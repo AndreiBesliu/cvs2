@@ -136,6 +136,20 @@ module.exports = {
       from: { path: '^(functions/src|test/capcane/functions)/' },
       to: { path: '^src/' },
     },
+    {
+      name: 'cvs2-fara-extensii',
+      severity: 'error',
+      comment: 'Codul lui cvs2 nu importă nimic dintr-o extensie, afară de tipurile lui HostApi (ADR 0127 §F).',
+      from: { path: '^(src|shared|test/capcane/gazda)/' },
+      to: { path: '^extensii/', pathNot: '^extensii/api\.ts$' },
+    },
+    {
+      name: 'extensia-doar-api',
+      severity: 'error',
+      comment: 'O extensie importă din cvs2 doar tipurile lui HostApi (extensii/api.ts), nu module ale aplicației (ADR 0127 §F).',
+      from: { path: '^(extensii/[^/]+|test/capcane/extensie)/' },
+      to: { path: '^(src|shared|scripts|functions)/' },
+    },
   ],
   options: {
     parser: 'swc',

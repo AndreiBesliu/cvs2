@@ -4,9 +4,10 @@ import { ACTIUNI_DOCUMENT } from '../../src/ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';
+import { ACTIUNI_EXTENSII } from '../../src/ui/actiuniExtensii.ts';
 import { actiuneaTastei, TASTE, tastaActiunii, tastaApasata } from '../../src/ui/scurtaturi.ts';
 
-const TOATE = [...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT, ...ACTIUNI_VEDERE];
+const TOATE = [...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT, ...ACTIUNI_VEDERE, ...ACTIUNI_EXTENSII];
 
 test('registrele au id-uri unice între ele: paleta le arată împreună', () => {
   const ids = TOATE.map((a) => a.id);

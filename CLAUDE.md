@@ -504,6 +504,96 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scriere în pod cere răspunsul „ok”**, nu doar starea: o valoare goală (sau `json`) e o citire. Proba cap-coadă are podul
   fals în `test/e2e/controlerWebSocket.ts` (`pod`), cu `esp3d.local` rezolvat de browser la 127.0.0.1 și podul pe 8282 (spec-ul
   merge pe rând). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul 483,8 / 500, /admin 105,3 / 200.**
+  **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
+  `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
+  protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
+  și dialogul (`src/app/primireLucrare.ts`, `src/app/DialogLucrare.tsx`) vin la cerere. Doar fereastra care a deschis fila,
+  confirmarea omului într-un dialog modal, fiecare fișier verificat ca unul adus cu „Fișier…” (`M6` refuzat, amprenta
+  trimisă); lista „Lucrarea primită” din panoul mașinii e separată de `ultimulExport` și stă doar în memorie. **Hosting-ul
+  rămâne fără COOP** (ar tăia `window.opener`). Pe live, primirea pornește după o placă trimisă așa pe test.
+  **Pornirea 98,7 (cu ușa 102,2 / 110 kB), totalul 451,9 / 500.**
+  **Gazda extensiilor (ADR 0127, felia 3.Xa, linia Trenuleț)** gata pe 02.11, în worktree-ul `wip/trenulet`: extensiile se
+  instalează (din `.zip`, de la o adresă HTTPS, prin linkul `#instaleaza=`), nu fac parte din aplicație. **Codul unei
+  extensii rulează doar în cadrul ei izolat** (iframe cu `sandbox="allow-scripts"` și `srcdoc`, fără originea aplicației),
+  cu `HostApi` v1 prin `MessagePort`. **CSP-ul are `blob:` și amprenta încărcătorului (`shared/cadruExtensie.ts`) în
+  `script-src` și `https:` în `connect-src`** (acordul owner-ului): o schimbare a textului încărcătorului cere amprenta nouă
+  (`test/unit/csp.extensii.test.ts`). Butonul Extensii stă lângă marcă; spațiul extensiei ia locul pânzei, iar acțiunile
+  documentului nu rulează cât e deschis. **cvs2 nu importă din `extensii/` decât `extensii/api.ts`** (regula
+  `cvs2-fara-extensii`), iar o extensie nu importă din cvs2 (`extensia-doar-api`). O extensie se împachetează cu `node
+  scripts/impacheteaza-extensie.ts <dosar>` (tipurile se șterg cu `stripTypeScriptTypes` din Node: TypeScript 7 n-are API de
+  transpilare). **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 460,6 / 500.**
+  **Stocarea extensiilor și permisiunile (ADR 0128, felia 3.Xb)** gata pe 03.11: permisiunea `stocare` (catalogul din
+  `src/extensii/pachet.ts`, arătat la instalare), `host.stocare` peste `host.cere`, în IndexedDB (`cncvs2-extensii` v2,
+  `date` și `marimi`): doar JSON sau octeți, 4 MB o valoare, 16 MB și 1 000 de chei pe extensie; scoaterea șterge datele.
+  **Senderul în `HostApi` vine după unirea lui 13.A↑ în `main`** („Întâi 13.A în main”), ca felia 3.Xc: extensia devine o
+  fereastră a aranjamentului (ADR 0132), iar „Lucrarea primită” trece în fereastra Mașina.
+  **Planificatorul Trenuleț ca extensie (ADR 0129, felia 3.Ta)** gata pe 03.11: sursele v18 stau în
+  `extensii/trenulet/sursa/`, neschimbate, cu testele lor de referință (`node extensii/trenulet/sursa/teste/referinte.js
+  --compara`, 0 diferențe). **De acum, planificatorul se schimbă în repo, nu în `Apps/Trenulet/`.** `node
+  scripts/construieste-trenulet.ts` face ce făcea `build.py`, fără Python: pagina de sine stătătoare (octet cu octet ca v18)
+  și pachetul `.tmp/extensii/trenulet-<versiune>.zip`. Intrarea (`extensii/trenulet/intrare.ts`) îi dă paginii, prin
+  `HostApi`, `window.claude` (`db`, `downloads`), `localStorage`, atributele `style` prin CSSOM și scripturile clasice.
+  Permisiunea nouă `descarcari` (`descarcari.salveaza`): cvs2 descarcă din pagina lui, doar tipurile din lista albă, cel
+  mult 64 MB. Încărcătorul și CSP-ul nu s-au schimbat. „Trimite la cvs2” și previzualizarea 3D nu merg încă din extensie.
+  **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 462,6 / 500.**
+  **Fereastra extensiei și senderul prin `HostApi` (ADR 0160, felia 3.Xc)** gata pe 03.11, după `main` (cu
+  13.A↑) adus în ramură: o extensie deschisă are fereastra ei, cu fila după cele ale aranjamentului (`#loc-fila-extensie`,
+  pusă de gazdă, nu în `aranjament.ferestre`) și ×; Proiectarea acoperită urmează ADR 0132 §3. **Permisiunea `masina`,
+  oprită pe live:** `host.masina` dă starea la fiecare schimbare, `incarca` (verificările lui „Fișier…”), `porneste` și `reia`
+  după confirmarea omului (`ConfirmareMasina`, butonul activ după o secundă), `pauza` și `opreste` direct, `trimite` prin
+  dialogul primirii. **Logica senderului pentru extensii stă în `src/app/masinaExtensii.ts` (`invelisMasina`), fără React;**
+  fereastra Mașina doar o leagă și o pune în semnalul `masinaPentruExtensii` (`src/app/lucrare.ts`). Pornirea judecă
+  `refuzStart` din flux, ca evenimentul `start`. Încărcătorul are `host.masina` și `host.descarcari`, deci amprenta nouă în
+  CSP. „Trimite la cvs2” merge din planificator, printr-o fereastră imitată în `intrare.ts` (pachetul 18.1.0).
+  **Pornirea 100,6 (cu ușa 104,1 / 110 kB), totalul 471,6 / 500.**
+  **Planificatorul adaptat pentru cvs2 (ADR 0161, felia 3.Tb)** gata pe 03.11: intrarea pune `window.cvs2` (cu senderul doar
+  când e deschis extensiei), iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie. **Sursele
+  planificatorului n-au atribute `style`** (o probă le oprește): clasele din `head.html` țin locul lor, culorile din date
+  (`data-fundal`) se pun prin CSSOM, iar adaptorul care copia atributele a plecat. În exportul CNC, „Pe mașină, prin cvs2”
+  folosește `host.masina`. **`referinte.js --compara` e în poarta unitară** (`trenulet.referinte.test.ts`, ~30 s): o
+  schimbare a motoarelor (G-code, LEGO, CNC) cere referințe noi, explicate. Pagina de sine stătătoare nu mai e v18 octet cu
+  octet (dovada aceea rămâne pe `754319b`). Pachetul 18.2.0. Cifrele aplicației nu se schimbă (sursele sunt doar în pachet).
+  **Sursele planificatorului în TypeScript (ADR 0162, felia 3.Tc)** gata pe 04.11: cele șase surse sunt `.ts`, scripturi
+  clasice (nu module), cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte), pe care
+  rădăcina îl exclude, iar `npm run typecheck` și `trenulet.tipuri.test.ts` îl verifică. **Construcția și `teste/incarca.js`
+  șterg tipurile (`stripTypeScriptTypes`):** în pagină și în pachet ajunge JavaScript. `globale.d.ts` declară Cavalier,
+  earcut, three.js (doar tipuri), `window.claude` și `window.cvs2`. Un nume global nou al unei surse se întoarce ca `var` din
+  funcția ei închisă. Unde codul presupune o valoare, stă un `!`; o gardă adevărată schimbă codul și cere proba ei.
+  `build.py` a plecat din repo.
+  **three.js în pachetul extensiei (ADR 0163, felia 3.Td)** gata pe 04.11: `vendor/three.min.js` e r128 de pe cdnjs, octet
+  cu octet (amprenta SRI fixată în `trenulet.test.ts`), cu `three.LICENSE`; în pachet stă ca `js/three.js` (și
+  `licente/three.txt`), dar nu în pagina de sine stătătoare. `window.cvs2.three()` îl aduce din pachet la prima intrare în
+  3D, ca script clasic din `blob:`: în cvs2, atelierul are vederea 3D. CSP-ul nu s-a schimbat. O versiune nouă de three.js
+  cere acordul owner-ului pentru descărcare și amprenta nouă în probă. Pachetul 18.3.0.
+  **Pluginul ca parte din cvs2 (ADR 0164, felia 3.Xd)** gata pe 04.11: cadrul primește și `color-scheme` (tema aleasă în
+  cvs2) și fonturile (`JETOANE_TEMA`, 16); planificatorul pune `data-gazda="cvs2"` și `data-theme` și își leagă de ele
+  suprafețele, textul, marginile, roșul, inelul de focus și fonturile (masa, lemnul, cărămizile, verdele și butoanele
+  principale rămân ale lui). Permisiunea `cont`: `host.cont` (conectat, numele, planul de la zi; fără adresă, uid sau
+  parolă), în context, schimbat pe loc (`src/extensii/cont.ts`). `host.nesalvat` și `host.laInchidere`: × (și altă
+  extensie, o versiune nouă) cere întâi salvările extensiei, cel mult 5 s, și întreabă doar ce rămâne nesalvat;
+  reîncărcarea, prin `beforeunload`. În planificator, o salvare amânată nouă trece prin `window.cvs2.amana`. Încărcătorul
+  are amprentă nouă (politica CSP neschimbată). Pachetul 18.4.0.
+  **Planificatorul în engleză (ADR 0165, felia 3.Te)** gata pe 04.11: `planificator/limba.ts` (primul script) dă limba lui
+  cvs2 și `tr`; româna rămâne în cod, engleza vine din `planificator/texte.en.json` (doar în pachet, adus doar în engleză):
+  `tr` pentru textele cu valori și cele din afara paginii (README-uri, mesajele motoarelor; context pentru cuvintele cu două
+  sensuri, `tr("placă", "pat")`), iar textele fixe se traduc pe pagină (`Limba.urmareste`), doar ca noduri de text întregi:
+  un cuvânt lipit de o valoare trece prin `tr`. Un text nou cere cheia lui: `node scripts/texte-trenulet.ts`, apoi
+  traducerea; `trenulet.engleza.test.ts` cade până atunci (și la un text lipit de valori fără `tr`). La o limbă nouă, pagina își
+  salvează lucrul și cere `host.reporneste()` (nou; cel mult o dată la 2 s, cererile dese adunate). G-code-ul, numele de
+  fișiere și antetele STL rămân în română. Pachetul 18.5.0.
+  **Formele între cvs2 și extensii (ADR 0166, felia 3.Xe)** gata pe 05.11: permisiunea nouă `forme`. Din desen spre
+  extensie, doar ce trimite omul: acțiunea `extensii.trimite-selectia` („Trimite la <extensie>”, în bara selecției și în
+  paletă, arătată doar cât e deschisă o extensie care primește forme); contururile vin din `src/extensii/formeSelectie.ts`
+  (în mm ai foii, arcele la cel mult 0,02 mm, plafoanele 10 000 / 200 000), la `host.forme.laPrimire`. Din extensie spre
+  desen, `host.forme.propune(nume, date)` (SVG / DXF, serviciul `src/extensii/forme.ts`): fereastra Importă, pe Proiectare,
+  cu „Propus de <extensie>”; nimic fără „Importă”. În planificator: fila „Din cvs2” a atelierului (`dinCvs2` în motorul
+  LEGO: găurile după cum stau contururile unele în altele) și „În desenul cvs2” la plăcile exportului. Încărcătorul, cu
+  amprentă nouă. Pachetul 18.6.0.
+  **Numele pluginului: Easy 3Draw (ADR 0167, felia 3.Tf)** gata pe 05.11: numele afișat (manifestul, 18.7.0, și
+  planificatorul: titlul, antetele README-urilor, sfatul filei „Din cvs2”, `de_la.aplicatie`), același în ambele limbi, în
+  `PASTRATE`. Id-ul rămâne `trenulet` (de el țin rândul instalat și datele: 18.7.0 peste 18.6.0 îi ia locul, cu circuitele),
+  la fel numele tehnice (pachetul, dosarul, scripturile) și antetul G-code-ului (amprentele v18). Verificarea românei rămase
+  nu mai scutește „Trenuleț”.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -618,6 +708,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **linia pluginului (Trenuleț, acum „Easy 3Draw”) unită în `main`** („Yes, merge it”, la „Merge wip/trenulet
+  (43 commits, with the plugin's sources) into main and push it to the public repo?”, după încheierea liniei pe 05.11: „Aici nu
+  mai facem nimic, am terminat si vom face unirea cu main”): feliile 3.S, 3.Xa–3.Xe și 3.Ta–3.Tf (ADR 0126–0129, 0160–0167)
+  intră în `main`, iar sursele pluginului (`extensii/trenulet/sursa/`, ~1,1 MB) și three.js r128 (`vendor/three.min.js`, MIT,
+  cu licența) devin publice în repo. Ce a rămas din linie (salvarea în cont, senderul K1C, știfturile LEGO pe o formă liberă,
+  semnul din bară) devine felii noi, pornite din `main`.
 - 05.11.2026: **conectarea prin WiFi: răspunsurile la ADR 0136** („1. c”, „2. a”, „3. b”, „4. trebuie sa pot alege la care
   retea sa ma conectez”): în felia 3.6f intră și căutarea în toată rețeaua, doar la clic; parola rețelei atelierului se scrie
   în aplicație, merge doar spre pod și nu se ține nicăieri (regula din ghidul podului s-a schimbat odată cu ea); numele
@@ -645,6 +741,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   „K1C-8578”, în timpul unei imprimări. E răspunsul la întrebarea 4 din ADR 0119: firmware-ul Creality, pe Klipper. Ce expune
   în rețea (Moonraker sau doar protocolul aplicației Creality) se cercetează la pornirea feliei; „mai târziu”, deci nicio felie
   acum. Captura stă doar local, în `docs/faza0/imprimanta-3d/` (ignorat de git).
+- 02.11.2026: **Trenuleț în cvs2: extensiile se instalează, rulează izolate și folosesc senderul prin `HostApi`** (sesiunea
+  dedicată, worktree-ul `wip/trenulet`; întrebările din handoff-urile din `Apps/Trenulet/cvs2/`):
+  - „nu vreau sa fie prezent in softul vanilla, vreau sa fie instalat din link. sau dintr-un zip. pentru asta avem nevoie de
+    un sistem de plugin-uri. interfata lui cvs2 va ramane tot timpul cea vanilla si pentru utilizarea plugin-ului, trebuie
+    accesat plugin-ul printr-un buton discret sau dintr-un meniu de plugin-uri pus aici” (lângă marcă): planificatorul nu
+    intră în aplicație. Codul lui stă în repo (`extensii/trenulet/`), dar se construiește separat, ca un `.zip`, în afara
+    pachetului și a plafonului de 500 kB. Meniul Extensii stă mereu lângă marcă, discret, iar spațiul unei extensii ia locul
+    pânzei (schița, „la fel”);
+  - „cum recomanzi tu”: instalarea de la orice adresă HTTPS a unui `.zip`, descărcată direct (`connect-src https:`), plus
+    linkul `<adresa cvs2>#instaleaza=<adresa pachetului>`;
+  - „eu vreau ca softul plug-inului sa poata folosi senderul din cvs2”, apoi „Da, ca recomandat”: extensia rulează într-un
+    cadru izolat (iframe cu sandbox, fără originea aplicației: nu vede proiectele, contul sau portul) și vorbește cu cvs2
+    doar prin `HostApi`. CSP-ul primește `blob:` și amprenta scriptului cadrului în `script-src`; cadrul are un CSP propriu,
+    fără rețea. Senderul prin `HostApi`: citește starea, încarcă programe (verificările lui „Fișier…”), pornește și reia doar
+    după confirmarea omului într-o fereastră a lui cvs2, pune pauză și oprește direct; conectarea, jog-ul, zero-ul,
+    palparea, deblocarea, comenzile manuale și setările controlerului rămân în panoul mașinii;
+  - la restul, recomandările (fără obiecție): întâi primirea (3.S, ADR 0126), apoi gazda extensiilor (3.Xa) și senderul în
+    `HostApi` (3.Xb); dialogul primirii modal, la sosire; pe live după o placă trimisă așa pe test; panoul mașinii se
+    deschide singur după „Primește”; lucrarea primită stă doar în memorie; ieșirea CNC a planificatorului prin planșe cvs2;
+    contractele atelierelor luate din cvs2; Manifold (cu `'wasm-unsafe-eval'`, cerut atunci); pagina de pe claude.ai
+    rămâne, construită din repo. Repo-ul e public: sursele planificatorului se reconfirmă înaintea primului push care le aduce.
 - 02.11.2026: **gruparea, răspunsurile owner-ului** la cele patru întrebări din raportul feliei 6.T↑ (ADR 0130):
   1. „1 e ok.”: grupurile în grupuri rămân permise (un nivel pe grupare, Degrupează desface doar acel nivel);
   2. „2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul trebuie implementat

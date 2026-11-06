@@ -6,6 +6,7 @@ import type { Mesaj } from './tipuri.ts';
  */
 export const enImport = {
   'import.titlu': 'Import: {nume}',
+  'import.propus-de': 'Proposed by {nume}',
   'import.citeste': 'Reading the file…',
   'import.marime': 'Drawing: {latime} × {inaltime} mm',
   'import.cai': { one: '{n} closed contour: {exterioare} cut outside, {interioare} inside (from the nesting)', other: '{n} closed contours: {exterioare} cut outside, {interioare} inside (from the nesting)' },

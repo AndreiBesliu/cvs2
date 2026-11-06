@@ -122,7 +122,11 @@ export const ARANJAMENT_MODERN: Aranjament = {
     selectie: [
       {
         id: 'selectie',
-        intrari: [{ actiune: 'document.duplica-selectia' }, { actiune: 'document.sterge-selectia' }, { actiune: 'vedere.proprietati' }],
+        // „Trimite la <extensie>” (ADR 0166 §B) se arată doar cât e deschisă o extensie care primește forme.
+        intrari: [
+          { actiune: 'document.duplica-selectia' }, { actiune: 'document.sterge-selectia' }, { actiune: 'vedere.proprietati' },
+          { actiune: 'extensii.trimite-selectia', aspect: 'eticheta' },
+        ],
       },
     ],
     jos: [

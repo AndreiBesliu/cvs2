@@ -1,0 +1,10 @@
+{
+  "format": "cvs2-extensie",
+  "api": 1,
+  "id": "proba-masina",
+  "nume": "Proba senderului",
+  "versiune": "1.0.0",
+  "intrare": "index.ts",
+  "stiluri": [],
+  "permisiuni": ["masina"]
+}

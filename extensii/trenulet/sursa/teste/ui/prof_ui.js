@@ -1,0 +1,74 @@
+// Scenariu de interfata (Playwright, Chromium cu swiftshader). PAGINA = documentul construit (iesire/preview.html),
+// THREE = three.min.js r128 (previzualizarea 3D); capturile si descarcarile merg in IESIRE (implicit ./capturi).
+const __cale = require('path'), __fs = require('fs');
+const PAGINA = process.env.PAGINA || __cale.join(__dirname, '..', '..', 'iesire', 'preview.html');
+const THREE_CALE = process.env.THREE || require.resolve('three/build/three.min.js');
+const IESIRE = process.env.IESIRE || __cale.join(process.cwd(), 'capturi');
+for (const d of ['', 'avion', 'cale', 'leg_ui', 'jos']) __fs.mkdirSync(__cale.join(IESIRE, d), { recursive: true });
+process.chdir(IESIRE);
+const { chromium } = require('playwright');
+const fs = require('fs');
+const THREE_JS = fs.readFileSync(THREE_CALE);
+(async () => {
+  const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
+  const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+  const p = await ctx.newPage();
+  await p.route('**/three.min.js', r => r.fulfill({ body: THREE_JS, contentType: 'application/javascript' }));
+  const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('file://' + PAGINA + '#2d'); await p.waitForTimeout(900);
+  await p.evaluate(() => { localStorage.clear(); }); await p.reload(); await p.waitForTimeout(900);
+  const masina = async () => [await p.$eval('#prof-masina select', s => s.options[s.selectedIndex].text), await p.evaluate(() => [setariCNC.placa.join('x'), setariCNC.freza, setariCNC.gcode.controler])].flat().join(' | ');
+  await p.click('#btn-export'); await p.waitForTimeout(1500);
+  console.log('initial:', await masina(), '| optiuni', await p.$$eval('#prof-masina option', o => o.map(x => x.text)));
+  await p.$eval('#cnc-setari', d => d.open = true);
+  await p.fill('#s-placa-0', '1220'); await p.waitForTimeout(900);
+  console.log('placa 1220:', await masina(), '| in profil', await p.evaluate(() => masini.lista[0].v['placa.0']));
+  await p.click('#prof-masina [data-prof="nou"]'); await p.fill('#prof-masina [data-prof="text"]', 'Mașina mică'); await p.click('#prof-masina [data-prof="ok"]'); await p.waitForTimeout(300);
+  await p.fill('#s-placa-0', '600'); await p.fill('#s-placa-1', '400'); await p.fill('#s-freza', '3.175'); await p.waitForTimeout(900);
+  await p.$eval('#s-gcode-controler', el => el.closest('details').open = true); await p.selectOption('#s-gcode-controler', 'grblhal'); await p.waitForTimeout(500);
+  console.log('masina mica:', await masina());
+  await p.selectOption('#prof-masina select', { index: 0 }); await p.waitForTimeout(900);
+  console.log('inapoi la prima:', await masina(), '| camp placa', await p.inputValue('#s-placa-0'));
+  await p.selectOption('#prof-masina select', { index: 1 }); await p.waitForTimeout(600);
+  await p.click('#prof-masina [data-prof="implicit"]'); await p.waitForTimeout(300);
+  console.log('implicita:', await p.$$eval('#prof-masina option', o => o.map(x => x.text)));
+  await p.selectOption('#prof-masina select', { index: 0 }); await p.waitForTimeout(600);
+  await p.reload(); await p.waitForTimeout(1200); await p.click('#btn-export'); await p.waitForTimeout(1500);
+  console.log('dupa reincarcare (deschide implicita):', await masina());
+  await p.click('#prof-masina [data-prof="nume"]'); await p.fill('#prof-masina [data-prof="text"]', 'CNC 6040'); await p.keyboard.press('Enter'); await p.waitForTimeout(300);
+  console.log('redenumita:', await p.$$eval('#prof-masina option', o => o.map(x => x.text)), '| foaia inca deschisa', await p.evaluate(() => !document.querySelector('#foaie-export').hidden));
+  await p.click('#prof-masina [data-prof="sterge"]'); await p.click('#prof-masina [data-prof="ok"]'); await p.waitForTimeout(800);
+  console.log('dupa stergere:', await masina(), await p.$$eval('#prof-masina option', o => o.map(x => x.text)));
+  // print_tata in 2D -> imprimanta din 3D
+  await p.$eval('#sec-printate', el => el.closest('details').open = true);
+  await p.fill('#s-print_tata', '4'); await p.waitForTimeout(800);
+  await p.keyboard.press('Escape');
+  // 3D: imprimantele
+  await p.click('[data-mod="3d"]'); await p.waitForTimeout(2200);
+  await p.$eval('#prof-imprimanta', el => el.closest('details').open = true);
+  const impr = async () => [await p.$eval('#prof-imprimanta select', s => s.options[s.selectedIndex].text), await p.textContent('#at-imprimanta-rez'), await p.inputValue('#at-reglaje [data-setare="varianta_stift"]'), await p.evaluate(() => setariCNC.print_tata)].join(' | ');
+  console.log('imprimanta:', await impr());
+  await p.click('#prof-imprimanta [data-prof="nou"]'); await p.fill('#prof-imprimanta [data-prof="text"]', 'Bambu'); await p.click('#prof-imprimanta [data-prof="ok"]'); await p.waitForTimeout(300);
+  await p.fill('#at-reglaje [data-setare="pat.0"]', '256'); await p.dispatchEvent('#at-reglaje [data-setare="pat.0"]', 'change');
+  await p.fill('#at-reglaje [data-setare="pat.1"]', '256'); await p.dispatchEvent('#at-reglaje [data-setare="pat.1"]', 'change');
+  await p.fill('#at-reglaje [data-setare="varianta_stift"]', '5'); await p.dispatchEvent('#at-reglaje [data-setare="varianta_stift"]', 'change'); await p.waitForTimeout(500);
+  await p.evaluate(() => TrenPentru3D.seteazaPrint({ print_tata: 2 })); await p.evaluate(() => Atelier3D.printSchimbat());
+  console.log('bambu:', await impr(), '| lista:', await p.textContent('#at-rez-lista'));
+  await p.selectOption('#prof-imprimanta select', { index: 0 }); await p.waitForTimeout(600);
+  console.log('inapoi la prima:', await impr());
+  await p.selectOption('#prof-imprimanta select', { index: 1 }); await p.waitForTimeout(400); await p.click('#prof-imprimanta [data-prof="implicit"]');
+  await p.selectOption('#prof-imprimanta select', { index: 0 }); await p.waitForTimeout(400);
+  await p.reload(); await p.waitForTimeout(2500);
+  await p.$eval('#prof-imprimanta', el => el.closest('details').open = true);
+  console.log('dupa reincarcare:', await impr());
+  await p.screenshot({ path: 'prof_3d.png' });
+  // telefon
+  const t = await (await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage();
+  t.on('pageerror', e => errs.push('TEL ' + e.message));
+  await t.goto('file://' + PAGINA + '#2d'); await t.waitForTimeout(900); await t.click('#btn-export'); await t.waitForTimeout(1200);
+  await t.click('#prof-masina [data-prof="nou"]'); await t.waitForTimeout(300);
+  console.log('telefon latime:', await t.evaluate(() => [document.querySelector('#foaie-export .foaie').scrollWidth, document.querySelector('#foaie-export .foaie').clientWidth]));
+  await t.screenshot({ path: 'prof_tel.png' });
+  console.log('erori', errs);
+  await b.close();
+})();

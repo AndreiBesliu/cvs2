@@ -109,6 +109,10 @@
       "ro": "Textul",
       "en": "Text"
     },
+    "0a758891c43d882a": {
+      "ro": "planificatorul în engleză",
+      "en": "the planner in English"
+    },
     "0a7887b0082312c0": {
       "ro": "regiunea păstrată, urechile, intrările",
       "en": "the kept region, tabs, lead-ins"
@@ -212,6 +216,10 @@
     "147973612cc55fc8": {
       "ro": "Conturile clienților: contul în aplicație, adus din etapa 14",
       "en": "Customer accounts: the account in the app, brought forward from stage 14"
+    },
+    "14c18e16b0a78a0c": {
+      "ro": "Fereastra extensiei și senderul prin `HostApi`",
+      "en": "The extension window and the sender through `HostApi`"
     },
     "14daa1cd690b3dce": {
       "ro": "Degajările colțurilor (ADR 0032, documentul v8 cu migrarea v7 → v8 și `colturi: null`): pe fiecare colț concav pentru materialul păstrat, între două linii, traseul face drumul minim Q → E → Q, cu cercul frezei prin colțul piesei (dog-bone pe bisectoare, T-bone în peretele mai lung, ca la Vectric), la fiecare sosire în Q, și cu urechi, rampă și intrări. Ediția întâi punea un cerc separat cu centrul la r dincolo de colț: pe hârtie lăsa o așchie de ~0,29·r pe bisectoare. Condițiile: departe de buclele vecine (D + 1), de urechile buclei (D) și de marginea foii (1 mm); altfel, avertisment. Coloana Colțuri în dialog. **Recenzia (o lentilă CAM + 2 verificatori, 0,66 M, 38 min) a prins o gaură a contractului:** două găuri cu T-bone și un perete de 4–6 mm: fiecare crestătură trecea singură de condiție, dar se întâlneau și tăiau peretele, iar o bucată din piesă se desprindea fără avertisment. Acum candidatele se judecă și între ele (amândouă omise). Tot de la recenzie: marginea foii, conturul curățat ca la offset, avertismentul arcelor sub raza frezei, filtrul pe cutii (1600 de găuri: 1,3 s în loc de 13 s). Oracolul (sesiune independentă, 0,81 M, 96 min): documentul v8, invariantele 2, 9–12 amendate, 13 nouă, degajările pe hârtie, 15 martori, 37 de sabotaje (35 prinse, 2 echivalente). Otrăvuri: 35 din 36 prinse; cea scăpată e echivalentă (candidatele pe linie: o tăietură pe linie cu degajări e refuzată oricum de lucrare). **CI:** nivelul rapid în 4 felii. **Treceri:** (1) contractul; (2) aplicația și documentul v8; (3) recenzia și reparațiile; (4) oracolul; (5) CI-ul; (6) otrăvurile.",
@@ -329,6 +337,10 @@
       "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
       "en": "Pocket with several bits; Drilling; Ordering + one file per tool; Toolpath animation; §10 Peck drilling"
     },
+    "21d664781ddf91ac": {
+      "ro": "**Sursele planificatorului Trenuleț în TypeScript** (fără mașină; ADR 0162; a treia felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Sursele în TypeScript”). Cele șase surse (motorul CNC, G-code, profilurile, LEGO, atelierul, planul; ~7 900 de linii) sunt `.ts`, scripturi clasice ca înainte, cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte ca aplicația, exclus din rădăcină): `npm run typecheck` și `trenulet.tipuri.test.ts` îl verifică. Construcția și ham-ul referințelor șterg tipurile (`stripTypeScriptTypes`). Doar tipuri adăugate: fiecare sursă, fără tipuri, are arborele sintactic de dinainte (acorn), cu o singură schimbare, exportul ca `var`; 1 785 de `!` unde codul presupunea o valoare, 274 de `as`, niciun `any`. `referinte.js --compara`: 622, 0 diferite. `build.py` a plecat. **Treceri:** (1) motoarele, comise separat (`781803f`); (2) atelierul și planul. Uneltele conversiei (deducerea tipurilor simple, semnele `!`, comparația arborilor) au stat în afara repo-ului.",
+      "en": "**The Trenuleț planner sources in TypeScript** (no machine; ADR 0162; the third slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Sursele în TypeScript”). The six sources (the CNC engine, G-code, profiles, LEGO, the workshop, the plan; ~7,900 lines) are `.ts`, classic scripts as before, with their own type project (`extensii/trenulet/sursa/tsconfig.json`, the same strict rules as the app, excluded from the root): `npm run typecheck` and `trenulet.tipuri.test.ts` check it. The build and the reference harness strip the types (`stripTypeScriptTypes`). Only types were added: each source, without types, has the syntax tree it had before (acorn), with a single change, the export as `var`; 1,785 `!` where the code assumed a value, 274 `as`, no `any`. `referinte.js --compara`: 622, 0 different. `build.py` is gone. **Passes:** (1) the engines, committed separately (`781803f`); (2) the workshop and the plan. The conversion tools (inferring simple types, the `!` marks, comparing the trees) stayed outside the repo."
+    },
     "22c00400d882218c": {
       "ro": "Pachetul de atelier, adus din etapa 4",
       "en": "The workshop pack, brought forward from stage 4"
@@ -356,6 +368,10 @@
     "249ae924a5467945": {
       "ro": "Contur L / A / C cu bulge; aria exactă pe toate trei primitivele (cercul = πr² exact, cubica prin Gauss pe 3 noduri); matricea cu rotiri exacte la 90°; offsetul peste cavalier, cu eșecul spus. Cavalier adus din `v0.1.1`: 118 `!` doar pentru tipuri, probat linie cu linie și cu martorul npm (100 de cazuri, bit cu bit). Profilul exterior / interior / pe linie, cu treceri egale. 50 de teste, valori pe hârtie. Treceri: `!` pus greșit în partea stângă de reparatorul automat; două importuri de efect cu `.js`; ciclurile interne cavalier → regula fațadei.",
       "en": "L / A / C contour with bulge; exact area on all three primitives (circle = πr² exactly, cubic via 3-point Gauss); matrix with exact 90° rotations; offset over cavalier, with failures reported. Cavalier vendored from `v0.1.1`: 118 `!` for types only, checked line by line and against the npm control (100 cases, bit for bit). Outside / inside / on-line profile, with equal passes. 50 tests, values on paper. Passes: a `!` misplaced on the left-hand side by the auto-fixer; two side-effect imports with `.js`; cavalier's internal cycles → the facade rule."
+    },
+    "2544a7715b5d127c": {
+      "ro": "**Numele pluginului: Easy 3Draw** (fără mașină; ADR 0167; în worktree-ul `wip/trenulet`; „o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). Numele afișat, același în română și în engleză, netradus: în manifest (instalarea, meniul, fereastra, „Trimite la”, „Propus de”, originea lucrării) și în planificator (titlul paginii, antetele README-urilor, sfatul filei „Din cvs2”). Id-ul `trenulet` rămâne: 18.7.0 instalat peste 18.6.0 îi ia locul, cu circuitele lui. Rămân și numele tehnice și antetul G-code-ului (amprentele v18). Pachetul 18.7.0.",
+      "en": "**The plugin’s name: Easy 3Draw** (no machine; ADR 0167; in the `wip/trenulet` worktree; “o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). The displayed name, the same in Romanian and in English, untranslated: in the manifest (the installation, the menu, the window, “Send to”, “Proposed by”, the job’s origin) and in the planner (the page title, the README headers, the hint of the “From cvs2” tab). The `trenulet` id stays: 18.7.0 installed over 18.6.0 takes its place, with its layouts. The technical names and the G-code header stay too (the v18 fingerprints). Package 18.7.0."
     },
     "266e79f8cd60b40f": {
       "ro": "Trasarea din imagine; EPS și AI vechi, cu cititor propriu",
@@ -533,6 +549,10 @@
       "ro": "regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată",
       "en": "regression from a paid account (test) and from one with an expired trial"
     },
+    "347984b10885e2d6": {
+      "ro": "Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi",
+      "en": "The plugin as part of cvs2: the theme, the fonts, the account it sees, closing without losses"
+    },
     "34ffe5f429051146": {
       "ro": "**Tasta fiecărei unelte, pe butonul ei** (cererea owner-ului: „vreau ca fiecare unealta sa aiba tasta de shortcut in coltul dreapta jos al butonului, langa iconita ei, fara sa o deranjeze cumva”). O literă mică (8 px, culoarea textului slab) în colțul dreapta-jos al fiecărui buton de unealtă, sub iconiță, fără s-o atingă și fără să prindă clicul; litera vine din aceeași hartă ca scurtăturile, deci nu poate arăta altă tastă. Manualul („Scurtăturile”) o pomenește. **Treceri:** (1) prima așezare (9 px, la 3 px de margini) atingea chenarul iconiței cu 1–2 px: măsurat, apoi coborâtă și micșorată, până când nicio literă nu mai atinge iconița.",
       "en": "**Each tool’s key, on its button** (the owner’s request: “I want each tool to have its shortcut key in the bottom right corner of the button, next to its icon, without disturbing it in any way”). A small letter (8 px, in the muted text colour) in the bottom right corner of each tool button, below the icon, not touching it and not catching the click; the letter comes from the same map as the shortcuts, so it cannot show another key. The manual (“Keyboard shortcuts”) mentions it. **Passes:** (1) the first placement (9 px, 3 px from the edges) touched the icon’s box by 1–2 px: measured, then lowered and made smaller, until no letter touches the icon."
@@ -540,6 +560,10 @@
     "35393447b253fd31": {
       "ro": "**Un schelet care taie** (§5.3)",
       "en": "**A skeleton that cuts** (§5.3)"
+    },
+    "353bf5eaec778987": {
+      "ro": "Primirea lucrărilor de la alte aplicații",
+      "en": "Receiving jobs from other apps"
     },
     "35c407c4f8470b69": {
       "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
@@ -633,10 +657,6 @@
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
     },
-    "3e849274cb79f809": {
-      "ro": "linia plugin-ului în roadmap și pe adresa principală de test",
-      "en": "the plugin line in the roadmap and on the main test address"
-    },
     "3e9cd247d407387f": {
       "ro": "Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie",
       "en": "The 3D printer (Creality K1C, over WiFi; the 03.11 answer to ADR 0119, question 4): its network address and a test print; whatever else the firmware needs is found out in the slice"
@@ -665,6 +685,10 @@
       "ro": "**Conturile clienților: contul în aplicație, adus din etapa 14** (fără mașină; ADR 0116; sugestia owner-ului acceptată pe 31.10, „Ne trebuie sistem de feedback sau raportare erori de catre userii clienti. Si trebuie sa facem si partea de accounts.”, și răspunsurile lui din 01.11: înregistrarea liberă, conturile ediției întâi rămân ale echipei, 7 zile offline setabile din admin, ordinea conturi → raportări → fila Utilizatori). Butonul **Cont** din extensia barei deschide panoul contului (doar online): intrarea cu Google sau cu e-mail și parolă, contul nou cu confirmarea adresei, parola uitată, numele, planul cu zilele rămase, ieșirea și nota de confidențialitate (cu locurile operatorului marcate). Callable-ul `cont` creează la prima logare cu adresa confirmată `conturi/{uid}`, cu proba de 14 zile, și calculează dreptul la fiecare deschidere: personalul are tot; proba trecută și contul dezactivat opresc exportul G-code și pornirea senderului. Aplicația ține dreptul 7 zile offline (`setari/conturi`) și îl reconfirmă la deschiderea editorului. Firebase Auth stă într-un singur modul, împărțit cu `/admin`; contul are categoria lui în poartă, doar online (26,0 / 32 kB). **Probele:** 10 pe hârtie, 8 ale callable-ului și 2 ale regulilor pe emulator, 3 e2e și unul cap-coadă pe emulatoare; 3 mutații țintite, toate prinse. Pornirea 97,6 → 98,4 (cu ușa 101,9 / 110 kB), totalul 432,1 → 433,1 / 450, /admin 196,0 → 196,9 / 200.",
       "en": "**Customer accounts: the account in the app, brought forward from stage 14** (no machine; ADR 0116; the owner’s suggestion accepted on 31.10, “We need a feedback or error reporting system for the client users. And we also have to do the accounts part.”, and his answers of 01.11: open registration, the first edition’s accounts stay the team’s, 7 offline days settable from admin, the order accounts → reports → the Users tab). The **Account** button in the bar’s extension opens the account panel (online only): signing in with Google or with email and password, the new account with the address confirmation, the forgotten password, the name, the plan with the days left, signing out and the privacy notice (with the controller’s places marked). The `cont` callable creates `conturi/{uid}` at the first sign-in with a confirmed address, with the 14-day trial, and computes the rights at every opening: staff have everything; an ended trial and a deactivated account stop G-code export and starting the sender. The app keeps the rights 7 days offline (`setari/conturi`) and confirms them again when the editor opens. Firebase Auth sits in a single module, shared with `/admin`; the account has its own category in the gate, online only (26.0 / 32 kB). **Tests:** 10 on paper, 8 for the callable and 2 for the rules on the emulator, 3 e2e and one end to end on the emulators; 3 targeted mutations, all caught. Startup 97.6 → 98.4 (with the door 101.9 / 110 kB), total 432.1 → 433.1 / 450, /admin 196.0 → 196.9 / 200."
     },
+    "40b30df045b433d7": {
+      "ro": "Numele pluginului: Easy 3Draw",
+      "en": "The plugin’s name: Easy 3Draw"
+    },
     "4156b068e6443d05": {
       "ro": "Stratul WebGL2 și panoul de proprietăți editabil",
       "en": "The WebGL2 layer and the editable properties panel"
@@ -680,6 +704,10 @@
     "41d6ab00a1773a0f": {
       "ro": "Profil cu urechi, intrări, sens; dog-bone / T-bone",
       "en": "Profile with tabs, lead-ins, direction; dog-bone / T-bone"
+    },
+    "42519929dcaf879a": {
+      "ro": "**Gazda extensiilor** (fără mașină; ADR 0127; a doua felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da”, la „Pornesc felia următoare, 3.Xa, gazda extensiilor?”). Extensiile se instalează, nu fac parte din aplicație: un pachet `.zip` cu `extensie.json` (id, versiunea, `api` 1, intrarea, stilurile, permisiunile din catalog, SHA-256 pe fișier), din fișier, de la o adresă HTTPS sau prin linkul `#instaleaza=`, cu confirmarea omului, în IndexedDB. Butonul Extensii stă lângă marcă; spațiul extensiei ia locul pânzei, cu numele ei și „Înapoi la planșă” deasupra (lângă marcă nu e loc la 1280 px), iar acțiunile documentului nu rulează cât e deschis. Extensia rulează într-un cadru izolat (iframe cu sandbox și `srcdoc`, încărcătorul cu amprenta în CSP, un CSP propriu fără rețea), cu `HostApi` v1 prin `MessagePort`; CSP-ul aplicației primește `blob:`, amprenta și `https:`. Extensia de probă `extensii/salut`, împachetatorul, două reguli de import cu capcanele lor, capitolul din manual. Probele: 12 teste unitare noi, 3 e2e în Edge (instalarea, izolarea încercată din cadru, linkul), 32 / 32 de otrăvuri prinse (una, după o probă nouă).",
+      "en": "**The extension host** (no machine; ADR 0127; the second slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da”, to “Shall I start the next slice, 3.Xa, the extension host?”). Extensions are installed, not part of the app: a `.zip` package with `extensie.json` (id, version, `api` 1, entry, styles, permissions from the catalog, SHA-256 per file), from a file, from an HTTPS address or through the `#instaleaza=` link, with the person’s confirmation, in IndexedDB. The Extensions button sits next to the brand; the extension’s workspace takes the canvas’s place, with its name and “Back to the sheet” above it (there’s no room next to the brand at 1280 px), and document actions don’t run while it’s open. The extension runs in an isolated frame (a sandboxed iframe with `srcdoc`, the loader with its hash in the CSP, a CSP of its own without network), with `HostApi` v1 through a `MessagePort`; the app’s CSP gets `blob:`, the hash and `https:`. The probe extension `extensii/salut`, the packer, two import rules with their traps, the manual chapter. The proofs: 12 new unit tests, 3 e2e in Edge (installing, the isolation tried from inside the frame, the link), 32 / 32 poisons caught (one after a new test)."
     },
     "42a72c90fedebdf5": {
       "ro": "Relieful 3: îmbinări, straturi bitmap, sculptura, anvelopa",
@@ -741,6 +769,10 @@
       "ro": "Mesajele modulelor la cerere",
       "en": "Module texts loaded on demand"
     },
+    "4845d1d910d3fb7f": {
+      "ro": "Sursele planificatorului Trenuleț în TypeScript",
+      "en": "The Trenuleț planner sources in TypeScript"
+    },
     "487df071bff2d150": {
       "ro": "**Copierea de-a lungul unei curbe, adusă din etapa 6** (fără mașină; ADR 0066; „Da”: întâi curba, apoi booleanul, apoi testul owner-ului). Panoul „Copiază în rețea” are al treilea fel, Pe curbă: formele se aleg întâi, curba după ele, cu Shift + clic (curba e ultima aleasă); câte copii (1–1000), la distanțe egale pe lungimea curbei (deschisă: de la capăt la capăt; închisă: de jur împrejur), cu centrul cutiei formelor pe curbă, cu sau fără rotirea după tangentă; previzualizarea cutiilor. Copiile sunt piese independente, într-un singur pas; originalele și curba rămân. Prin aceeași acțiune: pornirea neschimbată. Rândul „Transformare și copiere” e acum complet. **Treceri:** (1) calculul pur (`src/model/curba.ts`), felul nou în rețea și în acțiune, panoul și previzualizarea, manualul, probele pe hârtie (linia, semicercul, dreptunghiul, cercul, cubica măsurată independent), verzi din prima, deci trei mutații (vârful, lungimea cubicei, curba aleasă în panou), toate prinse.",
       "en": "**Copying along a curve, brought forward from stage 6** (no machine; ADR 0066; „Da”, i.e. yes: first the curve, then the boolean, then the owner's test). The „Copy in an array” panel has a third kind, On a curve: the shapes are chosen first, the curve after them, with Shift + click (the curve is the last one chosen); how many copies (1–1000), at equal distances along the curve's length (open: from end to end; closed: all around), with the centre of the shapes' box on the curve, with or without rotating along the tangent; the copies' boxes previewed. The copies are independent parts, in a single step; the originals and the curve stay. Through the same action: startup unchanged. The row „Transform and copy” is now complete. **Passes:** (1) the pure calculation (`src/model/curba.ts`), the new kind in the array and in the action, the panel and the preview, the manual, the tests on paper (the line, the semicircle, the rectangle, the circle, the cubic measured independently), green at first, so three mutations (the node, the cubic's length, the curve chosen in the panel), all caught."
@@ -785,6 +817,10 @@
       "ro": "**Exportul 2D: DXF și SVG, adus din etapa 9** (fără mașină; ADR 0088; „cel care se face mai repede”, între V-carve și exportul 2D). „Exportă vectori”, în extensia barei, scrie foaia în mm, la 1:1, ca **DXF R2007** (implicit) sau **SVG**: cercul e CIRCLE, liniile și arcele unei forme sunt o LWPOLYLINE cu bulge, curbele sunt SPLINE (Bézier în lanț, exacte); straturile sunt rolurile (EXTERIOR, INTERIOR, PE_LINIE, PE_O_PARTE, BUZUNAR, GAURIRE, FARA_OPERATIE, plus FOAIE la cerere), cu culori. Scriitorii sunt ai noștri, aduși la cerere (3,9 kB gzip; totalul 309,9 / 330, pornirea neschimbată): biblioteca DXF din s2 nu se putea instala (npm lipsește), iar cea PDF n-ar fi încăput. PDF, EPS și DXF R12 rămân pentru o felie următoare. Manualul are capitolul „Exportul vectorilor”. **Treceri:** (1) vectorii foii, scriitorii, panoul; oracolul independent nou, în Python (`test/oracles-py/export2d.py`, ezdxf 1.4.4, în CI pe felia 2), pe un corpus cu cazurile grele (dreptunghiul rotunjit rotit 30°, cercul R0,01 și unul scalat 2,5, curba S cu semicercul, ovalul din cubice, un contur amestecat, o piesă oglindită, o instanță rotită 90°): 0 erori și 0 reparații, totul cât pe hârtie; corpusul și în motorul SVG din Edge (lungimile, mijlocul arcelor, ± 0,05 mm: browserul aproximează arcele); mutațiile: 36 / 40 prinse la prima rulare (două „prinderi” erau căderi ale mediului, numărate ca supraviețuitoare), apoi probe noi (calea deschisă numai din linii, handle-ul DIMSTYLE pe 105, layout-urile din ACAD_LAYOUT, pe care ezdxf nu le verifică, și numerele din stare, care erau egale în e2e): 40 / 40, opt prinse doar de oracol; găsit pe drum: scriptul corpusului scria fișiere când îl importa Playwright (acum doar pornit direct); extensia barei, mai lată decât bara (991 px față de 718), lărgea coloana din mijloc a rândului de sus și strângea titlul la zero la 1280 px (prins de e2e-ul barei de jos): acum se întinde pe toate coloanele, centrată.",
       "en": "**2D export: DXF and SVG, brought forward from stage 9** (no machine; ADR 0088; “cel care se face mai repede”, between V-carve and the 2D export). “Export vectors”, in the bar extension, writes the sheet in mm, at 1:1, as **DXF R2007** (the default) or **SVG**: a circle is a CIRCLE, the lines and arcs of a shape are an LWPOLYLINE with bulges, curves are SPLINEs (chained Béziers, exact); the layers are the roles (EXTERIOR, INTERIOR, PE_LINIE, PE_O_PARTE, BUZUNAR, GAURIRE, FARA_OPERATIE, plus FOAIE on request), with colours. The writers are our own, loaded on demand (3.9 kB gzip; the total 309.9 / 330, startup unchanged): the DXF library from s2 could not be installed (npm is missing), and the PDF one would not have fitted. PDF, EPS and DXF R12 are left for a later slice. The manual has the chapter “Exporting vectors”. **Passes:** (1) the sheet’s vectors, the writers, the panel; a new independent oracle, in Python (`test/oracles-py/export2d.py`, ezdxf 1.4.4, in CI on slice 2), on a corpus with the hard cases (the rounded rectangle rotated 30°, the R0.01 circle and one scaled 2.5, the S curve with the semicircle, the oval made of cubics, a mixed outline, a mirrored part, an instance rotated 90°): 0 errors and 0 repairs, everything as on paper; the corpus also in Edge’s SVG engine (the lengths, the middle of the arcs, ± 0.05 mm: the browser approximates arcs); mutations: 36 / 40 caught on the first run (two “catches” were environment failures, counted as survivors), then new tests (the open path made only of lines, the DIMSTYLE handle on 105, the layouts in ACAD_LAYOUT, which ezdxf does not check, and the numbers in the status, which were equal in the e2e): 40 / 40, eight caught only by the oracle; found on the way: the corpus script wrote files when Playwright imported it (now only when run directly); the bar extension, wider than the bar (991 px against 718), widened the middle column of the top row and squeezed the title to zero at 1280 px (caught by the bottom bar e2e): it now spans all the columns, centred."
     },
+    "4d129cab383ecb32": {
+      "ro": "**Planificatorul în engleză, după limba lui cvs2** (fără mașină; ADR 0165; în worktree-ul `wip/trenulet`; „Engleza”). Româna rămâne în cod; engleza vine dintr-un dicționar de 1 127 de texte, adus doar în engleză: `tr` pentru textele cu valori și pentru cele care nu ajung pe pagină (README-ul arhivei CNC, mesajele motoarelor), traducerea pe pagină pentru textele fixe; zecimalele și data după limbă. La o limbă schimbată în cvs2, pluginul își salvează lucrul și cere repornirea (`host.reporneste()`, nou). Comentariile din G-code, numele de fișiere și antetele STL rămân în română. Unealta `scripts/texte-trenulet.ts` și proba dicționarului cer o traducere pentru fiecare text nou. Pachetul 18.5.0.",
+      "en": "**The planner in English, following the language of cvs2** (no machine; ADR 0165; in the `wip/trenulet` worktree; “Engleza”). Romanian stays in the code; English comes from a dictionary of 1,127 texts, loaded only in English: `tr` for the texts with values and for those that do not reach the page (the README of the CNC archive, the engines’ messages), the translation on the page for the fixed texts; decimals and dates follow the language. When the language changes in cvs2, the plugin saves its work and asks to be restarted (`host.reporneste()`, new). The G-code comments, the file names and the STL headers stay in Romanian. The `scripts/texte-trenulet.ts` tool and the dictionary probe ask for a translation of every new text. Package 18.5.0."
+    },
     "4d1fcfa5e1139df9": {
       "ro": "**Degajările pe colțurile cu arce, ultimele rămase din etapa 2** (fără mașină; ADR 0135; „da, 3.V”). Până acum, un colț cu o latură curbă primea doar avertismentul „o latură a colțului e curbă”: un „D” tăiat ca gaură, un dreptunghi unit cu un cerc (un umăr), o lentilă, orice import cu arce sau cubice. Acum se degajează ca cele dintre linii: Q pe curbele decalate ale pereților din V (piciorul poate cădea pe orice segment al peretelui, deci și pe o biarcă mai depărtată a unei cubice), E din tangentele din V, iar peretele (la T-bone și la condiția d din ADR 0134) merge până la prima rupere a tangentei. Unde decalarea mănâncă colțul, plasa spune „freza nu ajunge în colț”. Colțurile dintre linii rămân la fel, octet cu octet (amprenta din 3.U). **Probele:** `cam.degajari.arce.test.ts` (9, pe hârtie, în programul aplicației); oracolul cu colțurile cu arce (`degajari.arce.oracol.test.ts`: D39–D49 pe 4 montaje, cu Q și E pe hârtie și cât intră în pereții-arc, radial; 5 martori: fără drumuri, cum tăia înainte, poarta cade în fiecare colț, și la sosirea pe arc); corpusul din sămânță (`degajari.arce.corpus.oracol.test.ts`: 120 de programe, 684 de drumuri, 218 sosiri pe arc). Pe drum, oracolul a prins o alarmă falsă a aplicației: cu căutarea pe pereții întregi, joncțiunile netede ale unui dreptunghi rotunjit deveniseră colțuri, deci ruptura minimă se cere și aici. **Otrăvurile** din `test/otravuri/3.V.py`: 24; prima rulare (`ae2b43a`): 20 prinse, 4 scăpate: C03 → umărul minuscul (D50), Q06 → proba pe `colturiDeDegajat` (în program o ascunde potrivirea lui Q cu un vârf al buclei), J03 → canalul îngust; Q04 echivalentă (o atingere a decalatelor apare doar pe un contur cu un singur colț, unde încrucișarea pereților e mai aproape de V). Pe `1799b70`: 23 / 24, plus Q04 echivalentă. În `3.U.py`, P01 și P02 rescrise pe pereții întregi: prinse.",
       "en": "**Reliefs at corners with arcs, the last ones left from stage 2** (no machine; ADR 0135; “da, 3.V”). Until now, a corner with a curved side only got the warning “one side of the corner is curved”: a “D” cut as a hole, a rectangle joined with a circle (a shoulder), a lens, any import with arcs or cubics. Now they are relieved like the corners between lines: Q on the offset curves of the walls at V (the foot may fall on any segment of the wall, so also on a farther biarc of a cubic), E from the tangents at V, and the wall (for T-bone and for condition d of ADR 0134) runs up to the first tangent break. Where the offset eats the corner, the safety net says “the cutter does not reach the corner”. Corners between lines stay the same, byte for byte (the fingerprint from 3.U). **The proofs:** `cam.degajari.arce.test.ts` (9, on paper, in the application’s program); the oracle with arc corners (`degajari.arce.oracol.test.ts`: D39–D49 on 4 setups, with Q and E on paper and how far the relief goes into arc walls, radially; 5 witnesses: without the reliefs, as it cut before, the gate fails at every corner, also where the cutter arrives on an arc); the seeded corpus (`degajari.arce.corpus.oracol.test.ts`: 120 programs, 684 reliefs, 218 arrivals on an arc). On the way, the oracle caught a false alarm of the application: with the search on whole walls, the smooth joins of a rounded rectangle had become corners, so the minimum break is required here too. **The poisons** in `test/otravuri/3.V.py`: 24; first run (`ae2b43a`): 20 caught, 4 escaped: C03 → the tiny shoulder (D50), Q06 → the test on `colturiDeDegajat` (in the program, matching Q with a vertex of the loop hides it), J03 → the narrow channel; Q04 equivalent (a touch of the offsets only occurs on a contour with a single corner, where the crossing of the walls is nearer to V). On `1799b70`: 23 / 24, plus Q04 equivalent. In `3.U.py`, P01 and P02 rewritten for whole walls: caught."
@@ -792,6 +828,10 @@
     "4d235580c0cc066d": {
       "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11, cu răspunsurile lui): conexiunile ținute, fiecare cu rețeaua ei, alese de om (fără conectare singură); găsirea după nume și, la clic, în toată rețeaua; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
       "en": "Connecting over WiFi, much easier (ADR 0136, the owner’s request of 05.11, with the owner’s answers): the saved connections, each with its network, chosen by the person (no connecting on its own); finding by name and, on a click, on the whole network; the steps for each failure; setting up the ESP3D bridge from the app, instead of the commands in its terminal; tested on the emulator, behind a fake bridge"
+    },
+    "4df95c07f33790be": {
+      "ro": "3.S pe live (acolo primirea e oprită până atunci)",
+      "en": "3.S on live (receiving is off there until then)"
     },
     "4e56c6f74c2be124": {
       "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
@@ -857,10 +897,6 @@
       "ro": "**Transformările, Alt inversat, uneltele în bara de sus, adusă din etapa 6** (fără mașină; ADR 0052; „Da, fă acum transformările (mânerele de scalare și rotire pe selecție), împreună cu Alt care inversează lipirea, fără agenți” și „toate uneltele astea sa fie in bara de sus, cu snap si grid, iar align/distribute options intr-o subbara”). Uneltele, Lipire și Grilă în bara de sus (portal în locul `unelte` al aranjamentului), alinierea și distribuirea într-o sub-bară; „Adaugă dreptunghi / cerc” doar în paleta de comenzi; Alt inversează lipirea; raza cercului (un clic pune un cerc cu ea, o tragere o scrie); 8 mânere de scalare (colțuri proporțional, Shift liber; laturi pe o axă; ancora opusă) și unul de rotire (Shift 15°), cu `document.transforma`: rotirea schimbă instanța, scalarea geometria piesei, exact, refuzată cu motiv (cerc, arce, colț rotunjit, rotire oblică, piesă împărțită). Sub 95rem, căutarea doar cu pictogramă (la 1280 px acoperea 62 px din „Exportă”). Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). **Treceri:** (1) modelul și acțiunea, mânerele, probele; (2) captura: căutarea peste „Exportă” la 1280 / 1366 / 1440 px (proba nouă, cu control: cade pe CSS-ul vechi); o captură cu selecția veche, din ajutorul `vedere()` care compara perechea cerere / afișare înaintea efectului (acum așteaptă două cadre); (3) e2e-ul complet: un clic simplu pe mâner scala forma (scara din poziția absolută a cursorului; acum din deplasare, cu prag de 3 px), iar mânerele prindeau orice apăsare, deci panoramarea cu butonul din mijloc pornită de pe un mâner nu mai mergea (oracolele traseului): mânerele sunt acum doar desen, lovitura se decide geometric, doar pentru butonul stâng; (4) pragul de 24 px pe axă, ascunderea la mutare, probele lor. Editarea după plasare (raza, laturile) e felia 6.D↑.",
       "en": "**Transforms, inverted Alt, the tools in the top bar, brought forward from stage 6** (without the machine; ADR 0052; “Yes, do the transforms now (scale and rotate handles on the selection), together with Alt inverting snapping, no agents” and “all these tools should be in the top bar, with snap and grid, and the align/distribute options in a sub-bar”). The tools, Snap and Grid in the top bar (a portal into the layout's `unelte` slot), alignment and distribution in a sub-bar; “Add rectangle / circle” only in the command palette; Alt inverts snapping; the circle radius (a click places a circle with it, a drag writes it); 8 scale handles (corners proportional, Shift free; sides on one axis; the opposite anchor) and one rotate handle (Shift 15°), with `document.transforma`: rotation changes the instance, scaling the part's geometry, exactly, refused with a reason (circle, arcs, rounded corner, oblique rotation, shared part). Below 95rem, search shows only an icon (at 1280 px it covered 62 px of “Export”). Startup unchanged: 95.0 kB (99.7 / 100 with the door). **Passes:** (1) the model and the action, the handles, the checks; (2) the screenshot: search over “Export” at 1280 / 1366 / 1440 px (a new check, with a control: it fails on the old CSS); a screenshot with the old selection, from the `vedere()` helper comparing the request / display pair before the effect (it now waits two frames); (3) the full e2e: a plain click on a handle scaled the shape (the scale from the cursor's absolute position; now from the movement, with a 3 px threshold), and the handles caught every press, so a middle-button pan started on a handle no longer worked (the toolpath oracles): the handles are now just drawing, and hits are decided geometrically, only for the left button; (4) the 24 px per-axis threshold, hiding while moving, their checks. Editing after placement (radius, sides) is slice 6.D↑."
     },
-    "537b7e46c2898a63": {
-      "ro": "când vrei",
-      "en": "whenever you like"
-    },
     "53cf879c035a4170": {
       "ro": "**Tampon**",
       "en": "**Buffer**"
@@ -921,6 +957,10 @@
       "ro": "**Owner-ul fix în /admin** (ADR 0071; cererea owner-ului: „in admin, contul meu nu ar trebui sa poata fi removed. nu din admin. si nici rolul nu ar trebui sa poata fi schimbat”). Serverul refuză scoaterea unui owner și schimbarea rolului lui, oricine ar cere-o, iar rolul owner se dă doar din consolă; în fila Personal, rândul owner-ului e doar de citit (fără rol de ales, fără Scoate) și arată adresa contului. Funcțiile publicate pe test; pagina vine pe adresa de test după testul owner-ului (până atunci, pe canalul buzunar). **Treceri:** (1) callable-ul, pagina, probele pe emulatoare (un al doilea owner pus din consolă nu-l poate scoate pe primul); e2e-ul invitației trecut pe un rol custom (owner nu se mai dă din /admin).",
       "en": "**The owner fixed in /admin** (ADR 0071; the owner’s request: “in admin, my account should not be removable. not from admin. and its role should not be changeable either”). The server refuses removing an owner and changing its role, whoever asks, and the owner role is given only from the console; in the Staff tab, the owner’s row is read-only (no role to choose, no Remove) and shows the account’s address. Functions published on test; the page comes to the test address after the owner’s test (until then, on the buzunar channel). **Passes:** (1) the callable, the page, the emulator tests (a second owner set from the console cannot remove the first); the invitation e2e moved to a custom role (owner is no longer given from /admin)."
     },
+    "5998192125646a92": {
+      "ro": "Stocarea extensiilor și permisiunile",
+      "en": "Extension storage and permissions"
+    },
     "59f4607a172740dc": {
       "ro": "Ușa SVG",
       "en": "The SVG door"
@@ -944,10 +984,6 @@
     "5d642af2da946d6f": {
       "ro": "Stack-ul",
       "en": "The stack"
-    },
-    "5db4b8461b6caaf1": {
-      "ro": "Linia plugin-ului „2d- lego 3d” (Trenuleț ca extensie): feliile 3.S, 3.Xa–3.Xe și 3.Ta–3.Te sunt gata pe ramura `wip/trenulet` (doar locală, cu o copie în `Apps\\cncvs2-arhiva\\`), publicate pe canalul `trenulet`, dar nu în `main`, deci roadmap-ul nu le arată încă. Ultima, 3.Xe (05.11, formele între cvs2 și plugin, ADR 0166), cu worktree-ul curat. Decizia: unirea în `main` acum, sau după încă o felie",
-      "en": "The line of the “2d- lego 3d” plugin (Trenuleț as an extension): slices 3.S, 3.Xa–3.Xe and 3.Ta–3.Te are done on the `wip/trenulet` branch (local only, with a copy in `Apps\\cncvs2-arhiva\\`), published on the `trenulet` channel, but not in `main`, so the roadmap does not show them yet. The last one, 3.Xe (05.11, shapes between cvs2 and the plugin, ADR 0166), with the worktree clean. The decision: merge into `main` now, or after one more slice"
     },
     "5e6bba6be828f904": {
       "ro": "Strategia paralelă a buzunarului",
@@ -992,6 +1028,10 @@
     "6556d6d20dd957d6": {
       "ro": "**Textul vertical, adus din etapa 7** (fără mașină; ADR 0141; „Textul vertical (7.7↑)”, la „Ce fac după pauză?”). Literele una sub alta, drepte: fiecare rând e o coloană, de la stânga la dreapta, la distanța rândurilor. Fiecare literă stă după cutia ei exactă (a celei îngroșate: a miezului cu 2d în plus) sub cea de deasupra, la golul max(0, em − majuscula) + spațierea: între două majuscule pasul e chiar un em, iar semnele lui Ă, Ș, Ț își primesc locul (la un pas fix de un em, virgula lui Ț intra în căciula lui Ă); literele se centrează pe axă; un spațiu ține locul unei majuscule; fără crenare. Alinierea devine Sus / Mijloc / Jos față de ancoră; blocul primește `vertical: true`, nu și pe o curbă (panoul o lasă deoparte, cu motivul). Desenul unei litere e acum o funcție comună rândurilor și coloanelor (rândurile, neschimbate). Bucata textului 18,2 → 18,6 kB gzip; pornirea neschimbată (98,6, cu ușa 102,2 / 110 kB), totalul 447,2 → 447,8 / 500. **Treceri:** (1) așezarea, oracolul, blocul, panoul; găsite pe drum: pasul fix de un em (ciocnirea Ț–Ă, din calcul, înainte de cod) și rândul lui Roboto scris din memorie în proba pe hârtie (2400 de unități în loc de 2701, corectat din font). **Probele:** oracolul (`fonturi_verticale`: 6 cazuri, cu Roboto, Droid Serif, Inter cu cursiv, Relief, un caracter lipsă; aldinul vertical în corpusul aldinului), pe hârtie (pasul de un em, H centrat pe ±7,6854 mm, axa coloanei a doua la 37,1016 mm, golul Ț–Ă, alinierile), probele țintite (literele mutate întregi, golul, spațiul, alinierea, blocul, scalarea, em-ul sub majusculă), e2e-ul (HIT, reîncărcarea cu Jos, curba). **Otrăvurile** din `test/otravuri/7.7.py`: 19, toate prinse din prima (14 pe probele unitare, 5 de interfață prin e2e).",
       "en": "**Vertical text, brought forward from stage 7** (no machine; ADR 0141; “Vertical text (7.7↑)”, to “What do I do after the break?”). The letters one under another, upright: each line is a column, from left to right, at the distance between lines. Each letter goes by its exact box (a bold letter’s: the core’s, plus 2d) under the one above, at the gap max(0, em − capital height) + spacing: between two capitals the step is exactly one em, and the marks of Ă, Ș, Ț get their room (with a fixed one-em step, the comma of Ț ran into the breve of Ă); the letters are centred on the axis; a space takes the place of a capital; no kerning. The alignment becomes Top / Middle / Bottom relative to the anchor; the block gets `vertical: true`, not on a curve (the panel sets the curve aside, with the reason). Drawing a letter is now one function shared by lines and columns (the lines, unchanged). The text chunk 18.2 → 18.6 kB gzip; startup unchanged (98.6, with the door 102.2 / 110 kB), total 447.2 → 447.8 / 500. **Passes:** (1) the layout, the oracle, the block, the panel; found on the way: the fixed one-em step (the Ț–Ă collision, from a calculation, before the code) and Roboto’s line written from memory in the paper check (2400 units instead of 2701, corrected from the font). **Tests:** the oracle (`fonturi_verticale`: 6 cases, with Roboto, Droid Serif, Inter with italic, Relief, a missing character; vertical bold in the bold corpus), on paper (the one-em step, H centred on ±7.6854 mm, the second column’s axis at 37.1016 mm, the Ț–Ă gap, the alignments), targeted tests (the letters moved whole, the gap, the space, the alignment, the block, the scaling, the em under the capital height), the e2e (HIT, the reload with Bottom, the curve). **Mutations** from `test/otravuri/7.7.py`: 19, all caught first time (14 on the unit tests, 5 in the interface through e2e)."
+    },
+    "65614b70ffc4c0af": {
+      "ro": "Planificatorul Trenuleț adaptat pentru cvs2",
+      "en": "The Trenuleț planner adapted for cvs2"
     },
     "6617b1174d1aed2d": {
       "ro": "Rampa (ADR 0029, documentul v6 cu migrarea v5 → v6 și `rampa: null`): bucla se taie continuu, fără ridicare între treceri; rampa pe Lr = min(lungime; P/2), Z = max(rampă, profil), tura plină care o re-acoperă și merge până la intrarea următoare, intrarea rotită și scoasă din zonele urechilor (fără coborârea verticală a ediției întâi). Parcurgerea buclei generalizată (`src/cam/parcurgere.ts`, desfășurată); urechile o folosesc neschimbat (396 de programe identice octet cu octet). Coloana Rampă în dialog (10 mm la bifă). **Recenzia (prima rulare moartă la limita săptămânală, 0,34 M; a doua, doar lentila CAM cu 2 verificatori, 0,60 M, 35 min) a prins o gaură a contractului:** rampa n-avea lungime minimă; la ≤ 1e-6 mm rămânea o pană de material pe primul segment al unei tăieturi prin foaie, iar sub rezoluția postului ieșea plonjare verticală. Acum: rampa minimă 1 mm, cu refuzuri, și toleranța declarată a invariantei 11 pentru bucata sub rezoluție. Oracolul (sesiune independentă, reluat după limită, 0,65 M): documentul v6, invariantele 9 și 10 amendate, invarianta 11, oracolul pe hârtie al rampei pe 8 cazuri × 8 montaje; 31 de sabotaje prinse; testele de legătură ale urechilor nu mai sunt sărite pe schema 6. Otrăvuri: 30 din 31 prinse; cea rămasă e echivalentă (IR identic pe 720 de bucle). **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile. 2386 de teste unitare (0 sărite), 40 e2e.",
@@ -1044,6 +1084,10 @@
     "6be217f48d74c787": {
       "ro": "Fonturile cu o singură linie, aduse din etapa 7",
       "en": "Single-line fonts, brought forward from stage 7"
+    },
+    "6bfcef98e90ad660": {
+      "ro": "Stocarea extensiilor și catalogul permisiunilor",
+      "en": "Extension storage and the permission catalog"
     },
     "6c4a192ce7404e43": {
       "ro": "Ieșirea din foaie, din notițele owner-ului de la prototipul planșelor. Avertismentul stă în bara de jos, pe un rând, niciodată pe pânză. Exportul cere confirmare când discul frezei trece de marginea foii cât taie. Măsurarea e exactă: arcele prin punctele de pe axe, iar rampele și elicele se taie la Z 0. Pragul e jumătate din rezoluția de 0,001 mm. Confirmarea e legată de traseul arătat (obiectul cererii + amprentă) și se scrie în antet. Oracolul l-a scris o sesiune independentă, în 2 commit-uri: 46 de sabotaje, toate prinse. **Treceri:** (1) implementarea, cu `\\`-uri pierdute de heredoc; (2) recenzia adversarială cu 10 agenți (~1,45 M tokeni) a găsit 17 probleme. Cele importante erau ocoliri ale confirmării: bifa boolean, Ctrl+Z sub dialog, un rezultat întârziat. Au fost reparate, iar oracolul a primit margini exacte și rapidele în afara foii; (3) reverificarea n-a găsit nicio ocolire, dar a scos la iveală Shift+Tab spre bară, Space dublu, o adâncime peste foaie (din 1.9c) și un pas absurd. Reparate: aplicația e inertă sub dialog, acțiunile de document trec printr-o singură ușă, adâncimea e plafonată la grosimea foii, iar trecerile la 1 000. 23 de otrăvuri pe aplicație, toate prinse. 147 de teste unitare, 17 e2e. **Durata:** fără estimare spusă dinainte; 85 de minute cu recenzia și reverificarea, față de 3–11 minute pentru celelalte felii ale etapei.",
@@ -1153,6 +1197,10 @@
       "ro": "Exportul 2D: DXF și SVG, adus din etapa 9",
       "en": "2D export: DXF and SVG, brought forward from stage 9"
     },
+    "790635b979a2923c": {
+      "ro": "**Planificatorul Trenuleț ca extensie, din sursele neschimbate** (fără mașină; ADR 0129; prima felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește E2”). Sursele v18 stau în repo (`extensii/trenulet/sursa/`), cu testele lor de referință (622 comparate, 0 diferite); de acum planificatorul se schimbă în repo. `scripts/construieste-trenulet.ts` face ce făcea `build.py`, fără Python: pagina de sine stătătoare iese octet cu octet ca v18, iar pachetul `.zip` are marcajul, stilurile și cele 8 scripturi ale paginii. Intrarea extensiei îi dă paginii, prin `HostApi`, ce avea pe claude.ai: `window.claude` cu `db` (circuitele și setările, peste stocarea extensiei) și `downloads`, `localStorage`, atributele `style` prin CSSOM, scripturile clasice. Permisiunea nouă `descarcari`: cvs2 descarcă fișierul din pagina lui, cu numele curățat, doar tipuri de date și desene, cel mult 64 MB. „Trimite la cvs2” și previzualizarea 3D nu merg încă din extensie. Probele: 11 teste unitare noi, un e2e în Edge, 47 / 47 de otrăvuri prinse (două, după probe noi).",
+      "en": "**The Trenuleț planner as an extension, from its unchanged sources** (no machine; ADR 0129; the first slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește E2”). The v18 sources live in the repo (`extensii/trenulet/sursa/`), with their reference tests (622 compared, 0 different); from now on the planner changes in the repo. `scripts/construieste-trenulet.ts` does what `build.py` did, without Python: the standalone page comes out byte for byte as v18, and the `.zip` package holds the markup, the styles and the page’s 8 scripts. The extension’s entry gives the page, through `HostApi`, what it had on claude.ai: `window.claude` with `db` (circuits and settings, over the extension’s storage) and `downloads`, `localStorage`, the `style` attributes through CSSOM, the classic scripts. New permission `descarcari`: cvs2 downloads the file from its own page, with the name cleaned, only data and drawing types, at most 64 MB. “Send to cvs2” and the 3D preview don’t work from the extension yet. Tests: 11 new unit tests, one e2e in Edge, 47 / 47 poisons caught (two after new tests)."
+    },
     "79a43543f70f4f0c": {
       "ro": "Operațiile în document (ADR 0025, schema v3, migrarea v2 → v3): profilul, cu latura, adâncimea, pasul și freza, stă în piesă; se salvează, se anulează cu Ctrl+Z, iar exportul le citește din document. Placa 1 iese neschimbată după migrare (implicitele sunt cele de până acum). Oracolul v3 l-a scris o sesiune independentă: 752 de teste de legătură verzi pe aplicație, 38 de sabotaje pe oracol prinse. **Recenzia adversarială** (21 de agenți, 3,0 M, 100 min; anunțasem 1,5 M) a confirmat 15 din 17 constatări, cea mai gravă: în fila care citește, dialogul de export arăta valori vechi și, după preluarea scrierii, le scria înapoi peste munca celeilalte file. Plus virgula zecimală („2,5” era 25, salvat și tăiat), frezele amestecate, bucla pătratică, o filă care nu putea citi versiunea nouă și ținea blocarea. **Reverificarea** (un agent, 0,30 M): 7 din 7 reparate, 6 probleme noi mici, 5 reparate (colțul și Z0 nu se mai pierd la o versiune nouă, exportul în curs aruncat se spune, numerele se arată exact, fila „necitită” nu exportă versiunea veche, „aceeași sculă” = număr + diametru peste tot). **Otrăvuri:** 51 pe instantaneu și 33 pe codul final, într-un worktree în afara Drive-ului; toate prinse în afară de un mutant echivalent (garda din aplicație pentru o scriere pe care dialogul n-o permite); 5 goluri închise cu teste noi. **Treceri:** (1) implementarea, plus garda marginilor (Ø150 ar fi salvat un proiect care nu se mai deschide); (2) oracolul și elementul oglindit; (3) recenzia; (4) otrăvurile, cu 4 teste noi; (5) reverificarea; (6) runda finală de otrăvuri. 1022 de teste unitare, 35 e2e.",
       "en": "Operations in the document (ADR 0025, schema v3, the v2 → v3 migration): the profile, with its side, depth, step and bit, lives in the part; it is saved, undone with Ctrl+Z, and the export reads it from the document. Plate 1 comes out unchanged after migration (the defaults are the ones used so far). The v3 oracle was written by an independent session: 752 binding tests green on the app, 38 sabotages on the oracle caught. **The adversarial review** (21 agents, 3.0 M, 100 min; I had announced 1.5 M) confirmed 15 of 17 findings, the worst: in the reading tab, the export dialog showed old values and, after taking over writing, wrote them back over the other tab's work. Plus the decimal comma (“2,5” was 25, saved and cut), mixed bits, the quadratic loop, a tab that could not read the new version and kept the lock. **The re-check** (one agent, 0.30 M): 7 of 7 fixed, 6 small new problems, 5 fixed (the corner and Z0 are no longer lost on a new version, a discarded running export is reported, numbers are shown exactly, the “unread” tab does not export the old version, “same tool” = number + diameter everywhere). **Poisons:** 51 on the snapshot and 33 on the final code, in a worktree outside Drive; all caught except one equivalent mutant (the app's guard for a write the dialog does not allow); 5 gaps closed with new tests. **Passes:** (1) the implementation, plus the bounds guard (Ø150 would have saved a project that no longer opens); (2) the oracle and the mirrored element; (3) the review; (4) the poisons, with 4 new tests; (5) the re-check; (6) the final round of poisons. 1022 unit tests, 35 e2e."
@@ -1212,6 +1260,10 @@
     "7dc32a9cc991c2b6": {
       "ro": "Backup-ul zilnic al Firestore și marcajele de rulare",
       "en": "Daily Firestore backup and run markers"
+    },
+    "7de9b90c9b4b14f3": {
+      "ro": "**Primirea lucrărilor de la Planificatorul Trenuleț** (fără mașină; ADR 0126; prima felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da, ca recomandat”, cu recomandările la întrebările primirii: dialogul modal, pe live după o placă trimisă așa pe test, panoul mașinii deschis singur, lucrarea doar în memorie). „Trimite la cvs2” din planificator deschide aplicația la `#primeste-lucrare`, cu protocolul „cvs2-lucrare” v1: în pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live; ascultarea și dialogul vin la cerere. Lucrarea vine doar de la fereastra care a deschis fila; „Primește” verifică fiecare fișier ca unul adus cu „Fișier…” (`M6` refuzat, amprenta trimisă), răspunde `primit` și deschide panoul mașinii, unde rândul „Lucrarea primită” încarcă fișierul ales; „Nu” și Escape răspund `renuntat`; o lucrare nouă o înlocuiește pe cea din dialog. Probele: 6 teste unitare, 3 e2e în Edge (o pagină de pe altă origine trimite lucrarea), 28 / 28 de otrăvuri prinse.",
+      "en": "**Receiving jobs from the Trenuleț planner** (no machine; ADR 0126; the first slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da, ca recomandat”, with the recommendations on the receiving questions: a modal dialog, on live after a board sent this way on test, the machine panel opening by itself, the job kept only in memory). “Send to cvs2” in the planner opens the app at `#primeste-lucrare`, with the “cvs2-lucrare” v1 protocol: the startup bundle holds only the check of the anchor and of `window.opener`, outside live; the listening and the dialog load on demand. The job comes only from the window that opened the tab; “Accept” checks each file like one loaded with “File…” (`M6` refused, the sent fingerprint), answers `primit` and opens the machine panel, where the “Received job” row loads the chosen file; “No” and Escape answer `renuntat`; a new job replaces the one in the dialog. The proofs: 6 unit tests, 3 e2e in Edge (a page on another origin sends the job), 28 / 28 poisons caught."
     },
     "7e41744d8bd750f0": {
       "ro": "**Uneltele de desen prin tragere, adusă din etapa 6** (fără mașină; ADR 0051; „Da, fă acum uneltele de desen prin tragere (dreptunghi, cerc, elipsă, linie, poligon), cu lipirea, fără agenți”). În bara editării: Selecție (V), Dreptunghi (R), Cerc (O), Elipsă (E), Linie (L), Poligon (P, 3–64 laturi); capetele gestului lipite ca puncte (nelipite: rotunjite la 0,001 mm), Shift pentru pătrat / cerc / 15°, previzualizarea conturului; forma intră printr-o acțiune (`document.deseneaza`, un pas, documentul de după trece de ușă), cu geometria exactă (elipsa ca la importul SVG) și operația implicită (linia: pe linie, ca la import). **Treceri:** (1) codul și probele (e2e verde din prima); (2) captura: pictograma dreptunghiului ștearsă de stilul alinierii, colțurile nelipite cu zecimalele pixelilor; (3) porțile: importul funcției adâncimii din modulul importului aducea ușa întreagă în calculul acțiunilor, iar schemele documentului se lipeau de ușă într-o singură bucată (probele „schemele care nu vin” cădeau): funcția stă acum într-un modul fără dependențe, iar forma desenată se judecă direct cu schemele. Pornirea 94,7 → 95,0 kB (cu ușa 99,7 / 100).",
@@ -1309,6 +1361,10 @@
       "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
       "en": "Server-side error log (ADR 0039): the `cncvs2` functions on test, without touching the old ones; `errorLogs` grouped by fingerprint, with the occurrences; a `logServerError` that does not throw; `logClientError` with App Check and a cap. The new rules checked on the emulator, not published (3.3). 12 tests on the emulator, 12 sabotages caught (after the control showed a false failure of the tool). **On test:** 401 without App Check and with an unsigned token. Publishing needed two fixes: anchored exclusions (`/src`) and recreating the callable (public invocation is set only at creation)."
     },
+    "89fae6f0a6fc5aea": {
+      "ro": "Extensiile",
+      "en": "Extensions"
+    },
     "8a9708f14f83de88": {
       "ro": "Testul pas cu pas, în aplicație",
       "en": "The step-by-step test, in the app"
@@ -1356,6 +1412,10 @@
     "8ec9fbaed2594ca3": {
       "ro": "3.6e (senderul prin WiFi pe mașină)",
       "en": "3.6e (the sender over WiFi on the machine)"
+    },
+    "8f2ab49ca7dd76e9": {
+      "ro": "three.js în pachetul extensiei",
+      "en": "three.js in the extension package"
     },
     "8f70e8f713e43d92": {
       "ro": "Gărzile offsetului",
@@ -1408,6 +1468,10 @@
     "9365e78976b47c0c": {
       "ro": "crestele pe hârtie, fundul plat",
       "en": "the crests on paper, the flat bottom"
+    },
+    "939d19db6e9069d7": {
+      "ro": "**Planificatorul Trenuleț adaptat pentru cvs2** (fără mașină; ADR 0161; a doua felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește 3.Tb”). Intrarea extensiei pune `window.cvs2`, iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie. În cvs2, textul circuitelor spune că stau doar în browserul acesta, „Trimite la cvs2” vorbește de fereastra Mașina, iar three.js nu se mai cere de pe cdnjs. Marcajul și șabloanele n-au atribute `style`: clasele țin locul lor, culorile din date se pun prin CSSOM, deci cadrul nu mai are niciun refuz CSP. În exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea și reluarea cu confirmarea lui cvs2, pauza, oprirea. `referinte.js --compara` (622 de ieșiri, 0 diferențe) intră în poarta unitară. Probele: 3 teste unitare noi, 2 e2e noi în Edge, 26 / 26 de otrăvuri prinse.",
+      "en": "**The Trenuleț planner adapted for cvs2** (no machine; ADR 0161; the second slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește 3.Tb”). The extension’s entry sets `window.cvs2`, and the sources stay the same for claude.ai, the desktop copy and the extension. In cvs2, the circuits text says they are kept only in this browser, “Send to cvs2” talks about the Machine window, and three.js is no longer requested from cdnjs. The markup and the templates have no `style` attributes: classes take their place, the colours from data are set through CSSOM, so the frame has no CSP refusal any more. In the CNC export, “On the machine, through cvs2”: the state, loading, starting and resuming with cvs2’s confirmation, pause, stop. `referinte.js --compara` (622 outputs, 0 differences) joins the unit gate. Tests: 3 new unit tests, 2 new e2e in Edge, 26 / 26 poisons caught."
     },
     "9461ca760824bf61": {
       "ro": "Jog-ul, zero-ul, WCS-ul și palparea Z",
@@ -1497,6 +1561,10 @@
       "ro": "Scalarea unei piese importate cu arce plate",
       "en": "Scaling an imported piece with flat arcs"
     },
+    "9d088159afba5a1f": {
+      "ro": "formele între cvs2 și extensii",
+      "en": "shapes between cvs2 and extensions"
+    },
     "9d1316d9f73dab70": {
       "ro": "Transcrierile reale ca fixturi: sesiunea cu senderul nostru salvată la mașină și rejucată pe emulator; unde emulatorul diferă de mașină, mașina are dreptate",
       "en": "Real transcripts as fixtures: the session with our sender saved at the machine and replayed on the emulator; where the emulator differs from the machine, the machine is right"
@@ -1561,6 +1629,10 @@
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
     },
+    "a4a55e384f2f5853": {
+      "ro": "pluginul ca parte din cvs2",
+      "en": "the plugin as part of cvs2"
+    },
     "a4b831b0568aece6": {
       "ro": "Regiunea păstrată (ADR 0026), cu oracolul întâi (invarianta 2 în poartă, sesiune independentă); exportul refuză tăietura care intră într-o piesă",
       "en": "The kept region (ADR 0026), oracle first (invariant 2 in the gate, independent session); the export refuses a cut that enters a part"
@@ -1568,6 +1640,10 @@
     "a5303f334c1b6866": {
       "ro": "regresia completă (10 cote din 10 etape)",
       "en": "the full regression (10 dimensions from 10 stages)"
+    },
+    "a551fa2fafcf8ce1": {
+      "ro": "**Stocarea extensiilor și permisiunile** (fără mașină; ADR 0128; a treia felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește 3.Xb”, apoi „Întâi 13.A în main”: senderul în `HostApi` atinge fișierele pe care 13.A↑ le rescrie, deci vine după unirea ei, ca 3.Xc). Catalogul permisiunilor are `stocare`, arătată la instalare cu sensul ei; `host.stocare` (citeste, scrie, sterge, chei) peste `host.cere`, servită de cvs2 din IndexedDB (`date` și `marimi`, cheia `[id, cheie]`): doar JSON sau octeți, 4 MB o valoare, 16 MB și 1 000 de chei pe extensie; fără permisiune, refuzul. Scoaterea extensiei îi șterge datele; gestionarea arată cât ocupă. Probele: 5 teste unitare noi, un e2e nou și două lărgite în Edge, 18 / 18 otrăvuri prinse.",
+      "en": "**Extension storage and permissions** (no machine; ADR 0128; the third slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește 3.Xb”, then “Întâi 13.A în main”: the sender in `HostApi` touches the files 13.A↑ rewrites, so it comes after that merge, as 3.Xc). The permission catalog has `stocare`, shown at install with what it means; `host.stocare` (citeste, scrie, sterge, chei) over `host.cere`, served by cvs2 from IndexedDB (`date` and `marimi`, key `[id, cheie]`): only JSON or bytes, 4 MB a value, 16 MB and 1,000 keys per extension; without the permission, a refusal. Removing an extension deletes its data; the manage window shows how much it takes. The proofs: 5 new unit tests, one new e2e and two widened ones in Edge, 18 / 18 poisons caught."
     },
     "a6da42f42b6cfdae": {
       "ro": "Senderul (complet); §10 Senzor de lungime, Colțul XY, Override + jurnal, Planarea",
@@ -1757,6 +1833,10 @@
       "ro": "Booleanul",
       "en": "The boolean"
     },
+    "b89668c00070b90f": {
+      "ro": "Planificatorul Trenuleț ca extensie",
+      "en": "The Trenuleț planner as an extension"
+    },
     "b8ae4019a0545d9e": {
       "ro": "Oracolul independent al buzunarului",
       "en": "The independent pocket oracle"
@@ -1793,6 +1873,10 @@
       "ro": "Fluxul senderului ca mașini de stare pure (ADR 0080): încărcarea programului (octeții exportați, hash-ul, refuzurile: ASCII, `\\r`, liniile peste 70 de octeți, WCS-ul, `M6` străin, finalul), citirea răspunsurilor și a rapoartelor pe N axe, cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, sfârșitul, bariera, citirile, hold-ul, timpul real, WCS-ul); probat pe emulator",
       "en": "The sender flow as pure state machines (ADR 0080): loading the program (the exported bytes, the hash, the refusals: ASCII, `\\r`, lines over 70 bytes, the WCS, a foreign `M6`, the ending), reading the replies and the reports on N axes, the 11 rules of `docs/PORTARE.md` §3.4 (the bytes, the replies, the error in the stream, the lost buffer, the end, the barrier, the reads, the hold, realtime, the WCS); proven on the emulator"
     },
+    "bbd371c504093180": {
+      "ro": "O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11)",
+      "en": "A test board cut from a job sent from the Trenuleț planner through receiving (ADR 0126), on the main address of the test instance (merged into `main` on 06.11)"
+    },
     "bc17ea1b8d908d4a": {
       "ro": "**Strategia paralelă a buzunarului, adusă din etapa 5** (fără mașină; ADR 0094; „Da, continuă cu strategia paralelă (raster) a buzunarului, cu trecerea de profil; dacă pachetul nu mai încape, spune-mi întâi.”). Sub rândul unui buzunar, **Traseul**: inele (ca până acum) sau **linii paralele**, la **Unghiul** dat față de X (documentul v18: `strategie`). Pe fiecare trecere, liniile în zigzag, legate la adâncime doar cu linia vecină și doar prin buzunar, apoi trecerea de profil pe marginea zonei centrului, ca peretele să iasă pe vector; liniile coboară prin plonjare. Acoperirea e aceeași deschidere ca la inele, deci insulele și frezele de rest merg neschimbate. Pe criteriul din cercetare (80 × 40 × 10 cu Ø12, pasul 4,8), pe oracolul simulării: fundul la −10 ± 0,02 în afara colțurilor R6, la 0° și la 30°, peretele la x = 20 ± 0,02, liniile la 4,8 mm (pe hârtie: y = 26 + 4,8·k). Pachetul a încăput: totalul 328,0 → 329,2 / 330 kB (rămân 0,8 kB), pornirea 96,0 (cu ușa 99,5); marginea zonei centrului aplatizată (coardele, cu săgeata cel mult 0,0005 mm, spre interior), ca să nu adaug intersecțiile cu arcele. **Treceri:** (1) documentul v18 (schema, migrarea, oracolul documentului mutat pe v18), nucleul (`src/cam/paralel.ts`), lucrarea (refuzurile: pe alt fel, cu coborârea în rampă), fereastra, Exportă, panoul, manualul; probele: insula, frezele de rest după linii, sensul buclei la opoziție, o singură înlănțuire pe trecere; e2e. Mutațiile: **22 / 22** din prima. Rândul buzunarului din prag: „făcut” (criteriul îndeplinit; adaosul de finisare și adâncimea proprie pe freză, la cerere; rămâne placa etapei 5).",
       "en": "**The parallel pocket strategy, brought forward from stage 5** (no machine; ADR 0094; “Da, continuă cu strategia paralelă (raster) a buzunarului, cu trecerea de profil; dacă pachetul nu mai încape, spune-mi întâi.”). Under a pocket row, **Path**: rings (as before) or **parallel lines**, at the given **Angle** to X (document v18: `strategie`). On each pass, the lines in zigzag, linked at depth only to the next line and only through the pocket, then the profile pass along the edge of the centre zone, so the wall comes out on the vector; lines plunge straight. The coverage is the same opening as with rings, so islands and rest bits work unchanged. On the research criterion (80 × 40 × 10 with Ø12, stepover 4.8), on the simulation oracle: the floor at −10 ± 0.02 outside the R6 corners, at 0° and at 30°, the wall at x = 20 ± 0.02, the lines 4.8 mm apart (on paper: y = 26 + 4.8·k). The bundle fitted: total 328.0 → 329.2 / 330 kB (0.8 kB left), startup 96.0 (with the door 99.5); the edge of the centre zone flattened (chords with a sagitta of at most 0.0005 mm, inward), so as not to add the intersections with arcs. **Passes:** (1) document v18 (schema, migration, the document oracle moved to v18), the core (`src/cam/paralel.ts`), the job (refusals: on another kind, with a ramp descent), the dialog, Export, the panel, the manual; the proofs: the island, rest bits after lines, the loop's direction when conventional, a single chain per pass; e2e. Mutations: **22 / 22** at first. The threshold's pocket row: “done” (the criterion met; the finishing allowance and the own depth per bit, on request; the stage 5 plate remains)."
@@ -1808,6 +1892,10 @@
     "bcc1f02d66a99ec9": {
       "ro": "Importul PDF și AI",
       "en": "PDF and AI import"
+    },
+    "bd168fc0e094cf92": {
+      "ro": "**Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi** (fără mașină; ADR 0164; în worktree-ul `wip/trenulet`; „Da, pornește A”, după direcția nouă a owner-ului: pluginul devine un atelier de forme 3D pentru printare, iar întâi vine comunicarea cu cvs2). Cadrul primește și `color-scheme` (tema aleasă în cvs2) și fonturile; planificatorul își leagă de ele suprafețele, textul, marginile, roșul, inelul de focus și fonturile, pe loc, și își ține masa, lemnul, cărămizile și verdele de semnal. Permisiunea nouă `cont`: extensia vede dacă ești conectat, numele și planul de la zi (fără adresă, uid sau parolă), schimbate pe loc și din altă filă; planificatorul îl arată la Circuite. `host.nesalvat` și `host.laInchidere`: × (și altă extensie deschisă, o versiune nouă instalată) îi cere întâi extensiei salvările, cel mult 5 s, și întreabă („Rămân”, „Închide oricum”) doar ce rămâne nesalvat; reîncărcarea întreabă prin browser. Planificatorul: salvările amânate (circuitul, setările CNC, mașina, atelierul) trec prin gazdă și pleacă pe loc la închidere. Pachetul 18.4.0.",
+      "en": "**The plugin as part of cvs2: the theme, the fonts, the account it sees, closing without losses** (no machine; ADR 0164; in the `wip/trenulet` worktree; “Da, pornește A”, after the owner’s new direction: the plugin becomes a workshop of 3D shapes for printing, and the communication with cvs2 comes first). The frame also gets `color-scheme` (the theme chosen in cvs2) and the fonts; the planner binds its surfaces, text, borders, red, focus ring and fonts to them, live, and keeps its table, wood, bricks and signal green. The new `cont` permission: the extension sees whether you are signed in, the name and the current plan (no email, uid or password), updated live, from another tab too; the planner shows it under Circuits. `host.nesalvat` and `host.laInchidere`: × (and another extension opened, a new version installed) first asks the extension for its saves, at most 5 s, and asks (“Stay”, “Close anyway”) only about what is left unsaved; reloading asks through the browser. The planner: the delayed saves (the circuit, the CNC settings, the machine, the workshop) go through the host and leave at once on closing. Package 18.4.0."
     },
     "bd6ce3a6d08ac395": {
       "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",
@@ -1913,6 +2001,10 @@
       "ro": "Oracolul G-code în `test/oracles/` (zero importuri din `src/`): parserul propriu, codurile GRBL și regula de arc în float32, din s8 A.1. Poarta invariantelor 1, 3, 5, 6, 7, 8 pe un câmp de înălțimi (ca s4). Fiecare invariantă are otrava ei, scrisă de mână, și un program curat ca martor. Lanțul întreg trece poarta: gaura, insula, și insula pe 4 colțuri × Z0 sus / jos, cu cutia pe hârtie. A doua trecere: oracolul presupunea scula în (0, 0, 0) la pornire, deci cu Z0 jos vedea o rapidă prin material; acum startul necunoscut se judecă doar la capăt. 75 de teste.",
       "en": "G-code oracle in `test/oracles/` (zero imports from `src/`): its own parser, GRBL codes and the arc rule in float32, from s8 A.1. The gate of invariants 1, 3, 5, 6, 7, 8 on a height field (as in s4). Each invariant has its own hand-written poison and a clean program as control. The whole chain passes the gate: the hole, the island, and the island on 4 corners × Z0 top / bottom, with the box on paper. Second pass: the oracle assumed the tool at (0, 0, 0) at start, so with Z0 bottom it saw a rapid through material; an unknown start is now judged only at its end. 75 tests."
     },
+    "ccd87eb12c30e023": {
+      "ro": "**Fereastra extensiei și senderul prin `HostApi`** (fără mașină; ADR 0160; a patra felie a liniei Trenuleț, în worktree-ul `wip/trenulet`, după `main` adus în ramură, cu 13.A↑; „Main + 3.Xc (senderul)”). O extensie deschisă are fereastra ei: fila cu numele, după Proiectare și Mașina, și ×; altă fereastră o ascunde, cadrul rămâne. Permisiunea nouă `masina`, oprită pe live: starea, la fiecare schimbare; încărcarea ca „Fișier…”, cu „de la” extensie în fereastra Mașina; pornirea și reluarea după confirmarea omului, într-o fereastră a lui cvs2 (butonul activ după o secundă, legată de programul și de reluarea arătate); pauza și oprirea direct; o lucrare trimisă, prin dialogul primirii. „Trimite la cvs2” merge din planificator, printr-o fereastră imitată (sursele v18 neschimbate). Probele: 14 teste unitare noi, 5 e2e noi în Edge, 59 / 59 de otrăvuri prinse (două, după ce probele au fost făcute să pice într-o secundă; una, rescrisă ca să compileze).",
+      "en": "**The extension window and the sender through `HostApi`** (no machine; ADR 0160; the fourth slice of the Trenuleț line, in the `wip/trenulet` worktree, after `main` was brought into the branch, with 13.A↑; “Main + 3.Xc (senderul)”). An open extension has its own window: the tab with its name, after Design and Machine, and ×; another window hides it, the frame stays. New permission `masina`, off on live: the state, at every change; loading like “File…”, with “from” the extension in the Machine window; starting and resuming after the person confirms, in a cvs2 window (the button active after a second, bound to the program and the resume shown); pause and stop directly; a job sent through the receiving dialog. “Send to cvs2” works from the planner, through a stand-in window (the v18 sources unchanged). Tests: 14 new unit tests, 5 new e2e in Edge, 59 / 59 poisons caught (two after the tests were made to fail within a second; one rewritten so that it compiles)."
+    },
     "ccfd4cbed32bc5bf": {
       "ro": "Offsetul",
       "en": "The offset"
@@ -1952,6 +2044,10 @@
     "d398d322f1fdff6d": {
       "ro": "înainte de 3.6e",
       "en": "before 3.6e"
+    },
+    "d44cbac72109e492": {
+      "ro": "Planificatorul în engleză, după limba lui cvs2",
+      "en": "The planner in English, following the language of cvs2"
     },
     "d49e636700fcb2e9": {
       "ro": "**Remedierile din testul uneltelor de desen** (ADR 0074; raportul testului pas cu pas: 29 de pași bine, 2 nemarcați, notele owner-ului). Clicul alege conturul cel mai apropiat, apoi cea mai mică formă care cuprinde punctul (după un offset spre exterior, forma dinăuntru se alege iar cu un clic). Offsetul din desen are Colțurile: Ca originalul (implicit, colțurile ascuțite rămân ascuțite) sau Rotunjite (cu raza distanței, și spre interior). Copierea pe curbă: pe ea, la stânga sau la dreapta, tangente sau la o distanță. Pen-ul: dublu clic închide calea, tragerea din primul nod arată închiderea, Ctrl+Z / Ctrl+Y anulează și refac pașii desenului, Ctrl+Shift+Z imediat după îl redeschide. Mânerele despărțite se unesc din nou cu Alt sau cu Curbă pe ambele părți. Cronologia din roadmap arată feliile aduse înainte pe etapele viitoare (↑N). Manualul și pașii testului sunt la zi. **Treceri:** (1) cele șase remedieri cu probele lor; pe hârtie, două greșeli găsite și reparate înainte de commit (colțul unui contur cu trei vârfuri nu se prelungea; capătul unui braț lat cât 2d nu se rotunjea întreg), iar o valoare a probei era calculată greșit (colțul intrând al L-ului adaugă arie la offsetul exact, nu scade).",
@@ -1993,6 +2089,10 @@
       "ro": "Degajările aceleiași bucle",
       "en": "Same-loop corner relief"
     },
+    "d7cdc162c25b149e": {
+      "ro": "numele pluginului, Easy 3Draw",
+      "en": "the plugin’s name, Easy 3Draw"
+    },
     "d91325929d64bddd": {
       "ro": "Aldinul și cursivul sintetic",
       "en": "Synthetic bold and italic"
@@ -2000,6 +2100,10 @@
     "d945d735d69509b0": {
       "ro": "Bancul vizual v1",
       "en": "Visual bench v1"
+    },
+    "d9a929bd7f130879": {
+      "ro": "**three.js în pachetul extensiei: previzualizarea 3D în cvs2** (fără mașină; ADR 0163; a patra felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, descarcă”). three.js r128 descărcat de pe cdnjs (603 445 de octeți, SHA-512 egal cu amprenta SRI publicată), în `vendor/`, cu licența MIT; construcția îl pune în pachet ca `js/three.js`, neschimbat, cu textul licenței alături, dar nu în pagina de sine stătătoare. Intrarea îl aduce la cerere (`window.cvs2.three()`, script clasic din `blob:`, o singură dată), iar atelierul îl cheamă în cvs2 la prima intrare în 3D: vederea desenează piesa, fără niciun refuz CSP (CSP-ul neschimbat). Pachetul 18.3.0, ~370 kB.",
+      "en": "**three.js in the extension package: the 3D preview in cvs2** (no machine; ADR 0163; the fourth slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, descarcă”). three.js r128 downloaded from cdnjs (603,445 bytes, SHA-512 equal to the published SRI hash), in `vendor/`, with its MIT license; the build puts it in the package as `js/three.js`, unchanged, with the license text next to it, but not in the standalone page. The entry brings it on demand (`window.cvs2.three()`, a classic script from `blob:`, once), and the workshop calls it in cvs2 the first time it enters 3D: the view draws the piece, with no CSP refusal (the CSP is unchanged). Package 18.3.0, ~370 kB."
     },
     "d9e5d6d75bfed859": {
       "ro": "Oracolul G-code din s4 în `test/oracles/`, cu valorile pe hârtie pentru cele 4 colțuri, regula de arc GRBL și poarta invariantelor 1, 3, 5, 6, 7, 8",
@@ -2024,6 +2128,10 @@
     "dac4b53bceb98399": {
       "ro": "Importul EPS și AI ≤ 8, adus din etapa 9",
       "en": "EPS and AI ≤ 8 import, brought forward from stage 9"
+    },
+    "db14e07c4ef0098e": {
+      "ro": "înainte să pornim primirea pe live",
+      "en": "before we turn receiving on for live"
     },
     "dbb48461078beeca": {
       "ro": "V-carve (+ fund plat); Gravare pe linie + smart engrave",
@@ -2056,6 +2164,10 @@
     "de0643a0b03a958a": {
       "ro": "Scheletul",
       "en": "The skeleton"
+    },
+    "de2406a915c5bfb0": {
+      "ro": "Planificatorul Trenuleț ca extensie, din sursele neschimbate",
+      "en": "The Trenuleț planner as an extension, from its unchanged sources"
     },
     "de5d692e2507f6fe": {
       "ro": "Datele",
@@ -2101,6 +2213,10 @@
       "ro": "Importul SVG",
       "en": "SVG import"
     },
+    "e3683bc685424e89": {
+      "ro": "three.js în pachetul extensiei: previzualizarea 3D în cvs2",
+      "en": "three.js in the extension package: the 3D preview in cvs2"
+    },
     "e4053df5f106173a": {
       "ro": "Ușa documentului curent",
       "en": "The current document’s door"
@@ -2120,6 +2236,10 @@
     "e4b3470c17d3b5d4": {
       "ro": "Degajările aceleiași bucle, rămase din etapa 2",
       "en": "Same-loop corner relief, left over from stage 2"
+    },
+    "e6087eadf6b55447": {
+      "ro": "**Formele între cvs2 și plugin** (fără mașină; ADR 0166; în worktree-ul `wip/trenulet`; „B, schimbul de forme”, apoi „Da, fă-o” la schiță). Permisiunea nouă `forme`. Din desen spre extensie, doar ce trimite omul: „Trimite la <extensie>”, în bara selecției și în paletă, cât e deschisă o extensie care primește forme; contururile instanțelor alese, în mm ai foii, cu arcele și curbele la cel mult 0,02 mm. Din extensie spre desen, prin fereastra Importă, „Propus de <extensie>”: nimic nu intră fără „Importă”. Planificatorul: fila „Din cvs2” a atelierului 3D (forma ridicată la o grosime, cu găurile ei) și „În desenul cvs2” la fiecare placă a exportului CNC. Pachetul 18.6.0.",
+      "en": "**Shapes between cvs2 and the plugin** (no machine; ADR 0166; in the `wip/trenulet` worktree; “B, schimbul de forme”, then “Da, fă-o” at the sketch). The new `forme` permission. From the drawing to the extension, only what the person sends: “Send to <extension>”, in the selection bar and in the palette, while an extension that receives shapes is open; the outlines of the chosen instances, in sheet mm, with arcs and curves within 0.02 mm. From the extension to the drawing, through the Import window, “Proposed by <extension>”: nothing goes in without “Import”. The planner: the “From cvs2” tab of the 3D workshop (the shape raised to a thickness, with its holes) and “Into the cvs2 drawing” on every board of the CNC export. Package 18.6.0."
     },
     "e6935746ddf63115": {
       "ro": "Orice nod își schimbă tipul",
@@ -2152,6 +2272,10 @@
     "e8ad40ee8d5bfa63": {
       "ro": "Migrările pure vN → vN+1",
       "en": "Pure migrations vN → vN+1"
+    },
+    "e8d70bd76a3201bf": {
+      "ro": "Primirea lucrărilor de la Planificatorul Trenuleț",
+      "en": "Receiving jobs from the Trenuleț planner"
     },
     "e930fc44f93eb2b1": {
       "ro": "Uneltele de desen prin tragere",
@@ -2221,6 +2345,10 @@
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
     },
+    "f062430b2298842e": {
+      "ro": "Gazda extensiilor",
+      "en": "The extension host"
+    },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
       "en": "`nonzero` normalisation at the door"
@@ -2256,6 +2384,10 @@
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
+    },
+    "f5a0f22b52f21ca7": {
+      "ro": "Formele între cvs2 și plugin",
+      "en": "Shapes between cvs2 and the plugin"
     },
     "f5f9377648ddce6f": {
       "ro": "3.7b",

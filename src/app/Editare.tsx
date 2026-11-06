@@ -193,14 +193,14 @@ const MarcajeVerificare = lazy(() => import('./PanouVerificare.tsx').then(cuMesa
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta), apoi fereastra Mașina (ADR 0132 §8), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:`
- * ale manualului.
+ * paleta), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
+ * altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
  */
-function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean): string {
+function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean, acoperita: string): string {
   if (document.querySelector('[aria-labelledby="export-titlu"]')) return 'export.gcode';
   if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
   if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
-  if (!activ) return 'vedere.masina';
+  if (!activ) return acoperita;
   if (vedere3d) return 'editare.3d';
   return `unealta.${unealta}`;
 }
@@ -271,6 +271,8 @@ export type ProprietatiEditare = {
    * merge ca oriunde.
    */
   readonly activ?: boolean;
+  /** Ușa ferestrei care acoperă Proiectarea, pentru F1 (implicit, Mașina; fereastra unei extensii, ADR 0160 §A). */
+  readonly usaAcoperita?: string;
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
@@ -328,6 +330,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const activ = p.activ !== false;
   const activRef = useRef(activ);
   activRef.current = activ;
+  const acoperitaRef = useRef(p.usaAcoperita ?? 'vedere.masina');
+  acoperitaRef.current = p.usaAcoperita ?? 'vedere.masina';
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
@@ -655,7 +659,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.key === 'F1') {
         e.preventDefault();
         setMeniuCont(null);
-        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current, activRef.current) });
+        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current, activRef.current, acoperitaRef.current) });
         return;
       }
       // Acoperit de fereastra Mașina (ADR 0132 §3), desenul nu primește nicio tastă: nu se vede ce ar face.

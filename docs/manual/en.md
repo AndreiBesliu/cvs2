@@ -903,6 +903,16 @@ column, most urgent first.
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
   from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads. From the export window, after a successful
   export, **Open in Machine** brings the export's first file here, loaded, without starting it.
+- **Received job**: an app that sends jobs (for example Easy 3Draw, with “Send to cvs2”) opens cvs2 in a new tab.
+  The **Incoming job** dialog says who sends it, from where (an address, or a page opened from a file on your computer) and
+  which files, with the board, the bit and the time. **Accept** checks each file like one loaded with **File…** and opens the
+  Machine window; **No** tells the app you declined the job. The good files sit under the buttons, in cutting order: pick one in
+  **File of the received job** and press **Load received file**; the refused ones sit below, each with its reason. Nothing
+  starts by itself, and the job is lost when the page reloads (the app can send it again). On the live instance, receiving
+  is off for now.
+- **From an extension** (the Extensions chapter): a program loaded by an extension shows “from” it next to its name. A start
+  or a resume asked by an extension asks you first, in a window of the app: **Start** (or **Resume**) can be pressed after a
+  second, and **No** and Escape send nothing.
 - **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
   **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
   **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program
@@ -1033,6 +1043,68 @@ the reports need internet: without a network they do not open, but the app goes 
 
 Without an account, the app works as before. Below, **What data we keep** says what we keep about the account (and about the
 reports) and why.
+
+## Extensions
+%% capitol: extensii
+%% acopera: extensii.buton, extensii.trimite-selectia
+
+An extension adds a window of its own to the app, for example Easy 3Draw. It isn’t part of the app: you install
+it, and the app’s interface stays the same.
+
+- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, then
+  **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
+- **Install from file** takes a `.zip` package. **Install from address** asks for the **Package address** (HTTPS), then
+  **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
+  from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
+  without your click.
+- Before installing, the window shows the name, the version, where the package comes from, its files and their size, what
+  the extension asks for (for example, to keep its data in this browser) and, if there is one, the version it replaces.
+  **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A damaged or wrong package is
+  refused, with the reason.
+- An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
+  it keeps them.
+- An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
+  downloads: only data and drawings (`.zip`, `.json`, `.gcode`, `.stl` and the like), at most 64 MB each, never programs
+  or pages.
+- An extension that asked for it sees whether you are signed in to cvs2, with what name and plan, read-only: it can’t see
+  your email, your password or your projects. Easy 3Draw shows it under **Layouts**; signing in or
+  out (in another tab too) reaches the extension at once.
+- The extension takes the app’s theme: light or dark (the one picked with **Theme**), the colours and the fonts; a theme you
+  change reaches the extension at once. Easy 3Draw keeps only its own colours: the table, the wood, the bricks,
+  the signal green.
+- The extension also gets the app’s language. Easy 3Draw speaks Romanian or English, following **Language** in the
+  top bar; when you change the language, it restarts by itself, after saving its work (the layout, the settings, the
+  workshop). The comments in the G-code stay in Romanian, as in the app’s own export.
+- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
+  below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
+  you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
+  closes the extension: first it gives it a few seconds to save what it had to save (Easy 3Draw then saves its
+  circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it
+  open, **Close anyway** closes it, and the changes are lost. Likewise, while the extension has unsaved changes, reloading or
+  closing the tab asks you, through the browser’s window. After the page reloads, the app starts without the extension. F1
+  opens this chapter.
+- An extension that asked for it can use the machine, through the **Machine** window: it sees its state (the connection, the
+  job with its percentage, the loaded program), loads a G-code program, checked like one loaded with **File…** (the Machine
+  window writes next to it where it came from), pauses and stops the job. To start or resume the job, it asks you first, in
+  a window of the app: which extension asks, which program (the name, the lines, the start of the fingerprint) and what
+  resumes. The button that moves the machine can be pressed only after a second, and **No** or Escape send nothing. The
+  connection, jogging, zeroing, probing, unlocking, manual commands and continuing after a stop in the program stay in the
+  Machine window. On the live instance, extensions don’t use the machine for now.
+- Such an extension can also send a whole job (for example, “Send to cvs2” in Easy 3Draw): it comes in the
+  **Incoming job** dialog, like one from an app opened next to it, with the extension as its origin.
+- An extension that asked for it receives shapes from the drawing and proposes shapes for the drawing. Choose shapes on
+  the sheet: the selection bar shows **Send to extension**, with the name of the open extension (for example, **Send to
+  Easy 3Draw**; also in **Search commands**). The chosen outlines go to the extension, in mm, and its window
+  opens; Easy 3Draw raises them in 3D, in its workshop, under **From cvs2**. The extension sees the drawing in no
+  other way. The other way round, an extension can propose an SVG or DXF file (Easy 3Draw: a board from its CNC
+  export, with **Into the cvs2 drawing**): the **Import** window opens, with “Proposed by” and the extension's name, and
+  nothing enters the drawing until you press **Import**.
+- Easy 3Draw also uses the machine from its CNC export, under **On the machine, through cvs2**: it loads a file,
+  starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above the buttons.
+- The extension runs isolated: it can’t see your projects or the machine’s port, and it can’t reach the internet; of your
+  account it sees only what you allowed it (above); it talks to the app only through what the app gives it.
+- **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
+  one, together with its data, **Close** closes the window.
 
 ## Keyboard shortcuts
 %% capitol: scurtaturi

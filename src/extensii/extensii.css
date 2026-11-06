@@ -1,0 +1,198 @@
+/*
+ * Extensiile (ADR 0127 §C): butonul discret de lângă marcă, meniul de sub buton (stă pe `body`, ca meniul contului, cu
+ * aceleași rânduri) și spațiul extensiei, în zona din mijloc, în locul pânzei, cu numele ei și întoarcerea deasupra.
+ */
+.loc-extensii,
+.extensii {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.loc-extensii {
+  /* Coloana mărcii e îngustă (titlul se strânge primul): butonul stă mai aproape de numele instanței. */
+  margin-left: calc(var(--sp-1) - var(--sp-3));
+}
+
+.extensii-buton {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--t-slab);
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.extensii-buton:hover,
+.extensii-buton:focus-visible,
+.extensii-buton[aria-expanded='true'] {
+  color: var(--t);
+  background: var(--s-ales);
+}
+
+.meniu-extensii {
+  position: fixed;
+  z-index: 15;
+  min-width: 15rem;
+  max-width: 22rem;
+  padding: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+}
+
+.meniu-extensii-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  margin-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.meniu-extensii-cap span,
+.meniu-extensii small {
+  color: var(--t-slab);
+}
+
+.meniu-extensii [role='menuitem'] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.meniu-extensii [role='menuitem']:hover,
+.meniu-extensii [role='menuitem']:focus-visible {
+  background: var(--s-ales);
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.meniu-extensii [role='separator'] {
+  height: 1px;
+  margin: var(--sp-1) 0;
+  background: var(--l-margine);
+}
+
+/*
+ * Fereastra extensiei (ADR 0160 §A), ca fereastra Mașina (ADR 0132 §4): sub meniu, peste Proiectare, până la bara de jos, cu
+ * fundalul paginii. Cadrul o umple; pânza de dedesubt nu se vede nici prin golurile barei de jos.
+ */
+.fereastra-extensie {
+  grid-row: 2 / -2;
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 4;
+  margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0;
+  min-width: 0;
+  min-height: 0;
+  background: var(--panza-fundal);
+  /* Aplicația lasă clicurile să treacă spre pânză (`pointer-events: none`); fereastra le primește. */
+  pointer-events: auto;
+}
+
+.fereastra-extensie[hidden] {
+  display: none;
+}
+
+.aplicatie[data-fereastra='extensie'] > .lucru {
+  visibility: hidden;
+}
+
+.spatiu-cadru {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--s-panou);
+}
+
+/* Fila extensiei, după filele aranjamentului: numele (piesa de puzzle a meniului) și × lipit de ea. */
+.loc-fila-extensie:empty {
+  display: none;
+}
+
+.fila-extensie {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+[data-icona='extensii.fila'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M10 3a2 2 0 0 1 4 0v2h4a1 1 0 0 1 1 1v4h-2a2 2 0 0 0 0 4h2v4a1 1 0 0 1-1 1h-4v-2a2 2 0 0 0-4 0v2H6a1 1 0 0 1-1-1v-4h2a2 2 0 0 0 0-4H5V6a1 1 0 0 1 1-1h4z'/%3E%3C/svg%3E");
+}
+
+.fila-inchide {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 4px;
+  font-size: var(--fs-1);
+  line-height: 1;
+}
+
+.spatiu-gazda {
+  position: relative;
+  min-height: 0;
+}
+
+.cadru-extensie {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.spatiu-nota {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  margin: 0;
+  padding: var(--sp-3);
+  text-align: center;
+}
+
+.extensii-camp {
+  display: grid;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0;
+}
+
+.extensii-camp input {
+  min-width: min(28rem, 70vw);
+  font: inherit;
+}
+
+.extensii-lista {
+  margin: var(--sp-2) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.extensii-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--l-margine);
+}

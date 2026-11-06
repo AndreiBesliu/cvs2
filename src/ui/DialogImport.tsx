@@ -184,6 +184,8 @@ type Props = {
   readonly coada?: { readonly k: number; readonly n: number };
   /** Trece la fișierul următor fără să-l importe pe acesta. */
   readonly onSari?: () => void;
+  /** Extensia care a propus fișierul (ADR 0166 §C): „Propus de <extensie>”, sub titlu. */
+  readonly de?: string;
 };
 
 /**
@@ -195,7 +197,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, seRecitesc, motiv, onPx, onUnitate, onUnitateWmf, onPagina, onImporta,
-  onInchide, coada, onSari,
+  onInchide, coada, onSari, de,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -219,6 +221,7 @@ export function DialogImport({
           {t('import.titlu', { nume })}
           {coada && <span data-testid="import-coada">{' '}{t('import.coada', { k: coada.k, n: coada.n })}</span>}
         </h2>
+        {de !== undefined && <p className="mic" data-testid="import-de">{t('import.propus-de', { nume: de })}</p>}
         {stare === 'citire' && <p role="status">{t('import.citeste')}</p>}
         {pagini > 1 && (
           <div className="campuri">

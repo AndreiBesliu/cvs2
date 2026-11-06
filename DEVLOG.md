@@ -4859,112 +4859,6 @@ browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Desig
 fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
 block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
 
-## 2026-11-03 — Felia 13.A↑b: fereastra Mașina adusă în fundal după pornire (ADR 0132 §9) (Model: Claude Opus 5.5)
-
-**Prompt:** „Da, repară” (la „Repar aici golul de la prima deschidere a Mașinii?”, după observația sesiunii principale de la
-unirea lui 13.A↑: la prima deschidere, fereastra Mașina stă goală câteva clipe, cât vine modulul ei).
-**Started:** 03.11, 10:42. **Completed:** 03.11, 11:52.
-
-În worktree-ul `C:\Users\besli\cncvs2-lucru\sender-ecran`, pe ramura nouă `wip/13.A-b-masina-in-fundal`, din `main` `feb6920`
-(cu 13.A↑ unită). Cauza golului: bucata ferestrei Mașina era singura bucată la cerere fără locul ei în lista de preîncărcare
-de după pornire (ADR 0100), deci o cerea abia primul clic. **Trecerea 1** (`4b77679`): bucata și mesajele ei vin la o secundă
-după pornire, ca dialogurile; cât încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune „Se încarcă
-fereastra Mașina…”; dacă nu vine (o publicare nouă, rețeaua căzută), spune de ce și oferă Reîncarcă, ca dialogurile. Publicată
-pe canal și verificată acolo: bucata venea singură la ~1,1–1,4 s după pornire, dar la 60 ms după clic mesajul de încărcare era
-tot pe ecran. **Trecerea 2:** o componentă `lazy` suspendă la prima randare chiar cu bucata adusă (fabrica ei se cheamă abia
-atunci, iar promisiunea nouă nu e rezolvată pe loc), iar React ține rezerva lui Suspense ~300 ms, ca să nu clipească. Acum
-`incarcaMasina` ține componenta venită (`masinaGata`), iar `FereastraMasina` o montează direct, fără Suspense; altfel, calea la
-cerere de până acum. Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea. Proba
-preîncărcării caută acum mesajul la fiecare schimbare a paginii (un `MutationObserver`): căzută pe codul trecerii 1 („Expected
-false, Received true”), verde după.
-La zi: ADR 0132 (§9 și probele), rândul din jurnal (două treceri), CLAUDE.md, traducerile. Niciun capitol nou în manual:
-mesajul de eșec e cel al dialogurilor, cu același Reîncarcă.
-**Porțile** (a doua trecere): compilatorul, importurile (17 / 17), traducerile (548, 0 lipsă), 8 099 de teste unitare (8 091
-trec, 8 sărite), build-ul determinist (232 de fișiere identice; pornirea 100,0, cu ușa 103,5 / 110 kB, +0,1 față de `main`;
-totalul 453,2 / 500; /admin 105,4 / 200), licențele (96 + 247), e2e 305 / 307 în suita întreagă pe portul 4178:
-`raportor.spec.ts` cere portul 4173, iar `animatie` (timpul, sub încărcare) a trecut reluată singură (5 / 5).
-**Otrăvurile** (`test/otravuri/13.A-b.py`, în worktree-ul din afara Drive-ului, după commit-ul `0ae2890`, prin build și e2e cu
-`node`): 4 / 4 prinse, fiecare de proba ei: P01 (fără preîncărcare) și P04 (componenta venită, neținută: trece tot prin
-Suspense) de proba preîncărcării; P02 (fără mesajul de încărcare) și P03 (eșecul, gol) de proba răspunsului întârziat și
-refuzat. Arborele, identic cu HEAD după ele.
-**Publicat** pe canalul `sender-ecran` al instanței de test, la 11:49, din build-ul curat al lui `0ae2890`:
-https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `0ae2890a9624`, expiră 03.12); adresa principală de
-test a rămas pe `d6910511d758` (a liniei principale). Verificat pe canal, în browserul aplicației, cu fereastra ținută pe
-Proiectare: cu service worker-ul și fără el (prima vizită), bucata și mesajele ei vin singure la ~1,1–1,3 s după pornire, iar
-primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară nici o clipă (un observator al
-paginii, ca în probă); consola fără erori.
-
-## 2026-11-03 — Ordinea de mână a operațiilor (felia 5.9↑, ADR 0133) (Model: Claude Opus 5.5)
-
-**Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”), apoi „continua” (la
-„Aprobi schița ordinii operațiilor, cu cele patru recomandări?”).
-**Started:** 03.11, 10:00. **Completed:** 03.11, 14:12.
-
-Documentul v19: `rang` pe operație, un întreg în [0, 100 000]; fără rang, ordinea automată de azi, octet cu octet (corpusul
-CAM și plăcile). Ordinea programului e `ordineTaieturi`: cea automată, sortată stabil după rang. În fereastra exportului,
-**Ordinea tăierii** (Automată / A mea): rândurile în ordinea tăierii, cu locul lor (#), mânerul și săgețile, „cu N” la
-V-carve-urile legate; la Exportă, rangurile 0 … n−1 intră în proiect, iar în Automată pleacă. Față de schiță: buzunarele de
-aceeași adâncime **nu** se taie împreună (fiecare la locul lui; insula n-are traseu), doar V-carve-urile aceleiași piese, cu
-aceleași valori. Riscul e mai larg decât în schiță: pe aceeași piesă, dreptunghiul și cercul desenat în el (piese separate)
-nu avertizau. Acum „din interior” înseamnă primul punct al operației într-un contur închis al exteriorului (`cuprinse`, în
-`src/model/ordine.ts`: regula `interfata-prin-actiuni` nu lasă interfața să importe geometria). Glifele ↑ ↓ veneau colorate
-din alt font, deci săgețile sunt desenate. Tragerea: `dragTo` din Playwright nu pornește tragerea HTML5 în aplicație (pe o
-pagină goală, da); mausul în pași, da. Rândurile nu mai stau în ordinea documentului: proba V-carve a conflictului de freze
-caută cercul după cheie; alte două probe țineau versiunea în 18 (`document.v10`, `ghidaje`). Commit-urile: `3ab94ed`,
-`6456b84`, `9c0ca26` (documentul, corpusul, probele), `75e9b47` (fereastra), `c77b218` (fișa, pragul făcut, CLAUDE.md).
-**Porțile:** traducerile (548, 0 lipsă), compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
-8 sărite), licențele, build-ul determinist (pornirea 100,0, cu ușa 103,5 / 110 kB; totalul 455,3 / 500; /admin 105,4 / 200),
-e2e 307 / 307.
-**Otrăvurile** din `test/otravuri/5.9.py`, în clona din afara Drive-ului: **37 / 37** prinse (25 unitare, 12 pe e2e), fără
-VOID, arborele curat la final. În rularea lungă, E01 și E07 au mai doborât câte o probă străină de ele (ieșirea din foaie,
-urechile, apoi degajările), de fiecare dată alta, repede (1–2,5 s). Repetate, nu s-au mai întâmplat: spec-ul curat 57 / 57
-(de trei ori), E07 de două ori doar pe proba ordinii, pe `toBeDisabled`. Le pun pe seama sarcinii mașinii (rulau cât verificam
-în browser); dacă reapar în CI, le caut cauza.
-**Publicat pe test:** 03.11, 13:44, `publica` pe `75e9b47` (rularea 41629585480), după CI-ul rapid verde (41628552006; prima
-urmărire, `gh run watch`, ieșise devreme, cu CI-ul încă în lucru). Verificat în browserul aplicației la 1440 px: versiunea
-`75e9b47e6c5e`, după „Reload”; cu un dreptunghi și un cerc, Automată arată gaura (1), apoi dreptunghiul (2); A mea, săgeata
-în jos (28 × 24 px, lovită de `elementFromPoint`) duce gaura după dreptunghi; avertismentul („The outside in row 1 is cut
-before row 2, on the same piece or inside it…”) și Exportă oprit până la bifă; fără erori în consolă. Fereastra închisă fără
-export, formele anulate. Fișa și pragul: `c77b218`, publicat la 14:10 (rularea 41633102775).
-**Numerele ADR:** Trenuleț primește 0160–0169 (0126–0129, epuizate); linia principală are 0134–0139, apoi 0151–0159; textul,
-0143–0149.
-
-## 2026-11-03 — Unirea feliei 13.A↑b (fereastra Mașina adusă în fundal) în main (Model: Claude Opus 5.5)
-
-**Prompt:** „Da, unește” (la „Unesc acum 13.A↑b (senderul în fundal) în main?”).
-**Started:** 03.11, 14:15. **Completed:** 03.11, 14:41.
-
-Fuziunea `e35753b` a ramurii `wip/13.A-b-masina-in-fundal` (trei commit-uri, `4b77679` … `20aa2d3`, pornite din `feb6920`)
-în `main` (`0660ee5`, cu 5.9↑). Singurul conflict: DEVLOG, unde ambele ramuri adăugaseră o intrare la capăt; le-am păstrat pe
-amândouă, în ordinea în care s-au încheiat. Fișa, CLAUDE.md, traducerile (550, 0 lipsă), `stil.css` și `App.tsx` s-au unit
-singure. Sesiunea senderului știe de unire și își scoate worktree-ul (întâi joncțiunile); ramura rămâne pe origin.
-**Porțile** pe main-ul unit: traducerile, compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
-8 sărite), licențele, build-ul determinist (pornirea 100,2, cu ușa 103,7 / 110 kB; totalul 455,4 / 500; /admin 105,4 / 200),
-e2e 309 / 309.
-**Publicat pe test:** 03.11, 14:39, `publica` pe `e35753b` (rularea 41637152053), după CI-ul rapid verde (41636001575).
-Verificat în browserul aplicației la 1440 px: versiunea `e35753b90afb`; bucata ferestrei Mașina vine singură, la ~1,1 s
-după pornire, fără niciun clic; primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară
-(un observator al paginii); fără erori în consolă.
-
-## 2026-11-03 — Imprimanta 3D a owner-ului: Creality K1C, prin WiFi (ADR 0119, întrebarea 4) (Model: Claude Opus 5.5)
-
-**Prompt:** „Am o imprimanta 3d pe care vreau sa o folosim din cvs2 prin wifi. Las imaginea asta pentru mai tarziu.” (cu o
-captură din aplicația Creality).
-**Started:** 03.11, 20:47. **Completed:** 03.11, 21:05.
-
-Doar documente, fără felie („mai târziu”). Captura arată imprimanta „K1C-8578” în aplicația Creality, în timpul unei
-imprimări: e răspunsul la întrebarea 4 din ADR 0119 (ce imprimante și ce firmware), o Creality K1C, cu firmware-ul Creality
-pe Klipper. Trecut în ADR 0119 (§14: recomandarea devine prima felie a imprimantelor pe K1C, prin rețea, iar Marlin pe USB
-după; ce expune în rețea firmware-ul de fabrică, Moonraker sau doar protocolul aplicației Creality, și dacă cere accesul root
-se cercetează la pornirea feliei), în coada owner-ului din fișa etapei 3 (la felie: adresa imprimantei în rețea și o
-imprimare de probă) și în „Decizii luate” din `CLAUDE.md`. Captura stă doar local, în `docs/faza0/imprimanta-3d/` (ignorat
-de git). Avertismentul de pe captură (CC5000, coordonatele mișcării în afara cursei, pe `output_11031835.gcode`) nu e
-analizat: l-am notat pentru felie. Commit-ul `e176af8`.
-**Porțile:** traducerile (550, 0 lipsă), probele documentației (58 / 58).
-**Publicat pe test:** 03.11, 21:04, `publica` pe `e176af8` (rularea 41699288269), după CI-ul rapid verde (41698051907).
-Verificat: versiunea `e176af8c75c0` în browserul aplicației, la 1440 px, fără erori în consolă; rândul nou al cozii owner-ului
-în `documentatie/roadmap.json` și în `documentatie/roadmap.en.json` de pe test.
-
 ## 2026-11-02 — Felia 7.5↑: aldinul și cursivul sintetic (ADR 0123) (Model: Claude Opus 5.5)
 
 **Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
@@ -5005,6 +4899,65 @@ cu Aldin (propus 0,6 mm) și Cursiv (propus 12°), previzualizarea din linii și
 `cursiv: 12`, H de 0 … 20,000000000000004 mm, consola fără erori. Adresa principală de test a rămas a sesiunii principale
 (`77a1be6`).
 
+## 2026-11-02 — Felia 10.1↑: verificarea vectorilor, detectarea și panoul (ADR 0124) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
+principală). Sarcina de la sesiunea principală: sesiunea dedicată etapei 10, în worktree-ul ei, cu felia 10.1↑ (detectarea
+și panoul cu lista), ADR 0124, probele, publicarea pe canal și raportul, cu întrebările grupate.
+**Started:** 02.11, 20:41. **Completed:** 02.11, 22:05.
+
+În worktree-ul `C:\Users\besli\cncvs2-lucru\vectori` (ramura `wip/10.1-vectori`, din `main` `77a1be6`, cu joncțiunile
+`node_modules`; e2e-ul pe portul 4175). **Verifică vectorii**, un buton nou în extensia barei (după boolean și degrupare),
+deschide un panou adus la cerere: toleranța (implicit 0,01 mm), pragul buclei mici (1 %), „Doar formele alese”, lista
+problemelor pe feluri și, pe pânză, un cerc de mărime fixă în locul fiecăreia (roșu în aceeași formă, verde între forme).
+Felurile: duplicatele (aceleași noduri în toleranță, cu orice start și sens, și între piese; copiile ies din rest),
+intersecțiile dintre forme (prin cavalier, la 1e-6 mm, cu suprapunerile unite), autointersecțiile (cu bucla mai mică și
+procentul ei din formă), nodurile prea apropiate (în formă și între forme; lângă o atingere rămâne atingerea, la capetele a
+două căi rămân nodurile) și căile deschise (cu golul). Calculul pur e `src/model/verificare.ts`, în workerul CAM (cererea
+`verificare`, prin `actiuniExportCalcul.ts`, ca vederea 3D); în fațada offsetului, `autointersectii` și `intersectiiIntre`,
+iar `seAtingeSingur` folosește aceeași funcție (`atingeriReale`). La zi: ADR 0124 (nou, cu patru întrebări pentru 10.2↑),
+indexul, fișa (10.1↑), pragul (rândul trece în lucru), manualul (capitolul „Verificarea vectorilor”, ro și en), CLAUDE.md,
+traducerile (537, 0 lipsă).
+**Probele:** 17 probe pe hârtie (`test/unit/verificare.test.ts`), cu corpusul plantat al pragului (10 duplicate, 8 perechi
+de noduri la 0,005 mm, 6 intersecții, 5 bucle: toate, fără alarme false, cu culoarea lor) și același corpus citit din DXF;
+3 probe e2e (`test/e2e/verificare.spec.ts`: un DXF importat, lista care urmează documentul, panoul la 1024 px). Mutațiile:
+15 / 15 pe modul (primele rulări au scăpat patru,
+cu probele lor adăugate; o regulă fără nimic de prins a ieșit din cod, cavalier nu dă punctul de la capătul unei suprapuneri)
+și 3 / 3 pe panou, prin build și e2e, cu controlul verde înainte și după. O captură a panoului a arătat că ieșea din
+fereastră pe dreapta (se lărgea după ce venea conținutul, iar așezarea se făcuse la deschidere): are acum lățimea
+vecinilor, cu proba lui.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, 8 075 de teste unitare
+(0 eșuate, 8 sărite), build-ul determinist (230 de fișiere identice; pornirea 98,5 / 110 kB, cu ușa 102,0; totalul
+448,9 → 454,7 / 500), e2e-ul în Edge, pe portul 4175: 297 din 298 (`raportor.spec.ts:73` cere adresa de pe 4173; pe
+portul principal trece); `manual.spec.ts` numără acum 25 de capitole. Codul: `7eec5d0`.
+**Publicat pe canalul `vectori`** pe 02.11, la 22:05 (versiunea `7eec5d040fe1`, refăcută după commit, ca ștampila să fie
+a lui): <https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 02.12. Verificat acolo, în browserul aplicației:
+butonul, panoul și workerul (pe foaia goală, „No problems”, în 0,4 s), apoi două dreptunghiuri în același loc: „Problems: 1
+(shapes checked: 2)”, rândul duplicatului și un marcaj; foaia canalului a rămas goală. Ramura e pe GitHub, nu în `main`.
+
+## 2026-11-02 — Felia 3.S: primirea lucrărilor de la Planificatorul Trenuleț (ADR 0126) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, ca recomandat” (la „Aprobi cadrul izolat, cu senderul prin HostApi?”), în sesiunea dedicată liniei Trenuleț
+(worktree-ul `wip/trenulet`), după „La întrebările vechi (1–5 și 8–12), dacă nu spui altfel, merg pe recomandări. Asta
+înseamnă întâi primirea, apoi sistemul de extensii.”
+**Started:** 02.11, 21:22. **Completed:** 02.11, 22:02.
+
+Înaintea feliei, owner-ul a hotărât forma liniei Trenuleț (în `CLAUDE.md`, „Decizii luate”): planificatorul nu intră în
+aplicație, ci se instalează ca extensie, dintr-un `.zip` sau de la o adresă, din meniul Extensii de lângă marcă; extensia
+rulează într-un cadru izolat și folosește senderul doar prin `HostApi`. Felia de acum e primirea din protocolul „cvs2-lucrare”
+v1, pentru pagina de sine stătătoare. Codul și proba propuse de sesiunea Trenuleț (`Apps/Trenulet/cvs2/`) au intrat re-probate,
+cu limitele parametrizabile și titlul tăiat, nu aruncat. ADR 0126; codul: `2f3d6c9`.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), traducerile (540, 0 lipsă),
+licențele; 8 064 de teste unitare, înaintea traducerilor completate: 8 055 trec, singurul eșec fiind proba traducerilor;
+build-ul determinist (230 de fișiere identice; pornirea 98,7 / 110 kB, cu ușa 102,2; totalul 451,9 / 500; dialogul 2,2 kB,
+bucata comună a programului 1,0 kB). E2e-ul întreg, pe portul 4176: 295 trec, 4 pică. Trei pică doar sub încărcarea suitei
+(riglele, paleta de două ori) și trec rulate singure; al patrulea cere adresa `http://localhost:4173/` (raportorul), deci
+pică pe orice alt port. Otrăvurile `test/otravuri/3.S.py`: 28 / 28 prinse (P01–P20 unitare, E01–E08 prin e2e).
+**Publicat pe canalul `trenulet`** pe 02.11, la 22:05 (`node scripts/publica-canal.ts trenulet`, din `7a95fae`):
+<https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>, valabil până pe 02.12. Hosting-ul trimite CSP-ul neschimbat și
+niciun antet COOP. Proba e2e a primirii, rulată chiar pe canal (fără server local): 3 / 3. Adresa principală de test nu s-a
+atins; ramura nu e împinsă.
+
 ## 2026-11-02 — Felia 7.6↑: fonturile cu o singură linie (ADR 0140) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1 + 2 cu Relief” (la întrebarea „Fonturile cu o singură linie: cititorul și Relief SingleLine inclus?”, cu
@@ -5041,6 +4994,43 @@ Verificat în browserul aplicației, după „Reload” (precache-ul ținea vers
 fonturilor incluse, Aldin oprit cu motivul, previzualizarea din trăsături (fără umplere), „Atelier Ștefan 2026” pus pe
 foaie ca 28 de trăsături deschise, cu o singură gravură pe linie de 1 mm; consola fără erori. Adresa principală de test a
 rămas a sesiunii principale (`ec428c9`).
+
+## 2026-11-02 — Felia 3.Xa: gazda extensiilor (ADR 0127) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da” (la „Pornesc felia următoare, 3.Xa, gazda extensiilor? Ea aduce meniul de lângă marcă, instalarea din
+`.zip` și de la o adresă, cadrul izolat și o extensie de probă, „salut”.”), în sesiunea dedicată liniei Trenuleț.
+**Started:** 02.11, 22:10. **Completed:** 02.11, 23:00.
+
+Gazda extensiilor, după deciziile owner-ului din aceeași zi (instalate, nu în aplicație; cadrul izolat; CSP-ul care îl face
+posibil): ADR 0127; codul `5b74344`, reparațiile `27a3aa3` și `44d9275`.
+- Ce merge: pachetul, instalarea din fișier, de la adresă și prin link, meniul, spațiul izolat și extensia de probă „salut”.
+- Descoperite pe drum:
+  - TypeScript 7 n-are API de transpilare, iar `@swc/core` nu-și încarcă binarul aici. Împachetatorul șterge tipurile cu
+    `stripTypeScriptTypes` din Node.
+  - Cadrul primește stilurile ca foi construite (`adoptedStyleSheets`), pe care CSP-ul moștenit nu le oprește. Măsurat în
+    Edge, cu `padding`-ul din `salut.css`.
+  - `.aplicatie` lasă clicurile spre pânză (`pointer-events: none`), deci spațiul și le ia înapoi.
+  - La 1280 px, coloana mărcii are 157 px, iar titlul e deja strâns la zero. De aceea numele extensiei și „Înapoi la planșă”
+    stau deasupra spațiului, nu lângă marcă, cum era în schiță.
+  - `route.fulfill` din Playwright ocolește CORS-ul. Cazul „fără CORS” e probat ca descărcare căzută.
+- **Porțile:**
+  - compilatorul; importurile: 19 reguli, cu 2 noi și capcanele lor;
+  - testele unitare: 8 067 trec, singurul eșec fiind traducerile, completate apoi (543, 0 lipsă);
+  - build-ul determinist: 235 de fișiere identice; pornirea 98,9 / 110 kB, cu ușa 102,4; totalul 460,6 / 500; extensiile
+    aduc 8,5 kB la cerere.
+- **E2e-ul întreg, pe portul 4176:** 298 trec, 4 pică.
+  - Două căderi erau ale feliei, reparate în `27a3aa3`:
+    - martorul refuzat al probei CSP era o origine HTTPS, permisă acum; a devenit o origine `http:`;
+    - cu IndexedDB blocat, lista extensiilor scria o eroare care pornea raportorul.
+  - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright pe Windows.
+- **Otrăvurile `test/otravuri/3.Xa.py`:** 32 / 32. E03 (paza din `ruleazaDocument`) scăpase, fiindcă proba trecea doar
+  prin paletă; proba alegerii din lista vectorilor cu spațiul deschis o prinde.
+**Publicat pe canalul `trenulet`** pe 02.11, la 23:24, din `7cd108a`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>.
+- Antetul CSP de pe Hosting are `blob:`, amprenta încărcătorului și `https:`.
+- Probele extensiilor și ale primirii, rulate chiar pe canal: 6 / 6.
+- Captura spațiului a arătat un fundal gri, cu text închis. `--fond` e voalul translucid de sub ferestre, nu un fundal; spațiul
+  și extensia de probă iau acum `--s-panou`, iar extensiile primesc 13 jetoane ale temei (`7cd108a`).
+- Adresa principală de test nu s-a atins; ramura nu e împinsă.
 
 ## 2026-11-02 — Felia 7.6↑b: fonturile SVG cu o singură linie (ADR 0140 §7) (Model: Claude Opus 5.5)
 
@@ -5088,6 +5078,34 @@ cu nota nouă; un font SVG de probă, scris de mână (H, I, L, T și un O înch
 Regular”, e recunoscut cu o singură linie (Aldin oprit, cu motivul), previzualizarea e din trăsături, iar E-ul lipsă e spus;
 consola fără erori. Adresa principală de test a rămas a sesiunii principale.
 
+## 2026-11-03 — Felia 3.Xb: stocarea extensiilor și permisiunile (ADR 0128) (Model: Claude Opus 5.5)
+
+**Prompt:** „Întâi 13.A în main” (la întrebarea „Cum continui 3.Xb, față de ramura 13.A↑?”, după „Da, pornește 3.Xb”), în
+sesiunea dedicată liniei Trenuleț. Senderul în `HostApi` atinge aceleași fișiere ca 13.A↑ (fereastra Mașina, ADR 0132), deci
+vine după unirea ei, ca felia 3.Xc; acum, partea care nu le atinge.
+**Started:** 03.11, 07:26. **Completed:** 03.11, 09:14.
+
+Decizia owner-ului s-a trimis sesiunii principale, cu cuvintele lui (ea face unirea). ADR 0128; codul: `271d96d`.
+- **Ce merge:**
+  - catalogul permisiunilor are `stocare`, arătată la instalare cu sensul ei;
+  - `host.stocare` peste `host.cere`, servită din IndexedDB (versiunea 2: `date` și `marimi`, cheia `[id, cheie]`); limitele
+    sunt 4 MB o valoare, 16 MB și 1 000 de chei pe extensie;
+  - scoaterea extensiei îi șterge datele, iar gestionarea arată cât ocupă;
+  - extensia de probă își numără deschiderile.
+- **Încărcătorul** are amprenta nouă, deci CSP-ul și `firebase.json` sunt regenerate.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 546, 0 lipsă;
+  - 8 073 de teste unitare, 0 eșuate;
+  - build-ul determinist: 236 de fișiere identice, pornirea 98,9 / 110 kB, totalul 462,1 / 500.
+- **E2e-ul întreg, pe portul 4176:** 299 trec, 4 pică.
+  - Două căderi sunt ale manualului, rămase din 3.Xa: capitolul „Extensiile” e al 25-lea, iar suita de atunci rulase pe un
+    build de dinaintea lui. Reparate aici.
+  - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright, care trece la reluare.
+- **Otrăvurile `test/otravuri/3.Xb.py`:** 18 / 18 prinse.
+**Publicat pe canalul `trenulet`** pe 03.11, la 09:27, din `301bbf6`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele extensiilor și ale primirii, rulate chiar pe canal: 7 / 7. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
+
 ## 2026-11-03 — Felia 7.7↑: textul vertical (ADR 0141) (Model: Claude Opus 5.5)
 
 **Prompt:** „Textul vertical (7.7↑)” (la „Ce fac după pauză?”, după pauza de la sfârșitul feliei 7.6↑b).
@@ -5121,6 +5139,75 @@ Verificat în browserul aplicației (în engleză): bifa „Vertical”, alinier
 columns”; „PIAȚĂ” și „BAR” puse pe foaie, în două coloane, literele centrate pe axe, virgula lui Ț despărțită de căciula lui Ă
 (o piesă cu 17 forme, profilele pe exterior și pe interior); consola fără erori. Adresa principală de test a rămas a
 sesiunii principale.
+
+## 2026-11-03 — Felia 3.Ta: Planificatorul Trenuleț ca extensie, din sursele neschimbate (ADR 0129) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește E2” (după raportul lui 3.Xb), în sesiunea dedicată liniei Trenuleț. E2 e pasul în care sursele
+planificatorului intră în repo, ca extensie; 3.Ta e prima lui felie: pagina v18 neschimbată, în cadrul izolat.
+**Started:** 03.11, 09:28. **Completed:** 03.11, 10:40.
+
+ADR 0129; codul: `754319b`, plus proba care a prins două otrăvuri scăpate: `1948eb8`.
+- **Ce merge:**
+  - sursele v18 ale planificatorului stau în `extensii/trenulet/sursa/`, octet cu octet; testele lor de referință: 622
+    comparate, 0 diferite;
+  - `scripts/construieste-trenulet.ts` face ce făcea `build.py`, fără Python: pagina de sine stătătoare iese identică cu
+    v18 (amprenta lui `preview.html`), iar pachetul `.zip` are marcajul, stilurile și cele 8 scripturi ale paginii;
+  - instalat din fișier, planificatorul rulează în cadrul izolat: circuitele se salvează singure în stocarea extensiei și
+    se redeschid după reîncărcare, modul 3D și culoarea din atelier rămân, iar descărcările ies din pagina lui cvs2;
+  - permisiunea nouă `descarcari` (`descarcari.salveaza`): numele curățat, lista albă a tipurilor, cel mult 64 MB.
+- **Încărcătorul și CSP-ul** nu s-au schimbat.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 549, 0 lipsă;
+  - 8 092 de teste unitare, 0 eșuate (8 sărite, ca înainte);
+  - build-ul determinist: 237 de fișiere identice, pornirea 98,9 / 110 kB (cu ușa 102,4), totalul 462,6 / 500.
+- **E2e-ul întreg, pe portul 4176:** 302 trec, 2 pică. Una e aserțiunea care cere portul 4173 (raportorul). Cealaltă,
+  colecția TTC din `fonturi.spec.ts:82`, a expirat sub încărcarea suitei (butonul „Aplică” încă dezactivat) și trece
+  singură, în 6,4 s.
+- **Otrăvurile `test/otravuri/3.Ta.py`:** 47 / 47 prinse. A05 (o citire pornită înainte de dezabonare) și A07 (filtrul
+  cheilor `ls:`) scăpaseră întâi; două probe noi le prind.
+- **Ce nu merge încă:** „Trimite la cvs2” (cadrul nu deschide file), previzualizarea 3D (three.js nu vine din rețea),
+  fonturile paginii, tema și engleza lui cvs2; textul despre circuitele văzute „pe telefon, tabletă sau calculator” e fals
+  în cvs2 (datele stau doar în browserul acesta).
+**Publicat pe canalul `trenulet`** pe 03.11, la 10:47, din `e9a0de6`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor și ale primirii, rulate chiar pe canal: 8 / 8. Pachetul
+(`trenulet-18.0.0.zip`, 207 146 de octeți) nu stă pe canal: owner-ul îl primește ca fișier, fiindcă sursele
+planificatorului nu se publică înainte să le reconfirme (repo-ul e public). Adresa principală de test nu s-a atins; ramura
+nu e împinsă.
+
+## 2026-11-03 — Ordinea de mână a operațiilor (felia 5.9↑, ADR 0133) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”), apoi „continua” (la
+„Aprobi schița ordinii operațiilor, cu cele patru recomandări?”).
+**Started:** 03.11, 10:00. **Completed:** 03.11, 14:12.
+
+Documentul v19: `rang` pe operație, un întreg în [0, 100 000]; fără rang, ordinea automată de azi, octet cu octet (corpusul
+CAM și plăcile). Ordinea programului e `ordineTaieturi`: cea automată, sortată stabil după rang. În fereastra exportului,
+**Ordinea tăierii** (Automată / A mea): rândurile în ordinea tăierii, cu locul lor (#), mânerul și săgețile, „cu N” la
+V-carve-urile legate; la Exportă, rangurile 0 … n−1 intră în proiect, iar în Automată pleacă. Față de schiță: buzunarele de
+aceeași adâncime **nu** se taie împreună (fiecare la locul lui; insula n-are traseu), doar V-carve-urile aceleiași piese, cu
+aceleași valori. Riscul e mai larg decât în schiță: pe aceeași piesă, dreptunghiul și cercul desenat în el (piese separate)
+nu avertizau. Acum „din interior” înseamnă primul punct al operației într-un contur închis al exteriorului (`cuprinse`, în
+`src/model/ordine.ts`: regula `interfata-prin-actiuni` nu lasă interfața să importe geometria). Glifele ↑ ↓ veneau colorate
+din alt font, deci săgețile sunt desenate. Tragerea: `dragTo` din Playwright nu pornește tragerea HTML5 în aplicație (pe o
+pagină goală, da); mausul în pași, da. Rândurile nu mai stau în ordinea documentului: proba V-carve a conflictului de freze
+caută cercul după cheie; alte două probe țineau versiunea în 18 (`document.v10`, `ghidaje`). Commit-urile: `3ab94ed`,
+`6456b84`, `9c0ca26` (documentul, corpusul, probele), `75e9b47` (fereastra), `c77b218` (fișa, pragul făcut, CLAUDE.md).
+**Porțile:** traducerile (548, 0 lipsă), compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
+8 sărite), licențele, build-ul determinist (pornirea 100,0, cu ușa 103,5 / 110 kB; totalul 455,3 / 500; /admin 105,4 / 200),
+e2e 307 / 307.
+**Otrăvurile** din `test/otravuri/5.9.py`, în clona din afara Drive-ului: **37 / 37** prinse (25 unitare, 12 pe e2e), fără
+VOID, arborele curat la final. În rularea lungă, E01 și E07 au mai doborât câte o probă străină de ele (ieșirea din foaie,
+urechile, apoi degajările), de fiecare dată alta, repede (1–2,5 s). Repetate, nu s-au mai întâmplat: spec-ul curat 57 / 57
+(de trei ori), E07 de două ori doar pe proba ordinii, pe `toBeDisabled`. Le pun pe seama sarcinii mașinii (rulau cât verificam
+în browser); dacă reapar în CI, le caut cauza.
+**Publicat pe test:** 03.11, 13:44, `publica` pe `75e9b47` (rularea 41629585480), după CI-ul rapid verde (41628552006; prima
+urmărire, `gh run watch`, ieșise devreme, cu CI-ul încă în lucru). Verificat în browserul aplicației la 1440 px: versiunea
+`75e9b47e6c5e`, după „Reload”; cu un dreptunghi și un cerc, Automată arată gaura (1), apoi dreptunghiul (2); A mea, săgeata
+în jos (28 × 24 px, lovită de `elementFromPoint`) duce gaura după dreptunghi; avertismentul („The outside in row 1 is cut
+before row 2, on the same piece or inside it…”) și Exportă oprit până la bifă; fără erori în consolă. Fereastra închisă fără
+export, formele anulate. Fișa și pragul: `c77b218`, publicat la 14:10 (rularea 41633102775).
+**Numerele ADR:** Trenuleț primește 0160–0169 (0126–0129, epuizate); linia principală are 0134–0139, apoi 0151–0159; textul,
+0143–0149.
 
 ## 2026-11-03 — Felia 7.8↑: încadrarea textului în casetă (ADR 0142) (Model: Claude Opus 5.5)
 
@@ -5161,41 +5248,157 @@ Verificat în browserul aplicației (în engleză), după „Reload”: „HHH�
 consola fără erori. Notat: numerele din mesajele panoului au virgula zecimală și în engleză (regula proiectului,
 `textNumar(…, true)`, ca la legenda textului pe curbă). Adresa principală de test a rămas a sesiunii principale.
 
-## 2026-11-02 — Felia 10.1↑: verificarea vectorilor, detectarea și panoul (ADR 0124) (Model: Claude Opus 5.5)
+## 2026-11-03 — Felia 13.A↑b: fereastra Mașina adusă în fundal după pornire (ADR 0132 §9) (Model: Claude Opus 5.5)
 
-**Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
-principală). Sarcina de la sesiunea principală: sesiunea dedicată etapei 10, în worktree-ul ei, cu felia 10.1↑ (detectarea
-și panoul cu lista), ADR 0124, probele, publicarea pe canal și raportul, cu întrebările grupate.
-**Started:** 02.11, 20:41. **Completed:** 02.11, 22:05.
+**Prompt:** „Da, repară” (la „Repar aici golul de la prima deschidere a Mașinii?”, după observația sesiunii principale de la
+unirea lui 13.A↑: la prima deschidere, fereastra Mașina stă goală câteva clipe, cât vine modulul ei).
+**Started:** 03.11, 10:42. **Completed:** 03.11, 11:52.
 
-În worktree-ul `C:\Users\besli\cncvs2-lucru\vectori` (ramura `wip/10.1-vectori`, din `main` `77a1be6`, cu joncțiunile
-`node_modules`; e2e-ul pe portul 4175). **Verifică vectorii**, un buton nou în extensia barei (după boolean și degrupare),
-deschide un panou adus la cerere: toleranța (implicit 0,01 mm), pragul buclei mici (1 %), „Doar formele alese”, lista
-problemelor pe feluri și, pe pânză, un cerc de mărime fixă în locul fiecăreia (roșu în aceeași formă, verde între forme).
-Felurile: duplicatele (aceleași noduri în toleranță, cu orice start și sens, și între piese; copiile ies din rest),
-intersecțiile dintre forme (prin cavalier, la 1e-6 mm, cu suprapunerile unite), autointersecțiile (cu bucla mai mică și
-procentul ei din formă), nodurile prea apropiate (în formă și între forme; lângă o atingere rămâne atingerea, la capetele a
-două căi rămân nodurile) și căile deschise (cu golul). Calculul pur e `src/model/verificare.ts`, în workerul CAM (cererea
-`verificare`, prin `actiuniExportCalcul.ts`, ca vederea 3D); în fațada offsetului, `autointersectii` și `intersectiiIntre`,
-iar `seAtingeSingur` folosește aceeași funcție (`atingeriReale`). La zi: ADR 0124 (nou, cu patru întrebări pentru 10.2↑),
-indexul, fișa (10.1↑), pragul (rândul trece în lucru), manualul (capitolul „Verificarea vectorilor”, ro și en), CLAUDE.md,
-traducerile (537, 0 lipsă).
-**Probele:** 17 probe pe hârtie (`test/unit/verificare.test.ts`), cu corpusul plantat al pragului (10 duplicate, 8 perechi
-de noduri la 0,005 mm, 6 intersecții, 5 bucle: toate, fără alarme false, cu culoarea lor) și același corpus citit din DXF;
-3 probe e2e (`test/e2e/verificare.spec.ts`: un DXF importat, lista care urmează documentul, panoul la 1024 px). Mutațiile:
-15 / 15 pe modul (primele rulări au scăpat patru,
-cu probele lor adăugate; o regulă fără nimic de prins a ieșit din cod, cavalier nu dă punctul de la capătul unei suprapuneri)
-și 3 / 3 pe panou, prin build și e2e, cu controlul verde înainte și după. O captură a panoului a arătat că ieșea din
-fereastră pe dreapta (se lărgea după ce venea conținutul, iar așezarea se făcuse la deschidere): are acum lățimea
-vecinilor, cu proba lui.
-**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, 8 075 de teste unitare
-(0 eșuate, 8 sărite), build-ul determinist (230 de fișiere identice; pornirea 98,5 / 110 kB, cu ușa 102,0; totalul
-448,9 → 454,7 / 500), e2e-ul în Edge, pe portul 4175: 297 din 298 (`raportor.spec.ts:73` cere adresa de pe 4173; pe
-portul principal trece); `manual.spec.ts` numără acum 25 de capitole. Codul: `7eec5d0`.
-**Publicat pe canalul `vectori`** pe 02.11, la 22:05 (versiunea `7eec5d040fe1`, refăcută după commit, ca ștampila să fie
-a lui): <https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 02.12. Verificat acolo, în browserul aplicației:
-butonul, panoul și workerul (pe foaia goală, „No problems”, în 0,4 s), apoi două dreptunghiuri în același loc: „Problems: 1
-(shapes checked: 2)”, rândul duplicatului și un marcaj; foaia canalului a rămas goală. Ramura e pe GitHub, nu în `main`.
+În worktree-ul `C:\Users\besli\cncvs2-lucru\sender-ecran`, pe ramura nouă `wip/13.A-b-masina-in-fundal`, din `main` `feb6920`
+(cu 13.A↑ unită). Cauza golului: bucata ferestrei Mașina era singura bucată la cerere fără locul ei în lista de preîncărcare
+de după pornire (ADR 0100), deci o cerea abia primul clic. **Trecerea 1** (`4b77679`): bucata și mesajele ei vin la o secundă
+după pornire, ca dialogurile; cât încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune „Se încarcă
+fereastra Mașina…”; dacă nu vine (o publicare nouă, rețeaua căzută), spune de ce și oferă Reîncarcă, ca dialogurile. Publicată
+pe canal și verificată acolo: bucata venea singură la ~1,1–1,4 s după pornire, dar la 60 ms după clic mesajul de încărcare era
+tot pe ecran. **Trecerea 2:** o componentă `lazy` suspendă la prima randare chiar cu bucata adusă (fabrica ei se cheamă abia
+atunci, iar promisiunea nouă nu e rezolvată pe loc), iar React ține rezerva lui Suspense ~300 ms, ca să nu clipească. Acum
+`incarcaMasina` ține componenta venită (`masinaGata`), iar `FereastraMasina` o montează direct, fără Suspense; altfel, calea la
+cerere de până acum. Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea. Proba
+preîncărcării caută acum mesajul la fiecare schimbare a paginii (un `MutationObserver`): căzută pe codul trecerii 1 („Expected
+false, Received true”), verde după.
+La zi: ADR 0132 (§9 și probele), rândul din jurnal (două treceri), CLAUDE.md, traducerile. Niciun capitol nou în manual:
+mesajul de eșec e cel al dialogurilor, cu același Reîncarcă.
+**Porțile** (a doua trecere): compilatorul, importurile (17 / 17), traducerile (548, 0 lipsă), 8 099 de teste unitare (8 091
+trec, 8 sărite), build-ul determinist (232 de fișiere identice; pornirea 100,0, cu ușa 103,5 / 110 kB, +0,1 față de `main`;
+totalul 453,2 / 500; /admin 105,4 / 200), licențele (96 + 247), e2e 305 / 307 în suita întreagă pe portul 4178:
+`raportor.spec.ts` cere portul 4173, iar `animatie` (timpul, sub încărcare) a trecut reluată singură (5 / 5).
+**Otrăvurile** (`test/otravuri/13.A-b.py`, în worktree-ul din afara Drive-ului, după commit-ul `0ae2890`, prin build și e2e cu
+`node`): 4 / 4 prinse, fiecare de proba ei: P01 (fără preîncărcare) și P04 (componenta venită, neținută: trece tot prin
+Suspense) de proba preîncărcării; P02 (fără mesajul de încărcare) și P03 (eșecul, gol) de proba răspunsului întârziat și
+refuzat. Arborele, identic cu HEAD după ele.
+**Publicat** pe canalul `sender-ecran` al instanței de test, la 11:49, din build-ul curat al lui `0ae2890`:
+https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `0ae2890a9624`, expiră 03.12); adresa principală de
+test a rămas pe `d6910511d758` (a liniei principale). Verificat pe canal, în browserul aplicației, cu fereastra ținută pe
+Proiectare: cu service worker-ul și fără el (prima vizită), bucata și mesajele ei vin singure la ~1,1–1,3 s după pornire, iar
+primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară nici o clipă (un observator al
+paginii, ca în probă); consola fără erori.
+
+## 2026-11-03 — Felia 3.Xc: fereastra extensiei și senderul prin `HostApi` (ADR 0160) (Model: Claude Opus 5.5)
+
+**Prompt:** „Main + 3.Xc (senderul)” (la „Care felie urmează?”, după raportul lui 3.Ta), în sesiunea dedicată liniei
+Trenuleț.
+**Started:** 03.11, 12:03. **Completed:** 03.11, 19:56.
+
+Întâi `main` (`75e9b47`: 13.A↑, 6.U↑, 5.9↑ pașii 1–3) a venit în ramură: `7681cd8`. Conflictele s-au rezolvat păstrând ambele
+părți, iar „Lucrarea primită” a trecut în fereastra Mașina. Unirea pe `9c0ca26` lăsase două probe unitare pe documentul v18;
+le reparase `75e9b47`, deci am refăcut-o pe vârful nou. Apoi felia: `2517e29`. ADR-ul feliei e 0160, din blocul
+0160–0169 dat liniei de sesiunea principală; până la răspunsul ei, numărul provizoriu 0199, înlocuit după publicare.
+- **Ce merge:**
+  - fereastra extensiei: fila cu numele, după Proiectare și Mașina, apăsată, cu ×; altă fereastră o ascunde, iar cadrul
+    rămâne; nu se ține după reîncărcare; F1 deschide capitolul extensiilor;
+  - permisiunea `masina`, oprită pe live:
+    - starea, la fiecare schimbare;
+    - încărcarea ca „Fișier…” (fereastra Mașina montată la nevoie, „de la” extensie lângă program);
+    - pornirea și reluarea, după confirmarea omului într-o fereastră a lui cvs2: butonul activ după o secundă, focusul pe
+      „Nu”, Escape = „Nu”, legată de programul și de reluarea arătate;
+    - pauza și oprirea, direct;
+    - o lucrare trimisă, prin dialogul primirii;
+  - „Trimite la cvs2” din planificator: lucrarea ovalului de exemplu ajunge în „Lucrarea primită” și toate fișierele ei trec
+    verificările lui „Fișier…”.
+- **Încărcătorul** are `host.masina` și `host.descarcari`. Amprenta lui s-a schimbat în CSP și în `firebase.json`, pe
+  mecanismul aprobat. Politica CSP nu s-a schimbat.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 0 lipsă;
+  - 8 161 de teste unitare, 0 eșuate (8 sărite);
+  - build-ul determinist: 244 de fișiere identice; pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500.
+- **E2e-ul întreg, pe portul 4176:** 319 trec, 1 pică: aserțiunea care cere portul 4173 (raportorul). O eroare în jurnalul
+  local a apărut de două ori în proba senderului, la prima rulare după o schimbare, și n-am putut s-o repet (peste zece
+  rulări verzi după aceea). Proba arată acum și intrările jurnalului, când pică.
+- **Otrăvurile `test/otravuri/3.Xc.py`:** 59 / 59 prinse. P04 și P10 lăsau o promisiune fără răspuns, deci proba pica doar la termenul ei (300 s); acum pică într-o secundă (`peLoc`). E05 stricase sintaxa (build căzut, deci nu era o prindere): rescrisă, prinsă de e2e.
+- **Ce nu merge încă:**
+  - planificatorul n-are butoane pentru pornire, pauză sau oprire (vin în 3.Tb, cu sursele schimbate): „Trimite la cvs2” duce
+    lucrarea în „Lucrarea primită”, iar pornirea rămâne în fereastra Mașina;
+  - pe live, extensiile nu folosesc mașina, până la o placă tăiată așa pe test;
+  - continuarea după o barieră (M0, M1, M6) rămâne în fereastra Mașina.
+**Publicat pe canalul `trenulet`** pe 03.11, la 20:33, din `14fa66e`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 13 / 13.
+Pachetele (`trenulet-18.1.0.zip`, 208 173 de octeți; `proba-masina-1.0.0.zip`, extensia de probă a senderului, 2 053) nu
+stau pe canal: owner-ul le primește ca fișiere. Adresa principală de test nu s-a atins (alt `index.html`); ramura nu e
+împinsă.
+**ADR-ul 0160** (blocul 0160–0169, dat liniei de sesiunea principală după prima publicare): `d9ff422` înlocuiește numărul provizoriu
+0199 (fișierul, indexul, referințele, fișa, traducerea). **Canalul, republicat din `d9ff422`** la 20:43 (până pe 03.12):
+prima rulare a probelor, la câteva secunde după publicare, a avut două roșii (jurnalul local cu o eroare); a doua, 13 / 13.
+Artefactele primei rulări s-au șters la a doua, deci eroarea a rămas neexplicată.
+
+## 2026-11-03 — Unirea feliei 13.A↑b (fereastra Mașina adusă în fundal) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (la „Unesc acum 13.A↑b (senderul în fundal) în main?”).
+**Started:** 03.11, 14:15. **Completed:** 03.11, 14:41.
+
+Fuziunea `e35753b` a ramurii `wip/13.A-b-masina-in-fundal` (trei commit-uri, `4b77679` … `20aa2d3`, pornite din `feb6920`)
+în `main` (`0660ee5`, cu 5.9↑). Singurul conflict: DEVLOG, unde ambele ramuri adăugaseră o intrare la capăt; le-am păstrat pe
+amândouă, în ordinea în care s-au încheiat. Fișa, CLAUDE.md, traducerile (550, 0 lipsă), `stil.css` și `App.tsx` s-au unit
+singure. Sesiunea senderului știe de unire și își scoate worktree-ul (întâi joncțiunile); ramura rămâne pe origin.
+**Porțile** pe main-ul unit: traducerile, compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
+8 sărite), licențele, build-ul determinist (pornirea 100,2, cu ușa 103,7 / 110 kB; totalul 455,4 / 500; /admin 105,4 / 200),
+e2e 309 / 309.
+**Publicat pe test:** 03.11, 14:39, `publica` pe `e35753b` (rularea 41637152053), după CI-ul rapid verde (41636001575).
+Verificat în browserul aplicației la 1440 px: versiunea `e35753b90afb`; bucata ferestrei Mașina vine singură, la ~1,1 s
+după pornire, fără niciun clic; primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară
+(un observator al paginii); fără erori în consolă.
+
+## 2026-11-03 — Imprimanta 3D a owner-ului: Creality K1C, prin WiFi (ADR 0119, întrebarea 4) (Model: Claude Opus 5.5)
+
+**Prompt:** „Am o imprimanta 3d pe care vreau sa o folosim din cvs2 prin wifi. Las imaginea asta pentru mai tarziu.” (cu o
+captură din aplicația Creality).
+**Started:** 03.11, 20:47. **Completed:** 03.11, 21:05.
+
+Doar documente, fără felie („mai târziu”). Captura arată imprimanta „K1C-8578” în aplicația Creality, în timpul unei
+imprimări: e răspunsul la întrebarea 4 din ADR 0119 (ce imprimante și ce firmware), o Creality K1C, cu firmware-ul Creality
+pe Klipper. Trecut în ADR 0119 (§14: recomandarea devine prima felie a imprimantelor pe K1C, prin rețea, iar Marlin pe USB
+după; ce expune în rețea firmware-ul de fabrică, Moonraker sau doar protocolul aplicației Creality, și dacă cere accesul root
+se cercetează la pornirea feliei), în coada owner-ului din fișa etapei 3 (la felie: adresa imprimantei în rețea și o
+imprimare de probă) și în „Decizii luate” din `CLAUDE.md`. Captura stă doar local, în `docs/faza0/imprimanta-3d/` (ignorat
+de git). Avertismentul de pe captură (CC5000, coordonatele mișcării în afara cursei, pe `output_11031835.gcode`) nu e
+analizat: l-am notat pentru felie. Commit-ul `e176af8`.
+**Porțile:** traducerile (550, 0 lipsă), probele documentației (58 / 58).
+**Publicat pe test:** 03.11, 21:04, `publica` pe `e176af8` (rularea 41699288269), după CI-ul rapid verde (41698051907).
+Verificat: versiunea `e176af8c75c0` în browserul aplicației, la 1440 px, fără erori în consolă; rândul nou al cozii owner-ului
+în `documentatie/roadmap.json` și în `documentatie/roadmap.en.json` de pe test.
+
+## 2026-11-03 — Felia 3.Tb: Planificatorul Trenuleț adaptat pentru cvs2 (ADR 0161) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tb” (la „Pornesc felia următoare, 3.Tb?”, după raportul lui 3.Xc), în sesiunea dedicată liniei
+Trenuleț. 3.Tb: sursele planificatorului adaptate pentru cvs2, adică textul despre sincronizare, stilurile și butoanele mașinii.
+**Started:** 03.11, 20:48. **Completed:** 03.11, 21:28.
+
+- **Ce merge:**
+  - intrarea pune `window.cvs2`, iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie (pagina fără
+    cvs2 e probată și ea: textele de până acum, fără secțiunea mașinii);
+  - în cvs2, textul circuitelor spune că stau doar în browserul acesta; „Trimite la cvs2” vorbește de fereastra Mașina;
+    three.js nu se mai cere de pe cdnjs, iar vederea 3D spune de ce lipsește;
+  - marcajul și șabloanele n-au atribute `style`: clasele țin locul lor, culorile din date se pun prin CSSOM. Cadrul nu mai
+    are niciun refuz CSP, iar adaptorul care copia atributele a plecat;
+  - în exportul CNC, „Pe mașină, prin cvs2”: starea la fiecare schimbare, fișierul ales din export, „Încarcă pe mașină”,
+    „Pornește” și „Reia” cu confirmarea lui cvs2, „Pauză”, „Oprește”, refuzurile în limba omului.
+- **Instrumentul refuzurilor:** un colector pe consola paginii vedea 0 refuzuri și cu atributele încă în surse. Probele
+  ascultă acum `securitypolicyviolation` chiar în cadru, printr-un script pus la încărcare. Martorul, pe sursele vechi, a
+  văzut zeci de `style-src-attr`.
+- **Porțile:** compilatorul; importurile, 19 / 19; traducerile, 565, 0 lipsă; 8 164 de teste unitare, 0 eșuate (cu referințele motoarelor: 622, 0 diferite); build-ul determinist: 245 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate (planificatorul stă doar în pachet).
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul).
+- **Otrăvurile `test/otravuri/3.Tb.py`:** 26 / 26 prinse, fiecare de proba ei: R01 și R02 (o zecimală în plus în G-code, alt număr de laturi la cercurile LEGO) de `referinte.js --compara`, din poartă.
+- **Ce nu merge încă:** previzualizarea 3D (three.js, cu acordul descărcării), fonturile paginii, tema și engleza lui cvs2;
+  sursele sunt tot JavaScript (TypeScript într-o felie a lui).
+**Eroarea rară din jurnal (văzută la 3.Xc), lămurită:** proiectul `edge` al probelor blochează workerul PWA
+(`serviceWorkers: 'block'`), iar Playwright pune pentru asta în fiecare cadru `if (navigator.serviceWorker) …`. În cadrul cu
+sandbox al unei extensii, citirea aruncă `SecurityError`; când scriptul rulează după ascultătorul încărcătorului, eroarea
+ajunge în jurnalul local, cu numele extensiei. Proba cu workerul blocat și apoi permis: 1 eroare, apoi 0. Utilizatorii n-au
+scriptul: probele extensiilor recunosc intrarea lui (mesajul și stiva doar din `<anonymous>`) prin
+`test/e2e/ajutor-jurnal.ts`. Aplicația nu s-a schimbat.
+**Publicat pe canalul `trenulet`** pe 03.11, la 21:49, din `d4d8b54`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.2.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
 
 ## 2026-11-04 — Curățenia worktree-urilor: linia textului (7.5↑–7.8↑) și 10.1↑ unite în main (Model: Claude Opus 5.5)
 
@@ -5229,6 +5432,117 @@ licențele, build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalu
 316 / 318 (cele două căderi: numărul capitolelor din manual, reparat; apoi 5 / 5).
 **Publicat pe test:** 04.11, 10:29, `publica` pe `024c7d6` (rularea 41799503377), după CI-ul rapid verde (41798434101).
 Verificat în browserul aplicației la 1440 px: versiunea `024c7d607e37`, fără „Reload”; panoul textului cu Aldin, Cursiv, Vertical și Caseta (fără / limitat de casetă / scalat la casetă); „Check vectors” pe foaia goală: „No problems (shapes checked: 0).”; fără erori în consolă; panourile închise fără nimic adăugat.
+
+## 2026-11-04 — Felia 3.Tc: sursele planificatorului în TypeScript (ADR 0162) (Model: Claude Opus 5.5)
+
+**Prompt:** „Sursele în TypeScript” (la „Care e felia următoare?”, după raportul lui 3.Tb), în sesiunea dedicată liniei
+Trenuleț. 3.Tc: sursele planificatorului (motoarele, apoi pagina) trec în TypeScript, cu tipurile verificate de poartă și
+cu același JavaScript rulat.
+**Started:** 04.11, 07:19. **Completed:** 04.11, 09:08.
+
+- **Ce merge:**
+  - cele șase surse (motorul CNC, G-code, profilurile, LEGO, atelierul, planul; ~7 900 de linii) sunt `.ts`, scripturi
+    clasice ca înainte, cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte ca
+    aplicația); rădăcina le exclude, `npm run typecheck` le verifică, iar `test/unit/trenulet.tipuri.test.ts` le verifică și
+    în suita unitară (toate în proiect, zero erori, aplicația nu le vede);
+  - construcția și ham-ul referințelor (`teste/incarca.js`) șterg tipurile cu `stripTypeScriptTypes`: în pagină și în
+    pachet ajunge JavaScript (proba îl compilează cu `vm.Script`); pachetul 18.2.1, 218 364 de octeți (+7,7 kB, spațiile din
+    locul tipurilor);
+  - `globale.d.ts`: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` (cu tipul senderului din
+    `extensii/api.ts`).
+- **Dovada că JavaScript-ul e același:** fiecare sursă, fără tipuri, are arborele sintactic (acorn) al sursei de la
+  `b2ad915`, în afară de export (`var X = (function (glob: typeof globalThis) { …; return { … }; })(…)`). 1 785 de `!`
+  (unde codul presupunea o valoare), 274 de `as` (DOM, JSON, câmpurile editorului), niciun `any`.
+- **Cum:** tipurile simple deduse din folosire (codefix-ul TypeScript 6, cu tot ce nu era `number` / `string` / `boolean`
+  respins), tipurile cu nume scrise de mână, semnele `!` puse și apoi curățate unde au devenit inutile; uneltele au stat în
+  afara repo-ului. Motoarele, comise întâi (`781803f`), apoi atelierul și planul.
+- **Porțile:** compilatorul, ambele proiecte; importurile, 19 / 19; traducerile, 568, 0 lipsă; 8 168 de teste unitare, 0 eșuate (unul rulase cât completam traducerile; reluat, 4 / 4; ale planificatorului și ale documentației, 61 / 61); build-ul determinist: 246 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate (sursele stau doar în pachet); `referinte.js
+  --compara`: 622, 0 diferite.
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul, ca la 3.Tb).
+- **Otrăvurile `test/otravuri/3.Tc.py`:** 10 / 10 prinse, fiecare de proba ei: T07 și T09 (o eroare de tipuri, JavaScript-ul rulat neschimbat) doar de proba tipurilor, T10 (o schimbare de cod în motorul LEGO) de referințe.
+- **Ce nu merge încă:** previzualizarea 3D (three.js, cu acordul descărcării), fonturile paginii, tema și engleza lui cvs2;
+  semnele `!` și conversiile `as` arată presupuneri, nu le verifică (fiecare poate deveni o gardă, cu proba ei).
+**Publicat pe canalul `trenulet`** pe 04.11, la 09:07, din `b64bd7c`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.2.1.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Td: three.js în pachetul extensiei, previzualizarea 3D în cvs2 (ADR 0163) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, descarcă” (la „Descarc three.js (three.min.js r128, MIT, de pe cdnjs, ~603 kB) ca 3D-ul să meargă și în
+cvs2?”, după raportul lui 3.Tc), în sesiunea dedicată liniei Trenuleț. 3.Td: three.js intră în pachetul extensiei, iar
+atelierul îl încarcă de acolo, la prima intrare în 3D.
+**Started:** 04.11, 09:34. **Completed:** 04.11, 10:04.
+
+- **Descărcarea:** `https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js`, 603 445 de octeți, într-un dosar gol;
+  SHA-512 egal cu amprenta SRI publicată de cdnjs (`api.cdnjs.com`), antetul de licență MIT; fără `eval`, `new Function` sau
+  workeri (CSP-ul cadrului i-ar fi refuzat). Pus în `vendor/three.min.js`, neschimbat, cu `three.LICENSE`.
+- **Ce merge:**
+  - pachetul are `js/three.js` (octet cu octet; amprenta fixată în `trenulet.test.ts`) și `licente/three.txt`; pagina de sine
+    stătătoare nu-l are (pe claude.ai îl cere tot de pe cdnjs, la cerere);
+  - `window.cvs2.three()` îl aduce din pachet, ca script clasic din `blob:`, o singură dată; atelierul îl cheamă în cvs2 la
+    prima intrare în 3D: vederea desenează piesa (captura din raport), fără niciun refuz CSP; CSP-ul nu s-a schimbat;
+  - pachetul 18.3.0, 369 614 octeți (+151 kB).
+- **Porțile:** compilatorul, ambele proiecte; traducerile, 571, 0 lipsă; 8 170 de teste unitare, 0 eșuate; build-ul
+  determinist: 247 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate.
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul).
+- **Otrăvurile `test/otravuri/3.Td.py`:** 8 / 8 prinse, fiecare de proba ei: D01–D04 de construcție, D05–D07 de intrare,
+  D08 (atelierul nu mai cere three.js de la gazdă) de e2e.
+- **Ce nu merge încă:** fonturile paginii, tema și engleza lui cvs2 în planificator.
+**Publicat pe canalul `trenulet`** pe 04.11, la 10:03, din `7d33348`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.3.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Xd: pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi (ADR 0164) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește A” (la „Pornesc felia A (pluginul ca parte din cvs2: temă, fonturi, contul văzut, închiderea fără
+pierderi)?”, după direcția nouă a owner-ului: pluginul devine un atelier de forme 3D pentru printare, iar întâi vine
+„comunicare perfectă între cvs2 și plugin”), în sesiunea dedicată liniei Trenuleț. 3.Xd, fără server: tema și fonturile lui
+cvs2 în planificator, schimbate pe loc; contul văzut de extensie (conectat sau nu, numele, planul), doar pentru citire, cu o
+permisiune nouă; închiderea ferestrei extensiei salvează întâi ce era de salvat și întreabă doar dacă tot rămâne ceva.
+**Started:** 04.11, 11:11. **Completed:** 04.11, 19:06.
+
+- **Ce merge:**
+  - tema: cadrul primește și `color-scheme` (tema aleasă în cvs2, nu a sistemului) și fonturile (`--font`, `--mono`): 16
+    variabile, schimbate pe loc; planificatorul pune `data-gazda="cvs2"` și `data-theme`, iar bara, panourile, textul,
+    marginile, roșul, inelul de focus și fonturile lui sunt ale lui cvs2, pe luminos și pe întunecat; masa, lemnul,
+    cărămizile, verdele de semnal și butoanele principale rămân ale lui (capturile din raport);
+  - contul: permisiunea nouă `cont`, arătată la instalare; `host.cont` (conectat, numele, planul de la zi; fără adresă, uid
+    sau parolă; cu adresa neconfirmată, fără nume și plan), schimbat pe loc, și din altă filă; planificatorul îl arată la
+    Circuite;
+  - închiderea: `host.nesalvat`, `host.laInchidere`; × (și altă extensie deschisă, o versiune nouă instalată peste ea) îi cere
+    întâi extensiei salvările, cel mult 5 s, și întreabă doar ce rămâne nesalvat: „Închide oricum” (gestul, plin, primul) și
+    „Rămân” (focusul, și Escape; focusul se întoarce la ×); reîncărcarea întreabă prin browser; `host.inchide()` nu întreabă;
+    extensia deschisă, aleasă din meniu, doar își arată fereastra;
+  - planificatorul: salvările amânate (circuitul, setările CNC, profilul mașinii, atelierul) trec prin `window.cvs2.amana`, iar
+    scrierile adaptoarelor sunt urmărite: × imediat după o schimbare o păstrează, fără întrebare (proba e2e);
+  - încărcătorul, cu amprentă nouă în CSP (`shared/cadruExtensie.ts`, `firebase.json`), politica neschimbată; `api: 1`;
+    pachetul 18.4.0, 372 227 de octeți.
+- **Găsit pe drum:**
+  - focusul pus înapoi la × după „Rămân” nu ajungea (3 / 3 picate): aplicația era încă inertă, pentru că întrebarea o
+    anunța printr-un efect, iar randarea care scoate `inert` venea după temporizator. Acum „Rămân” scoate întrebarea și
+    inerția în aceeași randare (a clicului), apoi pune focusul: 3 / 3 trec;
+  - la otrăvuri, X21 (tura în plus după un temporizator, la închidere) a scăpat: în proba ei, o altă salvare amânată, mai
+    lungă, acoperea întâmplător scrierea întârziată. Cazul are acum proba lui, singur (`cd7f4e9`): X21 prinsă;
+  - în captură, ambele butoane ale întrebării ieșeau pline: în dialogurile lui cvs2, primul buton e gestul (plin), iar
+    „Rămân” avea în plus clasa `principal`. Scoasă (`4315392`);
+  - la scrierea otrăvurilor: trei apărări fără probă au primit-o (scrierile înlănțuite, altă extensie și o versiune nouă
+    peste una nesalvată, extensia deschisă aleasă din meniu), iar două linii fără rost au plecat.
+- **Porțile:** compilatorul (aplicația, sursele planificatorului, funcțiile); importurile; traducerile, 574, 0 lipsă; 8 184
+  de teste unitare, 0 eșuate; build-ul determinist: 247 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1),
+  neschimbată, totalul 472,4 / 500; licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 325 trec, 2 pică: aserțiunea care cere portul 4173 (raportorul, ca până acum) și
+  `export.spec.ts:653`, cu `EBUSY` la citirea descărcării (o blocare de fișier din Windows; singură, 3 / 3 trec).
+- **Otrăvurile `test/otravuri/3.Xd.py`:** 36 / 36 prinse, fiecare de proba ei: X01–X13, X26 și X28–X36 de e2e, X14–X17 de
+  contul extensiei, X18 de pachet, X19–X25 și X27 de adaptoare (X21, după proba ei nouă). Lăsate afară, cu motivul:
+  încărcătorul (amprenta îl prinde oricum), al doilea clic pe × cât se așteaptă, planul necunoscut arătat cu codul lui,
+  nuanțele derivate și culoarea inelului de focus (capturile).
+- **Ce nu merge încă:** salvarea modelelor în cont (feliile următoare, cu sesiunea principală); engleza planificatorului.
+**Publicat pe canalul `trenulet`** pe 04.11, la 19:05, din `4315392`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele extensiilor (și cele noi, ale temei, contului și închiderii), ale senderului, ale primirii și ale
+planificatorului, rulate chiar pe canal: 20 / 20. Pachetul (`trenulet-18.4.0.zip`) nu stă pe canal: owner-ul îl primește ca
+fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
 
 ## 2026-11-04 — Felia 13.A↑c: meniul pe telefon, și cu un font lat (ADR 0132 §10) (Model: Claude Opus 5.5)
 
@@ -5271,6 +5585,99 @@ build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalul 468,9 / 50
 **Publicat pe test:** 04.11, 16:32, `publica` pe `c0de287` (rularea 41848098549), după CI-ul rapid verde (41841525159)
 și după rularea completă de mai sus.
 Verificat: versiunea `c0de2870b37e` în browserul aplicației, după „Reload”; la 390 px, în română, cu mașina simulată conectată: Proiectarea doar cu iconița (eticheta de 1 × 1 px, numele accesibil), Mașina cu numele, „Mașina conectată” pe același rând, în dreapta; la 320 px, tot pe rând (cu fontul Windows, cuvântul încape întreg); la 1440 px, ambele file cu numele; fără erori în consolă; mașina deconectată la final, browserul lăsat în Proiectare și în engleză.
+
+## 2026-11-04 — Felia 3.Te: planificatorul în engleză, după limba lui cvs2 (ADR 0165) (Model: Claude Opus 5.5)
+
+**Prompt:** „Engleza” (la „Care felie urmează: B, schimbul de forme între cvs2 și plugin, sau engleza pluginului?”, după
+raportul lui 3.Xd), în sesiunea dedicată liniei Trenuleț. 3.Te: în cvs2, planificatorul vorbește limba lui cvs2 (română sau
+engleză): interfața, mesajele, avertismentele motoarelor și fișierele de citit din exporturi; la o limbă schimbată în cvs2,
+pluginul repornește singur, fără pierderi. Româna rămâne în cod, neschimbată; engleza vine dintr-un dicționar.
+Cu o pauză: „fa pauza” pe 04.11 seara, reluată pe 05.11 cu „Continuă”.
+**Started:** 04.11, 20:06. **Completed:** 05.11, 08:12.
+
+- **Ce merge:**
+  - limba: în cvs2, planificatorul vorbește limba lui cvs2 (română sau engleză): interfața (planul, Circuitele, exportul CNC
+    cu secțiunile lui, atelierul 3D cu fiecare fel de piesă), mesajele, avertismentele motoarelor și README-ul arhivelor
+    (`README.txt`, în engleză). Româna rămâne în cod; engleza vine din `planificator/texte.en.json` (1 127 de texte), doar
+    în pachet, adus doar în engleză, înghețat;
+  - `planificator/limba.ts`, primul script: `tr` pentru textele cu valori (șabloane; traducerea poate muta valorile) și
+    pentru cele care nu ajung pe pagină; un context pentru cuvintele cu două sensuri (placa de lemn = board, patul
+    imprimantei = bed, placa LEGO = plate; știftul Technic = pin); textele fixe se traduc pe pagină (nodurile de text
+    întregi și `title`, `aria-label`, `placeholder`, `alt`, la pornire și la fiecare schimbare). Zecimalele (punct) și data
+    (en-GB) urmează limba. Eroarea motorului „nu încape pe placă” poartă piesa ca proprietate, iar sfatul unei piese la comandă
+    care nu se poate închide se alege după felul motivului (`motivLC`): nimic nu se mai recunoaște după textul românesc;
+  - o limbă nouă în cvs2: pagina își salvează lucrul (salvările amânate din 3.Xd), apoi cere `host.reporneste()` (nou în
+    `HostApi` v1). cvs2 reface cadrul cu contextul de acum, cel mult o dată la 2 s; cererile dese se adună într-un singur
+    temporizator, iar închiderea o oprește (`src/extensii/repornire.ts`). RO → EN → RO, făcut repede, ajunge în limba bună.
+    Încărcătorul are amprentă nouă în CSP (politica e aceeași), iar extensia „Salut” are butonul;
+  - rămân în română: comentariile din G-code, numele fișierelor (în afară de README), antetele STL, erorile de neajuns, pagina
+    de sine stătătoare (claude.ai, copia de pe calculator);
+  - unealta `scripts/texte-trenulet.ts` pune în dicționar cheile noi din surse (și cuvintele singure cu majusculă: „Pod”,
+    „Grila:”) și găsește textele românești lipite de valori fără `tr` (`compuseNetraduse`). `trenulet.engleza.test.ts`
+    cere o traducere pentru fiecare cheie, fără intrări fără folos, cu aceleași {0}, {1}…, fără litere românești și fără
+    texte lipite netraduse; detectorul e probat pe un eșantion cu cazuri știute;
+  - pachetul 18.5.0: 414 536 de octeți, 15 fișiere (+42,3 kB, aproape tot dicționarul).
+- **Găsit pe drum:**
+  - traducerea pe pagină nu pornea nicăieri, deci textele fixe rămâneau românești: o pornește acum `limba.ts`, în engleză;
+  - prima formă a limitei de reporniri arunca o cerere venită la mai puțin de 2 s, iar RO → EN → RO, făcut repede, lăsa
+    extensia în engleză. Acum cererea așteaptă, iar cererile de până atunci se adună într-una (proba e2e);
+  - „placă” și „știft” au câte două-trei sensuri, de unde contextul (`tr("placă", "pat")`). Eticheta „plăci” de la înălțimea
+    pieselor LEGO ieșea „boards”; acum e `tr("plăci", "LEGO")`, adică „plates”;
+  - proba nouă a zecimalelor a găsit atelierul cu virgulă în engleză („31,8 × 15,8 × 11,4 mm”, „≈ 2,7 g”): reparat;
+  - în proba e2e, numele circuitului se scria înainte să pornească planificatorul (o cursă): proba așteaptă acum cipul de
+    stare;
+  - TypeScript 7 (nativ) nu mai are API-ul clasic: unealta citește sursele cu `parseAst` din Vite, după
+    `stripTypeScriptTypes`;
+  - la otrăvuri, două scăpaseră (`ce3a28b`):
+    - T22, garda cozii de reporniri: proba e2e numără deschiderile reușite, iar două reporniri în aceeași clipă se văd ca
+      una. Logica stă acum în `repornire.ts`, probată pe un ceas fals;
+    - T37, contextul uitat de unealtă: acum are a doua plasă, fără parser;
+  - capturile pentru raport au arătat, în engleză, cuvinte românești pe care nicio probă nu le vedea (`30e1a5b`):
+    - etichete de un cuvânt fără diacritice („Drepte”, „Curbe”, „Pod”, „Deschide”, „Grila:”, „Dedesubt:”): unealta cerea
+      doar texte cu spații sau diacritice, iar proba e2e căuta diacritice;
+    - cuvinte lipite de valori fără `tr` („1 piesă · 1 placă”, „3 capete libere”, apoi, la reluare, „2 tuneluri”, „120
+      linii” și avertismentele adăugate cu `push` și lipite cu `join`): pe pagină se potrivesc doar noduri de text întregi;
+    - sfatul de la închiderea cu o piesă la comandă se recunoștea după textul românesc (`/strânsă|doar/`), deci lipsea în
+      engleză.
+
+    Acum unealta cere și cuvintele cu majusculă, iar `compuseNetraduse` găsește lipiturile; locurile găsite trec prin
+    `tr`, iar 9 rămân românești cu bună știință, numite în unealtă. Dicționarul a crescut de la 1 070 la 1 127 de texte.
+    Proba e2e verifică acum și filele paletei, butoanele de un cuvânt și pagina după adăugarea unei piese;
+  - în capturi, cipul jurnalului arăta o dată „1 error”: era eroarea harnașului (blocarea service worker-ului de către
+    Playwright aruncă în cadrul cu sandbox; `eroriJurnal` o recunoaște și o scoate). Cu service worker-ul permis, cipul
+    arată „0 errors”.
+- **Porțile** (pe `30e1a5b`):
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 577, 0 lipsă;
+  - testele unitare: 8 206, 0 eșuate;
+  - build-ul determinist: 249 de fișiere identice; pornirea 100,6 / 110 kB (cu ușa 104,1), neschimbată; totalul 472,6 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 328 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+  Observate o dată, sub încărcare, și trecute apoi singure: `pen.spec.ts:190` (3 / 3) și proba „pe mașină” a planificatorului
+  (2 / 2, apoi spec-ul întreg 6 / 6, de două ori).
+- **Otrăvurile `test/otravuri/3.Te.py`:** 56 / 56 prinse, în trei rulări (T22 și T37 abia după probele lor noi), fiecare
+  de proba ei:
+  - de e2e: T05–T08, T17–T19, T21, T25–T32, T40, T41, T51;
+  - de `trenulet.limba`: T01–T04, T09, T10;
+  - de adaptoare: T11–T16;
+  - de pachet: T20;
+  - de `extensii.repornire`: T22–T24, T38, T39;
+  - de dicționar și detector: T33–T37, T42–T50, T52–T56.
+
+  Lăsate afară, cu motivul: încărcătorul (amprenta îl prinde oricum), `characterData` și `FARA` (nimic nu le pune azi la
+  lucru), sufixul exemplelor, cuvântul ales prin context la LEGO și la profiluri, `window.cvs2.limba` fix sau viu, sfatul
+  piesei la comandă, titlurile pieselor printate opționale.
+- **Ce nu merge încă:**
+  - engleza e a autorului feliei; owner-ul o poate corecta direct în `texte.en.json`, iar unealta păstrează traducerile;
+  - pagina de sine stătătoare rămâne în română;
+  - un text compus la rulare din valori care nu trec prin `tr`, altfel decât prin șabloane, `+`, `push` sau liste, poate
+    rămâne românesc;
+  - schimbul de forme cvs2 ↔ plugin (B) și salvarea în cont (C, D, cu sesiunea principală).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 08:07, din `30e1a5b`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor (și cele noi, ale repornirii), ale senderului, ale primirii și ale planificatorului (și
+cea în engleză), rulate chiar pe canal: 22 / 22. Pachetul (`trenulet-18.5.0.zip`) nu stă pe canal: owner-ul îl primește ca
+fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
 
 ## 2026-11-04 — Felia 3.U: degajările aceleiași bucle (ADR 0134) (Model: Claude Opus 5.5)
 
@@ -5415,6 +5822,68 @@ dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului 
   `Apps\cncvs2-arhiva\`. Ștergerea lor e la owner: modul automat refuză `git push --delete`.
 - **Rămâne** worktree-ul `trenulet` (linia activă).
 
+## 2026-11-05 — Felia 3.Xe: formele între cvs2 și plugin (ADR 0166) (Model: Claude Opus 5.5)
+
+**Prompt:** „B, schimbul de forme” (la „Care felie urmează?”, după raportul lui 3.Te), apoi „Da, fă-o” (la schița celor cinci locuri noi:
+bara selecției, fila „Din cvs2”, butonul „În desenul cvs2”, fereastra Importă „Propus de”, permisiunea), în sesiunea dedicată liniei
+Trenuleț. 3.Xe: o selecție din desenul cvs2 ajunge în plugin (ca s-o ridici în 3D), iar conturul unei plăci din plugin ajunge
+în desenul cvs2, prin fereastra Importă.
+**Started:** 05.11, 09:13. **Completed:** 05.11, 16:16.
+
+- **Ce merge:**
+  - permisiunea nouă `forme`, arătată la instalare: „să primească formele pe care i le trimiți din desen și să-ți propună forme
+    pentru desen (le adaugi tu, din Importă)”;
+  - din desen spre extensie, doar ce trimite omul: „Trimite la <extensie>” (acțiunea `extensii.trimite-selectia`), în bara
+    selecției și în paletă, arătată doar cât e deschisă o extensie care primește forme. Contururile instanțelor alese pleacă în
+    mm ai foii (originea în colțul stânga-jos), cu arcele, cercurile și cubicele aproximate la cel mult 0,02 mm, cel mult
+    10 000 de contururi și 200 000 de puncte (peste, sau fără nicio formă, extensia primește refuzul); apoi se arată fereastra
+    extensiei;
+  - din extensie spre desen: `host.forme.propune(nume, date)`, un SVG sau un DXF; cvs2 trece la Proiectare și deschide
+    fereastra Importă cu el, „Propus de <extensie>”. Nimic nu intră fără „Importă”, iar o propunere cât alt import e deschis
+    se refuză („ocupat”);
+  - planificatorul: fila „Din cvs2” a atelierului 3D (doar în cvs2) ridică forma primită la o grosime (0,4–50 mm, implicit
+    3,2), cu găurile ei (un contur cuprins de un număr impar de altele e o gaură), cu contururile deschise numărate și lăsate
+    afară; piesa intră în lista de printat. În exportul CNC, fiecare placă (la două fețe, fiecare față) are „În desenul cvs2”,
+    care propune DXF-ul ei;
+  - încărcătorul, cu amprentă nouă în CSP (politica aceeași); extensia de probă „Salut” primește și propune forme;
+  - pachetul 18.6.0: 417 717 octeți, 15 fișiere; dicționarul englez are 1 147 de texte.
+- **Găsit pe drum:**
+  - eticheta butonului din bara selecției se citește după numele accesibil: textul lui are și sfatul de la trecerea cu mausul;
+  - la otrăvuri, trei scăpaseră, fiecare din lipsa cazului care o desparte, nu din regulă greșită (`e34f2d3`):
+    - E21 (contururile deschise ridicate): calea deschisă din probă avea doar două puncte, pe care le scotea și filtrul de
+      puncte; acum are trei;
+    - E24 (alt DXF decât al plăcii): ovalul încăpea pe o singură placă; acum o placă de 400 × 300 îl împarte, iar butonul
+      plăcii 2 propune chiar DXF-ul ei;
+    - E27 (butoanele pe pagina de sine stătătoare): proba ei nu deschidea exportul; acum îl deschide și nu găsește niciunul.
+  - DXF-ul unei plăci are 1 000 × 600 mm: în cvs2, foaia implicită (300 × 200) trebuie mărită ca placa să încapă pe ea.
+- **Porțile:**
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 580, 0 lipsă;
+  - testele unitare: 8 220, 0 eșuate;
+  - build-ul determinist: 251 de fișiere identice; pornirea 101,0 / 110 kB (+0,4: butonul și legătura din aplicație);
+    totalul 474,3 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 333 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+- **Otrăvurile `test/otravuri/3.Xe.py`:** 27 / 27 prinse (E21, E24 și E27 abia după probele lor noi), fiecare de proba ei:
+  - de e2e: E10–E16, E21–E24, E27;
+  - de `extensii.forme`: E02–E09;
+  - de pachet: E01, E26;
+  - de aranjament: E17;
+  - de motorul LEGO: E18–E20;
+  - de adaptoare: E25.
+
+  Lăsate afară, cu motivul: încărcătorul (amprenta îl prinde oricum), a doua gardă a permisiunii în `trimiteForme`, plafonul
+  de 50 000 de puncte al atelierului, refuzul „doar-citire” (o a doua filă pe același proiect).
+- **Ce nu merge încă:**
+  - știfturile LEGO pe o formă liberă și grosimi diferite pe aceeași formă;
+  - forma exactă (arce, cubice) spre extensie, nu doar segmentele;
+  - salvarea modelelor în cont (C, D, cu sesiunea principală) și trimiterea la imprimanta 3D (E).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 16:05, din `e34f2d3`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor (și cele noi, ale formelor), ale senderului, ale primirii și ale planificatorului, rulate
+chiar pe canal: 27 / 27. Pachetul (`trenulet-18.6.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de
+test nu s-a atins; ramura nu e împinsă.
+
 ## 2026-11-05 — Felia 3.V: degajările pe colțurile cu arce (ADR 0135) (Model: Claude Opus 5.5)
 
 **Prompt:** „da, 3.V”, la „Start the next slice, 3.V (relief at corners with an arc)?”.
@@ -5455,6 +5924,53 @@ dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului 
 - **CI:** rapidă verde pe `fb1f80d` (42030945629); completă verde pe `fb1f80d` (42030959984, 35 min).
 - **Publicat pe test:** `fb1f80d` (42036102042), apoi `ecf2e0c`, doar cu .md peste el (42041651433; ora de pornire a lui 3.6f corectată). Verificat din `documentatie/roadmap.json` de pe test: 3.6f în lucru de la 12:53, coada owner-ului 13, ADR 0136 propus, engleza fără texte netraduse.
 - **Rămâne:** răspunsurile owner-ului la ADR 0136, apoi codul lui 3.6f.
+
+## 2026-11-05 — Felia 3.Tf: numele pluginului, Easy 3Draw (ADR 0167) (Model: Claude Opus 5.5)
+
+**Prompt:** „o sa vreau ca plugin-ul sa se numeasca Easy 3Draw” (după raportul lui 3.Xe, în sesiunea dedicată liniei Trenuleț).
+3.Tf: pluginul se arată ca „Easy 3Draw” peste tot unde omul îi vede numele.
+**Started:** 05.11, 16:18. **Completed:** 05.11, 18:39.
+
+- **Ce merge:**
+  - numele afișat, același în română și în engleză, netradus (`PASTRATE` din `scripts/texte-trenulet.ts`). În cvs2, din
+    manifest: instalarea („„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip”), meniul extensiilor, fila ferestrei, „Trimite la
+    Easy 3Draw”, „Propus de Easy 3Draw”, originea lucrării trimise și cererea de pornire pe mașină. În planificator: titlul
+    paginii, „EASY 3DRAW — fișierele pentru CNC” (README-ul arhivei CNC), „PIESE DE PRINTAT — din atelierul 3D din Easy
+    3Draw” (README-ul arhivei de printat), sfatul filei „Din cvs2” și `de_la.aplicatie` al lucrării trimise;
+  - id-ul rămâne `trenulet`: 18.7.0 instalat peste 18.6.0 îi ia locul (un singur rând în meniu), cu circuitele lui. Rămân și
+    numele tehnice (pachetul, dosarul, scripturile, ramura, canalul) și antetul G-code-ului (amprentele v18);
+  - manualul (ro, en) spune Easy 3Draw; pachetul 18.7.0: 417 705 octeți, 15 fișiere; dicționarul englez: 1 147 de texte, 0 fără
+    traducere.
+- **Găsit pe drum:**
+  - scutirea lui „Trenuleț” din verificarea românei rămase (dicționarul, pagina în engleză, README-ul englez) rămăsese fără
+    motiv: numele nou n-are diacritice. Am scos-o; otrava F07 (numele vechi, cu diacritice, într-o traducere) arată că plasa
+    prinde acum ce înainte trecea;
+  - proba actualizării pornește de la pachetul de atunci, cu id-ul fixat (`trenulet`): derivat din cel nou, „vechiul” ar fi
+    luat și un id schimbat, iar proba n-ar fi văzut nimic;
+  - un rând din manualul român avea numele vechi rupt pe două rânduri („Planificatorul / Trenuleț”), scăpat de înlocuirea pe
+    rânduri; l-am găsit căutând „Trenuleț” singur.
+- **Porțile:**
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 583, 0 lipsă; dicționarul planificatorului: 1 147, 0 lipsă;
+  - testele unitare: 8 220, 0 eșuate;
+  - build-ul determinist: 252 de fișiere identice; pornirea 101,0 / 110 kB; totalul 474,3 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 334 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+- **Otrăvurile `test/otravuri/3.Tf.py`:** 11 / 11 prinse, fiecare de proba ei:
+  - de e2e: F01–F05 și F11 (o versiune nouă care șterge datele celei vechi: o prinde doar proba nouă a actualizării);
+  - de `trenulet.engleza`: F06–F10.
+
+  Lăsate afară, cu motivul: manualul (numele din text n-are probă; l-am citit după înlocuire) și ce rămâne „trenulet” cu bună
+  știință (îl apără probele de dinainte: amprentele v18, conținutul pachetului).
+- **Ce nu merge încă:**
+  - semnul din bara planificatorului (o șină de lemn) e cel vechi; unul pentru Easy 3Draw cere o schiță;
+  - antetul G-code-ului spune tot „Trenulet - planificatorul de circuite”; se schimbă la cerere, cu amprente noi;
+  - salvarea modelelor în cont (C, D, cu sesiunea principală) și trimiterea la imprimanta 3D (E).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 18:37, din `c7251a3`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor, ale senderului, ale primirii și ale planificatorului (și cea nouă, a actualizării), rulate
+chiar pe canal: 28 / 28. Pachetul (`trenulet-18.7.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de
+test nu s-a atins; ramura nu e împinsă.
 
 ## 2026-11-05 — Felia 3.6f: conectarea prin WiFi, mai ușoară (ADR 0136, acceptat) (Model: Claude Opus 5.5)
 
