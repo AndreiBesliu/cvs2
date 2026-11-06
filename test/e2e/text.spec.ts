@@ -459,11 +459,22 @@ test('textul pe curbă (ADR 0108): clic pe conturul unui cerc R50, „LEMN” ur
   expect(Math.max(...r)).toBeLessThan(50.6);
   expect(Math.min(...r)).toBeGreaterThan(39.4);
 
+  // Dedesubt, cu literele la 150 % înălțime (ADR 0138 §2): vârful majusculelor tăiate (15 mm) tot pe cerc, nu cel de 10 mm.
+  await page.locator('[data-text="inaltime-litere"]').fill('150');
+  await page.click('[data-text="aplica"]');
+  const d3b = await documentSalvat(page, 4) as Doc;
+  expect(d3b.piese[1]!.radacina.text!['proportii']).toEqual({ latime: 100, inaltime: 150 });
+  r = raze(d3b);
+  expect(Math.max(...r)).toBeLessThan(50.6);
+  expect(Math.min(...r)).toBeGreaterThan(34.4);
+  expect(Math.min(...r)).toBeLessThan(35.6);
+  await page.locator('[data-text="inaltime-litere"]').fill('100');
+
   // Pe linie dreaptă: curba pleacă din bloc, textul stă drept din ancoră.
   await page.click('[data-text="drept"]');
   await expect(sectiune.locator('legend')).toHaveText('Pe linie dreaptă (curba rămâne aleasă)');
   await page.click('[data-text="aplica"]');
-  const d4 = await documentSalvat(page, 4) as Doc;
+  const d4 = await documentSalvat(page, 5) as Doc;
   expect(d4.piese[1]!.radacina.text!['curba']).toBeUndefined();
   const ys = (d4.piese[1]!.radacina.copii ?? []).flatMap((g) => (g.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.y)));
   expect(Math.min(...ys)).toBeCloseTo(0, 9);
