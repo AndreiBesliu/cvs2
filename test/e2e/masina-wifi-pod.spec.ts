@@ -6,12 +6,19 @@ import { pornesteControler, type ControlerWebSocket } from './controlerWebSocket
  * `pod`): asistentul (podul verificat în rețeaua lui, rețeaua atelierului cu parolele trimise doar lui, apoi găsit după nume și
  * ținut cu ambele drumuri), „Caută mașina” (după nume; ultimul IP ca rezervă; pașii unui eșec) și „Caută în toată rețeaua”.
  *
- * Browserul rezolvă `esp3d.local` la 127.0.0.1 și refuză pe loc celelalte nume `.local` (regulile lui de rezolvare), iar podul
- * din rețeaua atelierului ascultă pe 8282, portul lui de date: de aceea probele merg pe rând. Căutarea în toată rețeaua merge pe
- * 127.0.0.x, rețeaua conexiunii ținute, cu podul la 127.0.0.47. După multe încercări fără răspuns, browserul întârzie fiecare
+ * Browserul rezolvă `esp3d.local` la R.1 și refuză pe loc celelalte nume `.local` (regulile lui de rezolvare), iar podul din
+ * rețeaua atelierului ascultă pe 8282, portul lui de date: de aceea probele merg pe rând. Căutarea în toată rețeaua merge pe
+ * R.x, rețeaua conexiunii ținute, cu podul la R.47. R e `127.0.0`, sau `CNCVS2_E2E_RETEA` (de exemplu `127.0.1`): fiecare
+ * worktree paralel are rețeaua lui de loopback, deci două suite e2e deodată nu se ciocnesc pe 8282. După multe încercări fără
+ * răspuns, browserul întârzie fiecare
  * WebSocket nou cu 1–5 s (pe proces): legarea de după căutare are timp pe măsură.
  */
-test.use({ locale: 'ro-RO', launchOptions: { args: ['--host-resolver-rules=MAP esp3d.local 127.0.0.1, MAP *.local ~NOTFOUND'] } });
+const RETEA = process.env['CNCVS2_E2E_RETEA'] ?? '127.0.0';
+if (!/^127\.\d{1,3}\.\d{1,3}$/.test(RETEA)) throw new Error(`CNCVS2_E2E_RETEA trebuie să fie 127.a.b, nu „${RETEA}”`);
+/** Podul din rețeaua atelierului (`esp3d.local`) și cel găsit de căutarea în toată rețeaua. */
+const IP_POD = `${RETEA}.1`;
+const IP_GASIT = `${RETEA}.47`;
+test.use({ locale: 'ro-RO', launchOptions: { args: [`--host-resolver-rules=MAP esp3d.local ${IP_POD}, MAP *.local ~NOTFOUND`] } });
 test.describe.configure({ mode: 'serial' });
 
 const pornite: ControlerWebSocket[] = [];
@@ -44,7 +51,7 @@ test('pod nou: verificat în rețeaua lui, rețeaua atelierului cu parolele trim
       retele: [{ ssid: 'Vecin-5G', semnal: 40, protejata: true }, { ssid: 'Atelier COSTEL', semnal: 87, protejata: true }, { ssid: 'Musafiri', semnal: 20, protejata: false }],
       // Podul trece în rețeaua atelierului: acolo răspunde la esp3d.local, pe portul de date, după o repornire de ~1,5 s.
       laAtelier: () => {
-        pornit.atelier ??= new Promise((r) => { setTimeout(() => { void porneste({ port: 8282, pod: { mod: 'STA', ip: '192.168.1.47' } }).then(r); }, 1500); });
+        pornit.atelier ??= new Promise((r) => { setTimeout(() => { void porneste({ port: 8282, gazda: IP_POD, pod: { mod: 'STA', ip: '192.168.1.47' } }).then(r); }, 1500); });
       },
     },
   });
@@ -105,7 +112,7 @@ test('pod nou: verificat în rețeaua lui, rețeaua atelierului cu parolele trim
 
 test('Caută mașina: podul găsit după nume, legat și ținut; ultimul IP, rezerva unui nume care nu se rezolvă; un eșec își spune pașii', async ({ page }) => {
   test.setTimeout(90_000);
-  const b = await porneste({ port: 8282, pod: { mod: 'STA', ip: '192.168.1.47' } });
+  const b = await porneste({ port: 8282, gazda: IP_POD, pod: { mod: 'STA', ip: '192.168.1.47' } });
   await page.goto('/');
   await deschideAlegerea(page);
   await page.locator('[data-masina="wifi-cauta"]').click();
@@ -122,12 +129,12 @@ test('Caută mașina: podul găsit după nume, legat și ținut; ultimul IP, rez
 
   // Numele nu se rezolvă: ultimul IP răspunde; adresa arată pe unde s-a legat.
   await tine(page, [
-    { profil: 'esp3d', adresa: 'pod-absent.local', port: 8282, drum: 'atelier', retea: 'Atelier', ultimIp: '127.0.0.1' },
+    { profil: 'esp3d', adresa: 'pod-absent.local', port: 8282, drum: 'atelier', retea: 'Atelier', ultimIp: IP_POD },
     { profil: 'esp3d', adresa: 'nimeni.local', port: 8282, drum: 'atelier', retea: 'Atelier', ultimIp: null },
   ]);
   await page.locator('[data-masina="conecteaza-wifi"]').click();
   await page.getByTestId('masina-wifi-tinute').locator('li').first().locator('[data-masina="wifi-tinuta"]').click();
-  await expect(page.getByTestId('masina-conexiune')).toHaveText('Conectat prin WiFi (127.0.0.1:8282)', { timeout: 30_000 });
+  await expect(page.getByTestId('masina-conexiune')).toHaveText(`Conectat prin WiFi (${IP_POD}:8282)`, { timeout: 30_000 });
   await page.locator('[data-masina="deconecteaza"]').click();
 
   // Nici numele, nici un IP: ce s-a încercat și ce verifici, cu pagina controlerului.
@@ -147,19 +154,19 @@ test('Caută mașina: podul găsit după nume, legat și ținut; ultimul IP, rez
 
 test('Caută în toată rețeaua: rețeaua conexiunii ținute, gazdă cu gazdă, până la prima mașină găsită', async ({ page }) => {
   test.setTimeout(120_000);
-  const b = await porneste({ port: 8282, gazda: '127.0.0.47', pod: { mod: 'STA', ip: '127.0.0.47' } });
+  const b = await porneste({ port: 8282, gazda: IP_GASIT, pod: { mod: 'STA', ip: IP_GASIT } });
   await page.goto('/');
-  await tine(page, [{ profil: 'esp3d', adresa: '127.0.0.1', port: 8282, drum: 'adresa', retea: null, ultimIp: null }]);
+  await tine(page, [{ profil: 'esp3d', adresa: IP_POD, port: 8282, drum: 'adresa', retea: null, ultimIp: null }]);
   await deschideAlegerea(page);
   await page.locator('[data-masina="wifi-cauta"]').click();
   await page.locator('[data-masina="wifi-scaneaza"]').click();
   const s = page.getByTestId('masina-wifi-scanare');
   await expect(s).toHaveAttribute('data-gata', 'da', { timeout: 90_000 });
-  const rand = s.locator('[data-gazda="127.0.0.47"]');
-  await expect(rand).toContainText('Răspunde: pod ESP3D 3.0.2, ținta grbl · IP 127.0.0.47');
+  const rand = s.locator(`[data-gazda="${IP_GASIT}"]`);
+  await expect(rand).toContainText(`Răspunde: pod ESP3D 3.0.2, ținta grbl · IP ${IP_GASIT}`);
   expect(b.comenziEsp()).toEqual(['[ESP800] json\n']);
   await rand.locator('[data-masina="wifi-gasita"]').click();
   // Proba și transportul, fiecare cu întârzierea browserului (până la 5 s) după încercările căutării.
-  await expect(page.getByTestId('masina-conexiune')).toHaveText('Conectat prin WiFi (127.0.0.47:8282)', { timeout: 30_000 });
-  expect((await tinute(page)).conexiuni.map((c) => [c.adresa, c.drum])).toEqual([['127.0.0.47', 'atelier'], ['127.0.0.1', 'adresa']]);
+  await expect(page.getByTestId('masina-conexiune')).toHaveText(`Conectat prin WiFi (${IP_GASIT}:8282)`, { timeout: 30_000 });
+  expect((await tinute(page)).conexiuni.map((c) => [c.adresa, c.drum])).toEqual([[IP_GASIT, 'atelier'], [IP_POD, 'adresa']]);
 });
