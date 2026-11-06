@@ -15,7 +15,9 @@ complet (Linux, mai lent), proba a apăsat „Circuite” chiar după „pornit�
 
 A doua cauză, găsită la reparare: starea ferestrei rămâne cea de dinainte la redeschidere (și la o repornire, ADR 0165).
 Efectul care pornește cadrul o pune pe „se pornește” abia după prima randare, deci un cadru întreg, fereastra nouă arată
-„pornit” al celei închise, fără notă: o probă care așteaptă „pornit” trece pe loc, înaintea cadrului nou.
+„pornit” al celei închise, fără notă: o probă care așteaptă „pornit” trece pe loc, înaintea cadrului nou. Măsurătorile de
+mai sus le amestecau pe amândouă (de patru ori, cadrul nou nici nu era pus); le desparte câte o otravă (`test/otravuri/3.Xf.py`:
+fiecare cauză, singură, face proba nouă să cadă).
 
 ## Decizia
 
