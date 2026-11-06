@@ -712,6 +712,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **textul, restul pragului, pe linia principală** („Ok, o sa le raspund, aici poti sa continui”, cât liniile
+  paralele își așteaptă răspunsurile): felia următoare e 7.9↑ (apoi 7.9↑b), cu ADR 0138 propus (cercetarea, schița, cinci
+  întrebări): mărimea în mm, pt sau in, lățimea și înălțimea în procente, crenarea pornită sau oprită, mânerele care păstrează
+  textul, spațierea literelor alese. Documentul rămâne v19 (schema nouă e a incrustațiilor); codul vine după răspunsuri.
 - 06.11.2026: **două linii paralele, în worktree-uri** („vreau sa deschidem worktrees pentru alte etape sau felii”, apoi
   „Inlays, stage 12 (Recommended),Vector trim/convert, stage 10”): incrustațiile (felia 12.1↑, `wip/12.1-incrustatii`,
   `C:\Users\besli\cncvs2-lucru\incrustatii`, e2e pe 4174 și pe rețeaua de loopback `127.0.1`, ADR-urile 0170–0179,
