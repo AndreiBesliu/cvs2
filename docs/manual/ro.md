@@ -123,7 +123,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -136,8 +136,15 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
 - **fontul**: cele **incluse** (Roboto, Droid Serif și Relief SingleLine, un font cu o singură linie, de gravură),
   **Fonturile mele** (încărcate de tine sau descărcate din Google Fonts) și, după ce permiți accesul, cele **ale
   sistemului**; sub câmpuri se vede textul, cum se va tăia;
-- **înălțimea majusculelor**, în mm: la „20 mm”, H, N sau E au exact 20 mm (literele rotunde, ca O sau C, trec puțin peste
-  linie, ca în orice font);
+- **înălțimea majusculelor**, cu **unitatea mărimii** alături: în mm (la „20 mm”, H, N sau E au exact 20 mm; literele
+  rotunde, ca O sau C, trec puțin peste linie, ca în orice font), în inch (tot majusculele: 1 in sunt 25,4 mm) sau în pt,
+  unde numărul e **mărimea fontului**, ca în Word sau CorelDRAW (72 pt = un em de 1 inch; sub câmp, panoul spune ce
+  majuscule dă, de exemplu 18,06 mm cu Roboto). Schimbarea unității nu schimbă textul: numărul se convertește;
+- **lățimea literelor** și **înălțimea literelor**, în procente (100 %: literele fontului): la 70 % lățime, textul
+  devine îngust, cu aceleași majuscule; la altă înălțime, sub câmpuri apar majusculele tăiate, de exemplu 30 mm la 20 mm
+  și 150 %;
+- **crenarea fontului**: pornită, perechile ca „AV” sau „Te” se strâng după tabelul fontului; oprită, fiecare literă
+  stă la avansul ei (textul vertical n-o folosește);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
   **alinierea** față de ancoră;
 - **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, **Vertical**, literele una
@@ -151,6 +158,11 @@ taie din linii și arce, la cel mult 0,001 mm de forma exactă. **Cursiv** încl
 propune 12°; negativă, spre stânga; cel mult 45°), fiecare literă față de linia ei de bază, exact. Cu amândouă, literele se
 înclină întâi și se îngroașă apoi, deci trăsăturile se îngroașă la fel în toate direcțiile. Textul își ține aldinul și
 cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
+
+Lățimea și înălțimea literelor scalează literele înaintea oricărui alt pas: spațiul dintre litere, aldinul și distanța
+de curbă rămân în mm, iar cursivul înclină litera deja scalată. Trasă cu mânerele doar în lățime (sau doar în înălțime),
+un text drept fără aldin rămâne text: i se schimbă lățimea literelor (și mărimea, când tragi în înălțime). Un text pe o
+curbă devine vectori, iar unul aldin nu se scalează așa (literele lui au arce); scalarea uniformă le crește pe toate.
 
 **Vertical** pune literele una sub alta, drepte: fiecare rând devine o coloană, iar coloanele merg de la stânga la dreapta,
 la **distanța dintre coloane** (ca multiplu al rândului fontului). Fiecare literă stă centrată pe axa coloanei, iar între două

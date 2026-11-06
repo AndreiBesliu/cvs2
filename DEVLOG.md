@@ -5987,6 +5987,28 @@ test nu s-a atins; ramura nu e împinsă.
 - **Publicat pe test:** `33fd695` (42181200327; prima încercare, 42180847182, a căzut la eliberarea versiunii de Hosting, cu HTTP 500 de la Firebase, și a mers la a doua, fără nicio schimbare). Verificat pe <https://cncvectorstudio-test.web.app>: versiunea `33fd695d81fb`, alegerea „Conectează (WiFi)”, pasul 1 al asistentului (în română) și capitolul „Mașina” din manual, cu butoanele noi; fără căutări în rețeaua owner-ului.
 - **Rămâne:** podul real în rețeaua atelierului, configurat din asistent (3.6e, cu placa owner-ului).
 
+## 2026-11-06 — Unirea liniei pluginului (Trenuleț, „Easy 3Draw”) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, merge it” (la „Merge wip/trenulet (43 commits, with the plugin's sources) into main and push it to the public repo?”, după încheierea liniei pe 05.11: „Aici nu mai facem nimic, am terminat si vom face unirea cu main”).
+**Started:** 06.11, 10:47. **Completed:** 06.11, 13:31.
+
+- **Unirea** (`f6150ff`): `wip/trenulet` (vârful `6634ea6`, 43 de commit-uri, feliile 3.S, 3.Xa–3.Xe, 3.Ta–3.Tf, ADR 0126–0129 și 0160–0167) peste `main` (59 de commit-uri de la baza comună `75e9b47`, cu 3.6f). Înainte, verificarea pentru repo-ul public: nicio cheie sau parolă în ce aduce ramura, nimic din `docs/faza0/`; bibliotecile din `vendor/` au licențele lângă ele (three.js r128, MIT; earcut, ISC).
+- **Conflictele** (8 fișiere, după nota „Gata de unire” a sesiunii liniei): `PanouMasina.tsx` (importurile ambelor părți), `App.tsx` (fereastra Mașina din 13.A↑b, adusă în fundal, cu props-urile noi ale primirii și ale modalului; extensiile la cerere), `manual.test.ts` (77 de uși pe `main`, 73 pe ramură, comune până la 71: 79; controalele ferestrei Mașina ale ambelor părți, cu sursele lor), apoi documentele: fișa (coada owner-ului fără decizia unirii; placa de probă a primirii pe adresa principală; jurnalul cu ambele părți), `docs/otravuri.md`, CLAUDE.md, DEVLOG-ul (intrările ambelor părți, în ordinea zilei și a orei), traducerile (reuniunea, apoi unealta: 618, 0 lipsă).
+- **Porțile** pe arborele unit: unitarele 8441, 0 căzute; e2e 350 / 350; emulatoarele 81 / 81; traducerile 618, 0 lipsă. Mărimile: pornirea 101,4 (cu ușa 104,9 / 110 kB), /admin 105,4 / 200, totalul 503,1 kB, peste plafonul de 500: de aici ADR 0137 (plafonul 550 kB, decizia owner-ului: „Yes, 550 kB”), în `d2fd3ab`.
+- **CI:** rapid (`42200695411`) și complet (`42200711569`, 12:11–12:53) verzi pe `d2fd3ab`; apoi rapid verde pe `bf91fb1` (`42205952969`) și pe `61c75a1` (`42209168247`), două commit-uri doar cu probe e2e, pentru worktree-urile paralele (intrarea următoare).
+- **Publicat pe test:** `61c75a1`, prin workflow-ul `publica` (rularea `42210160623`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `61c75a145b5b`, cu bucățile gazdei extensiilor în harta importurilor (Extensii, Instalare, DialogLucrare) și CSP-ul liniei (`blob:` în `script-src`, `https:` și `ws:` în `connect-src`); roadmap-ul are 3.6f, 3.Tf („Easy 3Draw”) și ADR 0137.
+- **Rămâne:** curățenia worktree-ului `trenulet` (întâi joncțiunile `node_modules`, apoi worktree-ul) și ștergerea ramurii locale, la cuvântul owner-ului; ce a rămas din linie devine felii noi, din `main`.
+
+## 2026-11-06 — Două linii paralele: incrustațiile (etapa 12) și tăierea vectorilor (etapa 10) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi, la alegerea liniilor: „Inlays, stage 12 (Recommended),Vector trim/convert, stage 10”.
+**Started:** 06.11, 12:46. **Completed:** 06.11, 13:31.
+
+- **Incrustațiile** (felia 12.1↑, ramura `wip/12.1-incrustatii`): sesiunea `incrustatii` pornită, cu worktree-ul ei în afara lui Drive (`C:\Users\besli\cncvs2-lucru\incrustatii`), e2e-ul pe portul 4174 și pe rețeaua de loopback `127.0.1`, ADR-urile 0170–0179, canalul `incrustatii`. E singura linie care schimbă acum schema documentului (v20). Prima tură: cercetarea, ADR-ul propus cu întrebările și schița.
+- **Tăierea și conversia vectorilor** (felia 10.3↑, ramura `wip/10.3-taiere-conversie`): sesiunea pornită de owner din cardul aplicației (tura care o propusese venise dintr-un eveniment de fundal, iar aplicația pornește singură o sesiune doar dintr-un mesaj al owner-ului), cu `C:\Users\besli\cncvs2-lucru\taiere`, portul 4175, `127.0.2`, ADR-urile 0180–0189, canalul `taiere`, fără schemă nouă.
+- **E2e-ul, pregătit pentru suite paralele:** proba podului WiFi ia rețeaua de loopback din `CNCVS2_E2E_RETEA` (`bf91fb1`; trece pe 127.0.0 și pe 127.0.5), iar proba raportorului ia adresa din `baseURL`, nu 4173 scris în probă (`61c75a1`; căzută pe portul 4179 înainte, 11 / 11 după, pe 4179 și pe 4173). Sesiunii incrustațiilor i s-au trimis amândouă precizările (portul în trei locuri din `.tmp/pw.config.ts`, proba raportorului reparată pe `main`); a tăierii le are în brief.
+- **Linia principală** continuă de la ADR 0138; unirea fiecărei linii în `main`, la cuvântul owner-ului.
+
 ## 2026-11-06 — Felia 10.3↑ pornită: tăierea și conversia vectorilor (ADR 0180, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi „Vector trim/convert, stage 10” (owner-ul, în

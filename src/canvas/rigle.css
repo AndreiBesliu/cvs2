@@ -269,6 +269,20 @@
   border-radius: var(--r-1);
 }
 
+/* Mărimea textului cu unitatea ei (ADR 0138 §1): eticheta, câmpul și lista unităților, pe același rând. */
+.camp-retea.camp-marime {
+  grid-template-columns: 1fr 5rem 3.75rem;
+}
+
+.camp-marime select {
+  min-height: 30px;
+  font: inherit;
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
 .bifa-retea {
   display: flex;
   align-items: center;

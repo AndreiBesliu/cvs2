@@ -127,7 +127,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -140,8 +140,16 @@ In the tool's panel you type the text (Enter: new line) and choose:
 - the **font**: the **included** ones (Roboto, Droid Serif and Relief SingleLine, a single-line engraving font), **My
   fonts** (loaded by you or downloaded from Google Fonts) and, once you allow access, the **system fonts**; below the fields
   you see the text as it will be cut;
-- the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
-  the line, as in any font);
+- the **capital height**, with the **size unit** beside it: in mm (at “20 mm”, H, N or E are exactly 20 mm tall; round
+  letters, like O or C, go slightly over the line, as in any font), in inches (still the capitals: 1 in is 25.4 mm) or
+  in pt, where the number is the **font size**, as in Word or CorelDRAW (72 pt = a 1 inch em; below the field, the panel
+  says which capitals it gives, for example 18.06 mm in Roboto). Changing the unit doesn’t change the text: the number is
+  converted;
+- the **letter width** and the **letter height**, in percent (100 %: the font’s letters): at 70 % width the text gets
+  narrow, with the same capitals; at another height, the cut capitals show below the fields, for example 30 mm at 20 mm
+  and 150 %;
+- **font kerning**: on, pairs like “AV” or “Te” close up after the font’s table; off, each letter sits at its own
+  advance (vertical text doesn’t use it);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
   and the **alignment** to the anchor;
 - **Bold** and **Italic**, for any font, even without its own bold or slanted faces, **Vertical**, letters one under
@@ -155,6 +163,12 @@ are cut from lines and arcs, within 0.001 mm of the exact shape. **Italic** slan
 **Slant** (°; it suggests 12°; negative, to the left; at most 45°), each letter about its own baseline, exactly. With both,
 the letters are slanted first and thickened after, so the strokes thicken the same in every direction. The text keeps its
 bold and italic: it reopens with them, and uniform scaling grows the thickening too.
+
+The letter width and height scale the letters before any other step: the space between letters, the bold and the
+distance from a curve stay in mm, and italic slants the already scaled letter. Dragged with the handles in width only (or
+in height only), a straight text without bold stays text: its letter width changes (and its size, when you drag in
+height). A text on a curve becomes vectors, and a bold one doesn’t scale that way (its letters have arcs); uniform
+scaling grows them all.
 
 **Vertical** puts the letters one under another, upright: each line becomes a column, and the columns go from left to
 right, at the **distance between columns** (as a multiple of the font's line). Each letter is centred on the column's axis,

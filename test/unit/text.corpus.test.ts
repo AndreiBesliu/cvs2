@@ -99,7 +99,9 @@ for (const [nume, a] of Object.entries(ASTEPTAT)) {
 
 for (const [nume, a] of Object.entries(PE_CURBA)) {
   test(`corpusul textului pe curbă: ${nume} (${a.font}), față de oracol`, () => {
-    const r = aseazaPeCurba(aseazaText(font(a.font), a.parametri), a.curba, a.parametri.inaltime, a.parametri.aliniere);
+    // Pe curbă, textul stă după majuscula tăiată (cu proporțiile literelor, ADR 0138 §2).
+    const drept = aseazaText(font(a.font), a.parametri);
+    const r = aseazaPeCurba(drept, a.curba, drept.majuscula, a.parametri.aliniere);
     assert.ok(r, 'curba are lungime');
     aceleasiGlife(r.glife, a.glife, a.tol);
   });

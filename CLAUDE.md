@@ -508,6 +508,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   worktree-ul `trenulet`): gazda extensiilor, Planificatorul Trenuleț ca extensie, numit acum **Easy 3Draw**, primirea
   lucrărilor, senderul și formele prin `HostApi`. **Plafonul total 550 kB (ADR 0137, decizia owner-ului).** **Pornirea 101,4
   (cu ușa 104,9 / 110 kB), totalul 503,1 / 550, /admin 105,4 / 200.**
+  **Mărimea în pt și inch, proporțiile literelor, crenarea (ADR 0138, felia 7.9↑, adusă din etapa 7)** gata pe 06.11, cu
+  recomandările („Yes, 1a–5a”): lângă mărime, unitatea (mm și in măsoară majuscula; pt e mărimea fontului, iar panoul spune
+  majusculele care rezultă; conversiile în `src/text/marime.ts`); **Lățimea literelor** și **Înălțimea literelor** (%),
+  factorii hărții literelor din `aseazaText`, înaintea cursivului (spațierea și aldinul rămân în mm; rândurile urmează
+  majuscula tăiată, coloanele textului vertical lățimea); **Crenarea fontului** pornită sau oprită. Blocul ține `unitate`,
+  `proportii` și `crenare: false` (fără schemă nouă); fără ele, textul se așază bit cu bit ca înainte. Mânerele: o scalare
+  neuniformă păstrează un text drept fără aldin (`blocScalat`, prin lățimea literelor); pe o curbă, vectori; aldin, refuzat
+  (arce). **Un text scris în pt sau inch se arată rotunjit, cu valoarea exactă ținută lângă textul din câmp** (un „Aplică”
+  fără nicio schimbare n-o rotunjește). **Corpusul proporțiilor e Python** (`CAZURI_PROPORTII` în
+  `test/oracles-py/text_corpus.py`, `test/fixtures/text/proportii.json`): un caz nou = rândul acolo, apoi fixtura regenerată
+  și comisă. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 504,5 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -712,6 +723,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **textul, restul pragului, pe linia principală** („Ok, o sa le raspund, aici poti sa continui”, cât liniile
+  paralele își așteaptă răspunsurile): feliile 7.9↑ și 7.9↑b, cu ADR 0138 (cercetarea, schița, cinci întrebări), acceptat cu
+  recomandările („Yes, 1a–5a”): pt e mărimea fontului, mm și inch rămân majuscula; lățimea și înălțimea literelor în procente;
+  mânerele păstrează un text drept fără aldin; spațierea literelor alese, din panou, în mm. Documentul rămâne v19 (schema nouă
+  e a incrustațiilor).
+- 06.11.2026: **două linii paralele, în worktree-uri** („vreau sa deschidem worktrees pentru alte etape sau felii”, apoi
+  „Inlays, stage 12 (Recommended),Vector trim/convert, stage 10”): incrustațiile (felia 12.1↑, `wip/12.1-incrustatii`,
+  `C:\Users\besli\cncvs2-lucru\incrustatii`, e2e pe 4174 și pe rețeaua de loopback `127.0.1`, ADR-urile 0170–0179,
+  canalul `incrustatii`), singura linie care schimbă acum schema documentului (v20), și tăierea și conversia vectorilor
+  (felia 10.3↑, `wip/10.3-taiere-conversie`, `C:\Users\besli\cncvs2-lucru\taiere`, 4175, `127.0.2`, ADR-urile
+  0180–0189, canalul `taiere`), fără schemă nouă. Linia principală continuă de la ADR 0138. **Un worktree își scrie portul
+  e2e în trei locuri din `.tmp/pw.config.ts`** (comanda, `webServer.url`, `use.baseURL`; `playwright.config.ts` rămâne pe
+  4173) **și rulează e2e-ul cu `CNCVS2_E2E_RETEA`** (podul fals de pe 8282, pe rețeaua lui de loopback).
 - 06.11.2026: **plafonul total 550 kB** („Yes, 550 kB”, la „Raise the total bundle cap to 550 kB (new ADR), keeping startup
   at 110 kB?”): după unirea liniei pluginului, totalul era 503,1 / 500 kB; gazda extensiilor (~15 kB) trebuie să meargă și
   offline, deci rămâne în precache. ADR 0137; pornirea rămâne 110 kB.

@@ -2,9 +2,10 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type CSSProp
 import { createPortal } from 'react-dom';
 import { cuMesaje, t } from '../i18n/t.ts';
 import type { Contur } from '../geom/conturBaza.ts';
-import { aldinMaxim, LIMITE_TEXT, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
+import { aldinMaxim, LIMITE_TEXT, majusculaBloc, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
 import { FONT_IMPLICIT, FONTURI_INCLUSE } from '../text/fonturi.ts';
 import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
+import { majusculaDinMarime, marimeDinMajuscula, raportMajuscula, rotunjesteMarime, UNITATI_MARIME, type UnitateMarime } from '../text/marime.ts';
 import type { AliniereText, CasetaText } from '../text/asezare.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
@@ -46,7 +47,22 @@ type Formular = {
   readonly textVertical: boolean;
   /** Încadrarea în casetă (ADR 0142): fără, limitat de casetă sau scalat la ea, cu lățimea și înălțimea (mm). */
   readonly caseta: FelCaseta; readonly casetaLatime: string; readonly casetaInaltime: string;
+  /** Unitatea mărimii (ADR 0138 §1): mm și in măsoară majuscula, pt e mărimea fontului. */
+  readonly unitate: UnitateMarime;
+  /** Proporțiile literelor (ADR 0138 §2), în procente, și crenarea fontului (§3). */
+  readonly latime: string; readonly inaltimeLitere: string; readonly crenare: boolean;
 };
+
+/**
+ * Mărimea arătată în câmp după o conversie (un text ales, o altă unitate), cu valoarea ei exactă în mm: cât câmpul are chiar
+ * textul acela, se folosește valoarea exactă, ca un „Aplică” fără nicio schimbare să n-o rotunjească (ADR 0138 §1).
+ */
+type MarimeExacta = { readonly text: string; readonly unitate: UnitateMarime; readonly mm: number };
+
+/** Mărimea `mm` ca text de arătat în `unitate`: în mm exact (ca înainte), în pt și in rotunjită (ADR 0138 §1). */
+function textMarime(mm: number, unitate: UnitateMarime, raport: number): string {
+  return unitate === 'mm' ? textNumar(mm) : textNumar(rotunjesteMarime(marimeDinMajuscula(mm, unitate, raport), unitate));
+}
 
 type FelCaseta = 'fara' | CasetaText['fel'];
 const FELURI_CASETA: readonly FelCaseta[] = ['fara', 'limita', 'scala'];
@@ -59,10 +75,9 @@ const ALINIERI: readonly AliniereText[] = ['stanga', 'centru', 'dreapta'];
 /** Alinierea unui text vertical (ADR 0141), față de ancoră: coloana pornește din ea în jos, stă la mijloc sau se termină în ea. */
 const ALINIERI_VERTICALE = { stanga: 'sus', centru: 'mijloc', dreapta: 'jos' } as const;
 
-/** Îngroșarea propusă când se pornește aldinul (ADR 0123): 3 % din înălțimea majusculei, la sutimea de mm. */
-function grosimeImplicita(inaltime: string): string {
-  const h = citesteNumar(inaltime);
-  return textNumar(h === null ? 0.6 : Math.max(LIMITE_TEXT.aldinMinim, Math.round(h * 3) / 100));
+/** Îngroșarea propusă când se pornește aldinul (ADR 0123): 3 % din majuscula tăiată (mm), la sutimea de mm. */
+function grosimeImplicita(majuscula: number | null): string {
+  return textNumar(majuscula === null ? 0.6 : Math.max(LIMITE_TEXT.aldinMinim, Math.round(majuscula * 3) / 100));
 }
 
 /** Alegerile de data trecută (fontul, mărimile, alinierea), fără text: ținute în browser, ca la celelalte panouri. */
@@ -71,6 +86,7 @@ function formularSalvat(): Formular {
     continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
     pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
     aldin: false, grosime: '', cursiv: false, unghi: '12', textVertical: false, caseta: 'fara', casetaLatime: '100', casetaInaltime: '50',
+    unitate: 'mm', latime: '100', inaltimeLitere: '100', crenare: true,
   };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
@@ -87,6 +103,8 @@ function formularSalvat(): Formular {
       textVertical: s.textVertical === true,
       caseta: FELURI_CASETA.find((x) => x === s.caseta) ?? baza.caseta,
       casetaLatime: sir(s.casetaLatime, baza.casetaLatime), casetaInaltime: sir(s.casetaInaltime, baza.casetaInaltime),
+      unitate: UNITATI_MARIME.find((u) => u === s.unitate) ?? baza.unitate,
+      latime: sir(s.latime, baza.latime), inaltimeLitere: sir(s.inaltimeLitere, baza.inaltimeLitere), crenare: s.crenare !== false,
     };
   } catch {
     return baza;
@@ -100,6 +118,7 @@ function salveaza(f: Formular): void {
       pozitie: f.pozitie, distanta: f.distanta, invers: f.invers, verticala: f.verticala, intinsa: f.intinsa,
       aldin: f.aldin, grosime: f.grosime, cursiv: f.cursiv, unghi: f.unghi, textVertical: f.textVertical,
       caseta: f.caseta, casetaLatime: f.casetaLatime, casetaInaltime: f.casetaInaltime,
+      unitate: f.unitate, latime: f.latime, inaltimeLitere: f.inaltimeLitere, crenare: f.crenare,
     }));
   } catch {
     // Fără stocare (fereastră privată): alegerile țin cât pagina.
@@ -111,15 +130,25 @@ function salveaza(f: Formular): void {
  * cheia câmpului greșit.
  */
 function parametri(
-  f: Formular, numeFont: string | null, curba: CurbaAleasa | null, linie: boolean,
-): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' | 'caseta' {
+  f: Formular, numeFont: string | null, curba: CurbaAleasa | null, linie: boolean, raport: number | null, exacta: MarimeExacta | null,
+): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'proportii' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' | 'caseta' | 'asteapta' {
   if (f.continut.trim() === '' || f.continut.length > LIMITE_TEXT.caractere) return 'continut';
+  // În pt, majuscula depinde de font (ADR 0138 §1): până vine fontul, nu e nimic de arătat (și nici de spus).
+  if (f.unitate === 'pt' && raport === null) return 'asteapta';
   // Scalat la casetă (ADR 0142), înălțimea o dă caseta: câmpul e oprit, iar valoarea lui doar ține locul.
   const scala = f.caseta === 'scala';
   const scrisa = citesteNumar(f.inaltime);
-  const buna = scrisa !== null && scrisa >= LIMITE_TEXT.inaltimeMinima && scrisa <= LIMITE_TEXT.inaltimeMaxima;
+  // Majuscula în mm, oricare ar fi unitatea: textul arătat după o conversie își păstrează valoarea exactă.
+  const mm = scrisa === null ? null
+    : exacta && exacta.text === f.inaltime && exacta.unitate === f.unitate ? exacta.mm : majusculaDinMarime(scrisa, f.unitate, raport ?? 1);
+  const buna = mm !== null && mm >= LIMITE_TEXT.inaltimeMinima && mm <= LIMITE_TEXT.inaltimeMaxima;
   if (!buna && !scala) return 'inaltime';
-  const inaltime = buna ? scrisa : 20;
+  const inaltime = buna ? mm : 20;
+  // Proporțiile literelor (ADR 0138 §2), în procente; 100 și 100 nu intră în bloc.
+  const latime = citesteNumar(f.latime), inaltimeLitere = citesteNumar(f.inaltimeLitere);
+  const procent = (x: number | null): x is number => x !== null && x >= LIMITE_TEXT.procentMinim && x <= LIMITE_TEXT.procentMaxim;
+  if (!procent(latime) || !procent(inaltimeLitere)) return 'proportii';
+  const proportii = latime === 100 && inaltimeLitere === 100 ? undefined : { latime, inaltime: inaltimeLitere };
   const spatiere = citesteNumar(f.spatiere, true);
   if (spatiere === null || Math.abs(spatiere) > LIMITE_TEXT.spatiere) return 'spatiere';
   const interlinie = citesteNumar(f.interlinie);
@@ -128,8 +157,9 @@ function parametri(
   // îngroașă (ADR 0140): bifa lui e oprită, iar blocul nu-l primește.
   const gros = f.aldin && !linie;
   const aldin = gros ? citesteNumar(f.grosime) : 0;
-  // Scalat la casetă, înălțimea care încape e de cel puțin cinci ori aldinul (așezarea o caută așa).
-  if (aldin === null || (gros && (aldin < LIMITE_TEXT.aldinMinim || (!scala && aldin > aldinMaxim(inaltime))))) return 'aldin';
+  // Scalat la casetă, înălțimea care încape e de cel puțin cinci ori aldinul (așezarea o caută așa). Aldinul se măsoară pe
+  // majuscula tăiată (ADR 0138 §2).
+  if (aldin === null || (gros && (aldin < LIMITE_TEXT.aldinMinim || (!scala && aldin > aldinMaxim(majusculaBloc({ inaltime, proportii })))))) return 'aldin';
   const cursiv = f.cursiv ? citesteNumar(f.unghi, true) : 0;
   if (cursiv === null || Math.abs(cursiv) > LIMITE_TEXT.cursiv) return 'cursiv';
   let pe: CurbaText | null = null;
@@ -156,8 +186,13 @@ function parametri(
     ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}),
     ...(aldin > 0 ? { aldin } : {}), ...(cursiv !== 0 ? { cursiv } : {}), ...(f.textVertical ? { vertical: true as const } : {}),
     ...(caseta ? { caseta } : {}),
+    // ADR 0138: unitatea (doar pentru panou), proporțiile și crenarea oprită; lipsă, ca înainte.
+    ...(f.unitate !== 'mm' ? { unitate: f.unitate } : {}), ...(proportii ? { proportii } : {}), ...(f.crenare ? {} : { crenare: false as const }),
   };
 }
+
+/** Un număr la sutime, cu virgulă: ce arată notele panoului (majusculele, caseta). */
+const douaZecimale = (x: number): string => textNumar(Math.round(x * 100) / 100, true);
 
 /** Curba unui bloc salvat, ca un contur în sistemul piesei. */
 const curbaDinBloc = (c: CurbaText): CurbaAleasa => ({ contur: { inchis: c.inchis, varfuri: c.varfuri }, s: c.s });
@@ -191,6 +226,9 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   const [descarc, setDescarc] = useState(false);
   // „Pe linie dreaptă”: textul nu urmează curba (cea aleasă acum sau a textului editat), deși are una.
   const [drept, setDrept] = useState(false);
+  // Mărimea arătată după o conversie, cu valoarea ei exactă (ADR 0138 §1); majuscula unui text ales în pt, până vine fontul.
+  const [exacta, setExacta] = useState<MarimeExacta | null>(null);
+  const [asteaptaMarime, setAsteaptaMarime] = useState<number | null>(null);
   const scrie = (f: Formular): void => { setForm(f); salveaza(f); setMotiv(null); };
 
   useEffect(() => {
@@ -210,9 +248,20 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   useEffect(() => {
     if (!editat) return;
     const b = editat.bloc;
+    // Mărimea, în unitatea în care a fost scrisă (ADR 0138 §1); limitat de casetă, înălțimea cerută. În pt, după fontul
+    // textului: până vine, câmpul rămâne gol, iar majuscula așteaptă (efectul de mai jos).
+    const unitate = b.unitate ?? 'mm';
+    const mm = b.caseta?.fel === 'limita' ? b.caseta.ceruta : b.inaltime;
+    const adus = fonturi.get(b.font);
+    const raportAdus = adus?.ok ? raportMajuscula(adus.font) : null;
+    const marime = unitate === 'pt' && raportAdus === null ? null : textMarime(mm, unitate, raportAdus ?? 1);
+    setExacta(marime === null ? null : { text: marime, unitate, mm });
+    setAsteaptaMarime(marime === null ? mm : null);
     setForm((f) => ({
-      ...f, continut: b.continut, font: b.font, inaltime: textNumar(b.inaltime), spatiere: textNumar(b.spatiere),
+      ...f, continut: b.continut, font: b.font, inaltime: marime ?? '', unitate, spatiere: textNumar(b.spatiere),
       interlinie: textNumar(b.interlinie), aliniere: b.aliniere,
+      // Proporțiile și crenarea (ADR 0138 §2–3); un text fără ele le pune la loc: 100 %, crenarea pornită.
+      latime: textNumar(b.proportii?.latime ?? 100), inaltimeLitere: textNumar(b.proportii?.inaltime ?? 100), crenare: b.crenare !== false,
       ...(b.curba ? {
         pozitie: b.curba.pozitie, distanta: textNumar(b.curba.distanta), invers: b.curba.invers, verticala: b.curba.orientare === 'verticala',
         intinsa: b.curba.intinsa,
@@ -225,7 +274,6 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       // Caseta (ADR 0142): limitat de ea, câmpul înălțimii ține înălțimea cerută; fără casetă, ea se oprește.
       caseta: b.caseta?.fel ?? 'fara',
       ...(b.caseta ? { casetaLatime: textNumar(b.caseta.latime), casetaInaltime: textNumar(b.caseta.inaltime) } : {}),
-      ...(b.caseta?.fel === 'limita' ? { inaltime: textNumar(b.caseta.ceruta) } : {}),
     }));
     setMotiv(null);
     setDrept(false);
@@ -249,6 +297,16 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   // Un text vertical (ADR 0141) sau în casetă (ADR 0142) stă drept: nu urmează curba, chiar dacă ancora e pe una.
   const curbaActiva = drept || form.textVertical || form.caseta !== 'fara' ? null : curbaPosibila;
   const rezFont = fonturi.get(form.font);
+  // Raportul majusculei fontului ales (ADR 0138 §1): pt are nevoie de el; null cât fontul nu e adus.
+  const raport = rezFont?.ok ? raportMajuscula(rezFont.font) : null;
+  // Mărimea în pt a unui text ales, când îi vine fontul.
+  useEffect(() => {
+    if (asteaptaMarime === null || raport === null) return;
+    const marime = textMarime(asteaptaMarime, 'pt', raport);
+    setForm((f) => ({ ...f, inaltime: marime }));
+    setExacta({ text: marime, unitate: 'pt', mm: asteaptaMarime });
+    setAsteaptaMarime(null);
+  }, [asteaptaMarime, raport]);
   useEffect(() => {
     if (modul === null || modul === 'eroare' || fonturi.has(form.font)) return;
     let viu = true;
@@ -273,14 +331,14 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   };
   // Un font cu o singură linie (ADR 0140): trăsături de gravat, fără aldin.
   const linieFont = rezFont?.ok === true && rezFont.font.linie;
-  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font), curbaActiva, linieFont);
+  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font), curbaActiva, linieFont, raport, exacta);
   const asezat = useMemo(() => {
     if (modul === null || modul === 'eroare' || !rezFont?.ok || typeof p === 'string') return null;
     const dreptul = modul.aseazaText(rezFont.font, p);
     if (!p.curba) return dreptul;
     const c = p.curba;
     return modul.aseazaPeCurba(dreptul, { contur: { inchis: c.inchis, varfuri: c.varfuri }, s: c.s, pozitie: c.pozitie, distanta: c.distanta,
-      invers: c.invers, orientare: c.orientare, intinsa: c.intinsa }, p.inaltime, p.aliniere);
+      invers: c.invers, orientare: c.orientare, intinsa: c.intinsa }, dreptul.majuscula, p.aliniere);
   }, [modul, rezFont, typeof p === 'string' ? p : JSON.stringify(p)]);
   const lungimeCurba = useMemo(() => (curbaPosibila && modul !== null && modul !== 'eroare' ? modul.lungimeCurba(curbaPosibila.contur) : 0), [curbaPosibila, modul]);
 
@@ -288,7 +346,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
     if (motiv) return motiv;
     if (modul === 'eroare') return t('editare.text.neincarcat');
     if (rezFont && !rezFont.ok) return textIncarcare(rezFont, numeFont(form.font));
-    if (typeof p === 'string' && !(p === 'continut' && form.continut === '')) return t(`editare.text.gresit.${p}`);
+    if (typeof p === 'string' && p !== 'asteapta' && !(p === 'continut' && form.continut === '')) return t(`editare.text.gresit.${p}`);
     if (asezat && asezat.raport['aldin-esuat'] > 0) return t('editare.text.aldin-esuat', { n: asezat.raport['aldin-esuat'] });
     if (asezat && asezat.raport['caseta-prea-mica'] > 0) return t('editare.text.caseta.prea-mica');
     if (asezat && asezat.caractereLipsa.length > 0) return t('editare.text.lipsa', { n: asezat.raport.lipsa, caractere: asezat.caractereLipsa.join(' ') });
@@ -305,10 +363,31 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   const stareCaseta = ((): string | null => {
     if (!asezat || typeof p === 'string' || !p.caseta || asezat.glife.length === 0 || asezat.raport['caseta-prea-mica'] > 0) return null;
     const c = asezat.glife.map((g) => g.cutie).reduce((x, y) => ({ minX: Math.min(x.minX, y.minX), minY: Math.min(x.minY, y.minY), maxX: Math.max(x.maxX, y.maxX), maxY: Math.max(x.maxY, y.maxY) }));
-    const doua = (x: number): string => textNumar(Math.round(x * 100) / 100, true);
-    const date = { majuscula: doua(asezat.inaltime), latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY) };
+    // Majuscula tăiată (ADR 0138 §2): cea care a încăput, la înălțimea literelor.
+    const date = { majuscula: douaZecimale(asezat.majuscula), latime: douaZecimale(c.maxX - c.minX), inaltime: douaZecimale(c.maxY - c.minY) };
     return t(p.caseta.fel === 'limita' && asezat.inaltime < p.caseta.ceruta ? 'editare.text.caseta.micsorat' : 'editare.text.caseta.stare', date);
   })();
+  // Sub mărime, în pt și in: majusculele pe care le dă (în mm, la 100 %); sub proporții, majusculele tăiate (ADR 0138).
+  const notaMarime = typeof p !== 'string' && form.unitate !== 'mm'
+    ? t('editare.text.marime.majuscule', { mm: douaZecimale(p.caseta?.fel === 'scala' && asezat ? asezat.inaltime : p.inaltime) }) : null;
+  const notaProportii = typeof p !== 'string' && p.proportii && p.proportii.inaltime !== 100 && asezat
+    ? t('editare.text.proportii.taiate', { mm: douaZecimale(asezat.majuscula) }) : null;
+  /** Mărimea arătată când o dă caseta (scalat la ea): în unitatea aleasă. */
+  const marimeDinCaseta = (mm: number): string => (form.unitate === 'mm' ? textNumar(Math.round(mm * 100) / 100) : textMarime(mm, form.unitate, raport ?? 1));
+  /** O altă unitate a mărimii (ADR 0138 §1): numărul se convertește, textul rămâne cum e; pt cere fontul adus. */
+  const schimbaUnitatea = (u: UnitateMarime): void => {
+    if (u === form.unitate || (raport === null && (u === 'pt' || form.unitate === 'pt'))) return;
+    const scrisa = citesteNumar(form.inaltime);
+    const mm = scrisa === null ? null
+      : exacta && exacta.text === form.inaltime && exacta.unitate === form.unitate ? exacta.mm : majusculaDinMarime(scrisa, form.unitate, raport ?? 1);
+    if (mm === null) {
+      scrie({ ...form, unitate: u });
+      return;
+    }
+    const marime = u === 'mm' ? textNumar(rotunjesteMarime(mm, 'mm')) : textMarime(mm, u, raport ?? 1);
+    scrie({ ...form, unitate: u, inaltime: marime });
+    setExacta({ text: marime, unitate: u, mm });
+  };
   const trimite = (cerere: CerereText): void => {
     const r = ruleaza(cerere);
     setMotiv(r.ok ? null : t(r.motiv));
@@ -384,7 +463,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
             font cu o singură linie (ADR 0140) nu se îngroașă: bifa e oprită, cu motivul. */}
         <label className="bifa-retea" title={linieFont ? t('editare.text.aldin.linie') : undefined}>
           <input type="checkbox" checked={form.aldin && !linieFont} disabled={linieFont} data-text="aldin" onChange={(e) => {
-            scrie({ ...form, aldin: e.target.checked, grosime: e.target.checked && form.grosime.trim() === '' ? grosimeImplicita(form.inaltime) : form.grosime });
+            scrie({ ...form, aldin: e.target.checked, grosime: e.target.checked && form.grosime.trim() === '' ? grosimeImplicita(typeof p === 'string' ? null : majusculaBloc(p)) : form.grosime });
           }} />
           {t('editare.text.aldin')}
         </label>
@@ -457,13 +536,40 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
             </button>
           </fieldset>
         ) : null}
-        {(['inaltime', 'spatiere', 'interlinie'] as const).map((c) => (
+        {/* Mărimea, cu unitatea ei (ADR 0138 §1): în mm și in, majusculele; în pt, mărimea fontului, cu majusculele dedesubt.
+            Scalat la casetă (ADR 0142), o dă caseta: câmpul e oprit. */}
+        <label className="camp-retea camp-marime">
+          <span>{t(form.unitate === 'pt'
+            ? (form.caseta === 'scala' ? 'editare.text.marime-font.caseta' : 'editare.text.marime-font')
+            : (form.caseta === 'scala' ? 'editare.text.inaltime.caseta' : 'editare.text.inaltime'))}</span>
+          {form.caseta === 'scala'
+            ? <input value={asezat && asezat.raport['caseta-prea-mica'] === 0 ? marimeDinCaseta(asezat.inaltime) : ''} disabled data-text="inaltime" />
+            : <input value={form.inaltime} inputMode="decimal" data-text="inaltime" onChange={(e) => { scrie({ ...form, inaltime: e.target.value }); }} />}
+          <select value={form.unitate} data-text="unitate" aria-label={t('editare.text.unitate')} disabled={raport === null}
+            onChange={(e) => { schimbaUnitatea(UNITATI_MARIME.find((u) => u === e.target.value) ?? 'mm'); }}>
+            {UNITATI_MARIME.map((u) => <option key={u} value={u}>{t(`editare.text.unitate.${u}`)}</option>)}
+          </select>
+        </label>
+        {notaMarime ? <p className="nota-retea" data-testid="text-marime">{notaMarime}</p> : null}
+        {/* Proporțiile literelor (ADR 0138 §2), în procente; la altă înălțime, majusculele tăiate dedesubt. */}
+        {(['latime', 'inaltimeLitere'] as const).map((c) => (
           <label key={c} className="camp-retea">
-            <span>{t(c === 'interlinie' && form.textVertical ? 'editare.text.interlinie.coloane'
-              : c === 'inaltime' && form.caseta === 'scala' ? 'editare.text.inaltime.caseta' : `editare.text.${c}`)}</span>
-            {c === 'inaltime' && form.caseta === 'scala'
-              ? <input value={asezat && asezat.raport['caseta-prea-mica'] === 0 ? textNumar(Math.round(asezat.inaltime * 100) / 100) : ''} disabled data-text={c} />
-              : <input value={form[c]} inputMode="decimal" data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />}
+            <span>{t(c === 'latime' ? 'editare.text.proportii.latime' : 'editare.text.proportii.inaltime')}</span>
+            <input value={form[c]} inputMode="decimal" data-text={c === 'latime' ? 'latime' : 'inaltime-litere'}
+              onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />
+          </label>
+        ))}
+        {notaProportii ? <p className="nota-retea" data-testid="text-proportii">{notaProportii}</p> : null}
+        {/* Crenarea fontului (ADR 0138 §3); textul vertical n-o folosește. */}
+        <label className="bifa-retea" title={form.textVertical ? t('editare.text.crenare.vertical') : undefined}>
+          <input type="checkbox" checked={form.crenare} disabled={form.textVertical} data-text="crenare"
+            onChange={(e) => { scrie({ ...form, crenare: e.target.checked }); }} />
+          {t('editare.text.crenare')}
+        </label>
+        {(['spatiere', 'interlinie'] as const).map((c) => (
+          <label key={c} className="camp-retea">
+            <span>{t(c === 'interlinie' && form.textVertical ? 'editare.text.interlinie.coloane' : `editare.text.${c}`)}</span>
+            <input value={form[c]} inputMode="decimal" data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />
           </label>
         ))}
         <div className="fel-retea" role="radiogroup" aria-label={t('editare.text.aliniere')}>

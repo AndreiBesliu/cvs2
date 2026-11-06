@@ -65,6 +65,11 @@ const USI: readonly Usa[] = [
   { id: 'editare.text.cursiv', eticheta: eticheta('editare.text.cursiv') },
   { id: 'editare.text.vertical', eticheta: eticheta('editare.text.vertical') },
   { id: 'editare.text.caseta', eticheta: eticheta('editare.text.caseta') },
+  // Restul pragului textului (ADR 0138): unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului.
+  { id: 'editare.text.unitate', eticheta: eticheta('editare.text.unitate') },
+  { id: 'editare.text.proportii.latime', eticheta: eticheta('editare.text.proportii.latime') },
+  { id: 'editare.text.proportii.inaltime', eticheta: eticheta('editare.text.proportii.inaltime') },
+  { id: 'editare.text.crenare', eticheta: eticheta('editare.text.crenare') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
@@ -110,7 +115,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 79)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 83)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -120,7 +125,8 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // textul încă patru: aldinul și cursivul (ADR 0123), verticalul (ADR 0141) și caseta (ADR 0142); verificarea
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
-  assert.equal(USI.length, 79);
+  // Restul textului (ADR 0138), încă patru: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului.
+  assert.equal(USI.length, 83);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
