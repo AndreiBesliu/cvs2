@@ -70,7 +70,7 @@ test.describe('raportorul de erori', () => {
     expect(p.externe).toEqual([]);
   });
 
-  test('martorul, cu Firebase fără App Check: bucata vine la prima eroare, funcția dă 401, raportorul se stinge liniștit', async ({ page }) => {
+  test('martorul, cu Firebase fără App Check: bucata vine la prima eroare, funcția dă 401, raportorul se stinge liniștit', async ({ page, baseURL }) => {
     const p = await plasa(page);
     const apeluri: string[] = [];
     const avertismente: string[] = [];
@@ -98,7 +98,8 @@ test.describe('raportorul de erori', () => {
     expect(Object.keys(raport).sort()).toEqual(['adresa', 'browser', 'build', 'limba', 'mesaj', 'stiva', 'tip']);
     expect(raport['tip']).toBe('fereastra');
     expect(raport['mesaj']).toBe('Error: prima eroare');
-    expect(raport['adresa']).toBe('http://localhost:4173/');
+    // Adresa paginii, fără interogare: a serverului de probă (4173 aici; un worktree paralel are portul lui).
+    expect(raport['adresa']).toBe(new URL('/', baseURL).href);
     expect(raport['limba']).toBe('ro');
     expect(raport['browser']).toBe(await page.evaluate(() => navigator.userAgent));
     expect(p.bucati.some((u) => /\/raportor-/.test(u))).toBe(true);
