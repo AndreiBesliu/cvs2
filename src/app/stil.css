@@ -2179,6 +2179,21 @@ main h1 {
 .trasare-prag input[type='range'] {
   width: 100%;
 }
+.trasare-histograma {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 2rem;
+  display: block;
+}
+.trasare-histograma path {
+  fill: var(--t-slab);
+  opacity: 0.55;
+}
+.trasare-histograma line {
+  stroke: var(--a);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
 .dialog-trasare .mic {
   font-size: 0.85em;
   color: var(--t-slab);

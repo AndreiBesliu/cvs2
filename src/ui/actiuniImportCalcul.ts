@@ -128,7 +128,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
   return {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, sursa: t.sursa, transparenta: t.transparenta, prag: t.prag, automat: t.automat,
-    margini: t.margini, pete: t.pete, gauri: t.gauri, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
+    margini: t.margini, pete: t.pete, gauri: t.gauri, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere, histograma: t.histograma,
   };
 }
 
@@ -138,7 +138,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
  */
 type CaleTrasata = { readonly varfuri: Varf[]; readonly inchis: true };
 
-function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number): { cai: CaleTrasata[]; laturi: Latura[]; avertismente: AvertismenteImagine } {
+export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number): { cai: CaleTrasata[]; laturi: Latura[]; avertismente: AvertismenteImagine } {
   const P = (x: number, y: number): Punct => ({ x: x * mmPePx, y: (inaltimePx - y) * mmPePx });
   const cai: CaleTrasata[] = [];
   const laturi: Latura[] = [];

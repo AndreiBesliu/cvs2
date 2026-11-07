@@ -48,6 +48,8 @@ export type RaportImagine = {
   readonly pete: number; readonly gauri: number; readonly contururi: number; readonly varfuri: number;
   /** Abaterea măsurată față de conturul sub-pixel, în px. */
   readonly abaterePx: number;
+  /** Histograma cernelii (256 de trepte), sub glisorul pragului. */
+  readonly histograma: readonly number[];
 };
 
 /** Ce n-a intrat dintr-o imagine trasată: contururile sub rezoluție și cele peste plafonul unei căi. */

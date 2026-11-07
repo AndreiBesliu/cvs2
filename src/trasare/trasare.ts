@@ -49,6 +49,8 @@ export type RaportTrasare = {
   readonly contururi: number; readonly exterioare: number; readonly varfuri: number;
   /** Cea mai mare distanță dintre conturul sub-pixel și curbele trasate, în px. */
   readonly abatere: number;
+  /** Histograma cernelii (256 de trepte, înainte de curățare): fereastra o arată sub glisorul pragului. */
+  readonly histograma: readonly number[];
 };
 
 export type RezultatTrasare =
@@ -117,13 +119,18 @@ export function cerneala(img: ImagineRGBA, o: Pick<OptiuniTrasare, 'sursa' | 'in
   return { f, transparenta, sursa };
 }
 
+/** Câți pixeli are fiecare din cele 256 de trepte ale cernelii. */
+export function histograma(f: Float32Array): Float64Array {
+  const h = new Float64Array(256);
+  for (const v of f) { const i = Math.round(v * 255); h[i] = (h[i] ?? 0) + 1; }
+  return h;
+}
+
 /**
  * Pragul automat: Otsu desparte cele două clase ale histogramei, iar pragul stă la mijlocul mediilor lor, adică la
  * jumătatea acoperirii (muchia geometrică a unei margini netezite). Fără două clase, 0,5.
  */
-export function pragAutomat(f: Float32Array): number {
-  const h = new Float64Array(256);
-  for (const v of f) { const i = Math.round(v * 255); h[i] = (h[i] ?? 0) + 1; }
+export function pragAutomat(f: Float32Array, h: ArrayLike<number> = histograma(f)): number {
   let total = 0;
   for (let i = 0; i < 256; i++) total += i * (h[i] ?? 0);
   let w0 = 0, s0 = 0, cel = -1, m0b = 0, m1b = 255;
@@ -747,7 +754,9 @@ export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
   const { latime: W, inaltime: H } = img;
   const { f, transparenta, sursa } = cerneala(img, o);
   const automat = o.prag === null;
-  const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f)) : (Math.max(1, Math.min(254, o.prag)) - 0.5) / 255;
+  // Histograma, înainte de curățare (ea scrie în câmp): o dată, pentru prag și pentru fereastră.
+  const h = histograma(f);
+  const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f, h)) : (Math.max(1, Math.min(254, o.prag)) - 0.5) / 255;
   const { pete, gauri } = curata(f, W, H, T, o.petePx, o.gauriPx);
   // Marginile: printre pixelii de lângă contur, câți au o nuanță între desen și fundal.
   let langa = 0, nuante = 0;
@@ -767,7 +776,7 @@ export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
   const bucle = margini === 'dure' ? contururi(f, W, H, T).map(netezeste) : contururi(f, W, H, T);
   const pozitive = Uint8Array.from(bucle, (b) => (arie(b) > 0 ? 1 : 0));
   const exterioare = pozitive.reduce((s, x) => s + x, 0);
-  const baza = { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri } as const;
+  const baza = { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri, histograma: Array.from(h) } as const;
   if (bucle.length > PLAFON_TRASARE.contururi) {
     return { ok: false, cod: 'prea-multe', raport: { ...baza, contururi: bucle.length, exterioare, varfuri: 0, abatere: 0 } };
   }

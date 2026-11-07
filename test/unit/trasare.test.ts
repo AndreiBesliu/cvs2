@@ -27,6 +27,19 @@ test('pragul automat: mijlocul mediilor celor două clase (jumătatea acoperirii
   assert.equal(pragAutomat(new Float32Array(50).fill(0.3)), 0.5);
 });
 
+test('histograma cernelii: 256 de trepte, toți pixelii, înainte de curățare; pragul automat iese din ea, același', () => {
+  const img = imagine(40, 40, (x, y) => (discAlb(x, y) ? [0, 0, 0, 255] : x < 3 && y < 3 ? [0, 0, 0, 255] : [255, 255, 255, 255]));
+  const r = traseaza(img, { ...IMPLICITE, petePx: 20 });
+  assert.equal(r.raport.histograma.length, 256);
+  assert.equal(r.raport.histograma.reduce((s, x) => s + x, 0), 40 * 40);
+  // Pata din colț (9 px) s-a șters la curățare, dar histograma e a imaginii: 9 px negri în plus față de disc.
+  const disc = Array.from({ length: 1600 }, (_, p) => discAlb(p % 40, Math.floor(p / 40))).filter(Boolean).length;
+  assert.equal(r.raport.histograma[255], disc + 9);
+  assert.equal(r.raport.pete, 1);
+  const { f } = cerneala(img, IMPLICITE);
+  assert.equal(r.raport.prag, Math.round(pragAutomat(f) * 255));
+});
+
 test('cerneala (lecția D7): pe transparență contează alfa, oricare ar fi culoarea; pe o imagine opacă, fundalul e marginea', () => {
   for (const culoare of [255, 0, 128]) {
     const img = imagine(40, 40, (x, y) => (discAlb(x, y) ? [culoare, culoare, culoare, 255] : [255, 255, 255, 0]));

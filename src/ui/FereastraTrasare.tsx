@@ -189,6 +189,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
             aria-labelledby="trasare-prag-eticheta" data-camp="trasare-prag"
             onChange={(e) => { setCiorna({ ...ciorna, prag: Number(e.target.value) }); }} />
           <output data-testid="trasare-prag-valoare">{automat ? raport?.prag ?? '—' : ciorna.prag}</output>
+          {raport && <Histograma h={raport.histograma} prag={automat ? raport.prag : ciorna.prag} />}
         </div>
         <label className="rand">
           <input type="checkbox" checked={alegeri.inverseaza} data-camp="trasare-inverseaza" onChange={(e) => { onSchimba({ inverseaza: e.target.checked }); }} />
@@ -273,5 +274,22 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Histograma cernelii sub glisorul pragului (ADR 0220 §3): înălțimile pe scară logaritmică (fundalul și desenul ar strivi
+ * altfel nuanțele dintre ele), iar linia arată pragul, chiar cât se mută glisorul. Doar de privit: glisorul e controlul.
+ */
+function Histograma({ h, prag }: { readonly h: readonly number[]; readonly prag: number }) {
+  const max = Math.log1p(Math.max(1, ...h));
+  let d = 'M0 32';
+  for (let i = 0; i < h.length; i++) d += `L${i} ${(32 - (32 * Math.log1p(h[i] ?? 0)) / max).toFixed(1)}L${i + 1} ${(32 - (32 * Math.log1p(h[i] ?? 0)) / max).toFixed(1)}`;
+  d += `L${h.length} 32Z`;
+  return (
+    <svg className="trasare-histograma" viewBox="0 0 256 32" preserveAspectRatio="none" aria-hidden="true" data-testid="trasare-histograma">
+      <path d={d} />
+      <line x1={prag - 0.5} x2={prag - 0.5} y1={0} y2={32} />
+    </svg>
   );
 }
