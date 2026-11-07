@@ -10,6 +10,7 @@ import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
 import type { IdContract } from '../post/contracte/index.ts';
+import type { SemifabricatDop } from '../cam/incrustatie.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
 import type { ProgramSimulat } from '../sim/program.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
@@ -50,6 +51,14 @@ export type ParametriExport = {
 /** Foaia programului, cum o cere simularea. */
 export type FoaieCam = { readonly latime: number; readonly inaltime: number; readonly grosime: number };
 
+/**
+ * Dopul unei incrustații (ADR 0170 §3): programul lui, pe semifabricatul lui (XY0 în colțul ales, Z0 pe fața lui), și fișierele
+ * de descărcat (unul, sau câte unul pe sculă), cu numele `…-dop-<N>`.
+ */
+export type DopExportat = {
+  readonly element: string; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[]; readonly semifabricat: SemifabricatDop;
+};
+
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
   | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport }
@@ -68,6 +77,8 @@ export type RaspunsExport =
   | {
     readonly ok: true; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[];
     readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
+    /** Dopurile incrustațiilor foii (ADR 0170), câte unul pe regiune, în ordinea tăierii; gol fără incrustații. */
+    readonly dopuri: readonly DopExportat[];
     /** Senderul aplicației vorbește controlerului postului (familia GRBL): exportul ajunge și în panoul mașinii (ADR 0125). */
     readonly sender: boolean;
     /** Mutările nucleului simulării (ADR 0047 §3) pentru programul exportat, sau de ce nu se poate simula. */

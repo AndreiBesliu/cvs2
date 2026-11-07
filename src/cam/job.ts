@@ -9,6 +9,7 @@ import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
+import { refuzIncrustatie } from './incrustatie.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
@@ -181,6 +182,12 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     if (!fp) continue;
     if (t.tip !== 'vcarve') return { ok: false, motiv: `${t.idLume}: fundul plat cu freza dreaptă e doar al unui V-carve` };
     if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu în V` };
+  }
+  // Incrustația (ADR 0170 §4): locașul de aici și dopul (`incrustatie.ts`) cer aceleași lucruri, judecate înaintea traseului.
+  for (const t of taieturi) {
+    const op = operatieDe(t);
+    const r = op ? refuzIncrustatie(op, t.idLume) : null;
+    if (r) return { ok: false, motiv: r };
   }
   // Frezele de rest (ADR 0093): doar pe un buzunar (și pe fundul plat al unui V-carve, ADR 0091); fiecare plată, mai mică
   // decât freza dinainte, cu pasul lateral cel mult raza ei.
@@ -365,7 +372,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // V-carve ale unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), oricâte
   // operații ar fi (ADR 0112, precizarea): un text cu operațiile importului (exteriorul, golurile), trecute pe V-carve rând cu
   // rând în fereastra exportului, se sapă cu golurile lui, ca dintr-o singură operație.
-  const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${valoriVcarve({ ...u, fundPlat: operatieDe(u)?.fundPlat })}`;
+  const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${valoriVcarve({ ...u, fundPlat: operatieDe(u)?.fundPlat, incrustatie: operatieDe(u)?.incrustatie })}`;
   const vcarveFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;

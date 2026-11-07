@@ -5,6 +5,8 @@ import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAX
 export type { Coborare } from '../model/document.ts';
 // Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
+// Implicitele incrustației (ADR 0170), pentru rândul ei din fereastra exportului.
+export { INCRUSTATIE_IMPLICITA } from '../model/document.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
@@ -30,6 +32,8 @@ export const MARGINI_OPERATIE = {
   retragereCompleta: RETRAGERE_COMPLETA_MAXIMA,
   // Freza în V (ADR 0090): unghiul inclus, în grade.
   unghiV: UNGHI_V_MAXIM, unghiVMinim: UNGHI_V_MINIM,
+  // Incrustația (ADR 0170 §1): marginea semifabricatului dopului, în mm (plafonul laturii).
+  margineDop: PLAFON.latura,
 } as const;
 
 /**
@@ -78,7 +82,7 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
  * Parametrii exportului și rezumatul jobului: definiți lângă calculul lor, în workerul CAM (ADR 0109,
  * `src/jobs/protocolCam.ts`, `src/jobs/rezumat.ts`); interfața le citește de aici, ca tipuri.
  */
-import type { ParametriExport } from '../jobs/protocolCam.ts';
+import type { DopExportat, ParametriExport } from '../jobs/protocolCam.ts';
 import type { RezumatJob } from '../jobs/rezumat.ts';
 export type { ParametriExport } from '../jobs/protocolCam.ts';
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
@@ -141,6 +145,8 @@ export type RezultatExport =
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
     /** Fișierele de descărcat: unul, sau câte unul pe sculă (ADR 0084); `program` e primul. */
     readonly fisiere: readonly FisierExportat[];
+    /** Dopurile incrustațiilor (ADR 0170 §3): fiecare cu fișierele lui, de descărcat după ale foii. */
+    readonly dopuri: readonly DopExportat[];
     /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */
     readonly sender: boolean;
     /**

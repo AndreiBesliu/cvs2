@@ -46,7 +46,7 @@ test('rolul ales în panou: fereastra exportului îl arată, iar traseul arătat
   // Pe exterior: rama traseului la 3 mm în afara conturului (y 17).
   await expect.poll(() => alfaTraseu(page, 70, 17)).toBeGreaterThan(0);
   await expect(rol(page)).toHaveValue('exterior');
-  await expect(rol(page).locator('option')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'V-carve']);
+  await expect(rol(page).locator('option')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'V-carve', 'incrustație în V']);
   await rol(page).selectOption('interior');
   // Fără T: pe interior, rama e la 3 mm înăuntru (y 23), iar cea de afară dispare.
   await expect.poll(() => alfaTraseu(page, 70, 23)).toBeGreaterThan(0);
@@ -82,7 +82,7 @@ test('mai multe forme: rolul și adâncimea diferite arată „—” și câmpu
   // Dreptunghiul pe exterior (3 mm), cercul o gaură (8 mm): rolul „—”, adâncimea goală; găurirea nu e a dreptunghiului.
   await expect(rol(page)).toHaveValue('');
   await expect(rol(page).locator('option:checked')).toHaveText('— (diferite)');
-  await expect(rol(page).locator('option:not([disabled])')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'V-carve']);
+  await expect(rol(page).locator('option:not([disabled])')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'V-carve', 'incrustație în V']);
   await expect(taierea(page).locator('[data-camp="adancime"]')).toHaveValue('');
   await expect(taierea(page).locator('[data-camp="adancime"]')).toHaveAttribute('placeholder', '—');
   await rol(page).selectOption('pe-linie');
