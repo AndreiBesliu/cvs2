@@ -6740,3 +6740,22 @@ căzute, din CI).
   „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
   și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
 - **Rămâne:** unirea în `main`, la cuvântul owner-ului.
+
+## 2026-11-07 — Unirea probei întărite în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, la „Unesc întărirea probei (`cd100d5`) în `main`?”).
+**Started:** 07.11, 22:58. **Completed:** 07.11, 23:42.
+
+- **Unirea:** `main` (`b818601`: raportările 15.B↑b și imprimanta 3.6g–3.6i) adus întâi în ramură (`1012c69`; conflict doar la
+  coada `DEVLOG.md`, ambele intrări), apoi `4698385` pe `main` (primul părinte `b818601`, al doilea `1012c69`), din worktree,
+  fără checkout-ul principal. Față de `main`, doar proba și DEVLOG-ul.
+- **Porțile, pe arborele unit:** tipurile (aplicația, pluginul), build-ul, e2e `extensii.lucru` și `biblioteca` de două ori:
+  32 / 32.
+- **CI pe `4698385`:** complet verde (`42413527793`): unitare 8 648 (0 căzute, 12 sărite), funcțiile 101 / 101, e2e 375 / 375
+  (proba întărită, 2,3 s), e2e pe emulatoare 21 / 21. Rapidul (`42413509065`) a fost anulat de împingerea următoare pe `main`
+  (`c73177f`, plafonul de 600 kB), care îl conține; rapidul pe `c73177f`, verde.
+- **Nepublicat pe test:** se schimbase doar proba; sesiunea principală publică un `main` care o conține.
+- **Corectură:** am spus că doar proba propunerii face clic în cadru imediat după ce fila reapare. Greșit: am căutat tiparul
+  doar după `cadru(page)`, iar celelalte locuri ajung în cadru prin alte nume. Completul pe `c73177f` a căzut la fel în
+  `extensii.spec.ts` (butonul „eroare”, după filă); sesiunea principală a mutat ajutorul în `test/e2e/ajutor-extensii.ts` și
+  l-a pus în toate cele patru locuri (`a88b00f`).
