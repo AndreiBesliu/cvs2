@@ -9,7 +9,8 @@
 # dopului în renumerotarea rolurilor personalizate, găsită la recitirea codului.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
-# La 12.1↑c (ADR 0172): seturile documentului sunt pe v22 (proba v21 a devenit document.v22.oracol.test.ts).
+# La 12.1↑c (ADR 0172): seturile documentului sunt pe v22 (proba v21 a devenit document.v22.oracol.test.ts); E16, implicitul
+# frezei dopului (primul T liber), adăugată cu repararea lui.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -135,6 +136,10 @@ o('E14', PAN, "t(o.incrustatie?.fel === 'drept' ? 'export.latura.incrustatie-dre
   'operația numită buzunar în panou')
 o('E15', ARB, "              {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && t('arbore.buzunar.incrustatie', { joc: n(o.incrustatie.jocLateral) })}",
   '', 'e2e', 'arborele nu spune incrustația dreaptă')
+# Adăugată la 12.1↑c (răspunsul „Da, repară-l”): implicitul frezei dopului, ca la freza decupării benzii.
+o('E16', DLG, 'numarSculaDop: text(dop0?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),',
+  'numarSculaDop: text(dop0?.numar ?? (o.valori.scula?.numar ?? 1) + 1),', 'e2e',
+  'freza dopului, bifată, pornește de la T-ul locașului + 1 (lângă o incrustație în V, chiar T-ul V-ului: conflict pe loc)')
 
 SETURI = {
     'drept': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts'],

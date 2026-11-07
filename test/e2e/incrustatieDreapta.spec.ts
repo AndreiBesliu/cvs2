@@ -137,7 +137,8 @@ test('incrustația cu pereți drepți: rolul din panou, valorile pe hârtie, exp
 /**
  * Incrustația aleasă direct în fereastra exportului (ADR 0171 §5, răspunsurile 1, 2 și 4): sprijinul pe față cere jocul de
  * sub dop în locul spațiului de deasupra; dopul decupat nu are sprijin, iar spațiul de deasupra devine cât iese dopul peste
- * placă; altă freză pentru dop pornește de la T-ul următor, jumătate din Ø6 și pasul 40 %, și intră în verificarea T-urilor.
+ * placă; altă freză pentru dop pornește de la primul T liber (aici, după T1 al locașului), jumătate din Ø6 și pasul 40 %, și
+ * intră în verificarea T-urilor.
  * Exportă scrie dopul decupat pe o placă de exact 6 + 2 = 8 mm, cu punți; pe octeți, oracolul cere jocul 0,1 pe tot conturul.
  * Panoul arată apoi ce s-a scris: dopul decupat, freza lui, colțurile (unghiurile locașului R1,4 = 1,5 − 0,1, ale dopului R1,5).
  */
@@ -159,7 +160,7 @@ test('din fereastra exportului: sprijinul pe față, apoi dopul decupat cu freza
   await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveCount(0);
   await expect(inc.locator('[data-camp="inc-joc"]')).toHaveCount(0);
   await expect(inc.locator('label').filter({ has: page.locator('[data-camp="inc-fierastrau"]') })).toContainText('Cât iese peste placă (mm)');
-  // Freza dopului: T-ul următor, jumătate din Ø6, pasul 40 %.
+  // Freza dopului: primul T liber (T2, după T1 al locașului), jumătate din Ø6, pasul 40 %.
   await inc.locator('[data-camp="inc-freza-dop"]').check();
   await expect(inc.locator('[data-camp="dop-scula"]')).toHaveValue('2');
   await expect(inc.locator('[data-camp="dop-diametru"]')).toHaveValue('3');
@@ -196,4 +197,29 @@ test('din fereastra exportului: sprijinul pe față, apoi dopul decupat cu freza
   await expect(hartie).toContainText('Cât iese peste placă2.00 mm');
   await expect(hartie).toContainText('Semifabricatul dopuluigros de 8.00 mm');
   await expect(taierea(page).locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
+});
+
+/**
+ * Freza dopului, bifată, pornește de la primul T liber al tuturor frezelor ferestrei (găsită la 12.1↑c, pe canal, la freza
+ * decupării benzii): lângă un cerc cu incrustația în V (V-ul și fundul plat au deja numerele lor), T-ul locașului + 1 ar fi
+ * fost chiar T-ul V-ului, deci o a doua freză sub același T și Exportă oprit.
+ */
+test('freza dopului, bifată, pornește de la primul T liber al proiectului, fără conflict', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await adauga(page, 'cerc');
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const randuri = page.locator('tr[data-operatie]'), detalii = page.locator('tr[data-detalii]');
+  await expect(randuri).toHaveCount(2);
+  // Rândul dreptunghiului: cel care nu e incrustație în V.
+  const laturi = await randuri.locator('[data-camp="latura"]').evaluateAll((s) => s.map((x) => (x as HTMLSelectElement).value));
+  const k = laturi.findIndex((v) => v !== 'incrustatie');
+  await randuri.nth(k).locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const numere = await page.locator('tr[data-operatie] [data-camp="scula"], tr[data-detalii] [data-camp="fund-scula"]')
+    .evaluateAll((e) => e.map((x) => Number((x as HTMLInputElement).value)));
+  const dop = detalii.nth(k).locator('[data-incrustatie][data-fel="drept"]');
+  await dop.locator('[data-camp="inc-freza-dop"]').check();
+  await expect(dop.locator('[data-camp="dop-scula"]')).toHaveValue(String(Math.max(...numere) + 1));
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
 });

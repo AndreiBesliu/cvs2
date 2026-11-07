@@ -508,11 +508,12 @@ export function DialogExport(
       numarPunti: text(banda?.punti.numar ?? PUNTI_BANDA.numar), latimePunti: text(banda?.punti.latime ?? PUNTI_BANDA.latime),
       grosimePunti: text(banda?.punti.grosime ?? PUNTI_BANDA.grosime),
       // Pereții drepți (ADR 0171): implicit jocul lateral 0,1, dopul ridicat, pe fund; frezele dopului, ale locașului (bifa
-      // scoasă), iar cu bifa pornesc de la T-ul următor și jumătate din diametrul locașului.
+      // scoasă), iar cu bifa pornesc de la primul T de după toate frezele operațiilor (ca freza decupării benzii; T-ul locașului
+      // + 1 putea fi al altei freze) și de la jumătate din diametrul locașului.
       incrustatieDreapta: inchise && o.valori.tip === 'buzunar' && dr != null,
       lateralInc: text(dr?.jocLateral ?? INCRUSTATIE_DREAPTA_IMPLICITA.jocLateral),
       dopInc: dr?.dop ?? INCRUSTATIE_DREAPTA_IMPLICITA.dop, sprijinInc: dr?.sprijin ?? INCRUSTATIE_DREAPTA_IMPLICITA.sprijin,
-      frezaDop: dop0 !== undefined, numarSculaDop: text(dop0?.numar ?? (o.valori.scula?.numar ?? 1) + 1), diametruSculaDop: text(diametruDop),
+      frezaDop: dop0 !== undefined, numarSculaDop: text(dop0?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)), diametruSculaDop: text(diametruDop),
       pasLateralDop: text(dop0?.pasLateral ?? pasLateralImplicit(diametruDop)),
       restDop: (dr?.frezeDop ?? []).slice(1).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
     }];
