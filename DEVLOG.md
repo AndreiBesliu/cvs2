@@ -6353,3 +6353,26 @@ in paralel?”.
 - **Rămâne:** 12.1↑c (banda îngustă și decuparea dopului în V), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și
   potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul
   owner-ului (cu `CLAUDE.md`: proba documentului e acum `document.v21.oracol.test.ts`, iar următorul câmp nou e v22).
+
+## 2026-11-07 — Felia 12.1↑c pornită: banda îngustă din jurul dopului în V și decuparea lui (ADR 0172, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 12.1↑c” (owner-ul, la întrebarea de la capătul feliei 12.1↑b, în sesiunea liniei).
+**Started:** 07.11, 19:00. **Completed:** 07.11, 19:20 (cercetarea, ADR-ul și schița; codul lui 12.1↑c așteaptă răspunsurile).
+
+- **Ce era hotărât:** răspunsul 2 din ADR 0170 (fața coborâtă sau banda îngustă, alese la export; banda „se decupează de mână
+  acum, apoi de aplicație, cu punți”). Nehotărâte: lățimea benzii, linia și freza decupării, punțile, grosimea plăcii.
+- **Cercetarea:** ediția întâi (`CNCVectorStudio/src/cam/inlay.ts`, ramura `wip/inlay-traseu-decupare`, `f4732ff`): limita
+  automată la D·t + 2 mm, decuparea prin placă cu freza cilindrică și punți, cu trei condiții pe hârtie (peretele dopului întreg,
+  niciun lemn păstrat dincolo de linia cea mai adâncă, punțile pe partea care se rindeluiește); `CERCETARE-DETALIATA.json`
+  confirmă calea ei.
+- **Pe hârtie:** la noi dopul e un V-carve cu adâncimea de start S pe o regiune, cu fundul plat; banda e aceeași lucrare pe
+  desenul oglindit lărgit cu M = 2·H·t + Ø + 1 (pereții până la H·t, fundul plat la S + H, tăietura, rezerva). Tăietura prin
+  placă, la e = H·t + 0,5 de contur, lasă pe piesa decupată doar peretele de sub umăr și fundul benzii, deci așezată lasă exact
+  H între plăci și g sub dop; și în unghiurile intrânde, unde freza nu intră, piesa rămâne pe fund (cel mult e + r). Exemplul,
+  cercul R15 din proba 12.1↑ (V60, D 3, g 0,5, H 2, Ø3,175): banda 6,48 mm, tăietura între 1,65 și 4,83 de contur, piesa
+  păstrată R16,65, semifabricatul 55,9 × 55,9 (față de 40 × 40), placa de cel puțin 5,5.
+- **ADR 0172, propus**, cu șase întrebări (recomandarea întâi): lățimea benzii calculată, decuparea mereu, grosimea plăcii ca
+  câmp (documentul v22), freza decupării = freza dreaptă a fundului plat, punțile ca la 12.1↑b, plafonul liniei peste ~10 kB.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk> (fereastra exportului, dopul în secțiune și așezat, la scară, comparația, întrebările).
+- **În fișă:** rândul 12.1↑c (în lucru), rândul răspunsurilor în coada owner-ului; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑c (proba scrisă întâi: oracolul potrivirii cu decuparea).

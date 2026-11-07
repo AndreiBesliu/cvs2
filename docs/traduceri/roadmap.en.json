@@ -657,6 +657,10 @@
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
       "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
     },
+    "3ac8b282908f3288": {
+      "ro": "Banda îngustă din jurul dopului în V și decuparea lui",
+      "en": "The narrow band around the V plug and cutting it out"
+    },
     "3ad86e19435ea190": {
       "ro": "Sugestiile personalului în /admin",
       "en": "Staff suggestions in /admin"
@@ -1837,6 +1841,10 @@
       "ro": "Fișa plăcii 1 și programele A și B",
       "en": "The plate 1 file and programs A and B"
     },
+    "b2a7796ad1a7eaa6": {
+      "ro": "înainte de codul feliei",
+      "en": "before the slice code"
+    },
     "b2abba4d729d7a11": {
       "ro": "Regula de umplere",
       "en": "The fill rule"
@@ -2193,6 +2201,10 @@
       "ro": "**three.js în pachetul extensiei: previzualizarea 3D în cvs2** (fără mașină; ADR 0163; a patra felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, descarcă”). three.js r128 descărcat de pe cdnjs (603 445 de octeți, SHA-512 egal cu amprenta SRI publicată), în `vendor/`, cu licența MIT; construcția îl pune în pachet ca `js/three.js`, neschimbat, cu textul licenței alături, dar nu în pagina de sine stătătoare. Intrarea îl aduce la cerere (`window.cvs2.three()`, script clasic din `blob:`, o singură dată), iar atelierul îl cheamă în cvs2 la prima intrare în 3D: vederea desenează piesa, fără niciun refuz CSP (CSP-ul neschimbat). Pachetul 18.3.0, ~370 kB.",
       "en": "**three.js in the extension package: the 3D preview in cvs2** (no machine; ADR 0163; the fourth slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, descarcă”). three.js r128 downloaded from cdnjs (603,445 bytes, SHA-512 equal to the published SRI hash), in `vendor/`, with its MIT license; the build puts it in the package as `js/three.js`, unchanged, with the license text next to it, but not in the standalone page. The entry brings it on demand (`window.cvs2.three()`, a classic script from `blob:`, once), and the workshop calls it in cvs2 the first time it enters 3D: the view draws the piece, with no CSP refusal (the CSP is unchanged). Package 18.3.0, ~370 kB."
     },
+    "d9c3bdf3e0971c59": {
+      "ro": "**Banda îngustă din jurul dopului în V și decuparea lui** (în lucru, fără mașină; ADR 0172, propus; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; „Da, 12.1↑c”, după răspunsul 2 din ADR 0170: fața coborâtă sau banda, alese la export). Cercetarea: ediția întâi (limita automată, decuparea prin placă cu punți, trei condiții pe hârtie) și dopul de azi (V-carve cu adâncimea de start pe o regiune, fundul plat). Pe hârtie: banda e desenul oglindit lărgit cu M = 2·H·t + Ø + 1, cu fundul plat la S + H; tăietura prin placă stă la H·t + 0,5 de contur, deci tot ce rămâne pe piesa decupată stă pe fund sau pe peretele de sub umăr, iar așezată lasă H între plăci și g sub dop (cercul R15 din proba 12.1↑: banda 6,48 mm, piesa păstrată R16,65, semifabricatul 55,9 × 55,9). Schița: cinci planșe, la scară. Codul așteaptă răspunsurile la cele șase întrebări.",
+      "en": "**The narrow band around the V plug and cutting it out** (in progress, no machine; ADR 0172, proposed; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; “Da, 12.1↑c”, after answer 2 of ADR 0170: the lowered face or the band, chosen on export). The research: the first edition (the automatic boundary, the through cut with tabs, three conditions on paper) and today's plug (a V-carve with a start depth over a region, the flat floor). On paper: the band is the mirrored drawing grown by M = 2·H·t + Ø + 1, with the flat floor at S + H; the through cut sits H·t + 0.5 from the outline, so everything left on the cut-out piece is on the floor or on the wall below the shoulder, and seated it leaves H between the boards and g under the plug (the R15 circle from the 12.1↑ test: the band 6.48 mm, the kept piece R16.65, the blank 55.9 × 55.9). The sketch: five boards, to scale. The code waits for the answers to the six questions."
+    },
     "d9e5d6d75bfed859": {
       "ro": "Oracolul G-code din s4 în `test/oracles/`, cu valorile pe hârtie pentru cele 4 colțuri, regula de arc GRBL și poarta invariantelor 1, 3, 5, 6, 7, 8",
       "en": "The G-code oracle from s4 in `test/oracles/`, with values on paper for the 4 corners, the GRBL arc rule and the gate of invariants 1, 3, 5, 6, 7, 8"
@@ -2357,6 +2369,10 @@
       "ro": "Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă",
       "en": "SVG import: an inert DOMParser, units, viewBox, transforms, the size cap; biarcs (T6) with the tolerance budget (`docs/PORTARE.md` §3.3); a minimal PathKit facade (union + R3) for the `nonzero` normalisation at the door"
     },
+    "e7feb01fbf3c11e1": {
+      "ro": "12.1↑c",
+      "en": "12.1↑c"
+    },
     "e800dffc26abbfa3": {
       "ro": "Selecția cu dreptunghi",
       "en": "Rectangle selection"
@@ -2496,6 +2512,10 @@
     "f6bb259ae5e8b83b": {
       "ro": "Raportorul din client (P0, partea 1b): erorile jurnalului local pleacă spre `logClientError`, cu SDK-ul adus la prima eroare; App Check cu cheia instanței citită de la gazdă; CSP-ul; măsurat pe test: 200 cu token, 401 fără",
       "en": "The client reporter (P0, part 1b): the local log's errors go to `logClientError`, with the SDK loaded at the first error; App Check with the instance key read from the host; the CSP; measured on test: 200 with a token, 401 without"
+    },
+    "f742366103cfe75b": {
+      "ro": "Răspunsurile la cele șase întrebări din ADR 0172 (banda îngustă din jurul dopului în V și decuparea lui): lățimea benzii, decuparea, grosimea plăcii dopului, freza decupării, punțile, plafonul liniei; recomandările sunt primele variante; schița: <https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk>",
+      "en": "The answers to the six questions of ADR 0172 (the narrow band around the V plug and cutting it out): the band width, the cut-out, the plug board thickness, the cut-out bit, the tabs, the line budget; the recommendations are the first options; the sketch: <https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk>"
     },
     "f761a91abba82672": {
       "ro": "Pânza v0",
