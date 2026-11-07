@@ -7,7 +7,7 @@ import { deleteObject, getBytes, getMetadata, listAll, ref, updateMetadata, uplo
 /**
  * Regulile Storage (`storage.rules`, felia 15.B↑b, ADR 0116 §12) pe emulator: din client nu se citește, nu se listează, nu se
  * scrie și nu se șterge nimic, nici de autorul unui tichet, nici de personal, nici de owner; nici pe căile aplicației vechi
- * (`users/{uid}/…`, ale căror reguli dădeau omului scriere în dosarul lui). Proiectele atașate le scrie și le dă înapoi doar
+ * (`users/{uid}/…`, ale căror reguli le înlocuiesc pe proiectul de test). Proiectele atașate le scrie și le dă înapoi doar
  * callable-ul `tichete`. Controlul: aceleași cereri trec cu regulile oprite (obiectul există, cererea e bună), deci refuzul
  * vine din reguli, iar după toate refuzurile obiectele sunt încă acolo. Tokenurile emulatorului nu sunt semnate.
  */

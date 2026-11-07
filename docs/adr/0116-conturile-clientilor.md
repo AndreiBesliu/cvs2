@@ -286,7 +286,7 @@ Restul raportărilor (§12, §16, §18), notat pe 02.11 pentru mai târziu și p
     SHA-256 față de tichet, apoi salvat ca `cncvs2-tichet-<id>.json`. Deschiderea lui în editor cere o ușă „Deschide un
     proiect din fișier”, care nu există încă;
   - **regulile Storage (`storage.rules`, nou) refuză orice cerere din client**, pe orice cale (și pe cele ale aplicației
-    vechi, `users/{uid}/…`, care dădeau scriere oricărui om logat în dosarul lui). O regulă de citire „cine poate citi
+    vechi, `users/{uid}/…`, ale căror reguli le înlocuiesc pe proiectul de test). O regulă de citire „cine poate citi
     tichetul” ar fi cerut documentele lui din Firestore (cel mult două pe cerere), rolul IAM al regulilor cross-service, pe
     care firebase-tools îl acordă doar interactiv (publicarea din workflow îl sare), și CORS pe bucket pentru descărcarea
     din browser; callable-ul face aceeași judecată, sub App Check, cu probele lui.
