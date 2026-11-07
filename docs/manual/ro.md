@@ -1059,6 +1059,38 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   când îl găsește, **Pornește imprimarea…** deschide
   confirmarea de mai sus (cu bifa **Patul e gol**), iar **Închide** îl lasă în imprimantă. Dacă nu ajunge, fereastra spune
   de ce (imprimanta nu răspunde pe portul 80, fișierul nu apare în lista ei sau are altă mărime), cu **Încearcă din nou**.
+- **Din desen…** (sub listă; fără imprimantă legată, sub textul de început) feliază aici, fără Creality Print, piesele plate
+  din desen: o placă, un distanțier, un șablon, un cub de calibrare, adică un contur închis ridicat la o grosime. Golurile vin
+  din desen (o formă cuprinsă în alta e gaură, una cuprinsă într-o gaură e insulă), formele suprapuse se unesc, textul se
+  imprimă și el, iar căile deschise sunt lăsate deoparte, cu un mesaj. În fereastra **Piesă plată pentru imprimantă**:
+  - **Ce se imprimă:** **Piesele foii**, **Piesele selectate** sau **O singură piesă**, aleasă din listă. Piesele își păstrează
+    așezarea de pe foaie și se centrează pe pat; ce nu încape (220 × 220 mm la K1C, cu 5 mm margine pe fiecare latură) e spus.
+  - **Înălțimea** (implicit, grosimea foii), **Materialul** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS, ASA,
+    PC, PA-CF, TPU, cu valorile profilelor Creality K1 din OrcaSlicer), **Calitatea** (straturi de 0,08, 0,12, 0,16, 0,20 sau
+    0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare, în grilă) și **Brim**
+    (Automat: pentru piesele înguste sau înalte; Da; Nu).
+  - **Avansat** arată restul setărilor, pe grupuri. Straturile: Înălțimea stratului, Înălțimea primului strat, Straturile pline
+    de sus, Grosimea de sus, cel puțin, Straturile pline de jos. Temperaturile primului strat: Duza, pe primul strat; Patul, pe
+    primul strat. Lățimile liniilor: Lățimea peretelui exterior, Lățimea pereților interiori, Lățimea umplerii pline, Lățimea
+    umplerii rare, Lățimea suprafeței de sus, Lățimea pe primul strat. Vitezele: Viteza peretelui exterior, Viteza pereților
+    interiori, Viteza umplerii pline, Viteza umplerii rare, Viteza suprafeței de sus, Viteza primului strat, Viteza umplerii pe
+    primul strat, Viteza deplasărilor. Accelerațiile: Accelerația pereților, Accelerația suprafeței de sus, Accelerația
+    umplerii, Accelerația primului strat, Accelerația deplasărilor. Retragerea: Lungimea retragerii, Viteza retragerii,
+    Ridicarea pe Z. Răcirea: Ventilatorul piesei, minim; Ventilatorul piesei, maxim; Ventilatorul oprit pe primele straturi;
+    Ventilatorul auxiliar; Timpul minim al unui strat (un strat mai scurt se imprimă mai încet, ca să se răcească); Viteza
+    minimă la răcire. Debitul materialului: Debitul, Debitul volumic maxim (vitezele se taie ca materialul să încapă prin duză).
+    Marginile: Compensarea piciorului de elefant (primul strat, strâns puțin), Suprapunerea umplerii rare pe pereți,
+    Suprapunerea umplerii pline pe pereți, Lățimea brim-ului, Golul brim-ului. **Valorile profilului** le pune înapoi pe cele
+    ale materialului și calității alese. Setările alese se țin în browser, pentru data viitoare.
+  - În dreapta, stratul ales, văzut de sus, cu liniile colorate după rol (peretele exterior, pereții interiori, plin, suprafața
+    de sus, umplere rară, brim) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
+    linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui, apoi
+    straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame.
+  - **Trimite la imprimantă** (doar cu imprimanta legată) trece fișierul prin aceeași verificare și trimitere ca **Trimite un
+    fișier…**, cu aceeași bifă **Patul e gol** la pornire. **Salvează .gcode** îl descarcă, de pus pe stick sau de trimis mai
+    târziu; **Renunță** (sau `Escape`) închide fereastra. Fișierul folosește doar comenzile pe care OrcaSlicer le scrie pentru
+    K1C: începutul (`START_PRINT`) și sfârșitul (`END_PRINT`) rămân ale imprimantei, cu nivelarea, linia de curățare și răcirea
+    lor; fiecare piesă e un obiect pe care imprimanta îl poate sări, dacă se dezlipește.
 - **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
   pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
   O imprimantă care tace mai mult de 20 s e luată drept pierdută (legătura poate muri fără să se închidă), iar una care nu mai

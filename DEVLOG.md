@@ -6590,3 +6590,24 @@ va face update si pe main ulterior”.
 - **Pentru `main` (cererea owner-ului):** `main` (`63d6af5`, biblioteca extensiilor) unit în ramură (`5f729e8`; conflictele,
   doar în documente, cu ambele părți păstrate); porțile pe rezultat, apoi unirea în `main` o face sesiunea principală, cu
   cuvintele owner-ului, trimise ei.
+- **Porțile pe `cd2f234`** (unirea și ADR-ul acceptat): unit cod 0; build-ul determinist: pornirea 101,7 (cu ușa 105,3 / 110),
+  totalul 534,9 / 550; e2e: prima rulare a căzut în masă sub încărcarea mașinii (317 / 365 la prima interacțiune, 34 min, ~31
+  de procese node ale altor sesiuni), reluarea căderilor cu 4 lucrători: 327 / 327. Ramura împinsă la `cd2f234`, iar cererea
+  owner-ului, cu cuvintele lui, trimisă sesiunii principale.
+- **Felia 3.6j, codul:** felierea în `src/cam/feliere/` (`profil.ts`: imprimanta, 5 calități, 11 materiale, setările și
+  limitele lor; `piese.ts`: piesele din foaie, unirea pe componente, centrarea; `straturi.ts`: pereții cu `offsetFigura`, la
+  pasul OrcaSlicer, umplerea pe linii aliniate la pat, lanțurile zigzag, grila, brim-ul, ce e prea subțire; `gcode.ts`:
+  fișierul, timpul cu joncțiunile lui Klipper, încetinirea pentru răcire, ventilatoarele, obiectele; `campuri.ts`: „Avansat”;
+  `index.ts`). Propus în `src/machine/imprimanta/feliere/`, mutat după poarta importurilor (`masina-fara-post-si-document`:
+  transportul nu importă documentul). Dialogul `src/app/DialogDinDesen.tsx`, adus la primul clic; „Din desen…” în ambele
+  vederi ale ferestrei; aplicația dă desenul ca funcție (`desen`). Textele (en / ro), manualul (secțiunea „Din desen…”, cu
+  fiecare control și fiecare setare din „Avansat”), stilurile.
+- **Măsurat:** placa de 20 × 20 × 3 mm: 15 straturi, 1,75 g, ~3 min 36 s; E pe mm pe valorile de pe hârtie. Felierea: ~0,1 s
+  pentru o placă mică, ~1 s pentru 180 × 180 × 20 mm, ~1,6 s la 0,08 mm (16 MB). Mărimea: bucata dialogului 14,2 kB gzip (doar
+  codul felierii, fără geometrie dublată), totalul 549,6 / 550 (+14,7, peste estimarea de 8–12), pornirea 101,8.
+- **Găsit pe drum:** unirea pe perechi lăsa o formă care intră într-un gol apărut din unire drept gaură, reluând diferența la
+  nesfârșit (acum pe componente, cu proba ei); încetinirea pentru răcire nu ajungea la timpul minim pe piesele mici (acum prin
+  înjumătățire); otrava numelor cu diacritice ar fi scăpat pe „Placă de probă” (proba are acum „Ștanță”).
+- **Probe:** `imprimanta.feliere.test.ts` 18 / 18; manualul și traducerile 32 / 32; e2e `imprimanta.spec.ts` 11 / 11 (cu cele
+  două noi: fără imprimantă, cu fișierul descărcat; cu imprimanta falsă, prin verificarea și trimiterea 3.6h); compilatorul;
+  importurile 19 / 0.

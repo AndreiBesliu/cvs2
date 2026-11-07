@@ -602,13 +602,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
   găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
   evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
-  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 acceptat pe 07.11: „vreau
-  sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”, deci toate variantele care pot
-  sta împreună devin opțiuni, pe feliile 3.6j–3.6m): desenul feliat direct în cvs2 pentru
-  K1C, cu valorile din profilele K1C ale OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
-  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
-  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
-  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
+  vede și ce pornește aplicația Creality. **Piesele plate (ADR 0191, felia 3.6j)** gata pe 07.11, fără imprimantă (ADR-ul
+  acceptat cu „vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”: toate
+  variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m): **Din desen…** feliază în cvs2 piesele foii (toate,
+  selecția sau una), ridicate la o înălțime, pentru K1C, cu valorile profilelor OrcaSlicer (5 calități, 11 materiale K1),
+  „Simplu” și „Avansat”, straturile văzute de sus, **Salvează .gcode** și **Trimite la imprimantă** (prin 3.6h). Fișierul are
+  **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C** (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare
+  rămân ale imprimantei). **Codul stă în `src/cam/feliere/`, nu în `src/machine/`:** regula importurilor
+  `masina-fara-post-si-document` ține transportul fără document. Adus la primul clic, fără importuri din nucleu spre el (gata
+  de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 549,6 / 550** (+14,7 kB): liniile următoare cer decizia
+  owner-ului (plafonul sau modulele, ADR 0191 §G).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

@@ -4,7 +4,8 @@
 vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi
 disponibile in soft”. Deci toate variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m (secțiunea „Feliile”);
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
-(ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 07.11: „cum pot sa
+(ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
+K1C rămâne la owner. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -128,9 +129,10 @@ Semnele: [citit] în sursă, [calculat] pe hârtie, [nemăsurat] de aflat pe imp
 
 ### G. Bugetul și modulul (întrebarea 5)
 
-13. Codul stă în `src/machine/imprimanta/feliere/`, încărcat la deschiderea dialogului, într-o bucată a lui, fără niciun import
-    din nucleu spre el: gata de mutat într-un modul. Folosește geometria pe care firul principal o are deja (offsetul,
-    booleenele); `liniiParalele` vine cu el (~2 kB).
+13. Codul stă în `src/cam/feliere/` (propus în `src/machine/imprimanta/feliere/`, dar regula importurilor
+    `masina-fara-post-si-document` ține transportul fără document: felierea pleacă din document, deci e CAM), încărcat la
+    deschiderea dialogului, într-o bucată a lui, fără niciun import din nucleu spre el: gata de mutat într-un modul. Folosește
+    geometria pe care firul principal o are deja (offsetul, booleenele, în bucata lor comună); liniile umplerii le face singur.
 14. **Recomandat:** bucata intră în precache și în totalul de 550 kB, ca orice fereastră: merge și fără internet, în atelier.
     Estimarea: +8 … 12 kB (felierea ~6, dialogul cu previzualizarea ~4), pornirea neschimbată (101,7 / 110). Pe ramură,
     totalul e 531,4 / 550; cu liniile care așteaptă unirea, plafonul se poate umple: atunci decide owner-ul, ca la ADR 0122 și
@@ -184,6 +186,33 @@ Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin op
 - **Pe imprimanta owner-ului:** o placă de 40 × 20 × 3 mm, cu o gaură de 10 mm și o fantă, trimisă și pornită din cvs2; cu
   șublerul: 40,0 și 20,0 (±0,2), 3,0 (±0,1), gaura puțin sub 10 (găurile ies mai mici); primul strat lipit, pereții închiși,
   fața de sus închisă. Și ce arată ecranul imprimantei: miniatura, „stratul x din N”.
+
+## Felia 3.6j (07.11.2026): piesele plate, fără imprimantă
+
+- **Codul** (`src/cam/feliere/`): `profil.ts` (imprimanta, cele 5 calități și cele 11 materiale K1, setările și limitele lor),
+  `piese.ts` (piesele foii, ale selecției sau una singură; unirea pe componente: formele care se ating se adaugă pe rând la o
+  regiune, una care atinge exteriorul se unește cu el, una care intră într-un gol îl micșorează; centrarea pe pat, cu marginea),
+  `straturi.ts` (pereții prin `offsetFigura`, la pasul OrcaSlicer, cu compensarea primului strat și cusătura la spate;
+  umplerea pe linii aliniate la pat, în lanțuri zigzag, grila; brim-ul; ce e mai îngust decât o linie), `gcode.ts` (fișierul,
+  timpul cu joncțiunile lui Klipper, încetinirea pentru răcire, ventilatoarele, obiectele), `campuri.ts` („Avansat”),
+  `index.ts` (`feliaza`). Dialogul: `src/app/DialogDinDesen.tsx`, adus la primul clic pe „Din desen…”, care stă în ambele
+  vederi ale ferestrei (fără imprimantă, sub textul de început; cu ea, lângă „Trimite un fișier…”). Aplicația dă desenul ca o
+  funcție (`desen`), citită la clic.
+- **Măsurat:** placa de 20 × 20 × 3 mm: 15 straturi, 1,75 g de PLA (pe hârtie, ~1,8), ~3 min 36 s; E pe mm exact pe valorile
+  de pe hârtie (0,030727, 0,033172 și 0,037247). Felierea: ~0,1 s pentru o placă mică, ~1 s pentru 180 × 180 × 20 mm la 0,20 și
+  ~1,6 s la 0,08 (16 MB de G-code), pe firul principal. **Mărimea:** bucata dialogului are 14,2 kB gzip (dialogul 34 %,
+  G-code-ul 25 %, straturile 13 %, profilul 11 %; fără geometrie dublată: offsetul stă în bucata lui comună), deci totalul
+  549,6 / 550 (+14,7, peste estimarea de 8–12 de la §G), iar pornirea 101,8 (+0,1: `desen` din aplicație). Următoarele linii
+  cer decizia owner-ului: plafonul, ca la ADR 0122 și 0137, sau modulele (5b).
+- **Găsit pe drum:** (1) unirea pe perechi lăsa o formă care intră într-un gol apărut dintr-o unire drept gaură (și relua la
+  nesfârșit diferența): acum pe componente; (2) încetinirea pentru răcire nu ajungea la timpul minim pe piesele mici (timpul nu
+  scade liniar cu viteza, din cauza accelerațiilor): acum factorul se caută prin înjumătățire, până la viteza minimă; (3) poarta
+  importurilor a mutat codul în `src/cam/feliere/` (punctul 13).
+- **Proba:** `test/unit/imprimanta.feliere.test.ts` (18, pe valori de pe hârtie); manualul numește fiecare control al
+  dialogului și fiecare setare din „Avansat” (proba lui le caută pe toate); e2e +2 (fără imprimantă, cu fișierul descărcat;
+  cu imprimanta falsă, prin verificarea și trimiterea de la 3.6h); otrăvurile `test/otravuri/3.6j.py`.
+- **Nemăsurat încă:** placa de probă pe K1C; ce arată ecranul imprimantei (miniatura, „stratul x din N”); unde trage linia de
+  curățare.
 
 ## Întrebările (owner)
 

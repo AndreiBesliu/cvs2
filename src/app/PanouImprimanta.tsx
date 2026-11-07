@@ -10,7 +10,8 @@
  * O legătură căzută nu oprește imprimarea: fereastra spune asta și se leagă singură din nou; oprirea de urgență rămâne ecranul
  * imprimantei. Temperaturile doar se citesc.
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import type { DesenImprimanta } from './DialogDinDesen.tsx';
 import '../i18n/imprimanta.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { limba, t } from '../i18n/t.ts';
@@ -32,6 +33,15 @@ mesaje.catch(() => undefined);
 
 /** O singură sesiune pe pagină: fereastra rămâne montată după prima deschidere, iar legătura trăiește cu pagina. */
 const sesiune = new SesiuneImprimanta();
+
+/**
+ * Dialogul „Din desen…” (ADR 0191, felia 3.6j), cu felierea pieselor plate: o bucată a lui, adusă la primul clic, ca
+ * fereastra să nu crească pentru cine doar trimite fișiere gata feliate.
+ */
+const DialogDinDesen = lazy(() => import('./DialogDinDesen.tsx').then((m) => ({ default: m.DialogDinDesen })));
+
+/** Desenul de feliat: documentul și selecția, citite din aplicație la clicul pe „Din desen…”. */
+export type SursaDesen = () => DesenImprimanta;
 
 function citesteTinute(): readonly ImprimantaTinuta[] {
   try {
@@ -65,7 +75,7 @@ const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleStrin
 const gazdaPort = (a: AdresaRetea): string => (a.port === PORT_CREALITY ? a.gazda : `${a.gazda}:${a.port}`);
 const textMotiv = (m: MotivImprimanta, a: AdresaRetea | null): string => t(`imprimanta.motiv.${m}`, { adresa: a ? gazdaPort(a) : '—' });
 
-export function PanouImprimanta(): ReactNode {
+export function PanouImprimanta({ desen }: { readonly desen?: SursaDesen }): ReactNode {
   const st = useSyncExternalStore((f) => sesiune.aboneaza(f), () => sesiune.stare());
   const [tinute, setTinute] = useState<readonly ImprimantaTinuta[]>(citesteTinute);
   const tine = (f: (l: readonly ImprimantaTinuta[]) => readonly ImprimantaTinuta[]): void => {
@@ -87,13 +97,17 @@ export function PanouImprimanta(): ReactNode {
     <div className="imprimanta" data-testid="imprimanta">
       <h2 className="imprimanta-ascuns">{t('vedere.imprimanta')}</h2>
       {st.legatura === 'deconectat' || (st.legatura === 'se-leaga' && st.imprimanta.cod === null && st.imprimanta.model === null)
-        ? <Conectare st={st} tinute={tinute} uita={(id) => { tine((l) => uitaImprimanta(l, id)); }} />
-        : <Imprimanta st={st} />}
+        ? <Conectare st={st} tinute={tinute} uita={(id) => { tine((l) => uitaImprimanta(l, id)); }} desen={desen} />
+        : <Imprimanta st={st} desen={desen} />}
     </div>
   );
 }
 
-function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonly tinute: readonly ImprimantaTinuta[]; readonly uita: (id: string) => void }): ReactNode {
+function Conectare({ st, tinute, uita, desen }: {
+  readonly st: StareImprimanta; readonly tinute: readonly ImprimantaTinuta[]; readonly uita: (id: string) => void; readonly desen: SursaDesen | undefined;
+}): ReactNode {
+  // „Din desen…” merge și fără imprimantă legată: atunci fișierul doar se salvează.
+  const [dinDesen, setDinDesen] = useState<DesenImprimanta | null>(null);
   const [text, setText] = useState('');
   const [refuz, setRefuz] = useState<string | null>(null);
   const [cautare, setCautare] = useState<{ readonly n: number; readonly total: number } | null>(null);
@@ -128,6 +142,12 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
   };
   const seLeaga = st.legatura === 'se-leaga';
   return (
+    <>
+    {dinDesen !== null && (
+      <Suspense fallback={<p role="status">{t('imprimanta.felie.lucreaza')}</p>}>
+        <DialogDinDesen desen={dinDesen} model={null} trimite={null} inchide={() => { setDinDesen(null); }} />
+      </Suspense>
+    )}
     <div className="imprimanta-coloane imprimanta-doua">
       <section className="imprimanta-card" aria-labelledby="imprimanta-conectare" data-testid="imprimanta-conectare">
         <h3 id="imprimanta-conectare">{t('imprimanta.conectare')}</h3>
@@ -194,16 +214,25 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
               <p>{t('imprimanta.prima')}</p>
             </>
           )}
+        {desen !== undefined && (
+          <div className="imprimanta-din-desen">
+            <button type="button" data-imprimanta="din-desen" onClick={() => { setDinDesen(desen()); }}>{t('imprimanta.felie.din-desen')}</button>
+            <p className="imprimanta-ajutor">{t('imprimanta.felie.din-desen.ajutor')}</p>
+          </div>
+        )}
       </section>
     </div>
+    </>
   );
 }
 
 /** Cele două ferestre de confirmare: pornirea unui fișier și oprirea imprimării. */
 type Confirmare = { readonly fel: 'pornire'; readonly fisier: FisierImprimanta } | { readonly fel: 'oprire' };
 
-function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
+function Imprimanta({ st, desen }: { readonly st: StareImprimanta; readonly desen: SursaDesen | undefined }): ReactNode {
   const i = st.imprimanta;
+  // Piesele plate din desen (3.6j): fișierul feliat trece prin aceeași trimitere ca unul de pe calculator.
+  const [dinDesen, setDinDesen] = useState<DesenImprimanta | null>(null);
   const stare: StareLucrare = stareLucrare(i);
   const legata = st.legatura === 'conectat';
   const [confirmare, setConfirmare] = useState<Confirmare | null>(null);
@@ -290,6 +319,12 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
         <DialogTrimitere key={ales.k} fisier={ales.f} st={st} stare={stare} alt={alege} inchide={() => { setAles(null); }}
           porneste={(f) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f }); }} />
       )}
+      {dinDesen !== null && ales === null && (
+        <Suspense fallback={<p role="status">{t('imprimanta.felie.lucreaza')}</p>}>
+          <DialogDinDesen desen={dinDesen} model={i.model} inchide={() => { setDinDesen(null); }}
+            trimite={legata && st.fisiere !== null ? (f) => { setDinDesen(null); setAles((x) => ({ f, k: (x?.k ?? 0) + 1 })); } : null} />
+        </Suspense>
+      )}
       <div className="imprimanta-coloane">
         <section className="imprimanta-card" aria-labelledby="imprimanta-lucrarea" data-testid="imprimanta-lucrarea">
           <h3 id="imprimanta-lucrarea">{t('imprimanta.lucrarea')}</h3>
@@ -330,7 +365,8 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
               </div>
             )}
         </section>
-        <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }} />
+        <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }}
+          dinDesen={desen === undefined ? null : () => { setAles(null); setDinDesen(desen()); }} />
         <Jurnal st={st} />
       </div>
     </>
@@ -350,8 +386,9 @@ function Temperatura({ nume, v, tinta, id }: { readonly nume: string; readonly v
   );
 }
 
-function Fisiere({ st, stare, alege, porneste }: {
+function Fisiere({ st, stare, alege, porneste, dinDesen }: {
   readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alege: () => void; readonly porneste: (f: FisierImprimanta) => void;
+  readonly dinDesen: (() => void) | null;
 }): ReactNode {
   const legata = st.legatura === 'conectat';
   const libera = sePoatePorni(stare);
@@ -376,9 +413,11 @@ function Fisiere({ st, stare, alege, porneste }: {
       {!libera && st.fisiere !== null && st.fisiere.length > 0 && <p className="imprimanta-ajutor">{t('imprimanta.porneste.ocupata')}</p>}
       <div className="imprimanta-butoane">
         <button type="button" data-imprimanta="trimite" disabled={!legata || st.fisiere === null} onClick={alege}>{t('imprimanta.trimite')}</button>
+        {dinDesen !== null && <button type="button" data-imprimanta="din-desen" onClick={dinDesen}>{t('imprimanta.felie.din-desen')}</button>}
         <button type="button" data-imprimanta="fisiere-reimprospateaza" disabled={!legata} onClick={() => { sesiune.reimprospateaza(); }}>{t('imprimanta.fisiere.reimprospateaza')}</button>
       </div>
       <p className="imprimanta-ajutor">{t('imprimanta.trimite.ajutor')}</p>
+      {dinDesen !== null && <p className="imprimanta-ajutor">{t('imprimanta.felie.din-desen.ajutor')}</p>}
     </section>
   );
 }

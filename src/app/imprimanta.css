@@ -422,3 +422,162 @@
   border-radius: var(--r-1);
   background: var(--s-atentie);
 }
+
+/*
+ * Dialogul „Din desen…” (ADR 0191, felia 3.6j): pe toată lățimea ferestrei, setările în stânga (o coloană de ~20 rem),
+ * straturile în dreapta; o coloană pe telefon. Patul previzualizării e negru în ambele teme (placa K1C), iar rolurile
+ * liniilor au culorile lor, aceleași în ambele teme, ca în previzualizarea unui feliator.
+ */
+.imprimanta-felie {
+  max-width: none;
+  --imp-pat: #22262c;
+  --imp-pat-grila: #2f343b;
+  --imp-rol-exterior: #ff8a1f;
+  --imp-rol-interior: #ffe27a;
+  --imp-rol-plin: #b48cff;
+  --imp-rol-sus: #ff6b6b;
+  --imp-rol-rar: #4fd1c5;
+  --imp-rol-brim: #8fb8ff;
+  --imp-rol-subtire: #ff3b30;
+}
+
+.imprimanta-felie-corp {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+@media (max-width: 48rem) {
+  .imprimanta-felie-corp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.imprimanta-felie-setari,
+.imprimanta-felie-vedere {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.imprimanta-felie-ce {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.imprimanta-felie-ce legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-weight: 600;
+}
+
+.imprimanta-felie-ce label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-doua {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-avansat {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-avansat fieldset {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.imprimanta-felie-avansat legend {
+  padding: 0 var(--sp-1);
+  font-weight: 600;
+}
+
+.imprimanta-felie-camp span {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-camp input {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-felie-pat {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-2);
+  background: var(--imp-pat);
+}
+
+.imprimanta-felie-glisor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-glisor input {
+  width: 100%;
+  accent-color: var(--a);
+}
+
+.imprimanta-felie-glisor output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.imprimanta-felie-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.imprimanta-felie-legenda i {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.imprimanta-felie-rezumat {
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--t) 5%, var(--s-panou));
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-din-desen {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
 import { numeScurt } from '../../src/app/editareCalcul.ts';
 import { FELURI_ALINIERE } from '../../src/geom/aliniere.ts';
+import { CAMPURI_AVANSATE } from '../../src/cam/feliere/campuri.ts';
 import { enCarcasa } from '../../src/i18n/carcasa.en.ts';
 import { roCarcasa } from '../../src/i18n/carcasa.ro.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
@@ -231,12 +232,25 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   trimite: 'imprimanta.trimite', 'trimite-alt': 'imprimanta.trimite.alt', 'trimite-confirma': 'imprimanta.trimite.confirma',
   'trimite-oricum': 'imprimanta.trimite.oricum', 'trimite-renunta': 'imprimanta.trimite.renunta', 'trimite-reia': 'imprimanta.trimite.reia',
   'trimite-porneste': 'imprimanta.trimite.porneste', 'trimite-inchide': 'imprimanta.trimite.inchide',
+  // Piesele plate din desen (felia 3.6j, ADR 0191): butonul și dialogul lui (`src/app/DialogDinDesen.tsx`).
+  'din-desen': 'imprimanta.felie.din-desen', 'felie-ce-foaie': 'imprimanta.felie.ce.foaie', 'felie-ce-selectie': 'imprimanta.felie.ce.selectie',
+  'felie-ce-piesa': 'imprimanta.felie.ce.piesa', 'felie-piesa': 'imprimanta.felie.ce.piesa', 'felie-inaltime': 'imprimanta.felie.inaltime',
+  'felie-material': 'imprimanta.felie.material', 'felie-calitate': 'imprimanta.felie.calitate', 'felie-duza': 'imprimanta.felie.duza',
+  'felie-pat': 'imprimanta.felie.pat-temp', 'felie-pereti': 'imprimanta.felie.pereti', 'felie-umplere': 'imprimanta.felie.umplere',
+  'felie-brim': 'imprimanta.felie.brim', 'felie-avansat': 'imprimanta.felie.avansat', 'felie-implicite': 'imprimanta.felie.implicite',
+  'felie-strat': 'imprimanta.felie.strat', 'felie-trimite': 'imprimanta.felie.trimite', 'felie-salveaza': 'imprimanta.felie.salveaza',
+  'felie-renunta': 'imprimanta.felie.renunta',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
-  const sursa = citeste('src/app/PanouImprimanta.tsx');
-  assert.doesNotMatch(sursa, /data-imprimanta=\{/);
-  const controale = [...new Set([...sursa.matchAll(/data-imprimanta="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
+  const fereastra = citeste('src/app/PanouImprimanta.tsx'), dialog = citeste('src/app/DialogDinDesen.tsx');
+  assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
+  assert.doesNotMatch(dialog, /data-imprimanta=\{/);
+  // În dialog, câmpurile numerice primesc controlul prin `data="felie-…"` (al lui `CampNumar`).
+  const controale = [...new Set([
+    ...[...fereastra.matchAll(/data-imprimanta="([a-z0-9-]+)"/g)].map((x) => x[1]!),
+    ...[...dialog.matchAll(/data-imprimanta="([a-z0-9-]+)"|\bdata="(felie-[a-z0-9-]+)"/g)].map((x) => (x[1] ?? x[2])!),
+  ])].sort();
   assert.deepEqual(controale, Object.keys(CONTROALE_IMPRIMANTA).sort(), 'fiecare control din fereastră, și doar ele, în CONTROALE_IMPRIMANTA');
   for (const m of manuale()) {
     const cap = m.capitole.find((c) => c.id === 'imprimanta');
@@ -245,6 +259,21 @@ test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capi
     for (const c of controale) {
       const nume = numeScurt(eticheta(CONTROALE_IMPRIMANTA[c] ?? '')[m.limba]).toLocaleLowerCase(m.limba);
       assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-imprimanta="${c}") nu e în capitolul „imprimanta”`);
+    }
+  }
+});
+
+test('fiecare setare din „Avansat” (piesele plate, ADR 0191) și grupul ei sunt numite în capitolul „imprimanta”, în ambele limbi', () => {
+  for (const m of manuale()) {
+    const cap = m.capitole.find((c) => c.id === 'imprimanta');
+    assert.ok(cap, `${m.limba}: capitolul „imprimanta”`);
+    const text = `${cap.titlu}\n${cap.text}`.toLocaleLowerCase(m.limba).replace(/\s+/g, ' ');
+    for (const g of CAMPURI_AVANSATE) {
+      const chei = [`imprimanta.felie.g.${g.grup}`, ...g.campuri.map((c) => `imprimanta.felie.c.${c.k}`)];
+      for (const k of chei) {
+        const nume = numeScurt(eticheta(k)[m.limba]).toLocaleLowerCase(m.limba);
+        assert.ok(text.includes(nume), `${m.limba}: „${nume}” (${k}) nu e în capitolul „imprimanta”`);
+      }
     }
   }
 });

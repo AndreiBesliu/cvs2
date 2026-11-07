@@ -270,6 +270,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Acțiunile citesc și scriu starea sincron: referința ține mereu ultima valoare, starea React redesenează.
   const curenta = useRef({ istoric, selectie });
   curenta.current = { istoric, selectie };
+  // Desenul pentru „Din desen…” al ferestrei Imprimanta (ADR 0191): citit la clic, din referință (o funcție stabilă).
+  const [desenImprimanta] = useState(() => () => ({ doc: curenta.current.istoric.doc, selectie: curenta.current.selectie }));
 
   const [paleta, setPaleta] = useState(false);
   /**
@@ -1255,7 +1257,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {imprimantaMontata && (
           <section className="fereastra-imprimanta" aria-label={t('vedere.imprimanta')} hidden={fereastra !== 'imprimanta'}>
             <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="imprimanta-incarca">{t('fereastra.imprimanta.incarca')}</p>}>
-              <PanouImprimanta />
+              <PanouImprimanta desen={desenImprimanta} />
             </Suspense>
           </section>
         )}

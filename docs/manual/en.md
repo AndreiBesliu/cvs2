@@ -1096,6 +1096,37 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   does not arrive, the window says why (the printer does not answer on port 80, the file is not in its list, or its size
   differs), with
   **Try again**.
+- **From drawing…** (under the list; with no printer connected, under the opening text) slices flat parts from the drawing
+  here, without Creality Print: a plate, a spacer, a template, a calibration cube, that is a closed outline raised to a
+  thickness. Holes come from the drawing (a shape inside another is a hole, one inside a hole is an island), overlapping shapes
+  are joined, text prints too, and open paths are left aside, with a message. In the **Flat part for the printer** window:
+  - **What to print:** **The parts of the sheet**, **The selected parts** or **One part**, picked from the list. The parts keep
+    their layout from the sheet and are centred on the bed; what does not fit (220 × 220 mm on a K1C, with a 5 mm margin on
+    each side) is said.
+  - **Height** (by default, the sheet thickness), **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
+    ASA, PC, PA-CF, TPU, with the values of the Creality K1 profiles in OrcaSlicer), **Quality** (0.08, 0.12, 0.16, 0.20 or
+    0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage, as a grid)
+    and **Brim** (Automatic: for narrow or tall parts; Yes; No).
+  - **Advanced** shows the other settings, in groups. Layers: Layer height, First layer height, Top layers, Top thickness at
+    least, Bottom layers. First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
+    wall width, Solid infill width, Sparse infill width, Top surface width, First layer width. Speeds: Outer wall speed, Inner
+    wall speed, Solid infill speed, Sparse infill speed, Top surface speed, First layer speed, First layer infill speed, Travel
+    speed. Accelerations: Wall acceleration, Top surface acceleration, Infill acceleration, First layer acceleration, Travel
+    acceleration. Retraction: Retraction length, Retraction speed, Z hop. Cooling: Part fan, minimum; Part fan, maximum; Fan
+    off for the first layers; Auxiliary fan; Minimum layer time (a shorter layer prints slower, so it can cool); Slowest
+    cooling speed. Material flow: Flow ratio, Maximum volumetric speed (speeds are capped so the material fits through the
+    nozzle). Edges: Elephant foot compensation (the first layer, shrunk a little), Sparse infill overlap on walls, Solid infill
+    overlap on walls, Brim width, Brim gap. **Profile values** puts back those of the chosen material and quality. The chosen
+    settings are kept in the browser, for next time.
+  - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
+    surface, sparse infill, brim) over the part outline, thin and red: where only the red shows, the part is narrower than one
+    line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role,
+    then the layers, the estimated time (without heating) and the filament, in metres and grams.
+  - **Send to the printer** (only with the printer connected) passes the file through the same check and sending as **Send a
+    file…**, with the same **The bed is clear** check at start. **Save .gcode** downloads it, for a USB stick or to send later;
+    **Cancel** (or `Escape`) closes the window. The file uses only the commands OrcaSlicer writes for the K1C: the start
+    (`START_PRINT`) and the end (`END_PRINT`) stay the printer’s, with its levelling, purge line and cooling; each part is an
+    object the printer can skip if it comes loose.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
   and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen. A
   printer silent for more than 20 s counts as lost (a connection can die without closing), and one that no longer answers at
