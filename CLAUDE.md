@@ -363,8 +363,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   necunoscută și n-o atinge. **Emulatorul Storage (9195) șterge `<temp>/firebase/storage/blobs` la oprire:**
   `scripts/test-emulator.ts` îi dă un dosar temporar al rulării; **el ignoră și precondiția `ifGenerationMatch`**. **Bucata
   contului nu importă `shared/poza.ts`** (bundlerul l-ar scoate într-o bucată nouă, `poza`, prinsă de build-ul determinist).
-  Ținta de publicare `stocare` (regulile Storage) e în `TINTE_SERVER`. **Pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul
-  508,8 / 550, /admin 106,5 / 200, contul 29,6 / 32** (față de baza `80cc176`: 101,5, 508,8, 105,4, 28,8).
+  Ținta de publicare `stocare` (regulile Storage) e în `TINTE_SERVER`. După unirea lui `main` (`1bf99c5`) în ramură:
+  **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 106,5 / 200, contul 29,6 / 32** (față de un build
+  curat al lui `1bf99c5`: 101,5, 519,5, 105,4, 28,8).
   **Corpusul de aur al documentului (ADR 0121, felia 4.1↑, punctul 1 al etapei 4)** gata pe 02.11: același proiect de probă,
   salvat de aplicația fiecărei versiuni a schemei, v1 → v18 (commit-ul ei, în `ISTORIE`). Fiecare versiune deschide salvarea
   celei dinainte, cu migrarea ei, și adaugă ce a adus ea, de la grupul din v2 la strategia paralelă din v18. Intrările stau
