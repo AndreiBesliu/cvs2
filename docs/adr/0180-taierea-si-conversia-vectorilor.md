@@ -137,6 +137,32 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
 - **Panoul:** cele trei blocuri ale schiței, unul sub altul; nu trece de 70 % din fereastră (se derulează, ca panoul
   verificării).
 
+**Felia 10.3↑d, la cod** (07.11):
+- **Arce (§8):** fiecare cubică devine biarcele din ADR 0033 (`cubicaInArce`), cu toleranța împărțită la scara elementului
+  (abaterea se spune în lume); un element întins neuniform se sare (un arc întins nu mai e arc). Cu „și liniile scurte”, cel
+  mai lung șir de linii din fiecare vârf, fără colțuri (**o întoarcere de peste 30° e un colț**), devine arcul prin primul,
+  mijlocul și ultimul lui vârf, cât stă la cel mult toleranța de șir în ambele sensuri (vârfurile, laturile, arcul dintre două
+  vârfuri) și **nu trece de 180°**: poligonul închis cu 64 de laturi devine două semicercuri. Numerele unei căi (curbele, arcele,
+  liniile) se adună doar dacă ea se schimbă de tot.
+- **În cerc, doar dacă e (§10, 5a):** cercul celor mai mici pătrate (Kåsa), **pe vârfuri la o formă doar din linii** (deci prin
+  noduri), altfel pe eșantioane. Abaterea e radială, exactă pe linii (și piciorul perpendicularei din centru) și pe arce, **cât
+  forma ocolește centrul o singură dată, fără să se întoarcă**; altfel, distanța Hausdorff (o cale dus-întors pe un sfert de
+  cerc nu e cerc).
+- **În dreptunghi, doar dacă e:** dreptunghiul de arie minimă pe laturile învelitorii convexe, cu unghiul în (−45°, 45°]; raza
+  colțului din cât lipsesc colțurile (distanța de la colț la formă = r·(√2 − 1)), cel mult jumătate din latura mică. **Un cerc
+  (fără laturi drepte pe nicio axă) nu e dreptunghi, o fantă da.** Abaterea, Hausdorff în ambele sensuri (o cale dus-întors pe
+  trei laturi nu e dreptunghi).
+- **Cu mărimea dată:** cercul sau dreptunghiul, drept pe foaie, în centrul cutiei formei; doar formele închise.
+- **Elementul își păstrează id-ul, numele, câmpurile și operațiile;** se schimbă forma și matricea lui, cât să stea pe foaie
+  unde era (matricea nouă = matricea lui · inversa matricei lui în lume · matricea nouă în lume). Găurirea refuză dreptunghiul
+  (numărată, „cu găurire”).
+- **Ce se sare, numărat:** căile deschise (la cerc și dreptunghi), piesele puse de mai multe ori (§12), elementele întinse
+  neuniform (la arce). Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai mare) și,
+  la refuz, cea mai mică abatere a formelor refuzate.
+- **Acțiunea `document.converteste`:** un lot de `inlocuieste-piesa`, un singur pas de anulare, doar dacă documentul e cel de la
+  clic; selecția rămâne. Pornește din panou (calculul cere workerul), ca „Taie”. Butonul Convertește stă lângă Taie, în
+  extensia barei; panoul are câte un bloc pentru Arce, În cerc și În dreptunghi, fiecare cu toleranța și butonul lui.
+
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
 

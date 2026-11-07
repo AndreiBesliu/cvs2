@@ -500,6 +500,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   păstrează partea aleasă. O formă fără nimic acolo pleacă, iar una care trece granița se taie, se șterge sau rămâne întreagă.
   **Rezultatul tăierii are acum `sterse`**: acțiunea `document.taie` pune întâi ștergerile (`comenziStergere`), apoi degruparea,
   într-un singur `lot`. Oracolul are `judecaDecuparea` (`taiere.decupare.oracol.test.ts`).
+  **Conversia (felia 10.3↑d)** gata pe 07.11: `src/model/conversie.ts` (`converteste`, pură, în workerul CAM, cererea
+  `conversie`), panoul Convertește (`src/app/PanouConversie.tsx`, lângă Taie) și acțiunea `document.converteste` (un lot de
+  `inlocuieste-piesa`). **Arce:** biarcele din ADR 0033, toleranța împărțită la scara elementului (un element întins
+  neuniform se sare); șirurile de linii pe un cerc devin arce prin primul, mijlocul și ultimul vârf, fără colțuri (peste 30°)
+  și fără arce peste 180°. **În cerc:** Kåsa pe vârfuri la o formă doar din linii (prin noduri), abaterea radială doar cât
+  forma ocolește centrul o dată, altfel Hausdorff. **În dreptunghi:** aria minimă pe învelitoare, unghiul în (−45°, 45°], raza
+  colțului din colțurile lipsă; un cerc nu e dreptunghi, o fantă da. Elementul își păstrează id-ul și operațiile (găurirea
+  refuză dreptunghiul). Oracolul are `judecaConversia`, `hausdorff`, `cutieForma`, `cerculFormei`, `dreptunghiulFormei`
+  (`conversie.oracol.test.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

@@ -6320,3 +6320,28 @@ in paralel?”.
   1024 px: blocul „Decupează la ultima formă aleasă” ca în schiță, panoul derulat; decupat la cercul ales ultimul, restul unui
   dreptunghi care atingea cercul doar pe arc, din afară, a plecat (fără refuz: nimic tăiat), iar semidiscul dinăuntru și cercul
   au rămas.
+
+## 2026-11-07 — Felia 10.3↑d: conversia în arce, în cerc și în dreptunghi (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑d”.
+**Started:** 07.11, 14:40. **Completed:** 07.11, 17:55.
+
+- **Codul:** `src/model/conversie.ts` (`converteste`, pură): Arce (biarcele din ADR 0033 și șirurile de linii pe un cerc, fără
+  colțuri peste 30° și fără arce peste 180°), În cerc (Kåsa prin noduri; abaterea radială doar cât forma ocolește centrul o
+  dată, altfel Hausdorff), În dreptunghi (aria minimă pe învelitoare, raza colțului din colțurile lipsă; un cerc nu e
+  dreptunghi), cu mărimea dată (în centrul cutiei). Cererea nouă `conversie` în workerul CAM (`protocolCam`, `calculCam`,
+  `bazinCam`, `convertesteVectorii`); acțiunea `document.converteste` (un lot de `inlocuieste-piesa`, doar pe documentul de la
+  clic); panoul Convertește (`PanouConversie.tsx`, în bucata panoului Taie: o foaie de stil împărțită de două bucăți la cerere
+  ieșea într-o bucată doar de CSS, pe care harta importurilor o pomenea fără fișier, prinsă de poarta build-ului) și butonul
+  lui, lângă Taie. Manualul, ambele limbi (capitolul „Conversia vectorilor”).
+- **Unirea lui `main`** (`1bf99c5`: incrustațiile, documentul v20), cerută de sesiunea principală, în `c1b0e49`, după commit-ul
+  codului (`4c6a18f`): lucrul era încă necomis când a venit cererea. Conflictele: DEVLOG-ul (cel din `main` întreg, apoi
+  10.3↑c), indexul ADR, ușile manualului (86 în `main` + 2 = 88); capitolele manualului, „29” pe ambele părți, fără conflict,
+  sunt de fapt 30 (incrustația și conversia).
+- **Probele:** 19 pe hârtie (`conversie.test.ts`), oracolul extins (`judecaConversia`, cu Hausdorff măsurat din nou și cutia
+  exactă) pe trei corpusuri din sămânță, cu martorul lui; 2 e2e (`conversie.spec.ts`: cercul din 64 de laturi devine găuribil în
+  fereastra exportului; arcele și refuzurile, în panou).
+- **Porțile:** traducerile (646 / 0 la unire), compilatoarele, importurile, licențele; unit 8 584 (8 576 / 0 căderi / 8 sărite) pe codul feliei și 8 612 (8 604 / 0 căderi / 8 sărite) pe `c1b0e49`, după unire; build-ul determinist a prins pe codul feliei bucata doar de CSS (reparată înainte de commit), apoi 272 de fișiere identice, iar pe `c1b0e49` 274; e2e 360 / 360 pe codul feliei (apoi conversia, tăierea și manualul, 12 / 12, după mutarea panoului) și, pe `c1b0e49`, 355 / 362 în rularea întreagă (16 lucrători), cu 7 căderi la încărcarea paginii (elemente negăsite în 5 s, un fișier de raport blocat), trecute la reluare cu 3 lucrători (6 spec-uri, 45 / 45), deci 362 / 362; emulatoarele 81 / 81 și 21 / 21 pe `7f1d815`.
+- **Otrăvurile** (`test/otravuri/10.3d.py`): 25; prima rulare (`c1b0e49`): 24 prinse; V07 (sfertul de tură al dreptunghiului, cu colțul de pornire neschimbat) a scăpat, fiindcă la un dreptunghi exact prima latură de arie minimă a învelitorii are mereu unghiul sub 45°; prinsă pe `7f1d815` după o probă nouă (dreptunghiul rotit cu −30°, cu două umflături de 0,02 mm: latura de arie minimă e la 60°), deci 25 / 25. Două probe scrise înaintea rulării au fost singurele care au prins câte o otravă: cele două semicercuri (V03, arcele peste 180°) și calea dus-întors pe cerc (V05, abaterea radială fără ocolire).
+- **Pe codul feliei, față de `7f05ccd`: pornirea 101,4 → 101,5 (cu ușa 105,0 / 110 kB), totalul 517,2 → 522,1 / 550 kB (+4,9: workerul CAM +3,05, panoul, în bucata panoului Taie, +1,36, editarea +0,27, acțiunile +0,14 și o bucată nouă de 0,10 kB, `verificareLimite`, comună cu panoul verificării). După unirea lui `main`: pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 525,0 / 550 kB. Linia, până acum: ~16,0 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6, 10.3↑d +4,9), peste ghidul de ~10 kB din brief, cu o felie rămasă (netezirea).**
+
