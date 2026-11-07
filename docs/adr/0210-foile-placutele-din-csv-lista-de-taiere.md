@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
 toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
-în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`).
+în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Felia 11.1↑ gata pe 07.11**
+(foaia activă și lista cu foile; vezi la capăt, „Felia 11.1↑”).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -273,3 +274,44 @@ separate (implicit) sau cu aceleași piese (11.2↑); mărimea piesei în raport
 **Rămân reguli:** distanța minimă cât freza (sub ea, tăietura unei piese intră în vecina ei), un singur marcaj al câmpurilor
 (`{nume}`), locul literelor plăcuțelor în document. Biblioteca de piese rămâne pentru mai târziu. Numărul schemei
 plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 0171), altfel v22.
+
+## Felia 11.1↑ (gata pe 07.11)
+
+- **Foaia activă** e a ferestrei: o vedere ținută în browser (`cncvs2.foaia`, `src/app/foaiaActiva.ts`; un singur proiect în
+  browser, deci o singură cheie), fără revizie și fără anulare; un id necunoscut (foaia ștearsă, alt proiect) dă prima foaie.
+  Se dă explicit: `ContextDocument.foaie` în registru, `indexFoaie` / `idFoaie` în editare, în panouri și în cererile
+  workerului CAM care fac id-uri noi (verificarea, reparația, tăierea primesc documentul întreg, ca id-urile să nu se
+  ciocnească cu ale altor foi). CAM-ul care doar citește (exportul, traseul, timpul, simularea, vederea 3D) primește
+  documentul văzut din foaie (`doarFoaia`): programul unei foi e, octet cu octet, al documentului doar cu ea (proba unitară pe
+  trei foi; cea e2e pe placa 1 A, exportată de pe foaia 2).
+- **Lista:** foile una sub alta (numele; dedesubt mărimea, materialul și câte piese); piesele doar sub cea activă. „+ Foaie
+  nouă” pune una după cea activă, ca ea (mărimea, materialul). Meniul foii (⋯ sau clic dreapta) vine la cerere
+  (`MeniuFoaie.tsx`): **„Nume, mărime și material…”, un singur rând în locul celor două din §1** (deschide panoul de
+  proprietăți al foii, unde stau toate trei), „Duplică foaia”, „Mută foaia mai sus / jos”, „Șterge foaia” (cu confirmare când
+  are piese; ultima rămâne, oprită, cu motivul). PgUp / PgDn trec la foaia de dinainte / următoare; cu Ctrl, ⌘ sau Shift,
+  nimic (filele browserului). Cipul din bara de jos („Foaia 2 · 2 din 3”) apare doar cu mai multe foi.
+- **Mutarea pe altă foaie:** meniul de clic dreapta al pânzei („Mută pe Foaia 2”, „Mută pe o foaie nouă”; cu multe foi,
+  meniul derulează) sau rândul tras pe altă foaie (cu selecția lui, dacă e în ea); un `lot` de `sterge` + `adauga`, deci un
+  pas; locul și rotirea rămân, foaia activă la fel.
+- **Jurnalul:** `adauga-foaie`, `sterge-foaie`, `muta-foaie` și **`eticheta-foaie`** (numele sau materialul; mărimea rămâne la
+  `inlocuieste-stoc`, deci `inlocuieste-foaie` din §1 n-a mai fost nevoie). Aplicarea lor stă în `jurnalFoi.ts`, înregistrată
+  în jurnal odată cu comenzile (`foiComenzi.ts`), adică odată cu calculul acțiunilor: o comandă a foilor se naște doar acolo.
+- **`material` nu e în schemă** (abaterea de la §1, unde era „un text liber, ≤ 200 de caractere”): oracolul documentului
+  generează documente vechi cu un câmp necunoscut `material` pe foaie, cu orice valoare (obiect, număr, `null`), iar un
+  document valid ieri trebuie să rămână valid fără o schemă nouă (86 de probe ale oracolului au căzut pe varianta strictă).
+  Deci ușa nu-l judecă și îl păstrează; aplicația îl citește doar când e text (`materialFoaie`) și scrie doar text de cel mult
+  200 de caractere; comanda etichetei ține valoarea veche exactă (`{ valoare }` sau null), ca anularea să întoarcă și un
+  material străin, la locul lui.
+- **Exportul:** titlul ferestrei spune foaia când proiectul are mai multe („Exportă G-code (GRBL 1.1) · Foaia 2”); numele
+  fișierelor rămân cele de azi (`cncvs2-<origine>.nc`): cele pe foi (`<proiect>-foaia-2-…`) vin cu „Toate foile” (11.5↑).
+- **Limita știută:** o cale Pen începută înainte de PgUp / PgDn se termină pe foaia de după; gesturile față de foi vin cu
+  11.1↑b (toate foile pe pânză).
+- **Măsurat:** pornirea 101,5 → 103,7 kB (cu ușa 105,1 → 107,2 / 110), totalul 519,5 → 524,7 / 550: sub 550, deci ADR-ul
+  plafonului de 600 kB rămâne pentru o felie viitoare. Prima variantă urca pornirea cu 3,5 kB; au ieșit din ea comenzile
+  foilor, aplicarea lor în jurnal și meniul foii. În pornire rămân lista cu foile, legăturile din `App.tsx` și rândurile
+  registrului.
+- **Probele:** `foi.test.ts` (comenzile, inversele exacte, materialul străin), `foi.actiuni.test.ts` (registrul pe trei foi,
+  criteriul din prag pe JSON-ul canonic, exportul fiecărei foi față de documentul doar cu ea, foaia ținută), `foi.spec.ts`
+  (e2e: lista, PgUp / PgDn, reîncărcarea, mutarea din meniu și prin tragere, ștergerea cu confirmare, numele și materialul,
+  exportul foii a doua, traseul care urmează foaia), manualul (capitolul „Foile”, 9 uși noi), otrăvurile
+  `test/otravuri/11.1.py`: 42; prima rulare (`87a7537`): 41 prinse, C01 scăpată (id-ul foii noi nu sărea peste unul folosit: proba n-avea un gol în id-uri) → cazul f1, f3 → f4 în `foi.test.ts`, apoi prinsă, deci 42 / 42; cele 10 e2e (U01–U10), în clonă, pe portul 4178.

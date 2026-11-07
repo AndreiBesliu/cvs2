@@ -69,6 +69,8 @@ test('id-ul și numele unei foi noi: f<n> liber; numele din id, ca să nu se sch
   const d = treiFoi();
   assert.equal(idFoaieNoua(d), 'f4');
   assert.equal(idFoaieNoua({ ...d, foi: [d.foi[0] as Foaie, { ...(d.foi[2] as Foaie), id: 'f2' }] }), 'f3');
+  // Ștearsă f2 din f1, f2, f3: numărul foilor + 1 ar da f3, care există; id-ul nou sare peste el (otrava C01).
+  assert.equal(idFoaieNoua({ ...d, foi: [d.foi[0] as Foaie, d.foi[2] as Foaie] }), 'f4');
   const sablon = (n: number): string => `Foaia ${n}`;
   assert.equal(numeFoaie(d.foi[0] as Foaie, 0, sablon), 'Foaia 1');
   assert.equal(numeFoaie(d.foi[2] as Foaie, 2, sablon), 'Resturi');

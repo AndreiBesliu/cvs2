@@ -6330,3 +6330,22 @@ utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit
   600 kB luat din același răspuns (ADR-ul lui la prima felie care trece de 550); programul unic pentru toate foile devine
   11.5↑b, după etapa 13; numărul schemei plăcuțelor, v21 sau v22 după ordinea cu 12.1↑b. Decizia în `CLAUDE.md`; rândul
   răspunsurilor scos din coada owner-ului; rândul 11.1↑ din jurnal și pragul, la zi; traducerile 646 / 0.
+
+- **Felia 11.1↑ (`87a7537`):** foaia activă în toată aplicația (o vedere ținută în browser; registrul, editarea, panourile și
+  workerul CAM o primesc explicit; CAM-ul care doar citește primește documentul văzut din foaie), lista cu foile („+ Foaie
+  nouă”, meniul foii la cerere, PgUp / PgDn, cipul), mutarea pe altă foaie (meniul pânzei, tragerea rândului), numele și
+  materialul în panou (câmpul de text nou, `CampText`), exportul foii active, cu foaia în titlu. Capitolul „Foile” în manual.
+- **Ce a ieșit din drum:** (1) suita a căzut întâi pe 92 de probe, 86 ale oracolului documentului: `material` strict în schemă
+  refuza documente vechi valide (oracolul are `material` printre câmpurile necunoscute ale foii, cu orice valoare); acum nu e
+  în schemă, aplicația îl citește doar ca text, iar comanda etichetei ține valoarea veche exactă. (2) Pornirea crescuse cu
+  3,5 kB; comenzile foilor (`foiComenzi.ts`), aplicarea lor în jurnal (`jurnalFoi.ts`, înregistrată odată cu calculul) și
+  meniul foii (`MeniuFoaie.tsx`) au ieșit din ea: +2,2 kB. (3) Ctrl + PgUp / PgDn ajungeau la aplicație (`tastaApasata` le
+  dădea ca PgUp); acum doar fără modificatori. (4) Lista nouă n-avea stiluri, iar probele treceau: capul foii pe două rânduri,
+  meniul, ținta tragerii, văzute în capturi, în ambele teme. (5) Proba e2e a exportului lua prima foaie, deci n-ar fi prins
+  un export al documentului întreg: acum exportă foaia a doua.
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile (0 lipsă), unitare
+  8 601, 0 căzute (8 sărite), e2e 362 / 364 pe suita întreagă; cele 2 căzute (deschiderea proiectului și exportul dopului, peste termen sub încărcare) trec rulate singure, 11 / 11; build-ul determinist (275 de fișiere); pornirea 103,7 (cu ușa 107,2 / 110), totalul 524,7 / 550.
+- **Otrăvurile (`test/otravuri/11.1.py`, alese de autor, într-o clonă):** 42; prima rulare (`87a7537`): 41 prinse, C01 scăpată (id-ul foii noi nu sărea peste unul folosit: proba n-avea un gol în id-uri) → cazul f1, f3 → f4 în `foi.test.ts`, apoi prinsă, deci 42 / 42; cele 10 e2e (U01–U10), în clonă, pe portul 4178.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
+
+**Completed:** 07.11, 18:58.

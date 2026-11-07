@@ -495,6 +495,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (doar cu închidere), `pe-linie` și pentru cuțit, `prea-multe`. „Taie la intersecții” (panoul și meniul de clic dreapta) taie
   fiecare contur ales în locurile lui comune cu celelalte, nu și în buclele lui. Oracolul are `judecaCutitul` și
   `judecaIntersectiile` (`taiere.forma.oracol.test.ts`); generatorii corpusurilor stau în `test/unit/ajutor-taiere.ts`.
+  **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
+  (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
+  revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
+  lucrează pe ea. Lista arată foile (piesele doar sub cea activă), cu „+ Foaie nouă” și meniul foii (⋯ sau clic dreapta, la
+  cerere, `MeniuFoaie.tsx`); PgUp / PgDn trec între foi (cu Ctrl, ale browserului); mutarea pe altă foaie, din meniul de clic
+  dreapta al pânzei sau trăgând rândul. **Foaia activă se dă explicit (`ContextDocument.foaie`; `indexFoaie` în editare și în
+  workerul CAM, la verificare, reparare și tăiere, pe documentul întreg); CAM-ul care doar citește primește documentul văzut
+  din foaie (`doarFoaia`), deci programul unei foi e octet cu octet al documentului doar cu ea.** Comenzile noi ale jurnalului
+  au inversa exactă și se aplică din `jurnalFoi.ts`, înregistrat odată cu calculul acțiunilor (nu stă în pornire). **`material`
+  nu intră în schemă:** în documentele de până la el era un câmp necunoscut al foii, cu orice valoare (oracolul îl generează
+  așa); aplicația îl citește doar când e text și scrie doar text; comanda etichetei ține valoarea veche exactă. **Pornirea
+  101,5 → 103,7 (cu ușa 107,2 / 110 kB), totalul 519,5 → 524,7 / 550.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
