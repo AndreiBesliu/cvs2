@@ -6654,3 +6654,30 @@ va face update si pe main ulterior”.
 - **Pentru `main` (cererea owner-ului):** `main` (`63d6af5`, biblioteca extensiilor) unit în ramură (`5f729e8`; conflictele,
   doar în documente, cu ambele părți păstrate); porțile pe rezultat, apoi unirea în `main` o face sesiunea principală, cu
   cuvintele owner-ului, trimise ei.
+
+## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea liniei, la „Unim `wip/3.Xg-biblioteca` în `main`?”).
+**Started:** 07.11, 19:05. **Completed:** 07.11, 22:05.
+
+- **Ce intră:** `wip/3.Xg-biblioteca` până la `93192bb`: ADR 0230 (acceptat, „Da, 1a–7a”) și felia 3.Xg (biblioteca
+  extensiilor; otrăvurile 37 / 37). Unirea `58e73c0` (primul părinte `1bf99c5` = `main`, al doilea `93192bb`), făcută din
+  worktree (`git commit-tree` pe arborele ramurii, apoi avans rapid pe ramură și pe `main`), fără checkout-ul principal;
+  `CLAUDE.md` după unire (starea, decizia): `63d6af5`.
+- **Conflictele:** niciunul: `main` era deja în ramură (`1daf840`), deci arborele unirii e chiar al lui `93192bb` (`3fba5e1`).
+- **CI pe `63d6af5`:** rapid verde (`42395265997`). Complet (`42395280530`): la prima încercare, e2e 365 / 366, cu
+  `extensii.lucru.spec.ts:277` căzută (a doua formă propusă de extensie, după ce fila ei e arătată din nou: în captura CI-ului,
+  extensia n-a primit niciun răspuns, iar „Importă” n-a apărut în 30 s); la a doua încercare, verde întreg (e2e-ul și
+  emulatoarele).
+- **Căderea, cercetată:** local, pe `63d6af5`, aceeași probă a picat de 2 ori din 9 cât mașina era încărcată de alte sesiuni
+  (CPU 82 %; o dată la „Importă”, o dată la instalare); alternat cu `main` dinaintea unirii (`8003cb2`), la încărcare egală
+  (1, 4 și 8 lucrători): 0 căderi din 76 pe fiecare, cu aceeași durată pe probă (~6 s). Felia nu atinge drumul propunerii
+  (`App.tsx`, `cadru.ts`, `forme.ts`). Rămâne o cădere legată de încărcare, de întărit separat.
+- **Publicat pe test:** `63d6af5` (rularea `42407804922`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune`
+  `63d6af5b411e`; `verifica-test.ts`: „publicat întreg pe test, din arborele curat” (condiția publicării pe live). Verificat
+  acolo, în Edge fără fereastră: catalogul (HTTP 200, `no-cache`), pachetul (417 748 de octeți, amprenta egală cu catalogul,
+  `immutable`), rândul lui Easy 3Draw din meniu („Instalează”), fereastra „din biblioteca cvs2”, instalarea, „Deschide”
+  (extensia pornită), apoi „Instalată”.
+- **Rămâne:** pe live, biblioteca și Easy 3Draw ajung cu următoarea publicare a aplicației (la cuvântul owner-ului); în
+  checkout-ul principal, `main`-ul local e în urmă cu `58e73c0`, `63d6af5` și intrarea asta (`git pull`, merge); proba
+  `extensii.lucru.spec.ts:277`, de întărit (clicul în cadru imediat după ce fila extensiei reapare).
