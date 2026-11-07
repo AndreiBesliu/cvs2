@@ -329,9 +329,9 @@ function unesteSiruri(f: FormaCale, siruri: ReadonlyArray<{ readonly a: number; 
 
 // ——— Bucla: unde trec cele două drumuri prin punctul de încrucișare ———
 
-type Seg = { readonly a: Punct; readonly b: Punct; readonly s: Segment };
+export type Seg = { readonly a: Punct; readonly b: Punct; readonly s: Segment };
 
-function punctPe(g: Seg, t: number): Punct {
+export function punctPe(g: Seg, t: number): Punct {
   const { a, b, s } = g;
   if (s.tip === 'C') {
     const u = 1 - t;
@@ -364,7 +364,7 @@ function derivataPe(g: Seg, t: number): Punct {
 }
 
 /** Parametrii la care segmentul trece pe lângă X (minimele locale ale distanței, cel mult `eps`), cel mai apropiat întâi. */
-function treceri(g: Seg, X: Punct, eps: number): number[] {
+export function treceri(g: Seg, X: Punct, eps: number): number[] {
   const N = g.s.tip === 'L' ? 1 : 64;
   const d2 = (t: number): number => { const p = punctPe(g, t); return (p.x - X.x) ** 2 + (p.y - X.y) ** 2; };
   const cand: number[] = [];
@@ -417,7 +417,7 @@ function punctDublu(g: Seg): readonly [number, number] | null {
 }
 
 /** Newton pe P_i(s) = P_j(t): încrucișarea exactă a celor două drumuri, pornind de la (s, t); întoarce perechea mai bună. */
-function rafineaza(gi: Seg, gj: Seg, s0: number, t0: number): readonly [number, number] {
+export function rafineaza(gi: Seg, gj: Seg, s0: number, t0: number): readonly [number, number] {
   let s = s0, t = t0;
   const rest = (u: number, w: number): number => dist(punctPe(gi, u), punctPe(gj, w));
   let best = rest(s, t);

@@ -7,6 +7,9 @@
  * - **nimic inventat:** fiecare punct al formelor noi stă pe o formă veche sau pe linie (o coardă a închiderii);
  * - **părțile:** tot ce e în prima parte e de partea A a liniei (x ≤ X, y ≤ Y), tot ce e în a doua, de partea B;
  * - **aria** (cu închidere): regiunea par-impar a fiecărei părți are aria regiunii vechi tăiate cu semiplanul ei.
+ *
+ * Felia 10.3↑b: cuțitul-formă (un poligon convex: părțile înăuntru / în afară, ariile tăiate cu el; o linie frântă: ariile
+ * fețelor se adună la aria regiunii) și „Taie la intersecții” (aceeași lungime, nicio bucată nouă prin altă formă veche).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -248,6 +251,183 @@ export function judecaTaierea(o: {
       const asteptat = ariePar(o.inainte, { axa: o.axa, v: o.v, semn });
       const are = ariePar(parte);
       if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(asteptat))) rau.push(`aria părții ${k === 0 ? 'A' : 'B'}: ${are}, nu ${asteptat}`);
+    });
+  }
+  return rau;
+}
+
+// ——— Felia 10.3↑b: cuțitul-formă și „Taie la intersecții” ———
+
+/** Lungimea unei forme: exactă la linie și arc (r·|baleiaj|); la cubică, poligonul des (2 048 de laturi). */
+export function lungimeForma(f: FormaOracol): number {
+  let s = 0;
+  for (const g of f.seg) {
+    if (g.fel === 'L') { s += Math.hypot(g.b.x - g.a.x, g.b.y - g.a.y); continue; }
+    if (g.fel === 'A') { s += g.r * Math.abs(g.du); continue; }
+    let a = punct(g, 0);
+    for (let k = 1; k <= 2048; k++) {
+      const b = punct(g, k / 2048);
+      s += Math.hypot(b.x - a.x, b.y - a.y);
+      a = b;
+    }
+  }
+  return s;
+}
+
+/** Distanța de la q la marginea unui poligon. */
+function laPoligon(q: P, p: readonly P[]): number {
+  let best = Infinity;
+  for (let i = 0; i < p.length; i++) best = Math.min(best, distanta(q, { fel: 'L', a: p[i] as P, b: p[(i + 1) % p.length] as P }));
+  return best;
+}
+
+/** Poligonul p tăiat cu poligonul convex k, în sens trigonometric (Sutherland–Hodgman, semiplan cu semiplan). */
+function taieConvex(p: readonly P[], k: readonly P[]): P[] {
+  let rez: P[] = [...p];
+  for (let i = 0; i < k.length && rez.length > 0; i++) {
+    const a = k[i] as P, b = k[(i + 1) % k.length] as P;
+    const f = (q: P): number => (b.x - a.x) * (q.y - a.y) - (b.y - a.y) * (q.x - a.x);
+    const intrare = rez;
+    rez = [];
+    for (let j = 0; j < intrare.length; j++) {
+      const u = intrare[j] as P, v = intrare[(j + 1) % intrare.length] as P;
+      const fu = f(u), fv = f(v);
+      if (fu >= 0) rez.push(u);
+      if ((fu >= 0) !== (fv >= 0)) {
+        const t = fu / (fu - fv);
+        rez.push({ x: u.x + (v.x - u.x) * t, y: u.y + (v.y - u.y) * t });
+      }
+    }
+  }
+  return rez;
+}
+
+/** Aria par-impar a formelor închise tăiate cu poligonul convex k (trigonometric); adâncimea, a formelor întregi. */
+export function arieParInConvex(forme: readonly FormaOracol[], k: readonly P[]): number {
+  const poligoane = forme.filter((f) => f.inchis).map((f) => esantioane(f, 512));
+  let a = 0;
+  for (let i = 0; i < poligoane.length; i++) {
+    const p = poligoane[i] as P[];
+    const q0 = p[0] as P, q1 = p[1] ?? q0;
+    const mij = { x: (q0.x + q1.x) / 2, y: (q0.y + q1.y) / 2 };
+    let adancime = 0;
+    for (let j = 0; j < poligoane.length; j++) if (j !== i && inPoligon(mij, poligoane[j] as P[])) adancime++;
+    const t = taieConvex(p, k);
+    a += (adancime % 2 === 0 ? 1 : -1) * Math.abs(t.length >= 3 ? ariePoligon(t) : 0);
+  }
+  return a;
+}
+
+/**
+ * Judecata unei tăieri cu cuțitul-formă (lista abaterilor; goală = bună). `convex`: poligonul cuțitului, trigonometric, când
+ * cuțitul e un poligon convex închis (atunci părțile sunt înăuntru, apoi în afară, cu ariile tăiate de el); la un cuțit-cerc,
+ * poligonul lui des, iar `cerc` dă locul exact (cine e înăuntru). Altfel cuțitul e deschis și, cu închidere, ariile fețelor se
+ * adună la aria regiunii.
+ */
+export function judecaCutitul(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly cutit: readonly FormaOracol[];
+  readonly parti: ReadonlyArray<readonly FormaOracol[]>;
+  readonly inchide: boolean;
+  readonly convex: readonly P[] | null;
+  readonly cerc?: { readonly c: P; readonly r: number } | null;
+}): string[] {
+  const rau: string[] = [];
+  const toate = o.parti.flat();
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      const d = distantaLaForme(q, toate);
+      if (d > 1e-6) { rau.push(`un punct vechi (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e pe nicio formă nouă (${d})`); break; }
+    }
+  }
+  for (const f of toate) {
+    for (const q of esantioane(f, 48)) {
+      const d = Math.min(distantaLaForme(q, o.inainte), distantaLaForme(q, o.cutit));
+      if (d > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe cuțit (${d})`); break; }
+    }
+  }
+  if (o.convex) {
+    const k = o.convex;
+    if (o.parti.length !== 2) rau.push(`părțile: ${o.parti.length}, nu 2`);
+    const cerc = o.cerc ?? null;
+    const pe = (q: P): boolean => (cerc ? Math.abs(Math.hypot(q.x - cerc.c.x, q.y - cerc.c.y) - cerc.r) <= 1e-6 : laPoligon(q, k) <= 1e-6);
+    const inauntru = (q: P): boolean => (cerc ? Math.hypot(q.x - cerc.c.x, q.y - cerc.c.y) < cerc.r : inPoligon(q, k));
+    o.parti.forEach((parte, j) => {
+      for (const f of parte) {
+        for (const q of esantioane(f, 16)) {
+          if (pe(q)) continue;
+          if (inauntru(q) !== (j === 0)) { rau.push(`partea ${j === 0 ? 'dinăuntru' : 'din afară'} are un punct de cealaltă parte (${q.x.toFixed(4)}, ${q.y.toFixed(4)})`); return; }
+        }
+      }
+    });
+    if (o.inchide && o.parti.length === 2) {
+      const tot = ariePar(o.inainte), inauntru = arieParInConvex(o.inainte, k);
+      for (const [j, asteptat] of [[0, inauntru], [1, tot - inauntru]] as const) {
+        const are = ariePar(o.parti[j] as FormaOracol[]);
+        if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria părții ${j === 0 ? 'dinăuntru' : 'din afară'}: ${are}, nu ${asteptat}`);
+      }
+    }
+  } else if (o.inchide) {
+    const tot = ariePar(o.inainte);
+    let suma = 0;
+    for (const parte of o.parti) {
+      const a = ariePar(parte);
+      if (parte.some((f) => f.inchis) && !(a > 0)) rau.push(`o față fără arie (${a})`);
+      suma += a;
+    }
+    if (Math.abs(suma - tot) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`ariile fețelor: ${suma}, nu ${tot}`);
+  }
+  return rau;
+}
+
+/** Se încrucișează segmentele ab și cd, strict înăuntrul amândurora? */
+function seIncruciseaza(a: P, b: P, c: P, d: P): boolean {
+  const o = (p: P, q: P, r: P): number => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  const d1 = o(c, d, a), d2 = o(c, d, b), d3 = o(a, b, c), d4 = o(a, b, d);
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+}
+
+/**
+ * Judecata „Taie la intersecții” (lista abaterilor): acoperirea și nimic inventat, aceeași lungime în total (nimic dublat,
+ * nimic pierdut), iar o bucată nouă nu mai trece prin altă formă veche decât la capetele ei (poligoane dese, fără capete).
+ */
+export function judecaIntersectiile(o: { readonly inainte: readonly FormaOracol[]; readonly dupa: readonly FormaOracol[] }): string[] {
+  const rau: string[] = [];
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      const d = distantaLaForme(q, o.dupa);
+      if (d > 1e-6) { rau.push(`un punct vechi (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e pe nicio formă nouă (${d})`); break; }
+    }
+  }
+  for (const f of o.dupa) {
+    for (const q of esantioane(f, 48)) {
+      const d = distantaLaForme(q, o.inainte);
+      if (d > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e pe nicio formă veche (${d})`); break; }
+    }
+  }
+  const l0 = o.inainte.reduce((s, f) => s + lungimeForma(f), 0), l1 = o.dupa.reduce((s, f) => s + lungimeForma(f), 0);
+  if (Math.abs(l1 - l0) > 1e-6 * Math.max(1, l0)) rau.push(`lungimea: ${l1}, nu ${l0}`);
+  const vechi = o.inainte.map((f) => {
+    const p = esantioane(f, 128);
+    return { p: f.inchis ? [...p, p[0] as P] : p };
+  });
+  for (const f of o.dupa) {
+    if (f.inchis) continue;
+    const p = esantioane(f, 128);
+    const cap0 = p[0] as P, cap1 = p[p.length - 1] as P;
+    const interior = p.filter((q) => Math.hypot(q.x - cap0.x, q.y - cap0.y) > 1e-3 && Math.hypot(q.x - cap1.x, q.y - cap1.y) > 1e-3);
+    if (interior.length < 2) continue;
+    const pe = new Set(o.inainte.map((g, k) => (esantioane(f, 16).every((q) => distantaLaForme(q, [g]) <= 1e-6) ? k : -1)).filter((k) => k >= 0));
+    vechi.forEach((v, k) => {
+      if (pe.has(k)) return;
+      for (let i = 0; i + 1 < interior.length; i++) {
+        for (let j = 0; j + 1 < v.p.length; j++) {
+          if (seIncruciseaza(interior[i] as P, interior[i + 1] as P, v.p[j] as P, v.p[j + 1] as P)) {
+            rau.push(`o bucată nouă trece prin forma veche ${k} lângă (${(interior[i] as P).x.toFixed(3)}, ${(interior[i] as P).y.toFixed(3)})`);
+            return;
+          }
+        }
+      }
     });
   }
   return rau;

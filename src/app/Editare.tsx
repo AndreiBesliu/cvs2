@@ -612,6 +612,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       return motiv;
     });
   };
+  // Taie la intersecții (ADR 0180 §5), din meniul de clic dreapta (și din panoul Taie): calculul e al workerului CAM, pe
+  // documentul de la clic; tăierea se aplică prin `document.taie`, doar dacă desenul nu s-a schimbat între timp.
+  const taieLaIntersectii = (): Promise<string | null> => {
+    if (selectie.length === 0 || p.doarCitire) return Promise.resolve(null);
+    const laCerere = doc, alese = [...selectie];
+    const eroare = (e: unknown): string => {
+      reportError(new Error(`tăierea la intersecții: ${e instanceof Error ? e.message : String(e)}`));
+      return t('editare.taiere.eroare');
+    };
+    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit: { fel: 'intersectii' }, alese, inchide: false }).then((r) => {
+      if (!r.ok) return t(r.motiv === 'nimic-taiat' ? 'editare.taiere.motiv.nimic-intersectii' : `editare.taiere.motiv.${r.motiv}`);
+      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids }) });
+      return v.ok ? null : t(v.motiv);
+    }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
+  };
   // Degruparea (ADR 0103): piesele-grup alese se desfac în părțile lor, prin acțiunea registrului (și din meniul de clic
   // dreapta, din paletă, cu Ctrl+Shift+G). Refuzul se spune lângă butoane, până la altă selecție.
   const [motivDegrupare, setMotivDegrupare] = useState<string | null>(null);
@@ -952,6 +967,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
       { id: 'scade', eticheta: numeScurt(t('editare.boolean.scade')), activ: doua, ruleaza: () => { void booleanul('diferenta').then(facut); } },
       { id: 'intersecteaza', eticheta: numeScurt(t('editare.boolean.intersecteaza')), activ: doua, ruleaza: () => { void booleanul('intersectie').then(facut); } },
+      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: selectie.length > 0 && poate, ruleaza: () => { void taieLaIntersectii().then(facut); } },
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },

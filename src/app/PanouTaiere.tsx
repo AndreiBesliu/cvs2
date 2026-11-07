@@ -16,16 +16,17 @@ export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 /**
- * Panoul Taie (ADR 0180 §3; felia 10.3↑), adus la cerere din extensia barei: linia (verticală X, orizontală Y, sau un ghidaj
- * al foii), „Închide bucățile” (ținută în browser, ca Lipirea) și Taie. Cât e deschis, linia se vede pe pânză. Calculul e al
- * workerului CAM, pe documentul din clipa clicului; tăierea se aplică prin acțiunea `document.taie`, într-un pas de anulare,
- * doar dacă desenul nu s-a schimbat între timp.
+ * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b), adus la cerere din extensia barei: cu ce se taie (linia
+ * verticală X, orizontală Y, un ghidaj al foii sau ultima formă aleasă, cu Shift + clic), „Închide bucățile” (ținută în
+ * browser, ca Lipirea) și Taie; apoi „Taie la intersecții”, cu butonul lui. Cât e deschis, linia se vede pe pânză. Calculul e
+ * al workerului CAM, pe documentul din clipa clicului; tăierea se aplică prin acțiunea `document.taie`, într-un pas de
+ * anulare, doar dacă desenul nu s-a schimbat între timp.
  */
 
 /** Linia de tăiere de arătat pe pânză, în mm ai foii, sau nimic. */
 export type LinieTaiere = { readonly axa: 'x' | 'y'; readonly v: number } | null;
 
-type Fel = 'x' | 'y' | 'ghidaj';
+type Fel = 'x' | 'y' | 'ghidaj' | 'forma';
 type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
 
 /** Bifa „Închide bucățile” se ține în browser, pentru toate proiectele (implicit bifată). */
@@ -73,18 +74,23 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
 
   const g = ghidaje.find((x) => x.id === ghidaj) ?? null;
   const x = citesteNumar(textX, true), y = citesteNumar(textY, true);
-  const cutit: Cutit | null = fel === 'x' ? (x === null ? null : { fel: 'x', x }) : fel === 'y' ? (y === null ? null : { fel: 'y', y }) : g ? { fel: 'ghidaj', id: g.id } : null;
-  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y }) : g ? { axa: g.axa, v: g.poz } : null;
+  // Cuțitul-formă: ultima formă aleasă (Shift + clic), cu cel puțin o formă de tăiat înaintea ei.
+  const forma = selectie.length >= 2 ? (selectie[selectie.length - 1] ?? null) : null;
+  const cutit: Cutit | null = fel === 'x' ? (x === null ? null : { fel: 'x', x }) : fel === 'y' ? (y === null ? null : { fel: 'y', y })
+    : fel === 'ghidaj' ? (g ? { fel: 'ghidaj', id: g.id } : null) : forma ? { fel: 'forma', id: forma } : null;
+  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y })
+    : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz } : null;
   const cheieLinie = linie ? `${linie.axa}${linie.v}` : '';
   // Linia de pe pânză urmează valoarea (cheia ei), nu fiecare randare.
   useEffect(() => { onLinie(linie); }, [cheieLinie]);
   useEffect(() => () => { onLinie(null); }, [onLinie]);
 
-  const motiv = selectie.length === 0 ? t('editare.taiere.motiv.nimic-ales') : cutit === null ? (fel === 'ghidaj' ? t('editare.taiere.fara-ghidaje') : t('editare.taiere.motiv.valoare')) : null;
+  const motiv = selectie.length === 0 ? t('editare.taiere.motiv.nimic-ales')
+    : cutit === null ? t(fel === 'ghidaj' ? 'editare.taiere.fara-ghidaje' : fel === 'forma' ? 'editare.taiere.forma.lipsa' : 'editare.taiere.motiv.valoare') : null;
 
   /** Tăierea, calculată de worker pe documentul de acum; aplicată prin acțiunea documentului. Un eșec (nu o anulare) merge în jurnal. */
-  const taie = (): void => {
-    if (cutit === null || selectie.length === 0 || stare?.fel === 'calcul') return;
+  const ruleaza = (cu: Cutit, cuInchidere: boolean): void => {
+    if (selectie.length === 0 || stare?.fel === 'calcul') return;
     const laCerere = doc;
     const s = new AbortController();
     semnal.current?.abort();
@@ -97,9 +103,13 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taieVectorii(laCerere, { cutit, alese: [...selectie], inchide }, s.signal).then((r) => {
+      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], inchide: cuInchidere }, s.signal).then((r) => {
         if (s.signal.aborted) return;
-        if (!r.ok) { setStare({ fel: 'gata', text: t(`editare.taiere.motiv.${r.motiv}`), rau: true }); return; }
+        if (!r.ok) {
+          const cheie = r.motiv === 'nimic-taiat' && cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : (`editare.taiere.motiv.${r.motiv}` as const);
+          setStare({ fel: 'gata', text: t(cheie), rau: true });
+          return;
+        }
         const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids });
         const parti = String(r.ids.length);
         const text = r.scoase > 0
@@ -109,6 +119,8 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
       }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
     }, cade);
   };
+  const taie = (): void => { if (cutit !== null) ruleaza(cutit, inchide); };
+  const intersectii = (): void => { ruleaza({ fel: 'intersectii' }, false); };
 
   return (
     <>
@@ -138,19 +150,36 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
             ))}
           </select>
         </label>
+        <label className="rand-taiere" title={t('editare.taiere.forma.titlu')}>
+          <input type="radio" name="taiere-cu" checked={fel === 'forma'} data-taiere="cu-forma" onChange={() => { setFel('forma'); }} />
+          <span className="rand-taiere-lung">{t('editare.taiere.forma')}</span>
+        </label>
       </fieldset>
       <label className="bifa-taiere" title={t('editare.taiere.inchide.titlu')}>
         <input type="checkbox" checked={inchide} data-taiere="inchide" onChange={(e) => { setInchide(e.target.checked); scrieInchide(e.target.checked); }} />
         <span>{t('editare.taiere.inchide')}</span>
       </label>
-      {motiv ? <p className="motiv-retea" role="status" data-testid="taiere-motiv">{motiv}</p> : <p className="stare-taiere">{t('editare.taiere.alese', { n: String(selectie.length) })}</p>}
+      {motiv ? <p className="motiv-retea" role="status" data-testid="taiere-motiv">{motiv}</p> : (
+        <p className="stare-taiere">
+          {fel === 'forma' ? t('editare.taiere.forma.alese', { n: String(selectie.length - 1) }) : t('editare.taiere.alese', { n: String(selectie.length) })}
+        </p>
+      )}
+      <div className="butoane-retea">
+        <button type="button" className="principal" data-taiere="taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.taie')}</button>
+      </div>
+      <fieldset className="campuri-taiere">
+        <legend>{t('editare.taiere.intersectii')}</legend>
+        <p className="stare-taiere">{t('editare.taiere.intersectii.text')}</p>
+        <div className="butoane-retea">
+          <button type="button" data-taiere="intersectii" disabled={selectie.length === 0 || stare?.fel === 'calcul'} onClick={intersectii}>{t('editare.taiere.intersectii.taie')}</button>
+        </div>
+      </fieldset>
       {stare ? (
         <p className={stare.fel === 'gata' && stare.rau ? 'motiv-retea' : 'stare-taiere'} role="status" data-testid="taiere-stare">
           {stare.fel === 'calcul' ? t('editare.taiere.calcul') : stare.text}
         </p>
       ) : null}
       <div className="butoane-retea">
-        <button type="button" className="principal" data-taiere="taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.taie')}</button>
         <button type="button" data-taiere="inchide-panoul" onClick={onInchide}>{t('editare.retea.inchide')}</button>
       </div>
     </>

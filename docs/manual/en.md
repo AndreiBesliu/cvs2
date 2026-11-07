@@ -551,11 +551,13 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 %% capitol: taiere
 %% acopera: editare.taiere, document.taie
 
-**Cut** (the scissors button, after the booleans and ungrouping, in the toolbar extension) divides the chosen shapes with a
-straight line:
+**Cut** (the scissors button, after the booleans and ungrouping, in the toolbar extension) divides the chosen shapes,
+**Cut with**:
 - **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
   shapes);
-- **Guide**: one of the sheet guides, dragged from the ruler.
+- **Guide**: one of the sheet guides, dragged from the ruler;
+- **The last chosen shape (Shift + click)**: the knife is one of your shapes. Choose the shapes to cut, then, last, the
+  knife, with Shift + click; the knife stays unchanged.
 
 While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
 what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
@@ -563,9 +565,21 @@ cross stays as it is. The cut is exact: an arc is cut into two arcs of the same 
 nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
 touches it is not cut.
 
+A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. An open
+knife (a polyline, a curve) makes each piece a shape; the contours it does not cross stay together, and an uncut hole goes
+with the piece it lies in. The knife cuts where it crosses the shape and where its end enters the shape through a side; a
+knife that only touches the shape does not cut it.
+
 **Close the pieces** (ticked by default; the app remembers the choice): each side of a closed shape is closed along the
-cut, with a straight line. A shape with holes is read as a region: a ring cut in two gives two closed “U” shapes. Unticked,
-the pieces stay open: a circle cut through its centre gives two half circles, one arc each.
+cut: with a straight line, for the line and the guide, or along the knife, with its nodes. A shape with holes is read as a
+region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces stay open: a circle cut through its centre gives
+two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
+panel says why): extend it or cut without the tick.
+
+**Cut at intersections** (the button at the bottom of the panel, or from the right-click menu) cuts the chosen shapes by
+each other, at all their common points: where they cross, where they touch and at the ends of a shared side. Each piece
+becomes a shape, chosen, so you can delete the one you do not need. A shape that crosses itself is not split from here
+(that is the checking's job), and a closed contour with a single common point stays whole.
 
 The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
 open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A

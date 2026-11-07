@@ -1,5 +1,5 @@
 /*
- * Panoul Taie (ADR 0180 §3, felia 10.3↑) și linia de tăiere de pe pânză. Doar tokenurile temei; stratul de pe pânză nu prinde
+ * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b) și linia de tăiere de pe pânză. Doar tokenurile temei; stratul de pe pânză nu prinde
  * evenimente. Panoul are lățimea vecinilor (`.panou-retea`).
  */
 .campuri-taiere {
@@ -35,6 +35,11 @@
 
 .rand-taiere select.camp-taiere {
   grid-column: 3 / span 2;
+}
+
+/* Un rând fără câmp (cuțitul-formă): eticheta ia tot locul de după bifă. */
+.rand-taiere-lung {
+  grid-column: 2 / -1;
 }
 
 .bifa-taiere {

@@ -4,7 +4,7 @@
 worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
 cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
-06.11. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) pe 07.11. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 
@@ -102,6 +102,26 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
 - **10.3↑c:** „Decupează la…” (§4).
 - **10.3↑d:** În cerc, În dreptunghi (§10) și Arce (§8), cu panoul Convertește.
 - **10.3↑e:** Netezește (§9).
+
+**Felia 10.3↑b, la cod** (în cadrul deciziilor de mai sus, 07.11):
+- **Unde taie cuțitul-formă:** un contur închis se taie doar unde exact una dintre bucățile cuțitului de lângă loc intră în
+  regiunea piesei: o trecere, sau capătul cuțitului care intră printr-o latură (un cuțit desenat cu capetele chiar pe laturi
+  taie ca linia). O atingere, din afară sau dinăuntru, nu taie; nici capătul cuțitului care doar ajunge la latură din afară.
+  O cale deschisă se taie unde cuțitul o trece de tot.
+- **Părțile (§6):** cuțitul închis lasă două părți, înăuntrul lui (regiunea lui par-impar) și în afara lui; cel deschis face
+  din fiecare față și din fiecare bucată o formă, iar un contur netrecut merge cu cea mai mică față în care stă sau rămâne cu
+  celelalte, împreună (piesa rămasă).
+- **Închiderea:** corzile sunt bucățile cuțitului din regiune, cu nodurile lui; fețele merg pe bucăți (cu regiunea în
+  stânga) și pe corzi. O față cu aria negativă (corzile închid o buclă în jurul unei găuri) e marginea dinăuntru a regiunii
+  și merge cu ea. Un cuțit care intră din afară și se oprește în gaură despică inelul (un „C”); un cerc deschis într-un singur
+  loc are două semicercuri (un arc de 360° n-are bulge).
+- **Refuzurile noi (§12):** `nu-trece` (cu închidere, cuțitul se oprește în regiunea unei forme), `cutit` (cu închidere, se
+  încrucișează în ea), `pe-linie` și pentru cuțit (merge pe o latură a unei forme pe care o taie; una doar atinsă pe latură nu
+  se taie și nu se refuză), `prea-multe` (perechile de cercetat, la plafonul verificării).
+- **„Taie la intersecții” (§5):** fiecare contur ales se taie în locurile lui comune cu celelalte contururi alese (și cu cele
+  ale aceleiași piese), la capetele unei suprapuneri (nu și în îmbinările ei); un contur închis cu un singur loc rămâne
+  întreg; capătul unei căi deschise nu e un loc de tăiere. Pornește din panoul Taie și din meniul de clic dreapta; ca „Taie”
+  (10.3↑), nu și din paletă: calculul cere workerul.
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.

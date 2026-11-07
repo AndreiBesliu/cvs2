@@ -485,6 +485,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   cade acolo. **Între 40 și 75 rem, extensia barei trece pe două rânduri când nu mai încape** (la 1024 px are ~1 120 px; pe
   `main`, „3D” ieșea deja din fereastră); telefonul a rămas cum era. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul
   504,5 → 511,3 / 550 kB** (workerul CAM +4,5 kB, panoul 1,9 kB).
+  **Cuțitul-formă și „Taie la intersecții” (ADR 0180, felia 10.3↑b)** gata pe 07.11: ultima formă aleasă (Shift + clic) e
+  cuțitul și rămâne neschimbată; locurile comune vin din cavalier (`intersectiiIntre`), rafinate cu Newton pe segmentele
+  adevărate (`rafineaza` și `treceri`, exportate din `reparare.ts`). **Un contur închis se taie doar unde exact una dintre
+  bucățile cuțitului de lângă loc intră în regiunea piesei** (o trecere sau capătul cuțitului care intră; o atingere nu); o cale
+  deschisă, unde cuțitul o trece de tot. Cu închidere, corzile sunt bucățile cuțitului din regiune, iar fețele merg pe bucăți
+  (cu regiunea în stânga) și pe corzi; **o față cu aria negativă e marginea dinăuntru a unei regiuni și merge cu ea**. Cuțitul
+  închis lasă două părți (înăuntru, în afară), cel deschis face din fiecare față o formă; refuzurile noi: `nu-trece`, `cutit`
+  (doar cu închidere), `pe-linie` și pentru cuțit, `prea-multe`. „Taie la intersecții” (panoul și meniul de clic dreapta) taie
+  fiecare contur ales în locurile lui comune cu celelalte, nu și în buclele lui. Oracolul are `judecaCutitul` și
+  `judecaIntersectiile` (`taiere.forma.oracol.test.ts`); generatorii corpusurilor stau în `test/unit/ajutor-taiere.ts`.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
