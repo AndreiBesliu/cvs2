@@ -7,6 +7,8 @@
  *   0,5, deci doar regula colțului îl ține), iar laturile, drepte, n-au ce netezi;
  * - treptele unei trasări (pași de 0,5 mm pe y = 10·sin(x/10)): la 0,5 devin cubice, la cel mult 0,5 de ele; la 0,01 rămân,
  *   fiindcă pe scara 4 × 0,01 fiecare treaptă e un colț de 90°;
+ * - treptele unui sinus abrupt (panta până la 2), la 0,8: toate devin curbe, și prima, unde coarda trunchiată (la capătul
+ *   șirului) ar măsura un colț de ~72°;
  * - colțul de 90° al unui V cu ramuri curbe rămâne vârf, ramurile se netezesc;
  * - o linie de 8 mm rămâne linie la „Păstrează” 5, cu legăturile netede, și intră în curbă la 10;
  * - un arc rămâne arc (același vârf, același bulge), cu legăturile netede;
@@ -169,6 +171,22 @@ test('treptele unei trasări (pași de 0,5 mm): la 0,5 devin cubice netede, la c
   assert.ok(departareDePoligon(esantioane(f), p.map(([x, y]) => ({ x, y })), false) <= 0.5 + 1e-9);
   const strans = converteste(d, NETEZ(['t'], 0.01));
   assert.ok(strans.ok && strans.convertite === 0, 'la 0,01, treptele rămân');
+});
+
+test('treptele unui sinus abrupt (y = 20·sin(x/10), pași de 0,5 mm, panta până la 2), la 0,8: toate devin curbe, și prima treaptă, unde coarda trunchiată ar măsura un colț de ~72°', () => {
+  const pas = 0.5, y = (x: number): number => Math.round((20 * Math.sin(x / 10)) / pas) * pas;
+  const p: Array<readonly [number, number]> = [[0, y(0)]];
+  for (let k = 1; k * pas <= 15 + 1e-9; k++) {
+    const x = k * pas, u = p[p.length - 1] as readonly [number, number];
+    p.push([x, u[1]]);
+    if (y(x) !== u[1]) p.push([x, y(x)]);
+  }
+  const d = docDin(stoc, forma('a', cale(false, p), 200, 200));
+  const { dupa, r } = convertit(d, NETEZ(['a'], 0.8));
+  assert.equal(r.convertite, 1);
+  assert.equal(r.linii, p.length - 1, 'toate treptele, și prima, și ultima');
+  assert.ok(r.abatere <= 0.8);
+  assert.ok(caleDin(dupa, 'a').varfuri.slice(0, -1).every((x) => x.s.tip === 'C'));
 });
 
 test('colțul de 90° al unui V cu ramuri curbe (y = |x| + x²/100, din 1 în 1 mm) rămâne vârf; ramurile devin cubice netede', () => {
