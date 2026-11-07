@@ -6343,7 +6343,13 @@ in paralel?”.
   proba ei: F05 (partea îngustă lângă una lată), P06 (punțile, citite pe oracol), P07 (cazul `decupat-rest`); plus două noi,
   P11 (palierul punților) și L05 (frezele dopului în rolurile personalizate); pe codul final (`05d6ced`), 54 / 54. Lista 12.1 la
   zi cu codul de acum (fără VOID).
-- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12), cu build-ul acestui commit; ce s-a verificat acolo, în rândul următor al DEVLOG-ului.
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe
+  07.12; build-ul `6f2d1bc`). Verificat acolo, în browserul aplicației: versiunea `6f2d1bc71a0c` (după „Versiune nouă:
+  Reîncarcă”); rolul „incrustație cu pereți drepți” din panou, pe un dreptunghi de 30 × 20 cu Ø6 și adâncimea 3: pe hârtie,
+  vârfurile locașului R3 și unghiurile R2,9, ale dopului R2,9 și R3, jocul 0,10, dopul de 5 mm, semifabricatul de cel puțin
+  6; operația și arborele; în fereastra exportului, câmpurile rândului (ridicat, pe fund), apoi dopul decupat (fără sprijin,
+  „Cât iese peste placă”) și „Altă freză pentru dop” (T, Ø, pasul); închisă fără export, nicio eroare în consolă. Descărcarea
+  celor două fișiere e probată în e2e (în browserul aplicației n-am descărcat nimic).
 - **Rămâne:** 12.1↑c (banda îngustă și decuparea dopului în V), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și
   potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul
   owner-ului (cu `CLAUDE.md`: proba documentului e acum `document.v21.oracol.test.ts`, iar următorul câmp nou e v22).
