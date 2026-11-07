@@ -5,7 +5,7 @@
  *   cale dus-întors pe un sfert de cerc nu e cerc (nu-l ocolește: abaterea e Hausdorff, nu radială);
  * - **În cerc, cu diametrul:** 20 de contururi închise oarecare devin cercuri Ø8, în centrele cutiilor lor (±1e-9);
  * - **În dreptunghi:** dreptunghiul rotit cu 30° (patru linii) și cel cu colțurile rotunjite (r = 5) se recunosc, cu raza
- *   colțului; un cerc nu e dreptunghi, o fantă 60 × 20 da (raza 10); nici o cale dus-întors pe trei laturi; un trapez nu e
+ *   colțului; rotit cu −30°, cu două umflături de 0,02 mm, trece prin sfertul de tură (latura de arie minimă e la 60°); un cerc nu e dreptunghi, o fantă 60 × 20 da (raza 10); nici o cale dus-întors pe trei laturi; un trapez nu e
  *   dreptunghi; „cu mărimea” 40 × 20 îl pune drept, în centrul cutiei; găurirea refuză dreptunghiul;
  * - **Arce:** elipsa 100 × 60 din cubice devine doar linii și arce, sub 0,01; o polilinie de 32 de linii pe un semicerc R50
  *   devine un singur arc la 0,1 (capetele la bit) și rămâne la 0,01; poligonul închis cu 64 de laturi devine două semicercuri
@@ -163,6 +163,28 @@ test('dreptunghiul 100 × 40 rotit cu 30°, din patru linii, se recunoaște: lă
   const dupaC = conturLume(dupa, 'r');
   for (const v of inainte.varfuri) assert.ok(dupaC.varfuri.some((w) => Math.hypot(w.p.x - v.p.x, w.p.y - v.p.y) <= 1e-9), `colțul (${v.p.x}, ${v.p.y})`);
   aproape(r.abatere, 0, 1e-9, 'abaterea');
+});
+
+test('rotit cu −30°, cu câte o umflătură de 0,02 mm jos și în stânga: cel mai mic dreptunghi stă pe latura din dreapta (60°), adus la −30°: 100,02 × 40,02, cu colțul în (−0,02, −0,02)', () => {
+  // În rama dreptunghiului (x de-a lungul lui −30°): A, umflătura de jos, B, C, D, umflătura din stânga. Învelitoarea începe din
+  // A, iar prima ei latură cu aria cea mai mică e B→C, la 60°: sfertul de tură o aduce la −30°, cu lățimea și colțul de pornire
+  // schimbate.
+  const u = -Math.PI / 6, cu = Math.cos(u), su = Math.sin(u);
+  const lume = (x: number, y: number): readonly [number, number] => [x * cu - y * su, x * su + y * cu];
+  const d = docDin(stoc, forma('b', cale(true, lume(0, 0), lume(50, -0.02), lume(100, 0), lume(100, 40), lume(0, 40), lume(-0.02, 20)), 300, 300));
+  const { dupa, r } = convertit(d, DREPT(['b'], 0.1));
+  assert.equal(r.convertite, 1);
+  assert.ok(r.abatere <= 0.03, `abaterea: ${r.abatere}`);
+  const e = elementLume(dupa, 'b');
+  assert.ok(e.forma.tip === 'dreptunghi');
+  if (e.forma.tip !== 'dreptunghi') return;
+  aproape(e.forma.latime, 100.02, 1e-9, 'lățimea');
+  aproape(e.forma.inaltime, 40.02, 1e-9, 'înălțimea');
+  aproape(e.matrice.a, cu, 1e-12, 'unghiul (cos)');
+  aproape(e.matrice.b, su, 1e-12, 'unghiul (sin)');
+  const [ox, oy] = lume(-0.02, -0.02);
+  aproape(e.matrice.e, 300 + ox, 1e-9, 'colțul x');
+  aproape(e.matrice.f, 300 + oy, 1e-9, 'colțul y');
 });
 
 test('dreptunghiul cu colțurile rotunjite (o cale din linii și arce, r = 5) se recunoaște cu raza colțului 5', () => {
