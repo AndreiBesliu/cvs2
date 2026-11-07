@@ -71,6 +71,7 @@ export const ro = {
   'motiv.grupare-impartita': 'O piesă aleasă e folosită și de alte instanțe: gruparea ar lua-o și de la ele.',
   'actiune.text': 'Scrie textul',
   'actiune.repara': 'Repară vectorii',
+  'actiune.taie': 'Taie vectorii',
   'motiv.text-gol': 'Textul n-are nicio literă de tăiat: doar spații, sau litere pe care fontul nu le are.',
   'motiv.text-includeri': 'Textul are prea multe contururi ca să judec golurile literelor.',
   'motiv.text-vectori': 'Forma aleasă nu mai e text: contururile i-au fost schimbate altfel decât din panoul textului.',

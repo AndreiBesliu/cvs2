@@ -48,6 +48,9 @@ function felModel(baza: Rol): { readonly tip: TipOperatie; readonly latura: Latu
     case 'gaurire':
     case 'vcarve':
       return { tip: baza, latura: 'interior' };
+    // Locașul incrustației e un V-carve (ADR 0170 §2); valorile incrustației stau pe operația-model.
+    case 'incrustatie':
+      return { tip: 'vcarve', latura: 'interior' };
   }
 }
 

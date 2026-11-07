@@ -102,10 +102,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v19.oracol.test.ts` (din 03.11, cu rangul din v19). **Un câmp nou al documentului
-  (v20) intră acolo, ca rangul:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`,
-  frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 19` și porțile `<= 19` din
-  oracolele CAM). **Și în corpusul de aur
+  cu ușa aplicației în `test/unit/document.v20.oracol.test.ts` (din 07.11, cu incrustația din v20). **Un câmp nou al
+  documentului (v21) intră acolo, ca rangul și incrustația:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în
+  `problemeOperatieO`, frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 20` în probe;
+  oracolele CAM primesc versiunea nouă cum o primesc pe v20, de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
   --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
@@ -471,6 +471,30 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aplică într-un pas, doar dacă documentul e încă același. **Bucla se taie exact, în coordonatele elementului, cu
   parametrii celor două drumuri prin încrucișare (`adaugaNod`): restul vârfurilor rămân la bit; o reparație nouă păstrează
   regula și se probează la fel, cu documentul de după trecut prin ușă.**
+  **Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑, adusă din etapa 10)** gata pe 06.11, în worktree-ul `taiere` (ramura
+  `wip/10.3-taiere-conversie`), după răspunsurile owner-ului (1a–6a): **Taie** (foarfeca, în extensia barei, după boolean)
+  împarte formele alese cu linia verticală X, orizontală Y sau un ghidaj al foii: fiecare formă prin care trece linia devine
+  două forme, ce e de o parte și ce e de cealaltă, alese; „Închide bucățile” e la alegere (ținută în browser,
+  `cncvs2.taiere-inchide`): un inel dă două „U”-uri, iar fără bifă un cerc tăiat prin centru dă două semicercuri, câte un arc.
+  Calculul pur e `src/model/taiere.ts`, în workerul CAM (cererea `taiere`, prin `taieVectorii` din `actiuniExportCalcul.ts`);
+  acțiunea `document.taie` aplică comanda `degrupeaza` (o instanță înlocuită de părțile ei) doar dacă documentul e încă cel de
+  la clic; panoul vine la cerere (`src/app/PanouTaiere.tsx`), cu linia punctată pe pânză. **Locurile de tăiere se calculează
+  direct pe segmente (linia, arcul, cubica pe bucăți monotone), bucățile se taie exact cu `adaugaNod`, restul vârfurilor
+  rămân la bit, iar rolul piesei (`rolPiesei`, `grupeRol`) se păstrează pe părți.** Oracolul independent e
+  `test/oracles/taiere.ts` (corpusul din sămânță, `taiere.oracol.test.ts`): o tăiere care strică acoperirea, partea sau aria
+  cade acolo. **Între 40 și 75 rem, extensia barei trece pe două rânduri când nu mai încape** (la 1024 px are ~1 120 px; pe
+  `main`, „3D” ieșea deja din fereastră); telefonul a rămas cum era. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul
+  504,5 → 511,3 / 550 kB** (workerul CAM +4,5 kB, panoul 1,9 kB).
+  **Cuțitul-formă și „Taie la intersecții” (ADR 0180, felia 10.3↑b)** gata pe 07.11: ultima formă aleasă (Shift + clic) e
+  cuțitul și rămâne neschimbată; locurile comune vin din cavalier (`intersectiiIntre`), rafinate cu Newton pe segmentele
+  adevărate (`rafineaza` și `treceri`, exportate din `reparare.ts`). **Un contur închis se taie doar unde exact una dintre
+  bucățile cuțitului de lângă loc intră în regiunea piesei** (o trecere sau capătul cuțitului care intră; o atingere nu); o cale
+  deschisă, unde cuțitul o trece de tot. Cu închidere, corzile sunt bucățile cuțitului din regiune, iar fețele merg pe bucăți
+  (cu regiunea în stânga) și pe corzi; **o față cu aria negativă e marginea dinăuntru a unei regiuni și merge cu ea**. Cuțitul
+  închis lasă două părți (înăuntru, în afară), cel deschis face din fiecare față o formă; refuzurile noi: `nu-trece`, `cutit`
+  (doar cu închidere), `pe-linie` și pentru cuțit, `prea-multe`. „Taie la intersecții” (panoul și meniul de clic dreapta) taie
+  fiecare contur ales în locurile lui comune cu celelalte, nu și în buclele lui. Oracolul are `judecaCutitul` și
+  `judecaIntersectiile` (`taiere.forma.oracol.test.ts`); generatorii corpusurilor stau în `test/unit/ajutor-taiere.ts`.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -533,6 +557,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles-py/text_corpus.py`, în `proportii.json`, cu mutarea fiecărei litere pe hârtie în `DEPLASARI_SPATIERI`): un caz
   nou = rândul acolo, apoi fixtura regenerată și comisă. Rândul de prag al textului e făcut. **Pornirea 101,4 (cu ușa 104,9 /
   110 kB), totalul 506,0 / 550, /admin 105,4 / 200.**
+  **Incrustația în V (ADR 0170, felia 12.1↑, adusă din etapa 12)** gata pe 07.11, în worktree-ul `incrustatii`, cu
+  răspunsurile owner-ului (1a; la 2 și 3, ambele opțiuni, alese la export; 4a+b; 5a; 6a+b): rolul „incrustație în V” (panoul
+  și fereastra exportului) face din V-carve-ul formei locașul, iar dopul se calculează din desen la fiecare export
+  (`src/cam/incrustatie.ts`: oglinda pe X, semifabricatul cu marginea, fața coborâtă la S + H cu freza dreaptă, pereții cu V
+  de la adâncimea de start S), într-un fișier al lui (`…-dop-N`). Jocurile (cu „Același spațiu”), fierăstrăul și marginea se
+  aleg la export; panoul are secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile). **Documentul v20:** `incrustatie`
+  (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20 schimbă doar numărul; oracolul
+  documentului și corpusul de aur la v20. **Valorile pe hârtie ale incrustației stau într-un singur loc,
+  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. Urmează
+  12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
+  **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
+  **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
   **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
   `imprimanta` (`wip/3.6g-imprimanta`): fila **Imprimanta**, a treia a meniului global, leagă o imprimantă Creality din familia
   K1 (a owner-ului: o K1C) pe protocolul ei din fabrică: WebSocket-ul de pe 9999, **fără subprotocol** (Chrome refuză o legătură
@@ -546,8 +582,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (așteptat: se reface după 0,3 s); o legătură căzută se reface singură, iar **o reîncercare nu judecă permisiunea rețelei
   locale** (browserul aplicației o spune refuzată și spre loopback). Proba cap-coadă are imprimanta falsă în
   `test/e2e/imprimantaFalsa.ts` (9999, pe rețeaua de loopback a probei); ghidul owner-ului: `docs/masina/imprimanta-k1c.md`.
-  **Pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 514,0 / 550 (cu 7.9↑b, după unirea lui `main` în ramură), /admin 105,4 /
-  200.**
+  **Mărimea feliei: pornirea +0,2 kB, totalul +8,1 kB** (bucata ferestrei 7,5 kB, `reteaLocala` 1,0 kB).
   **Trimiterea unui `.gcode` la imprimantă (ADR 0190 §C.7, §D, felia 3.6h)** gata pe 07.11, pe aceeași ramură: **Trimite un
   fișier…**, sub lista fișierelor, verifică întâi fișierul pe calculator (`src/machine/imprimanta/gcode3d.ts`: antetul lui
   OrcaSlicer / Creality Print, PrusaSlicer sau Cura, temperaturile, miniatura, întinderea mișcărilor cu G90 / G91 / G92 / G28 și
@@ -556,8 +591,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nume pe care lista îl are primește „-2”, „-3”… (verificarea după nume spune ceva doar pentru un nume nou). **CSP-ul are `http:`
   în `connect-src`** (răspunsul 3a); `wss:` trecea deja (după CSP3, `ws:` și `https:` îl acoperă), iar martorul refuzat al
   probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
-  pe 80. **Pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 517,3 / 550 (+3,3, ~1,3 kB peste ținta liniei: unirea în `main`
-  așteaptă acordul owner-ului), /admin 105,4 / 200.**
+  pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei: unirea în `main` așteaptă acordul owner-ului. Cu
+  `main` (`8003cb2`) unit în ramură: pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 530,8 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -762,6 +797,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
+  inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
+  imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la
+  „ce altceva putem face in paralel?”, owner-ul a pornit două linii noi, în worktree-uri, amândouă întâi cu un ADR propus și
+  întrebările: planșele (etapa 11: mai multe foi, Multi-Plate, lista de tăiere; `wip/11.1-plansele`,
+  `C:\Users\besli\cncvs2-lucru\plansele`, e2e pe 4178 și `127.0.5`, ADR-urile 0210–0219, canalul `plansele`) și trasarea din
+  imagine (etapa 25; `wip/25.1-trasare`, `C:\Users\besli\cncvs2-lucru\trasare`, 4179, `127.0.6`, ADR-urile 0220–0229, canalul
+  `trasare`). Restul raportărilor (15.B↑b: `raportari`, 4177, `127.0.4`, ADR-urile 0200–0209) e propus, nepornit. **Suita
+  emulatoarelor ține porturi fixe (9095, 8085, 5005) și 4173, oricare ar fi worktree-ul:** înainte de ea, `netstat -ano`, iar
+  la o ciocnire se așteaptă cealaltă sesiune (pe 07.11, porțile unirii au căzut întâi doar din cauza asta).
 - 07.11.2026: **imprimanta 3D prin WiFi, răspunsurile la ADR 0190** (formularul schiței: „1a”, „2a”, „3a”, „4a”): fereastra
   Imprimanta, a treia filă a meniului global; întâi 3.6g (conectarea, starea, pauza și oprirea, fișierele din imprimantă), apoi
   3.6h (trimiterea unui `.gcode`); **`http:` în `connect-src`, pentru 3.6h** (acordul owner-ului, ca la `ws:`: un `http://`
@@ -769,6 +814,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   panourile mai multor masini unul langa altul, eventual si pe monitoare diferite. Dar asta poate veni mai tarziu.” (o felie a
   ei, mai târziu). Imprimanta lui: o K1C (2024), la 192.168.1.12; verificarea de pe calculatorul lui, doar cu citiri, permisă
   (pe 07.11, imprimanta n-a răspuns: oprită sau într-o rețea despărțită de cablu).
+- 06.11.2026: **tăierea și conversia vectorilor: răspunsurile la ADR 0180** (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
+  cu notele „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
+  jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și „aici va trebui sa testam
+  si sa ajustam pe viitor, pentru cand avem situatiile concrete”): întâi tăierea, apoi decuparea, conversia și netezirea;
+  linia dreaptă împarte fiecare formă aleasă în două forme, decuparea lasă forma cu ce rămâne, „Taie la intersecții” face din
+  fiecare bucată o formă; bucățile își păstrează rolul (o bucată deschisă, tăiată pe aceeași parte a frezei; buzunarul,
+  V-carve-ul și găurirea pleacă de pe ea); la cerc și dreptunghi, „doar dacă e” și „cu mărimea dată”; cercul din poligon trece
+  prin noduri; „Arce” face arce și din liniile scurte. „Închide bucățile” e la alegere (bifa ținută în browser): fără ea, un
+  cerc tăiat prin centru dă două forme separate, câte un arc de 180°. Linia lucrează în worktree-ul `taiere` (ADR 0180–0189),
+  în feliile 10.3↑–10.3↑e.
 - 06.11.2026: **textul, restul pragului, pe linia principală** („Ok, o sa le raspund, aici poti sa continui”, cât liniile
   paralele își așteaptă răspunsurile): feliile 7.9↑ și 7.9↑b, cu ADR 0138 (cercetarea, schița, cinci întrebări), acceptat cu
   recomandările („Yes, 1a–5a”): pt e mărimea fontului, mm și inch rămân majuscula; lățimea și înălțimea literelor în procente;

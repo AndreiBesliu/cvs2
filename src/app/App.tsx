@@ -511,6 +511,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         // Un fișier, sau câte unul pe freză (ADR 0084), cu numele dat de export (`numeFisier`).
         const fisiere = r.fisiere.map((f) => ({ octeti: f.octeti, sha256: f.sha256, linii: f.linii, nume: f.nume }));
         for (const f of fisiere) descarca(f.octeti, f.nume);
+        // Dopurile incrustațiilor (ADR 0170 §3): fișierele lor, după ale foii; nu intră în panoul mașinii (alt semifabricat).
+        const dopuri = r.dopuri.flatMap((d) => d.fisiere.map((f) => ({ ...d.semifabricat, nume: f.nume, linii: f.linii, sha256: f.sha256, octeti: f.octeti })));
+        for (const d of dopuri) descarca(d.octeti, d.nume);
         // În panoul mașinii ajunge doar un program pe care senderul îl vorbește (familia GRBL); restul se rulează de pe
         // controlerul lui (ADR 0125): un G4 P în ms ar deveni acolo o pauză de ore.
         setUltimulExport(r.sender ? fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
@@ -519,6 +522,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
+          ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}),
         });
         // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
         opresteSimularea();

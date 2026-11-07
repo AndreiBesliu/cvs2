@@ -357,7 +357,7 @@ test('programul poartă vârful frezei (IR), ca simularea exportului să taie cu
 
 // ── Ușa v16 ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile necunoscute rămân); un v15 cu ele nu e valid; un v15 curat urcă (prin v16–v18) la v19', () => {
+test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile necunoscute rămân); un v15 cu ele nu e valid; un v15 curat urcă (prin v16–v19) la v20', () => {
   const d = deschis(doc([DR20], [op(['a'], { scula: { ...V(30, 3.175, 0.25), forma: { tip: 'v', unghi: 30, varf: 0.25, cod: 'X' } }, directie: 'scurt' })]));
   const o = d.piese[0]!.operatii[0]!;
   assert.equal(o.scula.forma?.varf, 0.25);
@@ -376,7 +376,7 @@ test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile ne
   const curat = doc([DR20], [op(['a'])], 15);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 19 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 20 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

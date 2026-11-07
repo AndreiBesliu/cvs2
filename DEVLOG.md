@@ -6142,6 +6142,187 @@ apoi cercetarea, ADR-ul propus cu întrebările grupate (recomandarea întâi) �
 - **Otrăvurile:** 29 (`test/otravuri/7.9b.py`); toate prinse la prima rulare (`28c1761`, în clona din afara Drive-ului): 19 unitare (așezarea, blocul, ajutoarele) și 10 e2e (legăturile panoului). S03 (începuturile rândurilor pe unități UTF-16), U06 (−) și U08 (alegerea pe unități UTF-16) au venit cu pașii scriși pentru ele înaintea rulării (cazul cu 😀 pe două rânduri, clicul pe −, un 😀 scris înainte în e2e); U04 (fără `preventDefault`) e prinsă de apăsarea trimisă de pagină, nu de adresă (Edge fără fereastră nu merge înapoi singur).
 - **CI:** complet verde pe `28c1761` (`42362185110`, 10:01–10:35 UTC); rapid verde.
 - **Publicat pe test:** `28c1761` (rularea `42364646242`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `28c1761a66ed`; roadmap-ul are 7.9↑b gata, în etapa 7; în Edge fără fereastră, pe instanța de test: rândul sub câmpul textului, AVA alese, 2 mm, Alt + → dă 2,1, „Fără spațieri (2)”.
+## 2026-11-06 — Felia 12.1↑ pornită: incrustația în V (ADR 0170, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi alegerea liniei „Inlays, stage 12” (owner-ul, în
+sesiunea principală). Sarcina de la sesiunea principală: linia incrustațiilor (etapa 12, rândul de prag „Inlay în V și cu
+pereți drepți”), în worktree-ul `C:\Users\besli\cncvs2-lucru\incrustatii`, ramura `wip/12.1-incrustatii` din `main`
+(`bf91fb1`), e2e-ul pe 4174 și rețeaua de loopback `127.0.1`, ADR-urile 0170–0179, documentul v20, canalul `incrustatii`; întâi
+cercetarea și un ADR propus, cu întrebările grupate și schița, codul după răspunsuri.
+**Started:** 06.11, 12:45. **Completed:** 06.11, 13:30 (cercetarea, ADR-ul și schița; codul lui 12.1↑ așteaptă răspunsurile).
+
+- **Locul de lucru:** worktree-ul, cu joncțiunile `node_modules` și `functions\node_modules` spre checkout-ul principal;
+  `.tmp/pw.config.ts` cu portul 4174 în comandă, `url` și `baseURL`; `.tmp/emu.ts` copiat. Emulatoarele nu s-au rulat (porturile
+  4400 / 4500 erau ocupate de altă sesiune).
+- **Baza, pe `bf91fb1`:** compilatoarele (aplicația, planificatorul, funcțiile), importurile, traducerile, licențele, 8 449 de
+  teste unitare (0 căderi, 8 sărite), build-ul determinist (pornirea 101,4 cu ușa 104,9 / 110 kB, totalul 503,1 / 550, /admin
+  105,4 / 200), e2e 349 / 350 pe 4174: singura cădere e `raportor.spec.ts:101`, care cere adresa `http://localhost:4173/`
+  (cunoscută din linia verificării vectorilor, nu ține de felie).
+- **Cercetarea:** fizica pe hârtie a incrustației în V (locașul la min(D, d/t), dopul oglindit săpat de la S = D − g; întors,
+  dopul se oprește la S, pereții se ating pe S·t de la contur, sub dop rămâne g, între plăci H; exemplul V60 Ø6, D = 3, g = 0,5,
+  H = 2: S = 2,5, contactul pe 1,443 mm, dopul săpat la 4,5 sub conul de 5,196); criteriile din prag (DeskProto: V90,
+  adâncimea 4, spațiul 1 → suprapunerea 3,0 și câte 1,0 mm); ediția întâi (modelul cu limita automată, oracolul fizic pe 10
+  forme, ce strica potrivirea: conul scurt, crestele, formele care se ating, frezele diferite; decuparea neterminată de pe
+  `wip/inlay-traseu-decupare`); ce are cvs2 (V-carve-ul pe distanța exactă, fundul plat, oracolul simulării cu cititorul lui de
+  G-code; lipsesc adâncimea de start și foile multiple, etapa 11).
+- **ADR 0170, propus:** perechea declarată în document (`incrustatie` pe operația V-carve, documentul v20); dopul calculat din
+  desen la fiecare export, oglindit pe X, pe semifabricatul lui (cutia + 5 mm, XY0 în colțul lui, Z0 pe fața lui), cu fața
+  coborâtă la S + H de freza dreaptă și pereții săpați de V de la adâncimea de start; refuzurile; oracolul potrivirii
+  (`test/oracles/incrustatie.ts`) și otrăvurile scrise întâi; feliile 12.1↑ … 12.1↑e. Șase întrebări, cu recomandarea întâi.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK> (panoul cu rolul nou, exportul cu locașul și dopul,
+  potrivirea în secțiune, dopul în vederea 3D, întrebările), în culorile aplicației.
+- **În fișă:** rândul 12.1↑ (în lucru) și rândul răspunsurilor în coada owner-ului; în prag, rândul incrustațiilor trece „în
+  lucru”; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑ (proba scrisă întâi).
+
+## 2026-11-07 — Felia 12.1↑: incrustația în V (ADR 0170, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „1a; 2 - vreau sa pot alege intre optiuni atuci cand fac exportul; 3 - la fel ca la 2 - vreau sa am ambele optiuni;
+4a+b; 5a; 6 - si a si b” (owner-ul, răspunsurile la cele șase întrebări din ADR 0170, în sesiunea liniei).
+**Started:** 07.11, 10:44. **Completed:** 07.11, 13:01.
+
+- **Ce au schimbat răspunsurile** (în ADR): lemnul din jurul dopului și jocurile, ambele, alese la export (`jurDop`, două
+  valori cu bifa „Același spațiu”); fundul cu freza dreaptă acum, doar cu V în 12.1↑d; pereții drepți imediat după nucleul V
+  (12.1↑b); banda și decuparea în 12.1↑c.
+- **Documentul v20:** `incrustatie` (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20
+  schimbă doar numărul și refuză un `incrustatie` propriu pe un v19; oracolul documentului și corpusul de aur la v20 (ADR 0121).
+- **CAM-ul:** V-carve-ul cu adâncimea de start S (conul atinge conturul la −S); dopul calculat din desen la fiecare export
+  (`src/cam/incrustatie.ts`): oglinda pe X, semifabricatul (cutia + marginea), fața coborâtă la S + H cu freza dreaptă, pereții
+  cu V de la S; refuzurile cu motiv; un fișier pe dop (`…-dop-N`). Valorile pe hârtie într-un singur loc (`src/model/incrustatie.ts`).
+- **Interfața:** rolul „incrustație în V” (panoul și fereastra exportului); sub rând, jocul, „Același spațiu”, fierăstrăul și
+  marginea; în panou, jocurile și marginea, cu secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile, conul folosit,
+  grosimea semifabricatului); arborele; manualul („Incrustația în V”, ambele limbi).
+- **Probele, scrise întâi:** oracolul potrivirii (`test/oracles/incrustatie.ts`, fără importuri din `src/`) pe cinci cazuri pe
+  hârtie plus controlul negativ (dopul tăiat ca a doua cavitate pică); adâncimea de start pe oracolul simulării; rolul;
+  proba e2e pe octeții din browser (cercul R15: oprirea 2,4994, contactul 100 %, jocul 0,5006, între plăci 2,0006).
+- **Ce a prins proba e2e, reparat:** rândul ferestrei nu primea incrustația din document (`ExportConectat`); cu freza dreaptă
+  implicită Ø6, fâșia dintre dop și marginea regiunii avea 4,84 mm, iar V-ul o curăța cu inele dese (creasta 0,0505 între
+  plăci): regiunea e lărgită cât să treacă freza dreaptă, cu un avertisment că programul trece de marginile semifabricatului.
+- **Capcana scriptului:** `String.replace` cu text a făcut `$$` → `$` în `export.en.ts` (văzut în diff, reparat; înlocuirile
+  de acum cu `split`/`join`).
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele, traducerile, 8 501 teste unitare (0 căderi, 8 sărite), build-ul determinist (pornirea 101,5 cu ușa 105,1 / 110 kB, totalul 507,4 / 550: +4,3 kB față de baza din 06.11, 503,1), e2e 353 / 353 pe 4174 (la prima trecere, 19 căderi de încărcare a mașinii, toate verzi la reluarea cu 2 lucrători; proba manualului urcată la 28 de capitole).
+- **Otrăvurile** (`test/otravuri/12.1.py`): 44, alese de autor; prima rulare (`50ecaf7`): 27 prinse, 17 scăpate, fiecare cu proba ei nouă: cazul L al oracolului (P02: toate cazurile erau simetrice față de verticală, deci un dop neoglindit trecea), fața dopului coborâtă până la marginile semifabricatului (P08), `incrustatie.refuzuri.test.ts` (R01–R08, G01, G02: refuzurile și gruparea locașului nu aveau probă), rolul (L01: jocul pe un locaș puțin adânc; L03: fundul plat de dinainte), `incrustatie.scriere.test.ts` (E04: îmbinarea), proba e2e a ferestrei (E05, E06); a doua rulare, 17 / 17; pe codul final, 44 / 44.
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12; build-ul `07f71e9`). Verificat acolo, în browserul aplicației: rolul ales din panou, secțiunea pe hârtie (2,50 / 1,44 / 0,50 / 2,00 / 4,50 din 5,20 / 5,50 pe cercul R15 cu D 3 și H 2), rândul ferestrei exportului; descărcarea celor două fișiere, probată în e2e (în browserul aplicației n-am descărcat nimic).
+- **Rămâne:** 12.1↑b (pereții drepți, ADR 0171), 12.1↑c (banda îngustă și decuparea, alese la export), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul owner-ului.
+
+## 2026-11-07 — Felia 12.1↑b pornită: incrustația cu pereți drepți (ADR 0171, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 12.1↑b” (owner-ul, la întrebarea de la capătul feliei 12.1↑, în sesiunea liniei).
+**Started:** 07.11, 13:08. **Completed:** 07.11, 13:20 (cercetarea, ADR-ul și schița; codul lui 12.1↑b așteaptă răspunsurile).
+
+- **Cercetarea:** ArtCAM 2018, Inlay Wizard (pereți drepți: buzunar, gaură, în trepte, dopul; aceeași freză pentru locaș și
+  dop, colțurile potrivite, jocul care mărește cavitatea sau micșorează dopul) și criteriul din prag (steaua cu 5 colțuri,
+  Ø3, adâncimea 6, jocul 0,1: dopul întors intră cu 0,10 ± 0,02 pe tot conturul), din `CERCETARE-DETALIATA.json`.
+- **Pe hârtie:** locașul taie desenul cu vârfurile rotunjite cu raza frezei R și unghiurile intrânde cu R − c; dopul e locașul
+  micșorat cu c, deci are vârfurile R − c și unghiurile R, cât freza: aceeași freză îl taie fără lemn rămas, iar arcele
+  concentrice țin jocul c și în colțuri. Steaua din prag (raza 12 și 5), cu Ø3: vârful de 40,55° se retrage 2,83 mm, din
+  fiecare latură de 8,48 rămân drepte 3,49; cu Ø6 steaua iese aproape rotundă. O precizare la criteriu: vârfurile dopului au
+  R1,4, nu R1,5, dacă jocul e 0,1 pe tot conturul.
+- **Oprirea:** pereții drepți nu opresc dopul. Se sprijină pe fund (dopul înalt de D + H; între plăci rămâne H, cleiul pe
+  pereți) sau pe față (D − g; sub dop rămâne g, fără loc de fierăstrău). Nu se pot ambele, ca la V.
+- **ADR 0171, propus:** documentul v21 (`incrustatie` cu `fel: 'drept'` pe buzunar, `jocLateral`, `sprijin`), locașul ca buzunar
+  al conturului potrivit, dopul pe semifabricatul lui ca la V (oglindit, fața coborâtă cu aceleași freze, fișierul lui),
+  refuzurile, rolul „incrustație cu pereți drepți”, oracolul pereților drepți (`test/oracles/incrustatieDreapta.ts`) scris
+  întâi. Șase întrebări, cu recomandarea întâi. Estimarea: ~3 h de cod.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR> (panoul, colțurile pe hârtie cu contururile
+  calculate, pe ce se sprijină dopul, exportul, întrebările), în culorile aplicației.
+- **În fișă:** rândul 12.1↑b (în lucru) și rândul răspunsurilor în coada owner-ului; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑b (proba scrisă întâi). `main` (7.9↑b) se aduce în ramură la
+  începutul codului.
+## 2026-11-06 — Felia 10.3↑ pornită: tăierea și conversia vectorilor (ADR 0180, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi „Vector trim/convert, stage 10” (owner-ul, în
+sesiunea principală). Sarcina de la sesiunea principală: linia tăierii și conversiei vectorilor (etapa 10, rândul de prag
+„Tăierea și conversia vectorilor”), în worktree-ul ei, cu porțile verzi pe `main` ca bază, apoi cercetarea, ADR-ul propus
+cu întrebările grupate (recomandarea întâi) și schița interfeței, înainte de cod.
+**Started:** 06.11, 13:20. **Completed:** 06.11, 13:48 (cercetarea, ADR-ul și schița; codul lui 10.3↑ așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\taiere` (ramura `wip/10.3-taiere-conversie`, din `main` `61c75a1`),
+  cu joncțiunile `node_modules` și `functions\node_modules`; e2e-ul pe 4175 (`CNCVS2_E2E_RETEA=127.0.2`), canalul `taiere`,
+  ADR-urile 0180–0189.
+- **Porțile pe `main`, în worktree:** traducerile 618 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile);
+  importurile 19 / 0; licențele; unit 8 449 (8 441 trecute, 0 căderi, 8 sărite, 408 s); build-ul determinist (266 de
+  fișiere identice): pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 503,1 / 550, /admin 105,4 / 200; e2e 350 / 350 (Edge,
+  2,9 min); emulatoarele 81 / 81 și 21 / 21.
+- **Cercetarea:** în cvs2 se refolosesc nodul nou exact (`adaugaNod`), locurile comune din cavalier rafinate cu Newton pe
+  segmentele adevărate (bucla din ADR 0124 §13) și biarcele (ADR 0033); booleanul nu, fiindcă reface geometria. ArtCAM 2018
+  (ajutorul lui, referință funcțională): Slice Vectors, Clip Vectors to Boundaries, Fit Arcs, Spline Vectors, Convert to
+  Regular Shapes. Ediția întâi n-avea tăierea, decuparea sau conversia; lecțiile ei intră în ADR (toleranța măsurată pe toată
+  forma, nu doar pe noduri; netezirea potrivită direct pe linii, cu liniile lungi și arcele păstrate, contur cu contur; o
+  bucată deschisă își păstrează partea frezei sau pierde rolul de arie).
+- **ADR 0180, propus:** butoanele Taie (Taie cu o linie verticală / orizontală, un ghidaj sau ultima formă aleasă, cu
+  „Închide bucățile”, o piesă cu găuri citită ca regiune; Decupează la o graniță închisă; Taie la intersecții) și Convertește
+  (Arce, Netezește, În cerc, În dreptunghi), calculate în workerul CAM și aplicate într-un pas; fără schemă nouă; patru felii
+  (10.3↑ tăierea, 10.3↑b decuparea, 10.3↑c conversia, 10.3↑d netezirea); proba pe hârtie (pătratul la X = 50, inelul tăiat
+  în două „U”-uri, liniile decupate în cercul Ø100, elipsa la 0,01, poligonul cu 64 de laturi, cercurile Ø8) și oracolul
+  independent; șase întrebări.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/U8aNobZggHbXjNCXitTGEY> (privată, a owner-ului; răspunsurile stau în baza paginii, colecția
+  `raspunsuri`: `q1`–`q6` cu `optiune`, `nota`, `la`, și `general`).
+
+## 2026-11-06 — Felia 10.3↑: tăierea cu o linie dreaptă (ADR 0180, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Răspund în formular”, apoi „ok, am raspuns” (formularul schiței ADR 0180: 1a, 2a, 3a, 4a, 5a, 6a, cu nota la
+întrebarea 2: „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
+jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și nota generală: „aici va
+trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete”).
+**Started:** 06.11, 16:55 (la răspunsuri). **Completed:** 06.11, 20:15.
+
+- **Înainte:** `main` (`920078b`, cu 7.9↑) unit în ramură (`3f0c147`, DEVLOG-ul și coada owner-ului, ambele rânduri
+  păstrate); deciziile în ADR 0180 (acceptat), CLAUDE.md și fișă (`af20f88`). Prima felie propusă s-a despărțit: 10.3↑ e
+  tăierea cu o linie dreaptă; cuțitul-formă și „Taie la intersecții” trec în 10.3↑b.
+- **Codul:** `src/model/taiere.ts` (nou: locurile de tăiere direct pe segmente, bucățile exacte cu `adaugaNod`, cercul pe
+  cercul lui, închiderea prin corzile împerecheate de-a lungul liniei, rolul păstrat sau latura frezei pe bucățile deschise),
+  cererea `taiere` în workerul CAM (`protocolCam`, `calculCam`, `bazinCam`, `taieVectorii`), acțiunea `document.taie` (comanda
+  `degrupeaza`, doar pe documentul de la clic), panoul `src/app/PanouTaiere.tsx` cu linia de pe pânză, butonul Taie în
+  extensia barei, textele (29 în editare, `actiune.taie` în dicționarele de bază), capitolul „Tăierea vectorilor” în manual,
+  ambele limbi (28 de capitole, 85 de uși).
+- **Ce a ieșit la porți:** la 1024 px, butonul nou împingea „Verifică vectorii” în afara ferestrei (proba lui 10.1↑ a căzut).
+  Extensia avea deja ~1 070 px pe `main` (butonul „3D” ieșea din fereastră); între 40 și 75 rem trece acum pe două rânduri
+  când nu mai încape. Pe telefon, extensia rămâne cum era (un singur rând, mai lat decât ecranul, ca pe `main`): de spus
+  owner-ului.
+- **Probele:** `taiere.test.ts` (23), `taiere.oracol.test.ts` (oracolul independent din `test/oracles/taiere.ts`, 160 de
+  cazuri din sămânță, cu martorul lui; o mutație a perechilor de corzi pică și aici, și pe hârtie), `taiere.spec.ts` (2, Edge),
+  listele de acțiuni și manualul.
+- **Mărimea:** față de un build curat al lui `920078b`: pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 504,5 →
+  511,3 / 550 kB: workerul CAM +4,5 kB (din care modulul rolului ~0,7 kB), panoul 1,9 kB, editarea +0,4 kB.
+- **Otrăvurile** (`test/otravuri/10.3.py`, 28), în clona `C:\Users\besli\cncvs2-lucru\otravuri-taiere`, cele e2e pe portul
+  4179: prima rulare (`aaf69d7`): 26 prinse; L10 (un nod la 5e-10 mm de linie, numărat de două ori pe arc) și O05 (buzunarul
+  pus pe o cale deschisă) au scăpat, deci două probe noi în `taiere.test.ts`; pe `17c51d7`: L10 și O05 prinse, 28 / 28. Manualul
+  nu mai spune „și în paletă”: acțiunea pornește din panou.
+- **Emulatoarele:** 81 / 81 și 21 / 21 pe `9a965a7` (prima rulare a căzut în două probe doar fiindcă am comis `9a965a7` cât
+  rula: probele raportorului și ale tichetelor cer versiunea din build = HEAD).
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 06.12). Verificat acolo, la
+  1280 px: versiunea, butonul Taie între Boolean și Verifică vectorii, linia la X = 70 pe un dreptunghi și tăierea lui în două
+  forme, alese. Tot acolo, „mm” de după câmpul Y trecea pe rândul următor: rândurile panoului sunt acum o grilă (bifa, eticheta,
+  câmpul, unitatea), fiecare pe o linie în ambele limbi; canalul, republicat cu reparația.
+
+## 2026-11-07 — Felia 10.3↑b: cuțitul-formă și „Taie la intersecții” (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑b”, apoi, după o întrerupere, „continua”.
+**Started:** 06.11, 23:19 (reluată 07.11, 10:22). **Completed:** 07.11, 12:55.
+
+- **Înainte:** `main` (`010da85`, cu 7.9↑ și 3.Xf) unit în ramură (`99d4bf8`, DEVLOG-ul cu ambele părți); traducerile 632 / 0.
+- **Codul:** `src/model/taiere.ts`: cuțitul-formă (`cutitul`, `taieCuForma`, fețele `fete` / `fataDin`) și intersecțiile
+  (`locuriIntersectii`, `taieLaLocuri`), cu locurile comune din cavalier rafinate cu Newton (`intalniri`, `rafinat`; `punctPe`,
+  `treceri` și `rafineaza` exportate din `reparare.ts`); cercul se taie acum din pozițiile lui (unghiul π·(k + t)), iar deschis
+  într-un singur loc are două semicercuri. Panoul: „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții”; meniul de
+  clic dreapta: „Taie la intersecții”; textele noi (motivele `nu-trece`, `cutit`, `prea-multe`, `nimic-intersectii`), în ambele
+  limbi; capitolul `taiere` al manualului, în ambele limbi.
+- **Regulile, la cod** (în ADR 0180, „Felia 10.3↑b, la cod”): un contur închis se taie doar unde exact una dintre bucățile
+  cuțitului de lângă loc intră în regiunea piesei (o atingere, din afară sau dinăuntru, nu taie); o cale deschisă, unde cuțitul o
+  trece de tot. Cuțitul închis lasă două părți, cel deschis face din fiecare față o formă. Cu închidere, o față cu aria negativă
+  e marginea dinăuntru a regiunii (corzile închid o buclă în jurul unei găuri) și merge cu ea.
+- **Probele:** 31 pe hârtie în `taiere.forma.test.ts`; oracolul independent extins (`judecaCutitul`,
+  `judecaIntersectiile`), pe 120 de tăieri cu cuțitul (poligoane convexe, cercuri, linii frânte) și 60 la intersecții; 2 e2e noi.
+  Corpusul a găsit două lucruri pe care probele pe hârtie nu le aveau: marginea dinăuntru (un triunghi în inel, care intră doar
+  în gaură, era refuzat) și cercul deschis într-un singur loc (un arc de 360° n-are bulge).
+- **Porțile:** traducerile, compilatoarele, importurile, licențele; unit 8 531 / 0 căderi pe `bb35254` și 8 532 (8 524 / 0 căderi / 8 sărite) pe starea finală; build-ul determinist (271 identice); e2e: pe build-ul final 354 / 356 în rularea întreagă, cu două căderi ale paletei (Ctrl+K) la 5 s sub încărcarea altor sesiuni, trecute la reluare, deci 356 / 356 (în rularea dinainte, patru căderi la încărcarea paginii, la fel, și una reală: rândul din meniu, reparat); emulatoarele 81 / 81 și 21 / 21 pe `e9148a6`, cu hub-ul pe alte porturi (4410, 4510, 9160), fiindcă cele implicite erau ținute de rulările altei sesiuni.
+- **Otrăvurile** (`test/otravuri/10.3b.py`): 26; prima rulare (`525acd4`): 23 prinse; C02 (un loc chiar în nod, lăsat la t ≈ 0), X01 (fiecare contur cercetat și cu el însuși) și U01 (cuțitul luat ca prima formă aleasă) au scăpat, prinse pe `e9148a6` după trei probe noi: 26 / 26.
+- **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 511,4 → 515,1 / 550 kB (workerul CAM +3,2 kB, editarea +0,3, panoul +0,2). Linia, până acum: ~10,5 kB (10.3↑ +6,8, 10.3↑b +3,7), peste ghidul de ~10 kB din brief, cu trei felii rămase.**
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12). Verificat acolo, la
+  1024 px: opțiunea „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții” în panou; refuzurile, cu motivele lor (un
+  cerc-cuțit în dreptunghi, formele care nu se întâlnesc); cercul mutat pe latura dreptunghiului îl taie în două forme, alese
+  (semidiscul, din trei segmente, și restul), iar cercul rămâne neales și neschimbat.
 
 ## 2026-11-07 — 3.6g: fereastra Imprimanta, Creality K1C prin WiFi (ADR 0190, acceptat) (Model: Claude Opus 5.5)
 

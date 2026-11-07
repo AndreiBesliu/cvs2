@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 19;
+export const VERSIUNE_SCHEMA = 20;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -166,9 +166,28 @@ export type Operatie = {
    * operațiile pieselor foii = ordinea automată (ca în v18); o operație fără rang, într-o foaie cu ranguri, vine la capăt.
    */
   rang?: number;
+  /**
+   * Pe un V-carve (ADR 0170, documentul v20), incrustația: operația e locașul și își declară dopul, care se taie din același
+   * desen, oglindit, pe semifabricatul lui. Lipsă = un V-carve obișnuit (ca în v19).
+   */
+  incrustatie?: Incrustatie;
   [cheie: string]: unknown;
 };
 export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]: unknown };
+/**
+ * Incrustația în V (ADR 0170 §1, documentul v20), pe locaș (un V-carve de adâncime D): `joc` = jocul pentru clei de sub dop,
+ * g, deci dopul se sapă de la adâncimea de start S = D − g; `fierastrau` = spațiul dintre plăci după lipire, H (dopul se sapă
+ * până la S + H); `margine` = cât lemn rămâne în jurul cutiei desenului pe semifabricatul dopului, în mm; `jurDop` = ce se
+ * întâmplă cu lemnul din jurul dopului: `fata`, fața semifabricatului coborâtă toată, sau `banda`, o bandă îngustă săpată cu
+ * V-ul, apoi decuparea (felia 12.1↑c). Potrivirea (freza ascuțită, conul, jocul față de D) e a lucrării.
+ */
+export type Incrustatie = {
+  fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: 'fata' | 'banda'; [cheie: string]: unknown;
+};
+/** Jocul cel mai mic pentru clei (ADR 0170 §4), în mm: de două ori creasta inelelor V din colțurile fundului plat (0,05). */
+export const JOC_INCRUSTATIE_MINIM = 0.1;
+/** Valorile cu care pornește o incrustație nouă (ADR 0170, răspunsul 3: două valori, implicit 0,5 și 2 mm; marginea 5 mm). */
+export const INCRUSTATIE_IMPLICITA: Incrustatie = { fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata' };
 /**
  * O freză de rest (ADR 0093): plată, cu distanța dintre inelele ei, în mm (cel mult raza ei). Potrivirea (mai mică decât
  * freza dinainte, plată, alt număr) o judecă lucrarea.
@@ -220,7 +239,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 19; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 20; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

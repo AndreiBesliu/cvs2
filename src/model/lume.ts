@@ -1,5 +1,5 @@
 import { compune, rotatie, type Matrice } from '../geom/matrice.ts';
-import type { Document, FormaDoc, FundPlat, Instanta, Nod, Operatie } from './document.ts';
+import type { Document, FormaDoc, FundPlat, Incrustatie, Instanta, Nod, Operatie } from './document.ts';
 import { jsonCanonic } from './jsonCanonic.ts';
 
 /**
@@ -92,15 +92,17 @@ export type Taietura = ElementLume & {
 
 /**
  * Valorile care fac din V-carve-urile unei piese, într-o instanță, o singură regiune (ADR 0090, ADR 0112, precizarea din
- * 5.8↑b): freza, adâncimea, pasul, sensul, fundul plat. Lucrarea le citește pe tăieturi, iar gruparea (ADR 0130) pe
- * operații: două părți cu aceleași valori s-ar săpa împreună.
+ * 5.8↑b): freza, adâncimea, pasul, sensul, fundul plat și, din v20, incrustația (ADR 0170: un locaș nu se unește cu un
+ * V-carve obișnuit, nici cu alt locaș, cu alt dop). Lucrarea le citește pe tăieturi, iar gruparea (ADR 0130) pe operații: două
+ * părți cu aceleași valori s-ar săpa împreună.
  */
 export function valoriVcarve(o: {
   readonly scula: Operatie['scula']; readonly adancime: number; readonly pas: number; readonly sens: Operatie['sens']; readonly fundPlat?: FundPlat | undefined;
+  readonly incrustatie?: Incrustatie | undefined;
 }): string {
   return jsonCanonic({
     scula: { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma ?? null }, adancime: o.adancime, pas: o.pas, sens: o.sens,
-    fundPlat: o.fundPlat ?? null,
+    fundPlat: o.fundPlat ?? null, incrustatie: o.incrustatie ?? null,
   });
 }
 
