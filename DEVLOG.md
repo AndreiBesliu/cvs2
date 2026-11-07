@@ -6230,6 +6230,9 @@ bifa; worktree-ul `C:\Users\besli\cncvs2-lucru\raportari`, ramura `wip/15.B-rapo
   octetul invalid făcea JSON-ul greșit oricum), spionul scrierilor (scoaterea după tranzacție ascundea o încărcare degeaba),
   cursorul pe tichetele sărite. Baza e2e, prima pe emulatoare proaspete, a trecut de 60 s (patru callable-uri reci): proba are
   acum 120 s (`b741241`).
+- **Publicat:** canalul `raportari` al instanței de test, <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (până pe
+  07.12; build-ul `58a4748`), verificat în browserul aplicației: versiunea din antet, consola fără erori, jurnalul local gol.
+  Bifa și mărimea cer contul deschis; atașarea reală, descărcarea și jobul vin cu funcțiile din `main`, după unire.
 - **Rămâne:** unirea în `main` (decizia owner-ului), apoi publicarea serverului pe test (funcțiile, regulile Firestore și
   Storage, indecșii) și o raportare cu proiectul pe instanța de test; pe canal se vede doar bifa. Felia următoare a liniei ar
   fi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, cu Storage-ul acum, registrul probei), după cuvântul
