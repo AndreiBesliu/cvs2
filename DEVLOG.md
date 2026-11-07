@@ -6155,4 +6155,7 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
 - **Porțile:** traducerile, compilatoarele, importurile, licențele; unit 8 531 / 0 căderi pe `bb35254` și 8 532 (8 524 / 0 căderi / 8 sărite) pe starea finală; build-ul determinist (271 identice); e2e: pe build-ul final 354 / 356 în rularea întreagă, cu două căderi ale paletei (Ctrl+K) la 5 s sub încărcarea altor sesiuni, trecute la reluare, deci 356 / 356 (în rularea dinainte, patru căderi la încărcarea paginii, la fel, și una reală: rândul din meniu, reparat); emulatoarele 81 / 81 și 21 / 21 pe `e9148a6`, cu hub-ul pe alte porturi (4410, 4510, 9160), fiindcă cele implicite erau ținute de rulările altei sesiuni.
 - **Otrăvurile** (`test/otravuri/10.3b.py`): 26; prima rulare (`525acd4`): 23 prinse; C02 (un loc chiar în nod, lăsat la t ≈ 0), X01 (fiecare contur cercetat și cu el însuși) și U01 (cuțitul luat ca prima formă aleasă) au scăpat, prinse pe `e9148a6` după trei probe noi: 26 / 26.
 - **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 511,4 → 515,1 / 550 kB (workerul CAM +3,2 kB, editarea +0,3, panoul +0,2). Linia, până acum: ~10,5 kB (10.3↑ +6,8, 10.3↑b +3,7), peste ghidul de ~10 kB din brief, cu trei felii rămase.**
-
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12). Verificat acolo, la
+  1024 px: opțiunea „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții” în panou; refuzurile, cu motivele lor (un
+  cerc-cuțit în dreptunghi, formele care nu se întâlnesc); cercul mutat pe latura dreptunghiului îl taie în două forme, alese
+  (semidiscul, din trei segmente, și restul), iar cercul rămâne neales și neschimbat.
