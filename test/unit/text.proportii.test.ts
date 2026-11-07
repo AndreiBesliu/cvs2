@@ -215,10 +215,15 @@ const copii = (r: Nod): readonly Nod[] => (r.tip === 'grup' ? r.copii : [r]);
 const dinBloc = (b: BlocText): ParametriText => ({
   continut: b.continut, inaltime: b.caseta?.fel === 'limita' ? b.caseta.ceruta : b.inaltime, spatiere: b.spatiere, interlinie: b.interlinie,
   aliniere: b.aliniere, cursiv: b.cursiv, vertical: b.vertical, caseta: b.caseta, proportii: b.proportii, crenare: b.crenare,
+  spatieri: b.spatieri,
 });
+// Spațierile literelor alese (ADR 0138 §5) pe „AVATAR To↵Hog”: A | V, T | A, H | o.
+const alese = [{ dupa: 0, mm: 2 }, { dupa: 3, mm: -0.5 }, { dupa: 10, mm: 1 }] as const;
 
 for (const [nume, p, sx, sy, rotire] of [
   ['orizontal, cu cursiv și spațiere, mai lat', { ...baza, spatiere: 0.4, cursiv: 12 }, 1.5, 1, 0],
+  ['cu spațierile literelor alese, mai lat', { ...baza, spatieri: alese }, 1.6, 1, 0],
+  ['vertical, cu spațierile literelor alese, mai înalt', { ...baza, vertical: true, aliniere: 'centru', spatieri: alese }, 1, 1.4, 0],
   ['cu proporții, crenarea oprită, mai înalt', { ...baza, crenare: false, proportii: { latime: 80, inaltime: 110 } }, 1, 1.7, 0],
   ['vertical, cu spațiere, mai îngust', { ...baza, vertical: true, spatiere: 0.5, aliniere: 'centru' }, 0.5, 1, 0],
   ['în casetă, mai lat', { ...baza, continut: 'HHH', caseta: { fel: 'scala', latime: 100, inaltime: 50 } }, 2, 1, 0],

@@ -127,7 +127,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare, editare.text.spatieri
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -152,6 +152,12 @@ In the tool's panel you type the text (Enter: new line) and choose:
   advance (vertical text doesn’t use it);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
   and the **alignment** to the anchor;
+- **between selected letters**, right under the text: select some letters in the text (with the mouse or Shift + arrows)
+  and change the space between them, all at once, in the field (mm; negative, tighter), with − / + or with `Alt+←` /
+  `Alt+→` right in the text (0.1 mm); with the cursor between two letters, only that pair. The field is empty when the
+  chosen spaces differ. The space adds to the space between letters (on a curve, along it; in vertical text, between the
+  letters of the column) and stays on its letters while you type elsewhere in the text; **Clear letter spacing** removes all
+  of them;
 - **Bold** and **Italic**, for any font, even without its own bold or slanted faces, **Vertical**, letters one under
   another, and **Box**, the text fitted into a width and a height (below).
 
@@ -1172,6 +1178,7 @@ it, and the app’s interface stays the same.
 | `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
+| `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
 | `Alt`, while dragging | inverts snapping |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |

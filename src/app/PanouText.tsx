@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactElement } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useState, type CSSProperties, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import { cuMesaje, t } from '../i18n/t.ts';
 import type { Contur } from '../geom/conturBaza.ts';
@@ -6,7 +6,8 @@ import { aldinMaxim, LIMITE_TEXT, majusculaBloc, POZITII_PE_CURBA, type BlocText
 import { FONT_IMPLICIT, FONTURI_INCLUSE } from '../text/fonturi.ts';
 import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
 import { majusculaDinMarime, marimeDinMajuscula, raportMajuscula, rotunjesteMarime, UNITATI_MARIME, type UnitateMarime } from '../text/marime.ts';
-import type { AliniereText, CasetaText } from '../text/asezare.ts';
+import { cuGoluri, dupaEditare, goluriAtinse, pePuncte, valoareComuna } from '../text/spatieri.ts';
+import type { AliniereText, CasetaText, SpatiuLitera } from '../text/asezare.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
@@ -51,7 +52,24 @@ type Formular = {
   readonly unitate: UnitateMarime;
   /** Proporțiile literelor (ADR 0138 §2), în procente, și crenarea fontului (§3). */
   readonly latime: string; readonly inaltimeLitere: string; readonly crenare: boolean;
+  /**
+   * Spațierile literelor alese (ADR 0138 §5), ale textului de acum: se schimbă odată cu el (`dupaEditare`) și nu se țin în
+   * browser, ca textul.
+   */
+  readonly spatieri: readonly SpatiuLitera[];
 };
+
+/** Pasul spațiului literelor alese (ADR 0138 §5): butoanele − / + și Alt + ← / →, în mm. */
+const PAS_SPATIU = 0.1;
+
+/** Literele dintre golurile atinse, de arătat sub rând (un rând nou ca „↵”); un șir lung, cu mijlocul tăiat. */
+function litereAlese(text: string, goluri: readonly number[]): string {
+  const c = Array.from(text.replace(/\r/g, ''));
+  const prima = goluri[0], ultima = goluri.at(-1);
+  if (prima === undefined || ultima === undefined) return '';
+  const l = c.slice(prima, ultima + 2).map((x) => (x === '\n' ? '↵' : x));
+  return l.length > 20 ? `${l.slice(0, 9).join('')}…${l.slice(-9).join('')}` : l.join('');
+}
 
 /**
  * Mărimea arătată în câmp după o conversie (un text ales, o altă unitate), cu valoarea ei exactă în mm: cât câmpul are chiar
@@ -86,7 +104,7 @@ function formularSalvat(): Formular {
     continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
     pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
     aldin: false, grosime: '', cursiv: false, unghi: '12', textVertical: false, caseta: 'fara', casetaLatime: '100', casetaInaltime: '50',
-    unitate: 'mm', latime: '100', inaltimeLitere: '100', crenare: true,
+    unitate: 'mm', latime: '100', inaltimeLitere: '100', crenare: true, spatieri: [],
   };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
@@ -188,6 +206,8 @@ function parametri(
     ...(caseta ? { caseta } : {}),
     // ADR 0138: unitatea (doar pentru panou), proporțiile și crenarea oprită; lipsă, ca înainte.
     ...(f.unitate !== 'mm' ? { unitate: f.unitate } : {}), ...(proportii ? { proportii } : {}), ...(f.crenare ? {} : { crenare: false as const }),
+    // Spațierile literelor alese (ADR 0138 §5): în marginile blocului prin felul în care se fac (`cuGoluri`, `dupaEditare`).
+    ...(f.spatieri.length > 0 ? { spatieri: f.spatieri } : {}),
   };
 }
 
@@ -229,6 +249,11 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   // Mărimea arătată după o conversie, cu valoarea ei exactă (ADR 0138 §1); majuscula unui text ales în pt, până vine fontul.
   const [exacta, setExacta] = useState<MarimeExacta | null>(null);
   const [asteaptaMarime, setAsteaptaMarime] = useState<number | null>(null);
+  // Alegerea din câmpul textului, pe puncte de cod ([început, sfârșit)), și textul scris în câmpul spațiului literelor alese
+  // cât omul îl scrie (null: câmpul arată valoarea golurilor alese) (ADR 0138 §5).
+  const [alegere, setAlegere] = useState<{ readonly inceput: number; readonly sfarsit: number } | null>(null);
+  const [campSpatiu, setCampSpatiu] = useState<string | null>(null);
+  const idSpatiu = useId();
   const scrie = (f: Formular): void => { setForm(f); salveaza(f); setMotiv(null); };
 
   useEffect(() => {
@@ -274,7 +299,11 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       // Caseta (ADR 0142): limitat de ea, câmpul înălțimii ține înălțimea cerută; fără casetă, ea se oprește.
       caseta: b.caseta?.fel ?? 'fara',
       ...(b.caseta ? { casetaLatime: textNumar(b.caseta.latime), casetaInaltime: textNumar(b.caseta.inaltime) } : {}),
+      // Spațierile literelor alese (ADR 0138 §5), ale textului ales; unul fără ele nu le are.
+      spatieri: b.spatieri ?? [],
     }));
+    setAlegere(null);
+    setCampSpatiu(null);
     setMotiv(null);
     setDrept(false);
   }, [cheieEditat]);
@@ -342,11 +371,37 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   }, [modul, rezFont, typeof p === 'string' ? p : JSON.stringify(p)]);
   const lungimeCurba = useMemo(() => (curbaPosibila && modul !== null && modul !== 'eroare' ? modul.lungimeCurba(curbaPosibila.contur) : 0), [curbaPosibila, modul]);
 
+  // Spațierea literelor alese (ADR 0138 §5): golurile atinse de alegerea din câmpul textului și valoarea lor comună.
+  const goluri = alegere ? goluriAtinse(form.continut, alegere.inceput, alegere.sfarsit) : [];
+  const comuna = valoareComuna(form.spatieri, goluri);
+  const spatiuBun = (x: number | null): x is number => x !== null && Math.abs(x) <= LIMITE_TEXT.spatiere;
+  // Un text greșit în câmpul spațiului se spune și oprește Adaugă / Aplică (ce s-ar pune n-ar fi ce scrie acolo).
+  const spatiuGresit = campSpatiu !== null && campSpatiu.trim() !== '' && !spatiuBun(citesteNumar(campSpatiu, true));
+  /** Alegerea de acum a câmpului textului, pe puncte de cod (câmpul dă unități UTF-16, fără `\r`). */
+  const alege = (el: HTMLTextAreaElement): void => {
+    const a = Math.min(el.selectionStart, el.selectionEnd), b = Math.max(el.selectionStart, el.selectionEnd);
+    setAlegere({ inceput: pePuncte(el.value, a), sfarsit: pePuncte(el.value, b) });
+    setCampSpatiu(null);
+  };
+  /** Golurile `g` schimbate de `f` (din valoarea veche în cea nouă), toate deodată. */
+  const schimbaGoluri = (g: readonly number[], f: (vechi: number) => number): void => {
+    if (g.length === 0) return;
+    scrie({ ...form, spatieri: cuGoluri(form.spatieri, g, f) });
+    setCampSpatiu(null);
+  };
+  /** Câmpul spațiului: o valoare bună se pune pe loc pe toate golurile alese; textul rămâne cum îl scrie omul. */
+  const scrieSpatiu = (s: string): void => {
+    setCampSpatiu(s);
+    const v = citesteNumar(s, true);
+    if (spatiuBun(v) && goluri.length > 0) scrie({ ...form, spatieri: cuGoluri(form.spatieri, goluri, () => v) });
+  };
+
   const mesaj = ((): string | null => {
     if (motiv) return motiv;
     if (modul === 'eroare') return t('editare.text.neincarcat');
     if (rezFont && !rezFont.ok) return textIncarcare(rezFont, numeFont(form.font));
     if (typeof p === 'string' && p !== 'asteapta' && !(p === 'continut' && form.continut === '')) return t(`editare.text.gresit.${p}`);
+    if (spatiuGresit) return t('editare.text.gresit.spatiu-ales');
     if (asezat && asezat.raport['aldin-esuat'] > 0) return t('editare.text.aldin-esuat', { n: asezat.raport['aldin-esuat'] });
     if (asezat && asezat.raport['caseta-prea-mica'] > 0) return t('editare.text.caseta.prea-mica');
     if (asezat && asezat.caractereLipsa.length > 0) return t('editare.text.lipsa', { n: asezat.raport.lipsa, caractere: asezat.caractereLipsa.join(' ') });
@@ -356,7 +411,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   // O literă pe care aldinul n-a putut-o îngroșa lipsește din text: un asemenea text nu se pune pe foaie (ADR 0123).
   // Un text care nu încape în casetă (ADR 0142) nu se pune pe foaie.
   const gata = !!asezat && asezat.glife.length > 0 && asezat.raport['aldin-esuat'] === 0 && asezat.raport['caseta-prea-mica'] === 0
-    && typeof p !== 'string' && !doarCitire;
+    && typeof p !== 'string' && !spatiuGresit && !doarCitire;
   // Blocul ține înălțimea desenată: cu o casetă, cea care a încăput.
   const bloc = (q: Omit<BlocText, 'amprenta'>, a: TextAsezat): Omit<BlocText, 'amprenta'> => (q.caseta ? { ...q, inaltime: a.inaltime } : q);
   // Ce spune caseta: înălțimea care a încăput și mărimea textului (cutia literelor tăiate).
@@ -431,7 +486,48 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         }}>
         <p className="nota-retea" data-testid="text-stare">{editat ? t('editare.text.editezi') : t('editare.text.nou')}</p>
         <textarea className="continut-text" rows={3} value={form.continut} aria-label={t('editare.text.continut')} placeholder={t('editare.text.continut')}
-          data-text="continut" spellCheck={false} onChange={(e) => { scrie({ ...form, continut: e.target.value }); }} />
+          data-text="continut" spellCheck={false}
+          onChange={(e) => {
+            // Spațierile literelor neatinse de editare rămân pe literele lor (ADR 0138 §5).
+            const nou = e.target.value;
+            scrie({ ...form, continut: nou, spatieri: dupaEditare(form.continut, nou, form.spatieri) });
+            alege(e.target);
+          }}
+          onSelect={(e) => { alege(e.currentTarget); }}
+          onKeyDown={(e) => {
+            // Alt + ← / → (ADR 0138 §5): spațiul literelor alese, cu 0,1 mm; fără ca pagina să meargă înapoi în istoric.
+            if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const el = e.currentTarget;
+            const a = Math.min(el.selectionStart, el.selectionEnd), b = Math.max(el.selectionStart, el.selectionEnd);
+            const pas = e.key === 'ArrowRight' ? PAS_SPATIU : -PAS_SPATIU;
+            schimbaGoluri(goluriAtinse(el.value, pePuncte(el.value, a), pePuncte(el.value, b)), (x) => x + pas);
+          }} />
+        {/* Spațierea literelor alese (ADR 0138 §5): golurile dintre literele alese în câmpul de deasupra (sau perechea din jurul
+            cursorului), schimbate deodată, în mm; gol, dacă diferă. „Fără spațieri” le scoate pe toate. */}
+        <div className="spatieri-text" data-testid="text-spatieri">
+          <div className="camp-retea camp-spatiu">
+            <label htmlFor={idSpatiu}>{t('editare.text.spatieri')}</label>
+            <input id={idSpatiu} value={campSpatiu ?? (comuna === null ? '' : textNumar(comuna))} inputMode="decimal" data-text="spatiu-ales"
+              disabled={goluri.length === 0} placeholder={goluri.length > 0 && comuna === null ? t('editare.text.spatieri.diferite') : undefined}
+              onChange={(e) => { scrieSpatiu(e.target.value); }} onBlur={() => { if (!spatiuGresit) setCampSpatiu(null); }} />
+            <button type="button" data-text="spatiu-minus" disabled={goluri.length === 0} title={t('editare.text.spatieri.minus')}
+              aria-label={t('editare.text.spatieri.minus')} onClick={() => { schimbaGoluri(goluri, (x) => x - PAS_SPATIU); }}>−</button>
+            <button type="button" data-text="spatiu-plus" disabled={goluri.length === 0} title={t('editare.text.spatieri.plus')}
+              aria-label={t('editare.text.spatieri.plus')} onClick={() => { schimbaGoluri(goluri, (x) => x + PAS_SPATIU); }}>+</button>
+          </div>
+          <div className="spatieri-nota">
+            <p className="nota-retea" data-testid="text-spatieri-nota">
+              {goluri.length === 0 ? t('editare.text.spatieri.alege') : t('editare.text.spatieri.alese', { litere: litereAlese(form.continut, goluri) })}
+            </p>
+            {form.spatieri.length > 0 ? (
+              <button type="button" data-text="fara-spatieri" onClick={() => { scrie({ ...form, spatieri: [] }); setCampSpatiu(null); }}>
+                {t('editare.text.spatieri.fara', { n: form.spatieri.length })}
+              </button>
+            ) : null}
+          </div>
+        </div>
         <label className="camp-retea">
           <span>{t('editare.text.font')}</span>
           <select value={form.font} data-text="font" onChange={(e) => { scrie({ ...form, font: e.target.value }); }}>

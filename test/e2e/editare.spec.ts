@@ -23,6 +23,28 @@ async function trageEcran(page: Page, a: { x: number; y: number }, b: { x: numbe
   if (alt) await page.keyboard.up('Alt');
 }
 
+/**
+ * Câte ghidaje are foaia în ultima versiune salvată în IndexedDB (ca `documentSalvat` din `text.spec.ts`); −1: nimic salvat.
+ * Salvarea pleacă după fiecare document nou, dar asincron: o reîncărcare înaintea ei ar opri-o.
+ */
+async function ghidajeSalvate(page: Page): Promise<number> {
+  return page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-proiecte', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    const v = await new Promise<unknown>((ok, eroare) => {
+      const r = db.transaction('versiuni').objectStore('versiuni').openCursor(null, 'prev');
+      r.onsuccess = () => { ok(r.result?.value ?? null); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    db.close();
+    if (typeof v !== 'string') return -1;
+    return (JSON.parse(v) as { foi?: Array<{ ghidaje?: unknown[] }> }).foi?.[0]?.ghidaje?.length ?? 0;
+  });
+}
+
 async function centruRigla(page: Page, id: 'rigla-sus' | 'rigla-stanga'): Promise<{ x: number; y: number }> {
   const b = await page.getByTestId(id).boundingBox();
   if (!b) throw new Error(`${id} n-are cutie`);
@@ -54,9 +76,10 @@ test('riglele și ghidajele: din riglă, salvate în proiect, anulate, șterse p
   await page.keyboard.press('Control+y');
   await expect(rigle(page)).toHaveAttribute('data-ghidaje', '1');
 
-  // Salvat în proiect: rămâne după reîncărcare.
+  // Salvat în proiect: rămâne după reîncărcare. Reîncărcarea vine după ce ghidajul e chiar în IndexedDB (cu 300 ms de
+  // așteptare, sub încărcare, o reîncărcare oprea uneori salvarea, iar ghidajul lipsea).
   await expect(page.getByTestId('proiect')).toHaveCount(0);
-  await page.waitForTimeout(300);
+  await expect.poll(() => ghidajeSalvate(page)).toBe(1);
   await page.reload();
   await expect(rigle(page)).toHaveAttribute('data-ghidaje', '1');
 

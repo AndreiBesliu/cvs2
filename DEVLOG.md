@@ -6112,6 +6112,37 @@ apoi cercetarea, ADR-ul propus cu întrebările grupate (recomandarea întâi) �
 - **Rămâne:** răspunsurile owner-ului (ce a încercat, firmware-ul și varianta, IP-ul și cele patru întrebări); apoi codul lui
   3.6g, cu imprimanta falsă (`test/e2e/imprimantaFalsa.ts`) și ghidul `docs/masina/imprimanta-k1c.md`.
 
+## 2026-11-07 — 7.9↑b: spațierea literelor alese (Model: Claude Opus 5.5)
+
+**Prompt:** „la schita panoului text poti incepe cu recomandarile tale” (ADR 0138 §5, cu răspunsurile 4a și 5a: din panou, în mm).
+**Started:** 07.11, 10:50. **Completed:** 07.11, 12:40.
+
+- **Panoul:** sub câmpul textului, rândul **Între literele alese**: literele alese în text (mausul, Shift + săgeți) își
+  schimbă spațiul dintre ele, toate deodată: câmpul (mm; gol, cu „diferă”, când spațiile alese nu sunt la fel), − / + și
+  Alt + ← / → chiar în text (0,1 mm; tasta e oprită înaintea browserului, deci fără „înapoi” în istoric); cu cursorul între
+  două litere, doar perechea lor; sub rând, literele alese; **Fără spațieri (N)** le scoate. Văzut în aplicație înainte de
+  probe: rândul, AVA la 0,5 și la 4 mm în previzualizare, redeschiderea, „diferă” pe VAT.
+- **Blocul și așezarea:** `spatieri` (sortate, unice, nenule, după un caracter care mai are unul după el, în ±1 000 mm), cu
+  indicele pe puncte de cod (`\n` numărat, `\r` nu); golul se adaugă după crenare și spațiere doar între două litere vecine
+  așezate (nu lângă un caracter lipsă din font), pe verticală între celulele coloanei, pe o curbă de-a lungul ei, în casetă ca
+  spațierea. O editare a textului le lasă pe literele lor; la mânere cresc cu textul (×s; neuniform ×lx, vertical ×ly). Fără
+  ele, bit cu bit ca înainte. Ajutoarele panoului: `src/text/spatieri.ts`.
+- **Proba:** corpusul Python (`CAZURI_SPATIERI` în `proportii.json`, cu mutarea fiecărei litere pe hârtie, plus
+  `cerc-spatieri`, `linie-intinsa-spatieri`, `caseta-spatieri`, `aldin-spatieri`; cazurile vechi comparate, identice);
+  `text.spatieri.test.ts` (ajutoarele, 3 000 de editări la întâmplare care dau mereu un bloc pe care ușa îl primește, ușa,
+  așezarea, mânerele); două mânere neuniforme noi; e2e-ul (AVA, Alt + săgeți cu `defaultPrevented`, comparația cu textul fără
+  spațieri, redeschiderea, un 😀 scris înainte, + și −, Aplică, Ctrl+Z). Manualul: ușa 84, capitolul textului, scurtăturile.
+- **Porțile locale:** unitarele 8 493 (0 căzute; 8 sărite, logourile lipsă, ca înainte); e2e 352 / 353, apoi 350 / 353:
+  căderile (1, apoi 3), toate prima așteptare după deschiderea paginii (modulul editării peste 5 s, cu CPU-ul la 79 % din
+  alte sesiuni; aceeași clasă a căzut și la porțile lui 7.9↑, `cont.spec.ts:29`), trecute la reluare. Spec-ul editării,
+  repetat, a mai arătat o cădere a probei înseși, și pe `main` (`010da85`, în clona otrăvurilor): riglele reîncărcau după
+  300 ms fixe, înaintea salvării ghidajului; reparată separat (`a489450`, așteaptă ghidajul în IndexedDB), 36 / 36 de patru
+  ori. Încă o cădere, o dată, pe 07.11, în `fonturi.spec.ts:149` (clicul pe Aplică după reîncărcare, cu
+  fontul SVG), nereprodusă în 61 de rulări după ea. Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 506,0 / 550 (+1,4).
+- **Otrăvurile:** 29 (`test/otravuri/7.9b.py`); toate prinse la prima rulare (`28c1761`, în clona din afara Drive-ului): 19 unitare (așezarea, blocul, ajutoarele) și 10 e2e (legăturile panoului). S03 (începuturile rândurilor pe unități UTF-16), U06 (−) și U08 (alegerea pe unități UTF-16) au venit cu pașii scriși pentru ele înaintea rulării (cazul cu 😀 pe două rânduri, clicul pe −, un 😀 scris înainte în e2e); U04 (fără `preventDefault`) e prinsă de apăsarea trimisă de pagină, nu de adresă (Edge fără fereastră nu merge înapoi singur).
+- **CI:** complet verde pe `28c1761` (`42362185110`, 10:01–10:35 UTC); rapid verde.
+- **Publicat pe test:** `28c1761` (rularea `42364646242`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `28c1761a66ed`; roadmap-ul are 7.9↑b gata, în etapa 7; în Edge fără fereastră, pe instanța de test: rândul sub câmpul textului, AVA alese, 2 mm, Alt + → dă 2,1, „Fără spațieri (2)”.
+
 ## 2026-11-07 — 3.6g: fereastra Imprimanta, Creality K1C prin WiFi (ADR 0190, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Răspund în formular”, apoi „am raspuns si salvat” (owner-ul, în sesiunea liniei). Răspunsurile din formularul

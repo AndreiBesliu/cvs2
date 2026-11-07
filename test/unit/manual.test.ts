@@ -72,6 +72,8 @@ const USI: readonly Usa[] = [
   { id: 'editare.text.proportii.latime', eticheta: eticheta('editare.text.proportii.latime') },
   { id: 'editare.text.proportii.inaltime', eticheta: eticheta('editare.text.proportii.inaltime') },
   { id: 'editare.text.crenare', eticheta: eticheta('editare.text.crenare') },
+  // Spațierea literelor alese (ADR 0138 §5), rândul de sub textul panoului.
+  { id: 'editare.text.spatieri', eticheta: eticheta('editare.text.spatieri') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
@@ -117,7 +119,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 84: din 07.11, și fila Imprimanta, ADR 0190)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 85: din 07.11, și fila Imprimanta, ADR 0190)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -128,7 +130,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
   // Restul textului (ADR 0138), încă patru: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului.
-  assert.equal(USI.length, 84);
+  assert.equal(USI.length, 85);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

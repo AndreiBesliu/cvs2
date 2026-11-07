@@ -123,7 +123,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta, editare.text.unitate, editare.text.proportii.latime, editare.text.proportii.inaltime, editare.text.crenare, editare.text.spatieri
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -147,6 +147,11 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
   stă la avansul ei (textul vertical n-o folosește);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
   **alinierea** față de ancoră;
+- **între literele alese**, chiar sub text: alegi câteva litere în text (cu mausul sau cu Shift + săgeți) și le schimbi
+  spațiul dintre ele, toate deodată, în câmp (mm; negativ, mai strâns), cu − / + sau cu `Alt+←` / `Alt+→` chiar în text
+  (0,1 mm); cu cursorul între două litere, doar perechea lor. Câmpul e gol când spațiile alese diferă. Spațiul se adaugă la
+  spațiul dintre litere (pe o curbă, de-a lungul ei; la textul vertical, între literele coloanei) și rămâne pe literele lui
+  când scrii în altă parte a textului; **Fără spațieri** le scoate pe toate;
 - **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, **Vertical**, literele una
   sub alta, și **Caseta**, textul încadrat într-o lățime și o înălțime (mai jos).
 
@@ -1138,6 +1143,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
+| `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
 | `Alt`, cât tragi | inversează lipirea |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |

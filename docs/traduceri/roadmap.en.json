@@ -681,6 +681,10 @@
       "ro": "Senderul prin WiFi pe mașina owner-ului, prin controlerul ales; transcrierea, rejucată pe emulator",
       "en": "The sender over WiFi on the owner’s machine, through the chosen controller; the transcript, replayed on the emulator"
     },
+    "401af452ab3692ea": {
+      "ro": "**Spațierea literelor alese, adusă din etapa 7** (fără mașină; ADR 0138 §5; „la schita panoului text poti incepe cu recomandarile tale”, cu răspunsurile 4a și 5a). Ultimul punct rămas din definiția pragului textului. Sub câmpul textului, rândul **Între literele alese**: omul alege literele în text (cu mausul sau cu Shift + săgeți) și le schimbă spațiul dintre ele, toate deodată, în câmp (mm), cu − / + sau cu Alt + ← / → chiar în text (0,1 mm, fără ca pagina să meargă înapoi în istoric); cu cursorul între două litere, doar perechea lor; câmpul e gol când spațiile alese diferă, iar **Fără spațieri (N)** le scoate. Blocul ține `spatieri` (indicele caracterului, pe puncte de cod, și mm-ul), adunate la spațierea textului doar între două litere vecine ale aceluiași rând sau ale aceleiași coloane; pe o curbă, de-a lungul ei; în casetă, ca spațierea. O editare a textului le lasă pe literele lor, iar la mânere cresc cu textul. Fără ele, textul se așază bit cu bit ca înainte. Proba: corpusul Python (`CAZURI_SPATIERI` și cazurile noi din curbă, casetă și aldin, cu mutarea fiecărei litere pe hârtie), 3 000 de editări la întâmplare care dau mereu un bloc pe care ușa îl primește, e2e-ul (Alt + săgeți, un 😀 scris înainte, + și −, redeschiderea, Ctrl+Z); otrăvurile 29 / 29, la prima rulare (S03 și U08, indicii pe unități UTF-16, prinse de pașii cu 😀 scriși pentru ele; U04, Alt + săgeata ajunsă la browser, de apăsarea trimisă de pagină). Documentul rămâne v19. Rândul de prag al textului e făcut.",
+      "en": "**Spacing between selected letters, brought from stage 7** (no machine; ADR 0138 §5; “la schita panoului text poti incepe cu recomandarile tale”, with answers 4a and 5a). The last point left from the definition of the text threshold. Under the text box, the row **Between selected letters**: you select letters in the text (with the mouse or Shift + arrows) and change the space between them, all at once, in the field (mm), with − / + or with Alt + ← / → right in the text (0.1 mm, without the page going back in history); with the cursor between two letters, only that pair; the field is empty when the chosen spaces differ, and **Clear letter spacing (N)** removes them. The block keeps `spatieri` (the character’s index, in code points, and the mm), added to the text spacing only between two neighbouring letters of the same line or the same column; on a curve, along it; in a box, like the spacing. Editing the text leaves them on their letters, and with the handles they grow with the text. Without them, the text is laid out bit for bit as before. The proof: the Python corpus (`CAZURI_SPATIERI` and the new cases in the curve, box and bold corpora, with each letter’s shift on paper), 3,000 random edits that always give a block the door accepts, the e2e (Alt + arrows, a 😀 typed in front, + and −, reopening, Ctrl+Z); poisons 29 / 29, on the first run (S03 and U08, indices in UTF-16 units, caught by the 😀 steps written for them; U04, Alt + arrow reaching the browser, by the key press sent from the page). The document stays v19. The text threshold row is done."
+    },
     "4022794d5f162083": {
       "ro": "Sugestia din editor",
       "en": "The suggestion from the editor"
@@ -1025,6 +1029,10 @@
       "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",
       "en": "The minimal Users tab and the Settings tab, brought from stage 14"
     },
+    "614c2e017a6654d8": {
+      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă (ADR 0190 §C.7, §D): urcarea pe HTTP (`/upload`), verificată în lista fișierelor; verificarea fișierului (antetul feliatorului, mișcările față de patul de 220 × 220 × 250); pornirea cu confirmare; `http:` în `connect-src` (acordul owner-ului, 07.11)",
+      "en": "Sending a ready-sliced `.gcode` to the printer (ADR 0190 §C.7, §D): the upload over HTTP (`/upload`), checked in the file list; the file check (the slicer header, the moves against the 220 × 220 × 250 bed); starting with confirmation; `http:` in `connect-src` (the owner’s consent, 07.11)"
+    },
     "63760521aca66be1": {
       "ro": "V-carve-ul unei piese, o singură regiune",
       "en": "A part's V-carve, a single region"
@@ -1192,6 +1200,10 @@
     "763851f772b3f0d7": {
       "ro": "**cele 7 contracte probate** (sau decizia ta de la §8.1)",
       "en": "**the 7 contracts proven** (or your decision from §8.1)"
+    },
+    "76432533cdd9619c": {
+      "ro": "Spațierea literelor alese",
+      "en": "Spacing between selected letters"
     },
     "777c207aa2e71768": {
       "ro": "înainte de 3.7b",
@@ -1757,10 +1769,6 @@
       "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",
       "en": "Import, part 2: Corel, WMF (+ EMF beyond the threshold), DWG as a message"
     },
-    "ac5adfada9351f98": {
-      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă (ADR 0190 §C.7, §D): urcarea pe HTTP (`/upload`), verificată în lista fișierelor; verificarea fișierului (antetul feliatorului, mișcările față de patul de 220 × 220 × 250); pornirea cu confirmare; `http:` în CSP, doar cu acordul owner-ului",
-      "en": "Sending a ready-sliced `.gcode` to the printer (ADR 0190 §C.7, §D): the upload over HTTP (`/upload`), checked in the file list; the file check (the slicer header, the moves against the 220 × 220 × 250 bed); starting with confirmation; `http:` in the CSP, only with the owner’s consent"
-    },
     "ac777cee41886503": {
       "ro": "lista de lansare (`BRIEF.md` §8)",
       "en": "the launch list (`BRIEF.md` §8)"
@@ -2261,10 +2269,6 @@
       "ro": "Senderul",
       "en": "The sender"
     },
-    "e1fdb87217567bf8": {
-      "ro": "Imprimanta 3D prin WiFi (ADR 0190, propus; cererea owner-ului din 06.11): Creality K1C pe protocolul ei din fabrică (WebSocket-ul de pe 9999, cadre text JSON, `ok` la bătăile inimii); fereastra Imprimanta, cu conexiunile ei ținute și căutarea pe 9999; starea (duza, patul, progresul, timpul, fișierul, eroarea), Pauză / Reia / Oprește, fișierele din imprimantă, pornite cu confirmare; legătura căzută nu oprește imprimarea; proba pe o imprimantă falsă, cu protocolul ei pe hârtie",
-      "en": "3D printer over WiFi (ADR 0190, proposed; the owner’s request of 06.11): the Creality K1C on its factory protocol (the WebSocket on 9999, JSON text frames, `ok` to the heartbeats); the Printer window, with its own saved connections and the search on 9999; the status (nozzle, bed, progress, time, file, error), Pause / Resume / Stop, the files on the printer, started with confirmation; a dropped connection does not stop the print; tested on a fake printer, with its protocol on paper"
-    },
     "e24c29e67b38945a": {
       "ro": "**Importul WMF, adus din etapa 26** (fără mașină; ADR 0117; decizia owner-ului din 07.10: „WMF propriu”; subsesiune, în worktree-ul `wip/26.A-import-wmf`, pornită la „suntem pe aplicatie, haide sa pornim worktrees”). „Importă SVG / DXF / PDF / AI / EPS / WMF…” citește metafișierul Windows: polilinia, poligonul, PolyPolygon, dreptunghiul și cel rotunjit, elipsa, arcul, chord-ul, pie-ul și lanțul de LineTo, cu transformarea GDI (fereastra, vizorul, mutările, scările, modurile de mapare, ISOTROPIC, SaveDC / RestoreDC). Antetul placeable e o pagină: desenul stă pe foaie unde e în cadru, la 25,4 / inch mm pe unitate. Fără antet, unitatea se alege în fereastră (implicit 1/96 țol, ca LibreOffice) și desenul vine în colțul foii. Cercul iese din arce exacte, elipsa în cubice. O formă nevăzută (penița și pensula nule) se sare; textul, imaginile, operațiile raster, regiunile, decupajele și înregistrările necunoscute se sar, numărate; EMF-ul e refuzat cu motiv. Totul la cerere: pornirea neschimbată, 98,4 (cu ușa 101,9 / 110); totalul 433,1 → 437,6 / 450 kB. **Treceri:** (1) ADR-ul, cititorul, corpusul Python (11 fișiere, fiecare redat de GDI pe „Microsoft Print to PDF” și recitit cu PyMuPDF; CI-ul îl regenerează fără GDI și cere aceiași octeți), dialogul, manualul, e2e-ul. Găsite de oracolul GDI: arcul e orar când maparea oglindește doar axa X (cu ambele axe întoarse, tot trigonometric); capătul unui arc pus pe o axă e un artefact al GDI-ului; fundalul opac al textului e un dreptunghi plin; modurile metrice ale imprimantei vin din mm întregi (desfăcute în oracol). Găsit de probe: un RoundRect cu un colț nul pornea din colțul rotunjit. Prima măsurătoare a pornirii a dat 98,5 (+50 de octeți: eticheta, `accept`, unitatea aleasă), adusă la 98,4 (+27). Mutațiile: **59 / 59**: 56 pe probele unitare (5 au scăpat întâi și au primit probe: formele nevăzute cu numărul punctelor greșit, ISOTROPIC fără extinderi, cadrul decalat fără fereastra fișierului, o înregistrare fără parametri de 2 cuvinte) și 3 prin e2e, pe portul 4177. Sonda locală pe 128 de cliparturi Office (nu intră în repo): toate citite; ce desenează GDI peste 0,1 mm stă pe căile ușii, la cel mult 0,081 mm, și invers.",
       "en": "**WMF import, brought forward from stage 26** (no machine; ADR 0117; the owner's decision of 07.10: “our own WMF”; a sub-session, in the `wip/26.A-import-wmf` worktree, started at “we are on the app, let's start worktrees”). “Import SVG / DXF / PDF / AI / EPS / WMF…” reads the Windows metafile: the polyline, the polygon, PolyPolygon, the rectangle and the rounded one, the ellipse, the arc, the chord, the pie and the chain of LineTo, with the GDI transformation (the window, the viewport, their offsets and scales, the mapping modes, ISOTROPIC, SaveDC / RestoreDC). The placeable header is a page: the drawing lands on the sheet where it is in the frame, at 25.4 / inch mm per unit. Without the header, the unit is chosen in the window (1/96 inch by default, as in LibreOffice) and the drawing lands in the sheet's corner. A circle comes out of exact arcs, an ellipse as cubics. An invisible shape (null pen and null brush) is skipped; text, images, raster operations, regions, clipping and unknown records are skipped and counted; an EMF is refused with its reason. All on demand: startup unchanged, 98.4 (with the door 101.9 / 110); the total 433.1 → 437.6 / 450 kB. **Passes:** (1) the ADR, the reader, the Python corpus (11 files, each rendered by GDI on “Microsoft Print to PDF” and read back with PyMuPDF; CI regenerates it without GDI and asks for the same bytes), the window, the manual, the e2e. Found by the GDI oracle: the arc is clockwise when the mapping mirrors only the X axis (with both axes flipped, still counterclockwise); an arc end placed on an axis is a GDI artifact; the opaque text background is a filled rectangle; the printer's metric modes come from whole mm (undone in the oracle). Found by the tests: a RoundRect with a zero corner started from the rounded corner. The first startup measurement gave 98.5 (+50 bytes: the label, `accept`, the chosen unit), brought back to 98.4 (+27). Mutations: **59 / 59**: 56 on the unit tests (5 escaped at first and got tests: invisible shapes with a wrong point count, ISOTROPIC without extents, the offset frame without the file's window, a parameterless record of 2 words) and 3 through e2e, on port 4177. The local probe on 128 Office clipart files (not in the repo): all read; what GDI draws above 0.1 mm lies on the door's paths, within 0.081 mm, and the other way round."
@@ -2540,6 +2544,10 @@
     "ff314200edeb5317": {
       "ro": "Fonturile SVG cu o singură linie, aduse din etapa 7",
       "en": "Single-line SVG fonts, brought forward from stage 7"
+    },
+    "ff572d84b2dbed01": {
+      "ro": "Imprimanta 3D prin WiFi (ADR 0190, cererea owner-ului din 06.11, cu răspunsurile din 07.11): Creality K1C pe protocolul ei din fabrică (WebSocket-ul de pe 9999, cadre text JSON, `ok` la bătăile inimii); fereastra Imprimanta, cu conexiunile ei ținute și căutarea pe 9999; starea (duza, patul, progresul, timpul, fișierul, eroarea), Pauză / Reia / Oprește, fișierele din imprimantă, pornite cu confirmare; legătura căzută nu oprește imprimarea; proba pe o imprimantă falsă, cu protocolul ei pe hârtie",
+      "en": "3D printer over WiFi (ADR 0190, the owner’s request of 06.11, with the answers of 07.11): the Creality K1C on its factory protocol (the WebSocket on 9999, JSON text frames, `ok` to the heartbeats); the Printer window, with its own saved connections and the search on 9999; the status (nozzle, bed, progress, time, file, error), Pause / Resume / Stop, the files on the printer, started with confirmation; a dropped connection does not stop the print; tested on a fake printer, with its protocol on paper"
     }
   }
 }
