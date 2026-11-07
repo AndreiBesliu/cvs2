@@ -137,6 +137,13 @@ test('arcele: G2 orar trece pe sus, G3 pe jos, cercul întreg; un arc cu capetel
   const iese = analizeazaText('G90\nG1 X215 Y100\nG3 X215 Y120 I0 J10', K1C);
   assert.deepEqual(iese.iesire, { linie: 3, text: 'G3 X215 Y120 I0 J10', axa: 'X', valoare: 225 });
   assert.equal(analizeazaText('G90\nG1 X215 Y100\nG2 X215 Y120 I0 J10', K1C).iesire, null);
+  // Un sfert de cerc, unde sensul contează (otrava G13 a scăpat pe semicercuri, la care ocolul are aceeași mărime în ambele
+  // sensuri): centrul (110, 100), de la (120, 100), unghiul 0, la (110, 110), unghiul π/2. G3 ocolește π/2 și n-atinge
+  // nicio altă extremă; G2 ocolește 3π/2, prin (110, 90) și (100, 100).
+  const sfertG3 = analizeazaText('G90\nG1 X120 Y100\nG3 X110 Y110 I-10 J0', K1C);
+  assert.deepEqual([sfertG3.min[0], sfertG3.max[0], sfertG3.min[1], sfertG3.max[1]], [110, 120, 100, 110]);
+  const sfertG2 = analizeazaText('G90\nG1 X120 Y100\nG2 X110 Y110 I-10 J0', K1C);
+  assert.deepEqual([sfertG2.min[0], sfertG2.max[0], sfertG2.min[1], sfertG2.max[1]], [100, 120, 90, 110]);
 });
 
 test('G28 face poziția neștiută (o mișcare relativă după el nu se mai poate pune pe pat); G1X10 fără spații; litere mici; G29 nu e o mișcare', () => {
