@@ -162,6 +162,7 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
 - **Acțiunea `document.converteste`:** un lot de `inlocuieste-piesa`, un singur pas de anulare, doar dacă documentul e cel de la
   clic; selecția rămâne. Pornește din panou (calculul cere workerul), ca „Taie”. Butonul Convertește stă lângă Taie, în
   extensia barei; panoul are câte un bloc pentru Arce, În cerc și În dreptunghi, fiecare cu toleranța și butonul lui.
+  Rezultatul, sub blocuri, e adus în vedere la fiecare schimbare (panoul se derulează; la fel în panoul Taie).
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
