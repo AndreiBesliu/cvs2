@@ -701,6 +701,10 @@
       "ro": "Senderul prin WiFi pe mașina owner-ului, prin controlerul ales; transcrierea, rejucată pe emulator",
       "en": "The sender over WiFi on the owner’s machine, through the chosen controller; the transcript, replayed on the emulator"
     },
+    "401af452ab3692ea": {
+      "ro": "**Spațierea literelor alese, adusă din etapa 7** (fără mașină; ADR 0138 §5; „la schita panoului text poti incepe cu recomandarile tale”, cu răspunsurile 4a și 5a). Ultimul punct rămas din definiția pragului textului. Sub câmpul textului, rândul **Între literele alese**: omul alege literele în text (cu mausul sau cu Shift + săgeți) și le schimbă spațiul dintre ele, toate deodată, în câmp (mm), cu − / + sau cu Alt + ← / → chiar în text (0,1 mm, fără ca pagina să meargă înapoi în istoric); cu cursorul între două litere, doar perechea lor; câmpul e gol când spațiile alese diferă, iar **Fără spațieri (N)** le scoate. Blocul ține `spatieri` (indicele caracterului, pe puncte de cod, și mm-ul), adunate la spațierea textului doar între două litere vecine ale aceluiași rând sau ale aceleiași coloane; pe o curbă, de-a lungul ei; în casetă, ca spațierea. O editare a textului le lasă pe literele lor, iar la mânere cresc cu textul. Fără ele, textul se așază bit cu bit ca înainte. Proba: corpusul Python (`CAZURI_SPATIERI` și cazurile noi din curbă, casetă și aldin, cu mutarea fiecărei litere pe hârtie), 3 000 de editări la întâmplare care dau mereu un bloc pe care ușa îl primește, e2e-ul (Alt + săgeți, un 😀 scris înainte, + și −, redeschiderea, Ctrl+Z); otrăvurile 29 / 29, la prima rulare (S03 și U08, indicii pe unități UTF-16, prinse de pașii cu 😀 scriși pentru ele; U04, Alt + săgeata ajunsă la browser, de apăsarea trimisă de pagină). Documentul rămâne v19. Rândul de prag al textului e făcut.",
+      "en": "**Spacing between selected letters, brought from stage 7** (no machine; ADR 0138 §5; “la schita panoului text poti incepe cu recomandarile tale”, with answers 4a and 5a). The last point left from the definition of the text threshold. Under the text box, the row **Between selected letters**: you select letters in the text (with the mouse or Shift + arrows) and change the space between them, all at once, in the field (mm), with − / + or with Alt + ← / → right in the text (0.1 mm, without the page going back in history); with the cursor between two letters, only that pair; the field is empty when the chosen spaces differ, and **Clear letter spacing (N)** removes them. The block keeps `spatieri` (the character’s index, in code points, and the mm), added to the text spacing only between two neighbouring letters of the same line or the same column; on a curve, along it; in a box, like the spacing. Editing the text leaves them on their letters, and with the handles they grow with the text. Without them, the text is laid out bit for bit as before. The proof: the Python corpus (`CAZURI_SPATIERI` and the new cases in the curve, box and bold corpora, with each letter’s shift on paper), 3,000 random edits that always give a block the door accepts, the e2e (Alt + arrows, a 😀 typed in front, + and −, reopening, Ctrl+Z); poisons 29 / 29, on the first run (S03 and U08, indices in UTF-16 units, caught by the 😀 steps written for them; U04, Alt + arrow reaching the browser, by the key press sent from the page). The document stays v19. The text threshold row is done."
+    },
     "4022794d5f162083": {
       "ro": "Sugestia din editor",
       "en": "The suggestion from the editor"
@@ -1220,6 +1224,10 @@
     "763851f772b3f0d7": {
       "ro": "**cele 7 contracte probate** (sau decizia ta de la §8.1)",
       "en": "**the 7 contracts proven** (or your decision from §8.1)"
+    },
+    "76432533cdd9619c": {
+      "ro": "Spațierea literelor alese",
+      "en": "Spacing between selected letters"
     },
     "777c207aa2e71768": {
       "ro": "înainte de 3.7b",

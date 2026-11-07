@@ -501,6 +501,41 @@
   padding: var(--sp-1) var(--sp-2);
 }
 
+/* Spațierea literelor alese (ADR 0138 §5), sub câmpul textului: eticheta, câmpul (mm) și − / + pe un rând; dedesubt, ce e
+   ales (sau cum se alege) și „Fără spațieri”. */
+.spatieri-text {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.camp-retea.camp-spatiu {
+  grid-template-columns: 1fr 4.5rem 30px 30px;
+}
+
+.camp-spatiu button,
+.spatieri-nota button {
+  min-height: 30px;
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  background: var(--s-camp);
+  color: var(--t);
+  font-size: var(--fs-2);
+}
+
+.camp-spatiu button {
+  padding: 0;
+}
+
+.spatieri-nota {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.spatieri-nota button {
+  justify-self: end;
+  padding: 0 var(--sp-2);
+}
+
 /* Ancora unui text nou: o cruce în punctul ales, unde începe (sau stă la mijloc, la dreapta) linia de bază. */
 .ancora-text {
   fill: none;

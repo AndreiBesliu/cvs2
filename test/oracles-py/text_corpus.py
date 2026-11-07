@@ -577,6 +577,17 @@ def aseaza(font, p, linie=False):
         return cs
 
     randuri_text = p['continut'].replace('\r', '').split('\n')
+    # Spațierile literelor alese (ADR 0138 §5), scrise din nou: după caracterul cu indicele `dupa` (pe puncte de cod, cu `\n`
+    # numărat), încă `mm`, doar între două caractere vecine, amândouă litere așezate.
+    goluri_alese = {s['dupa']: s['mm'] for s in p.get('spatieri', [])}
+    inceput_rand, i = [], 0
+    for rand in randuri_text:
+        inceput_rand.append(i)
+        i += len(rand) + 1
+
+    def gol_ales(a, b):
+        return goluri_alese.get(a, 0.0) if b == a + 1 else 0.0
+
     if p.get('vertical'):
         # Textul vertical (ADR 0141), scris din nou aici: fiecare rând e o coloană, cu axa la r × rândul (de la stânga la
         # dreapta); fiecare caracter, o celulă: litera desenată în sistemul ei, cu cutia ei exactă (a figurii aldine: a
@@ -588,8 +599,9 @@ def aseaza(font, p, linie=False):
         spatiu = max(0.0, em - H) + p['spatiere']
         for r, rand in enumerate(randuri_text):
             axa = r * coloane_mm
-            celule = []
+            celule, pozitii, poz = [], [], inceput_rand[r] - 1
             for ch in rand:
+                poz += 1
                 if ord(ch) < 0x20 and ch != '\t':
                     continue
                 g = gl(0x20 if ch == '\t' else ord(ch))
@@ -605,6 +617,7 @@ def aseaza(font, p, linie=False):
                     x0b, y0b, x1b, y1b = cutie_miez({'contururi': cs})
                     cut = (x0b, y0b, x1b + 2 * d, y1b + 2 * d)
                 celule.append((ch, g, cs, cut))
+                pozitii.append(poz)
             baze = []
             for k, (ch, g, cs, cut) in enumerate(celule):
                 sus = cut[3] if cut else H
@@ -612,7 +625,7 @@ def aseaza(font, p, linie=False):
                     baze.append(-sus)
                 else:
                     ant = celule[k - 1][3]
-                    baze.append(baze[-1] + (ant[1] if ant else 0.0) - spatiu - sus)
+                    baze.append(baze[-1] + (ant[1] if ant else 0.0) - spatiu - sus - gol_ales(pozitii[k - 1], pozitii[k]))
             jos = baze[-1] + (celule[-1][3][1] if celule[-1][3] else 0.0) if celule else 0.0
             dy = 0.0 if p['aliniere'] == 'stanga' else (-jos / 2 if p['aliniere'] == 'centru' else -jos)
             randuri.append({'latime': -jos, 'caractere': len(celule), 'dx': dy})
@@ -625,7 +638,9 @@ def aseaza(font, p, linie=False):
         return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': coloane_mm, 'coborare': mm(desc)}}
     for r, rand in enumerate(randuri_text):
         litere, x, ant = [], 0.0, None
+        poz, poz_ant = inceput_rand[r] - 1, -2
         for ch in rand:
+            poz += 1
             if ord(ch) < 0x20 and ch != '\t':
                 continue
             g = gl(0x20 if ch == '\t' else ord(ch))
@@ -634,9 +649,13 @@ def aseaza(font, p, linie=False):
                 continue
             if ant is not None:
                 x += (mmx(cren(ant, g)) if crenare_pornita else 0) + p['spatiere']
+                extra = gol_ales(poz_ant, poz)
+                if extra:
+                    x += extra
             litere.append((ch, g, x))
             x += mmx(av(g)) + 2 * d
             ant = g
+            poz_ant = poz
         dx = 0 if p['aliniere'] == 'stanga' else (-x / 2 if p['aliniere'] == 'centru' else -x)
         randuri.append({'latime': x, 'caractere': len(litere), 'dx': dx})
         baza = -r * rand_mm
@@ -1107,6 +1126,13 @@ CAZURI_CURBA = [
     ('cerc-proportii', 'public/fonturi/roboto.ttf', {'continut': 'LEMN', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
                                                      'proportii': {'latime': 70, 'inaltime': 130}},
      cerc(40), {'s': 20, 'pozitie': 'centru'}, 1e-9),
+    # Cu spațierea literelor alese (ADR 0138 §5): literele urmează locurile așezării drepte, cu golurile alese; întins, restul
+    # curbei se împarte egal între goluri, iar golul ales rămâne în plus.
+    ('cerc-spatieri', 'public/fonturi/roboto.ttf', {'continut': 'LEMN', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
+                                                    'spatieri': [{'dupa': 1, 'mm': 4}]},
+     cerc(40), {'s': 20, 'pozitie': 'baza'}, 1e-9),
+    ('linie-intinsa-spatieri', 'public/fonturi/roboto.ttf', {**P_LEMN, 'aliniere': 'stanga', 'spatieri': [{'dupa': 0, 'mm': 5}]},
+     linii(False, (0, 0), (100, 0)), {'s': 30, 'pozitie': 'baza', 'intinsa': True}, 1e-9),
 ]
 
 
@@ -1153,6 +1179,17 @@ def probe_pe_hartie(rez):
     # Dincolo de capete, pe tangentă: prima literă înaintea începutului liniei, ultima după capătul ei.
     hs = rez['linie-dincolo-de-capete']['_harti']
     assert hs[0][1]([hs[0][0]['_x'], 0])[0] < 0 and hs[-1][1]([hs[-1][0]['_x'], 0])[0] > 30
+    # Întins pe linia de 100 mm, cu L | E lărgit cu 5 (ADR 0138 §5): textul tot din 0 în 100; rândul e cu 5 mai lat, deci
+    # fiecare din cele trei goluri întinse scade cu 5 / 3. Față de același text fără golul ales, literele se mută cu
+    # 0, 5 − 5/3, 5 − 10/3 și 5 − 5 = 0.
+    c = rez['linie-intinsa-spatieri']
+    p0 = {k: v for k, v in c['parametri'].items() if k != 'spatieri'}
+    _, fara, _ = pe_curba(aseaza(TTFont(os.path.join(RAD, c['font'])), p0), c['curba'], majuscula_taiata(p0), p0['aliniere'])
+    inceput = lambda g, h: h([g['_x'], 0])[0]
+    mutari = [inceput(*b) - inceput(*a) for a, b in zip(fara, c['_harti'])]
+    assert len(mutari) == 4 and all(aproape(m, e) for m, e in zip(mutari, (0, 10 / 3, 5 / 3, 0))), mutari
+    gn, hn = c['_harti'][-1]
+    assert aproape(inceput(*c['_harti'][0]), 0) and aproape(hn([gn['_x'] + gn['_avans'], 0])[0], 100)
 
 
 def cutie(glifa_asezata):
@@ -2061,6 +2098,9 @@ CAZURI_CASETA = [
     # Cu proporțiile literelor (ADR 0138 §2): caseta încadrează literele scalate.
     ('caseta-proportii', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
                                         'proportii': {'latime': 50, 'inaltime': 50}, 'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    # Cu spațierea literelor alese (ADR 0138 §5): golurile alese, în mm, nu cresc cu înălțimea, ca spațierea.
+    ('caseta-spatieri', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                       'spatieri': [{'dupa': 0, 'mm': 3}, {'dupa': 1, 'mm': 1}], 'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
 ]
 CAZURI_CASETA_LINIE = [
     ('caseta-linie', 'relief-singleline.ttf', {'continut': 'HOTEL\nOK', 'inaltime': 30, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
@@ -2087,6 +2127,8 @@ def probe_caseta_pe_hartie(cz):
     assert abs(h('caseta-vertical') - 30 * 1456 / 1119) < 1e-9, h('caseta-vertical')
     # Cu literele la 50 % × 50 % (ADR 0138 §2): „HHH” are 4039 · h · 0,5 / 1456 în lățime, majusculele h · 0,5; lățimea leagă.
     assert abs(h('caseta-proportii') - 200 * 1456 / 4039) < 1e-9, h('caseta-proportii')
+    # Golurile alese, 3 + 1 mm, cât spațierea de 2 mm a celor două goluri: aceeași înălțime, 96 · 1456 / 4039.
+    assert abs(h('caseta-spatieri') - 96 * 1456 / 4039) < 1e-9, h('caseta-spatieri')
     # Textul scalat umple caseta pe latura care leagă și încape pe cealaltă.
     for n in ('caseta-HHH', 'caseta-serif-centru', 'caseta-cff', 'caseta-vertical'):
         x0, y0, x1, y1 = cutie_text(cz[n], 0)
@@ -2219,6 +2261,37 @@ CAZURI_PROPORTII_LINIE = [
     ('proportii-linie', 'relief-singleline.ttf', {'continut': 'HOTEL', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
                                                   'proportii': {'latime': 50, 'inaltime': 200}}),
 ]
+# Spațierea literelor alese (ADR 0138 §5, felia 7.9↑b): după caracterul `dupa` (indicele pe puncte de cod în textul fără `\r`,
+# cu `\n` numărat), încă `mm`, doar între două litere vecine, amândouă așezate. Cu deplasarea fiecărei litere desenate pe
+# hârtie (`DEPLASARI_SPATIERI`, în mm, pe x; la textul vertical, pe y), față de același text fără spațieri.
+CAZURI_SPATIERI = [
+    # A | V | A: V cu 2 mm mai la dreapta, restul cu 4.
+    ('spatieri-AVATAR', 'roboto.ttf', {'continut': 'AVATAR', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                       'spatieri': [{'dupa': 0, 'mm': 2}, {'dupa': 1, 'mm': 2}]}),
+    # Centrat, pe două rânduri (`\n` numărat): M | N strâns cu 1,5 (rândul se îngustează, deci se mută cu 0,75 spre dreapta),
+    # T | a lărgit cu 3 (rândul al doilea se mută cu 1,5 spre stânga).
+    ('spatieri-centru-randuri', 'droid-serif.ttf', {'continut': 'LEMN\nTa', 'inaltime': 12, 'spatiere': 0.5, 'interlinie': 1.2,
+                                                    'aliniere': 'centru', 'spatieri': [{'dupa': 2, 'mm': -1.5}, {'dupa': 5, 'mm': 3}]}),
+    # La dreapta, cu cursiv, proporții și crenarea oprită: golurile rămân în mm (nu se scalează); spațiul e o literă așezată
+    # (A | spațiu, spațiu | B), deși nu se desenează. Rândul crește cu 1,75: A se mută cu −1,75, B rămâne.
+    ('spatieri-dreapta-cursiv', 'inter-subset.otf', {'continut': 'A B', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'dreapta',
+                                                     'cursiv': 12, 'proportii': {'latime': 70, 'inaltime': 120}, 'crenare': False,
+                                                     'spatieri': [{'dupa': 0, 'mm': 1.25}, {'dupa': 1, 'mm': 0.5}]}),
+    # Lângă un caracter lipsă din font nu se pune nimic (A | 中, 中 | B); indicii sunt pe puncte de cod: după 😀 (o pereche de
+    # surogate în UTF-16), C e al cincilea caracter, deci C | D e golul 4, iar rândul al doilea începe la 7 (T | a, golul 7).
+    ('spatieri-lipsa-astral', 'roboto.ttf', {'continut': 'A中B😀CD\nTa', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                             'spatieri': [{'dupa': 0, 'mm': 2}, {'dupa': 1, 'mm': 2}, {'dupa': 4, 'mm': 3}, {'dupa': 7, 'mm': 1.5}]}),
+    # Vertical, centrat: H | O coboară O cu 2,5, O | T urcă T cu 1 (T la −1,5); coloana crește cu 1,5, deci urcă cu 0,75.
+    ('spatieri-vertical', 'roboto.ttf', {'continut': 'HOT\nT', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
+                                         'vertical': True, 'spatieri': [{'dupa': 0, 'mm': 2.5}, {'dupa': 1, 'mm': -1}]}),
+]
+DEPLASARI_SPATIERI = {
+    'spatieri-AVATAR': [0, 2, 4, 4, 4, 4],
+    'spatieri-centru-randuri': [0.75, 0.75, 0.75, -0.75, -1.5, 1.5],
+    'spatieri-dreapta-cursiv': [-1.75, 0],
+    'spatieri-lipsa-astral': [0, 0, 0, 3, 0, 1.5],
+    'spatieri-vertical': [0.75, -1.75, -0.75, 0],
+}
 
 
 def puncte_text(asez):
@@ -2266,10 +2339,29 @@ def probe_proportii_pe_hartie(cz, fonturi):
     assert cu < suma - 1, (cu, suma)
 
 
+def probe_spatieri_pe_hartie(cz, fonturi):
+    """Pe hârtie (ADR 0138 §5): față de același text fără spațieri, fiecare punct al fiecărei litere desenate e mutat exact cu
+    deplasarea ei din `DEPLASARI_SPATIERI` (pe x; textul vertical, pe y), iar celelalte coordonate rămân. Lipsa: 中 și 😀."""
+    for nume, deplasari in DEPLASARI_SPATIERI.items():
+        p = {k: v for k, v in cz[nume]['parametri'].items() if k != 'spatieri'}
+        fara = aseaza(fonturi[nume], p, linie=cz[nume]['linie'])
+        a, b = fara['glife'], cz[nume]['glife']
+        assert [g['caracter'] for g in a] == [g['caracter'] for g in b] and len(b) == len(deplasari), (nume, len(b))
+        vertical = bool(p.get('vertical'))
+        for ga, gb, dep in zip(a, b, deplasari):
+            pa, pb = puncte_text({'glife': [ga]}), puncte_text({'glife': [gb]})
+            assert len(pa) == len(pb) > 3, (nume, ga['caracter'])
+            for (x0, y0), (x1, y1) in zip(pa, pb):
+                ex, ey = (x0, y0 + dep) if vertical else (x0 + dep, y0)
+                assert abs(x1 - ex) < 1e-9 and abs(y1 - ey) < 1e-9, (nume, ga['caracter'], (x0, y0), (x1, y1), dep)
+    assert cz['spatieri-lipsa-astral']['lipsa'] == 2, cz['spatieri-lipsa-astral']['lipsa']
+
+
 def fonturi_proportii():
-    """Cazurile proporțiilor literelor și ale crenării oprite (ADR 0138), cu probele pe hârtie."""
+    """Cazurile proporțiilor literelor și ale crenării oprite (ADR 0138), cu probele pe hârtie; din 7.9↑b, și ale spațierii
+    literelor alese (ADR 0138 §5)."""
     v, fonturi = {}, {}
-    for lista, linie in ((CAZURI_PROPORTII, False), (CAZURI_PROPORTII_LINIE, True)):
+    for lista, linie in ((CAZURI_PROPORTII, False), (CAZURI_PROPORTII_LINIE, True), (CAZURI_SPATIERI, False)):
         for nume, fisier, p in lista:
             cale = cale_fixtura(fisier)
             font = TTFont(cale)
@@ -2279,6 +2371,7 @@ def fonturi_proportii():
     for date in v.values():
         date['stricate'] = date['_stricate']
     probe_proportii_pe_hartie(v, fonturi)
+    probe_spatieri_pe_hartie(v, fonturi)
     return {'cazuri': fara_interne(v)}
 
 
@@ -2469,6 +2562,9 @@ CAZURI_ALDIN = [
     # Cu proporțiile literelor (ADR 0138 §2): miezul e majuscula tăiată − 2d, îngroșat la fel pe toate laturile.
     ('aldin-proportii', 'roboto.ttf', {'continut': 'HO', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6,
                                        'proportii': {'latime': 70, 'inaltime': 120}}, 0.25),
+    # Cu spațierea literelor alese (ADR 0138 §5): literele îngroșate stau la locurile cu golul ales.
+    ('aldin-spatieri', 'roboto.ttf', {'continut': 'HI', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'aldin': 0.6,
+                                      'spatieri': [{'dupa': 0, 'mm': 3}]}, 0.25),
 ]
 
 # Glifele, brute: punctele fiecărui contur (x, y, pe curbă), în unitățile fontului, cum le dă fontTools. Variantele își
