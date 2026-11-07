@@ -30,9 +30,10 @@ export const PLAFON_TRASARE = { contururi: 20_000, varfuri: 500_000 } as const;
 /**
  * Căile trasate, în pixeli, gata de transferat: calea k are vârfurile [inceput[k], inceput[k + 1]); vârful v pornește din
  * (xy[6v], xy[6v + 1]) spre vârful următor al căii (după ultimul, primul: căile sunt închise), cu o linie (`tip[v]` 0) sau cu
- * o cubică (1), cu mânerele (xy[6v + 2], xy[6v + 3]) și (xy[6v + 4], xy[6v + 5]).
+ * o cubică (1), cu mânerele (xy[6v + 2], xy[6v + 3]) și (xy[6v + 4], xy[6v + 5]). `exterior[k]` e 1 pe marginea de afară a
+ * cernelii și 0 pe un gol (din orientarea buclei: latura de tăiere, fără imbricare).
  */
-export type CaiTrasate = { readonly inceput: Uint32Array; readonly tip: Uint8Array; readonly xy: Float64Array };
+export type CaiTrasate = { readonly inceput: Uint32Array; readonly tip: Uint8Array; readonly xy: Float64Array; readonly exterior: Uint8Array };
 
 export type RaportTrasare = {
   readonly latime: number; readonly inaltime: number;
@@ -747,7 +748,8 @@ export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
   const eps = margini === 'dure' ? Math.max(trepte.eps, EPS_DUR) : trepte.eps;
   const tau = margini === 'dure' ? Math.max(trepte.tau, EPS_DUR) : trepte.tau;
   const bucle = margini === 'dure' ? contururi(f, W, H, T).map(netezeste) : contururi(f, W, H, T);
-  const exterioare = bucle.filter((b) => arie(b) > 0).length;
+  const pozitive = Uint8Array.from(bucle, (b) => (arie(b) > 0 ? 1 : 0));
+  const exterioare = pozitive.reduce((s, x) => s + x, 0);
   const baza = { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri } as const;
   if (bucle.length > PLAFON_TRASARE.contururi) {
     return { ok: false, cod: 'prea-multe', raport: { ...baza, contururi: bucle.length, exterioare, varfuri: 0, abatere: 0 } };
@@ -767,7 +769,7 @@ export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
   }
   return {
     ok: true,
-    cai: { inceput, tip: Uint8Array.from(tipuri), xy: Float64Array.from(xy) },
+    cai: { inceput, tip: Uint8Array.from(tipuri), xy: Float64Array.from(xy), exterior: pozitive },
     raport: { ...baza, contururi: bucle.length, exterioare, varfuri: tipuri.length, abatere },
   };
 }

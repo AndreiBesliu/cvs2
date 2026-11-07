@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import '../ui/actiuniDocumentCalcul.ts';
 import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
 import { formatImport } from '../io/formatImport.ts';
+import { TRASARE_IMPLICITA } from '../io/imagine.ts';
 import {
   PLAFON_IMPORT, type AlegeriImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
 } from '../ui/actiuniImport.ts';
@@ -34,8 +35,8 @@ type StareDialog = AlegeriImport & {
   readonly seRecitesc?: boolean;
 };
 
-/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină. */
-const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1 };
+/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină, trasarea implicită. */
+const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1, trasare: TRASARE_IMPLICITA };
 
 type Props = {
   /** Coada fișierelor alese sau lăsate pe planșă (felia 2.8b), cel puțin unul: dialogul le trece pe rând. */
@@ -132,7 +133,10 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   /** Recitirea cu o alegere schimbată: ce e pe ecran (previzualizarea sau refuzul) rămâne acolo până sosește noul rezultat. */
   const recitesteCu = (schimbare: Partial<AlegeriImport>): void => {
     if (!dialog.fisier) return;
-    const a = { pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina, ...schimbare };
+    const a = {
+      pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina,
+      trasare: dialog.trasare ?? TRASARE_IMPLICITA, ...schimbare,
+    };
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
   return (
@@ -159,6 +163,11 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       onInchide={inchide}
       {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
       {...(de === undefined ? {} : { de })}
+      trasare={{
+        alegeri: dialog.trasare ?? TRASARE_IMPLICITA,
+        onSchimba: (s) => { recitesteCu({ trasare: { ...(dialog.trasare ?? TRASARE_IMPLICITA), ...s } }); },
+        octeti: dialog.fisier?.octeti ?? null,
+      }}
     />
   );
 }

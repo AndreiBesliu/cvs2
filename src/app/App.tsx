@@ -889,6 +889,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     unitate: () => a.unitate,
     unitateWmf: () => a.unitateWmf,
     pagina: () => a.pagina,
+    trasare: () => a.trasare,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,
@@ -1173,7 +1174,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </div>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf" multiple hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf,.png,.jpg,.jpeg,.jfif,.webp,.gif,.bmp,.tif,.tiff" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru" inert={acoperita}>
           <Panza

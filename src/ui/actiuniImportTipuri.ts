@@ -5,6 +5,8 @@ import type { FormatImport } from '../io/formatImport.ts';
 import type { AvertismentePdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
 import type { Avertismente, CodRefuz } from '../io/svgCoduri.ts';
 import type { AvertismenteWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io/wmfCoduri.ts';
+import type { AlegeriTrasare } from '../io/imagine.ts';
+import type { CaiTrasate } from '../trasare/trasare.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
@@ -21,8 +23,35 @@ export type { FormatImport } from '../io/formatImport.ts';
 /** Fișierul ales: numele și octeții (citiți doar sub plafon, ADR 0035 §1). */
 export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array };
 
-/** Refuzurile celor cinci uși. */
-export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf;
+/**
+ * Refuzurile ușii imaginilor (ADR 0220): TIFF-ul (deocamdată), o imagine pe care browserul n-o decodează, prea multe contururi
+ * (plafonul, cu numărul lor), trasarea peste termen și una anulată de o previzualizare nouă.
+ */
+export type CodRefuzImagine = 'tiff' | 'imagine-citire' | 'prea-multe' | 'imagine-timp' | 'anulat';
+
+/** Refuzurile celor șase uși. */
+export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf | CodRefuzImagine;
+
+export type { AlegeriTrasare } from '../io/imagine.ts';
+
+/** Raportul unei imagini trasate (ADR 0220 §10), cu scara folosită: ce arată fereastra sub previzualizare. */
+export type RaportImagine = {
+  /** Pixelii trasați (după reducere) și, dacă decodarea a redus imaginea, mărimea ei din fișier. */
+  readonly latimePx: number; readonly inaltimePx: number;
+  readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
+  /** Mărimea imaginii pe foaie și a pixelului, în mm. */
+  readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
+  /** De unde vine scara: lățimea scrisă, DPI-ul fișierului sau 96 px / țol (presupus); `dpi` e cel folosit. */
+  readonly scara: 'latime' | 'fisier' | 'presupus'; readonly dpi: number;
+  readonly sursa: 'alfa' | 'lum'; readonly transparenta: boolean;
+  readonly prag: number; readonly automat: boolean; readonly margini: 'netezite' | 'dure';
+  readonly pete: number; readonly gauri: number; readonly contururi: number; readonly varfuri: number;
+  /** Abaterea măsurată față de conturul sub-pixel, în px. */
+  readonly abaterePx: number;
+};
+
+/** Ce n-a intrat dintr-o imagine trasată: contururile sub rezoluție și cele peste plafonul unei căi. */
+export type AvertismenteImagine = { readonly 'sub-rezolutie': number; readonly 'prea-mari': number };
 
 /** Unitățile unui DXF (ADR 0101 §2): declarate de fișier, sau alese de om (implicit mm). */
 export type UnitatiImport = { readonly mmPeUnitate: number; readonly declarate: boolean; readonly unitate: UnitateDxf | null };
@@ -76,19 +105,30 @@ export type PrevizualizareImport =
     readonly unitati: UnitatiWmf;
     readonly avertismente: AvertismenteWmf;
   })
+  | (Comune & {
+    readonly format: 'imagine'; readonly trasare: RaportImagine; readonly avertismente: AvertismenteImagine;
+    /** Căile trasate, în pixelii imaginii (Y în jos): previzualizarea le desenează direct, fără să le refacă din mm. */
+    readonly contur: CaiTrasate;
+  })
   | {
     readonly ok: false; readonly cod: CodRefuzImport; readonly detaliu?: string;
     readonly format?: FormatImport;
-    readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf;
+    readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | AvertismenteImagine;
     /** Un PDF citit până la lista paginilor: câte are (dialogul oferă alegerea alteia). */
     readonly pagini?: number;
+    /** O imagine refuzată după trasare (prea multe contururi): raportul, ca fereastra să spună ce să schimbi. */
+    readonly trasare?: RaportImagine;
   };
 
 /**
  * Alegerile din dialog pentru fișierul citit: px-ul (SVG), unitatea (un DXF fără unități; un WMF fără antet), pagina (un
  * PDF, de la 1).
  */
-export type AlegeriImport = { readonly pxPeTol: 96 | 72; readonly unitate: UnitateDxf; readonly unitateWmf: UnitateWmf; readonly pagina: number };
+export type AlegeriImport = {
+  readonly pxPeTol: 96 | 72; readonly unitate: UnitateDxf; readonly unitateWmf: UnitateWmf; readonly pagina: number;
+  /** Alegerile trasării unei imagini (ADR 0220 §10); lipsă: cele implicite. */
+  readonly trasare?: AlegeriTrasare;
+};
 
 export type ContextImport = {
   readonly fisier: () => FisierImport | null;
@@ -99,6 +139,8 @@ export type ContextImport = {
   readonly unitateWmf?: () => UnitateWmf;
   /** Pagina de citit dintr-un PDF (de la 1, ADR 0104 §7); lipsă: prima. */
   readonly pagina?: () => number;
+  /** Alegerile trasării unei imagini (ADR 0220 §10); lipsă: cele implicite. */
+  readonly trasare?: () => AlegeriTrasare | undefined;
   /** Limba aplicației, pentru `systemLanguage` din `switch`. */
   readonly limba: () => string;
   readonly doarCitire: () => boolean;

@@ -9,8 +9,10 @@ import { CODURI_AVERTISMENT_WMF, UNITATI_WMF } from '../io/wmfCoduri.ts';
 import {
   CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismenteEps, type AvertismentePdf, type AvertismenteWmf,
   type CodAvertisment, type CodAvertismentDxf, type CodAvertismentEps, type CodAvertismentPdf, type CodAvertismentWmf, type CodEntitati,
-  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf,
+  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf, type AlegeriTrasare,
+  type AvertismenteImagine,
 } from './actiuniImport.ts';
+import { PanouTrasare } from './FereastraTrasare.tsx';
 import { useLimba } from './useLimba.ts';
 
 const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
@@ -20,6 +22,8 @@ const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
+  tiff: 'import.imagine.tiff', 'imagine-citire': 'import.imagine.citire', 'prea-multe': 'import.imagine.prea-multe',
+  'imagine-timp': 'import.imagine.timp', anulat: 'import.imagine.anulat',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -111,9 +115,13 @@ const UNITATE_WMF = {
 
 /** Raportul ușii care a citit fișierul, în ordinea codurilor ei. */
 function ListaAvertismente({ a, format }: {
-  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | undefined; readonly format: FormatImport | undefined;
+  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | AvertismenteImagine | undefined;
+  readonly format: FormatImport | undefined;
 }) {
-  const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'dxf'
+  const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'imagine'
+    ? (['sub-rezolutie', 'prea-mari'] as const).filter((c) => ((a as AvertismenteImagine)[c] ?? 0) > 0)
+      .map((c) => ({ cod: c, text: t(`import.imagine.${c}`, { n: (a as AvertismenteImagine)[c] }) }))
+    : format === 'dxf'
     ? CODURI_AVERTISMENT_DXF.filter((c) => ((a as AvertismenteDxf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_DXF[c], { n: (a as AvertismenteDxf)[c] }) }))
     : format === 'pdf'
       ? CODURI_AVERTISMENT_PDF.filter((c) => ((a as AvertismentePdf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_PDF[c], { n: (a as AvertismentePdf)[c] }) }))
@@ -143,6 +151,8 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
+  if (cod === 'gol' && format === 'imagine') return t('import.imagine.gol');
+  if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: detaliu ?? '?' });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
@@ -186,6 +196,10 @@ type Props = {
   readonly onSari?: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C): „Propus de <extensie>”, sub titlu. */
   readonly de?: string;
+  /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
+  readonly trasare?: {
+    readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
+  };
 };
 
 /**
@@ -197,7 +211,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, seRecitesc, motiv, onPx, onUnitate, onUnitateWmf, onPagina, onImporta,
-  onInchide, coada, onSari, de,
+  onInchide, coada, onSari, de, trasare,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -214,15 +228,18 @@ export function DialogImport({
   const ok = stare !== 'citire' && stare.ok ? stare : null;
   // Paginile unui PDF citit până la lista lor (și refuzat după aceea): peste una, alegerea paginii.
   const pagini = stare === 'citire' ? 0 : stare.ok ? (stare.format === 'pdf' ? stare.pagini : 0) : (stare.pagini ?? 0);
+  // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
+  const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
-      <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
+      <div className={imagine ? 'dialog-cutie dialog-trasare' : 'dialog-cutie'} ref={cutie} tabIndex={-1}>
         <h2 id="import-titlu">
           {t('import.titlu', { nume })}
           {coada && <span data-testid="import-coada">{' '}{t('import.coada', { k: coada.k, n: coada.n })}</span>}
         </h2>
         {de !== undefined && <p className="mic" data-testid="import-de">{t('import.propus-de', { nume: de })}</p>}
-        {stare === 'citire' && <p role="status">{t('import.citeste')}</p>}
+        {stare === 'citire' && !imagine && <p role="status">{t('import.citeste')}</p>}
+        {imagine && <PanouTrasare alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare} seRecitesc={seRecitesc} />}
         {pagini > 1 && (
           <div className="campuri">
             <label>
