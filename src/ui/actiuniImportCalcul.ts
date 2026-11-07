@@ -25,6 +25,8 @@ import type { AvertismenteImagine, FisierImport, PrevizualizareImport, RaportIma
 export type OptiuniPrevizualizare = {
   readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly unitateWmf?: UnitateWmf | undefined; readonly pagina?: number;
   readonly trasare?: AlegeriTrasare | undefined;
+  /** Oprirea citirii (o citire nouă, Renunță, Escape): trasarea în curs își oprește workerul. */
+  readonly semnal?: AbortSignal | undefined;
 };
 
 /**
@@ -162,33 +164,26 @@ function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number): { cai
   return { cai, laturi, avertismente: { 'sub-rezolutie': sub, 'prea-mari': mari } };
 }
 
-/** Trasarea în curs: o previzualizare nouă o oprește pe cea veche (workerul ei se oprește din mijlocul calculului). */
-let trasareAnterioara: AbortController | null = null;
-
 /**
- * Previzualizarea unei imagini (ADR 0220): trasarea în workerul ei, cu alegerile din fereastră, apoi aceeași imbricare și
- * aceeași piesă ca la SVG. TIFF-ul se refuză deocamdată (răspunsul 5a); o imagine pe care browserul n-o decodează, prea
- * multe contururi sau trasarea peste termen, la fel, cu motivul lor.
+ * Previzualizarea unei imagini (ADR 0220): trasarea în workerul ei, cu alegerile din fereastră, apoi aceeași piesă ca la
+ * SVG. TIFF-ul se refuză deocamdată (răspunsul 5a); o imagine pe care browserul n-o decodează, prea multe contururi sau
+ * trasarea peste termen, la fel, cu motivul lor. `semnal`: al citirii (o citire nouă, Renunță sau Escape o opresc, cu
+ * workerul ei, din mijlocul calculului).
  */
-export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined): Promise<PrevizualizareImport> {
+export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal): Promise<PrevizualizareImport> {
   if (felImagine(f.octeti) === 'tiff' || (/\.tiff?$/i.test(f.nume) && !felImagine(f.octeti))) return { ok: false, cod: 'tiff', format: 'imagine' };
   const a = t ?? TRASARE_IMPLICITA;
-  trasareAnterioara?.abort();
-  const ctrl = new AbortController();
-  trasareAnterioara = ctrl;
   let r: RaspunsTrasare;
   try {
     r = await trasareInBazin({
       imagine: new Blob([new Uint8Array(f.octeti)]),
       optiuni: { sursa: a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
       peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti),
-    }, { semnal: ctrl.signal });
+    }, semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
     if (e instanceof TrasareCazuta) return { ok: false, cod: 'imagine-timp', format: 'imagine', detaliu: e.message };
     throw e;
-  } finally {
-    if (trasareAnterioara === ctrl) trasareAnterioara = null;
   }
   if (!r.ok && r.cod === 'citire') return { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: r.detaliu };
   const trasare = raportImagine(r);
@@ -203,7 +198,7 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
 
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
   const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
-  if (format === 'imagine') return previzualizareImagine(f, o.trasare);
+  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal);
   if (format === 'pdf' || format === 'eps') return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f) : previzualizarePdf(f, o.pagina);
   if (format === 'wmf') return previzualizareWmf(f, o.unitateWmf);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);

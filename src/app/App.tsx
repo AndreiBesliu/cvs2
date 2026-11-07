@@ -883,7 +883,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * Contextul ușilor pentru un fișier și alegerile lui (px-ul unui SVG, unitatea unui DXF sau a unui WMF fără antet, pagina
    * unui PDF); citirea lui o face dialogul (`ImportConectat`).
    */
-  const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
+  const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void, semnal?: AbortSignal): ContextImport => ({
+    ...(semnal ? { semnal } : {}),
     fisier: () => f,
     pxPeTol: () => a.pxPeTol,
     unitate: () => a.unitate,

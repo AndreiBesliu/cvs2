@@ -33,7 +33,7 @@ export const roImport = {
   'import.renunta-toate': 'Renunță la toate',
   'import.sari': 'Sari peste',
   'import.coada': '({k} din {n})',
-  'import.refuz.tip': 'Doar fișierele SVG, DXF, PDF, AI, EPS și WMF și imaginile PNG, JPEG, WebP, GIF și BMP se importă deocamdată (celelalte formate vin mai târziu).',
+  'import.refuz.tip': 'Doar fișierele SVG, DXF, PDF, AI, EPS, WMF și imaginile PNG, JPEG, WebP, GIF, BMP se importă deocamdată (celelalte formate vin mai târziu).',
   'import.refuz.octeti': 'Fișierul are {mb} MB: plafonul importului e 16 MB.',
   'import.refuz.svgz': 'Fișierul e arhivat (.svgz): dezarhivează-l întâi.',
   'import.refuz.entitati': 'Fișierul declară entități XML periculoase ({motiv}): refuzat.',

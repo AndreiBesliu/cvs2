@@ -141,6 +141,11 @@ export type ContextImport = {
   readonly pagina?: () => number;
   /** Alegerile trasării unei imagini (ADR 0220 §10); lipsă: cele implicite. */
   readonly trasare?: () => AlegeriTrasare | undefined;
+  /**
+   * Oprirea citirii (ADR 0220): o citire nouă, Renunță, Escape sau fișierul următor o opresc pe cea în curs; trasarea unei
+   * imagini își oprește workerul din mijlocul calculului.
+   */
+  readonly semnal?: AbortSignal;
   /** Limba aplicației, pentru `systemLanguage` din `switch`. */
   readonly limba: () => string;
   readonly doarCitire: () => boolean;

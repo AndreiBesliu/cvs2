@@ -44,7 +44,7 @@ type Props = {
   readonly punct: Loc;
   readonly registruImport: Registru<ContextImport>;
   /** Contextul ușilor pentru un fișier și alegerile lui (limba, fila care doar citește, jurnalul: ale aplicației). */
-  readonly contextImport: (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void) => ContextImport;
+  readonly contextImport: (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void, semnal?: AbortSignal) => ContextImport;
   /** Starea și rularea lui `document.importa`, prin registrul și contextul aplicației. */
   readonly stareImporta: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly importa: (p: ImportPregatit, loc: Loc) => RezultatActiune;
@@ -73,9 +73,19 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
   const cerere = useRef(0);
+  /**
+   * Oprirea citirii în curs (ADR 0220): o citire nouă, închiderea, fișierul următor sau demontarea o opresc. Trasarea unei
+   * imagini își oprește workerul; celelalte uși citesc pe loc și doar își aruncă rezultatul.
+   */
+  const oprire = useRef<AbortController | null>(null);
+  const opresteCitirea = (): void => {
+    oprire.current?.abort();
+    oprire.current = null;
+  };
 
   const inchide = (): void => {
     cerere.current++;
+    opresteCitirea();
     onInchide();
   };
   /**
@@ -84,15 +94,19 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
    */
   const citeste = (f: FisierImport, a: AlegeriImport, automat: boolean, vechi?: PrevizualizareImport): void => {
     const c = ++cerere.current;
+    opresteCitirea();
+    const ac = new AbortController();
+    oprire.current = ac;
     setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, ...(vechi ? { stare: vechi, seRecitesc: true } : { stare: 'citire' }) });
     const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, a, (r) => {
       if (c !== cerere.current) return;
+      if (oprire.current === ac) oprire.current = null;
       if (!automat && a.pxPeTol === 96 && r.ok && r.format === 'svg' && r.px && r.illustrator) {
         citeste(f, { ...a, pxPeTol: 72 }, true);
         return;
       }
       setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, stare: r });
-    }));
+    }, ac.signal));
     // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.
     if (!pornit.ok) inchide();
   };
@@ -100,6 +114,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   const incepe = (f: File): void => {
     const initiala = stareInitiala(f);
     const c = ++cerere.current;
+    opresteCitirea();
     setDialog(initiala);
     if (initiala.stare !== 'citire') return;
     f.arrayBuffer().then((b) => {
@@ -113,7 +128,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   useEffect(() => {
     const f = fisiere[0];
     if (f) incepe(f);
-    return () => { cerere.current++; };
+    return () => { cerere.current++; opresteCitirea(); };
   }, []);
   /** Fișierul următor din coadă (după „Importă” sau „Sari peste”), sau închiderea dialogului. */
   const urmatorul = (): void => {

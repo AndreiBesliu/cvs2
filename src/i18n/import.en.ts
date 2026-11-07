@@ -29,7 +29,7 @@ export const enImport = {
   'import.renunta-toate': 'Cancel all',
   'import.sari': 'Skip',
   'import.coada': '({k} of {n})',
-  'import.refuz.tip': 'Only SVG, DXF, PDF, AI, EPS and WMF files and PNG, JPEG, WebP, GIF and BMP images can be imported for now (the other formats come later).',
+  'import.refuz.tip': 'Only SVG, DXF, PDF, AI, EPS and WMF files, and PNG, JPEG, WebP, GIF and BMP images, can be imported for now (the other formats come later).',
   'import.refuz.octeti': 'The file has {mb} MB: the import limit is 16 MB.',
   'import.refuz.svgz': 'The file is compressed (.svgz): unpack it first.',
   'import.refuz.entitati': 'The file declares unsafe XML entities ({motiv}): refused.',

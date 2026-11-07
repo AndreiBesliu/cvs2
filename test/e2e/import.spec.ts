@@ -315,7 +315,7 @@ test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fiș
     { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
   ], 0.4, 0.6);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
-  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF, AI, EPS și WMF se importă deocamdată');
+  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF, AI, EPS, WMF și imaginile PNG, JPEG, WebP, GIF, BMP se importă deocamdată');
   await page.click('[data-buton="sari"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
   await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
@@ -745,7 +745,7 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
   // Extensia barei nu-l mai are; bara întreagă încape în fereastră, sub meniul global (ADR 0132: marca și grupul din dreapta
   // au urcat în meniu).
   await expect(page.locator('#loc-extensie [data-editare="vectori"]')).toHaveCount(0);
-  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf$/);
+  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf,\.png,\.jpg,\.jpeg,\.jfif,\.webp,\.gif,\.bmp,\.tif,\.tiff$/);
   const cutie = async (s: string) => {
     const b = await page.locator(s).boundingBox();
     if (!b) throw new Error(`${s} n-are cutie`);
