@@ -6333,7 +6333,7 @@ sesiunea principală, care a pornit linia).
 ## 2026-11-07 — Felia 3.Xg: biblioteca extensiilor (ADR 0230, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–7a” (owner-ul, în sesiunea liniei, la cele șapte întrebări din ADR 0230).
-**Started:** 07.11, 16:00. **Completed:** —
+**Started:** 07.11, 16:00. **Completed:** 07.11, 17:45.
 
 - **Răspunsurile:** toate recomandările: biblioteca lângă aplicație, construită la build; „Instalează” prin fereastra de azi;
   „Actualizează” dintr-un clic, cu fereastra doar când versiunea nouă cere ceva în plus; versiunea nouă se vede la deschiderea
@@ -6356,3 +6356,21 @@ sesiunea principală, care a pornit linia).
   `biblioteca`), `tipuri.ts`, `extensii.css`, `carcasa.ro/en.ts` (44 de texte); `shared/precache.ts` (motivul `biblioteca`),
   `scripts/firebase-json.ts` și `firebase.json`, `scripts/build-determinist.ts` (catalogul din `dist/` față de pachete, a doua
   plasă a precache-ului, rândul bibliotecii în raport); manualul (ro, en).
+- **Porțile:** tipurile (aplicația, sursele pluginului, funcțiile), importurile (19 reguli, 0 încălcări), licențele; unit 8 591 /
+  8 600 (singura cădere, traducerile roadmap-ului, închise la documente: 647 / 0); build determinist (276 de fișiere identice);
+  e2e biblioteca 7 / 7 la prima rulare; e2e întreg 365 / 366, cu `cont.spec.ts:29` căzut la încărcare (butonul Cont în 5 s),
+  15 / 15 singur, de trei ori; emulatoarele: prima rulare 80 / 81 (sugestiile: emulatorul de funcții n-a răspuns în 300 s), a doua
+  81 / 81 la funcții și 20 / 21 pe e2e (`cont.emulator.spec.ts:44`, serverul în 20 s), 2 / 2 singură.
+- **Otrăvurile** (`test/otravuri/3.Xg.py`, 37), în clona `C:\Users\besli\cncvs2-lucru\otravuri-biblioteca`, cele e2e pe 4180:
+  toate prinse la prima rulare (`2f01a82`), fiecare de proba ei. Baza e2e a căzut o dată în proba instalării, cât publicam pe
+  canal; reluată pe mașina liniștită: 7 / 7. E08 („Deschide” care doar închide), prinsă doar de aceeași probă, verificată la
+  pasul ei: după „Deschide”, `extensie-deschisa` lipsește.
+- **Mărimea:** pornirea 101,5 (cu ușa 105,1 / 110 kB), neschimbată; totalul 519,5 → 523,0 / 550 kB (+3,5, peste estimarea de
+  2–3): `Extensii` 4,3 → 8,5 kB (biblioteca trage după ea cititorul de pachete), `Instalare` 4,0 → 3,4 kB. `dist/extensii/`:
+  pachetul 408,0 kB și catalogul 0,8 kB, în afara plafonului și a precache-ului.
+- **Publicat pe canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 07.12), din
+  `2f01a82`. Verificat acolo, în Edge fără fereastră: catalogul (HTTP 200, `no-cache`), pachetul (417 748 de octeți, amprenta
+  egală cu catalogul, `immutable`), rândul lui Easy 3Draw din meniu, fereastra „din biblioteca cvs2”, instalarea, „Deschide”
+  (planificatorul pornit, 0 erori în jurnal), apoi „Instalată”.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului; o versiune nouă a lui Easy 3Draw cere de acum versiunea ridicată în
+  `extensii/trenulet/extensie.json` și `node scripts/biblioteca.ts --scrie`.
