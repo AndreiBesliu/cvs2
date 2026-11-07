@@ -4,8 +4,10 @@ import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import { inaltimeConV, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
+import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
 import { valoriIncrustatie } from '../model/incrustatie.ts';
+import { materialFoaie, numeFoaie } from '../model/foi.ts';
+import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
@@ -13,6 +15,7 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { useRoluriMele } from './roluriMele.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
+import { CampText } from '../ui/CampText.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -23,6 +26,8 @@ mesaje.catch(() => undefined);
 
 type Props = {
   readonly doc: Document;
+  /** Foaia activă (ADR 0210 §1): a ei sunt selecția și câmpurile foii; piesele puse și pe alte foi se numără pe toate. */
+  readonly indexFoaie?: number;
   /** Instanțele selectate care există pe foaie. */
   readonly alese: readonly string[];
   /** Elementele lor în lume, câte sunt, și cutia lor comună, în mm (le calculează deja aplicația, pentru pânză). */
@@ -36,6 +41,8 @@ type Props = {
   /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
   readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
+  /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
+  readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
   readonly onRol: (r: Rol | RolPersonal) => RezultatActiune;
   /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
@@ -45,11 +52,11 @@ type Props = {
 };
 
 /** Piesele instanțelor alese de pe foaie, fiecare o dată, în ordinea foii. */
-function pieseAlese(doc: Document, alese: readonly string[]): Piesa[] {
+function pieseAlese(doc: Document, alese: readonly string[], indexFoaie: number): Piesa[] {
   const ale = new Set(alese);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const rez = new Map<string, Piesa>();
-  for (const i of doc.foi[0]?.instante ?? []) {
+  for (const i of doc.foi[indexFoaie]?.instante ?? []) {
     const p = ale.has(i.id) ? piese.get(i.piesa) : undefined;
     if (p) rez.set(p.id, p);
   }
@@ -119,12 +126,14 @@ function operatie(o: Operatie, n: number): ReactNode {
  * registrului (un pas de anulare). Tăierea (ADR 0112): rolul pieselor alese, adâncimea și pasul tuturor operațiilor lor; restul
  * valorilor operațiilor se arată aici și se schimbă din dialogul exportului. Se încarcă la cerere.
  */
-export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
+export function PanouProprietati({
+  doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
+}: Props): ReactNode {
   useLimba();
   const roluriMele = useRoluriMele().roluri;
   // Refuzul ultimului rol ales, pentru selecția de atunci.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
-  const foaie = doc.foi[0];
+  const foaie = doc.foi[indexFoaie];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
   // Câmpurile țin minte textul scris; la altă selecție pornesc de la zero.
@@ -169,7 +178,7 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   // Tăierea (ADR 0112): rolul pieselor alese (doar rolurile care se potrivesc tuturor), adâncimea și pasul tuturor operațiilor
   // lor; cu valori diferite, câmpul e gol, iar lista arată „—”. Sub rolurile de bază, rolurile omului (ADR 0114 §4) al căror
   // rol de bază se potrivește; arătat e rolul personalizat al tuturor pieselor, dacă au unul (§6), altfel cel de bază.
-  const piese = pieseAlese(doc, alese);
+  const piese = pieseAlese(doc, alese, indexFoaie);
   const oferite = ROLURI.filter((r) => piese.length > 0 && piese.every((p) => roluriOferite(p).includes(r)));
   const roluri = piese.map(rolPiesei);
   const rolComun = roluri.length > 0 && roluri.every((r) => r !== null && r === roluri[0]) ? roluri[0] ?? null : null;
@@ -210,6 +219,13 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
         <section>
           <h3>{t('prop.foaia')}</h3>
           <dl>
+            {/* Numele și materialul (ADR 0210 §1): fără nume, foaia se cheamă după locul ei („Foaia 2”), arătat ca exemplu. */}
+            {rand(t('prop.foaia.nume'), <CampText key={`${foaie.id}/nume`} eticheta={t('prop.foaia.nume')} camp="foaie-nume" valoare={foaie.nume ?? ''}
+              exemplu={numeFoaie({ id: foaie.id }, indexFoaie, (n) => t('foaia.n', { n: String(n) }))} lungime={PLAFON.numeLungime}
+              dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => onEticheta('nume', x)} />)}
+            {rand(t('prop.foaia.material'), <CampText key={`${foaie.id}/material`} eticheta={t('prop.foaia.material')} camp="foaie-material"
+              valoare={materialFoaie(foaie) ?? ''} exemplu={t('prop.foaia.material.exemplu')} lungime={PLAFON.numeLungime}
+              dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => onEticheta('material', x)} />)}
             {rand(t('prop.latimea'), camp(t('prop.latimea'), 'foaie-latime', foaie.stoc.latime, 'mm', false, (x) => onStoc({ latime: x })))}
             {rand(t('prop.inaltimea'), camp(t('prop.inaltimea'), 'foaie-inaltime', foaie.stoc.inaltime, 'mm', false, (x) => onStoc({ inaltime: x })))}
             {rand(t('prop.grosimea'), camp(t('prop.grosimea'), 'foaie-grosime', foaie.stoc.grosime, 'mm', false, (x) => onStoc({ grosime: x })))}

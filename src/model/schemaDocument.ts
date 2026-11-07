@@ -182,6 +182,9 @@ const SchemaGhidaj = v.looseObject({ id: Id, axa: v.picklist(['x', 'y']), poz: c
 const SchemaFoaie = v.looseObject({
   id: Id,
   nume: Nume,
+  // `material` (ADR 0210 §1) nu e judecat aici: în documentele de până la el era un câmp necunoscut al foii, cu orice valoare
+  // (oracolul documentului îl generează așa), iar un document valid ieri rămâne valid. Aplicația îl citește doar când e text
+  // (`materialFoaie`) și scrie doar text de cel mult 200 de caractere; altceva rămâne neatins.
   stoc: v.looseObject({ latime: pozitiv(PLAFON.latura), inaltime: pozitiv(PLAFON.latura), grosime: pozitiv(PLAFON.grosime) }),
   instante: v.array(SchemaInstanta),
   ghidaje: v.optional(v.pipe(v.array(SchemaGhidaj), v.maxLength(PLAFON.ghidaje, `cel mult ${PLAFON.ghidaje} de ghidaje pe foaie`))),

@@ -119,7 +119,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 86)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 95)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -130,8 +130,10 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
   // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și
-  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
-  assert.equal(USI.length, 86);
+  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`. Foile
+  // (ADR 0210 §1), încă nouă: foaia nouă, duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției
+  // pe altă foaie, foaia de dinainte și următoarea.
+  assert.equal(USI.length, 95);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

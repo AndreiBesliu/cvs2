@@ -4,6 +4,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 /** Mesajele dialogului de export G-code, în română: exact cheile din engleză (`export.en.ts`). */
 export const roExport = {
   'export.titlu': 'Exportă G-code ({post})',
+  'export.titlu.foaie': 'Exportă G-code ({post}) · {foaie}',
   'export.origine': 'Colțul de origine',
   'export.colt.stanga-jos': 'stânga-jos',
   'export.colt.dreapta-jos': 'dreapta-jos',

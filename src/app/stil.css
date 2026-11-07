@@ -860,8 +860,102 @@ nav button[aria-pressed='true'] {
   margin: 0 0 0 14px;
 }
 
-.lista-vectori .nod-foaie + .lista-goala {
+.lista-vectori .foaie-lista > .lista-goala {
   padding-left: calc(13px + var(--sp-2));
+}
+
+/*
+ * Foile (ADR 0210 §1): fiecare cu capul ei (numele și mărimea; dedesubt, mai slab, materialul și câte piese), butonul ⋯ al
+ * meniului alături. Cea activă e marcată cu linia accentului; celelalte, mai slabe. Peste o foaie pe care se trage un rând,
+ * conturul punctat spune unde ajunge.
+ */
+.lista-vectori .foaie-lista + .foaie-lista {
+  margin-top: var(--sp-1);
+}
+
+.lista-vectori .foaie-cap {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.lista-vectori .foaie-cap .nod-foaie {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  column-gap: 6px;
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--r-1);
+}
+
+.lista-vectori .foaie-cap .nod-foaie::before {
+  grid-row: 1 / span 2;
+}
+
+.lista-vectori .foaie-cap .nod-foaie > span {
+  grid-column: 2;
+}
+
+.lista-vectori .foaie-lista[data-activa='da'] .nod-foaie {
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.lista-vectori .foaie-lista[data-activa='nu'] .nod-foaie {
+  color: var(--t-slab);
+  font-weight: 500;
+}
+
+.lista-vectori .foaie-detalii {
+  color: var(--t-slab);
+  font-weight: 400;
+}
+
+/* Mărimea și câte piese are nu se rup pe două rânduri; materialul, oricât de lung, da. */
+.lista-vectori .foaie-detalii > span:first-child,
+.lista-vectori .foaie-detalii > span:last-child {
+  white-space: nowrap;
+}
+
+.lista-vectori .foaie-meniu-buton {
+  width: auto;
+  min-width: 32px;
+  justify-content: center;
+  color: var(--t-slab);
+}
+
+.lista-vectori .foaie-lista.peste {
+  outline: 1px dashed var(--a);
+  outline-offset: -1px;
+  border-radius: var(--r-1);
+}
+
+.lista-vectori .foaie-noua {
+  margin-top: var(--sp-1);
+  color: var(--t-slab);
+}
+
+/* Meniul foii (`MeniuFoaie.tsx`): sub capul ei, cu rândurile ca ale meniului de clic dreapta, întrebarea ștergerii deasupra. */
+.lista-vectori .meniu-foaie {
+  display: grid;
+  gap: 1px;
+  margin: 2px 0 var(--sp-1) 14px;
+  padding: var(--sp-1);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+}
+
+.lista-vectori .meniu-foaie button:disabled {
+  color: var(--t-slab);
+  cursor: default;
+}
+
+.meniu-foaie-intrebare {
+  margin: 0;
+  padding: 4px var(--sp-2);
+  font-size: var(--fs-2);
+  font-weight: 600;
 }
 
 /* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
@@ -1888,6 +1982,22 @@ main h1 {
   text-align: center;
   pointer-events: none;
   z-index: 5;
+}
+
+/* Câmpul de text al panoului (ADR 0210 §1): numele și materialul foii, cât rândul, cu motivul unui refuz sub el. */
+.camp-text {
+  display: inline-grid;
+  gap: 4px;
+  width: 100%;
+}
+
+.camp-text input {
+  width: 100%;
+  font: inherit;
+}
+
+.camp-text input[aria-invalid='true'] {
+  border-color: var(--a);
 }
 
 /* Câmpul numeric unic (ADR 0038 §5) în panoul de proprietăți: valoarea, unitatea, motivul unui refuz sub ele. */

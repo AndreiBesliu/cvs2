@@ -141,6 +141,13 @@ export const roCarcasa = {
   'prop.adancime': 'Adâncimea',
   'prop.pas': 'Pasul',
   'prop.foaia': 'Foaia',
+  'prop.foaia.nume': 'Numele',
+  'prop.foaia.material': 'Materialul',
+  'prop.foaia.material.exemplu': 'de pildă MDF alb 18',
+  // Meniul foii din listă (ADR 0210 §1, `MeniuFoaie.tsx`).
+  'lista.foaie-proprietati': 'Nume, mărime și material…',
+  'lista.foaie-sterge-confirma': { one: 'Ștergi foaia și piesa de pe ea?', few: 'Ștergi foaia și cele {n} piese de pe ea?', other: 'Ștergi foaia și cele {n} de piese de pe ea?' },
+  'lista.renunta': 'Renunță',
   'prop.forme': 'Forme pe foaie',
   'prop.rotirea': 'Rotirea',
   'prop.colt': 'Colțul stânga-jos',

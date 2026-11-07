@@ -67,7 +67,40 @@ Toate pozițiile se măsoară din **colțul stânga-jos** al foii, cu X spre dre
 la tăiere: o operație nu coboară sub fața de jos a foii, iar vederea 3D arată ce trece prin ea.
 
 O formă care iese din foaie e semnalată în panoul Pe foaie, jos, în bara de stare, și pe riglă, cu linia de cotă (cu câți mm
-iese).
+iese). Un proiect poate avea mai multe foi: vezi [Foile](#foile).
+
+## Foile
+%% capitol: foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare
+
+Un proiect poate avea mai multe foi de material: plăci diferite (alt material, altă grosime) sau piese care nu încap pe una.
+Fiecare foaie are mărimea ei, piesele ei și, dacă vrei, un nume și un material.
+
+**Foaia activă.** Lucrezi pe o singură foaie odată, foaia activă: ale ei sunt pânza, uneltele, panoul Proprietăți,
+verificarea, traseul, timpul, vederea 3D și [exportul](#export). Panoul **Pe foaie** arată toate foile, una sub alta, cu
+mărimea, materialul și câte piese are fiecare; piesele se văd doar sub foaia activă. Un clic pe rândul unei foi o face activă
+(selecția se golește); `PageUp` (**Foaia de dinainte**) și `PageDown` (**Foaia următoare**) trec prin listă. Cu mai multe foi,
+bara de jos arată foaia activă și locul ei („Foaia 2 · 2 din 3”). Aplicația ține minte foaia activă în browser: la
+redeschidere, proiectul pornește pe ea.
+
+**Foaie nouă.** Butonul **+ Foaie nouă**, sub listă, adaugă o foaie după cea activă, cu aceeași mărime și același material,
+și o face activă. O foaie fără nume se cheamă după numărul ei („Foaia 2”); numărul rămâne și când muți sau ștergi alte foi.
+
+**Meniul foii** (butonul ⋯ de pe rândul ei, sau clic dreapta pe rând):
+- **Nume, mărime și material…** face foaia activă și deschide panoul Proprietăți, unde scrii **Numele și materialul foii**
+  (până la 200 de caractere; un câmp gol le șterge) și mărimea ei. Materialul e o etichetă („MDF alb 18”): nu schimbă
+  tăierea.
+- **Duplică foaia** face o foaie nouă după ea, cu aceeași mărime, același material și copii separate ale pieselor ei (ca
+  `Ctrl+D`).
+- **Mută foaia mai sus** și **Mută foaia mai jos** schimbă ordinea foilor în listă.
+- **Șterge foaia** o scoate, cu piesele ei; dacă are piese, meniul întreabă întâi. Ultima foaie a proiectului rămâne.
+
+**Mută pe altă foaie.** Piesele alese trec pe altă foaie din [meniul de clic dreapta](#meniu) al pânzei: **Mută pe** și numele
+foii, sau **Mută pe o foaie nouă**. Sau tragi rândul unei piese din listă peste altă foaie (dacă e în selecție, pleacă toată
+selecția). Fiecare piesă își păstrează locul și rotirea; dacă iese din foaia nouă, apare avertismentul obișnuit. Foaia activă
+rămâne aceeași.
+
+Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi) e un singur pas de anulare (`Ctrl+Z`).
 
 ## Desenul
 %% capitol: desen
@@ -395,7 +428,8 @@ sau dacă o piesă aleasă e folosită și de alte instanțe.
 Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Grupează** și **Degrupează**, apoi **Unește**,
 **Scade** și **Intersectează** (booleanul), apoi **Duplică** și **Șterge selecția**, fiecare cu tasta lui. Pe o formă care nu e
 aleasă, clicul dreapta o alege întâi; pe gol, selecția rămâne. Un rând e activ doar când se poate (booleanul, cu două forme;
-gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu.
+gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu. Cu mai multe foi, la capăt:
+**Mută pe** fiecare altă foaie și **Mută pe o foaie nouă** (vezi [Foile](#foile)).
 
 Săgețile trec între rânduri, `Enter` rulează rândul, `Esc` închide meniul; se închide și la un clic în afara lui, la rotiță sau
 după o comandă făcută. În vederea 3D, clicul dreapta nu deschide meniul.
@@ -823,7 +857,8 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 %% capitol: export
 %% acopera: export.gcode
 
-**Exportă G-code** deschide fereastra exportului. Pe lângă [operații](#operatii), alegi:
+**Exportă G-code** deschide fereastra exportului, pentru foaia activă (cu mai multe [foi](#foile), titlul ferestrei spune
+care). Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
@@ -1180,6 +1215,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
+| `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |
 | `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |

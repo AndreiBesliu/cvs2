@@ -115,16 +115,16 @@ export function timpInBazin(program: ProgramImpachetat, foaie: Montaj['foaie'], 
 }
 
 /** Verificarea vectorilor (ADR 0124): problemele contururilor foii (sau ale formelor alese), cu ce se poate repara din ele. */
-export function verificareInBazin(document: Document, optiuni: OptiuniVerificare, o: OptiuniCam = {}): Promise<VerificarePanou> {
-  return calculeaza({ fel: 'verificare', document, optiuni }, [], o) as Promise<VerificarePanou>;
+export function verificareInBazin(document: Document, optiuni: OptiuniVerificare, o: OptiuniCam = {}, indexFoaie = 0): Promise<VerificarePanou> {
+  return calculeaza({ fel: 'verificare', document, optiuni, indexFoaie }, [], o) as Promise<VerificarePanou>;
 }
 
 /** O reparație a verificării (ADR 0124 §10), pe documentul dat. */
-export function reparareInBazin(document: Document, cerere: CerereReparare, optiuni: OptiuniReparare, o: OptiuniCam = {}): Promise<RezultatReparare> {
-  return calculeaza({ fel: 'reparare', document, cerere, optiuni }, [], o) as Promise<RezultatReparare>;
+export function reparareInBazin(document: Document, cerere: CerereReparare, optiuni: OptiuniReparare, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatReparare> {
+  return calculeaza({ fel: 'reparare', document, cerere, optiuni, indexFoaie }, [], o) as Promise<RezultatReparare>;
 }
 
 /** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul dat: instanțele tăiate și părțile lor. */
-export function taiereInBazin(document: Document, cerere: CerereTaiere, o: OptiuniCam = {}): Promise<RezultatTaiere> {
-  return calculeaza({ fel: 'taiere', document, cerere }, [], o) as Promise<RezultatTaiere>;
+export function taiereInBazin(document: Document, cerere: CerereTaiere, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatTaiere> {
+  return calculeaza({ fel: 'taiere', document, cerere, indexFoaie }, [], o) as Promise<RezultatTaiere>;
 }

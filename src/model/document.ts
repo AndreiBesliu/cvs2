@@ -238,7 +238,14 @@ export type Instanta = {
  * schimbă nimic din ce se taie, deci a intrat fără schemă nouă: o versiune care nu-l știe îl păstrează necunoscut.
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
-export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
+/**
+ * Foaia (ADR 0024). `material` (ADR 0210 §1) e o etichetă scrisă de om („MDF alb 18”), pentru lista de tăiere și numele
+ * fișierelor: nu schimbă ce se taie, deci a intrat fără schemă nouă. Un document mai vechi îl poate avea ca un câmp
+ * necunoscut, cu orice valoare: eticheta e doar textul (`materialFoaie`), restul rămâne neatins.
+ */
+export type Foaie = {
+  id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown;
+};
 export type Document = { schema: 20; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */

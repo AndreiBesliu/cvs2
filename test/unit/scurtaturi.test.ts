@@ -59,7 +59,14 @@ test('tabelul face exact ce făcea tastatura de dinainte, pe acțiunile document
   assert.equal(incercari, 80);
 });
 
-test('modificatorii contează doar la tastele cu un caracter', () => {
+test('modificatorii contează la tastele cu un caracter și la PgUp / PgDn (Ctrl + PgUp / PgDn rămân ale browserului)', () => {
+  assert.equal(actiuneaTastei(tastaApasata({ key: 'PageUp', ctrlKey: false, metaKey: false, shiftKey: false })), 'vedere.foaia-anterioara');
+  assert.equal(actiuneaTastei(tastaApasata({ key: 'PageDown', ctrlKey: false, metaKey: false, shiftKey: false })), 'vedere.foaia-urmatoare');
+  for (const key of ['PageUp', 'PageDown']) {
+    assert.equal(actiuneaTastei(tastaApasata({ key, ctrlKey: true, metaKey: false, shiftKey: false })), undefined, `Ctrl+${key}`);
+    assert.equal(actiuneaTastei(tastaApasata({ key, ctrlKey: false, metaKey: true, shiftKey: false })), undefined, `⌘+${key}`);
+    assert.equal(actiuneaTastei(tastaApasata({ key, ctrlKey: false, metaKey: false, shiftKey: true })), undefined, `Shift+${key}`);
+  }
   assert.equal(tastaApasata({ key: 'z', ctrlKey: true, metaKey: false, shiftKey: false }), 'Ctrl+Z');
   assert.equal(tastaApasata({ key: 'Z', ctrlKey: false, metaKey: true, shiftKey: true }), 'Ctrl+Shift+Z');
   assert.equal(tastaApasata({ key: 'Delete', ctrlKey: true, metaKey: false, shiftKey: true }), 'Delete');

@@ -39,11 +39,13 @@ type Props = {
   readonly onSetariMasina: (text: string) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
+  /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
+  readonly foaie?: string;
 };
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina,
+  onDeschideInMasina, foaie,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -150,6 +152,7 @@ export function ExportConectat({
   return (
     <DialogExport
       baza={baza}
+      {...(foaie === undefined ? {} : { foaie })}
       operatii={exportFoaie.randuri}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}

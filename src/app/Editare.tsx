@@ -10,12 +10,13 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj, Nod } from '../model/document.ts';
 import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
-import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
+import type { ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, numeScurt, punctManer, ROTIRE_PX, susEticheta, tinteFoaie,
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
+import { doarFoaia, numeFoaie } from '../model/foi.ts';
 import { blocText } from '../model/blocText.ts';
 import { PanouText } from './PanouText.tsx';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
@@ -234,7 +235,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'foaieTinta'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -243,6 +244,9 @@ type Punct = { readonly x: number; readonly y: number };
 
 export type ProprietatiEditare = {
   readonly doc: Document;
+  /** Foaia activă a ferestrei (ADR 0210 §1): locul ei în lista foilor și id-ul ei. Pe ea se desenează, se alege și se taie. */
+  readonly indexFoaie: number;
+  readonly idFoaie: string;
   readonly selectie: readonly string[];
   readonly cutie: Cutie | null;
   readonly vedere: Vedere;
@@ -287,7 +291,7 @@ export type ProprietatiEditare = {
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
   useLimba();
-  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen, onRefuz } = p;
+  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen, onRefuz, indexFoaie, idFoaie } = p;
   // Ultimul desen al Pen-ului (ADR 0074 §4): pașii lui și proiectul de dinainte / de după, ca Ctrl+Shift+Z să-l redeschidă.
   const ultimulPen = useRef<{ readonly desen: DesenPen; readonly inainte: Document; dupa: Document | null } | null>(null);
   useEffect(() => {
@@ -296,7 +300,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   }, [doc]);
   // Desenul redeschis intră o singură dată în Pen (la schimbarea cheii); după, Pen-ul pornește gol.
   const [penRedeschis, setPenRedeschis] = useState<{ readonly cheie: number; readonly desen: DesenPen | null }>({ cheie: 0, desen: null });
-  const foaie = doc.foi[FOAIA];
+  const foaie = doc.foi[indexFoaie];
+  // Documentul văzut din foaia activă (ADR 0210 §5), pentru vederea 3D: ținut, ca simularea să nu se refacă la fiecare randare.
+  const docFoaie = useMemo(() => doarFoaia(doc, idFoaie), [doc, idFoaie]);
   const ghidaje = useMemo(() => foaie?.ghidaje ?? [], [foaie]);
   const [lipire, setLipire] = useState(() => citeste(CHEIE_LIPIRE) !== '0');
   const [grila, setGrila] = useState<{ readonly pornita: boolean; readonly pas: number }>(() => {
@@ -307,9 +313,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [textPas, setTextPas] = useState(() => textNumar(grila.pas));
 
   const alese = useMemo(() => new Set(selectie), [selectie]);
-  const tinte = useMemo(() => tinteFoaie(doc, alese, true), [doc, alese]);
+  const tinte = useMemo(() => tinteFoaie(doc, alese, true, indexFoaie), [doc, alese, indexFoaie]);
   // Un ghidaj tras se lipește de foaie, de forme și de grilă (nu de celelalte ghidaje: ar trage spre el însuși).
-  const tinteFaraGhidaje = useMemo(() => tinteFoaie(doc, new Set(), false), [doc]);
+  const tinteFaraGhidaje = useMemo(() => tinteFoaie(doc, new Set(), false, indexFoaie), [doc, indexFoaie]);
   const pasGrila = grila.pornita ? grila.pas : null;
 
   // Uneltele de desen (ADR 0051): unealta aleasă rămâne după o formă; capetele gestului se lipesc ca puncte.
@@ -369,7 +375,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Arcele făcute curbe înaintea înclinării (ADR 0078): o alegere a omului, nebifată la fiecare deschidere a panoului (cercul
   // rămâne cerc dacă nu cere altfel); bifa apare doar când selecția are arce.
   const [arceInCurbe, setArceInCurbe] = useState(false);
-  const cuArce = useMemo(() => panouInclinare && areArce(doc, FOAIA, selectie), [panouInclinare, doc, selectie]);
+  const cuArce = useMemo(() => panouInclinare && areArce(doc, indexFoaie, selectie), [panouInclinare, doc, indexFoaie, selectie]);
   // Înclinarea din panou: unghiurile citite (null: un câmp greșit) și transformarea, față de centrul cutiei selecției.
   const inclinare = useMemo((): Transformare | 'unghi' | 'zero' | null => {
     if (!panouInclinare || !cutie) return null;
@@ -391,7 +397,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const rezOffset = useMemo(() => {
     if (!panouOffset || modOffset === null || modOffset === 'eroare') return null;
     const d = citesteNumar(formOffset.distanta);
-    return d === null ? ('distanta' as const) : modOffset.offsetSelectie(doc, selectie, formOffset.sens === 'exterior' ? d : -d, formOffset.colturi);
+    return d === null ? ('distanta' as const) : modOffset.offsetSelectie(doc, selectie, formOffset.sens === 'exterior' ? d : -d, formOffset.colturi, indexFoaie);
   }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
@@ -511,7 +517,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [liniiDesen, setLiniiDesen] = useState<readonly LinieGhid[]>([]);
   // Liniile de aliniere ale mânerului lipit (ADR 0055), cât se trage.
   const [liniiManere, setLiniiManere] = useState<readonly LinieGhid[]>([]);
-  const tinteToate = useMemo(() => tinteFoaie(doc, new Set(), true), [doc]);
+  const tinteToate = useMemo(() => tinteFoaie(doc, new Set(), true, indexFoaie), [doc, indexFoaie]);
   // Gestul îl dă pânza printr-o funcție stabilă; starea de acum o citește de aici (fără închideri vechi).
   const scrieRaza = (r: number): void => { setRaza(r); setTextRaza(textNumar(r)); scrieLocal(CHEIE_RAZA, String(r)); };
   unealtaRef.current = unealta;
@@ -594,11 +600,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const booleanul = (op: 'reuniune' | 'diferenta' | 'intersectie'): Promise<string | null> => {
     if (selectie.length !== 2 || p.doarCitire) return Promise.resolve(null);
     const fa = (m: ModulBoolean): string | null => {
-      const r = m.booleanSelectie(doc, FOAIA, selectie, op);
+      const r = m.booleanSelectie(doc, indexFoaie, selectie, op);
       let motiv: string | null;
       if (typeof r === 'string') motiv = t(`editare.boolean.motiv.${r}`);
       else {
-        const v = motivDesen(doc, r.forme, p.doarCitire, r.sterse);
+        const v = motivDesen(doc, r.forme, p.doarCitire, r.sterse, idFoaie);
         motiv = v ? t(v) : null;
         if (!v) ruleaza('document.deseneaza', { formaNoua: () => r.forme, sterge: () => r.sterse });
       }
@@ -634,7 +640,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       reportError(new Error(`tăierea la intersecții: ${e instanceof Error ? e.message : String(e)}`));
       return t('editare.taiere.eroare');
     };
-    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit: { fel: 'intersectii' }, alese, inchide: false }).then((r) => {
+    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit: { fel: 'intersectii' }, alese, inchide: false }, undefined, indexFoaie).then((r) => {
       if (!r.ok) return t(r.motiv === 'nimic-taiat' ? 'editare.taiere.motiv.nimic-intersectii' : `editare.taiere.motiv.${r.motiv}`);
       const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids }) });
       return v.ok ? null : t(v.motiv);
@@ -683,7 +689,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
     const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
-    const r = transforma(doc, FOAIA, selectie, tr);
+    const r = transforma(doc, indexFoaie, selectie, tr);
     if (!r.ok) {
       setMotivOglinda(t(`editare.transformare.${r.motiv}`));
       return;
@@ -775,8 +781,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Meniul de clic dreapta (ADR 0103), în pixeli din colțul editării, cu motivul ultimului refuz din el.
   const [meniu, setMeniu] = useState<Punct | null>(null);
   const [motivMeniu, setMotivMeniu] = useState<string | null>(null);
-  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza });
-  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza };
+  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, indexFoaie });
+  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, indexFoaie };
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -792,7 +798,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.target !== panza || e.button !== 0 || spatiu || e.defaultPrevented || s.vedere3d || (s.unealta !== 'selectie' && s.unealta !== 'transformare')) return;
       const p = local(e), v = s.vedere;
       if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && manerLovit(s.cutie, v, p.x, p.y)) return;
-      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara);
+      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
       if (lovita && !e.shiftKey) return;
       e.preventDefault();
       e.stopPropagation();
@@ -821,7 +827,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           minX: (Math.min(x.a.x, b.x) - v.tx) / v.scara, maxX: (Math.max(x.a.x, b.x) - v.tx) / v.scara,
           minY: (v.ty - Math.max(x.a.y, b.y)) / v.scara, maxY: (v.ty - Math.min(x.a.y, b.y)) / v.scara,
         };
-        const prinse = aleseInCadru(s.doc, r, felCadru(x.a.x, b.x));
+        const prinse = aleseInCadru(s.doc, r, felCadru(x.a.x, b.x), s.indexFoaie);
         noi = x.shift ? adaugaLaSelectie(s.selectie, prinse) : prinse;
       }
       s.ruleaza('selectie.din-lista', { alese: () => noi });
@@ -846,7 +852,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.target !== panza || s.vedere3d) return;
       e.preventDefault();
       const p = local(e), v = s.vedere;
-      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara);
+      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
       if (lovita && !s.selectie.includes(lovita)) s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
       setMotivMeniu(null);
       setMeniu(p);
@@ -913,11 +919,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => { if (unealta !== 'text') { setAncoraText(null); setCurbaText(null); } }, [unealta]);
   const textAles = useMemo(() => {
     if (selectie.length !== 1) return null;
-    const inst = doc.foi[FOAIA]?.instante.find((i) => i.id === selectie[0]);
+    const inst = doc.foi[indexFoaie]?.instante.find((i) => i.id === selectie[0]);
     const piesa = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
     const bloc = piesa ? blocText(piesa.radacina) : null;
     return inst && bloc ? { instanta: inst.id, bloc } : null;
-  }, [doc, selectie]);
+  }, [doc, indexFoaie, selectie]);
   useEffect(() => {
     if (unealta !== 'text') return undefined;
     const el = radacina.current;
@@ -930,8 +936,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       e.stopPropagation();
       const r = el.getBoundingClientRect(), v = s.vedere;
       const x = (e.clientX - r.left - v.tx) / v.scara, y = (v.ty - (e.clientY - r.top)) / v.scara;
-      const lovita = instantaLa(s.doc, x, y, TOLERANTA_CLIC_PX / v.scara);
-      const inst = lovita ? s.doc.foi[FOAIA]?.instante.find((i) => i.id === lovita) : undefined;
+      const lovita = instantaLa(s.doc, x, y, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
+      const inst = lovita ? s.doc.foi[s.indexFoaie]?.instante.find((i) => i.id === lovita) : undefined;
       const piesa = inst ? s.doc.piese.find((q) => q.id === inst.piesa) : undefined;
       if (lovita && piesa && blocText(piesa.radacina)) {
         s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
@@ -941,7 +947,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const tol = TOLERANTA_CLIC_PX / v.scara;
       const piese = new Map(s.doc.piese.map((q) => [q.id, q]));
       let curba: { contur: Contur; d: number } | null = null;
-      for (const e of elementeFoaie(s.doc, FOAIA)) {
+      for (const e of elementeFoaie(s.doc, s.indexFoaie)) {
         const pe = piese.get(e.piesa);
         if (!pe || blocText(pe.radacina)) continue;
         const c = conturElement(e);
@@ -971,6 +977,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const r = ruleaza(id, {});
       facut(r.ok ? null : t(r.motiv));
     };
+    const mutaPe = (foaie: string | null): void => {
+      const r = ruleaza('selectie.muta-pe-foaie', { foaieTinta: () => foaie });
+      facut(r.ok ? null : t(r.motiv));
+    };
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
     return [
@@ -984,6 +994,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
+      // Mutarea pe altă foaie (ADR 0210 §1): fiecare piesă își păstrează locul; foaia activă rămâne.
+      'separator',
+      ...doc.foi.flatMap((f, k) => (f.id === idFoaie ? [] : [{
+        id: `muta-pe-${f.id}`, eticheta: t('editare.meniu.muta-pe', { nume: numeFoaie(f, k, (n) => t('foaia.n', { n: String(n) })) }),
+        activ: selectie.length > 0 && poate, ruleaza: () => { mutaPe(f.id); },
+      }])),
+      { id: 'muta-pe-noua', eticheta: t('editare.meniu.muta-pe-noua'), activ: selectie.length > 0 && poate, ruleaza: () => { mutaPe(null); } },
     ];
   };
 
@@ -997,9 +1014,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return peAxa ? lipita : poz;
   };
 
-  const cutiiInstante = useMemo(() => cutiiAlese(doc, alese), [doc, alese]);
+  const cutiiInstante = useMemo(() => cutiiAlese(doc, alese, indexFoaie), [doc, alese, indexFoaie]);
   // Cutia tuturor formelor foii, pentru liniile de cotă ale riglelor (ADR 0060).
-  const cutieForme = useMemo(() => cutieFormelor(doc), [doc]);
+  const cutieForme = useMemo(() => cutieFormelor(doc, indexFoaie), [doc, indexFoaie]);
   const aliniere = (fel: FelAliniere): void => {
     if (!foaie) return;
     const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime }, bloc);
@@ -1063,7 +1080,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {vedere3d ? (
         <Suspense fallback={null}>
-          <Vedere3D doc={doc} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
+          <Vedere3D doc={docFoaie} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
         </Suspense>
       ) : null}
       {foaie && !vedere3d ? (
@@ -1080,7 +1097,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         />
       ) : null}
       {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d ? (
-        <Manere cutie={cutie} vedere={vedere} doc={doc} selectie={selectie}
+        <Manere cutie={cutie} vedere={vedere} doc={doc} indexFoaie={indexFoaie} selectie={selectie}
           aplica={(tr) => ruleaza('document.transforma', { transformare: () => tr })}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
@@ -1091,7 +1108,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată (pe curbă: cutia formelor, fără curbă).
         const r = citesteRetea(formRetea, foaie?.stoc ?? { latime: 0, inaltime: 0 }, curbaAleasa);
         if (typeof r === 'string') return null;
-        const pc = r.fel === 'curba' ? copiiPeCurba(doc, FOAIA, selectie, r) : null;
+        const pc = r.fel === 'curba' ? copiiPeCurba(doc, indexFoaie, selectie, r) : null;
         if (typeof pc === 'string') return null;
         const c = pc ? pc.cutie : cutie;
         const copii = pc ? pc.copii : copiiRetea(cutie, r);
@@ -1139,7 +1156,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {/* Nodurile își ascultă singure tastele (Delete, săgețile): sub fereastra Mașina nu stau montate (ADR 0132 §3). */}
       {unealta === 'noduri' && !vedere3d && activ ? (
-        <Noduri doc={doc} selectie={selectie} vedere={vedere} marime={marime} zona={zona} doarCitire={p.doarCitire}
+        <Noduri doc={doc} indexFoaie={indexFoaie} selectie={selectie} vedere={vedere} marime={marime} zona={zona} doarCitire={p.doarCitire}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
@@ -1231,7 +1248,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <PanouInclinare form={formInclinare} onForm={scrieInclinare} arce={cuArce ? arceInCurbe : null} onArce={setArceInCurbe}
                 motiv={selectie.length === 0 || !cutie ? t('editare.inclinare.nicio-selectie') : p.doarCitire ? t('motiv.doar-citire')
                   : inclinare === 'unghi' ? t('editare.inclinare.motiv.unghi') : inclinare === 'zero' ? t('editare.inclinare.motiv.zero')
-                    : inclinare === null ? null : (() => { const r = transforma(doc, FOAIA, selectie, inclinare); return r.ok ? null : t(`editare.transformare.${r.motiv}`); })()}
+                    : inclinare === null ? null : (() => { const r = transforma(doc, indexFoaie, selectie, inclinare); return r.ok ? null : t(`editare.transformare.${r.motiv}`); })()}
                 onAplica={() => { if (inclinare !== null && typeof inclinare !== 'string') ruleaza('document.transforma', { transformare: () => inclinare }); setPanou(null); }}
                 onInchide={() => { setPanou(null); }} />
             ) : null}
@@ -1247,8 +1264,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <PanouRetea form={formRetea} onForm={scrieFormular} foaie={foaie?.stoc ?? { latime: 0, inaltime: 0 }} curba={curbaAleasa}
                 motivActiune={(r) => {
                   // Pe curbă, întâi motivul curbei (lipsă, compusă, fără lungime, nimic de copiat), apoi verdictul acțiunii.
-                  const c = r.fel === 'curba' && selectie.length > 0 ? copiiPeCurba(doc, FOAIA, selectie, r) : null;
-                  return typeof c === 'string' ? (`editare.retea.motiv.${c}` as const) : motivCopiereRetea(doc, selectie, r, p.doarCitire);
+                  const c = r.fel === 'curba' && selectie.length > 0 ? copiiPeCurba(doc, indexFoaie, selectie, r) : null;
+                  return typeof c === 'string' ? (`editare.retea.motiv.${c}` as const) : motivCopiereRetea(doc, selectie, r, p.doarCitire, idFoaie);
                 }}
                 onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanou(null); }}
                 onInchide={() => { setPanou(null); }} />
@@ -1263,7 +1280,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             </button>
             {panouOffset ? (
               <PanouOffset form={formOffset} onForm={scrieOffset} rez={modOffset === 'eroare' ? 'eroare' : rezOffset}
-                motivActiune={(f) => motivDesen(doc, f, p.doarCitire)}
+                motivActiune={(f) => motivDesen(doc, f, p.doarCitire, undefined, idFoaie)}
                 onAplica={(f) => { ruleaza('document.deseneaza', { formaNoua: () => f }); setPanou(null); }}
                 onInchide={() => { setPanou(null); }} />
             ) : null}
@@ -1307,7 +1324,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {panouTaiere ? (
               <CadruTaiere onInchide={() => { setPanou(null); }}>
                 <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.taiere.incarca')}</p>}>
-                  <PanouTaiere doc={doc} selectie={selectie} ghidaje={ghidaje}
+                  <PanouTaiere doc={doc} indexFoaie={indexFoaie} selectie={selectie} ghidaje={ghidaje}
                     centru={p.cutie ? { x: (p.cutie.minX + p.cutie.maxX) / 2, y: (p.cutie.minY + p.cutie.maxY) / 2 } : null}
                     onLinie={setLinieTaiere} onTaie={(r) => ruleaza('document.taie', { taiere: () => r })} onInchide={() => { setPanou(null); }} />
                 </Suspense>
@@ -1325,7 +1342,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {panouVerificare ? (
               <CadruVerificare onInchide={() => { setPanou(null); }}>
                 <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.verificare.incarca')}</p>}>
-                  <PanouVerificare doc={doc} selectie={selectie} stare={verificare} onStare={setVerificare}
+                  <PanouVerificare doc={doc} indexFoaie={indexFoaie} selectie={selectie} stare={verificare} onStare={setVerificare}
                     onAlege={(alese) => { ruleaza('selectie.din-lista', { alese: () => alese }); }}
                     onRepara={(r) => ruleaza('document.repara', { reparatie: () => r })} onInchide={() => { setPanou(null); }} />
                 </Suspense>
@@ -1349,7 +1366,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <IconaVectori />
               </button>
             )}
-            {panouVectori ? <PanouVectori doc={doc} onInchide={() => { setPanou(null); }} /> : null}
+            {panouVectori ? <PanouVectori doc={doc} indexFoaie={indexFoaie} onInchide={() => { setPanou(null); }} /> : null}
           </span>
         );
         const vedereSectiune = (
@@ -1694,8 +1711,9 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
  * a conturului pleacă prin `document.forma`, cu elementul ei; dreptunghiul și cercul devin căi la prima schimbare. Apăsările pe
  * noduri și pe mânere nu mai ajung la pânză (nici alegerea, nici mutarea); restul, da.
  */
-function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma }: {
+function Noduri({ doc, indexFoaie, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma }: {
   readonly doc: Document;
+  readonly indexFoaie: number;
   readonly selectie: readonly string[];
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
@@ -1708,7 +1726,7 @@ function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLin
   /** Forma nouă a conturului `nod` (id-ul elementului în piesă). */
   readonly aplica: (f: FormaCale, nod: string) => void;
 }): ReactElement {
-  const f = formaNoduri(doc, selectie);
+  const f = formaNoduri(doc, selectie, indexFoaie);
   const elemente = typeof f === 'string' ? [] : f.elemente;
   const cai = elemente.map((e) => caleDinForma(e.forma));
   // Nodul ales: conturul (`e`) și nodul din el (`i`); conturul tras, cât se trage.
@@ -2615,7 +2633,7 @@ type ModulVectori = typeof import('../io/exportVectori.ts');
  * EPS, nota despre arcele din curbe), conturul foii la cerere, Exportă și ce s-a descărcat (câte entități, pe câte
  * straturi). Scriitorii vin la primul Exportă: nu stau în pachetul de pornire. Esc îl închide.
  */
-function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onInchide: () => void }): ReactElement {
+function PanouVectori({ doc, indexFoaie, onInchide }: { readonly doc: Document; readonly indexFoaie: number; readonly onInchide: () => void }): ReactElement {
   const [format, setFormat] = useState<'dxf' | 'svg' | 'pdf' | 'eps'>('dxf');
   const [cuFoaia, setCuFoaia] = useState(false);
   const [stare, setStare] = useState<string | null>(null);
@@ -2623,7 +2641,7 @@ function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onI
   useInFereastra(radacina);
   const exporta = (): void => {
     import('../io/exportVectori.ts').then((m: ModulVectori) => {
-      const f = m.exportaVectori(doc, FOAIA, format, cuFoaia);
+      const f = m.exportaVectori(doc, indexFoaie, format, cuFoaia);
       if (f.entitati === 0) { setStare(t('editare.vectori.gol')); return; }
       descarcaText(f.text, f.nume, f.tip);
       setStare(t('editare.vectori.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi) }));
@@ -2686,8 +2704,8 @@ const CURSOR_MANER: Record<Maner | 'rotire', string> = {
  * (o scalare care n-ar mai fi exactă) se spune deasupra cutiei, cu motivul. Cât e apăsată pânza în altă parte (mutarea,
  * panoramarea), mânerele se ascund: n-ar urma forma.
  */
-function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }: {
-  readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly selectie: readonly string[];
+function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire, onLinii }: {
+  readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly indexFoaie: number; readonly selectie: readonly string[];
   /** Acțiunea `document.transforma`, cu rezultatul ei: un refuz al ușii documentului (schema) se spune ca unul al scalării. */
   readonly aplica: (t: Transformare) => RezultatActiune;
   /** Lipirea mânerului tras (ADR 0055), după Alt ținut (care o inversează): null = mânerul merge liber. */
@@ -2701,8 +2719,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
   const [motiv, setMotiv] = useState<string | null>(null);
   const [ascunse, setAscunse] = useState(false);
   const radacina = useRef<HTMLDivElement | null>(null);
-  const acum = useRef({ c, v, doc, selectie, aplica, lipire, onLinii });
-  acum.current = { c, v, doc, selectie, aplica, lipire, onLinii };
+  const acum = useRef({ c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii });
+  acum.current = { c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii };
   // Motivul unui refuz rămâne până la următorul gest sau până se schimbă selecția.
   useEffect(() => { setMotiv(null); }, [selectie]);
   useEffect(() => {
@@ -2760,13 +2778,13 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
       const s = g;
       g = null;
       setGest(null);
-      const { c: cutie, doc: d, selectie: alese, aplica: ap, lipire: lip, onLinii: linii } = acum.current;
+      const { c: cutie, doc: d, indexFoaie: k, selectie: alese, aplica: ap, lipire: lip, onLinii: linii } = acum.current;
       linii([]);
       // Un clic (sub 3 px de tragere) nu e o transformare.
       if (Math.hypot(e.clientX - s.ecran.x, e.clientY - s.ecran.y) < MINIM_DESEN_PX) return;
       const tr = transformareManerLipita(cutie, s.m, s.start, laFoaie(e), e.shiftKey, lip(e.altKey)).t;
       if (tr.fel === 'rotire' ? tr.unghi === 0 : tr.sx === 1 && tr.sy === 1) return;
-      const r = transforma(d, FOAIA, alese, tr);
+      const r = transforma(d, k, alese, tr);
       if (!r.ok) {
         setMotiv(t(`editare.transformare.${r.motiv}`));
         return;

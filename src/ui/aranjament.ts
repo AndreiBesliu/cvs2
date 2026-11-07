@@ -20,7 +20,7 @@ export const PANOURI = ['lista', 'proprietati'] as const;
 export type IdPanou = (typeof PANOURI)[number];
 
 /** Cipurile de stare: ce știe carcasa să arate ca stare (de obicei jos). */
-export const CIPURI = ['selectie', 'avertisment', 'proiect', 'config', 'actualizare', 'cursor', 'zoom', 'jurnal', 'traseu'] as const;
+export const CIPURI = ['selectie', 'avertisment', 'proiect', 'config', 'actualizare', 'cursor', 'zoom', 'jurnal', 'traseu', 'foaia'] as const;
 export type IdCip = (typeof CIPURI)[number];
 
 /**
@@ -131,7 +131,8 @@ export const ARANJAMENT_MODERN: Aranjament = {
     ],
     jos: [
       // „Versiune nouă gata” + „Reîncarcă” (ADR 0045 §5): doar cât un worker nou așteaptă clicul.
-      { id: 'stare', intrari: [{ cip: 'selectie' }, { cip: 'avertisment' }, { cip: 'proiect' }, { cip: 'config' }, { cip: 'actualizare' }] },
+      // Foaia activă (ADR 0210 §1), doar când proiectul are mai multe foi.
+      { id: 'stare', intrari: [{ cip: 'foaia' }, { cip: 'selectie' }, { cip: 'avertisment' }, { cip: 'proiect' }, { cip: 'config' }, { cip: 'actualizare' }] },
       // „Arată traseul” (ADR 0038 §2) stă cu vederea, lângă „Arată toată foaia”: în bara de sus ar lăți insula uneltelor
       // peste bara principală pe ecranele de laptop.
       { id: 'vedere', intrari: [{ cip: 'traseu' }, { cip: 'cursor' }, { cip: 'zoom' }, { cip: 'jurnal' }, { actiune: 'vedere.traseu' }, { actiune: 'vedere.potriveste' }] },

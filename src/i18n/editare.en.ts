@@ -419,6 +419,8 @@ export const enEditare = {
   'editare.taiere.intersectii': 'At intersections',
   'editare.taiere.intersectii.text': 'The chosen shapes cut each other at all their common points; each piece becomes a shape, to choose and delete.',
   'editare.taiere.intersectii.taie': 'Cut at intersections',
+  'editare.meniu.muta-pe': 'Move to {nume}',
+  'editare.meniu.muta-pe-noua': 'Move to a new sheet',
   'editare.taiere.motiv.nimic-ales': 'Choose the shapes to cut first.',
   'editare.taiere.motiv.ghidaj': 'The guide is no longer on the sheet.',
   'editare.taiere.motiv.valoare': 'Type the position of the line, in mm.',

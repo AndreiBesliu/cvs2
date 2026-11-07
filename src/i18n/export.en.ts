@@ -8,6 +8,7 @@ import type { Mesaj } from './tipuri.ts';
  */
 export const enExport = {
   'export.titlu': 'Export G-code ({post})',
+  'export.titlu.foaie': 'Export G-code ({post}) · {foaie}',
   'export.origine': 'Origin corner',
   'export.colt.stanga-jos': 'bottom left',
   'export.colt.dreapta-jos': 'bottom right',

@@ -130,6 +130,13 @@ export const enCarcasa = {
   'prop.adancime': 'Depth',
   'prop.pas': 'Step down',
   'prop.foaia': 'Sheet',
+  'prop.foaia.nume': 'Name',
+  'prop.foaia.material': 'Material',
+  'prop.foaia.material.exemplu': 'e.g. white MDF 18',
+  // Meniul foii din listă (ADR 0210 §1, `MeniuFoaie.tsx`).
+  'lista.foaie-proprietati': 'Name, size and material…',
+  'lista.foaie-sterge-confirma': { one: 'Delete the sheet and the part on it?', other: 'Delete the sheet and the {n} parts on it?' },
+  'lista.renunta': 'Cancel',
   'prop.forme': 'Shapes on the sheet',
   'prop.rotirea': 'Rotation',
   'prop.colt': 'Bottom-left corner',

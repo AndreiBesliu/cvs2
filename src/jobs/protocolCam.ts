@@ -70,11 +70,11 @@ export type CerereCam =
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
-  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare }
+  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare; readonly indexFoaie?: number }
   /** O reparație a verificării (ADR 0124 §10): piesele schimbate și instanțele de șters, pe documentul cererii. */
-  | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare }
+  | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare; readonly indexFoaie?: number }
   /** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑): instanțele tăiate și părțile lor, pe documentul cererii. */
-  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere };
+  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere; readonly indexFoaie?: number };
 
 export type RaspunsExport =
   | {

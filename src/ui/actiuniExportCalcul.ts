@@ -55,24 +55,24 @@ export async function simuleazaExport(
  * Verificarea vectorilor (ADR 0124): problemele contururilor foii (sau ale formelor alese), în workerul CAM (ADR 0109).
  * `semnal` anulează calculul (un document schimbat, panoul închis): promisiunea e respinsă cu `CalculAnulat`.
  */
-export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semnal?: AbortSignal): Promise<VerificarePanou> {
-  return verificareInBazin(doc, optiuni, semnal ? { semnal } : {});
+export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semnal?: AbortSignal, indexFoaie = 0): Promise<VerificarePanou> {
+  return verificareInBazin(doc, optiuni, semnal ? { semnal } : {}, indexFoaie);
 }
 
 /**
  * O reparație a verificării (ADR 0124 §10), pe documentul din clipa cererii, în workerul CAM: piesele schimbate și instanțele
  * de șters, pe care acțiunea `document.repara` le aplică într-un pas, doar dacă documentul e încă același.
  */
-export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: OptiuniReparare, semnal?: AbortSignal): Promise<RezultatReparare> {
-  return reparareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {});
+export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: OptiuniReparare, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatReparare> {
+  return reparareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {}, indexFoaie);
 }
 
 /**
  * Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul din clipa cererii, în workerul CAM: instanțele tăiate și
  * părțile lor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
  */
-export function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal): Promise<RezultatTaiere> {
-  return taiereInBazin(doc, cerere, semnal ? { semnal } : {});
+export function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatTaiere> {
+  return taiereInBazin(doc, cerere, semnal ? { semnal } : {}, indexFoaie);
 }
 
 /** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */

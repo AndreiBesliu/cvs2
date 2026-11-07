@@ -114,8 +114,10 @@ function reparatiaFelului(fel: Problema['fel'], randuri: ReadonlyArray<{ readonl
 
 type StareReparare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
 
-export function PanouVerificare({ doc, selectie, stare, onStare, onAlege, onRepara, onInchide }: {
+export function PanouVerificare({ doc, indexFoaie = 0, selectie, stare, onStare, onAlege, onRepara, onInchide }: {
   readonly doc: Document;
+  /** Foaia activă (ADR 0210 §1): pe ea se verifică și se repară. */
+  readonly indexFoaie?: number;
   /** Selecția aplicației: id-urile instanțelor. */
   readonly selectie: readonly string[];
   readonly stare: StareVerificare | null;
@@ -157,7 +159,7 @@ export function PanouVerificare({ doc, selectie, stare, onStare, onAlege, onRepa
       onStare({ rezultat: 'calcul', aleasa: null });
       import('../ui/actiuniExportCalcul.ts').then((calc) => {
         if (semnal.signal.aborted) return;
-        calc.verificaVectorii(doc, { toleranta: tolerantaBuna, alese }, semnal.signal).then(
+        calc.verificaVectorii(doc, { toleranta: tolerantaBuna, alese }, semnal.signal, indexFoaie).then(
           (r) => { if (!semnal.signal.aborted) onStare({ rezultat: r, aleasa: null }); },
           (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); },
         );
@@ -187,7 +189,7 @@ export function PanouVerificare({ doc, selectie, stare, onStare, onAlege, onRepa
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (semnal.signal.aborted) return;
-      calc.reparaVectorii(laCerere, cerere, { toleranta: tolerantaBuna, alese, pragBucla: pragBun, pragInchidere: inchidereBuna }, semnal.signal).then((x) => {
+      calc.reparaVectorii(laCerere, cerere, { toleranta: tolerantaBuna, alese, pragBucla: pragBun, pragInchidere: inchidereBuna }, semnal.signal, indexFoaie).then((x) => {
         if (semnal.signal.aborted) return;
         if (!x.ok) { setReparare({ fel: 'gata', text: t(`editare.verificare.reparare.motiv.${x.motiv}`), rau: true }); return; }
         const v = onRepara({ doc: laCerere, piese: x.piese, sterse: x.sterse });

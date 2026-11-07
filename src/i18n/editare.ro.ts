@@ -436,6 +436,8 @@ export const roEditare = {
   'editare.taiere.intersectii': 'La intersecții',
   'editare.taiere.intersectii.text': 'Formele alese se taie între ele, în toate locurile lor comune; fiecare bucată devine o formă, de ales și de șters.',
   'editare.taiere.intersectii.taie': 'Taie la intersecții',
+  'editare.meniu.muta-pe': 'Mută pe {nume}',
+  'editare.meniu.muta-pe-noua': 'Mută pe o foaie nouă',
   'editare.taiere.motiv.nimic-ales': 'Alege întâi formele de tăiat.',
   'editare.taiere.motiv.ghidaj': 'Ghidajul nu mai e pe foaie.',
   'editare.taiere.motiv.valoare': 'Scrie poziția liniei, în mm.',

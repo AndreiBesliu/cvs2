@@ -10,7 +10,7 @@ import { curataIntrare, offsetInchis, REZOLUTIE } from '../geom/offset.ts';
 import type { Document, VarfDoc } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import { FOAIA, type FormaNoua } from '../ui/actiuniDocument.ts';
+import type { FormaNoua } from '../ui/actiuniDocument.ts';
 
 /** Distanța cea mai mică (rezoluția modelului) și cea mai mare a offsetului din desen, în mm. */
 export const DISTANTA_MINIMA_OFFSET = REZOLUTIE;
@@ -39,7 +39,7 @@ export function formaDinContur(k: Contur): FormaNoua {
  * jumătate): interiorul care dispare e „nu încape”, restul „a eșuat”. Colțurile (ADR 0074 §2): implicit ca la original
  * (ascuțite unde originalul e ascuțit), sau rotunjite cu raza egală cu distanța.
  */
-export function offsetSelectie(doc: Document, selectie: readonly string[], distanta: number, colturi: Colturi = 'ca-originalul'): Offset | MotivOffset {
+export function offsetSelectie(doc: Document, selectie: readonly string[], distanta: number, colturi: Colturi = 'ca-originalul', indexFoaie = 0): Offset | MotivOffset {
   if (selectie.length === 0) return 'nimic';
   const d = Math.abs(distanta);
   if (!Number.isFinite(distanta) || d < DISTANTA_MINIMA_OFFSET || d > DISTANTA_MAXIMA_OFFSET) return 'distanta';
@@ -47,7 +47,7 @@ export function offsetSelectie(doc: Document, selectie: readonly string[], dista
   const forme: FormaNoua[] = [];
   const contururi: Contur[] = [];
   let sarite = 0;
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     if (!alese.has(e.instanta)) continue;
     const c = conturElement(e);
     if (!c.inchis) {

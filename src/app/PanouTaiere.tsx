@@ -49,8 +49,10 @@ function scrieInchide(v: boolean): void {
 /** Un număr rotunjit la 0,001 mm, cu virgulă în română. */
 const numar = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
 
-export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, onInchide }: {
+export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, onLinie, onTaie, onInchide }: {
   readonly doc: Document;
+  /** Foaia activă (ADR 0210 §1): pe ea se taie. */
+  readonly indexFoaie?: number;
   /** Selecția aplicației: id-urile instanțelor. */
   readonly selectie: readonly string[];
   readonly ghidaje: readonly Ghidaj[];
@@ -103,7 +105,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], inchide: cuInchidere }, s.signal).then((r) => {
+      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], inchide: cuInchidere }, s.signal, indexFoaie).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           const cheie = r.motiv === 'nimic-taiat' && cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : (`editare.taiere.motiv.${r.motiv}` as const);

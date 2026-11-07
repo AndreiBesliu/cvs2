@@ -148,6 +148,8 @@ type Props = {
    * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
    */
   readonly onDeschideInMasina?: () => void;
+  /** Foaia exportată (ADR 0210 §5), în titlu, când proiectul are mai multe. */
+  readonly foaie?: string;
 };
 
 const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
@@ -343,7 +345,7 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina,
+    onSetariMasina, onDeschideInMasina, foaie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -738,7 +740,8 @@ export function DialogExport(
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
       <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
-        <h2 id="export-titlu">{t('export.titlu', { post: postAles?.nume ?? '' })}</h2>
+        <h2 id="export-titlu">{foaie === undefined ? t('export.titlu', { post: postAles?.nume ?? '' })
+          : t('export.titlu.foaie', { post: postAles?.nume ?? '', foaie })}</h2>
         <div className="campuri">
           <label>
             {t('export.origine')}

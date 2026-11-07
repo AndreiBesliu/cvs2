@@ -65,9 +65,9 @@ test('meniul global (ADR 0132): filele ferestrelor, locul lucrării, apoi căuta
   assert.deepEqual(ARANJAMENT_MODERN.ferestre, ['proiectare', 'masina']);
   assert.deepEqual(DESCHIDE_FEREASTRA, { proiectare: 'vedere.proiectare', masina: 'vedere.masina' });
   // Cipurile care rămân și în Mașina sunt ale aplicației; cele ale desenului (selecția, ieșirea din foaie, traseul, cursorul,
-  // zoomul) se văd doar în Proiectare.
+  // zoomul, foaia activă: ADR 0210 §1) se văd doar în Proiectare.
   assert.deepEqual([...CIPURI_GLOBALE].sort(), ['actualizare', 'config', 'jurnal', 'proiect']);
-  assert.deepEqual(CIPURI.filter((c) => !CIPURI_GLOBALE.has(c)), ['selectie', 'avertisment', 'cursor', 'zoom', 'traseu']);
+  assert.deepEqual(CIPURI.filter((c) => !CIPURI_GLOBALE.has(c)), ['selectie', 'avertisment', 'cursor', 'zoom', 'traseu', 'foaia']);
 });
 
 test('localizatorii e2e `[data-actiune=…]` rămân unici: o acțiune stă cel mult o dată în zonele care o poartă așa', () => {

@@ -69,7 +69,41 @@ thickness matters for cutting: an operation does not go below the sheet's bottom
 through it.
 
 A shape that goes off the sheet is flagged in the On the sheet panel, at the bottom in the status bar, and on the ruler, with
-the dimension line (by how many mm it goes past).
+the dimension line (by how many mm it goes past). A project can have several sheets: see [Sheets](#foile).
+
+## Sheets
+%% capitol: foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare
+
+A project can have several sheets of material: different boards (another material, another thickness) or parts that do not
+fit on one. Each sheet has its own size, its own parts and, if you like, a name and a material.
+
+**The active sheet.** You work on one sheet at a time, the active sheet: the canvas, the tools, the Properties panel, the
+check, the toolpath, the time, the 3D view and the [export](#export) are all its own. The **On the sheet** panel shows all the
+sheets, one below the other, with the size, the material and how many parts each has; the parts show only under the active
+sheet. A click on a sheet's row makes it active (the selection is cleared); `PageUp` (**Previous sheet**) and `PageDown`
+(**Next sheet**) go through the list. With several sheets, the bottom bar shows the active sheet and its place ("Sheet 2 · 2
+of 3"). The app remembers the active sheet in the browser: when you open the project again, it starts on it.
+
+**New sheet.** The **+ New sheet** button, under the list, adds a sheet after the active one, with the same size and the same
+material, and makes it active. A sheet without a name is called by its number ("Sheet 2"); the number stays when you move or
+delete other sheets.
+
+**The sheet menu** (the ⋯ button on its row, or a right click on the row):
+- **Name, size and material…** makes the sheet active and opens the Properties panel, where you write the
+  **Sheet name and material** (up to 200 characters; an empty field removes them) and its size. The material is a label
+  ("white MDF 18"): it does not change the cutting.
+- **Duplicate the sheet** makes a new sheet after it, with the same size, the same material and separate copies of its parts
+  (like `Ctrl+D`).
+- **Move the sheet up** and **Move the sheet down** change the order of the sheets in the list.
+- **Delete the sheet** removes it, with its parts; if it has parts, the menu asks first. The project's last sheet stays.
+
+**Move to another sheet.** The chosen parts go to another sheet from the canvas [right-click menu](#meniu): **Move to** and the
+sheet's name, or **Move to a new sheet**. Or drag a part's row from the list onto another sheet (if it is in the selection, the
+whole selection goes). Each part keeps its place and rotation; if it goes past the new sheet, the usual warning shows. The
+active sheet stays the same.
+
+Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets) is a single undo step (`Ctrl+Z`).
 
 ## Drawing
 %% capitol: desen
@@ -411,6 +445,7 @@ A right click on the canvas opens the **right-click menu**, with what can be don
 **Subtract** and **Intersect** (the boolean), then **Duplicate** and **Delete selection**, each with its key. On a shape that is
 not chosen, the right click chooses it first; on empty space, the selection stays. A row is active only when it can run (the
 boolean with two shapes, grouping with at least two, ungrouping with a group chosen); a refusal shows its reason in the menu.
+With several sheets, at the end: **Move to** each other sheet and **Move to a new sheet** (see [Sheets](#foile)).
 
 The arrow keys move between rows, `Enter` runs the row, `Esc` closes the menu; it also closes on a click outside it, on the
 wheel or after a command has run. In the 3D view, a right click does not open the menu.
@@ -849,7 +884,8 @@ drawing, it closes by itself.
 %% capitol: export
 %% acopera: export.gcode
 
-**Export G-code** opens the export window. Besides the [operations](#operatii), you choose:
+**Export G-code** opens the export window, for the active sheet (with several [sheets](#foile), the window's title says
+which). Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
@@ -1218,6 +1254,7 @@ it, and the app’s interface stays the same.
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
+| `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
 | `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |

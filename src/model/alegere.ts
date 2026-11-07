@@ -11,17 +11,14 @@ import { elementeFoaie } from './lume.ts';
  * editarea merge mai departe.
  */
 
-/** Foaia pe care se lucrează (ca `FOAIA` din `src/ui/actiuniDocument.ts`); Multi-Plate vine în etapa 11. */
-const FOAIA = 0;
-
 /**
- * Instanța de sub un punct al documentului (ADR 0074 §1). Întâi conturul: cel mai apropiat dintre cele la cel mult
- * `toleranta` mm (la egalitate, cel de deasupra). Altfel, interiorul: dintre formele închise care cuprind punctul (regula
- * evenodd), cea mai mică, ca o formă dinăuntrul alteia să rămână de ales cu un clic (testul owner-ului: după un offset spre
- * exterior, conturul nou, deasupra, prindea orice clic dinăuntru). Sau null.
+ * Instanța de sub un punct al documentului (ADR 0074 §1), pe foaia `indexFoaie` (foaia activă a ferestrei, ADR 0210 §1). Întâi
+ * conturul: cel mai apropiat dintre cele la cel mult `toleranta` mm (la egalitate, cel de deasupra). Altfel, interiorul: dintre
+ * formele închise care cuprind punctul (regula evenodd), cea mai mică, ca o formă dinăuntrul alteia să rămână de ales cu un
+ * clic (testul owner-ului: după un offset spre exterior, conturul nou, deasupra, prindea orice clic dinăuntru). Sau null.
  */
-export function instantaLa(doc: Document, x: number, y: number, toleranta: number): string | null {
-  const lume = elementeFoaie(doc, FOAIA);
+export function instantaLa(doc: Document, x: number, y: number, toleranta: number, indexFoaie = 0): string | null {
+  const lume = elementeFoaie(doc, indexFoaie);
   let peContur: { readonly id: string; readonly d: number } | null = null;
   let inauntru: { readonly id: string; readonly arie: number } | null = null;
   for (let i = lume.length - 1; i >= 0; i--) {
