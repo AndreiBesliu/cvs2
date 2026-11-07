@@ -6095,3 +6095,39 @@ test nu s-a atins; ramura nu e împinsă.
 - **Otrăvurile:** 29 (`test/otravuri/7.9b.py`); toate prinse la prima rulare (`28c1761`, în clona din afara Drive-ului): 19 unitare (așezarea, blocul, ajutoarele) și 10 e2e (legăturile panoului). S03 (începuturile rândurilor pe unități UTF-16), U06 (−) și U08 (alegerea pe unități UTF-16) au venit cu pașii scriși pentru ele înaintea rulării (cazul cu 😀 pe două rânduri, clicul pe −, un 😀 scris înainte în e2e); U04 (fără `preventDefault`) e prinsă de apăsarea trimisă de pagină, nu de adresă (Edge fără fereastră nu merge înapoi singur).
 - **CI:** complet verde pe `28c1761` (`42362185110`, 10:01–10:35 UTC); rapid verde.
 - **Publicat pe test:** `28c1761` (rularea `42364646242`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `28c1761a66ed`; roadmap-ul are 7.9↑b gata, în etapa 7; în Edge fără fereastră, pe instanța de test: rândul sub câmpul textului, AVA alese, 2 mm, Alt + → dă 2,1, „Fără spațieri (2)”.
+
+## 2026-11-07 — Felia 25.1↑ pornită: trasarea din imagine (ADR 0220, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „**Trasarea din imagine (bitmap → vectori) în cncvs2**, adusă din etapa 25, într-un worktree al tău. **Întâi
+cercetarea, un ADR propus și o schiță, cu întrebările pentru owner; codul abia după răspunsuri.**” (sesiunea principală, după
+ce owner-ul a întrebat ce se mai poate face în paralel).
+**Started:** 07.11, 14:05. **Completed:** 07.11, 14:44 (cercetarea, ADR-ul și schița; codul lui 25.1↑ așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\trasare`, ramura `wip/25.1-trasare` (din `main` `36c75cb`), cu
+  joncțiunile `node_modules`; e2e pe 4179 (`.tmp/pw.config.ts`) cu `CNCVS2_E2E_RETEA=127.0.6`; ADR-urile 0220–0229; canalul
+  `trasare`.
+- **Cercetarea:** ArtCAM 2018 (referință funcțională: culorile reduse, apoi granița sau linia mediană a culorii alese, petele în
+  pixeli, netezimea, imaginea estompată), Vectric, LightBurn și Inkscape; algoritmii din lucrări (Otsu, marching squares,
+  Selinger 2003 pentru poligon, colțuri și cubice); licențele (potrace GPL, autotrace GPL, `marchingsquares` AGPL-3.0,
+  `imagetracerjs` Unlicense fără sub-pixel, `vtracer` MIT dar WASM prea mare; scikit-image BSD-3, doar ca oracol); lecțiile
+  ediției întâi (D4–D8, D15; eroarea ≈ 0,65 px). Verdictul de portare: rescris, cu vechiul ca martor (logoul owner-ului din
+  ediția întâi, 1288 × 325, alb pe transparent).
+- **Măsurat:** în Edge 157 fără fereastră (o sondă Playwright locală): PNG, JPEG, WebP, GIF și BMP decodate de
+  `createImageBitmap`, TIFF refuzat; orientarea EXIF aplicată mereu; culoarea pixelilor aproape transparenți se pierde prin
+  canvas (alfa rămâne exactă); 12 Mpx în worker: decodarea 37 ms, pixelii 20 ms. Build curat la `36c75cb`: totalul 506,0 / 550
+  kB, pornirea 101,4 (104,9 cu ușa) / 110; bucata importului 34,7 kB pentru cinci uși.
+- **ADR 0220, propus:** ușa imaginilor în „Importă…”; calculul în workerul CAM, cu nucleul ca bucată la cerere a workerului;
+  cerneala din RGBA (transparența ca acoperire, altfel întunecimea, cu fundalul din margine); pragul Otsu la jumătatea
+  acoperirii; petele și golurile mici în mm; conturul sub-pixel; poligonul, colțurile și cubicele după Selinger, cu abaterea
+  măsurată și arătată; mărimea din DPI sau 96 px / țol; aceeași piesă ca la SVG, documentul tot v19; plafoanele și termenul
+  (lecția D6); probele întâi (corpusul Python cu valorile pe hârtie, scikit-image ca al doilea martor, fișierul real întâi).
+  Feliile 25.1↑ (alb-negru, ~6 h, ~8 kB), 25.2↑ (culorile), 25.3↑ (linia mediană), 25.4↑ (scanările, la cerere). Opt
+  întrebări, cu recomandarea întâi.
+- **Schița:** șapte planșe, <https://claude.ai/artifact/6qm1Kdx7By22tPAxSHtHKj>: fereastra trasării ca machetă vie (pragul,
+  petele și conturul brut calculate în pagină, cu greșeala D7 reprodusă), drumul unei imagini cu muchia sub-pixel de aproape
+  (0,08 px față de 0,53 px ale treptelor), lecțiile, alte programe și licențele, probele, feliile cu bugetul la scară,
+  întrebările cu formularul (colecția `raspunsuri`, documentul `owner`).
+- **În fișă:** rândul 25.1↑ (în lucru) în jurnal și rândul răspunsurilor în coada owner-ului; ADR-ul în index; traducerile (5
+  texte, `--verifica` cu 0 lipsuri). Probele documentației și ale traducerilor: 28 / 28.
+- **Rămâne:** răspunsurile owner-ului (formularul din schiță), apoi codul lui 25.1↑, cu proba scrisă întâi. Nimic unit în
+  `main` (decizia owner-ului).
