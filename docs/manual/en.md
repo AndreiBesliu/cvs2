@@ -553,6 +553,46 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
+## Cutting vectors
+%% capitol: taiere
+%% acopera: editare.taiere, document.taie
+
+**Cut** (the scissors button, after the booleans and ungrouping, in the toolbar extension) divides the chosen shapes,
+**Cut with**:
+- **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
+  shapes);
+- **Guide**: one of the sheet guides, dragged from the ruler;
+- **The last chosen shape (Shift + click)**: the knife is one of your shapes. Choose the shapes to cut, then, last, the
+  knife, with Shift + click; the knife stays unchanged.
+
+While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
+what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
+cross stays as it is. The cut is exact: an arc is cut into two arcs of the same circle, a curve stays on its curve, and the
+nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
+touches it is not cut.
+
+A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. An open
+knife (a polyline, a curve) makes each piece a shape; the contours it does not cross stay together, and an uncut hole goes
+with the piece it lies in. The knife cuts where it crosses the shape and where its end enters the shape through a side; a
+knife that only touches the shape does not cut it.
+
+**Close the pieces** (ticked by default; the app remembers the choice): each side of a closed shape is closed along the
+cut: with a straight line, for the line and the guide, or along the knife, with its nodes. A shape with holes is read as a
+region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces stay open: a circle cut through its centre gives
+two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
+panel says why): extend it or cut without the tick.
+
+**Cut at intersections** (the button at the bottom of the panel, or from the right-click menu) cuts the chosen shapes by
+each other, at all their common points: where they cross, where they touch and at the ends of a shared side. Each piece
+becomes a shape, chosen, so you can delete the one you do not need. A shape that crosses itself is not split from here
+(that is the checking's job), and a closed contour with a single common point stays whole.
+
+The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
+open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
+pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
+placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
+(Ctrl+Z).
+
 ## Checking vectors
 %% capitol: verificare
 %% acopera: editare.verificare, document.repara
@@ -604,8 +644,8 @@ size of the circle, see below) or a **V-carve** (the V bit carves the shape alon
 G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
 
 The **Cutting role** can also be chosen in the properties panel, in the **Cutting** section, for any number of chosen shapes:
-**outside**, **inside**, **on the line**, **left** or **right** (on an open path), **pocket**, **drilling** (circles only) or
-**V-carve**. The list shows only the roles that fit all the chosen shapes; “—” when they have different roles. The role is the
+**outside**, **inside**, **on the line**, **left** or **right** (on an open path), **pocket**, **drilling** (circles only),
+**V-carve** or **V inlay** (see [The V inlay](#incrustatie)). The list shows only the roles that fit all the chosen shapes; “—” when they have different roles. The role is the
 whole shape's: on a letter with holes, outside cuts the outline on the outside and the holes on the inside, while the pocket
 and the V-carve carve the letter with its holes in one go. When the role changes, the cutter, the direction, the depth and the
 step stay; the rest goes back to the defaults. A V bit only works on the line and in a V-carve: for a V-carve, a flat cutter
@@ -627,7 +667,7 @@ all projects: another computer, another browser, or the test address versus the 
 
 | Field | What it means |
 |---|---|
-| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
@@ -741,6 +781,45 @@ a single straight bit clears the bottom; several, from the largest to the smalle
 
 Each row has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
 300 mm/min, safe Z 5 mm; insides are cut first.
+
+## The V inlay
+%% capitol: incrustatie
+
+A **V inlay** sets a plug of one wood into a pocket carved in another: the pocket is a V-carve of the drawing, and the plug is
+the same drawing, mirrored, V-carved on its own blank so that it goes into the pocket and stops before the bottom. Choose it as
+a role: **V inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export G-code** window.
+The row's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
+pocket and lowers the face of the plug blank.
+
+The inlay's values, under Depth and Step down in the panel and on its row in the export window:
+
+- **Glue gap** (g; default 0.5 mm, at least 0.1): what stays under the plug. The plug is carved from the pocket depth minus
+  the gap (S = D − g), so it stops on the walls, with g above the bottom.
+- **Saw gap** (H; default 2 mm): what stays between the two boards after gluing, so you can saw off or plane away the back
+  of the plug blank. In the export window, **Same space for glue and saw** keeps a single value for both.
+- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank.
+
+**On paper**, the panel shows, for the chosen shapes with the same values: how far the plug goes into the pocket (S), over
+how much the walls touch from the outline (S · tan(θ/2)), the gap under the plug, the space between the boards, how much of
+the bit's cone the pocket and the plug use, and the smallest thickness of the plug blank (S + H + 1 mm). For example, with a
+V60 Ø6, depth 3, glue gap 0.5 and saw gap 2: the plug goes in 2.5 mm, the walls touch over 1.44 mm, the plug is carved down
+to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick.
+
+**The export.** On **Export**, besides the sheet's program (with the pocket), one file per plug is downloaded: the name of the
+sheet's program with “-dop-1”, “-dop-2”… (on short names, DOP1…). The window shows each one's blank: width × height (the
+drawing's box, plus the margin on each side) and the smallest thickness. The plug is the drawing mirrored left to right; XY0
+is at the corner chosen for the sheet, on the plug blank, and Z0 on its face. The program first lowers the blank face with
+the straight bit, down to S + H (the wood around the plug), then the V bit cuts the plug walls from S down; the bit change is
+the one chosen in the window, as for the sheet.
+
+**Gluing.** Turn the plug face down over the pocket (the mirroring brings it back to the drawing) and press it in with glue:
+it stops on the walls, with the gap under it and the space between the boards. Then saw or plane its back down to the face
+of the board.
+
+**Refusals**, with the reason, on export: a flat bit or one with a flat tip; a glue gap under 0.1 mm (the ridges in the
+pocket's corners would hold the plug) or at least the depth; a plug carved (depth − gap + saw gap) deeper than the bit's cone;
+no flat floor with the straight bit (the V-bit-only variant comes later). The narrow band around the plug with its cut-out,
+straight walls and the plug in the 3D view come in the next slices.
 
 ## The toolpath on the canvas
 %% capitol: traseu

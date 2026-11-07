@@ -25,6 +25,8 @@ export type OperatieArbore = {
   readonly scula: { readonly numar: number; readonly diametru: number };
   /** Freza dreaptă a fundului plat al unui V-carve (ADR 0091). */
   readonly fundPlat?: { readonly scula: { readonly numar: number; readonly diametru: number } };
+  /** Incrustația în V (ADR 0170): V-carve-ul își are dopul, în fișierul lui. */
+  readonly incrustatie?: { readonly joc: number };
 };
 
 /**
@@ -49,6 +51,7 @@ export function NivelPiesa({ elemente, operatii }: { readonly elemente: number; 
                 t: o.scula.numar, d: n(o.scula.diametru),
               })}
               {o.tip === 'vcarve' && o.fundPlat && t('arbore.vcarve.fund', { t: o.fundPlat.scula.numar, d: n(o.fundPlat.scula.diametru) })}
+              {o.tip === 'vcarve' && o.incrustatie && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}
             </div>
           ))}
       </div>

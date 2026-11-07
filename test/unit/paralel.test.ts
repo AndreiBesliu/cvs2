@@ -190,7 +190,7 @@ test('refuzurile, cu motiv: strategia pe alt fel, cu coborârea în rampă, pasu
   assert.equal(motivJob(doc([DR80], [buz(['a'], { pasLateral: 6.5 })])), 'i/a: pasul lateral de 6.5 mm trebuie să fie în (0, 6] (raza frezei): altfel rămâne material între linii');
 });
 
-test('ușa v18: `strategie` = { fel: paralel, unghi în [0, 180) } (câmpurile necunoscute rămân); un v17 cu ea nu e valid; un v17 curat urcă (la v19, din felia 5.9↑)', () => {
+test('ușa v18: `strategie` = { fel: paralel, unghi în [0, 180) } (câmpurile necunoscute rămân); un v17 cu ea nu e valid; un v17 curat urcă (la v20, din felia 12.1↑)', () => {
   const d = deschis(doc([DR80], [buz(['a'], { strategie: { fel: 'paralel', unghi: 179.5, nota: 'n' } })]));
   assert.equal((d.piese[0]!.operatii[0]!.strategie as Record<string, unknown>)['nota'], 'n');
   for (const rau of [null, 'paralel', {}, { fel: 'raster', unghi: 0 }, { fel: 'paralel' }, { fel: 'paralel', unghi: -1 }, { fel: 'paralel', unghi: 180 }, { fel: 'paralel', unghi: '0' }]) {
@@ -201,7 +201,7 @@ test('ușa v18: `strategie` = { fel: paralel, unghi în [0, 180) } (câmpurile n
   const curat = JSON.parse(JSON.stringify(doc([DR80], [buz(['a'], { strategie: undefined })], 17)));
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 19 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 20 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0094): strategia doar pe un buzunar paralel (îmbinată), pe inele câmpul pleacă', () => {
