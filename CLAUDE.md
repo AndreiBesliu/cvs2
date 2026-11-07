@@ -570,7 +570,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
-  1a–7a”): Easy 3Draw se instalează și se actualizează dintr-o listă servită lângă aplicație. **La fiecare build,
+  1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
+  lângă aplicație. **La fiecare build,
   `scripts/biblioteca.ts` construiește din repo pachetele din `extensii/biblioteca.json` și catalogul lor, în `dist/extensii/`**
   (`catalog.json` și `<id>-<versiune>-<amprentă>.zip`, în afara precache-ului și a plafonului). În meniul Extensii, secțiunea
   Biblioteca: Instalează (fereastra, apoi Deschide), Actualizează la … (dintr-un clic; fereastra doar când versiunea nouă cere
@@ -783,6 +784,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
+  fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
+  următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.
 - 07.11.2026: **biblioteca extensiilor: răspunsurile la ADR 0230** („Da, 1a–7a”, după „Vreau ca plugin-ul nostru sa fie
   disponibil printr-o librarie. Fa asta intr-un worktree”): biblioteca stă lângă aplicație, construită din repo la fiecare build
   (`/extensii/catalog.json` și pachetele, cu amprenta SHA-256 verificată înaintea citirii); „Instalează” prin fereastra de azi,
