@@ -36,9 +36,22 @@ const sesiune = new SesiuneImprimanta();
 
 /**
  * Dialogul „Din desen…” (ADR 0191, felia 3.6j), cu felierea pieselor plate: o bucată a lui, adusă la primul clic, ca
- * fereastra să nu crească pentru cine doar trimite fișiere gata feliate.
+ * fereastra să nu crească pentru cine doar trimite fișiere gata feliate. O bucată care nu vine (o publicare nouă, cu alte
+ * nume de fișiere, peste o filă veche) spune asta, cu „Reîncarcă”, ca dialogurile aplicației.
  */
-const DialogDinDesen = lazy(() => import('./DialogDinDesen.tsx').then((m) => ({ default: m.DialogDinDesen })));
+const DialogDinDesen = lazy(() => import('./DialogDinDesen.tsx').then((m) => ({ default: m.DialogDinDesen }), () => ({ default: FelieNeincarcata })));
+
+function FelieNeincarcata({ inchide }: { readonly inchide: () => void }): ReactNode {
+  return (
+    <div className="imprimanta-dialog" role="alert" data-testid="imprimanta-felie-neincarcata">
+      <p>{t('dialog.neincarcat')}</p>
+      <div className="imprimanta-butoane">
+        <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
+        <button type="button" onClick={inchide}>{t('imprimanta.felie.renunta')}</button>
+      </div>
+    </div>
+  );
+}
 
 /** Desenul de feliat: documentul și selecția, citite din aplicație la clicul pe „Din desen…”. */
 export type SursaDesen = () => DesenImprimanta;
