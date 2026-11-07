@@ -6396,6 +6396,8 @@ unirea lui `main` în ramură).
   probele atinse 99 / 99, `imprimanta.spec.ts` (7) și `csp.spec.ts` (6). Emulatoarele, nerulate (nicio funcție atinsă).
 - **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al
   feliei; adresa principală de test, neatinsă.
-- **Rămâne:** acordul owner-ului pentru mărimea lui 3.6h (implicit da; altfel se unește doar 3.6g); 3.6i, pe imprimanta lui
+- **După încheiere:** owner-ul a acceptat mărimea („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”);
+  unirea în `main` rămâne a sesiunii principale.
+- **Rămâne:** 3.6i, pe imprimanta lui
   (originea paginii pe 9999 și pe `/upload`, CORS-ul, permisiunea rețelei locale pentru HTTP, marginile reale ale patului);
   camera (felia ei); panourile mașinilor alăturate (nota owner-ului).

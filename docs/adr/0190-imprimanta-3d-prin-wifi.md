@@ -153,8 +153,9 @@ altul, iar sesiunile (o mașină și o imprimantă, deodată) sunt deja despăr�
     (+8,1: bucata ferestrei 7,5 kB, cea comună `reteaLocala` 1,0 kB). Fără mutarea din §A.2, fereastra trăgea după ea transportul
     și conexiunile mașinilor într-o bucată comună nouă de 4 kB. Pentru 3.6h rămân deci ~2 kB din țintă: mai mult cere întâi
     acordul owner-ului. **Măsurat la 3.6h:** pornirea neschimbată (101,6), totalul 517,3 (+3,3 față de 514,0, după unirea cu
-    7.9↑b: verificarea fișierului ~1,8 kB, trimiterea ~0,6, dialogul ~1,0), deci ~1,3 kB peste țintă; unirea în `main` așteaptă
-    acordul owner-ului pentru diferență.
+    7.9↑b: verificarea fișierului ~1,8 kB, trimiterea ~0,6, dialogul ~1,0), deci ~1,3 kB peste țintă: **acceptat de owner pe 07.11**
+    („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”); cu `main` din 07.11 unit în ramură, totalul
+    e 530,8 / 550.
 
 ## Feliile
 

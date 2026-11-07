@@ -591,7 +591,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nume pe care lista îl are primește „-2”, „-3”… (verificarea după nume spune ceva doar pentru un nume nou). **CSP-ul are `http:`
   în `connect-src`** (răspunsul 3a); `wss:` trecea deja (după CSP3, `ws:` și `https:` îl acoperă), iar martorul refuzat al
   probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
-  pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei: unirea în `main` așteaptă acordul owner-ului. Cu
+  pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei, acceptată de owner pe 07.11 („Da, accept”). Cu
   `main` (`8003cb2`) unit în ramură: pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 530,8 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
@@ -797,6 +797,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **mărimea lui 3.6h acceptată** („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”): trimiterea unui `.gcode`
+  la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
+  în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul
+  owner-ului.
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la
