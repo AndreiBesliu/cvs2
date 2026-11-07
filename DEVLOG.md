@@ -6131,3 +6131,28 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   1280 px: versiunea, butonul Taie între Boolean și Verifică vectorii, linia la X = 70 pe un dreptunghi și tăierea lui în două
   forme, alese. Tot acolo, „mm” de după câmpul Y trecea pe rândul următor: rândurile panoului sunt acum o grilă (bifa, eticheta,
   câmpul, unitatea), fiecare pe o linie în ambele limbi; canalul, republicat cu reparația.
+
+## 2026-11-07 — Felia 10.3↑b: cuțitul-formă și „Taie la intersecții” (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑b”, apoi, după o întrerupere, „continua”.
+**Started:** 06.11, 23:19 (reluată 07.11, 10:22). **Completed:** 07.11, 12:55.
+
+- **Înainte:** `main` (`010da85`, cu 7.9↑ și 3.Xf) unit în ramură (`99d4bf8`, DEVLOG-ul cu ambele părți); traducerile 632 / 0.
+- **Codul:** `src/model/taiere.ts`: cuțitul-formă (`cutitul`, `taieCuForma`, fețele `fete` / `fataDin`) și intersecțiile
+  (`locuriIntersectii`, `taieLaLocuri`), cu locurile comune din cavalier rafinate cu Newton (`intalniri`, `rafinat`; `punctPe`,
+  `treceri` și `rafineaza` exportate din `reparare.ts`); cercul se taie acum din pozițiile lui (unghiul π·(k + t)), iar deschis
+  într-un singur loc are două semicercuri. Panoul: „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții”; meniul de
+  clic dreapta: „Taie la intersecții”; textele noi (motivele `nu-trece`, `cutit`, `prea-multe`, `nimic-intersectii`), în ambele
+  limbi; capitolul `taiere` al manualului, în ambele limbi.
+- **Regulile, la cod** (în ADR 0180, „Felia 10.3↑b, la cod”): un contur închis se taie doar unde exact una dintre bucățile
+  cuțitului de lângă loc intră în regiunea piesei (o atingere, din afară sau dinăuntru, nu taie); o cale deschisă, unde cuțitul o
+  trece de tot. Cuțitul închis lasă două părți, cel deschis face din fiecare față o formă. Cu închidere, o față cu aria negativă
+  e marginea dinăuntru a regiunii (corzile închid o buclă în jurul unei găuri) și merge cu ea.
+- **Probele:** 31 pe hârtie în `taiere.forma.test.ts`; oracolul independent extins (`judecaCutitul`,
+  `judecaIntersectiile`), pe 120 de tăieri cu cuțitul (poligoane convexe, cercuri, linii frânte) și 60 la intersecții; 2 e2e noi.
+  Corpusul a găsit două lucruri pe care probele pe hârtie nu le aveau: marginea dinăuntru (un triunghi în inel, care intră doar
+  în gaură, era refuzat) și cercul deschis într-un singur loc (un arc de 360° n-are bulge).
+- **Porțile:** traducerile, compilatoarele, importurile, licențele; unit 8 531 / 0 căderi pe `bb35254` și 8 532 (8 524 / 0 căderi / 8 sărite) pe starea finală; build-ul determinist (271 identice); e2e: pe build-ul final 354 / 356 în rularea întreagă, cu două căderi ale paletei (Ctrl+K) la 5 s sub încărcarea altor sesiuni, trecute la reluare, deci 356 / 356 (în rularea dinainte, patru căderi la încărcarea paginii, la fel, și una reală: rândul din meniu, reparat); emulatoarele 81 / 81 și 21 / 21 pe `e9148a6`, cu hub-ul pe alte porturi (4410, 4510, 9160), fiindcă cele implicite erau ținute de rulările altei sesiuni.
+- **Otrăvurile** (`test/otravuri/10.3b.py`): 26; prima rulare (`525acd4`): 23 prinse; C02 (un loc chiar în nod, lăsat la t ≈ 0), X01 (fiecare contur cercetat și cu el însuși) și U01 (cuțitul luat ca prima formă aleasă) au scăpat, prinse pe `e9148a6` după trei probe noi: 26 / 26.
+- **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 511,4 → 515,1 / 550 kB (workerul CAM +3,2 kB, editarea +0,3, panoul +0,2). Linia, până acum: ~10,5 kB (10.3↑ +6,8, 10.3↑b +3,7), peste ghidul de ~10 kB din brief, cu trei felii rămase.**
+
