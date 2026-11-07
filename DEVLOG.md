@@ -6361,7 +6361,7 @@ lui permisă; ce a încercat și fișierul cu CC5000, necompletate.
 
 **Prompt:** „Da, 3.6h” (owner-ul, la întrebarea „Încep felia 3.6h (trimiterea unui .gcode la imprimantă)?”, după 3.6g și
 unirea lui `main` în ramură).
-**Started:** 07.11, 13:45. **Completed:** —
+**Started:** 07.11, 13:45. **Completed:** 07.11, 15:35.
 
 - **Ce s-a construit:** sub lista fișierelor din fereastra Imprimanta, **Trimite un fișier…** și dialogul „Trimite la
   imprimantă” din schiță (secțiunea E). Verificarea pe calculator, pură (`src/machine/imprimanta/gcode3d.ts`): antetul lui
@@ -6389,3 +6389,13 @@ unirea lui `main` în ramură).
   afara Drive-ului, cu baza verde întâi; prima rulare (`09e0e26`): 55 prinse, 1 scăpată: G13 (G2 și G3 inversate), fiindcă
   arcele probei erau semicercuri și cercuri întregi, la care ocolul are aceeași mărime în ambele sensuri; proba are acum un
   sfert de cerc și o prinde (`tinte`, pe `28a0098`).
+- **Porțile**, pe ramura cu `main` (`8003cb2`: 12.1↑, 10.3↑–10.3↑b) unit în ea (`86aabd2`, la cererea sesiunii principale):
+  traducerile 651 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0 (1 037 module);
+  licențele; unit 8 626 (8 618 trecute, 0 căderi, 8 sărite); build-ul determinist (278 de fișiere; pornirea 101,7, cu ușa
+  105,3 / 110 kB; totalul 530,8 / 550; /admin 105,4 / 200); e2e 366 / 366, din prima (3,9 min). Înaintea unirii, pe felie:
+  probele atinse 99 / 99, `imprimanta.spec.ts` (7) și `csp.spec.ts` (6). Emulatoarele, nerulate (nicio funcție atinsă).
+- **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al
+  feliei; adresa principală de test, neatinsă.
+- **Rămâne:** acordul owner-ului pentru mărimea lui 3.6h (implicit da; altfel se unește doar 3.6g); 3.6i, pe imprimanta lui
+  (originea paginii pe 9999 și pe `/upload`, CORS-ul, permisiunea rețelei locale pentru HTTP, marginile reale ale patului);
+  camera (felia ei); panourile mașinilor alăturate (nota owner-ului).
