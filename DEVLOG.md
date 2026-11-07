@@ -6097,3 +6097,33 @@ cercetarea și un ADR propus, cu întrebările grupate și schița, codul după 
 - **În fișă:** rândul 12.1↑ (în lucru) și rândul răspunsurilor în coada owner-ului; în prag, rândul incrustațiilor trece „în
   lucru”; ADR-ul în index.
 - **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑ (proba scrisă întâi).
+
+## 2026-11-07 — Felia 12.1↑: incrustația în V (ADR 0170, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „1a; 2 - vreau sa pot alege intre optiuni atuci cand fac exportul; 3 - la fel ca la 2 - vreau sa am ambele optiuni;
+4a+b; 5a; 6 - si a si b” (owner-ul, răspunsurile la cele șase întrebări din ADR 0170, în sesiunea liniei).
+**Started:** 07.11, 10:44. **Completed:** 07.11, 13:01.
+
+- **Ce au schimbat răspunsurile** (în ADR): lemnul din jurul dopului și jocurile, ambele, alese la export (`jurDop`, două
+  valori cu bifa „Același spațiu”); fundul cu freza dreaptă acum, doar cu V în 12.1↑d; pereții drepți imediat după nucleul V
+  (12.1↑b); banda și decuparea în 12.1↑c.
+- **Documentul v20:** `incrustatie` (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20
+  schimbă doar numărul și refuză un `incrustatie` propriu pe un v19; oracolul documentului și corpusul de aur la v20 (ADR 0121).
+- **CAM-ul:** V-carve-ul cu adâncimea de start S (conul atinge conturul la −S); dopul calculat din desen la fiecare export
+  (`src/cam/incrustatie.ts`): oglinda pe X, semifabricatul (cutia + marginea), fața coborâtă la S + H cu freza dreaptă, pereții
+  cu V de la S; refuzurile cu motiv; un fișier pe dop (`…-dop-N`). Valorile pe hârtie într-un singur loc (`src/model/incrustatie.ts`).
+- **Interfața:** rolul „incrustație în V” (panoul și fereastra exportului); sub rând, jocul, „Același spațiu”, fierăstrăul și
+  marginea; în panou, jocurile și marginea, cu secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile, conul folosit,
+  grosimea semifabricatului); arborele; manualul („Incrustația în V”, ambele limbi).
+- **Probele, scrise întâi:** oracolul potrivirii (`test/oracles/incrustatie.ts`, fără importuri din `src/`) pe cinci cazuri pe
+  hârtie plus controlul negativ (dopul tăiat ca a doua cavitate pică); adâncimea de start pe oracolul simulării; rolul;
+  proba e2e pe octeții din browser (cercul R15: oprirea 2,4994, contactul 100 %, jocul 0,5006, între plăci 2,0006).
+- **Ce a prins proba e2e, reparat:** rândul ferestrei nu primea incrustația din document (`ExportConectat`); cu freza dreaptă
+  implicită Ø6, fâșia dintre dop și marginea regiunii avea 4,84 mm, iar V-ul o curăța cu inele dese (creasta 0,0505 între
+  plăci): regiunea e lărgită cât să treacă freza dreaptă, cu un avertisment că programul trece de marginile semifabricatului.
+- **Capcana scriptului:** `String.replace` cu text a făcut `$$` → `$` în `export.en.ts` (văzut în diff, reparat; înlocuirile
+  de acum cu `split`/`join`).
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele, traducerile, 8 501 teste unitare (0 căderi, 8 sărite), build-ul determinist (pornirea 101,5 cu ușa 105,1 / 110 kB, totalul 507,4 / 550: +4,3 kB față de baza din 06.11, 503,1), e2e 353 / 353 pe 4174 (la prima trecere, 19 căderi de încărcare a mașinii, toate verzi la reluarea cu 2 lucrători; proba manualului urcată la 28 de capitole).
+- **Otrăvurile** (`test/otravuri/12.1.py`): 44, alese de autor; prima rulare (`50ecaf7`): 27 prinse, 17 scăpate, fiecare cu proba ei nouă: cazul L al oracolului (P02: toate cazurile erau simetrice față de verticală, deci un dop neoglindit trecea), fața dopului coborâtă până la marginile semifabricatului (P08), `incrustatie.refuzuri.test.ts` (R01–R08, G01, G02: refuzurile și gruparea locașului nu aveau probă), rolul (L01: jocul pe un locaș puțin adânc; L03: fundul plat de dinainte), `incrustatie.scriere.test.ts` (E04: îmbinarea), proba e2e a ferestrei (E05, E06); a doua rulare, 17 / 17; pe codul final, 44 / 44.
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12; build-ul `07f71e9`). Verificat acolo, în browserul aplicației: rolul ales din panou, secțiunea pe hârtie (2,50 / 1,44 / 0,50 / 2,00 / 4,50 din 5,20 / 5,50 pe cercul R15 cu D 3 și H 2), rândul ferestrei exportului; descărcarea celor două fișiere, probată în e2e (în browserul aplicației n-am descărcat nimic).
+- **Rămâne:** 12.1↑b (pereții drepți, ADR 0171), 12.1↑c (banda îngustă și decuparea, alese la export), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul owner-ului.

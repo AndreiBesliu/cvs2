@@ -177,6 +177,10 @@
       "ro": "Personalul și Diagnoza (P0, partea 2; ADR 0040): `staff/{uid}` și rolul în reguli, login Google, primul owner scris din consolă; pagina `/admin` cu fila Erori (și „Rezolvat” prin callable, cu auditul) și Diagnoza minimă (instanța, build-ul, App Check, erorile nerezolvate, funcțiile, marcajele); retenția de 90 de zile (TTL)",
       "en": "Staff and Diagnostics (P0, part 2; ADR 0040): `staff/{uid}` and the role in the rules, Google login, the first owner written from the console; the `/admin` page with the Errors tab (and “Resolved” through a callable, with the audit) and minimal Diagnostics (the instance, the build, App Check, unresolved errors, functions, run markers); 90-day retention (TTL)"
     },
+    "10e3328ca15db6a2": {
+      "ro": "**Incrustația în V: locașul și dopul, documentul v20** (fără mașină; ADR 0170, acceptat; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; răspunsurile din 07.11: „1a; 2 - vreau sa pot alege intre optiuni atuci cand fac exportul; 3 - la fel ca la 2 - vreau sa am ambele optiuni; 4a+b; 5a; 6 - si a si b”). Pe 06.11, cercetarea, ADR-ul și schița; pe 07.11, codul. Documentul v20: `incrustatie` pe operația V-carve (jocul pentru clei, spațiul pentru fierăstrău, marginea dopului, lemnul din jurul lui); migrarea schimbă doar numărul și refuză un `incrustatie` propriu pe un v19; corpusul de aur la v20. V-carve-ul primește adâncimea de start S = D − g. Dopul se calculează din desen la fiecare export, oglindit pe X, pe semifabricatul lui (cutia + marginea, XY0 în colțul ales, Z0 pe fața lui): fața coborâtă la S + H cu freza dreaptă, până dincolo de margini, pereții cu V de la S; un fișier pe dop (`…-dop-N`), cu semifabricatul arătat în fereastră. Rolul „incrustație în V” în panou și în fereastra exportului (jocurile, „Același spațiu”, marginea); în panou, „Pe hârtie” (cât intră dopul, contactul, jocurile, conul, grosimea semifabricatului); manualul. Probele scrise întâi: oracolul potrivirii (fără importuri din `src/`) pe cinci cazuri pe hârtie, cu controlul negativ (dopul tăiat ca a doua cavitate pică); proba e2e pe octeții din browser (cercul R15: oprirea 2,4994 față de 2,5, contactul 100 %, jocul 0,5006, între plăci 2,0006). Proba e2e a prins două lucruri, reparate: rândul ferestrei nu primea incrustația din document; cu freza dreaptă Ø6, fâșia dintre dop și marginea regiunii avea 4,84 mm (creasta inelelor V, 0,0505 între plăci), deci regiunea e lărgită cât să treacă freza, cu un avertisment că programul trece de marginile semifabricatului. Otrăvurile (`test/otravuri/12.1.py`, 44): prima rulare, 27 prinse și 17 scăpate, fiecare cu proba ei nouă (cazul L al oracolului, fiindcă toate cazurile erau simetrice; fața coborâtă până la marginile semifabricatului; refuzurile și gruparea; rolul; îmbinarea scrisă de Exportă; fereastra); pe codul final, 44 / 44. Banda și decuparea (12.1↑c), pereții drepți (12.1↑b), fundul doar cu V (12.1↑d) și dopul în 3D (12.1↑e) urmează. **Pe canal:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12), verificat acolo: rolul din panou, valorile pe hârtie, rândul ferestrei.",
+      "en": "**The V inlay: the pocket and the plug, document v20** (no machine; ADR 0170, accepted; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; the answers of 07.11: “1a; 2 - vreau sa pot alege intre optiuni atuci cand fac exportul; 3 - la fel ca la 2 - vreau sa am ambele optiuni; 4a+b; 5a; 6 - si a si b”). On 06.11, the research, the ADR and the sketch; on 07.11, the code. Document v20: `incrustatie` on the V-carve operation (the glue gap, the saw gap, the plug margin, the wood around the plug); the migration only changes the number and refuses a v19 with its own `incrustatie`; the golden corpus at v20. The V-carve gets a start depth S = D − g. The plug is computed from the drawing on every export, mirrored on X, on its own blank (the box + the margin, XY0 at the chosen corner, Z0 on its face): the face lowered to S + H with the straight bit, past the edges, the walls with the V bit from S; one file per plug (`…-dop-N`), with the blank shown in the window. The “V inlay” role in the panel and in the export window (the gaps, “Same space”, the margin); in the panel, “On paper” (how far the plug goes in, the contact, the gaps, the cone, the blank thickness); the manual. The proofs written first: the fit oracle (no imports from `src/`) on five cases on paper, with the negative control (a plug cut as a second cavity fails); the e2e proof on the bytes from the browser (the R15 circle: the stop at 2.4994 against 2.5, contact 100 %, the gap 0.5006, between the boards 2.0006). The e2e proof caught two things, fixed: the window row did not get the inlay from the document; with the Ø6 straight bit, the strip between the plug and the region edge was 4.84 mm (the ridge of the V rings, 0.0505 between the boards), so the region is widened for the bit to pass, with a warning that the program goes past the edges of the blank. The poisons (`test/otravuri/12.1.py`, 44): first run, 27 caught and 17 escaped, each with its new proof (the oracle’s L case, since all the cases were symmetric; the face lowered up to the edges of the blank; the refusals and the grouping; the role; the merge written by Export; the window); on the final code, 44 / 44. The band and the cut-out (12.1↑c), straight walls (12.1↑b), the V-only floor (12.1↑d) and the plug in 3D (12.1↑e) come next. **On the channel:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (until 07.12), checked there: the role from the panel, the values on paper, the window row."
+    },
     "1137900220b8cd5a": {
       "ro": "Textul vertical, adus din etapa 7",
       "en": "Vertical text, brought forward from stage 7"
@@ -377,10 +381,6 @@
       "ro": "Contur L / A / C cu bulge; aria exactă pe toate trei primitivele (cercul = πr² exact, cubica prin Gauss pe 3 noduri); matricea cu rotiri exacte la 90°; offsetul peste cavalier, cu eșecul spus. Cavalier adus din `v0.1.1`: 118 `!` doar pentru tipuri, probat linie cu linie și cu martorul npm (100 de cazuri, bit cu bit). Profilul exterior / interior / pe linie, cu treceri egale. 50 de teste, valori pe hârtie. Treceri: `!` pus greșit în partea stângă de reparatorul automat; două importuri de efect cu `.js`; ciclurile interne cavalier → regula fațadei.",
       "en": "L / A / C contour with bulge; exact area on all three primitives (circle = πr² exactly, cubic via 3-point Gauss); matrix with exact 90° rotations; offset over cavalier, with failures reported. Cavalier vendored from `v0.1.1`: 118 `!` for types only, checked line by line and against the npm control (100 cases, bit for bit). Outside / inside / on-line profile, with equal passes. 50 tests, values on paper. Passes: a `!` misplaced on the left-hand side by the auto-fixer; two side-effect imports with `.js`; cavalier's internal cycles → the facade rule."
     },
-    "253c9641ad217405": {
-      "ro": "Incrustația în V",
-      "en": "The V inlay"
-    },
     "2544a7715b5d127c": {
       "ro": "**Numele pluginului: Easy 3Draw** (fără mașină; ADR 0167; în worktree-ul `wip/trenulet`; „o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). Numele afișat, același în română și în engleză, netradus: în manifest (instalarea, meniul, fereastra, „Trimite la”, „Propus de”, originea lucrării) și în planificator (titlul paginii, antetele README-urilor, sfatul filei „Din cvs2”). Id-ul `trenulet` rămâne: 18.7.0 instalat peste 18.6.0 îi ia locul, cu circuitele lui. Rămân și numele tehnice și antetul G-code-ului (amprentele v18). Pachetul 18.7.0.",
       "en": "**The plugin’s name: Easy 3Draw** (no machine; ADR 0167; in the `wip/trenulet` worktree; “o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). The displayed name, the same in Romanian and in English, untranslated: in the manifest (the installation, the menu, the window, “Send to”, “Proposed by”, the job’s origin) and in the planner (the page title, the README headers, the hint of the “From cvs2” tab). The `trenulet` id stays: 18.7.0 installed over 18.6.0 takes its place, with its layouts. The technical names and the G-code header stay too (the v18 fingerprints). Package 18.7.0."
@@ -556,6 +556,14 @@
     "32e55f096f4f3a7c": {
       "ro": "fișierele tale reale",
       "en": "your real files"
+    },
+    "32f0a11f4126f979": {
+      "ro": "12.1↑ pe test și fișa plăcii 12",
+      "en": "12.1↑ on test and the sheet of plate 12"
+    },
+    "341bea1f714a663e": {
+      "ro": "Incrustația în V: locașul și dopul, documentul v20",
+      "en": "The V inlay: the pocket and the plug, document v20"
     },
     "342df8d8f658a46e": {
       "ro": "regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată",
@@ -1145,10 +1153,6 @@
       "ro": "**Rigla pe marginea foii, cu linia de cotă** (ADR 0060; „vreau sa modificam rigla, trebuie sa stea pe marginea planselor”, apoi „Vreau ca rigla sa tina cat foaia de lucru, dar, daca avem piese care depasesc, sa se extinda o linie cu cota de lungime”). Rigla de sus stă deasupra foii, cea din stânga la stânga ei, lungi cât foaia, mutate odată cu ea la deplasare și zoom, și pe sub bare și panouri. Formele care ies din foaie au o linie de cotă în continuarea riglei, cu câți mm ies, pe fiecare parte. Pornirea rămâne neschimbată; manualul (Pânza, Foaia) e la zi. **Treceri:** (1) poziția și cotele, pure, cu probele lor, rigla nouă, probele e2e; (2) capturile: pe o cotă scurtă, eticheta se călca peste linie: mutată după capătul dinspre forme; (3) după prima publicare (rigla oprită pe marginea zonei libere), owner-ul: „Rigla trebuie sa urmeze foaia chiar si pe sub meniu”: rigla urmează foaia oriunde, tăiată doar la marginile pânzei.",
       "en": "**The ruler on the sheet's edge, with the dimension line** (ADR 0060; “I want to change the ruler, it has to sit on the edge of the sheets”, then “I want the ruler to be as long as the work sheet, but if we have parts that go past it, a line with the length dimension should extend”). The top ruler sits above the sheet and the left one to its left, as long as the sheet, moving with it when panning and zooming, under the bars and panels too. Shapes that go past the sheet get a dimension line continuing the ruler, with how many mm they go past, on each side. Startup stays unchanged; the manual (The canvas, The sheet) is up to date. **Passes:** (1) the position and the dimensions, pure, with their checks, the new ruler, the e2e checks; (2) the screenshots: on a short dimension the label overlapped the line: moved past the end towards the shapes; (3) after the first publish (the ruler stopped at the edge of the free area), the owner: “The ruler must follow the sheet even under the menu”: the ruler follows the sheet anywhere, cut only at the canvas edges."
     },
-    "701112b6cfad5359": {
-      "ro": "Răspunsurile la cele șase întrebări din ADR 0170 (incrustația în V): unde se taie dopul, lemnul din jurul lui, jocurile, fundul plat, unde se alege incrustația, ordinea feliilor; recomandările sunt primele variante",
-      "en": "The answers to the six questions in ADR 0170 (the V inlay): where the plug is cut, the wood around it, the gaps, the flat bottom, where the inlay is chosen, the order of the slices; the recommendations are the first options"
-    },
     "70e22497b3e60882": {
       "ro": "Importul EPS și AI ≤ 8",
       "en": "EPS and AI ≤ 8 import"
@@ -1329,10 +1333,6 @@
       "ro": "Insulele buzunarului, aduse din etapa 5",
       "en": "Pocket islands, brought forward from stage 5"
     },
-    "810672f10fa3ef6f": {
-      "ro": "Răspunsurile la cele șase întrebări din ADR 0170 (incrustațiile în V; propus pe ramura `wip/12.1-incrustatii`, în sesiunea liniei: ADR-ul și feliile ei se văd aici abia după unirea în `main`)",
-      "en": "The answers to the six questions in ADR 0170 (V inlays; proposed on the `wip/12.1-incrustatii` branch, in the line’s session: its ADR and slices show here only after the merge into `main`)"
-    },
     "8108a6373dfdea25": {
       "ro": "14.B↑: fila Sugestii",
       "en": "14.B↑: the Suggestions tab"
@@ -1424,6 +1424,10 @@
     "8b973fa451e18232": {
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
       "en": "**The sender over WiFi** (no machine; ADR 0119, accepted with the owner’s answers: streamed programs, the tablet later, the `ws:` scheme in the CSP). The **Connect (WiFi)** button in the machine panel links the sender to a controller on the local network through a WebSocket (FluidNC, grblHAL or an ESP3D bridge on GRBL), over the same stream: the address (a local IP or a `.local` name) is judged before connecting, with the local network permission of Chrome and Edge 147; the controller, the address and the port stay in the browser; before the first start over WiFi, the panel says what happens if the connection drops. The CSP gets the `ws:` scheme (without it, the browser blocked every WebSocket). On the way, at the owner’s request, the **Account** button moved next to the theme button. **The probes:** on paper (the addresses, the control messages, the transport, the session with a dropped connection) and end to end, with the GRBL emulator behind a local WebSocket server; targeted mutations, all caught."
+    },
+    "8bcdffba383379d1": {
+      "ro": "Încercarea incrustației în V pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație în V” din panou, Exportă (două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); apoi, pe placa 12, dopul lipit (să intre și să se oprească pe pereți, cu jocul sub el)",
+      "en": "Trying the V inlay on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “V inlay” role from the panel, Export (two files: the sheet with the pocket, and the plug, with its blank); then, on plate 12, the plug glued in (it should go in and stop on the walls, with the gap under it)"
     },
     "8c243c52eeeb263a": {
       "ro": "„Pornit” abia după pagina extensiei",
@@ -1812,10 +1816,6 @@
     "b2486c8d30aa716f": {
       "ro": "Fișa plăcii 1 și programele A și B",
       "en": "The plate 1 file and programs A and B"
-    },
-    "b2a7796ad1a7eaa6": {
-      "ro": "înainte de codul feliei",
-      "en": "before the slice’s code"
     },
     "b2abba4d729d7a11": {
       "ro": "Regula de umplere",
@@ -2261,10 +2261,6 @@
       "ro": "Importul SVG",
       "en": "SVG import"
     },
-    "e364e3ee4cf775be": {
-      "ro": "**Incrustația în V, adusă din etapa 12** (în lucru, fără mașină; ADR 0170, propus; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi alegerea liniei „Inlays, stage 12”). Cercetarea: fizica pe hârtie (dopul întors se oprește la S = D − g; pereții se ating pe S·tan(θ/2) de la contur; sub dop rămâne jocul g, între plăci spațiul H), ediția întâi (dopul care fusese a doua cavitate, oracolul ei fizic, decuparea neterminată), ArtCAM și DeskProto, ce are cvs2 (V-carve-ul pe distanța exactă, fundul plat, oracolul simulării; lipsesc adâncimea de start și foile multiple). ADR-ul propus: perechea declarată în document (documentul v20, `incrustatie` pe operația V-carve), dopul calculat din desen, oglindit, pe semifabricatul lui, oracolul potrivirii înaintea funcției. Schița: cinci planșe, ca artifact. Codul așteaptă răspunsurile la cele șase întrebări.",
-      "en": "**The V inlay, brought forward from stage 12** (in progress, no machine; ADR 0170, proposed; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; “vreau sa deschidem worktrees pentru alte etape sau felii”, then the choice of the line “Inlays, stage 12”). The research: the physics on paper (the flipped plug stops at S = D − g; the walls touch over S·tan(θ/2) from the outline; under the plug the gap g remains, between the boards the space H), the first edition (the plug that had been a second cavity, its physical oracle, the unfinished cut-out), ArtCAM and DeskProto, what cvs2 has (the V-carve on the exact distance, the flat bottom, the simulation oracle; missing: the start depth and multiple sheets). The proposed ADR: the pair declared in the document (document v20, `incrustatie` on the V-carve operation), the plug computed from the drawing, mirrored, on its own blank, the fit oracle before the feature. The sketch: five boards, as an artifact. The code waits for the answers to the six questions."
-    },
     "e3683bc685424e89": {
       "ro": "three.js în pachetul extensiei: previzualizarea 3D în cvs2",
       "en": "three.js in the extension package: the 3D preview in cvs2"
@@ -2485,10 +2481,6 @@
       "ro": "placa de regresie",
       "en": "the regression plate"
     },
-    "fa16917dee0d3b45": {
-      "ro": "12.1↑",
-      "en": "12.1↑"
-    },
     "fa41f158f389cb8e": {
       "ro": "Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL)",
       "en": "3D import; Zones; 3D trimming; **3D roughing; Parallel finishing** (closed on STL)"
@@ -2516,6 +2508,10 @@
     "fd187f6e7097a463": {
       "ro": "Extensia e „pornită” abia după ce pagina ei e gata",
       "en": "The extension is “started” only once its page is ready"
+    },
+    "fd21d28a21eb3019": {
+      "ro": "după publicarea pe canal",
+      "en": "after the channel publish"
     },
     "fd24b6d3ddb56f60": {
       "ro": "Elipsa e un cerc sub o matrice neuniformă",
