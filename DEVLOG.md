@@ -6298,3 +6298,52 @@ in paralel?”.
   emulatoarelor; rulate din nou după ce s-au eliberat: 359 / 359 (cu 3 lucrători), după ce cele două probe ale manualului au primit al 29-lea capitol (ambele ramuri mutaseră la fel numărul la 28, fiecare cu capitolul ei: `93fe9fa`); celelalte patru căderi ale rulării întâi (`/admin`, extensiile de două ori, tema), toate prima așteptare după încărcare, au trecut singure și în rularea întreagă; emulatoarele: 81 / 81 și 21 / 21 la a doua rulare; la prima, funcția `logClientError` nu s-a încărcat la cerere (CPU 77 %), iar codul funcțiilor nu se schimbase.
 - **CI:** complet verde pe `8003cb2` (`42374124727`); rapid verde.
 - **Publicat pe test:** `8003cb2` (rularea `42377691045`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `8003cb292217`; roadmap-ul de acolo are 7.9↑b, 10.3↑, 10.3↑b și 12.1↑ gata, 12.1↑b în lucru; în Edge fără fereastră, butonul Taie e acolo, fără erori în pagină, cu 0 erori în jurnalul local.
+
+## 2026-11-07 — Felia 12.1↑b: incrustația cu pereți drepți (ADR 0171, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „cate dintre ele pot fi puse impreuna ca optiuni puse la dispozitia utilizatorului?”, apoi „Da, toate trei”
+(owner-ul, la cele șase întrebări din ADR 0171, în sesiunea liniei).
+**Started:** 07.11, 14:14. **Completed:** 07.11, 18:50.
+
+- **Ce au schimbat răspunsurile** (în ADR): trei opțiuni, toate alese la export: dopul ridicat pe semifabricat sau decupat
+  prin placă (cu punți, neoglindit), sprijinul celui ridicat pe fund sau pe față, frezele dopului (ale locașului sau ale lui,
+  oricare: locașul se închide cu raza celei mai mici freze a dopului minus jocul). Colțurile potrivite de aplicație, jocul
+  lateral implicit 0,1 și rolul nou: recomandările.
+- **Documentul v21:** `incrustatie` cu `fel: 'drept'` pe buzunar (`jocLateral`, `dop`, `sprijin`, `joc`, `fierastrau`,
+  `margine`, `frezeDop` opțional); ușa e o variantă după `fel`; migrarea v20 → v21 schimbă doar numărul și refuză câmpurile
+  noi într-o incrustație v20; oracolul documentului și corpusul de aur la v21 (ADR 0121; intrările v20 refăcute din `dbb3e2b`,
+  aceiași octeți).
+- **CAM-ul:** `src/cam/incrustatieDreapta.ts` (locașul: desenul închis cu ρ = max(0, r − c), tăiat ca buzunar; dopul: conturul
+  tăiat micșorat cu c; refuzurile; avertismentele: părțile unite și cât se retrage cel mai ascuțit vârf), `src/cam/dopDrept.ts`
+  (dopul ridicat, oglindit, insulă într-un buzunar al semifabricatului lărgit; cel decupat, exterior prin D + H cu punți de
+  4 mm, cu cea mai mică freză a dopului; programul îl face lucrarea, dintr-un document sintetic). Razele, înălțimea dopului și
+  grosimea semifabricatului, dintr-un singur loc (`valoriIncrustatieDreapta`), comun cu panoul.
+- **Interfața:** rolul „incrustație cu pereți drepți” (panoul, rolurile personalizate, fereastra exportului); sub rând, jocul
+  lateral, dopul, sprijinul, spațiul folosit (H sau g), marginea, „Altă freză pentru dop” (cu frezele ei de rest, în
+  verificarea T-urilor); placa exactă a dopului decupat în fereastră; în panou, câmpurile, „Pe hârtie” (colțurile locașului și
+  ale dopului, jocul, înălțimea, semifabricatul) și arborele; manualul („Incrustația cu pereți drepți”, ambele limbi).
+- **Probele, scrise întâi:** oracolul pereților drepți (`test/oracles/incrustatieDreapta.ts`, fără importuri din `src/`) pe
+  cazuri pe hârtie (steaua din prag, dreptunghiul pe față, L-ul, inelul, dopul decupat, frezele dopului; apoi decupatul cu
+  freza de rest) plus controlul negativ (vârfuri ascuțite: pică pe interferență); măsurat pe stea: jocul 0,0991–0,1013 pe
+  1 562 de puncte, interferența 0 din 1 544, D 6,0000, h 8,0000, vârful 9,1720 față de 9,1717 pe hârtie. Rolul, refuzurile,
+  scrierea înapoi, punțile; e2e pe octeții din browser (dreptunghiul 30 × 20, Ø6: dopul ridicat din panou, cel decupat cu
+  freza lui din fereastră).
+- **Găsite pe drum, reparate:** refuzul c ≥ R din ADR lipsea; cheia rândului (`incrustatieDreapta`) s-ar fi scurs în operație
+  prin `operatieDinDialog`; frezele dopului nu intrau în numerotarea frezelor proiectului și a rolurilor personalizate; placa
+  dopului decupat arătată „cel puțin” (punțile cer grosimea exactă); înălțimea dopului calculată de două ori (panoul și dopul);
+  punțile aveau palierul de 4 mm pe traseu, deci lucrarea refuza dopul decupat cu orice freză peste Ø4, inclusiv Ø6, implicita
+  (găsit prin otrava P06; palierul e acum lățimea plus freza).
+- **Unirea:** `main` (1bf99c5: 12.1↑ și tăierea vectorilor unite) adus în ramură cu un merge (`34e852e`), la cererea sesiunii
+  principale, înaintea probelor noi; DEVLOG-ul din `main`, manualul la 30 de capitole.
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele,
+  traducerile (3 texte noi, traduse), 8 600 de teste unitare (0 căderi, 8 sărite), build-ul determinist (273 de fișiere;
+  pornirea 101,6 cu ușa 105,2 / 110 kB, totalul 525,1 / 550: +5,6 kB față de `main` după unire, 519,5; linia ține +9,9 kB față
+  de baza din 06.11), e2e 361 / 361 pe 4174, din prima (3 lucrători, 6,9 min).
+- **Otrăvurile** (`test/otravuri/12.1b.py`): 52 alese de autor; prima rulare (`40376e2`): 49 prinse, 3 scăpate, fiecare cu
+  proba ei: F05 (partea îngustă lângă una lată), P06 (punțile, citite pe oracol), P07 (cazul `decupat-rest`); plus două noi,
+  P11 (palierul punților) și L05 (frezele dopului în rolurile personalizate); pe codul final (`05d6ced`), 54 / 54. Lista 12.1 la
+  zi cu codul de acum (fără VOID).
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12), cu build-ul acestui commit; ce s-a verificat acolo, în rândul următor al DEVLOG-ului.
+- **Rămâne:** 12.1↑c (banda îngustă și decuparea dopului în V), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și
+  potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul
+  owner-ului (cu `CLAUDE.md`: proba documentului e acum `document.v21.oracol.test.ts`, iar următorul câmp nou e v22).
