@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Regulile Storage ale aplicației noi (felia 15.B↑b, ADR 0116 §12). Clientul nu citește, nu listează, nu scrie și nu șterge
+// nimic, pe nicio cale, deci nici pe ale aplicației vechi (`users/{uid}/…`, ale căror reguli le înlocuiește la publicare pe
+// proiectul de test). Singura regulă e refuzul: un bloc `match` gol nu se compilează, iar fără nicio altă regulă care să
+// permită, refuzul nu e umbrit de nimic (regulile se combină cu SAU).
+//
+// Singurele fișiere de acum sunt proiectele atașate raportărilor (`tichete/{id}/proiect.json.gz`). Le scrie callable-ul
+// `tichete`, odată cu tichetul, și le dă înapoi, prin el, doar cui poate citi tichetul (autorul, `tichete.citeste`,
+// `tichete.raspunde`, owner-ul); le șterge jobul `pastrareTichete`. Serverul trece prin Admin SDK, pe lângă reguli.
+//
+// De ce nu o regulă de citire pentru cine poate citi tichetul: ar cere documentele lui din Firestore (cel mult două pe
+// cerere), un rol IAM pe care publicarea din workflow nu-l poate acorda (firebase-tools îl cere doar interactiv) și CORS pe
+// bucket pentru descărcarea din browser; callable-ul face aceeași judecată, sub App Check, cu probele lui.
+// Probate pe emulator: `functions/test/reguli.storage.emulator.test.ts`.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{oriceCale=**} {
+      allow read, write: if false;
+    }
+  }
+}

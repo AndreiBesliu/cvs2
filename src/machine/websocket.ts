@@ -5,7 +5,11 @@
  * adresa se judecă înainte de conectare (`adresaRetea`). Cadrele primite, text sau binare, devin octeți pentru sesiune, fără
  * mesajele de control ale controlerului; fiecare scriere a sesiunii pleacă într-un cadru binar al ei (timpul real, singur).
  */
+import { permisiuneRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from './reteaLocala.ts';
 import type { Transport } from './sesiune.ts';
+
+// Adresa locală și permisiunea stau în `reteaLocala.ts` (ADR 0190 §G), comune cu imprimanta; importatorii vechi le iau tot de aici.
+export { adresaRetea, permisiuneRetea, TIMP_DESCHIDERE_MS, type AdresaRetea, type MotivAdresa } from './reteaLocala.ts';
 
 /**
  * Profilurile controlerelor (ADR 0119 §3): portul implicit, subprotocolul WebSocket-ului și dacă cadrele text sunt doar
@@ -25,62 +29,6 @@ export const PROFIL_RETEA: Readonly<Record<ProfilRetea, { readonly port: number;
 
 export function esteProfilRetea(x: unknown): x is ProfilRetea {
   return (PROFILURI_RETEA as readonly unknown[]).includes(x);
-}
-
-export type MotivAdresa = 'goala' | 'invalida' | 'schema' | 'cont' | 'port' | 'nume' | 'publica';
-export type AdresaRetea = {
-  readonly url: string;
-  /** Gazda, cum o arată panoul (IPv6 între paranteze). */
-  readonly gazda: string;
-  readonly port: number;
-};
-
-const portBun = (p: number): boolean => Number.isInteger(p) && p >= 1 && p <= 65535;
-
-/** IPv4 local (RFC 1918, link-local, loopback), scris ca atare; null dacă textul nu e un IPv4. */
-function ipv4Local(gazda: string): boolean | null {
-  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(gazda);
-  if (!m) return null;
-  const [a = 0, b = 0] = m.slice(1, 3).map(Number);
-  return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
-}
-
-/** IPv6 local (loopback, ULA fc00::/7, link-local fe80::/10), între paranteze, cum îl dă `URL`; null dacă nu e un IPv6. */
-function ipv6Local(gazda: string): boolean | null {
-  if (!gazda.startsWith('[')) return null;
-  const ip = gazda.slice(1, -1).toLowerCase();
-  return ip === '::1' || /^f[cd][0-9a-f]{0,2}:/.test(ip) || /^fe[89ab][0-9a-f]?:/.test(ip);
-}
-
-/**
- * Adresa controlerului, din ce a scris omul: un IP sau un nume, cu portul opțional (altfel cel din câmp), ori un URL `ws://`
- * întreg, cu cale. Doar un IP local sau un nume `.local` (și `localhost`): browserul ar bloca restul ca conținut mixt,
- * verificând adresa înainte de DNS. `wss://` nu: niciun controler n-are TLS, iar CSP-ul aplicației nu-l deschide. Fără nume și
- * parolă în adresă (n-au ce căuta în browser).
- */
-export function adresaRetea(text: string, port: number): { readonly ok: true; readonly adresa: AdresaRetea } | { readonly ok: false; readonly motiv: MotivAdresa } {
-  const t = text.trim();
-  if (t === '') return { ok: false, motiv: 'goala' };
-  const cuSchema = /^[a-z][a-z0-9+.-]*:\/\//i.test(t);
-  let u: URL;
-  try {
-    u = new URL(cuSchema ? t : `ws://${t}`);
-  } catch {
-    return { ok: false, motiv: 'invalida' };
-  }
-  if (u.protocol !== 'ws:') return { ok: false, motiv: 'schema' };
-  if (u.hostname === '') return { ok: false, motiv: 'invalida' };
-  if (u.username !== '' || u.password !== '') return { ok: false, motiv: 'cont' };
-  // `URL` scoate portul implicit al schemei (80 la ws://): portul scris se citește din text.
-  const autoritate = (cuSchema ? t.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '') : t).split(/[/?#]/)[0] ?? '';
-  const scris = /:(\d+)$/.exec(autoritate)?.[1];
-  const p = u.port !== '' ? Number(u.port) : scris !== undefined ? Number(scris) : port;
-  if (!portBun(p)) return { ok: false, motiv: 'port' };
-  const gazda = u.hostname;
-  const local = ipv4Local(gazda) ?? ipv6Local(gazda);
-  if (local === false) return { ok: false, motiv: 'publica' };
-  if (local === null && !(gazda === 'localhost' || gazda.endsWith('.localhost') || gazda.endsWith('.local'))) return { ok: false, motiv: 'nume' };
-  return { ok: true, adresa: { url: `ws://${gazda}:${p}${u.pathname}${u.search}`, gazda, port: p } };
 }
 
 /**
@@ -105,21 +53,8 @@ export interface WebSocketMinim {
 }
 export type FabricaWebSocket = (url: string, subprotocol: string | null) => WebSocketMinim;
 
-/** Cât așteaptă deschiderea: un controler stins nu răspunde deloc (fără refuz). */
-export const TIMP_DESCHIDERE_MS = 10_000;
+/** Starea `OPEN` a unui WebSocket. */
 const DESCHIS = 1;
-
-/** Starea permisiunii rețelei locale (Chrome 147: `local-network`; înainte, `local-network-access`); null: browserul n-o știe. */
-export async function permisiuneRetea(): Promise<string | null> {
-  for (const name of ['local-network', 'local-network-access']) {
-    try {
-      return (await navigator.permissions.query({ name } as unknown as PermissionDescriptor)).state;
-    } catch {
-      // Numele nu e cunoscut de browserul acesta: următorul.
-    }
-  }
-  return null;
-}
 
 const creeazaImplicit: FabricaWebSocket = (url, subprotocol) =>
   (subprotocol === null ? new WebSocket(url) : new WebSocket(url, subprotocol)) as unknown as WebSocketMinim;

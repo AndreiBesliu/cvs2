@@ -25,10 +25,12 @@ export const TINTE = {
   functii: 'functions:cncvs2',
   reguli: 'firestore:rules',
   indecsi: 'firestore:indexes',
+  // Regulile Storage (felia 15.B↑b): refuză orice cerere din client, pe bucket-ul implicit al proiectului.
+  stocare: 'storage',
 } as const;
 export type Tinta = keyof typeof TINTE;
-export const TOATE_TINTELE: readonly Tinta[] = ['hosting', 'functii', 'reguli', 'indecsi'];
-export const TINTE_SERVER: readonly Tinta[] = ['functii', 'reguli', 'indecsi'];
+export const TOATE_TINTELE: readonly Tinta[] = ['hosting', 'functii', 'reguli', 'indecsi', 'stocare'];
+export const TINTE_SERVER: readonly Tinta[] = ['functii', 'reguli', 'indecsi', 'stocare'];
 
 /** Ce s-a publicat pe o țintă. */
 export interface Publicare {

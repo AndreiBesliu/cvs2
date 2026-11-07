@@ -1,12 +1,19 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { POZA_MAX_OCTETI } from '../../shared/poza.ts';
-import { AMPRENTE_MAX, RASPUNS_MAX, RASPUNSURI_MAX, TEXT_MAX, TICHETE_PE_ZI, type RaspunsRaportarileMele, type RaspunsTichet } from '../../shared/tichete.ts';
+import {
+  AMPRENTE_MAX, caleProiectTichet, PROIECT_MAX_BASE64, PROIECT_MAX_OCTETI, RASPUNS_MAX, RASPUNSURI_MAX, TEXT_MAX, TICHETE_PE_ZI,
+  type RaspunsProiectTichet, type RaspunsRaportarileMele, type RaspunsTichet,
+} from '../../shared/tichete.ts';
 import { COLECTIE_AUDIT } from '../src/audit.ts';
 import { trateazaContul } from '../src/conturi/actiuni.ts';
+import { fisiereDin, type Fisiere } from '../src/fisiere.ts';
 import { raportariNecitite, trateazaTichetul, type TokenTichet } from '../src/tichete/actiuni.ts';
 
 /**
@@ -15,14 +22,23 @@ import { raportariNecitite, trateazaTichetul, type TokenTichet } from '../src/ti
  * scriere. Raportările omului: doar ale lui, cele mai noi întâi, fără cine a răspuns. Răspunsul și starea: doar cu
  * `tichete.raspunde`, pe versiunea văzută, cu auditul; primul răspuns deschide tichetul și numără la autor. Citirea: doar
  * autorul, fără să mute versiunea. Semnul din meniul contului vine odată cu deschiderea contului.
+ *
+ * Proiectul atașat (felia 15.B↑b), și pe emulatorul Storage: gzip-ul cererii ajunge neschimbat, cu meta lui în tichet;
+ * refuzurile nu lasă nici tichet, nici fișier; o tranzacție căzută după încărcare scoate fișierul la loc; descărcarea, doar
+ * cui poate citi tichetul. `rezolvatLa` se pune la rezolvare și se scoate la redeschidere.
  */
 
 const PROIECT = 'demo-cncvs2';
 const gazda = process.env['FIRESTORE_EMULATOR_HOST'];
 if (!gazda) throw new Error('FIRESTORE_EMULATOR_HOST lipsește: testele rulează prin npm run test:emulator');
+if (!process.env['FIREBASE_STORAGE_EMULATOR_HOST']) throw new Error('FIREBASE_STORAGE_EMULATOR_HOST lipsește: emulatorul Storage nu e pornit');
 process.env['GCLOUD_PROJECT'] ??= PROIECT;
 if (getApps().length === 0) initializeApp({ projectId: PROIECT });
 const db = getFirestore();
+const bucket = getStorage().bucket(`${PROIECT}.appspot.com`);
+const fisiere = fisiereDin(bucket);
+/** Numele fișierelor de sub `tichete/` din Storage. */
+const fisiereTichete = async (): Promise<string[]> => (await bucket.getFiles({ prefix: 'tichete/' }))[0].map((f) => f.name).sort();
 
 const T0 = new Date(Date.UTC(2026, 10, 2, 10, 0));
 const RASP = 'RTicRasp000000000000';
@@ -38,6 +54,7 @@ beforeEach(async () => {
   // Doi clienți cu contul deschis; un om logat fără cont deschis (adresa neconfirmată) nu e în nicio colecție.
   await db.doc('conturi/ana').set({ email: 'ana@exemplu.ro', nume: 'Ana', plan: 'proba' });
   await db.doc('conturi/ion').set({ email: 'ion@exemplu.ro', nume: 'Ion', plan: 'gratuit' });
+  await bucket.deleteFiles({ prefix: 'tichete/', force: true });
   ceas = T0.getTime();
 });
 
@@ -53,7 +70,9 @@ const audit = async () => (await db.collection(COLECTIE_AUDIT).orderBy('cand').g
 const tichetul = async (id: string) => (await db.doc(`tichete/${id}`).get()).data() ?? {};
 const ms = (x: unknown): number => (x as Timestamp).toMillis();
 let ceas = T0.getTime();
-const fa = (uid: string | null, data: unknown, token: TokenTichet | null = null, acum = new Date(ceas += 1000)) => trateazaTichetul(db, uid, token, data, acum);
+const faCu = (f: Fisiere, uid: string | null, data: unknown, token: TokenTichet | null = null, acum = new Date(ceas += 1000)) =>
+  trateazaTichetul(db, f, uid, token, data, acum);
+const fa = (uid: string | null, data: unknown, token: TokenTichet | null = null, acum = new Date(ceas += 1000)) => faCu(fisiere, uid, data, token, acum);
 const APLICATIA = { versiune: 'ed4c30c777de', instanta: 'test', limba: 'ro', browser: 'Mozilla/5.0 Edg/147', plan: 'proba' };
 const AMPRENTA = 'a'.repeat(32);
 const raporteaza = async (uid: string, extra: Record<string, unknown> = {}): Promise<RaspunsTichet> =>
@@ -77,7 +96,7 @@ test('raportarea: clientul cu contul deschis raportează, cu câmpurile curăța
   assert.equal(ms(d['creatLa']), ceas);
   const a = await audit();
   assert.deepEqual(a.map((x) => [x['actiune'], x['cine'], x['rol'], x['tinta'], x['inainte']]), [['tichete.raporteaza', 'ana', null, `tichete/${r.id}`, null]]);
-  assert.deepEqual(a[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 2, poza: null });
+  assert.deepEqual(a[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 2, poza: null, proiect: null });
   // Personalul raportează și fără cont deschis în editor; owner-ul, fără e-mail în personal și fără token, fără adresă; cu
   // token, cu adresa din el.
   const o = await raporteaza('own', { fel: 'intrebare', amprente: [] });
@@ -111,7 +130,148 @@ test('poza planșei: în documentul ei, lângă tichet; tichetul ține doar tipu
   assert.deepEqual((await tichetul(r.id))['poza'], { tip: 'image/jpeg', marime: POZA_MAX_OCTETI });
   const p = (await db.doc(`tichete/${r.id}/poze/plansa`).get()).data() ?? {};
   assert.deepEqual([p['tip'], p['marime'], (p['octeti'] as Buffer).length], ['image/jpeg', POZA_MAX_OCTETI, POZA_MAX_OCTETI]);
-  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, poza: { tip: 'image/jpeg', marime: POZA_MAX_OCTETI } });
+  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, poza: { tip: 'image/jpeg', marime: POZA_MAX_OCTETI }, proiect: null });
+});
+
+/* ── Proiectul atașat (felia 15.B↑b) ─────────────────────────────────────────────────────────────────────────────────── */
+
+/** Un document cvs2 mic (serverul cere doar un JSON cu `schema` întreagă; ușa lui îl judecă în fila Tichete). */
+const DOC = JSON.stringify({ schema: 20, foi: [{ id: 'f1', piese: [{ id: 'p1', nume: 'Placă ț', puncte: [0, 0, 120.5, 0, 120.5, 80] }] }] });
+const gz = (x: string | Buffer): string => gzipSync(typeof x === 'string' ? Buffer.from(x, 'utf8') : x).toString('base64');
+const sha = (x: string | Buffer): string => createHash('sha256').update(x).digest('hex');
+const RAPORTARE = { actiune: 'raporteaza', fel: 'problema', text: 'Exportul se oprește la 50 %.', aplicatia: APLICATIA, amprente: [] };
+const erori = async (): Promise<string[]> => (await db.collection('errorLogs').get()).docs.map((d) => String(d.get('mesaj')));
+/** Un proiect al cărui base64 se termină cu umplutură (lungimea gzip-ului nu se împarte la 3). */
+function cuUmplutura(): string {
+  for (let i = 0; i < 10; i++) {
+    const b = gz(`{"schema":20,"x":"${'y'.repeat(i)}"}`);
+    if (b.endsWith('=')) return b;
+  }
+  throw new Error('niciun gzip cu umplutură în 10 încercări');
+}
+
+test('proiectul atașat: gzip-ul cererii ajunge neschimbat în Storage; tichetul ține mărimea, amprenta și schema; auditul, mărimile', async () => {
+  const p = gz(DOC);
+  const r = await raporteaza('ana', { proiect: p });
+  const d = await tichetul(r.id);
+  const meta = { marime: Buffer.byteLength(DOC), comprimat: Buffer.from(p, 'base64').length, sha256: sha(DOC), schema: 20 };
+  assert.deepEqual(d['proiect'], meta);
+  assert.equal(d['rezolvatLa'], null, 'câmpul există de la creare, null');
+  assert.deepEqual(await fisiereTichete(), [caleProiectTichet(r.id)]);
+  const [octeti] = await bucket.file(caleProiectTichet(r.id)).download();
+  assert.deepEqual(octeti, Buffer.from(p, 'base64'), 'octet cu octet ce a trimis editorul');
+  const [m] = await bucket.file(caleProiectTichet(r.id)).getMetadata();
+  assert.equal(m.contentType, 'application/gzip');
+  assert.deepEqual((await audit())[0]?.['dupa'], { fel: 'problema', caractere: 28, amprente: 1, poza: null, proiect: { marime: meta.marime, comprimat: meta.comprimat } });
+  // Fără bifă: fără proiect, nimic în Storage. Raportările mele arată mărimea, ca omul să vadă ce a trimis.
+  const fara = await raporteaza('ana', { text: 'Fără proiect' });
+  assert.equal((await tichetul(fara.id))['proiect'], null);
+  assert.deepEqual(await fisiereTichete(), [caleProiectTichet(r.id)]);
+  assert.deepEqual((await mele('ana')).raportari.map((x) => [x.text, x.proiect]), [['Fără proiect', null], ['Exportul se oprește la 50 %.', meta.marime]]);
+});
+
+test('proiectul: exact la 10 MB trece; peste, alt format, gzip stricat sau un JSON fără schemă = refuz, fără tichet și fără fișier', async () => {
+  const plin = `{"schema":20}${' '.repeat(PROIECT_MAX_OCTETI - 13)}`;
+  assert.equal(Buffer.byteLength(plin), PROIECT_MAX_OCTETI);
+  const r = await raporteaza('ana', { proiect: gz(plin) });
+  assert.equal((await tichetul(r.id))['proiect']?.marime, PROIECT_MAX_OCTETI);
+  const tichete = (await db.collection('tichete').get()).size;
+  const tot = Buffer.from(gz(DOC), 'base64');
+  const rele: Array<[string, unknown]> = [
+    ['10 MB + 1 despachetat (bomba se oprește la plafon)', gz(`${plin} `)],
+    ['nu e base64', 'nu e base64!'],
+    ['base64 cu un rând nou', `${gz(DOC).slice(0, 8)}\n${gz(DOC).slice(8)}`],
+    ['base64 fără umplutură', cuUmplutura().replace(/=+$/, '')],
+    ['JSON necomprimat', Buffer.from(DOC).toString('base64')],
+    ['gzip tăiat', tot.subarray(0, tot.length - 9).toString('base64')],
+    ['nu e JSON', gz('nu e json')],
+    ['o listă, nu un obiect', gz('[1,2]')],
+    ['schema text', gz('{"schema":"20"}')],
+    ['schema 0', gz('{"schema":0}')],
+    ['schema fracționară', gz('{"schema":2.5}')],
+    // Un octet care nu e UTF-8 într-un text JSON: fără decodarea strictă ar deveni „�”, iar JSON-ul ar trece.
+    ['nu e UTF-8', gz(Buffer.concat([Buffer.from('{"schema":20,"x":"'), Buffer.from([0xff]), Buffer.from('"}')]))],
+    ['un număr', 7],
+    ['gol', ''],
+    ['peste plafonul cererii', 'A'.repeat(PROIECT_MAX_BASE64 + 4)],
+  ];
+  for (const [motiv, proiect] of rele) assert.equal(await cod(raporteaza('ana', { proiect })), 'invalid-argument', motiv);
+  assert.equal((await db.collection('tichete').get()).size, tichete);
+  assert.deepEqual(await fisiereTichete(), [caleProiectTichet(r.id)]);
+});
+
+test('proiectul nu urcă dacă raportarea oricum se refuză: fără cont deschis, cu plafonul zilei atins', async () => {
+  // Spionul numără scrierile: o încărcare urmată de scoatere ar lăsa Storage-ul tot gol, dar ar fi urcat degeaba.
+  let scrieri = 0;
+  const spion: Fisiere = { ...fisiere, async scrie(cale, o, tip) { scrieri++; await fisiere.scrie(cale, o, tip); } };
+  assert.equal(await cod(faCu(spion, 'neconfirmat', { ...RAPORTARE, proiect: gz(DOC) })), 'permission-denied');
+  for (let i = 0; i < TICHETE_PE_ZI; i++) await raporteaza('ion', { text: `R${i}` });
+  assert.equal(await cod(faCu(spion, 'ion', { ...RAPORTARE, proiect: gz(DOC) })), 'resource-exhausted');
+  assert.equal(scrieri, 0);
+  assert.deepEqual(await fisiereTichete(), []);
+});
+
+test('fișierele serverului: scrierea și citirea octet cu octet, lipsa e null, ștersul de două ori nu e o eroare', async () => {
+  const cale = caleProiectTichet('AbCdEfGhIjKlMnOpQrSt');
+  await fisiere.scrie(cale, Buffer.from('întâi'), 'application/gzip');
+  assert.equal((await fisiere.citeste(cale))?.toString('utf8'), 'întâi');
+  assert.equal(await fisiere.citeste(caleProiectTichet('ZzZzZzZzZzZzZzZzZzZz')), null, 'lipsa = null, nu o eroare');
+  await fisiere.sterge(cale);
+  await fisiere.sterge(cale);
+  assert.equal(await fisiere.citeste(cale), null, 'ștersul de două ori nu e o eroare');
+});
+
+test('o tranzacție căzută după încărcare (plafonul umplut între timp) scoate proiectul; o scoatere căzută rămâne orfan, în jurnal', async () => {
+  // Cursa dintre verificare și tranzacție: după încărcare, alt dispozitiv al omului umple plafonul zilei.
+  const cuCursa = (f: Fisiere): Fisiere => ({
+    ...f,
+    async scrie(cale, o, tip) {
+      await f.scrie(cale, o, tip);
+      await db.doc('limiteTichete/ana').set({ zi: '2026-11-02', numar: TICHETE_PE_ZI });
+    },
+  });
+  assert.equal(await cod(faCu(cuCursa(fisiere), 'ana', { ...RAPORTARE, proiect: gz(DOC) })), 'resource-exhausted');
+  assert.deepEqual(await fisiereTichete(), []);
+  assert.equal((await db.collection('tichete').get()).size, 0);
+  // Și scoaterea cade: refuzul rămâne același, fișierul rămâne (orfanul jobului de păstrare), eroarea intră în jurnal.
+  await db.doc('limiteTichete/ana').delete();
+  const caza: Fisiere = { ...cuCursa(fisiere), async sterge() { throw new Error('Storage indisponibil la scoatere'); } };
+  assert.equal(await cod(faCu(caza, 'ana', { ...RAPORTARE, proiect: gz(DOC) })), 'resource-exhausted');
+  assert.equal((await fisiereTichete()).length, 1);
+  assert.deepEqual(await erori(), ['Error: Storage indisponibil la scoatere']);
+});
+
+test('descărcarea proiectului: autorul și personalul care citește tichetele îl primesc octet cu octet; altcineva nu', async () => {
+  const r = await raporteaza('ana', { proiect: gz(DOC) });
+  const meta = (await tichetul(r.id))['proiect'];
+  for (const uid of ['ana', 'cit', 'sup', 'own']) {
+    const x = (await fa(uid, { actiune: 'proiect', id: r.id })) as RaspunsProiectTichet;
+    assert.deepEqual([x.ok, x.id, gunzipSync(Buffer.from(x.proiect, 'base64')).toString('utf8'), x.meta], [true, r.id, DOC, meta], uid);
+  }
+  for (const uid of ['ion', 'neconfirmat']) assert.equal(await cod(fa(uid, { actiune: 'proiect', id: r.id })), 'permission-denied', uid);
+  assert.equal(await cod(fa(null, { actiune: 'proiect', id: r.id })), 'unauthenticated');
+  assert.equal(await cod(fa('ana', { actiune: 'proiect', id: 'scurt' })), 'invalid-argument');
+  assert.equal(await cod(fa('own', { actiune: 'proiect', id: 'NuExista000000000000' })), 'not-found');
+  const fara = await raporteaza('ana', { text: 'Fără proiect' });
+  assert.equal(await cod(fa('ana', { actiune: 'proiect', id: fara.id })), 'not-found');
+  assert.deepEqual(await erori(), [], 'un tichet fără proiect nu e o stricăciune');
+  // Fișierul lipsă sub un tichet cu proiect e o stricăciune: refuzul, cu rândul din jurnal.
+  await bucket.file(caleProiectTichet(r.id)).delete();
+  assert.equal(await cod(fa('own', { actiune: 'proiect', id: r.id })), 'not-found');
+  assert.deepEqual(await erori(), [`Error: proiectul tichetului ${r.id} lipsește din Storage`]);
+});
+
+test('rezolvatLa: pus la rezolvare, scos la redeschidere; un răspuns pe un tichet rezolvat îl lasă', async () => {
+  const r = await raporteaza('ana');
+  await fa('sup', { actiune: 'stare', id: r.id, versiune: 1, stare: 'rezolvat' });
+  const rezolvat = ceas;
+  assert.equal(ms((await tichetul(r.id))['rezolvatLa']), rezolvat);
+  await fa('sup', { actiune: 'raspunde', id: r.id, versiune: 2, text: 'Încă o notă.' });
+  assert.deepEqual([(await tichetul(r.id))['stare'], ms((await tichetul(r.id))['rezolvatLa'])], ['rezolvat', rezolvat]);
+  await fa('sup', { actiune: 'stare', id: r.id, versiune: 3, stare: 'deschis' });
+  assert.equal((await tichetul(r.id))['rezolvatLa'], null);
+  await fa('own', { actiune: 'stare', id: r.id, versiune: 4, stare: 'rezolvat' });
+  assert.equal(ms((await tichetul(r.id))['rezolvatLa']), ceas, 'a doua rezolvare numără de la ea');
 });
 
 test(`plafonul zilnic: ${TICHETE_PE_ZI} pe cont pe zi (UTC); alt cont nu e oprit; a doua zi se reia`, async () => {
