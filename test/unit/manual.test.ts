@@ -239,7 +239,7 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'felie-pat': 'imprimanta.felie.pat-temp', 'felie-pereti': 'imprimanta.felie.pereti', 'felie-umplere': 'imprimanta.felie.umplere',
   'felie-brim': 'imprimanta.felie.brim', 'felie-avansat': 'imprimanta.felie.avansat', 'felie-implicite': 'imprimanta.felie.implicite',
   'felie-strat': 'imprimanta.felie.strat', 'felie-trimite': 'imprimanta.felie.trimite', 'felie-salveaza': 'imprimanta.felie.salveaza',
-  'felie-renunta': 'imprimanta.felie.renunta',
+  'felie-renunta': 'imprimanta.felie.renunta', 'felie-deplasari': 'imprimanta.felie.deplasari',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {

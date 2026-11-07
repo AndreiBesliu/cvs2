@@ -1257,7 +1257,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {imprimantaMontata && (
           <section className="fereastra-imprimanta" aria-label={t('vedere.imprimanta')} hidden={fereastra !== 'imprimanta'}>
             <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="imprimanta-incarca">{t('fereastra.imprimanta.incarca')}</p>}>
-              <PanouImprimanta desen={desenImprimanta} />
+              <PanouImprimanta desen={desenImprimanta} versiuneDesen={`${doc.rev}|${selectieValida.join(',')}`} />
             </Suspense>
           </section>
         )}

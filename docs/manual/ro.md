@@ -1085,7 +1085,13 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   - În dreapta, stratul ales, văzut de sus, cu liniile colorate după rol (peretele exterior, pereții interiori, plin, suprafața
     de sus, umplere rară, brim) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
     linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui, apoi
-    straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame.
+    straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame. Bifa **deplasările** arată, punctat, și
+    drumurile duzei dintre linii.
+  - **Duza** și **Patul** din „Simplu” schimbă și temperaturile primului strat (cu aceeași diferență față de ele cât are
+    profilul materialului: PC pornește cu 10 °C mai jos). Brim-ul e unul pentru toate piesele: ocolește piesele vecine. Tot ce
+    se extrudează, brim-ul inclus, trebuie să încapă în pat cu marginea de 5 mm, iar ultimul strat sub 250 mm; altfel
+    fișierul nu se face, iar fereastra spune cât iese. Dacă desenul se schimbă în Proiectare cât fereastra e deschisă,
+    piesele se citesc din nou.
   - **Trimite la imprimantă** (doar cu imprimanta legată) trece fișierul prin aceeași verificare și trimitere ca **Trimite un
     fișier…**, cu aceeași bifă **Patul e gol** la pornire. **Salvează .gcode** îl descarcă, de pus pe stick sau de trimis mai
     târziu; **Renunță** (sau `Escape`) închide fereastra. Fișierul folosește doar comenzile pe care OrcaSlicer le scrie pentru

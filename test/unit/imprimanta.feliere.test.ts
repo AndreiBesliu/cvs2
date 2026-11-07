@@ -153,10 +153,21 @@ test('retragerea: între două piese, da; în aceeași piesă, pe o deplasare sc
   const r = feliaza(doua, s, { data: DATA });
   assert.ok(r.gcode);
   const l = linii(r.gcode.text);
-  // Pe fiecare strat, înaintea fiecărei piese: retragerea, ridicarea și coborârea.
-  const i = l.findIndex((x) => x === 'EXCLUDE_OBJECT_START NAME=B_id_1_copy_0' || x === 'EXCLUDE_OBJECT_START NAME=A_id_0_copy_0');
-  assert.ok(l.slice(i, i + 4).some((x) => x === 'G1 E-.8 F2400'));
-  assert.ok(l.slice(i, i + 4).some((x) => /^G1 Z\.6 F600$/.test(x)));
+  // Stratul 2: între piese, retragerea și ridicarea (0,4 + 0,4 = Z0.8), apoi coborârea la Z0.4 la destinație.
+  const z2 = l.indexOf(';Z:0.4'), z3 = l.indexOf(';Z:0.6');
+  const a2 = l.slice(z2, z3);
+  const i = a2.findIndex((x, j) => x.startsWith('EXCLUDE_OBJECT_START') && j > a2.findIndex((y) => y.startsWith('EXCLUDE_OBJECT_END')));
+  assert.ok(i > 0);
+  const dupa = a2.slice(i, i + 6);
+  assert.ok(dupa.includes('G1 E-.8 F2400') && dupa.includes('G1 Z.8 F600'), JSON.stringify(dupa));
+  const k = dupa.indexOf('G1 Z.8 F600');
+  assert.match(dupa[k + 1]!, /^G1 X\S+ Y\S+/);
+  assert.equal(dupa[k + 2], 'G1 Z.4 F600');
+  // Stratul 1: prima deplasare pleacă de la Z1 (începutul imprimantei), în XY, și coboară la Z0.2 abia la destinație.
+  const z1 = l.indexOf(';Z:0.2');
+  const t1 = l.slice(z1).findIndex((x) => /^G1 X\S+ Y\S+ F30000$/.test(x));
+  assert.ok(!l.slice(z1, z1 + t1).some((x) => /^G1 Z/.test(x)), 'coboară înaintea deplasării');
+  assert.equal(l[z1 + t1 + 1], 'G1 Z.2 F600');
   // Pe un strat plin, liniile se leagă în zigzag: puține retrageri față de linii.
   const strat2 = l.slice(l.indexOf(';Z:0.4'), l.indexOf(';Z:0.6'));
   const retrageri = strat2.filter((x) => x === 'G1 E-.8 F2400').length;

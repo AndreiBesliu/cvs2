@@ -6602,7 +6602,7 @@ va face update si pe main ulterior”.
   transportul nu importă documentul). Dialogul `src/app/DialogDinDesen.tsx`, adus la primul clic; „Din desen…” în ambele
   vederi ale ferestrei; aplicația dă desenul ca funcție (`desen`). Textele (en / ro), manualul (secțiunea „Din desen…”, cu
   fiecare control și fiecare setare din „Avansat”), stilurile.
-- **Măsurat:** placa de 20 × 20 × 3 mm: 15 straturi, 1,75 g, ~3 min 36 s; E pe mm pe valorile de pe hârtie. Felierea: ~0,1 s
+- **Măsurat:** placa de probă de 40 × 20 × 3 mm, cu gaura și fanta: 15 straturi, 1,75 g, ~3 min 36 s; E pe mm pe valorile de pe hârtie. Felierea: ~0,1 s
   pentru o placă mică, ~1 s pentru 180 × 180 × 20 mm, ~1,6 s la 0,08 mm (16 MB). Mărimea: bucata dialogului 14,2 kB gzip (doar
   codul felierii, fără geometrie dublată), totalul 549,6 / 550 (+14,7, peste estimarea de 8–12), pornirea 101,8.
 - **Găsit pe drum:** unirea pe perechi lăsa o formă care intră într-un gol apărut din unire drept gaură, reluând diferența la
@@ -6611,3 +6611,17 @@ va face update si pe main ulterior”.
 - **Probe:** `imprimanta.feliere.test.ts` 18 / 18; manualul și traducerile 32 / 32; e2e `imprimanta.spec.ts` 11 / 11 (cu cele
   două noi: fără imprimantă, cu fișierul descărcat; cu imprimanta falsă, prin verificarea și trimiterea 3.6h); compilatorul;
   importurile 19 / 0.
+- **Porțile pe `819b37d`** (felia și rezerva bucății care nu vine): unit 8 671 (8 663 trecute, 0 căderi, 8 sărite); build-ul
+  determinist: pornirea 101,8 (cu ușa 105,4 / 110), totalul 549,6 / 550, /admin 105,4 / 200; e2e 377 / 377 din prima (cu 4
+  lucrători, cât mașina era încărcată).
+- **Otrăvurile** (`test/otravuri/3.6j.py`, în clona din afara Drive-ului, baza verde întâi: 18 / 18 și e2e 11 / 11): prima rulare
+  (`748cb17`) 32 prinse, F28 VOID: unealta de scriere pusese în sursă caracterele combinate U+0300 și U+036F în locul
+  escape-urilor `\u0300-\u036f` (codul mergea, textul otrăvii nu se găsea); escape-urile, puse la loc printr-un script
+  (`6c2d7f9`), iar F28 prinsă: 33 / 33.
+- **Recenzia cu agenți** (ultracode pornit; 4 lentile: G-code-ul față de OrcaSlicer și Klipper, geometria, dialogul, probele;
+  fiecare cu un verificator care a încercat s-o răstoarne; 8 agenți, ~2,6 milioane de tokeni, 49 min): 51 de constatări, 49
+  confirmate. Grave: brim-ul în afara verificării patului, brim-ul peste piesele vecine, trăsăturile înguste pierdute pe
+  primul strat, temperaturile din Simplu doar după primul strat, coborârea la Z0.2 pe loc după `START_PRINT`. Toate reparate
+  (ADR 0191, „Felia 3.6j”, recenzia), cu probele lor: `imprimanta.feliere.recenzie.test.ts` (22), fixtura profilelor
+  OrcaSlicer K1, e2e-ul extins; otrăvurile, 50 (+17 pentru reparații). Tot recenzia a prins cifrele „măsurate” puse de mine
+  pe o placă de 20 × 20 (erau ale plăcii de 40 × 20, cu gaura și fanta).

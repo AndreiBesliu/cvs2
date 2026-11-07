@@ -8,7 +8,9 @@
 import { conturDeTaiat } from '../contur.ts';
 import type { Contur } from '../../geom/conturBaza.ts';
 import { cutieContur, uneste, CUTIE_GOALA, type Cutie } from '../../geom/cutie.ts';
-import { booleanContururi, intersectiiIntre } from '../../geom/offset.ts';
+import { arieCuSemn } from '../../geom/contur.ts';
+import { inRegiune } from '../../geom/distanta.ts';
+import { booleanContururi, intersectiiIntre, type RegiuneBoolean } from '../../geom/offset.ts';
 import type { Document } from '../../model/document.ts';
 import { elementeFoaie, type ElementLume } from '../../model/lume.ts';
 
@@ -24,7 +26,7 @@ export type PiesaPlata = { readonly id: string; readonly nume: string; readonly 
 /** Marginea patului lăsată liberă pe fiecare latură (mm), până se măsoară linia de curățare a imprimantei (ADR 0191). */
 export const MARGINE_PAT = 5;
 
-export type MotivPiesa = 'fara-forme' | 'unire';
+export type MotivPiesa = 'fara-forme' | 'unire' | 'prea-multe';
 
 export type PieseAlese = {
   readonly piese: readonly PiesaPlata[];
@@ -36,9 +38,12 @@ export type PieseAlese = {
   readonly latime: number; readonly adancime: number; readonly incape: boolean;
 };
 
-/** Plafonul pașilor de unire ai unei piese: dincolo, refuz cu motiv, nu o buclă lungă. */
 /** Cele mai multe forme închise ale unei piese (perechile se judecă întâi după cutii, deci câteva mii trec repede). */
 const PLAFON_FORME = 5_000;
+const PREA_MULTE = 'prea multe forme';
+/** Regiunile booleanului fără cele de arie (aproape) zero, ca latura comună a două forme lipite. */
+const faraArieZero = (r: readonly RegiuneBoolean[]): RegiuneBoolean[] =>
+  r.filter((g) => Math.abs(arieCuSemn(g.exterior)) > 1e-6).map((g) => ({ exterior: g.exterior, gauri: g.gauri.filter((h) => Math.abs(arieCuSemn(h)) > 1e-6) }));
 
 const atingere = (a: Cutie, b: Cutie): boolean => a.minX <= b.maxX && b.minX <= a.maxX && a.minY <= b.maxY && b.minY <= a.maxY;
 
@@ -46,12 +51,14 @@ const atingere = (a: Cutie, b: Cutie): boolean => a.minX <= b.maxX && b.minX <= 
  * Contururile închise ale unei piese, cu suprapunerile unite. Formele care se ating (direct sau printr-un lanț de alte forme)
  * fac o componentă; în ea, formele se adaugă pe rând, în ordinea lanțului, la o regiune (un exterior cu golurile lui): o
  * formă care atinge exteriorul se unește cu el (golurile închise de unire se adaugă), iar una care intră într-un gol îl
- * micșorează (golul minus forma). O formă care nu atinge nici exteriorul, nici vreun gol, stă în material: nu schimbă nimic.
- * Componentele rămân unele lângă altele, citite par-impar (o componentă cuprinsă în alta e gol). Sau motivul.
+ * micșorează (golul minus forma). Fără atingere, contează cuprinderea: un gol cuprins întreg de formă dispare, o formă care
+ * cuprinde tot exteriorul devine exteriorul, o formă dintr-un gol rămâne insulă, iar una din material nu schimbă nimic. Așa,
+ * ordinea în care s-au desenat formele nu schimbă rezultatul. Regiunile de arie zero (latura comună a două forme lipite) se
+ * lasă deoparte. Componentele rămân unele lângă altele, citite par-impar (o componentă cuprinsă în alta e gol). Sau motivul.
  */
 export function unesteSuprapuse(intrare: readonly Contur[]): { readonly ok: true; readonly contururi: Contur[] } | { readonly ok: false; readonly motiv: string } {
   const n = intrare.length;
-  if (n > PLAFON_FORME) return { ok: false, motiv: 'prea multe forme' };
+  if (n > PLAFON_FORME) return { ok: false, motiv: PREA_MULTE };
   const cutii = intrare.map((c) => cutieContur(c));
   const ating = (a: Contur, b: Contur): boolean => atingere(cutieContur(a), cutieContur(b)) && intersectiiIntre(a, b).length > 0;
   const vecini: number[][] = intrare.map(() => []);
@@ -67,29 +74,38 @@ export function unesteSuprapuse(intrare: readonly Contur[]): { readonly ok: true
     const ordine = [s];
     vazut[s] = true;
     for (let k = 0; k < ordine.length; k++) for (const v of vecini[ordine[k]!]!) if (!vazut[v]) { vazut[v] = true; ordine.push(v); }
-    let ext = intrare[ordine[0]!]!, gauri: Contur[] = [];
+    let ext = intrare[ordine[0]!]!, gauri: Contur[] = [], insule: Contur[] = [];
+    const inC = (a: Contur, b: Contur): boolean => inRegiune(a.varfuri[0]!.p, [b]);
     for (const k of ordine.slice(1)) {
       const c = intrare[k]!;
-      const noi: Contur[] = [];
+      let noi: Contur[] = [];
+      let atinsGol = false;
       for (const h of gauri) {
-        if (!ating(h, c)) { noi.push(h); continue; }
-        const r = booleanContururi(h, c, 'diferenta');
-        if (!r.ok) return { ok: false, motiv: r.motiv };
-        for (const g of r.regiuni) {
-          if (g.gauri.length > 0) return { ok: false, motiv: 'o formă stă întreagă într-un gol' };
-          noi.push(g.exterior);
-        }
+        if (ating(h, c)) {
+          atinsGol = true;
+          const r = booleanContururi(h, c, 'diferenta');
+          if (!r.ok) return { ok: false, motiv: r.motiv };
+          for (const g of faraArieZero(r.regiuni)) {
+            if (g.gauri.length > 0) return { ok: false, motiv: 'o formă stă întreagă într-un gol' };
+            noi.push(g.exterior);
+          }
+        } else if (inC(h, c)) atinsGol = true; // golul, acoperit întreg de formă: dispare
+        else noi.push(h);
       }
       if (ating(ext, c)) {
         const r = booleanContururi(ext, c, 'reuniune');
         if (!r.ok) return { ok: false, motiv: r.motiv };
-        if (r.regiuni.length !== 1) return { ok: false, motiv: `unirea a dat ${r.regiuni.length} regiuni` };
-        ext = r.regiuni[0]!.exterior;
-        noi.push(...r.regiuni[0]!.gauri);
-      }
+        const g = faraArieZero(r.regiuni);
+        if (g.length !== 1) return { ok: false, motiv: `unirea a dat ${g.length} regiuni` };
+        ext = g[0]!.exterior;
+        noi.push(...g[0]!.gauri);
+      } else if (inC(ext, c)) {
+        // Forma cuprinde tot exteriorul: ea e acum exteriorul, iar golurile și insulele de dinăuntru sunt acoperite.
+        ext = c; noi = []; insule = [];
+      } else if (!atinsGol && gauri.some((h) => inC(c, h))) insule.push(c);
       gauri = noi;
     }
-    rez.push(ext, ...gauri);
+    rez.push(ext, ...gauri, ...insule);
   }
   return { ok: true, contururi: rez };
 }
@@ -121,8 +137,10 @@ export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: n
   let deschise = 0;
   const refuzate: { eticheta: string; motiv: MotivPiesa; detaliu?: string }[] = [];
   const brute: { id: string; eticheta: string; contururi: Contur[] }[] = [];
-  instante.forEach((inst, k) => {
-    const eticheta = numePiesa.get(inst.piesa) ?? `#${k + 1}`;
+  // Eticheta unei piese fără nume: numărul instanței pe foaie (ca în lista dialogului), nu în alegere.
+  const toateInst = foaie?.instante ?? [];
+  instante.forEach((inst) => {
+    const eticheta = numePiesa.get(inst.piesa) ?? `#${toateInst.indexOf(inst) + 1}`;
     const inchise: Contur[] = [];
     for (const e of peInstanta.get(inst.id) ?? []) {
       const r = conturDeTaiat(e);
@@ -131,7 +149,7 @@ export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: n
     }
     if (inchise.length === 0) { refuzate.push({ eticheta, motiv: 'fara-forme' }); return; }
     const u = unesteSuprapuse(inchise);
-    if (!u.ok) { refuzate.push({ eticheta, motiv: 'unire', detaliu: u.motiv }); return; }
+    if (!u.ok) { refuzate.push(u.motiv === PREA_MULTE ? { eticheta, motiv: 'prea-multe' } : { eticheta, motiv: 'unire', detaliu: u.motiv }); return; }
     brute.push({ id: inst.id, eticheta, contururi: u.contururi });
   });
   let cutie = CUTIE_GOALA;

@@ -1121,7 +1121,13 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
     surface, sparse infill, brim) over the part outline, thin and red: where only the red shows, the part is narrower than one
     line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role,
-    then the layers, the estimated time (without heating) and the filament, in metres and grams.
+    then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
+    also shows, dotted, the nozzle’s paths between lines.
+  - **Nozzle** and **Bed** in “Simple” also change the first layer temperatures (with the same difference from them as the
+    material profile has: PC starts 10 °C lower). The brim is one for all the parts: it goes around neighbouring parts.
+    Everything extruded, the brim included, must fit the bed with its 5 mm margin, and the last layer must stay under
+    250 mm; otherwise no file is made, and the window says how far it goes out. If the drawing changes in Design while the
+    window is open, the parts are read again.
   - **Send to the printer** (only with the printer connected) passes the file through the same check and sending as **Send a
     file…**, with the same **The bed is clear** check at start. **Save .gcode** downloads it, for a USB stick or to send later;
     **Cancel** (or `Escape`) closes the window. The file uses only the commands OrcaSlicer writes for the K1C: the start

@@ -2,23 +2,25 @@
  * Dialogul „Din desen…” al ferestrei Imprimanta (ADR 0191, felia 3.6j): piesele plate ale foii (toate, cele selectate sau
  * una singură), ridicate la o înălțime și feliate în cvs2 pentru K1C, cu setările „Simplu” (materialul, calitatea,
  * temperaturile, pereții, umplerea, brim-ul) și „Avansat” (toate celelalte, din `campuri.ts`); straturile văzute de sus, cu
- * un glisor; avertismentele (căile deschise, piesele fără forme închise, ce nu încape, ce e prea subțire); salvarea fișierului
- * și trimiterea lui prin dialogul de la 3.6h (aceeași verificare, aceeași bifă „Patul e gol” la pornire).
+ * un glisor și, la cerere, deplasările; avertismentele (căile deschise, piesele fără forme închise, ce nu încape în pat, ce e
+ * prea subțire); salvarea fișierului și trimiterea lui prin dialogul de la 3.6h (aceeași verificare, aceeași bifă „Patul e
+ * gol” la pornire).
  *
- * Felierea rulează pe firul principal, după o pauză scurtă de la ultima schimbare: o piesă plată se calculează pe feluri de
- * strat, nu strat cu strat (ADR 0191). Setările alese se țin în browser (o comoditate a fiecăruia, nu a proiectului).
+ * Desenul se citește la deschidere și din nou la fiecare schimbare a lui (`versiune`: documentul sau selecția), ca un fișier
+ * salvat după o trecere prin Proiectare să fie al desenului de acum. Felierea rulează pe firul principal, după o pauză scurtă
+ * de la ultima schimbare a unei setări: o piesă plată se calculează pe feluri de strat, nu strat cu strat (ADR 0191). Setările
+ * alese se țin în browser (o comoditate a fiecăruia, nu a proiectului). Patul e cel al K1C, profilul fișierului.
  */
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { limba, t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
-import { patPentru } from '../machine/imprimanta/gcode3d.ts';
-import { CAMPURI_AVANSATE, DIN_CALITATE, DIN_MATERIAL, type CampAvansat } from '../cam/feliere/campuri.ts';
+import { CAMPURI_AVANSATE, cuCalitate, cuMaterial, cuTemperatura, type CampAvansat } from '../cam/feliere/campuri.ts';
 import {
-  CALITATI, feliaza, LIMITE, material, MATERIALE, pieseDinDocument, puncte, setariImplicite, setariValide, timpText,
-  type Brim, type Miniatura, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
+  CALITATI, feliaza, K1C, LIMITE, material, MATERIALE, numeFisier, pieseDinDocument, puncte, setariImplicite, setariValide, timpText,
+  type Brim, type Cale, type Miniatura, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
 } from '../cam/feliere/index.ts';
 
-/** Desenul văzut la deschiderea dialogului: documentul și instanțele selectate. */
+/** Desenul de feliat: documentul și instanțele selectate. */
 export type DesenImprimanta = { readonly doc: Document; readonly selectie: readonly string[] };
 
 const CHEIE = 'cvs2.imprimanta.feliere';
@@ -39,13 +41,6 @@ function scrieSetari(s: SetariFeliere): void {
 
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
 const numar = (v: number, z = 2): string => v.toLocaleString(loc(), { maximumFractionDigits: z });
-const preia = (d: SetariFeliere, k: readonly (keyof SetariFeliere)[]): Partial<SetariFeliere> => Object.fromEntries(k.map((x) => [x, d[x]]));
-
-/** Numele fișierului, ca `filename_format` din OrcaSlicer: `<nume>_<material>_<timp>.gcode`, fără spații și diacritice. */
-export function numeFisier(nume: string, tip: string, timp: number): string {
-  const curat = (x: string): string => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
-  return `${curat(nume) || 'cvs2'}_${curat(tip)}_${timpText(timp).replace(/\s+/g, '')}.gcode`;
-}
 
 /** Data antetului, ca în OrcaSlicer: „2026-11-07 at 19:41:00”. */
 const dataAntet = (d: Date): string => {
@@ -95,10 +90,21 @@ const CULORI: Readonly<Record<string, string>> = {
   exterior: '--imp-rol-exterior', interior: '--imp-rol-interior', plin: '--imp-rol-plin', sus: '--imp-rol-sus', rar: '--imp-rol-rar', brim: '--imp-rol-brim',
 };
 
-/** Previzualizarea unui strat: patul de sus, conturul pieselor (subțire, roșu: unde nu iese nimic, se vede) și căile. */
-function Previzualizare({ rez, strat }: { readonly rez: RezultatFeliere; readonly strat: number }): ReactNode {
+/**
+ * Previzualizarea unui strat: patul de sus, conturul pieselor (subțire, roșu: unde nu iese nimic, se vede) și căile; la
+ * cerere, deplasările dintre ele (de la capătul unei căi la începutul următoarei). Se redesenează și când se schimbă lățimea.
+ */
+function Previzualizare({ rez, strat, deplasari }: { readonly rez: RezultatFeliere; readonly strat: number; readonly deplasari: boolean }): ReactNode {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const forma = useMemo(() => contur(rez.piese), [rez]);
+  const [latime, setLatime] = useState(0);
+  useEffect(() => {
+    const cv = ref.current;
+    if (!cv || typeof ResizeObserver === 'undefined') return;
+    const o = new ResizeObserver(() => { setLatime(cv.clientWidth); });
+    o.observe(cv);
+    return () => { o.disconnect(); };
+  }, []);
   useEffect(() => {
     const cv = ref.current;
     const c = cv?.getContext('2d');
@@ -113,7 +119,7 @@ function Previzualizare({ rez, strat }: { readonly rez: RezultatFeliere; readonl
     const W = cv.clientWidth || 480, H = Math.min(420, Math.max(160, (W * (y1 - y0)) / (x1 - x0)));
     const dpr = window.devicePixelRatio || 1;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = `${H}px`;
-    const k = Math.min(W / (x1 - x0), H / (y1 - y0)) * dpr;
+    const k = Math.min(cv.width / (x1 - x0), cv.height / (y1 - y0));
     const ox = (cv.width - (x1 - x0) * k) / 2, oy = (cv.height - (y1 - y0) * k) / 2;
     const X = (x: number): number => ox + (x - x0) * k, Y = (y: number): number => cv.height - (oy + (y - y0) * k);
     c.fillStyle = culoare('--imp-pat');
@@ -129,7 +135,8 @@ function Previzualizare({ rez, strat }: { readonly rez: RezultatFeliere; readonl
     for (const p of forma.pol) { for (let i = 0; i < p.length; i += 2) { if (i === 0) c.moveTo(X(p[i]!), Y(p[i + 1]!)); else c.lineTo(X(p[i]!), Y(p[i + 1]!)); } c.closePath(); }
     c.stroke();
     c.lineCap = 'round'; c.lineJoin = 'round';
-    for (const p of rez.cai(strat)) {
+    const cai: readonly Cale[] = rez.cai(strat);
+    for (const p of cai) {
       c.strokeStyle = culoare(CULORI[p.rol] ?? '--imp-rol-plin');
       c.lineWidth = Math.max(1, p.w * k * 0.9);
       c.beginPath();
@@ -137,11 +144,26 @@ function Previzualizare({ rez, strat }: { readonly rez: RezultatFeliere; readonl
       if (p.inchisa) c.closePath();
       c.stroke();
     }
-  }, [rez, strat, forma]);
+    if (deplasari) {
+      c.strokeStyle = culoare('--imp-deplasare'); c.lineWidth = Math.max(1, dpr); c.setLineDash([4 * dpr, 3 * dpr]);
+      c.beginPath();
+      for (let j = 1; j < cai.length; j++) {
+        const a = cai[j - 1]!, b = cai[j]!, n = a.p.length;
+        const [ax, ay] = a.inchisa ? [a.p[0]!, a.p[1]!] : [a.p[n - 2]!, a.p[n - 1]!];
+        c.moveTo(X(ax), Y(ay)); c.lineTo(X(b.p[0]!), Y(b.p[1]!));
+      }
+      c.stroke();
+      c.setLineDash([]);
+    }
+  }, [rez, strat, forma, deplasari, latime]);
   return <canvas ref={ref} className="imprimanta-felie-pat" data-testid="imprimanta-felie-pat" role="img" aria-label={t('imprimanta.felie.pat')} />;
 }
 
-/** Un câmp numeric: textul se scrie liber, iar valoarea (adusă în limite) se ia la ieșirea din câmp sau la Enter. */
+/**
+ * Un câmp numeric: textul se scrie liber, iar valoarea se ia la ieșirea din câmp sau la Enter, doar dacă e alta decât cea de
+ * acum (altfel nimic nu se refeliază, iar un clic pe un buton nu se pierde); după aceea, câmpul arată valoarea luată (adusă
+ * în limite), nu textul scris.
+ */
 function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
   readonly valoare: number; readonly procent?: boolean; readonly pas: number; readonly la: (v: number) => void; readonly id: string;
   readonly eticheta: string; readonly unitate: string; readonly data?: string;
@@ -151,8 +173,9 @@ function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
   useEffect(() => { setText(arata(valoare)); }, [valoare]);
   const ia = (): void => {
     const v = Number(text.replace(',', '.'));
-    if (Number.isFinite(v) && text.trim() !== '') la(procent ? v / 100 : v);
-    else setText(arata(valoare));
+    const nou = procent ? v / 100 : v;
+    if (Number.isFinite(v) && text.trim() !== '' && Math.abs(nou - valoare) > 1e-12) la(nou);
+    setText(arata(valoare));
   };
   return (
     <label className="imprimanta-camp imprimanta-felie-camp" htmlFor={id}>
@@ -165,25 +188,31 @@ function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
   );
 }
 
-export function DialogDinDesen({ desen, model, trimite, inchide }: {
-  readonly desen: DesenImprimanta; readonly model: string | null; readonly trimite: ((f: File) => void) | null; readonly inchide: () => void;
+export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
+  readonly sursa: () => DesenImprimanta; readonly versiune: string; readonly model: string | null;
+  readonly trimite: ((f: File) => void) | null; readonly inchide: () => void;
 }): ReactNode {
+  const [desen, setDesen] = useState(sursa);
+  const prima = useRef(true);
+  useEffect(() => { if (prima.current) { prima.current = false; return; } setDesen(sursa()); }, [versiune]);
   const foaie = desen.doc.foi[0];
   const instante = foaie?.instante ?? [];
   const numePiesa = useMemo(() => new Map(desen.doc.piese.map((p) => [p.id, p.nume])), [desen]);
   const numeInstanta = (id: string, k: number): string => numePiesa.get(instante.find((i) => i.id === id)?.piesa ?? '') ?? `#${k + 1}`;
   const selectate = desen.selectie.filter((id) => instante.some((i) => i.id === id));
   const [ce, setCe] = useState<SursaFeliere['fel']>(selectate.length > 0 ? 'selectie' : 'foaie');
-  const [piesa, setPiesa] = useState(selectate[0] ?? instante[0]?.id ?? '');
+  const [piesaAleasa, setPiesa] = useState(selectate[0] ?? instante[0]?.id ?? '');
+  const piesa = instante.some((i) => i.id === piesaAleasa) ? piesaAleasa : (instante[0]?.id ?? '');
   const grosime = foaie?.stoc.grosime ?? 3;
-  const [inaltime, setInaltime] = useState(() => Math.min(250, Math.max(0.2, grosime)));
+  const [inaltime, setInaltime] = useState(() => Math.min(K1C.pat[2], Math.max(0.2, grosime)));
   const [s, setS] = useState<SetariFeliere>(citesteSetari);
   useEffect(() => { scrieSetari(s); }, [s]);
   const [avansat, setAvansat] = useState(false);
-  const pat = patPentru(model);
-  const sursa: SursaFeliere = ce === 'foaie' ? { fel: 'foaie' } : ce === 'selectie' ? { fel: 'selectie', ids: selectate } : { fel: 'piesa', id: piesa };
+  const [deplasari, setDeplasari] = useState(false);
+  const pat = K1C.pat;
+  const sursaFel: SursaFeliere = ce === 'foaie' ? { fel: 'foaie' } : ce === 'selectie' ? { fel: 'selectie', ids: selectate } : { fel: 'piesa', id: piesa };
   const cheieSursa = ce === 'piesa' ? `piesa:${piesa}` : ce;
-  const alese = useMemo(() => pieseDinDocument(desen.doc, sursa, inaltime, [pat[0], pat[1]]), [desen, cheieSursa, inaltime, pat[0], pat[1]]);
+  const alese = useMemo(() => pieseDinDocument(desen.doc, sursaFel, inaltime, [pat[0], pat[1]]), [desen, cheieSursa, inaltime]);
   const [rez, setRez] = useState<RezultatFeliere | null>(null);
   const [lucreaza, setLucreaza] = useState(true);
   // Stratul arătat: 0 = încă neales de om (atunci cel din mijloc), altfel cel ales, cel mult ultimul.
@@ -191,14 +220,14 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
   useEffect(() => {
     setLucreaza(true);
     const id = setTimeout(() => {
-      const r = alese.incape && alese.piese.length > 0 && inaltime <= pat[2]
+      const r = alese.incape && alese.piese.length > 0
         ? feliaza(alese.piese, s, { data: dataAntet(new Date()), miniaturi: miniaturi(alese.piese) })
         : null;
       setRez(r);
       setLucreaza(false);
     }, 150);
     return () => { clearTimeout(id); };
-  }, [alese, s, inaltime, pat[2]]);
+  }, [alese, s]);
   const cutie = useRef<HTMLDivElement | null>(null);
   useEffect(() => { cutie.current?.querySelector<HTMLElement>('[data-imprimanta="felie-renunta"]')?.focus(); }, []);
 
@@ -206,14 +235,22 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
   const mt = material(s.material);
   const avert: string[] = [];
   if (instante.length === 0) avert.push(t('imprimanta.felie.foaie-goala'));
+  if (model !== null && !/k1c/i.test(model.replace(/[\s_-]/g, ''))) avert.push(t('imprimanta.felie.alt-model', { model }));
   if (alese.deschise > 0) avert.push(t('imprimanta.felie.deschise', { n: alese.deschise }));
-  for (const r of alese.refuzate) avert.push(t(`imprimanta.felie.refuz.${r.motiv}`, { piesa: r.eticheta, motiv: r.detaliu ?? '' }));
+  for (const r of alese.refuzate) {
+    avert.push(r.motiv === 'unire' ? t('imprimanta.felie.refuz.unire', { piesa: r.eticheta, motiv: r.detaliu ?? '' })
+      : t(r.motiv === 'prea-multe' ? 'imprimanta.felie.refuz.prea-multe' : 'imprimanta.felie.refuz.fara-forme', { piesa: r.eticheta }));
+  }
   if (!alese.incape) avert.push(t('imprimanta.felie.nu-incape', { l: numar(alese.latime, 1), a: numar(alese.adancime, 1), x: pat[0] - 10, y: pat[1] - 10 }));
-  if (inaltime > pat[2]) avert.push(t('imprimanta.felie.prea-inalta', { z: pat[2] }));
   for (const a of rez?.avertismente ?? []) {
-    avert.push(a.fel === 'subtire' ? t('imprimanta.felie.subtire', { piesa: a.piesa, arie: numar(a.arie, 1) })
-      : a.fel === 'nimic' ? t('imprimanta.felie.nimic', { piesa: a.piesa })
-        : t('imprimanta.felie.eroare', { piesa: a.piesa, motiv: a.motiv }));
+    switch (a.fel) {
+      case 'subtire': avert.push(t('imprimanta.felie.subtire', { piesa: a.piesa, arie: numar(a.arie, 1) })); break;
+      case 'nimic': avert.push(t('imprimanta.felie.nimic', { piesa: a.piesa })); break;
+      case 'eroare': avert.push(t('imprimanta.felie.eroare', { piesa: a.piesa, motiv: a.motiv })); break;
+      case 'brim': avert.push(t('imprimanta.felie.brim-eroare', { motiv: a.motiv })); break;
+      case 'iese': avert.push(t('imprimanta.felie.iese', { x0: numar(a.x0, 1), x1: numar(a.x1, 1), y0: numar(a.y0, 1), y1: numar(a.y1, 1), a: 5, b: pat[0] - 5 })); break;
+      case 'prea-inalta': avert.push(t('imprimanta.felie.prea-inalta', { z: pat[2], h: numar(a.z) })); break;
+    }
   }
   const n = g?.straturi ?? 0;
   const strat = n === 0 ? 1 : alesStrat === 0 ? Math.ceil(n / 2) : Math.min(alesStrat, n);
@@ -225,7 +262,7 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
       : fel === 'rar' ? t('imprimanta.felie.fel.rar')
         : t(fel.startsWith('sus') ? 'imprimanta.felie.fel.sus' : 'imprimanta.felie.fel.plin', { unghi });
   const numeBaza = alese.piese.length === 1 ? alese.piese[0]!.eticheta : (foaie?.nume ?? 'cvs2');
-  const fisier = (): File | null => (g === null ? null : new File([g.text], numeFisier(numeBaza, mt.tip, g.timp), { type: 'text/plain' }));
+  const fisier = (): File | null => (g === null ? null : new File([g.text], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' }));
   const salveaza = (): void => {
     const f = fisier();
     if (!f) return;
@@ -234,12 +271,12 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
     a.href = url; a.download = f.name; a.click();
     setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
   };
-  const seteaza = (k: keyof SetariFeliere, v: unknown): void => { setS((x) => setariValide({ ...x, [k]: v })); };
+  const seteaza = (k: keyof SetariFeliere, v: unknown): void => { setS((x) => (x[k] === v ? x : setariValide({ ...x, [k]: v }))); };
   const lim = (k: keyof SetariFeliere): readonly [number, number] | undefined => LIMITE[k];
 
   return (
     <div className="imprimanta-dialog imprimanta-felie" role="dialog" aria-labelledby="imprimanta-felie-titlu" data-testid="imprimanta-felie"
-      data-stare={lucreaza ? 'lucreaza' : g === null ? 'gol' : 'gata'} ref={cutie}
+      data-stare={lucreaza ? 'lucreaza' : g === null ? 'gol' : 'gata'} ref={cutie} tabIndex={-1}
       onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); inchide(); } }}>
       <h3 id="imprimanta-felie-titlu">{t('imprimanta.felie.titlu')}</h3>
       <div className="imprimanta-felie-corp">
@@ -258,23 +295,21 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
             </select>
           </fieldset>
           <CampNumar id="felie-inaltime" data="felie-inaltime" eticheta={t('imprimanta.felie.inaltime')} unitate="mm" pas={0.2} valoare={inaltime}
-            la={(v) => { setInaltime(Math.min(250, Math.max(0.2, v))); }} />
+            la={(v) => { setInaltime(Math.min(K1C.pat[2], Math.max(0.2, v))); }} />
           <p className="imprimanta-ajutor">{t('imprimanta.felie.inaltime.ajutor', { g: numar(grosime) })}</p>
           <div className="imprimanta-felie-doua">
             <label className="imprimanta-camp"><span>{t('imprimanta.felie.material')}</span>
-              <select data-imprimanta="felie-material" value={s.material}
-                onChange={(e) => { const id = e.target.value; setS((x) => setariValide({ ...x, ...preia(setariImplicite(id, x.calitate), DIN_MATERIAL), material: id })); }}>
+              <select data-imprimanta="felie-material" value={s.material} onChange={(e) => { const id = e.target.value; setS((x) => cuMaterial(x, id)); }}>
                 {MATERIALE.map((m) => <option key={m.id} value={m.id}>{m.nume}</option>)}
               </select></label>
             <label className="imprimanta-camp"><span>{t('imprimanta.felie.calitate')}</span>
-              <select data-imprimanta="felie-calitate" value={s.calitate}
-                onChange={(e) => { const id = e.target.value; setS((x) => setariValide({ ...x, ...preia(setariImplicite(x.material, id), DIN_CALITATE), calitate: id })); }}>
+              <select data-imprimanta="felie-calitate" value={s.calitate} onChange={(e) => { const id = e.target.value; setS((x) => cuCalitate(x, id)); }}>
                 {CALITATI.map((c) => <option key={c.id} value={c.id}>{t('imprimanta.felie.calitate.strat', { h: numar(c.strat) })}</option>)}
               </select></label>
           </div>
           <div className="imprimanta-felie-doua">
-            <CampNumar id="felie-duza" data="felie-duza" eticheta={t('imprimanta.felie.duza')} unitate="°C" pas={1} valoare={s.duza} la={(v) => { seteaza('duza', v); }} />
-            <CampNumar id="felie-pat-temp" data="felie-pat" eticheta={t('imprimanta.felie.pat-temp')} unitate="°C" pas={1} valoare={s.pat} la={(v) => { seteaza('pat', v); }} />
+            <CampNumar id="felie-duza" data="felie-duza" eticheta={t('imprimanta.felie.duza')} unitate="°C" pas={1} valoare={s.duza} la={(v) => { setS((x) => cuTemperatura(x, 'duza', v)); }} />
+            <CampNumar id="felie-pat-temp" data="felie-pat" eticheta={t('imprimanta.felie.pat-temp')} unitate="°C" pas={1} valoare={s.pat} la={(v) => { setS((x) => cuTemperatura(x, 'pat', v)); }} />
           </div>
           <div className="imprimanta-felie-doua">
             <CampNumar id="felie-pereti" data="felie-pereti" eticheta={t('imprimanta.felie.pereti')} unitate="" pas={1} valoare={s.pereti} la={(v) => { seteaza('pereti', v); }} />
@@ -312,7 +347,7 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
           {lucreaza && <p role="status" data-testid="imprimanta-felie-lucreaza">{t('imprimanta.felie.lucreaza')}</p>}
           {rez !== null && g !== null && (
             <>
-              <Previzualizare rez={rez} strat={strat} />
+              <Previzualizare rez={rez} strat={strat} deplasari={deplasari} />
               <label className="imprimanta-felie-glisor">
                 <span>{t('imprimanta.felie.strat')}</span>
                 <input type="range" min={1} max={n} value={strat} data-imprimanta="felie-strat" onChange={(e) => { setStrat(Number(e.target.value)); }} />
@@ -325,6 +360,8 @@ export function DialogDinDesen({ desen, model, trimite, inchide }: {
                 {(['exterior', 'interior', 'plin', 'sus', 'rar', 'brim'] as const).map((r) => (
                   <li key={r}><i style={{ background: `var(${CULORI[r]})` }} />{t(`imprimanta.felie.rol.${r}`)}</li>
                 ))}
+                <li><label><input type="checkbox" data-imprimanta="felie-deplasari" checked={deplasari} onChange={(e) => { setDeplasari(e.target.checked); }} />
+                  {t('imprimanta.felie.deplasari')}</label></li>
               </ul>
               <p className="imprimanta-felie-rezumat" data-testid="imprimanta-felie-rezumat">
                 {t('imprimanta.felie.rezumat', { n, timp: timpText(g.timp), m: numar(g.filamentMm / 1000), g: numar(g.filamentG, 1), material: mt.nume })}

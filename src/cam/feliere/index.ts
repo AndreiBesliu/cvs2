@@ -1,13 +1,17 @@
 /**
  * Felierea pieselor plate (ADR 0191), intrarea modulului: piesele (din `piese.ts`), setările (din `profil.ts`), apoi
- * șabloanele straturilor (`straturi.ts`) și G-code-ul (`gcode.ts`). Pură și fără ceas: data antetului vine de la cine
- * cere. Modulul stă în directorul lui și se încarcă la cerere (din dialogul „Din desen…”), fără importuri din nucleu spre el.
+ * șabloanele straturilor și brim-ul grupului (`straturi.ts`) și G-code-ul (`gcode.ts`). Pură și fără ceas: data antetului
+ * vine de la cine cere. Modulul stă în directorul lui și se încarcă la cerere (din dialogul „Din desen…”), fără importuri din
+ * nucleu spre el.
+ *
+ * Înainte de fișier, tot ce se extrudează (piesele, brim-ul) trebuie să stea în patul K1C cu marginea lui (linia de
+ * curățare), iar ultimul strat sub înălțimea patului; altfel fișierul nu se face, iar avertismentul spune cât iese.
  */
 import { cutieContur, uneste, CUTIE_GOALA } from '../../geom/cutie.ts';
 import { felStrat, numarStraturi, scrieGcode, type IesireGcode, type Miniatura } from './gcode.ts';
-import type { PiesaPlata } from './piese.ts';
-import type { SetariFeliere } from './profil.ts';
-import { sablonPiesa, type Cale, type FelStrat, type SablonPiesa } from './straturi.ts';
+import { MARGINE_PAT, type PiesaPlata } from './piese.ts';
+import { K1C, type SetariFeliere } from './profil.ts';
+import { brimGrup, sablonPiesa, type Cale, type FelStrat, type SablonPiesa } from './straturi.ts';
 
 export { pieseDinDocument, MARGINE_PAT, type PieseAlese, type PiesaPlata, type SursaFeliere } from './piese.ts';
 export { CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, type SetariFeliere, type Brim } from './profil.ts';
@@ -17,16 +21,19 @@ export { puncte, type Cale, type Rol } from './straturi.ts';
 export type AvertismentFeliere =
   | { readonly fel: 'subtire'; readonly piesa: string; readonly arie: number }
   | { readonly fel: 'nimic'; readonly piesa: string }
-  | { readonly fel: 'eroare'; readonly piesa: string; readonly motiv: string };
+  | { readonly fel: 'eroare'; readonly piesa: string; readonly motiv: string }
+  | { readonly fel: 'brim'; readonly motiv: string }
+  | { readonly fel: 'iese'; readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number }
+  | { readonly fel: 'prea-inalta'; readonly z: number };
 
 export type RezultatFeliere = {
-  /** Fișierul, sau null dacă nicio piesă nu iese. */
+  /** Fișierul, sau null dacă nicio piesă nu iese ori ceva iese din pat. */
   readonly gcode: IesireGcode | null;
   /** Piesele care ies, cu brim-ul ales pentru fiecare. */
   readonly piese: readonly PiesaPlata[];
   readonly brim: readonly boolean[];
   readonly avertismente: readonly AvertismentFeliere[];
-  /** Căile stratului k (de la 1), în ordinea imprimării pe piesă, pentru previzualizare. */
+  /** Căile stratului k (de la 1), în ordinea imprimării, pentru previzualizare. */
   readonly cai: (k: number) => readonly Cale[];
 };
 
@@ -38,6 +45,12 @@ export function brimAutomat(p: PiesaPlata): boolean {
   return ingust < 10 || p.inaltime > 1.5 * ingust;
 }
 
+/** Numele fișierului, ca `filename_format` din OrcaSlicer: `<nume>_<material>_<timp>.gcode`, fără spații și diacritice. */
+export function numeFisier(nume: string, tip: string, timp: string): string {
+  const curat = (x: string): string => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
+  return `${curat(nume) || 'cvs2'}_${curat(tip)}_${timp.replace(/\s+/g, '')}.gcode`;
+}
+
 export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { readonly data: string; readonly miniaturi?: readonly Miniatura[] }): RezultatFeliere {
   const avertismente: AvertismentFeliere[] = [];
   const bune: PiesaPlata[] = [], sabloane: SablonPiesa[] = [], brim: boolean[] = [];
@@ -45,19 +58,35 @@ export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { r
     const n = numarStraturi(p.inaltime, s);
     const feluri = new Set<FelStrat>();
     for (let k = 1; k <= n; k++) feluri.add(felStrat(k, n, s));
-    const b = s.brim === 'da' || (s.brim === 'automat' && brimAutomat(p));
-    const r = sablonPiesa(p.contururi, s, feluri, b);
+    const r = sablonPiesa(p.contururi, s, feluri);
     if (typeof r === 'string') { avertismente.push({ fel: 'eroare', piesa: p.eticheta, motiv: r }); continue; }
     if ([...r.fel.values()].every((c) => c.length === 0)) { avertismente.push({ fel: 'nimic', piesa: p.eticheta }); continue; }
     if (r.subtire > 0) avertismente.push({ fel: 'subtire', piesa: p.eticheta, arie: r.subtire });
-    bune.push(p); sabloane.push(r); brim.push(b);
+    bune.push(p); sabloane.push(r); brim.push(s.brim === 'da' || (s.brim === 'automat' && brimAutomat(p)));
   }
-  const gcode = bune.length === 0 ? null : scrieGcode({ piese: bune, sabloane, brim, setari: s, data: opt.data, ...(opt.miniaturi ? { miniaturi: opt.miniaturi } : {}) });
+  let caiBrim: Cale[] = [];
+  const rb = brimGrup(bune.map((p, i) => ({ contururi: p.contururi, brim: brim[i]! })), s);
+  if (typeof rb === 'string') avertismente.push({ fel: 'brim', motiv: rb });
+  else caiBrim = rb;
+  // Patul: tot ce se extrudează, cu marginea lui; ultimul strat, sub înălțimea lui.
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const intinde = (c: Cale): void => { for (let i = 0; i < c.p.length; i += 2) { x0 = Math.min(x0, c.p[i]!); x1 = Math.max(x1, c.p[i]!); y0 = Math.min(y0, c.p[i + 1]!); y1 = Math.max(y1, c.p[i + 1]!); } };
+  caiBrim.forEach(intinde);
+  for (const sab of sabloane) for (const cai of sab.fel.values()) cai.forEach(intinde);
+  let inPat = true;
+  if (bune.length > 0 && (x0 < MARGINE_PAT - 1e-6 || y0 < MARGINE_PAT - 1e-6 || x1 > K1C.pat[0] - MARGINE_PAT + 1e-6 || y1 > K1C.pat[1] - MARGINE_PAT + 1e-6)) {
+    avertismente.push({ fel: 'iese', x0, y0, x1, y1 });
+    inPat = false;
+  }
+  const zSus = bune.length === 0 ? 0 : s.strat1 + (Math.max(...bune.map((p) => numarStraturi(p.inaltime, s))) - 1) * s.strat;
+  if (zSus > K1C.pat[2] + 1e-9) { avertismente.push({ fel: 'prea-inalta', z: zSus }); inPat = false; }
+  const gcode = bune.length === 0 || !inPat ? null
+    : scrieGcode({ piese: bune, sabloane, brim: caiBrim, setari: s, data: opt.data, ...(opt.miniaturi ? { miniaturi: opt.miniaturi } : {}) });
+  const plan = gcode?.plan;
   const cai = (k: number): readonly Cale[] => {
-    const st = gcode?.plan[k - 1];
+    const st = plan?.[k - 1];
     if (!st) return [];
-    const rez: Cale[] = [];
-    if (k === 1) sabloane.forEach((x, i) => { if (brim[i]) rez.push(...x.brim); });
+    const rez: Cale[] = k === 1 ? [...caiBrim] : [];
     for (const { i, fel } of st.piese) rez.push(...(sabloane[i]?.fel.get(fel) ?? []));
     return rez;
   };

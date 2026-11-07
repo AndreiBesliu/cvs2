@@ -3,7 +3,7 @@
  * se arată ca procent. Eticheta fiecăruia e `imprimanta.felie.c.<setarea>`, a grupului `imprimanta.felie.g.<grupul>`; proba
  * manualului cere fiecare etichetă în capitolul „imprimanta”.
  */
-import type { SetariFeliere } from './profil.ts';
+import { material, setariImplicite, setariValide, type SetariFeliere } from './profil.ts';
 
 /** Setările numerice din „Avansat” (fiecare cu eticheta ei). */
 export type CheieAvansata =
@@ -59,3 +59,27 @@ export const DIN_CALITATE: readonly (keyof SetariFeliere)[] = [
   'strat', 'strat1', 'pereti', 'sus', 'susMinim', 'jos', 'vInterior', 'vPlin', 'vRar', 'vPrimInfill', 'aPereti', 'aSus', 'aImplicit', 'aPrim',
   'aDeplasare', 'suprapunereRar',
 ];
+
+const preia = (d: SetariFeliere, k: readonly (keyof SetariFeliere)[]): Partial<SetariFeliere> => Object.fromEntries(k.map((x) => [x, d[x]]));
+
+/** Setările cu alt material: ce ține de material vine din profilul lui (temperaturile, răcirea, debitul), restul rămâne. */
+export function cuMaterial(s: SetariFeliere, id: string): SetariFeliere {
+  return setariValide({ ...s, ...preia(setariImplicite(id, s.calitate), DIN_MATERIAL), material: id });
+}
+
+/** Setările cu altă calitate: ce ține de ea vine din procesul ei (straturile, pereții, vitezele, accelerațiile), restul rămâne. */
+export function cuCalitate(s: SetariFeliere, id: string): SetariFeliere {
+  return setariValide({ ...s, ...preia(setariImplicite(s.material, id), DIN_CALITATE), calitate: id });
+}
+
+/**
+ * „Duza” sau „Patul” din Simplu: temperatura de după primul strat și, cu aceeași diferență față de ea cât are profilul
+ * materialului, cea a primului strat (PC: 270 pe primul strat, 280 apoi; la celelalte, aceeași). Altfel, omul ar scrie o
+ * temperatură, iar pornirea (`START_PRINT`, `M109`) ar folosi alta.
+ */
+export function cuTemperatura(s: SetariFeliere, ce: 'duza' | 'pat', v: number): SetariFeliere {
+  const m = material(s.material);
+  return ce === 'duza'
+    ? setariValide({ ...s, duza: v, duza1: v + (m.duza1 - m.duza) })
+    : setariValide({ ...s, pat: v, pat1: v + (m.pat1 - m.pat) });
+}

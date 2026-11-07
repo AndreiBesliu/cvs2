@@ -29,8 +29,9 @@ o('F04', GC, 'const sus = Math.max(s.sus, Math.ceil(s.susMinim / s.strat - 1e-9)
 o('F05', GC, 'if (k <= s.jos || k > n - sus', 'if (k < s.jos || k > n - sus', 'feliere', 'un strat plin de jos lipsă')
 o('F06', ST, 'if (k === 1) d += (pas(wE, h) + pas(wI, h)) / 2;', 'if (k === 1) d += wI;', 'feliere',
   'al doilea perete prea departe: gol între pereți')
-o('F07', ST, 'e = prim ? s.piciorElefant : 0;', 'e = 0;', 'feliere', 'fără compensarea piciorului de elefant')
-o('F08', ST, 'regiuniLa(pr.dInterior - suprapunere * w)', 'regiuniLa(pr.dInterior)', 'feliere',
+o('F07', ST, 'const r = pereti1(h, s.wPrim, s.wPrim, s.piciorElefant);', 'const r = pereti1(h, s.wPrim, s.wPrim, 0);', 'feliere',
+  'fără compensarea piciorului de elefant')
+o('F08', ST, 'regiuniLa(pr.adanc[i]! - suprapunere * w)', 'regiuniLa(pr.adanc[i]!)', 'feliere',
   'umplerea nu se suprapune peste pereți: nu se leagă de ei')
 o('F09', ST, 'if (p[i + 1]! > p[k + 1]! + 1e-9 ||', 'if (false ||', 'feliere', 'cusătura nealiniată (bucla începe oriunde)')
 o('F10', ST, 'if (Math.abs(start - capat) > legaturaMax) {', 'if (false) {', 'feliere',
@@ -66,14 +67,44 @@ o('F27', PI, 'const dx = pat[0] / 2 - (cutie.minX + cutie.maxX) / 2', 'const dx 
   'piesele nu se mai centrează pe pat')
 o('F28', PI, "replace(/[\\u0300-\\u036f]/g, '')", "replace(/x/g, '')", 'feliere', 'numele obiectelor cu diacritice stricate')
 
-o('W01', DD, 'useState(() => Math.min(250, Math.max(0.2, grosime)))', 'useState(() => 3)', 'e2e', 'înălțimea implicită nu e grosimea foii')
+o('W01', DD, 'useState(() => Math.min(K1C.pat[2], Math.max(0.2, grosime)))', 'useState(() => 3)', 'e2e', 'înălțimea implicită nu e grosimea foii')
 o('W02', DD, 'alesStrat === 0 ? Math.ceil(n / 2)', 'alesStrat === 0 ? 1', 'e2e', 'previzualizarea pornește pe primul strat, nu la mijloc')
-o('W03', DD, '...preia(setariImplicite(id, x.calitate), DIN_MATERIAL), ', '', 'e2e',
+o('W03', DD, 'setS((x) => cuMaterial(x, id))', 'setS((x) => setariValide({ ...x, material: id }))', 'e2e',
   'schimbarea materialului nu-i aduce temperaturile (PETG la 220 °C)')
-o('W04', PA, '        {desen !== undefined && (', '        {false && (', 'e2e', 'fără „Din desen…” când imprimanta nu e legată')
-o('W05', PA, 'trimite={legata && st.fisiere !== null ? (f) =>', 'trimite={false ? (f) =>', 'e2e', 'fișierul feliat nu se mai poate trimite')
+o('W04', PA, '        {dinDesen !== null && (', '        {false && (', 'e2e', 'fără „Din desen…” când imprimanta nu e legată')
+o('W05', PA, 'trimite={sePoateTrimite ? (f) =>', 'trimite={false ? (f) =>', 'e2e', 'fișierul feliat nu se mai poate trimite')
+
+CA = 'src/cam/feliere/campuri.ts'
+
+# După recenzia cu agenți (07.11): câte una pentru fiecare reparație.
+o('R01', IX, '  caiBrim.forEach(intinde);\n', '', 'feliere', 'brim-ul nu intră în verificarea patului: iese din pat')
+o('R02', IX, 'if (zSus > K1C.pat[2] + 1e-9)', 'if (false)', 'feliere', 'ultimul strat, peste înălțimea patului')
+o('R03', GC, 'const hop = Math.min(this.s.ridicare, K1C.pat[2] - zStrat);', 'const hop = this.s.ridicare;', 'feliere',
+  'ridicarea de lângă vârf trece de 250 mm')
+o('R04', ST, 'return pierdute ? pereti1(h, s.wExterior, s.wPrim, 0) : r;', 'return r;', 'feliere',
+  'compensarea primului strat șterge trăsăturile înguste, imprimate apoi în aer')
+o('R05', ST, 'const r = regiuniLa(pr.adanc[i]! - suprapunere * w);', 'const r = regiuniLa(Math.max(...pr.adanc) - suprapunere * w);',
+  'feliere', 'umplerea tuturor insulelor de la adâncimea celei mai late: o fâșie îngustă rămâne cu o fantă')
+o('R06', ST, 'return ins.findIndex((x) => inRegiune(x.ext.varfuri[0]!.p, cont));', 'return -1;', 'feliere',
+  'cu suprapunerea mare, umplerea lărgită peste perete se pierde')
+o('R07', PI, '} else if (inC(h, c)) atinsGol = true;', '} else if (false) atinsGol = true;', 'feliere',
+  'un gol acoperit întreg de o formă desenată după rămâne gol')
+o('R08', PI, 'const g = faraArieZero(r.regiuni);', 'const g = r.regiuni;', 'feliere',
+  'două forme cu o latură comună: piesa refuzată')
+o('R09', GC, '  // profilele K1).\n  return 0;', '  // profilele K1).\n  return s.ventMin;', 'feliere',
+  'ventilatorul rămâne pornit pe straturile lungi (OrcaSlicer îl oprește)')
+o('R10', GC, 'if (k > 1) { w.retrage(); w.zLa(st.z); }', 'w.retrage(); w.zLa(st.z);', 'feliere',
+  'duza coboară la primul strat pe loc, la capătul liniei de curățare')
+o('R11', GC, 'j === 0 || L >= K1C.deplasareFaraRetragere', 'true', 'feliere', 'retragere între fiecare două bucle de brim')
+o('R12', CA, 'duza1: v + (m.duza1 - m.duza)', 'duza1: m.duza1', 'feliere', 'duza din Simplu nu ajunge pe primul strat')
+o('R13', CA, '...preia(setariImplicite(id, s.calitate), DIN_MATERIAL), material: id', 'material: id', 'feliere',
+  'materialul nou nu-și aduce temperaturile și debitul')
+o('R14', PI, '`#${toateInst.indexOf(inst) + 1}`', '`#1`', 'feliere', 'numerotarea pieselor fără nume, alta decât în listă')
+o('R15', DD, 'setDesen(sursa());', '', 'e2e', 'desenul schimbat în Proiectare nu ajunge în fereastra deschisă')
+o('R16', DD, 'ref={cutie} tabIndex={-1}', 'ref={cutie}', 'e2e', 'Escape nu mai închide fereastra după un clic în ea')
+o('R17', PA, 'disabled={trimitere}', '', 'e2e', '„Din desen…” oprește o trimitere în curs')
 
 SETURI = {
-    'feliere': ['test/unit/imprimanta.feliere.test.ts'],
+    'feliere': ['test/unit/imprimanta.feliere.test.ts', 'test/unit/imprimanta.feliere.recenzie.test.ts'],
 }
 E2E = ['test/e2e/imprimanta.spec.ts']

@@ -69,6 +69,8 @@ function laDistanta(c: readonly Contur[], d: number): Regiune[] | string {
 }
 
 const contururiDin = (r: readonly Regiune[]): Contur[] => r.flatMap((x) => [x.exterior, ...x.gauri]);
+/** Aria regiunilor (exterioarele, minus golurile lor). */
+const arieRegiuni = (r: readonly Regiune[]): number => r.reduce((a, g) => a + Math.abs(arieCuSemn(g.exterior)) - g.gauri.reduce((b, x) => b + Math.abs(arieCuSemn(x)), 0), 0);
 
 /** Liniile paralele (unghiul în grade, pasul s) ale poligoanelor (par-impar), pe pozițiile aliniate la pat: intervalele pe linie. */
 export function intervale(pol: readonly ArrayLike<number>[], unghi: number, s: number): Map<number, [number, number][]> {
@@ -148,10 +150,9 @@ export function ordoneaza(cai: readonly Cale[], x: number, y: number): { cai: Ca
   return { cai: rez, x, y };
 }
 
-/** Șablonul unei piese: căile fiecărui fel de strat, brim-ul, conturul (pentru deplasări și previzualizare) și ce nu iese. */
+/** Șablonul unei piese: căile fiecărui fel de strat, conturul (pentru deplasări și previzualizare) și ce nu iese. */
 export type SablonPiesa = {
   readonly fel: ReadonlyMap<FelStrat, readonly Cale[]>;
-  readonly brim: readonly Cale[];
   /** Conturul piesei, aplatizat: poligoanele par-impar. */
   readonly contur: readonly Float64Array[];
   /** Aria piesei și cea care nu iese (mai îngustă decât o linie), mm². */
@@ -160,14 +161,22 @@ export type SablonPiesa = {
 
 type Insula = { readonly ext: Contur; readonly cont: readonly Contur[] };
 
-/** Insula (regiunea pereților exteriori) care cuprinde punctul, sau -1. */
-const insulaLui = (ins: readonly Insula[], p: { x: number; y: number }): number => ins.findIndex((i) => inRegiune(p, i.cont));
+/**
+ * Insula căreia îi aparține regiunea: un punct al regiunii stă în insulă, sau (o regiune lărgită peste pereți, cu o suprapunere
+ * mare) un punct al insulei stă în regiune. Altfel -1.
+ */
+function insulaRegiunii(ins: readonly Insula[], g: Regiune): number {
+  const i = ins.findIndex((x) => inRegiune(g.exterior.varfuri[0]!.p, x.cont));
+  if (i >= 0) return i;
+  const cont = [g.exterior, ...g.gauri];
+  return ins.findIndex((x) => inRegiune(x.ext.varfuri[0]!.p, cont));
+}
 
 /**
  * Șablonul unei piese (contururi închise, care nu se ating, par-impar) pentru felurile date. Sau motivul, dacă geometria
- * refuză (un offset eșuat, nu doar o parte prea subțire).
+ * refuză (un offset eșuat, nu doar o parte prea subțire). Brim-ul e al grupului (`brimGrup`).
  */
-export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, feluri: ReadonlySet<FelStrat>, brim: boolean): SablonPiesa | string {
+export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, feluri: ReadonlySet<FelStrat>): SablonPiesa | string {
   const contur = contururi.map((c) => Float64Array.from(puncte(c)));
   // Aria, par-impar: un contur cuprins într-un număr impar de altele e gol.
   let arieTotala = 0;
@@ -191,41 +200,65 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     if (r === undefined) { r = laDistanta(contururi, d); memoRegiuni.set(k, r); }
     return r;
   };
-  function pereti0(h: number, prim: boolean): { insule: Insula[]; cai: Cale[][]; dInterior: number; wUltim: number } | string {
-    const wE = prim ? s.wPrim : s.wExterior, wI = prim ? s.wPrim : s.wInterior, e = prim ? s.piciorElefant : 0;
-    const insule: Insula[] = [], cai: Cale[][] = [];
-    let d = e + wE / 2, dInterior = e, wUltim = wE;
+  /**
+   * Pereții: inelele, insulă cu insulă, și adâncimea la care se oprește fiecare insulă (marginea interioară a celui mai adânc
+   * perete al ei): o insulă îngustă, cu mai puțini pereți, își are umplerea de la propria adâncime.
+   */
+  function pereti1(h: number, wE: number, wI: number, e: number): { insule: Insula[]; cai: Cale[][]; adanc: number[] } | string {
+    const insule: Insula[] = [], cai: Cale[][] = [], adanc: number[] = [];
+    let d = e + wE / 2;
     for (let k = 0; k < s.pereti; k++) {
       if (k === 1) d += (pas(wE, h) + pas(wI, h)) / 2; else if (k > 1) d += pas(wI, h);
       const r = regiuniLa(d);
       if (typeof r === 'string') return r;
       if (r.length === 0) break;
-      dInterior = d + (k === 0 ? wE : wI) / 2; wUltim = k === 0 ? wE : wI;
-      if (k === 0) for (const g of r) { insule.push({ ext: g.exterior, cont: [g.exterior, ...g.gauri] }); cai.push([]); }
+      const w = k === 0 ? wE : wI;
+      if (k === 0) for (const g of r) { insule.push({ ext: g.exterior, cont: [g.exterior, ...g.gauri] }); cai.push([]); adanc.push(0); }
       for (const g of r) {
-        const i = k === 0 ? insule.findIndex((x) => x.ext === g.exterior) : insulaLui(insule, g.exterior.varfuri[0]!.p);
+        const i = k === 0 ? insule.findIndex((x) => x.ext === g.exterior) : insulaRegiunii(insule, g);
         if (i < 0) continue;
-        for (const c of [g.exterior, ...g.gauri]) cai[i]!.unshift({ rol: k === 0 ? 'exterior' : 'interior', p: cusatura(puncte(c)), inchisa: true, w: k === 0 ? wE : wI });
+        adanc[i] = d + w / 2;
+        for (const c of [g.exterior, ...g.gauri]) cai[i]!.unshift({ rol: k === 0 ? 'exterior' : 'interior', p: cusatura(puncte(c)), inchisa: true, w });
       }
     }
-    return { insule, cai, dInterior, wUltim };
+    return { insule, cai, adanc };
+  }
+  function pereti0(h: number, prim: boolean): { insule: Insula[]; cai: Cale[][]; adanc: number[] } | string {
+    if (!prim) return pereti1(h, s.wExterior, s.wInterior, 0);
+    const r = pereti1(h, s.wPrim, s.wPrim, s.piciorElefant);
+    if (typeof r === 'string') return r;
+    // Compensarea primului strat (și linia lui mai lată) nu are voie să șteargă o trăsătură pe care straturile de deasupra o
+    // au: altfel ea s-ar imprima în aer, de la stratul 2. Atunci primul strat începe ca celelalte (fără compensare, cu
+    // peretele exterior la lățimea lui obișnuită).
+    // Pierderea se vede pe arii: regiunea peretelui exterior de pe primul strat, lărgită înapoi până la cea de deasupra, trebuie
+    // s-o acopere (colțurile rotunjite pierd sub 0,2 mm²; o trăsătură îngustă, mult mai mult).
+    const d0 = s.piciorElefant + s.wPrim / 2, d1 = s.wExterior / 2;
+    const sus = regiuniLa(d1), jos = regiuniLa(d0);
+    if (typeof sus === 'string') return sus;
+    if (typeof jos === 'string') return jos;
+    const inapoi = jos.length === 0 || d0 - d1 < 1e-6 ? jos : laDistanta(contururiDin(jos), -(d0 - d1));
+    const aSus = arieRegiuni(sus);
+    const pierdute = typeof inapoi === 'string' || aSus - arieRegiuni(inapoi) > Math.max(0.2, 0.005 * aSus);
+    return pierdute ? pereti1(h, s.wExterior, s.wPrim, 0) : r;
   }
   const umplere = (h: number, prim: boolean, w: number, suprapunere: number, unghiuri: readonly number[], rol: Rol, sp: number, rar: boolean): Cale[][] | string => {
     const pr = pereti(h, prim);
     if (typeof pr === 'string') return pr;
     const cai = pr.cai.map((x) => [...x]);
     if (pr.insule.length === 0 || (rar && s.umplere <= 0)) return cai;
-    const r = regiuniLa(pr.dInterior - suprapunere * w);
-    if (typeof r === 'string') return r;
-    for (const g of r) {
-      const i = insulaLui(pr.insule, g.exterior.varfuri[0]!.p);
-      if (i < 0) continue;
-      const pol = [g.exterior, ...g.gauri].map((c) => puncte(c));
-      const mica = rar && pol.reduce((a, p) => a + arie(p), 0) < ARIE_MINIMA_RARA;
-      const unghiuriAici = mica ? [unghiuri[0]!] : unghiuri, pasAici = mica ? pas(w, h) : sp;
-      for (const u of unghiuriAici) {
-        const linii = zigzag(intervale(pol, u, pasAici), u, pasAici, rar && !mica ? 0 : pasAici, mica ? 'plin' : rol, w);
-        cai[i]!.push(...ordoneaza(linii, linii[0]?.p[0] ?? 0, linii[0]?.p[1] ?? 0).cai);
+    for (let i = 0; i < pr.insule.length; i++) {
+      const r = regiuniLa(pr.adanc[i]! - suprapunere * w);
+      if (typeof r === 'string') return r;
+      for (const g of r) {
+        if (insulaRegiunii(pr.insule, g) !== i) continue;
+        const pol = [g.exterior, ...g.gauri].map((c) => puncte(c));
+        const mica = rar && pol.reduce((a, p) => a + arie(p), 0) < ARIE_MINIMA_RARA;
+        const unghiuriAici = mica ? [unghiuri[0]!] : unghiuri, pasAici = mica ? pas(w, h) : sp;
+        for (const u of unghiuriAici) {
+          // Grila rară nu se leagă niciodată (o legătură de câțiva mm s-ar extruda peste piesă sau peste un gol).
+          const linii = zigzag(intervale(pol, u, pasAici), u, pasAici, rar && !mica ? -1 : pasAici, mica ? 'plin' : rol, w);
+          cai[i]!.push(...ordoneaza(linii, linii[0]?.p[0] ?? 0, linii[0]?.p[1] ?? 0).cai);
+        }
       }
     }
     return cai;
@@ -245,16 +278,6 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     if (typeof r === 'string') return r;
     fel.set(f, r.flat());
   }
-  // Brim-ul: bucle spre exterior, doar exterioarele, de la cea mai depărtată spre piesă.
-  const caiBrim: Cale[] = [];
-  if (brim && s.latimeBrim > 0) {
-    const p = pas(s.wPrim, s.strat1), n = Math.max(1, Math.round(s.latimeBrim / p));
-    for (let k = n - 1; k >= 0; k--) {
-      const r = laDistanta(contururi, -(s.golBrim + s.wPrim / 2 + k * p));
-      if (typeof r === 'string') return r;
-      for (const g of r) caiBrim.push({ rol: 'brim', p: cusatura(puncte(g.exterior)), inchisa: true, w: s.wPrim });
-    }
-  }
   // Ce nu iese: regiunea minus deschiderea ei (strânsă cu w/2, apoi lărgită la loc).
   let subtire = 0;
   const strans = laDistanta(contururi, s.wExterior / 2);
@@ -264,5 +287,32 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     subtire = Math.max(0, arieTotala - ramas);
     if (subtire < Math.max(0.05, 0.002 * arieTotala)) subtire = 0;
   }
-  return { fel, brim: caiBrim, contur, arie: arieTotala, subtire };
+  return { fel, contur, arie: arieTotala, subtire };
+}
+
+/**
+ * Brim-ul grupului: buclele spre exterior ale tuturor pieselor deodată (`offsetFigura` le unește pe cele apropiate), doar
+ * exterioarele, de la cea mai depărtată spre piese; o buclă intră doar dacă înconjoară o piesă cu brim. Așa, brim-ul nu trece
+ * prin piesele vecine și nici peste brim-ul lor. Sau motivul (de exemplu, două piese care se ating).
+ */
+export function brimGrup(piese: readonly { readonly contururi: readonly Contur[]; readonly brim: boolean }[], s: SetariFeliere): Cale[] | string {
+  if (s.latimeBrim <= 0 || !piese.some((p) => p.brim)) return [];
+  const toate = piese.flatMap((p) => p.contururi);
+  const repere = piese.filter((p) => p.brim && p.contururi.length > 0).map((p) => p.contururi[0]!.varfuri[0]!.p);
+  const p = pas(s.wPrim, s.strat1), n = Math.max(1, Math.round(s.latimeBrim / p));
+  // Buclele, grupate după piesele pe care le înconjoară: întâi cele comune (mai multe piese), apoi ale fiecărei piese, fiecare
+  // grup de la exterior spre piese. Așa, între buclele alăturate ale aceluiași grup nu e nicio deplasare lungă.
+  const grupuri = new Map<string, Cale[]>();
+  for (let k = n - 1; k >= 0; k--) {
+    const r = laDistanta(toate, -(s.golBrim + s.wPrim / 2 + k * p));
+    if (typeof r === 'string') return r;
+    for (const g of r) {
+      const cheie = repere.map((q, i) => (inRegiune(q, [g.exterior]) ? i : -1)).filter((i) => i >= 0).join(',');
+      if (cheie === '') continue;
+      const l = grupuri.get(cheie) ?? [];
+      l.push({ rol: 'brim', p: cusatura(puncte(g.exterior)), inchisa: true, w: s.wPrim });
+      grupuri.set(cheie, l);
+    }
+  }
+  return [...grupuri.entries()].sort((a, b) => b[0].split(',').length - a[0].split(',').length).flatMap(([, l]) => l);
 }

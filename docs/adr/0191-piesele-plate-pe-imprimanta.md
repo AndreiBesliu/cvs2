@@ -198,7 +198,8 @@ Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin op
   `index.ts` (`feliaza`). Dialogul: `src/app/DialogDinDesen.tsx`, adus la primul clic pe „Din desen…”, care stă în ambele
   vederi ale ferestrei (fără imprimantă, sub textul de început; cu ea, lângă „Trimite un fișier…”). Aplicația dă desenul ca o
   funcție (`desen`), citită la clic.
-- **Măsurat:** placa de 20 × 20 × 3 mm: 15 straturi, 1,75 g de PLA (pe hârtie, ~1,8), ~3 min 36 s; E pe mm exact pe valorile
+- **Măsurat:** placa de probă de 40 × 20 × 3 mm, cu gaura de 10 mm și fanta: 15 straturi, 1,75 g de PLA (pe hârtie, ~1,8),
+  ~3 min 36 s (înainte de recenzie); E pe mm exact pe valorile
   de pe hârtie (0,030727, 0,033172 și 0,037247). Felierea: ~0,1 s pentru o placă mică, ~1 s pentru 180 × 180 × 20 mm la 0,20 și
   ~1,6 s la 0,08 (16 MB de G-code), pe firul principal. **Mărimea:** bucata dialogului are 14,2 kB gzip (dialogul 34 %,
   G-code-ul 25 %, straturile 13 %, profilul 11 %; fără geometrie dublată: offsetul stă în bucata lui comună), deci totalul
@@ -211,6 +212,22 @@ Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin op
 - **Proba:** `test/unit/imprimanta.feliere.test.ts` (18, pe valori de pe hârtie); manualul numește fiecare control al
   dialogului și fiecare setare din „Avansat” (proba lui le caută pe toate); e2e +2 (fără imprimantă, cu fișierul descărcat;
   cu imprimanta falsă, prin verificarea și trimiterea de la 3.6h); otrăvurile `test/otravuri/3.6j.py`.
+- **Recenzia cu agenți** (07.11, după porțile verzi: 4 lentile, fiecare cu un verificator care a încercat s-o răstoarne; 8
+  agenți, ~2,6 milioane de tokeni): 51 de constatări, 49 confirmate, toate reparate sau probate. Cele care puteau strica o
+  imprimare: brim-ul nu intra în verificarea patului (ieșea din pat cu un brim lat), brim-ul fiecărei piese trecea prin
+  piesele vecine, compensarea primului strat ștergea trăsăturile de 0,42–0,8 mm (imprimate apoi în aer, de la stratul 2),
+  „Duza” și „Patul” din Simplu nu ajungeau pe primul strat, iar duza cobora la Z0.2 pe loc, după `START_PRINT`. Reparat: un
+  brim pentru tot grupul (`brimGrup`, buclele grupate pe piese), verificarea patului pe tot ce se extrudează și pe Z-ul real al
+  ultimului strat (cu ridicarea plafonată), primul strat fără compensare unde aceasta ar pierde arie, temperaturile din Simplu
+  și pe primul strat (cu diferența profilului), prima deplasare la Z1 și coborârea la destinație (ca OrcaSlicer). Apoi: umplerea
+  fiecărei insule de la adâncimea ei, grila rară fără legături, unirea fără dependență de ordine (golul acoperit, latura
+  comună), ventilatorul oprit pe straturile mai lungi decât timpul de răcire (ca OrcaSlicer), patul K1C oricare ar fi
+  imprimanta legată (cu avertisment), dialogul unic (nu dispare la o schimbare a legăturii, nu oprește o trimitere), desenul
+  citit din nou la o schimbare, câmpurile fără refeliere inutilă, Escape și focusul, previzualizarea la o lățime nouă,
+  deplasările la cerere. Probele noi: `imprimanta.feliere.recenzie.test.ts` (22), cu tabelele legate de profilele OrcaSlicer
+  (`test/fixtures/imprimanta/orca-k1.json`), starea retragerii și Z-ul în tot fișierul, accelerațiile, debitul pe rol, grila,
+  încetinirea, obiectele, piesele de înălțimi diferite, filamentul pe hârtie; e2e-ul, cu temperatura din Simplu în `START_PRINT`,
+  desenul reîmprospătat și Escape. Rămâne: două forme care se ating într-un singur colț se refuză (cu motiv).
 - **Nemăsurat încă:** placa de probă pe K1C; ce arată ecranul imprimantei (miniatura, „stratul x din N”); unde trage linia de
   curățare.
 

@@ -165,18 +165,25 @@ class Scriitor {
     this.t += Math.abs(z - this.z) / K1C.vitezaZ; this.z = z; this.f = K1C.vitezaZ * 60;
   }
   /** Deplasarea la (x, y); cu retragere (și ridicare) dacă `retragere`. */
+  /**
+   * Deplasarea la (x, y), apoi coborârea la Z-ul stratului: cu retragere (și ridicare, cel mult până la înălțimea patului,
+   * doar sub `ridicareSub`) dacă `retragere`. Duza care stă deja mai sus (după începutul imprimantei, la Z1) se mută întâi în
+   * XY și coboară abia la destinație, ca OrcaSlicer: nu atinge capătul liniei de curățare.
+   */
   mergi(x: number, y: number, retragere: boolean, zStrat: number): void {
     const L = Math.hypot(x - this.x, y - this.y);
-    if (L < 1e-6) return;
-    const ridica = retragere && this.s.ridicare > 0 && zStrat < K1C.ridicareSub;
+    if (L < 1e-6 && Math.abs(this.z - zStrat) < 1e-9) return;
+    const hop = Math.min(this.s.ridicare, K1C.pat[2] - zStrat);
     if (retragere) this.retrage();
-    if (ridica) this.zLa(zStrat + this.s.ridicare);
-    this.acc(this.s.aDeplasare);
-    const f = Math.round(this.s.vDeplasare * 60);
-    this.scrie(`G1 X${n3(x)} Y${n3(y)}${f === this.f ? '' : ` F${f}`}`);
-    this.f = f; this.x = x; this.y = y;
-    this.t += timpBucata(L, this.s.vDeplasare, this.s.aDeplasare, 0, 0);
-    if (ridica) this.zLa(zStrat);
+    if (retragere && hop > 1e-9 && zStrat < K1C.ridicareSub && this.z < zStrat + hop - 1e-9) this.zLa(zStrat + hop);
+    if (L >= 1e-6) {
+      this.acc(this.s.aDeplasare);
+      const f = Math.round(this.s.vDeplasare * 60);
+      this.scrie(`G1 X${n3(x)} Y${n3(y)}${f === this.f ? '' : ` F${f}`}`);
+      this.f = f; this.x = x; this.y = y;
+      this.t += timpBucata(L, this.s.vDeplasare, this.s.aDeplasare, 0, 0);
+    }
+    this.zLa(zStrat);
   }
   /** Extrudarea unei căi, cu viteza dată (mm/s): E pe fiecare bucată, din secțiunea liniei. */
   extrudeaza(c: Cale, h: number, v: number, a: number): void {
@@ -213,7 +220,8 @@ class Scriitor {
 export type IntrareGcode = {
   readonly piese: readonly PiesaPlata[];
   readonly sabloane: readonly SablonPiesa[];
-  readonly brim: readonly boolean[];
+  /** Brim-ul grupului (`brimGrup`), pe primul strat. */
+  readonly brim: readonly Cale[];
   readonly setari: SetariFeliere;
   readonly miniaturi?: readonly Miniatura[];
   /** Data din antet, deja scrisă („2026-11-07 at 19:41:00”), ca ieșirea să nu depindă de ceas. */
@@ -231,9 +239,11 @@ const viteza = (c: Cale, h: number, prim: boolean, s: SetariFeliere): number => 
 /** Ventilatorul piesei pe un strat (%), după timpul lui, ca OrcaSlicer (între minim și maxim). */
 function ventilator(k: number, timp: number, s: SetariFeliere, ventSubTimp: number): number {
   if (k <= s.ventOprit) return 0;
-  if (timp < s.stratMinim || ventSubTimp <= s.stratMinim) return s.ventMax;
+  if (timp < s.stratMinim) return s.ventMax;
   if (timp < ventSubTimp) return s.ventMax - ((s.ventMax - s.ventMin) * (timp - s.stratMinim)) / (ventSubTimp - s.stratMinim);
-  return s.ventMin;
+  // Un strat mai lung decât `fan_cooling_layer_time`: OrcaSlicer oprește ventilatorul (`reduce_fan_stop_start_freq` = 0 în
+  // profilele K1).
+  return 0;
 }
 
 const centru = (p: ArrayLike<number>): [number, number] => {
@@ -260,10 +270,12 @@ function scrieStrat(w: Scriitor, st: PlanStrat, k: number, intr: IntrareGcode, f
   const s = intr.setari, prim = k === 1;
   const vf = (c: Cale): number => Math.max(Math.min(s.vitezaMinima, viteza(c, st.h, prim, s)), viteza(c, st.h, prim, s) * factor);
   if (prim) {
-    for (let i = 0; i < intr.piese.length; i++) {
-      if (!intr.brim[i]) continue;
-      for (const c of intr.sabloane[i]!.brim) { w.mergi(c.p[0]!, c.p[1]!, true, st.z); w.extrudeaza(c, st.h, vf(c), rol('brim', true, s).a); }
-    }
+    // Brim-ul grupului, de la bucla cea mai depărtată spre piese: între bucle alăturate (~0,46 mm), fără retragere.
+    intr.brim.forEach((c, j) => {
+      const L = Math.hypot(c.p[0]! - w.x, c.p[1]! - w.y);
+      w.mergi(c.p[0]!, c.p[1]!, j === 0 || L >= K1C.deplasareFaraRetragere, st.z);
+      w.extrudeaza(c, st.h, vf(c), rol('brim', true, s).a);
+    });
   }
   // Piesele, cea mai apropiată întâi.
   const rest = [...st.piese];
@@ -343,8 +355,8 @@ export function scrieGcode(intr: IntrareGcode): IesireGcode {
     w.scrie(';BEFORE_LAYER_CHANGE');
     w.scrie(`;${g3(st.z)}`);
     w.scrie('G92 E0');
-    if (k > 1) w.retrage();
-    w.zLa(st.z);
+    // Pe primul strat, Z-ul se pune la prima deplasare, după mutarea în XY (de la Z1, al începutului imprimantei).
+    if (k > 1) { w.retrage(); w.zLa(st.z); }
     w.scrie(';AFTER_LAYER_CHANGE');
     w.scrie(`;${g3(st.z)}`);
     if (k === 2) {
