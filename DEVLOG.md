@@ -6716,3 +6716,27 @@ ceva de aici incolo se va face update si pe main ulterior”; la publicarea refu
   indecși, stocare). <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `e9cf6ee3309e`; CSP-ul are `http:`
   în `connect-src`; catalogul extensiilor și `/admin` răspund 200. Rândul owner-ului din fișă (proba raportărilor pe adresa
   principală) apare în `/admin` cu următoarea publicare.
+
+## 2026-11-07 — Proba propunerii unei extensii, întărită: clicul pierdut după ce fereastra ei reapare (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, aici” (la „Întăresc aici proba instabilă `extensii.lucru.spec.ts:277`?”), apoi „Da, descarcă” (urma probei
+căzute, din CI).
+**Started:** 07.11, 22:10. **Completed:** 07.11, 22:55.
+
+- **Ce s-a întâmplat:** în CI-ul complet pe `63d6af5` (rularea `42395280530`, prima încercare), proba „formele: o extensie
+  propune un SVG…” a așteptat „Importă” 25 s. Urma ei (artefactul `probe-cazute`, 936 KB): al doilea clic pe „Propune o
+  formă” a fost dat la ~60 ms după ce fereastra extensiei a reapărut (fila, după Proiectare), în același punct ca primul, cu
+  verificările lui Playwright trecute în cadru; după el, nicio cerere a extensiei, nicio eroare în pagină, iar extensia avea
+  un singur răspuns. Clicul n-a ajuns la buton.
+- **Local (Windows), nereprodus:** 0 clicuri pierdute din 480 (fila ascunsă și arătată, apoi imediat un clic în cadru, cu și
+  fără procesorul paginii și al cadrului încetinit de 6 ori, 4 rulări în paralel). Drumul propunerii, notat la fiecare
+  graniță (clicul, mesajele portului, fereastra, `inert`, dialogurile), merge. Cade pe Linux, în CI, ca probele pe care le
+  pomenește `playwright.config.ts`.
+- **Întărirea** (`test/e2e/extensii.lucru.spec.ts`): `clicDupaReaparitie` face clicul adevărat și îl repetă doar dacă n-a
+  ajuns la buton (semnul îl pune clicul, o dată), deci propunerea nu pleacă de două ori; la capăt, extensia are exact două
+  răspunsuri („forme: deschis” de două ori), nu doar ultimul.
+- **Probat:** cu clicuri pierdute simulate în cadru (oprite pe document, înaintea butonului): 0, 1 și 2 trec, cu două
+  răspunsuri; toate pierdute, pică; proba veche, cu un clic pierdut, pică exact ca în CI („Importă” nu apare în 30 s). Mutația
+  „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
+  și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului.
