@@ -73,22 +73,27 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
    și tipurile lor MIME sunt formatul `imagine`; un fișier fără extensie cunoscută, după semnătură. TIFF e refuzat cu motivul
    lui (salvat ca PNG, merge), până la răspunsul 5. Fereastra de fișiere și lăsarea pe planșă le primesc. Plafonul
    fișierului rămâne 16 MB.
-2. **Calculul e în workerul CAM** (ADR 0109): cererea `trasare` poartă fișierul (un `Blob`) și opțiunile. Workerul
-   decodează (peste 16 Mpx, redus la 16 Mpx, cu calitatea „high”, iar fereastra spune asta), citește pixelii
-   (`OffscreenCanvas`) și trasează. Nucleul e o bucată la cerere a workerului (`import()` din `calculCam.ts`), deci workerul
-   CAM nu crește. Fără stare (ADR 0015): fiecare previzualizare e un calcul, iar unul nou îl anulează pe cel vechi.
+2. **Calculul e în workerul trasării** (`src/jobs/lucratorTrasare.ts`, după bazinul CAM, ADR 0109): cererea poartă fișierul
+   (un `Blob`) și alegerile. Workerul decodează (peste 16 Mpx, redus la 16 Mpx, cu calitatea „high”, iar fereastra spune
+   asta), citește pixelii (`OffscreenCanvas`) și trasează. Fără stare (ADR 0015): fiecare previzualizare e un calcul, oprit
+   de o citire nouă, de Renunță, de Escape și de fișierul următor (semnalul citirii, `ContextImport.semnal`), cu workerul din
+   mijlocul calculului.
+   *Schimbat la cod (felia 25.1↑):* decizia pusese nucleul ca bucată la cerere a workerului CAM, dar workerele se construiesc
+   IIFE (fără bucăți), deci l-ar fi crescut pe acela. Un worker al lui (6,7 kB gzip) nu atinge workerul CAM.
 3. **Cerneala vine din RGBA, nu din luminanță** (lecția D7):
    - o imagine cu transparență: cerneala e acoperirea (alfa), cu pragul la 50 %. Fundalul transparent e fundal oricare ar
      fi culoarea desenului (litere albe, negre sau colorate);
    - o imagine opacă: cerneala e întunecimea, iar polaritatea vine din marginea imaginii (ce domină marginea e fundalul);
      „Inversează” o întoarce;
    - pragul automat: Otsu desparte două clase, iar pragul stă la mijlocul mediilor lor, adică la jumătatea acoperirii (muchia
-     geometrică a unei margini netezite). Manual, un glisor de 0–255 peste histogramă;
+     geometrică a unei margini netezite). Manual, un glisor de 1–254, cu histograma cernelii sub el (pe scară logaritmică,
+     cu linia la prag, care urmează glisorul înaintea retrasării);
    - culorile (25.2↑) și pragul local (25.4↑) sunt alte surse ale cernelii, pe aceeași cale.
 4. **Curățarea, pe mască:**
    - componentele conexe: cerneala în 8-vecinătate, fundalul în 4;
-   - petele sub „Pete sub” și golurile sub „Găuri sub” se șterg din câmp. Pragurile se dau în mm (diametrul cercului cu
-     aceeași arie), cu echivalentul în pixeli alături; implicit 0,3 mm, dar cel puțin 2 × 2 px;
+   - petele sub „Ignoră petele sub” se șterg din câmp, iar golurile sub „Umple golurile sub” se umplu (cele lipite de
+     marginea imaginii rămân). Pragurile se dau în mm (diametrul cercului cu aceeași arie), cu echivalentul în pixeli
+     alături; implicit 0,3 mm, dar cel puțin 2 × 2 px;
    - aceeași regulă de vecinătate decide punctele-șa ale conturului, deci contururile nu contrazic componentele.
 5. **Conturul sub-pixel:** marching squares pe câmpul cernelii, la nivelul pragului, cu interpolarea liniară între centrele
    pixelilor. În afara imaginii e fundal, deci contururile se închid la margine. Ies inele închise: exterioarele într-un
@@ -109,7 +114,9 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
      desenului cade în punctul lăsat (felia 2.8b).
 8. **Piesa:**
    - căile închise trec prin regulile comune ușilor (`caleImport.ts`: praful, plafonul căii, marginile documentului);
-   - apoi prin aceeași imbricare (exterior / interior) și aceeași piesă ca la SVG (`piesaDinImport`);
+   - laturile (exterior / interior) vin din sensul fiecărui contur (§5), apoi aceeași piesă ca la SVG (`piesaDinImport`).
+     *Schimbat la cod:* nu prin imbricare. Sensul spune același lucru, iar pe o poză de 12 Mpx cu 2 162 de contururi,
+     imbricarea ținea firul principal 553 ms;
    - `document.importa` le adaugă într-un singur pas de anulare;
    - documentul rămâne v19: nicio schemă nouă.
 9. **Plafoanele și timpul** (lecția D6):
@@ -119,8 +126,8 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
    - termenul calculului e 30 s;
    - cât trasează, fereastra arată „Trasez…” peste previzualizarea veche, iar fila nu se blochează.
 10. **Fereastra (schița, planșa 1):** e fereastra importului, lărgită pentru o imagine.
-    - **În stânga:** sursa, pragul (automat sau glisorul cu histograma), Inversează, Netezimea, Pete sub, Găuri sub, lățimea
-      (cu DPI-ul și de unde vine).
+    - **În stânga:** sursa, pragul (automat sau glisorul cu histograma), Inversează, Netezimea, Ignoră petele sub, Umple
+      golurile sub, lățimea (cu DPI-ul și de unde vine).
     - **În dreapta:** previzualizarea, cu imaginea estompată (glisorul), vectorii peste ea și mărirea (rotița, + / −).
     - **Dedesubt, raportul:** contururile pe laturi, abaterea maximă, pixelul în mm, mărimea imaginii și reducerea ei.
     - Importă, Renunță și Escape merg ca la celelalte uși.
@@ -154,6 +161,41 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
 
     Linia întreagă ține ~12–14 kB din plafonul total, comun cu celelalte linii (răspunsul 6).
 
+## Felia 25.1↑: cum a ieșit și ce s-a măsurat
+
+**Nucleul** (`src/trasare/trasare.ts`, scris din lucrări, fără cod străin):
+- poligonul: un con al direcțiilor, strâns de discul fiecărui punct, în banda ε (lacom, nu optimul din Selinger: aceeași
+  bandă, cu ceva mai multe laturi); startul, în mijlocul celei mai lungi laturi;
+- vârfurile se mută în încrucișarea dreptelor laturilor vecine (cele mai mici pătrate, fără capete), doar în afară și cel
+  mult cât o parte din laturi; teșiturile nuanțelor (o latură scurtă între două lungi, cu rotirea în ea) se strâng într-un
+  colț, cel mult 0,9 px dincolo de contur (1,5 pe marginile dure);
+- colțul: vârful e departe de coarda dintre mijloacele laturilor (față de α · 4ε), e un colț strâns sau o întoarcere (peste
+  120°); altfel, o cubică între mijloace, cu mânerele potrivite prin vârful buclei; cubicele vecine se unesc cât abaterea
+  rămâne sub τ; abaterea se măsoară pe fiecare punct al buclei, față de bucata lui și de vecinele ei;
+- marginile dure (sub 15 % nuanțe lângă contur): bucla se netezește întâi (media 1, 2, 3, 2, 1), cu banda de cel puțin 0,4 px.
+
+**Ce a găsit sonda pe o poză JPEG zgomotoasă** (abaterea raportată ajungea la 1,6 px; fiecare caz, pe conturul lui): un
+punct întors în discul startului încheia latura și sărea un ac de un pixel; o limbă subțire (vârful ei, dincolo de capătul
+coardei) nu era colț, iar cubica ajungea la trei sferturi din drum; mutarea vârfului spre coardă scurta un ac. Reparate, cu
+proba pe zgomot: 1,52 / 1,56 / 1,65 → 0,56 / 0,61 / 0,63 px (Fidel / Echilibrat / Neted, 400 × 300); pe poza de 12 Mpx în
+browser, 1,63 → 0,79 px (Echilibrat).
+
+**Corpusul** (față de hârtie, în ambele sensuri; Echilibrat): cercurile 0,20 px; pătratul drept 0,09, rotit 0,04, cu margini
+dure 0,17, colțurile la cel mult 0,10 / 0,04 / 0,18 px de un vârf; litera R 0,29 / 0,30 px (lângă colțuri 0,47 / 0,66: piciorul
+literei are trăsături de 0,5 px); discul cu pete 0,13 px (față de martorul scikit-image 0,22). Țintele (0,4 px netezit, 0,6 px
+dur) sunt atinse peste tot, în afara colțurilor ascuțite ale literei. Logoul owner-ului: 48 de contururi (40 + 8), 758 de
+vârfuri, abaterea 0,58 px (0,153 mm la 96 px pe țol); față de martorul scikit-image, 0,96 / 0,58 px (colțurile strânse trec cu
+cel mult 0,9 px de conturul rotunjit al martorului).
+
+**Timpul** [măsurat pe 07.11, Edge 157 fără fereastră, pe mașina de lucru]: o poză de 4000 × 3000 cu zgomot (5 946 de
+contururi): trasarea ~6,7 s în worker, cu fila vie; la sosire, cel mai lung cadru 183 ms (înainte, un gol de 518 ms: imbricarea,
+praful pe cutia exactă), apoi 67 ms (verificarea lui Importă, comună ușilor) și ~150 ms desenul vectorilor. În e2e, o poză de
+3000 × 2000: 2,9–4,4 s de trasare, cel mai lung gol 17 ms. O imagine de 17 Mpx se reduce la 4850 × 3298, cu scara fișierului.
+
+**Limitele cunoscute:** pe un rezultat de mii de contururi, sosirea ține un cadru de ~0,2 s, iar mutarea sau mărirea
+previzualizării redesenează tot stratul vectorilor; Neted rotunjește, din decizie, colțurile cu brațele scurte (până la
+~α · ε = 1,26 px); acele zgomotului rămân în bandă (le șterge curățarea, nu netezimea).
+
 ## Ce am respins
 
 - **O bibliotecă de trasare:** potrace și autotrace (GPL), `marchingsquares` (AGPL), `imagetracerjs` (fără muchia sub-pixel,
@@ -169,8 +211,9 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
 
 - Butonul importului și fereastra de fișiere primesc imaginile. Fiecare control nou are capitolul lui în manual, în ambele
   limbi (`%% acopera:`), iar textele noi stau în `src/i18n/import.*.ts` (ADR 0086).
-- Cererea `trasare` intră în `protocolCam.ts`. Nucleul stă în `src/trasare/`, fără importuri din interfață (regula
-  `bazinul-fara-interfata`).
+- Cererea și răspunsul trasării stau în `src/jobs/calculTrasare.ts`, bazinul în `bazinTrasare.ts` (cu clasele lui de
+  anulare, ca să nu împartă o bucată cu bazinul CAM). Nucleul stă în `src/trasare/`, fără niciun import din aplicație
+  (regula `trasare-izolat`, cu capcana ei); bazinul îl poate importa (`bazinul-fara-interfata`).
 - Mărimea pixelului și abaterea se arată în fereastră; nu se scriu în document.
 - Plafonul total e comun cu liniile paralele (ADR 0137): fiecare felie își spune kB-ii în raport.
 

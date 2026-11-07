@@ -240,7 +240,9 @@ export function DialogImport({
         </h2>
         {de !== undefined && <p className="mic" data-testid="import-de">{t('import.propus-de', { nume: de })}</p>}
         {stare === 'citire' && !imagine && <p role="status">{t('import.citeste')}</p>}
-        {imagine && <PanouTrasare alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare} seRecitesc={seRecitesc} />}
+        {/* Un panou pentru fiecare fișier al cozii: ciorna câmpurilor (lățimea scrisă la imaginea dinainte) și mărirea nu trec
+            la imaginea următoare. */}
+        {imagine && <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare} seRecitesc={seRecitesc} />}
         {pagini > 1 && (
           <div className="campuri">
             <label>

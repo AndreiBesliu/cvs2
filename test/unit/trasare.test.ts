@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { arie, cerneala, contururi, PLAFON_TRASARE, pragAutomat, traseaza, type ImagineRGBA, type OptiuniTrasare } from '../../src/trasare/trasare.ts';
+import { arie, cerneala, contururi, PLAFON_TRASARE, pragAutomat, tesituri, traseaza, urmatorul, type ImagineRGBA, type OptiuniTrasare } from '../../src/trasare/trasare.ts';
 import { citestePng } from './ajutor-png.ts';
 import { esantioane } from './ajutor-trasare.ts';
 
@@ -105,6 +105,12 @@ test('punctul-șa: doi pixeli de cerneală care se ating într-un colț sunt o s
   const { f } = cerneala(img, IMPLICITE);
   const bucle = contururi(f, 10, 10, 0.5);
   assert.equal(bucle.length, 1);
+  // Bucla e închisă prin celula-șa, pe hârtie: celula fără cele două colțuri goale (1 − 2 · 1/8 = 0,75), plus trei sferturi
+  // din rombul fiecărui pixel (2 · 3/8): 1,5 px², în 8 puncte. Cu șaua orientată greșit, bucla se rupe (3 puncte).
+  const [b] = bucle;
+  assert.ok(b);
+  assert.equal(b.length / 2, 8);
+  assert.ok(Math.abs(arie(b) - 1.5) < 1e-9, `aria ${arie(b)}`);
   // Iar curățarea îi vede ca o singură pată de 2 px: cu pragul 3, dispar amândoi.
   assert.equal(traseaza(img, { ...IMPLICITE, petePx: 3 }).raport.contururi, 0);
   assert.equal(traseaza(img, { ...IMPLICITE, petePx: 2 }).raport.contururi, 1);
@@ -156,15 +162,17 @@ test('abaterea raportată e chiar distanța cea mai mare de la contur la curbe (
 test('o margine zgomotoasă (ca a unei poze JPEG): acele de un pixel și limbile subțiri rămân în banda treptei', () => {
   // Pete netede tăiate de prag, cu zgomot de ±5 niveluri: marginile au ace de un pixel lățime și limbi lângă marginea
   // imaginii. Înainte, latura poligonului sărea un ac întors lângă start, cubica nu ajungea în vârful unei limbi, iar mutarea
-  // vârfului în încrucișare scurta acul: 1,52 / 1,56 / 1,65 px pe cele trei trepte. Acum 0,56 / 0,61 / 0,63 px. Neted
-  // rotunjește, din decizie, colțurile cu brațele scurte (până la ~colt · eps = 1,26 px).
+  // vârfului în încrucișare scurta acul: 1,52 / 1,56 / 1,65 px pe cele trei trepte. Acum 0,56 / 0,61 / 0,63 px. (Neted poate
+  // rotunji, din decizie, colțurile cu brațele scurte până la ~colt · eps = 1,26 px; pe imaginea asta nu e cazul.)
   let s = 12345;
   const r = (): number => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
   const img = imagine(400, 300, (x, y) => {
     const v = 128 + 60 * Math.sin(x / 17 + 2 * Math.sin(y / 23)) * Math.cos(y / 19 + 2 * Math.sin(x / 29)) + 10 * (r() - 0.5);
     return [v, v, v, 255];
   });
-  const banda = { fidel: 0.7, echilibrat: 0.8, neted: 1.3 } as const;
+  // Benzile: măsurat + ~0,1 px, pe imaginea asta (nu garanții ale treptelor). Mutarea vârfului și spre coardă dădea 0,87 px
+  // pe Neted (otrava B02).
+  const banda = { fidel: 0.65, echilibrat: 0.7, neted: 0.75 } as const;
   for (const netezime of ['fidel', 'echilibrat', 'neted'] as const) {
     const t = traseaza(img, { ...IMPLICITE, netezime, petePx: 4, gauriPx: 4 });
     assert.ok(t.ok);
@@ -188,4 +196,88 @@ test('plafonul (lecția D6): peste 20 000 de contururi, refuzul spune câte au f
   // Cu petele de 1 px șterse, rămâne nimic.
   const curat = traseaza(img, { ...IMPLICITE, petePx: 2 });
   assert.ok(curat.ok && curat.raport.contururi === 0);
+});
+
+// ── Probele țintite ale otrăvurilor scăpate (lista 25.1, prima rulare) ─────────────────────────────────────────────────
+
+test('cerneala: nivelul plin e al celor mai acoperiți 2 % dintre pixelii vizibili, nu al celor tipici; o umbră ușoară rămâne fundal', () => {
+  // Pe transparent: o umbră cu alfa 60 pe cea mai mare parte a imaginii și un pătrat opac, separat de ea. Nivelul plin e 255
+  // (pătratul are peste 2 % din pixelii vizibili), deci umbra are cerneala 60 / 255 = 0,24, sub prag: un singur contur.
+  // La mediană (otrava C02), nivelul plin ar fi 60, iar umbra, desen.
+  const img = imagine(60, 40, (x, y) => {
+    if (x >= 40 && x < 50 && y >= 15 && y < 25) return [0, 0, 0, 255];
+    if (x >= 2 && x < 36 && y >= 2 && y < 38) return [0, 0, 0, 60];
+    return [0, 0, 0, 0];
+  });
+  const r = traseaza(img, IMPLICITE);
+  assert.ok(r.ok);
+  assert.equal(r.raport.sursa, 'alfa');
+  assert.equal(r.raport.contururi, 1);
+});
+
+test('Luminozitatea pe o imagine cu transparență: pixelii transparenți se pun pe alb, oricare le-ar fi culoarea', () => {
+  // Fundalul transparent scris negru (0, 0, 0, 0), ca în multe exporturi PNG, și un disc negru opac. Pus pe alb,
+  // transparentul e fundal: un contur, discul. Fără alfa (otrava C04), totul e negru și nu rămâne nimic.
+  const img = imagine(40, 40, (x, y) => (discAlb(x, y) ? [0, 0, 0, 255] : [0, 0, 0, 0]));
+  const r = traseaza(img, { ...IMPLICITE, sursa: 'lum' });
+  assert.ok(r.ok);
+  assert.equal(r.raport.contururi, 1);
+  assert.equal(r.raport.exterioare, 1);
+});
+
+test('pragul automat, cu clase împrăștiate: Otsu le desparte în gol, iar pragul e mijlocul mediilor lor (pe hârtie)', () => {
+  // 300 de pixeli în treptele 20–59 (de 7 ori tot șirul, apoi 20–39) și 700 în 150–249 (de 7 ori). Mediile, pe hârtie:
+  // (7 · 1580 + 590) / 300 = 38,833 și 199,5; pragul (38,833 + 199,5) / 2 = 119,17. Varianța fără greutatea clasei a doua
+  // (otrava P02) împinge despărțirea în clasa mare: 199,8.
+  const g = new Float32Array(1000);
+  for (let k = 0; k < 1000; k++) g[k] = (k < 300 ? 20 + (k % 40) : 150 + (k % 100)) / 255;
+  assert.ok(Math.abs(pragAutomat(g) * 255 - (38.8333333 + 199.5) / 2) < 1e-3, `pragul ${pragAutomat(g) * 255}`);
+});
+
+test('curățarea: un gol lipit de marginea imaginii nu e gol (e fundalul de afară), oricât de mic', () => {
+  // Un bloc de cerneală în colțul din dreapta-sus, cu o crestătură de 1 × 2 px deschisă doar spre marginea de sus: în
+  // 4-vecinătate, ea e o componentă a fundalului care atinge marginea. Sub pragul golurilor (3 px), tot rămâne.
+  const img = imagine(20, 12, (x, y) => (x >= 8 && y < 8 && !(x === 13 && y < 2) ? [0, 0, 0, 255] : [255, 255, 255, 255]));
+  const r = traseaza(img, { ...IMPLICITE, gauriPx: 3 });
+  assert.ok(r.ok);
+  assert.equal(r.raport.gauri, 0);
+});
+
+test('marginile: dure și cu câteva nuanțe (sub 15 % lângă contur), tot dure', () => {
+  // Un disc cu margini dure, cu fiecare al optulea pixel al marginii gri: puține nuanțe, deci treptele se netezesc.
+  const disc = (x: number, y: number): boolean => Math.hypot(x + 0.5 - 30, y + 0.5 - 30) < 20;
+  let k = 0;
+  const img = imagine(60, 60, (x, y) => {
+    const d = disc(x, y);
+    if (d && (!disc(x - 1, y) || !disc(x + 1, y)) && k++ % 8 === 0) return [128, 128, 128, 255];
+    return d ? [0, 0, 0, 255] : [255, 255, 255, 255];
+  });
+  assert.equal(traseaza(img, IMPLICITE).raport.margini, 'dure');
+});
+
+test('teșiturile: se strâng doar colțurile care se rotesc cu cel puțin 25° (pe logoul owner-ului)', () => {
+  // Fiecare colț strâns, cu rotirea dintre laturile vecine ale poligonului (aproape dreptele potrivite de cod, deci cu o
+  // margine: 20°). Pe logo, cea mai mică e 26,9°; fără prag (otrava T04, 5°), apar colțuri inventate pe îndoiri de 6°.
+  const img = citestePng(readFileSync(new URL('../fixtures/trasare/logo-cvs.png', import.meta.url)));
+  const { f } = cerneala(img, IMPLICITE);
+  let n = 0, min = 180;
+  for (const P of contururi(f, img.latime, img.inaltime, 0.5)) {
+    const m = P.length / 2;
+    if (m < 8) continue;
+    const V0 = [0];
+    for (let v = 0; v < m;) { v = urmatorul(P, m, v, 0.3, Math.min(m, v + 8192)); V0.push(v); }
+    const { V, fix } = tesituri(P, m, V0, 0.3);
+    const X = (k: number): number => P[2 * (((k % m) + m) % m)] ?? 0, Y = (k: number): number => P[2 * (((k % m) + m) % m) + 1] ?? 0;
+    for (let k = 1; k + 1 < V.length; k++) {
+      const x = fix.get(V[k] ?? -1);
+      if (!x) continue;
+      const a = V[k - 1] ?? 0, b = V[k + 1] ?? m;
+      let d = Math.abs(Math.atan2(Y(b) - x[1], X(b) - x[0]) - Math.atan2(x[1] - Y(a), x[0] - X(a))) * 180 / Math.PI;
+      if (d > 180) d = 360 - d;
+      min = Math.min(min, d);
+      n++;
+    }
+  }
+  assert.ok(n > 20, `${n} colțuri strânse`);
+  assert.ok(min >= 20, `cea mai mică rotire ${min.toFixed(1)}°`);
 });

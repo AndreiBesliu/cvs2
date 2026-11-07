@@ -150,6 +150,20 @@ test('logoul owner-ului (PNG transparent): Transparența aleasă singură, scara
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
+test('o coadă de două imagini: a doua pornește cu alegerile ei, nu cu lățimea scrisă la prima', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(['test/fixtures/trasare/logo-cvs.png', 'test/fixtures/trasare/cerc-opac-alb.png']);
+  await expect(page.getByTestId('import-coada')).toHaveText('(1 din 2)');
+  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await page.locator('[data-camp="trasare-latime"]').fill('100');
+  await expect(page.getByTestId('trasare-scara')).toContainText('din lățime');
+  await page.locator('[data-buton="sari"]').click();
+  await expect(page.getByTestId('import-coada')).toHaveText('(2 din 2)');
+  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.locator('[data-camp="trasare-latime"]')).toHaveValue('');
+  await expect(page.getByTestId('trasare-scara')).toContainText('presupus');
+});
+
 test('un cerc alb pe transparent (lecția D7): cu Luminozitatea, „nimic de trasat”; înapoi la Transparența, cercul', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/trasare/cerc-alb-transparent.png');

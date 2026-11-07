@@ -74,8 +74,9 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
   const cerere = useRef(0);
   /**
-   * Oprirea citirii în curs (ADR 0220): o citire nouă, închiderea, fișierul următor sau demontarea o opresc. Trasarea unei
-   * imagini își oprește workerul; celelalte uși citesc pe loc și doar își aruncă rezultatul.
+   * Oprirea citirii în curs (ADR 0220): o citire nouă, fișierul următor și demontarea o opresc; închiderea (Renunță,
+   * Escape) demontează dialogul, deci o oprește tot de acolo. Trasarea unei imagini își oprește workerul; celelalte uși
+   * citesc pe loc și doar își aruncă rezultatul.
    */
   const oprire = useRef<AbortController | null>(null);
   const opresteCitirea = (): void => {
@@ -85,7 +86,6 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
 
   const inchide = (): void => {
     cerere.current++;
-    opresteCitirea();
     onInchide();
   };
   /**

@@ -44,7 +44,7 @@ o('P02', TR, '    const m0 = s0 / w0, m1 = (total - s0) / w1, v = w0 * w1 * (m0 
   '    const m0 = s0 / w0, m1 = (total - s0) / w1, v = w0 * (m0 - m1) * (m0 - m1);', 'nuc', 'varianța dintre clase fără w1')
 o('P03', TR, '(Math.max(1, Math.min(254, o.prag)) - 0.5) / 255', '(Math.max(1, Math.min(254, o.prag)) + 0.5) / 255', 'nuc',
   'pragul ales cu o jumătate de nivel prea sus')
-o('P04', TR, "  const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f))", '  const T = automat ? (pragAutomat(f))', 'nuc',
+o('P04', TR, "  const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f, h))", '  const T = automat ? (pragAutomat(f, h))', 'nuc',
   'pe transparență, pragul din Otsu în loc de jumătatea acoperirii')
 
 # ---- Curățarea ----
@@ -144,8 +144,8 @@ o('A06', CA, "  if (felImagine(f.octeti) === 'tiff' || (/\\.tiff?$/i.test(f.nume
   "  if (felImagine(f.octeti) === 'tiff') return { ok: false, cod: 'tiff', format: 'imagine' };", 'usa', 'un .tif fără semnătură nu mai e refuzat ca TIFF')
 
 # ---- Interfața (e2e) ----
-o('E01', IC, '    cerere.current++;\n    opresteCitirea();\n    onInchide();', '    cerere.current++;\n    onInchide();', 'e2e',
-  'Renunță / Escape nu opresc trasarea (workerul merge mai departe)')
+o('E01', IC, '    return () => { cerere.current++; opresteCitirea(); };', '    return () => { cerere.current++; };', 'e2e',
+  'demontarea dialogului (Renunță, Escape) nu oprește trasarea: workerul merge mai departe')
 o('E02', IC, '    opresteCitirea();\n    const ac = new AbortController();', '    const ac = new AbortController();', 'e2e',
   'o citire nouă nu o oprește pe cea veche')
 o('E03', BZ, "    semnal?.addEventListener('abort', anuleaza);", '', 'e2e', 'bazinul nu ascultă oprirea')
@@ -154,6 +154,7 @@ o('E04', FE, "              {stare !== 'citire' && stare.ok && <p data-testid=\"
 o('E05', FE, "  const aleasa = raport ? t(raport.sursa === 'alfa' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';",
   "  const aleasa = raport ? t(raport.sursa === 'lum' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';", 'e2e', 'sursa aleasă spusă invers')
 o('E06', DI, "{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai',", "{t('import.cai',", 'e2e', 'contururile trasate spuse „din imbricare”')
+o('E07', DI, ' key={`${coada?.k ?? 1}:${nume}`}', '', 'e2e', 'panoul trasării păstrat de la o imagine a cozii la următoarea (lățimea scrisă trece)')
 
 SETURI = {
     'nuc': ['test/unit/trasare.test.ts', 'test/unit/trasare.corpus.test.ts'],
