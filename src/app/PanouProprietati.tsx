@@ -5,7 +5,8 @@ import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { inaltimeConV, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
-import { valoriIncrustatie } from '../model/incrustatie.ts';
+import { valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
@@ -79,8 +80,9 @@ function operatie(o: Operatie, n: number): ReactNode {
     <section key={o.id} className="prop-operatie">
       <h3>{t('prop.operatia', { n })}</h3>
       <dl>
-        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire')
-          : o.tip === 'vcarve' ? t(o.incrustatie ? 'export.latura.incrustatie' : 'export.latura.vcarve') : t(`export.latura.${o.latura}`))}
+        {rand(t('export.latura'), o.tip === 'buzunar' ? t(o.incrustatie?.fel === 'drept' ? 'export.latura.incrustatie-drept' : 'export.latura.buzunar')
+          : o.tip === 'gaurire' ? t('export.latura.gaurire')
+            : o.tip === 'vcarve' ? t(o.incrustatie?.fel === 'v' ? 'export.latura.incrustatie' : 'export.latura.vcarve') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
         {o.tip === 'buzunar' && rand(t('export.paralel'), o.strategie ? t('prop.strategie.paralel', { unghi: o.strategie.unghi }) : t('export.paralel.inele'))}
         {o.tip === 'buzunar' && !o.strategie && rand(t('export.coborare'), coborare(o.coborare))}
@@ -96,9 +98,16 @@ function operatie(o: Operatie, n: number): ReactNode {
         {o.tip === 'profil' && o.latura === 'pe-linie' && rand(t('export.directie'), t(o.directie === 'invers' ? 'export.directie.invers' : o.directie === 'scurt' ? 'export.directie.scurt' : 'export.directie.desen'))}
         {o.tip === 'vcarve' && rand(t('prop.fund'), o.fundPlat
           ? t('prop.fund.valoare', { numar: o.fundPlat.scula.numar, diametru: mmFreza(o.fundPlat.scula.diametru), pas: mm(o.fundPlat.pasLateral) }) : t('prop.fara'))}
-        {o.tip === 'vcarve' && o.incrustatie && rand(t('prop.inc'), t('prop.inc.valoare', {
+        {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && rand(t('prop.inc'), t('prop.inc.valoare', {
           joc: mm(o.incrustatie.joc), fierastrau: mm(o.incrustatie.fierastrau), margine: mm(o.incrustatie.margine),
         }))}
+        {/* Incrustația cu pereți drepți (ADR 0171): jocul lateral, felul dopului și sprijinul lui, marginea; frezele dopului, dacă are. */}
+        {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && rand(t('prop.inc'), t('prop.inc.valoare-drept', {
+          lateral: mm(o.incrustatie.jocLateral), margine: mm(o.incrustatie.margine),
+          dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata' : 'prop.inc.dop.ridicat-fund'),
+        }))}
+        {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && (o.incrustatie.frezeDop ?? []).length > 0 && rand(t('prop.inc.freze-dop'),
+          (o.incrustatie.frezeDop ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
         {((o.tip === 'buzunar' ? o.rest : o.tip === 'vcarve' ? o.fundPlat?.rest : undefined) ?? []).length > 0 && rand(t('prop.rest'),
           ((o.tip === 'buzunar' ? o.rest : o.fundPlat?.rest) ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
@@ -188,10 +197,23 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
     onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => ({ ...o, ...v }))])));
   // Incrustația (ADR 0170 §5): când toate operațiile alese sunt incrustații, jocurile și marginea lor se scriu de aici, pe toate
   // (îmbinate: un câmp necunoscut rămâne); secțiunea pe hârtie apare când valorile lor sunt aceleași.
-  const incrustatii = operatiiAlese.length > 0 && operatiiAlese.every((o) => o.tip === 'vcarve' && o.incrustatie !== undefined);
+  const incrustatii = operatiiAlese.length > 0 && operatiiAlese.every((o) => o.tip === 'vcarve' && o.incrustatie?.fel === 'v');
   const comunInc = (f: (i: Incrustatie) => number): number | null => comun((o) => (o.incrustatie ? f(o.incrustatie) : Number.NaN));
-  const scrieIncrustatie = (v: { readonly joc?: number; readonly fierastrau?: number; readonly margine?: number }): RezultatActiune =>
+  const scrieIncrustatie = (v: { readonly joc?: number; readonly fierastrau?: number; readonly margine?: number; readonly jocLateral?: number }): RezultatActiune =>
     onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => (o.incrustatie ? { ...o, incrustatie: { ...o.incrustatie, ...v } } : o))])));
+  // Incrustația cu pereți drepți (ADR 0171 §5): la fel, jocul lateral, spațiul folosit (H pe fund și la decupat, g pe față) și
+  // marginea; dopul, sprijinul și frezele lui se aleg în fereastra exportului (răspunsurile 1, 2 și 4).
+  const dreptOp = (o: Operatie) => (o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' ? o.incrustatie : null);
+  const drepte = operatiiAlese.length > 0 && operatiiAlese.every((o) => dreptOp(o) !== null);
+  const folosesteH = (o: Operatie): boolean => ((i) => i !== null && (i.dop === 'decupat' || i.sprijin === 'fund'))(dreptOp(o));
+  const toateH = drepte && operatiiAlese.every(folosesteH), toateG = drepte && !operatiiAlese.some(folosesteH);
+  const toateDecupate = drepte && operatiiAlese.every((o) => dreptOp(o)?.dop === 'decupat');
+  const primaDreapta = drepte ? operatiiAlese[0] : undefined;
+  const cheieHartie = (o: Operatie): string => jsonCanonic({
+    adancime: o.adancime, diametru: o.scula.diametru, rest: (o.rest ?? []).map((r) => r.scula.diametru), incrustatie: o.incrustatie ?? null,
+  });
+  const hartieDreapta = primaDreapta && operatiiAlese.every((o) => cheieHartie(o) === cheieHartie(primaDreapta)) ? valoriIncrustatieDreapta(primaDreapta) : null;
+  const incDreapta = primaDreapta ? dreptOp(primaDreapta) : null;
   const primaInc = incrustatii ? operatiiAlese[0] : undefined;
   const hartie = primaInc && operatiiAlese.every((o) => o.adancime === primaInc.adancime && o.scula.diametru === primaInc.scula.diametru
     && o.scula.forma?.unghi === primaInc.scula.forma?.unghi && o.incrustatie?.joc === primaInc.incrustatie?.joc
@@ -264,6 +286,13 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
               (x) => scrieIncrustatie({ fierastrau: x })))}
             {incrustatii && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
               (x) => scrieIncrustatie({ margine: x })))}
+            {drepte && rand(t('prop.inc.lateral'), camp(t('prop.inc.lateral'), 'inc-lateral', comunInc((i) => (i.fel === 'drept' ? i.jocLateral : Number.NaN)), 'mm', false,
+              (x) => scrieIncrustatie({ jocLateral: x })))}
+            {toateH && rand(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), camp(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), 'inc-fierastrau',
+              comunInc((i) => i.fierastrau), 'mm', false, (x) => scrieIncrustatie({ fierastrau: x })))}
+            {toateG && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
+            {drepte && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
+              (x) => scrieIncrustatie({ margine: x })))}
           </dl>
           {hartie && primaInc?.incrustatie && (
             <div className="prop-hartie" data-testid="prop-incrustatie-hartie">
@@ -275,6 +304,22 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
                 {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
                 {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
                 {rand(t('prop.inc.semifabricat'), t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
+              </dl>
+            </div>
+          )}
+          {/* Pe hârtie, pereții drepți (ADR 0171 §5): razele colțurilor, jocul, înălțimea dopului, spațiul folosit, semifabricatul. */}
+          {hartieDreapta && incDreapta && (
+            <div className="prop-hartie" data-testid="prop-incrustatie-hartie" data-fel="drept">
+              <p className="prop-grup">{t('prop.inc.hartie')}</p>
+              <dl>
+                {rand(t('prop.inc.colturi-locas'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.rLocas), unghi: mm(hartieDreapta.rho) }))}
+                {rand(t('prop.inc.colturi-dop'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.varfDop), unghi: mm(hartieDreapta.unghiDop) }))}
+                {rand(t('prop.inc.joc-contur'), t('prop.inc.mm', { mm: mm(hartieDreapta.c) }))}
+                {rand(t('prop.inc.inaltime'), t('prop.inc.mm', { mm: mm(hartieDreapta.inaltime) }))}
+                {incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
+                  ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
+                  : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
+                {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
               </dl>
             </div>
           )}

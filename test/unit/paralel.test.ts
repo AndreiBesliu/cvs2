@@ -201,7 +201,7 @@ test('ușa v18: `strategie` = { fel: paralel, unghi în [0, 180) } (câmpurile n
   const curat = JSON.parse(JSON.stringify(doc([DR80], [buz(['a'], { strategie: undefined })], 17)));
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 20 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 21 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0094): strategia doar pe un buzunar paralel (îmbinată), pe inele câmpul pleacă', () => {

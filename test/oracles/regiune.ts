@@ -92,7 +92,7 @@
  */
 import {
   ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type DocV15O, type DocV16O, type DocV17O, type DocV18O, type DocV19O, type DocV20O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
+  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type DocV15O, type DocV16O, type DocV17O, type DocV18O, type DocV19O, type DocV20O, type DocV21O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
@@ -786,7 +786,7 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O): Regiune {
   // ADR 0090 §4 (felia 8.1↑, scris de sesiunea aplicației): un V-carve nu e inel (sapă doar înăuntrul regiunii lui), deci
   // K nu se schimbă; un v14 se citește ca un v13, fără V-carve.
   // ADR 0091 (felia 8.2↑, scris de sesiunea aplicației): fundul plat e al V-carve-ului, deci un v15 se citește ca un v14.
@@ -799,6 +799,9 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV
   // ADR 0170 (felia 12.1↑, scris de sesiunea aplicației): incrustația e a V-carve-ului (locașul, înăuntrul regiunii lui), iar
   // dopul se taie pe alt semifabricat, deci un v20 se citește ca un v19.
   if (doc.schema === 20) return regiuneDinDocument({ ...doc, schema: 19 } as unknown as DocV19O);
+  // ADR 0171 (felia 12.1↑b): incrustația cu pereți drepți e a buzunarului (locașul, înăuntrul regiunii lui), iar dopul se
+  // taie pe alt semifabricat, deci un v21 se citește ca un v20.
+  if (doc.schema === 21) return regiuneDinDocument({ ...doc, schema: 20 } as unknown as DocV20O);
   if (doc.schema === 19) return regiuneDinDocument({ ...doc, schema: 18 } as unknown as DocV18O);
   if (doc.schema === 18) return regiuneDinDocument({ ...doc, schema: 17 } as unknown as DocV17O);
   if (doc.schema === 17) return regiuneDinDocument({ ...doc, schema: 16 } as unknown as DocV16O);

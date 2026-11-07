@@ -24,12 +24,12 @@ const inst = (id: string, p: string, x: number, y: number, rotire: number): Inst
  * Forma v9 a unui document v8 (sau a unei otrăvi v8): schema 8 devine 9, iar o schemă 9 (otrava „schema mai nouă” a
  * lui v8) devine 11, ca să rămână otravă; „8” devine „9”. Nimic altceva (ADR 0034 §3). Pe loc; întoarce documentul.
  * Felia 2.3c-2 (ADR 0037): 11, nu 10: ușa curentă (a oracolului și a aplicației) e v10, deci „mai nouă” e de acum 11.
- * Felia 5.1↑ (ADR 0069): 12, nu 11: ușa curentă e v11. Felia 5.9↑ (ADR 0133): 20, ușa curentă e v19. Felia 12.1↑ (ADR 0170): 21, ușa curentă e v20.
+ * Felia 5.1↑ (ADR 0069): 12, nu 11: ușa curentă e v11. Felia 5.9↑ (ADR 0133): 20, ușa curentă e v19. Felia 12.1↑ (ADR 0170): 21, ușa curentă e v20. Felia 12.1↑b (ADR 0171): 22, ușa curentă e v21.
  */
 const laV9 = (d: unknown): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 8) d['schema'] = 9;
-  else if (d['schema'] === 9) d['schema'] = 21;
+  else if (d['schema'] === 9) d['schema'] = 22;
   else if (d['schema'] === '8') d['schema'] = '9';
   return d;
 };

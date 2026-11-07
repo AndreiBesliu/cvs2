@@ -60,13 +60,14 @@ test('dopul săpat peste con: D − g + H = 3 − 0,5 + 2,7 = 5,2 > 5,196 e refu
   assert.equal(refuz({ incrustatie: { ...INC, fierastrau: 2.69 } }), null);
 });
 
-test('freza cu vârf plat, banda, dopul fără freză dreaptă și incrustația pe un profil: refuzate, cu felia care le aduce', () => {
+test('freza cu vârf plat, banda, dopul fără freză dreaptă și incrustația pe un profil: refuzate, cu felia care le aduce sau cu rolul potrivit', () => {
   assert.match(refuz({ scula: { numar: 2, nume: 'freza V60 varf 0.2', diametru: 6, forma: { tip: 'v', unghi: 60, varf: 0.2 } } }) ?? '', /vârf plat/);
   assert.match(refuz({ incrustatie: { ...INC, jurDop: 'banda' } }) ?? '', /12\.1↑c/);
   const { fundPlat: _f, ...faraFund } = operatie();
   void _f;
   assert.match(refuzIncrustatie(faraFund as unknown as Operatie, 'e1/a') ?? '', /freza dreaptă: alege-o în coloana Fund plat .*12\.1↑d/);
-  assert.match(refuz({ tip: 'profil', latura: 'interior', scula: { numar: 2, nume: 'freza plata', diametru: 6 } }) ?? '', /12\.1↑b/);
+  assert.match(refuz({ tip: 'profil', latura: 'interior', scula: { numar: 2, nume: 'freza plata', diametru: 6 } }) ?? '',
+    /incrustația în V e a unui V-carve \(pe un buzunar, alege incrustația cu pereți drepți\)/);
 });
 
 test('lucrarea refuză incrustația înaintea traseului: programul foii nu iese, cu motivul și elementul', () => {

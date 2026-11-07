@@ -17,6 +17,7 @@
  */
 import { inaltimeConV, JOC_INCRUSTATIE_MINIM, type Document, type Operatie } from '../model/document.ts';
 import { valoriIncrustatie } from '../model/incrustatie.ts';
+import { refuzIncrustatieDreapta } from './incrustatieDreapta.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { conturDreptunghi, type Contur } from '../geom/conturBaza.ts';
 import { cutieContur } from '../geom/cutie.ts';
@@ -28,8 +29,11 @@ import { MARJA_FUND, traseuVcarve } from './vcarve.ts';
 /** Turația, avansurile și Z-ul de siguranță (aceleași câmpuri ca regimul lucrării). */
 export type RegimDop = { readonly turatie: number; readonly avans: number; readonly avansPlonjare: number; readonly zSigur: number };
 
-/** Semifabricatul unui dop: lățimea și înălțimea lui (cutia desenului + marginea pe fiecare parte) și grosimea cea mai mică. */
-export type SemifabricatDop = { readonly latime: number; readonly inaltime: number; readonly grosimeMinima: number };
+/**
+ * Semifabricatul unui dop: lățimea și înălțimea lui (cutia desenului + marginea pe fiecare parte) și grosimea cea mai mică;
+ * `exacta`: dopul decupat (ADR 0171), a cărui placă trebuie să fie exact atât de groasă (tăietura trece prin ea, cu punți).
+ */
+export type SemifabricatDop = { readonly latime: number; readonly inaltime: number; readonly grosimeMinima: number; readonly exacta?: true };
 
 export type DopCalculat = {
   /** Elementul (în lume) al primei tăieturi a regiunii: după el se recunoaște dopul. */
@@ -53,7 +57,9 @@ const TRECERE_FUND = 0.5;
 export function refuzIncrustatie(op: Operatie, unde: string): string | null {
   const i = op.incrustatie;
   if (!i) return null;
-  if (op.tip !== 'vcarve') return `${unde}: incrustația în V e a unui V-carve (pereții drepți vin în felia 12.1↑b)`;
+  // Cu pereți drepți (ADR 0171), refuzurile ei.
+  if (i.fel === 'drept') return refuzIncrustatieDreapta(op, unde);
+  if (op.tip !== 'vcarve') return `${unde}: incrustația în V e a unui V-carve (pe un buzunar, alege incrustația cu pereți drepți)`;
   const f = op.scula.forma;
   if (f?.tip !== 'v') return `${unde}: incrustația cere o freză în V (T${op.scula.numar} e plată)`;
   if (f.varf !== undefined && f.varf > 0) {
@@ -88,7 +94,7 @@ const sculaIR = (s: Operatie['scula']): Scula => ({
  */
 export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
   const operatieDe = (t: Taietura): Operatie | undefined => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
-  const taieturi = ordineTaieturi(doc, 0).filter((t) => t.tip === 'vcarve' && operatieDe(t)?.incrustatie !== undefined);
+  const taieturi = ordineTaieturi(doc, 0).filter((t) => t.tip === 'vcarve' && operatieDe(t)?.incrustatie?.fel === 'v');
   const cheie = (u: Taietura): string => {
     const o = operatieDe(u);
     return `${u.instanta}/${u.piesa}/${valoriVcarve({ ...u, fundPlat: o?.fundPlat, incrustatie: o?.incrustatie })}`;

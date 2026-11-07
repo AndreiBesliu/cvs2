@@ -1,5 +1,5 @@
-import type { FrezaRest, FundPlat, Operatie } from '../model/document.ts';
-import type { FrezaRestOperatie, FundPlatOperatie, SculaOperatie, ValoriOperatie } from '../ui/DialogExport.tsx';
+import type { FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, Operatie } from '../model/document.ts';
+import type { FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, SculaOperatie, ValoriOperatie } from '../ui/DialogExport.tsx';
 
 /**
  * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul și vârful, sau
@@ -48,6 +48,20 @@ function restScris(vechi: readonly FrezaRest[] | undefined, noi: readonly FrezaR
 }
 
 /**
+ * Incrustația cu pereți drepți scrisă de Exportă (ADR 0171): valorile rândului peste cea din document, dacă și ea are pereți
+ * drepți (ÎMBINATĂ: un câmp necunoscut rămâne); frezele dopului peste ale ei, pe poziție, ca frezele de rest (fără ele, câmpul
+ * pleacă: dopul se taie cu frezele locașului).
+ */
+function incrustatieDreaptaScrisa(o: Incrustatie | undefined, i: IncrustatieDreaptaOperatie): IncrustatieDreapta {
+  const vechi = o?.fel === 'drept' ? o : undefined;
+  const { frezeDop: _vechi, ...fara } = vechi ?? {};
+  void _vechi;
+  const { frezeDop: noi, ...valori } = i;
+  const frezeDop = restScris(vechi?.frezeDop, noi ?? [], 'freza plata');
+  return { ...fara, ...valori, fel: 'drept', ...(frezeDop.length > 0 ? { frezeDop } : {}) };
+}
+
+/**
  * Operația pe care o scrie Exportă: valorile din dialog peste cea din document, cu freza arătată. Urechile, rampa,
  * intrările, degajările și scula se
  * ÎMBINĂ, nu se înlocuiesc: un câmp necunoscut din ele rămâne (ADR 0016), iar ordinea cheilor din document (cea salvată,
@@ -62,11 +76,11 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   // octet cu octet ce era.
   const {
     despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, directie: _dir, rest: _rest, strategie: _str,
-    incrustatie: _inc, ...rest
+    incrustatie: _inc, incrustatieDreapta: _incDreapta, ...rest
   } = {
     ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: sculaScrisa(o.scula, scula),
   };
-  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund; void _dir; void _rest; void _str; void _inc;
+  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund; void _dir; void _rest; void _str; void _inc; void _incDreapta;
   // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
   const tip = v === undefined ? o.tip : v.tip ?? 'profil';
   // Găurirea (ADR 0087 §1): latura interior, nimic din profil; ieșirea la al câtelea pas, a rândului sau a operației. Implicitul
@@ -77,7 +91,8 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
     const fundPlat = v === undefined ? o.fundPlat : v.fundPlat ? fundScris(o.fundPlat, v.fundPlat) : undefined;
     // Incrustația (ADR 0170): a rândului (fără ea, câmpul pleacă), ÎMBINATĂ cu cea din document (un câmp necunoscut rămâne), sau
     // a operației fără valori din dialog.
-    const incrustatie = v === undefined ? o.incrustatie : v.incrustatie ? { ...(o.incrustatie ?? {}), ...v.incrustatie, fel: 'v' as const } : undefined;
+    const incrustatie = v === undefined ? o.incrustatie
+      : v.incrustatie ? { ...(o.incrustatie?.fel === 'v' ? o.incrustatie : {}), ...v.incrustatie, fel: 'v' as const } : undefined;
     return {
       ...rest, tip, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(fundPlat ? { fundPlat } : {}),
       ...(incrustatie ? { incrustatie } : {}),
@@ -98,9 +113,11 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
     const frezeRest = v === undefined ? o.rest : restScris(o.rest, v.rest ?? [], 'freza plata');
     // Strategia (ADR 0094): a rândului (inelele: câmpul pleacă), îmbinată cu cea din document; sau a operației.
     const strategie = v === undefined ? o.strategie : v.strategie ? { ...(o.strategie ?? {}), ...v.strategie } : undefined;
+    // Incrustația cu pereți drepți (ADR 0171): a rândului (fără ea, câmpul pleacă), sau a operației fără valori din dialog.
+    const incrustatie = v === undefined ? o.incrustatie : v.incrustatieDreapta ? incrustatieDreaptaScrisa(o.incrustatie, v.incrustatieDreapta) : undefined;
     return {
       ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(coborare ? { coborare } : {}),
-      ...(frezeRest && frezeRest.length > 0 ? { rest: frezeRest } : {}), ...(strategie ? { strategie } : {}),
+      ...(frezeRest && frezeRest.length > 0 ? { rest: frezeRest } : {}), ...(strategie ? { strategie } : {}), ...(incrustatie ? { incrustatie } : {}),
     };
   }
   const despartire = v?.despartire ?? o.despartire;

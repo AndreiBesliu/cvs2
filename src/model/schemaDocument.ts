@@ -156,14 +156,27 @@ const SchemaOperatie = v.looseObject({
   // ADR 0133: locul în ordinea de mână (v19); rangurile egale sau lipsă le ordonează lucrarea (ordinea automată între ele).
   rang: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(PLAFON.operatii))),
   // ADR 0170 §1: incrustația (v20), pe orice fel la ușă; potrivirea (doar pe V-carve, freza ascuțită, conul, jocul față de
-  // adâncime, felul lemnului din jurul dopului) e a lucrării, ca la celelalte câmpuri ale operației.
-  incrustatie: v.optional(v.looseObject({
-    fel: v.literal('v'),
-    joc: pozitiv(PLAFON.adancimeOperatie),
-    fierastrau: pozitiv(PLAFON.adancimeOperatie),
-    margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),
-    jurDop: v.picklist(['fata', 'banda']),
-  })),
+  // adâncime, felul lemnului din jurul dopului) e a lucrării, ca la celelalte câmpuri ale operației. ADR 0171 §1 (v21): și cu
+  // pereți drepți (`fel: 'drept'`), tot pe orice fel la ușă (pe buzunar o cere lucrarea).
+  incrustatie: v.optional(v.variant('fel', [
+    v.looseObject({
+      fel: v.literal('v'),
+      joc: pozitiv(PLAFON.adancimeOperatie),
+      fierastrau: pozitiv(PLAFON.adancimeOperatie),
+      margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),
+      jurDop: v.picklist(['fata', 'banda']),
+    }),
+    v.looseObject({
+      fel: v.literal('drept'),
+      jocLateral: pozitiv(PLAFON.adancimeOperatie),
+      dop: v.picklist(['ridicat', 'decupat']),
+      sprijin: v.picklist(['fund', 'fata']),
+      joc: pozitiv(PLAFON.adancimeOperatie),
+      fierastrau: pozitiv(PLAFON.adancimeOperatie),
+      margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),
+      frezeDop: v.optional(SchemaRest),
+    }),
+  ])),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

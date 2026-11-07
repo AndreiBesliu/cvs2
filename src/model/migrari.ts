@@ -514,6 +514,30 @@ function v19v20(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v20 → v21 (ADR 0171 §1): incrustația cu pereți drepți schimbă doar numărul. Un v20 nu poate avea `fel: 'drept'` (ușa lui îl
+ * refuză), dar poate avea, ca necunoscute, câmpurile pe care v21 le folosește în `incrustatie`: un astfel de document nu e un
+ * v20 valid.
+ */
+const CAMPURI_INCRUSTATIE_V21 = ['jocLateral', 'dop', 'sprijin', 'frezeDop'] as const;
+function v20v21(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const inc = (o as Brut)['incrustatie'];
+      if (typeof inc !== 'object' || inc === null) continue;
+      const camp = CAMPURI_INCRUSTATIE_V21.find((c) => Object.hasOwn(inc, c));
+      if (camp) {
+        return { ok: false, motiv: `operația v20 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are în incrustație câmpul „${camp}”, pe care v21 îl folosește: nu e un document v20 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 21 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -549,5 +573,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   17: v17v18,
   18: v18v19,
   19: v19v20,
+  20: v20v21,
 };
 

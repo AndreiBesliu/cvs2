@@ -5,8 +5,8 @@ import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAX
 export type { Coborare } from '../model/document.ts';
 // Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
-// Implicitele incrustației (ADR 0170), pentru rândul ei din fereastra exportului.
-export { INCRUSTATIE_IMPLICITA } from '../model/document.ts';
+// Implicitele incrustațiilor (ADR 0170 în V, ADR 0171 cu pereți drepți), pentru rândurile lor din fereastra exportului.
+export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA } from '../model/document.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';

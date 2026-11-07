@@ -27,7 +27,40 @@ export type ValoriIncrustatie = {
 /** Valorile pe hârtie ale incrustației operației, sau null fără incrustație ori fără freză în V. */
 export function valoriIncrustatie(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie'>): ValoriIncrustatie | null {
   const i = op.incrustatie, f = op.scula.forma;
-  if (!i || f?.tip !== 'v') return null;
+  if (i?.fel !== 'v' || f?.tip !== 'v') return null;
   const S = op.adancime - i.joc, H = i.fierastrau, t = Math.tan((f.unghi * Math.PI) / 360);
   return { S, H, t, fata: S + H, contact: S * t, grosimeMinima: S + H + SUB_FATA_DOPULUI };
+}
+
+/** Valorile pe hârtie ale unei incrustații cu pereți drepți (ADR 0171): razele colțurilor, jocul, înălțimea dopului. */
+export type ValoriIncrustatieDreapta = {
+  /** Raza celei mai mici freze a locașului (vârfurile lui) și a dopului. */
+  readonly rLocas: number; readonly rDop: number;
+  /** Raza cu care se închide desenul (unghiurile locașului): max(0, rDop − c). */
+  readonly rho: number;
+  /** Colțurile dopului: vârfurile max(0, rLocas − c), unghiurile rho + c. */
+  readonly varfDop: number; readonly unghiDop: number;
+  readonly c: number;
+  /** Înălțimea dopului: D + H pe fund sau decupat, D − g pe față. */
+  readonly inaltime: number;
+  /** Grosimea semifabricatului dopului: cea mai mică la cel ridicat (h + 1), cea exactă la cel decupat (D + H). */
+  readonly grosime: number;
+};
+
+/**
+ * Valorile pe hârtie ale incrustației cu pereți drepți a operației, sau null: singurul loc al razelor (panoul le arată, iar
+ * lucrarea închide și deschide desenul cu ele, `cam/incrustatieDreapta.ts`).
+ */
+export function valoriIncrustatieDreapta(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie' | 'rest'>): ValoriIncrustatieDreapta | null {
+  const i = op.incrustatie;
+  if (i?.fel !== 'drept') return null;
+  const raza = (d: readonly { readonly scula: { readonly diametru: number } }[]): number => Math.min(...d.map((f) => f.scula.diametru / 2));
+  const locas = [{ scula: op.scula }, ...(op.rest ?? [])];
+  const rLocas = raza(locas), rDop = i.frezeDop && i.frezeDop.length > 0 ? raza(i.frezeDop) : rLocas;
+  const c = i.jocLateral, rho = Math.max(0, rDop - c);
+  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? op.adancime - i.joc : op.adancime + i.fierastrau;
+  return {
+    rLocas, rDop, rho, varfDop: Math.max(0, rLocas - c), unghiDop: rho + c, c, inaltime,
+    grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI,
+  };
 }

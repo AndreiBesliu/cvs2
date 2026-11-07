@@ -4792,3 +4792,112 @@ export const REFUZATE_V20: readonly RefuzV18[] = [
   { nume: 'R96 un v20 cu marginea negativă', doc: docV(20, vcarve({ incrustatie: inc({ margine: -1 }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1' },
   { nume: 'R97 un v20 cu incrustația fără fierăstrău', doc: docV(20, vcarve({ incrustatie: incFara('fierastrau') })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1: toate cinci cerute' },
 ];
+
+// Documentul v21 (felia 12.1↑b, ADR 0171 §1): incrustația cu pereți drepți, pe hârtie. Cazurile v20 de mai sus rămân ale
+// contractului v20; la ușa v21, un v20 valid urcă schimbând doar numărul, iar frontierele se judecă pe un document al
+// versiunii curente.
+
+/** Un document al cazurilor v20, adus la v21: doar numărul (ADR 0171 §1). */
+const laV21 = (d: Liber): Liber => cuSchema(d, 21);
+/** Incrustația cu pereți drepți din ADR 0171 §1, cu valorile implicite (jocul lateral 0,1, ridicat, pe fund, 0,5 și 2, marginea 5). */
+const incD = (v: Liber = {}): Liber => ({ fel: 'drept', jocLateral: 0.1, dop: 'ridicat', sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 5, ...v });
+/** Incrustația cu pereți drepți fără un câmp cerut. */
+const incDFara = (camp: string): Liber => {
+  const i = incD();
+  delete i[camp];
+  return i;
+};
+
+/** Documente v21 valide: ușa le primește neschimbate (v20-urile valide, renumerotate, și incrustațiile drepte la frontieră). */
+export const VALIDE_V21: readonly CazV18[] = [
+  ...VALIDE_V20.map((c) => ({ nume: `${c.nume} (v21)`, doc: laV21(c.doc) })),
+  { nume: 'J01 incrustația cu pereți drepți pe un buzunar (ADR 0171 §1)', doc: docV18(D, [buzunar({ incrustatie: incD() })], 21) },
+  { nume: 'J02 dopul decupat', doc: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat' }) })], 21) },
+  { nume: 'J03 dopul ridicat, sprijinit pe față', doc: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'fata' }) })], 21) },
+  { nume: 'J04 cu frezele dopului ale lui (o listă ca frezele de rest)', doc: docV18(D, [buzunar({ incrustatie: incD({ frezeDop: [{ scula: plata(5, 2), pasLateral: 0.8 }] }) })], 21) },
+  { nume: 'J05 jocul lateral și jocurile la plafon, marginea 0', doc: docV18(D, [buzunar({ incrustatie: incD({ jocLateral: 1_000, joc: 1_000, fierastrau: 1_000, margine: 0 }) })], 21) },
+  { nume: 'J06 pe un V-carve (ușa, pe orice fel; refuzul e al lucrării)', doc: docV18(D, [vcarve({ incrustatie: incD() })], 21) },
+  { nume: 'J07 cu un câmp necunoscut (și `jurDop`, necunoscut la pereții drepți)', doc: docV18(D, [buzunar({ incrustatie: incD({ jurDop: 'fata', alt: { x: 1 } }) })], 21) },
+];
+
+/** Documentele vechi urcă la v21: ce dădea hârtia la v20, cu numărul 21; un v20 curat urcă doar cu numărul. */
+export const MIGRARI_V21_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v21: Liber }> = [
+  ...MIGRARI_V20_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v21: laV21(c.v20) })),
+  {
+    nume: 'M21 un v20 cu incrustația în V urcă la v21 doar cu numărul',
+    vechi: docV18(D, [vcarve({ incrustatie: inc() })], 20),
+    v21: docV18(D, [vcarve({ incrustatie: inc() })], 21),
+  },
+];
+
+/** `jocLateral`, `dop`, `sprijin`, `frezeDop` în afara incrustației sunt câmpuri necunoscute oarecare: primite și păstrate. */
+export const NECIOCNIRI_V21: ReadonlyArray<CazV18 & { readonly v21: Liber }> = [
+  ...NECIOCNIRI_V20.map((c) => ({ nume: c.nume, doc: c.doc, v21: laV21(c.v20) })),
+  (() => {
+    const d = docV18(D, [opV18({ jocLateral: 0.1, sprijin: 'fund' })], 20);
+    return { nume: 'N21a un v20 cu `jocLateral` și `sprijin` pe operație, nu în incrustație', doc: d, v21: laV21(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: { scula: plata(3, 3), pasLateral: 1.2, dop: 'ridicat' } })], 20);
+    return { nume: 'N21b un v20 cu `dop` pe fundul plat', doc: d, v21: laV21(d) };
+  })(),
+];
+
+/** Frontierele v21: cele v20, plus incrustația cu pereți drepți, câmp cu câmp (ADR 0171 §1). */
+export const FRONTIERE_V21: readonly FrontieraV18[] = [
+  // Felul celălalt (v pe o incrustație dreaptă, drept pe una în V) cere câmpurile lui: refuzul numește câmpurile lipsă, nu felul,
+  // deci stă în REFUZATE_V21 (RA8, RA9), nu printre frontierele unui singur câmp.
+  ...FRONTIERE_V20.filter((f) => f.cale !== 'incrustatie.fel'),
+  {
+    cale: 'incrustatie.fel', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1, ADR 0171 §1: v',
+    valori: [['v', true], ['V', false], ['', false], [LIPSA, false], [1, false], [null, false]],
+  },
+  {
+    cale: 'incrustatie.fel', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: drept (cu câmpurile ei)',
+    valori: [['drept', true], ['Drept', false], ['', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'incrustatie.jocLateral', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: finit în (0, 1 000]',
+    valori: [[0.1, true], [0.001, true], [1_000, true], [0, false], [-0.1, false], [1_000.001, false], ['0.1', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.dop', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: ridicat sau decupat',
+    valori: [['ridicat', true], ['decupat', true], ['Ridicat', false], ['lipit', false], ['', false], [LIPSA, false], [null, false], [1, false]],
+  },
+  {
+    cale: 'incrustatie.sprijin', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: fund sau fata',
+    valori: [['fund', true], ['fata', true], ['față', false], ['Fund', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'incrustatie.joc', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: ca la V, finit în (0, 1 000]',
+    valori: [[0.5, true], [1_000, true], [0, false], [-0.5, false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.fierastrau', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: ca la V, finit în (0, 1 000]',
+    valori: [[2, true], [0.001, true], [0, false], [1_000.5, false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.margine', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: ca la V, finită în [0, 10 000]',
+    valori: [[0, true], [10_000, true], [-0.001, false], [10_000.001, false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.frezeDop', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0171 §1: opțional, o listă ca frezele de rest',
+    valori: [[LIPSA, true], [[{ scula: plata(5, 2), pasLateral: 0.8 }], true], [[], false], [null, false], [1, false], [[{ scula: plata(5, 2) }], false]],
+  },
+];
+
+/** Refuzurile v21: cele v20 (versiunea mai nouă e acum v22), plus incrustația dreaptă greșită și ciocnirile ei. */
+export const REFUZATE_V21: readonly RefuzV18[] = [
+  ...REFUZATE_V20.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v22)', doc: docV(22, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RA0 un v20 cu `jocLateral` în incrustație', doc: docV(20, vcarve({ incrustatie: inc({ jocLateral: 0.1 }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.jocLateral`, motiv: 'ADR 0171 §1', text: 'nu e un document v20 valid' },
+  { nume: 'RA1 un v20 cu `dop` în incrustație', doc: docV(20, vcarve({ incrustatie: inc({ dop: 'ridicat' }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.dop`, motiv: 'ADR 0171 §1', text: 'nu e un document v20 valid' },
+  { nume: 'RA2 un v20 cu `sprijin` în incrustație', doc: docV(20, vcarve({ incrustatie: inc({ sprijin: 'fund' }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.sprijin`, motiv: 'ADR 0171 §1', text: 'nu e un document v20 valid' },
+  { nume: 'RA3 un v20 cu `frezeDop` în incrustație', doc: docV(20, vcarve({ incrustatie: inc({ frezeDop: [] }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.frezeDop`, motiv: 'ADR 0171 §1: câmpul propriu, oricare ar fi valoarea', text: 'nu e un document v20 valid' },
+  { nume: 'RA4 un v21 cu jocul lateral 0', doc: docV(21, buzunar({ incrustatie: incD({ jocLateral: 0 }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0171 §1' },
+  { nume: 'RA5 un v21 cu dopul „lipit”', doc: docV(21, buzunar({ incrustatie: incD({ dop: 'lipit' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0171 §1' },
+  { nume: 'RA6 un v21 fără sprijin', doc: docV(21, buzunar({ incrustatie: incDFara('sprijin') })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0171 §1: toate cerute' },
+  { nume: 'RA7 un v21 cu frezele dopului goale', doc: docV(21, buzunar({ incrustatie: incD({ frezeDop: [] }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0171 §1: o listă de 1–8' },
+  { nume: 'RA8 un v21 cu o incrustație în V trecută pe „drept”, fără câmpurile ei', doc: docV(21, vcarve({ incrustatie: inc({ fel: 'drept' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.jocLateral`, motiv: 'ADR 0171 §1: felul drept cere jocul lateral, dopul și sprijinul' },
+  { nume: 'RA9 un v21 cu o incrustație dreaptă trecută pe „v”, fără lemnul din jurul dopului', doc: docV(21, buzunar({ incrustatie: incD({ fel: 'v' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.jurDop`, motiv: 'ADR 0170 §1: felul v cere jurDop' },
+];
