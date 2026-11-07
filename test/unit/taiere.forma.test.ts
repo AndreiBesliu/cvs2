@@ -328,6 +328,41 @@ test('o cale deschisă: trecută de cuțit, două bucăți (fiecare forma ei); a
   assert.equal(refuz(v, cerere(FORMA('k'), ['v', 'k'])), 'nimic-taiat');
 });
 
+/** Nicio pereche de vârfuri vecine la sub 1e-6 mm (un loc chiar într-un nod nu lasă un nod dublat, ADR 0124 §5). */
+function faraDubluri(c: Contur, mesaj: string): void {
+  const n = c.varfuri.length;
+  for (let k = 0; k < (c.inchis ? n : n - 1); k++) {
+    const a = c.varfuri[k]?.p, b = c.varfuri[(k + 1) % n]?.p;
+    assert.ok(a && b && Math.hypot(a.x - b.x, a.y - b.y) > 1e-6, `${mesaj}: vârfurile ${k} și ${(k + 1) % n} sunt unul peste altul`);
+  }
+}
+
+test('un loc chiar într-un nod nu lasă noduri dublate: rombul prin vârfuri, dreptunghiul rotunjit prin capetele arcelor, pătratul prin colțuri', () => {
+  const romb = docDin(stoc, forma('r', cale(true, [0, 50], [50, 0], [100, 50], [50, 100])), forma('k', cale(false, [-10, 50], [110, 50])));
+  for (const inchide of [true, false]) {
+    const { dupa, r } = taiat(romb, cerere(FORMA('k'), ['r', 'k'], inchide));
+    for (const id of r.ids) {
+      const c = unul(dupa, id);
+      faraDubluri(c, `rombul, ${inchide ? 'cu' : 'fără'} închidere`);
+      assert.equal(c.varfuri.length, 3, 'un triunghi (sau două laturi), fără noduri noi');
+    }
+  }
+  // Dreptunghiul 100 × 60 cu colțurile R10, tăiat la y = 10: chiar prin capetele arcelor de jos, (0, 10) și (100, 10).
+  const d = docDin(stoc, forma('d', { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 10 }), forma('k', cale(false, [-10, 10], [110, 10])));
+  const { dupa, r } = taiat(d, cerere(FORMA('k'), ['d', 'k']));
+  const fete = r.ids.map((id) => unul(dupa, id)).sort((u, w) => u.varfuri.length - w.varfuri.length);
+  const colt = 100 - 25 * Math.PI;
+  aproape(arie(fete[0] as Contur), 1000 - 2 * colt, 1e-9, 'dedesubt: 100 × 10 fără două colțuri');
+  aproape(arie(fete[1] as Contur), 6000 - 4 * colt - (1000 - 2 * colt), 1e-9, 'deasupra');
+  assert.deepEqual(fete.map((c) => c.varfuri.length), [4, 6]);
+  for (const c of fete) faraDubluri(c, 'dreptunghiul rotunjit');
+  // La intersecții: diagonala prin două colțuri ale pătratului.
+  const p = docDin(stoc, patrat('a', 0, 0), forma('l', cale(false, [-50, -50], [150, 150])));
+  const x = taiat(p, cerere(INTERSECTII, ['a', 'l']));
+  assert.equal(x.r.ids.length, 5);
+  for (const id of x.r.ids) faraDubluri(unul(x.dupa, id), 'pătratul și diagonala');
+});
+
 test('refuzurile cuțitului: doar cuțitul ales („nimic-ales”), cuțitul lipsă de pe foaie, o piesă pusă de două ori', () => {
   const d = docDin(stoc, patrat('a', 0, 0), forma('k', cale(false, [-10, 50], [110, 50])));
   assert.equal(refuz(d, cerere(FORMA('k'), ['k'])), 'nimic-ales');
@@ -417,6 +452,12 @@ test('latura comună, cu un nod la mijloc pe una dintre forme: tot doar la capet
 test('nu se taie: cercurile tangente (un singur loc pe fiecare), o formă singură care se taie singură (bucla e a verificării)', () => {
   assert.equal(refuz(docDin(stoc, cercF('a', 200, 200), cercF('b', 300, 200)), cerere(INTERSECTII, ['a', 'b'])), 'nimic-taiat');
   assert.equal(refuz(docDin(stoc, forma('o', cale(true, [0, 0], [100, 100], [100, 0], [0, 100]), 100, 100)), cerere(INTERSECTII, ['o'])), 'nimic-taiat');
+  // Steaua cu cinci colțuri se taie singură de cinci ori: tot a verificării, nu a tăierii.
+  const stea = Array.from({ length: 5 }, (_, k): readonly [number, number] => {
+    const u = Math.PI / 2 + (4 * Math.PI * k) / 5;
+    return [50 * Math.cos(u), 50 * Math.sin(u)];
+  });
+  assert.equal(refuz(docDin(stoc, forma('s', cale(true, ...stea), 300, 300)), cerere(INTERSECTII, ['s'])), 'nimic-taiat');
   assert.equal(refuz(docDin(stoc, patrat('a', 0, 0)), cerere(INTERSECTII, [])), 'nimic-ales');
 });
 

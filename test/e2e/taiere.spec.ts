@@ -84,6 +84,8 @@ test('Taie cu ultima formă aleasă: linia frântă, aleasă ultima, taie pătra
   await importa(page, FRANTA);
   await page.locator('[data-editare="degrupeaza"]').click();
   await expect(randuri(page)).toHaveCount(2);
+  // Linia frântă (al doilea contur al DXF-ului) e ultima aleasă: cuțitul.
+  const cutitul = await randuri(page).nth(1).getAttribute('data-instanta');
   await page.locator('[data-editare="taiere"]').click();
   await page.locator('[data-taiere="cu-forma"]').check();
   await expect(page.getByTestId('taiere-linia')).toHaveCount(0);
@@ -91,7 +93,11 @@ test('Taie cu ultima formă aleasă: linia frântă, aleasă ultima, taie pătra
   await page.locator('[data-taiere="taie"]').click();
   await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
   await expect(randuri(page)).toHaveCount(3, { timeout: 10_000 });
-  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(2);
+  const lista = page.getByTestId('lista-vectori');
+  await expect(lista.locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(2);
+  // Cuțitul (linia frântă, aleasă ultima) a rămas întreg, neales; pătratul s-a tăiat.
+  await expect(lista.locator('button[data-instanta][aria-pressed="false"]')).toHaveCount(1);
+  await expect(lista.locator('button[data-instanta][aria-pressed="false"]')).toHaveAttribute('data-instanta', cutitul ?? '—');
   await page.keyboard.press('Escape');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(2);
