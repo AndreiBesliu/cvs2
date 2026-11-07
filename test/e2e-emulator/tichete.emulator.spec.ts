@@ -107,6 +107,9 @@ async function ownerInTichete(browser: Browser): Promise<Page> {
 }
 
 test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul din fila Tichete; semnul și răspunsul în editor', async ({ page, browser }) => {
+  // Două browsere și patru callable-uri, toate reci când proba rulează prima pe emulatoare proaspete (măsurat: peste 60 s
+  // în clona otrăvurilor, 29 s cu funcțiile calde): termenul probei întregi e dublu față de cel implicit.
+  test.setTimeout(120_000);
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   const uid = await clientConfirmat('ana@exemplu.ro', 'parola-anei-1');
