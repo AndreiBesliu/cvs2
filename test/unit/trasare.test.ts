@@ -281,3 +281,19 @@ test('teșiturile: se strâng doar colțurile care se rotesc cu cel puțin 25° 
   assert.ok(n > 20, `${n} colțuri strânse`);
   assert.ok(min >= 20, `cea mai mică rotire ${min.toFixed(1)}°`);
 });
+
+test('pe transparență, pragul e jumătatea acoperirii, nu Otsu: o aură mare de 40 % rămâne fundal în jurul desenului', () => {
+  // Fundalul (2 020 px la 0), aura (1 000 px la alfa 102, adică 0,4) și desenul (un pătrat de 10 px, plin). Pe hârtie, Otsu
+  // ar despărți fundalul de aură plus desen (varianța 454 500 față de 225 300) și ar pune pragul la 0,23: aura, desen.
+  // Cu pragul la 50 %, se trasează doar pătratul: pragul 128, lățimea de 10 px (cu netezirea treptelor, sub 11).
+  const img = imagine(60, 52, (x, y) => {
+    if (x >= 25 && x < 35 && y >= 20 && y < 30) return [0, 0, 0, 255];
+    return x >= 8 && x < 52 && y >= 13 && y < 38 ? [0, 0, 0, 102] : [0, 0, 0, 0];
+  });
+  const r = traseaza(img, IMPLICITE);
+  assert.ok(r.ok);
+  assert.equal(r.raport.prag, 128);
+  let x0 = Infinity, x1 = -Infinity;
+  for (let i = 0; i < r.cai.xy.length; i += 6) { x0 = Math.min(x0, r.cai.xy[i] ?? 0); x1 = Math.max(x1, r.cai.xy[i] ?? 0); }
+  assert.ok(x1 - x0 > 9 && x1 - x0 < 11, `lățimea ${x1 - x0}`);
+});
