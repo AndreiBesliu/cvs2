@@ -585,6 +585,46 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
+  **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
+  `imprimanta` (`wip/3.6g-imprimanta`): fila **Imprimanta**, a treia a meniului global, leagă o imprimantă Creality din familia
+  K1 (a owner-ului: o K1C) pe protocolul ei din fabrică: WebSocket-ul de pe 9999, **fără subprotocol** (Chrome refuză o legătură
+  care cere un subprotocol neîntors de server), cadre text JSON, `ok` la fiecare bătaie a inimii (altfel imprimanta închide),
+  starea pe bucăți. Imprimantele ținute (`cncvs2.imprimanta.retea`, `v: 1`), adresa scrisă, căutarea pe 9999; starea,
+  temperaturile (doar citite), codul de la imprimantă; Pauză / Reia / Oprește (cu confirmare); fișierele din imprimantă, pornite
+  cu bifa „Patul e gol”; jurnalul cadrelor. **O imprimantă nu e un flux GRBL:** fișierul stă în ea, deci modulele ei stau lângă
+  sender (`src/machine/imprimanta/`), iar adresa locală, permisiunea și planificatorul căutării, comune, în
+  `src/machine/reteaLocala.ts` (reexportate de `websocket.ts` și `conexiuni.ts`: altfel fereastra trage transportul senderului
+  într-o bucată comună de 4 kB). **Singură, fereastra trimite doar citiri și `ok`**; după `opGcodeFile`, K1 închide legătura
+  (așteptat: se reface după 0,3 s); o legătură căzută se reface singură, iar **o reîncercare nu judecă permisiunea rețelei
+  locale** (browserul aplicației o spune refuzată și spre loopback). Proba cap-coadă are imprimanta falsă în
+  `test/e2e/imprimantaFalsa.ts` (9999, pe rețeaua de loopback a probei); ghidul owner-ului: `docs/masina/imprimanta-k1c.md`.
+  **Mărimea feliei: pornirea +0,2 kB, totalul +8,1 kB** (bucata ferestrei 7,5 kB, `reteaLocala` 1,0 kB).
+  **Trimiterea unui `.gcode` la imprimantă (ADR 0190 §C.7, §D, felia 3.6h)** gata pe 07.11, pe aceeași ramură: **Trimite un
+  fișier…**, sub lista fișierelor, verifică întâi fișierul pe calculator (`src/machine/imprimanta/gcode3d.ts`: antetul lui
+  OrcaSlicer / Creality Print, PrusaSlicer sau Cura, temperaturile, miniatura, întinderea mișcărilor cu G90 / G91 / G92 / G28 și
+  arce, față de patul modelului), cu **Trimite oricum** după un avertisment; apoi `POST /upload/<nume>` pe 80, multipart doar cu
+  `file`, `no-cors` (`urcare.ts`), căutat după nume în lista de pe 9999. **Un fișier din imprimantă nu se înlocuiește:** un
+  nume pe care lista îl are primește „-2”, „-3”… (verificarea după nume spune ceva doar pentru un nume nou). **CSP-ul are `http:`
+  în `connect-src`** (răspunsul 3a); `wss:` trecea deja (după CSP3, `ws:` și `https:` îl acoperă), iar martorul refuzat al
+  probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
+  pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei, acceptată de owner pe 07.11 („Da, accept”). Cu
+  `main` (`8003cb2`) unit în ramură: pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 530,8 / 550, /admin 105,4 / 200.**
+  **Proba pe imprimanta owner-ului (felia 3.6i), pasul 1** pe 07.11: fereastra s-a legat de pe canal, din browserul lui, la o
+  **K1C 2025** (firmware V1.0.0.26, în `DWIN sw ver`), la 192.168.1.10: **9999 primește pagina de pe altă origine**. Imprimanta
+  n-are bătăi ale inimii (doar bucăți de stare, la ~3 s), iar **lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
+  `director:nume:mărime:…;`), nu ca `retGcodeFileInfo2`: acum se citesc amândouă, cu mărimea (pe care trimiterea o verifică).
+  Transcrierea, anonimizată: `test/fixtures/imprimanta/k1c-2025.json`; imprimanta falsă are `fel: 'k1c-2025'`. **Pasul 2:**
+  la o pornire de pe ecran, imprimanta și-a refăcut WiFi-ul cu alt IP, iar legătura veche a murit fără să se închidă: acum
+  **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
+  găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
+  evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
+  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 acceptat pe 07.11: „vreau
+  sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”, deci toate variantele care pot
+  sta împreună devin opțiuni, pe feliile 3.6j–3.6m): desenul feliat direct în cvs2 pentru
+  K1C, cu valorile din profilele K1C ale OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
+  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
+  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
+  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -811,6 +851,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `#biblioteca=<id>`; Easy 3Draw ajunge pe live odată cu aplicația; secțiunea Biblioteca stă în meniul Extensii. Linia lucrează
   în worktree-ul `biblioteca` (`wip/3.Xg-biblioteca`, `C:\Users\besli\cncvs2-lucru\biblioteca`, e2e pe 4180 și `127.0.7`,
   ADR-urile 0230–0239, canalul `biblioteca`).
+- 07.11.2026: **mărimea lui 3.6h acceptată** („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”): trimiterea unui `.gcode`
+  la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
+  în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul
+  owner-ului.
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la
@@ -821,6 +865,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `trasare`). Restul raportărilor (15.B↑b: `raportari`, 4177, `127.0.4`, ADR-urile 0200–0209) e propus, nepornit. **Suita
   emulatoarelor ține porturi fixe (9095, 8085, 5005) și 4173, oricare ar fi worktree-ul:** înainte de ea, `netstat -ano`, iar
   la o ciocnire se așteaptă cealaltă sesiune (pe 07.11, porțile unirii au căzut întâi doar din cauza asta).
+- 07.11.2026: **imprimanta 3D prin WiFi, răspunsurile la ADR 0190** (formularul schiței: „1a”, „2a”, „3a”, „4a”): fereastra
+  Imprimanta, a treia filă a meniului global; întâi 3.6g (conectarea, starea, pauza și oprirea, fișierele din imprimantă), apoi
+  3.6h (trimiterea unui `.gcode`); **`http:` în `connect-src`, pentru 3.6h** (acordul owner-ului, ca la `ws:`: un `http://`
+  spre o gazdă publică rămâne blocat ca conținut mixt); camera, într-o felie a ei, după 3.6h. Nota lui la 1: „Vreau sa pot pune
+  panourile mai multor masini unul langa altul, eventual si pe monitoare diferite. Dar asta poate veni mai tarziu.” (o felie a
+  ei, mai târziu). Imprimanta lui: o K1C (2024), la 192.168.1.12; verificarea de pe calculatorul lui, doar cu citiri, permisă
+  (pe 07.11, imprimanta n-a răspuns: oprită sau într-o rețea despărțită de cablu).
 - 06.11.2026: **tăierea și conversia vectorilor: răspunsurile la ADR 0180** (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
   cu notele „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
   jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și „aici va trebui sa testam

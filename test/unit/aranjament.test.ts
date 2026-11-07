@@ -62,8 +62,8 @@ test('meniul global (ADR 0132): filele ferestrelor, locul lucrării, apoi căuta
   ]);
   // Colțul din dreapta al barei de desen a rămas gol: tot ce era acolo e al aplicației întregi, deci în meniu.
   assert.deepEqual(ARANJAMENT_MODERN.zone.unelte, []);
-  assert.deepEqual(ARANJAMENT_MODERN.ferestre, ['proiectare', 'masina']);
-  assert.deepEqual(DESCHIDE_FEREASTRA, { proiectare: 'vedere.proiectare', masina: 'vedere.masina' });
+  assert.deepEqual(ARANJAMENT_MODERN.ferestre, ['proiectare', 'masina', 'imprimanta']);
+  assert.deepEqual(DESCHIDE_FEREASTRA, { proiectare: 'vedere.proiectare', masina: 'vedere.masina', imprimanta: 'vedere.imprimanta' });
   // Cipurile care rămân și în Mașina sunt ale aplicației; cele ale desenului (selecția, ieșirea din foaie, traseul, cursorul,
   // zoomul) se văd doar în Proiectare.
   assert.deepEqual([...CIPURI_GLOBALE].sort(), ['actualizare', 'config', 'jurnal', 'proiect']);

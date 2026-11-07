@@ -11,7 +11,7 @@ import { DIR_MESAJE, esteDictionarMesaje, type Limba, type Mesaj } from './dicti
 export { DIR_MESAJE, esteDictionarMesaje, fisierBaza, type Limba } from './dictionar.ts';
 
 /** Modulele ale căror mesaje sunt date. `/admin` și testul pas cu pas (doar online, în afara totalului) le țin în cod. */
-export const MODULE_MESAJE = ['carcasa', 'editare', 'export', 'import', 'masina', 'simulare', 'traseu'] as const;
+export const MODULE_MESAJE = ['carcasa', 'editare', 'export', 'imprimanta', 'import', 'masina', 'simulare', 'traseu'] as const;
 export type ModulMesaje = (typeof MODULE_MESAJE)[number];
 
 /** Fișierul mesajelor unui modul, cu ambele limbi (calea din `dist/`, fără `/` în față). */
