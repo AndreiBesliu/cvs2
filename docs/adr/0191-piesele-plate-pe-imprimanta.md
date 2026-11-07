@@ -205,6 +205,12 @@ Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin op
   G-code-ul 25 %, straturile 13 %, profilul 11 %; fără geometrie dublată: offsetul stă în bucata lui comună), deci totalul
   549,6 / 550 (+14,7, peste estimarea de 8–12 de la §G), iar pornirea 101,8 (+0,1: `desen` din aplicație). Următoarele linii
   cer decizia owner-ului: plafonul, ca la ADR 0122 și 0137, sau modulele (5b).
+- **Măsurat după recenzie** (`6720782`): placa de probă, cu fanta de 12 × 2 mm, la PLA 0,20: 15 straturi, 1,78 g, ~3 min
+  45 s (fără încălzire); la 0,12: 25 de straturi, ~5 min; PETG: ~4 min 45 s. Bucata dialogului are 15,2 kB (+1,0, chiar
+  reparațiile: brim-ul comun, primul strat de rezervă, verificarea patului pe tot, temperaturile din Simplu), iar
+  `PanouImprimanta` +0,2: pe ramură, 550,8 / 550, peste vechiul plafon cu 0,8 kB. Între timp, owner-ul a ridicat plafonul la
+  600 kB (ADR 0143, 07.11): cu `main` adus în ramură (`b29d6dc`), totalul e 550,8 / 600, iar pornirea 101,8 (cu ușa
+  105,4 / 110).
 - **Găsit pe drum:** (1) unirea pe perechi lăsa o formă care intră într-un gol apărut dintr-o unire drept gaură (și relua la
   nesfârșit diferența): acum pe componente; (2) încetinirea pentru răcire nu ajungea la timpul minim pe piesele mici (timpul nu
   scade liniar cu viteza, din cauza accelerațiilor): acum factorul se caută prin înjumătățire, până la viteza minimă; (3) poarta

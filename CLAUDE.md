@@ -626,8 +626,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C** (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare
   rămân ale imprimantei). **Codul stă în `src/cam/feliere/`, nu în `src/machine/`:** regula importurilor
   `masina-fara-post-si-document` ține transportul fără document. Adus la primul clic, fără importuri din nucleu spre el (gata
-  de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 549,6 / 550** (+14,7 kB): liniile următoare cer decizia
-  owner-ului (plafonul sau modulele, ADR 0191 §G).
+  de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 550,8 / 600** cu `main` adus în ramură (+15,9 kB cu
+  recenzia; plafonul 600, ADR 0143). Modulele (5b) rămân pentru 3.6m (ADR 0191 §G).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

@@ -6643,7 +6643,7 @@ care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea li
 diferite si pot fi disponibile in soft” (owner-ul, la cele cinci întrebări ale ADR 0191), apoi, în timpul lucrului: „as vrea
 totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica ceva de aici incolo se
 va face update si pe main ulterior”.
-**Started:** 07.11, 19:31. **Completed:** —
+**Started:** 07.11, 19:31. **Completed:** 07.11, 23:29.
 
 - **ADR 0191, acceptat:** toate variantele care pot sta împreună devin opțiuni, pe felii: 3.6j (motorul, cu înălțimea fiecărei
   piese ținută de la început; „Din desen…” cu piesele foii, selecția sau o piesă, o înălțime, „Simplu” și „Avansat”; salvarea
@@ -6689,6 +6689,19 @@ va face update si pe main ulterior”.
   (ADR 0191, „Felia 3.6j”, recenzia), cu probele lor: `imprimanta.feliere.recenzie.test.ts` (22), fixtura profilelor
   OrcaSlicer K1, e2e-ul extins; otrăvurile, 50 (+17 pentru reparații). Tot recenzia a prins cifrele „măsurate” puse de mine
   pe o placă de 20 × 20 (erau ale plăcii de 40 × 20, cu gaura și fanta).
+- **Porțile pe `6720782`** (reparațiile): unit 8 693 (8 685 trecute, 0 căderi, 8 sărite); build-ul determinist: 284 de
+  fișiere identice, pornirea 101,8 (cu ușa 105,4 / 110), dar **totalul 550,8 / 550: peste plafon cu 0,8 kB** (bucata „Din
+  desen…” 15,2 kB, +1,0 din reparații; `PanouImprimanta` +0,2); e2e 376 / 377, iar căzuta (senderul extensiei,
+  `extensii.masina.spec.ts:83`: legătura mașinii simulate „pierdut” sub 4 lucrători) trece singură, 4 / 4.
+- **Otrăvurile după recenzie:** unitare 41 / 42 la prima rulare. R09 (ventilatorul lăsat la minim pe straturile lungi)
+  scăpase: proba căuta `M106 S0` oriunde după stratul 4, iar sfârșitul fișierului îl scrie oricum. Proba citește acum
+  comanda primului strat plin de sus (`1ff1580`): R09 prinsă, 42 / 42; e2e 8 / 8, baza verde întâi.
+- **Placa de probă, după recenzie** (40 × 20 × 3 mm, gaura de 10 mm, fanta de 12 × 2 mm): PLA 0,20, 15 straturi, 1,78 g,
+  ~3 min 45 s fără încălzire; PLA 0,12, 25 de straturi, ~5 min; PETG 0,20, ~4 min 45 s.
+- **Plafonul:** cât porțile rulau, owner-ul a ridicat plafonul total la 600 kB în `main` (ADR 0143, „Yes, 600 kB”, mesajul
+  sesiunii principale). `origin/main` (`c73177f`) unit în ramură (`b29d6dc`; conflictul, doar în DEVLOG, cu ambele părți).
+  **Porțile pe unire:** unit 8 701 (8 693 trecute, 0 căderi); build-ul determinist: totalul 550,8 / 600, pornirea
+  101,8 (cu ușa 105,4 / 110); e2e 377 / 377 din prima (4 lucrători).
 
 ## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
 
