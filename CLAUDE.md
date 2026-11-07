@@ -796,6 +796,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **trasarea pe culori, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0221, în sesiunea
+  liniei trasării): numărul culorilor e automat (cele distincte, 2–16), cu glisorul pentru alt număr; o culoare se leagă de
+  alta trăgându-i pastila peste a ei (ca în ArtCAM), cu „Dezleagă” pe pastilă; pe o imagine opacă, culoarea care domină
+  marginea e fundalul, nebifată; „Importă” face o piesă pe culoare, toate aliniate, cu rolul ales din panou pe fiecare;
+  culoarea stă doar în numele piesei (documentul nu se schimbă).
 - 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
   fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
   următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.

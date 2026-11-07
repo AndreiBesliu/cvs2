@@ -6479,3 +6479,15 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   color, de ce granițe comune (separat, suprapuse, comune; plasa duală pe o grilă), ce fac alte programe, probele și
   pachetul, întrebările cu formularul (`raspunsuri/owner`). Privită o dată (lat și telefon, ambele teme, fără erori).
 - Fără cod; nimic unit în `main`.
+
+## 2026-11-07 — Felia 25.2↑: trasarea pe culori (ADR 0221, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0221).
+**Started:** 07.11, 19:24. **Completed:** —
+
+- **Răspunsurile:** toate recomandările: numărul culorilor automat (2–16 cu glisorul); legarea prin tragerea pastilei, cu
+  „Dezleagă”; pe o imagine opacă, culoarea marginii e fundalul, nebifată; o piesă pe culoare, aliniate, cu rolul din panou;
+  culoarea doar în numele piesei. Scrise în ADR 0221 (acceptat), în `CLAUDE.md` („Decizii luate”) și în fișă (rândul cozii
+  scos).
+- **Înainte de cod:** `main` (`63d6af5`, cu biblioteca extensiilor, 3.Xg) unit în ramură (`ffae8a1`; ciocnirile doar la
+  capetele documentelor comune).

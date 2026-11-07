@@ -1,8 +1,8 @@
 # ADR 0221 — Trasarea pe culori: reducerea în OKLab, granițele comune, o piesă pe culoare
 
-**Starea:** propus pe 07.11.2026, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`), pornit la „Da, 25.2↑”
-(owner-ul, după 25.1↑). Felia 25.2↑, adusă din etapa 25, fără mașină. Codul pornește după răspunsurile la întrebările de la
-final.
+**Starea:** acceptat pe 07.11.2026, cu toate recomandările („Da, 1a–5a”, la întrebările de la final), în linia trasării
+(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus în aceeași zi, la „Da, 25.2↑” (owner-ul, după 25.1↑). Felia
+25.2↑, adusă din etapa 25, fără mașină.
 **Completează:** ADR 0220 (§12: „reducerea (2–16), pastilele cu procentul, alegerea și legarea culorilor, granița dintre două
 culori la amestecul lor de 50 % (aceeași pentru amândouă, fără goluri între ele), o piesă pe culoare”), incrustațiile (ADR
 0170: dopul și locașul se potrivesc doar pe o graniță comună).
@@ -44,7 +44,7 @@ cerneală; trasarea fiecărei culori separat, cu ea, lasă goluri între culori 
   - pe 12 Mpx: atribuirea la 8 centre 260 ms; trecerea în OKLab 760 ms fără tabel (cu memorarea pe culorile distincte ale
     imaginii, mult mai puțin).
 
-## Decizia (propusă; întrebările deschise sunt marcate)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Sursa „Culorile”** în lista Sursa a ferestrei trasării, lângă Transparența și Luminozitatea. Pragul și Inversează se
    ascund (nu au sens aici); Netezimea, petele, golurile și lățimea rămân.
@@ -112,6 +112,8 @@ cerneală; trasarea fiecărei culori separat, cu ea, lasă goluri între culori 
 o suprapunere); numărul automat greșește des; totalul trece de 550 kB.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (07.11):** „Da, 1a–5a”: toate recomandările.
 
 1. **Câte culori, implicit?**
    - **a)** Automat: culorile distincte din imagine, 2–16 (pe logoul tău, 3), cu glisorul pentru alt număr;

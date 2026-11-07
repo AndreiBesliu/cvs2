@@ -437,6 +437,10 @@
       "ro": "12.1↑b",
       "en": "12.1↑b"
     },
+    "29f3e29c4e220d4a": {
+      "ro": "**Trasarea pe culori** (în lucru, fără mașină; ADR 0221, acceptat; worktree-ul `trasare`, ramura `wip/25.1-trasare`; pornită la „Da, 25.2↑”, după 25.1↑). Cercetarea: ArtCAM și Carveco (reducerea culorilor cu un glisor, legarea prin tragerea pastilei), Inkscape (culorile trasate separat lasă goluri; cu „Stack”, se suprapun), vtracer (mozaicul fără cusături doar în 1.0 alfa); OKLab, k-means++, plasa duală (Surface Nets). Măsurat: logoul owner-ului are 3 culori naturale (albastru 22 %, gri închis 61 %, gri deschis 17 %, la cel puțin 0,095 în OKLab); 12 Mpx la 8 culori, 260 ms. Propunerea: sursa „Culorile” în fereastra trasării, reducerea pe pixelii plini, numărul automat sau 2–16, pastilele cu legarea, granițele comune la amestecul de 50 % (netezite o dată pentru ambele culori), o piesă pe culoare, aliniate. Schița: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (macheta vie, cinci întrebări cu formular). Răspunsurile (07.11, 19:24): „Da, 1a–5a”, toate recomandările; codul în lucru.",
+      "en": "**Tracing by colour** (in progress, no machine; ADR 0221, accepted; the `trasare` worktree, branch `wip/25.1-trasare`; started at “Da, 25.2↑”, after 25.1↑). The research: ArtCAM and Carveco (reducing the colours with a slider, linking by dragging a swatch), Inkscape (colours traced separately leave gaps; with “Stack”, they overlap), vtracer (the seam-free mosaic only in 1.0 alpha); OKLab, k-means++, the dual mesh (Surface Nets). Measured: the owner's logo has 3 natural colours (blue 22 %, dark grey 61 %, light grey 17 %, at least 0.095 apart in OKLab); 12 Mpx to 8 colours, 260 ms. The proposal: the “Colours” source in the tracing window, the reduction on solid pixels, the count automatic or 2–16, the swatches with linking, shared boundaries at the 50 % mix (smoothed once for both colours), one part per colour, aligned. The sketch: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (the live mock-up, five questions with a form). The answers (07.11, 19:24): “Da, 1a–5a”, all the recommendations; the code in progress."
+    },
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
       "en": "Checking and repairing vectors; Dimensions; Cutting and conversion; Transforming toolpaths"
@@ -796,10 +800,6 @@
     "45d47929f6f3533a": {
       "ro": "Carcasa interfeței, din prototipul ales de owner dintre trei",
       "en": "The interface shell, from the prototype the owner chose out of three"
-    },
-    "45dd05a397cb0ad0": {
-      "ro": "**Trasarea pe culori** (în lucru, fără mașină; ADR 0221, propus; worktree-ul `trasare`, ramura `wip/25.1-trasare`; pornită la „Da, 25.2↑”, după 25.1↑). Cercetarea: ArtCAM și Carveco (reducerea culorilor cu un glisor, legarea prin tragerea pastilei), Inkscape (culorile trasate separat lasă goluri; cu „Stack”, se suprapun), vtracer (mozaicul fără cusături doar în 1.0 alfa); OKLab, k-means++, plasa duală (Surface Nets). Măsurat: logoul owner-ului are 3 culori naturale (albastru 22 %, gri închis 61 %, gri deschis 17 %, la cel puțin 0,095 în OKLab); 12 Mpx la 8 culori, 260 ms. Propunerea: sursa „Culorile” în fereastra trasării, reducerea pe pixelii plini, numărul automat sau 2–16, pastilele cu legarea, granițele comune la amestecul de 50 % (netezite o dată pentru ambele culori), o piesă pe culoare, aliniate. Schița: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (macheta vie, cinci întrebări cu formular).",
-      "en": "**Tracing by colour** (in progress, no machine; ADR 0221, proposed; the `trasare` worktree, branch `wip/25.1-trasare`; started at “Da, 25.2↑”, after 25.1↑). The research: ArtCAM and Carveco (reducing the colours with a slider, linking by dragging a swatch), Inkscape (colours traced separately leave gaps; with “Stack”, they overlap), vtracer (the seam-free mosaic only in 1.0 alpha); OKLab, k-means++, the dual mesh (Surface Nets). Measured: the owner's logo has 3 natural colours (blue 22 %, dark grey 61 %, light grey 17 %, at least 0.095 apart in OKLab); 12 Mpx to 8 colours, 260 ms. The proposal: the “Colours” source in the tracing window, the reduction on solid pixels, the count automatic or 2–16, the swatches with linking, shared boundaries at the 50 % mix (smoothed once for both colours), one part per colour, aligned. The sketch: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (the live mock-up, five questions with a form)."
     },
     "470b43073b428a4c": {
       "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
@@ -1633,10 +1633,6 @@
       "ro": "Publicarea pe live (P1, partea 2): workflow-ul cu sha fixat, mediul `live` cu aprobarea owner-ului, WIF; amprenta `meta/deployment`, scrisă de pipeline (mutată din 3.3, ADR 0040 §7); contul de serviciu dedicat al backup-ului",
       "en": "Publishing to live (P1, part 2): the workflow with a pinned sha, the `live` environment with the owner's approval, WIF; the `meta/deployment` fingerprint, written by the pipeline (moved from 3.3, ADR 0040 §7); the backup's dedicated service account"
     },
-    "9b266134b7bfa2cb": {
-      "ro": "Răspunsurile la cele cinci întrebări din ADR 0221 (trasarea pe culori): câte culori implicit, legarea culorilor, fundalul unei imagini opace, ce face „Importă”, culoarea pe piesă; recomandările sunt primele variante; schița, cu formularul la capăt: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY>",
-      "en": "Answers to the five questions in ADR 0221 (tracing by colour): how many colours by default, linking colours, the background of an opaque image, what “Import” makes, the colour on the part; the recommendations are the first options; the sketch, with the form at the end: <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY>"
-    },
     "9b8d8f97eff6788f": {
       "ro": "Bancul vizual v1 (`npm run banc`, pagina `/banc/` pe instanța de test), cu martorii lui negativi, și unealta de otrăvuri comisă (`scripts/otravuri.py`, `docs/otravuri.md`). Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
       "en": "Visual bench v1 (`npm run banc`, the `/banc/` page on the test instance), with its negative controls, and the poison tool committed (`scripts/otravuri.py`, `docs/otravuri.md`). Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
@@ -1784,10 +1780,6 @@
     "a93dd14ea6480464": {
       "ro": "Dog-bone și T-bone",
       "en": "Dog-bone and T-bone"
-    },
-    "a9418ed9593b8744": {
-      "ro": "25.2↑",
-      "en": "25.2↑"
     },
     "aa307f4c17702a2b": {
       "ro": "Manualul utilizatorului",
