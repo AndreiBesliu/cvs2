@@ -8,7 +8,11 @@
 import type { Manifest } from './pachet.ts';
 import type { DepozitDate } from './stocare.ts';
 
-export type SursaExtensie = { readonly fel: 'fisier'; readonly nume: string } | { readonly fel: 'adresa'; readonly adresa: string };
+/** De unde a venit pachetul: un fișier ales, o adresă HTTPS sau biblioteca de lângă aplicație (ADR 0230, cu amprenta lui). */
+export type SursaExtensie =
+  | { readonly fel: 'fisier'; readonly nume: string }
+  | { readonly fel: 'adresa'; readonly adresa: string }
+  | { readonly fel: 'biblioteca'; readonly sha256: string };
 export type ExtensieInstalata = {
   readonly id: string;
   readonly manifest: Manifest;
