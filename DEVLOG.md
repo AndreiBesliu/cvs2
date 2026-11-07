@@ -6190,3 +6190,22 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   1024 px: opțiunea „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții” în panou; refuzurile, cu motivele lor (un
   cerc-cuțit în dreptunghi, formele care nu se întâlnesc); cercul mutat pe latura dreptunghiului îl taie în două forme, alese
   (semidiscul, din trei segmente, și restul), iar cercul rămâne neales și neschimbat.
+
+## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑c”.
+**Started:** 07.11, 13:00. **Completed:** 07.11, 14:35.
+
+- **Înainte:** `main` (`36c75cb`, cu 7.9↑b) unit în ramură (`df780db`): ușile manualului 86 (84 + Taie + `document.taie`),
+  DEVLOG-ul cu `main` întâi (acum prefix al celui din ramură); traducerile 636 / 0.
+- **Codul:** `src/model/taiere.ts`: tăierea cu cuțitul-formă despărțită în împărțire (`impartireCuForma`) și grupare (`laturi`,
+  pentru cuțitul închis); decuparea (`decupeazaInstanta`, `toateIntregi`) le refolosește. Rezultatul tăierii are acum `sterse`,
+  iar acțiunea `document.taie` pune întâi ștergerile (`comenziStergere`), apoi degruparea, într-un singur `lot`. Refuzul nou:
+  `granita`. Panoul: blocul „Decupează la ultima formă aleasă”, ca în schiță, iar panoul nu mai trece de 70 % din fereastră (se
+  derulează). Manualul, ambele limbi.
+- **Probele:** 8 pe hârtie (`taiere.decupare.test.ts`), oracolul extins (`judecaDecuparea`) pe 100 de decupări din sămânță, 1 e2e
+  nou; generatorii corpusurilor (`formaCorpus`, `document`) stau acum în `ajutor-taiere.ts`.
+- **Porțile:** traducerile (636 / 0), compilatoarele, importurile, licențele; unit 8 562 (8 554 / 0 căderi / 8 sărite); build-ul determinist (271 identice); e2e 358 / 358 pe `342eaa7` (în rularea întreagă 356, cu două căderi la încărcare, sub alte sesiuni, trecute la reluare); emulatoarele 81 / 81 și 21 / 21 pe `342eaa7`.
+- **Otrăvurile** (`test/otravuri/10.3c.py`): 15, toate prinse la prima rulare (`342eaa7`); K11 și K13 din `10.3b.py`, mutate pe codul nou, prinse și ele.
+- **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 516,6 → 517,2 / 550 kB. Linia, până acum: ~11,1 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6), peste ghidul de ~10 kB din brief, cu două felii rămase.**
+
