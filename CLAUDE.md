@@ -548,6 +548,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/e2e/imprimantaFalsa.ts` (9999, pe rețeaua de loopback a probei); ghidul owner-ului: `docs/masina/imprimanta-k1c.md`.
   **Pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 514,0 / 550 (cu 7.9↑b, după unirea lui `main` în ramură), /admin 105,4 /
   200.**
+  **Trimiterea unui `.gcode` la imprimantă (ADR 0190 §C.7, §D, felia 3.6h)** gata pe 07.11, pe aceeași ramură: **Trimite un
+  fișier…**, sub lista fișierelor, verifică întâi fișierul pe calculator (`src/machine/imprimanta/gcode3d.ts`: antetul lui
+  OrcaSlicer / Creality Print, PrusaSlicer sau Cura, temperaturile, miniatura, întinderea mișcărilor cu G90 / G91 / G92 / G28 și
+  arce, față de patul modelului), cu **Trimite oricum** după un avertisment; apoi `POST /upload/<nume>` pe 80, multipart doar cu
+  `file`, `no-cors` (`urcare.ts`), căutat după nume în lista de pe 9999. **Un fișier din imprimantă nu se înlocuiește:** un
+  nume pe care lista îl are primește „-2”, „-3”… (verificarea după nume spune ceva doar pentru un nume nou). **CSP-ul are `http:`
+  în `connect-src`** (răspunsul 3a); `wss:` trecea deja (după CSP3, `ws:` și `https:` îl acoperă), iar martorul refuzat al
+  probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
+  pe 80. **Pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 517,3 / 550 (+3,3, ~1,3 kB peste ținta liniei: unirea în `main`
+  așteaptă acordul owner-ului), /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

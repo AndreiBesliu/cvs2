@@ -6181,3 +6181,30 @@ lui permisă; ce a încercat și fișierul cu CC5000, necompletate.
 **Prompt:** „Da, 3.6h” (owner-ul, la întrebarea „Încep felia 3.6h (trimiterea unui .gcode la imprimantă)?”, după 3.6g și
 unirea lui `main` în ramură).
 **Started:** 07.11, 13:45. **Completed:** —
+
+- **Ce s-a construit:** sub lista fișierelor din fereastra Imprimanta, **Trimite un fișier…** și dialogul „Trimite la
+  imprimantă” din schiță (secțiunea E). Verificarea pe calculator, pură (`src/machine/imprimanta/gcode3d.ts`): antetul lui
+  OrcaSlicer / Creality Print, PrusaSlicer sau Cura (imprimanta, duza, materialul, timpul, cea mai mare miniatură PNG),
+  temperaturile din primele comenzi de încălzire sau din `START_PRINT`, întinderea mișcărilor G0–G3 cu G90 / G91, G92, G28 și
+  arcele I / J (cu punctele lor extreme), față de patul modelului (K1C 220 × 220 × 250, K1 Max 300 × 300 × 300); fișierul, citit
+  pe bucăți de 1 MiB. O mișcare în afara patului (cu linia), alt model în antet sau nicio mișcare dau un avertisment și
+  **Trimite oricum**. Trimiterea (`urcare.ts`): `POST /upload/<nume>` pe 80, multipart doar cu `file`, `no-cors`, ca OrcaSlicer;
+  numele fără spații, doar `.gcode` și niciodată unul pe care lista îl are (un fișier din imprimantă nu se înlocuiește: „-2”,
+  „-3”…); apoi numele căutat în lista de pe 9999. După „Ajuns în imprimantă”, **Pornește imprimarea…** deschide confirmarea
+  de la 3.6g (cu bifa); un eșec spune motivul (cererea căzută, fișierul care nu apare în listă), cu **Încearcă din nou**. CSP-ul
+  are `http:` în `connect-src` (răspunsul 3a), `firebase.json` regenerat. Imprimanta falsă primește `POST /upload`, iar proba
+  mută cererea de pe 80 pe portul ei (`page.route`). Manualul (8 controale noi, în ambele limbi), ghidul owner-ului (trimiterea
+  și pasul ei din proba 3.6i), ADR 0190 (felia 3.6h).
+- **Găsite pe drum:** martorul refuzat al probei CSP era `http://example.com`, care acum trece de CSP (și, de pe
+  `http://localhost`, ar fi ieșit în internet): cererea e prinsă de `route`, iar martorul e o cerere `data:`. Un martor `wss://`
+  n-a mers: trece de CSP (după CSP3, `ws:` și `https:` acoperă și `wss:`), iar o rută Playwright nu prinde un WebSocket.
+  `targetAddressSpace: 'local'` pleacă doar spre rețeaua locală, nu spre loopback (unde proba își ține imprimanta falsă).
+  Mărimea: analizorul mutat dintr-o clasă într-o închidere a câștigat 0,08 kB, iar verificarea în listă, din abonare în priviri
+  la câteva sute de ms, ~0,1 kB; restul e ce cere ADR-ul.
+- **Mărimile:** pornirea 101,6 (neschimbată; cu ușa 105,1 / 110 kB), totalul 517,3 / 550 (+3,3: bucata ferestrei de la 7,5 la
+  10,8 kB; verificarea ~1,8, trimiterea ~0,6, dialogul ~1,0), /admin 105,4 / 200: ~1,3 kB peste ținta liniei, deci unirea în
+  `main` așteaptă acordul owner-ului.
+- **Otrăvurile:** 56 (`test/otravuri/3.6h.py`, alese de autor; 46 pe probele unitare, 10 de interfață prin e2e), într-o clonă în
+  afara Drive-ului, cu baza verde întâi; prima rulare (`09e0e26`): 55 prinse, 1 scăpată: G13 (G2 și G3 inversate), fiindcă
+  arcele probei erau semicercuri și cercuri întregi, la care ocolul are aceeași mărime în ambele sensuri; proba are acum un
+  sfert de cerc și o prinde (`tinte`, pe `28a0098`).
