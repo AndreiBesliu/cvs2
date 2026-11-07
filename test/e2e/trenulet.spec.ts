@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 import { scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -240,7 +241,8 @@ test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confir
   await page.locator('[data-extensii="fila"]').click();
   await expect(stare).toHaveText('Mașina: conectată.');
 
-  await c.locator('#m-incarca').click();
+  // primul clic în cadru după ce fereastra lui reapare
+  await clicDupaReaparitie(page, '#m-incarca');
   await expect(stare).toHaveText(/^Mașina: conectată\. Program: placa_1\S* \(\d+ (de )?linii\)\.$/);
   await expect(page.getByTestId('masina-program-de-la')).toHaveText('de la Easy 3Draw');
   await c.locator('#m-porneste').click();

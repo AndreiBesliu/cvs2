@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -254,25 +255,6 @@ async function formaAleasa(page: Page): Promise<void> {
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByTestId('lista-vectori').locator('li').getByText('placuta').click();
   await expect(page.getByTestId('selectie')).toHaveText('Selectat: placuta');
-}
-
-/**
- * Un clic adevărat pe un buton din cadrul extensiei, chiar după ce fereastra ei reapare (fila, după altă fereastră). Cadrul e
- * alt proces: în CI (Linux), un clic dat la ~60 ms după ce fereastra a reapărut n-a ajuns la buton (nicio cerere, nicio eroare;
- * urma rulării 42395280530, 07.11), deși verificările lui Playwright, făcute în cadru, treceau; pe Windows nu s-a pierdut
- * niciunul din 480. Se repetă doar clicul care n-a ajuns la buton (semnul îl pune clicul, o singură dată), deci butonul nu
- * lucrează de două ori; un cadru în care niciun clic nu ajunge pică tot.
- */
-async function clicDupaReaparitie(page: Page, selector: string): Promise<void> {
-  const b = cadru(page).locator(selector);
-  await b.evaluate((e) => {
-    e.removeAttribute('data-clic-primit');
-    e.addEventListener('click', () => { e.setAttribute('data-clic-primit', ''); }, { once: true });
-  });
-  await expect(async () => {
-    if (await b.getAttribute('data-clic-primit') === null) await b.click({ timeout: 5000 });
-    await expect(b).toHaveAttribute('data-clic-primit', '', { timeout: 2000 });
-  }).toPass({ timeout: 15_000 });
 }
 
 test('formele (ADR 0166): „Trimite la <extensie>” doar cu o extensie care le primește; contururile ajung în mm, apoi fereastra ei', async ({ page }) => {
