@@ -1,0 +1,13 @@
+{
+  "extensii": [
+    {
+      "dosar": "trenulet",
+      "descriere": {
+        "ro": "Planifici circuite de trenuleț din lemn, cu fișierele pentru CNC, și faci piese de printat 3D: cărămizi LEGO și forme din desenul cvs2.",
+        "en": "Plan wooden train tracks with their CNC files, and make 3D-printable parts: LEGO bricks and shapes from your cvs2 drawing."
+      },
+      "versiune": "18.7.1",
+      "continut": "4ab5f2ea1d5b8eeddc929b2f8a4c09a4532f0d8e3ca27765ca5970f894a4ea60"
+    }
+  ]
+}

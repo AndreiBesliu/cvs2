@@ -6329,3 +6329,30 @@ sesiunea principală, care a pornit linia).
 - **În fișă:** rândul 3.Xg (în lucru) la capătul jurnalului și rândul răspunsurilor la capătul cozii owner-ului; ADR-ul în
   index; traducerile (5 texte, `--verifica`: 649 / 0). Probele documentației și ale traducerilor: 38 / 38.
 - **Rămâne:** răspunsurile owner-ului, apoi codul lui 3.Xg, cu probele scrise întâi. Nimic unit în `main`.
+
+## 2026-11-07 — Felia 3.Xg: biblioteca extensiilor (ADR 0230, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–7a” (owner-ul, în sesiunea liniei, la cele șapte întrebări din ADR 0230).
+**Started:** 07.11, 16:00. **Completed:** —
+
+- **Răspunsurile:** toate recomandările: biblioteca lângă aplicație, construită la build; „Instalează” prin fereastra de azi;
+  „Actualizează” dintr-un clic, cu fereastra doar când versiunea nouă cere ceva în plus; versiunea nouă se vede la deschiderea
+  meniului, nu la pornire; fișierul și adresa rămân („din afara bibliotecii”), plus linkul `#biblioteca=<id>`; Easy 3Draw pe live
+  odată cu aplicația; secțiunea în meniul Extensii. Scrise în ADR 0230 (acceptat), în `CLAUDE.md` („Decizii luate”) și în fișă
+  (rândul cozii scos).
+- **Înainte de cod:** `origin/main` (`1bf99c5`, DEVLOG-ul unirii) adus în ramură (`1daf840`; ciocnirea doar la coada
+  DEVLOG-ului, păstrate ambele intrări).
+- **Probele, scrise întâi** (și văzute căzând înaintea codului): `extensii.biblioteca.test.ts` (catalogul câmp cu câmp,
+  versiunile, starea rândului, ce cere în plus, amprenta greșită refuzată înaintea cititorului, cu aceeași mărime și cu alta,
+  manifestul nepotrivit, pachetul stricat, descărcarea oprită la mărimea din catalog, rețeaua care nu e defect, instalarea cu
+  sursa ei, catalogul cerut), `biblioteca.constructie.test.ts` (catalogul din build cu amprenta și mărimea pachetului de lângă
+  el, judecat ca în aplicație; Easy 3Draw cu câmpurile manifestului; determinismul; garda „conținut nou ⇒ versiune nouă”;
+  amprenta conținutului), precache-ul (`extensii/`), anteturile (`/extensii/catalog.json`, `/extensii/*.zip`), controalele
+  manualului; e2e `biblioteca.spec.ts` (7: instalarea cu „Deschide”, amprenta greșită cu defectul în jurnal, actualizarea
+  dintr-un clic cu datele păstrate, actualizarea care cere ceva nou, fără rețea, linkul, engleza).
+- **Codul:** `shared/biblioteca.ts`, `src/extensii/biblioteca.ts`, `scripts/biblioteca.ts`, `extensii/biblioteca.json`, pluginul
+  `biblioteca()` din `vite.config.ts`; `Extensii.tsx` (secțiunea, actualizarea din meniu, semnul „actualizare: …”, linkul),
+  `Instalare.tsx` (fereastra bibliotecii, „din afara bibliotecii”, gestionarea „din biblioteca cvs2”), `depozit.ts` (sursa
+  `biblioteca`), `tipuri.ts`, `extensii.css`, `carcasa.ro/en.ts` (44 de texte); `shared/precache.ts` (motivul `biblioteca`),
+  `scripts/firebase-json.ts` și `firebase.json`, `scripts/build-determinist.ts` (catalogul din `dist/` față de pachete, a doua
+  plasă a precache-ului, rândul bibliotecii în raport); manualul (ro, en).

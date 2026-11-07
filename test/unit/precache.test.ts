@@ -142,3 +142,14 @@ test('testul pas cu pas (ADR 0072) nu intră: bucata lui, stilul ei și pașii d
   assert.equal(motivPrecache('tutorial/Alt.json'), 'necunoscut');
   assert.equal(motivPrecache('tutorial/sub/unelte-desen.json'), 'necunoscut');
 });
+
+test('biblioteca extensiilor (ADR 0230) nu intră: catalogul și pachetele vin doar la instalare, de la cine instalează', () => {
+  for (const f of ['extensii/catalog.json', 'extensii/trenulet-18.7.1-7542bdac.zip', 'extensii/salut-1.0.0-0123abcd.zip']) {
+    assert.equal(motivPrecache(f), 'biblioteca', f);
+    assert.equal(inPrecache(f), false, f);
+  }
+  // Doar ce scrie construcția bibliotecii: alt fișier sub `extensii/` cere o decizie, ca orice fel nou.
+  for (const f of ['extensii/trenulet.zip', 'extensii/trenulet-18.7.1.zip', 'extensii/api.ts', 'extensii/sub/catalog.json', 'sub/extensii/catalog.json']) {
+    assert.equal(motivPrecache(f), 'necunoscut', f);
+  }
+});

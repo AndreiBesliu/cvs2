@@ -1,10 +1,10 @@
 # ADR 0230 — Biblioteca extensiilor: Easy 3Draw instalat și actualizat dintr-un clic
 
 **Starea:** propus pe 07.11.2026 pentru felia 3.Xg, a liniei gazdei extensiilor (după 3.Xa–3.Xf), în worktree-ul `biblioteca`
-(ramura `wip/3.Xg-biblioteca`). Cererea owner-ului: „Vreau ca plugin-ul nostru sa fie disponibil printr-o librarie. Fa asta
-intr-un worktree”. **Continuă:** ADR 0127 (pachetul, instalarea, cadrul izolat), ADR 0128 (permisiunile, arătate la
-instalare), ADR 0129 și 0167 (Easy 3Draw: construcția pachetului, id-ul `trenulet`), ADR 0137 (plafonul). Nu schimbă nimic din
-ele: adaugă a patra cale de instalare, lângă fișier, adresă și link.
+(ramura `wip/3.Xg-biblioteca`); **acceptat în aceeași zi, cu recomandările: „Da, 1a–7a”**. Cererea owner-ului: „Vreau ca
+plugin-ul nostru sa fie disponibil printr-o librarie. Fa asta intr-un worktree”. **Continuă:** ADR 0127 (pachetul, instalarea,
+cadrul izolat), ADR 0128 (permisiunile, arătate la instalare), ADR 0129 și 0167 (Easy 3Draw: construcția pachetului, id-ul
+`trenulet`), ADR 0137 (plafonul). Nu schimbă nimic din ele: adaugă a patra cale de instalare, lângă fișier, adresă și link.
 **Schița:** <https://claude.ai/artifact/GJgA4hRePmXFNPNNaQux3n> (șase planșe: meniul cu biblioteca, în cinci stări și în
 ambele limbi; instalarea; actualizarea; drumul unei versiuni noi; încrederea și mărimea; întrebările, cu formularul, care scrie
 în colecția `raspunsuri`, documentul `owner`).
@@ -44,7 +44,7 @@ nu-l descarcă și nu-l rulează.
 - **Cifrele, măsurate aici, la `8003cb2`:** pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, `/admin` 105,4 /
   200; bucățile gazdei: `Extensii` 4,3 kB, `Instalare` 4,0 kB, `cadru` 4,7 kB (gzip 9).
 
-## Decizia (propusă, cu recomandările întrebărilor)
+## Decizia (acceptată: recomandările, 1a–7a)
 
 ### A. Locul: biblioteca stă lângă aplicație, construită din repo (întrebarea 1)
 
@@ -57,7 +57,7 @@ nu-l descarcă și nu-l rulează.
     niciodată conținutul (nicio copie veche din cache sub același nume);
   - `catalog.json`: `{ format: "cvs2-biblioteca", schema: 1, extensii: [...] }`, câte un rând pe extensie: `id`, `nume`,
     `versiune`, `api`, `permisiuni` (luate din manifestul pachetului, nu scrise de mână), `descriere` (`ro`, `en`), `pachet`
-    (numele fișierului), `octeti`, `sha256` (al `.zip`-ului) și, opțional, `doarTest`.
+    (numele fișierului), `octeti` și `sha256` (al `.zip`-ului).
 - **Hosting:** `catalog.json` cu `Cache-Control: no-cache` (un 304 când nu s-a schimbat); pachetele cu `immutable`.
 - **Precache:** `extensii/` e un motiv nou, `biblioteca`, în afara lui: pachetul ajunge doar la cine îl instalează (în
   IndexedDB, ca azi), nu pe discul fiecărui om.
@@ -73,8 +73,8 @@ nu-l descarcă și nu-l rulează.
   manifestului, care are amprenta fiecărui fișier, deci nu depinde de compresie) stă în `extensii/biblioteca.json`, lângă
   versiune. Un pachet cu alt conținut și aceeași versiune face proba să pice, cu pasul de urmat: versiunea ridicată, apoi
   `node scripts/biblioteca.ts --scrie`. Fără ea, omul cu versiunea veche ar vedea „Instalată” și n-ar primi schimbarea.
-- **Instanța:** `doarTest: true` ține o extensie departe de live (aplicația o ascunde acolo, după instanța din `config.json`).
-  Pentru Easy 3Draw, după răspunsul 6.
+- **Instanța (răspunsul 6a):** Easy 3Draw ajunge pe live odată cu aplicația, când owner-ul o publică acolo; pe live, mașina
+  rămâne oprită pentru extensii (ADR 0160). Un semn „doar pe test” în catalog nu se face acum: nicio extensie nu-l cere.
 - Biblioteca are o singură versiune pe extensie, cea a commit-ului publicat. O versiune mai veche se întoarce publicând un
   commit mai vechi.
 
@@ -114,7 +114,8 @@ nu-l descarcă și nu-l rulează.
   - un rând care cere ce nu știe fila de acum (o permisiune nouă, alt `api`: o filă rămasă pe o versiune veche a
     aplicației, cu un catalog nou): „Reîncarcă aplicația ca s-o instalezi”, fără buton.
 
-  În lista de sus, o extensie instalată din bibliotecă, cu o versiune nouă acolo, are lângă nume „actualizare: 18.8.0”.
+  În lista de sus, o extensie instalată (din bibliotecă sau din fișier), cu o versiune mai nouă în bibliotecă, are lângă nume
+  „actualizare: 18.8.0”.
 - **Când se cere catalogul:** la fiecare deschidere a meniului, fără să-l țină pe loc. Cele instalate apar imediat (din
   IndexedDB, ca la meniul contului, ADR 0120), iar biblioteca se completează când sosește catalogul („Se încarcă
   biblioteca…”). Nicio cerere la pornirea aplicației.
@@ -128,7 +129,8 @@ nu-l descarcă și nu-l rulează.
 
 - **Pornirea:** neschimbată; biblioteca stă în bucata `Extensii` (adusă după prima randare) și în `Instalare` (la cerere).
 - **JavaScript:** ~2–3 kB gzip în plus (catalogul și judecata lui, secțiunea din meniu, instalarea din bibliotecă cu
-  amprenta): totalul ~519,5 → ~522 / 550 kB. Textele sunt date (`mesaje/carcasa.json`), în afara plafonului.
+  amprenta): totalul ~519,5 → ~522 / 550 kB. Textele sunt date (`mesaje/carcasa.json`), în afara plafonului. (Măsurat la
+  cod: +3,5 kB, §G.)
 - **`dist/`** crește cu pachetul (~408 kB) și catalogul (sub 1 kB), în afara plafonului (ADR 0137: „la fel pachetele
   extensiilor”) și a precache-ului. Hosting-ul urcă pachetul doar când i se schimbă octeții.
 - **Build-ul:** ~1 s în plus (construcția pachetului), de două ori în poarta determinismului.
@@ -137,8 +139,24 @@ nu-l descarcă și nu-l rulează.
 
 O singură felie, **3.Xg**, în trei treceri: (1) construcția (catalogul, pachetul cu amprenta în nume, proba versiunii,
 precache-ul, anteturile); (2) gazda (catalogul judecat, instalarea și actualizarea din bibliotecă, secțiunea din meniu,
-linkul, manualul); (3) probele e2e, otrăvurile, canalul `biblioteca`. Estimat ~4 h. Cu răspunsul 1b, încă o felie (3.Xh:
-încărcarea din `/admin`, regulile, funcția care judecă pachetul).
+linkul, manualul); (3) probele e2e, otrăvurile, canalul `biblioteca`. Estimat ~4 h.
+
+### G. Felia 3.Xg, la cod (07.11)
+
+- **Unde stă:** `shared/biblioteca.ts` (forma catalogului, numele pachetului, comparația versiunilor: ce știu și construcția,
+  și aplicația), `src/extensii/biblioteca.ts` (starea rândului, descărcarea, judecata, instalarea), `scripts/biblioteca.ts`
+  (construcția și garda versiunilor, cu `--scrie`), pluginul `biblioteca()` din `vite.config.ts` (și în serverul de
+  dezvoltare), `extensii/biblioteca.json` (Easy 3Draw 18.7.1, cu amprenta conținutului `4ab5f2ea…`).
+- **O descărcare peste mărimea din catalog** se refuză tot cu `amprenta-biblioteca`: octeții n-au cum fi ai pachetului.
+- **Linkul, pentru o extensie deja instalată** în aceeași versiune: „… e deja instalată”, cu **Deschide**; un id care nu e în
+  bibliotecă: „Extensia „…” nu e în biblioteca acestei instanțe.”
+- **Poarta build-ului** citește catalogul din `dist/` ca aplicația, cere ca în `dist/extensii/` să stea exact el și pachetele
+  lui, fiecare cu mărimea și amprenta din catalog, și ține biblioteca în afara precache-ului și printr-o a doua plasă, în
+  afara predicatului.
+- **Mărimea, măsurată:** pornirea neschimbată (101,5, cu ușa 105,1 / 110 kB); totalul 519,5 → 523,0 / 550 kB (+3,5 kB, peste
+  estimarea de 2–3 kB): bucata `Extensii` 4,3 → 8,5 kB, fiindcă biblioteca trage după ea și cititorul de pachete, care pleacă
+  din `Instalare` (4,0 → 3,4 kB). `Extensii` vine după prima randare, din precache, deci pornirea nu plătește nimic.
+  `dist/extensii/`: pachetul 408,0 kB și catalogul 0,8 kB, în afara plafonului și a precache-ului.
 
 ## Ce am respins
 
@@ -181,7 +199,9 @@ linkul, manualul); (3) probele e2e, otrăvurile, canalul `biblioteca`. Estimat ~
   ceva nou: fereastra, cu ce cere întâi); fără rețea (secțiunea, **Reîncearcă**); linkul `#biblioteca=trenulet`; engleza.
 - **Otrăvurile țintite:** `test/otravuri/3.Xg.py`, rulate dintr-o clonă din afara Drive-ului.
 
-## Întrebările (recomandarea întâi)
+## Întrebările (recomandarea întâi) și răspunsurile
+
+Owner-ul, pe 07.11, în sesiunea liniei: **„Da, 1a–7a”**: toate recomandările.
 
 1. **Unde stă biblioteca?**
    - **a)** lângă aplicație: catalogul și pachetele construite din repo la fiecare build (`/extensii/catalog.json`), cu

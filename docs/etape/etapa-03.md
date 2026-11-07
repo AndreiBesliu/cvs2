@@ -78,7 +78,6 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Răspunsurile la cele șase întrebări din ADR 0171 (incrustația cu pereți drepți): cum se face dopul, pe ce se sprijină, colțurile, frezele, jocul lateral, unde se alege; recomandările sunt primele variante; schița: <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR> | 12.1↑b | înainte de codul feliei |
 | O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11) | 3.S pe live (acolo primirea e oprită până atunci) | înainte să pornim primirea pe live |
 | Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune | 10.3↑ | acum |
-| Răspunsurile la cele șapte întrebări din ADR 0230 (biblioteca extensiilor, propus pe ramura `wip/3.Xg-biblioteca`): unde stă biblioteca, instalarea, actualizarea, cum afli de o versiune nouă, fișierul și linkurile, Easy 3Draw pe live, locul în interfață; recomandările sunt primele variante; schița, cu formularul: <https://claude.ai/artifact/GJgA4hRePmXFNPNNaQux3n> | 3.Xg | înainte de codul feliei |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 
