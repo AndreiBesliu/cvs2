@@ -6208,4 +6208,7 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
 - **Porțile:** traducerile (636 / 0), compilatoarele, importurile, licențele; unit 8 562 (8 554 / 0 căderi / 8 sărite); build-ul determinist (271 identice); e2e 358 / 358 pe `342eaa7` (în rularea întreagă 356, cu două căderi la încărcare, sub alte sesiuni, trecute la reluare); emulatoarele 81 / 81 și 21 / 21 pe `342eaa7`.
 - **Otrăvurile** (`test/otravuri/10.3c.py`): 15, toate prinse la prima rulare (`342eaa7`); K11 și K13 din `10.3b.py`, mutate pe codul nou, prinse și ele.
 - **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 516,6 → 517,2 / 550 kB. Linia, până acum: ~11,1 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6), peste ghidul de ~10 kB din brief, cu două felii rămase.**
-
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12). Verificat acolo, la
+  1024 px: blocul „Decupează la ultima formă aleasă” ca în schiță, panoul derulat; decupat la cercul ales ultimul, restul unui
+  dreptunghi care atingea cercul doar pe arc, din afară, a plecat (fără refuz: nimic tăiat), iar semidiscul dinăuntru și cercul
+  au rămas.
