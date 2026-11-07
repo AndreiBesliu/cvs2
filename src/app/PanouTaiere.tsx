@@ -16,6 +16,13 @@ export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 /**
+ * Panoul Convertește (felia 10.3↑d) vine în aceeași bucată, adus de aici: amândouă folosesc `taiere.css`, iar o foaie de stil
+ * împărțită de două bucăți la cerere ar ieși într-o bucată comună doar de CSS, pe care harta importurilor (ADR 0098) o
+ * pomenește fără fișierul ei (poarta din `scripts/build-determinist.ts`).
+ */
+export { PanouConversie } from './PanouConversie.tsx';
+
+/**
  * Panoul Taie (ADR 0180 §3, §4, §5; feliile 10.3↑, 10.3↑b și 10.3↑c), adus la cerere din extensia barei: cu ce se taie (linia
  * verticală X, orizontală Y, un ghidaj al foii sau ultima formă aleasă, cu Shift + clic), „Închide bucățile” (ținută în
  * browser, ca Lipirea) și Taie; „Decupează la ultima formă aleasă” (ce se păstrează, ce se face cu formele care trec granița)

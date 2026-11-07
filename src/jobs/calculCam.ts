@@ -8,6 +8,7 @@ import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
+import { converteste, type RezultatConversie } from '../model/conversie.ts';
 import { taie, type RezultatTaiere } from '../model/taiere.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
@@ -86,7 +87,7 @@ export function calculeazaSimularea(doc: Document): RaspunsSimulare {
 
 /** Răspunsul unei cereri, cu tablourile lui de transferat (ADR 0014). */
 export type RaspunsCalcul = {
-  readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RezumatJob | VerificarePanou | RezultatReparare | RezultatTaiere;
+  readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RezumatJob | VerificarePanou | RezultatReparare | RezultatTaiere | RezultatConversie;
   readonly transfer: ArrayBuffer[];
 };
 
@@ -112,5 +113,7 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       return { raspuns: repara(c.document, c.cerere, c.optiuni), transfer: [] };
     case 'taiere':
       return { raspuns: taie(c.document, c.cerere), transfer: [] };
+    case 'conversie':
+      return { raspuns: converteste(c.document, c.cerere), transfer: [] };
   }
 }

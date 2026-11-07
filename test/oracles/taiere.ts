@@ -11,6 +11,8 @@
  * Felia 10.3↑b: cuțitul-formă (un poligon convex: părțile înăuntru / în afară, ariile tăiate cu el; o linie frântă: ariile
  * fețelor se adună la aria regiunii) și „Taie la intersecții” (aceeași lungime, nicio bucată nouă prin altă formă veche).
  * Felia 10.3↑c: decuparea (ce rămâne e de partea păstrată, o acoperă, cu aria tăiată de graniță).
+ * Felia 10.3↑d: conversia (fiecare formă neschimbată sau devenită ce s-a cerut: fără cubice, un cerc, un dreptunghi; la cel
+ * mult toleranța de cea veche, ca distanță Hausdorff măsurată din nou; cu mărimea dată, centrul în centrul cutiei vechi).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -481,4 +483,155 @@ export function judecaDecuparea(o: {
     if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria rămasă: ${are}, nu ${asteptat}`);
   }
   return rau;
+}
+
+// ——— Felia 10.3↑d: conversia (arce, în cerc, în dreptunghi) ———
+
+const AUR = (Math.sqrt(5) - 1) / 2;
+
+/**
+ * Cât se depărtează forma `a` de forma `b`: cel mai depărtat punct al lui `a`, din eșantioane, cu fiecare maxim local al
+ * eșantioanelor rafinat pe secțiunea de aur, între vecinii lui.
+ */
+function departare(a: FormaOracol, b: FormaOracol, n = 40): number {
+  const d = (s: Seg, t: number): number => distantaLaForme(punct(s, t), [b]);
+  let max = 0;
+  for (const s of a.seg) {
+    const v = Array.from({ length: n + 1 }, (_, k) => d(s, k / n));
+    for (let k = 0; k <= n; k++) {
+      const x = v[k] as number;
+      max = Math.max(max, x);
+      if (k === 0 || k === n || x < (v[k - 1] as number) || x < (v[k + 1] as number)) continue;
+      let lo = (k - 1) / n, hi = (k + 1) / n;
+      let m1 = hi - AUR * (hi - lo), m2 = lo + AUR * (hi - lo), f1 = d(s, m1), f2 = d(s, m2);
+      for (let it = 0; it < 48; it++) {
+        if (f1 > f2) { hi = m2; m2 = m1; f2 = f1; m1 = hi - AUR * (hi - lo); f1 = d(s, m1); }
+        else { lo = m1; m1 = m2; f1 = f2; m2 = lo + AUR * (hi - lo); f2 = d(s, m2); }
+      }
+      max = Math.max(max, f1, f2);
+    }
+  }
+  return max;
+}
+
+/** Distanța Hausdorff dintre două forme, în ambele sensuri, măsurată de oracol. */
+export function hausdorff(a: FormaOracol, b: FormaOracol): number {
+  return Math.max(departare(a, b), departare(b, a));
+}
+
+/** Cutia unei forme, exactă: capetele, punctele arcelor de pe axe (în baleiajul lor), rădăcinile derivatei cubicelor. */
+export function cutieForma(f: FormaOracol): { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number } {
+  const q: P[] = [];
+  for (const s of f.seg) {
+    q.push(s.a, s.b);
+    if (s.fel === 'A') {
+      for (let k = -8; k <= 8; k++) {
+        const u = (k * Math.PI) / 2;
+        const rel = s.du >= 0 ? u - s.u0 : s.u0 - u;
+        if (rel > 0 && rel < Math.abs(s.du)) q.push({ x: s.c.x + s.r * Math.cos(u), y: s.c.y + s.r * Math.sin(u) });
+      }
+    } else if (s.fel === 'C') {
+      for (const ax of ['x', 'y'] as const) {
+        // x'(t) / 3 = A t² + B t + C, cu A = b − 3c2 + 3c1 − a, B = 2(c2 − 2c1 + a), C = c1 − a.
+        const A = s.b[ax] - 3 * s.c2[ax] + 3 * s.c1[ax] - s.a[ax], B = 2 * (s.c2[ax] - 2 * s.c1[ax] + s.a[ax]), C = s.c1[ax] - s.a[ax];
+        const t: number[] = [];
+        if (Math.abs(A) < 1e-14) { if (Math.abs(B) > 1e-14) t.push(-C / B); }
+        else {
+          const D = B * B - 4 * A * C;
+          if (D >= 0) t.push((-B + Math.sqrt(D)) / (2 * A), (-B - Math.sqrt(D)) / (2 * A));
+        }
+        for (const x of t) if (x > 0 && x < 1) q.push(punct(s, x));
+      }
+    }
+  }
+  return { minX: Math.min(...q.map((x) => x.x)), minY: Math.min(...q.map((x) => x.y)), maxX: Math.max(...q.map((x) => x.x)), maxY: Math.max(...q.map((x) => x.y)) };
+}
+
+/** Cercul unei forme: toate segmentele arce ale aceluiași cerc, legate cap la cap, 360° în total; altfel null. */
+export function cerculFormei(f: FormaOracol): { readonly c: P; readonly r: number } | null {
+  const a = f.seg[0];
+  if (!f.inchis || !a || a.fel !== 'A') return null;
+  let total = 0;
+  for (let k = 0; k < f.seg.length; k++) {
+    const s = f.seg[k] as Seg, urm = f.seg[(k + 1) % f.seg.length] as Seg;
+    if (s.fel !== 'A' || Math.hypot(s.c.x - a.c.x, s.c.y - a.c.y) > 1e-9 * a.r || Math.abs(s.r - a.r) > 1e-9 * a.r) return null;
+    if (Math.hypot(s.b.x - urm.a.x, s.b.y - urm.a.y) > 1e-9 * a.r) return null;
+    total += s.du;
+  }
+  return Math.abs(Math.abs(total) - 2 * Math.PI) < 1e-9 ? { c: a.c, r: a.r } : null;
+}
+
+/**
+ * Dreptunghiul unei forme: patru laturi drepte, două câte două paralele și perpendiculare pe vecinele lor, cu (la colțurile
+ * rotunjite) câte un arc de 90° între ele, toate de aceeași rază; altfel null. Întoarce laturile (lungimile lor) și raza.
+ */
+export function dreptunghiulFormei(f: FormaOracol): { readonly laturi: readonly number[]; readonly raza: number } | null {
+  if (!f.inchis) return null;
+  const linii = f.seg.filter((s): s is Extract<Seg, { fel: 'L' }> => s.fel === 'L');
+  const arce = f.seg.filter((s): s is Extract<Seg, { fel: 'A' }> => s.fel === 'A');
+  if (linii.length !== 4 || (arce.length !== 0 && arce.length !== 4) || f.seg.length !== 4 + arce.length) return null;
+  const raza = arce[0]?.r ?? 0;
+  for (const a of arce) if (Math.abs(Math.abs(a.du) - Math.PI / 2) > 1e-9 || Math.abs(a.r - raza) > 1e-9 * Math.max(1, raza)) return null;
+  // Laturile, în ordinea drumului, alternează cu arcele (dacă sunt).
+  if (arce.length === 4) for (let k = 0; k < 8; k++) if ((f.seg[k] as Seg).fel !== (k % 2 === (f.seg[0]?.fel === 'L' ? 0 : 1) ? 'L' : 'A')) return null;
+  const dir = linii.map((s) => ({ x: s.b.x - s.a.x, y: s.b.y - s.a.y }));
+  const l = dir.map((x) => Math.hypot(x.x, x.y));
+  for (let k = 0; k < 4; k++) {
+    const u = dir[k] as P, w = dir[(k + 1) % 4] as P;
+    if (Math.abs(u.x * w.x + u.y * w.y) > 1e-9 * (l[k] as number) * (l[(k + 1) % 4] as number)) return null;
+  }
+  if (Math.abs((l[0] as number) - (l[2] as number)) > 1e-9 * (l[0] as number) || Math.abs((l[1] as number) - (l[3] as number)) > 1e-9 * (l[1] as number)) return null;
+  return { laturi: l, raza };
+}
+
+const identice = (a: FormaOracol, b: FormaOracol): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Judecata unei conversii, element cu element (aceeași ordine înainte și după): fiecare formă e neschimbată, sau a devenit ce
+ * s-a cerut (fără cubice, la arce; un cerc; un dreptunghi), la cel mult toleranța de cea veche (Hausdorff, măsurat din nou),
+ * iar cu mărimea dată, are mărimea cerută și centrul în centrul cutiei celei vechi (la ±0,001, criteriul pragului). Întoarce
+ * abaterile (goală = bună), câte forme s-au schimbat și abaterea cea mai mare măsurată (doar „doar dacă e” și arce).
+ */
+export function judecaConversia(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly dupa: readonly FormaOracol[];
+  readonly fel: 'arce' | 'cerc' | 'dreptunghi';
+  readonly toleranta: number;
+  readonly diametru?: number | null;
+  readonly marime?: { readonly latime: number; readonly inaltime: number } | null;
+}): { readonly rau: string[]; readonly schimbate: number; readonly abatere: number } {
+  const rau: string[] = [];
+  let schimbate = 0, abatere = 0;
+  if (o.inainte.length !== o.dupa.length) return { rau: [`elementele: ${o.dupa.length} după, ${o.inainte.length} înainte`], schimbate, abatere };
+  const dat = (o.fel === 'cerc' && o.diametru != null) || (o.fel === 'dreptunghi' && o.marime != null);
+  for (let k = 0; k < o.inainte.length; k++) {
+    const a = o.inainte[k] as FormaOracol, b = o.dupa[k] as FormaOracol;
+    if (identice(a, b)) continue;
+    schimbate++;
+    const e = `elementul ${k}`;
+    if (o.fel === 'arce' && b.seg.some((s) => s.fel === 'C')) rau.push(`${e}: a rămas cu o cubică`);
+    if (o.fel === 'arce' && b.inchis !== a.inchis) rau.push(`${e}: s-a ${b.inchis ? 'închis' : 'deschis'}`);
+    if (o.fel !== 'arce' && !a.inchis) rau.push(`${e}: o cale deschisă a devenit ${o.fel}`);
+    const cerc = o.fel === 'cerc' ? cerculFormei(b) : null;
+    const drept = o.fel === 'dreptunghi' ? dreptunghiulFormei(b) : null;
+    if (o.fel === 'cerc' && !cerc) rau.push(`${e}: nu e un cerc`);
+    if (o.fel === 'dreptunghi' && !drept) rau.push(`${e}: nu e un dreptunghi`);
+    if (dat) {
+      const k0 = cutieForma(a), k1 = cutieForma(b);
+      const c0 = { x: (k0.minX + k0.maxX) / 2, y: (k0.minY + k0.maxY) / 2 }, c1 = { x: (k1.minX + k1.maxX) / 2, y: (k1.minY + k1.maxY) / 2 };
+      if (Math.hypot(c1.x - c0.x, c1.y - c0.y) > 1e-3) rau.push(`${e}: centrul (${c1.x}, ${c1.y}), nu al cutiei vechi (${c0.x}, ${c0.y})`);
+      if (cerc && o.diametru != null && Math.abs(2 * cerc.r - o.diametru) > 1e-9 * o.diametru) rau.push(`${e}: diametrul ${2 * cerc.r}, nu ${o.diametru}`);
+      if (drept && o.marime) {
+        const w = k1.maxX - k1.minX, h = k1.maxY - k1.minY;
+        if (Math.abs(w - o.marime.latime) > 1e-9 * o.marime.latime || Math.abs(h - o.marime.inaltime) > 1e-9 * o.marime.inaltime) {
+          rau.push(`${e}: ${w} × ${h} (drept pe foaie), nu ${o.marime.latime} × ${o.marime.inaltime}`);
+        }
+      }
+      continue;
+    }
+    const h = hausdorff(a, b);
+    abatere = Math.max(abatere, h);
+    if (h > o.toleranta + 1e-6) rau.push(`${e}: abaterea ${h} trece de toleranța ${o.toleranta}`);
+  }
+  return { rau, schimbate, abatere };
 }

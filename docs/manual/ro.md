@@ -580,6 +580,30 @@ Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe b
 pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
 (Ctrl+Z).
 
+## Conversia vectorilor
+%% capitol: conversie
+%% acopera: editare.conversie, document.converteste
+
+**Convertește** (butonul cu poligonul care devine cerc, lângă Taie, în extensia barei) schimbă forma formelor alese, fără să
+le schimbe locul, numele sau operațiile. Panoul are trei blocuri, fiecare cu butonul lui:
+- **Arce în locul curbelor**: fiecare curbă devine arce și linii, fără să se abată de ea mai mult decât **toleranța**
+  (implicit 0,01 mm); liniile și arcele rămân. Cu **și liniile scurte care stau pe un cerc** (bifată implicit), un șir de
+  linii scurte ale căror vârfuri stau pe un cerc (o polilinie dintr-un DXF) devine un arc, de cel mult o jumătate de cerc;
+  colțurile (unde drumul se întoarce cu peste 30°) și liniile lungi rămân.
+- **În cerc**: **doar dacă e cerc** (toleranța implicită 0,1 mm), forma devine cercul care trece prin nodurile ei, dacă stă
+  toată la cel mult toleranța de el: un cerc Ø100 desenat cu 64 de laturi rămâne Ø100 (laturile lui se abat de cerc cu
+  0,06 mm). **Cu diametrul** dat (implicit 8 mm), orice formă închisă devine cercul acela, în centrul cutiei ei: semnele de
+  găurire dintr-un DXF devin cercuri, pe care le poți găuri.
+- **În dreptunghi**: **doar dacă e dreptunghi** (0,1 mm), forma devine cel mai mic dreptunghi din jurul ei, oricât de rotit,
+  cu colțurile rotunjite dacă le are. **Cu mărimea** dată (implicit 40 × 20 mm), orice formă închisă devine dreptunghiul
+  acela, drept pe foaie, în centrul cutiei ei. O formă găurită nu devine dreptunghi: găurirea cere un cerc.
+
+Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă decât
+pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai
+mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi deschise
+(doar formele închise devin cerc sau dreptunghi) sau forme puse de mai multe ori pe foaie, care nu se convertesc de aici.
+Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare (Ctrl+Z).
+
 ## Verificarea vectorilor
 %% capitol: verificare
 %% acopera: editare.verificare, document.repara

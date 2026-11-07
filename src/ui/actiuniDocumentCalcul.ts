@@ -22,7 +22,7 @@ import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
-  comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type FormaNoua, type ReparatieCalculata,
+  comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type ConversieCalculata, type FormaNoua, type ReparatieCalculata,
   type TaiereCalculata,
 } from './actiuniDocument.ts';
 
@@ -523,6 +523,21 @@ export const CALCUL_DOCUMENT: CalculDocument = {
   },
   // Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑): calculată de worker pe documentul de atunci, într-un pas (comanda
   // degrupării); alese rămân părțile noi.
+  'document.converteste': {
+    activa: (ctx) => {
+      if (!ctx.conversie) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaConversie(ctx.istoric(), ctx.conversie());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.conversie) return;
+      const h = ctx.istoric();
+      const r = comandaConversie(h, ctx.conversie());
+      if (r.ok) ctx.scrie(executa(h, r.comanda));
+    },
+  },
   'document.taie': {
     activa: (ctx) => {
       if (!ctx.taiere) return 'motiv.nimic-ales';
@@ -764,6 +779,40 @@ export function comandaTaiere(h: Istoric, t: TaiereCalculata): ComandaTaiere {
   const rez = judecaTaierea(h, t);
   ultimaTaiere = { doc: h.doc, t, rez };
   return rez;
+}
+
+/**
+ * Comanda unei conversii (ADR 0180, felia 10.3↑d): fiecare piesă schimbată pusă în locul ei (`inlocuieste-piesa`), într-un
+ * singur pas. Refuzată, cu motiv: documentul nu mai e cel pe care s-a calculat, nimic de convertit, documentul de după peste
+ * plafoane sau refuzat de schemele lui. Ținută pe (document, conversie).
+ */
+let ultimaConversie: { readonly doc: Document; readonly c: ConversieCalculata; readonly rez: ComandaTaiere } | null = null;
+function comandaConversie(h: Istoric, c: ConversieCalculata): ComandaTaiere {
+  if (ultimaConversie && ultimaConversie.doc === h.doc && ultimaConversie.c === c) return ultimaConversie.rez;
+  const rez = judecaConversia(h, c);
+  ultimaConversie = { doc: h.doc, c, rez };
+  return rez;
+}
+
+function judecaConversia(h: Istoric, c: ConversieCalculata): ComandaTaiere {
+  if (c.doc !== h.doc) return { ok: false, motiv: 'editare.conversie.motiv.veche' };
+  if (c.piese.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const vechi = new Map(h.doc.piese.map((p) => [p.id, p]));
+  const comenzi: Comanda[] = [];
+  for (const p of c.piese) {
+    const v = vechi.get(p.id);
+    if (!v) return { ok: false, motiv: 'editare.conversie.motiv.veche' };
+    comenzi.push({ tip: 'inlocuieste-piesa', vechi: v, nou: p });
+  }
+  const comanda: Comanda = comenzi.length === 1 ? (comenzi[0] as Comanda) : { tip: 'lot', comenzi };
+  let dupa: Document;
+  try {
+    dupa = executa(h, comanda).doc;
+  } catch {
+    return { ok: false, motiv: 'editare.conversie.motiv.veche' };
+  }
+  if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.conversie.motiv.schema' };
 }
 
 function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {

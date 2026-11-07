@@ -200,6 +200,13 @@ const PanouTaiere = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((
   default: () => <p className="motiv-retea" role="status" data-testid="taiere-neincarcata">{t('editare.taiere.neincarcata')}</p>,
 })));
 const LiniaTaierii = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.LiniaTaierii }), () => ({ default: () => null })));
+/**
+ * Conversia vectorilor (ADR 0180 §8, §10; felia 10.3↑d): panoul Convertește, adus la primul clic pe butonul lui, în aceeași
+ * bucată cu panoul Taie (o singură foaie de stil, `taiere.css`). Dacă nu vine, panoul o spune.
+ */
+const PanouConversie = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.PanouConversie }), () => ({
+  default: () => <p className="motiv-retea" role="status" data-testid="conversie-neincarcata">{t('editare.conversie.neincarcata')}</p>,
+})));
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
@@ -234,7 +241,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -345,7 +352,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
-  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | null>(null);
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | 'conversie' | null>(null);
   const panouRef = useRef(panou);
   panouRef.current = panou;
   const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare', panouVectori = panou === 'vectori';
@@ -355,6 +362,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => { if (!panouVerificare) setVerificare(null); }, [panouVerificare]);
   // Tăierea (ADR 0180): linia de pe pânză ține cât panoul e deschis.
   const panouTaiere = panou === 'taiere';
+  const panouConversie = panou === 'conversie';
   const [linieTaiere, setLinieTaiere] = useState<LinieTaiere>(null);
   useEffect(() => { if (!panouTaiere) setLinieTaiere(null); }, [panouTaiere]);
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
@@ -1315,6 +1323,23 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ) : null}
           </span>
         );
+        // Conversia vectorilor (ADR 0180 §8, §10): arce în locul curbelor, în cerc, în dreptunghi; panoul și calculul vin la cerere.
+        const conversieSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.conversie.sectiune')} data-testid="extensie-conversie">
+            <button type="button" className="aliniaza" aria-expanded={panouConversie} aria-controls="panou-conversie" title={t('editare.conversie')}
+              aria-label={t('editare.conversie')} data-editare="conversie" disabled={p.doarCitire} onClick={() => { setPanou(panouConversie ? null : 'conversie'); }}>
+              <IconaConversie />
+            </button>
+            {panouConversie ? (
+              <CadruConversie onInchide={() => { setPanou(null); }}>
+                <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.conversie.incarca')}</p>}>
+                  <PanouConversie doc={doc} selectie={selectie}
+                    onConverteste={(r) => ruleaza('document.converteste', { conversie: () => r })} onInchide={() => { setPanou(null); }} />
+                </Suspense>
+              </CadruConversie>
+            ) : null}
+          </span>
+        );
         // Verificarea vectorilor (ADR 0124): pe formele alese (la bifă) sau pe toată foaia; panoul și calculul vin la cerere.
         const verificareSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.verificare.sectiune')} data-testid="extensie-verificare">
@@ -1399,6 +1424,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {booleanSectiune}
             <span className="separator" aria-hidden="true" />
             {taiereSectiune}
+            {conversieSectiune}
             <span className="separator" aria-hidden="true" />
             {verificareSectiune}
             <span className="separator" aria-hidden="true" />
@@ -2546,6 +2572,34 @@ function CadruTaiere({ onInchide, children }: { readonly onInchide: () => void; 
   return (
     <div className="insula panou-retea panou-taiere" id="panou-taiere" ref={radacina} role="group" aria-label={t('editare.taiere.sectiune')}
       data-testid="panou-taiere" onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      {children}
+    </div>
+  );
+}
+
+/** Conversia vectorilor (ADR 0180 §8, §10): un poligon care devine cerc. */
+function IconaConversie(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M7 8 5.5 10.6h-3L1 8l1.5-2.6h3z" className="contur" />
+      <path d="M8.2 6.6 9.6 8l-1.4 1.4" className="contur" />
+      <circle cx="12.4" cy="8" r="2.6" className="contur" />
+    </svg>
+  );
+}
+
+/** Cadrul panoului Convertește (ADR 0180 §8, §10), ca panourile vecine: sub butonul lui, ținut în fereastră; Esc îl închide. */
+function CadruConversie({ onInchide, children }: { readonly onInchide: () => void; readonly children: ReactNode }): ReactElement {
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
+  return (
+    <div className="insula panou-retea panou-taiere" id="panou-conversie" ref={radacina} role="group" aria-label={t('editare.conversie.sectiune')}
+      data-testid="panou-conversie" onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.preventDefault();
         e.stopPropagation();

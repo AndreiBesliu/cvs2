@@ -7,6 +7,7 @@ import type { IesireFoaie } from '../cam/iesire.ts';
 import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
+import type { CerereConversie } from '../model/conversie.ts';
 import type { CerereTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
@@ -65,7 +66,9 @@ export type CerereCam =
   /** O reparație a verificării (ADR 0124 §10): piesele schimbate și instanțele de șters, pe documentul cererii. */
   | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare }
   /** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑): instanțele tăiate și părțile lor, pe documentul cererii. */
-  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere };
+  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere }
+  /** Conversia vectorilor (ADR 0180, felia 10.3↑d): piesele schimbate (arce, cercuri, dreptunghiuri), pe documentul cererii. */
+  | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie };
 
 export type RaspunsExport =
   | {

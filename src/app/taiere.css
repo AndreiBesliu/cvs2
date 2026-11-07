@@ -1,6 +1,6 @@
 /*
- * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b) și linia de tăiere de pe pânză. Doar tokenurile temei; stratul de pe pânză nu prinde
- * evenimente. Panoul are lățimea vecinilor (`.panou-retea`).
+ * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b), panoul Convertește (§8, §10; felia 10.3↑d) și linia de tăiere de pe
+ * pânză. Doar tokenurile temei; stratul de pe pânză nu prinde evenimente. Panourile au lățimea vecinilor (`.panou-retea`).
  */
 .campuri-taiere {
   margin: 0;
@@ -37,7 +37,8 @@
   grid-column: 3 / span 2;
 }
 
-/* Panoul are trei blocuri (Taie cu, Decupează, La intersecții): ca panoul verificării, nu trece de fereastră, se derulează. */
+/* Panourile au câte trei blocuri (Taie cu, Decupează, La intersecții; Arce, În cerc, În dreptunghi): ca panoul verificării, nu trec de
+   fereastră, se derulează. */
 .panou-taiere {
   max-height: min(70vh, 36rem);
   overflow-y: auto;
@@ -74,6 +75,29 @@
   margin: 0;
   font-size: var(--fs-2);
   color: var(--t-slab);
+}
+
+/* Rândul „cu mărimea” al conversiei: bifa cu eticheta, apoi lățimea × înălțimea, apoi unitatea. */
+.rand-marime-conversie {
+  grid-template-columns: minmax(0, 1fr) 8rem 1.75rem;
+}
+
+.eticheta-marime-conversie {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.marime-conversie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.marime-conversie .camp-taiere {
+  width: 100%;
+  min-width: 0;
 }
 
 .linia-taierii {

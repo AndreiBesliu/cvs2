@@ -599,6 +599,32 @@ pocket, a V-carve and drilling need a closed shape, so they leave the open piece
 placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
 (Ctrl+Z).
 
+## Converting vectors
+%% capitol: conversie
+%% acopera: editare.conversie, document.converteste
+
+**Convert** (the button with the polygon turning into a circle, next to Cut, in the bar's extension) changes the form of the
+chosen shapes without changing their place, their names or their operations. The panel has three blocks, each with its
+button:
+- **Arcs instead of curves**: each curve becomes arcs and lines, straying from it no more than the **tolerance** (0.01 mm by
+  default); lines and arcs stay. With **and the short lines lying on a circle** (ticked by default), a run of short lines
+  whose vertices lie on a circle (a polyline from a DXF) becomes an arc, of at most half a circle; corners (where the path
+  turns by more than 30°) and long lines stay.
+- **Into a circle**: **only if it is a circle** (tolerance 0.1 mm by default), the shape becomes the circle through its
+  nodes, if all of it lies within the tolerance of it: a Ø100 circle drawn with 64 sides stays Ø100 (its sides stray from the
+  circle by 0.06 mm). **With the diameter** given (8 mm by default), any closed shape becomes that circle, at the centre of
+  its box: the drilling marks from a DXF become circles you can drill.
+- **Into a rectangle**: **only if it is a rectangle** (0.1 mm), the shape becomes the smallest rectangle around it, however
+  rotated, with rounded corners if it has them. **With the size** given (40 × 20 mm by default), any closed shape becomes that
+  rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
+  circle.
+
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
+along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
+lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
+were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
+converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
+
 ## Checking vectors
 %% capitol: verificare
 %% acopera: editare.verificare, document.repara
