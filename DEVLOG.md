@@ -6182,3 +6182,55 @@ cercetarea și un ADR propus, cu întrebările grupate și schița, codul după 
 - **În fișă:** rândul 12.1↑b (în lucru) și rândul răspunsurilor în coada owner-ului; ADR-ul în index.
 - **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑b (proba scrisă întâi). `main` (7.9↑b) se aduce în ramură la
   începutul codului.
+
+## 2026-11-07 — Felia 15.B↑b: proiectul atașat la raportare și păstrarea tichetelor (ADR 0116 §12, §16, §18) (Model: Claude Opus 5.5)
+
+**Prompt:** sarcina de la sesiunea principală (owner-ul întrebase ce se mai poate face în paralel): „Felia **15.B↑b** din cncvs2
+(restul raportărilor clienților, ADR 0116 §C și §F), într-un worktree al tău, pe o linie paralelă cu cele care lucrează deja”,
+cu deciziile luate (răspunsurile din 01.11 și nota din 02.11): proiectul atașat în Storage, cel mult 10 MB, doar cu bifa,
+citit de cine poate citi tichetul; jobul zilnic care șterge tichetele rezolvate după `zilePastrareTichete`, cu atașamentele
+și marcajul de rulare; fraza păstrării în nota de confidențialitate; probele pe emulatoare, regulile, e2e-ul dialogului cu
+bifa; worktree-ul `C:\Users\besli\cncvs2-lucru\raportari`, ramura `wip/15.B-raportari` din `main` (`80cc176`), e2e pe 4177 și
+`127.0.4`, canalul `raportari`; fără publicarea funcțiilor, a regulilor și a indecșilor din ramură; fără unire în `main`.
+**Started:** 07.11, 14:44. **Completed:** 07.11, 17:18 (codul în `d2b5974` și `b741241`).
+
+- **Proiectul atașat (§12):** bifa **Atașează proiectul** în raportare, cu mărimea sub ea și refuzul peste 10 MB; pleacă
+  JSON-ul canonic al documentului de la trimitere (aceiași octeți ca salvarea din browser), gzip prin `CompressionStream`,
+  base64, în cererea `raporteaza`. Serverul (`functions/src/tichete/proiect.ts`) cere base64 canonic, gzip, despachetare
+  plafonată la 10 MB, UTF-8 strict și `schema` întreagă; fișierul urcă în Storage (`tichete/{id}/proiect.json.gz`, prin
+  `functions/src/fisiere.ts`) după refuzurile ieftine și înaintea tranzacției tichetului, iar o tranzacție căzută îl scoate.
+  Acțiunea `proiect` îl dă înapoi doar cui poate citi tichetul; fila **Tichete** îl descarcă, despachetat și verificat pe
+  mărime și SHA-256. `storage.rules` refuză orice cerere din client (o regulă de citire „cine poate citi tichetul” ar fi cerut
+  rolul IAM al regulilor cross-service, pe care publicarea din workflow nu-l poate acorda, și CORS pe bucket).
+- **Păstrarea (§16):** `rezolvatLa` la rezolvare (scos la redeschidere); jobul `pastrareTichete` (04:00, cu marcaj) șterge
+  tichetele rezolvate mai vechi decât `zilePastrareTichete` (citit la rulare), cu poza, proiectul și auditul
+  `tichete.sterge`, apoi orfanii din Storage (fără tichet, mai vechi de o oră); 500 de tichete și 200 s pe rulare; eșecurile
+  pe element numărate și aruncate la final (marcajul: galben la unul, roșu la două la rând).
+- **Nota (§18):** fraza păstrării (implicit un an de la rezolvare, cât stabilește operatorul). Operatorul și adresa de
+  contact rămân marcate, la owner.
+- **Publicarea:** ținta nouă `stocare` în `TINTE_SERVER`; `firebase.json` (generat de `scripts/firebase-json.ts`) are regulile
+  Storage și emulatorul Storage pe 9195; `scripts/test-emulator.ts` îi dă un dosar temporar al rulării (emulatorul Storage
+  șterge `<temp>/firebase/storage/blobs` la oprire). Funcția `tichete`: 512 MiB, 120 s. Bucket-ul implicit al proiectului de
+  test există (`cncvectorstudio-test.firebasestorage.app`, citit cu `apps:sdkconfig`).
+- **Găsite pe drum:** expresia `RE_BASE64` cade în V8 („Maximum call stack size exceeded”) între 4 și 8 MB (poza, sub
+  546 kB, e în siguranță), deci proiectul se verifică decodat și recodat; regulile Storage nu primesc un `match` gol;
+  emulatorul Storage ignoră `ifGenerationMatch`, deci garda „nu acoperă” a plecat cu otrava ei; build-ul determinist a prins
+  o bucată nouă, `poza`, când bucata contului a importat `baza64` din contractul pozei: are acum copia ei, legată de original
+  printr-o probă de paritate.
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele,
+  traducerile (644, 0 lipsă), 8 529 de teste unitare (0 căderi, 8 sărite), build-ul determinist, emulatoarele (101 probe ale
+  funcțiilor și regulilor; e2e pe emulatoare 20 / 21: căderea e proba Diagnozei din `admin.emulator.spec.ts`, care cade la fel
+  pe baza curată `80cc176`, pe mașina asta: pornirea la rece a lui `logClientError` trece de 5 s; CI-ul de noapte e verde),
+  e2e 355 / 355 pe 4177 (4 căderi de încărcare în rularea paralelă, verzi la reluare).
+- **Mărimile**, față de un build curat al lui `80cc176`: pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 508,8 / 550,
+  neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 → 106,5 / 200.
+- **Otrăvurile** (`test/otravuri/15.B-b.py`, 41, dintr-o clonă în afara Drive-ului): 41 / 41 prinse la prima rulare (7 pe
+  hârtie; 31 pe emulatoarele Firestore și Storage: callable-ul, jobul, regulile; 3 de interfață, prin e2e-ul pe emulatoare).
+  Trei probe s-au întărit înainte, când lista a arătat că otrava ar fi scăpat: UTF-8 stricat într-un text JSON (fără el,
+  octetul invalid făcea JSON-ul greșit oricum), spionul scrierilor (scoaterea după tranzacție ascundea o încărcare degeaba),
+  cursorul pe tichetele sărite. Baza e2e, prima pe emulatoare proaspete, a trecut de 60 s (patru callable-uri reci): proba are
+  acum 120 s (`b741241`).
+- **Rămâne:** unirea în `main` (decizia owner-ului), apoi publicarea serverului pe test (funcțiile, regulile Firestore și
+  Storage, indecșii) și o raportare cu proiectul pe instanța de test; pe canal se vede doar bifa. Felia următoare a liniei ar
+  fi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, cu Storage-ul acum, registrul probei), după cuvântul
+  owner-ului.
