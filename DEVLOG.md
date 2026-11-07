@@ -6111,3 +6111,36 @@ apoi cercetarea, ADR-ul propus cu întrebările grupate (recomandarea întâi) �
   neatins: imprimantele 3D nu sunt în ArtCAM / DeskProto.
 - **Rămâne:** răspunsurile owner-ului (ce a încercat, firmware-ul și varianta, IP-ul și cele patru întrebări); apoi codul lui
   3.6g, cu imprimanta falsă (`test/e2e/imprimantaFalsa.ts`) și ghidul `docs/masina/imprimanta-k1c.md`.
+
+## 2026-11-07 — 3.6g: fereastra Imprimanta, Creality K1C prin WiFi (ADR 0190, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Răspund în formular”, apoi „am raspuns si salvat” (owner-ul, în sesiunea liniei). Răspunsurile din formularul
+schiței: 1a, 2a, 3a, 4a, cu nota la 1 („Vreau sa pot pune panourile mai multor masini unul langa altul, eventual si pe monitoare
+diferite. Dar asta poate veni mai tarziu.”); faptele: K1C, rootarea neștiută, IP-ul 192.168.1.12, verificarea de pe calculatorul
+lui permisă; ce a încercat și fișierul cu CC5000, necompletate.
+**Started:** 07.11, 10:48. **Completed:** 07.11, 12:51.
+
+- **Imprimanta reală** (doar citiri, cu acordul lui): la 10:48 și la 11:57, 192.168.1.12 n-a răspuns nici la ping, nici pe 80,
+  9999, 7125, 8000 sau 8080, iar în tabela ARP a calculatorului nu era niciun alt aparat din 192.168.1.x în afară de router:
+  imprimanta oprită sau o rețea WiFi despărțită de cablu. Originea paginii pe 9999 și CORS-ul de pe 80 rămân de măsurat (3.6i).
+- **Ce s-a construit:** fila **Imprimanta**, a treia a meniului global (`FERESTRE`, `vedere.imprimanta`, iconița ei), cu fereastra
+  la cerere (`src/app/PanouImprimanta.tsx`, `imprimanta.css`, textele în `mesaje/imprimanta.json`): conectarea (imprimantele
+  ținute, `cncvs2.imprimanta.retea` `v: 1`; adresa; căutarea pe 9999; motivul și pașii unui eșec), banda (starea, numele, adresa,
+  firmware-ul, Pauză / Reia / Oprește cu confirmare, Deconectează), lucrarea, temperaturile (doar citite), codul de la imprimantă,
+  fișierele (Pornește, cu bifa „Patul e gol”), jurnalul cadrelor. Protocolul pur în `src/machine/imprimanta/creality.ts`, sesiunea
+  în `sesiune.ts` (`ok` la fiecare bătaie a inimii, doar citiri singură, reîncercările la 1, 2, 4, 8, 15, 30 s, închiderea de după
+  pornire), lista și căutarea în `tinute.ts`. Capitolul „Imprimanta” din manual, în ambele limbi; ghidul owner-ului,
+  `docs/masina/imprimanta-k1c.md`, cu protocolul pe hârtie.
+- **Găsite pe drum:** Chrome refuză o legătură care cere un subprotocol neîntors de server, deci fără `wsslicer`; o reîncercare
+  renunța la legătură când browserul aplicației spunea permisiunea rețelei locale refuzată (și spre loopback), văzut în browser
+  cu imprimanta falsă oprită: acum doar prima legare citește permisiunea, cu proba ei; după Oprește, starea 7 se arată „Se
+  oprește”; bucata ferestrei trăgea `websocket.ts` și `conexiuni.ts` într-o bucată comună nouă de 4 kB, deci adresa locală,
+  permisiunea și planificatorul căutării s-au mutat în `src/machine/reteaLocala.ts` (reexportate din locurile vechi, senderul
+  neatins); căutarea ia și rețelele de loopback ale imprimantelor ținute (ca la mașini), altfel proba ar fi căutat în rețeaua reală.
+- **Mărimile:** pornirea 101,6 (+0,2; cu ușa 105,1 / 110 kB), totalul 512,6 / 550 (+8,1: bucata ferestrei 7,5 kB, cea comună 1,0),
+  /admin 105,4 / 200.
+- **Porțile:** traducerile 635 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0 (1 011 module); licențele; unit 8 505 (8 497 trecute, 0 căderi, 8 sărite), de două ori, ultima pe `1b27076`; build-ul determinist (273 de fișiere); e2e 357 / 357: în rularea completă, cu alte două sesiuni care rulau e2e și emulatoare pe aceeași mașină (5,7 min, față de 2,9 dimineață), 23 de probe fără legătură cu felia au depășit cei 5 s ai unei așteptări, apoi au trecut toate la reluare (`--last-failed`, 4 lucrători); proba e2e a manualului numără acum 28 de capitole. Emulatoarele, nerulate pentru felie (nicio funcție atinsă); baza lor, pe `main`, în worktree: 81 / 81 și 20 / 21 (căderea, popup-ul Google, reluată singură: 3 / 3).
+- **Otrăvurile:** 43 (`test/otravuri/3.6g.py`, alese de autor), într-o clonă în afara Drive-ului, cu baza verde întâi; prima rulare (`e74b52d`): 39 prinse și 4 scăpate. C07 (o cale lungă din afara directorului G-code: probele aveau doar căi mai scurte decât directorul), T01 (o listă de altă versiune: proba o avea goală) și T06 (ceasul dat înapoi) au primit probe și sunt prinse acum (`tinte`, pe `1b27076`); S08 (garda generației din `onmessage`) era cod mort, fiindcă un WebSocket vechi își pierde ascultătorii la oprire sau e deja închis: scoasă, cu perechile din `onopen` și `onclose`.
+- **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app> (expiră pe 07.12), cu ultimul commit al feliei; adresa principală de test, neatinsă. Verificat pe canal: versiunea, fila Imprimanta și fereastra ei, `mesaje/imprimanta.json`, CSP-ul neschimbat (`ws:` era deja acolo).
+- **Rămâne:** 3.6h (trimiterea unui `.gcode`, cu `http:` în `connect-src`, acceptat la întrebarea 3; ~2 kB rămași din țintă),
+  3.6i (proba pe imprimanta owner-ului, după ghid), camera (felia ei), panourile mașinilor alăturate (nota owner-ului).

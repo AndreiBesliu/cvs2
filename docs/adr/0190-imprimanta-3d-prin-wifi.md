@@ -205,7 +205,11 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
 - **Probele:** `test/unit/imprimanta.creality.test.ts` (14), `imprimanta.sesiune.test.ts` (10, pe un WebSocket fals și un ceas
   fals), `imprimanta.tinute.test.ts` (7); `test/e2e/imprimanta.spec.ts` (5, în Edge, cu imprimanta falsă din
   `test/e2e/imprimantaFalsa.ts`, pe 9999, pe rețeaua de loopback a probei); manualul (fiecare `data-imprimanta` numit în
-  capitolul lui).
+  capitolul lui). Otrăvurile (`test/otravuri/3.6g.py`, 43, într-o clonă în afara Drive-ului): 39 prinse din prima; C07 (o cale
+  lungă din afara directorului G-code), T01 (o listă de altă versiune, cu rânduri) și T06 (ceasul dat înapoi) au primit probe
+  și sunt prinse acum; S08 (garda generației din `onmessage`) era cod mort: un WebSocket vechi își pierde ascultătorii la
+  oprire sau e deja închis, deci garda a rămas doar pe căile asincrone (ceasurile, răspunsul permisiunii).
+- **După felie:** o confirmare închisă de o legătură pierdută nu mai reapare când legătura revine (proba e2e a legăturii căzute).
 
 ## Întrebările (owner)
 
