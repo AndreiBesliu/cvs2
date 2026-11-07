@@ -6681,3 +6681,38 @@ va face update si pe main ulterior”.
 - **Rămâne:** pe live, biblioteca și Easy 3Draw ajung cu următoarea publicare a aplicației (la cuvântul owner-ului); în
   checkout-ul principal, `main`-ul local e în urmă cu `58e73c0`, `63d6af5` și intrarea asta (`git pull`, merge); proba
   `extensii.lucru.spec.ts:277`, de întărit (clicul în cadru imediat după ce fila extensiei reapare).
+
+## 2026-11-07 — Unirea raportărilor (15.B↑b) și a imprimantei (3.6g–3.6i) în main, publicarea pe test (Model: Claude Opus
+5.5)
+
+**Prompt:** „Da, transmite” (owner-ul, în sesiunea liniei 15.B↑b, la „Să-i transmit sesiunii principale să unească 15.B↑b
+în `main` și să publice serverul pe test?”), transmis aici de sesiunea liniei; aici, „verifica din nou”; apoi, din sesiunea
+imprimantei, „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica
+ceva de aici incolo se va face update si pe main ulterior”; la publicarea refuzată din greșeală, „Qm dat din greseala”.
+**Started:** 07.11, 19:25. **Completed:** 07.11, 22:42.
+
+- **Verificarea de la „verifica din nou”:** între timp, sesiunea bibliotecii unise 3.Xg în `main` (`58e73c0`, la „Da,
+  unește” al owner-ului, în sesiunea ei). Cuvintele owner-ului pentru celelalte două uniri, găsite în transcrierile liniilor.
+- **Unirile:** 15.B↑b peste `63d6af5` (`b501571`; conflicte doar în `DEVLOG.md` și `docs/otravuri.md`, adăugări ale
+  ambelor părți, păstrate); imprimanta până la `cd2f234` (`6e61bee`; conflicte în `DEVLOG.md` și
+  `docs/traduceri/roadmap.en.json`, câte o intrare nouă pe fiecare parte); apoi DEVLOG-ul bibliotecii (`392bc4b`), adus cu
+  `e9cf6ee`. `firebase.json` unit e chiar ieșirea generatorului (CSP-ul imprimantei, Storage-ul raportărilor). Copia locală
+  `.tmp/emu.ts` pornește acum și Storage, cu dosarul temporar al rulării.
+- **Ordinea pe test:** CI-ul complet pe `63d6af5` căzuse întâi (`extensii.lucru.spec.ts:277`; sesiunea bibliotecii a
+  cercetat căderea: încărcarea; verde la a doua încercare). Push-ul unirilor a așteptat publicarea bibliotecii și DEVLOG-ul
+  ei, ca o publicare a unui commit mai vechi să nu vină după una mai nouă (ar fi întors serverul).
+- **Porțile:** pe `b501571`, traducerile, compilatoarele, importurile, licențele, build-ul determinist și 8 600 de teste
+  unitare (0 căzute); e2e-ul și emulatoarele, sub CPU 82–96 % (alte sesiuni), cu 2 + 7 căderi, toate trecute reluate singure;
+  `sugestii.emulator.spec.ts:97` (intrarea cu parola, blocată) a trecut 3 / 3 și fără 15.B↑b (`63d6af5`, în clona
+  otrăvurilor), și cu ea: încărcarea, nu felia. Pe `6e61bee` (cu imprimanta): 8 652 de teste unitare (0 căzute), build-ul
+  determinist, e2e 374 / 375 (căzuta, `traseu.oracol.spec.ts:626`, trecută singură), emulatoarele 101 / 101 și 21 / 21. Pe
+  `e9cf6ee`: traducerile, probele documentației (24 / 24), build-ul determinist (282 de fișiere identice).
+- **Mărimile:** pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.
+- **CI:** pe `e9cf6ee`, rapid verde (`42409120570`: cele șase felii și oracolul exportului 2D) și complet verde
+  (`42409122839`).
+- **Publicat pe test:** rularea `42412022925`, întâi serverul (regulile Storage eliberate în `firebase.storage`, fără vreun
+  rol în plus pentru contul WIF; regulile Firestore; indecșii; cele 12 funcții, cu `pastrareTichete` creată), apoi
+  hosting-ul (282 de fișiere); amprenta `meta/deployment` = `e9cf6ee3309e` pe toate țintele (hosting, funcții, reguli,
+  indecși, stocare). <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `e9cf6ee3309e`; CSP-ul are `http:`
+  în `connect-src`; catalogul extensiilor și `/admin` răspund 200. Rândul owner-ului din fișă (proba raportărilor pe adresa
+  principală) apare în `/admin` cu următoarea publicare.

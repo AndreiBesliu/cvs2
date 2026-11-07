@@ -350,8 +350,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucata contului își pierde numele (o ia de la ultimul ei modul). **Cheia amprentei unei erori stă în `shared/amprenta.ts`**
   (contractul erorilor e în pornire). 15.B↑b (proiectul atașat și jobul de păstrare) e notată pentru mai târziu (decizia
   owner-ului din 02.11). **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 450, /admin 105,4 / 200, contul 28,8 / 32.**
-  **Proiectul atașat și păstrarea tichetelor (ADR 0116 §12, §16, §18, felia 15.B↑b)** gata pe 07.11, pe ramura
-  `wip/15.B-raportari` (worktree-ul `raportari`; neunită în `main`):
+  **Proiectul atașat și păstrarea tichetelor (ADR 0116 §12, §16, §18, felia 15.B↑b)** gata pe 07.11, în worktree-ul
+  `raportari` (ramura `wip/15.B-raportari`), **unită în `main` pe 07.11** („Da, transmite”; rândul unirii, mai jos):
   - bifa **Atașează proiectul** în raportare (cel mult 10 MB; JSON-ul canonic, gzip, base64, prin callable-ul `tichete`);
     fișierul stă în Storage (`tichete/{id}/proiect.json.gz`), iar fila **Tichete** îl descarcă prin aceeași acțiune
     (`proiect`), verificat pe amprentă;
@@ -636,6 +636,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pachete, iar un defect al publicării ajunge în jurnal. **O schimbare a unei extensii din bibliotecă cere o versiune nouă în
   `extensie.json`, apoi `node scripts/biblioteca.ts --scrie`** (proba `biblioteca.constructie.test.ts` cade până atunci).
   **Pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 523,0 / 550, /admin 105,4 / 200.**
+  **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
+  `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
+  101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
+  se publică înaintea site-ului** (funcțiile, regulile Firestore și Storage, indecșii; `scripts/publica.ts` o face singur):
+  un site nou peste un `tichete` vechi pierde tăcut proiectul atașat. Regulile Storage (ținta `stocare`) le înlocuiesc pe
+  ale aplicației vechi pe bucket-ul de test.
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -840,6 +846,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **raportările (15.B↑b) și imprimanta (3.6g–3.6i), unite în `main`**, după biblioteca extensiilor (unită de
+  sesiunea ei): 15.B↑b la „Da, transmite” (în sesiunea liniei, la „Să-i transmit sesiunii principale să unească 15.B↑b în
+  `main` și să publice serverul pe test?”); imprimanta la „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut
+  ca functioneaza bine. daca se va modifica ceva de aici incolo se va face update si pe main ulterior” (în sesiunea liniei;
+  3.6j și următoarele vin mai târziu, tot prin unire). Apoi, aici, „verifica din nou”. **Când mai multe sesiuni unesc în
+  `main` în aceeași zi, publicările pe test merg în ordinea commit-urilor, una câte una:** o publicare a unui commit mai vechi,
+  venită după una mai nouă, întoarce serverul. Pe 07.11, push-ul celor două uniri a așteptat publicarea bibliotecii și
+  DEVLOG-ul ei.
 - 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
   fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
   următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.
