@@ -450,6 +450,15 @@ export function DialogExport(
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
   // Pe un rând cu căi deschise, urechile, rampa, intrările și degajările vin mai târziu (ADR 0037 §9, §12): bifele pornesc
   // scoase și rămân oprite, iar Exportă le scrie scoase (ce refuză exportul nu se oferă).
+  // Cel mai mare T al operațiilor (frezele lor, ale fundului plat, de rest, ale dopurilor): o freză nouă, cu bifa ei, pornește
+  // de la următorul, ca să nu ia numărul altei freze.
+  const tMaxim = Math.max(0, ...operatii.flatMap((o) => {
+    const v = o.valori, fp = v.fundPlat;
+    return [
+      v.scula?.numar ?? 0, fp?.numar ?? 0, ...(fp?.rest ?? []).map((r) => r.numar), ...(v.rest ?? []).map((r) => r.numar),
+      ...(v.incrustatieDreapta?.frezeDop ?? []).map((r) => r.numar), v.incrustatie?.banda?.freza?.numar ?? 0,
+    ];
+  }));
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
     const inchise = o.deschise === 0;
@@ -490,10 +499,11 @@ export function DialogExport(
       acelasiSpatiu: o.valori.incrustatie != null && o.valori.incrustatie.joc === o.valori.incrustatie.fierastrau,
       jurDop: o.valori.incrustatie?.jurDop ?? 'fata',
       // Banda (ADR 0172): valorile din document, altfel cele implicite: lățimea și placa goale (cea mai mică, S + H + 1),
-      // decuparea pusă, freza ei a fundului plat (bifa scoasă; cu bifa, de la T-ul de după fund), punțile 4 × 4 × 1 mm.
+      // decuparea pusă, freza ei a fundului plat (bifa scoasă; cu bifa, primul T de după toate frezele operațiilor), punțile
+      // 4 × 4 × 1 mm.
       latimeBanda: banda?.latime !== undefined ? text(banda.latime) : '', decupareBanda: banda?.decupare ?? true,
       placaBanda: banda ? text(banda.grosimePlaca) : '', frezaBanda: banda?.freza !== undefined,
-      numarSculaBanda: text(banda?.freza?.numar ?? (fund?.numar ?? (o.valori.scula?.numar ?? 1) + 1) + 1),
+      numarSculaBanda: text(banda?.freza?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),
       diametruSculaBanda: text(banda?.freza?.diametru ?? diametruFund),
       numarPunti: text(banda?.punti.numar ?? PUNTI_BANDA.numar), latimePunti: text(banda?.punti.latime ?? PUNTI_BANDA.latime),
       grosimePunti: text(banda?.punti.grosime ?? PUNTI_BANDA.grosime),

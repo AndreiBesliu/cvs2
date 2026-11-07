@@ -115,6 +115,9 @@ o('E12', DLG, 'data-camp="banda-placa" disabled={doarCitire || !p.decupareBanda}
   'placa pornită și fără decupare')
 o('E13', DLG, "{t(p.jurDop === 'banda' ? 'export.banda.nota' : 'export.incrustatie.nota')}", "{t('export.incrustatie.nota')}", 'e2e',
   'nota feței coborâte și pe bandă')
+o('E14', DLG, 'numarSculaBanda: text(banda?.freza?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),',
+  'numarSculaBanda: text(banda?.freza?.numar ?? (fund?.numar ?? 1) + 1),', 'e2e',
+  'freza decupării, bifată, pornește de la fundul plat + 1 (pe canal, chiar T-ul V-ului: conflict pe loc)')
 
 # ---- Citirea înapoi, scrierea îmbinată, panoul ----
 o('W01', VAL, "  if (b.latime === undefined) delete vechi['latime'];", '', 'dialog', 'lățimea golită rămâne cea veche')

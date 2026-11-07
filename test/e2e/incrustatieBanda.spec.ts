@@ -148,6 +148,11 @@ test('banda fără decupare: placa „cel puțin”, tăietura de mână; ce s-a
   await detalii.locator('[data-camp="banda-latime"]').fill('10');
   await detalii.locator('[data-camp="banda-punti-numar"]').fill('3');
   await detalii.locator('[data-camp="banda-freza"]').check();
+  // Implicit, primul T de după toate frezele operațiilor (aici V-ul și fundul plat): nicio ciocnire (pe canal, fundul + 1 era
+  // chiar T-ul V-ului).
+  const tV = Number(await rand.locator('[data-camp="scula"]').inputValue()), tF = Number(await detalii.locator('[data-camp="fund-scula"]').inputValue());
+  await expect(detalii.locator('[data-camp="banda-scula"]')).toHaveValue(String(Math.max(tV, tF) + 1));
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
   await detalii.locator('[data-camp="banda-scula"]').fill('9');
   await detalii.locator('[data-camp="banda-diametru"]').fill('4');
   await detalii.locator('[data-camp="banda-decupare"]').uncheck();
