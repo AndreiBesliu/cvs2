@@ -75,12 +75,16 @@ export function configFunctii(): object {
     }],
     // Indexul compus al filei Erori și politica TTL de 90 de zile (ADR 0040 §4, §6).
     firestore: { rules: 'firestore.rules', indexes: 'firestore.indexes.json' },
-    // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login.
+    // Regulile Storage (felia 15.B↑b): bucket-ul implicit, fără nicio cerere din client (proiectele atașate trec prin server).
+    storage: { rules: 'storage.rules' },
+    // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login. Storage pe 9195, nu pe
+    // 9199 (implicitul, folosit de alte proiecte de pe mașină).
     emulators: {
       singleProjectMode: true,
       auth: { port: 9095 },
       firestore: { port: 8085 },
       functions: { port: 5005 },
+      storage: { port: 9195 },
       ui: { enabled: false },
     },
   };

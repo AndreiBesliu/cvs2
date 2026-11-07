@@ -12,7 +12,11 @@
  * - **Căutarea** (§2): gazdele încercate (conexiunile ținute, numele obișnuite ale controlerelor, rețeaua proprie a podului) și,
  *   la cerere, o rețea /24 întreagă, cu un număr fix de încercări deodată; prima găsită oprește restul.
  */
+import { esteIpv4 } from './reteaLocala.ts';
 import { esteProfilRetea, PROFIL_RETEA, type ProfilRetea } from './websocket.ts';
+
+// IPv4 și planificatorul căutării stau în `reteaLocala.ts` (ADR 0190 §G), comune cu imprimanta; importatorii vechi le iau tot de aici.
+export { CONCURENTA_RETEA, esteIpv4, primulGasit, TIMP_DESCHIDERE_RETEA_MS } from './reteaLocala.ts';
 
 // —— Conexiunile ținute ——
 
@@ -138,12 +142,6 @@ export function tineConexiune(s: ConexiuniTinute, c: ConexiuneNoua, acum: number
 export const uitaConexiune = (s: ConexiuniTinute, id: string): ConexiuniTinute => ({ ...s, conexiuni: s.conexiuni.filter((x) => x.id !== id) });
 
 export const cuFormular = (s: ConexiuniTinute, f: FormularRetea): ConexiuniTinute => ({ ...s, formular: f });
-
-/** IPv4 scris ca atare (patru numere 0–255), fără port. */
-export function esteIpv4(text: string): boolean {
-  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(text);
-  return m !== null && m.slice(1).every((x) => Number(x) <= 255);
-}
 
 // —— Podul ESP3D: comenzile ——
 
@@ -414,60 +412,3 @@ export function reteleDeCautat(conexiuni: readonly ConexiuneTinuta[]): readonly 
  * toate, apoi portul 81, deci pe fiecare gazdă podul tot întâi.
  */
 export const gazdeRetea = (prefix: string, inc: Incercare): readonly Gazda[] => Array.from({ length: 254 }, (_, k) => ({ adresa: `${prefix}.${k + 1}`, incercari: [inc] }));
-
-/**
- * Câte gazde se încearcă deodată la căutarea în toată rețeaua. Chrome întârzie fiecare WebSocket nou al paginii cu 1–5 s după
- * multe încercări fără răspuns (`WebSocketPerProcessThrottler`: rand(1000, 5000) · 2^min(p + f / (s + 1), 16) / 65536 ms, cu
- * p încercările în curs, f cele căzute și s cele reușite din ultimele 2–4 minute), iar întârzierile curg în paralel.
- */
-export const CONCURENTA_RETEA = 32;
-/**
- * Cât așteaptă deschiderea unei încercări la căutarea în toată rețeaua: întârzierea browserului (cel mult 5 s), apoi o gazdă
- * care nu există (în rețeaua locală, ARP-ul fără răspuns cade în ~3 s), cu o marjă.
- */
-export const TIMP_DESCHIDERE_RETEA_MS = 9000;
-
-/**
- * Încearcă `n` lucruri, cel mult `concurenta` deodată, și se oprește la primul care dă ceva (celelalte primesc semnalul de
- * oprire). O încercare care aruncă e una fără rezultat. Oprirea din afară (`semnal`) dă null; `laProgres` primește câte s-au
- * terminat.
- */
-export function primulGasit<T>(
-  n: number,
-  incearca: (i: number, semnal: AbortSignal) => Promise<T | null>,
-  opt: { readonly concurenta: number; readonly semnal?: AbortSignal; readonly laProgres?: (terminate: number) => void },
-): Promise<{ readonly i: number; readonly rezultat: T } | null> {
-  const oprire = new AbortController();
-  return new Promise((rezolva) => {
-    let urm = 0;
-    let terminate = 0;
-    let gata = false;
-    const incheie = (r: { readonly i: number; readonly rezultat: T } | null): void => {
-      if (gata) return;
-      gata = true;
-      opt.semnal?.removeEventListener('abort', dinAfara);
-      oprire.abort();
-      rezolva(r);
-    };
-    const dinAfara = (): void => { incheie(null); };
-    if (opt.semnal?.aborted) { incheie(null); return; }
-    opt.semnal?.addEventListener('abort', dinAfara);
-    const porneste = (): void => {
-      if (gata) return;
-      if (urm >= n) {
-        if (terminate === n) incheie(null);
-        return;
-      }
-      const i = urm++;
-      void Promise.resolve().then(() => incearca(i, oprire.signal)).then((r) => r, () => null).then((r) => {
-        if (gata) return;
-        terminate++;
-        opt.laProgres?.(terminate);
-        if (r !== null) { incheie({ i, rezultat: r }); return; }
-        porneste();
-      });
-    };
-    if (n === 0) { incheie(null); return; }
-    for (let k = 0; k < Math.max(1, opt.concurenta) && k < n; k++) porneste();
-  });
-}
