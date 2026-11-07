@@ -109,6 +109,9 @@ export function ExportConectat({
               numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral,
               ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
             } : null,
+            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei.
+            incrustatie: o.incrustatie
+              ? { joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop } : null,
           } : {}),
           ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
         },

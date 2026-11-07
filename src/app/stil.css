@@ -1393,6 +1393,22 @@ nav button[aria-pressed='true'] {
   max-width: 3.25rem;
 }
 
+/* Incrustația (ADR 0170 §5): jocurile și marginea dopului pe rândul lor, nota sub ele, pe toată lățimea. */
+.dialog .campuri-incrustatie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  flex-basis: 100%;
+}
+
+.dialog .nota-incrustatie {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
 /* Freza rândului (ADR 0084): numărul sculei și diametrul, alăturate; T are cel mult trei cifre. */
 .dialog td.freza {
   white-space: nowrap;
@@ -1479,7 +1495,8 @@ nav button[aria-pressed='true'] {
   background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
 }
 
-[data-testid='export-stare'] {
+[data-testid='export-stare'],
+[data-testid='export-dopuri'] {
   overflow-wrap: anywhere;
   font-size: var(--fs-2);
 }

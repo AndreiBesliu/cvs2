@@ -102,10 +102,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v19.oracol.test.ts` (din 03.11, cu rangul din v19). **Un câmp nou al documentului
-  (v20) intră acolo, ca rangul:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`,
-  frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 19` și porțile `<= 19` din
-  oracolele CAM). **Și în corpusul de aur
+  cu ușa aplicației în `test/unit/document.v20.oracol.test.ts` (din 07.11, cu incrustația din v20). **Un câmp nou al
+  documentului (v21) intră acolo, ca rangul și incrustația:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în
+  `problemeOperatieO`, frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 20` în probe;
+  oracolele CAM primesc versiunea nouă cum o primesc pe v20, de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
   --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
@@ -562,6 +562,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles-py/text_corpus.py`, în `proportii.json`, cu mutarea fiecărei litere pe hârtie în `DEPLASARI_SPATIERI`): un caz
   nou = rândul acolo, apoi fixtura regenerată și comisă. Rândul de prag al textului e făcut. **Pornirea 101,4 (cu ușa 104,9 /
   110 kB), totalul 506,0 / 550, /admin 105,4 / 200.**
+  **Incrustația în V (ADR 0170, felia 12.1↑, adusă din etapa 12)** gata pe 07.11, în worktree-ul `incrustatii`, cu
+  răspunsurile owner-ului (1a; la 2 și 3, ambele opțiuni, alese la export; 4a+b; 5a; 6a+b): rolul „incrustație în V” (panoul
+  și fereastra exportului) face din V-carve-ul formei locașul, iar dopul se calculează din desen la fiecare export
+  (`src/cam/incrustatie.ts`: oglinda pe X, semifabricatul cu marginea, fața coborâtă la S + H cu freza dreaptă, pereții cu V
+  de la adâncimea de start S), într-un fișier al lui (`…-dop-N`). Jocurile (cu „Același spațiu”), fierăstrăul și marginea se
+  aleg la export; panoul are secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile). **Documentul v20:** `incrustatie`
+  (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20 schimbă doar numărul; oracolul
+  documentului și corpusul de aur la v20. **Valorile pe hârtie ale incrustației stau într-un singur loc,
+  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. Urmează
+  12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
+  **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
+  **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -766,6 +778,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
+  inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
+  imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la
+  „ce altceva putem face in paralel?”, owner-ul a pornit două linii noi, în worktree-uri, amândouă întâi cu un ADR propus și
+  întrebările: planșele (etapa 11: mai multe foi, Multi-Plate, lista de tăiere; `wip/11.1-plansele`,
+  `C:\Users\besli\cncvs2-lucru\plansele`, e2e pe 4178 și `127.0.5`, ADR-urile 0210–0219, canalul `plansele`) și trasarea din
+  imagine (etapa 25; `wip/25.1-trasare`, `C:\Users\besli\cncvs2-lucru\trasare`, 4179, `127.0.6`, ADR-urile 0220–0229, canalul
+  `trasare`). Restul raportărilor (15.B↑b: `raportari`, 4177, `127.0.4`, ADR-urile 0200–0209) e propus, nepornit. **Suita
+  emulatoarelor ține porturi fixe (9095, 8085, 5005) și 4173, oricare ar fi worktree-ul:** înainte de ea, `netstat -ano`, iar
+  la o ciocnire se așteaptă cealaltă sesiune (pe 07.11, porțile unirii au căzut întâi doar din cauza asta).
 - 06.11.2026: **tăierea și conversia vectorilor: răspunsurile la ADR 0180** (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
   cu notele „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
   jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și „aici va trebui sa testam

@@ -3,8 +3,8 @@ import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { adancimiImbricare } from '../geom/imbricare.ts';
 import { IDENTITATE } from '../geom/matrice.ts';
 import {
-  inaltimeConV, operatieImplicita, pasLateralImplicit, PLAFON, UNGHI_V_IMPLICIT, type Document, type FormaSculaDoc, type Latura, type Operatie,
-  type Piesa, type Scula, type TipOperatie,
+  inaltimeConV, INCRUSTATIE_IMPLICITA, JOC_INCRUSTATIE_MINIM, operatieImplicita, pasLateralImplicit, PLAFON, UNGHI_V_IMPLICIT, type Document,
+  type FormaSculaDoc, type Incrustatie, type Latura, type Operatie, type Piesa, type Scula, type TipOperatie,
 } from './document.ts';
 import { conturElement } from './forme.ts';
 import { elementeInstanta } from './lume.ts';
@@ -15,13 +15,15 @@ import { elementeInstanta } from './lume.ts';
  * - exterior: contururile de afară (adâncimea pară a imbricării) pe exterior, golurile pe interior; interior: invers;
  * - pe linie: toate formele într-o operație; stânga / dreapta: doar o piesă care e o singură cale deschisă;
  * - buzunar, V-carve: toate contururile într-o singură operație (regiunea par-impar, cu golurile ei);
+ * - incrustație în V (ADR 0170 §5): un V-carve al tuturor contururilor, care își declară dopul (`incrustatie`), cu freza dreaptă
+ *   a fundului plat și a feței dopului;
  * - găurire: toate cercurile, doar pe o piesă numai din cercuri.
  * Un rol se oferă doar dacă se potrivește tuturor formelor piesei.
  */
-export type Rol = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta' | 'buzunar' | 'gaurire' | 'vcarve';
+export type Rol = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta' | 'buzunar' | 'gaurire' | 'vcarve' | 'incrustatie';
 
 /** Rolurile, în ordinea listei din panou (a tăieturii din fereastra exportului). */
-export const ROLURI: readonly Rol[] = ['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta', 'buzunar', 'gaurire', 'vcarve'];
+export const ROLURI: readonly Rol[] = ['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta', 'buzunar', 'gaurire', 'vcarve', 'incrustatie'];
 
 /**
  * Bugetul imbricării unei piese (candidații vizitați plus vârfurile măsurate, ca la import): panoul o cere la fiecare
@@ -69,12 +71,19 @@ export function roluriOferite(p: Piesa): Rol[] {
     gaurire: forme.every((f) => f.cerc),
     // Regiunea unui V-carve e a unei singure operații (ADR 0090): peste plafonul nodurilor pe operație, s-ar împărți.
     vcarve: inchise && forme.length <= PLAFON.noduriOperatie,
+    // Locașul incrustației e tot un V-carve (ADR 0170 §2).
+    incrustatie: inchise && forme.length <= PLAFON.noduriOperatie,
   };
   return ROLURI.filter((r) => potrivit[r]);
 }
 
-/** O operație a rolului, fără valori: felul, latura și formele ei (id-ul e al grupei). */
-export type Grupa = { readonly id: string; readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[] };
+/**
+ * O operație a rolului, fără valori: felul, latura și formele ei (id-ul e al grupei); `incrustatie`, dacă V-carve-ul își declară
+ * dopul (ADR 0170).
+ */
+export type Grupa = {
+  readonly id: string; readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[]; readonly incrustatie?: true;
+};
 
 /** Câte o grupă la fiecare `PLAFON.noduriOperatie` noduri, ca la import: `id`, `id-2`, `id-3`…; nimic pentru o listă goală. */
 function bucati(id: string, tip: TipOperatie, latura: Latura, noduri: readonly string[]): Grupa[] {
@@ -106,6 +115,8 @@ export function grupeRol(p: Piesa, rol: Rol): Grupa[] | null {
     case 'gaurire':
     case 'vcarve':
       return bucati(rol, rol, 'interior', toate);
+    case 'incrustatie':
+      return bucati('incrustatie', 'vcarve', 'interior', toate).map((g) => ({ ...g, incrustatie: true as const }));
   }
 }
 
@@ -114,8 +125,10 @@ export function grupeRol(p: Piesa, rol: Rol): Grupa[] | null {
  * formele fiecărei operații, sortate. Aceeași împărțire = aceeași tăiere: un V-carve împărțit în două operații taie altă
  * regiune decât unul întreg (ADR 0090), deci nu e rolul „V-carve”.
  */
-function impartire(ops: ReadonlyArray<{ readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[] }>): string[] {
-  return ops.map((o) => `${o.tip === 'profil' ? `profil ${o.latura}` : o.tip}|${[...o.noduri].sort().join('\u0000')}`).sort();
+function impartire(ops: ReadonlyArray<{ readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[]; readonly incrustatie?: unknown }>): string[] {
+  // Un V-carve care își declară dopul (ADR 0170) e rolul incrustației, nu al V-carve-ului.
+  const fel = (o: (typeof ops)[number]): string => (o.tip === 'profil' ? `profil ${o.latura}` : o.incrustatie !== undefined ? `${o.tip}+incrustatie` : o.tip);
+  return ops.map((o) => `${fel(o)}|${[...o.noduri].sort().join('\u0000')}`).sort();
 }
 
 /**
@@ -193,12 +206,24 @@ export function frezaPentruRol(doc: Document, s: Scula, rol: Rol): Scula {
   const v = s.forma?.tip === 'v';
   const { forma: _forma, ...baza } = s;
   void _forma;
-  if (rol === 'vcarve' && !v) {
+  if ((rol === 'vcarve' || rol === 'incrustatie') && !v) {
     const forma: FormaSculaDoc = { tip: 'v', unghi: UNGHI_V_IMPLICIT };
     return { ...baza, numar: numarFreza(doc, s.diametru, forma), nume: `freza V${UNGHI_V_IMPLICIT}`, forma };
   }
-  if (v && rol !== 'vcarve' && rol !== 'pe-linie') return { ...baza, numar: numarFreza(doc, s.diametru, undefined), nume: 'freza plata' };
+  if (v && rol !== 'vcarve' && rol !== 'incrustatie' && rol !== 'pe-linie') return { ...baza, numar: numarFreza(doc, s.diametru, undefined), nume: 'freza plata' };
   return s;
+}
+
+/**
+ * Valorile incrustației unui rol nou (ADR 0170, răspunsul 3): cele de dinainte, dacă erau, altfel cele implicite; spațiul pentru
+ * fierăstrău cel mult cât lasă conul (S + H ≤ con, rotunjit în jos la 0,001 mm) și jocul sub adâncime, ca lucrarea să nu le
+ * refuze din prima.
+ */
+function incrustatiePentru(vechi: Incrustatie | undefined, adancime: number, con: number): Incrustatie {
+  const i = vechi ? structuredClone(vechi) : structuredClone(INCRUSTATIE_IMPLICITA);
+  const joc = Math.min(i.joc, Math.max(JOC_INCRUSTATIE_MINIM, Math.floor((adancime / 2) * 1000) / 1000));
+  const loc = Math.floor((con - (adancime - joc)) * 1000) / 1000;
+  return { ...i, joc, fierastrau: loc > 0 ? Math.min(i.fierastrau, loc) : i.fierastrau };
 }
 
 /**
@@ -214,15 +239,23 @@ export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[]
   const prima = p.operatii[0] ?? operatieImplicita(g[0]!.id, { tip: 'cerc', raza: 1 });
   const {
     id: _id, tip: tipVechi, noduri: _noduri, latura: _latura, scula: sculaVeche, sens, adancime: adancimeVeche, pas, urechi, rampa, intrari, colturi,
-    despartire: _d, pasLateral: pasVechi, coborare: _c, retragereCompleta: _r, fundPlat: _f, directie: _dir, rest: _rest, strategie: _s,
-    ...necunoscute
+    despartire: _d, pasLateral: pasVechi, coborare: _c, retragereCompleta: _r, fundPlat: fundVechi, directie: _dir, rest: _rest, strategie: _s,
+    incrustatie: incVechi, ...necunoscute
   } = prima;
-  void _id; void _noduri; void _latura; void _d; void _c; void _r; void _f; void _dir; void _rest; void _s;
+  void _id; void _noduri; void _latura; void _d; void _c; void _r; void _dir; void _rest; void _s;
   const scula = frezaPentruRol(doc, sculaVeche, rol);
   // La V-carve, adâncimea e cel mult conul frezei, rotunjit în jos la 0,001 mm (ADR 0112, precizarea 5.8↑c): altfel lucrarea
   // l-ar refuza („regiunea cere … iar conul frezei are …”), de pildă la gaura de 8 mm a unui cerc nou, cu V60 Ø6.
-  const con = rol === 'vcarve' && scula.forma?.tip === 'v' ? inaltimeConV(scula.diametru, scula.forma.unghi, scula.forma.varf ?? 0) : Infinity;
+  const v = rol === 'vcarve' || rol === 'incrustatie';
+  const con = v && scula.forma?.tip === 'v' ? inaltimeConV(scula.diametru, scula.forma.unghi, scula.forma.varf ?? 0) : Infinity;
   const adancime = Math.min(adancimeVeche, Math.floor(con * 1000) / 1000);
+  // Incrustația (ADR 0170): valorile ei de dinainte, dacă era deja una, altfel cele implicite, cu spațiul pentru fierăstrău cel
+  // mult cât lasă conul (S + H ≤ con); fundul plat (și fața dopului) cu freza dreaptă de dinainte, sau cu freza plată a operației.
+  const incrustatie = rol === 'incrustatie' ? incrustatiePentru(incVechi, adancime, con) : undefined;
+  const fundPlat = rol !== 'incrustatie' ? undefined : fundVechi ?? {
+    scula: sculaVeche.forma ? { numar: numarFreza(doc, sculaVeche.diametru, undefined), nume: 'freza plata', diametru: sculaVeche.diametru } : structuredClone(sculaVeche),
+    pasLateral: pasLateralImplicit(sculaVeche.diametru),
+  };
   const vechi = rolPiesei(p);
   const profil = (r: Rol | null): boolean => r === 'exterior' || r === 'interior';
   const extra = profil(vechi) && profil(rol) ? { urechi, rampa, intrari, colturi } : { urechi: null, rampa: null, intrari: null, colturi: null };
@@ -230,6 +263,7 @@ export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[]
   const ops = g.map((x): Operatie => ({
     ...structuredClone(necunoscute), id: x.id, tip: x.tip, noduri: [...x.noduri], scula: structuredClone(scula), latura: x.latura, sens, adancime, pas,
     ...structuredClone(extra), ...(x.tip === 'buzunar' ? { pasLateral } : {}),
+    ...(incrustatie ? { incrustatie: structuredClone(incrustatie) } : {}), ...(fundPlat ? { fundPlat: structuredClone(fundPlat) } : {}),
   }));
   const singura = p.operatii.length === 1 ? p.operatii[0] : undefined;
   if (ops.length === 1 && singura) ops[0] = { ...ops[0]!, id: singura.id };

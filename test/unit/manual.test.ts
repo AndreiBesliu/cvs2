@@ -133,7 +133,8 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
   // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
-  // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
+  // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă patru: butonul Taie și acțiunea `document.taie`, butonul
+  // Convertește și acțiunea `document.converteste`.
   assert.equal(USI.length, 88);
 });
 

@@ -4693,3 +4693,102 @@ export const REFUZATE_V19: readonly RefuzV18[] = [
   { nume: 'R84 un v19 cu rangul 2,5', doc: docV(19, opV18({ rang: 2.5 })), categorie: 'rang', camp: `${opC}.rang`, motiv: 'ADR 0133 §1' },
   { nume: 'R85 un v19 cu rangul peste plafon', doc: docV(19, opV18({ rang: 100_001 })), categorie: 'rang', camp: `${opC}.rang`, motiv: 'ADR 0133 §1' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v20 (felia 12.1↑, ADR 0170 §1, „Contractul ușii”): incrustația, pe hârtie. Cazurile v19 de mai sus rămân ale
+// contractului v19; la ușa v20, un v19 valid urcă schimbând doar numărul, iar frontierele se judecă pe un document al
+// versiunii curente.
+
+/** Un document al cazurilor v19, adus la v20: doar numărul (ADR 0170 §1). */
+const laV20 = (d: Liber): Liber => cuSchema(d, 20);
+/** Incrustația din ADR 0170 §1, cu valorile implicite ale răspunsurilor (jocul 0,5, fierăstrăul 2, marginea 5, fața). */
+const inc = (v: Liber = {}): Liber => ({ fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata', ...v });
+/** Incrustația fără un câmp cerut. */
+const incFara = (camp: string): Liber => {
+  const i = inc();
+  delete i[camp];
+  return i;
+};
+
+/** Documente v20 valide: ușa le primește neschimbate (v19-urile valide, renumerotate, și incrustațiile la frontieră). */
+export const VALIDE_V20: readonly CazV18[] = [
+  ...VALIDE_V19.map((c) => ({ nume: `${c.nume} (v20)`, doc: laV20(c.doc) })),
+  { nume: 'I01 fără incrustație: un V-carve obișnuit (ADR 0170 §1)', doc: docV18(D, [vcarve()], 20) },
+  { nume: 'I02 incrustația pe un V-carve, cu fața coborâtă', doc: docV18(D, [vcarve({ incrustatie: inc() })], 20) },
+  { nume: 'I03 cu banda îngustă (ușa o primește; lucrarea o aduce în 12.1↑c)', doc: docV18(D, [vcarve({ incrustatie: inc({ jurDop: 'banda' }) })], 20) },
+  { nume: 'I04 marginea 0, jocul și fierăstrăul la plafon', doc: docV18(D, [vcarve({ incrustatie: inc({ joc: 1_000, fierastrau: 1_000, margine: 0 }) })], 20) },
+  { nume: 'I05 pe un buzunar (ușa, pe orice fel; refuzul e al lucrării)', doc: docV18(D, [buzunar({ incrustatie: inc() })], 20) },
+  { nume: 'I06 cu un câmp necunoscut în incrustație (păstrat)', doc: docV18(D, [vcarve({ incrustatie: inc({ alt: { x: 1 } }) })], 20) },
+  { nume: 'I07 cu rangul și incrustația pe aceeași operație', doc: docV18(D, [vcarve({ rang: 2, incrustatie: inc({ joc: 0.1, fierastrau: 0.1 }) })], 20) },
+];
+
+/** Documentele vechi urcă la v20: ce dădea hârtia la v19, cu numărul 20; un v19 curat urcă doar cu numărul. */
+export const MIGRARI_V20_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v20: Liber }> = [
+  ...MIGRARI_V19_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v20: laV20(c.v19) })),
+  {
+    nume: 'M20 un v19 cu rangul și un V-carve urcă la v20 doar cu numărul',
+    vechi: docV18(D, [vcarve({ rang: 3 })], 19),
+    v20: docV18(D, [vcarve({ rang: 3 })], 20),
+  },
+];
+
+/** `incrustatie` în afara operației e un câmp necunoscut oarecare: primit și păstrat (ciocnirea, doar pe operație). */
+export const NECIOCNIRI_V20: ReadonlyArray<CazV18 & { readonly v20: Liber }> = [
+  ...NECIOCNIRI_V19.map((c) => ({ nume: c.nume, doc: c.doc, v20: laV20(c.v19) })),
+  (() => {
+    const d = docV18(D, [opV18({ scula: { ...plata(1, 6), incrustatie: 1 } })], 19);
+    return { nume: 'N20a un v19 cu `incrustatie` pe sculă', doc: d, v20: laV20(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [opV18()], 19);
+    ((d['piese'] as Liber[])[0] as Liber)['incrustatie'] = inc();
+    return { nume: 'N20b un v19 cu `incrustatie` pe piesă', doc: d, v20: laV20(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: { scula: plata(3, 3), pasLateral: 1.2, incrustatie: inc() } })], 19);
+    return { nume: 'N20c un v19 cu `incrustatie` pe fundul plat', doc: d, v20: laV20(d) };
+  })(),
+];
+
+/** Frontierele v20: cele v19, plus incrustația, câmp cu câmp (ADR 0170 §1, „Contractul ușii”). */
+export const FRONTIERE_V20: readonly FrontieraV18[] = [
+  ...FRONTIERE_V19,
+  {
+    cale: 'incrustatie', operatie: vcarve(), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: un obiect; lipsa = un V-carve obișnuit',
+    valori: [[LIPSA, true], [inc(), true], [null, false], [1, false], ['v', false], [[], false], [true, false]],
+  },
+  {
+    cale: 'incrustatie.fel', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: v',
+    valori: [['v', true], ['V', false], ['drept', false], ['', false], [LIPSA, false], [1, false], [null, false]],
+  },
+  {
+    cale: 'incrustatie.joc', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: finit în (0, 1 000]',
+    valori: [[0.5, true], [0.001, true], [1_000, true], [0, false], [-0, false], [-0.5, false], [1_000.001, false], ['0.5', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.fierastrau', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: finit în (0, 1 000]',
+    valori: [[2, true], [0.001, true], [1_000, true], [0, false], [-2, false], [1_000.5, false], ['2', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.margine', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: finită în [0, 10 000]',
+    valori: [[5, true], [0, true], [-0, true], [10_000, true], [-0.001, false], [10_000.001, false], ['5', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.jurDop', operatie: vcarve({ incrustatie: inc() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0170 §1: fata sau banda',
+    valori: [['fata', true], ['banda', true], ['Fata', false], ['față', false], ['', false], [LIPSA, false], [null, false], [1, false]],
+  },
+];
+
+/** Refuzurile v20: cele v19 (versiunea mai nouă e acum v21), plus incrustația greșită și ciocnirea ei. */
+export const REFUZATE_V20: readonly RefuzV18[] = [
+  ...REFUZATE_V19.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v21)', doc: docV(21, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'R90 un v19 cu incrustația', doc: docV(19, vcarve({ incrustatie: inc() })), categorie: 'ciocnire', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1', text: 'nu e un document v19 valid' },
+  { nume: 'R91 un v19 cu `incrustatie: null` (orice valoare se ciocnește)', doc: docV(19, vcarve({ incrustatie: null })), categorie: 'ciocnire', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1: câmpul propriu, oricare ar fi valoarea' },
+  { nume: 'R92 un v18 cu incrustația (trece de v18 → v19, se ciocnește la v19 → v20)', doc: docV(18, vcarve({ incrustatie: inc() })), categorie: 'ciocnire', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1, ADR 0070: tot lanțul', text: 'nu e un document v19 valid' },
+  { nume: 'R93 un v20 cu jocul 0', doc: docV(20, vcarve({ incrustatie: inc({ joc: 0 }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1' },
+  { nume: 'R94 un v20 cu felul „drept” (pereții drepți au felia și ADR-ul lor)', doc: docV(20, vcarve({ incrustatie: inc({ fel: 'drept' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1' },
+  { nume: 'R95 un v20 cu lemnul din jurul dopului „cerc”', doc: docV(20, vcarve({ incrustatie: inc({ jurDop: 'cerc' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1' },
+  { nume: 'R96 un v20 cu marginea negativă', doc: docV(20, vcarve({ incrustatie: inc({ margine: -1 }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1' },
+  { nume: 'R97 un v20 cu incrustația fără fierăstrău', doc: docV(20, vcarve({ incrustatie: incFara('fierastrau') })), categorie: 'incrustatie', camp: `${opC}.incrustatie`, motiv: 'ADR 0170 §1: toate cinci cerute' },
+];
