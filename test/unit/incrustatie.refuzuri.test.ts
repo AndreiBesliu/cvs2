@@ -74,7 +74,8 @@ test('freza cu vârf plat, dopul fără freză dreaptă și incrustația pe un p
 
 test('banda (ADR 0172): fără freza dreaptă, cu freza decupării în V sau cu numărul altei freze, mai îngustă decât cea mai mică, cu placa sub punți: refuzate, cu motivul', () => {
   // Pe hârtie: H 2, t = tan 30° = 0,57735, deci 2·H·t = 2,309; cu fundul plat Ø3, banda cea mai îngustă e 2,309 + 3 + 2·0,5 = 6,309;
-  // cu decuparea Ø4, 7,309. S = 3 − 0,5 = 2,5, deci placa are cel puțin S + H + 1 (punțile) = 5,5.
+  // cu decuparea Ø4, 7,309 (arătate rotunjite în sus: 6,31 și 7,31). S = 3 − 0,5 = 2,5, deci placa are cel puțin S + H + 1
+  // (punțile) = 5,5. Fără decupare, freza ei nu contează: nici pentru lățime, nici ca număr.
   const banda = (b: Record<string, unknown>): Record<string, unknown> => ({ incrustatie: { ...INC, jurDop: 'banda', banda: { decupare: true, grosimePlaca: 5.5, punti: { numar: 4, latime: 4, grosime: 1 }, ...b } } });
   assert.equal(refuz(banda({})), null);
   const { fundPlat: _f, ...faraFund } = operatie({ incrustatie: { ...INC, jurDop: 'banda' } });
@@ -84,12 +85,14 @@ test('banda (ADR 0172): fără freza dreaptă, cu freza decupării în V sau cu 
   assert.match(refuz(banda({ freza: { numar: 2, nume: 'dreapta', diametru: 3 } })) ?? '', /freza decupării \(T2\) are numărul frezei în V/);
   assert.match(refuz(banda({ freza: { numar: 1, nume: 'dreapta', diametru: 4 } })) ?? '', /T1 are două diametre \(3 și 4 mm\)/);
   assert.equal(refuz(banda({ freza: { numar: 1, nume: 'dreapta', diametru: 3 } })), null, 'aceeași freză ca fundul plat');
-  assert.match(refuz(banda({ latime: 6.3 })) ?? '', /banda dopului, de 6\.3 mm, e mai îngustă decât cea mai mică, de 6\.309 mm/);
+  assert.match(refuz(banda({ latime: 6.3 })) ?? '', /banda dopului, de 6\.3 mm, e mai îngustă decât cea mai mică, de 6\.31 mm \(pereții, fundul plat și tăietura decupării/);
   assert.equal(refuz(banda({ latime: 6.31 })), null);
-  assert.match(refuz(banda({ latime: 7.3, freza: { numar: 3, nume: 'dreapta', diametru: 4 } })) ?? '', /cea mai mică, de 7\.309 mm/);
+  assert.match(refuz(banda({ latime: 7.3, freza: { numar: 3, nume: 'dreapta', diametru: 4 } })) ?? '', /cea mai mică, de 7\.31 mm/);
   assert.match(refuz(banda({ grosimePlaca: 5.4 })) ?? '', /placa dopului, de 5\.4 mm, trebuie să aibă cel puțin 5\.5 mm/);
   assert.match(refuz(banda({ grosimePlaca: 6, punti: { numar: 4, latime: 4, grosime: 2 } })) ?? '', /cel puțin 6\.5 mm/);
   assert.equal(refuz(banda({ grosimePlaca: 3, decupare: false })), null, 'fără decupare, placa nu se taie');
+  assert.equal(refuz(banda({ decupare: false, latime: 6.31, freza: { numar: 2, nume: 'V', diametru: 6, forma: { tip: 'v', unghi: 60 } } })), null, 'fără decupare, freza ei nu contează');
+  assert.match(refuz(banda({ decupare: false, latime: 6.3 })) ?? '', /cea mai mică, de 6\.31 mm \(pereții, fundul plat, fiecare/);
 });
 
 test('lucrarea refuză incrustația înaintea traseului: programul foii nu iese, cu motivul și elementul', () => {

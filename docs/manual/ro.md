@@ -766,7 +766,7 @@ O **incrustație în V** pune un dop dintr-un lemn în locașul săpat în altul
 același desen, oglindit, săpat în V pe semifabricatul lui, ca să intre în locaș și să se oprească înainte de fund. Se alege ca
 rol: **incrustație în V**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista Tăietura a ferestrei **Exportă
 G-code**. Freza rândului e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
-și coboară fața semifabricatului dopului.
+și lemnul din jurul dopului.
 
 Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fereastra exportului:
 
@@ -775,28 +775,53 @@ Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fe
 - **Spațiul pentru fierăstrău** (H; implicit 2 mm): cât rămâne între cele două plăci după lipire, ca să tai cu fierăstrăul
   spatele semifabricatului dopului sau să-l rindeluiești. În fereastra exportului, **Același spațiu pentru clei și
   fierăstrău** ține o singură valoare pentru amândouă.
-- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului.
+- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului (cu banda, dincolo de
+  ea și de șanțul ei).
+
+**Lemnul din jurul dopului**, ales pe rândul incrustației din fereastra exportului:
+
+- **fața coborâtă toată** (implicit): freza dreaptă coboară toată fața semifabricatului dopului, până dincolo de margini, deci
+  semifabricatul se prinde fără cleme pe margini (de exemplu cu bandă dublu adezivă), iar spatele lui se taie după lipire;
+- **banda îngustă**: doar o bandă în jurul dopului, săpată cu V-ul și cu fundul plat, iar marginile semifabricatului rămân
+  întregi, pentru cleme. Valorile ei, fiecare la alegerea ta:
+  - **Lățimea benzii**: goală, cea mai mică, socotită de aplicație și arătată lângă câmp: 2 · H · tan(θ/2) (pereții dopului
+    și ai benzii) plus freza fundului plat (sau, cu decuparea, cea mai lată dintre ea și freza decupării) plus 2 · 0,5 mm
+    rezervă. O poți lărgi; mai îngustă, fereastra o refuză.
+  - **Decupează dopul din placă, cu punți** (pusă implicit): la urmă, freza decupării taie dopul prin toată placa, pe fundul
+    benzii, la H · tan(θ/2) + 0,5 mm de desen, și lasă punțile. Fără bifă, rămâne doar banda, iar dopul îl tai tu cu
+    fierăstrăul, pe fundul ei.
+  - **Grosimea plăcii dopului**: goală, adâncimea − jocul + fierăstrăul + 1 mm (S + H + 1). Tăietura trece prin toată placa,
+    deci grosimea trebuie să fie exactă; cel puțin fundul benzii plus grosimea punților.
+  - **Punți pe buclă**, **Lățimea punții**, **Grosimea punții** (implicit 4, 4 mm și 1 mm): ca urechile; grosimea se măsoară
+    de la fundul plăcii, deci după așezare punțile stau deasupra plăcii și se rindeluiesc odată cu restul.
+  - **Altă freză pentru decupare**: implicit, freza dreaptă a fundului plat; cu bifa, numărul și diametrul alteia (un număr
+    nou, ca orice freză).
 
 **Pe hârtie**, panoul arată, pentru formele alese cu aceleași valori: cât intră dopul în locaș (S), pe cât se ating pereții de
 la contur (S · tan(θ/2)), jocul de sub dop, spațiul dintre plăci, cât din conul frezei folosesc locașul și dopul, și grosimea
 cea mai mică a semifabricatului dopului (S + H + 1 mm). De exemplu, cu V60 Ø6, adâncimea 3, jocul 0,5 și fierăstrăul 2: dopul
 intră 2,5 mm, pereții se ating pe 1,44 mm, dopul se sapă până la 4,5 mm din conul de 5,20 mm, iar semifabricatul are cel puțin
-5,5 mm.
+5,5 mm. Cu banda, arată și lățimea ei (și pe cea mai mică), semifabricatul în plan (cutia desenului plus banda, șanțul de la
+față și marginea, pe fiecare parte) și decuparea: placa și punțile, sau unde tai de mână. În exemplu, cu fundul plat Ø6, banda
+are cel puțin 9,31 mm, iar semifabricatul, cutia desenului plus 15,75 mm pe fiecare parte.
 
 **Exportul.** La **Exportă**, pe lângă programul foii (cu locașul), se descarcă un fișier pentru fiecare dop: numele
 programului foii cu „-dop-1”, „-dop-2”… (pe numele scurte, DOP1…). Fereastra arată, pentru fiecare, semifabricatul: lățimea ×
 înălțimea (cutia desenului, plus marginea pe fiecare parte) și grosimea cea mai mică. Dopul e desenul oglindit stânga–dreapta;
 XY0 e în colțul ales pentru foaie, pe semifabricatul dopului, iar Z0 pe fața lui. Programul coboară întâi fața
 semifabricatului cu freza dreaptă, până la S + H (lemnul din jurul dopului), apoi freza în V taie pereții dopului de la S în
-jos; schimbarea frezei e cea aleasă în fereastră, ca la foaie.
+jos; schimbarea frezei e cea aleasă în fereastră, ca la foaie. Cu banda, freza dreaptă scoate doar fundul benzii, iar cu
+decuparea, la urmă, freza decupării taie dopul prin placă; fereastra arată atunci placa „groasă de exact” grosimea aleasă.
 
 **Lipirea.** Întoarce dopul cu fața în jos peste locaș (oglindirea îl aduce la desen) și apasă-l cu clei: se oprește pe pereți,
-cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele lui până la fața plăcii.
+cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele lui până la fața plăcii. Cu decuparea, întâi
+taie punțile și curăță-le la nivelul pereților, ca dopul să intre întreg.
 
 **Refuzurile**, cu motivul, la export: o freză plată sau cu vârf plat; jocul sub 0,1 mm (crestele din colțurile locașului ar
 ține dopul) sau cel puțin cât adâncimea; dopul săpat (adâncimea − jocul + fierăstrăul) mai adânc decât conul frezei; lipsa
-fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Banda îngustă din jurul dopului, cu decuparea
-lui, și dopul în vederea 3D vin în feliile următoare; pereții drepți au capitolul lor ([Incrustația cu pereți
+fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Cu banda: mai îngustă decât cea mai mică; cu
+decuparea, o placă mai subțire decât fundul benzii plus punțile, o freză a decupării în V, sau cu numărul altei freze și alt
+diametru. Dopul în vederea 3D vine într-o felie următoare; pereții drepți au capitolul lor ([Incrustația cu pereți
 drepți](#incrustatie-drept)).
 
 ## Incrustația cu pereți drepți

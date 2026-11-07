@@ -4,7 +4,7 @@
  * export, ca un program separat, pe semifabricatul lui.
  */
 import { inaltimeConV, JOC_INCRUSTATIE_MINIM, type Operatie } from '../model/document.ts';
-import { valoriBanda } from '../model/incrustatie.ts';
+import { susLaMicron, valoriBanda } from '../model/incrustatie.ts';
 import type { Program } from '../ir/ir.ts';
 import { refuzIncrustatieDreapta } from './incrustatieDreapta.ts';
 
@@ -58,7 +58,8 @@ export function refuzIncrustatie(op: Operatie, unde: string): string | null {
     return `${unde}: fața dopului se coboară cu freza dreaptă: alege-o în coloana Fund plat (varianta doar cu freza V vine în felia 12.1↑d)`;
   }
   const b = valoriBanda(op);
-  if (b) {
+  if (b?.decupare) {
+    // Freza decupării: doar cu decuparea (fără ea, nu taie nimic).
     const d = b.freza;
     if (d.forma !== undefined) return `${unde}: freza decupării dopului trebuie să fie dreaptă (T${d.numar} e în V)`;
     if (d.numar === op.scula.numar) return `${unde}: freza decupării (T${d.numar}) are numărul frezei în V a operației: fiecare freză cere numărul ei`;
@@ -67,12 +68,12 @@ export function refuzIncrustatie(op: Operatie, unde: string): string | null {
         return `${unde}: T${d.numar} are două diametre (${s.diametru} și ${d.diametru} mm), la fundul plat și la decuparea dopului: fiecare freză cere numărul ei`;
       }
     }
-    if (b.latime < b.minima - 1e-9) {
-      return `${unde}: banda dopului, de ${fix(b.latime)} mm, e mai îngustă decât cea mai mică, de ${fix(b.minima)} mm (pereții, fundul plat și tăietura decupării, fiecare cu freza lui): lărgește-o sau las-o calculată`;
-    }
-    if (b.decupare && b.placa < b.placaMinima - 1e-9) {
-      return `${unde}: placa dopului, de ${fix(b.placa)} mm, trebuie să aibă cel puțin ${fix(b.placaMinima)} mm (fundul benzii plus grosimea punților), ca decuparea să lase punțile sub fundul benzii`;
-    }
+  }
+  if (b && b.latime < b.minima - 1e-9) {
+    return `${unde}: banda dopului, de ${fix(b.latime)} mm, e mai îngustă decât cea mai mică, de ${susLaMicron(b.minima)} mm (pereții, fundul plat${b.decupare ? ' și tăietura decupării' : ''}, fiecare cu freza lui): lărgește-o sau las-o calculată`;
+  }
+  if (b?.decupare && b.placa < b.placaMinima - 1e-9) {
+    return `${unde}: placa dopului, de ${fix(b.placa)} mm, trebuie să aibă cel puțin ${susLaMicron(b.placaMinima)} mm (fundul benzii plus grosimea punților), ca decuparea să lase punțile sub fundul benzii`;
   }
   return null;
 }

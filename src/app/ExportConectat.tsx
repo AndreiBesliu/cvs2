@@ -117,9 +117,16 @@ export function ExportConectat({
               numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral,
               ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
             } : null,
-            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei.
-            incrustatie: o.incrustatie?.fel === 'v'
-              ? { joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop } : null,
+            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei; banda (ADR 0172), cu valorile ei.
+            incrustatie: o.incrustatie?.fel === 'v' ? {
+              joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop,
+              ...(o.incrustatie.banda ? { banda: {
+                ...(o.incrustatie.banda.latime !== undefined ? { latime: o.incrustatie.banda.latime } : {}), decupare: o.incrustatie.banda.decupare,
+                grosimePlaca: o.incrustatie.banda.grosimePlaca,
+                ...(o.incrustatie.banda.freza ? { freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru } } : {}),
+                punti: { numar: o.incrustatie.banda.punti.numar, latime: o.incrustatie.banda.punti.latime, grosime: o.incrustatie.banda.punti.grosime },
+              } } : {}),
+            } : null,
           } : {}),
           ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
         },

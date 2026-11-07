@@ -43,6 +43,9 @@ export const PUNTI_BANDA: Urechi = { numar: 4, latime: 4, grosime: 1 };
  */
 export const latimeMinimaBanda = (H: number, t: number, fund: number, decupare: number): number => 2 * H * t + Math.max(fund, decupare) + 2 * REZERVA_BANDA;
 
+/** O valoare cea mai mică, arătată omului: rotunjită în sus la 0,001 mm, ca numărul arătat, scris înapoi, să fie primit. */
+export const susLaMicron = (x: number): number => Math.ceil(x * 1000 - 1e-6) / 1000;
+
 /** Banda implicită (ADR 0172): decuparea pusă, placa S + H + 1, punțile 4 × 4 × 1 mm, freza fundului plat, lățimea calculată. */
 export const bandaImplicita = (S: number, H: number): BandaDop => ({ decupare: true, grosimePlaca: S + H + SUB_FATA_DOPULUI, punti: { ...PUNTI_BANDA } });
 
@@ -71,7 +74,8 @@ export function valoriBanda(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustat
   if (!v || i?.fel !== 'v' || i.jurDop !== 'banda' || !fp) return null;
   const b = i.banda ?? bandaImplicita(v.S, v.H);
   const freza = b.freza ?? fp.scula;
-  const minima = latimeMinimaBanda(v.H, v.t, fp.scula.diametru, freza.diametru);
+  // Freza decupării lărgește banda doar cu decuparea (fără ea, nu taie nimic).
+  const minima = latimeMinimaBanda(v.H, v.t, fp.scula.diametru, b.decupare ? freza.diametru : fp.scula.diametru);
   const latime = b.latime ?? minima;
   return {
     minima, latime, e: v.H * v.t + REZERVA_BANDA, margine: latime + v.contact + i.margine, decupare: b.decupare,

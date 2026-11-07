@@ -9,6 +9,7 @@
 # dopului în renumerotarea rolurilor personalizate, găsită la recitirea codului.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
+# La 12.1↑c (ADR 0172): seturile documentului sunt pe v22 (proba v21 a devenit document.v22.oracol.test.ts).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -140,8 +141,8 @@ SETURI = {
     'drept2': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts',
                'test/unit/incrustatieDreapta.rol.test.ts',
                'test/unit/incrustatieDreapta.scriere.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/buzunar.test.ts'],
-    'doc': ['test/unit/document.v21.oracol.test.ts'],
-    'doc2': ['test/unit/document.v21.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
+    'doc': ['test/unit/document.v22.oracol.test.ts'],
+    'doc2': ['test/unit/document.v22.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
     'rol': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/rolPersonal.test.ts'],
     'rol2': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/rolPersonal.test.ts', 'test/unit/actiuni.test.ts'],
     'dialog': ['test/unit/incrustatieDreapta.scriere.test.ts'],

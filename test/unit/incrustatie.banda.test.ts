@@ -6,8 +6,12 @@
  *   M + S·t + marginea pe fiecare parte, oglindit ca la fața coborâtă;
  * - tăietura lasă piesa păstrată până la e = H·t + c de desen (în unghiurile intrânde, cel mult e + Ø/2);
  * - întoarsă, piesa păstrată (punțile rupte) se oprește la S = D − g, cu pereții în contact, g sub dop și H între plăci;
- * - punțile: câte cere documentul pe buclă (golurile desenului nu se decupează), groase de gp de la fundul plăcii.
- * Controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii (nu la S).
+ * - punțile: câte cere documentul pe buclă (golurile desenului nu se decupează), groase de gp de la fundul plăcii, fiecare cu
+ *   palierul cel puțin cât lățimea cerută; între ele, tăietura trece prin placă.
+ * Lângă cazurile pe hârtie, rama din patru bare separate, la 1 mm una de alta: tăietura le ocolește pe toate (reuniunea), iar
+ * golul dinăuntru (lemnul de la fața plăcii, la peste M de bare) se taie afară, altfel piesa păstrată s-ar opri pe placă.
+ * Controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii (nu la S). Un document de
+ * dinainte de v22, cu banda aleasă, dar fără valorile ei, se taie cu cele implicite (decuparea, placa S + H + 1, 4 punți).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,6 +19,7 @@ import { incarca } from '../../src/model/incarcare.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { masoaraPotrivirea, suprafataPeScule, laDesen, cutieDesen } from '../oracles/incrustatie.ts';
 import { CAZURI_INCRUSTATIE, type CazIncrustatie } from '../oracles/incrustatie.cazuri.ts';
+import type { PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { documentCaz } from './ajutor-incrustatie.ts';
 
@@ -53,9 +58,20 @@ function scule(text: string, c: CazIncrustatie): SculaOracol[] {
 }
 
 const tan = (c: CazIncrustatie): number => Math.tan((c.v.unghi * Math.PI) / 360);
+const bara = (x: number, y: number, w: number, h: number): PunctO[] => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+/**
+ * Rama: patru bare de 4 mm, la 1 mm una de alta, în jurul unui pătrat de 16 × 14 (V60, D 3, g 0,5, H 2, Ø3). Pe hârtie: M =
+ * 6,309, deci centrul (162, 72), la 8 mm de fiecare bară, e lemn de la fața plăcii (un gol al benzii); e + r = 3,155 unește
+ * barele (golurile de 1 mm) într-un inel cu un gol de 9,7 × 9,7, tăiat pe linie, fără punți.
+ */
+const RAMA: CazIncrustatie = {
+  id: 'rama', desen: [bara(150, 60, 24, 4), bara(150, 80, 24, 4), bara(150, 65, 4, 14), bara(170, 65, 4, 14)], v: { diametru: 6, unghi: 60 },
+  dreapta: { diametru: 3, pasLateral: 1.2 }, D: 3, g: 0.5, H: 2, margine: 5, pas: 1.5, fundPlat: true,
+  hartie: 'patru bare separate: reuniunea tăieturii le ocolește pe toate, iar golul ei (cu lemnul de la fața plăcii) se taie afară',
+};
 const latimeMinima = (c: CazIncrustatie): number => 2 * c.H * tan(c) + c.dreapta.diametru + 2 * REZERVA;
 
-for (const c of CAZURI_INCRUSTATIE) {
+for (const c of [...CAZURI_INCRUSTATIE, RAMA]) {
   test(`banda cu decupare, ${c.id}: piesa păstrată se oprește la S, pereții se ating, g sub dop, H între plăci, ${PUNTI.numar} punți pe buclă`, async () => {
     const r = await calculeazaExport(deschis(documentBanda(c)), { origine: 'stanga-jos', z0: 'sus' });
     if (!r.ok) assert.fail(`${c.id}: ${r.motiv}`);
@@ -86,18 +102,23 @@ for (const c of CAZURI_INCRUSTATIE) {
     const nx = Math.ceil((x1 - x0 + 2 * lat) / CELULA), ny = Math.ceil((y1 - y0 + 2 * lat) / CELULA);
     const Mg = suprafataPeScule(textDop, { x0: g0x, y0: y0 - lat - y0 + margine, latime: nx * CELULA, inaltime: ny * CELULA, celula: CELULA }, scule(textDop, c));
     const punte = new Uint8Array(nx * ny);
-    let inel = 0;
+    let inel = 0, prin = 0;
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const x = x0 - lat + (i + 0.5) * CELULA, y = y0 - lat + (j + 0.5) * CELULA;
       const { d, inauntru } = laDesen(c.desen, x, y);
       if (inauntru || d < e + 0.3 || d > e + c.dreapta.diametru - 0.3) continue;
       inel++;
       const z = -Mg.z[j * nx + (nx - 1 - i)]!;
+      if (z >= T - 0.05) prin++;
       if (Math.abs(z - (T - PUNTI.grosime)) < 0.05) punte[j * nx + i] = 1;
     }
     // Bucățile, cu vecinii pe 8; o celulă izolată la capătul unei punți (arcul frezei, pe grila de 0,1 mm: măsurat la stea,
     // câte una lângă două dintre cele 4 punți de ~620 de celule) e o firimitură a grilei, nu o punte: sub FIRIMITURA, nu se numără.
     const FIRIMITURA = 20;
+    // Palierul unei punți, pe inelul măsurat (lat de Ø − 0,6): cel puțin cât lățimea cerută (măsurat: 1,1–1,2 din ea; rampele
+    // punților lucrării urcă treptat de o parte și de alta).
+    const palier = (PUNTI.latime * (c.dreapta.diametru - 0.6)) / (CELULA * CELULA);
+    const paliere: number[] = [];
     let bucati = 0;
     const vazut = new Uint8Array(nx * ny);
     for (let k = 0; k < nx * ny; k++) {
@@ -114,12 +135,32 @@ for (const c of CAZURI_INCRUSTATIE) {
           if (punte[kk] && !vazut[kk]) { vazut[kk] = 1; coada.push(kk); }
         }
       }
-      if (celule >= FIRIMITURA) bucati++;
+      if (celule >= FIRIMITURA) { bucati++; paliere.push(celule); }
     }
     assert.ok(inel > 0, `${c.id}: inelul tăieturii are celule`);
     assert.equal(bucati, PUNTI.numar, `${c.id}: punțile pe inel (${bucati})`);
+    for (const k of paliere) assert.ok(k >= 0.8 * palier && k <= 1.6 * palier, `${c.id}: palierul unei punți, ${k} celule din ~${palier.toFixed(0)}`);
+    // Între punți (și rampele lor), tăietura trece prin placă: măsurat, 26–51 % din inel.
+    assert.ok(prin >= 0.1 * inel, `${c.id}: tăiat prin placă ${prin} din ${inel}`);
   });
 }
+
+test('un document de dinainte de v22, cu banda aleasă și fără valorile ei: decuparea, placa S + H + 1 exactă, cea mai mică bandă', async () => {
+  const c = CAZURI_INCRUSTATIE.find((x) => x.id === 'dreptunghi')!;
+  const d = documentCaz(c) as { schema: number; piese: { operatii: { incrustatie: Record<string, unknown> }[] }[] };
+  d.schema = 21;
+  d.piese[0]!.operatii[0]!.incrustatie['jurDop'] = 'banda';
+  const r = await calculeazaExport(deschis(d), { origine: 'stanga-jos', z0: 'sus' });
+  if (!r.ok) assert.fail(r.motiv);
+  const dop = r.dopuri[0]!;
+  const t = tan(c), S = c.D - c.g, margine = latimeMinima(c) + S * t + c.margine;
+  assert.equal(dop.semifabricat.exacta, true);
+  assert.equal(dop.semifabricat.grosimeMinima, S + c.H + 1);
+  const { x0, x1 } = cutieDesen(c.desen);
+  assert.ok(Math.abs(dop.semifabricat.latime - (x1 - x0 + 2 * margine)) < 1e-6, `lățimea semifabricatului ${dop.semifabricat.latime}`);
+  // Fundul, pereții, decuparea: două schimbări de freză; punțile implicite: 4 pe buclă.
+  assert.equal((dop.program.text.match(/^T\d+ M6$/gm) ?? []).length, 2);
+});
 
 test('controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii, nu la S', async () => {
   const c = CAZURI_INCRUSTATIE.find((x) => x.id === 'dreptunghi')!;

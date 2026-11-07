@@ -5,7 +5,7 @@ import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { inaltimeConV, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
-import { valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
@@ -101,6 +101,8 @@ function operatie(o: Operatie, n: number): ReactNode {
         {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && rand(t('prop.inc'), t('prop.inc.valoare', {
           joc: mm(o.incrustatie.joc), fierastrau: mm(o.incrustatie.fierastrau), margine: mm(o.incrustatie.margine),
         }))}
+        {/* Lemnul din jurul dopului în V (ADR 0172): fața coborâtă sau banda îngustă. */}
+        {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && rand(t('prop.inc.jur'), t(o.incrustatie.jurDop === 'banda' ? 'prop.inc.jur.banda' : 'prop.inc.jur.fata'))}
         {/* Incrustația cu pereți drepți (ADR 0171): jocul lateral, felul dopului și sprijinul lui, marginea; frezele dopului, dacă are. */}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && rand(t('prop.inc'), t('prop.inc.valoare-drept', {
           lateral: mm(o.incrustatie.jocLateral), margine: mm(o.incrustatie.margine),
@@ -219,6 +221,9 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
     && o.scula.forma?.unghi === primaInc.scula.forma?.unghi && o.incrustatie?.joc === primaInc.incrustatie?.joc
     && o.incrustatie?.fierastrau === primaInc.incrustatie?.fierastrau) ? valoriIncrustatie(primaInc) : null;
   const con = primaInc?.scula.forma?.tip === 'v' ? inaltimeConV(primaInc.scula.diametru, primaInc.scula.forma.unghi) : null;
+  // Banda (ADR 0172), pe hârtie: doar cu aceeași incrustație și același fund plat pe toate operațiile alese.
+  const hartieBanda = hartie && primaInc && operatiiAlese.every((o) => jsonCanonic(o.incrustatie ?? null) === jsonCanonic(primaInc.incrustatie ?? null)
+    && o.fundPlat?.scula.diametru === primaInc.fundPlat?.scula.diametru) ? valoriBanda(primaInc) : null;
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -303,7 +308,14 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
                 {rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(primaInc.incrustatie.joc) }))}
                 {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
                 {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
-                {rand(t('prop.inc.semifabricat'), t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
+                {/* Banda (ADR 0172): lățimea și cea mai mică, semifabricatul în plan, decuparea (placa exactă, punțile) sau tăietura de mână. */}
+                {hartieBanda && rand(t('prop.inc.banda'), t('prop.inc.banda.valoare', { latime: mm(hartieBanda.latime), minima: mm(susLaMicron(hartieBanda.minima)) }))}
+                {hartieBanda && rand(t('prop.inc.banda.semifabricat'), t('prop.inc.banda.semifabricat.valoare', { mm: mm(hartieBanda.margine) }))}
+                {hartieBanda && rand(t('prop.inc.decupare'), hartieBanda.decupare
+                  ? t('prop.inc.decupare.valoare', { placa: mm(hartieBanda.placa), punti: hartieBanda.punti.numar, latime: mm(hartieBanda.punti.latime), grosime: mm(hartieBanda.punti.grosime) })
+                  : t('prop.inc.decupare.fara', { e: mm(hartieBanda.e) }))}
+                {rand(t('prop.inc.semifabricat'), hartieBanda?.decupare
+                  ? t('prop.inc.semifabricat.exact', { mm: mm(hartieBanda.placa) }) : t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
               </dl>
             </div>
           )}

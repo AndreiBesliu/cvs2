@@ -790,7 +790,7 @@ A **V inlay** sets a plug of one wood into a pocket carved in another: the pocke
 the same drawing, mirrored, V-carved on its own blank so that it goes into the pocket and stops before the bottom. Choose it as
 a role: **V inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export G-code** window.
 The row's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
-pocket and lowers the face of the plug blank.
+pocket and the wood around the plug.
 
 The inlay's values, under Depth and Step down in the panel and on its row in the export window:
 
@@ -798,29 +798,54 @@ The inlay's values, under Depth and Step down in the panel and on its row in the
   the gap (S = D − g), so it stops on the walls, with g above the bottom.
 - **Saw gap** (H; default 2 mm): what stays between the two boards after gluing, so you can saw off or plane away the back
   of the plug blank. In the export window, **Same space for glue and saw** keeps a single value for both.
-- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank.
+- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank (with the band, beyond the band
+  and its groove).
+
+**Wood around the plug**, chosen on the inlay's row in the export window:
+
+- **whole face lowered** (default): the straight bit lowers the whole face of the plug blank, past its edges, so the blank is
+  held without edge clamps (with double-sided tape, for example), and its back is cut off after gluing;
+- **narrow band**: only a band around the plug, cut with the V bit and the flat floor, and the blank edges stay whole, for
+  clamps. Its values, each your choice:
+  - **Band width**: empty, the narrowest, worked out by the app and shown next to the field: 2 · H · tan(θ/2) (the plug and
+    band walls) plus the flat-floor bit (or, with the cut-out, the wider of it and the cut-out bit) plus 2 · 0.5 mm to spare.
+    You can widen it; narrower, the window refuses it.
+  - **Cut the plug out of the board, with tabs** (on by default): last, the cut-out bit cuts the plug through the whole board,
+    on the band floor, H · tan(θ/2) + 0.5 mm from the drawing, leaving the tabs. Unticked, only the band stays, and you saw the
+    plug out yourself, on its floor.
+  - **Plug board thickness**: empty, depth − glue gap + saw gap + 1 mm (S + H + 1). The cut goes through the whole board, so
+    the thickness must be exact; at least the band floor plus the tab thickness.
+  - **Tabs per loop**, **Tab width**, **Tab thickness** (default 4, 4 mm and 1 mm): like hold-down tabs; the thickness is
+    measured from the bottom of the board, so once seated the tabs sit above the board and are planed off with the rest.
+  - **Another bit for the cut-out**: by default, the flat-floor straight bit; ticked, the number and diameter of another one (a
+    new number, like any bit).
 
 **On paper**, the panel shows, for the chosen shapes with the same values: how far the plug goes into the pocket (S), over
 how much the walls touch from the outline (S · tan(θ/2)), the gap under the plug, the space between the boards, how much of
 the bit's cone the pocket and the plug use, and the smallest thickness of the plug blank (S + H + 1 mm). For example, with a
 V60 Ø6, depth 3, glue gap 0.5 and saw gap 2: the plug goes in 2.5 mm, the walls touch over 1.44 mm, the plug is carved down
-to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick.
+to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick. With the band, it also shows its width (and the
+narrowest), the blank in plan (the drawing's box plus the band, the groove at the face and the margin, on each side) and the
+cut-out: the board and the tabs, or where you cut by hand. In the example, with a Ø6 flat floor, the band is at least 9.31 mm,
+and the blank is the drawing's box plus 15.75 mm on each side.
 
 **The export.** On **Export**, besides the sheet's program (with the pocket), one file per plug is downloaded: the name of the
 sheet's program with “-dop-1”, “-dop-2”… (on short names, DOP1…). The window shows each one's blank: width × height (the
 drawing's box, plus the margin on each side) and the smallest thickness. The plug is the drawing mirrored left to right; XY0
 is at the corner chosen for the sheet, on the plug blank, and Z0 on its face. The program first lowers the blank face with
 the straight bit, down to S + H (the wood around the plug), then the V bit cuts the plug walls from S down; the bit change is
-the one chosen in the window, as for the sheet.
+the one chosen in the window, as for the sheet. With the band, the straight bit clears only the band floor, and with the
+cut-out, last, the cut-out bit cuts the plug through the board; the window then shows the board “exactly” as thick as chosen.
 
 **Gluing.** Turn the plug face down over the pocket (the mirroring brings it back to the drawing) and press it in with glue:
 it stops on the walls, with the gap under it and the space between the boards. Then saw or plane its back down to the face
-of the board.
+of the board. With the cut-out, first cut the tabs and clean them flush with the walls, so the plug goes in whole.
 
 **Refusals**, with the reason, on export: a flat bit or one with a flat tip; a glue gap under 0.1 mm (the ridges in the
 pocket's corners would hold the plug) or at least the depth; a plug carved (depth − gap + saw gap) deeper than the bit's cone;
-no flat floor with the straight bit (the V-bit-only variant comes later). The narrow band around the plug with its cut-out
-and the plug in the 3D view come in the next slices; straight walls have their own chapter ([The straight-walled
+no flat floor with the straight bit (the V-bit-only variant comes later). With the band: narrower than the narrowest; with
+the cut-out, a board thinner than the band floor plus the tabs, a V cut-out bit, or one with another bit's number and another
+diameter. The plug in the 3D view comes in a later slice; straight walls have their own chapter ([The straight-walled
 inlay](#incrustatie-drept)).
 
 ## The straight-walled inlay
