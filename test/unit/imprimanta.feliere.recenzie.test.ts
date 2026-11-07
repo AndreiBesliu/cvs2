@@ -137,8 +137,15 @@ test('ventilatorul: pe straturile mai lungi decât timpul de răcire al material
   const r = feliaza([piesa([conturDreptunghi(70, 70, 80, 80)], 3)], setariImplicite('petg'), { data: DATA });
   assert.ok(r.gcode);
   const l = linii(r.gcode.text);
-  const z4 = l.indexOf(';Z:0.8');
-  assert.ok(l.slice(z4).includes('M106 S0'), 'ventilatorul nu se oprește pe straturile lungi');
+  // 3 mm la 0,2: 15 straturi; sus 5 pline, deci primul plin de sus e al 11-lea, la Z 2,2: 80 × 80 mm plin, mult peste 30 s.
+  // Comanda lui stă între `;Z:2.2` și schimbarea următoare: `M106 S0` de la sfârșit (pus oricum) nu contează.
+  const sus = l.indexOf(';Z:2.2');
+  assert.ok(sus > 0);
+  const vent = l.slice(sus, l.indexOf(';LAYER_CHANGE', sus)).filter((x) => /^M106 S\d+$/.test(x));
+  assert.deepEqual(vent, ['M106 S0'], 'ventilatorul nu se oprește pe straturile lungi');
+  // Straturile rare dinainte sunt scurte: ventilatorul pornit, între minimul și maximul PETG (40 … 90 %).
+  const rar = l.slice(l.indexOf(';Z:0.8'), sus).filter((x) => /^M106 S\d+$/.test(x)).map((x) => Number(x.slice(6)));
+  assert.ok(rar.length > 0 && rar.every((v) => v >= Math.floor(2.555 * 40) && v <= Math.floor(2.555 * 90)), String(rar));
 });
 
 test('„Simplu”: duza și patul schimbă și primul strat (cu diferența profilului); materialul și calitatea își aduc valorile, restul rămâne', () => {
