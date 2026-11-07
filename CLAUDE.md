@@ -602,7 +602,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
   găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
   evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
-  vede și ce pornește aplicația Creality.
+  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 propus pe 07.11, „Da,
+  piesele plate”, cu cinci întrebări în formularul schiței; codul vine după răspunsuri): desenul feliat direct în cvs2 pentru
+  K1C, cu valorile din profilul K1C al OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
+  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
+  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
+  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

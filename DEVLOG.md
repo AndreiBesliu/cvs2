@@ -6433,3 +6433,45 @@ oprit.
   (`export.spec.ts:518`, sub încărcare; și proba nouă a IP-ului schimbat, care pica de fapt: imprimanta falsă de la noua
   adresă își „termina” imprimarea, la 0,3 s pe procent, cât fereastra tăcea și căuta, deci era găsită „Gata”; acum înaintează
   încet, 2 / 2 singură, 9 / 9 tot fișierul). Otrăvurile pasului 2: 9 / 9 prinse (19 / 19 în `test/otravuri/3.6i.py`).
+
+## 2026-11-07 — Felia 3.6j propusă: piesele plate pe imprimantă (ADR 0191, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „in primul rand, accept toate sugestiile tale. apoi, mi-ai cerut sa fac pasul 2. cum pot sa feliez cubul pentru
+k1c?, de trimis vad ca pot trimite fisiere acum, si se vad si cele pe care le-a mai executat imprimanta, dar, cum pot sa fac eu
+slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia creality?”; apoi, la propunerea pieselor plate:
+„Da, piesele plate. Dar cand vom termina o mare parte sau tot ce ne-am propus momentan, vom face un sistem de slice extins care
+sa poata pregati fisierele de executat, pentru o multitudine de masini (cnc, laser, printere [3d sau altele]). [...] asa ca ma
+gandesc ca sistemul de conectare al cvs2 sa fie si el un plugin modular, care descarca sau activeaza sisteme de conectare pe
+care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea liniei imprimantei).
+**Started:** 07.11, 18:57. **Completed:** 07.11, 19:40 (cercetarea, ADR-ul și schița; codul lui 3.6j așteaptă răspunsurile).
+
+- **Răspunsul la întrebare:** un model 3D (cubul de calibrare dintr-un STL) se feliază în Creality Print sau OrcaSlicer și se
+  trimite din cvs2 cu „Trimite un fișier…” (pasul 3 din 3.6i); piesele plate din desen se pot felia în cvs2: asta propune ADR
+  0191. Sugestiile acceptate (camera, imprimarea văzută în tot cvs2, istoricul, piesa pe pat, codurile de eroare, comenzile în
+  plus; ferestrele alăturate, cu sesiunea principală; apoi mai multe imprimante, Moonraker, ștergerea fișierelor) vin fiecare
+  cu ADR-ul și schița ei, după piesele plate.
+- **Direcția modulară (owner-ul):** după propunerile de acum, pregătirea fișierelor pentru multe feluri de mașini și conectarea
+  ca module, activate după ce folosește fiecare client: o linie a ei, cu sesiunea principală. Până atunci, codul nou al
+  mașinilor se scrie gata de mutat într-un modul (în directorul lui, încărcat la cerere, fără importuri din nucleu spre el).
+- **Cercetarea:** profilele Creality ale OrcaSlicer (K1C cu duza 0,4: imprimanta, procesul „0.20mm Standard”, PLA și PETG
+  „@Creality K1-all”, cu moștenirile) și codul care scrie G-code-ul pentru Klipper (antetul, `EXCLUDE_OBJECT_*`,
+  `;LAYER_CHANGE`, `SET_VELOCITY_LIMIT`), la `9005b64`; geometria din cvs2 care se refolosește (`offsetRegiune`,
+  `liniiParalele`, `booleanContururi`, `elementeFoaie`); debitul, pe hârtie (0,030727 mm de filament pe mm de linie, la
+  0,42 × 0,2, PLA; plafonul de 18 mm³/s taie umplerea rară la 221 mm/s); bugetul (JavaScript gzip; pornirea 101,7 / 110,
+  totalul 531,4 / 550 pe ramură). Nemăsurat: miniatura și „stratul x din N” pe ecranul K1C, pentru un fișier care nu vine din
+  Creality Print; locul liniei de curățare.
+- **ADR 0191, propus:** o piesă plată e o prismă (fără surplombe sau suporturi), deci geometria se calculează o dată pe fel de
+  strat; pe strat, ca OrcaSlicer: pereții interiori, cel exterior, umplerea; jos 3 straturi pline, sus 5, între ele grila de
+  15 %; doar comenzile pe care OrcaSlicer le scrie deja pentru K1C; fișierul trece prin verificarea și trimiterea de la 3.6h;
+  codul în `src/machine/imprimanta/feliere/`, încărcat la deschiderea dialogului (+8 … 12 kB estimați, pornirea neschimbată).
+  Proba: pe hârtie, aceeași verificare ca la trimitere, un fișier Creality Print al owner-ului ca referință (nicio comandă în
+  plus; straturile, filamentul la ±5 %, timpul la ±25 %), e2e pe imprimanta falsă, otrăvurile, o placă de probă de
+  40 × 20 × 3 mm pe K1C, măsurată cu șublerul.
+- **Întrebările (recomandarea întâi):** 1. ce se imprimă (piesele foii, așezate ca pe foaie); 2. înălțimea (una, implicit
+  grosimea foii); 3. setările (puține); 4. locul („Din desen…”, în fereastra Imprimanta); 5. bugetul (în cei 550 kB;
+  alternativa: bucata adusă la prima folosire, primul pas al modulelor). Plus, opțional, fișierul de referință.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/SoVkWwNayNyNLtWLyehaT6> (privată, a owner-ului; răspunsurile
+  stau în baza paginii, colecția `raspunsuri`): ce e o piesă plată (desenul și cele 15 straturi ale plăcii de probă), patru
+  planșe (unde se deschide; setările, cu straturile văzute de sus și un glisor care merge; ce nu se poate imprima; trimiterea și
+  pornirea), tabelul profilului K1C, siguranța și limitele. Privită o dată înainte de publicare (Edge fără fereastră, 1 100 px
+  în tema luminoasă și 390 px în cea întunecată: fără depășiri, fără erori); baza formularului răspunde (goală).
