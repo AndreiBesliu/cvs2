@@ -11,6 +11,7 @@
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
+import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { RaspunsCalcul } from './calculCam.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
@@ -121,4 +122,9 @@ export function verificareInBazin(document: Document, optiuni: OptiuniVerificare
 /** O reparație a verificării (ADR 0124 §10), pe documentul dat. */
 export function reparareInBazin(document: Document, cerere: CerereReparare, optiuni: OptiuniReparare, o: OptiuniCam = {}): Promise<RezultatReparare> {
   return calculeaza({ fel: 'reparare', document, cerere, optiuni }, [], o) as Promise<RezultatReparare>;
+}
+
+/** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul dat: instanțele tăiate și părțile lor. */
+export function taiereInBazin(document: Document, cerere: CerereTaiere, o: OptiuniCam = {}): Promise<RezultatTaiere> {
+  return calculeaza({ fel: 'taiere', document, cerere }, [], o) as Promise<RezultatTaiere>;
 }

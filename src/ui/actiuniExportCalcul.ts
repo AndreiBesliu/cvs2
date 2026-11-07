@@ -1,10 +1,11 @@
-import { exportInBazin, reparareInBazin, simulareInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { exportInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
+import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
@@ -64,6 +65,14 @@ export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semn
  */
 export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: OptiuniReparare, semnal?: AbortSignal): Promise<RezultatReparare> {
   return reparareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {});
+}
+
+/**
+ * Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul din clipa cererii, în workerul CAM: instanțele tăiate și
+ * părțile lor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
+ */
+export function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal): Promise<RezultatTaiere> {
+  return taiereInBazin(doc, cerere, semnal ? { semnal } : {});
 }
 
 /** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */
