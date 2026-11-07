@@ -537,6 +537,44 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
+## Tăierea vectorilor
+%% capitol: taiere
+%% acopera: editare.taiere, document.taie
+
+**Taie** (butonul cu foarfeca, după boolean și degrupare, în extensia barei) împarte formele alese, **Taie cu**:
+- **Linia verticală X =** sau **Linia orizontală Y =**, poziția în mm ai foii (pornește din mijlocul formelor alese);
+- **Ghidajul**: unul dintre ghidajele foii, tras din riglă;
+- **Ultima formă aleasă (Shift + clic)**: cuțitul e o formă a ta. Alege formele de tăiat, apoi, ultimul, cuțitul, cu
+  Shift + clic; cuțitul rămâne neschimbat.
+
+Cât panoul e deschis, linia se vede pe pânză, punctată. **Taie** face din fiecare formă prin care trece linia două forme:
+ce e de o parte a liniei și ce e de cealaltă, fiecare aleasă după tăiere, la locul ei. O formă prin care linia nu trece
+rămâne cum e. Tăierea e exactă: un arc se taie în două arce ale aceluiași cerc, o curbă rămâne pe curba ei, iar nodurile pe
+care linia nu le atinge rămân neschimbate. Doar o trecere taie: un cerc tangent la linie sau un vârf care doar atinge linia
+nu se taie.
+
+Un cuțit închis (un cerc, un dreptunghi) lasă din fiecare formă două forme: ce e înăuntrul lui și ce e în afara lui. Un
+cuțit deschis (o linie frântă, o curbă) face din fiecare bucată o formă; contururile pe care nu le trece rămân împreună, iar
+o gaură netăiată merge cu bucata în care stă. Cuțitul taie unde trece prin formă și unde capătul lui intră în ea dintr-o
+latură; un cuțit care doar atinge forma nu o taie.
+
+**Închide bucățile** (bifată implicit; aplicația își amintește alegerea): fiecare parte a unei forme închise se închide pe
+tăietură: cu o linie dreaptă, la linie și la ghidaj, sau pe drumul cuțitului, cu nodurile lui. O formă cu găuri se citește
+ca regiune: un inel tăiat în două dă două forme în „U”, închise. Fără bifă, bucățile rămân deschise: un cerc tăiat prin
+centru dă două semicercuri, fiecare un singur arc. Cu bifă, un cuțit care se oprește înăuntrul unei forme sau care se
+încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l sau taie fără bifă.
+
+**Taie la intersecții** (butonul din partea de jos a panoului, sau din meniul de clic dreapta) taie formele alese între
+ele, în toate locurile lor comune: unde se trec, unde se ating și la capetele unei laturi comune. Fiecare bucată devine o
+formă, aleasă, ca s-o poți șterge pe cea de prisos. O formă care se taie singură nu se desparte de aici (asta e treaba
+verificării), iar un contur închis cu un singur loc comun rămâne întreg.
+
+Bucățile își păstrează rolul de tăiere: un pătrat tăiat pe exterior dă două dreptunghiuri tăiate tot pe exterior. O bucată
+deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afară sau pe dinăuntru, după sensul desenului).
+Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
+pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
+(Ctrl+Z).
+
 ## Verificarea vectorilor
 %% capitol: verificare
 %% acopera: editare.verificare, document.repara
