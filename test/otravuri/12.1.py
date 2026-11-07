@@ -5,7 +5,8 @@
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
 # La 12.1↑c (ADR 0172): dopul s-a mutat în `cam/dopV.ts` (P01–P04, P06–P09), R05 prinde acum motivul benzii fără fund
-# plat (banda e primită), iar seturile documentului sunt pe v22.
+# plat (banda e primită), E01 și E04 țintesc codul de acum (citirea și scrierea incrustației), iar seturile documentului
+# sunt pe v22.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -98,11 +99,11 @@ o('L03', ROL, "  const fundPlat = rol !== 'incrustatie' ? undefined : fundVechi 
   'rol', 'fundul plat de dinainte ignorat la rolul ales din nou')
 
 # ---- Fereastra exportului, panoul, arborele (e2e) ----
-o('E01', CON, "            incrustatie: o.incrustatie?.fel === 'v'\n", "            incrustatie: null && o.incrustatie?.fel === 'v'\n", 'e2e', 'rândul ferestrei nu primește incrustația din document')
+o('E01', CON, "            incrustatie: o.incrustatie?.fel === 'v' ? {\n", "            incrustatie: null && o.incrustatie?.fel === 'v' ? {\n", 'e2e', 'rândul ferestrei nu primește incrustația din document')
 o('E02', APP, '        for (const d of dopuri) descarca(d.octeti, d.nume);', '', 'e2e', 'fișierul dopului nedescărcat')
 o('E03', VAL, '      ...(incrustatie ? { incrustatie } : {}),', '', 'e2e', 'Exportă scoate incrustația din proiect')
-o('E04', VAL, "v.incrustatie ? { ...(o.incrustatie?.fel === 'v' ? o.incrustatie : {}), ...v.incrustatie, fel: 'v' as const } : undefined;",
-  "v.incrustatie ? { ...v.incrustatie, fel: 'v' as const } : undefined;", 'dialog', 'un câmp necunoscut al incrustației pierdut la Exportă')
+o('E04', VAL, "  const vechi: Record<string, unknown> = { ...(o?.fel === 'v' ? o : {}) };", '  const vechi: Record<string, unknown> = {};', 'dialog',
+  'un câmp necunoscut al incrustației pierdut la Exportă')
 o('E05', DLG, '      const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc),',
   '      const joc = citesteNumar(p.jocInc), fierastrau = citesteNumar(p.fierastrauInc),', 'e2e', '„Același spațiu” bifat nu scrie jocul ca fierăstrău')
 o('E06', DLG, "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true, fundPlat: true }", "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true }",

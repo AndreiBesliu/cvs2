@@ -172,6 +172,20 @@ test('numerele frezelor: păstrat cât e liber, al frezei identice, cel mai mic 
   const nd = rolNumerotat(doc(dr), sd, new Set(['w']));
   const inc = nd.operatie.incrustatie;
   assert.deepEqual([nd.operatie.scula.numar, inc?.fel === 'drept' ? inc.frezeDop?.[0]?.scula.numar : null], [1, 2]);
+  // Freza decupării benzii (ADR 0172): intră în socoteală la urmă; sub T2 (al fundului plat, Ø3) cu Ø4, ia cel mai mic liber.
+  const bd = simpla('b', DR(40, 40), {
+    tip: 'vcarve', latura: 'interior', scula: { numar: 1, nume: 'V60', diametru: 6, forma: { tip: 'v', unghi: 60 } }, adancime: 3, pas: 3,
+    fundPlat: { scula: t(2, 3), pasLateral: 1 },
+    incrustatie: {
+      fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'banda',
+      banda: { decupare: true, grosimePlaca: 5.5, freza: t(2, 4), punti: { numar: 4, latime: 4, grosime: 1 } },
+    },
+  });
+  const sbd = sablon([bd]);
+  assert.equal(sbd.baza, 'incrustatie');
+  const nbd = rolNumerotat(doc(bd), sbd, new Set(['b']));
+  const ib = nbd.operatie.incrustatie;
+  assert.deepEqual([nbd.operatie.scula.numar, nbd.operatie.fundPlat?.scula.numar, ib?.fel === 'v' ? ib.banda?.freza?.numar : null], [1, 2, 3]);
 });
 
 test('rolul recunoscut înapoi, și după renumerotarea frezelor; o valoare schimbată arată rolul de bază', () => {

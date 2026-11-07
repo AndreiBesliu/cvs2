@@ -3,7 +3,8 @@
  * cazurile în V de pe hârtie (`incrustatie.cazuri.ts`), cu `jurDop: 'banda'` și decuparea prin placa de grosime T, cu punți.
  * Contractul, scris aici din nou din ADR (c = 0,5 mm, t = tan(θ/2), Ø: freza decupării, implicit cea a fundului plat):
  * - banda cea mai îngustă: M = 2·H·t + max(Ø fundului plat, Ø decupării) + 2c; semifabricatul e cutia desenului cu
- *   M + S·t + marginea pe fiecare parte, oglindit ca la fața coborâtă;
+ *   M + S·t + marginea pe fiecare parte, oglindit ca la fața coborâtă; înainte de decupare, inelul tăieturii (între e și
+ *   e + Ø de desen) e chiar fundul benzii, la S + H: tăietura stă toată pe fundul plat (de aici lățimea cea mai mică);
  * - tăietura lasă piesa păstrată până la e = H·t + c de desen (în unghiurile intrânde, cel mult e + Ø/2);
  * - întoarsă, piesa păstrată (punțile rupte) se oprește la S = D − g, cu pereții în contact, g sub dop și H între plăci;
  * - punțile: câte cere documentul pe buclă (golurile desenului nu se decupează), groase de gp de la fundul plăcii, fiecare cu
@@ -100,9 +101,14 @@ for (const c of [...CAZURI_INCRUSTATIE, RAMA]) {
     const lat = e + c.dreapta.diametru + 1;
     const g0x = x1 + margine - (x0 - lat) - Math.ceil((x1 - x0 + 2 * lat) / CELULA) * CELULA;
     const nx = Math.ceil((x1 - x0 + 2 * lat) / CELULA), ny = Math.ceil((y1 - y0 + 2 * lat) / CELULA);
-    const Mg = suprafataPeScule(textDop, { x0: g0x, y0: y0 - lat - y0 + margine, latime: nx * CELULA, inaltime: ny * CELULA, celula: CELULA }, scule(textDop, c));
+    const grila = { x0: g0x, y0: y0 - lat - y0 + margine, latime: nx * CELULA, inaltime: ny * CELULA, celula: CELULA };
+    const Mg = suprafataPeScule(textDop, grila, scule(textDop, c));
+    // Înainte de decupare (programul până la ultima schimbare de freză): inelul tăieturii e chiar fundul benzii, la S + H, deci
+    // tăietura stă toată pe fundul plat (ADR 0172, lățimea cea mai mică: „iar tăietura să stea pe el”).
+    const inainte = textDop.slice(0, [...textDop.matchAll(/^T\d+ M6$/gm)].at(-1)!.index);
+    const Mf = suprafataPeScule(inainte, grila, scule(inainte, c));
     const punte = new Uint8Array(nx * ny);
-    let inel = 0, prin = 0;
+    let inel = 0, prin = 0, peFund = 0;
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const x = x0 - lat + (i + 0.5) * CELULA, y = y0 - lat + (j + 0.5) * CELULA;
       const { d, inauntru } = laDesen(c.desen, x, y);
@@ -111,7 +117,9 @@ for (const c of [...CAZURI_INCRUSTATIE, RAMA]) {
       const z = -Mg.z[j * nx + (nx - 1 - i)]!;
       if (z >= T - 0.05) prin++;
       if (Math.abs(z - (T - PUNTI.grosime)) < 0.05) punte[j * nx + i] = 1;
+      if (Math.abs(-Mf.z[j * nx + (nx - 1 - i)]! - (S + c.H)) <= 0.05) peFund++;
     }
+    assert.ok(peFund >= 0.99 * inel, `${c.id}: înainte de decupare, inelul tăieturii pe fundul benzii: ${peFund} din ${inel}`);
     // Bucățile, cu vecinii pe 8; o celulă izolată la capătul unei punți (arcul frezei, pe grila de 0,1 mm: măsurat la stea,
     // câte una lângă două dintre cele 4 punți de ~620 de celule) e o firimitură a grilei, nu o punte: sub FIRIMITURA, nu se numără.
     const FIRIMITURA = 20;

@@ -24,6 +24,7 @@ VAL = 'src/app/valoriOperatii.ts'
 DLG = 'src/ui/DialogExport.tsx'
 CON = 'src/app/ExportConectat.tsx'
 PAN = 'src/app/PanouProprietati.tsx'
+ROL = 'src/model/rolPersonal.ts'
 
 # ---- Valorile benzii, pe hârtie (`valoriBanda`, un singur loc: panoul, fereastra și dopul) ----
 o('B01', MOD, '=> 2 * H * t + Math.max(fund, decupare) + 2 * REZERVA_BANDA;', '=> H * t + Math.max(fund, decupare) + 2 * REZERVA_BANDA;', 'banda',
@@ -137,6 +138,10 @@ o('N06', PAN, "{rand(t('prop.inc.semifabricat'), hartieBanda?.decupare", "{rand(
 o('N07', PAN, "rand(t('prop.inc.jur'), t(o.incrustatie.jurDop === 'banda' ? 'prop.inc.jur.banda' : 'prop.inc.jur.fata'))",
   "rand(t('prop.inc.jur'), t('prop.inc.jur.fata'))", 'e2e', 'lemnul din jurul dopului arătat mereu „fața coborâtă”')
 
+# ---- Rolurile personalizate (găsită la recitirea codului, după prima rulare) ----
+o('L01', ROL, "    ...(inc?.fel === 'v' && inc.banda?.freza ? { incrustatie: { ...inc, banda: { ...inc.banda, freza: f(inc.banda.freza) } } } : {}),\n", '',
+  'rol', 'freza decupării benzii în afara renumerotării rolurilor personalizate')
+
 SETURI = {
     'banda': ['test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatie.refuzuri.test.ts'],
     'banda2': ['test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatie.refuzuri.test.ts', 'test/unit/incrustatie.potrivire.test.ts',
@@ -145,5 +150,7 @@ SETURI = {
     'doc2': ['test/unit/document.v22.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
     'dialog': ['test/unit/incrustatie.banda.scriere.test.ts'],
     'dialog2': ['test/unit/incrustatie.banda.scriere.test.ts', 'test/unit/incrustatie.scriere.test.ts', 'test/unit/actiuni.test.ts'],
+    'rol': ['test/unit/rolPersonal.test.ts'],
+    'rol2': ['test/unit/rolPersonal.test.ts', 'test/unit/rol.test.ts', 'test/unit/incrustatie.rol.test.ts'],
 }
 E2E = ['test/e2e/incrustatieBanda.spec.ts']

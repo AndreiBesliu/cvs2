@@ -74,8 +74,8 @@ function model(o: Operatie, tip: TipOperatie, latura: Latura): Operatie {
 
 /**
  * Operația cu fiecare freză trecută prin `f`, mereu în aceeași ordine: a ei, a fundului plat, frezele de rest ale fundului,
- * frezele de rest ale buzunarului, frezele dopului cu pereți drepți (ADR 0171). Numărarea și renumerotarea frezelor (§5) se
- * bazează pe ordinea asta.
+ * frezele de rest ale buzunarului, frezele dopului cu pereți drepți (ADR 0171), freza decupării benzii dopului în V (ADR 0172).
+ * Numărarea și renumerotarea frezelor (§5) se bazează pe ordinea asta.
  */
 function cuScule(o: Operatie, f: (s: Scula) => Scula): Operatie {
   const fp = o.fundPlat, inc = o.incrustatie;
@@ -85,6 +85,7 @@ function cuScule(o: Operatie, f: (s: Scula) => Scula): Operatie {
     ...(fp ? { fundPlat: { ...fp, scula: f(fp.scula), ...(fp.rest ? { rest: fp.rest.map((r) => ({ ...r, scula: f(r.scula) })) } : {}) } } : {}),
     ...(o.rest ? { rest: o.rest.map((r) => ({ ...r, scula: f(r.scula) })) } : {}),
     ...(inc?.fel === 'drept' && inc.frezeDop ? { incrustatie: { ...inc, frezeDop: inc.frezeDop.map((r) => ({ ...r, scula: f(r.scula) })) } } : {}),
+    ...(inc?.fel === 'v' && inc.banda?.freza ? { incrustatie: { ...inc, banda: { ...inc.banda, freza: f(inc.banda.freza) } } } : {}),
   };
 }
 
