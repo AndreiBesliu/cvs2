@@ -59,6 +59,9 @@ async function programe(descarcari: readonly Download[]): Promise<{ readonly loc
  * conturul (și în colțuri), nicio interferență, D = 6 și h = 8 ± 0,05.
  */
 test('incrustația cu pereți drepți: rolul din panou, valorile pe hârtie, exportul cu dopul ridicat, potrivirea pe oracol', async ({ page }) => {
+  // Oracolul, pe octeții din browser, ține cea mai mare parte a probei: 12,7 s singură, peste 30 s cu trei lucrători (07.11, la
+  // 12.1↑c, căzută o dată din timp, nu din cod).
+  test.setTimeout(90_000);
   await page.goto('/');
   await dreptunghiMic(page);
   const rol = taierea(page).locator('[data-camp="rol"]');
