@@ -186,8 +186,10 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
     }
     const scalata = scaleazaNod(piesa.radacina, lx, ly);
     if (typeof scalata === 'string') return { ok: false, motiv: scalata };
-    // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl face vectori.
-    const radacina = blocScalat(piesa.radacina, scalata, lx, ly, uniforma(sx, sy));
+    // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl păstrează doar pe un text drept, fără
+    // aldin (ADR 0138 §4). Scara blocului e cea din axele contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
+    const [bx, by] = uniforma(sx, sy) ? [lx, ly] : inAxe(lx, ly, sferturiMatrice(piesa.radacina.matrice) ?? 0);
+    const radacina = blocScalat(piesa.radacina, scalata, bx, by, uniforma(sx, sy));
     noiPiese.push({ ...piesa, radacina });
     noiInstante.push({ ...i, x: ancora.x + (i.x - ancora.x) * sx, y: ancora.y + (i.y - ancora.y) * sy });
   }

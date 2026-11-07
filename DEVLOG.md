@@ -5987,6 +5987,84 @@ test nu s-a atins; ramura nu e împinsă.
 - **Publicat pe test:** `33fd695` (42181200327; prima încercare, 42180847182, a căzut la eliberarea versiunii de Hosting, cu HTTP 500 de la Firebase, și a mers la a doua, fără nicio schimbare). Verificat pe <https://cncvectorstudio-test.web.app>: versiunea `33fd695d81fb`, alegerea „Conectează (WiFi)”, pasul 1 al asistentului (în română) și capitolul „Mașina” din manual, cu butoanele noi; fără căutări în rețeaua owner-ului.
 - **Rămâne:** podul real în rețeaua atelierului, configurat din asistent (3.6e, cu placa owner-ului).
 
+## 2026-11-06 — Unirea liniei pluginului (Trenuleț, „Easy 3Draw”) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, merge it” (la „Merge wip/trenulet (43 commits, with the plugin's sources) into main and push it to the public repo?”, după încheierea liniei pe 05.11: „Aici nu mai facem nimic, am terminat si vom face unirea cu main”).
+**Started:** 06.11, 10:47. **Completed:** 06.11, 13:31.
+
+- **Unirea** (`f6150ff`): `wip/trenulet` (vârful `6634ea6`, 43 de commit-uri, feliile 3.S, 3.Xa–3.Xe, 3.Ta–3.Tf, ADR 0126–0129 și 0160–0167) peste `main` (59 de commit-uri de la baza comună `75e9b47`, cu 3.6f). Înainte, verificarea pentru repo-ul public: nicio cheie sau parolă în ce aduce ramura, nimic din `docs/faza0/`; bibliotecile din `vendor/` au licențele lângă ele (three.js r128, MIT; earcut, ISC).
+- **Conflictele** (8 fișiere, după nota „Gata de unire” a sesiunii liniei): `PanouMasina.tsx` (importurile ambelor părți), `App.tsx` (fereastra Mașina din 13.A↑b, adusă în fundal, cu props-urile noi ale primirii și ale modalului; extensiile la cerere), `manual.test.ts` (77 de uși pe `main`, 73 pe ramură, comune până la 71: 79; controalele ferestrei Mașina ale ambelor părți, cu sursele lor), apoi documentele: fișa (coada owner-ului fără decizia unirii; placa de probă a primirii pe adresa principală; jurnalul cu ambele părți), `docs/otravuri.md`, CLAUDE.md, DEVLOG-ul (intrările ambelor părți, în ordinea zilei și a orei), traducerile (reuniunea, apoi unealta: 618, 0 lipsă).
+- **Porțile** pe arborele unit: unitarele 8441, 0 căzute; e2e 350 / 350; emulatoarele 81 / 81; traducerile 618, 0 lipsă. Mărimile: pornirea 101,4 (cu ușa 104,9 / 110 kB), /admin 105,4 / 200, totalul 503,1 kB, peste plafonul de 500: de aici ADR 0137 (plafonul 550 kB, decizia owner-ului: „Yes, 550 kB”), în `d2fd3ab`.
+- **CI:** rapid (`42200695411`) și complet (`42200711569`, 12:11–12:53) verzi pe `d2fd3ab`; apoi rapid verde pe `bf91fb1` (`42205952969`) și pe `61c75a1` (`42209168247`), două commit-uri doar cu probe e2e, pentru worktree-urile paralele (intrarea următoare).
+- **Publicat pe test:** `61c75a1`, prin workflow-ul `publica` (rularea `42210160623`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `61c75a145b5b`, cu bucățile gazdei extensiilor în harta importurilor (Extensii, Instalare, DialogLucrare) și CSP-ul liniei (`blob:` în `script-src`, `https:` și `ws:` în `connect-src`); roadmap-ul are 3.6f, 3.Tf („Easy 3Draw”) și ADR 0137.
+- **Rămâne:** curățenia worktree-ului `trenulet` (întâi joncțiunile `node_modules`, apoi worktree-ul) și ștergerea ramurii locale, la cuvântul owner-ului; ce a rămas din linie devine felii noi, din `main`.
+
+## 2026-11-06 — Două linii paralele: incrustațiile (etapa 12) și tăierea vectorilor (etapa 10) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi, la alegerea liniilor: „Inlays, stage 12 (Recommended),Vector trim/convert, stage 10”.
+**Started:** 06.11, 12:46. **Completed:** 06.11, 13:31.
+
+- **Incrustațiile** (felia 12.1↑, ramura `wip/12.1-incrustatii`): sesiunea `incrustatii` pornită, cu worktree-ul ei în afara lui Drive (`C:\Users\besli\cncvs2-lucru\incrustatii`), e2e-ul pe portul 4174 și pe rețeaua de loopback `127.0.1`, ADR-urile 0170–0179, canalul `incrustatii`. E singura linie care schimbă acum schema documentului (v20). Prima tură: cercetarea, ADR-ul propus cu întrebările și schița.
+- **Tăierea și conversia vectorilor** (felia 10.3↑, ramura `wip/10.3-taiere-conversie`): sesiunea pornită de owner din cardul aplicației (tura care o propusese venise dintr-un eveniment de fundal, iar aplicația pornește singură o sesiune doar dintr-un mesaj al owner-ului), cu `C:\Users\besli\cncvs2-lucru\taiere`, portul 4175, `127.0.2`, ADR-urile 0180–0189, canalul `taiere`, fără schemă nouă.
+- **E2e-ul, pregătit pentru suite paralele:** proba podului WiFi ia rețeaua de loopback din `CNCVS2_E2E_RETEA` (`bf91fb1`; trece pe 127.0.0 și pe 127.0.5), iar proba raportorului ia adresa din `baseURL`, nu 4173 scris în probă (`61c75a1`; căzută pe portul 4179 înainte, 11 / 11 după, pe 4179 și pe 4173). Sesiunii incrustațiilor i s-au trimis amândouă precizările (portul în trei locuri din `.tmp/pw.config.ts`, proba raportorului reparată pe `main`); a tăierii le are în brief.
+- **Linia principală** continuă de la ADR 0138; unirea fiecărei linii în `main`, la cuvântul owner-ului.
+
+## 2026-11-06 — 7.9↑: textul, mărimea în pt și inch, proporțiile literelor, crenarea (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, o sa le raspund, aici poti sa continui” (cercetarea, ADR 0138 propus, schița cu cinci întrebări), apoi
+„Yes, 1a–5a”.
+**Started:** 06.11, 14:45. **Completed:** 06.11, 19:28.
+
+- **Alegerea:** restul pragului textului (etapa 7), cel mai vechi gol al roadmap-ului fără mașină, fără schemă nouă (v20 e
+  al incrustațiilor) și fără codul liniilor paralele.
+- **Ce face:** lângă mărime, unitatea (mm, pt, in): mm și in măsoară majuscula, pt e mărimea fontului (72 pt cu Roboto dau
+  majusculele de 18,0578125 mm, arătate sub câmp; un număr convertit își ține valoarea exactă); **Lățimea literelor** și
+  **Înălțimea literelor** (%), cu majusculele tăiate spuse sub câmpuri; **Crenarea fontului** pornită sau oprită; mânerele
+  păstrează un text drept fără aldin la o scalare neuniformă (prin lățimea literelor; pe o curbă, vectori; aldin, refuzat
+  ca înainte, fiindcă literele lui au arce: corectat în ADR 0138 la acceptare).
+- **Codul:** `src/text/asezare.ts` (factorii hărții, înaintea cursivului; rândurile după majuscula tăiată, coloanele după
+  lățime; `majuscula` în așezare), `src/text/marime.ts` (conversiile), `src/model/blocText.ts` (`unitate`, `proportii`,
+  `crenare`, aldinul pe majuscula tăiată, `scalatNeuniform`), `src/model/transformare.ts`, `src/app/PanouText.tsx`.
+- **Proba:** corpusul Python (`CAZURI_PROPORTII`, `proportii.json`; plus `caseta-proportii`, `cerc-proportii`,
+  `aldin-proportii`), cu probele pe hârtie în oracol; `test/unit/text.proportii.test.ts`; e2e (unitatea, întoarcerea exactă
+  în mm, 50 %, 150 %, crenarea, redeschiderea; textul pe curbă cu literele la 150 %); fixturile vechi ale corpusului,
+  neschimbate (100 % și 100 % dau textul de azi bit cu bit). Patru uși noi în manual (83), în ambele limbi.
+- **Porțile:** unitarele 8465, 0 căzute (8 sărite); e2e 351 / 351 la a treia rulare (în primele două, câte o cădere fără
+  legătură cu felia, de fiecare dată în altă probă: `cont.spec.ts:29`, butonul Cont negăsit în 5 s la prima încărcare, și
+  `cam-bazin.spec.ts:229`, cu mesajul nepăstrat; amândouă trec singure); emulatoarele nerulate local (porturile lor, ocupate
+  de alt proces), rulate în CI-ul complet; traducerile, 0 lipsă; mărimile: pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul
+  504,5 / 550 (+1,4), /admin 105,4 / 200.
+- **Otrăvurile:** 28; prima rulare (`43ae768`): 27 prinse, U04 scăpată (legătura panoului spre curbă: nicio probă nu punea un text pe curbă la altă înălțime a literelor) → pasul nou din proba e2e a textului pe curbă, dedesubt, cu literele la 150 % (`920078b`), apoi U04 prinsă.
+- **CI:** rapid verde pe `920078b` (`42235518619`; cea de pe `43ae768` anulată de push-ul următor); complet căzut pe `43ae768`
+  (`42235093565`) în proba pluginului, reparată în 3.Xf (intrarea de mai jos); apoi complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
+- **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
+- **Roadmap-ul** (întrebarea owner-ului, „ai verificat roadmap, este actualizat?”): titlul scurt al lui ADR 0138 („Mărimea
+  textului în puncte și inch”, nu „Textul”, din cauza celui de-al doilea „:”) și coada owner-ului cu răspunsurile pe care le
+  așteaptă liniile paralele (ADR 0170, ADR 0180), ale căror ADR-uri stau pe ramurile lor până la unire.
+- **Rămâne:** 7.9↑b, spațierea literelor alese (din panou, în mm, ADR 0138 §5).
+
+## 2026-11-06 — 3.Xf: „pornit” abia după pagina extensiei (Model: Claude Opus 5.5)
+
+**Prompt:** niciunul nou: reparația cerută de regula „Un CI roșu pe `main` e incidentul numărul unu”, în felia 7.9↑.
+**Started:** 06.11, 17:14. **Completed:** 06.11, 19:28.
+
+- **Căderea:** CI-ul complet pe `43ae768` (`42235093565`), `trenulet.spec.ts:355`: „Închide” al foii Circuite, nevăzut 30 s;
+  „Circuite” fusese apăsat chiar după „pornit”, iar textul listei trecuse (proba lui nu cere vizibilitatea).
+- **Cauzele:** în clipa lui „pornit”, de cinci ori la rând, pagina planificatorului nu era gata (de patru ori nici pusă, o
+  dată butonul fără handler). Două cauze, despărțite apoi de câte o otravă (fiecare, singură, face proba nouă să cadă):
+  încărcătorul trimitea „pornit” imediat după `deschide`, care își punea pagina asincron; iar la redeschidere și la
+  repornire, fereastra arăta un cadru starea celei de dinainte („pornit”), fiindcă efectul o punea pe „se pornește” abia
+  după randare (o așteptare a lui „pornit” trecea pe loc, înaintea cadrului nou). Cele cinci măsurători le amestecau.
+- **Reparația:** încărcătorul așteaptă promisiunea lui `deschide` (`Spatiu.deschide`: `void | Promise<void>`); intrarea
+  planificatorului o întoarce; starea ferestrei se reface în randare când se schimbă extensia deschisă sau numărul pornirii;
+  amprenta nouă a încărcătorului (constanta și `firebase.json`); pachetul 18.7.1. ADR 0139.
+- **Proba:** e2e nou, de trei ori la rând: în clipa lui „pornit”, butonul „Circuite” are handler; proba căzută trece fără
+  nicio așteptare în plus. Porțile: unitarele 8464 trecute și una căzută (titlul ADR 0139, netradus: tradus apoi, iar proba
+  lui, rulată din nou, verde); e2e 352 / 352; totalul 504,6 / 550.
+- **Otrăvurile:** 3; toate prinse (`72def2a`): X01 (intrarea care nu-și întoarce pagina) și X02 (starea ferestrei de dinainte), fiecare singură, de proba nouă a pornirii; X03 (versiunea veche) de probele instalării.
+- **CI:** complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
+- **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
+
 ## 2026-11-06 — Felia 12.1↑ pornită: incrustația în V (ADR 0170, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi alegerea liniei „Inlays, stage 12” (owner-ul, în

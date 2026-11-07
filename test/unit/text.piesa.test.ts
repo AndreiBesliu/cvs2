@@ -13,7 +13,7 @@ import { piesaText } from '../../src/text/piesaText.ts';
 /**
  * Piesa unui text (ADR 0105 §4): câte un grup pe literă, contururile închise, operațiile din imbricare, blocul pe rădăcină
  * legat de contururi prin amprentă; ușa documentului o primește (blocul e un câmp păstrat, nu o schemă nouă), iar după
- * salvare blocul rămâne valid. Scalarea uniformă îl crește, cea neuniformă și o editare a contururilor îl fac vectori,
+ * salvare blocul rămâne valid. Scalarea uniformă îl crește, cea neuniformă îl păstrează pe un text drept (ADR 0138 §4), o editare a contururilor îl face vectori,
  * oglindirea îl păstrează, degruparea dă literele ca piese obișnuite. La editare, operațiile se mută pe contururile noi de
  * același fel.
  */
@@ -74,7 +74,7 @@ test('blocul e legat de contururi: o schimbare a unui vârf îl face vectori; un
   assert.equal(blocText({ ...rad, text: 'LEMN' }), null);
 });
 
-test('scalarea uniformă crește blocul (înălțimea, spațierea, amprenta nouă); cea neuniformă îl scoate; oglindirea îl păstrează', () => {
+test('scalarea uniformă crește blocul (înălțimea, spațierea, amprenta nouă); cea neuniformă îl păstrează pe un text drept, prin lățimea literelor (ADR 0138 §4); oglindirea îl păstrează', () => {
   const p = piesa({ ...PARAM, spatiere: 0.5 });
   const d = docCu(p);
   const s = transforma(d, 0, ['i1'], { fel: 'scalare', sx: 1.5, sy: 1.5, ancora: { x: 0, y: 0 } });
@@ -84,7 +84,12 @@ test('scalarea uniformă crește blocul (înălțimea, spațierea, amprenta nou�
   assert.deepEqual([b.inaltime, b.spatiere], [30, 0.75]);
   const n = transforma(d, 0, ['i1'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } });
   assert.ok(n.ok);
-  assert.equal(Object.hasOwn(n.piese[0]!.radacina, 'text'), false);
+  const bn = blocText(n.piese[0]!.radacina);
+  assert.ok(bn, 'un text drept, fără aldin, rămâne text');
+  assert.deepEqual([bn.inaltime, bn.spatiere, bn.proportii], [20, 0.75, { latime: 150, inaltime: 100 }]);
+  // Literele aldine sunt linii și arce: scalarea neuniformă le refuză, ca înainte (ADR 0052).
+  const gros = transforma(docCu(piesa({ ...PARAM, aldin: 0.6 })), 0, ['i1'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } });
+  assert.deepEqual(gros, { ok: false, motiv: 'neuniform-arc' });
   const o = transforma(d, 0, ['i1'], { fel: 'oglindire', directie: 'orizontal', centru: { x: 50, y: 50 } });
   assert.ok(o.ok);
   assert.ok(blocText(o.piese[0]!.radacina));
