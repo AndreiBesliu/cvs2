@@ -4,7 +4,8 @@ import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import type { Document, FormaDoc, Operatie, Piesa } from '../model/document.ts';
+import { inaltimeConV, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
+import { valoriIncrustatie } from '../model/incrustatie.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
@@ -78,7 +79,8 @@ function operatie(o: Operatie, n: number): ReactNode {
     <section key={o.id} className="prop-operatie">
       <h3>{t('prop.operatia', { n })}</h3>
       <dl>
-        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire') : o.tip === 'vcarve' ? t('export.latura.vcarve') : t(`export.latura.${o.latura}`))}
+        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire')
+          : o.tip === 'vcarve' ? t(o.incrustatie ? 'export.latura.incrustatie' : 'export.latura.vcarve') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
         {o.tip === 'buzunar' && rand(t('export.paralel'), o.strategie ? t('prop.strategie.paralel', { unghi: o.strategie.unghi }) : t('export.paralel.inele'))}
         {o.tip === 'buzunar' && !o.strategie && rand(t('export.coborare'), coborare(o.coborare))}
@@ -94,6 +96,9 @@ function operatie(o: Operatie, n: number): ReactNode {
         {o.tip === 'profil' && o.latura === 'pe-linie' && rand(t('export.directie'), t(o.directie === 'invers' ? 'export.directie.invers' : o.directie === 'scurt' ? 'export.directie.scurt' : 'export.directie.desen'))}
         {o.tip === 'vcarve' && rand(t('prop.fund'), o.fundPlat
           ? t('prop.fund.valoare', { numar: o.fundPlat.scula.numar, diametru: mmFreza(o.fundPlat.scula.diametru), pas: mm(o.fundPlat.pasLateral) }) : t('prop.fara'))}
+        {o.tip === 'vcarve' && o.incrustatie && rand(t('prop.inc'), t('prop.inc.valoare', {
+          joc: mm(o.incrustatie.joc), fierastrau: mm(o.incrustatie.fierastrau), margine: mm(o.incrustatie.margine),
+        }))}
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
         {((o.tip === 'buzunar' ? o.rest : o.tip === 'vcarve' ? o.fundPlat?.rest : undefined) ?? []).length > 0 && rand(t('prop.rest'),
           ((o.tip === 'buzunar' ? o.rest : o.fundPlat?.rest) ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
@@ -181,6 +186,17 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   const copii = piese.reduce((n, p) => n + doc.foi.reduce((m, f) => m + f.instante.filter((i) => i.piesa === p.id).length, 0), 0) > alese.length;
   const scrieValori = (v: { readonly adancime?: number; readonly pas?: number }): RezultatActiune =>
     onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => ({ ...o, ...v }))])));
+  // Incrustația (ADR 0170 §5): când toate operațiile alese sunt incrustații, jocurile și marginea lor se scriu de aici, pe toate
+  // (îmbinate: un câmp necunoscut rămâne); secțiunea pe hârtie apare când valorile lor sunt aceleași.
+  const incrustatii = operatiiAlese.length > 0 && operatiiAlese.every((o) => o.tip === 'vcarve' && o.incrustatie !== undefined);
+  const comunInc = (f: (i: Incrustatie) => number): number | null => comun((o) => (o.incrustatie ? f(o.incrustatie) : Number.NaN));
+  const scrieIncrustatie = (v: { readonly joc?: number; readonly fierastrau?: number; readonly margine?: number }): RezultatActiune =>
+    onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => (o.incrustatie ? { ...o, incrustatie: { ...o.incrustatie, ...v } } : o))])));
+  const primaInc = incrustatii ? operatiiAlese[0] : undefined;
+  const hartie = primaInc && operatiiAlese.every((o) => o.adancime === primaInc.adancime && o.scula.diametru === primaInc.scula.diametru
+    && o.scula.forma?.unghi === primaInc.scula.forma?.unghi && o.incrustatie?.joc === primaInc.incrustatie?.joc
+    && o.incrustatie?.fierastrau === primaInc.incrustatie?.fierastrau) ? valoriIncrustatie(primaInc) : null;
+  const con = primaInc?.scula.forma?.tip === 'v' ? inaltimeConV(primaInc.scula.diametru, primaInc.scula.forma.unghi) : null;
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -243,7 +259,25 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
             ))}
             {operatiiAlese.length > 0 && rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x })))}
             {operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
+            {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
+            {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
+              (x) => scrieIncrustatie({ fierastrau: x })))}
+            {incrustatii && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
+              (x) => scrieIncrustatie({ margine: x })))}
           </dl>
+          {hartie && primaInc?.incrustatie && (
+            <div className="prop-hartie" data-testid="prop-incrustatie-hartie">
+              <p className="prop-grup">{t('prop.inc.hartie')}</p>
+              <dl>
+                {rand(t('prop.inc.intra'), t('prop.inc.intra.valoare', { mm: mm(hartie.S) }))}
+                {rand(t('prop.inc.contact'), t('prop.inc.contact.valoare', { mm: mm(hartie.contact) }))}
+                {rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(primaInc.incrustatie.joc) }))}
+                {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
+                {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
+                {rand(t('prop.inc.semifabricat'), t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
+              </dl>
+            </div>
+          )}
           {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
           {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
           <PanouRoluri piese={piese} cheie={cheie} />

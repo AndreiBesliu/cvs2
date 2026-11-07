@@ -582,8 +582,8 @@ Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturulu
 fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
 
 **Rolul de tăiere** se alege și din panoul de proprietăți, în secțiunea **Tăierea**, pentru oricâte forme alese: **exterior**,
-**interior**, **pe linie**, **stânga** sau **dreapta** (pe o cale deschisă), **buzunar**, **găurire** (doar cercuri) sau
-**V-carve**. Lista arată doar rolurile care se potrivesc tuturor formelor alese; „—”, când au roluri diferite. Rolul e al formei
+**interior**, **pe linie**, **stânga** sau **dreapta** (pe o cale deschisă), **buzunar**, **găurire** (doar cercuri),
+**V-carve** sau **incrustație în V** (vezi [Incrustația în V](#incrustatie)). Lista arată doar rolurile care se potrivesc tuturor formelor alese; „—”, când au roluri diferite. Rolul e al formei
 întregi: pe o literă cu goluri, exteriorul taie conturul pe afară și golurile pe dinăuntru, iar buzunarul și V-carve-ul sapă
 litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensul, adâncimea și pasul; restul revine la
 implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
@@ -603,7 +603,7 @@ adresa de test față de cea live au lista lor.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
@@ -714,6 +714,45 @@ scoate o singură freză dreaptă; mai multe, de la cea mai mare la cea mai mic�
 
 Fiecare rând își are freza lui (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
 interioarele se taie primele.
+
+## Incrustația în V
+%% capitol: incrustatie
+
+O **incrustație în V** pune un dop dintr-un lemn în locașul săpat în altul: locașul e un V-carve al desenului, iar dopul e
+același desen, oglindit, săpat în V pe semifabricatul lui, ca să intre în locaș și să se oprească înainte de fund. Se alege ca
+rol: **incrustație în V**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista Tăietura a ferestrei **Exportă
+G-code**. Freza rândului e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
+și coboară fața semifabricatului dopului.
+
+Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fereastra exportului:
+
+- **Jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1): cât rămâne sub dop. Dopul se sapă de la adâncimea locașului
+  minus jocul (S = D − g), deci se oprește pe pereți, cu g deasupra fundului.
+- **Spațiul pentru fierăstrău** (H; implicit 2 mm): cât rămâne între cele două plăci după lipire, ca să tai cu fierăstrăul
+  spatele semifabricatului dopului sau să-l rindeluiești. În fereastra exportului, **Același spațiu pentru clei și
+  fierăstrău** ține o singură valoare pentru amândouă.
+- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului.
+
+**Pe hârtie**, panoul arată, pentru formele alese cu aceleași valori: cât intră dopul în locaș (S), pe cât se ating pereții de
+la contur (S · tan(θ/2)), jocul de sub dop, spațiul dintre plăci, cât din conul frezei folosesc locașul și dopul, și grosimea
+cea mai mică a semifabricatului dopului (S + H + 1 mm). De exemplu, cu V60 Ø6, adâncimea 3, jocul 0,5 și fierăstrăul 2: dopul
+intră 2,5 mm, pereții se ating pe 1,44 mm, dopul se sapă până la 4,5 mm din conul de 5,20 mm, iar semifabricatul are cel puțin
+5,5 mm.
+
+**Exportul.** La **Exportă**, pe lângă programul foii (cu locașul), se descarcă un fișier pentru fiecare dop: numele
+programului foii cu „-dop-1”, „-dop-2”… (pe numele scurte, DOP1…). Fereastra arată, pentru fiecare, semifabricatul: lățimea ×
+înălțimea (cutia desenului, plus marginea pe fiecare parte) și grosimea cea mai mică. Dopul e desenul oglindit stânga–dreapta;
+XY0 e în colțul ales pentru foaie, pe semifabricatul dopului, iar Z0 pe fața lui. Programul coboară întâi fața
+semifabricatului cu freza dreaptă, până la S + H (lemnul din jurul dopului), apoi freza în V taie pereții dopului de la S în
+jos; schimbarea frezei e cea aleasă în fereastră, ca la foaie.
+
+**Lipirea.** Întoarce dopul cu fața în jos peste locaș (oglindirea îl aduce la desen) și apasă-l cu clei: se oprește pe pereți,
+cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele lui până la fața plăcii.
+
+**Refuzurile**, cu motivul, la export: o freză plată sau cu vârf plat; jocul sub 0,1 mm (crestele din colțurile locașului ar
+ține dopul) sau cel puțin cât adâncimea; dopul săpat (adâncimea − jocul + fierăstrăul) mai adânc decât conul frezei; lipsa
+fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Banda îngustă din jurul dopului, cu decuparea
+lui, pereții drepți și dopul în vederea 3D vin în feliile următoare.
 
 ## Traseul pe pânză
 %% capitol: traseu

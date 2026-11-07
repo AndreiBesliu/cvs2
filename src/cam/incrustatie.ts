@@ -9,17 +9,21 @@
  * plăci. Programul dopului (§3): oglinda pe X a desenului, așezată pe semifabricat (cutia desenului oglindit cu `margine` pe
  * fiecare parte, originea în colțul lui stânga-jos, Z0 pe fața lui), adică (x, y) → (x1 + m − x, y − y0 + m); fața coborâtă la
  * S + H cu freza dreaptă (fundul plat al V-carve-ului), pereții dopului cu freza V, de la adâncimea de start S. Regiunea e
- * dreptunghiul semifabricatului lărgit cu H·t + 1 mm (peretele V de pe marginea lui cade în aer, iar freza dreaptă ajunge până
- * la marginea semifabricatului), cu desenul oglindit ca goluri (par-impar: golul unei litere devine iar regiune).
+ * dreptunghiul semifabricatului lărgit cu e (peretele V de pe marginea ei cade în aer, iar freza dreaptă coboară fața până
+ * dincolo de marginea semifabricatului), cu desenul oglindit ca goluri (par-impar: golul unei litere devine iar regiune);
+ * e = max(H·t + 1, Ø + 2w − m + 0,5), cu w = H·t + MARJA_FUND (cât stă fundul plat de fiecare perete): pe partea cea mai
+ * îngustă, între dop și marginea regiunii, freza dreaptă Ø trebuie să încapă, altfel fâșia o curăță freza V cu inele dese
+ * (măsurat la 12.1↑: Ø6 pe marginea de 5 mm lăsa 4,84 mm, iar creasta inelelor ajungea la 0,0505 între plăci).
  */
 import { inaltimeConV, JOC_INCRUSTATIE_MINIM, type Document, type Operatie } from '../model/document.ts';
+import { valoriIncrustatie } from '../model/incrustatie.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { conturDreptunghi, type Contur } from '../geom/conturBaza.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import { transformaContur } from '../geom/matrice.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { conturDeTaiat } from './contur.ts';
-import { traseuVcarve } from './vcarve.ts';
+import { MARJA_FUND, traseuVcarve } from './vcarve.ts';
 
 /** Turația, avansurile și Z-ul de siguranță (aceleași câmpuri ca regimul lucrării). */
 export type RegimDop = { readonly turatie: number; readonly avans: number; readonly avansPlonjare: number; readonly zSigur: number };
@@ -35,17 +39,10 @@ export type DopCalculat = {
   readonly avertismente: readonly string[];
 };
 
-/** Cât lasă grosimea cea mai mică a semifabricatului sub fața coborâtă (mm): dopul nu se taie prin placă. */
-export const SUB_FATA_DOPULUI = 1;
 /** Cât trece marginea regiunii dopului de marginea semifabricatului, peste H·t (mm): peretele ei cade în aer. */
 const DINCOLO_DE_MARGINE = 1;
-
-/** Valorile pe hârtie ale unei incrustații: adâncimea de start S, H și t = tan(θ/2). */
-export function valoriIncrustatie(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie'>): { readonly S: number; readonly H: number; readonly t: number } | null {
-  const i = op.incrustatie, f = op.scula.forma;
-  if (!i || f?.tip !== 'v') return null;
-  return { S: op.adancime - i.joc, H: i.fierastrau, t: Math.tan((f.unghi * Math.PI) / 360) };
-}
+/** Cât e mai lată decât freza dreaptă fâșia cea mai îngustă dintre dop și marginea regiunii (mm): freza trece pe toată fața. */
+const TRECERE_FUND = 0.5;
 
 /**
  * De ce nu se poate tăia incrustația (ADR 0170 §4), sau null: doar pe un V-carve, cu o freză în V ascuțită; jocul cel puțin
@@ -122,7 +119,10 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
     // Oglinda pe X, pe semifabricat: (x, y) → (x1 + m − x, y − y0 + m).
     const oglinda = { a: -1, b: 0, c: 0, d: 1, e: x1 + m, f: m - y0 };
     const latime = x1 - x0 + 2 * m, inaltime = y1 - y0 + 2 * m;
-    const e = val.H * val.t + DINCOLO_DE_MARGINE;
+    const w = val.H * val.t + MARJA_FUND;
+    const e = Math.max(val.H * val.t + DINCOLO_DE_MARGINE, fp.scula.diametru + 2 * w - m + TRECERE_FUND);
+    // Cât trece freza de marginile semifabricatului, cel mult: marginea regiunii plus raza celei mai late freze.
+    const dincolo = e + Math.max(op.scula.diametru, fp.scula.diametru) / 2;
     const regiune = [conturDreptunghi(-e, -e, latime + 2 * e, inaltime + 2 * e), ...contururi.map((c) => transformaContur(c, oglinda))];
     const f = op.scula.forma!;
     const v = traseuVcarve({
@@ -162,8 +162,11 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
     dopuri.push({
       element: t.idLume,
       program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari },
-      semifabricat: { latime, inaltime, grosimeMinima: val.S + val.H + SUB_FATA_DOPULUI },
-      avertismente: v.avertismente.map((a) => `dopul ${t.idLume}: ${a}`),
+      semifabricat: { latime, inaltime, grosimeMinima: val.grosimeMinima },
+      avertismente: [
+        `dopul ${t.idLume}: freza trece cu până la ${Math.ceil(dincolo * 10) / 10} mm dincolo de marginile semifabricatului (fața coborâtă până la margine): fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă`,
+        ...v.avertismente.map((a) => `dopul ${t.idLume}: ${a}`),
+      ],
     });
   }
   return { ok: true, dopuri };

@@ -5,6 +5,8 @@ import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAX
 export type { Coborare } from '../model/document.ts';
 // Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
+// Implicitele incrustației (ADR 0170), pentru rândul ei din fereastra exportului.
+export { INCRUSTATIE_IMPLICITA } from '../model/document.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
@@ -30,6 +32,8 @@ export const MARGINI_OPERATIE = {
   retragereCompleta: RETRAGERE_COMPLETA_MAXIMA,
   // Freza în V (ADR 0090): unghiul inclus, în grade.
   unghiV: UNGHI_V_MAXIM, unghiVMinim: UNGHI_V_MINIM,
+  // Incrustația (ADR 0170 §1): marginea semifabricatului dopului, în mm (plafonul laturii).
+  margineDop: PLAFON.latura,
 } as const;
 
 /**
