@@ -6358,3 +6358,27 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 - **Publicat** pe canalul `trasare` al instanței de test (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe
   07.12), din `6da7d74`; încercat acolo, în Edge fără fereastră: logoul owner-ului, 48 de contururi, piesa pe foaie, 0 erori.
   Suita unitară pe codul final: 8619 teste, 8611 trecute, 0 picate, 8 sărite. Neunit în `main` (decizia owner-ului).
+
+## 2026-11-07 — Felia 25.2↑ pornită: trasarea pe culori (ADR 0221, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.2↑” (owner-ul, la „Pornesc felia 25.2↑ (culorile)?”, după raportul feliei 25.1↑).
+**Started:** 07.11, 19:11. **Completed:** 07.11, 19:25 (cercetarea, ADR-ul și schița; codul lui 25.2↑ așteaptă răspunsurile).
+
+- **De ce întâi propunerea:** ADR 0220 (§12) hotărâse doar conturul feliei; interfața culorilor (pastilele, legarea) e o
+  decizie de aspect, deci schița vine înaintea codului (regula din 02.11), ca la 25.1↑.
+- **Cercetarea:** ArtCAM 2018 și Carveco (reducerea culorilor cu un glisor, legarea prin tragerea unei pastile peste alta,
+  legăturile șterse la o reducere nouă), Inkscape (culorile trasate separat lasă goluri; cu „Stack”, se suprapun), vtracer
+  (în 0.6, „cutout” cu cusături; mozaicul fără cusături doar în 1.0 alfa); OKLab (Ottosson, 2020), k-means++ (Arthur și
+  Vassilvitskii, 2007), plasa duală (Surface Nets, Gibson, 1998).
+- **Măsurat** (sonda `.tmp/dbg-culori.ts`, Node 26): logoul owner-ului are 3 culori naturale în OKLab, pe cei 25 203 pixeli
+  plini: albastru `#07609c` 22 %, gri închis `#353c45` 61 %, gri deschis `#4e5560` 17 % (cel puțin 0,095 între centre); la 4,
+  o lumină de 1,8 % se desparte la 0,055, deci regula „Automat” (0,08 și 1 %) se oprește la 3. Pe 12 Mpx: 8 culori în 260 ms.
+- **ADR 0221 (propus):** sursa „Culorile” în fereastra trasării; reducerea pe pixelii plini (fără amestecurile de pe
+  margini); numărul automat sau 2–16; pastilele cu ponderea, bifa și legarea; granițele comune la amestecul de 50 %, pe o
+  plasă duală a etichetelor, netezite o dată pentru ambele culori; o piesă pe culoare, aliniate; probele (corpusul pe culori,
+  logoul față de alb-negru și față de scikit-image, e2e, otrăvurile); ~+5–7 kB. Cinci întrebări, cu recomandarea întâi.
+- **Schița:** <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (sursa: `.tmp/schita-0221-culori.html`): macheta vie a
+  ferestrei pe culori (reducerea rulează în pagină, legarea prin tragere, fundalul unei imagini opace), drumul unei imagini
+  color, de ce granițe comune (separat, suprapuse, comune; plasa duală pe o grilă), ce fac alte programe, probele și
+  pachetul, întrebările cu formularul (`raspunsuri/owner`). Privită o dată (lat și telefon, ambele teme, fără erori).
+- Fără cod; nimic unit în `main`.
