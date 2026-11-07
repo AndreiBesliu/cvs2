@@ -360,7 +360,7 @@ test('fundul plat cu Ø6 și Ø2: în colț, materialul lăsat față de anvelop
 
 // ── Ușa v17 ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (câmpurile necunoscute rămân); un v16 cu el nu e valid; un v16 curat urcă (prin v17, v18) la v19', () => {
+test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (câmpurile necunoscute rămân); un v16 cu el nu e valid; un v16 curat urcă (prin v17–v19) la v20', () => {
   const d = deschis(doc([DR80], [buz(['a'], { rest: [{ ...R(2, 3), nota: 'n' }] })]));
   assert.equal((d.piese[0]!.operatii[0]!.rest?.[0] as Record<string, unknown>)['nota'], 'n');
   for (const rau of [[], 'T2', [{}], [{ scula: F(2, 3) }], [{ pasLateral: 1 }], [{ scula: F(2, 3), pasLateral: 0 }], [{ scula: F(2, 3), pasLateral: 51 }],
@@ -376,7 +376,7 @@ test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (c�
   const curat = doc([DR80], [buz(['a'], { rest: undefined })], 16);
   const c = incarca(JSON.parse(JSON.stringify(curat)));
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 19 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 20 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

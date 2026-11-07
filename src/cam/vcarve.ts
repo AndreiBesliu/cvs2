@@ -53,6 +53,12 @@ export type ParametriVcarve = {
   readonly diametruScula: number;
   /** Adâncimea maximă (D), în mm. */
   readonly adancime: number;
+  /**
+   * Adâncimea de start (ADR 0170 §3, dopul incrustației), în mm, în [0, D): regiunea se sapă ca și cum fața ar fi cu S mai
+   * jos, la −min(D, S + d·cot(θ/2)); conul atinge conturul la −S și taie, dincolo de el, panta până la față. 0 / lipsă = de la
+   * față (ca până acum).
+   */
+  readonly adancimeStart?: number;
   readonly pas: number;
   readonly avans: number;
   readonly avansPlonjare: number;
@@ -300,6 +306,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   if (!(p.unghi > 0 && p.unghi < 180)) return { ok: false, motiv: `unghiul frezei în V trebuie să fie în (0°, 180°) (${p.unghi}°)` };
   if (!(p.adancime > 0)) return { ok: false, motiv: `adâncimea maximă trebuie să fie pozitivă (${p.adancime} mm)` };
   if (!(p.pas > 0)) return { ok: false, motiv: `pasul pe trecere trebuie să fie pozitiv (${p.pas} mm)` };
+  const S = p.adancimeStart ?? 0;
+  if (!(S >= 0 && S < p.adancime)) return { ok: false, motiv: `adâncimea de start, de ${S} mm, trebuie să fie în [0, ${p.adancime}) (sub adâncimea maximă)` };
   if (p.contururi.length === 0 || p.contururi.some((c) => !c.inchis)) return { ok: false, motiv: 'V-carve-ul cere contururi închise' };
   const varf = p.varf ?? 0, a = varf / 2;
   if (!(varf >= 0 && varf < p.diametruScula)) return { ok: false, motiv: `vârful frezei în V, de ${varf} mm, trebuie să fie în [0, Ø${p.diametruScula})` };
@@ -321,8 +329,9 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   /** Raza celei mai mici freze drepte a fundului: până la ea, frezele drepte au scos deschiderea fundului cu discul ei. */
   const Rmin = p.fundPlat ? (p.fundPlat.rest?.at(-1)?.diametru ?? p.fundPlat.diametru) / 2 : 0;
   const tan = Math.tan((p.unghi * Math.PI) / 360), cot = 1 / tan;
-  // wP: peretele la −D (de la contur); wD: centrul frezei acolo (cu vârful plat, cu a mai departe).
-  const D = p.adancime, wP = D * tan, wD = a + wP;
+  // wP: peretele la −D (de la contur); wD: centrul frezei acolo (cu vârful plat, cu a mai departe). Cu adâncimea de start
+  // (ADR 0170), conul atinge conturul la −S, deci peretele de la −D stă la (D − S)·tan(θ/2) de el.
+  const D = p.adancime, wP = (D - S) * tan, wD = a + wP;
   const index: IndexContur = indexContururi(p.contururi);
   let graf;
   try {
@@ -348,7 +357,7 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   // frezele drepte au scos-o deja la −D. Cu
   // vârful plat, z ≥ 0 unde r ≤ a: bucățile acelea le scoate prima trecere (doar sub nivelul de dinainte, adică sub 0).
   const axa: P3[][] = (cuFreza ? ramuri.flatMap((pts) => sub(pts, wP + MARJA_FUND + Rmin)) : ramuri)
-    .map((pts) => cuTreceri(pts, wD).map((q) => [q[0], q[1], -Math.min(D, (q[2] - a) * cot)] as const));
+    .map((pts) => cuTreceri(pts, wD).map((q) => [q[0], q[1], -Math.min(D, S + (q[2] - a) * cot)] as const));
   // Peretele unde regiunea e mai lată decât freza la D: inelele regiunii decalate cu wD, la −D.
   const inele: Contur[] = [];
   const avertismente: string[] = [];
@@ -368,7 +377,7 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
     avertismente.push(`regiunea nu e nicăieri mai lată decât freza în V la ${D} mm (${(2 * wD).toFixed(3)} mm): n-are fund plat, deci freza dreaptă nu se montează`);
   }
   if (!(razaMax > a)) return { ok: false, motiv: `regiunea nu e nicăieri mai lată decât vârful frezei (${varf} mm): freza n-are unde coborî` };
-  const adancimeMax = Math.min(D, (razaMax - a) * cot);
+  const adancimeMax = Math.min(D, S + (razaMax - a) * cot);
   // Aceeași înălțime ca rolul V-carve din panou, care nu cere mai mult (ADR 0112).
   const con = inaltimeConV(p.diametruScula, p.unghi, varf);
   if (adancimeMax > con + 1e-9) {
@@ -387,7 +396,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   if (cuFreza && p.fundPlat) {
     const f = p.fundPlat;
     for (const nivel of niveluri) {
-      const w = nivel * tan + MARJA_FUND;
+      // Cu adâncimea de start, peretele la −nivel stă la (nivel − S)·tan(θ/2) de contur; deasupra lui S, nicăieri în regiune.
+      const w = Math.max(0, nivel - S) * tan + MARJA_FUND;
       for (const g of grupe) {
         const o = offsetDepartat(g, w);
         if (!o.ok) {

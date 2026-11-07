@@ -11,7 +11,7 @@ import type { RolPersonal } from '../model/rolPersonal.ts';
 import type { Transformare } from '../model/transformare.ts';
 // Doar tipul: piesa textului o face modulul textului, adus la cerere de panoul lui (ADR 0105 §5).
 import type { RezultatPiesaText } from '../text/piesaText.ts';
-import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
+import { anuleaza, executa, reface, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
 import type { Actiune } from './actiuni.ts';
 
 /**
@@ -42,6 +42,13 @@ export type CerereText =
  * aceleași id-uri) și instanțele de șters. Se aplică într-un singur pas doar dacă documentul e încă `doc`.
  */
 export type ReparatieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[]; readonly sterse: readonly string[] };
+
+/**
+ * Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), calculată de workerul CAM pe documentul `doc`: instanțele tăiate, fiecare cu
+ * părțile care îi iau locul (comanda `degrupeaza`), și instanțele noi, de ales după tăiere. Se aplică într-un pas doar dacă
+ * documentul e încă `doc`.
+ */
+export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[] };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;
@@ -100,6 +107,8 @@ export type ContextDocument = {
   readonly textNou?: () => CerereText;
   /** Reparația din panoul verificării vectorilor (ADR 0124 §10), calculată de worker. */
   readonly reparatie?: () => ReparatieCalculata;
+  /** Tăierea din panoul Taie (ADR 0180), calculată de worker. */
+  readonly taiere?: () => TaiereCalculata;
 };
 
 /**
@@ -503,6 +512,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.text', 'actiune.text', (ctx) => (ctx.textNou ? true : 'motiv.nimic-ales')),
   // Verificarea vectorilor (ADR 0124 §10): o reparație din panoul ei, calculată de worker, într-un pas.
   laCerere('document.repara', 'actiune.repara', (ctx) => (ctx.reparatie ? true : 'motiv.nimic-ales')),
+  // Tăierea și conversia vectorilor (ADR 0180): o tăiere din panoul Taie, calculată de worker, într-un pas.
+  laCerere('document.taie', 'actiune.taie', (ctx) => (ctx.taiere ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

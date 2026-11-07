@@ -1090,6 +1090,18 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Între telefon și 75rem, extensia trece pe două rânduri când nu mai încape (la 1024 px are ~1 120 px): altfel ultimele
+ * secțiuni (Verifică vectorii, 3D) ieșeau din fereastră, fără niciun mod de a ajunge la ele (felia 10.3↑, ADR 0180).
+ * Telefonul își păstrează aranjamentul lui (ADR 0132 §10).
+ */
+@media (min-width: 40.0625rem) and (max-width: 75rem) {
+  .extensie {
+    flex-wrap: wrap;
+    max-width: calc(100% - var(--r-3));
+  }
+}
+
+/*
  * Sub 95rem, „Caută o comandă” rămâne doar cu iconița (numele îl păstrează cititorul de ecran, scurtătura o spune sfatul):
  * bara de acțiuni, centrată pe fereastră, nu mai încape altfel între marcă și unelte (la 1280 px, 62 px peste „Exportă”).
  */
@@ -1381,6 +1393,22 @@ nav button[aria-pressed='true'] {
   max-width: 3.25rem;
 }
 
+/* Incrustația (ADR 0170 §5): jocurile și marginea dopului pe rândul lor, nota sub ele, pe toată lățimea. */
+.dialog .campuri-incrustatie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  flex-basis: 100%;
+}
+
+.dialog .nota-incrustatie {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
 /* Freza rândului (ADR 0084): numărul sculei și diametrul, alăturate; T are cel mult trei cifre. */
 .dialog td.freza {
   white-space: nowrap;
@@ -1467,7 +1495,8 @@ nav button[aria-pressed='true'] {
   background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
 }
 
-[data-testid='export-stare'] {
+[data-testid='export-stare'],
+[data-testid='export-dopuri'] {
   overflow-wrap: anywhere;
   font-size: var(--fs-2);
 }

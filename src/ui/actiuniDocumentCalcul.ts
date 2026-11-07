@@ -23,6 +23,7 @@ import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
   comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type FormaNoua, type ReparatieCalculata,
+  type TaiereCalculata,
 } from './actiuniDocument.ts';
 
 /**
@@ -520,6 +521,26 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (sel.some((id) => sterse.has(id))) ctx.selecteaza(sel.filter((id) => !sterse.has(id)));
     },
   },
+  // Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑): calculată de worker pe documentul de atunci, într-un pas (comanda
+  // degrupării); alese rămân părțile noi.
+  'document.taie': {
+    activa: (ctx) => {
+      if (!ctx.taiere) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaTaiere(ctx.istoric(), ctx.taiere());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.taiere) return;
+      const h = ctx.istoric();
+      const t = ctx.taiere();
+      const r = comandaTaiere(h, t);
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza(t.ids);
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -729,6 +750,34 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
   const dupa = executa(h, comanda).doc;
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
   return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.verificare.motiv.schema' };
+}
+
+/**
+ * Comanda unei tăieri (ADR 0180, felia 10.3↑): instanțele tăiate, fiecare înlocuită de părțile ei (comanda `degrupeaza`, ADR
+ * 0103 §5), într-un singur pas. Refuzată, cu motiv: documentul nu mai e cel pe care s-a calculat tăierea, nimic de tăiat,
+ * documentul de după peste plafoane sau refuzat de schemele lui. Ținută pe (document, tăiere), ca reparația.
+ */
+type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
+let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly rez: ComandaTaiere } | null = null;
+export function comandaTaiere(h: Istoric, t: TaiereCalculata): ComandaTaiere {
+  if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t) return ultimaTaiere.rez;
+  const rez = judecaTaierea(h, t);
+  ultimaTaiere = { doc: h.doc, t, rez };
+  return rez;
+}
+
+function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
+  if (t.doc !== h.doc) return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+  if (t.degrupate.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const comanda: Comanda = { tip: 'degrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: t.degrupate };
+  let dupa: Document;
+  try {
+    dupa = executa(h, comanda).doc;
+  } catch {
+    return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+  }
+  if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.taiere.motiv.schema' };
 }
 
 /**
