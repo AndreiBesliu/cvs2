@@ -164,6 +164,26 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
   extensia barei; panoul are câte un bloc pentru Arce, În cerc și În dreptunghi, fiecare cu toleranța și butonul lui.
   Rezultatul, sub blocuri, e adus în vedere la fiecare schimbare (panoul se derulează; la fel în panoul Taie).
 
+**Felia 10.3↑e, la cod** (07.11):
+- **Netezește (§9):** șirurile de linii scurte (cel mult „Păstrează”, implicit 5 mm, pe foaie) devin cubice potrivite direct
+  pe punctele lor (Schneider: cele mai mici pătrate cu tangentele capetelor date, reparametrizarea Newton, împărțirea în
+  punctul cel mai depărtat, cu tangenta comună, deci netedă), nu simplificate întâi. O cubică se primește doar dacă abaterea
+  Hausdorff față de bucata ei de șir (nodurile și laturile, în ambele sensuri) încape în toleranță; o latură singură care nu
+  încape rămâne linie.
+- **Colțurile ascuțite:** un vârf în care drumul se întoarce cu **peste 60°** (la Arce, 30°), măsurat pe **4 × toleranța** de
+  fiecare parte. Treptele mai mici decât atât nu sunt colțuri: o trasare în trepte se netezește la o toleranță cât treapta (la
+  0,01 rămâne). De ce 60°: la capătul unui platou, treptele se întorc cu 37–45° pe scara toleranței, iar cu 30° fiecare platou
+  lăsa o frântură; pătratul și triunghiul își păstrează colțurile. La mai puțin de 4 × toleranța de capătul unui șir,
+  întoarcerea nu se judecă (coarda ar fi trunchiată și ar măsura treapta).
+- **Ce rămâne:** liniile lungi, arcele și curbele (legătura cu ele e netedă, cu tangenta lor, dacă nu e colț); un șir drept
+  (punctele pe coarda lui) rămâne linii; pe o cale închisă, vârful 0 rămâne vârf, cu tangenta netedă (de el ține intrarea
+  frezei); fiecare contur separat (o literă cu găuri nu se sudează).
+- **În lume:** colțurile, lungimile și abaterea se măsoară pe foaie; mânerele se duc înapoi cu inversa matricei (o cubică
+  rămâne cubică sub orice matrice afină), deci și un element întins neuniform se netezește; capetele bucăților rămân vârfurile
+  vechi, la bit.
+- Măsurarea Hausdorff, comună conversiei și netezirii, stă în `src/model/abatereContur.ts`. Panoul: blocul Netezește, al
+  doilea, ca în schiță (toleranța 0,01, „Păstrează liniile mai lungi de” 5).
+
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
 

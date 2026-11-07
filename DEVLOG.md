@@ -6433,3 +6433,24 @@ sesiunea principală, care a pornit linia).
   la plafonul de 70 % (537,6 px), derulat; „În cerc, doar dacă e”: „Forme convertite: 1; abaterea cea mai mare: 0,06 mm. Nu sunt
   cercuri, la toleranța dată: 3. Cea mai mică abatere a lor: 0,414 mm.” (√2 − 1, pe hârtie); „cu diametrul 8”: toate patru,
   cercuri Ø8; rândul rezultatului întreg în panou; în fereastra exportului, rândul primește „găurire”; nicio eroare în consolă.
+
+## 2026-11-07 — Felia 10.3↑e: netezirea (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑e”.
+**Started:** 07.11, 19:09. **Completed:** 07.11, 21:05.
+
+- **Înainte:** `origin/main` (`63d6af5`, biblioteca extensiilor, 3.Xg) unit în ramură (`ab7af98`) înaintea commit-ului de cod,
+  cum a cerut sesiunea principală; modificările necomise ale manualului, singurele atinse de unire, puse deoparte ca patch și
+  aplicate la loc. `main`-ul local avea și unirea raportărilor (15.B↑b), încă neîmpinsă: n-am adus-o, ca să n-o public eu.
+- **Codul:** `src/model/netezire.ts` (`netezesteCale`): lanțurile de linii scurte (în lume), colțurile peste 60° pe
+  4 × toleranța (nejudecate la mai puțin de atât de capătul unui șir), potrivirea Schneider cu verificarea Hausdorff a fiecărei
+  cubice, legăturile netede cu liniile lungi, arcele și curbele păstrate, vârful 0 al căii închise păstrat, șirurile drepte
+  lăsate linii, mânerele duse înapoi cu inversa matricei. Cererea `netezire` a conversiei (cu „Păstrează”, refuzul `valoare`),
+  fără conturul în lume. Hausdorff-ul comun mutat în `src/model/abatereContur.ts`. Panoul: blocul Netezește, al doilea, ca în
+  schiță; manualul, ambele limbi; eticheta butonului Convertește numește și netezirea.
+- **Probele:** 12 pe hârtie, oracolul extins (`judecaNetezirea`) pe 56 de neteziri din sămânță, cu martorul lui; oracolul
+  cu margini inferioare ieftine în `distantaLaForme` (316 s → 18 s); 1 e2e nou.
+- **Porțile:** traducerile (651 / 0 la unire), compilatoarele, importurile, licențele; unit 8 646 (8 638 / 0 căderi / 8 sărite) pe starea unită cu 10.3↑e; build-ul determinist (277 de fișiere identice); e2e: întâi doar 140 / 370, sub încărcarea altor sesiuni (procesorul la 90 %, 66 de procese Edge; pagina nu se încărca în 30 s, cu 16 lucrători), apoi întreg 370 / 370 cu 3 lucrători; conversia, tăierea și manualul 13 / 13; emulatoarele: funcțiile 81 / 81 pe `59df9da`; e2e-ul lor (21) după, cât 4173 e al altei sesiuni.
+- **Otrăvurile** (`test/otravuri/10.3e.py`): 18; prima rulare (`36aba1c`): 17 prinse; N03 (întoarcerea judecată și cu coarda trunchiată, la capătul șirului) a scăpat, fiindcă la pragul de 60° treptele cu panta 1 se întorc la prima treaptă doar cu 45°; prinsă pe `59df9da` după o probă nouă (treptele unui sinus cu panta până la 2, unde coarda trunchiată ar măsura ~72°), deci 18 / 18. V10 din `10.3d.py`, mutată pe `abatereContur.ts`, prinsă și ea.
+- **Față de `ab7af98` (unirea fără 10.3↑e): workerul CAM +2,39 kB, panoul +0,18, deci totalul +2,5 kB, la 531,2 / 550; pornirea 101,6 (cu ușa 105,1 / 110 kB), neschimbată. Linia, toată: ~18,5 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6, 10.3↑d +4,9, 10.3↑e +2,5), peste ghidul de ~10 kB din brief.**
+

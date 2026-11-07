@@ -509,6 +509,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   colțului din colțurile lipsă; un cerc nu e dreptunghi, o fantă da. Elementul își păstrează id-ul și operațiile (găurirea
   refuză dreptunghiul). Oracolul are `judecaConversia`, `hausdorff`, `cutieForma`, `cerculFormei`, `dreptunghiulFormei`
   (`conversie.oracol.test.ts`).
+  **Netezirea (felia 10.3↑e)** gata pe 07.11: `src/model/netezire.ts` (`netezesteCale`, cererea `netezire` a conversiei,
+  cu „Păstrează”), blocul Netezește din panoul Convertește. Șirurile de linii scurte devin cubice Schneider, fiecare
+  verificată cu Hausdorff; **colțurile: peste 60° pe 4 × toleranța** (la Arce, 30°), nejudecate la mai puțin de atât de
+  capătul unui șir; un șir drept rămâne linii; vârful 0 al căii închise rămâne; totul în lume, mânerele duse înapoi cu
+  inversa. Hausdorff-ul comun: `src/model/abatereContur.ts`. Oracolul are `judecaNetezirea`
+  (`conversie.netezire.oracol.test.ts`), cu margini inferioare ieftine în `distantaLaForme` (de 7–10 ori mai repede).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
