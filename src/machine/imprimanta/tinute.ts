@@ -64,7 +64,11 @@ export const scrieImprimante = (l: readonly ImprimantaTinuta[]): string => JSON.
   imprimante: l.map(({ adresa, port, model, nume, folosita }) => ({ adresa, port, model, nume, folosita })),
 });
 
-/** O imprimantă legată: intră prima în listă (sau își ia locul acolo, cu ce a spus acum), iar lista rămâne de cel mult 8. */
+/**
+ * O imprimantă legată: intră prima în listă (sau își ia locul acolo, cu ce a spus acum), iar lista rămâne de cel mult 8. Una cu
+ * același nume la altă adresă e aceeași imprimantă, cu IP-ul schimbat (numele K1 poartă sfârșitul MAC-ului, „K1C-8578”): intrarea
+ * veche iese.
+ */
 export function tineImprimanta(
   l: readonly ImprimantaTinuta[],
   c: { readonly adresa: string; readonly port: number; readonly model: string | null; readonly nume: string | null },
@@ -72,11 +76,12 @@ export function tineImprimanta(
 ): readonly ImprimantaTinuta[] {
   const id = idImprimanta(c.adresa, c.port);
   const veche = l.find((x) => x.id === id);
+  const nume = c.nume ?? veche?.nume ?? null;
   const noua: ImprimantaTinuta = {
-    id, adresa: c.adresa.trim(), port: c.port, model: c.model ?? veche?.model ?? null, nume: c.nume ?? veche?.nume ?? null,
+    id, adresa: c.adresa.trim(), port: c.port, model: c.model ?? veche?.model ?? null, nume,
     folosita: Math.max(acum, ...l.map((x) => x.folosita + 1)),
   };
-  return [noua, ...l.filter((x) => x.id !== id)].slice(0, MAX_IMPRIMANTE);
+  return [noua, ...l.filter((x) => x.id !== id && (nume === null || x.nume !== nume))].slice(0, MAX_IMPRIMANTE);
 }
 
 export const uitaImprimanta = (l: readonly ImprimantaTinuta[], id: string): readonly ImprimantaTinuta[] => l.filter((x) => x.id !== id);
@@ -163,10 +168,12 @@ export function sondeazaImprimanta(adresa: AdresaRetea, opt: OptiuniSondaImprima
 /**
  * Căutarea în toată rețeaua (la clic): portul 9999 pe toate gazdele rețelelor date, `CONCURENTA_RETEA` deodată; prima
  * imprimantă găsită oprește restul. Cu permisiunea rețelei locale încă neîntrebată, prima gazdă merge singură, cât omul
- * răspunde la întrebarea browserului. `laProgres` primește câte gazde s-au terminat, din câte.
+ * răspunde la întrebarea browserului. `laProgres` primește câte gazde s-au terminat, din câte. Cu `nume`, doar imprimanta cu
+ * numele acela (una legată, cu IP-ul schimbat: 3.6i, imprimanta owner-ului și-a schimbat adresa de două ori într-o zi).
  */
 export async function cautaInRetea(retele: readonly string[], opt: OptiuniSondaImprimanta & {
   readonly laProgres?: (terminate: number, total: number) => void;
+  readonly nume?: string;
 } = {}): Promise<Gasita | null> {
   const gazde = retele.flatMap((r) => Array.from({ length: 254 }, (_, k) => `${r}.${k + 1}`));
   const total = gazde.length;
@@ -174,7 +181,7 @@ export async function cautaInRetea(retele: readonly string[], opt: OptiuniSondaI
     const a = adresaRetea(gazde[i] ?? '', PORT_CREALITY);
     if (!a.ok) return null;
     const r = await sondeazaImprimanta(a.adresa, { ...opt, semnal });
-    return r.ok ? r.gasita : null;
+    return r.ok && (opt.nume === undefined || r.gasita.nume === opt.nume) ? r.gasita : null;
   };
   const p = await (opt.permisiune ?? permisiuneRetea)().catch(() => null);
   let inceput = 0;

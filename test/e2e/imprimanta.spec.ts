@@ -310,3 +310,29 @@ test('K1C 2025 (după transcrierea owner-ului): fără bătăi ale inimii, lista
   await expect(lista).toContainText('cub_mic.gcode');
   expect(comenziSet(imp)).toEqual([]);
 });
+
+test('IP-ul schimbat (ca imprimanta owner-ului la o pornire de pe ecran): legătura tace, paza o pierde după 20 s, căutarea după nume o găsește la noua adresă și o ține acolo', async ({ page }) => {
+  test.setTimeout(150_000);
+  const veche = await porneste({ fel: 'k1c-2025' });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  // Legătura veche tace, fără închidere, iar la R.5 nu mai răspunde nimic; aceeași imprimantă (același nume) e acum la R.77.
+  veche.taci();
+  const noua = await porneste({ fel: 'k1c-2025', gazda: IP_GASIT, imprima: { fisier: 'output_11031835.gcode', progres: 6 } });
+  await expect(stare(page)).toHaveText('Legătura s-a pierdut', { timeout: 30_000 });
+  await expect(page.getByTestId('imprimanta-stare')).toHaveText('Imprimă', { timeout: 100_000 });
+  await expect(page.getByTestId('imprimanta-banda')).toContainText(`${IP_GASIT} · prin WiFi`);
+  // Lista ținută: doar noua adresă (aceeași imprimantă, după nume).
+  const tinute = await page.evaluate(() => JSON.parse(localStorage.getItem('cncvs2.imprimanta.retea') ?? 'null') as { imprimante: { adresa: string; nume: string }[] });
+  expect(tinute.imprimante.map((x) => [x.adresa, x.nume])).toEqual([[IP_GASIT, 'K1C-8578']]);
+  // Jurnalul spune ce s-a întâmplat: tăcerea, căutarea, noua adresă; bucățile fără nimic nou stau doar în copie.
+  const jurnal = page.getByTestId('imprimanta-jurnal');
+  await expect(jurnal).toContainText('· silence 20 s');
+  await expect(jurnal).toContainText('· search K1C-8578');
+  await expect(jurnal).toContainText(`· found K1C-8578 at ws://${IP_GASIT}:9999/`);
+  await expect(jurnal).toContainText(`· open ws://${IP_GASIT}:9999/`);
+  await expect(jurnal).not.toContainText('{"maxBedTemp":115}');
+  await expect(page.getByTestId('imprimanta-repaus')).toBeVisible();
+  expect(comenziSet(noua)).toEqual([]);
+});

@@ -199,3 +199,18 @@ test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca 
     [{ nume: 'a:b.gcode', cale: `${DIR_GCODE}a:b.gcode`, timp: null, material: null, marime: 12 }]);
   assert.equal(firmwareDin('printer hw ver:;printer sw ver:;DWIN hw ver:x;DWIN sw ver:V1.0.0.26.20251024S;'), 'V1.0.0.26.20251024S');
 });
+
+test('oprirea pe K1C 2025 (transcrierea owner-ului, 07.11): 1, apoi 0 cu fișierul încă pus, 4, apoi 0 fără fișier', () => {
+  // Cadrele de după `{"stop":1}`, ca în transcriere (numele fișierului, anonimizat).
+  const f = `${DIR_GCODE}proba_PLA_16m2s.gcode`;
+  let i = aplica(IMPRIMANTA_NECUNOSCUTA, citesteCadru(JSON.stringify({ state: 1, printFileName: f, printProgress: 0, printLeftTime: 962, deviceState: 1 })).stare);
+  assert.equal(stareLucrare(i), 'imprima');
+  const pasi: StareLucrare[] = [];
+  for (const c of [
+    '{"autohome":"X:1 Y:0 Z:0","bedTemp0":"34.000000","printId":"","printLeftTime":0,"state":0,"targetBedTemp0":0,"targetNozzleTemp":0,"maxBedTemp":115}',
+    '{"curPosition":"X:218 Y:110 Z:05","deviceState":0,"nozzleTemp":"132.000000","state":4,"maxBedTemp":115}',
+    '{"autohome":"X:0 Y:0 Z:0","nozzleTemp":"130.000000","printFileName":"","state":0,"maxBedTemp":115}',
+  ]) { i = aplica(i, citesteCadru(c).stare); pasi.push(stareLucrare(i)); }
+  // „pregătire” cu oprirea cerută din fereastră se arată „Se oprește”; apoi „Oprită”, apoi „Liberă”.
+  assert.deepEqual(pasi, ['pregatire', 'oprita', 'libera']);
+});

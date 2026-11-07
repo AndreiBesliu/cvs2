@@ -273,7 +273,20 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
   și aceeași mărime, cu motivul nou `marime` când diferă), firmware-ul din `DWIN sw ver` când `printer sw ver` e gol. Imprimanta
   falsă are felul `k1c-2025` (fără bătăi ale inimii, lista ca text, istoricul, filmele), cu proba ei e2e; transcrierea, rejucată
   pe hârtie (`imprimanta.creality.test.ts`).
-- **Rămâne (pasul 2, pe imprimantă):** trimiterea unui cub feliat pentru K1C (urcarea pe 80 de pe pagina aplicației), pornirea,
+- **Pasul 2 (17:36–17:43, a doua transcriere):** owner-ul a trimis un fișier din aplicația Creality, iar fereastra l-a văzut
+  pornind: **imprimanta trimite tuturor celor legați** (răspunsurile cerute de alt client, lista cu fișierul nou, întâi cu mărimea
+  parțială, 1 023 de octeți, apoi întreagă, ceea ce confirmă verificarea după mărime, starea 9 → 1, `printId`, `deviceState`,
+  `curPosition`, `usedMaterialLength`, plus un cadru `objects` cu conturul piesei pe pat, al lui `exclude_object`). **Oprește din
+  fereastră a mers:** `{"stop":1}`, apoi stările 0 (cu fișierul încă pus) → 4 → 0 fără fișier („Se oprește”, „Oprită”,
+  „Liberă”). La **o pornire de pe ecran** („reprint”), imprimanta și-a refăcut WiFi-ul **cu alt IP (.10 → .7)**: legătura veche
+  a murit fără să se închidă, iar fereastra a rămas pe ultima stare; owner-ul a găsit-o cu „Caută în toată rețeaua”. `layer`
+  sare între două numărători (8, 3, 4, 10, 5), de lămurit. **Reparat:** paza de tăcere (`TIMP_TACERE_MS`, 20 s: o legătură
+  care tace e pierdută și se reface), căutarea după nume după o reîncercare căzută (`cautaInRetea` cu `nume`; lista ținută se
+  mută la noua adresă, fiindcă o imprimantă cu același nume la altă adresă ia locul intrării vechi), evenimentele legăturii în
+  jurnal (`open`, `closed <cod>`, `failed <motiv>`, `silence`, `search`, `found`), bucățile fără nimic nou ascunse de pe
+  ecran (numărate, în copie). Imprimanta falsă are `taci()` (legătura tace, adresa nu mai primește), cu proba e2e a IP-ului
+  schimbat.
+- **Rămâne (pasul 3, pe imprimantă):** trimiterea unui cub feliat pentru K1C (urcarea pe 80 de pe pagina aplicației), pornirea,
   pauza și reluarea, oprirea, jurnalul copiat; marginile patului, dintr-un fișier feliat pentru K1C.
 
 ## Întrebările (owner)

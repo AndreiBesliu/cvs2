@@ -1097,7 +1097,9 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   differs), with
   **Try again**.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
-  and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen.
+  and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen. A
+  printer silent for more than 20 s counts as lost (a connection can die without closing), and one that no longer answers at
+  its address is looked for on the network by name (for example “K1C-8578”) and kept at its new address.
 - **The frame log** shows what the window sent and what it received; **Copy the log** puts it on the clipboard, for a report.
 - On its own, the window only reads the status and tells the printer it is there; every command comes from your click. Port
   9999 has no password: anyone on the workshop network can command the printer, so keep it on a network of your own.

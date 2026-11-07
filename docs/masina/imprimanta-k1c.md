@@ -67,6 +67,10 @@ nume.
   adresei → setările site-ului → **Acces la rețeaua locală** → Permite, apoi Conectează din nou.
 - **„La … răspunde ceva, dar nu ca o imprimantă Creality”**: pe portul 9999 al adresei aceleia stă altceva.
 - **Legătura se pierde des:** semnalul WiFi la imprimantă. Imprimanta continuă oricum; fereastra se leagă singură din nou.
+- **Fereastra rămâne pe aceeași stare sau spune „Legătura s-a pierdut” după o pornire de pe ecran:** la tine, pe 07.11,
+  imprimanta și-a refăcut WiFi-ul la o pornire de pe ecran și și-a luat alt IP (.10, apoi .7), iar legătura veche a murit fără
+  să se închidă. Acum fereastra observă tăcerea după 20 s și caută singură imprimanta în rețea, după numele ei. Ca să nu se
+  mai întâmple deloc, **rezervă-i adresa în router** (pasul 1).
 - **„Fișierul n-a plecat”**: imprimanta nu răspunde pe portul 80 sau browserul a oprit cererea. Dacă starea merge (9999), dar
   trimiterea nu, trimite-mi textul jurnalului și ce scrie în consola browserului (F12 → Console): e unul din lucrurile
   nemăsurate încă (de mai jos).

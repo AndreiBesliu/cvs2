@@ -19,7 +19,7 @@ import {
   numeDin, PORT_CREALITY, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua, stareLucrare, type FisierImprimanta, type StareLucrare,
 } from '../machine/imprimanta/creality.ts';
 import { analizeazaFisier, patPentru, type AnalizaGcode } from '../machine/imprimanta/gcode3d.ts';
-import { SesiuneImprimanta, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
+import { SesiuneImprimanta, type LinieJurnal, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, CHEIE_IMPRIMANTE, citesteImprimante, reteleDeCautat, scrieImprimante, tineImprimanta, uitaImprimanta, type ImprimantaTinuta,
 } from '../machine/imprimanta/tinute.ts';
@@ -221,6 +221,29 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
   const [ales, setAles] = useState<{ readonly f: File; readonly k: number } | null>(null);
   const intrare = useRef<HTMLInputElement | null>(null);
   const alege = (): void => { intrare.current?.click(); };
+  // IP-ul schimbat (3.6i: imprimanta owner-ului și-a luat altă adresă la o pornire de pe ecran): după o reîncercare căzută, o
+  // caută o dată în rețea, după numele ei, și se leagă acolo; lista ținută o mută la noua adresă (`tineImprimanta`).
+  const cautare = useRef<AbortController | null>(null);
+  const [cautNume, setCautNume] = useState<string | null>(null);
+  const deCautat = st.legatura === 'pierduta' && st.incercari >= 1 && i.nume !== null && st.adresa !== null;
+  useEffect(() => {
+    const nume = i.nume;
+    const veche = st.adresa;
+    if (!deCautat || cautare.current !== null || nume === null || veche === null) return;
+    const c = new AbortController();
+    cautare.current = c;
+    setCautNume(nume);
+    sesiune.noteaza(`search ${nume}`);
+    void cautaInRetea(reteleDeCautat([veche.gazda]), { semnal: c.signal, nume }).then((g) => {
+      if (c.signal.aborted) return;
+      setCautNume(null);
+      if (g === null || g.adresa.url === veche.url) return;
+      sesiune.noteaza(`found ${nume} at ${g.adresa.url}`);
+      void sesiune.conecteaza(g.adresa);
+    });
+  }, [deCautat]);
+  useEffect(() => { if (st.legatura !== 'pierduta') { cautare.current?.abort(); cautare.current = null; setCautNume(null); } }, [st.legatura]);
+  useEffect(() => () => { cautare.current?.abort(); }, []);
   const numeImprimanta = i.nume ?? i.model ?? t('imprimanta.tinuta.fara-nume');
   const detalii = [st.adresa ? t('imprimanta.prin-wifi', { adresa: gazdaPort(st.adresa) }) : null, i.firmware ? t('imprimanta.firmware', { versiune: i.firmware }) : null]
     .filter((x): x is string => x !== null).join(' · ');
@@ -249,6 +272,7 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
           <span>{st.pierdutaLa === null ? '' : st.incercari === 0
             ? t('imprimanta.pierduta.cand', { ora: ora(st.pierdutaLa) })
             : t('imprimanta.pierduta.incercari', { ora: ora(st.pierdutaLa), n: st.incercari })}</span>
+          {cautNume !== null && <span data-testid="imprimanta-cauta-nume">{t('imprimanta.pierduta.cauta', { nume: cautNume })}</span>}
         </div>
       )}
       {st.legatura === 'se-leaga' && <p className="imprimanta-nota" role="status" data-testid="imprimanta-reface">{t('imprimanta.reface')}</p>}
@@ -524,7 +548,8 @@ function Jurnal({ st }: { readonly st: StareImprimanta }): ReactNode {
   const [mesaj, setMesaj] = useState<string | null>(null);
   const zona = useRef<HTMLTextAreaElement | null>(null);
   const [arata, setArata] = useState(false);
-  const text = (): string => st.jurnal.map((l) => `${new Date(l.la).toISOString()} ${l.dir === 'trimis' ? '→' : '←'} ${l.text}`).join('\n');
+  const sageata = (d: LinieJurnal['dir']): string => (d === 'trimis' ? '→' : d === 'primit' ? '←' : '·');
+  const text = (): string => st.jurnal.map((l) => `${new Date(l.la).toISOString()} ${sageata(l.dir)} ${l.text}`).join('\n');
   const copiaza = (): void => {
     const tot = text();
     const selecteaza = (): void => {
@@ -538,17 +563,21 @@ function Jurnal({ st }: { readonly st: StareImprimanta }): ReactNode {
   };
   // Pe ecran, fără bătăile inimii și `ok`-urile lor (numărate dedesubt); copia le păstrează, cu ora fiecărui cadru.
   const esteInima = (x: string): boolean => x === 'ok' || x.includes('"heart_beat"');
-  const randuri = st.jurnal.map((l, k) => ({ l, k })).filter((x) => !esteInima(x.l.text));
+  // K1C 2025 n-are bătăi ale inimii, dar trimite la ~3 s o bucată fără nimic nou: tot zgomot, pe ecran (3.6i).
+  const esteRepaus = (x: string): boolean => /^\{"maxBedTemp":\d+\}$/.test(x);
+  const randuri = st.jurnal.map((l, k) => ({ l, k })).filter((x) => !esteInima(x.l.text) && !esteRepaus(x.l.text));
   const ultimele = randuri.slice(-40);
   const inimi = st.jurnal.filter((l) => l.dir === 'primit' && l.text.includes('"heart_beat"')).length;
+  const repaus = st.jurnal.filter((l) => l.dir === 'primit' && esteRepaus(l.text)).length;
   return (
     <section className="imprimanta-card imprimanta-lat" aria-labelledby="imprimanta-jurnal">
       <h3 id="imprimanta-jurnal">{t('imprimanta.jurnal')}</h3>
       <p className="imprimanta-ajutor">{t('imprimanta.jurnal.ajutor')}</p>
       <ol className="imprimanta-jurnal" data-testid="imprimanta-jurnal">
-        {ultimele.map(({ l, k }) => <li key={k} data-dir={l.dir}>{l.dir === 'trimis' ? '→ ' : '← '}{l.text}</li>)}
+        {ultimele.map(({ l, k }) => <li key={k} data-dir={l.dir}>{sageata(l.dir)} {l.text}</li>)}
       </ol>
       {inimi > 0 && <p className="imprimanta-ajutor" data-testid="imprimanta-inimi">{t('imprimanta.jurnal.inimi', { n: inimi })}</p>}
+      {repaus > 0 && <p className="imprimanta-ajutor" data-testid="imprimanta-repaus">{t('imprimanta.jurnal.repaus', { n: repaus })}</p>}
       <div className="imprimanta-butoane">
         <button type="button" data-imprimanta="jurnal-copiaza" disabled={st.jurnal.length === 0} onClick={copiaza}>{t('imprimanta.jurnal.copiaza')}</button>
         {mesaj !== null && <span className="imprimanta-slab" role="status">{mesaj}</span>}

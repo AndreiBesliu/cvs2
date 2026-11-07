@@ -33,5 +33,21 @@ o('W02', UI, 'f.marime === null ? null : marimeText(f.marime)]', 'null]', 'e2e',
 SETURI = {
     'creality': ['test/unit/imprimanta.creality.test.ts'],
     'urcare': ['test/unit/imprimanta.urcare.test.ts'],
+    'sesiune': ['test/unit/imprimanta.sesiune.test.ts'],
+    'tinute': ['test/unit/imprimanta.tinute.test.ts'],
 }
 E2E = ['test/e2e/imprimanta.spec.ts']
+
+# Pasul 2: legătura moartă fără închidere (paza de tăcere), IP-ul schimbat (căutarea după nume), jurnalul.
+SE = 'src/machine/imprimanta/sesiune.ts'
+TI = 'src/machine/imprimanta/tinute.ts'
+o('P01', SE, '      if (raspunde) this.pazeste(ws);\n', '', 'sesiune', 'paza de tăcere nu pornește: o legătură moartă rămâne „legată”')
+o('P02', SE, 'export const TIMP_TACERE_MS = 20_000;', 'export const TIMP_TACERE_MS = 200_000;', 'e2e', 'tăcerea se observă abia după minute')
+o('P03', SE, "      this.adaugaJurnal('stare', `failed ${motiv}`);\n", '', 'sesiune', 'o încercare căzută lipsește din jurnal')
+o('P04', SE, "      this.adaugaJurnal('stare', `closed ${e.code}`);\n", '', 'sesiune', 'închiderea (cu codul) lipsește din jurnal')
+o('P05', SE, "      this.adaugaJurnal('stare', `open ${adresa.url}`);\n", '', 'sesiune', 'adresa la care s-a deschis lipsește din jurnal')
+o('P06', TI, '(nume === null || x.nume !== nume)', 'true', 'tinute', 'aceeași imprimantă, cu IP-ul schimbat, rămâne și la adresa veche')
+o('P07', TI, 'r.ok && (opt.nume === undefined || r.gasita.nume === opt.nume) ? r.gasita : null', 'r.ok ? r.gasita : null', 'tinute',
+  'căutarea după nume se leagă de prima imprimantă găsită, oricare')
+o('W03', UI, 'st.incercari >= 1 && i.nume !== null', 'st.incercari >= 99 && i.nume !== null', 'e2e', 'imprimanta mutată nu e căutată')
+o('W04', UI, ' && !esteRepaus(x.l.text)', '', 'e2e', 'jurnalul de pe ecran, plin de bucăți fără nimic nou')

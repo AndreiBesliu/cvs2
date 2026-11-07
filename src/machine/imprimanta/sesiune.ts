@@ -47,7 +47,8 @@ const fabricaBrowser: FabricaWsText = (url) => new WebSocket(url) as unknown as 
 export type Legatura = 'deconectat' | 'se-leaga' | 'conectat' | 'pierduta';
 /** De ce n-a mers: fără răspuns, permisiunea rețelei locale refuzată, timpul trecut, sau ceva care răspunde, dar nu ca imprimanta. */
 export type MotivImprimanta = 'retea-nedeschis' | 'retea-permisiune' | 'retea-timp' | 'tacut';
-export type LinieJurnal = { readonly dir: 'primit' | 'trimis'; readonly text: string; readonly la: number };
+/** O linie a jurnalului: un cadru primit sau trimis, ori un eveniment al legăturii (`stare`: deschisă, închisă, tăcere…). */
+export type LinieJurnal = { readonly dir: 'primit' | 'trimis' | 'stare'; readonly text: string; readonly la: number };
 
 export type StareImprimanta = {
   readonly legatura: Legatura;
@@ -69,6 +70,12 @@ export const TIMP_PRIMUL_CADRU_MS = 6000;
 export const PAUZE_RECONECTARE_MS: readonly number[] = [1000, 2000, 4000, 8000, 15000, 30000];
 /** Cât de repede după o pornire o închidere e cea așteptată (K1 închide legătura după `opGcodeFile`). */
 export const TIMP_INCHIDERE_DUPA_PORNIRE_MS = 5000;
+/**
+ * Cât poate tăcea o imprimantă legată: K1C 2025 trimite o bucată de stare la ~3 s, K1 bătăile inimii. Mai mult înseamnă o
+ * legătură moartă fără să se fi închis (3.6i: imprimanta owner-ului și-a refăcut WiFi-ul la o pornire de pe ecran, cu alt IP,
+ * iar fereastra a rămas pe ultima stare): se reface, ca la o legătură căzută.
+ */
+export const TIMP_TACERE_MS = 20_000;
 export const MAX_JURNAL = 500;
 /** Un cadru lung (lista fișierelor are ~150 KiB la 200 de fișiere) intră tăiat în jurnal. */
 export const MAX_LINIE_JURNAL = 2000;
@@ -92,6 +99,7 @@ export class SesiuneImprimanta {
   private generatie = 0;
   private ceasuri: unknown[] = [];
   private ceasReconectare: unknown = null;
+  private ceasTacere: unknown = null;
   /** Omul vrea legătura (a apăsat Conectează și nu Deconectează). */
   private dorita = false;
   private pornitLa: number | null = null;
@@ -135,6 +143,9 @@ export class SesiuneImprimanta {
     return true;
   }
 
+  /** Un eveniment al ferestrei în jurnal (căutarea după nume, de exemplu), ca transcrierea să-l arate. */
+  noteaza(text: string): void { this.adaugaJurnal('stare', text); }
+
   /** Cere din nou toată starea și lista fișierelor. */
   reimprospateaza(): boolean {
     return this.trimite(CERERE_STARE) && this.trimite(CERERE_FISIERE);
@@ -174,6 +185,23 @@ export class SesiuneImprimanta {
     this.ceasuri = [];
     if (this.ceasReconectare !== null) this.ceas.clearTimeout(this.ceasReconectare);
     this.ceasReconectare = null;
+    if (this.ceasTacere !== null) this.ceas.clearTimeout(this.ceasTacere);
+    this.ceasTacere = null;
+  }
+
+  /** Paza de tăcere, pornită din nou la fiecare cadru al unei legături care a răspuns (`TIMP_TACERE_MS`). */
+  private pazeste(ws: WebSocketText): void {
+    if (this.ceasTacere !== null) this.ceas.clearTimeout(this.ceasTacere);
+    this.ceasTacere = this.ceas.setTimeout(() => {
+      this.ceasTacere = null;
+      if (this.ws !== ws) return;
+      ws.onopen = null; ws.onmessage = null; ws.onclose = null; ws.onerror = null;
+      ws.close(1000);
+      this.ws = null;
+      this.adaugaJurnal('stare', `silence ${TIMP_TACERE_MS / 1000} s`);
+      this.pune({ ...this.s, legatura: 'pierduta', pierdutaLa: this.ceas.acum(), incercari: 0 });
+      this.planifica();
+    }, TIMP_TACERE_MS);
   }
 
   /** Închide WebSocket-ul de acum fără să mai asculte de el. */
@@ -212,6 +240,7 @@ export class SesiuneImprimanta {
     const esec = (motiv: MotivImprimanta): void => {
       if (incheiat || !aMea()) return;
       incheiat = true;
+      this.adaugaJurnal('stare', `failed ${motiv}`);
       ws.onopen = null; ws.onmessage = null; ws.onclose = null; ws.onerror = null;
       ws.close(1000);
       if (this.ws === ws) this.ws = null;
@@ -240,6 +269,7 @@ export class SesiuneImprimanta {
     ws.onerror = () => { if (!deschis) esecDeschidere(); };
     ws.onopen = () => {
       deschis = true;
+      this.adaugaJurnal('stare', `open ${adresa.url}`);
       this.trimite(CERERE_STARE);
       this.trimite(CERERE_FISIERE);
       this.ceasNou(() => { if (!raspunde) esec('tacut'); }, TIMP_PRIMUL_CADRU_MS);
@@ -264,8 +294,10 @@ export class SesiuneImprimanta {
           fisiere: c.fisiere ?? this.s.fisiere,
         });
       }
+      if (raspunde) this.pazeste(ws);
     };
-    ws.onclose = () => {
+    ws.onclose = (e) => {
+      this.adaugaJurnal('stare', `closed ${e.code}`);
       if (!raspunde) {
         if (!deschis) esecDeschidere();
         else esec('tacut');
@@ -273,6 +305,7 @@ export class SesiuneImprimanta {
       }
       // După ce a răspuns: legătura a căzut (WiFi-ul, imprimanta oprită) sau a închis-o imprimanta după o pornire.
       if (this.ws === ws) this.ws = null;
+      if (this.ceasTacere !== null) { this.ceas.clearTimeout(this.ceasTacere); this.ceasTacere = null; }
       if (!this.dorita) return;
       const dupaPornire = this.pornitLa !== null && this.ceas.acum() - this.pornitLa <= TIMP_INCHIDERE_DUPA_PORNIRE_MS;
       this.pornitLa = null;

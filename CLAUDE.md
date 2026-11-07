@@ -597,7 +597,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **K1C 2025** (firmware V1.0.0.26, în `DWIN sw ver`), la 192.168.1.10: **9999 primește pagina de pe altă origine**. Imprimanta
   n-are bătăi ale inimii (doar bucăți de stare, la ~3 s), iar **lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
   `director:nume:mărime:…;`), nu ca `retGcodeFileInfo2`: acum se citesc amândouă, cu mărimea (pe care trimiterea o verifică).
-  Transcrierea, anonimizată: `test/fixtures/imprimanta/k1c-2025.json`; imprimanta falsă are `fel: 'k1c-2025'`.
+  Transcrierea, anonimizată: `test/fixtures/imprimanta/k1c-2025.json`; imprimanta falsă are `fel: 'k1c-2025'`. **Pasul 2:**
+  la o pornire de pe ecran, imprimanta și-a refăcut WiFi-ul cu alt IP, iar legătura veche a murit fără să se închidă: acum
+  **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
+  găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
+  evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
+  vede și ce pornește aplicația Creality.
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

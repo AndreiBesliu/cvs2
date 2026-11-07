@@ -1061,6 +1061,8 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   de ce (imprimanta nu răspunde pe portul 80, fișierul nu apare în lista ei sau are altă mărime), cu **Încearcă din nou**.
 - **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
   pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
+  O imprimantă care tace mai mult de 20 s e luată drept pierdută (legătura poate muri fără să se închidă), iar una care nu mai
+  răspunde la adresa ei e căutată singură în rețea, după nume (de exemplu „K1C-8578”), și ținută la noua adresă.
 - **Jurnalul cadrelor** arată ce a trimis fereastra și ce a primit; **Copiază jurnalul** îl pune în clipboard, pentru o
   raportare.
 - Singură, fereastra doar citește starea și răspunde imprimantei că e acolo; orice comandă pleacă dintr-un clic al tău. Portul

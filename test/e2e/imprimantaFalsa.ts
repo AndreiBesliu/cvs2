@@ -61,6 +61,11 @@ export interface ImprimantaFalsa {
   /** O eroare semnalată, ca `err` în stare (0: niciuna). */
   eroare(cod: number, cheie: number): void;
   taie(): void;
+  /**
+   * Ca imprimanta owner-ului la o pornire de pe ecran (3.6i): legăturile de acum tac, fără să se închidă, iar adresa nu mai
+   * primește legături noi (imprimanta și-a refăcut WiFi-ul, cu alt IP).
+   */
+  taci(): void;
   inchide(): Promise<void>;
 }
 
@@ -104,6 +109,9 @@ function multipart(corp: Buffer, tip: string): { camp: string; nume: string | nu
 
 export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<ImprimantaFalsa> {
   const socketuri = new Set<Socket>();
+  /** Legăturile care tac (`taci`): nu mai trimit și nu mai ascultă, dar rămân deschise. */
+  const tacute = new Set<Socket>();
+  let ascultaServerul = true;
   const trimitatori = new Set<(campuri: Readonly<Record<string, unknown>>) => void>();
   const primite: string[] = [];
   let conexiuni = 0;
@@ -182,13 +190,13 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     socket.write(['HTTP/1.1 101 Switching Protocols', 'Upgrade: websocket', 'Connection: Upgrade', `Sec-WebSocket-Accept: ${accept}`, '', ''].join('\r\n'));
     socketuri.add(socket);
     conexiuni++;
-    const trimite = (t: string): void => { if (!socket.destroyed) socket.write(cadru(1, Buffer.from(t, 'utf8'))); };
+    const trimite = (t: string): void => { if (!socket.destroyed && !tacute.has(socket)) socket.write(cadru(1, Buffer.from(t, 'utf8'))); };
     const json = (o: unknown): void => { trimite(JSON.stringify(o)); };
     const laSchimbare = (c: Readonly<Record<string, unknown>>): void => { json(c); };
     trimitatori.add(laSchimbare);
     /** Imprimanta închide legătura: cadrul de închidere, apoi socket-ul. */
     const inchide = (): void => {
-      if (socket.destroyed) return;
+      if (socket.destroyed || tacute.has(socket)) return;
       socket.write(cadru(8, Buffer.from([0x03, 0xe8])));
       setTimeout(() => { socket.destroy(); }, 20);
     };
@@ -201,6 +209,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       if (asteaptaOk === null) asteaptaOk = setTimeout(inchide, opt.asteptareOkMs ?? 3000);
     }, opt.inimaMs ?? 1000);
     const comanda = (text: string): void => {
+      if (tacute.has(socket)) return;
       if (text === 'ok') {
         okuri++;
         if (asteaptaOk !== null) { clearTimeout(asteaptaOk); asteaptaOk = null; }
@@ -288,9 +297,15 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         urcarea: (fel) => { pierde = fel === 'pierde'; },
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
+        taci: () => {
+          for (const x of socketuri) tacute.add(x);
+          if (ascultaServerul) { ascultaServerul = false; server.close(); }
+        },
         inchide: () => new Promise<void>((g) => {
           clearInterval(pas);
           for (const x of socketuri) x.resetAndDestroy();
+          if (!ascultaServerul) { g(); return; }
+          ascultaServerul = false;
           server.close(() => { g(); });
         }),
       });

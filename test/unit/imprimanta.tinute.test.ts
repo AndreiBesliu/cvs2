@@ -56,6 +56,34 @@ test('ținerea: cea legată acum vine prima, cu ce a spus; un nume necunoscut nu
   assert.deepEqual(citesteImprimante(scrieImprimante(b)).map((x) => x.adresa), ['10.0.0.3', '10.0.0.2']);
 });
 
+test('IP-ul schimbat (3.6i): aceeași imprimantă, după nume, la altă adresă ia locul intrării vechi; numele necunoscut nu șterge nimic', () => {
+  let l: readonly ImprimantaTinuta[] = [];
+  l = tineImprimanta(l, { adresa: '192.168.1.12', port: 9999, model: 'K1C', nume: 'K1C-8578' }, 1000);
+  l = tineImprimanta(l, { adresa: '192.168.1.40', port: 9999, model: 'K1', nume: 'K1-1234' }, 2000);
+  l = tineImprimanta(l, { adresa: '192.168.1.10', port: 9999, model: 'K1C', nume: 'K1C-8578' }, 3000);
+  l = tineImprimanta(l, { adresa: '192.168.1.7', port: 9999, model: 'K1C', nume: 'K1C-8578' }, 4000);
+  assert.deepEqual(l.map((x) => [x.adresa, x.nume]), [['192.168.1.7', 'K1C-8578'], ['192.168.1.40', 'K1-1234']]);
+  // Fără nume (încă nespus), o adresă nouă nu scoate pe nimeni.
+  l = tineImprimanta(l, { adresa: '192.168.1.50', port: 9999, model: null, nume: null }, 5000);
+  assert.equal(l.length, 3);
+});
+
+test('căutarea după nume (3.6i): doar imprimanta cu numele dat; alta, găsită înainte, se sare', async () => {
+  const fabrica = (url: string): WsFals => {
+    const w = new WsFals(url);
+    const raspuns = url === 'ws://10.0.8.3:9999/' ? '{"model":"K1","hostname":"K1-1234"}'
+      : url === 'ws://10.0.8.7:9999/' ? '{"model":"K1C","hostname":"K1C-8578"}' : null;
+    setTimeout(() => {
+      if (raspuns !== null) { w.readyState = 1; w.onopen?.(); w.onmessage?.({ data: raspuns }); }
+      else { w.onerror?.(); w.onclose?.({ code: 1006 }); }
+    }, 1);
+    return w;
+  };
+  assert.deepEqual(await cautaInRetea(['10.0.8'], { fabrica, permisiune: permisa, nume: 'K1C-8578' }), { adresa: adresa('10.0.8.7'), model: 'K1C', nume: 'K1C-8578' });
+  assert.deepEqual(await cautaInRetea(['10.0.8'], { fabrica, permisiune: permisa }), { adresa: adresa('10.0.8.3'), model: 'K1', nume: 'K1-1234' });
+  assert.equal(await cautaInRetea(['10.0.8'], { fabrica, permisiune: permisa, nume: 'K1C-0000' }), null);
+});
+
 test('rețelele de căutat: /24 ale IP-urilor știute; altfel 192.168.0 și 192.168.1', () => {
   assert.deepEqual(reteleDeCautat([]), ['192.168.0', '192.168.1']);
   assert.deepEqual(reteleDeCautat(['192.168.1.12', '192.168.1.40', '10.0.5.7', 'k1c.local', '127.0.3.5']), ['192.168.1', '10.0.5', '127.0.3']);

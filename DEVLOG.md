@@ -6421,3 +6421,10 @@ oprit.
   anonimizată (numele fișierelor owner-ului, istoricul), în `test/fixtures/imprimanta/k1c-2025.json`, rejucată pe hârtie;
   imprimanta falsă are felul `k1c-2025`, cu proba ei e2e. Probele găsite pe drum: o intrare din `/etc` era mutată după nume în
   directorul G-code (ca la lista veche): acum se sare. Otrăvurile: `test/otravuri/3.6i.py` (10).
+- **Pasul 2 (a doua și a treia transcriere, 17:36–17:43):** owner-ul a pornit un fișier din aplicația Creality (fereastra l-a
+  văzut: imprimanta trimite tuturor celor legați, iar lista a arătat întâi mărimea parțială a fișierului urcat), l-a oprit din
+  cvs2 (`{"stop":1}`, stările 0 → 4 → 0) și l-a pornit din nou de pe ecran: atunci **imprimanta și-a luat alt IP** (.10 → .7), iar
+  legătura veche a murit fără să se închidă; fereastra a rămas pe ultima stare, până la „Caută în toată rețeaua”. Reparat: paza
+  de tăcere (20 s), căutarea după nume după o reîncercare căzută (lista ținută se mută la noua adresă), evenimentele legăturii în
+  jurnal, bucățile `{"maxBedTemp":…}` ascunse de pe ecran (numărate). Imprimanta falsă tace la cerere (`taci`), cu proba e2e a
+  IP-ului schimbat; oprirea pe K1C 2025, rejucată pe hârtie din transcriere.

@@ -3,7 +3,8 @@ import test from 'node:test';
 import { adresaRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from '../../src/machine/reteaLocala.ts';
 import { CERERE_FISIERE, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, RASPUNS_INIMA } from '../../src/machine/imprimanta/creality.ts';
 import {
-  MAX_JURNAL, MAX_LINIE_JURNAL, PAUZE_RECONECTARE_MS, SesiuneImprimanta, TIMP_PRIMUL_CADRU_MS, type CeasImprimanta, type WebSocketText,
+  MAX_JURNAL, MAX_LINIE_JURNAL, PAUZE_RECONECTARE_MS, SesiuneImprimanta, TIMP_PRIMUL_CADRU_MS, TIMP_TACERE_MS, type CeasImprimanta,
+  type WebSocketText,
 } from '../../src/machine/imprimanta/sesiune.ts';
 
 /*
@@ -83,11 +84,47 @@ test('legarea: la deschidere pleacă doar citirile; primul cadru al imprimantei 
   w.primeste(INIMA);
   assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, RASPUNS_INIMA, RASPUNS_INIMA]);
   assert.equal(s.stare().imprimanta.progres, 27);
-  // Jurnalul: ce a plecat și ce a venit, în ordine.
+  // Jurnalul: deschiderea (cu adresa), ce a plecat și ce a venit, în ordine.
   assert.deepEqual(s.stare().jurnal.map((l) => `${l.dir} ${l.text}`), [
-    `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `primit ${STARE}`, `primit ${INIMA}`, `trimis ok`, 'primit {"printProgress":27}',
-    `primit ${INIMA}`, 'trimis ok',
+    'stare open ws://192.168.1.12:9999/', `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `primit ${STARE}`, `primit ${INIMA}`,
+    `trimis ok`, 'primit {"printProgress":27}', `primit ${INIMA}`, 'trimis ok',
   ]);
+});
+
+test('paza de tăcere (3.6i): o legătură care tace 20 s e pierdută și se reface; fiecare cadru o amână; în jurnal, motivul', async () => {
+  const { s, ceas, ws, ultimul } = sesiune();
+  const r = s.conecteaza(ADRESA);
+  const w = ultimul();
+  w.deschide();
+  w.primeste(STARE);
+  assert.deepEqual(await r, { ok: true });
+  // K1C 2025: fără bătăi ale inimii, o bucată de stare la ~3 s; fiecare amână paza.
+  for (let k = 0; k < 10; k++) { ceas.trece(3000); w.primeste('{"maxBedTemp":115}'); }
+  ceas.trece(TIMP_TACERE_MS - 1);
+  assert.equal(s.stare().legatura, 'conectat');
+  // Apoi tăcere: legătura moartă, fără închidere (imprimanta și-a refăcut WiFi-ul).
+  ceas.trece(1);
+  assert.equal(s.stare().legatura, 'pierduta');
+  assert.equal(w.inchis, 1000);
+  assert.equal(w.onmessage, null);
+  assert.equal(s.stare().jurnal.at(-1)?.text, `silence ${TIMP_TACERE_MS / 1000} s`);
+  // Prima reîncercare, după 1 s, cu citirile; legată din nou la primul cadru.
+  ceas.trece(PAUZE_RECONECTARE_MS[0] ?? 1000);
+  assert.equal(ws.length, 2);
+  ultimul().deschide();
+  ultimul().primeste(STARE);
+  assert.equal(s.stare().legatura, 'conectat');
+  // O închidere și o încercare căzută intră și ele în jurnal, cu codul și motivul.
+  ultimul().cade(1006);
+  assert.equal(s.stare().jurnal.at(-1)?.text, 'closed 1006');
+  ceas.trece(PAUZE_RECONECTARE_MS[0] ?? 1000);
+  ultimul().cade(1006);
+  await asteapta();
+  assert.deepEqual(s.stare().jurnal.slice(-2).map((l) => `${l.dir} ${l.text}`), ['stare closed 1006', 'stare failed retea-nedeschis']);
+  // Deconectarea oprește și paza.
+  s.deconecteaza();
+  ceas.trece(TIMP_TACERE_MS * 2);
+  assert.equal(s.stare().legatura, 'deconectat');
 });
 
 test('bătaia inimii ca prim cadru o leagă și ea', async () => {
