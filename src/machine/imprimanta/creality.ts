@@ -70,26 +70,28 @@ export function numar(v: unknown): number | null {
   return null;
 }
 
-/** Versiunea firmware-ului, din `modelVersion` („printer hw ver:…;printer sw ver:1.3.3.5;DWIN hw ver:…”). */
+/**
+ * Versiunea firmware-ului, din `modelVersion` („printer hw ver:…;printer sw ver:1.3.3.5;DWIN hw ver:…”). K1C 2025 (V1.0.0.26,
+ * transcrierea owner-ului din 07.11) lasă `printer sw ver` gol și o pune în `DWIN sw ver` („V1.0.0.26.20251024S”).
+ */
 export function firmwareDin(text: string): string | null {
+  const v: Record<string, string> = {};
   for (const bucata of text.split(';')) {
     const k = bucata.indexOf(':');
-    if (k < 0) continue;
-    if (bucata.slice(0, k).trim().toLowerCase() === 'printer sw ver') {
-      const v = bucata.slice(k + 1).trim();
-      return v === '' ? null : v;
-    }
+    if (k >= 0) v[bucata.slice(0, k).trim().toLowerCase()] = bucata.slice(k + 1).trim();
   }
-  return null;
+  return v['printer sw ver'] || v['dwin sw ver'] || null;
 }
 
-/** Un fișier din imprimantă, din lista ei (`retGcodeFileInfo2`): numele, calea și ce mai știe ea despre el. */
+/** Un fișier din imprimantă, din lista ei (`retGcodeFileInfo2` sau `retGcodeFileInfo`): numele, calea și ce mai știe ea despre el. */
 export type FisierImprimanta = {
   readonly nume: string;
   readonly cale: string;
   /** Timpul estimat de feliator (`timeCost`), în secunde. */
   readonly timp: number | null;
   readonly material: string | null;
+  /** Mărimea, în octeți (lista K1C 2025 o are). */
+  readonly marime: number | null;
 };
 
 const text = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v : null);
@@ -121,7 +123,26 @@ function fisierDin(o: unknown): FisierImprimanta | null {
   const nume = text(r['name']) ?? (cale ? numeDin(cale) : null);
   if (nume === null || numeSigur(nume) === null) return null;
   const caleBuna = cale !== null ? caleSigura(cale) : null;
-  return { nume, cale: caleBuna ?? `${DIR_GCODE}${nume}`, timp: numar(r['timeCost']), material: text(r['material']) };
+  return { nume, cale: caleBuna ?? `${DIR_GCODE}${nume}`, timp: numar(r['timeCost']), material: text(r['material']), marime: numar(r['size']) };
+}
+
+/**
+ * Lista ca text, din firmware-ul K1C 2025 (V1.0.0.26, transcrierea owner-ului din 07.11): `retGcodeFileInfo.fileInfo`, intrările
+ * despărțite de `;`, fiecare `director:nume:mărime:strat:dată:filament:miniatură`. Câmpurile se citesc din dreapta, ca un nume
+ * cu `:` să rămână întreg (numele au și spații: „Delta filament barrel base_Hyper PLA_49m.gcode”).
+ */
+function fisiereDinText(t: string): FisierImprimanta[] {
+  const out: FisierImprimanta[] = [];
+  for (const rand of t.split(';')) {
+    // O intrare scurtă (sau golul de după ultimul `;`) dă un nume gol, deci se sare mai jos.
+    const p = rand.split(':');
+    const nume = p.slice(1, -5).join(':');
+    const cale = `${p[0]}/${nume}`;
+    // Directorul e scris pe fiecare intrare: una din afara directorului G-code se sare (nu se mută după nume, ca la lista veche).
+    const f = caleSigura(cale) === null ? null : fisierDin({ name: nume, path: cale, size: p[p.length - 5] });
+    if (f !== null) out.push(f);
+  }
+  return out;
 }
 
 /** Ce aduce un cadru: bătaia inimii (cere `ok`), câmpurile stării, lista fișierelor; `json` fals: text care nu e un obiect JSON. */
@@ -166,7 +187,9 @@ export function citesteCadru(t: string): Cadru {
     stare.cheieEroare = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
   }
   const lista = r['retGcodeFileInfo2'];
-  const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null) : null;
+  const textLista = (r['retGcodeFileInfo'] as { fileInfo?: unknown } | null | undefined)?.fileInfo;
+  const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null)
+    : typeof textLista === 'string' ? fisiereDinText(textLista) : null;
   return { json: true, inima: r['ModeCode'] === 'heart_beat', stare, fisiere };
 }
 

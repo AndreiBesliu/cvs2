@@ -6401,3 +6401,23 @@ unirea lui `main` în ramură).
 - **Rămâne:** 3.6i, pe imprimanta lui
   (originea paginii pe 9999 și pe `/upload`, CORS-ul, permisiunea rețelei locale pentru HTTP, marginile reale ale patului);
   camera (felia ei); panourile mașinilor alăturate (nota owner-ului).
+
+## 2026-11-07 — 3.6i: proba pe imprimanta owner-ului, o K1C 2025 (ADR 0190) (Model: Claude Opus 5.5)
+
+**Prompt:** „E pornită acum” (owner-ul, la „Pornești imprimanta, ca să facem proba 3.6i?”), apoi jurnalul copiat din fereastra
+Imprimanta (15:04:23–15:05:00 UTC) și captura ei: legată la 192.168.1.10, „Ready”, „Waiting for the file list”, „Send a file…”
+oprit.
+**Started:** 07.11, 17:05. **Completed:** —
+
+- **Pasul 1, legarea (măsurat din jurnalul owner-ului):** fereastra s-a legat de pe canal la 192.168.1.10 (IP-ul s-a schimbat
+  de la .12), deci **9999 primește pagina de pe altă origine**, după permisiunea rețelei locale. Imprimanta e o **K1C 2025**:
+  firmware-ul stă în `DWIN sw ver` (V1.0.0.26.20251024S), `printer sw ver` e gol. **Fără bătăi ale inimii** în 37 s, doar
+  bucăți de stare la ~3 s; legătura ține fără `ok`. **Lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
+  `director:nume:mărime:strat:dată:filament:miniatură;…`, cu nume cu spații), urmată de `historyList` și `elapseVideoList`:
+  fereastra aștepta `retGcodeFileInfo2` (OrcaSlicer, Home Assistant), deci „Waiting for the file list” și **Trimite un fișier…**
+  oprit. Calculatorul de pe cablu al sesiunii (192.168.1.4) nu vede imprimanta; dispozitivul owner-ului o vede.
+- **Reparat:** lista ca text (intrările din afara directorului G-code se sar; un nume cu `:` rămâne întreg), mărimea fiecărui
+  fișier (în listă; trimiterea cere și aceeași mărime, cu motivul nou `marime`), firmware-ul din `DWIN sw ver`. Transcrierea,
+  anonimizată (numele fișierelor owner-ului, istoricul), în `test/fixtures/imprimanta/k1c-2025.json`, rejucată pe hârtie;
+  imprimanta falsă are felul `k1c-2025`, cu proba ei e2e. Probele găsite pe drum: o intrare din `/etc` era mutată după nume în
+  directorul G-code (ca la lista veche): acum se sare. Otrăvurile: `test/otravuri/3.6i.py` (10).

@@ -14,14 +14,17 @@ import type { AddressInfo, Socket } from 'node:net';
  * - imprimarea înaintează cu un procent la `pasMs`; la 100 % arată întâi timp rămas, apoi se încheie (0, 100 %, 0 s);
  * - din 3.6h, `POST /upload/<nume>` (multipart, câmpul `file`, ca OrcaSlicer), pe același port: fișierul intră în listă sub
  *   numele lui din multipart, fără antete CORS; `urcarea('pierde')` răspunde la fel, dar nu-l mai pune în listă. Pe K1C
- *   urcarea e pe 80; proba își mută cererea pe portul imprimantei false (`page.route`), aplicația rămâne pe 80.
+ *   urcarea e pe 80; proba își mută cererea pe portul imprimantei false (`page.route`), aplicația rămâne pe 80;
+ * - din 3.6i, `fel: 'k1c-2025'`, după transcrierea owner-ului (K1C 2025, firmware V1.0.0.26, 07.11): fără bătăi ale inimii (la
+ *   `inimaMs`, doar o bucată de stare, `{"maxBedTemp":115}`), lista ca text (`retGcodeFileInfo.fileInfo`, cu mărimile), urmată de
+ *   istoric (`historyList`) și de filme (`elapseVideoList`), firmware-ul în `DWIN sw ver`.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const DIR = '/usr/data/printer_data/gcodes/';
 
-export type FisierFals = { readonly name: string; readonly timeCost?: number; readonly material?: string };
+export type FisierFals = { readonly name: string; readonly timeCost?: number; readonly material?: string; readonly size?: number };
 
 /** O urcare primită: calea cererii, câmpurile multipart, numele fișierului din multipart și conținutul lui. */
 export type UrcareFalsa = { readonly url: string; readonly campuri: readonly string[]; readonly nume: string | null; readonly text: string };
@@ -38,6 +41,8 @@ export type OptiuniImprimantaFalsa = {
   readonly firmware?: string;
   /** Pornește imprimând fișierul acesta, de la procentul dat. */
   readonly imprima?: { readonly fisier: string; readonly progres: number };
+  /** `k1` (implicit): bătăile inimii și lista `retGcodeFileInfo2`; `k1c-2025`: ca imprimanta owner-ului (vezi antetul). */
+  readonly fel?: 'k1' | 'k1c-2025';
 };
 
 export interface ImprimantaFalsa {
@@ -108,9 +113,13 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   const urcate: UrcareFalsa[] = [];
   let pierde = false;
   const pasMs = opt.pasMs ?? 200;
+  const k2025 = opt.fel === 'k1c-2025';
   // Starea imprimantei, cum o trimite ea.
   const s: Record<string, string | number | Record<string, number>> = {
-    model: opt.model ?? 'K1C', hostname: opt.nume ?? 'K1C-8578', modelVersion: `printer hw ver:CR4CU220812S12;printer sw ver:${opt.firmware ?? '1.3.3.5'};DWIN hw ver:;DWIN sw ver:;`,
+    model: opt.model ?? 'K1C', hostname: opt.nume ?? 'K1C-8578',
+    modelVersion: k2025
+      ? `printer hw ver:;printer sw ver:;DWIN hw ver:CR4SU200382C13;DWIN sw ver:${opt.firmware ?? 'V1.0.0.26.20251024S'};`
+      : `printer hw ver:CR4CU220812S12;printer sw ver:${opt.firmware ?? '1.3.3.5'};DWIN hw ver:;DWIN sw ver:;`,
     state: 0, printFileName: '', printProgress: 0, printJobTime: 0, printLeftTime: 0, layer: 0, TotalLayer: 0,
     nozzleTemp: temp(28), targetNozzleTemp: temp(0), bedTemp0: temp(24), targetBedTemp0: temp(0), boxTemp: temp(23),
     err: { errcode: 0, key: 0 }, withSelfTest: 0, lightSw: 1,
@@ -157,7 +166,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       const f = parti.find((p) => p.camp === 'file');
       urcate.push({ url, campuri: parti.map((p) => p.camp), nume: f?.nume ?? null, text: f?.date.toString('utf8') ?? '' });
       if (f?.nume && !pierde) {
-        const nou: FisierFals = { name: f.nume, timeCost: 600, material: 'PLA' };
+        const nou: FisierFals = { name: f.nume, timeCost: 600, material: 'PLA', size: f.date.length };
         const k = fisiere.findIndex((x) => x.name === f.nume);
         if (k >= 0) fisiere[k] = nou;
         else fisiere.push(nou);
@@ -185,6 +194,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     };
     let asteaptaOk: ReturnType<typeof setTimeout> | null = null;
     const inima = setInterval(() => {
+      // K1C 2025: fără bătăi ale inimii, doar o bucată de stare, iar legătura ține și fără `ok`.
+      if (k2025) { json({ maxBedTemp: 115 }); return; }
       inimi++;
       json({ ModeCode: 'heart_beat', msg: new Date().toISOString() });
       if (asteaptaOk === null) asteaptaOk = setTimeout(inchide, opt.asteptareOkMs ?? 3000);
@@ -205,6 +216,14 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       const p = o.params ?? {};
       if (o.method === 'get' && p['ReqPrinterPara'] === 1) { json(s); return; }
       if (o.method === 'get' && p['reqGcodeFile'] === 1) {
+        if (k2025) {
+          // Ca în transcrierea owner-ului: `director:nume:mărime:strat:dată:filament:miniatură;…`, apoi istoricul și filmele.
+          const text = fisiere.map((f) => `${DIR.slice(0, -1)}:${f.name}:${f.size ?? 1000}:0.200000:1793890905:${f.timeCost ?? 0}:/tmp/creality/local_gcode/humbnail/${f.name.replace(/\.gcode$/, '.png')};`).join('');
+          json({ retGcodeFileInfo: { totalNum: fisiere.length, fileInfo: text } });
+          json({ historyList: [] });
+          json({ elapseVideoList: [] });
+          return;
+        }
         json({ retGcodeFileInfo2: fisiere.map((f) => ({ name: f.name, path: `${DIR}${f.name}`, ...(f.timeCost !== undefined ? { timeCost: String(f.timeCost) } : {}), ...(f.material ? { material: f.material } : {}), software: 'Creality Print' })) });
         return;
       }

@@ -1055,9 +1055,10 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   afara patului (cu linia ei) sau un fișier feliat pentru altă imprimantă dau un avertisment, iar butonul devine **Trimite
   oricum**; altfel e **Trimite**. **Alt fișier…** alege altul; **Renunță** (sau `Escape`) închide fereastra și oprește o
   trimitere începută. Numele pierde spațiile, iar un fișier care e deja în imprimantă nu se înlocuiește: cel nou primește
-  „-2” la nume. După trimitere, fereastra îl caută în lista imprimantei; când îl găsește, **Pornește imprimarea…** deschide
+  „-2” la nume. După trimitere, fereastra îl caută în lista imprimantei (și, dacă lista are mărimile, cu aceeași mărime);
+  când îl găsește, **Pornește imprimarea…** deschide
   confirmarea de mai sus (cu bifa **Patul e gol**), iar **Închide** îl lasă în imprimantă. Dacă nu ajunge, fereastra spune
-  de ce (imprimanta nu răspunde pe portul 80 sau fișierul nu apare în lista ei), cu **Încearcă din nou**.
+  de ce (imprimanta nu răspunde pe portul 80, fișierul nu apare în lista ei sau are altă mărime), cu **Încearcă din nou**.
 - **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
   pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
 - **Jurnalul cadrelor** arată ce a trimis fereastra și ce a primit; **Copiază jurnalul** îl pune în clipboard, pentru o

@@ -114,6 +114,8 @@ export const enImprimanta = {
   'imprimanta.trimite.motiv.retea': 'The file did not leave: the printer does not answer on port 80 (is it on, on the same network?) or the browser stopped the request.',
   'imprimanta.trimite.motiv.lipsa': 'The file left, but it is not in the printer’s list: it may not have arrived whole. Try again, or send it from Creality Print.',
   'imprimanta.trimite.motiv.citire': 'The file cannot be read from this computer.',
+  'imprimanta.trimite.motiv.marime': 'The file arrived, but on the printer its size differs from the one on the computer: it may not have arrived whole. Try again.',
+  'imprimanta.trimite.ajuns-marime': 'On the printer: “{nume}”, found in its list, with the same size ({octeti} bytes).',
   'imprimanta.trimite.reia': 'Try again',
   'imprimanta.trimite.ajuns': 'On the printer: “{nume}”, found in its list.',
   'imprimanta.trimite.porneste': 'Start printing…',

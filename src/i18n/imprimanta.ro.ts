@@ -117,6 +117,8 @@ export const roImprimanta = {
   'imprimanta.trimite.motiv.retea': 'Fișierul n-a plecat: imprimanta nu răspunde pe portul 80 (e pornită, în aceeași rețea?) sau browserul a oprit cererea.',
   'imprimanta.trimite.motiv.lipsa': 'Fișierul a plecat, dar nu apare în lista imprimantei: poate n-a ajuns întreg. Încearcă din nou sau trimite-l din Creality Print.',
   'imprimanta.trimite.motiv.citire': 'Fișierul nu se poate citi de pe calculator.',
+  'imprimanta.trimite.motiv.marime': 'Fișierul a ajuns, dar în imprimantă are altă mărime decât pe calculator: poate n-a ajuns întreg. Încearcă din nou.',
+  'imprimanta.trimite.ajuns-marime': 'Ajuns în imprimantă: „{nume}”, găsit în lista ei, cu aceeași mărime ({octeti} octeți).',
   'imprimanta.trimite.reia': 'Încearcă din nou',
   'imprimanta.trimite.ajuns': 'Ajuns în imprimantă: „{nume}”, găsit în lista ei.',
   'imprimanta.trimite.porneste': 'Pornește imprimarea…',

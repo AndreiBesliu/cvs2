@@ -112,7 +112,7 @@ test('comenzile pleacă doar cu legătura făcută, fiecare la chemarea ei', asy
   assert.equal(s.opresteImprimarea(), true);
   assert.deepEqual(ultimul().trimise.slice(2), [COMANDA_PAUZA, '{"method":"set","params":{"pause":0}}', '{"method":"set","params":{"stop":1}}']);
   // O cale în afara directorului G-code nu pleacă.
-  assert.equal(s.porneste({ nume: 'x', cale: '/etc/passwd', timp: null, material: null }), false);
+  assert.equal(s.porneste({ nume: 'x', cale: '/etc/passwd', timp: null, material: null, marime: null }), false);
   assert.equal(ultimul().trimise.length, 5);
 });
 
@@ -217,7 +217,7 @@ test('după pornire, K1 închide legătura: închiderea e așteptată, iar legă
   ultimul().deschide();
   ultimul().primeste(JSON.stringify({ state: 0, printFileName: '' }));
   await r;
-  assert.equal(s.porneste({ nume: 'a.gcode', cale: `${DIR_GCODE}a.gcode`, timp: null, material: null }), true);
+  assert.equal(s.porneste({ nume: 'a.gcode', cale: `${DIR_GCODE}a.gcode`, timp: null, material: null, marime: null }), true);
   assert.equal(ultimul().trimise.at(-1), '{"method":"set","params":{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/a.gcode"}}');
   ceas.trece(200);
   ultimul().cade(1000);

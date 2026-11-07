@@ -16,7 +16,8 @@ temperaturile, **Pauză / Reia / Oprește**, pornirea fișierelor din imprimant�
 ## 1. IP-ul imprimantei
 
 Pe ecranul imprimantei: **Setări → Rețea**. Scrie-ți IP-ul (de exemplu 192.168.1.12). Ca să nu se schimbe după o repornire a
-routerului, pune-i în router o adresă rezervată (în lista de clienți, numele ei e de felul „K1C-8578”).
+routerului, pune-i în router o adresă rezervată (în lista de clienți, numele ei e de felul „K1C-8578”). La tine s-a schimbat
+deja: pe 07.11 era la 192.168.1.10, nu la .12.
 
 Proba rapidă, de pe calculator: în Windows, `ping 192.168.1.12` (în PowerShell sau în Command Prompt). Dacă nu răspunde, aplicația
 nu va ajunge nici ea la imprimantă: verifică întâi rețeaua (pasul „Ce îți trebuie”).
@@ -97,11 +98,19 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
   - la final, K1C arată 100 % cu timp rămas, apoi 99, abia apoi încheie; numele și 100 % rămân după.
 - Client → imprimantă (`{"method":…,"params":{…}}`):
   - citiri: `{"method":"get","params":{"ReqPrinterPara":1}}` (toată starea), `{"method":"get","params":{"reqGcodeFile":1}}`
-    (lista: `{"retGcodeFileInfo2":[{"name","path","timeCost","material",…}]}`);
+    (lista: `{"retGcodeFileInfo2":[{"name","path","timeCost","material",…}]}`, sau, la K1C 2025, un text, mai jos);
   - comenzi: `{"method":"set","params":{"pause":1}}`, `{"pause":0}`, `{"stop":1}`,
     `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura).
 - HTTP pe 80: `POST /upload/<nume codat>` (multipart, doar câmpul `file`, cu numele fișierului; fără câmpul `path`, ca
   OrcaSlicer pentru K1C), fișierul ajunge în `/usr/data/printer_data/gcodes/`; aplicația nu citește răspunsul (cererea pleacă
   `no-cors`) și caută apoi numele în lista de pe 9999. Mai e `GET /info` (`model`, `mac`), nefolosit.
-- Nemăsurat încă pe imprimanta ta: ritmul bătăilor inimii, dacă 9999 și `/upload` primesc o pagină de pe altă origine, câmpurile
-  exacte ale listei de fișiere (mărimea, data), marginile reale ale patului (unde își face linia de curățare a duzei).
+- **K1C 2025** (imprimanta ta, firmware V1.0.0.26; transcrierea din 07.11, anonimizată în
+  `test/fixtures/imprimanta/k1c-2025.json`):
+  - **9999 primește pagina aplicației** (altă origine), după permisiunea rețelei locale;
+  - **fără bătăi ale inimii:** doar bucăți de stare, la ~3 s (`{"maxBedTemp":115}`, `boxTemp`); legătura ține fără `ok`;
+  - firmware-ul e în `DWIN sw ver` („V1.0.0.26.20251024S”), iar `printer sw ver` e gol;
+  - lista: `{"retGcodeFileInfo":{"totalNum":N,"fileInfo":"director:nume:mărime:strat:dată:filament:miniatură;…"}}` (numele pot
+    avea spații), apoi `{"historyList":[…]}` (istoricul imprimărilor) și `{"elapseVideoList":[]}`;
+  - starea are și `deviceState`, `curPosition`, `powerLoss`, `tfCard`, `video`, `webrtcSupport`, `maxBedTemp`, `maxNozzleTemp`.
+- Nemăsurat încă pe imprimanta ta: dacă `/upload` primește fișierul trimis de pe pagina aplicației, pornirea, pauza, reluarea și
+  oprirea pe o imprimare reală, marginile reale ale patului (unde își face linia de curățare a duzei).

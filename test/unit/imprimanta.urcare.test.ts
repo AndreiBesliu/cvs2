@@ -17,7 +17,7 @@ const adresa = (t: string): AdresaRetea => {
   return a.adresa;
 };
 
-const fisier = (nume: string): FisierImprimanta => ({ nume, cale: `/usr/data/printer_data/gcodes/${nume}`, timp: null, material: null });
+const fisier = (nume: string): FisierImprimanta => ({ nume, cale: `/usr/data/printer_data/gcodes/${nume}`, timp: null, material: null, marime: null });
 
 /** Lista imprimantei, falsă: la fiecare cerere, după o clipă, are ce i s-a spus să aibă. */
 function listaFalsa(dupaCerere: () => readonly FisierImprimanta[] | null): ListaImprimantei & { cereri: number } {
@@ -110,6 +110,23 @@ test('verificarea: lista cerută din nou până apare numele; dacă nu apare, �
   );
   // Fără trimitere, lista nu se mai cere.
   assert.equal(caz.cereri, 0);
+});
+
+test('verificarea după mărime (lista K1C 2025 o are): aceeași mărime e dovada; una diferită se mai așteaptă, apoi „marime”', async () => {
+  const date = new Blob(['G90\nG1 X1 Y1\n']);
+  const cu = (marime: number | null): FisierImprimanta => ({ ...fisier('x.gcode'), marime });
+  // Întâi încă scris (mărimea mai mică), apoi întreg.
+  let k = 0;
+  const scris = listaFalsa(() => [cu(++k >= 2 ? date.size : 3)]);
+  const r = await urca({ adresa: adresa('192.168.1.10'), nume: 'x.gcode', date, lista: scris, trimite: fetchFals().trimite, asteptareMs: 30 });
+  assert.deepEqual(r, { ok: true, fisier: cu(date.size) });
+  assert.equal(scris.cereri, 2);
+  assert.deepEqual(
+    await urca({ adresa: adresa('192.168.1.10'), nume: 'x.gcode', date, lista: listaFalsa(() => [cu(date.size + 1)]), trimite: fetchFals().trimite, asteptareMs: 10 }),
+    { ok: false, motiv: 'marime' },
+  );
+  // Fără mărime în listă (formatul vechi), numele ajunge.
+  assert.equal((await urca({ adresa: adresa('192.168.1.10'), nume: 'x.gcode', date, lista: listaFalsa(() => [cu(null)]), trimite: fetchFals().trimite, asteptareMs: 10 })).ok, true);
 });
 
 test('oprită de om: în timpul cererii sau al verificării, promisiunea respinge cu motivul semnalului', async () => {

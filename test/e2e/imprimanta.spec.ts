@@ -281,3 +281,32 @@ test('trimiterea: un fișier care nu e .gcode, refuzat; unul pentru altă imprim
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('ender_piesa.gcode');
   expect(comenziSet(imp)).toEqual([]);
 });
+
+test('K1C 2025 (după transcrierea owner-ului): fără bătăi ale inimii, lista ca text, cu mărimile, firmware-ul din DWIN; trimiterea verificată după nume și mărime', async ({ page }) => {
+  const imp = await porneste({
+    fel: 'k1c-2025',
+    fisiere: [{ name: 'Delta filament barrel base_Hyper PLA_49m.gcode', size: 6915587 }, { name: '3DBenchy_PLA_19m.gcode', size: 2513968 }],
+  });
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await expect(page.getByTestId('imprimanta-banda')).toContainText(`${IP} · prin WiFi · firmware V1.0.0.26.20251024S`);
+  const lista = page.getByTestId('imprimanta-fisiere');
+  await expect(lista).toContainText('Delta filament barrel base_Hyper PLA_49m.gcode');
+  await expect(lista.locator('li', { hasText: 'Delta filament' })).toContainText('6,9 MB');
+  await expect(lista.locator('li', { hasText: '3DBenchy' })).toContainText('2,5 MB');
+  // Legătura ține fără niciun `ok`: imprimanta nu trimite bătăi ale inimii, doar bucăți de stare.
+  await page.waitForTimeout(2500);
+  await expect(stare(page)).toHaveText('Liberă');
+  expect(imp.conexiuni()).toBe(1);
+  expect(imp.okuri()).toBe(0);
+  const text = gcode('Creality K1C', ['G1 Z0.2 F600', 'G1 X10 Y20 E1', 'G1 X200 Y210 E2']);
+  await alegeFisier(page, 'trimite', 'cub mic.gcode', text);
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns'))
+    .toHaveText(`Ajuns în imprimantă: „cub_mic.gcode”, găsit în lista ei, cu aceeași mărime (${Buffer.byteLength(text).toLocaleString('ro-RO')} octeți).`);
+  expect(imp.urcate().map((u) => u.nume)).toEqual(['cub_mic.gcode']);
+  await expect(lista).toContainText('cub_mic.gcode');
+  expect(comenziSet(imp)).toEqual([]);
+});

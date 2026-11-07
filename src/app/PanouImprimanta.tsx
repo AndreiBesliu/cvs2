@@ -60,6 +60,8 @@ const durata = (s: number): string => {
 const grade = (v: number | null): string => (v === null ? '—' : String(Math.round(v)));
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
 const ora = (ms: number): string => new Date(ms).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
+/** Mărimea unui fișier: MB cu o zecimală de la 1 MB, altfel kB. */
+const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(o / 1e3))} kB`);
 const gazdaPort = (a: AdresaRetea): string => (a.port === PORT_CREALITY ? a.gazda : `${a.gazda}:${a.port}`);
 const textMotiv = (m: MotivImprimanta, a: AdresaRetea | null): string => t(`imprimanta.motiv.${m}`, { adresa: a ? gazdaPort(a) : '—' });
 
@@ -341,7 +343,7 @@ function Fisiere({ st, stare, alege, porneste }: {
               {st.fisiere.map((f) => (
                 <li key={f.cale}>
                   <span className="imprimanta-lista-nume">{f.nume}</span>
-                  <span className="imprimanta-slab">{[f.material, f.timp === null ? null : durata(f.timp)].filter((x) => x !== null).join(' · ')}</span>
+                  <span className="imprimanta-slab">{[f.material, f.timp === null ? null : durata(f.timp), f.marime === null ? null : marimeText(f.marime)].filter((x) => x !== null).join(' · ')}</span>
                   <button type="button" data-imprimanta="porneste" disabled={!legata || !libera} onClick={() => { porneste(f); }}>{t('imprimanta.porneste')}</button>
                 </li>
               ))}
@@ -424,8 +426,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     a.tDuza === null && a.tPat === null ? null : `${grade(a.tDuza)} / ${grade(a.tPat)} °C`,
     a.timp === null ? null : `~${durata(a.timp)}`,
   ].filter((x) => x !== null).join(' · ');
-  const mb = fisier.size / 1e6;
-  const marime = mb >= 1 ? `${mb.toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(fisier.size / 1e3))} kB`;
+  const marime = marimeText(fisier.size);
   return (
     <div className="imprimanta-dialog" role="dialog" aria-labelledby="imprimanta-trimite-titlu" data-testid="imprimanta-trimite" data-pas={pas.fel}
       ref={cutie} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); renunta(); } }}>
@@ -450,7 +451,11 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
       {nume !== null && nume !== fisier.name && <p className="imprimanta-ajutor" data-testid="imprimanta-trimite-nume-nou">{t('imprimanta.trimite.nume-nou', { nume })}</p>}
       {pas.fel === 'trimite' && <p role="status" data-testid="imprimanta-trimite-progres">{t('imprimanta.trimite.se-trimite', { nume: nume ?? '', marime })}</p>}
       {pas.fel === 'esec' && <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-trimite-motiv" data-motiv={pas.motiv}>{t(`imprimanta.trimite.motiv.${pas.motiv}`)}</p>}
-      {pas.fel === 'ajuns' && <p role="status" data-testid="imprimanta-trimite-ajuns">{t('imprimanta.trimite.ajuns', { nume: pas.f.nume })}</p>}
+      {pas.fel === 'ajuns' && (
+        <p role="status" data-testid="imprimanta-trimite-ajuns">{pas.f.marime === null
+          ? t('imprimanta.trimite.ajuns', { nume: pas.f.nume })
+          : t('imprimanta.trimite.ajuns-marime', { nume: pas.f.nume, octeti: pas.f.marime.toLocaleString(loc()) })}</p>
+      )}
       <div className="imprimanta-butoane">
         {pas.fel === 'gata' && (avert.length === 0
           ? <button type="button" className="principal" data-imprimanta="trimite-confirma" disabled={!legata} onClick={() => { trimite(pas.a); }}>{t('imprimanta.trimite.confirma')}</button>

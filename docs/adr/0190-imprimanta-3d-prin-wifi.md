@@ -251,6 +251,31 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
   spre IP-ul imprimantei cu permisiunea dată pentru 9999, și marginile reale ale patului K1C (unde își face linia de curățare a
   duzei), din fișierele owner-ului.
 
+## Felia 3.6i (07.11.2026): pe imprimanta owner-ului
+
+- **Pasul 1, legarea (17:04, din browserul owner-ului, pe canalul `imprimanta`):** fereastra s-a legat la 192.168.1.10 (IP-ul s-a
+  schimbat de la .12: de rezervat în router), cu „Ready”, numele, temperaturile; jurnalul copiat e transcrierea, păstrată
+  anonimizată în `test/fixtures/imprimanta/k1c-2025.json`. **Măsurat:**
+  - **9999 primește pagina de pe altă origine** (`https://cncvectorstudio-test--imprimanta-…web.app`), după permisiunea rețelei
+    locale: drumul din fabrică merge din browser, deci profilul Moonraker (§F) nu trece înainte;
+  - **imprimanta e o K1C 2025:** `modelVersion` are `printer sw ver` gol, iar firmware-ul stă în `DWIN sw ver` (V1.0.0.26.20251024S,
+    cel din 10.2025); `webrtcSupport: 1` (camera, pe WebRTC, pentru felia ei);
+  - **fără bătăi ale inimii:** în 37 s, niciun `heart_beat`, doar bucăți de stare la ~3 s (`{"maxBedTemp":115}`, `boxTemp`), iar
+    legătura ține fără `ok`; sesiunea răspundea oricum doar la o bătaie primită;
+  - **lista fișierelor are alt format:** `{"retGcodeFileInfo":{"totalNum":11,"fileInfo":"dir:nume:mărime:strat:dată:filament:miniatură;…"}}`
+    (un singur text; numele au spații), nu `retGcodeFileInfo2` (lista din OrcaSlicer și Home Assistant), urmată de `historyList`
+    (istoricul imprimărilor) și `elapseVideoList`. Fereastra aștepta lista la nesfârșit („Waiting for the file list”), deci și
+    **Trimite un fișier…** rămânea oprit;
+  - calculatorul de pe cablu al sesiunii (192.168.1.4) nu vede imprimanta (fără ping, nimic în ARP pe .10 sau .12), dispozitivul
+    owner-ului o vede: clienții WiFi despărțiți de cablu. Fără urmări pentru aplicație; verificările mele vin din jurnalele lui.
+- **Reparat:** lista ca text (directorul de pe fiecare intrare: una din afara directorului G-code se sare, nu se mută după nume;
+  câmpurile din dreapta, ca un nume cu `:` să rămână întreg), **mărimea** fiecărui fișier (arătată în listă; trimiterea cere acum
+  și aceeași mărime, cu motivul nou `marime` când diferă), firmware-ul din `DWIN sw ver` când `printer sw ver` e gol. Imprimanta
+  falsă are felul `k1c-2025` (fără bătăi ale inimii, lista ca text, istoricul, filmele), cu proba ei e2e; transcrierea, rejucată
+  pe hârtie (`imprimanta.creality.test.ts`).
+- **Rămâne (pasul 2, pe imprimantă):** trimiterea unui cub feliat pentru K1C (urcarea pe 80 de pe pagina aplicației), pornirea,
+  pauza și reluarea, oprirea, jurnalul copiat; marginile patului, dintr-un fișier feliat pentru K1C.
+
 ## Întrebările (owner)
 
 **Răspunsurile, din 07.11 (formularul schiței):** 1a (cu nota de la §B, „Mai târziu”), 2a, 3a, 4a. Faptele: K1C (2024),

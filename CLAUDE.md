@@ -593,6 +593,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
   pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei, acceptată de owner pe 07.11 („Da, accept”). Cu
   `main` (`8003cb2`) unit în ramură: pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 530,8 / 550, /admin 105,4 / 200.**
+  **Proba pe imprimanta owner-ului (felia 3.6i), pasul 1** pe 07.11: fereastra s-a legat de pe canal, din browserul lui, la o
+  **K1C 2025** (firmware V1.0.0.26, în `DWIN sw ver`), la 192.168.1.10: **9999 primește pagina de pe altă origine**. Imprimanta
+  n-are bătăi ale inimii (doar bucăți de stare, la ~3 s), iar **lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
+  `director:nume:mărime:…;`), nu ca `retGcodeFileInfo2`: acum se citesc amândouă, cu mărimea (pe care trimiterea o verifică).
+  Transcrierea, anonimizată: `test/fixtures/imprimanta/k1c-2025.json`; imprimanta falsă are `fel: 'k1c-2025'`.
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

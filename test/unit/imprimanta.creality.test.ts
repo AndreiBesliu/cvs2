@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   aplica, CERERE_FISIERE, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE,
@@ -101,11 +102,11 @@ test('lista fișierelor (`retGcodeFileInfo2`): numele, calea sigură, timpul și
     ],
   }));
   assert.deepEqual(c.fisiere, [
-    { nume: 'output_11031835.gcode', cale: `${DIR_GCODE}output_11031835.gcode`, timp: 1140, material: 'PLA' },
-    { nume: 'caramida.gcode', cale: `${DIR_GCODE}sub/caramida.gcode`, timp: null, material: null },
+    { nume: 'output_11031835.gcode', cale: `${DIR_GCODE}output_11031835.gcode`, timp: 1140, material: 'PLA', marime: null },
+    { nume: 'caramida.gcode', cale: `${DIR_GCODE}sub/caramida.gcode`, timp: null, material: null, marime: null },
     // O cale în afara directorului G-code nu se folosește: pornirea merge pe numele din director.
-    { nume: 'x.gcode', cale: `${DIR_GCODE}x.gcode`, timp: null, material: null },
-    { nume: 'y.gcode', cale: `${DIR_GCODE}y.gcode`, timp: null, material: null },
+    { nume: 'x.gcode', cale: `${DIR_GCODE}x.gcode`, timp: null, material: null, marime: null },
+    { nume: 'y.gcode', cale: `${DIR_GCODE}y.gcode`, timp: null, material: null, marime: null },
   ]);
   assert.equal(citesteCadru('{"retGcodeFileInfo2":"nu e listă"}').fisiere, null);
 });
@@ -165,4 +166,36 @@ test('cererile și comenzile, octet cu octet (OrcaSlicer, `ha_creality_ws`)', ()
   // Doar citirile pleacă fără clic; nicio comandă `set` nu e printre ele.
   assert.deepEqual([...CITIRI], [CERERE_STARE, CERERE_FISIERE]);
   for (const c of CITIRI) assert.match(c, /"method":"get"/);
+});
+
+/** Transcrierea owner-ului (07.11, K1C 2025, firmware V1.0.0.26), anonimizată: `test/fixtures/imprimanta/k1c-2025.json`. */
+const K1C_2025 = JSON.parse(readFileSync('test/fixtures/imprimanta/k1c-2025.json', 'utf8')) as {
+  cadre: string[]; fisiere: { nume: string; marime: number }[];
+};
+
+test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca text cu mărimile, istoricul și filmele sărite', () => {
+  const [stare, lista, istoric, video, ...delte] = K1C_2025.cadre.map(citesteCadru);
+  assert.ok(stare && lista && istoric && video);
+  assert.ok(esteCreality(stare));
+  const i = aplica(IMPRIMANTA_NECUNOSCUTA, stare.stare);
+  assert.deepEqual(
+    [i.model, i.nume, i.firmware, i.cod, i.fisier, i.duza, i.duzaTinta, i.pat, i.patTinta, i.carcasa, i.eroare, i.autotest],
+    ['K1C', 'K1C-8578', 'V1.0.0.26.20251024S', 0, null, 26, 0, 25, 0, 25, null, 0],
+  );
+  assert.equal(stareLucrare(i), 'libera');
+  // Lista: 11 fișiere, cu numele întregi (și cele cu spații), calea din director, mărimea; fără timp și material.
+  assert.deepEqual(lista.fisiere, K1C_2025.fisiere.map(({ nume, marime }) => ({ nume, cale: `${DIR_GCODE}${nume}`, timp: null, material: null, marime })));
+  assert.deepEqual(lista.stare, {});
+  // Istoricul imprimărilor și filmele: cadre JSON fără nimic din ce citește fereastra.
+  for (const c of [istoric, video]) assert.deepEqual([c.json, c.inima, c.stare, c.fisiere], [true, false, {}, null]);
+  // Fără bătăi ale inimii: din 3 în 3 s, doar bucăți de stare (`maxBedTemp`, `boxTemp`).
+  assert.deepEqual(delte.map((c) => [c.inima, c.stare]), [[false, {}], [false, { carcasa: 24 }]]);
+  // O listă goală e o listă (nu „încă nimic”); un text stricat nu dă fișiere.
+  assert.deepEqual(citesteCadru('{"retGcodeFileInfo":{"totalNum":0,"fileInfo":""}}').fisiere, []);
+  assert.deepEqual(citesteCadru('{"retGcodeFileInfo":{"totalNum":1,"fileInfo":"/etc:passwd:1:0:0:0:/x.png;scurt:a:b;"}}').fisiere, []);
+  assert.equal(citesteCadru('{"retGcodeFileInfo":"nu e obiect"}').fisiere, null);
+  // Un nume cu „:” rămâne întreg (câmpurile se citesc din dreapta).
+  assert.deepEqual(citesteCadru(`{"retGcodeFileInfo":{"fileInfo":"${DIR_GCODE.slice(0, -1)}:a:b.gcode:12:0.2:1:3:/t/a.png;"}}`).fisiere,
+    [{ nume: 'a:b.gcode', cale: `${DIR_GCODE}a:b.gcode`, timp: null, material: null, marime: 12 }]);
+  assert.equal(firmwareDin('printer hw ver:;printer sw ver:;DWIN hw ver:x;DWIN sw ver:V1.0.0.26.20251024S;'), 'V1.0.0.26.20251024S');
 });

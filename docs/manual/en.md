@@ -1090,9 +1090,11 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   K1C). A move outside the bed (with its line) or a file sliced for another printer gives a warning, and the button becomes
   **Send anyway**; otherwise it is **Send**. **Another file…** picks a different one; **Cancel** (or `Escape`) closes the
   window and stops a sending under way. The name loses its spaces, and a file already on the printer is never replaced: the
-  new one gets “-2” in its name. After sending, the window looks for it in the printer’s list; once found, **Start
+  new one gets “-2” in its name. After sending, the window looks for it in the printer’s list (and, when the list has the
+  sizes, with the same size); once found, **Start
   printing…** opens the confirmation above (with the **The bed is clear** check), and **Close** leaves it on the printer. If it
-  does not arrive, the window says why (the printer does not answer on port 80, or the file is not in its list), with
+  does not arrive, the window says why (the printer does not answer on port 80, the file is not in its list, or its size
+  differs), with
   **Try again**.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
   and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen.

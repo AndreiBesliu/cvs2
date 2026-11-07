@@ -32,8 +32,11 @@ export type ListaImprimantei = {
   reimprospateaza(): boolean;
 };
 
-/** De ce n-a ajuns: cererea n-a plecat sau n-a primit răspuns (`retea`), ori fișierul nu apare în lista imprimantei (`lipsa`). */
-export type MotivUrcare = 'retea' | 'lipsa';
+/**
+ * De ce n-a ajuns: cererea n-a plecat sau n-a primit răspuns (`retea`), fișierul nu apare în lista imprimantei (`lipsa`) sau
+ * apare cu altă mărime decât cea trimisă (`marime`: lista K1C 2025 are mărimea, deci verificarea o cere).
+ */
+export type MotivUrcare = 'retea' | 'lipsa' | 'marime';
 export type RezultatUrcare = { readonly ok: true; readonly fisier: FisierImprimanta } | { readonly ok: false; readonly motiv: MotivUrcare };
 
 /**
@@ -66,12 +69,15 @@ export async function urca(o: {
     if (o.semnal?.aborted) throw e;
     return { ok: false, motiv: 'retea' };
   }
+  let alta = false;
   for (let k = 0; k < CERERI_LISTA * PRIVIRI; k++) {
     if (k % PRIVIRI === 0) o.lista.reimprospateaza();
     await new Promise((g) => { setTimeout(g, (o.asteptareMs ?? ASTEPTARE_LISTA_MS) / PRIVIRI); });
     o.semnal?.throwIfAborted();
     const f = o.lista.stare().fisiere?.find((x) => x.nume === o.nume);
-    if (f) return { ok: true, fisier: f };
+    // Cu mărimea în listă, doar aceeași mărime e o dovadă; una diferită poate fi un fișier încă scris, deci se mai așteaptă.
+    if (f && (f.marime === null || f.marime === o.date.size)) return { ok: true, fisier: f };
+    if (f) alta = true;
   }
-  return { ok: false, motiv: 'lipsa' };
+  return { ok: false, motiv: alta ? 'marime' : 'lipsa' };
 }
