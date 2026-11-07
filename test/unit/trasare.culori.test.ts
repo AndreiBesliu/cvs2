@@ -386,3 +386,20 @@ test('marginile la jumătate de pixel nu fac o culoare de mijloc: pătrate negre
   // Aria, în banda Netezimii Echilibrat (0,3 px pe tot perimetrul: 5 × 80 px): curbele pot tăia colțurile și laturile în ea.
   assert.ok(Math.abs(aria(p) - 2000) <= 5 * 80 * 0.3, `pătratele: ${aria(p)}`);
 });
+
+test('joncțiunea lângă un colț: granița vecină cotește la 1–3 px de ea, iar joncțiunea rămâne în banda Echilibrat (0,3 px)', () => {
+  // Roșul și albastrul alăturate pe alb; albastrul coboară mai jos cu `jos` px, deci granița alb–albastru cotește la
+  // `jos` px sub joncțiunea roșu–albastru–alb. Dreapta acelei granițe se potrivește doar până la cotitură.
+  for (const [jos, o] of [[2, 0.3], [1.5, 0.3], [2, 0.7], [1, 0.5], [3, 0.4]] as const) {
+    const img = deseneaza(60, 34, ALB, [
+      { inauntru: dreptunghi(10 + o, 10 + o, 30 + o, 20 + o), culoare: ROSU },
+      { inauntru: dreptunghi(30 + o, 10 + o, 50 + o, 20 + jos + o), culoare: ALBASTRU },
+    ]);
+    const r = ok(traseazaCulori(img, IMPLICITE));
+    for (const p of r.piese) {
+      let d = Infinity;
+      for (let v = 0; 6 * v < p.cai.xy.length; v++) d = Math.min(d, Math.hypot((p.cai.xy[6 * v] ?? 0) - (30 + o), (p.cai.xy[6 * v + 1] ?? 0) - (20 + o)));
+      assert.ok(d <= 0.3, `jos ${jos}, decalaj ${o}, ${p.hex}: joncțiunea la ${d.toFixed(3)} px`);
+    }
+  }
+});
