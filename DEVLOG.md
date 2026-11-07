@@ -6127,3 +6127,28 @@ cercetarea și un ADR propus, cu întrebările grupate și schița, codul după 
 - **Otrăvurile** (`test/otravuri/12.1.py`): 44, alese de autor; prima rulare (`50ecaf7`): 27 prinse, 17 scăpate, fiecare cu proba ei nouă: cazul L al oracolului (P02: toate cazurile erau simetrice față de verticală, deci un dop neoglindit trecea), fața dopului coborâtă până la marginile semifabricatului (P08), `incrustatie.refuzuri.test.ts` (R01–R08, G01, G02: refuzurile și gruparea locașului nu aveau probă), rolul (L01: jocul pe un locaș puțin adânc; L03: fundul plat de dinainte), `incrustatie.scriere.test.ts` (E04: îmbinarea), proba e2e a ferestrei (E05, E06); a doua rulare, 17 / 17; pe codul final, 44 / 44.
 - **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12; build-ul `07f71e9`). Verificat acolo, în browserul aplicației: rolul ales din panou, secțiunea pe hârtie (2,50 / 1,44 / 0,50 / 2,00 / 4,50 din 5,20 / 5,50 pe cercul R15 cu D 3 și H 2), rândul ferestrei exportului; descărcarea celor două fișiere, probată în e2e (în browserul aplicației n-am descărcat nimic).
 - **Rămâne:** 12.1↑b (pereții drepți, ADR 0171), 12.1↑c (banda îngustă și decuparea, alese la export), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul owner-ului.
+
+## 2026-11-07 — Felia 12.1↑b pornită: incrustația cu pereți drepți (ADR 0171, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 12.1↑b” (owner-ul, la întrebarea de la capătul feliei 12.1↑, în sesiunea liniei).
+**Started:** 07.11, 13:08. **Completed:** 07.11, 13:20 (cercetarea, ADR-ul și schița; codul lui 12.1↑b așteaptă răspunsurile).
+
+- **Cercetarea:** ArtCAM 2018, Inlay Wizard (pereți drepți: buzunar, gaură, în trepte, dopul; aceeași freză pentru locaș și
+  dop, colțurile potrivite, jocul care mărește cavitatea sau micșorează dopul) și criteriul din prag (steaua cu 5 colțuri,
+  Ø3, adâncimea 6, jocul 0,1: dopul întors intră cu 0,10 ± 0,02 pe tot conturul), din `CERCETARE-DETALIATA.json`.
+- **Pe hârtie:** locașul taie desenul cu vârfurile rotunjite cu raza frezei R și unghiurile intrânde cu R − c; dopul e locașul
+  micșorat cu c, deci are vârfurile R − c și unghiurile R, cât freza: aceeași freză îl taie fără lemn rămas, iar arcele
+  concentrice țin jocul c și în colțuri. Steaua din prag (raza 12 și 5), cu Ø3: vârful de 40,55° se retrage 2,83 mm, din
+  fiecare latură de 8,48 rămân drepte 3,49; cu Ø6 steaua iese aproape rotundă. O precizare la criteriu: vârfurile dopului au
+  R1,4, nu R1,5, dacă jocul e 0,1 pe tot conturul.
+- **Oprirea:** pereții drepți nu opresc dopul. Se sprijină pe fund (dopul înalt de D + H; între plăci rămâne H, cleiul pe
+  pereți) sau pe față (D − g; sub dop rămâne g, fără loc de fierăstrău). Nu se pot ambele, ca la V.
+- **ADR 0171, propus:** documentul v21 (`incrustatie` cu `fel: 'drept'` pe buzunar, `jocLateral`, `sprijin`), locașul ca buzunar
+  al conturului potrivit, dopul pe semifabricatul lui ca la V (oglindit, fața coborâtă cu aceleași freze, fișierul lui),
+  refuzurile, rolul „incrustație cu pereți drepți”, oracolul pereților drepți (`test/oracles/incrustatieDreapta.ts`) scris
+  întâi. Șase întrebări, cu recomandarea întâi. Estimarea: ~3 h de cod.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR> (panoul, colțurile pe hârtie cu contururile
+  calculate, pe ce se sprijină dopul, exportul, întrebările), în culorile aplicației.
+- **În fișă:** rândul 12.1↑b (în lucru) și rândul răspunsurilor în coada owner-ului; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑b (proba scrisă întâi). `main` (7.9↑b) se aduce în ramură la
+  începutul codului.
