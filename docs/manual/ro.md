@@ -562,10 +562,25 @@ mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete 
 (fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
 rămâne vie, iar o schimbare nouă o oprește pe cea începută.
 
+Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
+exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
+incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apoi:
+- **Numărul culorilor**: **Automat** găsește singur culorile deosebite ale imaginii (umbrirea unei suprafețe rămâne o
+  singură culoare, iar o culoare mică dar clară, ca o linie subțire, rămâne a ei); fără el, glisorul alege de la 2 la 16.
+  Un număr nou face culorile din nou, fără legăturile și bifele de dinainte;
+- **pastilele**: fiecare culoare, cu cât din desen are și bifa **Se trasează**. La o imagine opacă, culoarea marginii e
+  **fundalul**, nebifată (o poți bifa); la una transparentă, transparentul nu e o culoare;
+- **legarea**: trage o pastilă peste alta și cele două devin o singură culoare (de exemplu, umbra unei litere și litera);
+  **Leagă de…** face același lucru de la tastatură, iar pastila legată are **Dezleagă**;
+- mausul pe o pastilă îi arată regiunea în previzualizare; **Imaginea** e aici imaginea pictată în culorile găsite.
+
+**Importă** pune câte o formă pe culoare bifată, toate aliniate ca în imagine, într-un singur pas (un Ctrl+Z le scoate pe
+toate); numele fiecăreia are culoarea ei (de exemplu „logo #0c619c”). Rolul fiecăreia (buzunar, V-carve, incrustație) îl
+alegi apoi din panou.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
 afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- trasarea e alb-negru: culorile (câte o formă pe culoare), linia de mijloc a unui desen făcut din linii și scanările
-  îndreptate vin mai târziu;
+- linia de mijloc a unui desen făcut din linii și scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);

@@ -12,6 +12,7 @@ import {
   curbeleArcului, curbeleBuclei, EPS_DUR, netezeste, PLAFON_TRASARE, TREPTE,
   type Bucata, type CaiTrasate, type ImagineRGBA, type Netezime,
 } from './trasare.ts';
+import { primele } from './legaturi.ts';
 
 export type OptiuniCulori = {
   /** Câte culori (1–16); null: automat. */
@@ -50,7 +51,11 @@ export type RaportCulori = {
 };
 
 export type RezultatCulori =
-  | { readonly ok: true; readonly piese: readonly PiesaCuloare[]; readonly raport: RaportCulori }
+  | {
+    readonly ok: true; readonly piese: readonly PiesaCuloare[]; readonly raport: RaportCulori;
+    /** Culoarea fiecărui pixel, rând cu rând (după legături și curățare; 255: transparent): previzualizarea pictată. */
+    readonly etichete: Uint8Array;
+  }
   | { readonly ok: false; readonly cod: 'prea-multe'; readonly raport: RaportCulori };
 
 /** Cel mult atâtea culori (ADR 0221 §2). */
@@ -71,11 +76,12 @@ const VARFURI_PLASA = 6_000_000;
 const AMESTEC = { contrast: 30, capat: 0.12, abatere: 0.25 } as const;
 const DIRECTII = [[1, 0], [0, 1], [1, 1], [1, -1]] as const;
 /**
- * Joncțiunile (pasul 9b): dreapta fiecărei granițe se potrivește pe trecerile aflate între `min` și `max` px de vârful plasei
- * (cel mult `puncte`); vârful se mută cel mult `mutare` px; `miu` îl ține pe loc pe direcțiile în care dreptele nu decid
- * (granițe aproape paralele).
+ * Joncțiunile (pasul 9b): dreapta fiecărei granițe se potrivește pe primele ei treceri de lângă vârful plasei (la peste `min`
+ * și cel mult `max` px de el, cel mult `puncte`), oprite la primul colț (o cotitură peste `cotitura` radiani: altfel dreapta
+ * ar tăia colțul unei granițe în L); o dreaptă de care trecerile se depărtează cu peste `rest` px nu votează. Vârful se mută
+ * cel mult `mutare` px; `miu` îl ține pe loc pe direcțiile în care dreptele nu decid (granițe aproape paralele).
  */
-const JONCTIUNE = { min: 0.6, max: 4, puncte: 8, mutare: 1, miu: 0.05 } as const;
+const JONCTIUNE = { min: 0.25, max: 3, puncte: 4, cotitura: 0.6, rest: 0.3, mutare: 1, miu: 0.05 } as const;
 
 // ── Culorile: sRGB ↔ OKLab (Ottosson, 2020) ─────────────────────────────────────────────────────────────────────────
 
@@ -449,21 +455,8 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
     for (let y = 0; y < H; y++) { pune(y * W); pune(y * W + W - 1); }
     for (let k = 0; k < K; k++) if (fundal < 0 || (m[k] ?? 0) > (m[fundal] ?? 0)) fundal = k;
   }
-  // 6. Legăturile: fiecare culoare, la prima din lanțul ei; un ciclu are ca primă culoarea cu indicele cel mai mic din el
-  // (aceeași pentru toate culorile care ajung în el).
-  const prima = Int16Array.from({ length: K }, (_, k) => k);
-  for (let k = 0; k < K; k++) {
-    let j = k;
-    const drum = [k];
-    for (;;) {
-      const l = o.legaturi[j] ?? -1;
-      if (!(l >= 0 && l < K)) break;
-      const i = drum.indexOf(l);
-      if (i >= 0) { j = Math.min(...drum.slice(i)); break; }
-      drum.push(l); j = l;
-    }
-    prima[k] = j;
-  }
+  // 6. Legăturile: fiecare culoare, la prima din lanțul ei (un ciclu, la indicele lui cel mai mic).
+  const prima = primele(o.legaturi, K);
   const eFundal = (l: number): boolean => l >= K || (fundal >= 0 && l === (prima[fundal] ?? -1));
   const bifata = (l: number): boolean => l < K && (prima[l] ?? -1) === l && (o.bifate ? o.bifate[l] === true : !eFundal(l));
   const et = new Int16Array(n);
@@ -697,20 +690,36 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
     let a11 = miu, a12 = 0, a22 = miu, b1 = miu * x0, b2 = miu * y0, drepte = 0;
     for (const { arc, laInceput } of lista) {
       const p = arc.pts, m = p.length / 2;
-      let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0, c = 0;
-      // De la joncțiune spre interiorul arcului, fără celălalt capăt.
-      for (let i = 1; i < m - 1 && c < JONCTIUNE.puncte; i++) {
+      const xs: number[] = [], ys: number[] = [];
+      // De la joncțiune spre interiorul arcului, fără celălalt capăt, până la primul colț.
+      for (let i = 1; i < m - 1 && xs.length < JONCTIUNE.puncte; i++) {
         const q = laInceput ? i : m - 1 - i;
         const x = p[2 * q] ?? 0, y = p[2 * q + 1] ?? 0, r = Math.hypot(x - x0, y - y0);
         if (r > JONCTIUNE.max) break;
         if (r < JONCTIUNE.min) continue;
-        sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y; c++;
+        const n0 = xs.length;
+        if (n0 >= 2) {
+          const u = Math.atan2((ys[n0 - 1] ?? 0) - (ys[0] ?? 0), (xs[n0 - 1] ?? 0) - (xs[0] ?? 0));
+          let dU = Math.atan2(y - (ys[n0 - 1] ?? 0), x - (xs[n0 - 1] ?? 0)) - u;
+          while (dU > Math.PI) dU -= 2 * Math.PI;
+          while (dU < -Math.PI) dU += 2 * Math.PI;
+          if (Math.abs(dU) > JONCTIUNE.cotitura) break;
+        }
+        xs.push(x); ys.push(y);
       }
+      const c = xs.length;
       if (c < 2) continue;
-      const cx = sx / c, cy = sy / c;
+      let cx = 0, cy = 0;
+      for (let i = 0; i < c; i++) { cx += xs[i] ?? 0; cy += ys[i] ?? 0; }
+      cx /= c; cy /= c;
+      let sxx = 0, sxy = 0, syy = 0;
+      for (let i = 0; i < c; i++) { const dx = (xs[i] ?? 0) - cx, dy = (ys[i] ?? 0) - cy; sxx += dx * dx; sxy += dx * dy; syy += dy * dy; }
       // Direcția principală are unghiul ½·atan2(2·σxy, σxx − σyy); dreapta e {q : n·q = n·c}, cu n normala ei.
-      const t = 0.5 * Math.atan2(2 * (sxy / c - cx * cy), sxx / c - cx * cx - (syy / c - cy * cy));
+      const t = 0.5 * Math.atan2(2 * sxy, sxx - syy);
       const nx = -Math.sin(t), ny = Math.cos(t), k = nx * cx + ny * cy;
+      let rest = 0;
+      for (let i = 0; i < c; i++) rest = Math.max(rest, Math.abs(nx * (xs[i] ?? 0) + ny * (ys[i] ?? 0) - k));
+      if (rest > JONCTIUNE.rest) continue;
       a11 += nx * nx; a12 += nx * ny; a22 += ny * ny; b1 += nx * k; b2 += ny * k; drepte++;
     }
     if (drepte < 2) continue;
@@ -846,5 +855,7 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
   }
   const raport = raportFinal(arce.filter(folosit).length, contururi, varfuri, abatere);
   if (contururi > PLAFON_TRASARE.contururi || varfuri > PLAFON_TRASARE.varfuri) return { ok: false, cod: 'prea-multe', raport };
-  return { ok: true, piese, raport };
+  const etichete = new Uint8Array(n);
+  for (let p = 0; p < n; p++) { const l = et[p] ?? 0; etichete[p] = l < K ? l : 255; }
+  return { ok: true, piese, raport, etichete };
 }

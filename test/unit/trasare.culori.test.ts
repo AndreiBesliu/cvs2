@@ -248,6 +248,13 @@ test('legăturile: culoarea legată intră în piesa celei de care e legată (cu
   assert.deepEqual([ro, al, in_].map((k) => rc.raport.paleta[k]?.prima), [m, m, m]);
   assert.deepEqual(rc.piese.map((p) => p.culoare), [m]);
   assert.ok(Math.abs(aria(rc.piese[0] as PiesaCuloare) - 1200) < 10);
+  // Legată de fundal, o culoare devine fundal: nu se mai trasează.
+  const f = cauta(r0, ALB).k;
+  const lf = r0.raport.paleta.map(() => -1);
+  lf[in_] = f;
+  const rf = ok(traseazaCulori(OPACA, { ...IMPLICITE, legaturi: lf }));
+  assert.deepEqual(rf.piese.map((p) => p.culoare).sort(), [ro, al].sort());
+  assert.equal(rf.raport.paleta[in_]?.bifata, false);
 });
 
 test('culorile bifate: doar ele se trasează; fundalul bifat devine o piesă', () => {
@@ -263,4 +270,35 @@ test('culorile bifate: doar ele se trasează; fundalul bifat devine o piesă', (
   // Fundalul: toată imaginea, cu trei goluri.
   assert.equal(pf.cai.inceput.length - 1, 4);
   assert.ok(Math.abs(aria(pf) - (110 * 50 - 1200)) < 15, `${aria(pf)}`);
+});
+
+test('curățarea pe culori (margini dure): pata sub prag trece la vecina ei, golul de fundal din interior se umple, cel de la margine rămâne', () => {
+  // Fără netezire (pixeli întregi): un dreptunghi roșu lipit de marginea de sus, cu colțul (0–2, 0–2) alb (un gol de fundal
+  // de 4 px care atinge marginea imaginii), o pată albastră de 2 × 2 și un gol alb de 3 × 3 în el; alături, un pătrat albastru.
+  const img = deseneaza(100, 60, ALB, [
+    { inauntru: (x, y) => x < 50 && y < 40 && !(x < 2 && y < 2), culoare: ROSU },
+    { inauntru: dreptunghi(20, 20, 22, 22), culoare: ALBASTRU },
+    { inauntru: dreptunghi(35, 25, 38, 28), culoare: ALB },
+    { inauntru: dreptunghi(60, 10, 80, 30), culoare: ALBASTRU },
+  ]);
+  const fara = ok(traseazaCulori(img, IMPLICITE));
+  assert.equal(fara.raport.margini, 'dure');
+  assert.deepEqual([fara.raport.pete, fara.raport.gauri], [0, 0]);
+  const r = ok(traseazaCulori(img, { ...IMPLICITE, petePx: 6, gauriPx: 12 }));
+  assert.deepEqual([r.raport.pete, r.raport.gauri], [1, 1]);
+  const ro = piesa(r, cauta(r, ROSU).k), al = piesa(r, cauta(r, ALBASTRU).k);
+  assert.ok(ro && al);
+  // Roșul: un singur contur (pata și golul din interior au intrat în el), cu colțul de la margine scos: 50 × 40 − 4.
+  assert.equal(ro.cai.inceput.length - 1, 1);
+  assert.ok(Math.abs(aria(ro) - (2000 - 4)) < 2, `roșul: ${aria(ro)}`);
+  // Albastrul: doar pătratul din dreapta.
+  assert.equal(al.cai.inceput.length - 1, 1);
+  assert.ok(Math.abs(aria(al) - 400) < 4, `albastrul: ${aria(al)}`);
+  // Fără curățare, roșul are două goluri (pata și golul alb). Pe margini dure, golurile atât de mici își rotunjesc colțurile
+  // la netezire: împreună, sub 4 + 9 px², dar nu nimic.
+  const rf = piesa(fara, cauta(fara, ROSU).k);
+  assert.ok(rf);
+  assert.equal(rf.cai.inceput.length - 1, 3);
+  const goluri = aria(ro) - aria(rf);
+  assert.ok(goluri > 4 && goluri <= 13, `golurile: ${goluri}`);
 });

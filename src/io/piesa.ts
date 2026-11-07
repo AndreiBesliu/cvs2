@@ -49,6 +49,11 @@ export type PiesaImport = {
 export type ImportPregatit = DateImport & {
   readonly piesa: (id: string, foaie: FoaieImport) => PiesaImport;
   readonly treceDeUsa: (doc: Document) => boolean;
+  /**
+   * Piesele care intră odată cu aceasta, în același pas de anulare și aliniate (culorile unei imagini trasate, ADR 0221 §6):
+   * fiecare din aceeași pagină, deci la locul ei față de celelalte.
+   */
+  readonly impreuna?: readonly ImportPregatit[];
 };
 
 /** Importul pregătit din datele lui: constructorul e `piesaDinImport`, pe aceleași date; ușa e `incarca`. */

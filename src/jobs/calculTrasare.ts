@@ -1,8 +1,10 @@
 /**
  * Calculul trasării din imagine (ADR 0220 §2): decodarea (în workerul trasării, cu `createImageBitmap`, peste 16 Mpx redusă),
  * scara (lățimea aleasă, altfel DPI-ul fișierului, altfel 96 px / țol), pragurile curățării din mm în px și nucleul
- * (`src/trasare/trasare.ts`). Rulează în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
+ * (`src/trasare/trasare.ts`), sau, pe culori (ADR 0221), nucleul culorilor (`src/trasare/culori.ts`), cu imaginea pictată în
+ * culorile ei pentru previzualizare. Rulează în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
  */
+import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
 
@@ -11,6 +13,9 @@ export const PIXELI_MAXIM = 16_000_000;
 
 /** DPI-ul presupus când fișierul nu și-l spune (ADR 0220, răspunsul 2a): cât un px CSS, ca la un SVG. */
 export const DPI_PRESUPUS = 96;
+
+/** Imaginea pictată a previzualizării pe culori: cel mult atâția pixeli (fereastra n-are nevoie de mai mult). */
+export const PIXELI_POSTER = 1_000_000;
 
 export type CerereTrasare = {
   /** Fișierul (decodat în worker) sau pixelii (în probe). */
@@ -24,7 +29,12 @@ export type CerereTrasare = {
   /** DPI-ul citit din fișier (pe x), sau null. */
   readonly dpi: number | null;
   readonly maxPixeli?: number;
+  /** Trasarea pe culori (ADR 0221): numărul, legăturile și bifele; lipsă sau null: alb-negru, după `optiuni`. */
+  readonly culori?: Pick<OptiuniCulori, 'numar' | 'legaturi' | 'bifate'> | null;
 };
+
+/** Culoarea fiecărui pixel al imaginii pictate (indicele din paletă; 255: transparent), redusă sub `PIXELI_POSTER`. */
+export type Posterizare = { readonly latime: number; readonly inaltime: number; readonly etichete: Uint8Array };
 
 /** Ce se întoarce pe lângă trasare: scara folosită și reducerea imaginii. */
 type Scara = {
@@ -37,9 +47,27 @@ type Scara = {
 };
 
 export type RaspunsTrasare =
-  | (Scara & { readonly ok: true; readonly cai: CaiTrasate; readonly raport: RaportTrasare })
-  | (Scara & { readonly ok: false; readonly cod: 'prea-multe'; readonly raport: RaportTrasare })
+  | (Scara & { readonly ok: true; readonly fel: 'alb-negru'; readonly cai: CaiTrasate; readonly raport: RaportTrasare })
+  | (Scara & { readonly ok: false; readonly fel: 'alb-negru'; readonly cod: 'prea-multe'; readonly raport: RaportTrasare })
+  | (Scara & {
+    readonly ok: true; readonly fel: 'culori'; readonly piese: readonly PiesaCuloare[]; readonly raport: RaportCulori;
+    readonly posterizare: Posterizare;
+  })
+  | (Scara & { readonly ok: false; readonly fel: 'culori'; readonly cod: 'prea-multe'; readonly raport: RaportCulori })
   | { readonly ok: false; readonly cod: 'citire'; readonly detaliu: string };
+
+/** Etichetele imaginii, reduse prin cel mai apropiat pixel sub `PIXELI_POSTER` (aceleași, dacă încap). */
+export function posterizeaza(et: Uint8Array, W: number, H: number, max = PIXELI_POSTER): Posterizare {
+  if (W * H <= max) return { latime: W, inaltime: H, etichete: et };
+  const s = Math.sqrt(max / (W * H));
+  const w = Math.max(1, Math.floor(W * s)), h = Math.max(1, Math.floor(H * s));
+  const e = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const sy = Math.min(H - 1, Math.floor(((y + 0.5) * H) / h));
+    for (let x = 0; x < w; x++) e[y * w + x] = et[sy * W + Math.min(W - 1, Math.floor(((x + 0.5) * W) / w))] ?? 255;
+  }
+  return { latime: w, inaltime: h, etichete: e };
+}
 
 /** Imaginea decodată de browser (orientarea EXIF aplicată), redusă sub `maxPixeli`, în pixeli RGBA. */
 async function decodeaza(b: Blob, maxPixeli: number): Promise<{ img: ImagineRGBA; redusDin: Scara['redusDin'] }> {
@@ -81,7 +109,18 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   const mmPePx = latimeMm / img.latime;
   const scara = c.latimeMm !== null ? 'latime' : c.dpi !== null ? 'fisier' : 'presupus';
   const dpi = (latimeFisier / latimeMm) * 25.4;
-  const r = traseaza(img, { ...c.optiuni, petePx: ariePx(c.peteMm, mmPePx), gauriPx: ariePx(c.gauriMm, mmPePx) });
-  if (!r.ok) return { raspuns: { ...r, mmPePx, scara, dpi, redusDin }, transfer: [] };
-  return { raspuns: { ...r, mmPePx, scara, dpi, redusDin }, transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior]) };
+  const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
+  if (c.culori) {
+    const r = traseazaCulori(img, { ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx });
+    if (!r.ok) return { raspuns: { ...r, fel: 'culori', mmPePx, scara, dpi, redusDin }, transfer: [] };
+    const posterizare = posterizeaza(r.etichete, img.latime, img.inaltime);
+    const vederi = r.piese.flatMap((p) => [p.cai.inceput, p.cai.tip, p.cai.xy, p.cai.exterior]);
+    return {
+      raspuns: { ok: true, fel: 'culori', piese: r.piese, raport: r.raport, posterizare, mmPePx, scara, dpi, redusDin },
+      transfer: deTransferat([...vederi, posterizare.etichete]),
+    };
+  }
+  const r = traseaza(img, { ...c.optiuni, petePx, gauriPx });
+  if (!r.ok) return { raspuns: { ...r, fel: 'alb-negru', mmPePx, scara, dpi, redusDin }, transfer: [] };
+  return { raspuns: { ...r, fel: 'alb-negru', mmPePx, scara, dpi, redusDin }, transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior]) };
 }

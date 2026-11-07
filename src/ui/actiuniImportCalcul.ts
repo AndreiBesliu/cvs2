@@ -35,13 +35,13 @@ export type OptiuniPrevizualizare = {
  * poze, imbricarea ținea firul principal 553 ms).
  */
 function comune(f: FisierImport, cai: ReadonlyArray<CaleImport>, pagina: { readonly latime: number; readonly inaltime: number } | null,
-  pozitie?: 'fisier', date?: readonly Latura[]) {
+  pozitie?: 'fisier', date?: readonly Latura[], nume = numeDinFisier(f.nume)) {
   const laturi = date ?? laturiDinImbricare(cai, PLAFON_IMPORT.includeri);
   if (!laturi) return null;
   const cutie = cutieCai(cai);
   return {
     ok: true as const,
-    pregatit: pregateste({ nume: numeDinFisier(f.nume), cai, laturi, pagina, ...(pozitie ? { pozitie } : {}) }),
+    pregatit: pregateste({ nume, cai, laturi, pagina, ...(pozitie ? { pozitie } : {}) }),
     latime: cutie.maxX - cutie.minX,
     inaltime: cutie.maxY - cutie.minY,
     exterioare: laturi.filter((l, k) => l === 'exterior' && caleInchisa(cai[k] ?? {})).length,
@@ -122,13 +122,63 @@ export function previzualizareWmf(f: FisierImport, unitate?: UnitateWmf): Previz
  * §1: un AI e PDF de la Illustrator 9 și PostScript înainte); un fișier fără extensie cunoscută, după antet; altul,
  * refuzat (`tip`).
  */
-/** Raportul imaginii din răspunsul workerului: pixelii, scara și ce a făcut trasarea. */
+/** Raportul imaginii din răspunsul workerului: pixelii, scara și ce a făcut trasarea (pe culori, și paleta, ADR 0221). */
 function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportImagine {
-  const { raport: t } = r;
-  return {
+  const t = r.raport;
+  const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
-    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, sursa: t.sursa, transparenta: t.transparenta, prag: t.prag, automat: t.automat,
-    margini: t.margini, pete: t.pete, gauri: t.gauri, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere, histograma: t.histograma,
+    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, transparenta: t.transparenta, automat: t.automat,
+    margini: t.margini, pete: t.pete, gauri: t.gauri, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
+  };
+  if (r.fel === 'culori') {
+    const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai })) : [];
+    return { ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese } };
+  }
+  return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma };
+}
+
+/** Căile mai multor trasări, una după alta (contururile tuturor culorilor, pentru desenul previzualizării). */
+function laolalta(lista: readonly CaiTrasate[]): CaiTrasate {
+  let nc = 0, nv = 0;
+  for (const c of lista) { nc += c.inceput.length - 1; nv += c.tip.length; }
+  const inceput = new Uint32Array(nc + 1), tip = new Uint8Array(nv), xy = new Float64Array(6 * nv), exterior = new Uint8Array(nc);
+  let k = 0, v = 0;
+  for (const c of lista) {
+    for (let j = 0; j + 1 < c.inceput.length; j++) { inceput[k + j + 1] = v + (c.inceput[j + 1] ?? 0); exterior[k + j] = c.exterior[j] ?? 0; }
+    tip.set(c.tip, v); xy.set(c.xy, 6 * v);
+    k += c.inceput.length - 1; v += c.tip.length;
+  }
+  return { inceput, tip, xy, exterior };
+}
+
+/**
+ * Previzualizarea pe culori (ADR 0221 §6): câte o piesă pe culoare bifată, toate din aceeași pagină (imaginea), deci
+ * aliniate; numele, al fișierului și al culorii. „Importă” le adaugă împreună (`impreuna`), într-un singur pas de anulare.
+ */
+function previzualizareCulori(f: FisierImport, r: Extract<RaspunsTrasare, { fel: 'culori'; ok: true }>, trasare: RaportImagine): PrevizualizareImport {
+  const pagina = { latime: trasare.latimeMm, inaltime: trasare.inaltimeMm };
+  const baza = numeDinFisier(f.nume);
+  const piese: Array<NonNullable<ReturnType<typeof comune>>> = [];
+  let sub = 0, mari = 0;
+  for (const pc of r.piese) {
+    const { cai, laturi, avertismente: a } = caiDinTrasare(pc.cai, r.mmPePx, r.raport.inaltime);
+    sub += a['sub-rezolutie']; mari += a['prea-mari'];
+    if (cai.length === 0) continue;
+    const c = comune(f, cai, pagina, undefined, laturi, `${baza.slice(0, PLAFON.numeLungime - pc.hex.length - 1)} ${pc.hex}`);
+    if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'imagine', avertismente: { 'sub-rezolutie': sub, 'prea-mari': mari }, trasare };
+    piese.push(c);
+  }
+  const avertismente = { 'sub-rezolutie': sub, 'prea-mari': mari };
+  const [prima, ...rest] = piese;
+  if (!prima) return { ok: false, cod: 'gol', format: 'imagine', avertismente, trasare };
+  const toate = piese.flatMap((p) => p.pregatit.cai.map((c) => ({ varfuri: c.varfuri, inchis: true })));
+  if (preaDeparte(toate)) return { ok: false, cod: 'departe', format: 'imagine', trasare };
+  const cutie = cutieCai(toate);
+  return {
+    ok: true, format: 'imagine', trasare, avertismente, contur: laolalta(r.piese.map((p) => p.cai)),
+    pregatit: rest.length > 0 ? { ...prima.pregatit, impreuna: rest.map((p) => p.pregatit) } : prima.pregatit,
+    latime: cutie.maxX - cutie.minX, inaltime: cutie.maxY - cutie.minY,
+    exterioare: piese.reduce((s, p) => s + p.exterioare, 0), interioare: piese.reduce((s, p) => s + p.interioare, 0), deschise: 0,
   };
 }
 
@@ -173,21 +223,29 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
 export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal): Promise<PrevizualizareImport> {
   if (felImagine(f.octeti) === 'tiff' || (/\.tiff?$/i.test(f.nume) && !felImagine(f.octeti))) return { ok: false, cod: 'tiff', format: 'imagine' };
   const a = t ?? TRASARE_IMPLICITA;
+  const peCulori = a.sursa === 'culori';
   let r: RaspunsTrasare;
   try {
     r = await trasareInBazin({
       imagine: new Blob([new Uint8Array(f.octeti)]),
-      optiuni: { sursa: a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
+      optiuni: { sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
       peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti),
+      ...(peCulori ? { culori: a.culori } : {}),
     }, semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
     if (e instanceof TrasareCazuta) return { ok: false, cod: 'imagine-timp', format: 'imagine', detaliu: e.message };
     throw e;
   }
+  return previzualizareDinRaspuns(f, r);
+}
+
+/** Previzualizarea din răspunsul workerului trasării (alb-negru sau pe culori): refuzurile, căile în mm, piesa sau piesele. */
+export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): PrevizualizareImport {
   if (!r.ok && r.cod === 'citire') return { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: r.detaliu };
   const trasare = raportImagine(r);
   if (!r.ok) return { ok: false, cod: 'prea-multe', format: 'imagine', detaliu: String(r.raport.contururi), trasare };
+  if (r.fel === 'culori') return previzualizareCulori(f, r, trasare);
   const { cai, laturi, avertismente } = caiDinTrasare(r.cai, r.mmPePx, r.raport.inaltime);
   if (cai.length === 0) return { ok: false, cod: 'gol', format: 'imagine', avertismente, trasare };
   if (preaDeparte(cai)) return { ok: false, cod: 'departe', format: 'imagine', trasare };

@@ -2257,3 +2257,67 @@ main h1 {
   width: 100%;
   box-sizing: border-box;
 }
+/* Culorile (ADR 0221 §3): numărul, apoi pastilele; o pastilă se trage peste alta ca s-o lege. */
+.trasare-culori {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--sp-2);
+  align-items: center;
+}
+.trasare-culori > span,
+.trasare-culori > label,
+.trasare-culori > p,
+.trasare-culori > ul {
+  grid-column: 1 / -1;
+}
+.trasare-culori input[type='range'] {
+  width: 100%;
+}
+.trasare-pastile {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.trasare-pastila {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 2px var(--sp-2);
+  align-items: center;
+  padding: var(--sp-1);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+.trasare-pastila[draggable='true'] {
+  cursor: grab;
+}
+.trasare-pastila:hover,
+.trasare-pastila:focus-within {
+  background: var(--s-ales);
+}
+.trasare-pastila[data-legata] {
+  opacity: 0.8;
+  border-style: dashed;
+}
+.trasare-pastila-culoare {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--r-2);
+  border: 1px solid var(--l-margine);
+}
+.trasare-pastila-text {
+  display: grid;
+  min-width: 0;
+}
+.trasare-pastila-legatura {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+.trasare-pastila-legatura select {
+  width: auto;
+  flex: 1 1 6rem;
+}

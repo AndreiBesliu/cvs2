@@ -367,6 +367,21 @@ function dreapta(P: Float64Array, n: number, a: number, b: number): [number, num
 }
 
 /** Încrucișarea a două drepte (centru, direcție unitară), sau null dacă sunt aproape paralele. */
+/**
+ * Vârful (ox, oy), mutat în încrucișarea `i` a dreptelor vecine doar în afară și cel mult `raza`: pe o curbă netedă și la un
+ * colț rotunjit de nuanțe, dreptele se încrucișează mai departe de coarda vecinilor (a–b) decât vârful; spre coardă le duce
+ * doar un vârf subțire (un ac), pe care mutarea l-ar scurta (1,1 px, Neted). Aceeași regulă pentru bucle și pentru arce.
+ */
+function mutatInAfara(ox: number, oy: number, i: readonly [number, number] | null, ax: number, ay: number, bx: number, by: number,
+  raza: number): readonly [number, number] {
+  if (!i) return [ox, oy];
+  const lc = Math.hypot(bx - ax, by - ay);
+  const spreCoarda = (px: number, py: number): number => (lc > 0 ? ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / lc : 0);
+  const inafara = lc === 0 || (Math.sign(spreCoarda(i[0], i[1])) === Math.sign(spreCoarda(ox, oy))
+    && Math.abs(spreCoarda(i[0], i[1])) >= Math.abs(spreCoarda(ox, oy)));
+  return inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza ? i : [ox, oy];
+}
+
 function intersectie(a: readonly number[] | undefined, b: readonly number[] | undefined): [number, number] | null {
   if (!a || !b) return null;
   const [ax = 0, ay = 0, aux = 1, auy = 0] = a, [bx = 0, by = 0, bux = 1, buy = 0] = b;
@@ -603,14 +618,8 @@ export function curbeleBuclei(bucla: Float64Array, eps: number, tau: number, col
     if (f) { vx[k] = f[0]; vy[k] = f[1]; continue; }
     const i = intersectie(dr[(k + m - 1) % m], dr[k]);
     const raza = Math.max(2 * eps, 0.75, Math.min(2.5, 0.08 * Math.min(lung(k + m - 1), lung(k))));
-    // Doar în afară: pe o curbă netedă și la un colț rotunjit de nuanțe, dreptele se încrucișează mai departe de coarda
-    // vecinilor decât vârful; spre coardă le duce doar un vârf subțire (un ac), pe care mutarea l-ar scurta (1,1 px, Neted).
-    const ax = X(V[(k + m - 1) % m] ?? 0), ay = Y(V[(k + m - 1) % m] ?? 0), bx = X(V[k + 1] ?? n), by = Y(V[k + 1] ?? n);
-    const lc = Math.hypot(bx - ax, by - ay);
-    const spreCoarda = (px: number, py: number): number => (lc > 0 ? ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / lc : 0);
-    const inafara = !i || lc === 0 || (Math.sign(spreCoarda(i[0], i[1])) === Math.sign(spreCoarda(ox, oy))
-      && Math.abs(spreCoarda(i[0], i[1])) >= Math.abs(spreCoarda(ox, oy)));
-    if (i && inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }
+    const [x, y] = mutatInAfara(ox, oy, i, X(V[(k + m - 1) % m] ?? 0), Y(V[(k + m - 1) % m] ?? 0), X(V[k + 1] ?? n), Y(V[k + 1] ?? n), raza);
+    vx[k] = x; vy[k] = y;
   }
   // Colțurile: distanța vârfului la coarda dintre mijloacele laturilor vecine, față de 4·eps (cât dă o curbă netedă).
   const mx = (k: number): number => ((vx[k % m] ?? 0) + (vx[(k + 1) % m] ?? 0)) / 2;
@@ -711,12 +720,8 @@ export function curbeleArcului(P: Float64Array, eps: number, tau: number, colt: 
     if (f) { vx[k] = f[0]; vy[k] = f[1]; continue; }
     const i = intersectie(dr[k - 1], dr[k]);
     const raza = Math.max(2 * eps, 0.75, Math.min(2.5, 0.08 * Math.min(lung(k - 1), lung(k))));
-    const ax = X(V[k - 1] ?? 0), ay = Y(V[k - 1] ?? 0), bx = X(V[k + 1] ?? 0), by = Y(V[k + 1] ?? 0);
-    const lc = Math.hypot(bx - ax, by - ay);
-    const spreCoarda = (px: number, py: number): number => (lc > 0 ? ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / lc : 0);
-    const inafara = !i || lc === 0 || (Math.sign(spreCoarda(i[0], i[1])) === Math.sign(spreCoarda(ox, oy))
-      && Math.abs(spreCoarda(i[0], i[1])) >= Math.abs(spreCoarda(ox, oy)));
-    if (i && inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }
+    const [x, y] = mutatInAfara(ox, oy, i, X(V[k - 1] ?? 0), Y(V[k - 1] ?? 0), X(V[k + 1] ?? 0), Y(V[k + 1] ?? 0), raza);
+    vx[k] = x; vy[k] = y;
   }
   // Mijloacele laturilor și capetele bucăților (punctul arcului cel mai apropiat de mijloc).
   const mx = (k: number): number => ((vx[k] ?? 0) + (vx[k + 1] ?? 0)) / 2;

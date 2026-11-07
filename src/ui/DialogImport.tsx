@@ -147,12 +147,12 @@ function ListaAvertismente({ a, format }: {
  * PostScript). `nume`: fișierul (o eroare de citire a unui DXF, PDF sau EPS nu spune „nu e un SVG”; un AI fără conținut PDF
  * își primește sfatul).
  */
-function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined): string {
+function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined, culori = false): string {
   if (cod === 'parsare' && formatImport(nume, '') !== 'svg' && format !== 'svg') return t('import.refuz.citire');
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
-  if (cod === 'gol' && format === 'imagine') return t('import.imagine.gol');
+  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');
   if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
@@ -255,7 +255,7 @@ export function DialogImport({
         )}
         {stare !== 'citire' && !stare.ok && (
           <>
-            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format)}</p>
+            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori')}</p>
             <ListaAvertismente a={stare.avertismente} format={stare.format} />
           </>
         )}
@@ -264,6 +264,9 @@ export function DialogImport({
             <p data-testid="import-marime">{t('import.marime', { latime: ok.latime.toFixed(2), inaltime: ok.inaltime.toFixed(2) })}</p>
             {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
               <p data-testid="import-cai">{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+            )}
+            {ok.format === 'imagine' && ok.trasare.sursa === 'culori' && (
+              <p data-testid="import-piese">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>
             )}
             {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
             {ok.deschise > 0 && (

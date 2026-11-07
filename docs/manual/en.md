@@ -577,10 +577,25 @@ pixels, measured on every outline), the image's size, how many specks and holes 
 hard (no shades: then the pixel steps are smoothed). Every change traces the image again, on the side: the window stays
 responsive, and a new change stops the one under way.
 
+With **Source: Colours**, the image is traced by colour: each colour becomes a shape of its own, and two neighbouring
+colours share exactly the same edge (no strip and no overlap between them), so you can carve them at different depths or
+inlay them. The threshold and **Invert** are hidden; the other settings stay. Then:
+- **Number of colours**: **Automatic** finds the image's distinct colours by itself (the shading of a surface stays one
+  colour, and a small but clear colour, such as a thin line, keeps its own); without it, the slider picks from 2 to 16. A
+  new number makes the colours again, without the earlier links and ticks;
+- **the swatches**: each colour, with its share of the drawing and the **Trace** tick. On an opaque image, the colour of
+  the image's edge is the **background**, unticked (you can tick it); on a transparent one, transparency is not a colour;
+- **linking**: drag a swatch onto another and the two become one colour (for example, a letter's shadow and the letter);
+  **Link to…** does the same from the keyboard, and a linked swatch has **Unlink**;
+- the mouse over a swatch shows its region in the preview; the **Image** here is the image painted in the colours found.
+
+**Import** adds one shape per ticked colour, all aligned as in the image, in a single step (one Ctrl+Z removes them all);
+each one's name has its colour (for example “logo #0c619c”). You then pick each one's role (pocket, V-carve, inlay) in the
+panel.
+
 The traced drawing comes in as one shape, with the image as its page: the image's bottom-left corner is the sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
-- the tracing is black and white: colours (one shape per colour), the centre line of a drawing made of lines, and
-  straightened scans come later;
+- the centre line of a drawing made of lines and straightened scans come later;
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);

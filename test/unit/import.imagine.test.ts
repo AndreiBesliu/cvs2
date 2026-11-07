@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dpiImagine, felImagine } from '../../src/io/imagine.ts';
 import { formatDupaAntet, formatImport } from '../../src/io/formatImport.ts';
-import { raspundeTrasare, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
+import { posterizeaza, raspundeTrasare, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
-import { caiDinTrasare, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
+import { caiDinTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
 
 /**
  * Ușa imaginilor (ADR 0220 §1, §7, §8): semnăturile, DPI-ul din antet (PNG `pHYs`, JPEG JFIF și EXIF, BMP), scara și
@@ -203,4 +203,64 @@ test('refuzurile ușii: TIFF-ul (după semnătură sau după nume), înaintea de
   const r = await previzualizareImagine({ nume: 'poza.png', octeti: png(null) }, undefined);
   assert.equal(r.ok, false);
   assert.ok(!r.ok && r.cod === 'imagine-citire' && r.format === 'imagine' && typeof r.detaliu === 'string', JSON.stringify(r));
+});
+
+/** 120 × 60, opacă: trei pătrate de 20 px (roșu, albastru, gri închis) pe alb, departe unul de altul (ADR 0221). */
+const COLOR: ImagineRGBA = (() => {
+  const W = 120, H = 60, d = new Uint8ClampedArray(W * H * 4).fill(255);
+  const patrat = (x0: number, c: readonly number[]): void => {
+    for (let y = 20; y < 40; y++) for (let x = x0; x < x0 + 20; x++) d.set([...c, 255], (y * W + x) * 4);
+  };
+  patrat(10, [200, 40, 40]); patrat(50, [8, 96, 156]); patrat(90, [53, 60, 69]);
+  return { latime: W, inaltime: H, date: d };
+})();
+const peCulori = (c: Partial<CerereTrasare> = {}): CerereTrasare =>
+  cerere({ imagine: COLOR, latimeMm: 120, culori: { numar: null, legaturi: [], bifate: null }, ...c });
+
+test('pe culori, calculul: paleta cu fundalul, o piesă pe culoare bifată, imaginea pictată cu indicii paletei', async () => {
+  const r = (await raspundeTrasare(peCulori())).raspuns;
+  assert.ok(r.ok && r.fel === 'culori');
+  assert.equal(r.raport.paleta.length, 4);
+  const fundal = r.raport.paleta.findIndex((c) => c.fundal);
+  assert.equal(r.raport.paleta[fundal]?.hex, '#ffffff');
+  assert.deepEqual(r.piese.map((p) => p.culoare).sort(), [0, 1, 2, 3].filter((k) => k !== fundal));
+  // Imaginea pictată: aceeași mărime (sub plafon), fiecare pixel cu indicele culorii lui.
+  const { posterizare: p } = r;
+  assert.deepEqual([p.latime, p.inaltime], [120, 60]);
+  assert.equal(p.etichete[0], fundal);
+  const rosu = r.raport.paleta.findIndex((c) => c.hex === '#c82828');
+  assert.equal(p.etichete[30 * 120 + 20], rosu);
+  // Alb-negru, aceeași cerere fără culori: o singură trasare.
+  const an = (await raspundeTrasare(cerere({ imagine: COLOR, latimeMm: 120 }))).raspuns;
+  assert.ok(an.ok && an.fel === 'alb-negru');
+});
+
+test('imaginea pictată se reduce prin cel mai apropiat pixel sub plafon, cu proporțiile păstrate', () => {
+  // 4 × 2, plafonul 2: 2 × 1, fiecare pixel din centrul celulei lui.
+  const et = Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7]);
+  assert.deepEqual(posterizeaza(et, 4, 2, 8), { latime: 4, inaltime: 2, etichete: et });
+  const r = posterizeaza(et, 4, 2, 2);
+  assert.deepEqual([r.latime, r.inaltime, [...r.etichete]], [2, 1, [5, 7]]);
+});
+
+test('pe culori, previzualizarea: o piesă pe culoare, numele cu culoarea, aliniate în pagina imaginii, aduse împreună', async () => {
+  const r = (await raspundeTrasare(peCulori())).raspuns;
+  const p = previzualizareDinRaspuns({ nume: 'logo.png', octeti: new Uint8Array() }, r);
+  assert.ok(p.ok && p.format === 'imagine');
+  const toate = [p.pregatit, ...(p.pregatit.impreuna ?? [])];
+  assert.deepEqual(toate.map((q) => q.nume).sort(), ['logo #08609c', 'logo #353c45', 'logo #c82828']);
+  // Pagina e imaginea (120 × 60 mm, 1 mm pe px): fiecare pătrat la locul lui, cu Y în sus.
+  for (const q of toate) assert.deepEqual(q.pagina, { latime: 120, inaltime: 60 });
+  const stanga = toate.map((q) => Math.min(...q.cai.flatMap((c) => c.varfuri.map((v) => v.p.x)))).sort((a, b) => a - b);
+  assert.deepEqual(stanga.map((x) => Math.round(x * 10) / 10), [10, 50, 90]);
+  assert.equal(p.exterioare, 3);
+  // Mărimea: cutia comună a celor trei (10–110 × 20–40 mm).
+  assert.ok(Math.abs(p.latime - 100) < 0.1 && Math.abs(p.inaltime - 20) < 0.1, `${p.latime} × ${p.inaltime}`);
+  assert.equal(p.trasare.sursa, 'culori');
+  assert.equal(p.trasare.culori?.paleta.length, 4);
+  // Nicio culoare bifată: refuzul „gol”, cu paleta (fereastra o arată ca s-o poți bifa din nou).
+  const g = previzualizareDinRaspuns({ nume: 'logo.png', octeti: new Uint8Array() },
+    (await raspundeTrasare(peCulori({ culori: { numar: null, legaturi: [], bifate: [false, false, false, false] } }))).raspuns);
+  assert.ok(!g.ok && g.cod === 'gol');
+  assert.equal(g.trasare?.culori?.paleta.length, 4);
 });

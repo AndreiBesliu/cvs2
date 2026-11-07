@@ -6,9 +6,20 @@
 
 export type FelImagine = 'png' | 'jpeg' | 'gif' | 'bmp' | 'webp' | 'tiff';
 
+/** Alegerile trasării pe culori (ADR 0221 §2–§3), după indicele culorii din reducere. */
+export type AlegeriCulori = {
+  /** Câte culori (2–16); null: automat. */
+  readonly numar: number | null;
+  /** Pentru fiecare culoare, culoarea de care e legată, sau -1; o reducere nouă (alt număr) le șterge. */
+  readonly legaturi: readonly number[];
+  /** Ce culori se trasează; null: toate, afară de fundal. */
+  readonly bifate: readonly boolean[] | null;
+};
+
 /** Alegerile trasării din fereastra importului (ADR 0220 §10); pragurile curățării și lățimea, în mm. */
 export type AlegeriTrasare = {
-  readonly sursa: 'auto' | 'alfa' | 'lum';
+  /** Sursa cernelii (alb-negru), sau culorile (ADR 0221 §1): pragul și inversarea nu se folosesc atunci. */
+  readonly sursa: 'auto' | 'alfa' | 'lum' | 'culori';
   /** Pragul, din 255; null: automat. */
   readonly prag: number | null;
   readonly inverseaza: boolean;
@@ -17,11 +28,16 @@ export type AlegeriTrasare = {
   readonly gauriMm: number;
   /** Lățimea imaginii pe foaie; null: din DPI-ul fișierului (sau 96 px / țol). */
   readonly latimeMm: number | null;
+  readonly culori: AlegeriCulori;
 };
+
+/** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
+export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null };
 
 /** Implicitele (ADR 0220 §3–§7): sursa aleasă singură, pragul automat, Echilibrat, petele și golurile sub 0,3 mm. */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
   sursa: 'auto', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
+  culori: CULORI_IMPLICITE,
 };
 
 /** Felul imaginii după primii octeți, sau null (nu e o imagine pe care o știe ușa). */

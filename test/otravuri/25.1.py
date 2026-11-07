@@ -76,7 +76,7 @@ o('U04', TR, '    if (valid) cel = k;', '    cel = k;', 'nuc', 'capătul laturii
 
 # ---- Teșiturile ----
 o('T01', TR, '    if (Math.hypot(X(ic) - x[0], Y(ic) - x[1]) > depasire) continue;', '', 'nuc', 'colțul strâns oricât de departe de contur')
-o('T02', TR, '  const scurta = Math.max(3.5, 6 * eps);', '  const scurta = Math.max(1.5, 6 * eps);', 'nuc', 'teșiturile de 2–3,5 px nestrânse')
+o('T02', TR, '  const scurta = Math.max(4.5, 6 * eps);', '  const scurta = Math.max(1.5, 6 * eps);', 'nuc', 'teșiturile de 2–4,5 px nestrânse')
 o('T03', TR, '    if (dev > Math.max(0.5, 1.5 * eps)) continue;', '    if (dev > Math.max(5, 1.5 * eps)) continue;', 'nuc',
   'colțul strâns și când bucla nu stă pe cele două drepte')
 o('T04', TR, '    if (Math.abs(rotire) < (25 * Math.PI) / 180) continue;', '    if (Math.abs(rotire) < (5 * Math.PI) / 180) continue;', 'nuc',
@@ -85,8 +85,8 @@ o('T04', TR, '    if (Math.abs(rotire) < (25 * Math.PI) / 180) continue;', '    
 # ---- Colțurile și curbele ----
 o('B01', TR, '    eColt.push(fix.has(V[k] ?? -1) || d > colt * 4 * eps || intoarcere);', '    eColt.push(fix.has(V[k] ?? -1) || d > colt * 4 * eps);', 'nuc',
   'întoarcerea (limba) nu e colț')
-o('B02', TR, '    if (i && inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }',
-  '    if (i && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }', 'nuc', 'vârful mutat și spre coardă (acul scurtat)')
+o('B02', TR, '  return inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza ? i : [ox, oy];',
+  '  return Math.hypot(i[0] - ox, i[1] - oy) <= raza ? i : [ox, oy];', 'nuc', 'vârful mutat și spre coardă (acul scurtat)')
 o('B03', TR, '    eColt.push(fix.has(V[k] ?? -1) || d > colt * 4 * eps || intoarcere);', '    eColt.push(fix.has(V[k] ?? -1) || d > colt * 8 * eps || intoarcere);', 'nuc',
   'pragul colțurilor dublu')
 o('B04', TR, '    const alfa = dv > 1e-9 ? Math.max(0.55, Math.min(1, (4 * h) / (3 * dv))) : 0.75;', '    const alfa = 0.75;', 'nuc',
@@ -151,8 +151,8 @@ o('E02', IC, '    opresteCitirea();\n    const ac = new AbortController();', '  
 o('E03', BZ, "    semnal?.addEventListener('abort', anuleaza);", '', 'e2e', 'bazinul nu ascultă oprirea')
 o('E04', FE, "              {stare !== 'citire' && stare.ok && <p data-testid=\"trasare-abatere\">", '              {raport && <p data-testid="trasare-abatere">', 'e2e',
   'abaterea arătată și la un refuz')
-o('E05', FE, "  const aleasa = raport ? t(raport.sursa === 'alfa' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';",
-  "  const aleasa = raport ? t(raport.sursa === 'lum' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';", 'e2e', 'sursa aleasă spusă invers')
+o('E05', FE, "  const aleasa = raport && raport.sursa !== 'culori' ? t(raport.sursa === 'alfa' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';",
+  "  const aleasa = raport && raport.sursa !== 'culori' ? t(raport.sursa === 'lum' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';", 'e2e', 'sursa aleasă spusă invers')
 o('E06', DI, "{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai',", "{t('import.cai',", 'e2e', 'contururile trasate spuse „din imbricare”')
 o('E07', DI, ' key={`${coada?.k ?? 1}:${nume}`}', '', 'e2e', 'panoul trasării păstrat de la o imagine a cozii la următoarea (lățimea scrisă trece)')
 

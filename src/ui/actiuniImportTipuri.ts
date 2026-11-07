@@ -7,6 +7,8 @@ import type { Avertismente, CodRefuz } from '../io/svgCoduri.ts';
 import type { AvertismenteWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io/wmfCoduri.ts';
 import type { AlegeriTrasare } from '../io/imagine.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
+import type { CuloarePaleta } from '../trasare/culori.ts';
+import type { Posterizare } from '../jobs/calculTrasare.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
@@ -43,13 +45,25 @@ export type RaportImagine = {
   readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
   /** De unde vine scara: lățimea scrisă, DPI-ul fișierului sau 96 px / țol (presupus); `dpi` e cel folosit. */
   readonly scara: 'latime' | 'fisier' | 'presupus'; readonly dpi: number;
-  readonly sursa: 'alfa' | 'lum'; readonly transparenta: boolean;
+  /** Sursa cernelii (alb-negru) sau culorile (ADR 0221); pe culori, `prag` e 0, histograma goală, iar `automat` e al numărului. */
+  readonly sursa: 'alfa' | 'lum' | 'culori'; readonly transparenta: boolean;
   readonly prag: number; readonly automat: boolean; readonly margini: 'netezite' | 'dure';
   readonly pete: number; readonly gauri: number; readonly contururi: number; readonly varfuri: number;
   /** Abaterea măsurată față de conturul sub-pixel, în px. */
   readonly abaterePx: number;
   /** Histograma cernelii (256 de trepte), sub glisorul pragului. */
   readonly histograma: readonly number[];
+  /** Pe culori: paleta, imaginea pictată în culorile ei și contururile fiecărei piese (ADR 0221 §3, §7). */
+  readonly culori?: RaportCuloriImagine;
+};
+
+/** Ce arată fereastra unei trasări pe culori: pastilele, imaginea pictată și regiunea fiecărei culori (la trecerea mausului). */
+export type RaportCuloriImagine = {
+  readonly paleta: readonly CuloarePaleta[];
+  /** Imaginea pictată (lipsă la un refuz: prea multe contururi). */
+  readonly posterizare: Posterizare | null;
+  /** Câte o piesă pe culoare bifată (indicele din paletă), cu contururile ei în pixelii imaginii. */
+  readonly piese: ReadonlyArray<{ readonly culoare: number; readonly hex: string; readonly contur: CaiTrasate }>;
 };
 
 /** Ce n-a intrat dintr-o imagine trasată: contururile sub rezoluție și cele peste plafonul unei căi. */
