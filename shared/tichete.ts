@@ -91,6 +91,62 @@ export function faraRaspunsPrea(t: { readonly creatLa: number; readonly raspunsu
   return t.stare !== 'rezolvat' && t.raspunsuri === 0 && acum - t.creatLa >= FARA_RASPUNS_MS;
 }
 
+/**
+ * Proiectul atașat unei raportări (ADR 0116 §12, felia 15.B↑b), doar cu bifa omului: documentul deschis în editor, ca JSON
+ * canonic (aceiași octeți pe care îi salvează browserul), cel mult 10 MB. Pleacă comprimat (gzip), în base64, în cererea
+ * raportării; serverul îl ține în Storage (`caleProiectTichet`) și îl dă înapoi, prin același callable, doar cui poate citi
+ * tichetul (autorul, `tichete.citeste`, `tichete.raspunde`, owner-ul). Din client nu se citește și nu se scrie nimic în
+ * Storage: regulile refuză tot.
+ */
+export const PROIECT_MAX_OCTETI = 10 * 1024 * 1024;
+/** Proiectul comprimat nu trece nici el de plafon (un JSON se comprimă mult): cererea rămâne sub 14 MB, departe de 32. */
+export const PROIECT_GZ_MAX_OCTETI = PROIECT_MAX_OCTETI;
+/** Cât are proiectul comprimat la plafon, în base64 (4 caractere pe 3 octeți). */
+export const PROIECT_MAX_BASE64 = Math.ceil(PROIECT_GZ_MAX_OCTETI / 3) * 4;
+/** Amprenta JSON-ului (SHA-256, hex): fila Tichete o verifică după descărcare. */
+export const RE_SHA256 = /^[0-9a-f]{64}$/;
+
+/** Unde stă în Storage proiectul atașat unui tichet. Jobul de păstrare citește tot ce e sub `PREFIX_FISIERE_TICHETE`. */
+export const PREFIX_FISIERE_TICHETE = `${COLECTIE_TICHETE}/`;
+export const caleProiectTichet = (id: string): string => `${PREFIX_FISIERE_TICHETE}${id}/proiect.json.gz`;
+/** Pură: id-ul tichetului dintr-o cale de proiect; altceva = null (un nume necunoscut nu se atinge). */
+export function idDinCaleProiect(cale: string): string | null {
+  const m = /^tichete\/([A-Za-z0-9]{20})\/proiect\.json\.gz$/.exec(cale);
+  return m?.[1] ?? null;
+}
+
+/**
+ * Pură: o mărime de fișier pentru om (proiectul, în editor și în fila Tichete): până la 999 kB în kB întregi, rotunjiți în sus
+ * (cel puțin 1), apoi MB cu o zecimală, în formatul limbii (fără „1.024 kB”, care în română se citește o mie).
+ */
+export function marimeCitita(octeti: number, limba: 'ro' | 'en'): string {
+  if (octeti <= 999 * 1024) return `${Math.max(1, Math.ceil(octeti / 1024))} kB`;
+  return `${new Intl.NumberFormat(limba, { maximumFractionDigits: 1 }).format(Math.round((octeti / (1024 * 1024)) * 10) / 10)} MB`;
+}
+
+/** Ce ține tichetul despre proiectul atașat; fișierul e în Storage. */
+export interface MetaProiectTichet {
+  /** Octeții JSON-ului (cât arată omului și plafonul). */
+  readonly marime: number;
+  /** Octeții fișierului comprimat din Storage. */
+  readonly comprimat: number;
+  readonly sha256: string;
+  /** Versiunea schemei documentului (`schema`), ca fila să știe ce ușă îl deschide. */
+  readonly schema: number;
+}
+
+const intreg = (x: unknown, min: number, max: number): x is number => typeof x === 'number' && Number.isSafeInteger(x) && x >= min && x <= max;
+
+/** Pură: meta proiectului, citită dintr-un tichet; o formă greșită = null (nu se inventează). */
+export function metaProiectDin(x: unknown): MetaProiectTichet | null {
+  if (typeof x !== 'object' || x === null || Array.isArray(x)) return null;
+  const o = x as Record<string, unknown>;
+  const { marime, comprimat, sha256, schema } = o;
+  if (!intreg(marime, 1, PROIECT_MAX_OCTETI) || !intreg(comprimat, 1, PROIECT_GZ_MAX_OCTETI) || !intreg(schema, 1, 1000)) return null;
+  if (typeof sha256 !== 'string' || !RE_SHA256.test(sha256)) return null;
+  return { marime, comprimat, sha256, schema };
+}
+
 /** Un răspuns al echipei, cum îl primește autorul în aplicație (fără cine l-a scris). */
 export interface RaspunsEchipei {
   readonly text: string;
@@ -106,18 +162,32 @@ export interface RaportareaMea {
   readonly creatLa: number;
   readonly raspunsuri: readonly RaspunsEchipei[];
   readonly necitite: number;
+  /** Mărimea proiectului atașat (octeții JSON-ului), sau null fără proiect. */
+  readonly proiect: number | null;
 }
 
-/** Cererile callable-ului `tichete`; poza (opțională, base64, ca la sugestii: ADR 0111) doar la raportare. */
+/**
+ * Cererile callable-ului `tichete`. La raportare, poza (opțională, base64, ca la sugestii: ADR 0111) și proiectul (opțional,
+ * gzip în base64, doar cu bifa). `proiect` dă înapoi proiectul atașat, cui poate citi tichetul.
+ */
 export type CerereTichet =
   | {
     readonly actiune: 'raporteaza'; readonly fel: FelTichet; readonly text: string; readonly aplicatia: AplicatiaTichet;
-    readonly amprente: readonly string[]; readonly poza?: string;
+    readonly amprente: readonly string[]; readonly poza?: string; readonly proiect?: string;
   }
   | { readonly actiune: 'mele' }
   | { readonly actiune: 'citit'; readonly id: string }
   | { readonly actiune: 'raspunde'; readonly id: string; readonly versiune: number; readonly text: string }
-  | { readonly actiune: 'stare'; readonly id: string; readonly versiune: number; readonly stare: StareTichet };
+  | { readonly actiune: 'stare'; readonly id: string; readonly versiune: number; readonly stare: StareTichet }
+  | { readonly actiune: 'proiect'; readonly id: string };
+
+/** Proiectul atașat unui tichet, cum îl dă callable-ul: fișierul comprimat (base64), cu meta lui din tichet. */
+export interface RaspunsProiectTichet {
+  readonly ok: true;
+  readonly id: string;
+  readonly proiect: string;
+  readonly meta: MetaProiectTichet;
+}
 
 export interface RaspunsTichet {
   readonly ok: true;

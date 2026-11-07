@@ -1,4 +1,7 @@
 import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { adauga, deschideMeniulContului } from '../e2e/ajutor-panza.ts';
 
@@ -9,6 +12,9 @@ import { adauga, deschideMeniulContului } from '../e2e/ajutor-panza.ts';
  * Tichete (owner-ul, în alt browser: sesiunea contului e a originii) raportarea se vede cu tot ce are, iar răspunsul o
  * deschide. În editor, la pornirea următoare, semnul de pe butonul Cont și numărul de pe rând; „Raportările mele” arată
  * răspunsul, îl notează citit pe server și stinge semnul.
+ *
+ * Proiectul (felia 15.B↑b), doar cu bifa: mărimea lui sub bifă și în ce mai pleacă, meta lui în tichet (mărimea, amprenta,
+ * schema), iar în fila Tichete descărcarea dă octet cu octet versiunea salvată de editor (trecută prin Storage, pe server).
  */
 
 test.use({ locale: 'ro-RO' });
@@ -45,6 +51,24 @@ async function documente(cale: string): Promise<Array<{ readonly id: string; rea
 
 const text = (v: Valoare | undefined): string => v?.stringValue ?? '';
 const numar = (v: Valoare | undefined): number => Number(v?.integerValue ?? 'NaN');
+
+/** Ultima versiune a proiectului salvată de editor în IndexedDB (JSON-ul canonic), sau '' dacă nu e niciuna. */
+async function ultimaVersiune(page: Page): Promise<string> {
+  return page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-proiecte', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    const v = await new Promise<unknown>((ok, eroare) => {
+      const r = db.transaction('versiuni').objectStore('versiuni').openCursor(null, 'prev');
+      r.onsuccess = () => { ok(r.result?.value ?? null); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    db.close();
+    return typeof v === 'string' ? v : '';
+  });
+}
 
 /** Un client cu parolă și adresa confirmată, făcut prin API-ul emulatorului de cont (ca după linkul din e-mail). */
 async function clientConfirmat(email: string, parola: string): Promise<string> {
@@ -120,6 +144,17 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await r.locator('[data-camp="raport-fel-idee"]').check();
   await r.locator('[data-camp="raport-text"]').fill('Grila ar trebui\nsă se vadă mai bine.');
   await r.locator('[data-camp="raport-poza"]').check();
+  // Proiectul deschis, doar cu bifa: mărimea lui (JSON-ul canonic, cât salvează editorul) sub bifă și în ce mai pleacă.
+  await expect(r.locator('[data-raport="proiect"]')).toHaveCount(0);
+  await r.locator('[data-camp="raport-proiect"]').check();
+  const marime = Number(await r.locator('[data-raport="proiect"]').getAttribute('data-marime'));
+  expect(marime).toBeGreaterThan(100);
+  // Salvarea în browser pleacă asincron după fiecare schimbare: ultima versiune salvată ajunge la documentul de acum.
+  await expect.poll(async () => Buffer.byteLength(await ultimaVersiune(page), 'utf8'), LENT).toBe(marime);
+  const salvat = await ultimaVersiune(page);
+  const kb = Math.ceil(marime / 1024);
+  await expect(r.locator('[data-raport="proiect"]')).toHaveText(`Proiectul deschis are ${kb} kB.`);
+  await expect(r.locator('[data-raport-date-proiect]')).toHaveText(`Proiectul deschis (${kb} kB), comprimat`);
   await r.locator('[data-buton="raport-trimite"]').click();
   await expect(r.locator('[data-raport="trimis"]')).toBeVisible(LENT);
   await expect(r.locator('[data-buton="inchide-raport"]')).toHaveText('Închide');
@@ -140,6 +175,11 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   expect(numar(poza['marime'])).toBeGreaterThan(1000);
   expect(numar(poza['marime'])).toBeLessThanOrEqual(400 * 1024);
   expect((await documente(`tichete/${tichet?.id ?? ''}/poze`)).map((x) => x.id)).toEqual(['plansa']);
+  // Proiectul: în tichet doar meta lui (fișierul e în Storage), cu mărimea și amprenta versiunii salvate.
+  const proiect = f['proiect']?.mapValue?.fields ?? {};
+  expect([numar(proiect['marime']), text(proiect['sha256']), numar(proiect['schema'])]).toEqual([
+    marime, createHash('sha256').update(salvat).digest('hex'), (JSON.parse(salvat) as { schema: number }).schema,
+  ]);
 
   // Owner-ul, în fila Tichete: raportarea cu amprenta și datele aplicației; răspunsul o trece în „deschis”.
   const admin = await ownerInTichete(browser);
@@ -147,6 +187,23 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(rand.locator('[data-tic="text"]')).toHaveText('Grila ar trebui\nsă se vadă mai bine.', LENT);
   await expect(rand.locator('[data-tic="amprente"]')).toContainText(grup?.id ?? '-');
   await expect(rand.locator('[data-tic="aplicatia"]')).toContainText(BUILD);
+  // Proiectul, descărcat prin callable (din Storage, pe server), despachetat și verificat: versiunea salvată, octet cu octet.
+  const descarcaProiect = rand.locator('[data-tic="descarca-proiect"]');
+  await expect(descarcaProiect).toHaveText(`Descarcă proiectul (${kb} kB, schema ${(JSON.parse(salvat) as { schema: number }).schema})`);
+  const [descarcare] = await Promise.all([admin.waitForEvent('download', LENT), descarcaProiect.click()]);
+  expect(descarcare.suggestedFilename()).toBe(`cncvs2-tichet-${tichet?.id ?? ''}.json`);
+  expect(readFileSync(await descarcare.path(), 'utf8')).toBe(salvat);
+  await expect(rand.locator('[data-tic="proiect-descarcat"]')).toHaveText(`Proiectul s-a descărcat: cncvs2-tichet-${tichet?.id ?? ''}.json.`);
+  // Un fișier schimbat între timp în Storage (alt proiect decât cel trimis) nu se descarcă: amprenta din tichet nu se potrivește.
+  const caleProiect = encodeURIComponent(`tichete/${tichet?.id ?? ''}/proiect.json.gz`);
+  const schimbat = await fetch(`http://127.0.0.1:9195/upload/storage/v1/b/${PROIECT}.appspot.com/o?uploadType=media&name=${caleProiect}`, {
+    method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/gzip' }, body: gzipSync(Buffer.from('{"schema":20}')),
+  });
+  expect(schimbat.status, await schimbat.clone().text()).toBe(200);
+  await descarcaProiect.click();
+  await expect(rand.locator('[data-tic="proiect-eroare"]')).toHaveText(
+    'Proiectul nu s-a putut descărca: fișierul primit nu e cel trimis (mărimea sau amprenta diferă)', LENT,
+  );
   await rand.locator('[data-tic="raspuns-text"]').fill('Mulțumim! Grila mai groasă vine în versiunea următoare.');
   await rand.locator('[data-tic="trimite"]').click();
   await expect(rand.locator('[data-tic="raspuns"]')).toContainText('Grila mai groasă vine în versiunea următoare.', LENT);
@@ -168,6 +225,7 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   await expect(x.locator('.raportare-stare')).toHaveText('În lucru');
   await expect(x.locator('.raportare-noua')).toHaveText('1 răspuns nou');
   await expect(x.locator('.raportare-text')).toHaveText('Grila ar trebui\nsă se vadă mai bine.');
+  await expect(x.locator('.raportare-proiect')).toHaveText(`Cu proiectul atașat (${kb} kB)`);
   await expect(x.locator('[data-raspuns="0"] p')).toHaveText('Mulțumim! Grila mai groasă vine în versiunea următoare.');
   // Văzut: notat citit pe server, iar semnul se stinge.
   await expect(buton.getByTestId('cont-semn')).toHaveCount(0, LENT);

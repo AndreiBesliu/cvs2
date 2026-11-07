@@ -259,6 +259,81 @@ cât lucrul continuă cu etapa 4.
   - jobul zilnic care șterge tichetele rezolvate după `zilePastrareTichete`, cu atașamentele lor și marcajul de rulare;
   - fraza păstrării, în notă.
 
+## Felia 15.B↑b (07.11.2026): proiectul atașat și păstrarea tichetelor
+
+Restul raportărilor (§12, §16, §18), notat pe 02.11 pentru mai târziu și pornit pe 07.11 într-o linie paralelă (worktree-ul
+`wip/15.B-raportari`), la întrebarea owner-ului despre ce se mai poate face în paralel.
+
+- **Proiectul atașat (§12):**
+  - în **Raportează o problemă…**, bifa **Atașează proiectul (ca echipa să-l deschidă)**, nebifată implicit. La bifare,
+    sub ea, mărimea proiectului deschis; peste 10 MB, motivul, iar **Trimite** se oprește. În „Ce mai pleacă”, rândul
+    proiectului; în „Raportările mele”, mărimea proiectului atașat;
+  - pleacă documentul de la trimitere, ca JSON canonic (aceiași octeți pe care îi salvează browserul și pe care îi deschide
+    ușa unui proiect salvat), comprimat cu `CompressionStream` (fără cod în pachet), în base64, în cererea `raporteaza`
+    (`src/app/raportare.ts`). Plafonul e 10 MB pentru JSON și tot 10 MB pentru gzip: cererea rămâne sub 14 MB, departe de
+    32 MiB (Cloud Run și emulatorul);
+  - serverul (`functions/src/tichete/proiect.ts`) cere base64 canonic (decodat și recodat: expresia pozei cade în V8 cu
+    „Maximum call stack size exceeded” între 4 și 8 MB), gzip, despachetare plafonată la 10 MB (o bombă se oprește acolo),
+    UTF-8 strict și un JSON cu `schema` întreagă. Documentul nu se judecă mai departe: ușa îl judecă la deschidere, iar un
+    proiect care nu se deschide e tocmai ce poate raporta omul;
+  - fișierul stă în Storage, la `tichete/{id}/proiect.json.gz` (`application/gzip`), iar
+    tichetul ține `proiect: { marime, comprimat, sha256, schema }`. Ordinea: refuzurile ieftine (fără cont, plafonul zilei)
+    înaintea încărcării, apoi încărcarea, apoi tranzacția tichetului; o tranzacție căzută scoate fișierul, iar o scoatere
+    căzută intră în jurnal și rămâne jobului (orfanii). Auditul ține doar mărimile;
+  - acțiunea nouă `proiect` a callable-ului dă fișierul înapoi (base64), doar cui poate citi tichetul (autorul,
+    `tichete.citeste`, `tichete.raspunde`, owner-ul). Un tichet cu meta, dar fără fișier, e o stricăciune: intră în jurnal;
+  - în fila **Tichete**, **Descarcă proiectul (mărimea, schema)**: despachetat în browser, verificat pe mărime și pe
+    SHA-256 față de tichet, apoi salvat ca `cncvs2-tichet-<id>.json`. Deschiderea lui în editor cere o ușă „Deschide un
+    proiect din fișier”, care nu există încă;
+  - **regulile Storage (`storage.rules`, nou) refuză orice cerere din client**, pe orice cale (și pe cele ale aplicației
+    vechi, `users/{uid}/…`, care dădeau scriere oricărui om logat în dosarul lui). O regulă de citire „cine poate citi
+    tichetul” ar fi cerut documentele lui din Firestore (cel mult două pe cerere), rolul IAM al regulilor cross-service, pe
+    care firebase-tools îl acordă doar interactiv (publicarea din workflow îl sare), și CORS pe bucket pentru descărcarea
+    din browser; callable-ul face aceeași judecată, sub App Check, cu probele lui.
+- **Păstrarea tichetelor (§16):**
+  - starea `rezolvat` pune `rezolvatLa` (din 15.B↑b, câmp nou, null la creare), iar redeschiderea îl scoate; un răspuns pe
+    un tichet rezolvat îl lasă;
+  - jobul **`pastrareTichete`** (zilnic la 04:00, ora României, între backup și verificarea lui;
+    `functions/src/joburi/pastrare.ts`) citește la fiecare rulare `zilePastrareTichete` din `setari/conturi` (implicit 365,
+    între 30 și 3 650; o valoare schimbată din fila Setări se aplică de la rularea următoare). Tichetele cu `rezolvatLa` mai
+    vechi (un singur câmp, fără index compus), cele mai vechi întâi, pe pagini cu cursor; fiecare se judecă din nou în
+    tranzacția care îl șterge (între interogare și ștergere se putea redeschide), cu poza lui și rândul de audit
+    `tichete.sterge` (fără conținut, cu jobul drept autor: `job:pastrareTichete`), apoi fișierul proiectului;
+  - **orfanii:** fișierele de sub `tichete/` al căror tichet nu mai există, mai vechi de o oră (unul tânăr poate fi al unei
+    raportări în lucru); un nume necunoscut sau o dată lipsă nu se ating, se numără. Ce e în afara prefixului nu se citește;
+  - plafoanele: 500 de tichete și 200 s pe rulare (timeout-ul e 300 s); restul rămâne pentru ziua următoare
+    (`neterminat`, fără eroare). Eșecurile pe element se numără, iar la final jobul aruncă: marcajul (ADR 0041) îl face
+    galben la unul și roșu la două la rând, cu rândul din fila Erori. O ștergere căzută la tichete și reușită la orfani, în
+    aceeași rulare, nu mai e eșec. Jobul e în `JOBURI`, deci Diagnoza îl judecă și înainte de prima rulare („n-a rulat
+    niciodată”).
+- **Nota de confidențialitate (§18):** raportările (cu poza și proiectul, dacă le atașează omul) se țin ca să-i răspundem;
+  cele rezolvate se șterg singure, cu poza și proiectul lor, după perioada de păstrare stabilită de operator (implicit un
+  an de la rezolvare). Operatorul și adresa de contact rămân la owner, cu locurile marcate.
+- **Publicarea (după unirea în `main`):** ținta nouă `stocare` (`firebase deploy --only storage`) intră în țintele
+  serverului (`TINTE_SERVER`), deci în `npm run publica:functii` și în workflow. Funcția `tichete` are acum 512 MiB și
+  120 s (cererea și răspunsul cu proiectul; ~130 MB măsurați pe Node la plafon), iar clientul așteaptă 125 s.
+- **Probele:**
+  - pe hârtie: contractul (plafoanele, calea și id-ul din ea, meta din tichet), pregătirea proiectului (JSON-ul canonic,
+    gzip, base64 canonic, întors octet cu octet; exact la 10 MB trece, peste nu), mărimea citită, descărcarea din fila
+    Tichete (despachetarea, mărimea și amprenta), rândul filei cu proiectul, definiția jobului, Diagnoza cu jobul nou,
+    țintele publicării;
+  - pe emulatoare (Firestore și Storage, cu dosarul temporar al rulării: emulatorul Storage îl șterge la oprire):
+    `functions/test/tichete.emulator.test.ts` (încărcarea, refuzurile fără tichet și fără fișier, nicio încărcare pentru o
+    raportare refuzată, scoaterea după o tranzacție căzută, descărcarea, `rezolvatLa`),
+    `functions/test/pastrare.emulator.test.ts` (setarea, limita, orfanii, paginile și cursorul, plafonul și bugetul,
+    eșecurile și marcajul), `functions/test/reguli.storage.emulator.test.ts` (nicio cerere a clientului, cu controlul fără
+    reguli);
+  - e2e pe emulatoare: `test/e2e-emulator/tichete.emulator.spec.ts` (bifa, mărimea, meta din tichet, descărcarea din fila
+    Tichete egală cu versiunea salvată de editor).
+- **Limitele:**
+  - tichetele rezolvate înainte de 15.B↑b n-au `rezolvatLa`: jobul nu le vede (o redeschidere și o rezolvare le pun data);
+  - exportul zilnic al Firestore (ADR 0041) păstrează tichetele șterse cât trăiesc exporturile din bucket-ul de backup;
+    fișierele din Storage nu sunt în export;
+  - exportul și ștergerea datelor unui cont (14.D↑, §17) au acum și Storage-ul: proiectele atașate tichetelor lui
+    (`tichete/{id}/proiect.json.gz`), pe lângă documente;
+  - pe un canal de previzualizare se văd doar bifa și mărimea: funcțiile publicate pe proiectul de test sunt cele din `main`,
+    care ignoră proiectul din cerere, până la unirea liniei și publicarea serverului.
+
 ## Ce am respins
 
 - **Invitațiile pentru clienți:** owner-ul a ales înregistrarea liberă, iar planul se dă din admin.
@@ -268,6 +343,12 @@ cât lucrul continuă cu etapa 4.
 - **Răspunsul doar pe e-mail:** domeniul n-are încă MX, SPF și DKIM, iar în ediția întâi un declanșator de e-mail a tăcut
   două zile fără ca cineva să afle.
 - **TTL-ul pentru tichetele rezolvate:** nu șterge atașamentele din Storage și nu urmează păstrarea setată din admin.
+- **Citirea proiectului atașat direct din Storage, cu o regulă „cine poate citi tichetul” (15.B↑b):** cere documentele
+  tichetului și ale rolului din Firestore (cel mult două pe cerere), rolul IAM al regulilor cross-service, pe care
+  publicarea din workflow nu-l acordă, și CORS pe bucket; prin callable, aceeași judecată stă într-un singur loc, probat.
+- **Încărcarea proiectului direct din client în Storage (15.B↑b):** ar fi cerut reguli de scriere (mărimea, autorul, o
+  singură scriere; emulatorul nu deosebește `create` de `update`) și un pas de confirmare după încărcare; prin callable,
+  tichetul și fișierul pleacă împreună, cu aceleași refuzuri.
 
 ## Limite
 

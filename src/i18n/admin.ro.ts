@@ -100,6 +100,7 @@ export const roAdmin = {
   'admin.diag.functii.indiciu': 'Invocarea publică lipsă (403 de la frontul Google, fără CORS) apare aici ca eroare de rețea: șterge funcția și publică din nou.',
   'admin.diag.job.backupZilnic': 'Backup-ul zilnic (03:00)',
   'admin.diag.job.verificaBackup': 'Verificarea backup-ului (05:00)',
+  'admin.diag.job.pastrareTichete': 'Ștergerea tichetelor rezolvate vechi (04:00)',
   'admin.diag.job.niciodata': 'n-a rulat niciodată',
   'admin.diag.job.niciodata-indiciu': 'Normal până la prima oră programată după publicare; mai târziu înseamnă că programarea nu pornește.',
   'admin.diag.job.ruleaza': 'rulează acum',
@@ -469,4 +470,9 @@ export const roAdmin = {
   'admin.tic.poza-ascunde': 'Ascunde poza',
   'admin.tic.poza-se-incarca': 'Se încarcă poza…',
   'admin.tic.poza-lipsa': 'Poza nu s-a putut citi: {motiv}',
+  'admin.tic.proiect-descarca': 'Descarcă proiectul ({marime}, schema {schema})',
+  'admin.tic.proiect-se-descarca': 'Se descarcă proiectul…',
+  'admin.tic.proiect-descarcat': 'Proiectul s-a descărcat: {nume}.',
+  'admin.tic.proiect-eroare': 'Proiectul nu s-a putut descărca: {motiv}',
+  'admin.tic.proiect-amprenta': 'fișierul primit nu e cel trimis (mărimea sau amprenta diferă)',
 } as const satisfies DictionarRoPentru<typeof enAdmin>;

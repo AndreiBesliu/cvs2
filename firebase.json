@@ -125,6 +125,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "emulators": {
     "singleProjectMode": true,
     "auth": {
@@ -135,6 +138,9 @@
     },
     "functions": {
       "port": 5005
+    },
+    "storage": {
+      "port": 9195
     },
     "ui": {
       "enabled": false

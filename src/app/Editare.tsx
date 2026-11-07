@@ -386,9 +386,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
   const [contDeschis, setContDeschis] = useState(false);
-  // Raportările (ADR 0116 §C): fereastra unei raportări noi și „Raportările mele”, din meniul contului.
+  // Raportările (ADR 0116 §C): fereastra unei raportări noi și „Raportările mele”, din meniul contului. Proiectul atașat (§12)
+  // e documentul de la bifare și de la trimitere, nu cel de la deschiderea ferestrei.
   const [raportare, setRaportare] = useState(false);
   const [raportari, setRaportari] = useState(false);
+  const docRaportare = useRef(p.doc);
+  docRaportare.current = p.doc;
   // Meniul contului (ADR 0120), sub butonul Cont: deschis cu focusul pe primul rând sau, cu săgeata în sus, pe ultimul.
   const [meniuCont, setMeniuCont] = useState<'primul' | 'ultimul' | null>(null);
   const meniuContDeschis = meniuCont !== null;
@@ -984,7 +987,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {raportare ? createPortal(
         <Suspense fallback={null}>
-          <RaportareNoua config={p.config ?? null} intrari={() => p.jurnal?.citeste() ?? []} onInchide={() => { setRaportare(false); }} />
+          <RaportareNoua config={p.config ?? null} intrari={() => p.jurnal?.citeste() ?? []} proiect={() => docRaportare.current}
+            onInchide={() => { setRaportare(false); }} />
         </Suspense>,
         document.body,
       ) : null}
