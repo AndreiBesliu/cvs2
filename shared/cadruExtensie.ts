@@ -109,7 +109,7 @@ export const INCARCATOR = `(() => {
       const url = URL.createObjectURL(new Blob([fisiere[d.intrare]], { type: 'text/javascript' }));
       const modul = await import(url);
       const spatiu = await modul.activeaza(host);
-      spatiu.deschide(document.body);
+      await spatiu.deschide(document.body);
       trimite({ tip: 'pornit' });
     } catch (x) {
       raporteaza(x);
@@ -119,7 +119,7 @@ export const INCARCATOR = `(() => {
 })();`;
 
 /** Amprenta încărcătorului, în forma din CSP: base64(sha256(INCARCATOR)), verificată de `test/unit/csp.extensii.test.ts`. */
-export const AMPRENTA_INCARCATOR = "'sha256-yuvGmR3fNirrtYkFKBHj1udrV1qTzexovMP/Ln7aitw='";
+export const AMPRENTA_INCARCATOR = "'sha256-HVEE9GcI/+wWd3b3RxXEOqzCYX2Zi00aT1D6u7kp7o8='";
 
 /**
  * CSP-ul propriu al cadrului, peste cel moștenit de la aplicație: fără rețea (nici `fetch`, nici `ws:` spre mașină), scripturi

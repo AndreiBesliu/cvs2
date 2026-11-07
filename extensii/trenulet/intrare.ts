@@ -352,8 +352,9 @@ export async function activeaza(host: HostApi): Promise<Spatiu> {
   limbaPeste(host, lucru);
   if (cuMasina) deschiderePeste(host);
   return {
-    deschide(container: HTMLElement): void {
-      void (async () => {
+    // Promisiunea paginii puse și a scripturilor încărcate: gazda spune „pornit” abia după ea (ADR 0139).
+    deschide(container: HTMLElement): Promise<void> {
+      return (async () => {
         const corp = host.fisier('body.html');
         if (!corp) throw new Error('lipsește body.html');
         container.innerHTML = await corp.text();

@@ -14,7 +14,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.7.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.7.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -29,7 +29,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.7.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.7.1.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -72,7 +72,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.1, de la trenulet-18.7.1.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -164,7 +164,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.7.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.7.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -179,7 +179,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.7.0, instalat peste „Planific
   await page.reload();
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.1, de la trenulet-18.7.1.zip');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -523,4 +523,24 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(randuri + 1);
   await faraEroriInJurnal(page);
+});
+
+test('pornirea (ADR 0139): în clipa lui „pornit”, pagina planificatorului e gata (butonul Circuite are handler), de trei ori la rând', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  for (let k = 0; k < 3; k++) {
+    if (await page.locator('iframe.cadru-extensie').count()) {
+      await page.locator('[data-extensii="inchide-fereastra"]').click();
+      await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+    }
+    await page.locator('[data-extensii="buton"]').click();
+    await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
+    // Starea gazdei, citită la fiecare cadru al paginii: la prima apariție a lui „pornit”, cadrul e întrebat pe loc. Înainte,
+    // de cele mai multe ori nici pagina nu era pusă, iar o dată butonul exista fără handler.
+    await page.waitForFunction(() => document.querySelector('[data-testid="spatiu-extensie"]')?.getAttribute('data-stare') === 'pornit', null, { polling: 'raf' });
+    const f = await (await page.locator('iframe.cadru-extensie').elementHandle())!.contentFrame();
+    expect(await f!.evaluate(() => typeof document.querySelector<HTMLButtonElement>('#btn-circuite')?.onclick)).toBe('function');
+  }
 });

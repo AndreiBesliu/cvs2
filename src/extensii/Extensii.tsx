@@ -96,6 +96,14 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   // Repornirea cerută de extensie (ADR 0165): a câta pornire e (cadrul se reface la fiecare), cel mult una la 2 s.
   const [pornire, setPornire] = useState(0);
   const [repornire] = useState(() => repornireRara(() => { setPornire((n) => n + 1); }));
+  // „Se pornește” din prima randare a fiecărei ferestre noi (altă extensie, aceeași redeschisă, o repornire): starea celei de
+  // dinainte („pornit”) nu se mai vede niciun cadru, cât efectul de mai jos încă n-a rulat (ADR 0139). React reface randarea
+  // înainte s-o arate.
+  const [stareaCui, setStareaCui] = useState<{ readonly deschisa: ExtensieInstalata | null; readonly pornire: number }>({ deschisa, pornire });
+  if (stareaCui.deschisa !== deschisa || stareaCui.pornire !== pornire) {
+    setStareaCui({ deschisa, pornire });
+    setStare({ fel: 'porneste' });
+  }
   const limbaRef = useRef(limba);
   limbaRef.current = limba;
   // Gazda senderului, cea de acum: cadrul pornește o dată pe extensie, dar cere de fiecare dată prin ea.

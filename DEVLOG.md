@@ -6009,6 +6009,62 @@ test nu s-a atins; ramura nu e împinsă.
 - **E2e-ul, pregătit pentru suite paralele:** proba podului WiFi ia rețeaua de loopback din `CNCVS2_E2E_RETEA` (`bf91fb1`; trece pe 127.0.0 și pe 127.0.5), iar proba raportorului ia adresa din `baseURL`, nu 4173 scris în probă (`61c75a1`; căzută pe portul 4179 înainte, 11 / 11 după, pe 4179 și pe 4173). Sesiunii incrustațiilor i s-au trimis amândouă precizările (portul în trei locuri din `.tmp/pw.config.ts`, proba raportorului reparată pe `main`); a tăierii le are în brief.
 - **Linia principală** continuă de la ADR 0138; unirea fiecărei linii în `main`, la cuvântul owner-ului.
 
+## 2026-11-06 — 7.9↑: textul, mărimea în pt și inch, proporțiile literelor, crenarea (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, o sa le raspund, aici poti sa continui” (cercetarea, ADR 0138 propus, schița cu cinci întrebări), apoi
+„Yes, 1a–5a”.
+**Started:** 06.11, 14:45. **Completed:** 06.11, 19:28.
+
+- **Alegerea:** restul pragului textului (etapa 7), cel mai vechi gol al roadmap-ului fără mașină, fără schemă nouă (v20 e
+  al incrustațiilor) și fără codul liniilor paralele.
+- **Ce face:** lângă mărime, unitatea (mm, pt, in): mm și in măsoară majuscula, pt e mărimea fontului (72 pt cu Roboto dau
+  majusculele de 18,0578125 mm, arătate sub câmp; un număr convertit își ține valoarea exactă); **Lățimea literelor** și
+  **Înălțimea literelor** (%), cu majusculele tăiate spuse sub câmpuri; **Crenarea fontului** pornită sau oprită; mânerele
+  păstrează un text drept fără aldin la o scalare neuniformă (prin lățimea literelor; pe o curbă, vectori; aldin, refuzat
+  ca înainte, fiindcă literele lui au arce: corectat în ADR 0138 la acceptare).
+- **Codul:** `src/text/asezare.ts` (factorii hărții, înaintea cursivului; rândurile după majuscula tăiată, coloanele după
+  lățime; `majuscula` în așezare), `src/text/marime.ts` (conversiile), `src/model/blocText.ts` (`unitate`, `proportii`,
+  `crenare`, aldinul pe majuscula tăiată, `scalatNeuniform`), `src/model/transformare.ts`, `src/app/PanouText.tsx`.
+- **Proba:** corpusul Python (`CAZURI_PROPORTII`, `proportii.json`; plus `caseta-proportii`, `cerc-proportii`,
+  `aldin-proportii`), cu probele pe hârtie în oracol; `test/unit/text.proportii.test.ts`; e2e (unitatea, întoarcerea exactă
+  în mm, 50 %, 150 %, crenarea, redeschiderea; textul pe curbă cu literele la 150 %); fixturile vechi ale corpusului,
+  neschimbate (100 % și 100 % dau textul de azi bit cu bit). Patru uși noi în manual (83), în ambele limbi.
+- **Porțile:** unitarele 8465, 0 căzute (8 sărite); e2e 351 / 351 la a treia rulare (în primele două, câte o cădere fără
+  legătură cu felia, de fiecare dată în altă probă: `cont.spec.ts:29`, butonul Cont negăsit în 5 s la prima încărcare, și
+  `cam-bazin.spec.ts:229`, cu mesajul nepăstrat; amândouă trec singure); emulatoarele nerulate local (porturile lor, ocupate
+  de alt proces), rulate în CI-ul complet; traducerile, 0 lipsă; mărimile: pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul
+  504,5 / 550 (+1,4), /admin 105,4 / 200.
+- **Otrăvurile:** 28; prima rulare (`43ae768`): 27 prinse, U04 scăpată (legătura panoului spre curbă: nicio probă nu punea un text pe curbă la altă înălțime a literelor) → pasul nou din proba e2e a textului pe curbă, dedesubt, cu literele la 150 % (`920078b`), apoi U04 prinsă.
+- **CI:** rapid verde pe `920078b` (`42235518619`; cea de pe `43ae768` anulată de push-ul următor); complet căzut pe `43ae768`
+  (`42235093565`) în proba pluginului, reparată în 3.Xf (intrarea de mai jos); apoi complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
+- **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
+- **Roadmap-ul** (întrebarea owner-ului, „ai verificat roadmap, este actualizat?”): titlul scurt al lui ADR 0138 („Mărimea
+  textului în puncte și inch”, nu „Textul”, din cauza celui de-al doilea „:”) și coada owner-ului cu răspunsurile pe care le
+  așteaptă liniile paralele (ADR 0170, ADR 0180), ale căror ADR-uri stau pe ramurile lor până la unire.
+- **Rămâne:** 7.9↑b, spațierea literelor alese (din panou, în mm, ADR 0138 §5).
+
+## 2026-11-06 — 3.Xf: „pornit” abia după pagina extensiei (Model: Claude Opus 5.5)
+
+**Prompt:** niciunul nou: reparația cerută de regula „Un CI roșu pe `main` e incidentul numărul unu”, în felia 7.9↑.
+**Started:** 06.11, 17:14. **Completed:** 06.11, 19:28.
+
+- **Căderea:** CI-ul complet pe `43ae768` (`42235093565`), `trenulet.spec.ts:355`: „Închide” al foii Circuite, nevăzut 30 s;
+  „Circuite” fusese apăsat chiar după „pornit”, iar textul listei trecuse (proba lui nu cere vizibilitatea).
+- **Cauzele:** în clipa lui „pornit”, de cinci ori la rând, pagina planificatorului nu era gata (de patru ori nici pusă, o
+  dată butonul fără handler). Două cauze, despărțite apoi de câte o otravă (fiecare, singură, face proba nouă să cadă):
+  încărcătorul trimitea „pornit” imediat după `deschide`, care își punea pagina asincron; iar la redeschidere și la
+  repornire, fereastra arăta un cadru starea celei de dinainte („pornit”), fiindcă efectul o punea pe „se pornește” abia
+  după randare (o așteptare a lui „pornit” trecea pe loc, înaintea cadrului nou). Cele cinci măsurători le amestecau.
+- **Reparația:** încărcătorul așteaptă promisiunea lui `deschide` (`Spatiu.deschide`: `void | Promise<void>`); intrarea
+  planificatorului o întoarce; starea ferestrei se reface în randare când se schimbă extensia deschisă sau numărul pornirii;
+  amprenta nouă a încărcătorului (constanta și `firebase.json`); pachetul 18.7.1. ADR 0139.
+- **Proba:** e2e nou, de trei ori la rând: în clipa lui „pornit”, butonul „Circuite” are handler; proba căzută trece fără
+  nicio așteptare în plus. Porțile: unitarele 8464 trecute și una căzută (titlul ADR 0139, netradus: tradus apoi, iar proba
+  lui, rulată din nou, verde); e2e 352 / 352; totalul 504,6 / 550.
+- **Otrăvurile:** 3; toate prinse (`72def2a`): X01 (intrarea care nu-și întoarce pagina) și X02 (starea ferestrei de dinainte), fiecare singură, de proba nouă a pornirii; X03 (versiunea veche) de probele instalării.
+- **CI:** complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
+- **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
+
 ## 2026-11-06 — Felia 10.3↑ pornită: tăierea și conversia vectorilor (ADR 0180, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi „Vector trim/convert, stage 10” (owner-ul, în
