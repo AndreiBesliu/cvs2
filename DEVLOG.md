@@ -6421,6 +6421,70 @@ sesiunea principală, care a pornit linia).
   (planificatorul pornit, 0 erori în jurnal), apoi „Instalată”.
 - **Rămâne:** unirea în `main`, la cuvântul owner-ului; o versiune nouă a lui Easy 3Draw cere de acum versiunea ridicată în
   `extensii/trenulet/extensie.json` și `node scripts/biblioteca.ts --scrie`.
+## 2026-11-07 — Felia 15.B↑b: proiectul atașat la raportare și păstrarea tichetelor (ADR 0116 §12, §16, §18) (Model: Claude Opus 5.5)
+
+**Prompt:** sarcina de la sesiunea principală (owner-ul întrebase ce se mai poate face în paralel): „Felia **15.B↑b** din cncvs2
+(restul raportărilor clienților, ADR 0116 §C și §F), într-un worktree al tău, pe o linie paralelă cu cele care lucrează deja”,
+cu deciziile luate (răspunsurile din 01.11 și nota din 02.11): proiectul atașat în Storage, cel mult 10 MB, doar cu bifa,
+citit de cine poate citi tichetul; jobul zilnic care șterge tichetele rezolvate după `zilePastrareTichete`, cu atașamentele
+și marcajul de rulare; fraza păstrării în nota de confidențialitate; probele pe emulatoare, regulile, e2e-ul dialogului cu
+bifa; worktree-ul `C:\Users\besli\cncvs2-lucru\raportari`, ramura `wip/15.B-raportari` din `main` (`80cc176`), e2e pe 4177 și
+`127.0.4`, canalul `raportari`; fără publicarea funcțiilor, a regulilor și a indecșilor din ramură; fără unire în `main`.
+**Started:** 07.11, 14:44. **Completed:** 07.11, 17:18 (codul în `d2b5974` și `b741241`).
+
+- **Proiectul atașat (§12):** bifa **Atașează proiectul** în raportare, cu mărimea sub ea și refuzul peste 10 MB; pleacă
+  JSON-ul canonic al documentului de la trimitere (aceiași octeți ca salvarea din browser), gzip prin `CompressionStream`,
+  base64, în cererea `raporteaza`. Serverul (`functions/src/tichete/proiect.ts`) cere base64 canonic, gzip, despachetare
+  plafonată la 10 MB, UTF-8 strict și `schema` întreagă; fișierul urcă în Storage (`tichete/{id}/proiect.json.gz`, prin
+  `functions/src/fisiere.ts`) după refuzurile ieftine și înaintea tranzacției tichetului, iar o tranzacție căzută îl scoate.
+  Acțiunea `proiect` îl dă înapoi doar cui poate citi tichetul; fila **Tichete** îl descarcă, despachetat și verificat pe
+  mărime și SHA-256. `storage.rules` refuză orice cerere din client (o regulă de citire „cine poate citi tichetul” ar fi cerut
+  rolul IAM al regulilor cross-service, pe care publicarea din workflow nu-l poate acorda, și CORS pe bucket).
+- **Păstrarea (§16):** `rezolvatLa` la rezolvare (scos la redeschidere); jobul `pastrareTichete` (04:00, cu marcaj) șterge
+  tichetele rezolvate mai vechi decât `zilePastrareTichete` (citit la rulare), cu poza, proiectul și auditul
+  `tichete.sterge`, apoi orfanii din Storage (fără tichet, mai vechi de o oră); 500 de tichete și 200 s pe rulare; eșecurile
+  pe element numărate și aruncate la final (marcajul: galben la unul, roșu la două la rând).
+- **Nota (§18):** fraza păstrării (implicit un an de la rezolvare, cât stabilește operatorul). Operatorul și adresa de
+  contact rămân marcate, la owner.
+- **Publicarea:** ținta nouă `stocare` în `TINTE_SERVER`; `firebase.json` (generat de `scripts/firebase-json.ts`) are regulile
+  Storage și emulatorul Storage pe 9195; `scripts/test-emulator.ts` îi dă un dosar temporar al rulării (emulatorul Storage
+  șterge `<temp>/firebase/storage/blobs` la oprire). Funcția `tichete`: 512 MiB, 120 s. Bucket-ul implicit al proiectului de
+  test există (`cncvectorstudio-test.firebasestorage.app`, citit cu `apps:sdkconfig`).
+- **Găsite pe drum:** expresia `RE_BASE64` cade în V8 („Maximum call stack size exceeded”) între 4 și 8 MB (poza, sub
+  546 kB, e în siguranță), deci proiectul se verifică decodat și recodat; regulile Storage nu primesc un `match` gol;
+  emulatorul Storage ignoră `ifGenerationMatch`, deci garda „nu acoperă” a plecat cu otrava ei; build-ul determinist a prins
+  o bucată nouă, `poza`, când bucata contului a importat `baza64` din contractul pozei: are acum copia ei, legată de original
+  printr-o probă de paritate.
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele,
+  traducerile (644, 0 lipsă), 8 529 de teste unitare (0 căderi, 8 sărite), build-ul determinist, emulatoarele (101 probe ale
+  funcțiilor și regulilor; e2e pe emulatoare 20 / 21: căderea e proba Diagnozei din `admin.emulator.spec.ts`, care cade la fel
+  pe baza curată `80cc176`, pe mașina asta: pornirea la rece a lui `logClientError` trece de 5 s; CI-ul de noapte e verde),
+  e2e 355 / 355 pe 4177 (4 căderi de încărcare în rularea paralelă, verzi la reluare).
+- **Mărimile**, față de un build curat al lui `80cc176`: pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 508,8 / 550,
+  neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 → 106,5 / 200.
+- **Otrăvurile** (`test/otravuri/15.B-b.py`, 41, dintr-o clonă în afara Drive-ului): 41 / 41 prinse la prima rulare (7 pe
+  hârtie; 31 pe emulatoarele Firestore și Storage: callable-ul, jobul, regulile; 3 de interfață, prin e2e-ul pe emulatoare).
+  Trei probe s-au întărit înainte, când lista a arătat că otrava ar fi scăpat: UTF-8 stricat într-un text JSON (fără el,
+  octetul invalid făcea JSON-ul greșit oricum), spionul scrierilor (scoaterea după tranzacție ascundea o încărcare degeaba),
+  cursorul pe tichetele sărite. Baza e2e, prima pe emulatoare proaspete, a trecut de 60 s (patru callable-uri reci): proba are
+  acum 120 s (`b741241`).
+- **Publicat:** canalul `raportari` al instanței de test, <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (până pe
+  07.12; build-ul `58a4748`), verificat în browserul aplicației: versiunea din antet, consola fără erori, jurnalul local gol.
+  Bifa și mărimea cer contul deschis; atașarea reală, descărcarea și jobul vin cu funcțiile din `main`, după unire.
+- **Unirea cu `main`** (cererea sesiunii principale: „adu `main` în ramura ta cu un merge (nu rebase) și rulează porțile pe
+  rezultat”): `main` la `1bf99c5` (12.1↑ cu documentul v20, 10.3↑–10.3↑b), merge-ul `c4e1e4c`. Conflicte doar de adăugare la
+  final (DEVLOG, `docs/otravuri.md`: întâi intrările din `main`, apoi ale ramurii); restul s-a unit singur. Porțile pe
+  rezultat: compilatoarele, importurile (1 026 de module, 0 încălcări), licențele, traducerile (649, 0 lipsă), 8 588 de teste
+  unitare (0 căderi, 8 sărite), build-ul determinist, e2e 359 / 359 pe 4177 la prima trecere, emulatoarele (pornite abia
+  după ce suita altei sesiuni a eliberat 4173 și 9095 / 8085 / 5005): 101 / 101 probe ale funcțiilor și regulilor, e2e pe
+  emulatoare 21 / 21 (și proba Diagnozei, care cădea pe mașina asta). Mărimile, față de un build curat al lui `1bf99c5`:
+  pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 519,5 / 550, neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 →
+  106,5 / 200. Otrăvurile nu s-au reluat: unirea n-a atins modulele și probele feliei. Canalul `raportari`, republicat din
+  `319d4c2` (aceeași adresă, până pe 07.12): după „New version ready” → Reload, `319d4c21024e`, consola fără erori.
+- **Rămâne:** unirea în `main` (decizia owner-ului), apoi publicarea serverului pe test (funcțiile, regulile Firestore și
+  Storage, indecșii) și o raportare cu proiectul pe instanța de test; pe canal se vede doar bifa. Felia următoare a liniei ar
+  fi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, cu Storage-ul acum, registrul probei), după cuvântul
+  owner-ului.
 ## 2026-11-07 — 3.6g: fereastra Imprimanta, Creality K1C prin WiFi (ADR 0190, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Răspund în formular”, apoi „am raspuns si salvat” (owner-ul, în sesiunea liniei). Răspunsurile din formularul
@@ -6625,3 +6689,89 @@ va face update si pe main ulterior”.
   (ADR 0191, „Felia 3.6j”, recenzia), cu probele lor: `imprimanta.feliere.recenzie.test.ts` (22), fixtura profilelor
   OrcaSlicer K1, e2e-ul extins; otrăvurile, 50 (+17 pentru reparații). Tot recenzia a prins cifrele „măsurate” puse de mine
   pe o placă de 20 × 20 (erau ale plăcii de 40 × 20, cu gaura și fanta).
+
+## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea liniei, la „Unim `wip/3.Xg-biblioteca` în `main`?”).
+**Started:** 07.11, 19:05. **Completed:** 07.11, 22:05.
+
+- **Ce intră:** `wip/3.Xg-biblioteca` până la `93192bb`: ADR 0230 (acceptat, „Da, 1a–7a”) și felia 3.Xg (biblioteca
+  extensiilor; otrăvurile 37 / 37). Unirea `58e73c0` (primul părinte `1bf99c5` = `main`, al doilea `93192bb`), făcută din
+  worktree (`git commit-tree` pe arborele ramurii, apoi avans rapid pe ramură și pe `main`), fără checkout-ul principal;
+  `CLAUDE.md` după unire (starea, decizia): `63d6af5`.
+- **Conflictele:** niciunul: `main` era deja în ramură (`1daf840`), deci arborele unirii e chiar al lui `93192bb` (`3fba5e1`).
+- **CI pe `63d6af5`:** rapid verde (`42395265997`). Complet (`42395280530`): la prima încercare, e2e 365 / 366, cu
+  `extensii.lucru.spec.ts:277` căzută (a doua formă propusă de extensie, după ce fila ei e arătată din nou: în captura CI-ului,
+  extensia n-a primit niciun răspuns, iar „Importă” n-a apărut în 30 s); la a doua încercare, verde întreg (e2e-ul și
+  emulatoarele).
+- **Căderea, cercetată:** local, pe `63d6af5`, aceeași probă a picat de 2 ori din 9 cât mașina era încărcată de alte sesiuni
+  (CPU 82 %; o dată la „Importă”, o dată la instalare); alternat cu `main` dinaintea unirii (`8003cb2`), la încărcare egală
+  (1, 4 și 8 lucrători): 0 căderi din 76 pe fiecare, cu aceeași durată pe probă (~6 s). Felia nu atinge drumul propunerii
+  (`App.tsx`, `cadru.ts`, `forme.ts`). Rămâne o cădere legată de încărcare, de întărit separat.
+- **Publicat pe test:** `63d6af5` (rularea `42407804922`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune`
+  `63d6af5b411e`; `verifica-test.ts`: „publicat întreg pe test, din arborele curat” (condiția publicării pe live). Verificat
+  acolo, în Edge fără fereastră: catalogul (HTTP 200, `no-cache`), pachetul (417 748 de octeți, amprenta egală cu catalogul,
+  `immutable`), rândul lui Easy 3Draw din meniu („Instalează”), fereastra „din biblioteca cvs2”, instalarea, „Deschide”
+  (extensia pornită), apoi „Instalată”.
+- **Rămâne:** pe live, biblioteca și Easy 3Draw ajung cu următoarea publicare a aplicației (la cuvântul owner-ului); în
+  checkout-ul principal, `main`-ul local e în urmă cu `58e73c0`, `63d6af5` și intrarea asta (`git pull`, merge); proba
+  `extensii.lucru.spec.ts:277`, de întărit (clicul în cadru imediat după ce fila extensiei reapare).
+
+## 2026-11-07 — Unirea raportărilor (15.B↑b) și a imprimantei (3.6g–3.6i) în main, publicarea pe test (Model: Claude Opus
+5.5)
+
+**Prompt:** „Da, transmite” (owner-ul, în sesiunea liniei 15.B↑b, la „Să-i transmit sesiunii principale să unească 15.B↑b
+în `main` și să publice serverul pe test?”), transmis aici de sesiunea liniei; aici, „verifica din nou”; apoi, din sesiunea
+imprimantei, „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica
+ceva de aici incolo se va face update si pe main ulterior”; la publicarea refuzată din greșeală, „Qm dat din greseala”.
+**Started:** 07.11, 19:25. **Completed:** 07.11, 22:42.
+
+- **Verificarea de la „verifica din nou”:** între timp, sesiunea bibliotecii unise 3.Xg în `main` (`58e73c0`, la „Da,
+  unește” al owner-ului, în sesiunea ei). Cuvintele owner-ului pentru celelalte două uniri, găsite în transcrierile liniilor.
+- **Unirile:** 15.B↑b peste `63d6af5` (`b501571`; conflicte doar în `DEVLOG.md` și `docs/otravuri.md`, adăugări ale
+  ambelor părți, păstrate); imprimanta până la `cd2f234` (`6e61bee`; conflicte în `DEVLOG.md` și
+  `docs/traduceri/roadmap.en.json`, câte o intrare nouă pe fiecare parte); apoi DEVLOG-ul bibliotecii (`392bc4b`), adus cu
+  `e9cf6ee`. `firebase.json` unit e chiar ieșirea generatorului (CSP-ul imprimantei, Storage-ul raportărilor). Copia locală
+  `.tmp/emu.ts` pornește acum și Storage, cu dosarul temporar al rulării.
+- **Ordinea pe test:** CI-ul complet pe `63d6af5` căzuse întâi (`extensii.lucru.spec.ts:277`; sesiunea bibliotecii a
+  cercetat căderea: încărcarea; verde la a doua încercare). Push-ul unirilor a așteptat publicarea bibliotecii și DEVLOG-ul
+  ei, ca o publicare a unui commit mai vechi să nu vină după una mai nouă (ar fi întors serverul).
+- **Porțile:** pe `b501571`, traducerile, compilatoarele, importurile, licențele, build-ul determinist și 8 600 de teste
+  unitare (0 căzute); e2e-ul și emulatoarele, sub CPU 82–96 % (alte sesiuni), cu 2 + 7 căderi, toate trecute reluate singure;
+  `sugestii.emulator.spec.ts:97` (intrarea cu parola, blocată) a trecut 3 / 3 și fără 15.B↑b (`63d6af5`, în clona
+  otrăvurilor), și cu ea: încărcarea, nu felia. Pe `6e61bee` (cu imprimanta): 8 652 de teste unitare (0 căzute), build-ul
+  determinist, e2e 374 / 375 (căzuta, `traseu.oracol.spec.ts:626`, trecută singură), emulatoarele 101 / 101 și 21 / 21. Pe
+  `e9cf6ee`: traducerile, probele documentației (24 / 24), build-ul determinist (282 de fișiere identice).
+- **Mărimile:** pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.
+- **CI:** pe `e9cf6ee`, rapid verde (`42409120570`: cele șase felii și oracolul exportului 2D) și complet verde
+  (`42409122839`).
+- **Publicat pe test:** rularea `42412022925`, întâi serverul (regulile Storage eliberate în `firebase.storage`, fără vreun
+  rol în plus pentru contul WIF; regulile Firestore; indecșii; cele 12 funcții, cu `pastrareTichete` creată), apoi
+  hosting-ul (282 de fișiere); amprenta `meta/deployment` = `e9cf6ee3309e` pe toate țintele (hosting, funcții, reguli,
+  indecși, stocare). <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `e9cf6ee3309e`; CSP-ul are `http:`
+  în `connect-src`; catalogul extensiilor și `/admin` răspund 200. Rândul owner-ului din fișă (proba raportărilor pe adresa
+  principală) apare în `/admin` cu următoarea publicare.
+
+## 2026-11-07 — Proba propunerii unei extensii, întărită: clicul pierdut după ce fereastra ei reapare (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, aici” (la „Întăresc aici proba instabilă `extensii.lucru.spec.ts:277`?”), apoi „Da, descarcă” (urma probei
+căzute, din CI).
+**Started:** 07.11, 22:10. **Completed:** 07.11, 22:55.
+
+- **Ce s-a întâmplat:** în CI-ul complet pe `63d6af5` (rularea `42395280530`, prima încercare), proba „formele: o extensie
+  propune un SVG…” a așteptat „Importă” 25 s. Urma ei (artefactul `probe-cazute`, 936 KB): al doilea clic pe „Propune o
+  formă” a fost dat la ~60 ms după ce fereastra extensiei a reapărut (fila, după Proiectare), în același punct ca primul, cu
+  verificările lui Playwright trecute în cadru; după el, nicio cerere a extensiei, nicio eroare în pagină, iar extensia avea
+  un singur răspuns. Clicul n-a ajuns la buton.
+- **Local (Windows), nereprodus:** 0 clicuri pierdute din 480 (fila ascunsă și arătată, apoi imediat un clic în cadru, cu și
+  fără procesorul paginii și al cadrului încetinit de 6 ori, 4 rulări în paralel). Drumul propunerii, notat la fiecare
+  graniță (clicul, mesajele portului, fereastra, `inert`, dialogurile), merge. Cade pe Linux, în CI, ca probele pe care le
+  pomenește `playwright.config.ts`.
+- **Întărirea** (`test/e2e/extensii.lucru.spec.ts`): `clicDupaReaparitie` face clicul adevărat și îl repetă doar dacă n-a
+  ajuns la buton (semnul îl pune clicul, o dată), deci propunerea nu pleacă de două ori; la capăt, extensia are exact două
+  răspunsuri („forme: deschis” de două ori), nu doar ultimul.
+- **Probat:** cu clicuri pierdute simulate în cadru (oprite pe document, înaintea butonului): 0, 1 și 2 trec, cu două
+  răspunsuri; toate pierdute, pică; proba veche, cu un clic pierdut, pică exact ca în CI („Importă” nu apare în 30 s). Mutația
+  „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
+  și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului.

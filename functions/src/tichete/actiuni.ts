@@ -5,14 +5,16 @@ import { COLECTII_PERSONAL, normalizeazaEmail } from '../../../shared/personal.t
 import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
 import { esteVersiune } from '../../../shared/sugestii.ts';
 import {
-  COLECTIE_LIMITE_TICHETE, COLECTIE_TICHETE, curataAmprentele, curataAplicatia, curataTextTichet, esteFelTichet, esteIdTichet,
-  esteStareTichet, PLAFON_RAPORTARILE_MELE, RASPUNS_MAX, RASPUNSURI_MAX, TEXT_MAX, TICHETE_PE_ZI, ziUtc, type FelTichet,
-  type RaportareaMea, type RaspunsRaportarileMele, type RaspunsTichet, type StareTichet,
+  caleProiectTichet, COLECTIE_LIMITE_TICHETE, COLECTIE_TICHETE, curataAmprentele, curataAplicatia, curataTextTichet, esteFelTichet,
+  esteIdTichet, esteStareTichet, metaProiectDin, PLAFON_RAPORTARILE_MELE, RASPUNS_MAX, RASPUNSURI_MAX, TEXT_MAX, TICHETE_PE_ZI, ziUtc,
+  type FelTichet, type RaportareaMea, type RaspunsProiectTichet, type RaspunsRaportarileMele, type RaspunsTichet, type StareTichet,
 } from '../../../shared/tichete.ts';
 import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';
+import type { Fisiere } from '../fisiere.ts';
 import { drepturiIn } from '../personal/drepturi.ts';
 import { pozaDin } from '../poza.ts';
+import { proiectDin } from './proiect.ts';
 
 /**
  * Raportările clienților (tichetele, ADR 0116 §C, felia 15.B↑a). Raportează din editor oricine are contul deschis (adresa
@@ -20,6 +22,11 @@ import { pozaDin } from '../poza.ts';
  * starea, pe versiunea văzută. Autorul își vede raportările, cu răspunsurile echipei, și și le marchează citite. Drepturile se
  * citesc în tranzacția fiecărei acțiuni; raportarea și fiecare schimbare a personalului au rândul lor de audit în aceeași
  * tranzacție, fără textul omului (auditul ține felul și mărimile).
+ *
+ * Proiectul atașat (§12, felia 15.B↑b), doar cu bifa: fișierul intră în Storage înaintea tranzacției care face tichetul (o
+ * tranzacție se poate relua, o scriere în Storage nu are de ce), iar o tranzacție căzută îl șterge la loc; ce rămâne totuși
+ * fără tichet (o funcție oprită între cele două) îl șterge jobul de păstrare. Îl dă înapoi doar cui poate citi tichetul.
+ * Starea `rezolvat` pune `rezolvatLa` (redeschiderea îl scoate): de la el numără jobul păstrarea.
  */
 
 /** Ce citește serverul din tokenul omului (verificat de Firebase la intrarea în callable). */
@@ -47,7 +54,20 @@ function tinta(d: Record<string, unknown>): { readonly id: string; readonly vers
   return { id, versiune };
 }
 
-async function raporteaza(db: Firestore, uid: string, token: TokenTichet | null, d: Record<string, unknown>, acum: Date): Promise<RaspunsTichet> {
+/**
+ * Câte raportări a trimis omul azi (ziua UTC), sau refuzul: fără cont deschis (și fără să fie în personal), ori plafonul zilei
+ * atins. Aceeași judecată înaintea proiectului (ca un proiect refuzat să nu mai urce) și în tranzacție.
+ */
+function raportariAzi(cont: DocumentSnapshot, staff: DocumentSnapshot, limita: DocumentSnapshot, zi: string): number {
+  if (!cont.exists && !staff.exists) throw new HttpsError('permission-denied', 'raportarea cere contul deschis, cu adresa confirmată');
+  const azi = limita.get('zi') === zi ? numar(limita.get('numar')) : 0;
+  if (azi >= TICHETE_PE_ZI) throw new HttpsError('resource-exhausted', `cel mult ${TICHETE_PE_ZI} raportări pe zi; mai scrie mâine`);
+  return azi;
+}
+
+async function raporteaza(
+  db: Firestore, fisiere: Fisiere, uid: string, token: TokenTichet | null, d: Record<string, unknown>, acum: Date,
+): Promise<RaspunsTichet> {
   const fel = d['fel'];
   if (!esteFelTichet(fel)) throw argument('felul: problemă, idee sau întrebare');
   const text = curataTextTichet(d['text']);
@@ -57,34 +77,57 @@ async function raporteaza(db: Firestore, uid: string, token: TokenTichet | null,
   const amprente = curataAmprentele(d['amprente'] ?? []);
   if (amprente === null) throw argument('amprentele erorilor');
   const poza = pozaDin(d['poza']);
-  return db.runTransaction(async (tx) => {
-    // Toate citirile tranzacției înaintea scrierilor (Firestore o cere).
-    const drepturi = await drepturiIn(tx, db, uid);
-    const cont = await tx.get(db.collection(COLECTIE_CONTURI).doc(uid));
-    const staff = await tx.get(db.collection(COLECTII_PERSONAL.staff).doc(uid));
-    if (!cont.exists && !staff.exists) throw new HttpsError('permission-denied', 'raportarea cere contul deschis, cu adresa confirmată');
-    const limita = db.collection(COLECTIE_LIMITE_TICHETE).doc(uid);
-    const l = await tx.get(limita);
-    const zi = ziUtc(acum);
-    const azi = l.get('zi') === zi ? numar(l.get('numar')) : 0;
-    if (azi >= TICHETE_PE_ZI) throw new HttpsError('resource-exhausted', `cel mult ${TICHETE_PE_ZI} raportări pe zi; mai scrie mâine`);
-    const ref = db.collection(COLECTIE_TICHETE).doc();
-    const cand = Timestamp.fromDate(acum);
-    const autorEmail = sir(cont.get('email')) ?? sir(staff.get('email')) ?? normalizeazaEmail(token?.email);
-    // Poza stă în documentul ei (fila nu aduce octeții cu lista); tichetul ține doar tipul și mărimea.
-    const meta = poza ? { tip: poza.tip, marime: poza.octeti.length } : null;
-    tx.set(limita, { zi, numar: azi + 1 });
-    tx.create(ref, {
-      schema: 1, autor: uid, autorEmail, fel, text, aplicatia, amprente, poza: meta, stare: 'nou', creatLa: cand, modificatLa: cand,
-      raspunsuri: [], ultimulRaspunsLa: null, necititeAutor: 0, versiune: 1,
+  const proiect = proiectDin(d['proiect']);
+  const zi = ziUtc(acum);
+  const refCont = db.collection(COLECTIE_CONTURI).doc(uid);
+  const refStaff = db.collection(COLECTII_PERSONAL.staff).doc(uid);
+  const refLimita = db.collection(COLECTIE_LIMITE_TICHETE).doc(uid);
+  const ref = db.collection(COLECTIE_TICHETE).doc();
+  const cale = caleProiectTichet(ref.id);
+  if (proiect) {
+    // Refuzurile ieftine întâi: un proiect care oricum nu se primește nu mai urcă în Storage. Tranzacția le judecă din nou.
+    const [c, s, l] = await db.getAll(refCont, refStaff, refLimita);
+    if (!c || !s || !l) throw new Error('getAll a întors mai puține documente decât a cerut');
+    raportariAzi(c, s, l, zi);
+    await fisiere.scrie(cale, proiect.gz, 'application/gzip');
+  }
+  try {
+    return await db.runTransaction(async (tx) => {
+      // Toate citirile tranzacției înaintea scrierilor (Firestore o cere).
+      const drepturi = await drepturiIn(tx, db, uid);
+      const cont = await tx.get(refCont);
+      const staff = await tx.get(refStaff);
+      const azi = raportariAzi(cont, staff, await tx.get(refLimita), zi);
+      const cand = Timestamp.fromDate(acum);
+      const autorEmail = sir(cont.get('email')) ?? sir(staff.get('email')) ?? normalizeazaEmail(token?.email);
+      // Poza stă în documentul ei (fila nu aduce octeții cu lista); tichetul ține doar tipul și mărimea. Proiectul, în Storage.
+      const meta = poza ? { tip: poza.tip, marime: poza.octeti.length } : null;
+      tx.set(refLimita, { zi, numar: azi + 1 });
+      tx.create(ref, {
+        schema: 1, autor: uid, autorEmail, fel, text, aplicatia, amprente, poza: meta, proiect: proiect?.meta ?? null, stare: 'nou',
+        creatLa: cand, modificatLa: cand, rezolvatLa: null, raspunsuri: [], ultimulRaspunsLa: null, necititeAutor: 0, versiune: 1,
+      });
+      if (poza && meta) tx.create(ref.collection(COLECTIE_POZE).doc(ID_POZA), { schema: 1, ...meta, octeti: poza.octeti, creataLa: cand });
+      scrieAudit(tx, db, {
+        cand, cine: uid, rol: drepturi.rol, actiune: 'tichete.raporteaza', tinta: `${COLECTIE_TICHETE}/${ref.id}`, inainte: null,
+        dupa: {
+          fel, caractere: [...text].length, amprente: amprente.length, poza: meta,
+          proiect: proiect ? { marime: proiect.meta.marime, comprimat: proiect.meta.comprimat } : null,
+        },
+      });
+      return { ok: true, id: ref.id, schimbat: true, versiune: 1 };
     });
-    if (poza && meta) tx.create(ref.collection(COLECTIE_POZE).doc(ID_POZA), { schema: 1, ...meta, octeti: poza.octeti, creataLa: cand });
-    scrieAudit(tx, db, {
-      cand, cine: uid, rol: drepturi.rol, actiune: 'tichete.raporteaza', tinta: `${COLECTIE_TICHETE}/${ref.id}`, inainte: null,
-      dupa: { fel, caractere: [...text].length, amprente: amprente.length, poza: meta },
-    });
-    return { ok: true, id: ref.id, schimbat: true, versiune: 1 };
-  });
+  } catch (e) {
+    // Tichetul n-a ieșit: proiectul urcat nu mai are al cui fi. O ștergere căzută rămâne jobului de păstrare (orfanii).
+    if (proiect) {
+      try {
+        await fisiere.sterge(cale);
+      } catch (e2) {
+        await logServerError('callable:tichete', e2, { uid, etapa: 'proiectul unui tichet care n-a ieșit', cale }, db, acum);
+      }
+    }
+    throw e;
+  }
 }
 
 /** Un tichet cum îl vede autorul: răspunsurile echipei fără cine le-a scris. */
@@ -100,6 +143,7 @@ function raportareaDin(s: DocumentSnapshot): RaportareaMea {
     creatLa: ms(s.get('creatLa')),
     raspunsuri: (Array.isArray(raspunsuri) ? raspunsuri : []).map((r: unknown) => ({ text: sir(obiect(r)['text']) ?? '', la: ms(obiect(r)['la']) })),
     necitite: numar(s.get('necititeAutor')),
+    proiect: metaProiectDin(s.get('proiect'))?.marime ?? null,
   };
 }
 
@@ -182,7 +226,8 @@ async function schimbaStarea(db: Firestore, uid: string, d: Record<string, unkno
     const inainte: unknown = t.get('stare');
     if (inainte === stare) return { ok: true, id, schimbat: false, versiune };
     const cand = Timestamp.fromDate(acum);
-    tx.update(ref, { stare, modificatLa: cand, versiune: versiune + 1 });
+    // De la `rezolvatLa` numără jobul păstrarea (ADR 0116 §16); un tichet redeschis nu se mai șterge.
+    tx.update(ref, { stare, rezolvatLa: stare === 'rezolvat' ? cand : null, modificatLa: cand, versiune: versiune + 1 });
     scrieAudit(tx, db, {
       cand, cine: uid, rol: drepturi.rol, actiune: 'tichete.stare', tinta: `${COLECTIE_TICHETE}/${id}`, inainte: { stare: inainte ?? null },
       dupa: { stare },
@@ -192,22 +237,46 @@ async function schimbaStarea(db: Firestore, uid: string, d: Record<string, unkno
 }
 
 /**
- * Callable-ul `tichete`: `{ actiune: 'raporteaza' | 'mele' | 'citit' | 'raspunde' | 'stare', … }`; refuzurile sunt
- * `HttpsError`-uri cu motivul.
+ * Proiectul atașat unui tichet, dat înapoi cui poate citi tichetul (ca regulile lui: autorul, `tichete.citeste`,
+ * `tichete.raspunde`, owner-ul): fișierul comprimat, cu meta din tichet. Fila Tichete îl despachetează și îi verifică
+ * amprenta. Un tichet cu meta, dar fără fișier, e o stricăciune: intră în jurnal.
+ */
+async function proiectul(db: Firestore, fisiere: Fisiere, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsProiectTichet> {
+  const id = d['id'];
+  if (!esteIdTichet(id)) throw argument('id-ul tichetului');
+  const ref = db.collection(COLECTIE_TICHETE).doc(id);
+  const { drepturi, t } = await db.runTransaction(async (tx) => ({ drepturi: await drepturiIn(tx, db, uid), t: await tx.get(ref) }), { readOnly: true });
+  if (!t.exists) throw new HttpsError('not-found', 'tichetul nu există');
+  const poate = t.get('autor') === uid || drepturi.permisiuni.has('tichete.citeste') || drepturi.permisiuni.has('tichete.raspunde');
+  if (!poate) throw new HttpsError('permission-denied', 'proiectul îl văd doar autorul și personalul care citește tichetele');
+  const meta = metaProiectDin(t.get('proiect'));
+  if (!meta) throw new HttpsError('not-found', 'tichetul n-are proiect atașat');
+  const gz = await fisiere.citeste(caleProiectTichet(id));
+  if (!gz) {
+    await logServerError('callable:tichete', new Error(`proiectul tichetului ${id} lipsește din Storage`), { uid, actiune: 'proiect' }, db, acum);
+    throw new HttpsError('not-found', 'fișierul proiectului lipsește; eroarea e în jurnal');
+  }
+  return { ok: true, id, proiect: gz.toString('base64'), meta };
+}
+
+/**
+ * Callable-ul `tichete`: `{ actiune: 'raporteaza' | 'mele' | 'citit' | 'raspunde' | 'stare' | 'proiect', … }`; refuzurile sunt
+ * `HttpsError`-uri cu motivul. `fisiere`: Storage-ul proiectelor atașate.
  */
 export async function trateazaTichetul(
-  db: Firestore, uid: string | null, token: TokenTichet | null, data: unknown, acum: Date = new Date(),
-): Promise<RaspunsTichet | RaspunsRaportarileMele> {
+  db: Firestore, fisiere: Fisiere, uid: string | null, token: TokenTichet | null, data: unknown, acum: Date = new Date(),
+): Promise<RaspunsTichet | RaspunsRaportarileMele | RaspunsProiectTichet> {
   if (!uid) throw new HttpsError('unauthenticated', 'intră în cont');
   const d = obiect(data);
   const actiune = d['actiune'];
   try {
     switch (actiune) {
-      case 'raporteaza': return await raporteaza(db, uid, token, d, acum);
+      case 'raporteaza': return await raporteaza(db, fisiere, uid, token, d, acum);
       case 'mele': return await mele(db, uid);
       case 'citit': return await citit(db, uid, d);
       case 'raspunde': return await raspunde(db, uid, token, d, acum);
       case 'stare': return await schimbaStarea(db, uid, d, acum);
+      case 'proiect': return await proiectul(db, fisiere, uid, d, acum);
       default: throw argument('acțiunea');
     }
   } catch (e) {
