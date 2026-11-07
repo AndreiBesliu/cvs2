@@ -23,7 +23,11 @@ import { programDinDocument, type Regim } from './job.ts';
 const DINCOLO_DE_MARGINE = 1;
 /** Cât e mai lată decât freza cea mai lată fâșia dintre dop și marginea regiunii (mm): freza trece pe toată fața. */
 const TRECERE = 0.5;
-/** Punțile dopului decupat: câte pe buclă, lățimea și grosimea (de la fața de jos), mm. */
+/**
+ * Punțile dopului decupat: câte pe buclă, lățimea lemnului rămas și grosimea lui (de la fața de jos), mm. Pe traseul frezei,
+ * palierul punții e lățimea plus diametrul frezei (ADR 0031: coloana punții e palierul minus diametrul), deci lucrarea nu le
+ * refuză ca mai scurte decât freza, oricare ar fi ea.
+ */
 const PUNTI = { numar: 4, latime: 4, grosime: 1 } as const;
 
 const fix = (x: number): string => String(Math.round(x * 1000) / 1000);
@@ -113,7 +117,7 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
       piesa = {
         id: 'dop', radacina: { tip: 'grup', id: 'r', matrice: { ...IDENTITATE }, copii: noduri },
         operatii: [
-          { id: 'exterior', tip: 'profil', noduri: exterioare.map((_, i) => `dop-${i + 1}`), latura: 'exterior', urechi: { ...PUNTI }, ...baza },
+          { id: 'exterior', tip: 'profil', noduri: exterioare.map((_, i) => `dop-${i + 1}`), latura: 'exterior', urechi: { numar: PUNTI.numar, latime: PUNTI.latime + mica.scula.diametru, grosime: PUNTI.grosime }, ...baza },
           ...(goluri.length > 0 ? [{ id: 'goluri', tip: 'profil' as const, noduri: goluri.map((_, i) => `gol-${i + 1}`), latura: 'interior' as const, urechi: null, ...baza }] : []),
         ],
       };

@@ -60,13 +60,22 @@ function scule(text: string, freze: readonly FrezaPlataCaz[]): SculaOracol[] {
 
 const inaltimeDop = (c: CazDreapta): number => (c.dop === 'decupat' || c.sprijin === 'fund' ? c.D + c.H : c.D - c.g);
 
+/**
+ * Frezele cu care se taie dopul, după contract (ADR 0171): ale lui sau ale locașului; cel decupat, doar cu cea mai mică dintre
+ * ele (unghiurile lui au exact raza ei).
+ */
+function frezeDopului(c: CazDreapta): readonly FrezaPlataCaz[] {
+  const freze = c.frezeDop ?? c.locas;
+  return c.dop === 'decupat' ? [[...freze].sort((a, b) => a.diametru - b.diametru)[0]!] : freze;
+}
+
 async function potrivire(c: CazDreapta): Promise<{ readonly m: MasuraDreapta; readonly locas: string; readonly dop: string }> {
   const r = await calculeazaExport(deschis(documentDrept(c)), { origine: 'stanga-jos', z0: 'sus' });
   if (!r.ok) assert.fail(`${c.id}: ${r.motiv}`);
   assert.equal(r.dopuri.length, 1, `${c.id}: un singur dop`);
   const locas = r.program.text, dop = r.dopuri[0]!.program.text;
   const m = masoaraPotrivireaDreapta(
-    { text: locas, scule: scule(locas, c.locas) }, { text: dop, scule: scule(dop, c.frezeDop ?? c.locas) }, c.desen,
+    { text: locas, scule: scule(locas, c.locas) }, { text: dop, scule: scule(dop, frezeDopului(c)) }, c.desen,
     { D: c.D, h: inaltimeDop(c), dop: c.dop, margine: c.margine, celula: CELULA },
   );
   return { m, locas, dop };

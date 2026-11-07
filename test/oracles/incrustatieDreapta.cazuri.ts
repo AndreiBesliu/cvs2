@@ -103,4 +103,15 @@ export const CAZURI_DREAPTA: readonly CazDreapta[] = [
     ],
     hartie: 'frezele dopului ale lui (Ø2): locașul se închide cu raza frezei dopului minus jocul, deci unghiul dopului are exact R1, cât freza lui',
   },
+  {
+    // Găsit prin otrava P07: dopul decupat tăiat cu prima freză (Ø3), nu cu cea mai mică, trecea, fiindcă niciun caz n-avea
+    // două freze la un dop decupat.
+    id: 'decupat-rest', desen: [L(60, 80)], D: 3, pas: 1.5, c: 0.1, dop: 'decupat', sprijin: 'fund', H: 2, g: 0.5, margine: 5,
+    locas: [F3, { numar: 2, diametru: 2, pasLateral: 0.8 }],
+    raze: [
+      { p: [66, 86], d: [1, 1], lungime: 2, asteptat: 0.9 * SQ, ce: 'unghiul intrând, rotunjit cu ρ = 1 − 0,1 = 0,9 (freza de rest, Ø2, cea mai mică)' },
+      { p: [76, 80], d: [-1, 1], lungime: 2, asteptat: 1 * SQ, ce: 'vârful, rotunjit cu R1 (freza de rest a locașului ajunge în el)' },
+    ],
+    hartie: 'L-ul decupat, cu o freză de rest Ø2 la locaș: dopul se taie cu cea mai mică freză (Ø2), ca unghiul lui (R1) să încapă în al locașului (R0,9 + 0,1)',
+  },
 ];

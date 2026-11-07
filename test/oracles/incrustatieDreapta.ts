@@ -158,7 +158,11 @@ export type MasuraDreapta = {
   readonly joc: Banda;
   /** Punctele peretelui dopului care cad în afara locașului (sau pe perete), din câte. */
   readonly interferenta: number; readonly nDop: number;
-  /** Adâncimea locașului și înălțimea dopului măsurate (mediane), mm. */
+  /**
+   * Adâncimea locașului (mediana) și înălțimea dopului, mm: la cel ridicat, mediana feței coborâte; la cel decupat, cea mai mare
+   * adâncime a șanțului (tăietura trece prin placă, iar punțile doar ridică fundul șanțului în dreptul lor; mediana ar urma
+   * lungimea lor).
+   */
   readonly adancime: number; readonly inaltime: number;
   /** Unde întâlnește peretele locașului raza din p pe direcția d (prima trecere din tăiat în netăiat, sau invers), mm de la p. */
   readonly margineaPeRaza: (p: PunctO, d: PunctO, lungime: number) => number;
@@ -231,5 +235,6 @@ export function masoaraPotrivireaDreapta(
     }
     return NaN;
   };
-  return { joc: banda(joc), interferenta, nDop, adancime: mediana(adanci), inaltime: mediana(inalte), margineaPeRaza };
+  const inaltime = p.dop !== 'decupat' ? mediana(inalte) : inalte.length === 0 ? Number.NaN : inalte.reduce((a, b) => Math.max(a, b), -Infinity);
+  return { joc: banda(joc), interferenta, nDop, adancime: mediana(adanci), inaltime, margineaPeRaza };
 }

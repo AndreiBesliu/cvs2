@@ -80,9 +80,11 @@ o('G02', JOB, 'fundPlat: operatieDe(u)?.fundPlat, incrustatie: operatieDe(u)?.in
 o('D01', MIG, "      if (typeof o === 'object' && o !== null && Object.hasOwn(o, 'incrustatie')) {", '      if (false) {', 'doc',
   'ciocnirea v19 → v20 nedetectată (o incrustație veche luată drept nouă)')
 o('D02', SCH, "    jurDop: v.picklist(['fata', 'banda']),", '    jurDop: v.string(),', 'doc', 'orice text ca lemnul din jurul dopului')
-o('D03', SCH, '    margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),',
-  '    margine: v.pipe(v.number(), v.finite(), v.maxValue(PLAFON.latura)),', 'doc', 'marginea negativă primită')
-o('D04', SCH, '    fierastrau: pozitiv(PLAFON.adancimeOperatie),', '    fierastrau: v.number(),', 'doc', 'fierăstrăul zero sau negativ primit')
+# D03, D04: varianta V a schemei (din 12.1↑b, lângă cea cu pereți drepți, care are aceleași rânduri): `vechi` cu rândul de după.
+o('D03', SCH, '    margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),\n      jurDop:',
+  '    margine: v.pipe(v.number(), v.finite(), v.maxValue(PLAFON.latura)),\n      jurDop:', 'doc', 'marginea negativă primită')
+o('D04', SCH, "      fel: v.literal('v'),\n      joc: pozitiv(PLAFON.adancimeOperatie),\n      fierastrau: pozitiv(PLAFON.adancimeOperatie),",
+  "      fel: v.literal('v'),\n      joc: pozitiv(PLAFON.adancimeOperatie),\n      fierastrau: v.number(),", 'doc', 'fierăstrăul zero sau negativ primit')
 
 # ---- Rolul (ADR 0170 §5) ----
 o('L01', ROL, '  const joc = Math.min(i.joc, Math.max(JOC_INCRUSTATIE_MINIM, Math.floor((adancime / 2) * 1000) / 1000));', '  const joc = i.joc;',

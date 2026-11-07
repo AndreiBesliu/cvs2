@@ -2,8 +2,9 @@
  * Refuzurile incrustației cu pereți drepți (ADR 0171 §4), cu motivul, înainte de traseu: pe altceva decât un buzunar, o freză în
  * V a dopului, jocul lateral cel puțin cât raza celei mai mici freze a locașului (vârfurile dopului ar ieși ascuțite, cu jocul
  * crescut în ele), jocul de sub dopul sprijinit pe față sub 0,1 mm sau cel puțin cât adâncimea, o parte a desenului mai îngustă
- * decât freza locașului (dispare din el), dopul decupat cu marginea mai mică decât freza lui (șanțul ar ieși din placă). Pe
- * hârtie: freza Ø3 are R1,5; cu o freză de rest Ø2, cea mai mică are R1.
+ * decât freza locașului (dispare din el; singură sau lângă alta lată, găsită prin otrava F05: refuzul celei de lângă alta n-avea
+ * probă), dopul decupat cu marginea mai mică decât freza lui (șanțul ar ieși din placă). Pe hârtie: freza Ø3 are R1,5; cu o
+ * freză de rest Ø2, cea mai mică are R1.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -82,5 +83,28 @@ test('dopul decupat cu marginea mai mică decât freza lui e refuzat; cât freza
   assert.ok(!r.ok);
   assert.match(r.motiv, /marginea dopului decupat \(2 mm\) trebuie să fie cel puțin cât freza lui \(Ø3\)/);
   const bun = await exporta(documentCu([20, 20, 30, 20], operatie({ incrustatie: { ...INC, dop: 'decupat', margine: 3 } })));
+  assert.ok(bun.ok, bun.ok ? '' : bun.motiv);
+});
+
+/** Un document cu mai multe dreptunghiuri (x, y, lățime, înălțime), câte un element, toate în aceeași operație. */
+function documentCuMulte(dreptunghiuri: readonly (readonly [number, number, number, number])[], op: Record<string, unknown>): Document {
+  const copii = dreptunghiuri.map(([x, y, w, h], k) => ({
+    tip: 'element', id: String.fromCharCode(97 + k), matrice: { ...I, e: x, f: y }, forma: { tip: 'dreptunghi', latime: w, inaltime: h, razaColt: 0 },
+  }));
+  const r = incarca({
+    schema: 21, rev: 0,
+    piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: I, copii }, operatii: [{ ...op, noduri: copii.map((c) => c.id) }] }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
+  });
+  if (!r.ok) assert.fail(r.motiv);
+  return r.doc;
+}
+
+test('într-un desen cu mai multe părți, una mai îngustă decât freza (2 mm, lângă una de 30 × 20) e refuzată: ar dispărea din locaș', async () => {
+  const r = await exporta(documentCuMulte([[20, 20, 30, 20], [70, 20, 2, 30]], operatie()));
+  assert.ok(!r.ok);
+  assert.match(r.motiv, /o parte a desenului e mai îngustă decât freza locașului \(Ø3\): nu încape în locaș/);
+  // Lată de 3,2 mm (cât freza plus 0,2): încape, deci trece.
+  const bun = await exporta(documentCuMulte([[20, 20, 30, 20], [70, 20, 3.2, 30]], operatie()));
   assert.ok(bun.ok, bun.ok ? '' : bun.motiv);
 });

@@ -4,6 +4,9 @@
 # dopului, refuzurile, ușa documentului v21 (schema, ciocnirea), rolul, scrierea înapoi, fereastra exportului, panoul și arborele.
 # Țintele din ADR 0171 §6: raza fără c (D01), jocul aplicat de două ori (F02), oglinda (P01, P02), înălțimea dopului cu H în loc
 # de g (D04), fără închidere (F01).
+# Prima rulare (`40376e2`): 49 prinse, 3 scăpate (F05, P06, P07), fiecare cu proba ei; P06 a arătat și un defect: punțile de
+# 4 mm pe traseu erau refuzate de lucrare cu orice freză peste Ø4 (palierul e acum lățimea plus freza: P11). L05: frezele
+# dopului în renumerotarea rolurilor personalizate, găsită la recitirea codului.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -73,12 +76,15 @@ o('P04', DOP, '      const contururi = contururiRegiuni(f.figura.dop).map((c) =>
   '      const contururi = contururiRegiuni(f.figura.taiat).map((c) => transformaContur(c, oglinda));', 'drept', 'dopul cât locașul (fără joc)')
 o('P05', DOP, '      const e = Math.max(DINCOLO_DE_MARGINE, lata + TRECERE - m);', '      const e = DINCOLO_DE_MARGINE;', 'e2e',
   'regiunea feței nelărgită pentru freză (freza nu trece pe lângă dop)')
-o('P06', DOP, 'urechi: { ...PUNTI }, ...baza },', 'urechi: null, ...baza },', 'drept', 'dopul decupat fără punți (cade din placă)')
+o('P06', DOP, 'urechi: { numar: PUNTI.numar, latime: PUNTI.latime + mica.scula.diametru, grosime: PUNTI.grosime }, ...baza },', 'urechi: null, ...baza },',
+  'drept', 'dopul decupat fără punți (cade din placă)')
 o('P07', DOP, '      const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '      const mica = freze[0]!;', 'drept',
   'dopul decupat cu prima freză, nu cu cea mai mică (unghiurile lui rotunjite prea larg)')
 o('P08', DOP, "...(inc.dop === 'decupat' ? { exacta: true } : {}) },", '},', 'e2e', 'placa dopului decupat arătată „cel puțin”, nu exactă')
 o('P09', CAL, '  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  const calculate = { dopuri: [...inV.dopuri] };', 'drept',
   'dopul cu pereți drepți nu iese din export')
+o('P11', DOP, 'latime: PUNTI.latime + mica.scula.diametru,', 'latime: PUNTI.latime,', 'drept',
+  'palierul punților fără freză (lucrarea refuză dopul decupat cu freza Ø6)')
 o('P10', JOB, "        const ale = taieturi.filter((u) => u.tip === 'buzunar' && cheieDreapta(u) === cheie);", '        const ale = [t];', 'drept',
   'locașul fără celelalte contururi ale regiunii (golul inelului tăiat)')
 
@@ -98,6 +104,9 @@ o('L03', ROL, '  return { ...i, joc: Math.min(i.joc, Math.max(JOC_INCRUSTATIE_MI
   'jocul de sub dop nestrâns la jumătatea adâncimii')
 o('L04', ROL, "      if (o.incrustatie?.fel === 'drept') rez.push(...(o.incrustatie.frezeDop ?? []).map((r) => r.scula));", '', 'rol',
   'frezele dopului în afara numerotării (o freză nouă le ia numărul)')
+
+o('L05', 'src/model/rolPersonal.ts', "    ...(inc?.fel === 'drept' && inc.frezeDop ? { incrustatie: { ...inc, frezeDop: inc.frezeDop.map((r) => ({ ...r, scula: f(r.scula) })) } } : {}),",
+  '', 'rol', 'frezele dopului nerenumerotate de un rol personalizat (al doilea T1 cu alt diametru)')
 
 # ---- Scrierea înapoi, fereastra exportului, panoul, arborele ----
 o('E01', VAL, "  const vechi = o?.fel === 'drept' ? o : undefined;", '  const vechi = undefined;', 'dialog', 'un câmp necunoscut al incrustației pierdut la Exportă')
@@ -127,13 +136,14 @@ o('E15', ARB, "              {o.tip === 'buzunar' && o.incrustatie?.fel === 'dre
   '', 'e2e', 'arborele nu spune incrustația dreaptă')
 
 SETURI = {
-    'drept': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts'],
-    'drept2': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts', 'test/unit/incrustatieDreapta.rol.test.ts',
+    'drept': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts'],
+    'drept2': ['test/unit/incrustatieDreapta.potrivire.test.ts', 'test/unit/incrustatieDreapta.refuzuri.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts',
+               'test/unit/incrustatieDreapta.rol.test.ts',
                'test/unit/incrustatieDreapta.scriere.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/buzunar.test.ts'],
     'doc': ['test/unit/document.v21.oracol.test.ts'],
     'doc2': ['test/unit/document.v21.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
-    'rol': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts'],
-    'rol2': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/actiuni.test.ts'],
+    'rol': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/rolPersonal.test.ts'],
+    'rol2': ['test/unit/incrustatieDreapta.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/rolPersonal.test.ts', 'test/unit/actiuni.test.ts'],
     'dialog': ['test/unit/incrustatieDreapta.scriere.test.ts'],
     'dialog2': ['test/unit/incrustatieDreapta.scriere.test.ts', 'test/unit/actiuni.test.ts'],
 }
