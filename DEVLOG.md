@@ -6349,6 +6349,16 @@ bifa; worktree-ul `C:\Users\besli\cncvs2-lucru\raportari`, ramura `wip/15.B-rapo
 - **Publicat:** canalul `raportari` al instanței de test, <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (până pe
   07.12; build-ul `58a4748`), verificat în browserul aplicației: versiunea din antet, consola fără erori, jurnalul local gol.
   Bifa și mărimea cer contul deschis; atașarea reală, descărcarea și jobul vin cu funcțiile din `main`, după unire.
+- **Unirea cu `main`** (cererea sesiunii principale: „adu `main` în ramura ta cu un merge (nu rebase) și rulează porțile pe
+  rezultat”): `main` la `1bf99c5` (12.1↑ cu documentul v20, 10.3↑–10.3↑b), merge-ul `c4e1e4c`. Conflicte doar de adăugare la
+  final (DEVLOG, `docs/otravuri.md`: întâi intrările din `main`, apoi ale ramurii); restul s-a unit singur. Porțile pe
+  rezultat: compilatoarele, importurile (1 026 de module, 0 încălcări), licențele, traducerile (649, 0 lipsă), 8 588 de teste
+  unitare (0 căderi, 8 sărite), build-ul determinist, e2e 359 / 359 pe 4177 la prima trecere, emulatoarele (pornite abia
+  după ce suita altei sesiuni a eliberat 4173 și 9095 / 8085 / 5005): 101 / 101 probe ale funcțiilor și regulilor, e2e pe
+  emulatoare 21 / 21 (și proba Diagnozei, care cădea pe mașina asta). Mărimile, față de un build curat al lui `1bf99c5`:
+  pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 519,5 / 550, neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 →
+  106,5 / 200. Otrăvurile nu s-au reluat: unirea n-a atins modulele și probele feliei. Canalul `raportari`, republicat din
+  `319d4c2` (aceeași adresă, până pe 07.12): după „New version ready” → Reload, `319d4c21024e`, consola fără erori.
 - **Rămâne:** unirea în `main` (decizia owner-ului), apoi publicarea serverului pe test (funcțiile, regulile Firestore și
   Storage, indecșii) și o raportare cu proiectul pe instanța de test; pe canal se vede doar bifa. Felia următoare a liniei ar
   fi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, cu Storage-ul acum, registrul probei), după cuvântul
