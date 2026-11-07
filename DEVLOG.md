@@ -6276,3 +6276,25 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   1024 px: opțiunea „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții” în panou; refuzurile, cu motivele lor (un
   cerc-cuțit în dreptunghi, formele care nu se întâlnesc); cercul mutat pe latura dreptunghiului îl taie în două forme, alese
   (semidiscul, din trei segmente, și restul), iar cercul rămâne neales și neschimbat.
+
+## 2026-11-07 — Unirea incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, merge both” (la „Merge the finished inlays and vectors branches into main?”), după „ce altceva putem face
+in paralel?”.
+**Started:** 07.11, 13:55. **Completed:** 07.11, 15:57.
+
+- **Ce intră:** `wip/12.1-incrustatii` până la `41338d2` (12.1↑ încheiată, documentul v20; 12.1↑b doar ca ADR 0171 propus)
+  și `wip/10.3-taiere-conversie` până la `be7733e` (10.3↑ și 10.3↑b; ce a lucrat linia după el, neîmpins, nu). Linia
+  imprimantei (3.6g) rămâne pe ramura ei: owner-ul a spus „both”.
+- **Conflictele:** la prima unire doar `DEVLOG.md`; la a doua, `DEVLOG.md`, indexul ADR și `docs/otravuri.md` (adăugări ale
+  ambelor părți, păstrate în ordinea lor) și `test/unit/manual.test.ts`, unde ușile se adună: 83 în baza comună, +1 în main
+  (spațierea literelor alese), +2 pe ramură (butonul Taie și `document.taie`), deci 86. Codul tăierii nu ține v19 nicăieri;
+  traducerile roadmap-ului: 644, 0 lipsă.
+- **`CLAUDE.md`:** starea incrustației (linia n-o scrisese), cifrele după unire și regula unui câmp nou al documentului,
+  acum v21 (proba ușii e `document.v20.oracol.test.ts`).
+- **Porțile:** traducerile, compilatoarele, importurile, licențele, build-ul determinist, 8 580 de teste unitare (0 căzute,
+  8 sărite, ca înainte); pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200. E2e-ul și
+  emulatoarele au căzut întâi într-o secundă: altă sesiune (suita emulatoarelor din worktree-ul ei) ținea 4173 și porturile
+  emulatoarelor; rulate din nou după ce s-au eliberat: 359 / 359 (cu 3 lucrători), după ce cele două probe ale manualului au primit al 29-lea capitol (ambele ramuri mutaseră la fel numărul la 28, fiecare cu capitolul ei: `93fe9fa`); celelalte patru căderi ale rulării întâi (`/admin`, extensiile de două ori, tema), toate prima așteptare după încărcare, au trecut singure și în rularea întreagă; emulatoarele: 81 / 81 și 21 / 21 la a doua rulare; la prima, funcția `logClientError` nu s-a încărcat la cerere (CPU 77 %), iar codul funcțiilor nu se schimbase.
+- **CI:** complet verde pe `8003cb2` (`42374124727`); rapid verde.
+- **Publicat pe test:** `8003cb2` (rularea `42377691045`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `8003cb292217`; roadmap-ul de acolo are 7.9↑b, 10.3↑, 10.3↑b și 12.1↑ gata, 12.1↑b în lucru; în Edge fără fereastră, butonul Taie e acolo, fără erori în pagină, cu 0 erori în jurnalul local.
