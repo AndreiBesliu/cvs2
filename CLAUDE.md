@@ -773,6 +773,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **planșele: toate variantele rămân opțiuni pentru utilizator, cu recomandarea ca implicit** (ADR 0210, în
+  linia `plansele`). La ADR-ul propus, owner-ul a întrebat „ma intreb cate dintre raspunsuri/optiuni pot coexista ca optiuni
+  pentru utilizator”; la răspuns (șapte din opt, plafonul nefiind o opțiune a utilizatorului) și la „Le fac pe toate opțiuni,
+  cu recomandarea ca implicit?”: „Da, toate”. Deci: comutatorul „Toate foile” / „Doar foaia activă” (implicit toate);
+  exportul foii active și „Toate foile” (arhiva, foile identice ×N), iar programul unic cu oprire între foi după etapa 13;
+  ambele moduri ale lui „Așază pe foi”; câmpurile `{nume}` și „Fă din textul ales câmpul”; modurile casetei și, pentru un
+  text care tot iese, avertismentul sau confirmarea; gruparea cu surori întreabă, cu „Ține minte” și cu rândurile din meniu;
+  CSV-ul listei cu `;` sau `,`; „Mută și așază la capăt”, „Duplică foaia” separat sau legat, mărimea tăiată sau a desenului.
+  **Plafonul total 550 → 600 kB** (8a), luat din același „Da, toate” (răspunsul spunea că opțiunile îl cer); ADR-ul lui
+  vine la prima felie care trece de 550, cu pornirea tot la 110 kB. Rămân reguli: distanța dintre piese cel puțin cât freza
+  și un singur marcaj al câmpurilor. Codul pornește cu felia 11.1↑ (foaia activă și lista cu foile).
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la

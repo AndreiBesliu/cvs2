@@ -6317,3 +6317,16 @@ unirile).
   traducerilor: 87 / 87.
 - **Urmează:** codul, după răspunsuri (sau „ok la toate”) și după unirea incrustațiilor și a tăierii în `main`; v22 abia
   după v20 și v21. Prima felie: 11.1↑ (foaia activă și lista cu foile).
+
+## 2026-11-07 — Felia 11.1↑: foaia activă și lista cu foile (ADR 0210, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei: „ma intreb cate dintre raspunsuri/optiuni pot coexista ca optiuni pentru
+utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”: „Da, toate”.
+**Started:** 07.11, 15:00.
+
+- **Unirea:** `main` `8003cb2` (incrustațiile cu documentul v20, tăierea vectorilor) adus în ramură cu un merge (`f62caf2`);
+  două conflicte de adăugare (DEVLOG, indexul ADR), rândurile lui `main` întâi; traducerile 648 / 0 după unire.
+- **ADR 0210 acceptat:** toate variantele rămân opțiuni, cu recomandarea ca implicit („Răspunsurile owner-ului”); plafonul
+  600 kB luat din același răspuns (ADR-ul lui la prima felie care trece de 550); programul unic pentru toate foile devine
+  11.5↑b, după etapa 13; numărul schemei plăcuțelor, v21 sau v22 după ordinea cu 12.1↑b. Decizia în `CLAUDE.md`; rândul
+  răspunsurilor scos din coada owner-ului; rândul 11.1↑ din jurnal și pragul, la zi; traducerile 646 / 0.

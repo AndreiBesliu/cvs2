@@ -1,14 +1,17 @@
 # ADR 0210 — Planșele: mai multe foi, piesele puse de mai multe ori, plăcuțele din CSV și lista de tăiere (etapa 11)
 
-**Starea:** propus pe 07.11.2026, în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`).
+**Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
+toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
+în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
 multe plăci” (`BRIEF.md` §10, v1). **Completează:** ADR 0024 (planșele D; „etapa 11 primește instanțele legate și
 «Desprinde»”), ADR 0105, 0138 și 0142 (textul, blocul lui, caseta). **Documentul:** neschimbat pentru foi, piese, instanțe,
 export și lista de tăiere; o versiune nouă doar pentru literele plăcuțelor din CSV (felia 11.4↑), prima liberă la unire:
-probabil v22, fiindcă v20 (12.1↑) și v21 (ADR 0171, propus) sunt ale incrustațiilor. **Codul** vine după răspunsuri și după
-unirea liniilor incrustațiilor și a tăierii vectorilor în `main` (ating aceleași fișiere ale CAM-ului și ale exportului).
+v21 dacă 11.4↑ ajunge în `main` înaintea pereților drepți (12.1↑b, ADR 0171, care își cere tot v21), altfel v22. **Codul**
+a așteptat răspunsurile și unirea liniilor incrustațiilor și a tăierii vectorilor în `main` (ating aceleași fișiere ale
+CAM-ului și ale exportului): amândouă au venit pe 07.11 (`main` `8003cb2`, adus în ramură).
 **Schița:** <https://claude.ai/artifact/Fe7LSU7Lo8pQg4qxGA5JYZ> (recomandările întâi, șapte planșe ale interfeței la scară,
 feliile, plafonul și formularul celor opt întrebări; răspunsurile stau în baza paginii, colecția `raspunsuri`).
 
@@ -61,7 +64,7 @@ Referință funcțională, fără texte, interfață sau cod copiate.
   (`;` în română, unde virgula e zecimală), iar „CSV” simplu în codarea Windows (1250), nu în UTF-8; diacriticele vin sigur
   doar din „CSV UTF-8”. Ușa CSV trebuie să le primească pe toate.
 
-## Decizia (propusă, cu recomandările întrebărilor)
+## Decizia (implicitele; opțiunile din „Răspunsurile owner-ului” se adaugă lângă ele)
 
 1. **Foile.**
    - Fără schemă nouă: foaia are numele, stocul (lățimea, înălțimea, grosimea), instanțele și ghidajele. Se adaugă doar
@@ -147,15 +150,15 @@ Referință funcțională, fără texte, interfață sau cod copiate.
    așezat; `copii`, literele; `operatii`, id-ul operației → literele tăiate). Ușa cere ca grupul să fie al piesei, cu bloc
    valid și cu câmpuri; `continut` să fie textul blocului cu valorile din `campuri` (o verificare de șiruri, fără font); id-urile
    literelor unice și diferite de ale piesei; operațiile ale piesei, pe literele din `copii`. Plafoanele rămân (100 000 de
-   elemente în lume, cu literele plăcuțelor). Numărul: primul liber la unire (`main` e v19; v20 și v21 sunt ale
-   incrustațiilor, deci probabil **v22**). Migrarea schimbă doar numărul; o instanță care are deja un câmp necunoscut `texte`
+   elemente în lume, cu literele plăcuțelor). Numărul: primul liber la unire (`main` e v20 din 07.11, iar ADR 0171 își cere
+   v21: deci **v21** dacă 11.4↑ ajunge întâi, altfel v22). Migrarea schimbă doar numărul; o instanță care are deja un câmp necunoscut `texte`
    e refuzată, cu motiv (ciocnire, ca la ADR 0024 §7). Oracolul documentului și corpusul de aur (ADR 0121) trec la ea. Doar
    felia 11.4↑ o cere.
 8. **Cifrele.** Măsurat aici, pe `36c75cb`: pornirea 101,4 kB (cu ușa 104,9 / 110), totalul 506,0 / 550. Liniile deschise
    (notele lor): incrustațiile +4,3, tăierea vectorilor +10,4, imprimanta +8,0, deci ~528,7 după unire (~21 kB liberi), înainte
    de feliile lor următoare. Etapa 11, estimată după felii asemănătoare (panoul tăierii 1,9 kB, workerul CAM +3,2…4,5 kB pe
-   felie): **~25–35 kB** în total (tabelul feliilor), iar pornirea +0,5…1 kB (lista cu foile și foaia activă; restul la
-   cerere). Nu încape: întrebarea 8. Timpul: 12.1↑ a cerut 2 h 17 min de cod după răspunsuri (~5 h estimate); aici ~2–4 h pe
+   felie): **~25–35 kB** în total, ~28–38 kB cu opțiunile din răspunsuri (tabelul feliilor), iar pornirea +0,5…1 kB (lista
+   cu foile și foaia activă; restul la cerere). Nu încape: întrebarea 8. Timpul: 12.1↑ a cerut 2 h 17 min de cod după răspunsuri (~5 h estimate); aici ~2–4 h pe
    felie, cu probele, deci ~3–4 zile de lucru activ.
 
 ## Feliile propuse
@@ -163,13 +166,14 @@ Referință funcțională, fără texte, interfață sau cod copiate.
 | Felia | Ce | Schema | Mașina | Depinde de | JS (estimat) |
 |---|---|---|---|---|---:|
 | 11.1↑ | Foaia activă în toată aplicația; lista cu foile (+ Foaie, redenumește, mărimea și materialul, duplică, mută, șterge); mutarea între foi; exportul foii active | nu | nu | unirea incrustațiilor și a tăierii în `main` | ~5 kB |
-| 11.1↑b | Pânza cu toate foile (răspunsul 1): estompate, dublu-clic, PgUp / PgDn, „Toate foile” | nu | nu | 11.1↑ | ~2 kB |
-| 11.2↑ | «Încă…», «+1», «Desprinde», nivelul doi în listă și în panou, banda violet, gruparea cu surori | nu | nu | 11.1↑ | ~4 kB |
-| 11.3↑ | „Așază pe foi”: rândurile, vărsarea, distanța minimă din freză, ordinea și rotirea | nu | nu | 11.2↑ | ~2,5 kB |
-| 11.4↑ | Plăcuțele, nucleul: literele fiecărei plăcuțe (v22), `lume.ts`, CAM-ul, ușa, migrarea, câmpurile în panou; oracolul documentului scris separat (un agent, cu acordul tău și costul spus) | **v22** | nu | 11.3↑; v20 și v21 în `main` | ~5 kB |
-| 11.4↑b | «Din CSV…»: fișierul sau lipirea, separatorul, codarea, antetul, potrivirea, numerotarea, rândurile; numele prea lungi | nu | nu | 11.4↑ | ~4 kB |
+| 11.1↑b | Pânza cu toate foile (răspunsul 1): estompate, dublu-clic, PgUp / PgDn, comutatorul „Toate foile” / „Doar foaia activă” | nu | nu | 11.1↑ | ~2,3 kB |
+| 11.2↑ | «Încă…», «+1», «Desprinde», nivelul doi în listă și în panou, banda violet, gruparea cu surori (întrebarea cu „Ține minte”, rândurile din meniu), „Duplică foaia” cu aceleași piese | nu | nu | 11.1↑ | ~4,8 kB |
+| 11.3↑ | „Așază pe foi”: rândurile, vărsarea, distanța minimă din freză, ordinea și rotirea; „Mută și așază la capăt” | nu | nu | 11.2↑ | ~3 kB |
+| 11.4↑ | Plăcuțele, nucleul: literele fiecărei plăcuțe (v21 sau v22, după ordinea cu 12.1↑b), `lume.ts`, CAM-ul, ușa, migrarea, câmpurile în panou; oracolul documentului scris separat (un agent, cu acordul tău și costul spus) | **nouă** | nu | 11.3↑ | ~5 kB |
+| 11.4↑b | «Din CSV…»: fișierul sau lipirea, separatorul, codarea, antetul, potrivirea, „Fă din textul ales câmpul”, numerotarea, rândurile; numele prea lungi (avertismentul sau confirmarea la export) | nu | nu | 11.4↑ | ~5 kB |
 | 11.5↑ | „Toate foile” la export: arhiva, foile identice ×N, timpii | nu | nu | 11.1↑ | ~3,5 kB |
-| 11.6↑ | Raportul foilor și lista de tăiere: fereastra, CSV, tipărirea | nu | nu | 11.1↑ (valorile CSV: 11.4↑) | ~4,5 kB |
+| 11.5↑b | Un singur program pentru toate foile, cu oprire între ele (foi cu aceeași mărime și grosime, în același colț; confirmarea la fiecare foaie) | nu | da (proba) | etapa 13 | ~2,5 kB |
+| 11.6↑ | Raportul foilor și lista de tăiere: fereastra, CSV cu `;` sau `,`, mărimea tăiată sau a desenului, tipărirea | nu | nu | 11.1↑ (valorile CSV: 11.4↑) | ~4,7 kB |
 | 11.7 | Fișa plăcii 11: așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV, cu cotele pe hârtie | — | da | 11.3↑–11.5↑ | — |
 
 ## Proba (scrisă întâi)
@@ -208,7 +212,8 @@ Referință funcțională, fără texte, interfață sau cod copiate.
   `editareCalcul.ts`, `noduriCalcul.ts`, `src/cam/job.ts`, `src/jobs/calculCam.ts`, `src/model/alegere.ts`,
   `src/ui/actiuniDocument.ts`, `actiuniDocumentCalcul.ts`, plus ~20 de apeluri ale `elementeFoaie` / `taieturiFoaie` cu indicele
   implicit 0.
-- Unirea întâi: liniile incrustațiilor și a tăierii ating aceleași fișiere (CAM, export, Editare); v22 abia după v20 și v21.
+- Unirea întâi: liniile incrustațiilor și a tăierii ating aceleași fișiere (CAM, export, Editare); versiunea nouă a
+  plăcuțelor vine după v20 (făcut: `main` `8003cb2`, adus în ramură).
 - Manualul (ro, en): capitolele foilor, ale pieselor puse de mai multe ori, ale plăcuțelor din CSV și ale listei de tăiere;
   ușile noi în `manual.test.ts`.
 
@@ -238,3 +243,33 @@ plăcuțe trece de plafoane; imbricarea (v2) vine mai devreme, iar „Așază pe
 8. **Plafonul pachetului:** **a)** 550 → 600 kB, cu ADR nou (pornirea rămâne 110 kB; ~0,5–0,7 s în plus la prima instalare
    pe 750 kbit/s); b) loc făcut întâi (Workbox ~4 kB; Preact în locul lui React, ~45–50 kB, o felie cu risc); c) etapa mai
    mică: fără pânza cu toate foile (1b) și cu lista doar CSV (7b), ~5 kB mai puțin.
+
+## Răspunsurile owner-ului (07.11)
+
+După propunere, owner-ul a întrebat: „ma intreb cate dintre raspunsuri/optiuni pot coexista ca optiuni pentru utilizator”.
+Răspunsul dat: șapte din opt, cu recomandarea ca implicit și restul la un clic, fără pași în plus în cazul obișnuit (regula
+lui de la grupare, 02.11); plafonul nu e o opțiune a utilizatorului. La „Le fac pe toate opțiuni, cu recomandarea ca
+implicit?”: **„Da, toate”**. Deci:
+
+1. **Vederea:** comutatorul „Toate foile” / „Doar foaia activă”, ținut minte în browser pe proiect; implicit toate (1a);
+   „Doar foaia activă” e 1b, iar 1c se cuprinde în ele.
+2. **Exportul:** foaia activă și „Toate foile” (arhiva, foile identice ×N), acum. Programul unic pentru toate foile, cu
+   oprire între ele (2c), e felia 11.5↑b, după etapa 13, cum spunea același răspuns: doar pentru foi cu aceeași mărime și
+   grosime, puse în același colț, cu oprirea ca la schimbarea frezei și confirmarea omului la fiecare foaie.
+3. **Așezarea:** ambele moduri în dialog (3c), implicit ordinea listei, fără rotire.
+4. **Câmpurile:** acoladele scrise de mână (4a) și, în dialogul CSV, „Fă din textul ales câmpul {Coloana}”, care scrie
+   acoladele pentru om (4b); plus numerotarea.
+5. **Numele prea lung:** modul casetei pe textul șablonului (fără, „Limitat de casetă”, „Scalat la casetă”, ADR 0142); pentru
+   un text care tot iese din plăcuță, avertismentul (implicit) sau confirmarea la export, alese în dialogul CSV.
+6. **Gruparea cu surori:** întrebarea («Doar aceasta» / «În toate cele N»), cu „Ține minte alegerea”, plus „Grupează doar
+   aceasta” și „Grupează în toată piesa” în meniul de clic dreapta.
+7. **Raportul și lista:** fereastra, CSV-ul cu `;` (implicit, Excel în română) sau `,`, tipărirea.
+8. **Plafonul:** 550 → 600 kB (8a). E luat din același „Da, toate”, fiindcă răspunsul la întrebare spunea că opțiunile cer
+   plafonul ridicat („În ambele cazuri trebuie ridicat plafonul (8a)”). ADR-ul lui vine la prima felie care trece de 550;
+   pornirea rămâne 110 kB.
+
+**Implicitele mele devenite opțiuni:** „Mută și așază la capăt” lângă „Mută pe foaia…” (11.3↑); „Duplică foaia” cu copii
+separate (implicit) sau cu aceleași piese (11.2↑); mărimea piesei în raport, cea tăiată (implicit) sau a desenului (11.6↑).
+**Rămân reguli:** distanța minimă cât freza (sub ea, tăietura unei piese intră în vecina ei), un singur marcaj al câmpurilor
+(`{nume}`), locul literelor plăcuțelor în document. Biblioteca de piese rămâne pentru mai târziu. Numărul schemei
+plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 0171), altfel v22.
