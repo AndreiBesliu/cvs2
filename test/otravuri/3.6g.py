@@ -56,8 +56,8 @@ o('S06', SE, '      const dupaPornire = this.pornitLa !== null && this.ceas.acum
   '      const dupaPornire = false;', 'sesiune', 'închiderea de după pornire trece drept legătură pierdută')
 o('S07', SE, '    const ms = pauze[Math.min(this.s.incercari, pauze.length - 1)] ?? 30000;', '    const ms = pauze[0] ?? 1000;', 'sesiune',
   'reîncercările nu se răresc')
-o('S08', SE, "      if (!aMea() || typeof e.data !== 'string') return;", "      if (typeof e.data !== 'string') return;", 'sesiune',
-  'un WebSocket vechi schimbă starea')
+# S08 (garda generației în `onmessage`) a scăpat: era cod mort (un WebSocket vechi își pierde ascultătorii la oprire sau e
+# deja închis), scos pe 07.11 împreună cu perechile din `onopen` și `onclose`; garda rămâne doar pe căile asincrone.
 o('S09', SE, '    this.pune({ ...this.s, jurnal: jurnal.length > MAX_JURNAL ? jurnal.slice(jurnal.length - MAX_JURNAL) : jurnal });',
   '    this.pune({ ...this.s, jurnal });', 'sesiune', 'jurnalul crește fără margine')
 o('S10', SE, 'incercari: this.s.incercari + 1 });', 'incercari: this.s.incercari });', 'sesiune', 'încercările nu se numără')

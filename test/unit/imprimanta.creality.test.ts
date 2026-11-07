@@ -158,7 +158,8 @@ test('cererile și comenzile, octet cu octet (OrcaSlicer, `ha_creality_ws`)', ()
   assert.equal(COMANDA_OPRESTE, '{"method":"set","params":{"stop":1}}');
   assert.equal(comandaPornire(`${DIR_GCODE}output_11031835.gcode`),
     '{"method":"set","params":{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/output_11031835.gcode"}}');
-  for (const rea of ['/etc/passwd', `${DIR_GCODE}../x.gcode`, `${DIR_GCODE}`, `${DIR_GCODE}a\nb.gcode`, 'a.gcode']) {
+  // Și o cale lungă din afara directorului (otrava C07 a scăpat doar cu căi mai scurte decât directorul).
+  for (const rea of ['/etc/passwd', '/usr/data/printer_data/config/printer.cfg', `${DIR_GCODE}../x.gcode`, `${DIR_GCODE}`, `${DIR_GCODE}a\nb.gcode`, 'a.gcode']) {
     assert.equal(comandaPornire(rea), null, rea);
   }
   // Doar citirile pleacă fără clic; nicio comandă `set` nu e printre ele.

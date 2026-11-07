@@ -16,7 +16,9 @@ import {
 test('citirea tolerantă: altă versiune, JSON stricat, rânduri stricate sau adrese pe care browserul le-ar refuza se sar', () => {
   assert.deepEqual(citesteImprimante(null), []);
   assert.deepEqual(citesteImprimante('{nu e JSON'), []);
-  assert.deepEqual(citesteImprimante('{"v":2,"imprimante":[]}'), []);
+  // O listă de altă versiune nu se citește, chiar cu rânduri bune (otrava T01 a scăpat cu o listă goală).
+  assert.deepEqual(citesteImprimante('{"v":2,"imprimante":[{"adresa":"192.168.1.12","port":9999,"folosita":1}]}'), []);
+  assert.deepEqual(citesteImprimante('{"imprimante":[{"adresa":"192.168.1.12","port":9999,"folosita":1}]}'), []);
   assert.deepEqual(citesteImprimante('{"v":1,"imprimante":"nu"}'), []);
   const l = citesteImprimante(JSON.stringify({
     v: 1,
@@ -49,6 +51,9 @@ test('ținerea: cea legată acum vine prima, cu ce a spus; un nume necunoscut nu
   // Același „folosita” la două ținute la rând (ceasul n-a mers): ordinea rămâne a ultimei.
   const a = tineImprimanta(tineImprimanta([], { adresa: '10.0.0.2', port: 9999, model: null, nume: null }, 5), { adresa: '10.0.0.3', port: 9999, model: null, nume: null }, 5);
   assert.deepEqual(citesteImprimante(scrieImprimante(a)).map((x) => x.adresa), ['10.0.0.3', '10.0.0.2']);
+  // Ceasul dat înapoi (ora calculatorului schimbată): cea legată ultima rămâne prima și după citirea înapoi (otrava T06 a scăpat).
+  const b = tineImprimanta(tineImprimanta([], { adresa: '10.0.0.2', port: 9999, model: null, nume: null }, 10_000), { adresa: '10.0.0.3', port: 9999, model: null, nume: null }, 5_000);
+  assert.deepEqual(citesteImprimante(scrieImprimante(b)).map((x) => x.adresa), ['10.0.0.3', '10.0.0.2']);
 });
 
 test('rețelele de căutat: /24 ale IP-urilor știute; altfel 192.168.0 și 192.168.1', () => {

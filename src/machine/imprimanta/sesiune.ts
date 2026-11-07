@@ -206,6 +206,8 @@ export class SesiuneImprimanta {
     let deschis = false;
     let raspunde = false;
     let incheiat = false;
+    // Generația păzește doar ce vine asincron (ceasurile, răspunsul permisiunii): un WebSocket vechi nu mai trimite evenimente,
+    // fiindcă la oprire își pierde ascultătorii (`opreste`, `esec`), iar după o cădere e deja închis.
     const aMea = (): boolean => gen === this.generatie;
     const esec = (motiv: MotivImprimanta): void => {
       if (incheiat || !aMea()) return;
@@ -237,14 +239,13 @@ export class SesiuneImprimanta {
     this.ceasNou(() => { if (!deschis) esec('retea-timp'); }, TIMP_DESCHIDERE_MS);
     ws.onerror = () => { if (!deschis) esecDeschidere(); };
     ws.onopen = () => {
-      if (!aMea()) return;
       deschis = true;
       this.trimite(CERERE_STARE);
       this.trimite(CERERE_FISIERE);
       this.ceasNou(() => { if (!raspunde) esec('tacut'); }, TIMP_PRIMUL_CADRU_MS);
     };
     ws.onmessage = (e) => {
-      if (!aMea() || typeof e.data !== 'string') return;
+      if (typeof e.data !== 'string') return;
       this.adaugaJurnal('primit', e.data);
       const c = citesteCadru(e.data);
       if (c.inima) this.trimite(RASPUNS_INIMA);
@@ -265,7 +266,6 @@ export class SesiuneImprimanta {
       }
     };
     ws.onclose = () => {
-      if (!aMea()) return;
       if (!raspunde) {
         if (!deschis) esecDeschidere();
         else esec('tacut');
