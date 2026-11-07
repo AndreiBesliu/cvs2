@@ -15,7 +15,10 @@
  * - `config.json`: e al instanței și vine din rețea întâi, cu ultima copie bună în cache-ul lui (`src/pwa/configSw.ts`);
  * - `sw.js` (workerul însuși) și bancul vizual (`/banc/`, doar pe instanța de test);
  * - documentația admin (`documentatie/`, ADR 0048: roadmap-ul, catalogul, documentele), doar online ca pagina `/admin`
- *   care o cere la deschiderea filei; ~0,9 MB care n-au ce căuta pe discul fiecărui om.
+ *   care o cere la deschiderea filei; ~0,9 MB care n-au ce căuta pe discul fiecărui om;
+ * - biblioteca extensiilor (`extensii/`, ADR 0230: catalogul și pachetele, cu numele scris de construcția ei): un pachet
+ *   vine doar la cine îl instalează, iar extensia instalată stă apoi în IndexedDB și merge offline; ~410 kB pe discul
+ *   fiecărui om, și al celor care nu-l folosesc.
  *
  * Fonturile textului (`fonturi/*.ttf`, cu licența lor, ADR 0105) intră: textul se scrie și fără rețea, în atelier.
  * Manualul utilizatorului (`manual/ro.json`, `manual/en.json`, ADR 0058) intră: se citește și fără rețea, ca aplicația. La
@@ -35,6 +38,7 @@
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie
  * decis aici, nu lăsat tăcut în afara precache-ului.
  */
+import { DIR_BIBLIOTECA, esteNumePachetBiblioteca, FISIER_CATALOG_BIBLIOTECA } from './biblioteca.ts';
 
 /**
  * Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina
@@ -42,7 +46,7 @@
  */
 export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor'] as const;
 
-export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'necunoscut';
+export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'biblioteca' | 'necunoscut';
 
 /** Pură: de ce un fișier al build-ului (calea din `dist/`, cu `/`) intră sau nu în precache. */
 export function motivPrecache(cale: string): MotivPrecache {
@@ -51,6 +55,8 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (cale === 'sw.js') return 'worker';
   if (cale.startsWith('banc/')) return 'banc';
   if (cale.startsWith('documentatie/')) return 'documentatie';
+  if (cale === FISIER_CATALOG_BIBLIOTECA) return 'biblioteca';
+  if (cale.startsWith(`${DIR_BIBLIOTECA}/`) && esteNumePachetBiblioteca(cale.slice(DIR_BIBLIOTECA.length + 1))) return 'biblioteca';
   if (/^manual\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^coduri\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^mesaje\/[a-z]+\.json$/.test(cale)) return 'precache';

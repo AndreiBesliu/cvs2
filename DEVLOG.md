@@ -6299,6 +6299,82 @@ in paralel?”.
 - **CI:** complet verde pe `8003cb2` (`42374124727`); rapid verde.
 - **Publicat pe test:** `8003cb2` (rularea `42377691045`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `8003cb292217`; roadmap-ul de acolo are 7.9↑b, 10.3↑, 10.3↑b și 12.1↑ gata, 12.1↑b în lucru; în Edge fără fereastră, butonul Taie e acolo, fără erori în pagină, cu 0 erori în jurnalul local.
 
+## 2026-11-07 — Felia 3.Xg, propunerea: biblioteca extensiilor (ADR 0230, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau ca plugin-ul nostru sa fie disponibil printr-o librarie. Fa asta intr-un worktree” (owner-ul, transmis de
+sesiunea principală, care a pornit linia).
+**Started:** 07.11, 15:20. **Completed:** 07.11, 15:47.
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\biblioteca`, ramura `wip/3.Xg-biblioteca`, din `main` `8003cb2`;
+  joncțiunile `node_modules` și `functions\node_modules` spre checkout-ul principal; e2e pe 4180, cu
+  `CNCVS2_E2E_RETEA=127.0.7`; ADR-urile 0230–0239; canalul `biblioteca` (nepublicat încă: nu e cod).
+- **Cercetarea:** gazda extensiilor de azi (`pachet.ts`, `Instalare.tsx`, `Extensii.tsx`, `depozit.ts`), construcția
+  pachetului (`construieste-trenulet.ts`, `impacheteaza-extensie.ts`), publicarea (ADR 0044: pe live doar un commit publicat
+  întreg pe test), hosting-ul (fără rescriere generală), CSP-ul (`connect-src 'self'`), precache-ul (`shared/precache.ts`),
+  GitHub Releases (fișierele lor nu au CORS după redirecționare).
+- **Măsurat:** pachetul 18.7.1, construit de două ori: 417 748 de octeți, 15 fișiere, aceeași amprentă (`7542bdac…`), ~0,9 s.
+  Poarta build-ului la `8003cb2`: 273 de fișiere identice în două build-uri, pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul
+  519,5 / 550, `/admin` 105,4 / 200; bucățile gazdei: `Extensii` 4,3 kB, `Instalare` 4,0 kB, `cadru` 4,7 kB (gzip 9).
+- **ADR 0230, propus:** biblioteca stă lângă aplicație, construită din repo la fiecare build (`extensii/biblioteca.json` →
+  `dist/extensii/catalog.json` și pachetul, cu amprenta în nume), în afara precache-ului și a plafonului; amprenta SHA-256 a
+  pachetului verificată înaintea citirii, apoi judecata de azi și potrivirea cu rândul din catalog; un conținut nou cere o
+  versiune nouă (o probă, pe amprenta manifestului); o versiune nouă ajunge cu publicarea aplicației, întâi pe test, apoi pe
+  live, aceiași octeți. În meniul Extensii, secțiunea Biblioteca: Instalează (fereastra de azi, apoi Deschide), Actualizează
+  (dintr-un clic, fereastra doar când versiunea nouă cere ceva în plus), Instalată; catalogul cerut la deschiderea meniului,
+  nu la pornire; fără rețea, extensiile instalate merg ca azi. Fișierul, adresa și linkul rămân, plus `#biblioteca=<id>`.
+  Pornirea neschimbată, ~2–3 kB în total. O felie, în trei treceri, ~4 h. Șapte întrebări, cu recomandarea întâi.
+- **Schița:** șase planșe, <https://claude.ai/artifact/GJgA4hRePmXFNPNNaQux3n>: meniul Extensii cu biblioteca (cinci stări, în
+  română și în engleză), instalarea, actualizarea, drumul unei versiuni noi, încrederea și mărimea la scară, întrebările cu
+  formularul (colecția `raspunsuri`, documentul `owner`; gol la publicare).
+- **În fișă:** rândul 3.Xg (în lucru) la capătul jurnalului și rândul răspunsurilor la capătul cozii owner-ului; ADR-ul în
+  index; traducerile (5 texte, `--verifica`: 649 / 0). Probele documentației și ale traducerilor: 38 / 38.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 3.Xg, cu probele scrise întâi. Nimic unit în `main`.
+
+## 2026-11-07 — Felia 3.Xg: biblioteca extensiilor (ADR 0230, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–7a” (owner-ul, în sesiunea liniei, la cele șapte întrebări din ADR 0230).
+**Started:** 07.11, 16:00. **Completed:** 07.11, 17:45.
+
+- **Răspunsurile:** toate recomandările: biblioteca lângă aplicație, construită la build; „Instalează” prin fereastra de azi;
+  „Actualizează” dintr-un clic, cu fereastra doar când versiunea nouă cere ceva în plus; versiunea nouă se vede la deschiderea
+  meniului, nu la pornire; fișierul și adresa rămân („din afara bibliotecii”), plus linkul `#biblioteca=<id>`; Easy 3Draw pe live
+  odată cu aplicația; secțiunea în meniul Extensii. Scrise în ADR 0230 (acceptat), în `CLAUDE.md` („Decizii luate”) și în fișă
+  (rândul cozii scos).
+- **Înainte de cod:** `origin/main` (`1bf99c5`, DEVLOG-ul unirii) adus în ramură (`1daf840`; ciocnirea doar la coada
+  DEVLOG-ului, păstrate ambele intrări).
+- **Probele, scrise întâi** (și văzute căzând înaintea codului): `extensii.biblioteca.test.ts` (catalogul câmp cu câmp,
+  versiunile, starea rândului, ce cere în plus, amprenta greșită refuzată înaintea cititorului, cu aceeași mărime și cu alta,
+  manifestul nepotrivit, pachetul stricat, descărcarea oprită la mărimea din catalog, rețeaua care nu e defect, instalarea cu
+  sursa ei, catalogul cerut), `biblioteca.constructie.test.ts` (catalogul din build cu amprenta și mărimea pachetului de lângă
+  el, judecat ca în aplicație; Easy 3Draw cu câmpurile manifestului; determinismul; garda „conținut nou ⇒ versiune nouă”;
+  amprenta conținutului), precache-ul (`extensii/`), anteturile (`/extensii/catalog.json`, `/extensii/*.zip`), controalele
+  manualului; e2e `biblioteca.spec.ts` (7: instalarea cu „Deschide”, amprenta greșită cu defectul în jurnal, actualizarea
+  dintr-un clic cu datele păstrate, actualizarea care cere ceva nou, fără rețea, linkul, engleza).
+- **Codul:** `shared/biblioteca.ts`, `src/extensii/biblioteca.ts`, `scripts/biblioteca.ts`, `extensii/biblioteca.json`, pluginul
+  `biblioteca()` din `vite.config.ts`; `Extensii.tsx` (secțiunea, actualizarea din meniu, semnul „actualizare: …”, linkul),
+  `Instalare.tsx` (fereastra bibliotecii, „din afara bibliotecii”, gestionarea „din biblioteca cvs2”), `depozit.ts` (sursa
+  `biblioteca`), `tipuri.ts`, `extensii.css`, `carcasa.ro/en.ts` (44 de texte); `shared/precache.ts` (motivul `biblioteca`),
+  `scripts/firebase-json.ts` și `firebase.json`, `scripts/build-determinist.ts` (catalogul din `dist/` față de pachete, a doua
+  plasă a precache-ului, rândul bibliotecii în raport); manualul (ro, en).
+- **Porțile:** tipurile (aplicația, sursele pluginului, funcțiile), importurile (19 reguli, 0 încălcări), licențele; unit 8 591 /
+  8 600 (singura cădere, traducerile roadmap-ului, închise la documente: 647 / 0); build determinist (276 de fișiere identice);
+  e2e biblioteca 7 / 7 la prima rulare; e2e întreg 365 / 366, cu `cont.spec.ts:29` căzut la încărcare (butonul Cont în 5 s),
+  15 / 15 singur, de trei ori; emulatoarele: prima rulare 80 / 81 (sugestiile: emulatorul de funcții n-a răspuns în 300 s), a doua
+  81 / 81 la funcții și 20 / 21 pe e2e (`cont.emulator.spec.ts:44`, serverul în 20 s), 2 / 2 singură.
+- **Otrăvurile** (`test/otravuri/3.Xg.py`, 37), în clona `C:\Users\besli\cncvs2-lucru\otravuri-biblioteca`, cele e2e pe 4180:
+  toate prinse la prima rulare (`2f01a82`), fiecare de proba ei. Baza e2e a căzut o dată în proba instalării, cât publicam pe
+  canal; reluată pe mașina liniștită: 7 / 7. E08 („Deschide” care doar închide), prinsă doar de aceeași probă, verificată la
+  pasul ei: după „Deschide”, `extensie-deschisa` lipsește.
+- **Mărimea:** pornirea 101,5 (cu ușa 105,1 / 110 kB), neschimbată; totalul 519,5 → 523,0 / 550 kB (+3,5, peste estimarea de
+  2–3): `Extensii` 4,3 → 8,5 kB (biblioteca trage după ea cititorul de pachete), `Instalare` 4,0 → 3,4 kB. `dist/extensii/`:
+  pachetul 408,0 kB și catalogul 0,8 kB, în afara plafonului și a precache-ului.
+- **Publicat pe canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app> (până pe 07.12), din
+  `2f01a82`. Verificat acolo, în Edge fără fereastră: catalogul (HTTP 200, `no-cache`), pachetul (417 748 de octeți, amprenta
+  egală cu catalogul, `immutable`), rândul lui Easy 3Draw din meniu, fereastra „din biblioteca cvs2”, instalarea, „Deschide”
+  (planificatorul pornit, 0 erori în jurnal), apoi „Instalată”.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului; o versiune nouă a lui Easy 3Draw cere de acum versiunea ridicată în
+  `extensii/trenulet/extensie.json` și `node scripts/biblioteca.ts --scrie`.
+
 ## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 10.3↑c”.
@@ -6357,4 +6433,3 @@ in paralel?”.
   la plafonul de 70 % (537,6 px), derulat; „În cerc, doar dacă e”: „Forme convertite: 1; abaterea cea mai mare: 0,06 mm. Nu sunt
   cercuri, la toleranța dată: 3. Cea mai mică abatere a lor: 0,414 mm.” (√2 − 1, pe hârtie); „cu diametrul 8”: toate patru,
   cercuri Ø8; rândul rezultatului întreg în panou; în fereastra exportului, rândul primește „găurire”; nicio eroare în consolă.
-
