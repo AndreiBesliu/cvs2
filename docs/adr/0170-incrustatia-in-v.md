@@ -1,12 +1,26 @@
 # ADR 0170 — Incrustațiile: perechea în document și incrustația în V
 
-**Starea:** propus pe 06.11.2026, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia
-12.1↑, adusă din etapa 12, fără mașină. Cererea owner-ului: „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi
-alegerea liniei „Inlays, stage 12”. **Rândul din prag:** „Inlay în V (D) ȘI inlay cu pereți drepți, simplu sau în trepte (S),
-fiecare cu criteriul lui” (`ACOPERIRE-ARTCAM-DESKPROTO.md`). **Documentul:** v20 (propus). **Așteaptă** răspunsurile la cele
-șase întrebări de la final; codul vine după ele. Pereții drepți și treptele primesc ADR-ul lor (0171), la felia lor.
+**Starea:** acceptat pe 07.11.2026, cu răspunsurile owner-ului la cele șase întrebări: „1a; 2 - vreau sa pot alege intre
+optiuni atuci cand fac exportul; 3 - la fel ca la 2 - vreau sa am ambele optiuni; 4a+b; 5a; 6 - si a si b”. Propus pe 06.11, în
+linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia 12.1↑, adusă din etapa 12, fără mașină.
+Cererea owner-ului: „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi alegerea liniei „Inlays, stage 12”.
+**Rândul din prag:** „Inlay în V (D) ȘI inlay cu pereți drepți, simplu sau în trepte (S), fiecare cu criteriul lui”
+(`ACOPERIRE-ARTCAM-DESKPROTO.md`). **Documentul:** v20. Pereții drepți și treptele primesc ADR-ul lor (0171), la felia lor.
 **Schița:** <https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK> (cinci planșe: panoul, exportul, potrivirea pe hârtie, dopul
-în vederea 3D, întrebările).
+în vederea 3D, întrebările), la zi cu răspunsurile.
+
+**Ce au schimbat răspunsurile** (față de propunerea de mai jos, care rămâne valabilă în rest):
+- **2 și 3, alese la export:** lemnul din jurul dopului are ambele feluri, `jurDop: 'fata' | 'banda'` în `incrustatie` (fața
+  coborâtă toată, cu freza dreaptă; sau banda îngustă, săpată cu V-ul, apoi decuparea). Jocurile au două valori, iar fereastra
+  exportului are bifa „Același spațiu pentru clei și fierăstrău”, care le ține egale; documentul păstrează mereu ambele numere.
+- **4, ambele:** fundul plat cu freza dreaptă (`fundPlat`), sau doar cu freza V, prin inele dese. Alegerea e chiar freza din
+  coloana Fund plat: fără freză dreaptă, pe o incrustație, fundul îl scoate V-ul (creasta cel mult g/2 în locaș și H/2 pe fața
+  dopului), nu rămâne netăiat ca la un V-carve obișnuit.
+- **6, amândouă tehnicile, devreme:** pereții drepți vin imediat după nucleul V-ului, înaintea opțiunilor lui. Ordinea feliilor:
+  12.1↑ (nucleul V: v20, adâncimea de start, dopul cu fața coborâtă, oracolul potrivirii, rolul, exportul cu două fișiere și
+  bifa jocurilor); 12.1↑b (pereții drepți: buzunarul și dopul, ADR 0171); 12.1↑c (banda îngustă și decuparea dopului, cu
+  punți); 12.1↑d (fundul doar cu V); 12.1↑e (dopul în vederea 3D și potrivirea simulată); 12.1↑f (gaura și treptele); fișa
+  plăcii 12. Până la felia lor, `jurDop: 'banda'` și fundul doar cu V se refuză cu motivul și cu felia care le aduce.
 
 **Problema.** O incrustație pune o piesă dintr-un alt lemn (dopul) într-o cavitate (locașul) tăiată după același desen. În
 ediția întâi, „dopul” a fost 3,5 luni o a doua cavitate: 612 din 616 mișcări cădeau în interiorul conturului, iar dopul umplea
@@ -51,10 +65,14 @@ etapa 11).
 
 ## Decizia (propusă, cu recomandările întrebărilor)
 
-1. **Perechea în document (v20).** Câmpul opțional `incrustatie: { fel: 'v', joc, fierastrau, margine }` stă pe operația
+1. **Perechea în document (v20).** Câmpul opțional `incrustatie: { fel: 'v', joc, fierastrau, margine, jurDop }` stă pe operația
    V-carve: operația e locașul și își declară dopul.
    - Dopul nu se desenează și nu se ține separat: se calculează la fiecare export din aceleași contururi, oglindite. Așa nu
      poate rămâne în urma desenului.
+   - **Contractul ușii:** un obiect deschis (câmpurile necunoscute rămân), pe orice fel de operație (refuzurile lui, pe alt
+     fel sau cu altă freză, sunt ale lucrării, ca la celelalte câmpuri); `fel` = `'v'`; `joc` și `fierastrau`, numere finite în
+     (0, 1 000] mm (plafonul adâncimii unei operații); `margine`, număr finit în [0, 10 000] mm (plafonul laturii); `jurDop`,
+     `'fata'` sau `'banda'`. Toate cinci sunt cerute.
    - Migrarea v19 → v20 schimbă doar numărul. Un document v19 cu un câmp propriu `incrustatie` pe o operație e refuzat.
    - Oracolul documentului trece la v20 (`CAMPURI_NOI_O`, `problemeOperatieO`, frontierele pe hârtie), iar corpusul de aur
      primește adăugirea versiunii 20 (ADR 0121).
@@ -119,7 +137,7 @@ etapa 11).
 **Se redeschide dacă:** vin foile multiple (etapa 11): dopul poate deveni o așezare pe foaia lui, cu mai multe dopuri pe o
 placă, prin migrarea lui `incrustatie`. Sau placa 12 arată altă potrivire decât simularea.
 
-## Întrebările (recomandarea întâi)
+## Întrebările (recomandarea întâi) și răspunsurile din 07.11
 
 1. **Unde se taie dopul?**
    - **a)** calculat din desen, de aceeași operație: locașul rămâne în programul foii, dopul are fișierul lui, pe un
@@ -143,3 +161,7 @@ placă, prin migrarea lui `incrustatie`. Sau placa 12 arată altă potrivire dec
 6. **Ordinea feliilor:**
    - **a)** întâi V-ul (12.1↑, apoi dopul în 3D și decuparea, dacă e cazul), apoi pereții drepți, apoi gaura și treptele;
    - b) întâi pereții drepți.
+
+**Răspunsurile (07.11):** 1, a. 2, „vreau sa pot alege intre optiuni atuci cand fac exportul”: ambele, alese în fereastra
+exportului. 3, „la fel ca la 2 - vreau sa am ambele optiuni”: două valori, cu bifa care le ține egale. 4, a și b. 5, a. 6, „si a
+si b”: amândouă tehnicile, cu pereții drepți imediat după nucleul V-ului (ordinea din „Ce au schimbat răspunsurile”).

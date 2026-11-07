@@ -62,6 +62,7 @@ export const roExport = {
   'export.latura.buzunar': 'buzunar',
   'export.latura.gaurire': 'găurire',
   'export.latura.vcarve': 'V-carve',
+  'export.latura.incrustatie': 'incrustație în V',
   'export.vcarve.nu-se-aplica': 'Pe un V-carve, urechile, rampa, intrările și degajările profilului nu se aplică: freza în V sapă regiunea pe axa ei medială, până la adâncimea maximă.',
   'export.vcarve.nota': 'V-carve: freza în V merge pe mijlocul formei și coboară cât încape între pereți (r / tan(θ/2)), cel mult până la adâncimea scrisă. Unde forma e mai lată, fundul plat dintre pereți îl scoate freza dreaptă, cu bifa de mai jos; fără ea, fundul rămâne.',
   'export.fund': 'Fundul plat cu freza dreaptă',

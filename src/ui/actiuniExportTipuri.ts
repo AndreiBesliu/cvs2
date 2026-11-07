@@ -78,7 +78,7 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
  * Parametrii exportului și rezumatul jobului: definiți lângă calculul lor, în workerul CAM (ADR 0109,
  * `src/jobs/protocolCam.ts`, `src/jobs/rezumat.ts`); interfața le citește de aici, ca tipuri.
  */
-import type { ParametriExport } from '../jobs/protocolCam.ts';
+import type { DopExportat, ParametriExport } from '../jobs/protocolCam.ts';
 import type { RezumatJob } from '../jobs/rezumat.ts';
 export type { ParametriExport } from '../jobs/protocolCam.ts';
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
@@ -141,6 +141,8 @@ export type RezultatExport =
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
     /** Fișierele de descărcat: unul, sau câte unul pe sculă (ADR 0084); `program` e primul. */
     readonly fisiere: readonly FisierExportat[];
+    /** Dopurile incrustațiilor (ADR 0170 §3): fiecare cu fișierele lui, de descărcat după ale foii. */
+    readonly dopuri: readonly DopExportat[];
     /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */
     readonly sender: boolean;
     /**

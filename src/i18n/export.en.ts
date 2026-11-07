@@ -66,6 +66,7 @@ export const enExport = {
   'export.latura.buzunar': 'pocket',
   'export.latura.gaurire': 'drilling',
   'export.latura.vcarve': 'V-carve',
+  'export.latura.incrustatie': 'V inlay',
   'export.vcarve.nu-se-aplica': 'On a V-carve, tabs, ramps, lead-ins and corner reliefs of a profile do not apply: the V bit carves the region along its medial axis, down to the maximum depth.',
   'export.vcarve.nota': 'V-carve: the V bit runs along the middle of the shape and goes as deep as fits between the walls (r / tan(θ/2)), at most down to the depth written. Where the shape is wider, the straight bit clears the flat floor between the walls, with the box below; without it, the floor stays.',
   'export.fund': 'Flat floor with a straight bit',
