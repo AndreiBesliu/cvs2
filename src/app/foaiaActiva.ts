@@ -25,6 +25,25 @@ export function foaiaTinuta(stocare: StocareFoaie | null = stocareBrowser()): st
   }
 }
 
+/** „Toate foile pe pânză” (ADR 0210 §1, felia 11.1↑b), ținut în browser: implicit da; „0” = doar foaia activă. */
+export const CHEIE_TOATE_FOILE = 'cncvs2.toate-foile';
+
+export function toateFoileTinute(stocare: StocareFoaie | null = stocareBrowser()): boolean {
+  try {
+    return stocare?.getItem(CHEIE_TOATE_FOILE) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+export function tineToateFoile(da: boolean, stocare: StocareFoaie | null = stocareBrowser()): void {
+  try {
+    stocare?.setItem(CHEIE_TOATE_FOILE, da ? '1' : '0');
+  } catch {
+    // Fără stocare, următoarea pornire le arată pe toate.
+  }
+}
+
 /** Ține minte foaia activă; fără stocare (plină, refuzată), aplicația merge mai departe. */
 export function tineFoaia(id: string, stocare: StocareFoaie | null = stocareBrowser()): void {
   try {

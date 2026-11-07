@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
-  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type GestDesen, type LinieGhid, type Lipeste, type RaspunsDesen, type Vedere,
+  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type CerereFoi, type FoaieVecina, type FormaDesen, type GestDesen, type LinieGhid, type Lipeste,
+  type RaspunsDesen, type Vedere,
 } from './protocol.ts';
+import { vedereaPotrivita } from './potrivire.ts';
 
 type Props = {
   readonly forme: readonly FormaDesen[];
@@ -18,6 +20,14 @@ type Props = {
   readonly zona?: RefObject<HTMLElement | null>;
   /** Crește la fiecare „arată toată foaia”: vederea se potrivește din nou. */
   readonly potrivire?: number;
+  /** Ce încadrează potrivirea de acum, în mm ai foii active (toate foile, ADR 0210 §1); fără ea, foaia. */
+  readonly cadru?: { readonly x: number; readonly y: number; readonly latime: number; readonly inaltime: number } | null;
+  /**
+   * Foile de lângă cea activă (ADR 0210 §1), estompate și needitabile, cu numele lor. Dublu-clic pe una o face activă
+   * (`onActiveaza`), cu vederea mutată odată cu ea.
+   */
+  readonly vecine?: readonly FoaieVecina[];
+  readonly onActiveaza?: (id: string) => void;
   /** Cutia selecției, în mm: bara selecției (`children`) stă lângă ea, sub ea dacă încape, altfel deasupra. */
   readonly cutie?: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number } | null;
   readonly children?: ReactNode;
@@ -50,6 +60,9 @@ type Props = {
   readonly desen?: GestDesen;
 };
 
+/** Fără foi vecine: aceeași listă, ca workerul să nu le primească din nou la fiecare randare. */
+const FARA_VECINE: readonly FoaieVecina[] = [];
+
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
 const TOLERANTA_PX = 4;
 const PRAG_TRAGERE_PX = 3;
@@ -65,27 +78,22 @@ function culori(): CerereDesen['culori'] {
   };
 }
 
-/** Vederea care așază foaia întreagă în pânză (sau în zona `z` a ei, în pixeli din colțul pânzei), cu o margine. */
-export function vedereaPotrivita(
-  lat: number, ina: number, foaie: { latime: number; inaltime: number }, z = { x: 0, y: 0, w: lat, h: ina },
-): Vedere {
-  const margine = 24;
-  const scara = Math.min(SCARA_MAXIMA, Math.max(SCARA_MINIMA,
-    Math.min((z.w - 2 * margine) / foaie.latime, (z.h - 2 * margine) / foaie.inaltime)));
-  return { scara, tx: z.x + (z.w - foaie.latime * scara) / 2, ty: z.y + z.h - (z.h - foaie.inaltime * scara) / 2 };
-}
-
 /**
  * Pânza v0: vectorii exacți desenați de worker (`lucrator.ts`), afișați pe o pânză `bitmaprenderer`. Pânza nu știe de
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat, suprapunere, lipeste, desen }: Props) {
+export function Panza({
+  forme, foaie, selectie, onClic, onMutare, zona, potrivire, cadru, vecine = FARA_VECINE, onActiveaza, cutie, children, onCursor,
+  onScara, onFisiere, textLasare, strat, suprapunere, lipeste, desen,
+}: Props) {
   const [trage, setTrage] = useState(false);
   const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
   const lucratorRef = useRef<Worker | null>(null);
   const cerereRef = useRef(0);
+  // Ultimele foi vecine trimise workerului: se trimit din nou doar când se schimbă.
+  const foiTrimise = useRef<readonly FoaieVecina[] | null>(null);
   const [marime, setMarime] = useState({ latime: 0, inaltime: 0, dpr: 1 });
   const [vedere, setVedere] = useState<Vedere | null>(null);
   const [deplasare, setDeplasare] = useState({ dx: 0, dy: 0 });
@@ -152,15 +160,20 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     if (!vedere && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, foaie, zonaLibera()));
   }, [marime, foaie, vedere]);
 
-  // „Arată toată foaia”: aceeași potrivire, la cerere.
+  // „Arată toată foaia”: aceeași potrivire, la cerere; sau cutia cerută (toate foile).
   useEffect(() => {
-    if (potrivire && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, foaie, zonaLibera()));
+    if (potrivire && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, cadru ?? foaie, zonaLibera()));
   }, [potrivire]);
 
-  // Orice schimbare → o cerere nouă către worker.
+  // Orice schimbare → o cerere nouă către worker. Foile vecine pleacă înaintea ei, doar când s-au schimbat.
   useEffect(() => {
     const w = lucratorRef.current;
     if (!w || !vedere) return;
+    if (foiTrimise.current !== vecine) {
+      foiTrimise.current = vecine;
+      const foi: CerereFoi = { tip: 'foi', foi: vecine };
+      w.postMessage(foi);
+    }
     cerereRef.current += 1;
     setTrimisa(cerereRef.current);
     const cerere: CerereDesen = {
@@ -168,7 +181,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       vedere, foaie, forme, selectie, deplasare, culori: culori(),
     };
     w.postMessage(cerere);
-  }, [marime, vedere, foaie, forme, selectie, deplasare, tema]);
+  }, [marime, vedere, foaie, forme, selectie, deplasare, tema, vecine]);
 
   // Scara, spusă afară o dată pe vedere nouă (zoomul din bara de jos).
   useEffect(() => { if (vedere) onScara?.(vedere.scara); }, [vedere]);
@@ -291,6 +304,17 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       onPointerCancel={() => { if (gest.current?.tip === 'desen') desen?.('anulat', 0, 0, 1, { alt: false, shift: false }); gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
       onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
+      // Dublu-clic pe o foaie estompată (ADR 0210 §1): devine activă, iar vederea se mută odată cu originea, deci pânza nu sare.
+      onDoubleClick={(e) => {
+        if (!vedere || !onActiveaza) return;
+        const p = laDocument(e, vedere);
+        const f = vecine.find((v) => p.x >= v.x && p.x <= v.x + v.latime && p.y >= v.y && p.y <= v.y + v.inaltime);
+        if (!f) return;
+        setVedere({ ...vedere, tx: vedere.tx + f.x * vedere.scara, ty: vedere.ty - f.y * vedere.scara });
+        // Cursorul, din colțul foii noi: altfel bara de jos l-ar arăta față de cea veche până la mișcarea următoare.
+        onCursor?.({ x: p.x - f.x, y: p.y - f.y });
+        onActiveaza(f.id);
+      }}
       onDragOver={(e) => {
         if (!onFisiere || !cuFisiere(e)) return;
         e.preventDefault();

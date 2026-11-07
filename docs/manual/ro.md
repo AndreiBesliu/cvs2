@@ -71,7 +71,7 @@ iese). Un proiect poate avea mai multe foi: vezi [Foile](#foile).
 
 ## Foile
 %% capitol: foile
-%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile
 
 Un proiect poate avea mai multe foi de material: plăci diferite (alt material, altă grosime) sau piese care nu încap pe una.
 Fiecare foaie are mărimea ei, piesele ei și, dacă vrei, un nume și un material.
@@ -82,6 +82,12 @@ mărimea, materialul și câte piese are fiecare; piesele se văd doar sub foaia
 (selecția se golește); `PageUp` (**Foaia de dinainte**) și `PageDown` (**Foaia următoare**) trec prin listă. Cu mai multe foi,
 bara de jos arată foaia activă și locul ei („Foaia 2 · 2 din 3”). Aplicația ține minte foaia activă în browser: la
 redeschidere, proiectul pornește pe ea.
+
+**Toate foile pe pânză.** Foile stau pe pânză una lângă alta, în ordinea listei, la 100 mm una de alta, fiecare cu numele
+deasupra. Cea activă e vie, cu riglele ei; celelalte sunt estompate și nu se pot edita. **Dublu-clic** pe o foaie estompată o
+face activă, fără ca pânza să sară. Butonul **Toate foile pe pânză**, din dreapta-jos (lângă „Arată traseul”), oprește și
+pornește foile estompate: pornit, le încadrează pe toate; oprit, rămâne doar foaia activă, încadrată. Alegerea se ține minte
+în browser. `Home` încadrează foaia activă.
 
 **Foaie nouă.** Butonul **+ Foaie nouă**, sub listă, adaugă o foaie după cea activă, cu aceeași mărime și același material,
 și o face activă. O foaie fără nume se cheamă după numărul ei („Foaia 2”); numărul rămâne și când muți sau ștergi alte foi.

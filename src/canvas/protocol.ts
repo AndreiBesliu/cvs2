@@ -69,6 +69,26 @@ export type CerereDesen = {
   readonly culori: { readonly fundal: string; readonly foaie: string; readonly linie: string; readonly selectie: string };
 };
 
+/**
+ * O foaie de lângă cea activă (ADR 0210 §1, felia 11.1↑b): locul ei în coordonatele foii active (mm, colțul stânga-jos),
+ * mărimea, numele și formele ei, în coordonatele ei. Pânza o desenează estompată și nu o editează.
+ */
+export type FoaieVecina = {
+  readonly id: string;
+  readonly x: number;
+  readonly y: number;
+  readonly latime: number;
+  readonly inaltime: number;
+  readonly nume: string;
+  readonly forme: readonly FormaDesen[];
+};
+
+/**
+ * Foile vecine, trimise workerului doar când se schimbă (nu la fiecare cadru al deplasării), înaintea cererii de desen care
+ * le folosește.
+ */
+export type CerereFoi = { readonly tip: 'foi'; readonly foi: readonly FoaieVecina[] };
+
 /** `sageti`: câte săgeți de sens (căile deschise din selecție) are imaginea. */
 export type RaspunsDesen = { readonly tip: 'imagine'; readonly cerere: number; readonly imagine: ImageBitmap; readonly sageti: number };
 

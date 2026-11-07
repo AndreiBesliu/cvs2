@@ -73,7 +73,7 @@ the dimension line (by how many mm it goes past). A project can have several she
 
 ## Sheets
 %% capitol: foile
-%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile
 
 A project can have several sheets of material: different boards (another material, another thickness) or parts that do not
 fit on one. Each sheet has its own size, its own parts and, if you like, a name and a material.
@@ -84,6 +84,12 @@ sheets, one below the other, with the size, the material and how many parts each
 sheet. A click on a sheet's row makes it active (the selection is cleared); `PageUp` (**Previous sheet**) and `PageDown`
 (**Next sheet**) go through the list. With several sheets, the bottom bar shows the active sheet and its place ("Sheet 2 · 2
 of 3"). The app remembers the active sheet in the browser: when you open the project again, it starts on it.
+
+**All sheets on the canvas.** The sheets sit on the canvas side by side, in the order of the list, 100 mm apart, each with its
+name above it. The active one is live, with its rulers; the others are dimmed and cannot be edited. A **double click** on a
+dimmed sheet makes it active, without the canvas jumping. The **All sheets on the canvas** button, at the bottom right (next to
+"Show toolpath"), turns the dimmed sheets off and on: on, it frames them all; off, only the active sheet stays, framed. The
+choice is remembered in the browser. `Home` frames the active sheet.
 
 **New sheet.** The **+ New sheet** button, under the list, adds a sheet after the active one, with the same size and the same
 material, and makes it active. A sheet without a name is called by its number ("Sheet 2"); the number stays when you move or

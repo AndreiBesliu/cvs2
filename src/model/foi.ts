@@ -35,6 +35,22 @@ export function numeFoaie(foaie: Pick<Foaie, 'id' | 'nume'>, index: number, sabl
   return sablon(m ? Number(m[1]) : index + 1);
 }
 
+/** Distanța dintre foile de pe pânză, în mm (ADR 0210 §1). */
+export const SPATIU_FOI = 100;
+
+/**
+ * Locul fiecărei foi pe rândul pânzei (ADR 0210 §1, felia 11.1↑b): colțul ei stânga-jos pe X, în ordinea listei, la
+ * `SPATIU_FOI` una de alta, cu fețele de jos la Y 0. Pânza le arată față de foaia activă (originea ei).
+ */
+export function locuriFoi(doc: Document): number[] {
+  let x = 0;
+  return doc.foi.map((f) => {
+    const aici = x;
+    x += f.stoc.latime + SPATIU_FOI;
+    return aici;
+  });
+}
+
 /** Materialul foii, dacă e scris (o etichetă, ADR 0210 §1). */
 export function materialFoaie(foaie: Pick<Foaie, 'material'>): string | null {
   return typeof foaie.material === 'string' && foaie.material.trim() !== '' ? foaie.material : null;

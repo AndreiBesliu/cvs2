@@ -132,6 +132,7 @@ export const en = {
   'vedere.tema': 'Theme',
   'vedere.foaia-anterioara': 'Previous sheet',
   'vedere.foaia-urmatoare': 'Next sheet',
+  'vedere.toate-foile': 'All sheets on the canvas',
   'tema.auto': 'as the system',
   'tema.luminoasa': 'light',
   'tema.intunecata': 'dark',

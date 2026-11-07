@@ -37,6 +37,52 @@ async function revSalvat(page: Page): Promise<number> {
   });
 }
 
+/** Culoarea pânzei la un punct al foii active (mm), `[r, g, b]`, din pixelii ei (după ce cadrul cerut e afișat). */
+async function pixel(page: Page, x: number, y: number): Promise<number[]> {
+  const v = await vedere(page);
+  return page.evaluate(([px, py]) => {
+    const el = document.querySelector('[data-testid="panza"]') as HTMLCanvasElement;
+    const c = document.createElement('canvas');
+    c.width = el.width;
+    c.height = el.height;
+    const g = c.getContext('2d');
+    if (!g) return [];
+    g.drawImage(el, 0, 0);
+    return [...g.getImageData(Math.round(px), Math.round(py), 1, 1).data.slice(0, 3)];
+  }, [(v.tx + x * v.scara) * v.dpr, (v.ty - y * v.scara) * v.dpr] as const);
+}
+
+/** Cea mai mare depărtare (pe un canal) de culoarea `fata` într-o cutie de pixeli CSS de deasupra punctului (mm): cerneala unui text. */
+async function cerneala(page: Page, x: number, y: number, fata: readonly number[]): Promise<number> {
+  const v = await vedere(page);
+  return page.evaluate(([px, py, dpr, f0, f1, f2]) => {
+    const el = document.querySelector('[data-testid="panza"]') as HTMLCanvasElement;
+    const c = document.createElement('canvas');
+    c.width = el.width;
+    c.height = el.height;
+    const g = c.getContext('2d');
+    if (!g) return -1;
+    g.drawImage(el, 0, 0);
+    // Eticheta stă deasupra colțului stânga-sus al foii: 40 × 14 px CSS, cu baza la 4 px deasupra marginii.
+    const d = g.getImageData(Math.round(px), Math.round(py - 18 * dpr), Math.round(40 * dpr), Math.round(14 * dpr)).data;
+    let m = 0;
+    for (let i = 0; i < d.length; i += 4) m = Math.max(m, Math.abs((d[i] ?? 0) - f0), Math.abs((d[i + 1] ?? 0) - f1), Math.abs((d[i + 2] ?? 0) - f2));
+    return m;
+  }, [(v.tx + x * v.scara) * v.dpr, (v.ty - y * v.scara) * v.dpr, v.dpr, fata[0] ?? 0, fata[1] ?? 0, fata[2] ?? 0] as const);
+}
+
+/** Un token de culoare al temei (`#rrggbb`), ca `[r, g, b]`. */
+async function culoare(page: Page, token: string): Promise<number[]> {
+  const hex = await page.evaluate((t) => getComputedStyle(document.documentElement).getPropertyValue(t).trim(), token);
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+}
+
+/** Două culori la cel mult 3 unități pe canal (amestecul și rotunjirea pixelilor). */
+function aproape(a: readonly number[], b: readonly number[], unde: string): void {
+  expect(a.length, unde).toBe(3);
+  a.forEach((x, i) => { expect(Math.abs(x - (b[i] ?? 0)), `${unde}: ${a.join(',')} față de ${b.map((y) => Math.round(y)).join(',')}`).toBeLessThanOrEqual(3); });
+}
+
 /** Clic dreapta pe pânză, la un punct al foii (mm). */
 async function clicDreapta(page: Page, x: number, y: number): Promise<void> {
   const la = await ecran(page, await vedere(page));
@@ -200,4 +246,60 @@ test('traseul arătat urmează foaia activă: la PgDn se calculează pentru foai
   await expect.poll(() => alfaTraseu(page, 70, 38)).toBeGreaterThan(0);
   await expect(strat).toHaveAttribute('data-stins', 'false');
   expect(await alfaTraseu(page, 17, 50)).toBe(0);
+});
+
+test('toate foile pe pânză: vecina estompată, la 100 mm, cu numele; dublu-clic o face activă fără ca pânza să sară; comutatorul o ascunde și se ține minte', async ({ page }) => {
+  await page.goto('/');
+  const comutator = page.locator('[data-actiune="vedere.toate-foile"]');
+  // Cu o singură foaie, comutatorul nu apare.
+  await expect(comutator).toHaveCount(0);
+  await adauga(page, 'dreptunghi');
+  await lista(page).locator('[data-actiune="foaie.adauga"]').click();
+  await adauga(page, 'cerc');
+  await expect(comutator).toHaveAttribute('aria-pressed', 'true');
+  // Oprit, apoi pornit: pornit, le încadrează pe toate.
+  await comutator.click();
+  await expect(comutator).toHaveAttribute('aria-pressed', 'false');
+  await comutator.click();
+  await expect(comutator).toHaveAttribute('aria-pressed', 'true');
+  const fundal = await culoare(page, '--panza-fundal');
+  const foaieVie = await culoare(page, '--panza-foaie');
+  const estompat = fundal.map((f, i) => (f + (foaieVie[i] ?? 0)) / 2);
+  // Față de Foaia 2 (activă), Foaia 1 stă de la x −400 la −100; între ele, 100 mm de fundal.
+  aproape(await pixel(page, -200, 150), estompat, 'în Foaia 1, estompată');
+  aproape(await pixel(page, -50, 150), fundal, 'între foi');
+  aproape(await pixel(page, 250, 150), foaieVie, 'în Foaia 2, activă');
+  // Numele foii estompate, deasupra ei: cerneală pe fundal.
+  expect(await cerneala(page, -400, 200, fundal)).toBeGreaterThan(40);
+  // Dublu-clic pe Foaia 1: devine activă, iar vederea se mută cu 400 mm, deci foaia rămâne unde era pe ecran.
+  const v0 = await vedere(page);
+  const p = (await ecran(page, v0))(-200, 150);
+  await page.mouse.dblclick(p.x, p.y);
+  await expect(cip(page)).toHaveText('Foaia 1 · 1 din 2');
+  // Cursorul, din colțul foii noi: −200 față de Foaia 2 e 200 față de Foaia 1.
+  // (Mausul cade pe pixeli întregi: câteva zecimi de mm pe lângă.)
+  const xy = ((await page.getByTestId('cursor').textContent()) ?? '').match(/X (-?[\d.]+), Y (-?[\d.]+)/);
+  expect(Math.abs(Number(xy?.[1]) - 200)).toBeLessThan(2);
+  expect(Math.abs(Number(xy?.[2]) - 150)).toBeLessThan(2);
+  const v1 = await vedere(page);
+  expect(v1.scara).toBe(v0.scara);
+  expect(Math.abs(v1.tx - (v0.tx - 400 * v0.scara))).toBeLessThan(1e-6);
+  expect(v1.ty).toBe(v0.ty);
+  await expect(randuri(page)).toHaveText([DREPTUNGHI]);
+  aproape(await pixel(page, 200, 150), foaieVie, 'Foaia 1, acum activă');
+  aproape(await pixel(page, 600, 150), estompat, 'Foaia 2, acum estompată, la dreapta');
+  // Oprit: doar foaia activă; departe, unde stătea Foaia 2, fundal.
+  await comutator.click();
+  await expect(comutator).toHaveAttribute('aria-pressed', 'false');
+  const panza = page.getByTestId('panza');
+  const b = await panza.boundingBox();
+  if (!b) throw new Error('pânza n-are cutie');
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.wheel(0, 1200);
+  aproape(await pixel(page, 600, 150), fundal, 'Foaia 2, oprită');
+  // Reîncărcarea ține alegerea: tot oprit.
+  await expect.poll(() => revSalvat(page)).toBeGreaterThanOrEqual(3);
+  await page.reload();
+  await expect(cip(page)).toHaveText('Foaia 1 · 1 din 2');
+  await expect(comutator).toHaveAttribute('aria-pressed', 'false');
 });

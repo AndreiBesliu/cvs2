@@ -11,7 +11,7 @@ import { documentNou, type Document, type Operatie } from '../model/document.ts'
 import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
-import { doarFoaia, indexFoaieActiva, materialFoaie, numeFoaie } from '../model/foi.ts';
+import { doarFoaia, indexFoaieActiva, locuriFoi, materialFoaie, numeFoaie } from '../model/foi.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
@@ -38,7 +38,7 @@ import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
-import { foaiaTinuta, tineFoaia } from './foaiaActiva.ts';
+import { foaiaTinuta, tineFoaia, tineToateFoile, toateFoileTinute } from './foaiaActiva.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import type { CerereLucrare } from './DialogLucrare.tsx';
 import type { LucrarePrimita } from './primireLucrare.ts';
@@ -263,6 +263,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [selectie, setSelectie] = useState<readonly string[]>([]);
   // Foaia activă a ferestrei (ADR 0210 §1): o vedere, ținută în browser; fără ea, sau ștearsă, prima foaie.
   const [foaieAleasa, setFoaieAleasa] = useState<string | null>(() => foaiaTinuta());
+  // Toate foile pe pânză (ADR 0210 §1, felia 11.1↑b), estompate în jurul celei active; ținut în browser, implicit da.
+  const [toateFoile, setToateFoile] = useState(toateFoileTinute);
+  // Ce încadrează potrivirea următoare (toate foile); null: foaia activă, ca Home.
+  const [cadruPotrivire, setCadruPotrivire] = useState<{ x: number; y: number; latime: number; inaltime: number } | null>(null);
   const [eroareSalvare, setEroareSalvare] = useState<string | null>(null);
   const [mod, setMod] = useState<ModFila>(proiect.mod);
   const [motivNecitit, setMotivNecitit] = useState('');
@@ -492,10 +496,26 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     proprietati: () => { comutaPanou('proprietati'); },
     proiectare: () => { deschideFereastra('proiectare'); },
     masina: () => { deschideFereastra('masina'); },
-    potriveste: () => { setPotrivire((n) => n + 1); },
+    potriveste: () => { setCadruPotrivire(null); setPotrivire((n) => n + 1); },
     traseu: () => { comutaTraseu(); },
     'foaia-anterioara': () => { foaiaVecina(-1); },
     'foaia-urmatoare': () => { foaiaVecina(1); },
+    // Pornit, le încadrează pe toate; oprit, încadrează foaia activă (ca Home).
+    'toate-foile': () => {
+      const da = !toateFoile;
+      setToateFoile(da);
+      tineToateFoile(da);
+      const d = curenta.current.istoric.doc;
+      const k = indexFoaieActiva(d, curenta.current.foaie);
+      const locuri = locuriFoi(d);
+      const ultima = d.foi.length - 1;
+      const x0 = locuri[k] ?? 0;
+      setCadruPotrivire(da ? {
+        x: -x0, y: 0, latime: (locuri[ultima] ?? 0) + (d.foi[ultima]?.stoc.latime ?? 0),
+        inaltime: Math.max(...d.foi.map((f) => f.stoc.inaltime)),
+      } : null);
+      setPotrivire((n) => n + 1);
+    },
     tema: () => {
       const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
       setTema(noua);
@@ -569,6 +589,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Documentul văzut din foaia activă (ADR 0210 §5), pentru panou și pentru fereastra exportului: ținut, ca să nu se refacă la
   // fiecare randare.
   const docActiv = useMemo(() => doarFoaia(doc, idActiva), [doc, idActiva]);
+  // Foile de lângă cea activă, pe rândul pânzei (ADR 0210 §1, felia 11.1↑b): locul, numele și desenul fiecăreia. Desenul unei
+  // foi se ține cât rămân aceeași foaie și aceleași piese: o editare pe foaia activă nu le reface pe celelalte.
+  const desenFoi = useRef(new WeakMap<Document['foi'][number], { readonly piese: Document['piese']; readonly forme: ReturnType<typeof listaDesen> }>());
+  const vecine = useMemo(() => {
+    if (!toateFoile || doc.foi.length < 2) return [];
+    const locuri = locuriFoi(doc);
+    const x0 = locuri[indexActiva] ?? 0;
+    return doc.foi.flatMap((f, k) => {
+      if (k === indexActiva) return [];
+      let d = desenFoi.current.get(f);
+      if (d?.piese !== doc.piese) {
+        d = { piese: doc.piese, forme: listaDesen(doc, k) };
+        desenFoi.current.set(f, d);
+      }
+      return [{ id: f.id, x: (locuri[k] ?? 0) - x0, y: 0, latime: f.stoc.latime, inaltime: f.stoc.inaltime, nume: numeFoaie(f, k, sablonFoaie), forme: d.forme }];
+    });
+  }, [doc, indexActiva, toateFoile, limbaActiva]);
   // Lista de desen și elementele în lume se refac doar când se schimbă documentul sau foaia activă.
   const lume = useMemo(() => elementeFoaie(doc, indexActiva), [doc, indexActiva]);
   const forme = useMemo(() => listaDesen(doc, indexActiva), [doc, indexActiva]);
@@ -1049,6 +1086,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (id === 'extensii.trimite-selectia') return extensie?.forme ? buton(id, atribut, extra, t('actiune.trimite-la', { nume: extensie.nume })) : null;
     const p = panouAl(id);
     if (id === 'vedere.traseu') return buton(id, atribut, { ...extra, 'aria-pressed': traseu?.arata === true });
+    // Comutatorul foilor de pe pânză (ADR 0210 §1), doar cu mai multe foi.
+    if (id === 'vedere.toate-foile') return doc.foi.length < 2 ? null : buton(id, atribut, { ...extra, 'aria-pressed': toateFoile });
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
   };
 
@@ -1262,6 +1301,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           <Panza
             forme={forme}
             foaie={stoc}
+            vecine={vecine}
+            onActiveaza={(id) => { if (!dialogDeschis.current) activeazaFoaie(id); }}
+            cadru={cadruPotrivire}
             selectie={selectieDesen}
             onClic={(x, y, toleranta) => {
               const punct = () => ({ x, y, toleranta });

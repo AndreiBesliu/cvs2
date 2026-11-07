@@ -34,8 +34,9 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
   }
   // Plasa nu e vidă: meniul global, bara de sus, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
   // „Arată traseul” în bara de jos (2.8d), fără „Adaugă dreptunghi / cerc” (ADR 0052: locul uneltelor de desen). Căutarea și
-  // tema au trecut din colțul barei în meniul global (ADR 0132). Bara selecției are și „Trimite la <extensie>” (ADR 0166).
-  assert.equal(numarate, 2 + 4 + 0 + 4 + 2);
+  // tema au trecut din colțul barei în meniul global (ADR 0132). Bara selecției are și „Trimite la <extensie>” (ADR 0166);
+  // bara de jos, „Toate foile pe pânză” (ADR 0210 §1, felia 11.1↑b).
+  assert.equal(numarate, 2 + 4 + 0 + 4 + 3);
   for (const p of PANOURI) assert.ok(REGISTRU.has(COMUTA_PANOU[p]), `panoul ${p}: comutatorul lipsește din registru`);
   for (const f of FERESTRE) assert.ok(REGISTRU.has(DESCHIDE_FEREASTRA[f]), `fereastra ${f}: fila ei lipsește din registru`);
   assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
