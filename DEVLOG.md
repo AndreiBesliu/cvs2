@@ -6312,3 +6312,15 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   texte, `--verifica` cu 0 lipsuri). Probele documentației și ale traducerilor: 28 / 28.
 - **Rămâne:** răspunsurile owner-ului (formularul din schiță), apoi codul lui 25.1↑, cu proba scrisă întâi. Nimic unit în
   `main` (decizia owner-ului).
+
+## 2026-11-07 — Felia 25.1↑: trasarea alb-negru (ADR 0220, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–8a” (owner-ul, în sesiunea liniei trasării, la cele opt întrebări din ADR 0220).
+**Started:** 07.11, 14:57. **Completed:** —
+
+- **Răspunsurile:** toate recomandările: trasarea în „Importă…”; 96 px / țol fără DPI, cu lățimea în fereastră; linii și cubice;
+  ordinea 25.1↑ → 25.2↑ → 25.3↑ (25.4↑ la cerere); TIFF refuzat acum; în precache; scikit-image ca al doilea martor (descărcarea
+  permisă); logoul din ediția întâi în corpusul public. Scrise în ADR 0220 (acceptat), în `CLAUDE.md` („Decizii luate”) și în
+  fișă (rândul cozii scos).
+- **Înainte de cod:** `main` (`8003cb2`, cu incrustațiile și tăierea vectorilor) unit în ramură (`54168c5`; ciocnirile doar la
+  capetele indexului ADR și ale DEVLOG-ului).

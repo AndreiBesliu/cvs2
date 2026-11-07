@@ -773,6 +773,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **trasarea din imagine, cu toate recomandările** („Da, 1a–8a”, la cele opt întrebări din ADR 0220, în sesiunea
+  liniei trasării): trasarea stă în „Importă…” (o imagine aleasă sau lăsată pe planșă deschide fereastra trasării); o imagine
+  fără DPI primește 96 px / țol, cu lățimea scrisă în fereastră; curbele ies linii și cubice; ordinea: 25.1↑ alb-negru, 25.2↑
+  culorile, 25.3↑ linia mediană (25.4↑ scanările, doar la cerere); TIFF refuzat acum, iar imaginile din PDF rămân sărite; codul
+  în precache, în totalul de 550 kB; scikit-image (BSD-3) e al doilea martor al probei, în venv-ul oracolelor și în CI
+  (descărcarea permisă); logoul din ediția întâi intră în corpusul public, plus imaginile pe care owner-ul le trimite.
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la

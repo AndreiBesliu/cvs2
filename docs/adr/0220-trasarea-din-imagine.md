@@ -1,8 +1,8 @@
 # ADR 0220 — Trasarea din imagine: ușa imaginilor, conturul sub-pixel, curbele cu abaterea măsurată
 
-**Starea:** propus pe 07.11.2026, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`). Felia 25.1↑, adusă
-din etapa 25, fără mașină; codul vine după răspunsurile owner-ului. Pornirea: sesiunea principală, după ce owner-ul a
-întrebat ce se mai poate face în paralel.
+**Starea:** acceptat pe 07.11.2026, cu toate recomandările („Da, 1a–8a”, la întrebările de la final), în linia trasării
+(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus în aceeași zi. Felia 25.1↑, adusă din etapa 25, fără mașină.
+Pornirea: sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel.
 **Rândul din prag:** „Trasare din imagine (bitmap → vectori)” (S, v1, decis 06.10). **Placa etapei 25:** „logoul trasat”.
 **Completează:** T18 (ADR 0018: câte o ușă pe format, spre același model), ușile SVG, DXF, PDF, EPS și WMF (ADR 0035, 0101,
 0104, 0115, 0117), bazinul CAM (ADR 0109, 0015), plafonul total (ADR 0137). **Portarea** (`docs/PORTARE.md` §4, rândul
@@ -67,7 +67,7 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
 - **Fișierul owner-ului din D7:** logoul ediției întâi (`cnc_vector_studio_first_logo_transparent.png`, 1288 × 325, RGBA, fără
   DPI), în repo-ul privat al ediției întâi. La 96 px / țol iese 340,8 × 86,0 mm.
 
-## Decizia (propusă, cu recomandările întrebărilor)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Ușa imaginilor** (`src/io/formatImport.ts`): `.png`, `.jpg` / `.jpeg` / `.jfif`, `.webp`, `.gif` (primul cadru), `.bmp`
    și tipurile lor MIME sunt formatul `imagine`; un fișier fără extensie cunoscută, după semnătură. TIFF e refuzat cu motivul
@@ -178,6 +178,9 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
 trece de țintă; o poză reală trece de termen fără refuz; totalul trece de 550 kB.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (07.11):** „Da, 1a–8a”: toate recomandările, deci și descărcarea lui scikit-image (7a) și logoul în corpusul
+public (8a).
 
 **Interfața**
 1. **Unde stă trasarea?**
