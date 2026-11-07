@@ -6324,7 +6324,7 @@ in paralel?”.
 ## 2026-11-07 — Felia 10.3↑d: conversia în arce, în cerc și în dreptunghi (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 10.3↑d”.
-**Started:** 07.11, 14:40. **Completed:** 07.11, 17:55.
+**Started:** 07.11, 14:40. **Completed:** 07.11, 18:15.
 
 - **Codul:** `src/model/conversie.ts` (`converteste`, pură): Arce (biarcele din ADR 0033 și șirurile de linii pe un cerc, fără
   colțuri peste 30° și fără arce peste 180°), În cerc (Kåsa prin noduri; abaterea radială doar cât forma ocolește centrul o
@@ -6350,4 +6350,11 @@ in paralel?”.
 - **Porțile:** traducerile (646 / 0 la unire), compilatoarele, importurile, licențele; unit 8 584 (8 576 / 0 căderi / 8 sărite) pe codul feliei și 8 612 (8 604 / 0 căderi / 8 sărite) pe `c1b0e49`, după unire; build-ul determinist a prins pe codul feliei bucata doar de CSS (reparată înainte de commit), apoi 272 de fișiere identice, iar pe `c1b0e49` 274; e2e 360 / 360 pe codul feliei (apoi conversia, tăierea și manualul, 12 / 12, după mutarea panoului) și, pe `c1b0e49`, 355 / 362 în rularea întreagă (16 lucrători), cu 7 căderi la încărcarea paginii (elemente negăsite în 5 s, un fișier de raport blocat), trecute la reluare cu 3 lucrători (6 spec-uri, 45 / 45), deci 362 / 362; emulatoarele 81 / 81 și 21 / 21 pe `7f1d815`.
 - **Otrăvurile** (`test/otravuri/10.3d.py`): 27; prima rulare (`c1b0e49`), pe primele 25: 24 prinse; V07 (sfertul de tură al dreptunghiului, cu colțul de pornire neschimbat) a scăpat, fiindcă la un dreptunghi exact prima latură de arie minimă a învelitorii are mereu unghiul sub 45°; prinsă pe `7f1d815` după o probă nouă (dreptunghiul rotit cu −30°, cu două umflături de 0,02 mm: latura de arie minimă e la 60°), deci 25 / 25; U05 și U06 (rezultatul panoului adus în vedere, după verificarea pe canal), prinse pe `0c7e4c1`: 27 / 27. Două probe scrise înaintea rulării au fost singurele care au prins câte o otravă: cele două semicercuri (V03, arcele peste 180°) și calea dus-întors pe cerc (V05, abaterea radială fără ocolire).
 - **Pe codul feliei, față de `7f05ccd`: pornirea 101,4 → 101,5 (cu ușa 105,0 / 110 kB), totalul 517,2 → 522,1 / 550 kB (+4,9: workerul CAM +3,05, panoul, în bucata panoului Taie, +1,36, editarea +0,27, acțiunile +0,14 și o bucată nouă de 0,10 kB, `verificareLimite`, comună cu panoul verificării). După unirea lui `main`: pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 525,0 / 550 kB. Linia, până acum: ~16,0 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6, 10.3↑d +4,9), peste ghidul de ~10 kB din brief, cu o felie rămasă (netezirea).**
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12), `5e556c7`
+  (`cncvs2-versiune` `5e556c7bea02`; prima publicare servise `7f1d815`, fiindcă scriptul canalului publică `dist/` așa cum e,
+  iar ultimul build era al emulatoarelor). Verificat acolo, la 1024 × 768, în Edge fără fereastră (panoul browserului era
+  ascuns), pe un DXF cu poligonul cu 64 de laturi R50 și trei pătrățele de 2 mm: butonul Convertește imediat după Taie; panoul
+  la plafonul de 70 % (537,6 px), derulat; „În cerc, doar dacă e”: „Forme convertite: 1; abaterea cea mai mare: 0,06 mm. Nu sunt
+  cercuri, la toleranța dată: 3. Cea mai mică abatere a lor: 0,414 mm.” (√2 − 1, pe hârtie); „cu diametrul 8”: toate patru,
+  cercuri Ø8; rândul rezultatului întreg în panou; în fereastra exportului, rândul primește „găurire”; nicio eroare în consolă.
 
