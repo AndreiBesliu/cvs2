@@ -73,10 +73,14 @@ o('U03', P, "  const cerereArce: CerereConversie | null = ta === null ? null : {
   'bifa „și liniile scurte” nu ajunge la calcul')
 o('U04', P, '        const v = onConverteste({ doc: laCerere, piese: r.piese });', '        const v: RezultatActiune = { ok: true };', 'e2e',
   'panoul spune conversia, dar n-o aplică')
+o('U05', P, "  useEffect(() => { if (stare) randStare.current?.scrollIntoView({ block: 'nearest' }); }, [stare]);\n", '', 'e2e',
+  'rezultatul conversiei rămâne sub marginea panoului (verificarea pe canal)')
+o('U06', 'src/app/PanouTaiere.tsx', "  useEffect(() => { if (stare) randStare.current?.scrollIntoView({ block: 'nearest' }); }, [stare]);\n", '', 'e2e',
+  'rezultatul tăierii rămâne sub marginea panoului (verificarea pe canal)')
 
 SETURI = {
     'conversie': ['test/unit/conversie.test.ts', 'test/unit/conversie.oracol.test.ts'],
     'conversie2': ['test/unit/conversie.test.ts', 'test/unit/conversie.oracol.test.ts', 'test/unit/actiuni.calcul.test.ts',
                    'test/unit/actiuni.calcul.paritate.test.ts', 'test/unit/taiere.test.ts', 'test/unit/manual.test.ts'],
 }
-E2E = ['test/e2e/conversie.spec.ts']
+E2E = ['test/e2e/conversie.spec.ts', 'test/e2e/taiere.spec.ts']

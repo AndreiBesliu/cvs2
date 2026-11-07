@@ -81,6 +81,9 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const [stare, setStare] = useState<Stare | null>(null);
   const semnal = useRef<AbortController | null>(null);
   useEffect(() => () => { semnal.current?.abort(); }, []);
+  // Rezultatul stă sub blocuri, iar panoul (cel mult 70 % din fereastră) se derulează: adus în vedere la fiecare schimbare.
+  const randStare = useRef<HTMLParagraphElement | null>(null);
+  useEffect(() => { if (stare) randStare.current?.scrollIntoView({ block: 'nearest' }); }, [stare]);
 
   const g = ghidaje.find((x) => x.id === ghidaj) ?? null;
   const x = citesteNumar(textX, true), y = citesteNumar(textY, true);
@@ -218,7 +221,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
         </div>
       </fieldset>
       {stare ? (
-        <p className={stare.fel === 'gata' && stare.rau ? 'motiv-retea' : 'stare-taiere'} role="status" data-testid="taiere-stare">
+        <p ref={randStare} className={stare.fel === 'gata' && stare.rau ? 'motiv-retea' : 'stare-taiere'} role="status" data-testid="taiere-stare">
           {stare.fel === 'calcul' ? t('editare.taiere.calcul') : stare.text}
         </p>
       ) : null}

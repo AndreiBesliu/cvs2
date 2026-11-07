@@ -143,6 +143,8 @@ test('Decupează la ultima formă aleasă: din pătrat rămâne partea comună c
   await expect(page.locator('[data-taiere="inchide-decupare"]')).toBeChecked();
   await page.locator('[data-taiere="decupeaza"]').click();
   await expect(page.getByTestId('taiere-stare')).toHaveText('Forme decupate: 1; șterse: 0; forme noi: 1, alese.');
+  // Rezultatul stă sub cele trei blocuri, într-un panou care se derulează: adus în vedere (95 %: sub-pixelii).
+  await expect(page.getByTestId('taiere-stare')).toBeInViewport({ ratio: 0.95 });
   const lista = page.getByTestId('lista-vectori');
   await expect(randuri(page)).toHaveCount(2);
   await expect(lista.locator('button[data-instanta][aria-pressed="false"]')).toHaveAttribute('data-instanta', granita ?? '—');

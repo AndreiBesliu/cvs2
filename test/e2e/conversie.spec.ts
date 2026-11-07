@@ -30,7 +30,10 @@ async function importa(page: Page, entitati: string): Promise<void> {
 /** Câte alegeri „găurire” are rândul primei operații în fereastra exportului (doar pe un rând numai cu cercuri). */
 async function gaurire(page: Page): Promise<number> {
   await page.locator('[data-actiune="export.gcode"]').click();
-  const n = await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"] option[value="gaurire"]').count();
+  // Rândul întâi (fereastra vine la cerere): numărate înainte de el, alegerile ar fi zero și fără conversie.
+  const latura = page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]');
+  await expect(latura.locator('option').first()).toBeAttached();
+  const n = await latura.locator('option[value="gaurire"]').count();
   await page.getByRole('button', { name: 'Închide' }).click();
   await expect(page.locator('.dialog')).toHaveCount(0);
   return n;
@@ -54,6 +57,8 @@ test('În cerc: poligonul cu 64 de laturi devine cercul Ø100, găuribil; Anulea
 
   await page.locator('[data-conversie="cerc"]').click();
   await expect(stare(page)).toHaveText('Forme convertite: 1; abaterea cea mai mare: 0,06 mm.');
+  // Rezultatul stă sub blocuri, într-un panou care se derulează: adus în vedere (95 %: sub-pixelii).
+  await expect(stare(page)).toBeInViewport({ ratio: 0.95 });
   await expect(randuri(page)).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(panou(page)).toHaveCount(0);
