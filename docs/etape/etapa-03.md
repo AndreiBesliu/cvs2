@@ -78,6 +78,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Răspunsurile la cele șase întrebări din ADR 0171 (incrustația cu pereți drepți): cum se face dopul, pe ce se sprijină, colțurile, frezele, jocul lateral, unde se alege; recomandările sunt primele variante; schița: <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR> | 12.1↑b | înainte de codul feliei |
 | O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11) | 3.S pe live (acolo primirea e oprită până atunci) | înainte să pornim primirea pe live |
 | Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune | 10.3↑ | acum |
+| Încercarea trasării pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>): din „Importă…”, logoul tău sau o imagine pe care o trasezi de obicei (un desen scanat, o poză, un logo de client); sursa, pragul, netezimea și curățarea se schimbă cu previzualizarea alături, iar Importă pune desenul pe foaie, ca orice import. Spune unde iese mai rău decât în ediția întâi sau în ArtCAM (ADR 0220, „Se redeschide dacă”); imaginile trimise intră în corpus (răspunsul 8a) | 25.1↑, apoi 25.2↑ (culorile) | când vrei; 25.2↑ pornește la cuvântul tău |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 

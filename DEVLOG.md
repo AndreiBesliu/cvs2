@@ -6316,7 +6316,7 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 ## 2026-11-07 — Felia 25.1↑: trasarea alb-negru (ADR 0220, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–8a” (owner-ul, în sesiunea liniei trasării, la cele opt întrebări din ADR 0220).
-**Started:** 07.11, 14:57. **Completed:** —
+**Started:** 07.11, 14:57. **Completed:** 07.11, 18:45.
 
 - **Răspunsurile:** toate recomandările: trasarea în „Importă…”; 96 px / țol fără DPI, cu lățimea în fereastră; linii și cubice;
   ordinea 25.1↑ → 25.2↑ → 25.3↑ (25.4↑ la cerere); TIFF refuzat acum; în precache; scikit-image ca al doilea martor (descărcarea
@@ -6355,3 +6355,6 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   licențele, corpusul Python, suita unitară întreagă, e2e-urile trasării (6) și ale importului (23), build-ul determinist.
 - **Mărimea:** totalul 531,8 / 550 kB (`main` 519,5: +12,3; estimarea era ~8), pornirea 101,6 / 110 (105,2 cu ușa); workerul
   trasării 7,0 kB gzip, bucata ușilor +2,0 kB.
+- **Publicat** pe canalul `trasare` al instanței de test (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe
+  07.12), din `6da7d74`; încercat acolo, în Edge fără fereastră: logoul owner-ului, 48 de contururi, piesa pe foaie, 0 erori.
+  Suita unitară pe codul final: 8619 teste, 8611 trecute, 0 picate, 8 sărite. Neunit în `main` (decizia owner-ului).
