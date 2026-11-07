@@ -20,13 +20,17 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   // Antetele se potrivesc pe calea cererii: „/” și „/index.html” sunt două căi, deci amândouă sunt fără cache.
   // Documentația admin (ADR 0048) are nume fixe și se schimbă la fiecare publicare: fără cache, ca fila să n-o arate veche.
   // Mesajele ca date (ADR 0095): dicționarul de bază vine la fiecare pornire, de la o adresă fixă.
-  for (const cale of ['/', '/index.html', '/config.json', '/sw.js', '/documentatie/**', '/mesaje/**']) {
+  // Catalogul bibliotecii (ADR 0230): o adresă fixă, cu o versiune nouă a unei extensii la fiecare publicare.
+  for (const cale of ['/', '/index.html', '/config.json', '/sw.js', '/documentatie/**', '/mesaje/**', '/extensii/catalog.json']) {
     const r = cfg.hosting.headers.find((h) => h.source === cale);
     assert.equal(r?.headers.find((h) => h.key === 'Cache-Control')?.value, 'no-cache', cale);
   }
   // Documentele repo-ului de pe domeniul produsului nu ajung în rezultatele căutării.
   const doc = cfg.hosting.headers.find((h) => h.source === '/documentatie/**');
   assert.equal(doc?.headers.find((h) => h.key === 'X-Robots-Tag')?.value, 'noindex');
+  // Pachetele bibliotecii au amprenta în nume: o adresă nu-și schimbă niciodată octeții, deci se țin oricât.
+  const pachete = cfg.hosting.headers.find((h) => h.source === '/extensii/*.zip');
+  assert.equal(pachete?.headers.find((h) => h.key === 'Cache-Control')?.value, 'public, max-age=31536000, immutable');
 });
 
 test('antetul CSP primește amprentele scripturilor inline ale build-ului (harta importurilor, ADR 0098), pe toate căile', () => {

@@ -569,6 +569,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
+  **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
+  1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
+  lângă aplicație. **La fiecare build,
+  `scripts/biblioteca.ts` construiește din repo pachetele din `extensii/biblioteca.json` și catalogul lor, în `dist/extensii/`**
+  (`catalog.json` și `<id>-<versiune>-<amprentă>.zip`, în afara precache-ului și a plafonului). În meniul Extensii, secțiunea
+  Biblioteca: Instalează (fereastra, apoi Deschide), Actualizează la … (dintr-un clic; fereastra doar când versiunea nouă cere
+  ceva în plus), Instalată; catalogul se cere la deschiderea meniului, nu la pornire; linkul `#biblioteca=<id>`; un pachet din
+  fișier sau de la o adresă vine „din afara bibliotecii”. Amprenta SHA-256 din catalog se verifică înaintea cititorului de
+  pachete, iar un defect al publicării ajunge în jurnal. **O schimbare a unei extensii din bibliotecă cere o versiune nouă în
+  `extensie.json`, apoi `node scripts/biblioteca.ts --scrie`** (proba `biblioteca.constructie.test.ts` cade până atunci).
+  **Pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 523,0 / 550, /admin 105,4 / 200.**
   **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
   (ramura `wip/25.1-trasare`, neunită; canalul `trasare`), cu toate recomandările („Da, 1a–8a”): o imagine (PNG, JPEG, WebP,
   GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
@@ -785,6 +796,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
+  fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
+  următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.
+- 07.11.2026: **biblioteca extensiilor: răspunsurile la ADR 0230** („Da, 1a–7a”, după „Vreau ca plugin-ul nostru sa fie
+  disponibil printr-o librarie. Fa asta intr-un worktree”): biblioteca stă lângă aplicație, construită din repo la fiecare build
+  (`/extensii/catalog.json` și pachetele, cu amprenta SHA-256 verificată înaintea citirii); „Instalează” prin fereastra de azi,
+  „Actualizează” dintr-un clic (fereastra doar când versiunea nouă cere ceva în plus); o versiune nouă se vede la deschiderea
+  meniului Extensii, fără nicio cerere la pornire; fișierul și adresa rămân, cu „din afara bibliotecii”, plus linkul
+  `#biblioteca=<id>`; Easy 3Draw ajunge pe live odată cu aplicația; secțiunea Biblioteca stă în meniul Extensii. Linia lucrează
+  în worktree-ul `biblioteca` (`wip/3.Xg-biblioteca`, `C:\Users\besli\cncvs2-lucru\biblioteca`, e2e pe 4180 și `127.0.7`,
+  ADR-urile 0230–0239, canalul `biblioteca`).
 - 07.11.2026: **trasarea din imagine, cu toate recomandările** („Da, 1a–8a”, la cele opt întrebări din ADR 0220, în sesiunea
   liniei trasării): trasarea stă în „Importă…” (o imagine aleasă sau lăsată pe planșă deschide fereastra trasării); o imagine
   fără DPI primește 96 px / țol, cu lățimea scrisă în fereastră; curbele ies linii și cubice; ordinea: 25.1↑ alb-negru, 25.2↑

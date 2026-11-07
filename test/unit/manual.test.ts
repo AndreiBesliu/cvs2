@@ -224,6 +224,10 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
   // întrebarea de la închidere, cu lucru nesalvat (ADR 0164 §C)
   'inchidere-ramai': 'extensii.inchidere.ramai', 'inchidere-inchide': 'extensii.inchidere.inchide',
+  // biblioteca (ADR 0230): rândurile din meniu, fereastra actualizării, capătul instalării
+  'biblioteca-instaleaza': 'extensii.biblioteca.instaleaza', 'biblioteca-actualizeaza': 'extensii.biblioteca.actualizeaza',
+  'biblioteca-reincearca': 'extensii.biblioteca.reincearca', actualizeaza: 'extensii.actualizare.actualizeaza',
+  'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
@@ -239,7 +243,8 @@ ${citeste('src/extensii/Instalare.tsx')}`;
     for (const c of controale) {
       const cheie = CONTROALE_EXTENSII[c];
       if (!cheie) continue;
-      const nume = numeScurt(eticheta(cheie)[m.limba]).toLocaleLowerCase(m.limba);
+      // Numele fără parametri („Actualizează la {versiune}” → „Actualizează la”).
+      const nume = numeScurt(eticheta(cheie)[m.limba].replace(/\s*\{[a-z]+\}/g, '')).toLocaleLowerCase(m.limba);
       assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-extensii="${c}") nu e în capitolul „extensii”`);
     }
   }

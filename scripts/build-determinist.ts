@@ -14,6 +14,7 @@ import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/ma
 import { DIR_MESAJE, esteDictionarMesaje, esteFisierMesaje, fisierBaza, fisierMesaje, MODULE_MESAJE, type Limba } from '../shared/mesaje.ts';
 import { DICTIONARE_BAZA, DICTIONARE_MODULE } from './mesaje.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
+import { citesteCatalog, DIR_BIBLIOTECA, FISIER_CATALOG_BIBLIOTECA } from '../shared/biblioteca.ts';
 import { cspPentru, hashuriInline } from './cspHtml.ts';
 
 /**
@@ -563,10 +564,33 @@ for (const [marcaj, ce] of MARCAJE_ADMIN) {
 }
 const FIREBASE_IN_PRECACHE = /^assets\/(?:raportor|conexiuneBaza)-[A-Za-z0-9_-]{8}\.js$/;
 const straineInPrecache = [...manifest].filter((f) => f === 'config.json' || f === 'sw.js' || f.startsWith('banc/') || f.startsWith(`${DIR_DOCUMENTATIE}/`)
+  || f.startsWith(`${DIR_BIBLIOTECA}/`)
   || (f.endsWith('.js') && MARCAJE_ADMIN.some(([marcaj]) => cod(f).includes(marcaj)))
   || (f.endsWith('.js') && !FIREBASE_IN_PRECACHE.test(f) && MARCAJE_FIREBASE.some(([marcaj]) => cod(f).includes(marcaj))));
 if (straineInPrecache.length > 0) {
-  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js, bancul și documentația rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js, bancul, documentația și biblioteca extensiilor rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  process.exit(1);
+}
+
+/**
+ * Biblioteca extensiilor (ADR 0230): catalogul din build se citește ca în aplicație, iar în `dist/extensii/` stau exact el și
+ * pachetele lui, fiecare cu mărimea și amprenta scrise în catalog (ce verifică gazda la instalare, aici pe octeții publicați).
+ */
+const catalogBiblioteca = a.has(FISIER_CATALOG_BIBLIOTECA)
+  ? citesteCatalog(JSON.parse(readFileSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA), 'utf8')))
+  : { ok: false as const, detaliu: 'lipsește' };
+if (!catalogBiblioteca.ok) {
+  console.error(`dist/${FISIER_CATALOG_BIBLIOTECA}: ${catalogBiblioteca.detaliu} (biblioteca extensiilor, pluginul din vite.config.ts).`);
+  process.exit(1);
+}
+const fisiereBiblioteca = [...a.keys()].filter((f) => f.startsWith(`${DIR_BIBLIOTECA}/`)).sort();
+const asteptateBiblioteca = [FISIER_CATALOG_BIBLIOTECA, ...catalogBiblioteca.catalog.extensii.map((r) => `${DIR_BIBLIOTECA}/${r.pachet}`)].sort();
+const pachetGresit = catalogBiblioteca.catalog.extensii.find((r) => {
+  const cale = join('.tmp/build-1', DIR_BIBLIOTECA, r.pachet);
+  return !a.has(`${DIR_BIBLIOTECA}/${r.pachet}`) || statSync(cale).size !== r.octeti || createHash('sha256').update(readFileSync(cale)).digest('hex') !== r.sha256;
+});
+if (fisiereBiblioteca.join() !== asteptateBiblioteca.join() || pachetGresit) {
+  console.error(`dist/${DIR_BIBLIOTECA}/: ${pachetGresit ? `${pachetGresit.pachet} n-are mărimea sau amprenta din catalog` : `are ${fisiereBiblioteca.join(', ')}, nu ${asteptateBiblioteca.join(', ')}`} (ADR 0230).`);
   process.exit(1);
 }
 
@@ -697,7 +721,8 @@ console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri
 console.log(`O versiune nouă schimbă doar ${schimbateDeVersiune.join(' și ')} (harta importurilor, ADR 0098): ${traduceri.length} bucăți pomenite după nume stabile.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online); sugestia din editor: ${sugestie.toFixed(1)} kB (plafon ${PLAFON_SUGESTIE_KB}, doar online); contul: ${cont.toFixed(1)} kB (plafon ${PLAFON_CONT_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
-console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
+console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`) && !f.startsWith(`${DIR_BIBLIOTECA}/`)).join(', ')}, ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere, și ${DIR_BIBLIOTECA}/).`);
+console.log(`Biblioteca extensiilor (doar online, la instalare; ADR 0230): ${catalogBiblioteca.catalog.extensii.map((r) => `${r.nume} ${r.versiune}, ${(r.octeti / 1024).toFixed(1)} kB`).join('; ')}; catalogul ${(statSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA)).size / 1024).toFixed(1)} kB.`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
 console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);

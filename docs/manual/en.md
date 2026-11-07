@@ -1183,8 +1183,18 @@ reports) and why.
 An extension adds a window of its own to the app, for example Easy 3Draw. It isn’t part of the app: you install
 it, and the app’s interface stays the same.
 
-- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, then
-  **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
+- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, the
+  **Library**, then **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
+- The **Library** shows our extensions, published together with the app, for example Easy 3Draw: the name, the version,
+  what it does, what it asks for in short and its size. **Install** opens the install window, with what the extension asks
+  for in full; there, **Install** downloads the package, checks it against its fingerprint in the library and keeps it in
+  this browser, and **Open** opens its window (**Close** leaves it for later). When the library has a newer version of an
+  installed extension, its row in the menu says “update: …”, and **Update to …** brings it in one click, with its data; if
+  the new version asks for something more, the window says what first, and **Update** installs it. The library is read each
+  time the menu opens and needs an internet connection; without one, **Try again** asks for it again, and installed
+  extensions work as before. A link like `…/#biblioteca=trenulet` opens Easy 3Draw’s window from the library; nothing
+  downloads without your click. A package installed from a file or an address comes from outside the library, and the
+  window says so.
 - **Install from file** takes a `.zip` package. **Install from address** asks for the **Package address** (HTTPS), then
   **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
   from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
