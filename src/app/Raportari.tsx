@@ -2,16 +2,18 @@ import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import type { AplicatiaTichet, FelTichet, RaportareaMea } from '../../shared/tichete.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import {
-  codEroare, conecteazaContul, FELURI_TICHET, marcheazaCitita, primaStare, raportarileMele, TEXT_MAX, TICHETE_PE_ZI, trimiteRaportarea, type ContEditor,
+  codEroare, conecteazaContul, FELURI_TICHET, marcheazaCitita, primaStare, PROIECT_MAX_OCTETI, raportarileMele, TEXT_MAX, TICHETE_PE_ZI,
+  trimiteRaportarea, type ContEditor,
 } from '../cloud/contEditor.ts';
 import '../i18n/carcasa.ts';
 import { limba, t } from '../i18n/t.ts';
+import type { Document } from '../model/document.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
 import { contTinut } from './dreptCont.ts';
 import { textEroareCont, useFereastraCont } from './ferestreCont.ts';
 import type { IntrareEroare } from './jurnalErori.ts';
-import { aplicatiaTichet, amprenteleSesiunii } from './raportare.ts';
+import { aplicatiaTichet, amprenteleSesiunii, marimeCitita, octetiProiect, proiectPentruRaportare, proiectPreaMare } from './raportare.ts';
 import { puneRaportariNecitite, raportariNecitite } from './raportariNecitite.ts';
 import './raportari.css';
 
@@ -90,10 +92,13 @@ function faraOm(l: Exclude<Legatura, { readonly ce: ContEditor }>): ReactElement
 
 /**
  * O raportare nouă (ADR 0116 §11): felul, textul, poza planșei la cerere și, la vedere, ce mai pleacă odată cu ea (datele
- * aplicației, luate la deschidere, și amprentele erorilor din sesiune, fără conținutul lor).
+ * aplicației, luate la deschidere, și amprentele erorilor din sesiune, fără conținutul lor). Proiectul deschis pleacă doar
+ * cu bifa (§12, felia 15.B↑b): mărimea se arată la bifare, iar peste 10 MB raportarea nu pleacă; la trimitere se ia
+ * proiectul de atunci, comprimat.
  */
-export function RaportareNoua({ config, intrari = () => [], onInchide }: {
-  readonly config: Config | null; readonly intrari?: () => readonly IntrareEroare[]; readonly onInchide: () => void;
+export function RaportareNoua({ config, intrari = () => [], proiect = () => null, onInchide }: {
+  readonly config: Config | null; readonly intrari?: () => readonly IntrareEroare[]; readonly proiect?: () => Document | null;
+  readonly onInchide: () => void;
 }): ReactElement {
   useLimba();
   const cutie = useFereastraCont(onInchide);
@@ -102,6 +107,12 @@ export function RaportareNoua({ config, intrari = () => [], onInchide }: {
   const [fel, setFel] = useState<FelTichet>('problema');
   const [text, setText] = useState('');
   const [poza, setPoza] = useState(false);
+  const [cuProiect, setCuProiect] = useState(false);
+  // Mărimea proiectului (octeții JSON-ului), măsurată la bifare și la trimitere; null: nebifat sau niciun proiect deschis.
+  const [marime, setMarime] = useState<number | null>(null);
+  const marimea = (o: number): string => marimeCitita(o, limba());
+  const preaMare = marime !== null && proiectPreaMare(marime);
+  const textPreaMare = (o: number): string => t('raport.proiect.prea-mare', { marime: marimea(o), max: marimea(PROIECT_MAX_OCTETI) });
   const [lucreaza, setLucreaza] = useState(false);
   const [trimis, setTrimis] = useState(false);
   // Datele aplicației, luate la deschidere (limba de atunci, planul de azi).
@@ -129,8 +140,30 @@ export function RaportareNoua({ config, intrari = () => [], onInchide }: {
           return;
         }
       }
+      let pr: string | undefined;
+      if (cuProiect) {
+        const d = proiect();
+        if (!d) {
+          setEroare(t('raport.proiect.lipsa'));
+          return;
+        }
+        try {
+          const o = octetiProiect(d);
+          setMarime(o.length);
+          if (proiectPreaMare(o.length)) {
+            setEroare(textPreaMare(o.length));
+            return;
+          }
+          pr = await proiectPentruRaportare(o);
+        } catch (e) {
+          setEroare(t('raport.proiect.esec', { motiv: e instanceof Error ? e.message : String(e) }));
+          return;
+        }
+      }
       try {
-        await trimiteRaportarea(ce, { actiune: 'raporteaza', fel, text, aplicatia: app, amprente: a, ...(p === undefined ? {} : { poza: p }) });
+        await trimiteRaportarea(ce, {
+          actiune: 'raporteaza', fel, text, aplicatia: app, amprente: a, ...(p === undefined ? {} : { poza: p }), ...(pr === undefined ? {} : { proiect: pr }),
+        });
         setTrimis(true);
       } catch (e) {
         setEroare(textEroareRaportare(e));
@@ -168,6 +201,21 @@ export function RaportareNoua({ config, intrari = () => [], onInchide }: {
           <input type="checkbox" data-camp="raport-poza" checked={poza} onChange={(e) => { setPoza(e.target.checked); }} />
           {t('raport.poza')}
         </label>
+        <label className="raport-bifa">
+          <input type="checkbox" data-camp="raport-proiect" checked={cuProiect} onChange={(e) => {
+            const da = e.target.checked;
+            const d = da ? proiect() : null;
+            setCuProiect(da);
+            setMarime(d ? octetiProiect(d).length : null);
+          }} />
+          {t('raport.proiect')}
+        </label>
+        {cuProiect ? (
+          <p className={preaMare || marime === null ? 'camp-motiv' : 'nota'} data-raport="proiect" data-marime={marime ?? ''}
+            role={preaMare || marime === null ? 'alert' : undefined}>
+            {marime === null ? t('raport.proiect.lipsa') : preaMare ? textPreaMare(marime) : t('raport.proiect.marime', { marime: marimea(marime) })}
+          </p>
+        ) : null}
         <details className="raport-date" data-testid="raport-date">
           <summary>{t('raport.date.titlu')}</summary>
           <ul>
@@ -178,10 +226,14 @@ export function RaportareNoua({ config, intrari = () => [], onInchide }: {
             <li data-raport-amprente={amprente?.length ?? ''}>
               {amprente === null ? t('raport.date.amprente-calcul') : amprente.length === 0 ? t('raport.date.fara-erori') : t('raport.date.amprente', { n: amprente.length })}
             </li>
+            {cuProiect && marime !== null ? <li data-raport-date-proiect="">{t('raport.date.proiect', { marime: marimea(marime) })}</li> : null}
           </ul>
         </details>
         <div className="cont-butoane">
-          <button type="submit" data-buton="raport-trimite" disabled={lucreaza || amprente === null || text.trim() === ''}>{t('raport.trimite')}</button>
+          <button type="submit" data-buton="raport-trimite"
+            disabled={lucreaza || amprente === null || text.trim() === '' || (cuProiect && (marime === null || preaMare))}>
+            {t('raport.trimite')}
+          </button>
         </div>
       </form>
     );
@@ -240,6 +292,9 @@ export function RaportarileMele({ config, onInchide }: { readonly config: Config
               {r.necitite > 0 ? <span className="raportare-noua">{t('raport.mele.nou', { n: r.necitite })}</span> : null}
             </div>
             <p className="raportare-text">{r.text}</p>
+            {typeof r.proiect === 'number' ? (
+              <p className="nota raportare-proiect" data-raportare-proiect={r.proiect}>{t('raport.mele.proiect', { marime: marimeCitita(r.proiect, limba()) })}</p>
+            ) : null}
             {r.raspunsuri.length === 0 ? <p className="nota">{t('raport.mele.fara-raspuns')}</p> : (
               <ol className="raportare-raspunsuri">
                 {r.raspunsuri.map((x, k) => (

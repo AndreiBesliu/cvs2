@@ -1086,11 +1086,15 @@ Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, E
 internet: fără rețea nu se deschid, dar aplicația merge mai departe cu ultimul drept primit.
 
 - **Raportează o problemă…:** alegi ce trimiți (o problemă, o idee sau o întrebare), scrii ce s-a întâmplat și, dacă vrei,
-  bifezi **Atașează poza planșei**. Sub text, **Ce mai pleacă odată cu raportarea** arată tot ce pleacă în plus: versiunea
-  aplicației, limba, planul, browserul și amprentele erorilor din sesiunea asta (doar amprentele, fără conținutul erorilor,
-  ca echipa să le găsească în jurnalul ei). **Trimite** o trimite; un cont trimite cel mult 10 raportări pe zi.
+  bifezi **Atașează poza planșei**. Cu **Atașează proiectul (ca echipa să-l deschidă)** pleacă și proiectul deschis, exact cum
+  îl ai, comprimat; sub bifă se vede cât are. Se pot atașa cel mult 10 MB: un proiect mai mare nu pleacă, iar fără bifă nu
+  pleacă deloc. Sub text, **Ce mai pleacă odată cu raportarea** arată tot ce pleacă în plus: versiunea aplicației, limba,
+  planul, browserul, amprentele erorilor din sesiunea asta (doar amprentele, fără conținutul erorilor, ca echipa să le
+  găsească în jurnalul ei) și, cu bifa, proiectul. **Trimite** o trimite; un cont trimite cel mult 10 raportări pe zi.
 - **Raportările mele:** un răspuns nou al echipei pune un punct pe butonul **Cont** și numărul raportărilor cu răspuns nou pe
-  rândul **Raportările mele**. Când deschizi lista, răspunsurile noi sunt marcate, iar semnul se stinge.
+  rândul **Raportările mele**. Când deschizi lista, răspunsurile noi sunt marcate, iar semnul se stinge. O raportare cu
+  proiectul atașat îi arată mărimea. Raportările rezolvate se șterg singure, cu poza și proiectul lor, după perioada de
+  păstrare (implicit un an de la rezolvare; vezi nota de confidențialitate din panoul contului).
 
 - **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă
   și trimite un e-mail de confirmare; după ce deschizi linkul din el, apeși **Am confirmat**. **Am uitat parola** trimite un

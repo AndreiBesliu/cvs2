@@ -1122,12 +1122,16 @@ The menu works from the keyboard too: the arrow keys move between rows, Enter pi
 the reports need internet: without a network they do not open, but the app goes on with the last rights it received.
 
 - **Report a problem…:** you choose what you are sending (a problem, an idea or a question), write what happened and, if you
-  want, tick **Attach a picture of the sheet**. Below the text, **What else goes with the report** shows everything else that
-  goes: the app version, the language, the plan, the browser and the fingerprints of the errors in this session (only the
-  fingerprints, without the errors' content, so the team can find them in its log). **Send** sends it; an account sends at
-  most 10 reports a day.
+  want, tick **Attach a picture of the sheet**. With **Attach the project (so the team can open it)** the open project goes
+  too, exactly as you have it, compressed; its size shows under the tick box. At most 10 MB can be attached: a bigger project
+  does not go, and without the tick it does not go at all. Below the text, **What else goes with the report** shows
+  everything else that goes: the app version, the language, the plan, the browser, the fingerprints of the errors in this
+  session (only the fingerprints, without the errors' content, so the team can find them in its log) and, with the tick, the
+  project. **Send** sends it; an account sends at most 10 reports a day.
 - **My reports:** a new reply from the team puts a dot on the **Account** button and the number of reports with a new reply on
-  the **My reports** row. When you open the list, the new replies are marked, and the sign goes out.
+  the **My reports** row. When you open the list, the new replies are marked, and the sign goes out. A report with the
+  project attached shows its size. Resolved reports are deleted automatically, with their picture and project, after the
+  retention period (by default one year after they were resolved; see the privacy notice in the account panel).
 
 - **Signing in:** **Sign in with Google**, or the email address and the password, with **Sign in**. **Create account** makes a
   new account with a password and sends a confirmation email; after you open the link in it, press **I have confirmed**.
