@@ -253,6 +253,10 @@
       "ro": "Mașina, partea a doua",
       "en": "The machine, part two"
     },
+    "1628be307b504493": {
+      "ro": "**Planșele: toate foile pe pânză** (fără mașină; ADR 0210 §1, răspunsul 1 al owner-ului, „Da, toate”; „Da, 11.1↑b”, la „Pornesc felia 11.1↑b (toate foile pe pânză)?”). Pe pânză, foile stau una lângă alta, în ordinea listei, la 100 mm una de alta: cea activă vie, cu riglele ei, celelalte estompate și needitabile, fiecare cu numele deasupra. **Dublu-clic** pe o foaie estompată o face activă, fără ca pânza să sară. Comutatorul **Toate foile pe pânză** (dreapta-jos, doar cu mai multe foi), ținut în browser: pornit, le încadrează pe toate; oprit, rămâne doar foaia activă. Riglele, coordonatele, ghidajele și traseul rămân ale foii active. Pornirea 103,7 → 104,3 kB (cu ușa 107,8 / 110), totalul 524,7 → 525,5 / 550. Otrăvurile: 19 / 19, toate prinse la prima rulare. Pe canalul `plansele` al instanței de test.",
+      "en": "**Sheets: all sheets on the canvas** (no machine; ADR 0210 §1, the owner’s answer 1, “Yes, all”; “Yes, 11.1↑b”, to “Shall I start slice 11.1↑b (all sheets on the canvas)?”). On the canvas, the sheets sit side by side, in the order of the list, 100 mm apart: the active one live, with its rulers, the others dimmed and not editable, each with its name above it. A **double click** on a dimmed sheet makes it active, without the canvas jumping. The **All sheets on the canvas** toggle (bottom right, only with several sheets), remembered in the browser: on, it frames them all; off, only the active sheet stays. The rulers, coordinates, guides and toolpath stay those of the active sheet. Startup 103.7 → 104.3 kB (with the door 107.8 / 110), total 524.7 → 525.5 / 550. Mutations: 19 / 19, all caught on the first run. On the `plansele` channel of the test instance."
+    },
     "167efdf9d2d97663": {
       "ro": "Profilul pe orice contur: și pe cele deschise, pe o parte (stânga / dreapta), la nivelul CAM, pentru importul SVG (din 09.10, lângă 2.7: n-are contururi deschise până la import)",
       "en": "Profile on any contour: also on open ones, on one side (left / right), at the CAM level, for the SVG import (since 09.10, next to 2.7: there are no open contours until the import)"
@@ -2004,6 +2008,10 @@
     "bef8fda2a0faf985": {
       "ro": "Tăierea cu o linie dreaptă",
       "en": "Cutting with a straight line"
+    },
+    "bf287520e101f78f": {
+      "ro": "Planșele: toate foile pe pânză",
+      "en": "Sheets: all sheets on the canvas"
     },
     "bfca81120058bffa": {
       "ro": "**Măsurarea pe un laptop de atelier** (bancul s6-V, cu pragurile din T13).",

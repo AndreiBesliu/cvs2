@@ -507,6 +507,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nu intră în schemă:** în documentele de până la el era un câmp necunoscut al foii, cu orice valoare (oracolul îl generează
   așa); aplicația îl citește doar când e text și scrie doar text; comanda etichetei ține valoarea veche exactă. **Pornirea
   101,5 → 103,7 (cu ușa 107,2 / 110 kB), totalul 519,5 → 524,7 / 550.**
+  **Toate foile pe pânză (ADR 0210 §1, felia 11.1↑b)** gata pe 07.11: foile stau una lângă alta, în ordinea listei, la
+  100 mm (`locuriFoi`), cea activă vie, celelalte estompate, needitabile, cu numele deasupra; dublu-clic pe una o face
+  activă (vederea se mută cu originea: pânza nu sare); comutatorul „Toate foile pe pânză” (`vedere.toate-foile`, ținut în
+  browser, `cncvs2.toate-foile`), pornit, le încadrează pe toate. **Originea rămâne a foii active** (riglele, ghidajele,
+  uneltele, traseul neschimbate); foile vecine merg la workerul pânzei într-un mesaj al lor (`CerereFoi`), doar când se
+  schimbă. **Pornirea 104,3 (cu ușa 107,8 / 110 kB), totalul 525,5 / 550.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

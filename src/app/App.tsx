@@ -1,6 +1,6 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
@@ -189,6 +189,8 @@ const INTARZIERE_TRASEU_MS = 300;
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
+/** Fără foi vecine pe pânză (ADR 0210 §1): aceeași listă, ca pânza să nu i-o trimită workerului din nou la fiecare editare. */
+const NICIO_VECINA: readonly FoaieVecina[] = [];
 
 /** Temele, în ordinea în care le trece butonul: după sistem, luminoasă, întunecată. */
 const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
@@ -593,7 +595,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // foi se ține cât rămân aceeași foaie și aceleași piese: o editare pe foaia activă nu le reface pe celelalte.
   const desenFoi = useRef(new WeakMap<Document['foi'][number], { readonly piese: Document['piese']; readonly forme: ReturnType<typeof listaDesen> }>());
   const vecine = useMemo(() => {
-    if (!toateFoile || doc.foi.length < 2) return [];
+    if (!toateFoile || doc.foi.length < 2) return NICIO_VECINA;
     const locuri = locuriFoi(doc);
     const x0 = locuri[indexActiva] ?? 0;
     return doc.foi.flatMap((f, k) => {

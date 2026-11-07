@@ -6371,3 +6371,27 @@ utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
 
 **Completed:** 07.11, 18:58.
+
+## 2026-11-07 — Felia 11.1↑b: toate foile pe pânză (ADR 0210 §1) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc felia 11.1↑b (toate foile pe pânză)?”: „Da, 11.1↑b”.
+**Started:** 07.11, 19:05.
+
+- **Unirea:** `main` `1bf99c5` (doar DEVLOG) adus în ramură cu un merge (`3aad7ff`); conflictul de la coada DEVLOG-ului, cu
+  intrarea lui `main` întâi.
+- **Felia (`235ed5d`):** foile pe pânză, una lângă alta, în ordinea listei, la 100 mm (`locuriFoi`); originea rămâne a foii
+  active, deci riglele, ghidajele, uneltele și traseul nu s-au atins; vecinele, estompate și needitabile, cu numele deasupra,
+  merg la workerul pânzei într-un mesaj al lor (`CerereFoi`), doar când se schimbă; dublu-clic pe una o face activă, cu
+  vederea mutată odată cu originea și cursorul din colțul foii noi; comutatorul „Toate foile pe pânză” (dreapta-jos, doar cu
+  mai multe foi), ținut în browser, care pornit le încadrează pe toate (`src/canvas/potrivire.ts`, încadrarea unei cutii).
+- **Ce a ieșit din drum:** (1) numele foii active, scris pe pânză, stătea sub riglă (văzut în captură): foaia activă n-are
+  nume pe pânză, doar vecinele. (2) După dublu-clic, cursorul din bara de jos rămânea față de foaia veche până la mișcarea
+  următoare: acum se arată din colțul foii noi. (3) Proba cursorului: mausul cade pe pixeli întregi, deci se compară la 2 mm.
+  (4) Cu o singură foaie, lista goală a vecinelor era nouă la fiecare editare, deci pânza retrimitea workerului un mesaj gol:
+  acum e o constantă (`NICIO_VECINA`).
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile (0 lipsă), unitare 8 604, 0 căzute (8 sărite), e2e
+  pe suita întreagă, cu alte trei suite ale altor sesiuni pe aceeași mașină: 360 trecute, 1 trecută la a doua încercare, 4 căzute peste termen (animația traseului și Scade), care trec rulate singure (9 / 9); o rulare cu 4 lucrători a avut 10 căzute de același fel (module la cerere venite peste 5 s), toate trecute rulate singure (64 / 64, apoi 9 / 9); build-ul determinist (275 de fișiere); pornirea 104,3 (cu ușa 107,8 / 110), totalul 525,5 / 550.
+- **Otrăvurile (`test/otravuri/11.1b.py`, alese de autor, într-o clonă):** 19; toate prinse la prima rulare (`235ed5d`): 6 unitare și 13 prin e2e, în clonă, pe portul 4178.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
+
+**Completed:** 07.11, 20:49.

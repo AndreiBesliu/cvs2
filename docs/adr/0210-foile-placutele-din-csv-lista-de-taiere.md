@@ -2,8 +2,8 @@
 
 **Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
 toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
-în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Felia 11.1↑ gata pe 07.11**
-(foaia activă și lista cu foile; vezi la capăt, „Felia 11.1↑”).
+în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
+07.11** (foaia activă și lista cu foile; toate foile pe pânză; vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -315,3 +315,27 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   (e2e: lista, PgUp / PgDn, reîncărcarea, mutarea din meniu și prin tragere, ștergerea cu confirmare, numele și materialul,
   exportul foii a doua, traseul care urmează foaia), manualul (capitolul „Foile”, 9 uși noi), otrăvurile
   `test/otravuri/11.1.py`: 42; prima rulare (`87a7537`): 41 prinse, C01 scăpată (id-ul foii noi nu sărea peste unul folosit: proba n-avea un gol în id-uri) → cazul f1, f3 → f4 în `foi.test.ts`, apoi prinsă, deci 42 / 42; cele 10 e2e (U01–U10), în clonă, pe portul 4178.
+
+## Felia 11.1↑b (gata pe 07.11)
+
+- **Pe pânză**, foile stau una lângă alta, în ordinea listei, la 100 mm una de alta, cu fețele de jos la Y 0 (`locuriFoi`,
+  `SPATIU_FOI`). Originea rămâne a foii active, deci riglele, coordonatele, ghidajele, uneltele și traseul rămân ale ei, fără
+  nicio schimbare; celelalte foi se arată față de ea, estompate (foaia la jumătate peste fundal, liniile la 35 %) și
+  needitabile, fiecare cu numele deasupra. **Foaia activă n-are nume pe pânză:** acolo stă rigla ei (prima variantă îl
+  scria sub riglă); o arată lista, cipul și culoarea ei.
+- **Workerul pânzei** primește foile vecine într-un mesaj al lor (`CerereFoi`), trimis doar când se schimbă, înaintea cererii
+  de desen care le folosește: o deplasare nu le copiază din nou la fiecare cadru. Foile din afara pânzei se sar. Desenul unei
+  foi vecine se ține în aplicație cât rămân aceeași foaie și aceleași piese, deci o editare pe foaia activă nu le reface.
+- **Dublu-clic** pe o foaie estompată o face activă; vederea se mută cu originea (cu x-ul foii), deci pânza nu sare, iar
+  cursorul din bara de jos se arată din colțul foii noi. Uneltele care folosesc dublu-clicul (Pen la capătul căii, Noduri pe o
+  latură) îl iau înaintea pânzei. PgUp / PgDn, clicul din listă și meniul nu mută vederea: foaia nouă vine în locul celei de
+  dinainte, ca până acum.
+- **Comutatorul „Toate foile pe pânză”** (`vedere.toate-foile`, în dreapta-jos, lângă „Arată traseul”, doar cu mai multe
+  foi), ținut în browser (`cncvs2.toate-foile`, implicit pornit): pornit, le încadrează pe toate (potrivirea primește o
+  cutie, `src/canvas/potrivire.ts`); oprit, rămâne doar foaia activă, încadrată. `Home` încadrează foaia activă.
+- **Măsurat:** pornirea 103,7 → 104,3 kB (cu ușa 107,8 / 110), totalul 524,7 → 525,5 / 550 (desenul foilor stă în
+  workerul pânzei, nu în pornire).
+- **Probele:** `foi.panza.test.ts` (rândul pe hârtie, încadrarea unei cutii, comutatorul ținut), e2e-ul pânzei din
+  `foi.spec.ts` (pixelii foii estompate, ai fundalului dintre foi și ai foii active, cerneala numelui, dublu-clicul cu vederea
+  mutată exact cu 400 mm și cursorul, comutatorul oprit și ținut după reîncărcare), manualul (96 de uși), otrăvurile
+  `test/otravuri/11.1b.py`: 19; toate prinse la prima rulare (`235ed5d`): 6 unitare și 13 prin e2e, în clonă, pe portul 4178.
