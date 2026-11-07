@@ -315,17 +315,133 @@ def main():
     })
     text = json.dumps(asteptat, ensure_ascii=False, separators=(',', ':')) + '\n'
     cale_json = os.path.join(IESIRE, 'asteptat.json')
+    culori = culori_cazuri(diferente)
+    text_culori = json.dumps(culori, ensure_ascii=False, separators=(',', ':')) + '\n'
+    cale_culori = os.path.join(IESIRE, 'culori.json')
     if VERIFICA:
-        with open(cale_json, encoding='utf-8') as fh:
-            if fh.read() != text:
-                diferente.append('asteptat.json: alt conținut')
+        for cale, t, nume in ((cale_json, text, 'asteptat.json'), (cale_culori, text_culori, 'culori.json')):
+            with open(cale, encoding='utf-8') as fh:
+                if fh.read() != t:
+                    diferente.append(f'{nume}: alt conținut')
         if diferente:
             raise SystemExit('Corpusul trasării nu e cel comis:\n  ' + '\n  '.join(diferente))
-        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri, aceiași pixeli și același asteptat.json.')
+        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri și {len(culori["cazuri"])} pe culori, aceiași pixeli și '
+              'aceleași fișiere de așteptări.')
     else:
-        with open(cale_json, 'w', encoding='utf-8', newline='\n') as fh:
-            fh.write(text)
-        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri scrise în {IESIRE}.')
+        for cale, t in ((cale_json, text), (cale_culori, text_culori)):
+            with open(cale, 'w', encoding='utf-8', newline='\n') as fh:
+                fh.write(t)
+        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri și {len(culori["cazuri"])} pe culori scrise în {IESIRE}.')
+
+# ── Culorile (ADR 0221): regiuni care pavează imaginea, fiecare cu culoarea ei ─────────────────────────────────────────────
+#
+# Fiecare regiune e o listă de inele (regula nonzero); regiunile nu se suprapun, deci în fiecare pixel acoperirile lor se
+# adună la cel mult 1. Culoarea pixelului e media culorilor după aria fiecăreia (în sRGB, cum amestecă un rasterizator), plus
+# fundalul: alb (opac) sau transparent (alfa = suma acoperirilor). Pe hârtie: inelele fiecărei regiuni (cercurile, cu 1024
+# de laturi, la 2e-4 px de cerc) și joncțiunile, unde se întâlnesc trei culori (sau două și fundalul).
+
+ALBASTRU, INCHIS, DESCHIS, ALB = (7, 96, 156), (53, 60, 69), (141, 150, 163), (255, 255, 255)
+
+
+def sector(cx, cy, r, de, la, n):
+    """Sectorul de disc dintre unghiurile de și la (grade, în sensul lui y în jos): centrul și arcul, cu n laturi pe cerc."""
+    pasi = max(2, math.ceil(n * (la - de) / 360))
+    return [(cx, cy)] + [(cx + r * math.cos(math.radians(de + (la - de) * i / pasi)), cy + r * math.sin(math.radians(de + (la - de) * i / pasi)))
+                         for i in range(pasi + 1)]
+
+
+def culori_cazuri(diferente):
+    """Cazurile pe culori: imaginile (scrise sau verificate) și așteptările lor, ca dicționar."""
+    cazuri = []
+
+    def caz_c(nume, latime, inaltime, regiuni, fundal, asteptat, jonctiuni):
+        acops = [acoperire(inele, latime, inaltime) for _, inele, _ in regiuni]
+        tot = np.sum(acops, axis=0)
+        assert tot.max() <= 1 + 1e-9, (nume, tot.max())
+        amestec = np.zeros((inaltime, latime, 3), dtype=np.float64)
+        for (cul, _, _), a in zip(regiuni, acops):
+            amestec += a[:, :, None] * np.array(cul, np.float64)[None, None, :]
+        if fundal is None:
+            alfa = np.clip(np.round(tot * 255), 0, 255)
+            cul = np.where(tot[:, :, None] > 0, amestec / np.maximum(tot, 1e-12)[:, :, None], 0)
+            pix = np.zeros((inaltime, latime, 4), dtype=np.uint8)
+            pix[:, :, :3] = np.clip(np.round(cul), 0, 255).astype(np.uint8)
+            pix[:, :, 3] = alfa.astype(np.uint8)
+            canale = 4
+        else:
+            amestec += (1 - tot)[:, :, None] * np.array(fundal, np.float64)[None, None, :]
+            pix = np.clip(np.round(amestec), 0, 255).astype(np.uint8)
+            canale = 3
+        octeti = png(latime, inaltime, pix.tobytes(), canale)
+        cale = os.path.join(IESIRE, f'{nume}.png')
+        _, _, v = citeste_png(octeti)
+        if VERIFICA:
+            if not os.path.exists(cale):
+                diferente.append(f'{nume}.png: lipsește')
+            else:
+                with open(cale, 'rb') as fh:
+                    _, _, comis = citeste_png(fh.read())
+                if not np.array_equal(comis, v):
+                    diferente.append(f'{nume}.png: alți pixeli')
+        else:
+            with open(cale, 'wb') as fh:
+                fh.write(octeti)
+        cazuri.append({
+            'nume': nume, 'fisier': f'{nume}.png', 'latime': latime, 'inaltime': inaltime, 'asteptat': asteptat,
+            'regiuni': [{'culoare': '#%02x%02x%02x' % cul, 'inele': rotunjeste(hartie), 'aria': round(float(aria), 4)}
+                        for (cul, _, hartie), aria in zip(regiuni, [a.sum() for a in acops])],
+            'jonctiuni': [[round(x, 6), round(y, 6)] for x, y in jonctiuni],
+        })
+
+    # 1: un disc R40 în trei sectoare (razele la 10°, 130° și 250°), pe transparent: joncțiunea în centru și trei pe margine.
+    cx, cy, r = 64.37, 61.71, 40
+    unghiuri = [10, 130, 250, 370]
+    regiuni = []
+    for cul, de, la in zip((ALBASTRU, INCHIS, DESCHIS), unghiuri, unghiuri[1:]):
+        regiuni.append((cul, [sector(cx, cy, r, de, la, 4096)], [sector(cx, cy, r, de, la, 1024)]))
+    pe_margine = [(cx + r * math.cos(math.radians(u)), cy + r * math.sin(math.radians(u))) for u in unghiuri[:3]]
+    caz_c('culori-sectoare', 130, 125, regiuni, None, {'culori': 3, 'toleranta': 0.4}, [(cx, cy)] + pe_margine)
+
+    # 2: pătratul închis cu un inel albastru, iar în inel un disc închis cu un punct deschis, pe alb (opac): albul e fundalul.
+    sx, sy, cx, cy = 20.5, 18.25, 70.5, 68.25
+    regiuni = [
+        (INCHIS, [patrat(sx, sy, 100), cerc(cx, cy, 28, 4096, -1)], [patrat(sx, sy, 100), cerc(cx, cy, 28, 1024, -1)]),
+        (ALBASTRU, [cerc(cx, cy, 28, 4096), cerc(cx, cy, 15, 4096, -1)], [cerc(cx, cy, 28, 1024), cerc(cx, cy, 15, 1024, -1)]),
+        (INCHIS, [cerc(cx, cy, 15, 4096), cerc(cx, cy, 6, 4096, -1)], [cerc(cx, cy, 15, 1024), cerc(cx, cy, 6, 1024, -1)]),
+        (DESCHIS, [cerc(cx, cy, 6, 4096)], [cerc(cx, cy, 6, 1024)]),
+    ]
+    caz_c('culori-inel', 141, 137, regiuni, ALB, {'culori': 4, 'fundal': '#ffffff', 'toleranta': 0.4}, [])
+
+    # 3: tabla de șah cu blocuri de 30 px (albastru și deschis), cu punctul de întâlnire în afara grilei: celula-șa.
+    x0, y0, m = 15.3, 15.7, 30
+    def bloc(i, j):
+        return patrat(x0 + i * m, y0 + j * m, m)
+    regiuni = [(ALBASTRU, [bloc(0, 0)], [bloc(0, 0)]), (DESCHIS, [bloc(1, 0)], [bloc(1, 0)]),
+               (DESCHIS, [bloc(0, 1)], [bloc(0, 1)]), (ALBASTRU, [bloc(1, 1)], [bloc(1, 1)])]
+    caz_c('culori-sah', 91, 91, regiuni, None, {'culori': 2, 'toleranta': 0.4, 'sa': True},
+          [(x0 + m, y0 + m), (x0 + m, y0), (x0 + 2 * m, y0 + m), (x0 + m, y0 + 2 * m), (x0, y0 + m)])
+
+    # 4: logoul owner-ului, pe culori: fără hârtie; reuniunea culorilor trebuie să fie trasarea alb-negru a aceleiași imagini,
+    # iar paleta automată, cele trei culori pe care le numește un om: griul (cu umbrirea lui), albastrul și portocaliul
+    # liniilor punctate (1 % din pixelii plini, subțiri, cu margini transparente). Fiecare familie se ia din pixelii plini,
+    # după reguli simple pe canale; mediana ei e culoarea de pe hârtie.
+    with open(os.path.join(IESIRE, 'logo-cvs.png'), 'rb') as fh:
+        latime, inaltime, v = citeste_png(fh.read())
+    p = v.reshape(-1, 4).astype(int)
+    p = p[p[:, 3] >= 250]
+    r, g, b = p[:, 0], p[:, 1], p[:, 2]
+    familii = {
+        'gri': (np.abs(r - g) < 20) & (np.abs(g - b) < 30) & (r < 130),
+        'albastru': (b > r + 60) & (b > g + 20),
+        'portocaliu': (r > 190) & (g > 90) & (g < 190) & (b < 110),
+    }
+    paleta = {}
+    for nume, m in familii.items():
+        assert m.sum() >= 300, (nume, int(m.sum()))
+        paleta[nume] = '#' + ''.join('%02x' % int(round(c)) for c in np.median(p[m][:, :3], axis=0))
+    cazuri.append({'nume': 'logo-cvs-culori', 'fisier': 'logo-cvs.png', 'latime': latime, 'inaltime': inaltime,
+                   'asteptat': {'culori': 3, 'toleranta': 0.6, 'paleta': paleta}, 'regiuni': None, 'jonctiuni': []})
+    return {'schema': 1, 'cazuri': cazuri}
 
 
 main()

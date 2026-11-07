@@ -58,7 +58,7 @@ export type RezultatTrasare =
   | { readonly ok: false; readonly cod: 'prea-multe'; readonly raport: RaportTrasare };
 
 /** Banda poligonului (ε), toleranța unirii cubicelor (τ) și pragul colțurilor (α), în px, pe treptele Netezimii. */
-const TREPTE: Readonly<Record<Netezime, { readonly eps: number; readonly tau: number; readonly colt: number }>> = {
+export const TREPTE: Readonly<Record<Netezime, { readonly eps: number; readonly tau: number; readonly colt: number }>> = {
   fidel: { eps: 0.2, tau: 0.22, colt: 1.5 },
   echilibrat: { eps: 0.3, tau: 0.32, colt: 2.0 },
   neted: { eps: 0.45, tau: 0.5, colt: 2.8 },
@@ -67,7 +67,7 @@ const TREPTE: Readonly<Record<Netezime, { readonly eps: number; readonly tau: nu
  * Pe marginile dure, conturul urcă în trepte de o jumătate de pixel: se netezește întâi (o medie triunghiulară pe cinci puncte,
  * care lasă treptele la ~0,15 px), apoi banda le cuprinde.
  */
-const EPS_DUR = 0.4;
+export const EPS_DUR = 0.4;
 
 /** Netezirea unei bucle cu margini dure: media ponderată 1, 2, 3, 2, 1 a punctelor vecine. */
 export function netezeste(b: Float64Array): Float64Array {
@@ -314,7 +314,7 @@ export function arie(b: Float64Array): number {
 
 // ── Poligonul, colțurile și curbele unei bucle ──────────────────────────────────────────────────────────────────────────
 
-type Bucata = { tip: 0 | 1; x: number; y: number; c1x: number; c1y: number; c2x: number; c2y: number; de: number; la: number };
+export type Bucata = { tip: 0 | 1; x: number; y: number; c1x: number; c1y: number; c2x: number; c2y: number; de: number; la: number };
 
 /**
  * Cel mai depărtat vârf j (indicele în buclă, cel mult `limita`) până la care toate punctele dintre i și j stau la cel mult
@@ -401,20 +401,22 @@ function laSegment(px: number, py: number, ax: number, ay: number, bx: number, b
  * face aproape toată în teșitură (pe un cerc, ea se împarte pe toată lungimea), iar colțul nou nu trece de contur cu mai mult
  * de `depasire` (0,9 px; pe marginile dure, unde conturul netezit scurtează vârfurile, 1,5 px).
  */
-export function tesituri(P: Float64Array, n: number, V0: readonly number[], eps: number, depasire = 0.9): { V: number[]; fix: Map<number, [number, number]> } {
+export function tesituri(P: Float64Array, n: number, V0: readonly number[], eps: number, depasire = 0.9, inchisa = true): { V: number[]; fix: Map<number, [number, number]> } {
   const V = [...V0];
   const fix = new Map<number, [number, number]>();
   const X = (k: number): number => P[2 * (((k % n) + n) % n)] ?? 0;
   const Y = (k: number): number => P[2 * (((k % n) + n) % n) + 1] ?? 0;
   const lung = (a: number, b: number): number => Math.hypot(X(b) - X(a), Y(b) - Y(a));
   const directie = (a: number, b: number): number => Math.atan2(Y(b) - Y(a), X(b) - X(a));
-  const scurta = Math.max(3.5, 6 * eps);
+  const scurta = Math.max(4.5, 6 * eps);
   const unghi = (a: number, b: number): number => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
   for (let k = 1; k + 2 < V.length; k++) {
     let e = k;
     while (e - k < 3 && e + 2 < V.length && lung(V[e] ?? 0, V[e + 1] ?? 0) <= scurta) e++;
     if (e === k) continue;
     const la = V[k - 1] ?? 0, lb = V[k] ?? 0, ra = V[e] ?? 0, rb = V[e + 1] ?? n;
+    // Pe un arc deschis (o graniță între două joncțiuni, ADR 0221), vecinătatea nu trece peste capete.
+    if (!inchisa && (lb - 3 < 0 || ra + 3 > n - 1)) continue;
     const ls = lung(lb, ra), LA = lung(la, lb), LB = lung(ra, rb);
     if (ls > Math.max(4.5, 8 * eps) || LA < Math.max(4, 2 * ls) || LB < Math.max(4, 2 * ls)) continue;
     const dA = dreapta(P, n, la, lb), dB = dreapta(P, n, ra, rb);
@@ -659,9 +661,111 @@ export function curbeleBuclei(bucla: Float64Array, eps: number, tau: number, col
   return { bucati, abatere: masoara(bucati, P, n) };
 }
 
+/**
+ * Curbele unui arc deschis (ADR 0221 §5: o graniță dintre două joncțiuni, folosită de ambele culori): aceleași reguli ca la
+ * o buclă (poligonul în banda eps, teșiturile, vârfurile mutate în afară, colțurile, cubicele unite sub tau), cu capetele
+ * fixe (joncțiunile rămân unde sunt) și fără trecere peste capăt. Bucățile încep fiecare la `x, y`; ultima se termină în
+ * `sfarsit`, capătul arcului.
+ */
+export function curbeleArcului(P: Float64Array, eps: number, tau: number, colt: number, depasire = 0.9): { bucati: Bucata[]; sfarsit: [number, number]; abatere: number } {
+  const n = P.length / 2;
+  const X = (k: number): number => P[2 * k] ?? 0;
+  const Y = (k: number): number => P[2 * k + 1] ?? 0;
+  const sfarsit: [number, number] = [X(n - 1), Y(n - 1)];
+  const linie = (k: number, de: number, la: number, x = X(k), y = Y(k)): Bucata => ({ tip: 0, x, y, c1x: 0, c1y: 0, c2x: 0, c2y: 0, de, la });
+  if (n <= 2) return { bucati: [linie(0, 0, n - 1)], sfarsit, abatere: 0 };
+  // Poligonul de la un capăt la celălalt (fără trecere peste capăt), cu teșiturile strânse doar înăuntru.
+  const V0 = [0];
+  for (let v = 0; v < n - 1;) { v = urmatorul(P, n, v, eps, n - 1); V0.push(v); }
+  const { V, fix } = tesituri(P, n, V0, eps, depasire, false);
+  const m = V.length - 1;
+  if (m < 2) {
+    // Un arc scurt (o singură latură în bandă): coarda stă înăuntrul unei curbe convexe, deci se încearcă și o cubică, cu
+    // capetele fixe și tangentele din primele și ultimele puncte; rămâne cea mai apropiată (pe logo, coardele arcelor de
+    // ~5 px, între joncțiuni dese, micșorau culorile cu 0,7 %).
+    const bucati = [linie(0, 0, n - 1)];
+    const ab = masoara(bucati, P, n, sfarsit);
+    if (n >= 4) {
+      const i1 = Math.min(2, n - 1), i2 = Math.max(0, n - 3);
+      const t1x = X(i1) - X(0), t1y = Y(i1) - Y(0), t2x = X(i2) - X(n - 1), t2y = Y(i2) - Y(n - 1);
+      const l1 = Math.hypot(t1x, t1y), l2 = Math.hypot(t2x, t2y);
+      if (l1 > 0 && l2 > 0) {
+        const { bucata, eroare } = potriveste(P, n, 0, n - 1, X(0), Y(0), X(n - 1), Y(n - 1), t1x / l1, t1y / l1, t2x / l2, t2y / l2);
+        if (eroare <= tau && eroare < ab) {
+          const cub = [{ ...bucata, de: 0, la: n - 1 }];
+          return { bucati: cub, sfarsit, abatere: masoara(cub, P, n, sfarsit) };
+        }
+      }
+    }
+    return { bucati, sfarsit, abatere: ab };
+  }
+  const dr = Array.from({ length: m }, (_, k) => dreapta(P, n, V[k] ?? 0, V[k + 1] ?? n - 1));
+  const lung = (k: number): number => Math.hypot(X(V[k + 1] ?? 0) - X(V[k] ?? 0), Y(V[k + 1] ?? 0) - Y(V[k] ?? 0));
+  // Vârfurile: capetele fixe; cele dinăuntru, mutate în încrucișarea dreptelor vecine, doar în afară (ca la o buclă).
+  const vx = new Float64Array(m + 1), vy = new Float64Array(m + 1);
+  for (let k = 0; k <= m; k++) {
+    const ox = X(V[k] ?? 0), oy = Y(V[k] ?? 0);
+    vx[k] = ox; vy[k] = oy;
+    if (k === 0 || k === m) continue;
+    const f = fix.get(V[k] ?? -1);
+    if (f) { vx[k] = f[0]; vy[k] = f[1]; continue; }
+    const i = intersectie(dr[k - 1], dr[k]);
+    const raza = Math.max(2 * eps, 0.75, Math.min(2.5, 0.08 * Math.min(lung(k - 1), lung(k))));
+    const ax = X(V[k - 1] ?? 0), ay = Y(V[k - 1] ?? 0), bx = X(V[k + 1] ?? 0), by = Y(V[k + 1] ?? 0);
+    const lc = Math.hypot(bx - ax, by - ay);
+    const spreCoarda = (px: number, py: number): number => (lc > 0 ? ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / lc : 0);
+    const inafara = !i || lc === 0 || (Math.sign(spreCoarda(i[0], i[1])) === Math.sign(spreCoarda(ox, oy))
+      && Math.abs(spreCoarda(i[0], i[1])) >= Math.abs(spreCoarda(ox, oy)));
+    if (i && inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }
+  }
+  // Mijloacele laturilor și capetele bucăților (punctul arcului cel mai apropiat de mijloc).
+  const mx = (k: number): number => ((vx[k] ?? 0) + (vx[k + 1] ?? 0)) / 2;
+  const my = (k: number): number => ((vy[k] ?? 0) + (vy[k + 1] ?? 0)) / 2;
+  const mij = Array.from({ length: m }, (_, k) => aproape(P, n, V[k] ?? 0, V[k + 1] ?? n - 1, mx(k), my(k)));
+  // Primul capăt: o linie până la mijlocul primei laturi.
+  let bucati: Bucata[] = [linie(0, 0, mij[0] ?? 0)];
+  for (let k = 1; k < m; k++) {
+    const ax = mx(k - 1), ay = my(k - 1), bx = mx(k), by = my(k);
+    const de = mij[k - 1] ?? 0, la = mij[k] ?? 0;
+    const l = Math.hypot(bx - ax, by - ay);
+    const d = l > 0 ? Math.abs((bx - ax) * ((vy[k] ?? 0) - ay) - (by - ay) * ((vx[k] ?? 0) - ax)) / l : 0;
+    const ix = (vx[k] ?? 0) - (vx[k - 1] ?? 0), iy = (vy[k] ?? 0) - (vy[k - 1] ?? 0);
+    const ox = (vx[k + 1] ?? 0) - (vx[k] ?? 0), oy = (vy[k + 1] ?? 0) - (vy[k] ?? 0);
+    const li = Math.hypot(ix, iy), lo = Math.hypot(ox, oy);
+    const intoarcere = li > 0 && lo > 0 && (ix * ox + iy * oy) / (li * lo) < -0.5;
+    if (fix.has(V[k] ?? -1) || d > colt * 4 * eps || intoarcere) {
+      bucati.push(linie(0, de, V[k] ?? 0, ax, ay));
+      bucati.push(linie(0, V[k] ?? 0, la, vx[k] ?? 0, vy[k] ?? 0));
+      continue;
+    }
+    if (d < 0.15) { bucati.push(linie(0, de, la, ax, ay)); continue; }
+    let h = 0;
+    for (let q = de; q <= la; q++) h = Math.max(h, l > 0 ? Math.abs((bx - ax) * (Y(q) - ay) - (by - ay) * (X(q) - ax)) / l : 0);
+    const alfa = Math.max(0.55, Math.min(1, (4 * h) / (3 * d)));
+    bucati.push({
+      tip: 1, x: ax, y: ay, c1x: ax + alfa * ((vx[k] ?? 0) - ax), c1y: ay + alfa * ((vy[k] ?? 0) - ay),
+      c2x: bx + alfa * ((vx[k] ?? 0) - bx), c2y: by + alfa * ((vy[k] ?? 0) - by), de, la,
+    });
+  }
+  // Ultimul: o linie de la mijlocul ultimei laturi la capătul arcului.
+  bucati.push(linie(0, mij[m - 1] ?? 0, n - 1, mx(m - 1), my(m - 1)));
+  bucati = unesteLiniile(bucati, sfarsit);
+  bucati = unesteCubicele(bucati, P, n, tau, sfarsit);
+  return { bucati, sfarsit, abatere: masoara(bucati, P, n, sfarsit) };
+}
+
+/**
+ * Capătul bucății i: începutul celei de după ea; pe un arc deschis (`sfarsit` dat), după ultima vine capătul arcului, nu
+ * prima bucată.
+ */
+function urmatoarea(b: readonly Bucata[], i: number, sfarsit?: readonly [number, number]): { x: number; y: number } {
+  if (i + 1 < b.length) return b[i + 1] as Bucata;
+  return sfarsit ? { x: sfarsit[0], y: sfarsit[1] } : (b[(i + 1) % b.length] as Bucata);
+}
+
 /** Liniile care continuă pe aceeași dreaptă (o latură între două colțuri, ruptă la mijloc) devin una. */
-function unesteLiniile(b: Bucata[]): Bucata[] {
-  const pe = (p: Bucata, x: Bucata, urm: Bucata): boolean => {
+function unesteLiniile(b: Bucata[], sfarsit?: readonly [number, number]): Bucata[] {
+  const pe = (p: Bucata, x: Bucata, urm: { x: number; y: number }): boolean => {
     const ux = x.x - p.x, uy = x.y - p.y, wx = urm.x - x.x, wy = urm.y - x.y;
     const lu = Math.hypot(ux, uy), lw = Math.hypot(wx, wy);
     return p.tip === 0 && x.tip === 0 && lu > 0 && lw > 0 && Math.abs(ux * wy - uy * wx) / (lu * lw) < 1e-9 && ux * wx + uy * wy > 0;
@@ -669,11 +773,11 @@ function unesteLiniile(b: Bucata[]): Bucata[] {
   const r: Bucata[] = [];
   for (let i = 0; i < b.length; i++) {
     const x = b[i] as Bucata, p = r[r.length - 1];
-    if (p && pe(p, x, b[(i + 1) % b.length] as Bucata)) { p.la = x.la; continue; }
+    if (p && pe(p, x, urmatoarea(b, i, sfarsit))) { p.la = x.la; continue; }
     r.push(x);
   }
-  // Peste capătul listei: ultima linie continuă în prima.
-  while (r.length > 3) {
+  // Peste capătul listei: ultima linie continuă în prima (doar pe o buclă).
+  while (!sfarsit && r.length > 3) {
     const u = r[r.length - 1] as Bucata, p0 = r[0] as Bucata, p1 = r[1] as Bucata;
     if (!pe(u, p0, p1)) break;
     u.la = p0.la;
@@ -686,11 +790,12 @@ function unesteLiniile(b: Bucata[]): Bucata[] {
  * Cubicele vecine, care se rotesc în același sens și cu cel mult 100° împreună, se unesc într-una, potrivită punctelor
  * buclei dintre ele cu tangentele capetelor păstrate, cât abaterea rămâne sub tau (unirea curbelor din Selinger, §2.5).
  */
-function unesteCubicele(b: Bucata[], P: Float64Array, n: number, tau: number): Bucata[] {
+function unesteCubicele(b: Bucata[], P: Float64Array, n: number, tau: number, sfarsit?: readonly [number, number]): Bucata[] {
   const N = b.length;
   if (N < 2) return b;
-  // Pornirea: după o bucată care nu e cubică, ca o fugă să nu treacă peste capătul listei; altfel, de la început.
-  const start = Math.max(0, b.findIndex((x, k) => x.tip === 0 && (b[(k + 1) % N]?.tip ?? 0) === 1) + 1);
+  // Pornirea: după o bucată care nu e cubică, ca o fugă să nu treacă peste capătul listei; altfel, de la început. Pe un arc
+  // deschis, de la început, fără trecere peste capăt.
+  const start = sfarsit ? 0 : Math.max(0, b.findIndex((x, k) => x.tip === 0 && (b[(k + 1) % N]?.tip ?? 0) === 1) + 1);
   const ord = Array.from({ length: N }, (_, k) => b[(start + k) % N] as Bucata);
   const r: Bucata[] = [];
   for (let i = 0; i < N;) {
@@ -701,7 +806,7 @@ function unesteCubicele(b: Bucata[], P: Float64Array, n: number, tau: number): B
     for (let j = i + 1; j < N && l1 > 0; j++) {
       const z = ord[j] as Bucata;
       if (z.tip !== 1) break;
-      const fin = ord[(j + 1) % N] as Bucata;
+      const fin = urmatoarea(ord, j, sfarsit);
       const t2x = z.c2x - fin.x, t2y = z.c2y - fin.y, l2 = Math.hypot(t2x, t2y);
       if (l2 === 0) break;
       // Același sens și o rotire de cel mult 100°.
@@ -726,11 +831,13 @@ function unesteCubicele(b: Bucata[], P: Float64Array, n: number, tau: number): B
  * Abaterea: cea mai mare distanță dintre un punct al buclei și curbele trasate. Fiecare punct se judecă față de bucata în
  * care cade (după indici) și de vecinele ei: un capăt de bucată stă între două puncte ale buclei.
  */
-function masoara(b: Bucata[], P: Float64Array, n: number): number {
+function masoara(b: Bucata[], P: Float64Array, n: number, sfarsit?: readonly [number, number]): number {
   let ab = 0;
   const N = b.length;
   const la = (k: number, px: number, py: number): number => {
-    const x = b[((k % N) + N) % N] as Bucata, urm = b[(((k + 1) % N) + N) % N] as Bucata;
+    // Pe un arc deschis, vecinele din afara lui nu există.
+    if (sfarsit && (k < 0 || k >= N)) return Infinity;
+    const i = ((k % N) + N) % N, x = b[i] as Bucata, urm = urmatoarea(b, i, sfarsit);
     return distantaLa(x, urm.x, urm.y, px, py);
   };
   for (let k = 0; k < N; k++) {
