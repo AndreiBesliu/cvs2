@@ -554,3 +554,94 @@ test('mărimea, proporțiile și crenarea (ADR 0138): 20 mm sunt 79,74 pt, păst
     else await expect(page.locator('[data-text="crenare"]')).not.toBeChecked();
   }
 });
+
+test('spațierea literelor alese (ADR 0138 §5): „AVA” alese, 2 mm, Alt + → / ← (fără „înapoi” în istoric); V cu 2,1 mm, restul cu 4,2; după reîncărcare, un 😀 scris înainte, perechea, + și −; Aplică, Ctrl+Z; „Fără spațieri”', async ({ page }) => {
+  await page.goto('/');
+  const adresa = page.url();
+  await page.locator('[data-unealta="text"]').click();
+  const camp = page.locator('[data-text="continut"]');
+  const spatiu = page.locator('[data-text="spatiu-ales"]');
+  const nota = page.getByTestId('text-spatieri-nota');
+  await camp.fill('AVATAR');
+  // Cu cursorul la capăt nu e nicio pereche: rândul e oprit și spune cum se alege.
+  await expect(spatiu).toBeDisabled();
+  await expect(nota).toHaveText('Alege literele în text sau pune cursorul între două. Alt + ← / →: 0,1 mm.');
+  // AVA, cu Shift + săgeți: două goluri, fără spațiu încă.
+  await camp.press('Home');
+  for (let k = 0; k < 3; k++) await camp.press('Shift+ArrowRight');
+  await expect(nota).toHaveText('Între „AVA”. Alt + ← / →: 0,1 mm.');
+  await expect(spatiu).toHaveValue('0');
+  await spatiu.fill('2');
+  await expect(page.locator('[data-text="fara-spatieri"]')).toHaveText('Fără spațieri (2)');
+  // Alt + → de două ori, în text, cu alegerea păstrată: 2,2 mm; Alt + ←: 2,1. Tasta nu ajunge la browser (ar fi „înapoi”): o
+  // apăsare trimisă de pagină iese cu `defaultPrevented` (și pune încă 0,1 mm), iar adresa rămâne după Alt + ←.
+  await camp.focus();
+  await camp.press('Alt+ArrowRight');
+  await camp.press('Alt+ArrowRight');
+  await expect(spatiu).toHaveValue('2.2');
+  await camp.press('Alt+ArrowLeft');
+  await expect(spatiu).toHaveValue('2.1');
+  const oprita = await camp.evaluate((el) => !el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true, cancelable: true })));
+  expect(oprita).toBe(true);
+  await expect(spatiu).toHaveValue('2.2');
+  await camp.press('Alt+ArrowLeft');
+  await expect(spatiu).toHaveValue('2.1');
+  expect(page.url()).toBe(adresa);
+  let la = await ecran(page, await vedere(page));
+  const a = la(150, 150);
+  await page.mouse.click(a.x, a.y);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const t1 = d1.piese[0]!.radacina;
+  expect(t1.text!['spatieri']).toEqual([{ dupa: 0, mm: 2.1 }, { dupa: 1, mm: 2.1 }]);
+
+  // „Fără spațieri”, apoi același text, mai jos: față de el, V stă cu 2,1 mm mai la dreapta, iar restul cu 4,2.
+  await page.click('[data-text="fara-spatieri"]');
+  await expect(page.locator('[data-text="fara-spatieri"]')).toHaveCount(0);
+  la = await ecran(page, await vedere(page));
+  const b = la(150, 100);
+  await page.mouse.click(b.x, b.y);
+  await page.click('[data-text="adauga"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const t2 = d2.piese[1]!.radacina;
+  expect(t2.text!['spatieri']).toBeUndefined();
+  const stanga = (n: Nod): number[] => (n.copii ?? []).map((g) => Math.min(...abscise(g)));
+  const s1 = stanga(t1), s2 = stanga(t2);
+  expect(s1).toHaveLength(6);
+  [0, 2.1, 4.2, 4.2, 4.2, 4.2].forEach((d, k) => { expect(s1[k]! - s2[k]!).toBeCloseTo(d, 9); });
+
+  // După reîncărcare, textul ales își aduce spațierile. Un 😀 scris înainte (două unități UTF-16, un singur caracter, lipsă din
+  // Roboto) mută spațierile cu literele lor; cursorul între A și V arată perechea, iar + și − o schimbă. Aplică le pune într-un
+  // pas, Ctrl+Z le scoate.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  la = await ecran(page, await vedere(page));
+  const inst = d2.foi[0]!.instante[0]!;
+  const varf = d2.piese[0]!.radacina.copii![0]!.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la(inst.x + varf.x, inst.y + varf.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(camp).toHaveValue('AVATAR');
+  await expect(page.locator('[data-text="fara-spatieri"]')).toHaveText('Fără spațieri (2)');
+  await camp.focus();
+  await camp.press('Home');
+  await camp.pressSequentially('😀');
+  await expect(camp).toHaveValue('😀AVATAR');
+  await camp.press('ArrowRight');
+  await expect(nota).toHaveText('Între „AV”. Alt + ← / →: 0,1 mm.');
+  await expect(spatiu).toHaveValue('2.1');
+  await page.click('[data-text="spatiu-plus"]');
+  await expect(spatiu).toHaveValue('2.2');
+  await page.click('[data-text="spatiu-minus"]');
+  await expect(spatiu).toHaveValue('2.1');
+  await page.click('[data-text="spatiu-plus"]');
+  await expect(spatiu).toHaveValue('2.2');
+  await page.click('[data-text="aplica"]');
+  const d3 = await documentSalvat(page, 3) as Doc;
+  expect(d3.piese[0]!.radacina.text).toMatchObject({ continut: '😀AVATAR', spatieri: [{ dupa: 1, mm: 2.2 }, { dupa: 2, mm: 2.1 }] });
+  await page.locator('[data-unealta="selectie"]').click();
+  await page.getByTestId('panza').click({ position: { x: 5, y: 300 } });
+  await page.keyboard.press('Control+z');
+  const d4 = await documentSalvat(page, 4) as Doc;
+  expect(d4.piese[0]!.radacina.text).toMatchObject({ continut: 'AVATAR', spatieri: [{ dupa: 0, mm: 2.1 }, { dupa: 1, mm: 2.1 }] });
+});

@@ -525,6 +525,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   repornire: „se pornește”, nu „pornit” al celei de dinainte). **O extensie cu pagina pusă asincron își întoarce promisiunea
   din `deschide`; o probă care lucrează în cadru după „pornit” nu mai are nevoie de altă așteptare.** Amprenta nouă a
   încărcătorului în CSP. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 504,6 / 550, /admin 105,4 / 200.**
+  **Spațierea literelor alese (ADR 0138 §5, felia 7.9↑b)** gata pe 07.11, cu răspunsurile 4a și 5a: sub câmpul textului,
+  rândul **Între literele alese** (câmpul în mm, − / +, Alt + ← / → în text, cu 0,1 mm; „Fără spațieri (N)”). Blocul ține
+  `spatieri` (indicele pe puncte de cod, în textul fără `\r`, și mm-ul), adunate la spațierea textului doar între două litere
+  vecine așezate ale aceluiași rând sau coloane; ajutoarele pure ale panoului (alegerea, valoarea comună, schimbarea, editarea
+  textului) stau în `src/text/spatieri.ts`. **Corpusul lor e Python** (`CAZURI_SPATIERI` în
+  `test/oracles-py/text_corpus.py`, în `proportii.json`, cu mutarea fiecărei litere pe hârtie în `DEPLASARI_SPATIERI`): un caz
+  nou = rândul acolo, apoi fixtura regenerată și comisă. Rândul de prag al textului e făcut. **Pornirea 101,4 (cu ușa 104,9 /
+  110 kB), totalul 506,0 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
