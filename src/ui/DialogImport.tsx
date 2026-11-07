@@ -15,15 +15,16 @@ import {
 import { PanouTrasare } from './FereastraTrasare.tsx';
 import { useLimba } from './useLimba.ts';
 
-const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
+// „prea-multe” (o imagine trasată) e plural, după numărul contururilor: textRefuz îl scrie înaintea tabelului.
+const REFUZ: Readonly<Record<Exclude<CodRefuzImport, 'prea-multe'>, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
   neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
-  tiff: 'import.imagine.tiff', 'imagine-citire': 'import.imagine.citire', 'prea-multe': 'import.imagine.prea-multe',
-  'imagine-timp': 'import.imagine.timp', anulat: 'import.imagine.anulat',
+  tiff: 'import.imagine.tiff', 'imagine-citire': 'import.imagine.citire', 'imagine-timp': 'import.imagine.timp',
+  anulat: 'import.imagine.anulat',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -152,7 +153,7 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
   if (cod === 'gol' && format === 'imagine') return t('import.imagine.gol');
-  if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: detaliu ?? '?' });
+  if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
@@ -260,7 +261,7 @@ export function DialogImport({
           <>
             <p data-testid="import-marime">{t('import.marime', { latime: ok.latime.toFixed(2), inaltime: ok.inaltime.toFixed(2) })}</p>
             {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
-              <p data-testid="import-cai">{t('import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+              <p data-testid="import-cai">{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
             )}
             {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
             {ok.deschise > 0 && (

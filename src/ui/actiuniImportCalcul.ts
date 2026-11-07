@@ -9,6 +9,7 @@ import { citesteWmf } from '../io/wmf.ts';
 import { PLAFON, type Latura } from '../model/document.ts';
 import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
 import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
+import { REZOLUTIE } from '../geom/toleranta.ts';
 import { praf, preaDeparte } from '../io/caleImport.ts';
 import { dpiImagine, felImagine, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
 import { trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
@@ -144,11 +145,17 @@ function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number): { cai
     const a = c.inceput[k] ?? 0, b = c.inceput[k + 1] ?? 0;
     if (b - a > PLAFON.varfuriCale) { mari++; continue; }
     const varfuri: Varf[] = [];
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (let v = a; v < b; v++) {
       const q = (i: number): number => c.xy[6 * v + i] ?? 0;
+      x0 = Math.min(x0, q(0)); x1 = Math.max(x1, q(0)); y0 = Math.min(y0, q(1)); y1 = Math.max(y1, q(1));
       varfuri.push({ p: P(q(0), q(1)), s: c.tip[v] === 1 ? { tip: 'C', c1: P(q(2), q(3)), c2: P(q(4), q(5)) } : LINIE });
     }
-    if (varfuri.length < 2 || praf(varfuri)) { sub++; continue; }
+    // Praful îl judecă `praf` (cutia exactă, cu extremele cubicelor), dar doar unde poate fi: vârfurile stau pe curbă, deci în
+    // cutia ei, iar o cutie a vârfurilor peste rezoluție e deja destul. Pe o poză cu 6 000 de contururi, cutia exactă a
+    // fiecăruia ținea firul principal 0,14 s din 0,22.
+    const varfuriPeste = Math.hypot(x1 - x0, y1 - y0) * mmPePx >= REZOLUTIE;
+    if (varfuri.length < 2 || (!varfuriPeste && praf(varfuri))) { sub++; continue; }
     cai.push({ varfuri, inchis: true });
     laturi.push(c.exterior[k] === 1 ? 'exterior' : 'interior');
   }

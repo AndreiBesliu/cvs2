@@ -320,7 +320,10 @@ export function urmatorul(P: Float64Array, n: number, i: number, eps: number, li
     const q = k % n;
     const dx = (P[2 * q] ?? 0) - x0, dy = (P[2 * q + 1] ?? 0) - y0;
     const r = Math.hypot(dx, dy);
-    if (r <= eps) { cel = k; continue; }
+    // În discul startului, înainte să iasă bucla din el: tot startul. După ce a ieșit, un punct întors acolo e o întoarcere
+    // (un vârf subțire, de un pixel, al unei margini zgomotoase), judecată ca oricare: altfel latura, de 0,08 px, sărea
+    // tot vârful (1,5 px pe o poză JPEG).
+    if (r <= eps && Number.isNaN(baza)) { cel = k; continue; }
     if (Number.isNaN(baza)) { baza = Math.atan2(dy, dx); ux = dx / r; uy = dy / r; }
     const proi = dx * ux + dy * uy;
     if (proi < maxProi - eps) break;
@@ -591,7 +594,14 @@ export function curbeleBuclei(bucla: Float64Array, eps: number, tau: number, col
     if (f) { vx[k] = f[0]; vy[k] = f[1]; continue; }
     const i = intersectie(dr[(k + m - 1) % m], dr[k]);
     const raza = Math.max(2 * eps, 0.75, Math.min(2.5, 0.08 * Math.min(lung(k + m - 1), lung(k))));
-    if (i && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }
+    // Doar în afară: pe o curbă netedă și la un colț rotunjit de nuanțe, dreptele se încrucișează mai departe de coarda
+    // vecinilor decât vârful; spre coardă le duce doar un vârf subțire (un ac), pe care mutarea l-ar scurta (1,1 px, Neted).
+    const ax = X(V[(k + m - 1) % m] ?? 0), ay = Y(V[(k + m - 1) % m] ?? 0), bx = X(V[k + 1] ?? n), by = Y(V[k + 1] ?? n);
+    const lc = Math.hypot(bx - ax, by - ay);
+    const spreCoarda = (px: number, py: number): number => (lc > 0 ? ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / lc : 0);
+    const inafara = !i || lc === 0 || (Math.sign(spreCoarda(i[0], i[1])) === Math.sign(spreCoarda(ox, oy))
+      && Math.abs(spreCoarda(i[0], i[1])) >= Math.abs(spreCoarda(ox, oy)));
+    if (i && inafara && Math.hypot(i[0] - ox, i[1] - oy) <= raza) { vx[k] = i[0]; vy[k] = i[1]; }
   }
   // Colțurile: distanța vârfului la coarda dintre mijloacele laturilor vecine, față de 4·eps (cât dă o curbă netedă).
   const mx = (k: number): number => ((vx[k % m] ?? 0) + (vx[(k + 1) % m] ?? 0)) / 2;
@@ -601,8 +611,15 @@ export function curbeleBuclei(bucla: Float64Array, eps: number, tau: number, col
     const ax = mx(k + m - 1), ay = my(k + m - 1), bx = mx(k), by = my(k);
     const l = Math.hypot(bx - ax, by - ay);
     const d = l > 0 ? Math.abs((bx - ax) * ((vy[k] ?? 0) - ay) - (by - ay) * ((vx[k] ?? 0) - ax)) / l : 0;
+    // O întoarcere (laturile se rotesc cu peste 120° în vârf: o limbă subțire, un ac) e un colț, deși vârful stă pe dreapta
+    // coardei, dincolo de capătul ei: cubica ar ajunge doar la trei sferturi din drum (1,2 px lipsă pe o limbă de 4 px).
+    // Pe un poligon în banda eps, doar o rază sub ~0,6 px se rotește așa într-un vârf.
+    const ix = (vx[k] ?? 0) - (vx[(k + m - 1) % m] ?? 0), iy = (vy[k] ?? 0) - (vy[(k + m - 1) % m] ?? 0);
+    const ox = (vx[(k + 1) % m] ?? 0) - (vx[k] ?? 0), oy = (vy[(k + 1) % m] ?? 0) - (vy[k] ?? 0);
+    const li = Math.hypot(ix, iy), lo = Math.hypot(ox, oy);
+    const intoarcere = li > 0 && lo > 0 && (ix * ox + iy * oy) / (li * lo) < -0.5;
     // Un vârf strâns dintr-o teșitură e un colț găsit explicit (rotirea lui se face toată acolo).
-    eColt.push(fix.has(V[k] ?? -1) || d > colt * 4 * eps);
+    eColt.push(fix.has(V[k] ?? -1) || d > colt * 4 * eps || intoarcere);
   }
   // Bucățile: la colț, două linii prin vârf; altfel, o cubică între mijloacele laturilor, cu mânerele spre vârf. Capătul
   // fiecărei bucăți e punctul buclei cel mai apropiat de mijlocul laturii (punctele buclei nu sunt la distanțe egale).

@@ -140,6 +140,25 @@ test('abaterea raportată e chiar distanța cea mai mare de la contur la curbe (
   assert.ok(Math.abs(cel - r.raport.abatere) < 0.03, `raportul spune ${r.raport.abatere.toFixed(3)}, eșantioanele ${cel.toFixed(3)}`);
 });
 
+test('o margine zgomotoasă (ca a unei poze JPEG): acele de un pixel și limbile subțiri rămân în banda treptei', () => {
+  // Pete netede tăiate de prag, cu zgomot de ±5 niveluri: marginile au ace de un pixel lățime și limbi lângă marginea
+  // imaginii. Înainte, latura poligonului sărea un ac întors lângă start, cubica nu ajungea în vârful unei limbi, iar mutarea
+  // vârfului în încrucișare scurta acul: 1,52 / 1,56 / 1,65 px pe cele trei trepte. Acum 0,56 / 0,61 / 0,63 px. Neted
+  // rotunjește, din decizie, colțurile cu brațele scurte (până la ~colt · eps = 1,26 px).
+  let s = 12345;
+  const r = (): number => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  const img = imagine(400, 300, (x, y) => {
+    const v = 128 + 60 * Math.sin(x / 17 + 2 * Math.sin(y / 23)) * Math.cos(y / 19 + 2 * Math.sin(x / 29)) + 10 * (r() - 0.5);
+    return [v, v, v, 255];
+  });
+  const banda = { fidel: 0.7, echilibrat: 0.8, neted: 1.3 } as const;
+  for (const netezime of ['fidel', 'echilibrat', 'neted'] as const) {
+    const t = traseaza(img, { ...IMPLICITE, netezime, petePx: 4, gauriPx: 4 });
+    assert.ok(t.ok);
+    assert.ok(t.raport.abatere < banda[netezime], `${netezime}: abaterea ${t.raport.abatere.toFixed(3)} px, banda ${banda[netezime]}`);
+  }
+});
+
 test('marginile: dure pe o imagine fără nuanțe, netezite pe una cu ele', () => {
   const dur = imagine(40, 40, (x, y) => (discAlb(x, y) ? [0, 0, 0, 255] : [255, 255, 255, 255]));
   assert.equal(traseaza(dur, IMPLICITE).raport.margini, 'dure');

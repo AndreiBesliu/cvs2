@@ -260,13 +260,13 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
           {(stare === 'citire' || seRecitesc) && <p role="status" data-testid="trasare-trasez">{t('import.trasare.trasez')}</p>}
           {raport && (
             <>
-              {raport.contururi > 0 && <p data-testid="trasare-abatere">{t('import.trasare.abatere', { mm: nr(raport.abaterePx * raport.mmPePx, 3), px: nr(raport.abaterePx, 2) })}</p>}
+              {stare !== 'citire' && stare.ok && <p data-testid="trasare-abatere">{t('import.trasare.abatere', { mm: nr(raport.abaterePx * raport.mmPePx, 3), px: nr(raport.abaterePx, 2) })}</p>}
               <p data-testid="trasare-imagine">
                 {raport.redusDin
                   ? t('import.trasare.redusa', { latime: raport.latimePx, inaltime: raport.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
                   : t('import.trasare.imagine', { latime: raport.latimePx, inaltime: raport.inaltimePx })}
               </p>
-              {(raport.pete > 0 || raport.gauri > 0) && <p data-testid="trasare-curatare">{t('import.trasare.curatare', { pete: raport.pete, gauri: raport.gauri })}</p>}
+              {(raport.pete > 0 || raport.gauri > 0) && <p data-testid="trasare-curatare">{t('import.trasare.curatare', { pete: t('import.trasare.pete-sterse', { n: raport.pete }), gauri: t('import.trasare.goluri-umplute', { n: raport.gauri }) })}</p>}
               {raport.margini === 'dure' && <p className="mic" data-testid="trasare-dure">{t('import.trasare.dure')}</p>}
             </>
           )}
