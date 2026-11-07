@@ -6324,3 +6324,34 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   fișă (rândul cozii scos).
 - **Înainte de cod:** `main` (`8003cb2`, cu incrustațiile și tăierea vectorilor) unit în ramură (`54168c5`; ciocnirile doar la
   capetele indexului ADR și ale DEVLOG-ului).
+- **Pasul 1** (`f7c8431`): nucleul (`src/trasare/trasare.ts`, cod propriu din lucrări, fără importuri din aplicație) și corpusul
+  lui independent (`test/oracles-py/trasare_corpus.py`: 10 imagini cu acoperirea exactă, valorile pe hârtie, martorul
+  scikit-image pe disc și pe logoul owner-ului, refăcut și comparat în CI), cu judecătorul în ambele sensuri.
+- **Pasul 2** (`e13a179`): ușa imaginilor (`formatImport`, DPI-ul din antet), workerul trasării (al lui: workerele se
+  construiesc IIFE, nucleul ar fi crescut workerul CAM), fereastra (sursa, pragul, Inversează, Netezimea, curățarea în mm,
+  lățimea; previzualizarea cu mărirea; raportul). Laturile din sensul contururilor: imbricarea ținea firul principal 553 ms
+  pe o poză de 12 Mpx.
+- **Pasul 3** (`68b331d`): sonda în Edge fără fereastră (panoul era ascuns), apoi în Node, pe o poză JPEG zgomotoasă: abaterea
+  raportată ajungea la 1,6 px din trei cauze, fiecare pe conturul ei (latura care se întorcea în discul startului sărea un ac
+  de un pixel; o limbă subțire nu era colț; mutarea vârfului spre coardă scurta un ac). Reparate, cu proba pe zgomot:
+  1,52 / 1,56 / 1,65 → 0,56 / 0,61 / 0,63 px. Sosirea unui rezultat mare: praful judecat întâi pe cutia vârfurilor, cel mai
+  lung cadru 518 → 183 ms (profilul CPU: cutia exactă a fiecărei cubice). Abaterea ascunsă la un refuz, pluralele, capitolul
+  din manual.
+- **Pasul 4** (`0104c83`): oprirea citirii prin contextul importului (o citire nouă, fișierul următor, demontarea dialogului);
+  e2e-urile trasării: logoul ca în Node (48: 40 + 8), lecția D7, Escape cu tasta reală, o poză de 3000 × 2000 (cel mai lung
+  gol 17 ms; Inversează oprește calculul vechi fără răspuns).
+- **Pasul 5** (`598913a`): histograma sub glisorul pragului (decizia o cerea, fereastra n-o avea), probele ușii (DPI-ul din PNG,
+  JPEG JFIF și EXIF, BMP; scara; căile în mm, cu Y în sus: un desen întors ar fi trecut de e2e), o imagine de 17 Mpx redusă,
+  lista otrăvurilor.
+- **Pasul 6** (`1738160`, `87d37b1`): otrăvurile, din worktree, serial: 69; la prima rulare 58 prinse, 9 scăpate, una VOID (P04,
+  linia schimbată de histogramă). Probe țintite pentru cele scăpate (nivelul plin al alfa, transparentul pus pe alb, Otsu pe
+  hârtie, golul lipit de margine, bucla prin șa pe hârtie, marginea dură cu nuanțe, colțurile strânse de cel puțin 25°, banda
+  pe zgomot, pragul de 50 % pe transparență). E01 era echivalentă: Renunță și Escape demontează dialogul, iar demontarea
+  oprește citirea; oprirea dublă din `inchide` a ieșit, iar otrava a trecut pe demontare. Rejucate: toate prinse; pe codul
+  final, 69 / 69 (cele 58 din prima rulare pe aceleași fișiere, cu aceleași probe sau mai strânse). Tot aici, un defect găsit
+  la citirea codului: într-o coadă de imagini, panoul trasării trecea de la o imagine la alta cu ciorna (lățimea scrisă) și
+  mărirea; acum are cheia fișierului, cu proba e2e (otrava E07).
+- **Porțile:** typecheck (aplicația, extensia, funcțiile), regulile de import (20, cu capcana nouă `trasare-izolat`),
+  licențele, corpusul Python, suita unitară întreagă, e2e-urile trasării (6) și ale importului (23), build-ul determinist.
+- **Mărimea:** totalul 531,8 / 550 kB (`main` 519,5: +12,3; estimarea era ~8), pornirea 101,6 / 110 (105,2 cu ușa); workerul
+  trasării 7,0 kB gzip, bucata ușilor +2,0 kB.

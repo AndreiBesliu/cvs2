@@ -1,7 +1,9 @@
 # ADR 0220 — Trasarea din imagine: ușa imaginilor, conturul sub-pixel, curbele cu abaterea măsurată
 
 **Starea:** acceptat pe 07.11.2026, cu toate recomandările („Da, 1a–8a”, la întrebările de la final), în linia trasării
-(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus în aceeași zi. Felia 25.1↑, adusă din etapa 25, fără mașină.
+(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus în aceeași zi. Felia 25.1↑, adusă din etapa 25, fără mașină:
+**gata** pe 07.11 (alb-negru), pe ramură, neunită în `main` (decizia owner-ului), publicată pe canalul `trasare` al instanței
+de test; 25.2↑–25.4↑ urmează.
 Pornirea: sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel.
 **Rândul din prag:** „Trasare din imagine (bitmap → vectori)” (S, v1, decis 06.10). **Placa etapei 25:** „logoul trasat”.
 **Completează:** T18 (ADR 0018: câte o ușă pe format, spre același model), ușile SVG, DXF, PDF, EPS și WMF (ADR 0035, 0101,
@@ -152,6 +154,7 @@ Ediția întâi a ajuns la o trasare „bună”, dar după 7 runde în 3 zile, 
     - **otrăvurile** la capăt (`test/otravuri/25.1.py`).
 12. **Feliile:**
     - **25.1↑** trasarea alb-negru (punctele 1–11): ~6 h, cu ~+8 kB (nucleul ~5–6 kB în bucata workerului, fereastra ~2 kB);
+      gata pe 07.11, cu +12,3 kB (secțiunea feliei);
     - **25.2↑** culorile: reducerea (2–16), pastilele cu procentul, alegerea și legarea culorilor, granița dintre două culori la
       amestecul lor de 50 % (aceeași pentru amândouă, fără goluri între ele), o piesă pe culoare (rolul din panou), ~4 h;
     - **25.3↑** linia mediană: axa medială a trăsăturilor (`axaMediala.ts`), fără cioturile scurte, ca linii deschise gravate
@@ -192,9 +195,23 @@ contururi): trasarea ~6,7 s în worker, cu fila vie; la sosire, cel mai lung cad
 praful pe cutia exactă), apoi 67 ms (verificarea lui Importă, comună ușilor) și ~150 ms desenul vectorilor. În e2e, o poză de
 3000 × 2000: 2,9–4,4 s de trasare, cel mai lung gol 17 ms. O imagine de 17 Mpx se reduce la 4850 × 3298, cu scara fișierului.
 
+**Mărimea** [măsurat la `1738160` + proba P04, build determinist]: totalul 531,8 / 550 kB (`main` la `8003cb2`: 519,5, deci
++12,3), pornirea 101,6 / 110 (105,2 cu ușa); workerul trasării 7,0 kB gzip (al lui, în precache), bucata ușilor 36,7 kB
+(+2,0), fereastra și histograma ~3 kB. Estimarea din decizie era ~8 kB: workerul separat și fereastra au ieșit mai mari.
+
+**Probele:** corpusul (10 cazuri, în ambele sensuri, cu martorul scikit-image și în CI), 20 de probe țintite ale nucleului,
+9 ale ușii (semnăturile, DPI-ul, scara, căile în mm, refuzurile), 6 e2e (logoul ca în Node, D7, coada de imagini, 17 Mpx,
+Escape, poza mare cu anularea) plus cele 23 ale importului; suita unitară întreagă verde. **Otrăvurile**
+(`test/otravuri/25.1.py`, alese de autor): 69; la prima rulare 58 prinse, 9 scăpate și una VOID. Cele scăpate au primit
+probe țintite (nivelul plin al alfa, transparentul pus pe alb, Otsu pe hârtie, golul lipit de margine, bucla prin șa pe
+hârtie, marginea dură cu nuanțe, colțurile strânse de cel puțin 25°, banda pe zgomot, pragul de 50 % pe transparență); una
+era echivalentă (oprirea dublă la închidere, scoasă: demontarea dialogului o face). Pe codul final, 69 / 69.
+
 **Limitele cunoscute:** pe un rezultat de mii de contururi, sosirea ține un cadru de ~0,2 s, iar mutarea sau mărirea
-previzualizării redesenează tot stratul vectorilor; Neted rotunjește, din decizie, colțurile cu brațele scurte (până la
-~α · ε = 1,26 px); acele zgomotului rămân în bandă (le șterge curățarea, nu netezimea).
+previzualizării redesenează tot stratul vectorilor; o imagine mare se decodează întreagă o dată în worker și o dată pentru
+previzualizare (4 octeți pe pixel: o poză de 40 Mpx ține ~160 MB de fiecare parte cât se citește); Neted rotunjește, din
+decizie, colțurile cu brațele scurte (până la ~α · ε = 1,26 px); acele zgomotului rămân în bandă (le șterge curățarea, nu
+netezimea).
 
 ## Ce am respins
 
@@ -218,7 +235,8 @@ previzualizării redesenează tot stratul vectorilor; Neted rotunjește, din dec
 - Plafonul total e comun cu liniile paralele (ADR 0137): fiecare felie își spune kB-ii în raport.
 
 **Se redeschide dacă:** un fișier real al owner-ului iese mai rău decât în ediția întâi sau decât în ArtCAM; abaterea măsurată
-trece de țintă; o poză reală trece de termen fără refuz; totalul trece de 550 kB.
+trece de țintă; o poză reală trece de termen fără refuz; totalul trece de 550 kB; sosirea unei poze reale ține fila peste
+~0,3 s sau previzualizarea ei se mișcă greu; o poză mare de telefon umple memoria unui telefon la citire.
 
 ## Întrebările (recomandarea întâi)
 

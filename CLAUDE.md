@@ -569,6 +569,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
+  **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
+  (ramura `wip/25.1-trasare`, neunită; canalul `trasare`), cu toate recomandările („Da, 1a–8a”): o imagine (PNG, JPEG, WebP,
+  GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
+  pragul cu histograma, Inversează, Netezimea, petele și golurile în mm, lățimea cu DPI-ul sau 96 px pe țol; previzualizarea;
+  abaterea măsurată), iar desenul intră ca o piesă, cu laturile din sensul contururilor. **Nucleul, `src/trasare/trasare.ts`,
+  e cod propriu, fără niciun import din aplicație** (regula `trasare-izolat`; potrace e GPL, `marchingsquares` AGPL), și
+  rulează **în workerul lui** (`src/jobs/lucratorTrasare.ts`: workerele se construiesc IIFE, deci o bucată la cerere a
+  workerului CAM nu se poate). **O citire a importului are semnalul ei** (`ContextImport.semnal`): o citire nouă, fișierul
+  următor și demontarea dialogului (Renunță, Escape) opresc trasarea, cu workerul. **Proba nucleului e corpusul Python**
+  (`test/oracles-py/trasare_corpus.py`, cu acoperirea exactă, valorile pe hârtie și martorul scikit-image, verificat și în CI)
+  plus o probă pe o margine zgomotoasă (acele de un pixel: 0,56–0,63 px). Urmează 25.2↑ (culorile) și 25.3↑ (linia mediană).
+  **Pornirea 101,6 (cu ușa 105,2 / 110 kB), totalul 531,8 / 550.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
