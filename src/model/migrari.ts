@@ -538,6 +538,26 @@ function v20v21(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v21 → v22 (ADR 0172): banda dopului în V schimbă doar numărul. Un v21 poate avea, ca necunoscut, câmpul `banda` în
+ * `incrustatie`, pe care v22 îl folosește: un astfel de document nu e un v21 valid.
+ */
+function v21v22(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const inc = (o as Brut)['incrustatie'];
+      if (typeof inc === 'object' && inc !== null && Object.hasOwn(inc, 'banda')) {
+        return { ok: false, motiv: `operația v21 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are în incrustație câmpul „banda”, pe care v22 îl folosește: nu e un document v21 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 22 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -574,5 +594,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   18: v18v19,
   19: v19v20,
   20: v20v21,
+  21: v21v22,
 };
 

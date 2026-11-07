@@ -303,7 +303,7 @@ test('ușa v13: `retragereCompleta` e un întreg 1–100; tipul „gaurire” ș
   const curat = v12({ ...gaurire(['a']), tip: 'profil' });
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 21 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 22 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0087 §1): găurirea rândului cu latura interior și nimic din profil; implicitul 1 nu se scrie pe o operație care nu-l avea', () => {

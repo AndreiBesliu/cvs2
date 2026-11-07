@@ -4901,3 +4901,93 @@ export const REFUZATE_V21: readonly RefuzV18[] = [
   { nume: 'RA8 un v21 cu o incrustație în V trecută pe „drept”, fără câmpurile ei', doc: docV(21, vcarve({ incrustatie: inc({ fel: 'drept' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.jocLateral`, motiv: 'ADR 0171 §1: felul drept cere jocul lateral, dopul și sprijinul' },
   { nume: 'RA9 un v21 cu o incrustație dreaptă trecută pe „v”, fără lemnul din jurul dopului', doc: docV(21, buzunar({ incrustatie: incD({ fel: 'v' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.jurDop`, motiv: 'ADR 0170 §1: felul v cere jurDop' },
 ];
+
+// Documentul v22 (felia 12.1↑c, ADR 0172): banda dopului în V, pe hârtie. Cazurile v21 de mai sus rămân ale contractului v21;
+// la ușa v22, un v21 valid urcă schimbând doar numărul, iar frontierele se judecă pe un document al versiunii curente.
+
+/** Un document al cazurilor v21, adus la v22: doar numărul (ADR 0172). */
+const laV22 = (d: Liber): Liber => cuSchema(d, 22);
+/** Banda din ADR 0172, cu valorile implicite (decuparea, placa de 5,5 mm, 4 punți de 4 × 1 mm). */
+const banda = (v: Liber = {}): Liber => ({ decupare: true, grosimePlaca: 5.5, punti: { numar: 4, latime: 4, grosime: 1 }, ...v });
+/** Banda fără un câmp cerut. */
+const bandaFara = (camp: string): Liber => {
+  const b = banda();
+  delete b[camp];
+  return b;
+};
+/** Incrustația în V cu banda (ADR 0172). */
+const incB = (b: Liber = banda()): Liber => inc({ jurDop: 'banda', banda: b });
+
+/** Documente v22 valide: ușa le primește neschimbate (v21-urile valide, renumerotate, și banda la frontieră). */
+export const VALIDE_V22: readonly CazV18[] = [
+  ...VALIDE_V21.map((c) => ({ nume: `${c.nume} (v22)`, doc: laV22(c.doc) })),
+  { nume: 'K01 banda cu valorile implicite (ADR 0172)', doc: docV18(D, [vcarve({ incrustatie: incB() })], 22) },
+  { nume: 'K02 banda lată, fără decupare', doc: docV18(D, [vcarve({ incrustatie: incB(banda({ latime: 9, decupare: false })) })], 22) },
+  { nume: 'K03 banda cu freza decupării', doc: docV18(D, [vcarve({ incrustatie: incB(banda({ freza: plata(5, 3) })) })], 22) },
+  { nume: 'K04 banda și punțile la plafon', doc: docV18(D, [vcarve({ incrustatie: incB(banda({ latime: 10_000, grosimePlaca: 1_000, punti: { numar: 100, latime: 10_000, grosime: 5 } })) })], 22) },
+  { nume: 'K05 banda cu un câmp necunoscut, și în punți', doc: docV18(D, [vcarve({ incrustatie: incB(banda({ nota: 'x', punti: { numar: 4, latime: 4, grosime: 1, alt: 1 } })) })], 22) },
+  { nume: 'K06 banda pe fața coborâtă (ușa o primește; lucrarea o lasă)', doc: docV18(D, [vcarve({ incrustatie: inc({ jurDop: 'fata', banda: banda() }) })], 22) },
+];
+
+/** Documentele vechi urcă la v22: ce dădea hârtia la v21, cu numărul 22; un v21 curat urcă doar cu numărul. */
+export const MIGRARI_V22_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v22: Liber }> = [
+  ...MIGRARI_V21_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v22: laV22(c.v21) })),
+  {
+    nume: 'M22 un v21 cu incrustația în V, pe bandă, urcă la v22 doar cu numărul',
+    vechi: docV18(D, [vcarve({ incrustatie: inc({ jurDop: 'banda' }) })], 21),
+    v22: docV18(D, [vcarve({ incrustatie: inc({ jurDop: 'banda' }) })], 22),
+  },
+];
+
+/** `banda` în afara incrustației e un câmp necunoscut oarecare: primit și păstrat. */
+export const NECIOCNIRI_V22: ReadonlyArray<CazV18 & { readonly v22: Liber }> = [
+  ...NECIOCNIRI_V21.map((c) => ({ nume: c.nume, doc: c.doc, v22: laV22(c.v21) })),
+  (() => {
+    const d = docV18(D, [vcarve({ banda: 1, incrustatie: inc() })], 21);
+    return { nume: 'N22a un v21 cu `banda` pe operație, nu în incrustație', doc: d, v22: laV22(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: { scula: plata(3, 3), pasLateral: 1.2, banda: 2 } })], 21);
+    return { nume: 'N22b un v21 cu `banda` pe fundul plat', doc: d, v22: laV22(d) };
+  })(),
+];
+
+/** Frontierele v22: cele v21, plus banda, câmp cu câmp (ADR 0172). */
+export const FRONTIERE_V22: readonly FrontieraV18[] = [
+  ...FRONTIERE_V21,
+  {
+    cale: 'incrustatie.banda.decupare', operatie: vcarve({ incrustatie: incB() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: true / false',
+    valori: [[true, true], [false, true], ['da', false], [1, false], [null, false], [LIPSA, false]],
+  },
+  {
+    cale: 'incrustatie.banda.grosimePlaca', operatie: vcarve({ incrustatie: incB() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: finită în (0, 1 000]',
+    valori: [[5.5, true], [0.001, true], [1_000, true], [0, false], [-1, false], [1_000.001, false], ['5.5', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.banda.latime', operatie: vcarve({ incrustatie: incB() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: opțională, finită în (0, 10 000]',
+    valori: [[LIPSA, true], [6.5, true], [10_000, true], [0, false], [-1, false], [10_000.001, false], ['6.5', false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.banda.punti.numar', operatie: vcarve({ incrustatie: incB() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: ca urechile, un întreg 1–100',
+    valori: [[4, true], [1, true], [100, true], [0, false], [101, false], [2.5, false], [LIPSA, false]],
+  },
+  {
+    cale: 'incrustatie.banda.punti.grosime', operatie: vcarve({ incrustatie: incB() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: ca urechile, pozitivă',
+    valori: [[1, true], [0.5, true], [0, false], [-1, false], [LIPSA, false]],
+  },
+  {
+    cale: 'incrustatie.banda.freza.diametru', operatie: vcarve({ incrustatie: incB(banda({ freza: plata(5, 3) })) }), forma: D, categorie: 'incrustatie', adr: 'ADR 0172: ca scula operației',
+    valori: [[3, true], [0.1, true], [0, false], [-3, false], [LIPSA, false]],
+  },
+];
+
+/** Refuzurile v22: cele v21 (versiunea mai nouă e acum v23), plus banda greșită și ciocnirea ei. */
+export const REFUZATE_V22: readonly RefuzV18[] = [
+  ...REFUZATE_V21.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v23)', doc: docV(23, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RB0 un v21 cu `banda` în incrustație', doc: docV(21, vcarve({ incrustatie: incB() })), categorie: 'ciocnire', camp: `${opC}.incrustatie.banda`, motiv: 'ADR 0172: câmpul propriu', text: 'nu e un document v21 valid' },
+  { nume: 'RB1 un v22 cu banda fără placă', doc: docV(22, vcarve({ incrustatie: incB(bandaFara('grosimePlaca')) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.grosimePlaca`, motiv: 'ADR 0172: cerută' },
+  { nume: 'RB2 un v22 cu punțile null', doc: docV(22, vcarve({ incrustatie: incB(banda({ punti: null })) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.punti`, motiv: 'ADR 0172: un obiect, ca urechile' },
+  { nume: 'RB3 un v22 cu banda ca text', doc: docV(22, vcarve({ incrustatie: inc({ jurDop: 'banda', banda: 'da' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda`, motiv: 'ADR 0172: un obiect' },
+  { nume: 'RB4 un v22 cu banda fără decupare', doc: docV(22, vcarve({ incrustatie: incB(bandaFara('decupare')) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.decupare`, motiv: 'ADR 0172: cerută' },
+];

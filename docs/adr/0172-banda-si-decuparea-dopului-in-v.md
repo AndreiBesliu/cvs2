@@ -1,11 +1,31 @@
 # ADR 0172 — Banda îngustă din jurul dopului în V și decuparea lui
 
-**Starea:** propus pe 07.11.2026, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia
-12.1↑c, după pereții drepți (12.1↑b, ADR 0171), fără mașină. Cererea owner-ului: „Da, 12.1↑c”, după răspunsul 2 din ADR 0170
-(„vreau sa pot alege intre optiuni atuci cand fac exportul”: fața coborâtă sau banda îngustă, alese la export; banda „se
-decupează de mână acum, apoi de aplicație, cu punți”). **Documentul:** v22, doar dacă răspunsul 3 alege câmpul grosimii
-(recomandarea). **Schița:** <https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk> (cinci planșe: fereastra exportului, dopul în secțiune, așezarea, fața coborâtă sau
-banda, întrebările), la scară, din exemplul de mai jos.
+**Starea:** acceptat pe 07.11.2026. Owner-ul a răspuns la cele șase întrebări: „ca de obicei, vreau cat mai multe optiuni pe
+care userul sa le poata alege”. Propus tot pe 07.11, în linia incrustațiilor (worktree-ul `incrustatii`, ramura
+`wip/12.1-incrustatii`). Felia 12.1↑c, după pereții drepți (12.1↑b, ADR 0171), fără mașină. Cererea owner-ului: „Da, 12.1↑c”,
+după răspunsul 2 din ADR 0170 („vreau sa pot alege intre optiuni atuci cand fac exportul”: fața coborâtă sau banda îngustă,
+alese la export; banda „se decupează de mână acum, apoi de aplicație, cu punți”). **Documentul:** v22. **Schița:**
+<https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk> (cinci planșe: fereastra exportului, la zi cu răspunsurile; dopul în
+secțiune; așezarea; fața coborâtă sau banda; întrebările), la scară, din exemplul de mai jos.
+
+**Ce au schimbat răspunsurile** (față de propunerea de mai jos, care rămâne valabilă în rest): la fiecare întrebare, omul
+alege în fereastra exportului, iar recomandarea devine valoarea implicită.
+- **1, lățimea benzii:** cea calculată e cea mai mică și e implicită; un câmp o poate lărgi (`latime`; lipsă = cea calculată).
+  Mai îngustă decât cea mai mică, refuzată cu motivul. Cea mai mică ține și de freza decupării: M = 2·H·t + max(Ø fundului
+  plat, Ø decupării) + 2c, ca fundul plat să încapă freza lui, iar tăietura să stea pe el.
+- **2, decuparea:** o bifă, pusă implicit (`decupare`). Fără ea rămâne doar banda, iar dopul îl tai tu cu fierăstrăul, în
+  șanț; atunci placa are „cel puțin” S + H + 1, ca la fața coborâtă.
+- **3, grosimea plăcii dopului:** un câmp (`grosimePlaca`), implicit S + H + 1; cu decuparea, cel puțin S + H + grosimea
+  punților.
+- **4, freza decupării:** implicit freza dreaptă a fundului plat; la cerere, alta, aleasă în fereastră (`freza`, cu numărul și
+  diametrul ei).
+- **5, punțile:** câte pe buclă, cât de late și cât de groase, în fereastră (`punti`), implicit 4, 4 mm și 1 mm; palierul pe
+  traseu e lățimea plus freza, ca la 12.1↑b.
+- **6, plafonul:** fără răspuns anume; citit ca acceptat din „cat mai multe optiuni” (mai multe opțiuni cer mai mult cod).
+  Linia trece de ~10 kB, iar totalul rămâne sub 550. Dacă vrei altfel, se reface.
+- **Documentul v22:** câmpul opțional `banda` în incrustația în V: `{ latime?, decupare, grosimePlaca, freza?, punti }`, scris
+  doar cu `jurDop: 'banda'`. Migrarea v21 → v22 schimbă doar numărul; un v21 cu `banda` în incrustație e o ciocnire. Oracolul
+  documentului și corpusul de aur trec la v22.
 
 ## Problema
 

@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 21;
+export const VERSIUNE_SCHEMA = 22;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -179,10 +179,20 @@ export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]:
  * g, deci dopul se sapă de la adâncimea de start S = D − g; `fierastrau` = spațiul dintre plăci după lipire, H (dopul se sapă
  * până la S + H); `margine` = cât lemn rămâne în jurul cutiei desenului pe semifabricatul dopului, în mm; `jurDop` = ce se
  * întâmplă cu lemnul din jurul dopului: `fata`, fața semifabricatului coborâtă toată, sau `banda`, o bandă îngustă săpată cu
- * V-ul, apoi decuparea (felia 12.1↑c). Potrivirea (freza ascuțită, conul, jocul față de D) e a lucrării.
+ * V-ul, apoi decuparea (ADR 0172, documentul v22: valorile ei în `banda`; lipsă = cele implicite). Potrivirea (freza ascuțită,
+ * conul, jocul față de D) e a lucrării.
  */
 export type IncrustatieV = {
-  fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: 'fata' | 'banda'; [cheie: string]: unknown;
+  fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: 'fata' | 'banda'; banda?: BandaDop; [cheie: string]: unknown;
+};
+/**
+ * Banda îngustă din jurul dopului în V și decuparea lui (ADR 0172, documentul v22), cu `jurDop: 'banda'`: `latime` = lățimea
+ * benzii, mm (lipsă = cea mai mică, socotită de lucrare); `decupare` = dopul decupat prin placă, cu punți (fără ea, doar banda;
+ * dopul îl taie omul); `grosimePlaca` = grosimea plăcii dopului, prin care trece decuparea; `freza` = freza decupării, dacă nu e
+ * cea a fundului plat; `punti` = câte pe buclă, lățimea lemnului rămas și grosimea lui de la fundul plăcii (ca urechile).
+ */
+export type BandaDop = {
+  latime?: number; decupare: boolean; grosimePlaca: number; freza?: Scula; punti: Urechi; [cheie: string]: unknown;
 };
 /**
  * Incrustația cu pereți drepți (ADR 0171 §1, documentul v21), pe locaș (un buzunar de adâncime D): `jocLateral` = jocul dintre
@@ -260,7 +270,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 21; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 22; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

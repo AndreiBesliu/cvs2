@@ -32,8 +32,8 @@ const PUNTI = { numar: 4, latime: 4, grosime: 1 } as const;
 
 const fix = (x: number): string => String(Math.round(x * 1000) / 1000);
 
-/** Un element de document: calea închisă a conturului, în coordonatele semifabricatului. */
-const element = (id: string, c: Contur): Nod => ({
+/** Un element de document: calea închisă a conturului, în coordonatele semifabricatului (și pentru dopul în V, `dopV.ts`). */
+export const element = (id: string, c: Contur): Nod => ({
   tip: 'element', id, matrice: { ...IDENTITATE }, forma: { tip: 'cale', inchis: true, varfuri: c.varfuri.map((v) => ({ p: { ...v.p }, s: { ...v.s } })) },
 });
 

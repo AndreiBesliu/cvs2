@@ -376,7 +376,7 @@ test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile ne
   const curat = doc([DR20], [op(['a'])], 15);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 21 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 22 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

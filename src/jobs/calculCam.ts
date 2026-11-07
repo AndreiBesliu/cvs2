@@ -5,7 +5,7 @@
  * `src/ui/actiuniExportCalcul.ts` neschimbat: același program, aceiași octeți.
  */
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
-import { programeDopuri } from '../cam/incrustatie.ts';
+import { programeDopuri } from '../cam/dopV.ts';
 import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
