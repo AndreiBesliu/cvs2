@@ -319,7 +319,9 @@ test('IP-ul schimbat (ca imprimanta owner-ului la o pornire de pe ecran): legăt
   await expect(stare(page)).toHaveText('Liberă');
   // Legătura veche tace, fără închidere, iar la R.5 nu mai răspunde nimic; aceeași imprimantă (același nume) e acum la R.77.
   veche.taci();
-  const noua = await porneste({ fel: 'k1c-2025', gazda: IP_GASIT, imprima: { fisier: 'output_11031835.gcode', progres: 6 } });
+  // Imprimarea ei înaintează încet: tăcerea (20 s), reîncercarea și căutarea durează cât o imprimare falsă la pasul obișnuit
+  // (0,3 s pe procent), iar fereastra ar găsi-o deja „Gata”.
+  const noua = await porneste({ fel: 'k1c-2025', gazda: IP_GASIT, imprima: { fisier: 'output_11031835.gcode', progres: 6 }, pasMs: 60_000 });
   await expect(stare(page)).toHaveText('Legătura s-a pierdut', { timeout: 30_000 });
   await expect(page.getByTestId('imprimanta-stare')).toHaveText('Imprimă', { timeout: 100_000 });
   await expect(page.getByTestId('imprimanta-banda')).toContainText(`${IP_GASIT} · prin WiFi`);

@@ -6428,3 +6428,8 @@ oprit.
   de tăcere (20 s), căutarea după nume după o reîncercare căzută (lista ținută se mută la noua adresă), evenimentele legăturii în
   jurnal, bucățile `{"maxBedTemp":…}` ascunse de pe ecran (numărate). Imprimanta falsă tace la cerere (`taci`), cu proba e2e a
   IP-ului schimbat; oprirea pe K1C 2025, rejucată pe hârtie din transcriere.
+- **Porțile, după pasul 2** (`b01f121`): unit 8 632 (8 624 trecute, 0 căderi, 8 sărite); build-ul determinist (278 de fișiere;
+  pornirea 101,7, cu ușa 105,3 / 110 kB; totalul 531,4 / 550); e2e 366 / 368 în rularea completă, cu cele 2 trecute la reluare
+  (`export.spec.ts:518`, sub încărcare; și proba nouă a IP-ului schimbat, care pica de fapt: imprimanta falsă de la noua
+  adresă își „termina” imprimarea, la 0,3 s pe procent, cât fereastra tăcea și căuta, deci era găsită „Gata”; acum înaintează
+  încet, 2 / 2 singură, 9 / 9 tot fișierul). Otrăvurile pasului 2: 9 / 9 prinse (19 / 19 în `test/otravuri/3.6i.py`).
