@@ -47,6 +47,10 @@ export function configHosting(publicDir: string, hashuri: readonly string[] = []
         // Mesajele ca date (ADR 0086, 0095): nume fixe, chei noi la o publicare nouă. Dicționarul de bază vine la fiecare
         // pornire: cu `max-age=3600` (implicitul Hosting), o pagină fără worker ar putea primi o oră dicționarul vechi.
         { source: '/mesaje/**', headers: [antet('Cache-Control', 'no-cache')] },
+        // Biblioteca extensiilor (ADR 0230): catalogul are o adresă fixă și o versiune nouă la o publicare nouă (un 304 când nu
+        // s-a schimbat); un pachet are amprenta în nume, deci o adresă nu-și schimbă niciodată octeții.
+        { source: '/extensii/catalog.json', headers: [antet('Cache-Control', 'no-cache')] },
+        { source: '/extensii/*.zip', headers: [antet('Cache-Control', 'public, max-age=31536000, immutable')] },
       ],
     },
   };

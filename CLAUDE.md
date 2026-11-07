@@ -608,6 +608,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
   codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
   07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
+  **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
+  1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
+  lângă aplicație. **La fiecare build,
+  `scripts/biblioteca.ts` construiește din repo pachetele din `extensii/biblioteca.json` și catalogul lor, în `dist/extensii/`**
+  (`catalog.json` și `<id>-<versiune>-<amprentă>.zip`, în afara precache-ului și a plafonului). În meniul Extensii, secțiunea
+  Biblioteca: Instalează (fereastra, apoi Deschide), Actualizează la … (dintr-un clic; fereastra doar când versiunea nouă cere
+  ceva în plus), Instalată; catalogul se cere la deschiderea meniului, nu la pornire; linkul `#biblioteca=<id>`; un pachet din
+  fișier sau de la o adresă vine „din afara bibliotecii”. Amprenta SHA-256 din catalog se verifică înaintea cititorului de
+  pachete, iar un defect al publicării ajunge în jurnal. **O schimbare a unei extensii din bibliotecă cere o versiune nouă în
+  `extensie.json`, apoi `node scripts/biblioteca.ts --scrie`** (proba `biblioteca.constructie.test.ts` cade până atunci).
+  **Pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 523,0 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -812,6 +823,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
+  fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
+  următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.
+- 07.11.2026: **biblioteca extensiilor: răspunsurile la ADR 0230** („Da, 1a–7a”, după „Vreau ca plugin-ul nostru sa fie
+  disponibil printr-o librarie. Fa asta intr-un worktree”): biblioteca stă lângă aplicație, construită din repo la fiecare build
+  (`/extensii/catalog.json` și pachetele, cu amprenta SHA-256 verificată înaintea citirii); „Instalează” prin fereastra de azi,
+  „Actualizează” dintr-un clic (fereastra doar când versiunea nouă cere ceva în plus); o versiune nouă se vede la deschiderea
+  meniului Extensii, fără nicio cerere la pornire; fișierul și adresa rămân, cu „din afara bibliotecii”, plus linkul
+  `#biblioteca=<id>`; Easy 3Draw ajunge pe live odată cu aplicația; secțiunea Biblioteca stă în meniul Extensii. Linia lucrează
+  în worktree-ul `biblioteca` (`wip/3.Xg-biblioteca`, `C:\Users\besli\cncvs2-lucru\biblioteca`, e2e pe 4180 și `127.0.7`,
+  ADR-urile 0230–0239, canalul `biblioteca`).
 - 07.11.2026: **mărimea lui 3.6h acceptată** („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”): trimiterea unui `.gcode`
   la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
   în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul

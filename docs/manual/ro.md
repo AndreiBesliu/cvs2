@@ -1161,8 +1161,17 @@ de ce.
 O extensie adaugă aplicației o fereastră a ei, de exemplu Easy 3Draw. Nu face parte din aplicație: o instalezi
 tu, iar interfața aplicației rămâne aceeași.
 
-- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, apoi
-  **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, **Biblioteca**,
+  apoi **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+- **Biblioteca** arată extensiile noastre, publicate odată cu aplicația, de exemplu Easy 3Draw: numele, versiunea, ce face, ce
+  cere pe scurt și mărimea. **Instalează** deschide fereastra instalării, cu ce cere extensia pe larg; acolo, **Instalează**
+  descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul acesta, iar **Deschide** îi deschide
+  fereastra (**Închide** o lasă pentru mai târziu). Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei
+  din meniu spune „actualizare: …”, iar **Actualizează la …** o aduce dintr-un clic, cu datele ei; dacă versiunea nouă cere
+  ceva în plus, fereastra spune întâi ce, iar **Actualizează** o instalează. Biblioteca se citește la fiecare deschidere a
+  meniului și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate merg ca până acum. Un
+  link de forma `…/#biblioteca=trenulet` deschide fereastra lui Easy 3Draw din bibliotecă; nimic nu se descarcă fără clicul
+  tău. Un pachet instalat din fișier sau de la o adresă vine din afara bibliotecii, iar fereastra îl spune așa.
 - **Instalează din fișier** primește un pachet `.zip`. **Instalează din adresă** cere **Adresa pachetului** (HTTPS), apoi
   **Descarcă**; gazda trebuie să permită descărcarea din alte pagini, altfel descarci tu fișierul și îl instalezi din
   fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași fereastră, cu adresa completată; nimic nu se descarcă
