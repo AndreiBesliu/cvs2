@@ -8,7 +8,7 @@ import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
-import type { Document, Ghidaj } from '../model/document.ts';
+import type { Document, Ghidaj, Nod } from '../model/document.ts';
 import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
@@ -614,6 +614,19 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   };
   // Taie la intersecții (ADR 0180 §5), din meniul de clic dreapta (și din panoul Taie): calculul e al workerului CAM, pe
   // documentul de la clic; tăierea se aplică prin `document.taie`, doar dacă desenul nu s-a schimbat între timp.
+  // Rândul din meniu e activ doar cu cel puțin două contururi printre formele alese (două forme, sau o piesă cu mai multe).
+  const douaContururi = useMemo(() => {
+    const piese = new Map(doc.piese.map((x) => [x.id, x]));
+    const instante = new Map((foaie?.instante ?? []).map((i) => [i.id, i]));
+    const numara = (n: Nod, k: number): number => (k >= 2 ? k : n.tip === 'element' ? k + 1 : n.copii.reduce((s, c) => numara(c, s), k));
+    let k = 0;
+    for (const id of selectie) {
+      const r = piese.get(instante.get(id)?.piesa ?? '')?.radacina;
+      if (r) k = numara(r, k);
+      if (k >= 2) return true;
+    }
+    return false;
+  }, [doc.piese, foaie, selectie]);
   const taieLaIntersectii = (): Promise<string | null> => {
     if (selectie.length === 0 || p.doarCitire) return Promise.resolve(null);
     const laCerere = doc, alese = [...selectie];
@@ -967,7 +980,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
       { id: 'scade', eticheta: numeScurt(t('editare.boolean.scade')), activ: doua, ruleaza: () => { void booleanul('diferenta').then(facut); } },
       { id: 'intersecteaza', eticheta: numeScurt(t('editare.boolean.intersecteaza')), activ: doua, ruleaza: () => { void booleanul('intersectie').then(facut); } },
-      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: selectie.length > 0 && poate, ruleaza: () => { void taieLaIntersectii().then(facut); } },
+      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: douaContururi && poate, ruleaza: () => { void taieLaIntersectii().then(facut); } },
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },

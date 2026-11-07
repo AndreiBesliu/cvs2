@@ -72,7 +72,7 @@ o('U01', P, '  const forma = selectie.length >= 2 ? (selectie[selectie.length - 
   'cuțitul e prima formă aleasă, nu ultima')
 o('U02', P, "  const intersectii = (): void => { ruleaza({ fel: 'intersectii' }, false); };", '  const intersectii = (): void => { taie(); };', 'e2e',
   '„Taie la intersecții” taie cu linia')
-o('U03', E, "      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: selectie.length > 0 && poate,",
+o('U03', E, "      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: douaContururi && poate,",
   "      { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: false,", 'e2e',
   'rândul din meniul de clic dreapta, stins')
 
