@@ -689,24 +689,9 @@ export function curbeleArcului(P: Float64Array, eps: number, tau: number, colt: 
   const { V, fix } = tesituri(P, n, V0, eps, depasire, false);
   const m = V.length - 1;
   if (m < 2) {
-    // Un arc scurt (o singură latură în bandă): coarda stă înăuntrul unei curbe convexe, deci se încearcă și o cubică, cu
-    // capetele fixe și tangentele din primele și ultimele puncte; rămâne cea mai apropiată (pe logo, coardele arcelor de
-    // ~5 px, între joncțiuni dese, micșorau culorile cu 0,7 %).
+    // Un arc scurt (o singură latură în bandă): coarda lui.
     const bucati = [linie(0, 0, n - 1)];
-    const ab = masoara(bucati, P, n, sfarsit);
-    if (n >= 4) {
-      const i1 = Math.min(2, n - 1), i2 = Math.max(0, n - 3);
-      const t1x = X(i1) - X(0), t1y = Y(i1) - Y(0), t2x = X(i2) - X(n - 1), t2y = Y(i2) - Y(n - 1);
-      const l1 = Math.hypot(t1x, t1y), l2 = Math.hypot(t2x, t2y);
-      if (l1 > 0 && l2 > 0) {
-        const { bucata, eroare } = potriveste(P, n, 0, n - 1, X(0), Y(0), X(n - 1), Y(n - 1), t1x / l1, t1y / l1, t2x / l2, t2y / l2);
-        if (eroare <= tau && eroare < ab) {
-          const cub = [{ ...bucata, de: 0, la: n - 1 }];
-          return { bucati: cub, sfarsit, abatere: masoara(cub, P, n, sfarsit) };
-        }
-      }
-    }
-    return { bucati, sfarsit, abatere: ab };
+    return { bucati, sfarsit, abatere: masoara(bucati, P, n, sfarsit) };
   }
   const dr = Array.from({ length: m }, (_, k) => dreapta(P, n, V[k] ?? 0, V[k + 1] ?? n - 1));
   const lung = (k: number): number => Math.hypot(X(V[k + 1] ?? 0) - X(V[k] ?? 0), Y(V[k + 1] ?? 0) - Y(V[k] ?? 0));

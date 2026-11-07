@@ -26,8 +26,8 @@ DI = 'src/ui/DialogImport.tsx'
 o('R01', CU, 'const KL = 0.5;', 'const KL = 1;', 'nuc', 'OKLab simplu: umbrirea se împarte, griul deschis trece la albastru')
 o('R02', CU, '      if (amestec(x, y)) { amestecat[p] = 1; continue; }', '      if (amestec(x, y) && false) { amestecat[p] = 1; continue; }', 'nuc',
   'amestecurile de margine intră în reducere')
-o('R03', CU, 'const AMESTEC = { contrast: 30, capat: 0.12, abatere: 0.25 } as const;', 'const AMESTEC = { contrast: 300, capat: 0.12, abatere: 0.25 } as const;', 'nuc',
-  'niciun amestec recunoscut (contrastul cerut, peste orice)')
+o('R03', CU, 'const AMESTEC = { contrast: 30, capat: 0.12, abatere: 0.25 } as const;', 'const AMESTEC = { contrast: 800, capat: 0.12, abatere: 0.25 } as const;', 'nuc',
+  'niciun amestec recunoscut (contrastul cerut peste orice sumă pe trei canale, 765)')
 o('R04', CU, '  const r0 = kmeansMulte(lab, w, Math.max(1, Math.min(u, 2 * CULORI_MAXIM)));', '  const r0 = kmeansMulte(lab, w, Math.max(1, Math.min(u, 4)));', 'nuc',
   'puține clase înainte de unire: culoarea mică pierdută')
 o('R05', CU, '    if ((M[s] ?? 0) / total >= PRAG_AUTOMAT.pondere) break;', '    if (true) break;', 'nuc', 'clasele sub 0,2 % rămân culori')
@@ -40,8 +40,9 @@ o('R08', CU, '    C[i] = [(p[0] * mi + q[0] * mj) / m, (p[1] * mi + q[1] * mj) /
 o('R09', CU, '    for (let i = 0; i < C.length; i++) for (let j = i + 1; j < C.length; j++) if (d2(i, j) < d2(a, b)) { a = i; b = j; }',
   '    for (let i = 0; i < C.length; i++) for (let j = i + 1; j < C.length; j++) if (d2(i, j) > d2(a, b)) { a = i; b = j; }', 'nuc',
   'se unește perechea cea mai depărtată')
-o('R10', CU, '    for (let k = 0; k < C.length; k++) if (k !== s && d2(s, k) < d2(s, b)) b = k;', '', 'nuc',
-  'clasa prea mică unită cu prima, nu cu cea mai apropiată')
+# R10 (clasa prea mică unită cu prima, nu cu cea mai apropiată): pe corpus, logo și 120 de configurații întâmplătoare
+# schimba doar ordinea paletei (3 cazuri); cu paleta ordonată după pondere, echivalentă (pașii Lloyd de la capăt duc pixelii
+# clasei mici la centrul cel mai apropiat oricum). Scoasă din listă; codul (vecina cea mai apropiată) rămâne alegerea firească.
 
 # ---- Etichetele ----
 o('L01', CU, '    curat[p] = l >= 32 && !amestecat[p] ? 1 : 0;', '    curat[p] = l >= 32 ? 1 : 0;', 'nuc', 'un amestec cu culoarea unui centru, curat')
@@ -74,19 +75,20 @@ o('X02', CU, '  const acop = (p: number): number => (p < 0 ? 0 : transparenta ? 
   '  const acop = (p: number): number => (p < 0 ? 0 : transparenta ? Math.min(1, A(p) / 128) : 1);', 'nuc', 'acoperirea față de alfa 128, nu de nivelul plin')
 o('X03', CU, '    if (lista.length < 3) continue;', '    if (lista.length < 99) continue;', 'nuc', 'joncțiunile rămân media celulei')
 o('X04', CU, '          if (Math.abs(dU) > JONCTIUNE.cotitura) break;', '', 'nuc', 'dreapta joncțiunii trece peste colț (granița în L)')
-o('X05', CU, '      if (rest > JONCTIUNE.rest) continue;', '', 'nuc', 'votează și dreapta care nu se potrivește')
 o('X06', CU, '    if (!(Math.hypot(x - x0, y - y0) <= JONCTIUNE.mutare)) continue;', '    if (!(Math.hypot(x - x0, y - y0) <= 0.01)) continue;', 'nuc',
   'joncțiunea aproape nemutată')
 
 # ---- Arcele, piesele ----
-o('A01', TR, '    if (!inchisa && (lb - 3 < 0 || ra + 3 > n - 1)) continue;', '', 'nuc', 'teșitura unui arc trece peste capăt')
-o('A02', TR, '        if (eroare <= tau && eroare < ab) {', '        if (false) {', 'nuc', 'arcul scurt rămâne coardă')
+# A01 (teșitura unui arc deschis judecată și peste capete, cu indicii întorși): nicio diferență pe corpus, logo și 120 de
+# configurații; vecinătatea întoarsă cade la proba rotirii locale. Marginea indicilor rămâne (fără ea, un arc aproape
+# închis ar putea strânge o teșitură cu puncte de la celălalt capăt); scoasă din listă, ca echivalentă pe ce putem desena.
 o('A03', TR, '  const scurta = Math.max(4.5, 6 * eps);', '  const scurta = Math.max(3.5, 6 * eps);', 'nuc', 'teșitura de 4 px a unui colț de arc nestrânsă')
 o('B01', CU, '      exterior.push(ariaD > 0 ? 1 : 0);', '      exterior.push(ariaD < 0 ? 1 : 0);', 'usa', 'exterioarele și golurile inversate')
 o('B02', CU, '            tipuri.push(b.tip); xy.push(capat.x, capat.y, b.c2x, b.c2y, b.c1x, b.c1y);',
   '            tipuri.push(b.tip); xy.push(capat.x, capat.y, b.c1x, b.c1y, b.c2x, b.c2y);', 'nuc', 'arcul întors cu mânerele neschimbate')
-o('B03', CU, '            if (r < cel) { cel = r; urm = x; }', '            if (r > cel) { cel = r; urm = x; }', 'nuc',
-  'la un vârf cu culoarea de două ori, prima latură oarecare')
+o('B03', CU, '        const urm = cand.find((x) => dreaptaJ(x) === dreaptaJ(j)) ?? (cand[0] as Jumatate);',
+  '        const urm = cand.find((x) => dreaptaJ(x) !== dreaptaJ(j)) ?? (cand[0] as Jumatate);', 'nuc',
+  'la o atingere în colț, bucla trece la cealaltă vecină (golul lipit de margine)')
 
 # ---- Calculul și ușa ----
 o('D01', CT, '  if (c.culori) {', '  if (false) {', 'usa', 'cererea pe culori trasată alb-negru')

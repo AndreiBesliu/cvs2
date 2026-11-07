@@ -81,7 +81,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
   useEffect(() => {
     setPictata(culori?.posterizare ? pictura(culori.posterizare, culori.paleta, evidentiata) : null);
   }, [culori, evidentiata]);
-  const conturEvidentiat = useRef<{ readonly k: number; readonly p: Path2D } | null>(null);
+  // Conturul piesei de sub maus, ținut cât e aceeași piesă (o trasare nouă aduce alte contururi pentru aceeași culoare).
+  const conturEvidentiat = useRef<{ readonly contur: object; readonly p: Path2D } | null>(null);
   const [estompare, setEstompare] = useState(45);
   // Câmpurile cu valori: ciorna lor, trimisă după 250 ms fără altă schimbare.
   const [ciorna, setCiorna] = useState(() => ({
@@ -186,7 +187,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
     // Piesa culorii de sub maus: conturul ei, mai gros.
     const piesa = evidentiata === null ? undefined : culori?.piese.find((x) => x.culoare === evidentiata);
     if (piesa && vedere !== 'imagine') {
-      if (conturEvidentiat.current?.k !== piesa.culoare) conturEvidentiat.current = { k: piesa.culoare, p: caleDin(piesa.contur) };
+      if (conturEvidentiat.current?.contur !== piesa.contur) conturEvidentiat.current = { contur: piesa.contur, p: caleDin(piesa.contur) };
       g.strokeStyle = getComputedStyle(c).getPropertyValue('--a').trim() || '#0a5bd3';
       g.lineWidth = 3 / s;
       g.stroke(conturEvidentiat.current.p);

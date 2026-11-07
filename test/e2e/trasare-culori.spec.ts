@@ -133,6 +133,12 @@ test('de la tastatură: „Leagă de…” leagă, „Dezleagă” desface; făr
   await page.locator('[data-camp="trasare-culori-numar"]').fill('4');
   await expect(page.getByTestId('trasare-pastile').locator('li')).toHaveCount(4);
   await expect(page.getByTestId('import-piese')).toContainText('4 piese');
+  // Încă o dată, după o bifă scoasă: numărul nou nu păstrează bifa veche.
+  await page.getByTestId('trasare-pastile').locator('li').first().locator('[data-camp="trasare-culoare-bifata"]').uncheck();
+  await expect(page.getByTestId('import-piese')).toContainText('3 piese');
+  await page.locator('[data-camp="trasare-culori-numar"]').fill('5');
+  await expect(page.getByTestId('trasare-pastile').locator('li')).toHaveCount(5);
+  await expect(page.getByTestId('import-piese')).toContainText('5 piese');
 });
 
 test('un cerc alb pe transparent (lecția D7), pe culori: o pastilă, transparentul nu e culoare; cercul e o piesă', async ({ page }) => {

@@ -78,10 +78,10 @@ const DIRECTII = [[1, 0], [0, 1], [1, 1], [1, -1]] as const;
 /**
  * Joncțiunile (pasul 9b): dreapta fiecărei granițe se potrivește pe primele ei treceri de lângă vârful plasei (la peste `min`
  * și cel mult `max` px de el, cel mult `puncte`), oprite la primul colț (o cotitură peste `cotitura` radiani: altfel dreapta
- * ar tăia colțul unei granițe în L); o dreaptă de care trecerile se depărtează cu peste `rest` px nu votează. Vârful se mută
- * cel mult `mutare` px; `miu` îl ține pe loc pe direcțiile în care dreptele nu decid (granițe aproape paralele).
+ * ar tăia colțul unei granițe în L). Vârful se mută cel mult `mutare` px; `miu` îl ține pe loc pe direcțiile în care
+ * dreptele nu decid (granițe aproape paralele).
  */
-const JONCTIUNE = { min: 0.25, max: 3, puncte: 4, cotitura: 0.6, rest: 0.3, mutare: 1, miu: 0.05 } as const;
+const JONCTIUNE = { min: 0.25, max: 3, puncte: 4, cotitura: 0.6, mutare: 1, miu: 0.05 } as const;
 
 // ── Culorile: sRGB ↔ OKLab (Ottosson, 2020) ─────────────────────────────────────────────────────────────────────────
 
@@ -239,7 +239,12 @@ export function reduce(lab: Float64Array, w: Float64Array, numar: number | null)
   }
   const c = new Float64Array(3 * C.length);
   C.forEach((p, k) => c.set(p, 3 * k));
-  return { ...lloyd(lab, w, c, C.length, 10), automat: numar === null };
+  const r = lloyd(lab, w, c, C.length, 10);
+  // Culorile în ordinea ponderii, cea mai mare întâi (pastilele, și indicii legăturilor și ai bifelor).
+  const ordine = Array.from({ length: r.K }, (_, k) => k).sort((a, b) => (r.masa[b] ?? 0) - (r.masa[a] ?? 0) || a - b);
+  const cs = new Float64Array(3 * r.K), ms = new Float64Array(r.K);
+  ordine.forEach((k, j) => { cs.set(r.c.subarray(3 * k, 3 * k + 3), 3 * j); ms[j] = r.masa[k] ?? 0; });
+  return { c: cs, masa: ms, K: r.K, inertie: r.inertie, automat: numar === null };
 }
 
 // ── Trasarea pe culori ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -561,7 +566,8 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
       laturi++;
       if ((sa > 0.08 && sa < 0.92) || (sb > 0.08 && sb < 0.92)) amestecate++;
     }
-    const t = Math.max(0.02, Math.min(0.98, Math.abs(sb - sa) > 1e-9 ? (0.5 - sa) / (sb - sa) : 0.5));
+    // Ca la alb-negru (ADR 0220): trecerea strânsă doar la o milionime de centrele pixelilor, nu mai mult.
+    const t = Math.max(1e-6, Math.min(1 - 1e-6, Math.abs(sb - sa) > 1e-9 ? (0.5 - sa) / (sb - sa) : 0.5));
     return [X1 - 0.5 + t * (X2 - X1), Y1 - 0.5 + t * (Y2 - Y1)];
   };
   const varf = (...pts: Array<[number, number] | null>): number => {
@@ -717,9 +723,6 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
       // Direcția principală are unghiul ½·atan2(2·σxy, σxx − σyy); dreapta e {q : n·q = n·c}, cu n normala ei.
       const t = 0.5 * Math.atan2(2 * sxy, sxx - syy);
       const nx = -Math.sin(t), ny = Math.cos(t), k = nx * cx + ny * cy;
-      let rest = 0;
-      for (let i = 0; i < c; i++) rest = Math.max(rest, Math.abs(nx * (xs[i] ?? 0) + ny * (ys[i] ?? 0) - k));
-      if (rest > JONCTIUNE.rest) continue;
       a11 += nx * nx; a12 += nx * ny; a22 += ny * ny; b1 += nx * k; b2 += ny * k; drepte++;
     }
     if (drepte < 2) continue;
@@ -764,17 +767,8 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
   type Jumatate = { readonly arc: Arc; readonly invers: boolean };
   const inceputJ = (j: Jumatate): number => (j.invers ? j.arc.la : j.arc.de);
   const sfarsitJ = (j: Jumatate): number => (j.invers ? j.arc.de : j.arc.la);
-  /** Unghiul cu care pleacă jumătatea din capătul ei de început, și cel cu care sosește în capătul de sfârșit. */
-  const pleaca = (j: Jumatate): number => {
-    const p = j.arc.pts, m = p.length / 2;
-    const [x0, y0, x1, y1] = j.invers ? [p[2 * m - 2], p[2 * m - 1], p[2 * m - 4], p[2 * m - 3]] : [p[0], p[1], p[2], p[3]];
-    return Math.atan2((y1 ?? 0) - (y0 ?? 0), (x1 ?? 0) - (x0 ?? 0));
-  };
-  const soseste = (j: Jumatate): number => {
-    const p = j.arc.pts, m = p.length / 2;
-    const [x0, y0, x1, y1] = j.invers ? [p[2], p[3], p[0], p[1]] : [p[2 * m - 4], p[2 * m - 3], p[2 * m - 2], p[2 * m - 1]];
-    return Math.atan2((y1 ?? 0) - (y0 ?? 0), (x1 ?? 0) - (x0 ?? 0));
-  };
+  /** Culoarea din dreapta jumătății: vecina pe care o ocolește. */
+  const dreaptaJ = (j: Jumatate): number => (j.invers ? j.arc.stanga : j.arc.dreapta);
   const piese: PiesaCuloare[] = [];
   let contururi = 0, varfuri = 0;
   for (let L = 0; L < K; L++) {
@@ -801,19 +795,11 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
       for (let pas = 0; pas < jumatati.length && sfarsitJ(j) !== inceputJ(j0); pas++) {
         const cand = (deschise.get(sfarsitJ(j)) ?? []).filter((x) => !folosite.has(x));
         if (cand.length === 0) break;
-        // Un vârf unde culoarea apare de două ori: următoarea e prima latură întâlnită rotind, din direcția de întoarcere,
-        // spre partea culorii (aceeași felie a vârfului).
-        let urm = cand[0] as Jumatate;
-        if (cand.length > 1) {
-          const inapoi = soseste(j) + Math.PI;
-          let cel = Infinity;
-          for (const x of cand) {
-            let r = inapoi - pleaca(x);
-            while (r <= 0) r += 2 * Math.PI;
-            while (r > 2 * Math.PI) r -= 2 * Math.PI;
-            if (r < cel) { cel = r; urm = x; }
-          }
-        }
+        // Un vârf unde culoarea apare de două ori (o atingere în colț, unde celula nu se taie: fundalul pe o diagonală, două
+        // culori pe cealaltă): bucla ocolește mai departe aceeași vecină. Așa, un gol care atinge alt gol sau marginea într-un
+        // punct rămâne o buclă a lui (cele două bucle se ating, nu se încrucișează), nu o singură buclă care trece prin punct
+        // de două ori. Vecinele celor doi candidați diferă mereu: o celulă-șa cu două culori se taie.
+        const urm = cand.find((x) => dreaptaJ(x) === dreaptaJ(j)) ?? (cand[0] as Jumatate);
         bucla.push(urm);
         folosite.add(urm);
         j = urm;

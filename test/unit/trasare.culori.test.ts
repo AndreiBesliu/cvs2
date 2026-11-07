@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RezultatCulori } from '../../src/trasare/culori.ts';
-import type { ImagineRGBA } from '../../src/trasare/trasare.ts';
+import { traseaza, type ImagineRGBA } from '../../src/trasare/trasare.ts';
 import { esantioane } from './ajutor-trasare.ts';
 
 /**
@@ -255,6 +255,12 @@ test('legăturile: culoarea legată intră în piesa celei de care e legată (cu
   const rf = ok(traseazaCulori(OPACA, { ...IMPLICITE, legaturi: lf }));
   assert.deepEqual(rf.piese.map((p) => p.culoare).sort(), [ro, al].sort());
   assert.equal(rf.raport.paleta[in_]?.bifata, false);
+  // Și invers: fundalul tras peste roșu face din roșu fundal (regiunea lor e una), deci nici roșul nu se mai trasează.
+  const lr = r0.raport.paleta.map(() => -1);
+  lr[f] = ro;
+  const rr = ok(traseazaCulori(OPACA, { ...IMPLICITE, legaturi: lr }));
+  assert.deepEqual(rr.piese.map((p) => p.culoare).sort(), [al, in_].sort());
+  assert.equal(rr.raport.paleta[ro]?.bifata, false);
 });
 
 test('culorile bifate: doar ele se trasează; fundalul bifat devine o piesă', () => {
@@ -301,4 +307,82 @@ test('curățarea pe culori (margini dure): pata sub prag trece la vecina ei, go
   assert.equal(rf.cai.inceput.length - 1, 3);
   const goluri = aria(ro) - aria(rf);
   assert.ok(goluri > 4 && goluri <= 13, `golurile: ${goluri}`);
+});
+
+test('paleta automată: șase culori deosebite pe alb ies toate șapte (reducerea pornește de la mai multe clase decât culori)', () => {
+  const sase: Culoare[] = [ROSU, [40, 160, 60], ALBASTRU, [230, 200, 40], [170, 50, 160], INCHIS];
+  const img = deseneaza(140, 40, ALB, sase.map((c, k) => ({ inauntru: dreptunghi(6 + 22 * k, 12, 22 + 22 * k, 28), culoare: c })));
+  const r = ok(traseazaCulori(img, IMPLICITE));
+  assert.equal(r.raport.paleta.length, 7, r.raport.paleta.map((p) => p.hex).join(', '));
+  for (const c of [...sase, ALB]) assert.ok(cauta(r, c).d <= 4, `${c}: ${r.raport.paleta.map((p) => p.hex).join(', ')}`);
+  assert.equal(r.piese.length, 6);
+});
+
+test('marginile netezite nu devin culori: bare subțiri negre pe alb (mai mulți pixeli de margine decât de miez) dau două culori', () => {
+  // Cinci bare de 3 px, rotite: amestecurile negru–alb sunt peste jumătate din desen. Ele nu votează la reducere.
+  const c = Math.cos(0.3), s = Math.sin(0.3);
+  const bara = (k: number) => (x: number, y: number): boolean => {
+    const u = (x - 20 - 18 * k) * c + (y - 40) * s, v = -(x - 20 - 18 * k) * s + (y - 40) * c;
+    return Math.abs(u) < 1.5 && Math.abs(v) < 30;
+  };
+  const img = deseneaza(120, 80, ALB, [0, 1, 2, 3, 4].map((k) => ({ inauntru: bara(k), culoare: [0, 0, 0] as const })));
+  const r = ok(traseazaCulori(img, IMPLICITE));
+  assert.equal(r.raport.paleta.length, 2, r.raport.paleta.map((p) => p.hex).join(', '));
+  const p = piesa(r, cauta(r, [0, 0, 0]).k);
+  assert.ok(p);
+  assert.equal(p.cai.inceput.length - 1, 5);
+  // Granița e la amestecul de 50 %: aceeași arie ca alb-negrul cu pragul la jumătate (negrul pe alb: întunecimea e chiar
+  // acoperirea). Ambele sunt sub hârtie (900 px²) cu ~3 % la Echilibrat: capetele de 3 px ale barelor se rotunjesc.
+  const an = traseaza(img, { sursa: 'lum', prag: 128, inverseaza: false, netezime: 'echilibrat', petePx: 0, gauriPx: 0 });
+  assert.ok(an.ok);
+  const bn = aria({ culoare: 0, hex: '', cai: an.cai });
+  assert.ok(Math.abs(aria(p) - bn) < bn * 0.005, `barele: ${aria(p)} față de ${bn} alb-negru`);
+});
+
+test('fundalul bifat, cu două pătrate care se ating într-un colț: golurile lor rămân două, pe ambele diagonale', () => {
+  // La colțul comun, fundalul apare de două ori în aceeași celulă (nu se taie: e fundalul); fiecare gol își ia latura lui.
+  for (const [a, b] of [[[10, 10], [20, 20]], [[20, 10], [10, 20]]] as const) {
+    const img = deseneaza(40, 40, ALB, [
+      { inauntru: dreptunghi(a[0], a[1], a[0] + 10, a[1] + 10), culoare: ROSU },
+      { inauntru: dreptunghi(b[0], b[1], b[0] + 10, b[1] + 10), culoare: ALBASTRU },
+    ]);
+    const r0 = ok(traseazaCulori(img, IMPLICITE));
+    const f = cauta(r0, ALB).k;
+    const r = ok(traseazaCulori(img, { ...IMPLICITE, bifate: r0.raport.paleta.map(() => true) }));
+    const pf = piesa(r, f);
+    assert.ok(pf, `fundalul ${a} / ${b}`);
+    assert.equal(pf.cai.inceput.length - 1, 3, `fundalul: marginea și două goluri (${a} / ${b})`);
+    assert.ok(Math.abs(aria(pf) - (1600 - 200)) < 6, `fundalul: ${aria(pf)}`);
+    for (const c of [ROSU, ALBASTRU]) assert.equal(piesa(r, cauta(r, c).k)?.cai.inceput.length, 2);
+  }
+});
+
+test('fundalul bifat, cu un gol care atinge marginea într-un colț: golul rămâne o buclă a lui, lângă marginea din afară', () => {
+  // Galbenul (în mijloc) atinge cu colțul lui stânga-jos colțul dreapta-sus al roșului, lipit de marginea imaginii: fundalul
+  // trece prin punctul comun de două ori; bucla din afară ocolește roșul, golul ocolește galbenul.
+  const img = deseneaza(40, 30, ALB, [
+    { inauntru: dreptunghi(12, 5, 17, 20), culoare: [230, 200, 40] },
+    { inauntru: dreptunghi(0, 20, 12, 30), culoare: ROSU },
+  ]);
+  const r0 = ok(traseazaCulori(img, IMPLICITE));
+  const f = cauta(r0, ALB).k;
+  const r = ok(traseazaCulori(img, { ...IMPLICITE, bifate: r0.raport.paleta.map(() => true) }));
+  const pf = piesa(r, f);
+  assert.ok(pf);
+  assert.equal(pf.cai.inceput.length - 1, 2, 'fundalul: marginea din afară și golul galben');
+  assert.deepEqual([...pf.cai.exterior].sort(), [0, 1]);
+  assert.ok(Math.abs(aria(pf) - (1200 - 75 - 120)) < 6, `fundalul: ${aria(pf)}`);
+});
+
+test('marginile la jumătate de pixel nu fac o culoare de mijloc: pătrate negre cu laturile la .5, pe alb, dau două culori', () => {
+  // Fiecare pixel de pe margine e exact gri 50 % (o culoare deasă, la distanță mare de ambele): fără scoaterea amestecurilor
+  // din reducere, ar ieși a treia culoare.
+  const img = deseneaza(120, 40, ALB, [0, 1, 2, 3, 4].map((k) => ({ inauntru: dreptunghi(4.5 + 23 * k, 9.5, 24.5 + 23 * k, 29.5), culoare: [0, 0, 0] as const })));
+  const r = ok(traseazaCulori(img, IMPLICITE));
+  assert.equal(r.raport.paleta.length, 2, r.raport.paleta.map((p) => p.hex).join(', '));
+  const p = piesa(r, cauta(r, [0, 0, 0]).k);
+  assert.ok(p);
+  assert.equal(p.cai.inceput.length - 1, 5);
+  // Aria, în banda Netezimii Echilibrat (0,3 px pe tot perimetrul: 5 × 80 px): curbele pot tăia colțurile și laturile în ea.
+  assert.ok(Math.abs(aria(p) - 2000) <= 5 * 80 * 0.3, `pătratele: ${aria(p)}`);
 });
