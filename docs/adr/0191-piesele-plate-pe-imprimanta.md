@@ -1,7 +1,10 @@
 # ADR 0191 — Piesele plate pe imprimanta 3D: felierea desenului, în cvs2
 
-**Starea:** propus pe 07.11.2026, pentru felia 3.6j (întâi fără imprimantă, pe imprimanta falsă; apoi o placă de probă pe
-imprimanta owner-ului), în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 07.11: „cum pot sa
+**Starea:** acceptat pe 07.11.2026 (propus în aceeași zi), cu răspunsul owner-ului la cele cinci întrebări: „ca de obicei,
+vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi
+disponibile in soft”. Deci toate variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m (secțiunea „Feliile”);
+3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
+(ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -93,6 +96,11 @@ Semnele: [citit] în sursă, [calculat] pe hârtie, [nemăsurat] de aflat pe imp
    calitatea (fină 0,12 / standard 0,20 / rapidă 0,24 mm, profilele K1C ale OrcaSlicer), pereții (1–6), umplerea (0–100 %),
    brim-ul (automat / da / nu). Ultimele alese se țin în browser, ca alte alegeri ale ferestrei.
    Alternativa: toate setările, ca în OrcaSlicer (vitezele, accelerațiile, modelele de umplere).
+   **Răspunsul (07.11): amândouă**, ca „Simplu” și „Avansat” în dialog. Materialele: toate filamentele generice K1 ale
+   OrcaSlicer, cu moștenirile rezolvate (la `9005b64`): PLA, PLA High Speed, PLA Matte, PLA Silk (220 / 55 °C; debitul 0,98;
+   cel mult 18, 23, 18 și 7,5 mm³/s), PLA-CF (220 / 60; 0,95; 12), PETG (250 / 70; 0,95; 9), ABS și ASA (260 / 105; 0,926;
+   14 și 12), PC (270 primul strat, apoi 280 / 110; 0,94; 16), PA-CF (290 / 100; 1; 8), TPU (230 / 30; 1; 3,5; retragerea
+   0,4 mm), fiecare cu ventilatoarele, încetinirea pentru răcire și densitatea lui.
 
 ### E. Fișierul
 
@@ -138,11 +146,26 @@ Semnele: [citit] în sursă, [calculat] pe hârtie, [nemăsurat] de aflat pe imp
 
 ## Feliile
 
-- **3.6j** (§A–§H): felierea pieselor plate, dialogul cu previzualizarea pe straturi, salvarea și trimiterea; proba pe
-  imprimanta falsă; apoi, cu owner-ul, o placă de probă pe K1C.
-- Mai târziu, fiecare cu decizia ei: piesa „după CNC” (buzunarele ca trepte), înălțimea fiecărei piese, așezarea automată pe pat
-  (cu imbricarea din `src/io/imbricare.ts`), previzualizarea 3D. Modelele 3D (STL, 3MF) rămân în Creality Print sau OrcaSlicer
-  (ADR 0119 §13).
+Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin opțiuni în aplicație.
+
+- **3.6j** (§A–§H): motorul (pereții, plinul de jos și de sus, grila, primul strat cu compensarea lui, brim-ul, retragerea și
+  ridicarea, ventilatoarele, încetinirea pentru răcire, plafonul de debit, obiectele, antetul cu miniaturile, timpul și
+  filamentul), cu înălțimea fiecărei piese ținută de la început în motor; dialogul „Din desen…” din fereastra Imprimanta: ce se
+  imprimă (piesele foii, selecția sau o singură piesă: 1a, 1b), o înălțime (2a), „Simplu” (materialul, calitatea, pereții,
+  umplerea, brim-ul) și „Avansat” (lățimile liniilor, straturile de sus și de jos, vitezele, accelerațiile, retragerea,
+  ridicarea, ventilatoarele, răcirea, compensarea primului strat, lățimea brim-ului) (3a, 3b); straturile văzute de sus;
+  salvarea și trimiterea prin 3.6h (4a); bucata în precache, în totalul de 550 kB (5a). Proba pe imprimanta falsă; apoi, cu
+  owner-ul, o placă de probă pe K1C.
+- **3.6k** (3b, mai departe): alte modele de umplere (linii, triunghiuri, fagure, giroid, concentric) și ale suprafeței de sus,
+  cusătura (aliniată, în spate, cea mai apropiată, aleatorie), ștergerea la retragere, călcarea suprafeței de sus, fusta.
+- **3.6l** (1c, 2b, 2c): piesa „după CNC” (regiunea păstrată de tăieturi, cu buzunarele ca trepte și găurile găuririi) și
+  înălțimea fiecărei piese ținută în proiect: un câmp opțional al piesei, fără schemă nouă (ca ghidajele, ADR 0050), cu
+  sesiunea principală.
+- **3.6m** (4b, 5b): intrarea din dialogul exportului (altă mașină, lângă CNC) și bucata felierii adusă la prima folosire, cu
+  „Descarcă pentru lucru fără internet”: odată cu sistemul de module, cu sesiunea principală (atinge exportul, workerul PWA și
+  precache-ul). 5a și 5b nu pot sta împreună pentru aceeași bucată: 3.6j merge pe 5a, iar 5b vine ca opțiune odată cu modulele.
+- Mai târziu, fiecare cu decizia ei: așezarea automată pe pat (cu imbricarea din `src/io/imbricare.ts`), previzualizarea 3D.
+  Modelele 3D (STL, 3MF) rămân în Creality Print sau OrcaSlicer (ADR 0119 §13).
 
 ## Proba
 
@@ -163,6 +186,10 @@ Semnele: [citit] în sursă, [calculat] pe hârtie, [nemăsurat] de aflat pe imp
   fața de sus închisă. Și ce arată ecranul imprimantei: miniatura, „stratul x din N”.
 
 ## Întrebările (owner)
+
+**Răspunsul, din 07.11:** „vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in
+soft”: 1a, 1b și 1c; 2a, 2b și 2c; 3a și 3b; 4a și 4b; la 5, 5a acum, 5b cu modulele (secțiunea „Feliile”). Fișierul de
+referință: încă nu.
 
 1. **Ce se imprimă:** a) piesele foii (sau cele selectate), așezate ca pe foaie, centrate pe pat (recomandat); b) o singură
    piesă, aleasă în dialog; c) piesa „după CNC”, cu buzunarele ca trepte, de la început.

@@ -6540,7 +6540,7 @@ slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia cre
 sa poata pregati fisierele de executat, pentru o multitudine de masini (cnc, laser, printere [3d sau altele]). [...] asa ca ma
 gandesc ca sistemul de conectare al cvs2 sa fie si el un plugin modular, care descarca sau activeaza sisteme de conectare pe
 care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea liniei imprimantei).
-**Started:** 07.11, 18:57. **Completed:** 07.11, 19:40 (cercetarea, ADR-ul și schița; codul lui 3.6j așteaptă răspunsurile).
+**Started:** 07.11, 18:57. **Completed:** 07.11, 19:28 (cercetarea, ADR-ul și schița; codul lui 3.6j așteaptă răspunsurile).
 
 - **Răspunsul la întrebare:** un model 3D (cubul de calibrare dintr-un STL) se feliază în Creality Print sau OrcaSlicer și se
   trimite din cvs2 cu „Trimite un fișier…” (pasul 3 din 3.6i); piesele plate din desen se pot felia în cvs2: asta propune ADR
@@ -6572,3 +6572,21 @@ care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea li
   planșe (unde se deschide; setările, cu straturile văzute de sus și un glisor care merge; ce nu se poate imprima; trimiterea și
   pornirea), tabelul profilului K1C, siguranța și limitele. Privită o dată înainte de publicare (Edge fără fereastră, 1 100 px
   în tema luminoasă și 390 px în cea întunecată: fără depășiri, fără erori); baza formularului răspunde (goală).
+
+## 2026-11-07 — 3.6j: piesele plate, toate opțiunile (ADR 0191, acceptat); ramura pregătită pentru `main` (Model: Claude Opus 5.5)
+
+**Prompt:** „ca de obicei, vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot functiona ca optiuni
+diferite si pot fi disponibile in soft” (owner-ul, la cele cinci întrebări ale ADR 0191), apoi, în timpul lucrului: „as vrea
+totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica ceva de aici incolo se
+va face update si pe main ulterior”.
+**Started:** 07.11, 19:31. **Completed:** —
+
+- **ADR 0191, acceptat:** toate variantele care pot sta împreună devin opțiuni, pe felii: 3.6j (motorul, cu înălțimea fiecărei
+  piese ținută de la început; „Din desen…” cu piesele foii, selecția sau o piesă, o înălțime, „Simplu” și „Avansat”; salvarea
+  și trimiterea; bucata în precache), 3.6k (modelele de umplere, cusătura, ștergerea, călcarea, fusta), 3.6l (piesa „după CNC”,
+  înălțimea în proiect), 3.6m (intrarea din export și bucata adusă la prima folosire, cu modulele). 5a și 5b nu pot sta
+  împreună pentru aceeași bucată: 5b vine ca opțiune odată cu modulele. Materialele: cele 11 filamente generice K1 ale
+  OrcaSlicer (PLA, PLA High Speed, Matte, Silk, PLA-CF, PETG, ABS, ASA, PC, PA-CF, TPU), cu moștenirile rezolvate.
+- **Pentru `main` (cererea owner-ului):** `main` (`63d6af5`, biblioteca extensiilor) unit în ramură (`5f729e8`; conflictele,
+  doar în documente, cu ambele părți păstrate); porțile pe rezultat, apoi unirea în `main` o face sesiunea principală, cu
+  cuvintele owner-ului, trimise ei.
