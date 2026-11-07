@@ -768,8 +768,17 @@ export function comandaTaiere(h: Istoric, t: TaiereCalculata): ComandaTaiere {
 
 function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
   if (t.doc !== h.doc) return { ok: false, motiv: 'editare.taiere.motiv.veche' };
-  if (t.degrupate.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
-  const comanda: Comanda = { tip: 'degrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: t.degrupate };
+  const sterse = t.sterse ?? [];
+  if (t.degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
+  // Decuparea: întâi ștergerile (fiecare pe documentul de după cele dinainte), apoi degruparea; un singur pas de anulare.
+  const comenzi: Comanda[] = [];
+  try {
+    if (sterse.length > 0) comenzi.push(...comenziStergere(h.doc, new Set(sterse)).comenzi);
+  } catch {
+    return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+  }
+  if (t.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: t.degrupate });
+  const comanda: Comanda = comenzi.length === 1 ? (comenzi[0] as Comanda) : { tip: 'lot', comenzi };
   let dupa: Document;
   try {
     dupa = executa(h, comanda).doc;

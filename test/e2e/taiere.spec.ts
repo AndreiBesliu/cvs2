@@ -12,6 +12,9 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Felia 10.3↑b: „Ultima formă aleasă” (după degrupare, bucățile rămân alese, în ordine: linia frântă, ultima, e cuțitul) taie
  * pătratul în două fețe, iar cuțitul rămâne; „Taie la intersecții”, din panou și din meniul de clic dreapta, face din
  * pătratul și linia care îl trece cinci forme; Anulează le pune la loc.
+ *
+ * Felia 10.3↑c: „Decupează la ultima formă aleasă” lasă din pătrat partea lui comună cu cercul (granița, aleasă ultima, rămâne);
+ * după Anulează, cu formele alese din nou printr-un cadru, „se șterg” scoate pătratul, care trece granița.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -124,4 +127,43 @@ test('Taie la intersecții, din panou și din clic dreapta: pătratul și linia 
   await meniu.locator('[data-meniu="taie-intersectii"]').click();
   await expect(meniu).toHaveCount(0);
   await expect(randuri(page)).toHaveCount(5);
+});
+
+/** Pătratul 100 × 100 și cercul R30 din (100, 50), care îi trece latura din dreapta: o singură piesă. */
+const CU_CERC = PATRAT + cerc(100, 50, 30, { strat: 'GRANITA' });
+
+test('Decupează la ultima formă aleasă: din pătrat rămâne partea comună cu cercul; „se șterg” scoate pătratul; Anulează', async ({ page }) => {
+  await importa(page, CU_CERC);
+  await page.locator('[data-editare="degrupeaza"]').click();
+  await expect(randuri(page)).toHaveCount(2);
+  const granita = await randuri(page).nth(1).getAttribute('data-instanta');
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="pastreaza-inauntru"]')).toBeChecked();
+  await expect(page.locator('[data-taiere="trec-taie"]')).toBeChecked();
+  await expect(page.locator('[data-taiere="inchide-decupare"]')).toBeChecked();
+  await page.locator('[data-taiere="decupeaza"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme decupate: 1; șterse: 0; forme noi: 1, alese.');
+  const lista = page.getByTestId('lista-vectori');
+  await expect(randuri(page)).toHaveCount(2);
+  await expect(lista.locator('button[data-instanta][aria-pressed="false"]')).toHaveAttribute('data-instanta', granita ?? '—');
+  await page.locator('[data-taiere="inchide-panoul"]').click();
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(randuri(page)).toHaveCount(2);
+
+  // Amândouă, alese din nou cu un cadru tras de la dreapta la stânga, care le atinge (în ordinea foii: cercul, ultimul);
+  // „se șterg” scoate pătratul.
+  const la = await ecran(page, await vedere(page));
+  const [a, b] = [la(135, 60), la(90, 40)];
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+  await page.mouse.move(b.x, b.y, { steps: 4 });
+  await page.mouse.up();
+  await expect(lista.locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(2);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="trec-sterge"]').check();
+  await page.locator('[data-taiere="decupeaza"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme decupate: 0; șterse: 1; forme noi: 0, alese.');
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(randuri(page)).toHaveAttribute('data-instanta', granita ?? '—');
 });

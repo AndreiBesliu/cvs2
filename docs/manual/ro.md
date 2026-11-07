@@ -564,6 +564,11 @@ ca regiune: un inel tăiat în două dă două forme în „U”, închise. Făr
 centru dă două semicercuri, fiecare un singur arc. Cu bifă, un cuțit care se oprește înăuntrul unei forme sau care se
 încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l sau taie fără bifă.
 
+**Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
+**înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
+tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
+lui dinăuntru, deschise. **Decupează** e și ea un singur pas de anulare.
+
 **Taie la intersecții** (butonul din partea de jos a panoului, sau din meniul de clic dreapta) taie formele alese între
 ele, în toate locurile lor comune: unde se trec, unde se ating și la capetele unei laturi comune. Fiecare bucată devine o
 formă, aleasă, ca s-o poți șterge pe cea de prisos. O formă care se taie singură nu se desparte de aici (asta e treaba

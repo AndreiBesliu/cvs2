@@ -48,7 +48,8 @@ export type ReparatieCalculata = { readonly doc: Document; readonly piese: reado
  * părțile care îi iau locul (comanda `degrupeaza`), și instanțele noi, de ales după tăiere. Se aplică într-un pas doar dacă
  * documentul e încă `doc`.
  */
-export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[] };
+/** O tăiere calculată de worker: instanțele înlocuite de părțile lor, cele noi (de ales după) și cele de șters (decuparea). */
+export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[] };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;

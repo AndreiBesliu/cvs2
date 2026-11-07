@@ -16,9 +16,10 @@ export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 /**
- * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b), adus la cerere din extensia barei: cu ce se taie (linia
+ * Panoul Taie (ADR 0180 §3, §4, §5; feliile 10.3↑, 10.3↑b și 10.3↑c), adus la cerere din extensia barei: cu ce se taie (linia
  * verticală X, orizontală Y, un ghidaj al foii sau ultima formă aleasă, cu Shift + clic), „Închide bucățile” (ținută în
- * browser, ca Lipirea) și Taie; apoi „Taie la intersecții”, cu butonul lui. Cât e deschis, linia se vede pe pânză. Calculul e
+ * browser, ca Lipirea) și Taie; „Decupează la ultima formă aleasă” (ce se păstrează, ce se face cu formele care trec granița)
+ * și „Taie la intersecții”, fiecare cu butonul lui. Cât e deschis, linia se vede pe pânză. Calculul e
  * al workerului CAM, pe documentul din clipa clicului; tăierea se aplică prin acțiunea `document.taie`, într-un pas de
  * anulare, doar dacă desenul nu s-a schimbat între timp.
  */
@@ -68,6 +69,8 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const [textY, setTextY] = useState(() => (centru ? numar(centru.y, virgula) : ''));
   const [ghidaj, setGhidaj] = useState(() => ghidaje[0]?.id ?? '');
   const [inchide, setInchide] = useState(citesteInchide);
+  const [pastreaza, setPastreaza] = useState<'inauntru' | 'afara'>('inauntru');
+  const [trec, setTrec] = useState<'taie' | 'sterge' | 'intregi'>('taie');
   const [stare, setStare] = useState<Stare | null>(null);
   const semnal = useRef<AbortController | null>(null);
   useEffect(() => () => { semnal.current?.abort(); }, []);
@@ -106,21 +109,24 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
       calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], inchide: cuInchidere }, s.signal).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
-          const cheie = r.motiv === 'nimic-taiat' && cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : (`editare.taiere.motiv.${r.motiv}` as const);
-          setStare({ fel: 'gata', text: t(cheie), rau: true });
+          const nimic = cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : cu.fel === 'decupare' ? 'editare.taiere.motiv.nimic-decupat' : null;
+          setStare({ fel: 'gata', text: t(r.motiv === 'nimic-taiat' && nimic ? nimic : `editare.taiere.motiv.${r.motiv}`), rau: true });
           return;
         }
-        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids });
+        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids, sterse: r.sterse });
         const parti = String(r.ids.length);
-        const text = r.scoase > 0
-          ? t('editare.taiere.gata-scoase', { n: String(r.forme), parti, s: String(r.scoase) })
-          : t('editare.taiere.gata', { n: String(r.forme), parti });
+        const text = cu.fel === 'decupare'
+          ? t('editare.taiere.decupat', { n: String(r.degrupate.length), s: String(r.sterse.length), parti })
+          : r.scoase > 0
+            ? t('editare.taiere.gata-scoase', { n: String(r.forme), parti, s: String(r.scoase) })
+            : t('editare.taiere.gata', { n: String(r.forme), parti });
         setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
       }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
     }, cade);
   };
   const taie = (): void => { if (cutit !== null) ruleaza(cutit, inchide); };
   const intersectii = (): void => { ruleaza({ fel: 'intersectii' }, false); };
+  const decupeaza = (): void => { if (forma) ruleaza({ fel: 'decupare', id: forma, pastreaza, trec }, inchide); };
 
   return (
     <>
@@ -167,6 +173,36 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
       <div className="butoane-retea">
         <button type="button" className="principal" data-taiere="taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.taie')}</button>
       </div>
+      <fieldset className="campuri-taiere">
+        <legend>{t('editare.taiere.decupare')}</legend>
+        <p className="stare-taiere">{t('editare.taiere.decupare.text')}</p>
+        <div className="rand-optiuni-taiere" role="radiogroup" aria-label={t('editare.taiere.pastreaza')}>
+          <span>{t('editare.taiere.pastreaza')}</span>
+          {(['inauntru', 'afara'] as const).map((x) => (
+            <label key={x}>
+              <input type="radio" name="taiere-pastreaza" checked={pastreaza === x} data-taiere={`pastreaza-${x}`} onChange={() => { setPastreaza(x); }} />
+              {t(`editare.taiere.pastreaza.${x}`)}
+            </label>
+          ))}
+        </div>
+        <div className="rand-optiuni-taiere" role="radiogroup" aria-label={t('editare.taiere.trec')}>
+          <span>{t('editare.taiere.trec')}</span>
+          {(['taie', 'sterge', 'intregi'] as const).map((x) => (
+            <label key={x}>
+              <input type="radio" name="taiere-trec" checked={trec === x} data-taiere={`trec-${x}`} onChange={() => { setTrec(x); }} />
+              {t(`editare.taiere.trec.${x}`)}
+            </label>
+          ))}
+        </div>
+        <label className="bifa-taiere" title={t('editare.taiere.inchide.titlu')}>
+          <input type="checkbox" checked={inchide} data-taiere="inchide-decupare" onChange={(e) => { setInchide(e.target.checked); scrieInchide(e.target.checked); }} />
+          <span>{t('editare.taiere.inchide')}</span>
+        </label>
+        {forma ? null : <p className="motiv-retea" data-testid="decupare-motiv">{t('editare.taiere.decupare.lipsa')}</p>}
+        <div className="butoane-retea">
+          <button type="button" data-taiere="decupeaza" disabled={!forma || stare?.fel === 'calcul'} onClick={decupeaza}>{t('editare.taiere.decupeaza')}</button>
+        </div>
+      </fieldset>
       <fieldset className="campuri-taiere">
         <legend>{t('editare.taiere.intersectii')}</legend>
         <p className="stare-taiere">{t('editare.taiere.intersectii.text')}</p>

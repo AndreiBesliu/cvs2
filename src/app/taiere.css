@@ -37,6 +37,27 @@
   grid-column: 3 / span 2;
 }
 
+/* Panoul are trei blocuri (Taie cu, Decupează, La intersecții): ca panoul verificării, nu trece de fereastră, se derulează. */
+.panou-taiere {
+  max-height: min(70vh, 36rem);
+  overflow-y: auto;
+}
+
+/* Un rând de alegeri (Păstrează: înăuntru / în afară; Formele care trec granița: …), rupt pe mai multe rânduri dacă trebuie. */
+.rand-optiuni-taiere {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.rand-optiuni-taiere label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
 /* Un rând fără câmp (cuțitul-formă): eticheta ia tot locul de după bifă. */
 .rand-taiere-lung {
   grid-column: 2 / -1;

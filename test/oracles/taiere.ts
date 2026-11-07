@@ -10,6 +10,7 @@
  *
  * Felia 10.3↑b: cuțitul-formă (un poligon convex: părțile înăuntru / în afară, ariile tăiate cu el; o linie frântă: ariile
  * fețelor se adună la aria regiunii) și „Taie la intersecții” (aceeași lungime, nicio bucată nouă prin altă formă veche).
+ * Felia 10.3↑c: decuparea (ce rămâne e de partea păstrată, o acoperă, cu aria tăiată de graniță).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -429,6 +430,55 @@ export function judecaIntersectiile(o: { readonly inainte: readonly FormaOracol[
         }
       }
     });
+  }
+  return rau;
+}
+
+// ——— Felia 10.3↑c: decuparea ———
+
+/**
+ * Judecata unei decupări la o graniță convexă (sau un cerc), cu formele care o trec tăiate (lista abaterilor; goală = bună):
+ * tot ce rămâne e de partea păstrată; fiecare punct vechi strict de partea păstrată stă pe o formă nouă; nimic inventat (pe
+ * forma veche sau pe graniță); cu închidere, aria e a regiunii vechi tăiate de graniță (înăuntru) sau restul (în afară).
+ * `dupa` e gol când forma a plecat.
+ */
+export function judecaDecuparea(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly granita: readonly FormaOracol[];
+  readonly dupa: readonly FormaOracol[];
+  readonly inauntru: boolean;
+  readonly inchide: boolean;
+  readonly convex: readonly P[];
+  readonly cerc?: { readonly c: P; readonly r: number } | null;
+}): string[] {
+  const rau: string[] = [];
+  const k = o.convex, cerc = o.cerc ?? null;
+  const pe = (q: P): boolean => (cerc ? Math.abs(Math.hypot(q.x - cerc.c.x, q.y - cerc.c.y) - cerc.r) <= 1e-6 : laPoligon(q, k) <= 1e-6);
+  const inK = (q: P): boolean => (cerc ? Math.hypot(q.x - cerc.c.x, q.y - cerc.c.y) < cerc.r : inPoligon(q, k));
+  const pastrat = (q: P): boolean => inK(q) === o.inauntru;
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      if (pe(q) || !pastrat(q)) continue;
+      const d = distantaLaForme(q, o.dupa);
+      if (d > 1e-6) { rau.push(`un punct vechi de partea păstrată (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e pe nicio formă nouă (${d})`); break; }
+    }
+  }
+  for (const f of o.dupa) {
+    for (const q of esantioane(f, 48)) {
+      const d = Math.min(distantaLaForme(q, o.inainte), distantaLaForme(q, o.granita));
+      if (d > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe graniță (${d})`); break; }
+    }
+    for (const q of esantioane(f, 16)) {
+      if (pe(q) || pastrat(q)) continue;
+      rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) e de partea nepăstrată`);
+      break;
+    }
+  }
+  if (o.inchide) {
+    const tot = ariePar(o.inainte), inauntru = arieParInConvex(o.inainte, k);
+    const asteptat = o.inauntru ? inauntru : tot - inauntru;
+    const are = ariePar(o.dupa);
+    if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria rămasă: ${are}, nu ${asteptat}`);
   }
   return rau;
 }

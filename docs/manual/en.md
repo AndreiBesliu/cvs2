@@ -582,6 +582,12 @@ region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces 
 two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
 panel says why): extend it or cut without the tick.
 
+**Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
+**inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
+**Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
+that is cut stays closed along the boundary: a rectangle clipped to a circle becomes their common part; unticked, only its
+pieces inside remain, open. **Clip** is a single undo step too.
+
 **Cut at intersections** (the button at the bottom of the panel, or from the right-click menu) cuts the chosen shapes by
 each other, at all their common points: where they cross, where they touch and at the ends of a shared side. Each piece
 becomes a shape, chosen, so you can delete the one you do not need. A shape that crosses itself is not split from here

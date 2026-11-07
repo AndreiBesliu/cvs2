@@ -495,6 +495,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (doar cu închidere), `pe-linie` și pentru cuțit, `prea-multe`. „Taie la intersecții” (panoul și meniul de clic dreapta) taie
   fiecare contur ales în locurile lui comune cu celelalte, nu și în buclele lui. Oracolul are `judecaCutitul` și
   `judecaIntersectiile` (`taiere.forma.oracol.test.ts`); generatorii corpusurilor stau în `test/unit/ajutor-taiere.ts`.
+  **Decuparea la ultima formă aleasă (felia 10.3↑c)** gata pe 07.11: granița (închisă, refuzul `granita`) rămâne; fiecare formă
+  aleasă e împărțită ca de un cuțit închis (`impartireCuForma`, aceeași cu a tăierii; `laturi` dă înăuntru și în afară) și
+  păstrează partea aleasă. O formă fără nimic acolo pleacă, iar una care trece granița se taie, se șterge sau rămâne întreagă.
+  **Rezultatul tăierii are acum `sterse`**: acțiunea `document.taie` pune întâi ștergerile (`comenziStergere`), apoi degruparea,
+  într-un singur `lot`. Oracolul are `judecaDecuparea` (`taiere.decupare.oracol.test.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

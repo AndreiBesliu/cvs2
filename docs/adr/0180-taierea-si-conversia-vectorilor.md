@@ -4,7 +4,8 @@
 worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
 cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
-06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) pe 07.11. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) și **felia 10.3↑c** (decuparea, §4) pe 07.11.
+**Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 
@@ -122,6 +123,19 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
   ale aceleiași piese), la capetele unei suprapuneri (nu și în îmbinările ei); un contur închis cu un singur loc rămâne
   întreg; capătul unei căi deschise nu e un loc de tăiere. Pornește din panoul Taie și din meniul de clic dreapta; ca „Taie”
   (10.3↑), nu și din paletă: calculul cere workerul.
+
+**Felia 10.3↑c, la cod** (07.11):
+- **Decuparea refolosește împărțirea cuțitului închis:** fiecare formă aleasă e împărțită ca de un cuțit închis (granița),
+  apoi păstrează ce e de partea aleasă. O formă toată de partea păstrată rămâne neschimbată; una fără nimic acolo pleacă; una
+  cu câte ceva de ambele părți trece granița (și o piesă cu un contur înăuntru și unul în afară, fără nicio tăietură) și, după
+  alegere, se taie (rămâne partea păstrată), se șterge sau rămâne întreagă.
+- **Ștergerile:** o formă care pleacă se șterge cu piesa ei (dacă n-o mai folosește altă instanță); ștergerile și degruparea
+  sunt un singur pas de anulare (un lot: întâi ștergerile, apoi degruparea). O instanță a unei piese puse de mai multe ori se
+  poate șterge (cealaltă rămâne), dar nu tăia.
+- **Granița** trebuie să fie închisă (refuzul `granita`) și rămâne. „Închide bucățile” e aceeași bifă ca la „Taie cu”,
+  arătată și în blocul decupării, ca în schiță.
+- **Panoul:** cele trei blocuri ale schiței, unul sub altul; nu trece de 70 % din fereastră (se derulează, ca panoul
+  verificării).
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
