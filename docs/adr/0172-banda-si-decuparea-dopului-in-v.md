@@ -118,6 +118,23 @@ Trebuie hotărâte:
 **Se redeschide dacă:** vin foile multiple (etapa 11), când dopurile cu bandă se pot așeza mai multe pe o placă, ca piese. Sau
 placa 12 arată altă așezare decât simularea.
 
+## La implementare (felia 12.1↑c)
+
+- **Decuparea merge pe linie**, pe reuniunea exterioarelor desenului oglindit lărgite cu e + r, nu ca profil exterior pe
+  fiecare buclă lărgită cu e. Pe o buclă singură e aceeași tăietură; cu litere apropiate (două bucle la mai puțin de Ø una de
+  alta), profilul fiecăreia ar fi tăiat în piesa păstrată a celeilalte, până în peretele dopului. Pe linie, fiecare punct al
+  tăieturii stă la cel puțin e de orice parte a desenului, iar piesa păstrată ajunge cel mult la e + r, pe fundul plat.
+- **Golurile reuniunii se taie afară, pe linie, fără punți:** desenul din bucăți separate care închid un loc (rama din patru
+  bare, în proba benzii) lasă la mijloc lemn de la fața plăcii, mai departe de M; rămas în dop, s-ar opri pe placă. Golurile
+  literelor nu se taie (sunt în bandă, la S + H, ca la fața coborâtă).
+- **Freza decupării lărgește banda doar cu decuparea;** fără ea, nu taie nimic și nici nu se judecă.
+- **Valorile cele mai mici** (lățimea benzii, placa) se arată rotunjite în sus la 0,001 mm, ca numărul arătat, scris înapoi,
+  să fie primit.
+- **Punțile lucrării au rampe:** pe oracol, palierul fiecăreia iese 1,1–1,2 din lățimea cerută, iar între rampe tăietura trece
+  prin placă (26–51 % din inelul tăieturii, pe cele șase cazuri pe hârtie).
+- Dopul în V s-a mutat în `src/cam/dopV.ts` (ca dopul cu pereți drepți, în `dopDrept.ts`): el cere lucrarea foii pentru
+  decupare, iar lucrarea cere refuzul incrustației, care rămâne în `incrustatie.ts` (fără ciclu).
+
 ## Întrebările (recomandarea întâi)
 
 1. **Lățimea benzii:**
