@@ -205,10 +205,12 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
   const [oprireCeruta, setOprireCeruta] = useState(false);
   const seOpreste = oprireCeruta && stare === 'pregatire';
   useEffect(() => { if (stare !== 'pregatire' && stare !== 'imprima' && stare !== 'pauza') setOprireCeruta(false); }, [stare]);
-  // O confirmare veche nu rămâne după o legătură pierdută sau o stare în care comanda n-ar mai avea rost.
+  // O confirmare veche nu rămâne după o legătură pierdută sau o stare în care comanda n-ar mai avea rost: se închide de tot,
+  // ca să nu reapară singură când legătura revine.
   const rost = confirmare === null || !legata ? false
     : confirmare.fel === 'oprire' ? sePoateOpri(stare) : sePoatePorni(stare);
   const afisata = rost ? confirmare : null;
+  useEffect(() => { if (confirmare !== null && !rost) setConfirmare(null); }, [confirmare, rost]);
   const numeImprimanta = i.nume ?? i.model ?? t('imprimanta.tinuta.fara-nume');
   const detalii = [st.adresa ? t('imprimanta.prin-wifi', { adresa: gazdaPort(st.adresa) }) : null, i.firmware ? t('imprimanta.firmware', { versiune: i.firmware }) : null]
     .filter((x): x is string => x !== null).join(' · ');

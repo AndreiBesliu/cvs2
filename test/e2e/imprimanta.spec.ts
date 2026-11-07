@@ -144,14 +144,19 @@ test('legătura căzută: imprimanta merge mai departe, butoanele sunt oprite, a
   await deschide(page);
   await leaga(page, IP);
   await expect(stare(page)).toHaveText('Imprimă');
+  // O confirmare deschisă la căderea legăturii nu reapare singură după ce legătura revine.
+  await page.locator('[data-imprimanta="opreste"]').click();
+  await expect(page.getByTestId('imprimanta-oprire')).toBeVisible();
   imp.taie();
   await expect(stare(page)).toHaveText('Legătura s-a pierdut');
+  await expect(page.getByTestId('imprimanta-oprire')).toHaveCount(0);
   await expect(page.getByTestId('imprimanta-pierduta')).toContainText('Imprimanta merge mai departe singură');
   await expect(page.locator('[data-imprimanta="pauza"]')).toBeDisabled();
   await expect(page.locator('[data-imprimanta="opreste"]')).toBeDisabled();
   // Prima încercare pleacă după 1 s: imprimanta falsă ascultă încă, deci legătura revine.
   await expect(stare(page)).toHaveText('Imprimă', { timeout: 15_000 });
   await expect(page.getByTestId('imprimanta-pierduta')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-oprire')).toHaveCount(0);
   expect(imp.conexiuni()).toBe(2);
   expect(comenziSet(imp)).toEqual([]);
 });

@@ -90,6 +90,8 @@ o('U04', UI, "disabled={!legata || !sePoatePauza(stare)} onClick={() => { sesiun
   'e2e', 'Pauză trimite reluarea')
 o('U05', UI, "    if (!a.ok) { setRefuz(t(`imprimanta.refuz.${a.motiv}`)); return; }", '    if (!a.ok) { return; }', 'e2e',
   'o adresă refuzată nu spune de ce')
+o('U06', UI, '  useEffect(() => { if (confirmare !== null && !rost) setConfirmare(null); }, [confirmare, rost]);\n', '', 'e2e',
+  'confirmarea opririi reapare singură după ce legătura revine')
 
 SETURI = {
     'creality': ['test/unit/imprimanta.creality.test.ts'],

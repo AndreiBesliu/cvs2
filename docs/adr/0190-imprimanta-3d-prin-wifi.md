@@ -202,7 +202,7 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
   nici pe vreun port (80, 9999, 7125, 8000, 8080), iar din calculatorul lui nu se vedea niciun alt aparat din 192.168.1.x în
   afară de router: imprimanta oprită sau o rețea WiFi despărțită de cablu (rețeaua de oaspeți, „AP isolation”). Ce n-a putut fi
   măsurat (originea paginii pe 9999, CORS-ul de pe 80, ritmul bătăilor inimii) rămâne pentru 3.6i.
-- **Probele:** `test/unit/imprimanta.creality.test.ts` (13), `imprimanta.sesiune.test.ts` (10, pe un WebSocket fals și un ceas
+- **Probele:** `test/unit/imprimanta.creality.test.ts` (14), `imprimanta.sesiune.test.ts` (10, pe un WebSocket fals și un ceas
   fals), `imprimanta.tinute.test.ts` (7); `test/e2e/imprimanta.spec.ts` (5, în Edge, cu imprimanta falsă din
   `test/e2e/imprimantaFalsa.ts`, pe 9999, pe rețeaua de loopback a probei); manualul (fiecare `data-imprimanta` numit în
   capitolul lui).
