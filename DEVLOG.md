@@ -6175,3 +6175,9 @@ lui permisă; ce a încercat și fișierul cu CC5000, necompletate.
 - **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app> (expiră pe 07.12), cu ultimul commit al feliei; adresa principală de test, neatinsă. Verificat pe canal: versiunea, fila Imprimanta și fereastra ei, `mesaje/imprimanta.json`, CSP-ul neschimbat (`ws:` era deja acolo).
 - **Rămâne:** 3.6h (trimiterea unui `.gcode`, cu `http:` în `connect-src`, acceptat la întrebarea 3; ~2 kB rămași din țintă),
   3.6i (proba pe imprimanta owner-ului, după ghid), camera (felia ei), panourile mașinilor alăturate (nota owner-ului).
+
+## 2026-11-07 — 3.6h: trimiterea unui .gcode la imprimantă (ADR 0190 §C.7, §D) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6h” (owner-ul, la întrebarea „Încep felia 3.6h (trimiterea unui .gcode la imprimantă)?”, după 3.6g și
+unirea lui `main` în ramură).
+**Started:** 07.11, 13:45. **Completed:** —

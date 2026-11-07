@@ -152,7 +152,9 @@ altul, iar sesiunile (o mașină și o imprimantă, deodată) sunt deja despăr�
     cu patru linii pe același plafon). **Măsurat la 3.6g:** pornirea 101,6 (+0,2: fila, acțiunea și iconița ei), totalul 512,6
     (+8,1: bucata ferestrei 7,5 kB, cea comună `reteaLocala` 1,0 kB). Fără mutarea din §A.2, fereastra trăgea după ea transportul
     și conexiunile mașinilor într-o bucată comună nouă de 4 kB. Pentru 3.6h rămân deci ~2 kB din țintă: mai mult cere întâi
-    acordul owner-ului.
+    acordul owner-ului. **Măsurat la 3.6h:** pornirea neschimbată (101,6), totalul 517,3 (+3,3 față de 514,0, după unirea cu
+    7.9↑b: verificarea fișierului ~1,8 kB, trimiterea ~0,6, dialogul ~1,0), deci ~1,3 kB peste țintă; unirea în `main` așteaptă
+    acordul owner-ului pentru diferență.
 
 ## Feliile
 
@@ -165,13 +167,15 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
 ## Proba
 
 - **Pe hârtie:** `test/unit/imprimanta.creality.test.ts` (cadrele, pe bucăți, în stare: 1, 4, 5, 7, 9 și 100 % cu timp rămas;
-  `ok` la bătaia inimii; comenzile, octet cu octet; lista fișierelor; eroarea); în 3.6h, `test/unit/gcode3d.test.ts` (antetele
-  OrcaSlicer și Creality Print; întinderea, cu G90, G91, G92 și arce, pe valori calculate pe hârtie).
+  `ok` la bătaia inimii; comenzile, octet cu octet; lista fișierelor; eroarea); în 3.6h, `test/unit/imprimanta.gcode3d.test.ts`
+  (antetele OrcaSlicer și Creality Print; întinderea, cu G90, G91, G92 și arce, pe valori calculate pe hârtie) și
+  `imprimanta.urcare.test.ts` (numele, cererea, verificarea în listă).
 - **Imprimanta falsă** (`test/e2e/imprimantaFalsa.ts`, fără dependențe, ca `controlerWebSocket.ts`): WebSocket-ul de pe 9999,
   cu protocolul de mai sus (bătăile inimii, iar fără `ok` închide legătura; starea pe bucăți; lista; pauza, reluarea, oprirea;
-  pornirea, după care închide legătura, ca K1), pe rețeaua de loopback a probei (`CNCVS2_E2E_RETEA`); în 3.6h și HTTP-ul
-  (`/info`, `/upload/<nume>`, pe un port dat prin conexiune: 80 cere drepturi pe Linux, în CI). Protocolul ei, pe hârtie, în ghid.
-- **Otrăvurile:** `test/otravuri/3.6g.py`.
+  pornirea, după care închide legătura, ca K1), pe rețeaua de loopback a probei (`CNCVS2_E2E_RETEA`); în 3.6h și
+  `POST /upload/<nume>`, pe portul ei: 80 cere drepturi pe Linux (în CI), deci proba mută cererea aplicației de pe 80 pe portul
+  imprimantei false (`page.route`), iar aplicația rămâne pe 80. Protocolul ei, pe hârtie, în ghid.
+- **Otrăvurile:** `test/otravuri/3.6g.py`, `test/otravuri/3.6h.py`.
 - **Pe imprimanta owner-ului** (ghidul `docs/masina/imprimanta-k1c.md`): IP-ul, permisiunea, starea văzută; pauza și reluarea pe
   o imprimare scurtă de probă; jurnalul cadrelor copiat (transcrierea), rejucat pe imprimanta falsă.
 
@@ -210,6 +214,41 @@ Numele urmează seria 3.6d–3.6f („3.6g-b” nu e un id al roadmap-ului, care
   și sunt prinse acum; S08 (garda generației din `onmessage`) era cod mort: un WebSocket vechi își pierde ascultătorii la
   oprire sau e deja închis, deci garda a rămas doar pe căile asincrone (ceasurile, răspunsul permisiunii).
 - **După felie:** o confirmare închisă de o legătură pierdută nu mai reapare când legătura revine (proba e2e a legăturii căzute).
+
+## Felia 3.6h (07.11.2026): trimiterea unui `.gcode`
+
+- **Ce s-a construit:**
+  - verificarea, pură (`src/machine/imprimanta/gcode3d.ts`): antetul lui OrcaSlicer și Creality Print (`; cheie = valoare`, cu
+    configurația la final), al lui PrusaSlicer și al lui Cura (`;CHEIE:valoare`): imprimanta (`printer_model`,
+    `TARGET_MACHINE.NAME`, `printer_settings_id`), duza, materialul (primul din `filament_type`), timpul (`total estimated time`,
+    `estimated printing time (normal mode)`, `TIME`) și cea mai mare miniatură PNG; temperaturile, din primele comenzi de
+    încălzire cu o valoare (M104 / M109, M140 / M190) sau din `START_PRINT EXTRUDER_TEMP=… BED_TEMP=…` (cum pornesc K1);
+    întinderea mișcărilor G0–G3 pe X, Y și Z, cu G90 / G91, G92 (deplasarea), G28 (poziția neștiută până la o mișcare
+    absolută) și arcele cu I / J, cu punctele lor extreme (un arc cu capetele în pat poate ieși din el), față de patul modelului
+    (K1, K1C, K1 SE: 220 × 220 × 250; K1 Max: 300 × 300 × 300). Un arc cu `R` se judecă doar după capăt. Fișierul se citește pe
+    bucăți de 1 MiB, fără să taie o literă între ele; analiza ține doar ce a aflat;
+  - trimiterea (`urcare.ts`): numele (spațiile devin `_`, ca OrcaSlicer; doar `.gcode`; un nume pe care lista îl are primește
+    „-2”, „-3”…: **un fișier din imprimantă nu se înlocuiește**, poate fi chiar cel care se imprimă, iar verificarea după nume
+    spune ceva doar pentru un nume nou); `POST http://<ip>/upload/<nume>` pe 80, multipart doar cu `file`, `no-cors` (răspunsul
+    nu se citește: CORS-ul imprimantei e nemăsurat), cu `targetAddressSpace: 'local'` spre rețeaua locală (nu spre loopback);
+    apoi lista, cerută din nou pe 9999 (de trei ori, la câte 2 s), până apare numele;
+  - fereastra: **Trimite un fișier…** sub lista fișierelor și dialogul „Trimite la imprimantă” din schiță (secțiunea E): fișierul
+    și mărimea, **Alt fișier…**, ce spune antetul (cu ✓ fără avertismente) și miniatura, „Toate mișcările încap în patul…”,
+    avertismentele (o mișcare în afara patului, cu linia și textul ei; alt model în antet; nicio mișcare), numele nou, apoi
+    **Trimite** sau **Trimite oricum**; „Se trimite…”; „Ajuns în imprimantă”, cu **Pornește imprimarea…** (confirmarea de la
+    3.6g, cu bifa) și **Închide**, sau motivul (`retea`, `lipsa`, `citire`) cu **Încearcă din nou**. **Renunță** și Escape
+    închid și opresc o trimitere începută;
+  - CSP-ul: `http:` în `connect-src` (răspunsul 3a), cu motivul în `shared/csp.ts`; `firebase.json` regenerat.
+- **Găsit pe drum:** proba e2e a CSP-ului (`csp.spec.ts`) avea drept martor refuzat `http://example.com`, care acum trece de CSP
+  (iar de pe `http://localhost` ar fi ieșit în internet): cererea e prinsă acum de `route`, iar martorul refuzat e o cerere
+  `data:`. Un martor `wss://` n-a mers: trece de CSP (după CSP3, sursele `ws:` și `https:` acoperă și `wss:`, deci lipsa lui din
+  `connect-src` nu-l refuză), iar o rută Playwright nu prinde un WebSocket, deci ar fi ieșit în rețea.
+- **Probele:** `imprimanta.gcode3d.test.ts` (9), `imprimanta.urcare.test.ts` (5); `imprimanta.spec.ts` +2 (trimiterea
+  cap-coadă, cu imprimanta falsă care primește `POST /upload`; refuzul, avertismentele și **Trimite oricum**, cererea căzută,
+  fișierul care nu apare în listă, reluarea); `csp.spec.ts` (martorul `data:`); manualul (8 controale noi).
+- **Rămâne pentru 3.6i:** dacă `/upload` primește o pagină de pe altă origine (CORS, `Origin`), dacă Chrome lasă cererea HTTP
+  spre IP-ul imprimantei cu permisiunea dată pentru 9999, și marginile reale ale patului K1C (unde își face linia de curățare a
+  duzei), din fișierele owner-ului.
 
 ## Întrebările (owner)
 

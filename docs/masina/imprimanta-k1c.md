@@ -1,9 +1,10 @@
 # Imprimanta Creality K1C în cvs2, prin WiFi
 
-Ghidul din ADR 0190 (felia 3.6g). Fereastra **Imprimanta** a aplicației vorbește cu o imprimantă Creality din familia K1 (K1C,
-K1C 2025, K1, K1 Max, K1 SE) pe protocolul ei din fabrică: un WebSocket pe portul **9999**, același pe care îl folosesc Creality
-Print și OrcaSlicer. Nu cere root și nicio setare pe imprimantă. Deocamdată (3.6g): starea, temperaturile, **Pauză / Reia /
-Oprește** și pornirea fișierelor aflate deja în imprimantă. Trimiterea unui `.gcode` de pe calculator vine în 3.6h.
+Ghidul din ADR 0190 (feliile 3.6g și 3.6h). Fereastra **Imprimanta** a aplicației vorbește cu o imprimantă Creality din familia
+K1 (K1C, K1C 2025, K1, K1 Max, K1 SE) pe protocolul ei din fabrică: un WebSocket pe portul **9999**, același pe care îl folosesc
+Creality Print și OrcaSlicer, iar fișierele urcă pe HTTP, pe portul **80**. Nu cere root și nicio setare pe imprimantă: starea,
+temperaturile, **Pauză / Reia / Oprește**, pornirea fișierelor din imprimantă (3.6g) și trimiterea unui `.gcode` de pe calculator
+(3.6h).
 
 ## Ce îți trebuie
 
@@ -30,15 +31,32 @@ nu va ajunge nici ea la imprimantă: verifică întâi rețeaua (pasul „Ce î�
 Imprimanta rămâne în listă: data viitoare o alegi de acolo, cu **Conectează**. Dacă IP-ul s-a schimbat, **Caută în toată
 rețeaua** încearcă portul 9999 pe toate adresele rețelei (cam un minut).
 
-## 3. Proba (felia 3.6i)
+## 3. Trimiterea unui fișier
+
+1. Feliază piesa în Creality Print sau OrcaSlicer, cu profilul imprimantei tale (K1C), și salvează `.gcode`-ul pe calculator.
+2. Sub lista fișierelor: **Trimite un fișier…**, apoi alege-l.
+3. Fereastra îl verifică pe calculator, înainte să plece: pentru ce imprimantă a fost feliat, duza, materialul, temperaturile,
+   timpul și miniatura, apoi dacă toate mișcările încap în pat (220 × 220 × 250 mm la K1C). Fără probleme: **Trimite**. O
+   mișcare în afara patului (cu linia ei, de felul lui CC5000) sau un fișier feliat pentru altă imprimantă dau un avertisment,
+   iar butonul devine **Trimite oricum**.
+4. După trimitere, fereastra îl caută în lista imprimantei: „Ajuns în imprimantă”, apoi **Pornește imprimarea…** (cu bifa
+   **Patul e gol**) sau **Închide**.
+
+Numele pierde spațiile (ca în OrcaSlicer), iar un fișier care e deja în imprimantă nu se înlocuiește: cel nou primește „-2” la
+nume.
+
+## 4. Proba (felia 3.6i)
 
 1. Cu imprimanta liberă: banda spune „Liberă”, iar **În imprimantă** arată fișierele ei (cele trimise din Creality Print sau
    OrcaSlicer).
-2. Pornește o imprimare scurtă (un cub de calibrare): **Pornește…**, bifa **Patul e gol**, **Pornește imprimarea**. Imprimanta
-   închide legătura imediat după pornire, ca toate K1; fereastra se leagă singură din nou în câteva secunde.
-3. Cât imprimă: **Pauză**, apoi **Reia**. Temperaturile duzei și ale patului urcă la țintele lor.
-4. Dacă vrei: **Oprește…** → **Oprește imprimarea** (imprimarea nu se mai poate relua).
-5. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: e transcrierea pe care o rejucăm pe imprimanta
+2. Trimite un cub de calibrare feliat pentru K1C (pasul 3): în fereastra de verificare apar ✓ și „Toate mișcările încap în
+   patul…”. Dacă apare totuși un avertisment pentru un fișier feliat chiar pentru K1C, trimite-mi linia din el: așa aflăm unde
+   își face K1C linia de curățare a duzei.
+3. Pornește-l: **Pornește imprimarea…**, bifa **Patul e gol**, **Pornește imprimarea**. Imprimanta închide legătura imediat
+   după pornire, ca toate K1; fereastra se leagă singură din nou în câteva secunde.
+4. Cât imprimă: **Pauză**, apoi **Reia**. Temperaturile duzei și ale patului urcă la țintele lor.
+5. Dacă vrei: **Oprește…** → **Oprește imprimarea** (imprimarea nu se mai poate relua).
+6. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: e transcrierea pe care o rejucăm pe imprimanta
    falsă din probe.
 
 ## Când nu merge
@@ -48,6 +66,11 @@ rețeaua** încearcă portul 9999 pe toate adresele rețelei (cam un minut).
   adresei → setările site-ului → **Acces la rețeaua locală** → Permite, apoi Conectează din nou.
 - **„La … răspunde ceva, dar nu ca o imprimantă Creality”**: pe portul 9999 al adresei aceleia stă altceva.
 - **Legătura se pierde des:** semnalul WiFi la imprimantă. Imprimanta continuă oricum; fereastra se leagă singură din nou.
+- **„Fișierul n-a plecat”**: imprimanta nu răspunde pe portul 80 sau browserul a oprit cererea. Dacă starea merge (9999), dar
+  trimiterea nu, trimite-mi textul jurnalului și ce scrie în consola browserului (F12 → Console): e unul din lucrurile
+  nemăsurate încă (de mai jos).
+- **„Fișierul a plecat, dar nu apare în lista imprimantei”**: poate n-a ajuns întreg (WiFi slab). **Încearcă din nou** sau
+  trimite-l din Creality Print.
 
 ## De știut
 
@@ -77,6 +100,8 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
     (lista: `{"retGcodeFileInfo2":[{"name","path","timeCost","material",…}]}`);
   - comenzi: `{"method":"set","params":{"pause":1}}`, `{"pause":0}`, `{"stop":1}`,
     `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura).
-- HTTP pe 80 (pentru 3.6h): `GET /info` (`model`, `mac`), `POST /upload/<nume>` (multipart, câmpul `file`).
-- Nemăsurat încă pe imprimanta ta: ritmul bătăilor inimii, dacă 9999 primește o pagină de pe altă origine, câmpurile exacte
-  ale listei de fișiere (mărimea, data).
+- HTTP pe 80: `POST /upload/<nume codat>` (multipart, doar câmpul `file`, cu numele fișierului; fără câmpul `path`, ca
+  OrcaSlicer pentru K1C), fișierul ajunge în `/usr/data/printer_data/gcodes/`; aplicația nu citește răspunsul (cererea pleacă
+  `no-cors`) și caută apoi numele în lista de pe 9999. Mai e `GET /info` (`model`, `mac`), nefolosit.
+- Nemăsurat încă pe imprimanta ta: ritmul bătăilor inimii, dacă 9999 și `/upload` primesc o pagină de pe altă origine, câmpurile
+  exacte ale listei de fișiere (mărimea, data), marginile reale ale patului (unde își face linia de curățare a duzei).

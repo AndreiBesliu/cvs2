@@ -382,3 +382,43 @@
   font-family: var(--mono);
   font-size: var(--fs-1);
 }
+
+/* Trimiterea unui fișier (3.6h): fișierul ales, ce spune antetul lui, avertismentele. */
+.imprimanta-trimite-fisier {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.imprimanta-trimite-fisier strong {
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-trimite-despre {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.imprimanta-trimite-despre p {
+  margin: 0;
+}
+
+.imprimanta-miniatura {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: var(--r-1);
+  background: var(--s-peste);
+}
+
+.imprimanta-avert {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) calc(var(--sp-2) + 1.2em);
+  border-left: 3px solid var(--a);
+  border-radius: var(--r-1);
+  background: var(--s-atentie);
+}

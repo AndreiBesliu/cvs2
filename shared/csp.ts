@@ -22,6 +22,11 @@
  * HTTPS (conținut mixt: trec doar un IP local sau un nume `.local`, cu permisiunea rețelei locale). Fără `wss:`: niciun
  * controler n-are TLS, iar `wss:` ar deschide orice gazdă publică.
  *
+ * Imprimanta 3D prin WiFi (ADR 0190 §C.7, felia 3.6h; acordul owner-ului din 07.11, răspunsul 3a): fișierul `.gcode` urcă pe
+ * HTTP, la `http://<ip>/upload/…` (Creality K1C n-are TLS), deci `connect-src` primește și schema `http:`. Ca la `ws:`, spre o
+ * gazdă publică browserul blochează oricum un `http://` dintr-o pagină HTTPS (conținut mixt): trec doar un IP local sau un nume
+ * `.local`, cu permisiunea rețelei locale.
+ *
  * Extensiile (ADR 0127 §D, felia 3.Xa; acordul owner-ului din 02.11, „Da, ca recomandat”): codul unei extensii instalate stă
  * în browser și rulează în cadrul ei izolat dintr-o adresă `blob:`, pornit de încărcător, care rulează doar prin amprenta lui;
  * deci `script-src` primește `blob:` și amprenta încărcătorului. Cadrul moștenește CSP-ul și adaugă unul mai strict (fără
@@ -43,7 +48,7 @@ export const CSP = [
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
     'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
-    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'ws:', 'https:',
+    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'ws:', 'http:', 'https:',
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

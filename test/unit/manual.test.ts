@@ -223,6 +223,10 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   deconecteaza: 'imprimanta.deconecteaza', 'fisiere-reimprospateaza': 'imprimanta.fisiere.reimprospateaza', porneste: 'imprimanta.porneste',
   'pat-gol': 'imprimanta.pornire.pat-gol', 'pornire-confirma': 'imprimanta.pornire.confirma', 'pornire-renunta': 'imprimanta.pornire.renunta',
   'jurnal-copiaza': 'imprimanta.jurnal.copiaza',
+  // Trimiterea unui `.gcode` (felia 3.6h).
+  trimite: 'imprimanta.trimite', 'trimite-alt': 'imprimanta.trimite.alt', 'trimite-confirma': 'imprimanta.trimite.confirma',
+  'trimite-oricum': 'imprimanta.trimite.oricum', 'trimite-renunta': 'imprimanta.trimite.renunta', 'trimite-reia': 'imprimanta.trimite.reia',
+  'trimite-porneste': 'imprimanta.trimite.porneste', 'trimite-inchide': 'imprimanta.trimite.inchide',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {

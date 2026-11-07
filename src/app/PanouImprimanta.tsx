@@ -2,7 +2,8 @@
  * Fereastra Imprimanta (ADR 0190, felia 3.6g): o imprimantă Creality din familia K1 (K1C), legată prin WiFi, pe protocolul ei
  * din fabrică (WebSocket-ul de pe 9999). Conectarea (imprimantele ținute în browser, adresa scrisă de mână sau căutarea în
  * toată rețeaua, la clic), starea (lucrarea, temperaturile, codul de la imprimantă), Pauză / Reia / Oprește, fișierele din
- * imprimantă, pornite cu confirmare („Patul e gol”), și jurnalul cadrelor.
+ * imprimantă, pornite cu confirmare („Patul e gol”), și jurnalul cadrelor. Din felia 3.6h, și trimiterea unui `.gcode` de pe
+ * calculator: verificat întâi pe calculator (antetul feliatorului, mișcările față de pat), apoi căutat în lista imprimantei.
  *
  * Siguranța (ADR 0190 §E): singură, fereastra doar citește și răspunde `ok` la bătaia inimii; fiecare comandă pleacă dintr-un
  * clic. Pornirea cere bifa „Patul e gol”, oprirea o confirmare (o imprimare oprită nu se mai poate relua), pauza pleacă pe loc.
@@ -17,10 +18,12 @@ import { adresaRetea, type AdresaRetea } from '../machine/reteaLocala.ts';
 import {
   numeDin, PORT_CREALITY, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua, stareLucrare, type FisierImprimanta, type StareLucrare,
 } from '../machine/imprimanta/creality.ts';
+import { analizeazaFisier, patPentru, type AnalizaGcode } from '../machine/imprimanta/gcode3d.ts';
 import { SesiuneImprimanta, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, CHEIE_IMPRIMANTE, citesteImprimante, reteleDeCautat, scrieImprimante, tineImprimanta, uitaImprimanta, type ImprimantaTinuta,
 } from '../machine/imprimanta/tinute.ts';
+import { numeDeTrimis, urca, type MotivUrcare } from '../machine/imprimanta/urcare.ts';
 import './imprimanta.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -55,7 +58,8 @@ const durata = (s: number): string => {
   return t('imprimanta.ore', { h: Math.floor(x / 3600), m: Math.floor((x % 3600) / 60) });
 };
 const grade = (v: number | null): string => (v === null ? '—' : String(Math.round(v)));
-const ora = (ms: number): string => new Date(ms).toLocaleTimeString(limba() === 'ro' ? 'ro-RO' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
+const ora = (ms: number): string => new Date(ms).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
 const gazdaPort = (a: AdresaRetea): string => (a.port === PORT_CREALITY ? a.gazda : `${a.gazda}:${a.port}`);
 const textMotiv = (m: MotivImprimanta, a: AdresaRetea | null): string => t(`imprimanta.motiv.${m}`, { adresa: a ? gazdaPort(a) : '—' });
 
@@ -211,6 +215,10 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
     : confirmare.fel === 'oprire' ? sePoateOpri(stare) : sePoatePorni(stare);
   const afisata = rost ? confirmare : null;
   useEffect(() => { if (confirmare !== null && !rost) setConfirmare(null); }, [confirmare, rost]);
+  // Fișierul ales pentru trimitere (3.6h); `k` repornește dialogul la fiecare alegere.
+  const [ales, setAles] = useState<{ readonly f: File; readonly k: number } | null>(null);
+  const intrare = useRef<HTMLInputElement | null>(null);
+  const alege = (): void => { intrare.current?.click(); };
   const numeImprimanta = i.nume ?? i.model ?? t('imprimanta.tinuta.fara-nume');
   const detalii = [st.adresa ? t('imprimanta.prin-wifi', { adresa: gazdaPort(st.adresa) }) : null, i.firmware ? t('imprimanta.firmware', { versiune: i.firmware }) : null]
     .filter((x): x is string => x !== null).join(' · ');
@@ -249,6 +257,12 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
             else sesiune.porneste(afisata.fisier);
             setConfirmare(null);
           }} />
+      )}
+      <input type="file" accept=".gcode" hidden ref={intrare} data-testid="imprimanta-ales"
+        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setAles((x) => ({ f, k: (x?.k ?? 0) + 1 })); }} />
+      {ales !== null && (
+        <DialogTrimitere key={ales.k} fisier={ales.f} st={st} stare={stare} alt={alege} inchide={() => { setAles(null); }}
+          porneste={(f) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f }); }} />
       )}
       <div className="imprimanta-coloane">
         <section className="imprimanta-card" aria-labelledby="imprimanta-lucrarea" data-testid="imprimanta-lucrarea">
@@ -290,7 +304,7 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
               </div>
             )}
         </section>
-        <Fisiere st={st} stare={stare} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }} />
+        <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }} />
         <Jurnal st={st} />
       </div>
     </>
@@ -310,7 +324,9 @@ function Temperatura({ nume, v, tinta, id }: { readonly nume: string; readonly v
   );
 }
 
-function Fisiere({ st, stare, porneste }: { readonly st: StareImprimanta; readonly stare: StareLucrare; readonly porneste: (f: FisierImprimanta) => void }): ReactNode {
+function Fisiere({ st, stare, alege, porneste }: {
+  readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alege: () => void; readonly porneste: (f: FisierImprimanta) => void;
+}): ReactNode {
   const legata = st.legatura === 'conectat';
   const libera = sePoatePorni(stare);
   return (
@@ -333,9 +349,126 @@ function Fisiere({ st, stare, porneste }: { readonly st: StareImprimanta; readon
           )}
       {!libera && st.fisiere !== null && st.fisiere.length > 0 && <p className="imprimanta-ajutor">{t('imprimanta.porneste.ocupata')}</p>}
       <div className="imprimanta-butoane">
+        <button type="button" data-imprimanta="trimite" disabled={!legata || st.fisiere === null} onClick={alege}>{t('imprimanta.trimite')}</button>
         <button type="button" data-imprimanta="fisiere-reimprospateaza" disabled={!legata} onClick={() => { sesiune.reimprospateaza(); }}>{t('imprimanta.fisiere.reimprospateaza')}</button>
       </div>
+      <p className="imprimanta-ajutor">{t('imprimanta.trimite.ajutor')}</p>
     </section>
+  );
+}
+
+/** Pașii trimiterii unui fișier (ADR 0190 §D, schița, secțiunea E): verificarea pe calculator, trimiterea, rezultatul. */
+type PasTrimitere =
+  | { readonly fel: 'citeste' }
+  | { readonly fel: 'gata' | 'trimite'; readonly a: AnalizaGcode }
+  | { readonly fel: 'esec'; readonly a: AnalizaGcode | null; readonly motiv: MotivUrcare | 'citire' }
+  | { readonly fel: 'ajuns'; readonly f: FisierImprimanta };
+
+/** Numele unei imprimante, de comparat („Creality K1C” îl conține pe „K1C”). */
+const simplu = (s: string): string => s.toLowerCase().replace(/[\s_-]/g, '');
+
+function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
+  readonly fisier: File; readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alt: () => void; readonly inchide: () => void;
+  readonly porneste: (f: FisierImprimanta) => void;
+}): ReactNode {
+  const legata = st.legatura === 'conectat';
+  const model = st.imprimanta.model;
+  // Numele, ales o dată, față de lista de la alegere: un fișier din imprimantă nu se înlocuiește.
+  const [nume] = useState(() => numeDeTrimis(fisier.name, (st.fisiere ?? []).map((x) => x.nume)));
+  const [pas, setPas] = useState<PasTrimitere>({ fel: 'citeste' });
+  const [pat] = useState(() => patPentru(model));
+  const oprire = useRef<AbortController | null>(null);
+  const cutie = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const c = new AbortController();
+    oprire.current = c;
+    if (nume !== null) {
+      analizeazaFisier(fisier, pat, c.signal).then(
+        (a) => { if (!c.signal.aborted) setPas({ fel: 'gata', a }); },
+        () => { if (!c.signal.aborted) setPas({ fel: 'esec', a: null, motiv: 'citire' }); },
+      );
+    }
+    return () => { oprire.current?.abort(); };
+  }, [fisier, nume, pat]);
+  // Focusul, pe butonul fără urmări al fiecărui pas (Renunță sau Închide), ca la celelalte confirmări.
+  useEffect(() => { cutie.current?.querySelector<HTMLElement>('.imprimanta-butoane button:last-child')?.focus(); }, [pas.fel]);
+  const trimite = (a: AnalizaGcode): void => {
+    const adresa = st.adresa;
+    if (adresa === null || nume === null) return;
+    const c = new AbortController();
+    oprire.current = c;
+    setPas({ fel: 'trimite', a });
+    urca({ adresa, nume, date: fisier, lista: sesiune, semnal: c.signal }).then(
+      (r) => { if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier } : { fel: 'esec', a, motiv: r.motiv }); },
+      () => undefined,
+    );
+  };
+  const renunta = (): void => { oprire.current?.abort(); inchide(); };
+  const a = pas.fel === 'gata' || pas.fel === 'trimite' || pas.fel === 'esec' ? pas.a : null;
+  const avert: string[] = [];
+  if (a !== null) {
+    const e = a.iesire;
+    if (e !== null) {
+      avert.push(t(e.valoare < 0 ? 'imprimanta.trimite.iesire.sub' : 'imprimanta.trimite.iesire.peste',
+        { linie: e.linie, text: e.text, axa: e.axa, limita: pat['XYZ'.indexOf(e.axa)] ?? 0 }));
+    }
+    if (a.imprimanta !== null && model !== null && !simplu(a.imprimanta).includes(simplu(model))) {
+      avert.push(t('imprimanta.trimite.alta', { feliat: a.imprimanta, model }));
+    }
+    if (a.miscari === 0) avert.push(t('imprimanta.trimite.fara-miscari'));
+  }
+  const despre = a === null ? '' : [
+    a.imprimanta === null ? null
+      : t('imprimanta.trimite.feliat', { imprimanta: a.imprimanta }) + (a.duza === null ? '' : ` (${t('imprimanta.trimite.duza', { d: a.duza.toLocaleString(loc()) })})`),
+    a.material,
+    a.tDuza === null && a.tPat === null ? null : `${grade(a.tDuza)} / ${grade(a.tPat)} °C`,
+    a.timp === null ? null : `~${durata(a.timp)}`,
+  ].filter((x) => x !== null).join(' · ');
+  const mb = fisier.size / 1e6;
+  const marime = mb >= 1 ? `${mb.toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(fisier.size / 1e3))} kB`;
+  return (
+    <div className="imprimanta-dialog" role="dialog" aria-labelledby="imprimanta-trimite-titlu" data-testid="imprimanta-trimite" data-pas={pas.fel}
+      ref={cutie} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); renunta(); } }}>
+      <h3 id="imprimanta-trimite-titlu">{t('imprimanta.trimite.titlu')}</h3>
+      <p className="imprimanta-trimite-fisier">
+        <strong data-testid="imprimanta-trimite-nume">{fisier.name}</strong>
+        <span className="imprimanta-slab">{marime}</span>
+        {(nume === null || pas.fel === 'gata' || pas.fel === 'esec') && <button type="button" data-imprimanta="trimite-alt" onClick={alt}>{t('imprimanta.trimite.alt')}</button>}
+      </p>
+      {nume === null && <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-trimite-refuz">{t('imprimanta.trimite.refuz')}</p>}
+      {nume !== null && pas.fel === 'citeste' && <p role="status">{t('imprimanta.trimite.citeste')}</p>}
+      {a !== null && (
+        <div className="imprimanta-trimite-despre">
+          {a.miniatura !== null && <img className="imprimanta-miniatura" src={`data:image/png;base64,${a.miniatura}`} alt={t('imprimanta.trimite.miniatura')} />}
+          <div>
+            {despre !== '' && <p data-testid="imprimanta-trimite-despre">{avert.length === 0 ? '✓ ' : ''}{despre}</p>}
+            {a.iesire === null && a.miscari > 0 && <p className="imprimanta-slab" data-testid="imprimanta-trimite-incape">{t('imprimanta.trimite.incape', { x: pat[0], y: pat[1], z: pat[2] })}</p>}
+          </div>
+        </div>
+      )}
+      {avert.length > 0 && <ul className="imprimanta-avert" data-testid="imprimanta-trimite-avert">{avert.map((x) => <li key={x}>{x}</li>)}</ul>}
+      {nume !== null && nume !== fisier.name && <p className="imprimanta-ajutor" data-testid="imprimanta-trimite-nume-nou">{t('imprimanta.trimite.nume-nou', { nume })}</p>}
+      {pas.fel === 'trimite' && <p role="status" data-testid="imprimanta-trimite-progres">{t('imprimanta.trimite.se-trimite', { nume: nume ?? '', marime })}</p>}
+      {pas.fel === 'esec' && <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-trimite-motiv" data-motiv={pas.motiv}>{t(`imprimanta.trimite.motiv.${pas.motiv}`)}</p>}
+      {pas.fel === 'ajuns' && <p role="status" data-testid="imprimanta-trimite-ajuns">{t('imprimanta.trimite.ajuns', { nume: pas.f.nume })}</p>}
+      <div className="imprimanta-butoane">
+        {pas.fel === 'gata' && (avert.length === 0
+          ? <button type="button" className="principal" data-imprimanta="trimite-confirma" disabled={!legata} onClick={() => { trimite(pas.a); }}>{t('imprimanta.trimite.confirma')}</button>
+          : <button type="button" className="principal" data-imprimanta="trimite-oricum" disabled={!legata} onClick={() => { trimite(pas.a); }}>{t('imprimanta.trimite.oricum')}</button>)}
+        {pas.fel === 'esec' && pas.a !== null && (
+          <button type="button" className="principal" data-imprimanta="trimite-reia" disabled={!legata} onClick={() => { if (pas.a) trimite(pas.a); }}>{t('imprimanta.trimite.reia')}</button>
+        )}
+        {pas.fel === 'ajuns'
+          ? (
+            <>
+              <button type="button" className="principal" data-imprimanta="trimite-porneste" disabled={!legata || !sePoatePorni(stare)}
+                onClick={() => { porneste(pas.f); }}>{t('imprimanta.trimite.porneste')}</button>
+              <button type="button" data-imprimanta="trimite-inchide" onClick={inchide}>{t('imprimanta.trimite.inchide')}</button>
+            </>
+          )
+          : <button type="button" data-imprimanta="trimite-renunta" onClick={renunta}>{t('imprimanta.trimite.renunta')}</button>}
+      </div>
+    </div>
   );
 }
 

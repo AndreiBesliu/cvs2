@@ -972,6 +972,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   materialul și timpul estimat. **Pornește imprimarea** se aprinde abia după bifa **Patul e gol** (nicio piesă rămasă sub
   duză); **Renunță** închide confirmarea. Imprimanta se încălzește și își face singură verificările; imediat după pornire
   închide legătura, iar fereastra se leagă singură din nou. **Reîmprospătează** cere din nou lista.
+- **Trimite un fișier…** (sub listă) trimite la imprimantă un `.gcode` de pe calculator, gata feliat în Creality Print sau
+  OrcaSlicer. Întâi fereastra îl verifică pe calculator: pentru ce imprimantă a fost feliat, duza, materialul, temperaturile,
+  timpul estimat și miniatura, apoi dacă toate mișcările încap în patul imprimantei (220 × 220 × 250 mm la K1C). O mișcare în
+  afara patului (cu linia ei) sau un fișier feliat pentru altă imprimantă dau un avertisment, iar butonul devine **Trimite
+  oricum**; altfel e **Trimite**. **Alt fișier…** alege altul; **Renunță** (sau `Escape`) închide fereastra și oprește o
+  trimitere începută. Numele pierde spațiile, iar un fișier care e deja în imprimantă nu se înlocuiește: cel nou primește
+  „-2” la nume. După trimitere, fereastra îl caută în lista imprimantei; când îl găsește, **Pornește imprimarea…** deschide
+  confirmarea de mai sus (cu bifa **Patul e gol**), iar **Închide** îl lasă în imprimantă. Dacă nu ajunge, fereastra spune
+  de ce (imprimanta nu răspunde pe portul 80 sau fișierul nu apare în lista ei), cu **Încearcă din nou**.
 - **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
   pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
 - **Jurnalul cadrelor** arată ce a trimis fereastra și ce a primit; **Copiază jurnalul** îl pune în clipboard, pentru o

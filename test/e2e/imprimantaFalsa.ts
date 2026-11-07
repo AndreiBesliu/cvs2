@@ -11,7 +11,10 @@ import type { AddressInfo, Socket } from 'node:net';
  * - `{"method":"get","params":{"ReqPrinterPara":1}}`: toată starea; `{"reqGcodeFile":1}`: lista (`retGcodeFileInfo2`);
  * - starea pe bucăți, cu temperaturile ca text („220.000000”), doar câmpurile schimbate;
  * - `pause` 1 / 0, `stop` 1 (7, apoi 4 la 0,8 s), `opGcodeFile` (9, apoi 1, iar legătura se închide la 50 ms, ca K1);
- * - imprimarea înaintează cu un procent la `pasMs`; la 100 % arată întâi timp rămas, apoi se încheie (0, 100 %, 0 s).
+ * - imprimarea înaintează cu un procent la `pasMs`; la 100 % arată întâi timp rămas, apoi se încheie (0, 100 %, 0 s);
+ * - din 3.6h, `POST /upload/<nume>` (multipart, câmpul `file`, ca OrcaSlicer), pe același port: fișierul intră în listă sub
+ *   numele lui din multipart, fără antete CORS; `urcarea('pierde')` răspunde la fel, dar nu-l mai pune în listă. Pe K1C
+ *   urcarea e pe 80; proba își mută cererea pe portul imprimantei false (`page.route`), aplicația rămâne pe 80.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -19,6 +22,9 @@ const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const DIR = '/usr/data/printer_data/gcodes/';
 
 export type FisierFals = { readonly name: string; readonly timeCost?: number; readonly material?: string };
+
+/** O urcare primită: calea cererii, câmpurile multipart, numele fișierului din multipart și conținutul lui. */
+export type UrcareFalsa = { readonly url: string; readonly campuri: readonly string[]; readonly nume: string | null; readonly text: string };
 
 export type OptiuniImprimantaFalsa = {
   readonly port?: number;
@@ -43,6 +49,10 @@ export interface ImprimantaFalsa {
   /** Câte bătăi ale inimii a trimis. */
   inimi(): number;
   stare(): Readonly<Record<string, string | number>>;
+  /** Urcările primite (`POST /upload/…`), în ordine. */
+  urcate(): readonly UrcareFalsa[];
+  /** `pierde`: urcarea primește 200, dar fișierul nu intră în listă. */
+  urcarea(fel: 'primeste' | 'pierde'): void;
   /** O eroare semnalată, ca `err` în stare (0: niciuna). */
   eroare(cod: number, cheie: number): void;
   taie(): void;
@@ -65,6 +75,28 @@ function cadru(op: number, date: Uint8Array): Buffer {
 
 const temp = (v: number): string => v.toFixed(6);
 
+/** Părțile unui corp multipart/form-data: câmpul, numele fișierului (dacă e unul) și octeții. */
+function multipart(corp: Buffer, tip: string): { camp: string; nume: string | null; date: Buffer }[] {
+  const m = /boundary=(?:"([^"]+)"|([^;\s]+))/.exec(tip);
+  if (!m) return [];
+  const granita = Buffer.from(`--${m[1] ?? m[2] ?? ''}`);
+  const parti: { camp: string; nume: string | null; date: Buffer }[] = [];
+  let i = corp.indexOf(granita);
+  while (i >= 0) {
+    const start = i + granita.length;
+    if (corp.subarray(start, start + 2).toString() === '--') break;
+    const j = corp.indexOf(granita, start);
+    if (j < 0) break;
+    // Fără CRLF-ul de după graniță și fără cel dinaintea următoarei.
+    const parte = corp.subarray(start + 2, j - 2);
+    const h = parte.indexOf('\r\n\r\n');
+    const antet = parte.subarray(0, h).toString('utf8');
+    parti.push({ camp: /; name="([^"]*)"/.exec(antet)?.[1] ?? '', nume: /; filename="([^"]*)"/.exec(antet)?.[1] ?? null, date: parte.subarray(h + 4) });
+    i = j;
+  }
+  return parti;
+}
+
 export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<ImprimantaFalsa> {
   const socketuri = new Set<Socket>();
   const trimitatori = new Set<(campuri: Readonly<Record<string, unknown>>) => void>();
@@ -72,7 +104,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   let conexiuni = 0;
   let okuri = 0;
   let inimi = 0;
-  const fisiere = opt.fisiere ?? [];
+  const fisiere: FisierFals[] = [...(opt.fisiere ?? [])];
+  const urcate: UrcareFalsa[] = [];
+  let pierde = false;
   const pasMs = opt.pasMs ?? 200;
   // Starea imprimantei, cum o trimite ea.
   const s: Record<string, string | number | Record<string, number>> = {
@@ -113,7 +147,25 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     }
   }, pasMs);
 
-  const server = createServer((_cerere, raspuns) => { raspuns.writeHead(426).end(); });
+  const server = createServer((cerere, raspuns) => {
+    const url = cerere.url ?? '';
+    if (cerere.method !== 'POST' || !url.startsWith('/upload/')) { raspuns.writeHead(426).end(); return; }
+    const bucati: Buffer[] = [];
+    cerere.on('data', (b: Buffer) => { bucati.push(b); });
+    cerere.on('end', () => {
+      const parti = multipart(Buffer.concat(bucati), String(cerere.headers['content-type'] ?? ''));
+      const f = parti.find((p) => p.camp === 'file');
+      urcate.push({ url, campuri: parti.map((p) => p.camp), nume: f?.nume ?? null, text: f?.date.toString('utf8') ?? '' });
+      if (f?.nume && !pierde) {
+        const nou: FisierFals = { name: f.nume, timeCost: 600, material: 'PLA' };
+        const k = fisiere.findIndex((x) => x.name === f.nume);
+        if (k >= 0) fisiere[k] = nou;
+        else fisiere.push(nou);
+      }
+      // Fără antete CORS (nemăsurat pe K1C): aplicația oricum nu citește răspunsul.
+      raspuns.writeHead(200, { 'Content-Type': 'application/json' }).end('{"code":0}');
+    });
+  });
   server.on('upgrade', (cerere, socket: Socket) => {
     const cheie = cerere.headers['sec-websocket-key'];
     if (typeof cheie !== 'string') { socket.destroy(); return; }
@@ -213,6 +265,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         okuri: () => okuri,
         inimi: () => inimi,
         stare: () => ({ ...s }) as Readonly<Record<string, string | number>>,
+        urcate: () => [...urcate],
+        urcarea: (fel) => { pierde = fel === 'pierde'; },
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         inchide: () => new Promise<void>((g) => {

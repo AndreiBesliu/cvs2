@@ -1005,6 +1005,16 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
   the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it
   closes the connection, and the window reconnects by itself. **Refresh** asks for the list again.
+- **Send a file…** (under the list) sends a `.gcode` from this computer to the printer, already sliced in Creality Print or
+  OrcaSlicer. First the window checks it on the computer: the printer it was sliced for, the nozzle, the material, the
+  temperatures, the estimated time and the thumbnail, then whether every move fits the printer’s bed (220 × 220 × 250 mm on a
+  K1C). A move outside the bed (with its line) or a file sliced for another printer gives a warning, and the button becomes
+  **Send anyway**; otherwise it is **Send**. **Another file…** picks a different one; **Cancel** (or `Escape`) closes the
+  window and stops a sending under way. The name loses its spaces, and a file already on the printer is never replaced: the
+  new one gets “-2” in its name. After sending, the window looks for it in the printer’s list; once found, **Start
+  printing…** opens the confirmation above (with the **The bed is clear** check), and **Close** leaves it on the printer. If it
+  does not arrive, the window says why (the printer does not answer on port 80, or the file is not in its list), with
+  **Try again**.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
   and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen.
 - **The frame log** shows what the window sent and what it received; **Copy the log** puts it on the clipboard, for a report.
