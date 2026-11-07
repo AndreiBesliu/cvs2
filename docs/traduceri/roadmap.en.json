@@ -973,6 +973,10 @@
       "ro": "Profilul pe orice contur",
       "en": "Profile on any contour"
     },
+    "551d992a22ab4c72": {
+      "ro": "Linia mediană",
+      "en": "Centre line"
+    },
     "5719f26b67d851c3": {
       "ro": "dopul intră; jocul pe linia de lipire",
       "en": "the plug fits; the play on the glue line"
@@ -1425,6 +1429,10 @@
       "ro": "oricând",
       "en": "any time"
     },
+    "82fe6ff856cce7c0": {
+      "ro": "Răspunsurile la cele cinci întrebări din ADR 0222 (linia mediană, 25.3↑), în formularul schiței (<https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu>): întâi **bugetul** (linia trasării, cu `main`, e la 557,1 / 550 kB: plafonul la 575, trasarea doar online, sau 550 și tăieri în altă parte), apoi calea (scheletul pe pixeli, ~3,5 kB, sau axa medială exactă, ~12 kB), capetele, părțile pline și buclele",
+      "en": "The answers to the five questions of ADR 0222 (the centre line, 25.3↑), in the sketch’s form (<https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu>): first the **budget** (the tracing line, with `main`, is at 557.1 / 550 kB: the cap at 575, tracing online only, or 550 with cuts elsewhere), then the method (the pixel skeleton, ~3.5 kB, or the exact medial axis, ~12 kB), the ends, the filled parts and the loops"
+    },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
@@ -1548,6 +1556,10 @@
     "90214645e1c0b62a": {
       "ro": "N axe din prima zi",
       "en": "N axes from day one"
+    },
+    "9067e766d77cdfcc": {
+      "ro": "**Linia mediană** (în lucru, fără mașină; ADR 0222, propus; worktree-ul `trasare`, ramura `wip/25.1-trasare`; pornită la „Da, 25.3↑”, după 25.2↑). Întâi `main` (`e9cf6ee`) unit în ramură (`e4eb7e4`): cu el, totalul e 557,1 / 550 kB (`main` singur 535,0; alb-negrul și culorile, 22,1), deci poarta mărimii cade; unirea și propunerea stau locale, neîmpinse, până la decizia bugetului. Cercetarea: ArtCAM și Carveco („Create centreline”, deschise sau bucle), CorelDRAW („Centerline Trace”), Inkscape (AutoTrace, GPL), LightBurn și Vectric fără; Zhang–Suen, axa medială, joncțiunile (Noris și alții, 2013). Măsurat: axa medială a V-carve-ului ar costa 9,2 kB în workerul trasării; un prototip pe pixeli (Zhang–Suen, cioturile, joncțiunile unite, centrul la marginile de 50 %) are topologia corectă pe 21 de trăsături de hârtie, linia la 0,04–0,30 px în medie, grosimea la 0,1 px. Schița: <https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu> (cinci întrebări, cu formular).",
+      "en": "**Centre line** (in progress, no machine; ADR 0222, proposed; the `trasare` worktree, branch `wip/25.1-trasare`; started on “Yes, 25.3↑”, after 25.2↑). First `main` (`e9cf6ee`) merged into the branch (`e4eb7e4`): with it, the total is 557.1 / 550 kB (`main` alone 535.0; black and white and colours, 22.1), so the size gate fails; the merge and the proposal stay local, not pushed, until the budget is decided. Research: ArtCAM and Carveco (“Create centreline”, open or loops), CorelDRAW (“Centerline Trace”), Inkscape (AutoTrace, GPL), LightBurn and Vectric without; Zhang–Suen, the medial axis, the junctions (Noris et al., 2013). Measured: the V-carve medial axis would cost 9.2 kB in the tracing worker; a pixel prototype (Zhang–Suen, the spurs, merged junctions, the centre at the 50 % edges) has the right topology on 21 strokes on paper, the line at 0.04–0.30 px on average, the width within 0.1 px. The sketch: <https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu> (five questions, with a form)."
     },
     "90d27c16310e9771": {
       "ro": "**Booleanul, adus din etapa 6** (fără mașină; ADR 0067; „Ok”, după decizia owner-ului: booleanul înaintea testului lui). Secțiunea Boolean din extensia barei: Unește, Scade (din prima formă aleasă se scoate ultima, aleasă cu Shift + clic), Intersectează, pe exact două forme închise. Rezultatul e exact (prin cavalier, pe contururile pe care le-ar tăia freza: liniile și arcele rămân, curbele intră ca arce la 0,001 mm) și înlocuiește cele două forme într-un singur pas; o gaură rămâne în aceeași piesă, cu profil interior (ca la import). Refuzurile se spun lângă butoane: o formă deschisă sau compusă, forme care nu se ating, nimic comun, nimic rămas. Prin `document.deseneaza` (care primește acum și ștergerile și găurile): pornirea neschimbată. Manualul are capitolul „Booleanul”. **Treceri:** (1) fațada cavalier (`booleanContururi`), modelul pur, acțiunea (ștergerea într-o singură funcție, comună cu „Șterge selecția”), secțiunea din extensie, manualul, probele pe hârtie (pătratele suprapuse: 175 / 25 / 75; dreptunghiul minus cercul: gaura cu arce de rază 10, același centru; cercurile: 2π·100 − lentila; o cubică: aria 195,4), două date greșite în probe (nu în cod), corectate; trei pași e2e greșiți (Shift + clic în listă, starea păstrată între reîncărcări, focusul săgeților), refăcuți; două mutații (operanzii scăderii, butonul Scade), prinse; fraza din manual despre unire, corectată.",
@@ -2149,6 +2161,10 @@
       "ro": "Regiunea păstrată, cu oracolul întâi",
       "en": "The kept region, oracle first"
     },
+    "c52fd169bdc91b4d": {
+      "ro": "la răspunsuri pornește codul",
+      "en": "the code starts on the answers"
+    },
     "c631eb99a8754857": {
       "ro": "**Jog, zero și palparea Z, pe mașina simulată** (ADR 0082; „Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). În panoul **Mașina**, secțiunea Poziționare: **Coordonatele de lucru** (G54–G59, citite de la mașină), jog-ul cu pași de 0,1–100 mm (diagonalele într-o singură mișcare, **Oprește jog-ul**), **Zero XY** / **Zero Z** și **Palpează Z** cu placa de contact (două atingeri, Z0 = atingerea minus grosimea, freza ridicată la capăt, modul mașinii pus la loc). Zero-ul și palparea se scriu în sistemul programului încărcat, cu numele lui pe buton; nepotrivirea cu cel activ se spune; lângă zero, unde e Z0 pentru programul exportat. Ce nu se poate acum e dezactivat, cu motivul (alarma, lucrarea, mașina în mișcare). Pe instanța de test, mașina simulată are placa la Z −25. **Treceri:** (1) emulatorul întâi (jog-ul, palparea, `WCO:` în rapoarte: fără el, un zero nu se vedea pe ecran), procedurile pure, sesiunea, panoul; prima palpare pe emulator a picat cu `error:9`: atingerea fină pleca cât retragerea (un jog) încă mergea, iar GRBL refuză G-code-ul în Jog, deci G-code-ul procedurilor pleacă doar pe un Idle proaspăt; mutațiile: 55 / 59, două echivalente scoase din cod, două prinse de probe noi (o repornire cât un zero așteaptă, un port fără banner); pe panou, 4 / 4 prinse de e2e.",
       "en": "**Jog, zero and Z probing, on the simulated machine** (ADR 0082; “Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). In the **Machine** panel, the Positioning section: **Work coordinates** (G54–G59, read from the machine), jog in steps of 0.1–100 mm (the diagonals as a single move, **Stop the jog**), **Zero XY** / **Zero Z** and **Probe Z** with the touch plate (two touches, Z0 = the touch minus the thickness, the bit lifted at the end, the machine’s mode restored). The zero and the probing are written to the loaded program’s system, named on the button; a mismatch with the active one is stated; next to the zero, where Z0 is for the exported program. What cannot be done now is disabled, with the reason (alarm, a running job, the machine moving). On the test instance, the simulated machine has the plate at Z −25. **Passes:** (1) the emulator first (jog, probing, `WCO:` in the reports: without it, a zero did not show on screen), the pure procedures, the session, the panel; the first probing on the emulator failed with `error:9`: the slow touch was sent while the back-off (a jog) was still running, and GRBL refuses G-code during a jog, so the procedures’ G-code goes only on a fresh Idle; mutations: 55 / 59, two equivalent ones removed from the code, two caught by new tests (a reset while a zero waits, a port without a banner); on the panel, 4 / 4 caught by e2e."
@@ -2500,6 +2516,10 @@
     "ea0986b31ece9b65": {
       "ro": "**Senderul, postul cu contracte, observabilitatea**, primul live",
       "en": "**The sender, the post with contracts, observability**, the first live"
+    },
+    "eada26ee76d0700f": {
+      "ro": "25.3↑ și unirea liniei trasării",
+      "en": "25.3↑ and merging the tracing line"
     },
     "eae21f7a71d700db": {
       "ro": "Copierea în rețea și pe cerc",

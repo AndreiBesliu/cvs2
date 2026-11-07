@@ -6820,3 +6820,24 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 - **Porțile:** tipurile (aplicația, extensia, funcțiile), importurile, licențele, suita unitară (8 656 trecute, 0 căzute),
   determinismul (279 de fișiere) și mărimile, corpusul Python (`--verifica`), e2e: trasarea (10) și importul (23).
 - **Pe canal:** `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>).
+
+## 2026-11-07 — Felia 25.3↑ pornită: linia mediană (ADR 0222, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.3↑” (owner-ul, la „Pornesc 25.3↑ (linia mediană)?”, după raportul feliei 25.2↑).
+**Started:** 07.11, 22:31. **Completed:** 07.11, 23:35 (cercetarea, ADR-ul și schița; codul lui 25.3↑ așteaptă răspunsurile).
+
+- **Întâi `main`:** `e9cf6ee` (imprimanta 3D 3.6g–3.6i, raportările 15.B↑b, DEVLOG-ul bibliotecii) unit în ramură (`e4eb7e4`;
+  ciocnirile doar la capetele documentelor comune). Pe rezultat: tipurile (și funcțiile), importurile, suita unitară (8 716
+  trecute, 0 căzute), determinismul (285 de fișiere); **mărimea: 557,1 / 550 kB**, deci poarta cade (`main` singur, pe un
+  build curat, 535,0; linia trasării, 22,1). Unirea și propunerea stau locale, neîmpinse: cu ele, CI-ul ramurii ar fi roșu.
+- **Cercetarea:** ArtCAM / Carveco („Create centreline”, cu vectori deschiși sau bucle), CorelDRAW („Centerline Trace”, două
+  presetări), Inkscape (AutoTrace, GPL / LGPL: nimic din el), LightBurn și Vectric fără linie mediană; Zhang–Suen (1984),
+  axa medială (Blum), joncțiunile (Noris și alții, 2013).
+- **Măsurat:** axa medială exactă a V-carve-ului (`axaMediala.ts` cu `delaunator` și `robust-predicates`) ar costa 9,2 kB
+  gzip în workerul trasării; un prototip pe pixeli (`.tmp/proto-mediana.ts`: transformarea distanței, Zhang–Suen, graful,
+  cioturile, joncțiunile unite, centrul la marginile de 50 %, curbele arcelor din 25.2↑), pe 21 de trăsături de hârtie:
+  topologia corectă în toate, linia la 0,04–0,30 px în medie (0,93 px la colțul unui L gros), grosimea la 0,1 px. Subțierea
+  în ordinea distanței, făcută pe rând, a mâncat miezurile de 2 px (un L de 6 px și-a pierdut brațul): respinsă.
+- **ADR 0222 propus**, cu schița <https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu> (bugetul la scară, macheta contururi / linii mediane din
+  prototip, măsurătorile, formularul care scrie `raspunsuri/owner`): cinci întrebări, întâi bugetul (575 kB, trasarea doar
+  online, sau 550 cu tăieri), apoi calea, capetele, părțile pline, buclele.
