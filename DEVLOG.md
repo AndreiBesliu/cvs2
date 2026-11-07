@@ -6276,3 +6276,34 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   1024 px: opțiunea „Ultima formă aleasă (Shift + clic)” și blocul „La intersecții” în panou; refuzurile, cu motivele lor (un
   cerc-cuțit în dreptunghi, formele care nu se întâlnesc); cercul mutat pe latura dreptunghiului îl taie în două forme, alese
   (semidiscul, din trei segmente, și restul), iar cercul rămâne neales și neschimbat.
+
+## 2026-11-07 — Felia 3.Xg, propunerea: biblioteca extensiilor (ADR 0230, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau ca plugin-ul nostru sa fie disponibil printr-o librarie. Fa asta intr-un worktree” (owner-ul, transmis de
+sesiunea principală, care a pornit linia).
+**Started:** 07.11, 15:20. **Completed:** 07.11, 15:47.
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\biblioteca`, ramura `wip/3.Xg-biblioteca`, din `main` `8003cb2`;
+  joncțiunile `node_modules` și `functions\node_modules` spre checkout-ul principal; e2e pe 4180, cu
+  `CNCVS2_E2E_RETEA=127.0.7`; ADR-urile 0230–0239; canalul `biblioteca` (nepublicat încă: nu e cod).
+- **Cercetarea:** gazda extensiilor de azi (`pachet.ts`, `Instalare.tsx`, `Extensii.tsx`, `depozit.ts`), construcția
+  pachetului (`construieste-trenulet.ts`, `impacheteaza-extensie.ts`), publicarea (ADR 0044: pe live doar un commit publicat
+  întreg pe test), hosting-ul (fără rescriere generală), CSP-ul (`connect-src 'self'`), precache-ul (`shared/precache.ts`),
+  GitHub Releases (fișierele lor nu au CORS după redirecționare).
+- **Măsurat:** pachetul 18.7.1, construit de două ori: 417 748 de octeți, 15 fișiere, aceeași amprentă (`7542bdac…`), ~0,9 s.
+  Poarta build-ului la `8003cb2`: 273 de fișiere identice în două build-uri, pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul
+  519,5 / 550, `/admin` 105,4 / 200; bucățile gazdei: `Extensii` 4,3 kB, `Instalare` 4,0 kB, `cadru` 4,7 kB (gzip 9).
+- **ADR 0230, propus:** biblioteca stă lângă aplicație, construită din repo la fiecare build (`extensii/biblioteca.json` →
+  `dist/extensii/catalog.json` și pachetul, cu amprenta în nume), în afara precache-ului și a plafonului; amprenta SHA-256 a
+  pachetului verificată înaintea citirii, apoi judecata de azi și potrivirea cu rândul din catalog; un conținut nou cere o
+  versiune nouă (o probă, pe amprenta manifestului); o versiune nouă ajunge cu publicarea aplicației, întâi pe test, apoi pe
+  live, aceiași octeți. În meniul Extensii, secțiunea Biblioteca: Instalează (fereastra de azi, apoi Deschide), Actualizează
+  (dintr-un clic, fereastra doar când versiunea nouă cere ceva în plus), Instalată; catalogul cerut la deschiderea meniului,
+  nu la pornire; fără rețea, extensiile instalate merg ca azi. Fișierul, adresa și linkul rămân, plus `#biblioteca=<id>`.
+  Pornirea neschimbată, ~2–3 kB în total. O felie, în trei treceri, ~4 h. Șapte întrebări, cu recomandarea întâi.
+- **Schița:** șase planșe, <https://claude.ai/artifact/GJgA4hRePmXFNPNNaQux3n>: meniul Extensii cu biblioteca (cinci stări, în
+  română și în engleză), instalarea, actualizarea, drumul unei versiuni noi, încrederea și mărimea la scară, întrebările cu
+  formularul (colecția `raspunsuri`, documentul `owner`; gol la publicare).
+- **În fișă:** rândul 3.Xg (în lucru) la capătul jurnalului și rândul răspunsurilor la capătul cozii owner-ului; ADR-ul în
+  index; traducerile (5 texte, `--verifica`: 649 / 0). Probele documentației și ale traducerilor: 38 / 38.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 3.Xg, cu probele scrise întâi. Nimic unit în `main`.
