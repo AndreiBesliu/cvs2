@@ -401,6 +401,10 @@
       "ro": "**Numele pluginului: Easy 3Draw** (fără mașină; ADR 0167; în worktree-ul `wip/trenulet`; „o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). Numele afișat, același în română și în engleză, netradus: în manifest (instalarea, meniul, fereastra, „Trimite la”, „Propus de”, originea lucrării) și în planificator (titlul paginii, antetele README-urilor, sfatul filei „Din cvs2”). Id-ul `trenulet` rămâne: 18.7.0 instalat peste 18.6.0 îi ia locul, cu circuitele lui. Rămân și numele tehnice și antetul G-code-ului (amprentele v18). Pachetul 18.7.0.",
       "en": "**The plugin’s name: Easy 3Draw** (no machine; ADR 0167; in the `wip/trenulet` worktree; “o sa vreau ca plugin-ul sa se numeasca Easy 3Draw”). The displayed name, the same in Romanian and in English, untranslated: in the manifest (the installation, the menu, the window, “Send to”, “Proposed by”, the job’s origin) and in the planner (the page title, the README headers, the hint of the “From cvs2” tab). The `trenulet` id stays: 18.7.0 installed over 18.6.0 takes its place, with its layouts. The technical names and the G-code header stay too (the v18 fingerprints). Package 18.7.0."
     },
+    "2649cbdef8e6d863": {
+      "ro": "înainte de unirea lui 3.6j",
+      "en": "before 3.6j is merged"
+    },
     "266e79f8cd60b40f": {
       "ro": "Trasarea din imagine; EPS și AI vechi, cu cititor propriu",
       "en": "Tracing from an image; old EPS and AI, with our own reader"
@@ -1321,10 +1325,6 @@
       "ro": "Operațiile în document",
       "en": "Operations in the document"
     },
-    "7c4cfbf1c679d758": {
-      "ro": "3.6j",
-      "en": "3.6j"
-    },
     "7c50450482c286a4": {
       "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",
       "en": "`nonzero` normalisation at the door (ADR 0036: the exact arrangement in doubles, without PathKit; replaces the plan's PathKit + R3 facade), loaded only on import"
@@ -1408,6 +1408,10 @@
     "824fb32478e4221b": {
       "ro": "oricând",
       "en": "any time"
+    },
+    "82d63779af58388a": {
+      "ro": "Proba plăcii pe K1C, feliată în cvs2 (ADR 0191; 3.6j, pe canalul `imprimanta`: <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>): în Proiectare, un dreptunghi de 40 × 20 mm, cu un cerc de 10 mm și o fantă de 12 × 2 mm (un dreptunghi cu colțurile de 1 mm) în el; în fereastra Imprimanta, **Din desen…**, înălțimea 3 mm, PLA, 0,20 Standard, apoi **Trimite la imprimantă** și pornirea. Cu șublerul: 40,0 și 20,0 (±0,2), 3,0 (±0,1), gaura puțin sub 10; primul strat lipit, pereții și fața de sus închise; pe ecranul imprimantei, miniatura și „stratul x din 15”. Dacă e la îndemână, și un cub de calibrare feliat în Creality Print, ca referință",
+      "en": "The test plate on the K1C, sliced in cvs2 (ADR 0191; 3.6j, on the `imprimanta` channel: <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>): in Design, a 40 × 20 mm rectangle with a 10 mm circle and a 12 × 2 mm slot (a rectangle with 1 mm corners) inside it; in the Printer window, **From drawing…**, height 3 mm, PLA, 0.20 Standard, then **Send to the printer** and start. With the caliper: 40.0 and 20.0 (±0.2), 3.0 (±0.1), the hole slightly under 10; the first layer stuck, the walls and the top face closed; on the printer screen, the thumbnail and “layer x of 15”. If at hand, also a calibration cube sliced in Creality Print, as a reference"
     },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
@@ -1889,10 +1893,6 @@
       "ro": "Vectori, noduri, boolean, offset, aliniere; Transformare și copiere",
       "en": "Vectors, nodes, boolean, offset, alignment; Transform and copy"
     },
-    "b20fcad5982bff0c": {
-      "ro": "înainte de placa de probă",
-      "en": "before the test plate"
-    },
     "b23a1b5bf5ce0cd1": {
       "ro": "**Importul EPS și AI ≤ 8, adus din etapa 9** (fără mașină; ADR 0115; decizia owner-ului din 07.10: „EPS și AI ≤ 8 prin cititor propriu, limitat”; subsesiune, în worktree-ul `wip/9.5-import-eps`). „Importă SVG / DXF / PDF / AI / EPS…” citește și EPS-ul (și cel binar, cu previzualizarea), și AI-ul de dinainte de Illustrator 9, care e PostScript; ușa o alege începutul fișierului, deci un `.ai` de la Illustrator 9 rămâne la PDF. Cititorul propriu execută un program PostScript scris pas cu pas: procedurile definite (cu `bind`), matricele, `gsave` / `save`, căile cu relativele și dreptunghiurile, pictarea. Buclele și condițiile, operatorii lipsă (de exemplu `arc`) și EPS-urile de la Illustrator 9 sunt refuzate, iar fereastra spune motivul (și operatorul). Un AI ≤ 8 se citește după nume: prologul și setup-ul sărite, operatorii AI, calea compusă, straturile ca nume (cel ascuns, sărit). Desenul stă unde e în fișier, ca la DXF; textul, imaginile (cu datele lor din fișier) și umbririle se sar, numărate. Refuzul vechi „e PostScript” al ușii PDF a dispărut. Totul la cerere: pornirea neschimbată, 97,6 (cu ușa 101,1 / 110); totalul 414,8 → 425,0 / 450 kB. **Treceri:** (1) întâi corpusul Python (7 fișiere, fiecare trecut prin Ghostscript și recitit cu PyMuPDF; CI-ul îl regenerează și cere aceiași octeți), apoi cititorul (numărătorile corpusului, toate din prima), dialogul, manualul, e2e-ul. Găsite de probele țintite: `push(...)` cu sute de mii de elemente depășea stiva JavaScript (`copy`, `aload`, `roll`), o sursă de imagine necunoscută trecea drept „fără date” (`?? 'nu'` pe `null`), iar `CS6` cădea în regula „Illustrator 88 e vechi”. Mutațiile: 62 / 62: 59 pe probele unitare (lexicul, antetul, interpretorul, imaginile, operatorii AI, ușa după antet) și 3 prin e2e, pe portul 4175 (straturile AI în dialog, operatorul din refuz, `.eps` în fereastra de fișiere); una a trecut întâi: prologul AI executat (I01), echivalentă pe corpus, fiindcă `%%BeginProlog` și `%%BeginProcSet` erau deja secțiuni sărite: probă nouă (un AI 3 cu cod în prolog, în afara blocurilor de proceduri). Șapte probe scrise înaintea rundei, din listă (datele hex prea scurte, binarul după CR LF, ASCII85 cu „>”, calea schimbată între `gsave` și `grestore`, `shfill`, calea compusă nonzero cu golul în același sens, operatorul AI necunoscut chiar înaintea lui `Lb`).",
       "en": "**EPS and AI ≤ 8 import, brought forward from stage 9** (no machine; ADR 0115; the owner’s decision of 07.10: “EPS și AI ≤ 8 prin cititor propriu, limitat”; a sub-session, in the `wip/9.5-import-eps` worktree). “Import SVG / DXF / PDF / AI / EPS…” now also reads EPS (including binary EPS, with its preview) and AI from before Illustrator 9, which is PostScript; the start of the file picks the reader, so an `.ai` from Illustrator 9 on stays with PDF. Our own reader runs PostScript written out step by step: defined procedures (with `bind`), matrices, `gsave` / `save`, paths with the relative operators and the rectangles, painting. Loops and conditions, missing operators (`arc`, for example) and EPS files from Illustrator 9 are refused, and the window gives the reason (and the operator). An AI ≤ 8 is read by name: the prolog and setup skipped, the AI operators, compound paths, layers as names (the hidden one skipped). The drawing stays where it is in the file, as for DXF; text, images (with their data in the file) and shadings are skipped and counted. The PDF reader’s old “it is PostScript” refusal is gone. All on demand: startup unchanged, 97.6 (with the door 101.1 / 110); total 414.8 → 425.0 / 450 kB. **Passes:** (1) the Python corpus first (7 files, each run through Ghostscript and read back with PyMuPDF; CI regenerates it and requires the same bytes), then the reader (the corpus counts, all right the first time), the dialog, the manual, e2e. Found by the targeted tests: `push(...)` with hundreds of thousands of elements overflowed the JavaScript stack (`copy`, `aload`, `roll`), an unknown image source passed for “no data” (`?? 'nu'` on `null`), and `CS6` fell under the “Illustrator 88 is old” rule. Mutations: 62 / 62: 59 on the unit tests (the lexer, the header, the interpreter, the images, the AI operators, the reader chosen by header) and 3 through e2e, on port 4175 (the AI layers in the dialog, the operator in the refusal, `.eps` in the file window); one survived at first: the AI prolog executed (I01), equivalent on the corpus, since `%%BeginProlog` and `%%BeginProcSet` were already skipped sections: a new test (an AI 3 with code in the prolog, outside the procedure blocks). Seven tests written before the round, from the list (hex data too short, binary data after CR LF, ASCII85 with “>”, the path changed between `gsave` and `grestore`, `shfill`, the nonzero compound path with the hole in the same direction, the unknown AI operator right before `Lb`)."
@@ -2056,6 +2056,10 @@
     "bdffd8ff08e09bbe": {
       "ro": "Documentul v0: schema valibot cu versiune și o singură ușă de încărcare, arborele variantei alese, jurnalul de comenzi, IndexedDB în tranzacție, registrul de acțiuni cu capabilitatea pe fiecare acțiune; plus lista de vectori, cu avertismentele cu roșu (`BRIEF.md` §16.3)",
       "en": "Document v0: versioned valibot schema with a single loading door, the tree of the chosen variant, the command journal, IndexedDB in a transaction, the action registry with a capability on every action; plus the vector list, with warnings in red (`BRIEF.md` §16.3)"
+    },
+    "be23bc75c119439a": {
+      "ro": "3.6j în `main` (proba că fișierul feliat în cvs2 se imprimă cum trebuie)",
+      "en": "3.6j in `main` (the proof that a file sliced in cvs2 prints as it should)"
     },
     "bef8fda2a0faf985": {
       "ro": "Tăierea cu o linie dreaptă",
@@ -2372,10 +2376,6 @@
     "e19682d0fc552357": {
       "ro": "Coborârea în buzunar",
       "en": "The descent into a pocket"
-    },
-    "e1c3271a53cdc585": {
-      "ro": "Piesele plate pe imprimantă (ADR 0191, acceptat): dacă e la îndemână, un cub de calibrare feliat în Creality Print și salvat ca `.gcode` pe calculator (fișierul de referință al probei; cu el se face și trimiterea din 3.6i)",
-      "en": "Flat parts on the printer (ADR 0191, accepted): if at hand, a calibration cube sliced in Creality Print and saved as `.gcode` on the computer (the reference file of the proof; it also serves for the sending in 3.6i)"
     },
     "e1f70cb6ba59f161": {
       "ro": "Senderul",

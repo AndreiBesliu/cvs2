@@ -6702,6 +6702,9 @@ va face update si pe main ulterior”.
   sesiunii principale). `origin/main` (`c73177f`) unit în ramură (`b29d6dc`; conflictul, doar în DEVLOG, cu ambele părți).
   **Porțile pe unire:** unit 8 701 (8 693 trecute, 0 căderi); build-ul determinist: totalul 550,8 / 600, pornirea
   101,8 (cu ușa 105,4 / 110); e2e 377 / 377 din prima (4 lucrători).
+- **Canalul `imprimanta`**, republicat din `e24fac9` (pagina și bucata felierii, identice cu build-ul local), până pe 07.12:
+  <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>. Ramura împinsă la `e24fac9`. În coada owner-ului (fișa), proba plăcii pe K1C, înaintea unirii lui 3.6j în
+  `main`.
 
 ## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
 
