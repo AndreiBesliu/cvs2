@@ -590,8 +590,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   workerului CAM nu se poate). **O citire a importului are semnalul ei** (`ContextImport.semnal`): o citire nouă, fișierul
   următor și demontarea dialogului (Renunță, Escape) opresc trasarea, cu workerul. **Proba nucleului e corpusul Python**
   (`test/oracles-py/trasare_corpus.py`, cu acoperirea exactă, valorile pe hârtie și martorul scikit-image, verificat și în CI)
-  plus o probă pe o margine zgomotoasă (acele de un pixel: 0,56–0,63 px). Urmează 25.2↑ (culorile) și 25.3↑ (linia mediană).
-  **Pornirea 101,6 (cu ușa 105,2 / 110 kB), totalul 531,8 / 550.**
+  plus o probă pe o margine zgomotoasă (acele de un pixel: 0,56–0,63 px).
+  **Trasarea pe culori (ADR 0221, felia 25.2↑)** gata pe 07.11, în același worktree (neunită; canalul `trasare`), cu toate
+  recomandările („Da, 1a–5a”): sursa „Culorile”, numărul automat sau 2–16, pastilele cu legarea prin tragere, granițele
+  comune (netezite o dată pentru amândouă culorile), o piesă pe culoare, aliniate, într-un pas. **Nucleul,
+  `src/trasare/culori.ts`, tot fără importuri din aplicație;** reducerea e în OKLab cu luminozitatea pe jumătate, pe pixelii
+  plini fără amestecurile de margine, cu multe clase unite după distanță (testul vechi de „pixel plin” pierdea liniile
+  subțiri ale logoului). **Piesele aduse împreună trec prin `ImportPregatit.impreuna`;** legăturile, prin
+  `src/trasare/legaturi.ts` (nucleul și pastilele). Urmează 25.3↑ (linia mediană).
+  **Pornirea 101,6 (cu ușa 105,2 / 110 kB), totalul 545,1 / 550 (felia 25.2↑: +9,7; rămân 4,9 kB).**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

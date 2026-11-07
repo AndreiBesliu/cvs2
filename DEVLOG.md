@@ -6483,7 +6483,7 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 ## 2026-11-07 — Felia 25.2↑: trasarea pe culori (ADR 0221, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0221).
-**Started:** 07.11, 19:24. **Completed:** —
+**Started:** 07.11, 19:24. **Completed:** 07.11, 22:20
 
 - **Răspunsurile:** toate recomandările: numărul culorilor automat (2–16 cu glisorul); legarea prin tragerea pastilei, cu
   „Dezleagă”; pe o imagine opacă, culoarea marginii e fundalul, nebifată; o piesă pe culoare, aliniate, cu rolul din panou;
@@ -6491,3 +6491,25 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   scos).
 - **Înainte de cod:** `main` (`63d6af5`, cu biblioteca extensiilor, 3.Xg) unit în ramură (`ffae8a1`; ciocnirile doar la
   capetele documentelor comune).
+- **Felia, în patru treceri** (`9fe27dd`, `c39e46c`, `672c199`, `88b2e10`, apoi documentele): (1) nucleul
+  (`src/trasare/culori.ts`) și corpusul lui pe hârtie (sectoarele cu joncțiunile, inelul, tabla de șah) plus logoul; reducerea
+  refăcută pe logo: testul „plin” de 3 × 3 pierdea liniile portocalii (0 din 414 pixeli), iar k-means împărțea umbrirea
+  griului la orice număr; acum pixelii plini fără amestecurile de margine, OKLab cu luminozitatea pe jumătate, 32 de clase
+  unite după distanță; paleta automată a logoului: griul, albastrul, portocaliul (48 de contururi, reuniunea la 0,02 % de
+  alb-negru); (2) calculul, ușa (o piesă pe culoare, din aceeași pagină, „<fișier> #hex”), `document.importa` cu piesele
+  aduse împreună (un pas de anulare, aliniate; lăsate pe planșă, centrul cutiei comune în punct), fereastra (sursa
+  „Culorile”, numărul, pastilele, legarea prin tragere și de la tastatură, imaginea pictată cu regiunea de sub maus),
+  manualul, e2e; (3)–(4) otrăvurile: prima rulare 42 / 51 (lotul s-a oprit cu trei înainte de capăt: `lot` cere numărul din
+  `verifica`); scăpatele: probe noi (șase culori; culoarea legată de fundal și fundalul legat de o culoare; marginile la
+  jumătate de pixel; golul lipit de margine printr-un colț; joncțiunea lângă un colț), o regulă nouă la atingerile în colț
+  (bucla ocolește aceeași vecină, fără unghiuri: proba trecea doar fiindcă bucla pornea din punct), cod scos (dreapta
+  joncțiunii verificată pe rest, cubica arcelor scurte), echivalente (ordinea paletei, acum după pondere; marginea
+  indicilor la teșiturile arcelor), otrava R03 reparată; a doua rulare 49 / 50, X04 prinsă cu proba ei: 50 / 50. Lista
+  25.1: T02, B02, E05 cu rândurile noi; T02 și B02, prinse.
+- **Măsurat:** corpusul pe culori la 0,08–0,22 px de hârtie, granițele comune cât pe hârtie; barele subțiri au aceeași arie
+  ca alb-negrul la 50 % (pierderea de ~3 % la Echilibrat e a curbelor comune, la capetele de 3 px); cu 4–8 culori, reuniunea
+  logoului stă cu 0,2–0,35 % sub alb-negru (joncțiunile dese); poza de 12 Mpx pe culori: 6,8–8,8 s, 320–370 MB. Totalul
+  545,1 / 550 kB (+9,7 față de `251355e`, pe un build curat; estimarea din ADR era 5–7), pornirea 101,6 / 110.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), importurile, licențele, suita unitară (8 656 trecute, 0 căzute),
+  determinismul (279 de fișiere) și mărimile, corpusul Python (`--verifica`), e2e: trasarea (10) și importul (23).
+- **Pe canal:** `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>).
