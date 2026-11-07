@@ -37,7 +37,7 @@ o('V08', T, '  const raza = Math.min(lipsa / (Math.SQRT2 - 1), Math.min(w, hh) /
 o('V09', T, '  if (fit.latime - 2 * fit.raza <= c.toleranta && fit.inaltime - 2 * fit.raza <= c.toleranta) return nepotrivit(st, Infinity);',
   '  if (fit.latime - 2 * fit.raza <= c.toleranta || fit.inaltime - 2 * fit.raza <= c.toleranta) return nepotrivit(st, Infinity);',
   'conversie', 'o fantă (laturi drepte pe o singură axă) e refuzată ca un cerc')
-o('V10', T, '  return a > peste ? a : Math.max(a, dinspre(B, A, Math.max(24, Math.ceil((4 * numarSegmente(A)) / Math.max(1, numarSegmente(B))))));',
+o('V10', 'src/model/abatereContur.ts', '  return a > peste ? a : Math.max(a, dinspre(B, A, Math.max(24, Math.ceil((4 * numarSegmente(A)) / Math.max(1, numarSegmente(B))))));',
   '  return a;', 'conversie', 'abaterea doar dinspre forma veche (un singur sens)')
 o('V11', T, "  if (p.operatii.some((o) => o.tip === 'gaurire' && o.noduri.includes(nod.id))) {",
   "  if (p.operatii.some((o) => o.tip === 'gaurire' && !o.noduri.includes(nod.id))) {", 'conversie', 'găurirea nu mai oprește dreptunghiul')

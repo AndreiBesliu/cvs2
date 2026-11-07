@@ -16,9 +16,9 @@ export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 /**
- * Panoul Convertește (ADR 0180 §8, §10, §11; felia 10.3↑d), adus la cerere din extensia barei: **Arce în locul curbelor** (cu
- * „și liniile scurte care stau pe un cerc”), **În cerc** și **În dreptunghi** („doar dacă e”, la toleranța rândului, sau cu
- * mărimea dată), fiecare cu butonul lui. Calculul e al workerului CAM, pe documentul din clipa clicului; conversia se aplică
+ * Panoul Convertește (ADR 0180 §8, §9, §10, §11; feliile 10.3↑d și 10.3↑e), adus la cerere din extensia barei: **Arce în locul
+ * curbelor** (cu „și liniile scurte care stau pe un cerc”), **Netezește** (cu „Păstrează liniile mai lungi de”), **În cerc** și
+ * **În dreptunghi** („doar dacă e”, la toleranța rândului, sau cu mărimea dată), fiecare cu butonul lui. Calculul e al workerului CAM, pe documentul din clipa clicului; conversia se aplică
  * prin acțiunea `document.converteste`, într-un pas de anulare, doar dacă desenul nu s-a schimbat între timp. Panoul spune ce
  * s-a făcut (formele, curbele, arcele, abaterea cea mai mare) și de ce au rămas celelalte.
  */
@@ -43,16 +43,19 @@ function textRezultat(c: CerereConversie, r: Extract<RezultatConversie, { ok: tr
   const n = String(r.convertite), a = numar(r.abatere, virgula);
   const dat = (c.fel === 'cerc' && c.diametru !== null) || (c.fel === 'dreptunghi' && c.marime !== null);
   const parti = [r.convertite === 0
-    ? t(c.fel === 'arce' ? (c.linii ? 'editare.conversie.nimic.arce-linii' : 'editare.conversie.nimic.arce') : 'editare.conversie.nimic')
+    ? t(c.fel === 'arce' ? (c.linii ? 'editare.conversie.nimic.arce-linii' : 'editare.conversie.nimic.arce') : c.fel === 'netezire' ? 'editare.conversie.nimic.netezire' : 'editare.conversie.nimic')
     : c.fel === 'arce'
       ? t('editare.conversie.gata.arce', { n, curbe: String(r.curbe), arce: String(r.arce), linii: String(r.linii), a })
-      : t(dat ? 'editare.conversie.gata.marime' : 'editare.conversie.gata', { n, a })];
-  if (r.nepotrivite > 0 && c.fel !== 'arce') {
+      : c.fel === 'netezire'
+        ? t('editare.conversie.gata.netezire', { n, linii: String(r.linii), curbe: String(r.curbe), a })
+        : t(dat ? 'editare.conversie.gata.marime' : 'editare.conversie.gata', { n, a })];
+  if (r.nepotrivite > 0 && (c.fel === 'cerc' || c.fel === 'dreptunghi')) {
     parti.push(t(c.fel === 'cerc' ? 'editare.conversie.nepotrivite.cerc' : 'editare.conversie.nepotrivite.dreptunghi', { n: String(r.nepotrivite) }));
     if (r.abatereMinima !== null) parti.push(t('editare.conversie.abatere-minima', { a: numar(r.abatereMinima, virgula) }));
   }
   if (r.operatie > 0) parti.push(t('editare.conversie.operatie', { n: String(r.operatie) }));
-  if (r.sarite > 0) parti.push(t(c.fel === 'arce' ? 'editare.conversie.sarite.arce' : 'editare.conversie.sarite', { n: String(r.sarite) }));
+  const sarite = c.fel === 'arce' ? 'editare.conversie.sarite.arce' : c.fel === 'netezire' ? 'editare.conversie.sarite.netezire' : 'editare.conversie.sarite';
+  if (r.sarite > 0) parti.push(t(sarite, { n: String(r.sarite) }));
   return parti.join(' ');
 }
 
@@ -67,6 +70,8 @@ export function PanouConversie({ doc, selectie, onConverteste, onInchide }: {
   const virgula = useLimba() === 'ro';
   const [tolArce, setTolArce] = useState(() => textNumar(0.01, virgula));
   const [linii, setLinii] = useState(true);
+  const [tolNetezire, setTolNetezire] = useState(() => textNumar(0.01, virgula));
+  const [pastreaza, setPastreaza] = useState(() => textNumar(5, virgula));
   const [modCerc, setModCerc] = useState<'daca' | 'diametru'>('daca');
   const [tolCerc, setTolCerc] = useState(() => textNumar(0.1, virgula));
   const [diametru, setDiametru] = useState(() => textNumar(8, virgula));
@@ -86,6 +91,9 @@ export function PanouConversie({ doc, selectie, onConverteste, onInchide }: {
   const d = marime(diametru), l = marime(latime), h = marime(inaltime);
   // Fiecare bloc își are cererea (sau motivul pentru care butonul lui stă oprit).
   const cerereArce: CerereConversie | null = ta === null ? null : { fel: 'arce', alese, toleranta: ta, linii };
+  const tn = toleranta(tolNetezire), lp = marime(pastreaza);
+  const cerereNetezire: CerereConversie | null = tn === null || lp === null ? null : { fel: 'netezire', alese, toleranta: tn, pastreaza: lp };
+  const motivNetezire = tn === null ? t('editare.conversie.motiv.toleranta') : lp === null ? t('editare.conversie.motiv.valoare') : null;
   const cerereCerc: CerereConversie | null = modCerc === 'daca'
     ? (tc === null ? null : { fel: 'cerc', alese, toleranta: tc, diametru: null })
     : (d === null ? null : { fel: 'cerc', alese, toleranta: TOLERANTA_MAXIMA, diametru: d });
@@ -154,6 +162,26 @@ export function PanouConversie({ doc, selectie, onConverteste, onInchide }: {
         {cerereArce ? null : <p className="motiv-retea">{t('editare.conversie.motiv.toleranta')}</p>}
         <div className="butoane-retea">
           <button type="button" data-conversie="arce" disabled={!cerereArce || opreste} onClick={() => { ruleaza(cerereArce); }}>{t('editare.conversie.arce.buton')}</button>
+        </div>
+      </fieldset>
+      <fieldset className="campuri-taiere">
+        <legend>{t('editare.conversie.netezire')}</legend>
+        <p className="stare-taiere">{t('editare.conversie.netezire.text')}</p>
+        <label className="rand-taiere" title={t('editare.conversie.toleranta.titlu')}>
+          <span aria-hidden="true" />
+          <span>{t('editare.conversie.toleranta')}</span>
+          {camp(tolNetezire, setTolNetezire, 'toleranta-netezire', t('editare.conversie.toleranta'))}
+          <span>mm</span>
+        </label>
+        <label className="rand-taiere" title={t('editare.conversie.netezire.pastreaza.titlu')}>
+          <span aria-hidden="true" />
+          <span>{t('editare.conversie.netezire.pastreaza')}</span>
+          {camp(pastreaza, setPastreaza, 'pastreaza', t('editare.conversie.netezire.pastreaza'))}
+          <span>mm</span>
+        </label>
+        {motivNetezire ? <p className="motiv-retea">{motivNetezire}</p> : null}
+        <div className="butoane-retea">
+          <button type="button" data-conversie="netezire" disabled={!cerereNetezire || opreste} onClick={() => { ruleaza(cerereNetezire); }}>{t('editare.conversie.netezire.buton')}</button>
         </div>
       </fieldset>
       <fieldset className="campuri-taiere">

@@ -585,11 +585,16 @@ pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vect
 %% acopera: editare.conversie, document.converteste
 
 **Convertește** (butonul cu poligonul care devine cerc, lângă Taie, în extensia barei) schimbă forma formelor alese, fără să
-le schimbe locul, numele sau operațiile. Panoul are trei blocuri, fiecare cu butonul lui:
+le schimbe locul, numele sau operațiile. Panoul are patru blocuri, fiecare cu butonul lui:
 - **Arce în locul curbelor**: fiecare curbă devine arce și linii, fără să se abată de ea mai mult decât **toleranța**
   (implicit 0,01 mm); liniile și arcele rămân. Cu **și liniile scurte care stau pe un cerc** (bifată implicit), un șir de
   linii scurte ale căror vârfuri stau pe un cerc (o polilinie dintr-un DXF) devine un arc, de cel mult o jumătate de cerc;
   colțurile (unde drumul se întoarce cu peste 30°) și liniile lungi rămân.
+- **Netezește**: șirurile de linii scurte (o polilinie dintr-un DXF, treptele unei trasări) devin curbe netede, fără să se
+  abată de ele mai mult decât **toleranța** (implicit 0,01 mm). Liniile mai lungi de **Păstrează liniile mai lungi de**
+  (implicit 5 mm), arcele și curbele rămân, iar curba nouă se leagă de ele fără frântură; colțurile ascuțite (unde drumul se
+  întoarce cu peste 60°) rămân colțuri. Treptele mai mici decât de patru ori toleranța nu sunt colțuri: ca o trasare în
+  trepte să devină o curbă, alege o toleranță cât treptele.
 - **În cerc**: **doar dacă e cerc** (toleranța implicită 0,1 mm), forma devine cercul care trece prin nodurile ei, dacă stă
   toată la cel mult toleranța de el: un cerc Ø100 desenat cu 64 de laturi rămâne Ø100 (laturile lui se abat de cerc cu
   0,06 mm). **Cu diametrul** dat (implicit 8 mm), orice formă închisă devine cercul acela, în centrul cutiei ei: semnele de

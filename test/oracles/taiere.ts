@@ -13,6 +13,8 @@
  * Felia 10.3↑c: decuparea (ce rămâne e de partea păstrată, o acoperă, cu aria tăiată de graniță).
  * Felia 10.3↑d: conversia (fiecare formă neschimbată sau devenită ce s-a cerut: fără cubice, un cerc, un dreptunghi; la cel
  * mult toleranța de cea veche, ca distanță Hausdorff măsurată din nou; cu mărimea dată, centrul în centrul cutiei vechi).
+ * Felia 10.3↑e: netezirea (la cel mult toleranța; arcele, curbele și liniile mai lungi de „Păstrează”, neschimbate; colțurile
+ * ascuțite, peste 60° pe 4 × toleranța, vârfuri; cubicele noi doar între vârfuri vechi; nicio frântură ascuțită nouă).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -155,9 +157,28 @@ function distanta(q: P, s: Seg): number {
   return Math.min(best, Math.hypot(p.x - q.x, p.y - q.y));
 }
 
+/**
+ * O margine inferioară ieftină a distanței de la q la segment: exactă la linie; la arc, ||q − c| − r|; la cubică, distanța până
+ * la cutia punctelor de control (curba stă în învelitoarea lor convexă, deci în cutie).
+ */
+function margineJos(q: P, s: Seg): number {
+  if (s.fel === 'L') return distanta(q, s);
+  if (s.fel === 'A') return Math.abs(Math.hypot(q.x - s.c.x, q.y - s.c.y) - s.r);
+  const x0 = Math.min(s.a.x, s.c1.x, s.c2.x, s.b.x), x1 = Math.max(s.a.x, s.c1.x, s.c2.x, s.b.x);
+  const y0 = Math.min(s.a.y, s.c1.y, s.c2.y, s.b.y), y1 = Math.max(s.a.y, s.c1.y, s.c2.y, s.b.y);
+  return Math.hypot(Math.max(0, x0 - q.x, q.x - x1), Math.max(0, y0 - q.y, q.y - y1));
+}
+
+/** Distanța de la q la forme: segmentele în ordinea marginii lor de jos, cele care n-o pot bate pe cea găsită, sărite. */
 export function distantaLaForme(q: P, forme: readonly FormaOracol[]): number {
+  const cand: Array<{ readonly s: Seg; readonly lb: number }> = [];
+  for (const f of forme) for (const s of f.seg) cand.push({ s, lb: margineJos(q, s) });
+  cand.sort((u, v) => u.lb - v.lb);
   let best = Infinity;
-  for (const f of forme) for (const s of f.seg) best = Math.min(best, distanta(q, s));
+  for (const c of cand) {
+    if (c.lb >= best) break;
+    best = Math.min(best, c.s.fel === 'L' ? c.lb : distanta(q, c.s));
+  }
   return best;
 }
 
@@ -516,7 +537,9 @@ function departare(a: FormaOracol, b: FormaOracol, n = 40): number {
 
 /** Distanța Hausdorff dintre două forme, în ambele sensuri, măsurată de oracol. */
 export function hausdorff(a: FormaOracol, b: FormaOracol): number {
-  return Math.max(departare(a, b), departare(b, a));
+  // Pe o formă cu multe segmente scurte, mai puține eșantioane pe segment: segmentele sunt deja scurte.
+  const n = (f: FormaOracol): number => Math.max(6, Math.min(40, Math.ceil(600 / Math.max(1, f.seg.length))));
+  return Math.max(departare(a, b, n(a)), departare(b, a, n(b)));
 }
 
 /** Cutia unei forme, exactă: capetele, punctele arcelor de pe axe (în baleiajul lor), rădăcinile derivatei cubicelor. */
@@ -595,10 +618,12 @@ const identice = (a: FormaOracol, b: FormaOracol): boolean => JSON.stringify(a) 
 export function judecaConversia(o: {
   readonly inainte: readonly FormaOracol[];
   readonly dupa: readonly FormaOracol[];
-  readonly fel: 'arce' | 'cerc' | 'dreptunghi';
+  readonly fel: 'arce' | 'cerc' | 'dreptunghi' | 'netezire';
   readonly toleranta: number;
   readonly diametru?: number | null;
   readonly marime?: { readonly latime: number; readonly inaltime: number } | null;
+  /** La netezire: liniile mai lungi de atât (în lume) rămân. */
+  readonly pastreaza?: number | null;
 }): { readonly rau: string[]; readonly schimbate: number; readonly abatere: number } {
   const rau: string[] = [];
   let schimbate = 0, abatere = 0;
@@ -610,8 +635,9 @@ export function judecaConversia(o: {
     schimbate++;
     const e = `elementul ${k}`;
     if (o.fel === 'arce' && b.seg.some((s) => s.fel === 'C')) rau.push(`${e}: a rămas cu o cubică`);
-    if (o.fel === 'arce' && b.inchis !== a.inchis) rau.push(`${e}: s-a ${b.inchis ? 'închis' : 'deschis'}`);
-    if (o.fel !== 'arce' && !a.inchis) rau.push(`${e}: o cale deschisă a devenit ${o.fel}`);
+    if ((o.fel === 'arce' || o.fel === 'netezire') && b.inchis !== a.inchis) rau.push(`${e}: s-a ${b.inchis ? 'închis' : 'deschis'}`);
+    if (o.fel === 'netezire') for (const x of judecaNetezirea(a, b, o.toleranta, o.pastreaza ?? Infinity)) rau.push(`${e}: ${x}`);
+    if (o.fel !== 'arce' && o.fel !== 'netezire' && !a.inchis) rau.push(`${e}: o cale deschisă a devenit ${o.fel}`);
     const cerc = o.fel === 'cerc' ? cerculFormei(b) : null;
     const drept = o.fel === 'dreptunghi' ? dreptunghiulFormei(b) : null;
     if (o.fel === 'cerc' && !cerc) rau.push(`${e}: nu e un cerc`);
@@ -634,4 +660,95 @@ export function judecaConversia(o: {
     if (h > o.toleranta + 1e-6) rau.push(`${e}: abaterea ${h} trece de toleranța ${o.toleranta}`);
   }
   return { rau, schimbate, abatere };
+}
+
+// ——— Felia 10.3↑e: netezirea ———
+
+/** Pragul colțului ascuțit al netezirii (ADR 0180 §9, „la cod”): 60°, măsurat pe 4 × toleranța de fiecare parte. */
+const COLT_NETEZIRE = Math.PI / 3;
+const SCARA_NETEZIRE = 4;
+
+const subP = (a: P, b: P): P => ({ x: a.x - b.x, y: a.y - b.y });
+const lung = (v: P): number => Math.hypot(v.x, v.y);
+const intoarcere = (u: P, v: P): number => Math.atan2(Math.abs(u.x * v.y - u.y * v.x), u.x * v.x + u.y * v.y);
+const acelasi = (p: P, q: P): boolean => lung(subP(p, q)) <= 1e-9 * Math.max(1, lung(p));
+
+/** Tangenta unui segment (sensul de mers), la început sau la capăt. */
+function tangentaSeg(s: Seg, capat: boolean): P {
+  if (s.fel === 'L') return subP(s.b, s.a);
+  if (s.fel === 'A') {
+    const u = s.u0 + (capat ? s.du : 0), sg = s.du < 0 ? -1 : 1;
+    return { x: -Math.sin(u) * sg, y: Math.cos(u) * sg };
+  }
+  if (!capat) return lung(subP(s.c1, s.a)) > 1e-12 ? subP(s.c1, s.a) : lung(subP(s.c2, s.a)) > 1e-12 ? subP(s.c2, s.a) : subP(s.b, s.a);
+  return lung(subP(s.b, s.c2)) > 1e-12 ? subP(s.b, s.c2) : lung(subP(s.b, s.c1)) > 1e-12 ? subP(s.b, s.c1) : subP(s.b, s.a);
+}
+
+/**
+ * Punctul de la distanța D de vârful i, mergând doar pe linii scurte (înainte sau înapoi), sau null dacă șirul lor se termină
+ * mai devreme (capătul căii, o linie lungă, un arc, o curbă): acolo întoarcerea nu se judecă.
+ */
+function laDistanta(f: FormaOracol, i: number, D: number, sens: 1 | -1, scurta: (s: Seg) => boolean): P | null {
+  const m = f.seg.length;
+  let rest = D;
+  for (let pas = 0; pas < m; pas++) {
+    const k = sens > 0 ? i + pas : i - 1 - pas;
+    if (!f.inchis && (k < 0 || k >= m)) return null;
+    const s = f.seg[((k % m) + m) % m] as Seg;
+    if (!scurta(s)) return null;
+    const l = lung(subP(s.b, s.a));
+    if (l >= rest) {
+      const t = rest / l;
+      return sens > 0 ? { x: s.a.x + (s.b.x - s.a.x) * t, y: s.a.y + (s.b.y - s.a.y) * t } : { x: s.b.x + (s.a.x - s.b.x) * t, y: s.b.y + (s.a.y - s.b.y) * t };
+    }
+    rest -= l;
+  }
+  return null;
+}
+
+/** Netezirea unei forme, judecată față de cea veche (lista abaterilor; goală = bună). Hausdorff-ul îl măsoară judecata comună. */
+export function judecaNetezirea(a: FormaOracol, b: FormaOracol, tol: number, pastreaza: number): string[] {
+  const rau: string[] = [];
+  const D = SCARA_NETEZIRE * tol;
+  const scurta = (s: Seg): boolean => s.fel === 'L' && lung(subP(s.b, s.a)) <= pastreaza;
+  const varfuriA = a.seg.map((s) => s.a).concat(a.inchis ? [] : a.seg.length ? [(a.seg[a.seg.length - 1] as Seg).b] : []);
+  const esteVarfA = (p: P): boolean => varfuriA.some((q) => acelasi(p, q));
+  const varfuriB = b.seg.map((s) => s.a).concat(b.inchis ? [] : b.seg.length ? [(b.seg[b.seg.length - 1] as Seg).b] : []);
+  const esteVarfB = (p: P): boolean => varfuriB.some((q) => acelasi(p, q));
+  // Ce trebuie să rămână: arcele, curbele, liniile lungi (peste „Păstrează”, cu o margine), întocmai.
+  for (const s of a.seg) {
+    const pastrat = s.fel !== 'L' || lung(subP(s.b, s.a)) > pastreaza * (1 + 1e-9);
+    if (!pastrat) continue;
+    const gasit = b.seg.some((t) => t.fel === s.fel && acelasi(t.a, s.a) && acelasi(t.b, s.b)
+      && (t.fel !== 'A' || s.fel !== 'A' || (Math.abs(t.du - s.du) <= 1e-9 && acelasi(t.c, s.c)))
+      && (t.fel !== 'C' || s.fel !== 'C' || (acelasi(t.c1, s.c1) && acelasi(t.c2, s.c2))));
+    if (!gasit) rau.push(`segmentul păstrat ${s.fel} (${s.a.x.toFixed(4)}, ${s.a.y.toFixed(4)}) → (${s.b.x.toFixed(4)}, ${s.b.y.toFixed(4)}) lipsește`);
+  }
+  // Cubicele noi leagă vârfuri vechi.
+  for (const t of b.seg) {
+    if (t.fel !== 'C' || a.seg.some((s) => s.fel === 'C' && acelasi(s.a, t.a) && acelasi(s.b, t.b))) continue;
+    if (!esteVarfA(t.a) || !esteVarfA(t.b)) { rau.push(`o cubică nouă nu pleacă și nu ajunge în vârfuri vechi (${t.a.x.toFixed(4)}, ${t.a.y.toFixed(4)})`); break; }
+  }
+  // Colțurile ascuțite (pe scara D, doar unde șirul de linii scurte ajunge de fiecare parte) rămân vârfuri.
+  const m = a.seg.length;
+  for (let i = a.inchis ? 0 : 1; i < (a.inchis ? m : m); i++) {
+    const v = (a.seg[i % m] as Seg).a;
+    const p0 = laDistanta(a, i, D, -1, scurta), p1 = laDistanta(a, i, D, 1, scurta);
+    if (!p0 || !p1) continue;
+    const u = intoarcere(subP(v, p0), subP(p1, v));
+    if (u > COLT_NETEZIRE + Math.PI / 180 && !esteVarfB(v)) rau.push(`colțul de ${((u * 180) / Math.PI).toFixed(1)}° din (${v.x.toFixed(4)}, ${v.y.toFixed(4)}) a dispărut`);
+  }
+  // Nicio frântură ascuțită nouă: unde forma nouă se frânge cu peste 61°, și cea veche se frângea acolo cu peste 59°.
+  const mb = b.seg.length;
+  for (let j = b.inchis ? 0 : 1; j < mb; j++) {
+    const prev = b.seg[(j - 1 + mb) % mb] as Seg, cur = b.seg[j] as Seg;
+    const u = intoarcere(tangentaSeg(prev, true), tangentaSeg(cur, false));
+    if (u <= COLT_NETEZIRE + Math.PI / 180) continue;
+    const k = a.seg.findIndex((s) => acelasi(s.a, cur.a));
+    const vechi = k < 0 || (!a.inchis && k === 0) ? 0 : intoarcere(tangentaSeg(a.seg[(k - 1 + m) % m] as Seg, true), tangentaSeg(a.seg[k] as Seg, false));
+    if (vechi <= COLT_NETEZIRE - Math.PI / 180) rau.push(`o frântură nouă de ${((u * 180) / Math.PI).toFixed(1)}° în (${cur.a.x.toFixed(4)}, ${cur.a.y.toFixed(4)})`);
+  }
+  // Pe o cale închisă, vârful 0 rămâne primul.
+  if (a.inchis && a.seg[0] && b.seg[0] && !acelasi(a.seg[0].a, b.seg[0].a)) rau.push('vârful 0 al căii închise s-a mutat');
+  return rau;
 }

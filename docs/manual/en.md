@@ -604,12 +604,17 @@ placed several times on the sheet is not cut from here. Each cut (**Cut vectors*
 %% acopera: editare.conversie, document.converteste
 
 **Convert** (the button with the polygon turning into a circle, next to Cut, in the bar's extension) changes the form of the
-chosen shapes without changing their place, their names or their operations. The panel has three blocks, each with its
+chosen shapes without changing their place, their names or their operations. The panel has four blocks, each with its
 button:
 - **Arcs instead of curves**: each curve becomes arcs and lines, straying from it no more than the **tolerance** (0.01 mm by
   default); lines and arcs stay. With **and the short lines lying on a circle** (ticked by default), a run of short lines
   whose vertices lie on a circle (a polyline from a DXF) becomes an arc, of at most half a circle; corners (where the path
   turns by more than 30°) and long lines stay.
+- **Smooth**: runs of short lines (a polyline from a DXF, the steps of a trace) become smooth curves, straying from them no
+  more than the **tolerance** (0.01 mm by default). Lines longer than **Keep lines longer than** (5 mm by default), arcs and
+  curves stay, and the new curve joins them without a kink; sharp corners (where the path turns by more than 60°) stay
+  corners. Steps smaller than four times the tolerance are not corners: for a stepped trace to become a curve, choose a
+  tolerance as large as the steps.
 - **Into a circle**: **only if it is a circle** (tolerance 0.1 mm by default), the shape becomes the circle through its
   nodes, if all of it lies within the tolerance of it: a Ø100 circle drawn with 64 sides stays Ø100 (its sides stray from the
   circle by 0.06 mm). **With the diameter** given (8 mm by default), any closed shape becomes that circle, at the centre of

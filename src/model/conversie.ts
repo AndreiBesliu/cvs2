@@ -13,6 +13,8 @@
  * - **Arce:** fiecare cubică devine linii și arce sub toleranță (biarcele, ADR 0033); cu „și liniile scurte”, un șir de linii
  *   ale căror vârfuri stau pe un cerc devine un arc prin primul, mijlocul și ultimul vârf (cel mult 180°), cât nu trece de
  *   toleranță; un vârf în care drumul se întoarce cu peste 30° e un colț și rămâne. Cercurile și dreptunghiurile rămân.
+ * - **Netezește** (felia 10.3↑e, `netezire.ts`): șirurile de linii scurte devin cubice netede, sub toleranță; colțurile,
+ *   liniile mai lungi de „Păstrează”, arcele și curbele rămân.
  * Căile deschise (la cerc și dreptunghi), piesele puse de mai multe ori și elementele întinse neuniform (la arce) se sar.
  */
 import { cubicaInArce } from '../geom/biarce.ts';
@@ -26,6 +28,8 @@ import { RAZA_MAXIMA_ARC } from '../geom/toleranta.ts';
 import type { Document, ElementNod, FormaDoc, Nod, Piesa, VarfDoc } from './document.ts';
 import { conturElement } from './forme.ts';
 import { elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
+import { abatere } from './abatereContur.ts';
+import { netezesteCale } from './netezire.ts';
 import { punctPe } from './reparare.ts';
 import { TOLERANTA_MAXIMA, TOLERANTA_MINIMA } from './verificareLimite.ts';
 
@@ -35,9 +39,11 @@ export type CerereConversie =
   /** În cerc: doar dacă e (diametrul null, sub toleranță) sau cu diametrul dat. */
   | { readonly fel: 'cerc'; readonly alese: readonly string[]; readonly toleranta: number; readonly diametru: number | null }
   /** În dreptunghi: doar dacă e (mărimea null, sub toleranță) sau cu mărimea dată. */
-  | { readonly fel: 'dreptunghi'; readonly alese: readonly string[]; readonly toleranta: number; readonly marime: { readonly latime: number; readonly inaltime: number } | null };
+  | { readonly fel: 'dreptunghi'; readonly alese: readonly string[]; readonly toleranta: number; readonly marime: { readonly latime: number; readonly inaltime: number } | null }
+  /** Netezește: șirurile de linii scurte devin cubice; `pastreaza`: liniile mai lungi de atât (mm) rămân linii. */
+  | { readonly fel: 'netezire'; readonly alese: readonly string[]; readonly toleranta: number; readonly pastreaza: number };
 
-/** `nimic-ales`, `toleranta` (în afara 0,001 … 1 mm), `valoare` (un diametru sau o mărime care nu e un număr pozitiv). */
+/** `nimic-ales`, `toleranta` (în afara 0,001 … 1 mm), `valoare` (un diametru, o mărime sau „Păstrează” care nu e un număr pozitiv). */
 export type MotivConversie = 'nimic-ales' | 'toleranta' | 'valoare';
 
 export type RezultatConversie =
@@ -55,7 +61,7 @@ export type RezultatConversie =
     readonly operatie: number;
     /** Abaterea cea mai mare a formelor convertite, măsurată, în mm (0 la mărimea dată). */
     readonly abatere: number;
-    /** La arce: câte curbe s-au înlocuit și câte arce și linii au ieșit. */
+    /** La arce: câte curbe s-au înlocuit și câte arce și linii au ieșit; la netezire: câte linii s-au înlocuit și câte curbe au ieșit. */
     readonly curbe: number;
     readonly arce: number;
     readonly linii: number;
@@ -72,37 +78,6 @@ const SIR_MAXIM = 256;
 const dist = (p: Punct, q: Punct): number => Math.hypot(p.x - q.x, p.y - q.y);
 const pozitiv = (x: number): boolean => Number.isFinite(x) && x > 0;
 const translatie = (x: number, y: number): Matrice => ({ a: 1, b: 0, c: 0, d: 1, e: x, f: y });
-
-// ——— Măsurarea abaterii ———
-
-/** Cea mai mare distanță de la A la B: eșantioane pe fiecare segment, fiecare maxim local rafinat cu secțiunea de aur. */
-function dinspre(A: Contur, B: Contur, k: number): number {
-  let best = 0;
-  for (let i = 0; i < numarSegmente(A); i++) {
-    const g = segment(A, i);
-    const f = (t: number): number => distantaLaContur(punctPe(g, t), B);
-    const d = Array.from({ length: k + 1 }, (_, j) => f(j / k));
-    for (let j = 0; j <= k; j++) {
-      const dj = d[j] as number;
-      if (dj < (d[j - 1] ?? -1) || dj < (d[j + 1] ?? -1)) continue;
-      let lo = Math.max(0, (j - 1) / k), hi = Math.min(1, (j + 1) / k), m = dj;
-      for (let it = 0; it < 24; it++) {
-        const t1 = lo + (hi - lo) * 0.382, t2 = lo + (hi - lo) * 0.618;
-        const f1 = f(t1), f2 = f(t2);
-        m = Math.max(m, f1, f2);
-        if (f1 < f2) lo = t1; else hi = t2;
-      }
-      best = Math.max(best, m);
-    }
-  }
-  return best;
-}
-
-/** Abaterea Hausdorff, în ambele sensuri; `peste`: dacă primul sens trece deja de el, al doilea nu se mai măsoară. */
-function abatere(A: Contur, B: Contur, peste = Infinity): number {
-  const a = dinspre(A, B, 24);
-  return a > peste ? a : Math.max(a, dinspre(B, A, Math.max(24, Math.ceil((4 * numarSegmente(A)) / Math.max(1, numarSegmente(B))))));
-}
 
 // ——— În cerc ———
 
@@ -376,6 +351,12 @@ function nepotrivit(st: Stare, dev: number): null {
 
 /** Un element convertit, sau null dacă rămâne cum e (numărat, după caz). */
 function convertesteElement(e: ElementLume, nod: ElementNod, p: Piesa, c: CerereConversie, st: Stare): ElementNod | null {
+  // Netezirea lucrează pe vârfurile elementului, cu matricea lui: n-are nevoie de conturul în lume.
+  if (c.fel === 'netezire') {
+    if (nod.forma.tip !== 'cale') return null;
+    const varfuri = netezesteCale(nod.forma, e.matrice, c.toleranta, c.pastreaza, st);
+    return varfuri ? { ...nod, forma: { ...nod.forma, varfuri } } : null;
+  }
   let w: Contur;
   try {
     w = conturElement(e);
@@ -436,6 +417,7 @@ export function converteste(doc: Document, c: CerereConversie, indexFoaie = 0): 
   if (!(c.toleranta >= TOLERANTA_MINIMA && c.toleranta <= TOLERANTA_MAXIMA)) return { ok: false, motiv: 'toleranta' };
   if (c.fel === 'cerc' && c.diametru !== null && !pozitiv(c.diametru)) return { ok: false, motiv: 'valoare' };
   if (c.fel === 'dreptunghi' && c.marime && !(pozitiv(c.marime.latime) && pozitiv(c.marime.inaltime))) return { ok: false, motiv: 'valoare' };
+  if (c.fel === 'netezire' && !pozitiv(c.pastreaza)) return { ok: false, motiv: 'valoare' };
   const alese = new Set(c.alese);
   const folosiri = new Map<string, number>();
   for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
