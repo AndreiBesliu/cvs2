@@ -1,7 +1,7 @@
 # ADR 0138: Mărimea textului în puncte și inch, proporțiile literelor, spațierea literelor alese (feliile 7.9↑, 7.9↑b)
 
 **Starea:** acceptat pe 06.11.2026, cu recomandările („Yes, 1a–5a”, la „Accept the recommendations in ADR 0138 (1a 2a 3a
-4a 5a)?”), pentru feliile 7.9↑ (gata pe 06.11) și 7.9↑b, aduse din etapa 7, fără mașină, pe linia principală. Propus în
+4a 5a)?”), pentru feliile 7.9↑ (gata pe 06.11) și 7.9↑b (gata pe 07.11), aduse din etapa 7, fără mașină, pe linia principală. Propus în
 aceeași zi, cât liniile paralele (incrustațiile, ADR 0170; tăierea vectorilor, ADR 0180) își așteptau răspunsurile, la „Ok,
 o sa le raspund, aici poti sa continui”. **Completează:** ADR 0105 (textul: mărimea e înălțimea majusculei; blocul), ADR 0123
 (aldinul și cursivul), ADR 0141 (textul vertical), ADR 0142 (caseta), ADR 0052 (mânerele de scalare). **Documentul:**
@@ -88,15 +88,21 @@ deci nu se mai poate edita.
 - **Corpusul textului (Python, fontTools):** cazuri noi în `test/oracles-py/text_corpus.py` (lățimea și înălțimea, cu cursiv,
   vertical, în casetă și pe curbă; crenarea oprită; spațierile literelor alese), cu fixturile regenerate și comise: oracolul
   așază literele din fontTools, fără cititorul aplicației. În 7.9↑: `CAZURI_PROPORTII` (`proportii.json`, proba din
-  `test/unit/text.proportii.test.ts`), plus `caseta-proportii`, `cerc-proportii` și `aldin-proportii` în corpusurile lor.
+  `test/unit/text.proportii.test.ts`), plus `caseta-proportii`, `cerc-proportii` și `aldin-proportii` în corpusurile lor. În
+  7.9↑b: `CAZURI_SPATIERI` (tot în `proportii.json`; pe hârtie, `DEPLASARI_SPATIERI`: cât se mută fiecare literă față de același
+  text fără spațieri, pe două rânduri, la dreapta cu cursiv și proporții, lângă un caracter lipsă și după un 😀, vertical),
+  plus `cerc-spatieri`, `linie-intinsa-spatieri` (întins pe 100 mm: literele se mută cu 0, 10/3, 5/3 și 0 mm), `caseta-spatieri`
+  (3 + 1 mm dau aceeași înălțime ca spațierea de 2 mm) și `aldin-spatieri`. Ajutoarele panoului (`src/text/spatieri.ts`), în
+  `test/unit/text.spatieri.test.ts`, cu 3 000 de editări și schimbări la întâmplare, fiecare dând un bloc pe care ușa îl primește.
 - **Mânerele:** scalarea neuniformă a unui text drept dă aceleași contururi (sub 1e-9 mm) ca textul așezat din nou cu blocul
   nou; cu aldin sau pe o curbă, vectori.
 - **Ușa:** un bloc cu câmpurile noi, salvat și redeschis, se editează fără pierderi; un bloc vechi dă textul de azi, octet cu
   octet (G-code-ul).
 - **E2e:** unitatea, procentele, crenarea, spațierea literelor alese, previzualizarea, „Aplică” și redeschiderea; Alt + săgeți
   fără ca pagina să meargă înapoi în istoric.
-- **Otrăvurile** (`test/otravuri/7.9.py`): factorul pus pe o singură axă, unitatea inversată, crenarea ignorată, spațiul
-  manual pe rândul următor, editarea care mută spațierile pe alte litere.
+- **Otrăvurile** (`test/otravuri/7.9.py`): factorul pus pe o singură axă, unitatea inversată, crenarea ignorată; în 7.9↑b
+  (`test/otravuri/7.9b.py`): spațiul manual pe rândul următor sau peste un caracter lipsă, indicii pe unități UTF-16, editarea
+  care mută spațierile pe alte litere, Alt + săgeți ajunse la browser.
 
 ## Întrebările (owner)
 

@@ -71,7 +71,16 @@ export type ParametriText = {
   readonly proportii?: ProportiiText | undefined;
   /** Crenarea fontului (ADR 0138 §3): `false` o oprește (literele stau la avansurile lor); lipsă: pornită. */
   readonly crenare?: false | undefined;
+  /** Spațierile literelor alese (ADR 0138 §5): după caracterul `dupa`, încă `mm`; lipsă: niciuna. */
+  readonly spatieri?: readonly SpatiuLitera[] | undefined;
 };
+
+/**
+ * Un spațiu al literelor alese (ADR 0138 §5): după caracterul cu indicele `dupa` (pe puncte de cod, în textul fără `\r`, cu
+ * `\n` numărat), încă `mm` (negativ: mai strâns), doar între el și caracterul de după, dacă amândouă sunt litere ale aceluiași
+ * rând (sau ale aceleiași coloane).
+ */
+export type SpatiuLitera = { readonly dupa: number; readonly mm: number };
 
 /** Lățimea și înălțimea literelor (ADR 0138 §2), în procente. */
 export type ProportiiText = { readonly latime: number; readonly inaltime: number };
@@ -431,6 +440,12 @@ function aseaza(font: Font, p: ParametriText, masurare: boolean): TextAsezat {
   const inaltimeRand = (linieFont * majuscula) / font.majuscula * p.interlinie;
   const distantaColoane = (linieFont * (p.inaltime * sx)) / font.majuscula * p.interlinie;
   const randuri = p.continut.replace(/\r/g, '').split('\n');
+  // Spațierile literelor alese (ADR 0138 §5): indicele fiecărui caracter în text (pe puncte de cod; `\n` numărat), deci
+  // începutul fiecărui rând; spațiul se adaugă doar între două caractere vecine, amândouă litere așezate.
+  const spatiu = new Map((p.spatieri ?? []).map((s) => [s.dupa, s.mm]));
+  const inceputuri: number[] = [];
+  randuri.reduce((i, rand) => { inceputuri.push(i); return i + Array.from(rand).length + 1; }, 0);
+  const intre = (a: number, b: number): number => (b === a + 1 ? spatiu.get(a) ?? 0 : 0);
   const glife: GlifaAsezata[] = [];
   const linii: RandAsezat[] = [];
   const buget: BugetImport = { ramas: PLAFON_IMPORT.normalizare };
@@ -472,8 +487,10 @@ function aseaza(font: Font, p: ParametriText, masurare: boolean): TextAsezat {
     const gol = Math.max(0, em - majuscula) + p.spatiere;
     randuri.forEach((rand, r) => {
       const axa = r * distantaColoane;
-      const celule: { caracter: string; avans: number; cai: readonly CaleCitita[]; cutie: Cutie | null }[] = [];
+      const celule: { caracter: string; avans: number; cai: readonly CaleCitita[]; cutie: Cutie | null; poz: number }[] = [];
+      let poz = inceputuri[r]! - 1;
       for (const caracter of rand) {
+        poz++;
         const glifa = glifaDe(caracter);
         if (glifa === null) continue;
         const avans = inMmX(font.avans(glifa)) + 2 * d;
@@ -483,15 +500,17 @@ function aseaza(font: Font, p: ParametriText, masurare: boolean): TextAsezat {
         const c = miezLitera && miezLitera.length > 0 ? miezLitera.map(cutieContur).reduce(uneste) : null;
         const cai = c && miezLitera ? (d === 0 || masurare ? miezLitera : ingrosata(miezLitera, 0, 0)) : null;
         celule.push(c && cai
-          ? { caracter, avans, cai, cutie: d === 0 ? c : { minX: c.minX, minY: c.minY, maxX: c.maxX + 2 * d, maxY: c.maxY + 2 * d } }
-          : { caracter, avans, cai: [], cutie: null });
+          ? { caracter, avans, cai, cutie: d === 0 ? c : { minX: c.minX, minY: c.minY, maxX: c.maxX + 2 * d, maxY: c.maxY + 2 * d }, poz }
+          : { caracter, avans, cai: [], cutie: null, poz });
       }
-      // Liniile de bază: vârful primei litere în y = 0, apoi fiecare cutie sub cea de deasupra.
+      // Liniile de bază: vârful primei litere în y = 0, apoi fiecare cutie sub cea de deasupra, la golul coloanei plus spațiul
+      // literelor alese dintre ele (ADR 0138 §5).
       const baze: number[] = [];
       celule.forEach((c, k) => {
         const sus = c.cutie ? c.cutie.maxY : majuscula;
         const ant = celule[k - 1];
-        baze.push(ant ? baze[k - 1]! + (ant.cutie ? ant.cutie.minY : 0) - gol - sus : -sus);
+        const extra = ant ? intre(ant.poz, c.poz) : 0;
+        baze.push(ant ? baze[k - 1]! + (ant.cutie ? ant.cutie.minY : 0) - gol - sus - extra : -sus);
       });
       // Coloana se aliniază față de ancoră: sus (de la ea în jos), la mijloc sau jos (până la ea).
       const ultima = celule.at(-1);
@@ -511,16 +530,24 @@ function aseaza(font: Font, p: ParametriText, masurare: boolean): TextAsezat {
       // Glifele rândului și locul fiecăreia (în unitățile fontului, plus spațierea în mm), apoi lățimea rândului.
       const litere: { caracter: string; glifa: number; x: number; avans: number }[] = [];
       let x = 0;
-      let anterioara = -1;
+      let anterioara = -1, pozAnterioara = -2;
+      let poz = inceputuri[r]! - 1;
       for (const caracter of rand) {
+        poz++;
         const glifa = glifaDe(caracter);
         if (glifa === null) continue;
         // Crenarea fontului, cu lățimea literelor; oprită (ADR 0138 §3), doar spațierea.
         if (anterioara >= 0) x += (p.crenare === false ? 0 : inMmX(font.crenare(anterioara, glifa))) + p.spatiere;
+        // Spațiul literelor alese (ADR 0138 §5), doar între două litere vecine; fără el, aceleași numere ca înainte.
+        if (anterioara >= 0) {
+          const extra = intre(pozAnterioara, poz);
+          if (extra !== 0) x += extra;
+        }
         const avans = inMmX(font.avans(glifa)) + 2 * d;
         litere.push({ caracter, glifa, x, avans });
         x += avans;
         anterioara = glifa;
+        pozAnterioara = poz;
       }
       const latime = x;
       const dx = p.aliniere === 'stanga' ? 0 : p.aliniere === 'centru' ? -latime / 2 : -latime;

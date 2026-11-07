@@ -90,6 +90,15 @@ export const SchemaCasetaText = v.variant('fel', [
 const procent = numar(LIMITE_TEXT.procentMinim, LIMITE_TEXT.procentMaxim);
 export const SchemaProportiiText = v.object({ latime: procent, inaltime: procent });
 
+/**
+ * Un spațiu al literelor alese (ADR 0138 §5): după caracterul cu indicele `dupa` (pe puncte de cod, în textul fără `\r`),
+ * încă `mm` (negativ: mai strâns), ca spațierea textului.
+ */
+const SchemaSpatiuLitera = v.object({
+  dupa: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(LIMITE_TEXT.caractere - 1)),
+  mm: numar(-LIMITE_TEXT.spatiere, LIMITE_TEXT.spatiere),
+});
+
 /** Majuscula tăiată a unui bloc (ADR 0138 §2), în mm: înălțimea cerută × înălțimea literelor. */
 export const majusculaBloc = (b: { readonly inaltime: number; readonly proportii?: { readonly inaltime: number } | undefined }): number =>
   (b.proportii ? b.inaltime * (b.proportii.inaltime / 100) : b.inaltime);
@@ -120,8 +129,13 @@ export const SchemaBlocText = v.pipe(
     proportii: v.optional(SchemaProportiiText),
     /** Crenarea fontului (ADR 0138 §3): `false` o oprește; lipsă: pornită. */
     crenare: v.optional(v.literal(false)),
+    /** Spațierile literelor alese (ADR 0138 §5), sortate după `dupa`; lipsă: niciuna. */
+    spatieri: v.optional(v.pipe(v.array(SchemaSpatiuLitera), v.maxLength(LIMITE_TEXT.caractere), v.readonly())),
     amprenta: v.pipe(v.string(), v.maxLength(64)),
   }),
+  // Spațierile literelor alese: sortate, unice, nenule, după un caracter care mai are unul după el (ADR 0138 §5).
+  v.check((b) => !b.spatieri || b.spatieri.every((s, k, t) => s.mm !== 0 && (k === 0 || t[k - 1]!.dupa < s.dupa)
+    && s.dupa + 1 < Array.from(b.continut.replace(/\r/g, '')).length), 'spațierile literelor alese: sortate, unice, nenule, în text'),
   // Aldinul e cel mult o cincime din majuscula tăiată (ADR 0123, ADR 0138 §2).
   v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(majusculaBloc(b)), 'aldinul trece de o cincime din înălțime'),
   // Un text vertical stă drept: literele una sub alta nu urmează o curbă (ADR 0141).
@@ -166,6 +180,9 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
   const s = lx;
   const inaltime = b.inaltime * s;
   if (inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima || Math.abs(b.spatiere * s) > LIMITE_TEXT.spatiere) return fara;
+  // Spațierile literelor alese cresc cu textul, ca spațierea (ADR 0138 §5).
+  const spatieri = b.spatieri?.map((x) => ({ dupa: x.dupa, mm: x.mm * s }));
+  if (spatieri?.some((x) => Math.abs(x.mm) > LIMITE_TEXT.spatiere)) return fara;
   // Aldinul crește cu textul (cursivul e un unghi: rămâne); sub rezoluție, contururile rămân doar vectori.
   const aldin = b.aldin === undefined ? undefined : b.aldin * s;
   if (aldin !== undefined && aldin > 0 && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(majusculaBloc({ inaltime, proportii: b.proportii })))) return fara;
@@ -187,6 +204,7 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
     ...dupa,
     text: {
       ...b, inaltime, spatiere: b.spatiere * s, ...(aldin !== undefined ? { aldin } : {}), ...(curba ? { curba } : {}), ...(caseta ? { caseta } : {}),
+      ...(spatieri ? { spatieri } : {}),
       amprenta: amprentaContururi(dupa.copii),
     },
   };
@@ -213,6 +231,8 @@ function scalatNeuniform(b: BlocText, dupa: Nod & { readonly tip: 'grup' }, fara
   const { proportii: _p, cursiv: _c, ...rest } = b;
   const text = {
     ...rest, inaltime: b.inaltime * ly, spatiere: b.spatiere * (b.vertical ? ly : lx),
+    // Spațierile literelor alese, ca spațierea: pe orizontală, sau pe verticală la textul vertical (ADR 0138 §5).
+    ...(b.spatieri ? { spatieri: b.spatieri.map((x) => ({ dupa: x.dupa, mm: x.mm * (b.vertical ? ly : lx) })) } : {}),
     ...(proportii ? { proportii } : {}), ...(cursiv !== undefined ? { cursiv } : {}), ...(caseta ? { caseta } : {}),
     amprenta: amprentaContururi(dupa.copii),
   };

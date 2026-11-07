@@ -72,6 +72,8 @@ const USI: readonly Usa[] = [
   { id: 'editare.text.proportii.latime', eticheta: eticheta('editare.text.proportii.latime') },
   { id: 'editare.text.proportii.inaltime', eticheta: eticheta('editare.text.proportii.inaltime') },
   { id: 'editare.text.crenare', eticheta: eticheta('editare.text.crenare') },
+  // Spațierea literelor alese (ADR 0138 §5), rândul de sub textul panoului.
+  { id: 'editare.text.spatieri', eticheta: eticheta('editare.text.spatieri') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
@@ -117,7 +119,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 85)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 86)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -127,9 +129,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // textul încă patru: aldinul și cursivul (ADR 0123), verticalul (ADR 0141) și caseta (ADR 0142); verificarea
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
-  // Restul textului (ADR 0138), încă patru: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului. Tăierea
-  // vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
-  assert.equal(USI.length, 85);
+  // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
+  // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
+  assert.equal(USI.length, 86);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
