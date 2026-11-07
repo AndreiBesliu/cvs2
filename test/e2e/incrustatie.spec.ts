@@ -118,3 +118,35 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
   await expect(hartie).toContainText('Dopul intră2.60 mm în locaș');
   await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop (jocul 0.4 mm)');
 });
+
+/**
+ * Incrustația aleasă direct în fereastra exportului (ADR 0170 §5): opțiunea din lista Tăietura bifează fundul plat (fața
+ * dopului cere freza dreaptă) și arată jocurile implicite; cu „Același spațiu” bifat, Exportă scrie jocul și ca fierăstrău.
+ * Găsită prin otrăvurile 12.1 (E05, E06): proba de mai sus alege rolul din panou, deci nu trecea pe aici.
+ */
+test('incrustația din fereastra exportului: fundul plat bifat singur; „Același spațiu” scrie jocul și ca fierăstrău', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('tr[data-operatie]').first();
+  await rand.locator('[data-camp="latura"]').selectOption('incrustatie');
+  const detalii = page.locator('tr[data-detalii]').first();
+  await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
+  await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
+  await expect(detalii.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
+  await expect(detalii.locator('[data-camp="inc-margine"]')).toHaveValue('5');
+  await rand.locator('[data-camp="forma-scula"]').selectOption('v');
+  await rand.locator('[data-camp="diametru"]').fill('6');
+  await rand.locator('[data-camp="adancime"]').fill('3');
+  await rand.locator('[data-camp="pas"]').fill('1,5');
+  await detalii.locator('[data-camp="inc-acelasi"]').check();
+  await detalii.locator('[data-camp="inc-joc"]').fill('0,6');
+  await expect(detalii.locator('[data-camp="inc-fierastrau"]')).toHaveValue('0,6');
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText('Dopul, descărcat');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // În proiect: jocul și fierăstrăul sunt amândouă 0,6 (panoul le arată), iar pe hârtie dopul intră 3 − 0,6 = 2,4.
+  await expect(taierea(page).locator('[data-camp="inc-joc"]')).toHaveValue('0,6');
+  await expect(taierea(page).locator('[data-camp="inc-fierastrau"]')).toHaveValue('0,6');
+  await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Dopul intră2.40 mm în locaș');
+});

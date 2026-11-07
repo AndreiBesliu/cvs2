@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { incarca } from '../../src/model/incarcare.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
-import { masoaraPotrivirea, type MasuraPotrivire } from '../oracles/incrustatie.ts';
+import { masoaraPotrivirea, suprafataPeScule, type MasuraPotrivire } from '../oracles/incrustatie.ts';
 import { CAZURI_INCRUSTATIE, type CazIncrustatie } from '../oracles/incrustatie.cazuri.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 
@@ -86,6 +86,29 @@ for (const c of CAZURI_INCRUSTATIE) {
     assert.ok(m.intre.n > 0 && m.intre.min >= c.H - TOL && m.intre.max <= c.H + TOL, `spațiul dintre plăci H = ${c.H} ± ${TOL}: ${unde}`);
   });
 }
+
+test('fața dopului e coborâtă la S + H până la marginile semifabricatului, nu doar lângă desen (otrava P08: o ramă la margine)', async () => {
+  const c = CAZURI_INCRUSTATIE[0]!;
+  const r = await calculeazaExport(deschis(documentCaz(c)), { origine: 'stanga-jos', z0: 'sus' });
+  if (!r.ok) assert.fail(r.motiv);
+  const d = r.dopuri[0]!, text = d.program.text;
+  const { latime, inaltime } = d.semifabricat;
+  // Pe hârtie: dreptunghiul 12 × 6 cu marginea 5 → semifabricatul 22 × 16; fața la −(S + H) = −4,5, pe o fâșie de 1 mm
+  // de-a lungul fiecărei margini (departe de pereții dopului, care stau la cel mult H·t = 1,155 de desen).
+  assert.deepEqual([latime, inaltime], [22, 16]);
+  const celula = 0.1;
+  const o = suprafataPeScule(text, { x0: 0, y0: 0, latime, inaltime, celula }, scule(text, c));
+  const S = c.D - c.g, fata = S + c.H;
+  let n = 0, rele = 0;
+  for (let j = 0; j < o.ny; j++) for (let i = 0; i < o.nx; i++) {
+    const x = (i + 0.5) * celula, y = (j + 0.5) * celula;
+    if (Math.min(x, y, latime - x, inaltime - y) > 1) continue;
+    n++;
+    if (Math.abs(-o.z[j * o.nx + i]! - fata) > 0.05) rele++;
+  }
+  assert.ok(n > 1000, `celulele de pe margine: ${n}`);
+  assert.equal(rele, 0, `${rele} din ${n} celule de pe margine nu sunt la −${fata}`);
+});
 
 test('controlul negativ: dopul tăiat ca a doua cavitate (desenul oglindit, săpat ca un V-carve obișnuit) pică oracolul', async () => {
   const c = CAZURI_INCRUSTATIE[0]!;

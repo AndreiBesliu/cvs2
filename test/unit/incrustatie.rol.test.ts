@@ -78,7 +78,23 @@ test('din incrustație în alt rol: nici incrustația, nici fundul plat nu răm�
 test('incrustația de dinainte rămâne când rolul se alege din nou (jocul și fierăstrăul omului)', () => {
   const d = doc(dreptunghi, [exterior]);
   const prima = operatiiPentruRol(d, d.piese[0]!, 'incrustatie')!;
-  const cu = doc(dreptunghi, [{ ...prima[0]!, incrustatie: { fel: 'v', joc: 0.3, fierastrau: 1.5, margine: 8, jurDop: 'fata' } }]);
+  const cu = doc(dreptunghi, [{
+    ...prima[0]!, incrustatie: { fel: 'v', joc: 0.3, fierastrau: 1.5, margine: 8, jurDop: 'fata' },
+    fundPlat: { scula: { numar: 5, nume: 'freza dreapta', diametru: 4 }, pasLateral: 1.6 },
+  }]);
   const iar = operatiiPentruRol(cu, cu.piese[0]!, 'incrustatie')![0]!;
   assert.deepEqual(iar.incrustatie, { fel: 'v', joc: 0.3, fierastrau: 1.5, margine: 8, jurDop: 'fata' });
+  // Și freza dreaptă a omului (otrava L03: fundul plat refăcut din freza rândului).
+  assert.deepEqual(iar.fundPlat, { scula: { numar: 5, nume: 'freza dreapta', diametru: 4 }, pasLateral: 1.6 });
+});
+
+test('jocul se strânge pe un locaș puțin adânc: adâncimea 0,6 → jocul 0,3 (dopul intră cel puțin jumătate), nu 0,5', () => {
+  // Otrava L01: jocul implicit 0,5 pe adâncimea 0,6 ar lăsa dopul să intre doar 0,1 mm.
+  const d = doc(dreptunghi, [{ ...exterior, adancime: 0.6, pas: 0.6 }]);
+  const o = operatiiPentruRol(d, d.piese[0]!, 'incrustatie')![0]!;
+  assert.equal(o.adancime, 0.6);
+  assert.equal(o.incrustatie?.joc, 0.3);
+  // Pe locașul de 0,15, jocul nu coboară sub minimul de 0,1 (crestele colțurilor).
+  const mic = doc(dreptunghi, [{ ...exterior, adancime: 0.15, pas: 0.15 }]);
+  assert.equal(operatiiPentruRol(mic, mic.piese[0]!, 'incrustatie')![0]!.incrustatie?.joc, 0.1);
 });

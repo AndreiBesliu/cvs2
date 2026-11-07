@@ -22,6 +22,24 @@ Cererea owner-ului: „vreau sa deschidem worktrees pentru alte etape sau felii�
   punți); 12.1↑d (fundul doar cu V); 12.1↑e (dopul în vederea 3D și potrivirea simulată); 12.1↑f (gaura și treptele); fișa
   plăcii 12. Până la felia lor, `jurDop: 'banda'` și fundul doar cu V se refuză cu motivul și cu felia care le aduce.
 
+**Ce a adăugat felia 12.1↑ (07.11), din probe:**
+- **Regiunea dopului, lărgită cât să treacă freza dreaptă.** Proba e2e (cercul R15, rolul ales din panou, cu freza plată Ø6 de
+  dinainte ca fund plat) a măsurat, între plăci, o creastă de 0,0505 mm: cu regiunea lărgită doar cu H·t + 1, fâșia dintre dop
+  și marginea ei avea 4,84 mm pe partea cea mai îngustă (marginea 5), deci Ø6 nu încăpea, iar freza V o curăța cu inele dese.
+  Acum marginea regiunii e e = max(H·t + 1, Ø + 2w − m + 0,5), cu w = H·t + 0,002 (cât stă fundul plat de fiecare perete):
+  freza dreaptă trece pe toată fața, iar între plăci rămâne exact H (2,0006 pe aceeași probă).
+- **Avertismentul semifabricatului.** Fața se coboară până dincolo de marginile semifabricatului (ieșirea e a dopului, deci
+  confirmată de la sine), așa că exportul spune cât trece freza de ele (marginea regiunii plus raza celei mai late freze; la
+  proba de mai sus, 6,9 mm) și cere prinderea fără cleme pe margini, de exemplu cu bandă dublu adezivă.
+- **Rândul ferestrei citește incrustația din document** (proba e2e a găsit rândul arătat ca V-carve după rolul ales în panou),
+  iar lemnul din jurul dopului rămâne cel din document până când fereastra îl alege (12.1↑c).
+- **Valorile pe hârtie dintr-un singur loc** (`src/model/incrustatie.ts`): S, H, t, fața (S + H), contactul (S·t) și grosimea
+  cea mai mică a semifabricatului (S + H + 1), folosite de dop și arătate în panou.
+- **Otrăvurile** (`test/otravuri/12.1.py`, 44): prima rulare, 27 prinse și 17 scăpate, fiecare cu proba ei nouă: cazul L
+  al oracolului (toate cazurile erau simetrice față de verticală, deci un dop neoglindit trecea), fața dopului coborâtă până la
+  marginile semifabricatului, refuzurile și gruparea locașului după cheia dopului, jocul rolului pe un locaș puțin adânc și
+  fundul plat de dinainte, îmbinarea scrisă de Exportă, fereastra (fundul plat bifat, „Același spațiu”). Pe codul final, 44 / 44.
+
 **Problema.** O incrustație pune o piesă dintr-un alt lemn (dopul) într-o cavitate (locașul) tăiată după același desen. În
 ediția întâi, „dopul” a fost 3,5 luni o a doua cavitate: 612 din 616 mișcări cădeau în interiorul conturului, iar dopul umplea
 0 % din locaș; testul judeca structura („e oglinda?”), nu lemnul (`LECTII.md` §1). `PLAN.md` §3.1 cere ca perechea să fie
@@ -81,8 +99,9 @@ etapa 11).
    - Desenul se oglindește pe X: dopul se întoarce ca o pagină.
    - Semifabricatul e cutia desenului oglindit, cu `margine` (implicit 5 mm) pe fiecare parte. Originea e în colțul ales în
      fereastra exportului (implicit stânga-jos), iar Z0 e mereu pe fața semifabricatului.
-   - Fața semifabricatului se coboară la S + H în jurul dopului, cu freza dreaptă. Pereții dopului îi taie freza V, cu
-     adâncimea de start S: V-carve-ul primește adâncimea de start și sapă la min(S + H, S + d/t).
+   - Fața semifabricatului se coboară la S + H în jurul dopului, cu freza dreaptă, până dincolo de marginile lui (regiunea
+     lărgită, vezi „Ce a adăugat felia 12.1↑”). Pereții dopului îi taie freza V, cu adâncimea de start S: V-carve-ul primește
+     adâncimea de start și sapă la min(S + H, S + d/t).
    - Un fișier pe dop (`…-dop-N.nc`), cu schimbarea sculei aleasă în fereastră.
 4. **Refuzurile, cu motivul,** judecate de lucrare înainte de export:
    - D peste înălțimea conului, sau S + H peste ea;

@@ -64,4 +64,9 @@ export const CAZURI_INCRUSTATIE: readonly CazIncrustatie[] = [
     fundPlat: false,
     hartie: 'trăsătura îngustă: d ≤ 1,2, deci șanțul are cel mult 1,2·1,732 = 2,078 < S = 2,5: dopul umple șanțul fără joc, pereții se ating peste tot; locașul n-are fund plat (fără freza dreaptă)',
   },
+  {
+    id: 'L', desen: [[[60, 80], [76, 80], [76, 86], [66, 86], [66, 100], [60, 100]]], v: V60, dreapta: DREAPTA, D: 3, g: 0.5, H: 2,
+    margine: 5, pas: 1.5, fundPlat: true,
+    hartie: 'un L, nesimetric față de verticală (celelalte cazuri sunt simetrice, deci un dop neoglindit trecea: otrava P02): oglindit pe X, piciorul stă spre stânga pe semifabricat; barele de 6 au fundul plat de la D·t = 1,732, iar colțul concav dă axa medială ramificată',
+  },
 ];
