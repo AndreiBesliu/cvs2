@@ -1,0 +1,384 @@
+/*
+ * Fereastra Imprimanta (ADR 0190), adusă odată cu ea: aceleași tokenuri și aceleași carduri ca fereastra Mașina. Sus, banda
+ * imprimantei (starea, numele, Pauză / Reia / Oprește, lipită sus cât derulezi); dedesubt, trei coloane de la 60 rem (lucrarea,
+ * temperaturile, codul de la imprimantă), două până la 40 rem, una pe telefon; fișierele și jurnalul, pe toată lățimea.
+ */
+
+.imprimanta {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 112rem;
+  margin: 0 auto;
+  font-size: var(--fs-3);
+}
+
+/* Titlul ferestrei, pentru cititoarele de ecran: fila din meniu îl spune deja la vedere. */
+.imprimanta-ascuns {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.imprimanta-coloane {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.imprimanta-coloane.imprimanta-doua {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.imprimanta-lat {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 60rem) {
+  .imprimanta-coloane {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .imprimanta-coloane,
+  .imprimanta-coloane.imprimanta-doua {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.imprimanta-card,
+.imprimanta-banda,
+.imprimanta-dialog {
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  background: var(--s-panou);
+  box-shadow: var(--umbra-1);
+  min-width: 0;
+}
+
+.imprimanta-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.imprimanta h3 {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta p {
+  margin: 0;
+}
+
+.imprimanta-slab {
+  color: var(--t-slab);
+}
+
+.imprimanta-ajutor {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-refuz {
+  color: var(--rosu);
+}
+
+.imprimanta-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Banda: lipită sus în fereastră, ca Pauză și Oprește să rămână la îndemână cât derulezi. */
+.imprimanta-banda {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+}
+
+.imprimanta-cine {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-cine .imprimanta-slab {
+  font-size: var(--fs-2);
+}
+
+.imprimanta-comenzi {
+  margin-left: auto;
+}
+
+.imprimanta-cip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: var(--fs-2);
+  font-weight: 650;
+  color: var(--t);
+  background: var(--s-peste);
+  white-space: nowrap;
+}
+
+.imprimanta-cip::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.imprimanta-cip[data-stare='imprima'],
+.imprimanta-cip[data-stare='gata'] {
+  color: var(--traseu-taiere);
+  background: color-mix(in oklab, var(--traseu-taiere) 14%, var(--s-panou));
+}
+
+.imprimanta-cip[data-stare='pauza'],
+.imprimanta-cip[data-stare='pregatire'],
+.imprimanta-cip[data-stare='autotest'] {
+  color: var(--a);
+  background: var(--s-atentie);
+}
+
+.imprimanta-cip[data-stare='oprita'],
+.imprimanta-cip[data-stare='pierduta'] {
+  color: var(--rosu);
+  background: var(--s-rosu);
+}
+
+.imprimanta-opreste {
+  border-color: var(--rosu);
+  color: var(--rosu);
+}
+
+.imprimanta-opreste.plin {
+  background: var(--rosu);
+  color: var(--s-panou);
+}
+
+.imprimanta-pierduta,
+.imprimanta-cod {
+  display: grid;
+  gap: 4px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-1);
+}
+
+.imprimanta-pierduta {
+  border-left: 3px solid var(--rosu);
+  background: var(--s-rosu);
+}
+
+.imprimanta-cod {
+  border-left: 3px solid var(--a);
+  background: var(--s-atentie);
+}
+
+.imprimanta-nota {
+  padding: 6px var(--sp-2);
+  border-radius: var(--r-1);
+  border: 1px dashed var(--a);
+  background: var(--s-atentie);
+  font-size: var(--fs-2);
+}
+
+.imprimanta-dialog {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 38rem;
+  padding: var(--sp-3) var(--sp-4);
+  border-color: var(--a);
+  box-shadow: var(--umbra-2);
+}
+
+.imprimanta .imprimanta-dialog h3 {
+  font-size: var(--fs-4);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--t);
+}
+
+.imprimanta-bifa {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: var(--s-peste);
+}
+
+.imprimanta-bifa input {
+  margin-top: 3px;
+}
+
+.imprimanta-fisier,
+.imprimanta-lista-nume {
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-fisier {
+  font-weight: 600;
+}
+
+.imprimanta-progres,
+.imprimanta-bara {
+  display: block;
+  border-radius: 99px;
+  background: var(--s-peste);
+  overflow: hidden;
+}
+
+.imprimanta-progres {
+  height: 10px;
+}
+
+.imprimanta-bara {
+  height: 6px;
+}
+
+.imprimanta-progres > i,
+.imprimanta-bara > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+}
+
+.imprimanta-progres > i {
+  background: var(--traseu-taiere);
+}
+
+.imprimanta-bara > i {
+  background: var(--a);
+}
+
+.imprimanta-cifre {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px var(--sp-3);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-cifre dt {
+  color: var(--t-slab);
+}
+
+.imprimanta-cifre dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-temp {
+  display: grid;
+  gap: 4px;
+}
+
+.imprimanta-temp-rand {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-lista,
+.imprimanta-tinute,
+.imprimanta-jurnal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.imprimanta-lista,
+.imprimanta-tinute {
+  display: grid;
+}
+
+.imprimanta-lista li,
+.imprimanta-tinuta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.imprimanta-lista li:last-child,
+.imprimanta-tinuta:last-child {
+  border-bottom: 0;
+}
+
+.imprimanta-lista-nume {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.imprimanta-tinuta-nume {
+  display: grid;
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-formular,
+.imprimanta-camp {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.imprimanta-camp {
+  gap: 4px;
+}
+
+.imprimanta-pasi {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 4px;
+}
+
+.imprimanta-jurnal {
+  max-height: 16rem;
+  overflow: auto;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: var(--s-peste);
+  font-family: var(--mono);
+  font-size: var(--fs-1);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-jurnal li[data-dir='trimis'] {
+  color: var(--a);
+}
+
+.imprimanta-copie {
+  width: 100%;
+  min-height: 8rem;
+  font-family: var(--mono);
+  font-size: var(--fs-1);
+}

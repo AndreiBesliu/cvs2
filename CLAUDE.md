@@ -525,6 +525,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   repornire: „se pornește”, nu „pornit” al celei de dinainte). **O extensie cu pagina pusă asincron își întoarce promisiunea
   din `deschide`; o probă care lucrează în cadru după „pornit” nu mai are nevoie de altă așteptare.** Amprenta nouă a
   încărcătorului în CSP. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 504,6 / 550, /admin 105,4 / 200.**
+  **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
+  `imprimanta` (`wip/3.6g-imprimanta`): fila **Imprimanta**, a treia a meniului global, leagă o imprimantă Creality din familia
+  K1 (a owner-ului: o K1C) pe protocolul ei din fabrică: WebSocket-ul de pe 9999, **fără subprotocol** (Chrome refuză o legătură
+  care cere un subprotocol neîntors de server), cadre text JSON, `ok` la fiecare bătaie a inimii (altfel imprimanta închide),
+  starea pe bucăți. Imprimantele ținute (`cncvs2.imprimanta.retea`, `v: 1`), adresa scrisă, căutarea pe 9999; starea,
+  temperaturile (doar citite), codul de la imprimantă; Pauză / Reia / Oprește (cu confirmare); fișierele din imprimantă, pornite
+  cu bifa „Patul e gol”; jurnalul cadrelor. **O imprimantă nu e un flux GRBL:** fișierul stă în ea, deci modulele ei stau lângă
+  sender (`src/machine/imprimanta/`), iar adresa locală, permisiunea și planificatorul căutării, comune, în
+  `src/machine/reteaLocala.ts` (reexportate de `websocket.ts` și `conexiuni.ts`: altfel fereastra trage transportul senderului
+  într-o bucată comună de 4 kB). **Singură, fereastra trimite doar citiri și `ok`**; după `opGcodeFile`, K1 închide legătura
+  (așteptat: se reface după 0,3 s); o legătură căzută se reface singură, iar **o reîncercare nu judecă permisiunea rețelei
+  locale** (browserul aplicației o spune refuzată și spre loopback). Proba cap-coadă are imprimanta falsă în
+  `test/e2e/imprimantaFalsa.ts` (9999, pe rețeaua de loopback a probei); ghidul owner-ului: `docs/masina/imprimanta-k1c.md`.
+  **Pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 512,6 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -729,6 +743,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **imprimanta 3D prin WiFi, răspunsurile la ADR 0190** (formularul schiței: „1a”, „2a”, „3a”, „4a”): fereastra
+  Imprimanta, a treia filă a meniului global; întâi 3.6g (conectarea, starea, pauza și oprirea, fișierele din imprimantă), apoi
+  3.6h (trimiterea unui `.gcode`); **`http:` în `connect-src`, pentru 3.6h** (acordul owner-ului, ca la `ws:`: un `http://`
+  spre o gazdă publică rămâne blocat ca conținut mixt); camera, într-o felie a ei, după 3.6h. Nota lui la 1: „Vreau sa pot pune
+  panourile mai multor masini unul langa altul, eventual si pe monitoare diferite. Dar asta poate veni mai tarziu.” (o felie a
+  ei, mai târziu). Imprimanta lui: o K1C (2024), la 192.168.1.12; verificarea de pe calculatorul lui, doar cu citiri, permisă
+  (pe 07.11, imprimanta n-a răspuns: oprită sau într-o rețea despărțită de cablu).
 - 06.11.2026: **textul, restul pragului, pe linia principală** („Ok, o sa le raspund, aici poti sa continui”, cât liniile
   paralele își așteaptă răspunsurile): feliile 7.9↑ și 7.9↑b, cu ADR 0138 (cercetarea, schița, cinci întrebări), acceptat cu
   recomandările („Yes, 1a–5a”): pt e mărimea fontului, mm și inch rămân majuscula; lățimea și înălțimea literelor în procente;

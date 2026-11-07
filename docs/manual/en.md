@@ -970,6 +970,41 @@ hides the explanation until the next code; the error list and the log also show 
 - What cannot be done now is disabled, with the reason next to it (“Not now: the machine is in alarm…”): in alarm, while a
   job or a procedure runs. Stopped at a tool change, jog, probing and Zero Z work, Zero XY does not.
 
+## The printer
+%% capitol: imprimanta
+%% acopera: vedere.imprimanta
+
+The **Printer** tab in the app menu opens the 3D printer window, full screen, under the menu. For now it works with Creality
+printers of the K1 family (K1C and K1C 2025), over WiFi, on their factory protocol: no root and no setting on the printer. The
+printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` opens this chapter.
+
+- **Connecting.** Type the **Printer address** (you see it on the printer screen: Settings → Network, for example
+  192.168.1.50) and press **Connect**. The first time, the browser asks whether the page may reach devices on the local
+  network: choose **Allow**. It works in Chrome and Edge on a computer. A connected printer stays in the list, with its name
+  (for example “K1C-8578”): next time you pick it there, with **Connect**, and **Forget** removes it from the list. The window
+  does not connect by itself when you open it.
+- **Search the whole network** tries port 9999 on every address of the network, only when you press it, for about a minute;
+  **Stop the search** stops it. The first printer that answers gets connected.
+- **When it does not work,** the window says what happened (nothing answers, the permission was refused, something other
+  than a printer answers) and what to check: the printer is on, the computer is on the same network (not a guest network),
+  the address is the one on its screen.
+- **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
+  the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
+  **Temperatures** of the nozzle, the bed and the enclosure (read only: the app heats nothing) and the code the printer
+  reported (its screen shows the text).
+- **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
+  confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
+  connection; the printer is not touched.
+- **The files on the printer** (sent from Creality Print or OrcaSlicer): **Start** opens the confirmation, with the file, the
+  material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
+  the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it
+  closes the connection, and the window reconnects by itself. **Refresh** asks for the list again.
+- **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
+  and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen.
+- **The frame log** shows what the window sent and what it received; **Copy the log** puts it on the clipboard, for a report.
+- On its own, the window only reads the status and tells the printer it is there; every command comes from your click. Port
+  9999 has no password: anyone on the workshop network can command the printer, so keep it on a network of your own.
+
 ## The 3D view
 %% capitol: vedere-3d
 %% acopera: editare.3d

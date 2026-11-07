@@ -140,6 +140,8 @@ function MasinaNeincarcata() {
 let masinaGata: typeof TipPanouMasina | null = null;
 const incarcaMasina = () => import('./PanouMasina.tsx').then(cuMesaje).then((m) => { masinaGata = m.PanouMasina; return m; });
 const PanouMasina = lazy(() => incarcaMasina().then((m) => ({ default: m.PanouMasina }), () => ({ default: MasinaNeincarcata })));
+/** Fereastra Imprimanta (ADR 0190): panoul și protocolul imprimantei vin la prima deschidere, nu în pornire. */
+const PanouImprimanta = lazy(() => import('./PanouImprimanta.tsx').then(cuMesaje).then((m) => ({ default: m.PanouImprimanta }), () => ({ default: MasinaNeincarcata })));
 
 /**
  * Fereastra Mașina, aleasă o dată, la montare: cu bucata deja venită (preîncărcarea de după pornire), componenta ei direct,
@@ -314,12 +316,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const [fereastra, setFereastra] = useState<Fereastra>(() => fereastraTinuta(aranjament.ferestre));
   const [masinaMontata, setMasinaMontata] = useState(fereastra === 'masina');
+  /** Imprimanta (ADR 0190), ca Mașina: montată la prima deschidere, apoi ținută (legătura și ce vede omul rămân). */
+  const [imprimantaMontata, setImprimantaMontata] = useState(fereastra === 'imprimanta');
   const fereastraRef = useRef(fereastra);
   fereastraRef.current = fereastra;
   const deschideFereastra = (f: Fereastra): void => {
     fereastraRef.current = f;
     setFereastra(f);
     if (f === 'masina') setMasinaMontata(true);
+    if (f === 'imprimanta') setImprimantaMontata(true);
     // La pornire, nicio extensie nu e deschisă: fereastra ei nu se ține.
     if (f !== FEREASTRA_EXTENSIE) tineFereastra(f);
   };
@@ -468,6 +473,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     proprietati: () => { comutaPanou('proprietati'); },
     proiectare: () => { deschideFereastra('proiectare'); },
     masina: () => { deschideFereastra('masina'); },
+    imprimanta: () => { deschideFereastra('imprimanta'); },
     potriveste: () => { setPotrivire((n) => n + 1); },
     traseu: () => { comutaTraseu(); },
     tema: () => {
@@ -1205,7 +1211,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
-                  usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : 'vedere.masina'}
+                  usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
                   onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
@@ -1239,6 +1245,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {/* Cât bucata încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune asta, nu stă goală. */}
             <FereastraMasina ultimulExport={ultimulExport} lucrarePrimita={lucrarePrimita} simulare={config.ok && config.config.instanta !== 'live'}
               cerere={cerereMasina} onDeschide={() => { deschideFereastra('masina'); }} onModal={setModalMasina} />
+          </section>
+        )}
+        {/* Fereastra Imprimanta (ADR 0190), ca Mașina: sub meniu, peste Proiectare, montată la prima deschidere. */}
+        {imprimantaMontata && (
+          <section className="fereastra-imprimanta" aria-label={t('vedere.imprimanta')} hidden={fereastra !== 'imprimanta'}>
+            <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="imprimanta-incarca">{t('fereastra.imprimanta.incarca')}</p>}>
+              <PanouImprimanta />
+            </Suspense>
           </section>
         )}
         {/* Fereastra extensiei deschise (ADR 0160 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}

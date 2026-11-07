@@ -6,7 +6,7 @@ import type { Actiune } from './actiuni.ts';
  * Nu ating documentul; trec totuși prin registru, ca bara, tastatura și paleta să fie vederi ale aceluiași registru.
  */
 export type ContextVedere = {
-  readonly [K in 'paleta' | 'lista' | 'proprietati' | 'proiectare' | 'masina' | 'potriveste' | 'tema' | 'traseu']: () => void
+  readonly [K in 'paleta' | 'lista' | 'proprietati' | 'proiectare' | 'masina' | 'imprimanta' | 'potriveste' | 'tema' | 'traseu']: () => void
 };
 
 const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
@@ -19,5 +19,6 @@ const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
 
 // `traseu`: „Arată traseul” (ADR 0038 §2), un comutator al vederii; calculul îl pornește aplicația, la cerere.
 // `proiectare`, `masina`: filele ferestrelor din meniul global (ADR 0132): desenul, și mașina pe tot ecranul (conexiunea,
-// programul, lucrarea; ADR 0081), al cărei conținut vine la prima deschidere.
-export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = (['paleta', 'lista', 'proprietati', 'proiectare', 'masina', 'potriveste', 'tema', 'traseu'] as const).map(vedere);
+// programul, lucrarea; ADR 0081), al cărei conținut vine la prima deschidere; `imprimanta`: imprimanta 3D din
+// rețea (ADR 0190).
+export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = (['paleta', 'lista', 'proprietati', 'proiectare', 'masina', 'imprimanta', 'potriveste', 'tema', 'traseu'] as const).map(vedere);

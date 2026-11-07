@@ -938,6 +938,42 @@ următor; lista erorilor și jurnalul arată și ele titlul fiecărui cod.
 - Ce nu se poate acum e dezactivat, cu motivul alături („Nu acum: mașina e în alarmă…”): în alarmă, cât merge o lucrare sau o
   procedură. Oprit la o schimbare de sculă, merg jog-ul, palparea și zero-ul Z, nu și zero-ul XY.
 
+## Imprimanta
+%% capitol: imprimanta
+%% acopera: vedere.imprimanta
+
+Fila **Imprimanta** din meniul aplicației deschide fereastra imprimantei 3D, pe tot ecranul, sub meniu. Deocamdată lucrează cu
+imprimantele Creality din familia K1 (K1C și K1C 2025), prin WiFi, pe protocolul lor din fabrică: fără root și fără nicio
+setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastra Mașina rămâne a lui. `F1` deschide capitolul ăsta.
+
+- **Conectarea.** Scrie **Adresa imprimantei** (o vezi pe ecranul ei: Setări → Rețea, de exemplu 192.168.1.50) și apasă
+  **Conectează**. Prima dată, browserul întreabă dacă pagina poate ajunge la dispozitivele din rețeaua locală: alege
+  **Permite**. Merge în Chrome și Edge, pe calculator. O imprimantă legată rămâne în listă, cu numele ei (de exemplu
+  „K1C-8578”): data viitoare o alegi de acolo, cu **Conectează**, iar **Uită** o scoate din listă. Fereastra nu se leagă
+  singură când o deschizi.
+- **Caută în toată rețeaua** încearcă portul 9999 pe fiecare adresă a rețelei, doar când apeși, cam un minut; **Oprește
+  căutarea** o oprește. Prima imprimantă care răspunde se leagă.
+- **Când nu merge,** fereastra spune ce s-a întâmplat (nu răspunde nimic, permisiunea refuzată, răspunde altceva decât o
+  imprimantă) și ce verifici: imprimanta pornită, calculatorul în aceeași rețea cu ea (nu într-o rețea de oaspeți), adresa
+  de pe ecranul ei.
+- **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
+  firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
+  patului și din carcasă (doar citite: aplicația nu încălzește nimic) și codul semnalat de imprimantă (textul lui îl arată
+  ecranul ei).
+- **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
+  imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
+  legătura; imprimanta nu e atinsă.
+- **Fișierele din imprimantă** (trimise din Creality Print sau OrcaSlicer): **Pornește** deschide confirmarea, cu fișierul,
+  materialul și timpul estimat. **Pornește imprimarea** se aprinde abia după bifa **Patul e gol** (nicio piesă rămasă sub
+  duză); **Renunță** închide confirmarea. Imprimanta se încălzește și își face singură verificările; imediat după pornire
+  închide legătura, iar fereastra se leagă singură din nou. **Reîmprospătează** cere din nou lista.
+- **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
+  pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
+- **Jurnalul cadrelor** arată ce a trimis fereastra și ce a primit; **Copiază jurnalul** îl pune în clipboard, pentru o
+  raportare.
+- Singură, fereastra doar citește starea și răspunde imprimantei că e acolo; orice comandă pleacă dintr-un clic al tău. Portul
+  9999 n-are parolă: oricine din rețeaua atelierului poate comanda imprimanta, deci ține-o într-o rețea doar a ta.
+
 ## Vederea 3D
 %% capitol: vedere-3d
 %% acopera: editare.3d
