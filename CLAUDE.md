@@ -642,6 +642,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   se publică înaintea site-ului** (funcțiile, regulile Firestore și Storage, indecșii; `scripts/publica.ts` o face singur):
   un site nou peste un `tichete` vechi pierde tăcut proiectul atașat. Regulile Storage (ținta `stocare`) le înlocuiesc pe
   ale aplicației vechi pe bucket-ul de test.
+  **Plafonul total 600 kB (ADR 0143, decizia owner-ului din 07.11):** liniile paralele aveau gata pe ramuri încă ~60 kB
+  (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
+  iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
+  105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -846,6 +850,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 07.11.2026: **plafonul total 600 kB** („Yes, 600 kB”, la „Raise the total bundle cap to 600 kB (new ADR), startup staying
+  at 110 kB?”): după unirea raportărilor și a imprimantei, totalul era 535,0 / 550 kB, iar liniile paralele aveau gata pe
+  ramuri încă ~60 kB. ADR 0143; pornirea rămâne 110 kB.
 - 07.11.2026: **raportările (15.B↑b) și imprimanta (3.6g–3.6i), unite în `main`**, după biblioteca extensiilor (unită de
   sesiunea ei): 15.B↑b la „Da, transmite” (în sesiunea liniei, la „Să-i transmit sesiunii principale să unească 15.B↑b în
   `main` și să publice serverul pe test?”); imprimanta la „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut
