@@ -6419,3 +6419,21 @@ ADR 0172, în sesiunea liniei).
 - **Rămâne:** 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și potrivirea simulată), 12.1↑f (gaura și treptele), fișa
   plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul owner-ului (cu `CLAUDE.md`: proba documentului e acum
   `document.v22.oracol.test.ts`, iar următorul câmp nou e v23; planșele, dacă se unesc după, iau v23).
+
+## 2026-11-07 — 12.1↑b: freza dopului cu pereți drepți, bifată, pornește de la primul T liber (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repară-l” (owner-ul, la întrebarea de la capătul feliei 12.1↑c: „O repar aici, cu primul număr liber ca la
+bandă, sau o lași pe mai târziu?”).
+**Started:** 07.11, 23:11. **Completed:** 07.11, 23:30.
+
+- **Ce era:** „Altă freză pentru dop” (incrustația cu pereți drepți, 12.1↑b), bifată, propunea T-ul locașului + 1; lângă o
+  incrustație în V, acela era chiar T-ul V-ului, deci o a doua freză sub același T și Exportă oprit (ca freza decupării benzii,
+  găsită pe canal la 12.1↑c).
+- **Acum** (`0fc2ea0`): primul T de după toate frezele operațiilor ferestrei (`tMaxim` din `DialogExport`, comun cu freza
+  decupării). Proba e2e nouă: un dreptunghi cu pereți drepți lângă un cerc cu incrustația în V; bifată, freza dopului are T-ul
+  de după toate, fără conflict. Proba de dinainte (un singur dreptunghi) rămâne pe T2.
+- **Otrava:** E16 în lista 12.1b (implicitul vechi), prinsă de proba nouă: lista 12.1b la 55 / 55.
+- **Porțile:** tsc, e2e 364 / 364 pe 4174 (3 lucrători, 6,5 min).
+- **Publicat:** canalul `incrustatii`, build-ul `0fc2ea0`, verificat în browserul aplicației: versiunea `0fc2ea080371`; pe
+  dreptunghiul cu pereți drepți din proiect, „Altă freză pentru dop” bifată propune T3 Ø3 (aici, cu locașul pe T2, și regula
+  veche dădea T3; diferența o prinde proba e2e); închisă fără export.
