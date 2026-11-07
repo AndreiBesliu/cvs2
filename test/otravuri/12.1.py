@@ -93,25 +93,25 @@ o('L03', ROL, "  const fundPlat = rol !== 'incrustatie' ? undefined : fundVechi 
   'rol', 'fundul plat de dinainte ignorat la rolul ales din nou')
 
 # ---- Fereastra exportului, panoul, arborele (e2e) ----
-o('E01', CON, '            incrustatie: o.incrustatie\n', '            incrustatie: null && o.incrustatie\n', 'e2e', 'rândul ferestrei nu primește incrustația din document')
+o('E01', CON, "            incrustatie: o.incrustatie?.fel === 'v'\n", "            incrustatie: null && o.incrustatie?.fel === 'v'\n", 'e2e', 'rândul ferestrei nu primește incrustația din document')
 o('E02', APP, '        for (const d of dopuri) descarca(d.octeti, d.nume);', '', 'e2e', 'fișierul dopului nedescărcat')
 o('E03', VAL, '      ...(incrustatie ? { incrustatie } : {}),', '', 'e2e', 'Exportă scoate incrustația din proiect')
-o('E04', VAL, "v.incrustatie ? { ...(o.incrustatie ?? {}), ...v.incrustatie, fel: 'v' as const } : undefined;",
+o('E04', VAL, "v.incrustatie ? { ...(o.incrustatie?.fel === 'v' ? o.incrustatie : {}), ...v.incrustatie, fel: 'v' as const } : undefined;",
   "v.incrustatie ? { ...v.incrustatie, fel: 'v' as const } : undefined;", 'dialog', 'un câmp necunoscut al incrustației pierdut la Exportă')
 o('E05', DLG, '      const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc),',
   '      const joc = citesteNumar(p.jocInc), fierastrau = citesteNumar(p.fierastrauInc),', 'e2e', '„Același spațiu” bifat nu scrie jocul ca fierăstrău')
-o('E06', DLG, "v === 'incrustatie' ? { tip: 'vcarve', incrustatie: true, fundPlat: true }", "v === 'incrustatie' ? { tip: 'vcarve', incrustatie: true }",
+o('E06', DLG, "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true, fundPlat: true }", "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true }",
   'e2e', 'incrustația aleasă în fereastră fără fundul plat')
 o('E07', PAN, '(o.incrustatie ? { ...o, incrustatie: { ...o.incrustatie, ...v } } : o)', '(o)', 'e2e', 'panoul nu scrie jocurile')
-o('E08', ARB, "              {o.tip === 'vcarve' && o.incrustatie && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}", '', 'e2e',
+o('E08', ARB, "              {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}", '', 'e2e',
   'arborele nu spune incrustația')
 
 SETURI = {
     'inc': ['test/unit/incrustatie.potrivire.test.ts', 'test/unit/vcarve.start.test.ts', 'test/unit/incrustatie.refuzuri.test.ts'],
     'inc2': ['test/unit/incrustatie.potrivire.test.ts', 'test/unit/vcarve.start.test.ts', 'test/unit/vcarve.test.ts', 'test/unit/vcarve.fund.test.ts',
              'test/unit/incrustatie.rol.test.ts', 'test/unit/documente.aur.test.ts'],
-    'doc': ['test/unit/document.v20.oracol.test.ts'],
-    'doc2': ['test/unit/document.v20.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
+    'doc': ['test/unit/document.v21.oracol.test.ts'],
+    'doc2': ['test/unit/document.v21.oracol.test.ts', 'test/unit/documente.aur.test.ts', 'test/unit/document.oracol.test.ts'],
     'rol': ['test/unit/incrustatie.rol.test.ts', 'test/unit/rol.test.ts'],
     'rol2': ['test/unit/incrustatie.rol.test.ts', 'test/unit/rol.test.ts', 'test/unit/actiuni.test.ts'],
     'dialog': ['test/unit/actiuni.test.ts', 'test/unit/incrustatie.scriere.test.ts'],

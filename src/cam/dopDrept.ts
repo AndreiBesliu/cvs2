@@ -12,7 +12,7 @@ import type { Contur } from '../geom/conturBaza.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import { IDENTITATE, transformaContur } from '../geom/matrice.ts';
 import { VERSIUNE_SCHEMA, type Document, type Nod, type Operatie } from '../model/document.ts';
-import { SUB_FATA_DOPULUI } from '../model/incrustatie.ts';
+import { valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { ordineTaieturi, type Taietura } from '../model/lume.ts';
 import { conturDeTaiat } from './contur.ts';
 import { contururiRegiuni, figuraDreapta, frezeIncrustatieDreapta, refuzIncrustatieDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
@@ -77,12 +77,11 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
     const m = inc.margine, latime = x1 - x0 + 2 * m, inaltime = y1 - y0 + 2 * m;
     const { dop: freze } = frezeIncrustatieDreapta(op);
     const lata = Math.max(...freze.map((x) => x.scula.diametru));
+    // Înălțimea dopului și grosimea semifabricatului: din același loc ca panoul (`valoriIncrustatieDreapta`).
+    const { inaltime: h, grosime } = valoriIncrustatieDreapta(op)!;
     const avertismente: string[] = [];
     let piesa: Document['piese'][number];
-    let grosime: number;
     if (inc.dop === 'ridicat') {
-      const h = inc.sprijin === 'fata' ? op.adancime - inc.joc : op.adancime + inc.fierastrau;
-      grosime = h + SUB_FATA_DOPULUI;
       const oglinda = { a: -1, b: 0, c: 0, d: 1, e: x1 + m, f: m - y0 };
       const contururi = contururiRegiuni(f.figura.dop).map((c) => transformaContur(c, oglinda));
       const e = Math.max(DINCOLO_DE_MARGINE, lata + TRECERE - m);
@@ -104,7 +103,6 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
       if (m < mica.scula.diametru) {
         return { ok: false, motiv: `${t.idLume}, dopul: marginea dopului decupat (${fix(m)} mm) trebuie să fie cel puțin cât freza lui (Ø${fix(mica.scula.diametru)}): altfel șanțul iese din placă` };
       }
-      grosime = op.adancime + inc.fierastrau;
       const muta = { a: 1, b: 0, c: 0, d: 1, e: m - x0, f: m - y0 };
       const exterioare = f.figura.dop.map((r) => transformaContur(r.exterior, muta));
       const goluri = f.figura.dop.flatMap((r) => r.gauri.map((g) => transformaContur(g, muta)));
