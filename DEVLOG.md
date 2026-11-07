@@ -6095,3 +6095,44 @@ test nu s-a atins; ramura nu e împinsă.
 - **Otrăvurile:** 29 (`test/otravuri/7.9b.py`); toate prinse la prima rulare (`28c1761`, în clona din afara Drive-ului): 19 unitare (așezarea, blocul, ajutoarele) și 10 e2e (legăturile panoului). S03 (începuturile rândurilor pe unități UTF-16), U06 (−) și U08 (alegerea pe unități UTF-16) au venit cu pașii scriși pentru ele înaintea rulării (cazul cu 😀 pe două rânduri, clicul pe −, un 😀 scris înainte în e2e); U04 (fără `preventDefault`) e prinsă de apăsarea trimisă de pagină, nu de adresă (Edge fără fereastră nu merge înapoi singur).
 - **CI:** complet verde pe `28c1761` (`42362185110`, 10:01–10:35 UTC); rapid verde.
 - **Publicat pe test:** `28c1761` (rularea `42364646242`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `28c1761a66ed`; roadmap-ul are 7.9↑b gata, în etapa 7; în Edge fără fereastră, pe instanța de test: rândul sub câmpul textului, AVA alese, 2 mm, Alt + → dă 2,1, „Fără spațieri (2)”.
+
+## 2026-11-07 — 11.1↑ pornită: planșele, etapa 11 (ADR 0210, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul a întrebat ce se mai poate face în paralel; sesiunea principală a deschis linia. Sarcina ei, primul
+paragraf întocmai: „**Etapa 11 din cncvs2: planșele** (mai multe foi de material într-un proiect, plăcuțele cu date
+variabile din CSV, adică Multi-Plate, și lista de tăiere), într-un worktree al tău. **Întâi cercetarea, un ADR propus și o
+schiță, cu întrebările pentru owner; codul abia după răspunsuri.**” Restul: documentele de citit, worktree-ul, cercetarea,
+ce cere schema, „gata” (ADR-ul cu rândul din index și traducerile, schița ca artifact, DEVLOG, commit și push), codul după
+răspunsuri și după unirea incrustațiilor și a tăierii în `main`.
+**Started:** 07.11, 14:05. **Completed:** 07.11, 14:40 (cercetarea, ADR-ul și schița; codul așteaptă răspunsurile și
+unirile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\plansele` (ramura `wip/11.1-plansele`, din `main` `36c75cb`), cu
+  joncțiunile `node_modules` și `functions\node_modules`; `.tmp/pw.config.ts` cu portul 4178 în trei locuri (comanda,
+  `webServer.url`, `use.baseURL`), `.tmp/emu.ts` și `.tmp/pw.emulator.config.ts` copiate; e2e-ul cu
+  `CNCVS2_E2E_RETEA=127.0.5`; ADR-urile 0210–0219; canalul `plansele`.
+- **Măsurat pe `main`, în worktree:** build-ul determinist, 268 de fișiere identice; pornirea 101,4 (cu ușa 104,9 / 110 kB),
+  totalul 506,0 / 550, /admin 105,4 / 200. Liniile deschise, din notele lor: incrustațiile +4,3, tăierea +10,4, imprimanta
+  +8,0 (~528,7 după unire).
+- **Cercetarea:** ArtCAM 2018 (Sheets, Nesting, Multi-Plate), Vectric (foile din V11, Plate Production), LightBurn (textul
+  variabil), OpenCutList (lista pe material), prototipul din Faza 2 și criteriul din prag (`CERCETARE-DETALIATA.json`: 3 foi;
+  25 de plăcuțe 80 × 30 pe 300 × 200, distanța 5, marginea 10: 15 + 10). În cod: `foi[0]` / `FOAIA = 0` în 11 fișiere și ~20
+  de apeluri ale `elementeFoaie` / `taieturiFoaie` cu indicele implicit; ușa judecă deja toate foile; `campuri` nefolosit;
+  mânerele și gruparea refuză o piesă cu mai multe instanțe; blocul textului stă pe orice grup; un cititor ZIP cu CRC-32
+  există (ADR 0127).
+- **ADR 0210 (propus):** foaia activă a ferestrei, lista cu foile, toate foile pe pânză (cele inactive estompate), mutarea
+  cu locul păstrat, materialul ca etichetă; «Încă…», «+1», «Desprinde», banda violet, gruparea cu întrebare; „Așază pe foi”
+  (rânduri, vărsarea, distanța cel puțin cât freza); plăcuțele din CSV (`{nume}` în textul piesei, valorile pe instanță,
+  literele fiecărei plăcuțe pe instanță: singura schemă nouă, probabil v22, fiindcă v20 și v21 sunt ale incrustațiilor);
+  „Toate foile” într-o arhivă `.zip`, cu foile identice o dată; raportul foilor și lista de tăiere (CSV, tipărire). Feliile
+  11.1↑–11.7, ~25–35 kB, peste ce rămâne din 550 kB: întrebarea 8 e plafonul.
+- **Schița:** <https://claude.ai/artifact/Fe7LSU7Lo8pQg4qxGA5JYZ> (privată, a owner-ului): recomandările, șapte planșe la
+  scară (fereastra cu foile, cu cele trei variante ale întrebării 1; piesa pusă de mai multe ori; „Așază pe foi” cu foaia pe
+  hârtie; «Din CSV…» și plăcuța aleasă; exportul; raportul și lista), feliile, plafonul, formularul celor opt întrebări.
+  Răspunsurile stau în baza paginii, colecția `raspunsuri` (`q1`–`q8`: `optiune`, `nota`, `la`; `general`); la publicare,
+  goală. Scriptul paginii verificat cu `node --check`.
+- **Fișa și restul:** rândul 11.1↑ în jurnal (în lucru) și răspunsurile în coada owner-ului; pragul: rândul foilor și al
+  plăcuțelor din CSV, în lucru; indexul ADR; roadmap-ul în engleză (635 de texte, 0 lipsă). Probele documentației și ale
+  traducerilor: 87 / 87.
+- **Urmează:** codul, după răspunsuri (sau „ok la toate”) și după unirea incrustațiilor și a tăierii în `main`; v22 abia
+  după v20 și v21. Prima felie: 11.1↑ (foaia activă și lista cu foile).

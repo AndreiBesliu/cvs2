@@ -869,6 +869,10 @@
       "ro": "Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e",
       "en": "The WebGL2 layer (the toolpath as LINE_STRIP; the sheet stays in the vector worker until stage 4; ADR 0038) and the editable properties panel, in the 2.8a shell; sub-slices 2.8c–2.8e"
     },
+    "508a8f766f84ca17": {
+      "ro": "Răspunsurile la cele opt întrebări din ADR 0210 (planșele, etapa 11; propus pe ramura `wip/11.1-plansele`, în sesiunea liniei), în [formularul schiței](https://claude.ai/artifact/Fe7LSU7Lo8pQg4qxGA5JYZ) sau cu „ok la toate” în conversație: cum vezi foile, exportul cu mai multe foi, așezarea pe foi, câmpurile din text, numele prea lungi, gruparea pieselor puse de mai multe ori, raportul foilor și lista de tăiere, plafonul pachetului; recomandările sunt primele variante. Plafonul e decizia ta: etapa nu încape în ce rămâne din 550 kB după unirea liniilor deschise",
+      "en": "The answers to the eight questions in ADR 0210 (sheets, stage 11; proposed on the `wip/11.1-plansele` branch, in the line’s session), in the [sketch’s form](https://claude.ai/artifact/Fe7LSU7Lo8pQg4qxGA5JYZ) or with “ok to all” in the conversation: how you see the sheets, exporting several sheets, placing parts on sheets, the fields in the text, names that are too long, grouping a part placed several times, the sheet report and the cut list, the bundle cap; the recommendations are the first options. The cap is your decision: the stage does not fit in what is left of 550 kB once the open lines are merged"
+    },
     "508b2f15dfad2a60": {
       "ro": "Sesiunea Web Serial și panoul mașinii",
       "en": "The Web Serial session and the machine panel"
@@ -1116,6 +1120,10 @@
     "6d845b0a46fa9278": {
       "ro": "Progresul etapelor viitoare în cronologie",
       "en": "The progress of future stages on the timeline"
+    },
+    "6d8da73eafb6b0fe": {
+      "ro": "Planșele, aduse din etapa 11: propunerea",
+      "en": "Sheets, brought forward from stage 11: the proposal"
     },
     "6dff3c8d475a776d": {
       "ro": "Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă)",
@@ -1588,6 +1596,10 @@
     "9bd2d2099253a2ab": {
       "ro": "cât mai curând",
       "en": "as soon as possible"
+    },
+    "9bf57f84ae584ac3": {
+      "ro": "**Planșele, aduse din etapa 11: propunerea** (în lucru; fără mașină; ADR 0210, propus; linia deschisă de sesiunea principală, la întrebarea owner-ului despre ce se mai poate face în paralel; în worktree-ul `plansele`, pe ramura `wip/11.1-plansele`). Rândul de prag „Mai multe foi de material într-un proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” și funcția „Listă de tăiere pe mai multe plăci” cer foile în toată aplicația (azi lucrează doar prima), piesele puse de mai multe ori, așezarea pe foi cu vărsarea, plăcuțele din CSV, exportul pe foi și lista de tăiere. Propunerea: foaia activă e a ferestrei, toate foile stau pe pânză (cele inactive estompate), o piesă mutată pe altă foaie își păstrează locul; «Încă…», «+1», «Desprinde» și banda violet; „Așază pe foi”, pe rânduri, cu distanța cel puțin cât freza; câmpurile `{nume}` în textul piesei, valorile pe instanță și literele fiecărei plăcuțe pe instanță (singura schemă nouă a etapei, probabil v22, după v20 și v21 ale incrustațiilor); „Toate foile” la export, într-o arhivă, cu foile identice o dată; raportul foilor și lista de tăiere, cu CSV și tipărire. Feliile 11.1↑–11.7, ~25–35 kB: peste ce rămâne din plafonul de 550 kB după unirea liniilor deschise (întrebarea 8). Codul vine după răspunsuri și după unirea incrustațiilor și a tăierii în `main`.",
+      "en": "**Sheets, brought forward from stage 11: the proposal** (in progress; no machine; ADR 0210, proposed; the line was opened by the main session, after the owner asked what else could be done in parallel; in the `plansele` worktree, on the `wip/11.1-plansele` branch). The threshold row “Several material sheets in one project (Sheets) and plates with variable data from CSV (Multi-Plate)” and the function “Cut list over several sheets” call for sheets across the whole app (today only the first one works), parts placed several times, placing on sheets with overflow, plates from CSV, export per sheet and the cut list. The proposal: the active sheet belongs to the window, all sheets sit on the canvas (the inactive ones faded), a part moved to another sheet keeps its place; «More…», «+1», «Detach» and the violet band; “Place on sheets”, in rows, with a gap at least as wide as the bit; `{nume}` fields in the part’s text, the values on the instance and each plate’s letters on the instance (the stage’s only new schema, probably v22, after the inlays’ v20 and v21); “All sheets” in the export, in one archive, with identical sheets once; the sheet report and the cut list, with CSV and printing. Slices 11.1↑–11.7, ~25–35 kB: more than what is left of the 550 kB cap once the open lines are merged (question 8). The code comes after the answers and after the inlays and trimming lines are merged into `main`."
     },
     "9c3bf9eb00f8f5b8": {
       "ro": "**Aldinul și cursivul sintetic, aduse din etapa 7** (fără mașină; ADR 0123; worktree-ul `wip/7.5-text`, la cererea owner-ului: „vreau sa deschidem worktrees pentru urmatoarele etape”, „porneste worktrees”). În panoul textului, bifele **Aldin** (îngroșarea pe fiecare parte, propusă 3 % din înălțime) și **Cursiv** (înclinarea, propusă 12°), pentru orice font. Cursivul înclină fiecare literă față de linia ei de bază, exact. Aldinul așază literele la înălțimea miezului, h − 2d, le îngroașă cu d prin fațada offsetului (`offsetFigura`, nouă: o figură par-impar, în ambele sensuri, prin `Shape` din cavalier, cu ieșirea verificată și fără bucăți pierdute) și le mută cu (d, d): H de 20 mm rămâne de 20 mm, avansul crește cu 2d, colțurile de afară se rotunjesc. Literele îngroșate se țin în memorie (fără ea, offsetul costa 0,4–0,5 s pe 70 de litere, la fiecare tastă). Blocul ține `aldin` și `cursiv` (câmpuri păstrate, nu schemă nouă); scalarea uniformă crește îngroșarea. Pornirea 98,5 → 98,6 (cu ușa 102,0 → 102,2 / 110 kB), totalul 441,2 → 444,6 / 500 (~1,3 kB din `Shape`, adusă acum și pe firul principal). **Probele:** oracolul fontTools (5 cazuri, 41 de litere, ~218 000 de puncte clasificate independent, în miez sau la cel mult d de el; cutiile exacte; 3 cazuri de cursiv, contur cu contur), pe hârtie (H de 20 mm cu 0,6: colțul dinăuntru ascuțit, cel de afară rotunjit; cursivul de 12°), fațada (pătratul cu gol, golul închis, unirea, insula), blocul, previzualizarea (arcele), e2e-ul panoului. **Otrăvurile** din `test/otravuri/7.5.py`: 38 / 38 prinse din prima (32 pe probele unitare, 6 de interfață, prin e2e, cu un harnaș local pe portul worktree-ului).",
@@ -2424,6 +2436,10 @@
     "f3fa2adf59a56cb0": {
       "ro": "Copierea de-a lungul unei curbe",
       "en": "Copying along a curve"
+    },
+    "f42a27790b7b1677": {
+      "ro": "11.1↑",
+      "en": "11.1↑"
     },
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
