@@ -96,7 +96,7 @@ export function unesteSuprapuse(intrare: readonly Contur[]): { readonly ok: true
 
 /** Numele unui obiect pentru Klipper (`EXCLUDE_OBJECT`): fără diacritice și fără spații, ca la OrcaSlicer (`<nume>_id_<k>_copy_0`). */
 export function numeObiect(nume: string, k: number): string {
-  const curat = nume.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9_.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+  const curat = nume.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9_.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
   return `${curat || 'piesa'}_id_${k}_copy_0`;
 }
 

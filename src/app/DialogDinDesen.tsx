@@ -43,7 +43,7 @@ const preia = (d: SetariFeliere, k: readonly (keyof SetariFeliere)[]): Partial<S
 
 /** Numele fișierului, ca `filename_format` din OrcaSlicer: `<nume>_<material>_<timp>.gcode`, fără spații și diacritice. */
 export function numeFisier(nume: string, tip: string, timp: number): string {
-  const curat = (x: string): string => x.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
+  const curat = (x: string): string => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
   return `${curat(nume) || 'cvs2'}_${curat(tip)}_${timpText(timp).replace(/\s+/g, '')}.gcode`;
 }
 
