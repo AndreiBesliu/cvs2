@@ -6807,6 +6807,36 @@ il arhivezi”.
   `origin`, `wip/3.Xg-biblioteca` și `wip/15.B-raportari` intră în rândul owner-ului cu ramurile de șters (acum 17, cu
   comanda; traducerea la zi).
 
+## 2026-11-08 — Felia 3.Tg: înălțimile pieselor LEGO, la zecimi, în profilul imprimantei (ADR 0168) (Model: Claude Opus 5.5)
+
+**Prompt:** „plugin-ul 3d care face piesele de lego are o problema, stifturile pe care le face si gaurile de sub piesa sunt
+prea mici, raza este ok, dar inaltimea este putin prea mica. pare ca are nevoie de o zecime de milimetru pentru stifturi”,
+apoi „vreau sa pot edita eu inaltimile la zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”; la întrebarea
+implicitelor, „Defaults 1.9 / 2.1”.
+**Started:** 08.11, 09:30. **Completed:** 08.11, 12:05.
+
+- **Propunerea (`ea493a5`):** ADR 0168, cu schița în text și o singură întrebare (implicitele). Pe drum, `git fetch` cădea
+  cu „bad object refs/heads/main (1)”: opt copii de conflict ale lui Drive în `.git/refs` (`main (1)`, `wip/10
+  (1).3-taiere-conversie`…), toate cu sha-ul conținut în ramurile adevărate; mutate în afara lui `.git`, nu șterse.
+- **Felia (`b37dc0f`):** motorul (`stift_h` 1,9, `locas_h` 2,1 în cele șapte locuri cu `stift_h + 0.2`, `Lego.inaltimi`,
+  cinci plăci de calibrare 2 × 2 cu știfturi de 1,7–2,1 mm); atelierul (înălțimile în `CHEI_IMPRIMANTA`, citite prin
+  `Lego.inaltimi`, date motorului prin `paramMotor`; câmpurile cu − / +, bifa „Urmează știftul (+ 0,2)”, „Înapoi la
+  implicite”, în Setări și în fila Calibrare); 14 texte în engleză; Easy 3Draw 18.8.0 (manifestul, biblioteca).
+- **Probele:** `trenulet.inaltimi.test.ts` (7, pe hârtie, scrise înaintea codului: vârful știftului la H + stift_h, locașul
+  la locas_h și capacul cu 0,01 mai jos, marginea H − 0,8, toate cele șase feluri de fund plin, profilul vechi, plăcile de
+  calibrare, implicitele atelierului = ale motorului); e2e-ul înălțimilor (câmpurile, bifa, zecimile, piesa cu 0,1 mm mai
+  înaltă, reîncărcarea, două imprimante cu înălțimile lor, înapoi la implicite). Referințele v18 cu înălțimile lui v18
+  fixate în `referinte.js`: 622 comparate, 0 diferite.
+- **Otrăvurile (`test/otravuri/3.Tg.py`):** 28 / 28 prinse la prima rulare, în clona din afara Drive-ului, după baza verde
+  (7 / 7, 1 / 1, e2e 10 / 10).
+- **Porțile pe `b37dc0f`:** traducerile (672, apoi 674 cu rândul fișei), compilatoarele, importurile, 8 659 de teste unitare
+  (0 căzute), licențele, build-ul determinist (pornirea 101,7, cu ușa 105,3 / 110 kB; totalul 535,0 / 600), e2e 376 / 376,
+  emulatoarele 101 / 101 și 21 / 21.
+- **CI pe `b56f0e1` (documentele):** rapid `42466226940` și complet `42466228024`, verzi.
+- **Publicat pe test:** rularea `42469439538`, serverul întâi, apoi site-ul; amprenta `meta/deployment` = `b56f0e108349` pe
+  toate țintele. Catalogul bibliotecii are Easy 3Draw 18.8.0 (`trenulet-18.8.0-3660ee04.zip`, 420 528 de octeți, servit). În
+  cvs2: meniul Extensii → Biblioteca → „Actualizează la 18.8.0”.
+
 ## 2026-11-08 — 6.V↑ pornită: ancora și tastele transformării (ADR 0240, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, către sesiunea principală: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori.
