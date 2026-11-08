@@ -6681,6 +6681,84 @@ va face update si pe main ulterior”.
 - **Rămâne:** pe live, biblioteca și Easy 3Draw ajung cu următoarea publicare a aplicației (la cuvântul owner-ului); în
   checkout-ul principal, `main`-ul local e în urmă cu `58e73c0`, `63d6af5` și intrarea asta (`git pull`, merge); proba
   `extensii.lucru.spec.ts:277`, de întărit (clicul în cadru imediat după ce fila extensiei reapare).
+
+## 2026-11-07 — Unirea raportărilor (15.B↑b) și a imprimantei (3.6g–3.6i) în main, publicarea pe test (Model: Claude Opus
+5.5)
+
+**Prompt:** „Da, transmite” (owner-ul, în sesiunea liniei 15.B↑b, la „Să-i transmit sesiunii principale să unească 15.B↑b
+în `main` și să publice serverul pe test?”), transmis aici de sesiunea liniei; aici, „verifica din nou”; apoi, din sesiunea
+imprimantei, „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica
+ceva de aici incolo se va face update si pe main ulterior”; la publicarea refuzată din greșeală, „Qm dat din greseala”.
+**Started:** 07.11, 19:25. **Completed:** 07.11, 22:42.
+
+- **Verificarea de la „verifica din nou”:** între timp, sesiunea bibliotecii unise 3.Xg în `main` (`58e73c0`, la „Da,
+  unește” al owner-ului, în sesiunea ei). Cuvintele owner-ului pentru celelalte două uniri, găsite în transcrierile liniilor.
+- **Unirile:** 15.B↑b peste `63d6af5` (`b501571`; conflicte doar în `DEVLOG.md` și `docs/otravuri.md`, adăugări ale
+  ambelor părți, păstrate); imprimanta până la `cd2f234` (`6e61bee`; conflicte în `DEVLOG.md` și
+  `docs/traduceri/roadmap.en.json`, câte o intrare nouă pe fiecare parte); apoi DEVLOG-ul bibliotecii (`392bc4b`), adus cu
+  `e9cf6ee`. `firebase.json` unit e chiar ieșirea generatorului (CSP-ul imprimantei, Storage-ul raportărilor). Copia locală
+  `.tmp/emu.ts` pornește acum și Storage, cu dosarul temporar al rulării.
+- **Ordinea pe test:** CI-ul complet pe `63d6af5` căzuse întâi (`extensii.lucru.spec.ts:277`; sesiunea bibliotecii a
+  cercetat căderea: încărcarea; verde la a doua încercare). Push-ul unirilor a așteptat publicarea bibliotecii și DEVLOG-ul
+  ei, ca o publicare a unui commit mai vechi să nu vină după una mai nouă (ar fi întors serverul).
+- **Porțile:** pe `b501571`, traducerile, compilatoarele, importurile, licențele, build-ul determinist și 8 600 de teste
+  unitare (0 căzute); e2e-ul și emulatoarele, sub CPU 82–96 % (alte sesiuni), cu 2 + 7 căderi, toate trecute reluate singure;
+  `sugestii.emulator.spec.ts:97` (intrarea cu parola, blocată) a trecut 3 / 3 și fără 15.B↑b (`63d6af5`, în clona
+  otrăvurilor), și cu ea: încărcarea, nu felia. Pe `6e61bee` (cu imprimanta): 8 652 de teste unitare (0 căzute), build-ul
+  determinist, e2e 374 / 375 (căzuta, `traseu.oracol.spec.ts:626`, trecută singură), emulatoarele 101 / 101 și 21 / 21. Pe
+  `e9cf6ee`: traducerile, probele documentației (24 / 24), build-ul determinist (282 de fișiere identice).
+- **Mărimile:** pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.
+- **CI:** pe `e9cf6ee`, rapid verde (`42409120570`: cele șase felii și oracolul exportului 2D) și complet verde
+  (`42409122839`).
+- **Publicat pe test:** rularea `42412022925`, întâi serverul (regulile Storage eliberate în `firebase.storage`, fără vreun
+  rol în plus pentru contul WIF; regulile Firestore; indecșii; cele 12 funcții, cu `pastrareTichete` creată), apoi
+  hosting-ul (282 de fișiere); amprenta `meta/deployment` = `e9cf6ee3309e` pe toate țintele (hosting, funcții, reguli,
+  indecși, stocare). <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `e9cf6ee3309e`; CSP-ul are `http:`
+  în `connect-src`; catalogul extensiilor și `/admin` răspund 200. Rândul owner-ului din fișă (proba raportărilor pe adresa
+  principală) apare în `/admin` cu următoarea publicare.
+
+## 2026-11-07 — Proba propunerii unei extensii, întărită: clicul pierdut după ce fereastra ei reapare (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, aici” (la „Întăresc aici proba instabilă `extensii.lucru.spec.ts:277`?”), apoi „Da, descarcă” (urma probei
+căzute, din CI).
+**Started:** 07.11, 22:10. **Completed:** 07.11, 22:55.
+
+- **Ce s-a întâmplat:** în CI-ul complet pe `63d6af5` (rularea `42395280530`, prima încercare), proba „formele: o extensie
+  propune un SVG…” a așteptat „Importă” 25 s. Urma ei (artefactul `probe-cazute`, 936 KB): al doilea clic pe „Propune o
+  formă” a fost dat la ~60 ms după ce fereastra extensiei a reapărut (fila, după Proiectare), în același punct ca primul, cu
+  verificările lui Playwright trecute în cadru; după el, nicio cerere a extensiei, nicio eroare în pagină, iar extensia avea
+  un singur răspuns. Clicul n-a ajuns la buton.
+- **Local (Windows), nereprodus:** 0 clicuri pierdute din 480 (fila ascunsă și arătată, apoi imediat un clic în cadru, cu și
+  fără procesorul paginii și al cadrului încetinit de 6 ori, 4 rulări în paralel). Drumul propunerii, notat la fiecare
+  graniță (clicul, mesajele portului, fereastra, `inert`, dialogurile), merge. Cade pe Linux, în CI, ca probele pe care le
+  pomenește `playwright.config.ts`.
+- **Întărirea** (`test/e2e/extensii.lucru.spec.ts`): `clicDupaReaparitie` face clicul adevărat și îl repetă doar dacă n-a
+  ajuns la buton (semnul îl pune clicul, o dată), deci propunerea nu pleacă de două ori; la capăt, extensia are exact două
+  răspunsuri („forme: deschis” de două ori), nu doar ultimul.
+- **Probat:** cu clicuri pierdute simulate în cadru (oprite pe document, înaintea butonului): 0, 1 și 2 trec, cu două
+  răspunsuri; toate pierdute, pică; proba veche, cu un clic pierdut, pică exact ca în CI („Importă” nu apare în 30 s). Mutația
+  „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
+  și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului.
+
+## 2026-11-07 — Unirea probei întărite în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, la „Unesc întărirea probei (`cd100d5`) în `main`?”).
+**Started:** 07.11, 22:58. **Completed:** 07.11, 23:42.
+
+- **Unirea:** `main` (`b818601`: raportările 15.B↑b și imprimanta 3.6g–3.6i) adus întâi în ramură (`1012c69`; conflict doar la
+  coada `DEVLOG.md`, ambele intrări), apoi `4698385` pe `main` (primul părinte `b818601`, al doilea `1012c69`), din worktree,
+  fără checkout-ul principal. Față de `main`, doar proba și DEVLOG-ul.
+- **Porțile, pe arborele unit:** tipurile (aplicația, pluginul), build-ul, e2e `extensii.lucru` și `biblioteca` de două ori:
+  32 / 32.
+- **CI pe `4698385`:** complet verde (`42413527793`): unitare 8 648 (0 căzute, 12 sărite), funcțiile 101 / 101, e2e 375 / 375
+  (proba întărită, 2,3 s), e2e pe emulatoare 21 / 21. Rapidul (`42413509065`) a fost anulat de împingerea următoare pe `main`
+  (`c73177f`, plafonul de 600 kB), care îl conține; rapidul pe `c73177f`, verde.
+- **Nepublicat pe test:** se schimbase doar proba; sesiunea principală publică un `main` care o conține.
+- **Corectură:** am spus că doar proba propunerii face clic în cadru imediat după ce fila reapare. Greșit: am căutat tiparul
+  doar după `cadru(page)`, iar celelalte locuri ajung în cadru prin alte nume. Completul pe `c73177f` a căzut la fel în
+  `extensii.spec.ts` (butonul „eroare”, după filă); sesiunea principală a mutat ajutorul în `test/e2e/ajutor-extensii.ts` și
+  l-a pus în toate cele patru locuri (`a88b00f`).
 ## 2026-11-07 — Felia 25.1↑ pornită: trasarea din imagine (ADR 0220, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „**Trasarea din imagine (bitmap → vectori) în cncvs2**, adusă din etapa 25, într-un worktree al tău. **Întâi

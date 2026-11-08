@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -291,12 +292,13 @@ test('formele: o extensie propune un SVG; cvs2 trece la Proiectare și deschide 
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(0);
   await page.locator('[data-actiune="vedere.proiectare"]').click();
   await page.locator('[data-extensii="fila"]').click();
-  await cadru(page).locator('[data-salut="propune"]').click();
+  await clicDupaReaparitie(page, '[data-salut="propune"]');
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(1);
   await page.locator('[data-extensii="fila"]').click();
-  await expect(cadru(page).locator('[data-proba="forme"]').last()).toHaveText('forme: deschis');
+  // două propuneri, două răspunsuri: niciuna n-a plecat de două ori
+  await expect(cadru(page).locator('[data-proba="forme"]')).toHaveText(['forme: deschis', 'forme: deschis']);
   expect(await eroriJurnal(page)).toEqual([]);
 });
 
