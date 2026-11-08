@@ -801,3 +801,143 @@ export function judecaRetezarea(o: { readonly inainte: readonly FormaOracol[]; r
   }
   return rau;
 }
+
+// ——— Felia 10.3↑h (ADR 0181 §2, §3): linia la orice unghi, partea păstrată, capetele prelungite ———
+
+/** Poligonul tăiat cu semiplanul `semn · (n · q − v) ≥ 0` (Sutherland–Hodgman), pentru orice normală n. */
+function taieSemiplan(p: readonly P[], n: P, v: number, semn: number): P[] {
+  const f = (q: P): number => semn * (n.x * q.x + n.y * q.y - v);
+  const rez: P[] = [];
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i] as P, b = p[(i + 1) % p.length] as P;
+    const fa = f(a), fb = f(b);
+    if (fa >= 0) rez.push(a);
+    if ((fa >= 0) !== (fb >= 0)) {
+      const t = fa / (fa - fb);
+      rez.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+    }
+  }
+  return rez;
+}
+
+/** Aria regiunii par-impar a contururilor închise, tăiate întâi cu semiplanul `semn · (n · q − v) ≥ 0`. */
+export function arieParSemiplan(forme: readonly FormaOracol[], n: P, v: number, semn: number): number {
+  const poligoane = forme.filter((f) => f.inchis).map((f) => {
+    const p = esantioane(f, 512);
+    return p.filter((q, i) => i === 0 || Math.hypot(q.x - (p[i - 1] as P).x, q.y - (p[i - 1] as P).y) > 0);
+  });
+  let a = 0;
+  for (let i = 0; i < poligoane.length; i++) {
+    const p = poligoane[i] as P[];
+    const q0 = p[0] as P, q1 = p[1] ?? q0;
+    const mij = { x: (q0.x + q1.x) / 2, y: (q0.y + q1.y) / 2 };
+    let adancime = 0;
+    for (let j = 0; j < poligoane.length; j++) if (j !== i && inPoligon(mij, poligoane[j] as P[])) adancime++;
+    const t = taieSemiplan(p, n, v, semn);
+    a += (adancime % 2 === 0 ? 1 : -1) * Math.abs(t.length >= 3 ? ariePoligon(t) : 0);
+  }
+  return a;
+}
+
+/**
+ * Judecata unei tăieri cu o linie oarecare, n · q = v (n unitară; lista abaterilor): acoperirea (fiecare punct vechi pe o formă
+ * nouă) și nimic inventat (fiecare punct nou pe o formă veche sau pe linie); fiecare parte de o singură parte a liniei; cu
+ * închidere, aria părților de fiecare parte e aria regiunii vechi de partea aceea. `doua`: exact două părți, una de fiecare
+ * parte (linia din panou); altfel oricâte (cuțitul tras: fiecare față și fiecare bucată, o parte). `doar` (ADR 0181 §2,
+ * „Păstrează”): semnul părții păstrate; atunci se acoperă doar punctele vechi de partea ei, iar de cealaltă nu rămâne nimic.
+ */
+export function judecaLinia(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly parti: ReadonlyArray<readonly FormaOracol[]>;
+  readonly n: P;
+  readonly v: number;
+  readonly inchide: boolean;
+  readonly doua: boolean;
+  readonly doar?: 1 | -1;
+}): string[] {
+  const rau: string[] = [];
+  const fata = (q: P): number => o.n.x * q.x + o.n.y * q.y - o.v;
+  const toate = o.parti.flat();
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      if (o.doar !== undefined && o.doar * fata(q) <= 1e-7) continue;
+      const d = distantaLaForme(q, toate);
+      if (d > 1e-6) { rau.push(`un punct vechi (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e pe nicio formă nouă (${d})`); break; }
+    }
+  }
+  for (const f of toate) {
+    for (const q of esantioane(f, 48)) {
+      const d = distantaLaForme(q, o.inainte);
+      if (d > 1e-6 && Math.abs(fata(q)) > 1e-7) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche (${d}), nici pe linie`); break; }
+    }
+  }
+  // Partea fiecărei părți: 1 sau −1 (0: toată pe linie; 2: de ambele părți).
+  const laturi = o.parti.map((parte) => {
+    let s = 0;
+    for (const f of parte) {
+      for (const q of esantioane(f, 16)) {
+        const z = fata(q);
+        if (Math.abs(z) <= 1e-7) continue;
+        const w = z > 0 ? 1 : -1;
+        if (s === 0) s = w;
+        else if (s !== w) return 2;
+      }
+    }
+    return s;
+  });
+  if (laturi.includes(2)) rau.push('o parte trece linia');
+  const doar = o.doar;
+  if (doar !== undefined) {
+    if (laturi.some((s) => s === -doar)) rau.push('a rămas ceva de partea ștearsă');
+    if (o.doua && o.parti.length !== 1) rau.push(`părțile: ${o.parti.length}, nu 1`);
+  } else if (o.doua) {
+    if (o.parti.length !== 2) rau.push(`părțile: ${o.parti.length}, nu 2`);
+    else if (!(laturi.includes(1) && laturi.includes(-1))) rau.push('părțile nu sunt de o parte și de alta');
+  }
+  if (o.inchide && !laturi.includes(2)) {
+    for (const s of o.doar !== undefined ? [o.doar] : ([-1, 1] as const)) {
+      const asteptat = arieParSemiplan(o.inainte, o.n, o.v, s);
+      const are = o.parti.reduce((a, parte, k) => a + (laturi[k] === s ? ariePar(parte) : 0), 0);
+      if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(ariePar(o.inainte)))) rau.push(`aria de partea ${s > 0 ? '+' : '−'}: ${are}, nu ${asteptat}`);
+    }
+  }
+  return rau;
+}
+
+/**
+ * Judecata părții păstrate cu un cuțit închis, convex (`k`, trigonometric; lista abaterilor): ce rămâne stă înăuntrul lui
+ * (`inauntru`) sau în afară, acoperă punctele vechi de partea aceea, nu inventează nimic (pe formele vechi sau pe cuțit) și, cu
+ * închidere, are aria regiunii vechi de partea aceea.
+ */
+export function judecaPastrareaConvex(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly ramase: readonly FormaOracol[];
+  readonly k: readonly P[];
+  readonly inauntru: boolean;
+  readonly inchide: boolean;
+}): string[] {
+  const rau: string[] = [];
+  const pe = (q: P): boolean => laPoligon(q, o.k) <= 1e-6;
+  const deParte = (q: P): boolean => inPoligon(q, o.k) === o.inauntru;
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      if (pe(q) || !deParte(q)) continue;
+      const d = distantaLaForme(q, o.ramase);
+      if (d > 1e-6) { rau.push(`un punct vechi de partea păstrată (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) lipsește (${d})`); break; }
+    }
+  }
+  for (const f of o.ramase) {
+    for (const q of esantioane(f, 48)) {
+      if (pe(q)) continue;
+      if (!deParte(q)) { rau.push(`a rămas un punct de partea ștearsă (${q.x.toFixed(4)}, ${q.y.toFixed(4)})`); break; }
+      if (distantaLaForme(q, o.inainte) > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe cuțit`); break; }
+    }
+  }
+  if (o.inchide) {
+    const tot = ariePar(o.inainte), inK = arieParInConvex(o.inainte, o.k);
+    const asteptat = o.inauntru ? inK : tot - inK;
+    const are = ariePar(o.ramase);
+    if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria părții păstrate: ${are}, nu ${asteptat}`);
+  }
+  return rau;
+}
