@@ -7151,3 +7151,29 @@ proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift c�
   11 / 11, pe build-ul lui); proba de fum de acolo, în Edge, la amândouă: pornirea fără erori, selectorul ancorei (9), lista
   colțurilor (3), cercul întins devine elipsă cu eticheta „cercul devine elipsă”, testul din aplicație (`?test`) cu 33 de
   pași. Neunite: unirea în `main` o face sesiunea principală, la cuvântul owner-ului; coada owner-ului are încercarea pe canal.
+
+## 2026-11-08 — Unirea lui 12.1↑c-2 în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea incrustațiilor, la „Unim felia 12.1↑c-2 în main?”), transmis aici de
+sesiunea liniei.
+**Started:** 08.11, 16:42. **Completed:** 08.11, 17:56.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii incrustațiilor (mesajul lui, imediat după raportul
+  liniei despre 12.1↑c-2).
+- **Unirea (`079d225`, `--no-ff`):** fără conflicte; ramura conținea deja `main` (`4eb34da`), deci arborele unirii e chiar
+  al lui `3afc575`. Patru commit-uri: codul (`050588e`: punctele 3, 5 și 6), proba arcelor de 90° (`dbcd168`), documentele
+  (`3875510`), `main` adus (`3afc575`). Schema rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe
+  linie, cu v24, după v23 a planșelor.
+- **Porțile pe `079d225`:** traducerile (680, 0 lipsă), compilatoarele, importurile, 8 717 teste unitare (0 căzute, opt
+  sărite), licențele, build-ul determinist (286 de fișiere identice); e2e 384 / 384 (o cădere la încărcare,
+  `fonturi.spec.ts:250`: „Aplică” oprit 30 s după reîncărcare, ca `fonturi.spec.ts:149` la unirea de dinainte; trecută
+  singură; apoi 20 / 20 cu 8 lucrători și `--repeat-each=10`, deci nereprodusă; porțile locale păstrează de acum urmele
+  căderilor), emulatoarele 101 / 101 și 21 / 21. Mărimile: pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600,
+  /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele (`0d54112`):** CLAUDE.md (starea 12.1↑c-2, ce rămâne pe linie, cifrele, decizia din 08.11), comis după porți
+  (nu cât rulau).
+- **CI:** rapid `42492908784` și complet `42493020362` (pornit de mână) pe `0d54112`, verzi.
+- **Publicat pe test:** rularea `42496803926`, serverul întâi, apoi site-ul; amprenta `0d54112308de` pe toate țintele
+  (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `0d54112308de`.
+- **Semnul:** liniei incrustațiilor, după publicare. Între timp, owner-ul a cerut și unirea liniei ancorelor: unită local
+  (`0c81ccf`), împinsă după publicarea asta, ca publicările pe test să meargă în ordinea commit-urilor.
