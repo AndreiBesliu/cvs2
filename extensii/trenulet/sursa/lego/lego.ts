@@ -1,7 +1,8 @@
 // Motorul atelierului: piese compatibile LEGO ca corpuri inchise (STL), gata asezate pentru printare.
 //
-// Masurile LEGO: pasul de 8 mm, caramida 9,6 mm (3 placi de 3,2), stiftul de 4,8 mm inalt de 1,8, 0,1 mm joc pe
-// fiecare latura (piesa de n stifturi are 8n - 0,2 mm). Dedesubt, stiftul piesei de jos e prins intre perete (gros de
+// Masurile LEGO: pasul de 8 mm, caramida 9,6 mm (3 placi de 3,2), stiftul de 4,8 mm, 0,1 mm joc pe fiecare latura (piesa
+// de n stifturi are 8n - 0,2 mm). Inaltimea stiftului (implicit 1,9, la LEGO 1,7) si adancimea locasului de sub o piesa
+// plina (implicit 2,1) vin din profilul imprimantei, la zecimi (ADR 0168, `inaltimi`). Dedesubt, stiftul piesei de jos e prins intre perete (gros de
 // 1,5 mm) si tub (Ø 6,51) sau, la piesele late de un stift, intre pereti si stiftul mic dintre stifturi (Ø 3,2).
 // Technic: gaura Ø 4,8 cu lamaj Ø 6,2 x 0,8, grinda lata de 7,2 si groasa de 7,8 (subtire 3,8), axul in cruce de 4,8
 // cu bratele de 1,8, gaurile caramizii Technic la 5,8 mm de jos.
@@ -38,7 +39,9 @@ var Lego = (function (glob: typeof globalThis) {
   type DefPiesa = { [K in keyof typeof TIPURI]: { tip: K } & Parameters<(typeof TIPURI)[K]>[0] }[keyof typeof TIPURI];
   const IMPLICIT = {
     pas: 8, joc_lateral: 0.1, placa: 3.2, sus: 1.0,
-    stift_d: 4.8, stift_h: 1.8, perete: 1.5, tub_contact: 4 * Math.SQRT2 - 2.4,
+    stift_d: 4.8, perete: 1.5, tub_contact: 4 * Math.SQRT2 - 2.4,
+    // inaltimile din profilul imprimantei (ADR 0168; pana la 18.8.0: 1,8 si stiftul + 0,2)
+    stift_h: 1.9, locas_h: 2.1,
     // jocurile pentru printare (varianta 3 = cele de aici); fiecare varianta muta cu pasul ei
     joc_locas: 0.1, gaura_d: 5.0, lamaj_d: 6.4, lamaj_h: 0.8, ax_gaura_d: 5.0, ax_gaura_lat: 2.0,
     ax_d: 4.75, ax_lat: 1.75, stift_technic_d: 4.75, guler_d: 6.0, guler_lat: 1.6,
@@ -51,6 +54,20 @@ var Lego = (function (glob: typeof globalThis) {
     pat: [180, 180] as [number, number], pat_margine: 5, pat_distanta: 4,
   };
   let P = { ...IMPLICIT };
+  // inaltimile din profilul imprimantei (ADR 0168): la zecimi, in margini; ce nu e numar ia implicitul, iar locasul urmeaza
+  // stiftul (+ 0,2) cat bifa nu e oprita anume (un profil de dinainte de 18.8.0 n-o are)
+  const zecime = (x: number): number => Math.round(x * 10) / 10;
+  const MARGINI_INALTIMI = { stift_h: [1, 3], locas_h: [1, 4] } as const;
+  function inaltimi(v: { stift_h?: unknown; locas_h?: unknown; locas_urmeaza?: unknown } | null | undefined): { stift_h: number; locas_h: number } {
+    const citeste = (x: unknown, [a, b]: readonly [number, number], implicit: number): number => {
+      const n = typeof x === "number" ? x : typeof x === "string" && x.trim() !== "" ? +x.replace(",", ".") : NaN;
+      return Number.isFinite(n) ? Math.min(b, Math.max(a, zecime(n))) : implicit;
+    };
+    const stift_h = citeste(v?.stift_h, MARGINI_INALTIMI.stift_h, IMPLICIT.stift_h);
+    const locas_h = v?.locas_urmeaza !== false ? Math.min(MARGINI_INALTIMI.locas_h[1], zecime(stift_h + 0.2))
+      : citeste(v?.locas_h, MARGINI_INALTIMI.locas_h, IMPLICIT.locas_h);
+    return { stift_h, locas_h };
+  }
   // masurile efective, cu variantele alese la calibrare
   const ef = () => ({
     stiftD: P.stift_d + (P.varianta_stift - 3) * P.pas_stift,
@@ -421,7 +438,7 @@ var Lego = (function (glob: typeof globalThis) {
       }
     } else {
       // plina, cu cate un locas rotund pentru stiftul de dedesubt in fiecare celula
-      const ad = Math.min(P.stift_h + 0.2, H - 0.8);
+      const ad = Math.min(P.locas_h, H - 0.8);
       if (gauriSus.length) {
         const locas = celule.map(([i, j]) => cerc(s * i + s / 2, s * j + s / 2, P.stift_d / 2 + e.joc));
         tri.push(...stratCelule(celule, [...locas, ...gv.map(g => gauraForma(g.c, g.t))], 0, ad));
@@ -481,7 +498,7 @@ var Lego = (function (glob: typeof globalThis) {
     for (const [i, j] of celule) {
       const c: P2 = [s * i + s / 2, s * j + s / 2], pat = patratCelula(S, i, j, j0), r = P.stift_d / 2 + e.joc;
       const [xa, ya] = pat[0]!, [xb, yb] = pat[2]!, inPanta = j < adanc - sus;
-      let ad = Math.min(P.stift_h + 0.2, z(c[1] - r) - 0.6);
+      let ad = Math.min(P.locas_h, z(c[1] - r) - 0.6);
       if (ad < 1.0) { avert.push(tr("rândul din față e prea subțire pentru locașuri: stă direct pe știfturi")); sub(xa, xb, ya, yb, 0); continue; }
       // in fata locasului, unde panta coboara sub inaltimea lui, o fasie plina pana jos (altfel buza ar iesi mai groasa
       // decat cea ceruta, iar corpul de deasupra locasului s-ar intoarce pe dos)
@@ -508,7 +525,7 @@ var Lego = (function (glob: typeof globalThis) {
     const celule: Celula[] = [];
     for (let i = 0; i < lung; i++) for (let j = 0; j < adanc; j++) celule.push([i, j]);
     const S = new Set(celule.map(([i, j]) => cheie(i, j)));
-    const ad = Math.min(P.stift_h + 0.2, H - 0.8);
+    const ad = Math.min(P.locas_h, H - 0.8);
     for (const [i, j] of celule) {
       const c: P2 = [s * i + s / 2, s * j + s / 2], pat = patratCelula(S, i, j, j0);
       if (j >= adanc - sus) {
@@ -631,7 +648,7 @@ var Lego = (function (glob: typeof globalThis) {
     lung = Math.max(1, Math.min(24, Math.round(lung))); lat = Math.max(1, Math.min(24, Math.round(lat)));
     varf = Math.max(0, Math.min(lat, varf)); inceput = Math.max(0, Math.min(lung - 1, Math.round(inceput)));
     const pol = insetConvex(conturPana({ lung, lat, varf, inceput, parte }), P.joc_lateral);
-    const ad = Math.min(P.stift_h + 0.2, H - 0.8), rL = P.stift_d / 2 + e.joc, st: P2[] = [];
+    const ad = Math.min(P.locas_h, H - 0.8), rL = P.stift_d / 2 + e.joc, st: P2[] = [];
     let locasuri = 0, deschise = 0;
     // gaurile verticale, in colturile celulelor (intre stifturi), unde e material destul de jur imprejur
     const loc = new Set(pozitiiGauriPana({ lung, lat, varf, inceput, parte }).map(([a, b]) => cheie(a, b))), gv: GauraPusa[] = [], vazut = new Set<string>();
@@ -731,7 +748,7 @@ var Lego = (function (glob: typeof globalThis) {
     // de sus pana jos: pentru bara de 3,2 (stiftul din mijloc ramane gol), pentru stift Technic sau pentru ax (la 2 x 2).
     diam = +diam === 2 ? 2 : 1;
     const e = ef(), s = P.pas, H = placi * P.placa, R = diam * s / 2 - P.joc_lateral, cx = diam * s / 2, cy = cx, tri: Tri[] = [], avert: string[] = [];
-    const ad = Math.min(P.stift_h + 0.2, H - 0.8), N = 64, c0: P2 = [cx, cy];
+    const ad = Math.min(P.locas_h, H - 0.8), N = 64, c0: P2 = [cx, cy];
     let g = ["bara", "stift", "ax"].includes(gaura) ? gaura : "nu";
     if (diam === 1 && g !== "nu" && g !== "bara") { avert.push(tr("La 1 × 1 încape doar gaura pentru bară.")); g = "bara"; }
     const gp = g === "nu" ? null : gauraForma(c0, g === "bara" ? "b" : g === "ax" ? "x" : "r");
@@ -883,8 +900,8 @@ var Lego = (function (glob: typeof globalThis) {
     const zj = 2.5;      // jos: locasurile pentru stifturi; sus: gaurile
     for (const [i] of celule) {
       const c: P2 = [s * i + s / 2, s / 2], pat = patratCelula(S, i, 0, j0);
-      tri.push(...inel(pat, cerc(c[0], c[1], P.stift_d / 2 + e.joc), c, 0, Math.min(P.stift_h + 0.2, zj - 0.4)));
-      tri.push(...prisma(pat, Math.min(P.stift_h + 0.2, zj - 0.4) - 0.01, zj + 0.01));
+      tri.push(...inel(pat, cerc(c[0], c[1], P.stift_d / 2 + e.joc), c, 0, Math.min(P.locas_h, zj - 0.4)));
+      tri.push(...prisma(pat, Math.min(P.locas_h, zj - 0.4) - 0.01, zj + 0.01));
     }
     const xs = lung === 1 ? [s / 2] : Array.from({ length: lung - 1 }, (_, k) => s * (k + 1));
     const tipuri = xs.map((_, k) => (gauri && ["r", "x", "p"].includes(gauri[k]!) ? gauri[k] : "r"));
@@ -1084,6 +1101,15 @@ var Lego = (function (glob: typeof globalThis) {
       tri.push(...semne(v, 2, -1.0, 0.6));
       piese.push({ nume: `calibrare_stift_${v}`, titlu: tr`Calibrare: placa ${v}`, tri: laOrigine(tri) });
     }
+    // inaltimile (ADR 0168): cinci placi 2 x 2 pe fund plin, cu stifturi de 1,7 ... 2,1 mm si locasurile cu 0,2 mai adanci;
+    // variantele sunt absolute (nu depind de profil), semnul pe latura din spate
+    for (let v = 1; v <= 5; v++) {
+      const h = zecime(IMPLICIT.stift_h + (v - 3) / 10);
+      P = { ...salvat, stift_h: h, locas_h: zecime(h + 0.2) };
+      const tri = caramida({ celule: [[0, 0], [1, 0], [0, 1], [1, 1]], placi: 1, fund: "locasuri" }).tri;
+      tri.push(...semne(v, 2, 2 * P.pas - P.joc_lateral - 0.1, 0.6));
+      piese.push({ nume: `calibrare_inaltime_${v}`, titlu: tr`Calibrare: înălțimea ${v} (${String(h).replace(".", Limba.zecimal)} mm)`, tri: laOrigine(tri) });
+    }
     P = { ...salvat };
     for (const [tip, nume, cheieV] of [["r", "gauri", "varianta_gaura"], ["x", "ax", "varianta_ax"]] as [string, string, "varianta_gaura" | "varianta_ax"][]) {
       // fiecare gaura din grinda e alta varianta: 1 la capatul cu semnul
@@ -1214,6 +1240,6 @@ var Lego = (function (glob: typeof globalThis) {
     return tot;
   }
 
-  return { IMPLICIT, seteaza: (s?: Partial<typeof IMPLICIT> | null) => { P = { ...IMPLICIT, ...(s || {}) }; }, parametri: () => P, efective: ef, construieste, calibrare, stl, grame, aseaza, zip,
+  return { IMPLICIT, seteaza: (s?: Partial<typeof IMPLICIT> | null) => { P = { ...IMPLICIT, ...(s || {}) }; }, parametri: () => P, efective: ef, inaltimi, construieste, calibrare, stl, grame, aseaza, zip,
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita, _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi } };
 })(typeof globalThis !== "undefined" ? globalThis : window);

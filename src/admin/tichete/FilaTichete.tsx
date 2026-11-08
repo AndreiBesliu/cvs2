@@ -3,14 +3,17 @@ import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query } from '
 import type { Permisiune } from '../../../shared/personal.ts';
 import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
 import {
-  COLECTIE_TICHETE, curataTextTichet, PLAFON_LISTA_TICHETE, RASPUNS_MAX, STARI_TICHET, type CerereTichet, type RaspunsTichet,
+  COLECTIE_TICHETE, curataTextTichet, marimeCitita, PLAFON_LISTA_TICHETE, RASPUNS_MAX, STARI_TICHET, type CerereTichet, type MetaProiectTichet,
+  type RaspunsTichet,
 } from '../../../shared/tichete.ts';
-import { tichete, type Conexiune } from '../../cloud/conexiune.ts';
-import { t } from '../../i18n/t.ts';
+import { proiectulTichetului, tichete, type Conexiune } from '../../cloud/conexiune.ts';
+import { limba as limbaDeAcum, t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { useAdresaImaginii } from '../sugestii/FilaSugestii.tsx';
-import { eRosu, filtreaza, numarePeStare, ordoneaza, tichetDin, type Filtru, type Tichet } from './date.ts';
+import {
+  despacheteazaProiect, eRosu, filtreaza, numarePeStare, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet,
+} from './date.ts';
 import '../personal/personal.css';
 import '../sugestii/sugestii.css';
 import './tichete.css';
@@ -142,6 +145,7 @@ function Rand({ con, x, poateRaspunde, ocupat, faraAppCheck, eroare, fa, limba, 
         {x.amprente.length > 0 ? t('admin.tic.amprente', { lista: x.amprente.join(', ') }) : t('admin.tic.fara-amprente')}
       </p>
       {x.poza ? <PozaTichetului con={con} x={x} /> : null}
+      {x.proiect ? <ProiectulTichetului con={con} id={x.id} meta={x.proiect} /> : null}
       {x.raspunsuri.map((r, k) => (
         <div key={k} className="sug-decizia" data-tic="raspuns">
           <p className="admin-slab">{t('admin.tic.raspunsul', { cine: r.deEmail ?? '—', data: dataScurta(r.la, limba) })}</p>
@@ -184,6 +188,44 @@ function Raspuns({ x, ocupat, faraAppCheck, fa }: {
         </button>
       </div>
     </form>
+  );
+}
+
+/** Descarcă octeții exacți ai proiectului, ca fișier JSON. */
+function salveaza(octeti: Uint8Array<ArrayBuffer>, nume: string): void {
+  const url = URL.createObjectURL(new Blob([octeti], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nume;
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
+}
+
+/**
+ * Proiectul atașat tichetului (ADR 0116 §12, felia 15.B↑b): adus la cerere prin callable (din Storage nu citește nimeni din
+ * client), despachetat și verificat față de mărimea și amprenta din tichet, apoi descărcat ca JSON-ul canonic al proiectului.
+ */
+function ProiectulTichetului({ con, id, meta }: { readonly con: Conexiune; readonly id: string; readonly meta: MetaProiectTichet }): ReactElement {
+  const [stare, setStare] = useState<{ readonly faza: 'liber' | 'lucreaza' | 'gata' } | { readonly faza: 'eroare'; readonly motiv: string }>({ faza: 'liber' });
+  const descarca = (): void => {
+    setStare({ faza: 'lucreaza' });
+    (async () => {
+      const r = await proiectulTichetului(con, id);
+      const json = await despacheteazaProiect(r.proiect);
+      if (!(await proiectVerificat(json, meta))) throw new Error(t('admin.tic.proiect-amprenta'));
+      salveaza(json, numeFisierProiect(id));
+      setStare({ faza: 'gata' });
+    })().catch((e: unknown) => { setStare({ faza: 'eroare', motiv: motivDin(e) }); });
+  };
+  return (
+    <div className="sug-poza-rand tic-proiect">
+      <button type="button" data-tic="descarca-proiect" disabled={stare.faza === 'lucreaza' || con.appCheck === 'oprit'} onClick={descarca}>
+        {t('admin.tic.proiect-descarca', { marime: marimeCitita(meta.marime, limbaDeAcum()), schema: meta.schema })}
+      </button>
+      {stare.faza === 'lucreaza' ? <p className="admin-mesaj" aria-busy="true">{t('admin.tic.proiect-se-descarca')}</p> : null}
+      {stare.faza === 'gata' ? <p className="admin-slab" role="status" data-tic="proiect-descarcat">{t('admin.tic.proiect-descarcat', { nume: numeFisierProiect(id) })}</p> : null}
+      {stare.faza === 'eroare' ? <p className="admin-eroare" role="alert" data-tic="proiect-eroare">{t('admin.tic.proiect-eroare', { motiv: stare.motiv })}</p> : null}
+    </div>
   );
 }
 

@@ -101,6 +101,7 @@ export const enAdmin = {
   'admin.diag.functii.indiciu': 'A missing public invoker (403 from the Google front end, without CORS) shows up here as a network error: delete and redeploy the function.',
   'admin.diag.job.backupZilnic': 'Daily backup (03:00)',
   'admin.diag.job.verificaBackup': 'Backup check (05:00)',
+  'admin.diag.job.pastrareTichete': 'Deleting old resolved tickets (04:00)',
   'admin.diag.job.niciodata': 'has not run yet',
   'admin.diag.job.niciodata-indiciu': 'Normal until the first scheduled hour after publishing; later, it means the schedule does not start.',
   'admin.diag.job.ruleaza': 'running now',
@@ -466,4 +467,9 @@ export const enAdmin = {
   'admin.tic.poza-ascunde': 'Hide the picture',
   'admin.tic.poza-se-incarca': 'Loading the picture…',
   'admin.tic.poza-lipsa': 'The picture could not be read: {motiv}',
+  'admin.tic.proiect-descarca': 'Download the project ({marime}, schema {schema})',
+  'admin.tic.proiect-se-descarca': 'Downloading the project…',
+  'admin.tic.proiect-descarcat': 'The project was downloaded: {nume}.',
+  'admin.tic.proiect-eroare': 'The project could not be downloaded: {motiv}',
+  'admin.tic.proiect-amprenta': 'the file received is not the one sent (the size or the fingerprint differs)',
 } as const satisfies Readonly<Record<string, Mesaj>>;

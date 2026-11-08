@@ -350,6 +350,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucata contului își pierde numele (o ia de la ultimul ei modul). **Cheia amprentei unei erori stă în `shared/amprenta.ts`**
   (contractul erorilor e în pornire). 15.B↑b (proiectul atașat și jobul de păstrare) e notată pentru mai târziu (decizia
   owner-ului din 02.11). **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 450, /admin 105,4 / 200, contul 28,8 / 32.**
+  **Proiectul atașat și păstrarea tichetelor (ADR 0116 §12, §16, §18, felia 15.B↑b)** gata pe 07.11, în worktree-ul
+  `raportari` (ramura `wip/15.B-raportari`), **unită în `main` pe 07.11** („Da, transmite”; rândul unirii, mai jos):
+  - bifa **Atașează proiectul** în raportare (cel mult 10 MB; JSON-ul canonic, gzip, base64, prin callable-ul `tichete`);
+    fișierul stă în Storage (`tichete/{id}/proiect.json.gz`), iar fila **Tichete** îl descarcă prin aceeași acțiune
+    (`proiect`), verificat pe amprentă;
+  - jobul **`pastrareTichete`** (04:00) șterge tichetele cu `rezolvatLa` mai vechi decât `zilePastrareTichete`, cu poza și
+    proiectul, și fișierele rămase fără tichet; fraza păstrării în nota de confidențialitate.
+
+  **Din client nu se citește și nu se scrie nimic în Storage** (`storage.rules` refuză tot); un fișier nou al serverului trece
+  prin `functions/src/fisiere.ts`, iar o cale nouă sub `tichete/` intră în `idDinCaleProiect`, altfel jobul o numără
+  necunoscută și n-o atinge. **Emulatorul Storage (9195) șterge `<temp>/firebase/storage/blobs` la oprire:**
+  `scripts/test-emulator.ts` îi dă un dosar temporar al rulării; **el ignoră și precondiția `ifGenerationMatch`**. **Bucata
+  contului nu importă `shared/poza.ts`** (bundlerul l-ar scoate într-o bucată nouă, `poza`, prinsă de build-ul determinist).
+  Ținta de publicare `stocare` (regulile Storage) e în `TINTE_SERVER`. După unirea lui `main` (`1bf99c5`) în ramură:
+  **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 106,5 / 200, contul 29,6 / 32** (față de un build
+  curat al lui `1bf99c5`: 101,5, 519,5, 105,4, 28,8).
   **Corpusul de aur al documentului (ADR 0121, felia 4.1↑, punctul 1 al etapei 4)** gata pe 02.11: același proiect de probă,
   salvat de aplicația fiecărei versiuni a schemei, v1 → v18 (commit-ul ei, în `ISTORIE`). Fiecare versiune deschide salvarea
   celei dinainte, cu migrarea ei, și adaugă ce a adus ea, de la grupul din v2 la strategia paralelă din v18. Intrările stau
@@ -569,6 +585,67 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
+  **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
+  `imprimanta` (`wip/3.6g-imprimanta`): fila **Imprimanta**, a treia a meniului global, leagă o imprimantă Creality din familia
+  K1 (a owner-ului: o K1C) pe protocolul ei din fabrică: WebSocket-ul de pe 9999, **fără subprotocol** (Chrome refuză o legătură
+  care cere un subprotocol neîntors de server), cadre text JSON, `ok` la fiecare bătaie a inimii (altfel imprimanta închide),
+  starea pe bucăți. Imprimantele ținute (`cncvs2.imprimanta.retea`, `v: 1`), adresa scrisă, căutarea pe 9999; starea,
+  temperaturile (doar citite), codul de la imprimantă; Pauză / Reia / Oprește (cu confirmare); fișierele din imprimantă, pornite
+  cu bifa „Patul e gol”; jurnalul cadrelor. **O imprimantă nu e un flux GRBL:** fișierul stă în ea, deci modulele ei stau lângă
+  sender (`src/machine/imprimanta/`), iar adresa locală, permisiunea și planificatorul căutării, comune, în
+  `src/machine/reteaLocala.ts` (reexportate de `websocket.ts` și `conexiuni.ts`: altfel fereastra trage transportul senderului
+  într-o bucată comună de 4 kB). **Singură, fereastra trimite doar citiri și `ok`**; după `opGcodeFile`, K1 închide legătura
+  (așteptat: se reface după 0,3 s); o legătură căzută se reface singură, iar **o reîncercare nu judecă permisiunea rețelei
+  locale** (browserul aplicației o spune refuzată și spre loopback). Proba cap-coadă are imprimanta falsă în
+  `test/e2e/imprimantaFalsa.ts` (9999, pe rețeaua de loopback a probei); ghidul owner-ului: `docs/masina/imprimanta-k1c.md`.
+  **Mărimea feliei: pornirea +0,2 kB, totalul +8,1 kB** (bucata ferestrei 7,5 kB, `reteaLocala` 1,0 kB).
+  **Trimiterea unui `.gcode` la imprimantă (ADR 0190 §C.7, §D, felia 3.6h)** gata pe 07.11, pe aceeași ramură: **Trimite un
+  fișier…**, sub lista fișierelor, verifică întâi fișierul pe calculator (`src/machine/imprimanta/gcode3d.ts`: antetul lui
+  OrcaSlicer / Creality Print, PrusaSlicer sau Cura, temperaturile, miniatura, întinderea mișcărilor cu G90 / G91 / G92 / G28 și
+  arce, față de patul modelului), cu **Trimite oricum** după un avertisment; apoi `POST /upload/<nume>` pe 80, multipart doar cu
+  `file`, `no-cors` (`urcare.ts`), căutat după nume în lista de pe 9999. **Un fișier din imprimantă nu se înlocuiește:** un
+  nume pe care lista îl are primește „-2”, „-3”… (verificarea după nume spune ceva doar pentru un nume nou). **CSP-ul are `http:`
+  în `connect-src`** (răspunsul 3a); `wss:` trecea deja (după CSP3, `ws:` și `https:` îl acoperă), iar martorul refuzat al
+  probei CSP e o cerere `data:`. Proba e2e mută cererea de pe 80 pe portul imprimantei false (`page.route`); aplicația rămâne
+  pe 80. **Mărimea feliei: totalul +3,3 kB, ~1,3 kB peste ținta liniei, acceptată de owner pe 07.11 („Da, accept”). Cu
+  `main` (`8003cb2`) unit în ramură: pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 530,8 / 550, /admin 105,4 / 200.**
+  **Proba pe imprimanta owner-ului (felia 3.6i), pasul 1** pe 07.11: fereastra s-a legat de pe canal, din browserul lui, la o
+  **K1C 2025** (firmware V1.0.0.26, în `DWIN sw ver`), la 192.168.1.10: **9999 primește pagina de pe altă origine**. Imprimanta
+  n-are bătăi ale inimii (doar bucăți de stare, la ~3 s), iar **lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
+  `director:nume:mărime:…;`), nu ca `retGcodeFileInfo2`: acum se citesc amândouă, cu mărimea (pe care trimiterea o verifică).
+  Transcrierea, anonimizată: `test/fixtures/imprimanta/k1c-2025.json`; imprimanta falsă are `fel: 'k1c-2025'`. **Pasul 2:**
+  la o pornire de pe ecran, imprimanta și-a refăcut WiFi-ul cu alt IP, iar legătura veche a murit fără să se închidă: acum
+  **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
+  găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
+  evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
+  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 acceptat pe 07.11: „vreau
+  sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”, deci toate variantele care pot
+  sta împreună devin opțiuni, pe feliile 3.6j–3.6m): desenul feliat direct în cvs2 pentru
+  K1C, cu valorile din profilele K1C ale OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
+  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
+  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
+  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
+  **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
+  1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
+  lângă aplicație. **La fiecare build,
+  `scripts/biblioteca.ts` construiește din repo pachetele din `extensii/biblioteca.json` și catalogul lor, în `dist/extensii/`**
+  (`catalog.json` și `<id>-<versiune>-<amprentă>.zip`, în afara precache-ului și a plafonului). În meniul Extensii, secțiunea
+  Biblioteca: Instalează (fereastra, apoi Deschide), Actualizează la … (dintr-un clic; fereastra doar când versiunea nouă cere
+  ceva în plus), Instalată; catalogul se cere la deschiderea meniului, nu la pornire; linkul `#biblioteca=<id>`; un pachet din
+  fișier sau de la o adresă vine „din afara bibliotecii”. Amprenta SHA-256 din catalog se verifică înaintea cititorului de
+  pachete, iar un defect al publicării ajunge în jurnal. **O schimbare a unei extensii din bibliotecă cere o versiune nouă în
+  `extensie.json`, apoi `node scripts/biblioteca.ts --scrie`** (proba `biblioteca.constructie.test.ts` cade până atunci).
+  **Pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 523,0 / 550, /admin 105,4 / 200.**
+  **Raportările (15.B↑b) și imprimanta (3.6g, 3.6h, 3.6i pașii 1–2; ADR 0191 acceptat, codul 3.6j încă pe ramură) unite în
+  `main` pe 07.11**, peste biblioteca extensiilor (`b501571`, `6e61bee`, apoi `e9cf6ee` cu DEVLOG-ul bibliotecii): **pornirea
+  101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.** **Pe test (și pe live), serverul
+  se publică înaintea site-ului** (funcțiile, regulile Firestore și Storage, indecșii; `scripts/publica.ts` o face singur):
+  un site nou peste un `tichete` vechi pierde tăcut proiectul atașat. Regulile Storage (ținta `stocare`) le înlocuiesc pe
+  ale aplicației vechi pe bucket-ul de test.
+  **Plafonul total 600 kB (ADR 0143, decizia owner-ului din 07.11):** liniile paralele aveau gata pe ramuri încă ~60 kB
+  (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
+  iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
+  105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -659,6 +736,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `PASTRATE`. Id-ul rămâne `trenulet` (de el țin rândul instalat și datele: 18.7.0 peste 18.6.0 îi ia locul, cu circuitele),
   la fel numele tehnice (pachetul, dosarul, scripturile) și antetul G-code-ului (amprentele v18). Verificarea românei rămase
   nu mai scutește „Trenuleț”.
+  **Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei (ADR 0168, felia 3.Tg)** gata pe 08.11, în `main`, cu
+  implicitele alese de owner („Defaults 1.9 / 2.1”): înălțimea știftului (1,9 mm) și adâncimea locașului de sub piesele pline
+  (2,1 mm, cu bifa „Urmează știftul (+ 0,2)”), cu − / + la 0,1 mm, în fiecare imprimantă, lângă variantele de la calibrare
+  (Setări și fila Calibrare); cinci plăci de calibrare 2 × 2 cu știfturi de 1,7–2,1 mm. **Regulile înălțimilor stau doar în
+  `Lego.inaltimi(profil)`** (zecimile, marginile, legătura, implicitul pentru ce nu e număr): atelierul citește profilul prin
+  ea și îi dă motorului rezultatul, iar `trenulet.inaltimi.test.ts` ține implicitele atelierului egale cu ale motorului.
+  **Referințele v18 rulează cu înălțimile lui v18 fixate** (`V18` în `referinte.js`), deci apără restul geometriei; o
+  schimbare a înălțimilor implicite nu le atinge. Pachetul 18.8.0, din bibliotecă. Cifrele aplicației nu se schimbă.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -773,6 +858,45 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **înălțimile pieselor LEGO, editabile la zecimi, în profilul imprimantei** („plugin-ul 3d care face piesele de
+  lego are o problema, stifturile pe care le face si gaurile de sub piesa sunt prea mici, raza este ok, dar inaltimea este
+  putin prea mica. pare ca are nevoie de o zecime de milimetru pentru stifturi”, apoi „vreau sa pot edita eu inaltimile la
+  zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”, iar la întrebarea implicitelor „Defaults 1.9 / 2.1”):
+  ADR 0168, felia 3.Tg, în `main` (linia pluginului nu mai are worktree). Știftul 1,9 mm și locașul 2,1 mm sunt implicitele
+  oricărei imprimante noi; fiecare imprimantă își ține înălțimile ei.
+- 08.11.2026: **worktree-urile terminate și unite în `main`, scoase** („dupa ce verifici care worktree a terminat si a fost
+  integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”): `biblioteca` (3.Xg), `raportari` (15.B↑b) și
+  `trenulet` (linia pluginului, unită pe 06.11), fiecare cu ramura întreagă în `main`, curat și împins. Joncțiunile
+  `node_modules` și `functions\node_modules` scoase întâi (`cmd /c rmdir`, cu poarta care caută legături), apoi `git worktree
+  remove`; ramurile locale șterse cu `-d`; sesiunile arhivate (a lui `trenulet` era deja). Pe `origin`, `wip/3.Xg-biblioteca`
+  și `wip/15.B-raportari` intră în lista de șters a owner-ului (acum 17). Rămân cinci worktree-uri, cu felii încă neunite:
+  `imprimanta`, `incrustatii`, `plansele`, `taiere`, `trasare`.
+- 07.11.2026: **plafonul total 600 kB** („Yes, 600 kB”, la „Raise the total bundle cap to 600 kB (new ADR), startup staying
+  at 110 kB?”): după unirea raportărilor și a imprimantei, totalul era 535,0 / 550 kB, iar liniile paralele aveau gata pe
+  ramuri încă ~60 kB. ADR 0143; pornirea rămâne 110 kB.
+- 07.11.2026: **raportările (15.B↑b) și imprimanta (3.6g–3.6i), unite în `main`**, după biblioteca extensiilor (unită de
+  sesiunea ei): 15.B↑b la „Da, transmite” (în sesiunea liniei, la „Să-i transmit sesiunii principale să unească 15.B↑b în
+  `main` și să publice serverul pe test?”); imprimanta la „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut
+  ca functioneaza bine. daca se va modifica ceva de aici incolo se va face update si pe main ulterior” (în sesiunea liniei;
+  3.6j și următoarele vin mai târziu, tot prin unire). Apoi, aici, „verifica din nou”. **Când mai multe sesiuni unesc în
+  `main` în aceeași zi, publicările pe test merg în ordinea commit-urilor, una câte una:** o publicare a unui commit mai vechi,
+  venită după una mai nouă, întoarce serverul. Pe 07.11, push-ul celor două uniri a așteptat publicarea bibliotecii și
+  DEVLOG-ul ei.
+- 07.11.2026: **biblioteca extensiilor (3.Xg) unită în `main`** („Da, unește”, la „Unim `wip/3.Xg-biblioteca` în `main`?”):
+  fără conflicte (`main` era deja în ramură), commit-ul de unire `58e73c0`. Easy 3Draw și biblioteca ajung pe live odată cu
+  următoarea publicare a aplicației pe live (6a din ADR 0230); până atunci, doar pe test.
+- 07.11.2026: **biblioteca extensiilor: răspunsurile la ADR 0230** („Da, 1a–7a”, după „Vreau ca plugin-ul nostru sa fie
+  disponibil printr-o librarie. Fa asta intr-un worktree”): biblioteca stă lângă aplicație, construită din repo la fiecare build
+  (`/extensii/catalog.json` și pachetele, cu amprenta SHA-256 verificată înaintea citirii); „Instalează” prin fereastra de azi,
+  „Actualizează” dintr-un clic (fereastra doar când versiunea nouă cere ceva în plus); o versiune nouă se vede la deschiderea
+  meniului Extensii, fără nicio cerere la pornire; fișierul și adresa rămân, cu „din afara bibliotecii”, plus linkul
+  `#biblioteca=<id>`; Easy 3Draw ajunge pe live odată cu aplicația; secțiunea Biblioteca stă în meniul Extensii. Linia lucrează
+  în worktree-ul `biblioteca` (`wip/3.Xg-biblioteca`, `C:\Users\besli\cncvs2-lucru\biblioteca`, e2e pe 4180 și `127.0.7`,
+  ADR-urile 0230–0239, canalul `biblioteca`).
+- 07.11.2026: **mărimea lui 3.6h acceptată** („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”): trimiterea unui `.gcode`
+  la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
+  în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul
+  owner-ului.
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la
@@ -783,6 +907,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `trasare`). Restul raportărilor (15.B↑b: `raportari`, 4177, `127.0.4`, ADR-urile 0200–0209) e propus, nepornit. **Suita
   emulatoarelor ține porturi fixe (9095, 8085, 5005) și 4173, oricare ar fi worktree-ul:** înainte de ea, `netstat -ano`, iar
   la o ciocnire se așteaptă cealaltă sesiune (pe 07.11, porțile unirii au căzut întâi doar din cauza asta).
+- 07.11.2026: **imprimanta 3D prin WiFi, răspunsurile la ADR 0190** (formularul schiței: „1a”, „2a”, „3a”, „4a”): fereastra
+  Imprimanta, a treia filă a meniului global; întâi 3.6g (conectarea, starea, pauza și oprirea, fișierele din imprimantă), apoi
+  3.6h (trimiterea unui `.gcode`); **`http:` în `connect-src`, pentru 3.6h** (acordul owner-ului, ca la `ws:`: un `http://`
+  spre o gazdă publică rămâne blocat ca conținut mixt); camera, într-o felie a ei, după 3.6h. Nota lui la 1: „Vreau sa pot pune
+  panourile mai multor masini unul langa altul, eventual si pe monitoare diferite. Dar asta poate veni mai tarziu.” (o felie a
+  ei, mai târziu). Imprimanta lui: o K1C (2024), la 192.168.1.12; verificarea de pe calculatorul lui, doar cu citiri, permisă
+  (pe 07.11, imprimanta n-a răspuns: oprită sau într-o rețea despărțită de cablu).
 - 06.11.2026: **tăierea și conversia vectorilor: răspunsurile la ADR 0180** (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
   cu notele „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
   jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și „aici va trebui sa testam

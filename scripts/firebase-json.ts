@@ -47,6 +47,10 @@ export function configHosting(publicDir: string, hashuri: readonly string[] = []
         // Mesajele ca date (ADR 0086, 0095): nume fixe, chei noi la o publicare nouă. Dicționarul de bază vine la fiecare
         // pornire: cu `max-age=3600` (implicitul Hosting), o pagină fără worker ar putea primi o oră dicționarul vechi.
         { source: '/mesaje/**', headers: [antet('Cache-Control', 'no-cache')] },
+        // Biblioteca extensiilor (ADR 0230): catalogul are o adresă fixă și o versiune nouă la o publicare nouă (un 304 când nu
+        // s-a schimbat); un pachet are amprenta în nume, deci o adresă nu-și schimbă niciodată octeții.
+        { source: '/extensii/catalog.json', headers: [antet('Cache-Control', 'no-cache')] },
+        { source: '/extensii/*.zip', headers: [antet('Cache-Control', 'public, max-age=31536000, immutable')] },
       ],
     },
   };
@@ -71,12 +75,16 @@ export function configFunctii(): object {
     }],
     // Indexul compus al filei Erori și politica TTL de 90 de zile (ADR 0040 §4, §6).
     firestore: { rules: 'firestore.rules', indexes: 'firestore.indexes.json' },
-    // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login.
+    // Regulile Storage (felia 15.B↑b): bucket-ul implicit, fără nicio cerere din client (proiectele atașate trec prin server).
+    storage: { rules: 'storage.rules' },
+    // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login. Storage pe 9195, nu pe
+    // 9199 (implicitul, folosit de alte proiecte de pe mașină).
     emulators: {
       singleProjectMode: true,
       auth: { port: 9095 },
       firestore: { port: 8085 },
       functions: { port: 5005 },
+      storage: { port: 9195 },
       ui: { enabled: false },
     },
   };

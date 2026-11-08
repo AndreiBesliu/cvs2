@@ -14,6 +14,7 @@ import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/ma
 import { DIR_MESAJE, esteDictionarMesaje, esteFisierMesaje, fisierBaza, fisierMesaje, MODULE_MESAJE, type Limba } from '../shared/mesaje.ts';
 import { DICTIONARE_BAZA, DICTIONARE_MODULE } from './mesaje.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
+import { citesteCatalog, DIR_BIBLIOTECA, FISIER_CATALOG_BIBLIOTECA } from '../shared/biblioteca.ts';
 import { cspPentru, hashuriInline } from './cspHtml.ts';
 
 /**
@@ -28,7 +29,8 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   cavalier și de geometrie, ~73 kB, pe care firul principal le ține pentru desen și import), 500 kB din 02.11 (ADR 0122:
  *   decizia owner-ului, „Da, 500 kB”; la 441,2 kB, cele trei linii de lucru care urmau nu încăpeau în cei 8,8 kB rămași),
  *   550 kB din 06.11 (ADR 0137: decizia owner-ului, „Yes, 550 kB”; unirea liniei pluginului, cu gazda extensiilor, care
- *   merge și offline, a dus totalul la 503,1 kB);
+ *   merge și offline, a dus totalul la 503,1 kB), 600 kB din 07.11 (ADR 0143: decizia owner-ului, „Yes, 600 kB”; după
+ *   unirea raportărilor și a imprimantei, totalul era 535,0 kB, iar liniile paralele aveau gata pe ramuri încă ~60 kB);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
@@ -36,7 +38,7 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
 const PLAFON_PORNIRE_KB = 110;
-const PLAFON_TOTAL_KB = 550;
+const PLAFON_TOTAL_KB = 600;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are
@@ -563,10 +565,33 @@ for (const [marcaj, ce] of MARCAJE_ADMIN) {
 }
 const FIREBASE_IN_PRECACHE = /^assets\/(?:raportor|conexiuneBaza)-[A-Za-z0-9_-]{8}\.js$/;
 const straineInPrecache = [...manifest].filter((f) => f === 'config.json' || f === 'sw.js' || f.startsWith('banc/') || f.startsWith(`${DIR_DOCUMENTATIE}/`)
+  || f.startsWith(`${DIR_BIBLIOTECA}/`)
   || (f.endsWith('.js') && MARCAJE_ADMIN.some(([marcaj]) => cod(f).includes(marcaj)))
   || (f.endsWith('.js') && !FIREBASE_IN_PRECACHE.test(f) && MARCAJE_FIREBASE.some(([marcaj]) => cod(f).includes(marcaj))));
 if (straineInPrecache.length > 0) {
-  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js, bancul și documentația rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js, bancul, documentația și biblioteca extensiilor rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  process.exit(1);
+}
+
+/**
+ * Biblioteca extensiilor (ADR 0230): catalogul din build se citește ca în aplicație, iar în `dist/extensii/` stau exact el și
+ * pachetele lui, fiecare cu mărimea și amprenta scrise în catalog (ce verifică gazda la instalare, aici pe octeții publicați).
+ */
+const catalogBiblioteca = a.has(FISIER_CATALOG_BIBLIOTECA)
+  ? citesteCatalog(JSON.parse(readFileSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA), 'utf8')))
+  : { ok: false as const, detaliu: 'lipsește' };
+if (!catalogBiblioteca.ok) {
+  console.error(`dist/${FISIER_CATALOG_BIBLIOTECA}: ${catalogBiblioteca.detaliu} (biblioteca extensiilor, pluginul din vite.config.ts).`);
+  process.exit(1);
+}
+const fisiereBiblioteca = [...a.keys()].filter((f) => f.startsWith(`${DIR_BIBLIOTECA}/`)).sort();
+const asteptateBiblioteca = [FISIER_CATALOG_BIBLIOTECA, ...catalogBiblioteca.catalog.extensii.map((r) => `${DIR_BIBLIOTECA}/${r.pachet}`)].sort();
+const pachetGresit = catalogBiblioteca.catalog.extensii.find((r) => {
+  const cale = join('.tmp/build-1', DIR_BIBLIOTECA, r.pachet);
+  return !a.has(`${DIR_BIBLIOTECA}/${r.pachet}`) || statSync(cale).size !== r.octeti || createHash('sha256').update(readFileSync(cale)).digest('hex') !== r.sha256;
+});
+if (fisiereBiblioteca.join() !== asteptateBiblioteca.join() || pachetGresit) {
+  console.error(`dist/${DIR_BIBLIOTECA}/: ${pachetGresit ? `${pachetGresit.pachet} n-are mărimea sau amprenta din catalog` : `are ${fisiereBiblioteca.join(', ')}, nu ${asteptateBiblioteca.join(', ')}`} (ADR 0230).`);
   process.exit(1);
 }
 
@@ -697,7 +722,8 @@ console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri
 console.log(`O versiune nouă schimbă doar ${schimbateDeVersiune.join(' și ')} (harta importurilor, ADR 0098): ${traduceri.length} bucăți pomenite după nume stabile.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online); sugestia din editor: ${sugestie.toFixed(1)} kB (plafon ${PLAFON_SUGESTIE_KB}, doar online); contul: ${cont.toFixed(1)} kB (plafon ${PLAFON_CONT_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
-console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
+console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`) && !f.startsWith(`${DIR_BIBLIOTECA}/`)).join(', ')}, ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere, și ${DIR_BIBLIOTECA}/).`);
+console.log(`Biblioteca extensiilor (doar online, la instalare; ADR 0230): ${catalogBiblioteca.catalog.extensii.map((r) => `${r.nume} ${r.versiune}, ${(r.octeti / 1024).toFixed(1)} kB`).join('; ')}; catalogul ${(statSync(join('.tmp/build-1', FISIER_CATALOG_BIBLIOTECA)).size / 1024).toFixed(1)} kB.`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
 console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);

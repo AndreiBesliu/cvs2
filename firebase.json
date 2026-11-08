@@ -21,7 +21,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' blob: 'sha256-HVEE9GcI/+wWd3b3RxXEOqzCYX2Zi00aT1D6u7kp7o8=' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self'; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/ https://europe-central2-cncvectorstudio-test.cloudfunctions.net https://europe-central2-cncvectorstudio.cloudfunctions.net https://fonts.gstatic.com https://fonts.googleapis.com ws: https:; frame-src https://cncvectorstudio-test.firebaseapp.com https://cncvectorstudio.firebaseapp.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+            "value": "default-src 'self'; script-src 'self' blob: 'sha256-HVEE9GcI/+wWd3b3RxXEOqzCYX2Zi00aT1D6u7kp7o8=' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self'; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/ https://europe-central2-cncvectorstudio-test.cloudfunctions.net https://europe-central2-cncvectorstudio.cloudfunctions.net https://fonts.gstatic.com https://fonts.googleapis.com ws: http: https:; frame-src https://cncvectorstudio-test.firebaseapp.com https://cncvectorstudio.firebaseapp.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
           },
           {
             "key": "X-Content-Type-Options",
@@ -103,6 +103,24 @@
             "value": "no-cache"
           }
         ]
+      },
+      {
+        "source": "/extensii/catalog.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/extensii/*.zip",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
       }
     ]
   },
@@ -125,6 +143,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "emulators": {
     "singleProjectMode": true,
     "auth": {
@@ -135,6 +156,9 @@
     },
     "functions": {
       "port": 5005
+    },
+    "storage": {
+      "port": 9195
     },
     "ui": {
       "enabled": false

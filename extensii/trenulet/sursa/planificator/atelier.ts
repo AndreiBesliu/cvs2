@@ -65,9 +65,16 @@ var Atelier3D = (function () {
   const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
   let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
   const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
-  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
-  // imprimantele: fiecare cu patul ei si variantele de la calibrare (si cuplajele pieselor de cale printate, din 2D)
-  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa"];
+  // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
+  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
+  // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
+  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "stift_h", "locas_h", "locas_urmeaza"];
+  const INALTIMI = ["stift_h", "locas_h", "locas_urmeaza"] as const;
+  // inaltimile din setari prin motor: la zecimi, in margini, locasul dupa stift cat e bifat
+  function puneInaltimi(v: Valori) {
+    const h = Lego.inaltimi(v);
+    setari.stift_h = h.stift_h; setari.locas_h = h.locas_h; setari.locas_urmeaza = v.locas_urmeaza !== false;
+  }
   let imprimante: Imprimante | null = null, uiImprimante: { desen(): void } | null = null;
   const valoriImprimanta = (): Valori => ({ ...JSON.parse(JSON.stringify(Object.fromEntries(CHEI_IMPRIMANTA.map(k => [k, setari[k]])))),
     ...(window.TrenPentru3D && TrenPentru3D.print ? TrenPentru3D.print() : {}) });
@@ -76,8 +83,11 @@ var Atelier3D = (function () {
     if (!v) return;
     for (const k of CHEI_IMPRIMANTA) {
       if (k === "pat") { if (Array.isArray(v.pat) && v.pat.length === 2 && v.pat.every(x => Number.isFinite(+x))) setari.pat = v.pat.map(x => Math.min(500, Math.max(60, Math.round(+x)))); continue; }
+      if ((INALTIMI as readonly string[]).includes(k)) continue;
       if (Number.isFinite(+v[k]!) && v[k] !== null && v[k] !== "") (setari as Valori)[k] = k.startsWith("varianta_") ? Math.min(9, Math.max(-3, Math.round(+v[k]!))) : Math.max(0, Math.round(+v[k]!));
     }
+    // un profil de dinainte de 18.8.0 n-are inaltimile: ia implicitele motorului
+    puneInaltimi(v);
     if (window.TrenPentru3D && TrenPentru3D.seteazaPrint) TrenPentru3D.seteazaPrint({ print_tata: v.print_tata as number | undefined, print_mama: v.print_mama as number | undefined });
   }
   let setari = { ...SETARI_IMPLICIT, pat: SETARI_IMPLICIT.pat.slice() };
@@ -203,7 +213,7 @@ var Atelier3D = (function () {
   }
   const paramMotor = () => ({ varianta_stift: setari.varianta_stift, varianta_locas: setari.varianta_locas, varianta_gaura: setari.varianta_gaura, varianta_ax: setari.varianta_ax,
     varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa,
-    pat: setari.pat.slice() as [number, number], pat_margine: setari.pat_margine, pat_distanta: setari.pat_distanta });
+    pat: setari.pat.slice() as [number, number], pat_margine: setari.pat_margine, pat_distanta: setari.pat_distanta, ...Lego.inaltimi(setari) });
   const dimTri = (tri: readonly Tri[]): number[] => [0, 1, 2].map(k => { let m = 0; for (const t of tri) for (const p of t) if (p[k]! > m) m = p[k]!; return m; });
   function pieseDin(def: Def): PiesaGata[] {
     Lego.seteaza(paramMotor());
@@ -530,7 +540,8 @@ var Atelier3D = (function () {
           <li><b>Găurile:</b> bagă un știft Technic în grinda cu găuri rotunde și un ax în cea cu găuri în cruce. Gaura 1 e la capătul cu semnul. Alege gaura în care știftul intră strâns dar se rotește, iar axul intră fără joc.</li>
           <li><b>Clema și bara:</b> cinci plăci 1×1 cu clemă și știft gol (1–5 cubulețe pe spate). Prinde bara de probă (sau o bară LEGO) în clemă și bag-o în știftul gol. Alege placa la care clema se prinde cu un clic și se rotește pe bară, iar bara stă în știft.</li>
           <li><b>Cupa:</b> cinci plăci cu cupă. Apasă bila de probă în fiecare. Alege cupa în care bila intră apăsând, stă în orice poziție și nu iese singură.</li>
-          <li>Scrie cele șase numere mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6. Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
+          <li><b>Înălțimea:</b> cinci plăci 2×2 cu fund plin (1–5 cubulețe pe latura din spate), cu știfturi de 1,7 · 1,8 · 1,9 · 2,0 · 2,1 mm și locașurile cu 0,2 mm mai adânci. Pune o cărămidă LEGO peste fiecare placă, apoi apasă placa pe o cărămidă LEGO. Alege placa la care amândouă se prind ca un LEGO adevărat și scrie înălțimea ei mai jos, la „Înălțimea știftului”.</li>
+          <li>Scrie cele șase numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
         </ol>
         <div class="at-campuri" id="at-calib-campuri"></div>`;
       campuriVariante($("#at-calib-campuri"));
@@ -624,7 +635,49 @@ var Atelier3D = (function () {
   function campuriVariante(loc: HTMLElement) {
     loc.innerHTML = [["varianta_stift", "Varianta știftului"], ["varianta_locas", "Varianta locașului"], ["varianta_gaura", "Varianta găurii"], ["varianta_ax", "Varianta axului"],
       ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"]]
-      .map(([k, e]) => `<label for="${loc.id}-${k}">${e}<input id="${loc.id}-${k}" data-setare="${k}" type="number" min="-3" max="9" step="1" value="${(setari as Valori)[k!]}"></label>`).join("");
+      .map(([k, e]) => `<label for="${loc.id}-${k}">${e}<input id="${loc.id}-${k}" data-setare="${k}" type="number" min="-3" max="9" step="1" value="${(setari as Valori)[k!]}"></label>`).join("")
+      + campuriInaltimi(loc.id);
+    legaInaltimi(loc);
+  }
+  // inaltimile (ADR 0168): la zecimi, cu − / +; locasul dupa stift (+ 0,2) sau al lui; inapoi la implicite
+  function campuriInaltimi(id: string): string {
+    const h = Lego.inaltimi(setari), u = setari.locas_urmeaza !== false;
+    const camp = (k: "stift_h" | "locas_h", e: string, min: number, max: number, val: number, oprit: boolean) =>
+      `<span class="at-inaltime"><label for="${id}-${k}">${e}</label><span class="at-pas">`
+      + `<button type="button" class="btn" data-pas="${k}" data-d="-1" aria-label="Cu 0,1 mm mai puțin"${oprit ? " disabled" : ""}>−</button>`
+      + `<input id="${id}-${k}" data-setare="${k}" type="number" inputmode="decimal" min="${min}" max="${max}" step="0.1" value="${val}"${oprit ? " disabled" : ""}>`
+      + `<button type="button" class="btn" data-pas="${k}" data-d="1" aria-label="Cu 0,1 mm mai mult"${oprit ? " disabled" : ""}>+</button></span></span>`;
+    return `<fieldset class="at-inaltimi" data-inaltimi-pentru="${id}"><legend>Înălțimile (mm, la zecimi)</legend>`
+      + camp("stift_h", "Înălțimea știftului", 1, 3, h.stift_h, false) + `<span class="mic">Știftul LEGO: 1,7 mm.</span>`
+      + camp("locas_h", "Adâncimea locașului", 1, 4, h.locas_h, u)
+      + `<label class="at-bifa"><input type="checkbox" data-bifa="locas_urmeaza"${u ? " checked" : ""}>Urmează știftul (+ 0,2)</label>`
+      + `<button type="button" class="btn" data-inaltimi="implicite">Înapoi la implicite</button></fieldset>`;
+  }
+  function legaInaltimi(loc: HTMLElement) {
+    const f = loc.querySelector<HTMLElement>(".at-inaltimi");
+    if (!f) return;
+    f.onclick = ev => {
+      const b = (ev.target as Element).closest<HTMLButtonElement>("button");
+      if (!b || b.disabled) return;
+      if (b.dataset.inaltimi === "implicite") {
+        setari.stift_h = Lego.IMPLICIT.stift_h; setari.locas_h = Lego.IMPLICIT.locas_h; setari.locas_urmeaza = true;
+        inaltimiSchimbate(); return;
+      }
+      const k = b.dataset.pas as "stift_h" | "locas_h" | undefined;
+      if (k !== "stift_h" && k !== "locas_h") return;
+      setari[k] = Lego.inaltimi(setari)[k] + Number(b.dataset.d) / 10;
+      inaltimiSchimbate();
+    };
+  }
+  // dupa o schimbare a inaltimilor: prin motor (zecimi, margini, legatura), apoi in toate campurile, in profil si in piese
+  function inaltimiSchimbate() {
+    puneInaltimi(setari as unknown as Valori);
+    const u = setari.locas_urmeaza !== false;
+    document.querySelectorAll<HTMLInputElement>('#mod-3d [data-setare="stift_h"]').forEach(x => { x.value = String(setari.stift_h); });
+    document.querySelectorAll<HTMLInputElement>('#mod-3d [data-setare="locas_h"]').forEach(x => { x.value = String(setari.locas_h); x.disabled = u; });
+    document.querySelectorAll<HTMLButtonElement>('#mod-3d [data-pas="locas_h"]').forEach(x => { x.disabled = u; });
+    document.querySelectorAll<HTMLInputElement>('#mod-3d [data-bifa="locas_urmeaza"]').forEach(x => { x.checked = u; });
+    dupaSchimbare();
   }
   function deseneazaGrila() {
     const p = stare.caramida, S = new Set(p.celule.map(([i, j]) => cheie(i, j))), c = 30;
@@ -1276,6 +1329,7 @@ var Atelier3D = (function () {
       tr("POTRIVIREA PIESELOR LEGO"),
       tr`- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
       tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa} (3 = mijlocul).`,
+      tr`- Înălțimile: știftul ${fmt(Lego.inaltimi(setari).stift_h)} mm, locașul de sub piesele pline ${fmt(Lego.inaltimi(setari).locas_h)} mm.`,
       tr("- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate."),
       "", "LISTA",
       ...c.randuri.map(r => tr`- ${r.x.bucati} × ${r.x.nume}${r.dim ? tr` (${fmt(r.dim[0]!)} × ${fmt(r.dim[1]!)} × ${fmt(r.dim[2]!)} mm)` : ""}, ≈ ${fmt(r.g * r.x.bucati)} g`),
@@ -1315,15 +1369,26 @@ var Atelier3D = (function () {
   }
   function schimbaSetare(ev: Event) {
     if ((ev.target as HTMLElement).id === "at-cu-tren") { setari.cuTren = (ev.target as HTMLInputElement).checked; salveaza(); randeazaLista(); return; }
-    const el = (ev.target as Element).closest<CampNumeric>("[data-setare]");
+    const t = ev.target as HTMLElement;
+    if (t.matches('[data-bifa="locas_urmeaza"]')) { setari.locas_urmeaza = (t as HTMLInputElement).checked; inaltimiSchimbate(); return; }
+    const el = t.closest<CampNumeric>("[data-setare]");
     if (!el) return;
+    const k = el.dataset.setare;
+    if (k === "stift_h" || k === "locas_h") {
+      // la zecimi (ADR 0168); ce nu e numar arata inapoi valoarea de acum
+      const n = +String(el.value).replace(",", ".");
+      if (String(el.value).trim() !== "" && Number.isFinite(n)) setari[k] = n;
+      inaltimiSchimbate(); return;
+    }
     const v = Math.round(+String(el.value).replace(",", "."));
     if (!Number.isFinite(v)) return;
-    const k = el.dataset.setare;
     if (k!.startsWith("pat.")) setari.pat[+k!.slice(4)] = Math.min(500, Math.max(60, v));
     else if (k!.startsWith("varianta_")) (setari as Valori)[k!] = Math.min(9, Math.max(-3, v));
     else (setari as Valori)[k!] = Math.max(0, v);
     document.querySelectorAll<CampNumeric>(`#mod-3d [data-setare="${k}"]`).forEach(x => { if (x !== el) x.value = el.value; });
+    dupaSchimbare();
+  }
+  function dupaSchimbare() {
     if (imprimante) Profiluri.memoreaza(imprimante, valoriImprimanta());
     rezumatImprimanta();
     salveaza(); if (vedere === "model") arataModel(true); else if (privita) arataPrivita(); else construiesteCurent(true); randeazaLista();
@@ -1413,7 +1478,7 @@ var Atelier3D = (function () {
     if (stare.tip === "dinCvs2" && !cuForme) stare.tip = "caramida";
     uiImprimante = Profiluri.ui<Valori>($("#prof-imprimanta"), {
       eticheta: "Imprimanta", fel: "imprimanta",
-      ajutor: "Fiecare imprimantă își ține patul, variantele de la calibrare și cuplajele pieselor de cale printate (din 2D). Ce schimbi aici se scrie în imprimanta aleasă; pagina se deschide cu cea implicită (★).",
+      ajutor: "Fiecare imprimantă își ține patul, variantele de la calibrare, înălțimile și cuplajele pieselor de cale printate (din 2D). Ce schimbi aici se scrie în imprimanta aleasă; pagina se deschide cu cea implicită (★).",
       stare: () => imprimante!, salveaza: s => { imprimante = s; salveaza(); rezumatImprimanta(); }, valori: valoriImprimanta, aplica: aplicaImprimanta,
     });
     culori(); reglaje();

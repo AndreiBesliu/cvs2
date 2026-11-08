@@ -107,7 +107,7 @@ test('citirea: 404 = lipsă; 200 = amprenta validată; altă formă = nevalid; a
 
 test('live doar cu sha-ul publicat întreg pe test, din arborele curat', () => {
   const toate = (peste: Partial<Amprenta['tinte']> = {}): Amprenta => ({
-    schema: 1, app: 'cncvs2', projectId: 'cncvectorstudio-test', tinte: { hosting: p(), functii: p(), reguli: p(), indecsi: p(), ...peste },
+    schema: 1, app: 'cncvs2', projectId: 'cncvectorstudio-test', tinte: { hosting: p(), functii: p(), reguli: p(), indecsi: p(), stocare: p(), ...peste },
   });
   assert.deepEqual(shaPublicatPeTest(toate(), SHA), { ok: true });
   assert.equal(shaPublicatPeTest(null, SHA).ok, false);

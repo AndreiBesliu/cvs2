@@ -5,6 +5,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { onCall } from 'firebase-functions/v2/https';
 import { defineString } from 'firebase-functions/params';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
@@ -12,6 +13,8 @@ import { createRequire } from 'node:module';
 import { JOBURI, type NumeJob } from '../../shared/joburi.ts';
 import { pornesteBackup, verificaBackup as verifica, type ClientExport } from './joburi/backup.ts';
 import { cuMarcaj } from './joburi/marcaj.ts';
+import { pastreazaTichetele } from './joburi/pastrare.ts';
+import { fisiereDin, type Fisiere } from './fisiere.ts';
 import { trateazaRaportClient } from './erori/client.ts';
 import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
@@ -71,13 +74,22 @@ export const sugestii = onCall(
   async (cerere) => trateazaSugestia(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
 );
 
+let fisiereProiect: Fisiere | undefined;
+/** Fișierele serverului, în bucket-ul implicit al proiectului (din `FIREBASE_CONFIG`), create la prima cerere. */
+function fisiere(): Fisiere {
+  fisiereProiect ??= fisiereDin(getStorage().bucket());
+  return fisiereProiect;
+}
+
 /**
  * Raportările clienților (tichetele, ADR 0116 §C): raportarea din editor (contul deschis sau personalul, cel mult 10 pe zi),
  * raportările omului și citirea răspunsurilor, răspunsul și starea (personalul cu `tichete.raspunde`), cu auditul în tranzacție.
+ * Proiectul atașat (felia 15.B↑b) vine în cerere (cel mult ~14 MB, sub plafonul de 32 MiB al Cloud Run) și pleacă la fel:
+ * memoria (base64, gzip, JSON-ul despachetat, cu ~130 MB măsurați pe Node la plafon) și timpul unei conexiuni lente.
  */
 export const tichete = onCall(
-  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
-  async (cerere) => trateazaTichetul(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '512MiB', timeoutSeconds: 120 },
+  async (cerere) => trateazaTichetul(getFirestore(), fisiere(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
 );
 
 /**
@@ -142,6 +154,18 @@ export const backupZilnic = onSchedule(
   { ...contBackup, schedule: backup.programare, timeZone: backup.fus, region: REGIUNI.job, timeoutSeconds: backup.timeoutSecunde, retryCount: 0, memory: '256MiB' },
   async () => {
     await cuMarcaj(getFirestore(), backup.nume, () => pornesteBackup(clientExport(), process.env['BUCKET_BACKUP'], process.env['GCLOUD_PROJECT'] ?? '', new Date()));
+  },
+);
+
+const pastrare = definitie('pastrareTichete');
+/**
+ * Păstrarea tichetelor (ADR 0116 §16), la 04:00: tichetele rezolvate de mai mult de `zilePastrareTichete` (fila Setări), cu
+ * poza și proiectul lor, și fișierele rămase fără tichet. Pe contul implicit al funcțiilor (șterge din Firestore și Storage).
+ */
+export const pastrareTichete = onSchedule(
+  { schedule: pastrare.programare, timeZone: pastrare.fus, region: REGIUNI.job, timeoutSeconds: pastrare.timeoutSecunde, retryCount: 0, memory: '256MiB' },
+  async () => {
+    await cuMarcaj(getFirestore(), pastrare.nume, () => pastreazaTichetele(getFirestore(), fisiere(), new Date()));
   },
 );
 

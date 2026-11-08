@@ -4,7 +4,7 @@ import { httpsCallable } from 'firebase/functions';
 import type { CerereConturi, RaspunsPlan, RaspunsSetari } from '../../shared/conturiPlan.ts';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
-import type { CerereTichet, RaspunsTichet } from '../../shared/tichete.ts';
+import type { CerereTichet, RaspunsProiectTichet, RaspunsTichet } from '../../shared/tichete.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 import { contAplicatiei } from './contEditor.ts';
 
@@ -66,6 +66,14 @@ export async function sugestii(c: Conexiune, cerere: CerereSugestie): Promise<Ra
 /** Răspunsul și starea unui tichet din fila Tichete (ADR 0116 §13): cu `tichete.raspunde`, pe versiunea văzută. */
 export async function tichete(c: Conexiune, cerere: Extract<CerereTichet, { actiune: 'raspunde' | 'stare' }>): Promise<RaspunsTichet> {
   return (await httpsCallable<CerereTichet, RaspunsTichet>(c.functii, 'tichete')(cerere)).data;
+}
+
+/**
+ * Proiectul atașat unui tichet (ADR 0116 §12, felia 15.B↑b), cui poate citi tichetul: fișierul comprimat, în base64, cu meta
+ * lui. Poate avea câțiva MB: termenul e cât al funcției (120 s).
+ */
+export async function proiectulTichetului(c: Conexiune, id: string): Promise<RaspunsProiectTichet> {
+  return (await httpsCallable<CerereTichet, RaspunsProiectTichet>(c.functii, 'tichete', { timeout: 125_000 })({ actiune: 'proiect', id })).data;
 }
 
 /** Planul unui cont din fila Utilizatori (ADR 0116 §19): cu `conturi.administreaza`, pe planul văzut; refuzurile vin cu motivul. */
