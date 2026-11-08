@@ -667,17 +667,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
   29,6 / 32.**
   **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
-  worktree-ul `ancore` (ramura `wip/6.V-ancore`, neunită), cu recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
+  worktree-ul `ancore` (ramura `wip/6.V-ancore`), **unite în `main` tot pe 08.11** („Da, unește”; `0c81ccf`), cu
+  recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
   proporțional pe orice mâner, Ctrl = liber pe orice mâner, Alt = față de ancoră**, combinate (Shift câștigă peste Ctrl),
   citite și la apăsarea tastei cu mausul pe loc; la desen, Shift pătrat / cerc / 15°, Ctrl face cercul elipsă, Alt din centru.
   **Alt nu mai inversează lipirea la mânere și la desen** (acolo, butonul Lipire și Shift+L); o inversează încă la mutare,
-  ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul rămâne
-  v20) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
+  ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul nu se
+  schimbă) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
   arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
   bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
   poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
-  **Pornirea 101,7 / 110 kB, neschimbată; totalul 535,0 → 537,1 / 600.** Pe canalul `ancore` al instanței de test:
-  <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12).
+  Pe ramură, pornirea neschimbată și totalul +2,1 kB. Pe canalul `ancore` al instanței de test:
+  <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12). **După unire, cu incrustațiile: pornirea 101,8 (cu
+  ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -890,6 +892,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **linia ancorelor (6.V↑, 6.V↑b, 6.V↑c) unită în `main`** („Da, unește”, în sesiunea liniei, după raportul ei:
+  „Dacă e bine, spune „unește”; ramura o unește în `main` sesiunea principală”): conflicte doar în documente, păstrate ambele
+  părți. 6.V↑d (opțiunile) rămâne pe linie, după decizia owner-ului pe plafon.
 - 08.11.2026: **felia 12.1↑c-2 unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia 12.1↑c-2 în
   main?”): punctele 3, 5 și 6 din lista de după prima unire (lemnul din jurul dopului din panou, arborele și rândurile
   legate, viteza benzii). Documentul rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe linie, cu
