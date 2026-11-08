@@ -436,6 +436,9 @@ export const roEditare = {
   'editare.taiere.intersectii.text': 'Formele alese se taie între ele, în toate locurile lor comune; fiecare bucată devine o formă, de ales și de șters.',
   'editare.taiere.intersectii.taie': 'Taie la intersecții',
   'editare.meniu.muta-pe': 'Mută pe {nume}',
+  'editare.meniu.muta-si-aseaza': 'Mută și așază la capăt pe {nume}',
+  'editare.meniu.muta-si-aseaza-noua': 'Mută și așază pe o foaie nouă',
+  'editare.meniu.aseaza': 'Așază pe foi…',
   // Piesele puse de mai multe ori (ADR 0210 §2): banda violet, întrebarea grupării, rândurile din meniu.
   'editare.legata': { one: 'Piesa aleasă e pusă o dată.', few: 'Editezi o piesă pusă de {n} ori: se schimbă toate ({aici} pe foaia aceasta).', other: 'Editezi o piesă pusă de {n} de ori: se schimbă toate ({aici} pe foaia aceasta).' },
   'editare.legata.desprinde': 'Desprinde-o doar pe aceasta',

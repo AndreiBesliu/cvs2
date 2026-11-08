@@ -117,6 +117,9 @@ const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.
 // Primirea unei lucrări (ADR 0126): ascultarea și dialogul vin doar când fila a fost deschisă de aplicația care trimite.
 const incarcaPrimirea = () => import('./DialogLucrare.tsx').then(cuMesaje);
 const DialogLucrare = lazy(() => incarcaPrimirea().then((m) => ({ default: m.DialogLucrare }), () => ({ default: DialogNeincarcat })));
+// „Așază pe foi” (ADR 0210 §3): dialogul și calculul lui vin la primul gest.
+const incarcaAsezarea = () => import('./DialogAsezare.tsx').then(cuMesaje);
+const DialogAsezare = lazy(() => incarcaAsezarea().then((m) => ({ default: m.DialogAsezare }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
@@ -298,6 +301,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
   const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
+  /** Dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
+  const [dialogAsezare, setDialogAsezare] = useState(false);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
@@ -668,7 +673,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -709,7 +714,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -960,6 +965,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       curenta.current = { ...curenta.current, selectie: [] };
       setSelectie([]);
       setPanouri((p) => ({ ...p, proprietati: true }));
+    },
+    // „Așază pe foi…” din meniul foii: foaia devine activă (o alta golește selecția), iar dialogul se deschide pe ea.
+    aseaza: (id) => {
+      if (id !== idActiva) {
+        activeazaFoaie(id);
+        curenta.current = { ...curenta.current, selectie: [] };
+        setSelectie([]);
+      }
+      setDialogAsezare(true);
     },
     // Un rând tras pe altă foaie: îl ia cu selecția lui, dacă e în ea; altfel doar pe el.
     muta: (instanta, spre) => {
@@ -1360,7 +1374,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
+                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1465,6 +1479,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           importa={(p, loc) => ruleaza(registru, 'document.importa', contextImportNou(p, loc))}
           onInchide={() => { setCoadaImport(null); }}
         />
+      )}
+      {/* Scrierea dialogului trece pe lângă ușa oprită sub el (ca exportul și importul): e chiar gestul lui. */}
+      {dialogAsezare && (
+        <DialogAsezare doc={doc} idFoaie={idActiva} selectie={selectieValida}
+          stare={(c) => stare(registru, 'foaie.aseaza', context({ asezare: () => c }))}
+          aseaza={(c) => ruleaza(registru, 'foaie.aseaza', context({ asezare: () => c }))}
+          onInchide={() => { setDialogAsezare(false); }} />
       )}
       {cerereLucrare && (
         <DialogLucrare

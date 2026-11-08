@@ -258,6 +258,8 @@ export type ProprietatiEditare = {
   readonly doarCitire: boolean;
   /** Rulează o acțiune a documentului prin ușa aplicației (garda dialogului deschis), cu rezultatul ei (motivul unui refuz). */
   readonly ruleaza: (id: string, extra: Extra) => RezultatActiune;
+  /** Deschide dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
+  readonly onAseaza?: () => void;
   /** Lipirea mutării, dată pânzei (null: lipirea oprită sau modulul plecat). */
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
@@ -1011,6 +1013,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const r = ruleaza('selectie.muta-pe-foaie', { foaieTinta: () => foaie });
       facut(r.ok ? null : t(r.motiv));
     };
+    // „Mută și așază la capăt” (ADR 0210 §3): pe foaia țintă, după piesele ei, cu alegerile ultimei așezări.
+    const mutaSiAseaza = (foaie: string | null): void => {
+      const r = ruleaza('selectie.muta-si-aseaza', { foaieTinta: () => foaie });
+      facut(r.ok ? null : t(r.motiv));
+    };
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
     // Cu o piesă pusă de mai multe ori printre cele alese (ADR 0210 §2), două rânduri, fără întrebare.
@@ -1038,6 +1045,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         activ: selectie.length > 0 && poate, ruleaza: () => { mutaPe(f.id); },
       }])),
       { id: 'muta-pe-noua', eticheta: t('editare.meniu.muta-pe-noua'), activ: selectie.length > 0 && poate, ruleaza: () => { mutaPe(null); } },
+      ...doc.foi.flatMap((f, k) => (f.id === idFoaie ? [] : [{
+        id: `muta-si-aseaza-${f.id}`, eticheta: t('editare.meniu.muta-si-aseaza', { nume: numeFoaie(f, k, (n) => t('foaia.n', { n: String(n) })) }),
+        activ: selectie.length > 0 && poate, ruleaza: () => { mutaSiAseaza(f.id); },
+      }])),
+      { id: 'muta-si-aseaza-noua', eticheta: t('editare.meniu.muta-si-aseaza-noua'), activ: selectie.length > 0 && poate, ruleaza: () => { mutaSiAseaza(null); } },
+      ...(p.onAseaza ? [{ id: 'aseaza', eticheta: t('editare.meniu.aseaza'), activ: (foaie?.instante.length ?? 0) > 0 && poate,
+        ruleaza: () => { setMeniu(null); p.onAseaza?.(); } }] : []),
     ];
   };
 

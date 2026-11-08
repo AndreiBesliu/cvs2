@@ -71,7 +71,7 @@ iese). Un proiect poate avea mai multe foi: vezi [Foile](#foile).
 
 ## Foile
 %% capitol: foile
-%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile, foaie.aseaza, selectie.muta-si-aseaza
 
 Un proiect poate avea mai multe foi de material: plăci diferite (alt material, altă grosime) sau piese care nu încap pe una.
 Fiecare foaie are mărimea ei, piesele ei și, dacă vrei, un nume și un material.
@@ -107,7 +107,22 @@ foii, sau **Mută pe o foaie nouă**. Sau tragi rândul unei piese din listă pe
 selecția). Fiecare piesă își păstrează locul și rotirea; dacă iese din foaia nouă, apare avertismentul obișnuit. Foaia activă
 rămâne aceeași.
 
-Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi) e un singur pas de anulare (`Ctrl+Z`).
+**Așază pe foi.** **Așază pe foi…** (din meniul de clic dreapta al pânzei sau din meniul foii) deschide fereastra
+așezării. Alegi ce se așază (piesele alese sau toate de pe foaie), colțul de pornire (implicit stânga-sus), marginea foii și
+distanța dintre piese, pe X și pe Y (cu **Aceeași pe X și pe Y** bifată, un singur număr). Piesele se pun după cutia
+fiecăreia, cu rotirea ei, rând cu rând; cele care rămân pe foaie se ocolesc. Ce nu mai încape trece pe foaia următoare, dacă
+e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia rămâne pe loc. Nicio mărime nu se schimbă. Distanța
+e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul.
+**Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
+încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
+minte în browser.
+
+**Mută și așază la capăt.** În meniul de clic dreapta, lângă **Mută pe**, **Mută și așază la capăt pe** și numele foii mută
+piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări; **Mută și așază pe o foaie nouă** le așază
+pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca mai sus, pe foile următoare.
+
+Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi, o așezare) e un singur pas de anulare
+(`Ctrl+Z`).
 
 ## Piesele puse de mai multe ori
 %% capitol: piese-legate

@@ -73,7 +73,7 @@ the dimension line (by how many mm it goes past). A project can have several she
 
 ## Sheets
 %% capitol: foile
-%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile, foaie.aseaza, selectie.muta-si-aseaza
 
 A project can have several sheets of material: different boards (another material, another thickness) or parts that do not
 fit on one. Each sheet has its own size, its own parts and, if you like, a name and a material.
@@ -111,7 +111,23 @@ sheet's name, or **Move to a new sheet**. Or drag a part's row from the list ont
 whole selection goes). Each part keeps its place and rotation; if it goes past the new sheet, the usual warning shows. The
 active sheet stays the same.
 
-Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets) is a single undo step (`Ctrl+Z`).
+**Arrange on sheets.** **Arrange on sheets…** (from the canvas right-click menu or from the sheet menu) opens the
+arranging window. You choose what is arranged (the chosen parts or all on the sheet), the starting corner (top left by
+default), the sheet margin and the distance between parts, on X and on Y (with **Same on X and Y** ticked, a single
+number). The parts are placed by the box of each one, with its rotation, row by row; the ones staying on the sheet are
+avoided. Whatever no longer fits goes to the next sheet, if it is empty, then to new sheets, like the active sheet. A part
+larger than the sheet stays where it is. No size changes. The distance is at least the cutter of the outside profile
+(otherwise one part’s cut would run into its neighbour), and the window says the minimum. **Order**: as in the list
+(default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
+**Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
+
+**Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
+sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement;
+**Move and arrange on a new sheet** arranges them on a new sheet, like the active one. Whatever does not fit goes, as
+above, to the next sheets.
+
+Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets, an arrangement) is a single undo step
+(`Ctrl+Z`).
 
 ## Parts placed more than once
 %% capitol: piese-legate

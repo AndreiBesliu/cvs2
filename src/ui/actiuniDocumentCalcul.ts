@@ -27,6 +27,8 @@ import {
   comandaDuplicareLegata, comenziCopii, comenziDesprinde, folosiri as folosiriPieselor, INCA_MAXIM, instantePiesei, planCopii,
 } from '../model/pieseLegate.ts';
 import { aplica } from '../geom/matrice.ts';
+import { comenziAsezare, distantaMinima, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, foaieCtx, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
@@ -737,6 +739,41 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (c) ctx.scrie(executa(h, c));
     },
   },
+  // „Așază pe foi” (ADR 0210 §3): instanțele alese (sau toate) ale foii de lucru, din colț, rând cu rând, cu vărsarea pe
+  // foaia următoare goală și pe foi noi; un pas. Selecția rămâne, cu instanțele care au rămas pe foaie.
+  'foaie.aseaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaAsezare(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaAsezare(ctx);
+      if (!r.ok) return;
+      const dupa = executa(h, r.comanda);
+      ctx.scrie(dupa);
+      const ramase = new Set(foaieCtx(ctx, dupa.doc).instante.map((i) => i.id));
+      ctx.selecteaza(ctx.selectie().filter((id) => ramase.has(id)));
+    },
+  },
+  // „Mută și așază la capăt”: selecția pleacă pe foaia țintă (sau pe una nouă, ca foaia activă) și se așază după piesele ei,
+  // cu alegerile ultimei așezări; foaia activă rămâne, iar selecția se golește (ca la „Mută pe”).
+  'selectie.muta-si-aseaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaMutaSiAseaza(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const r = comandaMutaSiAseaza(ctx);
+      if (!r.ok) return;
+      ctx.scrie(executa(ctx.istoric(), r.comanda));
+      ctx.selecteaza([]);
+    },
+  },
   // „Duplică foaia cu aceleași piese”: instanțe legate, la aceleași locuri, pe o foaie nouă după ea, care devine activă.
   'foaie.duplica-legat': {
     activa: (ctx) => {
@@ -1096,6 +1133,59 @@ function gruparePiesa(doc: Document, idFoaie: string, parti: readonly ParteGrupa
   const comanda: Comanda = { tip: 'lot', comenzi: [inlocuire, ...stergere.comenzi] };
   return is(SchemaDocument, JSON.parse(JSON.stringify(stergere.doc))) && !plafonDepasit(numara(stergere.doc))
     ? { ok: true, comanda, id: g.id } : { ok: false, motiv: 'motiv.plafon' };
+}
+
+/** Așezarea pe foi (ADR 0210 §3), ținută pe cerere: `activa` și `ruleaza` (și dialogul, la fiecare tastă) o calculează o dată. */
+let ultimaAsezare: { readonly cheie: string; readonly doc: Document; readonly rez: ComandaCopii } | null = null;
+
+/**
+ * Comanda unei așezări: planul instanțelor `ids` ale foii `din` pe foaia `spre` (cu o foaie nouă întâi, când `noua` o dă),
+ * ca un pas; refuzul, cu motivul lui: nimic, valori greșite, distanța sub freză, toate prea mari, nimic de schimbat, plafonul.
+ */
+function comandaPlan(doc: Document, ids: readonly string[], din: string, optiuni: OptiuniAsezare, spre: string | null): ComandaCopii {
+  const cheie = JSON.stringify([ids, din, optiuni, spre]);
+  if (ultimaAsezare && ultimaAsezare.doc === doc && ultimaAsezare.cheie === cheie) return ultimaAsezare.rez;
+  const rez = ((): ComandaCopii => {
+    // Pe o foaie nouă: întâi foaia (ca foaia activă, după ea), apoi așezarea pe ea, în documentul de după.
+    const noua = spre === null ? comandaFoaieNoua(doc, din) : null;
+    if (noua && doc.foi.length >= PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    const baza = noua ? executa(istoricDin(doc), noua.comanda).doc : doc;
+    const p = planAsezare(baza, ids, din, optiuni, noua ? noua.id : spre ?? din);
+    if (!p.ok) return { ok: false, motiv: p.motiv === 'distanta' ? 'motiv.aseaza-distanta' : p.motiv === 'valori' ? 'motiv.aseaza-valori' : 'motiv.nimic-ales' };
+    if (p.locuri.length === 0) return { ok: false, motiv: 'motiv.aseaza-prea-mari' };
+    const comenzi = [...(noua ? [noua.comanda] : []), ...comenziAsezare(baza, din, p)];
+    const comanda = noua || comenzi.length > 0 ? pas(comenzi) : null;
+    if (!comanda) return { ok: false, motiv: 'motiv.aseaza-nimic' };
+    if (doc.foi.length + p.foiNoi + (noua ? 1 : 0) > PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    const dupa = executa(istoricDin(doc), comanda).doc;
+    return plafonDepasit(numara(dupa)) || !is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: false, motiv: 'motiv.plafon' } : { ok: true, comanda };
+  })();
+  ultimaAsezare = { cheie, doc, rez };
+  return rez;
+}
+
+/** „Așază pe foi”: instanțele cerute de dialog, pe foaia de lucru. */
+function comandaAsezare(ctx: ContextDocument): ComandaCopii {
+  const c = ctx.asezare?.();
+  if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const doc = ctx.istoric().doc;
+  const din = foaieCtx(ctx, doc).id;
+  return comandaPlan(doc, c.ids, din, c.optiuni, din);
+}
+
+/**
+ * „Mută și așază la capăt”: selecția, pe foaia țintă (null: una nouă), cu alegerile date sau cu cele ținute; omul n-a scris
+ * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz).
+ */
+function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
+  const tinta = ctx.foaieTinta?.();
+  if (tinta === undefined) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const doc = ctx.istoric().doc;
+  const din = foaieCtx(ctx, doc).id;
+  if (tinta !== null && (tinta === din || !doc.foi.some((f) => f.id === tinta))) return { ok: false, motiv: 'motiv.aceeasi-foaie' };
+  const o = ctx.asezare?.().optiuni ?? optiuniTinute();
+  const d = distantaMinima(doc, ctx.selectie(), din);
+  return comandaPlan(doc, ctx.selectie(), din, { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) }, tinta);
 }
 
 /** Copiile legate (ADR 0210 §2), ținute pe (document, instanță, câte): `activa` și `ruleaza` le calculează o dată. */

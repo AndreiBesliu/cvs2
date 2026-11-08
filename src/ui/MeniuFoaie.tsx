@@ -17,6 +17,8 @@ export type ActiuniFoi = {
   readonly ruleaza: (actiune: string, foaie: string) => void;
   /** Numele, mărimea și materialul foii: foaia devine activă, iar panoul de proprietăți se deschide. */
   readonly proprietati: (foaie: string) => void;
+  /** „Așază pe foi…” (ADR 0210 §3): foaia devine activă, iar dialogul se deschide pe ea. */
+  readonly aseaza: (foaie: string) => void;
   /** O instanță trasă pe altă foaie. */
   readonly muta: (instanta: string, foaie: string) => void;
 };
@@ -74,6 +76,9 @@ export function MeniuFoaie({ foaie, piese, actiuni, inchide }: Props): ReactNode
         <>
           <button type="button" role="menuitem" data-meniu-foaie-articol="proprietati" onClick={() => { inchide(); actiuni.proprietati(foaie); }}>
             {t('lista.foaie-proprietati')}
+          </button>
+          <button type="button" role="menuitem" data-meniu-foaie-articol="aseaza" onClick={() => { inchide(); actiuni.aseaza(foaie); }}>
+            {t('lista.foaie-aseaza')}
           </button>
           {RANDURI.map(([id, eticheta]) => {
             const s = actiuni.stare(id, foaie);

@@ -1581,6 +1581,66 @@ nav button[aria-pressed='true'] {
   color: var(--a);
 }
 
+/* „Așază pe foi” (ADR 0210 §3): grupurile de alegeri pe câte un rând, cu eticheta lor; minimul din freză, rezultatul. */
+.dialog-asezare {
+  max-width: min(36rem, calc(100vw - 2rem));
+}
+
+.dialog .alegeri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  border: 0;
+}
+
+.dialog .alegeri legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 650;
+  color: var(--t);
+}
+
+.dialog .alegeri input[type='text'] {
+  max-width: 6rem;
+}
+
+.dialog label.alegere {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--t);
+  font-size: var(--fs-3);
+}
+
+.dialog label.alegere input[type='radio'] {
+  accent-color: var(--a-plin);
+}
+
+.dialog .aseaza-minim {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog .aseaza-noi {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog .aseaza-rezultat {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--a) 12%, var(--s-panou));
+  font-weight: 600;
+}
+
 .dialog .butoane {
   display: flex;
   flex-wrap: wrap;

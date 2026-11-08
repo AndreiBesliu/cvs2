@@ -6,6 +6,8 @@ import {
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { Retea } from '../model/retea.ts';
+// Doar tipul: așezarea pe foi vine cu calculul și cu dialogul ei, la cerere (ADR 0210 §3).
+import type { OptiuniAsezare } from '../model/asezare.ts';
 import type { Rol } from '../model/rol.ts';
 import type { RolPersonal } from '../model/rolPersonal.ts';
 import type { Transformare } from '../model/transformare.ts';
@@ -72,6 +74,11 @@ export type ContextDocument = {
   readonly cateInTotal?: () => number;
   /** Gruparea cu o piesă pusă de mai multe ori (ADR 0210 §2): doar aceasta (desprinsă întâi) sau în toată piesa. */
   readonly grupareSurori?: () => 'doar' | 'toate';
+  /**
+   * „Așază pe foi” (ADR 0210 §3): instanțele foii de lucru de așezat și alegerile dialogului. La „Mută și așază la capăt”
+   * contează doar alegerile; fără ele, cele ținute în browser.
+   */
+  readonly asezare?: () => { readonly ids: readonly string[]; readonly optiuni: OptiuniAsezare };
   /** Foaia de făcut activă după acțiune: foaia nouă, copia, vecina celei șterse. */
   readonly activeazaFoaie?: (id: string) => void;
   /** Fila asta doar citește (alta scrie proiectul): nicio acțiune nu schimbă documentul. */
@@ -516,6 +523,10 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('piesa.plus-unu', 'actiune.plus-unu', oSinguraAleasa),
   laCerere('piesa.desprinde', 'actiune.desprinde', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : dupaCalcul())),
   laCerere('foaie.duplica-legat', 'actiune.foaie-duplica-legat', dupaCalcul),
+  // Așezarea pe foi (ADR 0210 §3, felia 11.3↑): din dialogul ei; mutarea cu așezare, din meniul de clic dreapta.
+  laCerere('foaie.aseaza', 'actiune.foaie-aseaza', (ctx) => (ctx.asezare ? dupaCalcul() : 'motiv.nimic-ales')),
+  laCerere('selectie.muta-si-aseaza', 'actiune.muta-si-aseaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+    : ctx.foaieTinta ? dupaCalcul() : 'motiv.nimic-ales')),
   laCerere('document.muta-instantele', 'actiune.muta-instantele', (ctx) => (ctx.deplasari ? true : 'motiv.nimic-ales')),
   // Uneltele de desen (ADR 0051): forma trasă pe pânză, ca o piesă nouă cu instanța ei.
   laCerere('document.deseneaza', 'actiune.deseneaza', (ctx) => (ctx.formaNoua ? true : 'motiv.nimic-ales')),

@@ -123,7 +123,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 101)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 103)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -138,7 +138,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b).
-  assert.equal(USI.length, 101);
+  assert.equal(USI.length, 103);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
