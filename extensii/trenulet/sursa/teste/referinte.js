@@ -50,21 +50,24 @@ lego.push(
   { tip: 'bara', lung: 4 }, { tip: 'bila', baza: 1 }, { tip: 'bila', baza: 2 }, { tip: 'cupa', baza: 1 });
 // variantele de calibrare schimba masurile: o piesa construita cu variante, pe langa cele implicite
 const variante = { varianta_stift: 4, varianta_locas: 2, varianta_gaura: 5, varianta_ax: 1, varianta_bara: 4, varianta_cupa: 2 };
+// inaltimile lui v18 (stiftul 1,8, locasul stiftul + 0,2), fixate: implicitele de azi sunt 1,9 / 2,1 (ADR 0168), apărate de
+// trenulet.inaltimi.test.ts; aici restul geometriei trebuie să iasă aceeași, octet cu octet
+const V18 = { stift_h: 1.8, locas_h: 1.8 + 0.2 };
 
 function iesireLego() {
   const out = {};
   const una = (cheie, tri) => { const s = L.stl(tri); out[cheie] = { sha: sha(s.date), tri: tri.length, vol: +s.volum.toFixed(4), plasa: plasa(tri) }; };
-  L.seteaza({});
+  L.seteaza(V18);
   for (const d of lego) una(JSON.stringify(d), L.construieste(d).tri);
   for (const c of L.calibrare()) una('calibrare:' + c.nume, c.tri);
-  L.seteaza(variante);
+  L.seteaza({ ...V18, ...variante });
   for (const d of [lego[0], ...lego.filter(d => ['caramida', 'rotund', 'clema', 'cupa', 'caramidaTechnic'].includes(d.tip)).slice(-12)]) una('variante:' + JSON.stringify(d), L.construieste(d).tri);
-  L.seteaza({});
+  L.seteaza(V18);
   // asezarea pe pat (aceleasi piese, aceeasi ordine)
   const piese = lego.slice(-20).map((d, k) => { const r = L.construieste(d); return { nume: 'p' + k, tri: r.tri, dim: r.dim }; });
-  L.seteaza({ pat: [220, 220] });
+  L.seteaza({ ...V18, pat: [220, 220] });
   L.aseaza(piese).forEach((pl, i) => una(`pat220:${i + 1}`, pl.tri));
-  L.seteaza({});
+  L.seteaza(V18);
   return out;
 }
 
