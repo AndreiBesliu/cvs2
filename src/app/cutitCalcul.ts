@@ -136,14 +136,19 @@ const nSeg = (f: ConturAproximat): number => (f.inchis ? f.puncte.length : f.pun
 /**
  * Locurile comune ale fiecărui contur cu celelalte (lungimi pe el, sortate), aproximate segment cu segment, ca bucata de sub
  * maus la Retează; null peste `plafon` perechi de segmente cercetate (atunci se vede doar clicul, iar tăierea e tot exactă).
+ * Cu `parteneri`, un loc se scrie pe un contur doar când celălalt e al unei forme-partener sau al aceleiași forme, ca la
+ * tăiere: partenerii sunt formele alese, iar forma de sub clic, chiar nealeasă, își are locurile cu ele.
  */
-export function locuriComune(forme: readonly ConturAproximat[], plafon = 4_000_000): number[][] | null {
+export function locuriComune(forme: readonly ConturAproximat[], plafon = 4_000_000, parteneri?: ReadonlySet<string>): number[][] | null {
   const rez: number[][] = forme.map(() => []);
   let perechi = 0;
   for (let i = 0; i < forme.length; i++) {
     const a = forme[i] as ConturAproximat;
     for (let j = i + 1; j < forme.length; j++) {
       const b = forme[j] as ConturAproximat;
+      const aceeasi = a.instanta === b.instanta;
+      const peA = !parteneri || aceeasi || parteneri.has(b.instanta), peB = !parteneri || aceeasi || parteneri.has(a.instanta);
+      if (!peA && !peB) continue;
       if (a.cutie.minX > b.cutie.maxX || b.cutie.minX > a.cutie.maxX || a.cutie.minY > b.cutie.maxY || b.cutie.minY > a.cutie.maxY) continue;
       perechi += nSeg(a) * nSeg(b);
       if (perechi > plafon) return null;
@@ -156,8 +161,8 @@ export function locuriComune(forme: readonly ConturAproximat[], plafon = 4_000_0
           if (Math.abs(den) < 1e-15) continue;
           const t = ((b0.x - a0.x) * sy - (b0.y - a0.y) * sx) / den, u = ((b0.x - a0.x) * ry - (b0.y - a0.y) * rx) / den;
           if (t < 0 || t > 1 || u < 0 || u > 1) continue;
-          (rez[i] as number[]).push((a.s[p] as number) + t * Math.hypot(rx, ry));
-          (rez[j] as number[]).push((b.s[q] as number) + u * Math.hypot(sx, sy));
+          if (peA) (rez[i] as number[]).push((a.s[p] as number) + t * Math.hypot(rx, ry));
+          if (peB) (rez[j] as number[]).push((b.s[q] as number) + u * Math.hypot(sx, sy));
         }
       }
     }

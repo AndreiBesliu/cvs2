@@ -114,3 +114,23 @@ test('bucata de sub maus (Retează): între cele mai apropiate locuri comune; f�
   // Peste plafonul perechilor cercetate: nimic de arătat.
   assert.equal(locuriComune([p, l], 1), null);
 });
+
+test('locurile comune cu partenerii (Retează cu ceva ales): fiecare contur, doar cu formele alese și cu forma lui, ca la clic', () => {
+  // „a” (aleasă): y = 0; „b” (nealeasă): x = 50 și, al doilea contur al ei, y = 30; „c” (nealeasă): x = 80. Verticalele merg
+  // de la y = −50 la 50, orizontalele de la x = 0 la 100.
+  const a = conturAproximat([{ x: 0, y: 0 }, { x: 100, y: 0 }], false, 'a');
+  const b = conturAproximat([{ x: 50, y: -50 }, { x: 50, y: 50 }], false, 'b');
+  const c = conturAproximat([{ x: 80, y: -50 }, { x: 80, y: 50 }], false, 'c');
+  const b2 = conturAproximat([{ x: 0, y: 30 }, { x: 100, y: 30 }], false, 'b');
+  const forme = [a, b, c, b2];
+  assert.deepEqual(locuriComune(forme), [[50, 80], [50, 80], [50, 80], [50, 80]], 'fără parteneri, toate cu toate');
+  const l = locuriComune(forme, undefined, new Set(['a']));
+  assert.ok(l);
+  // „a” e partenerul tuturor, dar partenerii ei sunt doar ea: retezată, pleacă toată.
+  assert.deepEqual(l[0], [], '„a”: niciun loc');
+  assert.deepEqual(l[1], [50, 80], '„b”: cu „a” (y = 0) și cu al doilea contur al ei (y = 30)');
+  assert.deepEqual(l[2], [50], '„c”: doar cu „a”; „b” nu e aleasă');
+  assert.deepEqual(l[3], [50], 'al doilea contur al lui „b”: doar cu „b”, nu și cu „c”');
+  assert.deepEqual(bucataSub(forme, l, { x: 50, y: 20 }, 1), { i: 1, de: 50, pana: 80, tot: false });
+  assert.deepEqual(bucataSub(forme, l, { x: 20, y: 0 }, 1), { i: 0, de: 0, pana: 100, tot: true });
+});

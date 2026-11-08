@@ -9,7 +9,8 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  * cu mâna; **Pen**, trei clicuri și Enter; **Formă** (nota owner-ului), un text pus pe placă: din ea ies litera și placa cu golul
  * ei, iar textul rămâne; două cercuri adunate cu Shift + clic taie împreună. **Foarfeca** deschide un cerc și desparte o cale
  * deschisă în două; **Retează** arată bucata de sub maus și, cu opt clicuri, face dintr-un „#” pătratul din mijloc, tot o formă;
- * **Desparte**, din unealta Noduri, deschide dreptunghiul în colțul ales.
+ * cu o formă aleasă, bucata unei forme nealese se vede și pleacă până la cea aleasă; **Desparte**, din unealta Noduri, deschide
+ * dreptunghiul în colțul ales.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -218,6 +219,35 @@ test('Retează: bucata de sub maus se vede; opt clicuri pe capetele unui „#”
   await page.locator('[data-unealta="selectie"]').click();
   await randuri(page).first().click();
   await expect(page.locator('#root, body').getByText('60.00 × 60.00 mm')).toBeVisible();
+});
+
+test('Retează cu o formă aleasă: bucata unei forme nealese se vede sub maus și pleacă până la cea aleasă; alegerea rămâne', async ({ page }) => {
+  // Două importuri, deci două forme: orizontala y = 20 (aleasă) și verticala x = 50 (nealeasă), care o trece.
+  await page.goto('/');
+  for (const [nume, entitati] of [['orizontala.dxf', linie(0, 20, 100, 20)], ['verticala.dxf', linie(50, 0, 50, 100)]] as const) {
+    await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf(nume, dxf({ antet: [['$INSUNITS', 70, 4]], entitati })));
+    await page.click('[data-buton="importa"]');
+    await expect(page.locator('.dialog')).toHaveCount(0);
+  }
+  await expect(randuri(page)).toHaveCount(2);
+  await page.locator('[data-editare="lipire"]').click();
+  await randuri(page).filter({ hasText: 'orizontala' }).click();
+  await expect(alese(page)).toHaveCount(1);
+  const la = await ecran(page, await vedere(page));
+  await cutit(page, 'reteaza');
+  const q = la(50, 90);
+  await page.mouse.move(q.x, q.y);
+  // Capătul de sus al verticalei (de la orizontală în sus) e marcat, deși verticala nu e aleasă.
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-marcaj', '2');
+  await page.mouse.click(q.x, q.y);
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Bucată scoasă; ce a rămas din contur stă în forma lui.');
+  await expect(randuri(page)).toHaveCount(2);
+  await expect(alese(page)).toHaveCount(1);
+  await expect(randuri(page).filter({ hasText: 'orizontala' })).toHaveAttribute('aria-pressed', 'true');
+  // Din verticală a rămas bucata de sub orizontală: 0 × 20 mm.
+  await page.locator('[data-unealta="selectie"]').click();
+  await randuri(page).filter({ hasText: 'verticala' }).click();
+  await expect(page.locator('#root, body').getByText('0.00 × 20.00 mm')).toBeVisible();
 });
 
 test('Noduri, Desparte: dreptunghiul se deschide chiar în colțul ales (o cale cu cinci noduri, tot o formă)', async ({ page }) => {

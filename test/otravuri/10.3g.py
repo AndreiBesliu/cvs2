@@ -1,8 +1,8 @@
 # Lista de otrăvuri a feliei 10.3↑g (Foarfeca, Retează și Desparte; ADR 0181 §4, §5), 08.11.2026, alese de autor: deschiderea
 # conturului închis, lipirea de nod, capătul și clicul departe, bucata scoasă (pe închis și pe deschis), capetele căii care nu
 # sunt locuri comune, contururile aceleiași piese ca parteneri, ștergerea formei rămase goale, forma de sub clic neaflată printre
-# cele alese, partea pură (selecția păstrată, bucata de sub maus peste capăt, marcajul fără dubluri, locurile pe ambele forme) și
-# șase legături din interfață (e2e).
+# cele alese, partea pură (selecția păstrată, bucata de sub maus peste capăt, marcajul fără dubluri, locurile pe ambele forme,
+# partenerii previzualizării) și șapte legături din interfață (e2e).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -49,8 +49,13 @@ o('G12', C, '    return { i, de: inainte ?? (l[l.length - 1] as number), pana: d
 o('G13', C, '    for (let j = 1; j < n; j++) { const sj = f.s[j] as number; if (sj < pana) rez.push(f.puncte[j] as P); }',
   '    for (let j = 0; j < n; j++) { const sj = f.s[j] as number; if (sj < pana) rez.push(f.puncte[j] as P); }', 'unealta',
   'marcajul peste capăt are vârful 0 de două ori')
-o('G14', C, '          (rez[j] as number[]).push((b.s[q] as number) + u * Math.hypot(sx, sy));\n', '', 'unealta',
+o('G14', C, '          if (peB) (rez[j] as number[]).push((b.s[q] as number) + u * Math.hypot(sx, sy));\n', '', 'unealta',
   'locurile comune se scriu doar pe primul contur al perechii')
+o('G15', C, '      const peA = !parteneri || aceeasi || parteneri.has(b.instanta), peB = !parteneri || aceeasi || parteneri.has(a.instanta);',
+  '      const peA = !parteneri || aceeasi || parteneri.has(a.instanta), peB = !parteneri || aceeasi || parteneri.has(b.instanta);', 'unealta',
+  'partenerii inversați: un loc se scrie pe conturul formei-partener, nu pe al celei care o întâlnește')
+o('G16', C, 'aceeasi || parteneri.has(b.instanta), peB', 'parteneri.has(b.instanta), peB', 'unealta',
+  'celelalte contururi ale aceleiași forme nealese nu-i mai sunt parteneri')
 # Interfața (e2e).
 o('H01', U, '        s.taie({ fel: s.mod, id, punct: { x, y }, toleranta: TOLERANTA_CLIC_PX / scara }, []);\n', '', 'e2e',
   'clicul foarfecii și al retezatului nu taie')
@@ -65,6 +70,9 @@ o('H05', U, "        const text = cutit.fel === 'reteaza'", "        const text 
 o('H06', T, "    taieUna = (inst, p) => (inst.id === c.id ? foarfeca(inst, p, c) : null);",
   "    taieUna = (inst, p) => (inst.id === c.id ? reteaza(doc, indexFoaie, alese, inst, p, { ...c, fel: 'reteaza' }) : null);", 'e2e',
   'foarfeca retează în loc să despartă')
+o('H07', U, '      if (p.length >= 2) forme.push(conturAproximat(p, c.inchis, e.instanta));',
+  '      if (p.length >= 2 && parteneri.has(e.instanta)) forme.push(conturAproximat(p, c.inchis, e.instanta));', 'e2e',
+  'sub maus se văd doar formele alese: bucata unei forme nealese, pe care clicul o retează, nu se arată')
 
 SETURI = {
     'foarfeca': ['test/unit/taiere.foarfeca.test.ts', 'test/unit/taiere.foarfeca.oracol.test.ts'],

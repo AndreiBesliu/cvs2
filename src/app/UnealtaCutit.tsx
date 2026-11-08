@@ -266,22 +266,22 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     return elementeFoaie(doc, 0).filter((e) => ids.has(e.instanta)).map((e) => drumSvg(conturElement(e), vedere));
   }, [forme, doc, vedere]);
 
-  // Retează: contururile formelor (cele alese, fără alegere toate ale foii) și locurile lor comune, aproximate, pentru bucata
-  // arătată sub maus; peste plafon, doar clicul (tăierea e tot exactă, a workerului).
+  // Retează: contururile tuturor formelor foii (sub clic poate fi oricare, chiar nealeasă) și locurile lor comune cu partenerii
+  // (formele alese, fără alegere toate ale foii, și aceeași formă), aproximate, pentru bucata arătată sub maus; peste plafon,
+  // doar clicul (tăierea e tot exactă, a workerului).
   const retezare = useMemo((): { readonly forme: ConturAproximat[]; readonly locuri: number[][] } | null => {
     if (mod !== 'reteaza') return null;
-    const ids = new Set(tinteCutit(doc, selectie, []));
+    const parteneri = new Set(tinteCutit(doc, selectie, []));
     const forme: ConturAproximat[] = [];
     let n = 0;
     for (const e of elementeFoaie(doc, 0)) {
-      if (!ids.has(e.instanta)) continue;
       const c = conturElement(e);
       const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
       n += p.length;
       if (n > PLAFON_PUNCTE) return null;
       if (p.length >= 2) forme.push(conturAproximat(p, c.inchis, e.instanta));
     }
-    const locuri = locuriComune(forme);
+    const locuri = locuriComune(forme, undefined, parteneri);
     return locuri ? { forme, locuri } : null;
   }, [doc, selectie, mod]);
   const [marcaj, setMarcaj] = useState<readonly Punct[] | null>(null);
