@@ -161,6 +161,11 @@ export function ancoraLipita(c: Cutie, p: Punct, lipire: LipirePunct | null, tol
   return { punct: { x: lx ?? rot(p.x), y: ly ?? rot(p.y) }, linii: r?.linii ?? [] };
 }
 
+/** Pură: ținta ancorei e sub punctul (px, py) al pânzei (pixeli din colțul ei), la cel mult 7 px; `null`: nicio țintă arătată. */
+export function ancoraLovita(a: Punct | null, v: { readonly tx: number; readonly ty: number; readonly scara: number }, px: number, py: number): boolean {
+  return a !== null && Math.hypot(px - (v.tx + a.x * v.scara), py - (v.ty - a.y * v.scara)) <= LOVIRE_PX + 1;
+}
+
 /** Ce face gestul pe mânerul `m`, pentru eticheta de lângă cutie (ADR 0240 §E): proporția, punctul fix, ancora pe linia lui. */
 export type ModManer = { readonly proportie: 'proportional' | 'liber' | 'axa'; readonly fix: 'ancora' | 'centru' | 'colt' | 'latura'; readonly peLinie: boolean };
 

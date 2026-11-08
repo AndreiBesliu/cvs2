@@ -168,3 +168,61 @@ test('Shift+L comută lipirea, și cât se trage; la desen, Alt nu mai inverseaz
   await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'true');
   expect(erori).toEqual([]);
 });
+
+/** Locul țintei ancorei, în mm ai foii (din atributele ei). */
+async function ancora(page: Page): Promise<[number, number]> {
+  const t = page.getByTestId('ancora');
+  return [Number(await t.getAttribute('data-x')), Number(await t.getAttribute('data-y'))];
+}
+
+test('ancora (ADR 0240 §A): trasă pe grilă, rotirea și oglindirea în jurul ei, selectorul, dublu clic, Alt față de ea', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  let la = await ecran(page, await vedere(page));
+  // Dreptunghiul 40 × 20 din (100, 60), ales după desen; unealta Transformare.
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await expect(randuri(page)).toHaveText(['dreptunghi 40.00 × 20.00 la X 100.00, Y 60.00']);
+  await page.locator('[data-unealta="transformare"]').click();
+  // Ancora pornește din centru (selectorul ținut în browser: implicit centrul).
+  await expect(page.locator('[data-ancora="c"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await ancora(page)).toEqual([120, 70]);
+  // Trasă de țintă în (150,4; 70,3): se prinde de grila de 10, în (150, 70).
+  await trage(page, la(120, 70), la(150.4, 70.3));
+  await expect.poll(() => ancora(page)).toEqual([150, 70]);
+  await expect(randuri(page)).toHaveText(['dreptunghi 40.00 × 20.00 la X 100.00, Y 60.00'], { timeout: 1000 });
+  // Rotirea cu 90° (Shift, pași de 15°) e în jurul ancorei: cutia ajunge în [140, 160] × [20, 60]; ancora rămâne pe loc.
+  // Mânerul rotirii stă în (120, 80 + 26 px); față de ancoră, (−30, 10 + 26 px), rotit cu 90° dă (−10 − 26 px, −30).
+  const s = (await vedere(page)).scara;
+  await page.keyboard.down('Shift');
+  await trage(page, await maner(page, 'rotire'), la(150 - 10 - 26 / s, 70 - 30));
+  await page.keyboard.up('Shift');
+  await expect(page.locator('[data-camp="rotire"]')).toHaveValue('90');
+  await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('140');
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('20');
+  expect(await ancora(page)).toEqual([150, 70]);
+  // Oglindirea verticală (Shift+V) e față de ancoră (orizontala y = 70): cutia ajunge în [80, 120] pe y.
+  await page.keyboard.press('Shift+V');
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('80');
+  expect(await ancora(page)).toEqual([150, 70]);
+  // Selectorul pe centru: ancora în centrul cutiei, (150, 100); trasă în (170, 100), apoi dublu clic o întoarce în centru.
+  await page.locator('[data-ancora="c"]').click();
+  await expect.poll(() => ancora(page)).toEqual([150, 100]);
+  la = await ecran(page, await vedere(page));
+  await trage(page, la(150, 100), la(170.2, 99.6));
+  await expect.poll(() => ancora(page)).toEqual([170, 100]);
+  await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('140');
+  await page.mouse.dblclick(la(170, 100).x, la(170, 100).y);
+  await expect.poll(() => ancora(page)).toEqual([150, 100]);
+  // Colțul stânga-jos din selector, (140, 80), apoi latura de sus (y = 120) trasă la 140 cu Alt: fix e ancora (y = 80), deci
+  // înălțimea 40 → 60; dreptunghiul, rotit cu 90°, are acum lățimea lui 60.
+  await page.locator('[data-ancora="sv"]').click();
+  await expect.poll(() => ancora(page)).toEqual([140, 80]);
+  la = await ecran(page, await vedere(page));
+  const n = await maner(page, 'n');
+  await trage(page, n, { x: n.x, y: la(150, 140).y }, ['Alt']);
+  await expect(randuri(page)).toHaveText([/^dreptunghi 60\.00 × 20\.00 /]);
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('80');
+  expect(await ancora(page)).toEqual([140, 80]);
+  expect(erori).toEqual([]);
+});

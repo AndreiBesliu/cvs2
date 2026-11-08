@@ -286,10 +286,18 @@ Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transf
 - **colțurile** scalează proporțional, cu colțul opus fix; **laturile** scalează pe o singură axă, cu latura opusă fixă;
 - **Shift**: proporțional pe orice mâner (și pe o latură: cealaltă axă crește la fel, simetric față de mijloc);
 - **Ctrl** (`⌘` pe Mac): liber pe orice mâner (și pe un colț, fiecare axă cu tragerea ei);
-- **Alt**: față de centru: centrul cutiei rămâne pe loc, nu mânerul opus;
-- tastele se pot ține împreună (Alt + Shift: proporțional față de centru; Alt + Ctrl: liber față de centru); cu Shift și
+- **Alt**: față de **ancoră** (implicit centrul cutiei): ancora rămâne pe loc, nu mânerul opus;
+- tastele se pot ține împreună (Alt + Shift: proporțional față de ancoră; Alt + Ctrl: liber față de ancoră); cu Shift și
   Ctrl, câștigă Shift. Se pot apăsa și în timpul tragerii, cu mausul pe loc;
-- **mânerul rotund de deasupra** rotește în jurul centrului; cu Shift, în pași de 15°.
+- **mânerul rotund de deasupra** rotește în jurul ancorei; cu Shift, în pași de 15°.
+
+**Ancora** e punctul fix al transformărilor: rotirea e în jurul ei, Alt scalează față de ea, oglindirea și înclinarea o
+folosesc. Pe pânză e ținta albastră, un cerc cu cruce. Pornește dintr-unul din cele 9 puncte ale cutiei (colțurile, mijloacele
+laturilor, centrul), ales în **selectorul** de lângă unealtă și ținut în browser. O tragi cu mâna oriunde, și în afara cutiei:
+se lipește de cele 9 puncte ale cutiei și de ținte (`Alt` inversează lipirea); **dublu clic** pe ea o întoarce în punctul
+ales. Când ancora stă pe un mâner (un colț ales în selector), mânerul are întâietate, iar ancora o muți din selector. Merge cu
+selecția când o muți sau o scalezi din alt mâner; după o rotire, o scalare cu Alt, o oglindire sau o înclinare în jurul ei,
+rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect.
 
 Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
 opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
@@ -299,11 +307,11 @@ cu motivul: o cale cu arce, un dreptunghi cu colțuri rotunjite sau o formă rot
 piesă folosită și de alte forme nu se schimbă.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
-(`Shift+V`, sus ↔ jos), față de centrul cutiei selecției. Se taie oglinda, cu același sens de tăiere.
+(`Shift+V`, sus ↔ jos), față de ancoră (implicit centrul cutiei selecției). Se taie oglinda, cu același sens de tăiere.
 
 **Înclină** (lângă oglindire, butonul cu un pătrat și paralelogramul lui) deschide un panou cu două unghiuri, în grade, între
 −75° și 75° (gol = 0): **Orizontal** mută punctele spre dreapta cu cât sunt mai sus (un unghi negativ, spre stânga), apoi
-**Vertical** le ridică cu cât sunt mai la dreapta, față de centrul cutiei selecției. Aria rămâne aceeași. Cât panoul e deschis,
+**Vertical** le ridică cu cât sunt mai la dreapta, față de ancoră (implicit centrul cutiei selecției). Aria rămâne aceeași. Cât panoul e deschis,
 cutia înclinată se vede pe pânză, punctat. Înclinarea intră exact în geometrie: liniile și curbele rămân linii și curbe, iar un
 dreptunghi devine o cale (un paralelogram). O formă cu arce (un cerc, un dreptunghi cu colțuri rotunjite, o cale cu arce) se
 înclină doar cu bifa **Arcele devin curbe (cercul devine elipsă)**, care apare în panou doar atunci: arcele devin curbe Bézier,
@@ -1259,7 +1267,8 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
 | `Shift+L` | pornește sau oprește lipirea, și cât tragi |
 | `Alt`, cât tragi o formă, un ghidaj sau un nod (și cu Pen) | inversează lipirea |
-| `Shift` / `Ctrl` / `Alt`, cât tragi un mâner (unealta Transformare) | proporțional pe orice mâner / liber pe orice mâner / față de centru; se pot ține împreună, iar cu Shift și Ctrl câștigă Shift |
+| `Shift` / `Ctrl` / `Alt`, cât tragi un mâner (unealta Transformare) | proporțional pe orice mâner / liber pe orice mâner / față de ancoră (implicit centrul); se pot ține împreună, iar cu Shift și Ctrl câștigă Shift |
+| dublu clic pe ținta ancorei (unealta Transformare) | ancora înapoi în punctul ales în selector |
 | `Shift` / `Ctrl` / `Alt`, cât desenezi | pătrat, cerc, pași de 15° / fără proporție (cercul devine elipsă) / din centru (linia, din mijloc) |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
 | `Enter` (cu unealta Pen) | termină calea începută |

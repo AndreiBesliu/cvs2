@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ancoraLipita, fractiiDinPunct, fractiiPunct, PUNCTE_CUTIE, punctDinFractii, transformareManer, type PunctCutie,
+  ancoraLipita, ancoraLovita, fractiiDinPunct, fractiiPunct, PUNCTE_CUTIE, punctDinFractii, transformareManer, type PunctCutie,
 } from '../../src/app/editareCalcul.ts';
 import { lipeste, tinteDin } from '../../src/geom/lipire.ts';
 import { transforma } from '../../src/model/transformare.ts';
@@ -50,6 +50,15 @@ test('lipirea ancorei: întâi cele 9 puncte ale cutiei, apoi țintele obișnuit
   assert.deepEqual([g.punct, g.linii.map((l) => l.axa)], [{ x: 33, y: 4.4 }, ['x']]);
   // Fără lipire (oprită, sau inversată cu Alt): exact unde a lăsat-o mausul, rotunjită la 0,001 mm.
   assert.deepEqual(ancoraLipita(C, { x: 39.00004, y: 18.9 }, null, 2).punct, { x: 39, y: 18.9 });
+});
+
+test('lovitura ancorei: la cel mult 7 px de țintă, pe ecran', () => {
+  // Ancora în (20, 10) mm, la 2 px/mm, cu originea foii în (10, 300) pe ecran: ținta în (50, 280).
+  const v = { tx: 10, ty: 300, scara: 2 };
+  assert.equal(ancoraLovita({ x: 20, y: 10 }, v, 50, 280), true);
+  assert.equal(ancoraLovita({ x: 20, y: 10 }, v, 56.9, 280), true);
+  assert.equal(ancoraLovita({ x: 20, y: 10 }, v, 50, 287.1), false);
+  assert.equal(ancoraLovita(null, v, 50, 280), false, 'fără ancoră (cutia prea mică pe ecran), nimic');
 });
 
 /** Dreptunghiul 40 × 20 din (0, 0), ales. */

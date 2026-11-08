@@ -296,10 +296,19 @@ The **Transform** tool (`S`) shows the handles on the selection's box and transf
   side fixed;
 - **Shift**: proportional on any handle (on a side too: the other axis grows by the same factor, symmetric about the middle);
 - **Ctrl** (`⌘` on a Mac): free on any handle (on a corner too, each axis with its own drag);
-- **Alt**: about the centre: the centre of the box stays put, not the opposite handle;
-- the keys can be held together (Alt + Shift: proportional about the centre; Alt + Ctrl: free about the centre); with Shift
+- **Alt**: about the **anchor** (the centre of the box by default): the anchor stays put, not the opposite handle;
+- the keys can be held together (Alt + Shift: proportional about the anchor; Alt + Ctrl: free about the anchor); with Shift
   and Ctrl, Shift wins. They can also be pressed while dragging, with the mouse still;
-- the **round handle above** rotates around the centre; with Shift, in 15° steps.
+- the **round handle above** rotates around the anchor; with Shift, in 15° steps.
+
+The **anchor** is the fixed point of the transforms: rotation is around it, Alt scales about it, mirroring and skewing use it.
+On the canvas it is the blue target, a circle with a cross. It starts from one of the 9 points of the box (the corners, the
+middles of the sides, the centre), chosen in the **picker** next to the tool and kept in the browser. You drag it by hand
+anywhere, outside the box too: it snaps to the 9 points of the box and to the targets (`Alt` inverts snapping); a
+**double-click** on it brings it back to the chosen point. When the anchor sits on a handle (a corner chosen in the picker),
+the handle wins, and you move the anchor from the picker. It goes with the selection when you move it or scale it from
+another handle; after a rotation, an Alt scaling, a mirroring or a skew around it, it stays put. A new selection brings it
+back to the chosen point; the anchor is not saved in the project.
 
 While you drag, the label above shows the size and what the keys do (for example “50 × 40 mm · one axis · from the opposite
 side”), and a blue dot shows what stays put. The handles snap to guides, the sheet, the other shapes and the grid, only on the
@@ -309,11 +318,13 @@ refused, with the reason: a path with arcs, a rectangle with rounded corners or 
 proportionally; a part used by other shapes too is not changed.
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
-top ↔ bottom), about the centre of the selection's box. The mirror image is what gets cut, with the same cutting direction.
+top ↔ bottom), about the anchor (the centre of the selection's box by default). The mirror image is what gets cut, with the
+same cutting direction.
 
 **Skew** (next to mirroring, the button with a square and its parallelogram) opens a panel with two angles, in degrees,
 between −75° and 75° (empty = 0): **Horizontal** moves points to the right the higher they are (a negative angle, to the
-left), then **Vertical** raises them the further right they are, about the centre of the selection box. The area stays the
+left), then **Vertical** raises them the further right they are, about the anchor (the centre of the selection box by
+default). The area stays the
 same. While the panel is open, the skewed box shows on the canvas, dashed. Skewing goes exactly into the geometry: lines and
 curves stay lines and curves, and a rectangle becomes a path (a parallelogram). A shape with arcs (a circle, a rectangle with
 rounded corners, a path with arcs) is skewed only with the tick **Arcs become curves (the circle becomes an ellipse)**, which
@@ -1301,7 +1312,8 @@ it, and the app’s interface stays the same.
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
 | `Shift+L` | turns snapping on or off, also while dragging |
 | `Alt`, while dragging a shape, a guide or a node (and with Pen) | inverts snapping |
-| `Shift` / `Ctrl` / `Alt`, while dragging a handle (Transform tool) | proportional on any handle / free on any handle / about the centre; they can be held together, and with Shift and Ctrl, Shift wins |
+| `Shift` / `Ctrl` / `Alt`, while dragging a handle (Transform tool) | proportional on any handle / free on any handle / about the anchor (the centre by default); they can be held together, and with Shift and Ctrl, Shift wins |
+| double-click on the anchor target (Transform tool) | the anchor back to the point chosen in the picker |
 | `Shift` / `Ctrl` / `Alt`, while drawing | square, circle, 15° steps / no proportion (the circle becomes an ellipse) / from the centre (the line, from the middle) |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
 | `Enter` (with the Pen tool) | finishes the path you started |
