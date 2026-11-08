@@ -7002,3 +7002,35 @@ putem imbunatati aici, inainte sa unim cu main?”).
 - **Rămân, după unire** (răspunsul owner-ului): 3 lemnul din jurul dopului ales și din panou (valorile benzii pe hârtie
   înainte de export), 4 punțile dopului drept alese în fereastră (câmpul poate intra tot în v22, cât nu e unit), 5 arborele
   („cu bandă”) și legăturile rândurilor în fereastră, 6 viteza benzii (~10 s pe 24 de litere, față de 6,7 cu fața coborâtă).
+
+## 2026-11-08 — Unirea incrustațiilor (12.1↑b, 12.1↑c) în main, documentul v22, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, așa” (owner-ul, în sesiunea planșelor, la „întâi unești incrustațiile în `main` (prin sesiunea principală),
+apoi aduc `main` în ramura mea și iau v23 peste ele”), transmis aici de sesiunea planșelor, cu „Mi-ar ajuta un semn când e
+în `origin/main` (commit-ul)”.
+**Started:** 08.11, 12:38. **Completed:** 08.11, 14:58.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii planșelor (mesajul lui, imediat după întrebarea
+  liniei); sesiunea incrustațiilor lăsase unirea „la cuvântul tău”, cu ramura împinsă la `4da55a1`.
+- **Unirea (`9692385`, `--no-ff`):** fără conflicte; ramura conținea deja `main` (`6c79ff9`), deci arborele unirii e chiar
+  al lui `4da55a1`, cel probat de linie. 23 de commit-uri: 12.1↑b (ADR 0171: pereții drepți, documentul v21, cu freza
+  dopului de la primul T liber), 12.1↑c (ADR 0172: banda și decuparea dopului în V, documentul v22, cu freza decupării de la
+  primul T liber), punțile pe buclele mici (`975b72a`). Documentul trece la v22.
+- **Porțile pe `9692385`:** traducerile (680, 0 lipsă), compilatoarele (TypeScript 7.0.2: cele 949 de fișiere ale
+  proiectului, verificate în două secunde), importurile, 8 715 teste unitare (8 707 trecute, 8 sărite, 0 căzute), licențele,
+  build-ul determinist (286 de fișiere identice); e2e 381 / 381 (o cădere la încărcare, `fonturi.spec.ts:149`: butonul
+  „Aplică” oprit 30 s; trecută singură, în 6,5 s; `PanouText.tsx` nu e atins de unire), emulatoarele 101 / 101 și 21 / 21 pe
+  `031e41a` (prima rulare avea două căderi din vina mea: commit-ul documentelor, făcut cât rulau, a schimbat HEAD-ul, iar
+  `raportor.emulator.spec.ts:57` și `tichete.emulator.spec.ts:109` compară versiunea din `dist/` cu HEAD-ul; reluate cu
+  build-ul pe HEAD-ul nou).
+- **Documentele (`031e41a`):** CLAUDE.md (starea 12.1↑b–c, regula câmpului nou cu v23 a planșelor, decizia din 08.11); în
+  fișa etapei 3, cele trei încercări ale owner-ului pentru incrustații, de pe canalul liniei pe adresa principală de test,
+  „când vrei” (traducerile: 678 de texte, 0 lipsă, 0 nefolosite; probele documentației 54 / 54).
+- **Mărimile:** pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.
+- **CI:** rapid `42474404616` pe `031e41a`, verde; complet `42478613626`, pornit de mână (`complet.yml` rulează doar noaptea
+  și la cerere, nu la push; ajutorul care aștepta rularea push-ului a ieșit după 10 minute), verde.
+- **Publicat pe test:** rularea `42482198529`, serverul întâi (regulile Storage și Firestore, cele 12 funcții), apoi
+  site-ul; amprenta `031e41abb70b` pe toate țintele (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa
+  de test servește `031e41abb70b`.
+- **Semnele:** planșelor și liniei incrustațiilor, după push, cu `9692385` și `031e41a`; linia incrustațiilor și-a adus apoi
+  ramura la `031e41a`.
