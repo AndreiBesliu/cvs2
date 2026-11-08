@@ -29,10 +29,19 @@ const roluri = (c: readonly Cale[]): Record<string, number> => {
   for (const x of c) r[x.rol] = (r[x.rol] ?? 0) + 1;
   return r;
 };
-/** Toate punctele căilor cu rolul dat, ca puncte. */
+/**
+ * Punctele căilor cu rolul dat: vârfurile și, pe fiecare segment, câte unul la cel mult 0,25 mm (o linie care traversează o
+ * regiune n-are neapărat un vârf în ea; otrava S04, scăpată la prima rulare, o arăta).
+ */
 const puncteRol = (c: readonly Cale[], rol: string): Punct[] => c.filter((x) => x.rol === rol).flatMap((x) => {
   const r: Punct[] = [];
-  for (let i = 0; i < x.p.length; i += 2) r.push({ x: x.p[i]!, y: x.p[i + 1]! });
+  const n = x.p.length / 2, m = x.inchisa ? n : n - 1;
+  for (let i = 0; i < n; i++) r.push({ x: x.p[2 * i]!, y: x.p[2 * i + 1]! });
+  for (let i = 0; i < m; i++) {
+    const j = (i + 1) % n, ax = x.p[2 * i]!, ay = x.p[2 * i + 1]!, bx = x.p[2 * j]!, by = x.p[2 * j + 1]!;
+    const k = Math.ceil(Math.hypot(bx - ax, by - ay) / 0.25);
+    for (let t = 1; t < k; t++) r.push({ x: ax + ((bx - ax) * t) / k, y: ay + ((by - ay) * t) / k });
+  }
   return r;
 });
 const inDreptunghi = (p: Punct, x0: number, y0: number, x1: number, y1: number): boolean => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1;
@@ -198,6 +207,10 @@ test('după CNC, dintr-un document: marginea din profilul prin tot, gaura prin t
   const cinci = pieseDinDocument(doc, { fel: 'foaie' }, 5, [220, 220], { dupaCnc: true });
   assert.ok(aproape(arieFigura(cinci.piese[0]!.contururi), 6000 - 25 * Math.PI - 1200));
   assert.deepEqual(cinci.piese[0]!.trepte!.map((t) => t.inaltime), [2, 3]);
+  // La 20 mm (mai înaltă decât foaia), găurirea prin tot (19 mm) rămâne gaură: contează intenția de pe CNC, nu înălțimea.
+  const douazeci = pieseDinDocument(doc, { fel: 'foaie' }, 20, [220, 220], { dupaCnc: true });
+  assert.ok(aproape(arieFigura(douazeci.piese[0]!.contururi), 6000 - 25 * Math.PI));
+  assert.deepEqual(douazeci.piese[0]!.trepte!.map((t) => t.inaltime), [17, 18, 14]);
   // Felierea: 90 de straturi; fundul buzunarului e stratul 60, găurirea 75, canelura 80.
   const f = feliaza(a.piese, S, { data: DATA });
   assert.deepEqual(f.avertismente, []);
@@ -306,8 +319,10 @@ test('felierea cu trepte: fundul buzunarului (60) are suprafața de sus doar în
     if (calcare === 'plin') {
       assert.ok(calcate(59).length > 0 && calcate(59).every((q) => inBuzunar(q, 1e-6)));
       // Plinul de jos e peste toată placa: călcarea lui o acoperă toată (capetele liniilor, de la o margine la alta).
-      const xs = calcate(2).map((q) => q.x), ys = calcate(2).map((q) => q.y);
-      assert.ok(Math.min(...xs) < 61 && Math.max(...xs) > 159 && Math.min(...ys) < 81 && Math.max(...ys) > 139, `${Math.min(...xs)}…${Math.max(...xs)}`);
+      const c2 = calcate(2);
+      const x0 = c2.reduce((a, q) => Math.min(a, q.x), Infinity), x1 = c2.reduce((a, q) => Math.max(a, q.x), -Infinity);
+      const y0 = c2.reduce((a, q) => Math.min(a, q.y), Infinity), y1 = c2.reduce((a, q) => Math.max(a, q.y), -Infinity);
+      assert.ok(x0 < 61 && x1 > 159 && y0 < 81 && y1 > 139, `${x0}…${x1} × ${y0}…${y1}`);
       assert.equal(calcate(55).length, 0);
     }
   }
