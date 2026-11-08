@@ -151,6 +151,27 @@ primului commit de cod, `origin/main` unit în ramură.
   bucata tăierii, la prima alegere. Pen-ul cuțitului e unealta Pen, cu culoarea cuțitului. Starea (ce s-a tăiat, refuzul)
   stă în cipul din colțul pânzei. Pornirea nu crește (101,8 kB); totalul crește cu 3,7 kB (546,8 / 600).
 
+**Felia 10.3↑g, la cod** (08.11):
+- **Foarfeca** taie conturul cel mai apropiat de clic (la 4 px), exact: un nod la toleranță e locul, iar un capăt de segment se
+  lipește de nod. O cale închisă se deschide acolo (un cerc deschis: două semicercuri, ca drum); una deschisă devine două forme,
+  ca la intersecții (celelalte contururi ale piesei rămân împreună). Capătul unei căi deschise se refuză (`capat`), iar un clic
+  departe de orice contur (`departe`).
+- **Retează** scoate bucata conturului de sub clic dintre cele mai apropiate două locuri comune cu celelalte contururi: ale
+  formelor alese sau, fără alegere, ale tuturor formelor foii, și ale aceleiași piese. Locurile se calculează doar pentru
+  conturul lovit (nu toate perechile). **Ce rămâne stă în piesă** (nu devine forme separate, ca la foarfecă), ca un DXF cu
+  liniile prelungite să rămână, după curățat, o singură formă; o piesă rămasă fără nimic se șterge. Capetele unei căi deschise
+  nu sunt locuri comune ale ei, nici un loc la sub 1e-9 din segment de ele (un „T”: verticala retezată pleacă toată, și când
+  trece de orizontală cu zgomot de calcul, fără un fir rămas), iar locul în care un contur se trece singur nu e un
+  loc comun (e treaba verificării, ca la „Taie la intersecții”); bucățile rămase nu se unesc.
+- **Bucata de sub maus** se arată cu roșu, aproximată pe firul principal (contururile ca polilinii, locurile comune segment cu
+  segment, cel mult 4 000 000 de perechi de segmente cercetate); tăierea e a workerului, exactă.
+- **Selecția rămâne cum era**, la toate felurile cuțitului: fără nimic ales, tot nimic (tăieturile și retezările următoare au
+  tot toate formele foii, adică răspunsul 2a ține și după prima tăietură); o formă aleasă care se taie e înlocuită de bucățile
+  ei. Schimbat față de 10.3↑f, unde bucățile noi deveneau alese, iar a doua tăietură ar fi tăiat doar printre ele.
+- **Desparte**, în unealta Noduri: forma tăiată chiar în nodul ales, prin aceeași foarfecă (workerul); rămâne aleasă prima
+  bucată, ca unealta să rămână pe ea. Căutarea punctului de pe contur (`apropiat`, `laturaLovita`) stă acum în
+  `src/geom/apropiat.ts`, comună uneltei Noduri și cuțitului.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în

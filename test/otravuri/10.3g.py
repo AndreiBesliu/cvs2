@@ -31,7 +31,8 @@ o('G05', T, '      ramase = [(inPrima ? b1 : b0) as FormaCale];', '      ramase 
   'pe un contur închis rămâne bucata de sub clic, nu cealaltă')
 o('G06', T, '    const scoasa = inainte ? 1 : 0;', '    const scoasa = 0;', 'foarfeca', 'pe o cale deschisă pleacă mereu prima bucată')
 o('G07', T, '  const ls = farDubluri(w, toate, (y) => y).filter((y) => w.inchis || (lam(y) > 1e-9 && lam(y) < m - 1e-9));',
-  '  const ls = farDubluri(w, toate, (y) => y);', 'foarfeca', 'capetele căii deschise (un „T”) devin locuri comune')
+  '  const ls = farDubluri(w, toate, (y) => y);', 'foarfeca',
+  'un loc la 1e-9 din λ de capătul căii (un „T” trecut cu 5e-8 mm) devine loc comun: rămâne un fir de 5e-8 mm')
 o('G08', T, '    if (!alese.has(e.instanta) || e.idLume === idLume || !seAting(cutieElement(e), A.cutie)) continue;',
   "    if (!alese.has(e.instanta) || e.idLume.split('/')[0] === idLume.split('/')[0] || !seAting(cutieElement(e), A.cutie)) continue;",
   'foarfeca', 'celelalte contururi ale aceleiași piese nu mai sunt parteneri („#”-ul dintr-o piesă)')

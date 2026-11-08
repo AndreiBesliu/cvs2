@@ -538,6 +538,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/app/UnealtaCutit.tsx` (adusă în bucata tăierii, bara prin portal, gestul prin intermediarul `gestCutit` din editare),
   partea pură în `src/app/cutitCalcul.ts` (țintele 2a, urma, locurile aproximative), bifa comună în `inchidereTaiere.ts`.
   Oracolul: `judecaCutitul` cu `tolCutit` (mâna liberă), corpusurile în `taiere.cutit.oracol.test.ts`.
+  **Foarfeca, Retează și Desparte (felia 10.3↑g)** gata pe 08.11: cuțitele `foarfeca` și `reteaza` (instanța, punctul,
+  toleranța) în `taiere.ts`; foarfeca deschide un contur închis (`taieLaLocuri` cu `deschide`) sau desparte unul deschis în
+  forme; retezatul scoate bucata dintre locurile comune ale conturului lovit (`locuriPeContur`), iar restul **stă în piesă**.
+  **Selecția rămâne** după orice tăiere a cuțitului (`selectieDupa`). Desparte, în unealta Noduri, folosește foarfeca. Oracolul:
+  `judecaFoarfeca`, `judecaRetezarea` (`taiere.foarfeca.oracol.test.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
