@@ -6806,3 +6806,45 @@ il arhivezi”.
 - **Ramurile și sesiunile:** `git branch -d` pe cele trei (unite); sesiunile bibliotecii și raportărilor, arhivate. Pe
   `origin`, `wip/3.Xg-biblioteca` și `wip/15.B-raportari` intră în rândul owner-ului cu ramurile de șters (acum 17, cu
   comanda; traducerea la zi).
+
+## 2026-11-08 — 6.V↑ pornită: ancora și tastele transformării (ADR 0240, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, către sesiunea principală: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori.
+si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta. de exemplu,
+daca vreau sa deformez un cerc si sa il fac elipsa coltul pastreaza proportia cercului, dar lateralele nu, eu vreau sa pot
+apasa SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar fi, si pe ALT, chiar si in combinatie
+cu celelalte, vreau sa imi pastreze centrul formei. Aceste hotkeys trebuie sa functioneze asa si cand creez formele (cercul,
+dreptunghiul etc.)”. Sarcina sesiunii principale către linie: worktree-ul `ancore` (ramura `wip/6.V-ancore`, e2e pe 4181 și
+`127.0.8`, ADR-urile 0240–0249, canalul `ancore`); prima rundă fără cod: cercetarea (ArtCAM, CorelDRAW, Illustrator,
+Inkscape; ADR 0051–0055, 0065, 0078, 0102, 0138; `Editare.tsx` și `src/geom/`), ADR 0240 propus, schița cu formularul și
+întrebările grupate, cu recomandarea întâi; codul, după răspunsuri.
+**Started:** 08.11, 11:31. **Completed:** 08.11, 12:15 (propunerea; codul așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\ancore` (ramura `wip/6.V-ancore`, din `main` `b56f0e1`), cu joncțiunile
+  `node_modules` și `functions\node_modules`; `.tmp/pw.config.ts` cu portul 4181 în trei locuri, `.tmp/pw.emulator.config.ts`
+  copiat.
+- **Cercetarea:** ArtCAM 2018 (originea transformării: un mâner tras după lacăt, 9 poziții sau X / Y; Shift păstrează
+  raportul, Alt scalează față de origine, rotirea în jurul ei), CorelDRAW (colțul proporțional implicit, Shift din centru,
+  Ctrl multipli, Alt „stretch”; originea obiectului în 9 puncte; tastele se pot schimba între ele), Illustrator (Shift
+  proporția, Alt din centru, punctul de referință în 9 puncte, originea uneltelor Scale și Rotate), Inkscape (Ctrl proporția,
+  Shift simetric față de centrul rotirii, salvat în fișier; la desen Ctrl pătrat, Shift din centru). În cod: tastele se citesc
+  doar din evenimentele mausului; Alt inversează lipirea la mutare, desen, mânere, Noduri, Pen; Shift face colțul liber;
+  Ctrl nu e citit de niciun gest; modelul are deja punctul fix ca parametru (`centru`, `ancora`); scalarea neuniformă refuză
+  cercul, arcele, colțurile rotunjite și instanțele rotite.
+- **ADR 0240 (propus):** Shift proporțional pe orice mâner, Ctrl liber pe orice mâner, Alt față de ancoră (implicit centrul),
+  combinate, citite și la apăsarea tastei; la desen, Shift pătrat sau cerc, Ctrl fără proporție (cercul devine elipsă), Alt
+  din centru (linia din mijloc); ancora într-unul din cele 9 puncte ale cutiei sau trasă de mână, urmată de selecție, cu
+  rotirea, oglindirea și înclinarea în jurul ei, neținută în proiect (documentul rămâne v20); cercul scalat neuniform devine
+  elipsa generatorului (editabilă în panou), arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite își păstrează raza
+  (trei feluri, ca opțiune), textul cu aldin devine vectori. Toate variantele care pot sta împreună sunt opțiuni, pe feliile
+  6.V↑–6.V↑d (~5 kB în total, fiecare sub 3 kB); patru întrebări: ancora în proiect, unde trece lipirea invers după ce Alt
+  devine centrul (recomandat: butonul Lipire și Shift+L), Shift + Ctrl, bugetul.
+- **Schița:** <https://claude.ai/artifact/6YMwTjXNiQDTcME6BjFNgv> (privată, a owner-ului); macheta mânerelor și a desenului,
+  cu tastele și butoanele lor; formularul scrie `raspunsuri/owner` (`q1`–`q4`, `nota1`–`nota4`, `general`, `trimisLa`),
+  colecția goală la publicare. Verificată o dată în Edge fără fereastră: exemplul owner-ului pe machetă (latura dreaptă
+  +10 mm: 50 × 40, Ø 50, 60 × 40, Ø 60; colțul (10, 4): Ø 50, 50 × 44, 60 × 48), Shift apăsat cu mausul pe loc, 0 erori în
+  consolă, nimic peste lățimea de 390 px. Desenul de pe machetă n-a fost atins de probă (planșa era sub ecran).
+- **Fișa și documentele:** rândul 6.V↑ (în lucru) în jurnal și răspunsurile în coada owner-ului; indexul ADR; traducerile
+  roadmap-ului (679 de texte, 0 lipsă). `documentatie.test.ts` cerea toate feliile etapei 6 „gata”: acum le cere gata afară
+  de cele numite, adică 6.V↑, în lucru. Probele documentației, traducerilor, manualului și pașilor testului: 55 / 55;
+  generatorul documentației din build: 187 de fișiere, ADR 0240 în catalog și în roadmap.
