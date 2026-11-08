@@ -6816,3 +6816,8 @@ căzute, din CI).
 - **Probe:** `imprimanta.feliere.modele.test.ts` (16), cele 3.6j adaptate la implicitele noi (pasul grilei, cheile
   straturilor; la retragere și la pereți, ștergerea și decalarea oprite explicit, cu probele lor separat); e2e +1.
   Otrăvurile: 58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
+
+## 2026-11-08 — 3.6l: piesele plate „după CNC” și înălțimea fiecărei piese în proiect (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6l” (owner-ul, la „Încep 3.6l?”, după 3.6k).
+**Started:** 08.11, 10:49. **Completed:** —

@@ -5,7 +5,8 @@ vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot fun
 disponibile in soft”. Deci toate variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m (secțiunea „Feliile”);
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
-K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”). Cererea owner-ului, din 07.11: „cum pot sa
+K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”).
+**Felia 3.6l** propusă pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese, cu două întrebări. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -277,6 +278,39 @@ La „Da, 3.6k”: răspunsul 3b mai departe, cu toate variantele OrcaSlicer car
   golul; ștergerea, cu cantitățile lui `calculateWipeRetractionLengths` și drumul ei; călcarea; fusta; subsolul; setările
   citite; tăierea polilinilor); e2e +1 (listele și bifele din „Avansat”, giroidul, călcarea, fusta pe pânză, ștergerea în
   fișier și oprită); otrăvurile `test/otravuri/3.6k.py` (58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate)). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
+
+## Felia 3.6l (propusă, 08.11.2026): piesa „după CNC” și înălțimea fiecărei piese
+
+La „Da, 3.6l”: răspunsurile 1c, 2b și 2c. Cercetarea, în cod [citit]:
+
+- **Tăieturile foii** (`taieturiFoaie`, `src/model/lume.ts`) dau, în lume, fiecare operație cu felul ei (profil, buzunar,
+  găurire, V-carve), latura, adâncimea și freza; **regiunea păstrată** (`regiunePastrata`, ADR 0026, `src/cam/regiune.ts`, folosită
+  de lucrare) spune deja ce rămâne după profilele prin tot material: marginea piesei și golurile ei.
+- **Găurirea** (ADR 0087) scoate cercul documentului (cel puțin cât freza, cel mult de două ori), până la adâncime; **buzunarul**
+  scoate aria dinăuntrul conturului (cu frezele de rest, până în colțuri); un **profil parțial** scoate o bandă de lățimea frezei,
+  pe partea tăieturii; **V-carve-ul** sapă în V, cu adâncimea după lățime.
+- **Piesa** din document are semnătura deschisă (`[cheie: string]: unknown`): un câmp opțional încape fără versiune nouă a
+  documentului, ca ghidajele foii (ADR 0050).
+
+**Propunerea:**
+
+1. **„După CNC”**, o bifă în „Ce se imprimă”: fiecare piesă, cum o lasă freza. Marginea și golurile, din profilele prin tot
+   (aceeași regulă ca regiunea păstrată); buzunarele, găuririle și profilele parțiale coboară zona lor la H − adâncime (H =
+   grosimea foii); ce trece prin tot e gol. Urechile, rampele și intrările nu contează (sunt ale prinderii pe CNC).
+2. **Treptele, în motor:** o piesă poate avea zone de înălțimi diferite. Pe fiecare strat, regiunea e unirea zonelor cel puțin
+   atât de înalte; plinul de sus se pune la fiecare treaptă (unde zona de deasupra lipsește pe grosimea de sus), plinul de jos
+   doar pe primele straturi; pereții urmează regiunea fiecărui strat.
+3. **Înălțimea fiecărei piese**, ținută în proiect: câmpul opțional `inaltimeImprimanta` (mm) al piesei, scris din dialog (cu
+   anularea obișnuită); în dialog, lângă „o înălțime pentru toate”, varianta „a fiecărei piese”, cu lista pieselor. Documentul
+   rămâne la versiunea lui; sesiunea principală află câmpul (unirea lui în `main`).
+
+**Întrebările** (doar ce se exclude; recomandarea întâi):
+
+- **A. V-carve-ul la „după CNC”:** a) se ignoră, cu o notă în dialog (recomandat: o gravură în V nu are trepte drepte); b) o
+  treaptă la adâncimea maximă, pe toată lățimea; c) terase, strat cu strat, după lățimea V-ului la fiecare înălțime (cel mai
+  aproape de piesa CNC, cel mai mult cod). Pot sta împreună ca opțiuni (b și c), dacă le vrei pe toate.
+- **B. Adâncimile, când înălțimea aleasă nu e grosimea foii:** a) rămân aceleași, în mm, măsurate de sus (recomandat: un buzunar de
+  3 mm rămâne de 3 mm); b) se scalează cu înălțimea (piesa CNC, întinsă pe Z). Se exclud pentru aceeași piesă; pot fi o alegere.
 
 ## Întrebările (owner)
 
