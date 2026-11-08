@@ -870,6 +870,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **worktree-urile terminate și unite în `main`, scoase** („dupa ce verifici care worktree a terminat si a fost
+  integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”): `biblioteca` (3.Xg), `raportari` (15.B↑b) și
+  `trenulet` (linia pluginului, unită pe 06.11), fiecare cu ramura întreagă în `main`, curat și împins. Joncțiunile
+  `node_modules` și `functions\node_modules` scoase întâi (`cmd /c rmdir`, cu poarta care caută legături), apoi `git worktree
+  remove`; ramurile locale șterse cu `-d`; sesiunile arhivate (a lui `trenulet` era deja). Pe `origin`, `wip/3.Xg-biblioteca`
+  și `wip/15.B-raportari` intră în lista de șters a owner-ului (acum 17). Rămân cinci worktree-uri, cu felii încă neunite:
+  `imprimanta`, `incrustatii`, `plansele`, `taiere`, `trasare`.
 - 07.11.2026: **plafonul total 600 kB** („Yes, 600 kB”, la „Raise the total bundle cap to 600 kB (new ADR), startup staying
   at 110 kB?”): după unirea raportărilor și a imprimantei, totalul era 535,0 / 550 kB, iar liniile paralele aveau gata pe
   ramuri încă ~60 kB. ADR 0143; pornirea rămâne 110 kB.

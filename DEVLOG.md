@@ -6760,6 +6760,53 @@ căzute, din CI).
   `extensii.spec.ts` (butonul „eroare”, după filă); sesiunea principală a mutat ajutorul în `test/e2e/ajutor-extensii.ts` și
   l-a pus în toate cele patru locuri (`a88b00f`).
 
+## 2026-11-07 — Plafonul total 550 → 600 kB (ADR 0143), clicul pierdut din CI, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, 600 kB” (la „Raise the total bundle cap to 600 kB (new ADR), startup staying at 110 kB?”, după unirea
+raportărilor și a imprimantei); a doua zi, „continua”.
+**Started:** 07.11, 22:44. **Completed:** 08.11, 09:16.
+
+- **Plafonul:** `PLAFON_TOTAL_KB` 550 → 600 în `scripts/build-determinist.ts`; ADR 0143 (totalul 535,0 / 550 kB, iar liniile
+  paralele aveau gata pe ramuri încă ~60 kB: trasarea ~25,6, piesele plate 14,7, incrustațiile ~8,6, planșele ~6,0, tăierea
+  5,5; cu toate unite rămân ~5 kB); ADR 0137 „Schimbat de”; indexul ADR; CLAUDE.md. Porțile pe `4754e4c`: traducerile,
+  compilatoarele, importurile, 8 652 de teste unitare (0 căzute), licențele, build-ul determinist (pornirea 101,7, cu ușa
+  105,3 / 110 kB; totalul 535,0 / 600). Rebazat peste întărirea bibliotecii (`4698385`) ca `c73177f`, cu porțile
+  documentelor și build-ul reluate.
+- **CI-ul complet pe `c73177f` (`42413819492`), roșu:** `extensii.spec.ts:110`, clicul pe „eroare” în cadru, imediat după
+  `[data-extensii="fila"]`, n-a ajuns la buton (jurnalul gol după 5 s): același tipar ca `extensii.lucru.spec.ts:277`
+  (`cd100d5`), nu felia (codul aplicației neschimbat). Căutat după pasul care îl pornește (clicul pe filă): încă două locuri
+  (`extensii.masina.spec.ts`, încărcarea; `trenulet.spec.ts`, `#m-incarca`). `a88b00f`: `clicDupaReaparitie` mutat în
+  `test/e2e/ajutor-extensii.ts` și folosit în toate patru. Proba, în clona otrăvurilor: cu primul clic din cadru oprit, cele
+  patru trec (o singură acțiune fiecare); martorul (proba veche, aceeași otravă) pică exact ca în CI. Completul pe `a88b00f`
+  (`42416661667`), verde.
+- **Publicarea:** primul job din fundal (complet, apoi publicare) a murit la repornirea sesiunii (ieșirea 4, fără nicio
+  linie), deci n-a publicat nimic. Pe `main` era `0060a86` (doar DEVLOG-ul bibliotecii peste `a88b00f`): rapidul de pe
+  `main` sare peste un commit doar cu `.md`, iar ajutorul meu căuta o rulare pe acel sha și ar fi așteptat degeaba; publicat
+  direct prin `publica.yml` (care acceptă strămoșul verde cu doar `.md` între ele), rularea `42457841230`: întâi serverul
+  (regulile Storage și Firestore, indecșii, cele 12 funcții), apoi hosting-ul; amprenta `meta/deployment` = `0060a86803c7`
+  pe toate țintele. <https://cncvectorstudio-test.web.app/> servește `0060a86803c7`; ADR 0143 e în `roadmap.json`.
+
+## 2026-11-08 — Worktree-urile terminate și unite în main, scoase (Model: Claude Opus 5.5)
+
+**Prompt:** „dupa ce verifici care worktree a terminat si a fost integrat in maine, vreau sa inchizi tu acel worktree si sa
+il arhivezi”.
+**Started:** 08.11, 09:08. **Completed:** 08.11, 09:23.
+
+- **Verificarea:** opt worktree-uri; trei cu ramura întreagă în `origin/main`, fără nimic necomis și fără commit-uri
+  neîmpinse: `biblioteca` (`wip/3.Xg-biblioteca`, `0060a86`), `raportari` (`wip/15.B-raportari`, `64495e6`), `trenulet`
+  (`wip/trenulet`, `6634ea6`, unită pe 06.11). Restul (`imprimanta`, `incrustatii`, `plansele`, `taiere`, `trasare`) au
+  felii neunite, deci rămân. Sesiunile: biblioteca și raportările, oprite, fără nicio întrebare deschisă; a lui `trenulet`,
+  deja arhivată.
+- **Scoaterea:** în fiecare, `git status --ignored` doar cu `!!`; joncțiunile `node_modules` și `functions\node_modules`
+  (țintele: cele ale checkout-ului principal) scoase cu `cmd /c rmdir`, fără `/s`; poarta care caută legături fără să
+  coboare în ele (Node, `isSymbolicLink`) le-a văzut întâi rămase în două worktree-uri, unde comanda din buclă nu găsise
+  calea, și apoi zero; `node_modules` din checkout-ul principal neatins (302 și 198 de intrări, înainte și după). Apoi `git
+  worktree remove`, fără `--force`. La `trenulet`, `.git/worktrees/trenulet` (Drive) a rămas cu `logs/`, `refs/` și dosarul
+  însuși ReadOnly, plus `ORIG_HEAD`: șterse de mână, nerecursiv, doar ele (nu `git worktree prune`).
+- **Ramurile și sesiunile:** `git branch -d` pe cele trei (unite); sesiunile bibliotecii și raportărilor, arhivate. Pe
+  `origin`, `wip/3.Xg-biblioteca` și `wip/15.B-raportari` intră în rândul owner-ului cu ramurile de șters (acum 17, cu
+  comanda; traducerea la zi).
+
 ## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 10.3↑c”.
