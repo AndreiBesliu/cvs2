@@ -151,6 +151,7 @@ export const roCarcasa = {
   'prop.forme': 'Forme pe foaie',
   'prop.rotirea': 'Rotirea',
   'prop.colt': 'Colțul stânga-jos',
+  'prop.ancora': 'Ancora transformării',
   'prop.latimea': 'Lățimea',
   'prop.inaltimea': 'Înălțimea',
   'prop.grosimea': 'Grosimea',

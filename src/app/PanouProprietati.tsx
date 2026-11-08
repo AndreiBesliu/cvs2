@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
@@ -132,6 +133,8 @@ function operatie(o: Operatie, n: number): ReactNode {
  */
 export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
   useLimba();
+  // Ancora transformării (ADR 0240 §A.7), cât unealta Transformare are o selecție: X / Y o mută, nu formele.
+  const ancora = useSyncExternalStore(ancoraPanou.asculta, ancoraPanou.citeste);
   const roluriMele = useRoluriMele().roluri;
   // Refuzul ultimului rol ales, pentru selecția de atunci; la fel, al lemnului din jurul dopului ales.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
@@ -266,6 +269,15 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
             {cutie && rand(t('prop.cutia'), t('prop.mm2', { latime: mm(cutie.maxX - cutie.minX), inaltime: mm(cutie.maxY - cutie.minY) }))}
             {rand(t('prop.elemente'), elemente)}
           </dl>
+          {ancora && cutie && (
+            <>
+              <p className="prop-grup" data-testid="prop-ancora">{t('prop.ancora')}</p>
+              <dl>
+                {rand('X', camp(`${t('prop.ancora')}, X`, 'ancora-x', valoareDerivata(ancora.x), 'mm', true, (x) => { ancora.muta({ x, y: ancora.y }); return { ok: true }; }))}
+                {rand('Y', camp(`${t('prop.ancora')}, Y`, 'ancora-y', valoareDerivata(ancora.y), 'mm', true, (y) => { ancora.muta({ x: ancora.x, y }); return { ok: true }; }))}
+              </dl>
+            </>
+          )}
         </section>
       )}
       {par && (

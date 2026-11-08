@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ancoraLipita, ancoraLovita, fractiiDinPunct, fractiiPunct, PUNCTE_CUTIE, punctDinFractii, transformareManer, type PunctCutie,
+  ancoraLipita, ancoraLovita, fixulLuiAlt, fractiiDinPunct, fractiiPunct, PUNCTE_CUTIE, punctDinFractii, transformareManer, type PunctCutie,
 } from '../../src/app/editareCalcul.ts';
 import { lipeste, tinteDin } from '../../src/geom/lipire.ts';
 import { transforma } from '../../src/model/transformare.ts';
@@ -92,6 +92,18 @@ test('pe hârtie (ADR 0240 §Proba): rotirea cu 90° în jurul colțului stânga
   // Ancora în centru (20, 10): cutia [10, 30] × [−10, 30].
   const c = transformareManer(C, 'rotire', { x: 40, y: 10 }, { x: 20, y: 30 }, T(), {}, punctDinFractii(C, fractiiPunct('c')));
   assert.deepEqual(cutie(d, transforma(d, 0, ['p'], c)), { minX: 10, minY: -10, maxX: 30, maxY: 30 });
+});
+
+test('opțiunea „Alt ține fix” (ADR 0240 §B.17, 6.V↑d): ancora, sau centrul cutiei oriunde ar sta ancora, și la rotire', () => {
+  const a = { x: 10, y: 10 };
+  assert.deepEqual(fixulLuiAlt(C, a, 'ancora'), a);
+  assert.deepEqual(fixulLuiAlt(C, a, 'centru'), { x: 20, y: 10 });
+  // Cu centrul: latura dreaptă trasă de la 40 la 50 cu Alt scalează față de (20, 10): sx = 30 / 20 = 1,5.
+  const t = transformareManer(C, 'e', { x: 40, y: 10 }, { x: 50, y: 10 }, T('A'), {}, fixulLuiAlt(C, a, 'centru'));
+  assert.deepEqual(t, { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 20, y: 10 } });
+  // Rotirea e în jurul centrului, nu al ancorei.
+  const r = transformareManer(C, 'rotire', { x: 40, y: 10 }, { x: 20, y: 30 }, T(), {}, fixulLuiAlt(C, a, 'centru'));
+  assert.deepEqual(r, { fel: 'rotire', unghi: 90, centru: { x: 20, y: 10 } });
 });
 
 test('pe hârtie: Alt față de ancora liberă (10, 10), oglindirea față de ea', () => {

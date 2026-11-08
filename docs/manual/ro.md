@@ -83,11 +83,16 @@ nouă, cu operația ei implicită; unealta rămâne aleasă pentru forma următo
 | Cerc | `O` | din centru; tragerea dă raza | — | elipsă, cu cursorul în colțul cutiei ei | — (pornește oricum din centru) |
 | Elipsă | `E` | din colț în colț | cerc | ca fără tastă | din centru |
 | Linie | `L` | din capăt în capăt | pași de 15° | — | din mijloc |
-| Poligon | `P` | din centru (poligon regulat) | pași de 15° | — | — |
+| Poligon | `P` | din centru (poligon regulat) | pași de 15° | întins: vârfurile pe elipsa cutiei, primul sus | — |
 
 - Tastele se pot ține împreună (Alt + Shift: pătrat sau cerc din centru); cu Shift și Ctrl, câștigă Shift. Se pot apăsa și
   în timpul tragerii, cu mausul pe loc. Lângă cursor, eticheta arată mărimea formei și ce fac tastele. Pe Mac, `Ctrl` e `⌘`.
-- La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp.
+  În bara de jos, **rândul tastelor** spune ce fac Shift, Ctrl și Alt cu unealta aleasă; tasta ținută se umple.
+- La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp. Lista
+  de lângă rază alege de unde pornește cercul: **Cercul: din centru** (implicit, ca în tabel) sau **Cercul: din colț**: cercul
+  din cutia trasă, ca elipsa cu Shift; cu Alt, din centru (cursorul în colțul cutiei), cu Ctrl, elipsă. Lista se ține în
+  browser.
+- Poligonul **întins** (Ctrl) nu mai e regulat: panoul îl arată ca pe o cale, fără laturi și rază.
 - La **Poligon**, numărul de laturi (3–64) se scrie în câmpul de lângă unealtă.
 - Capetele formei se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)).
 - `Esc` anulează forma începută; încă un Esc întoarce la Selecție.
@@ -299,7 +304,12 @@ laturilor, centrul), ales în **selectorul** de lângă unealtă și ținut în 
 se lipește de cele 9 puncte ale cutiei și de ținte (`Alt` inversează lipirea); **dublu clic** pe ea o întoarce în punctul
 ales. Când ancora stă pe un mâner (un colț ales în selector), mânerul are întâietate, iar ancora o muți din selector. Merge cu
 selecția când o muți sau o scalezi din alt mâner; după o rotire, o scalare cu Alt, o oglindire sau o înclinare în jurul ei,
-rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect.
+rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect. În panoul de proprietăți, rândul
+**Ancora transformării** îi arată locul, cu X / Y: scrise acolo, mută ancora, nu formele.
+
+Lista **Ce ține fix Alt**, de lângă selector, ținută în browser: **Alt: ancora** (implicit) sau **Alt: centrul**: atunci Alt
+scalează față de centrul cutiei, oriunde ar sta ancora, iar rotirea e și ea în jurul centrului (ancora rămâne pentru oglindire
+și înclinare).
 
 Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
 opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
@@ -314,8 +324,11 @@ importate) scalate pe o axă devin **curbe**, la cel mult 0,001 mm de arcul înt
 - **Colțuri: raza rămâne mereu**: și la scalarea proporțională;
 - **Colțuri: se scalează mereu**: trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma devine o cale).
 
-Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. Rămân refuzate,
-cu motivul, scalarea pe o axă a unei forme rotite oblic și schimbarea unei piese folosite și de alte forme.
+Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. O formă **rotită
+oblic** (altfel decât cu 90°), trasă pe o axă, se scalează în axele foii prin geometrie, ca înclinarea: devine o cale (un
+dreptunghi rotit iese un paralelogram), arcele devin curbe, iar locul și rotirea ei rămân; eticheta spune „formele rotite
+oblic devin căi”. Rămâne refuzată, cu motivul, schimbarea unei piese folosite și de alte forme. În bara de jos, **rândul
+tastelor** spune ce fac Shift, Ctrl și Alt cu Transformarea; tasta ținută se umple.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
 (`Shift+V`, sus ↔ jos), față de ancoră (implicit centrul cutiei selecției). Se taie oglinda, cu același sens de tăiere.

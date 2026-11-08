@@ -460,9 +460,28 @@
   border-radius: var(--r-1);
 }
 
-/* Colțurile rotunjite la scalare (ADR 0240 §F.28): o listă cu aspectul câmpurilor barei, cât textul felului ales. */
+/* Colțurile rotunjite la scalare (ADR 0240 §F.28), ce ține fix Alt și de unde pornește cercul (6.V↑d): liste cu aspectul
+   câmpurilor barei, cât textul felului ales. */
 .laturi.felul-colturi {
   width: auto;
+}
+
+/* Rândul tastelor (ADR 0240 §E.25): în bara de jos, ce fac Shift, Ctrl și Alt cu unealta aleasă; tasta ținută, plină. Locul
+   lui nu face o cutie a lui (nici golul barei, cât e gol). */
+.loc-taste {
+  display: contents;
+}
+
+.taste-unealta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.taste-unealta .tinuta kbd {
+  color: var(--t-pe-a);
+  background: var(--a-plin);
+  border-color: var(--a-plin);
 }
 
 /* Selectorul ancorei (ADR 0240 §A.2): cele 9 puncte ale cutiei, 3 × 3, în bara uneltei Transformare, cât bara de înalt

@@ -85,13 +85,17 @@ its default operation; the tool stays chosen for the next shape.
 | Circle | `O` | from the centre; the drag gives the radius | — | ellipse, with the cursor at the corner of its box | — (starts from the centre anyway) |
 | Ellipse | `E` | corner to corner | circle | as with no key | from the centre |
 | Line | `L` | end to end | 15° steps | — | from the middle |
-| Polygon | `P` | from the centre (a regular polygon) | 15° steps | — | — |
+| Polygon | `P` | from the centre (a regular polygon) | 15° steps | stretched: the vertices on the ellipse of the box, the first at the top | — |
 
 - The keys can be held together (Alt + Shift: a square or a circle from the centre); with Shift and Ctrl, Shift wins. They
   can also be pressed while dragging, with the mouse still. Next to the cursor, the label shows the shape's size and what the
-  keys do. On a Mac, `Ctrl` is `⌘`.
+  keys do. On a Mac, `Ctrl` is `⌘`. In the bottom bar, the **keys row** says what Shift, Ctrl and Alt do with the chosen
+  tool; a held key is filled.
 - With **Circle**, a click without dragging places a circle with the radius from the field next to the tool; a drag writes
-  its radius in the field.
+  its radius in the field. The list next to the radius chooses where the circle starts: **Circle: from the centre** (the
+  default, as in the table) or **Circle: from a corner**: the circle of the dragged box, like the ellipse with Shift; with Alt,
+  from the centre (the cursor at the corner of the box), with Ctrl, an ellipse. The list is kept in the browser.
+- The **stretched** polygon (Ctrl) is no longer regular: the panel shows it as a path, without sides and radius.
 - With **Polygon**, the number of sides (3–64) goes in the field next to the tool.
 - The ends of the shape snap like anything else (see Snap in [The canvas](#panza)).
 - `Esc` cancels the shape you started; another Esc goes back to Select.
@@ -310,7 +314,12 @@ anywhere, outside the box too: it snaps to the 9 points of the box and to the ta
 **double-click** on it brings it back to the chosen point. When the anchor sits on a handle (a corner chosen in the picker),
 the handle wins, and you move the anchor from the picker. It goes with the selection when you move it or scale it from
 another handle; after a rotation, an Alt scaling, a mirroring or a skew around it, it stays put. A new selection brings it
-back to the chosen point; the anchor is not saved in the project.
+back to the chosen point; the anchor is not saved in the project. In the properties panel, the **Transform anchor** row shows
+where it is, with X / Y: written there, they move the anchor, not the shapes.
+
+The **What Alt holds fixed** list, next to the picker, kept in the browser: **Alt: anchor** (the default) or **Alt: centre**:
+then Alt scales about the centre of the box, wherever the anchor is, and rotation is about the centre too (the anchor stays
+for mirroring and skewing).
 
 While you drag, the label above shows the size and what the keys do (for example “50 × 40 mm · one axis · from the opposite
 side”), and a blue dot shows what stays put. The handles snap to guides, the sheet, the other shapes and the grid, only on the
@@ -326,8 +335,11 @@ The **rounded corners** of a rectangle follow the list next to the anchor picker
 - **Corners: always scale**: dragged on one axis, the corners become quarter ellipses, made of curves (the shape becomes a
   path).
 
-A corner that no longer fits in the scaled side (for example R 10 in a 15 mm side) is refused, with the reason. Scaling a
-shape rotated at an angle on one axis, and changing a part used by other shapes too, stay refused, with the reason.
+A corner that no longer fits in the scaled side (for example R 10 in a 15 mm side) is refused, with the reason. A shape
+**rotated at an angle** (other than 90°), dragged on one axis, is scaled in the sheet's axes through the geometry, like
+skewing: it becomes a path (a rotated rectangle comes out a parallelogram), arcs become curves, and its place and rotation
+stay; the label says “shapes rotated at an angle become paths”. Changing a part used by other shapes too stays refused, with
+the reason. In the bottom bar, the **keys row** says what Shift, Ctrl and Alt do with Transform; a held key is filled.
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
 top ↔ bottom), about the anchor (the centre of the selection's box by default). The mirror image is what gets cut, with the

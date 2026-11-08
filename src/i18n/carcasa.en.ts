@@ -140,6 +140,7 @@ export const enCarcasa = {
   'prop.forme': 'Shapes on the sheet',
   'prop.rotirea': 'Rotation',
   'prop.colt': 'Bottom-left corner',
+  'prop.ancora': 'Transform anchor',
   'prop.latimea': 'Width',
   'prop.inaltimea': 'Height',
   'prop.grosimea': 'Thickness',
