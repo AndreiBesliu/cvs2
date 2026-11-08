@@ -33,7 +33,8 @@ import { offsetFigura } from '../geom/offset.ts';
 import { AXE_XYZ, type Miscare, type Scula } from '../ir/ir.ts';
 import { conturDeTaiat } from './contur.ts';
 import { element } from './dopDrept.ts';
-import { refuzIncrustatie, type DopCalculat, type RegimDop, type SemifabricatDop } from './incrustatie.ts';
+import { puntiPeBucle, refuzIncrustatie, type DopCalculat, type RegimDop, type SemifabricatDop } from './incrustatie.ts';
+import { lungimeBucla } from './parcurgere.ts';
 import { contururiRegiuni, regiuniDesen } from './incrustatieDreapta.ts';
 import { programDinDocument } from './job.ts';
 import { MARJA_FUND, traseuVcarve } from './vcarve.ts';
@@ -147,6 +148,11 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       const linie = offsetFigura(exterioare(), banda.e + d.diametru / 2);
       if (!linie.ok) return { ok: false, motiv: `${t.idLume}, decuparea dopului: ${linie.motiv}` };
       const bucle = linie.regiuni.map((r) => r.exterior), goluri = linie.regiuni.flatMap((r) => r.gauri);
+      // Punțile, pe fiecare buclă câte încap (palierul pe traseu e lățimea plus freza, ADR 0031: lemnul rămas e palierul minus
+      // freza, ca la 12.1↑b); o buclă mică (punctul unui „i”) primește mai puține, nu refuză tot exportul.
+      const palier = p.latime + d.diametru;
+      const pePunti = puntiPeBucle(bucle.map((c) => lungimeBucla(c)), palier, p.numar);
+      if (!pePunti.ok) return { ok: false, motiv: `${t.idLume}, decuparea dopului: ${pePunti.motiv}: micșorează punțile` };
       const noduri = [...bucle.map((c, i) => element(`bucla-${i + 1}`, c)), ...goluri.map((c, i) => element(`gol-${i + 1}`, c))];
       const baza = {
         tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T, pas: op.pas, scula: structuredClone(d), rampa: null, intrari: null, colturi: null,
@@ -156,8 +162,8 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
         piese: [{
           id: 'dop', radacina: { tip: 'grup', id: 'r', matrice: { ...IDENTITATE }, copii: noduri },
           operatii: [
-            // Palierul punții pe traseu e lățimea plus freza (ADR 0031: lemnul rămas e palierul minus freza), ca la 12.1↑b.
-            { id: 'decupare', noduri: bucle.map((_, i) => `bucla-${i + 1}`), urechi: { numar: p.numar, latime: p.latime + d.diametru, grosime: p.grosime }, ...baza },
+            // Câte o operație pentru fiecare număr de punți (de obicei, una singură: toate buclele cu cele cerute).
+            ...[...pePunti.grupe].map(([n, ii]) => ({ id: `decupare-${n}`, noduri: ii.map((i) => `bucla-${i + 1}`), urechi: { numar: n, latime: palier, grosime: p.grosime }, ...baza })),
             ...(goluri.length > 0 ? [{ id: 'goluri', noduri: goluri.map((_, i) => `gol-${i + 1}`), urechi: null, ...baza }] : []),
           ],
         }],
@@ -170,6 +176,7 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       for (const x of job.program.miscari) miscari.push(x);
       semifabricat = { latime, inaltime, grosimeMinima: T, exacta: true };
       avertismente.push(`dopul ${t.idLume}: e decupat din placa groasă de exact ${fix(T)} mm, cu ${p.numar} punți pe buclă, late de ${fix(p.latime)} mm și groase de ${fix(p.grosime)} mm; taie-le și curăță-le înainte de lipire`);
+      if (pePunti.avertisment) avertismente.push(`dopul ${t.idLume}: ${pePunti.avertisment}`);
       for (const a of job.avertismente) avertismente.push(`dopul ${t.idLume}: ${a}`);
     } else if (banda) {
       avertismente.push(`dopul ${t.idLume}: banda lasă marginile întregi; decupează dopul tu, cu fierăstrăul, pe fundul benzii, la cel puțin ${fix(banda.e)} mm de desen (mai aproape ar tăia peretele dopului)`);

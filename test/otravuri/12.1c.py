@@ -66,9 +66,9 @@ o('C04', DOP, '      const linie = offsetFigura(exterioare(), banda.e + d.diamet
   'decuparea pe e, nu pe e + r: freza taie peretele dopului')
 o('C05', DOP, '      const linie = offsetFigura(exterioare(), banda.e + d.diametru / 2);', '      const linie = offsetFigura(exterioare(), banda.e + d.diametru);', 'banda',
   'decuparea cu o rază mai departe: lemn păstrat dincolo de inelul măsurat')
-o('C06', DOP, 'urechi: { numar: p.numar, latime: p.latime + d.diametru, grosime: p.grosime }, ...baza },', 'urechi: null, ...baza },', 'banda',
+o('C06', DOP, 'urechi: { numar: n, latime: palier, grosime: p.grosime }, ...baza })),', 'urechi: null, ...baza })),', 'banda',
   'decuparea fără punți')
-o('C07', DOP, 'latime: p.latime + d.diametru,', 'latime: p.latime,', 'banda', 'palierul punții fără freză (lemnul rămas mai scurt decât cel cerut)')
+o('C07', DOP, '      const palier = p.latime + d.diametru;', '      const palier = p.latime;', 'banda', 'palierul punții fără freză (lemnul rămas mai scurt decât cel cerut)')
 o('C08', DOP, '            ...(goluri.length > 0 ? [', '            ...(false ? [', 'banda', 'golurile reuniunii netăiate (lemnul de la față rămâne în dop)')
 o('C09', DOP, '      monteaza(d);', '', 'banda', 'decuparea fără schimbarea frezei (cu freza în V)')
 o('C10', DOP, '      semifabricat = { latime, inaltime, grosimeMinima: T, exacta: true };', '      semifabricat = { latime, inaltime, grosimeMinima: T };',
@@ -145,6 +145,20 @@ o('N07', PAN, "rand(t('prop.inc.jur'), t(o.incrustatie.jurDop === 'banda' ? 'pro
 o('L01', ROL, "    ...(inc?.fel === 'v' && inc.banda?.freza ? { incrustatie: { ...inc, banda: { ...inc.banda, freza: f(inc.banda.freza) } } } : {}),\n", '',
   'rol', 'freza decupării benzii în afara renumerotării rolurilor personalizate')
 
+# ---- Punțile pe buclele mici (înaintea unirii, „1 si 2 acum”): câte încap pe fiecare buclă, nu refuzul ----
+URE = 'src/cam/urechi.ts'
+DDR = 'src/cam/dopDrept.ts'
+o('U01', URE, 'Math.floor(((0.9 * lungime) / latime) * (1 - 1e-9))', 'Math.floor((lungime / latime) * (1 - 1e-9))', 'punti',
+  'regula fără 0,9: prea multe punți pe buclă (lucrarea le refuză)')
+o('U02', INC, '  const incap = lungimi.map((L) => urechiCareIncap(L, palier, cerute));', '  const incap = lungimi.map(() => cerute);', 'punti',
+  'punțile cerute pe orice buclă (punctul unui „i” refuză tot exportul)')
+o('U03', INC, '    avertisment: reduse.length === 0 ? null', '    avertisment: true ? null', 'punti', 'buclele mici, fără avertisment')
+o('U04', INC, '  if (k >= 0) {', '  if (false) {', 'punti', 'o buclă fără nicio punte, primită (piesa ar cădea liberă)')
+o('U05', DOP, '      const pePunti = puntiPeBucle(bucle.map((c) => lungimeBucla(c)), palier, p.numar);',
+  '      const pePunti = puntiPeBucle(bucle.map(() => Infinity), palier, p.numar);', 'punti', 'banda: lungimea buclelor ignorată')
+o('U06', DDR, '        return o.ok && o.regiuni[0] ? lungimeBucla(o.regiuni[0].exterior) : Infinity;', '        return Infinity;', 'punti',
+  'dopul drept: lungimea traseului ignorată (partea mică refuză tot exportul)')
+
 SETURI = {
     'banda': ['test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatie.refuzuri.test.ts'],
     'banda2': ['test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatie.refuzuri.test.ts', 'test/unit/incrustatie.potrivire.test.ts',
@@ -155,5 +169,8 @@ SETURI = {
     'dialog2': ['test/unit/incrustatie.banda.scriere.test.ts', 'test/unit/incrustatie.scriere.test.ts', 'test/unit/actiuni.test.ts'],
     'rol': ['test/unit/rolPersonal.test.ts'],
     'rol2': ['test/unit/rolPersonal.test.ts', 'test/unit/rol.test.ts', 'test/unit/incrustatie.rol.test.ts'],
+    'punti': ['test/unit/urechi.incap.test.ts', 'test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts'],
+    'punti2': ['test/unit/urechi.incap.test.ts', 'test/unit/incrustatie.banda.test.ts', 'test/unit/incrustatieDreapta.dop.test.ts',
+               'test/unit/incrustatie.refuzuri.test.ts', 'test/unit/incrustatieDreapta.potrivire.test.ts'],
 }
 E2E = ['test/e2e/incrustatieBanda.spec.ts']

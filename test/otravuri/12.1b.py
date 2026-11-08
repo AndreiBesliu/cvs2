@@ -10,7 +10,7 @@
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
 # La 12.1↑c (ADR 0172): seturile documentului sunt pe v22 (proba v21 a devenit document.v22.oracol.test.ts); E16, implicitul
-# frezei dopului (primul T liber), adăugată cu repararea lui.
+# frezei dopului (primul T liber), adăugată cu repararea lui; P06 și P11 pe codul punților pe bucle (câte încap pe fiecare).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -78,14 +78,14 @@ o('P04', DOP, '      const contururi = contururiRegiuni(f.figura.dop).map((c) =>
   '      const contururi = contururiRegiuni(f.figura.taiat).map((c) => transformaContur(c, oglinda));', 'drept', 'dopul cât locașul (fără joc)')
 o('P05', DOP, '      const e = Math.max(DINCOLO_DE_MARGINE, lata + TRECERE - m);', '      const e = DINCOLO_DE_MARGINE;', 'e2e',
   'regiunea feței nelărgită pentru freză (freza nu trece pe lângă dop)')
-o('P06', DOP, 'urechi: { numar: PUNTI.numar, latime: PUNTI.latime + mica.scula.diametru, grosime: PUNTI.grosime }, ...baza },', 'urechi: null, ...baza },',
+o('P06', DOP, 'urechi: { numar: n, latime: palier, grosime: PUNTI.grosime }, ...baza,', 'urechi: null, ...baza,',
   'drept', 'dopul decupat fără punți (cade din placă)')
 o('P07', DOP, '      const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '      const mica = freze[0]!;', 'drept',
   'dopul decupat cu prima freză, nu cu cea mai mică (unghiurile lui rotunjite prea larg)')
 o('P08', DOP, "...(inc.dop === 'decupat' ? { exacta: true } : {}) },", '},', 'e2e', 'placa dopului decupat arătată „cel puțin”, nu exactă')
 o('P09', CAL, '  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  const calculate = { dopuri: [...inV.dopuri] };', 'drept',
   'dopul cu pereți drepți nu iese din export')
-o('P11', DOP, 'latime: PUNTI.latime + mica.scula.diametru,', 'latime: PUNTI.latime,', 'drept',
+o('P11', DOP, '      const palier = PUNTI.latime + mica.scula.diametru;', '      const palier = PUNTI.latime;', 'drept',
   'palierul punților fără freză (lucrarea refuză dopul decupat cu freza Ø6)')
 o('P10', JOB, "        const ale = taieturi.filter((u) => u.tip === 'buzunar' && cheieDreapta(u) === cheie);", '        const ale = [t];', 'drept',
   'locașul fără celelalte contururi ale regiunii (golul inelului tăiat)')

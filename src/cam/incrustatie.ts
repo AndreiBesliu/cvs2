@@ -7,6 +7,7 @@ import { inaltimeConV, JOC_INCRUSTATIE_MINIM, type Operatie } from '../model/doc
 import { susLaMicron, valoriBanda } from '../model/incrustatie.ts';
 import type { Program } from '../ir/ir.ts';
 import { refuzIncrustatieDreapta } from './incrustatieDreapta.ts';
+import { urechiCareIncap } from './urechi.ts';
 
 /** Turația, avansurile și Z-ul de siguranță (aceleași câmpuri ca regimul lucrării). */
 export type RegimDop = { readonly turatie: number; readonly avans: number; readonly avansPlonjare: number; readonly zSigur: number };
@@ -25,6 +26,29 @@ export type DopCalculat = {
   readonly semifabricat: SemifabricatDop;
   readonly avertismente: readonly string[];
 };
+
+/**
+ * Punțile unui dop decupat, pe buclele traseului (ADR 0171, ADR 0172): pe fiecare, câte încap din cele `cerute` (palierul =
+ * lățimea plus freza; regula lucrării, `urechiCareIncap`), grupate pe număr (câte o operație pentru fiecare număr), cu
+ * avertismentul buclelor mici (punctul unui „i”: mai puține punți, nu tot exportul refuzat); sau motivul, dacă pe o buclă nu
+ * încape nici una. Motivul și avertismentul vin fără loc: le pune cine cheamă.
+ */
+export function puntiPeBucle(lungimi: readonly number[], palier: number, cerute: number):
+  { readonly ok: true; readonly grupe: ReadonlyMap<number, readonly number[]>; readonly avertisment: string | null } | { readonly ok: false; readonly motiv: string } {
+  const incap = lungimi.map((L) => urechiCareIncap(L, palier, cerute));
+  const k = incap.findIndex((n) => n === 0);
+  if (k >= 0) {
+    return { ok: false, motiv: `bucla ${k + 1} a decupării, de ${fix(lungimi[k]!)} mm, e prea mică pentru o punte cu palierul de ${fix(palier)} mm (lățimea plus freza)` };
+  }
+  const grupe = new Map<number, number[]>();
+  incap.forEach((n, i) => { grupe.set(n, [...(grupe.get(n) ?? []), i]); });
+  const reduse = incap.filter((n) => n < cerute);
+  return {
+    ok: true, grupe,
+    avertisment: reduse.length === 0 ? null
+      : `pe ${reduse.length === 1 ? 'o buclă mică încap' : `${reduse.length} bucle mici încap`} mai puține punți decât cele ${cerute} cerute (cel puțin ${Math.min(...reduse)} pe buclă)`,
+  };
+}
 
 /**
  * De ce nu se poate tăia incrustația (ADR 0170 §4, ADR 0172), sau null: doar pe un V-carve, cu o freză în V ascuțită; jocul

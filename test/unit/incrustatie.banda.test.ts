@@ -7,10 +7,11 @@
  *   e + Ø de desen) e chiar fundul benzii, la S + H: tăietura stă toată pe fundul plat (de aici lățimea cea mai mică);
  * - tăietura lasă piesa păstrată până la e = H·t + c de desen (în unghiurile intrânde, cel mult e + Ø/2);
  * - întoarsă, piesa păstrată (punțile rupte) se oprește la S = D − g, cu pereții în contact, g sub dop și H între plăci;
- * - punțile: câte cere documentul pe buclă (golurile desenului nu se decupează), groase de gp de la fundul plăcii, fiecare cu
- *   palierul cel puțin cât lățimea cerută; între ele, tăietura trece prin placă.
+ * - punțile: câte cere documentul pe buclă, sau câte încap pe o buclă mică (golurile desenului nu se decupează), groase de gp
+ *   de la fundul plăcii, fiecare cu palierul cel puțin cât lățimea cerută; între ele, tăietura trece prin placă.
  * Lângă cazurile pe hârtie, rama din patru bare separate, la 1 mm una de alta: tăietura le ocolește pe toate (reuniunea), iar
- * golul dinăuntru (lemnul de la fața plăcii, la peste M de bare) se taie afară, altfel piesa păstrată s-ar opri pe placă.
+ * golul dinăuntru (lemnul de la fața plăcii, la peste M de bare) se taie afară, altfel piesa păstrată s-ar opri pe placă. Și
+ * litera „i”: bucla mică a punctului primește câte punți încap (3 din 4), cu avertismentul, în loc să refuze tot exportul.
  * Controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii (nu la S). Un document de
  * dinainte de v22, cu banda aleasă, dar fără valorile ei, se taie cu cele implicite (decuparea, placa S + H + 1, 4 punți).
  */
@@ -70,12 +71,27 @@ const RAMA: CazIncrustatie = {
   dreapta: { diametru: 3, pasLateral: 1.2 }, D: 3, g: 0.5, H: 2, margine: 5, pas: 1.5, fundPlat: true,
   hartie: 'patru bare separate: reuniunea tăieturii le ocolește pe toate, iar golul ei (cu lemnul de la fața plăcii) se taie afară',
 };
+/**
+ * Litera „i”: bara 1,6 × 10 și punctul R0,8, la 9 mm deasupra (V60, D 3, g 0,5, H 2, Ø3). Buclele decupării, la e + r = 3,155
+ * de desen, sunt separate; bucla punctului (2π·(0,8 + 3,155) ≈ 24,85 mm) primește 3 punți din cele 4 (palierul 4 + 3 = 7,
+ * 0,9·24,85 / 7 = 3,2), bara pe toate 4, deci 7 pe inel, cu avertismentul buclei mici (înainte, tot exportul era refuzat).
+ */
+const punctI = (cx: number, cy: number, r: number, n = 72): PunctO[] => Array.from({ length: n }, (_, k): PunctO => [cx + r * Math.cos((2 * Math.PI * k) / n), cy + r * Math.sin((2 * Math.PI * k) / n)]);
+const LITERA_I: CazIncrustatie = {
+  id: 'i', desen: [bara(20, 120, 1.6, 10), punctI(20.8, 139.8, 0.8)], v: { diametru: 6, unghi: 60 }, dreapta: { diametru: 3, pasLateral: 1.2 },
+  D: 3, g: 0.5, H: 2, margine: 5, pas: 1.5, fundPlat: false,
+  hartie: 'un „i”: punctul, o buclă mică a decupării, primește mai puține punți (3), cu avertismentul',
+};
+/** Câte punți pe inel așteaptă hârtia: 4 pe fiecare buclă, iar la „i”, 4 pe bară și 3 pe punct. */
+const puntiPeInel = (c: CazIncrustatie): number => (c.id === 'i' ? PUNTI.numar + 3 : PUNTI.numar);
 const latimeMinima = (c: CazIncrustatie): number => 2 * c.H * tan(c) + c.dreapta.diametru + 2 * REZERVA;
 
-for (const c of [...CAZURI_INCRUSTATIE, RAMA]) {
-  test(`banda cu decupare, ${c.id}: piesa păstrată se oprește la S, pereții se ating, g sub dop, H între plăci, ${PUNTI.numar} punți pe buclă`, async () => {
+for (const c of [...CAZURI_INCRUSTATIE, RAMA, LITERA_I]) {
+  test(`banda cu decupare, ${c.id}: piesa păstrată se oprește la S, pereții se ating, g sub dop, H între plăci, ${puntiPeInel(c)} punți pe inel`, async () => {
     const r = await calculeazaExport(deschis(documentBanda(c)), { origine: 'stanga-jos', z0: 'sus' });
     if (!r.ok) assert.fail(`${c.id}: ${r.motiv}`);
+    const mica = r.avertismente.filter((a) => a.includes('bucl') && a.includes('mai puține punți'));
+    assert.deepEqual(mica, c.id === 'i' ? ['dopul i/a0: pe o buclă mică încap mai puține punți decât cele 4 cerute (cel puțin 3 pe buclă)'] : [], `${c.id}: avertismentul buclelor mici`);
     assert.equal(r.dopuri.length, 1);
     const dop = r.dopuri[0]!;
     const t = tan(c), S = c.D - c.g, T = placa(c), M = latimeMinima(c), e = c.H * t + REZERVA;
@@ -146,7 +162,7 @@ for (const c of [...CAZURI_INCRUSTATIE, RAMA]) {
       if (celule >= FIRIMITURA) { bucati++; paliere.push(celule); }
     }
     assert.ok(inel > 0, `${c.id}: inelul tăieturii are celule`);
-    assert.equal(bucati, PUNTI.numar, `${c.id}: punțile pe inel (${bucati})`);
+    assert.equal(bucati, puntiPeInel(c), `${c.id}: punțile pe inel (${bucati})`);
     for (const k of paliere) assert.ok(k >= 0.8 * palier && k <= 1.6 * palier, `${c.id}: palierul unei punți, ${k} celule din ~${palier.toFixed(0)}`);
     // Între punți (și rampele lor), tăietura trece prin placă: măsurat, 26–51 % din inel.
     assert.ok(prin >= 0.1 * inel, `${c.id}: tăiat prin placă ${prin} din ${inel}`);
@@ -183,4 +199,13 @@ test('controlul negativ: banda fără decupare lasă placa întreagă, care se o
     { D: c.D, g: c.g, H: c.H, margine, unghi: c.v.unghi, celula: CELULA, lat: margine },
   );
   assert.ok(m.asezare < S - 1, `oprirea ${m.asezare.toFixed(4)}: placa întreagă trebuie să se oprească pe fața plăcii`);
+});
+
+test('o punte prea lată pentru bucla mică a punctului din „i” (palierul 30 + 3): refuzul, cu bucla, lungimea și sfatul', async () => {
+  // Pe hârtie: bucla punctului are ~24,85 mm, deci nici o punte cu palierul de 33 mm nu încape (0,9·24,85 = 22,4).
+  const d = documentBanda(LITERA_I) as { piese: { operatii: { incrustatie: { banda: Record<string, unknown> } }[] }[] };
+  d.piese[0]!.operatii[0]!.incrustatie.banda['punti'] = { numar: 4, latime: 30, grosime: 1 };
+  const r = await calculeazaExport(deschis(d), { origine: 'stanga-jos', z0: 'sus' });
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.match(r.motiv, /^i\/a0, decuparea dopului: bucla \d a decupării, de 24\.8\d* mm, e prea mică pentru o punte cu palierul de 33 mm \(lățimea plus freza\): micșorează punțile$/);
 });

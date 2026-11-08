@@ -11,13 +11,15 @@
 import type { Contur } from '../geom/conturBaza.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import { IDENTITATE, transformaContur } from '../geom/matrice.ts';
+import { offsetFigura } from '../geom/offset.ts';
 import { VERSIUNE_SCHEMA, type Document, type Nod, type Operatie } from '../model/document.ts';
 import { valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { ordineTaieturi, type Taietura } from '../model/lume.ts';
 import { conturDeTaiat } from './contur.ts';
 import { contururiRegiuni, figuraDreapta, frezeIncrustatieDreapta, refuzIncrustatieDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
-import type { DopCalculat } from './incrustatie.ts';
+import { puntiPeBucle, type DopCalculat } from './incrustatie.ts';
 import { programDinDocument, type Regim } from './job.ts';
+import { lungimeBucla } from './parcurgere.ts';
 
 /** Cât trece marginea regiunii dopului ridicat de marginea semifabricatului, cel puțin (mm): fața se coboară până dincolo. */
 const DINCOLO_DE_MARGINE = 1;
@@ -114,14 +116,28 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
       const baza = {
         sens: op.sens, adancime: grosime, pas: op.pas, scula: structuredClone(mica.scula), rampa: null, intrari: null, colturi: null,
       } as const;
+      // Punțile, pe fiecare buclă câte încap: traseul ei e conturul lărgit cu raza frezei (profilul exterior), iar o parte mică a
+      // desenului (punctul unui „i”) primește mai puține, nu refuză tot exportul. Fără lungime măsurabilă, cele cerute (judecă
+      // lucrarea).
+      const palier = PUNTI.latime + mica.scula.diametru;
+      const lungimi = exterioare.map((c) => {
+        const o = offsetFigura([c], mica.scula.diametru / 2);
+        return o.ok && o.regiuni[0] ? lungimeBucla(o.regiuni[0].exterior) : Infinity;
+      });
+      const pePunti = puntiPeBucle(lungimi, palier, PUNTI.numar);
+      if (!pePunti.ok) return { ok: false, motiv: `${t.idLume}, dopul: ${pePunti.motiv}` };
       piesa = {
         id: 'dop', radacina: { tip: 'grup', id: 'r', matrice: { ...IDENTITATE }, copii: noduri },
         operatii: [
-          { id: 'exterior', tip: 'profil', noduri: exterioare.map((_, i) => `dop-${i + 1}`), latura: 'exterior', urechi: { numar: PUNTI.numar, latime: PUNTI.latime + mica.scula.diametru, grosime: PUNTI.grosime }, ...baza },
+          ...[...pePunti.grupe].map(([n, ii]) => ({
+            id: `exterior-${n}`, tip: 'profil' as const, noduri: ii.map((i) => `dop-${i + 1}`), latura: 'exterior' as const,
+            urechi: { numar: n, latime: palier, grosime: PUNTI.grosime }, ...baza,
+          })),
           ...(goluri.length > 0 ? [{ id: 'goluri', tip: 'profil' as const, noduri: goluri.map((_, i) => `gol-${i + 1}`), latura: 'interior' as const, urechi: null, ...baza }] : []),
         ],
       };
       avertismente.push(`dopul ${t.idLume}: e decupat cu ${PUNTI.numar} punți pe buclă, late de ${PUNTI.latime} mm și groase de ${PUNTI.grosime} mm; taie-le și curăță-le la nivelul pereților înainte de lipire`);
+      if (pePunti.avertisment) avertismente.push(`dopul ${t.idLume}: ${pePunti.avertisment}`);
     }
     const sintetic: Document = {
       schema: VERSIUNE_SCHEMA, rev: 0, piese: [piesa],
