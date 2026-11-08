@@ -6844,3 +6844,26 @@ căzute, din CI).
   butonului numește netezirea; poligonul cu 200 de laturi R30 dintr-un DXF: „Forme schimbate: 1; linii înlocuite: 200; curbe
   noi: 14; abaterea cea mai mare: 0,008 mm.” (cifrele din e2e); treptele unei trasări (pași de 0,5 mm) rămân la 0,01 („Nimic
   de netezit…”) și devin la 0,5 nouă curbe netede, la 0,49 mm; nicio eroare în consolă.
+
+## 2026-11-08 — Linia 10.3↑ încheiată: ramura ținută unibilă cu `main` (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”.
+**Started:** 08.11, 09:01. **Completed:** 08.11, 09:45.
+
+- **Starea:** linia 10.3↑–10.3↑e gata pe ramură din 07.11 (`e546a5c`); `main` unise doar până la `be7733e` (10.3↑b) și
+  mersese înainte cu 37 de commit-uri (raportările 15.B↑b, imprimanta 3.6g–3.6i, biblioteca întărită, plafonul total 600 kB).
+- **Unirea:** `origin/main` (`0060a86`) unit în ramură (`b7aac9c`), ca sesiunea principală să poată uni 10.3↑c–e la cuvântul
+  owner-ului. Conflictele: DEVLOG-ul (cel din `main` întreg, apoi 10.3↑c–e), indexul ADR (0180, apoi 0190 și 0191), lista
+  otrăvurilor (ambele părți), ușile manualului (86 + fila Imprimanta + Convertește și `document.converteste` = 89). Fără
+  conflict, dar greșit: capitolele manualului, „30” pe ambele părți, sunt 31 (`test/e2e/manual.spec.ts`).
+- **Porțile pe `b7aac9c`:** traducerile (677 / 0), compilatoarele, importurile, licențele; unit 8 707 (8 699 / 0 căderi / 8
+  sărite); build-ul determinist (284 de fișiere identice); pornirea 101,8 (cu ușa 105,3 / 110 kB), totalul 543,1 / 600; e2e
+  379 / 379 (3 lucrători, 6,3 min). Emulatoarele: întâi 7 căderi la funcții, fiindcă harnașul local (`.tmp/emu.ts`, o copie fără
+  npm a lui `scripts/test-emulator.ts`) pornea doar Auth, Firestore și Functions; din 15.B↑b scriptul pornește și Storage, cu un
+  dosar temporar al fiecărei rulări. Cu harnașul adus la zi: 101 / 101 și 21 / 21.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `b7aac9c`
+  (`cncvs2-versiune` `b7aac9cffd7a`). Verificat acolo, la 1024 × 768, în Edge fără fereastră: În cerc (0,06 mm; pătrățelele de
+  2 mm refuzate cu 0,414 mm), cu diametrul 8, găurirea în fereastra exportului, ordinea blocurilor (Arce, Netezește, În cerc, În
+  dreptunghi), netezirea (200 de linii → 14 curbe la 0,008 mm; treptele de 0,5 mm rămân la 0,01 și devin 9 curbe la 0,5); nicio
+  eroare în consolă.
+
