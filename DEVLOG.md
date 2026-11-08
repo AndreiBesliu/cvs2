@@ -6912,7 +6912,8 @@ proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift c�
   (8674 + 8 sărite; singura căzută, traducerea rândului din fișă, scrisă apoi), traducerile 677 / 0 lipsă, e2e 126 / 126 (21
   de spec-uri: ancorele, editarea, importul, selecția, Pen, textul, booleanul, curba, exportul, nodurile, rețeaua, offsetul,
   înclinarea, tutorialul, tastele uneltelor, pânza, rigla, manualul, vectorii, panoul).
-- **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12), versiunea `b722ba343091`; proba
-  de fum de acolo, în Edge: pornirea fără erori, selectorul ancorei (9), lista colțurilor (3), cercul întins devine elipsă
-  cu eticheta „cercul devine elipsă”, testul din aplicație (`?test`) cu 33 de pași. Neunite: unirea în `main` o face sesiunea
-  principală, la cuvântul owner-ului.
+- **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12), publicat întâi cu `b722ba343091`,
+  apoi cu `8d4e06bb3e97` (pașii desenului din testul aplicației cer și Alt și Ctrl; e2e-ul tutorialului și al ancorelor,
+  11 / 11, pe build-ul lui); proba de fum de acolo, în Edge, la amândouă: pornirea fără erori, selectorul ancorei (9), lista
+  colțurilor (3), cercul întins devine elipsă cu eticheta „cercul devine elipsă”, testul din aplicație (`?test`) cu 33 de
+  pași. Neunite: unirea în `main` o face sesiunea principală, la cuvântul owner-ului; coada owner-ului are încercarea pe canal.
