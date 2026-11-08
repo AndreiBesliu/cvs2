@@ -6945,3 +6945,30 @@ bandă, sau o lași pe mai târziu?”).
 - **Publicat:** canalul `incrustatii`, build-ul `0fc2ea0`, verificat în browserul aplicației: versiunea `0fc2ea080371`; pe
   dreptunghiul cu pereți drepți din proiect, „Altă freză pentru dop” bifată propune T3 Ø3 (aici, cu locașul pe T2, și regula
   veche dădea T3; diferența o prinde proba e2e); închisă fără export.
+
+## 2026-11-08 — Înaintea unirii lui 12.1↑b–c: punțile pe buclele mici și `main` adus în ramură (Model: Claude Opus 5.5)
+
+**Prompt:** „1 si 2 acum 3-6 dupa” (owner-ul, la lista „ce putem îmbunătăți înainte să unim cu main”, după întrebarea „ce
+putem imbunatati aici, inainte sa unim cu main?”).
+**Started:** 08.11, 11:28. **Completed:** 08.11, 12:10.
+
+- **1. Punțile pe buclele mici** (`975b72a`): lucrarea pune un număr fix de urechi pe buclă și refuză tot exportul dacă nu
+  încap (W ≤ 0,9·P / n). Pe bucla punctului unui „i” banda cu decupare era refuzată („4 urechi de 7 mm pe o buclă de
+  24,85 mm”), iar dopul decupat cu pereți drepți, cu Ø1, sub R4. Acum, pe fiecare buclă, câte încap din cele cerute
+  (`urechiCareIncap`, aceeași regulă ca a lucrării; `puntiPeBucle`, grupate pe număr, câte o operație), cu avertismentul
+  buclelor mici; refuzul doar dacă nu încape nici una, cu bucla, lungimea și sfatul. Probele: regula față de `geometrieUrechi`
+  (5 000 de bucle deterministe), litera „i” pe oracolul benzii (7 punți pe inel: 4 pe bară, 3 pe punct), refuzul punții prea
+  late, cercul R2 al dopului drept (2 punți). Otrăvurile U01–U06; C06, C07 (12.1c) și P06, P11 (12.1b) pe codul nou.
+- **2. `main` adus în ramură** (`1749acc`, merge, de la `1bf99c5`: 47 de commit-uri, cu plafonul de 600 kB): codul s-a unit
+  singur; conflictele, doar în documente, rezolvate păstrând ambele părți (DEVLOG: întâi `main`, apoi linia; rândurile listei
+  de otrăvuri; dicționarul roadmap-ului: reuniunea, apoi `scripts/traduceri.ts`, 680 de texte, 0 lipsă). Manualul are 31 de
+  capitole (câte unul nou pe fiecare parte), iar Git unise singur aceeași schimbare din `manual.spec.ts` (29 → 30): proba
+  cere acum 31. Schema rămâne v22.
+- **Porțile pe rezultat:** compilatoarele ×3, importurile 19 / 0 (1 068 de module), licențele, traducerile, corpusul de aur
+  (23 de intrări, 21 de migrări), unit 8 715 (0 căderi), build determinist (286 de fișiere; pornirea 101,8, cu ușa
+  105,5 / 110; totalul 544,0 / 600), e2e 381 / 381 pe 4174, din prima (3 lucrători, 7,0 min). Otrăvurile reluate pe `1749acc`
+  (U01–U06, C06, C07, P06, P11): toate prinse; ancorele celor trei liste, fără VOID.
+- **Publicat:** Pe canal: build-ul `1749acc` (versiunea `1749acc63575`), verificat în browserul aplicației, în engleză: un cerc nou, rolul „V inlay” din panou („Wood around the plug: whole face lowered”), apoi în fereastra exportului banda îngustă (cea mai mică 7,578 mm, placa 6,196, punțile 4 × 4 × 1) și „Another bit for the cut-out” de la T3, fără conflict; fila „Printer” a lui `main`; închisă fără export, nicio eroare în consolă. Punțile pe buclele mici se văd doar la export: probate în unitare.
+- **Rămân, după unire** (răspunsul owner-ului): 3 lemnul din jurul dopului ales și din panou (valorile benzii pe hârtie
+  înainte de export), 4 punțile dopului drept alese în fereastră (câmpul poate intra tot în v22, cât nu e unit), 5 arborele
+  („cu bandă”) și legăturile rândurilor în fereastră, 6 viteza benzii (~10 s pe 24 de litere, față de 6,7 cu fața coborâtă).
