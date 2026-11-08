@@ -65,7 +65,8 @@ test('brim-ul comun: două piese apropiate, niciun punct de brim în piesa vecin
   // Între buclele alăturate ale aceluiași grup, fără retragere: doar la începutul brim-ului și între grupuri (comun, A, B).
   const l = linii(r.gcode!.text);
   const z1 = l.indexOf(';Z:0.2'), obiect = l.findIndex((x, j) => j > z1 && x.startsWith('EXCLUDE_OBJECT_START'));
-  assert.ok(l.slice(z1, obiect).filter((x) => x === 'G1 E-.8 F2400').length <= 3);
+  // Fiecare retragere are revenirea ei (`G1 E.8`): cu ștergerea, retragerea însăși se împarte (înainte, pe drum).
+  assert.ok(l.slice(z1, obiect).filter((x) => x === 'G1 E.8 F2400').length <= 3);
 });
 
 test('primul strat nu pierde trăsăturile pe care le au straturile de deasupra (un pieptene cu dinți de 0,7 mm)', () => {

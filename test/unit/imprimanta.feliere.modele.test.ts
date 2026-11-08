@@ -86,6 +86,15 @@ test('modelele rare din linii: direcțiile, pașii (sp · familii / densitate) �
   const unghiLo = (c: Cale): number => (((Math.atan2(c.p[c.p.length - 1]! - c.p[1]!, c.p[c.p.length - 2]! - c.p[0]!) * 180) / Math.PI) % 180 + 180) % 180;
   const drepte = lo.filter((c) => Math.abs(unghiLo(c) - 45) < 1e-6).length, inclinate = lo.filter((c) => Math.abs(unghiLo(c) - 45) > 0.5).length;
   assert.ok(drepte > 5 && inclinate > 5, `${drepte} drepte, ${inclinate} înclinate`);
+  // Fagurele: hexagoane regulate, deci trei direcții la 60° una de alta; în reperul modelului 90°, 30° și 150°, rotite cu
+  // −(u + 90°) pe stratul 9: 135°, 75° și 15°.
+  const fag = feliaza([piesa(placa, 4)], cu({ modelRar: 'honeycomb' }), { data: DATA }).cai(9).filter((x) => x.rol === 'rar');
+  const dirFag = new Set<number>();
+  for (const c of fag) for (let i = 2; i < c.p.length; i += 2) {
+    const L = Math.hypot(c.p[i]! - c.p[i - 2]!, c.p[i + 1]! - c.p[i - 1]!);
+    if (L > 0.5) dirFag.add(Math.round(((((Math.atan2(c.p[i + 1]! - c.p[i - 1]!, c.p[i]! - c.p[i - 2]!) * 180) / Math.PI) % 180) + 180) % 180) % 180);
+  }
+  assert.deepEqual([...dirFag].sort((a, b) => a - b), [15, 75, 135]);
   // Triunghiurile: trei familii la 60°, la 3 · sp / d, toate prin originea patului (faza 0): se întâlnesc în aceleași noduri.
   const tr = fam(cu({ modelRar: 'triangles' }), 9), ls = (3 * SP) / 0.15;
   assert.deepEqual([...tr.keys()].sort((a, b) => a - b), [45, 105, 165]);
@@ -147,18 +156,25 @@ test('modelele 3D (cubic, hașura în cruce, giroid) se schimbă cu Z; celelalte
 
 test('umplerea monotonă: o linie se imprimă mereu după vecina ei de dinainte; „monotonic line” fără legături, „monotonic” cu legături scurte', () => {
   // Un U: în dreptul golului, fiecare linie are două intervale (zigzag-ul simplu ar sări înainte și înapoi).
-  const u = [Float64Array.from(puncte(poligon([[0, 0], [30, 0], [30, 20], [20, 20], [20, 6], [10, 6], [10, 20], [0, 20]])))];
-  const iv = intervale(u, 90, 0.4);
-  for (const legaturi of [true, false]) {
-    const cai = monoton(iv, 90, 0.4, legaturi, 0.4, 'sus', 0.42);
+  // Liniile, orizontale (unghiul 0): sub y = 6, o linie întreagă; deasupra, două (brațele U-ului), deci regiunile se despart;
+  // la U-ul întors, se unesc.
+  const forme = [
+    poligon([[0, 0], [30, 0], [30, 20], [20, 20], [20, 6], [10, 6], [10, 20], [0, 20]]),
+    poligon([[0, 0], [10, 0], [10, 14], [20, 14], [20, 0], [30, 0], [30, 20], [0, 20]]),
+  ];
+  for (const forma of forme) for (const legaturi of [true, false]) {
+    const u = [Float64Array.from(puncte(forma))];
+    const iv = intervale(u, 0, 0.4);
+    assert.ok([...iv.values()].some((l) => l.length === 2));
+    const cai = monoton(iv, 0, 0.4, legaturi, 0.4, 'sus', 0.42);
     // Fiecare segment de linie: indexul căii în care e imprimat, linia (k) și intervalul ei.
     const seg: { ord: number; k: number; a: number; b: number }[] = [];
     let ord = 0;
     for (const c of cai) {
       for (let i = 0; i + 3 < c.p.length; i += 2) {
         const x0 = c.p[i]!, x1 = c.p[i + 2]!, y0 = c.p[i + 1]!, y1 = c.p[i + 3]!;
-        // Liniile la 90°: verticale; o legătură e orizontală.
-        if (Math.abs(x0 - x1) < 1e-9) seg.push({ ord: ord++, k: Math.round(-x0 / 0.4 - 0.5), a: Math.min(y0, y1), b: Math.max(y0, y1) });
+        // Liniile la 0°: orizontale; o legătură e verticală (de-a lungul liniilor, cel mult un pas).
+        if (Math.abs(y0 - y1) < 1e-9) seg.push({ ord: ord++, k: Math.round(y0 / 0.4 - 0.5), a: Math.min(x0, x1), b: Math.max(x0, x1) });
         else assert.ok(legaturi && Math.abs(x0 - x1) <= 0.4 + 1e-9, 'legătură nepermisă');
       }
       if (!legaturi) assert.equal(c.p.length, 4);
@@ -372,6 +388,9 @@ test('fusta: buclele la distanța lor, cea mai depărtată întâi, prima la −
   const s = feliaza([piesa(placa)], cu({ fusta: 3, scut: true, oBuclaDupa: true }), { data: DATA });
   assert.deepEqual([1, 2, 15].map((n) => s.cai(n).filter((c) => c.rol === 'fusta').length), [3, 1, 1]);
   assert.ok(Math.abs(maxX(s.cai(15).find((c) => c.rol === 'fusta')!) - 120 - (2 + 0.5 * sp)) < 1e-6);
+  const ls = linii(s.gcode!.text), z15 = ls.indexOf(';Z:3'), ob = ls.findIndex((x, j) => j > z15 && x.startsWith('EXCLUDE_OBJECT_START'));
+  const xs15 = ls.slice(z15, ob).filter((x) => /^G1 X\S+ Y\S+ E[\d.]/.test(x)).map((x) => v(x, 'X')!);
+  assert.ok(xs15.length > 4 && Math.abs(Math.max(...xs15) - 120 - (2 + 0.5 * sp)) < 2e-3, `${Math.max(...xs15)}`);
   // Lungimea minimă: buclele se adaugă până când filamentul ajunge la ea.
   const e = (0.2 * (0.5 - 0.2 * (1 - Math.PI / 4)) / ARIE_FILAMENT) * 0.98;
   const m = feliaza([piesa(placa)], cu({ fusta: 1, lungimeMinimaFusta: 30 }), { data: DATA }).cai(1).filter((c) => c.rol === 'fusta');

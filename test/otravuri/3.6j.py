@@ -34,7 +34,8 @@ o('F07', ST, 'const r = pereti1(h, s.wPrim, s.wPrim, s.piciorElefant);', 'const 
   'fără compensarea piciorului de elefant')
 o('F08', ST, 'regiuniLa(pr.adanc[i]! - suprapunere * w)', 'regiuniLa(pr.adanc[i]!)', 'feliere',
   'umplerea nu se suprapune peste pereți: nu se leagă de ei')
-o('F09', ST, 'if (p[i + 1]! > p[k + 1]! + 1e-9 ||', 'if (false ||', 'feliere', 'cusătura nealiniată (bucla începe oriunde)')
+o('F09', ST, '(Math.abs(pen - bp) <= 1e-9 && (dy > 1e-9 || (Math.abs(dy) <= 1e-9 && p[2 * i]! < p[2 * best]!)))', 'false', 'feliere',
+  'cusătura nealiniată: la colțuri la fel, bucla nu mai începe în spate')
 o('F10', LI, 'if (Math.abs(start - capat) > legaturaMax) {', 'if (false) {', 'feliere',
   'grila rară își leagă liniile cu bucăți lungi, extrudate peste piesă')
 o('F11', GC, 'if (t > 1e-9 && t < 1 - 1e-9 && u >= 0 && u <= 1) return true;', '', 'feliere',

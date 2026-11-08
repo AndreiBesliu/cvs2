@@ -37,8 +37,9 @@ o('M05', ST, "{ u: u + 60, faza: fr(-f) }", "{ u: u + 60, faza: fr(f) }", 'felie
 o('M06', ST, "new Set(['cubic', 'crosshatch', 'gyroid'])", "new Set(['cubic', 'crosshatch'])", 'feliere',
   'giroidul fără Z în cheia stratului: același șablon pe toate straturile')
 o('M07', MO, 'const dA = Math.max(1e-6, d * 2.44);', 'const dA = Math.max(1e-6, d);', 'feliere', 'giroidul fără factorul densității (2,44)')
-o('M08', MO, 'const distanta = sp / d, latura = distanta / (Math.sqrt(3) / 2), latime = 2 * distanta;',
-  'const distanta = sp / d, latura = distanta / (Math.sqrt(3) / 2), latime = 2.2 * distanta;', 'feliere', 'fagurele cu hexagoane strâmbe')
+o('M08', MO, 'const inaltime = 3 * latura, scurt = (distanta * Math.sqrt(3)) / 3, dx = sp / 2, dy = (dx * Math.sqrt(3)) / 3;',
+  'const inaltime = 3 * latura, scurt = distanta / 2, dx = sp / 2, dy = (dx * Math.sqrt(3)) / 3;', 'feliere',
+  'fagurele cu hexagoane strâmbe (latura scurtă greșită)')
 o('M09', ST, "case 'concentric': return concentrice(pr, i, pr.adanc[i]! + sp / 2 - suprapunere * w, sp / d, rol, w);",
   "case 'concentric': return concentrice(pr, i, pr.adanc[i]! + sp / 2 - suprapunere * w, sp, rol, w);", 'feliere',
   'concentricul ignoră densitatea')
