@@ -7177,3 +7177,11 @@ sesiunea liniei.
   (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `0d54112308de`.
 - **Semnul:** liniei incrustațiilor, după publicare. Între timp, owner-ul a cerut și unirea liniei ancorelor: unită local
   (`0c81ccf`), împinsă după publicarea asta, ca publicările pe test să meargă în ordinea commit-urilor.
+
+## 2026-11-08 — 6.V↑d: opțiunile ancorei și ale tastelor transformării (ADR 0240) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 6.V↑d acum” (la „Fac acum 6.V↑d, opțiunile rămase (~1,5 kB)?”, după unirea liniei în `main`, `0c81ccf`).
+**Started:** 08.11, 18:17. **Completed:** —
+
+- **Pornirea:** ramura `wip/6.V-ancore` adusă la `origin/main` (`8714306`, fast-forward); rândul 6.V↑d în jurnalul fișei (în
+  lucru), iar rândul liniei din coada owner-ului a ieșit (unirea s-a făcut, 6.V↑d e decisă).
