@@ -93,6 +93,7 @@ export const en = {
   'motiv.inca-total': 'Write how many there should be in total: more than now, at most 1,000.',
   'motiv.inca-prea-mare': 'The part does not fit on the sheet within the margins (10 mm).',
   'motiv.fara-surori': 'The chosen part is placed only once: there is nothing to detach it from.',
+  'motiv.placute': 'This part is the template of some plates: the change would break their letters. Detach the plates first.',
   'motiv.aseaza-distanta': 'The distance between parts is below the cutter of the outside profile: one part’s cut would run into its neighbour.',
   'motiv.aseaza-valori': 'Margins and distances: numbers from 0 to 1,000 mm, and the margins must leave room on the sheet.',
   'motiv.aseaza-prea-mari': 'The chosen parts are larger than the sheet: they stay where they are.',

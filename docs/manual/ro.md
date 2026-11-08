@@ -140,7 +140,7 @@ pe foaia următoare, dacă e goală, apoi pe foi noi, ca foaia piesei. **+1** pu
 separată, cu piesa ei.
 
 **Cum se văd.** Rândul unei piese puse de mai multe ori are în listă, violet, al câtelea e („(3 din 12)”). Cât e aleasă una,
-o bandă violet, sus pe pânză, spune de câte ori e pusă piesa: o schimbare a formei, a nodurilor, a textului, a scării, a
+o bandă violet, jos pe pânză, spune de câte ori e pusă piesa (cu panoul textului deschis, o spune panoul): o schimbare a formei, a nodurilor, a textului, a scării, a
 oglindirii, a înclinării sau a operațiilor se face pentru toate. Locul și rotirea rămân ale fiecăreia. Două instanțe alese ale
 aceleiași piese, rotite altfel, s-ar schimba diferit la o scalare neuniformă, o oglindire sau o înclinare: atunci schimbarea
 se refuză, cu motivul.
@@ -157,6 +157,17 @@ singură piesă de felul acesta printre cele alese). Bifa **Ține minte alegerea
 
 **Duplică foaia cu aceleași piese**, din meniul foii, face o foaie nouă după ea, cu aceleași piese (instanțe noi, în aceleași
 locuri): o schimbare a unei piese se vede pe ambele foi. **Duplică foaia** face, ca înainte, copii separate.
+
+**Plăcuțele.** Un câmp se scrie în textul unei piese între acolade: `{nume}`, `Masa {nr}`. Piesa devine un șablon: forma,
+fontul și mărimea sunt ale ei, iar fiecare instanță e o plăcuță cu valorile ei. Cu una aleasă, panoul Proprietăți arată
+**Pe această plăcuță**, cu un rând pe câmp; o valoare scrisă (`Enter`) face literele plăcuței din fontul textului (pe
+calculatorul acesta trebuie să fie fontul; altfel panoul spune de ce nu). Un câmp fără valoare rămâne gol. Pe foaie, la
+tăiere și la export, plăcuța are textul ei; lista o numește după el. Operațiile șablonului care îi taie textul (profilul pe
+exterior, pe interior, gravura) taie la fel literele fiecărei plăcuțe; rama și găurile rămân ale șablonului. **Încă…** și **+1**
+pun copii cu aceleași valori. Textul șablonului se editează cu unealta Text, pe oricare plăcuță: **Aplică** reface literele
+tuturor plăcuțelor, cu valorile lor (panoul spune câte). Rolul de tăiere și scalarea piesei se fac pentru toate. Literele
+șablonului nu se editează ca noduri și nu se înclină: plăcuțele ar rămâne cu textul vechi (motivul o spune). **Desprinde** pe
+o plăcuță (și pe una singură) îi dă o piesă a ei, cu textul ei obișnuit; gruparea și degruparea o desprind la fel.
 
 Fiecare gest e un singur pas de anulare (`Ctrl+Z`).
 

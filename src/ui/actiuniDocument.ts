@@ -1,7 +1,7 @@
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Document, type FormaDoc,
-  type Ghidaj, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
+  type Ghidaj, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type TextePlacuta,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
@@ -13,6 +13,7 @@ import type { RolPersonal } from '../model/rolPersonal.ts';
 import type { Transformare } from '../model/transformare.ts';
 // Doar tipul: piesa textului o face modulul textului, adus la cerere de panoul lui (ADR 0105 §5).
 import type { RezultatPiesaText } from '../text/piesaText.ts';
+import type { RezultatPlacuta } from '../text/placute.ts';
 import { anuleaza, executa, reface, type CampEticheta, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
 import { indexFoaieActiva } from '../model/foi.ts';
 import { copieArbore, idNou } from '../model/copii.ts';
@@ -39,7 +40,22 @@ export type CerereText =
     /** `grosime`: a foii curente, pentru adâncimea gravurii unui text cu o singură linie (ADR 0140). */
     readonly piesa: (id: string, scula?: Operatie['scula'], grosime?: number) => RezultatPiesaText;
   }
-  | { readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa, grosime?: number) => RezultatPiesaText };
+  | {
+    readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa, grosime?: number) => RezultatPiesaText;
+    /**
+     * Literele unei plăcuțe a piesei noi cu valorile ei (ADR 0210 §4): editarea unui șablon le reface pe toate în același
+     * pas. Fără ea, un șablon cu plăcuțe nu se editează.
+     */
+    readonly texte?: (nou: Piesa, valori: Readonly<Record<string, string>>) => RezultatPlacuta;
+  }
+  /**
+   * Valorile unei plăcuțe (ADR 0210 §4): instanța, piesa pe care s-au făcut literele (dacă s-a schimbat între timp, cererea
+   * e refuzată), valorile și literele fiecărui text cu câmpuri (lipsă: piesa nu mai e un șablon).
+   */
+  | {
+    readonly fel: 'placuta'; readonly instanta: string; readonly piesa: Piesa;
+    readonly campuri: Readonly<Record<string, string>>; readonly texte: Readonly<Record<string, TextePlacuta>> | undefined;
+  };
 
 /**
  * Reparația verificării vectorilor (ADR 0124 §10), calculată de workerul CAM pe documentul `doc`: piesele schimbate (cu

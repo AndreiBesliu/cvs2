@@ -194,7 +194,7 @@ const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, ope
 /** Un dicționar (ADR 0024): un obiect, nu o listă; `v.record` singur primește și `[]` (îl copiază într-un obiect), deci întâi forma. */
 const dictionar = <T extends v.GenericSchema>(s: T) =>
   v.pipe(v.custom<unknown>((x) => typeof x === 'object' && x !== null && !Array.isArray(x), 'un dicționar, nu o listă'), s);
-const SchemaTextePlacuta = v.looseObject({ continut: v.string(), copii: v.array(SchemaNod), operatii: dictionar(v.record(Id, v.array(Id))) });
+export const SchemaTextePlacuta = v.looseObject({ continut: v.string(), copii: v.array(SchemaNod), operatii: dictionar(v.record(Id, v.array(Id))) });
 const SchemaInstanta = v.looseObject({
   id: Id,
   piesa: Id,
@@ -258,11 +258,6 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | nul
 }
 
 /**
- * Literele plăcuțelor unei instanțe (ADR 0210 §7; v23), sau null: fiecare grup e un text al piesei, cu bloc valid și cu
- * câmpuri; textul plăcuței e al blocului, cu valorile instanței; id-urile literelor sunt unice și altele decât ale piesei;
- * operațiile sunt ale piesei, pe literele plăcuței, fiecare o dată; arborele cu literele ei rămâne în niveluri și în margini.
- */
-/**
  * Judecata literelor plăcuțelor (v23, ADR 0210 §7) stă în `judecataTexte.ts`, adus doar pentru un document cu plăcuțe
  * (ușa de la pornire îl cere înaintea primei randări, ca migrările pentru unul vechi, ADR 0070) și mereu de ușa întreagă
  * (`incarcare.ts`) și de acțiunile care fac litere. Se înregistrează aici când vine; fără el, un document cu plăcuțe nu trece.
@@ -314,7 +309,15 @@ function problemaDeAnsamblu(d: Document): string | null {
     const m = matriciInMargini(p);
     if (m) return m;
   }
-  // Literele plăcuțelor (v23), după plafoane: o plăcuță uriașă nu se judecă literă cu literă.
+  return null;
+}
+
+/**
+ * Literele plăcuțelor (v23), judecate de ușă după schemă (după plafoane: o plăcuță uriașă nu se judecă literă cu literă), pe
+ * documentul BRUT, cel pe care îl întoarce: cheile `__proto__`, `constructor` și `prototype` sunt date (ADR 0024 §9), iar
+ * ieșirea validatorului nu le are (o plăcuță cu o asemenea cheie n-ar fi fost judecată). Null: n-are plăcuțe, sau trec.
+ */
+export function problemaTexte(d: Document): string | null {
   if (!d.foi.some((f) => f.instante.some((i) => i.texte !== undefined))) return null;
   return judecataTexte ? judecataTexte(d) : 'documentul are plăcuțe cu litere, iar judecata lor nu e încărcată';
 }

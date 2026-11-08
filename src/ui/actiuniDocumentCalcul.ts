@@ -2,11 +2,12 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
 import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
+import { operatiiPlacutei } from '../io/placuteOperatii.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
@@ -15,7 +16,10 @@ import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
 import { grupDin, type ParteGrupata } from '../model/grupare.ts';
+import { placutaCoapta } from '../model/placute.ts';
 import { blocText } from '../model/blocText.ts';
+// Judecata literelor plăcuțelor (v23) se înregistrează în ușă la import: acțiunile o cer pe documentul de după.
+import { judecaTexte } from '../model/judecataTexte.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
@@ -208,6 +212,48 @@ export function motivCopiereRetea(doc: Document, selectie: readonly string[], r:
  */
 type ComandaText = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
 const MOTIV_TEXT = { gol: 'motiv.text-gol', includeri: 'motiv.text-includeri', plafon: 'motiv.plafon' } as const;
+/** De ce o plăcuță nu se poate reface cu textul nou al șablonului (ADR 0210 §4). */
+const MOTIV_PLACUTA = {
+  font: 'editare.text.placute.font', aldin: 'editare.text.placute.aldin', caseta: 'editare.text.placute.caseta',
+  curba: 'editare.text.placute.curba', includeri: 'editare.text.placute.includeri',
+} as const;
+
+/**
+ * Motivul unui document de după refuzat de ușă: de schemele lui (cel dat), sau de judecata literelor plăcuțelor (ADR 0210
+ * §7: o schimbare a șablonului care le-ar strica, `judecataTexte.ts`), pe documentul brut, ca ușa. Null: documentul trece.
+ */
+export function motivDupa(dupa: Document, altfel: CheieSimpla): CheieSimpla | null {
+  const brut = JSON.parse(JSON.stringify(dupa)) as Document;
+  if (!is(SchemaDocument, brut)) return altfel;
+  return judecaTexte(brut) === null ? null : 'motiv.placute';
+}
+
+/**
+ * Plăcuțele piesei `nou` (pe toate foile) cu operațiile ei noi mutate pe literele lor (ADR 0210 §4, `operatiiPlacutei`): o
+ * comandă pe plăcuța care se schimbă. Null: imbricarea literelor unei plăcuțe trece de plafonul ei.
+ */
+function placuteCuOperatiile(doc: Document, nou: Piesa): Comanda[] | null {
+  const comenzi: Comanda[] = [];
+  for (const x of instantePiesei(doc, nou.id)) {
+    const texte = x.instanta.texte;
+    const f = doc.foi[x.foaie];
+    if (!texte || !f) continue;
+    const noi: Record<string, TextePlacuta> = {};
+    for (const [g, t] of Object.entries(texte)) {
+      const operatii = operatiiPlacutei(nou, g, t.copii);
+      if (!operatii) return null;
+      noi[g] = { ...t, operatii };
+    }
+    if (jsonCanonic(noi) !== jsonCanonic(texte)) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: { ...x.instanta, texte: noi } });
+  }
+  return comenzi;
+}
+
+/** Instanța cu valorile și literele noi ale unei plăcuțe; fără litere (piesa nu mai e un șablon), doar cu valorile. */
+function cuValorile(i: Instanta, campuri: Readonly<Record<string, string>>, texte: Readonly<Record<string, TextePlacuta>> | undefined): Instanta {
+  const { texte: _texte, campuri: _campuri, ...rest } = i;
+  return { ...rest, ...(Object.keys(campuri).length > 0 ? { campuri: { ...campuri } } : {}), ...(texte ? { texte: structuredClone(texte) } : {}) };
+}
 let ultimulText: { doc: Document; cerere: CerereText; foaie: string | undefined; rez: ComandaText } | null = null;
 export function comandaText(doc: Document, cerere: CerereText, idFoaie?: string): ComandaText {
   if (ultimulText && ultimulText.doc === doc && ultimulText.cerere === cerere && ultimulText.foaie === idFoaie) return ultimulText.rez;
@@ -229,6 +275,16 @@ function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined)
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: c.loc.x, y: c.loc.y, rotire: 0 }, pozitie: foaie.instante.length,
       piesa: { piesa: r.piesa, pozitie: doc.piese.length },
     };
+  } else if (c.fel === 'placuta') {
+    // Valorile unei plăcuțe (ADR 0210 §4): literele făcute pe piesa de acum; una schimbată între timp le-ar face greșite.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    if (!inst || !p) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (p !== c.piesa) return { ok: false, motiv: 'motiv.placute' };
+    const nou = cuValorile(inst, c.campuri, c.texte);
+    if (jsonCanonic(nou) === jsonCanonic(inst)) return { ok: false, motiv: 'motiv.nimic-ales' };
+    id = inst.id;
+    comanda = { tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: inst, nou };
   } else {
     const inst = foaie.instante.find((i) => i.id === c.instanta);
     const vechi = inst ? doc.piese.find((p) => p.id === inst.piesa) : undefined;
@@ -237,10 +293,21 @@ function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined)
     const r = c.piesa(vechi, foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     id = inst.id;
-    comanda = { tip: 'inlocuieste-piesa', vechi, nou: r.piesa };
+    // Un șablon cu plăcuțe (ADR 0210 §4): literele fiecărei plăcuțe, pe orice foaie, se refac în același pas, cu valorile ei.
+    const comenzi: Comanda[] = [{ tip: 'inlocuieste-piesa', vechi, nou: r.piesa }];
+    for (const x of instantePiesei(doc, vechi.id)) {
+      if (!x.instanta.texte) continue;
+      if (!c.texte) return { ok: false, motiv: 'motiv.placute' };
+      const t = c.texte(r.piesa, x.instanta.campuri ?? {});
+      if (!t.ok) return { ok: false, motiv: MOTIV_PLACUTA[t.motiv] };
+      const f = doc.foi[x.foaie];
+      if (f) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: cuValorile(x.instanta, t.campuri, t.texte) });
+    }
+    comanda = comenzi.length === 1 ? comenzi[0]! : { tip: 'lot', comenzi };
   }
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id } : { ok: false, motiv };
 }
 
 /** Calculul celor cinci acțiuni, după id; `inregistreazaCalcul` îl leagă de registrul documentului. */
@@ -435,11 +502,11 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (s !== true) return s;
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       const c = comenziTransformare(ctx);
-      return c === null ? 'motiv.transformare-inexacta' : true;
+      return typeof c === 'string' ? c : true;
     },
     ruleaza: (ctx) => {
       const c = comenziTransformare(ctx);
-      const p = c ? pas(c) : null;
+      const p = typeof c === 'string' ? null : pas(c);
       if (p) ctx.scrie(executa(ctx.istoric(), p));
     },
   },
@@ -453,10 +520,12 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (s !== true) return s;
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
-      return comandaForma(ctx) === null ? 'prop.forma.refuzata' : true;
+      const r = comandaForma(ctx);
+      return r === null ? 'prop.forma.refuzata' : 'motiv' in r ? r.motiv : true;
     },
     ruleaza: (ctx) => {
-      const c = comandaForma(ctx)?.comanda;
+      const r = comandaForma(ctx);
+      const c = r && 'comanda' in r ? r.comanda : null;
       if (c) ctx.scrie(executa(ctx.istoric(), c));
     },
   },
@@ -958,7 +1027,9 @@ function judecaDegruparea(doc: Document, selectie: readonly string[], idFoaie: s
   for (const i of foaie.instante) {
     if (!alese.has(i.id)) continue;
     const p = piese.get(i.piesa);
-    const parti = p ? partiDegrupare(p) : 'o-singura-forma';
+    // O plăcuță (ADR 0210 §4) se desface cu literele ei: întâi coaptă în piesa ei (anularea pune la loc plăcuța).
+    const coapta = p && i.texte ? placutaCoapta(p, i, p.id) : null;
+    const parti = p ? partiDegrupare(coapta?.piesa ?? p) : 'o-singura-forma';
     if (!p || parti === 'o-singura-forma') {
       ids.push(i.id);
       continue;
@@ -973,7 +1044,7 @@ function judecaDegruparea(doc: Document, selectie: readonly string[], idFoaie: s
         const id = idLiber();
         ids.push(id);
         return {
-          instanta: { ...structuredClone(i), id, piesa: id },
+          instanta: { ...structuredClone(coapta?.instanta ?? i), id, piesa: id },
           piesa: { ...structuredClone(rest), id, radacina: copieArbore(x.radacina), operatii: structuredClone([...x.operatii]) },
         };
       }),
@@ -982,7 +1053,8 @@ function judecaDegruparea(doc: Document, selectie: readonly string[], idFoaie: s
   if (degrupate.length === 0) return { ok: false, motiv: 'motiv.nimic-de-degrupat' };
   const comanda: Comanda = { tip: 'degrupeaza', foaie: foaie.id, degrupate };
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, ids } : { ok: false, motiv };
 }
 
 /**
@@ -1016,7 +1088,8 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata, idFoaie: string | un
   if (!comanda) return { ok: false, motiv: 'motiv.nimic-ales' };
   const dupa = executa(h, comanda).doc;
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.verificare.motiv.schema' };
+  const motiv = motivDupa(dupa, 'editare.verificare.motiv.schema');
+  return motiv === null ? { ok: true, comanda } : { ok: false, motiv };
 }
 
 /**
@@ -1044,7 +1117,8 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata, idFoaie: string | undefin
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.taiere.motiv.schema' };
+  const motiv = motivDupa(dupa, 'editare.taiere.motiv.schema');
+  return motiv === null ? { ok: true, comanda } : { ok: false, motiv };
 }
 
 /**
@@ -1091,12 +1165,14 @@ function judecaGruparea(doc: Document, selectie: readonly string[], idFoaie: str
     return alegere === 'doar' ? grupareDesprinsa(doc, selectie, foaie.id, cuSurori) : gruparePiesa(doc, foaie.id, parti, cuSurori);
   }
   const id = idNou(doc);
-  const g = grupDin(parti, id);
+  // O plăcuță (ADR 0210 §4) intră în grup cu literele ei (coaptă); comanda ține părțile de dinainte, pentru anulare.
+  const g = grupDin(parti.map((x) => (x.instanta.texte ? placutaCoapta(x.piesa, x.instanta, x.piesa.id) : x)), id);
   if (g === 'vcarve') return { ok: false, motiv: 'motiv.grupare-vcarve' };
   if (g === 'doua') return { ok: false, motiv: 'motiv.grupare-doua' };
   const comanda: Comanda = { tip: 'regrupeaza', foaie: foaie.id, degrupate: [{ ...g, parti, locuri }] };
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id } : { ok: false, motiv };
 }
 
 /** «Doar aceasta»: piesele alese cu surori se desprind întâi (fiecare cu piesa ei), apoi gruparea obișnuită, în același pas. */
@@ -1131,8 +1207,8 @@ function gruparePiesa(doc: Document, idFoaie: string, parti: readonly ParteGrupa
   const dupaInlocuire = executa(istoricDin(doc), inlocuire).doc;
   const stergere = comenziStergere(dupaInlocuire, new Set(altele.map((x) => x.instanta.id)), idFoaie);
   const comanda: Comanda = { tip: 'lot', comenzi: [inlocuire, ...stergere.comenzi] };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(stergere.doc))) && !plafonDepasit(numara(stergere.doc))
-    ? { ok: true, comanda, id: g.id } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = plafonDepasit(numara(stergere.doc)) ? 'motiv.plafon' : motivDupa(stergere.doc, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id: g.id } : { ok: false, motiv };
 }
 
 /** Așezarea pe foi (ADR 0210 §3), ținută pe cerere: `activa` și `ruleaza` (și dialogul, la fiecare tastă) o calculează o dată. */
@@ -1245,12 +1321,12 @@ export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitir
 }
 
 /** Comenzile unei transformări (instanțele și piesele schimbate), sau null dacă ar ieși inexactă sau n-ar trece de schemă. */
-function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
+function comenziTransformare(ctx: ContextDocument): Comanda[] | CheieSimpla {
   const t = ctx.transformare?.();
-  if (!t) return null;
+  if (!t) return 'motiv.transformare-inexacta';
   const h = ctx.istoric();
   const r = transforma(h.doc, indexFoaieActiva(h.doc, ctx.foaie?.()), ctx.selectie(), t);
-  if (!r.ok) return null;
+  if (!r.ok) return 'motiv.transformare-inexacta';
   const foaie = foaieCtx(ctx, h.doc);
   const vechi = new Map(foaie.instante.map((i) => [i.id, i]));
   const vechiPiese = new Map(h.doc.piese.map((p) => [p.id, p]));
@@ -1261,12 +1337,14 @@ function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
   }
   for (const i of r.instante) {
     const v = vechi.get(i.id);
-    if (!v || instantaPreaDeparte(i.x, i.y)) return null;
+    if (!v || instantaPreaDeparte(i.x, i.y)) return 'motiv.transformare-inexacta';
     comenzi.push({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: v, nou: i });
   }
+  // Plăcuțele neselectate ale pieselor scalate (ADR 0210 §4): literele lor, scalate odată cu piesa.
+  for (const x of r.placute ?? []) comenzi.push({ tip: 'inlocuieste-instanta', foaie: x.foaie, vechi: x.vechi, nou: x.nou });
   const p = pas(comenzi);
   if (!p) return [];
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, p).doc))) ? comenzi : null;
+  return motivDupa(executa(h, p).doc, 'motiv.transformare-inexacta') ?? comenzi;
 }
 
 /**
@@ -1274,7 +1352,7 @@ function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
  * `comanda: null` când forma e aceeași; null când nu se poate (elementul cerut lipsește, documentul de după refuzat de schemă).
  * O piesă pusă de mai multe ori se schimbă pentru toate instanțele ei (ADR 0210 §2).
  */
-function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null } | null {
+function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null } | { readonly motiv: CheieSimpla } | null {
   const f = ctx.formaEditata?.();
   const h = ctx.istoric();
   const alese = ctx.selectie();
@@ -1298,7 +1376,9 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
   const nou = { ...vechi, radacina };
   if (jsonCanonic(nou) === jsonCanonic(vechi)) return { comanda: null };
   const comanda: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, comanda).doc))) ? { comanda } : null;
+  // Literele unui șablon de plăcuțe (ADR 0210 §4) nu se editează ca noduri: plăcuțele lor ar rămâne cu textul vechi.
+  const motiv = motivDupa(executa(h, comanda).doc, 'prop.forma.refuzata');
+  return motiv === null ? { comanda } : motiv === 'motiv.placute' ? { motiv } : null;
 }
 
 /**
@@ -1323,12 +1403,18 @@ function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal
     // Piesa își păstrează locul în ordinea de mână (ADR 0133 §4).
     const operatii = cuRangulPiesei(vechi.operatii, ale);
     if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
-    comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
+    const nou = { ...vechi, operatii };
+    comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou });
+    // Plăcuțele piesei (ADR 0210 §4): operațiile noi se mută și pe literele lor, în același pas.
+    const placute = placuteCuOperatiile(h.doc, nou);
+    if (!placute) return { ok: false, motiv: 'motiv.text-includeri' };
+    comenzi.push(...placute);
   }
   if (lista.length === 0) return { ok: false, motiv: 'motiv.nicio-selectie' };
   const c = pas(comenzi);
   if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, c).doc))) ? { ok: true, comanda: c } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(executa(h, c).doc, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda: c } : { ok: false, motiv };
 }
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */

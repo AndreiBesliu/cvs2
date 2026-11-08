@@ -54,7 +54,7 @@ export function cuLitere(radacina: Nod, texte: Readonly<Record<string, TextePlac
  * Nodurile operațiilor într-o instanță: ale piesei; pentru o plăcuță (v23), fără literele șablonului din grupurile ei, iar
  * la capăt literele plăcuței tăiate de fiecare operație, grup cu grup.
  */
-function noduriInInstanta(radacina: Nod, texte: Readonly<Record<string, TextePlacuta>> | undefined): (o: Operatie) => readonly string[] {
+export function noduriInInstanta(radacina: Nod, texte: Readonly<Record<string, TextePlacuta>> | undefined): (o: Operatie) => readonly string[] {
   if (!texte) return (o) => o.noduri;
   const sablon = new Set<string>();
   for (const { nod } of noduriPiesa(radacina)) {

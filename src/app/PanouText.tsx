@@ -229,8 +229,8 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   readonly ancora: Punct | null;
   /** Curba pe care a căzut ancora (ADR 0108 §3): conturul în coordonatele foii și distanța ancorei pe el. */
   readonly curba: { readonly contur: Contur; readonly s: number } | null;
-  /** Textul ales, cu blocul lui valid: „Aplică” îl înlocuiește. */
-  readonly editat: { readonly instanta: string; readonly bloc: BlocText } | null;
+  /** Textul ales, cu blocul lui valid: „Aplică” îl înlocuiește; și câte plăcuțe are piesa lui (ADR 0210 §4), refăcute odată cu el. */
+  readonly editat: { readonly instanta: string; readonly bloc: BlocText; readonly pusa?: number; readonly placute?: number } | null;
   readonly ruleaza: (cerere: CerereText) => RezultatActiune;
   readonly onInchide: () => void;
   readonly doarCitire: boolean;
@@ -453,7 +453,12 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   };
   const aplica = (): void => {
     if (!gata || !editat || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, bloc(p, asezat), vechi.id, undefined, vechi, grosime) });
+    // Plăcuțele șablonului (ADR 0210 §4): literele lor, cu fontul textului (cel adus aici), din blocul nou.
+    const font = rezFont?.ok ? rezFont.font : null;
+    trimite({
+      fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, bloc(p, asezat), vechi.id, undefined, vechi, grosime),
+      texte: (nou, valori) => modul.textePlacutei(nou, valori, (id) => (id === form.font ? font : null)),
+    });
   };
   /** Fontul ales s-a schimbat în bibliotecă (încărcat, descărcat, șters): listele se recitesc, fontul se caută din nou. */
   const schimbat = (id?: string): void => {
@@ -678,6 +683,8 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         </div>
         {asezat ? <Previzualizare asezat={asezat} /> : null}
         {mesaj ? <p className="motiv-retea" role="status" data-testid="text-motiv">{mesaj}</p> : null}
+        {editat?.placute ? <p className="nota-retea" data-testid="text-placute">{t('editare.text.placute', { n: editat.placute })}</p>
+          : (editat?.pusa ?? 0) > 1 ? <p className="nota-retea" data-testid="text-legata">{t('editare.text.legata', { n: editat?.pusa ?? 0 })}</p> : null}
         <div className="butoane-retea">
           <button type="button" className="principal" data-text="adauga" disabled={!gata || !ancora} onClick={adauga}>{t('editare.text.adauga')}</button>
           {editat ? <button type="button" data-text="aplica" disabled={!gata} onClick={aplica}>{t('editare.text.aplica')}</button> : null}

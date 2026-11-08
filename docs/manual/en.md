@@ -145,7 +145,7 @@ Whatever does not fit goes to the next sheet, if it is empty, then to new sheets
 more after the last. `Ctrl+D` stays a separate copy, with its own part.
 
 **How they show.** The row of a part placed more than once shows in the list, in violet, which one it is ("(3 of 12)"). While
-one is chosen, a violet band at the top of the canvas says how many times the part is placed: a change to the shape, the
+one is chosen, a violet band at the bottom of the canvas says how many times the part is placed (with the text panel open, the panel says it): a change to the shape, the
 nodes, the text, the scale, the mirroring, the skew or the operations is made for all of them. The place and the rotation stay
 each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
 a mirror or a skew: then the change is refused, with the reason.
@@ -163,6 +163,18 @@ The right-click menu has both rows, **Group just this one** and **Group in the w
 **Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
 instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
 copies.
+
+**Plates.** A field is written in the text of a part between braces: `{name}`, `Table {no}`. The part becomes a template: the
+shape, the font and the size are its own, and each instance is a plate with its own values. With one chosen, the Properties
+panel shows **On this plate**, with a row per field; a value written (`Enter`) makes the letters of the plate from the font of
+the text (the font must be on this computer; otherwise the panel says why not). A field without a value stays empty. On the
+sheet, when cutting and in the export, the plate has its own text; the list names it after it. The operations of the template
+that cut its text (the outside profile, the inside one, the engraving) cut the letters of every plate the same way; the frame
+and the holes stay the template's. **More…** and **+1** place copies with the same values. The text of the template is edited
+with the Text tool, on any plate: **Apply** redoes the letters of all the plates, with their values (the panel says how many).
+The cutting role and the scale of the part are changed for all of them. The letters of the template are not edited as nodes
+and are not skewed: the plates would keep the old text (the reason says so). **Detach** on a plate (even a single one) gives it
+a part of its own, with its ordinary text; grouping and ungrouping detach it the same way.
 
 Each gesture is a single undo step (`Ctrl+Z`).
 

@@ -646,7 +646,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
     const piese = new Map(doc.piese.map((p) => [p.id, p]));
     const piesaInstantei = new Map((foaie?.instante ?? []).map((i) => [i.id, piese.get(i.piesa)]));
-    const nume = new Map([...piesaInstantei].map(([i, p]) => [i, p?.nume]));
+    // O plăcuță (ADR 0210 §4) se numește după textul ei (primul rând), nu după șablon.
+    const nume = new Map((foaie?.instante ?? []).map((i) => [i.id, (i.texte && Object.values(i.texte)[0]?.continut.split('\n')[0]?.trim()) || piese.get(i.piesa)?.nume]));
     return { peInstanta, nume, piesaInstantei, dupaIdLume: new Map(lume.map((e) => [e.idLume, e])) };
   }, [lume, doc, foaie]);
   // Selecția ține instanțe; doar cele care există încă se arată (o anulare le poate scoate de pe foaie).
@@ -673,7 +674,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -1283,6 +1284,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
               onDesprinde={() => aplicaDinPanou('piesa.desprinde', {})}
+              onPlacuta={(c) => aplicaDinPanou('document.text', { textNou: () => c })}
               onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
               onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}

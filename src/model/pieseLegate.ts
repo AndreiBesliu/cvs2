@@ -1,7 +1,8 @@
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
-import { copieArbore, idNou } from './copii.ts';
+import { idNou } from './copii.ts';
 import type { Document, Foaie, Instanta, Piesa } from './document.ts';
 import { materialFoaie } from './foi.ts';
+import { placutaCoapta } from './placute.ts';
 import { idFoaieNoua } from './foiComenzi.ts';
 import { cutieElement } from './forme.ts';
 import type { Comanda } from './jurnal.ts';
@@ -172,7 +173,8 @@ export function comenziCopii(doc: Document, id: string, plan: Extract<PlanCopii,
 /**
  * «Desprinde» (ADR 0210 §2): fiecare instanță aleasă de pe foaia `idFoaie` care are surori primește o piesă a ei (copia
  * arborelui și a operațiilor, cu id nou), în același loc al listei. Ultima instanță rămasă a unei piese o păstrează (nu rămâne
- * o piesă fără instanțe). Goală dacă nu e nimic de desprins.
+ * o piesă fără instanțe). O plăcuță (ADR 0210 §4) își primește piesa coaptă (`placutaCoapta`: literele ei în arbore, cu textul
+ * ei obișnuit); una singură se coace chiar în piesa ei. Goală dacă nu e nimic de desprins.
  */
 export function comenziDesprinde(doc: Document, ids: ReadonlySet<string>, idFoaie: string): Comanda[] {
   const foaie = doc.foi.find((f) => f.id === idFoaie);
@@ -185,14 +187,20 @@ export function comenziDesprinde(doc: Document, ids: ReadonlySet<string>, idFoai
   for (const [k, i] of foaie.instante.entries()) {
     const p = piese.get(i.piesa);
     const cate = n.get(i.piesa) ?? 0;
-    if (!ids.has(i.id) || !p || cate < 2) continue;
+    if (!ids.has(i.id) || !p) continue;
+    if (cate < 2) {
+      if (!i.texte) continue;
+      const c = placutaCoapta(p, i, p.id);
+      comenzi.push({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: i, nou: c.instanta });
+      comenzi.push({ tip: 'inlocuieste-piesa', vechi: p, nou: c.piesa });
+      continue;
+    }
     n.set(i.piesa, cate - 1);
     const nid = idNou(doc, ocupate);
     ocupate.add(nid);
-    const { radacina, ...rest } = p;
-    const copie: Piesa = { ...structuredClone(rest), radacina: copieArbore(radacina), id: nid };
+    const c = placutaCoapta(p, i, nid);
     comenzi.push({ tip: 'sterge', foaie: foaie.id, instanta: i, pozitie: k });
-    comenzi.push({ tip: 'adauga', foaie: foaie.id, instanta: { ...i, piesa: nid }, pozitie: k, piesa: { piesa: copie, pozitie: pozPiesa++ } });
+    comenzi.push({ tip: 'adauga', foaie: foaie.id, instanta: c.instanta, pozitie: k, piesa: { piesa: c.piesa, pozitie: pozPiesa++ } });
   }
   return comenzi;
 }

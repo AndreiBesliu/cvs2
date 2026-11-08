@@ -9,6 +9,9 @@ import { susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta }
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
 import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
+import { campuriPiesei } from '../model/placute.ts';
+import type { RezultatPlacuta } from '../text/placute.ts';
+import type { CerereText } from '../ui/actiuniDocument.ts';
 import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
@@ -47,6 +50,8 @@ type Props = {
   readonly onPlusUnu: () => RezultatActiune;
   readonly onInca: (total: number) => RezultatActiune;
   readonly onDesprinde: () => RezultatActiune;
+  /** Valorile și literele singurei plăcuțe alese (ADR 0210 §4), prin acțiunea textului. */
+  readonly onPlacuta?: (c: Extract<CerereText, { readonly fel: 'placuta' }>) => RezultatActiune;
   /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
   readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
@@ -72,6 +77,11 @@ function pieseAlese(doc: Document, alese: readonly string[], indexFoaie: number)
 const mm = (x: number): string => x.toFixed(2);
 /** Diametrul unei freze: cu a treia zecimală când o are (Ø3,175, 1/8″), altfel ca restul (Ø6.00). */
 const mmFreza = (x: number): string => (x.toFixed(3).endsWith('0') ? x.toFixed(2) : x.toFixed(3));
+
+/** De ce literele plăcuței nu s-au putut face, în cuvinte (fontul, cu numele lui). */
+function motivPlacuta(r: Extract<RezultatPlacuta, { readonly ok: false }>): string {
+  return r.motiv === 'font' ? t('prop.placuta.motiv.font', { font: r.font ?? '' }) : t(`prop.placuta.motiv.${r.motiv}`);
+}
 
 /** Un rând „etichetă: valoare”, doar de citit. */
 const rand = (eticheta: string, valoare: ReactNode): ReactNode => (
@@ -144,7 +154,7 @@ function operatie(o: Operatie, n: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
-  onPlusUnu, onInca, onDesprinde,
+  onPlusUnu, onInca, onDesprinde, onPlacuta,
 }: Props): ReactNode {
   useLimba();
   const roluriMele = useRoluriMele().roluri;
@@ -153,6 +163,8 @@ export function PanouProprietati({
   const [refuzPiesa, setRefuzPiesa] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului rol ales, pentru selecția de atunci.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4).
+  const [placuta, setPlacuta] = useState<{ readonly cheie: string; readonly motiv: string | null } | null>(null);
   const foaie = doc.foi[indexFoaie];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
@@ -264,6 +276,24 @@ export function PanouProprietati({
     butonPiesa(r);
     if (r.ok) setInca(null);
   };
+  // Plăcuța (ADR 0210 §4): câmpurile din textul piesei, cu valorile instanței alese. O valoare nouă cere literele ei, din
+  // fontul fiecărui text (adus la cerere, cu modulul textului), apoi acțiunea textului le scrie într-un pas.
+  const campuriSablon = instanta && piesa ? campuriPiesei(piesa) : [];
+  const scrieValoare = (nume: string, text: string): RezultatActiune => {
+    if (!instanta || !piesa || !onPlacuta) return { ok: false, motiv: 'motiv.nimic-ales' };
+    const valori = { ...(instanta.campuri ?? {}), [nume]: text.trim() };
+    const [k, inst, p] = [cheie, instanta, piesa];
+    setPlacuta({ cheie: k, motiv: null });
+    import('../text/calcul.ts').then((m) => m.textePlacuteiCuFonturi(p, valori)).then((r) => {
+      if (!r.ok) {
+        setPlacuta({ cheie: k, motiv: motivPlacuta(r) });
+        return;
+      }
+      const rez = onPlacuta({ fel: 'placuta', instanta: inst.id, piesa: p, campuri: r.campuri, texte: r.texte });
+      setPlacuta(rez.ok ? null : { cheie: k, motiv: t(rez.motiv) });
+    }, () => { setPlacuta({ cheie: k, motiv: t('prop.placuta.motiv.modul') }); });
+    return { ok: true };
+  };
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -317,7 +347,8 @@ export function PanouProprietati({
               onClick={() => { setInca(inca?.cheie === cheie ? null : { cheie, text: String(Math.min(INCA_MAXIM, Math.max(2, pusa + 1))) }); }}>
               {t('actiune.inca')}
             </button>
-            {pusa > 1 && (
+            {/* O plăcuță (ADR 0210 §4) se desprinde și singură: piesa ei primește literele ei, cu textul ei obișnuit. */}
+            {(pusa > 1 || !!instanta.texte) && (
               <button type="button" className="violet" data-buton="desprinde" disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
                 onClick={() => { butonPiesa(onDesprinde()); }}>
                 {t('actiune.desprinde')}
@@ -344,6 +375,20 @@ export function PanouProprietati({
             </div>
           )}
           {refuzPiesa?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="piesa">{refuzPiesa.motiv}</p>}
+        </section>
+      )}
+      {instanta && campuriSablon.length > 0 && (
+        <section data-testid="prop-placuta" className="prop-placuta">
+          <h3>{t('prop.placuta')}</h3>
+          <p className="prop-nota-piesa">{t('prop.placuta.nota', { camp: campuriSablon.map((c) => `{${c}}`).join(', ') })}</p>
+          <dl>
+            {campuriSablon.map((c) => rand(c, (
+              <CampText key={`${cheie}/placuta/${c}`} eticheta={c} camp={`placuta-${c}`} valoare={instanta.campuri && Object.hasOwn(instanta.campuri, c) ? instanta.campuri[c] ?? '' : ''} exemplu={`{${c}}`}
+                lungime={PLAFON.campLungime} dezactivat={doarCitire || !onPlacuta} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => scrieValoare(c, x)} />
+            )))}
+          </dl>
+          {placuta?.cheie === cheie && placuta.motiv === null && <p className="prop-nota-piesa" data-testid="placuta-face">{t('prop.placuta.face')}</p>}
+          {placuta?.cheie === cheie && placuta.motiv !== null && <p className="camp-motiv" role="alert" data-motiv="placuta">{placuta.motiv}</p>}
         </section>
       )}
       {par && (

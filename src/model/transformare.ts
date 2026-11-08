@@ -16,6 +16,7 @@ import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
 import { blocScalat } from './blocText.ts';
 import { jsonCanonic } from './jsonCanonic.ts';
+import { cuLitere } from './lume.ts';
 import { arcInCubice, caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
@@ -69,8 +70,48 @@ export function areArce(doc: Document, indexFoaie: number, ids: readonly string[
 }
 
 export type RezultatTransformare =
-  | { readonly ok: true; readonly instante: readonly Instanta[]; readonly piese: readonly Piesa[] }
+  | {
+    readonly ok: true; readonly instante: readonly Instanta[]; readonly piese: readonly Piesa[];
+    /**
+     * Plăcuțele neselectate ale pieselor scalate (ADR 0210 §4), pe orice foaie, cu literele lor scalate odată cu piesa (cele
+     * alese le au deja în `instante`).
+     */
+    readonly placute?: ReadonlyArray<{ readonly foaie: string; readonly vechi: Instanta; readonly nou: Instanta }>;
+  }
   | { readonly ok: false; readonly motiv: MotivTransformare };
+
+/**
+ * Blocurile de text din arborele scalat uniform cu `s` (ADR 0105 §4): fiecare grup cu un bloc valid înainte (rădăcina sau un
+ * text grupat, ca un șablon de plăcuțe, ADR 0210 §4) îl păstrează, scalat (`blocScalat`). Arborii au aceeași formă.
+ */
+function blocuriScalate(inainte: Nod, dupa: Nod, s: number): Nod {
+  if (inainte.tip !== 'grup' || dupa.tip !== 'grup') return dupa;
+  const copii = dupa.copii.map((c, k) => {
+    const v = inainte.copii[k];
+    return v ? blocuriScalate(v, c, s) : c;
+  });
+  return blocScalat(inainte, copii.every((c, k) => c === dupa.copii[k]) ? dupa : { ...dupa, copii }, s, s, true);
+}
+
+/**
+ * Literele plăcuței `i` scalate cu piesa ei (ADR 0210 §4): arborele ei în lume (`cuLitere`) scalat ca rădăcina piesei, din
+ * care fiecare text își ia copiii; textul și operațiile rămân. Motivul, dacă scalarea nu se poate (ca la piesă).
+ */
+function texteScalate(piesa: Piesa, i: Instanta, lx: number, ly: number): Instanta['texte'] | MotivTransformare {
+  const texte = i.texte;
+  if (!texte) return texte;
+  const lume = scaleazaNod(cuLitere(piesa.radacina, texte), lx, ly);
+  if (typeof lume === 'string') return lume;
+  const rez: NonNullable<Instanta['texte']> = {};
+  const viziteaza = (n: Nod): void => {
+    if (n.tip !== 'grup') return;
+    const t = Object.hasOwn(texte, n.id) ? texte[n.id] : undefined;
+    if (t) rez[n.id] = { ...t, copii: n.copii };
+    else for (const c of n.copii) viziteaza(c);
+  };
+  viziteaza(lume);
+  return rez;
+}
 
 const EPS = 1e-12;
 const uniforma = (sx: number, sy: number): boolean => Math.abs(sx - sy) <= EPS * Math.max(1, Math.abs(sx), Math.abs(sy));
@@ -174,6 +215,8 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
   if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return { ok: false, motiv: 'scara-invalida' };
   const noiPiese = new Map<string, Piesa>();
   const noiInstante: Instanta[] = [];
+  // Scara fiecărei piese scalate, în axele ei: aceeași pentru literele plăcuțelor ei (ADR 0210 §4).
+  const scari = new Map<string, readonly [number, number]>();
   for (const i of instante) {
     const piesa = piese.get(i.piesa);
     if (!piesa) continue;
@@ -185,14 +228,35 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
     }
     const scalata = scaleazaNod(piesa.radacina, lx, ly);
     if (typeof scalata === 'string') return { ok: false, motiv: scalata };
-    // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl păstrează doar pe un text drept, fără
-    // aldin (ADR 0138 §4). Scara blocului e cea din axele contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
+    // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă (și unul grupat, ca textul unui șablon de plăcuțe); una
+    // neuniformă îl păstrează doar pe un text drept, fără aldin (ADR 0138 §4), pe rădăcină. Scara blocului e cea din axele
+    // contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
     const [bx, by] = uniforma(sx, sy) ? [lx, ly] : inAxe(lx, ly, sferturiMatrice(piesa.radacina.matrice) ?? 0);
-    const radacina = blocScalat(piesa.radacina, scalata, bx, by, uniforma(sx, sy));
+    const radacina = uniforma(sx, sy) ? blocuriScalate(piesa.radacina, scalata, lx) : blocScalat(piesa.radacina, scalata, bx, by, false);
     if (!oSinguraSchimbare(noiPiese, { ...piesa, radacina })) return { ok: false, motiv: 'piesa-impartita' };
+    scari.set(piesa.id, [lx, ly]);
     noiInstante.push({ ...i, x: ancora.x + (i.x - ancora.x) * sx, y: ancora.y + (i.y - ancora.y) * sy });
   }
-  return { ok: true, instante: noiInstante, piese: [...noiPiese.values()] };
+  // Plăcuțele pieselor scalate (ADR 0210 §4), pe toate foile: literele lor cresc cu piesa.
+  const scalate = new Set(noiInstante.map((i) => i.id));
+  const placute: Array<{ foaie: string; vechi: Instanta; nou: Instanta }> = [];
+  for (const [k, i] of noiInstante.entries()) {
+    const piesa = piese.get(i.piesa), s = scari.get(i.piesa);
+    if (!piesa || !s || !i.texte) continue;
+    const texte = texteScalate(piesa, i, s[0], s[1]);
+    if (typeof texte === 'string') return { ok: false, motiv: texte };
+    if (texte) noiInstante[k] = { ...i, texte };
+  }
+  for (const f of doc.foi) {
+    for (const i of f.instante) {
+      const piesa = piese.get(i.piesa), s = scari.get(i.piesa);
+      if (!piesa || !s || !i.texte || (f === foaie && scalate.has(i.id))) continue;
+      const texte = texteScalate(piesa, i, s[0], s[1]);
+      if (typeof texte === 'string') return { ok: false, motiv: texte };
+      if (texte) placute.push({ foaie: f.id, vechi: i, nou: { ...i, texte } });
+    }
+  }
+  return { ok: true, instante: noiInstante, piese: [...noiPiese.values()], ...(placute.length > 0 ? { placute } : {}) };
 }
 
 /**

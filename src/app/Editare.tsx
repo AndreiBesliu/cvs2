@@ -954,7 +954,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const inst = doc.foi[indexFoaie]?.instante.find((i) => i.id === selectie[0]);
     const piesa = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
     const bloc = piesa ? blocText(piesa.radacina) : null;
-    return inst && bloc ? { instanta: inst.id, bloc } : null;
+    // De câte ori e pusă piesa și câte plăcuțe are (ADR 0210 §2, §4), pe toate foile: «Aplică» le schimbă pe toate.
+    const ale = piesa ? doc.foi.flatMap((f) => f.instante.filter((i) => i.piesa === piesa.id)) : [];
+    return inst && bloc ? { instanta: inst.id, bloc, pusa: ale.length, placute: ale.filter((i) => i.texte).length } : null;
   }, [doc, indexFoaie, selectie]);
   useEffect(() => {
     if (unealta !== 'text') return undefined;
@@ -1084,7 +1086,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       {/* Piesele puse de mai multe ori (ADR 0210 §2), la mijlocul zonei libere a pânzei: banda violet (o schimbare a piesei
           alese se vede la toate) jos, unde nu stă nicio riglă (riglele urmează foaia); întrebarea grupării sus, sub bare, lângă
           butonul din care vine (deasupra benzii ar acoperi bara selecției). */}
-      {surori ? (
+      {/* Cu panoul textului deschis (înalt, jos), banda i-ar acoperi butoanele: atunci o spune panoul (ADR 0210 §4). */}
+      {surori && unealta !== 'text' ? (
         <div className="legate-jos" style={{ left: zona.x + zona.w / 2, top: zona.y + zona.h - 8 }}>
           <div className="banda-legata" role="status" data-testid="banda-legata">
             <span>{t('editare.legata', { n: surori.n, aici: String(surori.aici) })}</span>

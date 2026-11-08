@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { esteSimilitudine, TOLERANTA_SIMILITUDINE_LUME } from '../geom/matrice.ts';
 import { areArce, noduriPiesa, PLAFON, VERSIUNE_SCHEMA, type Document } from './document.ts';
-import { SchemaDocument } from './schemaDocument.ts';
+import { problemaTexte, SchemaDocument } from './schemaDocument.ts';
 import { elementeInstanta, matriceInstanta } from './lume.ts';
 
 /**
@@ -90,6 +90,8 @@ export function incarcaCu(brut: unknown, migrari: Readonly<Record<number, Migrar
   }
   const r = v.safeParse(SchemaDocument, doc);
   if (!r.success) return { ok: false, motiv: `documentul nu respectă schema${motivSchema(r.issues)}` };
+  const t = problemaTexte(doc as Document);
+  if (t) return { ok: false, motiv: `documentul nu respectă schema: ${t}` };
   const lume = arceNeuniformeInLume(doc as Document);
   if (lume) return { ok: false, motiv: `documentul nu respectă schema: ${lume}` };
   // Documentul întors e o copie a intrării validate, nu ieșirea valibot: aceea scoate tăcut cheile `__proto__`,

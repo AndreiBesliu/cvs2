@@ -97,6 +97,7 @@ export const ro = {
   'motiv.inca-total': 'Scrie câte să fie în total: mai multe decât acum, cel mult 1 000.',
   'motiv.inca-prea-mare': 'Piesa nu încape pe foaie între margini (10 mm).',
   'motiv.fara-surori': 'Piesa aleasă e pusă o singură dată: n-are de ce să se desprindă.',
+  'motiv.placute': 'Piesa e șablonul unor plăcuțe: schimbarea le-ar strica literele. Desprinde întâi plăcuțele.',
   'motiv.aseaza-distanta': 'Distanța dintre piese e sub freza profilului exterior: tăietura unei piese ar intra în vecina ei.',
   'motiv.aseaza-valori': 'Marginile și distanțele: numere de la 0 la 1 000 mm, iar marginile lasă loc pe foaie.',
   'motiv.aseaza-prea-mari': 'Piesele alese sunt mai mari decât foaia: rămân pe loc.',
