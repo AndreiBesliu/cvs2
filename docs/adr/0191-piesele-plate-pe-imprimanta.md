@@ -5,7 +5,7 @@ vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot fun
 disponibile in soft”. Deci toate variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m (secțiunea „Feliile”);
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
-K1C rămâne la owner. Cererea owner-ului, din 07.11: „cum pot sa
+K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”). Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -236,6 +236,47 @@ Răspunsul owner-ului (07.11): toate variantele care pot sta împreună devin op
   desenul reîmprospătat și Escape. Rămâne: două forme care se ating într-un singur colț se refuză (cu motiv).
 - **Nemăsurat încă:** placa de probă pe K1C; ce arată ecranul imprimantei (miniatura, „stratul x din N”); unde trage linia de
   curățare.
+
+## Felia 3.6k (08.11.2026): setările avansate mai departe
+
+La „Da, 3.6k”: răspunsul 3b mai departe, cu toate variantele OrcaSlicer care pot sta împreună, ca opțiuni în „Avansat”.
+
+- **Cercetarea** [citit, la `9005b64`]: definițiile și implicitele din `src/libslic3r/PrintConfig.cpp` (`sparse_infill_pattern`,
+  26 de modele; `top_surface_pattern`, `bottom_surface_pattern`, `internal_solid_infill_pattern`, câte 9; `seam_position`,
+  `staggered_inner_seams`, `seam_gap`; `wipe*`, `retract_before_wipe`, `role_based_wipe_speed`; `ironing_*`; `skirt_*`,
+  `draft_shield`, `min_skirt_length`); profilele K1C, rezolvate pe calitate: grila rară la toate, afară de 0,12 (hașura în
+  cruce, fără cusăturile dinăuntru decalate, călcarea la 100 mm/s și 0°); sus „monotonic line”, jos și dinăuntru „monotonic”;
+  cusătura aliniată, cu cele dinăuntru decalate; golul ei, 10 % din duză; ștergerea pornită de imprimantă (2 mm, 70 % din
+  retragere înainte, viteza după rol); fără călcare (10 %, 8 % la 0,08; pasul 0,15; 30 mm/s; 90°); fără fustă (2 mm, un strat,
+  50 mm/s). Algoritmii: `Fill/` (`FillRectilinear` cu familiile și fazele lor, `FillLine`, `FillHoneycomb`, `FillGyroid`,
+  `FillCrossHatch`, `FillConcentric`, `FillPlanePath`), `GCode.cpp` (`Wipe::wipe`, `calculateWipeRetractionLengths`, fusta pe
+  strat), `GCode/SeamPlacer.cpp` (penalizarea colțurilor, spatele, cea mai apropiată, aleatoarea, decalarea), `Fill/Fill.cpp`
+  (`make_ironing`), `Print.cpp` (`_make_skirt`). „zig-zag” din profile e numele vechi al lui „rectilinear” (`handle_legacy`).
+- **Ce intră** (implicitele, ale profilului): 14 modele rare (grila, dreptunghiular, aliniat, linii oscilante, triunghiuri,
+  tri-hexagon, cubic, hașura în cruce, fagure, giroid, concentric, curba Hilbert, coardele lui Arhimede, spirala octogramă) și
+  direcția lor; 8 modele pentru fiecare suprafață plină (sus, jos, dinăuntru) și direcția plinului; cele 5 locuri ale
+  cusăturii, decalarea, golul; ștergerea (pornită, distanța, partea dinainte, viteza după rol sau din deplasare); călcarea (4
+  feluri, 2 modele, debitul, pasul, viteza, marginea, unghiul); fusta (buclele, distanța, straturile, viteza, combinată sau pe
+  piesă, lungimea minimă, scutul, începutul, o buclă după primul strat).
+- **Ce nu intră încă** (fiecare cu felia ei, dacă owner-ul le vrea): modelele rare care cer straturile de deasupra sau o rețea
+  3D în plus (adaptive / quarter / support cubic, lightning, 3D honeycomb, lateral honeycomb și lattice, TPMS-D și TPMS-FK, zig
+  zag / cross zag / locked zag, noi în Orca), „spiral inset” la suprafețe; legăturile umplerii rare pe lângă pereți
+  (`infill_anchor`, 400 %, cel mult 20 mm: la noi liniile rare rămân nelegate, cu deplasări, ca la 3.6j); ridicarea „Auto Lift”
+  a profilului K1C (`z_hop_types`: la noi, ridicarea simplă, pe Z).
+- **Codul:** `linii.ts` (liniile, mutate din `straturi.ts`; umplerea monotonă, pe regiuni în care fiecare interval are un
+  singur vecin pe linia de dinainte și pe cea de după, de la prima linie spre ultima; tăierea unei polilinii de o regiune, cu o
+  grilă a laturilor), `modele.ts` (generatoarele portate), `straturi.ts` (cheia fiecărui strat: rolul, unghiul, cu alternarea
+  modelelor care o au, și Z-ul, la cele 3D; cusătura; călcarea; fusta), `gcode.ts` (ștergerea, cusătura aleasă la scriere,
+  fusta, subsolul). **Reparat pe drum:** pasul grilei rare, din pasul liniei (`spacing`, ca `fill_surface_by_multilines`), nu
+  din lățimea ei: umplerea ieșea cu ~10 % mai rară decât în OrcaSlicer.
+- **Măsurat:** densitatea, față de aria · d / sp: liniile și curbele 1,000; giroidul 0,90–0,93; fagurele 1,2–1,3 (ca în
+  OrcaSlicer); hașura în cruce 0,93–1,07. Felierea unei plăci de 60 × 40 × 4 mm: 25–100 ms; cu Hilbert pe toate plinurile,
+  0,3 s (și 28 min de imprimare, față de 9). Mărimea: totalul 558,4 / 600 kB (+7,6 față de 3.6j; bucata „Din desen…” 23,2 kB gzip, +8,0), pornirea 101,8 (cu ușa 105,4 / 110), neschimbată.
+- **Proba:** `imprimanta.feliere.modele.test.ts` (16, pe hârtie: implicitele legate de fixtura OrcaSlicer, extinsă cu cheile
+  3.6k pe fiecare calitate; pașii, fazele și alternarea modelelor; densitatea; modelele 3D pe Z; ordinea monotonă; cusătura;
+  golul; ștergerea, cu cantitățile lui `calculateWipeRetractionLengths` și drumul ei; călcarea; fusta; subsolul; setările
+  citite; tăierea polilinilor); e2e +1 (listele și bifele din „Avansat”, giroidul, călcarea, fusta pe pânză, ștergerea în
+  fișier și oprită); otrăvurile `test/otravuri/3.6k.py` (58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate)). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
 
 ## Întrebările (owner)
 

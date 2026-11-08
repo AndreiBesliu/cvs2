@@ -6796,4 +6796,23 @@ căzute, din CI).
 
 **Prompt:** „Da, 3.6k” (owner-ul, la „Încep 3.6k (alte modele de umplere, cusătura, ștergerea, călcarea, fusta) sau aștept
 întâi proba plăcii?”).
-**Started:** 08.11, 08:59. **Completed:** —
+**Started:** 08.11, 08:59. **Completed:** 08.11, 10:38.
+
+- **Cercetarea** (OrcaSlicer la `9005b64`, ca la 3.6j): definițiile și implicitele din `PrintConfig.cpp`, profilele K1C
+  rezolvate pe fiecare calitate (0,12 are hașura în cruce, fără cusăturile decalate, călcarea la 100 mm/s și 0°; ștergerea e
+  pornită pe imprimantă: 2 mm, 70 % din retragere înainte), algoritmii din `Fill/`, `GCode.cpp` (`Wipe`), `SeamPlacer.cpp`,
+  `make_ironing`, `_make_skirt`. Fixtura `orca-k1.json`, extinsă cu cheile 3.6k (cele lipsă din profile, din implicitele
+  `PrintConfig.cpp`).
+- **Felia** (`887507f`): ADR 0191, „Felia 3.6k”. 14 modele rare, 8 pentru fiecare suprafață plină, cusătura (5 locuri,
+  decalarea, golul), ștergerea, călcarea, fusta, ca opțiuni în „Avansat” (liste și bife), cu textele, manualul și
+  previzualizarea (rolurile noi). **Reparat pe drum:** pasul grilei rare, din pasul liniei, nu din lățimea ei (~10 % mai
+  rară decât în OrcaSlicer, de la 3.6j). Nu intră încă (ADR): modelele rare care cer straturile de deasupra, legăturile
+  umplerii rare pe lângă pereți (`infill_anchor`), ridicarea „Auto Lift”.
+- **Găsit pe drum, în probe:** o funcție de probă care citea distanța unei linii cu sensul ei (liniile întoarse ieșeau cu semn
+  schimbat, pasul părea dublu); retragerea dinaintea ștergerii golea și ea șirul buclei citite; un inel de 0,8 mm nu dă nimic
+  pe primul strat. Toate, în probe, nu în motor.
+- **Măsurat:** densitățile față de aria · d / sp (liniile și curbele 1,000; giroidul ~0,91; fagurele ~1,25); felierea, sub
+  0,3 s. Mărimea: totalul 558,4 / 600 kB (+7,6 față de 3.6j; bucata „Din desen…” 23,2 kB gzip, +8,0), pornirea 101,8 (cu ușa 105,4 / 110), neschimbată.
+- **Probe:** `imprimanta.feliere.modele.test.ts` (16), cele 3.6j adaptate la implicitele noi (pasul grilei, cheile
+  straturilor; la retragere și la pereți, ștergerea și decalarea oprite explicit, cu probele lor separat); e2e +1.
+  Otrăvurile: 58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).

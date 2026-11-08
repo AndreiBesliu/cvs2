@@ -805,6 +805,10 @@
       "ro": "Carcasa interfeței, din prototipul ales de owner dintre trei",
       "en": "The interface shell, from the prototype the owner chose out of three"
     },
+    "45e6a8ae0c0d5cde": {
+      "ro": "**Gata pe 08.11.** Piesele plate, setările avansate mai departe (ADR 0191): alte modele de umplere (linii, triunghiuri, fagure, giroid, concentric) și ale suprafeței de sus, cusătura (aliniată, în spate, cea mai apropiată, aleatorie), ștergerea la retragere, călcarea suprafeței de sus, fusta",
+      "en": "**Done on 08.11.** Flat parts, the advanced settings further on (ADR 0191): more infill patterns (lines, triangles, honeycomb, gyroid, concentric) and top-surface patterns, the seam (aligned, rear, nearest, random), wiping on retraction, ironing of the top surface, the skirt"
+    },
     "470b43073b428a4c": {
       "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
       "en": "The plate 2 file, with the golden programs (`docs/etape/placa-02.md`, done on 16.10: the app's export on the plate document, the gate with the region, dimensions on paper)"
@@ -1044,10 +1048,6 @@
     "5c77800071ce0d79": {
       "ro": "Înclinarea cu arcele făcute curbe",
       "en": "Skewing with the arcs made into curves"
-    },
-    "5d0a4055203e9f34": {
-      "ro": "Piesele plate, setările avansate mai departe (ADR 0191): alte modele de umplere (linii, triunghiuri, fagure, giroid, concentric) și ale suprafeței de sus, cusătura (aliniată, în spate, cea mai apropiată, aleatorie), ștergerea la retragere, călcarea suprafeței de sus, fusta",
-      "en": "Flat parts, the advanced settings further on (ADR 0191): more infill patterns (lines, triangles, honeycomb, gyroid, concentric) and top-surface patterns, the seam (aligned, rear, nearest, random), wiping on retraction, ironing of the top surface, the skirt"
     },
     "5d642af2da946d6f": {
       "ro": "Stack-ul",
@@ -1921,6 +1921,10 @@
       "ro": "Oracolul G-code din s4 în `test/oracles/`",
       "en": "The G-code oracle from s4 in `test/oracles/`"
     },
+    "b3b1a68ec58fc727": {
+      "ro": "Gata pe 08.11",
+      "en": "Done on 08.11"
+    },
     "b4487110fe6a1b12": {
       "ro": "Oglindirea selecției",
       "en": "Mirroring the selection"
@@ -2060,6 +2064,10 @@
     "be23bc75c119439a": {
       "ro": "3.6j în `main` (proba că fișierul feliat în cvs2 se imprimă cum trebuie)",
       "en": "3.6j in `main` (the proof that a file sliced in cvs2 prints as it should)"
+    },
+    "beb51394e23d1344": {
+      "ro": "**Piesele plate: modelele, cusătura, ștergerea, călcarea, fusta** (fără imprimantă; ADR 0191, „Da, 3.6k”; în worktree-ul `imprimanta`). În „Avansat”, toate variantele OrcaSlicer care pot sta împreună, cu implicitele profilelor K1C: 14 modele de umplere rară (grila, liniile, triunghiurile, tri-hexagonul, cubicul, hașura în cruce, fagurele, giroidul, concentricul, curbele Hilbert, Arhimede și octograma) și 8 pentru fiecare suprafață plină (monoton, monoton pe linii, dreptunghiular, aliniat, concentric, curbele), cu direcțiile lor; cusătura (aliniată, în spate, cea mai apropiată, aleatoare; cele dinăuntru decalate; golul); ștergerea la retragere, pornită de profil (70 % înainte, apoi 2 mm pe ultimul drum, ca `Wipe::wipe`); călcarea (sus, doar cea mai de sus, toate straturile pline); fusta (buclele, distanța, straturile, scutul, lungimea minimă, câte una pe piesă). La 0,12, hașura în cruce, ca în profil. **Reparat pe drum:** pasul grilei rare, din pasul liniei (ca OrcaSlicer). **Probe:** `imprimanta.feliere.modele.test.ts` (16, pe hârtie, legate de fixtura OrcaSlicer), e2e +1, otrăvurile 58 / 58 (și 3.6j, 50 / 50, pe codul nou). **Mărimea:** totalul 558,4 / 600 (+7,6), pornirea 101,8.",
+      "en": "**Flat parts: the patterns, the seam, the wipe, ironing, the skirt** (no machine; ADR 0191, “Da, 3.6k”; in the `imprimanta` worktree). In “Advanced”, every OrcaSlicer variant that can coexist, with the defaults of the K1C profiles: 14 sparse infill patterns (grid, lines, triangles, tri-hexagon, cubic, cross hatch, honeycomb, gyroid, concentric, the Hilbert, Archimedean and octagram curves) and 8 for each solid surface (monotonic, monotonic line, rectilinear, aligned, concentric, the curves), with their directions; the seam (aligned, back, nearest, random; the inner ones staggered; the gap); wipe while retracting, on in the profile (70 % first, then 2 mm along the last path, like `Wipe::wipe`); ironing (top, only the topmost, all solid layers); the skirt (loops, distance, layers, the draft shield, the minimum length, one per part). At 0.12, cross hatch, as in the profile. **Fixed on the way:** the sparse grid spacing, from the line spacing (as OrcaSlicer). **Proofs:** `imprimanta.feliere.modele.test.ts` (16, on paper, tied to the OrcaSlicer fixture), e2e +1, poisons 58 / 58 (and 3.6j, 50 / 50, on the new code). **Size:** total 558.4 / 600 (+7.6), startup 101.8."
     },
     "bef8fda2a0faf985": {
       "ro": "Tăierea cu o linie dreaptă",
@@ -2260,10 +2268,6 @@
     "d6afd5f4598f1f09": {
       "ro": "**Unealta Pen și tipurile nodurilor, aduse din etapa 6** (fără mașină; ADR 0063; cererea owner-ului: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”). Pen-ul (B) desenează o cale nod cu nod: clic = colț, tragere = curbă pe ambele părți, Shift + tragere = curbă pe o parte, clic pe ultimul nod = doar înapoi, clic pe primul nod închide, Enter sau dublu clic termină, Backspace scoate ultimul nod, Esc renunță. În unealta Noduri, nodurile cu curbă sunt rotunde, nodul ales își arată mânerele, iar trei butoane din bara de sus îi schimbă tipul (Colț, Curbă pe ambele părți, Curbă pe o parte; încă un clic: cealaltă parte); mânerul tras pe un nod neted îl rotește pe celălalt, Alt le desparte. Lângă un arc, nodul nu primește mâner (refuz cu motiv). Tipul se deduce din mânere: fără schemă nouă; pornirea neschimbată; manualul are capitolul „Unealta Pen”. **Treceri:** (1) modelul comun, Pen-ul, butoanele și mânerele, probele (7 unitare și 5 e2e noi, verzi din prima; patru mutații, în legătura cu interfața și în model, prinse); (2) sfaturile lungi se tăiau cu „…” în cipul de jos: scurtate (detaliile în manual și în titlul uneltei).",
       "en": "**The Pen tool and the node types, brought forward from stage 6** (no machine; ADR 0063; the owner's request: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”, i.e. nodes are either corners or make curves, on both sides or on one side only). The Pen (B) draws a path node by node: click = corner, drag = curve on both sides, Shift + drag = curve on one side, click on the last node = backward only, click on the first node closes, Enter or double-click finishes, Backspace removes the last node, Esc cancels. In the Nodes tool, curve nodes are round, the chosen node shows its handles, and three buttons in the top bar change its type (Corner, Curve on both sides, Curve on one side; click again: the other side); a handle dragged on a smooth node turns the other one, Alt splits them. Next to an arc, the node gets no handle (refused with a reason). The type is derived from the handles: no new schema; startup unchanged; the manual has the chapter „The Pen tool”. **Passes:** (1) the shared model, the Pen, the buttons and the handles, the tests (7 unit and 5 new e2e, green at first; four mutations, in the UI wiring and in the model, caught); (2) the long hints were cut with „…” in the bottom chip: shortened (the details are in the manual and in the tool's title)."
-    },
-    "d72c0f82e7a7d1fd": {
-      "ro": "Piesele plate, setările avansate mai departe",
-      "en": "Flat parts, the advanced settings further on"
     },
     "d78e2db8358494b0": {
       "ro": "Degajările aceleiași bucle",

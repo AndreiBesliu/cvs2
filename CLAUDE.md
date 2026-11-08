@@ -628,6 +628,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `masina-fara-post-si-document` ține transportul fără document. Adus la primul clic, fără importuri din nucleu spre el (gata
   de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 550,8 / 600** cu `main` adus în ramură (+15,9 kB cu
   recenzia; plafonul 600, ADR 0143). Modulele (5b) rămân pentru 3.6m (ADR 0191 §G).
+  **3.6k gata pe 08.11** (modelele, cusătura, ștergerea, călcarea, fusta, cu implicitele profilelor K1C; codul nou în
+  `src/cam/feliere/linii.ts` și `modele.ts`); totalul 558,4 / 600.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
