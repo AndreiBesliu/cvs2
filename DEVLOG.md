@@ -6951,3 +6951,43 @@ il arhivezi”.
 - **Fără cod.** `origin/main` (`ea493a5`, doar documente) se unește în ramură înaintea primului commit de cod, cum a cerut
   sesiunea principală.
 
+## 2026-11-08 — Felia 10.3↑f: unealta Cuțit (Linie, Pen, Liber, Formă; ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, la toate recomandarile, cu mentiunea ca vreau sa putem adauga un shape/vector existent ca cutit, de exemplu
+am facut un text anume si vreau sa decupez cu el sau cu alte forme deja existente” (owner-ul, în sesiunea liniei `taiere`,
+la cele patru întrebări din ADR 0181).
+**Started:** 08.11, 10:55. **Completed:** 08.11, 12:19.
+
+- **Acceptarea (`b515126`):** ADR 0181 acceptat (1a–4a). Nota owner-ului a devenit felul **Formă** al cuțitului (§1), pus în
+  prima felie: un clic pe o formă existentă (un text) o face cuțit. ADR 0180 primește trimiterea „schimbat de 0181” (§13,
+  retezatul cu un clic). Schița e pusă la zi (felul Formă), iar răspunsurile stau în baza ei (`q1`–`q4` = a, `general` =
+  nota).
+- **`origin/main` unit întâi (`0132142`):** `ea493a5` (ADR 0168 propus; DEVLOG, CLAUDE.md, fișa), doar documente.
+- **Ce lipsea:** cuțitul-formă din 10.3↑b nu tăia o formă din care cuțitul închis nu trece niciun contur: un text pus pe o
+  placă dădea `nimic-taiat` (probat pe model înainte de cod), adică exact cazul din nota owner-ului.
+- **Modelul** (`src/model/taiere.ts`): cuțitul `cale` (tras pe pânză, în mm ai foii, nu intră în document; mâna liberă
+  netezită cu netezirea din 10.3↑e, la jumătate de pixel) și `forme` (instanțele date, toate contururile împreună,
+  par-impar). **Buclele libere:** un cuțit închis care stă tot înăuntrul unei forme, fără să-i atingă vreun contur închis, o
+  taie cu închidere: bucla intră în ambele părți (margine înăuntru, gol în afară; mijlocul unui „O” rămâne insulă în placă),
+  cu forma ei (cercul rămâne cerc), în coordonatele piesei; pe o piesă fără rol ia operațiile conturului în care stă, cu
+  latura întoarsă după paritatea adâncimii; un cuțit încrucișat în regiune se refuză (`cutit`). Valorează și pentru „Taie
+  cu…” și „Decupează la” din panou.
+- **Unealta** (`src/app/UnealtaCutit.tsx`, în bucata tăierii; partea pură în `cutitCalcul.ts`): K, după Noduri; bara cu
+  felurile Linie (tragere, Shift 15°, lipirea desenului), Pen (unealta Pen, cu culoarea cuțitului; Enter taie), Liber și
+  Formă (Shift + clic adună, Enter taie, Esc lasă) și „Închide bucățile” (aceeași bifă ca în panou, `inchidereTaiere.ts`).
+  Taie formele alese; fără nimic ales, toate ale foii, fără cuțit (2a); la capătul gestului (3a), prin worker și
+  `document.taie`. Cât tragi, locurile unde taie se arată, aproximate pe firul principal (bazinul CAM pornește un worker pe
+  calcul, deci unul pe cadru ar fi prea greu). Starea, în cipul din colțul pânzei.
+- **Proba:** 11 teste pe hârtie (`taiere.cutit.test.ts`: pătratul tăiat de la (−10, 20) la (110, 60), 4 000 / 6 000 mm², cu
+  vârfurile la bit; calea trasă = forma din document; unda netezită, 5 000 / 5 000 la toleranță, și refuzul toleranței;
+  funda refuzată; „O”-ul în placă, 942,478 / 5 057,522; două cercuri, cu placa mutată din origine; formele-cuțit care nu se
+  taie între ele; „O”-ul peste margine; decuparea la „O”; fără închidere, nimic; placa fără rol), oracolul pe trei corpusuri
+  (`taiere.cutit.oracol.test.ts`: calea trasă = forma din document, 90 de cazuri; buclele libere, cu poligoane puse în
+  regiune, în gol sau în afară; mâna liberă, cu `tolCutit`), martorul, 6 teste ale părții pure (`cutitCalcul.test.ts`),
+  5 e2e (`cutit.spec.ts`: Linie cu locurile numărate, Liber, Pen, textul „O” ca cuțit pe placă, două cercuri adunate).
+  Manualul: capitolul „Unealta Cuțit” / „The Knife tool”, tasta K în scurtături, paragraful buclelor libere în tăiere;
+  ușile 90, capitolele 32; tastele uneltelor, 11.
+- **Otrăvurile** (`test/otravuri/10.3f.py`, în clonă, pe 4179): 24 de otrăvuri, toate aplicabile. Prima rulare (`c0fd1b7`): 17 din 18 unitare prinse; F10 (formele-cuțit alese se taie și ele) a scăpat, fiindcă un cuțit care e și țintă nu se taie singur (conturul lui stă pe cuțit); prinsă pe `568e636` după proba cu cercul-cuțit în alt cerc-cuțit. Cele 6 de interfață (Linia, Shift + clic, Pen-ul, tasta K, locurile, bifa închiderii), toate prinse; baza e2e fără otravă, 6 / 6; arborele clonei curat la capăt.
+- **Porțile:** Porțile: traducerile 678 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 728 (8 720 trecute, 0 căderi, 8 sărite); build-ul determinist: pornirea 101,8 kB (cu ușa 105,3 / 110), totalul 546,8 / 600 (+3,7 kB); e2e 383 / 384 la prima rulare (căzută sub încărcare: animatie.spec.ts:66, paleta, pe care felia n-o atinge; singură, 20 / 20), apoi 384 / 384; emulatoarele 101 / 101 și 21 / 21.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `862ae18`, verificat în Edge fără fereastră: K alege Cuțitul; Linia arată două locuri cât tragi și taie placa în două; textul „O” pus pe placă o decupează (litera, cu profil exterior și golul din mijloc pe interior; placa, cu exteriorul pe margine și pe mijlocul literei, interiorul pe golul ei); nicio eroare în consolă.
+
