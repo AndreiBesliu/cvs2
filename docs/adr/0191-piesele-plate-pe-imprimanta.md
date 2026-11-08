@@ -6,7 +6,7 @@ disponibile in soft”. Deci toate variantele care pot sta împreună devin opț
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
 K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”).
-**Felia 3.6l** acceptată pe 08.11 („Da, recomandările”; secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese. Cererea owner-ului, din 07.11: „cum pot sa
+**Felia 3.6l** acceptată pe 08.11 („Da, recomandările”) și gata pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -347,6 +347,7 @@ La „Da, 3.6l”: răspunsurile 1c, 2b și 2c. Cercetarea, în cod [citit]:
 - **Nu acum:** grosimea verticală sub pereții treptelor (`ensure_vertical_shell_thickness` din OrcaSlicer: plinul sub pereții
   unei benzi de sus); la noi, pereții de deasupra unei trepte stau pe umplerea rară. De propus ca felie (o opțiune), după proba
   plăcii.
+- **Măsurat și probat:** felierea plăcii de 18 mm cu buzunar, găurire și canelură, ~0,2 s (booleanul unei benzi, ~10 ms). Mărimea: totalul 566,2 / 600 kB (+7,8; bucata „Din desen…” 26,9 kB gzip), pornirea 102,0 (+0,2: scrierea înălțimii în App și câmpul din schemă; cu ușa 105,6 / 110). Proba: `imprimanta.feliere.trepte.test.ts` (12, pe hârtie), e2e +1, manualul (4 controale); otrăvurile `test/otravuri/3.6l.py`: 58, toate prinse (la prima rulare, 48 din 50 unitare; D02 și S04 prinse după întărirea probelor, `3607398`; cele 8 e2e, de proba 3.6l). Porțile: unit 8 728 (0 căderi, 8 sărite), build-ul determinist (287 de fișiere identice), e2e 379 / 379 din prima.
 
 ## Întrebările (owner)
 

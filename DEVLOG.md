@@ -6820,4 +6820,31 @@ căzute, din CI).
 ## 2026-11-08 — 3.6l: piesele plate „după CNC” și înălțimea fiecărei piese în proiect (ADR 0191) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 3.6l” (owner-ul, la „Încep 3.6l?”, după 3.6k); apoi, la cele două întrebări ale ADR-ului: „Da, recomandările”.
-**Started:** 08.11, 10:49. **Completed:** —
+**Started:** 08.11, 10:49. **Completed:** 08.11, 12:21.
+
+- **Felia** (`f2a9a54`): ADR 0191, „Felia 3.6l” (implementarea). **După CNC** (`src/cam/feliere/dupaCnc.ts`): marginea și
+  golurile din profilele prin tot (adâncimea cel puțin cât foaia; `regiunePastrata`, inelele de margine), treptele din
+  buzunare (pe adâncimi, cu insulele), găuriri și profile parțiale sau pe căi deschise (capsulele frezei pe traseul centrului,
+  din `profil()`, cu oglindirea), golurile prin tot (adâncimea cel puțin cât foaia sau cât înălțimea), V-carve-ul și freza în V
+  numărate. **Motorul:** benzile și booleanele (`trepte.ts`: `normalizeaza` din ușa importului, cu o cutie), felul straturilor
+  cu benzile lor (`fel.ts`, mutat din `straturi.ts` / `gcode.ts`), șablonul pe benzi (fața treptei, plinul de sub ea, umplerea
+  rară, fiecare în regiunea ei; pereții benzii; călcarea pe trepte; ce nu iese, pe fiecare bandă), deplasările pe conturul
+  benzii. **Înălțimea în proiect:** `inaltimeImprimanta` în tipul piesei și în schemă (opțională, fără versiune nouă),
+  `comandaInaltimi` (un pas, cu anularea), App -> fereastra Imprimanta -> dialog. **Dialogul:** bifa „După CNC” (cu nota
+  V-carve-ului), „Înălțimea” (una pentru toate / a fiecărei piese), stratul „cu o treaptă”; manualul, în ambele limbi.
+- **Piesele fără trepte nu se schimbă:** 171 de variante (modelele, cusăturile, călcarea, fusta, brim-ul; trei piese),
+  aceleași fișiere, octet cu octet, ca pe `9cf9d5a`.
+- **Găsit pe drum, în probe:** proiectul pus direct în bază, în e2e, cere `rev` egal cu cheia versiunii (altfel prima salvare a
+  filei e un conflict, iar fila trece pe doar-citire); liniile unei umpleri n-au vârfuri în regiunile pe care le traversează
+  (o probă pe vârfuri nu vede o linie care trece prin buzunar); `Math.min(...)` pe zeci de mii de puncte depășește stiva.
+- **Măsurat:** felierea plăcii de 18 mm cu buzunar, găurire și canelură, ~0,2 s; booleanul unei benzi, ~10 ms.
+  Mărimea: totalul 566,2 / 600 kB (+7,8), pornirea 102,0 (+0,2; cu ușa 105,6 / 110).
+- **Probe:** `imprimanta.feliere.trepte.test.ts` (12, pe hârtie: booleanele, capsulele cu distanța exactă, benzile, cheile,
+  „după CNC” dintr-un document, refuzurile, insula, canelura, partea, oglindirea, inelul interior, freza în V, felierea pe
+  roluri și călcare, ce nu iese, deplasările, comanda și schema); manualul (4 controale noi); e2e +1 (proiectul cu operații,
+  bifa, treptele, înălțimea scrisă, anulată, refăcută, ținută la redeschidere). Otrăvurile `test/otravuri/3.6l.py`: 58, toate
+  prinse: la prima rulare (`f2a9a54`), 48 din 50 unitare; D02 (o găurire prin tot la o piesă mai înaltă decât foaia) și S04
+  (umplerea rară peste treaptă, văzută doar între vârfuri), prinse după întărirea probelor (`3607398`); cele 8 e2e, prinse de
+  proba 3.6l (E05, la prima trecere, căzuse pe proba 3.6k, sub încărcare; reluată singură, prinsă de proba ei). Porțile: unit
+  8 728 (8 720 trecute, 0 căderi, 8 sărite); importurile, tipurile; build-ul determinist (287 de fișiere identice); e2e
+  379 / 379 din prima (4 lucrători).

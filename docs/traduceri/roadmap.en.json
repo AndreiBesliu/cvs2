@@ -1,10 +1,6 @@
 {
   "schema": 1,
   "texte": {
-    "01e32a3cdf30b065": {
-      "ro": "Piesele plate „după CNC”",
-      "en": "Flat parts “as the CNC leaves them”"
-    },
     "02292bc5bd879195": {
       "ro": "buzunar + rest, insulă, găuri în pași, elice",
       "en": "pocket + rest, island, peck holes, helix"
@@ -1229,6 +1225,10 @@
       "ro": "Buzunar, găurire, ordinea, frezele, animația",
       "en": "Pocket, drilling, ordering, bits, animation"
     },
+    "7387592a772cc537": {
+      "ro": "**Piesele plate „după CNC” și înălțimea fiecărei piese în proiect** (fără imprimantă; ADR 0191, „Da, 3.6l”, apoi „Da, recomandările”: V-carve-ul ignorat, cu o notă; adâncimile aceleași, în mm, de sus; în worktree-ul `imprimanta`). În „Din desen…”, bifa **După CNC**: fiecare piesă, cum o lasă freza, din operațiile ei: marginea și golurile din profilele prin tot (regula regiunii păstrate), iar buzunarele (cu insulele lor), găuririle și profilele parțiale sau pe căi deschise (cât lățimea frezei, pe partea tăieturii) coboară zona lor la înălțimea minus adâncime; ce trece prin tot e gol; V-carve-ul și gravura cu freza în V nu se imprimă, cu o notă. Motorul feliază **trepte**: benzi de straturi, fiecare cu pereții ei; la fața fiecărei trepte, suprafața de sus, iar sub ea, plinul de sus, ca pe fața piesei; călcarea și pe trepte. **Înălțimea:** una pentru toate sau a fiecărei piese, ținută în proiect (câmpul opțional `inaltimeImprimanta` al piesei, fără versiune nouă, scris cu anularea obișnuită). Booleanele, prin normalizarea nonzero a importului, cu o cutie. O piesă fără trepte dă aceleași fișiere ca înainte, octet cu octet (171 de variante). **Probe:** `imprimanta.feliere.trepte.test.ts` (12, pe hârtie), e2e +1 (proiectul cu operații, bifa, treptele, înălțimea scrisă, anulată, refăcută, ținută la redeschidere), manualul; otrăvurile 58 / 58 (50 unitare: la prima rulare 48, D02 și S04 prinse după întărirea probelor; 8 e2e). **Mărimea:** totalul 566,2 / 600 (+7,8; bucata „Din desen…” 26,9 kB gzip, normalizarea comună cu importul), pornirea 102,0 (+0,2: scrierea înălțimii în App și câmpul din schemă; cu ușa 105,6 / 110).",
+      "en": "**Flat parts “after CNC” and each part’s height kept in the project** (no printer; ADR 0191, “Da, 3.6l”, then “Da, recomandările”: V-carve ignored, with a note; the depths unchanged, in mm, from the top; in the `imprimanta` worktree). In “From drawing…”, the **After CNC** tick box: each part as the cutter leaves it, from its operations: the edge and the holes from the through profiles (the kept-region rule), while pockets (with their islands), drillings and partial or open-path profiles (the cutter’s width, on the side of the cut) lower their area to the height minus the depth; what goes all the way through is a hole; V-carves and engravings with a V bit do not print, with a note. The engine slices **steps**: bands of layers, each with its own walls; at the face of each step, the top surface, and under it the solid top layers, like the face of the part; ironing on steps too. **Height:** one for all or each part’s own, kept in the project (the part’s optional `inaltimeImprimanta` field, no new version, written with the usual undo). The booleans go through the import’s nonzero normalisation, with a box. A part without steps gives the same files as before, byte for byte (171 variants). **Proofs:** `imprimanta.feliere.trepte.test.ts` (12, on paper), e2e +1 (the project with operations, the tick box, the steps, the height written, undone, redone, kept on reopening), the manual; poisons 58 / 58 (50 unit: 48 on the first run, D02 and S04 caught after strengthening the proofs; 8 e2e). **Size:** total 566.2 / 600 (+7.8; the “From drawing…” chunk 26.9 kB gzip, the normalisation shared with the import), startup 102.0 (+0.2: writing the height in App and the schema field; with the door 105.6 / 110)."
+    },
     "73b52ec8ea2c587e": {
       "ro": "Partea documentului care nu depinde de A / D: catalogul de capabilități (`shared/`), schema v1 (foaia + elementele, comune ambelor variante) cu plafoane, câmpurile necunoscute păstrate, ușa unică de încărcare cu migrări pure, JSON canonic, jurnalul de comenzi (anulează / reface, 500), registrul de acțiuni cu capabilitatea obligatorie și motivele pe chei `t()`, regula „interfața doar prin acțiuni” cu capcana ei. Arborele variantei alese vine ca migrare v1 → v2. 92 de teste. Trecere: `Omit` pe tipul valibot cu index.",
       "en": "The part of the document that does not depend on A / D: the capability catalogue (`shared/`), schema v1 (the sheet + the elements, common to both variants) with caps, unknown fields preserved, the single loading door with pure migrations, canonical JSON, the command journal (undo / redo, 500), the action registry with a mandatory capability and reasons on `t()` keys, the “interface only through actions” rule with its trap. The tree of the chosen variant comes as the v1 → v2 migration. 92 tests. Pass: `Omit` on the valibot type with an index."
@@ -1512,6 +1512,10 @@
     "8c3c194433fcbf6c": {
       "ro": "Booleanul, adus din etapa 6",
       "en": "The boolean, brought forward from stage 6"
+    },
+    "8d5811b8a61fe766": {
+      "ro": "**Gata pe 08.11.** Piesele plate „după CNC” (ADR 0191): regiunea păstrată de tăieturi, cu buzunarele ca trepte și găurile găuririi; înălțimea fiecărei piese ținută în proiect (un câmp opțional al piesei, fără schemă nouă, ca ghidajele din ADR 0050; cu sesiunea principală)",
+      "en": "**Done on 08.11.** Flat parts “after CNC” (ADR 0191): the region kept by the cuts, with pockets as steps and drilled holes; each part’s height kept in the project (an optional field of the part, no new schema, like the guides of ADR 0050; with the main session)"
     },
     "8dec85c098b039ce": {
       "ro": "**Pachetul de atelier, adus din etapa 4** (fără mașină; ADR 0131; punctul 6 din `PLAN.md` §5.3, partea a doua; „Da, pornește”). Fișierele de probă T0–T7 ale celor opt controlere, după setul din sonda s8 (Anexa B), scrise de postul aplicației cu contractul fiecăruia: T0 citirea antetului și a comentariilor (cu stilurile alternative, unde nu sunt sigure), T1 arcele (cercurile Ø50 în 2 × 180° și 4 × 90°, colțurile R5, arcul R1200 și arcul mic), T2 avansul, pauza și, pe Syntec, punctul zecimal, T3 elicea, T4 schimbarea sculei (bariera, M6 la controler sau un fișier pe freză), T5 G54 și G55, T6 limita liniei și T7 găurirea în pași (pe GRBL 1.1, setul plăcii 3). Unde contractul e prudent, fișierul probează chiar controlerul (arcul R1200 ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în `test/ateliere/`. **Probele:** valorile pe hârtie citite din fișiere cu cititorul dialectelor (cercurile, timpii, pauza, elicea, adâncimile, WCS-ul, liniile lungi), fișa cu amprentele; pachetele comise, octet cu octet; arhivele, și prin cititorul zip al lui Python.",
@@ -2072,10 +2076,6 @@
     "bef8fda2a0faf985": {
       "ro": "Tăierea cu o linie dreaptă",
       "en": "Cutting with a straight line"
-    },
-    "bfb35c7cfbbdbd89": {
-      "ro": "Piesele plate „după CNC” (ADR 0191): regiunea păstrată de tăieturi, cu buzunarele ca trepte și găurile găuririi; înălțimea fiecărei piese ținută în proiect (un câmp opțional al piesei, fără schemă nouă, ca ghidajele din ADR 0050; cu sesiunea principală)",
-      "en": "Flat parts “as the CNC leaves them” (ADR 0191): the region kept by the cuts, with the pockets as steps and the drilled holes; the height of each part kept in the project (an optional field of the part, without a new schema, like the guides of ADR 0050; with the main session)"
     },
     "bfca81120058bffa": {
       "ro": "**Măsurarea pe un laptop de atelier** (bancul s6-V, cu pragurile din T13).",

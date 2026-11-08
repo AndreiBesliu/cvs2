@@ -630,6 +630,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   recenzia; plafonul 600, ADR 0143). Modulele (5b) rămân pentru 3.6m (ADR 0191 §G).
   **3.6k gata pe 08.11** (modelele, cusătura, ștergerea, călcarea, fusta, cu implicitele profilelor K1C; codul nou în
   `src/cam/feliere/linii.ts` și `modele.ts`); totalul 558,4 / 600.
+  **3.6l gata pe 08.11** (piesa „după CNC”, treptele în motor, înălțimea fiecărei piese în proiect: câmpul opțional
+  `inaltimeImprimanta` al piesei, în tip și în schemă, scris prin `comandaInaltimi`; codul nou în `fel.ts`, `trepte.ts`,
+  `dupaCnc.ts`); totalul 566,2 / 600, pornirea 102,0.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
