@@ -137,7 +137,8 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
   // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă patru: butonul Taie și acțiunea `document.taie`, butonul
   // Convertește și acțiunea `document.converteste`. Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
-  assert.equal(USI.length, 89);
+  // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`.
+  assert.equal(USI.length, 90);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

@@ -571,7 +571,9 @@ cross stays as it is. The cut is exact: an arc is cut into two arcs of the same 
 nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
 touches it is not cut.
 
-A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. An open
+A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. A closed
+knife lying wholly inside a shape, without touching its edge (a text on a plate), cuts it too, with **Close the
+pieces**: the letters come out of the plate, and the plate keeps their holes. An open
 knife (a polyline, a curve) makes each piece a shape; the contours it does not cross stay together, and an uncut hole goes
 with the piece it lies in. The knife cuts where it crosses the shape and where its end enters the shape through a side; a
 knife that only touches the shape does not cut it.
@@ -598,6 +600,29 @@ open piece of a closed shape is cut on the same side of the bit (outside or insi
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
 placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
 (Ctrl+Z).
+
+## The Knife tool
+%% capitol: cutit
+%% acopera: unealta.cutit
+
+The **Knife** tool (`K`, after Nodes) cuts the shapes it crosses, right on the canvas. It cuts the chosen shapes; with nothing
+chosen, all the shapes of the sheet. The drawn knife does not stay in the drawing, and the cut is the one from [Cutting
+vectors](#taiere): exact, with the pieces chosen after it, in their place, and with their cutting role. Pick the knife mode in
+the bar:
+- **Line**: a drag across the shapes, from end to end; **Shift** gives 15° steps, and the ends snap as in drawing (Alt
+  inverts snapping).
+- **Pen**: the knife nodes, as in the [Pen](#pen) tool (click = corner, drag = curve); **Enter** or a double-click cuts,
+  **Backspace** removes the last node, **Esc** cancels.
+- **Freehand**: drag by hand; the stroke is smoothed when you release the mouse, finer when zoomed in, with sharp corners
+  kept.
+- **Shape**: click a shape that already exists (a text, a circle, a piece with several contours) and it becomes the knife; it
+  stays unchanged. A text cuts the letters out of the plate under it, and the plate keeps their holes (the middle of an “O”
+  stays in the plate). **Shift + click** adds shapes to the knife (their contours are read together); a click without Shift,
+  or **Enter**, cuts with all of them; **Esc** drops them.
+
+While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
+(for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
+cut (or why not) is said in the corner of the canvas.
 
 ## Converting vectors
 %% capitol: conversie
@@ -1319,7 +1344,7 @@ it, and the app’s interface stays the same.
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |

@@ -553,7 +553,9 @@ rămâne cum e. Tăierea e exactă: un arc se taie în două arce ale aceluiași
 care linia nu le atinge rămân neschimbate. Doar o trecere taie: un cerc tangent la linie sau un vârf care doar atinge linia
 nu se taie.
 
-Un cuțit închis (un cerc, un dreptunghi) lasă din fiecare formă două forme: ce e înăuntrul lui și ce e în afara lui. Un
+Un cuțit închis (un cerc, un dreptunghi) lasă din fiecare formă două forme: ce e înăuntrul lui și ce e în afara lui. Un cuțit
+închis pus tot înăuntrul unei forme, fără să-i atingă marginea (un text pe o placă), o taie și el, cu **Închide
+bucățile**: din placă ies literele, iar placa rămâne cu golurile lor. Un
 cuțit deschis (o linie frântă, o curbă) face din fiecare bucată o formă; contururile pe care nu le trece rămân împreună, iar
 o gaură netăiată merge cu bucata în care stă. Cuțitul taie unde trece prin formă și unde capătul lui intră în ea dintr-o
 latură; un cuțit care doar atinge forma nu o taie.
@@ -579,6 +581,27 @@ deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afa
 Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
 pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
 (Ctrl+Z).
+
+## Unealta Cuțit
+%% capitol: cutit
+%% acopera: unealta.cutit
+
+Unealta **Cuțit** (`K`, după Noduri) taie direct pe pânză formele pe care le trece. Taie formele alese; fără nimic ales, toate
+formele foii. Cuțitul tras nu rămâne în desen, iar tăierea e cea din [Tăierea vectorilor](#taiere): exactă, cu bucățile alese
+după ea, la locul lor, și cu rolul lor de tăiere. Felul cuțitului se alege în bară:
+- **Linie**: o tragere peste forme, din capăt în capăt; **Shift** dă pași de 15°, iar capetele se lipesc ca la desen (Alt
+  inversează lipirea).
+- **Pen**: nodurile cuțitului, ca în unealta [Pen](#pen) (clic = colț, tragere = curbă); **Enter** sau dublu clic taie,
+  **Backspace** scoate ultimul nod, **Esc** renunță.
+- **Liber**: tragi cu mâna; urma se netezește când ridici mausul, mai fin la zoom mare, cu colțurile ascuțite păstrate.
+- **Formă**: un clic pe o formă care există deja (un text, un cerc, o piesă cu mai multe contururi) și ea devine cuțitul;
+  rămâne neschimbată. Un text taie din placa de sub el literele și placa cu golurile lor (mijlocul unui „O” rămâne în placă).
+  **Shift + clic** adaugă forme la cuțit (contururile lor se citesc împreună); clicul fără Shift, sau **Enter**, taie cu toate;
+  **Esc** le lasă.
+
+Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
+într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se
+spune în colțul pânzei.
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -1276,7 +1299,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |

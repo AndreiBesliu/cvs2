@@ -207,6 +207,13 @@ const LiniaTaierii = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then(
 const PanouConversie = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.PanouConversie }), () => ({
   default: () => <p className="motiv-retea" role="status" data-testid="conversie-neincarcata">{t('editare.conversie.neincarcata')}</p>,
 })));
+/**
+ * Unealta Cuțit (ADR 0181, felia 10.3↑f): bara, urma și tăierea ei vin în bucata tăierii, la prima alegere a uneltei. Dacă nu
+ * vine, un cip o spune; editarea merge mai departe.
+ */
+const UnealtaCutit = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.UnealtaCutit }), () => ({
+  default: () => <span className="cip cip-rosu noduri-sfat" role="status" data-testid="cutit-neincarcat">{t('editare.cutit.neincarcat')}</span>,
+})));
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
@@ -573,9 +580,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     return g;
   });
+  // Cuțitul (ADR 0181): pânza îi dă gestul printr-un intermediar stabil; gestul lui îl pune unealta, adusă la cerere (null la Pen).
+  const gestCutit = useRef<GestDesen | null>(null);
+  const [intermediarCutit] = useState(() => {
+    const g: GestDesen = (faza, x, y, scara, mod) => { gestCutit.current?.(faza, x, y, scara, mod); };
+    return g;
+  });
+  const [puneGestCutit] = useState(() => (g: GestDesen | null) => { gestCutit.current = g; });
+  const [locCutit, setLocCutit] = useState<HTMLElement | null>(null);
   useEffect(() => {
-    onDesen(!deseneaza(unealta) || p.doarCitire ? null : gestDesen);
-  }, [unealta, p.doarCitire, onDesen, gestDesen]);
+    onDesen(p.doarCitire ? null : deseneaza(unealta) ? gestDesen : unealta === 'cutit' ? intermediarCutit : null);
+  }, [unealta, p.doarCitire, onDesen, gestDesen, intermediarCutit]);
   useEffect(() => () => { onDesen(null); }, [onDesen]);
 
   useEffect(() => {
@@ -1179,6 +1194,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             return true;
           }} />
       ) : null}
+      {unealta === 'cutit' && !vedere3d && !p.doarCitire ? (
+        <Suspense fallback={null}>
+          <UnealtaCutit doc={doc} selectie={selectie} vedere={vedere} marime={marime} zona={zona} loc={locCutit} onGest={puneGestCutit}
+            onTaie={(r) => ruleaza('document.taie', { taiere: () => r })} onLinii={setLiniiManere}
+            lipire={(alt) => (lipire !== alt
+              ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+              : null)}
+            pen={(o) => (
+              <Pen vedere={vedere} marime={marime} zona={zona} cutit sfat={o.sfat} initial={null} redeschide={() => false}
+                lipire={(alt) => (lipire !== alt
+                  ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+                  : null)}
+                onLinii={setLiniiManere} termina={(f) => { o.termina(f); }} />
+            )} />
+        </Suspense>
+      ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
           <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
@@ -1461,6 +1492,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               );
             })}
             {unealta === 'noduri' ? <span className="loc-noduri" ref={setLocNoduri} /> : null}
+            {unealta === 'cutit' ? <span className="loc-noduri" ref={setLocCutit} /> : null}
             {unealta === 'poligon' ? (
               <input className="laturi" value={laturi} inputMode="numeric" aria-label={t('editare.laturi')} title={t('editare.laturi')} data-editare="laturi"
                 onChange={(e) => {
@@ -1693,6 +1725,7 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     linie: <line x1="2.5" y1="13.5" x2="13.5" y2="2.5" className="contur" />,
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
     text: <path className="contur" d="M3 4.5 V3 H13 V4.5 M8 3 V13.5 M5.5 13.5 H10.5" />,
+    cutit: <path className="contur" d="M2 14 L6.2 9.8 M6.2 9.8 L13 3 C14.4 4.4 14.2 6.8 12 9 L8.6 12.2 Z" />,
     pen: (
       <>
         <path className="contur" d="M8 1.5 L12.5 8.5 L8 14.5 L3.5 8.5 Z M8 1.5 V7.2" />
@@ -2021,7 +2054,10 @@ const RAZA_NOD_PX = 6;
  * Ctrl+Shift+Z îl redeschide (`redeschide`), cu pașii lui. Nodurile se lipesc (Alt inversează), mânerele nu. Forma pleacă prin
  * `document.deseneaza`; apăsările pe pânză sunt ale Pen-ului (nu aleg și nu mută), afară de deplasarea cu Space.
  */
-function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide }: {
+function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide, cutit = false, sfat }: {
+  /** Felul Pen al cuțitului (ADR 0181): calea pusă e cuțitul (culoarea lui), iar sfatul e al lui. */
+  readonly cutit?: boolean;
+  readonly sfat?: string;
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
   readonly zona: Zona;
@@ -2221,7 +2257,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
       : `M ${sx(ultim.p.x)} ${sy(ultim.p.y)} L ${sx(cursor.x)} ${sy(cursor.y)}`)
     : null;
   return (
-    <div className="pen" ref={radacina} data-testid="pen" data-noduri={noduri.length}>
+    <div className={cutit ? 'pen pen-cutit' : 'pen'} ref={radacina} data-testid="pen" data-noduri={noduri.length}>
       {noduri.length > 0 ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
           <path className="drum-pen" d={drumSvg(conturNoduri(caleDinNoduri(noduri, inchidere && sePoateInchide(noduri)), IDENTITATE), vedere)} />
@@ -2243,7 +2279,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
           })}
         </svg>
       ) : null}
-      <span className="cip noduri-sfat" role="status" data-testid="pen-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{t('editare.pen.sfat')}</span>
+      <span className="cip noduri-sfat" role="status" data-testid="pen-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{sfat ?? t('editare.pen.sfat')}</span>
     </div>
   );
 }

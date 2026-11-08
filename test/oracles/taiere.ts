@@ -346,7 +346,8 @@ export function arieParInConvex(forme: readonly FormaOracol[], k: readonly P[]):
  * Judecata unei tăieri cu cuțitul-formă (lista abaterilor; goală = bună). `convex`: poligonul cuțitului, trigonometric, când
  * cuțitul e un poligon convex închis (atunci părțile sunt înăuntru, apoi în afară, cu ariile tăiate de el); la un cuțit-cerc,
  * poligonul lui des, iar `cerc` dă locul exact (cine e înăuntru). Altfel cuțitul e deschis și, cu închidere, ariile fețelor se
- * adună la aria regiunii.
+ * adună la aria regiunii. `tolCutit` (ADR 0181, mâna liberă): cât se poate depărta marginea nouă de cuțitul dat, când aplicația
+ * l-a netezit întâi (implicit 1e-6, adică pe el).
  */
 export function judecaCutitul(o: {
   readonly inainte: readonly FormaOracol[];
@@ -355,7 +356,9 @@ export function judecaCutitul(o: {
   readonly inchide: boolean;
   readonly convex: readonly P[] | null;
   readonly cerc?: { readonly c: P; readonly r: number } | null;
+  readonly tolCutit?: number;
 }): string[] {
+  const tolCutit = o.tolCutit ?? 1e-6;
   const rau: string[] = [];
   const toate = o.parti.flat();
   for (const f of o.inainte) {
@@ -366,8 +369,8 @@ export function judecaCutitul(o: {
   }
   for (const f of toate) {
     for (const q of esantioane(f, 48)) {
-      const d = Math.min(distantaLaForme(q, o.inainte), distantaLaForme(q, o.cutit));
-      if (d > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe cuțit (${d})`); break; }
+      const dv = distantaLaForme(q, o.inainte), dk = distantaLaForme(q, o.cutit);
+      if (dv > 1e-6 && dk > tolCutit) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe cuțit (${Math.min(dv, dk)})`); break; }
     }
   }
   if (o.convex) {

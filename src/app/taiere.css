@@ -109,3 +109,52 @@
   stroke-width: 1.5;
   stroke-dasharray: 8 4;
 }
+
+/*
+ * Unealta Cuțit (ADR 0181, felia 10.3↑f): felurile și bifa în bara de sus; pe pânză, urma cuțitului (punctată, ca linia
+ * tăierii), locurile unde taie și formele adunate în cuțit. Stratul nu prinde evenimente: gestul e al pânzei.
+ */
+.bara-cutit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.cutit-inchide {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-2);
+  white-space: nowrap;
+}
+
+.cutit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.panza-cutie:has(.cutit) .panza {
+  cursor: crosshair;
+}
+
+.urma-cutit line,
+.urma-cutit polyline,
+.urma-cutit path {
+  fill: none;
+  stroke: var(--rosu);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 4;
+}
+
+.urma-cutit .loc-taiere {
+  fill: var(--rosu);
+  stroke: none;
+}
+
+/* Felul Pen: calea pusă e cuțitul, deci are culoarea lui. */
+.pen-cutit .drum-pen,
+.pen-cutit .pen-elastic {
+  stroke: var(--rosu);
+  stroke-dasharray: 8 4;
+}

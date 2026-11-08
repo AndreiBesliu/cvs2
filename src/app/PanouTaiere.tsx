@@ -9,6 +9,7 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { citesteInchide, scrieInchide } from './inchidereTaiere.ts';
 import './taiere.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -21,6 +22,8 @@ mesaje.catch(() => undefined);
  * pomenește fără fișierul ei (poarta din `scripts/build-determinist.ts`).
  */
 export { PanouConversie } from './PanouConversie.tsx';
+/** Unealta Cuțit (ADR 0181, felia 10.3↑f) vine tot de aici, din același motiv (`taiere.css`). */
+export { UnealtaCutit } from './UnealtaCutit.tsx';
 
 /**
  * Panoul Taie (ADR 0180 §3, §4, §5; feliile 10.3↑, 10.3↑b și 10.3↑c), adus la cerere din extensia barei: cu ce se taie (linia
@@ -36,23 +39,6 @@ export type LinieTaiere = { readonly axa: 'x' | 'y'; readonly v: number } | null
 
 type Fel = 'x' | 'y' | 'ghidaj' | 'forma';
 type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
-
-/** Bifa „Închide bucățile” se ține în browser, pentru toate proiectele (implicit bifată). */
-const CHEIE_INCHIDE = 'cncvs2.taiere-inchide';
-function citesteInchide(): boolean {
-  try {
-    return localStorage.getItem(CHEIE_INCHIDE) !== '0';
-  } catch {
-    return true;
-  }
-}
-function scrieInchide(v: boolean): void {
-  try {
-    localStorage.setItem(CHEIE_INCHIDE, v ? '1' : '0');
-  } catch {
-    // Fără stocare (fereastră privată, date blocate): alegerea ține doar cât pagina.
-  }
-}
 
 /** Un număr rotunjit la 0,001 mm, cu virgulă în română. */
 const numar = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
