@@ -12,7 +12,7 @@ import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
-import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
@@ -540,6 +540,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     },
   });
   const doc = istoric.doc;
+  // Freza foii, cât e deschis importul: liniile mediane ale unei imagini o compară cu grosimea trăsăturilor (ADR 0222 §5).
+  const frezaImport = coadaImport ? sculaFoii(doc)?.diametru : undefined;
   const foaie = doc.foi[0] ?? documentNou(FOAIA_IMPLICITA).foi[0];
   const foaieStoc = foaie?.stoc;
   // Lista de desen și elementele în lume se refac doar când se schimbă documentul.
@@ -1316,6 +1318,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           fisiere={coadaImport.fisiere}
           punct={coadaImport.punct}
           {...(coadaImport.de === undefined ? {} : { de: coadaImport.de })}
+          {...(frezaImport === undefined ? {} : { freza: frezaImport })}
           registruImport={registruImport}
           contextImport={contextImport}
           stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}

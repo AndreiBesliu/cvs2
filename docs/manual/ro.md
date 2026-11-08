@@ -545,6 +545,8 @@ dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
   transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
   rândul de sub listă spune ce a ales;
+- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
+  fiecărei trăsături, tăiat pe linie: vezi mai jos);
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
@@ -578,9 +580,19 @@ incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apo
 toate); numele fiecăreia are culoarea ei (de exemplu „logo #0c619c”). Rolul fiecăreia (buzunar, V-carve, incrustație) îl
 alegi apoi din panou.
 
+Cu **Rezultatul: Linii mediane**, fiecare trăsătură devine linia ei de mijloc, nu conturul: un scris de mână, o semnătură,
+un desen cu linii. O linie se termină în centrul capătului rotund al trăsăturii (acolo se oprește o freză cât trăsătura);
+unde se întâlnesc trăsături, liniile se întâlnesc într-un punct, iar cele care se continuă (bara unui T, un X, o buclă care
+se încrucișează) rămân o singură linie; un O sau un inel devine o buclă. O pată plină dă linia ei de mijloc (un dreptunghi
+lung, o linie; un disc, doar un punct): punctele, adică trăsăturile mai scurte decât grosimea lor, nu au linie, iar raportul
+le numără. Raportul spune și **grosimea obișnuită a trăsăturilor**, în mm, iar dacă foaia are o singură freză, cum stă ea
+față de trăsătură: mai lată (gravura ar mânca din jur), mai îngustă (ar ieși mai subțire) sau cât ea. **Arată grosimea**
+desenează, sub linii, banda pe care ar tăia-o o freză cât trăsătura. **Importă** pune liniile într-o formă, toate tăiate
+pe linie (și buclele), ca liniile deschise ale unui SVG.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
 afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- linia de mijloc a unui desen făcut din linii și scanările îndreptate vin mai târziu;
+- liniile mediane pe culori și scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);

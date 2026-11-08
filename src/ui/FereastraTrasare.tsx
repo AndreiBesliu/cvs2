@@ -3,6 +3,7 @@ import '../i18n/import.ts';
 import { t } from '../i18n/t.ts';
 import type { Posterizare } from '../jobs/calculTrasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
+import type { CaiTrasate } from '../trasare/trasare.ts';
 import { primele } from '../trasare/legaturi.ts';
 import type { AlegeriTrasare, PrevizualizareImport, RaportImagine } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
@@ -17,6 +18,8 @@ type Props = {
   readonly octeti: Uint8Array | null;
   readonly stare: PrevizualizareImport | 'citire';
   readonly seRecitesc: boolean;
+  /** Diametrul frezei foii, în mm, dacă foaia are una singură (ADR 0222 §5: raportul o compară cu grosimea trăsăturilor). */
+  readonly freza?: number;
 };
 
 /** Raportul trasării din previzualizare (și dintr-un refuz după trasare, ca „prea multe contururi”), sau null. */
@@ -45,20 +48,24 @@ function pictura(p: Posterizare, paleta: readonly CuloarePaleta[], evidentiata: 
   return c;
 }
 
-/** Contururile unor căi trasate (pixelii imaginii), ca o singură cale de desenat. */
-function caleDin(c: { readonly inceput: Uint32Array; readonly tip: Uint8Array; readonly xy: Float64Array }): Path2D {
-  const p = new Path2D(), x = c.xy;
-  for (let k = 0; k + 1 < c.inceput.length; k++) {
-    const a = c.inceput[k] ?? 0, b = c.inceput[k + 1] ?? 0;
-    if (b <= a) continue;
-    p.moveTo(x[6 * a] ?? 0, x[6 * a + 1] ?? 0);
-    for (let v = a; v < b; v++) {
-      const w = v + 1 < b ? v + 1 : a;
-      if (c.tip[v] === 1) p.bezierCurveTo(x[6 * v + 2] ?? 0, x[6 * v + 3] ?? 0, x[6 * v + 4] ?? 0, x[6 * v + 5] ?? 0, x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
-      else p.lineTo(x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
-    }
-    p.closePath();
+/** Calea k a unor căi trasate, adăugată la `p` (pixelii imaginii); una deschisă (o linie mediană) se oprește în ultimul vârf. */
+function adaugaCale(p: Path2D, c: CaiTrasate, k: number): number {
+  const a = c.inceput[k] ?? 0, b = c.inceput[k + 1] ?? 0, x = c.xy, deschisa = c.deschisa?.[k] === 1;
+  if (b <= a) return 0;
+  p.moveTo(x[6 * a] ?? 0, x[6 * a + 1] ?? 0);
+  for (let v = a; v < (deschisa ? b - 1 : b); v++) {
+    const w = v + 1 < b ? v + 1 : a;
+    if (c.tip[v] === 1) p.bezierCurveTo(x[6 * v + 2] ?? 0, x[6 * v + 3] ?? 0, x[6 * v + 4] ?? 0, x[6 * v + 5] ?? 0, x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
+    else p.lineTo(x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
   }
+  if (!deschisa) p.closePath();
+  return b - a;
+}
+
+/** Contururile unor căi trasate (pixelii imaginii), ca o singură cale de desenat. */
+function caleDin(c: CaiTrasate): Path2D {
+  const p = new Path2D();
+  for (let k = 0; k + 1 < c.inceput.length; k++) adaugaCale(p, c, k);
   return p;
 }
 
@@ -68,7 +75,7 @@ function caleDin(c: { readonly inceput: Uint32Array; readonly tip: Uint8Array; r
  * sau butoanele, mutarea prin tragere), apoi raportul: abaterea măsurată, imaginea, curățarea. Pe culori (ADR 0221), în locul
  * pragului și al lui Inversează, culorile (`PanouCulori`), iar imaginea previzualizării e cea pictată în culorile ei.
  */
-export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: Props) {
+export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, freza }: Props) {
   const limba = useLimba();
   const nr = (x: number, z: number): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: z, minimumFractionDigits: z }).format(x);
   const raport = raportDin(stare);
@@ -84,6 +91,9 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
   // Conturul piesei de sub maus, ținut cât e aceeași piesă (o trasare nouă aduce alte contururi pentru aceeași culoare).
   const conturEvidentiat = useRef<{ readonly contur: object; readonly p: Path2D } | null>(null);
   const [estompare, setEstompare] = useState(45);
+  // Liniile mediane (ADR 0222 §8): banda grosimii, sub linii, la cerere.
+  const [arataGrosimea, setArataGrosimea] = useState(false);
+  const mediane = raport?.mediane ?? null;
   // Câmpurile cu valori: ciorna lor, trimisă după 250 ms fără altă schimbare.
   const [ciorna, setCiorna] = useState(() => ({
     prag: alegeri.prag ?? 128, pete: String(alegeri.peteMm), gauri: String(alegeri.gauriMm), latime: alegeri.latimeMm === null ? '' : String(alegeri.latimeMm),
@@ -121,23 +131,12 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
   useEffect(() => {
     setCai([]);
     if (stare === 'citire' || !stare.ok || stare.format !== 'imagine') return undefined;
-    const c = stare.contur, x = c.xy, gata: Path2D[] = [];
+    const c = stare.contur, gata: Path2D[] = [];
     let k = 0, viu = true;
     const pas = (): void => {
       if (!viu) return;
       const p = new Path2D();
-      for (let n = 0; k + 1 < c.inceput.length && n < 8000; k++) {
-        const a = c.inceput[k] ?? 0, b = c.inceput[k + 1] ?? 0;
-        if (b <= a) continue;
-        n += b - a;
-        p.moveTo(x[6 * a] ?? 0, x[6 * a + 1] ?? 0);
-        for (let v = a; v < b; v++) {
-          const w = v + 1 < b ? v + 1 : a;
-          if (c.tip[v] === 1) p.bezierCurveTo(x[6 * v + 2] ?? 0, x[6 * v + 3] ?? 0, x[6 * v + 4] ?? 0, x[6 * v + 5] ?? 0, x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
-          else p.lineTo(x[6 * w] ?? 0, x[6 * w + 1] ?? 0);
-        }
-        p.closePath();
-      }
+      for (let n = 0; k + 1 < c.inceput.length && n < 8000; k++) n += adaugaCale(p, c, k);
       gata.push(p);
       if (k + 1 < c.inceput.length) setTimeout(pas, 0);
       else setCai(gata);
@@ -178,6 +177,17 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
       g.drawImage(fundal, 0, 0, W, H);
       g.globalAlpha = 1;
     }
+    // Banda grosimii: unde ar tăia o freză cât trăsătura (lățimea măsurată), sub linii.
+    if (cai.length > 0 && vedere !== 'imagine' && arataGrosimea && mediane && mediane.grosimePx > 0) {
+      g.strokeStyle = getComputedStyle(c).getPropertyValue('--traseu-taiere').trim() || '#0a7d53';
+      g.globalAlpha = 0.3;
+      g.lineWidth = mediane.grosimePx;
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+      for (const p of cai) g.stroke(p);
+      g.globalAlpha = 1;
+      g.lineCap = 'butt';
+    }
     if (cai.length > 0 && vedere !== 'imagine') {
       g.strokeStyle = getComputedStyle(c).getPropertyValue('--traseu-taiere').trim() || '#0a7d53';
       g.lineWidth = 1.5 / s;
@@ -192,7 +202,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
       g.lineWidth = 3 / s;
       g.stroke(conturEvidentiat.current.p);
     }
-  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori]);
+  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane]);
   const mareste = (f: number, px?: number, py?: number): void => {
     // Punctul de sub maus rămâne pe loc (fără maus: centrul).
     const ox = px ?? marime.w / 2, oy = py ?? marime.h / 2;
@@ -235,6 +245,16 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
             <option value="culori">{t('import.trasare.sursa.culori')}</option>
           </select>
         </label>
+        {!peCulori && (
+          <label>
+            {t('import.trasare.rezultat')}
+            <select value={alegeri.rezultat} data-camp="trasare-rezultat" onChange={(e) => { onSchimba({ rezultat: e.target.value === 'mediane' ? 'mediane' : 'contururi' }); }}>
+              <option value="contururi">{t('import.trasare.rezultat.contururi')}</option>
+              <option value="mediane">{t('import.trasare.rezultat.mediane')}</option>
+            </select>
+          </label>
+        )}
+        {!peCulori && alegeri.rezultat === 'mediane' && <p className="mic">{t('import.trasare.rezultat.sfat')}</p>}
         {peCulori && <PanouCulori alegeri={alegeri} paleta={culori?.paleta ?? null} onSchimba={onSchimba} onEvidentiaza={setEvidentiata} nr={nr} />}
         {raport && !peCulori && <p className="mic" data-testid="trasare-sursa-aleasa">{aleasa}</p>}
         {!peCulori && <div className="trasare-prag">
@@ -308,6 +328,12 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
             {t('import.trasare.estompare')}
             <input type="range" min={0} max={90} value={estompare} data-camp="trasare-estompare" onChange={(e) => { setEstompare(Number(e.target.value)); }} />
           </label>
+          {mediane && (
+            <label className="rand mic">
+              <input type="checkbox" checked={arataGrosimea} data-camp="trasare-arata-grosimea" onChange={(e) => { setArataGrosimea(e.target.checked); }} />
+              {t('import.trasare.arata-grosimea')}
+            </label>
+          )}
           <span className="trasare-zoom">
             <button type="button" data-buton="trasare-micsoreaza" title={t('import.trasare.micsoreaza')} onClick={() => { mareste(0.8); }}>−</button>
             <button type="button" data-buton="trasare-mareste" title={t('import.trasare.mareste')} onClick={() => { mareste(1.25); }}>+</button>
@@ -325,7 +351,13 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
           {(stare === 'citire' || seRecitesc) && <p role="status" data-testid="trasare-trasez">{t('import.trasare.trasez')}</p>}
           {raport && (
             <>
-              {stare !== 'citire' && stare.ok && <p data-testid="trasare-abatere">{t('import.trasare.abatere', { mm: nr(raport.abaterePx * raport.mmPePx, 3), px: nr(raport.abaterePx, 2) })}</p>}
+              {stare !== 'citire' && stare.ok && (
+                <p data-testid="trasare-abatere">
+                  {t(mediane ? 'import.trasare.abatere-mediane' : 'import.trasare.abatere', { mm: nr(raport.abaterePx * raport.mmPePx, 3), px: nr(raport.abaterePx, 2) })}
+                </p>
+              )}
+              {mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}
+              {mediane && mediane.puncte > 0 && <p data-testid="trasare-puncte">{t('import.trasare.puncte', { n: mediane.puncte })}</p>}
               <p data-testid="trasare-imagine">
                 {raport.redusDin
                   ? t('import.trasare.redusa', { latime: raport.latimePx, inaltime: raport.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
@@ -338,6 +370,22 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc }: 
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Grosimea obișnuită a trăsăturilor (ADR 0222 §5) și, dacă foaia are o singură freză, cum stă ea față de trăsătură: cât ea
+ * (cel mult 10 % sau 0,05 mm diferență), mai lată (gravura ar mânca din jur) sau mai îngustă (ar ieși mai subțire).
+ */
+function RaportGrosime({ grosimeMm, grosimePx, freza, nr }: {
+  readonly grosimeMm: number; readonly grosimePx: number; readonly freza: number | undefined; readonly nr: (x: number, z: number) => string;
+}) {
+  const fel = freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'lata' : 'ingusta';
+  return (
+    <>
+      <p data-testid="trasare-grosime">{t('import.trasare.grosime', { mm: nr(grosimeMm, 2), px: nr(grosimePx, 1) })}</p>
+      {fel && freza !== undefined && <p data-testid="trasare-freza" data-fel={fel}>{t(`import.trasare.freza-${fel}`, { d: nr(freza, 2) })}</p>}
+    </>
   );
 }
 

@@ -8,9 +8,13 @@ de laturi, la 1e-5 px de cerc; litera vine din Roboto, cu conturul citit cu font
 Al doilea martor (ADR 0220, răspunsul 7a) e scikit-image: pe imaginile fără hârtie (logoul owner-ului, discul cu pete),
 `find_contours` la jumătatea acoperirii, pe imaginea bordată cu fundal, dă contururile cu care se compară trasarea.
 
-Folosire: `python -I -X utf8 test/oracles-py/trasare_corpus.py [--verifica]` (numpy, scikit-image, fontTools din
-`test/oracles-py/requirements.txt`). Scrie imaginile și `asteptat.json` în `test/fixtures/trasare/`; se comit, iar probele
-unitare le citesc (`test/unit/trasare.corpus.test.ts`). `--verifica` (în CI) nu scrie nimic: refă totul în memorie și cere
+Culorile (ADR 0221) au regiunile și joncțiunile lor (`culori.json`), iar liniile mediane (ADR 0222), trăsăturile cu centrul,
+capetele și joncțiunile știute, cu `skeletonize` ca martor al topologiei (`mediana.json`).
+
+Folosire: `python -I -X utf8 test/oracles-py/trasare_corpus.py [--verifica]` (numpy, scikit-image cu scipy, fontTools
+din `test/oracles-py/requirements.txt`). Scrie imaginile, `asteptat.json`, `culori.json` și `mediana.json` în
+`test/fixtures/trasare/`; se comit, iar probele unitare le citesc (`test/unit/trasare.corpus.test.ts`,
+`trasare.culori.corpus.test.ts`, `trasare.mediana.corpus.test.ts`). `--verifica` (în CI) nu scrie nimic: refă totul în memorie și cere
 aceiași pixeli și același `asteptat.json` ca fișierele comise (octeții PNG depind de versiunea lui zlib, pixelii nu).
 """
 import json
@@ -318,20 +322,25 @@ def main():
     culori = culori_cazuri(diferente)
     text_culori = json.dumps(culori, ensure_ascii=False, separators=(',', ':')) + '\n'
     cale_culori = os.path.join(IESIRE, 'culori.json')
+    mediane = mediana_cazuri(diferente)
+    text_mediane = json.dumps(mediane, ensure_ascii=False, separators=(',', ':')) + '\n'
+    cale_mediane = os.path.join(IESIRE, 'mediana.json')
+    fisiere = ((cale_json, text, 'asteptat.json'), (cale_culori, text_culori, 'culori.json'), (cale_mediane, text_mediane, 'mediana.json'))
     if VERIFICA:
-        for cale, t, nume in ((cale_json, text, 'asteptat.json'), (cale_culori, text_culori, 'culori.json')):
+        for cale, t, nume in fisiere:
             with open(cale, encoding='utf-8') as fh:
                 if fh.read() != t:
                     diferente.append(f'{nume}: alt conținut')
         if diferente:
             raise SystemExit('Corpusul trasării nu e cel comis:\n  ' + '\n  '.join(diferente))
-        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri și {len(culori["cazuri"])} pe culori, aceiași pixeli și '
-              'aceleași fișiere de așteptări.')
+        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri, {len(culori["cazuri"])} pe culori și {len(mediane["cazuri"])} '
+              'de linii mediane, aceiași pixeli și aceleași fișiere de așteptări.')
     else:
-        for cale, t in ((cale_json, text), (cale_culori, text_culori)):
+        for cale, t, _ in fisiere:
             with open(cale, 'w', encoding='utf-8', newline='\n') as fh:
                 fh.write(t)
-        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri și {len(culori["cazuri"])} pe culori scrise în {IESIRE}.')
+        print(f'Corpusul trasării: {len(asteptat["cazuri"])} cazuri, {len(culori["cazuri"])} pe culori și {len(mediane["cazuri"])} '
+              f'de linii mediane scrise în {IESIRE}.')
 
 # ── Culorile (ADR 0221): regiuni care pavează imaginea, fiecare cu culoarea ei ─────────────────────────────────────────────
 #
@@ -441,6 +450,277 @@ def culori_cazuri(diferente):
         paleta[nume] = '#' + ''.join('%02x' % int(round(c)) for c in np.median(p[m][:, :3], axis=0))
     cazuri.append({'nume': 'logo-cvs-culori', 'fisier': 'logo-cvs.png', 'latime': latime, 'inaltime': inaltime,
                    'asteptat': {'culori': 3, 'toleranta': 0.6, 'paleta': paleta}, 'regiuni': None, 'jonctiuni': []})
+    return {'schema': 1, 'cazuri': cazuri}
+
+# ── Liniile mediane (ADR 0222): trăsături cu centrul știut ─────────────────────────────────────────────────────────────────
+#
+# O trăsătură e o linie frântă cu grosimea w: punctele la cel mult w / 2 de ea (capete și îmbinări rotunde, ca urma unui pix
+# sau a unei freze), sau, cu capete drepte, dreptunghiul ei. Pe imagine: reuniunea capsulelor segmentelor (dreptunghiul cu
+# două semicercuri de 64 de laturi, la 3e-4 · w / 2 de cerc), toate în același sens, deci regula nonzero le unește. Pe
+# hârtie: liniile (centrul), capetele (unde se oprește o freză cât trăsătura: centrul capătului rotund, ori la w / 2 de un
+# capăt drept), joncțiunile (cu numărul brațelor), colțurile liniei (lângă ele axa medială taie colțul, cu până la
+# 0,17 · w / 2: ADR 0222) și câte căi trebuie să iasă: brațele din prelungire ale unei joncțiuni (sub 30° de cotitură) se
+# leagă într-o cale, deci un T dă două căi, un X tot două, un Y trei. Toleranțele judecății (`asteptat`): linia, în afara
+# zonelor nodurilor (cât w în jurul capetelor, joncțiunilor și colțurilor), la 0,4 px de hârtie în ambele sensuri; capetele
+# libere la 0,4 px, joncțiunile la 0,45 px (măsurat la scrierea nucleului: 0,34, 0,28 și 0,32 px, pe semnătură), toate sub
+# jumătatea de grosime a ADR-ului.
+#
+# Martorul e scikit-image cu scipy: `skeletonize` pe cerneala la jumătate, cu capetele scoase de ⌈w⌉ ori (cioturile mai
+# scurte dispar, brațele adevărate se scurtează cu atât) și joncțiunile ale căror cercuri înscrise se suprapun unite (razele
+# din `distance_transform_edt`), dă tot atâtea capete și joncțiuni ca hârtia (capetele lui, retrase cu ~w), iar
+# `euler_number`, aceleași goluri; pixelii lui stau la cel mult 1 px de linie în afara zonelor nodurilor. Altfel generatorul
+# se oprește: hârtia și imaginea nu spun același lucru.
+
+def capsula(a, b, r, n=64):
+    """Inelul capsulei segmentului ab (raza r), cu unghiul descrescător: același sens pentru toate, deci se unesc."""
+    ax, ay = a
+    bx, by = b
+    lung = math.hypot(bx - ax, by - ay)
+    if lung < 1e-12:
+        return [(ax + r * math.cos(-math.pi * i / n), ay + r * math.sin(-math.pi * i / n)) for i in range(2 * n)]
+    ux, uy = (bx - ax) / lung, (by - ay) / lung
+    tn = math.atan2(ux, -uy)
+    inel = [(bx + r * math.cos(tn - math.pi * i / n), by + r * math.sin(tn - math.pi * i / n)) for i in range(n + 1)]
+    inel += [(ax + r * math.cos(tn - math.pi * (1 + i / n)), ay + r * math.sin(tn - math.pi * (1 + i / n))) for i in range(n + 1)]
+    return inel
+
+
+def dreptunghi(a, b, r):
+    """Trăsătura cu capete drepte: dreptunghiul segmentului ab, de lățime 2r, în sensul capsulelor."""
+    ax, ay = a
+    bx, by = b
+    lung = math.hypot(bx - ax, by - ay)
+    ux, uy = (bx - ax) / lung, (by - ay) / lung
+    nx, ny = -uy, ux
+    return [(bx + r * nx, by + r * ny), (bx - r * nx, by - r * ny), (ax - r * nx, ay - r * ny), (ax + r * nx, ay + r * ny)]
+
+
+def segmente(linii):
+    seg = []
+    for puncte, inchisa in linii:
+        n = len(puncte)
+        for k in range(n if inchisa else n - 1):
+            seg.append((*puncte[k], *puncte[(k + 1) % n]))
+    return np.asarray(seg, np.float64)
+
+
+def la_linii(pts, linii):
+    """Distanța fiecărui punct până la liniile de pe hârtie."""
+    s = segmente(linii)
+    ax, ay, bx, by = s[:, 0], s[:, 1], s[:, 2], s[:, 3]
+    dx, dy = bx - ax, by - ay
+    l2 = np.maximum(dx * dx + dy * dy, 1e-24)
+    pts = np.asarray(pts, np.float64).reshape(-1, 2)
+    rez = np.empty(len(pts))
+    for i0 in range(0, len(pts), 256):
+        p = pts[i0:i0 + 256]
+        u = np.clip(((p[:, 0:1] - ax) * dx + (p[:, 1:2] - ay) * dy) / l2, 0, 1)
+        rez[i0:i0 + 256] = np.hypot(ax + u * dx - p[:, 0:1], ay + u * dy - p[:, 1:2]).min(axis=1)
+    return rez
+
+
+# Pozițiile celor 8 vecini, în cerc (E, NE, N, NV, V, SV, S, SE); pozițiile pare sunt cele ortogonale.
+INEL8 = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)]
+
+
+def grupuri_vecini(s, y, x):
+    """Câte grupuri 8-conexe formează vecinii pixelului (pe inelul lui): 1 la un capăt, 2 pe linie, cel puțin 3 la joncțiune."""
+    v = [bool(s[y + dy, x + dx]) for dy, dx in INEL8]
+    par = list(range(8))
+
+    def rad(a):
+        while par[a] != a:
+            a = par[a]
+        return a
+    for k in range(8):
+        if v[k] and v[(k + 1) % 8]:
+            par[rad(k)] = rad((k + 1) % 8)
+        if k % 2 == 0 and v[k] and v[(k + 2) % 8]:
+            par[rad(k)] = rad((k + 2) % 8)
+    return len({rad(k) for k in range(8) if v[k]})
+
+
+def martor_mediana(acop, w):
+    """Martorul scikit-image: capetele, joncțiunile (după cioturi și unire), golurile și pixelii scheletului."""
+    from scipy import ndimage
+    masca = acop >= 0.5
+    sch = np.pad(morphology.skeletonize(masca), 1)
+    dist = np.pad(ndimage.distance_transform_edt(masca), 1)
+    h, l = sch.shape
+
+    def capete_din(s):
+        return [(y, x) for y, x in zip(*np.nonzero(s)) if grupuri_vecini(s, y, x) <= 1]
+    # Cioturile mai scurte decât w: capetele scoase de k ori (fără creșterea la loc a lui Gonzalez și Woods, care aducea înapoi
+    # și furca de la un capăt drept).
+    k = int(math.ceil(w))
+    s = sch.copy()
+    for _ in range(k):
+        for y, x in capete_din(s):
+            s[y, x] = False
+    capete = capete_din(s)
+    jonctiuni = [(y, x) for y, x in zip(*np.nonzero(s)) if grupuri_vecini(s, y, x) >= 3]
+    par = list(range(len(jonctiuni)))
+
+    def rad(a):
+        while par[a] != a:
+            a = par[a]
+        return a
+    for i, (ya, xa) in enumerate(jonctiuni):
+        for j in range(i):
+            yb, xb = jonctiuni[j]
+            if math.hypot(ya - yb, xa - xb) < dist[ya, xa] + dist[yb, xb]:
+                par[rad(i)] = rad(j)
+    grupe = {}
+    for i, (y, x) in enumerate(jonctiuni):
+        grupe.setdefault(rad(i), []).append((x - 1 + 0.5, y - 1 + 0.5))
+    centre = [(float(np.mean([p[0] for p in g])), float(np.mean([p[1] for p in g]))) for g in grupe.values()]
+    componente = int(measure.label(masca, connectivity=2).max())
+    goluri = componente - int(measure.euler_number(masca, connectivity=2))
+    pixeli = [(x - 1 + 0.5, y - 1 + 0.5) for y, x in zip(*np.nonzero(s))]
+    return {'capete': [(x - 1 + 0.5, y - 1 + 0.5) for y, x in capete], 'jonctiuni': centre, 'goluri': goluri, 'pixeli': pixeli}
+
+
+def unghi_cotitura(a, b):
+    """Cotitura dintre două brațe care pleacă din același punct (direcțiile lor): 0° când se continuă drept."""
+    c = (a[0] * b[0] + a[1] * b[1]) / (math.hypot(*a) * math.hypot(*b))
+    return 180 - math.degrees(math.acos(max(-1.0, min(1.0, c))))
+
+
+def mediana_cazuri(diferente):
+    """Cazurile liniei mediane: imaginile (scrise sau verificate) și hârtia lor, ca dicționar."""
+    cazuri = []
+
+    def caz_m(nume, latime, inaltime, linii, w, capete, jonctiuni, cai, inchise=0, goluri=0, colturi=(), cerneala=(25, 25, 25),
+              fundal=(255, 255, 255), drepte=False, toleranta=0.4, capat=0.4, jonctiune=0.45):
+        if drepte:
+            inele = [dreptunghi(p[0], p[1], w / 2) for p, _ in linii]
+        else:
+            inele = []
+            for puncte, inchisa in linii:
+                n = len(puncte)
+                inele += [capsula(puncte[k], puncte[(k + 1) % n], w / 2) for k in range(n if inchisa else n - 1)]
+        acop = acoperire(inele, latime, inaltime)
+        pix, canale = rgba(acop, cerneala, fundal)
+        octeti = png(latime, inaltime, pix.tobytes(), canale)
+        cale = os.path.join(IESIRE, f'{nume}.png')
+        _, _, v = citeste_png(octeti)
+        # Martorul, pe aceeași cerneală pe care o vede trasarea (alfa sau întunecimea, cu cerneala închisă).
+        cer = v[:, :, 3] / 255.0 if canale == 4 else 1.0 - v[:, :, :3].astype(np.float64).mean(axis=2) / 255.0
+        if fundal is not None and sum(fundal) < sum(cerneala):
+            cer = 1.0 - cer
+        m = martor_mediana(cer, w)
+        # Linia de pe hârtie (pentru capete drepte: între capete, nu până în marginea dreptunghiului).
+        hartie = [(p, inchisa) for p, inchisa in linii]
+        if drepte:
+            hartie = []
+            for p, _ in linii:
+                (ax, ay), (bx, by) = p
+                lung = math.hypot(bx - ax, by - ay)
+                ux, uy = (bx - ax) / lung, (by - ay) / lung
+                hartie.append(([(ax + ux * w / 2, ay + uy * w / 2), (bx - ux * w / 2, by - uy * w / 2)], False))
+        noduri = list(capete) + [j for j, _ in jonctiuni] + list(colturi)
+        departe = [p for p in m['pixeli'] if all(math.hypot(p[0] - q[0], p[1] - q[1]) > w for q in noduri)]
+        abatere = float(la_linii(departe, hartie).max()) if departe else 0.0
+        assert len(m['capete']) == len(capete), (nume, 'capete', len(m['capete']), len(capete))
+        assert len(m['jonctiuni']) == len(jonctiuni), (nume, 'jonctiuni', m['jonctiuni'], jonctiuni)
+        assert m['goluri'] == goluri, (nume, 'goluri', m['goluri'], goluri)
+        assert abatere <= 1.0, (nume, 'abaterea martorului', abatere)
+        for q in capete:
+            assert min(math.hypot(q[0] - c[0], q[1] - c[1]) for c in m['capete']) <= 2 * w + 2, (nume, 'capătul', q)
+        for q, _ in jonctiuni:
+            assert min(math.hypot(q[0] - c[0], q[1] - c[1]) for c in m['jonctiuni']) <= w, (nume, 'joncțiunea', q)
+        if VERIFICA:
+            if not os.path.exists(cale):
+                diferente.append(f'{nume}.png: lipsește')
+            else:
+                with open(cale, 'rb') as fh:
+                    _, _, comis = citeste_png(fh.read())
+                if not np.array_equal(comis, v):
+                    diferente.append(f'{nume}.png: alți pixeli')
+        else:
+            with open(cale, 'wb') as fh:
+                fh.write(octeti)
+        cazuri.append({
+            'nume': nume, 'fisier': f'{nume}.png', 'latime': latime, 'inaltime': inaltime, 'optiuni': IMPLICITE, 'grosime': w,
+            'linii': [{'puncte': [[round(x, 6), round(y, 6)] for x, y in p], 'inchisa': inchisa} for p, inchisa in hartie],
+            'capete': [[round(x, 6), round(y, 6)] for x, y in capete],
+            'jonctiuni': [{'p': [round(j[0], 6), round(j[1], 6)], 'brate': g} for j, g in jonctiuni],
+            'colturi': [[round(x, 6), round(y, 6)] for x, y in colturi],
+            'asteptat': {'cai': cai, 'inchise': inchise, 'goluri': goluri, 'toleranta': toleranta, 'capat': capat, 'jonctiune': jonctiune},
+            'martor': {'capete': len(m['capete']), 'jonctiuni': len(m['jonctiuni']), 'goluri': m['goluri'], 'abatere': round(abatere, 3)},
+        })
+
+    def arc(cx, cy, r, de, la, n):
+        return [(cx + r * math.cos(de + (la - de) * k / n), cy + r * math.sin(de + (la - de) * k / n)) for k in range(n + 1)]
+
+    def brat(c, lung, grade):
+        return (c[0] + lung * math.cos(math.radians(grade)), c[1] + lung * math.sin(math.radians(grade)))
+
+    # 1–3: dreapta orizontală și la 17°, la trei grosimi; capetele rotunde: linia se oprește în centrul lor.
+    for w in (3, 6, 10):
+        a, b = (10.3, 15.2), (70.3, 15.2)
+        caz_m(f'mediana-dreapta-0-w{w}', 80, 30, [([a, b], False)], w, [a, b], [], 1)
+        a, b = (10.3, 10.2), (69.7, 28.4)
+        caz_m(f'mediana-dreapta-17-w{w}', 80, 40, [([a, b], False)], w, [a, b], [], 1)
+    # 4: la 45°, unde subțierea pe pixeli e cea mai grea (trepte); pe transparent.
+    a, b = (8.4, 8.1), (52.6, 52.3)
+    caz_m('mediana-dreapta-45-w4', 61, 61, [([a, b], False)], 4, [a, b], [], 1, fundal=None, cerneala=(0, 0, 0))
+    # 5: cu capete drepte (o literă tipărită, un marker): capătul liniei e la w / 2 de margine, unde se oprește freza.
+    a, b = (12.6, 20.3), (68.1, 31.9)
+    u = ((b[0] - a[0]) / math.hypot(b[0] - a[0], b[1] - a[1]), (b[1] - a[1]) / math.hypot(b[0] - a[0], b[1] - a[1]))
+    caz_m('mediana-drepte-w8', 82, 52, [([a, b], False)], 8, [(a[0] + 4 * u[0], a[1] + 4 * u[1]), (b[0] - 4 * u[0], b[1] - 4 * u[1])],
+          [], 1, drepte=True)
+    # 6: un semicerc de rază 25.
+    p = arc(40.3, 15.6, 25, 0, math.pi, 256)
+    caz_m('mediana-arc-w5', 80, 50, [(p, False)], 5, [p[0], p[-1]], [], 1)
+    # 7–8: T: bara (o singură cale, brațele ei se continuă) și piciorul.
+    for w in (4, 8):
+        caz_m(f'mediana-T-w{w}', 80, 60, [([(10.3, 15.2), (70.3, 15.2)], False), ([(40.3, 15.2), (40.3, 52.7)], False)], w,
+              [(10.3, 15.2), (70.3, 15.2), (40.3, 52.7)], [((40.3, 15.2), 3)], 2)
+    # 9: plusul (90°) și 10–11: X-ul la 60°, la două grosimi: o joncțiune cu patru brațe, două căi.
+    caz_m('mediana-plus-w5', 72, 72, [([(10.2, 35.3), (60.8, 35.3)], False), ([(35.5, 10.1), (35.5, 60.6)], False)], 5,
+          [(10.2, 35.3), (60.8, 35.3), (35.5, 10.1), (35.5, 60.6)], [((35.5, 35.3), 4)], 2)
+    c = (36.4, 35.7)
+    for w in (4, 8):
+        caz_m(f'mediana-X60-w{w}', 72, 72, [([brat(c, 26, 200), brat(c, 26, 20)], False), ([brat(c, 26, 260), brat(c, 26, 80)], False)],
+              w, [brat(c, 26, g) for g in (20, 80, 200, 260)], [(c, 4)], 2)
+    # 12: Y-ul (trei brațe la 120°: niciunul nu continuă altul, deci trei căi); pe transparent, cerneală albă.
+    c = (36.2, 38.4)
+    caz_m('mediana-Y-w5', 72, 72, [([c, brat(c, 24, g)], False) for g in (-90, 30, 150)], 5, [brat(c, 24, g) for g in (-90, 30, 150)],
+          [(c, 3)], 3, fundal=None, cerneala=(255, 255, 255))
+    # 13–14: L-ul, o cale cu un colț (axa medială taie colțul cu 0,17 · w / 2).
+    for w in (4, 8):
+        caz_m(f'mediana-L-w{w}', 70, 70, [([(12.3, 10.2), (12.3, 55.6), (58.4, 55.6)], False)], w, [(12.3, 10.2), (58.4, 55.6)], [], 1,
+              colturi=[(12.3, 55.6)])
+    # 15–16: inelul, o buclă închisă tăiată pe linie (un gol); 17: pe negru, cerneală albă.
+    p = arc(40.3, 39.7, 28, 0, 2 * math.pi, 256)[:-1]
+    caz_m('mediana-inel-w3', 80, 80, [(p, True)], 3, [], [], 1, inchise=1, goluri=1)
+    caz_m('mediana-inel-w8', 80, 80, [(p, True)], 8, [], [], 1, inchise=1, goluri=1, cerneala=(250, 250, 250), fundal=(10, 10, 10))
+    # 18–19: un S (sinusoida, raza de curbură de cel puțin 9,6 px).
+    p = [(10 + k * 0.5, 30 + 15 * math.sin(k * 0.5 / 12)) for k in range(161)]
+    for w in (4, 7):
+        caz_m(f'mediana-S-w{w}', 100, 60, [(p, False)], w, [p[0], p[-1]], [], 1)
+    # 20: K: bara (două brațe în prelungire, o cale) și cele două diagonale din același punct: trei căi.
+    j = (15.4, 35.0)
+    caz_m('mediana-K-w5', 62, 70, [([(15.4, 8.2), (15.4, 61.8)], False), ([j, (50.3, 8.6)], False), ([j, (50.3, 61.4)], False)], 5,
+          [(15.4, 8.2), (15.4, 61.8), (50.3, 8.6), (50.3, 61.4)], [(j, 4)], 3)
+    # 21: o trăsătură groasă (16 px): capetele la 8 px de vârfuri.
+    a, b = (14.2, 20.4), (60.7, 26.9)
+    caz_m('mediana-gros-w16', 76, 48, [([a, b], False)], 16, [a, b], [], 1)
+    # 22: semnătura: o trohoidă cu două bucle (x = x0 + 5t − 15 sin t, y = y0 − 16 cos t), care se încrucișează de două ori la
+    # 79°: o singură cale, cu două joncțiuni de câte patru brațe și două goluri; raza de curbură e peste 6 px peste tot.
+    A, B, C, x0, y0 = 5.0, 15.0, 16.0, 32.4, 27.3
+    t0, t1, n = -math.pi + 0.3, 3 * math.pi - 0.3, 900
+    ts = [t0 + (t1 - t0) * k / n for k in range(n + 1)]
+    p = [(x0 + A * t - B * math.sin(t), y0 - C * math.cos(t)) for t in ts]
+    raze = [((A - B * math.cos(t)) ** 2 + (C * math.sin(t)) ** 2) ** 1.5 / abs((A - B * math.cos(t)) * C * math.cos(t) - C * math.sin(t) * B * math.sin(t))
+            for t in ts]
+    assert min(raze) > 6, min(raze)
+    tx = 2.27886  # sin(t) / t = A / B: încrucișarea buclei din jurul lui 0 (și a celei din jurul lui 2π)
+    for _ in range(50):
+        tx -= (A * tx - B * math.sin(tx)) / (A - B * math.cos(tx))
+    cruci = [(x0 + A * (2 * math.pi * k), y0 - C * math.cos(tx)) for k in (0, 1)]
+    caz_m('mediana-semnatura-w3.5', 96, 50, [(p, False)], 3.5, [p[0], p[-1]], [(cruci[0], 4), (cruci[1], 4)], 1, goluri=2)
     return {'schema': 1, 'cazuri': cazuri}
 
 

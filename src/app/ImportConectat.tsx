@@ -51,6 +51,8 @@ type Props = {
   readonly onInchide: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
   readonly de?: string;
+  /** Diametrul frezei foii, dacă are una singură (liniile mediane îl compară cu trăsătura, ADR 0222 §5). */
+  readonly freza?: number;
 };
 
 /**
@@ -68,7 +70,7 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de, freza }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
@@ -182,6 +184,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
         alegeri: dialog.trasare ?? TRASARE_IMPLICITA,
         onSchimba: (s) => { recitesteCu({ trasare: { ...(dialog.trasare ?? TRASARE_IMPLICITA), ...s } }); },
         octeti: dialog.fisier?.octeti ?? null,
+        ...(freza === undefined ? {} : { freza }),
       }}
     />
   );

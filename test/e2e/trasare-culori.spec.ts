@@ -4,6 +4,7 @@ import { ariePx } from '../../src/jobs/calculTrasare.ts';
 import { traseazaCulori } from '../../src/trasare/culori.ts';
 import { citestePng } from '../unit/ajutor-png.ts';
 import { esantioane } from '../unit/ajutor-trasare.ts';
+import { documentSalvat } from './ajutor-document.ts';
 
 /**
  * Trasarea pe culori în aplicația construită (ADR 0221, felia 25.2↑): sursa „Culorile”, pastilele, legarea (prin tragere și de
@@ -29,29 +30,6 @@ function inNode(nume: string, legaturi: readonly number[] = []) {
     return { culoare: pc.culoare, hex: pc.hex, x0, y0 };
   });
   return { paleta: r.raport.paleta.map((c) => c.hex), piese };
-}
-
-/** Ultima versiune salvată în IndexedDB, așteptată până la revizia dată (ca în `trasare.spec.ts`). */
-async function documentSalvat(page: Page, rev: number): Promise<{ piese: Array<{ id: string; nume: string }>; foi: Array<{ instante: Array<{ piesa: string; x: number; y: number }> }> }> {
-  let text: string | null = null;
-  await expect.poll(async () => {
-    text = await page.evaluate(async () => {
-      const db = await new Promise<IDBDatabase>((ok, eroare) => {
-        const r = indexedDB.open('cncvs2-proiecte', 1);
-        r.onsuccess = () => { ok(r.result); };
-        r.onerror = () => { eroare(r.error); };
-      });
-      const v = await new Promise<unknown>((ok, eroare) => {
-        const r = db.transaction('versiuni').objectStore('versiuni').openCursor(null, 'prev');
-        r.onsuccess = () => { ok(r.result?.value ?? null); };
-        r.onerror = () => { eroare(r.error); };
-      });
-      db.close();
-      return typeof v === 'string' ? v : null;
-    });
-    return text === null ? -1 : (JSON.parse(text) as { rev: number }).rev;
-  }).toBeGreaterThanOrEqual(rev);
-  return JSON.parse(text ?? '{}') as never;
 }
 
 const pastila = (page: Page, hex: string) => page.locator(`.trasare-pastila[data-hex="${hex}"]`);
@@ -89,7 +67,9 @@ test('logoul pe culori: pastilele ca în Node; portocaliul tras peste albastru s
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(2);
-  const doc = await documentSalvat(page, 1);
+  const doc = JSON.parse(await documentSalvat(page, 1)) as {
+    piese: Array<{ id: string; nume: string }>; foi: Array<{ instante: Array<{ piesa: string; x: number; y: number }> }>;
+  };
   // Un singur pas: revizia 1 are ambele piese; fiecare la colțul ei din pagina imaginii, ca în Node.
   const inst = doc.foi[0]?.instante ?? [];
   expect(inst.length).toBe(2);

@@ -264,3 +264,60 @@ test('pe culori, previzualizarea: o piesă pe culoare, numele cu culoarea, alini
   assert.ok(!g.ok && g.cod === 'gol');
   assert.equal(g.trasare?.culori?.paleta.length, 4);
 });
+
+/** 120 × 60, opacă: un inel (raza 15, grosimea 4) și o bară orizontală cu un picior (un T, grosimea 4), pe alb, netezite. */
+const LINII: ImagineRGBA = (() => {
+  const W = 120, H = 60, d = new Uint8ClampedArray(W * H * 4).fill(255);
+  const laSegment = (px: number, py: number, ax: number, ay: number, bx: number, by: number): number => {
+    const dx = bx - ax, dy = by - ay, u = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(ax + u * dx - px, ay + u * dy - py);
+  };
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let a = 0;
+      for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < 4; i++) {
+          const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+          const inel = Math.abs(Math.hypot(px - 30.2, py - 30.4) - 15) <= 2;
+          const t = laSegment(px, py, 60.3, 15.2, 110.4, 15.2) <= 2 || laSegment(px, py, 85.3, 15.2, 85.3, 50.6) <= 2;
+          if (inel || t) a++;
+        }
+      }
+      const v = 255 - Math.round((255 * a) / 16);
+      d.set([v, v, v, 255], (y * W + x) * 4);
+    }
+  }
+  return { latime: W, inaltime: H, date: d };
+})();
+
+test('liniile mediane, calculul: căile deschise și bucla, cu `deschisa`, grosimea și joncțiunea în raport', async () => {
+  const { raspuns: r, transfer } = await raspundeTrasare(cerere({ imagine: LINII, latimeMm: 120, rezultat: 'mediane' }));
+  assert.ok(r.ok && r.fel === 'mediane');
+  assert.equal(r.raport.contururi, 3, 'inelul, bara și piciorul');
+  assert.equal(r.raport.bucle, 1);
+  assert.equal(r.raport.jonctiuni, 1);
+  assert.ok(Math.abs(r.raport.grosime - 4) < 0.2, `${r.raport.grosime}`);
+  assert.deepEqual(Array.from(r.cai.deschisa ?? []).sort(), [0, 1, 1]);
+  // Tabloul `deschisa` pleacă transferat, ca și celelalte.
+  assert.ok(r.cai.deschisa && transfer.includes(r.cai.deschisa.buffer as ArrayBuffer));
+  // Pe culori, `rezultat` nu contează; fără el, contururile.
+  const c = (await raspundeTrasare(cerere({ imagine: LINII }))).raspuns;
+  assert.ok(c.ok && c.fel === 'alb-negru');
+});
+
+test('liniile mediane, previzualizarea: toate pe linie (deschise și bucla), iar piesa le pune pe toate în operația căilor deschise', async () => {
+  const r = (await raspundeTrasare(cerere({ imagine: LINII, latimeMm: 120, rezultat: 'mediane' }))).raspuns;
+  const p = previzualizareDinRaspuns({ nume: 'semnatura.png', octeti: new Uint8Array() }, r);
+  assert.ok(p.ok && p.format === 'imagine');
+  assert.equal(p.exterioare + p.interioare, 0);
+  assert.equal(p.deschise, 3);
+  assert.deepEqual(p.pregatit.laturi, ['pe-linie', 'pe-linie', 'pe-linie']);
+  assert.deepEqual(p.pregatit.cai.map((c) => c.inchis).sort(), [false, false, true]);
+  assert.ok(Math.abs((p.trasare.mediane?.grosimePx ?? 0) - 4) < 0.2);
+  assert.equal(p.trasare.mediane?.puncte, 0);
+  const { piesa } = p.pregatit.piesa('p1', { grosime: 10 });
+  assert.deepEqual(piesa.operatii.map((o) => [o.id, o.latura, o.noduri.length]), [['deschise', 'pe-linie', 3]]);
+  // O cale deschisă în mm: Y în sus, ultimul vârf e capătul (fără segment de închidere).
+  const deschisa = p.pregatit.cai.find((c) => c.inchis === false);
+  assert.ok(deschisa && deschisa.varfuri.length >= 2);
+});

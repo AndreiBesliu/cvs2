@@ -1,10 +1,12 @@
 /**
  * Calculul trasării din imagine (ADR 0220 §2): decodarea (în workerul trasării, cu `createImageBitmap`, peste 16 Mpx redusă),
  * scara (lățimea aleasă, altfel DPI-ul fișierului, altfel 96 px / țol), pragurile curățării din mm în px și nucleul
- * (`src/trasare/trasare.ts`), sau, pe culori (ADR 0221), nucleul culorilor (`src/trasare/culori.ts`), cu imaginea pictată în
- * culorile ei pentru previzualizare. Rulează în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
+ * (`src/trasare/trasare.ts`), sau liniile mediane (ADR 0222, `src/trasare/mediana.ts`), sau, pe culori (ADR 0221), nucleul
+ * culorilor (`src/trasare/culori.ts`), cu imaginea pictată în culorile ei pentru previzualizare. Rulează în
+ * `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
  */
 import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
+import { traseazaMediana, type RaportMediana } from '../trasare/mediana.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
 
@@ -31,6 +33,8 @@ export type CerereTrasare = {
   readonly maxPixeli?: number;
   /** Trasarea pe culori (ADR 0221): numărul, legăturile și bifele; lipsă sau null: alb-negru, după `optiuni`. */
   readonly culori?: Pick<OptiuniCulori, 'numar' | 'legaturi' | 'bifate'> | null;
+  /** Alb-negru: contururile (lipsă) sau liniile mediane (ADR 0222); pe culori nu contează. */
+  readonly rezultat?: 'contururi' | 'mediane';
 };
 
 /** Culoarea fiecărui pixel al imaginii pictate (indicele din paletă; 255: transparent), redusă sub `PIXELI_POSTER`. */
@@ -54,6 +58,8 @@ export type RaspunsTrasare =
     readonly posterizare: Posterizare;
   })
   | (Scara & { readonly ok: false; readonly fel: 'culori'; readonly cod: 'prea-multe'; readonly raport: RaportCulori })
+  | (Scara & { readonly ok: true; readonly fel: 'mediane'; readonly cai: CaiTrasate; readonly raport: RaportMediana })
+  | (Scara & { readonly ok: false; readonly fel: 'mediane'; readonly cod: 'prea-multe'; readonly raport: RaportMediana })
   | { readonly ok: false; readonly cod: 'citire'; readonly detaliu: string };
 
 /** Etichetele imaginii, reduse prin cel mai apropiat pixel sub `PIXELI_POSTER` (aceleași, dacă încap). */
@@ -118,6 +124,14 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
     return {
       raspuns: { ok: true, fel: 'culori', piese: r.piese, raport: r.raport, posterizare, mmPePx, scara, dpi, redusDin },
       transfer: deTransferat([...vederi, posterizare.etichete]),
+    };
+  }
+  if (c.rezultat === 'mediane') {
+    const r = traseazaMediana(img, { ...c.optiuni, petePx, gauriPx });
+    if (!r.ok) return { raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin }, transfer: [] };
+    return {
+      raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin },
+      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa]),
     };
   }
   const r = traseaza(img, { ...c.optiuni, petePx, gauriPx });

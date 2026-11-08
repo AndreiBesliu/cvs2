@@ -112,11 +112,12 @@ export function piesaDinImport(p: DateImport, id: string, scula?: Operatie['scul
   const operatii: Operatie[] = [];
   const prima = elemente[0];
   const adancime = adancimeDeschise(grosime);
-  // Latura din imbricare pentru căile închise; căile deschise (latura „pe-linie” din imbricare) intră în `deschise`.
+  // Latura din imbricare pentru căile închise; căile deschise (latura „pe-linie” din imbricare) intră în `deschise`, ca și o
+  // cale închisă cu latura „pe-linie” (o buclă a liniilor mediane, ADR 0222 §7: se taie pe linie, nu pe o parte).
   const grupe = [
     { id: 'exterior', latura: 'exterior', ale: (k: number) => caleInchisa(p.cai[k] ?? {}) && p.laturi[k] === 'exterior' },
     { id: 'interior', latura: 'interior', ale: (k: number) => caleInchisa(p.cai[k] ?? {}) && p.laturi[k] === 'interior' },
-    { id: 'deschise', latura: 'pe-linie', ale: (k: number) => !caleInchisa(p.cai[k] ?? {}) },
+    { id: 'deschise', latura: 'pe-linie', ale: (k: number) => !caleInchisa(p.cai[k] ?? {}) || p.laturi[k] === 'pe-linie' },
   ] as const;
   for (const g of grupe) {
     const noduri = elemente.filter((_, k) => g.ale(k)).map((e) => e.id);

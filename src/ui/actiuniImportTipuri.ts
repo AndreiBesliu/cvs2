@@ -55,6 +55,8 @@ export type RaportImagine = {
   readonly histograma: readonly number[];
   /** Pe culori: paleta, imaginea pictată în culorile ei și contururile fiecărei piese (ADR 0221 §3, §7). */
   readonly culori?: RaportCuloriImagine;
+  /** Liniile mediane (ADR 0222 §5): grosimea obișnuită a trăsăturilor (px), buclele, joncțiunile și punctele fără linie. */
+  readonly mediane?: { readonly grosimePx: number; readonly bucle: number; readonly jonctiuni: number; readonly puncte: number };
 };
 
 /** Ce arată fereastra unei trasări pe culori: pastilele, imaginea pictată și regiunea fiecărei culori (la trecerea mausului). */

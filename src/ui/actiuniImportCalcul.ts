@@ -46,7 +46,8 @@ function comune(f: FisierImport, cai: ReadonlyArray<CaleImport>, pagina: { reado
     inaltime: cutie.maxY - cutie.minY,
     exterioare: laturi.filter((l, k) => l === 'exterior' && caleInchisa(cai[k] ?? {})).length,
     interioare: laturi.filter((l, k) => l === 'interior' && caleInchisa(cai[k] ?? {})).length,
-    deschise: cai.filter((c) => !caleInchisa(c)).length,
+    // Tăiate pe linie: căile deschise și buclele cu latura „pe-linie” (liniile mediane, ADR 0222 §7).
+    deschise: cai.filter((c, k) => !caleInchisa(c) || laturi[k] === 'pe-linie').length,
   };
 }
 
@@ -134,6 +135,10 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
     const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai })) : [];
     return { ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese } };
   }
+  if (r.fel === 'mediane') {
+    const { grosime, bucle, jonctiuni, puncte } = r.raport;
+    return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma, mediane: { grosimePx: grosime, bucle, jonctiuni, puncte } };
+  }
   return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma };
 }
 
@@ -184,9 +189,10 @@ function previzualizareCulori(f: FisierImport, r: Extract<RaspunsTrasare, { fel:
 
 /**
  * Căile trasate (pixeli, Y în jos) ca ale unui import: în mm, cu Y în sus, imaginea fiind o pagină (colțul ei stânga-jos e
- * colțul foii). O cale sub rezoluție (praful) sau peste plafonul unei căi se sare, numărată.
+ * colțul foii). O cale sub rezoluție (praful) sau peste plafonul unei căi se sare, numărată. Liniile mediane (cu `deschisa`,
+ * ADR 0222) se taie toate pe linie: cele deschise se termină în ultimul vârf, iar buclele rămân închise, cu latura „pe-linie”.
  */
-type CaleTrasata = { readonly varfuri: Varf[]; readonly inchis: true };
+type CaleTrasata = { readonly varfuri: Varf[]; readonly inchis: boolean };
 
 export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number): { cai: CaleTrasata[]; laturi: Latura[]; avertismente: AvertismenteImagine } {
   const P = (x: number, y: number): Punct => ({ x: x * mmPePx, y: (inaltimePx - y) * mmPePx });
@@ -208,6 +214,11 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
     // fiecăruia ținea firul principal 0,14 s din 0,22.
     const varfuriPeste = Math.hypot(x1 - x0, y1 - y0) * mmPePx >= REZOLUTIE;
     if (varfuri.length < 2 || (!varfuriPeste && praf(varfuri))) { sub++; continue; }
+    if (c.deschisa) {
+      cai.push({ varfuri, inchis: c.deschisa[k] !== 1 });
+      laturi.push('pe-linie');
+      continue;
+    }
     cai.push({ varfuri, inchis: true });
     laturi.push(c.exterior[k] === 1 ? 'exterior' : 'interior');
   }
@@ -230,7 +241,7 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
       imagine: new Blob([new Uint8Array(f.octeti)]),
       optiuni: { sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
       peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti),
-      ...(peCulori ? { culori: a.culori } : {}),
+      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
     }, semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
@@ -240,7 +251,10 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
   return previzualizareDinRaspuns(f, r);
 }
 
-/** Previzualizarea din răspunsul workerului trasării (alb-negru sau pe culori): refuzurile, căile în mm, piesa sau piesele. */
+/**
+ * Previzualizarea din răspunsul workerului trasării (alb-negru, linii mediane sau pe culori): refuzurile, căile în mm, piesa
+ * sau piesele.
+ */
 export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): PrevizualizareImport {
   if (!r.ok && r.cod === 'citire') return { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: r.detaliu };
   const trasare = raportImagine(r);

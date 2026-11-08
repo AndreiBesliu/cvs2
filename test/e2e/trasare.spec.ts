@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { ariePx } from '../../src/jobs/calculTrasare.ts';
 import { traseaza } from '../../src/trasare/trasare.ts';
 import { citestePng } from '../unit/ajutor-png.ts';
+import { documentSalvat } from './ajutor-document.ts';
 
 /**
  * Trasarea din imagine în aplicația construită (ADR 0220, felia 25.1↑): ușa imaginilor, fereastra trasării, piesa pe foaie;
@@ -22,29 +23,6 @@ function inNode(nume: string): { contururi: number; exterioare: number; latime: 
   const r = traseaza(img, { ...IMPLICITE, petePx: p, gauriPx: p });
   if (!r.ok) throw new Error(`${nume}: ${r.cod}`);
   return { contururi: r.raport.contururi, exterioare: r.raport.exterioare, latime: img.latime, inaltime: img.inaltime };
-}
-
-/** Ultima versiune salvată în IndexedDB, așteptată până la revizia dată (ca în `import.spec.ts`). */
-async function documentSalvat(page: Page, rev: number): Promise<string> {
-  let text: string | null = null;
-  await expect.poll(async () => {
-    text = await page.evaluate(async () => {
-      const db = await new Promise<IDBDatabase>((ok, eroare) => {
-        const r = indexedDB.open('cncvs2-proiecte', 1);
-        r.onsuccess = () => { ok(r.result); };
-        r.onerror = () => { eroare(r.error); };
-      });
-      const v = await new Promise<unknown>((ok, eroare) => {
-        const r = db.transaction('versiuni').objectStore('versiuni').openCursor(null, 'prev');
-        r.onsuccess = () => { ok(r.result?.value ?? null); };
-        r.onerror = () => { eroare(r.error); };
-      });
-      db.close();
-      return typeof v === 'string' ? v : null;
-    });
-    return text === null ? -1 : (JSON.parse(text) as { rev: number }).rev;
-  }).toBeGreaterThanOrEqual(rev);
-  return text ?? '';
 }
 
 /**

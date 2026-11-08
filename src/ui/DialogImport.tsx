@@ -147,12 +147,13 @@ function ListaAvertismente({ a, format }: {
  * PostScript). `nume`: fișierul (o eroare de citire a unui DXF, PDF sau EPS nu spune „nu e un SVG”; un AI fără conținut PDF
  * își primește sfatul).
  */
-function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined, culori = false): string {
+function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined, culori = false, puncte = 0): string {
   if (cod === 'parsare' && formatImport(nume, '') !== 'svg' && format !== 'svg') return t('import.refuz.citire');
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
-  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');
+  // Liniile mediane fără nicio linie, dar cu puncte (ADR 0222): o pată plină sau doar puncte; pentru ele, contururile.
+  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : puncte > 0 ? 'import.imagine.gol-mediane' : 'import.imagine.gol');
   if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
@@ -200,6 +201,8 @@ type Props = {
   /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
   readonly trasare?: {
     readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
+    /** Diametrul frezei foii, dacă are una singură: raportul liniilor mediane îl compară cu trăsătura (ADR 0222 §5). */
+    readonly freza?: number;
   };
 };
 
@@ -242,7 +245,10 @@ export function DialogImport({
         {stare === 'citire' && !imagine && <p role="status">{t('import.citeste')}</p>}
         {/* Un panou pentru fiecare fișier al cozii: ciorna câmpurilor (lățimea scrisă la imaginea dinainte) și mărirea nu trec
             la imaginea următoare. */}
-        {imagine && <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare} seRecitesc={seRecitesc} />}
+        {imagine && (
+          <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare}
+            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })} />
+        )}
         {pagini > 1 && (
           <div className="campuri">
             <label>
@@ -255,7 +261,7 @@ export function DialogImport({
         )}
         {stare !== 'citire' && !stare.ok && (
           <>
-            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori')}</p>
+            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori', stare.trasare?.mediane?.puncte ?? 0)}</p>
             <ListaAvertismente a={stare.avertismente} format={stare.format} />
           </>
         )}
@@ -269,12 +275,15 @@ export function DialogImport({
               <p data-testid="import-piese">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>
             )}
             {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
-            {ok.deschise > 0 && (
+            {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (
+              // Liniile mediane (ADR 0222 §7): deschise și bucle, toate pe linie; grosimea e în raportul ferestrei.
+              <p data-testid="import-deschise">{t('import.mediane', { n: ok.deschise })}</p>
+            ) : (
               <>
                 <p data-testid="import-deschise">{t('import.deschise', { n: ok.deschise })}</p>
                 <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
               </>
-            )}
+            ))}
             {ok.format === 'dxf' && (ok.unitati.declarate ? (
               <p data-testid="import-unitati">
                 {t('import.unitati.declarate', { unitate: ok.unitati.unitate ? t(UNITATE[ok.unitati.unitate]) : t('import.unitati.alta', { mm: mm.format(ok.unitati.mmPeUnitate) }) })}

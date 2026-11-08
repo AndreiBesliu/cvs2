@@ -20,6 +20,8 @@ export type AlegeriCulori = {
 export type AlegeriTrasare = {
   /** Sursa cernelii (alb-negru), sau culorile (ADR 0221 §1): pragul și inversarea nu se folosesc atunci. */
   readonly sursa: 'auto' | 'alfa' | 'lum' | 'culori';
+  /** Ce iese din cerneala alb-negru (ADR 0222 §2): contururile ei, sau liniile mediane ale trăsăturilor (tăiate pe linie). */
+  readonly rezultat: 'contururi' | 'mediane';
   /** Pragul, din 255; null: automat. */
   readonly prag: number | null;
   readonly inverseaza: boolean;
@@ -34,9 +36,9 @@ export type AlegeriTrasare = {
 /** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
 export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null };
 
-/** Implicitele (ADR 0220 §3–§7): sursa aleasă singură, pragul automat, Echilibrat, petele și golurile sub 0,3 mm. */
+/** Implicitele (ADR 0220 §3–§7, ADR 0222 §2): sursa aleasă singură, contururile, pragul automat, Echilibrat, petele și golurile sub 0,3 mm. */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
-  sursa: 'auto', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
+  sursa: 'auto', rezultat: 'contururi', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
   culori: CULORI_IMPLICITE,
 };
 

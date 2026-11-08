@@ -560,6 +560,8 @@ preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
   background (the drawing is everything that is not transparent, whatever its colour) and **Brightness** for an opaque one
   (the background has the colour of the image's edge); the line under the list says which it chose;
+- **Result** (with Transparency and Brightness): **Outlines** (the drawing's edge) or **Centre lines** (the middle of each
+  stroke, cut on the line: see below);
 - **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
   tones; without it, the slider moves it;
 - **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
@@ -593,9 +595,19 @@ inlay them. The threshold and **Invert** are hidden; the other settings stay. Th
 each one's name has its colour (for example “logo #0c619c”). You then pick each one's role (pocket, V-carve, inlay) in the
 panel.
 
+With **Result: Centre lines**, each stroke becomes its middle line, not its outline: handwriting, a signature, a line
+drawing. A line ends at the centre of the stroke's round end (where a cutter as wide as the stroke stops); where strokes
+meet, the lines meet at one point, and those that carry on (the bar of a T, an X, a loop that crosses itself) stay one
+line; an O or a ring becomes a loop. A filled blob gives its middle line (a long rectangle, a line; a disc, only a dot):
+dots, that is strokes shorter than their width, have no line, and the report counts them. The report also gives the
+**usual stroke width**, in mm, and, if the sheet has a single cutter, how it compares with the stroke: wider (the
+engraving would eat into its surroundings), narrower (it would come out thinner) or as wide. **Show the width** draws,
+under the lines, the band a cutter as wide as the stroke would cut. **Import** adds the lines as one shape, all cut on the
+line (the loops too), like the open paths of an SVG.
+
 The traced drawing comes in as one shape, with the image as its page: the image's bottom-left corner is the sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
-- the centre line of a drawing made of lines and straightened scans come later;
+- centre lines by colour and straightened scans come later;
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);

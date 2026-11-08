@@ -33,7 +33,14 @@ export const PLAFON_TRASARE = { contururi: 20_000, varfuri: 500_000 } as const;
  * o cubică (1), cu mânerele (xy[6v + 2], xy[6v + 3]) și (xy[6v + 4], xy[6v + 5]). `exterior[k]` e 1 pe marginea de afară a
  * cernelii și 0 pe un gol (din orientarea buclei: latura de tăiere, fără imbricare).
  */
-export type CaiTrasate = { readonly inceput: Uint32Array; readonly tip: Uint8Array; readonly xy: Float64Array; readonly exterior: Uint8Array };
+export type CaiTrasate = {
+  readonly inceput: Uint32Array; readonly tip: Uint8Array; readonly xy: Float64Array; readonly exterior: Uint8Array;
+  /**
+   * Liniile mediane (ADR 0222): `deschisa[k]` e 1 pe o cale deschisă, al cărei ultim vârf e capătul ei (fără segment după
+   * el, ca un contur deschis al documentului); lipsă, toate căile sunt închise.
+   */
+  readonly deschisa?: Uint8Array;
+};
 
 export type RaportTrasare = {
   readonly latime: number; readonly inaltime: number;
@@ -846,16 +853,21 @@ function masoara(b: Bucata[], P: Float64Array, n: number, sfarsit?: readonly [nu
 
 // ── Trasarea întreagă ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Trasarea unei imagini: căile închise, în pixeli, și raportul; peste plafoane, refuzul, cu raportul (ce s-a numărat). */
-export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
+/** Ce știe raportul înainte de curbe: imaginea, cerneala, pragul, curățarea și marginile. */
+export type BazaRaport = Omit<RaportTrasare, 'contururi' | 'exterioare' | 'varfuri' | 'abatere'>;
+
+/**
+ * Partea comună a trasării și a liniei mediane (ADR 0222 §3): cerneala, histograma (înainte de curățare, care scrie în câmp;
+ * o dată, pentru prag și pentru fereastră), pragul (automat sau ales), curățarea petelor și a golurilor, apoi felul
+ * marginilor: printre pixelii de lângă prag, câți au o nuanță între desen și fundal.
+ */
+export function campul(img: ImagineRGBA, o: OptiuniTrasare): { readonly f: Float32Array; readonly T: number; readonly baza: BazaRaport } {
   const { latime: W, inaltime: H } = img;
   const { f, transparenta, sursa } = cerneala(img, o);
   const automat = o.prag === null;
-  // Histograma, înainte de curățare (ea scrie în câmp): o dată, pentru prag și pentru fereastră.
   const h = histograma(f);
   const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f, h)) : (Math.max(1, Math.min(254, o.prag)) - 0.5) / 255;
   const { pete, gauri } = curata(f, W, H, T, o.petePx, o.gauriPx);
-  // Marginile: printre pixelii de lângă contur, câți au o nuanță între desen și fundal.
   let langa = 0, nuante = 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x + 1 < W; x++) {
@@ -867,13 +879,20 @@ export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
     }
   }
   const margini = langa > 0 && nuante / langa < 0.15 ? 'dure' : 'netezite';
+  return { f, T, baza: { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri, histograma: Array.from(h) } };
+}
+
+/** Trasarea unei imagini: căile închise, în pixeli, și raportul; peste plafoane, refuzul, cu raportul (ce s-a numărat). */
+export function traseaza(img: ImagineRGBA, o: OptiuniTrasare): RezultatTrasare {
+  const { latime: W, inaltime: H } = img;
+  const { f, T, baza } = campul(img, o);
+  const { margini } = baza;
   const trepte = TREPTE[o.netezime];
   const eps = margini === 'dure' ? Math.max(trepte.eps, EPS_DUR) : trepte.eps;
   const tau = margini === 'dure' ? Math.max(trepte.tau, EPS_DUR) : trepte.tau;
   const bucle = margini === 'dure' ? contururi(f, W, H, T).map(netezeste) : contururi(f, W, H, T);
   const pozitive = Uint8Array.from(bucle, (b) => (arie(b) > 0 ? 1 : 0));
   const exterioare = pozitive.reduce((s, x) => s + x, 0);
-  const baza = { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri, histograma: Array.from(h) } as const;
   if (bucle.length > PLAFON_TRASARE.contururi) {
     return { ok: false, cod: 'prea-multe', raport: { ...baza, contururi: bucle.length, exterioare, varfuri: 0, abatere: 0 } };
   }
