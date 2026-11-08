@@ -418,7 +418,9 @@ unealta [Pen](#pen). Nodul ales își arată mânerele; butoanele din bara de su
   (nodul devine neted): media celor două, lungimea celui care există, sau, fără niciunul, câte o treime din segmentul lui. Pe un
   nod cu mânerele despărțite, le unește din nou;
 - **Curbă pe o parte**: păstrează mânerul de înainte (sau pune unul în prelungirea liniei care vine, ca linia să intre lin în
-  curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte.
+  curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte;
+- **Desparte**: taie forma chiar în nodul ales, ca [foarfeca cuțitului](#cutit): o cale închisă se deschide acolo, una deschisă
+  devine două forme (rămâne aleasă prima). Capătul unei căi deschise nu se desparte.
 
 **Trage un mâner** ca să schimbi curba; pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își păstrează
 lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț); pe mânerele despărțite, `Alt`
@@ -587,8 +589,9 @@ pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vect
 %% acopera: unealta.cutit
 
 Unealta **Cuțit** (`K`, după Noduri) taie direct pe pânză formele pe care le trece. Taie formele alese; fără nimic ales, toate
-formele foii. Cuțitul tras nu rămâne în desen, iar tăierea e cea din [Tăierea vectorilor](#taiere): exactă, cu bucățile alese
-după ea, la locul lor, și cu rolul lor de tăiere. Felul cuțitului se alege în bară:
+formele foii. Cuțitul tras nu rămâne în desen, iar tăierea e cea din [Tăierea vectorilor](#taiere): exactă, cu bucățile la
+locul lor și cu rolul lor de tăiere. Selecția rămâne cum era: fără nimic ales, rămâne nimic ales (tăieturile următoare au tot
+toate formele foii), iar o formă aleasă care se taie e înlocuită de bucățile ei. Felul cuțitului se alege în bară:
 - **Linie**: o tragere peste forme, din capăt în capăt; **Shift** dă pași de 15°, iar capetele se lipesc ca la desen (Alt
   inversează lipirea).
 - **Pen**: nodurile cuțitului, ca în unealta [Pen](#pen) (clic = colț, tragere = curbă); **Enter** sau dublu clic taie,
@@ -598,6 +601,14 @@ după ea, la locul lor, și cu rolul lor de tăiere. Felul cuțitului se alege �
   rămâne neschimbată. Un text taie din placa de sub el literele și placa cu golurile lor (mijlocul unui „O” rămâne în placă).
   **Shift + clic** adaugă forme la cuțit (contururile lor se citesc împreună); clicul fără Shift, sau **Enter**, taie cu toate;
   **Esc** le lasă.
+- **Foarfecă**: un clic pe conturul unei forme îl desparte acolo (lângă un nod, chiar în el): o cale închisă se deschide în
+  punctul acela, una deschisă devine două forme. Un cerc deschis rămâne cerc, ca drum: două semicercuri. Capătul unei căi
+  deschise nu se desparte.
+- **Retează**: bucata conturului de sub maus, între cele mai apropiate două locuri unde îl trec alte contururi (ale formelor
+  alese sau, fără nimic ales, ale tuturor formelor foii; și celelalte contururi ale aceleiași piese), se vede cu roșu, iar
+  clicul o scoate. Ce rămâne stă în aceeași formă, ca un DXF cu liniile prelungite să rămână, după curățat, o singură formă: cele
+  opt capete ale unui „#” lasă pătratul din mijloc. Un contur fără două locuri comune (o cale deschisă: fără niciunul) pleacă
+  tot. Unde se trece singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
 
 Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
 într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se

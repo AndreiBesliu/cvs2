@@ -1,19 +1,21 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { cerc, dxf, linie, lwpolilinie } from '../unit/ajutor-dxf.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
 
 /**
- * Unealta Cuțit (felia 10.3↑f, ADR 0181), în Edge, pe o placă 100 × 100 dintr-un DXF, fără nimic ales (răspunsul 2a: taie tot ce
- * trece): K alege unealta; felul **Linie** taie placa cu o tragere (cât tragi, locurile unde taie se numără), în două forme,
- * alese, iar Anulează o pune la loc; **Liber**, o urmă trasă cu mâna; **Pen**, trei clicuri și Enter; **Formă** (nota
- * owner-ului), un text pus pe placă: din ea ies litera și placa cu golul ei, iar textul rămâne; două cercuri adunate cu
- * Shift + clic taie împreună.
+ * Unealta Cuțit (feliile 10.3↑f și 10.3↑g, ADR 0181), în Edge, pe forme dintr-un DXF, fără nimic ales (răspunsul 2a: taie tot
+ * ce trece): K alege unealta; felul **Linie** taie placa cu o tragere (cât tragi, locurile unde taie se numără), în două forme,
+ * iar selecția rămâne goală, ca tăieturile următoare să aibă tot toate formele; Anulează o pune la loc; **Liber**, o urmă trasă
+ * cu mâna; **Pen**, trei clicuri și Enter; **Formă** (nota owner-ului), un text pus pe placă: din ea ies litera și placa cu golul
+ * ei, iar textul rămâne; două cercuri adunate cu Shift + clic taie împreună. **Foarfeca** deschide un cerc și desparte o cale
+ * deschisă în două; **Retează** arată bucata de sub maus și, cu opt clicuri, face dintr-un „#” pătratul din mijloc, tot o formă;
+ * **Desparte**, din unealta Noduri, deschide dreptunghiul în colțul ales.
  */
 test.use({ locale: 'ro-RO' });
 
 const fisierDxf = (nume: string, text: string) => ({ name: nume, mimeType: 'application/dxf', buffer: Buffer.from(text, 'utf8') });
 const PATRAT = lwpolilinie([[0, 0], [100, 0], [100, 100], [0, 100]], true, { strat: 'PATRAT' });
-const GATA = 'Forme tăiate: 1; forme noi: 2, alese.';
+const GATA = 'Forme tăiate: 1; forme noi: 2.';
 
 const randuri = (page: Page) => page.getByTestId('lista-vectori').locator('button[data-instanta]');
 const alese = (page: Page) => page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]');
@@ -43,13 +45,13 @@ async function nimicAles(page: Page, la: La): Promise<void> {
   await expect(alese(page)).toHaveCount(0);
 }
 
-async function cutit(page: Page, fel: 'linie' | 'pen' | 'liber' | 'forma'): Promise<void> {
+async function cutit(page: Page, fel: 'linie' | 'pen' | 'liber' | 'forma' | 'foarfeca' | 'reteaza'): Promise<void> {
   await page.locator('[data-unealta="cutit"]').click();
   await page.locator(`[data-cutit="${fel}"]`).click();
   await expect(page.locator(`[data-cutit="${fel}"]`)).toHaveAttribute('aria-pressed', 'true');
 }
 
-test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, alese (cât tragi, locurile se văd); Anulează', async ({ page }) => {
+test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, iar selecția rămâne goală (cât tragi, locurile se văd); Anulează', async ({ page }) => {
   const la = await placa(page);
   await page.locator('[data-unealta="selectie"]').focus();
   await page.keyboard.press('k');
@@ -70,7 +72,8 @@ test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, al
   await page.mouse.up();
   await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
   await expect(randuri(page)).toHaveCount(2);
-  await expect(alese(page)).toHaveCount(2);
+  // Selecția rămâne cum era: fără nimic ales, tot nimic (tăietura următoare are tot toate formele foii).
+  await expect(alese(page)).toHaveCount(0);
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(1);
 });
@@ -131,7 +134,7 @@ test('Formă (nota owner-ului): un text pus pe placă, clic pe el: din placă ie
   await page.mouse.click(m.x, m.y);
   await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
   await expect(randuri(page)).toHaveCount(3);
-  await expect(alese(page)).toHaveCount(2);
+  await expect(alese(page)).toHaveCount(0);
 });
 
 test('Formă: Shift + clic adună un cerc în cuțit, clicul pe al doilea taie placa cu amândouă', async ({ page }) => {
@@ -155,4 +158,80 @@ test('Formă: Shift + clic adună un cerc în cuțit, clicul pe al doilea taie p
   await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
   // Placa: cele două discuri și placa cu două găuri; cercurile-cuțit rămân.
   await expect(randuri(page)).toHaveCount(4);
+});
+
+/** Formele din DXF (o singură piesă), apoi nimic ales și lipirea oprită. */
+async function importa(page: Page, entitati: string, randuriDupa = 1): Promise<La> {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('forme.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati })));
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  await expect(randuri(page)).toHaveCount(randuriDupa);
+  await page.locator('[data-editare="lipire"]').click();
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="selectie"]').click();
+  const q = la(250, 50);
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.getAttribute('data-testid') ?? null, [q.x, q.y] as const)).toBe('panza');
+  await page.mouse.click(q.x, q.y);
+  await expect(alese(page)).toHaveCount(0);
+  return la;
+}
+
+test('Foarfecă: cercul se deschide în punctul clicului, tot o formă', async ({ page }) => {
+  const la = await importa(page, cerc(50, 50, 40, { strat: 'CERC' }));
+  await cutit(page, 'foarfeca');
+  await expect(page.getByTestId('cutit-sfat')).toContainText('Clic pe conturul unei forme');
+  const c = la(90, 50);
+  await page.mouse.click(c.x, c.y);
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Forme tăiate: 1; forme noi: 1.');
+  await expect(randuri(page)).toHaveCount(1);
+});
+
+test('Foarfecă: calea deschisă se desparte în două forme; capătul ei, nu', async ({ page }) => {
+  const la = await importa(page, lwpolilinie([[0, 0], [100, 0], [100, 100]], false, { strat: 'CALE' }));
+  await cutit(page, 'foarfeca');
+  const p = la(100, 40);
+  await page.mouse.click(p.x, p.y);
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Forme tăiate: 1; forme noi: 2.');
+  await expect(randuri(page)).toHaveCount(2);
+  // Capătul unei căi deschise nu se desparte.
+  const cap = la(100, 100);
+  await page.mouse.click(cap.x, cap.y);
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Capătul unei căi deschise nu se poate despărți: dă clic între capete.');
+});
+
+test('Retează: bucata de sub maus se vede; opt clicuri pe capetele unui „#” lasă pătratul din mijloc, tot o formă', async ({ page }) => {
+  const DIEZ = [linie(0, 20, 100, 20), linie(0, 80, 100, 80), linie(20, 0, 20, 100), linie(80, 0, 80, 100)].join('');
+  const la = await importa(page, DIEZ);
+  await cutit(page, 'reteaza');
+  for (const [x, y] of [[90, 20], [10, 20], [90, 80], [10, 80], [20, 90], [20, 10], [80, 90], [80, 10]] as const) {
+    const q = la(x, y);
+    await page.mouse.move(q.x, q.y);
+    // Capătul de sub maus (de la încrucișare până la capătul liniei) e marcat cu roșu, înainte de clic.
+    await expect(page.getByTestId('cutit')).toHaveAttribute('data-marcaj', '2');
+    await page.mouse.click(q.x, q.y);
+    await expect(page.getByTestId('cutit-sfat')).toHaveText('Bucată scoasă; ce a rămas din contur stă în forma lui.');
+  }
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(alese(page)).toHaveCount(0);
+  // Aleasă din listă, forma are cutia pătratului din mijloc.
+  await page.locator('[data-unealta="selectie"]').click();
+  await randuri(page).first().click();
+  await expect(page.locator('#root, body').getByText('60.00 × 60.00 mm')).toBeVisible();
+});
+
+test('Noduri, Desparte: dreptunghiul se deschide chiar în colțul ales (o cale cu cinci noduri, tot o formă)', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-editare="lipire"]').click();
+  await page.locator('[data-unealta="noduri"]').click();
+  await expect(page.locator('[data-editare="nod-desparte"]')).toBeDisabled();
+  const la = await ecran(page, await vedere(page));
+  const colt = la(20, 20);
+  await page.mouse.click(colt.x, colt.y);
+  await expect(page.getByTestId('noduri')).toHaveAttribute('data-ales', '0');
+  await page.locator('[data-editare="nod-desparte"]').click();
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(randuri(page).first()).toContainText('cale');
+  await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '5');
 });

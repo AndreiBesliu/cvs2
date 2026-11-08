@@ -755,3 +755,49 @@ export function judecaNetezirea(a: FormaOracol, b: FormaOracol, tol: number, pas
   if (a.inchis && a.seg[0] && b.seg[0] && !acelasi(a.seg[0].a, b.seg[0].a)) rau.push('vârful 0 al căii închise s-a mutat');
   return rau;
 }
+
+/**
+ * Judecata foarfecii (ADR 0181 §4; lista abaterilor, goală = bună): formele de după acoperă exact formele de dinainte (fiecare
+ * punct vechi pe o formă nouă și invers), cu aceeași lungime în total; o tăietură nouă (un capăt nou) stă la cel mult `tol` de
+ * clic; un contur închis devine o singură cale deschisă, unul deschis, două.
+ */
+export function judecaFoarfeca(o: { readonly inainte: readonly FormaOracol[]; readonly dupa: readonly FormaOracol[]; readonly punct: P; readonly tol: number }): string[] {
+  const rau: string[] = [];
+  for (const f of o.inainte) for (const q of esantioane(f, 48)) if (distantaLaForme(q, o.dupa) > 1e-6) { rau.push(`un punct vechi (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) lipsește`); break; }
+  for (const f of o.dupa) for (const q of esantioane(f, 48)) if (distantaLaForme(q, o.inainte) > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) e inventat`); break; }
+  const la = (fs: readonly FormaOracol[]): number => fs.reduce((x, f) => x + lungimeForma(f), 0);
+  if (Math.abs(la(o.inainte) - la(o.dupa)) > 1e-6 * Math.max(1, la(o.inainte))) rau.push(`lungimea: ${la(o.dupa)}, nu ${la(o.inainte)}`);
+  const capete = (fs: readonly FormaOracol[]): P[] => fs.filter((f) => !f.inchis && f.seg.length > 0).flatMap((f) => [(f.seg[0] as Seg).a, (f.seg[f.seg.length - 1] as Seg).b]);
+  const vechi = capete(o.inainte);
+  const noi = capete(o.dupa).filter((q) => vechi.every((v) => Math.hypot(v.x - q.x, v.y - q.y) > 1e-6));
+  if (noi.length === 0) rau.push('niciun capăt nou: nimic tăiat');
+  for (const q of noi) if (Math.hypot(q.x - o.punct.x, q.y - o.punct.y) > o.tol + 1e-9) { rau.push(`tăietura (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) e departe de clic`); break; }
+  const deschise = o.dupa.filter((f) => !f.inchis).length - o.inainte.filter((f) => !f.inchis).length;
+  if (deschise !== 1) rau.push(`căi deschise în plus: ${deschise}, nu 1 (un contur închis devine o cale; unul deschis, două)`);
+  return rau;
+}
+
+/**
+ * Judecata retezatului (ADR 0181 §5; lista abaterilor): nimic inventat (fiecare punct nou pe o formă veche); ce s-a scos conține
+ * punctul de sub clic; niciun punct scos nu stă pe celelalte contururi (`alte`, cu care se taie), deci bucata scoasă nu trece de
+ * un loc comun; fiecare capăt nou stă pe ele (bucata se oprește chiar în locul comun).
+ */
+export function judecaRetezarea(o: { readonly inainte: readonly FormaOracol[]; readonly dupa: readonly FormaOracol[]; readonly alte: readonly FormaOracol[]; readonly punct: P }): string[] {
+  const rau: string[] = [];
+  for (const f of o.dupa) for (const q of esantioane(f, 48)) if (distantaLaForme(q, o.inainte) > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) e inventat`); break; }
+  if (o.dupa.length > 0 && distantaLaForme(o.punct, o.dupa) <= 1e-6) rau.push('punctul de sub clic a rămas');
+  // Punctele scoase: ale formelor vechi, departe de cele noi; niciunul pe celelalte contururi (o margine de un micron la capete).
+  for (const f of o.inainte) {
+    for (const q of esantioane(f, 48)) {
+      if (distantaLaForme(q, o.dupa) <= 1e-6) continue;
+      if (o.alte.length > 0 && distantaLaForme(q, o.alte) <= 1e-9 && distantaLaForme(q, o.dupa) > 1e-3) { rau.push(`bucata scoasă trece de un loc comun, în (${q.x.toFixed(4)}, ${q.y.toFixed(4)})`); break; }
+    }
+  }
+  const capete = (fs: readonly FormaOracol[]): P[] => fs.filter((f) => !f.inchis && f.seg.length > 0).flatMap((f) => [(f.seg[0] as Seg).a, (f.seg[f.seg.length - 1] as Seg).b]);
+  const vechi = capete(o.inainte);
+  for (const q of capete(o.dupa)) {
+    if (vechi.some((v) => Math.hypot(v.x - q.x, v.y - q.y) <= 1e-6)) continue;
+    if (o.alte.length === 0 || distantaLaForme(q, o.alte) > 1e-6) { rau.push(`un capăt nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu stă într-un loc comun`); break; }
+  }
+  return rau;
+}

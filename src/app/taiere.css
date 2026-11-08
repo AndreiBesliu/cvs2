@@ -152,6 +152,20 @@
   stroke: none;
 }
 
+/* Retează: bucata de sub maus, care pleacă la clic (ADR 0181 §5). */
+.urma-cutit .bucata-reteaza {
+  stroke: var(--rosu);
+  stroke-width: 4;
+  stroke-dasharray: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.bara-cutit .contur.gros {
+  stroke-width: 2.6;
+}
+
 /* Felul Pen: calea pusă e cuțitul, deci are culoarea lui. */
 .pen-cutit .drum-pen,
 .pen-cutit .pen-elastic {

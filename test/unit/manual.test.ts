@@ -95,7 +95,7 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
   conversie: 'editare.conversie',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
 };
 
 // Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același

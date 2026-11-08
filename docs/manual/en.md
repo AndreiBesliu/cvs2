@@ -433,7 +433,9 @@ the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top 
   (the node becomes smooth): the average of the two, the length of the one there is, or, with none, a third of each segment. On
   a node with split handles, it joins them again;
 - **Curve on one side**: keeps the forward handle (or puts one in line with the incoming line, so the line flows into the
-  curve) and removes the other; another click moves the curve to the other side.
+  curve) and removes the other; another click moves the curve to the other side;
+- **Split**: cuts the shape right at the chosen node, like the [knife's scissors](#cutit): a closed path opens there, an open
+  one becomes two shapes (the first stays chosen). The end of an open path is not split.
 
 **Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
 `Alt`, the handles split (the node stays a curve on both sides, but with a corner); on split handles, `Alt` joins them again:
@@ -607,8 +609,9 @@ placed several times on the sheet is not cut from here. Each cut (**Cut vectors*
 
 The **Knife** tool (`K`, after Nodes) cuts the shapes it crosses, right on the canvas. It cuts the chosen shapes; with nothing
 chosen, all the shapes of the sheet. The drawn knife does not stay in the drawing, and the cut is the one from [Cutting
-vectors](#taiere): exact, with the pieces chosen after it, in their place, and with their cutting role. Pick the knife mode in
-the bar:
+vectors](#taiere): exact, with the pieces in their place and with their cutting role. The choice stays as it was: with nothing
+chosen, nothing stays chosen (the next cuts still have all the shapes of the sheet), and a chosen shape that is cut is replaced
+by its pieces. Pick the knife mode in the bar:
 - **Line**: a drag across the shapes, from end to end; **Shift** gives 15° steps, and the ends snap as in drawing (Alt
   inverts snapping).
 - **Pen**: the knife nodes, as in the [Pen](#pen) tool (click = corner, drag = curve); **Enter** or a double-click cuts,
@@ -619,6 +622,15 @@ the bar:
   stays unchanged. A text cuts the letters out of the plate under it, and the plate keeps their holes (the middle of an “O”
   stays in the plate). **Shift + click** adds shapes to the knife (their contours are read together); a click without Shift,
   or **Enter**, cuts with all of them; **Esc** drops them.
+- **Scissors**: a click on the outline of a shape splits it there (near a node, right at it): a closed path opens at that
+  point, an open one becomes two shapes. An opened circle stays a circle, as a path: two half circles. The end of an open path
+  is not split.
+- **Trim**: the piece of the outline under the mouse, between the two nearest places where other outlines cross it (of the
+  chosen shapes or, with nothing chosen, of all the shapes of the sheet; and the other outlines of the same piece), shows in
+  red, and the click removes it. What is left stays in the same shape, so that a DXF with overshooting lines stays, once
+  cleaned, a single shape: the eight ends of a “#” leave the square in the middle. An outline without two common points (an
+  open path: without any) goes entirely. Where an outline crosses itself is not a common point: that is the checking's job. The
+  lines left are not joined.
 
 While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
 (for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was

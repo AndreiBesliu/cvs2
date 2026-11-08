@@ -19,7 +19,10 @@ import { elementeFoaie } from '../model/lume.ts';
 import type { Cutit } from '../model/taiere.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
-import { adaugaLaUrma, caleCutit, caleDinPen, cutiePuncte, esteModCutit, locuriAproximative, MODURI_CUTIT, tinteCutit, type ModCutit, type Polilinie } from './cutitCalcul.ts';
+import {
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cutiePuncte, esteModCutit, locuriAproximative, locuriComune, MODURI_CUTIT,
+  selectieDupa, subPolilinie, tinteCutit, type ConturAproximat, type ModCutit, type Polilinie,
+} from './cutitCalcul.ts';
 import { capatConstrans, type FormaDesenata } from './desenCalcul.ts';
 import { citesteInchide, scrieInchide } from './inchidereTaiere.ts';
 import { drumSvg } from './noduriCalcul.ts';
@@ -88,8 +91,8 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
 
   /** Tăierea, calculată de worker pe documentul de acum; aplicată prin acțiunea documentului. Un eșec (nu o anulare) merge în jurnal. */
   const taie = (cutit: Cutit, cutitIds: readonly string[]): void => {
-    const laCerere = doc;
-    const alese = tinteCutit(laCerere, selectie, cutitIds);
+    const laCerere = doc, alegerea = selectie;
+    const alese = tinteCutit(laCerere, alegerea, cutitIds);
     if (alese.length === 0) {
       setStare({ fel: 'gata', text: t('editare.cutit.nimic-de-taiat'), rau: true });
       return;
@@ -111,11 +114,14 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
           setStare({ fel: 'gata', text: t(`editare.taiere.motiv.${r.motiv}`), rau: true });
           return;
         }
-        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids, sterse: r.sterse });
+        // Selecția rămâne cum era (fără nimic ales, tot nimic): tăieturile următoare au aceleași forme.
+        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: selectieDupa(alegerea, r.degrupate, r.sterse), sterse: r.sterse });
         const parti = String(r.ids.length);
-        const text = r.scoase > 0
-          ? t('editare.taiere.gata-scoase', { n: String(r.forme), parti, s: String(r.scoase) })
-          : t('editare.taiere.gata', { n: String(r.forme), parti });
+        const text = cutit.fel === 'reteaza'
+          ? (r.ids.length === 0 ? t('editare.cutit.retezat-tot') : t('editare.cutit.retezat'))
+          : r.scoase > 0
+            ? t('editare.cutit.gata-scoase', { n: String(r.forme), parti, s: String(r.scoase) })
+            : t('editare.cutit.gata', { n: String(r.forme), parti });
         setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
       }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
     }, cade);
@@ -188,7 +194,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
         if (cale) s.taie({ fel: 'cale', cale, netezire: 0.5 / scara }, []);
         return;
       }
-      // Felul Formă: un clic (fără tragere) pe o formă existentă.
+      // Felurile Formă, Foarfecă și Retează: un clic (fără tragere) pe o formă.
       if (faza === 'misca') return;
       a = null;
       const s0 = start;
@@ -196,6 +202,11 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       const id = instantaLa(s.doc, x, y, TOLERANTA_CLIC_PX / scara);
       if (!id) {
         setStare({ fel: 'gata', text: t('editare.cutit.nimic-sub'), rau: true });
+        return;
+      }
+      if (s.mod === 'foarfeca' || s.mod === 'reteaza') {
+        // Locul exact (nodul de lângă clic, sau piciorul pe latură) îl caută workerul, pe conturul formei de sub clic.
+        s.taie({ fel: s.mod, id, punct: { x, y }, toleranta: TOLERANTA_CLIC_PX / scara }, []);
         return;
       }
       if (m.shift) {
@@ -255,6 +266,51 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     return elementeFoaie(doc, 0).filter((e) => ids.has(e.instanta)).map((e) => drumSvg(conturElement(e), vedere));
   }, [forme, doc, vedere]);
 
+  // Retează: contururile formelor (cele alese, fără alegere toate ale foii) și locurile lor comune, aproximate, pentru bucata
+  // arătată sub maus; peste plafon, doar clicul (tăierea e tot exactă, a workerului).
+  const retezare = useMemo((): { readonly forme: ConturAproximat[]; readonly locuri: number[][] } | null => {
+    if (mod !== 'reteaza') return null;
+    const ids = new Set(tinteCutit(doc, selectie, []));
+    const forme: ConturAproximat[] = [];
+    let n = 0;
+    for (const e of elementeFoaie(doc, 0)) {
+      if (!ids.has(e.instanta)) continue;
+      const c = conturElement(e);
+      const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
+      n += p.length;
+      if (n > PLAFON_PUNCTE) return null;
+      if (p.length >= 2) forme.push(conturAproximat(p, c.inchis, e.instanta));
+    }
+    const locuri = locuriComune(forme);
+    return locuri ? { forme, locuri } : null;
+  }, [doc, selectie, mod]);
+  const [marcaj, setMarcaj] = useState<readonly Punct[] | null>(null);
+  const radacina = useRef<HTMLDivElement | null>(null);
+  const acumRetezare = useRef({ retezare, vedere });
+  acumRetezare.current = { retezare, vedere };
+  useEffect(() => {
+    if (mod !== 'reteaza') { setMarcaj(null); return undefined; }
+    let cadru = 0;
+    const misca = (e: PointerEvent): void => {
+      const el = radacina.current;
+      if (!el || cadru) return;
+      const cx = e.clientX, cy = e.clientY;
+      cadru = requestAnimationFrame(() => {
+        cadru = 0;
+        const { retezare: r, vedere: v } = acumRetezare.current;
+        const box = el.getBoundingClientRect();
+        if (!r || cx < box.left || cx > box.right || cy < box.top || cy > box.bottom) { setMarcaj(null); return; }
+        const q = { x: (cx - box.left - v.tx) / v.scara, y: (v.ty - (cy - box.top)) / v.scara };
+        const b = bucataSub(r.forme, r.locuri, q, TOLERANTA_CLIC_PX / v.scara);
+        setMarcaj(b ? subPolilinie(r.forme[b.i] as ConturAproximat, b.de, b.pana) : null);
+      });
+    };
+    window.addEventListener('pointermove', misca, true);
+    return () => { window.removeEventListener('pointermove', misca, true); if (cadru) cancelAnimationFrame(cadru); };
+  }, [mod]);
+  // Documentul s-a schimbat (o bucată scoasă): marcajul vechi nu mai e al lui.
+  useEffect(() => { setMarcaj(null); }, [doc]);
+
   const sfat = stare?.fel === 'gata' ? stare.text
     : stare?.fel === 'calcul' ? t('editare.cutit.calcul')
       : mod === 'forma' && forme.length > 0 ? t('editare.cutit.sfat.adunate', { n: String(forme.length) })
@@ -281,11 +337,13 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     <>
       {loc ? createPortal(bara, loc) : null}
       {mod === 'pen' ? pen({ termina: (f) => { const c = caleDinPen(f); if (c) taie({ fel: 'cale', cale: c }, []); }, sfat }) : (
-        <div className="cutit" data-testid="cutit" data-mod={mod} data-locuri={locuri.length} data-adunate={forme.length}>
+        <div className="cutit" ref={radacina} data-testid="cutit" data-mod={mod} data-locuri={locuri.length} data-adunate={forme.length}
+          data-marcaj={marcaj ? marcaj.length : 0}>
           <svg className="rigle-desen urma-cutit" width={marime.latime} height={marime.inaltime} aria-hidden="true">
             {urma?.fel === 'linie' ? <line x1={sx(urma.a.x)} y1={sy(urma.a.y)} x2={sx(urma.b.x)} y2={sy(urma.b.y)} /> : null}
             {urma?.fel === 'liber' ? <polyline points={urma.puncte.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} /> : null}
             {adunate.map((d, i) => <path key={i} d={d} />)}
+            {marcaj ? <polyline className="bucata-reteaza" points={marcaj.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} /> : null}
             {locuri.map((q, i) => <circle key={i} className="loc-taiere" cx={sx(q.x)} cy={sy(q.y)} r={3.5} />)}
           </svg>
           <span className={stare?.fel === 'gata' && stare.rau ? 'cip cip-rosu noduri-sfat' : 'cip noduri-sfat'} role="status" data-testid="cutit-sfat"
@@ -296,7 +354,10 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   );
 }
 
-/** Iconițele felurilor: linia cu capetele ei, curba Pen-ului cu un nod, urma mâinii, un „T” punctat (o formă existentă). */
+/**
+ * Iconițele felurilor: linia cu capetele ei, curba Pen-ului cu un nod, urma mâinii, un „T” punctat (o formă existentă),
+ * foarfeca și o linie cu capătul de dincolo de o altă linie, gros (bucata care pleacă).
+ */
 function IconaMod({ m }: { readonly m: ModCutit }): ReactElement {
   const desen: Record<ModCutit, ReactElement> = {
     linie: (
@@ -313,6 +374,18 @@ function IconaMod({ m }: { readonly m: ModCutit }): ReactElement {
     ),
     liber: <path className="contur" d="M1.5 10 C3 6 5 13 7 9 S10 4 11.5 8 S13.5 11 14.5 7" />,
     forma: <path className="contur" d="M3 4 H13 M8 4 V13.5" strokeDasharray="2 1.5" />,
+    foarfeca: (
+      <>
+        <circle className="contur" cx="4" cy="12" r="2" /><circle className="contur" cx="12" cy="12" r="2" />
+        <path className="contur" d="M5.4 10.6 L11 2.5 M10.6 10.6 L5 2.5" />
+      </>
+    ),
+    reteaza: (
+      <>
+        <path className="contur" d="M1.5 8 H9.5 M9.5 2.5 V13.5" />
+        <path className="contur gros" d="M10.5 8 H14.5" />
+      </>
+    ),
   };
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[m]}</svg>;
 }

@@ -666,6 +666,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       return v.ok ? null : t(v.motiv);
     }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
   };
+  // Desparte, din unealta Noduri (ADR 0181 §4): forma tăiată în nodul ales, ca de foarfeca cuțitului (calculul e al
+  // workerului); după, e aleasă prima bucată, ca unealta să rămână pe ea.
+  const desparteLaNod = (instanta: string, punct: { readonly x: number; readonly y: number }): Promise<string | null> => {
+    if (p.doarCitire) return Promise.resolve(null);
+    const laCerere = doc;
+    const eroare = (e: unknown): string => {
+      reportError(new Error(`despărțirea la nod: ${e instanceof Error ? e.message : String(e)}`));
+      return t('editare.taiere.eroare');
+    };
+    const cutit = { fel: 'foarfeca' as const, id: instanta, punct, toleranta: 1e-6 };
+    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit, alese: [instanta], inchide: false }).then((r) => {
+      if (!r.ok) return t(`editare.taiere.motiv.${r.motiv}`);
+      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids.slice(0, 1) }) });
+      return v.ok ? null : t(v.motiv);
+    }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
+  };
   // Degruparea (ADR 0103): piesele-grup alese se desfac în părțile lor, prin acțiunea registrului (și din meniul de clic
   // dreapta, din paletă, cu Ctrl+Shift+G). Refuzul se spune lângă butoane, până la altă selecție.
   const [motivDegrupare, setMotivDegrupare] = useState<string | null>(null);
@@ -1171,7 +1187,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
           onLinii={setLiniiManere} locBara={locNoduri}
-          aplica={(f, nod) => { ruleaza('document.forma', { formaEditata: () => f, nodEditat: () => nod }); }} />
+          aplica={(f, nod) => { ruleaza('document.forma', { formaEditata: () => f, nodEditat: () => nod }); }}
+          desparte={desparteLaNod} />
       ) : null}
       {unealta === 'pen' && !vedere3d && !p.doarCitire ? (
         <Pen vedere={vedere} marime={marime} zona={zona}
@@ -1757,7 +1774,12 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
  * a conturului pleacă prin `document.forma`, cu elementul ei; dreptunghiul și cercul devin căi la prima schimbare. Apăsările pe
  * noduri și pe mânere nu mai ajung la pânză (nici alegerea, nici mutarea); restul, da.
  */
-function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma }: {
+function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma, desparte }: {
+  /**
+   * Desparte (ADR 0181 §4): forma tăiată chiar în nodul ales, ca de foarfeca cuțitului; promisiunea dă motivul unui refuz,
+   * sau null.
+   */
+  readonly desparte: (instanta: string, punct: Punct) => Promise<string | null>;
   readonly doc: Document;
   readonly selectie: readonly string[];
   readonly vedere: Vedere;
@@ -1980,6 +2002,16 @@ function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLin
     setAles({ e: ales.e, i: r.nod });
   };
   const fara = tipAles === null || doarCitire;
+  // Desparte: forma, tăiată în nodul ales (în lume), prin workerul tăierii; refuzul (capătul unei căi deschise) se spune în sfat.
+  const desparteLaNod = (): void => {
+    const c = ales ? cai[ales.e] : undefined;
+    const nod = ales && c ? c.varfuri[ales.i] : undefined;
+    if (!ales || !nod || typeof f === 'string' || doarCitire) return;
+    void desparte(f.instanta, aplica(elemente[ales.e]!.matrice, nod.p)).then((m) => {
+      setMotiv(m);
+      if (!m) setAles(null);
+    });
+  };
   const manere = caleAleasa && ales && tipAles !== null ? manereAfisate(caleAleasa, ales.i) : null;
   const total = vizibile.reduce((n, c) => n + c.varfuri.length, 0);
   return (
@@ -2022,6 +2054,13 @@ function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLin
           <button type="button" className="aliniaza" aria-pressed={tipAles === 'inainte' || tipAles === 'inapoi'} disabled={fara} title={t('editare.noduri.o-parte')}
             aria-label={t('editare.noduri.o-parte')} data-editare="nod-o-parte" onClick={() => { schimba('o-parte'); }}>
             <IconaTipNod tip="o-parte" />
+          </button>
+          <button type="button" className="aliniaza" disabled={fara} title={t('editare.noduri.desparte')}
+            aria-label={t('editare.noduri.desparte')} data-editare="nod-desparte" onClick={desparteLaNod}>
+            <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path className="contur" d="M1.5 9 L6.5 9 M9.5 9 L14.5 9 M6.5 4 L9.5 14" />
+              <rect x="6.2" y="7.2" width="3.6" height="3.6" />
+            </svg>
           </button>
         </span>, locBara) : null}
     </div>

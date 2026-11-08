@@ -6,7 +6,10 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { adaugaLaUrma, caleCutit, caleDinPen, cutiePuncte, esteModCutit, locuriAproximative, lungimeUrma, tinteCutit } from '../../src/app/cutitCalcul.ts';
+import {
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cutiePuncte, esteModCutit, locuriAproximative, locuriComune, lungimeUrma,
+  selectieDupa, subPolilinie, tinteCutit,
+} from '../../src/app/cutitCalcul.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const stoc = { latime: 1000, inaltime: 1000, grosime: 18 };
@@ -65,6 +68,49 @@ test('locurile aproximative: o linie oblică trece pătratul pe două laturi, cu
 });
 
 test('felurile cuțitului: doar cele știute trec', () => {
-  for (const m of ['linie', 'pen', 'liber', 'forma']) assert.ok(esteModCutit(m), m);
-  for (const m of ['foarfeca', '', null, 3]) assert.ok(!esteModCutit(m), String(m));
+  for (const m of ['linie', 'pen', 'liber', 'forma', 'foarfeca', 'reteaza']) assert.ok(esteModCutit(m), m);
+  for (const m of ['decupare', '', null, 3]) assert.ok(!esteModCutit(m), String(m));
+});
+
+test('selecția după tăiere: nimic ales rămâne nimic; o formă aleasă tăiată, înlocuită de bucățile ei; una ștearsă iese', () => {
+  const degrupate = [{ instanta: { id: 'a' }, parti: [{ instanta: { id: 'a1' } }, { instanta: { id: 'a2' } }] }];
+  assert.deepEqual(selectieDupa([], degrupate, []), []);
+  assert.deepEqual(selectieDupa(['a', 'b'], degrupate, []), ['a1', 'a2', 'b']);
+  assert.deepEqual(selectieDupa(['b', 'c'], degrupate, ['c']), ['b']);
+});
+
+test('bucata de sub maus (Retează): între cele mai apropiate locuri comune; fără ele, tot conturul; punctele ei, pentru marcaj', () => {
+  // „#”: orizontala y = 20 și verticalele x = 20, x = 80, toate de la 0 la 100.
+  const h = conturAproximat([{ x: 0, y: 20 }, { x: 100, y: 20 }], false, 'd');
+  const v1 = conturAproximat([{ x: 20, y: 0 }, { x: 20, y: 100 }], false, 'd');
+  const v2 = conturAproximat([{ x: 80, y: 0 }, { x: 80, y: 100 }], false, 'd');
+  const forme = [h, v1, v2];
+  const locuri = locuriComune(forme);
+  assert.ok(locuri);
+  assert.deepEqual(locuri[0], [20, 80], 'pe orizontală, la x = 20 și x = 80');
+  assert.deepEqual(locuri[1], [20], 'și pe verticala x = 20, la y = 20');
+  const capat = bucataSub(forme, locuri, { x: 90, y: 20.5 }, 1);
+  assert.deepEqual(capat, { i: 0, de: 80, pana: 100, tot: false });
+  assert.deepEqual(subPolilinie(h, 80, 100), [{ x: 80, y: 20 }, { x: 100, y: 20 }]);
+  assert.deepEqual(bucataSub(forme, locuri, { x: 50, y: 20 }, 1), { i: 0, de: 20, pana: 80, tot: false }, 'mijlocul');
+  assert.equal(bucataSub(forme, locuri, { x: 50, y: 50 }, 1), null, 'departe de contururi');
+  // Un pătrat închis trecut de o singură verticală: două locuri, bucata din dreapta trece prin colțuri, peste capăt.
+  const p = conturAproximat([{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }, { x: 0, y: 100 }], true, 'p');
+  const l = conturAproximat([{ x: 50, y: -10 }, { x: 50, y: 110 }], false, 'l');
+  const lp = locuriComune([p, l]);
+  assert.ok(lp);
+  // Latura de jos, la 50; cea de sus se parcurge de la (100, 100) spre stânga: (50, 100) e la 200 + 50.
+  assert.deepEqual(lp[0], [50, 250]);
+  const dreapta = bucataSub([p, l], lp, { x: 100, y: 50 }, 1);
+  assert.deepEqual(dreapta, { i: 0, de: 50, pana: 250, tot: false });
+  assert.deepEqual(subPolilinie(p, 50, 250), [{ x: 50, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }, { x: 50, y: 100 }]);
+  // Înaintea primului loc (jos, la x = 20): bucata vine de la ultimul loc, peste capăt.
+  assert.deepEqual(bucataSub([p, l], lp, { x: 20, y: 0 }, 1), { i: 0, de: 250, pana: 50, tot: false });
+  const stanga = bucataSub([p, l], lp, { x: 0, y: 50 }, 1);
+  assert.deepEqual(stanga, { i: 0, de: 250, pana: 50, tot: false });
+  assert.deepEqual(subPolilinie(p, 250, 50), [{ x: 50, y: 100 }, { x: 0, y: 100 }, { x: 0, y: 0 }, { x: 50, y: 0 }]);
+  // Fără nicio altă formă: tot pătratul.
+  assert.deepEqual(bucataSub([p], [[]], { x: 100, y: 50 }, 1), { i: 0, de: 0, pana: 400, tot: true });
+  // Peste plafonul perechilor cercetate: nimic de arătat.
+  assert.equal(locuriComune([p, l], 1), null);
 });
