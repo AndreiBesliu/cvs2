@@ -5,7 +5,8 @@
  * `src/ui/actiuniExportCalcul.ts` neschimbat: același program, aceiași octeți.
  */
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
-import { programeDopuri } from '../cam/incrustatie.ts';
+import { programeDopuri } from '../cam/dopV.ts';
+import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
@@ -64,8 +65,12 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
   if (!e.ok) return e;
   // Dopurile incrustațiilor (ADR 0170 §3): câte un program pe semifabricatul lui, cu originea în colțul ales și Z0 mereu pe fața
   // lui. Fața se coboară până dincolo de marginea semifabricatului (în aer), deci ieșirea e a construcției, scrisă în program.
-  const calculate = programeDopuri(doc, REGIM_IMPLICIT);
-  if (!calculate.ok) return calculate;
+  // Dopurile (ADR 0170, ADR 0171): întâi cele în V, apoi cele cu pereți drepți; numerele fișierelor le urmează.
+  const inV = programeDopuri(doc, REGIM_IMPLICIT);
+  if (!inV.ok) return inV;
+  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT);
+  if (!drepte.ok) return drepte;
+  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };
   const dopuri: DopExportat[] = [];
   for (const [k, d] of calculate.dopuri.entries()) {
     const semifabricat = { latime: d.semifabricat.latime, inaltime: d.semifabricat.inaltime, grosime: d.semifabricat.grosimeMinima };

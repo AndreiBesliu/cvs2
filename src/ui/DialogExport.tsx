@@ -5,7 +5,8 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  INCRUSTATIE_IMPLICITA, laturiOferite, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
+  INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, laturiOferite, latimeMinimaBanda, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, PUNTI_BANDA,
+  SUB_FATA_DOPULUI, susLaMicron, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
   type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
   type Unitati,
 } from './actiuniExportTipuri.ts';
@@ -66,10 +67,34 @@ export type ValoriOperatie = {
   readonly strategie?: { readonly fel: 'paralel'; readonly unghi: number };
   /** Incrustația unui V-carve (ADR 0170): jocurile, marginea dopului și lemnul din jurul lui; `null` = un V-carve obișnuit. */
   readonly incrustatie?: IncrustatieOperatie | null;
+  /** Incrustația cu pereți drepți a unui buzunar (ADR 0171); `null` = un buzunar obișnuit. */
+  readonly incrustatieDreapta?: IncrustatieDreaptaOperatie | null;
 };
-/** Incrustația în V (ADR 0170 §1): jocul pentru clei, spațiul pentru fierăstrău, marginea semifabricatului, în mm. */
+/**
+ * Incrustația în V (ADR 0170 §1): jocul pentru clei, spațiul pentru fierăstrău, marginea semifabricatului, în mm; lemnul din
+ * jurul dopului (ADR 0172): fața coborâtă sau banda, cu valorile ei.
+ */
 export type IncrustatieOperatie = {
   readonly joc: number; readonly fierastrau: number; readonly margine: number; readonly jurDop: 'fata' | 'banda';
+  readonly banda?: BandaOperatie;
+};
+/**
+ * Banda îngustă din jurul dopului în V (ADR 0172, răspunsurile 1–5): lățimea (lipsă = cea mai mică, socotită de lucrare),
+ * decuparea prin placă, grosimea plăcii, freza decupării (lipsă = a fundului plat) și punțile, în mm.
+ */
+export type BandaOperatie = {
+  readonly latime?: number; readonly decupare: boolean; readonly grosimePlaca: number;
+  readonly freza?: { readonly numar: number; readonly diametru: number };
+  readonly punti: { readonly numar: number; readonly latime: number; readonly grosime: number };
+};
+/**
+ * Incrustația cu pereți drepți (ADR 0171 §1, răspunsurile 1, 2 și 4): jocul lateral, dopul ridicat sau decupat, sprijinul
+ * celui ridicat, jocul de sub dop (g) și spațiul de deasupra (H), marginea semifabricatului, în mm; frezele dopului, prima și
+ * cele de rest (lipsă = ale locașului).
+ */
+export type IncrustatieDreaptaOperatie = {
+  readonly jocLateral: number; readonly dop: 'ridicat' | 'decupat'; readonly sprijin: 'fund' | 'fata';
+  readonly joc: number; readonly fierastrau: number; readonly margine: number; readonly frezeDop?: readonly FrezaRestOperatie[];
 };
 /** O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm). */
 export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
@@ -113,6 +138,8 @@ export type StareExport =
      */
     readonly dopuri?: readonly {
       readonly nume: string; readonly linii: number; readonly sha256: string; readonly latime: number; readonly inaltime: number; readonly grosimeMinima: number;
+      /** Dopul decupat (ADR 0171): placa lui are exact grosimea dată. */
+      readonly exacta?: boolean;
     }[];
     /** `calcul`: simularea rulează (după descărcare); apoi rezultatul ei. */
     readonly rezumat: RezumatJob; readonly simulare: SimulareExport | 'calcul';
@@ -182,6 +209,16 @@ function inMargini(s: string, plafon: number, minim = 0): boolean {
 /** Diametrul implicit al frezei drepte a fundului plat (ADR 0091 §4), în mm (1/8″). */
 const DIAMETRU_FUND_IMPLICIT = 3.175;
 
+/** Marginea dopului unei incrustații: în [0, plafonul ei]. */
+function margineBuna(s: string): boolean {
+  const m = citesteNumar(s);
+  return m !== null && m >= 0 && m <= MARGINI_OPERATIE.margineDop;
+}
+
+/** Dopul cu pereți drepți ridicat și sprijinit pe față (ADR 0171): folosește jocul de sub el (g), nu spațiul de deasupra (H). */
+const sprijinitPeFata = (p: { readonly dopInc: 'ridicat' | 'decupat'; readonly sprijinInc: 'fund' | 'fata' }): boolean =>
+  p.dopInc === 'ridicat' && p.sprijinInc === 'fata';
+
 /** Urechile pornite sau nu; câmpurile lor rămân scrise și cu bifa scoasă, ca o bifă pusă la loc să nu le piardă. */
 type Rand = {
   /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
@@ -218,11 +255,62 @@ type Rand = {
    */
   readonly incrustatie: boolean; readonly jocInc: string; readonly fierastrauInc: string; readonly margineInc: string;
   readonly acelasiSpatiu: boolean;
-  /** Lemnul din jurul dopului, cel din document (fereastra încă nu-l alege: banda vine în felia 12.1↑c). */
+  /**
+   * Lemnul din jurul dopului (ADR 0172): fața coborâtă sau banda, cu lățimea (goală = cea mai mică), decuparea, placa (goală =
+   * S + H + 1), freza decupării (bifa: alta decât a fundului plat) și punțile, ca text; câmpurile rămân scrise și pe fața
+   * coborâtă, iar cele ale decupării și fără ea.
+   */
   readonly jurDop: 'fata' | 'banda';
+  readonly latimeBanda: string; readonly decupareBanda: boolean; readonly placaBanda: string;
+  readonly frezaBanda: boolean; readonly numarSculaBanda: string; readonly diametruSculaBanda: string;
+  readonly numarPunti: string; readonly latimePunti: string; readonly grosimePunti: string;
+  /**
+   * Incrustația cu pereți drepți (ADR 0171): un buzunar care își declară dopul, cu jocul lateral, felul dopului și sprijinul
+   * lui, ca text; jocul de sub dop, spațiul de deasupra și marginea sunt câmpurile incrustației în V (aceleași înțelesuri).
+   * `frezaDop`: dopul are frezele lui (răspunsul 4), prima și cele de rest; câmpurile rămân scrise și cu bifa scoasă.
+   */
+  readonly incrustatieDreapta: boolean; readonly lateralInc: string; readonly dopInc: 'ridicat' | 'decupat'; readonly sprijinInc: 'fund' | 'fata';
+  readonly frezaDop: boolean; readonly numarSculaDop: string; readonly diametruSculaDop: string; readonly pasLateralDop: string;
+  readonly restDop: readonly RandRest[];
 };
 /** O freză de rest pe rândul ei, ca text: numărul, diametrul și pasul lateral. */
 type RandRest = { readonly numar: string; readonly diametru: string; readonly pas: string };
+
+/**
+ * Banda dopului pe rând (ADR 0172), din câmpurile lui, ca în lucrare (`valoriBanda`): placa implicită S + H + 1 și cea mai mică
+ * cu decuparea (S + H + punțile), din adâncime, joc și fierăstrău; lățimea cea mai mică, și din unghiul V-ului, freza fundului
+ * plat și, cu decuparea, a ei (null fără ele). Null fără adâncime, joc sau fierăstrău.
+ */
+function bandaRand(p: Rand): { readonly placaImplicita: number; readonly placaMinima: number | null; readonly minima: number | null } | null {
+  const D = citesteNumar(p.adancime), g = citesteNumar(p.jocInc), H = p.acelasiSpatiu ? g : citesteNumar(p.fierastrauInc);
+  if (D === null || g === null || H === null) return null;
+  const S = D - g, u = citesteNumar(p.unghiV), gp = citesteNumar(p.grosimePunti);
+  const fund = p.fundPlat ? citesteNumar(p.diametruSculaFund) : null;
+  const decupare = !p.decupareBanda ? fund : p.frezaBanda ? citesteNumar(p.diametruSculaBanda) : fund;
+  return {
+    placaImplicita: S + H + SUB_FATA_DOPULUI, placaMinima: gp === null ? null : S + H + gp,
+    minima: u === null || fund === null || decupare === null ? null : latimeMinimaBanda(H, Math.tan((u * Math.PI) / 360), fund, decupare),
+  };
+}
+
+/**
+ * Câmpurile benzii unui rând sunt bune (ADR 0172): lățimea goală (cea mai mică) sau cel puțin cea mai mică, sub plafon; cu
+ * decuparea, placa goală (S + H + 1) sau sub plafon, oricum cel puțin fundul benzii plus punțile, punțile ca urechile și,
+ * cu bifa ei, freza decupării ca a fundului plat. Ce nu se știe încă (un câmp gol) îl spune lucrarea, cu motiv.
+ */
+function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean; readonly punti: boolean; readonly freza: boolean } {
+  const v = bandaRand(p);
+  const latime = p.latimeBanda.trim() === '' || (inMargini(p.latimeBanda, MARGINI_OPERATIE.latimeBanda)
+    && (v?.minima == null || (citesteNumar(p.latimeBanda) ?? 0) >= v.minima - 1e-9));
+  const placaScrisa = p.placaBanda.trim() === '' ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);
+  const placa = !p.decupareBanda || ((p.placaBanda.trim() === '' || inMargini(p.placaBanda, MARGINI_OPERATIE.placaBanda))
+    && (placaScrisa === null || v?.placaMinima == null || placaScrisa >= v.placaMinima - 1e-9));
+  const punti = !p.decupareBanda || (intregInMargini(p.numarPunti, MARGINI_OPERATIE.urechi) && inMargini(p.latimePunti, MARGINI_OPERATIE.latimeUreche)
+    && inMargini(p.grosimePunti, MARGINI_OPERATIE.grosimeUreche));
+  const freza = !p.decupareBanda || !p.frezaBanda || (intregInMargini(p.numarSculaBanda, MARGINI_OPERATIE.numarScula)
+    && inMargini(p.diametruSculaBanda, MARGINI_OPERATIE.diametru));
+  return { latime, placa, punti, freza };
+}
 /** Câte freze de rest are o listă (ADR 0093, plafonul documentului). */
 const MAXIM_REST = 8;
 /**
@@ -362,11 +450,22 @@ export function DialogExport(
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
   // Pe un rând cu căi deschise, urechile, rampa, intrările și degajările vin mai târziu (ADR 0037 §9, §12): bifele pornesc
   // scoase și rămân oprite, iar Exportă le scrie scoase (ce refuză exportul nu se oferă).
+  // Cel mai mare T al operațiilor (frezele lor, ale fundului plat, de rest, ale dopurilor): o freză nouă, cu bifa ei, pornește
+  // de la următorul, ca să nu ia numărul altei freze.
+  const tMaxim = Math.max(0, ...operatii.flatMap((o) => {
+    const v = o.valori, fp = v.fundPlat;
+    return [
+      v.scula?.numar ?? 0, fp?.numar ?? 0, ...(fp?.rest ?? []).map((r) => r.numar), ...(v.rest ?? []).map((r) => r.numar),
+      ...(v.incrustatieDreapta?.frezeDop ?? []).map((r) => r.numar), v.incrustatie?.banda?.freza?.numar ?? 0,
+    ];
+  }));
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
     const inchise = o.deschise === 0;
     const fund = o.valori.fundPlat ?? null;
     const diametruFund = fund?.diametru ?? DIAMETRU_FUND_IMPLICIT;
+    const dr = o.valori.incrustatieDreapta, inc = o.valori.incrustatie ?? dr, dop0 = dr?.frezeDop?.[0], banda = o.valori.incrustatie?.banda;
+    const diametruDop = dop0?.diametru ?? Math.round((o.valori.scula?.diametru ?? 6) * 500) / 1000;
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
       formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
@@ -394,10 +493,29 @@ export function DialogExport(
       restFund: (fund?.rest ?? []).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
       strategie: o.valori.strategie ? 'paralel' : 'inele', unghiParalel: text(o.valori.strategie?.unghi ?? 0),
       incrustatie: inchise && o.valori.tip === 'vcarve' && o.valori.incrustatie != null,
-      jocInc: text(o.valori.incrustatie?.joc ?? INCRUSTATIE_IMPLICITA.joc), fierastrauInc: text(o.valori.incrustatie?.fierastrau ?? INCRUSTATIE_IMPLICITA.fierastrau),
-      margineInc: text(o.valori.incrustatie?.margine ?? INCRUSTATIE_IMPLICITA.margine),
+      // Jocul de sub dop, spațiul de deasupra și marginea: ale incrustației rândului, în V sau cu pereți drepți (aceleași înțelesuri).
+      jocInc: text(inc?.joc ?? INCRUSTATIE_IMPLICITA.joc), fierastrauInc: text(inc?.fierastrau ?? INCRUSTATIE_IMPLICITA.fierastrau),
+      margineInc: text(inc?.margine ?? INCRUSTATIE_IMPLICITA.margine),
       acelasiSpatiu: o.valori.incrustatie != null && o.valori.incrustatie.joc === o.valori.incrustatie.fierastrau,
       jurDop: o.valori.incrustatie?.jurDop ?? 'fata',
+      // Banda (ADR 0172): valorile din document, altfel cele implicite: lățimea și placa goale (cea mai mică, S + H + 1),
+      // decuparea pusă, freza ei a fundului plat (bifa scoasă; cu bifa, primul T de după toate frezele operațiilor), punțile
+      // 4 × 4 × 1 mm.
+      latimeBanda: banda?.latime !== undefined ? text(banda.latime) : '', decupareBanda: banda?.decupare ?? true,
+      placaBanda: banda ? text(banda.grosimePlaca) : '', frezaBanda: banda?.freza !== undefined,
+      numarSculaBanda: text(banda?.freza?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),
+      diametruSculaBanda: text(banda?.freza?.diametru ?? diametruFund),
+      numarPunti: text(banda?.punti.numar ?? PUNTI_BANDA.numar), latimePunti: text(banda?.punti.latime ?? PUNTI_BANDA.latime),
+      grosimePunti: text(banda?.punti.grosime ?? PUNTI_BANDA.grosime),
+      // Pereții drepți (ADR 0171): implicit jocul lateral 0,1, dopul ridicat, pe fund; frezele dopului, ale locașului (bifa
+      // scoasă), iar cu bifa pornesc de la primul T de după toate frezele operațiilor (ca freza decupării benzii; T-ul locașului
+      // + 1 putea fi al altei freze) și de la jumătate din diametrul locașului.
+      incrustatieDreapta: inchise && o.valori.tip === 'buzunar' && dr != null,
+      lateralInc: text(dr?.jocLateral ?? INCRUSTATIE_DREAPTA_IMPLICITA.jocLateral),
+      dopInc: dr?.dop ?? INCRUSTATIE_DREAPTA_IMPLICITA.dop, sprijinInc: dr?.sprijin ?? INCRUSTATIE_DREAPTA_IMPLICITA.sprijin,
+      frezaDop: dop0 !== undefined, numarSculaDop: text(dop0?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)), diametruSculaDop: text(diametruDop),
+      pasLateralDop: text(dop0?.pasLateral ?? pasLateralImplicit(diametruDop)),
+      restDop: (dr?.frezeDop ?? []).slice(1).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -443,13 +561,23 @@ export function DialogExport(
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
     pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean; rest: boolean;
-    strategie: boolean; incrustatie: boolean;
+    strategie: boolean; incrustatie: boolean; dreapta: boolean; frezaDop: boolean; banda: boolean;
   } => ({
     // Incrustația (ADR 0170 §1): jocul și fierăstrăul în (0, 1 000], marginea în [0, 10 000]; restul (jocul față de adâncime,
     // conul) îl judecă lucrarea, cu motiv.
     incrustatie: p !== undefined && (p.tip !== 'vcarve' || !p.incrustatie || (inMargini(p.jocInc, MARGINI_OPERATIE.adancime)
       && (p.acelasiSpatiu || inMargini(p.fierastrauInc, MARGINI_OPERATIE.adancime))
-      && ((m) => m !== null && m >= 0 && m <= MARGINI_OPERATIE.margineDop)(citesteNumar(p.margineInc)))),
+      && margineBuna(p.margineInc))),
+    // Pereții drepți (ADR 0171): jocul lateral în (0, 1 000], spațiul folosit (g pe față, H pe fund și la decupat) la fel,
+    // marginea în [0, 10 000]; jocul față de adâncime și de freză îl judecă lucrarea, cu motiv.
+    dreapta: p !== undefined && (p.tip !== 'buzunar' || !p.incrustatieDreapta || (inMargini(p.lateralInc, MARGINI_OPERATIE.adancime)
+      && inMargini(sprijinitPeFata(p) ? p.jocInc : p.fierastrauInc, MARGINI_OPERATIE.adancime) && margineBuna(p.margineInc))),
+    // Frezele dopului (răspunsul 4): doar cu bifa; prima ca freza fundului plat, cele de rest tot mai mici.
+    frezaDop: p !== undefined && (p.tip !== 'buzunar' || !p.incrustatieDreapta || !p.frezaDop || (intregInMargini(p.numarSculaDop, MARGINI_OPERATIE.numarScula)
+      && inMargini(p.diametruSculaDop, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralDop, d / 2))(citesteNumar(p.diametruSculaDop))
+      && restBun(p.restDop, p.diametruSculaDop).every(Boolean))),
+    // Banda dopului în V (ADR 0172): doar pe o incrustație în V cu banda (`bandaBuna`).
+    banda: p !== undefined && (p.tip !== 'vcarve' || !p.incrustatie || p.jurDop !== 'banda' || Object.values(bandaBuna(p)).every(Boolean)),
     // Strategia paralelă (ADR 0094): unghiul liniilor în [0, 180).
     strategie: p !== undefined && (p.tip !== 'buzunar' || p.strategie === 'inele' || ((u) => u !== null && u >= 0 && u < 180)(citesteNumar(p.unghiParalel))),
     // Frezele de rest (ADR 0093): ale buzunarului; ale fundului plat, doar cu bifa pusă.
@@ -509,8 +637,16 @@ export function DialogExport(
     // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
     const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
     if (nf !== null && df !== null) adaugaFreza(nf, df, null);
-    // Și frezele de rest (ADR 0093): ale buzunarului și, cu bifa pusă, ale fundului plat.
-    for (const r of [...(p?.tip === 'buzunar' ? p.rest : []), ...(p?.tip === 'vcarve' && p.fundPlat ? p.restFund : [])]) {
+    // Și freza dopului cu pereți drepți (ADR 0171, răspunsul 4), cu bifa pusă: același T e aceeași freză și în fișierul dopului.
+    const dopPropriu = p?.tip === 'buzunar' && p.incrustatieDreapta && p.frezaDop;
+    const nd = dopPropriu ? citesteNumar(p.numarSculaDop) : null, dd = p ? citesteNumar(p.diametruSculaDop) : null;
+    if (nd !== null && dd !== null) adaugaFreza(nd, dd, null);
+    // Și freza decupării dopului cu bandă (ADR 0172), cu bifa ei și cu decuparea: același T e aceeași freză și în fișierul dopului.
+    const bandaProprie = p?.tip === 'vcarve' && p.incrustatie && p.jurDop === 'banda' && p.decupareBanda && p.frezaBanda;
+    const nb = bandaProprie ? citesteNumar(p.numarSculaBanda) : null, db = p ? citesteNumar(p.diametruSculaBanda) : null;
+    if (nb !== null && db !== null) adaugaFreza(nb, db, null);
+    // Și frezele de rest (ADR 0093): ale buzunarului și, cu bifa pusă, ale fundului plat și ale dopului.
+    for (const r of [...(p?.tip === 'buzunar' ? p.rest : []), ...(p?.tip === 'vcarve' && p.fundPlat ? p.restFund : []), ...(dopPropriu ? p.restDop : [])]) {
       const nr = citesteNumar(r.numar), dr = citesteNumar(r.diametru);
       if (nr !== null && dr !== null) adaugaFreza(nr, dr, null);
     }
@@ -530,8 +666,11 @@ export function DialogExport(
   const resturiBune = randuri.every((b) => b.rest);
   const strategiiBune = randuri.every((b) => b.strategie);
   const incrustatiiBune = randuri.every((b) => b.incrustatie);
+  const drepteBune = randuri.every((b) => b.dreapta);
+  const frezeDopBune = randuri.every((b) => b.frezaDop);
+  const benziBune = randuri.every((b) => b.banda);
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune;
+    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -547,7 +686,8 @@ export function DialogExport(
     });
   };
   // Lista afișată: ordinea omului sau cea automată. Pentru rândurile legate și pentru risc, ce știe fiecare rând acum: piesa,
-  // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat; ADR 0133 §2).
+  // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat; ADR 0133 §2) sau o
+  // incrustație cu pereți drepți (ADR 0171).
   const ordine = ordineMea ?? automata;
   const dupaCheie = new Map(operatii.map((o) => [o.cheie, o]));
   const numar = (s: string): string => String(citesteNumar(s));
@@ -558,10 +698,20 @@ export function DialogExport(
       numar(p.numarScula), numar(p.diametruScula), p.formaScula, numar(p.unghiV), numar(p.varfV), numar(p.adancime), numar(p.pas), p.sens,
       p.fundPlat ? [numar(p.numarSculaFund), numar(p.diametruSculaFund), numar(p.pasLateralFund), ...p.restFund.map((r) => `${numar(r.numar)} ${numar(r.diametru)} ${numar(r.pas)}`)].join(' ') : '',
     ].join('|');
+    // Incrustația cu pereți drepți (ADR 0171) se taie tot ca o singură regiune, din operațiile cu aceleași valori: freza, adâncimea,
+    // pasul, sensul, pasul lateral, frezele de rest, strategia, coborârea și incrustația (`valoriBuzunarDrept`, în lucrare).
+    const lista = (l: readonly RandRest[]): string => l.map((r) => `${numar(r.numar)} ${numar(r.diametru)} ${numar(r.pas)}`).join(' ');
+    const dreapta = p.tip !== 'buzunar' || !p.incrustatieDreapta ? null : [
+      'drept', numar(p.numarScula), numar(p.diametruScula), numar(p.adancime), numar(p.pas), p.sens, numar(p.pasLateral), lista(p.rest),
+      p.strategie === 'paralel' ? `paralel ${numar(p.unghiParalel)}` : p.coborare === 'plonjare' ? ''
+        : [p.coborare, numar(p.unghiCoborare), p.coborare === 'zigzag' ? numar(p.lungimeZigzag) : p.coborare === 'elice' ? numar(p.razaElice) : ''].join(' '),
+      numar(p.lateralInc), p.dopInc, p.sprijinInc, numar(p.jocInc), numar(p.fierastrauInc), numar(p.margineInc),
+      p.frezaDop ? `${numar(p.numarSculaDop)} ${numar(p.diametruSculaDop)} ${numar(p.pasLateralDop)} ${lista(p.restDop)}` : '',
+    ].join('|');
     // Buzunarul, găurirea și V-carve-ul se scriu pe interior (`operatieDinDialog`), oricare ar fi latura rămasă în rând.
     const profil = p.tip === 'profil';
     return [[o.cheie, {
-      piesa: o.cheie.slice(0, o.cheie.indexOf('/')), latura: profil ? p.latura : 'interior', despartire: profil && p.despartire, vcarve,
+      piesa: o.cheie.slice(0, o.cheie.indexOf('/')), latura: profil ? p.latura : 'interior', despartire: profil && p.despartire, vcarve: vcarve ?? dreapta,
       ...(o.inauntru ? { inauntru: o.inauntru } : {}),
     }]];
   }));
@@ -583,24 +733,30 @@ export function DialogExport(
   };
   /**
    * Frezele de rest ale unui rând (ADR 0093): câte un rând cu T, Ø și pasul, scos cu ×; „Adaugă” pune una cu T-ul următor
-   * liber, jumătate din diametrul celei dinainte și pasul de 40 %. `fund`: lista fundului plat (oprită fără bifă).
+   * liber, jumătate din diametrul celei dinainte și pasul de 40 %. `fel`: lista buzunarului, a fundului plat sau a dopului cu
+   * pereți drepți (ADR 0171; ultimele două, oprite fără bifă).
    */
-  const frezeRest = (cheie: string, p: Rand, fund: boolean, oprit: boolean): ReactNode => {
-    const lista = fund ? p.restFund : p.rest, prima = fund ? p.diametruSculaFund : p.diametruScula, pre = fund ? 'fund-' : '';
-    const pune = (nou: readonly RandRest[]): void => { schimba(cheie, fund ? { restFund: nou } : { rest: nou }); };
+  const frezeRest = (cheie: string, p: Rand, fel: 'buzunar' | 'fund' | 'dop', oprit: boolean): ReactNode => {
+    const lista = fel === 'fund' ? p.restFund : fel === 'dop' ? p.restDop : p.rest;
+    const prima = fel === 'fund' ? p.diametruSculaFund : fel === 'dop' ? p.diametruSculaDop : p.diametruScula;
+    const pre = fel === 'buzunar' ? '' : `${fel}-`;
+    const pune = (nou: readonly RandRest[]): void => { schimba(cheie, fel === 'fund' ? { restFund: nou } : fel === 'dop' ? { restDop: nou } : { rest: nou }); };
     const bune = restBun(lista, prima);
     const adauga = (): void => {
-      // Numerele folosite: freza fiecărui rând, frezele de rest ale buzunarelor și, cu bifa pusă, freza fundului și ale ei.
+      // Numerele folosite: freza fiecărui rând, frezele de rest ale buzunarelor și, cu bifa pusă, freza fundului, a dopului și
+      // ale lor.
       const toate = Object.values(param).flatMap((r) => [
         r.numarScula, ...(r.tip === 'buzunar' ? r.rest.map((x) => x.numar) : []),
         ...(r.tip === 'vcarve' && r.fundPlat ? [r.numarSculaFund, ...r.restFund.map((x) => x.numar)] : []),
+        ...(r.tip === 'buzunar' && r.incrustatieDreapta && r.frezaDop ? [r.numarSculaDop, ...r.restDop.map((x) => x.numar)] : []),
+        ...(r.tip === 'vcarve' && r.incrustatie && r.jurDop === 'banda' && r.decupareBanda && r.frezaBanda ? [r.numarSculaBanda] : []),
       ]);
       const t0 = Math.max(0, ...toate.map((x) => citesteNumar(x) ?? 0));
       const d0 = citesteNumar(lista.at(-1)?.diametru ?? prima) ?? 6, d = Math.round((d0 / 2) * 1000) / 1000;
       pune([...lista, { numar: text(Math.min(MARGINI_OPERATIE.numarScula, t0 + 1)), diametru: text(d), pas: text(pasLateralImplicit(d)) }]);
     };
     return (
-      <div className="campuri-rest" data-rest={fund ? `fund:${cheie}` : cheie}>
+      <div className="campuri-rest" data-rest={fel === 'buzunar' ? cheie : `${fel}:${cheie}`}>
         <span title={t('export.rest.titlu')}>{t('export.rest')}</span>
         {lista.map((r, k) => (
           <span className="freza-rest" data-rest-rand={k} key={k}>
@@ -643,10 +799,28 @@ export function DialogExport(
       const fundPlat = p.fundPlat && numar !== null && diametru !== null && pasLateral !== null
         ? { numar, diametru, pasLateral, ...(restFund && restFund.length > 0 ? { rest: restFund } : {}) } : null;
       // Incrustația (ADR 0170): cu bifa pusă, jocurile și marginea rândului (fierăstrăul = jocul cu „același spațiu”); fără ea,
-      // `null` (un V-carve obișnuit). Lemnul din jurul dopului rămâne cel din document (implicit fața coborâtă; banda vine în felia 12.1↑c).
+      // `null` (un V-carve obișnuit). Lemnul din jurul dopului (ADR 0172): al rândului.
       const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc), margine = citesteNumar(p.margineInc);
       if (p.incrustatie && (joc === null || fierastrau === null || margine === null)) return [];
-      const incrustatie = p.incrustatie && joc !== null && fierastrau !== null && margine !== null ? { joc, fierastrau, margine, jurDop: p.jurDop } : null;
+      // Banda (ADR 0172): doar cu `jurDop: 'banda'` (pe fața coborâtă, câmpul pleacă); lățimea goală nu se scrie (cea mai mică,
+      // socotită de lucrare), placa goală e S + H + 1. Fără decupare, placa și punțile (cerute de document) rămân cele scrise dacă
+      // sunt bune, altfel cele implicite; freza decupării, doar cu bifa ei și bună.
+      let banda: BandaOperatie | undefined;
+      if (p.incrustatie && p.jurDop === 'banda') {
+        const v = bandaRand(p), ok = bandaBuna(p);
+        const latime = p.latimeBanda.trim() === '' ? undefined : citesteNumar(p.latimeBanda);
+        const placa = p.placaBanda.trim() === '' || !ok.placa ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);
+        const pn = ok.punti ? citesteNumar(p.numarPunti) : PUNTI_BANDA.numar, pl = ok.punti ? citesteNumar(p.latimePunti) : PUNTI_BANDA.latime;
+        const pg = ok.punti ? citesteNumar(p.grosimePunti) : PUNTI_BANDA.grosime;
+        const fn = p.frezaBanda && ok.freza ? citesteNumar(p.numarSculaBanda) : null, fd = p.frezaBanda && ok.freza ? citesteNumar(p.diametruSculaBanda) : null;
+        if (latime === null || placa === null || pn === null || pl === null || pg === null) return [];
+        banda = {
+          ...(latime !== undefined ? { latime } : {}), decupare: p.decupareBanda, grosimePlaca: placa,
+          ...(fn !== null && fd !== null ? { freza: { numar: fn, diametru: fd } } : {}), punti: { numar: pn, latime: pl, grosime: pg },
+        };
+      }
+      const incrustatie = p.incrustatie && joc !== null && fierastrau !== null && margine !== null
+        ? { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) } : null;
       return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve', fundPlat, incrustatie }] as const];
     }
     // Găurirea (ADR 0087 §1): latura interior, nimic din profil, cu ieșirea la al câtelea pas.
@@ -676,9 +850,29 @@ export function DialogExport(
         else if (p.coborare === 'zigzag') { if (lungime === null) return []; coborare = { fel: 'zigzag', unghi, lungime }; }
         else { if (raza === null) return []; coborare = { fel: 'elice', unghi, raza }; }
       }
+      // Incrustația cu pereți drepți (ADR 0171): cu rolul ei, valorile rândului; fără el, `null` (un buzunar obișnuit). Documentul
+      // cere și spațiul nefolosit (H pe față, g pe fund și la decupat): rămâne cel scris dacă e bun, altfel cel implicit.
+      let incrustatieDreapta: IncrustatieDreaptaOperatie | null = null;
+      if (p.incrustatieDreapta) {
+        const jocLateral = citesteNumar(p.lateralInc), margine = citesteNumar(p.margineInc);
+        const pastrat = (s: string, implicit: number): number => (inMargini(s, MARGINI_OPERATIE.adancime) ? citesteNumar(s) ?? implicit : implicit);
+        const fata = sprijinitPeFata(p);
+        const joc = fata ? citesteNumar(p.jocInc) : pastrat(p.jocInc, INCRUSTATIE_DREAPTA_IMPLICITA.joc);
+        const fierastrau = fata ? pastrat(p.fierastrauInc, INCRUSTATIE_DREAPTA_IMPLICITA.fierastrau) : citesteNumar(p.fierastrauInc);
+        if (jocLateral === null || margine === null || joc === null || fierastrau === null) return [];
+        // Frezele dopului (răspunsul 4): cu bifa, prima și cele de rest; fără ea, ale locașului (câmpul pleacă).
+        let frezeDop: FrezaRestOperatie[] | null = null;
+        if (p.frezaDop) {
+          const numar = citesteNumar(p.numarSculaDop), diametru = citesteNumar(p.diametruSculaDop), pasLateralDop = citesteNumar(p.pasLateralDop);
+          const restDop = citesteRest(p.restDop);
+          if (numar === null || diametru === null || pasLateralDop === null || restDop === null) return [];
+          frezeDop = [{ numar, diametru, pasLateral: pasLateralDop }, ...restDop];
+        }
+        incrustatieDreapta = { jocLateral, dop: p.dopInc, sprijin: p.sprijinInc, joc, fierastrau, margine, ...(frezeDop ? { frezeDop } : {}) };
+      }
       return [[o.cheie, {
         scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
-        ...(coborare ? { coborare } : {}), rest, ...strategie,
+        ...(coborare ? { coborare } : {}), rest, ...strategie, incrustatieDreapta,
       }] as const];
     }
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
@@ -726,6 +920,9 @@ export function DialogExport(
     ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
     ...(strategiiBune ? [] : [t('motiv.strategie-invalida')]),
     ...(incrustatiiBune ? [] : [t('motiv.incrustatie-invalida', { max: fmtFreza.format(MARGINI_OPERATIE.margineDop) })]),
+    ...(drepteBune ? [] : [t('motiv.incrustatie-dreapta-invalida', { max: fmtFreza.format(MARGINI_OPERATIE.margineDop) })]),
+    ...(frezeDopBune ? [] : [t('motiv.freza-dop-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
+    ...(benziBune ? [] : [t('motiv.banda-invalida', { n: MARGINI_OPERATIE.numarScula })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -893,19 +1090,23 @@ export function DialogExport(
                   <td>
                     {/* Buzunarul (ADR 0069) e încă o alegere a tăieturii, doar pe un rând cu contururi închise; găurirea (ADR 0087),
                         doar pe un rând numai cu cercuri. */}
-                    <select value={nuProfil ? (vc && p.incrustatie ? 'incrustatie' : p.tip) : p.latura} data-camp="latura" disabled={doarCitire}
-                      title={deschis ? t('export.latura.deschise.titlu') : undefined}
+                    <select value={nuProfil ? (vc && p.incrustatie ? 'incrustatie' : buz && p.incrustatieDreapta ? 'incrustatie-drept' : p.tip) : p.latura}
+                      data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
                       onChange={(ev) => {
                         const v = ev.target.value;
-                        // Incrustația (ADR 0170) e un V-carve care își declară dopul, cu freza dreaptă pusă (fața dopului o cere).
-                        schimba(o.cheie, v === 'incrustatie' ? { tip: 'vcarve', incrustatie: true, fundPlat: true }
-                          : v === 'buzunar' || v === 'gaurire' || v === 'vcarve' ? { tip: v, incrustatie: false } : { tip: 'profil', latura: v as Latura, incrustatie: false });
+                        // Incrustația (ADR 0170) e un V-carve care își declară dopul, cu freza dreaptă pusă (fața dopului o cere); cea
+                        // cu pereți drepți (ADR 0171), un buzunar care își declară dopul.
+                        const fara = { incrustatie: false, incrustatieDreapta: false } as const;
+                        schimba(o.cheie, v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true, fundPlat: true }
+                          : v === 'incrustatie-drept' ? { ...fara, tip: 'buzunar', incrustatieDreapta: true }
+                            : v === 'buzunar' || v === 'gaurire' || v === 'vcarve' ? { ...fara, tip: v } : { ...fara, tip: 'profil', latura: v as Latura });
                       }}>
                       {laturiOferite(o.deschise, o.noduri, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
                       {!deschis && <option value="buzunar">{t(CHEI_LATURA.buzunar)}</option>}
                       {!deschis && o.cercuri === true && <option value="gaurire">{t('export.latura.gaurire')}</option>}
                       {!deschis && <option value="vcarve">{t('export.latura.vcarve')}</option>}
                       {!deschis && <option value="incrustatie">{t('export.latura.incrustatie')}</option>}
+                      {!deschis && <option value="incrustatie-drept">{t('export.latura.incrustatie-drept')}</option>}
                     </select>
                   </td>
                   <td>
@@ -986,7 +1187,7 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.pasLateralFund} data-camp="fund-pas" disabled={doarCitire || !p.fundPlat}
                           aria-invalid={p.fundPlat && !b.fund} onChange={(ev) => { schimba(o.cheie, { pasLateralFund: ev.target.value }); }} />
                       </label>
-                      {frezeRest(o.cheie, p, true, doarCitire || !p.fundPlat)}
+                      {frezeRest(o.cheie, p, 'fund', doarCitire || !p.fundPlat)}
                       </div>
                       )}
                       {/* Incrustația (ADR 0170 §5): jocul pentru clei, spațiul pentru fierăstrău (sau același, răspunsul 3) și marginea
@@ -1014,7 +1215,69 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.margineInc} data-camp="inc-margine" disabled={doarCitire}
                           aria-invalid={!b.incrustatie} onChange={(ev) => { schimba(o.cheie, { margineInc: ev.target.value }); }} />
                       </label>
-                      <p className="nota-incrustatie">{t('export.incrustatie.nota')}</p>
+                      {/* Lemnul din jurul dopului (ADR 0172): fața coborâtă sau banda îngustă, cu valorile ei, fiecare la alegerea omului. */}
+                      <label title={t('export.banda.jur.titlu')}>
+                        {t('export.banda.jur')}
+                        <select value={p.jurDop} data-camp="inc-jur" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { jurDop: ev.target.value === 'banda' ? 'banda' : 'fata' }); }}>
+                          <option value="fata">{t('export.banda.jur.fata')}</option>
+                          <option value="banda">{t('export.banda.jur.banda')}</option>
+                        </select>
+                      </label>
+                      {p.jurDop === 'banda' && ((v, ok) => (<>
+                      <label title={t('export.banda.latime.titlu')}>
+                        {t('export.banda.latime')}
+                        <input type="text" inputMode="decimal" value={p.latimeBanda} data-camp="banda-latime" disabled={doarCitire}
+                          placeholder={v?.minima != null ? fmtFreza.format(susLaMicron(v.minima)) : ''}
+                          aria-invalid={!ok.latime} onChange={(ev) => { schimba(o.cheie, { latimeBanda: ev.target.value }); }} />
+                        {v?.minima != null && <span className="nota-camp" data-camp="banda-minima">{t('export.banda.minima', { mm: fmtFreza.format(susLaMicron(v.minima)) })}</span>}
+                      </label>
+                      <label title={t('export.banda.decupare.titlu')}>
+                        <input type="checkbox" checked={p.decupareBanda} data-camp="banda-decupare" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { decupareBanda: ev.target.checked }); }} />
+                        {t('export.banda.decupare')}
+                      </label>
+                      <label title={t('export.banda.placa.titlu')}>
+                        {t('export.banda.placa')}
+                        <input type="text" inputMode="decimal" value={p.placaBanda} data-camp="banda-placa" disabled={doarCitire || !p.decupareBanda}
+                          placeholder={v ? fmtFreza.format(v.placaImplicita) : ''}
+                          aria-invalid={!ok.placa} onChange={(ev) => { schimba(o.cheie, { placaBanda: ev.target.value }); }} />
+                        {p.decupareBanda && v?.placaMinima != null && <span className="nota-camp" data-camp="banda-placa-minima">{t('export.banda.placa.minima', { mm: fmtFreza.format(susLaMicron(v.placaMinima)) })}</span>}
+                      </label>
+                      <label title={t('export.banda.punti.numar.titlu')}>
+                        {t('export.banda.punti.numar')}
+                        <input type="text" inputMode="numeric" value={p.numarPunti} data-camp="banda-punti-numar" disabled={doarCitire || !p.decupareBanda}
+                          aria-invalid={!ok.punti} onChange={(ev) => { schimba(o.cheie, { numarPunti: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.banda.punti.latime.titlu')}>
+                        {t('export.banda.punti.latime')}
+                        <input type="text" inputMode="decimal" value={p.latimePunti} data-camp="banda-punti-latime" disabled={doarCitire || !p.decupareBanda}
+                          aria-invalid={!ok.punti} onChange={(ev) => { schimba(o.cheie, { latimePunti: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.banda.punti.grosime.titlu')}>
+                        {t('export.banda.punti.grosime')}
+                        <input type="text" inputMode="decimal" value={p.grosimePunti} data-camp="banda-punti-grosime" disabled={doarCitire || !p.decupareBanda}
+                          aria-invalid={!ok.punti} onChange={(ev) => { schimba(o.cheie, { grosimePunti: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.banda.freza.titlu')}>
+                        <input type="checkbox" checked={p.frezaBanda} data-camp="banda-freza" disabled={doarCitire || !p.decupareBanda}
+                          onChange={(ev) => { schimba(o.cheie, { frezaBanda: ev.target.checked }); }} />
+                        {t('export.banda.freza')}
+                      </label>
+                      {p.frezaBanda && (<>
+                      <label>
+                        {t('export.freza.numar')}
+                        <input type="text" inputMode="numeric" value={p.numarSculaBanda} data-camp="banda-scula" className="numar-scula" disabled={doarCitire || !p.decupareBanda}
+                          aria-invalid={!ok.freza || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { numarSculaBanda: ev.target.value }); }} />
+                      </label>
+                      <label>
+                        {t('export.freza.diametru')}
+                        <input type="text" inputMode="decimal" value={p.diametruSculaBanda} data-camp="banda-diametru" disabled={doarCitire || !p.decupareBanda}
+                          aria-invalid={!ok.freza || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaBanda: ev.target.value }); }} />
+                      </label>
+                      </>)}
+                      </>))(bandaRand(p), bandaBuna(p))}
+                      <p className="nota-incrustatie">{t(p.jurDop === 'banda' ? 'export.banda.nota' : 'export.incrustatie.nota')}</p>
                       </div>
                       )}
                       {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}
@@ -1091,7 +1354,78 @@ export function DialogExport(
                       </label>
                       )}
                       </>)}
-                      {frezeRest(o.cheie, p, false, doarCitire)}
+                      {frezeRest(o.cheie, p, 'buzunar', doarCitire)}
+                      </div>
+                      )}
+                      {/* Incrustația cu pereți drepți (ADR 0171 §5, răspunsurile 1, 2 și 4): jocul lateral, dopul ridicat sau decupat,
+                          sprijinul celui ridicat, spațiul folosit (H sau g), marginea și, la cerere, frezele dopului. */}
+                      {buz && p.incrustatieDreapta && (
+                      <div className="campuri-incrustatie" data-incrustatie={o.cheie} data-fel="drept">
+                      <label title={t('export.incrustatie-drept.lateral.titlu')}>
+                        {t('export.incrustatie-drept.lateral')}
+                        <input type="text" inputMode="decimal" value={p.lateralInc} data-camp="inc-lateral" disabled={doarCitire}
+                          aria-invalid={!inMargini(p.lateralInc, MARGINI_OPERATIE.adancime)} onChange={(ev) => { schimba(o.cheie, { lateralInc: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.incrustatie-drept.dop.titlu')}>
+                        {t('export.incrustatie-drept.dop')}
+                        <select value={p.dopInc} data-camp="inc-dop" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { dopInc: ev.target.value === 'decupat' ? 'decupat' : 'ridicat' }); }}>
+                          <option value="ridicat">{t('export.incrustatie-drept.dop.ridicat')}</option>
+                          <option value="decupat">{t('export.incrustatie-drept.dop.decupat')}</option>
+                        </select>
+                      </label>
+                      {p.dopInc === 'ridicat' && (
+                      <label title={t('export.incrustatie-drept.sprijin.titlu')}>
+                        {t('export.incrustatie-drept.sprijin')}
+                        <select value={p.sprijinInc} data-camp="inc-sprijin" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { sprijinInc: ev.target.value === 'fata' ? 'fata' : 'fund' }); }}>
+                          <option value="fund">{t('export.incrustatie-drept.sprijin.fund')}</option>
+                          <option value="fata">{t('export.incrustatie-drept.sprijin.fata')}</option>
+                        </select>
+                      </label>
+                      )}
+                      {sprijinitPeFata(p) ? (
+                      <label title={t('export.incrustatie-drept.joc.titlu')}>
+                        {t('export.incrustatie.joc')}
+                        <input type="text" inputMode="decimal" value={p.jocInc} data-camp="inc-joc" disabled={doarCitire}
+                          aria-invalid={!inMargini(p.jocInc, MARGINI_OPERATIE.adancime)} onChange={(ev) => { schimba(o.cheie, { jocInc: ev.target.value }); }} />
+                      </label>
+                      ) : (
+                      <label title={t(p.dopInc === 'decupat' ? 'export.incrustatie-drept.peste.titlu' : 'export.incrustatie-drept.fierastrau.titlu')}>
+                        {t(p.dopInc === 'decupat' ? 'export.incrustatie-drept.peste' : 'export.incrustatie.fierastrau')}
+                        <input type="text" inputMode="decimal" value={p.fierastrauInc} data-camp="inc-fierastrau" disabled={doarCitire}
+                          aria-invalid={!inMargini(p.fierastrauInc, MARGINI_OPERATIE.adancime)} onChange={(ev) => { schimba(o.cheie, { fierastrauInc: ev.target.value }); }} />
+                      </label>
+                      )}
+                      <label title={t('export.incrustatie-drept.margine.titlu')}>
+                        {t('export.incrustatie.margine')}
+                        <input type="text" inputMode="decimal" value={p.margineInc} data-camp="inc-margine" disabled={doarCitire}
+                          aria-invalid={!margineBuna(p.margineInc)} onChange={(ev) => { schimba(o.cheie, { margineInc: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.incrustatie-drept.freza-dop.titlu')}>
+                        <input type="checkbox" checked={p.frezaDop} data-camp="inc-freza-dop" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { frezaDop: ev.target.checked }); }} />
+                        {t('export.incrustatie-drept.freza-dop')}
+                      </label>
+                      {p.frezaDop && (<>
+                      <label>
+                        {t('export.freza.numar')}
+                        <input type="text" inputMode="numeric" value={p.numarSculaDop} data-camp="dop-scula" disabled={doarCitire}
+                          aria-invalid={!b.frezaDop || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { numarSculaDop: ev.target.value }); }} />
+                      </label>
+                      <label>
+                        {t('export.freza.diametru')}
+                        <input type="text" inputMode="decimal" value={p.diametruSculaDop} data-camp="dop-diametru" disabled={doarCitire}
+                          aria-invalid={!b.frezaDop || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruSculaDop: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.pas-lateral.titlu')}>
+                        {t('export.pas-lateral')}
+                        <input type="text" inputMode="decimal" value={p.pasLateralDop} data-camp="dop-pas" disabled={doarCitire}
+                          aria-invalid={!b.frezaDop} onChange={(ev) => { schimba(o.cheie, { pasLateralDop: ev.target.value }); }} />
+                      </label>
+                      {frezeRest(o.cheie, p, 'dop', doarCitire)}
+                      </>)}
+                      <p className="nota-incrustatie">{t('export.incrustatie-drept.nota')}</p>
                       </div>
                       )}
                       {p.urechi && !nuProfil && (
@@ -1206,7 +1540,7 @@ export function DialogExport(
           <ul className="dopuri" data-testid="export-dopuri" aria-live="polite">
             {stare.dopuri.map((d) => (
               <li key={d.nume} data-fisier={d.nume}>
-                {t('export.gata.dop', {
+                {t(d.exacta ? 'export.gata.dop-decupat' : 'export.gata.dop', {
                   nume: d.nume, latime: fmtFreza.format(d.latime), inaltime: fmtFreza.format(d.inaltime), grosime: fmtFreza.format(d.grosimeMinima),
                   n: d.linii, sha: d.sha256,
                 })}

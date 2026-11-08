@@ -10,6 +10,7 @@ import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
 import { refuzIncrustatie } from './incrustatie.ts';
+import { figuraDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
@@ -84,10 +85,13 @@ function cercInLume(t: Taietura): { readonly centru: { readonly x: number; reado
  * căi deschise, ADR 0037 §2); pe o cale deschisă (n-are interior); două contururi de aceeași adâncime care se ating sau se
  * intersectează (par-impar n-ar mai spune ce e buzunar). Pasul lateral îl judecă inelele (`ineleBuzunar`).
  */
-function buzunareSiInsule(taieturi: readonly Taietura[], conturDe: (t: Taietura) => Contur): Map<number, number[]> | string {
+function buzunareSiInsule(
+  taieturi: readonly Taietura[], conturDe: (t: Taietura) => Contur, aparte: (t: Taietura) => boolean = () => false,
+): Map<number, number[]> | string {
   const grupuri = new Map<number, number[]>();
   for (const [i, t] of taieturi.entries()) {
-    if (t.tip !== 'buzunar') continue;
+    // Un buzunar cu incrustație cu pereți drepți (ADR 0171) e regiunea lui, cu figura lui: nu intră în buzunarele foii.
+    if (t.tip !== 'buzunar' || aparte(t)) continue;
     if (t.latura !== 'interior' || t.urechi || t.rampa || t.intrari || t.colturi || t.despartire) {
       return `${t.idLume}: un buzunar stă înăuntrul conturului, fără urechi, rampă, intrări, degajări sau despărțire`;
     }
@@ -263,7 +267,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     contururi.set(t.idLume, r.contur);
   }
   const conturDe = (t: Taietura): Contur => contururi.get(t.idLume) as Contur;
-  const buzunare = buzunareSiInsule(taieturi, conturDe);
+  const buzunare = buzunareSiInsule(taieturi, conturDe, (u) => operatieDe(u)?.incrustatie?.fel === 'drept');
   if (typeof buzunare === 'string') return { ok: false, motiv: buzunare };
   // V-carve-ul (ADR 0090), ca buzunarul: înăuntrul contururilor închise, fără nimic din profil; înaintea căilor deschise,
   // ca motivul să fie al lui, nu al profilului.
@@ -374,6 +378,12 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // rând în fereastra exportului, se sapă cu golurile lui, ca dintr-o singură operație.
   const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${valoriVcarve({ ...u, fundPlat: operatieDe(u)?.fundPlat, incrustatie: operatieDe(u)?.incrustatie })}`;
   const vcarveFacute = new Set<string>();
+  // Incrustațiile cu pereți drepți făcute (ADR 0171): ca la V-carve, o regiune pe piesă, instanță și valori.
+  const cheieDreapta = (u: Taietura): string => {
+    const o = operatieDe(u);
+    return `${u.instanta}/${u.piesa}/${o ? valoriBuzunarDrept(o) : u.operatie}`;
+  };
+  const drepteFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;
     // Diametrul și raza sculei acestei tăieturi.
@@ -456,51 +466,75 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // doar dinăuntrul conturului lui, până la adâncimea lui (§4), iar traseul lui stă înăuntru prin construcție (§5). O
     // insulă (ADR 0073) rămâne în picioare: n-are traseu, o ocolește buzunarul care o cuprinde.
     if (t.tip === 'buzunar') {
+      const op = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
+      /**
+       * Buzunarul unei regiuni (exteriorul și insulele ei), cu inelele sau liniile, coborârea și frezele de rest ale operației;
+       * motivul unui refuz (fără element), sau null.
+       */
+      const taieBuzunar = (contur: Contur, ci: readonly Contur[], eticheta: string): string | null => {
+        const pasLateral = op?.pasLateral;
+        if (pasLateral === undefined) return 'buzunarul n-are pasul lateral';
+        const adancimi = adancimiTreceri(t.adancime, t.pas);
+        if (typeof adancimi === 'string') return adancimi;
+        // Strategia paralelă (ADR 0094): liniile, apoi trecerea de profil; coborârea, doar prin plonjare.
+        const paralel = op?.strategie?.fel === 'paralel' ? op.strategie : null;
+        if (paralel && op?.coborare && op.coborare.fel !== 'plonjare') return 'strategia paralelă coboară prin plonjare; rampa, zigzagul și elicea sunt ale inelelor';
+        let tb: { readonly ok: true; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
+        if (paralel) {
+          const tp = traseuParalel(contur, { ...regim, sens: t.sens, raza: R, pasLateral, unghi: paralel.unghi, adancimi }, ci);
+          tb = tp.ok ? { ok: true, miscari: tp.miscari, avertismente: [] } : tp;
+        } else {
+          const inele = ineleBuzunar(contur, R, pasLateral, ci);
+          if (!inele.ok) return inele.motiv;
+          // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
+          tb = traseuBuzunar(contur, ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
+        }
+        if (!tb.ok) return tb.motiv;
+        for (const a of tb.avertismente) avertismente.push(`${t.idLume}: ${a}`);
+        montata(t);
+        miscari.push({ tip: 'eticheta', text: eticheta, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+        for (const m of tb.miscari) miscari.push(m);
+        // Frezele de rest (ADR 0093): fiecare doar unde cea dinainte n-a ajuns, pe aceleași treceri; una care n-are ce scoate
+        // nu se montează (avertisment).
+        const rest = op?.rest ?? [];
+        const lant = bucatiRestInLant(contur, ci, R, rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })), t.sens);
+        if (!lant.ok) return `freza de rest T${rest[lant.freza]?.scula.numar}: ${lant.motiv}`;
+        for (const [k, r] of rest.entries()) {
+          const b = { bucati: lant.bucati[k] ?? [] };
+          if (b.bucati.length === 0) {
+            avertismente.push(`${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) n-are ce scoate: frezele dinainte au ajuns peste tot unde ajunge și ea`);
+            continue;
+          }
+          const tr = taieBucati(adancimi.map((adancime) => ({ adancime, bucati: b.bucati })), regim);
+          monteaza(r.scula);
+          miscari.push({ tip: 'eticheta', text: `${t.idLume}: buzunar, restul cu T${r.scula.numar} Ø${r.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+          for (const m of tr.miscari) miscari.push(m);
+        }
+        return null;
+      };
+      // Incrustația cu pereți drepți (ADR 0171): contururile regiunii (operațiile piesei din instanță cu aceleași valori), închise
+      // cu raza celei mai mici freze a dopului minus jocul, se taie odată, la prima lor tăietură, regiune cu regiune.
+      if (op?.incrustatie?.fel === 'drept') {
+        const cheie = cheieDreapta(t);
+        if (drepteFacute.has(cheie)) continue;
+        drepteFacute.add(cheie);
+        const ale = taieturi.filter((u) => u.tip === 'buzunar' && cheieDreapta(u) === cheie);
+        const f = figuraDreapta(ale.map(conturDe), op);
+        if (!f.ok) return { ok: false, motiv: `${t.idLume}: ${f.motiv}` };
+        for (const a of f.figura.avertismente) avertismente.push(`${t.idLume}: ${a}`);
+        for (const r of f.figura.locas) {
+          const cuInsule = r.gauri.length > 0 ? `, insule: ${r.gauri.length}` : '';
+          const e = taieBuzunar(r.exterior, r.gauri, `${t.idLume}: incrustație cu pereți drepți, buzunar, ${t.adancime} mm${cuInsule}`);
+          if (e) return { ok: false, motiv: `${t.idLume}: ${e}` };
+        }
+        continue;
+      }
       const insule = buzunare.get(it);
       if (!insule) continue;
-      const op = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
-      const pasLateral = op?.pasLateral;
-      if (pasLateral === undefined) return { ok: false, motiv: `${t.idLume}: buzunarul n-are pasul lateral` };
       const ci = insule.map((j) => conturDe(taieturi[j] as Taietura));
-      const adancimi = adancimiTreceri(t.adancime, t.pas);
-      if (typeof adancimi === 'string') return { ok: false, motiv: `${t.idLume}: ${adancimi}` };
-      // Strategia paralelă (ADR 0094): liniile, apoi trecerea de profil; coborârea, doar prin plonjare.
-      const paralel = op?.strategie?.fel === 'paralel' ? op.strategie : null;
-      if (paralel && op?.coborare && op.coborare.fel !== 'plonjare') {
-        return { ok: false, motiv: `${t.idLume}: strategia paralelă coboară prin plonjare; rampa, zigzagul și elicea sunt ale inelelor` };
-      }
-      let tb: { readonly ok: true; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
-      if (paralel) {
-        const tp = traseuParalel(conturDe(t), { ...regim, sens: t.sens, raza: R, pasLateral, unghi: paralel.unghi, adancimi }, ci);
-        tb = tp.ok ? { ok: true, miscari: tp.miscari, avertismente: [] } : tp;
-      } else {
-        const inele = ineleBuzunar(conturDe(t), R, pasLateral, ci);
-        if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
-        // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
-        tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
-      }
-      if (!tb.ok) return { ok: false, motiv: `${t.idLume}: ${tb.motiv}` };
-      for (const a of tb.avertismente) avertismente.push(`${t.idLume}: ${a}`);
       const cuInsule = insule.length > 0 ? `, insule: ${insule.length}` : '';
-      montata(t);
-      miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
-      for (const m of tb.miscari) miscari.push(m);
-      // Frezele de rest (ADR 0093): fiecare doar unde cea dinainte n-a ajuns, pe aceleași treceri; una care n-are ce scoate
-      // nu se montează (avertisment).
-      const rest = op?.rest ?? [];
-      const lant = bucatiRestInLant(conturDe(t), ci, R, rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })), t.sens);
-      if (!lant.ok) return { ok: false, motiv: `${t.idLume}: freza de rest T${rest[lant.freza]?.scula.numar}: ${lant.motiv}` };
-      for (const [k, r] of rest.entries()) {
-        const b = { bucati: lant.bucati[k] ?? [] };
-        if (b.bucati.length === 0) {
-          avertismente.push(`${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) n-are ce scoate: frezele dinainte au ajuns peste tot unde ajunge și ea`);
-          continue;
-        }
-        const tr = taieBucati(adancimi.map((adancime) => ({ adancime, bucati: b.bucati })), regim);
-        monteaza(r.scula);
-        miscari.push({ tip: 'eticheta', text: `${t.idLume}: buzunar, restul cu T${r.scula.numar} Ø${r.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
-        for (const m of tr.miscari) miscari.push(m);
-      }
+      const e = taieBuzunar(conturDe(t), ci, `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`);
+      if (e) return { ok: false, motiv: `${t.idLume}: ${e}` };
       continue;
     }
     // Gravarea pe linie cu freza în V (ADR 0092 §3): conul ajunge la adâncime doar dacă ((Ø − t) / 2)·cot(θ/2) ≥ adâncimea;

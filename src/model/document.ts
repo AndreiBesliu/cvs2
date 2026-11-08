@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 20;
+export const VERSIUNE_SCHEMA = 22;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -167,8 +167,8 @@ export type Operatie = {
    */
   rang?: number;
   /**
-   * Pe un V-carve (ADR 0170, documentul v20), incrustația: operația e locașul și își declară dopul, care se taie din același
-   * desen, oglindit, pe semifabricatul lui. Lipsă = un V-carve obișnuit (ca în v19).
+   * Incrustația: operația e locașul și își declară dopul, calculat din același desen la fiecare export. Pe un V-carve, în V
+   * (ADR 0170, documentul v20); pe un buzunar, cu pereți drepți (ADR 0171, documentul v21). Lipsă = o operație obișnuită.
    */
   incrustatie?: Incrustatie;
   [cheie: string]: unknown;
@@ -179,15 +179,46 @@ export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]:
  * g, deci dopul se sapă de la adâncimea de start S = D − g; `fierastrau` = spațiul dintre plăci după lipire, H (dopul se sapă
  * până la S + H); `margine` = cât lemn rămâne în jurul cutiei desenului pe semifabricatul dopului, în mm; `jurDop` = ce se
  * întâmplă cu lemnul din jurul dopului: `fata`, fața semifabricatului coborâtă toată, sau `banda`, o bandă îngustă săpată cu
- * V-ul, apoi decuparea (felia 12.1↑c). Potrivirea (freza ascuțită, conul, jocul față de D) e a lucrării.
+ * V-ul, apoi decuparea (ADR 0172, documentul v22: valorile ei în `banda`; lipsă = cele implicite). Potrivirea (freza ascuțită,
+ * conul, jocul față de D) e a lucrării.
  */
-export type Incrustatie = {
-  fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: 'fata' | 'banda'; [cheie: string]: unknown;
+export type IncrustatieV = {
+  fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: 'fata' | 'banda'; banda?: BandaDop; [cheie: string]: unknown;
 };
+/**
+ * Banda îngustă din jurul dopului în V și decuparea lui (ADR 0172, documentul v22), cu `jurDop: 'banda'`: `latime` = lățimea
+ * benzii, mm (lipsă = cea mai mică, socotită de lucrare); `decupare` = dopul decupat prin placă, cu punți (fără ea, doar banda;
+ * dopul îl taie omul); `grosimePlaca` = grosimea plăcii dopului, prin care trece decuparea; `freza` = freza decupării, dacă nu e
+ * cea a fundului plat; `punti` = câte pe buclă, lățimea lemnului rămas și grosimea lui de la fundul plăcii (ca urechile).
+ */
+export type BandaDop = {
+  latime?: number; decupare: boolean; grosimePlaca: number; freza?: Scula; punti: Urechi; [cheie: string]: unknown;
+};
+/**
+ * Incrustația cu pereți drepți (ADR 0171 §1, documentul v21), pe locaș (un buzunar de adâncime D): `jocLateral` = jocul dintre
+ * pereții dopului și ai locașului, c; `dop` = cum se face dopul: `ridicat` pe semifabricatul lui (fața din jur coborâtă,
+ * întors și lipit) sau `decupat` prin placa lui, cu punți (pus fără întoarcere); `sprijin` = pe ce stă dopul ridicat: pe
+ * `fund` (înalt de D + H; între plăci rămâne H) sau pe `fata` coborâtă (înalt de D − g; sub el rămâne g); `joc` = g;
+ * `fierastrau` = H, ce rămâne peste placă (și grosimea dopului decupat e D + H); `margine` ca la V; `frezeDop` = frezele
+ * dopului, dacă nu sunt ale locașului (prima, apoi cele de rest). Locașul se închide cu raza celei mai mici freze a dopului
+ * minus c, iar dopul e conturul tăiat al locașului micșorat cu c (colțurile potrivite).
+ */
+export type IncrustatieDreapta = {
+  fel: 'drept'; jocLateral: number; dop: 'ridicat' | 'decupat'; sprijin: 'fund' | 'fata'; joc: number; fierastrau: number; margine: number;
+  frezeDop?: FrezaRest[]; [cheie: string]: unknown;
+};
+export type Incrustatie = IncrustatieV | IncrustatieDreapta;
 /** Jocul cel mai mic pentru clei (ADR 0170 §4), în mm: de două ori creasta inelelor V din colțurile fundului plat (0,05). */
 export const JOC_INCRUSTATIE_MINIM = 0.1;
 /** Valorile cu care pornește o incrustație nouă (ADR 0170, răspunsul 3: două valori, implicit 0,5 și 2 mm; marginea 5 mm). */
-export const INCRUSTATIE_IMPLICITA: Incrustatie = { fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata' };
+export const INCRUSTATIE_IMPLICITA: IncrustatieV = { fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata' };
+/**
+ * Valorile cu care pornește o incrustație cu pereți drepți (ADR 0171, răspunsurile: jocul lateral 0,1 mm, ca în criteriul din
+ * prag; dopul ridicat, pe fund; jocul de sub dop 0,5 și spațiul de deasupra 2 mm, ca la V; marginea 5 mm).
+ */
+export const INCRUSTATIE_DREAPTA_IMPLICITA: IncrustatieDreapta = {
+  fel: 'drept', jocLateral: 0.1, dop: 'ridicat', sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 5,
+};
 /**
  * O freză de rest (ADR 0093): plată, cu distanța dintre inelele ei, în mm (cel mult raza ei). Potrivirea (mai mică decât
  * freza dinainte, plată, alt număr) o judecă lucrarea.
@@ -239,7 +270,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 20; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 22; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {
