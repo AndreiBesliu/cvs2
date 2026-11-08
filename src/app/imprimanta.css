@@ -532,6 +532,19 @@
   font-weight: 600;
 }
 
+/*
+ * Listele din „Avansat” (3.6k, 3.6n) se strâng la lățimea celulei lor: o valoare lungă („Toată (și sub pereții treptelor)”,
+ * „Doar suprafața cea mai de sus”) nu mai împinge lista peste coloana vecină sau în afara panoului; textul ales se taie.
+ */
+.imprimanta-felie-avansat label {
+  min-width: 0;
+}
+
+.imprimanta-felie-avansat select {
+  width: 100%;
+  min-width: 0;
+}
+
 .imprimanta-felie-camp span {
   font-size: var(--fs-2);
   color: var(--t-slab);
