@@ -7177,3 +7177,31 @@ sesiunea liniei.
   (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `0d54112308de`.
 - **Semnul:** liniei incrustațiilor, după publicare. Între timp, owner-ul a cerut și unirea liniei ancorelor: unită local
   (`0c81ccf`), împinsă după publicarea asta, ca publicările pe test să meargă în ordinea commit-urilor.
+
+## 2026-11-08 — Unirea liniei ancorelor (6.V↑, 6.V↑b, 6.V↑c) în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea liniei, după raportul ei: „Dacă e bine, spune „unește”; ramura o unește în
+`main` sesiunea principală”), transmis aici de sesiunea liniei.
+**Started:** 08.11, 17:06. **Completed:** 08.11, 19:02.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii ancorelor (mesajul lui, imediat după raportul
+  liniei).
+- **Unirea (`0c81ccf`, `--no-ff`):** linia, de la `6c79ff9` până la `8be82c4` (10 commit-uri: ADR 0240, 6.V↑, 6.V↑b, 6.V↑c,
+  otrăvurile 50 / 50, documentele), peste `main` cu incrustațiile până la 12.1↑c-2. Conflictele, doar în `CLAUDE.md` (starea
+  și deciziile) și `DEVLOG.md` (coada), adăugări ale ambelor părți în același loc, păstrate amândouă (întâi `main`, apoi
+  linia; deciziile, cele mai noi întâi); restul (manualul, tutorialul, fișa, indexul ADR, traducerile) s-a unit singur.
+  Documentul rămâne v22: ancora stă în browser, nu în proiect.
+- **Porțile pe `0c81ccf`:** traducerile (686, 0 lipsă, 0 nefolosite), compilatoarele, importurile, 8 733 de teste unitare
+  (nicio cădere, opt sărite), licențele, build-ul determinist; e2e 392 / 392 din prima (tutorialul cu 33 de pași, importul
+  arcului plat pe regula nouă, ancorele), emulatoarele 101 / 101 și 21 / 21. Mărimile, cu incrustațiile: pornirea 101,8 (cu
+  ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele:** CLAUDE.md (`18cddfd`: starea ancorelor unite, documentul neschimbat, cifrele de după unire, decizia din
+  08.11); aici, în fișa etapei 3, încercarea owner-ului pentru ancore trece de pe canal pe adresa principală de test („apoi
+  unește” e făcut; decizia pe plafon pentru 6.V↑d rămâne), cu traducerile (686 de texte, 0 lipsă). Fișa ajunge pe test odată
+  cu următoarea publicare.
+- **Ordinea publicărilor:** linia a fost împinsă abia după publicarea lui 12.1↑c-2 (`0d54112`), ca publicările pe test să
+  meargă în ordinea commit-urilor.
+- **CI:** rapid `42498012961` și complet `42498107617` (pornit de mână) pe `8714306`, verzi.
+- **Publicat pe test:** rularea `42502036442`, serverul întâi, apoi site-ul; amprenta `8714306e9b62` pe toate țintele
+  (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `8714306e9b62`.
+- **Semnele:** liniei ancorelor (unirea și CI-ul) și liniei incrustațiilor (`main` are acum și ancorele).

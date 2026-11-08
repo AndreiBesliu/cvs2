@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "texte": {
+    "0166900bbd4c6c74": {
+      "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”. Separat, decizia pe plafon pentru 6.V↑d (opțiunile din ADR 0240: Alt ține fix, cercul din colț, poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite; ~1,5 kB)",
+      "en": "Trying the transform anchor and keys on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c merged into `main` and published on 08.11): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 10 “Handles”, 11 “Anchor” and 12 “Rounded corners”. Separately, the decision on the cap for 6.V↑d (the options in ADR 0240: Alt holds fixed, the circle from a corner, the stretched polygon, the keys row, X / Y of the anchor, rotated instances; ~1.5 kB)"
+    },
     "01e32a3cdf30b065": {
       "ro": "Piesele plate „după CNC”",
       "en": "Flat parts “as the CNC leaves them”"
@@ -1365,6 +1369,10 @@
       "ro": "— (pornește profilul)",
       "en": "— (starts the profile)"
     },
+    "7d2ac660f7f9e6e9": {
+      "ro": "6.V↑–6.V↑c pe test; 6.V↑d",
+      "en": "6.V↑–6.V↑c on test; 6.V↑d"
+    },
     "7dae65094e5069b5": {
       "ro": "Gruparea vectorilor",
       "en": "Grouping vectors"
@@ -1637,6 +1645,10 @@
       "ro": "Fără izolare cross-origin",
       "en": "No cross-origin isolation"
     },
+    "96cea0bd56bc5a82": {
+      "ro": "când vrei; 6.V↑d când se unesc liniile",
+      "en": "whenever you like; 6.V↑d when the lines are merged"
+    },
     "97782b935c8ff9d0": {
       "ro": "Importul WMF, cu cititor propriu",
       "en": "WMF import, with our own reader"
@@ -1888,10 +1900,6 @@
     "afddc76c52ee6158": {
       "ro": "Intrările compuse cu rampa",
       "en": "Lead-ins combined with the ramp"
-    },
-    "b0500d4eb2336219": {
-      "ro": "Încercarea ancorei și a tastelor transformării pe canalul `ancore` (<https://cncvectorstudio-test--ancore-vy17zado.web.app/?test>): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”; apoi „unește” sesiunii principale. Separat, decizia pe plafon pentru 6.V↑d (opțiunile din ADR 0240: Alt ține fix, cercul din colț, poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite; ~1,5 kB)",
-      "en": "Trying the transform anchor and keys on the `ancore` channel (<https://cncvectorstudio-test--ancore-vy17zado.web.app/?test>): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 10 “Handles”, 11 “Anchor” and 12 “Rounded corners”; then “unește” (merge) to the main session. Separately, the decision on the cap for 6.V↑d (the options in ADR 0240: Alt holds fixed, the circle from a corner, the stretched polygon, the keys row, X / Y of the anchor, rotated instances; ~1.5 kB)"
     },
     "b052146a0aa660c8": {
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
@@ -2149,10 +2157,6 @@
       "ro": "Regiunea păstrată, cu oracolul întâi",
       "en": "The kept region, oracle first"
     },
-    "c5ce4a02745092c6": {
-      "ro": "după publicarea pe canal; 6.V↑d când se unesc liniile",
-      "en": "after the channel publication; 6.V↑d when the lines are merged"
-    },
     "c631eb99a8754857": {
       "ro": "**Jog, zero și palparea Z, pe mașina simulată** (ADR 0082; „Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). În panoul **Mașina**, secțiunea Poziționare: **Coordonatele de lucru** (G54–G59, citite de la mașină), jog-ul cu pași de 0,1–100 mm (diagonalele într-o singură mișcare, **Oprește jog-ul**), **Zero XY** / **Zero Z** și **Palpează Z** cu placa de contact (două atingeri, Z0 = atingerea minus grosimea, freza ridicată la capăt, modul mașinii pus la loc). Zero-ul și palparea se scriu în sistemul programului încărcat, cu numele lui pe buton; nepotrivirea cu cel activ se spune; lângă zero, unde e Z0 pentru programul exportat. Ce nu se poate acum e dezactivat, cu motivul (alarma, lucrarea, mașina în mișcare). Pe instanța de test, mașina simulată are placa la Z −25. **Treceri:** (1) emulatorul întâi (jog-ul, palparea, `WCO:` în rapoarte: fără el, un zero nu se vedea pe ecran), procedurile pure, sesiunea, panoul; prima palpare pe emulator a picat cu `error:9`: atingerea fină pleca cât retragerea (un jog) încă mergea, iar GRBL refuză G-code-ul în Jog, deci G-code-ul procedurilor pleacă doar pe un Idle proaspăt; mutațiile: 55 / 59, două echivalente scoase din cod, două prinse de probe noi (o repornire cât un zero așteaptă, un port fără banner); pe panou, 4 / 4 prinse de e2e.",
       "en": "**Jog, zero and Z probing, on the simulated machine** (ADR 0082; “Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). In the **Machine** panel, the Positioning section: **Work coordinates** (G54–G59, read from the machine), jog in steps of 0.1–100 mm (the diagonals as a single move, **Stop the jog**), **Zero XY** / **Zero Z** and **Probe Z** with the touch plate (two touches, Z0 = the touch minus the thickness, the bit lifted at the end, the machine’s mode restored). The zero and the probing are written to the loaded program’s system, named on the button; a mismatch with the active one is stated; next to the zero, where Z0 is for the exported program. What cannot be done now is disabled, with the reason (alarm, a running job, the machine moving). On the test instance, the simulated machine has the plate at Z −25. **Passes:** (1) the emulator first (jog, probing, `WCO:` in the reports: without it, a zero did not show on screen), the pure procedures, the session, the panel; the first probing on the emulator failed with `error:9`: the slow touch was sent while the back-off (a jog) was still running, and GRBL refuses G-code during a jog, so the procedures’ G-code goes only on a fresh Idle; mutations: 55 / 59, two equivalent ones removed from the code, two caught by new tests (a reset while a zero waits, a port without a banner); on the panel, 4 / 4 caught by e2e."
@@ -2252,10 +2256,6 @@
     "d398d322f1fdff6d": {
       "ro": "înainte de 3.6e",
       "en": "before 3.6e"
-    },
-    "d443c329cdbb8bcb": {
-      "ro": "6.V↑–6.V↑c în `main`; 6.V↑d",
-      "en": "6.V↑–6.V↑c in `main`; 6.V↑d"
     },
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
