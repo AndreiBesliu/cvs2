@@ -1409,6 +1409,10 @@
       "ro": "oricând",
       "en": "any time"
     },
+    "82979ae6e294e148": {
+      "ro": "Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei",
+      "en": "The heights of the LEGO pieces, in tenths, in the printer profile"
+    },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
@@ -2340,6 +2344,10 @@
     "de2406a915c5bfb0": {
       "ro": "Planificatorul Trenuleț ca extensie, din sursele neschimbate",
       "en": "The Trenuleț planner as an extension, from its unchanged sources"
+    },
+    "de35863b4cd3a4ce": {
+      "ro": "**Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei** (fără mașină; ADR 0168, acceptat: „Defaults 1.9 / 2.1”; în `main`; „plugin-ul 3d care face piesele de lego are o problema, […] pare ca are nevoie de o zecime de milimetru pentru stifturi”, apoi „vreau sa pot edita eu inaltimile la zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”). Înălțimea știftului (1,9 mm) și adâncimea locașului de sub piesele pline (2,1 mm, cu bifa „Urmează știftul (+ 0,2)”), cu − / + la 0,1 mm, în fiecare imprimantă, lângă variantele de la calibrare; cinci plăci de calibrare cu știfturi de 1,7–2,1 mm; regulile într-o singură funcție, `Lego.inaltimi`; referințele v18 cu înălțimile lui v18 fixate (622 comparate, 0 diferite); 7 probe unitare pe hârtie și e2e-ul înălțimilor (două imprimante, reîncărcarea); otrăvurile 28 / 28. Easy 3Draw 18.8.0, din bibliotecă. Cifrele aplicației nu se schimbă.",
+      "en": "**The heights of the LEGO pieces, in tenths, in the printer profile** (no machine; ADR 0168, accepted: “Defaults 1.9 / 2.1”; in `main`; “plugin-ul 3d care face piesele de lego are o problema, […] pare ca are nevoie de o zecime de milimetru pentru stifturi”, then “vreau sa pot edita eu inaltimile la zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”). The stud height (1.9 mm) and the depth of the socket under the solid pieces (2.1 mm, with the “Follows the stud (+ 0.2)” tick), with − / + in 0.1 mm steps, in each printer, next to the calibration variants; five calibration plates with studs of 1.7–2.1 mm; the rules in a single function, `Lego.inaltimi`; the v18 references with the v18 heights pinned (622 compared, 0 different); 7 unit tests on paper and the heights e2e (two printers, the reload); poisons 28 / 28. Easy 3Draw 18.8.0, from the library. The app’s figures do not change."
     },
     "de5d692e2507f6fe": {
       "ro": "Datele",

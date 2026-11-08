@@ -736,6 +736,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `PASTRATE`. Id-ul rămâne `trenulet` (de el țin rândul instalat și datele: 18.7.0 peste 18.6.0 îi ia locul, cu circuitele),
   la fel numele tehnice (pachetul, dosarul, scripturile) și antetul G-code-ului (amprentele v18). Verificarea românei rămase
   nu mai scutește „Trenuleț”.
+  **Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei (ADR 0168, felia 3.Tg)** gata pe 08.11, în `main`, cu
+  implicitele alese de owner („Defaults 1.9 / 2.1”): înălțimea știftului (1,9 mm) și adâncimea locașului de sub piesele pline
+  (2,1 mm, cu bifa „Urmează știftul (+ 0,2)”), cu − / + la 0,1 mm, în fiecare imprimantă, lângă variantele de la calibrare
+  (Setări și fila Calibrare); cinci plăci de calibrare 2 × 2 cu știfturi de 1,7–2,1 mm. **Regulile înălțimilor stau doar în
+  `Lego.inaltimi(profil)`** (zecimile, marginile, legătura, implicitul pentru ce nu e număr): atelierul citește profilul prin
+  ea și îi dă motorului rezultatul, iar `trenulet.inaltimi.test.ts` ține implicitele atelierului egale cu ale motorului.
+  **Referințele v18 rulează cu înălțimile lui v18 fixate** (`V18` în `referinte.js`), deci apără restul geometriei; o
+  schimbare a înălțimilor implicite nu le atinge. Pachetul 18.8.0, din bibliotecă. Cifrele aplicației nu se schimbă.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -850,6 +858,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **înălțimile pieselor LEGO, editabile la zecimi, în profilul imprimantei** („plugin-ul 3d care face piesele de
+  lego are o problema, stifturile pe care le face si gaurile de sub piesa sunt prea mici, raza este ok, dar inaltimea este
+  putin prea mica. pare ca are nevoie de o zecime de milimetru pentru stifturi”, apoi „vreau sa pot edita eu inaltimile la
+  zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”, iar la întrebarea implicitelor „Defaults 1.9 / 2.1”):
+  ADR 0168, felia 3.Tg, în `main` (linia pluginului nu mai are worktree). Știftul 1,9 mm și locașul 2,1 mm sunt implicitele
+  oricărei imprimante noi; fiecare imprimantă își ține înălțimile ei.
 - 08.11.2026: **worktree-urile terminate și unite în `main`, scoase** („dupa ce verifici care worktree a terminat si a fost
   integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”): `biblioteca` (3.Xg), `raportari` (15.B↑b) și
   `trenulet` (linia pluginului, unită pe 06.11), fiecare cu ramura întreagă în `main`, curat și împins. Joncțiunile
