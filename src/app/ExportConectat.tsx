@@ -103,15 +103,30 @@ export function ExportConectat({
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
           ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
           ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+          // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului).
+          ...(o.tip === 'buzunar' ? {
+            incrustatieDreapta: o.incrustatie?.fel === 'drept' ? {
+              jocLateral: o.incrustatie.jocLateral, dop: o.incrustatie.dop, sprijin: o.incrustatie.sprijin, joc: o.incrustatie.joc,
+              fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
+              ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+            } : null,
+          } : {}),
           ...(o.tip === 'vcarve' ? {
             tip: 'vcarve' as const,
             fundPlat: o.fundPlat ? {
               numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral,
               ...(o.fundPlat.rest ? { rest: o.fundPlat.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
             } : null,
-            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei.
-            incrustatie: o.incrustatie
-              ? { joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop } : null,
+            // Incrustația (ADR 0170): rândul o arată ca rol, cu jocurile și marginea ei; banda (ADR 0172), cu valorile ei.
+            incrustatie: o.incrustatie?.fel === 'v' ? {
+              joc: o.incrustatie.joc, fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine, jurDop: o.incrustatie.jurDop,
+              ...(o.incrustatie.banda ? { banda: {
+                ...(o.incrustatie.banda.latime !== undefined ? { latime: o.incrustatie.banda.latime } : {}), decupare: o.incrustatie.banda.decupare,
+                grosimePlaca: o.incrustatie.banda.grosimePlaca,
+                ...(o.incrustatie.banda.freza ? { freza: { numar: o.incrustatie.banda.freza.numar, diametru: o.incrustatie.banda.freza.diametru } } : {}),
+                punti: { numar: o.incrustatie.banda.punti.numar, latime: o.incrustatie.banda.punti.latime, grosime: o.incrustatie.banda.punti.grosime },
+              } } : {}),
+            } : null,
           } : {}),
           ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
         },

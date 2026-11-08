@@ -27,6 +27,13 @@
  * nu intră în benzi: acolo eșantionarea grilei amestecă două pante.
  *
  * Ce NU judecă: mecanica (Z0 identic pe cele două plăci, jocul mașinii, fibra), lipiciul, fierăstrăul.
+ *
+ * Banda cu decupare (ADR 0172, contractul scris din nou aici): semifabricatul are aceeași oglindă, cu marginea lui (`margine` e
+ * cea a contractului, adică banda, șanțul și marginea omului), iar dopul e decupat prin placa de grosime T, cu punți de grosime
+ * gp de la fundul ei. Piesa păstrată e componenta conexă a celulelor netăiate până la vârful punților (adâncimea < T − gp) care
+ * cuprinde desenul: tăietura și punțile o despart de rest (punțile rupte). Numai piesa păstrată are lemn la așezare și la măsuri;
+ * `pastrate` spune câte celule are, iar `intindere`, cât de departe de desen ajunge (cel mai mare d al celulelor ei din afară).
+ * Cere T − gp mai adânc decât fundul benzii (S + H), ca punțile să se deosebească de fund pe suprafață.
  */
 import { judeca, type GrilaOracol, type SculaOracol } from './simulare.ts';
 
@@ -87,6 +94,8 @@ export type ParametriPotrivire = {
   readonly lat: number;
   /** Sub cât jocul înseamnă contact (mm). */
   readonly pragContact?: number;
+  /** Dopul decupat (ADR 0172): grosimea plăcii lui și a punților, mm; piesa păstrată e cea din tăietură (vezi antetul). */
+  readonly decupare?: { readonly grosimePlaca: number; readonly grosimePunte: number };
 };
 
 export type Banda = { readonly n: number; readonly min: number; readonly med: number; readonly max: number };
@@ -98,6 +107,8 @@ export type MasuraPotrivire = {
   readonly umplere: number;
   /** Unde s-a oprit dopul (celula cu F + M minim), pe foaie. */
   readonly oprire: PunctO;
+  /** Cu decupare: câte celule are piesa păstrată și cât de departe de desen ajunge (mm); fără ea, NaN. */
+  readonly pastrate: number; readonly intindere: number;
 };
 
 const banda = (v: number[]): Banda => {
@@ -130,13 +141,44 @@ export function masoaraPotrivirea(
   if (L.nx !== nx || L.ny !== ny || M.nx !== nx || M.ny !== ny) throw new Error('grilele nu au aceleași dimensiuni');
   const F = (i: number, j: number): number => -L.z[j * nx + i]!;
   const Mz = (i: number, j: number): number => -M.z[j * nx + (nx - 1 - i)]!;
+  const t = Math.tan((p.unghi * Math.PI) / 360);
+  const S = p.D - p.g, prag = p.pragContact ?? 0.05;
+  // Piesa păstrată (ADR 0172): fără decupare, tot semifabricatul; cu ea, umplerea de la desen pe celulele netăiate până la
+  // vârful punților. Atinge marginea ferestrei: tăietura nu e în fereastră (sau lipsește), deci piesa nu se poate judeca.
+  const pastrata = new Uint8Array(nx * ny).fill(p.decupare ? 0 : 1);
+  let pastrate = Number.NaN, intindere = Number.NaN;
+  if (p.decupare) {
+    const varfPunte = p.decupare.grosimePlaca - p.decupare.grosimePunte;
+    if (!(varfPunte > S + p.H + 0.05)) {
+      throw new Error(`vârful punților (${varfPunte} mm) trebuie să fie sub fundul benzii (${S + p.H} mm), ca să se deosebească de el`);
+    }
+    const coada: number[] = [];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      if (laDesen(desen, gx0 + (i + 0.5) * c, gy0 + (j + 0.5) * c).inauntru && Mz(i, j) < varfPunte - 0.05) { pastrata[j * nx + i] = 1; coada.push(j * nx + i); }
+    }
+    while (coada.length > 0) {
+      const k = coada.pop()!, i = k % nx, j = (k - i) / nx;
+      if (i === 0 || j === 0 || i === nx - 1 || j === ny - 1) throw new Error('piesa păstrată atinge marginea ferestrei: tăietura lipsește sau nu e în fereastră');
+      for (const [ii, jj] of [[i + 1, j], [i - 1, j], [i, j + 1], [i, j - 1]] as const) {
+        const kk = jj * nx + ii;
+        if (!pastrata[kk] && Mz(ii, jj) < varfPunte - 0.05) { pastrata[kk] = 1; coada.push(kk); }
+      }
+    }
+    pastrate = 0;
+    intindere = 0;
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      if (!pastrata[j * nx + i]) continue;
+      pastrate++;
+      const { d, inauntru } = laDesen(desen, gx0 + (i + 0.5) * c, gy0 + (j + 0.5) * c);
+      if (!inauntru) intindere = Math.max(intindere, d);
+    }
+  }
   let asezare = Infinity, oprire: PunctO = [NaN, NaN];
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    if (!pastrata[j * nx + i]) continue;
     const s = F(i, j) + Mz(i, j);
     if (s < asezare) { asezare = s; oprire = [gx0 + (i + 0.5) * c, gy0 + (j + 0.5) * c]; }
   }
-  const t = Math.tan((p.unghi * Math.PI) / 360);
-  const S = p.D - p.g, prag = p.pragContact ?? 0.05;
   const pereti: number[] = [], sub: number[] = [], intre: number[] = [];
   let volum = 0, umplut = 0;
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
@@ -148,7 +190,7 @@ export function masoaraPotrivirea(
       umplut += Math.min(f, Math.max(0, asezare - m));
       if (d > 2 * c && d < S * t - 2 * c) pereti.push(joc);
       if (d >= p.D * t + 2 * c) sub.push(joc);
-    } else if (d >= p.H * t + 2 * c) {
+    } else if (d >= p.H * t + 2 * c && pastrata[j * nx + i]) {
       intre.push(joc);
     }
   }
@@ -157,5 +199,6 @@ export function masoaraPotrivirea(
     contact: pereti.length > 0 ? pereti.filter((x) => x < prag).length / pereti.length : NaN, nContact: pereti.length,
     sub: banda(sub), intre: banda(intre),
     umplere: volum > 0 ? umplut / volum : NaN,
+    pastrate, intindere,
   };
 }

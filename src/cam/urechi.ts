@@ -42,6 +42,16 @@ export function geometrieUrechi(lungime: number, u: ParametriUrechi): GeometrieU
 }
 
 /**
+ * Câte urechi cu palierul `latime` încap pe o buclă de lungime `lungime`, cel mult `cerute`: regula lui `geometrieUrechi`
+ * (W ≤ 0,9·P / n), cu o rezervă de rotunjire, ca numărul dat să fie mereu primit. Pentru punțile dopurilor (ADR 0171, ADR
+ * 0172): pe o buclă mică (punctul unui „i”) se pun câte încap, în loc să se refuze tot exportul.
+ */
+export function urechiCareIncap(lungime: number, latime: number, cerute: number): number {
+  if (!(lungime > 0) || !(latime > 0)) return 0;
+  return Math.max(0, Math.min(cerute, Math.floor(((0.9 * lungime) / latime) * (1 - 1e-9))));
+}
+
+/**
  * Rupturile profilului pe o buclă de lungime P, la o trecere de adâncime d > vârf, cu capetele (0, −d) și (P, −d). Între
  * două rupturi, Z e liniar. Întoarce motivul dacă urechile nu încap.
  */

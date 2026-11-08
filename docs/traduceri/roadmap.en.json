@@ -17,10 +17,6 @@
       "ro": "Scheletul: `t()` en / ro cu paritatea verificată de compilator, ErrorBoundary + jurnalul local de erori, configul citit de la gazdă, CSP fără `unsafe-eval`",
       "en": "The skeleton: `t()` en / ro with compiler-checked parity, ErrorBoundary + local error log, config read from the host, CSP without `unsafe-eval`"
     },
-    "0273f4f9501b4be0": {
-      "ro": "**Incrustația cu pereți drepți** (în lucru, fără mașină; ADR 0171, propus; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; „Da, 12.1↑b”, după răspunsul 6 din ADR 0170: amândouă tehnicile, pereții drepți imediat după nucleul V). Cercetarea: ArtCAM (Inlay Wizard: buzunar, gaură, în trepte, dopul; aceeași freză, colțurile potrivite, jocul) și criteriul din prag (steaua, Ø3, adâncimea 6, jocul 0,1 ± 0,02 pe tot conturul). Pe hârtie: locașul taie desenul cu vârfurile R și unghiurile R − c, dopul e locașul micșorat cu c (vârfurile R − c, unghiurile R), deci aceeași freză îl taie exact și jocul e c și în colțuri; pereții drepți nu opresc dopul, așa că se sprijină pe fund (rămâne H între plăci) sau pe față (rămâne g sub dop). ADR-ul propus: documentul v21 (`fel: 'drept'` pe buzunar), dopul pe semifabricatul lui ca la V, oracolul pereților drepți înaintea funcției. Schița: cinci planșe, ca artifact. Codul așteaptă răspunsurile la cele șase întrebări.",
-      "en": "**The straight-walled inlay** (in progress, no machine; ADR 0171, proposed; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; “Da, 12.1↑b”, after answer 6 in ADR 0170: both techniques, straight walls right after the V core). The research: ArtCAM (Inlay Wizard: pocket, hole, stepped, the plug; the same bit, the corners matched, the gap) and the threshold criterion (the star, Ø3, depth 6, gap 0.1 ± 0.02 along the whole outline). On paper: the pocket cuts the drawing with the points at R and the inside corners at R − c, the plug is the pocket shrunk by c (points R − c, inside corners R), so the same bit cuts it exactly and the gap is c in the corners too; straight walls do not stop the plug, so it rests on the bottom (H stays between the boards) or on its face (g stays under the plug). The proposed ADR: document v21 (`fel: 'drept'` on the pocket), the plug on its own blank as for V, the straight-wall oracle before the feature. The sketch: five boards, as an artifact. The code waits for the answers to the six questions."
-    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -273,6 +269,14 @@
       "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",
       "en": "Pure migrations vN → vN+1, with a golden corpus (from now on there is data on live)."
     },
+    "179ae87f7c8bc8ac": {
+      "ro": "12.1↑c pe test și fișa plăcii 12",
+      "en": "12.1↑c on test and the sheet of plate 12"
+    },
+    "17ce5cf5ba9fbee6": {
+      "ro": "12.1↑b pe test și fișa plăcii 12",
+      "en": "12.1↑b on test and the sheet of plate 12"
+    },
     "17d7ce9a12b8a76a": {
       "ro": "Comutarea pe live",
       "en": "Switching to live"
@@ -445,10 +449,6 @@
       "ro": "Rigla pe marginea foii, cu linia de cotă",
       "en": "The ruler on the sheet's edge, with the dimension line"
     },
-    "29ca36608d4c51ae": {
-      "ro": "12.1↑b",
-      "en": "12.1↑b"
-    },
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
       "en": "Checking and repairing vectors; Dimensions; Cutting and conversion; Transforming toolpaths"
@@ -468,6 +468,10 @@
     "2b39f62d5992da7b": {
       "ro": "admin **P3**",
       "en": "admin **P3**"
+    },
+    "2b3f8c9457cee1bd": {
+      "ro": "Incrustația cu pereți drepți: locașul, dopul ridicat sau decupat, documentul v21",
+      "en": "The straight-walled inlay: the pocket, the raised or cut-out plug, document v21"
     },
     "2b928c08e30352d6": {
       "ro": "Șabloane + lot; §10 Fișa de lucru; admin **P2+**",
@@ -669,6 +673,10 @@
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
       "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
     },
+    "3ac8b282908f3288": {
+      "ro": "Banda îngustă din jurul dopului în V și decuparea lui",
+      "en": "The narrow band around the V plug and cutting it out"
+    },
     "3ad86e19435ea190": {
       "ro": "Sugestiile personalului în /admin",
       "en": "Staff suggestions in /admin"
@@ -780,10 +788,6 @@
     "43f41328d983f919": {
       "ro": "**Animația traseului, adusă din etapa 5** (fără mașină; ADR 0099; „continua”: etapa 3 nu mai are felii fără mașină, iar rândul de prag e din cea mai devreme etapă care mai avea ceva fără mașină). „Animează”, lângă timpul jobului, deschide un panou: rulează / pauză, pasul anterior și următor, viteza (1× … 500×; implicit, toată animația cam într-un minut), glisorul și citirile (timpul, pasul, mișcarea cu avansul și lucrarea, X Y Z, freza); pe pânză, freza (cât diametrul ei, plină în material) și drumul parcurs. Timpul fiecărei mișcări vine din estimarea planificatorului GRBL, împărțită la liniile postului (`liniiMiscari`): suma e exact timpul jobului din cip. Totul la cerere: pornirea crește doar cu un nume în lista de preîncărcare (96,3 → 96,4; cu ușa 99,9 / 100: strâmt); totalul 326,1 → 330,3 / 400 kB. **Treceri:** (1) modelul, playerul, panoul, stratul; găsit pe drum: „Pasul următor” arăta începutul pasului de după (capătul unui pas e acum al lui) și, cu un final fără timp, ultima mișcare în locul finalului; ramura cu timpi simpli, fără estimare, era de neatins din interfață (scoasă). Mutațiile: **28 / 28** (24 pe probele unitare, 4 în fereastră, pe e2e); una („drumul parcurs nedesenat”) a trecut întâi de e2e, fiindcă proba număra pixelii cu tot cu cercul frezei: acum compară începutul cu finalul.",
       "en": "**Toolpath animation, brought forward from stage 5** (no machine; ADR 0099; “continua”: stage 3 has no machine-free slices left, and the threshold row is from the earliest stage that still had something without the machine). “Animate”, next to the job time, opens a panel: play / pause, previous and next step, speed (1× … 500×; by default the whole animation in about a minute), the slider and the readings (time, step, the move with its feed and the operation, X Y Z, the bit); on the canvas, the bit (its diameter, filled in the material) and the path covered. Each move's time comes from the GRBL planner estimate, split at the post's lines (`liniiMiscari`): the sum is exactly the job time on the chip. All on demand: startup grows only by one name in the preload list (96.3 → 96.4; with the door 99.9 / 100: tight); total 326.1 → 330.3 / 400 kB. **Passes:** (1) the model, the player, the panel, the layer; found on the way: “Next step” showed the start of the following step (a step's end now belongs to it) and, with an end that takes no time, the last move instead of the end; the simple-timing branch without the estimate could not be reached from the interface (removed). Mutations: **28 / 28** (24 on the unit tests, 4 in the window, on e2e); one (“the path covered not drawn”) first got past the e2e, because the probe counted the pixels including the bit's circle: it now compares the start with the end."
-    },
-    "445cccb23a48878a": {
-      "ro": "Răspunsurile la cele șase întrebări din ADR 0171 (incrustația cu pereți drepți): cum se face dopul, pe ce se sprijină, colțurile, frezele, jocul lateral, unde se alege; recomandările sunt primele variante; schița: <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR>",
-      "en": "The answers to the six questions in ADR 0171 (the straight-walled inlay): how the plug is made, what it rests on, the corners, the bits, the side gap, where it is chosen; the recommendations are the first options; the sketch: <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR>"
     },
     "449772f5c59a39f9": {
       "ro": "Forma „cale” în document",
@@ -1413,6 +1417,10 @@
       "ro": "Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei",
       "en": "The heights of the LEGO pieces, in tenths, in the printer profile"
     },
+    "82b3d9ca223be2a8": {
+      "ro": "Banda îngustă din jurul dopului în V și decuparea lui, documentul v22",
+      "en": "The narrow band around the V plug and cutting it out, document v22"
+    },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
@@ -1897,10 +1905,6 @@
       "ro": "Fișa plăcii 1 și programele A și B",
       "en": "The plate 1 file and programs A and B"
     },
-    "b2a7796ad1a7eaa6": {
-      "ro": "înainte de codul feliei",
-      "en": "before the slice’s code"
-    },
     "b2abba4d729d7a11": {
       "ro": "Regula de umplere",
       "en": "The fill rule"
@@ -2077,6 +2081,10 @@
       "ro": "Piesele plate din dialogul exportului",
       "en": "Flat parts from the export dialog"
     },
+    "c1223121f95c3da1": {
+      "ro": "**Incrustația cu pereți drepți: locașul, dopul ridicat sau decupat, documentul v21** (fără mașină; ADR 0171, acceptat; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; răspunsurile din 07.11: „cate dintre ele pot fi puse impreuna ca optiuni puse la dispozitia utilizatorului?”, apoi „Da, toate trei”). Pe 07.11, 13:08–13:20, cercetarea, ADR-ul și schița; de la 14:14, codul. Documentul v21: `incrustatie` cu `fel: 'drept'` pe buzunar (jocul lateral, dopul ridicat sau decupat, sprijinul pe fund sau pe față, g, H, marginea, frezele dopului opționale); migrarea schimbă doar numărul și refuză câmpurile noi pe un v20; corpusul de aur la v21. Locașul: desenul închis cu raza celei mai mici freze a dopului minus jocul, tăiat ca buzunar (vârfurile ies cu raza frezei locașului); dopul: conturul tăiat micșorat cu jocul, deci jocul e același pe tot conturul, și în colțuri. Dopul ridicat: oglindit, cu fața coborâtă în jur (h = D + H pe fund, D − g pe față); cel decupat: neoglindit, prin placa de exact D + H, cu punți de 4 mm, cu cea mai mică freză a dopului. Toate trei alese la export; în panou, câmpurile și „Pe hârtie” (colțurile locașului și ale dopului, jocul, înălțimea, semifabricatul); arborele; rolurile personalizate; manualul (30 de capitole după unirea lui `main`). Refuzurile: pe altceva decât un buzunar, freza în V la dop, jocul lateral cât raza frezei, g pe față, partea mai îngustă decât freza, marginea dopului decupat sub freza lui. Probele scrise întâi: oracolul pereților drepți (fără importuri din `src/`) pe șapte cazuri pe hârtie și controlul negativ (steaua din prag: jocul 0,0991–0,1013 pe 1 562 de puncte, interferența 0, D 6,0000, h 8,0000); e2e pe octeții din browser (dreptunghiul 30 × 20 cu Ø6: dopul ridicat din panou și cel decupat cu freza lui, din fereastră). Găsite pe drum: refuzul c ≥ R din ADR lipsea; cheia rândului se putea scurge în operație; frezele dopului în afara numerotării frezelor (și a rolurilor personalizate); placa dopului decupat arătată „cel puțin”; punțile cu palierul de 4 mm, refuzate de lucrare cu orice freză peste Ø4 (deci cu Ø6, implicita). `main` (1bf99c5) unit în ramură înaintea probelor noi. Otrăvurile (`test/otravuri/12.1b.py`): prima rulare 49 / 52 (F05, P06, P07 scăpate, fiecare cu proba ei), pe codul final 54 / 54. Porțile: compilatoarele ×3, importurile 19 / 0, licențele, traducerile, unit 8 600 (0 căderi), determinist (pornirea 101,6, cu ușa 105,2 / 110; totalul 525,1 / 550, +5,6 kB; linia, +9,9 kB față de 06.11), e2e 361 / 361 pe 4174, din prima (3 lucrători, 6,9 min). **Pe canal:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12), build-ul `6f2d1bc`, verificat acolo: rolul din panou, valorile pe hârtie, câmpurile ferestrei (dopul ridicat și cel decupat, freza dopului), arborele.",
+      "en": "**The straight-walled inlay: the pocket, the raised or cut-out plug, document v21** (no machine; ADR 0171, accepted; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; the answers of 07.11: “cate dintre ele pot fi puse impreuna ca optiuni puse la dispozitia utilizatorului?”, then “Da, toate trei”). On 07.11, 13:08–13:20, the research, the ADR and the sketch; from 14:14, the code. Document v21: `incrustatie` with `fel: 'drept'` on the pocket (the side gap, the raised or cut-out plug, resting on the floor or on the face, g, H, the margin, the plug's own bits, optional); the migration only changes the number and refuses the new fields on a v20; the golden corpus at v21. The pocket: the drawing closed with the radius of the plug's smallest bit minus the gap, cut as a pocket (the tips come out with the pocket bit radius); the plug: the cut outline shrunk by the gap, so the gap is the same all along the outline, corners included. The raised plug: mirrored, with the face lowered around it (h = D + H on the floor, D − g on the face); the cut-out one: not mirrored, through a board of exactly D + H, with 4 mm tabs, with the plug's smallest bit. All three chosen on export; in the panel, the fields and “On paper” (the corners of the pocket and of the plug, the gap, the height, the blank); the tree; the custom roles; the manual (30 chapters after merging `main`). The refusals: on anything but a pocket, a V bit for the plug, a side gap as large as the bit radius, g on the face, a part narrower than the bit, a cut-out plug margin under its bit. The tests written first: the straight-wall oracle (no imports from `src/`) on seven cases on paper and the negative control (the threshold star: the gap 0.0991–0.1013 over 1,562 points, interference 0, D 6.0000, h 8.0000); e2e on the browser bytes (the 30 × 20 rectangle with Ø6: the raised plug from the panel and the cut-out one with its own bit, from the window). Found on the way: the c ≥ R refusal from the ADR was missing; the row key could leak into the operation; the plug bits outside the bit numbering (and the custom roles); the cut-out plug board shown as “at least”; the tabs with a 4 mm plateau, refused by the job with any bit over Ø4 (so with Ø6, the default). `main` (1bf99c5) merged into the branch before the new tests. The poisons (`test/otravuri/12.1b.py`): first run 49 / 52 (F05, P06, P07 escaped, each with its test), on the final code 54 / 54. The gates: the compilers ×3, imports 19 / 0, licences, translations, unit 8,600 (0 failures), deterministic (startup 101.6, with the door 105.2 / 110; total 525.1 / 550, +5.6 kB; the line, +9.9 kB since 06.11), e2e 361 / 361 on 4174, first time (3 workers, 6.9 min). **On the channel:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (until 07.12), build `6f2d1bc`, checked there: the role from the panel, the values on paper, the window fields (the raised plug and the cut-out one, the plug bit), the tree."
+    },
     "c13aacc11d5d7cec": {
       "ro": "Trasare din imagine (importul avansează)",
       "en": "Tracing from an image (import moves forward)"
@@ -2096,6 +2104,10 @@
     "c360d4f844cc22f6": {
       "ro": "Înălțimile pieselor LEGO",
       "en": "The heights of the LEGO pieces"
+    },
+    "c3ecba0373341cbe": {
+      "ro": "Încercarea incrustației cu pereți drepți pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație cu pereți drepți” din panou (valorile pe hârtie: colțurile, înălțimea dopului), apoi Exportă, cu dopul ridicat și cu cel decupat (câte două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); pe placa 12, dopul lipit (să intre cu jocul de 0,1 pe tot conturul, și în colțuri)",
+      "en": "Trying the straight-walled inlay on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “straight-walled inlay” role from the panel (the values on paper: the corners, the plug height), then Export, with the raised plug and with the cut-out one (two files each: the sheet with the pocket, and the plug, with its blank); on plate 12, the plug glued in (it should go in with the 0.1 gap all around, corners included)"
     },
     "c3f4ac7676f6a1a7": {
       "ro": "Contractele NcStudio, RichAuto",
@@ -2301,6 +2313,10 @@
       "ro": "Importul DXF",
       "en": "DXF import"
     },
+    "dabca1b38b5f5bab": {
+      "ro": "**Banda îngustă din jurul dopului în V și decuparea lui, documentul v22** (fără mașină; ADR 0172, acceptat; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`; „Da, 12.1↑c”, apoi răspunsul din 07.11: „ca de obicei, vreau cat mai multe optiuni pe care userul sa le poata alege”). Pe 07.11, 19:00–19:20, cercetarea, ADR-ul și schița; de la 19:22, codul. Documentul v22: `incrustatie.banda` (lățimea opțională, decuparea, placa, freza decupării opțională, punțile); migrarea schimbă doar numărul și refuză `banda` pe un v21; corpusul de aur la v22. Banda: reuniunea exterioarelor desenului oglindit lărgite cu M (cel puțin 2·H·t + Ø + 1), cu desenul ca goluri; semifabricatul, cutia desenului plus M + S·t + marginea, cu marginile întregi (pentru cleme). Decuparea, la urmă: pe linie, pe exterioarele lărgite cu e + r (e = H·t + 0,5), prin toată placa, cu punți pe buclele exterioare și fără punți pe golurile reuniunii; placa „groasă de exact”. Toate alese la export: fața coborâtă sau banda, lățimea (goală = cea mai mică, arătată), decuparea, placa (goală = S + H + 1), punțile, altă freză pentru decupare; în panou, „Lemnul din jurul dopului” și, pe hârtie, banda, semifabricatul în plan, decuparea; rolurile personalizate renumerotează și freza decupării; manualul (ro, en). Refuzurile: fără fund plat, banda mai îngustă decât cea mai mică, placa sub fundul benzii plus punțile, freza decupării în V sau cu numărul altei freze. Dopul în V mutat în `cam/dopV.ts`. Probele scrise întâi: oracolul potrivirii cu decuparea (piesa păstrată, umplută din desen) pe șase cazuri pe hârtie și pe rama din patru bare (golul reuniunii), banda implicită a unui v21, controlul negativ, tăietura pe fundul plat; e2e pe octeții din browser (cercul R15: fereastra, refuzurile, placa de 6, potrivirea piesei decupate, panoul, redeschiderea, banda fără decupare, placa goală, conflictul frezei). Găsite pe drum: un profil exterior pe fiecare buclă ar fi tăiat în piesa literei vecine (de aici linia pe reuniune); lemnul de la fața plăcii din mijlocul unei rame din bare ar fi rămas în dop; lățimea cea mai mică, arătată rotunjită, ar fi fost refuzată scrisă înapoi; freza decupării lărgea banda și fără decupare; rolurile personalizate n-o renumerotau; pe canal, freza decupării bifată pornea de la fundul plat + 1, chiar T-ul V-ului (acum, primul T liber); la cererea owner-ului („Da, repară-l”), la fel freza dopului cu pereți drepți (12.1↑b), cu proba e2e și otrava E16 a listei 12.1b. Otrăvurile (`test/otravuri/12.1c.py`): prima rulare 66 / 67 (C02 scăpată, cu proba ei), pe codul final 69 / 69. Porțile: compilatoarele ×3, importurile 19 / 0, licențele, traducerile, unit 8 623 (0 căderi), determinist (pornirea 101,6, cu ușa 105,3 / 110; totalul 528,1 / 550, +3,0 kB; linia, +12,9 kB față de 06.11), e2e 364 / 364 pe 4174 (3 lucrători; proba pereților drepți, cu oracolul pe octeți, primește 90 s: cu trei lucrători a trecut o dată de 30). **Pe canal:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12), build-ul `0fc2ea0`, verificat acolo: versiunea `0fc2ea080371` (după „Versiune nouă: Reîncarcă”); pe cercul R15 cu incrustația în V (V60 Ø6, fundul Ø6, adâncimea 3, fierăstrăul 2), panoul arată „Lemnul din jurul dopului: fața coborâtă toată”; în fereastra exportului, banda îngustă: lățimea goală, cu „cea mai mică: 9,31 mm”, decuparea pusă, placa goală, cu 5,5 și „cel puțin 5,5 mm”, punțile 4 × 4 × 1; fără decupare, placa, punțile și freza se opresc; „Altă freză pentru decupare” pornește de la T3 (primul liber; înainte de reparare, T2, chiar V-ul), iar „Altă freză pentru dop”, pe dreptunghiul cu pereți drepți, tot de la T3; manualul (și copia offline) are banda; închisă fără export, nicio eroare în consolă. Descărcările sunt probate în e2e. **Înaintea unirii** (08.11, 11:28–12:10, „1 si 2 acum 3-6 dupa”): punțile dopurilor decupate (banda și pereții drepți) pe fiecare buclă câte încap, cu avertismentul buclelor mici, refuzul doar dacă nu încape nici una (înainte, un „i” cu punctul separat sau o parte mică a desenului refuza tot exportul); probele: regula comună față de a lucrării, litera „i” pe oracol, cercul R2 al dopului drept; otrăvurile U01–U06. `main` adus în ramură (`1749acc`, 47 de commit-uri; conflicte doar în documente; manualul are 31 de capitole); porțile pe rezultat: unit 8 715 (0 căderi), e2e 381 / 381, determinist (pornirea 101,8, cu ușa 105,5 / 110; totalul 544,0 / 600), corpusul de aur, otrăvurile reluate prinse. Pe canal: build-ul `1749acc` (versiunea `1749acc63575`), verificat în browserul aplicației, în engleză: un cerc nou, rolul „V inlay” din panou („Wood around the plug: whole face lowered”), apoi în fereastra exportului banda îngustă (cea mai mică 7,578 mm, placa 6,196, punțile 4 × 4 × 1) și „Another bit for the cut-out” de la T3, fără conflict; fila „Printer” a lui `main`; închisă fără export, nicio eroare în consolă. Punțile pe buclele mici se văd doar la export: probate în unitare. Rămân, după unire (răspunsul owner-ului): lemnul din jurul dopului ales și din panou, punțile dopului drept alese în fereastră, arborele și legăturile rândurilor, viteza benzii.",
+      "en": "**The narrow band around the V plug and cutting it out, document v22** (no machine; ADR 0172, accepted; the `incrustatii` worktree, branch `wip/12.1-incrustatii`; “Da, 12.1↑c”, then the answer of 07.11: “ca de obicei, vreau cat mai multe optiuni pe care userul sa le poata alege”). On 07.11, 19:00–19:20, the research, the ADR and the sketch; from 19:22, the code. Document v22: `incrustatie.banda` (the optional width, the cut-out, the board, the optional cut-out bit, the tabs); the migration only changes the number and refuses `banda` on a v21; the golden corpus at v22. The band: the union of the mirrored drawing’s exteriors widened by M (at least 2·H·t + Ø + 1), with the drawing as holes; the blank, the drawing’s box plus M + S·t + the margin, with whole edges (for clamps). The cut-out, last: on the line, on the exteriors widened by e + r (e = H·t + 0.5), through the whole board, with tabs on the outer loops and no tabs on the union’s holes; the board “exactly” as thick. All chosen on export: the lowered face or the band, the width (empty = the narrowest, shown), the cut-out, the board (empty = S + H + 1), the tabs, another bit for the cut-out; in the panel, “Wood around the plug” and, on paper, the band, the blank in plan, the cut-out; custom roles renumber the cut-out bit too; the manual (ro, en). The refusals: no flat floor, a band narrower than the narrowest, a board under the band floor plus the tabs, a V cut-out bit or one with another bit’s number. The V plug moved to `cam/dopV.ts`. The tests written first: the fit oracle with the cut-out (the kept piece, filled from the drawing) on six paper cases and on the frame of four bars (the union’s hole), the default band of a v21, the negative control, the cut on the flat floor; e2e on the bytes in the browser (the R15 circle: the window, the refusals, the 6 mm board, the fit of the cut-out piece, the panel, reopening, the band without the cut-out, the empty board, the bit conflict). Found along the way: an outside profile on each loop would have cut into the neighbouring letter’s piece (hence the line on the union); the face-level wood in the middle of a frame of bars would have stayed in the plug; the narrowest width, shown rounded, would have been refused when written back; the cut-out bit widened the band even without the cut-out; custom roles did not renumber it; on the channel, the ticked cut-out bit started from the flat-floor bit + 1, the V bit’s very number (now, the first free T); at the owner’s request (“Da, repară-l”), the same for the straight-walled plug bit (12.1↑b), with its e2e test and poison E16 of list 12.1b. The poisons (`test/otravuri/12.1c.py`): first run 66 / 67 (C02 escaped, with its test), on the final code 69 / 69. The gates: the compilers ×3, imports 19 / 0, licences, translations, unit 8,623 (0 failures), deterministic (startup 101.6, with the door 105.3 / 110; the total 528.1 / 550, +3.0 kB; the line, +12.9 kB since 06.11), e2e 364 / 364 on 4174 (3 workers; the straight-walled test, with the oracle on the bytes, gets 90 s: with three workers it once went past 30). **On the channel:** <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (until 07.12), build `0fc2ea0`, checked there: version `0fc2ea080371` (after “New version: Reload”); on the R15 circle with the V inlay (V60 Ø6, Ø6 floor, depth 3, saw gap 2), the panel shows “Wood around the plug: whole face lowered”; in the export window, the narrow band: the width empty, with “narrowest: 9.31 mm”, the cut-out on, the board empty, with 5.5 and “at least 5.5 mm”, the tabs 4 × 4 × 1; without the cut-out, the board, the tabs and the bit are turned off; “Another bit for the cut-out” starts from T3 (the first free one; before the fix, T2, the V bit itself), and “Another bit for the plug”, on the straight-walled rectangle, from T3 too; the manual (and its offline copy) has the band; closed without exporting, no console error. The downloads are tested in e2e. **Before the merge** (08.11, 11:28–12:10, “1 si 2 acum 3-6 dupa”): the tabs of cut-out plugs (the band and straight walls) as many as fit on each loop, with the small-loop warning, refused only if none fits (before, an “i” with a separate dot or a small part of the drawing refused the whole export); the tests: the shared rule against the job’s, the letter “i” on the oracle, the R2 circle of the straight plug; poisons U01–U06. `main` brought into the branch (`1749acc`, 47 commits; conflicts only in the docs; the manual has 31 chapters); the gates on the result: unit 8,715 (0 failures), e2e 381 / 381, deterministic (startup 101.8, with the door 105.5 / 110; the total 544.0 / 600), the golden corpus, the rerun poisons caught. On the channel: build `1749acc` (version `1749acc63575`), checked in the app browser, in English: a new circle, the “V inlay” role from the panel (“Wood around the plug: whole face lowered”), then in the export window the narrow band (narrowest 7.578 mm, board 6.196, tabs 4 × 4 × 1) and “Another bit for the cut-out” from T3, with no conflict; the “Printer” tab from `main`; closed without exporting, no console error. The tabs on small loops only show on export: tested in the unit tests. Left for after the merge (the owner’s answer): the wood around the plug chosen from the panel too, the straight plug’s tabs chosen in the window, the tree and the row links, the band’s speed."
+    },
     "dac4b53bceb98399": {
       "ro": "Importul EPS și AI ≤ 8, adus din etapa 9",
       "en": "EPS and AI ≤ 8 import, brought forward from stage 9"
@@ -2456,6 +2472,10 @@
     "e800dffc26abbfa3": {
       "ro": "Selecția cu dreptunghi",
       "en": "Rectangle selection"
+    },
+    "e8a3337baf325435": {
+      "ro": "Încercarea benzii dopului în V pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci",
+      "en": "Trying the V plug band on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “V inlay” role from the panel, then in Export “Wood around the plug: narrow band” (the width, the cut-out, the board, the tabs, another bit for the cut-out); on plate 12, the cut-out plug (tabs broken off and cleaned) glued into the pocket: it should stop on the walls, with the saw gap between the boards"
     },
     "e8ad40ee8d5bfa63": {
       "ro": "Migrările pure vN → vN+1",
@@ -2632,6 +2652,10 @@
     "f96260c51b33320a": {
       "ro": "placa de regresie",
       "en": "the regression plate"
+    },
+    "f9eeaefe8fafd969": {
+      "ro": "după publicare",
+      "en": "after publishing"
     },
     "fa41f158f389cb8e": {
       "ro": "Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL)",

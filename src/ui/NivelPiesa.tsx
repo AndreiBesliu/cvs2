@@ -25,8 +25,11 @@ export type OperatieArbore = {
   readonly scula: { readonly numar: number; readonly diametru: number };
   /** Freza dreaptă a fundului plat al unui V-carve (ADR 0091). */
   readonly fundPlat?: { readonly scula: { readonly numar: number; readonly diametru: number } };
-  /** Incrustația în V (ADR 0170): V-carve-ul își are dopul, în fișierul lui. */
-  readonly incrustatie?: { readonly joc: number };
+  /**
+   * Incrustația: în V pe un V-carve (ADR 0170), cu pereți drepți pe un buzunar (ADR 0171); operația își are dopul, în fișierul
+   * lui.
+   */
+  readonly incrustatie?: { readonly fel: 'v'; readonly joc: number } | { readonly fel: 'drept'; readonly jocLateral: number };
 };
 
 /**
@@ -51,7 +54,8 @@ export function NivelPiesa({ elemente, operatii }: { readonly elemente: number; 
                 t: o.scula.numar, d: n(o.scula.diametru),
               })}
               {o.tip === 'vcarve' && o.fundPlat && t('arbore.vcarve.fund', { t: o.fundPlat.scula.numar, d: n(o.fundPlat.scula.diametru) })}
-              {o.tip === 'vcarve' && o.incrustatie && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}
+              {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}
+              {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && t('arbore.buzunar.incrustatie', { joc: n(o.incrustatie.jocLateral) })}
             </div>
           ))}
       </div>
