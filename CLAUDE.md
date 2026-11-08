@@ -529,6 +529,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   browser, `cncvs2.toate-foile`), pornit, le încadrează pe toate. **Originea rămâne a foii active** (riglele, ghidajele,
   uneltele, traseul neschimbate); foile vecine merg la workerul pânzei într-un mesaj al lor (`CerereFoi`), doar când se
   schimbă. **Pornirea 104,3 (cu ușa 107,8 / 110 kB), totalul 525,5 / 550.**
+  **Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑)** gata pe 08.11: «Încă…» și «+1» adaugă instanțe ale aceleiași
+  piese (`planCopii` în `src/model/pieseLegate.ts`: rândurile după ea, distanța din freză, foaia următoare goală, foile noi),
+  «Desprinde» îi dă instanței o copie a piesei (ultima păstrează piesa), „Duplică foaia cu aceleași piese” face instanțe noi
+  ale acelorași piese. **Editarea unei piese puse de mai multe ori o schimbă pentru toate** (refuzurile vechi au ieșit din
+  transformări, noduri, forma din panou și text; două instanțe alese care ar schimba-o diferit se refuză, `piesa-impartita`);
+  degruparea, reparațiile și tăierea vectorilor rămân refuzate, cu „Desprinde-o întâi”. Gruparea cu surori întreabă („Doar
+  aceasta” / „În toate cele N”, ținută în `cncvs2.grupare-surori`); banda violet stă jos, la mijlocul zonei libere (sus,
+  riglele urmează foaia), întrebarea sus, sub bare. `idNou` și `copieArbore` stau în `src/model/copii.ts`. **Pornirea 104,9
+  (cu ușa 108,5 / 110 kB), totalul 544,4 / 600.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

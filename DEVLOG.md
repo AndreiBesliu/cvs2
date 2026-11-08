@@ -6856,3 +6856,29 @@ utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
 
 **Completed:** 07.11, 20:49.
+
+## 2026-11-08 — Felia 11.2↑: piesele puse de mai multe ori (ADR 0210 §2) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc felia 11.2↑ (piesele puse de mai multe ori)?”: „Da, 11.2↑”.
+**Started:** 08.11, 08:59.
+
+- **Unirea:** `origin/main` (`0060a86`: imprimanta 3.6j, biblioteca extensiilor, plafonul total de 600 kB, ADR 0143) adus în
+  ramură cu un merge (`12d1db4`); manualul are acum 31 de capitole din `main` plus cel nou.
+- **Felia (`cb7efec`):** «Încă…» și «+1» (panoul, la „Piesa”), cu locul copiilor arătat înainte; lista cu „(k din N)”;
+  editarea legată (refuzurile pieselor împărțite scoase din transformări, noduri, forma din panou și text; două instanțe
+  alese care ar schimba piesa diferit se refuză); banda violet cu „Desprinde-o doar pe aceasta”; «Desprinde»; gruparea cu
+  surori (întrebarea, „Ține minte alegerea”, rândurile din meniul de clic dreapta); „Duplică foaia cu aceleași piese”;
+  capitolul nou din manual.
+- **Ce a ieșit din drum:** (1) forma din panou, prin care trec și nodurile (ADR 0068), refuza încă piesele puse de mai multe
+  ori, deși unealta Noduri se deschidea pentru ele: refuzul a ieșit și de acolo, cu proba lui. (2) Banda violet, pusă sus,
+  stătea sub meniul aplicației (nu se putea apăsa), iar întrebarea grupării, în bara uneltelor, ieșea din ecran: e2e-ul le-a
+  prins; banda stă jos, la mijlocul zonei libere (sus, riglele urmează foaia și o acopereau), întrebarea sus, sub bare.
+  (3) Textul de pe bandă, alb, n-ar fi fost lizibil pe violetul deschis al temei întunecate: `--t-pe-violet`, derivat pe
+  temă (7,4:1 în ambele). (4) „(k din N)” lipit de descrierea rândului: spațiul e acum în text, deci și în numele butonului.
+  (5) Gruparea în toată piesa n-avea o probă cu gazda rotită (semnul rotirii n-ar fi fost prins): proba nouă, pe hârtie.
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile (0 lipsă), unitare 8 698, 0 căzute (8 sărite),
+  e2e pe suita întreagă (384, cu 2 lucrători, fără suitele altor sesiuni pe mașină): 383 trecute, 1 la a doua încercare (`proiect.spec.ts`, fila care doar citește), care trece rulată singură (3 / 3); build-ul determinist; pornirea 104,5 → 104,9 (cu ușa 108,5 / 110), totalul 541,1 → 544,4 / 600.
+- **Otrăvurile (`test/otravuri/11.2.py`, alese de autor, într-o clonă):** 32; toate prinse la prima rulare (`cb7efec`): 20 unitare, dintre care L05 (rândurile urcă) și L08 (fără garda piesei prea mari) prin termenul de 300 s, fiindcă planul copiilor nu se mai termină, și 12 prin e2e; în două clone, una pentru unitare, alta pentru e2e (portul 4178), rulate în paralel.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
+
+**Completed:** 08.11, 11:20.

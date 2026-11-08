@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
 toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
 în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
-07.11** (foaia activă și lista cu foile; toate foile pe pânză; vezi la capăt).
+07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑ pe 08.11** (piesele puse de mai multe ori; vezi la
+capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -339,3 +340,50 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   `foi.spec.ts` (pixelii foii estompate, ai fundalului dintre foi și ai foii active, cerneala numelui, dublu-clicul cu vederea
   mutată exact cu 400 mm și cursorul, comutatorul oprit și ținut după reîncărcare), manualul (96 de uși), otrăvurile
   `test/otravuri/11.1b.py`: 19; toate prinse la prima rulare (`235ed5d`): 6 unitare și 13 prin e2e, în clonă, pe portul 4178.
+
+## Felia 11.2↑ (gata pe 08.11)
+
+- **«Încă…»** (panoul Proprietăți, la „Piesa”, cu o singură piesă aleasă) cere „Câte în total” (mai multe decât acum, cel
+  mult 1 000) și arată, înainte de „Adaugă N”, unde ajung copiile („1 pe Foaia 1, 2 pe o foaie nouă”). Copiile sunt instanțe
+  ale aceleiași piese (`adauga` cu instanța copiată, id nou, locul nou), într-un pas: pe rândul piesei, la dreapta ei, apoi pe
+  rânduri dedesubt, de la marginea foii (`MARGINE_COPII`, 10 mm); între piese, `distantaCopii`: cel puțin 5 mm sau diametrul
+  celei mai mari freze a profilelor exterioare (§3); un loc mai aproape de o piesă de pe foaie se sare; ce nu încape trece pe
+  foaia următoare dacă e goală, apoi pe foi noi după ea, ca foaia piesei (`planCopii`, `src/model/pieseLegate.ts`). O piesă
+  care nu încape între margini se refuză (`motiv.inca-prea-mare`), fără foi noi fără sfârșit. **«+1»** pune una după
+  ultima instanță a piesei, în ordinea proiectului. Așezarea e chiar nucleul lui „Așază pe foi” (11.3↑), care primește
+  colțul, ordinea și rotirea.
+- **Nivelul doi se vede:** în listă, rândul unei piese puse de mai multe ori spune, violet, „(3 din 12)” (spațiul e în
+  textul butonului, deci și în numele lui); panoul, „Pusă de 12 ori: o schimbare a ei se vede la toate. (Foaia 1: 2 · Foaia
+  2: 10)”, cu «+1», «Încă…» și «Desprinde».
+- **Editarea legată:** refuzurile pieselor împărțite au ieșit din mânere (scalarea, oglindirea, înclinarea), din noduri, din
+  forma din panou (`comandaForma`, prin care trec și nodurile, ADR 0068) și din textul editat: schimbarea intră în piesă,
+  deci la toate instanțele; locul și rotirea rămân ale fiecăreia. Două instanțe alese ale aceleiași piese pe care schimbarea
+  le-ar face diferit (rotite altfel, la o scalare neuniformă, o oglindire sau o înclinare) se refuză (`piesa-impartita`, cu
+  textul nou: „alege doar una”); la fel, piesa intră o singură dată în comandă. Rămân refuzate, cu „Desprinde-o întâi” în
+  motiv: degruparea, reparațiile verificării (decizia 8a) și tăierea vectorilor, unde o piesă s-ar face mai multe.
+- **Banda violet** (`--violet`, cu textul derivat pe temă, `--t-pe-violet`: 7,4:1 în ambele): „Editezi o piesă pusă de 4
+  ori: se schimbă toate (2 pe foaia aceasta).”, cu „Desprinde-o doar pe aceasta” când e aleasă una. **Stă jos, la mijlocul
+  zonei libere a pânzei:** sus, riglele urmează foaia și o acopereau (prima variantă, sub meniul aplicației, nici nu se putea
+  apăsa; e2e-ul a prins-o).
+- **«Desprinde»** (panoul, banda): fiecare instanță aleasă cu surori primește o copie a piesei (arborele cu noduri
+  noi, operațiile), cu id nou, în același loc al listei (`sterge` + `adauga`); ultima instanță păstrează piesa.
+- **Gruparea cu surori** (întrebarea 6): fără alegere ținută, **Grupează** (butonul, `Ctrl+G`) întreabă, sus, sub bare: «Doar
+  aceasta» (o desprinde, apoi gruparea obișnuită, într-un `lot`) sau «În toate cele N» (celelalte forme intră în piesa
+  gazdei, la locul lor față de instanța ei, cu rotirea ei scoasă: apar lângă fiecare instanță; merge cu o singură piesă cu
+  surori printre cele alese, `motiv.grupare-toate-una`). „Ține minte alegerea” o ține în browser (`cncvs2.grupare-surori`,
+  `src/ui/grupareSurori.ts`); o stocare care aruncă înseamnă „întreabă”. Meniul de clic dreapta are, în locul lui Grupează,
+  „Grupează doar aceasta” și „Grupează în toată piesa”, fără întrebare. Întrebarea se închide la altă selecție.
+- **„Duplică foaia cu aceleași piese”** (meniul foii, `foaie.duplica-legat`): o foaie nouă după ea, ca ea (fără nume), cu
+  instanțe noi ale acelorași piese, la aceleași locuri, care devine activă. „Duplică foaia” rămâne cu copii separate.
+- **Registrul:** `piesa.inca`, `piesa.plus-unu`, `piesa.desprinde`, `foaie.duplica-legat`, la cerere (calculul în
+  `actiuniDocumentCalcul.ts`); `idNou` și `copieArbore` s-au mutat în `src/model/copii.ts`, ca modelul să le folosească fără
+  registru.
+- **Măsurat:** pornirea 104,5 → 104,9 kB (cu ușa 108,0 → 108,5 / 110), totalul 541,1 → 544,4 / 600 (estimarea era ~4,8 kB).
+- **Probele:** `pieseLegate.test.ts` (locurile pe hârtie: rândurile, obstacolele, foaia următoare goală, foile noi, distanța
+  din freză, rotirea; «Desprinde»; copia legată a foii; fiecare cu inversa exactă), `pieseLegate.actiuni.test.ts` (registrul,
+  pe hârtie: «Încă…» cu vărsarea pe o foaie nouă și refuzurile, «+1» după ultima, «Desprinde», „Duplică foaia cu aceleași
+  piese” cu forma schimbată pe ambele, gruparea cu întrebarea, «Doar aceasta», «În toate cele N», și cu gazda rotită;
+  alegerea ținută), probele vechi ale refuzurilor rescrise pe §2 (transformările, înclinarea, nodurile, textul, forma din
+  panou, gruparea), `piese-legate.spec.ts` (e2e: panoul, lista, banda, editarea legată, «Desprinde» din bandă și din panou,
+  întrebarea cu Renunță și „Ține minte”, rândurile din meniu, copia legată a foii), manualul (capitolul nou „Piesele puse
+  de mai multe ori”, 32 de capitole, 101 uși), otrăvurile `test/otravuri/11.2.py`: 32; toate prinse la prima rulare (`cb7efec`): 20 unitare (L05, rândurile care urcă, și L08, fără garda piesei prea mari, prin termenul de 300 s: planul copiilor nu se mai termină) și 12 prin e2e, în două clone, pe portul 4178.
