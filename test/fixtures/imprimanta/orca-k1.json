@@ -1,5 +1,5 @@
 {
- "sursa": "OrcaSlicer resources/profiles/Creality, la 9005b64 (07.11.2026), cu moștenirile rezolvate; cheile feliei 3.6k (modelele, cusătura, ștergerea, călcarea, fusta) lipsă din profile, din implicitele `src/libslic3r/PrintConfig.cpp`",
+ "sursa": "OrcaSlicer resources/profiles/Creality, la 9005b64 (07.11.2026), cu moștenirile rezolvate; cheile feliilor 3.6k (modelele, cusătura, ștergerea, călcarea, fusta) și 3.6n (grosimea verticală) lipsă din profile, din implicitele `src/libslic3r/PrintConfig.cpp`",
  "materiale": {
   "PLA": {
    "nozzle_temperature_initial_layer": "220",
@@ -225,6 +225,7 @@
    "top_shell_layers": "9",
    "top_shell_thickness": "0.8",
    "bottom_shell_layers": "7",
+   "ensure_vertical_shell_thickness": "ensure_all",
    "inner_wall_speed": "250",
    "sparse_infill_speed": "350",
    "internal_solid_infill_speed": "250",
@@ -269,6 +270,7 @@
    "top_shell_layers": "5",
    "top_shell_thickness": "0.6",
    "bottom_shell_layers": "3",
+   "ensure_vertical_shell_thickness": "ensure_all",
    "inner_wall_speed": "300",
    "sparse_infill_speed": "500",
    "internal_solid_infill_speed": "300",
@@ -313,6 +315,7 @@
    "top_shell_layers": "5",
    "top_shell_thickness": "0.8",
    "bottom_shell_layers": "4",
+   "ensure_vertical_shell_thickness": "ensure_all",
    "inner_wall_speed": "250",
    "sparse_infill_speed": "300",
    "internal_solid_infill_speed": "250",
@@ -357,6 +360,7 @@
    "top_shell_layers": "5",
    "top_shell_thickness": "0.8",
    "bottom_shell_layers": "3",
+   "ensure_vertical_shell_thickness": "ensure_all",
    "inner_wall_speed": "250",
    "sparse_infill_speed": "270",
    "internal_solid_infill_speed": "250",
@@ -401,6 +405,7 @@
    "top_shell_layers": "5",
    "top_shell_thickness": "0.8",
    "bottom_shell_layers": "3",
+   "ensure_vertical_shell_thickness": "ensure_all",
    "inner_wall_speed": "250",
    "sparse_infill_speed": "250",
    "internal_solid_infill_speed": "250",

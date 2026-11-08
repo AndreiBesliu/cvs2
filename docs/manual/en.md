@@ -1120,7 +1120,10 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
     0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage)
     and **Brim** (Automatic: for narrow or tall parts; Yes; No).
   - **Advanced** shows the other settings, in groups. Layers: Layer height, First layer height, Top layers, Top thickness at
-    least, Bottom layers. First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
+    least, Bottom layers, Ensure vertical shell thickness (All (also under the walls of steps), the default: on a part with
+    steps, solid infill also goes under the walls above a step, so they do not stand on sparse infill; Moderate; Critical
+    only; None: solid only under top faces, with narrow solid regions widened or, with None and Critical only, the very
+    narrow ones removed). First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
     wall width, Solid infill width, Sparse infill width, Top surface width, First layer width. Speeds: Outer wall speed, Inner
     wall speed, Solid infill speed, Sparse infill speed, Top surface speed, First layer speed, First layer infill speed, Travel
     speed. Accelerations: Wall acceleration, Top surface acceleration, Infill acceleration, First layer acceleration, Travel

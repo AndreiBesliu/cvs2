@@ -84,6 +84,12 @@ export type ModelCalcare = (typeof MODELE_CALCARE)[number];
 /** Fusta (`skirt_type`): una pentru toate piesele sau câte una pentru fiecare. */
 export const FUSTE = ['combinata', 'piesa'] as const;
 export type TipFusta = (typeof FUSTE)[number];
+/**
+ * Grosimea verticală a pereților (`ensure_vertical_shell_thickness`, felia 3.6n): „toată” (implicit în toate profilele K1C) pune
+ * plin și sub pereții de deasupra unei trepte; celelalte, doar sub fețele de sus, cu regiunile pline înguste scoase sau lățite.
+ */
+export const GROSIMI_VERTICALE = ['ensure_all', 'ensure_moderate', 'ensure_critical_only', 'none'] as const;
+export type GrosimeVerticala = (typeof GROSIMI_VERTICALE)[number];
 
 /** O calitate (procesul K1C de aceeași înălțime a stratului). */
 export type Calitate = {
@@ -113,6 +119,8 @@ export type SetariFeliere = {
   readonly duza1: number; readonly duza: number; readonly pat1: number; readonly pat: number;
   readonly strat: number; readonly strat1: number;
   readonly pereti: number; readonly sus: number; readonly susMinim: number; readonly jos: number;
+  /** Grosimea verticală a pereților (3.6n): plinul sub pereții de deasupra unei trepte și regiunile pline înguste. */
+  readonly grosimeVerticala: GrosimeVerticala;
   readonly umplere: number;
   readonly brim: Brim; readonly latimeBrim: number; readonly golBrim: number;
   /** Lățimile liniilor: peretele exterior, cei interiori, plinul, umplerea rară, suprafața de sus, primul strat. */
@@ -160,7 +168,7 @@ export function setariImplicite(idMaterial = 'pla', idCalitate = '0.20'): Setari
   return {
     material: mt.id, calitate: c.id,
     duza1: mt.duza1, duza: mt.duza, pat1: mt.pat1, pat: mt.pat,
-    strat: c.strat, strat1: c.strat1, pereti: c.pereti, sus: c.sus, susMinim: c.susMinim, jos: c.jos,
+    strat: c.strat, strat1: c.strat1, pereti: c.pereti, sus: c.sus, susMinim: c.susMinim, jos: c.jos, grosimeVerticala: 'ensure_all',
     umplere: 0.15, brim: 'automat', latimeBrim: 5, golBrim: 0.1,
     wExterior: 0.42, wInterior: 0.45, wPlin: 0.42, wRar: 0.45, wSus: 0.42, wPrim: 0.5,
     vExterior: 200, vInterior: c.vInterior, vPlin: c.vPlin, vRar: c.vRar, vSus: 200, vPrim: 60, vPrimInfill: c.vPrimInfill, vDeplasare: 500,
@@ -198,7 +206,7 @@ export const LIMITE: { readonly [K in keyof SetariFeliere]?: readonly [number, n
 /** Alegerile din liste (modelele, cusătura, călcarea, fusta) și bifele, cu valorile lor permise. */
 const ALEGERI: { readonly [K in keyof SetariFeliere]?: readonly string[] } = {
   brim: ['automat', 'da', 'nu'], modelRar: MODELE_RAR, modelPlin: MODELE_PLIN, modelSus: MODELE_PLIN, modelJos: MODELE_PLIN, cusatura: CUSATURI,
-  calcare: CALCARI, modelCalcare: MODELE_CALCARE, tipFusta: FUSTE,
+  calcare: CALCARI, modelCalcare: MODELE_CALCARE, tipFusta: FUSTE, grosimeVerticala: GROSIMI_VERTICALE,
 };
 export const BIFE = ['cusaturiDecalate', 'stergere', 'stergereDupaRol', 'scut', 'oBuclaDupa'] as const satisfies readonly (keyof SetariFeliere)[];
 

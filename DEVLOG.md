@@ -6848,3 +6848,8 @@ căzute, din CI).
   proba 3.6l (E05, la prima trecere, căzuse pe proba 3.6k, sub încărcare; reluată singură, prinsă de proba ei). Porțile: unit
   8 728 (8 720 trecute, 0 căderi, 8 sărite); importurile, tipurile; build-ul determinist (287 de fișiere identice); e2e
   379 / 379 din prima (4 lucrători).
+
+## 2026-11-08 — 3.6n: grosimea verticală sub pereții treptelor (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pereții treptelor” (owner-ul, la „Fac și opțiunea cu plin sub pereții treptelor cât aștepți proba plăcii?”, după 3.6l).
+**Started:** 08.11, 12:35. **Completed:** —

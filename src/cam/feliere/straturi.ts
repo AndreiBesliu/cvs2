@@ -26,7 +26,7 @@ import { anvelopa, arie, intervale, lungime, monoton, ordoneaza, puncte, zigzag,
 import { citesteFel, type BenziFel, type FelStrat, type TipStrat } from './fel.ts';
 import { crosshatch, curba, fagure, giroid, oscilante } from './modele.ts';
 import { ARIE_FILAMENT, K1C, pas, sectiune, type Cusatura, type ModelPlin, type ModelRar, type SetariFeliere } from './profil.ts';
-import { arieFigura, combina, regiuniDin, type Termen } from './trepte.ts';
+import { arieFigura, combina, ingusteazaPlin, regiuniDin, regularizeazaPlin, type Termen } from './trepte.ts';
 
 export { arie, intervale, ordoneaza, puncte, SAGEATA, zigzag, type Cale, type Rol } from './linii.ts';
 export { bandaFel, citesteFel, DEPINDE_DE_Z, felDe, unghiModel, type FelStrat, type TipStrat } from './fel.ts';
@@ -418,7 +418,7 @@ export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeli
   };
   /** Partea unei insule a benzii b, la adâncimea dA (umplerea ei), tăiată de regiunile altor benzi (`termeni`): regiunile ei. */
   const memoParti = new Map<string, Regiune[] | string>();
-  const parte = (b: number, pr: Pereti, i: number, dA: number, cheie: string, termeni: readonly Termen[]): Regiune[] | string => {
+  const parte = (b: number, pr: Pereti, i: number, dA: number, cheie: string, termeni: () => readonly Termen[] | string): Regiune[] | string => {
     const k = `${b}|${i}|${dA.toFixed(6)}|${cheie}`;
     let rez = memoParti.get(k);
     if (rez !== undefined) return rez;
@@ -426,39 +426,109 @@ export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeli
     if (typeof r === 'string') rez = r;
     else {
       const ale = r.filter((g) => insulaRegiunii(pr.insule, g) === i);
-      const g = ale.length === 0 ? [] : combina([{ c: contururiDin(ale), compl: true }, ...termeni]);
+      const tt = ale.length === 0 ? [] : termeni();
+      const g = typeof tt === 'string' ? tt : ale.length === 0 ? [] : combina([{ c: contururiDin(ale), compl: true }, ...tt]);
       rez = typeof g === 'string' ? g : regiuniDin(g);
     }
     memoParti.set(k, rez);
     return rez;
   };
+  const R = (j: number): readonly Contur[] => benzi[j] ?? [];
+  /** Adâncimea marginii dinăuntru a pereților unei insule cu toți pereții (ca `pereti1`, fără primul strat). */
+  const dPereti = (h: number): number => {
+    let d = s.wExterior / 2;
+    for (let k = 1; k < s.pereti; k++) d += k === 1 ? (pas(s.wExterior, h) + pas(s.wInterior, h)) / 2 : pas(s.wInterior, h);
+    return d + (s.pereti > 1 ? s.wInterior : s.wExterior) / 2;
+  };
+  /** Umplerea benzii b (regiunea dinăuntrul pereților ei), ca figură. */
+  const umplereBanda = (b: number, h: number): Contur[] | string => {
+    const r = regiuniLa(b, dPereti(h));
+    return typeof r === 'string' ? r : contururiDin(r);
+  };
+  /**
+   * Ce poate rămâne rar pe un strat al benzii b (grosimea verticală, felia 3.6n): banda cu `sus` straturi mai sus (bs); la „toată”,
+   * cu bt ≠ b, doar în umplerea benzii bt (ce e sub pereții ei, sau în afara ei, devine plin).
+   */
+  const memoRar = new Map<string, readonly Contur[] | string>();
+  const rarRamas = (b: number, bs: number, bt: number, h: number): readonly Contur[] | string => {
+    if (bt === b) return R(bs);
+    const k = `${bs}|${bt}`;
+    let rez = memoRar.get(k);
+    if (rez === undefined) {
+      const F = umplereBanda(bt, h);
+      rez = typeof F === 'string' ? F : combina([{ c: R(bs), compl: true }, { c: F, compl: true }]);
+      memoRar.set(k, rez);
+    }
+    return rez;
+  };
+  /**
+   * Plinul insulei i a unui strat amestecat cu umplere rară alături (felia 3.6n): internul (umplerea insulei, cu suprapunerea cea
+   * mai mare, în banda stratului de deasupra) minus ce poate rămâne rar (`rarRamas`), apoi după grosimea verticală. Dacă
+   * regularizarea refuză (o figură care se atinge în vârf), plinul nelucrat.
+   */
+  const memoPlin = new Map<string, Contur[] | string>();
+  const plinInsula = (b: number, pr: Pereti, i: number, t: BenziFel, h: number): Contur[] | string => {
+    const k = `${b}|${i}|${t.b1}|${t.bs}|${t.bt}`;
+    let rez = memoPlin.get(k);
+    if (rez !== undefined) return rez;
+    rez = ((): Contur[] | string => {
+      const r = regiuniLa(b, pr.adanc[i]! - Math.max(s.suprapunerePlin * s.wPlin, s.suprapunereRar * s.wRar));
+      if (typeof r === 'string') return r;
+      const ale = r.filter((g) => insulaRegiunii(pr.insule, g) === i);
+      if (ale.length === 0) return [];
+      const A = contururiDin(ale);
+      const I = t.b1 !== b ? combina([{ c: A, compl: true }, { c: R(t.b1), compl: true }]) : A;
+      if (typeof I === 'string') return I;
+      if (I.length === 0) return [];
+      const X = rarRamas(b, t.bs, t.bt, h);
+      if (typeof X === 'string') return X;
+      const S0 = combina([{ c: I, compl: true }, { c: X }]);
+      if (typeof S0 === 'string') return S0;
+      if (S0.length === 0) return [];
+      const S = s.grosimeVerticala === 'ensure_all' ? regularizeazaPlin(S0, I, 1.05 * pas(s.wPlin, h))
+        : ingusteazaPlin(S0, I, s.grosimeVerticala, s.wExterior, s.wPlin, s.umplere <= 0);
+      return typeof S === 'string' ? S0 : S;
+    })();
+    memoPlin.set(k, rez);
+    return rez;
+  };
   /**
    * Un strat cu trepte, cu mai multe părți: pereții benzii b, apoi, în fiecare insulă, fiecare parte în regiunea ei: suprafața
    * de sus unde banda de deasupra lipsește (R_b minus R_b1), plinul unde lipsește banda cu `sus` straturi mai sus (R_b1 minus
-   * R_bs), umplerea rară în rest (R_bs).
+   * R_bs) și, la grosimea verticală „toată”, sub pereții treptelor de deasupra (`plinInsula`), umplerea rară în rest.
    */
   const amestecat = (t: BenziFel, h: number): Cale[][] | string => {
     const { b, b1, bs } = t;
     const pr = pereti(b, h, false);
     if (typeof pr === 'string') return pr;
     const cai = pr.cai.map((x) => [...x]);
-    const R = (j: number): readonly Contur[] => benzi[j] ?? [];
-    type Parte = { rol: Rol; model: ModelRar | ModelPlin; u: number; w: number; sup: number; rar: boolean; cheie: string; termeni: Termen[] };
+    const plin = b1 >= 0 && (bs !== b1 || t.bt !== b), cuS = plin && bs >= 0;
+    type Parte = {
+      rol: Rol; model: ModelRar | ModelPlin; u: number; w: number; sup: number; rar: boolean; cheie: string; termeni: (i: number) => readonly Termen[] | string;
+    };
     const parti: Parte[] = [];
-    if (b1 !== b) parti.push({ rol: 'sus', model: s.modelSus, u: t.uSus ?? 0, w: s.wSus, sup: s.suprapunerePlin, rar: false, cheie: `s${b1}`, termeni: [{ c: R(b1) }] });
-    if (b1 >= 0 && bs !== b1) {
+    if (b1 !== b) parti.push({ rol: 'sus', model: s.modelSus, u: t.uSus ?? 0, w: s.wSus, sup: s.suprapunerePlin, rar: false, cheie: `s${b1}`, termeni: () => [{ c: R(b1) }] });
+    if (plin) {
       parti.push({
-        rol: 'plin', model: s.modelPlin, u: t.uPlin ?? 0, w: s.wPlin, sup: s.suprapunerePlin, rar: false, cheie: `p${b1}:${bs}`,
-        termeni: [{ c: R(b1), compl: true }, ...(bs >= 0 ? [{ c: R(bs) }] : [])],
+        rol: 'plin', model: s.modelPlin, u: t.uPlin ?? 0, w: s.wPlin, sup: s.suprapunerePlin, rar: false, cheie: cuS ? `P${b1}:${bs}:${t.bt}` : `p${b1}:${bs}`,
+        termeni: cuS
+          ? (i) => { const S = plinInsula(b, pr, i, t, h); return typeof S === 'string' ? S : [{ c: S, compl: true }]; }
+          : () => [{ c: R(b1), compl: true }, ...(bs >= 0 ? [{ c: R(bs) }] : [])],
       });
     }
     if (bs >= 0 && s.umplere > 0) {
-      parti.push({ rol: 'rar', model: s.modelRar, u: t.uRar ?? 0, w: s.wRar, sup: s.suprapunereRar, rar: true, cheie: `r${bs}`, termeni: [{ c: R(bs), compl: true }] });
+      parti.push({
+        rol: 'rar', model: s.modelRar, u: t.uRar ?? 0, w: s.wRar, sup: s.suprapunereRar, rar: true, cheie: cuS ? `R${bs}:${b1}:${t.bt}` : `r${bs}`,
+        // Cu plinul lucrat: internul minus plin (ce scoate filtrul îngust redevine rar, ca la OrcaSlicer); altfel, banda bs.
+        termeni: cuS
+          ? (i) => { const S = plinInsula(b, pr, i, t, h); return typeof S === 'string' ? S : [{ c: R(b1), compl: true }, { c: S }]; }
+          : () => [{ c: R(bs), compl: true }],
+      });
     }
     const z = t.zRar ?? 0;
     for (const P of parti) {
       for (let i = 0; i < pr.insule.length; i++) {
-        const G = parte(b, pr, i, pr.adanc[i]! - P.sup * P.w, P.cheie, P.termeni);
+        const G = parte(b, pr, i, pr.adanc[i]! - P.sup * P.w, P.cheie, () => P.termeni(i));
         if (typeof G === 'string') return G;
         for (const g of G) {
           const gc = [g.exterior, ...g.gauri];
@@ -476,17 +546,17 @@ export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeli
     return cai;
   };
   /**
-   * Călcarea unui fel de strat al benzii b: fața piesei, strânsă cu marginea, cu debitul ei; cu `minus` (o bandă), doar unde
-   * banda aceea lipsește (fața unei trepte).
+   * Călcarea unui fel de strat al benzii b: fața piesei, strânsă cu marginea, cu debitul ei; cu `minus` (o figură), doar unde
+   * figura aceea lipsește (fața unei trepte, sau ce e plin pe un strat cu trepte).
    */
-  const calcare = (b: number, u: number, minus: number): Cale[] | string => {
+  const calcare = (b: number, u: number, minus: readonly Contur[] | null): Cale[] | string => {
     const inset = s.margineCalcare > 0 ? s.margineCalcare : 0.5 * K1C.duza;
     const mm3 = s.strat * s.debitCalcare * s.pasCalcare, w = s.pasCalcare;
     let fig: Contur[] | null = null;
-    if (minus >= 0) {
+    if (minus !== null) {
       const r = regiuniLa(b, inset);
       if (typeof r === 'string') return r;
-      const g = r.length === 0 ? [] : combina([{ c: contururiDin(r), compl: true }, { c: benzi[minus] ?? [] }]);
+      const g = r.length === 0 ? [] : combina([{ c: contururiDin(r), compl: true }, { c: minus }]);
       if (typeof g === 'string') return g;
       if (g.length === 0) return [];
       fig = g;
@@ -510,13 +580,30 @@ export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeli
       return monoton(intervale(pol, ua, s.pasCalcare), ua, s.pasCalcare, true, 3 * s.pasCalcare, 'calcare', w).map((c) => ({ ...c, mm3 }));
     });
   };
-  /** Ce se calcă pe un fel: banda din care se scade (-1: toată fața) sau nimic (null). */
-  const deCalcat = (tip: TipStrat, t: BenziFel | undefined): number | null => {
-    if (t === undefined) return ((s.calcare === 'sus' || s.calcare === 'ultima') ? tip === 'sus' : s.calcare === 'plin' && tip !== 'rar') ? -1 : null;
-    if (s.calcare === 'sus') return t.b1 !== t.b ? t.b1 : null;
-    if (s.calcare === 'ultima') return t.b1 === -1 ? -1 : null;
-    if (s.calcare === 'plin') return t.bs === -1 ? -1 : t.bs !== t.b ? t.bs : null;
-    return null;
+  /**
+   * Ce se calcă pe un fel: nimic (undefined), toată fața (null) sau fața fără o figură. La „toate straturile pline”, pe un strat cu
+   * trepte, fără banda rară; cu grosimea verticală „toată”, fără ea minus ce e sub pereții treptelor de deasupra (și acolo e plin).
+   */
+  const memoCalcPlin = new Map<string, readonly Contur[] | string>();
+  const deCalcat = (tip: TipStrat, t: BenziFel | undefined, h: number): readonly Contur[] | null | undefined | string => {
+    if (t === undefined) return ((s.calcare === 'sus' || s.calcare === 'ultima') ? tip === 'sus' : s.calcare === 'plin' && tip !== 'rar') ? null : undefined;
+    if (s.calcare === 'sus') return t.b1 !== t.b ? (t.b1 >= 0 ? R(t.b1) : null) : undefined;
+    if (s.calcare === 'ultima') return t.b1 === -1 ? null : undefined;
+    if (s.calcare === 'plin') {
+      if (t.bs === -1) return null;
+      if (t.bs === t.b) return undefined;
+      if (t.bt === t.b) return R(t.bs);
+      const k = `${t.b}|${t.bs}|${t.bt}`;
+      let m = memoCalcPlin.get(k);
+      if (m === undefined) {
+        const Fb = umplereBanda(t.b, h), Ft = umplereBanda(t.bt, h);
+        const V = typeof Fb === 'string' ? Fb : typeof Ft === 'string' ? Ft : combina([{ c: Fb, compl: true }, { c: Ft }]);
+        m = typeof V === 'string' ? V : combina([{ c: R(t.bs), compl: true }, { c: V }]);
+        memoCalcPlin.set(k, m);
+      }
+      return m;
+    }
+    return undefined;
   };
   const h = s.strat;
   for (const f of new Set(ordine)) {
@@ -530,8 +617,9 @@ export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeli
     else r = amestecat(t!, h);
     if (typeof r === 'string') return r;
     const cai = r.flat();
-    const minus = deCalcat(tip, t);
-    if (minus !== null) {
+    const minus = deCalcat(tip, t, h);
+    if (typeof minus === 'string') return minus;
+    if (minus !== undefined) {
       const c = calcare(b, u, minus);
       if (typeof c === 'string') return c;
       cai.push(...c);

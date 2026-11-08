@@ -5,12 +5,13 @@
  * grupului `imprimanta.felie.g.<grupul>`; proba manualului cere fiecare etichetă în capitolul „imprimanta”.
  */
 import {
-  CALCARI, CUSATURI, FUSTE, material, MODELE_CALCARE, MODELE_PLIN, MODELE_RAR, setariImplicite, setariValide, type SetariFeliere,
+  CALCARI, CUSATURI, FUSTE, GROSIMI_VERTICALE, material, MODELE_CALCARE, MODELE_PLIN, MODELE_RAR, setariImplicite, setariValide,
+  type SetariFeliere,
 } from './profil.ts';
 
 /** Setările numerice din „Avansat” (fiecare cu eticheta ei). */
 export type CheieAvansata =
-  | 'strat' | 'strat1' | 'sus' | 'susMinim' | 'jos' | 'duza1' | 'pat1'
+  | 'strat' | 'strat1' | 'sus' | 'susMinim' | 'jos' | 'grosimeVerticala' | 'duza1' | 'pat1'
   | 'wExterior' | 'wInterior' | 'wPlin' | 'wRar' | 'wSus' | 'wPrim'
   | 'vExterior' | 'vInterior' | 'vPlin' | 'vRar' | 'vSus' | 'vPrim' | 'vPrimInfill' | 'vDeplasare'
   | 'aPereti' | 'aSus' | 'aImplicit' | 'aPrim' | 'aDeplasare' | 'retragere' | 'vitezaRetragere' | 'ridicare'
@@ -26,7 +27,7 @@ export type GrupCampuri =
 /** Valorile listelor (fiecare cu eticheta `imprimanta.felie.o.<valoarea>`). */
 export type OptiuneAvansata =
   | (typeof MODELE_RAR)[number] | (typeof MODELE_PLIN)[number] | (typeof CUSATURI)[number] | (typeof CALCARI)[number]
-  | (typeof MODELE_CALCARE)[number] | (typeof FUSTE)[number];
+  | (typeof MODELE_CALCARE)[number] | (typeof FUSTE)[number] | (typeof GROSIMI_VERTICALE)[number];
 export type CampAvansat = {
   readonly k: CheieAvansata; readonly unitate: string; readonly pas: number; readonly procent?: true;
   readonly optiuni?: readonly OptiuneAvansata[]; readonly bifa?: true;
@@ -37,6 +38,7 @@ export const CAMPURI_AVANSATE: readonly GrupAvansat[] = [
   { grup: 'straturi', campuri: [
     { k: 'strat', unitate: 'mm', pas: 0.01 }, { k: 'strat1', unitate: 'mm', pas: 0.01 }, { k: 'sus', unitate: '', pas: 1 },
     { k: 'susMinim', unitate: 'mm', pas: 0.1 }, { k: 'jos', unitate: '', pas: 1 },
+    { k: 'grosimeVerticala', unitate: '', pas: 1, optiuni: GROSIMI_VERTICALE },
   ] },
   { grup: 'modele', campuri: [
     { k: 'modelRar', unitate: '', pas: 1, optiuni: MODELE_RAR }, { k: 'unghiRar', unitate: '°', pas: 1 },

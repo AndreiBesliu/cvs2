@@ -1082,7 +1082,10 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
     0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare) și **Brim**
     (Automat: pentru piesele înguste sau înalte; Da; Nu).
   - **Avansat** arată restul setărilor, pe grupuri. Straturile: Înălțimea stratului, Înălțimea primului strat, Straturile pline
-    de sus, Grosimea de sus, cel puțin, Straturile pline de jos. Temperaturile primului strat: Duza, pe primul strat; Patul, pe
+    de sus, Grosimea de sus, cel puțin, Straturile pline de jos, Grosimea verticală a pereților (Toată (și sub pereții
+    treptelor), implicit: la o piesă cu trepte, plinul se pune și sub pereții de deasupra unei trepte, ca ei să nu stea pe
+    umplerea rară; Moderată; Doar ce e critic; Fără: plinul doar sub fețele de sus, cu regiunile pline înguste lățite sau,
+    la Fără și Doar ce e critic, scoase cele foarte înguste). Temperaturile primului strat: Duza, pe primul strat; Patul, pe
     primul strat. Lățimile liniilor: Lățimea peretelui exterior, Lățimea pereților interiori, Lățimea umplerii pline, Lățimea
     umplerii rare, Lățimea suprafeței de sus, Lățimea pe primul strat. Vitezele: Viteza peretelui exterior, Viteza pereților
     interiori, Viteza umplerii pline, Viteza umplerii rare, Viteza suprafeței de sus, Viteza primului strat, Viteza umplerii pe

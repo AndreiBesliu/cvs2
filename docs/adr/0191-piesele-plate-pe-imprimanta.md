@@ -6,7 +6,8 @@ disponibile in soft”. Deci toate variantele care pot sta împreună devin opț
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
 K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”).
-**Felia 3.6l** acceptată pe 08.11 („Da, recomandările”) și gata pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese. Cererea owner-ului, din 07.11: „cum pot sa
+**Felia 3.6l** acceptată pe 08.11 („Da, recomandările”) și gata pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese.
+**Felia 3.6n** acceptată pe 08.11 („Da, pereții treptelor”; secțiunea „Felia 3.6n”): grosimea verticală, cu plinul sub pereții treptelor. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -348,6 +349,33 @@ La „Da, 3.6l”: răspunsurile 1c, 2b și 2c. Cercetarea, în cod [citit]:
   unei benzi de sus); la noi, pereții de deasupra unei trepte stau pe umplerea rară. De propus ca felie (o opțiune), după proba
   plăcii.
 - **Măsurat și probat:** felierea plăcii de 18 mm cu buzunar, găurire și canelură, ~0,2 s (booleanul unei benzi, ~10 ms). Mărimea: totalul 566,2 / 600 kB (+7,8; bucata „Din desen…” 26,9 kB gzip), pornirea 102,0 (+0,2: scrierea înălțimii în App și câmpul din schemă; cu ușa 105,6 / 110). Proba: `imprimanta.feliere.trepte.test.ts` (12, pe hârtie), e2e +1, manualul (4 controale); otrăvurile `test/otravuri/3.6l.py`: 58, toate prinse (la prima rulare, 48 din 50 unitare; D02 și S04 prinse după întărirea probelor, `3607398`; cele 8 e2e, de proba 3.6l). Porțile: unit 8 728 (0 căderi, 8 sărite), build-ul determinist (287 de fișiere identice), e2e 379 / 379 din prima.
+
+## Felia 3.6n (acceptată, 08.11.2026): grosimea verticală sub pereții treptelor
+
+La întrebarea de după 3.6l („Fac și opțiunea cu plin sub pereții treptelor cât aștepți proba plăcii?”), owner-ul: „Da, pereții
+treptelor”. La 3.6l, pereții de deasupra unei trepte stăteau pe umplerea rară.
+
+- **Cercetarea** [citit, la `9005b64`]: `ensure_vertical_shell_thickness` (`src/libslic3r/PrintConfig.cpp`): `none`,
+  `ensure_critical_only`, `ensure_moderate`, `ensure_all`, implicit `ensure_all` (vechiul „1” = all, „0” = moderate). Profilele
+  K1C: 0,08, 0,16, 0,20 și 0,24 scriu `ensure_all`, 0,12 moștenește implicitul: toate, „toată”. `PrintObject.cpp`:
+  - `discover_vertical_shells` (doar la „toată”): pe stratul k, plinul = internul ∩ regularizat((proiecțiile fețelor de sus ale
+    straturilor k+1 … k+nt−1) ∪ (internul minus intersecția zonelor de umplere ale straturilor din raza aceea)). Regularizarea:
+    deschiderea cu r1 = 0,325 · ms, închiderea cu r2 = 0,6 · ms, lărgirea cu r3 = 0,2 · ms (ms = 1,05 · pasul plinului), apoi
+    bucățile sub 1,5 · ms mm² (sau sub 8 · ms, dacă nu acoperă o regiune a internului) scoase.
+  - `discover_horizontal_shells` (celelalte moduri): proiecția fețelor de sus; regiunile mai înguste decât 2 · 0,5 (fără), 2 · 0,2
+    (doar critic) lățimi de perete exterior scoase (fără umplere rară, 2 · 1); cele prea înguste pentru plin (sub 2 · 3 lățimi de
+    plin, la „fără” 2 · 1) lățite cu atât, cât încap în intern.
+- **Decizia:** toate patru valorile, ca opțiuni, în „Avansat” → „Straturile”: „Grosimea verticală a pereților” (Toată (și sub
+  pereții treptelor), implicit; Moderată; Doar ce e critic; Fără), cu rândul `ensure_vertical_shell_thickness` în subsolul
+  fișierului. Nicio întrebare: valorile se exclud doar pentru aceeași feliere, deci stau împreună ca listă.
+- **La noi** (prisme pe benzi, fundul doar pe pat): raza de jos nu schimbă nimic (benzile se strâng în sus), iar zonele de umplere
+  ale straturilor din raza de sus se intersectează în umplerea benzii celei mai de sus, bt = banda stratului min(k + sus − 1, n).
+  Cheia stratului o ține (`:bt`, doar la „toată” și bt ≠ b). Pe un strat amestecat, plinul fiecărei insule e S = internul minus
+  (R_bs ∩ umplerea lui R_bt), lucrat după mod; umplerea rară = internul minus S (ce scoate filtrul îngust redevine rar, ca la
+  OrcaSlicer). Călcarea „toate straturile pline” calcă și inelul. Lățirea, la celelalte moduri, ia regiunile întregi care dispar
+  la strângere, nu și gâturile înguste ale unei regiuni mari: offsetul nostru rotunjește colțurile convexe (OrcaSlicer le ține
+  drepte, cu îmbinarea în unghi), iar fiecare colț ar fi părut îngust (văzut în probă: colțurile unui buzunar de 40 × 30 se
+  lățeau cu 1,26 mm). O piesă fără trepte nu se schimbă (afară de rândul din subsol): 171 de variante, aceleași drumuri.
 
 ## Întrebările (owner)
 

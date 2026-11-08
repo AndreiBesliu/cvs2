@@ -9,6 +9,8 @@
  *   stratului de deasupra (-1: deasupra piesei), bs a celui cu `sus` straturi mai sus (-1: deasupra piesei, sau plin pe tot
  *   stratul: plinul de jos, umplerea de 100 %). Pe strat: suprafața de sus în R_b minus R_b1, plinul în R_b1 minus R_bs,
  *   umplerea rară în R_bs; unghiurile doar ale părților care sunt (celelalte goale), ca straturile la fel să aibă aceeași cheie.
+ *   Cu grosimea verticală „toată” (felia 3.6n), la sfârșit `:bt`, banda cea mai de sus din raza plinului de sus, când e alta
+ *   decât b: plinul cuprinde și pereții treptelor de deasupra (ce nu e în umplerea ei).
  */
 import type { ModelPlin, ModelRar, SetariFeliere } from './profil.ts';
 
@@ -18,9 +20,13 @@ export type TipStrat = 'prim' | 'plin' | 'sus' | 'rar' | 'trepta';
 
 export const felDe = (tip: Exclude<TipStrat, 'trepta'>, u: number, uPlin: number, z: number | null): FelStrat => `${tip}:${u}:${uPlin}:${z === null ? '' : z.toFixed(4)}`;
 
-/** Benzile și unghiurile unui strat cu trepte (null: partea nu e pe strat). */
+/**
+ * Benzile și unghiurile unui strat cu trepte (null: partea nu e pe strat). `bt` (felia 3.6n, grosimea verticală „toată”): banda
+ * cea mai de sus din raza plinului de sus (straturile k+1 … k+sus−1); când e alta decât b, plinul cuprinde și ce nu e în umplerea
+ * ei (pereții treptelor de deasupra). Altfel, b.
+ */
 export type BenziFel = {
-  readonly b: number; readonly b1: number; readonly bs: number;
+  readonly b: number; readonly b1: number; readonly bs: number; readonly bt: number;
   readonly uSus: number | null; readonly uPlin: number | null; readonly uRar: number | null; readonly zRar: number | null;
 };
 
@@ -35,7 +41,8 @@ const nr = (x: string | undefined): number | null => (x === undefined || x === '
 export function citesteFel(f: FelStrat): FelCitit {
   const x = f.split(':');
   if (x[0] === 't') {
-    const t: BenziFel = { b: Number(x[1]), b1: Number(x[2]), bs: Number(x[3]), uSus: nr(x[4]), uPlin: nr(x[5]), uRar: nr(x[6]), zRar: nr(x[7]) };
+    const b = Number(x[1]);
+    const t: BenziFel = { b, b1: Number(x[2]), bs: Number(x[3]), bt: nr(x[8]) ?? b, uSus: nr(x[4]), uPlin: nr(x[5]), uRar: nr(x[6]), zRar: nr(x[7]) };
     const tip: TipStrat = t.b1 === -1 ? 'sus' : t.b1 === t.b && t.bs === -1 ? 'plin' : t.b1 === t.b && t.bs === t.b ? 'rar' : 'trepta';
     const u = tip === 'sus' ? t.uSus : tip === 'plin' ? t.uPlin : tip === 'rar' ? t.uRar : (t.uSus ?? t.uPlin ?? t.uRar);
     return { tip, u: u ?? 0, uPlin: t.uPlin ?? 0, z: t.zRar, trepte: t };
@@ -90,10 +97,13 @@ export function felStratTrepte(k: number, n: number, inceput: readonly number[],
   const b = banda(k), b1 = k >= n ? -1 : banda(k + 1);
   const sus = straturiSus(s);
   const bs = k <= s.jos || s.umplere >= 0.999 || k + sus > n ? -1 : banda(k + sus);
-  const areSus = b1 !== b, arePlin = b1 >= 0 && bs !== b1, areRar = bs >= 0;
+  // Grosimea verticală „toată” (3.6n): ca `discover_vertical_shells`, plinul se pune și unde, pe straturile din raza plinului de
+  // sus (cel mult până la vârful piesei), nu e umplerea benzii lor; dintre ele, a celei mai de sus (benzile se strâng în sus).
+  const bt = s.grosimeVerticala === 'ensure_all' && b1 >= 0 && bs >= 0 ? banda(Math.min(k + sus - 1, n)) : b;
+  const areSus = b1 !== b, arePlin = b1 >= 0 && (bs !== b1 || bt !== b), areRar = bs >= 0;
   const uSus = areSus ? String(unghiModel(s.modelSus, k, s.unghiPlin)) : '';
   const uPlin = arePlin || areRar ? String(unghiModel(s.modelPlin, k, s.unghiPlin)) : '';
   const uRar = areRar ? String(unghiModel(s.modelRar, k, s.unghiRar)) : '';
   const zRar = areRar && DEPINDE_DE_Z.has(s.modelRar) ? zStrat(k, s).toFixed(4) : '';
-  return `t:${b}:${b1}:${bs}:${uSus}:${uPlin}:${uRar}:${zRar}`;
+  return `t:${b}:${b1}:${bs}:${uSus}:${uPlin}:${uRar}:${zRar}${bt !== b ? `:${bt}` : ''}`;
 }

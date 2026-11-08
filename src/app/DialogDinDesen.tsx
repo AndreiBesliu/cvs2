@@ -311,7 +311,7 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
           : cf.tip === 'plin' ? textPlin(cf.u)
             : t('imprimanta.felie.fel.trepta', {
               parti: [
-                ...(tr && tr.uSus !== null ? [textSus(tr.uSus)] : []), ...(tr && tr.b1 >= 0 && tr.bs !== tr.b1 ? [textPlin(tr.uPlin ?? 0)] : []),
+                ...(tr && tr.uSus !== null ? [textSus(tr.uSus)] : []), ...(tr && tr.b1 >= 0 && (tr.bs !== tr.b1 || tr.bt !== tr.b) ? [textPlin(tr.uPlin ?? 0)] : []),
                 ...(tr && tr.bs >= 0 ? [textRar()] : []),
               ].join(' + '),
             });

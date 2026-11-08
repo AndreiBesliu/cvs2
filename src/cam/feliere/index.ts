@@ -19,7 +19,7 @@ export { pieseDinDocument, MARGINE_PAT, type OptiuniPiese, type PieseAlese, type
 export type { Treapta } from './trepte.ts';
 export {
   CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, MODELE_RAR, MODELE_PLIN, CUSATURI, CALCARI,
-  MODELE_CALCARE, FUSTE, type SetariFeliere, type Brim,
+  MODELE_CALCARE, FUSTE, GROSIMI_VERTICALE, type SetariFeliere, type Brim,
 } from './profil.ts';
 export { timpText, type Miniatura } from './gcode.ts';
 export { citesteFel, puncte, type Cale, type Rol } from './straturi.ts';

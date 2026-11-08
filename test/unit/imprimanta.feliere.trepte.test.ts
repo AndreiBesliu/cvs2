@@ -5,14 +5,18 @@
  * deasupra, călcarea după felul ales, deplasările pe conturul benzii) și înălțimea fiecărei piese ținută în proiect.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { arieCuSemn, cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from '../../src/geom/contur.ts';
 import { conturCerc, conturDreptunghi } from '../../src/geom/conturBaza.ts';
 import { inRegiune } from '../../src/geom/distanta.ts';
 import { citesteFel, felStrat, felStratTrepte } from '../../src/cam/feliere/fel.ts';
-import { feliaza, setariImplicite, setariValide, type Cale, type PiesaPlata } from '../../src/cam/feliere/index.ts';
+import { feliaza, GROSIMI_VERTICALE, setariImplicite, setariValide, type Cale, type PiesaPlata } from '../../src/cam/feliere/index.ts';
+import { CALITATI, pas } from '../../src/cam/feliere/profil.ts';
 import { numeObiect, pieseDinDocument } from '../../src/cam/feliere/piese.ts';
-import { arieFigura, benziPiesa, capsule, combina, type Treapta } from '../../src/cam/feliere/trepte.ts';
+import {
+  arieFigura, benziPiesa, capsule, combina, deschidere, ingusteazaPlin, regularizeazaPlin, type Treapta,
+} from '../../src/cam/feliere/trepte.ts';
 import { comandaInaltimi } from '../../src/model/inaltimeImprimanta.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { anuleaza, executa, istoricNou } from '../../src/model/jurnal.ts';
@@ -142,8 +146,14 @@ test('felul straturilor cu trepte, pe hârtie (5 straturi de sus, 3 de jos): pli
   assert.deepEqual(benzi(90), ['sus', 2, -1, -1]);
   // Cheile: monotonul (plinul) și monotonul pe linii (sus) se întorc cu 90° pe straturile pare; grila (rarul), nu.
   assert.equal(felStratTrepte(56, 90, inc, S), 't:0:0:1::135:45:');
-  assert.equal(felStratTrepte(57, 90, inc, S), 't:0:0:1::45:45:');
-  assert.equal(felStratTrepte(60, 90, inc, S), 't:0:1:1:135:135:45:');
+  // Grosimea verticală „toată” (implicită, 3.6n): bt e banda stratului k + 4 (raza plinului de sus), cel mult a vârfului; pe 57–60,
+  // pereții benzii 1 (de la 61) sunt în rază, deci cheia o ține. Fără grosimea verticală, cheile de la 3.6l.
+  assert.deepEqual([56, 57, 59, 60, 61, 71, 72, 75, 76, 86].map((k) => f(k).trepte?.bt), [0, 1, 1, 1, 1, 1, 2, 2, 2, 2]);
+  assert.equal(felStratTrepte(57, 90, inc, S), 't:0:0:1::45:45::1');
+  assert.equal(felStratTrepte(60, 90, inc, S), 't:0:1:1:135:135:45::1');
+  const fara = setariValide({ ...S, grosimeVerticala: 'none' });
+  assert.equal(felStratTrepte(57, 90, inc, fara), 't:0:0:1::45:45:');
+  assert.equal(felStratTrepte(60, 90, inc, fara), 't:0:1:1:135:135:45:');
   assert.equal(felStratTrepte(62, 90, inc, S), felStratTrepte(64, 90, inc, S));
   // Umplerea de 100 %: sub fundul buzunarului, tot plin; pe fund, suprafața de sus și plinul.
   const plin = setariValide({ ...S, umplere: 1 });
@@ -292,12 +302,12 @@ test('treptele, ce nu iese: un perete subțire lăsat de buzunar lângă margine
   assert.equal(feliaza([piesa([conturDreptunghi(60, 80, 100, 60)], 6)], S, { data: DATA }).avertismente.length, 0);
 });
 
-test('felierea cu trepte: fundul buzunarului (60) are suprafața de sus doar în buzunar, rarul doar în afară; sub el, plinul în buzunar; deasupra, pereții lui; călcarea după felul ales', () => {
+test('felierea cu trepte (fără grosimea verticală, ca la 3.6l): fundul buzunarului (60) are suprafața de sus doar în buzunar, rarul doar în afară; sub el, plinul în buzunar; deasupra, pereții lui; călcarea după felul ales', () => {
   // Placa 100 × 60 pe pat (60…160 × 80…140), buzunarul de 6 mm la 110…150 × 95…125.
   const p = piesa([conturDreptunghi(60, 80, 100, 60)], 18, [{ contururi: [conturDreptunghi(110, 95, 40, 30)], inaltime: 12 }]);
   const inBuzunar = (q: Punct, m: number) => inDreptunghi(q, 110 - m, 95 - m, 150 + m, 125 + m);
   for (const calcare of ['nu', 'sus', 'ultima', 'plin'] as const) {
-    const r = feliaza([p], setariValide({ ...S, calcare }), { data: DATA });
+    const r = feliaza([p], setariValide({ ...S, calcare, grosimeVerticala: 'none' }), { data: DATA });
     assert.deepEqual(r.avertismente, [], calcare);
     assert.equal(r.gcode?.straturi, 90);
     const fund = r.cai(60), sub = r.cai(59), rar = r.cai(55), peste = r.cai(61);
@@ -383,4 +393,120 @@ test('înălțimea în proiect: comanda o pune, o schimbă și o scoate, într-u
     rau.piese[1]!['inaltimeImprimanta'] = v;
     assert.equal(incarca(rau).ok, false, String(v));
   }
+});
+
+test('grosimea verticală (3.6n): implicitul din profilele K1C; în subsolul fișierului; „toată” pune plin și sub pereții de deasupra buzunarului (inelul de 0,906 mm, pe straturile 57–60), cu călcarea plinului peste el; celelalte, doar buzunarul', () => {
+  const o = JSON.parse(readFileSync('test/fixtures/imprimanta/orca-k1.json', 'utf8')) as { procese: Record<string, Record<string, string>> };
+  for (const c of CALITATI) {
+    const x = Object.entries(o.procese).find(([k]) => k.startsWith(`${c.id}mm`))?.[1];
+    assert.equal(setariImplicite('pla', c.id).grosimeVerticala, x?.['ensure_vertical_shell_thickness'], c.id);
+  }
+  assert.equal(setariValide({ ...S, grosimeVerticala: 'ceva' as never }).grosimeVerticala, 'ensure_all');
+  assert.equal(setariValide({ ...S, grosimeVerticala: 'none' }).grosimeVerticala, 'none');
+  // Pe hârtie: marginea dinăuntru a pereților (2, de 0,42 și 0,45, stratul de 0,2) e la 0,21 + (0,377 + 0,407) / 2 + 0,225 =
+  // 0,827 mm; plinul se lărgește cu 0,2 · 1,05 · 0,377 = 0,079 (r3): inelul ajunge la 0,906 mm de marginea buzunarului.
+  const d = 0.21 + (pas(0.42, 0.2) + pas(0.45, 0.2)) / 2 + 0.225 + 0.2 * 1.05 * pas(0.42, 0.2);
+  assert.ok(aproape(d, 0.906, 1e-3), String(d));
+  const p = piesa([conturDreptunghi(60, 80, 100, 60)], 18, [{ contururi: [conturDreptunghi(110, 95, 40, 30)], inaltime: 12 }]);
+  const inBuzunar = (q: Punct, m: number) => inDreptunghi(q, 110 - m, 95 - m, 150 + m, 125 + m);
+  const cutie = (c: readonly Cale[], rol: string): number[] | null => {
+    const q = puncteRol(c, rol);
+    if (q.length === 0) return null;
+    return [q.reduce((a, x) => Math.min(a, x.x), Infinity), q.reduce((a, x) => Math.min(a, x.y), Infinity),
+      q.reduce((a, x) => Math.max(a, x.x), -Infinity), q.reduce((a, x) => Math.max(a, x.y), -Infinity)];
+  };
+  const egal = (a: number[] | null, b: number[]): boolean => a !== null && a.every((x, i) => Math.abs(x - b[i]!) < 0.01);
+  for (const gv of GROSIMI_VERTICALE) {
+    const r = feliaza([p], setariValide({ ...S, grosimeVerticala: gv }), { data: DATA });
+    assert.deepEqual(r.avertismente, [], gv);
+    assert.ok(r.gcode!.text.includes(`\n; ensure_vertical_shell_thickness = ${gv}\n`), gv);
+    const e = gv === 'ensure_all' ? d : 0;
+    for (const k of [57, 58, 59]) {
+      assert.ok(egal(cutie(r.cai(k), 'plin'), [110 - e, 95 - e, 150 + e, 125 + e]), `${gv} ${k}: ${JSON.stringify(cutie(r.cai(k), 'plin'))}`);
+      // Rarul începe dincolo de inel (la distanța lui de buzunar; la colțuri, inelul e rotunjit).
+      assert.ok(puncteRol(r.cai(k), 'rar').every((q) => Math.hypot(Math.max(110 - q.x, 0, q.x - 150), Math.max(95 - q.y, 0, q.y - 125)) > e - 0.02), `${gv} ${k}`);
+    }
+    // Pe fața buzunarului (60): la „toată”, inelul e plin (pereții stratului 61 stau pe el); altfel, nimic plin.
+    if (gv === 'ensure_all') assert.ok(egal(cutie(r.cai(60), 'plin'), [110 - e, 95 - e, 150 + e, 125 + e]) && puncteRol(r.cai(60), 'plin').every((q) => !inBuzunar(q, -0.05)));
+    else assert.equal(cutie(r.cai(60), 'plin'), null, gv);
+    // Mai jos de raza plinului (56: pereții de la 61 nu sunt în k+1 … k+4) și deasupra treptei (61), fără inel.
+    assert.ok(egal(cutie(r.cai(56), 'plin'), gv === 'ensure_all' ? [109.92, 94.92, 150.08, 125.08] : [110, 95, 150, 125]), `${gv} 56: ${JSON.stringify(cutie(r.cai(56), 'plin'))}`);
+    assert.equal(cutie(r.cai(61), 'plin'), null, gv);
+  }
+  // Călcarea „toate straturile pline”, cu inelul: pe 59, peste buzunar și inel (până la marginea pereților de deasupra, 0,827).
+  const c = feliaza([p], setariValide({ ...S, calcare: 'plin' }), { data: DATA }).cai(59);
+  const dw = d - 0.2 * 1.05 * pas(0.42, 0.2);
+  assert.ok(egal(cutie(c, 'calcare'), [110 - dw, 95 - dw, 150 + dw, 125 + dw]), JSON.stringify(cutie(c, 'calcare')));
+  const cf = feliaza([p], setariValide({ ...S, calcare: 'plin', grosimeVerticala: 'none' }), { data: DATA }).cai(59);
+  assert.ok(egal(cutie(cf, 'calcare'), [110, 95, 150, 125]), JSON.stringify(cutie(cf, 'calcare')));
+});
+
+test('grosimea verticală (3.6n), regiunile pline înguste: „moderată” și „doar critic” lățesc canelura de 2 mm cu 3 linii (1,26 mm), „fără” nu; o fâșie de 0,3 mm: „fără” o scoate (rămâne rară), „doar critic” o ține și o lățește', () => {
+  const fasie = (lat: number): PiesaPlata => piesa([conturDreptunghi(60, 80, 100, 60)], 18, [{ contururi: [conturDreptunghi(100, 95, lat, 30)], inaltime: 12 }]);
+  const plinX = (gv: (typeof GROSIMI_VERTICALE)[number], lat: number): number[] | null => {
+    const q = puncteRol(feliaza([fasie(lat)], setariValide({ ...S, grosimeVerticala: gv }), { data: DATA }).cai(58), 'plin');
+    return q.length === 0 ? null : [q.reduce((a, x) => Math.min(a, x.x), Infinity), q.reduce((a, x) => Math.max(a, x.x), -Infinity)].map((x) => Number(x.toFixed(2)));
+  };
+  // 2 mm: strânsă cu 3 · 0,42 = 1,26 nu mai rămâne nimic, deci se lățește cu 1,26 (98,74 … 103,26); la „fără”, 2 > 2 · 0,42.
+  assert.deepEqual(plinX('ensure_moderate', 2), [98.74, 103.26]);
+  assert.deepEqual(plinX('ensure_critical_only', 2), [98.74, 103.26]);
+  assert.deepEqual(plinX('none', 2), [100, 102]);
+  // 0,3 mm: „fără” scoate ce e sub 2 · 0,5 · 0,42 = 0,42 mm; „doar critic” (sub 2 · 0,2 · 0,42 = 0,168) o ține și o lățește.
+  assert.equal(plinX('none', 0.3), null);
+  assert.deepEqual(plinX('ensure_critical_only', 0.3), [98.74, 101.56]);
+  // Unde „fără” a scos plinul, umplerea rară trece peste fâșie (rămâne internă, ca la OrcaSlicer).
+  const rar = puncteRol(feliaza([fasie(0.3)], setariValide({ ...S, grosimeVerticala: 'none' }), { data: DATA }).cai(58), 'rar');
+  assert.ok(rar.some((q) => q.x > 100.02 && q.x < 100.28 && q.y > 96 && q.y < 124));
+});
+
+test('grosimea verticală (3.6n), uneltele pe hârtie: deschiderea; „toată” (lărgirea cu r3, colțurile cu r1 + r3, bucățile mici scoase dacă nu acoperă internul); lățirea regiunilor întregi înguste', () => {
+  const ms = 1.05 * pas(0.42, 0.2), r1 = 0.325 * ms, r3 = 0.2 * ms;
+  const I = [conturDreptunghi(0, 0, 100, 60)];
+  // Deschiderea cu 0,2: fâșia de 0,3 pleacă; dreptunghiul de 40 × 30 rămâne, cu colțurile rotunjite: (4 − π) · 0,2² mai puțin
+  // (lărgirea la loc are 0,001 mm în plus, marja ei: colțurile pierd cu ~0,001 mm² mai puțin).
+  const d = deschidere([conturDreptunghi(10, 10, 40, 30), conturDreptunghi(60, 10, 0.3, 30)], 0.2);
+  assert.ok(typeof d !== 'string' && aproape(arieFigura(d), 1200 - (4 - Math.PI) * 0.04, 2e-3), String(typeof d === 'string' ? d : arieFigura(d)));
+  // „Toată”: strâns cu r1, lărgit cu r1 + r2, strâns cu r2 − r3 = dreptunghiul lărgit cu r3, cu colțurile de rază r1 + r3.
+  const reg = regularizeazaPlin([conturDreptunghi(10, 10, 40, 30)], I, ms);
+  const asteptat = (40 + 2 * r3) * (30 + 2 * r3) - (4 - Math.PI) * (r1 + r3) ** 2;
+  assert.ok(typeof reg !== 'string' && aproape(arieFigura(reg), asteptat, 1e-3), `${typeof reg === 'string' ? reg : arieFigura(reg)} ≠ ${asteptat}`);
+  // Mai îngust decât 2 · r1 = 0,257: pleacă. Un pătrat de 1,5 (sub 8 · ms = 3,17 mm²) într-un intern mare: pleacă; când e chiar
+  // internul lui (îl acoperă), rămâne.
+  assert.deepEqual(regularizeazaPlin([conturDreptunghi(10, 10, 0.25, 30)], I, ms), []);
+  assert.deepEqual(regularizeazaPlin([conturDreptunghi(10, 10, 1.5, 1.5)], I, ms), []);
+  const singur = regularizeazaPlin([conturDreptunghi(10, 10, 1.5, 1.5)], [conturDreptunghi(10, 10, 1.5, 1.5)], ms);
+  assert.ok(typeof singur !== 'string' && aproape(arieFigura(singur), 2.25, 1e-6));
+  // Lățirea: canelura de 2 × 30, strânsă cu 3 · 0,42 = 1,26, dispare: lărgită cu 1,26 (aria A + P · m + π m²).
+  const f = conturDreptunghi(50, 15, 2, 30), m = 1.26;
+  const mod = ingusteazaPlin([f], I, 'ensure_moderate', 0.42, 0.42, false);
+  assert.ok(typeof mod !== 'string' && aproape(arieFigura(mod), 60 + 64 * m + Math.PI * m * m, 1e-3), String(typeof mod === 'string' ? mod : arieFigura(mod)));
+  // „Fără”: strânsă cu 0,42 rămâne (2 > 0,84), deci doar colțurile rotunjite de filtrul de 0,21.
+  const fara = ingusteazaPlin([f], I, 'none', 0.42, 0.42, false);
+  assert.ok(typeof fara !== 'string' && aproape(arieFigura(fara), 60 - (4 - Math.PI) * 0.21 ** 2, 2e-3)); // marja deschiderii, ca mai sus
+  // Fără umplere rară (filtrul de 2 · 0,42 la orice mod): o fâșie de 0,6 pleacă și la „moderată”.
+  assert.deepEqual(ingusteazaPlin([conturDreptunghi(50, 15, 0.6, 30)], I, 'ensure_moderate', 0.42, 0.42, true), []);
+  // Lățirea rămâne în intern: canelura lângă marginea internului se lățește doar înăuntru.
+  const lang = ingusteazaPlin([conturDreptunghi(0, 15, 2, 30)], I, 'ensure_moderate', 0.42, 0.42, false);
+  assert.ok(typeof lang !== 'string' && regiuniX(lang)[0]! >= -1e-9);
+});
+
+/** Cea mai mică și cea mai mare coordonată X a unei figuri. */
+function regiuniX(c: readonly Contur[]): [number, number] {
+  let x0 = Infinity, x1 = -Infinity;
+  for (const k of c) for (const v of k.varfuri) { x0 = Math.min(x0, v.p.x); x1 = Math.max(x1, v.p.x); }
+  return [x0, x1];
+}
+
+test('grosimea verticală (3.6n), o găurire mică (Ø1,6) la 12 mm: la „toată”, sub raza pereților (56) discul e o bucată mică și pleacă, apoi (57–59) e plin cu inelul lui; la „moderată”, discul se lățește cu 1,26', () => {
+  // Discul de rază 0,8, lărgit cu r3 = 0,079: π · 0,879² = 2,43 mm², sub 8 · ms = 3,17, într-un intern mult mai mare.
+  const p = piesa([conturDreptunghi(60, 80, 100, 60)], 18, [{ contururi: [conturCerc(110, 110, 0.8)], inaltime: 12 }]);
+  const plin = (gv: (typeof GROSIMI_VERTICALE)[number], k: number): Punct[] => puncteRol(feliaza([p], setariValide({ ...S, grosimeVerticala: gv }), { data: DATA }).cai(k), 'plin');
+  assert.equal(plin('ensure_all', 56).length, 0);
+  for (const k of [57, 58, 59]) {
+    const q = plin('ensure_all', k);
+    // Discul (raza 0,8) cu inelul pereților de deasupra (0,906): plinul ajunge la ~1,71 mm de centru, nu mai departe.
+    assert.ok(q.length > 0 && q.every((x) => Math.hypot(x.x - 110, x.y - 110) < 1.73) && q.some((x) => Math.hypot(x.x - 110, x.y - 110) > 1.3), String(k));
+  }
+  const m = plin('ensure_moderate', 56);
+  assert.ok(m.length > 0 && m.every((x) => Math.hypot(x.x - 110, x.y - 110) < 2.07) && m.some((x) => Math.hypot(x.x - 110, x.y - 110) > 1.6));
 });

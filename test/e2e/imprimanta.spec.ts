@@ -545,6 +545,20 @@ test('Din desen…, după CNC (3.6l): treptele buzunarului, V-carve-ul spus; în
   await expect(fel).toContainText('umplere rară');
   await strat.fill('61');
   await expect(fel).not.toContainText('treaptă');
+  // Grosimea verticală (3.6n), implicit „toată”: pe fața buzunarului, și plinul inelului de sub pereții de deasupra; „fără”, nu.
+  await strat.fill('60');
+  await expect(fel).toContainText('+ plin:');
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  const grosime = page.locator('[data-felie="grosimeVerticala"]');
+  await expect(grosime).toHaveValue('ensure_all');
+  await grosime.selectOption('none');
+  await felieGata(page);
+  await strat.fill('60');
+  await expect(fel).toContainText('cu o treaptă: suprafața de sus');
+  await expect(fel).not.toContainText('plin:');
+  await grosime.selectOption('ensure_all');
+  await felieGata(page);
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
   // Înălțimea piesei, ținută în proiect: 10 mm dau 50 de straturi; buzunarul de 6 mm are fundul la 4 mm (stratul 20).
   await page.locator('[data-imprimanta="felie-inaltime-piese"]').check();
   const rand = page.getByTestId('imprimanta-felie-piese').locator('[data-imprimanta="felie-inaltime-piesa"]');

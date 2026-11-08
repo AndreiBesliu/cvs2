@@ -473,6 +473,7 @@ export function scrieGcode(intr: IntrareGcode): IesireGcode {
     `; filament_density = ${mt.densitate}`, `; filament_flow_ratio = ${s.debit}`, `; filament_max_volumetric_speed = ${s.volumMax}`,
     `; layer_height = ${s.strat}`, `; initial_layer_print_height = ${s.strat1}`, `; wall_loops = ${s.pereti}`,
     `; top_shell_layers = ${s.sus}`, `; top_shell_thickness = ${s.susMinim}`, `; bottom_shell_layers = ${s.jos}`,
+    `; ensure_vertical_shell_thickness = ${s.grosimeVerticala}`,
     `; sparse_infill_density = ${Math.round(s.umplere * 100)}%`, `; sparse_infill_pattern = ${s.modelRar}`,
     `; nozzle_temperature_initial_layer = ${s.duza1}`, `; nozzle_temperature = ${s.duza}`,
     `; hot_plate_temp_initial_layer = ${s.pat1}`, `; hot_plate_temp = ${s.pat}`,

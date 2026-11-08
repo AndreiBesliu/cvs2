@@ -17,7 +17,7 @@ import { arieCuSemn, cerculArcului, inverseaza, inSensTrigonometric, numarSegmen
 import { conturCerc, conturDreptunghi } from '../../geom/conturBaza.ts';
 import { inRegiune } from '../../geom/distanta.ts';
 import { normalizeaza } from '../../geom/nonzero.ts';
-import type { Regiune } from '../../geom/offset.ts';
+import { offsetFigura, type Regiune } from '../../geom/offset.ts';
 import { numarStraturi } from './fel.ts';
 import type { SetariFeliere } from './profil.ts';
 
@@ -161,4 +161,92 @@ export function benziPiesa(contururi: readonly Contur[], trepte: readonly Treapt
     regiuni.push(r); inceput.push(m + 1); arieJos = a;
   }
   return { regiuni, inceput, n };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------
+// Grosimea verticală (felia 3.6n): plinul unui strat amestecat, lucrat ca în OrcaSlicer.
+
+/** Regiunile figurii la distanța d spre interior (d < 0: spre exterior); [] dacă nu mai încape nimic; sau motivul. */
+export function laDistantaFigura(c: readonly Contur[], d: number): Regiune[] | string {
+  if (c.length === 0) return [];
+  const r = offsetFigura(c, -d);
+  if (r.ok) return [...r.regiuni];
+  return r.motiv.startsWith('scula nu încape') ? [] : r.motiv;
+}
+
+const contururiRegiuni = (r: readonly Regiune[]): Contur[] => r.flatMap((g) => [g.exterior, ...g.gauri]);
+
+/** Aria unei regiuni (exteriorul, minus golurile), mm². */
+export const arieRegiune = (g: Regiune): number => Math.abs(arieCuSemn(g.exterior)) - g.gauri.reduce((a, x) => a + Math.abs(arieCuSemn(x)), 0);
+
+/** Deschiderea figurii S cu raza m (strânsă cu m, lărgită la loc, ∩ S): bucățile mai înguste de 2·m pleacă. */
+export function deschidere(S: readonly Contur[], m: number): Contur[] | string {
+  const e = laDistantaFigura(S, m);
+  if (typeof e === 'string') return e;
+  if (e.length === 0) return [];
+  const d = laDistantaFigura(contururiRegiuni(e), -(m + 1e-3));
+  if (typeof d === 'string') return d;
+  return combina([{ c: S, compl: true }, { c: contururiRegiuni(d), compl: true }]);
+}
+
+/**
+ * Grosimea verticală „toată” (`discover_vertical_shells`): plinul S, deschis cu r1 = 0,325·ms (scoate ce e mai îngust decât o
+ * linie), închis cu r2 = 0,6·ms (umple golurile prea înguste pentru umplerea rară) și lărgit cu r3 = 0,2·ms, ∩ internul I; apoi
+ * bucățile mici scoase, dacă nu acoperă o regiune întreagă a internului. „Mică” la OrcaSlicer: sub 1,5·ms mm², sau sub 8·ms și
+ * cuprinsă între stratul de dedesubt și cel de deasupra, ceea ce la o prismă pe benzi e mereu adevărat: deci sub 8·ms. ms = 1,05 ·
+ * pasul plinului (mm).
+ */
+export function regularizeazaPlin(S: readonly Contur[], I: readonly Contur[], ms: number): Contur[] | string {
+  const r1 = 0.325 * ms, r2 = 0.6 * ms, r3 = 0.2 * ms;
+  const e1 = laDistantaFigura(S, r1);
+  if (typeof e1 === 'string') return e1;
+  if (e1.length === 0) return [];
+  const d2 = laDistantaFigura(contururiRegiuni(e1), -(r1 + r2));
+  if (typeof d2 === 'string') return d2;
+  const e3 = d2.length === 0 ? [] : laDistantaFigura(contururiRegiuni(d2), r2 - r3);
+  if (typeof e3 === 'string') return e3;
+  if (e3.length === 0) return [];
+  const x = combina([{ c: contururiRegiuni(e3), compl: true }, { c: I, compl: true }]);
+  if (typeof x === 'string') return x;
+  const gazde = regiuniDin(I).map((g) => ({ g, a: arieRegiune(g) }));
+  return regiuniDin(x).filter((g) => {
+    const a = arieRegiune(g);
+    if (a >= 8 * ms) return true;
+    const gz = gazde.find((y) => inRegiune(g.exterior.varfuri[0]!.p, [y.g.exterior, ...y.g.gauri]));
+    return gz !== undefined && a >= 0.95 * gz.a;
+  }).flatMap((g) => [g.exterior, ...g.gauri]);
+}
+
+/** Modurile grosimii verticale care nu pun plin sub pereții treptelor. */
+export type ModIngust = 'ensure_moderate' | 'ensure_critical_only' | 'none';
+
+/**
+ * Celelalte moduri (`discover_horizontal_shells`): plinul S, fără ce e mai îngust decât 2 · 0,5 (fără) sau 2 · 0,2 (doar critic)
+ * lățimi de perete exterior wE (fără umplere rară, 2 · 1); apoi regiunile prea înguste pentru plin (sub 2 · 3 lățimi de plin wP,
+ * la „fără” 2 · 1) se lățesc cu atât, cât încap în internul I. Lățirea ia regiunile întregi care dispar la strângere, nu și
+ * gâturile înguste ale unei regiuni mari: offsetul nostru rotunjește colțurile convexe (OrcaSlicer le ține drepte, cu îmbinarea
+ * în unghi), deci fiecare colț ar părea îngust.
+ */
+export function ingusteazaPlin(S0: readonly Contur[], I: readonly Contur[], mod: ModIngust, wE: number, wP: number, faraRar: boolean): Contur[] | string {
+  let S: readonly Contur[] = S0;
+  const f = faraRar ? 1 : mod === 'none' ? 0.5 : mod === 'ensure_critical_only' ? 0.2 : 0;
+  if (f > 0) {
+    const o = deschidere(S, f * wE);
+    if (typeof o === 'string') return o;
+    if (o.length === 0) return [];
+    S = o;
+  }
+  const m = (mod === 'none' ? 1 : 3) * wP;
+  const inguste: Regiune[] = [];
+  for (const g of regiuniDin(S)) {
+    const e = laDistantaFigura([g.exterior, ...g.gauri], m);
+    if (typeof e === 'string') return e;
+    if (e.length === 0) inguste.push(g);
+  }
+  if (inguste.length === 0) return [...S];
+  const lat = laDistantaFigura(contururiRegiuni(inguste), -m);
+  if (typeof lat === 'string') return lat;
+  const adaos = combina([{ c: contururiRegiuni(lat), compl: true }, { c: I, compl: true }]);
+  if (typeof adaos === 'string') return adaos;
+  return combina([{ c: S }, { c: adaos }]);
 }
