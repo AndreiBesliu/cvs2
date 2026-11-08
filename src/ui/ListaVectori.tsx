@@ -34,6 +34,8 @@ const MeniuFoaie = lazy(() => incarcaMeniuFoaie().then((m) => ({ default: m.Meni
 export type RandLista = {
   readonly id: string;
   readonly descriere: string;
+  /** O piesă pusă de mai multe ori (ADR 0210 §2): al câtelea e rândul din toate („(4 din 12)”), sau null. */
+  readonly legata?: string | null;
   readonly avertisment: string | null;
   readonly selectat: boolean;
   /** Piesa instanței: câte forme desenează și operațiile ei (ADR 0025). */
@@ -157,6 +159,8 @@ export function ListaVectori({ foi, randuri, onAlege, onActiveaza, actiuni }: Pr
                       onKeyDown={(e) => { sageti(e, r.id, deschis); }}
                     >
                       {r.descriere}
+                      {/* Spațiul e în text (numele butonului îl citește), nu doar în stil. */}
+                      {r.legata ? <>{' '}<span className="legata">{r.legata}</span></> : null}
                     </button>
                     {deschis && <Suspense fallback={null}><NivelPiesa elemente={r.elemente} operatii={r.operatii} /></Suspense>}
                   </li>

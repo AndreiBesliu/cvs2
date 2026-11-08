@@ -60,7 +60,7 @@ test('cercul și calea: uniform exact; cubicele își scalează punctele de cont
   assert.ok(transforma(doc1(arc), 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }).ok);
 });
 
-test('refuzurile: colțul rotunjit neuniform, rotirea oblică neuniformă, scara zero sau negativă, piesa împărțită', () => {
+test('refuzurile: colțul rotunjit neuniform, rotirea oblică neuniformă, scara zero sau negativă; piesa pusă de mai multe ori (ADR 0210 §2)', () => {
   assert.deepEqual(transforma(doc1({ ...R, razaColt: 5 }), 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'neuniform-colt' });
   const d = doc1(R);
   const i0 = d.foi[0]?.instante[0];
@@ -68,9 +68,20 @@ test('refuzurile: colțul rotunjit neuniform, rotirea oblică neuniformă, scara
   assert.deepEqual(transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'neuniform-rotit' });
   assert.ok(transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }).ok, 'uniform merge și oblic');
   for (const s of [0, -1, Number.NaN]) assert.deepEqual(transforma(doc1(R), 0, ['p'], { fel: 'scalare', sx: s, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'scara-invalida' });
+  // O piesă pusă de mai multe ori se scalează pentru toate: piesa o dată, locul doar al instanței alese.
   const imp = doc1(R);
-  imp.foi[0]?.instante.push({ id: 'q', piesa: 'p', x: 0, y: 0, rotire: 0 });
-  assert.deepEqual(transforma(imp, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'piesa-impartita' });
+  imp.foi[0]?.instante.push({ id: 'q', piesa: 'p', x: 50, y: 0, rotire: 90 });
+  const s = transforma(imp, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } });
+  assert.ok(s.ok);
+  assert.equal(s.piese.length, 1);
+  assert.deepEqual(s.instante.map((i) => i.id), ['p']);
+  // Amândouă alese, la o scalare uniformă: aceeași schimbare a piesei, o dată.
+  const ambele = transforma(imp, 0, ['p', 'q'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } });
+  assert.ok(ambele.ok);
+  assert.equal(ambele.piese.length, 1);
+  assert.equal(ambele.instante.length, 2);
+  // Neuniform, cu una rotită la 90°: în axele fiecăreia, scările se schimbă între ele, deci piesa s-ar schimba diferit.
+  assert.deepEqual(transforma(imp, 0, ['p', 'q'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'piesa-impartita' });
 });
 
 test('un arc mărit peste latura documentului devine cubice, pe cercul lui, sub toleranța importului; documentul trece de ușă (ADR 0102)', () => {
@@ -203,15 +214,19 @@ test('oglindirea în lume, la 0°, 90° și 30°: fiecare vârf și punct de con
   }
 });
 
-test('oglindirea selecției față de centrul ei comun; piesa împărțită e refuzată', () => {
+test('oglindirea selecției față de centrul ei comun; o piesă pusă de mai multe ori se oglindește pentru toate (ADR 0210 §2)', () => {
   const d = docDin(STOC,
     { id: 'a', forma: R, matrice: { ...ID, e: 20, f: 20 } },
     { id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: { ...ID, e: 250, f: 100 } });
   const o = cuRezultat(d, { fel: 'oglindire', directie: 'orizontal', centru: { x: 140, y: 0 } }, ['a', 'b']);
   assert.deepEqual(o.foi[0]?.instante.map((i) => [i.id, i.x, i.y]), [['a', 260, 20], ['b', 30, 100]]);
   const imp = doc1(R);
-  imp.foi[0]?.instante.push({ id: 'q', piesa: 'p', x: 0, y: 0, rotire: 0 });
-  assert.deepEqual(transforma(imp, 0, ['p'], { fel: 'oglindire', directie: 'vertical', centru: { x: 0, y: 0 } }), { ok: false, motiv: 'piesa-impartita' });
+  imp.foi[0]?.instante.push({ id: 'q', piesa: 'p', x: 0, y: 0, rotire: 90 });
+  const o1 = transforma(imp, 0, ['p'], { fel: 'oglindire', directie: 'vertical', centru: { x: 0, y: 0 } });
+  assert.ok(o1.ok);
+  assert.equal(o1.piese.length, 1);
+  // Amândouă alese, rotite altfel: oglinda din axele fiecăreia diferă, deci refuz.
+  assert.deepEqual(transforma(imp, 0, ['p', 'q'], { fel: 'oglindire', directie: 'vertical', centru: { x: 0, y: 0 } }), { ok: false, motiv: 'piesa-impartita' });
 });
 
 /**

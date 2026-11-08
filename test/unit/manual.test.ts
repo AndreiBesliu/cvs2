@@ -91,6 +91,8 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
   aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
+  // Butonul benzii violet (ADR 0210 §2): «Desprinde-o doar pe aceasta».
+  desprinde: 'piesa.desprinde',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
   'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
 };
@@ -121,7 +123,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 97)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 101)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -136,7 +138,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b).
-  assert.equal(USI.length, 97);
+  assert.equal(USI.length, 101);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

@@ -98,6 +98,7 @@ pornește foile estompate: pornit, le încadrează pe toate; oprit, rămâne doa
   tăierea.
 - **Duplică foaia** face o foaie nouă după ea, cu aceeași mărime, același material și copii separate ale pieselor ei (ca
   `Ctrl+D`).
+- **Duplică foaia cu aceleași piese** face la fel, dar cu aceleași piese: vezi [Piesele puse de mai multe ori](#piese-legate).
 - **Mută foaia mai sus** și **Mută foaia mai jos** schimbă ordinea foilor în listă.
 - **Șterge foaia** o scoate, cu piesele ei; dacă are piese, meniul întreabă întâi. Ultima foaie a proiectului rămâne.
 
@@ -107,6 +108,42 @@ selecția). Fiecare piesă își păstrează locul și rotirea; dacă iese din f
 rămâne aceeași.
 
 Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi) e un singur pas de anulare (`Ctrl+Z`).
+
+## Piesele puse de mai multe ori
+%% capitol: piese-legate
+%% acopera: piesa.inca, piesa.plus-unu, piesa.desprinde, foaie.duplica-legat
+
+O piesă se poate pune de mai multe ori: aceeași formă, cu aceleași operații, în mai multe locuri, pe aceeași foaie sau pe
+altele. Fiecare loc e o instanță a piesei, cu locul și rotirea ei; forma și operațiile sunt ale piesei, deci o schimbare a lor
+se vede la toate.
+
+**Încă și +1.** Cu o singură piesă aleasă, panoul Proprietăți arată, la **Piesa**, de câte ori e pusă și pe ce foi.
+**Încă…** cere **Câte în total** (mai multe decât acum, cel mult 1 000) și arată, înainte să adaugi, unde ajung cele noi: pe
+rândul piesei, la dreapta ei, apoi pe rânduri dedesubt, de la marginea foii (10 mm), ocolind piesele de pe foaie. Între
+piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare. Ce nu încape trece
+pe foaia următoare, dacă e goală, apoi pe foi noi, ca foaia piesei. **+1** pune încă una după ultima. `Ctrl+D` rămâne o copie
+separată, cu piesa ei.
+
+**Cum se văd.** Rândul unei piese puse de mai multe ori are în listă, violet, al câtelea e („(3 din 12)”). Cât e aleasă una,
+o bandă violet, sus pe pânză, spune de câte ori e pusă piesa: o schimbare a formei, a nodurilor, a textului, a scării, a
+oglindirii, a înclinării sau a operațiilor se face pentru toate. Locul și rotirea rămân ale fiecăreia. Două instanțe alese ale
+aceleiași piese, rotite altfel, s-ar schimba diferit la o scalare neuniformă, o oglindire sau o înclinare: atunci schimbarea
+se refuză, cu motivul.
+
+**Desprinde.** **Desprinde** (în panou, sau **Desprinde-o doar pe aceasta**, din bandă) dă fiecărei instanțe alese o piesă a
+ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare),
+reparațiile [verificării](#verificare) și [tăierea vectorilor](#taiere) nu schimbă o piesă pusă de mai multe ori: întâi o
+desprinzi. O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
+
+**Gruparea.** Cu o piesă pusă de mai multe ori printre formele alese, **Grupează** întreabă: **Doar aceasta** (o desprinde,
+apoi grupează) sau **În toate cele N** (formele celelalte intră în piesă, deci apar lângă fiecare instanță a ei; merge cu o
+singură piesă de felul acesta printre cele alese). Bifa **Ține minte alegerea** o păstrează în browser: gruparea nu mai
+întreabă. Meniul de clic dreapta are amândouă rândurile, **Grupează doar aceasta** și **Grupează în toată piesa**.
+
+**Duplică foaia cu aceleași piese**, din meniul foii, face o foaie nouă după ea, cu aceleași piese (instanțe noi, în aceleași
+locuri): o schimbare a unei piese se vede pe ambele foi. **Duplică foaia** face, ca înainte, copii separate.
+
+Fiecare gest e un singur pas de anulare (`Ctrl+Z`).
 
 ## Desenul
 %% capitol: desen
@@ -405,8 +442,8 @@ contururi (degroșare și finisare) le taie, după degrupare, contur cu contur. 
 singur `Ctrl+Z` le adună la loc.
 
 Degruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+Shift+G`), dacă un **V-carve** își sapă contururile împreună
-(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio
-formă aleasă nu e un grup.
+(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e pusă de mai multe ori (întâi o desprinzi,
+vezi [Piesele puse de mai multe ori](#piese-legate)) sau dacă nicio formă aleasă nu e un grup.
 
 ## Gruparea
 %% capitol: grupare
@@ -424,8 +461,9 @@ desface gruparea, cu fiecare formă la locul ei.
 
 Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
 literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+G`), dacă e aleasă o singură formă, dacă două
-forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată)
-sau dacă o piesă aleasă e folosită și de alte instanțe.
+forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată).
+Cu o piesă pusă de mai multe ori printre cele alese, gruparea întreabă întâi: vezi [Piesele puse de mai multe
+ori](#piese-legate).
 
 ## Meniul de clic dreapta
 %% capitol: meniu

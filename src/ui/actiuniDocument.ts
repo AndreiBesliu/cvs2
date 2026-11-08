@@ -13,6 +13,7 @@ import type { Transformare } from '../model/transformare.ts';
 import type { RezultatPiesaText } from '../text/piesaText.ts';
 import { anuleaza, executa, reface, type CampEticheta, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
 import { indexFoaieActiva } from '../model/foi.ts';
+import { copieArbore, idNou } from '../model/copii.ts';
 import type { Actiune } from './actiuni.ts';
 
 /**
@@ -67,6 +68,10 @@ export type ContextDocument = {
   readonly foaieTinta?: () => string | null;
   /** Numele sau materialul foii, scris în panou (ADR 0210 §1). */
   readonly etichetaNoua?: () => { readonly camp: CampEticheta; readonly valoare: string };
+  /** «Încă…» (ADR 0210 §2): câte instanțe ale piesei alese să fie în total, în proiect. */
+  readonly cateInTotal?: () => number;
+  /** Gruparea cu o piesă pusă de mai multe ori (ADR 0210 §2): doar aceasta (desprinsă întâi) sau în toată piesa. */
+  readonly grupareSurori?: () => 'doar' | 'toate';
   /** Foaia de făcut activă după acțiune: foaia nouă, copia, vecina celei șterse. */
   readonly activeazaFoaie?: (id: string) => void;
   /** Fila asta doar citește (alta scrie proiectul): nicio acțiune nu schimbă documentul. */
@@ -203,20 +208,13 @@ export function alegereLaCerere(aduce: () => Promise<Alegere>): { readonly incar
   return { incarca, ruleaza };
 }
 
+// Id-urile noi și copia arborelui stau în model (`copii.ts`); registrul le dă mai departe, ca până acum.
+export { copieArbore, idNou };
+
 const ALEGERE = alegereLaCerere(() => import('./actiuniAlegere.ts'));
 
 /** Modulul alegerii, cerut de aplicație la montare: primul clic nu așteaptă rețeaua (doar unul dat în primele clipe). */
 export const incarcaAlegerea = ALEGERE.incarca;
-
-/** Primul id liber de forma `e<n>`, liber și ca piesă, și ca instanță: o formă nouă are piesa și instanța cu același id. */
-export function idNou(doc: Document, ocupate: ReadonlySet<string> = new Set()): string {
-  const folosite = new Set<string>(ocupate);
-  for (const p of doc.piese) folosite.add(p.id);
-  for (const f of doc.foi) for (const i of f.instante) folosite.add(i.id);
-  let n = doc.piese.length + 1;
-  while (folosite.has(`e${n}`)) n++;
-  return `e${n}`;
-}
 
 /** Foaia cu id-ul dat (foaia activă a ferestrei, ADR 0210 §1); fără id, sau fără o foaie cu el, prima. */
 export function foaieCurenta(doc: Document, id: string | null | undefined) {
@@ -317,19 +315,6 @@ export function alesePreaDeparte(ctx: ContextDocument, dx: number, dy: number): 
   return foaieCtx(ctx).instante.some((i) => alese.has(i.id) && instantaPreaDeparte(i.x + dx, i.y + dy));
 }
 
-/**
- * Copia arborelui unei piese pentru Ctrl+D: noduri noi, dar formele împărțite. Documentul nu se schimbă pe loc, deci o
- * formă poate sta în două piese; o cale de 50 000 de vârfuri nu se mai copiază în istoric la fiecare Ctrl+D (recenzia 2.7b).
- */
-export function copieArbore(n: Nod): Nod {
-  if (n.tip === 'element') {
-    const { forma, ...rest } = n;
-    return { ...structuredClone(rest), forma } as Nod;
-  }
-  const { copii, ...rest } = n;
-  return { ...structuredClone(rest), copii: copii.map(copieArbore) } as Nod;
-}
-
 /** Selecția păstrează doar instanțele care există încă (după o anulare, o refacere sau o ștergere). */
 function curataSelectia(ctx: ContextDocument): void {
   const existente = new Set(foaieCtx(ctx).instante.map((i) => i.id));
@@ -350,6 +335,9 @@ let calcul: CalculDocument | null = null;
 
 /** Garda unei acțiuni fără date de cerut (foile, ADR 0210 §1): până vine calculul, spune că editarea se încarcă. */
 const dupaCalcul = (): true | 'motiv.editare-se-incarca' => (calcul === null ? 'motiv.editare-se-incarca' : true);
+/** Garda unei acțiuni pe o singură piesă aleasă (ADR 0210 §2): motivul, sau garda calculului. */
+const oSinguraAleasa = (ctx: ContextDocument): true | CheieSimpla => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+  : ctx.selectie().length > 1 ? 'motiv.o-singura-piesa' : dupaCalcul());
 
 /** Înregistrarea calculului (o dată, la evaluarea modulului lui). */
 export function inregistreazaCalcul(c: CalculDocument): void {
@@ -522,6 +510,12 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('foaie.eticheta', 'actiune.foaie-eticheta', (ctx) => (ctx.etichetaNoua ? dupaCalcul() : 'motiv.nimic-ales')),
   laCerere('selectie.muta-pe-foaie', 'actiune.muta-pe-foaie', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
     : ctx.foaieTinta ? dupaCalcul() : 'motiv.nimic-ales')),
+  // Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑): din panou, din banda violet și din meniul foii (paleta, ca
+  // pentru foi, nu le grupează).
+  laCerere('piesa.inca', 'actiune.inca', (ctx) => (oSinguraAleasa(ctx) !== true ? oSinguraAleasa(ctx) : ctx.cateInTotal ? true : 'motiv.nimic-ales')),
+  laCerere('piesa.plus-unu', 'actiune.plus-unu', oSinguraAleasa),
+  laCerere('piesa.desprinde', 'actiune.desprinde', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : dupaCalcul())),
+  laCerere('foaie.duplica-legat', 'actiune.foaie-duplica-legat', dupaCalcul),
   laCerere('document.muta-instantele', 'actiune.muta-instantele', (ctx) => (ctx.deplasari ? true : 'motiv.nimic-ales')),
   // Uneltele de desen (ADR 0051): forma trasă pe pânză, ca o piesă nouă cu instanța ei.
   laCerere('document.deseneaza', 'actiune.deseneaza', (ctx) => (ctx.formaNoua ? true : 'motiv.nimic-ales')),

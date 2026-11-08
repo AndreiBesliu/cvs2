@@ -3,7 +3,8 @@
  * al foii. Rotirea schimbă doar instanța (unghiul și locul). Scalarea schimbă geometria piesei, EXACT: dreptunghiul își
  * schimbă laturile, cercul raza, calea vârfurile și punctele de control; unde rezultatul n-ar mai fi exact se refuză cu
  * motiv (o scalare neuniformă pe un cerc, pe un arc sau pe un colț rotunjit; o scalare neuniformă pe o instanță sau un nod
- * rotit altfel decât cu un multiplu de 90°; o piesă folosită și de alte instanțe). Oglindirea pune reflexia în matricea
+ * rotit altfel decât cu un multiplu de 90°; două instanțe alese ale aceleiași piese, pe care schimbarea ar face-o diferit:
+ * o piesă pusă de mai multe ori se schimbă pentru toate, ADR 0210 §2). Oglindirea pune reflexia în matricea
  * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne. Înclinarea
  * (ADR 0065) intră în geometrie: liniile și cubicele rămân exacte; arcele (cercul, colțurile rotunjite) se refuză, sau, la
  * cererea omului, devin întâi cubice (ADR 0078), cu abaterea de după înclinare sub toleranța proiectului. Blocul unui text
@@ -14,6 +15,7 @@ import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
 import { blocScalat } from './blocText.ts';
+import { jsonCanonic } from './jsonCanonic.ts';
 import { arcInCubice, caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
@@ -162,22 +164,19 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
       }),
     };
   }
-  // O piesă folosită de mai multe instanțe s-ar schimba peste tot: refuz (copiile legate vin în etapa 11).
-  const folosiri = new Map<string, number>();
-  for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
+  // O piesă pusă de mai multe ori (ADR 0210 §2) se schimbă pentru toate instanțele ei: locul și rotirea rămân ale fiecăreia.
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  if (t.fel === 'oglindire') return oglindeste(instante, piese, folosiri, t);
-  if (t.fel === 'inclinare') return inclina(instante, piese, folosiri, t);
+  if (t.fel === 'oglindire') return oglindeste(instante, piese, t);
+  if (t.fel === 'inclinare') return inclina(instante, piese, t);
   const { sx, sy, ancora } = t;
   // Fără oglindire din mânere: o scară care trece de zero (mânerul tras peste ancoră) e refuzată, nu întoarsă (oglindirea
   // are butoanele ei, ADR 0054).
   if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return { ok: false, motiv: 'scara-invalida' };
-  const noiPiese: Piesa[] = [];
+  const noiPiese = new Map<string, Piesa>();
   const noiInstante: Instanta[] = [];
   for (const i of instante) {
     const piesa = piese.get(i.piesa);
     if (!piesa) continue;
-    if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
     let lx = sx, ly = sy;
     if (!uniforma(sx, sy)) {
       const q = sferturi(i.rotire);
@@ -190,10 +189,22 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
     // aldin (ADR 0138 §4). Scara blocului e cea din axele contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
     const [bx, by] = uniforma(sx, sy) ? [lx, ly] : inAxe(lx, ly, sferturiMatrice(piesa.radacina.matrice) ?? 0);
     const radacina = blocScalat(piesa.radacina, scalata, bx, by, uniforma(sx, sy));
-    noiPiese.push({ ...piesa, radacina });
+    if (!oSinguraSchimbare(noiPiese, { ...piesa, radacina })) return { ok: false, motiv: 'piesa-impartita' };
     noiInstante.push({ ...i, x: ancora.x + (i.x - ancora.x) * sx, y: ancora.y + (i.y - ancora.y) * sy });
   }
-  return { ok: true, instante: noiInstante, piese: noiPiese };
+  return { ok: true, instante: noiInstante, piese: [...noiPiese.values()] };
+}
+
+/**
+ * O piesă schimbată o singură dată (ADR 0210 §2): două instanțe alese ale aceleiași piese o schimbă la fel (atunci intră o
+ * dată), sau diferit (rotite altfel, la o scalare neuniformă, o oglindire sau o înclinare): atunci schimbarea nu se poate
+ * face, iar motivul e `piesa-impartita`.
+ */
+function oSinguraSchimbare(noi: Map<string, Piesa>, p: Piesa): boolean {
+  const deja = noi.get(p.id);
+  if (deja) return jsonCanonic(deja) === jsonCanonic(p);
+  noi.set(p.id, p);
+  return true;
 }
 
 /** −0 → 0 (o reflexie înmulțește zerourile cu −1): matricea scrisă în document rămâne aceeași la comparare. */
@@ -205,21 +216,21 @@ const fara0 = (m: Matrice): Matrice => ({ a: m.a + 0, b: m.b + 0, c: m.c + 0, d:
  * instanței rămâne, iar L intră în matricea rădăcinii piesei, înaintea ei. La multiplii de 90°, L e exactă (0 și ±1).
  */
 function oglindeste(
-  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, folosiri: ReadonlyMap<string, number>,
-  t: Extract<Transformare, { fel: 'oglindire' }>,
+  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, t: Extract<Transformare, { fel: 'oglindire' }>,
 ): RezultatTransformare {
   const S: Matrice = t.directie === 'orizontal' ? { a: -1, b: 0, c: 0, d: 1, e: 0, f: 0 } : { a: 1, b: 0, c: 0, d: -1, e: 0, f: 0 };
-  const noiPiese: Piesa[] = [];
+  const noiPiese = new Map<string, Piesa>();
   const noiInstante: Instanta[] = [];
   for (const i of instante) {
     const piesa = piese.get(i.piesa);
     if (!piesa) continue;
-    if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
     const L = compune(rotatie(-i.rotire), compune(S, rotatie(i.rotire)));
-    noiPiese.push({ ...piesa, radacina: { ...piesa.radacina, matrice: fara0(compune(L, piesa.radacina.matrice)) } });
+    if (!oSinguraSchimbare(noiPiese, { ...piesa, radacina: { ...piesa.radacina, matrice: fara0(compune(L, piesa.radacina.matrice)) } })) {
+      return { ok: false, motiv: 'piesa-impartita' };
+    }
     noiInstante.push(t.directie === 'orizontal' ? { ...i, x: 2 * t.centru.x - i.x } : { ...i, y: 2 * t.centru.y - i.y });
   }
-  return { ok: true, instante: noiInstante, piese: noiPiese };
+  return { ok: true, instante: noiInstante, piese: [...noiPiese.values()] };
 }
 
 /**
@@ -269,20 +280,18 @@ function inclinaNod(n: Nod, sus: Matrice, H: Matrice, arce: boolean): Nod | Moti
 
 /** Înclinarea (ADR 0065): geometria pieselor primește înclinarea, locul și rotirea instanțelor rămân. */
 function inclina(
-  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, folosiri: ReadonlyMap<string, number>,
-  t: Extract<Transformare, { fel: 'inclinare' }>,
+  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, t: Extract<Transformare, { fel: 'inclinare' }>,
 ): RezultatTransformare {
   const bun = (u: number): boolean => Number.isFinite(u) && Math.abs(u) <= UNGHI_MAXIM_INCLINARE;
   if (!bun(t.unghiX) || !bun(t.unghiY)) return { ok: false, motiv: 'unghi-invalid' };
   const H = matriceInclinare(t.unghiX, t.unghiY, t.centru);
-  const noiPiese: Piesa[] = [];
+  const noiPiese = new Map<string, Piesa>();
   for (const i of instante) {
     const piesa = piese.get(i.piesa);
     if (!piesa) continue;
-    if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
     const radacina = inclinaNod(piesa.radacina, compune(translatie(i.x, i.y), rotatie(i.rotire)), H, t.arceInCurbe === true);
     if (typeof radacina === 'string') return { ok: false, motiv: radacina };
-    noiPiese.push({ ...piesa, radacina });
+    if (!oSinguraSchimbare(noiPiese, { ...piesa, radacina })) return { ok: false, motiv: 'piesa-impartita' };
   }
-  return { ok: true, instante: [], piese: noiPiese };
+  return { ok: true, instante: [], piese: [...noiPiese.values()] };
 }

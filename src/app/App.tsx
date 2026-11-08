@@ -614,6 +614,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       return [{ id: f.id, x: (locuri[k] ?? 0) - x0, y: 0, latime: f.stoc.latime, inaltime: f.stoc.inaltime, nume: numeFoaie(f, k, sablonFoaie), forme: d.forme }];
     });
   }, [doc, indexActiva, toateFoile, limbaActiva]);
+  // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
+  // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
+  const surori = useMemo(() => {
+    const n = new Map<string, number>();
+    const k = new Map<string, number>();
+    for (const f of doc.foi) for (const i of f.instante) {
+      const c = (n.get(i.piesa) ?? 0) + 1;
+      n.set(i.piesa, c);
+      k.set(i.id, c);
+    }
+    return { n, k };
+  }, [doc]);
   // Lista de desen și elementele în lume se refac doar când se schimbă documentul sau foaia activă.
   const lume = useMemo(() => elementeFoaie(doc, indexActiva), [doc, indexActiva]);
   const forme = useMemo(() => listaDesen(doc, indexActiva), [doc, indexActiva]);
@@ -656,7 +668,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -922,6 +934,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const randuri: RandLista[] = (foaie?.instante ?? []).map((i) => ({
     id: i.id,
     descriere: descriereInstanta(elementeInstanta(i.id), numePiesa(i.id)),
+    legata: (surori.n.get(i.piesa) ?? 0) > 1 ? t('lista.din', { k: String(surori.k.get(i.id) ?? 0), n: String(surori.n.get(i.piesa) ?? 0) }) : null,
     avertisment: avertInstanta.get(i.id)?.join('\n') ?? null,
     selectat: alese.has(i.id),
     elemente: elementeInstanta(i.id).length,
@@ -1253,6 +1266,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               doc={doc} indexFoaie={indexActiva} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie}
               doarCitire={doarCiteste(mod)}
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
+              onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
+              onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
+              onDesprinde={() => aplicaDinPanou('piesa.desprinde', {})}
               onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
               onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}

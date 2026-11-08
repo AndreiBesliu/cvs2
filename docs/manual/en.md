@@ -101,6 +101,8 @@ delete other sheets.
   ("white MDF 18"): it does not change the cutting.
 - **Duplicate the sheet** makes a new sheet after it, with the same size, the same material and separate copies of its parts
   (like `Ctrl+D`).
+- **Duplicate the sheet with the same parts** does the same, but with the same parts: see [Parts placed more than
+  once](#piese-legate).
 - **Move the sheet up** and **Move the sheet down** change the order of the sheets in the list.
 - **Delete the sheet** removes it, with its parts; if it has parts, the menu asks first. The project's last sheet stays.
 
@@ -110,6 +112,43 @@ whole selection goes). Each part keeps its place and rotation; if it goes past t
 active sheet stays the same.
 
 Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets) is a single undo step (`Ctrl+Z`).
+
+## Parts placed more than once
+%% capitol: piese-legate
+%% acopera: piesa.inca, piesa.plus-unu, piesa.desprinde, foaie.duplica-legat
+
+A part can be placed more than once: the same shape, with the same operations, in several places, on the same sheet or on
+others. Each place is an instance of the part, with its own place and rotation; the shape and the operations belong to the
+part, so a change to them shows on all of them.
+
+**More and +1.** With a single part chosen, the Properties panel shows, under **Part**, how many times it is placed and on
+which sheets. **More…** asks **How many in total** (more than now, at most 1,000) and shows, before you add them, where the
+new ones go: on the part's row, to its right, then on rows below, from the sheet's margin (10 mm), going around the parts on
+the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger.
+Whatever does not fit goes to the next sheet, if it is empty, then to new sheets, like the part's sheet. **+1** places one
+more after the last. `Ctrl+D` stays a separate copy, with its own part.
+
+**How they show.** The row of a part placed more than once shows in the list, in violet, which one it is ("(3 of 12)"). While
+one is chosen, a violet band at the top of the canvas says how many times the part is placed: a change to the shape, the
+nodes, the text, the scale, the mirroring, the skew or the operations is made for all of them. The place and the rotation stay
+each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
+a mirror or a skew: then the change is refused, with the reason.
+
+**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its own,
+a copy, in the same place: from then on it changes on its own. The last instance keeps the part. [Ungrouping](#degrupare),
+the [check](#verificare)'s repairs and [cutting the vectors](#taiere) do not change a part placed more than once: detach it
+first. A deleted instance goes alone; the part goes with its last instance.
+
+**Grouping.** With a part placed more than once among the chosen shapes, **Group** asks: **Just this one** (detaches it, then
+groups) or **In all N** (the other shapes go into the part, so they show next to each of its instances; it works with a single
+part of this kind among the chosen ones). The **Remember the choice** box keeps it in the browser: grouping no longer asks.
+The right-click menu has both rows, **Group just this one** and **Group in the whole part**.
+
+**Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
+instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
+copies.
+
+Each gesture is a single undo step (`Ctrl+Z`).
 
 ## Drawing
 %% capitol: desen
@@ -420,8 +459,8 @@ outlines (roughing and finishing) cuts them, after ungrouping, outline by outlin
 and a single `Ctrl+Z` puts them back together.
 
 Ungrouping is refused, with the reason shown next to the buttons (also on `Ctrl+Shift+G`), if a **V-carve** cuts its outlines
-together (letters with their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none
-of the chosen shapes is a group.
+together (letters with their holes: apart, the holes would be cut too), if the part is placed more than once (detach it first,
+see [Parts placed more than once](#piese-legate)), or if none of the chosen shapes is a group.
 
 ## Grouping
 %% capitol: grupare
@@ -441,7 +480,8 @@ place.
 Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
 letter comes out the same. Grouping is refused, with the reason shown next to the buttons (also on `Ctrl+G`), if a single shape
 is chosen, if two shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the
-overlap would be left uncut) or if a chosen part is also used by other instances.
+overlap would be left uncut). With a part placed more than once among the chosen ones, grouping asks first: see [Parts placed
+more than once](#piese-legate).
 
 ## The right-click menu
 %% capitol: meniu

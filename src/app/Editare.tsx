@@ -39,6 +39,8 @@ import { conturNoduri, drumSvg, formaNoduri, inversa, laturaLovita, nodLovit, no
 import { aplica, IDENTITATE } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { tastaActiunii } from '../ui/scurtaturi.ts';
+import { tineAlegerea, type AlegereGrupare } from '../ui/grupareSurori.ts';
+import { folosiri } from '../model/pieseLegate.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
 import { contTinut, puneCont, useContTinut, type ContTinut } from './dreptCont.ts';
@@ -235,7 +237,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'foaieTinta'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'foaieTinta' | 'grupareSurori'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -672,19 +674,44 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Gruparea (ADR 0130): cel puțin două forme alese devin o piesă, tot prin registru (și din meniul de clic dreapta, din
   // paletă, cu Ctrl+G). Refuzul se spune lângă butoane, până la altă selecție.
   const [motivGrupare, setMotivGrupare] = useState<string | null>(null);
+  // Întrebarea grupării cu o piesă pusă de mai multe ori (ADR 0210 §2) și bifa „Ține minte alegerea”.
+  const [intrebareGrupare, setIntrebareGrupare] = useState(false);
+  const [tineGrupare, setTineGrupare] = useState(false);
   useEffect(() => { setMotivGrupare(null); }, [selectie]);
-  const grupeaza = (): string | null => {
+  // Prima instanță aleasă a unei piese puse de mai multe ori (ADR 0210 §2): de câte ori e pusă și câte stau pe foaia activă.
+  const surori = useMemo(() => {
+    const n = folosiri(doc);
+    const foaie = doc.foi[indexFoaie];
+    const i = foaie?.instante.find((x) => selectie.includes(x.id) && (n.get(x.piesa) ?? 0) > 1);
+    return i && foaie ? { n: n.get(i.piesa) ?? 0, aici: foaie.instante.filter((x) => x.piesa === i.piesa).length } : null;
+  }, [doc, indexFoaie, selectie]);
+  // O altă selecție închide întrebarea grupării.
+  useEffect(() => { setIntrebareGrupare(false); }, [selectie]);
+  const grupeaza = (alegere?: AlegereGrupare): string | null => {
     if (selectie.length < 2 || p.doarCitire) return null;
-    const r = ruleaza('document.grupeaza', {});
+    const r = ruleaza('document.grupeaza', alegere ? { grupareSurori: () => alegere } : {});
+    // O piesă aleasă e pusă de mai multe ori, fără alegere ținută: întrebarea, nu motivul.
+    if (!r.ok && r.motiv === 'motiv.grupare-intrebare') {
+      setMotivGrupare(null);
+      setIntrebareGrupare(true);
+      return null;
+    }
+    setIntrebareGrupare(false);
     const motiv = r.ok ? null : t(r.motiv);
     setMotivGrupare(motiv);
     return motiv;
+  };
+  const alegeGruparea = (alegere: AlegereGrupare): void => {
+    if (tineGrupare) tineAlegerea(alegere);
+    setIntrebareGrupare(false);
+    grupeaza(alegere);
   };
   // Aceleași două acțiuni pornite de la tastatură (Ctrl+G, Ctrl+Shift+G) sau din paletă rulează prin ușa aplicației, care
   // îi dă aici motivul unui refuz: se spune tot lângă butoane, până la altă selecție.
   useEffect(() => {
     onRefuz((id, motiv) => {
-      if (id === 'document.grupeaza') setMotivGrupare(t(motiv));
+      if (id === 'document.grupeaza' && motiv === 'motiv.grupare-intrebare') setIntrebareGrupare(true);
+      else if (id === 'document.grupeaza') setMotivGrupare(t(motiv));
       else if (id === 'document.degrupeaza') setMotivDegrupare(t(motiv));
     });
     return () => { onRefuz(null); };
@@ -986,8 +1013,15 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
+    // Cu o piesă pusă de mai multe ori printre cele alese (ADR 0210 §2), două rânduri, fără întrebare.
+    const grupare: ArticolMeniu[] = surori === null
+      ? [{ id: 'grupeaza', eticheta: t('actiune.grupeaza'), tasta: tastaActiunii('document.grupeaza'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza()); } }]
+      : [
+        { id: 'grupeaza-doar', eticheta: t('editare.grupare.meniu-doar'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza('doar')); } },
+        { id: 'grupeaza-piesa', eticheta: t('editare.grupare.meniu-piesa'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza('toate')); } },
+      ];
     return [
-      { id: 'grupeaza', eticheta: t('actiune.grupeaza'), tasta: tastaActiunii('document.grupeaza'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza()); } },
+      ...grupare,
       { id: 'degrupeaza', eticheta: t('actiune.degrupeaza'), tasta: tastaActiunii('document.degrupeaza'), activ: grupAles && poate, ruleaza: () => { facut(degrupeaza()); } },
       'separator',
       { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
@@ -1033,6 +1067,35 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
 
   return (
     <div className="editare" ref={radacina}>
+      {/* Piesele puse de mai multe ori (ADR 0210 §2), la mijlocul zonei libere a pânzei: banda violet (o schimbare a piesei
+          alese se vede la toate) jos, unde nu stă nicio riglă (riglele urmează foaia); întrebarea grupării sus, sub bare, lângă
+          butonul din care vine (deasupra benzii ar acoperi bara selecției). */}
+      {surori ? (
+        <div className="legate-jos" style={{ left: zona.x + zona.w / 2, top: zona.y + zona.h - 8 }}>
+          <div className="banda-legata" role="status" data-testid="banda-legata">
+            <span>{t('editare.legata', { n: surori.n, aici: String(surori.aici) })}</span>
+            {selectie.length === 1 && !p.doarCitire ? (
+              <button type="button" data-editare="desprinde" onClick={() => { const r = ruleaza('piesa.desprinde', {}); if (!r.ok) setMotivGrupare(t(r.motiv)); }}>
+                {t('editare.legata.desprinde')}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+      {surori && intrebareGrupare && selectie.length >= 2 ? (
+        <div className="legate-sus" style={{ left: zona.x + zona.w / 2, top: zona.y + 8 }}>
+          <div className="intrebare-grupare" role="group" aria-label={t('editare.grupare.intrebare', { n: surori.n })} data-testid="intrebare-grupare">
+            <span>{t('editare.grupare.intrebare', { n: surori.n })}</span>
+            <button type="button" data-grupare="doar" onClick={() => { alegeGruparea('doar'); }}>{t('editare.grupare.doar')}</button>
+            <button type="button" data-grupare="toate" onClick={() => { alegeGruparea('toate'); }}>{t('editare.grupare.toate', { n: surori.n })}</button>
+            <label>
+              <input type="checkbox" data-grupare="tine" checked={tineGrupare} onChange={(e) => { setTineGrupare(e.target.checked); }} />
+              {t('editare.grupare.tine')}
+            </label>
+            <button type="button" data-grupare="renunta" onClick={() => { setIntrebareGrupare(false); }}>{t('editare.grupare.renunta')}</button>
+          </div>
+        </div>
+      ) : null}
       {manual ? (
         <Suspense fallback={null}>
           <Manual usa={manual.usa} onInchide={() => { setManual(null); }} />

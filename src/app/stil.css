@@ -27,6 +27,9 @@
   --a-plin: #a64d00;
   --t-pe-a: #ffffff;
   --rosu: #b3261e;
+  /* Piesele puse de mai multe ori (ADR 0210 §2): numărul din listă, banda și butoanele lor. */
+  --violet: #6b3fa0;
+  --t-pe-violet: #ffffff;
   --l-focus: #0b5cd5;
   --l-camp: #868b93;
   --fond: rgb(20 24 29 / 0.4);
@@ -51,6 +54,8 @@
     --a-plin: #f2a33a;
     --t-pe-a: #1a1206;
     --rosu: #ff8a80;
+    --violet: #b892ff;
+    --t-pe-violet: #1a1033;
     --l-focus: #7cb2ff;
     --l-camp: #737b86;
     --fond: rgb(0 0 0 / 0.55);
@@ -74,6 +79,8 @@
   --a-plin: #f2a33a;
   --t-pe-a: #1a1206;
   --rosu: #ff8a80;
+  --violet: #b892ff;
+  --t-pe-violet: #1a1033;
   --l-focus: #7cb2ff;
   --l-camp: #737b86;
   --fond: rgb(0 0 0 / 0.55);
@@ -958,6 +965,12 @@ nav button[aria-pressed='true'] {
   padding: 4px var(--sp-2);
   font-size: var(--fs-2);
   font-weight: 600;
+}
+
+/* O piesă pusă de mai multe ori (ADR 0210 §2): „(4 din 12)” lângă rând, violet. */
+.lista-vectori .legata {
+  color: var(--violet);
+  white-space: nowrap;
 }
 
 /* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
@@ -2055,6 +2068,115 @@ main h1 {
 
 .prop-export {
   margin-top: var(--sp-3);
+}
+
+/* Piesele puse de mai multe ori (ADR 0210 §2), la mijlocul zonei libere a pânzei (locul îl dă Editare): banda violet jos,
+ * cu marginea de jos a cutiei; întrebarea grupării sus. Doar ele prind clicurile, nu golul din jur. */
+.legate-jos,
+.legate-sus {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: max-content;
+  max-width: min(44rem, calc(100vw - 2 * var(--sp-3)));
+  pointer-events: none;
+}
+
+.legate-jos {
+  translate: -50% -100%;
+}
+
+.legate-sus {
+  translate: -50% 0;
+}
+
+.banda-legata {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-pe-violet);
+  background: var(--violet);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+  pointer-events: auto;
+}
+
+.banda-legata button {
+  color: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+
+/* Întrebarea grupării cu o piesă pusă de mai multe ori (ADR 0210 §2), sus, sub bare. */
+.intrebare-grupare {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--violet);
+  border-radius: var(--r-1);
+  background: var(--s-panou);
+  box-shadow: var(--umbra-1);
+  font-size: var(--fs-2);
+  pointer-events: auto;
+}
+
+.intrebare-grupare label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Piesa singurei instanțe alese (ADR 0210 §2): de câte ori e pusă, «+1», «Încă…», «Desprinde»; violet când are surori. */
+.prop-piesa.legata h3 {
+  color: var(--violet);
+}
+
+.prop-nota-piesa {
+  margin: 0 0 var(--sp-2);
+  color: var(--t-slab);
+}
+
+.prop-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.prop-butoane button.violet {
+  color: var(--violet);
+  border-color: var(--violet);
+}
+
+.prop-inca {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.prop-inca label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+
+.prop-inca input {
+  width: 6rem;
+  font: inherit;
+  text-align: right;
 }
 
 /* Panoul contului (ADR 0116): logarea, confirmarea adresei, planul și nota de confidențialitate. */

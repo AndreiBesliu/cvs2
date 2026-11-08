@@ -24,6 +24,8 @@ export type ActiuniFoi = {
 /** Rândurile registrului din meniu, în ordine, cu eticheta fiecăruia; ștergerea la capăt. */
 const RANDURI = [
   ['foaie.duplica', 'actiune.foaie-duplica'],
+  // Aceleași piese, legate (ADR 0210 §2): o schimbare a uneia se vede pe ambele foi.
+  ['foaie.duplica-legat', 'actiune.foaie-duplica-legat'],
   ['foaie.muta-sus', 'actiune.foaie-muta-sus'],
   ['foaie.muta-jos', 'actiune.foaie-muta-jos'],
   ['foaie.sterge', 'actiune.foaie-sterge'],

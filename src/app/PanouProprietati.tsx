@@ -7,6 +7,7 @@ import { t } from '../i18n/t.ts';
 import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
 import { valoriIncrustatie } from '../model/incrustatie.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
+import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
 import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
@@ -41,6 +42,10 @@ type Props = {
   /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
   readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
+  /** Piesele puse de mai multe ori (ADR 0210 §2): «+1», «Încă…» (câte să fie în total) și «Desprinde», prin registru. */
+  readonly onPlusUnu: () => RezultatActiune;
+  readonly onInca: (total: number) => RezultatActiune;
+  readonly onDesprinde: () => RezultatActiune;
   /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
   readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
@@ -128,9 +133,13 @@ function operatie(o: Operatie, n: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
+  onPlusUnu, onInca, onDesprinde,
 }: Props): ReactNode {
   useLimba();
   const roluriMele = useRoluriMele().roluri;
+  // «Încă…» deschis: totul scris (text, ca omul să poată scrie liber), pentru instanța de atunci; și refuzul ultimului buton.
+  const [inca, setInca] = useState<{ readonly cheie: string; readonly text: string } | null>(null);
+  const [refuzPiesa, setRefuzPiesa] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului rol ales, pentru selecția de atunci.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const foaie = doc.foi[indexFoaie];
@@ -147,7 +156,6 @@ export function PanouProprietati({
   // Forma singurei instanțe alese, dacă piesa ei e un singur element cu parametri (ADR 0053).
   const forma = instanta && piesa?.radacina.tip === 'element' ? piesa.radacina.forma : null;
   const par = forma ? parametri(forma) : null;
-  const impartita = piesa ? doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === piesa.id).length, 0) > 1 : false;
   const schimba = (p: Parametri): RezultatActiune => onForma(dinParametri(p));
   const campForma = (eticheta: string, numeCamp: string, valoare: number, unitate: string, onAplica: (x: number) => RezultatActiune): ReactNode =>
     rand(eticheta, camp(eticheta, numeCamp, valoareDerivata(valoare), unitate, false, onAplica));
@@ -206,6 +214,29 @@ export function PanouProprietati({
     && o.scula.forma?.unghi === primaInc.scula.forma?.unghi && o.incrustatie?.joc === primaInc.incrustatie?.joc
     && o.incrustatie?.fierastrau === primaInc.incrustatie?.fierastrau) ? valoriIncrustatie(primaInc) : null;
   const con = primaInc?.scula.forma?.tip === 'v' ? inaltimeConV(primaInc.scula.diametru, primaInc.scula.forma.unghi) : null;
+  // Piesa singurei instanțe alese (ADR 0210 §2): de câte ori e pusă, pe ce foi, și unde ar ajunge copiile lui «Încă…».
+  const sablonFoaie = (n: number): string => t('foaia.n', { n: String(n) });
+  const pusa = piesa ? folosiri(doc).get(piesa.id) ?? 0 : 0;
+  const peFoi = piesa && pusa > 1 ? doc.foi.flatMap((f, k) => {
+    const c = f.instante.filter((i) => i.piesa === piesa.id).length;
+    return c > 0 ? [`${numeFoaie(f, k, sablonFoaie)}: ${c}`] : [];
+  }).join(' · ') : '';
+  const totalInca = inca?.cheie === cheie && /^\d{1,4}$/.test(inca.text.trim()) ? Number(inca.text.trim()) : null;
+  const planInca = instanta && totalInca !== null && totalInca > pusa && totalInca <= INCA_MAXIM ? planCopii(doc, instanta.id, totalInca - pusa) : null;
+  const undeInca = planInca?.ok ? [
+    ...doc.foi.flatMap((f, k) => {
+      const c = planInca.locuri.filter((l) => l.foaie === f.id).length;
+      return c > 0 ? [t('prop.piesa.inca.pe', { k: String(c), foaie: numeFoaie(f, k, sablonFoaie) })] : [];
+    }),
+    ...(planInca.foiNoi > 0 ? [t('prop.piesa.inca.noi', { n: planInca.foiNoi, k: String(planInca.locuri.filter((l) => typeof l.foaie === 'number').length) })] : []),
+  ].join(', ') : '';
+  const butonPiesa = (r: RezultatActiune): void => { setRefuzPiesa(r.ok ? null : { cheie, motiv: t(r.motiv) }); };
+  const adaugaInca = (): void => {
+    if (totalInca === null) return;
+    const r = onInca(totalInca);
+    butonPiesa(r);
+    if (r.ok) setInca(null);
+  };
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -247,10 +278,51 @@ export function PanouProprietati({
           </dl>
         </section>
       )}
+      {instanta && piesa && (
+        <section data-testid="prop-piesa" className={pusa > 1 ? 'prop-piesa legata' : 'prop-piesa'}>
+          <h3>{t('prop.piesa')}</h3>
+          <p className="prop-nota-piesa" data-pusa={pusa}>{t('prop.piesa.pusa', { n: pusa })}{peFoi ? ` (${peFoi})` : ''}</p>
+          <div className="prop-butoane">
+            <button type="button" data-buton="plus-unu" disabled={doarCitire} {...(oprit ? { title: oprit } : {})} onClick={() => { butonPiesa(onPlusUnu()); }}>
+              {t('actiune.plus-unu')}
+            </button>
+            <button type="button" data-buton="inca" aria-expanded={inca?.cheie === cheie} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+              onClick={() => { setInca(inca?.cheie === cheie ? null : { cheie, text: String(Math.min(INCA_MAXIM, Math.max(2, pusa + 1))) }); }}>
+              {t('actiune.inca')}
+            </button>
+            {pusa > 1 && (
+              <button type="button" className="violet" data-buton="desprinde" disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+                onClick={() => { butonPiesa(onDesprinde()); }}>
+                {t('actiune.desprinde')}
+              </button>
+            )}
+          </div>
+          {inca?.cheie === cheie && (
+            <div className="prop-inca" data-testid="prop-inca">
+              <label>
+                {t('prop.piesa.inca')}
+                <input type="text" inputMode="numeric" autoComplete="off" data-camp="inca-total" value={inca.text}
+                  onChange={(e) => { setInca({ cheie, text: e.target.value }); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adaugaInca(); } else if (e.key === 'Escape') { e.preventDefault(); setInca(null); } }} />
+              </label>
+              <p className="prop-nota-piesa">{totalInca !== null && totalInca > pusa
+                ? t('prop.piesa.inca.acum', { n: String(pusa), m: String(totalInca - pusa) }) : t('motiv.inca-total')}</p>
+              {undeInca && <p className="prop-nota-piesa" data-testid="inca-unde">{undeInca}</p>}
+              <div className="prop-butoane">
+                <button type="button" data-buton="inca-adauga" disabled={totalInca === null || totalInca <= pusa || !planInca?.ok} onClick={adaugaInca}>
+                  {t('prop.piesa.inca.adauga', { n: totalInca !== null && totalInca > pusa ? totalInca - pusa : 0 })}
+                </button>
+                <button type="button" data-buton="inca-renunta" onClick={() => { setInca(null); }}>{t('lista.renunta')}</button>
+              </div>
+            </div>
+          )}
+          {refuzPiesa?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="piesa">{refuzPiesa.motiv}</p>}
+        </section>
+      )}
       {par && (
         <section data-testid="prop-forma" data-forma={par.tip}>
           <h3>{t(`prop.forma.${par.tip}`)}</h3>
-          {impartita ? <p className="prop-nota">{t('prop.forma.impartita')}</p> : <dl>{campuriForma(par)}</dl>}
+          <dl>{campuriForma(par)}</dl>
         </section>
       )}
       {oferite.length > 0 && (
