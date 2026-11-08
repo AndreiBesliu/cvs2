@@ -421,7 +421,7 @@ test('ușa v14: forma frezei e `{ tip: "v", unghi ∈ [1, 179] }` (câmpurile ne
   const curat = doc(dr, [{ ...vcarve(['a']), tip: 'profil', scula: { numar: 1, nume: 'freza plata', diametru: 6 } }], 0, 0, 13);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 20 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 22 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0090): V-carve-ul cu latura interior și nimic din profil; forma frezei, cu numele după ea doar când se schimbă', () => {

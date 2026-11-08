@@ -37,7 +37,7 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
   await page.goto('/');
   await adauga(page, 'cerc');
   const rol = taierea(page).locator('[data-camp="rol"]');
-  await expect(rol.locator('option')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'găurire', 'V-carve', 'incrustație în V']);
+  await expect(rol.locator('option')).toHaveText(['exterior', 'interior', 'pe linie', 'buzunar', 'găurire', 'V-carve', 'incrustație în V', 'incrustație cu pereți drepți']);
   await rol.selectOption('incrustatie');
   // Adâncimea a devenit conul V60 Ø6 (8 nu încape), jocul 0,5, iar fierăstrăul cât mai rămâne din con (0,5).
   await expect(taierea(page).locator('[data-camp="adancime"]')).toHaveValue('5,196');

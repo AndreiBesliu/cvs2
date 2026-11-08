@@ -4,7 +4,7 @@
  * folosește doar ce are orice versiune: `documentNou`, `operatieImplicita` (din v3), ușa `incarca` și `jsonCanonic`.
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
- * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v20 incrustația), apoi
+ * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v22 banda dopului în V), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -12,7 +12,7 @@
  * Cu `<deschis>`, rețeta scrie și documentul deschis de ușa versiunii N din salvarea N − 1, înaintea adăugirii: ce a făcut
  * atunci migrarea N − 1 → N. Proba corpusului îl compară cu migrarea de azi.
  *
- * O versiune nouă (v21) își scrie aici adăugirea, la `ADAUGIRI[21]`, cu câmpul ei.
+ * O versiune nouă (v23) își scrie aici adăugirea, la `ADAUGIRI[23]`, cu câmpul ei.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as D from '../src/model/document.ts';
@@ -157,6 +157,25 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
   },
   // v20 (ADR 0170): eticheta V-carve devine locașul unei incrustații în V (jocul 0,5, fierăstrăul 2, marginea 5, fața coborâtă).
   20: (d) => { op(d, 'eticheta')['incrustatie'] = { fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata' }; d['rev'] += 1; },
+  // v21 (ADR 0171): buzunarul devine locașul unei incrustații cu pereți drepți (jocul lateral 0,1, dopul ridicat, pe fund, g 0,5,
+  // H 2, marginea 5), cu freza lui pentru dop (T7, Ø1,5).
+  21: (d) => {
+    op(d, 'buzunar')['incrustatie'] = {
+      fel: 'drept', jocLateral: 0.1, dop: 'ridicat', sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 5,
+      frezeDop: [{ scula: { numar: 7, nume: 'freza plata', diametru: 1.5 }, pasLateral: 0.6 }],
+    };
+    d['rev'] += 1;
+  },
+  // v22 (ADR 0172): dopul etichetei se taie cu banda îngustă, lată de 8 mm, decupat din placa de 6 mm cu freza lui (T8, Ø2) și
+  // cu 3 punți de 5 × 1,5 mm.
+  22: (d) => {
+    const inc = op(d, 'eticheta')['incrustatie'];
+    inc['jurDop'] = 'banda';
+    inc['banda'] = {
+      latime: 8, decupare: true, grosimePlaca: 6, freza: { numar: 8, nume: 'freza dreapta', diametru: 2 }, punti: { numar: 3, latime: 5, grosime: 1.5 },
+    };
+    d['rev'] += 1;
+  },
 };
 
 let doc: Obj;

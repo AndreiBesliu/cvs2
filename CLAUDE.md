@@ -102,10 +102,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v20.oracol.test.ts` (din 07.11, cu incrustația din v20). **Un câmp nou al
-  documentului (v21) intră acolo, ca rangul și incrustația:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în
-  `problemeOperatieO`, frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 20` în probe;
-  oracolele CAM primesc versiunea nouă cum o primesc pe v20, de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
+  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22). **Un câmp nou al
+  documentului (v23 e a planșelor, 11.4↑; altă linie ia versiunea de după) intră acolo, ca rangul și incrustația:** rândul
+  lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
+  versiunea curentă se mută pe ea (`schema: 22` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
+  de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
   --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
@@ -581,8 +582,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aleg la export; panoul are secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile). **Documentul v20:** `incrustatie`
   (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20 schimbă doar numărul; oracolul
   documentului și corpusul de aur la v20. **Valorile pe hârtie ale incrustației stau într-un singur loc,
-  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. Urmează
-  12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
+  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. 12.1↑b
+  și 12.1↑c: mai jos, unite pe 08.11.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
   **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
@@ -674,6 +675,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   intră normala în celelalte brațe, (w/2)/tan(θ/2).** 25.3↑b (opțiunile: ADR 0223, propus) așteaptă răspunsurile.
   **Cu `main` unit pe 08.11 (`ed43b49`) și 25.3↑ corectată: pornirea 101,8 / 110 kB, totalul 563,3 / 600 (linia trasării,
   25.1↑–25.3↑: +28,3).**
+  **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
+  08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
+  (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`
+  (lățimea, decuparea prin placă, grosimea plăcii, freza decupării, punțile); migrările v20 → v21 și v21 → v22 schimbă doar
+  numărul și refuză un document care are deja, ca necunoscute, câmpurile noi. Valorile pe hârtie (`valoriIncrustatieDreapta`,
+  `valoriBanda`) stau tot în `src/model/incrustatie.ts`; lucrarea, în `src/cam/incrustatieDreapta.ts`, `dopDrept.ts` și
+  `dopV.ts`. Oracolul potrivirii, cu banda și decuparea, rămâne `test/oracles/incrustatie.ts`; al pereților drepți e
+  `test/oracles/incrustatieDreapta.ts` (cazurile pe hârtie în `incrustatieDreapta.cazuri.ts`). **O freză în plus a dopului
+  drept sau a decupării, bifată, pornește de la primul T liber.** **Punțile pe buclele mici:** pe fiecare buclă, câte încap din
+  cele cerute (`urechiCareIncap` din `src/cam/urechi.ts`, aceeași regulă ca a lucrării; `puntiPeBucle` din
+  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. Pe linie rămân, după unire („1 si 2 acum 3-6
+  dupa”): lemnul din jurul dopului ales și din panou, punțile dopului drept alese în fereastră, arborele („cu bandă”) și
+  legăturile rândurilor în fereastră, viteza benzii. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,0 / 600, /admin
+  106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -764,6 +779,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `PASTRATE`. Id-ul rămâne `trenulet` (de el țin rândul instalat și datele: 18.7.0 peste 18.6.0 îi ia locul, cu circuitele),
   la fel numele tehnice (pachetul, dosarul, scripturile) și antetul G-code-ului (amprentele v18). Verificarea românei rămase
   nu mai scutește „Trenuleț”.
+  **Înălțimile pieselor LEGO, la zecimi, în profilul imprimantei (ADR 0168, felia 3.Tg)** gata pe 08.11, în `main`, cu
+  implicitele alese de owner („Defaults 1.9 / 2.1”): înălțimea știftului (1,9 mm) și adâncimea locașului de sub piesele pline
+  (2,1 mm, cu bifa „Urmează știftul (+ 0,2)”), cu − / + la 0,1 mm, în fiecare imprimantă, lângă variantele de la calibrare
+  (Setări și fila Calibrare); cinci plăci de calibrare 2 × 2 cu știfturi de 1,7–2,1 mm. **Regulile înălțimilor stau doar în
+  `Lego.inaltimi(profil)`** (zecimile, marginile, legătura, implicitul pentru ce nu e număr): atelierul citește profilul prin
+  ea și îi dă motorului rezultatul, iar `trenulet.inaltimi.test.ts` ține implicitele atelierului egale cu ale motorului.
+  **Referințele v18 rulează cu înălțimile lui v18 fixate** (`V18` în `referinte.js`), deci apără restul geometriei; o
+  schimbare a înălțimilor implicite nu le atinge. Pachetul 18.8.0, din bibliotecă. Cifrele aplicației nu se schimbă.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -878,6 +901,31 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
+  „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
+  documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
+  punțile dopului drept alese în fereastră, pe linia incrustațiilor) ia versiunea de după. Worktree-ul `incrustatii` rămâne,
+  cu 3–6 din lista dinaintea unirii („1 si 2 acum 3-6 dupa”).
+- 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
+  ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
+  hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar
+  fi, si pe ALT, chiar si in combinatie cu celelalte, vreau sa imi pastreze centrul formei. Aceste hotkeys trebuie sa
+  functioneze asa si cand creez formele”): felia 6.V↑, `wip/6.V-ancore`, `C:\Users\besli\cncvs2-lucru\ancore`, e2e pe 4181 și
+  `127.0.8`, ADR-urile 0240–0249, canalul `ancore`; întâi ADR-ul și schița, cu întrebările (între ele, unde se mută
+  inversarea lipirii, ținută azi de Alt).
+- 08.11.2026: **înălțimile pieselor LEGO, editabile la zecimi, în profilul imprimantei** („plugin-ul 3d care face piesele de
+  lego are o problema, stifturile pe care le face si gaurile de sub piesa sunt prea mici, raza este ok, dar inaltimea este
+  putin prea mica. pare ca are nevoie de o zecime de milimetru pentru stifturi”, apoi „vreau sa pot edita eu inaltimile la
+  zecimi de milimetri sa pot salva ca profil pentru tot plugin-ul”, iar la întrebarea implicitelor „Defaults 1.9 / 2.1”):
+  ADR 0168, felia 3.Tg, în `main` (linia pluginului nu mai are worktree). Știftul 1,9 mm și locașul 2,1 mm sunt implicitele
+  oricărei imprimante noi; fiecare imprimantă își ține înălțimile ei.
+- 08.11.2026: **worktree-urile terminate și unite în `main`, scoase** („dupa ce verifici care worktree a terminat si a fost
+  integrat in maine, vreau sa inchizi tu acel worktree si sa il arhivezi”): `biblioteca` (3.Xg), `raportari` (15.B↑b) și
+  `trenulet` (linia pluginului, unită pe 06.11), fiecare cu ramura întreagă în `main`, curat și împins. Joncțiunile
+  `node_modules` și `functions\node_modules` scoase întâi (`cmd /c rmdir`, cu poarta care caută legături), apoi `git worktree
+  remove`; ramurile locale șterse cu `-d`; sesiunile arhivate (a lui `trenulet` era deja). Pe `origin`, `wip/3.Xg-biblioteca`
+  și `wip/15.B-raportari` intră în lista de șters a owner-ului (acum 17). Rămân cinci worktree-uri, cu felii încă neunite:
+  `imprimanta`, `incrustatii`, `plansele`, `taiere`, `trasare`.
 - 08.11.2026: **linia mediană, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0222, în sesiunea liniei
   trasării): rezultatul „Linii mediane” în fereastra trasării (sursele alb-negru), scheletul pe pixeli cu centrul la
   marginile de 50 % (nu axa medială a V-carve-ului, ~12 kB); o linie se termină în centrul capătului rotund; o pată plină dă

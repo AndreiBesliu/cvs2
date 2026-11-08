@@ -15,7 +15,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.7.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.8.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -30,7 +30,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.7.1.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.8.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -73,7 +73,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.1, de la trenulet-18.7.1.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.8.0, de la trenulet-18.8.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -165,7 +165,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.7.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.8.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -180,7 +180,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.7.1, instalat peste „Planific
   await page.reload();
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.1, de la trenulet-18.7.1.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.8.0, de la trenulet-18.8.0.zip');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -265,6 +265,90 @@ test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confir
   await c.locator('#m-opreste').click();
   await expect(stare).toHaveText(/^Mașina: (în alarmă|lucrarea s-a întrerupt)/);
   await expect(c.locator('#m-pauza')).toBeDisabled();
+  await faraEroriInJurnal(page);
+});
+
+test('înălțimile (ADR 0168): la zecimi, în profilul imprimantei; locașul după știft sau al lui; păstrate; înapoi la implicite', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  const c = cadru(page);
+  await c.locator('[data-mod="3d"]').first().click();
+  await expect(c.locator('#at-vedere canvas')).toBeVisible();
+  await c.locator('details.setari:has(#at-reglaje) > summary').click();
+  const stift = c.locator('#at-reglaje-stift_h'), locas = c.locator('#at-reglaje-locas_h'), bifa = c.locator('#at-reglaje [data-bifa="locas_urmeaza"]');
+  // implicitele de la 18.8.0: 1,9 / 2,1, locașul după știft (câmpul lui oprit)
+  await expect(stift).toHaveValue('1.9');
+  await expect(locas).toHaveValue('2.1');
+  await expect(locas).toBeDisabled();
+  await expect(bifa).toBeChecked();
+  // înălțimea piesei de acum, din „Mărime”: cu un știft mai înalt cu 0,1 mm, piesa crește exact cu atât
+  const inaltimePiesa = async (): Promise<number> => {
+    const t = (await c.locator('#at-cote').textContent()) ?? '';
+    const m = /× ([\d,]+) mm/.exec(t);
+    return m ? Number(m[1]!.replace(',', '.')) : Number.NaN;
+  };
+  const inainte = await inaltimePiesa();
+  expect(inainte).toBeGreaterThan(0);
+  await c.locator('#at-reglaje [data-pas="stift_h"][data-d="1"]').click();
+  await expect(stift).toHaveValue('2');
+  await expect(locas).toHaveValue('2.2');
+  await expect.poll(inaltimePiesa).toBeCloseTo(inainte + 0.1, 5);
+  // aceleași valori și în fila Calibrare
+  await c.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await expect(c.locator('#at-calib-campuri-stift_h')).toHaveValue('2');
+  await expect(c.locator('#at-calib-campuri-locas_h')).toHaveValue('2.2');
+  await expect(c.locator('#at-calib-campuri [data-bifa="locas_urmeaza"]')).toBeChecked();
+  await c.locator('#at-tipuri [data-tip="caramida"]').click();
+  await expect.poll(inaltimePiesa).toBeCloseTo(inainte + 0.1, 5);
+  // fără bifă, locașul e al lui: rotunjit la zecimi, cu − / + (virgula, în proba unitară a lui Lego.inaltimi)
+  await bifa.uncheck();
+  await expect(locas).toBeEnabled();
+  await locas.fill('2.34');
+  await locas.press('Tab');
+  await expect(locas).toHaveValue('2.3');
+  await c.locator('#at-reglaje [data-pas="locas_h"][data-d="-1"]').click();
+  await expect(locas).toHaveValue('2.2');
+  await c.locator('#at-reglaje [data-pas="locas_h"][data-d="-1"]').click();
+  await expect(locas).toHaveValue('2.1');
+  // ce nu e număr: valoarea de acum, înapoi
+  await stift.fill('');
+  await stift.press('Tab');
+  await expect(stift).toHaveValue('2');
+  // în profilul imprimantei, deci după reîncărcare
+  await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toMatch(/"stift_h":2,"locas_h":2\.1,"locas_urmeaza":false/);
+  await page.reload();
+  await deschide(page);
+  await c.locator('[data-mod="3d"]').first().click();
+  await c.locator('details.setari:has(#at-reglaje) > summary').click();
+  await expect(stift).toHaveValue('2');
+  await expect(locas).toHaveValue('2.1');
+  await expect(bifa).not.toBeChecked();
+  // fiecare imprimantă își ține înălțimile: una nouă pornește de la cele de acum, iar „Înapoi la implicite” o schimbă doar pe ea
+  const profil = c.locator('#prof-imprimanta'), alege = profil.locator('[data-prof="alege"]');
+  await profil.locator('[data-prof="nou"]').click();
+  await profil.locator('[data-prof="ok"]').click();
+  await expect(alege.locator('option')).toHaveCount(2);
+  await expect(stift).toHaveValue('2');
+  await c.locator('#at-reglaje [data-inaltimi="implicite"]').click();
+  await expect(stift).toHaveValue('1.9');
+  await expect(locas).toHaveValue('2.1');
+  await expect(bifa).toBeChecked();
+  await expect(locas).toBeDisabled();
+  await expect.poll(inaltimePiesa).toBeCloseTo(inainte, 5);
+  // prima imprimantă, aleasă din nou: cu ale ei (și piesa cu știftul ei)
+  await alege.selectOption({ index: 0 });
+  await expect(stift).toHaveValue('2');
+  await expect(locas).toHaveValue('2.1');
+  await expect(bifa).not.toBeChecked();
+  await expect(locas).toBeEnabled();
+  await expect.poll(inaltimePiesa).toBeCloseTo(inainte + 0.1, 5);
+  await alege.selectOption({ index: 1 });
+  await expect(stift).toHaveValue('1.9');
+  await expect(bifa).toBeChecked();
+  await expect.poll(inaltimePiesa).toBeCloseTo(inainte, 5);
   await faraEroriInJurnal(page);
 });
 
