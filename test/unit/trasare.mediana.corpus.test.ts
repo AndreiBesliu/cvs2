@@ -12,8 +12,8 @@ import { esantioaneCai, grila } from './ajutor-trasare.ts';
  * dea: același număr de căi și de bucle; capetele libere (capetele căilor deschise care nu ating altă cale) la `capat` de
  * capetele hârtiei; în fiecare joncțiune, atâtea brațe câte are, iar curbele la `jonctiune` de punctul ei; linia la
  * `toleranta` de hârtie, în ambele sensuri, în afara zonelor nodurilor (cât o grosime în jurul capetelor, joncțiunilor și
- * colțurilor: acolo axa medială se abate, cu până la 0,17 · w / 2 într-un colț), iar înăuntrul lor la o jumătate de grosime;
- * grosimea raportată la 0,2 px.
+ * colțurilor), iar înăuntrul lor la cel mult `zona` (o jumătate de grosime; la colțurile refăcute, 0,5 px); grosimea
+ * raportată la 0,2 px.
  */
 
 type Pt = readonly [number, number];
@@ -21,7 +21,10 @@ type Caz = {
   readonly nume: string; readonly fisier: string; readonly optiuni: OptiuniTrasare; readonly grosime: number;
   readonly linii: ReadonlyArray<{ readonly puncte: readonly Pt[]; readonly inchisa: boolean }>;
   readonly capete: readonly Pt[]; readonly jonctiuni: ReadonlyArray<{ readonly p: Pt; readonly brate: number }>; readonly colturi: readonly Pt[];
-  readonly asteptat: { readonly cai: number; readonly inchise: number; readonly goluri: number; readonly toleranta: number; readonly capat: number; readonly jonctiune: number };
+  readonly asteptat: {
+    readonly cai: number; readonly inchise: number; readonly goluri: number; readonly toleranta: number; readonly capat: number;
+    readonly jonctiune: number; readonly zona: number;
+  };
   readonly martor: { readonly capete: number; readonly jonctiuni: number; readonly goluri: number };
 };
 
@@ -43,8 +46,8 @@ function laLinii(x: number, y: number, linii: Caz['linii']): number {
   return d;
 }
 
-test('corpusul liniei mediane: 24 de cazuri, iar martorul a găsit topologia hârtiei', () => {
-  assert.equal(CORPUS.cazuri.length, 24);
+test('corpusul liniei mediane: 26 de cazuri, iar martorul a găsit topologia hârtiei', () => {
+  assert.equal(CORPUS.cazuri.length, 26);
   for (const c of CORPUS.cazuri) {
     assert.equal(c.martor.capete, c.capete.length, c.nume);
     assert.equal(c.martor.jonctiuni, c.jonctiuni.length, c.nume);
@@ -123,6 +126,6 @@ for (const caz of CORPUS.cazuri) {
     }
     assert.ok(afara <= a.toleranta, `curbele → hârtia: ${afara.toFixed(3)} px`);
     assert.ok(inapoi <= a.toleranta, `hârtia → curbele: ${inapoi.toFixed(3)} px`);
-    assert.ok(inauntru <= w / 2, `în zonele nodurilor: ${inauntru.toFixed(3)} px`);
+    assert.ok(inauntru <= a.zona, `în zonele nodurilor: ${inauntru.toFixed(3)} px (cel mult ${a.zona})`);
   });
 }

@@ -59,11 +59,14 @@ o('B02', ME, "  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) > 0 &
   'brațul curățat cu o toleranță largă: punctele strâmbe rămân')
 o('B03', ME, '      return !v || Math.hypot((q % W) + 0.5 - v.x, Math.floor(q / W) + 0.5 - v.y) >= v.r;', '      return true;', 'nuc',
   'pixelii din cercul joncțiunii rămân în brațe')
-o('B04', ME, '    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }', '', 'nuc',
-  'joncțiunea în media pixelilor, nu în încrucișarea brațelor')
-o('B08', ME, '    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }',
-  '    if (det > 0.6) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }', 'nuc',
+o('B04', ME, '    if (det > 0.05) {', '    if (false) {', 'nuc', 'joncțiunea în media pixelilor, nu în încrucișarea brațelor')
+o('B08', ME, '    if (det > 0.05) {', '    if (det > 0.6) {', 'nuc',
   'încrucișarea cerută doar la brațe foarte diferite: furcile sub ~50° rămân în media pixelilor')
+o('B09', ME, '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }',
+  '      if (camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }', 'nuc', 'încrucișarea primită și când dreptele brațelor nu se întâlnesc')
+o('B10', ME, '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }',
+  '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r)) { x = lx; y = ly; }', 'nuc',
+  'încrucișarea primită și în afara cernelii („Ve”: la 15 px, între litere)')
 # B05 (punctul celor mai mici pătrate primit oricât de departe) a scăpat, iar pe furci era mai bun decât garda: într-o furcă
 # îngustă, încrucișarea stă departe de pixelii joncțiunii. Garda a fost scoasă din cod (furcile au acum proba lor), deci și
 # otrava.
@@ -74,13 +77,18 @@ o('B07', ME, '        if (k >= 3 && Math.hypot(x - (sel[0] ?? 0), y - (sel[1] ??
   'dreapta brațului din tot brațul (un arc dă o direcție greșită lângă joncțiune)')
 
 # ---- Centrul, grosimea ----
-o('M01', ME, '      const d = (a - b) / 2, w = a + b;', '      const d = (b - a) / 2, w = a + b;', 'nuc', 'centrul mutat în sens invers')
-o('M02', ME, '      if (Math.abs(d) > Math.max(1, w / 3)) { L[i] = Number.NaN; continue; }', '', 'nuc',
-  'mutarea primită oricât de mare (normala intrată în alt braț)')
+o('M01', ME, '      D[i] = (a - b) / 2;', '      D[i] = (b - a) / 2;', 'nuc', 'centrul mutat în sens invers')
+o('M02', ME, '      if (Math.abs(d) > Math.max(1, wl / 3) || Math.abs(w - wl) > Math.max(1, 0.15 * wl)) continue;', '', 'nuc',
+  'orice mutare primită (normala intrată în alt braț, colțurile drepte)')
+o('M07', ME, '      if (Math.abs(d) > Math.max(1, wl / 3) || Math.abs(w - wl) > Math.max(1, 0.15 * wl)) continue;',
+  '      if (Math.abs(d) > Math.max(1, wl / 3) || Math.abs(w - wl) > Math.max(1, 0.4 * wl)) continue;', 'nuc',
+  'lățimea locală cu toleranță largă: colțurile drepte se mută strâmb')
+o('M08', ME, '    const K = Math.max(MEDIANA.vecinatate, Math.round(2 * mediana(fer)));', '    const K = MEDIANA.vecinatate;', 'nuc',
+  'fereastra lățimii locale fixă: pe o trăsătură groasă, colțul o trage după el')
 o('M03', ME, '  for (let trecut = 0; trecut < 2; trecut++) {', '  for (let trecut = 0; trecut < 1; trecut++) {', 'nuc',
   'o singură trecere: tangenta din pixeli, nu din centre')
-o('M04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 0 } as const;', 'nuc', 'tangenta dintr-un singur punct (nicio direcție)')
+o('M04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 0, vecinatate: 10 } as const;', 'nuc', 'tangenta dintr-un singur punct (nicio direcție)')
 o('M05', ME, '    if (c < T) return u - MEDIANA.pas + (MEDIANA.pas * (prev - T)) / Math.max(1e-12, prev - c);', '    if (c < T) return u;', 'nuc',
   'trecerea fără interpolare: grosimea crește cu un pas')
 o('M06', ME, '  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;',
@@ -95,18 +103,25 @@ o('E03', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;\
   'mersul spre vârf din primul punct bun (strâmb cu 1 px la un capăt drept), nu din centrul dreptei')
 # E04 (punctele prea late luate drept bune la capăt): după recentrarea capătului de-a curmezișul, limita de sus nu mai
 # schimba nimic (0 diferențe pe 61 de capete drepte, înainte cel mult 0,04 px în ambele sensuri). Scoasă din cod și din listă.
-o('E05', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.3, vecini: 2 } as const;', 'nuc', 'punctele rotunjimii capătului luate drept bune')
+o('E05', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.3, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'punctele rotunjimii capătului luate drept bune')
 o('E06', ME, '  if (dx * (x0 - (P[2 * i1] ?? 0)) + dy * (y0 - (P[2 * i1 + 1] ?? 0)) < 0) { dx = -dx; dy = -dy; }', '', 'nuc',
   'direcția capătului fără sens: mersul spre vârf poate porni înapoi')
 o('E07', ME, '  if (sus > 0 && jos > 0 && Math.abs(sus - jos) / 2 <= Math.max(1, wl / 3)) { cx += (-dy * (sus - jos)) / 2; cy += (dx * (sus - jos)) / 2; }', '', 'nuc',
   'capătul nerecentrat de-a curmezișul (0,71 px la un capăt drept oblic)')
+o('E08', ME, ' || Math.hypot((P[2 * k] ?? 0) - cx, (P[2 * k + 1] ?? 0) - cy) < wl / 2)) k++;', ')) k++;', 'nuc',
+  'punctele de lângă centrul capătului rămân: linia se cârligă la capătul unui bloc gros')
+o('K01', ME, '    colturi(P, L, false, f, W, H, T);\n', '', 'nuc', 'colțurile drepte ale lanțurilor nerefăcute (zigzaguri de 1,7 px)')
+o('K02', ME, '{ Q.push(x, y); M.push(Number.NaN); }', '{}', 'nuc', 'colțul tăiat de o coardă, nu refăcut în încrucișare')
+o('K03', ME, '      colturi(P, L, true, f, W, H, T);\n', '', 'nuc', 'colțurile drepte ale buclelor nerefăcute')
+o('K04', ME, '      if (Math.abs(sin) >= Math.sin((20 * Math.PI) / 180)) {', '      if (Math.abs(sin) >= Math.sin((80 * Math.PI) / 180)) {', 'nuc',
+  'colțurile sub 80° nerefăcute')
 
 # ---- Legarea brațelor, căile ----
-o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 0, capat: 0.9, vecini: 2 } as const;', 'nuc', 'niciun braț legat: bara T-ului în două')
-o('L02', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 70, capat: 0.9, vecini: 2 } as const;', 'nuc', 'brațele Y-ului legate (cotitura de 60°)')
+o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 0, capat: 0.9, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'niciun braț legat: bara T-ului în două')
+o('L02', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 70, capat: 0.9, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'brațele Y-ului legate (cotitura de 60°)')
 o('L03', ME, '        if (cot <= MEDIANA.cotitura || lista.length === 2) cand.push({ i, j, c: cot });', '        if (cot <= MEDIANA.cotitura) cand.push({ i, j, c: cot });', 'nuc',
   'o joncțiune cu două brațe care cotesc nu mai e o trecere')
 o('L04', ME, '    cand.sort((p, q) => p.c - q.c || p.i - q.i || p.j - q.j);', '    cand.sort((p, q) => q.c - p.c || p.i - q.i || p.j - q.j);', 'nuc',

@@ -347,3 +347,44 @@ test('capetele drepte ale trăsăturilor groase și oblice: centrul lor, recentr
     }
   }
 });
+
+// ── Logoul owner-ului (imaginea reală): colțurile literelor și joncțiunile ──────────────────────────────────────────────
+
+test('logoul owner-ului: nicio întoarcere bruscă (peste 120° pe ±1,5 px) și nicio linie în afara cernelii', async () => {
+  // Pe 08.11, după 25.3↑, logoul a arătat ce corpusul (îmbinări rotunde) nu arăta: zigzaguri în colțurile drepte ale
+  // literelor (61 de eșantioane cu întoarceri peste 120°, cea mai mare 180°) și o joncțiune pusă între „V” și „e”, în afara
+  // cernelii, la 15 px de pixelii ei. Acum: cea mai mare cotitură 92°, un colț adevărat.
+  const { readFileSync } = await import('node:fs');
+  const { citestePng } = await import('./ajutor-png.ts');
+  const { campul } = await import('../../src/trasare/trasare.ts');
+  const img = citestePng(readFileSync(new URL('../fixtures/trasare/logo-cvs.png', import.meta.url)));
+  const o = { ...IMPLICITE, petePx: 4, gauriPx: 4 };
+  const t = traseazaMediana(img, o);
+  assert.ok(t.ok);
+  const { f, T } = campul(img, o);
+  const W = img.latime, H = img.inaltime;
+  const camp = (x: number, y: number): number => {
+    const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
+    const g = (i: number, j: number): number => (i < 0 || j < 0 || i >= W || j >= H ? 0 : f[j * W + i] ?? 0);
+    return (1 - u) * (1 - v) * g(x0, y0) + u * (1 - v) * g(x0 + 1, y0) + (1 - u) * v * g(x0, y0 + 1) + u * v * g(x0 + 1, y0 + 1);
+  };
+  let cea = 0, minCerneala = Infinity;
+  for (const c of esantioaneCai(t.cai)) {
+    const p: number[] = [c.puncte[0] ?? 0, c.puncte[1] ?? 0];
+    for (let i = 2; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      minCerneala = Math.min(minCerneala, camp(x, y) / T);
+      if (Math.hypot(x - (p[p.length - 2] ?? 0), y - (p[p.length - 1] ?? 0)) >= 0.5) p.push(x, y);
+    }
+    const n = p.length / 2;
+    for (let i = 3; i + 3 < n; i++) {
+      const ax = (p[2 * i] ?? 0) - (p[2 * i - 6] ?? 0), ay = (p[2 * i + 1] ?? 0) - (p[2 * i - 5] ?? 0);
+      const bx = (p[2 * i + 6] ?? 0) - (p[2 * i] ?? 0), by = (p[2 * i + 7] ?? 0) - (p[2 * i + 1] ?? 0);
+      const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+      if (la > 1e-9 && lb > 1e-9) cea = Math.max(cea, (Math.acos(Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)))) * 180) / Math.PI);
+    }
+  }
+  assert.ok(cea <= 120, `cea mai bruscă întoarcere: ${cea.toFixed(0)}°`);
+  // Fiecare punct al liniilor stă în cerneală (câmpul la cel puțin jumătate din prag: curbele pot ieși puțin lângă margine).
+  assert.ok(minCerneala >= 0.5, `cel mai slab punct: ${minCerneala.toFixed(2)} din prag`);
+});

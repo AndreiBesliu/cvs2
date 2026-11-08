@@ -463,7 +463,9 @@ def culori_cazuri(diferente):
 # leagă într-o cale, deci un T dă două căi, un X tot două, un Y trei. Toleranțele judecății (`asteptat`): linia, în afara
 # zonelor nodurilor (cât w în jurul capetelor, joncțiunilor și colțurilor), la 0,4 px de hârtie în ambele sensuri; capetele
 # libere la 0,4 px, joncțiunile la 0,45 px (măsurat la scrierea nucleului: 0,34, 0,28 și 0,32 px, pe semnătură), toate sub
-# jumătatea de grosime a ADR-ului.
+# jumătatea de grosime a ADR-ului. În zonele nodurilor, linia stă la cel mult `zona` (implicit o jumătate de grosime); la
+# colțurile L-ului și ale „n”-ului drept, 0,5 px: colțul se reface în încrucișarea brațelor (măsurat 0,12 și 0,10 px; înainte,
+# în colțul drept, zigzaguri de 1,7 px, pe care jumătatea de grosime nu le vedea).
 #
 # Martorul e scikit-image cu scipy: `skeletonize` pe cerneala la jumătate, cu capetele scoase de ⌈w⌉ ori (cioturile mai
 # scurte dispar, brațele adevărate se scurtează cu atât) și joncțiunile ale căror cercuri înscrise se suprapun unite (razele
@@ -483,6 +485,16 @@ def capsula(a, b, r, n=64):
     inel = [(bx + r * math.cos(tn - math.pi * i / n), by + r * math.sin(tn - math.pi * i / n)) for i in range(n + 1)]
     inel += [(ax + r * math.cos(tn - math.pi * (1 + i / n)), ay + r * math.sin(tn - math.pi * (1 + i / n))) for i in range(n + 1)]
     return inel
+
+
+def dreptunghi_prelungit(a, b, r):
+    """Dreptunghiul segmentului ab, de lățime 2r, prelungit cu r la ambele capete (îmbinarea în colț a două segmente se umple
+    pătrat, ca la un font), în sensul capsulelor."""
+    ax, ay = a
+    bx, by = b
+    lung = math.hypot(bx - ax, by - ay)
+    ux, uy = (bx - ax) / lung, (by - ay) / lung
+    return dreptunghi((ax - r * ux, ay - r * uy), (bx + r * ux, by + r * uy), r)
 
 
 def dreptunghi(a, b, r):
@@ -591,14 +603,17 @@ def mediana_cazuri(diferente):
     cazuri = []
 
     def caz_m(nume, latime, inaltime, linii, w, capete, jonctiuni, cai, inchise=0, goluri=0, colturi=(), cerneala=(25, 25, 25),
-              fundal=(255, 255, 255), drepte=False, toleranta=0.4, capat=0.4, jonctiune=0.45):
+              fundal=(255, 255, 255), drepte=False, toleranta=0.4, capat=0.4, jonctiune=0.45, zona=None):
         if drepte:
             inele = [dreptunghi(p[0], p[1], w / 2) for p, _ in linii]
         else:
             inele = []
-            for puncte, inchisa in linii:
+            for linie in linii:
+                puncte, inchisa = linie[0], linie[1]
+                forma = dreptunghi_prelungit if len(linie) > 2 and linie[2] == 'drept' else capsula
                 n = len(puncte)
-                inele += [capsula(puncte[k], puncte[(k + 1) % n], w / 2) for k in range(n if inchisa else n - 1)]
+                inele += [forma(puncte[k], puncte[(k + 1) % n], w / 2) for k in range(n if inchisa else n - 1)]
+            linii = [(linie[0], linie[1]) for linie in linii]
         acop = acoperire(inele, latime, inaltime)
         pix, canale = rgba(acop, cerneala, fundal)
         octeti = png(latime, inaltime, pix.tobytes(), canale)
@@ -646,7 +661,8 @@ def mediana_cazuri(diferente):
             'capete': [[round(x, 6), round(y, 6)] for x, y in capete],
             'jonctiuni': [{'p': [round(j[0], 6), round(j[1], 6)], 'brate': g} for j, g in jonctiuni],
             'colturi': [[round(x, 6), round(y, 6)] for x, y in colturi],
-            'asteptat': {'cai': cai, 'inchise': inchise, 'goluri': goluri, 'toleranta': toleranta, 'capat': capat, 'jonctiune': jonctiune},
+            'asteptat': {'cai': cai, 'inchise': inchise, 'goluri': goluri, 'toleranta': toleranta, 'capat': capat, 'jonctiune': jonctiune,
+                         'zona': round(w / 2, 6) if zona is None else zona},
             'martor': {'capete': len(m['capete']), 'jonctiuni': len(m['jonctiuni']), 'goluri': m['goluri'], 'abatere': round(abatere, 3)},
         })
 
@@ -691,7 +707,7 @@ def mediana_cazuri(diferente):
     # 13–14: L-ul, o cale cu un colț (axa medială taie colțul cu 0,17 · w / 2).
     for w in (4, 8):
         caz_m(f'mediana-L-w{w}', 70, 70, [([(12.3, 10.2), (12.3, 55.6), (58.4, 55.6)], False)], w, [(12.3, 10.2), (58.4, 55.6)], [], 1,
-              colturi=[(12.3, 55.6)])
+              colturi=[(12.3, 55.6)], zona=0.5)
     # 15–16: inelul, o buclă închisă tăiată pe linie (un gol); 17: pe negru, cerneală albă.
     p = arc(40.3, 39.7, 28, 0, 2 * math.pi, 256)[:-1]
     caz_m('mediana-inel-w3', 80, 80, [(p, True)], 3, [], [], 1, inchise=1, goluri=1)
@@ -721,6 +737,11 @@ def mediana_cazuri(diferente):
         tx -= (A * tx - B * math.sin(tx)) / (A - B * math.cos(tx))
     cruci = [(x0 + A * (2 * math.pi * k), y0 - C * math.cos(tx)) for k in (0, 1)]
     caz_m('mediana-semnatura-w3.5', 96, 50, [(p, False)], 3.5, [p[0], p[-1]], [(cruci[0], 4), (cruci[1], 4)], 1, goluri=2)
+    # 23–24: un „n” cu colțuri drepte și capete drepte (ca litera unui font; logoul a arătat zigzaguri în colțuri), la două
+    # grosimi: o cale, cu două colțuri; capetele la w / 2 de capetele drepte.
+    for w in (6, 10):
+        n_ = [(20.3, 70.4), (20.3, 22.6), (62.7, 22.6), (62.7, 70.4)]
+        caz_m(f'mediana-n-drept-w{w}', 84, 84, [(n_, False, 'drept')], w, [n_[0], n_[-1]], [], 1, colturi=n_[1:3], zona=0.5)
     return {'schema': 1, 'cazuri': cazuri}
 
 

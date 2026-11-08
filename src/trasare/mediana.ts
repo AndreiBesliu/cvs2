@@ -33,9 +33,9 @@ export type RezultatMediana =
 /**
  * Reglajele (ADR 0222 §3): pasul mersului de-a curmezișul (px); un ciot e mai scurt decât `ciot` · raza joncțiunii + 1 px;
  * două brațe se continuă sub `cotitura` grade; un punct cu lățimea sub `capat` · grosimea lanțului e în capătul rotund;
- * tangenta din punctele de la i − `vecini` la i + `vecini`.
+ * tangenta din punctele de la i − `vecini` la i + `vecini`; lățimea locală, mediana a ±`vecinatate` puncte.
  */
-export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;
+export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;
 
 // Vecinii în cerc, de la est, în sens trigonometric pe ecran (y în jos): E, NE, N, NV, V, SV, S, SE.
 const DX = [1, 1, 0, -1, -1, -1, 0, 1] as const;
@@ -255,31 +255,55 @@ function trecere(f: Float32Array, W: number, H: number, T: number, x: number, y:
 
 /**
  * Punctele unui lanț (x0, y0, x1, y1, …) mutate în mijlocul dintre trecerile pragului pe normala lui (tangenta din vecinii
- * de pe lanț), cu lățimea de-a curmezișul (NaN unde mutarea ar fi peste o treime din lățime: lângă o joncțiune, normala
- * intră în alt braț). Două treceri: a doua, cu tangenta din centrele primei.
+ * de pe lanț), cu lățimea de-a curmezișul. Un punct a cărui lățime iese din lățimea locală (mediana măsurătorilor din jur,
+ * ±15 %, cel puțin ±1 px) sau a cărui mutare trece de o treime din ea rămâne pe pixelul lui, cu lățimea NaN (`colturi` îl
+ * scoate apoi): într-un colț drept normala trece pe diagonală, spre colț, iar lângă o joncțiune intră în alt braț (mutate,
+ * făceau zigzaguri în colțurile literelor: măsurat pe logo). Două treceri: a doua, cu tangenta din centrele primei.
  */
 function centreaza(P0: Float64Array, inchis: boolean, f: Float32Array, W: number, H: number, T: number): { P: Float64Array; L: Float64Array } {
   const n = P0.length / 2;
   let Q = P0;
-  const L = new Float64Array(n).fill(Number.NaN);
+  let L = new Float64Array(n).fill(Number.NaN);
+  const D = new Float64Array(n), M = new Float64Array(n), NX = new Float64Array(n), NY = new Float64Array(n);
+  const fer: number[] = [];
   for (let trecut = 0; trecut < 2; trecut++) {
-    const R = new Float64Array(P0);
     for (let i = 0; i < n; i++) {
       const ia = inchis ? (i - MEDIANA.vecini + n) % n : Math.max(0, i - MEDIANA.vecini);
       const ib = inchis ? (i + MEDIANA.vecini) % n : Math.min(n - 1, i + MEDIANA.vecini);
       let tx = (Q[2 * ib] ?? 0) - (Q[2 * ia] ?? 0), ty = (Q[2 * ib + 1] ?? 0) - (Q[2 * ia + 1] ?? 0);
       const lt = Math.hypot(tx, ty);
+      M[i] = Number.NaN;
       if (lt < 1e-9) continue;
       tx /= lt; ty /= lt;
-      const x = P0[2 * i] ?? 0, y = P0[2 * i + 1] ?? 0, nx = -ty, ny = tx;
-      const a = trecere(f, W, H, T, x, y, nx, ny), b = trecere(f, W, H, T, x, y, -nx, -ny);
-      const d = (a - b) / 2, w = a + b;
-      if (Math.abs(d) > Math.max(1, w / 3)) { L[i] = Number.NaN; continue; }
-      R[2 * i] = x + nx * d;
-      R[2 * i + 1] = y + ny * d;
-      L[i] = w;
+      const x = P0[2 * i] ?? 0, y = P0[2 * i + 1] ?? 0;
+      NX[i] = -ty; NY[i] = tx;
+      const a = trecere(f, W, H, T, x, y, -ty, tx), b = trecere(f, W, H, T, x, y, ty, -tx);
+      D[i] = (a - b) / 2;
+      M[i] = a + b;
+    }
+    const R = new Float64Array(P0), Lnou = new Float64Array(n).fill(Number.NaN);
+    // Fereastra: cel puțin ±`vecinatate` puncte, și cel puțin două grosimi de-o parte și de alta (într-un colț drept al unei
+    // trăsături groase, punctele strâmbe ajung până la o grosime de colț și ar trage mediana după ele).
+    fer.length = 0;
+    for (let i = 0; i < n; i++) if ((M[i] ?? 0) > 0) fer.push(M[i] ?? 0);
+    const K = Math.max(MEDIANA.vecinatate, Math.round(2 * mediana(fer)));
+    for (let i = 0; i < n; i++) {
+      const w = M[i] ?? Number.NaN, d = D[i] ?? 0;
+      if (!(w > 0)) continue;
+      fer.length = 0;
+      for (let k = -K; k <= K; k++) {
+        const j = inchis ? (((i + k) % n) + n) % n : i + k;
+        const v = j >= 0 && j < n ? M[j] ?? Number.NaN : Number.NaN;
+        if (v > 0) fer.push(v);
+      }
+      const wl = mediana(fer);
+      if (Math.abs(d) > Math.max(1, wl / 3) || Math.abs(w - wl) > Math.max(1, 0.15 * wl)) continue;
+      R[2 * i] = (P0[2 * i] ?? 0) + (NX[i] ?? 0) * d;
+      R[2 * i + 1] = (P0[2 * i + 1] ?? 0) + (NY[i] ?? 0) * d;
+      Lnou[i] = w;
     }
     Q = R;
+    L = Lnou;
   }
   return { P: Q, L };
 }
@@ -288,6 +312,60 @@ function mediana(v: readonly number[]): number {
   if (v.length === 0) return 0;
   const s = v.slice().sort((a, b) => a - b);
   return s[s.length >> 1] ?? 0;
+}
+
+/**
+ * Colțurile drepte (ca ale unei litere): un șir de puncte nemăsurate (lățimea lor ieșea din cea locală) între puncte bune
+ * iese; dacă dreptele punctelor bune de dinainte și de după (cât 1,5 grosimi, cel puțin trei puncte) se taie sub cel puțin
+ * 20°, în cerneală și la cel mult o grosime de mijlocul șirului, colțul se pune în încrucișarea lor; altfel, curbele leagă
+ * direct punctele bune. Capetele lanțului nu se ating (le au `retrage` și `curataBrat`). Pe un lanț închis, șirurile trec
+ * peste capăt.
+ */
+function colturi(P: number[], L: number[], inchis: boolean, f: Float32Array, W: number, H: number, T: number): void {
+  const n = P.length / 2;
+  const bun = (i: number): boolean => (L[i] ?? 0) > 0;
+  const masurate: number[] = [];
+  for (let i = 0; i < n; i++) if (bun(i)) masurate.push(L[i] ?? 0);
+  const wl = mediana(masurate);
+  if (!(wl > 0) || masurate.length === n) return;
+  // Pe o buclă, pornirea dintr-un punct bun: un șir rău nu trece peste capătul listei.
+  let start = 0;
+  if (inchis) while (!bun(start)) start++;
+  const at = (k: number): number => (((start + k) % n) + n) % n;
+  const inLant = (k: number): boolean => inchis || (k >= 0 && k < n);
+  // Dreapta punctelor bune de la k0 încolo, în sensul `pas` (cât 1,5 grosimi, cel puțin trei puncte), sau null.
+  const dreaptaDe = (k0: number, pas: number): { cx: number; cy: number; dx: number; dy: number } | null => {
+    const sel: number[] = [];
+    for (let k = k0, c = 0; inLant(k) && c < n && bun(at(k)); k += pas, c++) {
+      const x = P[2 * at(k)] ?? 0, y = P[2 * at(k) + 1] ?? 0;
+      if (sel.length >= 6 && Math.hypot(x - (sel[0] ?? 0), y - (sel[1] ?? 0)) > Math.max(3, 1.5 * wl)) break;
+      sel.push(x, y);
+    }
+    return sel.length >= 6 ? dreapta(sel, 0, sel.length / 2 - 1) : null;
+  };
+  const Q: number[] = [], M: number[] = [];
+  const pastreaza = (k: number): void => { Q.push(P[2 * at(k)] ?? 0, P[2 * at(k) + 1] ?? 0); M.push(L[at(k)] ?? Number.NaN); };
+  for (let k = 0; k < n;) {
+    if (bun(at(k))) { pastreaza(k); k++; continue; }
+    let e = k;
+    while (e < n && !bun(at(e))) e++;
+    // Un șir care atinge un capăt al lanțului deschis rămâne: e al capătului.
+    if (!inchis && (k === 0 || e >= n)) { for (let q = k; q < e; q++) pastreaza(q); k = e; continue; }
+    const A = dreaptaDe(k - 1, -1), B = dreaptaDe(e, 1);
+    if (A && B) {
+      const sin = A.dx * B.dy - A.dy * B.dx;
+      if (Math.abs(sin) >= Math.sin((20 * Math.PI) / 180)) {
+        const t = ((B.cx - A.cx) * B.dy - (B.cy - A.cy) * B.dx) / sin;
+        const x = A.cx + A.dx * t, y = A.cy + A.dy * t, im = at(Math.floor((k + e - 1) / 2));
+        if (camp(f, W, H, x, y) >= T && Math.hypot(x - (P[2 * im] ?? 0), y - (P[2 * im + 1] ?? 0)) <= wl) { Q.push(x, y); M.push(Number.NaN); }
+      }
+    } else {
+      for (let q = k; q < e; q++) pastreaza(q);
+    }
+    k = e;
+  }
+  P.length = 0; P.push(...Q);
+  L.length = 0; L.push(...M);
 }
 
 /** Dreapta celor mai mici pătrate prin punctele [i, j] ale listei: centrul și direcția (vectorul propriu cel mare). */
@@ -336,8 +414,10 @@ function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number
   // cotit spre colțul unui capăt drept) îl muta cu până la 0,7 px într-o parte (măsurat).
   const sus = trecere(f, W, H, T, cx, cy, -dy, dx), jos = trecere(f, W, H, T, cx, cy, dy, -dx);
   if (sus > 0 && jos > 0 && Math.abs(sus - jos) / 2 <= Math.max(1, wl / 3)) { cx += (-dy * (sus - jos)) / 2; cy += (dx * (sus - jos)) / 2; }
+  // Punctele din fața centrului ies, ca și cele la mai puțin de o jumătate de grosime de el: capătul intră drept în centru, pe
+  // direcția lui (lângă capătul unui bloc gros sau al unei trăsături cu capătul tăiat oblic, ele cârligau linia: logoul).
   let k = i0;
-  while (k + 1 < n && ((P[2 * k] ?? 0) - cx) * dx + ((P[2 * k + 1] ?? 0) - cy) * dy > -0.05) k++;
+  while (k + 1 < n && (((P[2 * k] ?? 0) - cx) * dx + ((P[2 * k + 1] ?? 0) - cy) * dy > -0.05 || Math.hypot((P[2 * k] ?? 0) - cx, (P[2 * k + 1] ?? 0) - cy) < wl / 2)) k++;
   P.splice(0, 2 * k, cx, cy);
   L.splice(0, k, wl);
 }
@@ -425,7 +505,9 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
       const P0 = Float64Array.from(l.pix.flatMap((q) => [(q % W) + 0.5, Math.floor(q / W) + 0.5]));
       const c = centreaza(P0, true, f, W, H, T);
       for (const w of c.L) if (w > 0) latimi.push(w);
-      bucleLibere.push(c);
+      const P = Array.from(c.P), L = Array.from(c.L);
+      colturi(P, L, true, f, W, H, T);
+      bucleLibere.push({ P: Float64Array.from(P), L: Float64Array.from(L) });
       continue;
     }
     const capat = (q: number): Capat | null => ((grad[q] ?? 0) >= 3 ? { g: rad(q) } : null);
@@ -444,6 +526,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
     const c = pix.length > 0 ? centreaza(P0, false, f, W, H, T) : { P: P0, L: new Float64Array(0) };
     for (const w of c.L) if (w > 0) latimi.push(w);
     const P = Array.from(c.P), L = Array.from(c.L);
+    colturi(P, L, false, f, W, H, T);
     const laCapat = (cap: Capat | null, P: number[], L: number[]): void => {
       if (!cap) { retrage(P, L, f, W, H, T); return; }
       const v = grupuri.get(cap.g);
@@ -493,10 +576,11 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
       brate.set(c.g, lista);
     }
   }
-  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor; fără două direcții destul de diferite,
-  // media pixelilor ei. Fără gardă de distanță: într-o furcă îngustă, încrucișarea brațelor stă departe de pixelii joncțiunii
-  // (la 20°, ~5 raze), iar o gardă de o rază, sau de cinci, o respingea (linia la 0,29 px în loc de 0,09; la 12°, 1,87 în loc
-  // de 0,07: măsurat).
+  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor, dacă brațele chiar se întâlnesc acolo
+  // (dreptele trec la cel mult max(0,5 px, 0,15 raze) de el, în medie pătratică) și dacă e în cerneală; altfel, media pixelilor
+  // ei. Fără gardă de distanță: într-o furcă îngustă, încrucișarea stă departe de pixelii joncțiunii (la 20°, ~5 raze; o gardă
+  // de o rază o respingea, cu linia la 0,29 px în loc de 0,09). Brațele curbe lângă joncțiune (literele logoului) dau drepte
+  // care nu se întâlnesc, sau se întâlnesc în afara cernelii (la „Ve”, la 15 px, între litere): acolo, media.
   for (const [g, lista] of brate) {
     const v = grupuri.get(g);
     if (!v) continue;
@@ -509,7 +593,12 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
     }
     const det = a11 * a22 - a12 * a12;
     let x = v.x, y = v.y;
-    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }
+    if (det > 0.05) {
+      const lx = (a22 * b1 - a12 * b2) / det, ly = (a11 * b2 - a12 * b1) / det;
+      let rez = 0, nl = 0;
+      for (const b of lista) { if (b.linie) { rez += ((lx - b.cx) * b.dy - (ly - b.cy) * b.dx) ** 2; nl++; } }
+      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }
+    }
     locuri.set(g, [x, y]);
   }
   // Brațele din prelungire se leagă două câte două (cele mai drepte întâi, sub `cotitura`); o joncțiune cu doar două brațe
