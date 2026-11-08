@@ -664,7 +664,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   plini fără amestecurile de margine, cu multe clase unite după distanță (testul vechi de „pixel plin” pierdea liniile
   subțiri ale logoului). **Piesele aduse împreună trec prin `ImportPregatit.impreuna`;** legăturile, prin
   `src/trasare/legaturi.ts` (nucleul și pastilele). Urmează 25.3↑ (linia mediană).
-  **Pornirea 101,6 (cu ușa 105,2 / 110 kB), totalul 545,1 / 550 (felia 25.2↑: +9,7; rămân 4,9 kB).**
+  **Cu `main` unit pe 08.11 (`ed43b49`): pornirea 101,8 / 110 kB, totalul 557,1 / 600 (linia trasării, 25.1↑–25.2↑: +22,1).**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -869,6 +869,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **linia mediană, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0222, în sesiunea liniei
+  trasării): rezultatul „Linii mediane” în fereastra trasării (sursele alb-negru), scheletul pe pixeli cu centrul la
+  marginile de 50 % (nu axa medială a V-carve-ului, ~12 kB); o linie se termină în centrul capătului rotund; o pată plină dă
+  scheletul ei; buclele se taie pe linie. Bugetul era deja hotărât (ADR 0143, 600 kB). Alternativele care pot sta împreună
+  (capetele în vârf, părțile late rămase contururi și semnalarea lor, buclele ca vectori închiși) vin ca opțiuni în 25.3↑b.
 - 07.11.2026: **trasarea pe culori, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0221, în sesiunea
   liniei trasării): numărul culorilor e automat (cele distincte, 2–16), cu glisorul pentru alt număr; o culoare se leagă de
   alta trăgându-i pastila peste a ei (ca în ArtCAM), cu „Dezleagă” pe pastilă; pe o imagine opacă, culoarea care domină

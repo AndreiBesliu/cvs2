@@ -1,8 +1,9 @@
 # ADR 0222 — Linia mediană: scheletul trăsăturilor, cu centrul sub-pixel, tăiat pe linie
 
-**Starea:** propus pe 07.11.2026, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`), pornit la „Da, 25.3↑”
-(owner-ul, după 25.2↑). Felia 25.3↑, adusă din etapa 25, fără mașină. Codul pornește după răspunsurile la întrebările de la
-final; **întâi bugetul** (întrebarea 1): cu `main` unit, linia trasării trece deja de plafonul de 550 kB.
+**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–5a”, la întrebările de la final), în linia trasării
+(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus pe 07.11, la „Da, 25.3↑” (owner-ul, după 25.2↑). Felia 25.3↑,
+adusă din etapa 25, fără mașină. Bugetul (întrebarea 1) îl hotărâse între timp ADR 0143: plafonul total e 600 kB („Yes,
+600 kB”, 07.11), peste cei 575 recomandați aici; cu `main` unit, linia trasării e la 557,1 / 600.
 **Completează:** ADR 0220 (§12: „25.3↑ linia mediană: axa medială a trăsăturilor, fără cioturile scurte, ca linii deschise
 gravate pe linie, cu grosimea trăsăturii față de freză”), ADR 0221 (curbele arcelor deschise, cu capetele fixe; joncțiunile
 prin cele mai mici pătrate), ADR 0037 §11 (căile deschise, tăiate pe linie), ADR 0090 (axa medială exactă a V-carve-ului).
@@ -55,10 +56,10 @@ cvs2 de azi, cele două margini se șterg de mână, una câte una.
   - **bugetul:** pe ramură, cu `main` unit (`e9cf6ee`), totalul e **557,1 / 550 kB**; `main` singur, 535,0 kB (pe un build
     curat); 25.1↑ și 25.2↑ au adus 22,1 kB. Linia trasării nu se poate uni în `main` sub plafonul de azi, cu sau fără 25.3↑.
 
-## Decizia (propusă; întrebările deschise sunt marcate)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
-1. **Bugetul, întâi** (întrebarea 1): plafonul total la 575 kB, ca la ADR 0137 (decizia ta); încap 25.1↑–25.3↑ și rămân
-   ~15 kB pentru celelalte linii.
+1. **Bugetul** (întrebarea 1): plafonul total e 600 kB, din ADR 0143 (decizia owner-ului din 07.11, peste cei 575 propuși
+   aici); încap 25.1↑–25.3↑ și liniile paralele gata pe ramuri.
 2. **Rezultatul** în fereastra trasării, la sursele alb-negru (Transparența, Luminozitatea): **Contururi** (ca acum) sau
    **Linii mediane**. Pe culori, linia mediană a fiecărei culori bifate vine mai târziu, la cerere.
 3. **Calculul** (întrebarea 2), în workerul trasării, cod propriu în `src/trasare/` (regula `trasare-izolat`):
@@ -111,6 +112,11 @@ cvs2 de azi, cele două margini se șterg de mână, una câte una.
 tăiat), cioturile rămân, sau linia stă la peste o jumătate de grosime de mijlocul trăsăturii.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (08.11):** „Da, 1a–5a”: toate recomandările. **Opțiunile care pot sta împreună** (regula „toate opțiunile”,
+din 07.11): capetele în vârf (3b), părțile late rămase contururi (4b) și semnalarea lor (4c), buclele ca vectori închiși
+(5b) vin ca opțiuni ale ferestrei, într-o felie de după (25.3↑b); recomandările de aici sunt implicitele. Doar calea (2) și
+bugetul (1) se exclud.
 
 1. **Bugetul** (linia trasării, cu `main`, e la 557,1 / 550 kB; cu 25.3↑, ~561):
    - **a)** plafonul total la 575 kB (ca la ADR 0137): încap 25.1↑–25.3↑ și ~15 kB pentru celelalte linii;

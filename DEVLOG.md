@@ -6919,3 +6919,16 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 - **ADR 0222 propus**, cu schița <https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu> (bugetul la scară, macheta contururi / linii mediane din
   prototip, măsurătorile, formularul care scrie `raspunsuri/owner`): cinci întrebări, întâi bugetul (575 kB, trasarea doar
   online, sau 550 cu tăieri), apoi calea, capetele, părțile pline, buclele.
+
+## 2026-11-08 — Felia 25.3↑: linia mediană (ADR 0222, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0222).
+**Started:** 08.11, 09:00. **Completed:** —
+
+- **Răspunsurile:** toate recomandările: bugetul (hotărât între timp de ADR 0143: 600 kB), scheletul pe pixeli cu centrul la
+  marginile de 50 %, capetele în centrul capătului rotund, totul linii mediane, buclele pe linie. Alternativele care pot sta
+  împreună (3b, 4b, 4c, 5b), ca opțiuni în 25.3↑b (regula „toate opțiunile”). Scrise în ADR 0222 (acceptat), în `CLAUDE.md`
+  („Decizii luate”) și în fișă (rândul cozii scos).
+- **Înainte de cod:** `origin/main` (`0060a86`, cu plafonul de 600 kB) unit în ramură (`ed43b49`; ciocnirile doar la capetele
+  documentelor comune): totalul 557,1 / 600, poarta mărimii verde; unirea de ieri (`e4eb7e4`) și propunerea (`6ad0106`),
+  împinse odată cu ea.
