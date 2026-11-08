@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import { conturCerc, conturDreptunghi, type Contur } from '../../src/geom/conturBaza.ts';
 import { analizeazaText, patPentru } from '../../src/machine/imprimanta/gcode3d.ts';
 import { anvelopa, felStrat, iesePeste, numarStraturi, timpBucata, timpText } from '../../src/cam/feliere/gcode.ts';
-import { arie } from '../../src/cam/feliere/straturi.ts';
+import { arie, citesteFel } from '../../src/cam/feliere/straturi.ts';
 import { brimAutomat, feliaza, setariImplicite, type Cale } from '../../src/cam/feliere/index.ts';
 import { numeObiect, pieseDinDocument, unesteSuprapuse } from '../../src/cam/feliere/piese.ts';
 import { ARIE_FILAMENT, pas, sectiune, setariValide } from '../../src/cam/feliere/profil.ts';
@@ -49,14 +49,16 @@ test('straturile: câte, pe ce înălțime, cu ce rol (jos 3, sus 5 sau 0,8 mm, 
   assert.equal(numarStraturi(3, s), 15);
   assert.equal(numarStraturi(0.2, s), 1);
   assert.equal(numarStraturi(20, setariImplicite('pla', '0.12')), 167);
-  const f = Array.from({ length: 15 }, (_, i) => felStrat(i + 1, 15, s));
-  assert.deepEqual(f, ['prim', 'plin135', 'plin45', 'rar', 'rar', 'rar', 'rar', 'rar', 'rar', 'rar', 'plin45', 'plin135', 'plin45', 'plin135', 'sus45']);
+  // Rolul și unghiul fiecărui strat: plinul (monoton) alternează 45° / 135°, grila rară ține 45° (cu a doua direcție, 135°).
+  const f = Array.from({ length: 15 }, (_, i) => citesteFel(felStrat(i + 1, 15, s)));
+  assert.deepEqual(f.map((x) => x.tip), ['prim', 'plin', 'plin', 'rar', 'rar', 'rar', 'rar', 'rar', 'rar', 'rar', 'plin', 'plin', 'plin', 'plin', 'sus']);
+  assert.deepEqual(f.map((x) => x.u), [45, 135, 45, 45, 45, 45, 45, 45, 45, 45, 45, 135, 45, 135, 45]);
   // 0,08 mm: sus cel puțin 0,8 mm = 10 straturi (peste cele 9 ale profilului).
   const fin = setariImplicite('pla', '0.08');
-  assert.equal(felStrat(40 - 9, 40, fin), 'plin45');
-  assert.equal(felStrat(40 - 10, 40, fin), 'rar');
+  assert.equal(citesteFel(felStrat(40 - 9, 40, fin)).tip, 'plin');
+  assert.equal(citesteFel(felStrat(40 - 10, 40, fin)).tip, 'rar');
   // Umplerea 100 %: totul plin.
-  assert.equal(felStrat(8, 15, setariValide({ ...s, umplere: 1 })), 'plin135');
+  assert.deepEqual(citesteFel(felStrat(8, 15, setariValide({ ...s, umplere: 1 }))), { tip: 'plin', u: 135, uPlin: 135, z: null });
 });
 
 test('o placă de 20 × 20 × 3 mm: 15 straturi, totul în piesă, E pe mm pe valorile de pe hârtie, antetul citit de verificarea 3.6h', () => {
@@ -145,7 +147,8 @@ test('ce e mai îngust decât o linie: nimic dintr-o fâșie de 0,3 mm; o punte 
 });
 
 test('retragerea: între două piese, da; în aceeași piesă, pe o deplasare scurtă prin material, nu', () => {
-  const s = setariImplicite();
+  // Fără ștergere (ea are proba ei, `imprimanta.feliere.modele.test.ts`): aici, doar unde se retrage.
+  const s = setariValide({ ...setariImplicite(), stergere: false });
   const doua = [
     { ...piesa([conturDreptunghi(80, 100, 15, 15)]), id: 'a', nume: 'A_id_0_copy_0' },
     { ...piesa([conturDreptunghi(125, 100, 15, 15)]), id: 'b', nume: 'B_id_1_copy_0' },
@@ -266,7 +269,8 @@ test('piesele din document: căile deschise numărate, grupul centrat pe pat, ce
 const minX = (c: Cale): number => { let m = Infinity; for (let i = 0; i < c.p.length; i += 2) m = Math.min(m, c.p[i]!); return m; };
 
 test('pereții pe hârtie: la w/2 de margine, apoi după (pasul exterior + pasul interior) / 2; primul strat, cu 0,15 mai înăuntru; cusătura la spate; umplerea plină, peste pereți cu 25 %', () => {
-  const r = feliaza([piesa([conturDreptunghi(100, 100, 20, 20)])], setariImplicite(), { data: DATA });
+  // Fără decalarea cusăturilor dinăuntru (are proba ei): aici, fiecare buclă pornește din spate.
+  const r = feliaza([piesa([conturDreptunghi(100, 100, 20, 20)])], setariValide({ ...setariImplicite(), cusaturiDecalate: false }), { data: DATA });
   assert.ok(r.gcode);
   const p8 = r.cai(8).filter((c) => c.inchisa).map(minX).sort((a, b) => a - b);
   assert.ok(Math.abs(p8[0]! - 100.21) < 1e-3 && Math.abs(p8[1]! - (100.21 + (pas(0.42, 0.2) + pas(0.45, 0.2)) / 2)) < 1e-3, JSON.stringify(p8));
@@ -305,8 +309,8 @@ test('temperaturile primului strat (PC: 270 °C, apoi 280; patul 110): în START
   const r = feliaza([piesa([conturDreptunghi(100, 100, 20, 20)])], setariImplicite('pc'), { data: DATA });
   assert.ok(r.gcode);
   assert.match(r.gcode.text, /\nSTART_PRINT EXTRUDER_TEMP=270 BED_TEMP=110\n/);
-  const l = linii(r.gcode.text), s2 = l.indexOf(';Z:0.4');
-  assert.ok(l.slice(s2, s2 + 12).includes('M104 S280'));
+  const l = linii(r.gcode.text), s2 = l.indexOf(';Z:0.4'), dupa = l.indexOf(';AFTER_LAYER_CHANGE', s2);
+  assert.ok(l.slice(dupa, dupa + 4).includes('M104 S280'));
   assert.ok(!l.slice(0, s2).includes('M104 S280'));
 });
 

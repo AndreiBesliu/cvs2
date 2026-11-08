@@ -11,18 +11,22 @@ import { cutieContur, uneste, CUTIE_GOALA } from '../../geom/cutie.ts';
 import { felStrat, numarStraturi, scrieGcode, type IesireGcode, type Miniatura } from './gcode.ts';
 import { MARGINE_PAT, type PiesaPlata } from './piese.ts';
 import { K1C, type SetariFeliere } from './profil.ts';
-import { brimGrup, sablonPiesa, type Cale, type FelStrat, type SablonPiesa } from './straturi.ts';
+import { brimGrup, fustaGrup, sablonPiesa, type Cale, type FelStrat, type SablonPiesa } from './straturi.ts';
 
 export { pieseDinDocument, MARGINE_PAT, type PieseAlese, type PiesaPlata, type SursaFeliere } from './piese.ts';
-export { CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, type SetariFeliere, type Brim } from './profil.ts';
+export {
+  CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, MODELE_RAR, MODELE_PLIN, CUSATURI, CALCARI,
+  MODELE_CALCARE, FUSTE, type SetariFeliere, type Brim,
+} from './profil.ts';
 export { timpText, type Miniatura } from './gcode.ts';
-export { puncte, type Cale, type Rol } from './straturi.ts';
+export { citesteFel, puncte, type Cale, type Rol } from './straturi.ts';
 
 export type AvertismentFeliere =
   | { readonly fel: 'subtire'; readonly piesa: string; readonly arie: number }
   | { readonly fel: 'nimic'; readonly piesa: string }
   | { readonly fel: 'eroare'; readonly piesa: string; readonly motiv: string }
   | { readonly fel: 'brim'; readonly motiv: string }
+  | { readonly fel: 'fusta'; readonly motiv: string }
   | { readonly fel: 'iese'; readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number }
   | { readonly fel: 'prea-inalta'; readonly z: number };
 
@@ -68,10 +72,15 @@ export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { r
   const rb = brimGrup(bune.map((p, i) => ({ contururi: p.contururi, brim: brim[i]! })), s);
   if (typeof rb === 'string') avertismente.push({ fel: 'brim', motiv: rb });
   else caiBrim = rb;
-  // Patul: tot ce se extrudează, cu marginea lui; ultimul strat, sub înălțimea lui.
+  let caiFusta: Cale[] = [];
+  const rf = fustaGrup(sabloane.map((sab) => ({ contur: sab.contur })), caiBrim, s);
+  if (typeof rf === 'string') avertismente.push({ fel: 'fusta', motiv: rf });
+  else caiFusta = rf;
+  // Patul: tot ce se extrudează (piesele, brim-ul, fusta), cu marginea lui; ultimul strat, sub înălțimea lui.
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   const intinde = (c: Cale): void => { for (let i = 0; i < c.p.length; i += 2) { x0 = Math.min(x0, c.p[i]!); x1 = Math.max(x1, c.p[i]!); y0 = Math.min(y0, c.p[i + 1]!); y1 = Math.max(y1, c.p[i + 1]!); } };
   caiBrim.forEach(intinde);
+  caiFusta.forEach(intinde);
   for (const sab of sabloane) for (const cai of sab.fel.values()) cai.forEach(intinde);
   let inPat = true;
   if (bune.length > 0 && (x0 < MARGINE_PAT - 1e-6 || y0 < MARGINE_PAT - 1e-6 || x1 > K1C.pat[0] - MARGINE_PAT + 1e-6 || y1 > K1C.pat[1] - MARGINE_PAT + 1e-6)) {
@@ -81,12 +90,13 @@ export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { r
   const zSus = bune.length === 0 ? 0 : s.strat1 + (Math.max(...bune.map((p) => numarStraturi(p.inaltime, s))) - 1) * s.strat;
   if (zSus > K1C.pat[2] + 1e-9) { avertismente.push({ fel: 'prea-inalta', z: zSus }); inPat = false; }
   const gcode = bune.length === 0 || !inPat ? null
-    : scrieGcode({ piese: bune, sabloane, brim: caiBrim, setari: s, data: opt.data, ...(opt.miniaturi ? { miniaturi: opt.miniaturi } : {}) });
+    : scrieGcode({ piese: bune, sabloane, brim: caiBrim, fusta: caiFusta, setari: s, data: opt.data, ...(opt.miniaturi ? { miniaturi: opt.miniaturi } : {}) });
   const plan = gcode?.plan;
   const cai = (k: number): readonly Cale[] => {
     const st = plan?.[k - 1];
     if (!st) return [];
-    const rez: Cale[] = k === 1 ? [...caiBrim] : [];
+    const fusta = caiFusta.length > 0 && (s.scut || k <= s.inaltimeFusta) ? (k === 1 || !s.oBuclaDupa ? caiFusta : caiFusta.slice(-1)) : [];
+    const rez: Cale[] = [...fusta, ...(k === 1 ? caiBrim : [])];
     for (const { i, fel } of st.piese) rez.push(...(sabloane[i]?.fel.get(fel) ?? []));
     return rez;
   };

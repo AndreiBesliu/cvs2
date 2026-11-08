@@ -241,13 +241,16 @@ test('debitul pe rol, pe o piesă mare (fără încetinire): exteriorul la 200 m
   assert.deepEqual([...f].sort((x, y) => x - y), [12000, Math.round((18 / sectiune(0.45, 0.2)) * 60)]);
 });
 
-test('grila rară: ambele direcții (45° și 135°), cu liniile paralele la 6 mm (2 · 0,45 / 15 %)', () => {
+test('grila rară: ambele direcții (45° și 135°), cu liniile paralele la 5,4277 mm (2 · pasul 0,45 × 0,2 / 15 %, ca OrcaSlicer)', () => {
   const r = feliaza([piesa([conturDreptunghi(80, 80, 60, 60)], 3)], setariImplicite(), { data: DATA });
   const rare = r.cai(8).filter((c) => c.rol === 'rar');
   const unghiuri = new Set(rare.map((c) => Math.round((Math.atan2(c.p[3]! - c.p[1]!, c.p[2]! - c.p[0]!) * 180) / Math.PI + 360) % 180));
   assert.deepEqual([...unghiuri].sort((a, b) => a - b), [45, 135]);
   const la45 = rare.filter((c) => Math.abs(c.p[3]! - c.p[1]! - (c.p[2]! - c.p[0]!)) < 1e-6).map((c) => (c.p[1]! - c.p[0]!) / Math.SQRT2).sort((a, b) => a - b);
-  for (let i = 1; i < la45.length; i++) assert.ok(Math.abs(la45[i]! - la45[i - 1]! - 6) < 1e-6 || Math.abs(la45[i]! - la45[i - 1]!) < 1e-6);
+  // `fill_surface_by_multilines`: spacing · 2 / densitate, cu spacing = 0,45 − 0,2 · (1 − π/4) = 0,407080 (nu lățimea liniei).
+  const ls = (2 * (0.45 - 0.2 * (1 - Math.PI / 4))) / 0.15;
+  assert.ok(Math.abs(ls - 5.427729) < 1e-6);
+  for (let i = 1; i < la45.length; i++) assert.ok(Math.abs(la45[i]! - la45[i - 1]! - ls) < 1e-6 || Math.abs(la45[i]! - la45[i - 1]!) < 1e-6, `${la45[i]! - la45[i - 1]!}`);
 });
 
 test('încetinirea pentru răcire: un strat scurt ajunge la ~8 s (PLA); unul care nici așa nu ajunge merge cu viteza minimă (20 mm/s)', () => {

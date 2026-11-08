@@ -1067,7 +1067,7 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
     așezarea de pe foaie și se centrează pe pat; ce nu încape (220 × 220 mm la K1C, cu 5 mm margine pe fiecare latură) e spus.
   - **Înălțimea** (implicit, grosimea foii), **Materialul** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS, ASA,
     PC, PA-CF, TPU, cu valorile profilelor Creality K1 din OrcaSlicer), **Calitatea** (straturi de 0,08, 0,12, 0,16, 0,20 sau
-    0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare, în grilă) și **Brim**
+    0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare) și **Brim**
     (Automat: pentru piesele înguste sau înalte; Da; Nu).
   - **Avansat** arată restul setărilor, pe grupuri. Straturile: Înălțimea stratului, Înălțimea primului strat, Straturile pline
     de sus, Grosimea de sus, cel puțin, Straturile pline de jos. Temperaturile primului strat: Duza, pe primul strat; Patul, pe
@@ -1080,10 +1080,30 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
     Ventilatorul auxiliar; Timpul minim al unui strat (un strat mai scurt se imprimă mai încet, ca să se răcească); Viteza
     minimă la răcire. Debitul materialului: Debitul, Debitul volumic maxim (vitezele se taie ca materialul să încapă prin duză).
     Marginile: Compensarea piciorului de elefant (primul strat, strâns puțin), Suprapunerea umplerii rare pe pereți,
-    Suprapunerea umplerii pline pe pereți, Lățimea brim-ului, Golul brim-ului. **Valorile profilului** le pune înapoi pe cele
-    ale materialului și calității alese. Setările alese se țin în browser, pentru data viitoare.
+    Suprapunerea umplerii pline pe pereți, Lățimea brim-ului, Golul brim-ului. Modelele umplerii: Modelul umplerii rare
+    (Grilă, implicit; Dreptunghiular, întors cu 90° de la un strat la altul; Dreptunghiular aliniat; Linii, una din două
+    ușor înclinată; Triunghiuri; Tri-hexagon; Cubic, Hașură în cruce și Giroid, care se schimbă cu înălțimea, ca o umplere
+    în spațiu; Fagure; Concentric; Curba Hilbert; Coardele lui Arhimede; Spirala octogramă; la 0,12 mm, profilul pornește cu
+    Hașură în cruce), Direcția umplerii rare, Modelul plinului dinăuntru, Modelul suprafeței de sus și Modelul suprafeței de
+    jos (Monoton, pe linii, implicit sus; Monoton, implicit jos și dinăuntru: liniile, mereu în aceeași ordine, pentru o
+    față netedă; Dreptunghiular; Dreptunghiular aliniat; Concentric; Curba Hilbert; Coardele lui Arhimede; Spirala
+    octogramă), Direcția plinului. Ștergerea: Șterge la retragere (pornită în profilul K1C: înaintea unei deplasări, duza
+    merge puțin pe linia abia făcută, ca să nu lase o picătură), Distanța ștergerii, Retragerea dinaintea ștergerii (restul
+    retragerii se face pe drum), Viteza ștergerii după rol (cu viteza ultimei linii), Viteza ștergerii, din a deplasării.
+    Cusătura: Locul cusăturii (Aliniată, implicit: în colțul cel mai ascuns, la fel pe fiecare strat; Aliniată, în spate; În
+    spate; Cea mai apropiată, de duză; Aleatoare), Cusăturile dinăuntru decalate (fiecare perete dinăuntru pornește puțin
+    mai departe, ca cusăturile să nu stea una peste alta), Golul cusăturii. Călcarea: Ce se calcă (Fără călcare, implicit;
+    Toate suprafețele de sus; Doar suprafața cea mai de sus; Toate straturile pline): o trecere în plus, cu debit mic, peste
+    față, ca s-o netezească; Modelul călcării (Dreptunghiular, Concentric), Debitul călcării, Pasul călcării, Viteza
+    călcării, Marginea călcării (0: jumătate de duză), Unghiul călcării (față de liniile feței). Fusta: Buclele fustei (0:
+    fără fustă, implicit), Distanța fustei (față de piese sau de brim), Straturile fustei, Viteza fustei, Felul fustei (Una
+    pentru toate piesele; Câte una pe piesă), Filamentul minim al fustei (buclele se adaugă până ajung la el), Scutul (fusta
+    pe toată înălțimea), contra curentului de aer, la ABS sau ASA, Începutul fustei (unghiul, față de centrul pieselor), O
+    singură buclă după primul strat. Fusta se trage prima, pe primul strat: amorsează duza și arată dacă patul e bine
+    nivelat. **Valorile profilului** le pune înapoi pe cele ale materialului și calității alese. Setările alese se țin în
+    browser, pentru data viitoare.
   - În dreapta, stratul ales, văzut de sus, cu liniile colorate după rol (peretele exterior, pereții interiori, plin, suprafața
-    de sus, umplere rară, brim) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
+    de sus, umplere rară, brim, călcarea, fusta) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
     linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui, apoi
     straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame. Bifa **deplasările** arată, punctat, și
     drumurile duzei dintre linii.

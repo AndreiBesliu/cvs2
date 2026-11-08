@@ -431,6 +431,51 @@ test('Din desen…, fără imprimantă: foaia goală spusă; un dreptunghi felia
   await expect(page.locator('[data-imprimanta="din-desen"]')).toBeFocused();
 });
 
+test('Din desen…, Avansat (3.6k): modelul umplerii, călcarea și fusta, în previzualizare și în fișier; ștergerea, din profil, oprită la cerere', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '3');
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  // Ștergerea e pornită de profilul K1C; modelul rar implicit, grila.
+  await expect(page.locator('[data-felie="stergere"]')).toBeChecked();
+  await expect(page.locator('[data-felie="modelRar"]')).toHaveValue('grid');
+  await page.locator('[data-felie="modelRar"]').selectOption('gyroid');
+  await felieGata(page);
+  await page.locator('[data-imprimanta="felie-strat"]').fill('8');
+  await expect(page.getByTestId('imprimanta-felie-fel')).toContainText('umplere rară: Giroid');
+  await page.locator('[data-felie="calcare"]').selectOption('sus');
+  await felieGata(page);
+  const fusta = page.locator('[data-felie="fusta"]');
+  await fusta.fill('2');
+  await fusta.press('Enter');
+  await felieGata(page);
+  await expect(page.locator('.imprimanta-felie-legenda')).toContainText('călcarea');
+  await expect(page.locator('.imprimanta-felie-legenda')).toContainText('fusta');
+  // Pe primul strat, fusta se vede: pixeli de culoarea ei (#c9ced6) pe pânză.
+  await page.locator('[data-imprimanta="felie-strat"]').fill('1');
+  await expect.poll(() => page.getByTestId('imprimanta-felie-pat').evaluate((c) => {
+    const x = (c as HTMLCanvasElement).getContext('2d')!.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data;
+    let n = 0;
+    for (let i = 0; i < x.length; i += 4) if (Math.abs(x[i]! - 0xc9) < 12 && Math.abs(x[i + 1]! - 0xce) < 12 && Math.abs(x[i + 2]! - 0xd6) < 12) n++;
+    return n;
+  })).toBeGreaterThan(100);
+  const citeste = async (): Promise<string> => {
+    const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+    return (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  };
+  const text = await citeste();
+  for (const x of ['; sparse_infill_pattern = gyroid', '; ironing_type = top', '; skirt_loops = 2', '; wipe = 1', ';WIPE_START']) expect(text).toContain(`\n${x}\n`);
+  // Ștergerea oprită: retragerea întreagă, fără drumul ei.
+  await page.locator('[data-felie="stergere"]').uncheck();
+  await felieGata(page);
+  const fara = await citeste();
+  expect(fara).not.toContain(';WIPE_START');
+  expect(fara).toContain('\n; wipe = 0\n');
+});
+
 test('Din desen…, cu imprimanta legată: „Trimite la imprimantă” trece prin verificarea de la 3.6h, iar fișierul ajunge întreg', async ({ page }) => {
   const imp = await porneste({});
   await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));

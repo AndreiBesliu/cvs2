@@ -1,9 +1,12 @@
 /**
  * Câmpurile din „Avansat” ale dialogului „Din desen…” (ADR 0191, răspunsul 3b), pe grupuri: setarea, unitatea, pasul și dacă
- * se arată ca procent. Eticheta fiecăruia e `imprimanta.felie.c.<setarea>`, a grupului `imprimanta.felie.g.<grupul>`; proba
- * manualului cere fiecare etichetă în capitolul „imprimanta”.
+ * se arată ca procent; o listă (`optiuni`, fiecare cu eticheta `imprimanta.felie.o.<valoarea>`) sau o bifă (`bifa`), la
+ * setările feliei 3.6k (modelele, cusătura, ștergerea, călcarea, fusta). Eticheta fiecăruia e `imprimanta.felie.c.<setarea>`, a
+ * grupului `imprimanta.felie.g.<grupul>`; proba manualului cere fiecare etichetă în capitolul „imprimanta”.
  */
-import { material, setariImplicite, setariValide, type SetariFeliere } from './profil.ts';
+import {
+  CALCARI, CUSATURI, FUSTE, material, MODELE_CALCARE, MODELE_PLIN, MODELE_RAR, setariImplicite, setariValide, type SetariFeliere,
+} from './profil.ts';
 
 /** Setările numerice din „Avansat” (fiecare cu eticheta ei). */
 export type CheieAvansata =
@@ -12,15 +15,33 @@ export type CheieAvansata =
   | 'vExterior' | 'vInterior' | 'vPlin' | 'vRar' | 'vSus' | 'vPrim' | 'vPrimInfill' | 'vDeplasare'
   | 'aPereti' | 'aSus' | 'aImplicit' | 'aPrim' | 'aDeplasare' | 'retragere' | 'vitezaRetragere' | 'ridicare'
   | 'ventMin' | 'ventMax' | 'ventOprit' | 'ventAux' | 'stratMinim' | 'vitezaMinima' | 'debit' | 'volumMax'
-  | 'piciorElefant' | 'suprapunereRar' | 'suprapunerePlin' | 'latimeBrim' | 'golBrim';
-export type GrupCampuri = 'straturi' | 'temperaturi' | 'latimi' | 'viteze' | 'acceleratii' | 'retragere' | 'racire' | 'material' | 'margini';
-export type CampAvansat = { readonly k: CheieAvansata; readonly unitate: string; readonly pas: number; readonly procent?: true };
+  | 'piciorElefant' | 'suprapunereRar' | 'suprapunerePlin' | 'latimeBrim' | 'golBrim'
+  | 'modelRar' | 'modelPlin' | 'modelSus' | 'modelJos' | 'unghiRar' | 'unghiPlin' | 'cusatura' | 'cusaturiDecalate' | 'golCusatura'
+  | 'stergere' | 'distantaStergere' | 'retragereInainte' | 'stergereDupaRol' | 'vStergere'
+  | 'calcare' | 'modelCalcare' | 'debitCalcare' | 'pasCalcare' | 'vCalcare' | 'margineCalcare' | 'unghiCalcare'
+  | 'fusta' | 'distantaFusta' | 'inaltimeFusta' | 'vFusta' | 'tipFusta' | 'lungimeMinimaFusta' | 'scut' | 'unghiFusta' | 'oBuclaDupa';
+export type GrupCampuri =
+  | 'straturi' | 'modele' | 'temperaturi' | 'latimi' | 'viteze' | 'acceleratii' | 'retragere' | 'stergere' | 'racire' | 'material' | 'margini'
+  | 'cusatura' | 'calcare' | 'fusta';
+/** Valorile listelor (fiecare cu eticheta `imprimanta.felie.o.<valoarea>`). */
+export type OptiuneAvansata =
+  | (typeof MODELE_RAR)[number] | (typeof MODELE_PLIN)[number] | (typeof CUSATURI)[number] | (typeof CALCARI)[number]
+  | (typeof MODELE_CALCARE)[number] | (typeof FUSTE)[number];
+export type CampAvansat = {
+  readonly k: CheieAvansata; readonly unitate: string; readonly pas: number; readonly procent?: true;
+  readonly optiuni?: readonly OptiuneAvansata[]; readonly bifa?: true;
+};
 export type GrupAvansat = { readonly grup: GrupCampuri; readonly campuri: readonly CampAvansat[] };
 
 export const CAMPURI_AVANSATE: readonly GrupAvansat[] = [
   { grup: 'straturi', campuri: [
     { k: 'strat', unitate: 'mm', pas: 0.01 }, { k: 'strat1', unitate: 'mm', pas: 0.01 }, { k: 'sus', unitate: '', pas: 1 },
     { k: 'susMinim', unitate: 'mm', pas: 0.1 }, { k: 'jos', unitate: '', pas: 1 },
+  ] },
+  { grup: 'modele', campuri: [
+    { k: 'modelRar', unitate: '', pas: 1, optiuni: MODELE_RAR }, { k: 'unghiRar', unitate: '°', pas: 1 },
+    { k: 'modelPlin', unitate: '', pas: 1, optiuni: MODELE_PLIN }, { k: 'modelSus', unitate: '', pas: 1, optiuni: MODELE_PLIN },
+    { k: 'modelJos', unitate: '', pas: 1, optiuni: MODELE_PLIN }, { k: 'unghiPlin', unitate: '°', pas: 1 },
   ] },
   { grup: 'temperaturi', campuri: [{ k: 'duza1', unitate: '°C', pas: 1 }, { k: 'pat1', unitate: '°C', pas: 1 }] },
   { grup: 'latimi', campuri: [
@@ -39,6 +60,11 @@ export const CAMPURI_AVANSATE: readonly GrupAvansat[] = [
   { grup: 'retragere', campuri: [
     { k: 'retragere', unitate: 'mm', pas: 0.05 }, { k: 'vitezaRetragere', unitate: 'mm/s', pas: 1 }, { k: 'ridicare', unitate: 'mm', pas: 0.05 },
   ] },
+  { grup: 'stergere', campuri: [
+    { k: 'stergere', unitate: '', pas: 1, bifa: true }, { k: 'distantaStergere', unitate: 'mm', pas: 0.1 },
+    { k: 'retragereInainte', unitate: '%', pas: 1, procent: true }, { k: 'stergereDupaRol', unitate: '', pas: 1, bifa: true },
+    { k: 'vStergere', unitate: '%', pas: 1, procent: true },
+  ] },
   { grup: 'racire', campuri: [
     { k: 'ventMin', unitate: '%', pas: 1 }, { k: 'ventMax', unitate: '%', pas: 1 }, { k: 'ventOprit', unitate: '', pas: 1 },
     { k: 'ventAux', unitate: '%', pas: 1 }, { k: 'stratMinim', unitate: 's', pas: 1 }, { k: 'vitezaMinima', unitate: 'mm/s', pas: 1 },
@@ -47,6 +73,20 @@ export const CAMPURI_AVANSATE: readonly GrupAvansat[] = [
   { grup: 'margini', campuri: [
     { k: 'piciorElefant', unitate: 'mm', pas: 0.01 }, { k: 'suprapunereRar', unitate: '%', pas: 1, procent: true },
     { k: 'suprapunerePlin', unitate: '%', pas: 1, procent: true }, { k: 'latimeBrim', unitate: 'mm', pas: 0.5 }, { k: 'golBrim', unitate: 'mm', pas: 0.05 },
+  ] },
+  { grup: 'cusatura', campuri: [
+    { k: 'cusatura', unitate: '', pas: 1, optiuni: CUSATURI }, { k: 'cusaturiDecalate', unitate: '', pas: 1, bifa: true },
+    { k: 'golCusatura', unitate: 'mm', pas: 0.01 },
+  ] },
+  { grup: 'calcare', campuri: [
+    { k: 'calcare', unitate: '', pas: 1, optiuni: CALCARI }, { k: 'modelCalcare', unitate: '', pas: 1, optiuni: MODELE_CALCARE },
+    { k: 'debitCalcare', unitate: '%', pas: 1, procent: true }, { k: 'pasCalcare', unitate: 'mm', pas: 0.01 }, { k: 'vCalcare', unitate: 'mm/s', pas: 1 },
+    { k: 'margineCalcare', unitate: 'mm', pas: 0.05 }, { k: 'unghiCalcare', unitate: '°', pas: 1 },
+  ] },
+  { grup: 'fusta', campuri: [
+    { k: 'fusta', unitate: '', pas: 1 }, { k: 'distantaFusta', unitate: 'mm', pas: 0.5 }, { k: 'inaltimeFusta', unitate: '', pas: 1 },
+    { k: 'vFusta', unitate: 'mm/s', pas: 1 }, { k: 'tipFusta', unitate: '', pas: 1, optiuni: FUSTE }, { k: 'lungimeMinimaFusta', unitate: 'mm', pas: 1 },
+    { k: 'scut', unitate: '', pas: 1, bifa: true }, { k: 'unghiFusta', unitate: '°', pas: 1 }, { k: 'oBuclaDupa', unitate: '', pas: 1, bifa: true },
   ] },
 ];
 
@@ -57,7 +97,7 @@ export const DIN_MATERIAL: readonly (keyof SetariFeliere)[] = [
 /** Setările care țin de calitate (se iau din nou din profil la schimbarea ei). */
 export const DIN_CALITATE: readonly (keyof SetariFeliere)[] = [
   'strat', 'strat1', 'pereti', 'sus', 'susMinim', 'jos', 'vInterior', 'vPlin', 'vRar', 'vPrimInfill', 'aPereti', 'aSus', 'aImplicit', 'aPrim',
-  'aDeplasare', 'suprapunereRar',
+  'aDeplasare', 'suprapunereRar', 'modelRar', 'cusaturiDecalate', 'debitCalcare', 'vCalcare', 'unghiCalcare',
 ];
 
 const preia = (d: SetariFeliere, k: readonly (keyof SetariFeliere)[]): Partial<SetariFeliere> => Object.fromEntries(k.map((x) => [x, d[x]]));

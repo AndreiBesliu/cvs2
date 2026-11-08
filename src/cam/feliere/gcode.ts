@@ -10,9 +10,14 @@
  * centripetă), cu o trecere înainte și una înapoi; deplasările și retragerile, la fel. Încetinirea pentru răcire: un strat mai
  * scurt decât `stratMinim` se rescrie cu vitezele de extrudare micșorate (nu sub `vitezaMinima`).
  */
+import { anvelopa, lungime, type Cale, type Rol } from './linii.ts';
 import type { PiesaPlata } from './piese.ts';
 import { ARIE_FILAMENT, K1C, material, sectiune, type SetariFeliere } from './profil.ts';
-import type { Cale, FelStrat, Rol, SablonPiesa } from './straturi.ts';
+import {
+  cuCusatura, cusaturaAleatoare, cusaturaApropiata, DEPINDE_DE_Z, felDe, unghiModel, type FelStrat, type SablonPiesa,
+} from './straturi.ts';
+
+export { anvelopa } from './linii.ts';
 
 export type Miniatura = { readonly latime: number; readonly inaltime: number; readonly png: string };
 
@@ -21,15 +26,20 @@ export type PlanStrat = { readonly z: number; readonly h: number; readonly piese
 
 /** Câte straturi are o piesă de înălțimea H: primul, de `strat1`, apoi de `strat`. */
 export const numarStraturi = (H: number, s: SetariFeliere): number => Math.max(1, Math.round((H - s.strat1) / s.strat + 1e-9) + 1);
+/** Z-ul (vârful) stratului k, de la 1. */
+export const zStrat = (k: number, s: SetariFeliere): number => s.strat1 + (k - 1) * s.strat;
 
-/** Felul stratului k (de la 1) al unei piese cu n straturi. */
+/**
+ * Felul stratului k (de la 1) al unei piese cu n straturi: primul (suprafața de jos), ultimul (suprafața de sus), plinul de jos și
+ * de sus, umplerea rară; fiecare cu modelul și unghiul lui (cu alternarea stratului la modelele care o au) și, la modelele 3D, Z-ul.
+ */
 export function felStrat(k: number, n: number, s: SetariFeliere): FelStrat {
-  if (k === 1) return 'prim';
-  const u = k % 2 === 0 ? '135' : '45';
-  if (k === n) return `sus${u}`;
+  const uPlin = unghiModel(s.modelPlin, k, s.unghiPlin);
+  if (k === 1) return felDe('prim', unghiModel(s.modelJos, k, s.unghiPlin), uPlin, null);
+  if (k === n) return felDe('sus', unghiModel(s.modelSus, k, s.unghiPlin), uPlin, null);
   const sus = Math.max(s.sus, Math.ceil(s.susMinim / s.strat - 1e-9));
-  if (k <= s.jos || k > n - sus || s.umplere >= 0.999) return `plin${u}`;
-  return 'rar';
+  if (k <= s.jos || k > n - sus || s.umplere >= 0.999) return felDe('plin', uPlin, uPlin, null);
+  return felDe('rar', unghiModel(s.modelRar, k, s.unghiRar), uPlin, DEPINDE_DE_Z.has(s.modelRar) ? zStrat(k, s) : null);
 }
 
 export function planStraturi(inaltimi: readonly number[], s: SetariFeliere): PlanStrat[] {
@@ -38,7 +48,7 @@ export function planStraturi(inaltimi: readonly number[], s: SetariFeliere): Pla
   const rez: PlanStrat[] = [];
   for (let k = 1; k <= max; k++) {
     rez.push({
-      z: s.strat1 + (k - 1) * s.strat, h: k === 1 ? s.strat1 : s.strat,
+      z: zStrat(k, s), h: k === 1 ? s.strat1 : s.strat,
       piese: n.flatMap((nk, i) => (k <= nk ? [{ i, fel: felStrat(k, nk, s) }] : [])),
     });
   }
@@ -124,6 +134,9 @@ export function iesePeste(x0: number, y0: number, x1: number, y1: number, contur
 
 /** Câmpurile pe care scrierea le cere de la fiecare rol: viteza, accelerația. */
 function rol(r: Rol, prim: boolean, s: SetariFeliere): { v: number; a: number } {
+  // Fusta, cu viteza ei (0 = a primului strat); călcarea, cu a ei și cu accelerația suprafeței de sus.
+  if (r === 'fusta') return { v: s.vFusta > 0 ? s.vFusta : s.vPrim, a: prim ? s.aPrim : s.aImplicit };
+  if (r === 'calcare') return { v: s.vCalcare, a: prim ? s.aPrim : s.aSus };
   if (prim) return { v: r === 'exterior' || r === 'interior' || r === 'brim' ? s.vPrim : s.vPrimInfill, a: s.aPrim };
   switch (r) {
     case 'exterior': return { v: s.vExterior, a: s.aPereti };
@@ -135,12 +148,14 @@ function rol(r: Rol, prim: boolean, s: SetariFeliere): { v: number; a: number } 
   }
 }
 
-/** Golul cusăturii: bucla se oprește cu atât înaintea începutului ei (10 % din duză, ca în profil). */
-const GOL_CUSATURA = 0.1 * K1C.duza;
-
 class Scriitor {
   readonly l: string[] = [];
   x = 0; y = 0; z = 0; f = 0; a = 0; retras = false; t = 0; e = 0;
+  /**
+   * Drumul ștergerii (ca `Wipe` din OrcaSlicer), de la poziția duzei: după o buclă, înainte, peste începutul ei; după o cale
+   * deschisă, înapoi pe ea. Și viteza ultimei extrudări (ștergerea după rol).
+   */
+  sterge: number[] | null = null; vUltim = 0;
   readonly s: SetariFeliere;
   constructor(s: SetariFeliere) { this.s = s; }
   scrie(x: string): void { this.l.push(x); }
@@ -149,10 +164,50 @@ class Scriitor {
     this.a = a;
     this.scrie(`SET_VELOCITY_LIMIT ACCEL=${a} ACCEL_TO_DECEL=${a} MINIMUM_CRUISE_RATIO=0`);
   }
+  /**
+   * Retragerea; cu ștergerea pornită (și un drum de șters), ca `GCode::retract` + `Wipe::wipe`: întâi `retragereInainte` din
+   * lungime, apoi duza merge `distantaStergere` pe drum retrăgând restul, cât încape la viteza retragerii (ce nu încape se
+   * retrage înainte); la sfârșit, ce a mai rămas.
+   */
   retrage(): void {
     if (this.retras || this.s.retragere <= 0) return;
-    this.scrie(`G1 E-${n5(this.s.retragere)} F${Math.round(this.s.vitezaRetragere * 60)}`);
-    this.retras = true; this.f = Math.round(this.s.vitezaRetragere * 60); this.t += this.s.retragere / this.s.vitezaRetragere;
+    const L = this.s.retragere, vr = this.s.vitezaRetragere, fr = Math.round(vr * 60);
+    let inainte = L, inTimp = 0, drum: number[] = [];
+    const s = this.s;
+    if (s.stergere && this.sterge && this.sterge.length >= 2 && s.distantaStergere > 0) {
+      const vw = Math.max(10, s.stergereDupaRol ? this.vUltim : s.vStergere * s.vDeplasare);
+      drum = taiatLa([this.x, this.y, ...this.sterge], s.distantaStergere);
+      const Lw = lungime(drum);
+      inainte = L * s.retragereInainte;
+      const rest = L - inainte, maxim = (vr * Lw) / vw;
+      if (rest > 1e-9 && maxim > 1e-9) {
+        if (maxim - rest > 1e-9) inTimp = rest; else { inTimp = maxim; inainte += rest - maxim; }
+      }
+      if (Lw <= 1e-9) drum = [];
+      if (inainte > 1e-9) { this.scrie(`G1 E-${n5(inainte)} F${fr}`); this.f = fr; this.t += inainte / vr; }
+      if (drum.length >= 4) {
+        this.scrie(';WIPE_START');
+        const fw = Math.round(vw * 60);
+        this.scrie(`G1 F${fw}`);
+        for (let i = 2; i < drum.length; i += 2) {
+          const l = Math.hypot(drum[i]! - drum[i - 2]!, drum[i + 1]! - drum[i - 1]!);
+          if (l < 1e-6) continue;
+          const de = (inTimp * l) / Lw;
+          this.scrie(`G1 X${n3(drum[i]!)} Y${n3(drum[i + 1]!)}${de > 0 ? ` E-${n5(de)}` : ''}`);
+        }
+        this.scrie(';WIPE_END');
+        this.f = fw; this.t += timpPolilinie(drum, vw, this.a);
+        this.x = drum[drum.length - 2]!; this.y = drum[drum.length - 1]!;
+      } else inTimp = 0;
+      // Ce n-a încăput nici înainte, nici în timpul ștergerii.
+      const ramas = L - inainte - inTimp;
+      if (ramas > 1e-9) { this.scrie(`G1 E-${n5(ramas)} F${fr}`); this.f = fr; this.t += ramas / vr; }
+    } else {
+      this.scrie(`G1 E-${n5(L)} F${fr}`);
+      this.f = fr; this.t += L / vr;
+    }
+    this.sterge = null;
+    this.retras = true;
   }
   deretrage(): void {
     if (!this.retras) return;
@@ -171,11 +226,12 @@ class Scriitor {
    * XY și coboară abia la destinație, ca OrcaSlicer: nu atinge capătul liniei de curățare.
    */
   mergi(x: number, y: number, retragere: boolean, zStrat: number): void {
-    const L = Math.hypot(x - this.x, y - this.y);
-    if (L < 1e-6 && Math.abs(this.z - zStrat) < 1e-9) return;
+    if (Math.hypot(x - this.x, y - this.y) < 1e-6 && Math.abs(this.z - zStrat) < 1e-9) return;
     const hop = Math.min(this.s.ridicare, K1C.pat[2] - zStrat);
     if (retragere) this.retrage();
     if (retragere && hop > 1e-9 && zStrat < K1C.ridicareSub && this.z < zStrat + hop - 1e-9) this.zLa(zStrat + hop);
+    // Deplasarea pleacă de unde a lăsat-o ștergerea.
+    const L = Math.hypot(x - this.x, y - this.y);
     if (L >= 1e-6) {
       this.acc(this.s.aDeplasare);
       const f = Math.round(this.s.vDeplasare * 60);
@@ -185,21 +241,22 @@ class Scriitor {
     }
     this.zLa(zStrat);
   }
-  /** Extrudarea unei căi, cu viteza dată (mm/s): E pe fiecare bucată, din secțiunea liniei. */
+  /** Extrudarea unei căi, cu viteza dată (mm/s): E pe fiecare bucată, din secțiunea liniei (sau din debitul căii, la călcare). */
   extrudeaza(c: Cale, h: number, v: number, a: number): void {
     this.deretrage();
     this.acc(a);
-    const k = (sectiune(c.w, h) / ARIE_FILAMENT) * this.s.debit;
+    const k = ((c.mm3 ?? sectiune(c.w, h)) / ARIE_FILAMENT) * this.s.debit;
     const p = c.p, n = p.length / 2;
     const pts: number[] = [p[0]!, p[1]!];
     for (let i = 1; i < n; i++) pts.push(p[2 * i]!, p[2 * i + 1]!);
     if (c.inchisa) {
-      // Înapoi la început, fără ultimii GOL_CUSATURA mm.
+      // Înapoi la început, fără ultimii `golCusatura` mm (`seam_gap`).
+      const gol = this.s.golCusatura;
       let total = 0;
       for (let i = 0; i < n; i++) { const j = (i + 1) % n; total += Math.hypot(p[2 * j]! - p[2 * i]!, p[2 * j + 1]! - p[2 * i + 1]!); }
       const ultima = Math.hypot(p[0]! - p[2 * n - 2]!, p[1]! - p[2 * n - 1]!);
-      if (total > 4 * GOL_CUSATURA && ultima > GOL_CUSATURA) {
-        const r = (ultima - GOL_CUSATURA) / ultima;
+      if (gol > 0 && total > 4 * gol && ultima > gol) {
+        const r = (ultima - gol) / ultima;
         pts.push(p[2 * n - 2]! + (p[0]! - p[2 * n - 2]!) * r, p[2 * n - 1]! + (p[1]! - p[2 * n - 1]!) * r);
       } else pts.push(p[0]!, p[1]!);
     }
@@ -214,7 +271,25 @@ class Scriitor {
     }
     this.x = pts[pts.length - 2]!; this.y = pts[pts.length - 1]!;
     this.t += timpPolilinie(pts, v, a);
+    // Drumul ștergerii: după o buclă, punctele ei de la al doilea încolo (peste cusătură); după o cale deschisă, înapoi pe ea.
+    if (c.inchisa) this.sterge = pts.slice(2);
+    else { const r: number[] = []; for (let i = pts.length - 4; i >= 0; i -= 2) r.push(pts[i]!, pts[i + 1]!); this.sterge = r; }
+    this.vUltim = v;
   }
+}
+
+/** Polilinia (x, y, …), tăiată după lungimea dată. */
+function taiatLa(p: readonly number[], L: number): number[] {
+  const r = [p[0]!, p[1]!];
+  let rest = L;
+  for (let i = 2; i < p.length && rest > 1e-12; i += 2) {
+    const l = Math.hypot(p[i]! - p[i - 2]!, p[i + 1]! - p[i - 1]!);
+    if (l <= rest) { r.push(p[i]!, p[i + 1]!); rest -= l; continue; }
+    const t = rest / l;
+    r.push(p[i - 2]! + (p[i]! - p[i - 2]!) * t, p[i - 1]! + (p[i + 1]! - p[i - 1]!) * t);
+    break;
+  }
+  return r;
 }
 
 export type IntrareGcode = {
@@ -222,6 +297,8 @@ export type IntrareGcode = {
   readonly sabloane: readonly SablonPiesa[];
   /** Brim-ul grupului (`brimGrup`), pe primul strat. */
   readonly brim: readonly Cale[];
+  /** Fusta (`fustaGrup`), de la bucla cea mai depărtată; pe primele `inaltimeFusta` straturi (cu scutul, pe toate). */
+  readonly fusta?: readonly Cale[];
   readonly setari: SetariFeliere;
   readonly miniaturi?: readonly Miniatura[];
   /** Data din antet, deja scrisă („2026-11-07 at 19:41:00”), ca ieșirea să nu depindă de ceas. */
@@ -234,7 +311,7 @@ export type IesireGcode = {
 };
 
 /** Viteza unei căi: a rolului, tăiată de plafonul de debit al materialului. */
-const viteza = (c: Cale, h: number, prim: boolean, s: SetariFeliere): number => Math.min(rol(c.rol, prim, s).v, s.volumMax / sectiune(c.w, h));
+const viteza = (c: Cale, h: number, prim: boolean, s: SetariFeliere): number => Math.min(rol(c.rol, prim, s).v, s.volumMax / (c.mm3 ?? sectiune(c.w, h)));
 
 /** Ventilatorul piesei pe un strat (%), după timpul lui, ca OrcaSlicer (între minim și maxim). */
 function ventilator(k: number, timp: number, s: SetariFeliere, ventSubTimp: number): number {
@@ -252,23 +329,19 @@ const centru = (p: ArrayLike<number>): [number, number] => {
   return [(x0 + x1) / 2, (y0 + y1) / 2];
 };
 
-/** Anvelopa convexă a punctelor (lanțul monoton al lui Andrew), pentru `POLYGON` din `EXCLUDE_OBJECT_DEFINE`. */
-export function anvelopa(p: readonly ArrayLike<number>[]): [number, number][] {
-  const pts: [number, number][] = [];
-  for (const q of p) for (let i = 0; i < q.length; i += 2) pts.push([q[i]!, q[i + 1]!]);
-  pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  if (pts.length < 3) return pts;
-  const x = (o: [number, number], a: [number, number], b: [number, number]): number => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const jos: [number, number][] = [], sus: [number, number][] = [];
-  for (const q of pts) { while (jos.length >= 2 && x(jos[jos.length - 2]!, jos[jos.length - 1]!, q) <= 0) jos.pop(); jos.push(q); }
-  for (let i = pts.length - 1; i >= 0; i--) { const q = pts[i]!; while (sus.length >= 2 && x(sus[sus.length - 2]!, sus[sus.length - 1]!, q) <= 0) sus.pop(); sus.push(q); }
-  return [...jos.slice(0, -1), ...sus.slice(0, -1)];
-}
-
 /** Scrie un strat (căile, deplasările, retragerile) în scriitorul dat, cu factorul de viteză al încetinirii pentru răcire. */
 function scrieStrat(w: Scriitor, st: PlanStrat, k: number, intr: IntrareGcode, factor: number): void {
   const s = intr.setari, prim = k === 1;
   const vf = (c: Cale): number => Math.max(Math.min(s.vitezaMinima, viteza(c, st.h, prim, s)), viteza(c, st.h, prim, s) * factor);
+  // Fusta, înaintea a orice altceva (ca OrcaSlicer), pe straturile ei; după primul strat, cu `oBuclaDupa`, doar bucla dinăuntru.
+  const fusta = intr.fusta ?? [];
+  if (fusta.length > 0 && (s.scut || k <= s.inaltimeFusta)) {
+    (prim || !s.oBuclaDupa ? fusta : fusta.slice(-1)).forEach((c, j) => {
+      const L = Math.hypot(c.p[0]! - w.x, c.p[1]! - w.y);
+      w.mergi(c.p[0]!, c.p[1]!, j === 0 || L >= K1C.deplasareFaraRetragere, st.z);
+      w.extrudeaza(c, st.h, vf(c), rol('fusta', prim, s).a);
+    });
+  }
   if (prim) {
     // Brim-ul grupului, de la bucla cea mai depărtată spre piese: între bucle alăturate (~0,46 mm), fără retragere.
     intr.brim.forEach((c, j) => {
@@ -294,7 +367,21 @@ function scrieStrat(w: Scriitor, st: PlanStrat, k: number, intr: IntrareGcode, f
     w.scrie(`; printing object ${nume}`);
     w.scrie(`EXCLUDE_OBJECT_START NAME=${nume}`);
     let prima = true;
-    for (const c of cai) {
+    // Cusătura care depinde de duză (cea mai apropiată) sau de strat (aleatoare): aleasă când se ajunge la primul perete al
+    // grupului, pe bucla lui exterioară; pereții dinăuntru pornesc din proiecția ei (decalați, dacă e cerut).
+    const dinamica = s.cusatura === 'nearest' || s.cusatura === 'random';
+    const cusaturi = new Map<number, { x: number; y: number; i: number }>();
+    for (const c0 of cai) {
+      let c = c0;
+      if (dinamica && c.grup !== undefined) {
+        let S = cusaturi.get(c.grup);
+        if (!S) {
+          const r = cai.find((x) => x.grup === c.grup && x.adancime === 0) ?? c;
+          if (s.cusatura === 'nearest') { const i = cusaturaApropiata(r.p, r.gaura ?? false, w.x, w.y); S = { x: r.p[2 * i]!, y: r.p[2 * i + 1]!, i }; } else S = cusaturaAleatoare(r.p, st.z);
+          cusaturi.set(c.grup, S);
+        }
+        c = cuCusatura(c, c.adancime === 0 ? S : { x: S.x, y: S.y }, s.cusaturiDecalate);
+      }
       const x = c.p[0]!, y = c.p[1]!;
       const L = Math.hypot(x - w.x, y - w.y);
       const retrage = L >= K1C.deplasareFaraRetragere && (prima || iesePeste(w.x, w.y, x, y, sab.contur));
@@ -366,7 +453,7 @@ export function scrieGcode(intr: IntrareGcode): IesireGcode {
     // Stratul, întâi la viteza plină (o probă, nescrisă); dacă e mai scurt decât `stratMinim`, din nou, încetinit.
     const timpLa = (factor: number): number => {
       const proba = new Scriitor(s);
-      Object.assign(proba, { x: w.x, y: w.y, z: w.z, f: w.f, a: w.a, retras: w.retras });
+      Object.assign(proba, { x: w.x, y: w.y, z: w.z, f: w.f, a: w.a, retras: w.retras, sterge: w.sterge, vUltim: w.vUltim });
       scrieStrat(proba, st, k, intr, factor);
       return proba.t;
     };
@@ -404,11 +491,22 @@ export function scrieGcode(intr: IntrareGcode): IesireGcode {
     `; filament_density = ${mt.densitate}`, `; filament_flow_ratio = ${s.debit}`, `; filament_max_volumetric_speed = ${s.volumMax}`,
     `; layer_height = ${s.strat}`, `; initial_layer_print_height = ${s.strat1}`, `; wall_loops = ${s.pereti}`,
     `; top_shell_layers = ${s.sus}`, `; top_shell_thickness = ${s.susMinim}`, `; bottom_shell_layers = ${s.jos}`,
-    `; sparse_infill_density = ${Math.round(s.umplere * 100)}%`, '; sparse_infill_pattern = grid',
+    `; sparse_infill_density = ${Math.round(s.umplere * 100)}%`, `; sparse_infill_pattern = ${s.modelRar}`,
     `; nozzle_temperature_initial_layer = ${s.duza1}`, `; nozzle_temperature = ${s.duza}`,
     `; hot_plate_temp_initial_layer = ${s.pat1}`, `; hot_plate_temp = ${s.pat}`,
     `; brim_type = ${s.brim === 'nu' ? 'no_brim' : s.brim === 'da' ? 'outer_only' : 'auto_brim'}`, `; brim_width = ${s.latimeBrim}`,
     `; elefant_foot_compensation = ${s.piciorElefant}`, `; retraction_length = ${s.retragere}`, `; z_hop = ${s.ridicare}`,
+    `; infill_direction = ${s.unghiRar}`, `; solid_infill_direction = ${s.unghiPlin}`, `; internal_solid_infill_pattern = ${s.modelPlin}`,
+    `; top_surface_pattern = ${s.modelSus}`, `; bottom_surface_pattern = ${s.modelJos}`,
+    `; seam_position = ${s.cusatura}`, `; staggered_inner_seams = ${s.cusaturiDecalate ? 1 : 0}`, `; seam_gap = ${Number(s.golCusatura.toFixed(4))}`,
+    `; wipe = ${s.stergere ? 1 : 0}`, `; wipe_distance = ${s.distantaStergere}`, `; retract_before_wipe = ${Math.round(s.retragereInainte * 100)}%`,
+    `; role_based_wipe_speed = ${s.stergereDupaRol ? 1 : 0}`, `; wipe_speed = ${Math.round(s.vStergere * 100)}%`,
+    `; ironing_type = ${({ nu: 'no ironing', sus: 'top', ultima: 'topmost', plin: 'solid' } as const)[s.calcare]}`,
+    `; ironing_pattern = ${s.modelCalcare}`, `; ironing_flow = ${Math.round(s.debitCalcare * 100)}%`, `; ironing_spacing = ${s.pasCalcare}`,
+    `; ironing_speed = ${s.vCalcare}`, `; ironing_inset = ${s.margineCalcare}`, `; ironing_angle = ${s.unghiCalcare}`,
+    `; skirt_loops = ${s.fusta}`, `; skirt_distance = ${s.distantaFusta}`, `; skirt_height = ${s.inaltimeFusta}`, `; skirt_speed = ${s.vFusta}`,
+    `; skirt_type = ${s.tipFusta === 'combinata' ? 'combined' : 'perobject'}`, `; min_skirt_length = ${s.lungimeMinimaFusta}`,
+    `; draft_shield = ${s.scut ? 'enabled' : 'disabled'}`, `; skirt_start_angle = ${s.unghiFusta}`, `; single_loop_draft_shield = ${s.oBuclaDupa ? 1 : 0}`,
     '; CONFIG_BLOCK_END', '',
   ];
   return {

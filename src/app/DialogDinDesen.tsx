@@ -16,7 +16,7 @@ import { limba, t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
 import { CAMPURI_AVANSATE, cuCalitate, cuMaterial, cuTemperatura, type CampAvansat } from '../cam/feliere/campuri.ts';
 import {
-  CALITATI, feliaza, K1C, LIMITE, material, MATERIALE, numeFisier, pieseDinDocument, puncte, setariImplicite, setariValide, timpText,
+  CALITATI, citesteFel, feliaza, K1C, LIMITE, material, MATERIALE, numeFisier, pieseDinDocument, puncte, setariImplicite, setariValide, timpText,
   type Brim, type Cale, type Miniatura, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
 } from '../cam/feliere/index.ts';
 
@@ -88,6 +88,7 @@ function miniaturi(piese: readonly PiesaPlata[]): Miniatura[] {
 
 const CULORI: Readonly<Record<string, string>> = {
   exterior: '--imp-rol-exterior', interior: '--imp-rol-interior', plin: '--imp-rol-plin', sus: '--imp-rol-sus', rar: '--imp-rol-rar', brim: '--imp-rol-brim',
+  calcare: '--imp-rol-calcare', fusta: '--imp-rol-fusta',
 };
 
 /**
@@ -248,6 +249,7 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
       case 'nimic': avert.push(t('imprimanta.felie.nimic', { piesa: a.piesa })); break;
       case 'eroare': avert.push(t('imprimanta.felie.eroare', { piesa: a.piesa, motiv: a.motiv })); break;
       case 'brim': avert.push(t('imprimanta.felie.brim-eroare', { motiv: a.motiv })); break;
+      case 'fusta': avert.push(t('imprimanta.felie.fusta-eroare', { motiv: a.motiv })); break;
       case 'iese': avert.push(t('imprimanta.felie.iese', { x0: numar(a.x0, 1), x1: numar(a.x1, 1), y0: numar(a.y0, 1), y1: numar(a.y1, 1), a: 5, b: pat[0] - 5 })); break;
       case 'prea-inalta': avert.push(t('imprimanta.felie.prea-inalta', { z: pat[2], h: numar(a.z) })); break;
     }
@@ -256,11 +258,14 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
   const strat = n === 0 ? 1 : alesStrat === 0 ? Math.ceil(n / 2) : Math.min(alesStrat, n);
   const hReal = n === 0 ? 0 : s.strat1 + (n - 1) * s.strat;
   const fel = g?.plan[strat - 1]?.piese[0]?.fel;
-  const unghi = fel?.endsWith('135') ? '135' : '45';
-  const textFel = fel === undefined ? ''
-    : fel === 'prim' ? t('imprimanta.felie.fel.prim')
-      : fel === 'rar' ? t('imprimanta.felie.fel.rar')
-        : t(fel.startsWith('sus') ? 'imprimanta.felie.fel.sus' : 'imprimanta.felie.fel.plin', { unghi });
+  // Felul stratului ales: rolul, modelul (cu numele lui din listă) și unghiul.
+  const cf = fel === undefined ? null : citesteFel(fel);
+  const unghi = cf ? String(cf.u % 180) : '';
+  const textFel = cf === null ? ''
+    : cf.tip === 'prim' ? t('imprimanta.felie.fel.prim', { model: t(`imprimanta.felie.o.${s.modelJos}`) })
+      : cf.tip === 'rar' ? t('imprimanta.felie.fel.rar', { model: t(`imprimanta.felie.o.${s.modelRar}`) })
+        : cf.tip === 'sus' ? t('imprimanta.felie.fel.sus', { model: t(`imprimanta.felie.o.${s.modelSus}`), unghi })
+          : t('imprimanta.felie.fel.plin', { model: t(`imprimanta.felie.o.${s.modelPlin}`), unghi });
   const numeBaza = alese.piese.length === 1 ? alese.piese[0]!.eticheta : (foaie?.nume ?? 'cvs2');
   const fisier = (): File | null => (g === null ? null : new File([g.text], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' }));
   const salveaza = (): void => {
@@ -331,6 +336,24 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
                 <fieldset key={gr.grup}>
                   <legend>{t(`imprimanta.felie.g.${gr.grup}`)}</legend>
                   {gr.campuri.map((c: CampAvansat) => {
+                    // O listă (modelele, cusătura, călcarea, felul fustei) sau o bifă; altfel, un număr.
+                    if (c.optiuni) {
+                      return (
+                        <label key={c.k} className="imprimanta-camp"><span>{t(`imprimanta.felie.c.${c.k}`)}</span>
+                          <select id={`felie-${c.k}`} data-felie={c.k} value={s[c.k] as string} onChange={(e) => { seteaza(c.k, e.target.value); }}>
+                            {c.optiuni.map((o) => <option key={o} value={o}>{t(`imprimanta.felie.o.${o}`)}</option>)}
+                          </select>
+                        </label>
+                      );
+                    }
+                    if (c.bifa) {
+                      return (
+                        <label key={c.k} className="imprimanta-camp imprimanta-camp-bifa">
+                          <input id={`felie-${c.k}`} data-felie={c.k} type="checkbox" checked={s[c.k] as boolean} onChange={(e) => { seteaza(c.k, e.target.checked); }} />
+                          <span>{t(`imprimanta.felie.c.${c.k}`)}</span>
+                        </label>
+                      );
+                    }
                     const l = lim(c.k);
                     return (
                       <CampNumar key={c.k} id={`felie-${c.k}`} eticheta={t(`imprimanta.felie.c.${c.k}`)} unitate={c.unitate} pas={c.pas}
@@ -357,7 +380,7 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
                 {t('imprimanta.felie.z', { z: numar(s.strat1 + (strat - 1) * s.strat) })} · {textFel}
               </p>
               <ul className="imprimanta-felie-legenda" aria-label={t('imprimanta.felie.legenda')}>
-                {(['exterior', 'interior', 'plin', 'sus', 'rar', 'brim'] as const).map((r) => (
+                {(['exterior', 'interior', 'plin', 'sus', 'rar', 'brim', 'calcare', 'fusta'] as const).map((r) => (
                   <li key={r}><i style={{ background: `var(${CULORI[r]})` }} />{t(`imprimanta.felie.rol.${r}`)}</li>
                 ))}
                 <li><label><input type="checkbox" data-imprimanta="felie-deplasari" checked={deplasari} onChange={(e) => { setDeplasari(e.target.checked); }} />

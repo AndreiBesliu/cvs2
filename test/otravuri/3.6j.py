@@ -12,6 +12,7 @@ def o(id, fis, vechi, nou, set, ce):
 
 
 PR = 'src/cam/feliere/profil.ts'
+LI = 'src/cam/feliere/linii.ts'
 GC = 'src/cam/feliere/gcode.ts'
 ST = 'src/cam/feliere/straturi.ts'
 PI = 'src/cam/feliere/piese.ts'
@@ -34,14 +35,14 @@ o('F07', ST, 'const r = pereti1(h, s.wPrim, s.wPrim, s.piciorElefant);', 'const 
 o('F08', ST, 'regiuniLa(pr.adanc[i]! - suprapunere * w)', 'regiuniLa(pr.adanc[i]!)', 'feliere',
   'umplerea nu se suprapune peste pereți: nu se leagă de ei')
 o('F09', ST, 'if (p[i + 1]! > p[k + 1]! + 1e-9 ||', 'if (false ||', 'feliere', 'cusătura nealiniată (bucla începe oriunde)')
-o('F10', ST, 'if (Math.abs(start - capat) > legaturaMax) {', 'if (false) {', 'feliere',
+o('F10', LI, 'if (Math.abs(start - capat) > legaturaMax) {', 'if (false) {', 'feliere',
   'grila rară își leagă liniile cu bucăți lungi, extrudate peste piesă')
 o('F11', GC, 'if (t > 1e-9 && t < 1 - 1e-9 && u >= 0 && u <= 1) return true;', '', 'feliere',
   'o deplasare care iese din piesă nu se mai vede: fără retragere, fire')
 o('F12', GC, '  if (k <= s.ventOprit) return 0;\n', '', 'feliere', 'ventilatorul pornit din primul strat (lipirea de pat)')
 o('F13', GC, 'const vAux = k <= s.ventOprit ? 0 : s.ventAux;', 'const vAux = s.ventAux;', 'feliere',
   'ventilatorul auxiliar pornit din primul strat')
-o('F14', GC, 'Math.min(rol(c.rol, prim, s).v, s.volumMax / sectiune(c.w, h))', 'rol(c.rol, prim, s).v', 'feliere',
+o('F14', GC, 'Math.min(rol(c.rol, prim, s).v, s.volumMax / (c.mm3 ?? sectiune(c.w, h)))', 'rol(c.rol, prim, s).v', 'feliere',
   'fără plafonul de debit: duza nu ține pasul, sub-extrudare')
 o('F15', GC, 'if (timpLa(mij) >= s.stratMinim) lo = mij; else hi = mij;', 'if (timpLa(mij) >= s.stratMinim) hi = mij; else lo = mij;',
   'feliere', 'încetinirea pentru răcire, întoarsă')
@@ -52,7 +53,7 @@ o('F18', GC, 'START_PRINT EXTRUDER_TEMP=${s.duza1} BED_TEMP=${s.pat1}', 'START_P
   'feliere', 'temperatura primului strat ignorată la pornire (PC: 280 în loc de 270)')
 o('F19', GC, '      if (s.duza !== s.duza1) w.scrie(`M104 S${s.duza}`);\n', '', 'feliere',
   'temperatura de după primul strat nu se mai pune')
-o('F20', GC, 'const r = (ultima - GOL_CUSATURA) / ultima;', 'const r = 1;', 'feliere', 'fără golul cusăturii (bucla se închide peste ea)')
+o('F20', GC, 'const r = (ultima - gol) / ultima;', 'const r = 1;', 'feliere', 'fără golul cusăturii (bucla se închide peste ea)')
 o('F21', ST, 'Math.round(s.latimeBrim / p)', 'Math.floor(s.latimeBrim / p)', 'feliere', 'brim-ul cu o buclă mai puțin')
 o('F22', IX, 'return ingust < 10 || p.inaltime > 1.5 * ingust;', 'return p.inaltime > 1.5 * ingust;', 'feliere',
   'brim-ul automat uită piesele înguste')
@@ -95,7 +96,9 @@ o('R09', GC, '  // profilele K1).\n  return 0;', '  // profilele K1).\n  return 
   'ventilatorul rămâne pornit pe straturile lungi (OrcaSlicer îl oprește)')
 o('R10', GC, 'if (k > 1) { w.retrage(); w.zLa(st.z); }', 'w.retrage(); w.zLa(st.z);', 'feliere',
   'duza coboară la primul strat pe loc, la capătul liniei de curățare')
-o('R11', GC, 'j === 0 || L >= K1C.deplasareFaraRetragere', 'true', 'feliere', 'retragere între fiecare două bucle de brim')
+o('R11', GC, "w.mergi(c.p[0]!, c.p[1]!, j === 0 || L >= K1C.deplasareFaraRetragere, st.z);\n      w.extrudeaza(c, st.h, vf(c), rol('brim', true, s).a);",
+  "w.mergi(c.p[0]!, c.p[1]!, true, st.z);\n      w.extrudeaza(c, st.h, vf(c), rol('brim', true, s).a);", 'feliere',
+  'retragere între fiecare două bucle de brim')
 o('R12', CA, 'duza1: v + (m.duza1 - m.duza)', 'duza1: m.duza1', 'feliere', 'duza din Simplu nu ajunge pe primul strat')
 o('R13', CA, '...preia(setariImplicite(id, s.calitate), DIN_MATERIAL), material: id', 'material: id', 'feliere',
   'materialul nou nu-și aduce temperaturile și debitul')

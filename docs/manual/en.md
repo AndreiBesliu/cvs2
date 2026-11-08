@@ -1105,7 +1105,7 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
     each side) is said.
   - **Height** (by default, the sheet thickness), **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
     ASA, PC, PA-CF, TPU, with the values of the Creality K1 profiles in OrcaSlicer), **Quality** (0.08, 0.12, 0.16, 0.20 or
-    0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage, as a grid)
+    0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage)
     and **Brim** (Automatic: for narrow or tall parts; Yes; No).
   - **Advanced** shows the other settings, in groups. Layers: Layer height, First layer height, Top layers, Top thickness at
     least, Bottom layers. First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
@@ -1116,10 +1116,28 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
     off for the first layers; Auxiliary fan; Minimum layer time (a shorter layer prints slower, so it can cool); Slowest
     cooling speed. Material flow: Flow ratio, Maximum volumetric speed (speeds are capped so the material fits through the
     nozzle). Edges: Elephant foot compensation (the first layer, shrunk a little), Sparse infill overlap on walls, Solid infill
-    overlap on walls, Brim width, Brim gap. **Profile values** puts back those of the chosen material and quality. The chosen
-    settings are kept in the browser, for next time.
+    overlap on walls, Brim width, Brim gap. Infill patterns: Sparse infill pattern (Grid, the default; Rectilinear, turned
+    by 90° from one layer to the next; Aligned rectilinear; Line, every other line slightly slanted; Triangles; Tri-hexagon;
+    Cubic, Cross hatch and Gyroid, which change with height, as a 3D infill; Honeycomb; Concentric; Hilbert curve;
+    Archimedean chords; Octagram spiral; at 0.12 mm the profile starts with Cross hatch), Sparse infill direction, Internal
+    solid infill pattern, Top surface pattern and Bottom surface pattern (Monotonic line, the top default; Monotonic, the
+    bottom and internal default: the lines always in the same order, for an even face; Rectilinear; Aligned rectilinear;
+    Concentric; Hilbert curve; Archimedean chords; Octagram spiral), Solid infill direction. Wipe: Wipe while retracting (on
+    in the K1C profile: before a travel, the nozzle moves a little along the line it just made, so it leaves no blob), Wipe
+    distance, Retract amount before wipe (the rest of the retraction happens on the way), Role-based wipe speed (at the
+    speed of the last line), Wipe speed, of travel speed. Seam: Seam position (Aligned, the default: in the most hidden
+    corner, the same on every layer; Aligned back; Back; Nearest, to the nozzle; Random), Staggered inner seams (each inner
+    wall starts a little further along, so the seams do not stack), Seam gap. Ironing: Ironing type (No ironing, the
+    default; All top surfaces; Topmost surface only; All solid layers): one extra pass with a small flow over the face, to
+    smooth it; Ironing pattern (Rectilinear, Concentric), Ironing flow, Ironing line spacing, Ironing speed, Ironing inset
+    (0: half a nozzle), Ironing angle offset (from the lines of the face). Skirt: Skirt loops (0: no skirt, the default),
+    Skirt distance (from the parts or the brim), Skirt height, Skirt speed, Skirt type (Combined; Per object), Skirt minimum
+    extrusion length (loops are added until they reach it), Draft shield (the skirt as tall as the parts, against drafts,
+    for ABS or ASA), Skirt start point (the angle, from the centre of the parts), Single loop after first layer. The skirt
+    is printed first, on the first layer: it primes the nozzle and shows whether the bed is level. **Profile values** puts
+    back those of the chosen material and quality. The chosen settings are kept in the browser, for next time.
   - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
-    surface, sparse infill, brim) over the part outline, thin and red: where only the red shows, the part is narrower than one
+    surface, sparse infill, brim, ironing, skirt) over the part outline, thin and red: where only the red shows, the part is narrower than one
     line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role,
     then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
     also shows, dotted, the nozzle’s paths between lines.

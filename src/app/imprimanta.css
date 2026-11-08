@@ -353,6 +353,13 @@
   gap: 4px;
 }
 
+/* O bifă din „Avansat” (felia 3.6k): căsuța înaintea etichetei, pe același rând. */
+.imprimanta-camp-bifa {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 .imprimanta-pasi {
   margin: 0;
   padding-left: 1.2em;
@@ -438,6 +445,8 @@
   --imp-rol-sus: #ff6b6b;
   --imp-rol-rar: #4fd1c5;
   --imp-rol-brim: #8fb8ff;
+  --imp-rol-calcare: #7cf29c;
+  --imp-rol-fusta: #c9ced6;
   --imp-rol-subtire: #ff3b30;
   --imp-deplasare: #9aa3ad;
 }

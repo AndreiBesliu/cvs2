@@ -6791,3 +6791,9 @@ căzute, din CI).
   „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
   și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
 - **Rămâne:** unirea în `main`, la cuvântul owner-ului.
+
+## 2026-11-08 — 3.6k: piesele plate, setările avansate mai departe (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6k” (owner-ul, la „Încep 3.6k (alte modele de umplere, cusătura, ștergerea, călcarea, fusta) sau aștept
+întâi proba plăcii?”).
+**Started:** 08.11, 08:59. **Completed:** —
