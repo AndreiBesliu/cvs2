@@ -858,6 +858,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **ancora și tastele transformării: răspunsurile la ADR 0240** („Ok la toate”, la „Accepți recomandările la cele
+  4 întrebări din ADR 0240?”, în sesiunea liniei): ancora e a selecției de acum (unul din cele 9 puncte ale cutiei, ales în
+  bara Transformării și ținut în browser, sau trasă de mână), nu se ține în proiect, deci documentul rămâne v20; la mânere și
+  la desen, Alt e „față de ancoră” / „din centru”, iar lipirea urmează acolo butonul Lipire, comutat și cu Shift+L (Alt rămâne
+  „lipirea invers” la mutare, ghidaje, ancoră, Noduri și Pen); cu Shift și Ctrl ținute împreună câștigă Shift; feliile 6.V↑,
+  6.V↑b și 6.V↑c acum, 6.V↑d (opțiunile) după decizia owner-ului pe plafon, când se unesc liniile.
 - 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
   ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
   hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar

@@ -6878,3 +6878,13 @@ Inkscape; ADR 0051–0055, 0065, 0078, 0102, 0138; `Editare.tsx` și `src/geom/`
   roadmap-ului (679 de texte, 0 lipsă). `documentatie.test.ts` cerea toate feliile etapei 6 „gata”: acum le cere gata afară
   de cele numite, adică 6.V↑, în lucru. Probele documentației, traducerilor, manualului și pașilor testului: 55 / 55;
   generatorul documentației din build: 187 de fișiere, ADR 0240 în catalog și în roadmap.
+
+## 2026-11-08 — 6.V↑, 6.V↑b, 6.V↑c: tastele la mânere și la desen, ancora, arcele (ADR 0240) (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok la toate” (la „Accepți recomandările la cele 4 întrebări din ADR 0240?”), deci 1a–4a: ancora neținută în
+proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift câștigă peste Ctrl, feliile 6.V↑–6.V↑c acum.
+**Started:** 08.11, 12:21. **Completed:** —
+
+- **Răspunsurile:** ADR 0240 acceptat (starea și secțiunea „Răspunsurile owner-ului”), indexul ADR, fișa (rândul cozii
+  owner-ului scos, rândul 6.V↑ cu răspunsul), decizia în CLAUDE.md. `origin/main` (`6c79ff9`) adus în ramură (`ff0693d`;
+  DEVLOG-ul cu ambele intrări, în ordinea lor).

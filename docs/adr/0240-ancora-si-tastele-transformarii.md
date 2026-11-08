@@ -1,7 +1,8 @@
 # ADR 0240 — Ancora și tastele transformării: Shift, Ctrl și Alt la mânere și la desen
 
-**Starea:** propus pe 08.11.2026, cu patru întrebări pentru owner, în worktree-ul `ancore` (ramura `wip/6.V-ancore`, din
-`main` `b56f0e1`). Cererea owner-ului, exactă: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori. si
+**Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), cu răspunsul owner-ului la cele patru întrebări: „Ok la toate”,
+deci recomandările 1a–4a (secțiunea „Răspunsurile owner-ului”, la capăt). Lucrat în worktree-ul `ancore` (ramura
+`wip/6.V-ancore`, din `main` `b56f0e1`). Cererea owner-ului, exactă: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori. si
 o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta. de exemplu, daca
 vreau sa deformez un cerc si sa il fac elipsa coltul pastreaza proportia cercului, dar lateralele nu, eu vreau sa pot apasa
 SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar fi, si pe ALT, chiar si in combinatie cu
@@ -251,6 +252,15 @@ ar lua singură linia asta. Textele noi stau în dicționarele modulelor (date, 
    trepte întregi (×2, ×3, ½, ⅓), ca Ctrl în CorelDRAW și Alt în Inkscape.
 4. **Bugetul:** a) 6.V↑, 6.V↑b și 6.V↑c acum (~3,5 kB), iar 6.V↑d după decizia ta pe plafon, când se unesc liniile
    (recomandat); b) toate patru acum (~5 kB), cu plafonul ridicat printr-un ADR nou.
+
+## Răspunsurile owner-ului (08.11)
+
+„Ok la toate” (la „Accepți recomandările la cele 4 întrebări din ADR 0240?”), deci recomandările:
+1. „1a”: ancora e a selecției de acum, cu punctul de pornire ținut în browser; documentul rămâne v20;
+2. „2a”: la mânere și la desen, lipirea urmează butonul Lipire, comutat și cu Shift+L; Alt rămâne „lipirea invers” la
+   mutare, ghidaje, ancoră, Noduri și Pen;
+3. „3a”: cu Shift și Ctrl ținute împreună, câștigă Shift (proporția);
+4. „4a”: 6.V↑, 6.V↑b și 6.V↑c acum; 6.V↑d după decizia owner-ului pe plafon, când se unesc liniile.
 
 ## Ce am respins
 
