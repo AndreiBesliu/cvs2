@@ -801,7 +801,8 @@ The inlay's values, under Depth and Step down in the panel and on its row in the
 - **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank (with the band, beyond the band
   and its groove).
 
-**Wood around the plug**, chosen on the inlay's row in the export window:
+**Wood around the plug**, chosen in the panel's **Cutting** section (for all the selected shapes) or on the inlay's row
+in the export window; the band values are chosen in the window:
 
 - **whole face lowered** (default): the straight bit lowers the whole face of the plug blank, past its edges, so the blank is
   held without edge clamps (with double-sided tape, for example), and its back is cut off after gluing;
@@ -824,7 +825,7 @@ The inlay's values, under Depth and Step down in the panel and on its row in the
 how much the walls touch from the outline (S · tan(θ/2)), the gap under the plug, the space between the boards, how much of
 the bit's cone the pocket and the plug use, and the smallest thickness of the plug blank (S + H + 1 mm). For example, with a
 V60 Ø6, depth 3, glue gap 0.5 and saw gap 2: the plug goes in 2.5 mm, the walls touch over 1.44 mm, the plug is carved down
-to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick. With the band, it also shows its width (and the
+to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick. With the band (as soon as you choose it, before the first export too), it also shows its width (and the
 narrowest), the blank in plan (the drawing's box plus the band, the groove at the face and the margin, on each side) and the
 cut-out: the board and the tabs, or where you cut by hand. In the example, with a Ø6 flat floor, the band is at least 9.31 mm,
 and the blank is the drawing's box plus 15.75 mm on each side.

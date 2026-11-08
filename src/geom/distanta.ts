@@ -21,11 +21,19 @@ export function peArc(u: number, start: number, baleiaj: number): boolean {
   return rel <= Math.abs(baleiaj);
 }
 
-function distantaLaArc(p: Punct, a: Punct, b: Punct, bulge: number): number {
-  const { centru, raza, start, baleiaj } = cerculArcului(a, b, bulge);
+/** Cercul unui arc (`cerculArcului`): indexurile contururilor îl calculează o dată pe segment, nu la fiecare punct. */
+export type CercArc = ReturnType<typeof cerculArcului>;
+
+/** Distanța de la p la arcul de la a la b, cu cercul lui deja calculat (aceleași operații ca din bulge). */
+export function distantaLaArcCerc(p: Punct, a: Punct, b: Punct, cerc: CercArc): number {
+  const { centru, raza, start, baleiaj } = cerc;
   const u = Math.atan2(p.y - centru.y, p.x - centru.x);
   if (peArc(u, start, baleiaj)) return Math.abs(Math.hypot(p.x - centru.x, p.y - centru.y) - raza);
   return Math.min(Math.hypot(p.x - a.x, p.y - a.y), Math.hypot(p.x - b.x, p.y - b.y));
+}
+
+function distantaLaArc(p: Punct, a: Punct, b: Punct, bulge: number): number {
+  return distantaLaArcCerc(p, a, b, cerculArcului(a, b, bulge));
 }
 
 type Cubica = { readonly a: Punct; readonly c1: Punct; readonly c2: Punct; readonly b: Punct };
@@ -164,18 +172,19 @@ export const RIDICARE_RAZA = 1e-9;
 /** Câte ori taie segmentul de la a la b raza orizontală de înălțime y (deja ridicată) spre +x din p. */
 export function traversariSegment(p: Punct, y: number, a: Punct, b: Punct, s: Segment): number {
   if (s.tip === 'L') return (a.y > y) !== (b.y > y) && p.x < a.x + ((y - a.y) * (b.x - a.x)) / (b.y - a.y) ? 1 : 0;
-  if (s.tip === 'A') {
-    const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
-    const h = y - centru.y;
-    if (Math.abs(h) >= raza) return 0;
-    const w = Math.sqrt(raza * raza - h * h);
-    let n = 0;
-    for (const x of [centru.x - w, centru.x + w]) {
-      if (x > p.x && peArc(Math.atan2(h, x - centru.x), start, baleiaj)) n++;
-    }
-    return n;
-  }
+  if (s.tip === 'A') return traversariArc(p, y, cerculArcului(a, b, s.bulge));
   return traversariCubica(p, y, { a, c1: s.c1, c2: s.c2, b });
+}
+
+/** Câte ori taie un arc, cu cercul lui deja calculat, raza orizontală de înălțime y (deja ridicată) spre +x din p. */
+export function traversariArc(p: Punct, y: number, cerc: CercArc): number {
+  const { centru, raza, start, baleiaj } = cerc;
+  const h = y - centru.y;
+  if (Math.abs(h) >= raza) return 0;
+  const w = Math.sqrt(raza * raza - h * h);
+  const x0 = centru.x - w, x1 = centru.x + w;
+  return (x0 > p.x && peArc(Math.atan2(h, x0 - centru.x), start, baleiaj) ? 1 : 0)
+    + (x1 > p.x && peArc(Math.atan2(h, x1 - centru.x), start, baleiaj) ? 1 : 0);
 }
 
 function traversari(p: Punct, c: Contur): number {

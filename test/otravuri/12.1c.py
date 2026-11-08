@@ -105,8 +105,8 @@ o('E05', DLG, '&& (placaScrisa === null || v?.placaMinima == null || placaScrisa
 o('E06', DLG, "p.jurDop !== 'banda' || Object.values(bandaBuna(p)).every(Boolean)),", "p.jurDop !== 'banda' || true),", 'e2e', 'Exportă pornit cu banda greșită')
 o('E07', DLG, '    if (nb !== null && db !== null) adaugaFreza(nb, db, null);', '', 'e2e', 'freza decupării în afara verificării T-urilor')
 o('E08', DLG, 'decupareBanda: banda?.decupare ?? true,', 'decupareBanda: banda?.decupare ?? false,', 'e2e', 'decuparea implicită scoasă')
-o('E09', DLG, '? { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) } : null;', '? { joc, fierastrau, margine, jurDop: p.jurDop } : null;', 'e2e',
-  'fereastra nu scrie banda')
+o('E09', DLG, '  return { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) };', '  return { joc, fierastrau, margine, jurDop: p.jurDop };', 'e2e',
+  'fereastra nu scrie banda (după unire, în `incrustatieVRand`)')
 o('E10', DLG, "const placa = p.placaBanda.trim() === '' || !ok.placa ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);",
   "const placa = p.placaBanda.trim() === '' || !ok.placa ? 6 : citesteNumar(p.placaBanda);", 'e2e', 'placa goală scrisă altfel decât S + H + 1')
 o('E11', DLG, "schimba(o.cheie, { jurDop: ev.target.value === 'banda' ? 'banda' : 'fata' });", "schimba(o.cheie, { jurDop: 'fata' });", 'e2e',

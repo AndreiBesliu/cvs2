@@ -104,13 +104,13 @@ o('E02', APP, '        for (const d of dopuri) descarca(d.octeti, d.nume);', '',
 o('E03', VAL, '      ...(incrustatie ? { incrustatie } : {}),', '', 'e2e', 'Exportă scoate incrustația din proiect')
 o('E04', VAL, "  const vechi: Record<string, unknown> = { ...(o?.fel === 'v' ? o : {}) };", '  const vechi: Record<string, unknown> = {};', 'dialog',
   'un câmp necunoscut al incrustației pierdut la Exportă')
-o('E05', DLG, '      const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc),',
-  '      const joc = citesteNumar(p.jocInc), fierastrau = citesteNumar(p.fierastrauInc),', 'e2e', '„Același spațiu” bifat nu scrie jocul ca fierăstrău')
+o('E05', DLG, '  const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc),',
+  '  const joc = citesteNumar(p.jocInc), fierastrau = citesteNumar(p.fierastrauInc),', 'e2e', '„Același spațiu” bifat nu scrie jocul ca fierăstrău (după unire, în `incrustatieVRand`)')
 o('E06', DLG, "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true, fundPlat: true }", "v === 'incrustatie' ? { ...fara, tip: 'vcarve', incrustatie: true }",
   'e2e', 'incrustația aleasă în fereastră fără fundul plat')
 o('E07', PAN, '(o.incrustatie ? { ...o, incrustatie: { ...o.incrustatie, ...v } } : o)', '(o)', 'e2e', 'panoul nu scrie jocurile')
-o('E08', ARB, "              {o.tip === 'vcarve' && o.incrustatie?.fel === 'v' && t('arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}", '', 'e2e',
-  'arborele nu spune incrustația')
+o('E08', ARB, "              {o.tip === 'vcarve' && o.incrustatie?.fel === 'v'\n                && t(o.incrustatie.jurDop === 'banda' ? 'arbore.vcarve.incrustatie-banda' : 'arbore.vcarve.incrustatie', { joc: n(o.incrustatie.joc) })}", '', 'e2e',
+  'arborele nu spune incrustația (după unire, pe două rânduri, cu banda)')
 
 SETURI = {
     'inc': ['test/unit/incrustatie.potrivire.test.ts', 'test/unit/vcarve.start.test.ts', 'test/unit/incrustatie.refuzuri.test.ts'],
