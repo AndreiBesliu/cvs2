@@ -88,6 +88,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Încercarea benzii dopului în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑c unită în `main` și publicată pe 08.11): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci | 12.1↑c pe test și fișa plăcii 12 | când vrei |
 | O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11) | 3.S pe live (acolo primirea e oprită până atunci) | înainte să pornim primirea pe live |
 | Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune | 10.3↑ | acum |
+| Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite” | 6.V↑–6.V↑c pe test | când vrei |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 

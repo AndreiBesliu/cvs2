@@ -1513,6 +1513,10 @@
       "ro": "Meniul contului",
       "en": "The account menu"
     },
+    "8b9181a019633638": {
+      "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”",
+      "en": "Trying the transform anchor and keys on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c merged into `main` and published on 08.11): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 10 “Handles”, 11 “Anchor” and 12 “Rounded corners”"
+    },
     "8b973fa451e18232": {
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
       "en": "**The sender over WiFi** (no machine; ADR 0119, accepted with the owner’s answers: streamed programs, the tablet later, the `ws:` scheme in the CSP). The **Connect (WiFi)** button in the machine panel links the sender to a controller on the local network through a WebSocket (FluidNC, grblHAL or an ESP3D bridge on GRBL), over the same stream: the address (a local IP or a `.local` name) is judged before connecting, with the local network permission of Chrome and Edge 147; the controller, the address and the port stay in the browser; before the first start over WiFi, the panel says what happens if the connection drops. The CSP gets the `ws:` scheme (without it, the browser blocked every WebSocket). On the way, at the owner’s request, the **Account** button moved next to the theme button. **The probes:** on paper (the addresses, the control messages, the transport, the session with a dropped connection) and end to end, with the GRBL emulator behind a local WebSocket server; targeted mutations, all caught."
@@ -1948,6 +1952,10 @@
     "b52896d7055ba085": {
       "ro": "Simularea",
       "en": "Simulation"
+    },
+    "b585e6ff16935d58": {
+      "ro": "6.V↑–6.V↑c pe test",
+      "en": "6.V↑–6.V↑c on test"
     },
     "b626a7057b287086": {
       "ro": "Tăierea și conversia vectorilor",

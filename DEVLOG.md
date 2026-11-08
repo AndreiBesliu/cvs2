@@ -7184,4 +7184,5 @@ sesiunea liniei.
 **Started:** 08.11, 18:17. **Completed:** —
 
 - **Pornirea:** ramura `wip/6.V-ancore` adusă la `origin/main` (`8714306`, fast-forward); rândul 6.V↑d în jurnalul fișei (în
-  lucru), iar rândul liniei din coada owner-ului a ieșit (unirea s-a făcut, 6.V↑d e decisă).
+  lucru), iar rândul liniei din coada owner-ului trimite acum la adresa principală de test (6.V↑–6.V↑c unite și publicate pe
+  08.11; 6.V↑d e decisă).
