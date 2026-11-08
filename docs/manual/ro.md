@@ -847,7 +847,8 @@ Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fe
 - **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului (cu banda, dincolo de
   ea și de șanțul ei).
 
-**Lemnul din jurul dopului**, ales pe rândul incrustației din fereastra exportului:
+**Lemnul din jurul dopului**, ales în secțiunea **Tăierea** a panoului (pentru toate formele alese) sau pe rândul
+incrustației din fereastra exportului; valorile benzii se aleg în fereastră:
 
 - **fața coborâtă toată** (implicit): freza dreaptă coboară toată fața semifabricatului dopului, până dincolo de margini, deci
   semifabricatul se prinde fără cleme pe margini (de exemplu cu bandă dublu adezivă), iar spatele lui se taie după lipire;
@@ -870,7 +871,7 @@ Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fe
 la contur (S · tan(θ/2)), jocul de sub dop, spațiul dintre plăci, cât din conul frezei folosesc locașul și dopul, și grosimea
 cea mai mică a semifabricatului dopului (S + H + 1 mm). De exemplu, cu V60 Ø6, adâncimea 3, jocul 0,5 și fierăstrăul 2: dopul
 intră 2,5 mm, pereții se ating pe 1,44 mm, dopul se sapă până la 4,5 mm din conul de 5,20 mm, iar semifabricatul are cel puțin
-5,5 mm. Cu banda, arată și lățimea ei (și pe cea mai mică), semifabricatul în plan (cutia desenului plus banda, șanțul de la
+5,5 mm. Cu banda (de îndată ce o alegi, și înainte de primul export), arată și lățimea ei (și pe cea mai mică), semifabricatul în plan (cutia desenului plus banda, șanțul de la
 față și marginea, pe fiecare parte) și decuparea: placa și punțile, sau unde tai de mână. În exemplu, cu fundul plat Ø6, banda
 are cel puțin 9,31 mm, iar semifabricatul, cutia desenului plus 15,75 mm pe fiecare parte.
 

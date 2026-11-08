@@ -133,8 +133,9 @@ function operatie(o: Operatie, n: number): ReactNode {
 export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
   useLimba();
   const roluriMele = useRoluriMele().roluri;
-  // Refuzul ultimului rol ales, pentru selecția de atunci.
+  // Refuzul ultimului rol ales, pentru selecția de atunci; la fel, al lemnului din jurul dopului ales.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const foaie = doc.foi[0];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
@@ -203,6 +204,15 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   const comunInc = (f: (i: Incrustatie) => number): number | null => comun((o) => (o.incrustatie ? f(o.incrustatie) : Number.NaN));
   const scrieIncrustatie = (v: { readonly joc?: number; readonly fierastrau?: number; readonly margine?: number; readonly jocLateral?: number }): RezultatActiune =>
     onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => (o.incrustatie ? { ...o, incrustatie: { ...o.incrustatie, ...v } } : o))])));
+  // Lemnul din jurul dopului în V (ADR 0172), ales și de aici (punctul 3 de după unirea lui 12.1↑c): fața coborâtă sau banda,
+  // pe toate incrustațiile în V alese. Banda scrisă rămâne în document (o întoarcere o găsește, iar Exportă o scoate pe fața
+  // coborâtă); fără ea, banda implicită. Cu valori diferite, lista arată „—”.
+  const jururi = operatiiAlese.map((o) => (o.incrustatie?.fel === 'v' ? o.incrustatie.jurDop : null));
+  const jurComun = incrustatii && jururi.every((j) => j === jururi[0]) ? jururi[0] ?? null : null;
+  const alegeJur = (jur: 'fata' | 'banda'): void => {
+    const rez = onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => (o.incrustatie?.fel === 'v' ? { ...o, incrustatie: { ...o.incrustatie, jurDop: jur } } : o))])));
+    setRefuzJur(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
+  };
   // Incrustația cu pereți drepți (ADR 0171 §5): la fel, jocul lateral, spațiul folosit (H pe fund și la decupat, g pe față) și
   // marginea; dopul, sprijinul și frezele lui se aleg în fereastra exportului (răspunsurile 1, 2 și 4).
   const dreptOp = (o: Operatie) => (o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' ? o.incrustatie : null);
@@ -291,6 +301,15 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
               (x) => scrieIncrustatie({ fierastrau: x })))}
             {incrustatii && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
               (x) => scrieIncrustatie({ margine: x })))}
+            {incrustatii && rand(t('prop.inc.jur'), (
+              <select key={`${cheie}/inc-jur`} value={jurComun ?? ''} data-camp="inc-jur" aria-label={t('prop.inc.jur')} disabled={doarCitire}
+                {...(oprit ? { title: oprit } : {})}
+                onChange={(ev) => { if (ev.target.value === 'fata' || ev.target.value === 'banda') alegeJur(ev.target.value); }}>
+                {jurComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
+                <option value="fata">{t('prop.inc.jur.fata')}</option>
+                <option value="banda">{t('prop.inc.jur.banda')}</option>
+              </select>
+            ))}
             {drepte && rand(t('prop.inc.lateral'), camp(t('prop.inc.lateral'), 'inc-lateral', comunInc((i) => (i.fel === 'drept' ? i.jocLateral : Number.NaN)), 'mm', false,
               (x) => scrieIncrustatie({ jocLateral: x })))}
             {toateH && rand(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), camp(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), 'inc-fierastrau',
@@ -337,6 +356,7 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
           )}
           {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
           {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
+          {refuzJur?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="inc-jur">{refuzJur.motiv}</p>}
           <PanouRoluri piese={piese} cheie={cheie} />
         </section>
       )}
