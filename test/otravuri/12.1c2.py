@@ -1,4 +1,4 @@
-# Lista de otrăvuri a feliei 12.1↑c2 (după unirea lui 12.1↑b–c în `main`, „1 si 2 acum 3-6 dupa”: punctele 3, 5 și 6), 08.11.2026,
+# Lista de otrăvuri a feliei 12.1↑c-2 (după unirea lui 12.1↑b–c în `main`, „1 si 2 acum 3-6 dupa”: punctele 3, 5 și 6), 08.11.2026,
 # alese de autor: viteza benzii (indexul contururilor: cercul arcului ținut pe segment, segmentele de lângă rază sărite după
 # cutie; arcul cu cercul dat, în `geom/distanta.ts`), rândurile legate ale incrustațiilor în V în fereastra exportului, arborele
 # („cu banda îngustă”) și lemnul din jurul dopului ales din panou.
