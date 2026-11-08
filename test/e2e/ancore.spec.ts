@@ -364,6 +364,8 @@ test('„Alt ține fix: centrul cutiei” (ADR 0240 §B.17, 6.V↑d): Alt și ro
   await page.mouse.move(la(150, 70).x, e.y, { steps: 5 });
   await expect(page.getByTestId('manere-eticheta')).toHaveText('60 × 20 mm · pe o axă · față de centru');
   await expect(page.getByTestId('manere-fix')).toHaveAttribute('data-x', '120');
+  // Ancora nu e punctul fix: ținta nu se umple.
+  await expect(page.getByTestId('ancora')).not.toHaveClass(/fixa/);
   await page.mouse.up();
   await page.keyboard.up('Alt');
   await expect(randuri(page)).toHaveText(['dreptunghi 60.00 × 20.00 la X 90.00, Y 60.00']);
@@ -421,8 +423,14 @@ test('cercul din colț și poligonul întins (ADR 0240 §C.19–§C.20, 6.V↑d)
   // Din colț: (60, 60) → (90, 80), cutia pătrată cu latura 30: cercul R 15 în (75, 75).
   await trage(page, la(60, 60), la(90, 80));
   await expect(randuri(page).nth(0)).toHaveText('cerc R15.00 cu centrul la X 75.00, Y 75.00');
-  // Cu Alt, din centru: R 30 în (200, 100).
-  await trage(page, la(200, 100), la(230, 120), ['Alt']);
+  // Cu Alt, din centru: R 30 în (200, 100); eticheta o spune.
+  await page.mouse.move(la(200, 100).x, la(200, 100).y);
+  await page.keyboard.down('Alt');
+  await page.mouse.down();
+  await page.mouse.move(la(230, 120).x, la(230, 120).y, { steps: 5 });
+  await expect(page.getByTestId('desen-eticheta')).toHaveText('R 30 mm · din centru');
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
   await expect(randuri(page).nth(1)).toHaveText('cerc R30.00 cu centrul la X 200.00, Y 100.00');
   // Poligonul (6 laturi) cu Ctrl, din (100, 150) spre (130, 170): întins pe elipsa 30 / 20, primul vârf sus.
   await page.locator('[data-unealta="poligon"]').click();
