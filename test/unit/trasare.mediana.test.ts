@@ -403,6 +403,16 @@ test('logoul owner-ului: nicio întoarcere bruscă, nicio linie în afara cernel
     const d = toate.reduce((m, p) => Math.min(m, Math.hypot(p[0] - q[0], p[1] - q[1])), Infinity);
     assert.ok(d <= 2, `colțul (${q.join(', ')}): căile trec la ${d.toFixed(2)} px`);
   }
+  // Urechile: la fiecare joncțiune se termină o singură cale, a trăsăturii groase, iar latura inelului trece prin ea (la urechea
+  // din dreapta, latura de două puncte dintre joncțiune și colț își ia direcția din coarda lor; altfel, trei căi acolo).
+  const capete: Pt[] = esantioaneCai(t.cai).filter((c) => c.deschisa).flatMap((c) => {
+    const k = c.varfuri.length / 2;
+    return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * k - 2] ?? 0, c.varfuri[2 * k - 1] ?? 0]] as Pt[];
+  });
+  for (const q of [[41, 145], [41, 167.4], [299.6, 144.9], [301, 167.2]] as Pt[]) {
+    const n = capete.filter((p) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 2.5).length;
+    assert.equal(n, 1, `joncțiunea urechii (${q.join(', ')}): ${n} capete de căi`);
+  }
   // „e”: latura din stânga, lângă bara din mijloc (x = 678,6), rămâne pe mijloc; înainte, un „<” de 4,4 px.
   let lat = 0;
   for (const p of toate) if (p[1] >= 174 && p[1] <= 185 && p[0] >= 671 && p[0] <= 684 && !(Math.abs(p[1] - 179.3) < 0.75 && p[0] > 678.6)) lat = Math.max(lat, Math.abs(p[0] - 678.6));

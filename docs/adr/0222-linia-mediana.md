@@ -1,7 +1,7 @@
 # ADR 0222 — Linia mediană: scheletul trăsăturilor, cu centrul sub-pixel, tăiat pe linie
 
 **Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–5a”, la întrebările de la final), și implementat în
-aceeași zi (secțiunea „Implementarea”), în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în
+aceeași zi (secțiunea „Implementarea”; corectat tot atunci, după logoul tău: secțiunea „Corectura”), în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în
 `main`); propus pe 07.11, la „Da, 25.3↑” (owner-ul, după 25.2↑). Felia 25.3↑,
 adusă din etapa 25, fără mașină. Bugetul (întrebarea 1) îl hotărâse între timp ADR 0143: plafonul total e 600 kB („Yes,
 600 kB”, 07.11), peste cei 575 recomandați aici; cu `main` unit, linia trasării e la 557,1 / 600.
@@ -147,7 +147,55 @@ cvs2 de azi, cele două margini se șterg de mână, una câte una.
 
 **Limitele, scrise:** furcile sub ~12° (trăsături suprapuse pe câteva grosimi) dau linia printre ele; o trăsătură mai scurtă
 decât grosimea ei e un punct, fără linie; liniile mediane pe culori, capetele în vârf (3b), părțile late rămase contururi și
-semnalarea lor (4b, 4c) și buclele ca vectori închiși (5b) vin în 25.3↑b, ca opțiuni.
+semnalarea lor (4b, 4c) și buclele ca vectori închiși (5b) vin în 25.3↑b, ca opțiuni (ADR 0223).
+
+## Corectura (08.11, pe logoul tău)
+
+**Ce s-a văzut:** trasat cu liniile mediane, logoul tău (litere cu colțuri drepte, două urechi cu inele pătrate, o freză
+plină) a arătat ce corpusul, doar cu îmbinări rotunde, nu arăta. Probele trecuseră toate. Defectele au ieșit la iveală
+privind logoul mărit, bucată cu bucată, nu din cifrele probelor: **o probă pe imaginea reală, privită mărită, intră
+înaintea raportului** (de aici, proba logoului de mai jos).
+
+**Ce s-a schimbat**, în trei pași (`ab336f1`, `ad11061`, `0430183`), fiecare cu probe noi care cad pe codul de dinainte:
+
+1. **Centrarea** (§3): un punct se mută doar dacă lățimea lui e în ±15 % (cel puțin ±1 px) din lățimea locală (mediana din
+   jur, pe cel puțin două grosimi); în colțul drept al unei litere, normala iese pe diagonală și măsoară prea mult.
+   Înainte: zigzaguri în colțurile lui „n”, „d”, „e” (61 de întoarceri peste 120°, cea mai mare 180°).
+2. **Colțurile:** punctele nemăsurate dintre puncte bune ies (o insulă de cel mult două puncte bune între ele ține de colț);
+   dacă dreptele de o parte și de alta se taie sub cel puțin 20°, în cerneală și aproape, colțul se reface în încrucișare.
+   Dreptele se trag doar pe porțiunea dreaptă (abaterea cel mult 0,5 px): la bucla lui „e”, latura scurtă de lângă colț,
+   trasă și pe curba de sus, ducea încrucișarea în afara cernelii, iar colțul se teșea (4,0 px).
+3. **Brațele unei joncțiuni:** dreapta lor, doar pe porțiunea dreaptă (abaterea cel mult 0,5 px, nu 0,1 grosimi; un punct
+   nemăsurat o încheie), și doar dacă merge cam încotro pleacă scheletul (cel mult 45° de direcția brută); două puncte dau
+   doar direcția, pentru legare.
+4. **Curățarea lângă joncțiune** (punctele în care normala intră în celelalte brațe): doar până la (w/2)/tan(θ/2) de centru,
+   θ fiind unghiul cel mai mic dintre două brațe ale joncțiunii, luat din dreptele unei prime treceri (direcțiile brute,
+   din pixeli, sunt strâmbe tocmai la furcile înguste: 73° în loc de 20°); dincolo de zonă, un punct rău nu mai ține
+   curățarea. Înainte, curățarea de până la trei grosimi trecea de colțul inelului de lângă joncțiune și îl tăia cu o coardă
+   (2,7–4,1 px, la trei colțuri ale urechilor).
+5. **Locul joncțiunii:** perechile se aleg întâi; o pereche care nu e în prelungire (peste 5°), fără brațe vecine sub 45°,
+   intră ca o singură dreaptă, prin primele puncte ale celor două brațe (latura din stânga a lui „e” se curbează de o parte
+   și de alta a barei; cele două drepte, fiecare înclinată spre curba ei, se tăiau cu 4,4 px pe lângă latură). Punctul celor
+   mai mici pătrate rămâne doar în cerneală; la „Ve”, încrucișarea brațelor curbe cădea la 15 px, între litere.
+6. **Capetele:** punctele de lângă centrul capătului (sub o jumătate de grosime) ies, ca linia să intre drept în el.
+
+**Măsurat** [08.11]:
+- logoul: cea mai mare cotitură 92° (un colț adevărat; înainte 180°), niciun punct în afara cernelii, colțurile urechilor și
+  al buclei lui „e” la cel mult 1,6 px (înainte 2,7–4,1; 1,6 rămâne la colțul aflat la mai puțin de 1,5 grosimi de o
+  joncțiune, unde latura dintre ele are doar două puncte măsurate: acolo stă diagonala scheletului), latura lui „e” pe
+  mijloc, o cale prin joncțiune;
+- colțurile drepte, noi în corpus: „n” de 10 px 1,69 → 0,10 px; L 0,62 → 0,12; pătratul de 6 px 0,87 → 0,13;
+- pe 434 de configurații întâmplătoare (T, X, furci, Y, K cu brațe drepte și curbe), față de codul de dinainte de pasul 3:
+  15 mai bune, 6 mai rele (Y-uri groase din arce, unde și înainte joncțiunea era la 1,3–2,1 px), topologia neschimbată;
+- otrăvurile: a treia rulare 60 / 66 (trei echivalente scoase, P04, E03, E05; B09 cu codul ei scos), a patra 64 / 66 (B10 și
+  A02, despărțite de un X din arce strânse și de logo, au adus probe noi), a cincea, pe codul de acum, 75 / 77: cele două
+  scăpate (A06, direcția din coarda a două puncte; G02, punctele de dincolo de zona curățării) schimbau doar topologia la
+  urechea din dreapta (trei căi la joncțiune în loc de una), iar proba logoului numără acum capetele la joncțiunile
+  urechilor: 77 / 77;
+- mărimea: totalul 563,3 / 600 kB (+1,6 față de 25.3↑), pornirea 101,8 / 110.
+
+**Limitele, scrise:** un colț aflat la mai puțin de ~1,5 grosimi de o joncțiune rămâne cu diagonala scheletului (cel mult
+1,6 px pe logo); un Y gros din trei arce își pune joncțiunea pe curba perechii netede, la 1–2 px de punctul de pe hârtie.
 
 ## Ce am respins
 

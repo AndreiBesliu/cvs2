@@ -668,10 +668,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   („Da, 1a–5a”): „Rezultatul: Linii mediane” la sursele alb-negru. **Nucleul, `src/trasare/mediana.ts`, tot fără importuri
   din aplicație;** partea comună cu contururile (cerneala, pragul, curățarea, marginile) e `campul`, în `trasare.ts`.
   **Zhang–Suen are nevoie de îndreptarea lui Lü și Wang** (fără ea, o trăsătură la 45° dispare). **Căile deschise au
-  `CaiTrasate.deschisa`;** buclele tăiate pe linie intră în operația căilor deschise (`piesaDinImport`). Urmează 25.3↑b
-  (opțiunile, la cuvântul owner-ului).
-  **Cu `main` unit pe 08.11 (`ed43b49`) și 25.3↑: pornirea 101,8 / 110 kB, totalul 561,7 / 600 (linia trasării,
-  25.1↑–25.3↑: +26,7).**
+  `CaiTrasate.deschisa`;** buclele tăiate pe linie intră în operația căilor deschise (`piesaDinImport`).
+  **Corectată pe 08.11 după logoul owner-ului, privit mărit (probele, cu îmbinări rotunde, trecuseră): o dreaptă (brațul unei
+  joncțiuni, latura unui colț) se trage doar pe porțiunea dreaptă (0,5 px); curățarea de lângă o joncțiune merge doar cât
+  intră normala în celelalte brațe, (w/2)/tan(θ/2).** 25.3↑b (opțiunile: ADR 0223, propus) așteaptă răspunsurile.
+  **Cu `main` unit pe 08.11 (`ed43b49`) și 25.3↑ corectată: pornirea 101,8 / 110 kB, totalul 563,3 / 600 (linia trasării,
+  25.1↑–25.3↑: +28,3).**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

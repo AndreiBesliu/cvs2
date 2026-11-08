@@ -6945,3 +6945,29 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   (garda de distanță a joncțiunii și limita de sus a lățimii la capăt, scoase din cod), 57 / 57.
 - **Porțile:** tipurile (și funcțiile), importurile, licențele, corpusul `--verifica`, suita unitară, e2e (trasarea alb-negru,
   culorile, liniile mediane, importul), determinismul. Totalul 561,7 / 600 kB (+4,6), pornirea 101,8 / 110.
+
+## 2026-11-08 — 25.3↑ corectată după logo; felia 25.3↑b pornită: opțiunile liniei mediane (ADR 0223, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.3↑b” (owner-ul, în sesiunea liniei trasării, după raportul lui 25.3↑).
+**Started:** 08.11, 11:00. **Completed:** 08.11, 12:45.
+
+- **Corectura lui 25.3↑**, găsită pe logoul owner-ului privit mărit, bucată cu bucată (probele, doar cu îmbinări rotunde,
+  trecuseră toate), în trei pași, fiecare cu probe noi care cad pe codul de dinainte:
+  (1) `ab336f1`: centrarea după lățimea locală, colțurile drepte refăcute în încrucișarea laturilor, joncțiunea doar în
+  cerneală, capetele drepte (zigzagurile din colțurile literelor: 61 de întoarceri peste 120° → 0; „n” de 10 px: 1,69 →
+  0,10 px); (2) `ad11061`: direcția brațelor scurte, insulele colțurilor (pătratul: 0,87 → 0,13 px); (3) `0430183`:
+  dreptele brațelor și ale colțurilor doar pe porțiunea dreaptă (0,5 px), curățarea brațelor cât intră normala în celelalte
+  ((w/2)/tan(θ/2), θ din dreptele unei prime treceri), perechile ca o singură dreaptă când se curbează (colțurile urechilor:
+  2,7–4,1 → ≤ 1,6 px; joncțiunea lui „e”: 4,4 px → pe mijloc; colțul buclei lui „e”: 4,0 → 0,2 px). Pe 434 de configurații
+  întâmplătoare, față de pasul 2: 15 mai bune, 6 mai rele (Y-uri groase din arce, deja la 1,3–2,1 px), topologia neschimbată.
+- **Otrăvurile:** 60 / 66, 64 / 66, 75 / 77, apoi 77 / 77; scăpatele, despărțite (un X din arce strânse, un X îngust, un
+  „e” sintetic, reperele logoului, numărul capetelor la joncțiunile urechilor) sau scoase cu motivul în listă (P04, E03, E05
+  echivalente; B09 cu codul ei).
+- **25.3↑b:** cercetarea (Illustrator „Strokes” cu lățimea maximă, ArtCAM și Carveco „Closed vector loops”, CorelDRAW);
+  prototipul părților late (deschiderea morfologică, două transformări ale distanței: pe logo, 2 părți late, 14,4 % din
+  cerneală; 59 de linii mediane pe rest, 18 lipite de contur; ~0,19 s în plus); ADR 0223 propus, cu trei întrebări (locul
+  opțiunilor, pragul automat, semnalarea implicită); schița, cu toate combinațiile pe logo și formularul:
+  <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>.
+- **Porțile** (pe `0430183`): tipurile (aplicația, extensia, funcțiile), corpusul `--verifica`, suita unitară (8774, 0
+  căzute), e2e (trasarea alb-negru, culorile, liniile mediane, importul: 36 / 36), determinismul. Totalul 563,3 / 600 kB
+  (+1,6), pornirea 101,8 / 110.
