@@ -2318,7 +2318,9 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
           })}
         </svg>
       ) : null}
-      <span className="cip noduri-sfat" role="status" data-testid="pen-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{sfat ?? t('editare.pen.sfat')}</span>
+      {/* Pentru cuțit, sfatul lui se rupe pe rânduri, ca în celelalte feluri (`cutit-sfat`, din `taiere.css`). */}
+      <span className={cutit ? 'cip noduri-sfat cutit-sfat' : 'cip noduri-sfat'} role="status" data-testid="pen-sfat"
+        style={{ left: zona.x + 8, top: zona.y + zona.h - (cutit ? 16 : 44) }}>{sfat ?? t('editare.pen.sfat')}</span>
     </div>
   );
 }
