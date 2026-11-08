@@ -15,29 +15,21 @@
  * - Umplerea: după model (`linii.ts`, `modele.ts`): liniile aliniate la pat (aceleași poziții pe fiecare strat și în fiecare
  *   insulă), tăiate par-impar de regiunea dinăuntrul pereților (lărgită peste ei cu suprapunerea).
  * - Călcarea: o trecere cu debit mic peste fața de sus (sau peste toate straturile pline), la marginea dată de contur.
+ * - Treptele (felia 3.6l): fiecare bandă (`trepte.ts`) are pereții ei; pe un strat unde o treaptă se termină, umplerea se
+ *   împarte pe părți (suprafața de sus a treptei, plinul de sub fața de sus, umplerea rară), fiecare în regiunea ei.
  */
 import type { Contur } from '../../geom/conturBaza.ts';
 import { arieCuSemn } from '../../geom/contur.ts';
 import { inRegiune } from '../../geom/distanta.ts';
 import { offsetFigura, type Regiune } from '../../geom/offset.ts';
 import { anvelopa, arie, intervale, lungime, monoton, ordoneaza, puncte, zigzag, type Cale, type Rol } from './linii.ts';
+import { citesteFel, type BenziFel, type FelStrat, type TipStrat } from './fel.ts';
 import { crosshatch, curba, fagure, giroid, oscilante } from './modele.ts';
 import { ARIE_FILAMENT, K1C, pas, sectiune, type Cusatura, type ModelPlin, type ModelRar, type SetariFeliere } from './profil.ts';
+import { arieFigura, combina, regiuniDin, type Termen } from './trepte.ts';
 
 export { arie, intervale, ordoneaza, puncte, SAGEATA, zigzag, type Cale, type Rol } from './linii.ts';
-
-/**
- * Felul unui strat: rolul (primul strat, plinul dinăuntru, suprafața de sus, umplerea rară), unghiul lui, unghiul plinului
- * (pentru insulele rare prea mici, umplute plin) și Z-ul, doar la modelele care depind de el. O cheie, ca șabloanele să se
- * calculeze o singură dată pentru straturile la fel.
- */
-export type FelStrat = string;
-export type TipStrat = 'prim' | 'plin' | 'sus' | 'rar';
-export const felDe = (tip: TipStrat, u: number, uPlin: number, z: number | null): FelStrat => `${tip}:${u}:${uPlin}:${z === null ? '' : z.toFixed(4)}`;
-export function citesteFel(f: FelStrat): { tip: TipStrat; u: number; uPlin: number; z: number | null } {
-  const [tip, u, uPlin, z] = f.split(':');
-  return { tip: tip as TipStrat, u: Number(u), uPlin: Number(uPlin), z: z === undefined || z === '' ? null : Number(z) };
-}
+export { bandaFel, citesteFel, DEPINDE_DE_Z, felDe, unghiModel, type FelStrat, type TipStrat } from './fel.ts';
 
 /** Sub atâta arie (mm²), umplerea rară a unei insule devine plină (`minimum_sparse_infill_area`). */
 export const ARIE_MINIMA_RARA = 15;
@@ -202,9 +194,13 @@ const distantaLaBucla = (x: number, y: number, p: ArrayLike<number>): number => 
 /** Șablonul unei piese: căile fiecărui fel de strat, conturul (pentru deplasări și previzualizare) și ce nu iese. */
 export type SablonPiesa = {
   readonly fel: ReadonlyMap<FelStrat, readonly Cale[]>;
+  /** Felul fiecărui strat, de la primul: câte straturi are piesa. */
+  readonly ordine: readonly FelStrat[];
   /** Conturul piesei, aplatizat: poligoanele par-impar. */
   readonly contur: readonly Float64Array[];
-  /** Aria piesei și cea care nu iese (mai îngustă decât o linie), mm². */
+  /** Conturul fiecărei benzi (prima, chiar `contur`): pe el se judecă o deplasare peste gol (`bandaFel`). */
+  readonly benzi: readonly (readonly Float64Array[])[];
+  /** Aria piesei și cea care nu iese (mai îngustă decât o linie, pe cea mai rea bandă), mm². */
   readonly arie: number; readonly subtire: number;
 };
 
@@ -221,21 +217,19 @@ function insulaRegiunii(ins: readonly Insula[], g: Regiune): number {
   return ins.findIndex((x) => inRegiune(x.ext.varfuri[0]!.p, cont));
 }
 
-const MODELE_ALTERNATE: ReadonlySet<string> = new Set(['monotonic', 'monotonicline', 'rectilinear', 'line', 'honeycomb']);
-/**
- * Unghiul modelului pe stratul k (de la 1): baza, plus 90° pe straturile pare la modelele care alternează (`_layer_angle` din
- * OrcaSlicer: liniile, fagurele); celelalte țin aceeași direcție.
- */
-export const unghiModel = (model: ModelRar | ModelPlin, k: number, baza: number): number => (MODELE_ALTERNATE.has(model) && k % 2 === 0 ? baza + 90 : baza);
-/** Modelele rare care depind de Z (3D): cheia stratului îl ține. */
-export const DEPINDE_DE_Z: ReadonlySet<string> = new Set(['cubic', 'crosshatch', 'gyroid']);
+/** Generatorul buclelor concentrice ale unei insule sau părți: pasul liniilor, densitatea, suprapunerea, lățimea, rolul. */
+type Concentric = (sp: number, d: number, suprapunere: number, w: number, rol: Rol) => Cale[] | string;
 
 /**
- * Șablonul unei piese (contururi închise, care nu se ating, par-impar) pentru felurile date. Sau motivul, dacă geometria
- * refuză (un offset eșuat, nu doar o parte prea subțire). Brim-ul și fusta sunt ale grupului (`brimGrup`, `fustaGrup`).
+ * Șablonul unei piese pentru felurile din `ordine` (felul fiecărui strat, de la primul, `fel.ts`). `benzi`: regiunile benzilor
+ * (contururi închise, care nu se ating, par-impar; prima e piesa întreagă, `trepte.ts`), una singură la o piesă fără trepte.
+ * Sau motivul, dacă geometria refuză (un offset sau un boolean eșuat, nu doar o parte prea subțire). Brim-ul și fusta sunt ale
+ * grupului (`brimGrup`, `fustaGrup`).
  */
-export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, feluri: ReadonlySet<FelStrat>): SablonPiesa | string {
+export function sablonPiesa(benzi: readonly (readonly Contur[])[], s: SetariFeliere, ordine: readonly FelStrat[]): SablonPiesa | string {
+  const contururi = benzi[0] ?? [];
   const contur = contururi.map((c) => Float64Array.from(puncte(c)));
+  const conturBenzi = benzi.map((bc, i) => (i === 0 ? contur : bc.map((c) => Float64Array.from(puncte(c)))));
   // Aria, par-impar: un contur cuprins într-un număr impar de altele e gol.
   let arieTotala = 0;
   contururi.forEach((c, i) => {
@@ -247,33 +241,34 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
   for (const q of contur) for (let i = 0; i < q.length; i += 2) { cx0 = Math.min(cx0, q[i]!); cx1 = Math.max(cx1, q[i]!); cy0 = Math.min(cy0, q[i + 1]!); cy1 = Math.max(cy1, q[i + 1]!); }
   const cutieP = [cx0, cy0, cx1, cy1] as const;
   const fel = new Map<FelStrat, Cale[]>();
-  // Pereții (două variante: primul strat și restul) și regiunile umplerii (după distanță) se calculează o singură dată.
-  const memoPereti = new Map<boolean, ReturnType<typeof pereti0>>();
-  const pereti = (h: number, prim: boolean): ReturnType<typeof pereti0> => {
-    let r = memoPereti.get(prim);
-    if (r === undefined) { r = pereti0(h, prim); memoPereti.set(prim, r); }
+  type Pereti = { insule: Insula[]; cai: Cale[][]; adanc: number[] };
+  // Pereții (pe bandă: primul strat și restul) și regiunile umplerii (pe bandă, după distanță) se calculează o singură dată.
+  const memoPereti = new Map<string, Pereti | string>();
+  const pereti = (b: number, h: number, prim: boolean): Pereti | string => {
+    const k = `${b}:${prim}`;
+    let r = memoPereti.get(k);
+    if (r === undefined) { r = pereti0(b, h, prim); memoPereti.set(k, r); }
     return r;
   };
   const memoRegiuni = new Map<string, Regiune[] | string>();
-  const regiuniLa = (d: number): Regiune[] | string => {
-    const k = d.toFixed(6);
+  const regiuniLa = (b: number, d: number): Regiune[] | string => {
+    const k = `${b}:${d.toFixed(6)}`;
     let r = memoRegiuni.get(k);
-    if (r === undefined) { r = laDistanta(contururi, d); memoRegiuni.set(k, r); }
+    if (r === undefined) { r = laDistanta(benzi[b] ?? [], d); memoRegiuni.set(k, r); }
     return r;
   };
-  type Pereti = { insule: Insula[]; cai: Cale[][]; adanc: number[] };
   /**
-   * Pereții: inelele, insulă cu insulă, și adâncimea la care se oprește fiecare insulă (marginea interioară a celui mai adânc
-   * perete al ei): o insulă îngustă, cu mai puțini pereți, își are umplerea de la propria adâncime. Fiecare buclă, cu grupul
+   * Pereții benzii b: inelele, insulă cu insulă, și adâncimea la care se oprește fiecare insulă (marginea interioară a celui mai
+   * adânc perete al ei): o insulă îngustă, cu mai puțini pereți, își are umplerea de la propria adâncime. Fiecare buclă, cu grupul
    * ei (bucla exterioară cea mai apropiată, de același fel: margine sau gol) și cu cusătura, la modurile care nu depind de duză.
    */
-  function pereti1(h: number, wE: number, wI: number, e: number): Pereti | string {
+  function pereti1(b: number, h: number, wE: number, wI: number, e: number): Pereti | string {
     const insule: Insula[] = [], cai: Cale[][] = [], adanc: number[] = [];
     const radacini: { insula: number; gaura: boolean; p: Float64Array; grup: number }[] = [];
     let d = e + wE / 2;
     for (let k = 0; k < s.pereti; k++) {
       if (k === 1) d += (pas(wE, h) + pas(wI, h)) / 2; else if (k > 1) d += pas(wI, h);
-      const r = regiuniLa(d);
+      const r = regiuniLa(b, d);
       if (typeof r === 'string') return r;
       if (r.length === 0) break;
       const w = k === 0 ? wE : wI;
@@ -288,7 +283,7 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
           if (k === 0) { grup = radacini.length; radacini.push({ insula: i, gaura, p, grup }); } else {
             const cand = radacini.filter((x) => x.insula === i && x.gaura === gaura);
             const lista = cand.length > 0 ? cand : radacini.filter((x) => x.insula === i);
-            grup = lista.reduce((b, x) => (distantaLaBucla(p[0]!, p[1]!, x.p) < distantaLaBucla(p[0]!, p[1]!, b.p) ? x : b), lista[0]!).grup;
+            grup = lista.reduce((y, x) => (distantaLaBucla(p[0]!, p[1]!, x.p) < distantaLaBucla(p[0]!, p[1]!, y.p) ? x : y), lista[0]!).grup;
           }
           cai[i]!.unshift({ rol: k === 0 ? 'exterior' : 'interior', p, inchisa: true, w, grup, adancime: k, gaura });
         }
@@ -300,9 +295,9 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     }
     return { insule, cai, adanc };
   }
-  function pereti0(h: number, prim: boolean): Pereti | string {
-    if (!prim) return pereti1(h, s.wExterior, s.wInterior, 0);
-    const r = pereti1(h, s.wPrim, s.wPrim, s.piciorElefant);
+  function pereti0(b: number, h: number, prim: boolean): Pereti | string {
+    if (!prim) return pereti1(b, h, s.wExterior, s.wInterior, 0);
+    const r = pereti1(b, h, s.wPrim, s.wPrim, s.piciorElefant);
     if (typeof r === 'string') return r;
     // Compensarea primului strat (și linia lui mai lată) nu are voie să șteargă o trăsătură pe care straturile de deasupra o
     // au: altfel ea s-ar imprima în aer, de la stratul 2. Atunci primul strat începe ca celelalte (fără compensare, cu
@@ -310,20 +305,20 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     // Pierderea se vede pe arii: regiunea peretelui exterior de pe primul strat, lărgită înapoi până la cea de deasupra, trebuie
     // s-o acopere (colțurile rotunjite pierd sub 0,2 mm²; o trăsătură îngustă, mult mai mult).
     const d0 = s.piciorElefant + s.wPrim / 2, d1 = s.wExterior / 2;
-    const sus = regiuniLa(d1), jos = regiuniLa(d0);
+    const sus = regiuniLa(b, d1), jos = regiuniLa(b, d0);
     if (typeof sus === 'string') return sus;
     if (typeof jos === 'string') return jos;
     const inapoi = jos.length === 0 || d0 - d1 < 1e-6 ? jos : laDistanta(contururiDin(jos), -(d0 - d1));
     const aSus = arieRegiuni(sus);
     const pierdute = typeof inapoi === 'string' || aSus - arieRegiuni(inapoi) > Math.max(0.2, 0.005 * aSus);
-    return pierdute ? pereti1(h, s.wExterior, s.wPrim, 0) : r;
+    return pierdute ? pereti1(b, h, s.wExterior, s.wPrim, 0) : r;
   }
-  /** Buclele concentrice ale unei insule, de la adâncimea d0 spre interior, la `dist` una de alta, fiecare din capătul celei de dinainte. */
-  const concentrice = (pr: Pereti, i: number, d0: number, dist: number, rol: Rol, w: number, mm3?: number): Cale[] | string => {
+  /** Buclele concentrice ale unei insule a benzii b, de la adâncimea d0 spre interior, la `dist` una de alta, fiecare din capătul celei de dinainte. */
+  const concentrice = (b: number, pr: Pereti, i: number, d0: number, dist: number, rol: Rol, w: number): Cale[] | string => {
     const rez: Cale[] = [];
     let x = 0, y = 0;
     for (let j = 0; j < 10000; j++) {
-      const r = regiuniLa(d0 + j * dist);
+      const r = regiuniLa(b, d0 + j * dist);
       if (typeof r === 'string') return r;
       const ale = r.filter((g) => insulaRegiunii(pr.insule, g) === i);
       if (ale.length === 0) break;
@@ -332,6 +327,27 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
           const p = Float64Array.from(puncte(c));
           const f = proiectie(p, x, y);
           const q = j === 0 && rez.length === 0 ? p : pornesteDin(p, f.i, f.x, f.y);
+          rez.push({ rol, p: q, inchisa: true, w });
+          x = q[0]!; y = q[1]!;
+        }
+      }
+    }
+    return rez;
+  };
+  /** Buclele concentrice ale unei figuri (o parte a unui strat cu trepte), de la d0 (0: chiar marginea ei) spre interior. */
+  const concentriceFigura = (c: readonly Contur[], d0: number, dist: number, rol: Rol, w: number, mm3?: number): Cale[] | string => {
+    const rez: Cale[] = [];
+    let x = 0, y = 0;
+    for (let j = 0; j < 100000; j++) {
+      const d = d0 + j * dist;
+      const r = d < 1e-9 ? regiuniDin(c) : laDistanta(c, d);
+      if (typeof r === 'string') return r;
+      if (r.length === 0) break;
+      for (const g of r) {
+        for (const k of [g.exterior, ...g.gauri]) {
+          const p = Float64Array.from(puncte(k));
+          const f = proiectie(p, x, y);
+          const q = rez.length === 0 ? p : pornesteDin(p, f.i, f.x, f.y);
           rez.push({ rol, p: q, inchisa: true, w, ...(mm3 === undefined ? {} : { mm3 }) });
           x = q[0]!; y = q[1]!;
         }
@@ -346,8 +362,8 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     const cai = l.filter((p) => p.length >= 4).map((p) => ({ rol, p: Float64Array.from(p), inchisa: false, w }));
     return ordoneaza(cai, cai[0]?.p[0] ?? 0, cai[0]?.p[1] ?? 0).cai;
   };
-  /** Umplerea unei insule (poligoanele `pol`), după model; d = densitatea (1 la plin). */
-  const umpleInsula = (pr: Pereti, i: number, pol: number[][], model: ModelRar | ModelPlin, u: number, d: number, z: number, h: number, w: number,
+  /** Umplerea unei insule sau părți (poligoanele `pol`), după model; d = densitatea (1 la plin); concentricul, din `conc`. */
+  const umpleInsula = (conc: Concentric, pol: number[][], model: ModelRar | ModelPlin, u: number, d: number, z: number, h: number, w: number,
     suprapunere: number, rol: Rol, rar: boolean): Cale[] | string => {
     const sp = pas(w, h);
     switch (model) {
@@ -369,28 +385,29 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
       case 'honeycomb': return lanturi(fagure(pol, u, sp, d), rol, w);
       case 'gyroid': return lanturi(giroid(pol, u, sp, d, z), rol, w);
       case 'crosshatch': return lanturi(crosshatch(pol, u, sp, d, z), rol, w);
-      case 'concentric': return concentrice(pr, i, pr.adanc[i]! + sp / 2 - suprapunere * w, sp / d, rol, w);
+      case 'concentric': return conc(sp, d, suprapunere, w, rol);
       default: return lanturi(curba(model, pol, u, sp, d, cutieP), rol, w);
     }
   };
-  /** Pereții și umplerea fiecărei insule a unui fel de strat. */
-  const umplere = (h: number, prim: boolean, w: number, suprapunere: number, model: ModelRar | ModelPlin, u: number, uPlin: number, z: number,
+  /** Pereții și umplerea fiecărei insule a unui fel de strat al benzii b, cu un singur rol pe tot stratul. */
+  const umplere = (b: number, h: number, prim: boolean, w: number, suprapunere: number, model: ModelRar | ModelPlin, u: number, uPlin: number, z: number,
     rol: Rol, rar: boolean): Cale[][] | string => {
-    const pr = pereti(h, prim);
+    const pr = pereti(b, h, prim);
     if (typeof pr === 'string') return pr;
     const cai = pr.cai.map((x) => [...x]);
     if (pr.insule.length === 0 || (rar && s.umplere <= 0)) return cai;
     for (let i = 0; i < pr.insule.length; i++) {
-      const r = regiuniLa(pr.adanc[i]! - suprapunere * w);
+      const r = regiuniLa(b, pr.adanc[i]! - suprapunere * w);
       if (typeof r === 'string') return r;
+      const conc: Concentric = (sp, d, sup, wc, rc) => concentrice(b, pr, i, pr.adanc[i]! + sp / 2 - sup * wc, sp / d, rc, wc);
       for (const g of r) {
         if (insulaRegiunii(pr.insule, g) !== i) continue;
         const pol = [g.exterior, ...g.gauri].map((c) => puncte(c));
         // O insulă rară prea mică se umple plin (`minimum_sparse_infill_area`), cu modelul și lățimea plinului.
         const mica = rar && pol.reduce((a, p) => a + arie(p), 0) < ARIE_MINIMA_RARA;
         const umple = mica
-          ? umpleInsula(pr, i, pol, s.modelPlin, uPlin, 1, z, h, s.wPlin, suprapunere, 'plin', false)
-          : umpleInsula(pr, i, pol, model, u, rar ? s.umplere : 1, z, h, w, suprapunere, rol, rar);
+          ? umpleInsula(conc, pol, s.modelPlin, uPlin, 1, z, h, s.wPlin, suprapunere, 'plin', false)
+          : umpleInsula(conc, pol, model, u, rar ? s.umplere : 1, z, h, w, suprapunere, rol, rar);
         if (typeof umple === 'string') return umple;
         cai[i]!.push(...umple);
         // Concentricul ține toată insula dintr-odată (nu pe regiunea lărgită).
@@ -399,21 +416,93 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
     }
     return cai;
   };
-  /** Călcarea unui fel de strat: toată fața piesei, strânsă cu marginea, cu debitul ei. */
-  const calcare = (u: number): Cale[] | string => {
+  /** Partea unei insule a benzii b, la adâncimea dA (umplerea ei), tăiată de regiunile altor benzi (`termeni`): regiunile ei. */
+  const memoParti = new Map<string, Regiune[] | string>();
+  const parte = (b: number, pr: Pereti, i: number, dA: number, cheie: string, termeni: readonly Termen[]): Regiune[] | string => {
+    const k = `${b}|${i}|${dA.toFixed(6)}|${cheie}`;
+    let rez = memoParti.get(k);
+    if (rez !== undefined) return rez;
+    const r = regiuniLa(b, dA);
+    if (typeof r === 'string') rez = r;
+    else {
+      const ale = r.filter((g) => insulaRegiunii(pr.insule, g) === i);
+      const g = ale.length === 0 ? [] : combina([{ c: contururiDin(ale), compl: true }, ...termeni]);
+      rez = typeof g === 'string' ? g : regiuniDin(g);
+    }
+    memoParti.set(k, rez);
+    return rez;
+  };
+  /**
+   * Un strat cu trepte, cu mai multe părți: pereții benzii b, apoi, în fiecare insulă, fiecare parte în regiunea ei: suprafața
+   * de sus unde banda de deasupra lipsește (R_b minus R_b1), plinul unde lipsește banda cu `sus` straturi mai sus (R_b1 minus
+   * R_bs), umplerea rară în rest (R_bs).
+   */
+  const amestecat = (t: BenziFel, h: number): Cale[][] | string => {
+    const { b, b1, bs } = t;
+    const pr = pereti(b, h, false);
+    if (typeof pr === 'string') return pr;
+    const cai = pr.cai.map((x) => [...x]);
+    const R = (j: number): readonly Contur[] => benzi[j] ?? [];
+    type Parte = { rol: Rol; model: ModelRar | ModelPlin; u: number; w: number; sup: number; rar: boolean; cheie: string; termeni: Termen[] };
+    const parti: Parte[] = [];
+    if (b1 !== b) parti.push({ rol: 'sus', model: s.modelSus, u: t.uSus ?? 0, w: s.wSus, sup: s.suprapunerePlin, rar: false, cheie: `s${b1}`, termeni: [{ c: R(b1) }] });
+    if (b1 >= 0 && bs !== b1) {
+      parti.push({
+        rol: 'plin', model: s.modelPlin, u: t.uPlin ?? 0, w: s.wPlin, sup: s.suprapunerePlin, rar: false, cheie: `p${b1}:${bs}`,
+        termeni: [{ c: R(b1), compl: true }, ...(bs >= 0 ? [{ c: R(bs) }] : [])],
+      });
+    }
+    if (bs >= 0 && s.umplere > 0) {
+      parti.push({ rol: 'rar', model: s.modelRar, u: t.uRar ?? 0, w: s.wRar, sup: s.suprapunereRar, rar: true, cheie: `r${bs}`, termeni: [{ c: R(bs), compl: true }] });
+    }
+    const z = t.zRar ?? 0;
+    for (const P of parti) {
+      for (let i = 0; i < pr.insule.length; i++) {
+        const G = parte(b, pr, i, pr.adanc[i]! - P.sup * P.w, P.cheie, P.termeni);
+        if (typeof G === 'string') return G;
+        for (const g of G) {
+          const gc = [g.exterior, ...g.gauri];
+          const pol = gc.map((c) => puncte(c));
+          const conc: Concentric = (sp, d, _sup, wc, rc) => concentriceFigura(gc, sp / 2, sp / d, rc, wc);
+          const mica = P.rar && pol.reduce((a, p) => a + arie(p), 0) < ARIE_MINIMA_RARA;
+          const umple = mica
+            ? umpleInsula(conc, pol, s.modelPlin, t.uPlin ?? 0, 1, z, h, s.wPlin, P.sup, 'plin', false)
+            : umpleInsula(conc, pol, P.model, P.u, P.rar ? s.umplere : 1, z, h, P.w, P.sup, P.rol, P.rar);
+          if (typeof umple === 'string') return umple;
+          cai[i]!.push(...umple);
+        }
+      }
+    }
+    return cai;
+  };
+  /**
+   * Călcarea unui fel de strat al benzii b: fața piesei, strânsă cu marginea, cu debitul ei; cu `minus` (o bandă), doar unde
+   * banda aceea lipsește (fața unei trepte).
+   */
+  const calcare = (b: number, u: number, minus: number): Cale[] | string => {
     const inset = s.margineCalcare > 0 ? s.margineCalcare : 0.5 * K1C.duza;
     const mm3 = s.strat * s.debitCalcare * s.pasCalcare, w = s.pasCalcare;
+    let fig: Contur[] | null = null;
+    if (minus >= 0) {
+      const r = regiuniLa(b, inset);
+      if (typeof r === 'string') return r;
+      const g = r.length === 0 ? [] : combina([{ c: contururiDin(r), compl: true }, { c: benzi[minus] ?? [] }]);
+      if (typeof g === 'string') return g;
+      if (g.length === 0) return [];
+      fig = g;
+    }
     if (s.modelCalcare === 'concentric') {
+      if (fig !== null) return concentriceFigura(fig, 0, s.pasCalcare, 'calcare', w, mm3);
       const rez: Cale[] = [];
       for (let j = 0; j < 100000; j++) {
-        const r = regiuniLa(inset + j * s.pasCalcare);
+        const r = regiuniLa(b, inset + j * s.pasCalcare);
         if (typeof r === 'string') return r;
         if (r.length === 0) break;
         for (const g of r) for (const c of [g.exterior, ...g.gauri]) rez.push({ rol: 'calcare', p: Float64Array.from(puncte(c)), inchisa: true, w, mm3 });
       }
       return rez;
     }
-    const r = regiuniLa(inset);
+    const r = fig === null ? regiuniLa(b, inset) : regiuniDin(fig);
     if (typeof r === 'string') return r;
     const ua = u + s.unghiCalcare;
     return r.flatMap((g) => {
@@ -421,33 +510,47 @@ export function sablonPiesa(contururi: readonly Contur[], s: SetariFeliere, felu
       return monoton(intervale(pol, ua, s.pasCalcare), ua, s.pasCalcare, true, 3 * s.pasCalcare, 'calcare', w).map((c) => ({ ...c, mm3 }));
     });
   };
+  /** Ce se calcă pe un fel: banda din care se scade (-1: toată fața) sau nimic (null). */
+  const deCalcat = (tip: TipStrat, t: BenziFel | undefined): number | null => {
+    if (t === undefined) return ((s.calcare === 'sus' || s.calcare === 'ultima') ? tip === 'sus' : s.calcare === 'plin' && tip !== 'rar') ? -1 : null;
+    if (s.calcare === 'sus') return t.b1 !== t.b ? t.b1 : null;
+    if (s.calcare === 'ultima') return t.b1 === -1 ? -1 : null;
+    if (s.calcare === 'plin') return t.bs === -1 ? -1 : t.bs !== t.b ? t.bs : null;
+    return null;
+  };
   const h = s.strat;
-  for (const f of feluri) {
-    const { tip, u, uPlin, z } = citesteFel(f);
+  for (const f of new Set(ordine)) {
+    const cf = citesteFel(f);
+    const { tip, u, uPlin, z } = cf, t = cf.trepte, b = t?.b ?? 0;
     let r: Cale[][] | string;
-    if (tip === 'prim') r = umplere(s.strat1, true, s.wPrim, s.suprapunerePlin, s.modelJos, u, u, s.strat1, 'plin', false);
-    else if (tip === 'rar') r = umplere(h, false, s.wRar, s.suprapunereRar, s.modelRar, u, uPlin, z ?? 0, 'rar', true);
-    else if (tip === 'plin') r = umplere(h, false, s.wPlin, s.suprapunerePlin, s.modelPlin, u, u, z ?? 0, 'plin', false);
-    else r = umplere(h, false, s.wSus, s.suprapunerePlin, s.modelSus, u, u, z ?? 0, 'sus', false);
+    if (tip === 'prim') r = umplere(0, s.strat1, true, s.wPrim, s.suprapunerePlin, s.modelJos, u, u, s.strat1, 'plin', false);
+    else if (tip === 'rar') r = umplere(b, h, false, s.wRar, s.suprapunereRar, s.modelRar, u, uPlin, z ?? 0, 'rar', true);
+    else if (tip === 'plin') r = umplere(b, h, false, s.wPlin, s.suprapunerePlin, s.modelPlin, u, u, z ?? 0, 'plin', false);
+    else if (tip === 'sus') r = umplere(b, h, false, s.wSus, s.suprapunerePlin, s.modelSus, u, u, z ?? 0, 'sus', false);
+    else r = amestecat(t!, h);
     if (typeof r === 'string') return r;
     const cai = r.flat();
-    if ((s.calcare === 'sus' || s.calcare === 'ultima') ? tip === 'sus' : s.calcare === 'plin' && tip !== 'rar') {
-      const c = calcare(u);
+    const minus = deCalcat(tip, t);
+    if (minus !== null) {
+      const c = calcare(b, u, minus);
       if (typeof c === 'string') return c;
       cai.push(...c);
     }
     fel.set(f, cai);
   }
-  // Ce nu iese: regiunea minus deschiderea ei (strânsă cu w/2, apoi lărgită la loc).
+  // Ce nu iese: regiunea minus deschiderea ei (strânsă cu w/2, apoi lărgită la loc), pe fiecare bandă; cea mai rea.
   let subtire = 0;
-  const strans = laDistanta(contururi, s.wExterior / 2);
-  if (typeof strans !== 'string') {
+  benzi.forEach((bc, b) => {
+    const total = b === 0 ? arieTotala : arieFigura(bc);
+    const strans = laDistanta(bc, s.wExterior / 2);
+    if (typeof strans === 'string') return;
     const larg = strans.length === 0 ? [] : laDistanta(contururiDin(strans), -s.wExterior / 2);
-    const ramas = typeof larg === 'string' ? arieTotala : larg.reduce((a, g) => a + Math.abs(arieCuSemn(g.exterior)) - g.gauri.reduce((b, x) => b + Math.abs(arieCuSemn(x)), 0), 0);
-    subtire = Math.max(0, arieTotala - ramas);
-    if (subtire < Math.max(0.05, 0.002 * arieTotala)) subtire = 0;
-  }
-  return { fel, contur, arie: arieTotala, subtire };
+    const ramas = typeof larg === 'string' ? total : larg.reduce((a, g) => a + Math.abs(arieCuSemn(g.exterior)) - g.gauri.reduce((x, y) => x + Math.abs(arieCuSemn(y)), 0), 0);
+    let x = Math.max(0, total - ramas);
+    if (x < Math.max(0.05, 0.002 * total)) x = 0;
+    subtire = Math.max(subtire, x);
+  });
+  return { fel, ordine, contur, benzi: conturBenzi, arie: arieTotala, subtire };
 }
 
 /**

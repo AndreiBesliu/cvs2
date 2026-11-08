@@ -6819,5 +6819,5 @@ căzute, din CI).
 
 ## 2026-11-08 — 3.6l: piesele plate „după CNC” și înălțimea fiecărei piese în proiect (ADR 0191) (Model: Claude Opus 5.5)
 
-**Prompt:** „Da, 3.6l” (owner-ul, la „Încep 3.6l?”, după 3.6k).
+**Prompt:** „Da, 3.6l” (owner-ul, la „Încep 3.6l?”, după 3.6k); apoi, la cele două întrebări ale ADR-ului: „Da, recomandările”.
 **Started:** 08.11, 10:49. **Completed:** —

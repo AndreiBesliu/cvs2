@@ -8,12 +8,15 @@
  * curățare), iar ultimul strat sub înălțimea patului; altfel fișierul nu se face, iar avertismentul spune cât iese.
  */
 import { cutieContur, uneste, CUTIE_GOALA } from '../../geom/cutie.ts';
-import { felStrat, numarStraturi, scrieGcode, type IesireGcode, type Miniatura } from './gcode.ts';
+import { felStrat, felStratTrepte } from './fel.ts';
+import { scrieGcode, type IesireGcode, type Miniatura } from './gcode.ts';
 import { MARGINE_PAT, type PiesaPlata } from './piese.ts';
 import { K1C, type SetariFeliere } from './profil.ts';
-import { brimGrup, fustaGrup, sablonPiesa, type Cale, type FelStrat, type SablonPiesa } from './straturi.ts';
+import { brimGrup, fustaGrup, sablonPiesa, type Cale, type SablonPiesa } from './straturi.ts';
+import { benziPiesa } from './trepte.ts';
 
-export { pieseDinDocument, MARGINE_PAT, type PieseAlese, type PiesaPlata, type SursaFeliere } from './piese.ts';
+export { pieseDinDocument, MARGINE_PAT, type OptiuniPiese, type PieseAlese, type PiesaPlata, type SursaFeliere } from './piese.ts';
+export type { Treapta } from './trepte.ts';
 export {
   CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, MODELE_RAR, MODELE_PLIN, CUSATURI, CALCARI,
   MODELE_CALCARE, FUSTE, type SetariFeliere, type Brim,
@@ -59,10 +62,11 @@ export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { r
   const avertismente: AvertismentFeliere[] = [];
   const bune: PiesaPlata[] = [], sabloane: SablonPiesa[] = [], brim: boolean[] = [];
   for (const p of piese) {
-    const n = numarStraturi(p.inaltime, s);
-    const feluri = new Set<FelStrat>();
-    for (let k = 1; k <= n; k++) feluri.add(felStrat(k, n, s));
-    const r = sablonPiesa(p.contururi, s, feluri);
+    // Benzile (o singură bandă fără trepte), apoi felul fiecărui strat și șablonul.
+    const b = benziPiesa(p.contururi, p.trepte ?? [], p.inaltime, s);
+    if (typeof b === 'string') { avertismente.push({ fel: 'eroare', piesa: p.eticheta, motiv: b }); continue; }
+    const ordine = Array.from({ length: b.n }, (_, i) => (b.regiuni.length === 1 ? felStrat(i + 1, b.n, s) : felStratTrepte(i + 1, b.n, b.inceput, s)));
+    const r = sablonPiesa(b.regiuni, s, ordine);
     if (typeof r === 'string') { avertismente.push({ fel: 'eroare', piesa: p.eticheta, motiv: r }); continue; }
     if ([...r.fel.values()].every((c) => c.length === 0)) { avertismente.push({ fel: 'nimic', piesa: p.eticheta }); continue; }
     if (r.subtire > 0) avertismente.push({ fel: 'subtire', piesa: p.eticheta, arie: r.subtire });
@@ -87,7 +91,7 @@ export function feliaza(piese: readonly PiesaPlata[], s: SetariFeliere, opt: { r
     avertismente.push({ fel: 'iese', x0, y0, x1, y1 });
     inPat = false;
   }
-  const zSus = bune.length === 0 ? 0 : s.strat1 + (Math.max(...bune.map((p) => numarStraturi(p.inaltime, s))) - 1) * s.strat;
+  const zSus = bune.length === 0 ? 0 : s.strat1 + (Math.max(...sabloane.map((x) => x.ordine.length)) - 1) * s.strat;
   if (zSus > K1C.pat[2] + 1e-9) { avertismente.push({ fel: 'prea-inalta', z: zSus }); inPat = false; }
   const gcode = bune.length === 0 || !inPat ? null
     : scrieGcode({ piese: bune, sabloane, brim: caiBrim, fusta: caiFusta, setari: s, data: opt.data, ...(opt.miniaturi ? { miniaturi: opt.miniaturi } : {}) });

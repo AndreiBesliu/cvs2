@@ -1065,7 +1065,19 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   imprimă și el, iar căile deschise sunt lăsate deoparte, cu un mesaj. În fereastra **Piesă plată pentru imprimantă**:
   - **Ce se imprimă:** **Piesele foii**, **Piesele selectate** sau **O singură piesă**, aleasă din listă. Piesele își păstrează
     așezarea de pe foaie și se centrează pe pat; ce nu încape (220 × 220 mm la K1C, cu 5 mm margine pe fiecare latură) e spus.
-  - **Înălțimea** (implicit, grosimea foii), **Materialul** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS, ASA,
+  - **După CNC: buzunarele, găuririle și profilele parțiale ca trepte** (bifa de sub „Ce se imprimă”): fiecare piesă se
+    imprimă cum o lasă freza, din operațiile ei, nu din formele desenate. Marginea și golurile vin din profilele prin tot (pe
+    exterior sau pe interior, cel puțin cât grosimea foii); un buzunar, o găurire sau un profil parțial (cât lățimea frezei, pe
+    partea tăieturii) coboară zona lor la înălțimea minus adâncime, iar adâncimea rămâne în mm, măsurată de sus, oricare ar fi
+    înălțimea aleasă; ce trece prin tot (sau mai adânc decât înălțimea) e gol. Pe fiecare treaptă vin straturile pline de sus,
+    ca pe fața piesei. Urechile, rampele și intrările nu contează; V-carve-ul și gravura cu freza în V nu se imprimă (o gravură
+    în V n-are trepte drepte), iar fereastra spune câte sunt. O piesă fără profil exterior prin tot n-are margine: fereastra
+    spune asta.
+  - **Înălțimea:** **Una pentru toate** (câmpul **Înălțimea pentru toate**, implicit grosimea foii) sau **A fiecărei piese,
+    ținută în proiect**: lista pieselor alese, fiecare cu înălțimea ei, scrisă în piesă (în proiect, cu anularea obișnuită),
+    deci data viitoare vine singură; o piesă fără ea ia înălțimea pentru toate (cu proiectul deschis doar pentru citit, lista
+    nu se poate schimba).
+  - **Materialul** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS, ASA,
     PC, PA-CF, TPU, cu valorile profilelor Creality K1 din OrcaSlicer), **Calitatea** (straturi de 0,08, 0,12, 0,16, 0,20 sau
     0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare) și **Brim**
     (Automat: pentru piesele înguste sau înalte; Da; Nu).
@@ -1104,7 +1116,8 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
     browser, pentru data viitoare.
   - În dreapta, stratul ales, văzut de sus, cu liniile colorate după rol (peretele exterior, pereții interiori, plin, suprafața
     de sus, umplere rară, brim, călcarea, fusta) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
-    linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui, apoi
+    linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui (la o piesă cu trepte, un strat poate avea mai multe:
+    **cu o treaptă:** suprafața de sus a treptei, plinul de sub o față, umplerea rară), apoi
     straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame. Bifa **deplasările** arată, punctat, și
     drumurile duzei dintre linii.
   - **Duza** și **Patul** din „Simplu” schimbă și temperaturile primului strat (cu aceeași diferență față de ele cât are

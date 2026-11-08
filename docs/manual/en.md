@@ -1103,7 +1103,19 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   - **What to print:** **The parts of the sheet**, **The selected parts** or **One part**, picked from the list. The parts keep
     their layout from the sheet and are centred on the bed; what does not fit (220 × 220 mm on a K1C, with a 5 mm margin on
     each side) is said.
-  - **Height** (by default, the sheet thickness), **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
+  - **After CNC: pockets, drillings and partial profiles as steps** (the tick box under “What to print”): each part prints as
+    the cutter leaves it, from its operations, not from the drawn shapes. The edge and the holes come from the through
+    profiles (outside or inside, at least as deep as the sheet); a pocket, a drilling or a partial profile (the cutter’s width,
+    on the side of the cut) lowers its area to the height minus the depth, and the depth stays in mm, measured from the top,
+    whatever the chosen height; what goes all the way through (or deeper than the height) is a hole. Each step gets the solid
+    top layers, like the face of the part. Tabs, ramps and leads do not count; V-carves and engravings with a V bit do not
+    print (a V engraving has no straight steps), and the window says how many there are. A part without a through outside
+    profile has no edge: the window says so.
+  - **Height:** **One for all** (the **Height for all** field, by default the sheet thickness) or **Each part’s own, kept in
+    the project**: the list of the chosen parts, each with its height, written into the part (in the project, with the usual
+    undo), so next time it comes by itself; a part without one takes the height for all (with the project open read-only, the
+    list cannot change).
+  - **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
     ASA, PC, PA-CF, TPU, with the values of the Creality K1 profiles in OrcaSlicer), **Quality** (0.08, 0.12, 0.16, 0.20 or
     0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage)
     and **Brim** (Automatic: for narrow or tall parts; Yes; No).
@@ -1138,7 +1150,8 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
     back those of the chosen material and quality. The chosen settings are kept in the browser, for next time.
   - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
     surface, sparse infill, brim, ironing, skirt) over the part outline, thin and red: where only the red shows, the part is narrower than one
-    line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role,
+    line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role (on a part with steps, a layer can have several: **with a
+    step:** the top surface of the step, the solid under a face, the sparse infill),
     then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
     also shows, dotted, the nozzle’s paths between lines.
   - **Nozzle** and **Bed** in “Simple” also change the first layer temperatures (with the same difference from them as the

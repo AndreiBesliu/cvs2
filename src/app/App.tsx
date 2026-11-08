@@ -9,7 +9,8 @@ import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
-import { istoricNou, type Istoric } from '../model/jurnal.ts';
+import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
+import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
@@ -272,6 +273,16 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   curenta.current = { istoric, selectie };
   // Desenul pentru „Din desen…” al ferestrei Imprimanta (ADR 0191): citit la clic, din referință (o funcție stabilă).
   const [desenImprimanta] = useState(() => () => ({ doc: curenta.current.istoric.doc, selectie: curenta.current.selectie }));
+  // Înălțimea de imprimare a pieselor (ADR 0191, 3.6l), scrisă din același dialog: o comandă obișnuită (cu anularea), pe
+  // documentul de acum; în doar-citire, niciuna.
+  const scrieInaltimiImprimanta = doarCiteste(mod) ? null : (inaltimi: ReadonlyMap<string, number | null>): void => {
+    const h = curenta.current.istoric;
+    const c = comandaInaltimi(h.doc, inaltimi);
+    if (!c) return;
+    const nou = executaComanda(h, c);
+    curenta.current = { ...curenta.current, istoric: nou };
+    setIstoric(nou);
+  };
 
   const [paleta, setPaleta] = useState(false);
   /**
@@ -1257,7 +1268,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {imprimantaMontata && (
           <section className="fereastra-imprimanta" aria-label={t('vedere.imprimanta')} hidden={fereastra !== 'imprimanta'}>
             <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="imprimanta-incarca">{t('fereastra.imprimanta.incarca')}</p>}>
-              <PanouImprimanta desen={desenImprimanta} versiuneDesen={`${doc.rev}|${selectieValida.join(',')}`} />
+              <PanouImprimanta desen={desenImprimanta} versiuneDesen={`${doc.rev}|${selectieValida.join(',')}`} scrieInaltimi={scrieInaltimiImprimanta} />
             </Suspense>
           </section>
         )}

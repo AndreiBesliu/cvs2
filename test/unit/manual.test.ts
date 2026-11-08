@@ -234,12 +234,15 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'trimite-porneste': 'imprimanta.trimite.porneste', 'trimite-inchide': 'imprimanta.trimite.inchide',
   // Piesele plate din desen (felia 3.6j, ADR 0191): butonul și dialogul lui (`src/app/DialogDinDesen.tsx`).
   'din-desen': 'imprimanta.felie.din-desen', 'felie-ce-foaie': 'imprimanta.felie.ce.foaie', 'felie-ce-selectie': 'imprimanta.felie.ce.selectie',
-  'felie-ce-piesa': 'imprimanta.felie.ce.piesa', 'felie-piesa': 'imprimanta.felie.ce.piesa', 'felie-inaltime': 'imprimanta.felie.inaltime',
+  'felie-ce-piesa': 'imprimanta.felie.ce.piesa', 'felie-piesa': 'imprimanta.felie.ce.piesa', 'felie-inaltime': 'imprimanta.felie.inaltime.camp',
   'felie-material': 'imprimanta.felie.material', 'felie-calitate': 'imprimanta.felie.calitate', 'felie-duza': 'imprimanta.felie.duza',
   'felie-pat': 'imprimanta.felie.pat-temp', 'felie-pereti': 'imprimanta.felie.pereti', 'felie-umplere': 'imprimanta.felie.umplere',
   'felie-brim': 'imprimanta.felie.brim', 'felie-avansat': 'imprimanta.felie.avansat', 'felie-implicite': 'imprimanta.felie.implicite',
   'felie-strat': 'imprimanta.felie.strat', 'felie-trimite': 'imprimanta.felie.trimite', 'felie-salveaza': 'imprimanta.felie.salveaza',
   'felie-renunta': 'imprimanta.felie.renunta', 'felie-deplasari': 'imprimanta.felie.deplasari',
+  // Felia 3.6l: piesa „după CNC” și înălțimea (una pentru toate, a fiecărei piese; rândul unei piese poartă numele ei).
+  'felie-dupa-cnc': 'imprimanta.felie.dupa-cnc', 'felie-inaltime-toate': 'imprimanta.felie.inaltime.toate',
+  'felie-inaltime-piese': 'imprimanta.felie.inaltime.piese', 'felie-inaltime-piesa': 'imprimanta.felie.inaltime.piese',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {

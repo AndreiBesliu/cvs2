@@ -491,6 +491,21 @@
   gap: var(--sp-2);
 }
 
+/* Înălțimea (felia 3.6l): câmpurile numerice rămân pe două rânduri (eticheta, apoi câmpul), ca în restul dialogului. */
+.imprimanta-felie-ce label.imprimanta-camp {
+  display: grid;
+  align-items: stretch;
+  gap: 4px;
+}
+
+/* Lista pieselor, fiecare cu înălțimea ei, sub alegerea ei. */
+.imprimanta-felie-piese {
+  display: grid;
+  gap: var(--sp-1);
+  padding-left: 1.6em;
+  min-width: 0;
+}
+
 .imprimanta-felie-doua {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

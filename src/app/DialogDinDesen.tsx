@@ -6,6 +6,9 @@
  * prea subțire); salvarea fișierului și trimiterea lui prin dialogul de la 3.6h (aceeași verificare, aceeași bifă „Patul e
  * gol” la pornire).
  *
+ * Felia 3.6l: „După CNC” (fiecare piesă cum o lasă freza, cu buzunarele, găuririle și profilele parțiale ca trepte; V-carve-ul
+ * nu se imprimă, cu o notă) și înălțimea fiecărei piese, ținută în proiect (`scrieInaltimi`: o comandă obișnuită, cu anularea).
+ *
  * Desenul se citește la deschidere și din nou la fiecare schimbare a lui (`versiune`: documentul sau selecția), ca un fișier
  * salvat după o trecere prin Proiectare să fie al desenului de acum. Felierea rulează pe firul principal, după o pauză scurtă
  * de la ultima schimbare a unei setări: o piesă plată se calculează pe feluri de strat, nu strat cu strat (ADR 0191). Setările
@@ -38,6 +41,26 @@ function citesteSetari(): SetariFeliere {
 function scrieSetari(s: SetariFeliere): void {
   try { localStorage.setItem(CHEIE, JSON.stringify(s)); } catch { /* fără stocare: rămân doar în dialog */ }
 }
+
+/** Alegerile dialogului care nu sunt setări ale felierii (3.6l): „După CNC” și felul înălțimii, ținute tot în browser. */
+type Alegeri = { readonly dupaCnc: boolean; readonly inaltimi: 'toate' | 'piese' };
+const CHEIE_ALEGERI = 'cvs2.imprimanta.felie.alegeri';
+
+function citesteAlegeri(): Alegeri {
+  try {
+    const x = JSON.parse(localStorage.getItem(CHEIE_ALEGERI) ?? '{}') as Record<string, unknown>;
+    return { dupaCnc: x.dupaCnc === true, inaltimi: x.inaltimi === 'piese' ? 'piese' : 'toate' };
+  } catch {
+    return { dupaCnc: false, inaltimi: 'toate' };
+  }
+}
+
+function scrieAlegeri(a: Alegeri): void {
+  try { localStorage.setItem(CHEIE_ALEGERI, JSON.stringify(a)); } catch { /* fără stocare: rămân doar în dialog */ }
+}
+
+/** Înălțimea unei piese ținută în proiect, dacă e un număr în limitele imprimantei. */
+const inaltimePiesa = (h: unknown): number | null => (typeof h === 'number' && Number.isFinite(h) && h >= 0.2 && h <= K1C.pat[2] ? h : null);
 
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
 const numar = (v: number, z = 2): string => v.toLocaleString(loc(), { maximumFractionDigits: z });
@@ -165,9 +188,9 @@ function Previzualizare({ rez, strat, deplasari }: { readonly rez: RezultatFelie
  * acum (altfel nimic nu se refeliază, iar un clic pe un buton nu se pierde); după aceea, câmpul arată valoarea luată (adusă
  * în limite), nu textul scris.
  */
-function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
+function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data, dezactivat }: {
   readonly valoare: number; readonly procent?: boolean; readonly pas: number; readonly la: (v: number) => void; readonly id: string;
-  readonly eticheta: string; readonly unitate: string; readonly data?: string;
+  readonly eticheta: string; readonly unitate: string; readonly data?: string; readonly dezactivat?: boolean;
 }): ReactNode {
   const arata = (v: number): string => String(Number((procent ? v * 100 : v).toFixed(4)));
   const [text, setText] = useState(arata(valoare));
@@ -181,7 +204,7 @@ function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
   return (
     <label className="imprimanta-camp imprimanta-felie-camp" htmlFor={id}>
       <span>{eticheta}{unitate ? ` (${unitate})` : ''}</span>
-      <input id={id} type="text" inputMode="decimal" value={text} step={pas} autoComplete="off" spellCheck={false}
+      <input id={id} type="text" inputMode="decimal" value={text} step={pas} autoComplete="off" spellCheck={false} disabled={dezactivat === true}
         {...(data ? { 'data-imprimanta': data } : { 'data-felie': id.replace(/^felie-/, '') })}
         onChange={(e) => { setText(e.target.value); }} onBlur={ia}
         onKeyDown={(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); ia(); } }} />
@@ -189,9 +212,11 @@ function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data }: {
   );
 }
 
-export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
+export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrieInaltimi = null }: {
   readonly sursa: () => DesenImprimanta; readonly versiune: string; readonly model: string | null;
   readonly trimite: ((f: File) => void) | null; readonly inchide: () => void;
+  /** Scrie înălțimea pieselor în proiect (după id; null = scoate); null: proiectul nu se poate scrie. */
+  readonly scrieInaltimi?: ((m: ReadonlyMap<string, number | null>) => void) | null;
 }): ReactNode {
   const [desen, setDesen] = useState(sursa);
   const prima = useRef(true);
@@ -211,9 +236,21 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
   const [avansat, setAvansat] = useState(false);
   const [deplasari, setDeplasari] = useState(false);
   const pat = K1C.pat;
+  const [alegeri, setAlegeri] = useState<Alegeri>(citesteAlegeri);
+  useEffect(() => { scrieAlegeri(alegeri); }, [alegeri]);
   const sursaFel: SursaFeliere = ce === 'foaie' ? { fel: 'foaie' } : ce === 'selectie' ? { fel: 'selectie', ids: selectate } : { fel: 'piesa', id: piesa };
   const cheieSursa = ce === 'piesa' ? `piesa:${piesa}` : ce;
-  const alese = useMemo(() => pieseDinDocument(desen.doc, sursaFel, inaltime, [pat[0], pat[1]]), [desen, cheieSursa, inaltime]);
+  // Piesele documentului din alegere (o piesă poate avea mai multe instanțe), cu înălțimea ținută în proiect, dacă o au.
+  const pieseAlese = useMemo(() => {
+    const ids = new Set(instante.filter((i) => ce === 'foaie' || (ce === 'selectie' ? selectate.includes(i.id) : i.id === piesa)).map((i) => i.piesa));
+    return desen.doc.piese.filter((p) => ids.has(p.id)).map((p) => ({
+      id: p.id, nume: p.nume ?? `#${instante.findIndex((i) => i.piesa === p.id) + 1}`, h: inaltimePiesa(p.inaltimeImprimanta),
+    }));
+  }, [desen, cheieSursa]);
+  const alese = useMemo(() => pieseDinDocument(desen.doc, sursaFel, inaltime, [pat[0], pat[1]], {
+    dupaCnc: alegeri.dupaCnc,
+    ...(alegeri.inaltimi === 'piese' ? { inaltimi: new Map(pieseAlese.map((p) => [p.id, p.h ?? inaltime])) } : {}),
+  }), [desen, cheieSursa, inaltime, alegeri, pieseAlese]);
   const [rez, setRez] = useState<RezultatFeliere | null>(null);
   const [lucreaza, setLucreaza] = useState(true);
   // Stratul arătat: 0 = încă neales de om (atunci cel din mijloc), altfel cel ales, cel mult ultimul.
@@ -239,8 +276,8 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
   if (model !== null && !/k1c/i.test(model.replace(/[\s_-]/g, ''))) avert.push(t('imprimanta.felie.alt-model', { model }));
   if (alese.deschise > 0) avert.push(t('imprimanta.felie.deschise', { n: alese.deschise }));
   for (const r of alese.refuzate) {
-    avert.push(r.motiv === 'unire' ? t('imprimanta.felie.refuz.unire', { piesa: r.eticheta, motiv: r.detaliu ?? '' })
-      : t(r.motiv === 'prea-multe' ? 'imprimanta.felie.refuz.prea-multe' : 'imprimanta.felie.refuz.fara-forme', { piesa: r.eticheta }));
+    avert.push(r.motiv === 'unire' || r.motiv === 'cnc' ? t(`imprimanta.felie.refuz.${r.motiv}`, { piesa: r.eticheta, motiv: r.detaliu ?? '' })
+      : t(`imprimanta.felie.refuz.${r.motiv}`, { piesa: r.eticheta }));
   }
   if (!alese.incape) avert.push(t('imprimanta.felie.nu-incape', { l: numar(alese.latime, 1), a: numar(alese.adancime, 1), x: pat[0] - 10, y: pat[1] - 10 }));
   for (const a of rez?.avertismente ?? []) {
@@ -257,15 +294,27 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
   const n = g?.straturi ?? 0;
   const strat = n === 0 ? 1 : alesStrat === 0 ? Math.ceil(n / 2) : Math.min(alesStrat, n);
   const hReal = n === 0 ? 0 : s.strat1 + (n - 1) * s.strat;
+  // Înălțimea cerută: cea pentru toate, sau a celei mai înalte piese ieșite (fiecare cu a ei).
+  const hCerut = alegeri.inaltimi === 'piese' && alese.piese.length > 0 ? Math.max(...alese.piese.map((p) => p.inaltime)) : inaltime;
   const fel = g?.plan[strat - 1]?.piese[0]?.fel;
   // Felul stratului ales: rolul, modelul (cu numele lui din listă) și unghiul.
   const cf = fel === undefined ? null : citesteFel(fel);
-  const unghi = cf ? String(cf.u % 180) : '';
+  const textSus = (u: number): string => t('imprimanta.felie.fel.sus', { model: t(`imprimanta.felie.o.${s.modelSus}`), unghi: String(u % 180) });
+  const textPlin = (u: number): string => t('imprimanta.felie.fel.plin', { model: t(`imprimanta.felie.o.${s.modelPlin}`), unghi: String(u % 180) });
+  const textRar = (): string => t('imprimanta.felie.fel.rar', { model: t(`imprimanta.felie.o.${s.modelRar}`) });
+  // Un strat cu trepte are mai multe părți: fiecare, cu modelul ei (suprafața de sus a treptei, plinul de sub o față, umplerea).
+  const tr = cf?.trepte;
   const textFel = cf === null ? ''
     : cf.tip === 'prim' ? t('imprimanta.felie.fel.prim', { model: t(`imprimanta.felie.o.${s.modelJos}`) })
-      : cf.tip === 'rar' ? t('imprimanta.felie.fel.rar', { model: t(`imprimanta.felie.o.${s.modelRar}`) })
-        : cf.tip === 'sus' ? t('imprimanta.felie.fel.sus', { model: t(`imprimanta.felie.o.${s.modelSus}`), unghi })
-          : t('imprimanta.felie.fel.plin', { model: t(`imprimanta.felie.o.${s.modelPlin}`), unghi });
+      : cf.tip === 'rar' ? textRar()
+        : cf.tip === 'sus' ? textSus(cf.u)
+          : cf.tip === 'plin' ? textPlin(cf.u)
+            : t('imprimanta.felie.fel.trepta', {
+              parti: [
+                ...(tr && tr.uSus !== null ? [textSus(tr.uSus)] : []), ...(tr && tr.b1 >= 0 && tr.bs !== tr.b1 ? [textPlin(tr.uPlin ?? 0)] : []),
+                ...(tr && tr.bs >= 0 ? [textRar()] : []),
+              ].join(' + '),
+            });
   const numeBaza = alese.piese.length === 1 ? alese.piese[0]!.eticheta : (foaie?.nume ?? 'cvs2');
   const fisier = (): File | null => (g === null ? null : new File([g.text], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' }));
   const salveaza = (): void => {
@@ -298,10 +347,36 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
               onChange={(e) => { setPiesa(e.target.value); }}>
               {instante.map((i, k) => <option key={i.id} value={i.id}>{numeInstanta(i.id, k)}</option>)}
             </select>
+            <label className="imprimanta-camp-bifa">
+              <input type="checkbox" data-imprimanta="felie-dupa-cnc" checked={alegeri.dupaCnc}
+                onChange={(e) => { const dupaCnc = e.target.checked; setAlegeri((x) => ({ ...x, dupaCnc })); }} />
+              <span>{t('imprimanta.felie.dupa-cnc')}</span>
+            </label>
+            {alegeri.dupaCnc && <p className="imprimanta-ajutor">{t('imprimanta.felie.dupa-cnc.ajutor')}</p>}
+            {alegeri.dupaCnc && alese.vcarve > 0 && (
+              <p className="imprimanta-ajutor" data-testid="imprimanta-felie-vcarve">{t('imprimanta.felie.dupa-cnc.vcarve', { n: alese.vcarve })}</p>
+            )}
           </fieldset>
-          <CampNumar id="felie-inaltime" data="felie-inaltime" eticheta={t('imprimanta.felie.inaltime')} unitate="mm" pas={0.2} valoare={inaltime}
-            la={(v) => { setInaltime(Math.min(K1C.pat[2], Math.max(0.2, v))); }} />
-          <p className="imprimanta-ajutor">{t('imprimanta.felie.inaltime.ajutor', { g: numar(grosime) })}</p>
+          <fieldset className="imprimanta-felie-ce imprimanta-felie-inaltimi">
+            <legend>{t('imprimanta.felie.inaltime')}</legend>
+            <label><input type="radio" name="felie-inaltimi" data-imprimanta="felie-inaltime-toate" checked={alegeri.inaltimi === 'toate'}
+              onChange={() => { setAlegeri((x) => ({ ...x, inaltimi: 'toate' })); }} />{t('imprimanta.felie.inaltime.toate')}</label>
+            <CampNumar id="felie-inaltime" data="felie-inaltime" eticheta={t('imprimanta.felie.inaltime.camp')} unitate="mm" pas={0.2} valoare={inaltime}
+              la={(v) => { setInaltime(Math.min(K1C.pat[2], Math.max(0.2, v))); }} />
+            <p className="imprimanta-ajutor">{t('imprimanta.felie.inaltime.ajutor', { g: numar(grosime) })}</p>
+            <label><input type="radio" name="felie-inaltimi" data-imprimanta="felie-inaltime-piese" checked={alegeri.inaltimi === 'piese'}
+              onChange={() => { setAlegeri((x) => ({ ...x, inaltimi: 'piese' })); }} />{t('imprimanta.felie.inaltime.piese')}</label>
+            {alegeri.inaltimi === 'piese' && (
+              <div className="imprimanta-felie-piese" data-testid="imprimanta-felie-piese">
+                {pieseAlese.map((p) => (
+                  <CampNumar key={p.id} id={`felie-h-${p.id}`} data="felie-inaltime-piesa" eticheta={p.nume} unitate="mm" pas={0.2}
+                    valoare={p.h ?? inaltime} dezactivat={scrieInaltimi === null}
+                    la={(v) => { scrieInaltimi?.(new Map([[p.id, Math.min(K1C.pat[2], Math.max(0.2, v))]])); }} />
+                ))}
+                <p className="imprimanta-ajutor">{t(scrieInaltimi === null ? 'imprimanta.felie.inaltime.piese.doar-citire' : 'imprimanta.felie.inaltime.piese.ajutor')}</p>
+              </div>
+            )}
+          </fieldset>
           <div className="imprimanta-felie-doua">
             <label className="imprimanta-camp"><span>{t('imprimanta.felie.material')}</span>
               <select data-imprimanta="felie-material" value={s.material} onChange={(e) => { const id = e.target.value; setS((x) => cuMaterial(x, id)); }}>
@@ -389,7 +464,7 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide }: {
               <p className="imprimanta-felie-rezumat" data-testid="imprimanta-felie-rezumat">
                 {t('imprimanta.felie.rezumat', { n, timp: timpText(g.timp), m: numar(g.filamentMm / 1000), g: numar(g.filamentG, 1), material: mt.nume })}
               </p>
-              {Math.abs(hReal - inaltime) > 1e-3 && (
+              {Math.abs(hReal - hCerut) > 1e-3 && (
                 <p className="imprimanta-ajutor" data-testid="imprimanta-felie-inaltime-reala">
                   {t('imprimanta.felie.inaltime-reala', { h: numar(hReal), n, s: numar(s.strat) })}</p>
               )}

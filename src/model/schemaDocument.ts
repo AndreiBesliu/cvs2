@@ -165,7 +165,10 @@ const SchemaOperatie = v.looseObject({
     jurDop: v.picklist(['fata', 'banda']),
   })),
 });
-const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
+/** `inaltimeImprimanta` (ADR 0191, 3.6l): opțională, fără schemă nouă (nu schimbă tăierea), ca ghidajele foii. */
+const SchemaPiesa = v.looseObject({
+  id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie), inaltimeImprimanta: v.optional(pozitiv(PLAFON.grosime)),
+});
 const SchemaInstanta = v.looseObject({
   id: Id,
   piesa: Id,

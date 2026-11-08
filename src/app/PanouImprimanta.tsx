@@ -88,7 +88,10 @@ const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleStrin
 const gazdaPort = (a: AdresaRetea): string => (a.port === PORT_CREALITY ? a.gazda : `${a.gazda}:${a.port}`);
 const textMotiv = (m: MotivImprimanta, a: AdresaRetea | null): string => t(`imprimanta.motiv.${m}`, { adresa: a ? gazdaPort(a) : '—' });
 
-export function PanouImprimanta({ desen, versiuneDesen }: { readonly desen?: SursaDesen; readonly versiuneDesen?: string }): ReactNode {
+/** `scrieInaltimi`: scrie înălțimea de imprimare a pieselor în proiect (3.6l); null în doar-citire, lipsă fără proiect. */
+export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi }: {
+  readonly desen?: SursaDesen; readonly versiuneDesen?: string; readonly scrieInaltimi?: ((m: ReadonlyMap<string, number | null>) => void) | null;
+}): ReactNode {
   const st = useSyncExternalStore((f) => sesiune.aboneaza(f), () => sesiune.stare());
   const [tinute, setTinute] = useState<readonly ImprimantaTinuta[]>(citesteTinute);
   const tine = (f: (l: readonly ImprimantaTinuta[]) => readonly ImprimantaTinuta[]): void => {
@@ -126,6 +129,7 @@ export function PanouImprimanta({ desen, versiuneDesen }: { readonly desen?: Sur
       {dinDesen && desen !== undefined && (
         <Suspense fallback={<p role="status">{t('imprimanta.felie.lucreaza')}</p>}>
           <DialogDinDesen sursa={desen} versiune={versiuneDesen ?? ''} model={st.imprimanta.model} inchide={inchideDinDesen}
+            scrieInaltimi={scrieInaltimi ?? null}
             trimite={sePoateTrimite ? (f) => { setDinDesen(false); setDeTrimis((x) => ({ f, k: (x?.k ?? 0) + 1 })); } : null} />
         </Suspense>
       )}

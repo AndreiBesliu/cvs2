@@ -228,7 +228,12 @@ export const COBORARE_MINIME = { unghi: 0.5, lungime: 1, raza: 0.5 } as const;
 export type TipOperatie = 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
 /** Cel mai mare număr de pași dintre două ieșiri complete ale găuririi (ADR 0087). */
 export const RETRAGERE_COMPLETA_MAXIMA = 100;
-export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
+/**
+ * `inaltimeImprimanta` (ADR 0191, felia 3.6l): înălțimea piesei plate pe imprimanta 3D, în mm, ținută în proiect din dialogul
+ * „Din desen…”; lipsă = cea aleasă acolo pentru toate. Nu schimbă nimic din ce se taie, deci a intrat fără schemă nouă (ca
+ * ghidajele foii, ADR 0050).
+ */
+export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; inaltimeImprimanta?: number; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
 export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;

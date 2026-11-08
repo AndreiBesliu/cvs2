@@ -6,7 +6,7 @@ disponibile in soft”. Deci toate variantele care pot sta împreună devin opț
 3.6j întâi fără imprimantă, pe imprimanta falsă, apoi o placă de probă pe imprimanta owner-ului, în worktree-ul `imprimanta`
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
 K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”).
-**Felia 3.6l** propusă pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese, cu două întrebări. Cererea owner-ului, din 07.11: „cum pot sa
+**Felia 3.6l** acceptată pe 08.11 („Da, recomandările”; secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -279,7 +279,10 @@ La „Da, 3.6k”: răspunsul 3b mai departe, cu toate variantele OrcaSlicer car
   citite; tăierea polilinilor); e2e +1 (listele și bifele din „Avansat”, giroidul, călcarea, fusta pe pânză, ștergerea în
   fișier și oprită); otrăvurile `test/otravuri/3.6k.py` (58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate)). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
 
-## Felia 3.6l (propusă, 08.11.2026): piesa „după CNC” și înălțimea fiecărei piese
+## Felia 3.6l (acceptată, 08.11.2026): piesa „după CNC” și înălțimea fiecărei piese
+
+**Răspunsul owner-ului (08.11):** „Da, recomandările”: A a (V-carve-ul se ignoră, cu o notă în dialog) și B a (adâncimile
+rămân aceleași, în mm, măsurate de sus). Schița: <https://claude.ai/artifact/7XG7M4A5imWUngG4VmtgZw>.
 
 La „Da, 3.6l”: răspunsurile 1c, 2b și 2c. Cercetarea, în cod [citit]:
 
@@ -311,6 +314,39 @@ La „Da, 3.6l”: răspunsurile 1c, 2b și 2c. Cercetarea, în cod [citit]:
   aproape de piesa CNC, cel mai mult cod). Pot sta împreună ca opțiuni (b și c), dacă le vrei pe toate.
 - **B. Adâncimile, când înălțimea aleasă nu e grosimea foii:** a) rămân aceleași, în mm, măsurate de sus (recomandat: un buzunar de
   3 mm rămâne de 3 mm); b) se scalează cu înălțimea (piesa CNC, întinsă pe Z). Se exclud pentru aceeași piesă; pot fi o alegere.
+
+**Implementarea (08.11):**
+
+- **După CNC** (`src/cam/feliere/dupaCnc.ts`): fiecare instanță, din tăieturile ei (`taieturiFoaie`). Marginea și golurile:
+  inelele prin tot (profil exterior / interior, adâncimea cel puțin cât grosimea foii G, fără freză în V), cu
+  `regiunePastrata`; contururile sunt inelele de margine (piesa de o parte, altceva de cealaltă), citite par-impar. Fără niciun
+  inel de piesă, refuz („fără margine”); un refuz al regiunii păstrate (inele care se ating), cu motivul ei. Treptele: buzunarele
+  (pe adâncimi, par-impar, ca lucrarea: un contur într-altul de aceeași adâncime e insulă), găuririle (cercul desenului),
+  profilele parțiale și cele pe căi deschise (ce scoate freza purtată pe traseul centrului ei, din `profil()`: capsulele
+  segmentelor, la raza frezei; pe o parte, cu oglindirea). Prin tot (adâncimea cel puțin G, intenția de pe CNC, sau cel puțin
+  înălțimea H aleasă): gaură. Înălțimea treptei: H minus adâncimea (B a). Urechile, rampele, intrările și degajările nu
+  contează; V-carve-ul și orice tăietură cu freza în V se numără, pentru notă (A a). O formă fără operație nu e gaură.
+- **Booleanele** (`trepte.ts`): `normalizeaza` din ușa importului (nonzero → par-impar: muchiile comune, tangențele și arcele
+  exacte), cu o cutie: A minus U = B minus (compl(A) ∪ U), intersecția la fel; un singur apel pe combinație. Probat pe hârtie (un
+  buzunar care atinge două margini, un cerc, o treaptă care iese din piesă) și pe capsule (puncte la cel mult r de cale).
+- **Motorul:** benzile (`benziPiesa`): înălțimile treptelor, ca număr de straturi; banda b are regiunea benzii de dedesubt minus
+  treptele care se termină sub ea; cu aceeași arie, se unesc; goală, taie vârful piesei. Felul stratului (`fel.ts`): la o piesă
+  cu trepte, de la stratul 2, cheia `t:b:b1:bs:…` (banda lui, a stratului de deasupra, a celui cu `sus` straturi mai sus);
+  părțile: suprafața de sus în R_b minus R_b1, plinul în R_b1 minus R_bs, umplerea rară în R_bs, fiecare cu modelul, lățimea și
+  suprapunerea ei; pereții, ai benzii. Primul strat rămâne suprafața de jos peste toată piesa (ca OrcaSlicer, unde jos și sus se
+  suprapun). Călcarea: „toate suprafețele de sus” și fața fiecărei trepte; „doar cea mai de sus”, doar vârful; „toate
+  straturile pline”, și plinul de sub o treaptă. Deplasările se judecă pe conturul benzii (retragerea peste golul unei trepte).
+  Ce nu iese (mai îngust decât o linie), pe fiecare bandă. **O piesă fără trepte merge pe drumul de până acum:** 171 de variante
+  (modelele, cusăturile, călcarea, fusta, brim-ul; trei piese) dau aceleași fișiere, octet cu octet, ca înainte.
+- **Înălțimea în proiect:** `inaltimeImprimanta` (mm) în piesă (tipul și schema: opțională, pozitivă, ca ghidajele foii, fără
+  versiune nouă); scrisă de `comandaInaltimi` (`src/model/inaltimeImprimanta.ts`), o comandă obișnuită (un pas, cu anularea),
+  prin App → fereastra Imprimanta → dialog; în doar-citire, lista nu se schimbă.
+- **Dialogul:** bifa „După CNC: buzunarele, găuririle și profilele parțiale ca trepte” (cu ajutorul și nota V-carve-ului),
+  „Înălțimea”: „Una pentru toate” sau „A fiecărei piese, ținută în proiect” (lista pieselor alese); alegerile, în browser;
+  stratul cu treaptă își spune părțile („cu o treaptă: …”). Manualul, în ambele limbi.
+- **Nu acum:** grosimea verticală sub pereții treptelor (`ensure_vertical_shell_thickness` din OrcaSlicer: plinul sub pereții
+  unei benzi de sus); la noi, pereții de deasupra unei trepte stau pe umplerea rară. De propus ca felie (o opțiune), după proba
+  plăcii.
 
 ## Întrebările (owner)
 

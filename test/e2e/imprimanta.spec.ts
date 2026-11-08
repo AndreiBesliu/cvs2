@@ -476,6 +476,120 @@ test('Din desen…, Avansat (3.6k): modelul umplerii, călcarea și fusta, în p
   expect(fara).toContain('\n; wipe = 0\n');
 });
 
+/** Proiectul unei plăci de 100 × 60 × 18, cu operațiile ei: profil exterior prin tot, buzunar de 6, găurire prin tot, găurire de 3, canelură de 2, V-carve. */
+const I3 = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+const op3 = (id: string, tip: string, noduri: string[], latura: string, adancime: number, extra: Record<string, unknown> = {}) => ({
+  id, tip, noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime, pas: 3, urechi: null, rampa: null, intrari: null,
+  colturi: null, ...(tip === 'buzunar' ? { pasLateral: 2.4 } : {}), ...extra,
+});
+const el3 = (id: string, forma: Record<string, unknown>, e = 0, f = 0) => ({ tip: 'element', id, matrice: { ...I3, e, f }, forma });
+const cale3 = (pts: [number, number][], inchis = false) => ({ tip: 'cale', inchis, varfuri: pts.map(([x, y]) => ({ p: { x, y }, s: { tip: 'L' } })) });
+// `rev` = cheia versiunii puse în bază: altfel prima salvare a filei ar fi un conflict (o versiune mai nouă, a altei file).
+const PROIECT_CNC = {
+  schema: 20, rev: 1_000_000,
+  piese: [{
+    id: 'p', nume: 'Placă', radacina: { tip: 'grup', id: 'g', matrice: { ...I3 }, copii: [
+      el3('a', cale3([[0, 0], [100, 0], [100, 60], [0, 60]], true)), el3('b', cale3([[50, 15], [90, 15], [90, 45], [50, 45]], true)),
+      el3('c', { tip: 'cerc', raza: 5 }, 15, 30), el3('d', { tip: 'cerc', raza: 4 }, 30, 15), el3('e', cale3([[10, 50], [40, 50]])),
+      el3('v', cale3([[20, 5], [30, 5], [30, 10], [20, 10]], true)),
+    ] },
+    operatii: [
+      op3('o1', 'profil', ['a'], 'exterior', 18.5), op3('o2', 'buzunar', ['b'], 'interior', 6), op3('o3', 'gaurire', ['c'], 'interior', 19),
+      op3('o4', 'gaurire', ['d'], 'interior', 3), op3('o5', 'profil', ['e'], 'pe-linie', 2),
+      op3('o6', 'vcarve', ['v'], 'interior', 2, { scula: { numar: 2, nume: 'V', diametru: 10, forma: { tip: 'v', unghi: 60 } } }),
+    ],
+  }],
+  foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 20, y: 20, rotire: 0 }] }],
+};
+
+/** Scrie proiectul direct în baza aplicației (ca o salvare), apoi reîncarcă: aplicația îl deschide. */
+const deschideProiect = async (page: Page, text: string): Promise<void> => {
+  await page.goto('/');
+  await expect(page.getByTestId('lista-vectori')).toBeVisible();
+  await page.evaluate(async (t) => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-proiecte', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    await new Promise<void>((ok, eroare) => {
+      const tx = db.transaction('versiuni', 'readwrite');
+      tx.objectStore('versiuni').put(t, ['proiect', 1_000_000]);
+      tx.oncomplete = () => { ok(); };
+      tx.onerror = () => { eroare(tx.error); };
+    });
+    db.close();
+  }, text);
+  await page.reload();
+  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible();
+};
+
+test('Din desen…, după CNC (3.6l): treptele buzunarului, V-carve-ul spus; înălțimea piesei scrisă în proiect, anulată, refăcută și ținută la redeschidere', async ({ page }) => {
+  await deschideProiect(page, JSON.stringify(PROIECT_CNC));
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  // Formele desenate: 90 de straturi, fără trepte (buzunarul e o gaură, ca orice formă închisă dinăuntru).
+  const rezumat = page.getByTestId('imprimanta-felie-rezumat'), fel = page.getByTestId('imprimanta-felie-fel'), strat = page.locator('[data-imprimanta="felie-strat"]');
+  await expect(rezumat).toContainText('90 straturi');
+  await strat.fill('60');
+  await expect(fel).toContainText('umplere rară');
+  await expect(fel).not.toContainText('treaptă');
+  // După CNC: nota V-carve-ului; fundul buzunarului (stratul 60) e o treaptă, cu suprafața de sus și umplerea rară.
+  await page.locator('[data-imprimanta="felie-dupa-cnc"]').check();
+  await felieGata(page);
+  await expect(page.getByTestId('imprimanta-felie-vcarve')).toContainText('O tăietură în V');
+  await expect(page.getByTestId('imprimanta-felie-avert')).toHaveCount(0);
+  await strat.fill('60');
+  await expect(fel).toContainText('cu o treaptă: suprafața de sus');
+  await expect(fel).toContainText('umplere rară');
+  await strat.fill('61');
+  await expect(fel).not.toContainText('treaptă');
+  // Înălțimea piesei, ținută în proiect: 10 mm dau 50 de straturi; buzunarul de 6 mm are fundul la 4 mm (stratul 20).
+  await page.locator('[data-imprimanta="felie-inaltime-piese"]').check();
+  const rand = page.getByTestId('imprimanta-felie-piese').locator('[data-imprimanta="felie-inaltime-piesa"]');
+  await expect(rand).toHaveCount(1);
+  await expect(rand).toHaveValue('18');
+  await rand.fill('10');
+  await rand.press('Enter');
+  await felieGata(page);
+  await expect(rezumat).toContainText('50 straturi');
+  await expect(rand).toHaveValue('10');
+  // Înălțimea cerută e a piesei (10 mm), deci nota „Piesa iese de … mm” nu apare.
+  await expect(page.getByTestId('imprimanta-felie-inaltime-reala')).toHaveCount(0);
+  await strat.fill('20');
+  await expect(fel).toContainText('cu o treaptă');
+  const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+  const text = await (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  expect(text.split('\n').filter((l) => l === ';LAYER_CHANGE')).toHaveLength(50);
+  expect(text).toContain('\n;Z:4\n');
+  // Anularea, din Proiectare: înălțimea piesei se scoate; în dialog, cea pentru toate (18), 90 de straturi.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.keyboard.press('Control+z');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(rand).toHaveValue('18');
+  await felieGata(page);
+  await expect(rezumat).toContainText('90 straturi');
+  // Refacerea, apoi redeschiderea: înălțimea vine din proiect, iar alegerile dialogului, din browser.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.keyboard.press('Control+Y');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(rand).toHaveValue('10');
+  await page.reload();
+  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible();
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(page.locator('[data-imprimanta="felie-dupa-cnc"]')).toBeChecked();
+  await expect(page.locator('[data-imprimanta="felie-inaltime-piese"]')).toBeChecked();
+  await expect(rand).toHaveValue('10');
+  await expect(rezumat).toContainText('50 straturi');
+  // Una pentru toate: înălțimea piesei rămâne în proiect, dar nu se folosește.
+  await page.locator('[data-imprimanta="felie-inaltime-toate"]').check();
+  await felieGata(page);
+  await expect(rezumat).toContainText('90 straturi');
+});
+
 test('Din desen…, cu imprimanta legată: „Trimite la imprimantă” trece prin verificarea de la 3.6h, iar fișierul ajunge întreg', async ({ page }) => {
   const imp = await porneste({});
   await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));

@@ -4,15 +4,20 @@
  * cuprindere (par-impar), iar formele care se suprapun doar în parte se unesc întâi: o gaură apărută din unire scade ce o
  * suprapune mai târziu. Căile deschise nu se imprimă: se numără. Apoi grupul se centrează pe pat, iar ce nu încape (cu
  * marginea) se refuză, cu mărimea.
+ *
+ * „După CNC” (felia 3.6l, `dupaCnc.ts`): fiecare instanță, cum o lasă freza, din operațiile ei (marginea din profilele prin tot,
+ * buzunarele, găuririle și profilele parțiale ca trepte), nu din formele desenate. Înălțimea poate fi a fiecărei piese.
  */
 import { conturDeTaiat } from '../contur.ts';
+import { formeDupaCnc } from './dupaCnc.ts';
+import type { Treapta } from './trepte.ts';
 import type { Contur } from '../../geom/conturBaza.ts';
 import { cutieContur, uneste, CUTIE_GOALA, type Cutie } from '../../geom/cutie.ts';
 import { arieCuSemn } from '../../geom/contur.ts';
 import { inRegiune } from '../../geom/distanta.ts';
 import { booleanContururi, intersectiiIntre, type RegiuneBoolean } from '../../geom/offset.ts';
 import type { Document } from '../../model/document.ts';
-import { elementeFoaie, type ElementLume } from '../../model/lume.ts';
+import { elementeFoaie, taieturiFoaie, type ElementLume, type Taietura } from '../../model/lume.ts';
 
 /** Ce se imprimă: piesele foii, cele selectate sau o singură instanță. */
 export type SursaFeliere =
@@ -20,18 +25,27 @@ export type SursaFeliere =
   | { readonly fel: 'selectie'; readonly ids: readonly string[] }
   | { readonly fel: 'piesa'; readonly id: string };
 
-/** O piesă de imprimat: instanța, numele obiectului pentru imprimantă, formele (în coordonatele patului) și înălțimea. */
-export type PiesaPlata = { readonly id: string; readonly nume: string; readonly eticheta: string; readonly contururi: readonly Contur[]; readonly inaltime: number };
+/**
+ * O piesă de imprimat: instanța, numele obiectului pentru imprimantă, formele (în coordonatele patului, par-impar), înălțimea
+ * și, la o piesă „după CNC”, treptele (zonele care se opresc mai jos; golurile prin tot sunt deja în forme).
+ */
+export type PiesaPlata = {
+  readonly id: string; readonly nume: string; readonly eticheta: string; readonly contururi: readonly Contur[]; readonly inaltime: number;
+  readonly trepte?: readonly Treapta[];
+};
 
 /** Marginea patului lăsată liberă pe fiecare latură (mm), până se măsoară linia de curățare a imprimantei (ADR 0191). */
 export const MARGINE_PAT = 5;
 
-export type MotivPiesa = 'fara-forme' | 'unire' | 'prea-multe';
+/** `fara-margine`: după CNC, niciun profil exterior prin tot nu decupează piesa; `cnc`: tăieturile ei nu se pot citi (detaliul). */
+export type MotivPiesa = 'fara-forme' | 'unire' | 'prea-multe' | 'fara-margine' | 'cnc';
 
 export type PieseAlese = {
   readonly piese: readonly PiesaPlata[];
   /** Căile deschise, lăsate deoparte. */
   readonly deschise: number;
+  /** După CNC: tăieturile în V (V-carve, gravura cu freza în V), care nu se imprimă. */
+  readonly vcarve: number;
   /** Piesele care nu se pot imprima, cu motivul. */
   readonly refuzate: readonly { readonly eticheta: string; readonly motiv: MotivPiesa; readonly detaliu?: string }[];
   /** Mărimea grupului (mm) și dacă încape pe pat, cu marginea. */
@@ -121,11 +135,14 @@ const muta = (c: Contur, dx: number, dy: number): Contur => ({
   varfuri: c.varfuri.map((v) => ({ p: { x: v.p.x + dx, y: v.p.y + dy }, s: v.s.tip === 'C' ? { tip: 'C', c1: { x: v.s.c1.x + dx, y: v.s.c1.y + dy }, c2: { x: v.s.c2.x + dx, y: v.s.c2.y + dy } } : v.s })),
 });
 
+/** Cum se citesc piesele: după CNC (din operații) și înălțimea fiecărei piese a documentului (după id; lipsa: cea dată). */
+export type OptiuniPiese = { readonly dupaCnc?: boolean; readonly inaltimi?: ReadonlyMap<string, number> };
+
 /**
  * Piesele alese din foaia 0, cu înălțimea dată, centrate ca grup pe pat (`pat`: lățimea și adâncimea, mm). Instanțele își
  * păstrează așezarea de pe foaie, unele față de altele.
  */
-export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: number, pat: readonly [number, number]): PieseAlese {
+export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: number, pat: readonly [number, number], opt: OptiuniPiese = {}): PieseAlese {
   const foaie = doc.foi[0];
   const instante = (foaie?.instante ?? []).filter((i) => sursa.fel === 'foaie' || (sursa.fel === 'selectie' ? sursa.ids.includes(i.id) : i.id === sursa.id));
   const peInstanta = new Map<string, ElementLume[]>();
@@ -134,13 +151,25 @@ export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: n
     if (x) x.push(e); else peInstanta.set(e.instanta, [e]);
   }
   const numePiesa = new Map(doc.piese.map((p) => [p.id, p.nume]));
-  let deschise = 0;
+  // După CNC: tăieturile foii, o singură dată, pe instanțe.
+  const taieturi = new Map<string, Taietura[]>();
+  if (opt.dupaCnc) for (const t of taieturiFoaie(doc, 0)) { const x = taieturi.get(t.instanta); if (x) x.push(t); else taieturi.set(t.instanta, [t]); }
+  const G = foaie?.stoc.grosime ?? inaltime;
+  let deschise = 0, vcarve = 0;
   const refuzate: { eticheta: string; motiv: MotivPiesa; detaliu?: string }[] = [];
-  const brute: { id: string; eticheta: string; contururi: Contur[] }[] = [];
+  const brute: { id: string; eticheta: string; contururi: Contur[]; inaltime: number; trepte?: readonly Treapta[] }[] = [];
   // Eticheta unei piese fără nume: numărul instanței pe foaie (ca în lista dialogului), nu în alegere.
   const toateInst = foaie?.instante ?? [];
   instante.forEach((inst) => {
     const eticheta = numePiesa.get(inst.piesa) ?? `#${toateInst.indexOf(inst) + 1}`;
+    const H = opt.inaltimi?.get(inst.piesa) ?? inaltime;
+    if (opt.dupaCnc) {
+      const f = formeDupaCnc(taieturi.get(inst.id) ?? [], G, H);
+      if (!f.ok) { refuzate.push({ eticheta, motiv: f.motiv, ...(f.detaliu === undefined ? {} : { detaliu: f.detaliu }) }); return; }
+      vcarve += f.vcarve;
+      brute.push({ id: inst.id, eticheta, contururi: [...f.contururi], inaltime: H, ...(f.trepte.length > 0 ? { trepte: f.trepte } : {}) });
+      return;
+    }
     const inchise: Contur[] = [];
     for (const e of peInstanta.get(inst.id) ?? []) {
       const r = conturDeTaiat(e);
@@ -150,15 +179,16 @@ export function pieseDinDocument(doc: Document, sursa: SursaFeliere, inaltime: n
     if (inchise.length === 0) { refuzate.push({ eticheta, motiv: 'fara-forme' }); return; }
     const u = unesteSuprapuse(inchise);
     if (!u.ok) { refuzate.push(u.motiv === PREA_MULTE ? { eticheta, motiv: 'prea-multe' } : { eticheta, motiv: 'unire', detaliu: u.motiv }); return; }
-    brute.push({ id: inst.id, eticheta, contururi: u.contururi });
+    brute.push({ id: inst.id, eticheta, contururi: u.contururi, inaltime: H });
   });
   let cutie = CUTIE_GOALA;
   for (const b of brute) for (const c of b.contururi) cutie = uneste(cutie, cutieContur(c));
   const latime = brute.length === 0 ? 0 : cutie.maxX - cutie.minX, adancime = brute.length === 0 ? 0 : cutie.maxY - cutie.minY;
   const incape = latime <= pat[0] - 2 * MARGINE_PAT && adancime <= pat[1] - 2 * MARGINE_PAT;
   const dx = pat[0] / 2 - (cutie.minX + cutie.maxX) / 2, dy = pat[1] / 2 - (cutie.minY + cutie.maxY) / 2;
-  const piese = brute.length === 0 ? [] : brute.map((b, k) => ({
-    id: b.id, eticheta: b.eticheta, nume: numeObiect(b.eticheta, k), inaltime, contururi: b.contururi.map((c) => muta(c, dx, dy)),
+  const piese = brute.length === 0 ? [] : brute.map((b, k): PiesaPlata => ({
+    id: b.id, eticheta: b.eticheta, nume: numeObiect(b.eticheta, k), inaltime: b.inaltime, contururi: b.contururi.map((c) => muta(c, dx, dy)),
+    ...(b.trepte ? { trepte: b.trepte.map((t) => ({ inaltime: t.inaltime, contururi: t.contururi.map((c) => muta(c, dx, dy)) })) } : {}),
   }));
-  return { piese, deschise, refuzate, latime, adancime, incape };
+  return { piese, deschise, vcarve, refuzate, latime, adancime, incape };
 }
