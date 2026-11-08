@@ -55,8 +55,14 @@ export type RaportImagine = {
   readonly histograma: readonly number[];
   /** Pe culori: paleta, imaginea pictată în culorile ei și contururile fiecărei piese (ADR 0221 §3, §7). */
   readonly culori?: RaportCuloriImagine;
-  /** Liniile mediane (ADR 0222 §5): grosimea obișnuită a trăsăturilor (px), buclele, joncțiunile și punctele fără linie. */
-  readonly mediane?: { readonly grosimePx: number; readonly bucle: number; readonly jonctiuni: number; readonly puncte: number };
+  /**
+   * Liniile mediane (ADR 0222 §5): grosimea obișnuită a trăsăturilor (px), buclele, joncțiunile și punctele fără linie; părțile
+   * late, dacă s-au căutat (ADR 0223): câte, ce parte din cerneală (0–1) și pragul folosit (px).
+   */
+  readonly mediane?: {
+    readonly grosimePx: number; readonly bucle: number; readonly jonctiuni: number; readonly puncte: number;
+    readonly parti?: { readonly numar: number; readonly arie: number; readonly pragPx: number };
+  };
 };
 
 /** Ce arată fereastra unei trasări pe culori: pastilele, imaginea pictată și regiunea fiecărei culori (la trecerea mausului). */
@@ -127,6 +133,8 @@ export type PrevizualizareImport =
     readonly format: 'imagine'; readonly trasare: RaportImagine; readonly avertismente: AvertismenteImagine;
     /** Căile trasate, în pixelii imaginii (Y în jos): previzualizarea le desenează direct, fără să le refacă din mm. */
     readonly contur: CaiTrasate;
+    /** Contururile părților late ale liniilor mediane (ADR 0223), pentru semnalare, în pixelii imaginii. */
+    readonly late?: CaiTrasate;
   })
   | {
     readonly ok: false; readonly cod: CodRefuzImport; readonly detaliu?: string;

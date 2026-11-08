@@ -4,16 +4,35 @@
  * și buclele fără joncțiuni; cioturile tăiate; joncțiunile apropiate unite, în punctul celor mai mici pătrate al dreptelor
  * brațelor; centrul sub-pixel, la mijlocul dintre trecerile pragului de-a curmezișul trăsăturii (iar grosimea, distanța
  * dintre ele); capetele libere în centrul capătului rotund (unde se oprește o freză cât trăsătura); brațele din prelungire
- * ale unei joncțiuni legate într-o cale; curbele arcelor (ADR 0221) și ale buclelor.
+ * ale unei joncțiuni legate într-o cale; curbele arcelor (ADR 0221) și ale buclelor. Opțiunile (ADR 0223): capetele în
+ * vârful trăsăturii, părțile late ca contururi (și căutate doar pentru semnalare), buclele ca vectori închiși.
  *
  * Pură, fără importuri din aplicație (regula `trasare-izolat`): rulează în workerul trasării, iar probele o cheamă direct.
  * Coordonatele, ca la trasare: pixeli, y în jos, centrul pixelului (i, j) în (i + 0,5, j + 0,5). Algoritmii vin din lucrări
  * publice (Zhang și Suen 1984; Yokoi, Toriwaki și Fukumura 1975), scriși aici.
  */
+import { partiLate } from './partiLate.ts';
 import {
-  campul, curbeleArcului, curbeleBuclei, EPS_DUR, PLAFON_TRASARE, TREPTE,
+  arie, campul, contururi, curbeleArcului, curbeleBuclei, EPS_DUR, PLAFON_TRASARE, TREPTE,
   type BazaRaport, type Bucata, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare,
 } from './trasare.ts';
+
+/** Opțiunile liniei mediane (ADR 0223); implicitele ferestrei sunt recomandările din ADR 0222, cu semnalarea pornită. */
+export type OptiuniMediana = {
+  /** Unde se termină o linie: în centrul capătului rotund (unde se oprește o freză cât trăsătura) sau în vârful trăsăturii. */
+  readonly capete: 'centru' | 'varf';
+  /** Părțile mai late decât pragul: linii mediane (ca restul) sau contururi (închise, cu latura din sensul lor). */
+  readonly late: 'mediane' | 'contur';
+  /** Pragul părților late, în px; null: automat, de două ori grosimea obișnuită a trăsăturilor. */
+  readonly pragLatPx: number | null;
+  /** Părțile late se caută și când rămân linii mediane: raportul le numără, previzualizarea le arată. */
+  readonly semnaleaza: boolean;
+  /** Buclele: tăiate pe linie, sau vectori închiși, cu latura din încuibare (bucla din afară pe exterior). */
+  readonly bucle: 'linie' | 'inchise';
+};
+
+/** Linia mediană fără opțiuni (ADR 0222): capetele în centru, totul linii mediane, buclele pe linie, părțile late necăutate. */
+export const MEDIANA_SIMPLA: OptiuniMediana = { capete: 'centru', late: 'mediane', pragLatPx: null, semnaleaza: false, bucle: 'linie' };
 
 export type RaportMediana = BazaRaport & {
   /** Căile (deschise și bucle), dintre ele buclele, joncțiunile desenului și vârfurile curbelor. */
@@ -24,10 +43,19 @@ export type RaportMediana = BazaRaport & {
   readonly grosime: number;
   /** Trăsăturile mai scurte decât grosimea lor (puncte), rămase fără linie. */
   readonly puncte: number;
+  /**
+   * Părțile late (ADR 0223), dacă s-au căutat: câte (contururile lor de afară), ce parte din cerneală (0–1) și pragul de
+   * lățime folosit, în px.
+   */
+  readonly parti?: { readonly numar: number; readonly arie: number; readonly pragPx: number };
 };
 
 export type RezultatMediana =
-  | { readonly ok: true; readonly cai: CaiTrasate; readonly raport: RaportMediana }
+  | {
+    readonly ok: true; readonly cai: CaiTrasate; readonly raport: RaportMediana;
+    /** Contururile părților late, dacă s-au căutat: doar pentru semnalarea din previzualizare (fără laturi). */
+    readonly late?: CaiTrasate;
+  }
   | { readonly ok: false; readonly cod: 'prea-multe'; readonly raport: RaportMediana };
 
 /**
@@ -415,7 +443,7 @@ function dreapta(P: readonly number[], i: number, j: number): { cx: number; cy: 
  * dreptei; centrul e la o jumătate de grosime înapoi de vârf, recentrat de-a curmezișul. Un capăt drept dă tot punctul în
  * care se oprește o freză cât trăsătura.
  */
-function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number, T: number): void {
+function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number, T: number, varf: boolean): void {
   const n = P.length / 2;
   const masurate = L.filter((x) => x > 0);
   if (n < 2 || masurate.length === 0) return;
@@ -443,6 +471,23 @@ function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number
   // direcția lui (lângă capătul unui bloc gros sau al unei trăsături cu capătul tăiat oblic, ele cârligau linia: logoul).
   let k = i0;
   while (k + 1 < n && (((P[2 * k] ?? 0) - cx) * dx + ((P[2 * k + 1] ?? 0) - cy) * dy > -0.05 || Math.hypot((P[2 * k] ?? 0) - cx, (P[2 * k + 1] ?? 0) - cy) < wl / 2)) k++;
+  // În vârf (ADR 0223): din centrul capătului, până trece pragul (pe un capăt rotund, vârful lui; pe unul drept, marginea; lângă
+  // o parte lată tăiată din câmp, conturul ei), pe direcția porțiunii drepte de lângă capăt (abaterea cel mult `drept`): pe
+  // talpa scurtă a lui „t” din logo, dreapta celor 1,5 grosimi prindea curba și scotea vârful oblic, în colț.
+  if (varf) {
+    let j = i0 + 1, vx = dx, vy = dy;
+    while (j + 1 <= i1 && abatereDreptei(P.slice(2 * i0, 2 * (j + 2))) <= MEDIANA.drept) j++;
+    if (j - i0 >= 2) {
+      const dv = dreapta(P, i0, j), semn = dv.dx * dx + dv.dy * dy < 0 ? -1 : 1;
+      vx = semn * dv.dx; vy = semn * dv.dy;
+    }
+    const t = trecere(f, W, H, T, cx, cy, vx, vy);
+    if (t > 0) {
+      P.splice(0, 2 * k, cx + vx * t, cy + vy * t, cx, cy);
+      L.splice(0, k, wl, wl);
+      return;
+    }
+  }
   P.splice(0, 2 * k, cx, cy);
   L.splice(0, k, wl);
 }
@@ -462,9 +507,13 @@ type Muchie = {
   readonly dA: Directie | null; readonly dB: Directie | null;
 };
 
-export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMediana {
-  const { latime: W, inaltime: H } = img;
-  const { f, T, baza } = campul(img, o);
+/** Căile asamblate ale liniilor mediane, în pixeli, înaintea curbelor; lățimile măsurate, joncțiunile și punctele. */
+type Linii = {
+  readonly cai: Array<{ P: number[]; inchisa: boolean }>; readonly latimi: number[]; readonly jonctiuni: number; readonly puncte: number;
+};
+
+/** Liniile mediane ale cernelii câmpului `f` (pragul T); `varf`: capetele libere în vârful trăsăturii (ADR 0223). */
+function linii(f: Float32Array, T: number, W: number, H: number, varf: boolean): Linii {
   const m = new Uint8Array(W * H);
   for (let p = 0; p < m.length; p++) m[p] = (f[p] ?? 0) >= T ? 1 : 0;
   const s = subtiaza(m, W, H);
@@ -649,7 +698,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
   const curata = (unghiuri: ReadonlyMap<number, number> | null): Muchie[] => centrate.map((m) => {
     const P = m.P.slice(), L = m.L.slice();
     const laCapat = (cap: Capat | null): void => {
-      if (!cap) { retrage(P, L, f, W, H, T); return; }
+      if (!cap) { retrage(P, L, f, W, H, T, varf); return; }
       const v = grupuri.get(cap.g);
       if (v) curataBrat(P, L, v.x, v.y, v.r, unghiuri?.get(cap.g) ?? null);
     };
@@ -775,47 +824,158 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
   }
   for (const [e] of muchii.entries()) if (!folosita[e]) mergi(e, 'a', true);
   for (const b of bucleLibere) cai.push({ P: Array.from(b.P), inchisa: true });
+  return { cai, latimi, jonctiuni: locuri.size, puncte };
+}
+
+/** Inelul închis P (x0, y0, x1, y1, …) cuprinde punctul (x, y)? (paritatea tăieturilor unei raze spre dreapta) */
+function inInel(P: readonly number[], x: number, y: number): boolean {
+  let in_ = false;
+  const n = P.length / 2;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = P[2 * i] ?? 0, yi = P[2 * i + 1] ?? 0, xj = P[2 * j] ?? 0, yj = P[2 * j + 1] ?? 0;
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) in_ = !in_;
+  }
+  return in_;
+}
+
+/**
+ * Capetele unei linii de lângă o parte lată (tăiată din câmp, deci capătul rămâne la o jumătate de grosime de ea): linia
+ * merge mai departe, pe direcția capătului, până în conturul părții late (cel mult încă o grosime și jumătate), ca freza să
+ * nu lase o punte între linie și buzunar.
+ */
+function lipeste(cai: Linii['cai'], laMiez: Float32Array, W: number, H: number, R0: number, w: number): number {
+  const d = (x: number, y: number): number => {
+    const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
+    const g = (i: number, j: number): number => laMiez[Math.min(H - 1, Math.max(0, j)) * W + Math.min(W - 1, Math.max(0, i))] ?? Infinity;
+    return (1 - u) * (1 - v) * g(x0, y0) + u * (1 - v) * g(x0 + 1, y0) + (1 - u) * v * g(x0, y0 + 1) + u * v * g(x0 + 1, y0 + 1);
+  };
+  let lipite = 0;
+  for (const c of cai) {
+    if (c.inchisa) continue;
+    for (const capat of [0, 1] as const) {
+      const P = c.P, n = P.length / 2;
+      if (n < 2) break;
+      const i0 = capat === 0 ? 0 : n - 1, pas = capat === 0 ? 1 : -1;
+      const x = P[2 * i0] ?? 0, y = P[2 * i0 + 1] ?? 0;
+      if (!(d(x, y) <= R0 + w)) continue;
+      // Direcția capătului: spre el, din punctele de pe ultima grosime și jumătate.
+      let k = i0;
+      while (k + pas >= 0 && k + pas < n && Math.hypot((P[2 * (k + pas)] ?? 0) - x, (P[2 * (k + pas) + 1] ?? 0) - y) <= Math.max(2, 1.5 * w)) k += pas;
+      let dx = x - (P[2 * k] ?? 0), dy = y - (P[2 * k + 1] ?? 0);
+      const l = Math.hypot(dx, dy);
+      if (!(l > 1e-9)) continue;
+      dx /= l; dy /= l;
+      let u = 0;
+      while (u <= 1.5 * w && d(x + dx * u, y + dy * u) > R0) u += 0.25;
+      if (u > 1.5 * w || u === 0) continue;
+      lipite++;
+      if (capat === 0) P.unshift(x + dx * u, y + dy * u);
+      else P.push(x + dx * u, y + dy * u);
+    }
+  }
+  return lipite;
+}
+
+/**
+ * Linia mediană a unei imagini (ADR 0222), cu opțiunile din ADR 0223 (`om`; lipsă: ca în ADR 0222, fără părțile late).
+ * Părțile late se caută cu pragul dat sau cu de două ori grosimea obișnuită (din liniile întregului desen): ca contururi,
+ * liniile se retrasează pe rest, cu capetele lipite de conturul lor.
+ */
+export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare, om: OptiuniMediana = MEDIANA_SIMPLA): RezultatMediana {
+  const { latime: W, inaltime: H } = img;
+  const { f, T, baza } = campul(img, o);
+  const varf = om.capete === 'varf';
+  let L = linii(f, T, W, H, varf);
+  const grosime = mediana(L.latimi);
+  // Părțile late: căutate pentru semnalare sau ca să rămână contururi; fără grosime măsurată (doar puncte), nu.
+  let late: Float64Array[] = [];
+  let parti: RaportMediana['parti'];
+  if ((om.semnaleaza || om.late === 'contur') && grosime > 0) {
+    const pragPx = om.pragLatPx ?? 2 * grosime;
+    const pl = partiLate(f, T, W, H, pragPx / 2);
+    late = pl.arieLata > 0 ? contururi(pl.lata, W, H, T) : [];
+    parti = { numar: late.filter((b) => arie(b) > 0).length, arie: pl.arieLata / Math.max(1, pl.arieCerneala), pragPx };
+    if (om.late === 'contur' && late.length > 0) {
+      L = linii(pl.subtire, T, W, H, varf);
+      lipeste(L.cai, pl.laMiez, W, H, pl.R0, grosime);
+    }
+  }
   // Curbele, cu treptele Netezimii (pe marginile dure, banda cel puțin `EPS_DUR`, ca la trasare).
   const trepte = TREPTE[o.netezime];
   const dure = baza.margini === 'dure';
   const eps = dure ? Math.max(trepte.eps, EPS_DUR) : trepte.eps;
   const tau = dure ? Math.max(trepte.tau, EPS_DUR) : trepte.tau;
-  const valide = cai.filter((c) => c.P.length >= (c.inchisa ? 6 : 4));
-  const grosime = mediana(latimi);
-  const jonctiuni = locuri.size;
+  const depasire = dure ? 1.5 : 0.9;
+  const valide = L.cai.filter((c) => c.P.length >= (c.inchisa ? 6 : 4));
+  const contur = om.late === 'contur' ? late : [];
+  // Buclele ca vectori închiși: latura din încuibare (câte alte bucle o cuprind: pare, exterior; impare, interior).
+  const inchise = om.bucle === 'inchise' ? valide.filter((c) => c.inchisa) : [];
+  const exteriorBucla = new Map<(typeof valide)[number], number>();
+  for (const c of inchise) {
+    const x = c.P[0] ?? 0, y = c.P[1] ?? 0;
+    let n = 0;
+    for (const d of inchise) if (d !== c && inInel(d.P, x, y)) n++;
+    exteriorBucla.set(c, n % 2 === 0 ? 1 : 0);
+  }
+  const nCai = valide.length + contur.length;
   const bucle = valide.filter((c) => c.inchisa).length;
   const raport = (varfuri: number, abatere: number): RaportMediana => ({
-    ...baza, contururi: valide.length, bucle, jonctiuni, varfuri, abatere, grosime, puncte,
+    ...baza, contururi: nCai, bucle, jonctiuni: L.jonctiuni, varfuri, abatere, grosime, puncte: L.puncte, ...(parti ? { parti } : {}),
   });
-  if (valide.length > PLAFON_TRASARE.contururi) return { ok: false, cod: 'prea-multe', raport: raport(0, 0) };
-  const inceput = new Uint32Array(valide.length + 1);
-  const deschisa = new Uint8Array(valide.length);
+  if (nCai > PLAFON_TRASARE.contururi) return { ok: false, cod: 'prea-multe', raport: raport(0, 0) };
+  const inceput = new Uint32Array(nCai + 1);
+  const deschisa = new Uint8Array(nCai), exterior = new Uint8Array(nCai), peLinie = new Uint8Array(nCai).fill(1);
   const tipuri: number[] = [];
   const xy: number[] = [];
   let abatere = 0;
+  const adauga = (bucati: readonly Bucata[], k: number): boolean => {
+    for (const x of bucati) { tipuri.push(x.tip); xy.push(x.x, x.y, x.c1x, x.c1y, x.c2x, x.c2y); }
+    inceput[k + 1] = tipuri.length;
+    return tipuri.length <= PLAFON_TRASARE.varfuri;
+  };
   for (const [k, c] of valide.entries()) {
     const P = Float64Array.from(c.P);
     let bucati: Bucata[];
     if (c.inchisa) {
-      const r = curbeleBuclei(P, eps, tau, trepte.colt, dure ? 1.5 : 0.9);
+      const r = curbeleBuclei(P, eps, tau, trepte.colt, depasire);
       bucati = r.bucati;
       abatere = Math.max(abatere, r.abatere);
+      const e = exteriorBucla.get(c);
+      if (e !== undefined) { peLinie[k] = 0; exterior[k] = e; }
     } else {
-      const r = curbeleArcului(P, eps, tau, trepte.colt, dure ? 1.5 : 0.9);
+      const r = curbeleArcului(P, eps, tau, trepte.colt, depasire);
       bucati = [...r.bucati, { tip: 0, x: r.sfarsit[0], y: r.sfarsit[1], c1x: 0, c1y: 0, c2x: 0, c2y: 0, de: 0, la: 0 }];
       abatere = Math.max(abatere, r.abatere);
       deschisa[k] = 1;
     }
-    for (const x of bucati) { tipuri.push(x.tip); xy.push(x.x, x.y, x.c1x, x.c1y, x.c2x, x.c2y); }
-    inceput[k + 1] = tipuri.length;
-    if (tipuri.length > PLAFON_TRASARE.varfuri) return { ok: false, cod: 'prea-multe', raport: raport(tipuri.length, abatere) };
+    if (!adauga(bucati, k)) return { ok: false, cod: 'prea-multe', raport: raport(tipuri.length, abatere) };
+  }
+  // Contururile părților late, ca la trasare: latura din sensul lor (marginea de afară, exterior; un gol, interior).
+  const curbeLate = late.map((b) => curbeleBuclei(b, eps, tau, trepte.colt, depasire));
+  for (const [j, r] of (om.late === 'contur' ? curbeLate : []).entries()) {
+    const k = valide.length + j;
+    abatere = Math.max(abatere, r.abatere);
+    peLinie[k] = 0;
+    exterior[k] = arie(late[j] ?? new Float64Array(0)) > 0 ? 1 : 0;
+    if (!adauga(r.bucati, k)) return { ok: false, cod: 'prea-multe', raport: raport(tipuri.length, abatere) };
+  }
+  const cai: CaiTrasate = {
+    inceput, tip: Uint8Array.from(tipuri), xy: Float64Array.from(xy), exterior, deschisa,
+    ...(peLinie.includes(0) ? { peLinie } : {}),
+  };
+  if (!parti) return { ok: true, cai, raport: raport(tipuri.length, abatere) };
+  // Contururile pentru semnalare, separat (și când părțile late rămân linii mediane); doar de desenat, fără laturi.
+  const t2: number[] = [], xy2: number[] = [], inceput2 = new Uint32Array(late.length + 1);
+  for (const [j, r] of curbeLate.entries()) {
+    for (const x of r.bucati) { t2.push(x.tip); xy2.push(x.x, x.y, x.c1x, x.c1y, x.c2x, x.c2y); }
+    inceput2[j + 1] = t2.length;
   }
   return {
-    ok: true,
-    cai: { inceput, tip: Uint8Array.from(tipuri), xy: Float64Array.from(xy), exterior: new Uint8Array(valide.length), deschisa },
-    raport: raport(tipuri.length, abatere),
+    ok: true, cai, raport: raport(tipuri.length, abatere),
+    late: { inceput: inceput2, tip: Uint8Array.from(t2), xy: Float64Array.from(xy2), exterior: new Uint8Array(late.length) },
   };
 }
+
 
 /** Lista de puncte (și lățimile lor) întoarsă pe loc. */
 function invers(P: number[], L: number[]): void {

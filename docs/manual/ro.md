@@ -590,6 +590,17 @@ față de trăsătură: mai lată (gravura ar mânca din jur), mai îngustă (ar
 desenează, sub linii, banda pe care ar tăia-o o freză cât trăsătura. **Importă** pune liniile într-o formă, toate tăiate
 pe linie (și buclele), ca liniile deschise ale unui SVG.
 
+Sub **Rezultatul: Linii mediane** stau opțiunile lor:
+- **Capetele:** **Centrul capătului** (implicit) sau **Vârful trăsăturii**: linia merge până la marginea trăsăturii, pentru o
+  freză în V care trebuie să ajungă până în vârf;
+- **Părțile late:** **Linii mediane** (implicit: o pată plină dă linia ei de mijloc) sau **Contururi**: părțile mai late
+  decât pragul rămân contururi închise, tăiate pe exterior (golurile lor pe interior), iar liniile care ajung la ele se
+  opresc pe conturul lor, fără punte; **Mai late de**: **Automat** (de două ori grosimea obișnuită) sau o valoare în mm;
+- **Arată părțile late** (pornită implicit): previzualizarea le colorează, iar raportul spune câte sunt și ce parte din
+  cerneală, ca să vezi că desenul are părți pline înainte să imporți;
+- **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
+  iar o buclă aflată în alta, pe interior.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
 afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
 - liniile mediane pe culori și scanările îndreptate vin mai târziu;

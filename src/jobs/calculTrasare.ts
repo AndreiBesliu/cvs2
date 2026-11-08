@@ -6,7 +6,7 @@
  * `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
  */
 import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
-import { traseazaMediana, type RaportMediana } from '../trasare/mediana.ts';
+import { traseazaMediana, type OptiuniMediana, type RaportMediana } from '../trasare/mediana.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
 
@@ -35,6 +35,8 @@ export type CerereTrasare = {
   readonly culori?: Pick<OptiuniCulori, 'numar' | 'legaturi' | 'bifate'> | null;
   /** Alb-negru: contururile (lipsă) sau liniile mediane (ADR 0222); pe culori nu contează. */
   readonly rezultat?: 'contururi' | 'mediane';
+  /** Opțiunile liniei mediane (ADR 0223), cu pragul părților late în mm (null: automat); lipsă: ca în ADR 0222. */
+  readonly mediane?: Omit<OptiuniMediana, 'pragLatPx'> & { readonly pragLatMm: number | null };
 };
 
 /** Culoarea fiecărui pixel al imaginii pictate (indicele din paletă; 255: transparent), redusă sub `PIXELI_POSTER`. */
@@ -58,7 +60,11 @@ export type RaspunsTrasare =
     readonly posterizare: Posterizare;
   })
   | (Scara & { readonly ok: false; readonly fel: 'culori'; readonly cod: 'prea-multe'; readonly raport: RaportCulori })
-  | (Scara & { readonly ok: true; readonly fel: 'mediane'; readonly cai: CaiTrasate; readonly raport: RaportMediana })
+  | (Scara & {
+    readonly ok: true; readonly fel: 'mediane'; readonly cai: CaiTrasate; readonly raport: RaportMediana;
+    /** Contururile părților late, dacă s-au căutat (ADR 0223): previzualizarea le semnalează. */
+    readonly late?: CaiTrasate;
+  })
   | (Scara & { readonly ok: false; readonly fel: 'mediane'; readonly cod: 'prea-multe'; readonly raport: RaportMediana })
   | { readonly ok: false; readonly cod: 'citire'; readonly detaliu: string };
 
@@ -127,11 +133,16 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
     };
   }
   if (c.rezultat === 'mediane') {
-    const r = traseazaMediana(img, { ...c.optiuni, petePx, gauriPx });
+    const m = c.mediane;
+    const om: OptiuniMediana | undefined = m
+      ? { capete: m.capete, late: m.late, semnaleaza: m.semnaleaza, bucle: m.bucle, pragLatPx: m.pragLatMm !== null && m.pragLatMm > 0 ? m.pragLatMm / mmPePx : null }
+      : undefined;
+    const r = traseazaMediana(img, { ...c.optiuni, petePx, gauriPx }, om);
     if (!r.ok) return { raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin }, transfer: [] };
+    const late = r.late ? [r.late.inceput, r.late.tip, r.late.xy, r.late.exterior] : [];
     return {
       raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin },
-      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa]),
+      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa, r.cai.peLinie, ...late]),
     };
   }
   const r = traseaza(img, { ...c.optiuni, petePx, gauriPx });

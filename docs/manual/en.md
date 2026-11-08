@@ -605,6 +605,17 @@ engraving would eat into its surroundings), narrower (it would come out thinner)
 under the lines, the band a cutter as wide as the stroke would cut. **Import** adds the lines as one shape, all cut on the
 line (the loops too), like the open paths of an SVG.
 
+Under **Result: Centre lines** sit their options:
+- **Line ends:** **Centre of the end** (the default) or **Tip of the stroke**: the line runs to the stroke's edge, for a
+  V-bit that has to reach the tip;
+- **Wide parts:** **Centre lines** (the default: a filled blob gives its middle line) or **Outlines**: parts wider than the
+  threshold stay closed outlines, cut on the outside (their holes on the inside), and the lines that reach them stop on
+  their outline, with no bridge; **Wider than**: **Automatic** (twice the usual stroke width) or a value in mm;
+- **Show the wide parts** (on by default): the preview colours them and the report says how many there are and what share
+  of the ink, so you see that the drawing has filled parts before you import;
+- **Loops:** **On the line** (the default) or **Closed vectors**: an O or a ring becomes a closed outline, cut on the
+  outside, and a loop inside another one, on the inside.
+
 The traced drawing comes in as one shape, with the image as its page: the image's bottom-left corner is the sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
 - centre lines by colour and straightened scans come later;

@@ -16,6 +16,18 @@ export type AlegeriCulori = {
   readonly bifate: readonly boolean[] | null;
 };
 
+/**
+ * Opțiunile liniei mediane din fereastră (ADR 0223): capetele, părțile late (cu pragul în mm; null: automat, de două ori
+ * grosimea obișnuită), semnalarea lor și buclele.
+ */
+export type AlegeriMediane = {
+  readonly capete: 'centru' | 'varf';
+  readonly late: 'mediane' | 'contur';
+  readonly pragLatMm: number | null;
+  readonly semnaleaza: boolean;
+  readonly bucle: 'linie' | 'inchise';
+};
+
 /** Alegerile trasării din fereastra importului (ADR 0220 §10); pragurile curățării și lățimea, în mm. */
 export type AlegeriTrasare = {
   /** Sursa cernelii (alb-negru), sau culorile (ADR 0221 §1): pragul și inversarea nu se folosesc atunci. */
@@ -31,15 +43,20 @@ export type AlegeriTrasare = {
   /** Lățimea imaginii pe foaie; null: din DPI-ul fișierului (sau 96 px / țol). */
   readonly latimeMm: number | null;
   readonly culori: AlegeriCulori;
+  /** Opțiunile liniei mediane (ADR 0223), folosite doar cu rezultatul „Linii mediane”. */
+  readonly mediane: AlegeriMediane;
 };
 
 /** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
 export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null };
 
+/** Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită. */
+export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: true, bucle: 'linie' };
+
 /** Implicitele (ADR 0220 §3–§7, ADR 0222 §2): sursa aleasă singură, contururile, pragul automat, Echilibrat, petele și golurile sub 0,3 mm. */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
   sursa: 'auto', rezultat: 'contururi', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
-  culori: CULORI_IMPLICITE,
+  culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE,
 };
 
 /** Felul imaginii după primii octeți, sau null (nu e o imagine pe care o știe ușa). */

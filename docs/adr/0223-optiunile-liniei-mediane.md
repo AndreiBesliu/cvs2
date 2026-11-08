@@ -1,8 +1,8 @@
 # ADR 0223 — Opțiunile liniei mediane: capetele în vârf, părțile late ca contururi, semnalarea lor, buclele închise
 
-**Starea:** propus pe 08.11.2026, la „Da, 25.3↑b” (owner-ul, după 25.3↑); felia 25.3↑b, adusă din etapa 25, fără mașină,
-în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în `main`). Codul pornește după răspunsurile
-de la final.
+**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–3a”, la întrebările de la final); propus tot atunci, la
+„Da, 25.3↑b” (owner-ul, după 25.3↑). Felia 25.3↑b, adusă din etapa 25, fără mașină, în linia trasării (worktree-ul
+`trasare`, ramura `wip/25.1-trasare`, neunită în `main`; `origin/main` unit în ea întâi, `8dde2d2`: totalul 572,3 / 600 kB).
 **Completează:** ADR 0222 (întrebările 3–5: variantele care pot sta lângă recomandări vin ca opțiuni, după regula „toate
 opțiunile” din 07.11), ADR 0220 (contururile și curbele lor), ADR 0037 §11 (căile deschise, tăiate pe linie).
 **Schița:** <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr> (logoul tău cu toate combinațiile opțiunilor, calculate de
@@ -39,7 +39,7 @@ linie. Fiecare are un caz în care nu ajunge:
     trecere a pragului ca la retragere); în schiță, aproximat cu o jumătate de grosime;
   - **buclele:** 4 pe logo; latura din încuibare se ia ca la contururi.
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Fereastra trasării**, sub „Rezultatul”, vizibil doar la „Linii mediane” (întrebarea 1), un grup de patru, cu
    recomandările din ADR 0222 ca implicite:
@@ -79,6 +79,8 @@ linie. Fiecare are un caz în care nu ajunge:
 sau o linie lipită de o parte lată lasă o punte.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (08.11):** „Da, 1a–3a”: toate recomandările.
 
 Opțiunile de mai sus vin toate (regula „toate opțiunile”); întrebările sunt doar despre ce se exclude.
 

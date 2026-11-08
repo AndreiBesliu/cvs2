@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import '../i18n/import.ts';
 import { t } from '../i18n/t.ts';
 import type { Posterizare } from '../jobs/calculTrasare.ts';
@@ -94,9 +94,15 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   // Liniile mediane (ADR 0222 §8): banda grosimii, sub linii, la cerere.
   const [arataGrosimea, setArataGrosimea] = useState(false);
   const mediane = raport?.mediane ?? null;
+  // Opțiunile liniei mediane (ADR 0223) și contururile părților late, colorate în previzualizare cât e bifată semnalarea.
+  const om = alegeri.mediane;
+  const late = stare !== 'citire' && stare.ok && stare.format === 'imagine' ? stare.late ?? null : null;
+  const caleLate = useMemo(() => (late ? caleDin(late) : null), [late]);
+  const arataLate = alegeri.rezultat === 'mediane' && om.semnaleaza && caleLate !== null;
   // Câmpurile cu valori: ciorna lor, trimisă după 250 ms fără altă schimbare.
   const [ciorna, setCiorna] = useState(() => ({
     prag: alegeri.prag ?? 128, pete: String(alegeri.peteMm), gauri: String(alegeri.gauriMm), latime: alegeri.latimeMm === null ? '' : String(alegeri.latimeMm),
+    lat: om.pragLatMm === null ? '' : String(om.pragLatMm),
   }));
   const trimise = useRef(alegeri);
   trimise.current = alegeri;
@@ -111,6 +117,9 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       if (gauri !== null && gauri !== a.gauriMm) s.gauriMm = gauri;
       const lat = latime !== null && latime > 0 ? latime : null;
       if (lat !== a.latimeMm && (lat !== null || ciorna.latime.trim() === '')) s.latimeMm = lat;
+      // Pragul părților late, scris (cu „Automat” debifat): doar o valoare pozitivă.
+      const pragLat = numar(ciorna.lat);
+      if (a.mediane.pragLatMm !== null && pragLat !== null && pragLat > 0 && pragLat !== a.mediane.pragLatMm) s.mediane = { ...a.mediane, pragLatMm: pragLat };
       if (Object.keys(s).length > 0) onSchimba(s);
     }, 250);
     return () => { clearTimeout(id); };
@@ -177,6 +186,13 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       g.drawImage(fundal, 0, 0, W, H);
       g.globalAlpha = 1;
     }
+    // Părțile late (ADR 0223), colorate sub linii, cu accentul aplicației.
+    if (caleLate && arataLate && vedere !== 'imagine') {
+      g.fillStyle = getComputedStyle(c).getPropertyValue('--a').trim() || '#a64d00';
+      g.globalAlpha = 0.3;
+      g.fill(caleLate, 'evenodd');
+      g.globalAlpha = 1;
+    }
     // Banda grosimii: unde ar tăia o freză cât trăsătura (lățimea măsurată), sub linii.
     if (cai.length > 0 && vedere !== 'imagine' && arataGrosimea && mediane && mediane.grosimePx > 0) {
       g.strokeStyle = getComputedStyle(c).getPropertyValue('--traseu-taiere').trim() || '#0a7d53';
@@ -202,7 +218,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       g.lineWidth = 3 / s;
       g.stroke(conturEvidentiat.current.p);
     }
-  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane]);
+  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, caleLate, arataLate]);
   const mareste = (f: number, px?: number, py?: number): void => {
     // Punctul de sub maus rămâne pe loc (fără maus: centrul).
     const ox = px ?? marime.w / 2, oy = py ?? marime.h / 2;
@@ -255,6 +271,11 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
           </label>
         )}
         {!peCulori && alegeri.rezultat === 'mediane' && <p className="mic">{t('import.trasare.rezultat.sfat')}</p>}
+        {!peCulori && alegeri.rezultat === 'mediane' && (
+          <OptiuniMediane om={om} onSchimba={(m) => { onSchimba({ mediane: m }); }} lat={ciorna.lat}
+            onLat={(v) => { setCiorna({ ...ciorna, lat: v }); }}
+            automatMm={mediane?.parti && raport ? mediane.parti.pragPx * raport.mmPePx : mediane && raport ? 2 * mediane.grosimePx * raport.mmPePx : null} nr={nr} />
+        )}
         {peCulori && <PanouCulori alegeri={alegeri} paleta={culori?.paleta ?? null} onSchimba={onSchimba} onEvidentiaza={setEvidentiata} nr={nr} />}
         {raport && !peCulori && <p className="mic" data-testid="trasare-sursa-aleasa">{aleasa}</p>}
         {!peCulori && <div className="trasare-prag">
@@ -358,6 +379,13 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               )}
               {mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}
               {mediane && mediane.puncte > 0 && <p data-testid="trasare-puncte">{t('import.trasare.puncte', { n: mediane.puncte })}</p>}
+              {mediane?.parti && (
+                <p data-testid="trasare-parti">
+                  {mediane.parti.numar > 0
+                    ? t('import.trasare.parti', { n: mediane.parti.numar, procent: nr(100 * mediane.parti.arie, 0), mm: nr(mediane.parti.pragPx * raport.mmPePx, 2) })
+                    : t('import.trasare.parti-niciuna', { mm: nr(mediane.parti.pragPx * raport.mmPePx, 2) })}
+                </p>
+              )}
               <p data-testid="trasare-imagine">
                 {raport.redusDin
                   ? t('import.trasare.redusa', { latime: raport.latimePx, inaltime: raport.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
@@ -369,6 +397,63 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Opțiunile liniei mediane (ADR 0223, răspunsurile 1a–3a): sub „Rezultatul”, doar la „Linii mediane”: capetele (în centrul
+ * capătului rotund sau în vârf), părțile late (linii mediane sau contururi) cu pragul lor („Automat”: de două ori grosimea
+ * obișnuită; altfel, în mm), „Arată părțile late” (pornită implicit) și buclele (pe linie sau vectori închiși). Pragul are
+ * efect doar cu contururi sau cu semnalarea.
+ */
+function OptiuniMediane({ om, onSchimba, lat, onLat, automatMm, nr }: {
+  readonly om: AlegeriTrasare['mediane']; readonly onSchimba: (m: AlegeriTrasare['mediane']) => void;
+  readonly lat: string; readonly onLat: (v: string) => void; readonly automatMm: number | null; readonly nr: (x: number, z: number) => string;
+}) {
+  const automat = om.pragLatMm === null;
+  const conteazaPragul = om.late === 'contur' || om.semnaleaza;
+  return (
+    <div className="trasare-mediane" role="group" aria-label={t('import.trasare.mediane.optiuni')} data-testid="trasare-optiuni-mediane">
+      <label>
+        {t('import.trasare.capete')}
+        <select value={om.capete} data-camp="trasare-capete" onChange={(e) => { onSchimba({ ...om, capete: e.target.value === 'varf' ? 'varf' : 'centru' }); }}>
+          <option value="centru">{t('import.trasare.capete.centru')}</option>
+          <option value="varf">{t('import.trasare.capete.varf')}</option>
+        </select>
+      </label>
+      <label>
+        {t('import.trasare.late')}
+        <select value={om.late} data-camp="trasare-late" onChange={(e) => { onSchimba({ ...om, late: e.target.value === 'contur' ? 'contur' : 'mediane' }); }}>
+          <option value="mediane">{t('import.trasare.late.mediane')}</option>
+          <option value="contur">{t('import.trasare.late.contur')}</option>
+        </select>
+      </label>
+      <div className="trasare-prag-lat">
+        <span id="trasare-lat-eticheta">{t('import.trasare.lat')}</span>
+        <label className="rand">
+          <input type="checkbox" checked={automat} disabled={!conteazaPragul} data-camp="trasare-lat-auto" onChange={(e) => {
+            const v = automatMm !== null && automatMm > 0 ? Number(automatMm.toFixed(2)) : 1;
+            onLat(String(v));
+            onSchimba({ ...om, pragLatMm: e.target.checked ? null : v });
+          }} />
+          {t('import.trasare.lat-automat')}
+        </label>
+        <input type="text" inputMode="decimal" aria-labelledby="trasare-lat-eticheta" data-camp="trasare-lat"
+          value={automat ? (automatMm !== null ? nr(automatMm, 2) : '') : lat} disabled={automat || !conteazaPragul}
+          onChange={(e) => { onLat(e.target.value); }} />
+      </div>
+      <label className="rand">
+        <input type="checkbox" checked={om.semnaleaza} data-camp="trasare-arata-late" onChange={(e) => { onSchimba({ ...om, semnaleaza: e.target.checked }); }} />
+        {t('import.trasare.arata-late')}
+      </label>
+      <label>
+        {t('import.trasare.bucle')}
+        <select value={om.bucle} data-camp="trasare-bucle" onChange={(e) => { onSchimba({ ...om, bucle: e.target.value === 'inchise' ? 'inchise' : 'linie' }); }}>
+          <option value="linie">{t('import.trasare.bucle.linie')}</option>
+          <option value="inchise">{t('import.trasare.bucle.inchise')}</option>
+        </select>
+      </label>
     </div>
   );
 }

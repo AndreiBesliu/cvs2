@@ -40,6 +40,11 @@ export type CaiTrasate = {
    * el, ca un contur deschis al documentului); lipsă, toate căile sunt închise.
    */
   readonly deschisa?: Uint8Array;
+  /**
+   * Liniile mediane cu opțiuni (ADR 0223): `peLinie[k]` e 1 pe o cale tăiată pe linie și 0 pe una cu latura din `exterior[k]`
+   * (contururile părților late, buclele ca vectori închiși); lipsă, toate căile mediane se taie pe linie.
+   */
+  readonly peLinie?: Uint8Array;
 };
 
 export type RaportTrasare = {

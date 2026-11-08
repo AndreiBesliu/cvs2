@@ -321,3 +321,35 @@ test('liniile mediane, previzualizarea: toate pe linie (deschise și bucla), iar
   const deschisa = p.pregatit.cai.find((c) => c.inchis === false);
   assert.ok(deschisa && deschisa.varfuri.length >= 2);
 });
+
+/** LINII, cu o pată plină de 20 × 20 (cercul înscris de rază 10; al trăsăturilor, 2) sub bară, în dreapta piciorului. */
+const LINII_PLIN: ImagineRGBA = (() => {
+  const d = new Uint8ClampedArray(LINII.date);
+  for (let y = 30; y < 50; y++) for (let x = 95; x < 115; x++) d.set([0, 0, 0, 255], (y * LINII.latime + x) * 4);
+  return { latime: LINII.latime, inaltime: LINII.inaltime, date: d };
+})();
+
+test('liniile mediane cu opțiuni (ADR 0223): pata plină contur exterior, bucla vector închis, restul pe linie; pragul în mm', async () => {
+  const mediane = { capete: 'centru', late: 'contur', pragLatMm: null, semnaleaza: true, bucle: 'inchise' } as const;
+  const { raspuns: r, transfer } = await raspundeTrasare(cerere({ imagine: LINII_PLIN, latimeMm: 60, rezultat: 'mediane', mediane }));
+  assert.ok(r.ok && r.fel === 'mediane');
+  assert.equal(r.raport.parti?.numar, 1);
+  assert.ok(Math.abs((r.raport.parti?.pragPx ?? 0) - 8) < 0.4, `pragul automat: ${r.raport.parti?.pragPx}`);
+  assert.ok(r.cai.peLinie && transfer.includes(r.cai.peLinie.buffer as ArrayBuffer));
+  assert.ok(r.late && transfer.includes(r.late.xy.buffer as ArrayBuffer), 'contururile părților late, transferate');
+  const p = previzualizareDinRaspuns({ nume: 'desen.png', octeti: new Uint8Array() }, r);
+  assert.ok(p.ok && p.format === 'imagine');
+  assert.ok(p.late, 'previzualizarea primește contururile, pentru semnalare');
+  assert.equal(p.trasare.mediane?.parti?.numar, 1);
+  // Inelul (vector închis, singura buclă: exterior) și pata (conturul ei de afară): exterior; bara și piciorul, pe linie.
+  assert.deepEqual([...p.pregatit.laturi].sort(), ['exterior', 'exterior', 'pe-linie', 'pe-linie']);
+  assert.equal(p.exterioare, 2);
+  assert.equal(p.deschise, 2);
+  const { piesa } = p.pregatit.piesa('p1', { grosime: 10 });
+  assert.deepEqual(piesa.operatii.map((o) => [o.id, o.latura, o.noduri.length]), [['exterior', 'exterior', 2], ['deschise', 'pe-linie', 2]]);
+  // Pragul scris în mm (la 0,5 mm pe px): 11 mm sunt 22 px, peste cercul înscris al petei (10 px), deci nicio parte lată.
+  const mare = (await raspundeTrasare(cerere({ imagine: LINII_PLIN, latimeMm: 60, rezultat: 'mediane', mediane: { ...mediane, pragLatMm: 11 } }))).raspuns;
+  assert.ok(mare.ok && mare.fel === 'mediane');
+  assert.equal(mare.raport.parti?.numar, 0);
+  assert.ok(Math.abs((mare.raport.parti?.pragPx ?? 0) - 22) < 1e-9);
+});

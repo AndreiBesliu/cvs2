@@ -901,6 +901,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **opțiunile liniei mediane, cu toate recomandările** („Da, 1a–3a”, la cele trei întrebări din ADR 0223, în
+  sesiunea liniei trasării): sub „Rezultatul: Linii mediane”, vizibile doar atunci, un grup de patru (capetele în centru sau
+  în vârf, părțile late linii mediane sau contururi, „Arată părțile late”, buclele pe linie sau vectori închiși); pragul
+  automat al părților late e de două ori grosimea obișnuită a trăsăturilor (în mm în fereastră); „Arată părțile late” e
+  pornită implicit.
 - 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
   „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
   documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu

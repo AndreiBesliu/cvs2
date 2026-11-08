@@ -136,8 +136,11 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
     return { ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese } };
   }
   if (r.fel === 'mediane') {
-    const { grosime, bucle, jonctiuni, puncte } = r.raport;
-    return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma, mediane: { grosimePx: grosime, bucle, jonctiuni, puncte } };
+    const { grosime, bucle, jonctiuni, puncte, parti } = r.raport;
+    return {
+      ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma,
+      mediane: { grosimePx: grosime, bucle, jonctiuni, puncte, ...(parti ? { parti } : {}) },
+    };
   }
   return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma };
 }
@@ -190,7 +193,8 @@ function previzualizareCulori(f: FisierImport, r: Extract<RaspunsTrasare, { fel:
 /**
  * Căile trasate (pixeli, Y în jos) ca ale unui import: în mm, cu Y în sus, imaginea fiind o pagină (colțul ei stânga-jos e
  * colțul foii). O cale sub rezoluție (praful) sau peste plafonul unei căi se sare, numărată. Liniile mediane (cu `deschisa`,
- * ADR 0222) se taie toate pe linie: cele deschise se termină în ultimul vârf, iar buclele rămân închise, cu latura „pe-linie”.
+ * ADR 0222) se taie pe linie: cele deschise se termină în ultimul vârf, iar buclele rămân închise, cu latura „pe-linie”; cu
+ * opțiunile din ADR 0223, o cale cu `peLinie` 0 (conturul unei părți late, o buclă ca vector închis) ia latura din `exterior`.
  */
 type CaleTrasata = { readonly varfuri: Varf[]; readonly inchis: boolean };
 
@@ -216,7 +220,7 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
     if (varfuri.length < 2 || (!varfuriPeste && praf(varfuri))) { sub++; continue; }
     if (c.deschisa) {
       cai.push({ varfuri, inchis: c.deschisa[k] !== 1 });
-      laturi.push('pe-linie');
+      laturi.push(c.deschisa[k] === 1 || c.peLinie?.[k] !== 0 ? 'pe-linie' : c.exterior[k] === 1 ? 'exterior' : 'interior');
       continue;
     }
     cai.push({ varfuri, inchis: true });
@@ -241,7 +245,7 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
       imagine: new Blob([new Uint8Array(f.octeti)]),
       optiuni: { sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
       peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti),
-      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
+      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
     }, semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
@@ -265,7 +269,7 @@ export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): Pr
   if (preaDeparte(cai)) return { ok: false, cod: 'departe', format: 'imagine', trasare };
   const c = comune(f, cai, { latime: trasare.latimeMm, inaltime: trasare.inaltimeMm }, undefined, laturi);
   if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'imagine', avertismente, trasare };
-  return { ...c, format: 'imagine', trasare, avertismente, contur: r.cai };
+  return { ...c, format: 'imagine', trasare, avertismente, contur: r.cai, ...(r.fel === 'mediane' && r.late ? { late: r.late } : {}) };
 }
 
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {

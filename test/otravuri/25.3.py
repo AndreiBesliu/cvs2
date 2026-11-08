@@ -90,11 +90,11 @@ o('M04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat
   'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 0, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;', 'nuc', 'tangenta dintr-un singur punct (nicio direcție)')
 o('M05', ME, '    if (c < T) return u - MEDIANA.pas + (MEDIANA.pas * (prev - T)) / Math.max(1e-12, prev - c);', '    if (c < T) return u;', 'nuc',
   'trecerea fără interpolare: grosimea crește cu un pas')
-o('M06', ME, '  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;',
-  '  const fx = x, fy = y, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;', 'nuc', 'câmpul biliniar decalat cu o jumătate de pixel')
+o('M06', ME, '): number {\n  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;',
+  '): number {\n  const fx = x, fy = y, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;', 'nuc', 'câmpul biliniar decalat cu o jumătate de pixel')
 
 # ---- Capetele ----
-o('E01', ME, '      if (!cap) { retrage(P, L, f, W, H, T); return; }', '      if (!cap) return;', 'nuc', 'capetele rămân unde se oprește scheletul')
+o('E01', ME, '      if (!cap) { retrage(P, L, f, W, H, T, varf); return; }', '      if (!cap) return;', 'nuc', 'capetele rămân unde se oprește scheletul')
 o('E02', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;', '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy);', 'nuc',
   'linia se termină în vârful trăsăturii (3b), nu în centrul capătului')
 # E03 (mersul spre vârf din primul punct bun): după recentrarea capătului și îndreptarea lui, diferă în a treia zecimală
@@ -162,26 +162,26 @@ o('L07', ME, '      if (!inchisa) { const fin = loc(mu[alt]); if (fin) P.push(fi
 o('X01', ME, '    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0.5) { puncte++; continue; }', '    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0) { puncte++; continue; }', 'nuc',
   'un disc retras la un punct dă o cale de lungime zero')
 o('X02', ME, '  for (const p of schelet) if (grad[p] === 0) puncte++;', '', 'nuc', 'pixelul izolat nu se numără')
-o('X03', ME, "  if (valide.length > PLAFON_TRASARE.contururi) return { ok: false, cod: 'prea-multe', raport: raport(0, 0) };", '', 'nuc', 'fără plafon')
+o('X03', ME, "  if (nCai > PLAFON_TRASARE.contururi) return { ok: false, cod: 'prea-multe', raport: raport(0, 0) };", '', 'nuc', 'fără plafon')
 o('X04', ME, '      deschisa[k] = 1;', '', 'nuc', 'căile deschise ies închise')
 o('X05', ME, '      bucati = [...r.bucati, { tip: 0, x: r.sfarsit[0], y: r.sfarsit[1], c1x: 0, c1y: 0, c2x: 0, c2y: 0, de: 0, la: 0 }];',
   '      bucati = r.bucati;', 'nuc', 'calea deschisă fără ultimul vârf (capătul pierdut)')
 
 # ---- Calculul, ușa ----
 o('U01', CT, "  if (c.rezultat === 'mediane') {", '  if (false) {', 'usa', 'cererea liniilor mediane dă contururi')
-o('U02', CT, '      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa]),',
-  '      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior]),', 'usa', '`deschisa` copiat, nu transferat')
+o('U02', CT, '      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa, r.cai.peLinie, ...late]),',
+  '      transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.peLinie, ...late]),', 'usa', '`deschisa` copiat, nu transferat')
 o('U03', CA, "      cai.push({ varfuri, inchis: c.deschisa[k] !== 1 });", "      cai.push({ varfuri, inchis: true });", 'usa', 'liniile deschise ajung închise')
-o('U04', CA, "      laturi.push('pe-linie');\n      continue;", "      laturi.push('exterior');\n      continue;", 'usa', 'liniile mediane tăiate pe exterior')
+o('U04', CA, "      laturi.push(c.deschisa[k] === 1 || c.peLinie?.[k] !== 0 ? 'pe-linie' : c.exterior[k] === 1 ? 'exterior' : 'interior');\n      continue;",
+  "      laturi.push('exterior');\n      continue;", 'usa', 'liniile mediane tăiate pe exterior')
 o('U05', PI, "    { id: 'deschise', latura: 'pe-linie', ale: (k: number) => !caleInchisa(p.cai[k] ?? {}) || p.laturi[k] === 'pe-linie' },",
   "    { id: 'deschise', latura: 'pe-linie', ale: (k: number) => !caleInchisa(p.cai[k] ?? {}) },", 'usa', 'bucla pe linie rămâne fără operație')
 o('U06', CA, "    deschise: cai.filter((c, k) => !caleInchisa(c) || laturi[k] === 'pe-linie').length,",
   "    deschise: cai.filter((c) => !caleInchisa(c)).length,", 'usa', 'buclele pe linie nu se numără')
-o('U07', CA, "    return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma, mediane: { grosimePx: grosime, bucle, jonctiuni, puncte } };",
-  "    return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma };", 'usa', 'raportul fără grosime și puncte')
+o('U07', CA, '      mediane: { grosimePx: grosime, bucle, jonctiuni, puncte, ...(parti ? { parti } : {}) },\n', '', 'usa', 'raportul fără grosime și puncte')
 
 # ---- Fereastra, dialogul (e2e) ----
-o('F01', CA, "      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),",
+o('F01', CA, "      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),",
   "      ...(peCulori ? { culori: a.culori } : {}),", 'e2e', '„Linii mediane” nu ajunge la worker')
 o('F02', FE, "  const fel = freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'lata' : 'ingusta';",
   "  const fel = freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'ingusta' : 'lata';", 'e2e',
