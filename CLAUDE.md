@@ -538,6 +538,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aceasta” / „În toate cele N”, ținută în `cncvs2.grupare-surori`); banda violet stă jos, la mijlocul zonei libere (sus,
   riglele urmează foaia), întrebarea sus, sub bare. `idNou` și `copieArbore` stau în `src/model/copii.ts`. **Pornirea 104,9
   (cu ușa 108,5 / 110 kB), totalul 544,4 / 600.**
+  **„Așază pe foi” (ADR 0210 §3, felia 11.3↑)** gata pe 08.11: fereastra `DialogAsezare.tsx` (la cerere) și
+  `planAsezare` / `comenziAsezare` în `src/model/asezare.ts` (din colț, rând cu rând, ocolind piesele rămase cu freza lor,
+  vărsarea pe foaia următoare goală și pe foi noi, piesele prea mari pe loc; rotirea „90” ia varianta culcată doar când e
+  strict mai bună). Distanța minimă e freza profilului exterior: scrisă mai jos, refuz; unde omul n-a scris (deschiderea
+  ferestrei, „Mută și așază la capăt” din meniu), urcă singură. Alegerile se țin în `cncvs2.asezare`
+  (`src/app/asezareTinuta.ts`: `src/ui` nu importă modelul, regula `interfata-prin-actiuni`). Scrierea ferestrei trece pe
+  lângă garda „dialog deschis” (`ruleaza(registru, …)`), ca exportul. **Pornirea 105,3 (cu ușa 108,9 / 110 kB: rămân
+  1,1 kB), totalul 548,7 / 600.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

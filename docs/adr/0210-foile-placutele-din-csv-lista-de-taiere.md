@@ -3,8 +3,8 @@
 **Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
 toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
 în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
-07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑ pe 08.11** (piesele puse de mai multe ori; vezi la
-capăt).
+07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑ și 11.3↑ pe 08.11** (piesele puse de mai multe
+ori; „Așază pe foi”; vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -387,3 +387,46 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   panou, gruparea), `piese-legate.spec.ts` (e2e: panoul, lista, banda, editarea legată, «Desprinde» din bandă și din panou,
   întrebarea cu Renunță și „Ține minte”, rândurile din meniu, copia legată a foii), manualul (capitolul nou „Piesele puse
   de mai multe ori”, 32 de capitole, 101 uși), otrăvurile `test/otravuri/11.2.py`: 32; toate prinse la prima rulare (`cb7efec`): 20 unitare (L05, rândurile care urcă, și L08, fără garda piesei prea mari, prin termenul de 300 s: planul copiilor nu se mai termină) și 12 prin e2e, în două clone, pe portul 4178.
+
+## Felia 11.3↑ (gata pe 08.11)
+
+- **„Așază pe foi”** (`foaie.aseaza`; fereastra `DialogAsezare.tsx`, la cerere, din meniul de clic dreapta al pânzei și din
+  meniul foii; planșa 3 a schiței): ce se așază (piesele alese, implicit când sunt, sau toate de pe foaia activă), colțul de
+  pornire (implicit stânga-sus), marginea foii și distanța dintre piese pe X și pe Y (cu „Aceeași pe X și pe Y”, implicit
+  bifată), ordinea și rotirea (răspunsul 3: ambele moduri, implicit ordinea listei, fără rotire), foile noi și, înainte de
+  „Așază”, rezultatul („7 piese pe 2 foi: 4 + 3. Una e o foaie nouă.”). Alegerile se țin în browser (`cncvs2.asezare`,
+  `src/app/asezareTinuta.ts`; o valoare stricată dă implicitele). Scrierea dialogului trece pe lângă garda „dialog
+  deschis”, ca exportul și importul.
+- **Așezarea** (`planAsezare`, `src/model/asezare.ts`): după cutia fiecărei piese (cu rotirea ei), din colțul ales, rând cu
+  rând (fiecare rând cât piesa cea mai înaltă din el); piesele care rămân pe foaie se ocolesc, la distanța aleasă și cel
+  puțin cât freza profilului lor exterior; un rând oprit de ele coboară sub piesa care l-a oprit. Ce nu încape trece pe
+  foaia următoare dacă e goală, apoi pe foi noi, ca foaia țintă (mărimea, materialul; fără ghidaje), după ultima folosită.
+  O piesă mai mare decât foaia rămâne pe loc, iar fereastra o spune. Instanțele care rămân pe foaia lor își schimbă locul și
+  rotirea (`inlocuieste-instanta`, doar când se schimbă ceva: altfel „nimic de mutat”); cele care pleacă ies de pe foaia lor
+  și intră la capătul listei foii noi. Un pas de anulare. Selecția păstrează doar piesele rămase pe foaia activă.
+- **Distanța minimă** e regulă: cea mai mare freză a profilelor exterioare ale pieselor așezate. Scrisă mai jos de om,
+  refuz cu motiv (`motiv.aseaza-distanta`), iar fereastra arată minimul („cel puțin 6 mm: freza Ø6 a profilului
+  exterior”). Unde omul n-a scris nimic (fereastra la deschidere, „Mută și așază la capăt” din meniu), distanța ținută
+  urcă singură la minim: altfel, cu implicitul de 5 mm și dreptunghiul cu freza Ø6, gestul ar fi fost refuzat fără ca omul
+  să fi ales vreo distanță.
+- **Ordinea „cele mari întâi”**: după arie, descrescător (la egalitate, ordinea listei). **Rotirea „90° când încap mai
+  multe”**: se calculează două așezări, cu orientarea de acum și cu piesele culcate (rotite cu 90° cele mai înalte decât
+  late; o piesă care încape doar rotită se rotește oricum); se ia cea culcată doar dacă e strict mai bună: mai puține piese
+  rămase pe loc, apoi mai puține foi, apoi mai multe pe prima. Proba: 6 piese de 50 × 110 pe 300 × 200 încap culcate pe o
+  foaie (2 × 3), în picioare doar 5 + 1; plăcuțele de 80 × 30, deja culcate, rămân nerotite.
+- **„Mută și așază la capăt”** (`selectie.muta-si-aseaza`; răspunsurile, „implicitele devenite opțiuni”): în meniul de clic
+  dreapta, lângă „Mută pe”, câte un rând „Mută și așază la capăt pe Foaia N” pentru fiecare altă foaie și „Mută și așază pe o
+  foaie nouă” (ca foaia activă, după ea). Piesele alese pleacă pe foaia țintă și se așază după piesele ei (ocolite), cu
+  alegerile ultimei așezări; foaia activă rămâne, selecția se golește (ca la „Mută pe”).
+- **Paleta:** `selectie.muta-si-aseaza` apare în grupul selecției, oprită fără o foaie țintă (ca `selectie.muta-pe-foaie`);
+  `foaie.aseaza`, ca acțiunile foilor, nu.
+- **Măsurat:** pornirea 104,9 → 105,3 kB (cu ușa 108,5 → 108,9 / 110: rămân 1,1 kB pentru feliile următoare), totalul
+  544,4 → 548,7 / 600 (estimarea era ~3 kB; au venit în plus fereastra și „Mută și așază”).
+- **Probele:** `asezare.test.ts` (pe hârtie: cele 25 de plăcuțe din prag, 15 + 10, la x = 10 / 95 / 180 și y = 160 / 125 /
+  90 / 55 / 20; colțurile; marginile și distanțele diferite pe X și pe Y; piesele rămase, și cu freza lor de 8; distanța sub
+  freză; valorile; piesa prea mare; ordinea; rotirea, cu varianta culcată doar când e mai bună; vărsarea pe foaia următoare
+  goală și oprirea la una cu piese; mutarea pe altă foaie; fiecare cu inversa exactă), `asezare.actiuni.test.ts` (registrul,
+  pe hârtie, cu refuzurile; „Mută și așază” pe o foaie cu o piesă ocolită și pe o foaie nouă; alegerile ținute),
+  `asezare.spec.ts` (e2e: fereastra din meniul foii și din cel de clic dreapta, distanța de la freză, rezultatul, refuzul,
+  colțul ținut, anularea; „Mută și așază la capăt pe Foaia 2”), manualul (capitolul „Foile”, 103 uși), otrăvurile
+  `test/otravuri/11.3.py`: 32; pe codul final (`87f3aee`) toate prinse. La prima rulare (`ab85477`): 22 unitare prinse, A05 prin termenul de 300 s (fără distanță, saltul peste piesa rămasă nu mai înainta: rescrisă cu un milimetru în plus) și A09 scăpată (nicio probă cu culcarea mai proastă: proba nouă, 16 piese de 30 × 80 care încap doar în picioare); 8 prin e2e, în două clone, pe portul 4178.

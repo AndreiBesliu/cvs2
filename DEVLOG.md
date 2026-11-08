@@ -6929,3 +6929,24 @@ utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app> (până pe 07.12).
 
 **Completed:** 08.11, 11:20.
+
+## 2026-11-08 — Felia 11.3↑: „Așază pe foi” (ADR 0210 §3) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc felia 11.3↑ („Așază pe foi”)?”: „Da, 11.3↑”.
+**Started:** 08.11, 11:34.
+
+- **Felia (`ab85477`, proba rotirii `87f3aee`):** fereastra „Așază pe foi” după planșa 3 a schiței (ce, colțul, marginea și distanța pe X și pe Y,
+  ordinea, rotirea, foile noi, rezultatul înainte), din meniul de clic dreapta și din meniul foii; așezarea pură în
+  `src/model/asezare.ts`, cu vărsarea pe foaia următoare goală și pe foi noi; „Mută și așază la capăt pe Foaia N” și „pe o
+  foaie nouă”, lângă „Mută pe”; alegerile ținute în browser; manualul.
+- **Ce a ieșit din drum:** (1) cu implicitul de 5 mm și dreptunghiul cu freza Ø6, „Mută și așază” ar fi fost refuzat fără
+  ca omul să fi ales vreo distanță: unde n-a scris nimic, distanța ținută urcă la freză; scrisă mai jos, refuz. (2) Alegerile
+  ținute stăteau întâi în `src/ui/`, care nu are voie să importe modelul (`interfata-prin-actiuni`): mutate în `src/app/`,
+  lângă `foaiaActiva.ts`. (3) O valoare pe hârtie a probei de registru era greșită (piesa care rămâne pe Foaia 2 stă jos,
+  deci rândul de sus e liber): proba refăcută cu o a treia piesă, chiar ocolită, la (126, 64).
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile (0 lipsă), unitare 8 718, 0 căzute (8 sărite),
+  e2e pe suita întreagă (387, cu 2 lucrători): 386 trecute, 1 la a doua încercare (`proiect.spec.ts`, operațiile în document), care trece rulată singură (3 / 3); build-ul determinist; pornirea 104,9 → 105,3 (cu ușa 108,9 / 110), totalul 544,4 → 548,7 / 600.
+- **Otrăvurile (`test/otravuri/11.3.py`, alese de autor, în două clone):** 32. Prima rulare (`ab85477`): 22 unitare prinse; A05 („fără distanță”) prin termenul de 300 s, fiindcă saltul peste piesa rămasă nu mai înainta (o buclă fără capăt, deși lista voia să le evite: rescrisă cu un milimetru în plus); A09 („varianta rotită mereu”) scăpată: nicio probă n-avea un caz în care culcarea e mai proastă, deci proba nouă (16 piese de 30 × 80, care încap în picioare pe o foaie, culcate doar 15 + 1). Pe codul final (`87f3aee`): A05 și A09 prinse, deci 24 / 24 unitare; 8 / 8 prin e2e. În două clone (unitare și e2e).
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
+
+**Completed:** 08.11, 12:21.
