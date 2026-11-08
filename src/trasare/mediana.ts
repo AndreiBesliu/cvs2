@@ -58,9 +58,11 @@ export function subtiaza(m: Uint8Array, W: number, H: number): Uint8Array {
     for (let x = 0; x < W; x++) {
       const p = y * W + x;
       if (!s[p]) continue;
+      // La pornire, doar pixelii care pot ieși acum (între 3 și 6 vecini): cu mai puțini nu ies niciodată (vecinii doar scad),
+      // iar cu mai mulți intră în coadă când li se scoate un vecin.
       let plini = 0;
       for (let k = 0; k < 8; k++) plini += v(x + (DX[k] ?? 0), y + (DY[k] ?? 0));
-      if (plini < 8) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }
+      if (plini >= 3 && plini <= 6) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }
     }
   }
   for (let schimbat = true; schimbat;) {
@@ -305,17 +307,17 @@ function dreapta(P: readonly number[], i: number, j: number): { cx: number; cy: 
 
 /**
  * Capătul liber al unei liste de puncte (primul punct): în centrul capătului rotund (ADR 0222 §4). Punctele capătului ies
- * până la primele trei la rând cu lățimea lanțului (de la `capat` · grosimea lui la 1,2 · grosimea, sau +0,75 px: mai
- * îngustă e rotunjimea capătului, mai lată, o normală strâmbă, ca pe scheletul care cotește spre colțul unui capăt drept);
- * direcția, din dreapta punctelor de după ele (cât 1,5 grosimi); vârful, unde trece pragul mergând înainte; centrul e la o
- * jumătate de grosime înapoi de vârf. Un capăt drept dă tot punctul în care se oprește o freză cât trăsătura.
+ * până la primele trei la rând cu lățimea lanțului (cel puțin `capat` · grosimea lui: mai îngustă e rotunjimea capătului);
+ * direcția, din dreapta punctelor de după ele (cât 1,5 grosimi); vârful, unde trece pragul mergând înainte, din centrul
+ * dreptei; centrul e la o jumătate de grosime înapoi de vârf, recentrat de-a curmezișul. Un capăt drept dă tot punctul în
+ * care se oprește o freză cât trăsătura.
  */
 function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number, T: number): void {
   const n = P.length / 2;
   const masurate = L.filter((x) => x > 0);
   if (n < 2 || masurate.length === 0) return;
   const wm = mediana(masurate);
-  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) >= MEDIANA.capat * wm && (L[k] ?? 0) <= Math.max(1.2 * wm, wm + 0.75));
+  const bun = (k: number): boolean => k >= n || (L[k] ?? 0) >= MEDIANA.capat * wm;
   let i0 = 0;
   while (i0 < n >> 1 && !(bun(i0) && bun(i0 + 1) && bun(i0 + 2))) i0++;
   if (!bun(i0)) i0 = 0;
@@ -329,7 +331,11 @@ function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number
   if (dx * (x0 - (P[2 * i1] ?? 0)) + dy * (y0 - (P[2 * i1 + 1] ?? 0)) < 0) { dx = -dx; dy = -dy; }
   const wl = mediana(L.slice(i0, i1 + 1).filter((x) => x > 0)) || wm;
   const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;
-  const cx = d.cx + dx * avans, cy = d.cy + dy * avans;
+  let cx = d.cx + dx * avans, cy = d.cy + dy * avans;
+  // Centrul capătului, recentrat de-a curmezișul: acolo trăsătura are toată lățimea, iar o direcție puțin strâmbă (scheletul
+  // cotit spre colțul unui capăt drept) îl muta cu până la 0,7 px într-o parte (măsurat).
+  const sus = trecere(f, W, H, T, cx, cy, -dy, dx), jos = trecere(f, W, H, T, cx, cy, dy, -dx);
+  if (sus > 0 && jos > 0 && Math.abs(sus - jos) / 2 <= Math.max(1, wl / 3)) { cx += (-dy * (sus - jos)) / 2; cy += (dx * (sus - jos)) / 2; }
   let k = i0;
   while (k + 1 < n && ((P[2 * k] ?? 0) - cx) * dx + ((P[2 * k + 1] ?? 0) - cy) * dy > -0.05) k++;
   P.splice(0, 2 * k, cx, cy);
@@ -487,8 +493,10 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
       brate.set(c.g, lista);
     }
   }
-  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor; fără două direcții destul de diferite, sau
-  // mai departe de o rază (+1 px) de pixelii ei, media lor.
+  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor; fără două direcții destul de diferite,
+  // media pixelilor ei. Fără gardă de distanță: într-o furcă îngustă, încrucișarea brațelor stă departe de pixelii joncțiunii
+  // (la 20°, ~5 raze), iar o gardă de o rază, sau de cinci, o respingea (linia la 0,29 px în loc de 0,09; la 12°, 1,87 în loc
+  // de 0,07: măsurat).
   for (const [g, lista] of brate) {
     const v = grupuri.get(g);
     if (!v) continue;
@@ -501,10 +509,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
     }
     const det = a11 * a22 - a12 * a12;
     let x = v.x, y = v.y;
-    if (det > 0.05) {
-      const lx = (a22 * b1 - a12 * b2) / det, ly = (a11 * b2 - a12 * b1) / det;
-      if (Math.hypot(lx - v.x, ly - v.y) <= v.r + 1) { x = lx; y = ly; }
-    }
+    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }
     locuri.set(g, [x, y]);
   }
   // Brațele din prelungire se leagă două câte două (cele mai drepte întâi, sub `cotitura`); o joncțiune cu doar două brațe

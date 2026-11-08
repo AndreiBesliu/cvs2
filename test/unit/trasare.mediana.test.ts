@@ -263,3 +263,87 @@ test('aceeași imagine dă aceleași căi, octet cu octet (fără ordine depende
   assert.deepEqual(Array.from(a.cai.inceput), Array.from(b.cai.inceput));
   assert.equal(MEDIANA.cotitura, 30);
 });
+
+// ── Probele țintite ale otrăvurilor scăpate (lista 25.3, prima rulare) ─────────────────────────────────────────────────
+
+/** Trăsături drepte cu capete drepte (dreptunghiuri), eșantionate 4 × 4 pe pixel. */
+function dreptunghiuri(W: number, H: number, seg: ReadonlyArray<readonly [Pt, Pt]>, w: number): ImagineRGBA {
+  return imagine(W, H, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if (seg.some(([A, B]) => {
+          const L = Math.hypot(B[0] - A[0], B[1] - A[1]), ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+          const t = (px - A[0]) * ux + (py - A[1]) * uy, d = Math.abs(-(px - A[0]) * uy + (py - A[1]) * ux);
+          return t >= 0 && t <= L && d <= w / 2;
+        })) a++;
+      }
+    }
+    return a / 16;
+  });
+}
+
+test('furcile de 20–45° (o trăsătură dreaptă și o ramură din mijlocul ei): dreapta rămâne o cale, prin joncțiune, la cel mult 0,2 px', () => {
+  // Măsurat la scriere: linia la cel mult 0,17 px, curbele la cel mult 0,21 px de punctul furcii. Cu perechile cele mai strâmbe
+  // întâi (L04), dreapta se rupe sub 30°; cu brațele curățate larg (B02), se rupe la 20° și linia trece de 0,25 px la 40°; cu
+  // raza grupului din primul pixel (P04), linia ajunge la 0,23 px la 35°.
+  const c: Pt = [60.3, 45.2], u = 0.31, L = 45;
+  for (const unghi of [20, 25, 30, 35, 40, 45]) {
+    for (const w of [3, 4, 6, 8]) {
+      const A: Pt = [c[0] - L * Math.cos(u), c[1] - L * Math.sin(u)], B: Pt = [c[0] + L * Math.cos(u), c[1] + L * Math.sin(u)];
+      const C: Pt = [c[0] + L * Math.cos(u + (unghi * Math.PI) / 180), c[1] + L * Math.sin(u + (unghi * Math.PI) / 180)];
+      const linii = [{ P: [A, B] }, { P: [c, C] }];
+      const t = traseazaMediana(trasaturi(120, 100, linii, w), IMPLICITE);
+      const caz = `${unghi}°, w ${w}`;
+      assert.ok(t.ok, caz);
+      const cai = esantioaneCai(t.cai);
+      assert.equal(cai.length, 2, caz);
+      const lang = (p: Pt, q: Pt): boolean => Math.hypot(p[0] - q[0], p[1] - q[1]) < w;
+      const capete = cai.map((k) => { const n = k.varfuri.length / 2; return [[k.varfuri[0] ?? 0, k.varfuri[1] ?? 0], [k.varfuri[2 * n - 2] ?? 0, k.varfuri[2 * n - 1] ?? 0]] as const; });
+      assert.ok(capete.some(([p, q]) => (lang(p, A) && lang(q, B)) || (lang(p, B) && lang(q, A))), `${caz}: A și B pe aceeași cale`);
+      let jonct = Infinity;
+      for (const k of cai) for (let i = 0; i < k.puncte.length; i += 2) jonct = Math.min(jonct, Math.hypot((k.puncte[i] ?? 0) - c[0], (k.puncte[i + 1] ?? 0) - c[1]));
+      assert.ok(jonct <= 0.25, `${caz}: curbele trec la ${jonct.toFixed(3)} px de furcă`);
+      const zona = w / Math.sin((unghi * Math.PI) / 180) + w;
+      const departe = (x: number, y: number): boolean => Math.hypot(x - c[0], y - c[1]) > zona && [A, B, C].every((p) => Math.hypot(x - p[0], y - p[1]) > w);
+      let abatere = 0;
+      for (const k of cai) {
+        for (let i = 0; i < k.puncte.length; i += 2) {
+          const x = k.puncte[i] ?? 0, y = k.puncte[i + 1] ?? 0;
+          if (departe(x, y)) abatere = Math.max(abatere, Math.min(laLinie(x, y, [A, B]), laLinie(x, y, [c, C])));
+        }
+      }
+      assert.ok(abatere <= 0.2, `${caz}: linia la ${abatere.toFixed(3)} px`);
+    }
+  }
+});
+
+test('un colț ascuțit (un V de ~37°, subțire): o singură cale, fiindcă joncțiunea cu două brațe rămasă după ciot e o trecere', () => {
+  // Configurația care a despărțit otrava L03: fără trecerea forțată, V-ul ieșea în două căi.
+  const t = traseazaMediana(trasaturi(90, 80, [{ P: [[22.31, 57.49], [56.19, 53.12], [31.38, 29.63]] }], 3.13), IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1);
+  const [c] = esantioaneCai(t.cai);
+  assert.ok(c?.deschisa);
+});
+
+test('capetele drepte ale trăsăturilor groase și oblice: centrul lor, recentrat de-a curmezișul, la cel mult 0,2 px', () => {
+  // Fără recentrare, direcția puțin strâmbă a capătului (scheletul cotit spre un colț) muta capătul cu până la 0,71 px într-o
+  // parte; cu ea, 0,14 px pe 61 de trăsături întâmplătoare. Aici, cele patru cele mai rele de atunci.
+  const cazuri: Array<readonly [Pt, Pt, number]> = [[[75.94, 25.23], [49.36, 77.67], 8.17], [[71.07, 27.7], [49.09, 77.19], 8.9],
+    [[95.17, 40.24], [40.88, 55.79], 9.16], [[86.95, 36.97], [35.05, 62.42], 6.7]];
+  for (const [A, B, w] of cazuri) {
+    const t = traseazaMediana(dreptunghiuri(120, 90, [[A, B]], w), { ...IMPLICITE, petePx: 4, gauriPx: 4 });
+    assert.ok(t.ok);
+    const [c] = esantioaneCai(t.cai);
+    assert.ok(c);
+    const L = Math.hypot(B[0] - A[0], B[1] - A[1]), ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+    const n = c.varfuri.length / 2;
+    const capete: Pt[] = [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]];
+    for (const q of [[A[0] + (ux * w) / 2, A[1] + (uy * w) / 2], [B[0] - (ux * w) / 2, B[1] - (uy * w) / 2]] as Pt[]) {
+      const d = Math.min(...capete.map((p) => Math.hypot(p[0] - q[0], p[1] - q[1])));
+      assert.ok(d <= 0.2, `w ${w}: capătul (${q.map((v) => v.toFixed(2)).join(', ')}) la ${d.toFixed(3)} px`);
+    }
+  }
+});

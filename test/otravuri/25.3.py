@@ -26,9 +26,11 @@ o('S01', ME, '        if (B < 3 || B > 6) continue;', '        if (B < 2 || B > 
 o('S02', ME, '        if (sub === 0 ? p2 * p4 * p6 || p4 * p6 * p8 : p2 * p4 * p8 || p2 * p6 * p8) continue;', '        if (false) continue;', 'nuc',
   'fără condițiile direcționale: subțierea roade prea mult')
 o('S03', ME, '          if (!(f & 2)) coada[1].push(q);', '', 'nuc', 'vecinii pixelului scos nu se mai încearcă la a doua sub-trecere')
-o('S04', ME, '      if (plini < 8) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }', '      if (plini < 7) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }', 'nuc',
-  'marginea de pornire fără pixelii cu un singur vecin de fundal')
-o('S05', ME, '        sucio[p] = (sucio[p] ?? 0) & ~bit;', '        sucio[p] = 0;', 'nuc', 'pixelul încercat pierde și semnul celeilalte sub-treceri')
+o('S04', ME, '      if (plini >= 3 && plini <= 6) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }',
+  '      if (plini >= 3 && plini <= 5) { coada[0].push(p); coada[1].push(p); sucio[p] = 3; }', 'nuc',
+  'la pornire, fără pixelii cu șase vecini (care pot ieși chiar atunci)')
+# S05 (pixelul încercat pierde și semnul celeilalte sub-treceri): doar eficiența; pixelul rămâne în coada celeilalte
+# sub-treceri și se poate încerca de două ori, cu aceeași decizie (la fel pe 400 de configurații întâmplătoare). Scoasă.
 
 # ---- Coturile treptelor, ciotul de un pixel ----
 o('C01', ME, '      if (x8[k] && x8[(k + 2) % 8] && !x8[(k + 4) % 8] && !x8[(k + 5) % 8] && !x8[(k + 6) % 8]) { s[p] = 0; break; }',
@@ -37,7 +39,8 @@ o('C02', ME, '      if (x8[k] && x8[(k + 2) % 8] && !x8[(k + 4) % 8] && !x8[(k +
   '      if (x8[k] && x8[(k + 2) % 8] && !x8[(k + 4) % 8] && !x8[(k + 6) % 8]) { s[p] = 0; break; }', 'nuc',
   'un cot scos și când are vecin pe diagonala opusă')
 o('C03', ME, '        if (simplu(s, W, H, jonct)) s[jonct] = 0;', '', 'nuc', 'ciotul de un pixel rămas sub linie: o joncțiune falsă')
-o('C04', ME, '  return nc === 1;\n}', '  return nc <= 1;\n}', 'nuc', 'un pixel cu numărul de conexiune 0 (în mijlocul unui bloc) e luat drept simplu')
+# C04 (numărul de conexiune 0 luat drept simplu): în `simplu`, doar pe pixelul unei joncțiuni după tăierea unui ciot, care
+# nu are patru vecini ortogonali (scheletul e subțire): la fel pe 400 de configurații. Scoasă.
 
 # ---- Cioturile, punțile ----
 o('P01', ME, '      if (lungime(l.pix, W) < MEDIANA.ciot * R(jonct) + 1) {', '      if (lungime(l.pix, W) < R(jonct) + 1) {', 'nuc',
@@ -56,9 +59,14 @@ o('B02', ME, "  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) > 0 &
   'brațul curățat cu o toleranță largă: punctele strâmbe rămân')
 o('B03', ME, '      return !v || Math.hypot((q % W) + 0.5 - v.x, Math.floor(q / W) + 0.5 - v.y) >= v.r;', '      return true;', 'nuc',
   'pixelii din cercul joncțiunii rămân în brațe')
-o('B04', ME, '    if (det > 0.05) {', '    if (false) {', 'nuc', 'joncțiunea în media pixelilor, nu în încrucișarea brațelor')
-o('B05', ME, '      if (Math.hypot(lx - v.x, ly - v.y) <= v.r + 1) { x = lx; y = ly; }', '      { x = lx; y = ly; }', 'nuc',
-  'punctul celor mai mici pătrate primit oricât de departe')
+o('B04', ME, '    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }', '', 'nuc',
+  'joncțiunea în media pixelilor, nu în încrucișarea brațelor')
+o('B08', ME, '    if (det > 0.05) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }',
+  '    if (det > 0.6) { x = (a22 * b1 - a12 * b2) / det; y = (a11 * b2 - a12 * b1) / det; }', 'nuc',
+  'încrucișarea cerută doar la brațe foarte diferite: furcile sub ~50° rămân în media pixelilor')
+# B05 (punctul celor mai mici pătrate primit oricât de departe) a scăpat, iar pe furci era mai bun decât garda: într-o furcă
+# îngustă, încrucișarea stă departe de pixelii joncțiunii. Garda a fost scoasă din cod (furcile au acum proba lor), deci și
+# otrava.
 o('B06', ME, '        if ((cx - v.x) * dx + (cy - v.y) * dy < 0) { dx = -dx; dy = -dy; }', '', 'nuc',
   'direcția brațului fără sens: perechile se aleg la întâmplare')
 o('B07', ME, '        if (k >= 3 && Math.hypot(x - (sel[0] ?? 0), y - (sel[1] ?? 0)) > Math.max(2, 1.5 * wa)) break;',
@@ -82,15 +90,17 @@ o('M06', ME, '  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math
 o('E01', ME, '      if (!cap) { retrage(P, L, f, W, H, T); return; }', '      if (!cap) return;', 'nuc', 'capetele rămân unde se oprește scheletul')
 o('E02', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;', '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy);', 'nuc',
   'linia se termină în vârful trăsăturii (3b), nu în centrul capătului')
-o('E03', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;\n  const cx = d.cx + dx * avans, cy = d.cy + dy * avans;',
-  '  const avans = trecere(f, W, H, T, x0, y0, dx, dy) - wl / 2;\n  const cx = x0 + dx * avans, cy = y0 + dy * avans;', 'nuc',
+o('E03', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;\n  let cx = d.cx + dx * avans, cy = d.cy + dy * avans;',
+  '  const avans = trecere(f, W, H, T, x0, y0, dx, dy) - wl / 2;\n  let cx = x0 + dx * avans, cy = y0 + dy * avans;', 'nuc',
   'mersul spre vârf din primul punct bun (strâmb cu 1 px la un capăt drept), nu din centrul dreptei')
-o('E04', ME, "  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) >= MEDIANA.capat * wm && (L[k] ?? 0) <= Math.max(1.2 * wm, wm + 0.75));",
-  "  const bun = (k: number): boolean => k >= n || (L[k] ?? 0) >= MEDIANA.capat * wm;", 'nuc', 'punctele prea late (normala strâmbă) luate drept bune')
+# E04 (punctele prea late luate drept bune la capăt): după recentrarea capătului de-a curmezișul, limita de sus nu mai
+# schimba nimic (0 diferențe pe 61 de capete drepte, înainte cel mult 0,04 px în ambele sensuri). Scoasă din cod și din listă.
 o('E05', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
   'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.3, vecini: 2 } as const;', 'nuc', 'punctele rotunjimii capătului luate drept bune')
 o('E06', ME, '  if (dx * (x0 - (P[2 * i1] ?? 0)) + dy * (y0 - (P[2 * i1 + 1] ?? 0)) < 0) { dx = -dx; dy = -dy; }', '', 'nuc',
   'direcția capătului fără sens: mersul spre vârf poate porni înapoi')
+o('E07', ME, '  if (sus > 0 && jos > 0 && Math.abs(sus - jos) / 2 <= Math.max(1, wl / 3)) { cx += (-dy * (sus - jos)) / 2; cy += (dx * (sus - jos)) / 2; }', '', 'nuc',
+  'capătul nerecentrat de-a curmezișul (0,71 px la un capăt drept oblic)')
 
 # ---- Legarea brațelor, căile ----
 o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2 } as const;',
