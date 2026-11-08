@@ -606,9 +606,10 @@ toate formele foii), iar o formă aleasă care se taie e înlocuită de bucăți
   deschise nu se desparte.
 - **Retează**: bucata conturului de sub maus, între cele mai apropiate două locuri unde îl trec alte contururi (ale formelor
   alese sau, fără nimic ales, ale tuturor formelor foii; și celelalte contururi ale aceleiași piese), se vede cu roșu, iar
-  clicul o scoate. Ce rămâne stă în aceeași formă, ca un DXF cu liniile prelungite să rămână, după curățat, o singură formă: cele
-  opt capete ale unui „#” lasă pătratul din mijloc. Un contur fără două locuri comune (o cale deschisă: fără niciunul) pleacă
-  tot. Unde se trece singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
+  clicul o scoate. Cu ceva ales, formele alese sunt marginile, iar sub maus poate fi orice formă, chiar nealeasă. Ce rămâne
+  stă în aceeași formă, ca un DXF cu liniile prelungite să rămână, după curățat, o singură formă: cele opt capete ale unui
+  „#” lasă pătratul din mijloc. Un contur fără două locuri comune (o cale deschisă: fără niciunul) pleacă tot. Unde se trece
+  singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
 
 Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
 într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se

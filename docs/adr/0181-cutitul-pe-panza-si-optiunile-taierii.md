@@ -163,14 +163,16 @@ primului commit de cod, `origin/main` unit în ramură.
   nu sunt locuri comune ale ei, nici un loc la sub 1e-9 din segment de ele (un „T”: verticala retezată pleacă toată, și când
   trece de orizontală cu zgomot de calcul, fără un fir rămas), iar locul în care un contur se trece singur nu e un
   loc comun (e treaba verificării, ca la „Taie la intersecții”); bucățile rămase nu se unesc.
-- **Bucata de sub maus** se arată cu roșu, aproximată pe firul principal (contururile ca polilinii, locurile comune segment cu
-  segment, cel mult 4 000 000 de perechi de segmente cercetate); tăierea e a workerului, exactă.
+- **Bucata de sub maus** se arată cu roșu, aproximată pe firul principal: contururile tuturor formelor foii ca polilinii (sub
+  clic poate fi oricare, chiar nealeasă), cu locurile comune segment cu segment doar față de partenerii tăierii (formele alese,
+  fără alegere toate, și aceeași formă), cel mult 4 000 000 de perechi de segmente cercetate; tăierea e a workerului, exactă.
 - **Selecția rămâne cum era**, la toate felurile cuțitului: fără nimic ales, tot nimic (tăieturile și retezările următoare au
   tot toate formele foii, adică răspunsul 2a ține și după prima tăietură); o formă aleasă care se taie e înlocuită de bucățile
   ei. Schimbat față de 10.3↑f, unde bucățile noi deveneau alese, iar a doua tăietură ar fi tăiat doar printre ele.
 - **Desparte**, în unealta Noduri: forma tăiată chiar în nodul ales, prin aceeași foarfecă (workerul); rămâne aleasă prima
   bucată, ca unealta să rămână pe ea. Căutarea punctului de pe contur (`apropiat`, `laturaLovita`) stă acum în
   `src/geom/apropiat.ts`, comună uneltei Noduri și cuțitului.
+- **Mărimea:** pe aceeași bază (`6c79ff9`), pornirea nu crește (101,8 kB; cu ușa 105,3 / 110), iar totalul crește cu 2,8 kB (546,9 → 549,7), plus 0,1 cu previzualizarea pe toate formele (`a5ca66b`). După unirea incrustațiilor (`031e41a`): pornirea 101,9 (cu ușa 105,5 / 110), totalul 558,7 / 600.
 
 ## Proba
 

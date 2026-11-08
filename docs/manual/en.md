@@ -627,10 +627,11 @@ by its pieces. Pick the knife mode in the bar:
   is not split.
 - **Trim**: the piece of the outline under the mouse, between the two nearest places where other outlines cross it (of the
   chosen shapes or, with nothing chosen, of all the shapes of the sheet; and the other outlines of the same piece), shows in
-  red, and the click removes it. What is left stays in the same shape, so that a DXF with overshooting lines stays, once
-  cleaned, a single shape: the eight ends of a “#” leave the square in the middle. An outline without two common points (an
-  open path: without any) goes entirely. Where an outline crosses itself is not a common point: that is the checking's job. The
-  lines left are not joined.
+  red, and the click removes it. With something chosen, the chosen shapes are the edges, and the shape under the mouse can be
+  any, even one not chosen. What is left stays in the same shape, so that a DXF with overshooting lines stays, once cleaned, a
+  single shape: the eight ends of a “#” leave the square in the middle. An outline without two common points (an open path:
+  without any) goes entirely. Where an outline crosses itself is not a common point: that is the checking's job. The lines
+  left are not joined.
 
 While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
 (for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
