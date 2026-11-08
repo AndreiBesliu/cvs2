@@ -346,8 +346,9 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
             {marcaj ? <polyline className="bucata-reteaza" points={marcaj.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} /> : null}
             {locuri.map((q, i) => <circle key={i} className="loc-taiere" cx={sx(q.x)} cy={sy(q.y)} r={3.5} />)}
           </svg>
-          <span className={stare?.fel === 'gata' && stare.rau ? 'cip cip-rosu noduri-sfat' : 'cip noduri-sfat'} role="status" data-testid="cutit-sfat"
-            style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{sfat}</span>
+          {/* Sfatul se rupe pe rânduri (cele ale felurilor trec de un rând); marginea lui de jos stă la 16 px de capătul pânzei. */}
+          <span className={stare?.fel === 'gata' && stare.rau ? 'cip cip-rosu noduri-sfat cutit-sfat' : 'cip noduri-sfat cutit-sfat'} role="status"
+            data-testid="cutit-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 16 }}>{sfat}</span>
         </div>
       )}
     </>

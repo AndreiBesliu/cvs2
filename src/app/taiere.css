@@ -166,6 +166,18 @@
   stroke-width: 2.6;
 }
 
+/*
+ * Sfatul cuțitului: cipul se rupe pe rânduri, nu se taie cu „…” (sfaturile felurilor au peste un rând la 36rem); urcă din
+ * marginea lui de jos, ca un rând în plus să nu iasă din pânză.
+ */
+.cip.cutit-sfat {
+  white-space: normal;
+  line-height: 18px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  transform: translateY(-100%);
+}
+
 /* Felul Pen: calea pusă e cuțitul, deci are culoarea lui. */
 .pen-cutit .drum-pen,
 .pen-cutit .pen-elastic {
