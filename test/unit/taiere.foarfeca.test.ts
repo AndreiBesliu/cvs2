@@ -204,6 +204,16 @@ test('un „T”: capătul unei linii care stă pe alta nu e un loc comun al ei,
   assert.deepEqual(contururi(d2, r2.ids[0] as string).map(varfuri), [[[0, 0], [50, 0]]]);
 });
 
+test('un „T” întors: capătul de la sfârșitul verticalei stă pe orizontală; retezată, verticala pleacă toată', () => {
+  // Verticala merge de sus în jos și se termină pe orizontală: locul ei e la sfârșitul ultimului segment, nu la un nod.
+  for (const v of [cale(false, [50, 50], [50, 0]), cale(false, [50, 50], [50, 20], [50, 0])]) {
+    const d = docDin(stoc, forma('a', cale(false, [0, 0], [100, 0])), forma('b', v));
+    const r = taie(d, { cutit: reteaza('b', 50, 30), alese: ['a', 'b'], inchide: false });
+    assert.ok(r.ok);
+    assert.deepEqual(r.sterse, ['b'], `${v.tip === 'cale' ? v.varfuri.length : 0} vârfuri`);
+  }
+});
+
 test('foarfeca și retezatul schimbă forma de sub clic chiar dacă nu e printre cele alese', () => {
   const d = docDin(stoc, forma('h', cale(false, [0, 0], [100, 0])), forma('v', cale(false, [80, -20], [80, 20])));
   // Doar verticala aleasă (ea dă locul comun); orizontala, de sub clic, se retează oricum.
