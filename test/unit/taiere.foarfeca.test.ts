@@ -7,7 +7,8 @@
  * - **retezatul**: liniile (0, 0)–(100, 0) și (80, −20)–(80, 20): clicul în (90, 0) lasă (0, 0)–(80, 0), cel în (80, 10) lasă
  *   (80, −20)–(80, 0); „#”-ul dintr-o singură piesă (patru linii), cu opt clicuri, devine pătratul 60 × 60, tot o piesă;
  *   dreptunghiul 100 × 60 trecut de linia x = 50, retezat în dreapta: calea deschisă de 160 mm prin stânga; o formă fără locuri
- *   comune pleacă toată; locurile comune sunt doar cu formele alese.
+ *   comune pleacă toată; locurile comune sunt doar cu formele alese; verticala unui „T” pleacă toată, și când capătul ei e
+ *   la începutul sau la sfârșitul căii, și când trece de orizontală cu 5e-8 mm (fără un fir rămas).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -205,13 +206,23 @@ test('un „T”: capătul unei linii care stă pe alta nu e un loc comun al ei,
 });
 
 test('un „T” întors: capătul de la sfârșitul verticalei stă pe orizontală; retezată, verticala pleacă toată', () => {
-  // Verticala merge de sus în jos și se termină pe orizontală: locul ei e la sfârșitul ultimului segment, nu la un nod.
+  // Verticala merge de sus în jos și se termină pe orizontală: locul ei e la sfârșitul ultimului segment, scris ca vârful de la
+  // capăt (la sub `eps` de el), deci nu e loc comun.
   for (const v of [cale(false, [50, 50], [50, 0]), cale(false, [50, 50], [50, 20], [50, 0])]) {
     const d = docDin(stoc, forma('a', cale(false, [0, 0], [100, 0])), forma('b', v));
     const r = taie(d, { cutit: reteaza('b', 50, 30), alese: ['a', 'b'], inchide: false });
     assert.ok(r.ok);
     assert.deepEqual(r.sterse, ['b'], `${v.tip === 'cale' ? v.varfuri.length : 0} vârfuri`);
   }
+});
+
+test('un „T” cu verticala trecută de orizontală cu 5e-8 mm (zgomot de calcul): retezată, pleacă toată, fără un fir de 5e-8 mm', () => {
+  // Locul comun stă la 5e-8 mm de capăt, peste `eps`: nu e scris ca vârful de la capăt (λ = 1 − 5e-10), dar nici nu desparte
+  // ceva (un loc la 1e-9 din λ de capătul căii nu e loc comun).
+  const d = docDin(stoc, forma('a', cale(false, [0, 0], [100, 0])), forma('b', cale(false, [50, 100], [50, -5e-8])));
+  const r = taie(d, { cutit: reteaza('b', 50, 30), alese: ['a', 'b'], inchide: false });
+  assert.ok(r.ok);
+  assert.deepEqual(r.sterse, ['b']);
 });
 
 test('foarfeca și retezatul schimbă forma de sub clic chiar dacă nu e printre cele alese', () => {
