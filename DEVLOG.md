@@ -6871,3 +6871,16 @@ căzute, din CI).
   stratului cu inel). Otrăvurile `test/otravuri/3.6n.py`: 28 / 28 din prima (26 unitare, 2 e2e, fiecare de proba ei). Porțile:
   unit 8 733 (8 725 trecute, 0 căderi, 8 sărite); build-ul determinist (287 de fișiere identice); e2e 379 / 379 din prima,
   apoi proba imprimantei 13 / 13 după reparația de așezare. Piesele fără trepte: aceleași drumuri (171 de variante).
+
+## 2026-11-08 — 3.6o: driverele imprimantelor și comenzile din timpul imprimării (ADR 0192) (Model: Claude Opus 5.5)
+
+**Prompt:** „in principiu, vreau sa pot conecta orice fel de imprimanta, deci codul pe care il dezvolti trebuie sa fie pregatit pentru asta. poti incepe cu 1” (owner-ul, la răspunsul cu cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi; grupul 1: comenzile din timpul imprimării).
+**Started:** 08.11, 18:12. **Completed:** —
+
+- **Cercetarea:** comenzile K1 din integrarea Home Assistant (lumina, ventilatoarele prin `M106` în `gcodeCmd`, viteza și
+  debitul 1–200, țintele, homing-ul în doi pași cu `deviceState` 7 între ei, K1 fără încălzitor de carcasă); câmpurile din
+  transcrierea owner-ului (toate, fără `targetBoxTemp`); ce diferă la Moonraker, OctoPrint, PrusaLink, Elegoo SDCP, Bambu și
+  Marlin pe USB (transportul, parola, comenzile, intervalele, procent sau trepte).
+- **Propunerea** (ADR 0192, propus): driverul pur (starea comună, comenzile ca pași, capabilitățile) peste o legătură comună
+  pe transport; fereastra după capabilități; trei întrebări care se exclud (schița, ventilatoarele prin `gcodeCmd`, răcirea
+  singură). Codul vine după răspunsuri și după schiță.

@@ -2237,6 +2237,10 @@
       "ro": "înainte de 3.6e",
       "en": "before 3.6e"
     },
+    "d40ec2e42feef6f1": {
+      "ro": "Comenzile imprimantei, cu driverele (ADR 0192, cererea owner-ului din 08.11: „vreau sa pot conecta orice fel de imprimanta”): contractul comun al driverelor (starea, comenzile, capabilitățile) și driverul Creality K1; în fereastra Imprimanta, lumina, ventilatoarele, viteza și debitul cât imprimă, temperaturile (Preîncălzește, Răcește) și homing-ul; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "Printer controls, with drivers (ADR 0192, the owner’s request of 08.11: “I want to be able to connect any kind of printer”): the common driver contract (state, commands, capabilities) and the Creality K1 driver; in the Printer window, the light, the fans, speed and flow while printing, the temperatures (Preheat, Cool down) and homing; proof on the fake printer, then the guide on the owner’s printer"
+    },
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
       "en": "The planner in English, following the language of cvs2"
@@ -2529,6 +2533,10 @@
       "ro": "3.5 (transcrierile rejucate pe emulator) și prima felie a etapei",
       "en": "3.5 (the transcripts replayed on the emulator) and the stage's first slice"
     },
+    "ef502da8532512a1": {
+      "ro": "Driverele imprimantelor și comenzile din timpul imprimării",
+      "en": "Printer drivers and the controls during printing"
+    },
     "ef590086e8e244da": {
       "ro": "STL-ul de referință în trepte + semisfera",
       "en": "the stepped reference STL + the hemisphere"
@@ -2592,6 +2600,10 @@
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
+    },
+    "f46865133ce08894": {
+      "ro": "Comenzile imprimantei, cu driverele",
+      "en": "Printer controls, with drivers"
     },
     "f5a0f22b52f21ca7": {
       "ro": "Formele între cvs2 și plugin",
