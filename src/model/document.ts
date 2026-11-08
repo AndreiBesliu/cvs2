@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 22;
+export const VERSIUNE_SCHEMA = 23;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -261,8 +261,16 @@ export type TipOperatie = 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
 export const RETRAGERE_COMPLETA_MAXIMA = 100;
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
+/**
+ * Literele unei plăcuțe (ADR 0210 §4, §7; v23): pentru un grup de text cu câmpuri al piesei, textul așezat cu valorile
+ * instanței (`continut`), literele lui (`copii`, în locul copiilor grupului) și, pe fiecare operație a piesei, literele pe
+ * care le taie (`operatii`). Lumea (`lume.ts`) le pune în locul literelor șablonului: pânza, CAM-ul și verificarea le văd
+ * fără să știe de CSV.
+ */
+export type TextePlacuta = { continut: string; copii: Nod[]; operatii: Record<string, string[]>; [cheie: string]: unknown };
 export type Instanta = {
-  id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
+  id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>;
+  texte?: Record<string, TextePlacuta>; [cheie: string]: unknown;
 };
 /**
  * Un ghidaj al foii (ADR 0050): linia verticală `x = poz` (axa `x`) sau orizontală `y = poz` (axa `y`), în mm ai foii. Nu
@@ -277,7 +285,7 @@ export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]:
 export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown;
 };
-export type Document = { schema: 22; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 23; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {
@@ -340,15 +348,54 @@ export function numara(d: Document): Numaratoare {
   let elementeLume = 0;
   let taieturi = 0;
   let varfuriLume = 0;
+  const piese = new Map(d.piese.map((p) => [p.id, p]));
+  const grupuri = new Map<string, MarimeArbore | null>();
   for (const f of d.foi) {
     for (const i of f.instante) {
       instante++;
       elementeLume += elementePiesa.get(i.piesa) ?? 0;
       taieturi += referintePiesa.get(i.piesa) ?? 0;
       varfuriLume += varfuriPiesa.get(i.piesa) ?? 0;
+      // Literele unei plăcuțe (v23) stau în locul copiilor grupului lor: se adaugă ale ei și se scad ale șablonului; ale ei
+      // sunt și noduri ale documentului.
+      for (const [g, t] of Object.entries(i.texte ?? {})) {
+        const cheie = `${i.piesa}/${g}`;
+        if (!grupuri.has(cheie)) grupuri.set(cheie, marimeGrup(piese.get(i.piesa), g));
+        const sub = grupuri.get(cheie), m = marimeArbore(t.copii, null);
+        noduri += m.noduri;
+        varfuri += m.varfuri;
+        elementeLume += m.elemente - (sub?.elemente ?? 0);
+        varfuriLume += m.varfuri - (sub?.varfuri ?? 0);
+        taieturi += Object.values(t.operatii).reduce((s, l) => s + l.length, 0) - (sub?.referinte ?? 0);
+      }
     }
   }
   return { noduri, instante, elementeLume, operatii, taieturi, varfuri, varfuriLume };
+}
+
+type MarimeArbore = { noduri: number; elemente: number; varfuri: number; referinte: number };
+
+/** Nodurile, elementele și vârfurile căilor unor arbori; cu o piesă, și câte noduri ale operațiilor ei sunt elemente ale lor. */
+function marimeArbore(copii: readonly Nod[], p: Piesa | null): MarimeArbore {
+  const m: MarimeArbore = { noduri: 0, elemente: 0, varfuri: 0, referinte: 0 };
+  const elemente = new Set<string>();
+  for (const c of copii) {
+    for (const { nod } of noduriPiesa(c)) {
+      m.noduri++;
+      if (nod.tip !== 'element') continue;
+      m.elemente++;
+      elemente.add(nod.id);
+      if (nod.forma.tip === 'cale') m.varfuri += nod.forma.varfuri.length;
+    }
+  }
+  for (const o of p?.operatii ?? []) for (const n of o.noduri) if (elemente.has(n)) m.referinte++;
+  return m;
+}
+
+/** Ce înlocuiesc literele unei plăcuțe: copiii grupului `g` al piesei (null fără piesă sau fără un grup cu id-ul lui). */
+function marimeGrup(p: Piesa | undefined, g: string): MarimeArbore | null {
+  const x = p ? noduriPiesa(p.radacina).find((y) => y.nod.id === g)?.nod : undefined;
+  return p && x?.tip === 'grup' ? marimeArbore(x.copii, p) : null;
 }
 
 /**

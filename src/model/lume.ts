@@ -1,5 +1,5 @@
 import { compune, rotatie, type Matrice } from '../geom/matrice.ts';
-import type { Document, FormaDoc, FundPlat, Incrustatie, Instanta, Nod, Operatie } from './document.ts';
+import { noduriPiesa, type Document, type FormaDoc, type FundPlat, type Incrustatie, type Instanta, type Nod, type Operatie, type TextePlacuta } from './document.ts';
 import { jsonCanonic } from './jsonCanonic.ts';
 
 /**
@@ -34,10 +34,39 @@ export function instantaDin(id: string): string {
   return k < 0 ? id : id.slice(0, k);
 }
 
-/** Elementele în lume ale unei instanțe, cu matricea ei dată (pentru o previzualizare se poate da alta). */
-export function elementeInstanta(radacina: Nod, i: Pick<Instanta, 'id' | 'piesa'>, mInstanta: Matrice): ElementLume[] {
+/**
+ * Rădăcina piesei cu literele unei plăcuțe (ADR 0210 §4; v23): grupurile din `texte` primesc copiii plăcuței în locul
+ * literelor șablonului; restul arborelui rămâne același obiect. Fără `texte`, chiar rădăcina.
+ */
+export function cuLitere(radacina: Nod, texte: Readonly<Record<string, TextePlacuta>> | undefined): Nod {
+  if (!texte) return radacina;
+  const inlocuieste = (n: Nod): Nod => {
+    if (n.tip !== 'grup') return n;
+    const t = Object.hasOwn(texte, n.id) ? texte[n.id] : undefined;
+    if (t) return { ...n, copii: t.copii };
+    const copii = n.copii.map(inlocuieste);
+    return copii.every((c, k) => c === n.copii[k]) ? n : { ...n, copii };
+  };
+  return inlocuieste(radacina);
+}
+
+/**
+ * Nodurile operațiilor într-o instanță: ale piesei; pentru o plăcuță (v23), fără literele șablonului din grupurile ei, iar
+ * la capăt literele plăcuței tăiate de fiecare operație, grup cu grup.
+ */
+function noduriInInstanta(radacina: Nod, texte: Readonly<Record<string, TextePlacuta>> | undefined): (o: Operatie) => readonly string[] {
+  if (!texte) return (o) => o.noduri;
+  const sablon = new Set<string>();
+  for (const { nod } of noduriPiesa(radacina)) {
+    if (nod.tip === 'grup' && Object.hasOwn(texte, nod.id)) for (const c of nod.copii) for (const x of noduriPiesa(c)) sablon.add(x.nod.id);
+  }
+  return (o) => [...o.noduri.filter((n) => !sablon.has(n)), ...Object.values(texte).flatMap((t) => t.operatii[o.id] ?? [])];
+}
+
+/** Elementele în lume ale unei instanțe, cu matricea ei dată (pentru o previzualizare se poate da alta); o plăcuță, cu literele ei. */
+export function elementeInstanta(radacina: Nod, i: Pick<Instanta, 'id' | 'piesa' | 'texte'>, mInstanta: Matrice): ElementLume[] {
   const rez: ElementLume[] = [];
-  const stiva: Array<{ readonly nod: Nod; readonly m: Matrice }> = [{ nod: radacina, m: mInstanta }];
+  const stiva: Array<{ readonly nod: Nod; readonly m: Matrice }> = [{ nod: cuLitere(radacina, i.texte), m: mInstanta }];
   while (stiva.length > 0) {
     const x = stiva.pop();
     if (!x) break;
@@ -132,8 +161,9 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
     const p = piese.get(i.piesa);
     if (!p || p.operatii.length === 0) continue;
     const elemente = new Map(elementeInstanta(p.radacina, i, matriceInstanta(i)).map((e) => [e.nod, e]));
+    const noduri = noduriInInstanta(p.radacina, i.texte);
     for (const o of p.operatii) {
-      for (const n of o.noduri) {
+      for (const n of noduri(o)) {
         const e = elemente.get(n);
         if (!e) continue;
         rez.push({

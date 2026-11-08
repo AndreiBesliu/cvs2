@@ -99,6 +99,16 @@ export function incarcaCu(brut: unknown, migrari: Readonly<Record<number, Migrar
 
 
 /**
+ * Documentul brut are plăcuțe cu litere (`texte` pe o instanță, v23): ușa de la pornire aduce întâi judecata lor
+ * (`judecataTexte.ts`), ca migrările pentru un document vechi. O privire pe forma brută, fără să judece ceva.
+ */
+export function cuPlacute(brut: unknown): boolean {
+  const foi = typeof brut === 'object' && brut !== null ? (brut as Brut)['foi'] : null;
+  return Array.isArray(foi) && foi.some((f) => typeof f === 'object' && f !== null && Array.isArray((f as Brut)['instante'])
+    && ((f as Brut)['instante'] as unknown[]).some((i) => typeof i === 'object' && i !== null && Object.hasOwn(i, 'texte')));
+}
+
+/**
  * Ușa unui document al versiunii curente (sau al uneia mai noi, ori fără versiune întreagă: refuzul nu cere migrări);
  * null = documentul e mai vechi (o versiune întreagă între 1 și cea curentă, ADR 0070 §2), deci îi trebuie migrările
  * (`incarca` din `incarcare.ts`).

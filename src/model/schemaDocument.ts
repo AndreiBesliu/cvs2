@@ -190,16 +190,22 @@ const SchemaOperatie = v.looseObject({
   ])),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
+/** Literele unei plăcuțe (ADR 0210 §7; v23): forma; potrivirea cu piesa și cu valorile o judecă documentul întreg. */
+/** Un dicționar (ADR 0024): un obiect, nu o listă; `v.record` singur primește și `[]` (îl copiază într-un obiect), deci întâi forma. */
+const dictionar = <T extends v.GenericSchema>(s: T) =>
+  v.pipe(v.custom<unknown>((x) => typeof x === 'object' && x !== null && !Array.isArray(x), 'un dicționar, nu o listă'), s);
+const SchemaTextePlacuta = v.looseObject({ continut: v.string(), copii: v.array(SchemaNod), operatii: dictionar(v.record(Id, v.array(Id))) });
 const SchemaInstanta = v.looseObject({
   id: Id,
   piesa: Id,
   x: finit,
   y: finit,
   rotire: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(360)),
-  campuri: v.optional(v.pipe(
+  campuri: v.optional(dictionar(v.pipe(
     v.record(v.pipe(v.string(), v.maxLength(PLAFON.campCheie)), v.pipe(v.string(), v.maxLength(PLAFON.campLungime))),
     v.check((c) => Object.keys(c).length <= PLAFON.campuri, `cel mult ${PLAFON.campuri} de câmpuri pe instanță`),
-  )),
+  ))),
+  texte: v.optional(dictionar(v.record(Id, SchemaTextePlacuta))),
 });
 /** Ghidajele foii (ADR 0050): opționale, fără schemă nouă (nu schimbă tăierea); plafonul și poziția, ca la instanțe. */
 const SchemaGhidaj = v.looseObject({ id: Id, axa: v.picklist(['x', 'y']), poz: coordonata });
@@ -218,7 +224,7 @@ const SchemaFoaie = v.looseObject({
  * Matricea compusă a fiecărui nod față de rădăcina piesei rămâne finită și mărginită: un lanț de 32 de scalări mari ar
  * da altfel Infinity sau NaN în lume (pe pânză și în CAM). Compunerea e cea din `lume.ts`, de sus în jos.
  */
-function matriciInMargini(p: Piesa): string | null {
+export function matriciInMargini(p: Piesa): string | null {
   const stiva = [{ nod: p.radacina, m: IDENTITATE }];
   while (stiva.length > 0) {
     const x = stiva.pop();
@@ -249,6 +255,22 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | nul
     if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
   }
   return null;
+}
+
+/**
+ * Literele plăcuțelor unei instanțe (ADR 0210 §7; v23), sau null: fiecare grup e un text al piesei, cu bloc valid și cu
+ * câmpuri; textul plăcuței e al blocului, cu valorile instanței; id-urile literelor sunt unice și altele decât ale piesei;
+ * operațiile sunt ale piesei, pe literele plăcuței, fiecare o dată; arborele cu literele ei rămâne în niveluri și în margini.
+ */
+/**
+ * Judecata literelor plăcuțelor (v23, ADR 0210 §7) stă în `judecataTexte.ts`, adus doar pentru un document cu plăcuțe
+ * (ușa de la pornire îl cere înaintea primei randări, ca migrările pentru unul vechi, ADR 0070) și mereu de ușa întreagă
+ * (`incarcare.ts`) și de acțiunile care fac litere. Se înregistrează aici când vine; fără el, un document cu plăcuțe nu trece.
+ */
+let judecataTexte: ((d: Document) => string | null) | null = null;
+
+export function inregistreazaJudecataTexte(judeca: (d: Document) => string | null): void {
+  judecataTexte = judeca;
 }
 
 /** Ce cere contractul peste forma fiecărui câmp: unicitatea, referințele și plafoanele de ansamblu. */
@@ -292,7 +314,9 @@ function problemaDeAnsamblu(d: Document): string | null {
     const m = matriciInMargini(p);
     if (m) return m;
   }
-  return null;
+  // Literele plăcuțelor (v23), după plafoane: o plăcuță uriașă nu se judecă literă cu literă.
+  if (!d.foi.some((f) => f.instante.some((i) => i.texte !== undefined))) return null;
+  return judecataTexte ? judecataTexte(d) : 'documentul are plăcuțe cu litere, iar judecata lor nu e încărcată';
 }
 
 export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(

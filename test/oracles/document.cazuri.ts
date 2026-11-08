@@ -35,12 +35,15 @@
  * - v9 (ADR 0034, felia 2.7b): în `document.v9.cazuri.ts`, ca fișierele care nu-l folosesc să nu-l construiască; de aceea
  *   `aleator`, `laV5` … `laV8` și generatorii otrăvurilor (`otravuriArbore`, `otravuriOperatii`, `otravuriSens`) sunt
  *   exportate.
+ * - v23 (ADR 0210 §7, felia 11.4↑: literele plăcuțelor din CSV, `Instanta.texte`): la capăt, după v11–v22, cu antetul lui.
  */
 import type {
   CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, DocV6O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber,
   MatriceO, NodO, OperatieO, OperatieV4O, OperatieV5O, OperatieV6O, PiesaO, PiesaV3O, PiesaV4O, PiesaV5O, PiesaV6O, PunctO,
   RampaO, SculaO, SensO, TaieturaV4O, UrechiO, DocV7O, IntrariO, OperatieV7O, PiesaV7O, ColturiO, DocV8O, OperatieV8O, PiesaV8O,
 } from './document.ts';
+// v23 (ADR 0105 §4): amprenta unui bloc e o funcție a literelor șablonului, nu o regulă: o calculează oracolul.
+import { amprentaContururiO } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
 
@@ -4991,3 +4994,985 @@ export const REFUZATE_V22: readonly RefuzV18[] = [
   { nume: 'RB3 un v22 cu banda ca text', doc: docV(22, vcarve({ incrustatie: inc({ jurDop: 'banda', banda: 'da' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda`, motiv: 'ADR 0172: un obiect' },
   { nume: 'RB4 un v22 cu banda fără decupare', doc: docV(22, vcarve({ incrustatie: incB(bandaFara('decupare')) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.banda.decupare`, motiv: 'ADR 0172: cerută' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v23 (felia 11.4↑, ADR 0210 §4 și §7): literele plăcuțelor din CSV, pe hârtie.
+
+/**
+ * CAZURILE documentului v23 (sesiune independentă, scrise doar din ADR 0210 §4, §7 și răspunsurile owner-ului 4–5, ADR 0105,
+ * 0138, 0142, 0024, 0070 și 0121), pentru partea v23 a oracolului (capătul lui `document.ts`) și pentru
+ * `test/unit/document.v23.oracol.test.ts`. Fiecare verdict e scris aici, pe hârtie; doar amprenta blocurilor (ADR 0105 §4) o
+ * calculează oracolul (`amprentaContururiO`), fiindcă e o funcție a literelor șablonului, nu o regulă:
+ * - `VALIDE_V23`: documente v23 primite NESCHIMBATE: v22-urile valide renumerotate și plăcuțele (`P..`);
+ * - `MIGRARI_V23_HARTIE`: documente vechi și v23-ul care iese din ușă (doar numărul, de la v10);
+ * - `NECIOCNIRI_V23`: `texte` în afara instanței (pe piesă, nod, foaie, operație, sus, ca valoare în `campuri`): un câmp
+ *   necunoscut, primit și păstrat;
+ * - `FRONTIERE_V23`: câmpurile literelor plăcuței (și ale blocului șablonului), cu valori de o parte și de alta a marginilor,
+ *   fiecare cu verdictul de pe hârtie;
+ * - `REFUZATE_V23`: un singur defect fiecare, cu categoria oracolului și calea câmpului (ca în motivul ușii);
+ * - `AMBIGUE_V23` și `plafoaneV23().ambigue`: ce nu hotărăște textul (punctele DESCHISE din antetul părții v23 a
+ *   oracolului), cu verdictul ALEGERII; aplicația doar se raportează;
+ * - `plafoaneV23()` (la cerere, documente mari): plafoanele de ansamblu cu literele plăcuțelor, la margine și peste ea;
+ * - `CORPUS_V23` și `OTRAVURI_V23`: documente generate cu plăcuțe (PRNG-ul `aleator`), valide și stricate câte un fel.
+ */
+
+/** Un document al cazurilor v22, adus la v23: doar numărul (ADR 0210 §7: „Migrarea schimbă doar numărul”). */
+const laV23 = (d: Liber): Liber => cuSchema(d, 23);
+
+/** Conturul închis al unei litere (linii și o cubică), cu colțul în (x0, y0). */
+const conturLitera = (x0: number, y0: number, l: number, h: number): Liber => ({
+  tip: 'cale', inchis: true, varfuri: [
+    { p: { x: x0, y: y0 }, s: { tip: 'L' } },
+    { p: { x: x0 + l, y: y0 }, s: { tip: 'C', c1: { x: x0 + l + 1, y: y0 + 2 }, c2: { x: x0 + l + 1, y: y0 + h - 2 } } },
+    { p: { x: x0 + l, y: y0 + h }, s: { tip: 'L' } },
+    { p: { x: x0, y: y0 + h }, s: { tip: 'L' } },
+  ],
+});
+/** O literă cum o face textul (ADR 0105 §4: un grup pe literă): conturul `<id>c` și, dacă are, golul `<id>g`. */
+const litera = (id: string, x: number, gol = false): Liber => ({
+  tip: 'grup', id, matrice: T(x, 0), copii: [
+    { tip: 'element', id: `${id}c`, forma: conturLitera(0, 0, 4, 7), matrice: I() },
+    ...(gol ? [{ tip: 'element', id: `${id}g`, forma: conturLitera(1, 2, 2, 3), matrice: I() }] : []),
+  ],
+});
+/** O literă cu un arc (cum are aldinul, ADR 0123): conturul `<id>c`. */
+const literaArc = (id: string, x: number): Liber => ({
+  tip: 'grup', id, matrice: T(x, 0), copii: [{
+    tip: 'element', id: `${id}c`, matrice: I(),
+    forma: { tip: 'cale', inchis: true, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: 0.5 } }, { p: { x: 4, y: 0 }, s: { tip: 'L' } }, { p: { x: 4, y: 7 }, s: { tip: 'L' } }] },
+  }],
+});
+/** O literă pe `niveluri` niveluri (grupuri unul în altul, conturul `<p>0` jos, grupul `<p><niveluri − 1>` sus). */
+const literaAdanca = (p: string, niveluri: number): Liber => {
+  let n: Liber = { tip: 'element', id: `${p}0`, forma: conturLitera(0, 0, 4, 7), matrice: I() };
+  for (let k = 1; k < niveluri; k++) n = { tip: 'grup', id: `${p}${k}`, matrice: I(), copii: [n] };
+  return n;
+};
+/** Blocul de text al unui grup cu copiii dați (ADR 0105 §3–§4): Roboto, 7 mm, la stânga; amprenta e a copiilor. */
+const blocO = (continut: string, copii: unknown, v: Liber = {}): Liber => ({
+  continut, font: 'roboto', inaltime: 7, spatiere: 0, interlinie: 1, aliniere: 'stanga', ...v, amprenta: amprentaContururiO(copii),
+});
+/** Un grup de text (ADR 0105 §4; ADR 0130: pe orice grup al piesei), cu literele șablonului și blocul lor. */
+const grupText = (id: string, continut: string, copii: Liber[], v: Liber = {}, matrice: MatriceO = T(10, 10)): Liber => ({
+  tip: 'grup', id, matrice, text: blocO(continut, copii, v), copii,
+});
+/** Literele șablonului „{nume}” (trei, cum le-ar da fontul; ușa nu le citește). */
+const sablonNume = (): Liber[] => [litera('s1', 0), litera('s2', 6, true), litera('s3', 12)];
+/** Amprenta literelor șablonului „{nume}” (ADR 0105 §4). */
+const AMPRENTA_SABLON = amprentaContururiO(sablonNume());
+/** Operațiile plăcuței: rama pe exterior, gaura de prindere, literele pe exterior și golurile lor (ca la un import, ADR 0105 §4). */
+const operatiiPlacuta = (): Liber[] => [
+  opV18({ id: 'o1', noduri: ['rama'], latura: 'exterior' }),
+  opV18({ id: 'o2', noduri: ['gaura'], latura: 'interior' }),
+  opV18({ id: 'o3', noduri: ['s1c', 's2c', 's3c'], latura: 'exterior', scula: plata(2, 1), adancime: 2, pas: 1 }),
+  opV18({ id: 'o4', noduri: ['s2g'], latura: 'interior', scula: plata(2, 1), adancime: 2, pas: 1 }),
+];
+/**
+ * Plăcuța-șablon `pl` (ADR 0210 §4: „Șablonul e o piesă”): rama 80 × 30, o gaură, grupul de text `t` cu „{nume}” (sau textul
+ * dat, cu câmpurile blocului date), al treilea copil al rădăcinii `r`.
+ */
+function piesaPlacuta(o: { readonly continut?: string; readonly bloc?: Liber; readonly grup?: Liber; readonly id?: string } = {}): Liber {
+  return {
+    id: o.id ?? 'pl', nume: 'Plăcuța',
+    radacina: { tip: 'grup', id: 'r', matrice: I(), copii: [
+      { tip: 'element', id: 'rama', forma: dreptunghi(80, 30), matrice: I() },
+      { tip: 'element', id: 'gaura', forma: cerc(2), matrice: T(5, 15) },
+      o.grup ?? grupText('t', o.continut ?? '{nume}', sablonNume(), o.bloc ?? {}),
+    ] },
+    operatii: operatiiPlacuta(),
+  };
+}
+/** Literele plăcuței „Ana” (ușa nu le așază: contează id-urile, forma și operațiile), cu prefixul id-urilor. */
+const litereAna = (p = 'q'): Liber[] => [litera(`${p}1`, 0, true), litera(`${p}2`, 6), litera(`${p}3`, 12, true)];
+/** Ce taie operațiile piesei din literele „Ana”: contururile cu `o3`, golurile cu `o4`. */
+const operatiiAna = (p = 'q'): Liber => ({ o3: [`${p}1c`, `${p}2c`, `${p}3c`], o4: [`${p}1g`, `${p}3g`] });
+/** O intrare din `texte` (ADR 0210 §7: textul așezat, literele, operația → literele tăiate), cu câmpurile date în plus. */
+const intrareText = (continut: string, copii: Liber[] = litereAna(), operatii: Liber = operatiiAna(), v: Liber = {}): Liber => ({ continut, copii, operatii, ...v });
+/** O instanță a plăcuței, cu valorile ei și (dacă e dat) `texte`. */
+const placuta = (
+  id: string, campuri: Liber | undefined, texte?: unknown,
+  o: { readonly x?: number; readonly y?: number; readonly rotire?: number; readonly piesa?: string } = {},
+): Liber => ({
+  id, piesa: o.piesa ?? 'pl', x: o.x ?? 10, y: o.y ?? 10, rotire: o.rotire ?? 0,
+  ...(campuri !== undefined ? { campuri } : {}), ...(texte !== undefined ? { texte } : {}),
+});
+/** Foaia 300 × 200 × 18 cu instanțele date. */
+const foaieV23 = (id: string, instante: readonly Liber[]): Liber => ({ id, stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [...instante] });
+/** Un document cu piesele date și instanțele date, pe o foaie. */
+export function docV23(piese: readonly Liber[], instante: readonly Liber[], schema = 23): Liber {
+  return { schema, rev: 0, piese: [...piese], foi: [foaieV23('f1', instante)] };
+}
+/** Documentul de bază: o plăcuță „Ana” (valoarea `nume`, literele ei și ce taie fiecare operație). */
+export const docAna = (schema = 23): Liber => docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })], schema);
+/** Plăcuța „Ana” fără operații pe litere (id-urile literelor se pot schimba fără să rupă o trimitere). */
+const docAnaFaraOps = (): Liber => docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), {}) })]);
+/** Literele șablonului „Clasa {clasa}”. */
+const sablonClasa = (): Liber[] => [litera('v1', 0), litera('v2', 6)];
+/** Piesa `pd` cu două grupuri de text: `t` („{nume}”) și `u` („Clasa {clasa}”), cu operația `o5` pe literele lui `u`. */
+function piesaDoua(): Liber {
+  return {
+    id: 'pd',
+    radacina: { tip: 'grup', id: 'r', matrice: I(), copii: [
+      { tip: 'element', id: 'rama', forma: dreptunghi(120, 40), matrice: I() },
+      grupText('t', '{nume}', sablonNume()),
+      grupText('u', 'Clasa {clasa}', sablonClasa(), {}, T(10, 25)),
+    ] },
+    operatii: [
+      ...operatiiPlacuta().filter((o) => o['id'] !== 'o2'),
+      opV18({ id: 'o5', noduri: ['v1c', 'v2c'], latura: 'exterior', scula: plata(2, 1), adancime: 2, pas: 1 }),
+    ],
+  };
+}
+/** O plăcuță a piesei `pd`, cu ambele texte (literele lui `u`: `w1`, `w2`). */
+const placutaDoua = (id: string): Liber => placuta(id, { nume: 'Ana', clasa: 'a V-a' }, {
+  t: intrareText('Ana'),
+  u: intrareText('Clasa a V-a', [litera('w1', 0), litera('w2', 6)], { o5: ['w1c', 'w2c'] }),
+}, { piesa: 'pd' });
+/** Curba unui text pe curbă (ADR 0108): un arc, apoi o linie. */
+const curbaText = (): Liber => ({
+  inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: 0.4 } }, { p: { x: 60, y: 0 }, s: { tip: 'L' } }],
+  s: 0, pozitie: 'baza', distanta: 0, invers: false, orientare: 'rotita', intinsa: false,
+});
+/** Piesa doar cu textul (ADR 0105 §4: blocul pe grupul rădăcină). */
+const piesaDoarText = (): Liber => ({
+  id: 'pt', radacina: grupText('t', '{nume}', sablonNume(), {}, I()),
+  operatii: operatiiPlacuta().filter((o) => o['id'] === 'o3' || o['id'] === 'o4'),
+});
+/** Un v3 (operațiile fără sens, urechi, rampă, intrări, colțuri), din documentul v23 dat. */
+const caV3 = (d: Liber): Liber => {
+  const c = structuredClone(d);
+  c['schema'] = 3;
+  for (const p of c['piese'] as Liber[]) for (const o of p['operatii'] as Liber[]) for (const k of ['sens', 'urechi', 'rampa', 'intrari', 'colturi']) delete o[k];
+  return c;
+};
+
+/** Prima instanță a documentului. */
+const inst0 = (d: Liber): Liber => (((d['foi'] as Liber[])[0] as Liber)['instante'] as Liber[])[0] as Liber;
+/** Intrarea `g` a primei instanțe. */
+const intrare0 = (d: Liber, g = 't'): Liber => (inst0(d)['texte'] as Liber)[g] as Liber;
+/** Litera `k` (de sus) a intrării `g` a primei instanțe. */
+const litera0 = (d: Liber, k: number, g = 't'): Liber => (intrare0(d, g)['copii'] as Liber[])[k] as Liber;
+/** Grupul de text `t` al primei piese (al treilea copil al rădăcinii). */
+const grupT0 = (d: Liber): Liber => ((((d['piese'] as Liber[])[0] as Liber)['radacina'] as Liber)['copii'] as Liber[])[2] as Liber;
+/** Documentul de bază (sau cel dat), stricat de `strica`. */
+const stricat = (strica: (d: Liber) => void, baza: () => Liber = docAna): Liber => {
+  const d = baza();
+  strica(d);
+  return d;
+};
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente v23 valide: ușa le primește neschimbate.
+
+export const VALIDE_V23: readonly CazV18[] = [
+  ...VALIDE_V22.map((c) => ({ nume: `${c.nume} (v23)`, doc: laV23(c.doc) })),
+  { nume: 'P01 o plăcuță „Ana”: textul așezat, literele și ce taie fiecare operație (ADR 0210 §7)', doc: docAna() },
+  {
+    nume: 'P02 trei plăcuțe ale aceleiași piese, fiecare cu numele ei; literele au aceleași id-uri pe fiecare (unice pe instanță)',
+    doc: docV23([piesaPlacuta()], [
+      placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') }),
+      placuta('i2', { nume: 'Mihaela' }, { t: intrareText('Mihaela') }, { y: 50 }),
+      placuta('i3', { nume: 'Ștefan' }, { t: intrareText('Ștefan') }, { y: 90 }),
+    ]),
+  },
+  { nume: 'P03 „Masa {nr}”: textul din jurul câmpului rămâne (ADR 0210 §4)', doc: docV23([piesaPlacuta({ continut: 'Masa {nr}' })], [placuta('i1', { nr: '12' }, { t: intrareText('Masa 12') })]) },
+  {
+    nume: 'P04 două câmpuri, unul de două ori: fiecare apariție primește valoarea',
+    doc: docV23([piesaPlacuta({ continut: '{nume} {prenume} ({nume})' })], [placuta('i1', { nume: 'Pop', prenume: 'Ana' }, { t: intrareText('Pop Ana (Pop)') })]),
+  },
+  { nume: 'P05 două câmpuri lipite', doc: docV23([piesaPlacuta({ continut: '{nr}{litera}' })], [placuta('i1', { nr: '7', litera: 'B' }, { t: intrareText('7B') })]) },
+  {
+    nume: 'P06 o valoare cu „$&”, „$1”, „$$”, „$\'” și „$`”: intră așa cum e (o verificare de șiruri, ADR 0210 §7)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: "$& $1 $$ $' $`" }, { t: intrareText("$& $1 $$ $' $`") })]),
+  },
+  {
+    nume: 'P07 o valoare cu acolade: se înlocuiesc câmpurile textului blocului, o dată („{b}” rămâne „{b}”)',
+    doc: docV23([piesaPlacuta({ continut: '{a}' })], [placuta('i1', { a: '{b}', b: 'X' }, { t: intrareText('{b}') })]),
+  },
+  { nume: 'P08 diacriticele (ș, ț cu virgulă) și un caracter din afara planului de bază', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ștefan Țărnă 😀' }, { t: intrareText('Ștefan Țărnă 😀') })]) },
+  {
+    nume: 'P09 două rânduri (Enter), cu câte un câmp',
+    doc: docV23([piesaPlacuta({ continut: '{nume}\nClasa {clasa}' })], [placuta('i1', { nume: 'Ana', clasa: 'a V-a' }, { t: intrareText('Ana\nClasa a V-a') })]),
+  },
+  {
+    nume: 'P10 rândurile despărțite cu „\\r\\n” rămân exact',
+    doc: docV23([piesaPlacuta({ continut: '{nume}\r\nMasa {nr}' })], [placuta('i1', { nume: 'Ana', nr: '3' }, { t: intrareText('Ana\r\nMasa 3') })]),
+  },
+  {
+    nume: 'P11 o plăcuță fără litere (numele din spații): copii și operatii goale (ALEGERE: ușa nu așază textul)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: '   ' }, { t: intrareText('   ', [], {}) })]),
+  },
+  { nume: 'P12 blocul pe o curbă (ADR 0108), cu câmpul', doc: docV23([piesaPlacuta({ bloc: { curba: curbaText() } })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]) },
+  {
+    nume: 'P13 „Limitat de casetă” pe șablon (răspunsul 5, ADR 0142): un nume lung, micșorat (geometria nu e a ușii)',
+    doc: docV23(
+      [piesaPlacuta({ bloc: { inaltime: 5.2, caseta: { fel: 'limita', latime: 70, inaltime: 20, ceruta: 7 } } })],
+      [placuta('i1', { nume: 'Maximilian-Alexandru' }, { t: intrareText('Maximilian-Alexandru') })],
+    ),
+  },
+  {
+    nume: 'P14 blocul cu toate câmpurile lui opționale (ADR 0123, 0138): proporțiile, cursivul, aldinul, spațierile, punctele',
+    doc: docV23(
+      [piesaPlacuta({ bloc: { numeFont: 'Roboto', proportii: { latime: 80, inaltime: 120 }, cursiv: 12, aldin: 0.5, spatieri: [{ dupa: 0, mm: 0.5 }], unitate: 'pt', crenare: false } })],
+      [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })],
+    ),
+  },
+  { nume: 'P15 textul e chiar rădăcina piesei (ADR 0105 §4)', doc: docV23([piesaDoarText()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') }, { piesa: 'pt' })]) },
+  { nume: 'P16 două grupuri de text, amândouă cu literele plăcuței (id-uri diferite între ele)', doc: docV23([piesaDoua()], [placutaDoua('i1')]) },
+  {
+    nume: 'P17 două grupuri de text, doar unul cu literele plăcuței (ADR-ul nu le cere pe toate)',
+    doc: docV23([piesaDoua()], [placuta('i1', { nume: 'Ana', clasa: 'a V-a' }, { t: intrareText('Ana') }, { piesa: 'pd' })]),
+  },
+  {
+    nume: 'P18 o instanță a șablonului fără texte (taie „{nume}”, ca până la v22), lângă o plăcuță',
+    doc: docV23([piesaPlacuta()], [placuta('i0', { nume: 'Ana' }), placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') }, { y: 50 })]),
+  },
+  {
+    nume: 'P19 o operație a piesei fără literele plăcuței (o3 lipsește: nu taie nimic din ele)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), { o4: ['q1g', 'q3g'] }) })]),
+  },
+  {
+    nume: 'P20 operația ramei (o1) taie și o literă a plăcuței (o operație a piesei, pe o literă din copii)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), { ...operatiiAna(), o1: ['q2c'] }) })]),
+  },
+  {
+    nume: 'P21 câmpuri necunoscute în intrare și pe litere (păstrate, ADR 0024)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, {
+      t: intrareText('Ana', [{ ...litera('q1', 0, true), stil: 'x' }, litera('q2', 6), { ...litera('q3', 12, true), culoare: 3 }], operatiiAna(), { nota: { de: 'csv' }, micsorare: 0.9 }),
+    })]),
+  },
+  {
+    nume: 'P22 grupul de text cu id-ul „constructor”, iar câmpul și cheia din campuri la fel (date, ADR 0024 §9)',
+    doc: docV23([piesaPlacuta({ grup: grupText('constructor', '{constructor}', sablonNume()) })], [placuta('i1', { constructor: 'Ana' }, { constructor: intrareText('Ana') })]),
+  },
+  {
+    nume: 'P23 grupul de text „__proto__”, câmpul {__proto__} și cheile din campuri și din texte (date, ADR 0024 §9)',
+    doc: docV23(
+      [piesaPlacuta({ grup: grupText('__proto__', '{__proto__}', sablonNume()) })],
+      [placuta('i1', JSON.parse('{"__proto__": "Ana"}') as Liber, JSON.parse(`{"__proto__": ${JSON.stringify(intrareText('Ana'))}}`) as Liber)],
+    ),
+  },
+  {
+    nume: 'P24 litere cu arce, pe plăcuțe rotite cu 90° și cu 30° (similitudini în lume, ADR 0034 §2)',
+    doc: docV23([piesaPlacuta()], [
+      placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', [literaArc('q1', 0), literaArc('q2', 6)], { o3: ['q1c', 'q2c'] }) }, { x: 100, rotire: 90 }),
+      placuta('i2', { nume: 'Ana' }, { t: intrareText('Ana', [literaArc('q1', 0), literaArc('q2', 6)], { o3: ['q1c', 'q2c'] }) }, { y: 100, rotire: 30 }),
+    ]),
+  },
+  {
+    nume: 'P25 literele cu id-urile instanței, ale pieselor, ale unei operații, ale foii și ale nodului altei piese (alte spații de nume)',
+    doc: docV23(
+      [piesaPlacuta(), { id: 'px', radacina: { tip: 'element', id: 'e', forma: dreptunghi(10, 10), matrice: I() }, operatii: [] }],
+      [placuta('i1', { nume: 'Ana' }, {
+        t: intrareText('Ana', [litera('i1', 0), litera('pl', 6), litera('o3', 12), litera('f1', 18), litera('e', 24)], { o3: ['i1c', 'plc', 'o3c', 'f1c', 'ec'] }),
+      })],
+    ),
+  },
+  {
+    nume: 'P26 o literă care ajunge pe nivelul 32 (grupul pe 2, literele pe 3 … 32: la margine în orice citire)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', [literaAdanca('qa', 30)], { o3: ['qa0'] }) })]),
+  },
+  {
+    nume: 'P27 imbricarea la 200 de niveluri, într-un câmp necunoscut al intrării (ADR 0024, precizarea 5)',
+    // documentul 1, foi 2, foaia 3, instante 4, instanța 5, texte 6, intrarea 7, `nota` 8 … 200: 193 de obiecte.
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), operatiiAna(), { nota: imbricat(193) }) })]),
+  },
+  {
+    nume: 'P28 șablonul fără litere (blocul cu amprenta listei goale), plăcuța cu litere tăiate de operația ramei',
+    doc: docV23(
+      [{ ...piesaPlacuta({ grup: grupText('t', '{nume}', []) }), operatii: operatiiPlacuta().filter((o) => o['id'] === 'o1' || o['id'] === 'o2') }],
+      [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), { o1: ['q1c', 'q2c', 'q3c'] }) })],
+    ),
+  },
+  (() => {
+    const inst = (k: number): Liber => placuta(`i${k}`, { nume: `Elev ${k}` }, { t: intrareText(`Elev ${k}`) }, { x: 10 + ((k - 1) % 3) * 85, y: 10 + Math.floor(((k - 1) % 15) / 3) * 35 });
+    return {
+      nume: 'P29 30 de plăcuțe pe două foi (15 + 15), fiecare cu numele ei (prototipul, ADR 0210)',
+      doc: { schema: 23, rev: 3, piese: [piesaPlacuta()], foi: [
+        foaieV23('f1', Array.from({ length: 15 }, (_, k) => inst(k + 1))),
+        { ...foaieV23('f2', Array.from({ length: 15 }, (_, k) => inst(k + 16))), nume: 'Foaia 2' },
+      ] },
+    };
+  })(),
+  { nume: 'P30 `texte` pe piesă e un câmp necunoscut, lângă o plăcuță', doc: { ...docAna(), piese: [{ ...piesaPlacuta(), texte: { t: 1 } }] } },
+  (() => {
+    const p = piesaPlacuta();
+    (p['radacina'] as Liber)['matrice'] = M(0, 1, -1, 0, 30, 0);
+    return { nume: 'P31 rădăcina piesei rotită cu 90° (literele, sub grupul lor, ca orice nod)', doc: docV23([p], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]) };
+  })(),
+  { nume: 'P32 campuri cu chei pe care textul nu le folosește', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana', clasa: 'a V-a', nota: '' }, { t: intrareText('Ana') })]) },
+  { nume: 'P33 fontul unui sistem (ADR 0106), cu numele lui', doc: docV23([piesaPlacuta({ bloc: { font: 'g:Roboto:700', numeFont: 'Roboto Bold' } })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]) },
+  {
+    nume: 'P34 aceeași piesă pe două foi, cu plăcuțe pe amândouă',
+    doc: { schema: 23, rev: 0, piese: [piesaPlacuta()], foi: [
+      foaieV23('f1', [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]),
+      foaieV23('f2', [placuta('i2', { nume: 'Ion' }, { t: intrareText('Ion', [litera('q1', 0), litera('q2', 6)], { o3: ['q1c', 'q2c'] }) })]),
+    ] },
+  },
+  { nume: 'P35 valoarea e chiar „{nume}”: textul plăcuței e „{nume}”', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: '{nume}' }, { t: intrareText('{nume}') })]) },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente vechi și ce iese din ușa v23.
+
+/** Plăcuța-șablon cu două instanțe și valorile lor, fără literele plăcuțelor (cum o putea scrie v22). */
+const SABLON_V22 = docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }), placuta('i2', { nume: 'Ion' }, undefined, { y: 50 })], 22);
+const SABLON_V10 = docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' })], 10);
+
+export const MIGRARI_V23_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v23: Liber }> = [
+  ...MIGRARI_V22_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v23: laV23(c.v22) })),
+  { nume: 'M23a un v22 cu plăcuța-șablon și valorile pe instanțe, fără literele plăcuțelor: doar numărul (ADR 0210 §7)', vechi: SABLON_V22, v23: laV23(SABLON_V22) },
+  { nume: 'M23b un v10 cu plăcuța-șablon (blocul, un câmp necunoscut al grupului): doar numărul', vechi: SABLON_V10, v23: cuSchema(SABLON_V10, 23) },
+];
+
+/** `texte` în afara instanței e un câmp necunoscut oarecare: primit și păstrat (ciocnirea e doar pe instanță, ADR 0210 §7). */
+export const NECIOCNIRI_V23: ReadonlyArray<CazV18 & { readonly v23: Liber }> = [
+  ...NECIOCNIRI_V22.map((c) => ({ nume: c.nume, doc: c.doc, v23: laV23(c.v22) })),
+  ...([
+    ['N23a un v22 cu `texte` pe piesă', (d: Liber) => { ((d['piese'] as Liber[])[0] as Liber)['texte'] = { t: intrareText('Ana') }; }],
+    ['N23b un v22 cu `texte` pe rădăcina piesei', (d: Liber) => { (((d['piese'] as Liber[])[0] as Liber)['radacina'] as Liber)['texte'] = 1; }],
+    ['N23c un v22 cu `texte` pe foaie', (d: Liber) => { ((d['foi'] as Liber[])[0] as Liber)['texte'] = []; }],
+    ['N23d un v22 cu `texte` sus', (d: Liber) => { d['texte'] = 'x'; }],
+    ['N23e un v22 cu `texte` pe o operație', (d: Liber) => { (((d['piese'] as Liber[])[0] as Liber)['operatii'] as Liber[])[0]!['texte'] = {}; }],
+    ['N23f un v22 cu `texte` ca valoare în campuri', (d: Liber) => { (inst0(d)['campuri'] as Liber)['texte'] = 'Ana'; }],
+    ['N23g un v22 cu `texte` în stocul foii', (d: Liber) => { (((d['foi'] as Liber[])[0] as Liber)['stoc'] as Liber)['texte'] = 0; }],
+    ['N23h un v22 cu `texte` pe grupul de text, lângă bloc', (d: Liber) => { grupT0(d)['texte'] = { t: 1 }; }],
+  ] as const).map(([nume, pune]) => {
+    const d = structuredClone(SABLON_V22);
+    pune(d);
+    return { nume, doc: d, v23: laV23(d) };
+  }),
+  (() => {
+    const d = structuredClone(SABLON_V10);
+    ((d['piese'] as Liber[])[0] as Liber)['texte'] = { t: intrareText('Ana') };
+    return { nume: 'N23i un v10 cu `texte` pe piesă (prin tot lanțul)', doc: d, v23: cuSchema(d, 23) };
+  })(),
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Frontierele: o valoare pusă la o cale a documentului de bază, cu verdictul de pe hârtie.
+
+export type FrontieraV23 = {
+  /** Calea câmpului în document (cu `.`; indicii listelor ca numere). */
+  readonly cale: string;
+  /** Documentul pe care se pune valoarea (o copie nouă la fiecare chemare). */
+  readonly baza: () => Liber;
+  /** Categoria oracolului când valoarea e refuzată. */
+  readonly categorie: CategorieO;
+  /** Ce trebuie să numească motivul oracolului (calea, ca în mesajele lui). */
+  readonly mesaj: string;
+  readonly adr: string;
+  /** Valoarea (sau `LIPSA`) și verdictul de pe hârtie: `true` = primit. */
+  readonly valori: ReadonlyArray<readonly [unknown, boolean]>;
+  /** Valori pe care ADR-ul nu le hotărăște (DESCHIS): verdictul ALEGERII oracolului și de ce; aplicația doar se raportează. */
+  readonly ambigue?: ReadonlyArray<readonly [unknown, boolean, string]>;
+};
+
+const CI0 = 'foi.0.instante.0';
+const CT0 = `${CI0}.texte`;
+const CB0 = 'piese.0.radacina.copii.2.text';
+
+export const FRONTIERE_V23: readonly FrontieraV23[] = [
+  {
+    cale: CT0, baza: docAna, categorie: 'texte', mesaj: 'texte', adr: 'ADR 0210 §7: opțional; un dicționar grupul piesei → literele',
+    valori: [
+      [LIPSA, true], [{ t: intrareText('Ana') }, true], [null, false], [[], false], ['t', false], [1, false], [true, false],
+      [{ r: intrareText('Ana') }, false], [{ rama: intrareText('Ana') }, false], [{ gaura: intrareText('Ana') }, false],
+      [{ zz: intrareText('Ana') }, false], [{ T: intrareText('Ana') }, false], [{ s1: intrareText('Ana') }, false],
+    ],
+    ambigue: [[{}, true, 'DESCHIS: `texte: {}` (nicio intrare); ALEGERE: primit']],
+  },
+  {
+    cale: `${CT0}.t`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0210 §7: { continut, copii, operatii }',
+    valori: [[intrareText('Ana'), true], [null, false], [[], false], ['Ana', false], [{}, false], [{ continut: 'Ana', operatii: {} }, false]],
+  },
+  {
+    cale: `${CT0}.t.continut`, baza: docAna, categorie: 'texte', mesaj: 'texte.t.continut', adr: 'ADR 0210 §7: textul blocului cu valorile din campuri, exact',
+    valori: [
+      ['Ana', true], ['ana', false], ['ANA', false], ['Ana ', false], [' Ana', false], ['Ana\n', false], ['', false], ['{nume}', false],
+      ['Ană', false], [LIPSA, false], [null, false], [7, false], [['Ana'], false], [{ text: 'Ana' }, false],
+    ],
+  },
+  {
+    cale: `${CI0}.campuri.nume`, baza: docAna, categorie: 'texte', mesaj: 'texte.t.continut', adr: 'ADR 0210 §7: valoarea din campuri dă textul plăcuței',
+    valori: [['Ana', true], ['ana', false], ['Ana ', false], ['', false], ['{nume}', false]],
+    ambigue: [[LIPSA, false, 'DESCHIS: câmpul fără valoare în campuri; ALEGERE: refuz']],
+  },
+  {
+    cale: `${CT0}.t.copii`, baza: docAnaFaraOps, categorie: 'texte', mesaj: 'texte.t.copii', adr: 'ADR 0210 §7: literele, o listă de noduri',
+    valori: [[litereAna(), true], [[], true], [[litera('q1', 0)], true], [LIPSA, false], [null, false], [{}, false], ['q1', false], [litera('q1', 0), false]],
+  },
+  {
+    cale: `${CT0}.t.operatii`, baza: docAna, categorie: 'texte', mesaj: 'texte.t.operatii', adr: 'ADR 0210 §7: id-ul operației piesei → literele tăiate',
+    valori: [
+      [operatiiAna(), true], [{}, true], [{ o4: ['q1g'] }, true], [null, false], [[], false], ['o3', false], [{ ox: [] }, false],
+      [{ ...operatiiAna(), o9: ['q1c'] }, false],
+    ],
+    ambigue: [[LIPSA, false, 'DESCHIS: intrarea fără operatii; ALEGERE: refuz (valoarea are trei câmpuri)']],
+  },
+  {
+    cale: `${CT0}.t.operatii.o3`, baza: docAna, categorie: 'texte', mesaj: 'texte.t.operatii.o3', adr: 'ADR 0210 §7: operațiile ale piesei, pe literele din copii',
+    valori: [
+      [LIPSA, true], [['q1c'], true], [['q1c', 'q2c', 'q3c'], true], [['q1g', 'q3g'], true], [['q3c', 'q1c'], true], [['zz'], false],
+      [['s1c'], false], [['rama'], false], [['q1c', 'zz'], false], [[1], false], ['q1c', false], [null, false], [{}, false], [[null], false],
+    ],
+    ambigue: [
+      [[], true, 'DESCHIS: o listă goală; ALEGERE: primită (nicio literă tăiată)'],
+      [['q1c', 'q1c'], false, 'DESCHIS: o literă de două ori; ALEGERE: refuz (ca noduri, ADR 0025)'],
+      [['q1'], false, 'DESCHIS: grupul literei, nu conturul; ALEGERE: refuz (operațiile taie elemente, ADR 0025)'],
+    ],
+  },
+  {
+    cale: `${CT0}.t.copii.0.id`, baza: docAna, categorie: 'texte', mesaj: 'texte.t.copii[0].id', adr: 'ADR 0210 §7: id-urile literelor unice și diferite de ale piesei',
+    valori: [
+      ['q1', true], ['qq', true], ['i1', true], ['pl', true], ['o3', true], ['f1', true], ['x'.repeat(64), true],
+      ['r', false], ['rama', false], ['gaura', false], ['t', false], ['s1', false], ['s2g', false], ['q2', false], ['q3', false], ['q1c', false], ['q1g', false],
+    ],
+  },
+  {
+    cale: `${CT0}.t.copii.0.id`, baza: docAna, categorie: 'id', mesaj: 'texte.t.copii[0].id', adr: 'ADR 0024: un id, ^[A-Za-z0-9_-]+$, 1–64 de caractere',
+    valori: [['q-1_A', true], ['a b', false], ['', false], ['x'.repeat(65), false], ['ș', false]],
+  },
+  {
+    cale: `${CT0}.t.copii.0.id`, baza: docAna, categorie: 'schema', mesaj: 'texte.t.copii[0].id', adr: 'ADR 0024: id-ul e un text',
+    valori: [[7, false], [null, false], [LIPSA, false]],
+  },
+  {
+    cale: `${CT0}.t.copii.0.copii.0.id`, baza: docAnaFaraOps, categorie: 'texte', mesaj: 'texte.t.copii[0].copii[0].id', adr: 'ADR 0210 §7: și conturul unei litere e o literă',
+    valori: [['q1c', true], ['zz', true], ['rama', false], ['q1', false], ['q3g', false], ['s3c', false], ['q2c', false]],
+  },
+  {
+    cale: `${CT0}.t.copii.0.matrice.e`, baza: docAna, categorie: 'margini', mesaj: 'texte.t.copii[0]', adr: 'ADR 0024, precizarea 5: |e| ≤ 10 000 000 față de rădăcina piesei (grupul e la x 10)',
+    valori: [[0, true], [9_999_990, true], [-10_000_010, true], [9_999_990.5, false], [-10_000_010.5, false], [2e7, false]],
+  },
+  { cale: `${CT0}.t.copii.0.matrice.e`, baza: docAna, categorie: 'finit', mesaj: 'texte.t.copii[0]', adr: 'ADR 0024, precizarea 5: finită', valori: [[Number.POSITIVE_INFINITY, false], [Number.NaN, false]] },
+  { cale: `${CT0}.t.copii.0.matrice.e`, baza: docAna, categorie: 'schema', mesaj: 'texte.t.copii[0]', adr: 'ADR 0024: un număr', valori: [['0', false], [null, false], [LIPSA, false]] },
+  {
+    cale: `${CT0}.t.copii.0.matrice.a`, baza: docAna, categorie: 'margini', mesaj: 'texte.t.copii[0]', adr: 'ADR 0024, precizarea 5: |a| ≤ 10 000 (fără arce, orice afină)',
+    valori: [[1, true], [10_000, true], [-10_000, true], [0, true], [10_000.5, false], [-10_001, false]],
+  },
+  {
+    cale: `${CT0}.t.copii.1.copii.0.forma.inchis`, baza: docAna, categorie: 'cale', mesaj: 'texte.t.copii[1].copii[0].forma', adr: 'ADR 0037 §2: inchis e boolean',
+    valori: [[true, true], [false, true], ['da', false], [LIPSA, false], [1, false]],
+  },
+  {
+    cale: `${CT0}.t.copii.0.tip`, baza: docAnaFaraOps, categorie: 'schema', mesaj: 'texte.t.copii[0]', adr: 'ADR 0024: grup sau element (cu formă)',
+    valori: [['grup', true], ['element', false], ['litera', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: `${CT0}.t.copii.0.nume`, baza: docAna, categorie: 'plafon', mesaj: 'texte.t.copii[0].nume', adr: 'ADR 0024, precizarea 4: numele, cel mult 200',
+    valori: [[LIPSA, true], ['A', true], ['x'.repeat(200), true], ['x'.repeat(201), false]],
+  },
+  { cale: `${CT0}.t.copii.0.nume`, baza: docAna, categorie: 'schema', mesaj: 'texte.t.copii[0].nume', adr: 'ADR 0024: un text', valori: [[7, false], [null, false]] },
+  // Blocul grupului de text (ADR 0105 §3–§4, 0123, 0138, 0141, 0142): un bloc stricat nu mai e valid, deci intrarea e refuzată.
+  {
+    cale: `${CB0}.inaltime`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §3: 0,1–1 000 mm',
+    valori: [[0.1, true], [7, true], [1_000, true], [0.0999, false], [0, false], [-7, false], [1_000.001, false], ['7', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  { cale: `${CB0}.spatiere`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §3: ± 1 000 mm', valori: [[-1_000, true], [1_000, true], [0, true], [-1_000.001, false], [1_000.5, false], ['0', false], [LIPSA, false]] },
+  { cale: `${CB0}.interlinie`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §3: 0,5–5', valori: [[0.5, true], [5, true], [1.15, true], [0.49, false], [5.01, false], [LIPSA, false], [Number.NaN, false]] },
+  {
+    cale: `${CB0}.aliniere`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §3: stânga, centru, dreapta',
+    valori: [['stanga', true], ['centru', true], ['dreapta', true], ['Stanga', false], ['stânga', false], ['', false], [LIPSA, false], [0, false]],
+  },
+  {
+    cale: `${CB0}.font`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105, 0106: id-ul fontului, 1–128',
+    valori: [['roboto', true], ['g:Roboto:700', true], ['x'.repeat(128), true], ['', false], ['x'.repeat(129), false], [7, false], [LIPSA, false]],
+  },
+  { cale: `${CB0}.numeFont`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0106: cel mult 128', valori: [[LIPSA, true], ['', true], ['x'.repeat(128), true], ['x'.repeat(129), false], [null, false]] },
+  {
+    cale: `${CB0}.amprenta`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §4: amprenta contururilor grupului',
+    valori: [[AMPRENTA_SABLON, true], ['0000000000000000', false], ['', false], ['x'.repeat(65), false], [LIPSA, false], [7, false]],
+  },
+  {
+    cale: `${CB0}.aldin`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0123: 0 sau 0,01 … o cincime din majusculă (7 · 0,2 = 1,4)',
+    valori: [[LIPSA, true], [0, true], [-0, true], [0.01, true], [1.4, true], [1.400000002, false], [0.005, false], [-0.1, false], ['0', false], [201, false]],
+  },
+  { cale: `${CB0}.cursiv`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0123: ± 45°', valori: [[LIPSA, true], [-45, true], [45, true], [0, true], [45.001, false], [-46, false], ['5', false]] },
+  { cale: `${CB0}.vertical`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0141: lipsă sau true', valori: [[LIPSA, true], [true, true], [false, false], [1, false], ['true', false]] },
+  { cale: `${CB0}.crenare`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0138 §3: lipsă sau false', valori: [[LIPSA, true], [false, true], [true, false], [0, false]] },
+  { cale: `${CB0}.unitate`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0138 §1: lipsă (mm), pt, in', valori: [[LIPSA, true], ['pt', true], ['in', true], ['mm', false], ['PT', false], ['', false]] },
+  {
+    cale: `${CB0}.proportii`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0138 §2: lățimea și înălțimea în 10–1 000 %',
+    valori: [[LIPSA, true], [{ latime: 10, inaltime: 1_000 }, true], [{ latime: 100, inaltime: 100, x: 1 }, true], [{ latime: 9.9, inaltime: 100 }, false], [{ latime: 100 }, false], [null, false], [[100, 100], false]],
+  },
+  {
+    cale: `${CB0}.caseta`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0142 §5: limitat (cu ceruta) sau scalat, 0,1–10 000 mm',
+    valori: [
+      [LIPSA, true], [{ fel: 'limita', latime: 70, inaltime: 20, ceruta: 7 }, true], [{ fel: 'scala', latime: 0.1, inaltime: 10_000 }, true],
+      [{ fel: 'limita', latime: 70, inaltime: 20 }, false], [{ fel: 'scala', latime: 10_000.1, inaltime: 20 }, false], [{ fel: 'umple', latime: 1, inaltime: 1 }, false], [null, false],
+    ],
+  },
+  {
+    cale: `${CB0}.spatieri`, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0138 §5: sortate, unice, nenule, după un caracter cu altul după el („{nume}” are 6)',
+    valori: [
+      [LIPSA, true], [[], true], [[{ dupa: 0, mm: 1 }], true], [[{ dupa: 4, mm: -1 }], true], [[{ dupa: 0, mm: 1 }, { dupa: 3, mm: 2 }], true],
+      [[{ dupa: 5, mm: 1 }], false], [[{ dupa: 0, mm: 0 }], false], [[{ dupa: 1, mm: 1 }, { dupa: 0, mm: 1 }], false], [[{ dupa: 0, mm: 1 }, { dupa: 0, mm: 2 }], false],
+      [[{ dupa: 0.5, mm: 1 }], false], [[{ dupa: 0, mm: 1_001 }], false], [{ dupa: 0, mm: 1 }, false],
+    ],
+  },
+  { cale: CB0, baza: docAna, categorie: 'texte', mesaj: 'texte.t', adr: 'ADR 0105 §4: blocul de text al grupului', valori: [[LIPSA, false], [null, false], ['{nume}', false], [[], false]] },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente stricate: un singur defect fiecare.
+
+export const REFUZATE_V23: readonly RefuzV18[] = [
+  ...REFUZATE_V22.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v24)', doc: docV(24, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  // Forma lui `texte`.
+  { nume: 'TA0 texte null', doc: stricat((d) => { inst0(d)['texte'] = null; }), categorie: 'texte', camp: CT0, motiv: 'ADR 0210 §7: un dicționar grupul → literele' },
+  { nume: 'TA1 texte o listă', doc: stricat((d) => { inst0(d)['texte'] = [intrareText('Ana')]; }), categorie: 'texte', camp: CT0, motiv: 'ADR 0210 §7: un dicționar' },
+  { nume: 'TA2 texte un text', doc: stricat((d) => { inst0(d)['texte'] = 'Ana'; }), categorie: 'texte', camp: CT0, motiv: 'ADR 0210 §7: un dicționar' },
+  // Grupul: al piesei, un grup, cu blocul valid și cu câmpuri.
+  { nume: 'TB0 cheia nu e un nod al piesei', doc: stricat((d) => { inst0(d)['texte'] = { zz: intrareText('Ana') }; }), categorie: 'texte', camp: `${CT0}.zz`, motiv: 'ADR 0210 §7: grupul e al piesei' },
+  { nume: 'TB1 cheia e un element (rama)', doc: stricat((d) => { inst0(d)['texte'] = { rama: intrareText('Ana') }; }), categorie: 'texte', camp: `${CT0}.rama`, motiv: 'ADR 0210 §7: un grup' },
+  { nume: 'TB2 cheia e rădăcina, un grup fără bloc', doc: stricat((d) => { inst0(d)['texte'] = { r: intrareText('Ana') }; }), categorie: 'texte', camp: `${CT0}.r`, motiv: 'ADR 0210 §7: cu bloc valid' },
+  {
+    nume: 'TB3 cheia e grupul de text al altei piese',
+    doc: docV23([piesaPlacuta(), piesaDoua()], [placuta('i1', { nume: 'Ana', clasa: 'a V-a' }, { t: intrareText('Ana'), u: intrareText('Clasa a V-a', [litera('w1', 0)], {}) })]),
+    categorie: 'texte', camp: `${CT0}.u`, motiv: 'ADR 0210 §7: grupul e al piesei instanței',
+  },
+  { nume: 'TB4 blocul grupului cu înălțimea 0', doc: docV23([piesaPlacuta({ bloc: { inaltime: 0 } })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]), categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0105 §3: 0,1–1 000 mm, deci blocul nu e valid' },
+  {
+    nume: 'TB5 amprenta veche: o literă a șablonului mutată pe altă cale',
+    doc: stricat((d) => { (((grupT0(d)['copii'] as Liber[])[0] as Liber)['matrice'] as Liber)['e'] = 1; }),
+    categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0105 §4: contururile schimbate pe altă cale fac blocul nevalid',
+  },
+  { nume: 'TB6 textul grupului fără câmpuri („LEMN”)', doc: docV23([piesaPlacuta({ continut: 'LEMN' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('LEMN') })]), categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0210 §7: cu câmpuri' },
+  { nume: 'TB7 „}nume{”: acoladele întoarse nu fac un câmp', doc: docV23([piesaPlacuta({ continut: '}nume{' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('}nume{') })]), categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0210 §4: `{nume}`' },
+  {
+    nume: 'TB8 blocul pe o curbă și în casetă',
+    doc: docV23([piesaPlacuta({ bloc: { curba: curbaText(), caseta: { fel: 'scala', latime: 70, inaltime: 20 } } })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]),
+    categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0142 §5: un text în casetă nu stă pe o curbă',
+  },
+  { nume: 'TB9 blocul cu `vertical: false`', doc: docV23([piesaPlacuta({ bloc: { vertical: false } })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]), categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0141: lipsă sau true' },
+  // Intrarea și textul așezat.
+  { nume: 'TC0 intrarea null', doc: stricat((d) => { (inst0(d)['texte'] as Liber)['t'] = null; }), categorie: 'texte', camp: `${CT0}.t`, motiv: 'ADR 0210 §7: { continut, copii, operatii }' },
+  { nume: 'TC1 intrarea fără continut', doc: stricat((d) => { delete intrare0(d)['continut']; }), categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: textul așezat' },
+  { nume: 'TC2 continut un număr', doc: stricat((d) => { intrare0(d)['continut'] = 7; }), categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: un text' },
+  { nume: 'TC3 continut cu un spațiu în plus', doc: stricat((d) => { intrare0(d)['continut'] = 'Ana '; }), categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: o verificare de șiruri' },
+  { nume: 'TC4 continut e textul șablonului', doc: stricat((d) => { intrare0(d)['continut'] = '{nume}'; }), categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: cu valorile din campuri' },
+  {
+    nume: 'TC5 „Ş” cu sedilă (U+015E) în locul lui „Ș” cu virgulă (U+0218)', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ștefan' }, { t: intrareText('Ştefan') })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: o verificare de șiruri, fără normalizare',
+  },
+  {
+    nume: 'TC6 „Ș” descompus (S urmat de U+0326)', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ștefan' }, { t: intrareText('Ștefan') })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: o verificare de șiruri, fără normalizare',
+  },
+  {
+    nume: 'TC7 valoarea „$&” scrisă cum o lasă `replace` cu un text de înlocuire („{nume}”)', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: '$&' }, { t: intrareText('{nume}') })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: valoarea intră așa cum e',
+  },
+  {
+    nume: 'TC8 valoarea „{b}” înlocuită încă o dată („X”)', doc: docV23([piesaPlacuta({ continut: '{a}' })], [placuta('i1', { a: '{b}', b: 'X' }, { t: intrareText('X') })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7: câmpurile sunt ale textului blocului, nu ale valorilor',
+  },
+  {
+    nume: 'TC9 câmpul {toString} fără valoare, cu textul funcției din prototip (greșit în orice citire a valorii lipsă)',
+    doc: docV23([piesaPlacuta({ continut: '{toString}' })], [placuta('i1', {}, { t: intrareText(String(Object.prototype.toString)) })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0024 §9: cheile sunt date; campuri n-are toString',
+  },
+  {
+    nume: 'TC10 câmpul fără valoare, cu „undefined” (greșit în orice citire a valorii lipsă)', doc: docV23([piesaPlacuta()], [placuta('i1', {}, { t: intrareText('undefined') })]),
+    categorie: 'texte', camp: `${CT0}.t.continut`, motiv: 'ADR 0210 §7',
+  },
+  // Literele.
+  { nume: 'TD0 intrarea fără copii', doc: stricat((d) => { delete intrare0(d)['copii']; }), categorie: 'texte', camp: `${CT0}.t.copii`, motiv: 'ADR 0210 §7: literele' },
+  { nume: 'TD1 copii un obiect', doc: stricat((d) => { intrare0(d)['copii'] = {}; }), categorie: 'texte', camp: `${CT0}.t.copii`, motiv: 'ADR 0210 §7: o listă de litere' },
+  { nume: 'TD2 o literă cu id-ul unui nod al piesei (rama)', doc: stricat((d) => { litera0(d, 1)['id'] = 'rama'; }), categorie: 'texte', camp: `${CT0}.t.copii.1.id`, motiv: 'ADR 0210 §7: diferite de ale piesei' },
+  { nume: 'TD3 o literă cu id-ul unei litere a șablonului (s1)', doc: stricat((d) => { litera0(d, 0)['id'] = 's1'; }), categorie: 'texte', camp: `${CT0}.t.copii.0.id`, motiv: 'ADR 0210 §7: literele șablonului sunt noduri ale piesei' },
+  { nume: 'TD4 o literă cu id-ul grupului de text (t)', doc: stricat((d) => { litera0(d, 2)['id'] = 't'; }), categorie: 'texte', camp: `${CT0}.t.copii.2.id`, motiv: 'ADR 0210 §7: diferite de ale piesei' },
+  { nume: 'TD5 două litere cu același id', doc: stricat((d) => { litera0(d, 2)['id'] = 'q1'; }), categorie: 'texte', camp: `${CT0}.t.copii.2.id`, motiv: 'ADR 0210 §7: unice' },
+  {
+    nume: 'TD6 conturul unei litere cu id-ul literei', doc: stricat((d) => { ((litera0(d, 1)['copii'] as Liber[])[0] as Liber)['id'] = 'q2'; }),
+    categorie: 'texte', camp: `${CT0}.t.copii.1.copii.0.id`, motiv: 'ADR 0210 §7: unice (la orice adâncime)',
+  },
+  {
+    nume: 'TD7 același id în două intrări ale aceleiași instanțe (ALEGERE: unice pe instanță, id-ul în lume e instanța/nodul)',
+    doc: (() => {
+      const d = docV23([piesaDoua()], [placutaDoua('i1')]);
+      intrare0(d, 'u')['copii'] = [{ ...litera('w1', 0), id: 'q2' }, litera('w2', 6)];
+      return d;
+    })(),
+    categorie: 'texte', camp: `${CT0}.u.copii.0.id`, motiv: 'ADR 0210 §7: unice; ADR 0024: id-ul în lume',
+  },
+  { nume: 'TD8 o literă cu id-ul „a b”', doc: stricat((d) => { litera0(d, 0)['id'] = 'a b'; }), categorie: 'id', camp: `${CT0}.t.copii.0.id`, motiv: 'ADR 0024: formatul id-ului' },
+  { nume: 'TD9 o literă cu id-ul 7', doc: stricat((d) => { litera0(d, 0)['id'] = 7; }), categorie: 'schema', camp: `${CT0}.t.copii.0.id`, motiv: 'ADR 0024: id-ul e un text' },
+  { nume: 'TE0 matricea unei litere cu NaN', doc: stricat((d) => { (litera0(d, 0)['matrice'] as Liber)['e'] = Number.NaN; }), categorie: 'finit', camp: `${CT0}.t.copii.0.matrice`, motiv: 'ADR 0024, precizarea 5: nimic NaN pe pânză' },
+  { nume: 'TE1 o literă fără matrice', doc: stricat((d) => { delete litera0(d, 0)['matrice']; }), categorie: 'schema', camp: `${CT0}.t.copii.0.matrice`, motiv: 'ADR 0024: nodul are matricea' },
+  {
+    nume: 'TE2 conturul unei litere cu o formă necunoscută', doc: stricat((d) => { ((litera0(d, 1)['copii'] as Liber[])[0] as Liber)['forma'] = { tip: 'litera' }; }),
+    categorie: 'schema', camp: `${CT0}.t.copii.1.copii.0.forma`, motiv: 'ADR 0024, 0034: formele cunoscute',
+  },
+  {
+    nume: 'TE3 conturul unei litere cu un singur vârf',
+    doc: stricat((d) => { ((litera0(d, 1)['copii'] as Liber[])[0] as Liber)['forma'] = { tip: 'cale', inchis: true, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'L' } }] }; }),
+    categorie: 'cale', camp: `${CT0}.t.copii.1.copii.0.forma`, motiv: 'ADR 0034 §2: cel puțin 2 vârfuri',
+  },
+  { nume: 'TE4 un grup de literă fără copii', doc: stricat((d) => { (intrare0(d)['copii'] as Liber[]).push({ tip: 'grup', id: 'q4', matrice: I() }); }), categorie: 'schema', camp: `${CT0}.t.copii.3`, motiv: 'ADR 0024: grupul are copii' },
+  { nume: 'TE5 o literă dusă afară din margini (10 000 000 mm)', doc: stricat((d) => { litera0(d, 0)['matrice'] = T(10_000_000, 0); }), categorie: 'margini', camp: `${CT0}.t.copii.0`, motiv: 'ADR 0024, precizarea 5: lumea e mărginită' },
+  {
+    nume: 'TE6 o literă cu arce sub o scalare neuniformă', doc: stricat((d) => { (intrare0(d)['copii'] as Liber[]).push({ tip: 'grup', id: 'q4', matrice: M(2, 0, 0, 1, 20, 0), copii: [literaArc('q5', 0)] }); }),
+    categorie: 'forma', camp: `${CT0}.t.copii.3`, motiv: 'ADR 0024, precizarea 5: arcele doar sub o similitudine',
+  },
+  {
+    nume: 'TE7 o literă dreptunghi cu lățimea negativă',
+    doc: stricat((d) => { (intrare0(d)['copii'] as Liber[]).push({ tip: 'element', id: 'q4', forma: { tip: 'dreptunghi', latime: -1, inaltime: 1, razaColt: 0 }, matrice: I() }); }),
+    categorie: 'pozitiv', camp: `${CT0}.t.copii.3.forma`, motiv: 'ADR 0024, precizarea 4: mărimile strict pozitive',
+  },
+  { nume: 'TE8 o literă cu numele de 201 caractere', doc: stricat((d) => { litera0(d, 0)['nume'] = 'x'.repeat(201); }), categorie: 'plafon', camp: `${CT0}.t.copii.0.nume`, motiv: 'ADR 0024, precizarea 4: cel mult 200' },
+  { nume: 'TE9 o literă de tipul „nod”', doc: stricat((d) => { (intrare0(d)['copii'] as Liber[]).push({ tip: 'nod', id: 'q4', matrice: I() }); }), categorie: 'schema', camp: `${CT0}.t.copii.3.tip`, motiv: 'ADR 0024: grup sau element' },
+  // Operațiile: ale piesei, pe literele din copii.
+  { nume: 'TF1 operatii o listă', doc: stricat((d) => { intrare0(d)['operatii'] = []; }), categorie: 'texte', camp: `${CT0}.t.operatii`, motiv: 'ADR 0210 §7: operația → literele' },
+  { nume: 'TF2 operatii un text', doc: stricat((d) => { intrare0(d)['operatii'] = 'o3'; }), categorie: 'texte', camp: `${CT0}.t.operatii`, motiv: 'ADR 0210 §7: un dicționar' },
+  { nume: 'TF3 o operație care nu e a piesei (ox)', doc: stricat((d) => { intrare0(d)['operatii'] = { ...operatiiAna(), ox: ['q1c'] }; }), categorie: 'texte', camp: `${CT0}.t.operatii.ox`, motiv: 'ADR 0210 §7: operațiile ale piesei' },
+  { nume: 'TF4 o operație scrisă cu majusculă (O3)', doc: stricat((d) => { intrare0(d)['operatii'] = { O3: ['q1c'], o4: ['q1g', 'q3g'] }; }), categorie: 'texte', camp: `${CT0}.t.operatii.O3`, motiv: 'ADR 0210 §7: id-ul exact al operației' },
+  { nume: 'TF5 literele unei operații ca text', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = 'q1c'; }), categorie: 'texte', camp: `${CT0}.t.operatii.o3`, motiv: 'ADR 0210 §7: literele tăiate, o listă' },
+  { nume: 'TF6 o literă necunoscută (zz)', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['q1c', 'zz']; }), categorie: 'texte', camp: `${CT0}.t.operatii.o3`, motiv: 'ADR 0210 §7: pe literele din copii' },
+  { nume: 'TF7 o literă a șablonului (s1c), nu a plăcuței', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['q1c', 's1c']; }), categorie: 'texte', camp: `${CT0}.t.operatii.o3`, motiv: 'ADR 0210 §7: pe literele din copii' },
+  { nume: 'TF8 un element al piesei (rama)', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['rama']; }), categorie: 'texte', camp: `${CT0}.t.operatii.o3`, motiv: 'ADR 0210 §7: pe literele din copii' },
+  { nume: 'TF9 un număr în locul unei litere', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['q1c', 7]; }), categorie: 'texte', camp: `${CT0}.t.operatii.o3`, motiv: 'ADR 0210 §7: id-urile literelor' },
+  // Ciocnirile migrării (ADR 0210 §7: „o instanță care are deja un câmp necunoscut `texte` e refuzată, cu motiv”).
+  { nume: 'TG0 un v22 cu literele plăcuței pe instanță', doc: docAna(22), categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7: ciocnire, ca la ADR 0024 §7' },
+  { nume: 'TG1 un v22 cu `texte: null` (orice valoare se ciocnește)', doc: stricat((d) => { inst0(d)['texte'] = null; }, () => docAna(22)), categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7: câmpul propriu, oricare ar fi valoarea' },
+  { nume: 'TG2 un v22 cu `texte: {}`', doc: stricat((d) => { inst0(d)['texte'] = {}; }, () => docAna(22)), categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7: câmpul propriu, oricare ar fi valoarea' },
+  { nume: 'TG3 un v21 cu literele plăcuței (trece de v21 → v22, se ciocnește la v22 → v23)', doc: docAna(21), categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7, ADR 0070: tot lanțul' },
+  { nume: 'TG4 un v10 cu literele plăcuței', doc: docAna(10), categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7, ADR 0070: tot lanțul' },
+  {
+    nume: 'TG5 un v3 cu literele plăcuței (piesa fără căi, pe care v3 nu le are; literele, un câmp necunoscut până la v22)',
+    doc: caV3(docV23([{ id: 'p', radacina: { tip: 'element', id: 'e', forma: dreptunghi(80, 30), matrice: I() }, operatii: [opV18({ noduri: ['e'] })] }], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') }, { piesa: 'p' })])),
+    categorie: 'ciocnire', camp: CT0, motiv: 'ADR 0210 §7, ADR 0070: tot lanțul',
+  },
+  {
+    nume: 'TG6 un v22 cu literele pe a doua instanță a celei de-a doua foi',
+    doc: { ...docV23([piesaPlacuta()], [], 22), foi: [foaieV23('f1', [placuta('i1', { nume: 'Ana' })]), foaieV23('f2', [placuta('i2', { nume: 'Ion' }), placuta('i3', { nume: 'Ana' }, { t: intrareText('Ana') }, { y: 60 })])] },
+    categorie: 'ciocnire', camp: 'foi.1.instante.1.texte', motiv: 'ADR 0210 §7: pe orice instanță',
+  },
+  // Imbricarea și o instanță fără piesă.
+  {
+    nume: 'TH0 imbricarea la 201 niveluri, într-un câmp necunoscut al intrării',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', litereAna(), operatiiAna(), { nota: imbricat(194) }) })]),
+    categorie: 'adancime', camp: '', motiv: 'ADR 0024, precizarea 5: cel mult 200 de niveluri (al documentului întreg)',
+  },
+  {
+    nume: 'TI0 campuri o listă goală, fără texte (ADR 0024: „un dicționar text → text”, ca `texte` și `operatii`)',
+    doc: stricat((d) => { const i = inst0(d); delete i['texte']; i['campuri'] = []; }),
+    categorie: 'schema', camp: `${CI0}.campuri`, motiv: 'ADR 0024: campuri e un dicționar',
+  },
+  {
+    nume: 'TH1 o plăcuță care trimite la o piesă lipsă: doar trimiterea (literele n-au ce înlocui)',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') }, { piesa: 'lipsa' })]),
+    categorie: 'referinta', camp: `${CI0}.piesa`, motiv: 'ADR 0024: piesa există',
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Ce nu hotărăște textul (DESCHIS, antetul părții v23 a oracolului): verdictul ALEGERII; aplicația doar se raportează.
+
+export const AMBIGUE_V23: ReadonlyArray<CazV18 & { readonly alegere: boolean; readonly adr: string }> = [
+  { nume: 'Z01 un câmp fără valoare în campuri, cu textul gol', doc: docV23([piesaPlacuta()], [placuta('i1', {}, { t: intrareText('', [], {}) })]), alegere: false, adr: 'ADR 0210 §7 nu spune ce se scrie pentru o valoare lipsă; ALEGERE: refuz (textul nu se poate scrie)' },
+  { nume: 'Z02 un câmp fără valoare, cu textul șablonului păstrat', doc: docV23([piesaPlacuta()], [placuta('i1', {}, { t: intrareText('{nume}') })]), alegere: false, adr: 'ca Z01' },
+  { nume: 'Z03 o plăcuță fără campuri', doc: docV23([piesaPlacuta()], [placuta('i1', undefined, { t: intrareText('{nume}') })]), alegere: false, adr: 'ca Z01' },
+  { nume: 'Z04 numele câmpului cu majusculă ({Nume}, campuri.nume)', doc: docV23([piesaPlacuta({ continut: '{Nume}' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]), alegere: false, adr: 'ADR 0210 §4: potrivirea „fără litere mari și diacritice” e a coloanelor CSV; ALEGERE: la ușă, cheia exactă' },
+  { nume: 'Z05 „{}” în text, lângă un câmp', doc: docV23([piesaPlacuta({ continut: '{} {nume}' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('{} Ana') })]), alegere: true, adr: 'sintaxa câmpului nu e scrisă; ALEGERE: un nume nevid, deci „{}” e text' },
+  { nume: 'Z06 „{{nume}}”', doc: docV23([piesaPlacuta({ continut: '{{nume}}' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('{Ana}') })]), alegere: true, adr: 'ALEGERE: acoladele dinafară rămân text (fără „scăpare”)' },
+  { nume: 'Z07 un nume cu spațiu ({nume complet})', doc: docV23([piesaPlacuta({ continut: '{nume complet}' })], [placuta('i1', { 'nume complet': 'Ana Pop' }, { t: intrareText('Ana Pop') })]), alegere: true, adr: 'ADR 0210 §4: „Fă din textul ales câmpul {Coloana}” scrie numele coloanei; ALEGERE: spațiile fac parte din nume' },
+  { nume: 'Z08 un nume cu diacritice ({prénom})', doc: docV23([piesaPlacuta({ continut: '{prénom}' })], [placuta('i1', { prénom: 'Zoë' }, { t: intrareText('Zoë') })]), alegere: true, adr: 'ca Z07' },
+  { nume: 'Z09 spații în acolade ({ nume }), cu campuri.nume', doc: docV23([piesaPlacuta({ continut: '{ nume }' })], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana') })]), alegere: false, adr: 'ALEGERE: numele nu se taie, deci „ nume ” n-are valoare' },
+  { nume: 'Z10 un Enter în acolade', doc: docV23([piesaPlacuta({ continut: '{a\nb}' })], [placuta('i1', { 'a\nb': 'X' }, { t: intrareText('X') })]), alegere: true, adr: 'ALEGERE: orice în afară de acolade' },
+  { nume: 'Z11 o acoladă neînchisă înaintea unui câmp', doc: docV23([piesaPlacuta({ continut: '{nume {nr}' })], [placuta('i1', { nr: '12' }, { t: intrareText('{nume 12') })]), alegere: true, adr: 'ALEGERE: „{nume ” rămâne text' },
+  {
+    nume: 'Z12 „\\n” în locul lui „\\r\\n”', doc: docV23([piesaPlacuta({ continut: '{nume}\r\nMasa {nr}' })], [placuta('i1', { nume: 'Ana', nr: '3' }, { t: intrareText('Ana\nMasa 3') })]),
+    alegere: false, adr: 'ADR 0210 §7: „o verificare de șiruri”; ALEGERE: exactă (spațierile ADR 0138 numără fără \\r, ușa nu)',
+  },
+  { nume: 'Z13 textul plăcuței gol (o celulă goală din CSV)', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: '' }, { t: intrareText('', [], {}) })]), alegere: true, adr: 'marginea 1–1 000 e a blocului (ADR 0105 §3), nu a plăcuței; ALEGERE: primit' },
+  { nume: 'Z14 textul plăcuței de 1 200 de caractere', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'x'.repeat(1_200) }, { t: intrareText('x'.repeat(1_200)) })]), alegere: true, adr: 'ca Z13' },
+  { nume: 'Z15 `texte: {}`', doc: stricat((d) => { inst0(d)['texte'] = {}; }), alegere: true, adr: 'ADR 0210 §7 nu spune; ALEGERE: nicio intrare de judecat, primit' },
+  { nume: 'Z16 o operație cu o listă goală', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o4'] = []; }), alegere: true, adr: 'ALEGERE: nicio literă tăiată de ea, primit' },
+  { nume: 'Z17 o literă de două ori în lista unei operații', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['q1c', 'q1c', 'q2c']; }), alegere: false, adr: 'ALEGERE: ca noduri (ADR 0025: id-uri distincte)' },
+  { nume: 'Z18 grupul unei litere în lista unei operații', doc: stricat((d) => { (intrare0(d)['operatii'] as Liber)['o3'] = ['q1', 'q2c', 'q3c']; }), alegere: false, adr: 'ALEGERE: operațiile taie elemente (ADR 0025), nu grupuri' },
+  {
+    nume: 'Z19 o literă a altei intrări a instanței în lista unei operații',
+    doc: (() => {
+      const d = docV23([piesaDoua()], [placutaDoua('i1')]);
+      intrare0(d, 'u')['operatii'] = { o5: ['w1c', 'w2c', 'q1c'] };
+      return d;
+    })(),
+    alegere: false, adr: 'ADR 0210 §7: „pe literele din copii”; ALEGERE: copii intrării ei',
+  },
+  {
+    nume: 'Z20 literele ca elemente, fără grupul literei', alegere: true, adr: 'forma literelor nu e scrisă; ALEGERE: orice nod valid',
+    doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', [{ tip: 'element', id: 'q1c', forma: conturLitera(0, 0, 4, 7), matrice: I() }, { tip: 'element', id: 'q2c', forma: conturLitera(6, 0, 4, 7), matrice: I() }], { o3: ['q1c', 'q2c'] }) })]),
+  },
+  { nume: 'Z21 un cerc ca literă', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', [{ tip: 'element', id: 'q1', forma: cerc(2), matrice: T(3, 3) }], {}) })]), alegere: true, adr: 'ca Z20' },
+  {
+    nume: 'Z22 un grup cu literele plăcuței în alt grup cu literele plăcuței (un bloc printre literele altui bloc)', alegere: false,
+    adr: 'ADR 0210 §7 nu spune; ALEGERE: refuz (literele grupului dinăuntru sunt printre literele șablonului celui dinafară, înlocuite)',
+    doc: (() => {
+      const interior = grupText('u', '{nr}', [litera('v1', 0)], {}, T(0, -10));
+      const piesa = piesaPlacuta({ grup: grupText('t', '{nume}', [...sablonNume(), interior]) });
+      return docV23([piesa], [placuta('i1', { nume: 'Ana', nr: '7' }, { t: intrareText('Ana'), u: intrareText('7', [litera('x1', 0)], {}) })]);
+    })(),
+  },
+  { nume: 'Z23 literele până pe nivelul 33 (grupul pe 2, literele 31 de niveluri)', doc: docV23([piesaPlacuta()], [placuta('i1', { nume: 'Ana' }, { t: intrareText('Ana', [literaAdanca('qa', 31)], { o3: ['qa0'] }) })]), alegere: false, adr: 'ADR 0024, precizarea 1; ALEGERE: nivelurile se socotesc de la grupul literelor' },
+  { nume: 'Z24 intrarea fără operatii', doc: stricat((d) => { delete intrare0(d)['operatii']; }), alegere: false, adr: 'ADR 0210 §7 numește trei câmpuri; ALEGERE: toate cerute' },
+  { nume: 'Z25 „{}” singur, cu campuri[""]', doc: docV23([piesaPlacuta({ continut: '{}' })], [placuta('i1', { '': 'x' }, { t: intrareText('x') })]), alegere: false, adr: 'ALEGERE: „{}” nu e câmp, deci textul n-are câmpuri' },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Plafoanele de ansamblu cu literele plăcuțelor (ADR 0210 §7: „100 000 de elemente în lume, cu literele plăcuțelor”),
+// la margine și peste ea. Documente mari: se construiesc la cerere, o dată.
+
+type PlafoaneV23 = {
+  readonly valide: readonly CazV18[];
+  readonly refuzate: ReadonlyArray<CazV18 & { readonly categorie: CategorieO }>;
+  readonly ambigue: ReadonlyArray<CazV18 & { readonly alegere: boolean; readonly adr: string }>;
+};
+let plafoaneConstruite: PlafoaneV23 | undefined;
+
+/**
+ * Plăcuțele la plafoane. Piesa `pm`: rădăcina `r` cu rame mici (`e1` …) și grupul de text `t` („{n}”), fără litere în
+ * șablon (amprenta listei goale), deci literele plăcuțelor stau în lume la fel în orice citire (în locul literelor
+ * șablonului sau pe lângă ele); cazurile cu o literă în șablon sunt ambigue.
+ */
+export function plafoaneV23(): PlafoaneV23 {
+  if (plafoaneConstruite !== undefined) return plafoaneConstruite;
+  const rame = (n: number): Liber[] => Array.from({ length: n }, (_, k) => ({ tip: 'element', id: `e${k + 1}`, forma: dreptunghi(2, 2), matrice: T(k * 3, 0) }));
+  const piesa = (nRame: number, sablon: Liber[], operatii: Liber[] = []): Liber => ({
+    id: 'pm', radacina: { tip: 'grup', id: 'r', matrice: I(), copii: [...rame(nRame), grupText('t', '{n}', sablon)] }, operatii,
+  });
+  const plac = (k: number, litere: Liber[], operatii: Liber = {}): Liber => placuta(`i${k}`, { n: 'x' }, { t: intrareText('x', litere, operatii) }, { piesa: 'pm', x: (k % 100) * 3, y: Math.floor(k / 100) * 3 });
+  const doc = (p: Liber, instante: Liber[]): Liber => ({ schema: 23, rev: 0, piese: [p], foi: [{ id: 'f1', stoc: { latime: 3_000, inaltime: 3_000, grosime: 18 }, instante }] });
+  const o12 = (nRame: number): Liber[] => {
+    const noduri = Array.from({ length: nRame }, (_, k) => `e${k + 1}`);
+    return [opV18({ id: 'o1', noduri, latura: 'exterior' }), opV18({ id: 'o2', noduri, latura: 'interior' })];
+  };
+  const multeLitere = (n: number): Liber[] => Array.from({ length: n }, (_, k) => litera(`q${k}`, k * 6));
+  // 1 000 de plăcuțe cu 99 de rame și o literă fiecare: 1 000 · (99 + 1) = 100 000 de elemente în lume.
+  const elemente = (prima: Liber[], sablon: Liber[] = []): Liber => doc(piesa(99, sablon), Array.from({ length: 1_000 }, (_, k) => plac(k + 1, k === 0 ? prima : [litera('q', 0)])));
+  // 1 000 de plăcuțe cu 49 de rame tăiate de două operații (98) și o literă tăiată de amândouă (2): 100 000 de tăieturi în lume.
+  const taieturi = (prima: Liber[], opsPrima: Liber): Liber => doc(piesa(49, [], o12(49)), Array.from({ length: 1_000 }, (_, k) => plac(k + 1, k === 0 ? prima : [litera('q', 0)], k === 0 ? opsPrima : { o1: ['qc'], o2: ['qc'] })));
+  // O plăcuță cu n litere tăiate toate de o operație (`noduri` are cel mult 10 000, ADR 0025): de `o1`, a ramei `e1`, deci
+  // în lumea instanței `o1` taie 1 + n noduri; sau, cu litera `s` în șablon, de `o3` (pe `sc`, înlocuită): n, sau 1 + n
+  // dacă litera șablonului rămâne lângă ele.
+  const lista = (n: number, sablon = false): Liber => {
+    const litere = multeLitere(n);
+    const ids = litere.map((l) => `${String(l['id'])}c`);
+    const o3 = opV18({ id: 'o3', noduri: ['sc'], latura: 'exterior', scula: plata(2, 1), adancime: 1, pas: 1 });
+    const ops = [opV18({ id: 'o1', noduri: ['e1'], latura: 'exterior' }), ...(sablon ? [o3] : [])];
+    return doc(piesa(1, sablon ? [litera('s', 0)] : [], ops), [plac(1, litere, sablon ? { o3: ids } : { o1: ids })]);
+  };
+  plafoaneConstruite = {
+    valide: [
+      { nume: 'L01 100 000 de elemente în lume, cu literele plăcuțelor (1 000 · (99 de rame + 1 literă))', doc: elemente([litera('q', 0)]) },
+      { nume: 'L03 100 000 de tăieturi în lume, cu literele plăcuțelor (1 000 · (98 + 2))', doc: taieturi([litera('q', 0)], { o1: ['qc'], o2: ['qc'] }) },
+      { nume: 'L05 o operație care taie rama și 9 999 de litere ale unei plăcuțe: 10 000 de noduri (cât `noduri`, în orice citire)', doc: lista(9_999) },
+    ],
+    refuzate: [
+      { nume: 'L02 100 001 elemente în lume: o plăcuță cu o literă în plus', doc: elemente([litera('q', 0), litera('q2', 6)]), categorie: 'margini' },
+      { nume: 'L04 100 001 tăieturi în lume: o plăcuță cu o literă în plus, tăiată o dată', doc: taieturi([litera('q', 0), litera('q2', 6)], { o1: ['qc', 'q2c'], o2: ['qc'] }), categorie: 'plafon' },
+    ],
+    ambigue: [
+      {
+        nume: 'Z30 100 000 de elemente în lume cu literele plăcuțelor în locul celei a șablonului (101 000 dacă stau pe lângă ea)',
+        doc: elemente([litera('q', 0)], [litera('s', 0)]), alegere: true,
+        adr: 'ADR 0210 §4, §7: „lume.ts le pune în locul literelor șablonului”; ALEGERE: în locul lor, deci 100 000',
+      },
+      {
+        nume: 'Z31 100 001 noduri, cu literele plăcuței (49 999 de litere, câte un grup și un contur, plus 3 noduri ale piesei)',
+        doc: doc(piesa(1, []), [plac(1, multeLitere(49_999))]), alegere: false,
+        adr: 'ADR 0024: „cel mult 100 000 de noduri” pe document; ALEGERE: literele plăcuțelor sunt noduri ale documentului',
+      },
+      {
+        nume: 'Z32 o operație care taie rama și 10 000 de litere ale unei plăcuțe (10 001 în lume, lista de 10 000)', doc: lista(10_000), alegere: false,
+        adr: 'ADR 0025: cel mult 10 000 de noduri într-o operație; ALEGERE: pe ce taie ea în lumea instanței, nu doar pe listă',
+      },
+      {
+        nume: 'Z33 o operație a literei șablonului care taie 10 000 de litere ale unei plăcuțe (10 001 dacă litera șablonului rămâne)', doc: lista(10_000, true), alegere: true,
+        adr: 'ADR 0210 §4: literele plăcuței stau în locul literelor șablonului; ALEGERE: 10 000',
+      },
+    ],
+  };
+  return plafoaneConstruite;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente v23 generate: plăcuțe pe una sau două foi, cu textul, literele și operațiile lor, și câte un defect.
+
+const VALORI_V23 = ['Ana', 'Mihaela', 'Ștefan', 'Ţuică', '12', 'a V-a', '$& $1', '{nume}', "O'Brien", 'Zoë 😀', 'Maximilian-Alexandru', '  ', 'Popescu-Ionescu'] as const;
+const CAMPURI_V23 = ['nume', 'nr', 'Clasa', 'oras_1'] as const;
+/** Un grup de text generat: textul e `parti[0] {c0} parti[1] … {cn} parti[n + 1]`, iar operațiile literelor lui. */
+type GrupGeneratV23 = { readonly id: string; readonly parti: readonly string[]; readonly campuri: readonly string[]; readonly opContur?: string; readonly opGol?: string };
+
+/**
+ * Un document v23 din sămânță: 1–3 piese, fiecare cu 0–2 rame și 1–2 grupuri de text (câte 1–2 câmpuri, 0–4 litere în
+ * șablon, alte câmpuri ale blocului), 1–2 foi cu 1–5 plăcuțe; fiecare plăcuță are valorile tuturor câmpurilor piesei ei și,
+ * pe cele mai multe grupuri, literele ei (0–5), cu operațiile piesei pe ele. Textul plăcuței se scrie din aceleași bucăți
+ * ca textul blocului, cu valorile puse direct (nu prin oracol).
+ */
+export function genereazaV23(samanta: number): Liber {
+  const r = aleator(samanta);
+  const intreg = (min: number, max: number): number => min + Math.floor(r() * (max - min + 1));
+  const alege = <V,>(lista: readonly V[]): V => lista[Math.floor(r() * lista.length)] as V;
+  const piese: Liber[] = [];
+  const grupuriPiesa = new Map<string, GrupGeneratV23[]>();
+  const nrPiese = intreg(1, 3);
+  for (let p = 0; p < nrPiese; p++) {
+    const copii: Liber[] = [];
+    const operatii: Liber[] = [];
+    const nrRame = intreg(0, 2);
+    for (let e = 0; e < nrRame; e++) {
+      copii.push({ tip: 'element', id: `e${e}`, forma: r() < 0.6 ? dreptunghi(intreg(20, 200), intreg(10, 80)) : cerc(intreg(1, 10)), matrice: T(intreg(0, 40), intreg(0, 40)) });
+    }
+    if (nrRame > 0) operatii.push(opV18({ id: 'o1', noduri: Array.from({ length: nrRame }, (_, e) => `e${e}`), latura: 'exterior' }));
+    const grupuri: GrupGeneratV23[] = [];
+    const nrGrupuri = intreg(1, 2);
+    for (let g = 0; g < nrGrupuri; g++) {
+      const nrCampuri = intreg(1, 2);
+      const campuri: string[] = [];
+      while (campuri.length < nrCampuri) {
+        const c = alege(CAMPURI_V23);
+        if (!campuri.includes(c)) campuri.push(c);
+      }
+      const parti = [alege(['', 'Masa ', 'Nr. ', 'Clasa ']), ...campuri.slice(1).map(() => alege([' ', ' · ', '\n'])), alege(['', '', ' 2026', '\nAtelier'])];
+      const text = (parti[0] as string) + campuri.map((c, k) => `{${c}}${parti[k + 1] as string}`).join('');
+      const sablon = Array.from({ length: intreg(0, 4) }, (_, k) => litera(`s${g}${k}`, k * 6, r() < 0.3));
+      const contururi = sablon.map((l) => `${String(l['id'])}c`);
+      const goluri = sablon.filter((l) => (l['copii'] as Liber[]).length > 1).map((l) => `${String(l['id'])}g`);
+      const optiuni = alege<Liber>([{}, { aliniere: 'centru' }, { caseta: { fel: 'limita', latime: 70, inaltime: 20, ceruta: 7 } }, { proportii: { latime: 80, inaltime: 100 } }, { cursiv: 10, spatiere: 0.5 }, { unitate: 'pt' }, { aldin: 0.3 }]);
+      copii.push(grupText(`t${g}`, text, sablon, optiuni, T(intreg(0, 20), intreg(0, 20))));
+      const opContur = contururi.length > 0 ? `o${2 + 2 * g}` : undefined;
+      const opGol = goluri.length > 0 ? `o${3 + 2 * g}` : undefined;
+      if (opContur !== undefined) operatii.push(opV18({ id: opContur, noduri: contururi, latura: 'exterior', scula: plata(2, 1), adancime: 1, pas: 1 }));
+      if (opGol !== undefined) operatii.push(opV18({ id: opGol, noduri: goluri, latura: 'interior', scula: plata(2, 1), adancime: 1, pas: 1 }));
+      grupuri.push({ id: `t${g}`, parti, campuri, ...(opContur !== undefined ? { opContur } : {}), ...(opGol !== undefined ? { opGol } : {}) });
+    }
+    piese.push({ id: `p${p}`, radacina: { tip: 'grup', id: 'r', matrice: alege([I(), M(0, 1, -1, 0, 100, 0)]), copii }, operatii });
+    grupuriPiesa.set(`p${p}`, grupuri);
+  }
+  const foi: Liber[] = [];
+  let n = 0;
+  const nrFoi = intreg(1, 2);
+  for (let f = 0; f < nrFoi; f++) {
+    const instante: Liber[] = [];
+    const nrInst = intreg(1, 5);
+    for (let k = 0; k < nrInst; k++) {
+      const piesa = alege(piese);
+      const grupuri = grupuriPiesa.get(String(piesa['id'])) ?? [];
+      const campuri: Liber = {};
+      for (const g of grupuri) for (const c of g.campuri) campuri[c] ??= alege(VALORI_V23);
+      if (r() < 0.2) campuri['nota'] = 'în plus';
+      const texte: Liber = {};
+      let l = 0;
+      for (const g of grupuri) {
+        if (r() < 0.15) continue;
+        const continut = (g.parti[0] as string) + g.campuri.map((c, j) => `${campuri[c] as string}${g.parti[j + 1] as string}`).join('');
+        const litere = Array.from({ length: intreg(0, 5) }, (_, j) => litera(`q${++l}`, j * 6, r() < 0.3));
+        const contur = litere.map((x) => `${String(x['id'])}c`);
+        const gol = litere.filter((x) => (x['copii'] as Liber[]).length > 1).map((x) => `${String(x['id'])}g`);
+        const ops: Liber = {};
+        if (g.opContur !== undefined && contur.length > 0) ops[g.opContur] = contur;
+        if (g.opGol !== undefined && gol.length > 0) ops[g.opGol] = gol;
+        if (contur.length > 0 && r() < 0.15 && (piesa['operatii'] as Liber[]).some((o) => o['id'] === 'o1')) ops['o1'] = [contur[0] as string];
+        texte[g.id] = { continut, copii: litere, operatii: ops, ...(r() < 0.1 ? { nota: 'din CSV' } : {}) };
+      }
+      instante.push({
+        id: `i${n++}`, piesa: piesa['id'], x: intreg(0, 200), y: intreg(0, 150), rotire: alege([0, 90, 180, 270, 30]), campuri,
+        ...(Object.keys(texte).length > 0 ? { texte } : {}),
+      });
+    }
+    foi.push({ id: `f${f + 1}`, stoc: { latime: 600, inaltime: 400, grosime: 18 }, instante });
+  }
+  return { schema: 23, rev: intreg(0, 50), piese, foi };
+}
+
+/** Felurile de defecte puse într-un document generat, fiecare cu o singură categorie a oracolului. */
+export const FELURI_STRICARE_V23 = [
+  'continut', 'grup-lipsa', 'grup-fara-bloc', 'litera-piesa', 'litera-dubla', 'op-straina', 'ref-straina', 'amprenta', 'fara-campuri',
+  'litera-nan', 'texte-null', 'ciocnire',
+] as const;
+export type FelStricareV23 = (typeof FELURI_STRICARE_V23)[number];
+
+/** O copie a documentului generat, stricată într-un singur fel, cu categoria oracolului; nimic dacă felul nu se aplică. */
+export function stricaV23(doc: Liber, fel: FelStricareV23): { readonly doc: Liber; readonly categorie: CategorieO } | undefined {
+  const d = structuredClone(doc);
+  const intrari: Array<{ readonly inst: Liber; readonly g: string; readonly intrare: Liber }> = [];
+  for (const f of d['foi'] as Liber[]) {
+    for (const inst of f['instante'] as Liber[]) {
+      const t = inst['texte'];
+      if (esteObiectC(t)) for (const [g, x] of Object.entries(t)) intrari.push({ inst, g, intrare: x as Liber });
+    }
+  }
+  const prima = intrari[0];
+  const cuLitere = intrari.find((x) => (x.intrare['copii'] as Liber[]).length > 0);
+  const cuLista = intrari.find((x) => Object.values(x.intrare['operatii'] as Liber).some((l) => Array.isArray(l) && l.length > 0));
+  const grupul = (x: { readonly inst: Liber; readonly g: string }): Liber => {
+    const piesa = (d['piese'] as Liber[]).find((p) => p['id'] === x.inst['piesa']) as Liber;
+    return ((piesa['radacina'] as Liber)['copii'] as Liber[]).find((c) => c['id'] === x.g) as Liber;
+  };
+  const muta = (x: { readonly inst: Liber; readonly g: string }, cheie: string): void => {
+    const t = x.inst['texte'] as Liber;
+    t[cheie] = t[x.g];
+    delete t[x.g];
+  };
+  if (prima === undefined) return undefined;
+  switch (fel) {
+    case 'continut':
+      prima.intrare['continut'] = `${String(prima.intrare['continut'])}·`;
+      return { doc: d, categorie: 'texte' };
+    case 'grup-lipsa':
+      muta(prima, 'nuexista');
+      return { doc: d, categorie: 'texte' };
+    case 'grup-fara-bloc':
+      muta(prima, 'r');
+      return { doc: d, categorie: 'texte' };
+    case 'litera-piesa':
+      if (cuLitere === undefined) return undefined;
+      ((cuLitere.intrare['copii'] as Liber[])[0] as Liber)['id'] = 'r';
+      return { doc: d, categorie: 'texte' };
+    case 'litera-dubla': {
+      if (cuLitere === undefined) return undefined;
+      const l = (cuLitere.intrare['copii'] as Liber[])[0] as Liber;
+      ((l['copii'] as Liber[])[0] as Liber)['id'] = l['id'];
+      return { doc: d, categorie: 'texte' };
+    }
+    case 'op-straina':
+      (prima.intrare['operatii'] as Liber)['ox'] = [];
+      return { doc: d, categorie: 'texte' };
+    case 'ref-straina': {
+      if (cuLista === undefined) return undefined;
+      const ops = cuLista.intrare['operatii'] as Liber;
+      const cheie = Object.keys(ops).find((k) => Array.isArray(ops[k]) && (ops[k] as unknown[]).length > 0) as string;
+      (ops[cheie] as unknown[]).push('zz');
+      return { doc: d, categorie: 'texte' };
+    }
+    case 'amprenta':
+      (grupul(prima)['text'] as Liber)['amprenta'] = '0'.repeat(16);
+      return { doc: d, categorie: 'texte' };
+    case 'fara-campuri':
+      (grupul(prima)['text'] as Liber)['continut'] = 'LEMN';
+      return { doc: d, categorie: 'texte' };
+    case 'litera-nan':
+      if (cuLitere === undefined) return undefined;
+      (((cuLitere.intrare['copii'] as Liber[])[0] as Liber)['matrice'] as Liber)['e'] = Number.NaN;
+      return { doc: d, categorie: 'finit' };
+    case 'texte-null':
+      prima.inst['texte'] = null;
+      return { doc: d, categorie: 'texte' };
+    case 'ciocnire':
+      d['schema'] = 22;
+      return { doc: d, categorie: 'ciocnire' };
+  }
+}
+
+/** Documentele v23 generate, valide (sămânțele 23 000 …). */
+export const CORPUS_V23: readonly CazV18[] = Array.from({ length: 30 }, (_, k) => ({ nume: `GV23-${String(k + 1).padStart(2, '0')} generat, sămânța ${23_000 + k}`, doc: genereazaV23(23_000 + k) }));
+
+/** Primele 12 documente generate, stricate în fiecare fel care se aplică (un defect, o categorie). */
+export const OTRAVURI_V23: ReadonlyArray<{ readonly nume: string; readonly doc: Liber; readonly categorie: CategorieO }> = CORPUS_V23.slice(0, 12).flatMap((c) =>
+  FELURI_STRICARE_V23.flatMap((fel) => {
+    const s = stricaV23(c.doc, fel);
+    return s === undefined ? [] : [{ nume: `${c.nume}, stricat: ${fel}`, doc: s.doc, categorie: s.categorie }];
+  }));
