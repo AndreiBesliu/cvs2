@@ -174,6 +174,34 @@ primului commit de cod, `origin/main` unit în ramură.
   `src/geom/apropiat.ts`, comună uneltei Noduri și cuțitului.
 - **Mărimea:** pe aceeași bază (`6c79ff9`), pornirea nu crește (101,8 kB; cu ușa 105,3 / 110), iar totalul crește cu 2,8 kB (546,9 → 549,7), plus 0,1 cu previzualizarea pe toate formele (`a5ca66b`). După unirea incrustațiilor (`031e41a`): pornirea 101,9 (cu ușa 105,5 / 110), totalul 558,7 / 600.
 
+**Felia 10.3↑h, la cod** (08.11):
+- **Linia prin X, Y la unghiul α** (§3): linia de tăiere are normala și direcția ei (`n · p = v`), iar verticala și orizontala
+  taie la bit ca înainte (înmulțiri cu 0 și 1). Normala liniei la unghi e cea din stânga direcției (cos α, sin α); la
+  multiplii de 90°, direcția e exactă. În panou: rândul „Linia printr-un punct, la un unghi”, cu X, Y (din mijlocul formelor
+  alese) și unghiul (implicit 45°) dedesubt; pe pânză, linia prin punct, la unghiul ei.
+- **Păstrează** (§2): la linie, partea din stânga direcției (verticala: x mai mic; orizontala, ca linia spre dreapta:
+  deasupra, deci în panou „deasupra / dedesubt”); la cuțitul închis, înăuntru (stânga) sau în afară (dreapta), oricum ar fi
+  tras; la cel deschis, latura unei fețe o dă sensul corzilor din drumul ei (fața are regiunea în stânga: o coardă parcursă
+  în sensul cuțitului o lasă în stânga lui), a unei bucăți deschise, direcția în care pleacă din cuțit la capetele ei tăiate,
+  a unui contur netăiat, cel mai apropiat punct al cuțitului. Nehotărât (o spirală: corzi în ambele sensuri) rămâne. O formă
+  pe care tăietura n-o atinge rămâne; una tăiată, fără nimic de partea păstrată, se șterge.
+- **Prelungește capetele** (§2): doar căile deschise (cuțitul tras, cuțitul-formă deschis; în panou, doar la cuțitul-formă,
+  fiindcă liniile sunt întregi), pe tangenta din capăt (latura; arcul: coarda rotită cu jumătate din baleiaj; cubica: mânerul
+  din capăt). „Până ies din formă”: cât capătul stă în regiunea unei forme de tăiat, merge până la cea mai depărtată dintre
+  primele ieșiri din regiunile în care stă, plus 1e-3 mm, apoi mai departe dacă acolo intră în alta. „Linia întreagă”:
+  dincolo de cutia tuturor formelor de tăiat (1 mm peste).
+- **Cuțitul-formă șters** (§2): `stergeCutitul` îl pune în `sterse`, doar dacă s-a tăiat ceva; din panou, bifa „și șterge-o
+  după tăiere” de sub „Ultima formă aleasă”; din unealtă, „Șterge cuțitul” la felul Formă.
+- **Opțiunile**, o singură setare în browser (`optiuniTaiere.ts`, cu cheia de dinainte a lui „Închide bucățile”), aceleași în
+  panou și în bara Cuțitului, ținute la zi în amândouă (`useSyncExternalStore`); grupurile lor, o singură componentă
+  (`GrupuriTaiere.tsx`). **Schimbat față de schiță:** în bara Cuțitului, „Prelungește” și „Păstrează” stau într-un panou sub
+  butonul „Opțiunile tăierii” (ca panourile extensiei), nu pe rând: bara de sus n-are loc de ele la 1 280 px (butonul
+  „Exportă G-code” ieșea din fereastră). Când o opțiune nu e cea implicită, butonul are un punct roșu, iar sfatul o spune.
+- **Cât tragi** (Linie, Liber): capetele prelungite, punctate, iar cu „Păstrează”, partea care pleacă, estompată (culoarea
+  foii, cu o nuanță slabă a cuțitului), decupată pe regiunile pe care cuțitul le trece de cel puțin două ori; aproximat pe
+  firul principal, ca locurile. La Pen și la Formă, doar tăierea (exactă) le aplică.
+- **Mărimea:** pe aceeași bază (`8303b68`), pornirea nu crește (101,9 kB; cu ușa 105,5 / 110), iar totalul crește cu 4,6 kB (559,0 → 563,6 / 600), peste estimarea de ~2 kB: panoul, panoul opțiunilor din bară, previzualizarea și depozitul opțiunilor.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în
