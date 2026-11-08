@@ -380,12 +380,12 @@ test('DXF fără unități: mm, cu alegerea lor; țolul mărește desenul de 25,
   await expect(page.getByTestId('import-refuz')).toHaveText('Fișierul nu e un DXF valid (linia 5 nu se poate citi).');
 });
 
-test('DXF cu un arc aproape drept (R ≈ 4 000 mm), mărit din colț: piesa crește, arcul de peste 10 m devine curbe (ADR 0102); un refuz se vede sub bare', async ({ page }) => {
+test('DXF cu un arc aproape drept (R ≈ 4 000 mm), mărit din colț: piesa crește, arcul de peste 10 m devine curbe (ADR 0102); eticheta se vede sub bare', async ({ page }) => {
   await page.goto('/');
   // Pătratul de 40 mm în (20, 20), cu latura de jos un arc de bulge 1/400: raza (40 / 4)·(400 + 1/400) ≈ 4 000 mm. Mărit de
   // peste 2,5 ori, raza trece de latura documentului (10 000 mm): înainte, schema refuza tăcut și piesa rămânea la 40 mm.
   const lw = grupuri([0, 'LWPOLYLINE'], [8, 'TAIERE'], [90, 4], [70, 1], [10, 20], [20, 20], [42, 1 / 400], [10, 60], [20, 20], [10, 60], [20, 60], [10, 20], [20, 60]);
-  // Cercul R5 din mijloc rămâne arc oricât s-ar mări: el refuză întinderea pe o singură axă.
+  // Cercul R5 din mijloc rămâne arc oricât s-ar mări; întins pe o singură axă, devine curbe (ADR 0240 §F.27).
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('arc.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati: lw + cerc(40, 40, 5, { strat: 'TAIERE' }) })));
   await page.click('[data-buton="importa"]');
   await expect(page.locator('.dialog')).toHaveCount(0);
@@ -409,24 +409,28 @@ test('DXF cu un arc aproape drept (R ≈ 4 000 mm), mărit din colț: piesa cre�
   await page.mouse.up();
   await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
   await expect.poll(async () => Number(/^([\d.]+)/.exec(await cutia.textContent() ?? '')?.[1] ?? 0)).toBeGreaterThan(100);
-  // Latura e trasă: arcul plat a devenit curbe, dar cercul are arce, deci piesa se scalează doar proporțional. Deasupra
-  // mânerului de rotire, motivul ar intra sub bare: stă sub cutie, pe ecran.
+  // Latura trasă: arcul plat a devenit curbe la mărire, iar arcele cercului devin curbe acum, la întindere (ADR 0240 §F.27;
+  // înainte, refuzul „doar proporțional”). Eticheta o spune cât se trage; deasupra mânerului de rotire ar intra sub bare: stă
+  // sub cutie, pe ecran (același loc ca motivul unui refuz).
   const e = await page.locator('[data-maner="e"]').boundingBox();
   if (!e) throw new Error('mânerul e n-are cutie');
+  const lata = Number(/^([\d.]+)/.exec(await cutia.textContent() ?? '')?.[1] ?? 0);
   await page.mouse.move(e.x + e.width / 2, e.y + e.height / 2);
   await page.mouse.down();
   await page.mouse.move(e.x + e.width / 2 + 60, e.y + e.height / 2, { steps: 4 });
-  await page.mouse.up();
-  const motiv = page.getByTestId('manere-motiv');
-  await expect(motiv).toContainText('proporțional');
-  const m = await motiv.boundingBox();
-  if (!m) throw new Error('motivul n-are cutie');
+  const eticheta = page.getByTestId('manere-eticheta');
+  await expect(eticheta).toContainText('arcele devin curbe');
+  const m = await eticheta.boundingBox();
+  if (!m) throw new Error('eticheta n-are cutie');
   expect(m.y).toBeGreaterThanOrEqual(bare.y + bare.height);
-  await expect(motiv).toBeInViewport({ ratio: 1 });
-  // Nici insula selecției (Duplică, Șterge, proprietățile), de deasupra barei de jos, nu-l acoperă (verificarea lui 9.3↑b).
+  await expect(eticheta).toBeInViewport({ ratio: 1 });
+  // Nici insula selecției (Duplică, Șterge, proprietățile), de deasupra barei de jos, nu o acoperă (verificarea lui 9.3↑b).
   const insula = await page.locator('.bara-selectie .insula').boundingBox();
   if (!insula) throw new Error('insula selecției n-are cutie');
   expect(m.y + m.height <= insula.y || m.y >= insula.y + insula.height || m.x + m.width <= insula.x || m.x >= insula.x + insula.width).toBe(true);
+  await page.mouse.up();
+  await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
+  await expect.poll(async () => Number(/^([\d.]+)/.exec(await cutia.textContent() ?? '')?.[1] ?? 0)).toBeGreaterThan(lata);
 });
 
 test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dreapta, din butonul de lângă boolean și cu Ctrl+Shift+G; Ctrl+Z o adună', async ({ page }) => {

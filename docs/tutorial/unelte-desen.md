@@ -27,28 +27,31 @@ Lista „Pe foaie” din stânga e goală.
 ### Dreptunghiul
 %% pas: d-dreptunghi
 %% faci
-Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`.
+Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`; apoi unul ținând `Alt` (și unul cu `Alt` + `Shift`).
 %% vezi
-Un dreptunghi din colț în colț; cu Shift, un pătrat. Forma nouă e aleasă și apare în listă.
+Un dreptunghi din colț în colț; cu Shift, un pătrat; cu Alt, din centru (punctul apăsat e centrul lui), iar cu amândouă, un
+pătrat din centru. Lângă cursor, eticheta spune mărimea și ce fac tastele. Forma nouă e aleasă și apare în listă.
 
 ### Cercul
 %% pas: d-cerc
 %% faci
-Cerc (`O`): un clic fără tragere; apoi o tragere din centru.
+Cerc (`O`): un clic fără tragere; apoi o tragere din centru; apoi una ținând `Ctrl`.
 %% vezi
-Clicul pune un cerc cu raza din câmpul de lângă unealtă; tragerea dă raza ei și o scrie în câmp.
+Clicul pune un cerc cu raza din câmpul de lângă unealtă; tragerea dă raza ei și o scrie în câmp; cu Ctrl iese o elipsă din
+centru, cu cursorul în colțul cutiei ei (eticheta spune „elipsă”).
 
 ### Elipsa, linia, poligonul
 %% pas: d-elipsa
 %% faci
-Elipsă (`E`); Linie (`L`) trasă cu `Shift`; Poligon (`P`) cu 5 în câmpul de laturi.
+Elipsă (`E`); Linie (`L`) trasă cu `Shift`, apoi cu `Alt`; Poligon (`P`) cu 5 în câmpul de laturi.
 %% vezi
-Elipsa din colț în colț; linia în pași de 15° cu Shift; un pentagon regulat, din centru.
+Elipsa din colț în colț; linia în pași de 15° cu Shift, iar cu Alt pornește din mijloc (punctul apăsat e mijlocul ei); un
+pentagon regulat, din centru.
 
 ### Lipirea
 %% pas: d-lipire
 %% faci
-Cu Lipire pornită (magnetul), trage o formă lângă colțul alteia; apoi trage din nou ținând `Alt`.
+Cu Selecție (`V`) și Lipire pornită (magnetul), trage o formă lângă colțul alteia; apoi trage din nou ținând `Alt`.
 %% vezi
 Forma se prinde exact de colț sau de latură, cu linii de aliniere; cu Alt nu se mai prinde.
 
@@ -81,9 +84,29 @@ Prima intră în selecție, a doua iese.
 ### Mânerele
 %% pas: t-manere
 %% faci
-Transformare (`S`): trage un colț, o latură, apoi mânerul rotund de deasupra; repetă ținând `Shift`.
+Transformare (`S`): trage un colț, o latură, apoi mânerul rotund de deasupra; repetă ținând `Shift`, apoi `Ctrl`, apoi
+`Alt`.
 %% vezi
-Colțul scalează proporțional (cu Shift, liber), latura pe o singură axă, mânerul rotește (cu Shift, în pași de 15°).
+Colțul scalează proporțional (cu Ctrl, liber), latura pe o singură axă (cu Shift, proporțional); cu Alt, centrul rămâne pe
+loc; mânerul rotește (cu Shift, în pași de 15°). Eticheta de deasupra spune ce fac tastele.
+
+### Ancora
+%% pas: t-ancora
+%% faci
+Transformare: în selectorul de lângă unealtă alege colțul stânga-jos, apoi trage mânerul rotund; trage ținta albastră (cercul
+cu cruce) în alt loc și rotește din nou; la sfârșit, dublu clic pe țintă.
+%% vezi
+Prima rotire e în jurul colțului ales, a doua în jurul țintei mutate, iar ținta rămâne pe loc după rotire; eticheta spune „în
+jurul ancorei”. Dublu clic o întoarce în colțul ales.
+
+### Colțurile rotunjite
+%% pas: t-colturi
+%% faci
+Un dreptunghi cu Raza colțurilor 10 (în panou). Transformare: trage latura dreaptă spre dreapta. Apoi, în lista de lângă
+selectorul ancorei, „Colțuri: se scalează mereu”, și trage din nou.
+%% vezi
+Prima dată eticheta spune „colțurile își păstrează raza”, iar panoul arată tot un dreptunghi cu raza 10; a doua oară,
+„colțurile devin curbe”, iar forma devine o cale, cu colțurile întinse.
 
 ### Oglindirea
 %% pas: t-oglinda

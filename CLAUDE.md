@@ -666,6 +666,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/axaMediala.index.test.ts`). Pe linie rămâne punctul 4, punțile dopului drept alese în fereastră: un câmp nou,
   deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
   29,6 / 32.**
+  **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
+  worktree-ul `ancore` (ramura `wip/6.V-ancore`, neunită), cu recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
+  proporțional pe orice mâner, Ctrl = liber pe orice mâner, Alt = față de ancoră**, combinate (Shift câștigă peste Ctrl),
+  citite și la apăsarea tastei cu mausul pe loc; la desen, Shift pătrat / cerc / 15°, Ctrl face cercul elipsă, Alt din centru.
+  **Alt nu mai inversează lipirea la mânere și la desen** (acolo, butonul Lipire și Shift+L); o inversează încă la mutare,
+  ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul rămâne
+  v20) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
+  arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
+  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
+  poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
+  **Pornirea 101,7 / 110 kB, neschimbată; totalul 535,0 → 537,1 / 600.** Pe canalul `ancore` al instanței de test:
+  <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12).
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -887,6 +899,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
   punțile dopului drept alese în fereastră, pe linia incrustațiilor) ia versiunea de după. Worktree-ul `incrustatii` rămâne,
   cu 3–6 din lista dinaintea unirii („1 si 2 acum 3-6 dupa”).
+- 08.11.2026: **ancora și tastele transformării: răspunsurile la ADR 0240** („Ok la toate”, la „Accepți recomandările la cele
+  4 întrebări din ADR 0240?”, în sesiunea liniei): ancora e a selecției de acum (unul din cele 9 puncte ale cutiei, ales în
+  bara Transformării și ținut în browser, sau trasă de mână), nu se ține în proiect, deci documentul rămâne v20; la mânere și
+  la desen, Alt e „față de ancoră” / „din centru”, iar lipirea urmează acolo butonul Lipire, comutat și cu Shift+L (Alt rămâne
+  „lipirea invers” la mutare, ghidaje, ancoră, Noduri și Pen); cu Shift și Ctrl ținute împreună câștigă Shift; feliile 6.V↑,
+  6.V↑b și 6.V↑c acum, 6.V↑d (opțiunile) după decizia owner-ului pe plafon, când se unesc liniile.
 - 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
   ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
   hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar
