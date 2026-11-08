@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { eroriJurnal } from './ajutor-jurnal.ts';
 import { adauga } from './ajutor-panza.ts';
 
@@ -105,8 +106,8 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await page.locator('[data-extensii="fila"]').click();
   await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'extensie');
 
-  // Eroarea extensiei ajunge în jurnalul local, cu id-ul ei.
-  await c.locator('[data-salut="eroare"]').click();
+  // Eroarea extensiei ajunge în jurnalul local, cu id-ul ei (primul clic în cadru după ce fereastra lui reapare).
+  await clicDupaReaparitie(page, '[data-salut="eroare"]');
   await expect.poll(async () => (await eroriJurnal(page)).map((x) => x.mesaj)).toEqual([expect.stringContaining('extensia salut: eroare de probă din extensie')]);
 
   await page.locator('[data-extensii="inchide-fereastra"]').click();

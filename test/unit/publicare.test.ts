@@ -12,7 +12,9 @@ const p = (gitSha = SHA, peste: Partial<Publicare> = {}): Publicare => ({
   gitSha, gitRef: 'main', arboreCurat: true, deployedAt: '2026-10-18T09:00:00.000Z', deployedBy: 'github:AndreiBesliu #12', ...peste,
 });
 const amprenta = (tinte: Amprenta['tinte'], projectId: string = PROIECTE.test): Amprenta => ({ schema: 1, app: 'cncvs2', projectId, tinte });
-const toate = (gitSha = SHA): Amprenta['tinte'] => ({ hosting: p(gitSha, { builtAt: '2026-10-18T08:58:00.000Z' }), functii: p(gitSha), reguli: p(gitSha), indecsi: p(gitSha) });
+const toate = (gitSha = SHA): Amprenta['tinte'] => ({
+  hosting: p(gitSha, { builtAt: '2026-10-18T08:58:00.000Z' }), functii: p(gitSha), reguli: p(gitSha), indecsi: p(gitSha), stocare: p(gitSha),
+});
 
 test('proiectele instanțelor: sursa unică', () => {
   assert.deepEqual(PROIECTE, { test: 'cncvectorstudio-test', live: 'cncvectorstudio' });

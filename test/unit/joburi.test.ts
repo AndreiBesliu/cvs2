@@ -14,7 +14,16 @@ const ok = (ore: number) => m({ ultimaPornire: ACUM - ore * H - 5_000, ultimulFi
 
 test('limita de vechime: 1,1 × intervalul + 2 h', () => {
   assert.equal(limitaOre(BACKUP), 28.4);
-  assert.deepEqual(JOBURI.map((j) => j.nume), ['backupZilnic', 'verificaBackup']);
+  assert.deepEqual(JOBURI.map((j) => j.nume), ['backupZilnic', 'verificaBackup', 'pastrareTichete']);
+});
+
+test('păstrarea tichetelor (ADR 0116 §16, felia 15.B↑b): zilnic la 04:00, după backup și înaintea verificării lui', () => {
+  const p = JOBURI.find((j) => j.nume === 'pastrareTichete');
+  assert.deepEqual(p, { nume: 'pastrareTichete', programare: '0 4 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 300 });
+  // Cron, nu „every 24 hours”: forma App Engine își numără intervalul de la ultima publicare a funcțiilor.
+  for (const j of JOBURI) assert.match(j.programare, /^\d{1,2} \d{1,2} \* \* \*$/, j.nume);
+  // Pragul de vechime, ca la backup: o zi lungă de vară sau o întârziere a programatorului nu-l fac roșu.
+  assert.equal(limitaOre(p ?? BACKUP), 28.4);
 });
 
 test('fără marcaj: atenție (n-a rulat niciodată); marcaj nevalid: eșec', () => {

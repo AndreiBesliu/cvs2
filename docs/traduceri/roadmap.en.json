@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "texte": {
+    "01e32a3cdf30b065": {
+      "ro": "Piesele plate „după CNC”",
+      "en": "Flat parts “as the CNC leaves them”"
+    },
     "02292bc5bd879195": {
       "ro": "buzunar + rest, insulă, găuri în pași, elice",
       "en": "pocket + rest, island, peck holes, helix"
@@ -60,6 +64,10 @@
     "05fad3a74f8b47cf": {
       "ro": "Raportorul din client",
       "en": "The client reporter"
+    },
+    "0683a94c575aa2de": {
+      "ro": "Piesele plate pe imprimanta 3D",
+      "en": "Flat parts on the 3D printer"
     },
     "068514652d40f327": {
       "ro": "Intrările și ieșirile, alese față de regiunea păstrată (ADR 0030, documentul v7; portate, `docs/PORTARE.md` §3.2), fără rampă",
@@ -300,6 +308,10 @@
     "1b3e4c3fa116a3fe": {
       "ro": "Un singur post",
       "en": "A single post"
+    },
+    "1b64dd62ea9b4333": {
+      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă",
+      "en": "Sending a ready-sliced `.gcode` to the printer"
     },
     "1c2122dc6058fc5b": {
       "ro": "Biarcele",
@@ -693,10 +705,6 @@
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
     },
-    "3e9cd247d407387f": {
-      "ro": "Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie",
-      "en": "The 3D printer (Creality K1C, over WiFi; the 03.11 answer to ADR 0119, question 4): its network address and a test print; whatever else the firmware needs is found out in the slice"
-    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -841,6 +849,10 @@
       "ro": "Jurnalul de erori pe server",
       "en": "Server-side error log"
     },
+    "4a8756adbd460dfc": {
+      "ro": "**Raportările clienților, partea a doua: proiectul atașat și păstrarea tichetelor** (fără mașină; ADR 0116 §12, §16, §18; notată pe 02.11 pentru mai târziu, pornită pe 07.11 într-o linie paralelă, la întrebarea owner-ului despre ce se mai poate face în paralel; worktree-ul `raportari`, ramura `wip/15.B-raportari`, neunită). În **Raportează o problemă…**, bifa **Atașează proiectul**: sub ea, mărimea proiectului deschis; peste 10 MB, motivul, iar **Trimite** se oprește. Pleacă JSON-ul canonic (aceiași octeți ca salvarea din browser), comprimat și în base64, prin callable-ul `tichete`; serverul îl validează (base64 canonic, despachetarea plafonată la 10 MB, UTF-8 strict, `schema`), îl urcă în Storage (`tichete/{id}/proiect.json.gz`) după refuzurile ieftine și înaintea tranzacției (o tranzacție căzută îl scoate) și ține în tichet mărimea, amprenta și schema; acțiunea `proiect` îl dă înapoi doar cui poate citi tichetul. În fila **Tichete**, **Descarcă proiectul**, verificat pe mărime și SHA-256; în „Raportările mele”, mărimea lui. **Regulile Storage** refuză orice cerere din client (și pe căile aplicației vechi). Jobul **`pastrareTichete`** (04:00, cu marcaj): tichetele cu `rezolvatLa` mai vechi decât păstrarea din fila Setări, cu poza, proiectul și auditul `tichete.sterge`, apoi fișierele rămase fără tichet; plafoanele, eșecurile numărate (galben la unul, roșu la două la rând). Fraza păstrării în nota de confidențialitate (operatorul și contactul rămân la owner). Ținta de publicare nouă `stocare`. **Probele:** pe hârtie (contractul, pregătirea și descărcarea proiectului, base64-ul la paritate cu al pozei, mărimea citită, jobul, Diagnoza, țintele); pe emulatoarele Firestore și Storage (16 ale callable-ului, 8 ale jobului, 5 ale regulilor Storage, cu dosarul temporar al rulării: emulatorul Storage îl șterge la oprire); e2e pe emulatoare (bifa, meta din tichet, descărcarea egală cu salvarea editorului, un fișier schimbat refuzat). Build-ul determinist a prins o bucată nouă (`poza`): bucata contului nu mai importă contractul pozei. Emulatorul Storage ignoră `ifGenerationMatch`, deci garda „nu acoperă” a plecat. **Otrăvurile** din `test/otravuri/15.B-b.py`: 41 / 41 prinse la prima rulare (7 pe hârtie, 31 pe emulatoare, 3 de interfață); trei probe întărite înainte (UTF-8 într-un text JSON, spionul scrierilor, cursorul jobului). **Unirea cu `main`** (`1bf99c5`: 12.1↑ și 10.3↑–10.3↑b; merge-ul `c4e1e4c`, doar două conflicte de adăugare), cu porțile reluate pe rezultat. **Mărimile**, față de un build curat al lui `1bf99c5`: pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 519,5 / 550, neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 → 106,5 / 200. **Pe canal:** <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (până pe 07.12; republicat după unire), verificat acolo: pornește fără erori; bifa și mărimea cer contul deschis, iar atașarea reală, descărcarea și jobul vin cu funcțiile din `main`, după unire.",
+      "en": "**Customer reports, part two: the attached project and ticket retention** (no machine; ADR 0116 §12, §16, §18; set aside on 02.11 for later, started on 07.11 on a parallel line, at the owner’s question about what else can run in parallel; the `raportari` worktree, branch `wip/15.B-raportari`, not merged). In **Report a problem…**, the **Attach the project** tick box: under it, the size of the open project; over 10 MB, the reason, and **Send** stops. What goes is the canonical JSON (the same bytes the browser saves), compressed and in base64, through the `tichete` callable; the server validates it (canonical base64, decompression capped at 10 MB, strict UTF-8, `schema`), uploads it to Storage (`tichete/{id}/proiect.json.gz`) after the cheap refusals and before the transaction (a failed transaction removes it) and keeps the size, the fingerprint and the schema on the ticket; the `proiect` action gives it back only to whoever can read the ticket. In the **Tickets** tab, **Download the project**, checked on size and SHA-256; in “My reports”, its size. **The Storage rules** refuse every request from the client (on the old app’s paths too). The **`pastrareTichete`** job (04:00, with a run marker): the tickets whose `rezolvatLa` is older than the retention set in the Settings tab, with the picture, the project and the `tichete.sterge` audit, then the files left without a ticket; the caps, the failures counted (yellow at one, red at two in a row). The retention sentence in the privacy notice (the data controller and the contact stay with the owner). A new publish target, `stocare`. **The tests:** on paper (the contract, preparing and downloading the project, the base64 at parity with the picture’s, the size shown, the job, Diagnostics, the targets); on the Firestore and Storage emulators (16 for the callable, 8 for the job, 5 for the Storage rules, with the run’s own temp folder: the Storage emulator deletes it on shutdown); e2e on the emulators (the tick box, the ticket metadata, the download equal to the editor’s save, a changed file refused). The deterministic build caught a new chunk (`poza`): the account chunk no longer imports the picture contract. The Storage emulator ignores `ifGenerationMatch`, so the “do not overwrite” guard went. **Mutations** from `test/otravuri/15.B-b.py`: 41 / 41 caught on the first run (7 on paper, 31 on emulators, 3 interface ones); three tests strengthened beforehand (UTF-8 inside a JSON string, the write spy, the job cursor). **The merge with `main`** (`1bf99c5`: 12.1↑ and 10.3↑–10.3↑b; the merge `c4e1e4c`, only two append conflicts), with the gates rerun on the result. **Sizes**, against a clean build of `1bf99c5`: startup 101.5 (105.1 / 110 kB with the door) and the total 519.5 / 550, unchanged; the account 28.8 → 29.6 / 32; /admin 105.4 → 106.5 / 200. **On the channel:** <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (until 07.12; republished after the merge), checked there: it starts without errors; the tick box and the size need an open account, while the real attachment, the download and the job come with the functions from `main`, after the merge."
+    },
     "4aea7905acfeea1b": {
       "ro": "Afișarea simulării în WebGL2.",
       "en": "Simulation display in WebGL2."
@@ -941,6 +953,10 @@
       "ro": "**Transformările, Alt inversat, uneltele în bara de sus, adusă din etapa 6** (fără mașină; ADR 0052; „Da, fă acum transformările (mânerele de scalare și rotire pe selecție), împreună cu Alt care inversează lipirea, fără agenți” și „toate uneltele astea sa fie in bara de sus, cu snap si grid, iar align/distribute options intr-o subbara”). Uneltele, Lipire și Grilă în bara de sus (portal în locul `unelte` al aranjamentului), alinierea și distribuirea într-o sub-bară; „Adaugă dreptunghi / cerc” doar în paleta de comenzi; Alt inversează lipirea; raza cercului (un clic pune un cerc cu ea, o tragere o scrie); 8 mânere de scalare (colțuri proporțional, Shift liber; laturi pe o axă; ancora opusă) și unul de rotire (Shift 15°), cu `document.transforma`: rotirea schimbă instanța, scalarea geometria piesei, exact, refuzată cu motiv (cerc, arce, colț rotunjit, rotire oblică, piesă împărțită). Sub 95rem, căutarea doar cu pictogramă (la 1280 px acoperea 62 px din „Exportă”). Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). **Treceri:** (1) modelul și acțiunea, mânerele, probele; (2) captura: căutarea peste „Exportă” la 1280 / 1366 / 1440 px (proba nouă, cu control: cade pe CSS-ul vechi); o captură cu selecția veche, din ajutorul `vedere()` care compara perechea cerere / afișare înaintea efectului (acum așteaptă două cadre); (3) e2e-ul complet: un clic simplu pe mâner scala forma (scara din poziția absolută a cursorului; acum din deplasare, cu prag de 3 px), iar mânerele prindeau orice apăsare, deci panoramarea cu butonul din mijloc pornită de pe un mâner nu mai mergea (oracolele traseului): mânerele sunt acum doar desen, lovitura se decide geometric, doar pentru butonul stâng; (4) pragul de 24 px pe axă, ascunderea la mutare, probele lor. Editarea după plasare (raza, laturile) e felia 6.D↑.",
       "en": "**Transforms, inverted Alt, the tools in the top bar, brought forward from stage 6** (without the machine; ADR 0052; “Yes, do the transforms now (scale and rotate handles on the selection), together with Alt inverting snapping, no agents” and “all these tools should be in the top bar, with snap and grid, and the align/distribute options in a sub-bar”). The tools, Snap and Grid in the top bar (a portal into the layout's `unelte` slot), alignment and distribution in a sub-bar; “Add rectangle / circle” only in the command palette; Alt inverts snapping; the circle radius (a click places a circle with it, a drag writes it); 8 scale handles (corners proportional, Shift free; sides on one axis; the opposite anchor) and one rotate handle (Shift 15°), with `document.transforma`: rotation changes the instance, scaling the part's geometry, exactly, refused with a reason (circle, arcs, rounded corner, oblique rotation, shared part). Below 95rem, search shows only an icon (at 1280 px it covered 62 px of “Export”). Startup unchanged: 95.0 kB (99.7 / 100 with the door). **Passes:** (1) the model and the action, the handles, the checks; (2) the screenshot: search over “Export” at 1280 / 1366 / 1440 px (a new check, with a control: it fails on the old CSS); a screenshot with the old selection, from the `vedere()` helper comparing the request / display pair before the effect (it now waits two frames); (3) the full e2e: a plain click on a handle scaled the shape (the scale from the cursor's absolute position; now from the movement, with a 3 px threshold), and the handles caught every press, so a middle-button pan started on a handle no longer worked (the toolpath oracles): the handles are now just drawing, and hits are decided geometrically, only for the left button; (4) the 24 px per-axis threshold, hiding while moving, their checks. Editing after placement (radius, sides) is slice 6.D↑."
     },
+    "537b7e46c2898a63": {
+      "ro": "când vrei",
+      "en": "whenever you like"
+    },
     "53cf879c035a4170": {
       "ro": "**Tampon**",
       "en": "**Buffer**"
@@ -1021,6 +1037,10 @@
       "ro": "șanțurile de calibrare",
       "en": "the calibration grooves"
     },
+    "5af556944a6ff976": {
+      "ro": "3.6i (proba pe imprimantă, pasul 2)",
+      "en": "3.6i (the test on the printer, step 2)"
+    },
     "5bece914e15c12d9": {
       "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
       "en": "Textures; STL / OBJ export; Relief clipart; Laser"
@@ -1029,6 +1049,10 @@
       "ro": "Înclinarea cu arcele făcute curbe",
       "en": "Skewing with the arcs made into curves"
     },
+    "5d0a4055203e9f34": {
+      "ro": "Piesele plate, setările avansate mai departe (ADR 0191): alte modele de umplere (linii, triunghiuri, fagure, giroid, concentric) și ale suprafeței de sus, cusătura (aliniată, în spate, cea mai apropiată, aleatorie), ștergerea la retragere, călcarea suprafeței de sus, fusta",
+      "en": "Flat parts, the advanced settings further on (ADR 0191): more infill patterns (lines, triangles, honeycomb, gyroid, concentric) and top-surface patterns, the seam (aligned, rear, nearest, random), wiping on retraction, ironing of the top surface, the skirt"
+    },
     "5d642af2da946d6f": {
       "ro": "Stack-ul",
       "en": "The stack"
@@ -1036,6 +1060,10 @@
     "5e6bba6be828f904": {
       "ro": "Strategia paralelă a buzunarului",
       "en": "The parallel pocket strategy"
+    },
+    "5ead90306f40b791": {
+      "ro": "Piesele plate pe imprimantă",
+      "en": "Flat parts on the printer"
     },
     "5eeb3f9c2208b108": {
       "ro": "Gravarea pe linie cu freza în V și gravarea inteligentă",
@@ -1064,6 +1092,10 @@
     "612f682f4c69fc17": {
       "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",
       "en": "The minimal Users tab and the Settings tab, brought from stage 14"
+    },
+    "614c2e017a6654d8": {
+      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă (ADR 0190 §C.7, §D): urcarea pe HTTP (`/upload`), verificată în lista fișierelor; verificarea fișierului (antetul feliatorului, mișcările față de patul de 220 × 220 × 250); pornirea cu confirmare; `http:` în `connect-src` (acordul owner-ului, 07.11)",
+      "en": "Sending a ready-sliced `.gcode` to the printer (ADR 0190 §C.7, §D): the upload over HTTP (`/upload`), checked in the file list; the file check (the slicer header, the moves against the 220 × 220 × 250 bed); starting with confirmation; `http:` in `connect-src` (the owner’s consent, 07.11)"
     },
     "63760521aca66be1": {
       "ro": "V-carve-ul unei piese, o singură regiune",
@@ -1096,10 +1128,6 @@
     "670a50da029d7c81": {
       "ro": "CI rapid",
       "en": "Rapid CI"
-    },
-    "67ff5cb20bcf9309": {
-      "ro": "feliile imprimantelor",
-      "en": "the printer slices"
     },
     "681462eed9b23fdd": {
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
@@ -1249,6 +1277,10 @@
       "ro": "Sugestia din editor, cu poza planșei",
       "en": "The suggestion from the editor, with a picture of the sheet"
     },
+    "78230fbafc1165dc": {
+      "ro": "Piesele plate din dialogul exportului, ca altă mașină lângă CNC, și felierea adusă la prima folosire, cu „Descarcă pentru lucru fără internet” (ADR 0191): odată cu sistemul de module, cu sesiunea principală",
+      "en": "Flat parts from the export dialog, as another machine next to the CNC, and the slicer fetched on first use, with “Download for working offline” (ADR 0191): together with the module system, with the main session"
+    },
     "78256b8a334faf00": {
       "ro": "un repo fără ramuri moarte",
       "en": "a repository without dead branches"
@@ -1277,6 +1309,10 @@
       "ro": "**Simularea și verificarea;** calibrarea; celelalte contracte",
       "en": "**Simulation and verification;** calibration; the other contracts"
     },
+    "7ac268af8f7477e9": {
+      "ro": "Imprimanta 3D pe imprimanta owner-ului",
+      "en": "The 3D printer on the owner’s printer"
+    },
     "7adba96b4237b0b0": {
       "ro": "**V-carve-ul unei piese, o singură regiune** (fără mașină; precizarea din ADR 0112; „continua cu altceva”, din limita scrisă în ADR 0112). Un text cu operațiile importului, trecute pe V-carve rând cu rând în fereastra exportului, se săpa în două regiuni („O” ca un disc plin). Acum regiunea V-carve-ului e a contururilor unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), ca buzunarele de aceeași adâncime (ADR 0073); cu valori diferite, regiunile rămân ale lor. **Treceri:** (1) proba întâi (inelul R10 / R6 pe două operații dă mișcările unei singure operații; căzută înainte), apoi cheia regiunii în lucrare (`src/cam/job.ts`).",
       "en": "**A part's V-carve, a single region** (no machine; the precision in ADR 0112; “continua cu altceva”, from the limit written in ADR 0112). A text with the import's operations, set to V-carve row by row in the export window, was carved in two regions (an “O” as a full disc). Now a V-carve region is made of the outlines of one part in one instance with the same values (the cutter, the depth, the step, the direction, the flat bottom), like the pockets of the same depth (ADR 0073); with different values, the regions stay separate. **Passes:** (1) the probe first (the R10 / R6 ring on two operations gives the moves of a single operation; it failed before), then the region key in the job (`src/cam/job.ts`)."
@@ -1292,6 +1328,10 @@
     "7b9ef2336dbee5f8": {
       "ro": "Operațiile în document",
       "en": "Operations in the document"
+    },
+    "7c4cfbf1c679d758": {
+      "ro": "3.6j",
+      "en": "3.6j"
     },
     "7c50450482c286a4": {
       "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",
@@ -1536,6 +1576,10 @@
     "92d3d4781a981f7c": {
       "ro": "Personalul, fila Erori și Diagnoza (ADR 0040): pagina `/admin` la cerere (164 kB, cu bugetul ei; pornirea 99,0 / 100 kB), login Google, rolul din `staff/{uid}`, fila Erori cu „Rezolvat” prin callable și audit în aceeași tranzacție, Diagnoza (7 verificări), TTL de 90 de zile, regulile noi publicate. 17 teste pe emulator, 3 e2e pe emulatoare (login-ul emulatorului de Auth inclus), 3 e2e fără configurație, 13 unitare; 7 sabotaje, prinse unde trebuie, cu martorii trecuți (un martor picat a arătat primul apel lent al callable-ului: termen de 30 s). **Pe test:** pagina pornește până la fereastra Google, fără încălcări de CSP.",
       "en": "Staff, the Errors tab and Diagnostics (ADR 0040): the `/admin` page on demand (164 kB, with its own budget; startup 99.0 / 100 kB), Google login, the role from `staff/{uid}`, the Errors tab with “Resolved” through a callable and the audit in the same transaction, Diagnostics (7 checks), a 90-day TTL, the new rules published. 17 tests on the emulator, 3 e2e on emulators (the Auth emulator's login included), 3 e2e without configuration, 13 unit tests; 7 sabotages, caught where they should be, with the controls passing (a failed control revealed the callable's slow first call: a 30 s deadline). **On test:** the page starts up to the Google window, with no CSP violations."
+    },
+    "930a66cc69face6b": {
+      "ro": "Imprimanta 3D pe imprimanta owner-ului, după ghid (`docs/masina/imprimanta-k1c.md`): starea, pauza și reluarea pe o imprimare scurtă, trimiterea unui fișier; transcrierea cadrelor, rejucată pe imprimanta falsă",
+      "en": "The 3D printer on the owner’s printer, following the guide (`docs/masina/imprimanta-k1c.md`): the status, pausing and resuming a short print, sending a file; the transcript of the frames, replayed on the fake printer"
     },
     "9349481461342270": {
       "ro": "Offsetul formelor în desen, adus din etapa 6",
@@ -1865,6 +1909,10 @@
       "ro": "Vectori, noduri, boolean, offset, aliniere; Transformare și copiere",
       "en": "Vectors, nodes, boolean, offset, alignment; Transform and copy"
     },
+    "b20fcad5982bff0c": {
+      "ro": "înainte de placa de probă",
+      "en": "before the test plate"
+    },
     "b23a1b5bf5ce0cd1": {
       "ro": "**Importul EPS și AI ≤ 8, adus din etapa 9** (fără mașină; ADR 0115; decizia owner-ului din 07.10: „EPS și AI ≤ 8 prin cititor propriu, limitat”; subsesiune, în worktree-ul `wip/9.5-import-eps`). „Importă SVG / DXF / PDF / AI / EPS…” citește și EPS-ul (și cel binar, cu previzualizarea), și AI-ul de dinainte de Illustrator 9, care e PostScript; ușa o alege începutul fișierului, deci un `.ai` de la Illustrator 9 rămâne la PDF. Cititorul propriu execută un program PostScript scris pas cu pas: procedurile definite (cu `bind`), matricele, `gsave` / `save`, căile cu relativele și dreptunghiurile, pictarea. Buclele și condițiile, operatorii lipsă (de exemplu `arc`) și EPS-urile de la Illustrator 9 sunt refuzate, iar fereastra spune motivul (și operatorul). Un AI ≤ 8 se citește după nume: prologul și setup-ul sărite, operatorii AI, calea compusă, straturile ca nume (cel ascuns, sărit). Desenul stă unde e în fișier, ca la DXF; textul, imaginile (cu datele lor din fișier) și umbririle se sar, numărate. Refuzul vechi „e PostScript” al ușii PDF a dispărut. Totul la cerere: pornirea neschimbată, 97,6 (cu ușa 101,1 / 110); totalul 414,8 → 425,0 / 450 kB. **Treceri:** (1) întâi corpusul Python (7 fișiere, fiecare trecut prin Ghostscript și recitit cu PyMuPDF; CI-ul îl regenerează și cere aceiași octeți), apoi cititorul (numărătorile corpusului, toate din prima), dialogul, manualul, e2e-ul. Găsite de probele țintite: `push(...)` cu sute de mii de elemente depășea stiva JavaScript (`copy`, `aload`, `roll`), o sursă de imagine necunoscută trecea drept „fără date” (`?? 'nu'` pe `null`), iar `CS6` cădea în regula „Illustrator 88 e vechi”. Mutațiile: 62 / 62: 59 pe probele unitare (lexicul, antetul, interpretorul, imaginile, operatorii AI, ușa după antet) și 3 prin e2e, pe portul 4175 (straturile AI în dialog, operatorul din refuz, `.eps` în fereastra de fișiere); una a trecut întâi: prologul AI executat (I01), echivalentă pe corpus, fiindcă `%%BeginProlog` și `%%BeginProcSet` erau deja secțiuni sărite: probă nouă (un AI 3 cu cod în prolog, în afara blocurilor de proceduri). Șapte probe scrise înaintea rundei, din listă (datele hex prea scurte, binarul după CR LF, ASCII85 cu „>”, calea schimbată între `gsave` și `grestore`, `shfill`, calea compusă nonzero cu golul în același sens, operatorul AI necunoscut chiar înaintea lui `Lb`).",
       "en": "**EPS and AI ≤ 8 import, brought forward from stage 9** (no machine; ADR 0115; the owner’s decision of 07.10: “EPS și AI ≤ 8 prin cititor propriu, limitat”; a sub-session, in the `wip/9.5-import-eps` worktree). “Import SVG / DXF / PDF / AI / EPS…” now also reads EPS (including binary EPS, with its preview) and AI from before Illustrator 9, which is PostScript; the start of the file picks the reader, so an `.ai` from Illustrator 9 on stays with PDF. Our own reader runs PostScript written out step by step: defined procedures (with `bind`), matrices, `gsave` / `save`, paths with the relative operators and the rectangles, painting. Loops and conditions, missing operators (`arc`, for example) and EPS files from Illustrator 9 are refused, and the window gives the reason (and the operator). An AI ≤ 8 is read by name: the prolog and setup skipped, the AI operators, compound paths, layers as names (the hidden one skipped). The drawing stays where it is in the file, as for DXF; text, images (with their data in the file) and shadings are skipped and counted. The PDF reader’s old “it is PostScript” refusal is gone. All on demand: startup unchanged, 97.6 (with the door 101.1 / 110); total 414.8 → 425.0 / 450 kB. **Passes:** (1) the Python corpus first (7 files, each run through Ghostscript and read back with PyMuPDF; CI regenerates it and requires the same bytes), then the reader (the corpus counts, all right the first time), the dialog, the manual, e2e. Found by the targeted tests: `push(...)` with hundreds of thousands of elements overflowed the JavaScript stack (`copy`, `aload`, `roll`), an unknown image source passed for “no data” (`?? 'nu'` on `null`), and `CS6` fell under the “Illustrator 88 is old” rule. Mutations: 62 / 62: 59 on the unit tests (the lexer, the header, the interpreter, the images, the AI operators, the reader chosen by header) and 3 through e2e, on port 4175 (the AI layers in the dialog, the operator in the refusal, `.eps` in the file window); one survived at first: the AI prolog executed (I01), equivalent on the corpus, since `%%BeginProlog` and `%%BeginProcSet` were already skipped sections: a new test (an AI 3 with code in the prolog, outside the procedure blocks). Seven tests written before the round, from the list (hex data too short, binary data after CR LF, ASCII85 with “>”, the path changed between `gsave` and `grestore`, `shfill`, the nonzero compound path with the hole in the same direction, the unknown AI operator right before `Lb`)."
@@ -1953,6 +2001,10 @@
       "ro": "Cuțitul-formă și „Taie la intersecții”",
       "en": "The shape knife and “Cut at intersections”"
     },
+    "b8cae7ccfc94d4e6": {
+      "ro": "**Imprimanta 3D prin WiFi** (fără mașină; ADR 0190, acceptat cu răspunsurile owner-ului din formularul schiței, „1a”, „2a”, „3a”, „4a”; „Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”; în worktree-ul `imprimanta`, pe ramura `wip/3.6g-imprimanta`). „Conectează (WiFi)” știa doar controlerele familiei GRBL (8282 și 81), deci o K1C nu se putea găsi și nici lega. Acum fila **Imprimanta**, a treia a meniului global, leagă o imprimantă Creality din familia K1 pe protocolul ei din fabrică: WebSocket-ul de pe 9999, fără subprotocol, cadre text JSON, `ok` la fiecare bătaie a inimii, starea pe bucăți. Imprimantele ținute, adresa scrisă, căutarea pe 9999; starea (duza, patul, carcasa, progresul, timpul, stratul, codul de la imprimantă); **Pauză / Reia / Oprește** (cu confirmare); fișierele din imprimantă, pornite cu bifa „Patul e gol”; jurnalul cadrelor. Singură, fereastra trimite doar citiri și `ok`. După pornire, K1 închide legătura: fereastra se leagă singură din nou; o legătură căzută (imprimanta merge mai departe) se reface la fel. Modulele, lângă sender (`src/machine/imprimanta/`), iar adresa locală, permisiunea și căutarea, comune, în `src/machine/reteaLocala.ts`. **Treceri:** (1) protocolul și probele pe hârtie, apoi sesiunea, fereastra, imprimanta falsă și e2e-ul. Găsite în browser: o reîncercare renunța la legătură când browserul spunea permisiunea refuzată (și spre loopback): acum doar prima legare citește permisiunea; după Oprește, starea 7 („Se oprește”); bucata ferestrei trăgea transportul senderului într-o bucată comună de 4 kB (mutarea în `reteaLocala.ts`, totalul +8,1 kB). Pe imprimanta owner-ului (192.168.1.12, doar citiri): fără răspuns la 10:48 și 11:57, nici la ping. **Probele:** `imprimanta.creality.test.ts` (14), `imprimanta.sesiune.test.ts` (10, pe un WebSocket și un ceas false), `imprimanta.tinute.test.ts` (7), `imprimanta.spec.ts` (5, în Edge, cu imprimanta falsă din `imprimantaFalsa.ts`); manualul. **Otrăvurile** din `test/otravuri/3.6g.py`: 43, alese de autor, într-o clonă în afara Drive-ului; prima rulare (`e74b52d`): 39 prinse, 4 scăpate. C07 (o cale lungă din afara directorului G-code), T01 (o listă de altă versiune, cu rânduri) și T06 (ceasul dat înapoi) au primit probe și sunt prinse acum (`1b27076`); S08 (garda generației din `onmessage`) era cod mort, scos, cu perechile lui.",
+      "en": "**3D printer over WiFi** (no machine; ADR 0190, accepted with the owner’s answers from the sketch form, “1a”, “2a”, “3a”, “4a”; “Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”; in the `imprimanta` worktree, on the `wip/3.6g-imprimanta` branch). “Connect (WiFi)” only knew the GRBL-family controllers (8282 and 81), so a K1C could be neither found nor connected. Now the **Printer** tab, the third in the global menu, connects a Creality printer of the K1 family on its factory protocol: the WebSocket on 9999, no subprotocol, JSON text frames, `ok` to every heartbeat, the status in pieces. The saved printers, a typed address, the search on 9999; the status (nozzle, bed, enclosure, progress, time, layer, the code from the printer); **Pause / Resume / Stop** (with confirmation); the files on the printer, started with the “The bed is clear” check; the frame log. On its own, the window only sends reads and `ok`. After a start, a K1 closes the connection: the window reconnects by itself; a lost connection (the printer keeps going) is restored the same way. The modules sit next to the sender (`src/machine/imprimanta/`), and the local address, the permission and the search, shared, in `src/machine/reteaLocala.ts`. **Passes:** (1) the protocol and the paper tests, then the session, the window, the fake printer and the e2e. Found in the browser: a retry gave up the connection when the browser reported the permission as refused (even towards loopback): now only the first connection reads the permission; after Stop, state 7 (“Stopping”); the window’s chunk pulled the sender’s transport into a new 4 kB shared chunk (the move to `reteaLocala.ts`, total +8.1 kB). On the owner’s printer (192.168.1.12, reads only): no answer at 10:48 and 11:57, not even to ping. **Tests:** `imprimanta.creality.test.ts` (14), `imprimanta.sesiune.test.ts` (10, on a fake WebSocket and a fake clock), `imprimanta.tinute.test.ts` (7), `imprimanta.spec.ts` (5, in Edge, with the fake printer from `imprimantaFalsa.ts`); the manual. **Poisons** from `test/otravuri/3.6g.py`: 43, chosen by the author, in a clone outside Drive; first run (`e74b52d`): 39 caught, 4 escaped. C07 (a long path outside the G-code directory), T01 (a list of another version, with rows) and T06 (the clock set back) got tests and are caught now (`1b27076`); S08 (the generation guard in `onmessage`) was dead code, removed with its pairs."
+    },
     "b8d0fd78d524928f": {
       "ro": "Sensul de tăiere (urcare / opoziție), pe operație, cu implicitul ales de owner; schema v4",
       "en": "Cutting direction (climb / conventional), per operation, with the default chosen by the owner; schema v4"
@@ -2029,6 +2081,10 @@
       "ro": "Tăierea cu o linie dreaptă",
       "en": "Cutting with a straight line"
     },
+    "bfb35c7cfbbdbd89": {
+      "ro": "Piesele plate „după CNC” (ADR 0191): regiunea păstrată de tăieturi, cu buzunarele ca trepte și găurile găuririi; înălțimea fiecărei piese ținută în proiect (un câmp opțional al piesei, fără schemă nouă, ca ghidajele din ADR 0050; cu sesiunea principală)",
+      "en": "Flat parts “as the CNC leaves them” (ADR 0191): the region kept by the cuts, with the pockets as steps and the drilled holes; the height of each part kept in the project (an optional field of the part, without a new schema, like the guides of ADR 0050; with the main session)"
+    },
     "bfca81120058bffa": {
       "ro": "**Măsurarea pe un laptop de atelier** (bancul s6-V, cu pragurile din T13).",
       "en": "**Measuring on a workshop laptop** (the s6-V bench, with the thresholds from T13)."
@@ -2040,6 +2096,10 @@
     "c083a50de5467f32": {
       "ro": "Transformările selecției, Alt care inversează lipirea",
       "en": "Transforming the selection, Alt inverting snapping"
+    },
+    "c0fb9430db0be31a": {
+      "ro": "Piesele plate din dialogul exportului",
+      "en": "Flat parts from the export dialog"
     },
     "c13aacc11d5d7cec": {
       "ro": "Trasare din imagine (importul avansează)",
@@ -2145,9 +2205,21 @@
       "ro": "**Simularea, nucleul CPU, felia 1 din 2, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0047): oracolul portat din s4 de un agent fără acces la nucleu, în CI înaintea lui (18 piese pe hârtie, cele 7 otrăvuri ca martori); nucleul în `src/sim/` (câmpul pe dale de 16 × 16 în atlas, dalele uniforme ca un număr, calculul exact pe celulă cu freza plată / bila / V, trigonometria proprie doar cu + − × ÷ √), bazinul `src/jobs/` (rândurile de dale r mod N, workerele jobului); amprenta Node = Edge, pe 1 și 4 fire, poartă în e2e prin workerul construit; harta adâncimilor, materialul scos și cea mai adâncă tăietură în dialogul exportului, după descărcare. Măsurat: dale de 16 față de 32 (612 / 626 ms, 37,6 / 60,7 MB pe jobul 2D al sondei). Recenzia (doi verificatori): nucleul fără material lăsat pe 32 900 de programe aleatoare și 779 din CAM; remediate „prin foaie” în Float32, arcul ambiguu, amprenta pe 64 de biți, descărcarea care aștepta simularea, workerul tăcut, jurnalul, poarta pe pixeli. Otrăvurile: 61 / 61 pe codul final (prima rundă: 47 / 49, scăpatele → probe noi). Felia 2: afișarea în WebGL2 și fereastra de 0,1 mm.",
       "en": "**Simulation, the CPU core, slice 1 of 2, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0047): the oracle ported from s4 by an agent without access to the core, in CI before it (18 pieces on paper, the 7 poisons as controls); the core in `src/sim/` (the field in 16 × 16 tiles in an atlas, uniform tiles as a single number, exact per-cell computation with the flat / ball / V bit, its own trigonometry using only + − × ÷ √), the `src/jobs/` pool (tile rows r mod N, the job workers); the Node = Edge fingerprint, on 1 and 4 threads, a gate in e2e through the built worker; the depth map, the material removed and the deepest cut in the export dialog, after the download. Measured: 16 versus 32 tiles (612 / 626 ms, 37.6 / 60.7 MB on the probe's 2D job). The review (two verifiers): the core leaves no material on 32,900 random programs and 779 from CAM; fixed “through the sheet” in Float32, the ambiguous arc, the 64-bit fingerprint, the download that waited for the simulation, the silent worker, the log, the pixel gate. Poisons: 61 / 61 on the final code (first round: 47 / 49, the escaped ones → new checks). Slice 2: the WebGL2 display and the 0.1 mm window."
     },
+    "d1f6b819210eb014": {
+      "ro": "Piesele plate pe imprimantă (ADR 0191, acceptat pe 07.11: toate variantele care pot sta împreună devin opțiuni): desenul feliat direct în cvs2, pentru piesele ridicate de pe pat la o grosime (o placă, un distanțier, un șablon, un cub): pereții, straturile pline de jos și de sus, umplerea rară, cu valorile din profilele K1C ale OrcaSlicer (11 materiale) și doar comenzile pe care OrcaSlicer le scrie deja pentru K1C; „Din desen…” în fereastra Imprimanta: piesele foii, selecția sau o singură piesă, o înălțime, „Simplu” și „Avansat”, straturile văzute de sus; salvarea și trimiterea prin 3.6h; proba pe imprimanta falsă, apoi o placă de probă pe K1C",
+      "en": "Flat parts on the printer (ADR 0191, accepted on 07.11: every variant that can coexist becomes an option): the drawing sliced directly in cvs2, for parts raised from the bed to a thickness (a plate, a spacer, a template, a cube): the walls, the solid bottom and top layers, the sparse infill, with the values from the OrcaSlicer K1C profiles (11 materials) and only the commands OrcaSlicer already writes for the K1C; “From drawing…” in the Printer window: the parts of the sheet, the selection or a single part, one height, “Simple” and “Advanced”, the layers seen from above; saving and sending through 3.6h; the proof on the fake printer, then a test plate on the K1C"
+    },
     "d2209e6152f6179f": {
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
+    },
+    "d22d70993c109ca1": {
+      "ro": "Imprimanta 3D (Creality K1C, prin WiFi; ADR 0190, acceptat; 3.6g, 3.6h și pasul 1 al lui 3.6i pe ramura `wip/3.6g-imprimanta`, pe canalul `imprimanta`): legată pe 07.11 (o K1C 2025, care și-a schimbat IP-ul de două ori: .12, .10, .7; fereastra o caută acum singură după nume); în router, **o adresă rezervată pentru ea**; apoi proba din [ghid](https://github.com/AndreiBesliu/cvs2/blob/wip/3.6g-imprimanta/docs/masina/imprimanta-k1c.md), §4 (trimiterea unui cub de calibrare feliat pentru K1C, pornirea, o pauză și o reluare, jurnalul copiat); de spus, dacă știi: de unde venea fișierul cu CC5000",
+      "en": "The 3D printer (Creality K1C, over WiFi; ADR 0190, accepted; 3.6g, 3.6h and step 1 of 3.6i on the `wip/3.6g-imprimanta` branch, on the `imprimanta` channel): connected on 07.11 (a K1C 2025 that changed its IP twice: .12, .10, .7; the window now finds it by name by itself); in the router, **a reserved address for it**; then the test from the [guide](https://github.com/AndreiBesliu/cvs2/blob/wip/3.6g-imprimanta/docs/masina/imprimanta-k1c.md), §4 (sending a calibration cube sliced for the K1C, starting it, a pause and a resume, the copied log); if you know: where the file with CC5000 came from"
+    },
+    "d2f90d7cd8eae964": {
+      "ro": "Imprimanta 3D prin WiFi",
+      "en": "3D printer over WiFi"
     },
     "d30ff102a8448021": {
       "ro": "Imaginea podului ESP3D",
@@ -2204,6 +2276,10 @@
     "d6afd5f4598f1f09": {
       "ro": "**Unealta Pen și tipurile nodurilor, aduse din etapa 6** (fără mașină; ADR 0063; cererea owner-ului: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”). Pen-ul (B) desenează o cale nod cu nod: clic = colț, tragere = curbă pe ambele părți, Shift + tragere = curbă pe o parte, clic pe ultimul nod = doar înapoi, clic pe primul nod închide, Enter sau dublu clic termină, Backspace scoate ultimul nod, Esc renunță. În unealta Noduri, nodurile cu curbă sunt rotunde, nodul ales își arată mânerele, iar trei butoane din bara de sus îi schimbă tipul (Colț, Curbă pe ambele părți, Curbă pe o parte; încă un clic: cealaltă parte); mânerul tras pe un nod neted îl rotește pe celălalt, Alt le desparte. Lângă un arc, nodul nu primește mâner (refuz cu motiv). Tipul se deduce din mânere: fără schemă nouă; pornirea neschimbată; manualul are capitolul „Unealta Pen”. **Treceri:** (1) modelul comun, Pen-ul, butoanele și mânerele, probele (7 unitare și 5 e2e noi, verzi din prima; patru mutații, în legătura cu interfața și în model, prinse); (2) sfaturile lungi se tăiau cu „…” în cipul de jos: scurtate (detaliile în manual și în titlul uneltei).",
       "en": "**The Pen tool and the node types, brought forward from stage 6** (no machine; ADR 0063; the owner's request: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”, i.e. nodes are either corners or make curves, on both sides or on one side only). The Pen (B) draws a path node by node: click = corner, drag = curve on both sides, Shift + drag = curve on one side, click on the last node = backward only, click on the first node closes, Enter or double-click finishes, Backspace removes the last node, Esc cancels. In the Nodes tool, curve nodes are round, the chosen node shows its handles, and three buttons in the top bar change its type (Corner, Curve on both sides, Curve on one side; click again: the other side); a handle dragged on a smooth node turns the other one, Alt splits them. Next to an arc, the node gets no handle (refused with a reason). The type is derived from the handles: no new schema; startup unchanged; the manual has the chapter „The Pen tool”. **Passes:** (1) the shared model, the Pen, the buttons and the handles, the tests (7 unit and 5 new e2e, green at first; four mutations, in the UI wiring and in the model, caught); (2) the long hints were cut with „…” in the bottom chip: shortened (the details are in the manual and in the tool's title)."
+    },
+    "d72c0f82e7a7d1fd": {
+      "ro": "Piesele plate, setările avansate mai departe",
+      "en": "Flat parts, the advanced settings further on"
     },
     "d78e2db8358494b0": {
       "ro": "Degajările aceleiași bucle",
@@ -2305,10 +2381,6 @@
       "ro": "Intrările cu rampă",
       "en": "Ramped lead-ins"
     },
-    "e0a776831728cfac": {
-      "ro": "când vin imprimantele",
-      "en": "when the printers come"
-    },
     "e0b5b9a288063b7e": {
       "ro": "Selecția cu dreptunghi, ca în CAD",
       "en": "Rectangle selection, as in CAD"
@@ -2320,6 +2392,10 @@
     "e19682d0fc552357": {
       "ro": "Coborârea în buzunar",
       "en": "The descent into a pocket"
+    },
+    "e1c3271a53cdc585": {
+      "ro": "Piesele plate pe imprimantă (ADR 0191, acceptat): dacă e la îndemână, un cub de calibrare feliat în Creality Print și salvat ca `.gcode` pe calculator (fișierul de referință al probei; cu el se face și trimiterea din 3.6i)",
+      "en": "Flat parts on the printer (ADR 0191, accepted): if at hand, a calibration cube sliced in Creality Print and saved as `.gcode` on the computer (the reference file of the proof; it also serves for the sending in 3.6i)"
     },
     "e1f70cb6ba59f161": {
       "ro": "Senderul",
@@ -2449,6 +2525,10 @@
       "ro": "Verificarea vectorilor",
       "en": "Vector check"
     },
+    "edbed6bc0918b236": {
+      "ro": "**Trimiterea unui `.gcode` la imprimantă** (fără mașină; ADR 0190 §C.7, §D; „Da, 3.6h”; în worktree-ul `imprimanta`, pe ramura `wip/3.6g-imprimanta`). Sub lista fișierelor, **Trimite un fișier…**: fereastra verifică întâi `.gcode`-ul pe calculator (antetul lui OrcaSlicer / Creality Print, PrusaSlicer sau Cura: imprimanta, duza, materialul, timpul, miniatura; temperaturile, din comenzi sau din `START_PRINT`; întinderea mișcărilor cu G90 / G91 / G92 / G28 și arcele, față de patul modelului, 220 × 220 × 250 la K1C), cu avertisment și **Trimite oricum** pentru o mișcare în afara patului sau alt model; apoi `POST /upload/<nume>` pe 80 (multipart doar cu `file`, `no-cors`, ca OrcaSlicer), cu numele fără spații și niciodată unul din listă („-2”, „-3”…: un fișier din imprimantă nu se înlocuiește), și îl caută în lista de pe 9999; **Pornește imprimarea…** deschide confirmarea cu bifa. CSP-ul are `http:` în `connect-src` (răspunsul 3a). **Găsit pe drum:** martorul refuzat al probei CSP (`http://example.com`) trece acum de CSP, iar `wss:` trecea deja (CSP3): martorul e o cerere `data:`. **Probe:** `imprimanta.gcode3d.test.ts` (9), `imprimanta.urcare.test.ts` (5), `imprimanta.spec.ts` +2 (cu imprimanta falsă care primește `POST /upload`), `csp.spec.ts`, manualul (8 controale noi). **Mărimea:** pornirea neschimbată, totalul 517,3 / 550 (+3,3, ~1,3 kB peste ținta liniei, acceptat de owner pe 07.11: „Da, accept”). **Otrăvurile** din `test/otravuri/3.6h.py`: 56, alese de autor, într-o clonă în afara Drive-ului, cu baza verde întâi; prima rulare (`09e0e26`): 55 prinse, 1 scăpată: G13 (G2 și G3 inversate), fiindcă arcele probei erau semicercuri și cercuri întregi, la care ocolul are aceeași mărime în ambele sensuri; proba are acum un sfert de cerc și o prinde (`tinte`, pe `28a0098`).",
+      "en": "**Sending a `.gcode` to the printer** (no machine; ADR 0190 §C.7, §D; “Da, 3.6h”; in the `imprimanta` worktree, on the `wip/3.6g-imprimanta` branch). Under the file list, **Send a file…**: the window first checks the `.gcode` on the computer (the OrcaSlicer / Creality Print, PrusaSlicer or Cura header: the printer, nozzle, material, time, thumbnail; the temperatures, from the commands or from `START_PRINT`; the extent of the moves with G90 / G91 / G92 / G28 and arcs, against the model’s bed, 220 × 220 × 250 on a K1C), with a warning and **Send anyway** for a move outside the bed or another model; then `POST /upload/<name>` on 80 (multipart with only `file`, `no-cors`, like OrcaSlicer), with the name without spaces and never one already in the list (“-2”, “-3”…: a file on the printer is never replaced), and looks for it in the list on 9999; **Start printing…** opens the confirmation with the check. The CSP has `http:` in `connect-src` (answer 3a). **Found on the way:** the CSP probe’s refused witness (`http://example.com`) now passes the CSP, and `wss:` already did (CSP3): the witness is a `data:` request. **Tests:** `imprimanta.gcode3d.test.ts` (9), `imprimanta.urcare.test.ts` (5), `imprimanta.spec.ts` +2 (with the fake printer accepting `POST /upload`), `csp.spec.ts`, the manual (8 new controls). **Size:** startup unchanged, total 517.3 / 550 (+3.3, ~1.3 kB over the line’s target, accepted by the owner on 07.11: “Da, accept”). **Poisons** from `test/otravuri/3.6h.py`: 56, chosen by the author, in a clone outside Drive, with a green baseline first; first run (`09e0e26`): 55 caught, 1 escaped: G13 (G2 and G3 swapped), because the test’s arcs were half and full circles, whose sweep has the same size both ways; the test now has a quarter circle and catches it (`tinte`, on `28a0098`)."
+    },
     "edc8f938cdeea3ab": {
       "ro": "Exportul 2D în PDF și EPS",
       "en": "2D export to PDF and EPS"
@@ -2469,9 +2549,17 @@
       "ro": "Senderul prin WiFi",
       "en": "The sender over WiFi"
     },
+    "ef88bc58ed94a6dc": {
+      "ro": "15.B↑b pe test (atașarea, descărcarea și jobul de la 04:00)",
+      "en": "15.B↑b on test (the attachment, the download and the 04:00 job)"
+    },
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
+    },
+    "f015589558c813f1": {
+      "ro": "Proba raportărilor complete pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 15.B↑b unită în `main` și publicată pe 07.11, serverul înaintea site-ului): o raportare cu **Atașează proiectul** (meniul contului → Raportează o problemă…), proiectul descărcat din `/admin` → Tichete, o raportare fără bifă; a doua zi după 04:00, jobul `pastrareTichete` în Diagnoză",
+      "en": "Testing the complete reports on the main test address (<https://cncvectorstudio-test.web.app/>; 15.B↑b merged into `main` and published on 07.11, the server before the site): a report with **Attach the project** (the account menu → Report a problem…), the project downloaded from `/admin` → Tickets, a report without the tick; the next day after 04:00, the `pastrareTichete` job in Diagnostics"
     },
     "f062430b2298842e": {
       "ro": "Gazda extensiilor",
@@ -2605,6 +2693,10 @@
       "ro": "Offsetul formelor în desen",
       "en": "Offsetting shapes in drawing"
     },
+    "feddb884549408b1": {
+      "ro": "Raportările clienților, partea a doua: proiectul atașat și păstrarea tichetelor",
+      "en": "Customer reports, part two: the attached project and ticket retention"
+    },
     "ff2897a9ec65e014": {
       "ro": "textura, grila ghilotină; tăietura și gravura pe laserul tău Ruida",
       "en": "the texture, the guillotine grid; the cut and the engraving on your Ruida laser"
@@ -2612,6 +2704,10 @@
     "ff314200edeb5317": {
       "ro": "Fonturile SVG cu o singură linie, aduse din etapa 7",
       "en": "Single-line SVG fonts, brought forward from stage 7"
+    },
+    "ff572d84b2dbed01": {
+      "ro": "Imprimanta 3D prin WiFi (ADR 0190, cererea owner-ului din 06.11, cu răspunsurile din 07.11): Creality K1C pe protocolul ei din fabrică (WebSocket-ul de pe 9999, cadre text JSON, `ok` la bătăile inimii); fereastra Imprimanta, cu conexiunile ei ținute și căutarea pe 9999; starea (duza, patul, progresul, timpul, fișierul, eroarea), Pauză / Reia / Oprește, fișierele din imprimantă, pornite cu confirmare; legătura căzută nu oprește imprimarea; proba pe o imprimantă falsă, cu protocolul ei pe hârtie",
+      "en": "3D printer over WiFi (ADR 0190, the owner’s request of 06.11, with the answers of 07.11): the Creality K1C on its factory protocol (the WebSocket on 9999, JSON text frames, `ok` to the heartbeats); the Printer window, with its own saved connections and the search on 9999; the status (nozzle, bed, progress, time, file, error), Pause / Resume / Stop, the files on the printer, started with confirmation; a dropped connection does not stop the print; tested on a fake printer, with its protocol on paper"
     }
   }
 }

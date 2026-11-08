@@ -18,7 +18,7 @@ async function deschide(page: Page): Promise<void> {
   await expect(manual(page)).toHaveAttribute('data-stare', 'gata');
 }
 
-test('Manualul din meniul contului îl deschide la primul capitol: cuprinsul cu 30 de capitole, linkurile duc între capitole, Esc închide', async ({ page }) => {
+test('Manualul din meniul contului îl deschide la primul capitol: cuprinsul cu 31 de capitole, linkurile duc între capitole, Esc închide', async ({ page }) => {
   const cereri: string[] = [];
   page.on('request', (r) => { cereri.push(new URL(r.url()).pathname); });
   await page.goto('/');
@@ -27,7 +27,7 @@ test('Manualul din meniul contului îl deschide la primul capitol: cuprinsul cu 
   await deschide(page);
   expect(cereri.filter((c) => c === '/manual/ro.json')).toHaveLength(1);
   await expect(page.locator('#manual-titlu')).toHaveText('Manualul CNC Vector Studio');
-  await expect(manual(page).locator('.manual-cuprins button')).toHaveCount(30);
+  await expect(manual(page).locator('.manual-cuprins button')).toHaveCount(31);
   await expect(capitol(page)).toHaveAttribute('data-capitol', 'pornire');
   await expect(capitol(page).locator('h3')).toHaveText('Primii pași');
   // Linkul „Proiectul și salvarea” duce la capitolul lui; cuprinsul îl arată ales.
@@ -81,7 +81,7 @@ test('căutarea: fără diacritice și fără litere mari; nimic găsit se spune
   const cauta = page.getByTestId('manual-cauta');
   await cauta.fill('ROTESTE');
   const gasite = manual(page).locator('.manual-cuprins button');
-  await expect(gasite).not.toHaveCount(30);
+  await expect(gasite).not.toHaveCount(31);
   const ids = await gasite.evaluateAll((b) => b.map((x) => x.getAttribute('data-capitol')));
   expect(ids).toContain('transformari');
   expect(ids).toContain('selectie');
@@ -123,6 +123,6 @@ test('în engleză: manualul englez, cu aceleași capitole și textele ferestrei
   await expect(manual(page)).toHaveAttribute('data-limba', 'en');
   await manual(page).locator('button[data-capitol="export"]').click();
   await expect(capitol(page).locator('h3')).toHaveText('Exporting G-code');
-  await expect(manual(page).locator('.manual-cuprins button')).toHaveCount(30);
+  await expect(manual(page).locator('.manual-cuprins button')).toHaveCount(31);
   await expect(page.getByTestId('manual-cauta')).toHaveAttribute('placeholder', 'Search the manual');
 });

@@ -1092,6 +1092,55 @@ hides the explanation until the next code; the error list and the log also show 
 - What cannot be done now is disabled, with the reason next to it (“Not now: the machine is in alarm…”): in alarm, while a
   job or a procedure runs. Stopped at a tool change, jog, probing and Zero Z work, Zero XY does not.
 
+## The printer
+%% capitol: imprimanta
+%% acopera: vedere.imprimanta
+
+The **Printer** tab in the app menu opens the 3D printer window, full screen, under the menu. For now it works with Creality
+printers of the K1 family (K1C and K1C 2025), over WiFi, on their factory protocol: no root and no setting on the printer. The
+printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` opens this chapter.
+
+- **Connecting.** Type the **Printer address** (you see it on the printer screen: Settings → Network, for example
+  192.168.1.50) and press **Connect**. The first time, the browser asks whether the page may reach devices on the local
+  network: choose **Allow**. It works in Chrome and Edge on a computer. A connected printer stays in the list, with its name
+  (for example “K1C-8578”): next time you pick it there, with **Connect**, and **Forget** removes it from the list. The window
+  does not connect by itself when you open it.
+- **Search the whole network** tries port 9999 on every address of the network, only when you press it, for about a minute;
+  **Stop the search** stops it. The first printer that answers gets connected.
+- **When it does not work,** the window says what happened (nothing answers, the permission was refused, something other
+  than a printer answers) and what to check: the printer is on, the computer is on the same network (not a guest network),
+  the address is the one on its screen.
+- **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
+  the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
+  **Temperatures** of the nozzle, the bed and the enclosure (read only: the app heats nothing) and the code the printer
+  reported (its screen shows the text).
+- **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
+  confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
+  connection; the printer is not touched.
+- **The files on the printer** (sent from Creality Print or OrcaSlicer): **Start** opens the confirmation, with the file, the
+  material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
+  the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it
+  closes the connection, and the window reconnects by itself. **Refresh** asks for the list again.
+- **Send a file…** (under the list) sends a `.gcode` from this computer to the printer, already sliced in Creality Print or
+  OrcaSlicer. First the window checks it on the computer: the printer it was sliced for, the nozzle, the material, the
+  temperatures, the estimated time and the thumbnail, then whether every move fits the printer’s bed (220 × 220 × 250 mm on a
+  K1C). A move outside the bed (with its line) or a file sliced for another printer gives a warning, and the button becomes
+  **Send anyway**; otherwise it is **Send**. **Another file…** picks a different one; **Cancel** (or `Escape`) closes the
+  window and stops a sending under way. The name loses its spaces, and a file already on the printer is never replaced: the
+  new one gets “-2” in its name. After sending, the window looks for it in the printer’s list (and, when the list has the
+  sizes, with the same size); once found, **Start
+  printing…** opens the confirmation above (with the **The bed is clear** check), and **Close** leaves it on the printer. If it
+  does not arrive, the window says why (the printer does not answer on port 80, the file is not in its list, or its size
+  differs), with
+  **Try again**.
+- **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
+  and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen. A
+  printer silent for more than 20 s counts as lost (a connection can die without closing), and one that no longer answers at
+  its address is looked for on the network by name (for example “K1C-8578”) and kept at its new address.
+- **The frame log** shows what the window sent and what it received; **Copy the log** puts it on the clipboard, for a report.
+- On its own, the window only reads the status and tells the printer it is there; every command comes from your click. Port
+  9999 has no password: anyone on the workshop network can command the printer, so keep it on a network of your own.
+
 ## The 3D view
 %% capitol: vedere-3d
 %% acopera: editare.3d
@@ -1159,12 +1208,16 @@ The menu works from the keyboard too: the arrow keys move between rows, Enter pi
 the reports need internet: without a network they do not open, but the app goes on with the last rights it received.
 
 - **Report a problem…:** you choose what you are sending (a problem, an idea or a question), write what happened and, if you
-  want, tick **Attach a picture of the sheet**. Below the text, **What else goes with the report** shows everything else that
-  goes: the app version, the language, the plan, the browser and the fingerprints of the errors in this session (only the
-  fingerprints, without the errors' content, so the team can find them in its log). **Send** sends it; an account sends at
-  most 10 reports a day.
+  want, tick **Attach a picture of the sheet**. With **Attach the project (so the team can open it)** the open project goes
+  too, exactly as you have it, compressed; its size shows under the tick box. At most 10 MB can be attached: a bigger project
+  does not go, and without the tick it does not go at all. Below the text, **What else goes with the report** shows
+  everything else that goes: the app version, the language, the plan, the browser, the fingerprints of the errors in this
+  session (only the fingerprints, without the errors' content, so the team can find them in its log) and, with the tick, the
+  project. **Send** sends it; an account sends at most 10 reports a day.
 - **My reports:** a new reply from the team puts a dot on the **Account** button and the number of reports with a new reply on
-  the **My reports** row. When you open the list, the new replies are marked, and the sign goes out.
+  the **My reports** row. When you open the list, the new replies are marked, and the sign goes out. A report with the
+  project attached shows its size. Resolved reports are deleted automatically, with their picture and project, after the
+  retention period (by default one year after they were resolved; see the privacy notice in the account panel).
 
 - **Signing in:** **Sign in with Google**, or the email address and the password, with **Sign in**. **Create account** makes a
   new account with a password and sends a confirmation email; after you open the link in it, press **I have confirmed**.

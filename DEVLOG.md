@@ -6065,6 +6065,53 @@ test nu s-a atins; ramura nu e împinsă.
 - **CI:** complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
 - **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
 
+## 2026-11-06 — Felia 3.6g pornită: imprimanta 3D prin WiFi (ADR 0190, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”
+(owner-ul, în sesiunea principală). Sarcina de la sesiunea principală: linia imprimantei 3D prin WiFi (Creality K1C, ADR 0119
+§14 și întrebarea 4), în worktree-ul ei, cu porțile verzi pe `main` ca bază; întâi întrebările despre ce a încercat owner-ul,
+apoi cercetarea, ADR-ul propus cu întrebările grupate (recomandarea întâi) și schița interfeței, înainte de cod.
+**Started:** 06.11, 20:17. **Completed:** 06.11, 21:35 (cercetarea, ADR-ul și schița; codul lui 3.6g așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\imprimanta` (ramura `wip/3.6g-imprimanta`, din `main` `010da85`),
+  cu joncțiunile `node_modules` și `functions\node_modules`; e2e-ul pe 4176 (`CNCVS2_E2E_RETEA=127.0.3`), canalul
+  `imprimanta`, ADR-urile 0190–0199.
+- **Porțile pe `main`, în worktree:** traducerile 629 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile);
+  importurile 19 / 0 (997 de module); licențele; unit 8 473 (8 465 trecute, 0 căderi, 8 sărite, 354 s); build-ul determinist
+  (268 de fișiere identice): pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 504,5 / 550, /admin 105,4 / 200; e2e 352 / 352
+  (Edge, 2,9 min); emulatoarele: funcțiile 81 / 81, e2e 20 / 21 (`utilizatori.emulator.spec.ts:175` a așteptat 60 s intrarea
+  cu Google din popup; reluat singur, spec-ul trece 3 / 3).
+- **De ce nu se leagă azi:** „Conectează (WiFi)” știe doar familia GRBL (porturile 8282 și 81, `[ESP800]` sau `?`), deci o K1C
+  nu se găsește și nu se leagă, oricare ar fi adresa. Ce a apăsat owner-ul și ce a văzut: întrebat (formularul schiței).
+- **Cercetarea:** două K1C: cea din 2024 (firmware 1.3.x, root din ecran, fără Moonraker din fabrică) și K1C 2025 (firmware
+  1.0 / 1.1, fără root, cu un API compatibil Moonraker pe 7125, „nexusp”). Drumul comun, din fabrică, e al lui Creality Print și
+  OrcaSlicer (sursa OrcaSlicer din 04.11.2026; integrarea Home Assistant `ha_creality_ws`, cu capturi K1C din 25.10.2026):
+  WebSocket-ul de pe 9999 (cadre text JSON; `{"ModeCode":"heart_beat"}` cere `ok`, altfel imprimanta închide; starea pe
+  bucăți: `state` 1 / 5 / 4 / 7 / 9, progresul, temperaturile, `err`; comenzile `pause`, `stop`, `opGcodeFile`; fără parolă) și
+  urcarea pe HTTP, pe 80 (`POST /upload/<nume>`, multipart). Găsirea: DNS-SD (`_Creality-<MAC>._udp.local.`), pe care browserul
+  nu-l vede, deci IP-ul sau căutarea pe 9999. Din browser: 9999 trece cu `ws:` (deja în CSP) și permisiunea rețelei locale;
+  urcarea cere `http:` în `connect-src`; Moonraker adevărat refuză WebSocket-ul altei origini fără `cors_domains` (citit în
+  `components/websockets.py`). Nemăsurat: dacă 9999 primește o pagină de pe altă origine și dacă 80 are antete CORS.
+  CC5000 nu e în nicio listă publică; familia apropiată (CX2585–CZ2587) vine din fișiere feliate pentru alt pat.
+- **ADR 0190, propus:** profilul `creality-k1` pe protocolul din fabrică, fără root; o imprimantă nu e un flux GRBL (fișierul
+  stă în ea), deci module noi, lângă sender (`src/imprimanta/`); fereastra Imprimanta, a treia filă, cu conexiunile ei ținute;
+  3.6g (conectarea, starea, pauza / oprirea, fișierele din imprimantă; fără schimbare de CSP), 3.6h (trimiterea unui `.gcode`,
+  cu verificarea antetului și a mișcărilor față de patul de 220 × 220 × 250; `http:` în CSP doar cu acordul owner-ului), 3.6i
+  (pe imprimanta owner-ului); siguranța (singură, aplicația doar citește și răspunde `ok`; pornirea cu „Patul e gol?”, pauza pe
+  loc, oprirea cu o confirmare, legătura căzută nu oprește imprimarea, temperaturile doar citite); Moonraker, camera și Marlin
+  mai târziu; fără schemă nouă; ținta de mărime ~8 kB; patru întrebări.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/Rf7msDet5o4ae8ch9AygSj> (privată, a owner-ului; cinci
+  planșe în culorile aplicației: prima dată, imprimă, fișierele și pornirea, oprirea și legătura căzută, trimiterea unui
+  `.gcode`). Răspunsurile stau în baza paginii, colecția `raspunsuri`: `q1`–`q4` (`optiune`, `nota`, `la`), `fapte`
+  (`incercat`, `firmware`, `varianta`, `root`, `ip`, `fisier`, `proba`) și `general`; se citesc cu `ArtifactData` `list`. La
+  publicare, colecția era goală.
+- **Fișa:** rândurile 3.6g, 3.6h și 3.6i în tabel, 3.6g în jurnal (în lucru), rândul imprimantei din coada owner-ului la zi.
+  Numele „3.6g-b” din sarcină nu e un id al roadmap-ului (`RE_ID` primește `3.6g`, `3.4b`, `3.8-0`), deci 3.6h și 3.6i, ca
+  seria 3.6d–3.6f; proba fișei etapei 3 (`documentatie.test.ts`) le cere. Traducerile roadmap-ului: 635 / 0 lipsă. Pragul,
+  neatins: imprimantele 3D nu sunt în ArtCAM / DeskProto.
+- **Rămâne:** răspunsurile owner-ului (ce a încercat, firmware-ul și varianta, IP-ul și cele patru întrebări); apoi codul lui
+  3.6g, cu imprimanta falsă (`test/e2e/imprimantaFalsa.ts`) și ghidul `docs/masina/imprimanta-k1c.md`.
+
 ## 2026-11-07 — 7.9↑b: spațierea literelor alese (Model: Claude Opus 5.5)
 
 **Prompt:** „la schita panoului text poti incepe cu recomandarile tale” (ADR 0138 §5, cu răspunsurile 4a și 5a: din panou, în mm).
@@ -6374,6 +6421,344 @@ sesiunea principală, care a pornit linia).
   (planificatorul pornit, 0 erori în jurnal), apoi „Instalată”.
 - **Rămâne:** unirea în `main`, la cuvântul owner-ului; o versiune nouă a lui Easy 3Draw cere de acum versiunea ridicată în
   `extensii/trenulet/extensie.json` și `node scripts/biblioteca.ts --scrie`.
+## 2026-11-07 — Felia 15.B↑b: proiectul atașat la raportare și păstrarea tichetelor (ADR 0116 §12, §16, §18) (Model: Claude Opus 5.5)
+
+**Prompt:** sarcina de la sesiunea principală (owner-ul întrebase ce se mai poate face în paralel): „Felia **15.B↑b** din cncvs2
+(restul raportărilor clienților, ADR 0116 §C și §F), într-un worktree al tău, pe o linie paralelă cu cele care lucrează deja”,
+cu deciziile luate (răspunsurile din 01.11 și nota din 02.11): proiectul atașat în Storage, cel mult 10 MB, doar cu bifa,
+citit de cine poate citi tichetul; jobul zilnic care șterge tichetele rezolvate după `zilePastrareTichete`, cu atașamentele
+și marcajul de rulare; fraza păstrării în nota de confidențialitate; probele pe emulatoare, regulile, e2e-ul dialogului cu
+bifa; worktree-ul `C:\Users\besli\cncvs2-lucru\raportari`, ramura `wip/15.B-raportari` din `main` (`80cc176`), e2e pe 4177 și
+`127.0.4`, canalul `raportari`; fără publicarea funcțiilor, a regulilor și a indecșilor din ramură; fără unire în `main`.
+**Started:** 07.11, 14:44. **Completed:** 07.11, 17:18 (codul în `d2b5974` și `b741241`).
+
+- **Proiectul atașat (§12):** bifa **Atașează proiectul** în raportare, cu mărimea sub ea și refuzul peste 10 MB; pleacă
+  JSON-ul canonic al documentului de la trimitere (aceiași octeți ca salvarea din browser), gzip prin `CompressionStream`,
+  base64, în cererea `raporteaza`. Serverul (`functions/src/tichete/proiect.ts`) cere base64 canonic, gzip, despachetare
+  plafonată la 10 MB, UTF-8 strict și `schema` întreagă; fișierul urcă în Storage (`tichete/{id}/proiect.json.gz`, prin
+  `functions/src/fisiere.ts`) după refuzurile ieftine și înaintea tranzacției tichetului, iar o tranzacție căzută îl scoate.
+  Acțiunea `proiect` îl dă înapoi doar cui poate citi tichetul; fila **Tichete** îl descarcă, despachetat și verificat pe
+  mărime și SHA-256. `storage.rules` refuză orice cerere din client (o regulă de citire „cine poate citi tichetul” ar fi cerut
+  rolul IAM al regulilor cross-service, pe care publicarea din workflow nu-l poate acorda, și CORS pe bucket).
+- **Păstrarea (§16):** `rezolvatLa` la rezolvare (scos la redeschidere); jobul `pastrareTichete` (04:00, cu marcaj) șterge
+  tichetele rezolvate mai vechi decât `zilePastrareTichete` (citit la rulare), cu poza, proiectul și auditul
+  `tichete.sterge`, apoi orfanii din Storage (fără tichet, mai vechi de o oră); 500 de tichete și 200 s pe rulare; eșecurile
+  pe element numărate și aruncate la final (marcajul: galben la unul, roșu la două la rând).
+- **Nota (§18):** fraza păstrării (implicit un an de la rezolvare, cât stabilește operatorul). Operatorul și adresa de
+  contact rămân marcate, la owner.
+- **Publicarea:** ținta nouă `stocare` în `TINTE_SERVER`; `firebase.json` (generat de `scripts/firebase-json.ts`) are regulile
+  Storage și emulatorul Storage pe 9195; `scripts/test-emulator.ts` îi dă un dosar temporar al rulării (emulatorul Storage
+  șterge `<temp>/firebase/storage/blobs` la oprire). Funcția `tichete`: 512 MiB, 120 s. Bucket-ul implicit al proiectului de
+  test există (`cncvectorstudio-test.firebasestorage.app`, citit cu `apps:sdkconfig`).
+- **Găsite pe drum:** expresia `RE_BASE64` cade în V8 („Maximum call stack size exceeded”) între 4 și 8 MB (poza, sub
+  546 kB, e în siguranță), deci proiectul se verifică decodat și recodat; regulile Storage nu primesc un `match` gol;
+  emulatorul Storage ignoră `ifGenerationMatch`, deci garda „nu acoperă” a plecat cu otrava ei; build-ul determinist a prins
+  o bucată nouă, `poza`, când bucata contului a importat `baza64` din contractul pozei: are acum copia ei, legată de original
+  printr-o probă de paritate.
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele,
+  traducerile (644, 0 lipsă), 8 529 de teste unitare (0 căderi, 8 sărite), build-ul determinist, emulatoarele (101 probe ale
+  funcțiilor și regulilor; e2e pe emulatoare 20 / 21: căderea e proba Diagnozei din `admin.emulator.spec.ts`, care cade la fel
+  pe baza curată `80cc176`, pe mașina asta: pornirea la rece a lui `logClientError` trece de 5 s; CI-ul de noapte e verde),
+  e2e 355 / 355 pe 4177 (4 căderi de încărcare în rularea paralelă, verzi la reluare).
+- **Mărimile**, față de un build curat al lui `80cc176`: pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 508,8 / 550,
+  neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 → 106,5 / 200.
+- **Otrăvurile** (`test/otravuri/15.B-b.py`, 41, dintr-o clonă în afara Drive-ului): 41 / 41 prinse la prima rulare (7 pe
+  hârtie; 31 pe emulatoarele Firestore și Storage: callable-ul, jobul, regulile; 3 de interfață, prin e2e-ul pe emulatoare).
+  Trei probe s-au întărit înainte, când lista a arătat că otrava ar fi scăpat: UTF-8 stricat într-un text JSON (fără el,
+  octetul invalid făcea JSON-ul greșit oricum), spionul scrierilor (scoaterea după tranzacție ascundea o încărcare degeaba),
+  cursorul pe tichetele sărite. Baza e2e, prima pe emulatoare proaspete, a trecut de 60 s (patru callable-uri reci): proba are
+  acum 120 s (`b741241`).
+- **Publicat:** canalul `raportari` al instanței de test, <https://cncvectorstudio-test--raportari-uffzv6xn.web.app> (până pe
+  07.12; build-ul `58a4748`), verificat în browserul aplicației: versiunea din antet, consola fără erori, jurnalul local gol.
+  Bifa și mărimea cer contul deschis; atașarea reală, descărcarea și jobul vin cu funcțiile din `main`, după unire.
+- **Unirea cu `main`** (cererea sesiunii principale: „adu `main` în ramura ta cu un merge (nu rebase) și rulează porțile pe
+  rezultat”): `main` la `1bf99c5` (12.1↑ cu documentul v20, 10.3↑–10.3↑b), merge-ul `c4e1e4c`. Conflicte doar de adăugare la
+  final (DEVLOG, `docs/otravuri.md`: întâi intrările din `main`, apoi ale ramurii); restul s-a unit singur. Porțile pe
+  rezultat: compilatoarele, importurile (1 026 de module, 0 încălcări), licențele, traducerile (649, 0 lipsă), 8 588 de teste
+  unitare (0 căderi, 8 sărite), build-ul determinist, e2e 359 / 359 pe 4177 la prima trecere, emulatoarele (pornite abia
+  după ce suita altei sesiuni a eliberat 4173 și 9095 / 8085 / 5005): 101 / 101 probe ale funcțiilor și regulilor, e2e pe
+  emulatoare 21 / 21 (și proba Diagnozei, care cădea pe mașina asta). Mărimile, față de un build curat al lui `1bf99c5`:
+  pornirea 101,5 (cu ușa 105,1 / 110 kB) și totalul 519,5 / 550, neschimbate; contul 28,8 → 29,6 / 32; /admin 105,4 →
+  106,5 / 200. Otrăvurile nu s-au reluat: unirea n-a atins modulele și probele feliei. Canalul `raportari`, republicat din
+  `319d4c2` (aceeași adresă, până pe 07.12): după „New version ready” → Reload, `319d4c21024e`, consola fără erori.
+- **Rămâne:** unirea în `main` (decizia owner-ului), apoi publicarea serverului pe test (funcțiile, regulile Firestore și
+  Storage, indecșii) și o raportare cu proiectul pe instanța de test; pe canal se vede doar bifa. Felia următoare a liniei ar
+  fi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, cu Storage-ul acum, registrul probei), după cuvântul
+  owner-ului.
+## 2026-11-07 — 3.6g: fereastra Imprimanta, Creality K1C prin WiFi (ADR 0190, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Răspund în formular”, apoi „am raspuns si salvat” (owner-ul, în sesiunea liniei). Răspunsurile din formularul
+schiței: 1a, 2a, 3a, 4a, cu nota la 1 („Vreau sa pot pune panourile mai multor masini unul langa altul, eventual si pe monitoare
+diferite. Dar asta poate veni mai tarziu.”); faptele: K1C, rootarea neștiută, IP-ul 192.168.1.12, verificarea de pe calculatorul
+lui permisă; ce a încercat și fișierul cu CC5000, necompletate.
+**Started:** 07.11, 10:48. **Completed:** 07.11, 12:51.
+
+- **Imprimanta reală** (doar citiri, cu acordul lui): la 10:48 și la 11:57, 192.168.1.12 n-a răspuns nici la ping, nici pe 80,
+  9999, 7125, 8000 sau 8080, iar în tabela ARP a calculatorului nu era niciun alt aparat din 192.168.1.x în afară de router:
+  imprimanta oprită sau o rețea WiFi despărțită de cablu. Originea paginii pe 9999 și CORS-ul de pe 80 rămân de măsurat (3.6i).
+- **Ce s-a construit:** fila **Imprimanta**, a treia a meniului global (`FERESTRE`, `vedere.imprimanta`, iconița ei), cu fereastra
+  la cerere (`src/app/PanouImprimanta.tsx`, `imprimanta.css`, textele în `mesaje/imprimanta.json`): conectarea (imprimantele
+  ținute, `cncvs2.imprimanta.retea` `v: 1`; adresa; căutarea pe 9999; motivul și pașii unui eșec), banda (starea, numele, adresa,
+  firmware-ul, Pauză / Reia / Oprește cu confirmare, Deconectează), lucrarea, temperaturile (doar citite), codul de la imprimantă,
+  fișierele (Pornește, cu bifa „Patul e gol”), jurnalul cadrelor. Protocolul pur în `src/machine/imprimanta/creality.ts`, sesiunea
+  în `sesiune.ts` (`ok` la fiecare bătaie a inimii, doar citiri singură, reîncercările la 1, 2, 4, 8, 15, 30 s, închiderea de după
+  pornire), lista și căutarea în `tinute.ts`. Capitolul „Imprimanta” din manual, în ambele limbi; ghidul owner-ului,
+  `docs/masina/imprimanta-k1c.md`, cu protocolul pe hârtie.
+- **Găsite pe drum:** Chrome refuză o legătură care cere un subprotocol neîntors de server, deci fără `wsslicer`; o reîncercare
+  renunța la legătură când browserul aplicației spunea permisiunea rețelei locale refuzată (și spre loopback), văzut în browser
+  cu imprimanta falsă oprită: acum doar prima legare citește permisiunea, cu proba ei; după Oprește, starea 7 se arată „Se
+  oprește”; bucata ferestrei trăgea `websocket.ts` și `conexiuni.ts` într-o bucată comună nouă de 4 kB, deci adresa locală,
+  permisiunea și planificatorul căutării s-au mutat în `src/machine/reteaLocala.ts` (reexportate din locurile vechi, senderul
+  neatins); căutarea ia și rețelele de loopback ale imprimantelor ținute (ca la mașini), altfel proba ar fi căutat în rețeaua reală.
+- **Mărimile:** pornirea 101,6 (+0,2; cu ușa 105,1 / 110 kB), totalul 512,6 / 550 (+8,1: bucata ferestrei 7,5 kB, cea comună 1,0),
+  /admin 105,4 / 200.
+- **Porțile:** traducerile 635 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0 (1 011 module); licențele; unit 8 505 (8 497 trecute, 0 căderi, 8 sărite), de două ori, ultima pe `1b27076`; build-ul determinist (273 de fișiere); e2e 357 / 357: în rularea completă, cu alte două sesiuni care rulau e2e și emulatoare pe aceeași mașină (5,7 min, față de 2,9 dimineață), 23 de probe fără legătură cu felia au depășit cei 5 s ai unei așteptări, apoi au trecut toate la reluare (`--last-failed`, 4 lucrători); proba e2e a manualului numără acum 28 de capitole. Emulatoarele, nerulate pentru felie (nicio funcție atinsă); baza lor, pe `main`, în worktree: 81 / 81 și 20 / 21 (căderea, popup-ul Google, reluată singură: 3 / 3).
+- **Otrăvurile:** 43 (`test/otravuri/3.6g.py`, alese de autor), într-o clonă în afara Drive-ului, cu baza verde întâi; prima rulare (`e74b52d`): 39 prinse și 4 scăpate. C07 (o cale lungă din afara directorului G-code: probele aveau doar căi mai scurte decât directorul), T01 (o listă de altă versiune: proba o avea goală) și T06 (ceasul dat înapoi) au primit probe și sunt prinse acum (`tinte`, pe `1b27076`); S08 (garda generației din `onmessage`) era cod mort, fiindcă un WebSocket vechi își pierde ascultătorii la oprire sau e deja închis: scoasă, cu perechile din `onopen` și `onclose`.
+- **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app> (expiră pe 07.12), cu ultimul commit al feliei; adresa principală de test, neatinsă. Verificat pe canal: versiunea, fila Imprimanta și fereastra ei, `mesaje/imprimanta.json`, CSP-ul neschimbat (`ws:` era deja acolo).
+- **Rămâne:** 3.6h (trimiterea unui `.gcode`, cu `http:` în `connect-src`, acceptat la întrebarea 3; ~2 kB rămași din țintă),
+  3.6i (proba pe imprimanta owner-ului, după ghid), camera (felia ei), panourile mașinilor alăturate (nota owner-ului).
+
+## 2026-11-07 — 3.6h: trimiterea unui .gcode la imprimantă (ADR 0190 §C.7, §D) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6h” (owner-ul, la întrebarea „Încep felia 3.6h (trimiterea unui .gcode la imprimantă)?”, după 3.6g și
+unirea lui `main` în ramură).
+**Started:** 07.11, 13:45. **Completed:** 07.11, 15:35.
+
+- **Ce s-a construit:** sub lista fișierelor din fereastra Imprimanta, **Trimite un fișier…** și dialogul „Trimite la
+  imprimantă” din schiță (secțiunea E). Verificarea pe calculator, pură (`src/machine/imprimanta/gcode3d.ts`): antetul lui
+  OrcaSlicer / Creality Print, PrusaSlicer sau Cura (imprimanta, duza, materialul, timpul, cea mai mare miniatură PNG),
+  temperaturile din primele comenzi de încălzire sau din `START_PRINT`, întinderea mișcărilor G0–G3 cu G90 / G91, G92, G28 și
+  arcele I / J (cu punctele lor extreme), față de patul modelului (K1C 220 × 220 × 250, K1 Max 300 × 300 × 300); fișierul, citit
+  pe bucăți de 1 MiB. O mișcare în afara patului (cu linia), alt model în antet sau nicio mișcare dau un avertisment și
+  **Trimite oricum**. Trimiterea (`urcare.ts`): `POST /upload/<nume>` pe 80, multipart doar cu `file`, `no-cors`, ca OrcaSlicer;
+  numele fără spații, doar `.gcode` și niciodată unul pe care lista îl are (un fișier din imprimantă nu se înlocuiește: „-2”,
+  „-3”…); apoi numele căutat în lista de pe 9999. După „Ajuns în imprimantă”, **Pornește imprimarea…** deschide confirmarea
+  de la 3.6g (cu bifa); un eșec spune motivul (cererea căzută, fișierul care nu apare în listă), cu **Încearcă din nou**. CSP-ul
+  are `http:` în `connect-src` (răspunsul 3a), `firebase.json` regenerat. Imprimanta falsă primește `POST /upload`, iar proba
+  mută cererea de pe 80 pe portul ei (`page.route`). Manualul (8 controale noi, în ambele limbi), ghidul owner-ului (trimiterea
+  și pasul ei din proba 3.6i), ADR 0190 (felia 3.6h).
+- **Găsite pe drum:** martorul refuzat al probei CSP era `http://example.com`, care acum trece de CSP (și, de pe
+  `http://localhost`, ar fi ieșit în internet): cererea e prinsă de `route`, iar martorul e o cerere `data:`. Un martor `wss://`
+  n-a mers: trece de CSP (după CSP3, `ws:` și `https:` acoperă și `wss:`), iar o rută Playwright nu prinde un WebSocket.
+  `targetAddressSpace: 'local'` pleacă doar spre rețeaua locală, nu spre loopback (unde proba își ține imprimanta falsă).
+  Mărimea: analizorul mutat dintr-o clasă într-o închidere a câștigat 0,08 kB, iar verificarea în listă, din abonare în priviri
+  la câteva sute de ms, ~0,1 kB; restul e ce cere ADR-ul.
+- **Mărimile:** pornirea 101,6 (neschimbată; cu ușa 105,1 / 110 kB), totalul 517,3 / 550 (+3,3: bucata ferestrei de la 7,5 la
+  10,8 kB; verificarea ~1,8, trimiterea ~0,6, dialogul ~1,0), /admin 105,4 / 200: ~1,3 kB peste ținta liniei, deci unirea în
+  `main` așteaptă acordul owner-ului.
+- **Otrăvurile:** 56 (`test/otravuri/3.6h.py`, alese de autor; 46 pe probele unitare, 10 de interfață prin e2e), într-o clonă în
+  afara Drive-ului, cu baza verde întâi; prima rulare (`09e0e26`): 55 prinse, 1 scăpată: G13 (G2 și G3 inversate), fiindcă
+  arcele probei erau semicercuri și cercuri întregi, la care ocolul are aceeași mărime în ambele sensuri; proba are acum un
+  sfert de cerc și o prinde (`tinte`, pe `28a0098`).
+- **Porțile**, pe ramura cu `main` (`8003cb2`: 12.1↑, 10.3↑–10.3↑b) unit în ea (`86aabd2`, la cererea sesiunii principale):
+  traducerile 651 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0 (1 037 module);
+  licențele; unit 8 626 (8 618 trecute, 0 căderi, 8 sărite); build-ul determinist (278 de fișiere; pornirea 101,7, cu ușa
+  105,3 / 110 kB; totalul 530,8 / 550; /admin 105,4 / 200); e2e 366 / 366, din prima (3,9 min). Înaintea unirii, pe felie:
+  probele atinse 99 / 99, `imprimanta.spec.ts` (7) și `csp.spec.ts` (6). Emulatoarele, nerulate (nicio funcție atinsă).
+- **Publicat pe canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al
+  feliei; adresa principală de test, neatinsă.
+- **După încheiere:** owner-ul a acceptat mărimea („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”);
+  unirea în `main` rămâne a sesiunii principale.
+- **Rămâne:** 3.6i, pe imprimanta lui
+  (originea paginii pe 9999 și pe `/upload`, CORS-ul, permisiunea rețelei locale pentru HTTP, marginile reale ale patului);
+  camera (felia ei); panourile mașinilor alăturate (nota owner-ului).
+
+## 2026-11-07 — 3.6i: proba pe imprimanta owner-ului, o K1C 2025 (ADR 0190) (Model: Claude Opus 5.5)
+
+**Prompt:** „E pornită acum” (owner-ul, la „Pornești imprimanta, ca să facem proba 3.6i?”), apoi jurnalul copiat din fereastra
+Imprimanta (15:04:23–15:05:00 UTC) și captura ei: legată la 192.168.1.10, „Ready”, „Waiting for the file list”, „Send a file…”
+oprit.
+**Started:** 07.11, 17:05. **Completed:** —
+
+- **Pasul 1, legarea (măsurat din jurnalul owner-ului):** fereastra s-a legat de pe canal la 192.168.1.10 (IP-ul s-a schimbat
+  de la .12), deci **9999 primește pagina de pe altă origine**, după permisiunea rețelei locale. Imprimanta e o **K1C 2025**:
+  firmware-ul stă în `DWIN sw ver` (V1.0.0.26.20251024S), `printer sw ver` e gol. **Fără bătăi ale inimii** în 37 s, doar
+  bucăți de stare la ~3 s; legătura ține fără `ok`. **Lista fișierelor vine ca text** (`retGcodeFileInfo.fileInfo`,
+  `director:nume:mărime:strat:dată:filament:miniatură;…`, cu nume cu spații), urmată de `historyList` și `elapseVideoList`:
+  fereastra aștepta `retGcodeFileInfo2` (OrcaSlicer, Home Assistant), deci „Waiting for the file list” și **Trimite un fișier…**
+  oprit. Calculatorul de pe cablu al sesiunii (192.168.1.4) nu vede imprimanta; dispozitivul owner-ului o vede.
+- **Reparat:** lista ca text (intrările din afara directorului G-code se sar; un nume cu `:` rămâne întreg), mărimea fiecărui
+  fișier (în listă; trimiterea cere și aceeași mărime, cu motivul nou `marime`), firmware-ul din `DWIN sw ver`. Transcrierea,
+  anonimizată (numele fișierelor owner-ului, istoricul), în `test/fixtures/imprimanta/k1c-2025.json`, rejucată pe hârtie;
+  imprimanta falsă are felul `k1c-2025`, cu proba ei e2e. Probele găsite pe drum: o intrare din `/etc` era mutată după nume în
+  directorul G-code (ca la lista veche): acum se sare. Otrăvurile: `test/otravuri/3.6i.py` (10).
+- **Pasul 2 (a doua și a treia transcriere, 17:36–17:43):** owner-ul a pornit un fișier din aplicația Creality (fereastra l-a
+  văzut: imprimanta trimite tuturor celor legați, iar lista a arătat întâi mărimea parțială a fișierului urcat), l-a oprit din
+  cvs2 (`{"stop":1}`, stările 0 → 4 → 0) și l-a pornit din nou de pe ecran: atunci **imprimanta și-a luat alt IP** (.10 → .7), iar
+  legătura veche a murit fără să se închidă; fereastra a rămas pe ultima stare, până la „Caută în toată rețeaua”. Reparat: paza
+  de tăcere (20 s), căutarea după nume după o reîncercare căzută (lista ținută se mută la noua adresă), evenimentele legăturii în
+  jurnal, bucățile `{"maxBedTemp":…}` ascunse de pe ecran (numărate). Imprimanta falsă tace la cerere (`taci`), cu proba e2e a
+  IP-ului schimbat; oprirea pe K1C 2025, rejucată pe hârtie din transcriere.
+- **Porțile, după pasul 2** (`b01f121`): unit 8 632 (8 624 trecute, 0 căderi, 8 sărite); build-ul determinist (278 de fișiere;
+  pornirea 101,7, cu ușa 105,3 / 110 kB; totalul 531,4 / 550); e2e 366 / 368 în rularea completă, cu cele 2 trecute la reluare
+  (`export.spec.ts:518`, sub încărcare; și proba nouă a IP-ului schimbat, care pica de fapt: imprimanta falsă de la noua
+  adresă își „termina” imprimarea, la 0,3 s pe procent, cât fereastra tăcea și căuta, deci era găsită „Gata”; acum înaintează
+  încet, 2 / 2 singură, 9 / 9 tot fișierul). Otrăvurile pasului 2: 9 / 9 prinse (19 / 19 în `test/otravuri/3.6i.py`).
+
+## 2026-11-07 — Felia 3.6j propusă: piesele plate pe imprimantă (ADR 0191, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „in primul rand, accept toate sugestiile tale. apoi, mi-ai cerut sa fac pasul 2. cum pot sa feliez cubul pentru
+k1c?, de trimis vad ca pot trimite fisiere acum, si se vad si cele pe care le-a mai executat imprimanta, dar, cum pot sa fac eu
+slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia creality?”; apoi, la propunerea pieselor plate:
+„Da, piesele plate. Dar cand vom termina o mare parte sau tot ce ne-am propus momentan, vom face un sistem de slice extins care
+sa poata pregati fisierele de executat, pentru o multitudine de masini (cnc, laser, printere [3d sau altele]). [...] asa ca ma
+gandesc ca sistemul de conectare al cvs2 sa fie si el un plugin modular, care descarca sau activeaza sisteme de conectare pe
+care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea liniei imprimantei).
+**Started:** 07.11, 18:57. **Completed:** 07.11, 19:28 (cercetarea, ADR-ul și schița; codul lui 3.6j așteaptă răspunsurile).
+
+- **Răspunsul la întrebare:** un model 3D (cubul de calibrare dintr-un STL) se feliază în Creality Print sau OrcaSlicer și se
+  trimite din cvs2 cu „Trimite un fișier…” (pasul 3 din 3.6i); piesele plate din desen se pot felia în cvs2: asta propune ADR
+  0191. Sugestiile acceptate (camera, imprimarea văzută în tot cvs2, istoricul, piesa pe pat, codurile de eroare, comenzile în
+  plus; ferestrele alăturate, cu sesiunea principală; apoi mai multe imprimante, Moonraker, ștergerea fișierelor) vin fiecare
+  cu ADR-ul și schița ei, după piesele plate.
+- **Direcția modulară (owner-ul):** după propunerile de acum, pregătirea fișierelor pentru multe feluri de mașini și conectarea
+  ca module, activate după ce folosește fiecare client: o linie a ei, cu sesiunea principală. Până atunci, codul nou al
+  mașinilor se scrie gata de mutat într-un modul (în directorul lui, încărcat la cerere, fără importuri din nucleu spre el).
+- **Cercetarea:** profilele Creality ale OrcaSlicer (K1C cu duza 0,4: imprimanta, procesul „0.20mm Standard”, PLA și PETG
+  „@Creality K1-all”, cu moștenirile) și codul care scrie G-code-ul pentru Klipper (antetul, `EXCLUDE_OBJECT_*`,
+  `;LAYER_CHANGE`, `SET_VELOCITY_LIMIT`), la `9005b64`; geometria din cvs2 care se refolosește (`offsetRegiune`,
+  `liniiParalele`, `booleanContururi`, `elementeFoaie`); debitul, pe hârtie (0,030727 mm de filament pe mm de linie, la
+  0,42 × 0,2, PLA; plafonul de 18 mm³/s taie umplerea rară la 221 mm/s); bugetul (JavaScript gzip; pornirea 101,7 / 110,
+  totalul 531,4 / 550 pe ramură). Nemăsurat: miniatura și „stratul x din N” pe ecranul K1C, pentru un fișier care nu vine din
+  Creality Print; locul liniei de curățare.
+- **ADR 0191, propus:** o piesă plată e o prismă (fără surplombe sau suporturi), deci geometria se calculează o dată pe fel de
+  strat; pe strat, ca OrcaSlicer: pereții interiori, cel exterior, umplerea; jos 3 straturi pline, sus 5, între ele grila de
+  15 %; doar comenzile pe care OrcaSlicer le scrie deja pentru K1C; fișierul trece prin verificarea și trimiterea de la 3.6h;
+  codul în `src/machine/imprimanta/feliere/`, încărcat la deschiderea dialogului (+8 … 12 kB estimați, pornirea neschimbată).
+  Proba: pe hârtie, aceeași verificare ca la trimitere, un fișier Creality Print al owner-ului ca referință (nicio comandă în
+  plus; straturile, filamentul la ±5 %, timpul la ±25 %), e2e pe imprimanta falsă, otrăvurile, o placă de probă de
+  40 × 20 × 3 mm pe K1C, măsurată cu șublerul.
+- **Întrebările (recomandarea întâi):** 1. ce se imprimă (piesele foii, așezate ca pe foaie); 2. înălțimea (una, implicit
+  grosimea foii); 3. setările (puține); 4. locul („Din desen…”, în fereastra Imprimanta); 5. bugetul (în cei 550 kB;
+  alternativa: bucata adusă la prima folosire, primul pas al modulelor). Plus, opțional, fișierul de referință.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/SoVkWwNayNyNLtWLyehaT6> (privată, a owner-ului; răspunsurile
+  stau în baza paginii, colecția `raspunsuri`): ce e o piesă plată (desenul și cele 15 straturi ale plăcii de probă), patru
+  planșe (unde se deschide; setările, cu straturile văzute de sus și un glisor care merge; ce nu se poate imprima; trimiterea și
+  pornirea), tabelul profilului K1C, siguranța și limitele. Privită o dată înainte de publicare (Edge fără fereastră, 1 100 px
+  în tema luminoasă și 390 px în cea întunecată: fără depășiri, fără erori); baza formularului răspunde (goală).
+
+## 2026-11-07 — 3.6j: piesele plate, toate opțiunile (ADR 0191, acceptat); ramura pregătită pentru `main` (Model: Claude Opus 5.5)
+
+**Prompt:** „ca de obicei, vreau cat mai multe optiuni, asa ca, vreau sa le faci pe toate cele care pot functiona ca optiuni
+diferite si pot fi disponibile in soft” (owner-ul, la cele cinci întrebări ale ADR 0191), apoi, în timpul lucrului: „as vrea
+totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica ceva de aici incolo se
+va face update si pe main ulterior”.
+**Started:** 07.11, 19:31. **Completed:** —
+
+- **ADR 0191, acceptat:** toate variantele care pot sta împreună devin opțiuni, pe felii: 3.6j (motorul, cu înălțimea fiecărei
+  piese ținută de la început; „Din desen…” cu piesele foii, selecția sau o piesă, o înălțime, „Simplu” și „Avansat”; salvarea
+  și trimiterea; bucata în precache), 3.6k (modelele de umplere, cusătura, ștergerea, călcarea, fusta), 3.6l (piesa „după CNC”,
+  înălțimea în proiect), 3.6m (intrarea din export și bucata adusă la prima folosire, cu modulele). 5a și 5b nu pot sta
+  împreună pentru aceeași bucată: 5b vine ca opțiune odată cu modulele. Materialele: cele 11 filamente generice K1 ale
+  OrcaSlicer (PLA, PLA High Speed, Matte, Silk, PLA-CF, PETG, ABS, ASA, PC, PA-CF, TPU), cu moștenirile rezolvate.
+- **Pentru `main` (cererea owner-ului):** `main` (`63d6af5`, biblioteca extensiilor) unit în ramură (`5f729e8`; conflictele,
+  doar în documente, cu ambele părți păstrate); porțile pe rezultat, apoi unirea în `main` o face sesiunea principală, cu
+  cuvintele owner-ului, trimise ei.
+
+## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea liniei, la „Unim `wip/3.Xg-biblioteca` în `main`?”).
+**Started:** 07.11, 19:05. **Completed:** 07.11, 22:05.
+
+- **Ce intră:** `wip/3.Xg-biblioteca` până la `93192bb`: ADR 0230 (acceptat, „Da, 1a–7a”) și felia 3.Xg (biblioteca
+  extensiilor; otrăvurile 37 / 37). Unirea `58e73c0` (primul părinte `1bf99c5` = `main`, al doilea `93192bb`), făcută din
+  worktree (`git commit-tree` pe arborele ramurii, apoi avans rapid pe ramură și pe `main`), fără checkout-ul principal;
+  `CLAUDE.md` după unire (starea, decizia): `63d6af5`.
+- **Conflictele:** niciunul: `main` era deja în ramură (`1daf840`), deci arborele unirii e chiar al lui `93192bb` (`3fba5e1`).
+- **CI pe `63d6af5`:** rapid verde (`42395265997`). Complet (`42395280530`): la prima încercare, e2e 365 / 366, cu
+  `extensii.lucru.spec.ts:277` căzută (a doua formă propusă de extensie, după ce fila ei e arătată din nou: în captura CI-ului,
+  extensia n-a primit niciun răspuns, iar „Importă” n-a apărut în 30 s); la a doua încercare, verde întreg (e2e-ul și
+  emulatoarele).
+- **Căderea, cercetată:** local, pe `63d6af5`, aceeași probă a picat de 2 ori din 9 cât mașina era încărcată de alte sesiuni
+  (CPU 82 %; o dată la „Importă”, o dată la instalare); alternat cu `main` dinaintea unirii (`8003cb2`), la încărcare egală
+  (1, 4 și 8 lucrători): 0 căderi din 76 pe fiecare, cu aceeași durată pe probă (~6 s). Felia nu atinge drumul propunerii
+  (`App.tsx`, `cadru.ts`, `forme.ts`). Rămâne o cădere legată de încărcare, de întărit separat.
+- **Publicat pe test:** `63d6af5` (rularea `42407804922`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune`
+  `63d6af5b411e`; `verifica-test.ts`: „publicat întreg pe test, din arborele curat” (condiția publicării pe live). Verificat
+  acolo, în Edge fără fereastră: catalogul (HTTP 200, `no-cache`), pachetul (417 748 de octeți, amprenta egală cu catalogul,
+  `immutable`), rândul lui Easy 3Draw din meniu („Instalează”), fereastra „din biblioteca cvs2”, instalarea, „Deschide”
+  (extensia pornită), apoi „Instalată”.
+- **Rămâne:** pe live, biblioteca și Easy 3Draw ajung cu următoarea publicare a aplicației (la cuvântul owner-ului); în
+  checkout-ul principal, `main`-ul local e în urmă cu `58e73c0`, `63d6af5` și intrarea asta (`git pull`, merge); proba
+  `extensii.lucru.spec.ts:277`, de întărit (clicul în cadru imediat după ce fila extensiei reapare).
+
+## 2026-11-07 — Unirea raportărilor (15.B↑b) și a imprimantei (3.6g–3.6i) în main, publicarea pe test (Model: Claude Opus
+5.5)
+
+**Prompt:** „Da, transmite” (owner-ul, în sesiunea liniei 15.B↑b, la „Să-i transmit sesiunii principale să unească 15.B↑b
+în `main` și să publice serverul pe test?”), transmis aici de sesiunea liniei; aici, „verifica din nou”; apoi, din sesiunea
+imprimantei, „as vrea totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica
+ceva de aici incolo se va face update si pe main ulterior”; la publicarea refuzată din greșeală, „Qm dat din greseala”.
+**Started:** 07.11, 19:25. **Completed:** 07.11, 22:42.
+
+- **Verificarea de la „verifica din nou”:** între timp, sesiunea bibliotecii unise 3.Xg în `main` (`58e73c0`, la „Da,
+  unește” al owner-ului, în sesiunea ei). Cuvintele owner-ului pentru celelalte două uniri, găsite în transcrierile liniilor.
+- **Unirile:** 15.B↑b peste `63d6af5` (`b501571`; conflicte doar în `DEVLOG.md` și `docs/otravuri.md`, adăugări ale
+  ambelor părți, păstrate); imprimanta până la `cd2f234` (`6e61bee`; conflicte în `DEVLOG.md` și
+  `docs/traduceri/roadmap.en.json`, câte o intrare nouă pe fiecare parte); apoi DEVLOG-ul bibliotecii (`392bc4b`), adus cu
+  `e9cf6ee`. `firebase.json` unit e chiar ieșirea generatorului (CSP-ul imprimantei, Storage-ul raportărilor). Copia locală
+  `.tmp/emu.ts` pornește acum și Storage, cu dosarul temporar al rulării.
+- **Ordinea pe test:** CI-ul complet pe `63d6af5` căzuse întâi (`extensii.lucru.spec.ts:277`; sesiunea bibliotecii a
+  cercetat căderea: încărcarea; verde la a doua încercare). Push-ul unirilor a așteptat publicarea bibliotecii și DEVLOG-ul
+  ei, ca o publicare a unui commit mai vechi să nu vină după una mai nouă (ar fi întors serverul).
+- **Porțile:** pe `b501571`, traducerile, compilatoarele, importurile, licențele, build-ul determinist și 8 600 de teste
+  unitare (0 căzute); e2e-ul și emulatoarele, sub CPU 82–96 % (alte sesiuni), cu 2 + 7 căderi, toate trecute reluate singure;
+  `sugestii.emulator.spec.ts:97` (intrarea cu parola, blocată) a trecut 3 / 3 și fără 15.B↑b (`63d6af5`, în clona
+  otrăvurilor), și cu ea: încărcarea, nu felia. Pe `6e61bee` (cu imprimanta): 8 652 de teste unitare (0 căzute), build-ul
+  determinist, e2e 374 / 375 (căzuta, `traseu.oracol.spec.ts:626`, trecută singură), emulatoarele 101 / 101 și 21 / 21. Pe
+  `e9cf6ee`: traducerile, probele documentației (24 / 24), build-ul determinist (282 de fișiere identice).
+- **Mărimile:** pornirea 101,7 (cu ușa 105,3 / 110 kB), totalul 535,0 / 550, /admin 106,5 / 200, contul 29,6 / 32.
+- **CI:** pe `e9cf6ee`, rapid verde (`42409120570`: cele șase felii și oracolul exportului 2D) și complet verde
+  (`42409122839`).
+- **Publicat pe test:** rularea `42412022925`, întâi serverul (regulile Storage eliberate în `firebase.storage`, fără vreun
+  rol în plus pentru contul WIF; regulile Firestore; indecșii; cele 12 funcții, cu `pastrareTichete` creată), apoi
+  hosting-ul (282 de fișiere); amprenta `meta/deployment` = `e9cf6ee3309e` pe toate țintele (hosting, funcții, reguli,
+  indecși, stocare). <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `e9cf6ee3309e`; CSP-ul are `http:`
+  în `connect-src`; catalogul extensiilor și `/admin` răspund 200. Rândul owner-ului din fișă (proba raportărilor pe adresa
+  principală) apare în `/admin` cu următoarea publicare.
+
+## 2026-11-07 — Proba propunerii unei extensii, întărită: clicul pierdut după ce fereastra ei reapare (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, aici” (la „Întăresc aici proba instabilă `extensii.lucru.spec.ts:277`?”), apoi „Da, descarcă” (urma probei
+căzute, din CI).
+**Started:** 07.11, 22:10. **Completed:** 07.11, 22:55.
+
+- **Ce s-a întâmplat:** în CI-ul complet pe `63d6af5` (rularea `42395280530`, prima încercare), proba „formele: o extensie
+  propune un SVG…” a așteptat „Importă” 25 s. Urma ei (artefactul `probe-cazute`, 936 KB): al doilea clic pe „Propune o
+  formă” a fost dat la ~60 ms după ce fereastra extensiei a reapărut (fila, după Proiectare), în același punct ca primul, cu
+  verificările lui Playwright trecute în cadru; după el, nicio cerere a extensiei, nicio eroare în pagină, iar extensia avea
+  un singur răspuns. Clicul n-a ajuns la buton.
+- **Local (Windows), nereprodus:** 0 clicuri pierdute din 480 (fila ascunsă și arătată, apoi imediat un clic în cadru, cu și
+  fără procesorul paginii și al cadrului încetinit de 6 ori, 4 rulări în paralel). Drumul propunerii, notat la fiecare
+  graniță (clicul, mesajele portului, fereastra, `inert`, dialogurile), merge. Cade pe Linux, în CI, ca probele pe care le
+  pomenește `playwright.config.ts`.
+- **Întărirea** (`test/e2e/extensii.lucru.spec.ts`): `clicDupaReaparitie` face clicul adevărat și îl repetă doar dacă n-a
+  ajuns la buton (semnul îl pune clicul, o dată), deci propunerea nu pleacă de două ori; la capăt, extensia are exact două
+  răspunsuri („forme: deschis” de două ori), nu doar ultimul.
+- **Probat:** cu clicuri pierdute simulate în cadru (oprite pe document, înaintea butonului): 0, 1 și 2 trec, cu două
+  răspunsuri; toate pierdute, pică; proba veche, cu un clic pierdut, pică exact ca în CI („Importă” nu apare în 30 s). Mutația
+  „a doua propunere răspunde «deschis», dar nu deschide nimic” (în clonă): proba întărită pică. Proba de 8 ori (4 lucrători)
+  și tot fișierul de 2 ori: 8 / 8, 18 / 18; tipurile trec.
+- **Rămâne:** unirea în `main`, la cuvântul owner-ului.
+
+## 2026-11-07 — Unirea probei întărite în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, la „Unesc întărirea probei (`cd100d5`) în `main`?”).
+**Started:** 07.11, 22:58. **Completed:** 07.11, 23:42.
+
+- **Unirea:** `main` (`b818601`: raportările 15.B↑b și imprimanta 3.6g–3.6i) adus întâi în ramură (`1012c69`; conflict doar la
+  coada `DEVLOG.md`, ambele intrări), apoi `4698385` pe `main` (primul părinte `b818601`, al doilea `1012c69`), din worktree,
+  fără checkout-ul principal. Față de `main`, doar proba și DEVLOG-ul.
+- **Porțile, pe arborele unit:** tipurile (aplicația, pluginul), build-ul, e2e `extensii.lucru` și `biblioteca` de două ori:
+  32 / 32.
+- **CI pe `4698385`:** complet verde (`42413527793`): unitare 8 648 (0 căzute, 12 sărite), funcțiile 101 / 101, e2e 375 / 375
+  (proba întărită, 2,3 s), e2e pe emulatoare 21 / 21. Rapidul (`42413509065`) a fost anulat de împingerea următoare pe `main`
+  (`c73177f`, plafonul de 600 kB), care îl conține; rapidul pe `c73177f`, verde.
+- **Nepublicat pe test:** se schimbase doar proba; sesiunea principală publică un `main` care o conține.
+- **Corectură:** am spus că doar proba propunerii face clic în cadru imediat după ce fila reapare. Greșit: am căutat tiparul
+  doar după `cadru(page)`, iar celelalte locuri ajung în cadru prin alte nume. Completul pe `c73177f` a căzut la fel în
+  `extensii.spec.ts` (butonul „eroare”, după filă); sesiunea principală a mutat ajutorul în `test/e2e/ajutor-extensii.ts` și
+  l-a pus în toate cele patru locuri (`a88b00f`).
 
 ## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
 
@@ -6459,4 +6844,3 @@ sesiunea principală, care a pornit linia).
   butonului numește netezirea; poligonul cu 200 de laturi R30 dintr-un DXF: „Forme schimbate: 1; linii înlocuite: 200; curbe
   noi: 14; abaterea cea mai mare: 0,008 mm.” (cifrele din e2e); treptele unei trasări (pași de 0,5 mm) rămân la 0,01 („Nimic
   de netezit…”) și devin la 0,5 nouă curbe netede, la 0,49 mm; nicio eroare în consolă.
-
