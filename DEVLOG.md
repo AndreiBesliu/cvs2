@@ -6920,10 +6920,10 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
   prototip, măsurătorile, formularul care scrie `raspunsuri/owner`): cinci întrebări, întâi bugetul (575 kB, trasarea doar
   online, sau 550 cu tăieri), apoi calea, capetele, părțile pline, buclele.
 
-## 2026-11-08 — Felia 25.3↑: linia mediană (ADR 0222, acceptat) (Model: Claude Opus 5.5)
+## 2026-11-08 — Felia 25.3↑: linia mediană (ADR 0222, acceptat și implementat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0222).
-**Started:** 08.11, 09:00. **Completed:** —
+**Started:** 08.11, 09:00. **Completed:** 08.11, 10:50.
 
 - **Răspunsurile:** toate recomandările: bugetul (hotărât între timp de ADR 0143: 600 kB), scheletul pe pixeli cu centrul la
   marginile de 50 %, capetele în centrul capătului rotund, totul linii mediane, buclele pe linie. Alternativele care pot sta
@@ -6932,3 +6932,16 @@ ce owner-ul a întrebat ce se mai poate face în paralel).
 - **Înainte de cod:** `origin/main` (`0060a86`, cu plafonul de 600 kB) unit în ramură (`ed43b49`; ciocnirile doar la capetele
   documentelor comune): totalul 557,1 / 600, poarta mărimii verde; unirea de ieri (`e4eb7e4`) și propunerea (`6ad0106`),
   împinse odată cu ea.
+- **Corpusul** (`trasare_corpus.py`, `mediana.json`): 24 de trăsături cu centrul, capetele și joncțiunile pe hârtie (drepte la
+  trei grosimi și unghiuri, capete drepte, arc, T, plus, X la 60°, Y, L, inel, S, K, o trăsătură groasă, o semnătură cu două
+  bucle); martorul scikit-image (`skeletonize`, `euler_number`, cu scipy) dă aceleași capete, joncțiuni și goluri.
+- **Nucleul** (`src/trasare/mediana.ts`): Zhang–Suen cu îndreptarea lui Lü și Wang (fără ea, trăsătura la 45° dispare), cu
+  cozi; coturile treptelor; cioturile (1,5 · raza + 1); joncțiunile unite și puse în încrucișarea brațelor curățate;
+  centrul la mijlocul trecerilor pragului; capetele în centrul capătului rotund, recentrate; brațele din prelungire legate.
+  `campul` e comun cu `traseaza`.
+- **Ușa și fereastra:** „Rezultatul”, `CaiTrasate.deschisa`, buclele în operația căilor deschise, raportul grosimii și al
+  frezei foii (`sculaFoii`, din App), banda grosimii, punctele numărate, refuzul unui desen doar din puncte; manualul.
+- **Otrăvurile** (`test/otravuri/25.3.py`): 50 / 59, apoi, cu furcile, capetele drepte oblice și colțul ascuțit despărțite
+  (garda de distanță a joncțiunii și limita de sus a lățimii la capăt, scoase din cod), 57 / 57.
+- **Porțile:** tipurile (și funcțiile), importurile, licențele, corpusul `--verifica`, suita unitară, e2e (trasarea alb-negru,
+  culorile, liniile mediane, importul), determinismul. Totalul 561,7 / 600 kB (+4,6), pornirea 101,8 / 110.

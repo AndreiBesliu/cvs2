@@ -1,7 +1,8 @@
 # ADR 0222 — Linia mediană: scheletul trăsăturilor, cu centrul sub-pixel, tăiat pe linie
 
-**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–5a”, la întrebările de la final), în linia trasării
-(worktree-ul `trasare`, ramura `wip/25.1-trasare`); propus pe 07.11, la „Da, 25.3↑” (owner-ul, după 25.2↑). Felia 25.3↑,
+**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–5a”, la întrebările de la final), și implementat în
+aceeași zi (secțiunea „Implementarea”), în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în
+`main`); propus pe 07.11, la „Da, 25.3↑” (owner-ul, după 25.2↑). Felia 25.3↑,
 adusă din etapa 25, fără mașină. Bugetul (întrebarea 1) îl hotărâse între timp ADR 0143: plafonul total e 600 kB („Yes,
 600 kB”, 07.11), peste cei 575 recomandați aici; cu `main` unit, linia trasării e la 557,1 / 600.
 **Completează:** ADR 0220 (§12: „25.3↑ linia mediană: axa medială a trăsăturilor, fără cioturile scurte, ca linii deschise
@@ -92,6 +93,61 @@ cvs2 de azi, cele două margini se șterg de mână, una câte una.
     - proba pe zgomot (o poză de scris de mână, JPEG), ca la 25.1↑; e2e: o semnătură trasată, Importă cu liniile pe linie;
     - otrăvurile la capăt (`test/otravuri/25.3.py`).
 11. **Mărimea:** ~+3,5 kB (nucleul ~2,5–3 kB în workerul trasării, fereastra ~0,5 kB, textele ~0,3 kB).
+
+## Implementarea (08.11)
+
+**Ce s-a schimbat față de propunere** (fiecare, găsit pe corpus, pe furci sau de otrăvuri):
+
+1. **Subțierea** (§3): Zhang–Suen singur șterge toată o trăsătură la 45° (banda ei diagonală dispare într-o sub-trecere:
+   slăbiciunea cunoscută a algoritmului, măsurată pe corpus); cu îndreptarea lui Lü și Wang (un pixel iese doar cu cel puțin
+   trei vecini), rămâne. Treptele: doar coturile (doi vecini ortogonali în unghi drept, partea opusă goală) ies; un pixel
+   simplu oarecare ar fi ros o linie de doi pixeli de la capăt și ar fi mutat joncțiunile (măsurat). Ciotul de un pixel rămas
+   sub o linie după tăierea unui ciot iese și el, dacă e simplu (altfel, o joncțiune falsă). Subțierea lucrează cu cozi: se
+   reîncearcă doar pixelii cu vecinătatea schimbată (exact subțierea clasică, verificat pe pete întâmplătoare), deci munca
+   e pe aria cernelii.
+2. **Cioturile:** pragul e 1,5 · raza joncțiunii + 1 px (prototipul avea o rază + 1: furca unui capăt drept, lungă cât
+   √2 raze, rămânea).
+3. **Brațele lângă joncțiune:** normala unui punct de lângă joncțiune intră în celelalte brațe (lățimea măsurată acolo e
+   prea mare, iar centrul, mutat: pe un X la 60°, linia la 2,6 px). Punctele ies de la capătul dinspre joncțiune până la
+   primele trei la rând cu lățimea brațului (±20 %, cel puțin ±0,75 px), cel mult până la raza joncțiunii plus trei
+   grosimi; dreapta brațului se trage prin primele lui puncte rămase (1,5 grosimi).
+4. **Locul joncțiunii:** punctul celor mai mici pătrate al dreptelor brațelor, fără gardă de distanță (doar cu două
+   direcții destul de diferite). O gardă de o rază, propusă ca siguranță, respingea tocmai încrucișarea furcilor înguste,
+   care stă departe de pixelii joncțiunii (la 20°, ~5 raze): linia ieșea la 0,29 px în loc de 0,09, iar la 12°, la 1,87 în
+   loc de 0,07.
+5. **Capetele** (§4): mersul spre vârf pleacă din centrul dreptei capătului, nu din primul punct bun (scheletul cotit spre
+   colțul unui capăt drept îl strâmba cu 1 px), iar centrul capătului se recentrează de-a curmezișul (acolo trăsătura are
+   toată lățimea): pe 61 de capete drepte oblice, cel mai rău de la 0,71 la 0,14 px.
+6. **Brațele legate** (nou): două brațe ale unei joncțiuni care se continuă (sub 30° de cotitură; cele mai drepte întâi) sunt
+   o singură cale: un T dă două căi (bara și piciorul), un X două, un Y trei, un 8 o buclă, o acadea o cale; o joncțiune cu
+   doar două brațe (un colț ascuțit, după ciotul lui) e o trecere. Mai puține ridicări ale frezei, iar bara unui T rămâne o
+   singură dreaptă.
+7. **Punctele:** o trăsătură mai scurtă decât grosimea ei (un punct, un disc plin) n-are linie mediană; raportul le numără,
+   cu sfatul „alege Contururi”, iar un desen doar din puncte e refuzat cu același sfat.
+8. **Comune cu 25.1↑:** cerneala, pragul, curățarea și marginile sunt o singură funcție (`campul`, în `trasare.ts`), pentru
+   contururi și pentru liniile mediane. Ieșirea: `CaiTrasate.deschisa` (ultimul vârf al unei căi deschise e capătul ei),
+   transferată din worker; ușa pune toate căile pe linie (și buclele, în operația căilor deschise, §7); fereastra are
+   „Rezultatul”, raportul grosimii (și al frezei foii, când foaia are una singură: `sculaFoii`) și banda grosimii.
+
+**Măsurat** [08.11, Node 26 și Edge fără fereastră]:
+- corpusul (24 de trăsături, scrise de `trasare_corpus.py`, cu martorul scikit-image de acord pe capete, joncțiuni și goluri):
+  topologia exactă peste tot (căile, buclele, capetele libere, brațele fiecărei joncțiuni); linia la cel mult 0,34 px de
+  hârtie în ambele sensuri, în afara zonelor nodurilor (S-ul de 7 px; cele mai multe sub 0,2); capetele la cel mult 0,18 px
+  de centrul capătului; joncțiunile la cel mult 0,32 px (semnătura; celelalte sub 0,1); grosimea la cel mult 0,14 px; în
+  colțul unui L, axa medială taie colțul cu 0,6 px (sub jumătatea de grosime: așa e axa, nu o greșeală);
+- furcile (o dreaptă și o ramură, 20–45°, grosimile 3–8): dreapta rămâne o cale, linia la cel mult 0,17 px, joncțiunea la
+  cel mult 0,21 px; sub ~12°, trăsăturile se suprapun pe câteva grosimi, iar linia trece printre ele (până la 2,5 px);
+- zgomotul (±12 niveluri pe pixel): aceleași căi și capete, fără cioturi, linia sub 0,5 px; marginile dure: T-ul la 17°,
+  linia sub 0,6 px;
+- timpul: logoul tău (1288 × 325) 0,13 s (54 de căi, 2 bucle, 12 joncțiuni: literele pline dau scheletul lor); o imagine de
+  12 Mpx cu 400 de trăsături, 1,5 s (contururile, pe aceeași imagine, 1,7 s);
+- probele: 14 țintite, 25 ale corpusului, 2 ale calculului și ușii, 3 e2e;
+- otrăvurile (`test/otravuri/25.3.py`): prima rulare 50 / 59 (lotul s-a oprit cu una înainte de capăt: F08, rulată apoi, prinsă); cele nouă scăpate, după ce le desparte pe configurații întâmplătoare: două echivalente (S05, C04: la fel pe 400), două cu codul lor scos (garda de distanță a joncțiunii, mai rea pe furci: B05; limita de sus a lățimii la capăt, fără efect după recentrare: E04), cinci cu probe noi (furcile: L04, B02, P04; colțul ascuțit: L03; coada subțierii, pe codul nou: S04); două otrăvuri noi (E07, B08). A doua rulare: 57 / 57;
+- mărimea: totalul 561,7 / 600 kB (+4,6 față de 557,1; estimarea fusese ~3,5), pornirea 101,8 / 110, neschimbată.
+
+**Limitele, scrise:** furcile sub ~12° (trăsături suprapuse pe câteva grosimi) dau linia printre ele; o trăsătură mai scurtă
+decât grosimea ei e un punct, fără linie; liniile mediane pe culori, capetele în vârf (3b), părțile late rămase contururi și
+semnalarea lor (4b, 4c) și buclele ca vectori închiși (5b) vin în 25.3↑b, ca opțiuni.
 
 ## Ce am respins
 
