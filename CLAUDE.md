@@ -657,10 +657,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/incrustatieDreapta.ts` (cazurile pe hârtie în `incrustatieDreapta.cazuri.ts`). **O freză în plus a dopului
   drept sau a decupării, bifată, pornește de la primul T liber.** **Punțile pe buclele mici:** pe fiecare buclă, câte încap din
   cele cerute (`urechiCareIncap` din `src/cam/urechi.ts`, aceeași regulă ca a lucrării; `puntiPeBucle` din
-  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. Pe linie rămân, după unire („1 si 2 acum 3-6
-  dupa”): lemnul din jurul dopului ales și din panou, punțile dopului drept alese în fereastră, arborele („cu bandă”) și
-  legăturile rândurilor în fereastră, viteza benzii. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,0 / 600, /admin
-  106,5 / 200, contul 29,6 / 32.**
+  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. **Pornirea 101,8 (cu ușa 105,5 / 110 kB),
+  totalul 544,0 / 600.** **Felia 12.1↑c-2, unită tot pe 08.11** („Da, unește”; `079d225`): lemnul din jurul dopului în V se
+  alege și din panou (Tăierea, `inc-jur`), cu valorile benzii pe hârtie înaintea exportului; arborele spune „cu banda
+  îngustă”; în fereastra exportului, două incrustații în V ale aceleiași piese, cu valori diferite, nu mai stau pe un rând
+  (`incrustatieVRand`); banda merge de ~2,6 ori mai repede, ca orice V-carve cu fund plat, cu aceiași octeți
+  (`indexContururi` în `src/cam/axaMediala.ts`, `traversariArc` și `distantaLaArcCerc` în `src/geom/distanta.ts`; proba
+  `test/unit/axaMediala.index.test.ts`). Pe linie rămâne punctul 4, punțile dopului drept alese în fereastră: un câmp nou,
+  deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
+  29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -873,6 +878,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **felia 12.1↑c-2 unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia 12.1↑c-2 în
+  main?”): punctele 3, 5 și 6 din lista de după prima unire (lemnul din jurul dopului din panou, arborele și rândurile
+  legate, viteza benzii). Documentul rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe linie, cu
+  v24, după v23 a planșelor.
 - 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
   „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
   documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
