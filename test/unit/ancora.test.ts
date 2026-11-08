@@ -23,9 +23,15 @@ test('cele 9 puncte ale cutiei, în ordinea selectorului (rândul de sus întâi
   ]);
   // O ancoră liberă, și în afara cutiei: fracțiile o duc înapoi exact.
   for (const p of [{ x: 10, y: 10 }, { x: -15, y: 32.5 }, { x: 40, y: 0 }]) assert.deepEqual(punctDinFractii(C, fractiiDinPunct(C, p)), p);
-  // Pe o axă fără lățime (o linie orizontală), ancora stă pe linie.
+  // Pe o axă fără lățime (o linie orizontală), ancora stă pe linie, la mijlocul axei: când linia capătă înălțime (rotită din
+  // panou, nu în jurul ancorei), ancora e la mijlocul ei.
   const linie = { minX: 0, minY: 5, maxX: 40, maxY: 5 };
-  assert.deepEqual(punctDinFractii(linie, fractiiDinPunct(linie, { x: 10, y: 9 })), { x: 10, y: 5 });
+  const fl = fractiiDinPunct(linie, { x: 10, y: 9 });
+  assert.deepEqual(fl, { u: 0.25, v: 0.5 });
+  assert.deepEqual(punctDinFractii(linie, fl), { x: 10, y: 5 });
+  assert.deepEqual(punctDinFractii({ minX: 0, minY: -15, maxX: 40, maxY: 25 }, fl), { x: 10, y: 5 });
+  // La fel pe o linie verticală.
+  assert.deepEqual(fractiiDinPunct({ minX: 7, minY: 0, maxX: 7, maxY: 20 }, { x: 3, y: 5 }), { u: 0.5, v: 0.25 });
 });
 
 test('ancora urmează selecția: mutată sau scalată din alt mâner, aceleași fracții; după o rotire în jurul ei, rămâne pe loc', () => {

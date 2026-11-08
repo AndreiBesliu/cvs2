@@ -646,6 +646,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
   iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
   105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
+  worktree-ul `ancore` (ramura `wip/6.V-ancore`, neunită), cu recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
+  proporțional pe orice mâner, Ctrl = liber pe orice mâner, Alt = față de ancoră**, combinate (Shift câștigă peste Ctrl),
+  citite și la apăsarea tastei cu mausul pe loc; la desen, Shift pătrat / cerc / 15°, Ctrl face cercul elipsă, Alt din centru.
+  **Alt nu mai inversează lipirea la mânere și la desen** (acolo, butonul Lipire și Shift+L); o inversează încă la mutare,
+  ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul rămâne
+  v20) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
+  arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
+  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
+  poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
+  **Pornirea 101,7 / 110 kB, neschimbată; totalul 535,0 → 537,1 / 600.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, modManer, punctManer, ROTIRE_PX, susEticheta, tinteFoaie, transformareManer,
-  transformareManerLipita, type Taste,
+  cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, modManer, punctManer, ROTIRE_PX, susEticheta, tasteDin, tinteFoaie,
+  transformareManer, transformareManerLipita, type Taste,
 } from '../../src/app/editareCalcul.ts';
 import { pasRigla } from '../../src/canvas/gradatii.ts';
 import { lipeste, tinteDin } from '../../src/geom/lipire.ts';
@@ -23,6 +23,15 @@ function document(): Document {
   if (f) f.ghidaje = [{ id: 'g1', axa: 'x', poz: 123 }];
   return d;
 }
+
+test('tastele unui eveniment (ADR 0240): ⌘ pe Mac e Ctrl, ca la scurtături; Shift și Alt sunt ale lor', () => {
+  const ev = (o: Partial<{ shiftKey: boolean; ctrlKey: boolean; metaKey: boolean; altKey: boolean }>) =>
+    ({ shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, ...o });
+  assert.deepEqual(tasteDin(ev({})), { shift: false, ctrl: false, alt: false });
+  assert.deepEqual(tasteDin(ev({ metaKey: true })), { shift: false, ctrl: true, alt: false });
+  assert.deepEqual(tasteDin(ev({ ctrlKey: true })), { shift: false, ctrl: true, alt: false });
+  assert.deepEqual(tasteDin(ev({ shiftKey: true, altKey: true })), { shift: true, ctrl: false, alt: true });
+});
 
 test('țintele foii: foaia, ghidajele, cutiile celorlalte forme și capetele căilor deschise; fără cele alese', () => {
   const d = document();

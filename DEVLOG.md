@@ -6888,3 +6888,23 @@ proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift c�
 - **Răspunsurile:** ADR 0240 acceptat (starea și secțiunea „Răspunsurile owner-ului”), indexul ADR, fișa (rândul cozii
   owner-ului scos, rândul 6.V↑ cu răspunsul), decizia în CLAUDE.md. `origin/main` (`6c79ff9`) adus în ramură (`ff0693d`;
   DEVLOG-ul cu ambele intrări, în ordinea lor).
+- **6.V↑** (`e8c4f90`): tastele la mânere (`transformareManer`, `modManer`: Shift proporțional, Ctrl liber, Alt față de
+  ancoră, Shift câștigă peste Ctrl, citite și la apăsarea tastei cu mausul pe loc) și la desen (`formaDesenata`: Alt din
+  centru, linia din mijloc, Ctrl face cercul elipsă); eticheta cu modul, lângă cutie și lângă cursor; lipirea la mânere și la
+  desen pe butonul Lipire, comutat cu Shift+L și în timpul tragerii; cercul scalat pe o axă devine elipsa generatorului,
+  recunoscută de panou (o elipsă recunoscută se reface din generator). Probele vechi cu Shift = colțul liber și Alt = lipirea
+  la mânere, rescrise pe regula nouă. Totalul 535,0 → 535,6 / 600 kB.
+- **6.V↑b** (`ae84182`): ancora, din selectorul 3 × 3 (`cncvs2.ancora`) sau trasă de mână (lipită de cele 9 puncte ale
+  cutiei, apoi de ținte; dublu clic înapoi), ținută ca fracții ale cutiei; rotirea, Alt, oglindirea și înclinarea în jurul ei,
+  după care rămâne pe loc; o selecție nouă o întoarce. Totalul 535,6 → 536,6 / 600 kB.
+- **6.V↑c** (`4b82bdb`): arcele căilor scalate pe o axă devin curbe sub 0,001 mm (conversia comună cu înclinarea), colțurile
+  rotunjite în trei feluri (lista din bara Transformării, `cncvs2.colturi`; refuzul nou `colturi-nu-incap`), textul aldin
+  devine vectori; eticheta spune ce se întâmplă (`formeScalate`). E2e-ul a primit și pașii care lipseau liniei (Shift apăsat
+  în timpul desenului, Alt la mâner cu lipirea, selecția nouă, înclinarea față de ancoră); testul din aplicație, pașii
+  „Ancora” și „Colțurile rotunjite”. Totalul 536,6 → 537,1 / 600 kB; pornirea 101,7 / 110, neschimbată în toată linia.
+- **Suita unitară sub încărcare:** 10 căderi „Data cannot be cloned, out of memory” în probele cu documente de 100 000 de
+  noduri (alte sesiuni pe mașină), toate verzi rulate pe rând (1596 / 1596).
+- **Otrăvurile** (`test/otravuri/6.V.py`, 50, din worktree, pe rând): 48 prinse la prima rulare. V06 (⌘ luat drept Ctrl) și
+  V26 (fracția ancorei pe o linie fără lățime) au scăpat: probele noi din `editare.test.ts` și `ancora.test.ts` le prind
+  acum (`tinte`). Proba din `import.spec.ts` care aștepta refuzul „doar proporțional” la întinderea unei piese cu arce verifică
+  acum eticheta („arcele devin curbe”), în același loc pe ecran (sub bare, neacoperită de insula selecției).

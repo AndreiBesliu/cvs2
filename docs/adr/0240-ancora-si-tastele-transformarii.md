@@ -1,7 +1,8 @@
 # ADR 0240 — Ancora și tastele transformării: Shift, Ctrl și Alt la mânere și la desen
 
 **Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), cu răspunsul owner-ului la cele patru întrebări: „Ok la toate”,
-deci recomandările 1a–4a (secțiunea „Răspunsurile owner-ului”, la capăt). Lucrat în worktree-ul `ancore` (ramura
+deci recomandările 1a–4a (secțiunea „Răspunsurile owner-ului”, la capăt). Feliile 6.V↑–6.V↑c implementate pe 08.11, pe
+ramură (secțiunea „Implementarea”); 6.V↑d, după decizia owner-ului pe plafon. Lucrat în worktree-ul `ancore` (ramura
 `wip/6.V-ancore`, din `main` `b56f0e1`). Cererea owner-ului, exactă: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori. si
 o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta. de exemplu, daca
 vreau sa deformez un cerc si sa il fac elipsa coltul pastreaza proportia cercului, dar lateralele nu, eu vreau sa pot apasa
@@ -283,6 +284,35 @@ ar lua singură linia asta. Textele noi stau în dicționarele modulelor (date, 
 
 - După Ctrl+Z, o ancoră mutată de mână rămâne în aceleași fracții ale cutiei, nu în locul de dinaintea transformării anulate.
 - Un cerc dintr-o piesă rotită altfel decât cu 90° rămâne refuzat la o scalare neuniformă, până la opțiunea din 6.V↑d (§F.30).
+
+## Implementarea (08.11)
+
+În worktree-ul `ancore`, pe ramura `wip/6.V-ancore`, cu probele scrise înaintea codului:
+- **6.V↑** (`e8c4f90`): §B (fără 17), §C (fără 19–20), §D, §E.24, §F.26. Tastele se citesc din eveniment (`tasteDin`: ⌘ pe
+  Mac e Ctrl) și la apăsare, cu ultimul punct al cursorului, la mânere și la desen. Probele vechi cu Shift = colțul liber
+  (ADR 0052) și Alt = lipirea liberă la mânere și la desen (ADR 0055, ADR 0052) s-au rescris pe regula nouă.
+- **6.V↑b** (`ae84182`): §A.1–§A.6. Ancora e ținută ca fracții ale cutiei selecției; după o transformare în jurul ei se
+  recalculează pe cutia nouă din punctul de dinainte. Mânerele au întâietate față de țintă; cadrul de selecție și pânza nu
+  primesc apăsarea pe țintă.
+- **6.V↑c** (`4b82bdb`): §F.27–§F.29. Arcele se fac curbe cu aceeași funcție ca la înclinare (`arceInCubiceCale`, pe
+  predicatul `arcDesenat`, comun cu `areArce`); refuzurile `neuniform-arc` și `neuniform-colt` au ieșit, iar colțul care nu mai
+  încape are motivul lui, `colturi-nu-incap`. Lista colțurilor stă în bara Transformării, lângă selectorul ancorei
+  (`cncvs2.colturi`, implicit felul a). Eticheta spune ce se întâmplă formelor alese (`formeScalate`: cercul, arcele, colțurile,
+  textul care devine vectori, o dată pentru tot textul).
+
+**Pe lângă plan:** testul din aplicație are doi pași noi, „Ancora” și „Colțurile rotunjite” (33 de pași). Manualul spunea că
+orice scalare neuniformă face textul vectori; acum spune regula din ADR 0138 (textul drept fără aldin rămâne text).
+
+**Mărimile:** totalul 535,0 → 535,6 (6.V↑) → 536,6 (6.V↑b) → 537,1 / 600 kB (6.V↑c), adică 2,1 kB pe trei felii (estimat
+~3,5); pornirea 101,7 / 110, neschimbată.
+
+**Probele:** pe hârtie, tabelele din §B și §C, ancora (§Proba), arcele sub 0,001 mm (și într-un grup scalat de 50 de ori),
+colțurile în cele trei feluri, eticheta (`formeScalate`), textul aldin; e2e (Edge, `ancore.spec.ts`, 8): tastele pe cercul
+Ø 40 cu fiecare combinație, tasta apăsată cu mausul pe loc (la mânere și la desen), desenul, Shift+L, ancora (trasă, rotirea,
+oglindirea, selectorul, dublu clic, selecția nouă, Alt), colțurile (eticheta, refuzul, felul ținut și citit la pornire),
+arcele unui offset rotunjit, înclinarea față de ancoră. **Otrăvurile** (`test/otravuri/6.V.py`, 50): 48 prinse la prima
+rulare; cele două scăpate (⌘ pe Mac luat drept Ctrl, în `tasteDin`; fracția ancorei pe o linie fără lățime) au primit
+probele lor și sunt prinse acum, fiecare de proba ei.
 
 ## Sursele
 
