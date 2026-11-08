@@ -232,7 +232,46 @@ test('Păstrează, cu un „O” pus pe placă (felul Formă): stânga (înăunt
   }
 });
 
+test('Păstrează, cu cuțitul deschis: un contur netăiat al piesei, dincolo de capătul cuțitului, e de partea în care stă', () => {
+  // Piesa „p”: pătratul 100 × 100 și dreptunghiul de la (150, 60) la (200, 100), deasupra liniei y = 50; cuțitul de la (−10, 50)
+  // la (110, 50) taie doar pătratul, iar dreptunghiul e în stânga sensului lui, prelungit.
+  const baza = docDin(stoc);
+  const foaie = baza.foi[0];
+  assert.ok(foaie);
+  const radacina: Nod = {
+    tip: 'grup', id: 'p', matrice: { ...ID }, copii: [
+      { tip: 'element', id: 'p-a', forma: { tip: 'dreptunghi', latime: 100, inaltime: 100, razaColt: 0 }, matrice: { ...ID } },
+      { tip: 'element', id: 'p-b', forma: { tip: 'dreptunghi', latime: 50, inaltime: 40, razaColt: 0 }, matrice: { ...ID, e: 150, f: 60 } },
+    ],
+  };
+  const d: Document = { ...baza, piese: [{ id: 'p', radacina, operatii: [] }], foi: [{ ...foaie, instante: [{ id: 'p', piesa: 'p', x: 0, y: 0, rotire: 0 }] }] };
+  const total = (t: ReturnType<typeof taiat>): number => t.r.ids.reduce((s, id) => s + ariePar(t.dupa, id), 0);
+  const st = taiat(d, cerere(linieCale(-10, 50, 110, 50), ['p'], { pastreaza: 'stanga' }));
+  aproape(total(st), 5000 + 2000, 1e-6, 'stânga: jumătatea de sus și dreptunghiul');
+  const dr = taiat(d, cerere(linieCale(-10, 50, 110, 50), ['p'], { pastreaza: 'dreapta' }));
+  assert.equal(dr.r.ids.length, 1);
+  aproape(total(dr), 5000, 1e-6, 'dreapta: doar jumătatea de jos');
+});
+
 // ——— Prelungește capetele (§2) ———
+
+test('Prelungește: o cubică la capăt merge pe tangenta ei (de la al doilea mâner spre capăt), până la latura de sus în (85, 100)', () => {
+  const d = docDin(stoc, patrat('a'));
+  // De la (20, 50) la (60, 50), cu mânerele (30, 50) și (50, 30): tangenta de la capăt e (10, 20), deci y = 100 la x = 85.
+  const k: Cutit = {
+    fel: 'cale', cale: {
+      tip: 'cale', inchis: false, varfuri: [
+        { p: { x: -10, y: 50 }, s: L },
+        { p: { x: 20, y: 50 }, s: { tip: 'C', c1: { x: 30, y: 50 }, c2: { x: 50, y: 30 } } },
+        { p: { x: 60, y: 50 }, s: L },
+      ],
+    },
+  };
+  const { dupa, r } = taiat(d, cerere(k, ['a'], { prelungeste: 'forma' }));
+  assert.equal(r.ids.length, 2);
+  assert.ok(r.ids.some((id) => contururi(dupa, id).some((c) => areVarf(c, 85, 100, 1e-6))), 'tăietura ajunge în (85, 100)');
+  aproape(r.ids.reduce((s, id) => s + Math.abs(contururi(dupa, id).filter((c) => c.inchis).reduce((a, c) => a + arieCuSemn(c), 0)), 0), 10000, 1e-6, 'ariile');
+});
 
 test('Prelungește: cuțitul de la (−10, 50) la (80, 50), cu închidere: fără prelungire, `nu-trece`; până ies din formă, două de 5 000', () => {
   const d = docDin(stoc, patrat('a'));
