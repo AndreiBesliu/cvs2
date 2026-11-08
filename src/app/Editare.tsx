@@ -17,6 +17,7 @@ import {
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
 import { blocText } from '../model/blocText.ts';
+import { useInFereastra } from './inFereastra.ts';
 import { PanouText } from './PanouText.tsx';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
@@ -2342,26 +2343,6 @@ function IconaRetea(): ReactElement {
  * motivul pentru care nu se poate (valorile, sau verdictul acțiunii: nicio selecție, doar citire, plafonul, prea departe) și
  * Copiază. Esc îl închide.
  */
-/**
- * Ține un panou plutitor al extensiei în fereastră: așezat sub butonul lui, iar dacă iese pe dreapta (o fereastră îngustă, un
- * buton spre capătul extensiei), mutat spre stânga cât iese, fără să treacă de marginea stângă.
- */
-function useInFereastra(ref: RefObject<HTMLElement | null>): void {
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const aseaza = (): void => {
-      el.style.left = '';
-      const r = el.getBoundingClientRect();
-      const iese = r.right - (window.innerWidth - 8);
-      if (iese > 0) el.style.left = `${-Math.min(iese, Math.max(0, r.left - 8))}px`;
-    };
-    aseaza();
-    window.addEventListener('resize', aseaza);
-    return () => { window.removeEventListener('resize', aseaza); };
-  }, [ref]);
-}
-
 function PanouRetea({ form, onForm, foaie, curba, motivActiune, onCopiaza, onInchide }: {
   readonly form: FormularRetea;
   readonly onForm: (f: FormularRetea) => void;

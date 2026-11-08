@@ -545,9 +545,11 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 
 **Taie** (butonul cu foarfeca, după boolean și degrupare, în extensia barei) împarte formele alese, **Taie cu**:
 - **Linia verticală X =** sau **Linia orizontală Y =**, poziția în mm ai foii (pornește din mijlocul formelor alese);
+- **Linia printr-un punct, la un unghi**: punctul (X, Y, în mm ai foii) și unghiul (0° e orizontala, 90° verticala), tot
+  exactă;
 - **Ghidajul**: unul dintre ghidajele foii, tras din riglă;
 - **Ultima formă aleasă (Shift + clic)**: cuțitul e o formă a ta. Alege formele de tăiat, apoi, ultimul, cuțitul, cu
-  Shift + clic; cuțitul rămâne neschimbat.
+  Shift + clic; cuțitul rămâne neschimbat, iar cu **și șterge-o după tăiere** pleacă în același pas cu tăierea.
 
 Cât panoul e deschis, linia se vede pe pânză, punctată. **Taie** face din fiecare formă prin care trece linia două forme:
 ce e de o parte a liniei și ce e de cealaltă, fiecare aleasă după tăiere, la locul ei. O formă prin care linia nu trece
@@ -566,7 +568,19 @@ latură; un cuțit care doar atinge forma nu o taie.
 tăietură: cu o linie dreaptă, la linie și la ghidaj, sau pe drumul cuțitului, cu nodurile lui. O formă cu găuri se citește
 ca regiune: un inel tăiat în două dă două forme în „U”, închise. Fără bifă, bucățile rămân deschise: un cerc tăiat prin
 centru dă două semicercuri, fiecare un singur arc. Cu bifă, un cuțit care se oprește înăuntrul unei forme sau care se
-încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l sau taie fără bifă.
+încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l (sau alege „până ies din formă”, mai jos) ori taie
+fără bifă.
+
+**Prelungește capetele** (doar la un cuțit-formă deschis; liniile sunt deja întregi): **nu** (implicit); **până ies din
+formă**: un capăt oprit înăuntrul unei forme de tăiat merge mai departe pe tangenta lui (linia, arcul sau curba de la capăt)
+până iese din ea, și din formele în care intră așa, ca tăietura să treacă de tot; **linia întreagă**: capetele merg pe
+tangentă dincolo de toate formele de tăiat (la o linie dreaptă, linia fără capete).
+
+**Păstrează**: **ambele părți** (implicit), **stânga** sau **dreapta** tăieturii, față de sensul ei: la linia verticală,
+stânga e x mai mic; la cea orizontală, părțile se cheamă **deasupra** și **dedesubt**; la linia la unghi, stânga sensului dat
+de unghi; la un cuțit-formă deschis, a sensului în care a fost desenat; la unul închis, **înăuntru** sau **în afară**. Partea
+cealaltă a formelor tăiate pleacă în același pas; o formă pe care tăietura n-o atinge rămâne, chiar dacă e de partea
+cealaltă. Aplicația își amintește alegerile, aceleași și în bara [Cuțitului](#cutit).
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
@@ -614,6 +628,13 @@ toate formele foii), iar o formă aleasă care se taie e înlocuită de bucăți
 Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
 într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se
 spune în colțul pânzei.
+
+Butonul **Opțiunile tăierii** (glisoarele de lângă bifă) deschide **Prelungește capetele** și **Păstrează**, aceleași ca în
+[panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până iese din ea, iar partea din dreapta sau din
+stânga sensului în care tragi pleacă în același pas. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar
+**Șterge cuțitul** scoate formele-cuțit după tăiere. Când o opțiune nu e cea implicită, butonul are un punct roșu, iar sfatul
+din colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e
+estompată, cu o nuanță roșie, peste formele pe care cuțitul le împarte de tot.
 
 ## Conversia vectorilor
 %% capitol: conversie

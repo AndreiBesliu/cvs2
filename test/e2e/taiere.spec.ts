@@ -15,6 +15,11 @@ import { ecran, vedere } from './ajutor-panza.ts';
  *
  * Felia 10.3↑c: „Decupează la ultima formă aleasă” lasă din pătrat partea lui comună cu cercul (granița, aleasă ultima, rămâne);
  * după Anulează, cu formele alese din nou printr-un cadru, „se șterg” scoate pătratul, care trece granița.
+ *
+ * Felia 10.3↑h (ADR 0181 §2, §3): linia prin (20, 50) la 30° taie pătratul în două (cutiile, 100 × 96,19 și 100 × 61,55);
+ * „Păstrează stânga” la X = 30 lasă partea de 30 × 100, iar la Y părțile se cheamă deasupra și dedesubt; o linie scurtă aleasă
+ * ultima nu taie nimic fără prelungire, iar „până ies din formă” și „și șterge-o după tăiere” fac din pătrat două fețe și scot
+ * cuțitul.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -168,4 +173,68 @@ test('Decupează la ultima formă aleasă: din pătrat rămâne partea comună c
   await expect(page.getByTestId('taiere-stare')).toHaveText('Forme decupate: 0; șterse: 1; forme noi: 0, alese.');
   await expect(randuri(page)).toHaveCount(1);
   await expect(randuri(page)).toHaveAttribute('data-instanta', granita ?? '—');
+});
+
+// ——— Opțiunile tăierii din panou (felia 10.3↑h, ADR 0181 §2, §3) ———
+
+const SCURTA = PATRAT + lwpolilinie([[30, 50], [70, 50]], false, { strat: 'CUTIT' });
+
+test('Linia prin X, Y la unghi: pătratul tăiat prin (20, 50) la 30°, în două forme de 100 × 96,19 și 100 × 61,55 mm; linia se vede pe pânză', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="cu-unghi"]').check();
+  await page.locator('[data-taiere="unghi-x"]').fill('20');
+  await page.locator('[data-taiere="unghi-y"]').fill('50');
+  await page.locator('[data-taiere="unghi"]').fill('30');
+  await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-axa', 'u');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
+  await expect(randuri(page)).toHaveCount(2);
+  await page.keyboard.press('Escape');
+  // Cutia fiecărei forme: dedesubt, de la y = 0 la 50 + 80/√3; deasupra, de la 50 − 20/√3 la 100.
+  const cutie = page.locator('#root, body').getByText(/^100\.00 × (96\.19|61\.55) mm$/);
+  await randuri(page).nth(0).click();
+  await expect(cutie).toBeVisible();
+  const prima = (await cutie.textContent()) ?? '';
+  await randuri(page).nth(1).click();
+  await expect(cutie).not.toHaveText(prima);
+  const aDoua = (await cutie.textContent()) ?? '';
+  expect([prima, aDoua].sort()).toEqual(['100.00 × 61.55 mm', '100.00 × 96.19 mm']);
+});
+
+test('Păstrează stânga, la X = 30: rămâne doar partea de 30 × 100 mm; la Y, părțile se cheamă deasupra și dedesubt; prelungirea e stinsă la linii', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  const eticheta = (x: string) => panou(page).locator('label', { has: page.locator(`[data-taiere="parte-${x}"]`) });
+  await page.locator('[data-taiere="cu-y"]').check();
+  await expect(eticheta('stanga')).toHaveText('deasupra');
+  await expect(eticheta('dreapta')).toHaveText('dedesubt');
+  await page.locator('[data-taiere="cu-x"]').check();
+  await expect(eticheta('stanga')).toHaveText('stânga');
+  await expect(page.locator('[data-taiere="prelungeste-forma"]')).toBeDisabled();
+  await page.locator('[data-taiere="x"]').fill('30');
+  await page.locator('[data-taiere="parte-stanga"]').check();
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 1, alese.');
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(page.locator('#root, body').getByText('30.00 × 100.00 mm')).toBeVisible();
+});
+
+test('Ultima formă aleasă, o linie scurtă înăuntrul pătratului: fără prelungire, refuzul; până ies din formă, două fețe, iar cuțitul, cu bifa, pleacă', async ({ page }) => {
+  await importa(page, SCURTA);
+  await page.locator('[data-editare="degrupeaza"]').click();
+  await expect(randuri(page)).toHaveCount(2);
+  // Linia scurtă (al doilea contur al DXF-ului) e ultima aleasă: cuțitul.
+  const cutitul = await randuri(page).nth(1).getAttribute('data-instanta');
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="cu-forma"]').check();
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Tăietura nu trece prin nicio formă aleasă (o atingere nu taie).');
+  await expect(page.locator('[data-taiere="prelungeste-forma"]')).toBeEnabled();
+  await page.locator('[data-taiere="prelungeste-forma"]').check();
+  await page.locator('[data-taiere="sterge-cutitul"]').check();
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese. Cuțitul-formă a fost șters.');
+  await expect(randuri(page)).toHaveCount(2);
+  await expect(page.locator(`[data-instanta="${cutitul ?? '—'}"]`)).toHaveCount(0);
 });

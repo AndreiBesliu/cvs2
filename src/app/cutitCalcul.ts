@@ -7,6 +7,7 @@
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Document, VarfDoc } from '../model/document.ts';
 import type { FormaCale } from '../model/noduri.ts';
+import type { Prelungire } from '../model/taiere.ts';
 import type { FormaDesenata } from './desenCalcul.ts';
 
 /** Felurile cuțitului din bara lui: cele care trag un cuțit (10.3↑f), apoi Foarfeca și Retează (10.3↑g). */
@@ -231,4 +232,142 @@ export function subPolilinie(f: ConturAproximat, de: number, pana: number): P[] 
   }
   rez.push(punctLa(f, pana));
   return rez;
+}
+
+// ——— Opțiunile tăierii, cât tragi (ADR 0181 §2; felia 10.3↑h) ———
+
+/** O formă de tăiat ca regiune: contururile ei închise, ca polilinii, cu cutia lor (prelungirea și partea ștearsă, arătate). */
+export type RegiuneAproximativa = { readonly instanta: string; readonly contururi: readonly Polilinie[]; readonly cutie: Cutie };
+
+/** Punctul q e în regiune (par-impar, raza spre +x)? */
+export function inRegiuneAproximativa(q: P, r: RegiuneAproximativa): boolean {
+  if (q.x < r.cutie.minX || q.x > r.cutie.maxX || q.y < r.cutie.minY || q.y > r.cutie.maxY) return false;
+  let in_ = false;
+  for (const c of r.contururi) {
+    const p = c.puncte;
+    for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+      const a = p[i] as P, b = p[j] as P;
+      if ((a.y > q.y) !== (b.y > q.y) && q.x < ((b.x - a.x) * (q.y - a.y)) / (b.y - a.y) + a.x) in_ = !in_;
+    }
+  }
+  return in_;
+}
+
+/** Cât merge raza q + s·w (w unitară, s > 0) până la primul contur al regiunii, sau null. */
+function primaIesire(q: P, w: P, r: RegiuneAproximativa): number | null {
+  let best = Infinity;
+  for (const c of r.contururi) {
+    const p = c.puncte, n = p.length;
+    for (let i = 0; i < n; i++) {
+      const a = p[i] as P, b = p[(i + 1) % n] as P;
+      const ex = b.x - a.x, ey = b.y - a.y;
+      const den = w.x * ey - w.y * ex;
+      if (Math.abs(den) < 1e-15) continue;
+      const s = ((a.x - q.x) * ey - (a.y - q.y) * ex) / den;
+      const t = ((a.x - q.x) * w.y - (a.y - q.y) * w.x) / den;
+      if (s > 1e-9 && t >= 0 && t <= 1 && s < best) best = s;
+    }
+  }
+  return best < Infinity ? best : null;
+}
+
+/** Direcția (unitară) în care iese polilinia din capătul ei: 0, din început (înapoi); 1, din sfârșit. Null: un singur punct. */
+function directieCapat(p: readonly P[], capat: 0 | 1): P | null {
+  const n = p.length;
+  const c = (capat === 0 ? p[0] : p[n - 1]) as P;
+  for (let k = 1; k < n; k++) {
+    const q = (capat === 0 ? p[k] : p[n - 1 - k]) as P;
+    const l = Math.hypot(c.x - q.x, c.y - q.y);
+    if (l > 1e-9) return { x: (c.x - q.x) / l, y: (c.y - q.y) / l };
+  }
+  return null;
+}
+
+/**
+ * Prelungirile capetelor (ADR 0181 §2), aproximative, pentru urma de pe pânză: de la capăt spre afară, pe direcția ultimei
+ * laturi; `forma`, cât capătul stă în regiunea unei forme de tăiat (până la cea mai depărtată dintre primele ieșiri, apoi mai
+ * departe, dacă intră în alta); `intreaga`, dincolo de cutia dată (1 mm peste). Tăierea exactă, pe tangentă, e a workerului.
+ */
+export function prelungiriAproximative(puncte: readonly P[], mod: Prelungire, regiuni: readonly RegiuneAproximativa[], cutie: Cutie): Array<readonly [P, P]> {
+  if (mod === 'nu' || puncte.length < 2) return [];
+  const rez: Array<readonly [P, P]> = [];
+  for (const capat of [0, 1] as const) {
+    const P0 = (capat === 0 ? puncte[0] : puncte[puncte.length - 1]) as P;
+    const w = directieCapat(puncte, capat);
+    if (!w) continue;
+    let s = 0;
+    if (mod === 'intreaga') {
+      if (cutie.maxX >= cutie.minX) for (const x of [cutie.minX, cutie.maxX]) for (const y of [cutie.minY, cutie.maxY]) s = Math.max(s, (x - P0.x) * w.x + (y - P0.y) * w.y);
+      if (s > 0) s += 1;
+    } else {
+      for (let pas = 0; pas < 100; pas++) {
+        const q = { x: P0.x + w.x * s, y: P0.y + w.y * s };
+        let urm = 0;
+        for (const r of regiuni) {
+          if (!inRegiuneAproximativa(q, r)) continue;
+          const e = primaIesire(q, w, r);
+          if (e !== null && e > urm) urm = e;
+        }
+        if (!(urm > 0)) break;
+        s += urm + 1e-3;
+      }
+    }
+    if (s > 0) rez.push([P0, { x: P0.x + w.x * s, y: P0.y + w.y * s }]);
+  }
+  return rez;
+}
+
+/** Calea cu prelungirile ei (cele de la `prelungiriAproximative`): punctul de la capătul fiecăreia, pus la capătul lui. */
+export function cuPrelungiri(puncte: readonly P[], prelungiri: ReadonlyArray<readonly [P, P]>): P[] {
+  const rez = [...puncte];
+  const P0 = puncte[0], Pn = puncte[puncte.length - 1];
+  for (const [de, pana] of prelungiri) {
+    if (de === P0) rez.unshift(pana);
+    else if (de === Pn) rez.push(pana);
+  }
+  return rez;
+}
+
+/**
+ * Partea care pleacă cu „Păstrează” (ADR 0181 §2), ca poligoane de estompat (par-impar) peste regiunile atinse: la un cuțit
+ * deschis, de partea ștearsă a căii, cu capetele duse pe direcția lor la `departe` mm și închisă departe, de partea aceea; la
+ * unul închis, înăuntrul lui (`dreapta`: rămâne ce e în afară) sau tot ce e în afara lui (`stanga`).
+ */
+export function poligonSters(puncte: readonly P[], inchis: boolean, pastreaza: 'stanga' | 'dreapta', departe: number): P[][] | null {
+  if (puncte.length < 2) return null;
+  if (inchis) {
+    if (pastreaza === 'dreapta') return [[...puncte]];
+    const k = cutiePuncte(puncte);
+    const cx = (k.minX + k.maxX) / 2, cy = (k.minY + k.maxY) / 2;
+    return [[{ x: cx - departe, y: cy - departe }, { x: cx + departe, y: cy - departe }, { x: cx + departe, y: cy + departe }, { x: cx - departe, y: cy + departe }], [...puncte]];
+  }
+  const w0 = directieCapat(puncte, 0), w1 = directieCapat(puncte, 1);
+  if (!w0 || !w1) return null;
+  const P0 = puncte[0] as P, Pn = puncte[puncte.length - 1] as P;
+  const A = { x: P0.x + w0.x * departe, y: P0.y + w0.y * departe }, B = { x: Pn.x + w1.x * departe, y: Pn.y + w1.y * departe };
+  const l = Math.hypot(B.x - A.x, B.y - A.y);
+  if (!(l > 0)) return null;
+  const u = { x: (B.x - A.x) / l, y: (B.y - A.y) / l };
+  // Se păstrează stânga: pleacă dreapta sensului (normala din dreapta lui u); și invers.
+  const n = pastreaza === 'stanga' ? { x: u.y, y: -u.x } : { x: -u.y, y: u.x };
+  return [[A, ...puncte, B, { x: B.x + n.x * departe, y: B.y + n.y * departe }, { x: A.x + n.x * departe, y: A.y + n.y * departe }]];
+}
+
+/** Regiunile pe care cuțitul le împarte: cel puțin două treceri prin contururile lor (sau, la unul închis, stă tot în ea). */
+export function regiuniAtinse(puncte: readonly P[], inchis: boolean, regiuni: readonly RegiuneAproximativa[]): RegiuneAproximativa[] {
+  if (puncte.length < 2) return [];
+  const k = cutiePuncte(puncte);
+  const m = inchis ? puncte.length : puncte.length - 1;
+  return regiuni.filter((r) => {
+    if (k.minX > r.cutie.maxX || r.cutie.minX > k.maxX || k.minY > r.cutie.maxY || r.cutie.minY > k.maxY) return inchis && inRegiuneAproximativa(puncte[0] as P, r);
+    let n = 0;
+    for (let i = 0; i < m && n < 2; i++) {
+      const a = puncte[i] as P, b = puncte[(i + 1) % puncte.length] as P;
+      for (const c of r.contururi) {
+        const p = c.puncte;
+        for (let j = 0; j < p.length; j++) if (trecere(a, b, p[j] as P, p[(j + 1) % p.length] as P)) n++;
+      }
+    }
+    return n >= 2 || (inchis && n === 0 && inRegiuneAproximativa(puncte[0] as P, r));
+  });
 }

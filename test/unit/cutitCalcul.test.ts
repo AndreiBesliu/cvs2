@@ -7,8 +7,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cutiePuncte, esteModCutit, locuriAproximative, locuriComune, lungimeUrma,
-  selectieDupa, subPolilinie, tinteCutit,
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cuPrelungiri, cutiePuncte, esteModCutit, locuriAproximative, locuriComune,
+  lungimeUrma, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie, tinteCutit, type RegiuneAproximativa,
 } from '../../src/app/cutitCalcul.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
@@ -133,4 +133,71 @@ test('locurile comune cu partenerii (Retează cu ceva ales): fiecare contur, doa
   assert.deepEqual(l[3], [50], 'al doilea contur al lui „b”: doar cu „b”, nu și cu „c”');
   assert.deepEqual(bucataSub(forme, l, { x: 50, y: 20 }, 1), { i: 1, de: 50, pana: 80, tot: false });
   assert.deepEqual(bucataSub(forme, l, { x: 20, y: 0 }, 1), { i: 0, de: 0, pana: 100, tot: true });
+});
+
+// ——— Opțiunile tăierii, cât tragi (felia 10.3↑h) ———
+
+const regiune = (instanta: string, x0: number, y0: number, x1: number, y1: number): RegiuneAproximativa => {
+  const puncte = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+  return { instanta, contururi: [{ puncte, inchis: true, cutie: cutiePuncte(puncte) }], cutie: cutiePuncte(puncte) };
+};
+/** Punctul q e în poligoane (par-impar)? */
+function inPoligoane(q: { x: number; y: number }, ps: ReadonlyArray<ReadonlyArray<{ x: number; y: number }>>): boolean {
+  let in_ = false;
+  for (const p of ps) {
+    for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+      const a = p[i] as { x: number; y: number }, b = p[j] as { x: number; y: number };
+      if ((a.y > q.y) !== (b.y > q.y) && q.x < ((b.x - a.x) * (q.y - a.y)) / (b.y - a.y) + a.x) in_ = !in_;
+    }
+  }
+  return in_;
+}
+const aproapeP = (a: { x: number; y: number } | undefined, x: number, y: number, mesaj: string): void => {
+  assert.ok(a && Math.hypot(a.x - x, a.y - y) <= 1e-9, `${mesaj}: (${a?.x}, ${a?.y}), nu (${x}, ${y})`);
+};
+
+test('prelungirile arătate (ADR 0181 §2): până ies din pătrat, de la ambele capete (1e-3 peste); linia întreagă, dincolo de cutie; nu, nimic', () => {
+  const p = regiune('a', 0, 0, 100, 100);
+  const k = [{ x: 20, y: 50 }, { x: 80, y: 50 }];
+  const f = prelungiriAproximative(k, 'forma', [p], p.cutie);
+  assert.equal(f.length, 2);
+  aproapeP(f[0]?.[1], -1e-3, 50, 'începutul, înapoi');
+  aproapeP(f[1]?.[1], 100 + 1e-3, 50, 'sfârșitul');
+  assert.deepEqual(cuPrelungiri(k, f).map((q) => Math.round(q.x * 1e9) / 1e9), [-1e-3, 20, 80, 100.001]);
+  // Linia întreagă, cu cutia până la x = 300: sfârșitul la 300 + 1, începutul la 0 − 1.
+  const i = prelungiriAproximative(k, 'intreaga', [p], { minX: 0, minY: 0, maxX: 300, maxY: 100 });
+  aproapeP(i[0]?.[1], -1, 50, 'începutul, întreagă');
+  aproapeP(i[1]?.[1], 301, 50, 'sfârșitul, întreagă');
+  assert.deepEqual(prelungiriAproximative(k, 'nu', [p], p.cutie), []);
+  // Un capăt în afara formelor rămâne; două pătrate lipite: trece prin amândouă.
+  const afara = prelungiriAproximative([{ x: -10, y: 50 }, { x: 80, y: 50 }], 'forma', [p], p.cutie);
+  assert.equal(afara.length, 1);
+  aproapeP(afara[0]?.[1], 100 + 1e-3, 50, 'doar sfârșitul');
+  const doua = prelungiriAproximative(k, 'forma', [p, regiune('c', 100, 0, 200, 100)], { minX: 0, minY: 0, maxX: 200, maxY: 100 });
+  // A doua ieșire se măsoară din punctul de după prima (100,001): capătul ajunge la 200 + 1e-3.
+  aproapeP(doua[1]?.[1], 200 + 1e-3, 50, 'prin al doilea pătrat');
+});
+
+test('partea care pleacă (ADR 0181 §2): cuțitul spre dreapta, „Păstrează stânga” estompează dedesubtul; la cel închis, înăuntrul sau afara', () => {
+  const k = [{ x: 0, y: 0 }, { x: 10, y: 0 }];
+  const st = poligonSters(k, false, 'stanga', 1000);
+  assert.ok(st && inPoligoane({ x: 5, y: -1 }, st) && !inPoligoane({ x: 5, y: 1 }, st), 'stânga păstrată: pleacă dedesubtul');
+  const dr = poligonSters(k, false, 'dreapta', 1000);
+  assert.ok(dr && inPoligoane({ x: 5, y: 1 }, dr) && !inPoligoane({ x: 5, y: -1 }, dr), 'dreapta păstrată: pleacă deasupra');
+  // Și dincolo de capete (prelungirea dusă departe), tot dedesubt.
+  assert.ok(st && inPoligoane({ x: 500, y: -1 }, st) && inPoligoane({ x: -500, y: -1 }, st));
+  const patrat = [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }, { x: 0, y: 10 }];
+  const inauntru = poligonSters(patrat, true, 'dreapta', 1000);
+  assert.ok(inauntru && inPoligoane({ x: 5, y: 5 }, inauntru) && !inPoligoane({ x: 50, y: 50 }, inauntru), 'în afară păstrat: pleacă înăuntrul');
+  const afara = poligonSters(patrat, true, 'stanga', 1000);
+  assert.ok(afara && !inPoligoane({ x: 5, y: 5 }, afara) && inPoligoane({ x: 50, y: 50 }, afara), 'înăuntru păstrat: pleacă afara');
+});
+
+test('regiunile atinse: cuțitul care trece pătratul de tot, da; cel care se oprește în el, nu; cel închis, tot înăuntru, da', () => {
+  const p = regiune('a', 0, 0, 100, 100), q = regiune('b', 200, 0, 300, 100);
+  assert.deepEqual(regiuniAtinse([{ x: -10, y: 50 }, { x: 110, y: 50 }], false, [p, q]).map((r) => r.instanta), ['a']);
+  assert.deepEqual(regiuniAtinse([{ x: -10, y: 50 }, { x: 50, y: 50 }], false, [p, q]), []);
+  const inel = [{ x: 40, y: 40 }, { x: 60, y: 40 }, { x: 60, y: 60 }, { x: 40, y: 60 }];
+  assert.deepEqual(regiuniAtinse(inel, true, [p, q]).map((r) => r.instanta), ['a']);
+  assert.deepEqual(regiuniAtinse(inel, false, [p, q]), [], 'aceeași cale, deschisă: nu trece nimic');
 });

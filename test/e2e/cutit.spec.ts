@@ -265,3 +265,84 @@ test('Noduri, Desparte: dreptunghiul se deschide chiar în colțul ales (o cale 
   await expect(randuri(page).first()).toContainText('cale');
   await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '5');
 });
+
+// ——— Opțiunile tăierii în bara cuțitului (felia 10.3↑h, ADR 0181 §2) ———
+
+test('Păstrează stânga: cât tragi Linia, partea care pleacă e estompată; rămâne doar partea de deasupra, aceeași alegere și în panou', async ({ page }) => {
+  const la = await placa(page);
+  await cutit(page, 'linie');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.locator('[data-cutit="parte-stanga"]').check();
+  // Butonul opțiunilor arată că una nu e cea implicită, iar sfatul o spune.
+  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '1');
+  await expect(page.getByTestId('cutit-sfat')).toContainText('Opțiuni: păstrează stânga.');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  const a = la(-10, 20), b = la(110, 60);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 6 });
+  // Placa e împărțită de cuțit: partea din dreapta sensului (dedesubt) e estompată.
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-estompate', '1');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Forme tăiate: 1; forme noi: 1.');
+  await expect(randuri(page)).toHaveCount(1);
+  // Ce a rămas: de la latura tăiată, (0; 70/3), în sus: 100 × 76,67 mm.
+  await page.locator('[data-unealta="selectie"]').click();
+  await randuri(page).first().click();
+  await expect(page.locator('#root, body').getByText('100.00 × 76.67 mm')).toBeVisible();
+  // Aceeași alegere în panoul Taie.
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="parte-stanga"]')).toBeChecked();
+});
+
+test('Prelungește până ies din formă: Linia trasă doar înăuntrul plăcii o taie de la o latură la alta (cât tragi, capetele prelungite se văd)', async ({ page }) => {
+  const la = await placa(page);
+  await cutit(page, 'linie');
+  const a = la(20, 50), b = la(80, 50);
+  // Fără prelungire, cuțitul nu atinge nimic.
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 4 });
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-prelungiri', '0');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Tăietura nu trece prin nicio formă aleasă (o atingere nu taie).');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.locator('[data-cutit="prelungeste-forma"]').check();
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 4 });
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-prelungiri', '2');
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-locuri', '2');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
+  await expect(randuri(page)).toHaveCount(2);
+});
+
+test('Formă, cu „Șterge cuțitul”: un cerc pus pe placă o decupează și pleacă; Păstrează are „înăuntru” și „în afară”', async ({ page }) => {
+  await page.goto('/');
+  for (const [nume, entitati] of [['placa.dxf', PATRAT], ['cerc.dxf', cerc(50, 50, 20, { strat: 'CERC' })]] as const) {
+    await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf(nume, dxf({ antet: [['$INSUNITS', 70, 4]], entitati })));
+    await page.click('[data-buton="importa"]');
+    await expect(page.locator('.dialog')).toHaveCount(0);
+  }
+  await expect(randuri(page)).toHaveCount(2);
+  const cercul = await randuri(page).nth(1).getAttribute('data-instanta');
+  await page.locator('[data-editare="lipire"]').click();
+  const la = await ecran(page, await vedere(page));
+  await nimicAles(page, la);
+  await cutit(page, 'forma');
+  await page.locator('[data-cutit="optiuni"]').click();
+  const optiuni = page.getByTestId('optiuni-cutit');
+  await expect(optiuni.locator('label', { has: page.locator('[data-cutit="parte-stanga"]') })).toHaveText('înăuntru');
+  await expect(optiuni.locator('label', { has: page.locator('[data-cutit="parte-dreapta"]') })).toHaveText('în afară');
+  await page.locator('[data-cutit="sterge"]').check();
+  await page.locator('[data-cutit="optiuni"]').click();
+  const c = la(70, 50);
+  await page.mouse.click(c.x, c.y);
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Forme tăiate: 1; forme noi: 2. Cuțitul-formă a fost șters.');
+  // Din placă: discul și placa cu golul; cercul-cuțit a plecat.
+  await expect(randuri(page)).toHaveCount(2);
+  await expect(page.locator(`[data-instanta="${cercul ?? '—'}"]`)).toHaveCount(0);
+});

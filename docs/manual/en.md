@@ -563,9 +563,12 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 **Cut with**:
 - **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
   shapes);
+- **The line through a point, at an angle**: the point (X, Y, in sheet millimetres) and the angle (0° is horizontal, 90°
+  vertical), exact too;
 - **Guide**: one of the sheet guides, dragged from the ruler;
 - **The last chosen shape (Shift + click)**: the knife is one of your shapes. Choose the shapes to cut, then, last, the
-  knife, with Shift + click; the knife stays unchanged.
+  knife, with Shift + click; the knife stays unchanged, and with **and delete it after the cut** it goes in the same step as
+  the cut.
 
 While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
 what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
@@ -584,7 +587,18 @@ knife that only touches the shape does not cut it.
 cut: with a straight line, for the line and the guide, or along the knife, with its nodes. A shape with holes is read as a
 region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces stay open: a circle cut through its centre gives
 two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
-panel says why): extend it or cut without the tick.
+panel says why): extend it (or choose “until they leave the shape”, below) or cut without the tick.
+
+**Extend the ends** (only for an open shape knife; the lines are whole already): **no** (the default); **until they leave the
+shape**: an end stopped inside a shape to cut goes on along its tangent (the line, the arc or the curve at the end) until it
+leaves the shape, and the shapes it enters that way, so that the cut goes right through; **whole line**: the ends go on along
+the tangent past all the shapes to cut (for a straight line, the line without ends).
+
+**Keep**: **both parts** (the default), the **left** or the **right** of the cut, relative to its direction: for the
+vertical line, left is the smaller x; for the horizontal one, the parts are called **above** and **below**; for the line at
+an angle, the left of the direction the angle gives; for an open shape knife, of the direction it was drawn in; for a closed
+one, **inside** or **outside**. The other part of the cut shapes goes in the same step; a shape the cut does not touch
+stays, even on the other side. The app remembers the choices, the same in the [Knife](#cutit) bar.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -636,6 +650,13 @@ by its pieces. Pick the knife mode in the bar:
 While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
 (for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
 cut (or why not) is said in the corner of the canvas.
+
+The **Cutting options** button (the sliders next to the checkbox) opens **Extend the ends** and **Keep**, the same as in the
+[Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves the shape, and the part on the
+right or on the left of the direction you drag in goes in the same step. For the Shape kind, the parts are called **inside**
+and **outside**, and **Delete the knife** removes the knife shapes after the cut. When an option is not the default, the
+button has a red dot, and the hint in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends
+show dotted, and the part that goes is faded, with a red tint, over the shapes the knife splits right through.
 
 ## Converting vectors
 %% capitol: conversie

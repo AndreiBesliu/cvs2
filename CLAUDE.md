@@ -537,13 +537,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (instanțele, par-impar) în `src/model/taiere.ts`; **buclele libere** (un cuțit închis tot înăuntrul unei forme intră în ambele
   părți, cu latura întoarsă după adâncime pe o piesă fără rol) valorează și pentru cuțitul-formă din panou. Unealta:
   `src/app/UnealtaCutit.tsx` (adusă în bucata tăierii, bara prin portal, gestul prin intermediarul `gestCutit` din editare),
-  partea pură în `src/app/cutitCalcul.ts` (țintele 2a, urma, locurile aproximative), bifa comună în `inchidereTaiere.ts`.
+  partea pură în `src/app/cutitCalcul.ts` (țintele 2a, urma, locurile aproximative), bifa comună în `optiuniTaiere.ts`.
   Oracolul: `judecaCutitul` cu `tolCutit` (mâna liberă), corpusurile în `taiere.cutit.oracol.test.ts`.
   **Foarfeca, Retează și Desparte (felia 10.3↑g)** gata pe 08.11: cuțitele `foarfeca` și `reteaza` (instanța, punctul,
   toleranța) în `taiere.ts`; foarfeca deschide un contur închis (`taieLaLocuri` cu `deschide`) sau desparte unul deschis în
   forme; retezatul scoate bucata dintre locurile comune ale conturului lovit (`locuriPeContur`), iar restul **stă în piesă**.
   **Selecția rămâne** după orice tăiere a cuțitului (`selectieDupa`). Desparte, în unealta Noduri, folosește foarfeca. Oracolul:
   `judecaFoarfeca`, `judecaRetezarea` (`taiere.foarfeca.oracol.test.ts`).
+  **Opțiunile tăierii (felia 10.3↑h)** gata pe 08.11: linia `{ fel: 'unghi', x, y, unghi }` (linia de tăiere are normala și
+  direcția ei: `Linie = { n, u, v }`; verticala și orizontala, la bit ca înainte); în cerere `pastreaza` (stânga / dreapta
+  direcției; la cuțitul închis, înăuntru / în afară; la cel deschis, latura fețelor din sensul corzilor), `prelungeste` (pe
+  tangentă, până ies din regiunile țintelor sau dincolo de toate) și `stergeCutitul`. Opțiunile, o singură setare în browser
+  (`optiuniTaiere.ts`, cu `useSyncExternalStore`), cu grupurile comune în `GrupuriTaiere.tsx`; în bara Cuțitului, într-un panou
+  sub butonul „Opțiunile tăierii” (bara de sus n-are loc de ele pe rând); `useInFereastra` stă acum în `inFereastra.ts`.
+  Oracolul: `judecaLinia`, `judecaPastrareaConvex` (`taiere.optiuni.oracol.test.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
