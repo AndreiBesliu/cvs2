@@ -323,11 +323,22 @@ function mediana(v: readonly number[]): number {
  */
 function colturi(P: number[], L: number[], inchis: boolean, f: Float32Array, W: number, H: number, T: number): void {
   const n = P.length / 2;
-  const bun = (i: number): boolean => (L[i] ?? 0) > 0;
   const masurate: number[] = [];
-  for (let i = 0; i < n; i++) if (bun(i)) masurate.push(L[i] ?? 0);
+  for (let i = 0; i < n; i++) if ((L[i] ?? 0) > 0) masurate.push(L[i] ?? 0);
   const wl = mediana(masurate);
   if (!(wl > 0) || masurate.length === n) return;
+  // O insulă de cel mult două puncte bune între puncte nemăsurate ține tot de colț (lățimea lor trecea de puțin, dar și ele
+  // sunt strâmbe: la colțul unui pătrat, două șiruri despărțite de două puncte nu mai aveau fiecare trei puncte bune alături).
+  const rau = Uint8Array.from({ length: n }, (_, i) => ((L[i] ?? 0) > 0 ? 0 : 1));
+  for (let i = 0; i < n; i++) {
+    if (rau[i]) continue;
+    let e = i;
+    while (e < i + 3 && !rau[inchis ? e % n : e] && (inchis || e < n)) e++;
+    const stanga = inchis ? rau[(i - 1 + n) % n] : i > 0 ? rau[i - 1] : 0;
+    const dreapta_ = inchis ? rau[e % n] : e < n ? rau[e] : 0;
+    if (e - i <= 2 && stanga && dreapta_) for (let q = i; q < e; q++) rau[inchis ? q % n : q] = 1;
+  }
+  const bun = (i: number): boolean => !rau[i];
   // Pe o buclă, pornirea dintr-un punct bun: un șir rău nu trece peste capătul listei.
   let start = 0;
   if (inchis) while (!bun(start)) start++;
@@ -426,7 +437,14 @@ function retrage(P: number[], L: number[], f: Float32Array, W: number, H: number
 
 /** Capătul unei muchii: liber (centrul capătului rotund) sau într-o joncțiune (grupul ei). */
 type Capat = { readonly g: number };
-type Muchie = { readonly P: number[]; readonly L: number[]; readonly a: Capat | null; readonly b: Capat | null };
+/**
+ * Muchia: punctele (de la capătul a la b), lățimile, capetele și, la fiecare capăt, primii pixeli ai scheletului (cei de lângă
+ * joncțiune, din care se ia direcția brută a brațului).
+ */
+type Muchie = {
+  readonly P: number[]; readonly L: number[]; readonly a: Capat | null; readonly b: Capat | null;
+  readonly pixA: readonly number[]; readonly pixB: readonly number[];
+};
 
 export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMediana {
   const { latime: W, inaltime: H } = img;
@@ -518,6 +536,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
       const v = grupuri.get(c.g);
       return !v || Math.hypot((q % W) + 0.5 - v.x, Math.floor(q / W) + 0.5 - v.y) >= v.r;
     };
+    const pixA = pix.slice(0, 128), pixB = pix.slice(-128).reverse();
     let i = 0, j = pix.length - 1;
     while (i <= j && !departe(pix[i] ?? 0, a)) i++;
     while (j >= i && !departe(pix[j] ?? 0, b)) j--;
@@ -537,10 +556,13 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
     laCapat(b, P, L);
     invers(P, L);
     if (!a && !b && lungimeXY(P) < 0.5) { puncte++; continue; }
-    muchii.push({ P, L, a, b });
+    muchii.push({ P, L, a, b, pixA, pixB });
   }
-  // Brațele fiecărei joncțiuni: dreapta primelor puncte ale brațului (curățat lângă joncțiune; cât 1,5 grosimi de la primul,
-  // cel puțin trei), cu direcția dinspre joncțiune; fără destule puncte, direcția spre capătul lui sau spre joncțiunea de dincolo.
+  // Brațele fiecărei joncțiuni: dreapta primelor puncte ale brațului (curățat lângă joncțiune), cât rămân pe o dreaptă (abaterea
+  // cel mult max(0,5 px, 0,1 grosimi), cel mult 1,5 grosimi, cel puțin trei puncte: un braț scurt care cotește după joncțiune,
+  // ca latura unei urechi a logoului, nu-și ia direcția din colț), cu direcția dinspre joncțiune; altfel, direcția pixelilor
+  // scheletului de după cercul joncțiunii (nu a capătului îndepărtat al brațului, care la urechea logoului era joncțiunea de
+  // jos: brațul inelului se lega de trăsătura de sus).
   type Brat = { readonly e: number; readonly capat: 'a' | 'b'; readonly dx: number; readonly dy: number; readonly cx: number; readonly cy: number; readonly linie: boolean };
   const brate = new Map<number, Brat[]>();
   const locuri = new Map<number, readonly [number, number]>();
@@ -558,14 +580,40 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
         const q = idx(k), x = mu.P[2 * q] ?? 0, y = mu.P[2 * q + 1] ?? 0;
         if (k >= 3 && Math.hypot(x - (sel[0] ?? 0), y - (sel[1] ?? 0)) > Math.max(2, 1.5 * wa)) break;
         sel.push(x, y);
+        if (sel.length >= 8) {
+          const d = dreapta(sel, 0, sel.length / 2 - 1);
+          let abatere = 0;
+          for (let t = 0; t < sel.length; t += 2) abatere = Math.max(abatere, Math.abs(((sel[t] ?? 0) - d.cx) * d.dy - ((sel[t + 1] ?? 0) - d.cy) * d.dx));
+          if (abatere > Math.max(0.5, 0.1 * wa)) { sel.length -= 2; break; }
+        }
       }
       let dx = 0, dy = 0, cx = v.x, cy = v.y;
-      const linie = sel.length >= 6;
+      // Dreapta contează doar dacă merge cam încotro pleacă scheletul din joncțiune (cel mult 45° de direcția lui brută): la
+      // urechea logoului, primele puncte bune ale inelului erau deja după colț, pe latura verticală, iar dreapta lor „cobora”.
+      // Direcția brută: media pixelilor scheletului de la cercul joncțiunii până la încă 1,5 grosimi de el.
+      let bruta: readonly [number, number] | null = null;
+      {
+        let sx = 0, sy = 0, k = 0;
+        for (const q of capat === 'a' ? mu.pixA : mu.pixB) {
+          const x = (q % W) + 0.5, y = Math.floor(q / W) + 0.5, d = Math.hypot(x - v.x, y - v.y);
+          if (d > v.r + Math.max(3, 1.5 * wa)) break;
+          if (d >= v.r) { sx += x; sy += y; k++; }
+        }
+        const bx = k > 0 ? sx / k - v.x : 0, by = k > 0 ? sy / k - v.y : 0, l = Math.hypot(bx, by);
+        if (l > 1e-9) bruta = [bx / l, by / l];
+      }
+      let linie = sel.length >= 6;
+      if (linie && bruta) {
+        const d = dreapta(sel, 0, sel.length / 2 - 1), semn = (d.cx - v.x) * d.dx + (d.cy - v.y) * d.dy < 0 ? -1 : 1;
+        if (semn * (d.dx * bruta[0] + d.dy * bruta[1]) < Math.SQRT1_2) linie = false;
+      }
       if (linie) {
         ({ dx, dy, cx, cy } = dreapta(sel, 0, sel.length / 2 - 1));
         if ((cx - v.x) * dx + (cy - v.y) * dy < 0) { dx = -dx; dy = -dy; }
+      } else if (bruta) {
+        [dx, dy] = bruta;
       } else if (n > 0) {
-        dx = (mu.P[2 * idx(n - 1)] ?? 0) - v.x; dy = (mu.P[2 * idx(n - 1) + 1] ?? 0) - v.y;
+        dx = (mu.P[2 * idx(0)] ?? 0) - v.x; dy = (mu.P[2 * idx(0) + 1] ?? 0) - v.y;
       } else {
         const alt = mu[capat === 'a' ? 'b' : 'a'], u = alt ? grupuri.get(alt.g) : undefined;
         if (u) { dx = u.x - v.x; dy = u.y - v.y; }
@@ -576,11 +624,11 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
       brate.set(c.g, lista);
     }
   }
-  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor, dacă brațele chiar se întâlnesc acolo
-  // (dreptele trec la cel mult max(0,5 px, 0,15 raze) de el, în medie pătratică) și dacă e în cerneală; altfel, media pixelilor
+  // Locul fiecărei joncțiuni: punctul celor mai mici pătrate al dreptelor brațelor, dacă e în cerneală; altfel (la „Ve”, în
+  // logo, încrucișarea brațelor curbe ieșea la 15 px, între litere), sau fără două direcții destul de diferite, media pixelilor
   // ei. Fără gardă de distanță: într-o furcă îngustă, încrucișarea stă departe de pixelii joncțiunii (la 20°, ~5 raze; o gardă
-  // de o rază o respingea, cu linia la 0,29 px în loc de 0,09). Brațele curbe lângă joncțiune (literele logoului) dau drepte
-  // care nu se întâlnesc, sau se întâlnesc în afara cernelii (la „Ve”, la 15 px, între litere): acolo, media.
+  // de o rază o respingea, cu linia la 0,29 px în loc de 0,09). O regulă pe abaterea dreptelor de la punct (cât de bine se
+  // întâlnesc) nu mai schimba nimic după ce dreptele strâmbe ale brațelor ies (ca la urechile logoului): scoasă.
   for (const [g, lista] of brate) {
     const v = grupuri.get(g);
     if (!v) continue;
@@ -595,9 +643,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare): RezultatMe
     let x = v.x, y = v.y;
     if (det > 0.05) {
       const lx = (a22 * b1 - a12 * b2) / det, ly = (a11 * b2 - a12 * b1) / det;
-      let rez = 0, nl = 0;
-      for (const b of lista) { if (b.linie) { rez += ((lx - b.cx) * b.dy - (ly - b.cy) * b.dx) ** 2; nl++; } }
-      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }
+      if (camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }
     }
     locuri.set(g, [x, y]);
   }

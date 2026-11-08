@@ -388,3 +388,52 @@ test('logoul owner-ului: nicio întoarcere bruscă (peste 120° pe ±1,5 px) și
   // Fiecare punct al liniilor stă în cerneală (câmpul la cel puțin jumătate din prag: curbele pot ieși puțin lângă margine).
   assert.ok(minCerneala >= 0.5, `cel mai slab punct: ${minCerneala.toFixed(2)} din prag`);
 });
+
+test('o ureche ca în logo (o trăsătură groasă care atinge un inel pătrat subțire): joncțiunile pe latura inelului, inelul o buclă', () => {
+  // Laturile inelului cotesc la 8 px de joncțiune, deci dreptele brațelor lui (trase pe 1,5 grosimi) nu se întâlnesc cu a
+  // trăsăturii: punctul celor mai mici pătrate urca ~7 px în trăsătura groasă. Cu regula (dreptele chiar se întâlnesc, în
+  // medie la cel mult max(0,5 px, 0,15 raze)), joncțiunea rămâne în media pixelilor ei, pe latură.
+  const gros = 9, subtire = 4.5;
+  const sus: Pt[] = [[40.2, 4.6], [40.2, 30.3]], jos: Pt[] = [[40.2, 46.3], [40.2, 74.4]];
+  const inel: Pt[] = [[32.2, 30.3], [48.2, 30.3], [48.2, 46.3], [32.2, 46.3]];
+  // Inelul cu colțuri drepte: distanța Chebyshev de la pătratul liniei lui, cel mult jumătate de grosime.
+  const inInel = (x: number, y: number): boolean => {
+    const cx = 40.2, cy = 38.3, h = 8, dx = Math.abs(x - cx), dy = Math.abs(y - cy);
+    return Math.max(dx, dy) <= h + subtire / 2 && Math.max(dx, dy) >= h - subtire / 2;
+  };
+  const img = imagine(80, 80, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if (inInel(px, py) || laLinie(px, py, sus) <= gros / 2 || laLinie(px, py, jos) <= gros / 2) a++;
+      }
+    }
+    return a / 16;
+  });
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.jonctiuni, 2);
+  const cai = esantioaneCai(t.cai);
+  const capete = (c: (typeof cai)[number]): [Pt, Pt] => {
+    const n = c.varfuri.length / 2;
+    return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]];
+  };
+  // Fiecare trăsătură e calea ei, de la capătul liber până în joncțiunea ei, pe latura inelului (cel mult o jumătate din grosimea
+  // inelului de linia laturii, 2,25 px: în cerneala laturii); înainte,
+  // trăsătura de sus continua în jumătatea stângă a inelului și în trăsătura de jos (2 căi în loc de 3).
+  for (const [liber, j] of [[[40.2, 4.6], [40.2, 30.3]], [[40.2, 74.4], [40.2, 46.3]]] as Array<[Pt, Pt]>) {
+    const c = cai.find((k) => k.deschisa && capete(k).some((p) => Math.hypot(p[0] - liber[0], p[1] - liber[1]) < 2));
+    assert.ok(c, `calea trăsăturii din (${liber.join(', ')})`);
+    const d = Math.min(...capete(c).map((p) => Math.hypot(p[0] - j[0], p[1] - j[1])));
+    assert.ok(d <= subtire / 2, `trăsătura din (${liber.join(', ')}) se oprește la ${d.toFixed(2)} px de joncțiunea (${j.join(', ')})`);
+  }
+  // Inelul: celelalte căi (o buclă, sau două jumătăți între joncțiuni) stau pe pătratul lui.
+  for (const c of cai) {
+    if (c.deschisa && capete(c).some((p) => p[1] < 10 || p[1] > 70)) continue;
+    for (let i = 0; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      assert.ok(laLinie(x, y, [...inel, inel[0] as Pt]) <= 2, `inelul trece la ${laLinie(x, y, [...inel, inel[0] as Pt]).toFixed(2)} px de pătrat`);
+    }
+  }
+});

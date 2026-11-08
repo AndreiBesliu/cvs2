@@ -742,6 +742,12 @@ def mediana_cazuri(diferente):
     for w in (6, 10):
         n_ = [(20.3, 70.4), (20.3, 22.6), (62.7, 22.6), (62.7, 70.4)]
         caz_m(f'mediana-n-drept-w{w}', 84, 84, [(n_, False, 'drept')], w, [n_[0], n_[-1]], [], 1, colturi=n_[1:3], zona=0.5)
+    # 25: un inel pătrat cu colțuri drepte (latura de 40 px, de 6 ori grosimea): o buclă, colțurile refăcute la 0,5 px.
+    pat = [(20.4, 20.2), (60.4, 20.2), (60.4, 60.2), (20.4, 60.2)]
+    caz_m('mediana-patrat-drept-w6', 81, 81, [(pat, True, 'drept')], 6, [], [], 1, inchise=1, goluri=1, colturi=pat, zona=0.5)
+    # 26: un colț de 73° (îmbinare rotundă, 9 px): colțul refăcut și sub 80° (o configurație întâmplătoare l-a arătat).
+    v = [(86.23, 75.24), (64.25, 58.78), (42.04, 74.94)]
+    caz_m('mediana-colt73-w9', 120, 90, [(v, False)], 9.2, [v[0], v[-1]], [], 1, colturi=[v[1]], zona=0.5)
     return {'schema': 1, 'cazuri': cazuri}
 
 

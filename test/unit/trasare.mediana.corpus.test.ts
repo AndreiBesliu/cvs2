@@ -46,8 +46,8 @@ function laLinii(x: number, y: number, linii: Caz['linii']): number {
   return d;
 }
 
-test('corpusul liniei mediane: 26 de cazuri, iar martorul a găsit topologia hârtiei', () => {
-  assert.equal(CORPUS.cazuri.length, 26);
+test('corpusul liniei mediane: 28 de cazuri, iar martorul a găsit topologia hârtiei', () => {
+  assert.equal(CORPUS.cazuri.length, 28);
   for (const c of CORPUS.cazuri) {
     assert.equal(c.martor.capete, c.capete.length, c.nume);
     assert.equal(c.martor.jonctiuni, c.jonctiuni.length, c.nume);

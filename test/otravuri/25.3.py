@@ -49,8 +49,8 @@ o('P02', ME, '      if (lungime(l.pix, W) < MEDIANA.ciot * R(jonct) + 1) {', '  
 o('P03', ME, "    if ((grad[l.a] ?? 0) >= 3 && (grad[l.b] ?? 0) >= 3 && lungime(l.pix, W) < R(l.a) + R(l.b)) {",
   "    if ((grad[l.a] ?? 0) >= 3 && (grad[l.b] ?? 0) >= 3 && lungime(l.pix, W) < 1.5) {", 'nuc',
   'doar pixelii-joncțiune vecini se unesc: un X la 60° rămâne două Y')
-o('P04', ME, '    if (v) { v.x += x; v.y += y; v.n++; v.r = Math.max(v.r, R(p)); } else grupuri.set(g, { x, y, r: R(p), n: 1 });',
-  '    if (v) { v.x += x; v.y += y; v.n++; } else grupuri.set(g, { x, y, r: R(p), n: 1 });', 'nuc', 'raza grupului, a primului pixel, nu cea mai mare')
+# P04 (raza grupului din primul pixel, nu cea mai mare): după corectura colțurilor și a joncțiunilor, pe configurațiile
+# întâmplătoare care o despart, linia diferă în a doua zecimală a mediei (0,084 față de 0,061 px), cu același maxim. Scoasă.
 
 # ---- Brațele, locul joncțiunii ----
 o('B01', ME, '      if (v) curataBrat(P, L, v.x, v.y, v.r);', '', 'nuc', 'brațele necurățate lângă joncțiune (X la 60°: 2,6 px)')
@@ -62,10 +62,9 @@ o('B03', ME, '      return !v || Math.hypot((q % W) + 0.5 - v.x, Math.floor(q / 
 o('B04', ME, '    if (det > 0.05) {', '    if (false) {', 'nuc', 'joncțiunea în media pixelilor, nu în încrucișarea brațelor')
 o('B08', ME, '    if (det > 0.05) {', '    if (det > 0.6) {', 'nuc',
   'încrucișarea cerută doar la brațe foarte diferite: furcile sub ~50° rămân în media pixelilor')
-o('B09', ME, '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }',
-  '      if (camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }', 'nuc', 'încrucișarea primită și când dreptele brațelor nu se întâlnesc')
-o('B10', ME, '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r) && camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }',
-  '      if (Math.sqrt(rez / Math.max(1, nl)) <= Math.max(0.5, 0.15 * v.r)) { x = lx; y = ly; }', 'nuc',
+# B09 (încrucișarea primită și când dreptele nu se întâlnesc): regula abaterii dreptelor a fost scoasă din cod (fără efect
+# pe 800 de configurații și pe logo, după ce dreptele strâmbe ale brațelor ies prin direcția lor brută).
+o('B10', ME, '      if (camp(f, W, H, lx, ly) >= T) { x = lx; y = ly; }', '      { x = lx; y = ly; }', 'nuc',
   'încrucișarea primită și în afara cernelii („Ve”: la 15 px, între litere)')
 # B05 (punctul celor mai mici pătrate primit oricât de departe) a scăpat, iar pe furci era mai bun decât garda: într-o furcă
 # îngustă, încrucișarea stă departe de pixelii joncțiunii. Garda a fost scoasă din cod (furcile au acum proba lor), deci și
@@ -98,13 +97,11 @@ o('M06', ME, '  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math
 o('E01', ME, '      if (!cap) { retrage(P, L, f, W, H, T); return; }', '      if (!cap) return;', 'nuc', 'capetele rămân unde se oprește scheletul')
 o('E02', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;', '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy);', 'nuc',
   'linia se termină în vârful trăsăturii (3b), nu în centrul capătului')
-o('E03', ME, '  const avans = trecere(f, W, H, T, d.cx, d.cy, dx, dy) - wl / 2;\n  let cx = d.cx + dx * avans, cy = d.cy + dy * avans;',
-  '  const avans = trecere(f, W, H, T, x0, y0, dx, dy) - wl / 2;\n  let cx = x0 + dx * avans, cy = y0 + dy * avans;', 'nuc',
-  'mersul spre vârf din primul punct bun (strâmb cu 1 px la un capăt drept), nu din centrul dreptei')
+# E03 (mersul spre vârf din primul punct bun): după recentrarea capătului și îndreptarea lui, diferă în a treia zecimală
+# (capetele 0,11 față de 0,10 px). Echivalentă; scoasă.
 # E04 (punctele prea late luate drept bune la capăt): după recentrarea capătului de-a curmezișul, limita de sus nu mai
 # schimba nimic (0 diferențe pe 61 de capete drepte, înainte cel mult 0,04 px în ambele sensuri). Scoasă din cod și din listă.
-o('E05', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.3, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'punctele rotunjimii capătului luate drept bune')
+# E05 (punctele rotunjimii capătului luate drept bune): diferă în a treia zecimală (capetele 0,09 față de 0,08 px). Scoasă.
 o('E06', ME, '  if (dx * (x0 - (P[2 * i1] ?? 0)) + dy * (y0 - (P[2 * i1 + 1] ?? 0)) < 0) { dx = -dx; dy = -dy; }', '', 'nuc',
   'direcția capătului fără sens: mersul spre vârf poate porni înapoi')
 o('E07', ME, '  if (sus > 0 && jos > 0 && Math.abs(sus - jos) / 2 <= Math.max(1, wl / 3)) { cx += (-dy * (sus - jos)) / 2; cy += (dx * (sus - jos)) / 2; }', '', 'nuc',
@@ -116,6 +113,13 @@ o('K02', ME, '{ Q.push(x, y); M.push(Number.NaN); }', '{}', 'nuc', 'colțul tăi
 o('K03', ME, '      colturi(P, L, true, f, W, H, T);\n', '', 'nuc', 'colțurile drepte ale buclelor nerefăcute')
 o('K04', ME, '      if (Math.abs(sin) >= Math.sin((20 * Math.PI) / 180)) {', '      if (Math.abs(sin) >= Math.sin((80 * Math.PI) / 180)) {', 'nuc',
   'colțurile sub 80° nerefăcute')
+o('K05', ME, '    if (e - i <= 2 && stanga && dreapta_) for (let q = i; q < e; q++) rau[inchis ? q % n : q] = 1;', '', 'nuc',
+  'insulele scurte de puncte bune despart colțul în două șiruri: colțul pătratului nerefăcut')
+o('A01', ME, '        if (semn * (d.dx * bruta[0] + d.dy * bruta[1]) < Math.SQRT1_2) linie = false;', '', 'nuc',
+  'dreapta brațului primită și când cotește (urechea logoului: trăsătura de sus legată de inel)')
+o('A02', ME, '          if (abatere > Math.max(0.5, 0.1 * wa)) { sel.length -= 2; break; }', '', 'nuc', 'dreapta brațului trasă și peste colț')
+o('A03', ME, '          if (d > v.r + Math.max(3, 1.5 * wa)) break;', '          if (d > 2 * v.r + 1) break;', 'nuc',
+  'direcția brută din fereastra razei joncțiunii (o furcă cu joncțiunea lângă margine: 1,4 px)')
 
 # ---- Legarea brațelor, căile ----
 o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
