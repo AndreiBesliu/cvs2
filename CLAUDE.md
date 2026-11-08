@@ -672,9 +672,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `CaiTrasate.deschisa`;** buclele tăiate pe linie intră în operația căilor deschise (`piesaDinImport`).
   **Corectată pe 08.11 după logoul owner-ului, privit mărit (probele, cu îmbinări rotunde, trecuseră): o dreaptă (brațul unei
   joncțiuni, latura unui colț) se trage doar pe porțiunea dreaptă (0,5 px); curățarea de lângă o joncțiune merge doar cât
-  intră normala în celelalte brațe, (w/2)/tan(θ/2).** 25.3↑b (opțiunile: ADR 0223, propus) așteaptă răspunsurile.
-  **Cu `main` unit pe 08.11 (`ed43b49`) și 25.3↑ corectată: pornirea 101,8 / 110 kB, totalul 563,3 / 600 (linia trasării,
-  25.1↑–25.3↑: +28,3).**
+  intră normala în celelalte brațe, (w/2)/tan(θ/2).**
+  **Opțiunile liniei mediane (ADR 0223, felia 25.3↑b)** gata pe 08.11, tot acolo, cu toate recomandările („Da, 1a–3a”): sub
+  „Rezultatul: Linii mediane”, capetele, părțile late (linii mediane sau contururi, cu pragul), „Arată părțile late” și
+  buclele. **Părțile late sunt deschiderea morfologică a cernelii (`src/trasare/partiLate.ts`): miezul, apoi ce e la cel mult
+  R0 + 0,5 px de el; bucățile rămase care ating partea lată și stau toate la cel mult 2·R0 + 1 de miez îi aparțin** (altfel,
+  zeci de cioturi în jurul unui bloc). **`CaiTrasate.peLinie` (lipsă: toate pe linie) dă latura căilor mediane închise.**
+  **Cu `main` unit pe 08.11 (`8dde2d2`, cu incrustațiile) și 25.3↑b: pornirea 101,9 / 110 kB, totalul 574,8 / 600.**
   **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
   08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
   (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`

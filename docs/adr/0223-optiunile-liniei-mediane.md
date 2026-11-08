@@ -1,6 +1,7 @@
 # ADR 0223 — Opțiunile liniei mediane: capetele în vârf, părțile late ca contururi, semnalarea lor, buclele închise
 
-**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–3a”, la întrebările de la final); propus tot atunci, la
+**Starea:** acceptat pe 08.11.2026, cu toate recomandările („Da, 1a–3a”, la întrebările de la final), și implementat în aceeași
+zi (secțiunea „Implementarea”); propus tot atunci, la
 „Da, 25.3↑b” (owner-ul, după 25.3↑). Felia 25.3↑b, adusă din etapa 25, fără mașină, în linia trasării (worktree-ul
 `trasare`, ramura `wip/25.1-trasare`, neunită în `main`; `origin/main` unit în ea întâi, `8dde2d2`: totalul 572,3 / 600 kB).
 **Completează:** ADR 0222 (întrebările 3–5: variantele care pot sta lângă recomandări vin ca opțiuni, după regula „toate
@@ -61,6 +62,43 @@ linie. Fiecare are un caz în care nu ajunge:
 6. **Probele, scrise întâi:** corpusul Python (un desen cu linii și o pată plină, cu părțile late știute pe hârtie; capetele
    în vârf la vârful hârtiei; buclele cu laturile lor), logoul (2 părți late, nicio linie mediană în ele), e2e (opțiunile în
    fereastră, piesa cu contururi și linii), otrăvurile.
+
+## Implementarea (08.11)
+
+**Ce s-a schimbat față de propunere** (fiecare, găsit pe logoul tău sau de probe):
+
+1. **Resturile părților late:** deschiderea cu discul rotunjește colțurile unui bloc și lasă, pe margini, o fâșie de sub un
+   pixel; pe logo, ele dădeau zeci de linii scurte în jurul blocurilor frezei (67 de căi în loc de 51). O bucată rămasă din
+   cerneală care **atinge** partea lată și stă toată la cel mult 2·R0 + 1 de miezul ei (la un colț de 60°, vârful e la 2·R0)
+   ține de partea lată; o liniuță sau un punct de lângă ea, care nu o atinge, rămâne al lui. Contururile blocurilor au acum
+   colțurile lor, nu rotunjite.
+2. **Deschiderea, cu încă o jumătate de pixel:** miezul se măsoară pe centrele pixelilor, deci marginea deschiderii putea
+   cădea până la ~0,7 px înăuntrul cernelii (golul unui inel gros ieșea la 0,77 px), iar conturul o urma pe ea.
+3. **Capetele lipite stau pe contur, nu pe latura de hârtie:** lângă locul unde o trăsătură se lipește de o pată, cercurile
+   înscrise sunt mai mari, deci deschiderea face o mică racordare în trăsătură (~1 px); linia se oprește pe contur, fără
+   punte, la cel mult 1,5 px de latura pe care o atinge.
+4. **Direcția vârfului:** la „Vârful trăsăturii”, linia merge din centrul capătului pe direcția porțiunii drepte de lângă el
+   (abaterea cel mult 0,5 px), nu pe dreapta celor 1,5 grosimi: talpa scurtă a lui „t” din logo ieșea oblic, în colț (~4 px).
+   Centrul capătului (implicitul) a rămas neatins.
+5. **Etichetele mai scurte** în fereastră: „Centrul capătului” / „Vârful trăsăturii” (cele din schiță nu încăpeau în listă).
+6. **`CaiTrasate.peLinie`** (lipsă: toate pe linie, ca în ADR 0222): 0 pe contururile părților late (latura din sensul lor)
+   și pe buclele închise (latura din încuibare); ușa le pune pe operația contururilor, restul pe a căilor deschise.
+
+**Măsurat** [08.11, Node 26 și Edge fără fereastră, pe codul `0430183` + 25.3↑b]:
+- logoul tău, cu „Contururi”: 2 părți late (blocurile frezei, 15,3 % din cerneală), conturate cu colțurile lor; pe rest 51 de
+  căi, fără cioturi; liniile cercului mare se opresc pe conturul blocului de sus; cu toate opțiunile: 45 de linii pe linie și
+  6 contururi pe exterior (blocurile, cele două „o”, inelele urechilor), punctul lui „i” devine o linie de la o margine la
+  alta; timpul, ~0,3 s (de la ~0,13 s fără opțiuni);
+- probele, cu valori pe hârtie: dreptunghiul plin (aria 600 px² la cel mult 3 %, colțurile la 1 px, capătul lipit pe contur),
+  vârfurile capetelor rotunde și drepte (0,3 px), două inele concentrice (exterior și interior), inelul gros cu gol (o parte,
+  golul pe interior, la cel mult 0,75 px), pragul dat, semnalarea care nu schimbă liniile, o liniuță și un punct lângă o pată;
+  ușa (pragul în mm, la 0,5 mm pe px; laturile; operațiile) și e2e (grupul, implicitele, semnalarea, contururile, vârful,
+  pragul scris, Importă);
+- otrăvurile (`test/otravuri/25.3b.py`): 36 / 36 la prima rulare (lista 25.3, rulată din nou pe nucleul schimbat: 77 / 77);
+- mărimea: totalul 574,8 / 600 kB, pornirea 101,9 / 110.
+
+**Limitele, scrise:** o trăsătură groasă lipită de o pată are o mică racordare (~1 px) în conturul petei, acolo unde se lipesc;
+pragul automat se ia din grosimea obișnuită a întregului desen (pe un desen făcut aproape numai din pete, scrie pragul în mm).
 
 ## Ce am respins
 

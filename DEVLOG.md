@@ -7214,3 +7214,26 @@ putem imbunatati aici, inainte sa unim cu main?”).
 - **Rămân, după unire** (răspunsul owner-ului): 3 lemnul din jurul dopului ales și din panou (valorile benzii pe hârtie
   înainte de export), 4 punțile dopului drept alese în fereastră (câmpul poate intra tot în v22, cât nu e unit), 5 arborele
   („cu bandă”) și legăturile rândurilor în fereastră, 6 viteza benzii (~10 s pe 24 de litere, față de 6,7 cu fața coborâtă).
+
+## 2026-11-08 — Felia 25.3↑b: opțiunile liniei mediane (ADR 0223, acceptat și implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării, la cele trei întrebări din ADR 0223).
+**Started:** 08.11, 14:05. **Completed:** 08.11, 15:59.
+
+- **Răspunsurile:** toate recomandările: opțiunile sub „Rezultatul”, doar la „Linii mediane”; pragul automat, de două ori
+  grosimea obișnuită; „Arată părțile late” pornită implicit. Scrise în ADR 0223 (acceptat) și în `CLAUDE.md`.
+- **Înainte de cod:** `origin/main` (`031e41a`: incrustațiile 12.1↑b–c, 3.Tg) unit în ramură (`8dde2d2`; ciocnirile doar în
+  documentele comune, păstrate ambele părți; traducerile, reuniunea cheilor): totalul 572,3 / 600, pornirea 101,9 / 110.
+- **Nucleul:** `src/trasare/partiLate.ts` (nou: transformarea distanței Felzenszwalb–Huttenlocher, deschiderea cu discul de
+  rază R0 + 0,5 px, resturile alipite); `traseazaMediana(img, o, om)`: liniile întregului desen (grosimea), părțile late cu
+  pragul dat sau automat, retrasarea pe rest, capetele lipite de contur, contururile cu latura din sensul lor, buclele
+  închise cu latura din încuibare, capetele în vârf (pe direcția porțiunii drepte); `CaiTrasate.peLinie`.
+- **Ușa și fereastra:** `AlegeriTrasare.mediane` (pragul în mm), workerul îl trece în px, transferă `peLinie` și contururile
+  părților late; ușa pune laturile; fereastra: grupul de patru sub „Rezultatul”, părțile late colorate în previzualizare,
+  raportul lor; manualul (ro, en).
+- **Găsite pe logo și de probe:** resturile deschiderii (67 de căi → 51, colțurile blocurilor întregi), marginea deschiderii
+  cuantizată (golul inelului gros: 0,77 px → jumătatea de pixel), racordarea de lângă lipitură (capătul pe contur, nu pe latura
+  de hârtie), talpa lui „t” cu vârful oblic (direcția din porțiunea dreaptă).
+- **Otrăvurile:** lista nouă `25.3b` (37), 36 / 36 la prima rulare (lista 25.3, rulată din nou pe nucleul schimbat: 77 / 77); lista 25.3, cu șapte rânduri aduse la textul nou.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), corpusul `--verifica`, suita unitară, e2e (trasarea, culorile,
+  liniile mediane, importul), determinismul. Totalul 574,8 / 600 kB, pornirea 101,9 / 110.

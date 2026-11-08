@@ -85,6 +85,10 @@
       "ro": "Harta importurilor și o publicare care aduce doar ce s-a schimbat",
       "en": "The import map and a publish that fetches only what changed"
     },
+    "07f0bba1f1d5f4ce": {
+      "ro": "**Opțiunile liniei mediane** (fără mașină; ADR 0223, acceptat și implementat; worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în `main`; pornită la „Da, 25.3↑b”, după 25.3↑; răspunsurile: „Da, 1a–3a”, toate recomandările). Cercetarea: Illustrator (Image Trace, „Strokes”, cu lățimea maximă: ce e mai gros devine contur), ArtCAM și Carveco („Closed vector loops”), CorelDRAW (deschise și închise, fără amestec); schița, cu toate combinațiile opțiunilor pe logo: <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>. **Treceri:** (1) propunerea, cu corectura lui 25.3↑ pe logo (`ab336f1`, `ad11061`, `0430183`, `311501f`); (2) răspunsurile, `origin/main` unit (`8dde2d2`: totalul 572,3 / 600), apoi felia (`d9340ff`): sub „Rezultatul: Linii mediane”, capetele în centru sau în vârf, părțile late linii mediane sau contururi (deschiderea morfologică cu discul de jumătate din prag, plus o jumătate de pixel; resturile care ating partea lată, alipite; pragul automat 2 × grosimea, sau în mm), „Arată părțile late” (colorate în previzualizare, numărate în raport), buclele pe linie sau vectori închiși (latura din încuibare); `CaiTrasate.peLinie`. Pe logo: 2 părți late (15,3 % din cerneală), conturate cu colțurile lor, 51 de căi pe rest. Otrăvurile: 36 / 36 la prima rulare (lista 25.3, rulată din nou pe nucleul schimbat: 77 / 77). Totalul 574,8 / 600 kB, pornirea 101,9 / 110.",
+      "en": "**The centre-line options** (no machine; ADR 0223, accepted and implemented; the `trasare` worktree, the `wip/25.1-trasare` branch, not merged into `main`; started at “Yes, 25.3↑b”, after 25.3↑; the answers: “Yes, 1a–3a”, all the recommendations). The research: Illustrator (Image Trace, “Strokes”, with the maximum width: anything thicker becomes an outline), ArtCAM and Carveco (“Closed vector loops”), CorelDRAW (open and closed, never mixed); the sketch, with every combination of the options on the logo: <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>. **Passes:** (1) the proposal, with the correction of 25.3↑ on the logo (`ab336f1`, `ad11061`, `0430183`, `311501f`); (2) the answers, `origin/main` merged (`8dde2d2`: the total 572.3 / 600), then the slice (`d9340ff`): under “Result: Centre lines”, the ends at the centre or at the tip, the wide parts as centre lines or outlines (the morphological opening with a disc of half the threshold, plus half a pixel; the leftovers that touch the wide part, merged into it; the automatic threshold 2 × the width, or in mm), “Show the wide parts” (coloured in the preview, counted in the report), the loops on the line or as closed vectors (the side from the nesting); `CaiTrasate.peLinie`. On the logo: 2 wide parts (15.3 % of the ink), outlined with their corners, 51 paths on the rest. The poisons: 36 / 36 on the first run (the 25.3 list, run again on the changed core: 77 / 77). The total 574.8 / 600 kB, startup 101.9 / 110."
+    },
     "07f253fcc3551030": {
       "ro": "Repararea, conversia, cotele, transformarea traseelor",
       "en": "Repair, conversion, dimensions, transforming toolpaths"
@@ -1253,10 +1257,6 @@
       "ro": "Partea documentului care nu depinde de A / D: catalogul de capabilități (`shared/`), schema v1 (foaia + elementele, comune ambelor variante) cu plafoane, câmpurile necunoscute păstrate, ușa unică de încărcare cu migrări pure, JSON canonic, jurnalul de comenzi (anulează / reface, 500), registrul de acțiuni cu capabilitatea obligatorie și motivele pe chei `t()`, regula „interfața doar prin acțiuni” cu capcana ei. Arborele variantei alese vine ca migrare v1 → v2. 92 de teste. Trecere: `Omit` pe tipul valibot cu index.",
       "en": "The part of the document that does not depend on A / D: the capability catalogue (`shared/`), schema v1 (the sheet + the elements, common to both variants) with caps, unknown fields preserved, the single loading door with pure migrations, canonical JSON, the command journal (undo / redo, 500), the action registry with a mandatory capability and reasons on `t()` keys, the “interface only through actions” rule with its trap. The tree of the chosen variant comes as the v1 → v2 migration. 92 tests. Pass: `Omit` on the valibot type with an index."
     },
-    "749f51ba12f59851": {
-      "ro": "25.3↑b",
-      "en": "25.3↑b"
-    },
     "74a51029f7125771": {
       "ro": "Import 2D (fără DGK / PIC, scoase pe 07.10)",
       "en": "2D import (without DGK / PIC, removed on 07.10)"
@@ -1449,10 +1449,6 @@
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
     },
-    "83c2d30000404249": {
-      "ro": "**Opțiunile liniei mediane** (propus; ADR 0223; worktree-ul `trasare`, ramura `wip/25.1-trasare`, neunită în `main`; pornită la „Da, 25.3↑b”, după 25.3↑). Cercetarea: Illustrator (Image Trace, „Strokes”, cu lățimea maximă: ce e mai gros devine contur), ArtCAM și Carveco („Closed vector loops”), CorelDRAW (deschise și închise, fără amestec). Prototipul părților late (deschiderea morfologică a cernelii, două transformări ale distanței): pe logoul owner-ului, 2 părți late (blocurile frezei, 14,4 % din cerneală), 59 de linii mediane pe rest, 18 capete lipite de conturul lor, ~0,19 s în plus. Schița, cu toate combinațiile opțiunilor pe logo și formularul: <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>. Codul, după răspunsuri. Înainte, corectura lui 25.3↑ (rândul de sus).",
-      "en": "**The centre-line options** (proposed; ADR 0223; the `trasare` worktree, the `wip/25.1-trasare` branch, not merged into `main`; started at “Yes, 25.3↑b”, after 25.3↑). The research: Illustrator (Image Trace, “Strokes”, with the maximum width: anything thicker becomes an outline), ArtCAM and Carveco (“Closed vector loops”), CorelDRAW (open and closed, never mixed). The wide-parts prototype (the morphological opening of the ink, two distance transforms): on the owner’s logo, 2 wide parts (the cutter blocks, 14.4 % of the ink), 59 centre lines on the rest, 18 ends attached to their outline, ~0.19 s more. The sketch, with every combination of the options on the logo and the form: <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>. The code, after the answers. Before it, the correction of 25.3↑ (the row above)."
-    },
     "83edac4913407194": {
       "ro": "Documentația live: manualul utilizatorului",
       "en": "Live documentation: the user manual"
@@ -1592,10 +1588,6 @@
     "922ebbecce673160": {
       "ro": "Raportorul de erori din client",
       "en": "The client error reporter"
-    },
-    "929d8c7ebd582fe4": {
-      "ro": "Răspunsurile la cele trei întrebări din ADR 0223 (opțiunile liniei mediane; propus pe ramura `wip/25.1-trasare`): formularul din schiță (<https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>: logoul tău cu toate combinațiile opțiunilor), apoi „gata” în sesiune",
-      "en": "The answers to the three questions in ADR 0223 (the centre-line options; proposed on the `wip/25.1-trasare` branch): the form in the sketch (<https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>: your logo with every combination of the options), then “done” in the session"
     },
     "92d3d4781a981f7c": {
       "ro": "Personalul, fila Erori și Diagnoza (ADR 0040): pagina `/admin` la cerere (164 kB, cu bugetul ei; pornirea 99,0 / 100 kB), login Google, rolul din `staff/{uid}`, fila Erori cu „Rezolvat” prin callable și audit în aceeași tranzacție, Diagnoza (7 verificări), TTL de 90 de zile, regulile noi publicate. 17 teste pe emulator, 3 e2e pe emulatoare (login-ul emulatorului de Auth inclus), 3 e2e fără configurație, 13 unitare; 7 sabotaje, prinse unde trebuie, cu martorii trecuți (un martor picat a arătat primul apel lent al callable-ului: termen de 30 s). **Pe test:** pagina pornește până la fereastra Google, fără încălcări de CSP.",
