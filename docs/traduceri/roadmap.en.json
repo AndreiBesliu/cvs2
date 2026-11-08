@@ -501,6 +501,10 @@
       "ro": "admin **P0** + **P1**",
       "en": "admin **P0** + **P1**"
     },
+    "2cf93f010a20101c": {
+      "ro": "Cuțitul pe pânză și opțiunile tăierii",
+      "en": "The knife on the canvas and the cutting options"
+    },
     "2d37f6bd0ac31c15": {
       "ro": "Booleanul formelor",
       "en": "The boolean of shapes"
@@ -588,6 +592,10 @@
     "32f0a11f4126f979": {
       "ro": "12.1↑ pe test și fișa plăcii 12",
       "en": "12.1↑ on test and the sheet of plate 12"
+    },
+    "3317dab7bfab32c2": {
+      "ro": "înainte de codul lui 10.3↑f",
+      "en": "before the code of 10.3↑f"
     },
     "341bea1f714a663e": {
       "ro": "Incrustația în V: locașul și dopul, documentul v20",
@@ -1133,6 +1141,10 @@
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
     },
+    "689d143b21bff2e5": {
+      "ro": "10.3↑f",
+      "en": "10.3↑f"
+    },
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
       "en": "The 500 kB total cap"
@@ -1140,10 +1152,6 @@
     "699a709980c3e032": {
       "ro": "**Harta importurilor și o publicare care aduce doar ce s-a schimbat** (fără mașină; ADR 0098; „Da, repar-o”, după măsurătoarea de pe test: o publicare fără cod re-aducea 38 din 71 de fișiere, ~72 % din octeți). Bucățile se importă după nume stabile (`build.chunkImportMap`, Vite 8.3.3, experimental), traduse de harta din `index.html`; amprenta exactă a hărții intră în CSP (meta-ul și antetul de pe Hosting), tot fără `unsafe-inline`; versiunea stă în antetul paginii, nu în JavaScript. Proba din poartă: un build cu altă versiune schimbă doar `index.html` și `sw.js` (înainte: 78 de fișiere). Pornirea și totalul neschimbate (96,3 / 100, 326,1 / 400 kB). **Treceri:** (1) harta, CSP-ul, versiunea; găsit pe drum: Vite pune harta după transformările `post` ale paginii (amprenta se scrie în `generateBundle`), iar cu CSP-ul mai lung codarea paginii ajunsese la octetul 996 din 1 024 (meta-urile stau acum după `<meta charset>`). Mutațiile: **16 / 16** din prima (9 pe probele unitare, 5 pe poarta build-ului, 2 în fereastră, pe e2e).",
       "en": "**The import map and a publish that fetches only what changed** (no machine; ADR 0098; “Da, repar-o”, after the measurement on test: a publish without code fetched 38 of 71 files again, ~72% of the bytes). The chunks import each other by stable names (`build.chunkImportMap`, Vite 8.3.3, experimental), translated by the map in `index.html`; the map's exact hash goes into the CSP (the meta and the Hosting header), still without `unsafe-inline`; the version sits in the page header, not in JavaScript. The gate's probe: a build with another version changes only `index.html` and `sw.js` (before: 78 files). Startup and total unchanged (96.3 / 100, 326.1 / 400 kB). **Passes:** (1) the map, the CSP, the version; found on the way: Vite inserts the map after the page's `post` transforms (the hash is written in `generateBundle`), and with the longer CSP the page encoding had reached byte 996 of 1,024 (the build's metas now sit after `<meta charset>`). Mutations: **16 / 16** on the first run (9 on the unit tests, 5 on the build gate, 2 in the window, on e2e)."
-    },
-    "69e999864c6d5599": {
-      "ro": "10.3↑",
-      "en": "10.3↑"
     },
     "6acd2ce3f75f8abf": {
       "ro": "Intrările și ieșirile",
@@ -1549,6 +1557,10 @@
       "ro": "**Booleanul, adus din etapa 6** (fără mașină; ADR 0067; „Ok”, după decizia owner-ului: booleanul înaintea testului lui). Secțiunea Boolean din extensia barei: Unește, Scade (din prima formă aleasă se scoate ultima, aleasă cu Shift + clic), Intersectează, pe exact două forme închise. Rezultatul e exact (prin cavalier, pe contururile pe care le-ar tăia freza: liniile și arcele rămân, curbele intră ca arce la 0,001 mm) și înlocuiește cele două forme într-un singur pas; o gaură rămâne în aceeași piesă, cu profil interior (ca la import). Refuzurile se spun lângă butoane: o formă deschisă sau compusă, forme care nu se ating, nimic comun, nimic rămas. Prin `document.deseneaza` (care primește acum și ștergerile și găurile): pornirea neschimbată. Manualul are capitolul „Booleanul”. **Treceri:** (1) fațada cavalier (`booleanContururi`), modelul pur, acțiunea (ștergerea într-o singură funcție, comună cu „Șterge selecția”), secțiunea din extensie, manualul, probele pe hârtie (pătratele suprapuse: 175 / 25 / 75; dreptunghiul minus cercul: gaura cu arce de rază 10, același centru; cercurile: 2π·100 − lentila; o cubică: aria 195,4), două date greșite în probe (nu în cod), corectate; trei pași e2e greșiți (Shift + clic în listă, starea păstrată între reîncărcări, focusul săgeților), refăcuți; două mutații (operanzii scăderii, butonul Scade), prinse; fraza din manual despre unire, corectată.",
       "en": "**The boolean, brought forward from stage 6** (no machine; ADR 0067; „Ok”, after the owner's decision: the boolean before his test). The Boolean section of the bar extension: Unite, Subtract (the last shape chosen, with Shift + click, is taken out of the first), Intersect, on exactly two closed shapes. The result is exact (through cavalier, on the outlines the cutter would cut: lines and arcs stay, curves go in as arcs at 0.001 mm) and replaces the two shapes in a single step; a hole stays in the same part, with an inside profile (as on import). Refusals are shown next to the buttons: an open or compound shape, shapes that do not touch, nothing in common, nothing left. Through `document.deseneaza` (which now also takes deletions and holes): startup unchanged. The manual has the chapter „The boolean”. **Passes:** (1) the cavalier facade (`booleanContururi`), the pure model, the action (deletion in a single function, shared with „Delete selection”), the extension section, the manual, the tests on paper (the overlapping squares: 175 / 25 / 75; the rectangle minus the circle: the hole with arcs of radius 10, same centre; the circles: 2π·100 − the lens; a cubic: area 195.4), two wrong data in the tests (not in the code), corrected; three wrong e2e steps (Shift + click in the list, state kept between reloads, the arrow keys' focus), redone; two mutations (the subtraction operands, the Subtract button), caught; the manual's sentence about uniting, corrected."
     },
+    "90f0e0b16f137f4e": {
+      "ro": "Răspunsurile la cele patru întrebări din ADR 0181 (cuțitul pe pânză și opțiunile tăierii; propus pe ramura `wip/10.3-taiere-conversie`), în [formularul schiței](https://claude.ai/artifact/7jiFhVpNn9vAcc2Mjpd5bW) (sau „ok la toate” în conversație): ordinea feliilor, ce taie cuțitul fără forme alese, când taie, retezatul cu un clic (respins în ADR 0180); recomandările sunt primele variante",
+      "en": "The answers to the four questions in ADR 0181 (the knife on the canvas and the cutting options; proposed on the `wip/10.3-taiere-conversie` branch), in [the sketch's form](https://claude.ai/artifact/7jiFhVpNn9vAcc2Mjpd5bW) (or “ok la toate” in the conversation): the order of the slices, what the knife cuts with no shapes chosen, when it cuts, trimming with one click (rejected in ADR 0180); the recommendations are the first options"
+    },
     "912f72e32ee78347": {
       "ro": "Owner-ul e fix în /admin",
       "en": "The owner is fixed in /admin"
@@ -1865,10 +1877,6 @@
       "ro": "lista de lansare (`BRIEF.md` §8)",
       "en": "the launch list (`BRIEF.md` §8)"
     },
-    "ad308da7dec96a99": {
-      "ro": "Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune",
-      "en": "The answers to the six questions in ADR 0180 (vector trimming and conversion; proposed on the `wip/10.3-taiere-conversie` branch): the form in the line session’s sketch, then “gata” in the session"
-    },
     "ad3e364dd5baa9bc": {
       "ro": "**Imaginea podului ESP3D** (fără mașină; ADR 0119, „Da, pregătește” la „Îți pregătesc configurarea ESP3D (fișierul și pașii de compilare)?”). Workflow-ul `pod-esp3d`, pornit de mână, compilează pe GitHub ESP3D 3.0.2 pentru mașina cu GRBL 1.1h, cu trei schimbări: ținta implicită GRBL (cu altă țintă, `?`, `!` și `~` așteaptă capătul liniei), GRBL pe Serial2 (GPIO16 / GPIO17) și socket-ul de date pe 8282. Rețeaua atelierului nu intră în imagine: se pune la prima pornire, din pagina podului. ESP3D 3.1 rămâne afară, fiindcă are alt socket de date. `scripts/pod-esp3d.ts` verifică întâi în sursă faptele de care depinde profilul aplicației, schimbă fiecare rând exact o dată și adaugă o unitate de probă, compilată cu sursa. Imaginea unică (de la 0x0) e verificată bucată cu bucată, iar esptool o validează și el. Ghidul owner-ului, `docs/masina/pod-esp3d.md`: scrierea din browser, rețeaua, firele, aplicația. **Probele:** 10 teste pe hârtie; faptele și diff-ul de trei rânduri pe sursa reală; compilarea, cu unitatea de probă; imaginea verificată. Prima rulare s-a oprit, cu motivul, la adresa aplicației, care lipsea din metadatele PlatformIO; acum vine din tabela de partiții, ca la platformă. Nedovedit până la 3.6e: pornirea pe placă.",
       "en": "**The ESP3D bridge image** (without the machine; ADR 0119, “Yes, prepare it” to “Shall I prepare the ESP3D configuration for you (the file and the build steps)?”). The `pod-esp3d` workflow, started by hand, builds ESP3D 3.0.2 on GitHub for the machine with GRBL 1.1h, with three changes: GRBL as the default target (with another target, `?`, `!` and `~` wait for the end of the line), GRBL on Serial2 (GPIO16 / GPIO17) and the data socket on 8282. The workshop network does not go into the image: it is set at the first start, from the bridge’s page. ESP3D 3.1 stays out, because it has a different data socket. `scripts/pod-esp3d.ts` first checks in the source the facts the app’s profile relies on, changes each line exactly once and adds a probe unit, compiled with the source. The merged image (from 0x0) is checked piece by piece, and esptool validates it too. The owner’s guide, `docs/masina/pod-esp3d.md`: writing from the browser, the network, the wires, the app. **The proofs:** 10 tests on paper; the facts and the three-line diff on the real source; the build, with the probe unit; the image checked. The first run stopped, with the reason, at the application’s address, which was missing from the PlatformIO metadata; it now comes from the partition table, as on the platform. Not proven until 3.6e: booting on the board."
@@ -2136,6 +2144,10 @@
     "c522fbef9a2f41e6": {
       "ro": "Regiunea păstrată, cu oracolul întâi",
       "en": "The kept region, oracle first"
+    },
+    "c5fc5e4bcc14011e": {
+      "ro": "**Cuțitul pe pânză și opțiunile tăierii** (în lucru; fără mașină; ADR 0181, propus; „vreau sa mai lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”; în worktree-ul `taiere`, pe ramura `wip/10.3-taiere-conversie`). Propunerea: unealta **Cuțit (K)**, după Noduri, care taie direct pe pânză, cu felurile Linie, Pen, Liber, Foarfecă și Retează, cu calculul în worker și un singur pas de anulare; opțiunile comune cu panoul Taie (închiderea, spațiul sau suprapunerea între bucăți, prelungirea capetelor, partea păstrată, cuțitul-formă șters după tăiere); linia la orice unghi; îmbinarea pe tăieturile drepte (zigzag, val, dinți drepți, coadă de rândunică, puzzle, cu raza colțurilor); tăierea în panouri (egale sau din colț, grupate pe panou). Feliile 10.3↑f–10.3↑k; patru întrebări la owner, cu schița și formularul lor (artifact privat). Codul vine după răspunsuri.",
+      "en": "**The knife on the canvas and the cutting options** (in progress; no machine; ADR 0181, proposed; “vreau sa mai lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”; in the `taiere` worktree, on the `wip/10.3-taiere-conversie` branch). The proposal: a **Knife (K)** tool, after Nodes, that cuts directly on the canvas, with the Line, Pen, Freehand, Scissors and Trim modes, computed in the worker and undone in a single step; options shared with the Cut panel (closing, a gap or an overlap between the pieces, extending the ends, keeping one side, deleting the shape knife after the cut); the line at any angle; joints on straight cuts (zigzag, wave, square teeth, dovetail, puzzle, with the corner radius); cutting into panels (equal or from the corner, grouped per panel). Slices 10.3↑f–10.3↑k; four questions for the owner, with their sketch and form (a private artifact). The code comes after the answers."
     },
     "c631eb99a8754857": {
       "ro": "**Jog, zero și palparea Z, pe mașina simulată** (ADR 0082; „Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). În panoul **Mașina**, secțiunea Poziționare: **Coordonatele de lucru** (G54–G59, citite de la mașină), jog-ul cu pași de 0,1–100 mm (diagonalele într-o singură mișcare, **Oprește jog-ul**), **Zero XY** / **Zero Z** și **Palpează Z** cu placa de contact (două atingeri, Z0 = atingerea minus grosimea, freza ridicată la capăt, modul mașinii pus la loc). Zero-ul și palparea se scriu în sistemul programului încărcat, cu numele lui pe buton; nepotrivirea cu cel activ se spune; lângă zero, unde e Z0 pentru programul exportat. Ce nu se poate acum e dezactivat, cu motivul (alarma, lucrarea, mașina în mișcare). Pe instanța de test, mașina simulată are placa la Z −25. **Treceri:** (1) emulatorul întâi (jog-ul, palparea, `WCO:` în rapoarte: fără el, un zero nu se vedea pe ecran), procedurile pure, sesiunea, panoul; prima palpare pe emulator a picat cu `error:9`: atingerea fină pleca cât retragerea (un jog) încă mergea, iar GRBL refuză G-code-ul în Jog, deci G-code-ul procedurilor pleacă doar pe un Idle proaspăt; mutațiile: 55 / 59, două echivalente scoase din cod, două prinse de probe noi (o repornire cât un zero așteaptă, un port fără banner); pe panou, 4 / 4 prinse de e2e.",

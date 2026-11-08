@@ -6867,3 +6867,40 @@ căzute, din CI).
   dreptunghi), netezirea (200 de linii → 14 curbe la 0,008 mm; treptele de 0,5 mm rămân la 0,01 și devin 9 curbe la 0,5); nicio
   eroare în consolă.
 
+## 2026-11-08 — Linia tăierii continuă: cuțitul pe pânză și opțiunile tăierii (ADR 0181, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mai lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil” (owner-ul,
+în sesiunea liniei `taiere`).
+**Started:** 08.11, 09:50. **Completed:** 08.11, 10:50 (cercetarea, ADR-ul și schița; codul lui 10.3↑f așteaptă răspunsurile).
+
+- **Cercetarea:** în cvs2 se refolosesc cuțitul-formă din 10.3↑b (taie cu orice cale dată în mm ai foii, deci unealta nu
+  trebuie să pună cuțitul în document), gestul Pen-ului (ADR 0063), pașii de 15° ai liniei, lipirea, netezirea din 10.3↑e
+  (pentru mâna liberă) și offsetul căilor deschise (`offsetDeschis`, ADR 0037 §5, pentru spațiu); unealta Noduri nu desparte
+  o cale; tasta K e liberă (Ctrl+K e paleta). Referințe funcționale: cuțitul din CorelDRAW (linia din două puncte, Bézier,
+  mâna liberă; spațiu sau suprapunere între bucăți), foarfeca și „Divide Objects Below” din Illustrator, tăierea interactivă
+  din Vectric, îmbinările panourilor unei firme mari (puzzle, coadă de rândunică, colțurile cel puțin cât raza frezei).
+- **ADR 0181, propus:** unealta Cuțit (K), după Noduri, cu felurile Linie (Shift: 15°), Pen, Liber (netezit la ridicarea
+  mausului), Foarfecă (desparte un contur într-un punct; și butonul Desparte în unealta Noduri) și Retează (scoate cu un clic
+  bucata dintre două locuri comune); cuțitul trăiește doar cât gestul, iar calculul e cererea lui „Taie cu…” ultima formă,
+  cu calea dată. Opțiunile comune cu panoul Taie: închiderea, spațiul sau suprapunerea (lățimea totală, centrată), prelungirea
+  capetelor (până ies din formă sau linia întreagă), partea păstrată (doar din formele tăiate), cuțitul-formă șters după
+  tăiere; linia prin X, Y la orice unghi; îmbinarea pe tăieturile drepte (zigzag, val, dinți drepți, coadă de rândunică,
+  puzzle; pasul, înălțimea, raza colțurilor; jocul e spațiul); tăierea în panouri (egale sau din colț, grupate „Panoul 1” …).
+  Feliile 10.3↑f–10.3↑k. Proba pe hârtie: pătratul tăiat de la (−10, 20) la (110, 60): 4 000 și 6 000 mm²; cu spațiul 6 la
+  X = 50: 47 × 100; cercul R50 cu spațiul 6: segmentele de 3 627,171 mm²; inelul R50 / R30 la Y = 0 cu spațiul 3: „U”-urile
+  de 2 453,259 mm²; linia prin (20, 50) la 30°: 6 732,051 și 3 267,949 mm²; foarfeca pe cercul R50: 314,159 mm; zigzagul la
+  X = 50 (pasul 20): patru dinți, 10 mm drepți la capete, câte 5 000 mm²; panourile unei firme de 2 400 × 1 000 la
+  1 200 × 900: patru egale de 1 200 × 500, sau două de 1 200 × 900 și două de 1 200 × 100 din colț.
+- **Patru întrebări:** ordinea feliilor, ce taie cuțitul fără forme alese, când taie, retezatul cu un clic. Ultimul fusese
+  respins în ADR 0180 §13; regula ADR-urilor cere cuvântul owner-ului ca să-l întoarcă, deci e întrebare, nu opțiune.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/7jiFhVpNn9vAcc2Mjpd5bW> (privată, a owner-ului;
+  răspunsurile stau în baza paginii, colecția `raspunsuri`: `q1`–`q4` cu `optiune`, `nota`, `la`, și `general`). Desenele
+  sunt calculate. Proba paginii, în Edge fără fereastră: fără erori în consolă și fără derulare orizontală, la 1 280 px
+  (luminos) și la 390 px (întunecat); salvarea, cu un document de probă scris, citit și șters.
+- **Fișa:** rândul 10.3↑f (în lucru) și răspunsurile în coada owner-ului. Rândul întrebărilor ADR 0180 (răspunse pe 06.11,
+  scos atunci din coadă și adus înapoi de unirea `72def2a`) a ieșit din coadă.
+- **Mărimea, estimat:** pornirea crește cu sub 0,5 kB (butonul uneltei); restul vine la prima alegere a cuțitului, ~17,5 kB
+  pe toate feliile (totalul azi 543,1 / 600 kB; linia a adăugat deja ~18,5 kB, peste ghidul de ~10).
+- **Fără cod.** `origin/main` (`ea493a5`, doar documente) se unește în ramură înaintea primului commit de cod, cum a cerut
+  sesiunea principală.
+
