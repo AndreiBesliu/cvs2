@@ -1,11 +1,13 @@
 # ADR 0181 — Cuțitul pe pânză și opțiunile tăierii
 
-**Starea:** propus pe 08.11.2026, pentru feliile 10.3↑f–10.3↑k, fără mașină, în worktree-ul `taiere` (ramura
-`wip/10.3-taiere-conversie`). Cererea owner-ului, din 08.11, după linia ADR 0180 încheiată: „vreau sa mai lucram la taiere,
-vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”. **Completează:** ADR 0180 (tăierea exactă, cuțitul-formă,
+**Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), pentru feliile 10.3↑f–10.3↑k, fără mașină, în worktree-ul
+`taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 08.11, după linia ADR 0180 încheiată: „vreau sa mai
+lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”. Răspunsurile lui: „ok, la toate
+recomandarile” (1a, 2a, 3a, 4a), cu nota „vreau sa putem adauga un shape/vector existent ca cutit, de exemplu am facut un text
+anume si vreau sa decupez cu el sau cu alte forme deja existente” (§1, felul Formă, în 10.3↑f). **Completează:** ADR 0180 (tăierea exactă, cuțitul-formă,
 închiderea, unde ajung bucățile și rolul lor), ADR 0050 și ADR 0051 (lipirea, desenul prin tragere), ADR 0063 (gestul
-Pen-ului), ADR 0037 §5 (offsetul unei căi deschise), ADR 0130 (gruparea). **Schimbă**, dacă owner-ul alege 4a: ADR 0180 §13 și
-„Ce am respins” (tăierea cu un clic pe bucată). **Documentul:** neschimbat (v20): cuțitul uneltei nu se salvează, iar
+Pen-ului), ADR 0037 §5 (offsetul unei căi deschise), ADR 0130 (gruparea). **Schimbă** (răspunsul 4a): ADR 0180 §13 și „Ce am
+respins” (tăierea cu un clic pe bucată). **Documentul:** neschimbat (v20): cuțitul uneltei nu se salvează, iar
 rezultatul e din tipurile de azi.
 
 **Problema.** Cuțitul de azi stă doar în panoul Taie: linia verticală X = …, cea orizontală Y = …, un ghidaj sau ultima formă
@@ -50,6 +52,12 @@ de 3 mm, își ține mijlocul legat de foaie); nici face din tăietura dreaptă 
    - **Pen:** nod cu nod, ca Pen-ul (clic = colț, tragere = curbă); Enter sau dublu clic taie, Backspace scoate ultimul nod.
    - **Liber:** trasat cu mâna, netezit la ridicarea mausului (netezirea din 10.3↑e, la o jumătate de pixel a vederii: fină
      la zoom mare).
+   - **Formă** (nota owner-ului): un clic pe o formă existentă (un text, un cerc, o piesă din mai multe contururi) taie cu
+     ea; Shift + clic adaugă forme la cuțit, iar clicul fără Shift (sau Enter) taie cu toate. Contururile cuțitului se citesc
+     împreună, par-impar, ca la o piesă cu mai multe contururi (un text: literele, cu găurile lor), deci un text taie dintr-o
+     placă literele și placa cu golurile lor. Cuțitul rămâne (sau se șterge, cu opțiunea din §2); cu „Păstrează” înăuntru
+     sau în afară, formele se decupează după el. Din panou, „Taie cu…” și „Decupează la” ultima formă aleasă primesc și azi
+     un text.
    - **Foarfecă** (§4) și **Retează** (§5).
 
    Lipirea (de ghidaje, noduri și grilă; Alt o inversează) e cea a desenului; Esc renunță la gest. Cât tragi, se văd cuțitul
@@ -108,7 +116,8 @@ de 3 mm, își ține mijlocul legat de foaie); nici face din tăietura dreaptă 
 
 Ordinea din întrebarea 1, varianta recomandată:
 
-- **10.3↑f:** unealta Cuțit (K), cu felurile Linie, Pen și Liber (§1), „Închide bucățile” în bara ei și previzualizarea.
+- **10.3↑f:** unealta Cuțit (K), cu felurile Linie, Pen, Liber și Formă (§1), „Închide bucățile” în bara ei și
+  previzualizarea.
 - **10.3↑g:** Foarfeca și Retează (§4, §5), plus Desparte în unealta Noduri.
 - **10.3↑h:** Prelungește capetele, Păstrează o parte, cuțitul-formă care se șterge (§2) și linia la orice unghi (§3).
 - **10.3↑i:** spațiul și suprapunerea (§2).
@@ -134,10 +143,10 @@ primului commit de cod, `origin/main` unit în ramură.
 - **E2e:** fiecare fel al cuțitului, pe un DXF importat, cu anularea; tasta K; previzualizarea.
 - **Otrăvurile țintite** (`test/otravuri/10.3f.py`, …), rulate în clona ramurii, în afara Drive-ului.
 
-## Întrebările pentru owner
+## Întrebările pentru owner și răspunsurile lui
 
-Formularul lor, cu desenele înainte / după, e pagina „Cuțitul și opțiunile tăierii” (privată, a owner-ului). Recomandarea e
-prima variantă. Restul opțiunilor (§2–§7) pot sta toate împreună, deci nu sunt întrebări: vin pe rând, în felii, iar implicitul
+Formularul lor, cu desenele înainte / după, e pagina „Cuțitul și opțiunile tăierii” (privată, a owner-ului). **Răspunsurile,
+din 08.11:** 1a, 2a, 3a, 4a, adică recomandările, cu nota de la §1 (felul Formă). Recomandarea e prima variantă. Restul opțiunilor (§2–§7) pot sta toate împreună, deci nu sunt întrebări: vin pe rând, în felii, iar implicitul
 e cel scris.
 
 1. **Ordinea feliilor:** a) întâi unealta Cuțit (Linie, Pen, Liber), apoi Foarfeca și Retează, opțiunile mici, spațiul,

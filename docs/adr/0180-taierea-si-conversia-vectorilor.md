@@ -5,7 +5,8 @@ worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, d
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
 cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
 06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) și **felia 10.3↑c** (decuparea, §4) pe 07.11.
-**Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+**Schimbat de** ADR 0181 (08.11, răspunsul 4a): §13 și „Ce am respins”, tăierea cu un clic pe bucată (felul Retează al
+cuțitului). **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 
