@@ -315,7 +315,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 20;
+export const SCHEMA_CURENTA_O = 22;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2012,17 +2012,25 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
  * - v20 (ADR 0170 §1, „Contractul ușii”): `incrustatie` opțional, un obiect deschis pe orice fel: `fel` = 'v', `joc` și
  *   `fierastrau` finite în (0, 1 000], `margine` finită în [0, 10 000], `jurDop` = 'fata' / 'banda', toate cerute. Potrivirea cu
  *   felul, freza și adâncimea e a lucrării (textul o spune).
- * - Migrările v10 → … → v20 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
+ * - v21 (ADR 0171 §1): `incrustatie` poate fi și cu pereți drepți, `fel` = 'drept': `jocLateral` finit în (0, 1 000],
+ *   `dop` = 'ridicat' / 'decupat', `sprijin` = 'fund' / 'fata', `joc` și `fierastrau` ca la V, `margine` ca la V, toate cerute;
+ *   `frezeDop` opțional, o listă ca frezele de rest. Felul operației (buzunarul) îl cere lucrarea. Pe un v20, `fel` = 'drept' e
+ *   refuzat de ușa lui, iar `jocLateral`, `dop`, `sprijin` sau `frezeDop` în `incrustatie` sunt ciocniri la v20 → v21.
+ * - v22 (ADR 0172): incrustația în V poate avea `banda` (cu `jurDop` = 'banda'), un obiect deschis: `latime` opțional, finit
+ *   în (0, 10 000]; `decupare` true / false; `grosimePlaca` finit în (0, 1 000]; `freza` opțional, ca scula operației; `punti`
+ *   ca urechile. Potrivirea (lățimea cea mai mică, placa față de dop și de punți, freza plată) e a lucrării. Pe un v21,
+ *   `banda` în `incrustatie` e o ciocnire la v21 → v22.
+ * - Migrările v10 → … → v22 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
  *   document vN valid”), cu câmpul PROPRIU: v10 cu `pasLateral` pe o operație (un buzunar e refuzat deja de schema v10);
  *   v11 cu `coborare`; v12 cu `retragereCompleta` (găurirea e refuzată de schema v12); v13 cu `forma` pe scula operației
  *   (V-carve-ul, de schema v13); v14 cu `fundPlat`; v15 cu `directie`, sau cu `varf` în forma frezei operației ori a
- *   fundului ei plat; v16 cu `rest` pe operație sau pe fundul ei plat; v17 cu `strategie`; v18 cu `rang`; v19 cu `incrustatie`. Verificarea apără tot lanțul
+ *   fundului ei plat; v16 cu `rest` pe operație sau pe fundul ei plat; v17 cu `strategie`; v18 cu `rang`; v19 cu `incrustatie`; v20 cu `jocLateral`, `dop`, `sprijin` sau `frezeDop` în `incrustatie`; v21 cu `banda` în `incrustatie`. Verificarea apără tot lanțul
  *   (ADR 0070, „Respinse”): un v4 cu `pasLateral` trece de v4 … v10 (câmp necunoscut) și se ciocnește la v10 → v11.
  *   ALEGERE: ciocnirea e doar unde o pune textul (pe operație, pe scula sau forma ei, pe fundul plat); același nume în
  *   altă parte (pe sculă, în afara formei, pe nod, pe piesă, sus) rămâne un câmp necunoscut oarecare.
- * - Ușa (ADR 0024, precizările 9–10; ADR 0070 §2): un v20 valid trece neschimbat (o copie, cu cheile `__proto__`);
- *   un document vechi urcă la v20; unul mai nou, fără versiune întreagă sau care nu e obiect se refuză. Ușa curentă (fără
- *   migrări) întoarce `null` pentru o versiune întreagă 1 … 19 (cere migrările), altfel exact verdictul ușii întregi.
+ * - Ușa (ADR 0024, precizările 9–10; ADR 0070 §2): un v22 valid trece neschimbat (o copie, cu cheile `__proto__`);
+ *   un document vechi urcă la v22; unul mai nou, fără versiune întreagă sau care nu e obiect se refuză. Ușa curentă (fără
+ *   migrări) întoarce `null` pentru o versiune întreagă 1 … 21 (cere migrările), altfel exact verdictul ușii întregi.
  * - Imbricarea: tot JSON-ul, cu obiectele noi, are cel mult 200 de niveluri (ADR 0024, precizarea 5).
  *
  * Categoriile noi: `[pas-lateral]`, `[coborare]`, `[retragere]`, `[fund-plat]`, `[directie]`, `[rest]`, `[strategie]`,
@@ -2073,7 +2081,10 @@ export const RANG_MAXIM_O = 100_000;
  * (0, 1 000] mm (plafonul adâncimii unei operații); `margine` finită în [0, 10 000] mm (plafonul laturii); `jurDop` = 'fata' sau
  * 'banda'; toate cinci cerute.
  */
-export const INCRUSTATIE_O = { jocMax: 1_000, fierastrauMax: 1_000, margineMax: 10_000, jurDop: ['fata', 'banda'] } as const;
+export const INCRUSTATIE_O = {
+  jocMax: 1_000, fierastrauMax: 1_000, margineMax: 10_000, jurDop: ['fata', 'banda'], jocLateralMax: 1_000, dop: ['ridicat', 'decupat'],
+  sprijin: ['fund', 'fata'], latimeBandaMax: 10_000, grosimePlacaMax: 1_000,
+} as const;
 
 /** Felurile operației, pe versiune (ADR 0069 §1, ADR 0087 §6, ADR 0090 §5). */
 export function felurileO(versiune: number): readonly string[] {
@@ -2108,6 +2119,8 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   18: ['strategie'],
   19: ['rang'],
   20: ['incrustatie'],
+  21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
+  22: ['incrustatie.banda'],
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -2148,6 +2161,17 @@ export type OperatieV18O = OperatieV17O & { strategie?: StrategieO };
 export type OperatieV19O = OperatieV18O & { rang?: number };
 export type IncrustatieO = Liber & { fel: 'v'; joc: number; fierastrau: number; margine: number; jurDop: (typeof INCRUSTATIE_O.jurDop)[number] };
 export type OperatieV20O = OperatieV19O & { incrustatie?: IncrustatieO };
+/** v21 (ADR 0171): și incrustația cu pereți drepți. */
+export type IncrustatieDreaptaO = Liber & {
+  fel: 'drept'; jocLateral: number; dop: (typeof INCRUSTATIE_O.dop)[number]; sprijin: (typeof INCRUSTATIE_O.sprijin)[number];
+  joc: number; fierastrau: number; margine: number; frezeDop?: FrezaRestO[];
+};
+export type OperatieV21O = OperatieV19O & { incrustatie?: IncrustatieO | IncrustatieDreaptaO };
+/** v22 (ADR 0172): și banda dopului în V. */
+export type BandaO = Liber & {
+  latime?: number; decupare: boolean; grosimePlaca: number; freza?: Liber; punti: Liber & { numar: number; latime: number; grosime: number };
+};
+export type OperatieV22O = OperatieV19O & { incrustatie?: (IncrustatieO & { banda?: BandaO }) | IncrustatieDreaptaO };
 
 export type PiesaV11O = PiesaO & { operatii: OperatieV11O[] };
 export type PiesaV12O = PiesaO & { operatii: OperatieV12O[] };
@@ -2159,6 +2183,8 @@ export type PiesaV17O = PiesaO & { operatii: OperatieV17O[] };
 export type PiesaV18O = PiesaO & { operatii: OperatieV18O[] };
 export type PiesaV19O = PiesaO & { operatii: OperatieV19O[] };
 export type PiesaV20O = PiesaO & { operatii: OperatieV20O[] };
+export type PiesaV21O = PiesaO & { operatii: OperatieV21O[] };
+export type PiesaV22O = PiesaO & { operatii: OperatieV22O[] };
 
 export type DocV11O = Liber & { schema: 11; rev: number; piese: PiesaV11O[]; foi: FoaieO[] };
 export type DocV12O = Liber & { schema: 12; rev: number; piese: PiesaV12O[]; foi: FoaieO[] };
@@ -2170,9 +2196,11 @@ export type DocV17O = Liber & { schema: 17; rev: number; piese: PiesaV17O[]; foi
 export type DocV18O = Liber & { schema: 18; rev: number; piese: PiesaV18O[]; foi: FoaieO[] };
 export type DocV19O = Liber & { schema: 19; rev: number; piese: PiesaV19O[]; foi: FoaieO[] };
 export type DocV20O = Liber & { schema: 20; rev: number; piese: PiesaV20O[]; foi: FoaieO[] };
+export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi: FoaieO[] };
+export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
-/** Un document v11 … v20, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O;
+/** Un document v11 … v22, după numărul lui. */
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2301,11 +2329,24 @@ export function problemeStrategieO(s: unknown): string[] {
 }
 
 /** ADR 0170 §1: incrustația (cu marginile din `INCRUSTATIE_O`). */
-export function problemeIncrustatieO(i: unknown): string[] {
+export function problemeIncrustatieO(i: unknown, versiune = 20): string[] {
   if (!esteObiect(i)) return [` = ${arata(i)} nu e un obiect { fel: 'v', joc, fierastrau, margine, jurDop }`];
-  const rez: string[] = [];
   const p = INCRUSTATIE_O;
-  if (i['fel'] !== 'v') rez.push(`.fel = ${are(i, 'fel') ? arata(i['fel']) : '(lipsă)'} nu e 'v'`);
+  // v21 (ADR 0171 §1): cu pereți drepți, `fel` = 'drept', cu jocul lateral, felul dopului, sprijinul și frezele lui (opționale,
+  // o listă ca frezele de rest), plus `joc`, `fierastrau`, `margine` ca la V; fără `jurDop` (un câmp necunoscut oarecare).
+  if (versiune >= 21 && i['fel'] === 'drept') {
+    const rez: string[] = [];
+    if (!pozitivPana(i['jocLateral'], p.jocLateralMax)) rez.push(`.jocLateral = ${are(i, 'jocLateral') ? arata(i['jocLateral']) : '(lipsă)'} nu e în (0, ${p.jocLateralMax}]`);
+    if (!(p.dop as readonly unknown[]).includes(i['dop'])) rez.push(`.dop = ${are(i, 'dop') ? arata(i['dop']) : '(lipsă)'} nu e ${p.dop.join(' / ')}`);
+    if (!(p.sprijin as readonly unknown[]).includes(i['sprijin'])) rez.push(`.sprijin = ${are(i, 'sprijin') ? arata(i['sprijin']) : '(lipsă)'} nu e ${p.sprijin.join(' / ')}`);
+    if (!pozitivPana(i['joc'], p.jocMax)) rez.push(`.joc = ${are(i, 'joc') ? arata(i['joc']) : '(lipsă)'} nu e în (0, ${p.jocMax}]`);
+    if (!pozitivPana(i['fierastrau'], p.fierastrauMax)) rez.push(`.fierastrau = ${are(i, 'fierastrau') ? arata(i['fierastrau']) : '(lipsă)'} nu e în (0, ${p.fierastrauMax}]`);
+    if (!intre(i['margine'], 0, p.margineMax)) rez.push(`.margine = ${are(i, 'margine') ? arata(i['margine']) : '(lipsă)'} nu e în [0, ${p.margineMax}]`);
+    if (are(i, 'frezeDop')) for (const m of problemeRestO(i['frezeDop'], versiune)) rez.push(`.frezeDop${m}`);
+    return rez;
+  }
+  const rez: string[] = [];
+  if (i['fel'] !== 'v') rez.push(`.fel = ${are(i, 'fel') ? arata(i['fel']) : '(lipsă)'} nu e ${versiune >= 21 ? "'v' / 'drept'" : "'v'"}`);
   if (!pozitivPana(i['joc'], p.jocMax)) rez.push(`.joc = ${are(i, 'joc') ? arata(i['joc']) : '(lipsă)'} nu e în (0, ${p.jocMax}]`);
   if (!pozitivPana(i['fierastrau'], p.fierastrauMax)) {
     rez.push(`.fierastrau = ${are(i, 'fierastrau') ? arata(i['fierastrau']) : '(lipsă)'} nu e în (0, ${p.fierastrauMax}]`);
@@ -2314,6 +2355,28 @@ export function problemeIncrustatieO(i: unknown): string[] {
   if (!(p.jurDop as readonly unknown[]).includes(i['jurDop'])) {
     rez.push(`.jurDop = ${are(i, 'jurDop') ? arata(i['jurDop']) : '(lipsă)'} nu e ${p.jurDop.join(' / ')}`);
   }
+  if (versiune >= 22 && are(i, 'banda')) for (const m of problemeBandaO(i['banda'], versiune)) rez.push(`.banda${m}`);
+  return rez;
+}
+
+/**
+ * ADR 0172 (v22): banda dopului în V, un obiect deschis: `latime` opțional, finit în (0, 10 000]; `decupare` true / false;
+ * `grosimePlaca` finit în (0, 1 000]; `freza` opțional, ca scula unei operații; `punti` ca urechile (un întreg 1–100, lățimea și
+ * grosimea pozitive). Potrivirea (lățimea cea mai mică, placa față de dop, freza plată) e a lucrării.
+ */
+export function problemeBandaO(b: unknown, versiune: number): string[] {
+  if (!esteObiect(b)) return [` = ${arata(b)} nu e un obiect { decupare, grosimePlaca, punti }`];
+  const rez: string[] = [];
+  const p = INCRUSTATIE_O;
+  if (are(b, 'latime') && !pozitivPana(b['latime'], p.latimeBandaMax)) rez.push(`.latime = ${arata(b['latime'])} nu e în (0, ${p.latimeBandaMax}]`);
+  if (typeof b['decupare'] !== 'boolean') rez.push(`.decupare = ${are(b, 'decupare') ? arata(b['decupare']) : '(lipsă)'} nu e true / false`);
+  if (!pozitivPana(b['grosimePlaca'], p.grosimePlacaMax)) {
+    rez.push(`.grosimePlaca = ${are(b, 'grosimePlaca') ? arata(b['grosimePlaca']) : '(lipsă)'} nu e în (0, ${p.grosimePlacaMax}]`);
+  }
+  if (are(b, 'freza')) for (const m of problemeSculaO(b['freza'], versiune)) rez.push(`.freza${m}`);
+  const punti = b['punti'];
+  if (!esteObiect(punti)) rez.push(`.punti = ${are(b, 'punti') ? arata(punti) : '(lipsă)'} nu e un obiect { numar, latime, grosime }`);
+  else for (const m of problemeUrechiO({ urechi: punti })) rez.push(`.punti${m}`);
   return rez;
 }
 
@@ -2346,7 +2409,7 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   if (versiune >= 19 && are(op, 'rang') && !intreg(op['rang'], 0, RANG_MAXIM_O)) {
     cu('rang', 'rang', [` = ${arata(op['rang'])} nu e un întreg 0–${RANG_MAXIM_O}`]);
   }
-  if (versiune >= 20 && are(op, 'incrustatie')) cu('incrustatie', 'incrustatie', problemeIncrustatieO(op['incrustatie']));
+  if (versiune >= 20 && are(op, 'incrustatie')) cu('incrustatie', 'incrustatie', problemeIncrustatieO(op['incrustatie'], versiune));
   return rez;
 }
 
@@ -2448,14 +2511,14 @@ export function ridicaPanaLaO(doc: unknown, la: number): Liber {
   return { ...structuredClone(baza), schema: la };
 }
 
-/** Ușa curentă (v20): motivele; goală = primit. */
+/** Ușa curentă (v22): motivele; goală = primit. */
 export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v20 (o copie; un v20 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV20O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV20O;
+/** Un document primit de ușa curentă, cum iese din ea: v22 (o copie; un v22 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV22O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV22O;
 }
 
 /**
@@ -2479,6 +2542,8 @@ export function verificaV17(doc: unknown): string[] { return verificaVnO(doc, 17
 export function verificaV18(doc: unknown): string[] { return verificaVnO(doc, 18); }
 export function verificaV19(doc: unknown): string[] { return verificaVnO(doc, 19); }
 export function verificaV20(doc: unknown): string[] { return verificaVnO(doc, 20); }
+export function verificaV21(doc: unknown): string[] { return verificaVnO(doc, 21); }
+export function verificaV22(doc: unknown): string[] { return verificaVnO(doc, 22); }
 export function verificaPanaLaV11O(doc: unknown): string[] { return verificaPanaLaO(doc, 11); }
 export function verificaPanaLaV12O(doc: unknown): string[] { return verificaPanaLaO(doc, 12); }
 export function verificaPanaLaV13O(doc: unknown): string[] { return verificaPanaLaO(doc, 13); }
@@ -2488,6 +2553,8 @@ export function verificaPanaLaV16O(doc: unknown): string[] { return verificaPana
 export function verificaPanaLaV17O(doc: unknown): string[] { return verificaPanaLaO(doc, 17); }
 export function verificaPanaLaV18O(doc: unknown): string[] { return verificaPanaLaO(doc, 18); }
 export function verificaPanaLaV19O(doc: unknown): string[] { return verificaPanaLaO(doc, 19); }
+export function verificaPanaLaV20O(doc: unknown): string[] { return verificaPanaLaO(doc, 20); }
+export function verificaPanaLaV21O(doc: unknown): string[] { return verificaPanaLaO(doc, 21); }
 export function ridicaV11O(doc: unknown): DocV11O { return ridicaPanaLaO(doc, 11) as DocV11O; }
 export function ridicaV12O(doc: unknown): DocV12O { return ridicaPanaLaO(doc, 12) as DocV12O; }
 export function ridicaV13O(doc: unknown): DocV13O { return ridicaPanaLaO(doc, 13) as DocV13O; }
@@ -2592,3 +2659,7 @@ export function migreazaV1V19O(v1: DocV1O): DocV19O { return ridicaPanaLaO(v1, 1
 export function migreazaV18V19O(v18: DocV18O): DocV19O { return ridicaPanaLaO(v18, 19) as DocV19O; }
 export function migreazaV1V20O(v1: DocV1O): DocV20O { return ridicaPanaLaO(v1, 20) as DocV20O; }
 export function migreazaV19V20O(v19: DocV19O): DocV20O { return ridicaPanaLaO(v19, 20) as DocV20O; }
+export function migreazaV1V21O(v1: DocV1O): DocV21O { return ridicaPanaLaO(v1, 21) as DocV21O; }
+export function migreazaV20V21O(v20: DocV20O): DocV21O { return ridicaPanaLaO(v20, 21) as DocV21O; }
+export function migreazaV1V22O(v1: DocV1O): DocV22O { return ridicaPanaLaO(v1, 22) as DocV22O; }
+export function migreazaV21V22O(v21: DocV21O): DocV22O { return ridicaPanaLaO(v21, 22) as DocV22O; }

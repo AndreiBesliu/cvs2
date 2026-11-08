@@ -1,8 +1,25 @@
 # ADR 0171 — Incrustația cu pereți drepți: locașul și dopul cu aceeași freză, colțurile potrivite
 
-**Starea:** propus pe 07.11.2026, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia
-12.1↑b, după nucleul V (12.1↑, ADR 0170), fără mașină. Cererea owner-ului: „Da, 12.1↑b”, după răspunsul 6 din ADR 0170 („si a
-si b”: amândouă tehnicile, pereții drepți imediat după nucleul V).
+**Starea:** acceptat pe 07.11.2026. Owner-ul a întrebat „cate dintre ele pot fi puse impreuna ca optiuni puse la dispozitia
+utilizatorului?”, apoi a răspuns „Da, toate trei” la propunerea de a le pune pe toate trei (1, 2 și 4) în felie. Propus tot pe
+07.11, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia 12.1↑b, după nucleul V (12.1↑,
+ADR 0170), fără mașină. Cererea owner-ului: „Da, 12.1↑b”, după răspunsul 6 din ADR 0170 („si a si b”: amândouă tehnicile,
+pereții drepți imediat după nucleul V).
+
+**Ce au schimbat răspunsurile** (față de propunerea de mai jos, care rămâne valabilă în rest):
+- **1, 2 și 4, alese la export:**
+  - dopul ridicat pe semifabricatul lui sau decupat prin toată placa, cu punți (`dop: 'ridicat' | 'decupat'`);
+  - sprijinul pe fund sau pe față (`sprijin`), doar la dopul ridicat (cel decupat stă mereu pe fund);
+  - frezele dopului, implicit aceleași ca ale locașului, sau ale lui (`frezeDop`).
+- **Frezele dopului pot fi oricare:** locașul se închide cu raza celei mai mici freze a dopului minus jocul (nu a locașului),
+  deci unghiurile dopului au exact raza frezei lui. Condiția „cel mult cât cea mai mică a locașului” nu mai e necesară.
+- **Dopul decupat:** desenul neoglindit (intră în locaș fără întoarcere), tăiat ca exterior, cu punți, prin placa lui de
+  grosime D + H; partea care iese peste placă (H) se rindeluiește. Câmpul `fierastrau` ține deci H în ambele feluri: ce rămâne
+  peste placă, de tăiat sau de rindeluit.
+- **3, 5 și 6:** recomandările (colțurile potrivite de aplicație, jocul lateral implicit 0,1 mm, rolul nou). Răspunsul a fost
+  la întrebarea despre opțiuni: 3 și 6 nu sunt opțiuni utile, iar 5 e doar o valoare implicită, pe care o schimbi oricând.
+- **Cât se retrage cel mai ascuțit vârf** apare în fereastra exportului, după calcul (o calculează lucrarea, din contururi),
+  nu în panou. În panou rămân razele, jocul, înălțimea dopului și grosimea semifabricatului.
 **Rândul din prag:** „Inlay în V (D) ȘI inlay cu pereți drepți, simplu sau în trepte (S), fiecare cu criteriul lui”
 (`ACOPERIRE-ARTCAM-DESKPROTO.md`). **Criteriul din prag, pentru pereții drepți:** steaua cu 5 colțuri, freza Ø3, adâncimea 6,
 jocul 0,1; dopul simulat și oglindit intră în cavitate cu 0,10 mm joc (± 0,02) pe tot conturul. **Documentul:** v21. Gaura

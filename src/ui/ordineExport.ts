@@ -5,8 +5,8 @@
  */
 
 /**
- * Ce îi trebuie ordinii despre un rând: piesa, latura, despărțirea, valorile care unesc un V-carve (null pe alt fel) și
- * rândurile altor piese din interiorul formelor lui (`cuprinse`, `src/model/ordine.ts`).
+ * Ce îi trebuie ordinii despre un rând: piesa, latura, despărțirea, valorile care unesc un V-carve sau o incrustație cu pereți
+ * drepți (ADR 0171; null pe alt fel) și rândurile altor piese din interiorul formelor lui (`cuprinse`, `src/model/ordine.ts`).
  */
 export type RandOrdine = {
   readonly piesa: string;
@@ -45,7 +45,8 @@ export function muta(ordine: readonly string[], de: number, la: number): string[
 
 /**
  * Rândurile legate (ADR 0133 §2): V-carve-urile aceleiași piese, cu aceleași valori, se sapă ca o singură regiune, la primul
- * dintre ele din ordine. Fiecare rând de după primul primește locul acestuia (1 … n).
+ * dintre ele din ordine; la fel incrustațiile cu pereți drepți (ADR 0171), cu cheia lor. Fiecare rând de după primul primește
+ * locul acestuia (1 … n).
  */
 export function legaturi(ordine: readonly string[], randuri: ReadonlyMap<string, RandOrdine>): Map<string, number> {
   const primul = new Map<string, number>();

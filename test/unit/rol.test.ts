@@ -39,10 +39,10 @@ const litera = (): Piesa => grup('L', [el('o', DR(30, 40)), el('h', DR(10, 20), 
 const forma = (ops: readonly Operatie[] | null): unknown => ops?.map((o) => [o.id, o.tip, o.latura, o.noduri]);
 
 test('rolurile oferite: doar cele care se potrivesc tuturor formelor piesei', () => {
-  assert.deepEqual(roluriOferite(simpla('d', DR(30, 20))), ['exterior', 'interior', 'pe-linie', 'buzunar', 'vcarve', 'incrustatie']);
-  assert.deepEqual(roluriOferite(simpla('c', CERC(5))), ['exterior', 'interior', 'pe-linie', 'buzunar', 'gaurire', 'vcarve', 'incrustatie']);
+  assert.deepEqual(roluriOferite(simpla('d', DR(30, 20))), ['exterior', 'interior', 'pe-linie', 'buzunar', 'vcarve', 'incrustatie', 'incrustatie-drept']);
+  assert.deepEqual(roluriOferite(simpla('c', CERC(5))), ['exterior', 'interior', 'pe-linie', 'buzunar', 'gaurire', 'vcarve', 'incrustatie', 'incrustatie-drept']);
   assert.deepEqual(roluriOferite(simpla('l', LINIE([0, 0], [10, 0]))), ['pe-linie', 'stanga', 'dreapta']);
-  assert.deepEqual(roluriOferite(litera()), ['exterior', 'interior', 'pe-linie', 'buzunar', 'vcarve', 'incrustatie']);
+  assert.deepEqual(roluriOferite(litera()), ['exterior', 'interior', 'pe-linie', 'buzunar', 'vcarve', 'incrustatie', 'incrustatie-drept']);
   // Contururi și o cale deschisă: doar pe linie (restul, din export sau după degrupare).
   assert.deepEqual(roluriOferite(grup('m', [el('a', DR(10, 10)), el('b', LINIE([0, 20], [10, 20]))], [])), ['pe-linie']);
   // Două cercuri: și găurirea; două căi deschise: nici stânga, nici dreapta (sunt ale unei singure căi).
@@ -50,7 +50,7 @@ test('rolurile oferite: doar cele care se potrivesc tuturor formelor piesei', ()
   assert.deepEqual(roluriOferite(grup('ll', [el('a', LINIE([0, 0], [10, 0])), el('b', LINIE([0, 5], [10, 5]))], [])), ['pe-linie']);
   // Imbricarea peste buget (2 000 de contururi identice, fiecare în toate celelalte): fără exterior și interior.
   const suprapuse = grup('s', Array.from({ length: 2000 }, (_, k) => el(`s${k}`, DR(10, 10))), []);
-  assert.deepEqual(roluriOferite(suprapuse), ['pe-linie', 'buzunar', 'vcarve', 'incrustatie']);
+  assert.deepEqual(roluriOferite(suprapuse), ['pe-linie', 'buzunar', 'vcarve', 'incrustatie', 'incrustatie-drept']);
 });
 
 test('rolul recunoscut: al operațiilor exact așa cum le-ar da el', () => {

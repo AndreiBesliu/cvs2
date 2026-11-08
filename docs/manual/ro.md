@@ -719,7 +719,8 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 
 **Rolul de tăiere** se alege și din panoul de proprietăți, în secțiunea **Tăierea**, pentru oricâte forme alese: **exterior**,
 **interior**, **pe linie**, **stânga** sau **dreapta** (pe o cale deschisă), **buzunar**, **găurire** (doar cercuri),
-**V-carve** sau **incrustație în V** (vezi [Incrustația în V](#incrustatie)). Lista arată doar rolurile care se potrivesc tuturor formelor alese; „—”, când au roluri diferite. Rolul e al formei
+**V-carve**, **incrustație în V** (vezi [Incrustația în V](#incrustatie)) sau **incrustație cu pereți drepți** (vezi
+[Incrustația cu pereți drepți](#incrustatie-drept)). Lista arată doar rolurile care se potrivesc tuturor formelor alese; „—”, când au roluri diferite. Rolul e al formei
 întregi: pe o literă cu goluri, exteriorul taie conturul pe afară și golurile pe dinăuntru, iar buzunarul și V-carve-ul sapă
 litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensul, adâncimea și pasul; restul revine la
 implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
@@ -739,7 +740,7 @@ adresa de test față de cea live au lista lor.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
@@ -858,7 +859,7 @@ O **incrustație în V** pune un dop dintr-un lemn în locașul săpat în altul
 același desen, oglindit, săpat în V pe semifabricatul lui, ca să intre în locaș și să se oprească înainte de fund. Se alege ca
 rol: **incrustație în V**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista Tăietura a ferestrei **Exportă
 G-code**. Freza rândului e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
-și coboară fața semifabricatului dopului.
+și lemnul din jurul dopului.
 
 Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fereastra exportului:
 
@@ -867,28 +868,103 @@ Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fe
 - **Spațiul pentru fierăstrău** (H; implicit 2 mm): cât rămâne între cele două plăci după lipire, ca să tai cu fierăstrăul
   spatele semifabricatului dopului sau să-l rindeluiești. În fereastra exportului, **Același spațiu pentru clei și
   fierăstrău** ține o singură valoare pentru amândouă.
-- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului.
+- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului (cu banda, dincolo de
+  ea și de șanțul ei).
+
+**Lemnul din jurul dopului**, ales pe rândul incrustației din fereastra exportului:
+
+- **fața coborâtă toată** (implicit): freza dreaptă coboară toată fața semifabricatului dopului, până dincolo de margini, deci
+  semifabricatul se prinde fără cleme pe margini (de exemplu cu bandă dublu adezivă), iar spatele lui se taie după lipire;
+- **banda îngustă**: doar o bandă în jurul dopului, săpată cu V-ul și cu fundul plat, iar marginile semifabricatului rămân
+  întregi, pentru cleme. Valorile ei, fiecare la alegerea ta:
+  - **Lățimea benzii**: goală, cea mai mică, socotită de aplicație și arătată lângă câmp: 2 · H · tan(θ/2) (pereții dopului
+    și ai benzii) plus freza fundului plat (sau, cu decuparea, cea mai lată dintre ea și freza decupării) plus 2 · 0,5 mm
+    rezervă. O poți lărgi; mai îngustă, fereastra o refuză.
+  - **Decupează dopul din placă, cu punți** (pusă implicit): la urmă, freza decupării taie dopul prin toată placa, pe fundul
+    benzii, la H · tan(θ/2) + 0,5 mm de desen, și lasă punțile. Fără bifă, rămâne doar banda, iar dopul îl tai tu cu
+    fierăstrăul, pe fundul ei.
+  - **Grosimea plăcii dopului**: goală, adâncimea − jocul + fierăstrăul + 1 mm (S + H + 1). Tăietura trece prin toată placa,
+    deci grosimea trebuie să fie exactă; cel puțin fundul benzii plus grosimea punților.
+  - **Punți pe buclă**, **Lățimea punții**, **Grosimea punții** (implicit 4, 4 mm și 1 mm): ca urechile; grosimea se măsoară
+    de la fundul plăcii, deci după așezare punțile stau deasupra plăcii și se rindeluiesc odată cu restul.
+  - **Altă freză pentru decupare**: implicit, freza dreaptă a fundului plat; cu bifa, numărul și diametrul alteia (un număr
+    nou, ca orice freză).
 
 **Pe hârtie**, panoul arată, pentru formele alese cu aceleași valori: cât intră dopul în locaș (S), pe cât se ating pereții de
 la contur (S · tan(θ/2)), jocul de sub dop, spațiul dintre plăci, cât din conul frezei folosesc locașul și dopul, și grosimea
 cea mai mică a semifabricatului dopului (S + H + 1 mm). De exemplu, cu V60 Ø6, adâncimea 3, jocul 0,5 și fierăstrăul 2: dopul
 intră 2,5 mm, pereții se ating pe 1,44 mm, dopul se sapă până la 4,5 mm din conul de 5,20 mm, iar semifabricatul are cel puțin
-5,5 mm.
+5,5 mm. Cu banda, arată și lățimea ei (și pe cea mai mică), semifabricatul în plan (cutia desenului plus banda, șanțul de la
+față și marginea, pe fiecare parte) și decuparea: placa și punțile, sau unde tai de mână. În exemplu, cu fundul plat Ø6, banda
+are cel puțin 9,31 mm, iar semifabricatul, cutia desenului plus 15,75 mm pe fiecare parte.
 
 **Exportul.** La **Exportă**, pe lângă programul foii (cu locașul), se descarcă un fișier pentru fiecare dop: numele
 programului foii cu „-dop-1”, „-dop-2”… (pe numele scurte, DOP1…). Fereastra arată, pentru fiecare, semifabricatul: lățimea ×
 înălțimea (cutia desenului, plus marginea pe fiecare parte) și grosimea cea mai mică. Dopul e desenul oglindit stânga–dreapta;
 XY0 e în colțul ales pentru foaie, pe semifabricatul dopului, iar Z0 pe fața lui. Programul coboară întâi fața
 semifabricatului cu freza dreaptă, până la S + H (lemnul din jurul dopului), apoi freza în V taie pereții dopului de la S în
-jos; schimbarea frezei e cea aleasă în fereastră, ca la foaie.
+jos; schimbarea frezei e cea aleasă în fereastră, ca la foaie. Cu banda, freza dreaptă scoate doar fundul benzii, iar cu
+decuparea, la urmă, freza decupării taie dopul prin placă; fereastra arată atunci placa „groasă de exact” grosimea aleasă.
 
 **Lipirea.** Întoarce dopul cu fața în jos peste locaș (oglindirea îl aduce la desen) și apasă-l cu clei: se oprește pe pereți,
-cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele lui până la fața plăcii.
+cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele lui până la fața plăcii. Cu decuparea, întâi
+taie punțile și curăță-le la nivelul pereților, ca dopul să intre întreg.
 
 **Refuzurile**, cu motivul, la export: o freză plată sau cu vârf plat; jocul sub 0,1 mm (crestele din colțurile locașului ar
 ține dopul) sau cel puțin cât adâncimea; dopul săpat (adâncimea − jocul + fierăstrăul) mai adânc decât conul frezei; lipsa
-fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Banda îngustă din jurul dopului, cu decuparea
-lui, pereții drepți și dopul în vederea 3D vin în feliile următoare.
+fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Cu banda: mai îngustă decât cea mai mică; cu
+decuparea, o placă mai subțire decât fundul benzii plus punțile, o freză a decupării în V, sau cu numărul altei freze și alt
+diametru. Dopul în vederea 3D vine într-o felie următoare; pereții drepți au capitolul lor ([Incrustația cu pereți
+drepți](#incrustatie-drept)).
+
+## Incrustația cu pereți drepți
+%% capitol: incrustatie-drept
+
+O **incrustație cu pereți drepți** pune un dop cu pereți verticali în locașul săpat în altă placă: locașul e un buzunar al
+desenului, iar dopul e același contur, tăiat cu freza plată pe semifabricatul lui, mai mic cu un joc lateral pe toată
+lungimea. Se alege ca rol: **incrustație cu pereți drepți**, din secțiunea **Tăierea** a panoului de proprietăți sau din lista
+Tăietura a ferestrei **Exportă G-code**. Freza rândului e plată; buzunarul își păstrează frezele de rest, strategia și
+coborârea.
+
+**Colțurile le potrivește aplicația.** Freza e rotundă: în locaș, vârfurile desenului ies rotunjite cu raza ei (R), iar la dop,
+pe care freza îl ocolește pe dinafară, se rotunjesc unghiurile intrânde (cu raza frezei dopului, r). Aplicația rotunjește deci
+și unghiurile locașului, cu r minus jocul, iar dopul e conturul tăiat al locașului micșorat cu jocul: arcele perechi sunt
+concentrice, iar jocul e același pe tot conturul, și în colțuri. Cât se retrage cel mai ascuțit vârf față de desen apare ca
+avertisment după export. O parte a desenului mai îngustă decât freza nu încape în locaș: exportul o refuză.
+
+Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din fereastra exportului:
+
+- **Jocul lateral** (c; implicit 0,1 mm): cât rămâne între pereții dopului și ai locașului, pe fiecare parte. Locașul rămâne
+  cât desenul, dopul se micșorează cu c. Trebuie să fie sub raza celei mai mici freze a locașului.
+- **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
+  (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
+  toată placa lui, cu 4 punți pe buclă (desenul neoglindit), și intră în locaș fără întoarcere.
+- **Se sprijină** (doar la dopul ridicat): **pe fundul locașului**: dopul e înalt cât adâncimea plus **spațiul pentru
+  fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a semifabricatului stă pe
+  placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1 și sub adâncime).
+- **Cât iese peste placă** (la dopul decupat; tot H): placa dopului e groasă cât adâncimea plus H, iar partea care iese peste
+  placă se rindeluiește după lipire.
+- **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului; la cel decupat, cel puțin
+  cât freza lui.
+- **Altă freză pentru dop** (doar în fereastra exportului): implicit, dopul se taie cu frezele locașului; cu bifa, cu o freză a
+  lui (T, Ø, pasul lateral) și frezele ei de rest. O freză mai mică ascute unghiurile intrânde: locașul le rotunjește cu raza
+  ei minus jocul. Același T înseamnă aceeași freză și în fișierul dopului.
+
+**Pe hârtie**, panoul arată, pentru formele alese cu aceleași valori: colțurile locașului (vârfurile R, unghiurile r − c) și ale
+dopului (vârfurile R − c, unghiurile r), jocul pe contur, înălțimea dopului și grosimea semifabricatului (cea mai mică la dopul
+ridicat, înălțimea plus 1 mm; exactă la cel decupat). De exemplu, cu freza Ø6, adâncimea 6, jocul 0,1 și dopul ridicat pe
+fund: vârfurile locașului R3, unghiurile R2,9, ale dopului R2,9 și R3; dopul e înalt de 8 mm, iar semifabricatul are cel
+puțin 9 mm.
+
+**Exportul.** Ca la incrustația în V, se descarcă și un fișier pentru fiecare dop („-dop-1”…), cu semifabricatul lui: XY0 în
+colțul ales, Z0 pe fața lui. La dopul ridicat, fața se coboară în jur cu frezele dopului, până dincolo de marginile
+semifabricatului: fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă. La dopul decupat, conturul se taie ca
+exterior, prin placă, cu punți late de 4 mm și groase de 1 mm, iar golurile desenului ca interioare; taie punțile și
+curăță-le la nivelul pereților înainte de lipire.
+
+**Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
+raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
+mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui.
 
 ## Traseul pe pânză
 %% capitol: traseu

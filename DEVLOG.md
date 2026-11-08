@@ -6837,6 +6837,172 @@ implicitelor, „Defaults 1.9 / 2.1”.
   toate țintele. Catalogul bibliotecii are Easy 3Draw 18.8.0 (`trenulet-18.8.0-3660ee04.zip`, 420 528 de octeți, servit). În
   cvs2: meniul Extensii → Biblioteca → „Actualizează la 18.8.0”.
 
+## 2026-11-07 — Felia 12.1↑b: incrustația cu pereți drepți (ADR 0171, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „cate dintre ele pot fi puse impreuna ca optiuni puse la dispozitia utilizatorului?”, apoi „Da, toate trei”
+(owner-ul, la cele șase întrebări din ADR 0171, în sesiunea liniei).
+**Started:** 07.11, 14:14. **Completed:** 07.11, 18:50.
+
+- **Ce au schimbat răspunsurile** (în ADR): trei opțiuni, toate alese la export: dopul ridicat pe semifabricat sau decupat
+  prin placă (cu punți, neoglindit), sprijinul celui ridicat pe fund sau pe față, frezele dopului (ale locașului sau ale lui,
+  oricare: locașul se închide cu raza celei mai mici freze a dopului minus jocul). Colțurile potrivite de aplicație, jocul
+  lateral implicit 0,1 și rolul nou: recomandările.
+- **Documentul v21:** `incrustatie` cu `fel: 'drept'` pe buzunar (`jocLateral`, `dop`, `sprijin`, `joc`, `fierastrau`,
+  `margine`, `frezeDop` opțional); ușa e o variantă după `fel`; migrarea v20 → v21 schimbă doar numărul și refuză câmpurile
+  noi într-o incrustație v20; oracolul documentului și corpusul de aur la v21 (ADR 0121; intrările v20 refăcute din `dbb3e2b`,
+  aceiași octeți).
+- **CAM-ul:** `src/cam/incrustatieDreapta.ts` (locașul: desenul închis cu ρ = max(0, r − c), tăiat ca buzunar; dopul: conturul
+  tăiat micșorat cu c; refuzurile; avertismentele: părțile unite și cât se retrage cel mai ascuțit vârf), `src/cam/dopDrept.ts`
+  (dopul ridicat, oglindit, insulă într-un buzunar al semifabricatului lărgit; cel decupat, exterior prin D + H cu punți de
+  4 mm, cu cea mai mică freză a dopului; programul îl face lucrarea, dintr-un document sintetic). Razele, înălțimea dopului și
+  grosimea semifabricatului, dintr-un singur loc (`valoriIncrustatieDreapta`), comun cu panoul.
+- **Interfața:** rolul „incrustație cu pereți drepți” (panoul, rolurile personalizate, fereastra exportului); sub rând, jocul
+  lateral, dopul, sprijinul, spațiul folosit (H sau g), marginea, „Altă freză pentru dop” (cu frezele ei de rest, în
+  verificarea T-urilor); placa exactă a dopului decupat în fereastră; în panou, câmpurile, „Pe hârtie” (colțurile locașului și
+  ale dopului, jocul, înălțimea, semifabricatul) și arborele; manualul („Incrustația cu pereți drepți”, ambele limbi).
+- **Probele, scrise întâi:** oracolul pereților drepți (`test/oracles/incrustatieDreapta.ts`, fără importuri din `src/`) pe
+  cazuri pe hârtie (steaua din prag, dreptunghiul pe față, L-ul, inelul, dopul decupat, frezele dopului; apoi decupatul cu
+  freza de rest) plus controlul negativ (vârfuri ascuțite: pică pe interferență); măsurat pe stea: jocul 0,0991–0,1013 pe
+  1 562 de puncte, interferența 0 din 1 544, D 6,0000, h 8,0000, vârful 9,1720 față de 9,1717 pe hârtie. Rolul, refuzurile,
+  scrierea înapoi, punțile; e2e pe octeții din browser (dreptunghiul 30 × 20, Ø6: dopul ridicat din panou, cel decupat cu
+  freza lui din fereastră).
+- **Găsite pe drum, reparate:** refuzul c ≥ R din ADR lipsea; cheia rândului (`incrustatieDreapta`) s-ar fi scurs în operație
+  prin `operatieDinDialog`; frezele dopului nu intrau în numerotarea frezelor proiectului și a rolurilor personalizate; placa
+  dopului decupat arătată „cel puțin” (punțile cer grosimea exactă); înălțimea dopului calculată de două ori (panoul și dopul);
+  punțile aveau palierul de 4 mm pe traseu, deci lucrarea refuza dopul decupat cu orice freză peste Ø4, inclusiv Ø6, implicita
+  (găsit prin otrava P06; palierul e acum lățimea plus freza).
+- **Unirea:** `main` (1bf99c5: 12.1↑ și tăierea vectorilor unite) adus în ramură cu un merge (`34e852e`), la cererea sesiunii
+  principale, înaintea probelor noi; DEVLOG-ul din `main`, manualul la 30 de capitole.
+- **Porțile:** compilatoarele (aplicația, planificatorul, funcțiile), importurile (19 reguli, 0 încălcări), licențele,
+  traducerile (3 texte noi, traduse), 8 600 de teste unitare (0 căderi, 8 sărite), build-ul determinist (273 de fișiere;
+  pornirea 101,6 cu ușa 105,2 / 110 kB, totalul 525,1 / 550: +5,6 kB față de `main` după unire, 519,5; linia ține +9,9 kB față
+  de baza din 06.11), e2e 361 / 361 pe 4174, din prima (3 lucrători, 6,9 min).
+- **Otrăvurile** (`test/otravuri/12.1b.py`): 52 alese de autor; prima rulare (`40376e2`): 49 prinse, 3 scăpate, fiecare cu
+  proba ei: F05 (partea îngustă lângă una lată), P06 (punțile, citite pe oracol), P07 (cazul `decupat-rest`); plus două noi,
+  P11 (palierul punților) și L05 (frezele dopului în rolurile personalizate); pe codul final (`05d6ced`), 54 / 54. Lista 12.1 la
+  zi cu codul de acum (fără VOID).
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe
+  07.12; build-ul `6f2d1bc`). Verificat acolo, în browserul aplicației: versiunea `6f2d1bc71a0c` (după „Versiune nouă:
+  Reîncarcă”); rolul „incrustație cu pereți drepți” din panou, pe un dreptunghi de 30 × 20 cu Ø6 și adâncimea 3: pe hârtie,
+  vârfurile locașului R3 și unghiurile R2,9, ale dopului R2,9 și R3, jocul 0,10, dopul de 5 mm, semifabricatul de cel puțin
+  6; operația și arborele; în fereastra exportului, câmpurile rândului (ridicat, pe fund), apoi dopul decupat (fără sprijin,
+  „Cât iese peste placă”) și „Altă freză pentru dop” (T, Ø, pasul); închisă fără export, nicio eroare în consolă. Descărcarea
+  celor două fișiere e probată în e2e (în browserul aplicației n-am descărcat nimic).
+- **Rămâne:** 12.1↑c (banda îngustă și decuparea dopului în V), 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și
+  potrivirea simulată), 12.1↑f (gaura și treptele), fișa plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul
+  owner-ului (cu `CLAUDE.md`: proba documentului e acum `document.v21.oracol.test.ts`, iar următorul câmp nou e v22).
+
+## 2026-11-07 — Felia 12.1↑c pornită: banda îngustă din jurul dopului în V și decuparea lui (ADR 0172, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 12.1↑c” (owner-ul, la întrebarea de la capătul feliei 12.1↑b, în sesiunea liniei).
+**Started:** 07.11, 19:00. **Completed:** 07.11, 19:20 (cercetarea, ADR-ul și schița; codul lui 12.1↑c așteaptă răspunsurile).
+
+- **Ce era hotărât:** răspunsul 2 din ADR 0170 (fața coborâtă sau banda îngustă, alese la export; banda „se decupează de mână
+  acum, apoi de aplicație, cu punți”). Nehotărâte: lățimea benzii, linia și freza decupării, punțile, grosimea plăcii.
+- **Cercetarea:** ediția întâi (`CNCVectorStudio/src/cam/inlay.ts`, ramura `wip/inlay-traseu-decupare`, `f4732ff`): limita
+  automată la D·t + 2 mm, decuparea prin placă cu freza cilindrică și punți, cu trei condiții pe hârtie (peretele dopului întreg,
+  niciun lemn păstrat dincolo de linia cea mai adâncă, punțile pe partea care se rindeluiește); `CERCETARE-DETALIATA.json`
+  confirmă calea ei.
+- **Pe hârtie:** la noi dopul e un V-carve cu adâncimea de start S pe o regiune, cu fundul plat; banda e aceeași lucrare pe
+  desenul oglindit lărgit cu M = 2·H·t + Ø + 1 (pereții până la H·t, fundul plat la S + H, tăietura, rezerva). Tăietura prin
+  placă, la e = H·t + 0,5 de contur, lasă pe piesa decupată doar peretele de sub umăr și fundul benzii, deci așezată lasă exact
+  H între plăci și g sub dop; și în unghiurile intrânde, unde freza nu intră, piesa rămâne pe fund (cel mult e + r). Exemplul,
+  cercul R15 din proba 12.1↑ (V60, D 3, g 0,5, H 2, Ø3,175): banda 6,48 mm, tăietura între 1,65 și 4,83 de contur, piesa
+  păstrată R16,65, semifabricatul 55,9 × 55,9 (față de 40 × 40), placa de cel puțin 5,5.
+- **ADR 0172, propus**, cu șase întrebări (recomandarea întâi): lățimea benzii calculată, decuparea mereu, grosimea plăcii ca
+  câmp (documentul v22), freza decupării = freza dreaptă a fundului plat, punțile ca la 12.1↑b, plafonul liniei peste ~10 kB.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/6ykTvBaNppvWvQSX6EfSNk> (fereastra exportului, dopul în secțiune și așezat, la scară, comparația, întrebările).
+- **În fișă:** rândul 12.1↑c (în lucru), rândul răspunsurilor în coada owner-ului; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑c (proba scrisă întâi: oracolul potrivirii cu decuparea).
+
+## 2026-11-07 — Felia 12.1↑c: banda îngustă din jurul dopului în V și decuparea lui, cu toate alegerile la export, documentul v22 (ADR 0172, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „ca de obicei, vreau cat mai multe optiuni pe care userul sa le poata alege” (owner-ul, la cele șase întrebări din
+ADR 0172, în sesiunea liniei).
+**Started:** 07.11, 19:22. **Completed:** 07.11, 23:06 (cu verificarea pe canal și repararea găsită acolo).
+
+- **Răspunsul, citit:** fiecare întrebare devine o alegere în fereastra exportului, cu recomandarea ca valoare implicită:
+  lățimea benzii (goală = cea mai mică, arătată), decuparea (pusă), grosimea plăcii (goală = S + H + 1), freza decupării (a
+  fundului plat sau alta), punțile (4 × 4 × 1 mm); plafonul liniei, citit ca acceptat. ADR 0172 acceptat, cu „Ce au schimbat
+  răspunsurile” și „La implementare”.
+- **Documentul v22** (`f7b4c04`): câmpul opțional `incrustatie.banda` ({ latime?, decupare, grosimePlaca, freza?, punti }),
+  scris doar cu `jurDop: 'banda'`; migrarea v21 → v22 schimbă doar numărul, iar un v21 cu `banda` în incrustație e o ciocnire.
+  Oracolul documentului trece la v22 (contractul benzii, frontierele, refuzurile, ciocnirea); proba lui devine
+  `document.v22.oracol.test.ts`. Corpusul de aur (`1bc14fc`): adăugirea v22 (eticheta, cu banda de 8 mm, placa de 6, T8 Ø2, 3
+  punți); intrările v21 refăcute din `452f06c` sunt aceiași octeți.
+- **Dopul cu bandă** (`src/cam/dopV.ts`, mutat din `incrustatie.ts`: lucrarea foii cere refuzul de acolo, iar decuparea cere
+  lucrarea, deci fără ciclu): regiunea e reuniunea exterioarelor desenului oglindit lărgite cu M, cu desenul ca goluri;
+  semifabricatul, cutia desenului plus M + S·t + marginea, cu marginile întregi. Decuparea, la urmă: pe linie, pe exterioarele
+  lărgite cu e + r (e = H·t + 0,5), prin toată placa, cu punți pe buclele exterioare (palierul = lățimea + freza) și fără punți
+  pe golurile reuniunii; placa „groasă de exact”. Valorile, dintr-un singur loc (`valoriBanda`).
+- **Proba scrisă întâi:** oracolul potrivirii primește decuparea (piesa păstrată, umplută din desen peste celulele netăiate
+  până la vârful punților); șase cazuri pe hârtie trec (oprirea la S, contactul, g, H pe fundul păstrat, întinderea între e și
+  e + Ø/2, 4 punți pe buclă), apoi și rama din patru bare (golul reuniunii), banda implicită a unui v21 și controlul negativ
+  (fără decupare, placa întreagă se oprește pe fața plăcii). Numărătoarea punților: vecinii pe 8, iar o celulă izolată la
+  capătul unei punți (stea, măsurat) nu e o punte; punțile lucrării au rampe (palierul 1,1–1,2 din lățime, tăiat prin placă
+  pe 26–51 % din inel).
+- **Găsite pe drum:** un profil exterior pe fiecare buclă ar fi tăiat în piesa literei vecine, până în perete (de aici
+  linia pe reuniune); lemnul de la fața plăcii din mijlocul unei rame din bare ar fi rămas în dop (golurile reuniunii, tăiate
+  afară); lățimea cea mai mică, arătată rotunjită, ar fi fost refuzată scrisă înapoi (acum rotunjită în sus); freza decupării
+  lărgea banda și fără decupare.
+- **Interfața:** în fereastra exportului, „Lemnul din jurul dopului” și câmpurile benzii, cu cea mai mică lățime și placa
+  arătate lângă câmpuri, validarea pe rând, conflictul T-urilor cu freza decupării; scrierea îmbinată (necunoscutele, numele
+  frezei) și citirea înapoi; în panou, „Lemnul din jurul dopului” și, pe hârtie, banda, semifabricatul în plan, decuparea;
+  manualul (ro, en). e2e pe octeții din browser (cercul R15, V60, fundul Ø6): banda cea mai mică 9,31, placa de 6, potrivirea
+  piesei decupate pe oracol, panoul, redeschiderea; banda fără decupare, placa goală, conflictul frezei.
+- **Otrăvurile** (`test/otravuri/12.1c.py`): 68 alese de autor; prima rulare (`7a5711a`, 67): 66 prinse, una scăpată, C02 (banda săpată pe jumătate: dopul se potrivea, dar tăietura decupării ieșea de pe fundul plat, prin lemnul plin al feței) → proba nouă: înainte de decupare, inelul tăieturii e fundul benzii (S + H) pe cel puțin 99 % din celule; plus L01 (freza decupării în rolurile personalizate, găsită la recitirea codului și reparată). Pe codul final (`b084563`): C02 și L01 prinse; celelalte 66, prinse la prima rulare, pe fișiere neschimbate de atunci (probele doar mai stricte): 68 / 68. Apoi E14 (implicitul frezei decupării, găsit pe canal): pe `c6f062a`, E14 prinsă, iar E01–E13 reluate (fereastra se schimbase) și prinse: 69 / 69. Listele 12.1 și 12.1b la zi (dopul mutat în `dopV.ts`, E01 și E04 pe codul de acum, seturile documentului pe v22), fără VOID.
+- **Porțile:** compilatoarele ×3, importurile 19 / 0, licențele, traducerile (649 de texte, 0 lipsă), unit 8 623 (0 căderi), build determinist (275 de fișiere; pornirea 101,6, cu ușa 105,3 / 110; totalul 528,1 / 550: +3,0 kB pentru felie; linia, +12,9 kB față de 06.11, în cei ~13 ai răspunsului 6), e2e 363 / 363 pe 4174 (3 lucrători, 6,9 min; pe codul final, 6,7 min, după ce proba pereților drepți a primit 90 s: cu trei lucrători trecuse o dată de 30, din timp, nu din cod; singură, 12,7 s).
+- **Găsită pe canal** (`ecc5b16`): în proiectul rămas de la verificările de dinainte (V-ul pe T2, fundul plat pe T1), „Altă freză pentru decupare” bifată propunea T2, chiar T-ul V-ului, deci conflict pe loc. Acum implicitul e primul T de după toate frezele operațiilor ferestrei (`c6f062a`, cu proba e2e și otrava E14).
+- **Publicat:** canalul `incrustatii` al instanței de test, <https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app> (până pe 07.12; build-ul `38287c5`). Verificat acolo, în browserul aplicației: versiunea `38287c5cc9b4` (după „Versiune nouă: Reîncarcă”); pe cercul R15 cu incrustația în V (V60 Ø6, fundul Ø6, adâncimea 3, fierăstrăul 2), panoul arată „Lemnul din jurul dopului: fața coborâtă toată”; în fereastra exportului, banda îngustă: lățimea goală, cu „cea mai mică: 9,31 mm”, decuparea pusă, placa goală, cu 5,5 și „cel puțin 5,5 mm”, punțile 4 × 4 × 1; fără decupare, placa, punțile și freza se opresc; „Altă freză pentru decupare” pornește de la T3; manualul (și copia offline) are banda; închisă fără export, nicio eroare în consolă. Conflictul T2 dintre cele două rânduri ale acelui proiect e de dinainte (cercul și dreptunghiul, puse pe rând la 12.1↑ și 12.1↑b) și fereastra îl arată corect. Descărcările sunt probate în e2e (în browserul aplicației n-am descărcat nimic).
+- **Rămâne:** 12.1↑d (fundul doar cu freza V), 12.1↑e (dopul în 3D și potrivirea simulată), 12.1↑f (gaura și treptele), fișa
+  plăcii 12; unirea în `main` o face sesiunea principală, la cuvântul owner-ului (cu `CLAUDE.md`: proba documentului e acum
+  `document.v22.oracol.test.ts`, iar următorul câmp nou e v23; planșele, dacă se unesc după, iau v23).
+
+## 2026-11-07 — 12.1↑b: freza dopului cu pereți drepți, bifată, pornește de la primul T liber (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repară-l” (owner-ul, la întrebarea de la capătul feliei 12.1↑c: „O repar aici, cu primul număr liber ca la
+bandă, sau o lași pe mai târziu?”).
+**Started:** 07.11, 23:11. **Completed:** 07.11, 23:30.
+
+- **Ce era:** „Altă freză pentru dop” (incrustația cu pereți drepți, 12.1↑b), bifată, propunea T-ul locașului + 1; lângă o
+  incrustație în V, acela era chiar T-ul V-ului, deci o a doua freză sub același T și Exportă oprit (ca freza decupării benzii,
+  găsită pe canal la 12.1↑c).
+- **Acum** (`0fc2ea0`): primul T de după toate frezele operațiilor ferestrei (`tMaxim` din `DialogExport`, comun cu freza
+  decupării). Proba e2e nouă: un dreptunghi cu pereți drepți lângă un cerc cu incrustația în V; bifată, freza dopului are T-ul
+  de după toate, fără conflict. Proba de dinainte (un singur dreptunghi) rămâne pe T2.
+- **Otrava:** E16 în lista 12.1b (implicitul vechi), prinsă de proba nouă: lista 12.1b la 55 / 55.
+- **Porțile:** tsc, e2e 364 / 364 pe 4174 (3 lucrători, 6,5 min).
+- **Publicat:** canalul `incrustatii`, build-ul `0fc2ea0`, verificat în browserul aplicației: versiunea `0fc2ea080371`; pe
+  dreptunghiul cu pereți drepți din proiect, „Altă freză pentru dop” bifată propune T3 Ø3 (aici, cu locașul pe T2, și regula
+  veche dădea T3; diferența o prinde proba e2e); închisă fără export.
+
+## 2026-11-08 — Înaintea unirii lui 12.1↑b–c: punțile pe buclele mici și `main` adus în ramură (Model: Claude Opus 5.5)
+
+**Prompt:** „1 si 2 acum 3-6 dupa” (owner-ul, la lista „ce putem îmbunătăți înainte să unim cu main”, după întrebarea „ce
+putem imbunatati aici, inainte sa unim cu main?”).
+**Started:** 08.11, 11:28. **Completed:** 08.11, 12:10.
+
+- **1. Punțile pe buclele mici** (`975b72a`): lucrarea pune un număr fix de urechi pe buclă și refuză tot exportul dacă nu
+  încap (W ≤ 0,9·P / n). Pe bucla punctului unui „i” banda cu decupare era refuzată („4 urechi de 7 mm pe o buclă de
+  24,85 mm”), iar dopul decupat cu pereți drepți, cu Ø1, sub R4. Acum, pe fiecare buclă, câte încap din cele cerute
+  (`urechiCareIncap`, aceeași regulă ca a lucrării; `puntiPeBucle`, grupate pe număr, câte o operație), cu avertismentul
+  buclelor mici; refuzul doar dacă nu încape nici una, cu bucla, lungimea și sfatul. Probele: regula față de `geometrieUrechi`
+  (5 000 de bucle deterministe), litera „i” pe oracolul benzii (7 punți pe inel: 4 pe bară, 3 pe punct), refuzul punții prea
+  late, cercul R2 al dopului drept (2 punți). Otrăvurile U01–U06; C06, C07 (12.1c) și P06, P11 (12.1b) pe codul nou.
+- **2. `main` adus în ramură** (`1749acc`, merge, de la `1bf99c5`: 47 de commit-uri, cu plafonul de 600 kB): codul s-a unit
+  singur; conflictele, doar în documente, rezolvate păstrând ambele părți (DEVLOG: întâi `main`, apoi linia; rândurile listei
+  de otrăvuri; dicționarul roadmap-ului: reuniunea, apoi `scripts/traduceri.ts`, 680 de texte, 0 lipsă). Manualul are 31 de
+  capitole (câte unul nou pe fiecare parte), iar Git unise singur aceeași schimbare din `manual.spec.ts` (29 → 30): proba
+  cere acum 31. Schema rămâne v22.
+- **Porțile pe rezultat:** compilatoarele ×3, importurile 19 / 0 (1 068 de module), licențele, traducerile, corpusul de aur
+  (23 de intrări, 21 de migrări), unit 8 715 (0 căderi), build determinist (286 de fișiere; pornirea 101,8, cu ușa
+  105,5 / 110; totalul 544,0 / 600), e2e 381 / 381 pe 4174, din prima (3 lucrători, 7,0 min). Otrăvurile reluate pe `1749acc`
+  (U01–U06, C06, C07, P06, P11): toate prinse; ancorele celor trei liste, fără VOID.
+- **Publicat:** Pe canal: build-ul `1749acc` (versiunea `1749acc63575`), verificat în browserul aplicației, în engleză: un cerc nou, rolul „V inlay” din panou („Wood around the plug: whole face lowered”), apoi în fereastra exportului banda îngustă (cea mai mică 7,578 mm, placa 6,196, punțile 4 × 4 × 1) și „Another bit for the cut-out” de la T3, fără conflict; fila „Printer” a lui `main`; închisă fără export, nicio eroare în consolă. Punțile pe buclele mici se văd doar la export: probate în unitare.
+- **Rămân, după unire** (răspunsul owner-ului): 3 lemnul din jurul dopului ales și din panou (valorile benzii pe hârtie
+  înainte de export), 4 punțile dopului drept alese în fereastră (câmpul poate intra tot în v22, cât nu e unit), 5 arborele
+  („cu bandă”) și legăturile rândurilor în fereastră, 6 viteza benzii (~10 s pe 24 de litere, față de 6,7 cu fața coborâtă).
+
 ## 2026-11-07 — 11.1↑ pornită: planșele, etapa 11 (ADR 0210, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul a întrebat ce se mai poate face în paralel; sesiunea principală a deschis linia. Sarcina ei, primul

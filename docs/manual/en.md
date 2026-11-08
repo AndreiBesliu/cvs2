@@ -742,7 +742,8 @@ G-code** window, one row per shape; on export, the window does **Apply the opera
 
 The **Cutting role** can also be chosen in the properties panel, in the **Cutting** section, for any number of chosen shapes:
 **outside**, **inside**, **on the line**, **left** or **right** (on an open path), **pocket**, **drilling** (circles only),
-**V-carve** or **V inlay** (see [The V inlay](#incrustatie)). The list shows only the roles that fit all the chosen shapes; “—” when they have different roles. The role is the
+**V-carve**, **V inlay** (see [The V inlay](#incrustatie)) or **straight-walled inlay** (see
+[The straight-walled inlay](#incrustatie-drept)). The list shows only the roles that fit all the chosen shapes; “—” when they have different roles. The role is the
 whole shape's: on a letter with holes, outside cuts the outline on the outside and the holes on the inside, while the pocket
 and the V-carve carve the letter with its holes in one go. When the role changes, the cutter, the direction, the depth and the
 step stay; the rest goes back to the defaults. A V bit only works on the line and in a V-carve: for a V-carve, a flat cutter
@@ -764,7 +765,7 @@ all projects: another computer, another browser, or the test address versus the 
 
 | Field | What it means |
 |---|---|
-| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
@@ -886,7 +887,7 @@ A **V inlay** sets a plug of one wood into a pocket carved in another: the pocke
 the same drawing, mirrored, V-carved on its own blank so that it goes into the pocket and stops before the bottom. Choose it as
 a role: **V inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export G-code** window.
 The row's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
-pocket and lowers the face of the plug blank.
+pocket and the wood around the plug.
 
 The inlay's values, under Depth and Step down in the panel and on its row in the export window:
 
@@ -894,29 +895,104 @@ The inlay's values, under Depth and Step down in the panel and on its row in the
   the gap (S = D − g), so it stops on the walls, with g above the bottom.
 - **Saw gap** (H; default 2 mm): what stays between the two boards after gluing, so you can saw off or plane away the back
   of the plug blank. In the export window, **Same space for glue and saw** keeps a single value for both.
-- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank.
+- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank (with the band, beyond the band
+  and its groove).
+
+**Wood around the plug**, chosen on the inlay's row in the export window:
+
+- **whole face lowered** (default): the straight bit lowers the whole face of the plug blank, past its edges, so the blank is
+  held without edge clamps (with double-sided tape, for example), and its back is cut off after gluing;
+- **narrow band**: only a band around the plug, cut with the V bit and the flat floor, and the blank edges stay whole, for
+  clamps. Its values, each your choice:
+  - **Band width**: empty, the narrowest, worked out by the app and shown next to the field: 2 · H · tan(θ/2) (the plug and
+    band walls) plus the flat-floor bit (or, with the cut-out, the wider of it and the cut-out bit) plus 2 · 0.5 mm to spare.
+    You can widen it; narrower, the window refuses it.
+  - **Cut the plug out of the board, with tabs** (on by default): last, the cut-out bit cuts the plug through the whole board,
+    on the band floor, H · tan(θ/2) + 0.5 mm from the drawing, leaving the tabs. Unticked, only the band stays, and you saw the
+    plug out yourself, on its floor.
+  - **Plug board thickness**: empty, depth − glue gap + saw gap + 1 mm (S + H + 1). The cut goes through the whole board, so
+    the thickness must be exact; at least the band floor plus the tab thickness.
+  - **Tabs per loop**, **Tab width**, **Tab thickness** (default 4, 4 mm and 1 mm): like hold-down tabs; the thickness is
+    measured from the bottom of the board, so once seated the tabs sit above the board and are planed off with the rest.
+  - **Another bit for the cut-out**: by default, the flat-floor straight bit; ticked, the number and diameter of another one (a
+    new number, like any bit).
 
 **On paper**, the panel shows, for the chosen shapes with the same values: how far the plug goes into the pocket (S), over
 how much the walls touch from the outline (S · tan(θ/2)), the gap under the plug, the space between the boards, how much of
 the bit's cone the pocket and the plug use, and the smallest thickness of the plug blank (S + H + 1 mm). For example, with a
 V60 Ø6, depth 3, glue gap 0.5 and saw gap 2: the plug goes in 2.5 mm, the walls touch over 1.44 mm, the plug is carved down
-to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick.
+to 4.5 mm of the 5.20 mm cone, and the blank is at least 5.5 mm thick. With the band, it also shows its width (and the
+narrowest), the blank in plan (the drawing's box plus the band, the groove at the face and the margin, on each side) and the
+cut-out: the board and the tabs, or where you cut by hand. In the example, with a Ø6 flat floor, the band is at least 9.31 mm,
+and the blank is the drawing's box plus 15.75 mm on each side.
 
 **The export.** On **Export**, besides the sheet's program (with the pocket), one file per plug is downloaded: the name of the
 sheet's program with “-dop-1”, “-dop-2”… (on short names, DOP1…). The window shows each one's blank: width × height (the
 drawing's box, plus the margin on each side) and the smallest thickness. The plug is the drawing mirrored left to right; XY0
 is at the corner chosen for the sheet, on the plug blank, and Z0 on its face. The program first lowers the blank face with
 the straight bit, down to S + H (the wood around the plug), then the V bit cuts the plug walls from S down; the bit change is
-the one chosen in the window, as for the sheet.
+the one chosen in the window, as for the sheet. With the band, the straight bit clears only the band floor, and with the
+cut-out, last, the cut-out bit cuts the plug through the board; the window then shows the board “exactly” as thick as chosen.
 
 **Gluing.** Turn the plug face down over the pocket (the mirroring brings it back to the drawing) and press it in with glue:
 it stops on the walls, with the gap under it and the space between the boards. Then saw or plane its back down to the face
-of the board.
+of the board. With the cut-out, first cut the tabs and clean them flush with the walls, so the plug goes in whole.
 
 **Refusals**, with the reason, on export: a flat bit or one with a flat tip; a glue gap under 0.1 mm (the ridges in the
 pocket's corners would hold the plug) or at least the depth; a plug carved (depth − gap + saw gap) deeper than the bit's cone;
-no flat floor with the straight bit (the V-bit-only variant comes later). The narrow band around the plug with its cut-out,
-straight walls and the plug in the 3D view come in the next slices.
+no flat floor with the straight bit (the V-bit-only variant comes later). With the band: narrower than the narrowest; with
+the cut-out, a board thinner than the band floor plus the tabs, a V cut-out bit, or one with another bit's number and another
+diameter. The plug in the 3D view comes in a later slice; straight walls have their own chapter ([The straight-walled
+inlay](#incrustatie-drept)).
+
+## The straight-walled inlay
+%% capitol: incrustatie-drept
+
+A **straight-walled inlay** sets a plug with vertical walls into a pocket cut in another board: the pocket is a pocket of the
+drawing, and the plug is the same outline, cut with the flat bit on its own blank, smaller by a side gap all around. Choose it
+as a role: **straight-walled inlay**, in the **Cutting** section of the properties panel or in the Cut list of the **Export
+G-code** window. The row's bit is flat; the pocket keeps its rest bits, strategy and ramping.
+
+**The app matches the corners.** The bit is round: in the pocket, the tips of the drawing come out rounded with its radius (R),
+and on the plug, which the bit goes around from outside, the inside corners get rounded (with the plug bit radius, r). So the
+app also rounds the pocket's inside corners, with r minus the gap, and the plug is the pocket's cut outline shrunk by the gap:
+paired arcs are concentric, and the gap is the same all along the outline, corners included. How far the sharpest tip moves
+back from the drawing appears as a warning after export. A part of the drawing narrower than the bit does not fit in the
+pocket: the export refuses it.
+
+The inlay's values, in the panel (under Depth and Step down) and on its row in the export window:
+
+- **Side gap** (c; default 0.1 mm): what stays between the plug walls and the pocket walls, on each side. The pocket keeps the
+  drawing size, the plug shrinks by c. It must be under the radius of the pocket's smallest bit.
+- **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
+  lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
+  whole board, with 4 tabs per loop (drawing not mirrored), and goes into the pocket without flipping.
+- **Rests on** (raised plug only): **the pocket floor**: the plug is as tall as the depth plus the **saw gap** (H; default
+  2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits on the board, and the plug
+  is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the depth).
+- **Above the board** (cut-out plug; also H): the plug board is as thick as the depth plus H, and the part above the board is
+  planed off after gluing.
+- **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank; for a cut-out plug, at least its
+  bit diameter.
+- **Another bit for the plug** (in the export window only): by default the plug is cut with the pocket bits; ticked, with a bit
+  of its own (T, Ø, stepover) and its rest bits. A smaller bit sharpens the inside corners: the pocket rounds them with its
+  radius minus the gap. The same T means the same bit in the plug file too.
+
+**On paper**, the panel shows, for the chosen shapes with the same values: the pocket corners (tips R, inside corners r − c) and
+the plug corners (tips R − c, inside corners r), the gap along the outline, the plug height and the blank thickness (the
+smallest for a raised plug, the height plus 1 mm; exact for a cut-out one). For example, with a Ø6 bit, depth 6, gap 0.1 and a
+raised plug resting on the floor: pocket tips R3, inside corners R2.9; plug R2.9 and R3; the plug is 8 mm tall, and the blank
+at least 9 mm.
+
+**Export.** As with the V inlay, a file for each plug is downloaded too (“-dop-1”…), with its blank: XY0 at the chosen corner,
+Z0 on its face. For a raised plug, the face is lowered around it with the plug bits, past the edges of the blank: hold it
+without clamps on the edges, for example with double-sided tape. For a cut-out plug, the outline is cut as an outside profile,
+through the board, with tabs 4 mm wide and 1 mm thick, and the drawing's holes as insides; cut the tabs and clean them flush
+with the walls before gluing.
+
+**Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
+radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
+than the bit; a cut-out plug margin smaller than its bit.
 
 ## The toolpath on the canvas
 %% capitol: traseu
