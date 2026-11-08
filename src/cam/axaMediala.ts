@@ -16,19 +16,33 @@
 import Delaunator from 'delaunator';
 import { incircle, orient2d } from 'robust-predicates';
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from '../geom/conturBaza.ts';
-import { distantaLaSegment, peArc, RIDICARE_RAZA, traversariSegment } from '../geom/distanta.ts';
+import {
+  distantaLaArcCerc, distantaLaSegment, peArc, RIDICARE_RAZA, traversariArc, traversariSegment, type CercArc,
+} from '../geom/distanta.ts';
 
 /** Cel mai mare număr de eșantioane: peste el, regiunea e refuzată cu motiv (memoria și timpul triangulării). */
 export const ESANTIOANE_MAXIME = 600_000;
 
 // ── Indexul contururilor: distanța exactă și interiorul (par-impar), fără O(puncte × segmente) ──────────────────────────
 
-type SegmentIndexat = { readonly a: Punct; readonly b: Punct; readonly s: Segment; readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number };
+/** Un segment al indexului, cu cutia lui și, pe un arc, cercul lui, calculat o dată (nu la fiecare punct judecat). */
+type SegmentIndexat = {
+  readonly a: Punct; readonly b: Punct; readonly s: Segment; readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number;
+  readonly cerc: CercArc | null;
+};
 
-function cutieSegment(a: Punct, b: Punct, s: Segment): [number, number, number, number] {
+/**
+ * Cât poate trece raza de cutia unui segment numai din rotunjiri (mm): punctul de tăiere al unui arc e pe cercul lui, al unei
+ * linii între capete, deci cel mult câteva ulp-uri (sub 1e-11 mm la coordonatele foii) dincolo de cutie. Un segment mai departe
+ * de atât de rază, sau în întregime la stânga punctului, nu e tăiat de ea: `inauntru` îl sare fără calcul, cu aceeași
+ * numărătoare.
+ */
+const MARJA_CUTIE = 1e-6;
+
+function cutieSegment(a: Punct, b: Punct, s: Segment, cerc: CercArc | null): [number, number, number, number] {
   let minX = Math.min(a.x, b.x), minY = Math.min(a.y, b.y), maxX = Math.max(a.x, b.x), maxY = Math.max(a.y, b.y);
   if (s.tip === 'A') {
-    const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
+    const { centru, raza, start, baleiaj } = cerc ?? cerculArcului(a, b, s.bulge);
     for (const u of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
       if (!peArc(u, start, baleiaj)) continue;
       const x = centru.x + raza * Math.cos(u), y = centru.y + raza * Math.sin(u);
@@ -54,8 +68,9 @@ export function indexContururi(contururi: readonly Contur[]): IndexContur {
     if (!c.inchis) continue;
     for (let i = 0; i < numarSegmente(c); i++) {
       const { a, b, s } = segment(c, i);
-      const [minX, minY, maxX, maxY] = cutieSegment(a, b, s);
-      segmente.push({ a, b, s, minX, minY, maxX, maxY });
+      const cerc = s.tip === 'A' ? cerculArcului(a, b, s.bulge) : null;
+      const [minX, minY, maxX, maxY] = cutieSegment(a, b, s, cerc);
+      segmente.push({ a, b, s, minX, minY, maxX, maxY, cerc });
     }
   }
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -94,7 +109,7 @@ export function indexContururi(contururi: readonly Contur[]): IndexContur {
           if (vazut[k] === stampila) continue;
           vazut[k] = stampila;
           const g = segmente[k]!;
-          d = Math.min(d, distantaLaSegment(p, g.a, g.b, g.s));
+          d = Math.min(d, g.cerc ? distantaLaArcCerc(p, g.a, g.b, g.cerc) : distantaLaSegment(p, g.a, g.b, g.s));
         }
       }
     }
@@ -125,7 +140,10 @@ export function indexContururi(contururi: readonly Contur[]): IndexContur {
     let n = 0;
     for (let q = numarBenzi[j]!; q < numarBenzi[j + 1]!; q++) {
       const g = segmente[inBanda[q]!]!;
-      n += traversariSegment(p, y, g.a, g.b, g.s);
+      // Banda pe Y e mai înaltă decât raza: segmentele ei la stânga lui p sau deasupra ori dedesubtul razei (cu `MARJA_CUTIE`)
+      // n-o taie, deci se sar fără calcul (cele mai multe, pe o regiune lată); celelalte se numără ca până acum.
+      if (g.maxX < p.x - MARJA_CUTIE || y < g.minY - MARJA_CUTIE || y > g.maxY + MARJA_CUTIE) continue;
+      n += g.cerc ? traversariArc(p, y, g.cerc) : traversariSegment(p, y, g.a, g.b, g.s);
     }
     return n % 2 === 1;
   };

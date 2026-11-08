@@ -311,6 +311,35 @@ function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean
     && inMargini(p.diametruSculaBanda, MARGINI_OPERATIE.diametru));
   return { latime, placa, punti, freza };
 }
+
+/**
+ * Incrustația în V a rândului (ADR 0170, ADR 0172), cum o scrie Exportă: jocurile și marginea (fierăstrăul = jocul cu „același
+ * spațiu”) și lemnul din jurul dopului; banda doar cu `jurDop: 'banda'` (pe fața coborâtă, câmpul pleacă), cu lățimea goală
+ * nescrisă (cea mai mică, socotită de lucrare) și placa goală S + H + 1. Fără decupare, placa și punțile (cerute de document)
+ * rămân cele scrise dacă sunt bune, altfel cele implicite; freza decupării, doar cu bifa ei și bună. Null fără bifă (un V-carve
+ * obișnuit), undefined cu un câmp de necitit (rândul nu se scrie). Din ea se leagă și rândurile (lucrarea unește doar locașele
+ * cu aceeași incrustație, `valoriVcarve`).
+ */
+function incrustatieVRand(p: Rand): IncrustatieOperatie | null | undefined {
+  if (!p.incrustatie) return null;
+  const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc), margine = citesteNumar(p.margineInc);
+  if (joc === null || fierastrau === null || margine === null) return undefined;
+  let banda: BandaOperatie | undefined;
+  if (p.jurDop === 'banda') {
+    const v = bandaRand(p), ok = bandaBuna(p);
+    const latime = p.latimeBanda.trim() === '' ? undefined : citesteNumar(p.latimeBanda);
+    const placa = p.placaBanda.trim() === '' || !ok.placa ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);
+    const pn = ok.punti ? citesteNumar(p.numarPunti) : PUNTI_BANDA.numar, pl = ok.punti ? citesteNumar(p.latimePunti) : PUNTI_BANDA.latime;
+    const pg = ok.punti ? citesteNumar(p.grosimePunti) : PUNTI_BANDA.grosime;
+    const fn = p.frezaBanda && ok.freza ? citesteNumar(p.numarSculaBanda) : null, fd = p.frezaBanda && ok.freza ? citesteNumar(p.diametruSculaBanda) : null;
+    if (latime === null || placa === null || pn === null || pl === null || pg === null) return undefined;
+    banda = {
+      ...(latime !== undefined ? { latime } : {}), decupare: p.decupareBanda, grosimePlaca: placa,
+      ...(fn !== null && fd !== null ? { freza: { numar: fn, diametru: fd } } : {}), punti: { numar: pn, latime: pl, grosime: pg },
+    };
+  }
+  return { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) };
+}
 /** Câte freze de rest are o listă (ADR 0093, plafonul documentului). */
 const MAXIM_REST = 8;
 /**
@@ -686,8 +715,8 @@ export function DialogExport(
     });
   };
   // Lista afișată: ordinea omului sau cea automată. Pentru rândurile legate și pentru risc, ce știe fiecare rând acum: piesa,
-  // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat; ADR 0133 §2) sau o
-  // incrustație cu pereți drepți (ADR 0171).
+  // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat, incrustația în V;
+  // ADR 0133 §2, ADR 0170) sau o incrustație cu pereți drepți (ADR 0171).
   const ordine = ordineMea ?? automata;
   const dupaCheie = new Map(operatii.map((o) => [o.cheie, o]));
   const numar = (s: string): string => String(citesteNumar(s));
@@ -697,6 +726,9 @@ export function DialogExport(
     const vcarve = p.tip !== 'vcarve' ? null : [
       numar(p.numarScula), numar(p.diametruScula), p.formaScula, numar(p.unghiV), numar(p.varfV), numar(p.adancime), numar(p.pas), p.sens,
       p.fundPlat ? [numar(p.numarSculaFund), numar(p.diametruSculaFund), numar(p.pasLateralFund), ...p.restFund.map((r) => `${numar(r.numar)} ${numar(r.diametru)} ${numar(r.pas)}`)].join(' ') : '',
+      // Incrustația în V (ADR 0170, ADR 0172): lucrarea unește doar locașele cu aceeași incrustație, deci și rândurile se leagă
+      // doar cu ea: cea scrisă de Exportă, cu banda ei, sau „de necitit” cât un câmp e greșit.
+      p.incrustatie ? JSON.stringify(incrustatieVRand(p) ?? 'de necitit') : '',
     ].join('|');
     // Incrustația cu pereți drepți (ADR 0171) se taie tot ca o singură regiune, din operațiile cu aceleași valori: freza, adâncimea,
     // pasul, sensul, pasul lateral, frezele de rest, strategia, coborârea și incrustația (`valoriBuzunarDrept`, în lucrare).
@@ -798,29 +830,9 @@ export function DialogExport(
       if (p.fundPlat && restFund === null) return [];
       const fundPlat = p.fundPlat && numar !== null && diametru !== null && pasLateral !== null
         ? { numar, diametru, pasLateral, ...(restFund && restFund.length > 0 ? { rest: restFund } : {}) } : null;
-      // Incrustația (ADR 0170): cu bifa pusă, jocurile și marginea rândului (fierăstrăul = jocul cu „același spațiu”); fără ea,
-      // `null` (un V-carve obișnuit). Lemnul din jurul dopului (ADR 0172): al rândului.
-      const joc = citesteNumar(p.jocInc), fierastrau = p.acelasiSpatiu ? joc : citesteNumar(p.fierastrauInc), margine = citesteNumar(p.margineInc);
-      if (p.incrustatie && (joc === null || fierastrau === null || margine === null)) return [];
-      // Banda (ADR 0172): doar cu `jurDop: 'banda'` (pe fața coborâtă, câmpul pleacă); lățimea goală nu se scrie (cea mai mică,
-      // socotită de lucrare), placa goală e S + H + 1. Fără decupare, placa și punțile (cerute de document) rămân cele scrise dacă
-      // sunt bune, altfel cele implicite; freza decupării, doar cu bifa ei și bună.
-      let banda: BandaOperatie | undefined;
-      if (p.incrustatie && p.jurDop === 'banda') {
-        const v = bandaRand(p), ok = bandaBuna(p);
-        const latime = p.latimeBanda.trim() === '' ? undefined : citesteNumar(p.latimeBanda);
-        const placa = p.placaBanda.trim() === '' || !ok.placa ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);
-        const pn = ok.punti ? citesteNumar(p.numarPunti) : PUNTI_BANDA.numar, pl = ok.punti ? citesteNumar(p.latimePunti) : PUNTI_BANDA.latime;
-        const pg = ok.punti ? citesteNumar(p.grosimePunti) : PUNTI_BANDA.grosime;
-        const fn = p.frezaBanda && ok.freza ? citesteNumar(p.numarSculaBanda) : null, fd = p.frezaBanda && ok.freza ? citesteNumar(p.diametruSculaBanda) : null;
-        if (latime === null || placa === null || pn === null || pl === null || pg === null) return [];
-        banda = {
-          ...(latime !== undefined ? { latime } : {}), decupare: p.decupareBanda, grosimePlaca: placa,
-          ...(fn !== null && fd !== null ? { freza: { numar: fn, diametru: fd } } : {}), punti: { numar: pn, latime: pl, grosime: pg },
-        };
-      }
-      const incrustatie = p.incrustatie && joc !== null && fierastrau !== null && margine !== null
-        ? { joc, fierastrau, margine, jurDop: p.jurDop, ...(banda ? { banda } : {}) } : null;
+      // Incrustația (ADR 0170, ADR 0172): a rândului, cu banda lui (`incrustatieVRand`); `null` pe un V-carve obișnuit.
+      const incrustatie = incrustatieVRand(p);
+      if (incrustatie === undefined) return [];
       return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve', fundPlat, incrustatie }] as const];
     }
     // Găurirea (ADR 0087 §1): latura interior, nimic din profil, cu ieșirea la al câtelea pas.

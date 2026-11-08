@@ -7034,3 +7034,39 @@ apoi aduc `main` în ramura mea și iau v23 peste ele”), transmis aici de sesi
   de test servește `031e41abb70b`.
 - **Semnele:** planșelor și liniei incrustațiilor, după push, cu `9692385` și `031e41a`; linia incrustațiilor și-a adus apoi
   ramura la `031e41a`.
+
+## 2026-11-08 — Felia 12.1↑c-2, după unirea lui 12.1↑b–c: viteza benzii, rândurile legate, arborele, lemnul din jurul dopului din panou (Model: Claude Opus 5.5)
+
+**Prompt:** „1 si 2 acum 3-6 dupa” (owner-ul, la lista „ce putem îmbunătăți înainte să unim cu main”), apoi, de la sesiunea
+principală, vestea unirii („Linia incrustațiilor e în `origin/main`: unirea `9692385` … Un câmp nou pe linia ta … ia versiunea
+de după”): punctele 3, 5 și 6; punctul 4 (punțile dopului drept alese în fereastră) cere un câmp nou, deci v24, după v23.
+**Started:** 08.11, 14:05. **Completed:** 08.11, 15:59.
+
+- **`main` în ramură:** fast-forward la `031e41a` (unirea `9692385` are chiar arborele lui `4da55a1`; după ea, doar documente).
+- **6. Viteza benzii** (`050588e`): profilul V8 (`--cpu-prof`) pe textul de 24 de litere: 6,5 din 10 s în inelele colțurilor
+  ale V-carve-ului dopului (`atins` → `bucatiNeatinse`), adică testul „în zona frezei drepte” din `indexContururi`: fiecare
+  punct trecea prin toate segmentele benzii lui pe Y și recalcula cercul fiecărui arc (`cerculArcului`, 2,8 s singur). Acum
+  cercul se ține pe segment, calculat o dată, iar segmentele pe care raza nu le poate tăia (la stânga punctului, deasupra sau
+  dedesubtul ei, cu o marjă de 1e-6 mm peste rotunjiri) se sar fără calcul; `traversariArc` și `distantaLaArcCerc` (în
+  `geom/distanta.ts`) fac aceleași operații ca din bulge. Aceleași programe: amprentele SHA-256 a 12 exporturi (literele,
+  „i” cu punct, arce adevărate, literele Roboto cu diacritice; cu bandă, decupare, față coborâtă, V-carve simplu), identice
+  înainte și după. Timpii, același script, de două ori: banda 9,7 / 9,5 → 3,9 / 3,5 s, decuparea 9,6 / 10,5 → 3,4 / 3,4 s,
+  fața coborâtă 7,1 / 7,0 → 3,2 / 3,2 s (și V-carve-ul simplu, cu fundul plat, merge mai repede). Proba nouă
+  (`test/unit/axaMediala.index.test.ts`): indexul față de calculul direct (`inRegiune`, `distantaLaContur`), EXACT, pe 24 de
+  seturi aleatoare de contururi cu linii, arce și cubice, cu punctele de la marginea cutiilor, de pe capete și din vârfurile
+  cercurilor arcelor (peste 10 000).
+- **5. Rândurile legate:** fereastra lega la ordonare două incrustații în V ale aceleiași piese cu valori diferite, deși
+  lucrarea le sapă separat (`valoriVcarve` are incrustația). Cheia rândului are acum incrustația cum o scrie Exportă
+  (`incrustatieVRand`, scoasă din scrierea rândului: un singur loc). Proba e2e: piesa dreptunghi − cerc, cu două incrustații
+  în V: legate; cu alt joc, cu banda pe una singură, cu altă lățime a benzii, nu; înapoi, iar legate.
+- **5. Arborele:** „, incrustație cu dop, cu banda îngustă (jocul … mm)” când lemnul din jurul dopului e banda.
+- **3. Lemnul din jurul dopului ales din panou:** în secțiunea Tăierea, pe toate incrustațiile în V alese („— (diferite)” cu
+  valori diferite; un singur pas de anulare); banda scrisă rămâne în document (Exportă o scoate pe fața coborâtă). Cu banda,
+  panoul arată valorile ei pe hârtie înainte de export (cu banda implicită: lățimea cea mai mică, placa S + H + 1). Probele
+  e2e: un cerc (banda pe hârtie, arborele, fereastra pornită pe bandă, înapoi pe față), două piese („—”, alegerea pe
+  amândouă, anularea). Manualul (ro, en): unde se alege; banda pe hârtie de îndată ce o alegi.
+- **Porțile:** compilatoarele ×3, importurile 19 / 0 (1 069 de module), licențele, unit 8 716 (0 căderi; +1: proba indexului), build determinist (286 de fișiere; pornirea 101,8, cu ușa 105,5 / 110; totalul 544,2 / 600, +0,2 kB), e2e 384: 382 din prima, 2 căderi de încărcare (`EBUSY` pe un fișier al rezultatelor; `selectie.spec.ts:158`) trecute singure, 3 / 3 fiecare.
+- **Otrăvurile:** lista nouă `12.1c2.py`, 16 otrăvuri: la prima rulare (`050588e`) 15 prinse (V01–V09 și V11 pe probele lor; K01, K02, A01, P01, P02 prin e2e) și V10 scăpată (interiorul segment cu segment pe arcul oglindit: cercul de probă, din două semicercuri, nu deosebește arcul de oglinda lui), cu proba nouă pe colțurile rotunjite (`dbcd168`) prinsă: 16 / 16; reorientate pe codul mutat și prinse: 12.1 E05, E08 și 12.1c E09, E10.
+- **Publicat:** pe canalul `incrustatii`, build-ul `dbcd168` (versiunea `dbcd168f3545`, până pe 08.12), verificat în browserul aplicației, în engleză: pe cercul cu rolul „V inlay”, „Wood around the plug: narrow band” ales din panou arată banda pe hârtie (lățimea 7,58 mm, cea mai mică; semifabricatul plus 15,29 mm pe fiecare parte; decuparea prin placa de 6,20 mm, punțile 4 × 4 × 1), arborele spune „narrow band”, iar fereastra exportului pornește pe bandă (lățimea goală, „narrowest: 7.578 mm”; placa goală, 6,196); închisă fără export, alegerea anulată (înapoi pe fața coborâtă), fără erori în consolă.
+- **Rămâne:** punctul 4 (punțile dopului drept alese în fereastră: câte, lățimea, grosimea): un câmp nou în document, deci
+  v24, după ce v23 a planșelor intră în `main`.

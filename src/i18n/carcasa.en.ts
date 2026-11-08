@@ -237,6 +237,7 @@ export const enCarcasa = {
   },
   'arbore.vcarve.fund': ', flat floor with T{t} Ø{d}',
   'arbore.vcarve.incrustatie': ', inlay with a plug (glue gap {joc} mm)',
+  'arbore.vcarve.incrustatie-banda': ', inlay with a plug, narrow band (glue gap {joc} mm)',
   'arbore.buzunar.incrustatie': ', straight-walled inlay (side gap {joc} mm)',
   'arbore.fara-operatii': 'No cutting operation',
   // Extensiile (ADR 0127): butonul de lângă marcă, meniul, spațiul și ferestrele instalării.
