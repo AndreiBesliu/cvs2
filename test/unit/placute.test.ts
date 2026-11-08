@@ -429,6 +429,8 @@ test('o plăcuță sub o cheie pe care validatorul o sare (`constructor`) e jude
   // Litere în altă formă (copiii nu sunt o listă), alt text decât al valorilor, o operație cu o listă care nu e listă.
   for (const [ce, rau] of [
     ['litere stricate', { ...bun, texte: { constructor: { ...t, copii: 'x' } } }],
+    // O formă stricată a unei litere: doar forma intrării o prinde (id-urile, operațiile și matricele sunt bune).
+    ['o literă cu forma stricată', { ...bun, texte: { constructor: { ...t, copii: [{ ...(t.copii[0] as GrupNod), copii: [{ ...((t.copii[0] as GrupNod).copii[0]!), forma: { tip: 'cale', inchis: true, varfuri: 'zz' } }, ...(t.copii[0] as GrupNod).copii.slice(1)] }, ...t.copii.slice(1)] } } }],
     ['alt text', { ...bun, texte: { constructor: { ...t, continut: 'Masa 8' } } }],
     ['o valoare care nu e text', { ...bun, campuri: { nr: '7', constructor: 5 } }],
   ] as const) {

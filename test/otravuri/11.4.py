@@ -38,8 +38,8 @@ o('P04', PO, '    if (noduri.length > 0) rez[o.id] = noduri;', '    rez[o.id] = 
 o('P05', PT, '    for (let n = 2; !liber(prefix); n++)', '    for (let n = 2; false; n++)', 'placute', 'prefixul literelor se ciocnește cu un id al piesei')
 o('P06', PT, "    const continut = cuValori(t.bloc.continut, campuri) ?? '';", '    const continut = t.bloc.continut;', 'placute',
   'plăcuța are textul șablonului („Masa {nr}”), nu valorile ei')
-o('P07', PT, "  return { ...rest, continut, inaltime: bloc.caseta?.fel === 'limita' ? bloc.caseta.ceruta : bloc.inaltime };",
-  '  return { ...rest, continut, inaltime: bloc.inaltime };', 'placute', 'limitat de casetă, plăcuța pornește de la înălțimea șablonului (mai mică)')
+# P07 („limitat de casetă, plăcuța pornește de la înălțimea șablonului”) a scăpat la prima rulare (`c2784f2`): echivalentă,
+# fiindcă așezarea limitată caută oricum de la `caseta.ceruta`. Codul ei a fost scos (mutantul mai bun = codul scos).
 o('P08', PT, "  if (drept.raport['caseta-prea-mica'] > 0) return 'caseta';\n", '', 'placute', 'un text care nu încape în casetă trece')
 o('P09', PT, '  if (!c) return drept;', '  if (!c || c) return drept;', 'placute', 'șablonul pe curbă dă plăcuțe cu textul drept')
 # Șablonul și coacerea (unitare).

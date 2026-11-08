@@ -34,10 +34,14 @@ export type RezultatPlacuta =
   }
   | { readonly ok: false; readonly motiv: MotivPlacuta; readonly font?: string };
 
-/** Parametrii așezării unui bloc salvat, cu alt text: limitat de casetă, se pornește de la înălțimea cerută (ADR 0142). */
+/**
+ * Parametrii așezării unui bloc salvat, cu alt text. Cu o casetă, înălțimea blocului e cea în care a încăput șablonul, dar
+ * așezarea nu pornește de la ea: limitat de casetă, caută de la înălțimea cerută (`caseta.ceruta`), scalat, de la cea mai
+ * mare (ADR 0142, `inaltimeInCaseta`), deci plăcuța cu un text mai scurt crește la loc.
+ */
 function parametriBloc(bloc: BlocText, continut: string): ParametriText {
   const { amprenta: _a, spatieri: _s, curba: _c, font: _f, numeFont: _n, unitate: _u, ...rest } = bloc;
-  return { ...rest, continut, inaltime: bloc.caseta?.fel === 'limita' ? bloc.caseta.ceruta : bloc.inaltime };
+  return { ...rest, continut };
 }
 
 /** Textul `continut` așezat cu blocul `bloc` (drept sau pe curba lui), sau motivul. */
