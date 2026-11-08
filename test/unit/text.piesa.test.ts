@@ -5,7 +5,7 @@ import { partiDegrupare } from '../../src/model/degrupare.ts';
 import { blocText } from '../../src/model/blocText.ts';
 import { documentNou, type Document, type ElementNod, type GrupNod, type Nod, type Operatie, type Piesa } from '../../src/model/document.ts';
 import { incarca } from '../../src/model/incarcare.ts';
-import { transforma } from '../../src/model/transformare.ts';
+import { formeScalate, transforma } from '../../src/model/transformare.ts';
 import { aseazaText, type ParametriText } from '../../src/text/asezare.ts';
 import { citesteFont, type Font } from '../../src/text/font.ts';
 import { piesaText } from '../../src/text/piesaText.ts';
@@ -87,9 +87,16 @@ test('scalarea uniformă crește blocul (înălțimea, spațierea, amprenta nou�
   const bn = blocText(n.piese[0]!.radacina);
   assert.ok(bn, 'un text drept, fără aldin, rămâne text');
   assert.deepEqual([bn.inaltime, bn.spatiere, bn.proportii], [20, 0.75, { latime: 150, inaltime: 100 }]);
-  // Literele aldine sunt linii și arce: scalarea neuniformă le refuză, ca înainte (ADR 0052).
+  // Literele aldine sunt linii și arce: scalate neuniform, arcele devin curbe, iar textul devine vectori (ADR 0240 §F.29;
+  // înainte, refuzat).
   const gros = transforma(docCu(piesa({ ...PARAM, aldin: 0.6 })), 0, ['i1'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } });
-  assert.deepEqual(gros, { ok: false, motiv: 'neuniform-arc' });
+  assert.ok(gros.ok);
+  assert.equal(blocText(gros.piese[0]!.radacina), null, 'textul cu aldin devine vectori');
+  const arce = (n: Nod): boolean => (n.tip === 'element' ? n.forma.tip === 'cale' && n.forma.varfuri.some((x) => x.s.tip === 'A' && x.s.bulge !== 0) : n.copii.some(arce));
+  assert.equal(arce(gros.piese[0]!.radacina), false, 'niciun arc nu rămâne');
+  // Eticheta mânerelor o spune o dată, pentru tot textul (și arcele aldinului); textul drept rămâne text, deci nimic.
+  assert.deepEqual(formeScalate(docCu(piesa({ ...PARAM, aldin: 0.6 })), 0, ['i1']), { cerc: false, arce: false, colturi: false, text: true });
+  assert.deepEqual(formeScalate(d, 0, ['i1']), { cerc: false, arce: false, colturi: false, text: false });
   const o = transforma(d, 0, ['i1'], { fel: 'oglindire', directie: 'orizontal', centru: { x: 50, y: 50 } });
   assert.ok(o.ok);
   assert.ok(blocText(o.piese[0]!.radacina));

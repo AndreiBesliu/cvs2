@@ -4,7 +4,7 @@
  * Grila de 10 mm ține capetele gesturilor pe valorile de pe hârtie.
  */
 import { test, expect, type Page } from '@playwright/test';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -75,6 +75,15 @@ test('tastele la mânere (ADR 0240): cercul Ø 40 din (100, 100), latura dreapt�
     await page.keyboard.press('Control+z');
     await expect(randuri(page)).toHaveText(['cerc R20.00 cu centrul la X 100.00, Y 100.00']);
   }
+  // Cu Alt, lipirea rămâne a butonului (răspunsul 2a): lăsată în 131,3, latura se prinde de grilă, în 130.
+  {
+    const l = await ecran(page, await vedere(page));
+    const e = await maner(page, 'e');
+    await trage(page, e, { x: l(131.3, 100).x, y: e.y }, ['Alt']);
+    await expect(randuri(page)).toHaveText([/^cale 60\.00 × 40\.00, \d+ (de )?segmente, la X 70\.00, Y 80\.00$/]);
+    await page.keyboard.press('Control+z');
+    await expect(randuri(page)).toHaveText(['cerc R20.00 cu centrul la X 100.00, Y 100.00']);
+  }
   // Colțul dreapta-sus tras cu (10, 4) mm, cu Ctrl: elipsa 50 × 44, fix colțul stânga-jos (80, 80), centrul (105, 102).
   // Grila oprită: 124 nu e pe ea.
   await page.locator('[data-editare="grila"]').click();
@@ -131,6 +140,11 @@ test('desenul cu tastele (ADR 0240 §C): dreptunghiul din centru, cercul cu Ctrl
   await page.keyboard.down('Alt');
   await page.mouse.down();
   await page.mouse.move(la(90, 80).x, la(90, 80).y, { steps: 5 });
+  await expect(page.getByTestId('desen-eticheta')).toHaveText('60 × 40 mm · din centru');
+  // Shift apăsat cu mausul pe loc: pătratul, imediat; ridicat, din nou dreptunghiul.
+  await page.keyboard.down('Shift');
+  await expect(page.getByTestId('desen-eticheta')).toHaveText('60 × 60 mm · din centru · pătrat');
+  await page.keyboard.up('Shift');
   await expect(page.getByTestId('desen-eticheta')).toHaveText('60 × 40 mm · din centru');
   await page.mouse.up();
   await page.keyboard.up('Alt');
@@ -214,6 +228,14 @@ test('ancora (ADR 0240 §A): trasă pe grilă, rotirea și oglindirea în jurul 
   await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('140');
   await page.mouse.dblclick(la(170, 100).x, la(170, 100).y);
   await expect.poll(() => ancora(page)).toEqual([150, 100]);
+  // O selecție nouă o întoarce în punctul ales: trasă iar în (170, 100), apoi un clic pe foaia goală (nimic ales) și rândul
+  // formei.
+  await trage(page, la(150, 100), la(170.2, 99.6));
+  await expect.poll(() => ancora(page)).toEqual([170, 100]);
+  await page.mouse.click(la(250, 180).x, la(250, 180).y);
+  await expect(page.getByTestId('ancora')).toHaveCount(0);
+  await randuri(page).first().click();
+  await expect.poll(() => ancora(page)).toEqual([150, 100]);
   // Colțul stânga-jos din selector, (140, 80), apoi latura de sus (y = 120) trasă la 140 cu Alt: fix e ancora (y = 80), deci
   // înălțimea 40 → 60; dreptunghiul, rotit cu 90°, are acum lățimea lui 60.
   await page.locator('[data-ancora="sv"]').click();
@@ -224,5 +246,97 @@ test('ancora (ADR 0240 §A): trasă pe grilă, rotirea și oglindirea în jurul 
   await expect(randuri(page)).toHaveText([/^dreptunghi 60\.00 × 20\.00 /]);
   await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('80');
   expect(await ancora(page)).toEqual([140, 80]);
+  expect(erori).toEqual([]);
+});
+
+/** Latura dreaptă trasă până la x (mm), cu eticheta citită înainte de eliberare. */
+async function trageLatura(page: Page, x: number): Promise<string | null> {
+  const la = await ecran(page, await vedere(page));
+  const e = await maner(page, 'e');
+  await page.mouse.move(e.x, e.y);
+  await page.mouse.down();
+  await page.mouse.move(la(x, 0).x, e.y, { steps: 5 });
+  const eticheta = page.getByTestId('manere-eticheta');
+  await expect(eticheta).toBeVisible();
+  const text = await eticheta.textContent();
+  await page.mouse.up();
+  return text;
+}
+
+test('colțurile rotunjite (ADR 0240 §F.28): raza rămâne la întindere, refuzul cu motiv, „se scalează mereu” face curbe', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(200, 120));
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 60.00']);
+  const raza = page.locator('[data-camp="forma-raza-colt"]');
+  await raza.fill('10');
+  await raza.press('Enter');
+  await expect(raza).toHaveValue('10');
+  await page.locator('[data-unealta="transformare"]').click();
+  const fel = page.locator('[data-editare="colturi"]');
+  await expect(fel).toHaveValue('');
+  // Implicit: întins la 150, rămâne dreptunghi cu R 10, iar eticheta o spune.
+  expect(await trageLatura(page, 250)).toBe('150 × 60 mm · pe o axă · față de latura opusă · colțurile își păstrează raza');
+  await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 100.00, Y 60.00']);
+  await expect(raza).toHaveValue('10');
+  // Strâns la 10 mm, R 10 nu mai încape: refuzul, cu motivul; forma rămâne.
+  await trageLatura(page, 110);
+  await expect(page.getByTestId('manere-motiv')).toHaveText('Colțurile rotunjite nu mai încap în dreptunghiul scalat: alege „Colțuri: se scalează mereu” sau micșorează raza.');
+  await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 100.00, Y 60.00']);
+  // „Se scalează mereu”, ținut în browser: întinsă la 180, forma devine o cale (colțurile, sferturi de elipsă din curbe).
+  await fel.selectOption('scaleaza');
+  expect(await page.evaluate(() => localStorage.getItem('cncvs2.colturi'))).toBe('scaleaza');
+  expect(await trageLatura(page, 280)).toBe('180 × 60 mm · pe o axă · față de latura opusă · colțurile devin curbe');
+  await expect(randuri(page)).toHaveText([/^cale 180\.00 × 60\.00, \d+ (de )?segmente, la X 100\.00, Y 60\.00$/]);
+  expect(erori).toEqual([]);
+  // Felul ales se citește la pornire: o filă deschisă după aceasta (care nu mai e deschisă, deci nu ține proiectul) îl are.
+  const context = page.context();
+  await page.close();
+  const alta = await context.newPage();
+  await alta.goto('/');
+  await alta.locator('[data-unealta="transformare"]').click();
+  await expect(alta.locator('[data-editare="colturi"]')).toHaveValue('scaleaza');
+});
+
+test('înclinarea față de ancoră (ADR 0240 §A.5): cu ancora în colțul stânga-jos, latura de jos rămâne pe loc', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await expect(randuri(page)).toHaveText(['dreptunghi 40.00 × 20.00 la X 100.00, Y 60.00']);
+  await page.locator('[data-unealta="transformare"]').click();
+  await page.locator('[data-ancora="sv"]').click();
+  await expect.poll(() => ancora(page)).toEqual([100, 60]);
+  await page.locator('[data-editare="inclinare"]').click();
+  await page.locator('[data-inclinare="x"]').fill('45');
+  await page.locator('[data-inclinare="y"]').fill('0');
+  await page.locator('[data-inclinare="aplica"]').click();
+  // Orizontal cu 45°, față de y = 60: latura de jos rămâne, cea de sus se mută cu 20 (față de centru, cutia ar începe în 90).
+  await expect(randuri(page)).toHaveText([/^cale 60\.00 × 20\.00, 4 segmente, la X 100\.00, Y 60\.00$/]);
+  expect(await ancora(page)).toEqual([100, 60]);
+  expect(erori).toEqual([]);
+});
+
+test('arcele unei căi întinse pe o axă devin curbe (ADR 0240 §F.27): conturul rotunjit al unui offset, eticheta, apoi calea', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  // Dreptunghiul 100 × 60 din (20, 20) și conturul lui spre exterior cu 5 mm, cu colțurile rotunjite: 110 × 70 din (15, 15),
+  // patru linii și patru arce R 5; conturul nou e ales.
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-editare="offset"]').click();
+  await page.locator('[data-offset-colturi="rotunjite"]').click();
+  await page.locator('[data-offset="aplica"]').click();
+  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00, 8 segmente');
+  await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-unealta="transformare"]').click();
+  // Latura dreaptă de la 125 la 180 (pe grila de 10): × 1,5, iar arcele devin curbe.
+  expect(await trageLatura(page, 180)).toBe('165 × 70 mm · pe o axă · față de latura opusă · arcele devin curbe');
+  const rand = randuri(page).nth(1);
+  await expect(rand).toHaveText(/^cale 165\.00 × 70\.00, \d+ (de )?segmente, la X 15\.00, Y 15\.00$/);
+  const segmente = Number(/, (\d+) (de )?segmente/.exec((await rand.textContent()) ?? '')?.[1]);
+  expect(segmente).toBeGreaterThan(8);
   expect(erori).toEqual([]);
 });

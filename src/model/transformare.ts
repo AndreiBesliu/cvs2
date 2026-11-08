@@ -14,15 +14,23 @@ import { inversa } from '../geom/inversa.ts';
 import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
-import { blocScalat } from './blocText.ts';
+import { blocScalat, blocText, textNeuniformPosibil } from './blocText.ts';
 import { elipsa, parametri } from './formeParametrice.ts';
-import { arcInCubice, caleDinForma } from './noduri.ts';
+import { arcInCubice, caleDinForma, type FormaCale } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
 
 export type Transformare =
   | { readonly fel: 'rotire'; readonly unghi: number; readonly centru: P }
-  | { readonly fel: 'scalare'; readonly sx: number; readonly sy: number; readonly ancora: P }
+  | {
+    readonly fel: 'scalare'; readonly sx: number; readonly sy: number; readonly ancora: P;
+    /**
+     * Colțurile rotunjite ale unui dreptunghi (ADR 0240 §F.28): lipsă, raza rămâne la o scalare neuniformă și crește la una
+     * uniformă; `pastreaza`, raza rămâne mereu; `scaleaza`, crește mereu (la una neuniformă, colțurile devin sferturi de
+     * elipsă, din curbe).
+     */
+    readonly colturi?: 'pastreaza' | 'scaleaza';
+  }
   /** `orizontal`: stânga ↔ dreapta, față de dreapta verticală prin `centru`; `vertical`: sus ↔ jos, față de orizontala lui. */
   | { readonly fel: 'oglindire'; readonly directie: 'orizontal' | 'vertical'; readonly centru: P }
   /**
@@ -36,7 +44,7 @@ export type Transformare =
   };
 
 export type MotivTransformare =
-  | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
+  | 'colturi-nu-incap' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
 
 /** Cel mai mare unghi de înclinare acceptat, în grade (tan 75° ≈ 3,7). */
 export const UNGHI_MAXIM_INCLINARE = 75;
@@ -55,17 +63,55 @@ export function intindere(m: Matrice): number {
   return Math.sqrt((s + Math.sqrt(Math.max(0, s * s - 4 * det * det))) / 2);
 }
 
-/** Pură: o formă a instanțelor `ids` ale foii are arce (un cerc, colțuri rotunjite, o cale cu arce): înclinarea le-ar refuza. */
-export function areArce(doc: Document, indexFoaie: number, ids: readonly string[]): boolean {
+/** Pură: vârful `k` începe un arc desenat (cu bulge; segmentul ultimului vârf al unei căi deschise nu se desenează, ADR 0001). */
+function arcDesenat(c: FormaCale, k: number): boolean {
+  const v = c.varfuri[k];
+  return v !== undefined && v.s.tip === 'A' && v.s.bulge !== 0 && (c.inchis || k < c.varfuri.length - 1);
+}
+const areArcCale = (c: FormaCale): boolean => c.varfuri.some((_, k) => arcDesenat(c, k));
+
+/** Piesele instanțelor `ids` ale foii (o piesă folosită de mai multe instanțe, o dată pe instanță). */
+function pieseAlese(doc: Document, indexFoaie: number, ids: readonly string[]): Piesa[] {
   const alese = new Set(ids);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  const inNod = (n: Nod): boolean => n.tip === 'element'
-    ? caleDinForma(n.forma).varfuri.some((v) => v.s.tip === 'A' && v.s.bulge !== 0)
-    : n.copii.some(inNod);
-  return (doc.foi[indexFoaie]?.instante ?? []).some((i) => {
+  return (doc.foi[indexFoaie]?.instante ?? []).flatMap((i) => {
     const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
-    return p !== undefined && inNod(p.radacina);
+    return p ? [p] : [];
   });
+}
+
+/** Pură: o formă a instanțelor `ids` ale foii are arce (un cerc, colțuri rotunjite, o cale cu arce): înclinarea le-ar refuza. */
+export function areArce(doc: Document, indexFoaie: number, ids: readonly string[]): boolean {
+  const inNod = (n: Nod): boolean => (n.tip === 'element' ? areArcCale(caleDinForma(n.forma)) : n.copii.some(inNod));
+  return pieseAlese(doc, indexFoaie, ids).some((p) => inNod(p.radacina));
+}
+
+/**
+ * Ce schimbă o scalare formelor instanțelor `ids` (ADR 0240 §F), pentru eticheta mânerelor: un cerc (devine elipsă), arcele
+ * unei căi (devin curbe), colțurile rotunjite (după felul ales), un text care devine vectori (cu aldin sau pe o curbă; o spune
+ * o dată pentru toate literele lui, cu arcele aldinului).
+ */
+export type FormeScalate = { readonly cerc: boolean; readonly arce: boolean; readonly colturi: boolean; readonly text: boolean };
+
+/** Pură: `FormeScalate` pentru instanțele `ids` ale foii. */
+export function formeScalate(doc: Document, indexFoaie: number, ids: readonly string[]): FormeScalate {
+  const r = { cerc: false, arce: false, colturi: false, text: false };
+  const inNod = (n: Nod): void => {
+    if (n.tip === 'grup') {
+      for (const c of n.copii) inNod(c);
+      return;
+    }
+    const f = n.forma;
+    if (f.tip === 'cerc') r.cerc = true;
+    else if (f.tip === 'dreptunghi') r.colturi ||= f.razaColt > 0;
+    else r.arce ||= areArcCale(f);
+  };
+  for (const p of pieseAlese(doc, indexFoaie, ids)) {
+    const b = blocText(p.radacina);
+    if (b && !textNeuniformPosibil(b)) r.text = true;
+    else inNod(p.radacina);
+  }
+  return r;
 }
 
 export type RezultatTransformare =
@@ -91,12 +137,40 @@ function sferturiMatrice(m: Matrice): number | null {
   return sferturi((Math.atan2(m.b, m.a) * 180) / Math.PI);
 }
 
-function scaleazaForma(f: FormaDoc, sx: number, sy: number): FormaDoc | MotivTransformare {
+/**
+ * Pură: calea cu arcele ei desenate făcute cubice ale aceluiași cerc, la cel mult `tol` mm (`arcInCubice`, ADR 0068). Comună
+ * înclinării (ADR 0078) și scalării neuniforme (ADR 0240 §F.27).
+ */
+function arceInCubiceCale(c: FormaCale, tol: number): FormaCale {
+  const n = c.varfuri.length;
+  return {
+    ...c,
+    varfuri: c.varfuri.flatMap((v, k): VarfDoc[] => {
+      const b = c.varfuri[(k + 1) % n];
+      return arcDesenat(c, k) && b && v.s.tip === 'A' ? arcInCubice(v.p, b.p, v.s.bulge, tol) : [v];
+    }),
+  };
+}
+
+/**
+ * Pură: forma scalată cu (sx, sy), în axele ei. `sW` e scara elementului în lume (produsul scărilor nodurilor de deasupra și
+ * a lui): un arc făcut cubice la o scalare neuniformă rămâne sub toleranța proiectului în lume (ADR 0240 §F.27).
+ */
+function scaleazaForma(f: FormaDoc, sx: number, sy: number, colturi: 'pastreaza' | 'scaleaza' | undefined, sW: number): FormaDoc | MotivTransformare {
   const u = uniforma(sx, sy);
+  // Abaterea unei cubice față de arcul ei crește, la scalare, cel mult cu scara cea mai mare, apoi cu scara elementului.
+  const tolArce = TOLERANTA_PROIECT / (sW * Math.max(Math.abs(sx), Math.abs(sy)));
   switch (f.tip) {
-    case 'dreptunghi':
-      if (!u && f.razaColt > 0) return 'neuniform-colt';
-      return { ...f, latime: f.latime * Math.abs(sx), inaltime: f.inaltime * Math.abs(sy), razaColt: f.razaColt * Math.abs(sx) };
+    case 'dreptunghi': {
+      const latime = f.latime * Math.abs(sx), inaltime = f.inaltime * Math.abs(sy);
+      if (f.razaColt === 0) return { ...f, latime, inaltime, razaColt: 0 };
+      // Colțurile care se scalează neuniform devin sferturi de elipsă: o cale, din curbe (ADR 0240 §F.28, felul c).
+      if (!u && colturi === 'scaleaza') return scaleazaForma(arceInCubiceCale(caleDinForma(f), tolArce), sx, sy, colturi, sW);
+      // Altfel raza rămâne (la o scalare neuniformă, sau mereu cu `pastreaza`): dreptunghiul rămâne exact și editabil.
+      const razaColt = u && colturi !== 'pastreaza' ? f.razaColt * Math.abs(sx) : f.razaColt;
+      if (razaColt > Math.min(latime, inaltime) / 2) return 'colturi-nu-incap';
+      return { ...f, latime, inaltime, razaColt };
+    }
     case 'cerc':
       // Scalat neuniform, cercul devine elipsa generatorului uneltei de desen (ADR 0240 §F): aceleași cubice ca o elipsă
       // desenată, deci panoul o recunoaște și îi editează razele.
@@ -113,9 +187,10 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number): FormaDoc | MotivTra
         const z = (v: number): number => (Math.abs(v) <= 1e-9 * s ? 0 : v);
         return elipsa({ x: z(el.centru.x * sx), y: z(el.centru.y * sy) }, rx, ry);
       }
-      if (!u && f.varfuri.some((v) => v.s.tip === 'A')) return 'neuniform-arc';
+      // Scalate neuniform, arcele devin întâi curbe ale aceluiași cerc (ADR 0240 §F.27), apoi se scalează ca orice cubică.
+      const baza = u ? f : arceInCubiceCale(f, tolArce);
       const p = (q: { readonly x: number; readonly y: number; readonly [k: string]: unknown }) => ({ ...q, x: q.x * sx, y: q.y * sy });
-      const scalate = f.varfuri.map((v) => ({ ...v, p: p(v.p), s: v.s.tip === 'C' ? { ...v.s, c1: p(v.s.c1), c2: p(v.s.c2) } : v.s }));
+      const scalate = baza.varfuri.map((v) => ({ ...v, p: p(v.p), s: v.s.tip === 'C' ? { ...v.s, c1: p(v.s.c1), c2: p(v.s.c2) } : v.s }));
       // Un arc pe care mărirea îl duce peste latura documentului (raza din coardă și bulge, ca schema, cu marja de 0,1 % a
       // importului) devine cubice sub toleranța importului, ca un arc plat la import (ADR 0035 §6, ADR 0102): altfel schema
       // ar refuza documentul, iar piesa n-ar mai crește deloc.
@@ -136,7 +211,7 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number): FormaDoc | MotivTra
  * Pură: nodul scalat cu (sx, sy) în axele lui de deasupra: translația lui se scalează, iar copiii (sau forma) primesc scalarea
  * trecută prin rotirea lui (un multiplu de 90°; altfel doar o scalare uniformă trece).
  */
-function scaleazaNod(n: Nod, sx: number, sy: number): Nod | MotivTransformare {
+function scaleazaNod(n: Nod, sx: number, sy: number, colturi: 'pastreaza' | 'scaleaza' | undefined, sW = 1): Nod | MotivTransformare {
   const m = n.matrice;
   const matrice = { ...m, e: m.e * sx, f: m.f * sy };
   let lx = sx, ly = sy;
@@ -146,13 +221,14 @@ function scaleazaNod(n: Nod, sx: number, sy: number): Nod | MotivTransformare {
     [lx, ly] = inAxe(sx, sy, q);
   }
   // Scara proprie a nodului (|a, b|) nu se schimbă: scalarea intră în geometrie, în axele locale.
+  const s = sW * Math.hypot(m.a, m.b);
   if (n.tip === 'element') {
-    const f = scaleazaForma(n.forma, lx, ly);
+    const f = scaleazaForma(n.forma, lx, ly, colturi, s);
     return typeof f === 'string' ? f : { ...n, matrice, forma: f };
   }
   const copii: Nod[] = [];
   for (const c of n.copii) {
-    const r = scaleazaNod(c, lx, ly);
+    const r = scaleazaNod(c, lx, ly, colturi, s);
     if (typeof r === 'string') return r;
     copii.push(r);
   }
@@ -198,7 +274,7 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
       if (q === null) return { ok: false, motiv: 'neuniform-rotit' };
       [lx, ly] = inAxe(sx, sy, q);
     }
-    const scalata = scaleazaNod(piesa.radacina, lx, ly);
+    const scalata = scaleazaNod(piesa.radacina, lx, ly, t.colturi);
     if (typeof scalata === 'string') return { ok: false, motiv: scalata };
     // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl păstrează doar pe un text drept, fără
     // aldin (ADR 0138 §4). Scara blocului e cea din axele contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
@@ -243,16 +319,8 @@ function oglindeste(
  */
 function aplicaFormei(f: FormaDoc, A: Matrice, tolArce: number | null): FormaDoc | MotivTransformare {
   const c = caleDinForma(f);
-  const n = c.varfuri.length;
-  const arc = (k: number): boolean => { const v = c.varfuri[k]; return v !== undefined && v.s.tip === 'A' && v.s.bulge !== 0 && (c.inchis || k < n - 1); };
-  let varfuri: readonly VarfDoc[] = c.varfuri;
-  if (c.varfuri.some((_, k) => arc(k))) {
-    if (tolArce === null) return 'inclinare-arc';
-    varfuri = c.varfuri.flatMap((v, k) => {
-      const b = c.varfuri[(k + 1) % n];
-      return arc(k) && b && v.s.tip === 'A' ? arcInCubice(v.p, b.p, v.s.bulge, tolArce) : [v];
-    });
-  }
+  if (tolArce === null && areArcCale(c)) return 'inclinare-arc';
+  const { varfuri } = tolArce === null ? c : arceInCubiceCale(c, tolArce);
   const p = (q: { readonly x: number; readonly y: number }) => aplica(A, q);
   return { ...c, varfuri: varfuri.map((v) => ({ p: p(v.p), s: v.s.tip === 'C' ? { tip: 'C' as const, c1: p(v.s.c1), c2: p(v.s.c2) } : { tip: 'L' as const } })) };
 }

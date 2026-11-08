@@ -170,7 +170,8 @@ cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
 Lățimea și înălțimea literelor scalează literele înaintea oricărui alt pas: spațiul dintre litere, aldinul și distanța
 de curbă rămân în mm, iar cursivul înclină litera deja scalată. Trasă cu mânerele doar în lățime (sau doar în înălțime),
 un text drept fără aldin rămâne text: i se schimbă lățimea literelor (și mărimea, când tragi în înălțime). Un text pe o
-curbă devine vectori, iar unul aldin nu se scalează așa (literele lui au arce); scalarea uniformă le crește pe toate.
+curbă sau unul aldin devine vectori (arcele aldinului, curbe), iar eticheta mânerelor o spune; scalarea uniformă le crește
+pe toate.
 
 **Vertical** pune literele una sub alta, drepte: fiecare rând devine o coloană, iar coloanele merg de la stânga la dreapta,
 la **distanța dintre coloane** (ca multiplu al rândului fontului). Fiecare literă stă centrată pe axa coloanei, iar între două
@@ -238,8 +239,8 @@ majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se taie în stilu
 lățimile și crenarea lui; textul ține stilul și se redeschide cu el. Un WOFF2 se încarcă întâi convertit în TTF sau OTF.
 
 Textul rămâne editabil și după salvare, cât timp contururile lui nu se schimbă pe altă cale: mutarea, rotirea, oglindirea și
-scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou); o scalare neuniformă, o înclinare sau o editare de
-noduri îl fac vectori obișnuiți. **Degrupează** îl desface în litere, ca vectori. Ș și Ț se scriu cu virgulă (Ș ș Ț ț), ca
+scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou), la fel scalarea pe o axă a unui text drept fără
+aldin; scalarea pe o axă a unui text pe curbă sau aldin, o înclinare sau o editare de noduri îl fac vectori obișnuiți. **Degrupează** îl desface în litere, ca vectori. Ș și Ț se scriu cu virgulă (Ș ș Ț ț), ca
 în română. Un caracter pe care fontul nu-l are nu se desenează, iar panoul îl spune.
 
 ## Selecția și editarea
@@ -282,7 +283,8 @@ câmp.
 %% capitol: transformari
 %% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
-Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce):
+Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce cât
+scalarea e proporțională):
 - **colțurile** scalează proporțional, cu colțul opus fix; **laturile** scalează pe o singură axă, cu latura opusă fixă;
 - **Shift**: proporțional pe orice mâner (și pe o latură: cealaltă axă crește la fel, simetric față de mijloc);
 - **Ctrl** (`⌘` pe Mac): liber pe orice mâner (și pe un colț, fiecare axă cu tragerea ei);
@@ -302,9 +304,18 @@ rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se sa
 Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
 opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
 pe axa pe care o scalează, cât e pornită lipirea (`Shift+L` o comută). Un **cerc** scalat pe o singură axă devine **elipsă**:
-aceeași elipsă ca una desenată cu Elipsa, cu razele editabile în panou. Unele scalări nu se pot face exact și sunt refuzate,
-cu motivul: o cale cu arce, un dreptunghi cu colțuri rotunjite sau o formă rotită oblic se scalează doar proporțional; o
-piesă folosită și de alte forme nu se schimbă.
+aceeași elipsă ca una desenată cu Elipsa, cu razele editabile în panou. Arcele unei căi (colțurile unui offset, arcele
+importate) scalate pe o axă devin **curbe**, la cel mult 0,001 mm de arcul întins; eticheta spune „arcele devin curbe”, iar
+`Ctrl+Z` le readuce.
+
+**Colțurile rotunjite** ale unui dreptunghi urmează lista de lângă selectorul ancorei, ținută în browser:
+- **Colțuri: raza rămâne la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
+  cu raza editabilă în panou; scalată proporțional, raza crește cu forma;
+- **Colțuri: raza rămâne mereu**: și la scalarea proporțională;
+- **Colțuri: se scalează mereu**: trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma devine o cale).
+
+Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. Rămân refuzate,
+cu motivul, scalarea pe o axă a unei forme rotite oblic și schimbarea unei piese folosite și de alte forme.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
 (`Shift+V`, sus ↔ jos), față de ancoră (implicit centrul cutiei selecției). Se taie oglinda, cu același sens de tăiere.

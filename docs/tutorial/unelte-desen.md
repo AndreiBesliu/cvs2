@@ -87,6 +87,24 @@ Transformare (`S`): trage un colț, o latură, apoi mânerul rotund de deasupra;
 Colțul scalează proporțional (cu Ctrl, liber), latura pe o singură axă (cu Shift, proporțional); cu Alt, centrul rămâne pe
 loc; mânerul rotește (cu Shift, în pași de 15°). Eticheta de deasupra spune ce fac tastele.
 
+### Ancora
+%% pas: t-ancora
+%% faci
+Transformare: în selectorul de lângă unealtă alege colțul stânga-jos, apoi trage mânerul rotund; trage ținta albastră (cercul
+cu cruce) în alt loc și rotește din nou; la sfârșit, dublu clic pe țintă.
+%% vezi
+Prima rotire e în jurul colțului ales, a doua în jurul țintei mutate, iar ținta rămâne pe loc după rotire; eticheta spune „în
+jurul ancorei”. Dublu clic o întoarce în colțul ales.
+
+### Colțurile rotunjite
+%% pas: t-colturi
+%% faci
+Un dreptunghi cu Raza colțurilor 10 (în panou). Transformare: trage latura dreaptă spre dreapta. Apoi, în lista de lângă
+selectorul ancorei, „Colțuri: se scalează mereu”, și trage din nou.
+%% vezi
+Prima dată eticheta spune „colțurile își păstrează raza”, iar panoul arată tot un dreptunghi cu raza 10; a doua oară,
+„colțurile devin curbe”, iar forma devine o cale, cu colțurile întinse.
+
 ### Oglindirea
 %% pas: t-oglinda
 %% faci

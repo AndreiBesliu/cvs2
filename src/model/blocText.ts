@@ -210,6 +210,9 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
   };
 }
 
+/** Un text care rămâne text la o scalare neuniformă (ADR 0138 §4): drept (nu pe o curbă) și fără aldin. */
+export const textNeuniformPosibil = (b: BlocText): boolean => !b.curba && !((b.aldin ?? 0) > 0);
+
 /**
  * Scalarea neuniformă (lx, ly) a unui text (ADR 0138 §4). Un text drept (nu pe o curbă), fără aldin, scalat așa e exact un
  * text cu alt bloc: mărimea × ly, lățimea literelor × lx / ly (înălțimea lor rămâne), spațierea × lx (la textul vertical,
@@ -219,7 +222,7 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
  * nou iese din margini (procentele, cursivul peste 45°), piesa devine vectori, ca înainte.
  */
 function scalatNeuniform(b: BlocText, dupa: Nod & { readonly tip: 'grup' }, fara: Nod, lx: number, ly: number): Nod {
-  if (b.curba || (b.aldin ?? 0) > 0) return fara;
+  if (!textNeuniformPosibil(b)) return fara;
   const r = lx / ly;
   const pr = b.proportii ?? { latime: 100, inaltime: 100 };
   const latime = pr.latime * r;

@@ -177,8 +177,8 @@ bold and italic: it reopens with them, and uniform scaling grows the thickening 
 The letter width and height scale the letters before any other step: the space between letters, the bold and the
 distance from a curve stay in mm, and italic slants the already scaled letter. Dragged with the handles in width only (or
 in height only), a straight text without bold stays text: its letter width changes (and its size, when you drag in
-height). A text on a curve becomes vectors, and a bold one doesn’t scale that way (its letters have arcs); uniform
-scaling grows them all.
+height). A text on a curve or a bold one becomes vectors (the arcs of the bold, curves), and the handles’ label says so;
+uniform scaling grows them all.
 
 **Vertical** puts the letters one under another, upright: each line becomes a column, and the columns go from left to
 right, at the **distance between columns** (as a multiple of the font's line). Each letter is centred on the column's axis,
@@ -246,8 +246,9 @@ written in it. A variable font (like Bahnschrift) is cut in the chosen style (Se
 widths and kerning; the text keeps the style and reopens with it. A WOFF2 is loaded after converting it to TTF or OTF.
 
 The text stays editable after saving too, as long as its outlines are not changed some other way: moving, rotating,
-mirroring and uniform scaling keep it (scaling also grows the height in the panel); a non-uniform scaling, a skew or a node
-edit turn it into ordinary vectors. **Ungroup** takes it apart into letters, as vectors. Ș and Ț are written with a comma
+mirroring and uniform scaling keep it (scaling also grows the height in the panel), and so does scaling a straight text
+without bold on one axis; scaling a text on a curve or a bold one on one axis, a skew or a node edit turn it into ordinary
+vectors. **Ungroup** takes it apart into letters, as vectors. Ș and Ț are written with a comma
 (Ș ș Ț ț), as in Romanian. A character the font does not have is not drawn, and the panel says so.
 
 ## Selecting and editing
@@ -291,7 +292,8 @@ field.
 %% capitol: transformari
 %% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
-The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs):
+The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs while
+the scaling is proportional):
 - the **corners** scale proportionally, with the opposite corner fixed; the **sides** scale on one axis, with the opposite
   side fixed;
 - **Shift**: proportional on any handle (on a side too: the other axis grows by the same factor, symmetric about the middle);
@@ -313,9 +315,19 @@ back to the chosen point; the anchor is not saved in the project.
 While you drag, the label above shows the size and what the keys do (for example “50 × 40 mm · one axis · from the opposite
 side”), and a blue dot shows what stays put. The handles snap to guides, the sheet, the other shapes and the grid, only on the
 axis they scale, while snapping is on (`Shift+L` toggles it). A **circle** scaled on one axis becomes an **ellipse**: the same
-ellipse as one drawn with the Ellipse tool, with its radii editable in the panel. Some scalings cannot be done exactly and are
-refused, with the reason: a path with arcs, a rectangle with rounded corners or a shape rotated at an angle scale only
-proportionally; a part used by other shapes too is not changed.
+ellipse as one drawn with the Ellipse tool, with its radii editable in the panel. The arcs of a path (the corners of an offset,
+imported arcs) scaled on one axis become **curves**, within 0.001 mm of the stretched arc; the label says “arcs become
+curves”, and `Ctrl+Z` brings them back.
+
+The **rounded corners** of a rectangle follow the list next to the anchor picker, kept in the browser:
+- **Corners: keep radius when stretched** (the default): dragged on one axis, the radius stays the same and the rectangle
+  stays a rectangle, with its radius editable in the panel; scaled proportionally, the radius grows with the shape;
+- **Corners: always keep radius**: also with proportional scaling;
+- **Corners: always scale**: dragged on one axis, the corners become quarter ellipses, made of curves (the shape becomes a
+  path).
+
+A corner that no longer fits in the scaled side (for example R 10 in a 15 mm side) is refused, with the reason. Scaling a
+shape rotated at an angle on one axis, and changing a part used by other shapes too, stay refused, with the reason.
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
 top ↔ bottom), about the anchor (the centre of the selection's box by default). The mirror image is what gets cut, with the

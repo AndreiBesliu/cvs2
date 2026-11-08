@@ -10,14 +10,14 @@ import { esteTutorial, fisierTutorial, type Tutorial } from '../../shared/tutori
 import { numaratoare, numeRaport, raportHtml } from '../../src/app/raportTest.ts';
 
 const citeste = (cale: string): string => readFileSync(cale, 'utf8');
-/** Pașii testului din artifact (25.10), în ordine: testul din aplicație îi păstrează pe toți. */
+/** Pașii testului din artifact (25.10), în ordine: testul din aplicație îi păstrează pe toți; plus ancora și colțurile (ADR 0240). */
 const ID_ARTIFACT = [
-  'p-deschide', 'p-curata', 'd-dreptunghi', 'd-cerc', 'd-elipsa', 'd-lipire', 'd-ghidaj', 's-cadru', 's-shift', 't-manere', 't-oglinda',
+  'p-deschide', 'p-curata', 'd-dreptunghi', 'd-cerc', 'd-elipsa', 'd-lipire', 'd-ghidaj', 's-cadru', 's-shift', 't-manere', 't-ancora', 't-colturi', 't-oglinda',
   't-inclina', 'c-grila', 'c-cerc', 'c-curba', 'o-exterior', 'o-interior', 'b-scade', 'b-uneste', 'b-disjuncte', 'pen-desen', 'pen-parti',
   'pen-taste', 'n-muta', 'n-tipuri', 'n-cerc', 'n-gaura', 'a-aliniaza', 'x-anulare', 'x-manual', 'x-export',
 ];
 
-test('testul uneltelor: 31 de pași în 11 secțiuni, aceiași ca în artifact, fiecare cu „faci” și „vezi”; fișierul trece de formă', () => {
+test('testul uneltelor: 33 de pași în 11 secțiuni, cei din artifact plus ancora și colțurile, fiecare cu „faci” și „vezi”; fișierul trece de formă', () => {
   const f = genereazaTutorialele(citeste);
   assert.deepEqual([...f.keys()], [fisierTutorial('unelte-desen')]);
   const t = JSON.parse(f.get(fisierTutorial('unelte-desen')) ?? '') as Tutorial;

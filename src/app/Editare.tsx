@@ -9,7 +9,7 @@ import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj, Nod } from '../model/document.ts';
-import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
+import { areArce, formeScalate, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   adaugaLaSelectie, aleseInCadru, ancoraLipita, ancoraLovita, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea,
@@ -65,6 +65,10 @@ export const TOLERANTA_LIPIRE_PX = 6;
 const CHEIE_LIPIRE = 'cncvs2.lipire';
 /** Punctul din care pornește ancora transformării (ADR 0240 §A.2), unul din cele 9 ale cutiei; implicit centrul. */
 const CHEIE_ANCORA = 'cncvs2.ancora';
+/** Colțurile rotunjite la scalarea din mânere (ADR 0240 §F.28): '' = raza rămâne la întindere (implicit). */
+const CHEIE_COLTURI = 'cncvs2.colturi';
+const FELURI_COLTURI = ['', 'pastreaza', 'scaleaza'] as const;
+type FelColturi = (typeof FELURI_COLTURI)[number];
 const CHEIE_GRILA = 'cncvs2.grila';
 const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
@@ -324,6 +328,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     setAncoraLibera(null);
     scrieLocal(CHEIE_ANCORA, k);
   };
+  const [colturi, setColturi] = useState<FelColturi>(() => {
+    const v = citeste(CHEIE_COLTURI);
+    return FELURI_COLTURI.find((k) => k === v) ?? '';
+  });
   const [lipire, setLipire] = useState(() => citeste(CHEIE_LIPIRE) !== '0');
   const [grila, setGrila] = useState<{ readonly pornita: boolean; readonly pas: number }>(() => {
     const s = citeste(CHEIE_GRILA);
@@ -1152,7 +1160,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           onLinii={setLiniiManere}
           ancora={ancora}
           onAncora={(q) => { setAncoraLibera(q ? fractiiDinPunct(cutie, q) : null); }}
-          onTine={(q) => { ancoraDeTinut.current = q; }} />
+          onTine={(q) => { ancoraDeTinut.current = q; }}
+          colturi={colturi || undefined} />
       ) : null}
       {panouRetea && cutie && selectie.length > 0 && !vedere3d ? (() => {
         // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată (pe curbă: cutia formelor, fără curbă).
@@ -1532,13 +1541,24 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 }} />
             ) : null}
             {unealta === 'transformare' ? (
-              // Selectorul ancorei (ADR 0240 §A.2): unul din cele 9 puncte ale cutiei, de unde pornește ancora.
-              <span className="selector-ancora" role="group" aria-label={t('editare.ancora')} title={t('editare.ancora')} data-editare="ancora">
-                {PUNCTE_CUTIE.map((k) => (
-                  <button key={k} type="button" aria-pressed={startAncora === k} aria-label={t(`editare.ancora.${k}`)} title={t(`editare.ancora.${k}`)}
-                    data-ancora={k} onClick={() => { alegeStartAncora(k); }} />
-                ))}
-              </span>
+              <>
+                {/* Selectorul ancorei (ADR 0240 §A.2): unul din cele 9 puncte ale cutiei, de unde pornește ancora. */}
+                <span className="selector-ancora" role="group" aria-label={t('editare.ancora')} title={t('editare.ancora')} data-editare="ancora">
+                  {PUNCTE_CUTIE.map((k) => (
+                    <button key={k} type="button" aria-pressed={startAncora === k} aria-label={t(`editare.ancora.${k}`)} title={t(`editare.ancora.${k}`)}
+                      data-ancora={k} onClick={() => { alegeStartAncora(k); }} />
+                  ))}
+                </span>
+                {/* Colțurile rotunjite la scalare (ADR 0240 §F.28): trei feluri, ținute în browser. */}
+                <select className="laturi felul-colturi" value={colturi} aria-label={t('editare.colturi')} title={t('editare.colturi.titlu')} data-editare="colturi"
+                  onChange={(e) => {
+                    const k = FELURI_COLTURI.find((x) => x === e.target.value) ?? '';
+                    setColturi(k);
+                    scrieLocal(CHEIE_COLTURI, k);
+                  }}>
+                  {FELURI_COLTURI.map((k) => <option key={k} value={k}>{t(`editare.colturi.${k || 'intindere'}`)}</option>)}
+                </select>
+              </>
             ) : null}
             <span className="separator" aria-hidden="true" />
             <button type="button" className="aliniaza" aria-pressed={lipire} title={t('editare.lipire-sfat')} aria-label={t('editare.lipire')} data-editare="lipire"
@@ -2807,7 +2827,7 @@ const CURSOR_MANER: Record<Maner | 'rotire', string> = {
  * (o scalare care n-ar mai fi exactă) se spune deasupra cutiei, cu motivul. Cât e apăsată pânza în altă parte (mutarea,
  * panoramarea), mânerele se ascund: n-ar urma forma.
  */
-function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, ancora: ancoraData, onAncora, onTine }: {
+function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, ancora: ancoraData, onAncora, onTine, colturi: felColturi }: {
   readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly selectie: readonly string[];
   /** Acțiunea `document.transforma`, cu rezultatul ei: un refuz al ușii documentului (schema) se spune ca unul al scalării. */
   readonly aplica: (t: Transformare) => RezultatActiune;
@@ -2820,6 +2840,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, a
   readonly onAncora: (p: Punct | null) => void;
   /** După o transformare în jurul ei, ancora rămâne pe loc (punctul foii de dinainte). */
   readonly onTine: (p: Punct) => void;
+  /** Colțurile rotunjite la scalare (ADR 0240 §F.28); lipsă = raza rămâne la întindere. */
+  readonly colturi: 'pastreaza' | 'scaleaza' | undefined;
 }): ReactElement {
   const ex = (x: number): number => v.tx + x * v.scara;
   const ey = (y: number): number => v.ty - y * v.scara;
@@ -2834,15 +2856,13 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, a
   const vazute = manereVazute((c.maxX - c.minX) * v.scara, (c.maxY - c.minY) * v.scara);
   // Ținta se arată (și se apucă) doar cât se arată și mânerele.
   const arataAncora = vazute.length > 0;
-  const acum = useRef({ c, v, doc, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine });
-  acum.current = { c, v, doc, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine };
+  const acum = useRef({ c, v, doc, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine, felColturi });
+  acum.current = { c, v, doc, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine, felColturi };
   // Motivul unui refuz rămâne până la următorul gest sau până se schimbă selecția.
   useEffect(() => { setMotiv(null); }, [selectie]);
-  // Un cerc ales: o scalare neuniformă îl face elipsă (ADR 0240 §F), iar eticheta o spune cât se trage.
-  const areCerc = useMemo(() => {
-    const alese = new Set(selectie);
-    return elementeFoaie(doc, FOAIA).some((e) => alese.has(e.instanta) && e.forma.tip === 'cerc');
-  }, [doc, selectie]);
+  // Ce schimbă scalarea formelor alese (ADR 0240 §F): cercul devine elipsă, arcele curbe, colțurile după felul ales, textul
+  // vectori; eticheta o spune cât se trage.
+  const forme = useMemo(() => formeScalate(doc, FOAIA, selectie), [doc, selectie]);
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -2940,8 +2960,10 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, a
       // Un clic (sub 3 px de tragere) nu e o transformare.
       if (Math.hypot(e.clientX - s.ecran.x, e.clientY - s.ecran.y) < MINIM_DESEN_PX) return;
       const taste = tasteDin(e);
-      const tr = calcul(s, laFoaie(e), taste).t;
-      if (tr.fel === 'rotire' ? tr.unghi === 0 : tr.sx === 1 && tr.sy === 1) return;
+      const tm = calcul(s, laFoaie(e), taste).t;
+      if (tm.fel === 'rotire' ? tm.unghi === 0 : tm.sx === 1 && tm.sy === 1) return;
+      const fc = acum.current.felColturi;
+      const tr: Transformare = tm.fel === 'scalare' && fc ? { ...tm, colturi: fc } : tm;
       const r = transforma(d, FOAIA, alese, tr);
       if (!r.ok) {
         setMotiv(t(`editare.transformare.${r.motiv}`));
@@ -3025,11 +3047,19 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii, a
       ? `${textNumar(gest.t.unghi, true)}° · ${t(inCentru ? 'editare.mod.rotire.centru' : 'editare.mod.rotire.ancora')}`
       : (() => {
         const mod = modManer(c, gest.m === 'rotire' ? 'e' : gest.m, gest.taste, ancora);
+        const neuniform = gest.t.sx !== gest.t.sy;
+        // Colțurile: raza rămâne la întindere (implicit) sau mereu; cu „se scalează mereu”, întinse devin curbe.
+        const nota = !forme.colturi ? null
+          : neuniform ? (felColturi === 'scaleaza' ? 'editare.mod.colturi.curbe' : 'editare.mod.colturi.raza')
+            : felColturi === 'pastreaza' ? 'editare.mod.colturi.raza' : null;
         return [
           `${mm((c.maxX - c.minX) * gest.t.sx)} × ${mm((c.maxY - c.minY) * gest.t.sy)} mm`,
           t(`editare.mod.${mod.proportie}`), t(`editare.mod.fix.${mod.fix}`),
           ...(mod.peLinie ? [t('editare.mod.pe-linie')] : []),
-          ...(areCerc && gest.t.sx !== gest.t.sy ? [t('editare.mod.elipsa')] : []),
+          ...(forme.cerc && neuniform ? [t('editare.mod.elipsa')] : []),
+          ...(forme.arce && neuniform ? [t('editare.mod.arce')] : []),
+          ...(nota ? [t(nota)] : []),
+          ...(forme.text && neuniform ? [t('editare.mod.text')] : []),
         ].join(' · ');
       })()
     : null;
