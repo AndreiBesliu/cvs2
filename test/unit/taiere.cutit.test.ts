@@ -200,6 +200,15 @@ test('două cercuri R10, cuțit împreună (Shift + clic): cercurile (628,319 mm
   }
 });
 
+test('formele-cuțit nu se taie între ele: un cerc R10 în cercul R30, amândouă cuțit și alese cu placa; doar placa se taie', () => {
+  // Fără scoaterea lor dintre ținte, cercul mic ar fi o buclă liberă în cel mare și l-ar tăia (otrava F10).
+  const d = docDin(stoc, dreptunghi('a', 0, 0, 100, 60), cercF('k1', 50, 30, 25), cercF('k2', 50, 30, 10));
+  const { dupa, r } = taiat(d, cerere({ fel: 'forme', ids: ['k1', 'k2'] }, ['a', 'k1', 'k2']));
+  assert.deepEqual(r.degrupate.map((x) => x.instanta.id), ['a'], 'doar placa e tăiată');
+  for (const k of ['k1', 'k2']) assert.deepEqual(contururi(dupa, k), contururi(d, k), `cuțitul ${k} rămâne neschimbat`);
+  aproape(ariePar(dupa, r.ids[0] as string), Math.PI * (625 - 100), 1e-6, 'inelul dintre cercuri');
+});
+
 test('un „O” peste marginea plăcii: litera din placă (o față și golul din mijloc) și restul plăcii', () => {
   // Inelul centrat pe latura de sus (y = 60): jumătatea de jos a literei e în placă, mijlocul R10 trece și el marginea.
   const d = cuLitera(docDin(stoc, dreptunghi('a', 0, 0, 100, 60)), 'o', 50, 60);
