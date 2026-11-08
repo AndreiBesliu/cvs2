@@ -126,6 +126,14 @@ test('rotirea cu 90° doar când încap mai multe: 6 piese de 50 × 110 încap c
   // Culcată (rotită cu 90° în jurul originii), cutia e [−110, 0] × [0, 50]: colțul cutiei în (10, 140) cere instanța în (120, 140).
   assert.deepEqual(cu.locuri.map((l) => [l.x, l.y, l.rotire]), [[120, 140, 90], [235, 140, 90], [120, 85, 90], [235, 85, 90], [120, 30, 90], [235, 30, 90]]);
   aplica(doc, comenziAsezare(doc, 'f1', cu));
+  // Culcarea mai proastă se lasă deoparte: 16 piese de 30 × 80 încap în picioare pe o foaie (8 pe rând, la x = 10 + 35k, pe
+  // două rânduri, y = 110 și 25), culcate doar 15 + 1.
+  const ids16 = Array.from({ length: 16 }, (_, k) => `s${k}`);
+  const stau = proiect([foaie('f1', ids16.map((id) => inst(id, 's')))], [dreptunghi('s', 30, 80)]);
+  const nerotite = bun(planAsezare(stau, ids16, 'f1', opt({ rotirea: '90' })));
+  assert.deepEqual(peFoi(nerotite), [['f1', 16]]);
+  assert.equal(nerotite.rotite, 0);
+  assert.deepEqual(xy(nerotite, 'f1'), [110, 25].flatMap((y) => [0, 1, 2, 3, 4, 5, 6, 7].map((k) => [10 + 35 * k, y])));
   // Plăcuțele de 80 × 30 sunt deja culcate: în picioare ar încăpea mai puține, deci rămân nerotite.
   const placute = proiect([foaie('f1', ids.map((id) => inst(id, 'q')))], [dreptunghi('q', 80, 30)]);
   const r = bun(planAsezare(placute, ids, 'f1', opt({ rotirea: '90' })));

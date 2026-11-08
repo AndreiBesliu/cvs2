@@ -28,7 +28,9 @@ o('A01', AS, "  colt: 'stanga-sus', margineX: 10, margineY: 10,", "  colt: 'stan
 o('A02', AS, '        const X = stanga ? u : f.W - u - b.w,', '        const X = stanga ? u : f.W - u,', 'asezare', 'din dreapta, piesa iese peste marginea foii')
 o('A03', AS, ' Y = sus ? f.H - v - b.h : v;', ' Y = sus ? f.H - v : v;', 'asezare', 'de sus, piesa iese peste marginea foii')
 o('A04', AS, 'gx: Math.max(dx, d), gy: Math.max(dy, d),', 'gx: dx, gy: dy,', 'asezare', 'freza piesei rămase nu mărește distanța de ea')
-o('A05', AS, '          u = o.u1 + o.gx;', '          u = o.u1;', 'asezare', 'după piesa rămasă, fără distanță')
+# A05 era „u = o.u1” (fără distanță): piesa rămânea prea aproape, saltul nu mai înainta, bucla nu se termina (PRINSĂ prin
+# termen, la prima rulare, `ab85477`). Rescrisă cu un milimetru în plus, care cade repede.
+o('A05', AS, '          u = o.u1 + o.gx;', '          u = o.u1 + o.gx + 1;', 'asezare', 'după piesa rămasă, cu un milimetru în plus')
 o('A06', AS, '          if (rand > 0) v += rand + dy;', '          if (rand > 0) v += rand;', 'asezare', 'rândurile se lipesc unul de altul')
 o('A07', AS, '      if (!f || f.instante.length > 0) break;', '      if (!f) break;', 'asezare', 'și o foaie următoare cu piese primește')
 o('A08', AS, '      else preaMari.push(i.id);\n', '      else void 0;\n', 'asezare', 'piesele prea mari nu se spun')
