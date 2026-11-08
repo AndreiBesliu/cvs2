@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -100,7 +101,8 @@ test('senderul: încărcarea verificată; pornirea și reluarea confirmate de om
   await page.locator('[data-extensii="fila"]').click();
   await expect(stare(page)).toHaveText('conectată · liber · conectata · —');
 
-  await apasa(page, 'incarca');
+  // primul clic în cadru după ce fereastra lui reapare
+  await clicDupaReaparitie(page, '[data-proba-masina="incarca"]');
   await expect(rezultat(page, 'incarca')).toHaveText('incarca: ["proba.nc",48]');
   await expect(stare(page)).toHaveText('conectată · pregatit · conectata · proba.nc');
   await expect(page.getByTestId('masina-program')).toContainText('proba.nc · 48 de linii');

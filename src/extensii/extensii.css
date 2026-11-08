@@ -196,3 +196,104 @@
   padding: var(--sp-1) 0;
   border-bottom: 1px solid var(--l-margine);
 }
+
+/*
+ * Biblioteca (ADR 0230 §D): sub cele instalate, câte un rând pe extensie (numele și versiunea, descrierea, ce cere pe scurt,
+ * mărimea și butonul), în culorile meniului. Butonul rândului e un rând al meniului (săgețile ajung la el), dar arată ca un
+ * buton, nu ca un rând întreg.
+ */
+.meniu-biblioteca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+}
+
+.meniu-biblioteca > strong {
+  font-weight: 600;
+}
+
+.biblioteca-nota,
+.biblioteca-cap span,
+.biblioteca-jos > span:first-child,
+.biblioteca-cip {
+  color: var(--t-slab);
+}
+
+.biblioteca-rand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.biblioteca-cap,
+.biblioteca-jos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.biblioteca-cap {
+  align-items: baseline;
+}
+
+.biblioteca-rand p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.biblioteca-cipuri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.biblioteca-cip {
+  padding: 0 6px;
+  font-size: var(--fs-1);
+  border: 1px solid var(--l-margine);
+  border-radius: 99px;
+}
+
+.meniu-extensii .biblioteca-buton[role='menuitem'] {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  min-height: 28px;
+  padding: 2px var(--sp-2);
+  font-weight: 600;
+  color: var(--t-pe-a);
+  background: var(--a-plin);
+  border: 1px solid var(--a-plin);
+}
+
+.meniu-extensii .biblioteca-buton[role='menuitem']:hover,
+.meniu-extensii .biblioteca-buton[role='menuitem']:focus-visible {
+  background: color-mix(in oklab, var(--a-plin) 82%, var(--t));
+  box-shadow: 0 0 0 2px var(--l-focus);
+}
+
+.biblioteca-ok {
+  font-weight: 600;
+}
+
+.biblioteca-insigna {
+  margin-top: 2px;
+  padding: 0 6px;
+  color: var(--t);
+  background: var(--s-ales);
+  border-radius: 99px;
+}
+
+/* Fereastra actualizării: ce cere în plus versiunea nouă, întâi și pus în evidență. */
+.dialog p.nou {
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--s-atentie);
+  border-radius: var(--r-1);
+}

@@ -31,15 +31,17 @@ export const CIPURI_GLOBALE: ReadonlySet<IdCip> = new Set<IdCip>(['proiect', 'co
 
 /**
  * Ferestrele aplicației (ADR 0132): filele meniului global, sub care stă câte o fereastră pe tot ecranul. Proiectarea ține
- * desenul (bara de desen, pânza, docurile); Mașina ține senderul. O extensie (gazda din Trenuleț) se adaugă aici.
+ * desenul (bara de desen, pânza, docurile); Mașina ține senderul; Imprimanta, imprimanta 3D din rețea (ADR 0190). O extensie
+ * (gazda din Trenuleț) se adaugă aici.
  */
-export const FERESTRE = ['proiectare', 'masina'] as const;
+export const FERESTRE = ['proiectare', 'masina', 'imprimanta'] as const;
 export type IdFereastra = (typeof FERESTRE)[number];
 
 /** Acțiunea vederii care deschide fiecare fereastră (fila ei din meniu, paleta). Mașina păstrează id-ul panoului de dinainte. */
 export const DESCHIDE_FEREASTRA: { readonly [F in IdFereastra]: string } = {
   proiectare: 'vedere.proiectare',
   masina: 'vedere.masina',
+  imprimanta: 'vedere.imprimanta',
 };
 
 /** Controalele care nu sunt acțiuni ale registrului: limba (butoanele RO / EN, apăsat = limba de acum). */
@@ -139,7 +141,7 @@ export const ARANJAMENT_MODERN: Aranjament = {
     ],
   },
   docuri: { stanga: ['lista'], dreapta: ['proprietati'] },
-  ferestre: ['proiectare', 'masina'],
+  ferestre: ['proiectare', 'masina', 'imprimanta'],
 };
 
 /** Cheia unei intrări într-o zonă: o acțiune, un control sau un cip apar cel mult o dată pe zonă (și ca cheie React). */

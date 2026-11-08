@@ -22,7 +22,7 @@ import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './con
  * împărțit cu `/admin`, deci stă în aceeași bucată, iar importul de aici îl pune înaintea modulului ăstuia. Bucata își ia
  * numele de la ultimul ei modul: fără importul ăsta s-ar fi numit după contract, nu `contEditor` (poarta build-ului o cere).
  */
-export { FELURI_TICHET, TEXT_MAX, TICHETE_PE_ZI } from '../../shared/tichete.ts';
+export { FELURI_TICHET, PROIECT_MAX_OCTETI, TEXT_MAX, TICHETE_PE_ZI } from '../../shared/tichete.ts';
 
 /** O legătură cu contul Firebase: a editorului (`ContEditor`) sau a paginii `/admin` (`Conexiune`). */
 export interface CuCont {
@@ -177,9 +177,12 @@ export async function schimbaNumele(ce: ContEditor, nume: string): Promise<Raspu
   return (await httpsCallable<CerereCont, RaspunsNume>(ce.functii, 'cont')({ actiune: 'nume', nume })).data;
 }
 
-/** O raportare din editor (ADR 0116 §11), prin callable-ul `tichete`; refuzurile vin cu motivul. */
+/**
+ * O raportare din editor (ADR 0116 §11), prin callable-ul `tichete`; refuzurile vin cu motivul. Cu proiectul atașat (§12),
+ * cererea poate avea câțiva MB: termenul e cât al funcției (120 s), nu cele 70 s implicite ale clientului.
+ */
 export async function trimiteRaportarea(ce: ContEditor, cerere: Extract<CerereTichet, { actiune: 'raporteaza' }>): Promise<RaspunsTichet> {
-  return (await httpsCallable<CerereTichet, RaspunsTichet>(ce.functii, 'tichete')(cerere)).data;
+  return (await httpsCallable<CerereTichet, RaspunsTichet>(ce.functii, 'tichete', { timeout: 125_000 })(cerere)).data;
 }
 
 /** Raportările omului, cu răspunsurile echipei (ADR 0116 §14). */

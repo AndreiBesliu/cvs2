@@ -11,6 +11,8 @@ import { DIR_MANUAL } from './shared/manual.ts';
 import { DIR_MESAJE } from './shared/mesaje.ts';
 import { DIR_TUTORIAL } from './shared/tutorial.ts';
 import { inPrecache } from './shared/precache.ts';
+import { DIR_BIBLIOTECA } from './shared/biblioteca.ts';
+import { construiesteBiblioteca } from './scripts/biblioteca.ts';
 
 /**
  * Versiunea din build: commit-ul checkout-ului. Două build-uri ale aceluiași commit ies identice, octet cu octet. Întâi
@@ -126,6 +128,39 @@ function documentatie(): Plugin {
 }
 
 /**
+ * Biblioteca extensiilor (ADR 0230): la fiecare build, `scripts/biblioteca.ts` construiește din repo pachetele extensiilor din
+ * `extensii/biblioteca.json` și catalogul lor și le scrie în `dist/extensii/`, în afara precache-ului (`shared/precache.ts`):
+ * un pachet vine doar la cine îl instalează. În dezvoltare, aceleași fișiere se construiesc la prima cerere și se țin cât
+ * rulează serverul (o schimbare a unei extensii cere repornirea lui).
+ */
+function biblioteca(): Plugin {
+  let construita: ReturnType<typeof construiesteBiblioteca> | null = null;
+  return {
+    name: 'cncvs2-biblioteca',
+    generateBundle() {
+      for (const [fileName, source] of construiesteBiblioteca().fisiere) this.emitFile({ type: 'asset', fileName, source });
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const cale = (req.url ?? '').split('?')[0] ?? '';
+        if (!cale.startsWith(`/${DIR_BIBLIOTECA}/`)) {
+          next();
+          return;
+        }
+        construita ??= construiesteBiblioteca();
+        const continut = construita.fisiere.get(decodeURIComponent(cale.slice(1)));
+        if (!continut) {
+          next();
+          return;
+        }
+        res.setHeader('Content-Type', cale.endsWith('.json') ? 'application/json; charset=utf-8' : 'application/zip');
+        res.end(Buffer.from(continut));
+      });
+    },
+  };
+}
+
+/**
  * Workerul PWA (ADR 0045, ADR 0017): `src/sw.ts`, scris de build la `/sw.js` (adresa workerului ediției întâi, pe care o
  * preia), cu lista precache-ului dată de `shared/precache.ts` (aceeași funcție o aplică poarta pe build). Fără manifestul
  * aplicației (instalabilitatea cere iconițe; nu e ținta), fără scriptul de înregistrare injectat în `index.html` (pornirea
@@ -156,7 +191,7 @@ function pwa(): Plugin[] {
 }
 
 export default defineConfig({
-  plugins: [react(), versiuneInPagina(), cspInBuild(), documentatie(), pwa()],
+  plugins: [react(), versiuneInPagina(), cspInBuild(), documentatie(), biblioteca(), pwa()],
   // Codul servit de Vite rulează calculul CAM doar în worker (ADR 0109): ramura din proces a bazinului, a testelor din
   // Node, dispare la build, cu importul ei (altfel CAM-ul ar sta și în bucățile firului principal).
   define: { __CNCVS2_CONSTRUIT__: 'true' },

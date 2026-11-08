@@ -1,0 +1,24 @@
+{
+  "sursa": "Transcrierea owner-ului, 07.11.2026, 15:04:23–15:05:00 UTC, din fereastra Imprimanta (copia jurnalului): o K1C 2025, firmware V1.0.0.26 (DWIN sw ver), la 192.168.1.10. Anonimizată: numele fișierelor lui (cele de probă din fabrică, cu data 1761305272–4, rămân), istoricul (o singură intrare, cu un fișier de probă). Restul, octet cu octet.",
+  "cadre": [
+    "{\"TotalLayer\":0,\"autohome\":\"X:0 Y:0 Z:0\",\"auxiliaryFanPct\":0,\"bedTemp0\":\"25.000000\",\"boxTemp\":25,\"caseFanPct\":0,\"connect\":1,\"curFeedratePct\":100,\"curFlowratePct\":100,\"curPosition\":\"X:00 Y:00 Z:00\",\"deviceState\":0,\"enableSelfTest\":0,\"err\":{\"errcode\":0,\"key\":0},\"fan\":0,\"fanAuxiliary\":0,\"fanCase\":0,\"hostname\":\"K1C-8578\",\"layer\":0,\"lightSw\":1,\"model\":\"K1C\",\"materialStatus\":0,\"modelFanPct\":0,\"modelVersion\":\"printer hw ver:;printer sw ver:;DWIN hw ver:CR4SU200382C13;DWIN sw ver:V1.0.0.26.20251024S;\",\"nozzleTemp\":\"26.000000\",\"powerLoss\":1,\"printFileName\":\"\",\"printId\":\"\",\"printJobTime\":0,\"printLeftTime\":0,\"printProgress\":0,\"printStartTime\":0,\"repoPlrStatus\":0,\"state\":0,\"targetBedTemp0\":0,\"targetNozzleTemp\":0,\"tfCard\":1,\"upgradeStatus\":0,\"usedMaterialLength\":0,\"withSelfTest\":0,\"video\":1,\"maxBedTemp\":115,\"maxNozzleTemp\":320,\"webrtcSupport\":1}",
+    "{\"retGcodeFileInfo\":{\"totalNum\":11,\"fileInfo\":\"/usr/data/printer_data/gcodes:piesa-a_PLA_1h33m.gcode:5415049:0.080000:1793890905:5304:/tmp/creality/local_gcode/humbnail/piesa-a_PLA_1h33m.png;/usr/data/printer_data/gcodes:3DBenchy_PLA_19m.gcode:2513968:0.250000:1761305272:3670:/tmp/creality/local_gcode/humbnail/3DBenchy_PLA_19m.png;/usr/data/printer_data/gcodes:piesa-b_PLA_3h9m.gcode:3996861:0.300000:1793981666:12:/tmp/creality/local_gcode/humbnail/piesa-b_PLA_3h9m.png;/usr/data/printer_data/gcodes:Delta filament barrel base_Hyper PLA_49m.gcode:6915587:0.300000:1761305274:12:/tmp/creality/local_gcode/humbnail/Delta filament barrel base_Hyper PLA_49m.png;/usr/data/printer_data/gcodes:piesa-c_w_support_PLA_1h59m.gcode:7065854:0.080000:1793899000:6217:/tmp/creality/local_gcode/humbnail/piesa-c_w_support_PLA_1h59m.png;/usr/data/printer_data/gcodes:Flexi-Rex_PLA_38m19s.gcode:3886109:0.200000:1761305273:5007:/tmp/creality/local_gcode/humbnail/Flexi-Rex_PLA_38m19s.png;/usr/data/printer_data/gcodes:PIESA55-d_PLA_2h2m.gcode:7831494:0.080000:1793981119:5987:/tmp/creality/local_gcode/humbnail/PIESA55-d_PLA_2h2m.png;/usr/data/printer_data/gcodes:piesa-e_PLA_5h35m.gcode:53597732:0.080000:1794035852:13747:/tmp/creality/local_gcode/humbnail/piesa-e_PLA_5h35m.png;/usr/data/printer_data/gcodes:Logo filament barrel base_Hyper PLA_54m.gcode:5609034:0.300000:1761305273:12:/tmp/creality/local_gcode/humbnail/Logo filament barrel base_Hyper PLA_54m.png;/usr/data/printer_data/gcodes:600S-TEST_Hyper PLA_7m.gcode:2573564:0.300000:1761305272:2:/tmp/creality/local_gcode/humbnail/600S-TEST_Hyper PLA_7m.png;/usr/data/printer_data/gcodes:piesa-b_PLA_5h48m.gcode:55585199:0.080000:1793983240:11837:/tmp/creality/local_gcode/humbnail/piesa-b_PLA_5h48m.png;\"}}",
+    "{\"historyList\":[{\"id\":1,\"filename\":\"/usr/data/printer_data/gcodes/3DBenchy_PLA_19m.gcode\",\"size\":2513968,\"ctime\":1761305272,\"starttime\":1761305276,\"totaltime\":1180,\"usagematerial\":3712.4,\"startway\":9,\"usagetime\":1140,\"printfinish\":1,\"thumbnail\":\"/usr/data/printer_data/gcodes/.thumbs/dummpy.png\"}]}",
+    "{\"elapseVideoList\":[]}",
+    "{\"maxBedTemp\":115}",
+    "{\"boxTemp\":24,\"maxBedTemp\":115}"
+  ],
+  "fisiere": [
+    { "nume": "piesa-a_PLA_1h33m.gcode", "marime": 5415049 },
+    { "nume": "3DBenchy_PLA_19m.gcode", "marime": 2513968 },
+    { "nume": "piesa-b_PLA_3h9m.gcode", "marime": 3996861 },
+    { "nume": "Delta filament barrel base_Hyper PLA_49m.gcode", "marime": 6915587 },
+    { "nume": "piesa-c_w_support_PLA_1h59m.gcode", "marime": 7065854 },
+    { "nume": "Flexi-Rex_PLA_38m19s.gcode", "marime": 3886109 },
+    { "nume": "PIESA55-d_PLA_2h2m.gcode", "marime": 7831494 },
+    { "nume": "piesa-e_PLA_5h35m.gcode", "marime": 53597732 },
+    { "nume": "Logo filament barrel base_Hyper PLA_54m.gcode", "marime": 5609034 },
+    { "nume": "600S-TEST_Hyper PLA_7m.gcode", "marime": 2573564 },
+    { "nume": "piesa-b_PLA_5h48m.gcode", "marime": 55585199 }
+  ]
+}

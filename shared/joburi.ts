@@ -16,6 +16,8 @@ export interface DefinitieJob {
 export const JOBURI = [
   { nume: 'backupZilnic', programare: '0 3 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 300 },
   { nume: 'verificaBackup', programare: '0 5 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 120 },
+  // Tichetele rezolvate mai vechi decât păstrarea din fila Setări, cu poza și proiectul lor (ADR 0116 §16, felia 15.B↑b).
+  { nume: 'pastrareTichete', programare: '0 4 * * *', fus: 'Europe/Bucharest', intervalOre: 24, timeoutSecunde: 300 },
 ] as const satisfies readonly DefinitieJob[];
 
 export type NumeJob = (typeof JOBURI)[number]['nume'];

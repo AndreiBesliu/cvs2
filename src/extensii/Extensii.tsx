@@ -15,19 +15,29 @@
  *
  * Linkul de instalare (`#instaleaza=<adresa>`) deschide fereastra adresei, completată; nimic nu se descarcă fără clic, iar
  * ancora se șterge din adresă.
+ *
+ * Biblioteca (ADR 0230): sub cele instalate, secțiunea Biblioteca, cu catalogul cerut la fiecare deschidere a meniului (cele
+ * instalate apar pe loc, din browser; nicio cerere la pornire). Fiecare rând: numele, versiunea, descrierea în limba aplicației,
+ * ce cere pe scurt, mărimea și „Instalează” (fereastra instalării), „Actualizează la …” (dintr-un clic, în meniu, când versiunea
+ * nouă nu cere nimic în plus; altfel fereastra), „Instalată”, o versiune alta sau „Reîncarcă”. O extensie instalată cu o versiune
+ * mai nouă în bibliotecă are lângă nume „actualizare: …”. Linkul `#biblioteca=<id>` deschide fereastra rândului; nimic nu se
+ * descarcă fără clic.
  */
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { aboneazaCont, contTinut } from '../app/dreptCont.ts';
 import type { Jurnal } from '../app/jurnalErori.ts';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
-import { cuMesaje, t } from '../i18n/t.ts';
+import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { FormeCvs2 } from '../../extensii/api.ts';
+import { ADRESA_CATALOG, type CatalogBiblioteca, type RandBiblioteca } from '../../shared/biblioteca.ts';
+import { cereCatalogul, instaleazaDinBiblioteca, stareRand, type RefuzBiblioteca } from './biblioteca.ts';
 import type { CadruPornit, GazdaForme, GazdaMasina } from './cadru.ts';
 import { contextPentruExtensie } from './cont.ts';
-import { FaraStocare, listaExtensii, type ExtensieInstalata } from './depozit.ts';
+import { FaraStocare, listaExtensii, scrieExtensia, type ExtensieInstalata } from './depozit.ts';
+import { CATALOG_PERMISIUNI } from './pachet.ts';
 import { repornireRara } from './repornire.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
@@ -39,6 +49,21 @@ mesaje.catch(() => undefined);
 const Instalare = lazy(() => import('./Instalare.tsx').then(cuMesaje).then((m) => ({ default: m.Instalare })));
 
 const ANCORA_INSTALARE = '#instaleaza=';
+const ANCORA_BIBLIOTECA = '#biblioteca=';
+
+/** Catalogul bibliotecii, cum îl vede meniul: se încarcă, a venit, fără rețea, ori un defect al publicării. */
+type StareBiblioteca =
+  | { readonly fel: 'incarca' }
+  | { readonly fel: 'ok'; readonly catalog: CatalogBiblioteca }
+  | { readonly fel: 'retea' }
+  | { readonly fel: 'defect'; readonly detaliu: string };
+/** O actualizare dintr-un clic, în meniu (ADR 0230 §D): în lucru, gata (cu versiunea), sau ce n-a mers. */
+type ProgresActualizare = { readonly fel: 'lucreaza' } | { readonly fel: 'gata'; readonly versiune: string } | { readonly fel: 'eroare'; readonly text: string };
+
+/** Adresa absolută a catalogului: pachetele bibliotecii stau lângă el. */
+const adresaCatalog = (): string => new URL(ADRESA_CATALOG, location.href).href;
+const motivText = (m: RefuzBiblioteca['motiv'], detaliu?: string): string =>
+  `${t(`extensii.motiv.${m}` as CheieSimpla)}${detaliu ? ` (${detaliu})` : ''}`;
 
 /** Săgețile mută focusul între rândurile meniului; Escape și Tab îl închid (ca meniul contului). */
 function tastaInMeniu(e: KeyboardEvent<HTMLDivElement>, inchide: () => void): void {
@@ -82,6 +107,12 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const [cerere, setCerere] = useState<CerereInstalare | null>(null);
   const [deschisa, setDeschisa] = useState<ExtensieInstalata | null>(null);
   const [stare, setStare] = useState<{ readonly fel: 'porneste' | 'pornit' } | { readonly fel: 'esuat'; readonly mesaj: string }>({ fel: 'porneste' });
+  // Biblioteca (ADR 0230): catalogul cerut la deschiderea meniului (doar ultima cerere contează) și actualizările din meniu.
+  const [biblioteca, setBiblioteca] = useState<StareBiblioteca | null>(null);
+  const cerereCatalog = useRef(0);
+  const [progres, setProgres] = useState<Readonly<Record<string, ProgresActualizare>>>({});
+  const deschisaRef = useRef(deschisa);
+  deschisaRef.current = deschisa;
   const buton = useRef<HTMLButtonElement | null>(null);
   const refMeniu = useRef<HTMLDivElement | null>(null);
   const fisier = useRef<HTMLInputElement | null>(null);
@@ -119,9 +150,33 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     });
   };
   useEffect(reincarca, []);
-  // Linkul de instalare: la pornire și când ancora se schimbă în fila deschisă (un link lipit în aceeași filă).
+  // Un defect al publicării bibliotecii (catalogul, amprenta, potrivirea) ajunge în jurnal; lipsa rețelei nu.
+  const raporteazaDefect = useCallback((e: Error): void => { jurnal.adauga('fereastra', e); }, [jurnal]);
+  // Catalogul bibliotecii, cerut din nou la fiecare deschidere a meniului; cel de dinainte rămâne arătat cât vine cel nou.
+  const incarcaBiblioteca = (): void => {
+    const n = ++cerereCatalog.current;
+    setBiblioteca((b) => (b?.fel === 'ok' ? b : { fel: 'incarca' }));
+    void cereCatalogul(adresaCatalog()).then((c) => {
+      if (n !== cerereCatalog.current) return;
+      if (c.fel === 'defect') raporteazaDefect(new Error(`biblioteca: catalogul (${c.detaliu})`));
+      setBiblioteca(c);
+    });
+  };
+  // Linkul de instalare: la pornire și când ancora se schimbă în fila deschisă (un link lipit în aceeași filă). Linkul
+  // bibliotecii (ADR 0230) deschide fereastra rândului ei, cu catalogul cerut de fereastră.
   useEffect(() => {
     const dinAncora = (): void => {
+      if (location.hash.startsWith(ANCORA_BIBLIOTECA)) {
+        let id = '';
+        try {
+          id = decodeURIComponent(location.hash.slice(ANCORA_BIBLIOTECA.length));
+        } catch {
+          id = '';
+        }
+        history.replaceState(history.state, '', `${location.pathname}${location.search}`);
+        if (/^[a-z0-9-]{1,40}$/.test(id)) setCerere({ fel: 'biblioteca', id, rand: null, dinLink: true });
+        return;
+      }
       if (!location.hash.startsWith(ANCORA_INSTALARE)) return;
       let adresa = '';
       try {
@@ -144,10 +199,11 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     } : null);
   }, [deschisa, onDeschisa]);
 
-  // Meniul: sub buton, cu focusul pe primul rând; un clic în afara lui îl închide.
+  // Meniul: sub buton, cu focusul pe primul rând; un clic în afara lui îl închide. Biblioteca se cere din nou.
   const deschideMeniul = (): void => {
     const r = buton.current?.getBoundingClientRect();
     setMeniu(r ? { top: Math.round(r.bottom + 4), left: Math.max(4, Math.round(r.left)) } : { top: 48, left: 8 });
+    incarcaBiblioteca();
   };
   const inchideMeniul = (): void => { setMeniu(null); buton.current?.focus(); };
   useLayoutEffect(() => {
@@ -189,6 +245,35 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const deschideExtensia = (x: ExtensieInstalata): void => {
     if (deschisa?.id === x.id) { onFereastra(); return; }
     inchideCuGrija(() => { setDeschisa(x); });
+  };
+  // „Deschide” după o instalare din bibliotecă: o versiune nouă a celei deschise o înlocuiește (după închiderea fără pierderi).
+  const deschideInstalata = (x: ExtensieInstalata): void => {
+    if (deschisa?.id === x.id && deschisa.instalat !== x.instalat) inchideCuGrija(() => { setDeschisa(x); });
+    else deschideExtensia(x);
+  };
+  /**
+   * „Actualizează la …” dintr-un clic, în meniu (ADR 0230 §D): versiunea nouă nu cere nimic în plus, deci fără fereastră.
+   * Descărcarea verificată, scrierea, apoi lista; o versiune veche deschisă se închide fără pierderi.
+   */
+  const actualizeazaDinMeniu = async (rand: RandBiblioteca): Promise<void> => {
+    setProgres((p) => ({ ...p, [rand.id]: { fel: 'lucreaza' } }));
+    let r: Awaited<ReturnType<typeof instaleazaDinBiblioteca>>;
+    try {
+      r = await instaleazaDinBiblioteca(rand, { adresaCatalog: adresaCatalog(), scrie: scrieExtensia });
+    } catch (e) {
+      const text = e instanceof FaraStocare ? t('extensii.instalare.fara-stocare') : String(e);
+      setProgres((p) => ({ ...p, [rand.id]: { fel: 'eroare', text } }));
+      return;
+    }
+    if (!r.ok) {
+      if (r.defect) raporteazaDefect(new Error(`biblioteca: ${rand.id} ${rand.versiune}: ${r.motiv}${r.detaliu ? ` (${r.detaliu})` : ''}`));
+      const text = t('extensii.biblioteca.esec', { motiv: motivText(r.motiv, r.detaliu) });
+      setProgres((p) => ({ ...p, [rand.id]: { fel: 'eroare', text } }));
+      return;
+    }
+    setProgres((p) => ({ ...p, [rand.id]: { fel: 'gata', versiune: rand.versiune } }));
+    reincarca();
+    if (deschisaRef.current?.id === rand.id) inchideCuGrija();
   };
 
   // Fereastra: cadrul pornește la deschidere și se oprește la închidere (× sau `host.inchide()`).
@@ -274,17 +359,84 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
         }} />
     </span>
   );
+  // Biblioteca (ADR 0230 §D): un rând pe extensie, cu starea lui față de ce e instalat.
+  const catalog = biblioteca?.fel === 'ok' ? biblioteca.catalog : null;
+  const kb = (n: number): string => new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 1 }).format(n / 1024);
+  const randBiblioteca = (r: RandBiblioteca): ReactNode => {
+    const instalata = lista.find((x) => x.id === r.id);
+    const s = stareRand(r, instalata?.manifest);
+    const pr = progres[r.id];
+    const descriere = `biblioteca-${r.id}`;
+    let control: ReactNode;
+    if (pr?.fel === 'lucreaza') control = <span role="status">{t('extensii.biblioteca.actualizez')}</span>;
+    else if (s.fel === 'instaleaza') {
+      control = (
+        <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-instaleaza" aria-describedby={descriere}
+          onClick={() => { alege(() => { setCerere({ fel: 'biblioteca', id: r.id, rand: r, dinLink: false }); }); }}>
+          {t('extensii.biblioteca.instaleaza')}
+        </button>
+      );
+    } else if (s.fel === 'actualizeaza') {
+      control = (
+        <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-actualizeaza" aria-describedby={descriere}
+          onClick={() => {
+            // Ce cere în plus versiunea nouă trece prin fereastră; altfel, dintr-un clic, aici.
+            if (s.permisiuniNoi.length > 0) alege(() => { setCerere({ fel: 'biblioteca', id: r.id, rand: r, dinLink: false }); });
+            else void actualizeazaDinMeniu(r);
+          }}>
+          {t('extensii.biblioteca.actualizeaza', { versiune: r.versiune })}
+        </button>
+      );
+    } else if (s.fel === 'instalata') {
+      control = <span className="biblioteca-ok">{pr?.fel === 'gata' ? t('extensii.biblioteca.actualizata', { versiune: pr.versiune }) : t('extensii.biblioteca.instalata')}</span>;
+    } else if (s.fel === 'alta') control = <span>{t('extensii.biblioteca.alta', { versiune: s.versiune })}</span>;
+    else control = <span>{t('extensii.biblioteca.reincarca')}</span>;
+    return (
+      <div key={r.id} className="biblioteca-rand" data-id={r.id} data-stare={s.fel}>
+        <div className="biblioteca-cap"><strong>{r.nume}</strong><span>{r.versiune}</span></div>
+        <p id={descriere}>{r.descriere[limba]}</p>
+        <div className="biblioteca-cipuri">
+          {r.permisiuni.map((p) => <span key={p} className="biblioteca-cip">{CATALOG_PERMISIUNI.includes(p) ? t(`extensii.permisiune-scurt.${p}` as CheieSimpla) : p}</span>)}
+        </div>
+        {pr?.fel === 'eroare' && <p className="avertisment" role="alert">{pr.text}</p>}
+        <div className="biblioteca-jos"><span>{t('extensii.biblioteca.marime', { kb: kb(r.octeti) })}</span>{control}</div>
+      </div>
+    );
+  };
+  const sectiuneaBibliotecii = (
+    <div className="meniu-biblioteca" role="group" aria-label={t('extensii.biblioteca')} data-testid="biblioteca">
+      <strong>{t('extensii.biblioteca')}</strong>
+      {(biblioteca === null || biblioteca.fel === 'incarca') && <span className="biblioteca-nota" role="status">{t('extensii.biblioteca.incarca')}</span>}
+      {(biblioteca?.fel === 'retea' || biblioteca?.fel === 'defect') && (
+        <div className="biblioteca-jos">
+          <span role="alert">{biblioteca.fel === 'retea' ? t('extensii.biblioteca.fara-retea') : t('extensii.biblioteca.eroare', { motiv: biblioteca.detaliu })}</span>
+          <button type="button" role="menuitem" className="biblioteca-buton" data-extensii="biblioteca-reincearca" onClick={() => { incarcaBiblioteca(); }}>
+            {t('extensii.biblioteca.reincearca')}
+          </button>
+        </div>
+      )}
+      {catalog?.extensii.length === 0 && <span className="biblioteca-nota">{t('extensii.biblioteca.goala')}</span>}
+      {catalog?.extensii.map(randBiblioteca)}
+    </div>
+  );
   const meniul = meniu && (
     <div ref={refMeniu} className="meniu-extensii" data-testid="meniu-extensii" style={{ top: meniu.top, left: meniu.left }}>
       <div className="meniu-extensii-cap"><strong>{t('extensii.instalate')}</strong>{lista.length === 0 && <span>{t('extensii.niciuna')}</span>}</div>
       <div role="menu" aria-label={t('extensii.meniu')} onKeyDown={(e) => { tastaInMeniu(e, inchideMeniul); }}>
-        {lista.map((x) => (
-          <button key={x.id} type="button" role="menuitem" data-extensii="deschide" data-id={x.id}
-            onClick={() => { alege(() => { deschideExtensia(x); }); }}>
-            <span>{x.manifest.nume}</span>
-            <small>{t('extensii.deschide', { versiune: x.manifest.versiune })}</small>
-          </button>
-        ))}
+        {lista.map((x) => {
+          const r = catalog?.extensii.find((y) => y.id === x.id);
+          const s = r ? stareRand(r, x.manifest) : null;
+          return (
+            <button key={x.id} type="button" role="menuitem" data-extensii="deschide" data-id={x.id}
+              onClick={() => { alege(() => { deschideExtensia(x); }); }}>
+              <span>{x.manifest.nume}</span>
+              <small>{t('extensii.deschide', { versiune: x.manifest.versiune })}</small>
+              {r && s?.fel === 'actualizeaza' && <small className="biblioteca-insigna">{t('extensii.biblioteca.actualizare', { versiune: r.versiune })}</small>}
+            </button>
+          );
+        })}
+        {lista.length > 0 && <div className="meniu-separator" role="separator" />}
+        {sectiuneaBibliotecii}
         <div className="meniu-separator" role="separator" />
         <button type="button" role="menuitem" data-extensii="din-fisier" onClick={() => { alege(() => { fisier.current?.click(); }); }}>
           <span>{t('extensii.din-fisier')}</span>
@@ -351,10 +503,12 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       {locSpatiu && spatiul ? createPortal(spatiul, locSpatiu) : null}
       <Suspense fallback={null}>
         {cerere && (
-          <Instalare cerere={cerere} instalate={lista}
-            onGata={(id) => {
+          <Instalare cerere={cerere} instalate={lista} onDefect={raporteazaDefect}
+            onGata={(id, deschide) => {
               setCerere(null);
               reincarca();
+              // „Deschide” după o instalare din bibliotecă (ADR 0230): extensia, în fereastra ei.
+              if (deschide) { deschideInstalata(deschide); return; }
               // O versiune nouă peste cea deschisă: cea veche se închide fără pierderi; datele trec la cea nouă.
               if (id !== null && deschisa?.id === id) inchideCuGrija();
             }}

@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 06.11.2026, de owner („Yes, 550 kB”, la „Raise the total bundle cap to 550 kB (new ADR), keeping
 startup at 110 kB?”), la unirea liniei pluginului în `main`. **Schimbă:** plafonul total din `scripts/build-determinist.ts`
-(ADR 0122, care îl ridicase la 500 kB). Celelalte plafoane rămân, între ele pornirea (110 kB, ADR 0100), ușa (8 kB),
+(ADR 0122, care îl ridicase la 500 kB). **Schimbat de:** ADR 0143 (600 kB, din 07.11, după unirea raportărilor și a
+imprimantei). Celelalte plafoane rămân, între ele pornirea (110 kB, ADR 0100), ușa (8 kB),
 `/admin` (200 kB), contul (32 kB) și cele doar online.
 
 **Problema.** Unirea liniei pluginului (feliile 3.S, 3.Xa–3.Xe și 3.Ta–3.Tf, ADR 0126–0129 și 0160–0167) a dus totalul la

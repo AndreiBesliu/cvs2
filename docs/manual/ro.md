@@ -1061,6 +1061,54 @@ următor; lista erorilor și jurnalul arată și ele titlul fiecărui cod.
 - Ce nu se poate acum e dezactivat, cu motivul alături („Nu acum: mașina e în alarmă…”): în alarmă, cât merge o lucrare sau o
   procedură. Oprit la o schimbare de sculă, merg jog-ul, palparea și zero-ul Z, nu și zero-ul XY.
 
+## Imprimanta
+%% capitol: imprimanta
+%% acopera: vedere.imprimanta
+
+Fila **Imprimanta** din meniul aplicației deschide fereastra imprimantei 3D, pe tot ecranul, sub meniu. Deocamdată lucrează cu
+imprimantele Creality din familia K1 (K1C și K1C 2025), prin WiFi, pe protocolul lor din fabrică: fără root și fără nicio
+setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastra Mașina rămâne a lui. `F1` deschide capitolul ăsta.
+
+- **Conectarea.** Scrie **Adresa imprimantei** (o vezi pe ecranul ei: Setări → Rețea, de exemplu 192.168.1.50) și apasă
+  **Conectează**. Prima dată, browserul întreabă dacă pagina poate ajunge la dispozitivele din rețeaua locală: alege
+  **Permite**. Merge în Chrome și Edge, pe calculator. O imprimantă legată rămâne în listă, cu numele ei (de exemplu
+  „K1C-8578”): data viitoare o alegi de acolo, cu **Conectează**, iar **Uită** o scoate din listă. Fereastra nu se leagă
+  singură când o deschizi.
+- **Caută în toată rețeaua** încearcă portul 9999 pe fiecare adresă a rețelei, doar când apeși, cam un minut; **Oprește
+  căutarea** o oprește. Prima imprimantă care răspunde se leagă.
+- **Când nu merge,** fereastra spune ce s-a întâmplat (nu răspunde nimic, permisiunea refuzată, răspunde altceva decât o
+  imprimantă) și ce verifici: imprimanta pornită, calculatorul în aceeași rețea cu ea (nu într-o rețea de oaspeți), adresa
+  de pe ecranul ei.
+- **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
+  firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
+  patului și din carcasă (doar citite: aplicația nu încălzește nimic) și codul semnalat de imprimantă (textul lui îl arată
+  ecranul ei).
+- **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
+  imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
+  legătura; imprimanta nu e atinsă.
+- **Fișierele din imprimantă** (trimise din Creality Print sau OrcaSlicer): **Pornește** deschide confirmarea, cu fișierul,
+  materialul și timpul estimat. **Pornește imprimarea** se aprinde abia după bifa **Patul e gol** (nicio piesă rămasă sub
+  duză); **Renunță** închide confirmarea. Imprimanta se încălzește și își face singură verificările; imediat după pornire
+  închide legătura, iar fereastra se leagă singură din nou. **Reîmprospătează** cere din nou lista.
+- **Trimite un fișier…** (sub listă) trimite la imprimantă un `.gcode` de pe calculator, gata feliat în Creality Print sau
+  OrcaSlicer. Întâi fereastra îl verifică pe calculator: pentru ce imprimantă a fost feliat, duza, materialul, temperaturile,
+  timpul estimat și miniatura, apoi dacă toate mișcările încap în patul imprimantei (220 × 220 × 250 mm la K1C). O mișcare în
+  afara patului (cu linia ei) sau un fișier feliat pentru altă imprimantă dau un avertisment, iar butonul devine **Trimite
+  oricum**; altfel e **Trimite**. **Alt fișier…** alege altul; **Renunță** (sau `Escape`) închide fereastra și oprește o
+  trimitere începută. Numele pierde spațiile, iar un fișier care e deja în imprimantă nu se înlocuiește: cel nou primește
+  „-2” la nume. După trimitere, fereastra îl caută în lista imprimantei (și, dacă lista are mărimile, cu aceeași mărime);
+  când îl găsește, **Pornește imprimarea…** deschide
+  confirmarea de mai sus (cu bifa **Patul e gol**), iar **Închide** îl lasă în imprimantă. Dacă nu ajunge, fereastra spune
+  de ce (imprimanta nu răspunde pe portul 80, fișierul nu apare în lista ei sau are altă mărime), cu **Încearcă din nou**.
+- **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
+  pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
+  O imprimantă care tace mai mult de 20 s e luată drept pierdută (legătura poate muri fără să se închidă), iar una care nu mai
+  răspunde la adresa ei e căutată singură în rețea, după nume (de exemplu „K1C-8578”), și ținută la noua adresă.
+- **Jurnalul cadrelor** arată ce a trimis fereastra și ce a primit; **Copiază jurnalul** îl pune în clipboard, pentru o
+  raportare.
+- Singură, fereastra doar citește starea și răspunde imprimantei că e acolo; orice comandă pleacă dintr-un clic al tău. Portul
+  9999 n-are parolă: oricine din rețeaua atelierului poate comanda imprimanta, deci ține-o într-o rețea doar a ta.
+
 ## Vederea 3D
 %% capitol: vedere-3d
 %% acopera: editare.3d
@@ -1127,11 +1175,15 @@ Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, E
 internet: fără rețea nu se deschid, dar aplicația merge mai departe cu ultimul drept primit.
 
 - **Raportează o problemă…:** alegi ce trimiți (o problemă, o idee sau o întrebare), scrii ce s-a întâmplat și, dacă vrei,
-  bifezi **Atașează poza planșei**. Sub text, **Ce mai pleacă odată cu raportarea** arată tot ce pleacă în plus: versiunea
-  aplicației, limba, planul, browserul și amprentele erorilor din sesiunea asta (doar amprentele, fără conținutul erorilor,
-  ca echipa să le găsească în jurnalul ei). **Trimite** o trimite; un cont trimite cel mult 10 raportări pe zi.
+  bifezi **Atașează poza planșei**. Cu **Atașează proiectul (ca echipa să-l deschidă)** pleacă și proiectul deschis, exact cum
+  îl ai, comprimat; sub bifă se vede cât are. Se pot atașa cel mult 10 MB: un proiect mai mare nu pleacă, iar fără bifă nu
+  pleacă deloc. Sub text, **Ce mai pleacă odată cu raportarea** arată tot ce pleacă în plus: versiunea aplicației, limba,
+  planul, browserul, amprentele erorilor din sesiunea asta (doar amprentele, fără conținutul erorilor, ca echipa să le
+  găsească în jurnalul ei) și, cu bifa, proiectul. **Trimite** o trimite; un cont trimite cel mult 10 raportări pe zi.
 - **Raportările mele:** un răspuns nou al echipei pune un punct pe butonul **Cont** și numărul raportărilor cu răspuns nou pe
-  rândul **Raportările mele**. Când deschizi lista, răspunsurile noi sunt marcate, iar semnul se stinge.
+  rândul **Raportările mele**. Când deschizi lista, răspunsurile noi sunt marcate, iar semnul se stinge. O raportare cu
+  proiectul atașat îi arată mărimea. Raportările rezolvate se șterg singure, cu poza și proiectul lor, după perioada de
+  păstrare (implicit un an de la rezolvare; vezi nota de confidențialitate din panoul contului).
 
 - **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă
   și trimite un e-mail de confirmare; după ce deschizi linkul din el, apeși **Am confirmat**. **Am uitat parola** trimite un
@@ -1154,8 +1206,17 @@ de ce.
 O extensie adaugă aplicației o fereastră a ei, de exemplu Easy 3Draw. Nu face parte din aplicație: o instalezi
 tu, iar interfața aplicației rămâne aceeași.
 
-- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, apoi
-  **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, **Biblioteca**,
+  apoi **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+- **Biblioteca** arată extensiile noastre, publicate odată cu aplicația, de exemplu Easy 3Draw: numele, versiunea, ce face, ce
+  cere pe scurt și mărimea. **Instalează** deschide fereastra instalării, cu ce cere extensia pe larg; acolo, **Instalează**
+  descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul acesta, iar **Deschide** îi deschide
+  fereastra (**Închide** o lasă pentru mai târziu). Când biblioteca are o versiune mai nouă a unei extensii instalate, rândul ei
+  din meniu spune „actualizare: …”, iar **Actualizează la …** o aduce dintr-un clic, cu datele ei; dacă versiunea nouă cere
+  ceva în plus, fereastra spune întâi ce, iar **Actualizează** o instalează. Biblioteca se citește la fiecare deschidere a
+  meniului și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate merg ca până acum. Un
+  link de forma `…/#biblioteca=trenulet` deschide fereastra lui Easy 3Draw din bibliotecă; nimic nu se descarcă fără clicul
+  tău. Un pachet instalat din fișier sau de la o adresă vine din afara bibliotecii, iar fereastra îl spune așa.
 - **Instalează din fișier** primește un pachet `.zip`. **Instalează din adresă** cere **Adresa pachetului** (HTTPS), apoi
   **Descarcă**; gazda trebuie să permită descărcarea din alte pagini, altfel descarci tu fișierul și îl instalezi din
   fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași fereastră, cu adresa completată; nimic nu se descarcă

@@ -8,6 +8,8 @@ import { enCarcasa } from '../../src/i18n/carcasa.en.ts';
 import { roCarcasa } from '../../src/i18n/carcasa.ro.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
 import { roEditare } from '../../src/i18n/editare.ro.ts';
+import { enImprimanta } from '../../src/i18n/imprimanta.en.ts';
+import { roImprimanta } from '../../src/i18n/imprimanta.ro.ts';
 import { enMasina } from '../../src/i18n/masina.en.ts';
 import { roMasina } from '../../src/i18n/masina.ro.ts';
 import { en } from '../../src/i18n/mesaje.en.ts';
@@ -34,8 +36,8 @@ import { randuriMeniuCont, type IdMeniuCont } from '../../src/app/meniuCont.ts';
 type Usa = { readonly id: string; readonly eticheta: Readonly<Record<LimbaManual, string>> };
 
 const dictionar = {
-  ro: { ...ro, ...roEditare, ...roMasina, ...roCarcasa } as Record<string, unknown>,
-  en: { ...en, ...enEditare, ...enMasina, ...enCarcasa } as Record<string, unknown>,
+  ro: { ...ro, ...roEditare, ...roMasina, ...roImprimanta, ...roCarcasa } as Record<string, unknown>,
+  en: { ...en, ...enEditare, ...enMasina, ...enImprimanta, ...enCarcasa } as Record<string, unknown>,
 };
 const eticheta = (cheie: string): Record<LimbaManual, string> => {
   const r = dictionar.ro[cheie], e = dictionar.en[cheie];
@@ -119,7 +121,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 96)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 97)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -130,10 +132,11 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
   // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și
-  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`. Foile
-  // (ADR 0210 §1), încă nouă: foaia nouă, duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției
-  // pe altă foaie, foaia de dinainte și următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b).
-  assert.equal(USI.length, 96);
+  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
+  // Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
+  // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
+  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b).
+  assert.equal(USI.length, 97);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -216,6 +219,39 @@ ${citeste('src/app/ConectareWifi.tsx')}`;
 });
 
 /**
+ * Controalele ferestrei Imprimanta (`data-imprimanta` în `src/app/PanouImprimanta.tsx`, ADR 0190) și eticheta fiecăruia, care
+ * trebuie numită în capitolul „imprimanta”. Unul nou, lipsă de aici, face proba să cadă.
+ */
+const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
+  tinuta: 'imprimanta.tinuta.conecteaza', uita: 'imprimanta.tinuta.uita', adresa: 'imprimanta.adresa', conecteaza: 'imprimanta.conecteaza',
+  cauta: 'imprimanta.cauta', 'cauta-opreste': 'imprimanta.cauta.opreste', pauza: 'imprimanta.pauza', reia: 'imprimanta.reia',
+  opreste: 'imprimanta.opreste', 'oprire-confirma': 'imprimanta.oprire.confirma', 'oprire-renunta': 'imprimanta.oprire.renunta',
+  deconecteaza: 'imprimanta.deconecteaza', 'fisiere-reimprospateaza': 'imprimanta.fisiere.reimprospateaza', porneste: 'imprimanta.porneste',
+  'pat-gol': 'imprimanta.pornire.pat-gol', 'pornire-confirma': 'imprimanta.pornire.confirma', 'pornire-renunta': 'imprimanta.pornire.renunta',
+  'jurnal-copiaza': 'imprimanta.jurnal.copiaza',
+  // Trimiterea unui `.gcode` (felia 3.6h).
+  trimite: 'imprimanta.trimite', 'trimite-alt': 'imprimanta.trimite.alt', 'trimite-confirma': 'imprimanta.trimite.confirma',
+  'trimite-oricum': 'imprimanta.trimite.oricum', 'trimite-renunta': 'imprimanta.trimite.renunta', 'trimite-reia': 'imprimanta.trimite.reia',
+  'trimite-porneste': 'imprimanta.trimite.porneste', 'trimite-inchide': 'imprimanta.trimite.inchide',
+};
+
+test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
+  const sursa = citeste('src/app/PanouImprimanta.tsx');
+  assert.doesNotMatch(sursa, /data-imprimanta=\{/);
+  const controale = [...new Set([...sursa.matchAll(/data-imprimanta="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
+  assert.deepEqual(controale, Object.keys(CONTROALE_IMPRIMANTA).sort(), 'fiecare control din fereastră, și doar ele, în CONTROALE_IMPRIMANTA');
+  for (const m of manuale()) {
+    const cap = m.capitole.find((c) => c.id === 'imprimanta');
+    assert.ok(cap, `${m.limba}: capitolul „imprimanta”`);
+    const text = `${cap.titlu}\n${cap.text}`.toLocaleLowerCase(m.limba).replace(/\s+/g, ' ');
+    for (const c of controale) {
+      const nume = numeScurt(eticheta(CONTROALE_IMPRIMANTA[c] ?? '')[m.limba]).toLocaleLowerCase(m.limba);
+      assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-imprimanta="${c}") nu e în capitolul „imprimanta”`);
+    }
+  }
+});
+
+/**
  * Controalele extensiilor (`data-extensii` în `src/extensii/`, ADR 0127) și eticheta fiecăruia, numită în capitolul
  * „extensii” (null: un control fără etichetă proprie: fișierul ales, rândul unei extensii și fila ei, cu numele ei, ×).
  */
@@ -226,6 +262,10 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
   // întrebarea de la închidere, cu lucru nesalvat (ADR 0164 §C)
   'inchidere-ramai': 'extensii.inchidere.ramai', 'inchidere-inchide': 'extensii.inchidere.inchide',
+  // biblioteca (ADR 0230): rândurile din meniu, fereastra actualizării, capătul instalării
+  'biblioteca-instaleaza': 'extensii.biblioteca.instaleaza', 'biblioteca-actualizeaza': 'extensii.biblioteca.actualizeaza',
+  'biblioteca-reincearca': 'extensii.biblioteca.reincearca', actualizeaza: 'extensii.actualizare.actualizeaza',
+  'deschide-instalata': 'extensii.instalare.deschide', 'inchide-instalata': 'extensii.instalare.inchide',
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
@@ -241,7 +281,8 @@ ${citeste('src/extensii/Instalare.tsx')}`;
     for (const c of controale) {
       const cheie = CONTROALE_EXTENSII[c];
       if (!cheie) continue;
-      const nume = numeScurt(eticheta(cheie)[m.limba]).toLocaleLowerCase(m.limba);
+      // Numele fără parametri („Actualizează la {versiune}” → „Actualizează la”).
+      const nume = numeScurt(eticheta(cheie)[m.limba].replace(/\s*\{[a-z]+\}/g, '')).toLocaleLowerCase(m.limba);
       assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-extensii="${c}") nu e în capitolul „extensii”`);
     }
   }
