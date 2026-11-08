@@ -893,6 +893,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
+  ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
+  hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar
+  fi, si pe ALT, chiar si in combinatie cu celelalte, vreau sa imi pastreze centrul formei. Aceste hotkeys trebuie sa
+  functioneze asa si cand creez formele”): felia 6.V↑, `wip/6.V-ancore`, `C:\Users\besli\cncvs2-lucru\ancore`, e2e pe 4181 și
+  `127.0.8`, ADR-urile 0240–0249, canalul `ancore`; întâi ADR-ul și schița, cu întrebările (între ele, unde se mută
+  inversarea lipirii, ținută azi de Alt).
 - 08.11.2026: **înălțimile pieselor LEGO, editabile la zecimi, în profilul imprimantei** („plugin-ul 3d care face piesele de
   lego are o problema, stifturile pe care le face si gaurile de sub piesa sunt prea mici, raza este ok, dar inaltimea este
   putin prea mica. pare ca are nevoie de o zecime de milimetru pentru stifturi”, apoi „vreau sa pot edita eu inaltimile la
