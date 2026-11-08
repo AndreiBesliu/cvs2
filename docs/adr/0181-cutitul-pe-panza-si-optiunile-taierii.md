@@ -128,6 +128,29 @@ Fiecare felie: proba scrisă întâi (valorile pe hârtie, oracolul independent,
 ambele limbi pentru fiecare buton, otrăvurile țintite în clona ramurii, porțile, publicarea pe canalul `taiere`; înaintea
 primului commit de cod, `origin/main` unit în ramură.
 
+**Felia 10.3↑f, la cod** (în cadrul deciziilor de mai sus, 08.11):
+- **Cuțitul tras** e o cale în mm ai foii, dată cererii de tăiere (`cale`), care nu intră în document; mâna liberă vine
+  netezită de netezirea din 10.3↑e, la jumătate de pixel al vederii, fără „Păstrează” (colțurile peste 60° rămân). **Formele
+  existente** (`forme`) sunt instanțele date, cu toate contururile lor citite împreună, par-impar; cuțitul-formă din panou e
+  același cuțit, cu o singură instanță. Formele-cuțit nu se taie și rămân.
+- **Buclele libere:** un cuțit închis care stă tot înăuntrul unei forme, fără să-i atingă vreun contur închis, o taie și el,
+  cu închidere: bucla intră în ambele părți, ca margine înăuntru și ca gol în afară (mijlocul unui „O” ajunge, ca insulă, în
+  placă). Bucla își păstrează forma (cercul cuțitului rămâne cerc), în coordonatele piesei tăiate. Pe o piesă fără rol, ia
+  operațiile conturului în care stă, cu latura întoarsă când adâncimea ei în parte diferă de a lui ca paritate. Un cuțit
+  care se încrucișează în regiune se refuză (`cutit`). Asta lipsea și lui „Taie cu…” și „Decupează la” ultima formă aleasă:
+  un text pus pe o placă nu tăia nimic.
+- **Ce taie:** formele alese, fără formele-cuțit; fără nimic ales, toate instanțele foii (2a). La capătul gestului (3a),
+  prin workerul CAM și `document.taie`, un pas de anulare; noile forme rămân alese.
+- **Cât tragi:** locurile unde taie sunt aproximate pe firul principal (formele de tăiat, ca polilinii la 0,05 mm, trecute
+  segment cu segment; peste 200 000 de puncte, doar urma); cele exacte și refuzurile vin de la worker. Bazinul CAM pornește
+  un worker pe calcul, deci un calcul pe cadru ar fi prea greu.
+- **Felul Formă:** clicul alege ca Selecția (conturul la 4 px, altfel cea mai mică formă închisă care cuprinde punctul), deci
+  un clic în mijlocul unei litere alege textul; Shift + clic adună forme (conturate pe pânză), clicul fără Shift sau Enter
+  taie cu toate, Esc le lasă.
+- **Interfața:** butonul, iconița și tasta uneltei stau în editare; bara (portal în bara de sus), urma și tăierea vin în
+  bucata tăierii, la prima alegere. Pen-ul cuțitului e unealta Pen, cu culoarea cuțitului. Starea (ce s-a tăiat, refuzul)
+  stă în cipul din colțul pânzei. Pornirea nu crește (101,8 kB); totalul crește cu 3,7 kB (546,8 / 600).
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în

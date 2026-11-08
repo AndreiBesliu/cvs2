@@ -531,6 +531,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   capătul unui șir; un șir drept rămâne linii; vârful 0 al căii închise rămâne; totul în lume, mânerele duse înapoi cu
   inversa. Hausdorff-ul comun: `src/model/abatereContur.ts`. Oracolul are `judecaNetezirea`
   (`conversie.netezire.oracol.test.ts`), cu margini inferioare ieftine în `distantaLaForme` (de 7–10 ori mai repede).
+  **Unealta Cuțit (ADR 0181, felia 10.3↑f)** gata pe 08.11: K, după Noduri; felurile Linie, Pen, Liber și Formă (un text sau
+  altă formă existentă e cuțitul). Modelul: cuțitul `cale` (tras, nu intră în document, netezit la mâna liberă) și `forme`
+  (instanțele, par-impar) în `src/model/taiere.ts`; **buclele libere** (un cuțit închis tot înăuntrul unei forme intră în ambele
+  părți, cu latura întoarsă după adâncime pe o piesă fără rol) valorează și pentru cuțitul-formă din panou. Unealta:
+  `src/app/UnealtaCutit.tsx` (adusă în bucata tăierii, bara prin portal, gestul prin intermediarul `gestCutit` din editare),
+  partea pură în `src/app/cutitCalcul.ts` (țintele 2a, urma, locurile aproximative), bifa comună în `inchidereTaiere.ts`.
+  Oracolul: `judecaCutitul` cu `tolCutit` (mâna liberă), corpusurile în `taiere.cutit.oracol.test.ts`.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
