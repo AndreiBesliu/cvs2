@@ -102,10 +102,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22). **Un câmp nou al
-  documentului (v23 e a planșelor, 11.4↑; altă linie ia versiunea de după) intră acolo, ca rangul și incrustația:** rândul
+  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
+  plăcuțelor, 11.4↑, ramura `wip/11.1-plansele`), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
+  (v24 pe altă linie, după unirea planșelor) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
-  versiunea curentă se mută pe ea (`schema: 22` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
+  versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
@@ -547,6 +548,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/app/asezareTinuta.ts`: `src/ui` nu importă modelul, regula `interfata-prin-actiuni`). Scrierea ferestrei trece pe
   lângă garda „dialog deschis” (`ruleaza(registru, …)`), ca exportul. **Pornirea 105,3 (cu ușa 108,9 / 110 kB: rămân
   1,1 kB), totalul 548,7 / 600.**
+  **Plăcuțele, nucleul (ADR 0210 §4, §7, felia 11.4↑)** gata pe 08.11: documentul **v23** (`Instanta.texte`: textul, literele
+  și operațiile fiecărei plăcuțe; `lume.ts` le pune în locul literelor șablonului); judecata lor în `judecataTexte.ts`, adusă
+  doar pentru un document cu plăcuțe, și rulată de ușă **pe documentul brut** (`problemaTexte`, `usaCurenta.ts`), nu în
+  validator: `v.record` sare cheile `__proto__` / `constructor` / `prototype`, care sunt date (ADR 0024 §9). Acțiunile cer
+  același verdict prin `motivDupa` (refuzul plăcuțelor e `motiv.placute`). Literele din font în `src/text/placute.ts`,
+  operațiile lor fără font în `src/io/placuteOperatii.ts`, șablonul și coacerea în `src/model/placute.ts`. Valorile din
+  panou trec prin acțiunea textului (cererea `placuta`; nicio acțiune nouă la pornire); editarea textului șablonului le
+  reface pe toate; rolul, scalarea, «Desprinde», gruparea și degruparea le țin. Oracolul v23 (agentul, din ADR-uri) e în
+  `test/oracles/document.ts`. **Pornirea 106,0 (cu ușa 109,9 / 110 kB: rămâne sub 0,1 kB), totalul 563,0 / 600.** Rămâne
+  pentru 11.4↑b: «Din CSV…», editarea textului unui șablon grupat, lista plăcuțelor micșorate de casetă.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

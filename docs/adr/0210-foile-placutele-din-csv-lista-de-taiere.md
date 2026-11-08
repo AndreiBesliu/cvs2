@@ -430,3 +430,72 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   `asezare.spec.ts` (e2e: fereastra din meniul foii și din cel de clic dreapta, distanța de la freză, rezultatul, refuzul,
   colțul ținut, anularea; „Mută și așază la capăt pe Foaia 2”), manualul (capitolul „Foile”, 103 uși), otrăvurile
   `test/otravuri/11.3.py`: 32; pe codul final (`87f3aee`) toate prinse. La prima rulare (`ab85477`): 22 unitare prinse, A05 prin termenul de 300 s (fără distanță, saltul peste piesa rămasă nu mai înainta: rescrisă cu un milimetru în plus) și A09 scăpată (nicio probă cu culcarea mai proastă: proba nouă, 16 piese de 30 × 80 care încap doar în picioare); 8 prin e2e, în două clone, pe portul 4178.
+
+## Felia 11.4↑ (gata pe 08.11)
+
+- **Documentul v23** (`4c0f0d7`; schema nouă a etapei, §7): `Instanta.texte`, cheia e id-ul unui grup de text cu câmpuri al
+  piesei, valoarea `continut` (textul blocului cu valorile din `campuri`), `copii` (literele) și `operatii` (id-ul operației →
+  literele pe care le taie). Migrarea v22 → v23 schimbă doar numărul; o instanță v22 cu un `texte` necunoscut e o ciocnire.
+  `lume.ts` pune literele plăcuței în locul literelor șablonului (`cuLitere`), iar tăieturile le iau pe ale ei
+  (`noduriInInstanta`): pânza, CAM-ul, verificarea, exportul și cutiile le văd fără să știe de CSV. `numara` le socotește în
+  plafoane. `campuri` și `texte` sunt dicționare (un `[]` e refuzat, ca la ADR 0024).
+- **Ușa la cerere** (ADR 0070): forma literelor e în ușa de la pornire; judecata lor întreagă (blocul valid al șablonului, cu
+  schema și amprenta, textul cu valorile, id-urile unice și diferite de ale piesei, operațiile ale piesei pe literele
+  plăcuței, plafonul unei operații în lumea instanței, un text al plăcuței sub altul, adâncimea, marginile matricelor) stă în
+  `judecataTexte.ts` (0,9 kB), adus doar pentru un document cu plăcuțe (`cuPlacute`, înainte de prima randare), de ușa
+  întreagă și de calculul acțiunilor. În ușa de la pornire ar fi trecut de plafon (111,8 / 110 kB).
+- **Judecata pe documentul brut** (reparată în pasul 3): ușa întoarce o copie a intrării, cu cheile `__proto__`,
+  `constructor` și `prototype` ca date (ADR 0024 §9), dar judecata plăcuțelor rula în validator, pe ieșirea lui, din care
+  `v.record` le scoate tăcut. O plăcuță sub o asemenea cheie (un grup `constructor`, o operație `constructor`) trecea deci
+  nejudecată, iar lumea îi folosea literele. Acum ușa judecă plăcuțele după schemă, pe documentul brut (`problemaTexte`,
+  `usaCurenta.ts`), cu forma intrărilor sărite de validator (literele, valoarea câmpului, lista operației) și plafoanele cu
+  literele lor; acțiunile la fel (`motivDupa`). Un câmp `{__proto__}` sau `{constructor}` e un câmp ca oricare (ca în
+  oracol, P22 și P23).
+- **Oracolul documentului v23**, scris separat de un agent doar din ADR-uri (cu acordul owner-ului, ~0,76 M tokeni): 26 / 26
+  față de ușa aplicației, după două divergențe reparate în aplicație (blocul șablonului judecat întreg; listele refuzate
+  ca dicționare) și punctele deschise aliniate: numele câmpurilor (orice în afară de acolade, și un rând nou), un câmp fără
+  valoare refuzat, `texte` gol și o plăcuță fără litere primite, `operatii` lipsă refuzat și o listă goală primită, plafonul
+  de 10 000 de noduri al unei operații în lumea instanței, grupurile plăcuței neimbricate, orice nod valid ca literă,
+  adâncimea cel mult 32, literele unice pe instanță. Corpusul de aur (ADR 0121) are versiunea 23 (`1f250a7`).
+- **Literele unei plăcuțe** (`src/text/placute.ts`, în modulul textului, la cerere): pentru fiecare text cu câmpuri al piesei
+  (`textePiesei`: grupurile cu bloc valid și cu câmpuri, cele mai de sus), textul blocului cu valorile plăcuței, așezat ca un
+  text obișnuit cu același bloc (drept sau pe curba lui; limitat de casetă, de la înălțimea cerută, nu de la cea în care a
+  încăput șablonul); literele, ca la piesa unui text (`litereText`, scoasă din `piesaText`), cu id-urile `t<j>-l<k>` și
+  `t<j>-c<n>` (un sufix dacă s-ar ciocni cu un id al piesei). Un câmp fără valoare e gol (`valoriPlacutei`). Refuzurile, cu
+  motiv: fontul lipsă (cu numele lui), aldinul care n-a îngroșat o literă, textul care nu încape în casetă nici la cea mai mică
+  înălțime, curba fără lungime, imbricarea peste plafon. Spațierile literelor alese (ADR 0138 §5) țin de caracterele
+  șablonului: plăcuțele nu le primesc.
+- **Operațiile literelor** (`src/io/placuteOperatii.ts`, fără font): o operație care taie literele șablonului se mută pe
+  literele plăcuței de același fel, ca la editarea unui text (`felOperatie`, scoasă din `piesaText`): profilul pe exterior pe
+  contururile de afară, cel pe interior pe goluri, restul pe toate; o găurire nu are pe ce sta. Rama și găurile plăcuței
+  (operațiile care nu taie textul) rămân ale șablonului. Felul vine din imbricarea contururilor plăcuței, deci operațiile se
+  mută din nou și fără font (rolul de tăiere).
+- **Panoul** („Pe această plăcuță”, `PanouProprietati.tsx`): cu o singură instanță aleasă a unui șablon, câte un rând pe câmp
+  (exemplul arată câmpul, `{nr}`), cu nota (câmpurile; forma, fontul și mărimea sunt ale piesei). O valoare scrisă cere modulul
+  textului și fonturile (`textePlacuteiCuFonturi`), apoi acțiunea textului (`document.text`, cererea `placuta`, fără o acțiune
+  nouă în registrul de pornire) scrie instanța într-un pas; o piesă schimbată între timp e refuzată (`motiv.placute`). Lista
+  numește plăcuța după textul ei („Masa 7 (1 din 3)”).
+- **Consecvența șablonului:** editarea textului lui (unealta Text, pe oricare plăcuță) reface literele tuturor plăcuțelor, pe
+  toate foile, în același pas, cu fontul deja adus de panou; panoul spune câte („Șablonul are 3 plăcuțe: «Aplică» le reface
+  literele.”); un text fără câmpuri le lasă doar cu valorile. Rolul de tăiere mută operațiile noi pe literele plăcuțelor. O
+  scalare a piesei le scalează pe toate (cele alese și celelalte, pe orice foaie), iar blocul unui text grupat (șablonul cu
+  ramă) rămâne valid la o scalare uniformă. **«Desprinde»** pe o plăcuță (și pe una singură) o coace (`placutaCoapta`):
+  literele ei în arbore, cu blocul obișnuit (textul ei, amprenta literelor ei, fără spațierile alese), numele piesei din primul
+  rând, operațiile care taie ce taiau în lume; tăieturile rămân aceleași. Gruparea și degruparea coc plăcuța întâi (anularea
+  o pune la loc). Restul schimbărilor care ar strica literele (nodurile literelor șablonului, înclinarea, o scalare neuniformă
+  care face textul vectori, reparațiile și tăierea pe litere) se refuză cu motivul plăcuțelor (`motiv.placute`, prin
+  `motivDupa`, după judecata documentului de după).
+- **Banda pieselor legate** nu se mai arată cât e deschis panoul textului (înalt, îi acoperea «Aplică»): spune panoul, „Piesa
+  e pusă de N ori: «Aplică» o schimbă la toate.” (sau nota plăcuțelor).
+- **Rămâne pentru 11.4↑b** (cu dialogul CSV): editarea textului unui șablon grupat (unealta Text editează doar textul de pe
+  rădăcina piesei), lista plăcuțelor micșorate de casetă (cât, în %) și avertismentul celor din care iese textul.
+- **Măsurat:** pornirea 106,0 kB (cu ușa 109,7 → 109,9 / 110: rămâne sub 0,1 kB, deci o felie care atinge pornirea sau ușa
+  face întâi loc), totalul 548,7 → 563,0 / 600 (v23 și judecata ei, oracolul nu intră în aplicație, literele din font în
+  modulul textului, panoul).
+- **Probele:** `document.v23.oracol.test.ts` (26, oracolul agentului față de ușa aplicației), corpusul de aur cu v23,
+  `placute.test.ts` (pe hârtie: literele plăcuței sunt literele unui text obișnuit cu același conținut, pe drept, pe curbă și
+  limitat de casetă; operațiile taie aceleași contururi; rama nu taie textul; prefixul liber; valorile goale; acțiunea textului
+  și refuzurile ei; refacerea la editarea șablonului, pe două foi; «Desprinde», cu tăieturile neschimbate; gruparea și
+  degruparea; rolul; scalarea, și a celor de pe altă foaie; nodurile și înclinarea refuzate; cheile `__proto__` și
+  `constructor`, judecate de ușă), `placute.spec.ts` (e2e: câmpul, valoarea, copiile, editarea șablonului cu nota, «Desprinde»,
+  Ctrl+Z), manualul. Otrăvurile `test/otravuri/11.4.py`: la prima rulare (`c2784f2`) 30 / 32 unitare prinse: P07 echivalentă (limitat de casetă, așezarea caută oricum de la `caseta.ceruta`: ramura din `parametriBloc` era cod în plus, scoasă) și U02 scăpată (proba strica literele într-un fel prins oricum mai jos: proba nouă, o literă cu forma stricată sub cheia `constructor`); pe codul final (`ca7c0b6`) 40 / 40: 31 / 31 unitare și 9 / 9 prin e2e, în două clone, pe portul 4178.

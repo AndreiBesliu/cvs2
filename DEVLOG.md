@@ -7146,3 +7146,45 @@ utilizator”; apoi, la „Le fac pe toate opțiuni, cu recomandarea ca implicit
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
 
 **Completed:** 08.11, 12:21.
+
+## 2026-11-08 — Felia 11.4↑: plăcuțele, nucleul (ADR 0210 §4, §7; documentul v23) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei: „Da, 11.4↑”; apoi, la „Unești întâi incrustațiile (eu iau apoi v23) și pornesc
+agentul oracolului (~0,7 M tokeni)?”: „Da, așa”.
+**Started:** 08.11, 12:34.
+
+- **Pasul 1 (`4c0f0d7`):** documentul v23 (`Instanta.texte`: textul, literele și operațiile fiecărei plăcuțe), lumea
+  (`cuLitere`, `noduriInInstanta`), numărătoarea, migrarea v22 → v23, ușa (forma la pornire; judecata întreagă în
+  `judecataTexte.ts`, adusă doar pentru un document cu plăcuțe: altfel pornirea cu ușa ar fi fost 111,8 / 110). Oracolul
+  documentului v23, scris separat de un agent doar din ADR-uri (~0,76 M tokeni): 26 / 26, după două divergențe reparate în
+  aplicație și punctele deschise aliniate.
+- **Pasul 2 (`1f250a7`):** corpusul de aur primește versiunea 23.
+- **Pasul 3 (COMMIT):** literele din font (`src/text/placute.ts`), operațiile lor fără font (`src/io/placuteOperatii.ts`),
+  șablonul și coacerea (`src/model/placute.ts`); „Pe această plăcuță” în panou, prin acțiunea textului (cererea `placuta`);
+  editarea textului șablonului reface toate plăcuțele; rolul, scalarea, «Desprinde» (și pe una singură), gruparea și
+  degruparea țin literele; restul se refuză cu `motiv.placute`; lista numește plăcuța după textul ei; banda pieselor legate
+  nu mai acoperă panoul textului; manualul.
+- **Ce a ieșit din drum:** (1) cu panoul textului deschis pe o piesă pusă de mai multe ori, banda violet îi acoperea «Aplică»
+  (prins de proba e2e): banda nu se mai arată atunci, spune panoul. (2) Piesa coaptă păstra numele șablonului („Sala {nr}” în
+  listă): ia primul rând al textului ei, ca un text. (3) Două probe unitare greșite (amprenta uitată la ciocnirea id-urilor,
+  câmpuri cerute unui text copt), reparate. (4) **O gaură a ușii din pasul 1**, găsită la recitire (un câmp `{__proto__}`):
+  judecata plăcuțelor rula în validator, pe ieșirea lui, din care `v.record` scoate tăcut cheile `__proto__` / `constructor` /
+  `prototype` (date, ADR 0024 §9), deci o plăcuță sub o asemenea cheie trecea nejudecată, iar lumea îi folosea literele. Am
+  încercat întâi să fac din cele trei nume „necâmpuri”, dar oracolul (P22, P23) și ADR 0024 §9 le țin ca date: ușa judecă acum
+  plăcuțele pe documentul brut, cu forma intrărilor sărite de validator. (5) Proba e2e a manualului cerea încă 32 de capitole
+  după unirea cu `main` de azi (33): adusă la zi.
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări, 1 100 de module), traducerile (roadmap-ul
+  tradus cu fișa), unitare 8 809: 8 800 trecute, 8 sărite, 1 căzută (traducerea rândului nou din fișă, venită cu commit-ul
+  documentelor); build-ul determinist; pornirea 106,0 kB (cu ușa 109,7 → 109,9 / 110), totalul 559,9 → 563,0 / 600. E2e pe
+  suita întreagă, pe codul final (2 lucrători, în paralel cu otrăvurile și cu suitele altei sesiuni): 377 trecute, 4 la a doua
+  încercare, 5 căzute și 7 nerulate din aceleași fișiere seriale (`otravuri-23c.spec.ts`, `panou.spec.ts`), care trec toate 12
+  rulate singure; prima rulare întreagă (înaintea ușii pe documentul brut): 390, 1 la a doua încercare, 2 căzute în manual
+  (numărul capitolelor).
+- **Otrăvurile (`test/otravuri/11.4.py`, alese de autor, în două clone):** prima rulare (`c2784f2`): 30 / 32 unitare prinse; P07
+  („limitat de casetă, de la înălțimea șablonului”) echivalentă: așezarea limitată caută oricum de la `caseta.ceruta`, deci
+  ramura era cod în plus și a plecat; U02 („literele de sub o cheie sărită nu se judecă în forma lor”) scăpată: proba strica
+  literele într-un fel prins oricum mai jos, deci proba nouă strică forma unei litere (`ca7c0b6`). Pe codul final: 31 / 31
+  unitare și 9 / 9 prin e2e, deci 40 / 40.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
+
+**Completed:** 08.11, 22:30.
