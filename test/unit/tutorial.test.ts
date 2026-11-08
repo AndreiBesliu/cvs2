@@ -27,8 +27,9 @@ test('testul uneltelor: 33 de pași în 11 secțiuni, cei din artifact plus anco
   assert.deepEqual(t.sectiuni.flatMap((s) => s.pasi.map((p) => p.id)), ID_ARTIFACT);
   const d = t.sectiuni[1]!.pasi[0]!;
   assert.deepEqual([d.titlu, d.faci, d.vezi], [
-    'Dreptunghiul', 'Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`.',
-    'Un dreptunghi din colț în colț; cu Shift, un pătrat. Forma nouă e aleasă și apare în listă.',
+    'Dreptunghiul', 'Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`; apoi unul ținând `Alt` (și unul cu `Alt` + `Shift`).',
+    'Un dreptunghi din colț în colț; cu Shift, un pătrat; cu Alt, din centru (punctul apăsat e centrul lui), iar cu amândouă, un '
+    + 'pătrat din centru. Lângă cursor, eticheta spune mărimea și ce fac tastele. Forma nouă e aleasă și apare în listă.',
   ]);
   assert.match(t.intro, /^Fiecare pas spune ce faci/);
   // Mai multe rânduri ale aceluiași câmp se unesc cu un spațiu.

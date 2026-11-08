@@ -27,28 +27,31 @@ Lista „Pe foaie” din stânga e goală.
 ### Dreptunghiul
 %% pas: d-dreptunghi
 %% faci
-Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`.
+Dreptunghi (`R`): trage pe foaie; apoi încă unul ținând `Shift`; apoi unul ținând `Alt` (și unul cu `Alt` + `Shift`).
 %% vezi
-Un dreptunghi din colț în colț; cu Shift, un pătrat. Forma nouă e aleasă și apare în listă.
+Un dreptunghi din colț în colț; cu Shift, un pătrat; cu Alt, din centru (punctul apăsat e centrul lui), iar cu amândouă, un
+pătrat din centru. Lângă cursor, eticheta spune mărimea și ce fac tastele. Forma nouă e aleasă și apare în listă.
 
 ### Cercul
 %% pas: d-cerc
 %% faci
-Cerc (`O`): un clic fără tragere; apoi o tragere din centru.
+Cerc (`O`): un clic fără tragere; apoi o tragere din centru; apoi una ținând `Ctrl`.
 %% vezi
-Clicul pune un cerc cu raza din câmpul de lângă unealtă; tragerea dă raza ei și o scrie în câmp.
+Clicul pune un cerc cu raza din câmpul de lângă unealtă; tragerea dă raza ei și o scrie în câmp; cu Ctrl iese o elipsă din
+centru, cu cursorul în colțul cutiei ei (eticheta spune „elipsă”).
 
 ### Elipsa, linia, poligonul
 %% pas: d-elipsa
 %% faci
-Elipsă (`E`); Linie (`L`) trasă cu `Shift`; Poligon (`P`) cu 5 în câmpul de laturi.
+Elipsă (`E`); Linie (`L`) trasă cu `Shift`, apoi cu `Alt`; Poligon (`P`) cu 5 în câmpul de laturi.
 %% vezi
-Elipsa din colț în colț; linia în pași de 15° cu Shift; un pentagon regulat, din centru.
+Elipsa din colț în colț; linia în pași de 15° cu Shift, iar cu Alt pornește din mijloc (punctul apăsat e mijlocul ei); un
+pentagon regulat, din centru.
 
 ### Lipirea
 %% pas: d-lipire
 %% faci
-Cu Lipire pornită (magnetul), trage o formă lângă colțul alteia; apoi trage din nou ținând `Alt`.
+Cu Selecție (`V`) și Lipire pornită (magnetul), trage o formă lângă colțul alteia; apoi trage din nou ținând `Alt`.
 %% vezi
 Forma se prinde exact de colț sau de latură, cu linii de aliniere; cu Alt nu se mai prinde.
 

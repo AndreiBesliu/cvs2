@@ -87,6 +87,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Răspunsurile la cele șase întrebări din ADR 0171 (incrustația cu pereți drepți): cum se face dopul, pe ce se sprijină, colțurile, frezele, jocul lateral, unde se alege; recomandările sunt primele variante; schița: <https://claude.ai/artifact/5cfiGBoZaXDnot9ksHAqGR> | 12.1↑b | înainte de codul feliei |
 | O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11) | 3.S pe live (acolo primirea e oprită până atunci) | înainte să pornim primirea pe live |
 | Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune | 10.3↑ | acum |
+| Încercarea ancorei și a tastelor transformării pe canalul `ancore` (<https://cncvectorstudio-test--ancore-vy17zado.web.app/?test>): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”; apoi „unește” sesiunii principale. Separat, decizia pe plafon pentru 6.V↑d (opțiunile din ADR 0240: Alt ține fix, cercul din colț, poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite; ~1,5 kB) | 6.V↑–6.V↑c în `main`; 6.V↑d | după publicarea pe canal; 6.V↑d când se unesc liniile |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 
