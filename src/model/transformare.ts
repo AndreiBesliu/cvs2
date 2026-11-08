@@ -1,9 +1,10 @@
 /**
  * Transformările selecției (ADR 0052, ADR 0054), pure: rotirea, scalarea și oglindirea instanțelor alese, față de un punct
  * al foii. Rotirea schimbă doar instanța (unghiul și locul). Scalarea schimbă geometria piesei, EXACT: dreptunghiul își
- * schimbă laturile, cercul raza, calea vârfurile și punctele de control; unde rezultatul n-ar mai fi exact se refuză cu
- * motiv (o scalare neuniformă pe un cerc, pe un arc sau pe un colț rotunjit; o scalare neuniformă pe o instanță sau un nod
- * rotit altfel decât cu un multiplu de 90°; o piesă folosită și de alte instanțe). Oglindirea pune reflexia în matricea
+ * schimbă laturile, cercul raza, calea vârfurile și punctele de control; un cerc scalat neuniform devine elipsa generatorului
+ * uneltei de desen (ADR 0240); unde rezultatul n-ar mai fi exact se refuză cu motiv (o scalare neuniformă pe un arc sau pe un
+ * colț rotunjit; o scalare neuniformă pe o instanță sau un nod rotit altfel decât cu un multiplu de 90°; o piesă folosită și
+ * de alte instanțe). Oglindirea pune reflexia în matricea
  * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne. Înclinarea
  * (ADR 0065) intră în geometrie: liniile și cubicele rămân exacte; arcele (cercul, colțurile rotunjite) se refuză, sau, la
  * cererea omului, devin întâi cubice (ADR 0078), cu abaterea de după înclinare sub toleranța proiectului. Blocul unui text
@@ -14,6 +15,7 @@ import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
 import { blocScalat } from './blocText.ts';
+import { elipsa, parametri } from './formeParametrice.ts';
 import { arcInCubice, caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
@@ -34,7 +36,7 @@ export type Transformare =
   };
 
 export type MotivTransformare =
-  | 'neuniform-cerc' | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
+  | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
 
 /** Cel mai mare unghi de înclinare acceptat, în grade (tan 75° ≈ 3,7). */
 export const UNGHI_MAXIM_INCLINARE = 75;
@@ -96,9 +98,21 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number): FormaDoc | MotivTra
       if (!u && f.razaColt > 0) return 'neuniform-colt';
       return { ...f, latime: f.latime * Math.abs(sx), inaltime: f.inaltime * Math.abs(sy), razaColt: f.razaColt * Math.abs(sx) };
     case 'cerc':
-      if (!u) return 'neuniform-cerc';
+      // Scalat neuniform, cercul devine elipsa generatorului uneltei de desen (ADR 0240 §F): aceleași cubice ca o elipsă
+      // desenată, deci panoul o recunoaște și îi editează razele.
+      if (!u) return elipsa({ x: 0, y: 0 }, f.raza * Math.abs(sx), f.raza * Math.abs(sy));
       return { ...f, raza: f.raza * Math.abs(sx) };
     case 'cale': {
+      // O elipsă a generatorului, scalată neuniform, se face din nou din generator: cubicele ei rămân sub toleranța lui și
+      // recunoscute (scalate punct cu punct, abaterea ar crește cu scara). Uniform, se scalează punct cu punct, ca înainte.
+      const el = u ? null : parametri(f);
+      if (el?.tip === 'elipsa') {
+        const rx = el.rx * Math.abs(sx), ry = el.ry * Math.abs(sy), s = Math.max(rx, ry);
+        // Zgomotul recunoașterii (media vârfurilor, ~1e-15) nu scoate centrul din originea piesei: acolo, razele egale dau
+        // din nou un cerc exact.
+        const z = (v: number): number => (Math.abs(v) <= 1e-9 * s ? 0 : v);
+        return elipsa({ x: z(el.centru.x * sx), y: z(el.centru.y * sy) }, rx, ry);
+      }
       if (!u && f.varfuri.some((v) => v.s.tip === 'A')) return 'neuniform-arc';
       const p = (q: { readonly x: number; readonly y: number; readonly [k: string]: unknown }) => ({ ...q, x: q.x * sx, y: q.y * sy });
       const scalate = f.varfuri.map((v) => ({ ...v, p: p(v.p), s: v.s.tip === 'C' ? { ...v.s, c1: p(v.s.c1), c2: p(v.s.c2) } : v.s }));

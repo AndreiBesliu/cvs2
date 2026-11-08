@@ -49,41 +49,56 @@ function patrat(a: P, b: P): P {
   return { x: a.x + Math.sign(b.x - a.x || 1) * l, y: a.y + Math.sign(b.y - a.y || 1) * l };
 }
 
-/** Pură: al doilea capăt al gestului, după Shift (pătrat / cerc / 15°). */
-export function capatConstrans(u: UnealtaDesen, a: P, b: P, shift: boolean): P {
-  if (!shift) return b;
+/** Tastele ținute la desen (ADR 0240): Shift = pătrat / cerc / pași de 15°, Ctrl = fără proporție, Alt = din centru. */
+export type TasteDesen = { readonly shift: boolean; readonly ctrl: boolean; readonly alt: boolean };
+const FARA: TasteDesen = { shift: false, ctrl: false, alt: false };
+
+/** Pură: al doilea capăt al gestului, după Shift (pătrat / cerc / 15°); cercul nu se constrânge (e cerc oricum). */
+export function capatConstrans(u: UnealtaDesen, a: P, b: P, taste: TasteDesen): P {
+  if (!taste.shift) return b;
   if (u === 'dreptunghi' || u === 'elipsa') return patrat(a, b);
   if (u === 'linie' || u === 'poligon') return pe15(a, b);
   return b;
 }
 
+/** Pură: cercul se desenează ca elipsă (Ctrl fără Shift: fără proporție, ADR 0240), din centru, cu cursorul în colțul cutiei. */
+export const cerculElipsa = (taste: TasteDesen): boolean => taste.ctrl && !taste.shift;
+
 const L = (p: P): VarfDoc => ({ p: { x: p.x, y: p.y }, s: { tip: 'L' } });
 
 /**
  * Pură: forma desenată între `a` și `b` (mm ai foii, după lipire și Shift), sau null dacă e degenerată (o latură, raza
- * sau lungimea sub `minim` mm: tragerea prea scurtă nu face nimic).
+ * sau lungimea sub `minim` mm: tragerea prea scurtă nu face nimic). Cu Alt (ADR 0240), dreptunghiul și elipsa pornesc din
+ * centru (`a` e centrul, `b` un colț al cutiei), iar linia din mijloc; cercul și poligonul pornesc oricum din centru. Cu Ctrl
+ * fără Shift, cercul devine elipsă, din centru, cu `b` în colțul cutiei ei.
  */
-export function formaDesenata(u: UnealtaDesen, a: P, b: P, laturi: number, minim: number): FormaDesenata | null {
+export function formaDesenata(u: UnealtaDesen, a: P, b: P, laturi: number, minim: number, taste: TasteDesen = FARA): FormaDesenata | null {
   const dx = b.x - a.x, dy = b.y - a.y;
   switch (u) {
     case 'dreptunghi': {
-      const w = Math.abs(dx), h = Math.abs(dy);
+      const w = Math.abs(dx) * (taste.alt ? 2 : 1), h = Math.abs(dy) * (taste.alt ? 2 : 1);
       if (w < minim || h < minim) return null;
-      return { forma: { tip: 'dreptunghi', latime: w, inaltime: h, razaColt: 0 }, x: Math.min(a.x, b.x), y: Math.min(a.y, b.y) };
+      const x = taste.alt ? a.x - Math.abs(dx) : Math.min(a.x, b.x), y = taste.alt ? a.y - Math.abs(dy) : Math.min(a.y, b.y);
+      return { forma: { tip: 'dreptunghi', latime: w, inaltime: h, razaColt: 0 }, x, y };
     }
     case 'cerc': {
+      if (cerculElipsa(taste)) {
+        if (Math.abs(dx) < minim / 2 || Math.abs(dy) < minim / 2) return null;
+        return { forma: elipsa({ x: 0, y: 0 }, Math.abs(dx), Math.abs(dy)), x: a.x, y: a.y };
+      }
       const r = Math.hypot(dx, dy);
       return r < minim ? null : { forma: { tip: 'cerc', raza: r }, x: a.x, y: a.y };
     }
     case 'elipsa': {
-      const rx = Math.abs(dx) / 2, ry = Math.abs(dy) / 2;
+      const rx = Math.abs(dx) / (taste.alt ? 1 : 2), ry = Math.abs(dy) / (taste.alt ? 1 : 2);
       if (rx < minim / 2 || ry < minim / 2) return null;
       // Centrată în originea piesei; razele egale (Shift) dau un cerc exact, nu cubice (generatorul comun, ADR 0053).
-      return { forma: elipsa({ x: 0, y: 0 }, rx, ry), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      return { forma: elipsa({ x: 0, y: 0 }, rx, ry), x: taste.alt ? a.x : (a.x + b.x) / 2, y: taste.alt ? a.y : (a.y + b.y) / 2 };
     }
     case 'linie': {
-      if (Math.hypot(dx, dy) < minim) return null;
-      return { forma: { tip: 'cale', inchis: false, varfuri: [L({ x: 0, y: 0 }), L({ x: dx, y: dy })] }, x: a.x, y: a.y };
+      const k = taste.alt ? 2 : 1;
+      if (Math.hypot(dx, dy) * k < minim) return null;
+      return { forma: { tip: 'cale', inchis: false, varfuri: [L({ x: 0, y: 0 }), L({ x: dx * k, y: dy * k })] }, x: taste.alt ? a.x - dx : a.x, y: taste.alt ? a.y - dy : a.y };
     }
     case 'poligon': {
       const r = Math.hypot(dx, dy);

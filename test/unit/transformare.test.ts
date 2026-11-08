@@ -7,6 +7,7 @@ import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { conturElement, cutieElement } from '../../src/model/forme.ts';
+import { elipsa, parametri } from '../../src/model/formeParametrice.ts';
 
 /** Transformările (ADR 0052), pure: rotirea, scalarea exactă a geometriei și refuzurile, cu valori pe hârtie. */
 
@@ -44,7 +45,6 @@ test('scalarea dreptunghiului: laturile, locul față de ancoră; neuniformă pe
 test('cercul și calea: uniform exact; cubicele își scalează punctele de control; arcele trec doar uniform', () => {
   const c = transforma(doc1({ tip: 'cerc', raza: 10 }), 0, ['p'], { fel: 'scalare', sx: 3, sy: 3, ancora: { x: 0, y: 0 } });
   assert.deepEqual(c.ok && c.piese[0]?.radacina.tip === 'element' ? c.piese[0].radacina.forma : null, { tip: 'cerc', raza: 30 });
-  assert.deepEqual(transforma(doc1({ tip: 'cerc', raza: 10 }), 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'neuniform-cerc' });
   const cale: FormaDoc = { tip: 'cale', inchis: true, varfuri: [
     { p: { x: 0, y: 0 }, s: { tip: 'C', c1: { x: 1, y: 2 }, c2: { x: 3, y: 4 } } }, { p: { x: 10, y: 0 }, s: { tip: 'L' } }, { p: { x: 10, y: 10 }, s: { tip: 'L' } },
   ] };
@@ -58,6 +58,41 @@ test('cercul și calea: uniform exact; cubicele își scalează punctele de cont
   const arc: FormaDoc = { tip: 'cale', inchis: true, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: 1 } }, { p: { x: 10, y: 0 }, s: { tip: 'A', bulge: 1 } }] };
   assert.deepEqual(transforma(doc1(arc), 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'neuniform-arc' });
   assert.ok(transforma(doc1(arc), 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }).ok);
+});
+
+test('cercul scalat neuniform devine elipsa generatorului, recunoscută de panou; elipsa se reface din generator (ADR 0240 §F)', () => {
+  const forma = (r: ReturnType<typeof transforma>) => (r.ok && r.piese[0]?.radacina.tip === 'element' ? r.piese[0].radacina.forma : null);
+  // Cercul R 20 în (10, 20), scalat cu (1,5; 1) față de (0, 0): exact elipsa uneltei, cu razele 30 și 20; locul (15, 20).
+  const r = transforma(doc1({ tip: 'cerc', raza: 20 }), 0, ['p'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } });
+  assert.deepEqual(forma(r), elipsa({ x: 0, y: 0 }, 30, 20));
+  assert.deepEqual(r.ok ? [r.instante[0]?.x, r.instante[0]?.y] : [], [15, 20]);
+  const f = forma(r);
+  const pf = f ? parametri(f) : null;
+  assert.ok(pf?.tip === 'elipsa' && Math.abs(pf.centru.x) < 1e-9 && Math.abs(pf.centru.y) < 1e-9 && Math.abs(pf.rx - 30) < 1e-9 && Math.abs(pf.ry - 20) < 1e-9, 'panoul o recunoaște ca elipsă');
+  // Pe o instanță rotită cu 90°, sx al foii scalează axa y a piesei: razele 20 și 30.
+  const d = doc1({ tip: 'cerc', raza: 20 });
+  const i0 = d.foi[0]?.instante[0];
+  if (i0) i0.rotire = 90;
+  assert.deepEqual(forma(transforma(d, 0, ['p'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } })), elipsa({ x: 0, y: 0 }, 20, 30));
+  // Elipsa 30 / 20 (recunoscută), scalată cu (2/3; 1): din nou generatorul, cu razele egale, deci un cerc R 20.
+  const cerc = forma(transforma(doc1(elipsa({ x: 0, y: 0 }, 30, 20)), 0, ['p'], { fel: 'scalare', sx: 2 / 3, sy: 1, ancora: { x: 0, y: 0 } }));
+  assert.ok(cerc?.tip === 'cerc' && Math.abs(cerc.raza - 20) < 1e-9);
+  // O elipsă descentrată în piesă își scalează și centrul: (5, −4) cu (2; 0,5) → (10, −2), razele 60 și 10; tot o elipsă a
+  // generatorului (recunoscută cu aceiași parametri, sub 1e-9).
+  const desc = forma(transforma(doc1(elipsa({ x: 5, y: -4 }, 30, 20)), 0, ['p'], { fel: 'scalare', sx: 2, sy: 0.5, ancora: { x: 0, y: 0 } }));
+  const pd = desc ? parametri(desc) : null;
+  assert.ok(pd?.tip === 'elipsa' && Math.abs(pd.centru.x - 10) < 1e-9 && Math.abs(pd.centru.y + 2) < 1e-9 && Math.abs(pd.rx - 60) < 1e-9 && Math.abs(pd.ry - 10) < 1e-9);
+  // Scalată uniform, elipsa își scalează punctele de control, ca înainte (G-code-ul formelor de azi nu se schimbă).
+  const u = forma(transforma(doc1(elipsa({ x: 0, y: 0 }, 30, 20)), 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }));
+  const e0 = elipsa({ x: 0, y: 0 }, 30, 20);
+  assert.ok(u?.tip === 'cale' && e0.tip === 'cale' && u.varfuri.length === e0.varfuri.length);
+  // Documentul de după trece de ușă.
+  assert.ok(r.ok);
+  if (r.ok) {
+    const doc = doc1({ tip: 'cerc', raza: 20 });
+    const dupa = { ...doc, piese: r.piese, foi: [{ ...doc.foi[0]!, instante: r.instante }] };
+    assert.ok(incarca(JSON.parse(JSON.stringify(dupa))).ok);
+  }
 });
 
 test('refuzurile: colțul rotunjit neuniform, rotirea oblică neuniformă, scara zero sau negativă, piesa împărțită', () => {

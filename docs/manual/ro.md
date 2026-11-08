@@ -52,8 +52,9 @@ cu dublu clic pe el îi scrii poziția exactă. Ghidajele se salvează cu proiec
 **Grilă**: butonul cu grila din bara de sus o arată pe foaie; pasul ei (între 0,1 și 1000 mm) se scrie în câmpul de lângă.
 
 **Lipire**: cât e pornită, ce tragi (o formă, un mâner, capătul unei forme noi, un ghidaj) se lipește de ghidaje, de
-marginile și centrul foii, de celelalte forme și de grilă; liniile de aliniere arată de ce s-a lipit. Ține apăsat `Alt` cât
-tragi ca s-o inversezi: o oprește când e pornită, o pornește când e oprită.
+marginile și centrul foii, de celelalte forme și de grilă; liniile de aliniere arată de ce s-a lipit. `Shift+L` o pornește
+sau o oprește, și cât tragi (butonul arată starea). Când muți o formă, un ghidaj sau un nod, ține apăsat `Alt` cât tragi ca
+s-o inversezi; la mânere și la desen, `Alt` înseamnă „din centru” (vezi [Transformările](#transformari)).
 
 ## Foaia
 %% capitol: foaia
@@ -76,14 +77,16 @@ iese).
 Uneltele de desen stau în bara de sus; fiecare are o tastă. Alegi unealta, apoi tragi pe pânză. **Desenează** o formă
 nouă, cu operația ei implicită; unealta rămâne aleasă pentru forma următoare.
 
-| Unealta | Tasta | Cum se trage | Cu Shift |
-|---|---|---|---|
-| Dreptunghi | `R` | din colț în colț | pătrat |
-| Cerc | `O` | din centru; tragerea dă raza | — |
-| Elipsă | `E` | din colț în colț | cerc |
-| Linie | `L` | din capăt în capăt | pași de 15° |
-| Poligon | `P` | din centru (poligon regulat) | pași de 15° |
+| Unealta | Tasta | Cum se trage | Cu Shift | Cu Ctrl | Cu Alt |
+|---|---|---|---|---|---|
+| Dreptunghi | `R` | din colț în colț | pătrat | ca fără tastă | din centru |
+| Cerc | `O` | din centru; tragerea dă raza | — | elipsă, cu cursorul în colțul cutiei ei | — (pornește oricum din centru) |
+| Elipsă | `E` | din colț în colț | cerc | ca fără tastă | din centru |
+| Linie | `L` | din capăt în capăt | pași de 15° | — | din mijloc |
+| Poligon | `P` | din centru (poligon regulat) | pași de 15° | — | — |
 
+- Tastele se pot ține împreună (Alt + Shift: pătrat sau cerc din centru); cu Shift și Ctrl, câștigă Shift. Se pot apăsa și
+  în timpul tragerii, cu mausul pe loc. Lângă cursor, eticheta arată mărimea formei și ce fac tastele. Pe Mac, `Ctrl` e `⌘`.
 - La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp.
 - La **Poligon**, numărul de laturi (3–64) se scrie în câmpul de lângă unealtă.
 - Capetele formei se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)).
@@ -280,13 +283,20 @@ câmp.
 %% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
 Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce):
-- **colțurile** scalează proporțional, cu colțul opus fix; cu Shift, liber pe ambele axe;
-- **laturile** scalează pe o singură axă;
+- **colțurile** scalează proporțional, cu colțul opus fix; **laturile** scalează pe o singură axă, cu latura opusă fixă;
+- **Shift**: proporțional pe orice mâner (și pe o latură: cealaltă axă crește la fel, simetric față de mijloc);
+- **Ctrl** (`⌘` pe Mac): liber pe orice mâner (și pe un colț, fiecare axă cu tragerea ei);
+- **Alt**: față de centru: centrul cutiei rămâne pe loc, nu mânerul opus;
+- tastele se pot ține împreună (Alt + Shift: proporțional față de centru; Alt + Ctrl: liber față de centru); cu Shift și
+  Ctrl, câștigă Shift. Se pot apăsa și în timpul tragerii, cu mausul pe loc;
 - **mânerul rotund de deasupra** rotește în jurul centrului; cu Shift, în pași de 15°.
 
-Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar pe axa pe care o scalează (`Alt` inversează lipirea).
-Unele scalări nu se pot face exact și sunt refuzate, cu motivul: un cerc, o cale cu arce, un dreptunghi cu colțuri rotunjite
-sau o formă rotită oblic se scalează doar proporțional; o piesă folosită și de alte forme nu se schimbă.
+Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
+opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
+pe axa pe care o scalează, cât e pornită lipirea (`Shift+L` o comută). Un **cerc** scalat pe o singură axă devine **elipsă**:
+aceeași elipsă ca una desenată cu Elipsa, cu razele editabile în panou. Unele scalări nu se pot face exact și sunt refuzate,
+cu motivul: o cale cu arce, un dreptunghi cu colțuri rotunjite sau o formă rotită oblic se scalează doar proporțional; o
+piesă folosită și de alte forme nu se schimbă.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
 (`Shift+V`, sus ↔ jos), față de centrul cutiei selecției. Se taie oglinda, cu același sens de tăiere.
@@ -1247,7 +1257,10 @@ tu, iar interfața aplicației rămâne aceeași.
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
-| `Alt`, cât tragi | inversează lipirea |
+| `Shift+L` | pornește sau oprește lipirea, și cât tragi |
+| `Alt`, cât tragi o formă, un ghidaj sau un nod (și cu Pen) | inversează lipirea |
+| `Shift` / `Ctrl` / `Alt`, cât tragi un mâner (unealta Transformare) | proporțional pe orice mâner / liber pe orice mâner / față de centru; se pot ține împreună, iar cu Shift și Ctrl câștigă Shift |
+| `Shift` / `Ctrl` / `Alt`, cât desenezi | pătrat, cerc, pași de 15° / fără proporție (cercul devine elipsă) / din centru (linia, din mijloc) |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
 | `Enter` (cu unealta Pen) | termină calea începută |
 | `Ctrl+Z`, `Ctrl+Y` (cu unealta Pen și o cale începută) | anulează / reface ultimul pas al căii |

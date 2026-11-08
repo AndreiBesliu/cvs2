@@ -74,35 +74,104 @@ export function punctManer(c: Cutie, m: Maner): Punct {
 }
 
 /**
- * Pură: transformarea gestului pe un mâner. Scalarea: ancora e mânerul opus; colțurile scalează proporțional (după axa
- * care s-a schimbat mai mult), Shift liber; laturile, pe o singură axă; mânerul urmează DEPLASAREA cursorului față de
- * apăsare (un clic pe mâner, oriunde în pătratul lui, nu schimbă nimic). Rotirea: unghiul dintre apăsare și cursor, în
- * jurul centrului cutiei, Shift în pași de 15°. Scările și unghiul se rotunjesc (1e-4, 0,001°), ca pixelii mausului să nu
- * ajungă în geometrie.
+ * Tastele ținute la un gest (ADR 0240): Shift = proporția pe orice mâner, Ctrl (⌘ pe Mac) = liber pe orice mâner, Alt = față
+ * de ancoră (la desen, din centru). Cu Shift și Ctrl împreună, câștigă Shift.
+ */
+export type Taste = { readonly shift: boolean; readonly ctrl: boolean; readonly alt: boolean };
+export const FARA_TASTE: Taste = { shift: false, ctrl: false, alt: false };
+/** Tastele unui eveniment al mausului sau al tastaturii (⌘ pe Mac e Ctrl, ca la scurtături). */
+export const tasteDin = (e: { readonly shiftKey: boolean; readonly ctrlKey: boolean; readonly metaKey: boolean; readonly altKey: boolean }): Taste =>
+  ({ shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey, alt: e.altKey });
+
+const centrul = (c: Cutie): Punct => ({ x: (c.minX + c.maxX) / 2, y: (c.minY + c.maxY) / 2 });
+
+/**
+ * Pură: transformarea gestului pe un mâner (ADR 0052, ADR 0240). Scalarea: fix e mânerul opus, sau, cu Alt, `ancora`
+ * (implicit centrul cutiei); colțurile scalează proporțional (după axa care s-a schimbat mai mult), laturile pe o singură
+ * axă; Shift face proporțional orice mâner (la o latură, scara ei intră și pe cealaltă axă), Ctrl face liber orice mâner (la
+ * o latură nu schimbă nimic), iar cu amândouă câștigă Shift. Pe o axă pe care punctul fix stă pe linia mânerului, axa nu se
+ * scalează. Mânerul urmează DEPLASAREA cursorului față de apăsare (un clic pe mâner nu schimbă nimic). Rotirea: unghiul
+ * dintre apăsare și cursor, în jurul ancorei, Shift în pași de 15°. Scările și unghiul se rotunjesc (1e-4, 0,001°), ca
+ * pixelii mausului să nu ajungă în geometrie; pe o axă lipită (`tinta`), mânerul ajunge exact pe țintă (ADR 0055).
  */
 export function transformareManer(
-  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean, tinta: { readonly x?: number; readonly y?: number } = {},
+  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, taste: Taste, tinta: { readonly x?: number; readonly y?: number } = {},
+  ancora: Punct = centrul(c),
 ): TransformareManer {
-  const cx = (c.minX + c.maxX) / 2, cy = (c.minY + c.maxY) / 2;
   if (m === 'rotire') {
+    const { x: cx, y: cy } = ancora;
     let u = ((Math.atan2(q.y - cy, q.x - cx) - Math.atan2(start.y - cy, start.x - cx)) * 180) / Math.PI;
     if (u > 180) u -= 360;
     if (u < -180) u += 360;
-    u = shift ? Math.round(u / 15) * 15 : Math.round(u * 1000) / 1000;
+    u = taste.shift ? Math.round(u / 15) * 15 : Math.round(u * 1000) / 1000;
     return { fel: 'rotire', unghi: u, centru: { x: cx, y: cy } };
   }
-  const a = punctManer(c, OPUS[m]), h = punctManer(c, m);
+  const a = taste.alt ? { x: ancora.x, y: ancora.y } : punctManer(c, OPUS[m]), h = punctManer(c, m);
+  const peX = m !== 'n' && m !== 's', peY = m !== 'e' && m !== 'v';
   const rot = (v: number): number => Math.round(v * 10000) / 10000;
-  // Pe o axă lipită (`tinta`), mânerul ajunge exact pe țintă: scara ei nu se rotunjește (ADR 0055).
   const hx = tinta.x ?? h.x + q.x - start.x, hy = tinta.y ?? h.y + q.y - start.y;
-  let fx = h.x === a.x ? 1 : tinta.x === undefined ? rot((hx - a.x) / (h.x - a.x)) : (hx - a.x) / (h.x - a.x);
-  let fy = h.y === a.y ? 1 : tinta.y === undefined ? rot((hy - a.y) / (h.y - a.y)) : (hy - a.y) / (h.y - a.y);
-  if (m.length === 2 && !shift) {
-    const f = Math.abs(fx - 1) >= Math.abs(fy - 1) ? fx : fy;
+  let fx = !peX || h.x === a.x ? 1 : tinta.x === undefined ? rot((hx - a.x) / (h.x - a.x)) : (hx - a.x) / (h.x - a.x);
+  let fy = !peY || h.y === a.y ? 1 : tinta.y === undefined ? rot((hy - a.y) / (h.y - a.y)) : (hy - a.y) / (h.y - a.y);
+  if (taste.shift || (m.length === 2 && !taste.ctrl)) {
+    const f = !peY ? fx : !peX ? fy : Math.abs(fx - 1) >= Math.abs(fy - 1) ? fx : fy;
     fx = f;
     fy = f;
   }
   return { fel: 'scalare', sx: fx, sy: fy, ancora: a };
+}
+
+/** Cele 9 puncte ale cutiei, de unde pornește ancora (ADR 0240 §A), în ordinea selectorului: rândul de sus întâi. */
+export type PunctCutie = 'nv' | 'n' | 'ne' | 'v' | 'c' | 'e' | 'sv' | 's' | 'se';
+export const PUNCTE_CUTIE: readonly PunctCutie[] = ['nv', 'n', 'ne', 'v', 'c', 'e', 'sv', 's', 'se'];
+/** Un punct ținut față de cutia selecției, ca fracții din lățimea și înălțimea ei (0…1 înăuntru; și în afara ei). */
+export type Fractii = { readonly u: number; readonly v: number };
+
+/** Pură: fracțiile unuia din cele 9 puncte ale cutiei. */
+export function fractiiPunct(p: PunctCutie): Fractii {
+  const u = p === 'nv' || p === 'v' || p === 'sv' ? 0 : p === 'n' || p === 'c' || p === 's' ? 0.5 : 1;
+  const v = p === 'nv' || p === 'n' || p === 'ne' ? 1 : p === 'v' || p === 'c' || p === 'e' ? 0.5 : 0;
+  return { u, v };
+}
+
+/** Pură: punctul foii al fracțiilor `f` pe cutia `c`. */
+export const punctDinFractii = (c: Cutie, f: Fractii): Punct => ({ x: c.minX + f.u * (c.maxX - c.minX), y: c.minY + f.v * (c.maxY - c.minY) });
+
+/** Pură: fracțiile punctului `p` pe cutia `c`; pe o axă fără lățime (o linie), ancora stă pe linie. */
+export function fractiiDinPunct(c: Cutie, p: Punct): Fractii {
+  const w = c.maxX - c.minX, h = c.maxY - c.minY;
+  return { u: w > 0 ? (p.x - c.minX) / w : 0.5, v: h > 0 ? (p.y - c.minY) / h : 0.5 };
+}
+
+/**
+ * Pură: ancora trasă cu mâna în `p` (ADR 0240 §A.3), lipită: întâi de cele 9 puncte ale cutiei (la cel mult `toleranta` mm),
+ * apoi de țintele obișnuite (`lipire`: ghidajele, foaia, celelalte forme, grila); fără lipire, rotunjită la 0,001 mm.
+ */
+export function ancoraLipita(c: Cutie, p: Punct, lipire: LipirePunct | null, toleranta: number): { readonly punct: Punct; readonly linii: readonly LinieLipire[] } {
+  const rot = (v: number): number => Math.round(v * 1000) / 1000;
+  if (!lipire) return { punct: { x: rot(p.x), y: rot(p.y) }, linii: [] };
+  let cel: Punct | null = null, d0 = toleranta;
+  for (const k of PUNCTE_CUTIE) {
+    const q = punctDinFractii(c, fractiiPunct(k));
+    const d = Math.hypot(q.x - p.x, q.y - p.y);
+    if (d <= d0) { d0 = d; cel = q; }
+  }
+  if (cel) return { punct: cel, linii: [] };
+  const r = lipire(p);
+  const lx = r?.linii.find((l) => l.axa === 'x')?.poz, ly = r?.linii.find((l) => l.axa === 'y')?.poz;
+  return { punct: { x: lx ?? rot(p.x), y: ly ?? rot(p.y) }, linii: r?.linii ?? [] };
+}
+
+/** Ce face gestul pe mânerul `m`, pentru eticheta de lângă cutie (ADR 0240 §E): proporția, punctul fix, ancora pe linia lui. */
+export type ModManer = { readonly proportie: 'proportional' | 'liber' | 'axa'; readonly fix: 'ancora' | 'centru' | 'colt' | 'latura'; readonly peLinie: boolean };
+
+/** Pură: modul gestului pe mânerul `m` cu tastele date; `ancora` e punctul fix al lui Alt (centrul cutiei = „față de centru”). */
+export function modManer(c: Cutie, m: Maner, taste: Taste, ancora: Punct): ModManer {
+  const colt = m.length === 2;
+  const proportie = taste.shift || (colt && !taste.ctrl) ? 'proportional' : colt ? 'liber' : 'axa';
+  if (!taste.alt) return { proportie, fix: colt ? 'colt' : 'latura', peLinie: false };
+  const ctr = centrul(c), h = punctManer(c, m);
+  const peLinie = (m !== 'n' && m !== 's' && h.x === ancora.x) || (m !== 'e' && m !== 'v' && h.y === ancora.y);
+  return { proportie, fix: ancora.x === ctr.x && ancora.y === ctr.y ? 'centru' : 'ancora', peLinie };
 }
 
 /** Cât de departe deasupra cutiei stă mânerul de rotire (pixeli). */
@@ -158,19 +227,20 @@ export type LipirePunct = (p: Punct) => { readonly linii: readonly LinieLipire[]
 
 /**
  * Pură: transformarea mânerului `m`, cu punctul lui lipit (ADR 0055). Mânerul tras (punctul lui + deplasarea cursorului) se
- * lipește ca un punct de ținte; pe axele pe care mânerul le scalează și pe care s-a lipit, scara îl duce exact pe țintă. La
- * colțul proporțional decide axa care s-a schimbat mai mult, deci o lipire pe cealaltă axă nu se folosește. Liniile întoarse
- * sunt doar ale axelor pe care mânerul a ajuns chiar pe țintă. Rotirea nu se lipește (are Shift, în pași de 15°).
+ * lipește ca un punct de ținte; pe axele pe care mânerul le scalează și pe care s-a lipit, scara îl duce exact pe țintă, față
+ * de punctul fix (mânerul opus sau, cu Alt, ancora). La proporțional decide axa care s-a schimbat mai mult (la o latură, axa
+ * ei), deci o lipire pe cealaltă axă nu se folosește. Liniile întoarse sunt doar ale axelor pe care mânerul a ajuns chiar pe
+ * țintă. Rotirea nu se lipește (are Shift, în pași de 15°).
  */
 export function transformareManerLipita(
-  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean, lipire: LipirePunct | null,
+  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, taste: Taste, lipire: LipirePunct | null, ancora: Punct = centrul(c),
 ): { readonly t: TransformareManer; readonly linii: readonly LinieLipire[] } {
-  if (m === 'rotire' || !lipire) return { t: transformareManer(c, m, start, q, shift), linii: [] };
+  if (m === 'rotire' || !lipire) return { t: transformareManer(c, m, start, q, taste, {}, ancora), linii: [] };
   const h = punctManer(c, m);
   const r = lipire({ x: h.x + q.x - start.x, y: h.y + q.y - start.y });
   const x = m === 'n' || m === 's' ? undefined : r?.linii.find((l) => l.axa === 'x')?.poz;
   const y = m === 'e' || m === 'v' ? undefined : r?.linii.find((l) => l.axa === 'y')?.poz;
-  const t = transformareManer(c, m, start, q, shift, { ...(x === undefined ? {} : { x }), ...(y === undefined ? {} : { y }) });
+  const t = transformareManer(c, m, start, q, taste, { ...(x === undefined ? {} : { x }), ...(y === undefined ? {} : { y }) }, ancora);
   if (t.fel !== 'scalare' || !r) return { t, linii: [] };
   // Unde a ajuns mânerul după scalare (la colțul proporțional, o axă poate fi dusă de cealaltă, nu de ținta ei).
   const nx = t.ancora.x + (h.x - t.ancora.x) * t.sx, ny = t.ancora.y + (h.y - t.ancora.y) * t.sy;

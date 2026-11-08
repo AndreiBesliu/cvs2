@@ -53,8 +53,9 @@ double-click it to type its exact position. Guides are saved with the project.
 **Grid**: the grid button in the top bar shows it on the sheet; its step (0.1 to 1000 mm) goes in the field next to it.
 
 **Snap**: while it is on, whatever you drag (a shape, a handle, the end of a new shape, a guide) snaps to the guides, the
-sheet's edges and centre, the other shapes and the grid; the alignment lines show what it snapped to. Hold `Alt` while
-dragging to invert it: off when on, on when off.
+sheet's edges and centre, the other shapes and the grid; the alignment lines show what it snapped to. `Shift+L` turns it on
+or off, also while dragging (the button shows the state). When you move a shape, a guide or a node, hold `Alt` while dragging
+to invert it; on the handles and when drawing, `Alt` means “from the centre” (see [Transforms](#transformari)).
 
 ## The sheet
 %% capitol: foaia
@@ -78,14 +79,17 @@ the dimension line (by how many mm it goes past).
 The drawing tools are in the top bar; each has a key. Pick the tool, then drag on the canvas. **Draw** makes a new shape, with
 its default operation; the tool stays chosen for the next shape.
 
-| Tool | Key | How to drag | With Shift |
-|---|---|---|---|
-| Rectangle | `R` | corner to corner | square |
-| Circle | `O` | from the centre; the drag gives the radius | — |
-| Ellipse | `E` | corner to corner | circle |
-| Line | `L` | end to end | 15° steps |
-| Polygon | `P` | from the centre (a regular polygon) | 15° steps |
+| Tool | Key | How to drag | With Shift | With Ctrl | With Alt |
+|---|---|---|---|---|---|
+| Rectangle | `R` | corner to corner | square | as with no key | from the centre |
+| Circle | `O` | from the centre; the drag gives the radius | — | ellipse, with the cursor at the corner of its box | — (starts from the centre anyway) |
+| Ellipse | `E` | corner to corner | circle | as with no key | from the centre |
+| Line | `L` | end to end | 15° steps | — | from the middle |
+| Polygon | `P` | from the centre (a regular polygon) | 15° steps | — | — |
 
+- The keys can be held together (Alt + Shift: a square or a circle from the centre); with Shift and Ctrl, Shift wins. They
+  can also be pressed while dragging, with the mouse still. Next to the cursor, the label shows the shape's size and what the
+  keys do. On a Mac, `Ctrl` is `⌘`.
 - With **Circle**, a click without dragging places a circle with the radius from the field next to the tool; a drag writes
   its radius in the field.
 - With **Polygon**, the number of sides (3–64) goes in the field next to the tool.
@@ -288,13 +292,21 @@ field.
 %% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
 The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs):
-- the **corners** scale proportionally, with the opposite corner fixed; with Shift, freely on both axes;
-- the **sides** scale on one axis;
+- the **corners** scale proportionally, with the opposite corner fixed; the **sides** scale on one axis, with the opposite
+  side fixed;
+- **Shift**: proportional on any handle (on a side too: the other axis grows by the same factor, symmetric about the middle);
+- **Ctrl** (`⌘` on a Mac): free on any handle (on a corner too, each axis with its own drag);
+- **Alt**: about the centre: the centre of the box stays put, not the opposite handle;
+- the keys can be held together (Alt + Shift: proportional about the centre; Alt + Ctrl: free about the centre); with Shift
+  and Ctrl, Shift wins. They can also be pressed while dragging, with the mouse still;
 - the **round handle above** rotates around the centre; with Shift, in 15° steps.
 
-The handles snap to guides, the sheet, the other shapes and the grid, only on the axis they scale (`Alt` inverts snapping).
-Some scalings cannot be done exactly and are refused, with the reason: a circle, a path with arcs, a rectangle with rounded
-corners or a shape rotated at an angle scale only proportionally; a part used by other shapes too is not changed.
+While you drag, the label above shows the size and what the keys do (for example “50 × 40 mm · one axis · from the opposite
+side”), and a blue dot shows what stays put. The handles snap to guides, the sheet, the other shapes and the grid, only on the
+axis they scale, while snapping is on (`Shift+L` toggles it). A **circle** scaled on one axis becomes an **ellipse**: the same
+ellipse as one drawn with the Ellipse tool, with its radii editable in the panel. Some scalings cannot be done exactly and are
+refused, with the reason: a path with arcs, a rectangle with rounded corners or a shape rotated at an angle scale only
+proportionally; a part used by other shapes too is not changed.
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
 top ↔ bottom), about the centre of the selection's box. The mirror image is what gets cut, with the same cutting direction.
@@ -1287,7 +1299,10 @@ it, and the app’s interface stays the same.
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
-| `Alt`, while dragging | inverts snapping |
+| `Shift+L` | turns snapping on or off, also while dragging |
+| `Alt`, while dragging a shape, a guide or a node (and with Pen) | inverts snapping |
+| `Shift` / `Ctrl` / `Alt`, while dragging a handle (Transform tool) | proportional on any handle / free on any handle / about the centre; they can be held together, and with Shift and Ctrl, Shift wins |
+| `Shift` / `Ctrl` / `Alt`, while drawing | square, circle, 15° steps / no proportion (the circle becomes an ellipse) / from the centre (the line, from the middle) |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
 | `Enter` (with the Pen tool) | finishes the path you started |
 | `Ctrl+Z`, `Ctrl+Y` (with the Pen tool and a path started) | undoes / redoes the last step of the path |

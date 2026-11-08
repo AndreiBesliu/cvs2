@@ -81,9 +81,11 @@ Prima intră în selecție, a doua iese.
 ### Mânerele
 %% pas: t-manere
 %% faci
-Transformare (`S`): trage un colț, o latură, apoi mânerul rotund de deasupra; repetă ținând `Shift`.
+Transformare (`S`): trage un colț, o latură, apoi mânerul rotund de deasupra; repetă ținând `Shift`, apoi `Ctrl`, apoi
+`Alt`.
 %% vezi
-Colțul scalează proporțional (cu Shift, liber), latura pe o singură axă, mânerul rotește (cu Shift, în pași de 15°).
+Colțul scalează proporțional (cu Ctrl, liber), latura pe o singură axă (cu Shift, proporțional); cu Alt, centrul rămâne pe
+loc; mânerul rotește (cu Shift, în pași de 15°). Eticheta de deasupra spune ce fac tastele.
 
 ### Oglindirea
 %% pas: t-oglinda

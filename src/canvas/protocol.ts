@@ -88,6 +88,10 @@ export type Lipeste = (dx: number, dy: number, scara: number, alt: boolean) => {
 
 /**
  * Gestul unei unelte de desen (ADR 0051): cu o unealtă aleasă, apăsarea stângă pe pânză nu alege și nu mută, ci desenează.
- * Punctele sunt în mm ai foii; `alt` oprește lipirea, `shift` constrânge forma. Pânza păstrează zoomul și deplasarea.
+ * Punctele sunt în mm ai foii; tastele (ADR 0240): `shift` constrânge forma (pătrat, cerc, 15°), `ctrl` (sau ⌘) o lasă fără
+ * proporție, `alt` o desenează din centru. Pânza păstrează zoomul și deplasarea.
  */
-export type GestDesen = (faza: 'start' | 'misca' | 'gata' | 'anulat', x: number, y: number, scara: number, mod: { readonly alt: boolean; readonly shift: boolean }) => void;
+export type GestDesen = (
+  faza: 'start' | 'misca' | 'gata' | 'anulat', x: number, y: number, scara: number,
+  mod: { readonly alt: boolean; readonly shift: boolean; readonly ctrl: boolean },
+) => void;

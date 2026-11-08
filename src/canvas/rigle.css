@@ -872,3 +872,18 @@
   text-align: center;
   color: var(--rosu, var(--t));
 }
+
+/* Punctul fix al gestului pe mânere (ADR 0240): mânerul opus, centrul sau ancora, cât se trage. */
+.manere-fix {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--l-focus);
+  box-shadow: 0 0 0 1.5px var(--s-panou);
+}
+
+/* Eticheta desenului, lângă cursor (ADR 0240): mărimea formei și ce fac tastele. */
+.desen-eticheta {
+  transform: none;
+}

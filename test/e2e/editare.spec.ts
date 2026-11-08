@@ -370,12 +370,15 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
   await page.keyboard.press('Control+z');
   await expect(page.locator('[data-camp="rotire"]')).toHaveValue('0');
 
-  // Cercul scalat de pe o latură ar deveni elipsă: refuzul se spune, cercul rămâne.
+  // Cercul scalat de pe o latură devine elipsă (ADR 0240 §F): elipsa uneltei Elipsă, cu razele editabile în panou.
   await adauga(page, 'cerc');
   await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
   const e = await maner(page, 'e');
   await trageEcran(page, e, { x: e.x + 40, y: e.y });
-  await expect(page.getByTestId('manere-motiv')).toContainText('elipsă');
+  await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
+  await expect(randuri(page).nth(1)).toHaveText(/^cale /);
+  await expect(page.locator('[data-camp="forma-ry"]')).toHaveValue('15');
+  await page.keyboard.press('Control+z');
   await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
   // Din colț, proporțional, trece: raza crește.
   const se = await maner(page, 'se');
@@ -630,7 +633,7 @@ test('oglindirea (ADR 0054): butoanele din extensie și Shift+H / Shift+V; ce se
   expect(erori).toEqual([]);
 });
 
-test('lipirea mânerelor (ADR 0055): latura trasă lângă un ghidaj ajunge exact pe el, cu linia lui; Alt o lasă liberă', async ({ page }) => {
+test('lipirea mânerelor (ADR 0055, ADR 0240): latura trasă lângă un ghidaj ajunge exact pe el, cu linia lui; oprită cu Shift+L, liberă', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   await page.goto('/');
@@ -667,20 +670,24 @@ test('lipirea mânerelor (ADR 0055): latura trasă lângă un ghidaj ajunge exac
   await expect(randuri(page)).toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
   await expect(page.locator('[data-camp="forma-latime"]')).toHaveValue('180');
 
-  // Cu Alt ținut, aceeași tragere rămâne liberă: lățimea nu e 180.
+  // Cu lipirea oprită de Shift+L (ADR 0240, răspunsul 2a: la mânere, Alt înseamnă acum „față de centru”), aceeași tragere
+  // rămâne liberă: lățimea nu e 180. Shift+L o pornește la loc.
   await page.keyboard.press('Control+z');
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  await page.locator('body').focus();
+  await page.keyboard.press('Shift+L');
+  await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'false');
   v = await vedere(page);
   la = await ecran(page, v);
   const e2 = await maner(page, 'e');
   await page.mouse.move(e2.x, e2.y);
-  await page.keyboard.down('Alt');
   await page.mouse.down();
   await page.mouse.move(la(199.2, 50).x, e2.y, { steps: 4 });
   await expect(page.locator('line.aliniere')).toHaveCount(0);
   await page.mouse.up();
-  await page.keyboard.up('Alt');
   await expect(randuri(page)).not.toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
   await expect(randuri(page)).toHaveText([/^dreptunghi 179\.\d\d × 60\.00 la X 20\.00, Y 20\.00$/]);
+  await page.keyboard.press('Shift+L');
+  await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'true');
   expect(erori).toEqual([]);
 });
