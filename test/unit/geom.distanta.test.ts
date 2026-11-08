@@ -38,6 +38,20 @@ test('evenodd: înăuntrul cercului și al dreptunghiului, nu afară, oricare ar
   assert.equal(inRegiune({ x: 30, y: 20 }, [d]), true, 'pe latura de jos, ridicat cu ε');
 });
 
+test('evenodd pe arce de 90°: lângă mijlocul arcului fiecărui colț rotunjit, înăuntru și afară (arcul, nu oglinda lui față de coardă)', () => {
+  // Cercul din două semicercuri nu deosebește arcul de oglinda lui față de coardă (oglindit, fiecare semicerc devine celălalt);
+  // un colț de 90° da: oglinda lui trece la 4,14 de centru, arcul la 10, coarda la 7,07. La 9 de centru, punctul e înăuntru.
+  const d = conturDreptunghi(20, 20, 100, 60, 10);
+  const colturi = [[30, 30, -1, -1], [110, 30, 1, -1], [110, 70, 1, 1], [30, 70, -1, 1]] as const;
+  for (const forma of [d, inverseaza(d)]) {
+    for (const [cx, cy, sx, sy] of colturi) {
+      const pe = (r: number) => ({ x: cx + sx * r * Math.SQRT1_2, y: cy + sy * r * Math.SQRT1_2 });
+      assert.equal(inRegiune(pe(9), [forma]), true, `colțul (${cx}, ${cy}), la 9 de centrul arcului`);
+      assert.equal(inRegiune(pe(11), [forma]), false, `colțul (${cx}, ${cy}), la 11 de centrul arcului`);
+    }
+  }
+});
+
 test('evenodd cu gaură: dreptunghiul cu cercul în el are gaura goală', () => {
   const regiune = [conturDreptunghi(20, 20, 100, 60), conturCerc(70, 50, 15)];
   assert.equal(inRegiune({ x: 70, y: 50 }, regiune), false, 'în gaură');
