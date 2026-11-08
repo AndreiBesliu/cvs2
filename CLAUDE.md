@@ -102,10 +102,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v20.oracol.test.ts` (din 07.11, cu incrustația din v20). **Un câmp nou al
-  documentului (v21) intră acolo, ca rangul și incrustația:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în
-  `problemeOperatieO`, frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 20` în probe;
-  oracolele CAM primesc versiunea nouă cum o primesc pe v20, de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
+  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22). **Un câmp nou al
+  documentului (v23 e a planșelor, 11.4↑; altă linie ia versiunea de după) intră acolo, ca rangul și incrustația:** rândul
+  lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
+  versiunea curentă se mută pe ea (`schema: 22` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
+  de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
   --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
@@ -581,8 +582,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aleg la export; panoul are secțiunea „Pe hârtie” (cât intră dopul, contactul, jocurile). **Documentul v20:** `incrustatie`
   (`fel`, `joc`, `fierastrau`, `margine`, `jurDop`) pe operația V-carve; migrarea v19 → v20 schimbă doar numărul; oracolul
   documentului și corpusul de aur la v20. **Valorile pe hârtie ale incrustației stau într-un singur loc,
-  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. Urmează
-  12.1↑b (pereții drepți, ADR 0171 propus, cu șase întrebări pentru owner), apoi 12.1↑c–f.
+  `src/model/incrustatie.ts`;** oracolul potrivirii e `test/oracles/incrustatie.ts`, fără importuri din `src/`. 12.1↑b
+  și 12.1↑c: mai jos, unite pe 08.11.
   **Liniile incrustațiilor (12.1↑) și a tăierii vectorilor (10.3↑, 10.3↑b) unite în `main` pe 07.11** („Yes, merge both”):
   **pornirea 101,5 (cu ușa 105,1 / 110 kB), totalul 519,5 / 550, /admin 105,4 / 200.**
   **Imprimanta 3D prin WiFi (ADR 0190, felia 3.6g)** gata pe 07.11, cu răspunsurile owner-ului („1a–4a”), în worktree-ul
@@ -646,6 +647,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
   iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
   105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
+  08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
+  (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`
+  (lățimea, decuparea prin placă, grosimea plăcii, freza decupării, punțile); migrările v20 → v21 și v21 → v22 schimbă doar
+  numărul și refuză un document care are deja, ca necunoscute, câmpurile noi. Valorile pe hârtie (`valoriIncrustatieDreapta`,
+  `valoriBanda`) stau tot în `src/model/incrustatie.ts`; lucrarea, în `src/cam/incrustatieDreapta.ts`, `dopDrept.ts` și
+  `dopV.ts`. Oracolul potrivirii, cu banda și decuparea, rămâne `test/oracles/incrustatie.ts`; al pereților drepți e
+  `test/oracles/incrustatieDreapta.ts` (cazurile pe hârtie în `incrustatieDreapta.cazuri.ts`). **O freză în plus a dopului
+  drept sau a decupării, bifată, pornește de la primul T liber.** **Punțile pe buclele mici:** pe fiecare buclă, câte încap din
+  cele cerute (`urechiCareIncap` din `src/cam/urechi.ts`, aceeași regulă ca a lucrării; `puntiPeBucle` din
+  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. Pe linie rămân, după unire („1 si 2 acum 3-6
+  dupa”): lemnul din jurul dopului ales și din panou, punțile dopului drept alese în fereastră, arborele („cu bandă”) și
+  legăturile rândurilor în fereastră, viteza benzii. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,0 / 600, /admin
+  106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -858,6 +873,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
+  „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
+  documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
+  punțile dopului drept alese în fereastră, pe linia incrustațiilor) ia versiunea de după. Worktree-ul `incrustatii` rămâne,
+  cu 3–6 din lista dinaintea unirii („1 si 2 acum 3-6 dupa”).
 - 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
   ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
   hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar

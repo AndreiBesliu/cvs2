@@ -613,6 +613,10 @@
       "ro": "Primirea lucrărilor de la alte aplicații",
       "en": "Receiving jobs from other apps"
     },
+    "359ff308bacba946": {
+      "ro": "Încercarea incrustației în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑ e în `main` din 07.11): un desen, rolul „incrustație în V” din panou, Exportă (două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); apoi, pe placa 12, dopul lipit (să intre și să se oprească pe pereți, cu jocul sub el)",
+      "en": "Trying the V inlay on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑ has been in `main` since 07.11): a drawing, the “V inlay” role from the panel, Export (two files: the sheet with the pocket, and the plug, with its blank); then, on plate 12, the plug glued in (it should go in and stop on the walls, with the gap under it)"
+    },
     "35c407c4f8470b69": {
       "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
       "en": "Jog, XY / Z zero, Z probing with the touch plate, G54–G59, on the simulated machine (ADR 0082): the pure procedures, the work coordinate system read back, the modal state restored, refusals with a reason; e2e on the emulator"
@@ -1501,10 +1505,6 @@
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
       "en": "**The sender over WiFi** (no machine; ADR 0119, accepted with the owner’s answers: streamed programs, the tablet later, the `ws:` scheme in the CSP). The **Connect (WiFi)** button in the machine panel links the sender to a controller on the local network through a WebSocket (FluidNC, grblHAL or an ESP3D bridge on GRBL), over the same stream: the address (a local IP or a `.local` name) is judged before connecting, with the local network permission of Chrome and Edge 147; the controller, the address and the port stay in the browser; before the first start over WiFi, the panel says what happens if the connection drops. The CSP gets the `ws:` scheme (without it, the browser blocked every WebSocket). On the way, at the owner’s request, the **Account** button moved next to the theme button. **The probes:** on paper (the addresses, the control messages, the transport, the session with a dropped connection) and end to end, with the GRBL emulator behind a local WebSocket server; targeted mutations, all caught."
     },
-    "8bcdffba383379d1": {
-      "ro": "Încercarea incrustației în V pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație în V” din panou, Exportă (două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); apoi, pe placa 12, dopul lipit (să intre și să se oprească pe pereți, cu jocul sub el)",
-      "en": "Trying the V inlay on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “V inlay” role from the panel, Export (two files: the sheet with the pocket, and the plug, with its blank); then, on plate 12, the plug glued in (it should go in and stop on the walls, with the gap under it)"
-    },
     "8c243c52eeeb263a": {
       "ro": "„Pornit” abia după pagina extensiei",
       "en": "“Started” only after the extension’s page"
@@ -2097,6 +2097,10 @@
       "ro": "Ieșirea din foaie (cerința owner-ului de la încercarea prototipului, `BRIEF.md` §16.3): avertismentul în bara de jos, niciodată pe pânză; exportul cere confirmare când discul frezei trece de marginea foii, iar confirmarea se scrie în antet; oracolul independent refuză tăierea în afara foii fără declarație",
       "en": "Leaving the sheet (the owner's requirement from trying the prototype, `BRIEF.md` §16.3): the warning in the bottom bar, never on the canvas; the export asks for confirmation when the cutter disc crosses the sheet edge, and the confirmation is written in the header; the independent oracle refuses cutting outside the sheet without a declaration"
     },
+    "c2d4f4b332635180": {
+      "ro": "Încercarea incrustației cu pereți drepți pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑b unită în `main` și publicată pe 08.11): un desen, rolul „incrustație cu pereți drepți” din panou (valorile pe hârtie: colțurile, înălțimea dopului), apoi Exportă, cu dopul ridicat și cu cel decupat (câte două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); pe placa 12, dopul lipit (să intre cu jocul de 0,1 pe tot conturul, și în colțuri)",
+      "en": "Trying the straight-walled inlay on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑b merged into `main` and published on 08.11): a drawing, the “straight-walled inlay” role from the panel (the values on paper: the corners, the plug height), then Export, with the raised plug and with the cut-out one (two files each: the sheet with the pocket, and the plug, with its blank); on plate 12, the plug glued in (it should go in with the 0.1 gap all around, corners included)"
+    },
     "c319e93753faa8e6": {
       "ro": "Contururile deschise",
       "en": "Open contours"
@@ -2104,10 +2108,6 @@
     "c360d4f844cc22f6": {
       "ro": "Înălțimile pieselor LEGO",
       "en": "The heights of the LEGO pieces"
-    },
-    "c3ecba0373341cbe": {
-      "ro": "Încercarea incrustației cu pereți drepți pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație cu pereți drepți” din panou (valorile pe hârtie: colțurile, înălțimea dopului), apoi Exportă, cu dopul ridicat și cu cel decupat (câte două fișiere: foaia cu locașul și dopul, cu semifabricatul lui); pe placa 12, dopul lipit (să intre cu jocul de 0,1 pe tot conturul, și în colțuri)",
-      "en": "Trying the straight-walled inlay on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “straight-walled inlay” role from the panel (the values on paper: the corners, the plug height), then Export, with the raised plug and with the cut-out one (two files each: the sheet with the pocket, and the plug, with its blank); on plate 12, the plug glued in (it should go in with the 0.1 gap all around, corners included)"
     },
     "c3f4ac7676f6a1a7": {
       "ro": "Contractele NcStudio, RichAuto",
@@ -2385,6 +2385,10 @@
       "ro": "Selecția cu dreptunghi, ca în CAD",
       "en": "Rectangle selection, as in CAD"
     },
+    "e0e343d87851b0d5": {
+      "ro": "Încercarea benzii dopului în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑c unită în `main` și publicată pe 08.11): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci",
+      "en": "Trying the V plug band on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑c merged into `main` and published on 08.11): a drawing, the “V inlay” role from the panel, then in Export “Wood around the plug: narrow band” (the width, the cut-out, the board, the tabs, another bit for the cut-out); on plate 12, the cut-out plug (tabs broken off and cleaned) glued into the pocket: it should stop on the walls, with the saw gap between the boards"
+    },
     "e18bff728797799e": {
       "ro": "Biarcele proprii sunt singura ușă de aproximare",
       "en": "Our own biarcs are the only approximation door"
@@ -2472,10 +2476,6 @@
     "e800dffc26abbfa3": {
       "ro": "Selecția cu dreptunghi",
       "en": "Rectangle selection"
-    },
-    "e8a3337baf325435": {
-      "ro": "Încercarea benzii dopului în V pe canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci",
-      "en": "Trying the V plug band on the `incrustatii` channel (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>): a drawing, the “V inlay” role from the panel, then in Export “Wood around the plug: narrow band” (the width, the cut-out, the board, the tabs, another bit for the cut-out); on plate 12, the cut-out plug (tabs broken off and cleaned) glued into the pocket: it should stop on the walls, with the saw gap between the boards"
     },
     "e8ad40ee8d5bfa63": {
       "ro": "Migrările pure vN → vN+1",
@@ -2653,10 +2653,6 @@
       "ro": "placa de regresie",
       "en": "the regression plate"
     },
-    "f9eeaefe8fafd969": {
-      "ro": "după publicare",
-      "en": "after publishing"
-    },
     "fa41f158f389cb8e": {
       "ro": "Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL)",
       "en": "3D import; Zones; 3D trimming; **3D roughing; Parallel finishing** (closed on STL)"
@@ -2692,10 +2688,6 @@
     "fd187f6e7097a463": {
       "ro": "Extensia e „pornită” abia după ce pagina ei e gata",
       "en": "The extension is “started” only once its page is ready"
-    },
-    "fd21d28a21eb3019": {
-      "ro": "după publicarea pe canal",
-      "en": "after the channel publish"
     },
     "fd24b6d3ddb56f60": {
       "ro": "Elipsa e un cerc sub o matrice neuniformă",
