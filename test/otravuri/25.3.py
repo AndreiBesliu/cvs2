@@ -53,7 +53,7 @@ o('P03', ME, "    if ((grad[l.a] ?? 0) >= 3 && (grad[l.b] ?? 0) >= 3 && lungime(
 # întâmplătoare care o despart, linia diferă în a doua zecimală a mediei (0,084 față de 0,061 px), cu același maxim. Scoasă.
 
 # ---- Brațele, locul joncțiunii ----
-o('B01', ME, '      if (v) curataBrat(P, L, v.x, v.y, v.r);', '', 'nuc', 'brațele necurățate lângă joncțiune (X la 60°: 2,6 px)')
+o('B01', ME, '      if (v) curataBrat(P, L, v.x, v.y, v.r, unghiuri?.get(cap.g) ?? null);', '', 'nuc', 'brațele necurățate lângă joncțiune (X la 60°: 2,6 px)')
 o('B02', ME, "  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) > 0 && Math.abs((L[k] ?? 0) - wa) <= Math.max(0.75, 0.2 * wa));",
   "  const bun = (k: number): boolean => k >= n || ((L[k] ?? 0) > 0 && Math.abs((L[k] ?? 0) - wa) <= Math.max(3, 0.6 * wa));", 'nuc',
   'brațul curățat cu o toleranță largă: punctele strâmbe rămân')
@@ -86,8 +86,8 @@ o('M08', ME, '    const K = Math.max(MEDIANA.vecinatate, Math.round(2 * mediana(
   'fereastra lățimii locale fixă: pe o trăsătură groasă, colțul o trage după el')
 o('M03', ME, '  for (let trecut = 0; trecut < 2; trecut++) {', '  for (let trecut = 0; trecut < 1; trecut++) {', 'nuc',
   'o singură trecere: tangenta din pixeli, nu din centre')
-o('M04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 0, vecinatate: 10 } as const;', 'nuc', 'tangenta dintr-un singur punct (nicio direcție)')
+o('M04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 0, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;', 'nuc', 'tangenta dintr-un singur punct (nicio direcție)')
 o('M05', ME, '    if (c < T) return u - MEDIANA.pas + (MEDIANA.pas * (prev - T)) / Math.max(1e-12, prev - c);', '    if (c < T) return u;', 'nuc',
   'trecerea fără interpolare: grosimea crește cu un pas')
 o('M06', ME, '  const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;',
@@ -117,15 +117,38 @@ o('K05', ME, '    if (e - i <= 2 && stanga && dreapta_) for (let q = i; q < e; q
   'insulele scurte de puncte bune despart colțul în două șiruri: colțul pătratului nerefăcut')
 o('A01', ME, '        if (semn * (d.dx * bruta[0] + d.dy * bruta[1]) < Math.SQRT1_2) linie = false;', '', 'nuc',
   'dreapta brațului primită și când cotește (urechea logoului: trăsătura de sus legată de inel)')
-o('A02', ME, '          if (abatere > Math.max(0.5, 0.1 * wa)) { sel.length -= 2; break; }', '', 'nuc', 'dreapta brațului trasă și peste colț')
-o('A03', ME, '          if (d > v.r + Math.max(3, 1.5 * wa)) break;', '          if (d > 2 * v.r + 1) break;', 'nuc',
+o('A02', ME, '          if (sel.length >= 8 && abatereDreptei(sel) > MEDIANA.drept) { sel.length -= 2; break; }', '', 'nuc',
+  'dreapta brațului trasă și peste colț sau curbă (latura lui „e”: 22°)')
+o('A03', ME, '        if (d > v.r + Math.max(3, 1.5 * (wa || 2 * v.r))) break;', '        if (d > 2 * v.r + 1) break;', 'nuc',
   'direcția brută din fereastra razei joncțiunii (o furcă cu joncțiunea lângă margine: 1,4 px)')
+o('A04', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10, drept: 1.3, prelungire: 5 } as const;', 'nuc',
+  'dreptele trase cu abaterea de 0,1 grosimi: brațele lui „e” înclinate, nelegate')
+o('A05', ME, '          if (k > 0 && !((mu.L[q] ?? 0) > 0)) break;', '', 'nuc', 'dreapta brațului trasă și prin colțul nemăsurat (urechea din dreapta: 37°)')
+o('A06', ME, '        } else if (coarda >= 0.75 && bruta &&', '        } else if (false && coarda >= 0.75 && bruta &&', 'nuc',
+  'latura de două puncte dintre joncțiune și colț ia direcția brută: brațele inelului nelegate')
+o('G01', ME, '  const pana = unghi === null ? r + 3 * wa : Math.min(r + 3 * wa, Math.max(r, wa / 2 / Math.tan(unghi / 2)) + Math.max(1, 0.25 * wa));',
+  '  const pana = r + 3 * wa;', 'nuc', 'curățarea până la trei grosimi oricum: colțul urechii tăiat de o coardă')
+o('G02', ME, '  const bunAici = (k: number): boolean => !inZona(k) || bun(k);', '  const bunAici = bun;', 'nuc',
+  'punctele rele de dincolo de zonă țin curățarea: latura scurtă a urechii scoasă, brațul pornit din colț')
+o('G03', ME, '    unghiuri.set(g, m);', '    unghiuri.set(g, Math.PI / 2);', 'nuc', 'unghiul joncțiunii ignorat (90°): furca îngustă curățată prea puțin')
+o('P05', ME, '      adauga((b.px + o.px) / 2, (b.py + o.py) / 2, dx, dy, 2);', '      adauga(b.cx, b.cy, b.dx, b.dy, 1); adauga(o.cx, o.cy, o.dx, o.dy, 1);', 'nuc',
+  'perechea curbă tot cu dreptele separate: joncțiunea lui „e” în afara mijlocului')
+o('P06', ME, 'drept: 0.5, prelungire: 5 } as const;', 'drept: 0.5, prelungire: 0 } as const;', 'nuc',
+  'dreapta comună și pentru perechile drepte: furca de 20° la 0,32 px')
+o('P07', ME, '      if (!departe || -(b.dx * o.dx + b.dy * o.dy)', '      if (-(b.dx * o.dx + b.dy * o.dy)', 'nuc',
+  'dreapta comună și lângă un braț apropiat: X-ul îngust la 1,3 px')
+o('P08', ME, '      let dx = o.px - b.px, dy = o.py - b.py;\n      const l = Math.hypot(dx, dy);\n      if (l >= 2) { dx /= l; dy /= l; } else { dx = b.dx - o.dx; dy = b.dy - o.dy; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m; }\n      adauga((b.px + o.px) / 2, (b.py + o.py) / 2, dx, dy, 2);',
+  '      let dx = o.cx - b.cx, dy = o.cy - b.cy;\n      const l = Math.hypot(dx, dy);\n      if (l >= 2) { dx /= l; dy /= l; } else { dx = b.dx - o.dx; dy = b.dy - o.dy; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m; }\n      adauga((b.cx + o.cx) / 2, (b.cy + o.cy) / 2, dx, dy, 2);', 'nuc',
+  'coarda perechii prin centrele dreptelor: săgeata arcului (semnătura, 0,7 px)')
+o('K06', ME, '      if (sel.length >= 8 && abatereDreptei(sel) > MEDIANA.drept) { sel.length -= 2; break; }\n    }\n    return sel.length >= 6', '    }\n    return sel.length >= 6', 'nuc',
+  'dreptele colțurilor trase și pe curbă: colțul buclei lui „e” teșit')
 
 # ---- Legarea brațelor, căile ----
-o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 0, capat: 0.9, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'niciun braț legat: bara T-ului în două')
-o('L02', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10 } as const;',
-  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 70, capat: 0.9, vecini: 2, vecinatate: 10 } as const;', 'nuc', 'brațele Y-ului legate (cotitura de 60°)')
+o('L01', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 0, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;', 'nuc', 'niciun braț legat: bara T-ului în două')
+o('L02', ME, 'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 30, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;',
+  'export const MEDIANA = { pas: 0.25, ciot: 1.5, cotitura: 70, capat: 0.9, vecini: 2, vecinatate: 10, drept: 0.5, prelungire: 5 } as const;', 'nuc', 'brațele Y-ului legate (cotitura de 60°)')
 o('L03', ME, '        if (cot <= MEDIANA.cotitura || lista.length === 2) cand.push({ i, j, c: cot });', '        if (cot <= MEDIANA.cotitura) cand.push({ i, j, c: cot });', 'nuc',
   'o joncțiune cu două brațe care cotesc nu mai e o trecere')
 o('L04', ME, '    cand.sort((p, q) => p.c - q.c || p.i - q.i || p.j - q.j);', '    cand.sort((p, q) => q.c - p.c || p.i - q.i || p.j - q.j);', 'nuc',
@@ -136,7 +159,7 @@ o('L06', ME, '      if (start) P.push(start[0], start[1]);', '', 'nuc', 'calea n
 o('L07', ME, '      if (!inchisa) { const fin = loc(mu[alt]); if (fin) P.push(fin[0], fin[1]); }', '', 'nuc', 'calea nu ajunge în joncțiune')
 
 # ---- Punctele, plafonul, ieșirea ----
-o('X01', ME, '    if (!a && !b && lungimeXY(P) < 0.5) { puncte++; continue; }', '    if (!a && !b && lungimeXY(P) < 0) { puncte++; continue; }', 'nuc',
+o('X01', ME, '    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0.5) { puncte++; continue; }', '    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0) { puncte++; continue; }', 'nuc',
   'un disc retras la un punct dă o cale de lungime zero')
 o('X02', ME, '  for (const p of schelet) if (grad[p] === 0) puncte++;', '', 'nuc', 'pixelul izolat nu se numără')
 o('X03', ME, "  if (valide.length > PLAFON_TRASARE.contururi) return { ok: false, cod: 'prea-multe', raport: raport(0, 0) };", '', 'nuc', 'fără plafon')
