@@ -6852,4 +6852,22 @@ căzute, din CI).
 ## 2026-11-08 — 3.6n: grosimea verticală sub pereții treptelor (ADR 0191) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, pereții treptelor” (owner-ul, la „Fac și opțiunea cu plin sub pereții treptelor cât aștepți proba plăcii?”, după 3.6l).
-**Started:** 08.11, 12:35. **Completed:** —
+**Started:** 08.11, 12:35. **Completed:** 08.11, 15:18.
+
+- **Cercetarea** (OrcaSlicer la `9005b64`): `ensure_vertical_shell_thickness` (`PrintConfig.cpp`: patru valori, implicit
+  „ensure_all”; toate profilele K1C, „ensure_all”), `discover_vertical_shells` și `discover_horizontal_shells`
+  (`PrintObject.cpp`, descărcat pentru felie): constantele regularizării, ale filtrului și ale lățirii.
+- **Felia** (`c227afd`): setarea, cu toate valorile, în „Avansat” → „Straturile”, în subsol și în fixtură; banda bt în cheia
+  stratului; plinul unui strat amestecat lucrat după mod (uneltele, pure, în `trepte.ts`); umplerea rară = internul minus
+  plinul; călcarea plinului cu inelul; manualul, în ambele limbi.
+- **Găsit pe drum:** (1) deschiderea cu offsetul nostru rotunjește colțurile convexe (OrcaSlicer le ține drepte), deci la
+  modurile cu lățire fiecare colț de buzunar părea îngust și se lățea cu 1,26 mm: lățirea ia acum regiunile întregi care
+  dispar la strângere; (2) ce scoate filtrul îngust trebuie să redevină umplere rară, nu gol; (3) la OrcaSlicer, o bucată mică
+  se scoate doar dacă nu acoperă o regiune internă; (4) listele lungi din „Avansat” ieșeau din coloană (și două de la 3.6k):
+  reparat (`73c2c5f`), măsurat la 1400 și la 390 px.
+- **Măsurat:** inelul ajunge la 0,906 mm de marginea buzunarului (0,827 marginea pereților + 0,079 lărgirea), exact pe
+  hârtie; felierea plăcii cu buzunar, ~0,1 s. Mărimea: totalul 567,3 / 600 kB (+1,1), pornirea 102,0.
+- **Probe:** 4 noi în `imprimanta.feliere.trepte.test.ts`, cele 3.6l pe modul „fără”; e2e (lista din „Avansat”, eticheta
+  stratului cu inel). Otrăvurile `test/otravuri/3.6n.py`: 28 / 28 din prima (26 unitare, 2 e2e, fiecare de proba ei). Porțile:
+  unit 8 733 (8 725 trecute, 0 căderi, 8 sărite); build-ul determinist (287 de fișiere identice); e2e 379 / 379 din prima,
+  apoi proba imprimantei 13 / 13 după reparația de așezare. Piesele fără trepte: aceleași drumuri (171 de variante).

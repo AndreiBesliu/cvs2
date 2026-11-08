@@ -7,7 +7,7 @@ disponibile in soft”. Deci toate variantele care pot sta împreună devin opț
 (ramura `wip/3.6g-imprimanta`). **Felia 3.6j** gata pe 07.11, fără imprimantă (secțiunea „Felia 3.6j”); placa de probă pe
 K1C rămâne la owner. **Felia 3.6k** (modelele, cusătura, ștergerea, călcarea, fusta) gata pe 08.11 (secțiunea „Felia 3.6k”).
 **Felia 3.6l** acceptată pe 08.11 („Da, recomandările”) și gata pe 08.11 (secțiunea „Felia 3.6l”): piesa „după CNC”, treptele, înălțimea fiecărei piese.
-**Felia 3.6n** acceptată pe 08.11 („Da, pereții treptelor”; secțiunea „Felia 3.6n”): grosimea verticală, cu plinul sub pereții treptelor. Cererea owner-ului, din 07.11: „cum pot sa
+**Felia 3.6n** acceptată și gata pe 08.11 („Da, pereții treptelor”; secțiunea „Felia 3.6n”): grosimea verticală, cu plinul sub pereții treptelor. Cererea owner-ului, din 07.11: „cum pot sa
 feliez cubul pentru k1c?, [...] cum pot sa fac eu slice-ul? putem face asta direct din cvs2, sau trebuie sa o fac in aplicatia
 creality?”; la propunerea pieselor plate: „Da, piesele plate.” **Completează:** ADR 0190 (fereastra Imprimanta; trimiterea și
 verificarea fișierului, 3.6h), ADR 0119 §13 („nu feliază modele 3D”: rămâne așa; o piesă plată din desen nu e un model 3D).
@@ -376,6 +376,11 @@ treptelor”. La 3.6l, pereții de deasupra unei trepte stăteau pe umplerea rar
   la strângere, nu și gâturile înguste ale unei regiuni mari: offsetul nostru rotunjește colțurile convexe (OrcaSlicer le ține
   drepte, cu îmbinarea în unghi), iar fiecare colț ar fi părut îngust (văzut în probă: colțurile unui buzunar de 40 × 30 se
   lățeau cu 1,26 mm). O piesă fără trepte nu se schimbă (afară de rândul din subsol): 171 de variante, aceleași drumuri.
+- **Măsurat și probat:** inelul ajunge la 0,906 mm de marginea buzunarului (0,827, marginea pereților, plus 0,079, lărgirea),
+  exact pe hârtie. Mărimea: totalul 567,3 / 600 kB (+1,1), pornirea 102,0. Proba: 4 noi în
+  `imprimanta.feliere.trepte.test.ts` (inelul, regiunile înguste, uneltele, găurirea mică), cele 3.6l pe modul „fără”, e2e
+  (lista, eticheta stratului); otrăvurile `test/otravuri/3.6n.py`: 28 / 28 din prima. Porțile: unit 8 733 (0 căderi), build-ul
+  determinist, e2e 379 / 379. Reparat pe drum: listele lungi din „Avansat” se strâng la lățimea coloanei.
 
 ## Întrebările (owner)
 
