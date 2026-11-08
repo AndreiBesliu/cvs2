@@ -6883,7 +6883,7 @@ Inkscape; ADR 0051–0055, 0065, 0078, 0102, 0138; `Editare.tsx` și `src/geom/`
 
 **Prompt:** „Ok la toate” (la „Accepți recomandările la cele 4 întrebări din ADR 0240?”), deci 1a–4a: ancora neținută în
 proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift câștigă peste Ctrl, feliile 6.V↑–6.V↑c acum.
-**Started:** 08.11, 12:21. **Completed:** —
+**Started:** 08.11, 12:21. **Completed:** 08.11, 16:50.
 
 - **Răspunsurile:** ADR 0240 acceptat (starea și secțiunea „Răspunsurile owner-ului”), indexul ADR, fișa (rândul cozii
   owner-ului scos, rândul 6.V↑ cu răspunsul), decizia în CLAUDE.md. `origin/main` (`6c79ff9`) adus în ramură (`ff0693d`;
@@ -6908,3 +6908,11 @@ proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift c�
   V26 (fracția ancorei pe o linie fără lățime) au scăpat: probele noi din `editare.test.ts` și `ancora.test.ts` le prind
   acum (`tinte`). Proba din `import.spec.ts` care aștepta refuzul „doar proporțional” la întinderea unei piese cu arce verifică
   acum eticheta („arcele devin curbe”), în același loc pe ecran (sub bare, neacoperită de insula selecției).
+- **Porțile** (pe `b722ba3`): tipurile (aplicația, extensia, funcțiile), importurile (19 reguli), licențele, unit 8683
+  (8674 + 8 sărite; singura căzută, traducerea rândului din fișă, scrisă apoi), traducerile 677 / 0 lipsă, e2e 126 / 126 (21
+  de spec-uri: ancorele, editarea, importul, selecția, Pen, textul, booleanul, curba, exportul, nodurile, rețeaua, offsetul,
+  înclinarea, tutorialul, tastele uneltelor, pânza, rigla, manualul, vectorii, panoul).
+- **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12), versiunea `b722ba343091`; proba
+  de fum de acolo, în Edge: pornirea fără erori, selectorul ancorei (9), lista colțurilor (3), cercul întins devine elipsă
+  cu eticheta „cercul devine elipsă”, testul din aplicație (`?test`) cu 33 de pași. Neunite: unirea în `main` o face sesiunea
+  principală, la cuvântul owner-ului.
