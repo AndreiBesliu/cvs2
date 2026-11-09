@@ -27,17 +27,45 @@
  *   din fiecare bucată o formă, iar contururile netăiate merg cu fața în care stau sau rămân împreună.
  * - „Taie la intersecții” taie fiecare contur ales în toate locurile lui comune cu celelalte (treceri, atingeri, capetele unei
  *   suprapuneri), nu și în buclele lui; un contur închis cu un singur loc rămâne întreg. Fiecare bucată devine o formă.
+ *
+ * Felia 10.3↑c (ADR 0180 §4): **„Decupează la”** ultima formă aleasă, închisă (granița, care rămâne): fiecare formă aleasă e
+ * împărțită ca de un cuțit închis, apoi păstrează ce e de partea aleasă (înăuntru sau în afară). O formă care trece granița
+ * se taie, se șterge sau rămâne întreagă, după alegere; una fără nimic de partea păstrată pleacă (`sterse`).
+ *
+ * Felia 10.3↑f (ADR 0181 §1): **cuțitul uneltei**. O cale trasă pe pânză (felurile Linie, Pen și Liber), în mm ai foii, care
+ * nu intră în document (mâna liberă vine netezită aici, la toleranța dată), sau una ori mai multe forme existente (felul
+ * Formă: un text, cu toate literele lui), citite împreună, par-impar. Un cuțit închis care stă tot înăuntrul unei forme, fără
+ * să-i treacă vreun contur, o taie și el, cu închidere: bucla lui intră în ambele părți, ca margine înăuntru și ca gol în
+ * afară (literele unui text puse pe o placă ies din ea, iar placa rămâne cu golurile lor).
+ *
+ * Felia 10.3↑h (ADR 0181 §2, §3): **linia prin X, Y la unghiul α**, exactă ca X și Y (aceleași formule, cu normala ei);
+ * **„Păstrează” o parte** (stânga sau dreapta cuțitului, față de sensul lui; la unul închis, înăuntru sau în afară): partea
+ * cealaltă a formelor tăiate pleacă în același pas, o formă netăiată rămâne; la un cuțit deschis, latura unei fețe o dau
+ * corzile ei, iar a unei bucăți deschise, direcția în care pleacă din cuțit; **capetele prelungite** pe tangentă (până ies din
+ * formele de tăiat, sau dincolo de toate); **cuțitul-formă șters** după tăiere, în același pas.
+ *
+ * Felia 10.3↑i (ADR 0181 §2): **spațiul sau suprapunerea** dintre bucăți, de lățimea w, centrate pe cuțit. Fiecare parte se
+ * taie cu cuțitul mutat paralel cu w / 2, spre ea la spațiu, spre cealaltă la suprapunere: linia, cu paralela ei; calea trasă
+ * și cuțitul-formă deschis, cu offsetul căii (capetele lui merg mai departe pe tangentă cât au rămas într-un contur pe care
+ * cuțitul nemutat îl taie); cel închis, cu offsetul figurii lui (înăuntru se strânge, în afară crește). Doar cu închidere și
+ * doar formele pe care cuțitul nemutat le taie. Se refuză spațiul care ar mânca o bucată întreagă de partea păstrată (o față,
+ * o insulă netăiată sau o bucată de cale care nu trece de cuțitul mutat; o gaură pleacă odată cu fâșia) și cuțitul care nu se
+ * poate muta (offsetul lui se rupe, nu încape într-o curbă strânsă sau, mutat, se oprește într-o formă).
  */
+import { apropiat } from '../geom/apropiat.ts';
 import { arieCuSemn, cerculArcului, inverseaza, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf } from '../geom/contur.ts';
 import { CUTIE_GOALA, cutieContur, uneste, type Cutie } from '../geom/cutie.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import { inversa } from '../geom/inversa.ts';
 import { compune, IDENTITATE, transformaContur, type Matrice } from '../geom/matrice.ts';
-import { autointersectii, indexCutii, intersectiiIntre } from '../geom/offset.ts';
+import { autointersectii, indexCutii, intersectiiIntre, offsetDeschis, offsetFigura, offsetInchis } from '../geom/offset.ts';
 import type { Document, ElementNod, FormaDoc, Instanta, Nod, Operatie, Piesa, SegmentDoc, VarfDoc } from './document.ts';
-import { conturElement } from './forme.ts';
+import { conturElement, cutieElement } from './forme.ts';
+import { dintiPe, drumImbinare, imbinareBuna, type Imbinare } from './imbinare.ts';
+import { latimeBuna } from './intreBucati.ts';
 import type { Degrupata } from './jurnal.ts';
 import { elementeFoaie, elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
+import { netezesteCale } from './netezire.ts';
 import { adaugaNod, caleDinForma, type FormaCale } from './noduri.ts';
 import { punctPe as punctSeg, rafineaza, treceri as langa } from './reparare.ts';
 import { grupeRol, rolPiesei } from './rol.ts';
@@ -50,10 +78,54 @@ import { PLAFON_PERECHI, pentruCavalier } from './verificare.ts';
 export type Cutit =
   | { readonly fel: 'x'; readonly x: number }
   | { readonly fel: 'y'; readonly y: number }
+  /** Linia prin (x, y) la `unghi` grade (ADR 0181 §3): 0° = orizontala, 90° = verticala; exactă, ca X și Y. */
+  | { readonly fel: 'unghi'; readonly x: number; readonly y: number; readonly unghi: number }
   | { readonly fel: 'ghidaj'; readonly id: string }
   | { readonly fel: 'forma'; readonly id: string }
-  | { readonly fel: 'intersectii' };
-type CutitLinie = Extract<Cutit, { readonly fel: 'x' | 'y' | 'ghidaj' }>;
+  /**
+   * Cuțitul uneltei (ADR 0181 §1): o cale trasă pe pânză, în mm ai foii, care nu intră în document. `netezire`: mâna liberă se
+   * netezește întâi, la toleranța asta (mm), cu netezirea din ADR 0180 §9.
+   */
+  | { readonly fel: 'cale'; readonly cale: FormaCale; readonly netezire?: number }
+  /** Felul Formă al cuțitului (ADR 0181 §1, nota owner-ului): una sau mai multe forme existente, citite împreună (par-impar). */
+  | { readonly fel: 'forme'; readonly ids: readonly string[] }
+  /**
+   * Foarfeca (ADR 0181 §4): conturul instanței `id` cel mai apropiat de `punct` (mm ai foii), la cel mult `toleranta` mm, se
+   * taie acolo, exact (un nod al lui mai apropiat de atât e locul): o cale închisă se deschide, una deschisă devine două.
+   * Bucățile lui devin forme, ca la intersecții; celelalte contururi ale piesei rămân împreună.
+   */
+  | { readonly fel: 'foarfeca'; readonly id: string; readonly punct: Punct; readonly toleranta: number }
+  /**
+   * Retează (ADR 0181 §5): bucata conturului de sub `punct` (instanța `id`), dintre cele mai apropiate două locuri comune cu
+   * celelalte contururi ale formelor alese, se scoate; ce rămâne stă în piesă. Un contur fără două locuri comune (deschis: fără
+   * niciunul) pleacă tot.
+   */
+  | { readonly fel: 'reteaza'; readonly id: string; readonly punct: Punct; readonly toleranta: number }
+  | { readonly fel: 'intersectii' }
+  /**
+   * Decupează la ultima formă aleasă (instanța ei, închisă): păstrează ce e înăuntru sau în afară; formele care trec granița
+   * se taie, se șterg sau rămân întregi.
+   */
+  | { readonly fel: 'decupare'; readonly id: string; readonly pastreaza: 'inauntru' | 'afara'; readonly trec: 'taie' | 'sterge' | 'intregi' };
+type CutitLinie = Extract<Cutit, { readonly fel: 'x' | 'y' | 'unghi' | 'ghidaj' }>;
+
+/**
+ * Prelungește capetele unui cuțit deschis (ADR 0181 §2): `nu`; `forma`, un capăt oprit în regiunea unei forme de tăiat merge
+ * mai departe pe tangenta lui, până iese din ea (și din cele în care intră așa); `intreaga`, fiecare capăt merge pe tangentă
+ * dincolo de toate formele (la Linie, linia fără capete).
+ */
+export type Prelungire = 'nu' | 'forma' | 'intreaga';
+/**
+ * Ce rămâne din formele tăiate (ADR 0181 §2): `ambele` părți, sau doar cea din `stanga` cuțitului ori din `dreapta` lui, față
+ * de sensul în care merge (linia verticală: x mai mic, stânga; orizontala, ca linia spre dreapta: deasupra, stânga). La un
+ * cuțit închis, stânga e înăuntru, dreapta în afară. Partea cealaltă a formelor tăiate se șterge; o formă netăiată rămâne.
+ */
+export type Pastrare = 'ambele' | 'stanga' | 'dreapta';
+/**
+ * Între bucăți (ADR 0181 §2): un `spatiu` sau o `suprapunere` de `latime` mm (lățimea totală, centrată pe cuțit). Fiecare parte
+ * se taie cu cuțitul mutat paralel cu latime / 2: spre ea la spațiu, spre cealaltă la suprapunere.
+ */
+export type Intre = { readonly fel: 'spatiu' | 'suprapunere'; readonly latime: number };
 
 export type CerereTaiere = {
   readonly cutit: Cutit;
@@ -61,6 +133,23 @@ export type CerereTaiere = {
   readonly alese: readonly string[];
   /** „Închide bucățile”: fiecare parte a unei forme închise se închide pe tăietură. */
   readonly inchide: boolean;
+  /** Lipsă: `nu`. Doar la cuțitele cu capete (calea trasă, cuțitul-formă deschis). */
+  readonly prelungeste?: Prelungire;
+  /** Lipsă: `ambele`. Nu la decupare (care are alegerea ei), la intersecții, la foarfecă și la retezat. */
+  readonly pastreaza?: Pastrare;
+  /** Cuțitul-formă (`forma`, `forme`) se șterge după tăiere, în același pas (ADR 0181 §2); lipsă: rămâne. */
+  readonly stergeCutitul?: boolean;
+  /**
+   * Spațiul sau suprapunerea dintre bucăți (ADR 0181 §2); lipsă: nimic. Doar cu închidere, la linii, la calea trasă și la
+   * cuțitul-formă (nu la decupare, la intersecții, la foarfecă și la retezat).
+   */
+  readonly intre?: Intre;
+  /**
+   * Îmbinarea (ADR 0181 §6; `imbinare.ts`): pe o tăietură dreaptă (liniile din panou, ghidajul, calea trasă din două puncte),
+   * marginea nouă urmează modelul, iar spațiul sau suprapunerea de mai sus sunt jocul dintre bucăți; lipsă: tăietura dreaptă.
+   * Doar cu închidere.
+   */
+  readonly imbinare?: Imbinare;
 };
 
 /**
@@ -70,9 +159,18 @@ export type CerereTaiere = {
  * operații diferite, pe o piesă fără rol: alege întâi un rol sau taie fără închidere), `nereusita` (tăierea nu s-a putut face
  * exact, de pildă două treceri în același punct), `nu-trece` (cu închidere, cuțitul se oprește în regiunea unei forme),
  * `cutit` (cu închidere, cuțitul se încrucișează în regiunea unei forme), `prea-multe` (prea multe perechi de forme de
- * cercetat la intersecții, ca la verificare).
+ * cercetat la intersecții, ca la verificare), `granita` (granița decupării nu e o formă închisă), `departe` (clicul foarfecii
+ * sau al retezatului nu e la toleranță de niciun contur al formei), `capat` (foarfeca pe capătul unei căi deschise: nimic de
+ * despărțit), `spatiu` (spațiul ar mânca o bucată întreagă de partea păstrată: o fâșie mai îngustă decât el), `spatiu-cutit`
+ * (cuțitul nu se poate muta cu jumătate din lățime: offsetul lui se rupe, nu încape într-o curbă strânsă sau, mutat, se
+ * oprește într-o formă), `spatiu-inchide` (spațiul și suprapunerea cer închiderea). La spațiu, `valoare`: lățimea nu e un număr
+ * între `LATIME_MINIMA` și `LATIME_MAXIMA` (`intreBucati.ts`). La îmbinare: `imbinare` (în nicio coardă a tăieturii nu încape un
+ * dinte întreg), `imbinare-raza` (modelul nu iese cu pasul, înălțimea și raza date), `imbinare-margine` (dinții ar atinge
+ * marginea unei forme: o latură oblică sau o gaură prea aproape), `imbinare-dreapta` (cuțitul nu e o dreaptă), `imbinare-inchide`
+ * (cere închiderea), `valoare` (pasul, înălțimea sau raza nu sunt numere bune).
  */
-export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe';
+export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
+  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide';
 
 export type RezultatTaiere =
   | {
@@ -85,14 +183,36 @@ export type RezultatTaiere =
     readonly forme: number;
     /** Câte operații s-au scos de pe bucățile deschise (buzunarul, V-carve-ul, găurirea). */
     readonly scoase: number;
+    /** Instanțele de șters (decuparea: fără nimic de partea păstrată, sau care trec granița, cu „se șterg”). */
+    readonly sterse: readonly string[];
   }
   | { readonly ok: false; readonly motiv: MotivTaiere };
 
-type Linie = { readonly axa: 'x' | 'y'; readonly v: number };
-/** Locul punctului față de linie: negativ de partea A (stânga sau dedesubt), pozitiv de partea B. */
-const fata = (L: Linie, p: Punct): number => (L.axa === 'x' ? p.x : p.y) - L.v;
+/**
+ * Linia de tăiere: punctele p cu n · p = v (n, normala ei, unitară), cu direcția u (unitară, pe linie). Verticala x = X are
+ * n = (1, 0), u = (0, 1); orizontala y = Y, n = (0, 1), u = (1, 0): înmulțirile cu 0 și 1 sunt exacte, deci liniile de pe
+ * axe taie ca înainte, la bit. Linia prin X, Y la unghiul α (ADR 0181 §3) are u = (cos α, sin α) și normala din stânga lui u.
+ */
+type Linie = { readonly n: Punct; readonly u: Punct; readonly v: number };
+/** Locul punctului față de linie: negativ de partea A (stânga verticalei, dedesubtul orizontalei), pozitiv de partea B. */
+const fata = (L: Linie, p: Punct): number => L.n.x * p.x + L.n.y * p.y - L.v;
 /** Poziția punctului de-a lungul liniei. */
-const dealungul = (L: Linie, p: Punct): number => (L.axa === 'x' ? p.y : p.x);
+const dealungul = (L: Linie, p: Punct): number => L.u.x * p.x + L.u.y * p.y;
+/** Partea din stânga direcției u (ADR 0181 §2, „Păstrează stânga”): 1 la B, −1 la A (stânga verticalei, de x mai mic). */
+const stangaLiniei = (L: Linie): 1 | -1 => (L.u.x * L.n.y - L.u.y * L.n.x > 0 ? 1 : -1);
+const VERTICALA = { n: { x: 1, y: 0 }, u: { x: 0, y: 1 } } as const;
+const ORIZONTALA = { n: { x: 0, y: 1 }, u: { x: 1, y: 0 } } as const;
+
+/** Direcția unghiului α, în grade, exactă la multiplii de 90° (atunci linia e chiar verticala sau orizontala). */
+function directie(alfa: number): Punct {
+  const r = ((alfa % 360) + 360) % 360;
+  if (r === 0) return { x: 1, y: 0 };
+  if (r === 90) return { x: 0, y: 1 };
+  if (r === 180) return { x: -1, y: 0 };
+  if (r === 270) return { x: 0, y: -1 };
+  const a = (r * Math.PI) / 180;
+  return { x: Math.cos(a), y: Math.sin(a) };
+}
 /** Sub atât, un punct e pe linie: 1e-9 mm, plus rotunjirea coordonatelor mari. */
 const eps = (p: Punct): number => 1e-9 + 1e-12 * Math.max(Math.abs(p.x), Math.abs(p.y));
 const LINIE_DOC = (): SegmentDoc => ({ tip: 'L' });
@@ -122,13 +242,14 @@ function radacini2(A: number, B: number, C: number): number[] {
 function treceriSegment(L: Linie, a: Punct, b: Punct, s: Segment, peA: boolean, peB: boolean): number[] {
   if (s.tip === 'A' && Math.abs(s.bulge) > 1e-12) {
     const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
-    const d = L.v - (L.axa === 'x' ? centru.x : centru.y);
+    // Piciorul perpendicularei din centru pe linie e la d pe normală; locurile, la ±h pe direcție.
+    const d = L.v - (L.n.x * centru.x + L.n.y * centru.y);
     if (!(Math.abs(d) < raza)) return [];
     const h = Math.sqrt(raza * raza - d * d);
     if (!(h > 1e-9 * Math.max(1, raza))) return [];
     const rez: number[] = [];
     for (const semn of [1, -1]) {
-      const unghi = L.axa === 'x' ? Math.atan2(semn * h, d) : Math.atan2(d, semn * h);
+      const unghi = Math.atan2(L.n.y * d + L.u.y * semn * h, L.n.x * d + L.u.x * semn * h);
       let rel = (baleiaj >= 0 ? unghi - start : start - unghi) % (2 * Math.PI);
       if (rel < 0) rel += 2 * Math.PI;
       const t = rel / Math.abs(baleiaj);
@@ -140,7 +261,7 @@ function treceriSegment(L: Linie, a: Punct, b: Punct, s: Segment, peA: boolean, 
     return rez.sort((u, w) => u - w);
   }
   if (s.tip === 'C') {
-    const k = (p: Punct): number => (L.axa === 'x' ? p.x : p.y);
+    const k = (p: Punct): number => L.n.x * p.x + L.n.y * p.y;
     const d0 = k(s.c1) - k(a), d1 = k(s.c2) - k(s.c1), d2 = k(b) - k(s.c2);
     const rupturi = [0, ...radacini2(d0 - 2 * d1 + d2, 2 * (d1 - d0), d0), 1];
     const f = (t: number): number => fata(L, punctPe(a, b, s, t));
@@ -348,6 +469,11 @@ type ElementNou = {
   readonly exteriorDreapta: boolean | null;
   /** Elementul vechi, la o formă netăiată (își păstrează id-ul și câmpurile). */
   readonly vechi?: ElementNod;
+  /**
+   * O buclă a cuțitului care stă în altă adâncime decât conturul din care își ia operațiile (un gol al plăcii, din conturul ei
+   * exterior): pe o piesă fără rol, profilul ei trece de pe exterior pe interior și invers.
+   */
+  readonly inversLatura?: boolean;
 };
 
 /**
@@ -434,6 +560,7 @@ function operatiiParte(p: Piesa, radacina: Nod, elemente: ReadonlyArray<{ readon
       if (!ids.some((s) => o.noduri.includes(s))) continue;
       if (e.fel === 'inchis' && ids.length > 1 && !ids.every((s) => o.noduri.includes(s))) return 'operatii';
       let latura = o.latura;
+      if (e.inversLatura && (latura === 'exterior' || latura === 'interior')) latura = latura === 'exterior' ? 'interior' : 'exterior';
       if (e.fel === 'deschis' && e.exteriorDreapta !== null) {
         if (o.tip !== 'profil') { scoase++; continue; }
         if (latura === 'exterior' || latura === 'interior') latura = (latura === 'exterior') === e.exteriorDreapta ? 'dreapta' : 'stanga';
@@ -470,14 +597,22 @@ function linia(doc: Document, c: CutitLinie, indexFoaie: number): Linie | MotivT
   if (c.fel === 'ghidaj') {
     const g = doc.foi[indexFoaie]?.ghidaje?.find((x) => x.id === c.id);
     if (!g) return 'ghidaj';
-    return Number.isFinite(g.poz) ? { axa: g.axa, v: g.poz } : 'valoare';
+    return Number.isFinite(g.poz) ? { ...(g.axa === 'x' ? VERTICALA : ORIZONTALA), v: g.poz } : 'valoare';
+  }
+  if (c.fel === 'unghi') {
+    if (!Number.isFinite(c.x) || !Number.isFinite(c.y) || !Number.isFinite(c.unghi)) return 'valoare';
+    const u = directie(c.unghi);
+    const n = { x: -u.y, y: u.x };
+    return { n, u, v: n.x * c.x + n.y * c.y };
   }
   const v = c.fel === 'x' ? c.x : c.y;
-  return Number.isFinite(v) ? { axa: c.fel, v } : 'valoare';
+  return Number.isFinite(v) ? { ...(c.fel === 'x' ? VERTICALA : ORIZONTALA), v } : 'valoare';
 }
 
 /** O instanță tăiată: părțile care îi iau locul și câte contururi s-au tăiat. */
 type Rezultat = { readonly parti: readonly Parte[]; readonly taiate: number };
+/** O instanță care pleacă (decuparea). */
+type Stearsa = { readonly sterge: true };
 
 /**
  * Tăierea instanțelor alese, pe foaia de lucru (ADR 0180 §3, §5, §6). Cu o linie dreaptă, fiecare instanță prin care trece
@@ -490,22 +625,91 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
   if (!foaie || cerere.alese.length === 0) return { ok: false, motiv: 'nimic-ales' };
   const alese = new Set(cerere.alese);
   const c = cerere.cutit;
-  let taieUna: (inst: Instanta, p: Piesa) => Rezultat | MotivTaiere | null;
-  if (c.fel === 'forma') {
-    // Cuțitul rămâne neschimbat: nu e printre formele de tăiat.
+  const pastreaza = cerere.pastreaza ?? 'ambele';
+  // Spațiul sau suprapunerea (ADR 0181 §2), doar la cuțitele cu două laturi: liniile, calea trasă, cuțitul-formă.
+  const intre = c.fel === 'decupare' || c.fel === 'intersectii' || c.fel === 'foarfeca' || c.fel === 'reteaza' ? undefined : cerere.intre;
+  if (intre) {
+    if (!cerere.inchide) return { ok: false, motiv: 'spatiu-inchide' };
+    if (!latimeBuna(intre.latime)) return { ok: false, motiv: 'valoare' };
+  }
+  // Îmbinarea (ADR 0181 §6), doar pe tăieturile drepte, cu închidere; dinții drumurilor, numărați pentru refuzul `imbinare`.
+  const imbinare = c.fel === 'decupare' || c.fel === 'intersectii' || c.fel === 'foarfeca' || c.fel === 'reteaza' ? undefined : cerere.imbinare;
+  if (imbinare) {
+    if (!cerere.inchide) return { ok: false, motiv: 'imbinare-inchide' };
+    if (!imbinareBuna(imbinare)) return { ok: false, motiv: 'valoare' };
+    if (c.fel === 'forma' || c.fel === 'forme' || (c.fel === 'cale' && c.netezire !== undefined)) return { ok: false, motiv: 'imbinare-dreapta' };
+  }
+  let dinti = 0;
+  const numara = (n: number): void => { dinti += n; };
+  let taieUna: (inst: Instanta, p: Piesa) => Rezultat | Stearsa | MotivTaiere | null;
+  // Cuțitul-formă de șters după tăiere (ADR 0181 §2), doar dacă s-a tăiat ceva.
+  let cutitSters: readonly string[] = [];
+  if (c.fel === 'forma' || c.fel === 'forme' || c.fel === 'cale') {
+    // Cuțitul rămâne neschimbat: nu e printre formele de tăiat (cel tras pe pânză nici nu e în document).
+    const ids = c.fel === 'forma' ? [c.id] : c.fel === 'forme' ? c.ids : [];
+    for (const id of ids) alese.delete(id);
+    if (alese.size === 0) return { ok: false, motiv: 'nimic-ales' };
+    let xs: ReadonlyArray<{ readonly c: Contur; readonly e: ElementLume | null }>;
+    if (c.fel === 'cale') {
+      const k = conturCale(c);
+      if (typeof k === 'string') return { ok: false, motiv: k };
+      xs = [{ c: k, e: null }];
+    } else {
+      const f = contururiForme(doc, indexFoaie, ids);
+      if (typeof f === 'string') return { ok: false, motiv: f };
+      xs = f;
+    }
+    const prelungeste = cerere.prelungeste ?? 'nu';
+    if (prelungeste !== 'nu' && xs.some((x) => !x.c.inchis)) {
+      const t = tinteDin(doc, foaie.instante, alese);
+      if (typeof t === 'string') return { ok: false, motiv: t };
+      xs = xs.map((x) => (x.c.inchis ? x : { ...x, c: prelungit(x.c, prelungeste, t) }));
+    }
+    const K = cutitulDin(xs);
+    if (typeof K === 'string') return { ok: false, motiv: K };
+    if (imbinare) {
+      // Calea trasă din două puncte (cu prelungirile ei): fiecare instanță își are drumul cu dinți.
+      const dr = caleDreapta(xs);
+      if (!dr) return { ok: false, motiv: 'imbinare-dreapta' };
+      taieUna = (inst, p) => taieCuImbinare(inst, p, dr, imbinare, pastreaza, intre, null, numara);
+    } else if (intre) {
+      const M = cutiteMutate(K, intre, pastreaza);
+      if (typeof M === 'string') return { ok: false, motiv: M };
+      taieUna = (inst, p) => taieCuFormaIntre(K, M, inst, p, pastreaza, intre.fel);
+    } else {
+      taieUna = (inst, p) => taieCuForma(K, inst, p, cerere.inchide, pastreaza);
+    }
+    if (cerere.stergeCutitul === true) cutitSters = ids;
+  } else if (c.fel === 'decupare') {
+    // Granița rămâne neschimbată și trebuie să fie închisă.
     alese.delete(c.id);
     if (alese.size === 0) return { ok: false, motiv: 'nimic-ales' };
-    const K = cutitul(doc, indexFoaie, c.id);
+    const K = cutitul(doc, indexFoaie, [c.id]);
     if (typeof K === 'string') return { ok: false, motiv: K };
-    taieUna = (inst, p) => taieCuForma(K, inst, p, cerere.inchide);
+    if (!K.inchis) return { ok: false, motiv: 'granita' };
+    taieUna = (inst, p) => decupeazaInstanta(K, inst, p, c, cerere.inchide);
   } else if (c.fel === 'intersectii') {
     const loc = locuriIntersectii(doc, indexFoaie, alese);
     if (typeof loc === 'string') return { ok: false, motiv: loc };
-    taieUna = (inst, p) => taieLaLocuri(inst, p, loc);
+    taieUna = (inst, p) => taieLaLocuri(inst, p, loc, false);
+  } else if (c.fel === 'foarfeca') {
+    // Doar forma de sub clic se schimbă.
+    taieUna = (inst, p) => (inst.id === c.id ? foarfeca(inst, p, c) : null);
+    alese.add(c.id);
+  } else if (c.fel === 'reteaza') {
+    // Locurile comune sunt cu formele alese (fără alegere, toate ale foii, din interfață); forma de sub clic, oricum.
+    alese.add(c.id);
+    taieUna = (inst, p) => (inst.id === c.id ? reteaza(doc, indexFoaie, alese, inst, p, c) : null);
   } else {
     const L = linia(doc, c, indexFoaie);
     if (typeof L === 'string') return { ok: false, motiv: L };
-    taieUna = (inst, p) => taieInstanta(L, inst, p, cerere.inchide);
+    if (imbinare) {
+      // Drumul merge în sensul liniei; partea A (semnul −1) vine întâi, ca la tăierea fără îmbinare.
+      const dr: Dreapta = { A: { x: L.n.x * L.v, y: L.n.y * L.v }, u: L.u };
+      taieUna = (inst, p) => taieCuImbinare(inst, p, dr, imbinare, pastreaza, intre, stangaLiniei(L), numara);
+    } else {
+      taieUna = intre ? (inst, p) => taieInstantaIntre(L, inst, p, pastreaza, intre) : (inst, p) => taieInstanta(L, inst, p, cerere.inchide, pastreaza);
+    }
   }
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const folosiri = new Map<string, number>();
@@ -526,6 +730,7 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
 
   const degrupate: Degrupata[] = [];
   const ids: string[] = [];
+  const sterse: string[] = [];
   let forme = 0;
   let scoase = 0;
   for (const inst of foaie.instante) {
@@ -535,6 +740,7 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     const r = taieUna(inst, p);
     if (r === null) continue;
     if (typeof r === 'string') return { ok: false, motiv: r };
+    if ('sterge' in r) { sterse.push(inst.id); continue; }
     if ((folosiri.get(p.id) ?? 0) > 1) return { ok: false, motiv: 'impartita' };
     const parti: Array<{ readonly instanta: Instanta; readonly piesa: Piesa }> = [];
     for (const parte of r.parti) {
@@ -548,12 +754,84 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     forme += r.taiate;
     degrupate.push({ instanta: inst, piesa: p, parti });
   }
-  if (degrupate.length === 0) return { ok: false, motiv: 'nimic-taiat' };
-  return { ok: true, degrupate, ids, forme, scoase };
+  if (degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'nimic-taiat' };
+  if (imbinare && dinti === 0) return { ok: false, motiv: 'imbinare' };
+  for (const id of cutitSters) if (!sterse.includes(id)) sterse.push(id);
+  return { ok: true, degrupate, ids, forme, scoase, sterse };
 }
 
-/** O instanță tăiată în cele două părți ale ei, sau null dacă linia nu trece prin ea, sau motivul unui refuz. */
-function taieInstanta(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): Rezultat | MotivTaiere | null {
+/** Elementele instanței de fiecare parte a liniei (A: −1, B: 1) și câte contururi a tăiat ea (0: linia n-o atinge). */
+type PeParti = { readonly pePart: ReadonlyMap<number, ElementNou[]>; readonly taiate: number };
+
+/**
+ * O instanță tăiată în cele două părți ale ei, sau null dacă linia nu trece prin ea, sau motivul unui refuz. Cu „Păstrează”
+ * o parte (ADR 0181 §2), doar ea; o instanță care n-are nimic de partea păstrată se șterge.
+ */
+function taieInstanta(L: Linie, inst: Instanta, p: Piesa, inchide: boolean, pastreaza: Pastrare): Rezultat | Stearsa | MotivTaiere | null {
+  const r = partiLinie(L, inst, p, inchide);
+  if (typeof r === 'string') return r;
+  const { pePart, taiate } = r;
+  if (taiate === 0) return null;
+  if (pastreaza !== 'ambele') {
+    const ramase = pePart.get(pastreaza === 'stanga' ? stangaLiniei(L) : -stangaLiniei(L)) as ElementNou[];
+    return ramase.length > 0 ? { parti: [{ elemente: ramase }], taiate } : { sterge: true };
+  }
+  const parti = [-1, 1].map((x) => ({ elemente: pePart.get(x) as ElementNou[] })).filter((x) => x.elemente.length > 0);
+  return parti.length === 0 ? null : { parti, taiate };
+}
+
+/** Peste atât (mm) trebuie să treacă o bucată de cuțitul mutat, ca spațiul să n-o mănânce: o fâșie mai subțire e zgomot. */
+const PESTE_CUTIT = 1e-6;
+
+/** Cât trece conturul c de linia L spre partea s (A: −1, B: 1): cel mai mare s · (n · p − v) pe el, exact (cutia lui, rotită). */
+function catTrece(L: Linie, c: Contur, s: number): number {
+  const k = cutieContur(transformaContur(c, { a: L.n.x, b: -L.n.y, c: L.n.y, d: L.n.x, e: 0, f: 0 }));
+  return s > 0 ? k.maxX - L.v : L.v - k.minX;
+}
+
+/**
+ * O instanță tăiată de linie cu spațiu sau suprapunere (ADR 0181 §2): fiecare parte păstrată, tăiată cu linia mutată cu w / 2
+ * (spre ea la spațiu, spre cealaltă la suprapunere). Null dacă linia nu trece prin instanță: rămâne neschimbată, chiar dacă cea
+ * mutată ar atinge-o. La spațiu, `spatiu` dacă o bucată de partea păstrată nu trece de linia mutată.
+ */
+function taieInstantaIntre(L: Linie, inst: Instanta, p: Piesa, pastreaza: Pastrare, intre: Intre): Rezultat | Stearsa | MotivTaiere | null {
+  const z = partiLinie(L, inst, p, true);
+  if (typeof z === 'string') return z;
+  if (z.taiate === 0) return null;
+  const d = intre.latime / 2, spre = intre.fel === 'spatiu' ? 1 : -1;
+  const st = stangaLiniei(L);
+  const laturi: readonly number[] = pastreaza === 'ambele' ? [-1, 1] : [pastreaza === 'stanga' ? st : -st];
+  const mi = matriceInstanta(inst);
+  const parti: Parte[] = [];
+  for (const s of laturi) {
+    if (spre > 0 && mancata(z.pePart.get(s) ?? [], mi, (c) => catTrece(L, c, s) > d + PESTE_CUTIT)) return 'spatiu';
+    const g = partiLinie({ n: L.n, u: L.u, v: L.v + s * spre * d }, inst, p, true);
+    if (typeof g === 'string') return g;
+    const el = g.pePart.get(s) ?? [];
+    if (el.length > 0) parti.push({ elemente: el });
+  }
+  if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
+  return { parti, taiate: z.taiate };
+}
+
+/**
+ * Spațiul (ADR 0181 §2): ar mânca el o bucată întreagă dintre `elemente` (o parte a tăieturii fără spațiu; matricea lor, față de
+ * rădăcina piesei, compusă cu `mi`)? Fiecare contur care nu e gaură (o față, o insulă netăiată, o bucată de cale) trebuie să
+ * treacă de cuțitul mutat (`trece`, cu contururile închise ale părții); o gaură (stă în un număr impar de alte contururi
+ * închise ale părții) poate pleca, odată cu fâșia.
+ */
+function mancata(elemente: readonly ElementNou[], mi: Matrice, trece: (c: Contur, inchise: readonly Contur[]) => boolean): boolean {
+  const cs = elemente.map((e) => conturElement({ forma: e.forma, matrice: compune(mi, e.matrice) }));
+  const inchise = cs.filter((c) => c.inchis);
+  return cs.some((c) => {
+    if (trece(c, inchise)) return false;
+    const q = c.varfuri[0]?.p;
+    return !c.inchis || !q || inchise.filter((x) => x !== c && inRegiune(q, [x])).length % 2 === 0;
+  });
+}
+
+/** Instanța împărțită de linie (ADR 0180 §3): elementele fiecărei părți, cu închiderea, sau motivul unui refuz. */
+function partiLinie(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): PeParti | MotivTaiere {
   const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
   const rel = elementeInstanta(p.radacina, inst, IDENTITATE);
   const vechi = elementeArbore(p.radacina);
@@ -596,7 +874,6 @@ function taieInstanta(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): Rez
       }
     }
   }
-  if (taiate === 0) return null;
   if (inchide && bucatiInchise.length > 0) {
     // Corzile: trecerile tuturor contururilor închise, de-a lungul liniei, împerecheate 1–2, 3–4… (regiunea par-impar).
     const ordine = pozitii.map((_, k) => k).sort((u, w) => (pozitii[u] as number) - (pozitii[w] as number));
@@ -616,8 +893,7 @@ function taieInstanta(L: Linie, inst: Instanta, p: Piesa, inchide: boolean): Rez
       (pePart.get(parte) as ElementNou[]).push(...c);
     }
   }
-  const parti = [-1, 1].map((x) => ({ elemente: pePart.get(x) as ElementNou[] })).filter((x) => x.elemente.length > 0);
-  return parti.length === 0 ? null : { parti, taiate };
+  return { pePart, taiate };
 }
 
 /** Elementele arborelui piesei, după id (o singură trecere: o piesă importată are mii de contururi). */
@@ -833,16 +1109,78 @@ function raze(c: Contur, x: Trecere): Punct[] {
 function deOParteSiDeAlta(k: readonly Punct[], s: readonly Punct[]): boolean {
   const [k1, k2] = k, [s1, s2] = s;
   if (!k1 || !k2 || !s1 || !s2) return false;
+  const x = sector(k1, k2, s1), y = sector(k1, k2, s2);
+  return x !== 0 && y !== 0 && x !== y;
+}
+
+/**
+ * Sectorul direcției v față de un drum care pleacă din loc pe k1 (înainte) și pe k2 (înapoi): 1 de la k1 spre k2, în sens
+ * trigonometric (stânga drumului, ADR 0181 §2), 2 celălalt, 0 pe una din ele.
+ */
+function sector(k1: Punct, k2: Punct, v: Punct): 0 | 1 | 2 {
   const doi = 2 * Math.PI;
   const mod = (a: number): number => ((a % doi) + doi) % doi;
   const a0 = Math.atan2(k1.y, k1.x), deschidere = mod(Math.atan2(k2.y, k2.x) - a0);
-  const sector = (v: Punct): number => {
-    const d = mod(Math.atan2(v.y, v.x) - a0);
-    if (d < 1e-9 || d > doi - 1e-9 || Math.abs(d - deschidere) < 1e-9) return 0;
-    return d < deschidere ? 1 : 2;
-  };
-  const x = sector(s1), y = sector(s2);
-  return x !== 0 && y !== 0 && x !== y;
+  const d = mod(Math.atan2(v.y, v.x) - a0);
+  if (d < 1e-9 || d > doi - 1e-9 || Math.abs(d - deschidere) < 1e-9) return 0;
+  return d < deschidere ? 1 : 2;
+}
+
+/** Latura unei părți față de cuțitul deschis: 1 stânga, −1 dreapta, 0 nehotărât (de ambele părți, sau pe cuțit). */
+type Latura = 1 | -1 | 0;
+
+/** Latura direcției `raza`, care pleacă din locul `l` de pe cuțit (pe care cuțitul trece, cu ambele direcții). */
+function laturaRazei(K: Cutitul, l: Loc, raza: Punct | undefined): Latura {
+  if (!raza) return 0;
+  const [kf, kb] = raze((K.contururi[l.kc] as Cav).c, l.x.b);
+  if (!kf || !kb) return 0;
+  const s = sector(kf, kb, raza);
+  return s === 1 ? 1 : s === 2 ? -1 : 0;
+}
+
+/**
+ * Latura unei bucăți deschise, dintre locurile `de` (pleacă înainte din el) și `pana` (ajunge în el), pe conturul c: cea
+ * spre care pleacă din cuțit la fiecare capăt tăiat; capete în părți diferite: nehotărât.
+ */
+function laturaBucatii(K: Cutitul, c: Contur, de: Loc | undefined, pana: Loc | undefined): Latura {
+  const xs: Latura[] = [];
+  if (de) xs.push(laturaRazei(K, de, raze(c, de.x.a)[0]));
+  if (pana) xs.push(laturaRazei(K, pana, raze(c, pana.x.a)[1]));
+  const hotarate = new Set(xs.filter((x) => x !== 0));
+  return hotarate.size === 1 ? ([...hotarate][0] as Latura) : 0;
+}
+
+/**
+ * Latura unui contur netăiat față de cuțitul deschis, după primul lui punct de probă care nu stă pe cuțit: cea în care e față
+ * de cel mai apropiat punct al cuțitului (la un capăt al lui, față de tangenta de acolo).
+ */
+function laturaPunctelor(K: Cutitul, proba: readonly Punct[]): Latura {
+  for (const q of proba) {
+    let cel: { readonly c: Contur; readonly k: number; readonly t: number; readonly d: number } | null = null;
+    for (const kv of K.contururi) {
+      for (let k = 0; k < numarSegmente(kv.c); k++) {
+        const r = apropiat(kv.c, k, q);
+        if (!cel || r.d < cel.d) cel = { c: kv.c, k, t: r.t, d: r.d };
+      }
+    }
+    if (!cel) return 0;
+    if (cel.d <= 1e-6) continue;
+    const x: Trecere = cel.t >= 1 ? { k: cel.k + 1, t: 0 } : cel.t <= 0 ? { k: cel.k, t: 0 } : { k: cel.k, t: cel.t };
+    const P = punctLa(cel.c, x);
+    const v = { x: q.x - P.x, y: q.y - P.y };
+    const r = raze(cel.c, x);
+    const [r0, r1] = r;
+    if (r0 && r1) {
+      const s = sector(r0, r1, v);
+      return s === 1 ? 1 : s === 2 ? -1 : 0;
+    }
+    if (!r0) return 0;
+    // Un capăt al cuțitului: sensul de mers e raza înainte (la început) sau opusul celei înapoi (la sfârșit).
+    const dir = x.k === 0 && x.t === 0 ? r0 : { x: -r0.x, y: -r0.y };
+    const z = dir.x * v.y - dir.y * v.x;
+    return z > 0 ? 1 : z < 0 ? -1 : 0;
+  }
+  return 0;
 }
 
 // ——— Cuțitul-formă (ADR 0180 §3, §6) ———
@@ -850,26 +1188,33 @@ function deOParteSiDeAlta(k: readonly Punct[], s: readonly Punct[]): boolean {
 /** Cuțitul: contururile lui în lume, gata de cavalier, și locurile în care se taie singur (sau contururile lui între ele). */
 type Cutitul = {
   readonly contururi: readonly Cav[];
+  /**
+   * Elementul din care vine fiecare contur (un cuțit-formă), sau null (calea trasă pe pânză): o buclă care stă toată într-o
+   * formă îi păstrează forma (un cerc rămâne cerc).
+   */
+  readonly surse: readonly (ElementLume | null)[];
   /** Toate contururile închise: părțile sunt ce e înăuntrul lui (regiunea par-impar) și ce e în afară. */
   readonly inchis: boolean;
   readonly proprii: readonly Punct[];
   readonly cutie: Cutie;
 };
 
-function cutitul(doc: Document, indexFoaie: number, id: string): Cutitul | MotivTaiere {
-  const inst = doc.foi[indexFoaie]?.instante.find((i) => i.id === id);
-  const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
-  if (!inst || !p) return 'nimic-ales';
+/** Cuțitul din contururile date, în lume: cele care nu se pot tăia (un punct, o linie de lungime zero) nu contează. */
+function cutitulDin(xs: ReadonlyArray<{ readonly c: Contur; readonly e: ElementLume | null }>): Cutitul | MotivTaiere {
   const contururi: Cav[] = [];
-  for (const e of elementeInstanta(p.radacina, inst, matriceInstanta(inst))) {
+  const surse: Array<ElementLume | null> = [];
+  for (const x of xs) {
     let c: Cav | null | 'esuat';
     try {
-      c = laCavalier(conturElement(e));
+      c = laCavalier(x.c);
     } catch {
       return 'nereusita';
     }
     if (c === 'esuat') return 'nereusita';
-    if (c) contururi.push(c);
+    if (c) {
+      contururi.push(c);
+      surse.push(x.e);
+    }
   }
   if (contururi.length === 0) return 'nimic-taiat';
   const proprii: Punct[] = [];
@@ -877,7 +1222,190 @@ function cutitul(doc: Document, indexFoaie: number, id: string): Cutitul | Motiv
     for (const x of autointersectii(a.lucru)) proprii.push(...x.puncte);
     for (const b of contururi.slice(i + 1)) for (const x of intersectiiIntre(a.lucru, b.lucru)) proprii.push(...x.puncte);
   });
-  return { contururi, inchis: contururi.every((c) => c.c.inchis), proprii, cutie: contururi.reduce((u, c) => uneste(u, c.cutie), CUTIE_GOALA) };
+  return { contururi, surse, inchis: contururi.every((c) => c.c.inchis), proprii, cutie: contururi.reduce((u, c) => uneste(u, c.cutie), CUTIE_GOALA) };
+}
+
+/** Contururile cuțitului-formă, în lume: toate contururile instanțelor date (ultima formă aleasă; felul Formă, una sau mai multe). */
+function contururiForme(doc: Document, indexFoaie: number, ids: readonly string[]): Array<{ readonly c: Contur; readonly e: ElementLume }> | MotivTaiere {
+  const xs: Array<{ readonly c: Contur; readonly e: ElementLume }> = [];
+  for (const id of ids) {
+    const inst = doc.foi[indexFoaie]?.instante.find((i) => i.id === id);
+    const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    if (!inst || !p) return 'nimic-ales';
+    for (const e of elementeInstanta(p.radacina, inst, matriceInstanta(inst))) {
+      try {
+        xs.push({ c: conturElement(e), e });
+      } catch {
+        return 'nereusita';
+      }
+    }
+  }
+  return xs;
+}
+
+/** Cuțitul-formă: toate contururile instanțelor date, împreună (granița decupării). */
+function cutitul(doc: Document, indexFoaie: number, ids: readonly string[]): Cutitul | MotivTaiere {
+  const xs = contururiForme(doc, indexFoaie, ids);
+  return typeof xs === 'string' ? xs : cutitulDin(xs);
+}
+
+/** Calea trasă pe pânză (ADR 0181 §1), în lume, netezită întâi dacă vine din mâna liberă. */
+function conturCale(c: Extract<Cutit, { readonly fel: 'cale' }>): Contur | MotivTaiere {
+  let f = c.cale;
+  if (c.netezire !== undefined) {
+    if (!(c.netezire > 0) || !Number.isFinite(c.netezire)) return 'valoare';
+    // Colțurile ascuțite rămân, liniile oricât de lungi devin curbe (fără „Păstrează liniile mai lungi de”).
+    const v = netezesteCale(f, IDENTITATE, c.netezire, Infinity, { abatere: 0, curbe: 0, linii: 0 });
+    if (v) f = { ...f, varfuri: v };
+  }
+  try {
+    return caContur(f);
+  } catch {
+    return 'nereusita';
+  }
+}
+
+// ——— Prelungirea capetelor (ADR 0181 §2) ———
+
+/** Peste atât trece cuțitul prelungit de marginea din care iese (mm): tăietura e o trecere, nu un capăt pe margine. */
+const DEPASIRE = 1e-3;
+const LINIE_GEOM: Segment = { tip: 'L' };
+
+/** Ce știe prelungirea despre formele de tăiat: regiunea fiecăreia (contururile închise, în lume, cu cutia ei) și cutia tuturor. */
+type Tinte = {
+  readonly regiuni: ReadonlyArray<{ readonly R: readonly Contur[]; readonly cutie: Cutie }>;
+  readonly cutie: Cutie;
+  /** Contururile, gata de cavalier (o dată pe contur, oricâte capete se prelungesc). */
+  readonly cav: Map<Contur, Cav | null>;
+};
+
+function tinteDin(doc: Document, instante: readonly Instanta[], alese: ReadonlySet<string>): Tinte | MotivTaiere {
+  const regiuni: Array<{ readonly R: readonly Contur[]; readonly cutie: Cutie }> = [];
+  let cutie: Cutie = CUTIE_GOALA;
+  for (const inst of instante) {
+    if (!alese.has(inst.id)) continue;
+    const p = doc.piese.find((x) => x.id === inst.piesa);
+    if (!p) continue;
+    let cs: Contur[];
+    try {
+      cs = elementeInstanta(p.radacina, inst, matriceInstanta(inst)).map((e) => conturElement(e));
+    } catch {
+      return 'nereusita';
+    }
+    const k = cs.reduce((u, c) => uneste(u, cutieContur(c)), CUTIE_GOALA);
+    cutie = uneste(cutie, k);
+    const R = cs.filter((c) => c.inchis);
+    if (R.length > 0) regiuni.push({ R, cutie: k });
+  }
+  return { regiuni, cutie, cav: new Map() };
+}
+
+/**
+ * Direcția (unitară) în care iese o cale deschisă din capătul ei, pe tangentă: din început, înapoi; din sfârșit, înainte. La
+ * arc, coarda rotită cu jumătate din baleiaj; la cubică, de la mânerul din capăt (sau următorul punct diferit de capăt).
+ */
+function tangentaCapat(c: Contur, capat: 0 | 1): Punct | null {
+  const m = numarSegmente(c);
+  if (m === 0) return null;
+  const g = segment(c, capat === 0 ? 0 : m - 1);
+  let d: Punct;
+  if (g.s.tip === 'A' && Math.abs(g.s.bulge) > 1e-12) {
+    const r = (capat === 0 ? -2 : 2) * Math.atan(g.s.bulge);
+    const cx = g.b.x - g.a.x, cy = g.b.y - g.a.y;
+    const dx = cx * Math.cos(r) - cy * Math.sin(r), dy = cx * Math.sin(r) + cy * Math.cos(r);
+    d = capat === 0 ? { x: -dx, y: -dy } : { x: dx, y: dy };
+  } else if (g.s.tip === 'C') {
+    const P = capat === 0 ? g.a : g.b;
+    const q = (capat === 0 ? [g.s.c1, g.s.c2, g.b] : [g.s.c2, g.s.c1, g.a]).find((x) => Math.hypot(x.x - P.x, x.y - P.y) > 1e-12);
+    if (!q) return null;
+    d = { x: P.x - q.x, y: P.y - q.y };
+  } else {
+    d = capat === 0 ? { x: g.a.x - g.b.x, y: g.a.y - g.b.y } : { x: g.b.x - g.a.x, y: g.b.y - g.a.y };
+  }
+  const l = Math.hypot(d.x, d.y);
+  return l > 0 && Number.isFinite(l) ? { x: d.x / l, y: d.y / l } : null;
+}
+
+/** Cât merge raza din P pe direcția w până la primul loc comun cu un contur din R (la cel mult `lung` mm), sau null. */
+function iesire(P: Punct, w: Punct, R: readonly Contur[], lung: number, t: Tinte): number | null {
+  const raza: Contur = { inchis: false, varfuri: [{ p: P, s: LINIE_GEOM }, { p: { x: P.x + w.x * lung, y: P.y + w.y * lung }, s: LINIE_GEOM }] };
+  let A: Cav | null | 'esuat';
+  try {
+    A = laCavalier(raza);
+  } catch {
+    return null;
+  }
+  if (A === null || A === 'esuat') return null;
+  let best = Infinity;
+  for (const c of R) {
+    let B = t.cav.get(c);
+    if (B === undefined) {
+      let x: Cav | null | 'esuat';
+      try {
+        x = laCavalier(c);
+      } catch {
+        x = null;
+      }
+      B = x === 'esuat' ? null : x;
+      t.cav.set(c, B);
+    }
+    if (B === null || !seAting(A.cutie, B.cutie)) continue;
+    for (const x of intalniri(A, B).puncte) {
+      const s = (x.a.k + x.a.t) * lung;
+      if (s > 1e-9 && s < best) best = s;
+    }
+  }
+  return best < Infinity ? best : null;
+}
+
+/**
+ * Cât se prelungește capătul P (direcția w) „până iese din formă”: cât stă în regiunea unei forme de tăiat, merge până la cea
+ * mai depărtată dintre primele ieșiri din regiunile în care stă, plus DEPASIRE; dacă acolo intră în altă formă, mai departe.
+ */
+function pesteRegiuni(P0: Punct, w: Punct, t: Tinte): number {
+  const k = uneste(t.cutie, { minX: P0.x, minY: P0.y, maxX: P0.x, maxY: P0.y });
+  const lung = Math.hypot(k.maxX - k.minX, k.maxY - k.minY) + 1;
+  let s = 0;
+  for (let pas = 0; pas < 100; pas++) {
+    const P = { x: P0.x + w.x * s, y: P0.y + w.y * s };
+    let urm = 0, inauntru = false;
+    for (const r of t.regiuni) {
+      if (P.x < r.cutie.minX || P.x > r.cutie.maxX || P.y < r.cutie.minY || P.y > r.cutie.maxY) continue;
+      if (!r.R.every((c) => distantaLaContur(P, c) > 1e-6) || !inRegiune(P, r.R)) continue;
+      inauntru = true;
+      const e = iesire(P, w, r.R, lung, t);
+      if (e !== null && e > urm) urm = e;
+    }
+    if (!inauntru || !(urm > 0)) break;
+    s += urm + DEPASIRE;
+  }
+  return s;
+}
+
+/** Cât se prelungește capătul P (direcția w) cu „linia întreagă”: dincolo de cutia tuturor formelor de tăiat (1 mm peste). */
+function pesteCutie(P: Punct, w: Punct, k: Cutie): number {
+  if (!(k.maxX >= k.minX)) return 0;
+  let s = 0;
+  for (const x of [k.minX, k.maxX]) for (const y of [k.minY, k.maxY]) s = Math.max(s, (x - P.x) * w.x + (y - P.y) * w.y);
+  return s > 0 ? s + 1 : 0;
+}
+
+/** Calea deschisă c, cu capetele prelungite pe tangentă (o latură dreaptă nouă la fiecare capăt prelungit). */
+function prelungit(c: Contur, mod: 'forma' | 'intreaga', t: Tinte): Contur {
+  const n = c.varfuri.length;
+  if (c.inchis || n < 2) return c;
+  const v0 = (c.varfuri[0] as Varf).p, v1 = (c.varfuri[n - 1] as Varf).p;
+  const cat = (P: Punct, w: Punct | null): number => (w === null ? 0 : mod === 'intreaga' ? pesteCutie(P, w, t.cutie) : pesteRegiuni(P, w, t));
+  const w0 = tangentaCapat(c, 0), w1 = tangentaCapat(c, 1);
+  const s0 = cat(v0, w0), s1 = cat(v1, w1);
+  if (!(s0 > 0) && !(s1 > 0)) return c;
+  const varfuri = [...c.varfuri];
+  if (s1 > 0 && w1) {
+    varfuri[n - 1] = { p: v1, s: LINIE_GEOM };
+    varfuri.push({ p: { x: v1.x + w1.x * s1, y: v1.y + w1.y * s1 }, s: LINIE_GEOM });
+  }
+  if (s0 > 0 && w0) varfuri.unshift({ p: { x: v0.x + w0.x * s0, y: v0.y + w0.y * s0 }, s: LINIE_GEOM });
+  return { inchis: false, varfuri };
 }
 
 /** Un loc comun al conturului `el` al piesei cu conturul `kc` al cuțitului (`x.a` pe formă, `x.b` pe cuțit). */
@@ -932,7 +1460,7 @@ function fataDin(drum: readonly PasFata[], mi: Matrice): { readonly e: ElementNo
  * locului până la celălalt capăt al ei, apoi pe bucata care pleacă de acolo, până la început. Null dacă un loc n-are exact o
  * bucată care pleacă din el și o coardă.
  */
-function fete(piese: readonly PiesaFata[], corzi: readonly Coarda[], mi: Matrice): Array<{ readonly e: ElementNou; readonly arie: number; readonly piese: readonly PiesaFata[] }> | null {
+function fete(piese: readonly PiesaFata[], corzi: readonly Coarda[], mi: Matrice): Array<{ readonly e: ElementNou; readonly arie: number; readonly piese: readonly PiesaFata[]; readonly latura: Latura }> | null {
   const pleaca = new Map<number, number>();
   piese.forEach((b, i) => { pleaca.set(b.invers ? b.pana : b.de, i); });
   const peCoarda = new Map<number, { readonly c: Coarda; readonly inapoi: boolean }>();
@@ -942,7 +1470,7 @@ function fete(piese: readonly PiesaFata[], corzi: readonly Coarda[], mi: Matrice
   }
   if (pleaca.size !== piese.length || peCoarda.size !== 2 * corzi.length) return null;
   const vazute = new Set<number>();
-  const rez: Array<{ readonly e: ElementNou; readonly arie: number; readonly piese: readonly PiesaFata[] }> = [];
+  const rez: Array<{ readonly e: ElementNou; readonly arie: number; readonly piese: readonly PiesaFata[]; readonly latura: Latura }> = [];
   for (let i0 = 0; i0 < piese.length; i0++) {
     if (vazute.has(i0)) continue;
     const drum: PasFata[] = [];
@@ -960,20 +1488,56 @@ function fete(piese: readonly PiesaFata[], corzi: readonly Coarda[], mi: Matrice
     }
     const f = fataDin(drum, mi);
     if (!f) return null;
-    rez.push({ ...f, piese: drum.map((x) => x.b) });
+    // Fața are regiunea în stânga drumului: o coardă parcursă în sensul cuțitului o lasă în stânga lui (ADR 0181 §2), una
+    // parcursă invers, în dreapta; corzi în ambele sensuri (un cuțit în spirală): nehotărât.
+    const latura: Latura = drum.every((x) => !x.inapoi) ? 1 : drum.every((x) => x.inapoi) ? -1 : 0;
+    rez.push({ ...f, piese: drum.map((x) => x.b), latura });
   }
   return rez;
 }
 
-/** O formă nouă, cu punctele ei de probă (ale bucăților formei, nu ale corzilor) și, la o față, conturul și aria ei în lume. */
-type Noua = { readonly e: ElementNou; readonly proba: readonly Punct[]; readonly fata: { readonly c: Contur; readonly arie: number } | null };
+/**
+ * O formă nouă, cu punctele ei de probă (ale bucăților formei, nu ale corzilor), la o față conturul și aria ei în lume, și
+ * latura ei față de un cuțit deschis (ADR 0181 §2).
+ */
+type Noua = { readonly e: ElementNou; readonly proba: readonly Punct[]; readonly fata: { readonly c: Contur; readonly arie: number } | null; readonly latura: Latura };
+
+/** Un contur netăiat (sau o margine dinăuntru), cu punctele lui de probă. */
+type Intreaga = { readonly e: ElementNou; readonly proba: readonly Punct[] };
+/**
+ * O buclă închisă a unui cuțit închis care stă toată în regiunea piesei, fără să-i atingă vreun contur închis (ADR 0181 §1):
+ * intră în ambele părți. Forma și matricea ei față de rădăcina piesei (forma cuțitului-formă, deci un cerc rămâne cerc; calea
+ * trasă, ca o cale), bucla în lume cu un punct al ei și conturul piesei în care stă, cu adâncimea lui (operațiile, pe o piesă
+ * fără rol).
+ */
+type Libera = {
+  readonly forma: FormaDoc;
+  readonly matrice: Matrice;
+  readonly c: Contur;
+  readonly q: Punct;
+  readonly sursa: ElementLume;
+  readonly adancime: number;
+};
 
 /**
- * O instanță tăiată cu cuțitul-formă (ADR 0180 §3, §6), sau null dacă nu e tăiată, sau motivul unui refuz. Un contur închis se
- * taie doar unde exact una dintre bucățile cuțitului de lângă loc intră în regiunea piesei; o cale deschisă, unde cuțitul o
+ * O instanță împărțită de cuțit: formele noi (bucăți și fețe), cele netăiate, buclele libere ale cuțitului și câte contururi
+ * s-au tăiat.
+ */
+type Impartire = {
+  readonly noi: readonly Noua[];
+  readonly intregi: readonly Intreaga[];
+  readonly libere: readonly Libera[];
+  readonly taiate: number;
+  /** Contururile închise ale piesei, în lume, pe care cuțitul le taie (capetele cuțitului mutat, ADR 0181 §2). */
+  readonly atinse: readonly Contur[];
+};
+
+/**
+ * O instanță împărțită de cuțitul-formă (ADR 0180 §3, §6), sau null dacă nu e tăiată, sau motivul unui refuz. Un contur închis
+ * se taie doar unde exact una dintre bucățile cuțitului de lângă loc intră în regiunea piesei; o cale deschisă, unde cuțitul o
  * trece de tot. Cu închidere, fețele sunt făcute din bucățile contururilor închise și din corzi.
  */
-function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Rezultat | MotivTaiere | null {
+function impartireCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Impartire | MotivTaiere | null {
   const mi = matriceInstanta(inst);
   const lume = elementeInstanta(p.radacina, inst, mi);
   const rel = elementeInstanta(p.radacina, inst, IDENTITATE);
@@ -1000,11 +1564,43 @@ function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Re
       for (const x of r.puncte) locuri.push({ el, kc, x });
     }
   }
-  if (locuri.length === 0) return null;
-
   // Regiunea piesei (par-impar); un punct pe marginea ei nu e înăuntru.
   const R = w.filter((c) => c.inchis);
   const inR = (q: Punct): boolean => R.every((c) => distantaLaContur(q, c) > 1e-6) && inRegiune(q, R);
+  // Buclele libere (ADR 0181 §1): contururile unui cuțit închis care nu ating niciun contur închis al piesei și stau în
+  // regiunea ei (un text pus pe o placă). Cu închidere, fiecare intră în ambele părți.
+  const libere: Libera[] = [];
+  if (K.inchis && inchide && R.length > 0) {
+    const atinse = new Set(locuri.filter((l) => (w[l.el] as Contur).inchis).map((l) => l.kc));
+    const mi1 = inversa(mi);
+    for (let kc = 0; kc < K.contururi.length; kc++) {
+      if (atinse.has(kc)) continue;
+      const kw = (K.contururi[kc] as Cav).c;
+      const q = punctLa(kw, { k: 0, t: 0.5 });
+      if (!inR(q)) continue;
+      if (!mi1) return 'nereusita';
+      // Conturul piesei în care stă bucla: cel mai mic dintre cele închise care o cuprind.
+      let el = -1, arie = Infinity;
+      w.forEach((c, j) => {
+        if (!c.inchis || !inRegiune(q, [c])) return;
+        const a = Math.abs(arieCuSemn(c));
+        if (a < arie) { el = j; arie = a; }
+      });
+      const sursa = lume[el];
+      if (!sursa) return 'nereusita';
+      const qs = punctLa(w[el] as Contur, { k: 0, t: 0.5 });
+      const adancime = w.filter((c, j) => j !== el && c.inchis && inRegiune(qs, [c])).length;
+      const ek = K.surse[kc];
+      libere.push({
+        forma: ek ? ek.forma : { tip: 'cale', inchis: true, varfuri: inDocument(transformaContur(kw, mi1)) },
+        matrice: ek ? compune(mi1, ek.matrice) : IDENTITATE,
+        c: kw, q, sursa, adancime,
+      });
+    }
+  }
+  if (locuri.length === 0 && libere.length === 0) return null;
+  // Un cuțit care se încrucișează în regiune nu are o parte dinăuntru bine făcută.
+  if (libere.length > 0 && K.proprii.some(inR)) return 'cutit';
   const taiat = new Set<Loc>();
   for (let kc = 0; kc < K.contururi.length; kc++) {
     const kw = (K.contururi[kc] as Cav).c;
@@ -1041,7 +1637,7 @@ function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Re
   // Un contur închis se taie cu închidere de la un loc (o coardă pleacă din el), fără închidere de la două.
   const minim = (c: Contur): number => (c.inchis && !inchide ? 2 : 1);
   const taiate = w.filter((c, el) => (locTaiere[el] as Loc[]).length >= minim(c)).length;
-  if (taiate === 0) return null;
+  if (taiate === 0 && libere.length === 0) return null;
   if (suprapus) return 'pe-linie';
 
   const adancime = (el: number): number => {
@@ -1049,7 +1645,7 @@ function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Re
     return w.filter((c, j) => j !== el && c.inchis && inRegiune(q, [c])).length;
   };
   const noi: Noua[] = [];
-  const intregi: Array<{ readonly e: ElementNou; readonly proba: readonly Punct[] }> = [];
+  const intregi: Intreaga[] = [];
   const pieseFata: PiesaFata[] = [];
   const idLoc = new Map<Loc, number>();
   for (let el = 0; el < w.length; el++) {
@@ -1070,9 +1666,16 @@ function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Re
       continue;
     }
     const trig = c.inchis ? arieCuSemn(c) > 0 : null;
-    for (const f of bucati) {
-      noi.push({ e: { forma: f, matrice: er.matrice, surse: [e], fel: 'deschis', exteriorDreapta: trig, ...camp }, proba: puncteProba(conturElement({ forma: f, matrice: e.matrice })), fata: null });
-    }
+    bucati.forEach((f, j) => {
+      // Locurile dintre care stă bucata: pe un contur închis, al ei și următorul; pe o cale deschisă, prima pleacă din început
+      // și ultima ajunge la sfârșit (capete libere).
+      const de = c.inchis ? ls[j] : j > 0 ? ls[j - 1] : undefined;
+      const pana = c.inchis ? ls[(j + 1) % ls.length] : ls[j];
+      noi.push({
+        e: { forma: f, matrice: er.matrice, surse: [e], fel: 'deschis', exteriorDreapta: trig, ...camp },
+        proba: puncteProba(conturElement({ forma: f, matrice: e.matrice })), fata: null, latura: laturaBucatii(K, c, de, pana),
+      });
+    });
   }
 
   if (pieseFata.length > 0) {
@@ -1101,39 +1704,429 @@ function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean): Re
       const proba = x.piese.flatMap((b) => puncteProba(conturElement({ forma: b.f, matrice: b.e.matrice })));
       // O margine dinăuntru (aria negativă) merge, ca un contur netăiat, cu regiunea în care stă.
       if (x.arie < 0) intregi.push({ e: x.e, proba });
-      else noi.push({ e: x.e, proba, fata: { c: transformaContur(caContur(x.e.forma as FormaCale), compune(mi, x.e.matrice)), arie: x.arie } });
+      else noi.push({ e: x.e, proba, fata: { c: transformaContur(caContur(x.e.forma as FormaCale), compune(mi, x.e.matrice)), arie: x.arie }, latura: x.latura });
     }
   }
 
-  const parti: Parte[] = [];
-  if (K.inchis) {
-    // Cuțitul închis: ce e înăuntrul lui și ce e în afară (după primul punct de probă care nu stă pe el).
-    const kw = K.contururi.map((c) => c.c);
-    const inauntru = (proba: readonly Punct[]): boolean => {
-      for (const q of proba) if (kw.every((c) => distantaLaContur(q, c) > 1e-6)) return inRegiune(q, kw);
-      return false;
-    };
-    const A: ElementNou[] = [], B: ElementNou[] = [];
-    for (const x of [...noi, ...intregi]) (inauntru(x.proba) ? A : B).push(x.e);
-    for (const x of [A, B]) if (x.length > 0) parti.push({ elemente: x });
-  } else {
-    // Cuțitul deschis: fiecare față și fiecare bucată, o formă; un contur netăiat merge cu cea mai mică față în care stă,
-    // altfel rămâne.
-    const separate = noi.map((x) => ({ elemente: [x.e] }));
-    const rest: ElementNou[] = [];
-    for (const x of intregi) {
-      const q = x.proba[0];
-      let k = -1;
-      noi.forEach((y, j) => {
-        if (q && y.fata && inRegiune(q, [y.fata.c]) && (k < 0 || y.fata.arie < ((noi[k] as Noua).fata?.arie ?? Infinity))) k = j;
-      });
-      if (k >= 0) (separate[k] as Parte).elemente.push(x.e);
-      else rest.push(x.e);
+  // Tăiată doar de buclele libere: conturul în care stau se socotește tăiat.
+  const atinse = w.filter((c, el) => c.inchis && (locTaiere[el] as Loc[]).length > 0);
+  return { noi, intregi, libere, taiate: Math.max(taiate, libere.length > 0 ? 1 : 0), atinse };
+}
+
+/**
+ * Buclele libere ale cuțitului, în fiecare parte (ADR 0181 §1): o margine înăuntru, un gol în afară (sau o insulă, mijlocul
+ * unei litere). Pe o piesă fără rol, bucla ia operațiile conturului în care stă, cu latura întoarsă când adâncimea ei în parte
+ * diferă de a lui ca paritate.
+ */
+function cuLibere(libere: readonly Libera[], parti: readonly ElementNou[][], mi: Matrice): void {
+  if (libere.length === 0) return;
+  const bucle = libere.map((l) => l.c);
+  for (const parte of parti) {
+    const inParte = parte.map((e) => conturElement({ forma: e.forma, matrice: compune(mi, e.matrice) })).filter((c) => c.inchis);
+    for (const l of libere) {
+      const adancime = [...inParte, ...bucle].filter((c) => c !== l.c && inRegiune(l.q, [c])).length;
+      parte.push({ forma: l.forma, matrice: l.matrice, surse: [l.sursa], fel: 'inchis', exteriorDreapta: null, inversLatura: adancime % 2 !== l.adancime % 2 });
     }
-    parti.push(...separate);
-    if (rest.length > 0) parti.push({ elemente: rest });
   }
-  return { parti, taiate };
+}
+
+/** Ce e înăuntrul cuțitului închis și ce e în afara lui, după primul punct de probă al fiecărei forme care nu stă pe el. */
+function laturi(K: Cutitul, xs: readonly Intreaga[]): readonly [ElementNou[], ElementNou[]] {
+  const kw = K.contururi.map((c) => c.c);
+  const inauntru = (proba: readonly Punct[]): boolean => {
+    for (const q of proba) if (kw.every((c) => distantaLaContur(q, c) > 1e-6)) return inRegiune(q, kw);
+    return false;
+  };
+  const A: ElementNou[] = [], B: ElementNou[] = [];
+  for (const x of xs) (inauntru(x.proba) ? A : B).push(x.e);
+  return [A, B];
+}
+
+/** Părțile cuțitului-formă, cu latura lor (1: stânga, înăuntru; −1: dreapta, în afară; 0: nehotărâtă), și restul celui deschis. */
+type Grupare = { readonly parti: ReadonlyArray<{ readonly elemente: ElementNou[]; readonly latura: Latura }>; readonly rest: readonly Intreaga[] };
+
+/**
+ * Părțile unei instanțe împărțite de cuțitul-formă: la cel închis, ce e înăuntrul lui și ce e în afară (buclele libere, în
+ * amândouă); la cel deschis, fiecare față și fiecare bucată, o formă, iar un contur netăiat merge cu cea mai mică față în care
+ * stă, altfel rămâne în rest.
+ */
+function grupare(K: Cutitul, r: Impartire, mi: Matrice): Grupare {
+  if (K.inchis) {
+    const doua = laturi(K, [...r.noi, ...r.intregi]);
+    cuLibere(r.libere, doua, mi);
+    return { parti: [{ elemente: doua[0], latura: 1 }, { elemente: doua[1], latura: -1 }], rest: [] };
+  }
+  const parti = r.noi.map((x) => ({ elemente: [x.e], latura: x.latura }));
+  const rest: Intreaga[] = [];
+  for (const x of r.intregi) {
+    const q = x.proba[0];
+    let k = -1;
+    r.noi.forEach((y, j) => {
+      if (q && y.fata && inRegiune(q, [y.fata.c]) && (k < 0 || y.fata.arie < ((r.noi[k] as Noua).fata?.arie ?? Infinity))) k = j;
+    });
+    if (k >= 0) parti[k]?.elemente.push(x.e);
+    else rest.push(x);
+  }
+  return { parti, rest };
+}
+
+/** Ce rămâne cu „Păstrează” (ADR 0181 §2): părțile de partea păstrată și cele nehotărâte, apoi restul ei, ca o singură parte. */
+function pastrate(K: Cutitul, g: Grupare, pastreaza: Pastrare): Parte[] {
+  const sters: Latura = pastreaza === 'stanga' ? -1 : pastreaza === 'dreapta' ? 1 : 0;
+  const parti: Parte[] = g.parti.filter((x) => x.elemente.length > 0 && (sters === 0 || x.latura !== sters)).map((x) => ({ elemente: x.elemente }));
+  const rest = sters === 0 ? g.rest : g.rest.filter((x) => laturaPunctelor(K, x.proba) !== sters);
+  if (rest.length > 0) parti.push({ elemente: rest.map((x) => x.e) });
+  return parti;
+}
+
+/**
+ * O instanță tăiată cu cuțitul-formă: părțile ei (cuțitul închis: înăuntru, în afară; deschis: fiecare față, o formă). Cu
+ * „Păstrează” o parte (ADR 0181 §2): la cuțitul închis, ce e înăuntru (stânga) sau în afară (dreapta); la cel deschis, părțile
+ * de partea păstrată și cele nehotărâte. O instanță care n-are nimic de partea păstrată se șterge.
+ */
+function taieCuForma(K: Cutitul, inst: Instanta, p: Piesa, inchide: boolean, pastreaza: Pastrare): Rezultat | Stearsa | MotivTaiere | null {
+  const r = impartireCuForma(K, inst, p, inchide);
+  if (r === null || typeof r === 'string') return r;
+  const parti = pastrate(K, grupare(K, r, matriceInstanta(inst)), pastreaza);
+  if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
+  return { parti, taiate: r.taiate };
+}
+
+// ——— Spațiul și suprapunerea cu cuțitul-formă (ADR 0181 §2) ———
+
+/** Contururile cuțitului mutat (cele deschise, încă neprelungite) și cuțitul gata; null: cel închis, strâns, a dispărut. */
+type CutitMutat = { readonly contururi: readonly Contur[]; readonly K: Cutitul } | null;
+/** Cuțitul mutat spre stânga (`st`; la cel închis, înăuntru) și spre dreapta (`dr`; în afară); undefined: nu trebuie. */
+type Mutate = { readonly st: CutitMutat | undefined; readonly dr: CutitMutat | undefined };
+
+/**
+ * Cuțitul K mutat paralel cu `d` mm (pozitiv: spre stânga sensului; la cel închis, înăuntru, deci figura lui se strânge): la cel
+ * închis, offsetul figurii (null dacă dispare); la cel deschis, fiecare cale cu offsetul ei, dintr-o singură bucată, iar o buclă
+ * închisă a lui, cu offsetul conturului, în sensul ei. Altfel `spatiu-cutit`.
+ */
+function mutat(K: Cutitul, d: number): CutitMutat | MotivTaiere {
+  const lucru = K.contururi.map((c) => c.lucru);
+  const cs: Contur[] = [];
+  if (K.inchis) {
+    const r = offsetFigura(lucru, -d);
+    if (!r.ok) return d > 0 && r.motiv.startsWith('scula nu încape') ? null : 'spatiu-cutit';
+    for (const g of r.regiuni) cs.push(g.exterior, ...g.gauri);
+    if (cs.length === 0) return null;
+  } else {
+    for (const c of lucru) {
+      if (!c.inchis) {
+        const r = offsetDeschis(c, d);
+        if (!r.ok || r.bucati.length !== 1) return 'spatiu-cutit';
+        cs.push(r.bucati[0] as Contur);
+      } else {
+        const trig = arieCuSemn(c) > 0;
+        const r = offsetInchis(c, trig ? -d : d);
+        if (!r.ok || r.contururi.length !== 1) return 'spatiu-cutit';
+        const o = r.contururi[0] as Contur;
+        cs.push(trig ? o : inverseaza(o));
+      }
+    }
+  }
+  const M = cutitulDin(cs.map((c) => ({ c, e: null })));
+  return typeof M === 'string' ? 'spatiu-cutit' : { contururi: cs, K: M };
+}
+
+/** Cuțitele mutate de care e nevoie: partea s se taie cu cel mutat spre ea (spațiul) sau spre cealaltă (suprapunerea). */
+function cutiteMutate(K: Cutitul, intre: Intre, pastreaza: Pastrare): Mutate | MotivTaiere {
+  const d = intre.latime / 2;
+  const laturiPastrate: ReadonlyArray<1 | -1> = pastreaza === 'ambele' ? [1, -1] : [pastreaza === 'stanga' ? 1 : -1];
+  const trebuie = new Set(laturiPastrate.map((s) => (intre.fel === 'spatiu' ? s : -s)));
+  const st = trebuie.has(1) ? mutat(K, d) : undefined;
+  if (typeof st === 'string') return st;
+  const dr = trebuie.has(-1) ? mutat(K, -d) : undefined;
+  if (typeof dr === 'string') return dr;
+  return { st, dr };
+}
+
+/**
+ * Cuțitul mutat, pentru o instanță: capetele căilor lui merg mai departe pe tangentă cât au rămas într-un contur închis pe
+ * care cuțitul nemutat îl taie (un cuțit care iese pe sub un unghi mic dintr-o formă: cel mutat s-ar opri înăuntru).
+ */
+function prelungitPentru(m: NonNullable<CutitMutat>, atinse: readonly Contur[]): Cutitul | MotivTaiere {
+  if (m.K.inchis || atinse.length === 0) return m.K;
+  const t: Tinte = {
+    regiuni: atinse.map((c) => ({ R: [c], cutie: cutieContur(c) })),
+    cutie: atinse.reduce((u, c) => uneste(u, cutieContur(c)), CUTIE_GOALA),
+    cav: new Map(),
+  };
+  const cs = m.contururi.map((c) => (c.inchis ? c : prelungit(c, 'forma', t)));
+  if (cs.every((c, i) => c === m.contururi[i])) return m.K;
+  const K = cutitulDin(cs.map((c) => ({ c, e: null })));
+  return typeof K === 'string' ? 'spatiu-cutit' : K;
+}
+
+/** Trece conturul c (în lume) de cuțitul mutat Ks spre partea s? (Vezi `mancataDeForma`.) */
+function treceDeCutit(c: Contur, Ks: Cutitul | null, s: 1 | -1, inchise: readonly Contur[]): boolean {
+  if (Ks === null) return s === -1;
+  let A: Cav | null | 'esuat';
+  try {
+    A = laCavalier(c);
+  } catch {
+    A = 'esuat';
+  }
+  // Un contur care nu se poate judeca trece: decide tăierea cu cuțitul mutat.
+  if (A === 'esuat') return true;
+  if (A) {
+    for (const k of Ks.contururi) {
+      if (!seAting(A.cutie, k.cutie)) continue;
+      for (const x of intalniri(A, k).puncte) if (deOParteSiDeAlta(raze(k.c, x.b), raze(c, x.a))) return true;
+    }
+  }
+  const proba = puncteProba(c);
+  if (!Ks.inchis) return laturaPunctelor(Ks, proba) === s;
+  const kw = Ks.contururi.map((k) => k.c);
+  const q = proba.find((x) => kw.every((k) => distantaLaContur(x, k) > 1e-6));
+  if (q && inRegiune(q, kw) === (s === 1)) return true;
+  // O parte care se strânge, dar rămâne (înăuntru, sau insula din mijlocul unei litere, în afară): o buclă a cuțitului mutat
+  // stă în ea, în regiunea părții, deci lângă buclă e material de ambele ei laturi.
+  return c.inchis && kw.some((k) => {
+    const v = k.varfuri[0]?.p;
+    return v !== undefined && inRegiune(v, [c]) && inRegiune(v, inchise);
+  });
+}
+
+/**
+ * Spațiul la cuțitul-formă: ar mânca o bucată de partea s (`mancata`)? Fiecare parte de partea s a tăieturii fără spațiu și,
+ * la cuțitul deschis, restul de partea s; un contur trece de cuțitul mutat dacă îl taie de-a binelea (de o parte și de alta),
+ * dacă stă dincolo de el sau, la cel închis, dacă o buclă a lui stă în conturul acesta, în regiunea părții.
+ */
+function mancataDeForma(K: Cutitul, g: Grupare, s: 1 | -1, Ks: Cutitul | null, mi: Matrice): boolean {
+  const parti = g.parti.filter((x) => x.latura === s).map((x) => x.elemente);
+  if (!K.inchis) {
+    const rest = g.rest.filter((x) => laturaPunctelor(K, x.proba) === s).map((x) => x.e);
+    if (rest.length > 0) parti.push(rest);
+  }
+  return parti.some((el) => mancata(el, mi, (c, inchise) => treceDeCutit(c, Ks, s, inchise)));
+}
+
+/**
+ * Partea s (1: stânga, înăuntru; −1: dreapta, în afară) a instanței tăiate cu cuțitul mutat Ks (null: cel închis, strâns până
+ * a dispărut, deci totul e în afară): părțile ei și, la cel deschis, contururile netăiate din afara fețelor, de partea s sau
+ * nehotărâte. Cu ambele laturi păstrate, o parte nehotărâtă se refuză: ar intra în amândouă.
+ */
+function parteaDin(Ks: Cutitul | null, s: 1 | -1, inst: Instanta, p: Piesa, ambele: boolean): { readonly parti: ElementNou[][]; readonly rest: readonly Intreaga[] } | MotivTaiere {
+  const r = Ks === null ? null : impartireCuForma(Ks, inst, p, true);
+  // Cuțitul mutat care se oprește într-o formă nu se poate folosi.
+  if (typeof r === 'string') return r === 'nu-trece' ? 'spatiu-cutit' : r;
+  if (r === null || Ks === null) {
+    // Cuțitul mutat nu atinge instanța: toată e de o parte a lui.
+    const toate = toateIntregi(inst, p);
+    if (typeof toate === 'string') return toate;
+    if (Ks === null) return { parti: s === -1 ? [toate.map((x) => x.e)] : [], rest: [] };
+    if (Ks.inchis) {
+      const x = laturi(Ks, toate)[s === 1 ? 0 : 1];
+      return { parti: x.length > 0 ? [x] : [], rest: [] };
+    }
+    return { parti: [], rest: toate.filter((x) => laturaPunctelor(Ks, x.proba) !== -s) };
+  }
+  const g = grupare(Ks, r, matriceInstanta(inst));
+  if (ambele && g.parti.some((x) => x.latura === 0 && x.elemente.length > 0)) return 'spatiu-cutit';
+  return {
+    parti: g.parti.filter((x) => x.elemente.length > 0 && x.latura !== -s).map((x) => x.elemente),
+    rest: g.rest.filter((x) => laturaPunctelor(Ks, x.proba) !== -s),
+  };
+}
+
+/**
+ * O instanță tăiată de cuțitul-formă cu spațiu sau suprapunere (ADR 0181 §2): fiecare latură păstrată vine din tăierea cu
+ * cuțitul mutat spre ea (spațiul) sau spre cealaltă (suprapunerea); un contur netăiat din afara fețelor, o singură dată, la
+ * urmă. Null dacă cuțitul nemutat nu taie instanța (rămâne neschimbată, chiar dacă cel mutat ar atinge-o). Cu `grupat`
+ * (îmbinarea pe linia din panou, §6), tot ce e de o latură e o singură parte, cu restul de partea lui; `grupat` e semnul părții
+ * liniei din stânga drumului, iar partea A (semnul −1) vine întâi.
+ */
+function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastreaza: Pastrare, fel: Intre['fel'], grupat: 1 | -1 | null = null): Rezultat | Stearsa | MotivTaiere | null {
+  const z = impartireCuForma(K, inst, p, true);
+  if (z === null || typeof z === 'string') return z;
+  const mi = matriceInstanta(inst);
+  const gz = grupare(K, z, mi);
+  const laturiPastrate: ReadonlyArray<1 | -1> = pastreaza === 'ambele' ? [1, -1] : [pastreaza === 'stanga' ? 1 : -1];
+  const parti: Parte[] = [];
+  const rest = new Map<string, ElementNou>();
+  const peLatura = new Map<number, ElementNou[]>();
+  for (const s of laturiPastrate) {
+    const m = (fel === 'spatiu' ? s : -s) === 1 ? M.st : M.dr;
+    if (m === undefined) return 'nereusita';
+    const Ks = m === null ? null : prelungitPentru(m, z.atinse);
+    if (typeof Ks === 'string') return Ks;
+    if (fel === 'spatiu' && mancataDeForma(K, gz, s, Ks, mi)) return 'spatiu';
+    const x = parteaDin(Ks, s, inst, p, pastreaza === 'ambele');
+    if (typeof x === 'string') return x;
+    const toate = x.parti.flat();
+    if (grupat === null) for (const el of x.parti) parti.push({ elemente: el });
+    for (const y of x.rest) {
+      const cheie = y.e.surse[0]?.nod ?? `#${rest.size}`;
+      if (grupat !== null && !rest.has(cheie)) toate.push(y.e);
+      rest.set(cheie, y.e);
+    }
+    peLatura.set(s, toate);
+  }
+  if (grupat !== null) {
+    for (const s of grupat === -1 ? [1, -1] : [-1, 1]) {
+      const el = peLatura.get(s);
+      if (el && el.length > 0) parti.push({ elemente: el });
+    }
+  } else if (rest.size > 0) {
+    parti.push({ elemente: [...rest.values()] });
+  }
+  if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
+  return { parti, taiate: z.taiate };
+}
+
+// ——— Îmbinarea (ADR 0181 §6) ———
+
+/**
+ * Dreapta unei tăieturi cu îmbinare: prin A, pe direcția u (unitară). `de`, `pana`: capetele căii trase (poziții u · P); lipsă
+ * la linia din panou, unde drumul trece de cutia fiecărei instanțe cu 10 mm.
+ */
+type Dreapta = { readonly A: Punct; readonly u: Punct; readonly de?: number; readonly pana?: number };
+
+/** Calea trasă din două puncte, cu prelungirile ei pe aceeași dreaptă: capetele ei, sau null dacă nu e dreaptă. */
+function caleDreapta(xs: ReadonlyArray<{ readonly c: Contur }>): Dreapta | null {
+  const c = xs.length === 1 ? (xs[0] as { readonly c: Contur }).c : null;
+  if (!c || c.inchis || c.varfuri.length < 2) return null;
+  const A = (c.varfuri[0] as Varf).p, B = (c.varfuri[c.varfuri.length - 1] as Varf).p;
+  const l = Math.hypot(B.x - A.x, B.y - A.y);
+  if (!(l > 0)) return null;
+  const u = { x: (B.x - A.x) / l, y: (B.y - A.y) / l };
+  for (let k = 0; k < c.varfuri.length; k++) {
+    const v = c.varfuri[k] as Varf;
+    if ((k + 1 < c.varfuri.length && v.s.tip !== 'L') || Math.abs((v.p.x - A.x) * u.y - (v.p.y - A.y) * u.x) > eps(v.p)) return null;
+  }
+  return { A, u, de: u.x * A.x + u.y * A.y, pana: u.x * B.x + u.y * B.y };
+}
+
+/**
+ * Drumul tăieturii cu îmbinare pentru o instanță (contururile ei închise, în lume): dreapta de la `de` la `pana`, cu modelul
+ * pus pe fiecare coardă a ei prin regiune (trecerile, împerecheate par-impar) în care încape măcar un dinte întreg; o coardă mai
+ * scurtă rămâne dreaptă, iar una care nu stă toată pe tăietură, la fel. `imbinare-margine`: dinții unei coarde ar atinge un
+ * contur (o latură oblică sau o gaură prea aproape). Vârfurile de pe marginea formei (capetele coardelor) nu intră în drum.
+ */
+function drumCuImbinare(A: Punct, u: Punct, de: number, pana: number, inchise: readonly Contur[], im: Imbinare): { readonly c: Contur; readonly dinti: number } | MotivTaiere {
+  const n = { x: -u.y, y: u.x };
+  const L: Linie = { n, u, v: n.x * A.x + n.y * A.y };
+  const poz: number[] = [];
+  for (const c of inchise) {
+    const tr = treceri(L, c);
+    if (tr === 'pe-linie') return 'pe-linie';
+    for (const x of tr) poz.push(dealungul(L, punctLa(c, x)));
+  }
+  if (poz.length % 2 === 1) return 'nereusita';
+  poz.sort((a, b) => a - b);
+  const tA = dealungul(L, A);
+  const la = (t: number, s: number): Punct => ({ x: A.x + (t - tA) * u.x + s * n.x, y: A.y + (t - tA) * u.y + s * n.y });
+  const vf = (t: number, s: number, b: number): Varf => ({ p: la(t, s), s: b === 0 ? LINIE_GEOM : { tip: 'A', bulge: b } });
+  const varfuri: Varf[] = [vf(de, 0, 0)];
+  let dinti = 0;
+  // Contururile formei în cavalier, pentru marginea dinților: o singură dată și doar dacă vreo coardă primește dinți.
+  let cav: ReadonlyArray<Cav | null | 'esuat'> | null = null;
+  for (let k = 0; k + 1 < poz.length; k += 2) {
+    const a = poz[k] as number, b = poz[k + 1] as number;
+    if (a <= de || b >= pana) continue;
+    const d = drumImbinare(b - a, im);
+    if (d === 'imbinare-raza') return d;
+    if (d === null) continue;
+    const dinti0 = d.slice(1, -1).map((x) => vf(a + x.t, x.s, x.b));
+    let D: Cav | null | 'esuat';
+    try {
+      D = laCavalier({ inchis: false, varfuri: dinti0 });
+    } catch {
+      return 'nereusita';
+    }
+    if (D === 'esuat' || D === null) return 'nereusita';
+    cav ??= inchise.map((c): Cav | null | 'esuat' => {
+      try {
+        return laCavalier(c);
+      } catch {
+        return 'esuat';
+      }
+    });
+    for (const C of cav) {
+      if (C && C !== 'esuat' && seAting(D.cutie, C.cutie) && intalniri(D, C).puncte.length > 0) return 'imbinare-margine';
+    }
+    dinti += dintiPe(b - a, im.pas).n;
+    varfuri.push(...dinti0);
+  }
+  varfuri.push(vf(pana, 0, 0));
+  return { c: { inchis: false, varfuri }, dinti };
+}
+
+/**
+ * O instanță tăiată cu îmbinare (ADR 0181 §6): drumul ei, tăiat ca un cuțit-formă deschis, cu spațiul sau suprapunerea drept
+ * joc (§2). Cu `grupat` (linia din panou), ce e de o parte a drumului e o singură parte, ca la linie (partea A întâi; `grupat`
+ * e semnul părții liniei din stânga drumului); altfel (calea trasă), fiecare față e o parte. `numara` primește dinții drumului.
+ */
+function taieCuImbinare(inst: Instanta, p: Piesa, dr: Dreapta, im: Imbinare, pastreaza: Pastrare, intre: Intre | undefined, grupat: 1 | -1 | null, numara: (n: number) => void): Rezultat | Stearsa | MotivTaiere | null {
+  const mi = matriceInstanta(inst);
+  let w: Contur[];
+  try {
+    w = elementeInstanta(p.radacina, inst, mi).map((e) => conturElement(e));
+  } catch {
+    return 'nereusita';
+  }
+  const k = w.reduce((x, c) => uneste(x, cutieContur(c)), CUTIE_GOALA);
+  const pr = [k.minX, k.maxX].flatMap((x) => [k.minY, k.maxY].map((y) => dr.u.x * x + dr.u.y * y));
+  const d = drumCuImbinare(dr.A, dr.u, dr.de ?? Math.min(...pr) - 10, dr.pana ?? Math.max(...pr) + 10, w.filter((c) => c.inchis), im);
+  if (typeof d === 'string') return d;
+  numara(d.dinti);
+  const K = cutitulDin([{ c: d.c, e: null }]);
+  if (typeof K === 'string') return K;
+  if (intre) {
+    const M = cutiteMutate(K, intre, pastreaza);
+    return typeof M === 'string' ? M : taieCuFormaIntre(K, M, inst, p, pastreaza, intre.fel, grupat);
+  }
+  if (grupat === null) return taieCuForma(K, inst, p, true, pastreaza);
+  const r = impartireCuForma(K, inst, p, true);
+  if (r === null || typeof r === 'string') return r;
+  const g = grupare(K, r, mi);
+  const st: ElementNou[] = [], drp: ElementNou[] = [];
+  for (const x of g.parti) (x.latura === -1 ? drp : st).push(...x.elemente);
+  for (const x of g.rest) (laturaPunctelor(K, x.proba) === -1 ? drp : st).push(x.e);
+  const ramase = pastreaza === 'stanga' ? [st] : pastreaza === 'dreapta' ? [drp] : grupat === -1 ? [st, drp] : [drp, st];
+  const parti = ramase.filter((x) => x.length > 0).map((elemente) => ({ elemente }));
+  if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
+  return { parti, taiate: r.taiate };
+}
+
+// ——— Decuparea (ADR 0180 §4, §6) ———
+
+/** Toate contururile instanței, netăiate, cu punctele lor de probă (o instanță la care cuțitul n-a tăiat nimic). */
+function toateIntregi(inst: Instanta, p: Piesa): Intreaga[] | MotivTaiere {
+  const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
+  const rel = elementeInstanta(p.radacina, inst, IDENTITATE);
+  const vechi = elementeArbore(p.radacina);
+  try {
+    return lume.map((e, i): Intreaga => {
+      const v = vechi.get(e.nod);
+      const er = rel[i] as ElementLume;
+      return { e: { forma: e.forma, matrice: er.matrice, surse: [e], fel: 'intreg', exteriorDreapta: null, ...(v ? { vechi: v } : {}) }, proba: puncteProba(conturElement(e)) };
+    });
+  } catch {
+    return 'nereusita';
+  }
+}
+
+/**
+ * O instanță decupată la granița K (închisă): ce e de partea păstrată. Neschimbată (null) dacă e toată acolo; ștearsă dacă n-are
+ * nimic acolo; altfel trece granița și, după alegere, se taie (rămâne doar partea păstrată), se șterge sau rămâne întreagă.
+ */
+function decupeazaInstanta(K: Cutitul, inst: Instanta, p: Piesa, o: Extract<Cutit, { readonly fel: 'decupare' }>, inchide: boolean): Rezultat | Stearsa | MotivTaiere | null {
+  const r = impartireCuForma(K, inst, p, inchide);
+  if (typeof r === 'string') return r;
+  const xs = r ? [...r.noi, ...r.intregi] : toateIntregi(inst, p);
+  if (typeof xs === 'string') return xs;
+  const [inauntru, afara] = laturi(K, xs);
+  if (r) cuLibere(r.libere, [inauntru, afara], matriceInstanta(inst));
+  const [pastrate, plecate] = o.pastreaza === 'inauntru' ? [inauntru, afara] : [afara, inauntru];
+  if (plecate.length === 0) return null;
+  if (pastrate.length === 0) return { sterge: true };
+  if (o.trec === 'intregi') return null;
+  if (o.trec === 'sterge') return { sterge: true };
+  return { parti: [{ elemente: pastrate }], taiate: r?.taiate ?? 0 };
 }
 
 // ——— Taie la intersecții (ADR 0180 §5, ADR 0124 §15) ———
@@ -1179,9 +2172,9 @@ function locuriIntersectii(doc: Document, indexFoaie: number, alese: ReadonlySet
 
 /**
  * O instanță tăiată la intersecții: fiecare bucată, o parte; contururile netăiate (și cele închise cu un singur loc), o parte
- * la urmă. Null dacă nu se taie nimic.
+ * la urmă. Null dacă nu se taie nimic. `deschide` (foarfeca): un contur închis cu un singur loc se deschide acolo.
  */
-function taieLaLocuri(inst: Instanta, p: Piesa, loc: ReadonlyMap<string, readonly Trecere[]>): Rezultat | null {
+function taieLaLocuri(inst: Instanta, p: Piesa, loc: ReadonlyMap<string, readonly Trecere[]>, deschide: boolean): Rezultat | null {
   const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
   const rel = elementeInstanta(p.radacina, inst, IDENTITATE);
   const vechi = elementeArbore(p.radacina);
@@ -1194,7 +2187,7 @@ function taieLaLocuri(inst: Instanta, p: Piesa, loc: ReadonlyMap<string, readonl
     const x = loc.get(e.idLume);
     const w = x ? conturElement(e) : null;
     const tr = w && x ? farDubluri(w, x, (y) => y) : [];
-    if (!w || tr.length < (w.inchis ? 2 : 1)) {
+    if (!w || tr.length < (w.inchis && !deschide ? 2 : 1)) {
       rest.push({ forma: e.forma, matrice: er.matrice, surse: [e], fel: 'intreg', exteriorDreapta: null, ...camp });
       continue;
     }
@@ -1205,4 +2198,130 @@ function taieLaLocuri(inst: Instanta, p: Piesa, loc: ReadonlyMap<string, readonl
   if (taiate === 0) return null;
   if (rest.length > 0) parti.push({ elemente: rest });
   return { parti, taiate };
+}
+
+// ——— Foarfeca și Retează (ADR 0181 §4, §5; felia 10.3↑g) ———
+
+/** Locul de pe contur, ca număr: segmentul plus parametrul. */
+const lam = (x: Trecere): number => x.k + x.t;
+
+/**
+ * Conturul instanței cel mai apropiat de `q` (mm ai foii), la cel mult `tol` mm, cu locul de pe el: un nod al lui la cel mult
+ * `tol` de clic e locul (capetele segmentelor se lipesc de noduri). `departe` dacă niciun contur nu e atât de aproape.
+ */
+function conturLovit(inst: Instanta, p: Piesa, q: Punct, tol: number): { readonly el: number; readonly e: ElementLume; readonly w: Contur; readonly x: Trecere } | MotivTaiere {
+  if (!(tol > 0) || !Number.isFinite(q.x) || !Number.isFinite(q.y)) return 'valoare';
+  const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
+  let cel: { el: number; e: ElementLume; w: Contur; x: Trecere; d: number } | null = null;
+  for (let el = 0; el < lume.length; el++) {
+    const e = lume[el] as ElementLume;
+    let w: Contur;
+    try {
+      w = conturElement(e);
+    } catch {
+      return 'nereusita';
+    }
+    const n = numarSegmente(w);
+    for (let k = 0; k < n; k++) {
+      const r = apropiat(w, k, q);
+      if (r.d <= tol && (!cel || r.d < cel.d)) cel = { el, e, w, x: { k, t: r.t }, d: r.d };
+    }
+  }
+  if (!cel) return 'departe';
+  // Un nod al conturului lovit, la toleranță de clic: tăietura cade chiar în el.
+  const v = cel.w.varfuri;
+  let nod = -1, dn = tol;
+  for (let k = 0; k < v.length; k++) {
+    const d = Math.hypot((v[k] as Varf).p.x - q.x, (v[k] as Varf).p.y - q.y);
+    if (d <= dn) { dn = d; nod = k; }
+  }
+  const n = numarSegmente(cel.w);
+  const x: Trecere = nod >= 0 ? { k: cel.w.inchis ? nod % n : nod, t: 0 } : cel.x.t >= 1 ? { k: cel.x.k + 1, t: 0 } : cel.x;
+  return { el: cel.el, e: cel.e, w: cel.w, x: cel.w.inchis && x.k >= n ? { k: 0, t: 0 } : x };
+}
+
+/** Foarfeca (ADR 0181 §4): conturul de sub clic, tăiat acolo; capătul unei căi deschise nu se desparte (`capat`). */
+function foarfeca(inst: Instanta, p: Piesa, c: Extract<Cutit, { readonly fel: 'foarfeca' }>): Rezultat | MotivTaiere | null {
+  const lov = conturLovit(inst, p, c.punct, c.toleranta);
+  if (typeof lov === 'string') return lov;
+  const m = numarSegmente(lov.w);
+  if (!lov.w.inchis && (lam(lov.x) <= 1e-12 || lam(lov.x) >= m - 1e-12)) return 'capat';
+  return taieLaLocuri(inst, p, new Map([[lov.e.idLume, [lov.x]]]), true);
+}
+
+/** Locurile comune ale conturului `w` (elementul `idLume`) cu celelalte contururi ale instanțelor alese (ale piesei lui, la fel). */
+function locuriPeContur(doc: Document, indexFoaie: number, alese: ReadonlySet<string>, idLume: string, w: Contur): Trecere[] | MotivTaiere {
+  let A: Cav | null | 'esuat';
+  try {
+    A = laCavalier(w);
+  } catch {
+    return 'nereusita';
+  }
+  if (A === 'esuat') return 'nereusita';
+  if (A === null) return [];
+  const rez: Trecere[] = [];
+  for (const e of elementeFoaie(doc, indexFoaie)) {
+    if (!alese.has(e.instanta) || e.idLume === idLume || !seAting(cutieElement(e), A.cutie)) continue;
+    let B: Cav | null | 'esuat';
+    try {
+      B = laCavalier(conturElement(e));
+    } catch {
+      return 'nereusita';
+    }
+    if (B === 'esuat') return 'nereusita';
+    if (B) for (const x of intalniri(A, B).puncte) rez.push(x.a);
+  }
+  return rez;
+}
+
+/**
+ * Retează (ADR 0181 §5): bucata conturului de sub clic, dintre cele mai apropiate două locuri comune, scoasă; ce rămâne din el
+ * (o cale deschisă, sau două, la mijlocul unei căi deschise) stă în piesă, cu celelalte contururi. Un contur închis cu mai
+ * puțin de două locuri comune, sau unul deschis fără niciunul, pleacă tot; o piesă rămasă fără nimic se șterge.
+ */
+function reteaza(doc: Document, indexFoaie: number, alese: ReadonlySet<string>, inst: Instanta, p: Piesa, c: Extract<Cutit, { readonly fel: 'reteaza' }>): Rezultat | Stearsa | MotivTaiere {
+  const lov = conturLovit(inst, p, c.punct, c.toleranta);
+  if (typeof lov === 'string') return lov;
+  const { el, e, w, x } = lov;
+  const toate = locuriPeContur(doc, indexFoaie, alese, e.idLume, w);
+  if (typeof toate === 'string') return toate;
+  const m = numarSegmente(w);
+  const lc = lam(x);
+  // Locurile, în ordinea conturului, fără dubluri; pe o cale deschisă, doar cele dinăuntru (un capăt nu desparte nimic).
+  const ls = farDubluri(w, toate, (y) => y).filter((y) => w.inchis || (lam(y) > 1e-9 && lam(y) < m - 1e-9));
+  let ramase: FormaCale[];
+  if (w.inchis) {
+    if (ls.length < 2) ramase = [];
+    else {
+      let ib = ls.findIndex((y) => lam(y) > lc);
+      if (ib < 0) ib = 0;
+      const ia = (ib - 1 + ls.length) % ls.length;
+      const doua = [ls[ia] as Trecere, ls[ib] as Trecere].sort(compara);
+      const [b0, b1] = bucatiElement(e, doua);
+      const inPrima = lc >= lam(doua[0] as Trecere) && lc <= lam(doua[1] as Trecere);
+      ramase = [(inPrima ? b1 : b0) as FormaCale];
+    }
+  } else {
+    const inainte = ls.filter((y) => lam(y) <= lc).pop();
+    const dupa = ls.find((y) => lam(y) > lc);
+    const taieturi = [inainte, dupa].filter((y): y is Trecere => y !== undefined);
+    const bucati = bucatiElement(e, taieturi);
+    const scoasa = inainte ? 1 : 0;
+    ramase = bucati.filter((_, i) => i !== scoasa);
+  }
+  const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
+  const rel = elementeInstanta(p.radacina, inst, IDENTITATE);
+  const vechi = elementeArbore(p.radacina);
+  const sens = w.inchis ? arieCuSemn(w) > 0 : null;
+  const elemente: ElementNou[] = [];
+  for (let i = 0; i < lume.length; i++) {
+    const ei = lume[i] as ElementLume, er = rel[i] as ElementLume, v = vechi.get(ei.nod);
+    if (i === el) {
+      for (const f of ramase) elemente.push({ forma: f, matrice: er.matrice, surse: [ei], fel: 'deschis', exteriorDreapta: sens });
+      continue;
+    }
+    elemente.push({ forma: ei.forma, matrice: er.matrice, surse: [ei], fel: 'intreg', exteriorDreapta: null, ...(v ? { vechi: v } : {}) });
+  }
+  if (elemente.length === 0) return { sterge: true };
+  return { parti: [{ elemente }], taiate: 1 };
 }

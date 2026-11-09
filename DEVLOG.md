@@ -7657,3 +7657,327 @@ fie la dispozitia userilor”.
 
   Codul vine după răspunsuri.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), traducerile roadmap-ului (1 nouă, 0 lipsă).
+
+## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑c”.
+**Started:** 07.11, 13:00. **Completed:** 07.11, 14:35.
+
+- **Înainte:** `main` (`36c75cb`, cu 7.9↑b) unit în ramură (`df780db`): ușile manualului 86 (84 + Taie + `document.taie`),
+  DEVLOG-ul cu `main` întâi (acum prefix al celui din ramură); traducerile 636 / 0.
+- **Codul:** `src/model/taiere.ts`: tăierea cu cuțitul-formă despărțită în împărțire (`impartireCuForma`) și grupare (`laturi`,
+  pentru cuțitul închis); decuparea (`decupeazaInstanta`, `toateIntregi`) le refolosește. Rezultatul tăierii are acum `sterse`,
+  iar acțiunea `document.taie` pune întâi ștergerile (`comenziStergere`), apoi degruparea, într-un singur `lot`. Refuzul nou:
+  `granita`. Panoul: blocul „Decupează la ultima formă aleasă”, ca în schiță, iar panoul nu mai trece de 70 % din fereastră (se
+  derulează). Manualul, ambele limbi.
+- **Probele:** 8 pe hârtie (`taiere.decupare.test.ts`), oracolul extins (`judecaDecuparea`) pe 100 de decupări din sămânță, 1 e2e
+  nou; generatorii corpusurilor (`formaCorpus`, `document`) stau acum în `ajutor-taiere.ts`.
+- **Porțile:** traducerile (636 / 0), compilatoarele, importurile, licențele; unit 8 562 (8 554 / 0 căderi / 8 sărite); build-ul determinist (271 identice); e2e 358 / 358 pe `342eaa7` (în rularea întreagă 356, cu două căderi la încărcare, sub alte sesiuni, trecute la reluare); emulatoarele 81 / 81 și 21 / 21 pe `342eaa7`.
+- **Otrăvurile** (`test/otravuri/10.3c.py`): 15, toate prinse la prima rulare (`342eaa7`); K11 și K13 din `10.3b.py`, mutate pe codul nou, prinse și ele.
+- **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 516,6 → 517,2 / 550 kB. Linia, până acum: ~11,1 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6), peste ghidul de ~10 kB din brief, cu două felii rămase.**
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12). Verificat acolo, la
+  1024 px: blocul „Decupează la ultima formă aleasă” ca în schiță, panoul derulat; decupat la cercul ales ultimul, restul unui
+  dreptunghi care atingea cercul doar pe arc, din afară, a plecat (fără refuz: nimic tăiat), iar semidiscul dinăuntru și cercul
+  au rămas.
+
+## 2026-11-07 — Felia 10.3↑d: conversia în arce, în cerc și în dreptunghi (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑d”.
+**Started:** 07.11, 14:40. **Completed:** 07.11, 18:15.
+
+- **Codul:** `src/model/conversie.ts` (`converteste`, pură): Arce (biarcele din ADR 0033 și șirurile de linii pe un cerc, fără
+  colțuri peste 30° și fără arce peste 180°), În cerc (Kåsa prin noduri; abaterea radială doar cât forma ocolește centrul o
+  dată, altfel Hausdorff), În dreptunghi (aria minimă pe învelitoare, raza colțului din colțurile lipsă; un cerc nu e
+  dreptunghi), cu mărimea dată (în centrul cutiei). Cererea nouă `conversie` în workerul CAM (`protocolCam`, `calculCam`,
+  `bazinCam`, `convertesteVectorii`); acțiunea `document.converteste` (un lot de `inlocuieste-piesa`, doar pe documentul de la
+  clic); panoul Convertește (`PanouConversie.tsx`, în bucata panoului Taie: o foaie de stil împărțită de două bucăți la cerere
+  ieșea într-o bucată doar de CSS, pe care harta importurilor o pomenea fără fișier, prinsă de poarta build-ului) și butonul
+  lui, lângă Taie. Manualul, ambele limbi (capitolul „Conversia vectorilor”).
+- **Unirea lui `main`** (`1bf99c5`: incrustațiile, documentul v20), cerută de sesiunea principală, în `c1b0e49`, după commit-ul
+  codului (`4c6a18f`): lucrul era încă necomis când a venit cererea. Conflictele: DEVLOG-ul (cel din `main` întreg, apoi
+  10.3↑c), indexul ADR, ușile manualului (86 în `main` + 2 = 88); capitolele manualului, „29” pe ambele părți, fără conflict,
+  sunt de fapt 30 (incrustația și conversia).
+- **Probele:** 19 pe hârtie (`conversie.test.ts`), oracolul extins (`judecaConversia`, cu Hausdorff măsurat din nou și cutia
+  exactă) pe trei corpusuri din sămânță, cu martorul lui; 2 e2e (`conversie.spec.ts`: cercul din 64 de laturi devine găuribil în
+  fereastra exportului; arcele și refuzurile, în panou).
+- **Pe canal** (după prima publicare, la 1024 × 768, cu un script în Edge fără fereastră, pe adresa publicată): după „În
+  cerc”, rândul cu rezultatul rămânea sub marginea panoului (la plafonul de 70 % din fereastră, derulat), pe jumătate
+  ascuns; la fel în panoul Taie. Reparat în `0c7e4c1`: rezultatul e adus în vedere la fiecare schimbare, cu o probă e2e în
+  fiecare panou (`toBeInViewport`, 95 %: sub-pixelii), iar ajutorul e2e al alegerii „găurire” așteaptă acum rândul ferestrei
+  exportului (înainte număra și cât încă nu venise, deci „0 înainte de conversie” trecea oricum). După reparație: build-ul
+  determinist (274), e2e-ul conversiei, al tăierii și al manualului 12 / 12.
+- **Porțile:** traducerile (646 / 0 la unire), compilatoarele, importurile, licențele; unit 8 584 (8 576 / 0 căderi / 8 sărite) pe codul feliei și 8 612 (8 604 / 0 căderi / 8 sărite) pe `c1b0e49`, după unire; build-ul determinist a prins pe codul feliei bucata doar de CSS (reparată înainte de commit), apoi 272 de fișiere identice, iar pe `c1b0e49` 274; e2e 360 / 360 pe codul feliei (apoi conversia, tăierea și manualul, 12 / 12, după mutarea panoului) și, pe `c1b0e49`, 355 / 362 în rularea întreagă (16 lucrători), cu 7 căderi la încărcarea paginii (elemente negăsite în 5 s, un fișier de raport blocat), trecute la reluare cu 3 lucrători (6 spec-uri, 45 / 45), deci 362 / 362; emulatoarele 81 / 81 și 21 / 21 pe `7f1d815`.
+- **Otrăvurile** (`test/otravuri/10.3d.py`): 27; prima rulare (`c1b0e49`), pe primele 25: 24 prinse; V07 (sfertul de tură al dreptunghiului, cu colțul de pornire neschimbat) a scăpat, fiindcă la un dreptunghi exact prima latură de arie minimă a învelitorii are mereu unghiul sub 45°; prinsă pe `7f1d815` după o probă nouă (dreptunghiul rotit cu −30°, cu două umflături de 0,02 mm: latura de arie minimă e la 60°), deci 25 / 25; U05 și U06 (rezultatul panoului adus în vedere, după verificarea pe canal), prinse pe `0c7e4c1`: 27 / 27. Două probe scrise înaintea rulării au fost singurele care au prins câte o otravă: cele două semicercuri (V03, arcele peste 180°) și calea dus-întors pe cerc (V05, abaterea radială fără ocolire).
+- **Pe codul feliei, față de `7f05ccd`: pornirea 101,4 → 101,5 (cu ușa 105,0 / 110 kB), totalul 517,2 → 522,1 / 550 kB (+4,9: workerul CAM +3,05, panoul, în bucata panoului Taie, +1,36, editarea +0,27, acțiunile +0,14 și o bucată nouă de 0,10 kB, `verificareLimite`, comună cu panoul verificării). După unirea lui `main`: pornirea 101,6 (cu ușa 105,1 / 110 kB), totalul 525,0 / 550 kB. Linia, până acum: ~16,0 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6, 10.3↑d +4,9), peste ghidul de ~10 kB din brief, cu o felie rămasă (netezirea).**
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12), `5e556c7`
+  (`cncvs2-versiune` `5e556c7bea02`; prima publicare servise `7f1d815`, fiindcă scriptul canalului publică `dist/` așa cum e,
+  iar ultimul build era al emulatoarelor). Verificat acolo, la 1024 × 768, în Edge fără fereastră (panoul browserului era
+  ascuns), pe un DXF cu poligonul cu 64 de laturi R50 și trei pătrățele de 2 mm: butonul Convertește imediat după Taie; panoul
+  la plafonul de 70 % (537,6 px), derulat; „În cerc, doar dacă e”: „Forme convertite: 1; abaterea cea mai mare: 0,06 mm. Nu sunt
+  cercuri, la toleranța dată: 3. Cea mai mică abatere a lor: 0,414 mm.” (√2 − 1, pe hârtie); „cu diametrul 8”: toate patru,
+  cercuri Ø8; rândul rezultatului întreg în panou; în fereastra exportului, rândul primește „găurire”; nicio eroare în consolă.
+
+## 2026-11-07 — Felia 10.3↑e: netezirea (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑e”.
+**Started:** 07.11, 19:09. **Completed:** 07.11, 21:05.
+
+- **Înainte:** `origin/main` (`63d6af5`, biblioteca extensiilor, 3.Xg) unit în ramură (`ab7af98`) înaintea commit-ului de cod,
+  cum a cerut sesiunea principală; modificările necomise ale manualului, singurele atinse de unire, puse deoparte ca patch și
+  aplicate la loc. `main`-ul local avea și unirea raportărilor (15.B↑b), încă neîmpinsă: n-am adus-o, ca să n-o public eu.
+- **Codul:** `src/model/netezire.ts` (`netezesteCale`): lanțurile de linii scurte (în lume), colțurile peste 60° pe
+  4 × toleranța (nejudecate la mai puțin de atât de capătul unui șir), potrivirea Schneider cu verificarea Hausdorff a fiecărei
+  cubice, legăturile netede cu liniile lungi, arcele și curbele păstrate, vârful 0 al căii închise păstrat, șirurile drepte
+  lăsate linii, mânerele duse înapoi cu inversa matricei. Cererea `netezire` a conversiei (cu „Păstrează”, refuzul `valoare`),
+  fără conturul în lume. Hausdorff-ul comun mutat în `src/model/abatereContur.ts`. Panoul: blocul Netezește, al doilea, ca în
+  schiță; manualul, ambele limbi; eticheta butonului Convertește numește și netezirea.
+- **Probele:** 12 pe hârtie, oracolul extins (`judecaNetezirea`) pe 56 de neteziri din sămânță, cu martorul lui; oracolul
+  cu margini inferioare ieftine în `distantaLaForme` (316 s → 18 s); 1 e2e nou.
+- **Porțile:** traducerile (651 / 0 la unire), compilatoarele, importurile, licențele; unit 8 646 (8 638 / 0 căderi / 8 sărite) pe starea unită cu 10.3↑e; build-ul determinist (277 de fișiere identice); e2e: întâi doar 140 / 370, sub încărcarea altor sesiuni (procesorul la 90 %, 66 de procese Edge; pagina nu se încărca în 30 s, cu 16 lucrători), apoi întreg 370 / 370 cu 3 lucrători; conversia, tăierea și manualul 13 / 13; emulatoarele: funcțiile 81 / 81 pe `59df9da`, apoi suita întreagă, 81 / 81 și 21 / 21, pe `eb5939d` (pornită singură la 21:09, după ce alte sesiuni au eliberat 4173 și porturile emulatoarelor).
+- **Otrăvurile** (`test/otravuri/10.3e.py`): 18; prima rulare (`36aba1c`): 17 prinse; N03 (întoarcerea judecată și cu coarda trunchiată, la capătul șirului) a scăpat, fiindcă la pragul de 60° treptele cu panta 1 se întorc la prima treaptă doar cu 45°; prinsă pe `59df9da` după o probă nouă (treptele unui sinus cu panta până la 2, unde coarda trunchiată ar măsura ~72°), deci 18 / 18. V10 din `10.3d.py`, mutată pe `abatereContur.ts`, prinsă și ea.
+- **Față de `ab7af98` (unirea fără 10.3↑e): workerul CAM +2,39 kB, panoul +0,18, deci totalul +2,5 kB, la 531,2 / 550; pornirea 101,6 (cu ușa 105,1 / 110 kB), neschimbată. Linia, toată: ~18,5 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6, 10.3↑d +4,9, 10.3↑e +2,5), peste ghidul de ~10 kB din brief.**
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 07.12), `2dae959`
+  (`cncvs2-versiune` `2dae95995303`; build-ul refăcut pe HEAD înainte de publicare). Verificat acolo, la 1024 × 768, în Edge
+  fără fereastră: blocurile panoului Convertește în ordinea schiței (Arce, Netezește, În cerc, În dreptunghi), eticheta
+  butonului numește netezirea; poligonul cu 200 de laturi R30 dintr-un DXF: „Forme schimbate: 1; linii înlocuite: 200; curbe
+  noi: 14; abaterea cea mai mare: 0,008 mm.” (cifrele din e2e); treptele unei trasări (pași de 0,5 mm) rămân la 0,01 („Nimic
+  de netezit…”) și devin la 0,5 nouă curbe netede, la 0,49 mm; nicio eroare în consolă.
+
+## 2026-11-08 — Linia 10.3↑ încheiată: ramura ținută unibilă cu `main` (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”.
+**Started:** 08.11, 09:01. **Completed:** 08.11, 09:45.
+
+- **Starea:** linia 10.3↑–10.3↑e gata pe ramură din 07.11 (`e546a5c`); `main` unise doar până la `be7733e` (10.3↑b) și
+  mersese înainte cu 37 de commit-uri (raportările 15.B↑b, imprimanta 3.6g–3.6i, biblioteca întărită, plafonul total 600 kB).
+- **Unirea:** `origin/main` (`0060a86`) unit în ramură (`b7aac9c`), ca sesiunea principală să poată uni 10.3↑c–e la cuvântul
+  owner-ului. Conflictele: DEVLOG-ul (cel din `main` întreg, apoi 10.3↑c–e), indexul ADR (0180, apoi 0190 și 0191), lista
+  otrăvurilor (ambele părți), ușile manualului (86 + fila Imprimanta + Convertește și `document.converteste` = 89). Fără
+  conflict, dar greșit: capitolele manualului, „30” pe ambele părți, sunt 31 (`test/e2e/manual.spec.ts`).
+- **Porțile pe `b7aac9c`:** traducerile (677 / 0), compilatoarele, importurile, licențele; unit 8 707 (8 699 / 0 căderi / 8
+  sărite); build-ul determinist (284 de fișiere identice); pornirea 101,8 (cu ușa 105,3 / 110 kB), totalul 543,1 / 600; e2e
+  379 / 379 (3 lucrători, 6,3 min). Emulatoarele: întâi 7 căderi la funcții, fiindcă harnașul local (`.tmp/emu.ts`, o copie fără
+  npm a lui `scripts/test-emulator.ts`) pornea doar Auth, Firestore și Functions; din 15.B↑b scriptul pornește și Storage, cu un
+  dosar temporar al fiecărei rulări. Cu harnașul adus la zi: 101 / 101 și 21 / 21.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `b7aac9c`
+  (`cncvs2-versiune` `b7aac9cffd7a`). Verificat acolo, la 1024 × 768, în Edge fără fereastră: În cerc (0,06 mm; pătrățelele de
+  2 mm refuzate cu 0,414 mm), cu diametrul 8, găurirea în fereastra exportului, ordinea blocurilor (Arce, Netezește, În cerc, În
+  dreptunghi), netezirea (200 de linii → 14 curbe la 0,008 mm; treptele de 0,5 mm rămân la 0,01 și devin 9 curbe la 0,5); nicio
+  eroare în consolă.
+
+## 2026-11-08 — Linia tăierii continuă: cuțitul pe pânză și opțiunile tăierii (ADR 0181, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mai lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil” (owner-ul,
+în sesiunea liniei `taiere`).
+**Started:** 08.11, 09:50. **Completed:** 08.11, 10:50 (cercetarea, ADR-ul și schița; codul lui 10.3↑f așteaptă răspunsurile).
+
+- **Cercetarea:** în cvs2 se refolosesc cuțitul-formă din 10.3↑b (taie cu orice cale dată în mm ai foii, deci unealta nu
+  trebuie să pună cuțitul în document), gestul Pen-ului (ADR 0063), pașii de 15° ai liniei, lipirea, netezirea din 10.3↑e
+  (pentru mâna liberă) și offsetul căilor deschise (`offsetDeschis`, ADR 0037 §5, pentru spațiu); unealta Noduri nu desparte
+  o cale; tasta K e liberă (Ctrl+K e paleta). Referințe funcționale: cuțitul din CorelDRAW (linia din două puncte, Bézier,
+  mâna liberă; spațiu sau suprapunere între bucăți), foarfeca și „Divide Objects Below” din Illustrator, tăierea interactivă
+  din Vectric, îmbinările panourilor unei firme mari (puzzle, coadă de rândunică, colțurile cel puțin cât raza frezei).
+- **ADR 0181, propus:** unealta Cuțit (K), după Noduri, cu felurile Linie (Shift: 15°), Pen, Liber (netezit la ridicarea
+  mausului), Foarfecă (desparte un contur într-un punct; și butonul Desparte în unealta Noduri) și Retează (scoate cu un clic
+  bucata dintre două locuri comune); cuțitul trăiește doar cât gestul, iar calculul e cererea lui „Taie cu…” ultima formă,
+  cu calea dată. Opțiunile comune cu panoul Taie: închiderea, spațiul sau suprapunerea (lățimea totală, centrată), prelungirea
+  capetelor (până ies din formă sau linia întreagă), partea păstrată (doar din formele tăiate), cuțitul-formă șters după
+  tăiere; linia prin X, Y la orice unghi; îmbinarea pe tăieturile drepte (zigzag, val, dinți drepți, coadă de rândunică,
+  puzzle; pasul, înălțimea, raza colțurilor; jocul e spațiul); tăierea în panouri (egale sau din colț, grupate „Panoul 1” …).
+  Feliile 10.3↑f–10.3↑k. Proba pe hârtie: pătratul tăiat de la (−10, 20) la (110, 60): 4 000 și 6 000 mm²; cu spațiul 6 la
+  X = 50: 47 × 100; cercul R50 cu spațiul 6: segmentele de 3 627,171 mm²; inelul R50 / R30 la Y = 0 cu spațiul 3: „U”-urile
+  de 2 453,259 mm²; linia prin (20, 50) la 30°: 6 732,051 și 3 267,949 mm²; foarfeca pe cercul R50: 314,159 mm; zigzagul la
+  X = 50 (pasul 20): patru dinți, 10 mm drepți la capete, câte 5 000 mm²; panourile unei firme de 2 400 × 1 000 la
+  1 200 × 900: patru egale de 1 200 × 500, sau două de 1 200 × 900 și două de 1 200 × 100 din colț.
+- **Patru întrebări:** ordinea feliilor, ce taie cuțitul fără forme alese, când taie, retezatul cu un clic. Ultimul fusese
+  respins în ADR 0180 §13; regula ADR-urilor cere cuvântul owner-ului ca să-l întoarcă, deci e întrebare, nu opțiune.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/7jiFhVpNn9vAcc2Mjpd5bW> (privată, a owner-ului;
+  răspunsurile stau în baza paginii, colecția `raspunsuri`: `q1`–`q4` cu `optiune`, `nota`, `la`, și `general`). Desenele
+  sunt calculate. Proba paginii, în Edge fără fereastră: fără erori în consolă și fără derulare orizontală, la 1 280 px
+  (luminos) și la 390 px (întunecat); salvarea, cu un document de probă scris, citit și șters.
+- **Fișa:** rândul 10.3↑f (în lucru) și răspunsurile în coada owner-ului. Rândul întrebărilor ADR 0180 (răspunse pe 06.11,
+  scos atunci din coadă și adus înapoi de unirea `72def2a`) a ieșit din coadă.
+- **Mărimea, estimat:** pornirea crește cu sub 0,5 kB (butonul uneltei); restul vine la prima alegere a cuțitului, ~17,5 kB
+  pe toate feliile (totalul azi 543,1 / 600 kB; linia a adăugat deja ~18,5 kB, peste ghidul de ~10).
+- **Fără cod.** `origin/main` (`ea493a5`, doar documente) se unește în ramură înaintea primului commit de cod, cum a cerut
+  sesiunea principală.
+
+## 2026-11-08 — Felia 10.3↑f: unealta Cuțit (Linie, Pen, Liber, Formă; ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, la toate recomandarile, cu mentiunea ca vreau sa putem adauga un shape/vector existent ca cutit, de exemplu
+am facut un text anume si vreau sa decupez cu el sau cu alte forme deja existente” (owner-ul, în sesiunea liniei `taiere`,
+la cele patru întrebări din ADR 0181).
+**Started:** 08.11, 10:55. **Completed:** 08.11, 12:19.
+
+- **Acceptarea (`b515126`):** ADR 0181 acceptat (1a–4a). Nota owner-ului a devenit felul **Formă** al cuțitului (§1), pus în
+  prima felie: un clic pe o formă existentă (un text) o face cuțit. ADR 0180 primește trimiterea „schimbat de 0181” (§13,
+  retezatul cu un clic). Schița e pusă la zi (felul Formă), iar răspunsurile stau în baza ei (`q1`–`q4` = a, `general` =
+  nota).
+- **`origin/main` unit întâi (`0132142`):** `ea493a5` (ADR 0168 propus; DEVLOG, CLAUDE.md, fișa), doar documente.
+- **Ce lipsea:** cuțitul-formă din 10.3↑b nu tăia o formă din care cuțitul închis nu trece niciun contur: un text pus pe o
+  placă dădea `nimic-taiat` (probat pe model înainte de cod), adică exact cazul din nota owner-ului.
+- **Modelul** (`src/model/taiere.ts`): cuțitul `cale` (tras pe pânză, în mm ai foii, nu intră în document; mâna liberă
+  netezită cu netezirea din 10.3↑e, la jumătate de pixel) și `forme` (instanțele date, toate contururile împreună,
+  par-impar). **Buclele libere:** un cuțit închis care stă tot înăuntrul unei forme, fără să-i atingă vreun contur închis, o
+  taie cu închidere: bucla intră în ambele părți (margine înăuntru, gol în afară; mijlocul unui „O” rămâne insulă în placă),
+  cu forma ei (cercul rămâne cerc), în coordonatele piesei; pe o piesă fără rol ia operațiile conturului în care stă, cu
+  latura întoarsă după paritatea adâncimii; un cuțit încrucișat în regiune se refuză (`cutit`). Valorează și pentru „Taie
+  cu…” și „Decupează la” din panou.
+- **Unealta** (`src/app/UnealtaCutit.tsx`, în bucata tăierii; partea pură în `cutitCalcul.ts`): K, după Noduri; bara cu
+  felurile Linie (tragere, Shift 15°, lipirea desenului), Pen (unealta Pen, cu culoarea cuțitului; Enter taie), Liber și
+  Formă (Shift + clic adună, Enter taie, Esc lasă) și „Închide bucățile” (aceeași bifă ca în panou, `inchidereTaiere.ts`).
+  Taie formele alese; fără nimic ales, toate ale foii, fără cuțit (2a); la capătul gestului (3a), prin worker și
+  `document.taie`. Cât tragi, locurile unde taie se arată, aproximate pe firul principal (bazinul CAM pornește un worker pe
+  calcul, deci unul pe cadru ar fi prea greu). Starea, în cipul din colțul pânzei.
+- **Proba:** 11 teste pe hârtie (`taiere.cutit.test.ts`: pătratul tăiat de la (−10, 20) la (110, 60), 4 000 / 6 000 mm², cu
+  vârfurile la bit; calea trasă = forma din document; unda netezită, 5 000 / 5 000 la toleranță, și refuzul toleranței;
+  funda refuzată; „O”-ul în placă, 942,478 / 5 057,522; două cercuri, cu placa mutată din origine; formele-cuțit care nu se
+  taie între ele; „O”-ul peste margine; decuparea la „O”; fără închidere, nimic; placa fără rol), oracolul pe trei corpusuri
+  (`taiere.cutit.oracol.test.ts`: calea trasă = forma din document, 90 de cazuri; buclele libere, cu poligoane puse în
+  regiune, în gol sau în afară; mâna liberă, cu `tolCutit`), martorul, 6 teste ale părții pure (`cutitCalcul.test.ts`),
+  5 e2e (`cutit.spec.ts`: Linie cu locurile numărate, Liber, Pen, textul „O” ca cuțit pe placă, două cercuri adunate).
+  Manualul: capitolul „Unealta Cuțit” / „The Knife tool”, tasta K în scurtături, paragraful buclelor libere în tăiere;
+  ușile 90, capitolele 32; tastele uneltelor, 11.
+- **Otrăvurile** (`test/otravuri/10.3f.py`, în clonă, pe 4179): 24 de otrăvuri, toate aplicabile. Prima rulare (`c0fd1b7`): 17 din 18 unitare prinse; F10 (formele-cuțit alese se taie și ele) a scăpat, fiindcă un cuțit care e și țintă nu se taie singur (conturul lui stă pe cuțit); prinsă pe `568e636` după proba cu cercul-cuțit în alt cerc-cuțit. Cele 6 de interfață (Linia, Shift + clic, Pen-ul, tasta K, locurile, bifa închiderii), toate prinse; baza e2e fără otravă, 6 / 6; arborele clonei curat la capăt.
+- **Porțile:** traducerile 678 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 728 (8 720 trecute, 0 căderi, 8 sărite); build-ul determinist: pornirea 101,8 kB (cu ușa 105,3 / 110), totalul 546,8 / 600 (+3,7 kB); e2e 383 / 384 la prima rulare (căzută sub încărcare: animatie.spec.ts:66, paleta, pe care felia n-o atinge; singură, 20 / 20), apoi 384 / 384; emulatoarele 101 / 101 și 21 / 21.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `862ae18`, verificat în Edge fără fereastră: K alege Cuțitul; Linia arată două locuri cât tragi și taie placa în două; textul „O” pus pe placă o decupează (litera, cu profil exterior și golul din mijloc pe interior; placa, cu exteriorul pe margine și pe mijlocul literei, interiorul pe golul ei); nicio eroare în consolă.
+
+## 2026-11-08 — Felia 10.3↑g: Foarfeca, Retează și Desparte (ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑g” (owner-ul, în sesiunea liniei `taiere`).
+**Started:** 08.11, 12:34. **Completed:** 08.11, 17:17.
+
+- **`origin/main` unit de două ori:** la început `6c79ff9` (felia 3.Tg, înălțimile pieselor LEGO în profilul imprimantei;
+  `0051562`), înaintea porților `031e41a` (incrustațiile 12.1↑b–c, documentul v22; `dc226b4`). Conflictele: DEVLOG-ul (intrările
+  lui main, apoi ale ramurii), indexul ADR, `docs/otravuri.md`, dicționarul roadmap-ului (reuniunea, curățată: 685 de texte, 0
+  fără traducere) și proba manualului (33 de capitole).
+- **Modelul** (`src/model/taiere.ts`): cuțitele `foarfeca` și `reteaza` (instanța de sub clic, punctul, toleranța). Foarfeca
+  taie conturul cel mai apropiat de clic, exact (lipit de un nod la toleranță): o cale închisă se deschide, una deschisă
+  devine două forme; refuzurile `capat` și `departe`. Retează scoate bucata dintre cele mai apropiate două locuri comune ale
+  conturului lovit cu celelalte contururi (ale formelor alese sau ale tuturor, și ale aceleiași piese), calculate doar pentru
+  el; **ce rămâne stă în piesă**, iar o piesă golită se șterge. Capetele căii nu sunt locuri comune ale ei (nici un loc la sub
+  1e-9 din segment de ele, zgomotul de calcul); buclele unui contur cu el însuși nici atât (ale verificării). `apropiat` și
+  `laturaLovita`, mutate în `src/geom/apropiat.ts`.
+- **Unealta:** felurile Foarfecă și Retează în bara cuțitului; la Retează, bucata de sub maus se vede cu roșu (aproximată pe
+  firul principal: `locuriComune`, `bucataSub`, `subPolilinie`; pe toate formele foii, cu locurile doar față de partenerii
+  tăierii: formele alese, fără alegere toate, și aceeași formă). **Selecția rămâne cum era** după orice tăiere a cuțitului
+  (`selectieDupa`): fără nimic ales, tot nimic, ca a doua tăietură să aibă tot toate formele foii (în 10.3↑f bucățile noi
+  deveneau alese, iar a doua tăietură ar fi tăiat doar printre ele). Sfatul cuțitului se rupe pe rânduri (cipul de un rând
+  tăia cu „…” sfaturile tuturor felurilor). Unealta Noduri: butonul **Desparte** (foarfeca în nodul ales; rămâne aleasă prima
+  bucată).
+- **Proba:** 13 teste pe hârtie (`taiere.foarfeca.test.ts`), oracolul pe două corpusuri, cu martorul
+  (`taiere.foarfeca.oracol.test.ts`: acoperirea, lungimea, tăietura la clic; bucata scoasă conține clicul, nu trece de niciun
+  loc comun, capetele noi stau în locurile comune), 9 teste ale părții pure (`cutitCalcul.test.ts`), e2e: 5 noi (cercul
+  deschis, calea despărțită și capătul refuzat, „#”-ul retezat cu marcajul văzut înainte de fiecare clic, retezatul unei
+  forme nealese cu o alta aleasă, Desparte în Noduri) și cele 5 ale lui 10.3↑f puse la zi (selecția rămâne goală, mesajul
+  fără „alese”). Manualul: Foarfecă și Retează în capitolul cuțitului, Desparte în capitolul nodurilor, regula selecției, în
+  ambele limbi.
+- **Treceri:** 5: (1) probele pe hârtie: una din valorile mele era greșită (refăcută de mână), iar alta a prins un defect adevărat, marcajul retezatului peste capătul conturului avea vârful 0 de două ori (`subPolilinie`); lungimea cubicei din oracol, măsurată cu 256 de coarde, ieșea cu 3e-4 mm alături: 16 384; (2) e2e-ul: rândul DXF-ului din listă arată numele fișierului, nu mărimea (mărimea se citește în panoul proprietăților), iar două importuri în același test țineau proiectul (IndexedDB rămâne între pagini): două teste; (3) otrava G07 (filtrul capetelor căii la retezat) a scăpat, iar un „T” întors n-o prinde nici el, fiindcă locul de la capătul exact e scris ca vârful de acolo și scos oricum; un „T” cu verticala trecută de orizontală cu 5e-8 mm (zgomot de calcul) o prinde (`35a6901`): fără filtru, din verticală ar rămâne un fir de 5e-8 mm; (4) la recitirea codului: cu ceva ales, marcajul Retezatului se calcula doar pe formele alese, deși clicul retează orice formă de sub el, deci pe una nealeasă nu se vedea nimic: previzualizarea ia acum toate formele foii, cu locurile față de partenerii tăierii (`a5ca66b`, cu o probă pe hârtie și un e2e); (5) pe canal: sfaturile felurilor (115–170 de caractere) se tăiau cu „…” în cipul de un rând, de la 10.3↑f: cipul cuțitului se rupe acum pe rânduri (`a6675a5`; la felul Pen, al cărui sfat stă în cipul uneltei Pen, `290a944`).
+- **Otrăvurile** (`test/otravuri/10.3g.py`, în clonă, pe 4179): 23 de otrăvuri, toate aplicabile. Prima rulare (`761d95f`, 20): 13 din 14 de model și unealtă prinse; G07 (filtrul capetelor căii la retezat) a scăpat: un „T” exact, nici întors (`99b455f`), n-o prinde, fiindcă `pozitie` scrie locul de la capăt ca vârful de acolo, iar `farDubluri` îl scoate; filtrul lucrează doar pe un loc la sub 1e-9 din segment de capăt, dar peste `eps` (zgomotul de calcul). Prinsă pe `35a6901`, cu „T”-ul trecut de orizontală cu 5e-8 mm. Cele 6 de interfață (clicul Foarfecii și al Retezatului, marcajul de sub maus, selecția păstrată, Desparte, mesajul retezatului, foarfeca care ar reteza), toate prinse; baza e2e fără otravă, 9 / 9. Pe `a5ca66b` (partenerii previzualizării): G14 pusă la zi, G15 (partenerii inversați), G16 (fără aceeași formă) și H07 (marcajul doar pe formele alese), toate prinse; arborele clonei curat la capăt.
+- **Porțile:** pe `290a944`: traducerile 685 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 802 (8 794 trecute, 0 căderi, 8 sărite; pe `a5ca66b`, după care s-au schimbat doar CSS-ul și clasa cipului); build-ul determinist (288 de fișiere): pornirea 101,9 kB (cu ușa 105,5 / 110), totalul 558,7 / 600, iar felia, pe aceeași bază (`6c79ff9`), lasă pornirea neschimbată și adaugă 2,8 kB la total (546,9 → 549,7), plus 0,1 cu `a5ca66b`; e2e 395 / 395 (înainte: pe `dc226b4`, 393 / 394, cu `trenulet.spec.ts:219` căzut sub încărcare, singur 3 / 3, apoi 394 / 394; pe `a5ca66b`, 392 / 395, trei căzute sub încărcarea altor sesiuni, cu procesorul la ~60 %: `recenzia-a.spec.ts:33`, `proiect.spec.ts:81`, `raportor.spec.ts:118`, singure 9 / 9, apoi 395 / 395); emulatoarele 101 / 101 și 21 / 21 (pe `a5ca66b`).
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `290a944`, verificat în Edge fără fereastră: Foarfeca deschide cercul (tot o formă) și desparte calea (două forme), iar capătul ei e refuzat; Retează arată bucata roșie înaintea fiecăruia din cele opt clicuri pe „#” și lasă pătratul de 60 × 60, o formă; Desparte, oprit până la alegerea nodului, deschide dreptunghiul (cinci noduri, o formă); sfaturile celor șase feluri, întregi, pe două rânduri; nicio eroare în consolă.
+
+## 2026-11-08 — Felia 10.3↑h: opțiunile tăierii (linia la unghi, Păstrează, Prelungește, cuțitul-formă șters; ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑h” (owner-ul, în sesiunea liniei `taiere`).
+**Started:** 08.11, 17:49. **Completed:** 08.11, 22:39.
+
+- **`origin/main` unit întâi:** `0d54112` (incrustațiile 12.1↑c-2), în `8303b68`; conflictul, doar în DEVLOG (intrările lui
+  main, apoi ale ramurii); traducerile 689 / 0, capitolele 33, ușile 90.
+- **Modelul** (`src/model/taiere.ts`): linia de tăiere are normala și direcția ei (`Linie = { n, u, v }`), iar verticala și
+  orizontala taie la bit ca înainte; linia `{ fel: 'unghi', x, y, unghi }`, cu normala din stânga direcției. În cerere:
+  `pastreaza` (la linie, stânga direcției; la cuțitul închis, înăuntru sau în afară; la cel deschis, latura fețelor din sensul
+  corzilor, a bucăților deschise din direcția în care pleacă din cuțit, a contururilor netăiate din cel mai apropiat punct al
+  cuțitului; o formă netăiată rămâne), `prelungeste` (pe tangenta din capăt: latura, arcul, cubica; până ies din regiunile
+  țintelor, cu 1e-3 mm peste margine și mai departe prin formele lipite, sau dincolo de cutia lor) și `stergeCutitul` (în
+  `sterse`, doar dacă s-a tăiat ceva).
+- **Panoul Taie:** rândul „Linia printr-un punct, la un unghi” (X, Y, unghiul; linia pe pânză), bifa „și șterge-o după
+  tăiere”, „Prelungește capetele” (doar la un cuțit-formă deschis) și „Păstrează”, cu numele părților după cuțit (stânga /
+  dreapta, deasupra / dedesubt, înăuntru / în afară).
+- **Bara Cuțitului:** „Închide bucățile” pe rând; „Prelungește”, „Păstrează” și, la felul Formă, „Șterge cuțitul”, într-un
+  panou sub butonul „Opțiunile tăierii” (**schimbat față de schiță**: pe rând nu încăpeau la 1 280 px, iar „Exportă G-code”
+  ieșea din fereastră); un punct roșu pe buton și sfatul spun opțiunile care nu sunt cele implicite. Cât tragi (Linie,
+  Liber): capetele prelungite, punctate, și partea care pleacă, estompată, cu o nuanță slabă a cuțitului.
+- **Opțiunile**, o singură setare în browser (`optiuniTaiere.ts`, cu aceeași cheie pentru „Închide bucățile”), ținute la zi în
+  panou și în bară; grupurile, `GrupuriTaiere.tsx`; `useInFereastra`, mutat în `inFereastra.ts`.
+- **Proba:** 18 teste pe hârtie (`taiere.optiuni.test.ts`), oracolul (`taiere.optiuni.oracol.test.ts`: linia la orice
+  unghi, cu păstrarea, pe 150 de forme ale corpusului; prelungirea în forme convexe, ca linia întreagă; linia întreagă pe
+  1–3 forme; cuțitul închis convex, înăuntru și în afară; martorul), 3 teste noi ale părții pure (`cutitCalcul.test.ts`),
+  e2e: 3 în `cutit.spec.ts`, 3 în `taiere.spec.ts`. Manualul, în ambele limbi.
+- **Treceri:** 4: (1) probele pe hârtie: două valori ale mele erau greșite, modelul avea dreptate (segmentul de cerc dintre coardă și sfertul de arc e 100π − 200, nu 50π − 100; prelungirea prin două pătrate lipite ajunge la 200,001, nu la 200,002); (2) oracolul: un cuțit cu ambele capete înăuntru, fără prelungire, nu atinge nimic (`nimic-taiat`, nu `nu-trece`), iar linia întreagă nimerea prea rar formele corpusului (punctul ei, acum prin mijlocul uneia); (3) la capturi: bara de sus nu mai încăpea la 1 280 px („Exportă G-code” ieșea din fereastră), deci opțiunile din bara Cuțitului au trecut într-un panou sub butonul lor; partea estompată abia se vedea (formele sunt contururi): o nuanță slabă a cuțitului; rândul liniei la unghi se rupea urât: eticheta, apoi X, Y și unghiul dedesubt; (4) înaintea otrăvurilor, două probe noi (un contur netăiat dincolo de capătul cuțitului; tangenta unei cubice la capăt), pentru două otrăvuri pe care nicio probă nu le-ar fi atins.
+- **Otrăvurile** (`test/otravuri/10.3h.py`, în clonă, pe 4179): 27 de otrăvuri, toate aplicabile, toate prinse la prima rulare (`d7cde86`): 18 de model și partea pură (pe setul `optiuni`, 23 de teste, și pe `unealta`, 12), 9 de interfață (pe `cutit.spec.ts` și `taiere.spec.ts`, 21 de teste). Pentru I09 (conturul netăiat dincolo de capătul cuțitului) și I11 (tangenta cubicei la capăt), probele au fost scrise înaintea rulării, fiindcă nicio probă nu le-ar fi atins; arborele clonei curat la capăt.
+- **Porțile:** pe `4ebe3f5`: traducerile 689 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 830 (8 822 trecute, 0 căderi, 8 sărite); build-ul determinist (288 de fișiere): pornirea 101,9 kB (cu ușa 105,5 / 110), totalul 563,6 / 600, iar felia, pe aceeași bază (`8303b68`), lasă pornirea neschimbată și adaugă 4,6 kB la total (559,0 → 563,6), peste estimarea de ~2 kB din ADR; e2e 404 / 404, cu doi lucrători (înainte: la prima rulare, 402 / 404, cu `incrustatieDreapta.spec.ts:61` căzut pe un fișier blocat al Playwright, `EBUSY`, și `pwa.spec.ts:213`, singure 6 / 6; a doua, cu trei lucrători, s-a prăbușit pe memoria virtuală a mașinii, epuizată de alte sesiuni și de un joc deschis: lucrătorii au ieșit cu 0xC000012D); emulatoarele 101 / 101 și 21 / 21.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 08.12), `4ebe3f5`, verificat în Edge fără fereastră: linia la 30° din panou taie pătratul în două, cu linia pe pânză la unghiul ei; „Păstrează stânga” la X = 30 lasă partea de 30 × 100; în bara Cuțitului, panoul opțiunilor (punctul roșu, sfatul cu opțiunile), apoi Linia trasă doar înăuntrul plăcii cu gaură: prelungită până la margini (două prelungiri, patru locuri), cu partea de dedesubt estompată, lasă doar partea de deasupra; felul Formă cu „Șterge cuțitul” decupează placa și scoate cercul; nicio eroare în consolă.
+
+## 2026-11-09 — Felia 10.3↑i: spațiul și suprapunerea dintre bucăți (ADR 0181 §2) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑i” (owner-ul, în sesiunea liniei `taiere`).
+**Started:** 09.11, 10:30. **Completed:** 09.11, 16:34.
+
+- **`origin/main` unit întâi:** `4b96a0a` (linia ancorelor, 6.V↑–6.V↑c), în `1ff4271`; conflictele: DEVLOG (intrările lui main,
+  apoi ale ramurii), fișa (coada owner-ului: rândul ancorei; rândul întrebărilor ADR 0180, răspunse pe 06.11, rămâne scos),
+  dicționarul roadmap-ului (reuniunea), `Editare.tsx` (gestul cuțitului lângă tastele ADR 0240). La unire, tsc a prins o
+  ruptură tăcută: `GestDesen` are acum și Ctrl, iar `capatConstrans` primește tastele întregi; cu valoarea booleană de
+  dinainte, Shift nu mai ținea Linia cuțitului la 15° (reparat; o probă e2e nouă). Alt rămâne „lipirea invers” la cuțit (ADR
+  0240 §D.23: unde n-are alt sens).
+- **Modelul** (`src/model/taiere.ts`): `intre = { fel: 'spatiu' | 'suprapunere', latime }` în cerere, doar cu închidere
+  (`spatiu-inchide`), lățimea de la 0,01 la 1 000 mm (`valoare`; limitele în `intreBucati.ts`, comune cu interfața, fără să
+  aducă modelul în bucata ei). Fiecare parte păstrată se taie cu cuțitul mutat cu w / 2 (spre ea la spațiu, spre cealaltă la
+  suprapunere): linia, cu paralela ei; calea, cu `offsetDeschis` (o bucată; capetele prelungite cât au rămas într-un contur pe
+  care cuțitul nemutat îl taie); cel închis, cu `offsetFigura`. Doar formele tăiate de cuțitul nemutat. Refuzurile: `spatiu`
+  (o bucată de partea păstrată care nu trece de cuțitul mutat: `mancata`, cu găurile scutite) și `spatiu-cutit` (cuțitul
+  nu se poate muta). `partiLinie` scos din `taieInstanta`; `grupare` și `pastrate` din `taieCuForma` (aceleași părți).
+- **Interfața:** „Între bucăți” (nimic, spațiu, suprapunere, cu lățimea în mm), al treilea grup din `GrupuriTaiere`, deci în
+  panou și în opțiunile Cuțitului, stins fără închidere; ținut în browser (`optiuniTaiere.ts`). Pe pânză, fâșia: în jurul
+  liniei din panou (două paralele punctate mai rar) și, cât tragi, în jurul urmei (`fasieAproximativa`); sfatul Cuțitului o
+  spune. Motivele noi, în ambele limbi; manualul (capitolele `taiere` și `cutit`), în ambele limbi.
+- **Proba:** 21 de teste pe hârtie (`taiere.spatiu.test.ts`: valorile din ADR, refuzurile și marginile lor, cuțitul tras la
+  margini), oracolul (`taiere.spatiu.oracol.test.ts`: `judecaSpatiul`, `judecaConvexMutat` și `mancatRaster`, o rețea care
+  găsește singură bucățile mâncate, pe 270 de tăieri ale corpusului, cu martorul), 2 teste noi ale părții pure
+  (`cutitCalcul.test.ts`), e2e: 2 în `taiere.spec.ts`, 2 în `cutit.spec.ts` (unul, Shift-ul reparat la unire).
+- **Treceri:** 4: (1) la unirea lui `main`: tsc a prins o ruptură tăcută a cuțitului (Shift-ul Liniei, oprit de `capatConstrans` primit cu o valoare booleană, după ce `GestDesen` a primit și Ctrl), reparată, cu o probă e2e; (2) probele pe hârtie: un „O” pus pe placă, cu spațiul 4, era refuzat pe nedrept: regula „o buclă a cuțitului mutat stă în contur” ținea doar înăuntru, iar insula din mijlocul literei, în afară, are nevoie de ea; (3) oracolul: rețeaua lui vedea bucăți mâncate false în vârful penei dintre cerc și linie (acum leagă și vecinii pe diagonală, iar o componentă de câteva celule e nehotărâtă); un ciot de cale de 0,03 mm stă, cu suprapunerea, tot în fâșie, deci se potrivește ambelor laturi (oracolul le încearcă pe amândouă); colțurile rotunjite ale cuțitului convex cereau mai multe coarde la 29 mm; corpusul avea prea puține refuzuri (acum, linia aproape paralelă cu o margine, lângă ea); (4) înaintea otrăvurilor, patru probe noi (cuțitul tras chiar pe o latură; insula din fâșie la cuțitul tras; insula cu suprapunerea, o singură dată; cuțitul în buclă care se rupe), pentru ramuri pe care nicio probă nu le atingea. La capturi, rândul nou se rupe ca celelalte: nimic de schimbat.
+- **Otrăvurile** (`test/otravuri/10.3i.py`, în clonă, pe 4179): 33 de otrăvuri, toate aplicabile, toate prinse la prima rulare (`1c60f43`): 22 de model (pe setul `spatiu`, 21 de teste pe hârtie și 4 ale oracolului), 3 ale părții pure (pe `unealta`, 14 teste), 8 de interfață (pe `cutit.spec.ts` și `taiere.spec.ts`, 25 de teste). Pentru patru (J16, offsetul rupt; J19, atingerea pe o latură; J21, restul cuțitului deschis; J22, restul o singură dată), probele au fost scrise înaintea rulării, fiindcă nicio probă nu le-ar fi atins; arborele clonei, curat la capăt.
+- **Porțile:** pe `1c60f43`: traducerile 697 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 873 (8 865 trecute, 0 căderi, 8 sărite); build-ul determinist (287 de fișiere): pornirea 101,8 kB (cu ușa 105,5 / 110), totalul 567,8 / 600, iar felia, pe aceeași bază (`1ff4271`), lasă pornirea neschimbată și adaugă 2,1 kB la total (565,7 → 567,8), cât estima ADR-ul (~2 kB); e2e 416 / 416, cu doi lucrători; emulatoarele 101 / 101 și 21 / 21. **Bugetul:** o unire de probă cu `main` de pe 09.11 (`3797e17`, 578,8) dă 600,1 / 600: linia trece de plafon cu 0,1 kB (fără 10.3↑i, ~598,0), deci unirea ei cere decizia owner-ului.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 09.12), `c9dd793`, verificat în Edge fără fereastră: din panou, spațiul 6 la X = 50 (fâșia, pe pânză) lasă două forme de 47 × 100, iar la X = 98 refuzul, cu motiv; în opțiunile Cuțitului, suprapunerea 2 (sfatul o spune; cât tragi, fâșia) lasă două forme de 100 × 51; felul Formă, un cerc R20 cu spațiul 4: discul de 36 × 36 și placa cu golul; nicio eroare în consolă.
+
+## 2026-11-09 — Felia 10.3↑j: îmbinarea pe tăieturile drepte (ADR 0181 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑j” (owner-ul, în sesiunea liniei `taiere`).
+**Started:** 09.11, 16:44. **Completed:** 09.11, 21:02.
+
+- **`origin/main` unit întâi:** `3797e17` (trasarea 25.1↑–25.3↑b, 6.V↑d și reparația barei de sus), în `913ecf0`; apoi
+  `dbf7354` (plafonul total 700 kB, ADR 0144), în `33e65f9` (singurul conflict, în DEVLOG: intrările lui `main` întâi).
+  Jurnalul lui `main` spunea că unirea de probă a tăierii (`08dca64`, neîmpinsă) căzuse pe proba barei de sus
+  (`ancore.spec.ts:512`): cu Cuțitul în bara uneltelor, bara Transformării ajungea la 1296 px cu grila și fontul lat, iar
+  reparația era a liniei, pe ramura ei.
+- **Modelul:** `src/model/imbinare.ts` (nou, pur, comun workerului și previzualizării): zigzag, val, dinți drepți, coadă de
+  rândunică (laturile 1 : 6) și puzzle pe o coardă, cu pasul, înălțimea și raza colțurilor; dinții întregi la mijloc,
+  ⌊l / pas − 1⌋, cu cel puțin o jumătate de pas drept la capete; colțurile poligonale rotunjite tangent cu raza, valul din trei
+  arce de aceeași rază pe cocoașă, puzzle-ul cu capul de rază H / 4 și flancurile de raza dată la √(H · r) de mijloc (capul mai
+  lat decât gâtul); fiecare drum, simetric față de mijlocul coardei. În `taie()`: `imbinare` doar cu închidere și doar pe
+  tăieturile drepte (linia din panou, calea trasă din două puncte); drumul pe coardele dreptei prin fiecare instanță
+  (`drumCuImbinare`), tăiat ca un cuțit-formă deschis, cu spațiul de la 10.3↑i drept joc; la linia din panou, fețele grupate pe
+  laturi (`grupat`, A întâi). Refuzurile: `imbinare` (niciun dinte), `imbinare-raza`, `imbinare-margine` (dinții ar atinge un
+  contur), `imbinare-dreapta`, `imbinare-inchide`.
+- **Interfața:** grupul „Îmbinarea” din `GrupuriTaiere` (modelul, apoi pasul, înălțimea și raza prin câmpul comun `CampMm`),
+  în panou și în opțiunile Cuțitului, stins fără închidere și pe tăieturile care nu sunt drepte; ținut în browser. Pe pânză,
+  dinții în locul fâșiei: pe coardele formelor alese, la linia din panou, și cât tragi Linia (`corziAproximative`,
+  `dintiAproximativi`). Sfatul Cuțitului spune îmbinarea. Manualul (ro, en): paragraful „Îmbinarea” și opțiunile Cuțitului.
+- **Bara de sus (reparația cerută de `main`):** măsurată la 1280 px cu grila și fontul lat, la fiecare unealtă: treceau de
+  fereastră Transformarea (1296 px; en 1276) și Cuțitul (Linie 1340, Foarfeca 1302). „Închide bucățile” trece din bara
+  Cuțitului în opțiunile lui (primul rând; debifată, punctul roșu și sfatul spun „bucățile rămân deschise”; la Foarfecă și
+  Retează nu se aplica), iar sub 95rem butoanele barei doar cu iconiță (anulează, reface, importul, exportul vectorilor) au 8
+  px de fiecare parte, nu 12 (38 px, peste ținta de 36; ca „Caută”, în același bloc). Capetele acum: Transformarea 1264 (en
+  1250), Cuțitul 1216 (en 1211), Foarfeca 1197. Proba din `main` (`ancore.spec.ts:512`, ro și en) trece; a Cuțitului, nouă, la
+  fiecare fel, cu grila, în ro și en.
+- **Probe:** generatorul pe hârtie (10: dinții pe coardă, zigzagul fără și cu rază, simetria, valul, puzzle-ul, dinții drepți,
+  coada, valorile, fără laturi de lungime zero), tăierea (10: zigzagul pe pătrat, cu raza, cu jocul și suprapunerea, fiecare
+  model, linia la 30°, coarda scurtă, cuțitul tras, refuzurile, insula în fâșie, cuțitul din gaura unui inel), oracolul
+  (`judecaImbinarea`, trei probe pe corpusuri din sămânță), partea pură (3), e2e (panoul: zigzagul la X = 50, 55 × 100, cu
+  alegerea ținută după reîncărcare; refuzurile; puzzle-ul la Y = 50, 100 × 60; Cuțitul: zigzagul cu spațiul 0,2, 100 × 54,86,
+  și Liber fără dinți; bara la 1280 px, ro și en). La privirea mărită (placa 200 × 100 tăiată cu fiecare model): puzzle-ul are
+  capul mai lat decât gâtul, coada se lărgește spre vârf, jocul de 1 mm se vede ca două contururi paralele.
+- **Otrăvurile** (`test/otravuri/10.3j.py`, în clonă, pe 4179): 54 de otrăvuri, toate aplicabile: 15 ale generatorului, 17 ale tăierii și 7 ale părții pure, pe seturile `imbinare` și `unealta`, plus 15 de interfață (e2e, cu bara de sus). La prima rulare, 47 / 54 prinse; au scăpat șapte: vârfurile lipite ale drumului (G14), cuțitul-formă drept (M03), coarda din spatele cuțitului tras dintr-o gaură (M06), calea cu un arc între capete (M15), ordinea părților cu joc (M16), insula din fâșie cu suprapunerea (M17) și raza 0 arătată greșit (H10). Pentru fiecare, o probă nouă (`8eccb32`, `4eb8649`), apoi prinsă. Înainte de rulare, verificarea dublă din `CampMm` (depozitul opțiunilor o face) a fost scoasă: otrava ei ar fi fost echivalentă. Prima rulare s-a oprit la primul diacritic (`python -I` cu ieșirea în fișier: cp1252); reluată cu `-X utf8`.
+- **Porțile:** pe `4eb8649`: traducerile 714 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 20 / 0; licențele; unit 9 027 (9 019 trecute, 0 căderi, 8 sărite); build-ul determinist; e2e 441 / 442, cu doi lucrători (singura cădere, `ancore.spec.ts:99`, la încărcare: bara editorului n-a apărut în 5 s; toată suita, 15 / 15 la rerulare); emulatoarele 101 / 101 și 21 / 21 (din PowerShell, cu `npxshim`: `npm` lipsește din instalarea Node).
+- **Mărimea:** pe aceeași bază (`33e65f9`, cu `main` de pe 09.11), pornirea nu crește (102,0 kB; cu ușa 105,6 / 110), iar totalul crește cu 4,2 kB (600,1 → 604,3 / 700), peste estimarea ADR-ului (~3 kB): modelele (comune workerului și previzualizării), grupul „Îmbinarea”, dinții arătați, manualul și reparația barei.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 09.12), `4eb8649`, verificat în Edge fără fereastră: din panou, zigzagul 20 / 10 / 0 la X = 50 (dinții pe pânză) lasă două forme de 55 × 100, puzzle-ul la Y = 50, două de 100 × 60; din opțiunile Cuțitului, zigzagul cu spațiul 0,2 (sfatul îl spune; cât tragi, dinții, nu fâșia) lasă două forme de 100 × 54,86; bara de sus la 1280 px, cu grila și fontul lat: Transformarea la 1264 (en 1250), Cuțitul la 1216 (en 1211); nicio eroare în consolă. **După raportul barei, owner-ul a cerut altceva:** Importă, Exportă vectorii și Exportă G-code în bara de sus, lângă Imprimanta. Schița, cu cinci întrebări și capturile prototipului (construit în clonă): <https://claude.ai/artifact/94AHZeAD9KvEmZsBt6MQW6>; schimbarea vine după răspunsuri și înlocuiește reparația de acum.

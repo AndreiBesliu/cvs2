@@ -64,6 +64,8 @@ const USI: readonly Usa[] = [
   { id: 'editare.verificare', eticheta: eticheta('editare.verificare') },
   // Tăierea vectorilor (ADR 0180): butonul Taie din extensia barei.
   { id: 'editare.taiere', eticheta: eticheta('editare.taiere') },
+  // Conversia vectorilor (ADR 0180, felia 10.3↑d): butonul Convertește, lângă Taie.
+  { id: 'editare.conversie', eticheta: eticheta('editare.conversie') },
   { id: 'editare.text.fonturi', eticheta: eticheta('editare.text.fonturi') },
   { id: 'editare.text.aldin', eticheta: eticheta('editare.text.aldin') },
   { id: 'editare.text.cursiv', eticheta: eticheta('editare.text.cursiv') },
@@ -93,7 +95,8 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
+  conversie: 'editare.conversie',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
 };
 
 // Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același
@@ -132,10 +135,11 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // textul încă patru: aldinul și cursivul (ADR 0123), verticalul (ADR 0141) și caseta (ADR 0142); verificarea
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
-  // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și
-  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
-  // Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
-  assert.equal(USI.length, 87);
+  // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
+  // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă patru: butonul Taie și acțiunea `document.taie`, butonul
+  // Convertește și acțiunea `document.converteste`. Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
+  // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`.
+  assert.equal(USI.length, 90);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

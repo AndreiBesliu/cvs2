@@ -512,6 +512,62 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (doar cu închidere), `pe-linie` și pentru cuțit, `prea-multe`. „Taie la intersecții” (panoul și meniul de clic dreapta) taie
   fiecare contur ales în locurile lui comune cu celelalte, nu și în buclele lui. Oracolul are `judecaCutitul` și
   `judecaIntersectiile` (`taiere.forma.oracol.test.ts`); generatorii corpusurilor stau în `test/unit/ajutor-taiere.ts`.
+  **Decuparea la ultima formă aleasă (felia 10.3↑c)** gata pe 07.11: granița (închisă, refuzul `granita`) rămâne; fiecare formă
+  aleasă e împărțită ca de un cuțit închis (`impartireCuForma`, aceeași cu a tăierii; `laturi` dă înăuntru și în afară) și
+  păstrează partea aleasă. O formă fără nimic acolo pleacă, iar una care trece granița se taie, se șterge sau rămâne întreagă.
+  **Rezultatul tăierii are acum `sterse`**: acțiunea `document.taie` pune întâi ștergerile (`comenziStergere`), apoi degruparea,
+  într-un singur `lot`. Oracolul are `judecaDecuparea` (`taiere.decupare.oracol.test.ts`).
+  **Conversia (felia 10.3↑d)** gata pe 07.11: `src/model/conversie.ts` (`converteste`, pură, în workerul CAM, cererea
+  `conversie`), panoul Convertește (`src/app/PanouConversie.tsx`, lângă Taie) și acțiunea `document.converteste` (un lot de
+  `inlocuieste-piesa`). **Arce:** biarcele din ADR 0033, toleranța împărțită la scara elementului (un element întins
+  neuniform se sare); șirurile de linii pe un cerc devin arce prin primul, mijlocul și ultimul vârf, fără colțuri (peste 30°)
+  și fără arce peste 180°. **În cerc:** Kåsa pe vârfuri la o formă doar din linii (prin noduri), abaterea radială doar cât
+  forma ocolește centrul o dată, altfel Hausdorff. **În dreptunghi:** aria minimă pe învelitoare, unghiul în (−45°, 45°], raza
+  colțului din colțurile lipsă; un cerc nu e dreptunghi, o fantă da. Elementul își păstrează id-ul și operațiile (găurirea
+  refuză dreptunghiul). Oracolul are `judecaConversia`, `hausdorff`, `cutieForma`, `cerculFormei`, `dreptunghiulFormei`
+  (`conversie.oracol.test.ts`).
+  **Netezirea (felia 10.3↑e)** gata pe 07.11: `src/model/netezire.ts` (`netezesteCale`, cererea `netezire` a conversiei,
+  cu „Păstrează”), blocul Netezește din panoul Convertește. Șirurile de linii scurte devin cubice Schneider, fiecare
+  verificată cu Hausdorff; **colțurile: peste 60° pe 4 × toleranța** (la Arce, 30°), nejudecate la mai puțin de atât de
+  capătul unui șir; un șir drept rămâne linii; vârful 0 al căii închise rămâne; totul în lume, mânerele duse înapoi cu
+  inversa. Hausdorff-ul comun: `src/model/abatereContur.ts`. Oracolul are `judecaNetezirea`
+  (`conversie.netezire.oracol.test.ts`), cu margini inferioare ieftine în `distantaLaForme` (de 7–10 ori mai repede).
+  **Unealta Cuțit (ADR 0181, felia 10.3↑f)** gata pe 08.11: K, după Noduri; felurile Linie, Pen, Liber și Formă (un text sau
+  altă formă existentă e cuțitul). Modelul: cuțitul `cale` (tras, nu intră în document, netezit la mâna liberă) și `forme`
+  (instanțele, par-impar) în `src/model/taiere.ts`; **buclele libere** (un cuțit închis tot înăuntrul unei forme intră în ambele
+  părți, cu latura întoarsă după adâncime pe o piesă fără rol) valorează și pentru cuțitul-formă din panou. Unealta:
+  `src/app/UnealtaCutit.tsx` (adusă în bucata tăierii, bara prin portal, gestul prin intermediarul `gestCutit` din editare),
+  partea pură în `src/app/cutitCalcul.ts` (țintele 2a, urma, locurile aproximative), bifa comună în `optiuniTaiere.ts`.
+  Oracolul: `judecaCutitul` cu `tolCutit` (mâna liberă), corpusurile în `taiere.cutit.oracol.test.ts`.
+  **Foarfeca, Retează și Desparte (felia 10.3↑g)** gata pe 08.11: cuțitele `foarfeca` și `reteaza` (instanța, punctul,
+  toleranța) în `taiere.ts`; foarfeca deschide un contur închis (`taieLaLocuri` cu `deschide`) sau desparte unul deschis în
+  forme; retezatul scoate bucata dintre locurile comune ale conturului lovit (`locuriPeContur`), iar restul **stă în piesă**.
+  **Selecția rămâne** după orice tăiere a cuțitului (`selectieDupa`). Desparte, în unealta Noduri, folosește foarfeca. Oracolul:
+  `judecaFoarfeca`, `judecaRetezarea` (`taiere.foarfeca.oracol.test.ts`).
+  **Opțiunile tăierii (felia 10.3↑h)** gata pe 08.11: linia `{ fel: 'unghi', x, y, unghi }` (linia de tăiere are normala și
+  direcția ei: `Linie = { n, u, v }`; verticala și orizontala, la bit ca înainte); în cerere `pastreaza` (stânga / dreapta
+  direcției; la cuțitul închis, înăuntru / în afară; la cel deschis, latura fețelor din sensul corzilor), `prelungeste` (pe
+  tangentă, până ies din regiunile țintelor sau dincolo de toate) și `stergeCutitul`. Opțiunile, o singură setare în browser
+  (`optiuniTaiere.ts`, cu `useSyncExternalStore`), cu grupurile comune în `GrupuriTaiere.tsx`; în bara Cuțitului, într-un panou
+  sub butonul „Opțiunile tăierii” (bara de sus n-are loc de ele pe rând); `useInFereastra` stă acum în `inFereastra.ts`.
+  Oracolul: `judecaLinia`, `judecaPastrareaConvex` (`taiere.optiuni.oracol.test.ts`).
+  **Spațiul și suprapunerea (felia 10.3↑i)** gata pe 09.11: `intre = { fel, latime }` în cerere (doar cu închidere; limitele
+  în `intreBucati.ts`, comune cu interfața): fiecare parte se taie cu cuțitul mutat cu w / 2 (linia: paralela; calea:
+  `offsetDeschis`, o bucată, capetele prelungite cât au rămas într-un contur tăiat; cel închis: `offsetFigura`), doar formele
+  tăiate de cuțitul nemutat; `spatiu` când o bucată de partea păstrată nu trece de cuțitul mutat (`mancata`; găurile scapă),
+  `spatiu-cutit` când cuțitul nu se poate muta. `partiLinie` e scos din `taieInstanta`, `grupare` și `pastrate` din
+  `taieCuForma`. Oracolul: `judecaSpatiul`, `judecaConvexMutat` și `mancatRaster` (o rețea care găsește singură bucățile
+  mâncate), în `taiere.spatiu.oracol.test.ts`.
+  **Îmbinarea (felia 10.3↑j)** gata pe 09.11: `imbinare = { model, pas, inaltime, raza }` în cerere (doar cu închidere, doar
+  pe tăieturile drepte: linia din panou și calea trasă din două puncte); modelele în `src/model/imbinare.ts` (pur, comun
+  workerului și previzualizării): dinții întregi la mijlocul fiecărei coarde, ⌊l / pas − 1⌋, cu cel puțin o jumătate de pas la
+  capete, colțurile rotunjite cu raza (valul și puzzle-ul, arce tangente), fiecare drum simetric față de mijlocul coardei.
+  Drumul (`drumCuImbinare`) se taie ca un cuțit-formă deschis, cu spațiul de la 10.3↑i drept joc; la linia din panou, fețele
+  se grupează pe laturi (`grupat`). Refuzurile: `imbinare`, `imbinare-raza`, `imbinare-margine`, `imbinare-dreapta`,
+  `imbinare-inchide`. Oracolul: `judecaImbinarea` (`taiere.imbinare.oracol.test.ts`). **Bara Cuțitului nu mai are „Închide
+  bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
+  în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
+  fiecare fel, în `cutit.spec.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

@@ -461,7 +461,9 @@ unealta [Pen](#pen). Nodul ales își arată mânerele; butoanele din bara de su
   (nodul devine neted): media celor două, lungimea celui care există, sau, fără niciunul, câte o treime din segmentul lui. Pe un
   nod cu mânerele despărțite, le unește din nou;
 - **Curbă pe o parte**: păstrează mânerul de înainte (sau pune unul în prelungirea liniei care vine, ca linia să intre lin în
-  curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte.
+  curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte;
+- **Desparte**: taie forma chiar în nodul ales, ca [foarfeca cuțitului](#cutit): o cale închisă se deschide acolo, una deschisă
+  devine două forme (rămâne aleasă prima). Capătul unei căi deschise nu se desparte.
 
 **Trage un mâner** ca să schimbi curba; pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își păstrează
 lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț); pe mânerele despărțite, `Alt`
@@ -669,9 +671,11 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
 
 **Taie** (butonul cu foarfeca, după boolean și degrupare, în extensia barei) împarte formele alese, **Taie cu**:
 - **Linia verticală X =** sau **Linia orizontală Y =**, poziția în mm ai foii (pornește din mijlocul formelor alese);
+- **Linia printr-un punct, la un unghi**: punctul (X, Y, în mm ai foii) și unghiul (0° e orizontala, 90° verticala), tot
+  exactă;
 - **Ghidajul**: unul dintre ghidajele foii, tras din riglă;
 - **Ultima formă aleasă (Shift + clic)**: cuțitul e o formă a ta. Alege formele de tăiat, apoi, ultimul, cuțitul, cu
-  Shift + clic; cuțitul rămâne neschimbat.
+  Shift + clic; cuțitul rămâne neschimbat, iar cu **și șterge-o după tăiere** pleacă în același pas cu tăierea.
 
 Cât panoul e deschis, linia se vede pe pânză, punctată. **Taie** face din fiecare formă prin care trece linia două forme:
 ce e de o parte a liniei și ce e de cealaltă, fiecare aleasă după tăiere, la locul ei. O formă prin care linia nu trece
@@ -679,7 +683,9 @@ rămâne cum e. Tăierea e exactă: un arc se taie în două arce ale aceluiași
 care linia nu le atinge rămân neschimbate. Doar o trecere taie: un cerc tangent la linie sau un vârf care doar atinge linia
 nu se taie.
 
-Un cuțit închis (un cerc, un dreptunghi) lasă din fiecare formă două forme: ce e înăuntrul lui și ce e în afara lui. Un
+Un cuțit închis (un cerc, un dreptunghi) lasă din fiecare formă două forme: ce e înăuntrul lui și ce e în afara lui. Un cuțit
+închis pus tot înăuntrul unei forme, fără să-i atingă marginea (un text pe o placă), o taie și el, cu **Închide
+bucățile**: din placă ies literele, iar placa rămâne cu golurile lor. Un
 cuțit deschis (o linie frântă, o curbă) face din fiecare bucată o formă; contururile pe care nu le trece rămân împreună, iar
 o gaură netăiată merge cu bucata în care stă. Cuțitul taie unde trece prin formă și unde capătul lui intră în ea dintr-o
 latură; un cuțit care doar atinge forma nu o taie.
@@ -688,7 +694,52 @@ latură; un cuțit care doar atinge forma nu o taie.
 tăietură: cu o linie dreaptă, la linie și la ghidaj, sau pe drumul cuțitului, cu nodurile lui. O formă cu găuri se citește
 ca regiune: un inel tăiat în două dă două forme în „U”, închise. Fără bifă, bucățile rămân deschise: un cerc tăiat prin
 centru dă două semicercuri, fiecare un singur arc. Cu bifă, un cuțit care se oprește înăuntrul unei forme sau care se
-încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l sau taie fără bifă.
+încrucișează în ea nu se poate folosi (panoul spune de ce): prelungește-l (sau alege „până ies din formă”, mai jos) ori taie
+fără bifă.
+
+**Prelungește capetele** (doar la un cuțit-formă deschis; liniile sunt deja întregi): **nu** (implicit); **până ies din
+formă**: un capăt oprit înăuntrul unei forme de tăiat merge mai departe pe tangenta lui (linia, arcul sau curba de la capăt)
+până iese din ea, și din formele în care intră așa, ca tăietura să treacă de tot; **linia întreagă**: capetele merg pe
+tangentă dincolo de toate formele de tăiat (la o linie dreaptă, linia fără capete).
+
+**Păstrează**: **ambele părți** (implicit), **stânga** sau **dreapta** tăieturii, față de sensul ei: la linia verticală,
+stânga e x mai mic; la cea orizontală, părțile se cheamă **deasupra** și **dedesubt**; la linia la unghi, stânga sensului dat
+de unghi; la un cuțit-formă deschis, a sensului în care a fost desenat; la unul închis, **înăuntru** sau **în afară**. Partea
+cealaltă a formelor tăiate pleacă în același pas; o formă pe care tăietura n-o atinge rămâne, chiar dacă e de partea
+cealaltă. Aplicația își amintește alegerile, aceleași și în bara [Cuțitului](#cutit).
+
+**Între bucăți** (cere **Închide bucățile**): **nimic** (implicit), **spațiu** sau **suprapunere**, de **lățimea** dată
+(în mm, implicit 3, de la 0,01 la 1 000), centrate pe tăietură. Fiecare parte se taie cu tăietura mutată cu jumătate din
+lățime: la spațiu, spre ea, deci între bucăți rămâne o fâșie goală, ca tăietura unei pânze (pătratul 100 × 100 tăiat la
+X = 50 cu spațiul 6 dă două dreptunghiuri de 47 × 100); la suprapunere, spre cealaltă, deci bucățile se suprapun pe toată
+lățimea (53 × 100 fiecare). La un cuțit-formă deschis, tăietura mutată e drumul lui mutat paralel (colțurile ies rotunjite
+pe partea dinafară); la unul închis, înăuntru se strânge, iar în afară crește. Cât panoul e deschis, fâșia se vede pe pânză,
+cu două linii punctate mai rar. Se taie doar formele prin care trece tăietura: una de lângă ea rămâne, chiar dacă fâșia ar
+atinge-o. Un spațiu care ar mânca o bucată întreagă de partea păstrată (o fâșie mai îngustă decât el, o insulă din fâșie)
+nu se face, iar panoul spune de ce; o gaură din fâșie pleacă odată cu ea. Nici un cuțit care nu se poate muta (se rupe într-o
+curbă mai strânsă decât jumătatea lățimii) nu se poate folosi.
+
+**Îmbinarea** (cere **Închide bucățile**; doar la tăieturile drepte: liniile din panou, ghidajul și felul Linie al
+[Cuțitului](#cutit)): marginea nouă a bucăților urmează un model, ca ele să se prindă una de alta: **dreaptă** (implicit,
+fără model), **zigzag**, **val**, **dinți drepți**, **coadă de rândunică** sau **puzzle**, cu **pasul** (lungimea unui
+dinte, implicit 40 mm), **înălțimea** (de la vârful de jos la cel de sus, implicit 20 mm) și **raza** colțurilor (implicit 3
+mm; 0 lasă colțurile ascuțite). Pe fiecare bucată de tăietură care trece printr-o formă, dinții întregi stau la mijloc, iar
+la fiecare capăt rămâne o margine dreaptă de cel puțin o jumătate de pas, deci niciun dinte nu e tăiat de marginea formei:
+pătratul 100 × 100 tăiat la X = 50 în zigzag cu pasul 20 și înălțimea 10 are patru dinți, cu câte 10 mm drepți la capete,
+iar fiecare bucată are 55 × 100. Fiecare colț e al ambelor bucăți (scobit într-una, bombat în cealaltă), deci se rotunjește
+cu raza dată, ca o freză de raza aceea să le taie pe amândouă; valul și puzzle-ul sunt făcute din arce, iar arcele lor
+trebuie să aibă cel puțin raza dată. Coada de rândunică are laturile înclinate 1 : 6, iar puzzle-ul, capul mai lat decât
+gâtul (cât timp înălțimea trece de patru raze): amândouă țin bucățile prinse și pe lungime. Modelele sunt simetrice față de
+mijlocul lor, deci cele două bucăți ale unei forme simetrice au aceeași arie. Cu **Între bucăți**, dinții se taie cu spațiul
+dat între ei (jocul, ca bucățile să intre una în alta) sau cu suprapunerea dată. Cât panoul e deschis, dinții se văd pe
+pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de ce, o tăietură în care nu încape niciun dinte, un
+model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
+și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
+
+**Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
+**înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
+tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
+lui dinăuntru, deschise. **Decupează** e și ea un singur pas de anulare.
 
 **Taie la intersecții** (butonul din partea de jos a panoului, sau din meniul de clic dreapta) taie formele alese între
 ele, în toate locurile lor comune: unde se trec, unde se ating și la capetele unei laturi comune. Fiecare bucată devine o
@@ -700,6 +751,76 @@ deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afa
 Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
 pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
 (Ctrl+Z).
+
+## Unealta Cuțit
+%% capitol: cutit
+%% acopera: unealta.cutit
+
+Unealta **Cuțit** (`K`, după Noduri) taie direct pe pânză formele pe care le trece. Taie formele alese; fără nimic ales, toate
+formele foii. Cuțitul tras nu rămâne în desen, iar tăierea e cea din [Tăierea vectorilor](#taiere): exactă, cu bucățile la
+locul lor și cu rolul lor de tăiere. Selecția rămâne cum era: fără nimic ales, rămâne nimic ales (tăieturile următoare au tot
+toate formele foii), iar o formă aleasă care se taie e înlocuită de bucățile ei. Felul cuțitului se alege în bară:
+- **Linie**: o tragere peste forme, din capăt în capăt; **Shift** dă pași de 15°, iar capetele se lipesc ca la desen (Alt
+  inversează lipirea).
+- **Pen**: nodurile cuțitului, ca în unealta [Pen](#pen) (clic = colț, tragere = curbă); **Enter** sau dublu clic taie,
+  **Backspace** scoate ultimul nod, **Esc** renunță.
+- **Liber**: tragi cu mâna; urma se netezește când ridici mausul, mai fin la zoom mare, cu colțurile ascuțite păstrate.
+- **Formă**: un clic pe o formă care există deja (un text, un cerc, o piesă cu mai multe contururi) și ea devine cuțitul;
+  rămâne neschimbată. Un text taie din placa de sub el literele și placa cu golurile lor (mijlocul unui „O” rămâne în placă).
+  **Shift + clic** adaugă forme la cuțit (contururile lor se citesc împreună); clicul fără Shift, sau **Enter**, taie cu toate;
+  **Esc** le lasă.
+- **Foarfecă**: un clic pe conturul unei forme îl desparte acolo (lângă un nod, chiar în el): o cale închisă se deschide în
+  punctul acela, una deschisă devine două forme. Un cerc deschis rămâne cerc, ca drum: două semicercuri. Capătul unei căi
+  deschise nu se desparte.
+- **Retează**: bucata conturului de sub maus, între cele mai apropiate două locuri unde îl trec alte contururi (ale formelor
+  alese sau, fără nimic ales, ale tuturor formelor foii; și celelalte contururi ale aceleiași piese), se vede cu roșu, iar
+  clicul o scoate. Cu ceva ales, formele alese sunt marginile, iar sub maus poate fi orice formă, chiar nealeasă. Ce rămâne
+  stă în aceeași formă, ca un DXF cu liniile prelungite să rămână, după curățat, o singură formă: cele opt capete ale unui
+  „#” lasă pătratul din mijloc. Un contur fără două locuri comune (o cale deschisă: fără niciunul) pleacă tot. Unde se trece
+  singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
+
+Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
+într-un singur pas de anulare (Ctrl+Z). Ce s-a tăiat (sau de ce nu) se spune în colțul pânzei.
+
+Butonul **Opțiunile tăierii** (glisoarele de după felurile cuțitului; la Foarfecă și Retează nu e, ele n-au opțiuni)
+deschide **Închide bucățile**, aceeași bifă ca în panoul Taie, apoi **Prelungește capetele**, **Păstrează**, **Între
+bucăți** și **Îmbinarea**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până
+iese din ea, partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, spațiul (sau suprapunerea) mută
+cuțitul cu jumătate din lățime pentru fiecare parte, iar îmbinarea, doar la felul Linie (o tăietură dreaptă), pune modelul
+ei pe tăietură. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar **Șterge cuțitul** scoate formele-cuțit
+după tăiere. Când o opțiune nu e cea implicită (și bucățile lăsate deschise), butonul are un punct roșu, iar sfatul din
+colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e estompată, cu
+o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și
+de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
+
+## Conversia vectorilor
+%% capitol: conversie
+%% acopera: editare.conversie, document.converteste
+
+**Convertește** (butonul cu poligonul care devine cerc, lângă Taie, în extensia barei) schimbă forma formelor alese, fără să
+le schimbe locul, numele sau operațiile. Panoul are patru blocuri, fiecare cu butonul lui:
+- **Arce în locul curbelor**: fiecare curbă devine arce și linii, fără să se abată de ea mai mult decât **toleranța**
+  (implicit 0,01 mm); liniile și arcele rămân. Cu **și liniile scurte care stau pe un cerc** (bifată implicit), un șir de
+  linii scurte ale căror vârfuri stau pe un cerc (o polilinie dintr-un DXF) devine un arc, de cel mult o jumătate de cerc;
+  colțurile (unde drumul se întoarce cu peste 30°) și liniile lungi rămân.
+- **Netezește**: șirurile de linii scurte (o polilinie dintr-un DXF, treptele unei trasări) devin curbe netede, fără să se
+  abată de ele mai mult decât **toleranța** (implicit 0,01 mm). Liniile mai lungi de **Păstrează liniile mai lungi de**
+  (implicit 5 mm), arcele și curbele rămân, iar curba nouă se leagă de ele fără frântură; colțurile ascuțite (unde drumul se
+  întoarce cu peste 60°) rămân colțuri. Treptele mai mici decât de patru ori toleranța nu sunt colțuri: ca o trasare în
+  trepte să devină o curbă, alege o toleranță cât treptele.
+- **În cerc**: **doar dacă e cerc** (toleranța implicită 0,1 mm), forma devine cercul care trece prin nodurile ei, dacă stă
+  toată la cel mult toleranța de el: un cerc Ø100 desenat cu 64 de laturi rămâne Ø100 (laturile lui se abat de cerc cu
+  0,06 mm). **Cu diametrul** dat (implicit 8 mm), orice formă închisă devine cercul acela, în centrul cutiei ei: semnele de
+  găurire dintr-un DXF devin cercuri, pe care le poți găuri.
+- **În dreptunghi**: **doar dacă e dreptunghi** (0,1 mm), forma devine cel mai mic dreptunghi din jurul ei, oricât de rotit,
+  cu colțurile rotunjite dacă le are. **Cu mărimea** dată (implicit 40 × 20 mm), orice formă închisă devine dreptunghiul
+  acela, drept pe foaie, în centrul cutiei ei. O formă găurită nu devine dreptunghi: găurirea cere un cerc.
+
+Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă decât
+pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai
+mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi deschise
+(doar formele închise devin cerc sau dreptunghi) sau forme puse de mai multe ori pe foaie, care nu se convertesc de aici.
+Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare (Ctrl+Z).
 
 ## Verificarea vectorilor
 %% capitol: verificare
@@ -1445,7 +1566,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |

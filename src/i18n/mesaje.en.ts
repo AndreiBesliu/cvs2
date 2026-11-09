@@ -68,6 +68,7 @@ export const en = {
   'actiune.text': 'Write the text',
   'actiune.repara': 'Repair vectors',
   'actiune.taie': 'Cut vectors',
+  'actiune.converteste': 'Convert vectors',
   'motiv.text-gol': 'The text has no letter to cut: only spaces, or letters the font does not have.',
   'motiv.text-includeri': 'The text has too many outlines to work out the holes of the letters.',
   'motiv.text-vectori': 'The chosen shape is no longer text: its outlines were changed other than from the text panel.',

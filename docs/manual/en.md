@@ -480,7 +480,9 @@ the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top 
   (the node becomes smooth): the average of the two, the length of the one there is, or, with none, a third of each segment. On
   a node with split handles, it joins them again;
 - **Curve on one side**: keeps the forward handle (or puts one in line with the incoming line, so the line flows into the
-  curve) and removes the other; another click moves the curve to the other side.
+  curve) and removes the other; another click moves the curve to the other side;
+- **Split**: cuts the shape right at the chosen node, like the [knife's scissors](#cutit): a closed path opens there, an open
+  one becomes two shapes (the first stays chosen). The end of an open path is not split.
 
 **Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
 `Alt`, the handles split (the node stays a curve on both sides, but with a corner); on split handles, `Alt` joins them again:
@@ -692,9 +694,12 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 **Cut with**:
 - **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
   shapes);
+- **The line through a point, at an angle**: the point (X, Y, in sheet millimetres) and the angle (0° is horizontal, 90°
+  vertical), exact too;
 - **Guide**: one of the sheet guides, dragged from the ruler;
 - **The last chosen shape (Shift + click)**: the knife is one of your shapes. Choose the shapes to cut, then, last, the
-  knife, with Shift + click; the knife stays unchanged.
+  knife, with Shift + click; the knife stays unchanged, and with **and delete it after the cut** it goes in the same step as
+  the cut.
 
 While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
 what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
@@ -702,7 +707,9 @@ cross stays as it is. The cut is exact: an arc is cut into two arcs of the same 
 nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
 touches it is not cut.
 
-A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. An open
+A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. A closed
+knife lying wholly inside a shape, without touching its edge (a text on a plate), cuts it too, with **Close the
+pieces**: the letters come out of the plate, and the plate keeps their holes. An open
 knife (a polyline, a curve) makes each piece a shape; the contours it does not cross stay together, and an uncut hole goes
 with the piece it lies in. The knife cuts where it crosses the shape and where its end enters the shape through a side; a
 knife that only touches the shape does not cut it.
@@ -711,7 +718,53 @@ knife that only touches the shape does not cut it.
 cut: with a straight line, for the line and the guide, or along the knife, with its nodes. A shape with holes is read as a
 region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces stay open: a circle cut through its centre gives
 two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
-panel says why): extend it or cut without the tick.
+panel says why): extend it (or choose “until they leave the shape”, below) or cut without the tick.
+
+**Extend the ends** (only for an open shape knife; the lines are whole already): **no** (the default); **until they leave the
+shape**: an end stopped inside a shape to cut goes on along its tangent (the line, the arc or the curve at the end) until it
+leaves the shape, and the shapes it enters that way, so that the cut goes right through; **whole line**: the ends go on along
+the tangent past all the shapes to cut (for a straight line, the line without ends).
+
+**Keep**: **both parts** (the default), the **left** or the **right** of the cut, relative to its direction: for the
+vertical line, left is the smaller x; for the horizontal one, the parts are called **above** and **below**; for the line at
+an angle, the left of the direction the angle gives; for an open shape knife, of the direction it was drawn in; for a closed
+one, **inside** or **outside**. The other part of the cut shapes goes in the same step; a shape the cut does not touch
+stays, even on the other side. The app remembers the choices, the same in the [Knife](#cutit) bar.
+
+**Between pieces** (it needs **Close the pieces**): **nothing** (the default), a **gap** or an **overlap**, of the given
+**width** (in mm, 3 by default, from 0.01 to 1 000), centred on the cut. Each part is cut with the cut moved by half the
+width: for a gap, towards it, so an empty strip stays between the pieces, like the cut of a saw blade (the 100 × 100 square
+cut at X = 50 with a gap of 6 gives two rectangles of 47 × 100); for an overlap, towards the other one, so the pieces
+overlap over the whole width (53 × 100 each). For an open shape knife, the moved cut is its path moved in parallel (the
+corners come out rounded on the outer side); for a closed one, the inside shrinks and the outside grows. While the panel is
+open, the strip shows on the canvas, with two lines dotted more sparsely. Only the shapes the cut goes through are cut: one
+next to it stays, even if the strip would touch it. A gap that would eat a whole piece on the kept side (a strip narrower
+than it, an island inside the strip) is not made, and the panel says why; a hole inside the strip goes with it. Neither can
+a knife that cannot be moved (it breaks in a curve tighter than half the width) be used.
+
+**Joint** (it needs **Close the pieces**; only on straight cuts: the lines of the panel, the guide and the Line kind of the
+[Knife](#cutit)): the new edge of the pieces follows a pattern, so that they hold each other: **straight** (the default, no
+pattern), **zigzag**, **wave**, **square teeth**, **dovetail** or **puzzle**, with the **pitch** (the length of a tooth, 40
+mm by default), the **height** (from the bottom tip to the top one, 20 mm by default) and the **radius** of the corners (3
+mm by default; 0 leaves the corners sharp). On each stretch of the cut that goes through a shape, the whole teeth stay in
+the middle, and at each end a straight margin of at least half a pitch stays, so no tooth is cut by the edge of the shape:
+the 100 × 100 square cut at X = 50 in a zigzag with a pitch of 20 and a height of 10 has four teeth, with 10 mm straight at
+each end, and each piece is 55 × 100. Each corner belongs to both pieces (hollow in one, bulging in the other), so it is
+rounded with the given radius, for a cutter of that radius to cut both; the wave and the puzzle are made of arcs, and their
+arcs must have at least the given radius. The dovetail has its sides slanted 1 : 6, and the puzzle, its head wider than its
+neck (as long as the height is over four radii): both hold the pieces together along the cut as well. The patterns are
+symmetric about their middle, so the two pieces of a symmetric shape have the same area. With **Between pieces**, the teeth
+are cut with the given gap between them (the clearance, so that the pieces fit into each other) or with the given overlap.
+While the panel is open, the teeth show on the canvas, on the chosen shapes, instead of the strip. Not made, and the panel
+says why: a cut where no tooth fits, a pattern that does not work with the given sizes (a rounding that does not fit in a
+tooth, a radius of the wave or of the puzzle below the given one) and teeth that would touch the edge of a shape (a slanted
+side or a hole too close to the cut).
+
+**Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
+**inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
+**Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
+that is cut stays closed along the boundary: a rectangle clipped to a circle becomes their common part; unticked, only its
+pieces inside remain, open. **Clip** is a single undo step too.
 
 **Cut at intersections** (the button at the bottom of the panel, or from the right-click menu) cuts the chosen shapes by
 each other, at all their common points: where they cross, where they touch and at the ends of a shared side. Each piece
@@ -723,6 +776,82 @@ open piece of a closed shape is cut on the same side of the bit (outside or insi
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
 placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
 (Ctrl+Z).
+
+## The Knife tool
+%% capitol: cutit
+%% acopera: unealta.cutit
+
+The **Knife** tool (`K`, after Nodes) cuts the shapes it crosses, right on the canvas. It cuts the chosen shapes; with nothing
+chosen, all the shapes of the sheet. The drawn knife does not stay in the drawing, and the cut is the one from [Cutting
+vectors](#taiere): exact, with the pieces in their place and with their cutting role. The choice stays as it was: with nothing
+chosen, nothing stays chosen (the next cuts still have all the shapes of the sheet), and a chosen shape that is cut is replaced
+by its pieces. Pick the knife mode in the bar:
+- **Line**: a drag across the shapes, from end to end; **Shift** gives 15° steps, and the ends snap as in drawing (Alt
+  inverts snapping).
+- **Pen**: the knife nodes, as in the [Pen](#pen) tool (click = corner, drag = curve); **Enter** or a double-click cuts,
+  **Backspace** removes the last node, **Esc** cancels.
+- **Freehand**: drag by hand; the stroke is smoothed when you release the mouse, finer when zoomed in, with sharp corners
+  kept.
+- **Shape**: click a shape that already exists (a text, a circle, a piece with several contours) and it becomes the knife; it
+  stays unchanged. A text cuts the letters out of the plate under it, and the plate keeps their holes (the middle of an “O”
+  stays in the plate). **Shift + click** adds shapes to the knife (their contours are read together); a click without Shift,
+  or **Enter**, cuts with all of them; **Esc** drops them.
+- **Scissors**: a click on the outline of a shape splits it there (near a node, right at it): a closed path opens at that
+  point, an open one becomes two shapes. An opened circle stays a circle, as a path: two half circles. The end of an open path
+  is not split.
+- **Trim**: the piece of the outline under the mouse, between the two nearest places where other outlines cross it (of the
+  chosen shapes or, with nothing chosen, of all the shapes of the sheet; and the other outlines of the same piece), shows in
+  red, and the click removes it. With something chosen, the chosen shapes are the edges, and the shape under the mouse can be
+  any, even one not chosen. What is left stays in the same shape, so that a DXF with overshooting lines stays, once cleaned, a
+  single shape: the eight ends of a “#” leave the square in the middle. An outline without two common points (an open path:
+  without any) goes entirely. Where an outline crosses itself is not a common point: that is the checking's job. The lines
+  left are not joined.
+
+While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
+(for Pen, on Enter), as a single undo step (Ctrl+Z). What was cut (or why not) is said in the corner of the canvas.
+
+The **Cutting options** button (the sliders after the knife kinds; Scissors and Trim have none, they have no options) opens
+**Close the pieces**, the same checkbox as in the Cut panel, then **Extend the ends**, **Keep**, **Between pieces** and
+**Joint**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
+the shape, the part on the right or on the left of the direction you drag in goes in the same step, the gap (or the overlap)
+moves the knife by half the width for each part, and the joint, only for the Line kind (a straight cut), puts its pattern on
+the cut. For the Shape kind, the parts are called **inside** and **outside**, and **Delete the knife** removes the knife
+shapes after the cut. When an option is not the default (the pieces left open too), the button has a red dot, and the hint
+in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends show dotted, and the part that goes
+is faded, with a red tint, over the shapes the knife splits right through; with a gap or an overlap, their strip shows on
+both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
+goes right through.
+
+## Converting vectors
+%% capitol: conversie
+%% acopera: editare.conversie, document.converteste
+
+**Convert** (the button with the polygon turning into a circle, next to Cut, in the bar's extension) changes the form of the
+chosen shapes without changing their place, their names or their operations. The panel has four blocks, each with its
+button:
+- **Arcs instead of curves**: each curve becomes arcs and lines, straying from it no more than the **tolerance** (0.01 mm by
+  default); lines and arcs stay. With **and the short lines lying on a circle** (ticked by default), a run of short lines
+  whose vertices lie on a circle (a polyline from a DXF) becomes an arc, of at most half a circle; corners (where the path
+  turns by more than 30°) and long lines stay.
+- **Smooth**: runs of short lines (a polyline from a DXF, the steps of a trace) become smooth curves, straying from them no
+  more than the **tolerance** (0.01 mm by default). Lines longer than **Keep lines longer than** (5 mm by default), arcs and
+  curves stay, and the new curve joins them without a kink; sharp corners (where the path turns by more than 60°) stay
+  corners. Steps smaller than four times the tolerance are not corners: for a stepped trace to become a curve, choose a
+  tolerance as large as the steps.
+- **Into a circle**: **only if it is a circle** (tolerance 0.1 mm by default), the shape becomes the circle through its
+  nodes, if all of it lies within the tolerance of it: a Ø100 circle drawn with 64 sides stays Ø100 (its sides stray from the
+  circle by 0.06 mm). **With the diameter** given (8 mm by default), any closed shape becomes that circle, at the centre of
+  its box: the drilling marks from a DXF become circles you can drill.
+- **Into a rectangle**: **only if it is a rectangle** (0.1 mm), the shape becomes the smallest rectangle around it, however
+  rotated, with rounded corners if it has them. **With the size** given (40 × 20 mm by default), any closed shape becomes that
+  rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
+  circle.
+
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
+along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
+lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
+were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
+converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare
@@ -1490,7 +1619,7 @@ it, and the app’s interface stays the same.
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |
