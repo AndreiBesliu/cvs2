@@ -742,6 +742,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Cu `main` unit pe 08.11 (`8dde2d2`, cu incrustațiile) și 25.3↑b: pornirea 101,9 / 110 kB, totalul 574,8 / 600.**
   **Linia trasării (25.1↑–25.3↑b) unită în `main` pe 09.11** („Yes, merge trasarea”; `e277836`; conflicte doar în
   documente). **Pornirea 101,9 (cu ușa 105,5 / 110 kB), totalul 577,2 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Scanările și pozele (ADR 0224, felia 25.4↑) gata pe 09.11, unite în `main` tot pe 09.11** („putem uni si trasarea din
+  imagine.”; `0ebbd99`; pornirea 101,9, cu ușa 105,6 / 110 kB; totalul 582,5 / 700), **cu toate recomandările („Da,
+  1a–2a”): Lumina
+  („Uniformă” implicit, „Neuniformă”: polinomul hârtiei, „Cu umbre”: închiderea morfologică), Zona (un decupaj în calcul,
+  `CerereTrasare.zona`; răspunsul are imaginea întreagă și zona), „Ignoră ce atinge marginea”. Nucleul luminii stă în
+  `src/trasare/lumina.ts`; la luminile de poză, polaritatea vine din mediana din jur, nu din margine (marginea întoarce
+  foaia pozată pe masă), iar prima regulă (închiderea și deschiderea) mergea doar pe desene dese.** Probele luminii
+  numără doar greșelile clare (acoperirea sub 0,4 sau peste 0,6): pe trăsături subțiri, pragul automat cade la ~0,47.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1002,6 +1010,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **25.4↑ (scanările și pozele) unită în `main`** („putem uni si trasarea din imagine.”): fără conflicte, cu
+  totalul 582,5 / 700 kB; worktree-ul `trasare` rămâne (linia continuă, la cuvântul owner-ului).
 - 09.11.2026: **worktree-ul `ancore` scos** („Yes, remove it”, la „Remove the finished ancore worktree and archive its
   session?”): linia ancorelor (ADR 0240) e încheiată și unită (`0c81ccf`, `e481e55`, `df19f8c`). Joncțiunile `node_modules`
   și `functions\node_modules` scoase întâi (poarta cu legăturile), apoi `git worktree remove`; `.git/worktrees/ancore`

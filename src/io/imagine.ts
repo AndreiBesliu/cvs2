@@ -45,6 +45,12 @@ export type AlegeriTrasare = {
   readonly culori: AlegeriCulori;
   /** Opțiunile liniei mediane (ADR 0223), folosite doar cu rezultatul „Linii mediane”. */
   readonly mediane: AlegeriMediane;
+  /** Lumina (ADR 0224), doar pe sursa luminozității: implicit „Uniformă”, pragul de azi (răspunsul 1a). */
+  readonly lumina: 'uniforma' | 'neuniforma' | 'umbre';
+  /** „Ignoră ce atinge marginea” (ADR 0224): implicit oprită. */
+  readonly margine: boolean;
+  /** Zona trasă pe previzualizare, în pixelii imaginii trasate (ADR 0224, răspunsul 2a: un decupaj), sau null: toată. */
+  readonly zona: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } | null;
 };
 
 /** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
@@ -53,11 +59,20 @@ export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifa
 /** Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită. */
 export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: true, bucle: 'linie' };
 
-/** Implicitele (ADR 0220 §3–§7, ADR 0222 §2): sursa aleasă singură, contururile, pragul automat, Echilibrat, petele și golurile sub 0,3 mm. */
+/**
+ * Implicitele (ADR 0220 §3–§7, ADR 0222 §2, ADR 0224): sursa aleasă singură, contururile, pragul automat, Echilibrat, petele
+ * și golurile sub 0,3 mm, lumina uniformă, fără zonă și fără ștergerea marginii.
+ */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
   sursa: 'auto', rezultat: 'contururi', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
-  culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE,
+  culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE, lumina: 'uniforma', margine: false, zona: null,
 };
+
+/**
+ * Sugestia raportului (ADR 0224 §1): la „Uniformă”, pe luminozitate, când fundalul neted al hârtiei variază cu mai mult
+ * de atât ((max − min) / max), raportul propune „Neuniformă”.
+ */
+export const SUGESTIE_INEGALA = 0.25;
 
 /** Felul imaginii după primii octeți, sau null (nu e o imagine pe care o știe ușa). */
 export function felImagine(b: Uint8Array): FelImagine | null {

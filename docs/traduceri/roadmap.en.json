@@ -129,6 +129,10 @@
       "ro": "regiunea păstrată, urechile, intrările",
       "en": "the kept region, tabs, lead-ins"
     },
+    "0a7d4d62d2a0823f": {
+      "ro": "Scanările și pozele",
+      "en": "Scans and photos"
+    },
     "0a85bfda7cc862e9": {
       "ro": "Frezele de rest",
       "en": "Rest bits"
@@ -1693,6 +1697,10 @@
       "ro": "Traseul pe pânză și panoul de proprietăți editabil",
       "en": "The toolpath on the canvas and the editable properties panel"
     },
+    "94b0745ff87d28d7": {
+      "ro": "Încercarea scanărilor și a pozelor (25.4↑) pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 25.4↑ unită în `main` și publicată pe 09.11): din „Importă…”, o poză de telefon a unui desen pe hârtie (luminată dintr-o parte, cu umbra telefonului sau pe masă) și o scanare: **Lumina** „Neuniformă” sau „Cu umbre”, **Ignoră ce atinge marginea**, **Zona** trasă pe previzualizare (butonul ei, sau Shift + tragere). Spune unde iese mai rău decât în LightBurn sau în ArtCAM (ADR 0224, „Se redeschide dacă”); poza trimisă intră în probe",
+      "en": "Trying scans and photos (25.4↑) on the main test address (<https://cncvectorstudio-test.web.app/>; 25.4↑ merged into `main` and published on 09.11): from “Import…”, a phone photo of a drawing on paper (lit from one side, with the phone’s shadow or on a table) and a scan: **Lighting** “Uneven” or “With shadows”, **Ignore what touches the edge**, the **Area** dragged on the preview (its button, or Shift + drag). Say where it comes out worse than in LightBurn or ArtCAM (ADR 0224, “Reopens if”); the photo you send goes into the tests"
+    },
     "950c55ab39d07325": {
       "ro": "Loc în pachetul de pornire (ADR 0042), felie fără mașină, prin workflow (măsurătoarea, 3 propuneri, judecătorul, implementarea, 4 verificatori): pornirea 99,1 → **92,3 / 100 kB**; cu un proiect salvat 101,5 → 96,9. Ferestrele exportului, importului și panoului își aduc calculul, schemele documentului stau în modulul lor, dicționarul limbii active și alegerea cu clicul vin la cerere. Recenzia: 9 constatări, 7 remediate cu proba lor (limba nu se mai abandonează după 4 s, ultimul clic de limbă câștigă, pagina „fără texte” accesibilă, otrava C01 repusă, ușa plafonată la 8 kB), fiecare probă pică pe sabotajul remedierii; 2 limite scrise (tragerea și tasta date înaintea sosirii alegerii).",
       "en": "Room in the startup bundle (ADR 0042), a slice without the machine, through a workflow (the measurement, 3 proposals, the judge, the implementation, 4 verifiers): startup 99.1 → **92.3 / 100 kB**; with a saved project 101.5 → 96.9. The export, import and panel windows bring their own calculation, the document schemas live in their own module, the active language's dictionary and click selection come on demand. The review: 9 findings, 7 fixed with their checks (the language is no longer abandoned after 4 s, the last language click wins, the “no texts” page is accessible, poison C01 restored, the door capped at 8 kB), each check failing on the fix's sabotage; 2 limits written down (the drag and the key given before the selection arrives)."
@@ -1928,6 +1936,10 @@
     "ab2f341922a3707a": {
       "ro": "Transformările, Alt inversat, uneltele în bara de sus",
       "en": "Transforms, inverted Alt, the tools in the top bar"
+    },
+    "ab3abffe8e5fd0b8": {
+      "ro": "**Scanările și pozele** (fără mașină; ADR 0224, acceptat și implementat; worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, neunită; pornită la „continua”, după unirea liniei trasării în `main`; răspunsurile: „Da, 1a–2a”, toate recomandările). Cercetarea: LightBurn, Vectric, CorelDRAW, ImageJ; Sauvola, „rolling ball”, închiderea van Herk – Gil-Werman, corecția câmpului plat; schița, cu macheta pe toate cazurile: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>. În fereastra trasării, pe sursa luminozității, **Lumina**: „Uniformă” (pragul de azi, implicit; raportul sugerează „Neuniformă” când hârtia variază cu peste 25 %), „Neuniformă” (un polinom de gradul 3 potrivit pe hârtie) sau „Cu umbre” (închiderea morfologică pe 1/12 din latura mică); cerneala e raportul față de fundal, cu fundalul de cel puțin un sfert din hârtia cea mai deschisă; polaritatea, din mediana din jur (marginea întoarce foaia pozată pe masă). **Zona**, un decupaj (pagina e ea, lățimea e a ei): butonul ei și Shift + tragere pe previzualizare, mutarea, întinderea, „Toată imaginea”. **Ignoră ce atinge marginea**, și pe culori. **Treceri:** (1) propunerea (`929d512`); (2) `origin/main` unit (`01f6673`: plafonul 700 kB), apoi felia (`fe21e56`, `56d8138`, `3ecf19b`): regula polarității propusă mergea doar pe desene dese (pe un desen rar, din e2e, lua hârtia drept cerneală), înlocuită cu mediana; petele mesei închise, oprite de pragul de jos al fundalului. Otrăvurile: 48 / 48 (la prima rulare 46 / 49: L12 și T06 au primit probe, hârtia foarte întunecată și poza subexpusă; L15, echivalentă, scoasă din listă cu pragul de zgomot al polarității). Totalul 582,5 / 700 kB (+3,7), pornirea 101,9 / 110; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 09.12), amprenta `3ecf19befdd7`.",
+      "en": "**Scans and photos** (no machine; ADR 0224, accepted and implemented; the `trasare` worktree, the `wip/25.1-trasare` branch, brought up to `origin/main`, not merged; started at “continua”, after the tracing line was merged into `main`; the answers: “Yes, 1a–2a”, all the recommendations). The research: LightBurn, Vectric, CorelDRAW, ImageJ; Sauvola, “rolling ball”, the van Herk – Gil-Werman closing, flat-field correction; the sketch, with the mock-up on every case: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>. In the tracing window, on the brightness source, **Lighting**: “Even” (today’s threshold, the default; the report suggests “Uneven” when the paper varies by over 25 %), “Uneven” (a degree-3 polynomial fitted on the paper) or “With shadows” (the morphological closing over 1/12 of the short side); the ink is the ratio to the background, with the background at least a quarter of the brightest paper; the polarity, from the surrounding median (the edge flips a sheet photographed on a table). The **Area**, a crop (the page is the area, the width is its width): its button and Shift + drag on the preview, moving, stretching, “Whole image”. **Ignore what touches the edge**, on colours too. **Passes:** (1) the proposal (`929d512`); (2) `origin/main` merged (`01f6673`: the 700 kB limit), then the slice (`fe21e56`, `56d8138`, `3ecf19b`): the proposed polarity rule only worked on dense drawings (on a sparse one, from the e2e, it took the paper for ink), replaced with the median; the specks of the dark table, stopped by the background’s lower bound. The poisons: 48 / 48 (on the first run 46 / 49: L12 and T06 got tests, the very dark paper and the underexposed photo; L15, equivalent, removed from the list along with the polarity’s noise threshold). The total 582.5 / 700 kB (+3.7), startup 101.9 / 110; published on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, until 09.12), fingerprint `3ecf19befdd7`."
     },
     "ab63838d337db906": {
       "ro": "Tichetele, configurarea, fișa de lucru, șabloanele, copiile în cloud",
@@ -2844,6 +2856,10 @@
     "fd62de0c9b1c5f17": {
       "ro": "Offsetul formelor în desen",
       "en": "Offsetting shapes in drawing"
+    },
+    "fded0c97b7ea4ee0": {
+      "ro": "25.4↑ pe test",
+      "en": "25.4↑ on test"
     },
     "feddb884549408b1": {
       "ro": "Raportările clienților, partea a doua: proiectul atașat și păstrarea tichetelor",

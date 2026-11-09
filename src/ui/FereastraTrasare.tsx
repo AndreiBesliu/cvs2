@@ -5,10 +5,47 @@ import type { Posterizare } from '../jobs/calculTrasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
 import { primele } from '../trasare/legaturi.ts';
+import { SUGESTIE_INEGALA } from '../io/imagine.ts';
 import type { AlegeriTrasare, PrevizualizareImport, RaportImagine } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
 
 type Vedere = 'imagine' | 'vectori' | 'ambele';
+
+/** O zonă (ADR 0224), în pixelii imaginii întregi, y în jos. */
+type Zona = NonNullable<AlegeriTrasare['zona']>;
+/** Ce apucă o tragere pe zonă: o latură sau un colț (după punctele cardinale), interiorul, sau nimic (o zonă nouă). */
+type Apucare = 'noua' | 'muta' | 'n' | 's' | 'e' | 'v' | 'ne' | 'nv' | 'se' | 'sv';
+type Tragere =
+  | { readonly fel: 'vedere'; readonly x: number; readonly y: number; readonly cx: number; readonly cy: number }
+  | { readonly fel: 'zona'; readonly ix: number; readonly iy: number; readonly z0: Zona | null; readonly mod: Apucare };
+
+/** Ce apucă punctul (x, y) dintr-o zonă: o latură sau un colț la cel mult `tol` px de ele, interiorul, altfel nimic. */
+function apuca(z: Zona, x: number, y: number, tol: number): Apucare {
+  if (x < z.x - tol || x > z.x + z.w + tol || y < z.y - tol || y > z.y + z.h + tol) return 'noua';
+  const n = Math.abs(y - z.y) <= tol, s = Math.abs(y - z.y - z.h) <= tol, v = Math.abs(x - z.x) <= tol, e = Math.abs(x - z.x - z.w) <= tol;
+  const d = `${n ? 'n' : s ? 's' : ''}${e ? 'e' : v ? 'v' : ''}`;
+  return d === 'n' || d === 's' || d === 'e' || d === 'v' || d === 'ne' || d === 'nv' || d === 'se' || d === 'sv' ? d : 'muta';
+}
+
+/** Zona după o tragere până în (x, y): nouă (din punctul apucat), mutată sau întinsă de o latură sau un colț; în imagine. */
+function zonaTrasa(d: Extract<Tragere, { fel: 'zona' }>, x0: number, y0: number, W: number, H: number): Zona {
+  const tai = (v: number, a: number, b: number): number => Math.max(a, Math.min(b, v));
+  const x = tai(x0, 0, W), y = tai(y0, 0, H), z = d.z0;
+  if (d.mod === 'noua' || !z) {
+    const ax = tai(d.ix, 0, W), ay = tai(d.iy, 0, H);
+    return { x: Math.min(ax, x), y: Math.min(ay, y), w: Math.abs(x - ax), h: Math.abs(y - ay) };
+  }
+  if (d.mod === 'muta') return { x: tai(z.x + x0 - d.ix, 0, W - z.w), y: tai(z.y + y0 - d.iy, 0, H - z.h), w: z.w, h: z.h };
+  const xa = d.mod.endsWith('v') ? x : z.x, xb = d.mod.endsWith('e') ? x : z.x + z.w;
+  const ya = d.mod.startsWith('n') ? y : z.y, yb = d.mod.startsWith('s') ? y : z.y + z.h;
+  return { x: Math.min(xa, xb), y: Math.min(ya, yb), w: Math.abs(xb - xa), h: Math.abs(yb - ya) };
+}
+
+/** Zona în pixeli întregi (marginile ei rotunjite). */
+const rotunjita = (z: Zona): Zona => {
+  const x = Math.round(z.x), y = Math.round(z.y);
+  return { x, y, w: Math.round(z.x + z.w) - x, h: Math.round(z.y + z.h) - y };
+};
 
 type Props = {
   readonly alegeri: AlegeriTrasare;
@@ -91,6 +128,11 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   // Conturul piesei de sub maus, ținut cât e aceeași piesă (o trasare nouă aduce alte contururi pentru aceeași culoare).
   const conturEvidentiat = useRef<{ readonly contur: object; readonly p: Path2D } | null>(null);
   const [estompare, setEstompare] = useState(45);
+  // Zona (ADR 0224): cu butonul ei apăsat (sau cu Shift), tragerea pe previzualizare desenează, mută sau întinde zona; cât
+  // se trage, zona e o ciornă, trimisă la ridicarea mausului.
+  const [modZona, setModZona] = useState(false);
+  const [zonaCiorna, setZonaCiorna] = useState<Zona | null>(null);
+  const ciornaZona = useRef<Zona | null>(null);
   // Liniile mediane (ADR 0222 §8): banda grosimii, sub linii, la cerere.
   const [arataGrosimea, setArataGrosimea] = useState(false);
   const mediane = raport?.mediane ?? null;
@@ -165,7 +207,10 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     ro.observe(c);
     return () => { ro.disconnect(); };
   }, []);
-  const W = raport?.latimePx ?? bmp?.width ?? 1, H = raport?.inaltimePx ?? bmp?.height ?? 1;
+  // Previzualizarea arată toată imaginea; căile unei zone (un decupaj, ADR 0224) se desenează la locul zonei lor.
+  const W = raport?.intreg.latimePx ?? bmp?.width ?? 1, H = raport?.intreg.inaltimePx ?? bmp?.height ?? 1;
+  const zonaTrasata = raport?.zona ?? null, zonaArata = zonaCiorna ?? alegeri.zona;
+  const zx = zonaTrasata?.x ?? 0, zy = zonaTrasata?.y ?? 0;
   const incadrare = Math.min(marime.w / W, marime.h / H) * 0.95;
   const s = incadrare * vizor.k, cx = vizor.cx ?? W / 2, cy = vizor.cy ?? H / 2;
   useEffect(() => {
@@ -179,13 +224,32 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, c.width, c.height);
     g.setTransform(s * dpr, 0, 0, s * dpr, (marime.w / 2 - cx * s) * dpr, (marime.h / 2 - cy * s) * dpr);
-    const fundal = pictata ?? bmp;
-    if (fundal && vedere !== 'vectori') {
-      g.globalAlpha = vedere === 'ambele' ? 1 - estompare / 100 : 1;
-      g.imageSmoothingEnabled = !pictata && s < 4;
-      g.drawImage(fundal, 0, 0, W, H);
+    if (vedere !== 'vectori') {
+      const alfa = vedere === 'ambele' ? 1 - estompare / 100 : 1;
+      // Pe culori, imaginea pictată e a zonei trasate; în jurul ei, imaginea, estompată de două ori.
+      if (pictata && zonaTrasata && bmp) {
+        g.globalAlpha = alfa / 2;
+        g.imageSmoothingEnabled = s < 4;
+        g.drawImage(bmp, 0, 0, W, H);
+      }
+      const fundal = pictata ?? bmp;
+      if (fundal) {
+        g.globalAlpha = alfa;
+        g.imageSmoothingEnabled = !pictata && s < 4;
+        if (pictata && raport) g.drawImage(pictata, zx, zy, raport.latimePx, raport.inaltimePx);
+        else g.drawImage(fundal, 0, 0, W, H);
+      }
       g.globalAlpha = 1;
     }
+    // În afara zonei alese (ADR 0224), umbrit.
+    if (zonaArata) {
+      g.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      g.beginPath();
+      g.rect(0, 0, W, H);
+      g.rect(zonaArata.x, zonaArata.y, zonaArata.w, zonaArata.h);
+      g.fill('evenodd');
+    }
+    g.translate(zx, zy);
     // Părțile late (ADR 0223), colorate sub linii, cu accentul aplicației.
     if (caleLate && arataLate && vedere !== 'imagine') {
       g.fillStyle = getComputedStyle(c).getPropertyValue('--a').trim() || '#a64d00';
@@ -218,7 +282,28 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       g.lineWidth = 3 / s;
       g.stroke(conturEvidentiat.current.p);
     }
-  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, caleLate, arataLate]);
+    g.translate(-zx, -zy);
+    // Conturul zonei, cu mânerele lui cât e apăsat butonul zonei (sau cât se trage).
+    if (zonaArata) {
+      g.strokeStyle = getComputedStyle(c).getPropertyValue('--a').trim() || '#0a5bd3';
+      g.lineWidth = 1.5 / s;
+      g.setLineDash([6 / s, 4 / s]);
+      g.strokeRect(zonaArata.x, zonaArata.y, zonaArata.w, zonaArata.h);
+      g.setLineDash([]);
+      if (modZona || zonaCiorna) {
+        const m = 7 / s;
+        g.fillStyle = '#ffffff';
+        for (const fx of [0, 0.5, 1]) {
+          for (const fy of [0, 0.5, 1]) {
+            if (fx === 0.5 && fy === 0.5) continue;
+            const px = zonaArata.x + fx * zonaArata.w - m / 2, py = zonaArata.y + fy * zonaArata.h - m / 2;
+            g.fillRect(px, py, m, m);
+            g.strokeRect(px, py, m, m);
+          }
+        }
+      }
+    }
+  }, [bmp, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, caleLate, arataLate, zonaArata, zonaTrasata, zx, zy, modZona, zonaCiorna, raport]);
   const mareste = (f: number, px?: number, py?: number): void => {
     // Punctul de sub maus rămâne pe loc (fără maus: centrul).
     const ox = px ?? marime.w / 2, oy = py ?? marime.h / 2;
@@ -237,7 +322,12 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     c.addEventListener('wheel', roata, { passive: false });
     return () => { c.removeEventListener('wheel', roata); };
   });
-  const tras = useRef<{ x: number; y: number; cx: number; cy: number } | null>(null);
+  const tras = useRef<Tragere | null>(null);
+  /** Punctul de sub maus, în pixelii imaginii întregi. */
+  const laImagine = (e: { readonly clientX: number; readonly clientY: number; readonly currentTarget: Element }): [number, number] => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return [cx + (e.clientX - r.left - marime.w / 2) / s, cy + (e.clientY - r.top - marime.h / 2) / s];
+  };
 
   const aleasa = raport && raport.sursa !== 'culori' ? t(raport.sursa === 'alfa' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';
   const px = (mm: string): string => {
@@ -300,6 +390,22 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
             {t('import.trasare.inverseaza')}
           </label>
         )}
+        {!peCulori && (raport ? raport.sursa === 'lum' : alegeri.sursa === 'lum') && (
+          <div className="trasare-lumina">
+            <label>
+              {t('import.trasare.lumina')}
+              <select value={alegeri.lumina} data-camp="trasare-lumina" onChange={(e) => {
+                const v = e.target.value;
+                onSchimba({ lumina: v === 'neuniforma' || v === 'umbre' ? v : 'uniforma' });
+              }}>
+                <option value="uniforma">{t('import.trasare.lumina.uniforma')}</option>
+                <option value="neuniforma">{t('import.trasare.lumina.neuniforma')}</option>
+                <option value="umbre">{t('import.trasare.lumina.umbre')}</option>
+              </select>
+            </label>
+            <p className="mic" data-testid="trasare-lumina-sfat">{t(`import.trasare.lumina.sfat.${alegeri.lumina}`)}</p>
+          </div>
+        )}
         <label>
           {t('import.trasare.netezime')}
           <select value={alegeri.netezime} data-camp="trasare-netezime" onChange={(e) => {
@@ -320,6 +426,10 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
           {t('import.trasare.gauri')}
           <input type="text" inputMode="decimal" value={ciorna.gauri} data-camp="trasare-gauri" onChange={(e) => { setCiorna({ ...ciorna, gauri: e.target.value }); }} />
           <span className="mic">{px(ciorna.gauri)}</span>
+        </label>
+        <label className="rand">
+          <input type="checkbox" checked={alegeri.margine} data-camp="trasare-margine" onChange={(e) => { onSchimba({ margine: e.target.checked }); }} />
+          {t('import.trasare.margine')}
         </label>
         <label>
           {t('import.trasare.latime')}
@@ -360,14 +470,39 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
             <button type="button" data-buton="trasare-mareste" title={t('import.trasare.mareste')} onClick={() => { mareste(1.25); }}>+</button>
             <button type="button" data-buton="trasare-incadreaza" onClick={() => { setVizor({ k: 1, cx: null, cy: null }); }}>{t('import.trasare.incadreaza')}</button>
           </span>
+          <span className="trasare-zoom">
+            <button type="button" data-buton="trasare-zona" aria-pressed={modZona} title={t('import.trasare.zona.titlu')}
+              onClick={() => { setModZona(!modZona); }}>{t('import.trasare.zona')}</button>
+            <button type="button" data-buton="trasare-toata" disabled={!alegeri.zona}
+              onClick={() => { setZonaCiorna(null); onSchimba({ zona: null }); }}>{t('import.trasare.toata')}</button>
+          </span>
         </div>
-        <canvas ref={panza} className="trasare-panza" data-testid="trasare-previzualizare" aria-label={t('import.trasare.previzualizare')}
-          onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); tras.current = { x: e.clientX, y: e.clientY, cx, cy }; }}
+        <canvas ref={panza} className={modZona ? 'trasare-panza zona' : 'trasare-panza'} data-testid="trasare-previzualizare"
+          aria-label={t('import.trasare.previzualizare')}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            if (modZona || e.shiftKey) {
+              const [ix, iy] = laImagine(e), z0 = alegeri.zona;
+              tras.current = { fel: 'zona', ix, iy, z0, mod: z0 ? apuca(z0, ix, iy, 7 / s) : 'noua' };
+            } else tras.current = { fel: 'vedere', x: e.clientX, y: e.clientY, cx, cy };
+          }}
           onPointerMove={(e) => {
             const d = tras.current;
-            if (d) setVizor({ k: vizor.k, cx: d.cx - (e.clientX - d.x) / s, cy: d.cy - (e.clientY - d.y) / s });
+            if (!d) return;
+            if (d.fel === 'vedere') { setVizor({ k: vizor.k, cx: d.cx - (e.clientX - d.x) / s, cy: d.cy - (e.clientY - d.y) / s }); return; }
+            const [ix, iy] = laImagine(e);
+            ciornaZona.current = zonaTrasa(d, ix, iy, W, H);
+            setZonaCiorna(ciornaZona.current);
           }}
-          onPointerUp={() => { tras.current = null; }} />
+          onPointerUp={() => {
+            const d = tras.current, z = ciornaZona.current;
+            tras.current = null;
+            ciornaZona.current = null;
+            if (d?.fel !== 'zona') return;
+            setZonaCiorna(null);
+            // Un clic fără tragere (sau un dreptunghi de sub 4 px) nu face o zonă.
+            if (z && z.w >= 4 && z.h >= 4) onSchimba({ zona: rotunjita(z) });
+          }} />
         <div className="trasare-raport" data-testid="trasare-raport" aria-live="polite">
           {(stare === 'citire' || seRecitesc) && <p role="status" data-testid="trasare-trasez">{t('import.trasare.trasez')}</p>}
           {raport && (
@@ -376,6 +511,17 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
                 <p data-testid="trasare-abatere">
                   {t(mediane ? 'import.trasare.abatere-mediane' : 'import.trasare.abatere', { mm: nr(raport.abaterePx * raport.mmPePx, 3), px: nr(raport.abaterePx, 2) })}
                 </p>
+              )}
+              {raport.zona && (
+                <p data-testid="trasare-zona">
+                  {t('import.trasare.zona-raport', {
+                    latime: raport.zona.w, inaltime: raport.zona.h, mmL: nr(raport.latimeMm, 1), mmI: nr(raport.inaltimeMm, 1),
+                    latime0: raport.intreg.latimePx, inaltime0: raport.intreg.inaltimePx,
+                  })}
+                </p>
+              )}
+              {raport.sursa === 'lum' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA && (
+                <p className="avertisment" data-testid="trasare-sugestie">{t('import.trasare.sugestie', { procent: nr(100 * raport.inegala, 0) })}</p>
               )}
               {mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}
               {mediane && mediane.puncte > 0 && <p data-testid="trasare-puncte">{t('import.trasare.puncte', { n: mediane.puncte })}</p>}
@@ -388,10 +534,11 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               )}
               <p data-testid="trasare-imagine">
                 {raport.redusDin
-                  ? t('import.trasare.redusa', { latime: raport.latimePx, inaltime: raport.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
-                  : t('import.trasare.imagine', { latime: raport.latimePx, inaltime: raport.inaltimePx })}
+                  ? t('import.trasare.redusa', { latime: raport.intreg.latimePx, inaltime: raport.intreg.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
+                  : t('import.trasare.imagine', { latime: raport.intreg.latimePx, inaltime: raport.intreg.inaltimePx })}
               </p>
               {(raport.pete > 0 || raport.gauri > 0) && <p data-testid="trasare-curatare">{t('import.trasare.curatare', { pete: t('import.trasare.pete-sterse', { n: raport.pete }), gauri: t('import.trasare.goluri-umplute', { n: raport.gauri }) })}</p>}
+              {raport.margine > 0 && <p data-testid="trasare-margine">{t('import.trasare.margine-sterse', { n: raport.margine })}</p>}
               {raport.margini === 'dure' && <p className="mic" data-testid="trasare-dure">{t('import.trasare.dure')}</p>}
             </>
           )}

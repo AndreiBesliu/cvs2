@@ -8,7 +8,8 @@ import type { AvertismenteWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io
 import type { AlegeriTrasare } from '../io/imagine.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
-import type { Posterizare } from '../jobs/calculTrasare.ts';
+import type { Lumina } from '../trasare/lumina.ts';
+import type { Posterizare, ZonaTrasare } from '../jobs/calculTrasare.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
@@ -38,8 +39,14 @@ export type { AlegeriTrasare } from '../io/imagine.ts';
 
 /** Raportul unei imagini trasate (ADR 0220 §10), cu scara folosită: ce arată fereastra sub previzualizare. */
 export type RaportImagine = {
-  /** Pixelii trasați (după reducere) și, dacă decodarea a redus imaginea, mărimea ei din fișier. */
+  /** Pixelii trasați (după reducere; ai zonei, dacă e una) și, dacă decodarea a redus imaginea, mărimea ei din fișier. */
   readonly latimePx: number; readonly inaltimePx: number;
+  /**
+   * Imaginea decodată întreagă, în px, și zona trasată din ea (ADR 0224: un decupaj, deci pagina e ea), sau null.
+   * Previzualizarea arată toată imaginea și pune vectorii zonei la locul lor.
+   */
+  readonly intreg: { readonly latimePx: number; readonly inaltimePx: number };
+  readonly zona: ZonaTrasare | null;
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
   /** Mărimea imaginii pe foaie și a pixelului, în mm. */
   readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
@@ -49,6 +56,11 @@ export type RaportImagine = {
   readonly sursa: 'alfa' | 'lum' | 'culori'; readonly transparenta: boolean;
   readonly prag: number; readonly automat: boolean; readonly margini: 'netezite' | 'dure';
   readonly pete: number; readonly gauri: number; readonly contururi: number; readonly varfuri: number;
+  /**
+   * Lumina folosită (ADR 0224; pe transparență și pe culori, „uniforma”), cât variază hârtia la „Uniformă” (pentru sugestie,
+   * altfel null) și bucățile lipite de margine șterse.
+   */
+  readonly lumina: Lumina; readonly inegala: number | null; readonly margine: number;
   /** Abaterea măsurată față de conturul sub-pixel, în px. */
   readonly abaterePx: number;
   /** Histograma cernelii (256 de trepte), sub glisorul pragului. */
