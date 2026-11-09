@@ -30,7 +30,9 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   decizia owner-ului, „Da, 500 kB”; la 441,2 kB, cele trei linii de lucru care urmau nu încăpeau în cei 8,8 kB rămași),
  *   550 kB din 06.11 (ADR 0137: decizia owner-ului, „Yes, 550 kB”; unirea liniei pluginului, cu gazda extensiilor, care
  *   merge și offline, a dus totalul la 503,1 kB), 600 kB din 07.11 (ADR 0143: decizia owner-ului, „Yes, 600 kB”; după
- *   unirea raportărilor și a imprimantei, totalul era 535,0 kB, iar liniile paralele aveau gata pe ramuri încă ~60 kB);
+ *   unirea raportărilor și a imprimantei, totalul era 535,0 kB, iar liniile paralele aveau gata pe ramuri încă ~60 kB),
+ *   700 kB din 09.11 (ADR 0144: decizia owner-ului, „Yes, 700 kB”; după unirea trasării și a lui 6.V↑d, totalul era
+ *   578,7 kB, iar tăierea, planșele și imprimanta, gata pe ramuri, aduceau împreună încă ~85 kB);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
@@ -38,7 +40,7 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
 const PLAFON_PORNIRE_KB = 110;
-const PLAFON_TOTAL_KB = 600;
+const PLAFON_TOTAL_KB = 700;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are

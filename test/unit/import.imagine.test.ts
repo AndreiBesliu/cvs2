@@ -5,6 +5,7 @@ import { formatDupaAntet, formatImport } from '../../src/io/formatImport.ts';
 import { posterizeaza, raspundeTrasare, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
 import { caiDinTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
+import { luminaLaterala, poza } from './ajutor-poze.ts';
 
 /**
  * Ușa imaginilor (ADR 0220 §1, §7, §8): semnăturile, DPI-ul din antet (PNG `pHYs`, JPEG JFIF și EXIF, BMP), scara și
@@ -352,4 +353,92 @@ test('liniile mediane cu opțiuni (ADR 0223): pata plină contur exterior, bucla
   assert.ok(mare.ok && mare.fel === 'mediane');
   assert.equal(mare.raport.parti?.numar, 0);
   assert.ok(Math.abs((mare.raport.parti?.pragPx ?? 0) - 22) < 1e-9);
+});
+
+test('zona (ADR 0224, răspunsul 2a) e un decupaj: se trasează doar ea, colțul ei stânga-jos e colțul foii, lățimea e a ei', async () => {
+  // `imagine` (100 × 50): dreptunghiul negru x 20–80, y 10–40, și pata de 3 px de la (5, 5). Zona x 50–100 îl taie.
+  const z = { x: 50, y: 0, w: 50, h: 50 };
+  const r = (await raspundeTrasare(cerere({ latimeMm: 25, zona: z }))).raspuns;
+  assert.ok(r.ok && r.fel === 'alb-negru');
+  assert.deepEqual(r.zona, z);
+  assert.deepEqual(r.intreg, { latime: 100, inaltime: 50 });
+  assert.deepEqual([r.raport.latime, r.raport.inaltime], [50, 50]);
+  assert.equal(r.raport.contururi, 1, 'doar bucata dreptunghiului din zonă');
+  // Lățimea scrisă e a zonei: 25 mm pe 50 px.
+  assert.equal(r.mmPePx, 0.5);
+  aproape(r.dpi, 50.8, '50 px pe 25 mm');
+  // În mm, cu Y în sus, pagina e zona: bucata e la x 0–15 mm (px 50–80 ai imaginii), y 5–20 mm.
+  const { cai } = caiDinTrasare(r.cai, r.mmPePx, r.raport.inaltime);
+  const xs = cai.flatMap((c) => c.varfuri.map((v) => v.p.x)), ys = cai.flatMap((c) => c.varfuri.map((v) => v.p.y));
+  const lang = (a: number, b: number, m: string): void => { assert.ok(Math.abs(a - b) < 0.3, `${m}: ${a} față de ${b}`); };
+  lang(Math.min(...xs), 0, 'stânga'); lang(Math.max(...xs), 15, 'dreapta'); lang(Math.min(...ys), 5, 'jos'); lang(Math.max(...ys), 20, 'sus');
+  const p = previzualizareDinRaspuns({ nume: 'scan.png', octeti: new Uint8Array() }, r);
+  assert.ok(p.ok && p.format === 'imagine');
+  assert.deepEqual(p.pregatit.pagina, { latime: 25, inaltime: 25 });
+  assert.deepEqual(p.trasare.zona, z);
+  assert.deepEqual(p.trasare.intreg, { latimePx: 100, inaltimePx: 50 });
+  assert.deepEqual([p.trasare.latimeMm, p.trasare.inaltimeMm], [25, 25]);
+  // Cu „Ignoră ce atinge marginea”, bucata tăiată de zonă e lipită de marginea ei: nimic de trasat.
+  const m = (await raspundeTrasare(cerere({ latimeMm: 25, zona: z, optiuni: { ...cerere({}).optiuni, margine: true } }))).raspuns;
+  assert.ok(m.ok && m.fel === 'alb-negru');
+  assert.equal(m.raport.contururi, 0);
+  assert.equal(m.raport.margine, 1);
+});
+
+test('zona: scara din DPI nu se schimbă (pixelul are aceeași mărime); zona se taie la imagine, iar una din afara ei nu e zonă', async () => {
+  const r = (await raspundeTrasare(cerere({ dpi: 254, zona: { x: 50, y: 0, w: 50, h: 50 } }))).raspuns;
+  assert.ok(r.ok);
+  aproape(r.mmPePx, 0.1);
+  aproape(r.dpi, 254);
+  assert.equal(r.scara, 'fisier');
+  const t = (await raspundeTrasare(cerere({ zona: { x: 90.4, y: 39.6, w: 50, h: 50 } }))).raspuns;
+  assert.ok(t.ok);
+  assert.deepEqual(t.zona, { x: 90, y: 40, w: 10, h: 10 });
+  const afara = (await raspundeTrasare(cerere({ zona: { x: 200, y: 0, w: 50, h: 50 } }))).raspuns;
+  assert.ok(afara.ok);
+  assert.equal(afara.zona, null);
+  assert.equal(afara.raport.contururi, 2);
+  const fara = (await raspundeTrasare(cerere({}))).raspuns;
+  assert.ok(fara.ok);
+  assert.equal(fara.zona, null);
+  assert.deepEqual(fara.intreg, { latime: 100, inaltime: 50 });
+});
+
+test('zona pe culori: doar pătratele din ea, imaginea pictată cât zona; marginea trece la fundal ce atinge zona', async () => {
+  // COLOR (120 × 60): pătratele la x 10, 50, 90 (20 px). Zona x 40–120 prinde două, iar latura ei din stânga nu atinge niciunul.
+  const r = (await raspundeTrasare(peCulori({ zona: { x: 40, y: 0, w: 80, h: 60 } }))).raspuns;
+  assert.ok(r.ok && r.fel === 'culori');
+  assert.equal(r.piese.length, 2);
+  assert.deepEqual([r.posterizare.latime, r.posterizare.inaltime], [80, 60]);
+  // Zona x 0–60 taie pătratul albastru (x 50–70) la marginea ei: cu marginea, doar cel roșu rămâne.
+  const t = (await raspundeTrasare(peCulori({ zona: { x: 0, y: 0, w: 60, h: 60 }, optiuni: { ...peCulori().optiuni, margine: true } }))).raspuns;
+  assert.ok(t.ok && t.fel === 'culori');
+  assert.equal(t.piese.length, 1);
+  assert.equal(t.raport.margine, 1);
+});
+
+test('lumina și marginea trec prin cerere: o poză cu masa în jur, „Neuniformă” și „Ignoră ce atinge marginea”, fără nicio cale pe masă', async () => {
+  const W = 600, H = 400, img = poza({ W, H, lumina: luminaLaterala(W, H), masa: true });
+  const o = { ...cerere({}).optiuni, lumina: 'neuniforma', margine: true } as const;
+  const r = (await raspundeTrasare(cerere({ imagine: img, optiuni: o, peteMm: 1, latimeMm: W * 0.26 }))).raspuns;
+  assert.ok(r.ok && r.fel === 'alb-negru');
+  assert.equal(r.raport.lumina, 'neuniforma');
+  assert.ok(r.raport.margine >= 1, `bucăți lipite de margine: ${r.raport.margine}`);
+  // Câte contururi are desenul adevărat (masca lui, negru pe alb, trasată la fel); niciun vârf lângă marginea imaginii (masa).
+  const masca = new Uint8ClampedArray(W * H * 4).fill(255);
+  for (let i = 0; i < W * H; i++) if (img.adevar[i] === 1) masca.set([0, 0, 0, 255], 4 * i);
+  const adevar = (await raspundeTrasare(cerere({ imagine: { latime: W, inaltime: H, date: masca }, peteMm: 1, latimeMm: W * 0.26 }))).raspuns;
+  assert.ok(adevar.ok && adevar.fel === 'alb-negru');
+  assert.equal(r.raport.contururi, adevar.raport.contururi);
+  const xy = r.cai.xy;
+  for (let v = 0; v < xy.length / 6; v++) {
+    const x = xy[6 * v] ?? 0, y = xy[6 * v + 1] ?? 0;
+    assert.ok(x > 8 && y > 8 && x < W - 8 && y < H - 8, `vârful (${x}, ${y})`);
+  }
+  // Pe transparență nu se aplică (n-are lumină): raportul spune „uniforma”.
+  const transp = new Uint8ClampedArray(40 * 30 * 4);
+  for (let y = 0; y < 30; y++) for (let x = 0; x < 40; x++) if (Math.hypot(x - 20, y - 15) < 8) transp.set([0, 0, 0, 255], (y * 40 + x) * 4);
+  const t = (await raspundeTrasare(cerere({ imagine: { latime: 40, inaltime: 30, date: transp }, optiuni: o }))).raspuns;
+  assert.ok(t.ok && t.fel === 'alb-negru');
+  assert.equal(t.raport.lumina, 'uniforma');
 });

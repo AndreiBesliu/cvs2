@@ -7702,6 +7702,106 @@ ta”: proba „Alt ține fix” (`ancore.spec.ts:354`) cădea pe Linux, unde `s
 - **Porțile:** tipurile, unit 72 (manualul, testul din aplicație, i18n, documentația, editarea), traducerile, e2e 35 (ancorele
   cu cele două probe noi, tutorialul, editarea, fereastra).
 
+## 2026-11-09 — Unirea lui 6.V↑d în main; CI-ul roșu pe bara de sus, reparația și publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea ancorelor, după raportul ei: „Dacă e bine, spune „unește”. Ramura o unește
+în `main` sesiunea principală.”), transmis aici de sesiunea liniei; apoi, la CI-ul roșu, „Yes, merge the fix” (la „Merge the
+ancore fix into main when it's ready?”).
+**Started:** 09.11, 11:27. **Completed:** 09.11, 17:30.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii ancorelor, imediat după raportul liniei.
+- **Unirea (`e481e55`, `--no-ff`):** de la `7dcb7a2` (6.V↑d: ce ține fix Alt, cercul din colț, poligonul întins, rândul
+  tastelor, ancora X / Y în panou, formele rotite oblic trase de o latură). Conflictele, doar în `DEVLOG.md`, fișa etapei 3
+  și traduceri, păstrate amândouă părțile; în coada owner-ului, rândul ancorelor al liniei (fără decizia pe plafon, acum
+  făcută). Porțile din prima: 8 861 de teste unitare (nicio cădere), build-ul determinist, e2e 411 / 411, emulatoarele 101 /
+  101 și 21 / 21; totalul 578,8 / 600 kB. Documentele (`c9bbf52`): CLAUDE.md; în fișă, încercările trasării și ale lui 6.V↑d
+  pe adresa principală de test și pașii ancorelor renumerotați (11, 12, 13: 6.V↑d a adăugat pasul 6).
+- **CI-ul complet pe `cbdaf64` (`42598259552`), roșu:** `ancore.spec.ts:354`, bara de sus la 1280 px. Pe Linux, `system-ui`
+  e lat: capătul barei la 1300 px (pe Windows, cu Segoe UI, la 1245). Reprodus local cu `--font: Verdana, 'DejaVu Sans'` (ca
+  în `fereastra.spec.ts`). Nimic publicat: testul rămăsese pe trasare (`9773cd6`). Ramura liniei nu rulase e2e pe Linux
+  (rapidul n-are e2e), iar porțile locale sunt pe Windows.
+- **Reparația liniei (`4246279`, unită prin `df19f8c`):** textele listei colțurilor mai scurte (explicația rămâne în titlu),
+  cu motivul refuzului, manualul și pasul din testul aplicației; proba barei, separată, cu fontul lat pus înainte de
+  măsurare, pe Transformare și pe cerc, în română și în engleză (capătul la 1260 / 1248 px). Porțile din prima: 8 861 de
+  teste unitare, e2e 413 / 413, emulatoarele 101 / 101 și 21 / 21. CLAUDE.md (`3797e17`): o opțiune nouă în bara de sus se
+  probează și cu fontul lat.
+- **CI:** rapid `42629427425` și complet `42633579690` (pornit de mână) pe `3797e17`, verzi: `main` verde din nou.
+- **Publicat pe test:** rularea `42641540149`, serverul întâi, apoi site-ul; amprenta `3797e17ed2e1` pe toate țintele.
+
+## 2026-11-09 — Plafonul total 700 kB (ADR 0144); unirea tăierii oprită de proba barei de sus (Model: Claude Opus 5.5)
+
+**Prompt:** „ce se mai poate uni?”, apoi „Yes, 700 kB” (la „Raise the total bundle limit to 700 kB?”) și „Yes, merge
+tăierea” (la „Merge tăierea into main?”).
+**Started:** 09.11, 16:40. **Completed:** 09.11, 17:30.
+
+- **Ce se mai poate uni:** pe `main` (`3797e17`, 578,7 / 600 kB), unirile de probă în clona din afara Drive-ului: tăierea
+  600,1 (+21,4), imprimanta 617,2 (+38,5), amândouă 638,5; planșele (conflicte de cod cu `main`), vârful față de baza lor:
+  +25,2, cu pornirea și ușa la ~110,1 / 110 peste `main`-ul de acum. Fiecare trecea singură de plafon.
+- **Plafonul (`d46fd15`):** ADR 0144 (700 kB, cu cifrele de mai sus; pornirea rămâne 110 kB), ADR 0143 „Schimbat de”, rândul
+  din index, `PLAFON_TOTAL_KB = 700` în `scripts/build-determinist.ts`, CLAUDE.md (starea, decizia). Porțile: traducerile,
+  compilatorul, probele documentației (34 / 34), build-ul determinist (578,8 / 700).
+- **Unirea tăierii, de probă (`08dca64`, neîmpinsă):** de la `21492d3` (10.3↑f–10.3↑i), conflicte doar în documente (în
+  coada owner-ului, rândul întrebărilor ADR 0180, acceptat din 06.11, scos, cum îl scosese linia). Porțile: 9 001 de teste
+  unitare (nicio cădere), build-ul determinist (600,2 / 700), emulatoarele 101 / 101 și 21 / 21; e2e 436 / 437: proba nouă a
+  barei (`ancore.spec.ts:512`) cade și singură: cu Cuțitul (K) în bara uneltelor, capătul barei Transformării e la 1296 px
+  cu fontul lat, în română. Proba a prins depășirea înainte de push: unirea e păstrată local
+  (`backup/unire-taiere-08dca64`), `main` a rămas pe `d46fd15`, iar reparația o face linia tăierii, pe ramura ei.
+
+## 2026-11-09 — Felia 25.4↑ pornită: scanările și pozele (ADR 0224, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea liniei în `main`).
+**Started:** 09.11, 16:49. **Completed:** 09.11, 17:25.
+
+- **Ramura** adusă la `origin/main` (`3797e17`, fast-forward); sesiunea principală, rugată să nu scoată worktree-ul `trasare`.
+- **Cercetarea:** LightBurn (pragul local pentru schițe, trasarea în dreptunghiul tras), Vectric (decuparea, zona),
+  CorelDRAW (scoaterea fundalului), ImageJ („rolling ball”, pragurile locale, „exclude on edges”); Sauvola (2000), imaginile
+  integrale (Shafait, Keysers, Breuel 2008), Bradley–Roth (2007), maximul pe fereastră în trei comparații pe pixel (van Herk
+  1992, Gil și Werman 1993), corecția câmpului plat.
+- **Prototipul** (`.tmp/proto-254.ts`, `.tmp/metode-254.ts`, `.tmp/proto-254-inchidere.ts`, `.tmp/proto-254-creta.ts`,
+  `.tmp/polaritate-254.ts`), pe imagini sintetice de 1200 × 800 cu cerneala știută (lumina scade de cinci ori dintr-un colț în
+  cel opus): pragul de azi dă 259–2519 % cerneală în plus; „Neuniformă” (un polinom de gradul 3 potrivit pe hârtie, cerneala
+  ca raport) ține desenul la 0–0,3 % în plus și 0,7–1,1 % lipsă, și pata plină, dar umbra tare iese cerneală (648 %); „Cu
+  umbre” (închiderea morfologică pe 1/12 din latura mică) ține umbra (0,7 / 1,1 %), dar golește pata (26 % lipsă); foaia pe
+  masă, cu „Ignoră ce atinge marginea” sau cu zona: 0,3–0,4 / 0,8–0,9 %; creta pe tablă: 0,2 / 0,8 % (Neuniformă).
+- **Găsite pe drum:** (1) Sauvola pune marginea trăsăturii unde cade pragul local (pe lumina egală, +2,4 %; în oglindă, pe
+  cretă, +10,5 %), deci „Cu umbre” e închiderea, cu raportul și Otsu; (2) polaritatea din margine (nucleul de azi) întoarce
+  foaia pozată pe masă și poza cu umbră, iar clasa cea mai mare după Otsu cade pe umbră (Otsu desparte lumina): minoritatea
+  locală a cernelii le nimerește pe toate șase (5–12 % față de 29,5–31,5 %); (3) pe cretă, raportul la fundalul închis
+  amplifică zgomotul: numărătoarea polarității se face față de mijlocul dintre închidere și deschidere, pe imaginea redusă
+  la ~0,25 Mpx și netezită 3 × 3.
+- **Timpul pe 12 Mpx** (Node 26): Neuniformă 7–14 + 69–120 ms, Cu umbre 546–590 ms, polaritatea 71–93 ms, Sauvola 120–189 ms
+  (cu sumele pe coloane: memoria O(W), în locul celor 192 MB ale imaginilor integrale).
+- **ADR 0224** propus: Lumina (Uniformă / Neuniformă / Cu umbre), Zona trasă pe previzualizare, „Ignoră ce atinge marginea”
+  (și pe culori); două întrebări (lumina implicită; zona: decupaj sau filtru). Schița, cu macheta pe toate cazurile și
+  formularul: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>.
+- **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului (0 lipsă).
+
+## 2026-11-09 — Felia 25.4↑: scanările și pozele (ADR 0224, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–2a” (owner-ul, la cele două întrebări din ADR 0224: „Uniformă” implicit, cu sugestia din raport; zona e
+un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
+
+- **Ramura** adusă la `origin/main` (`01f6673`: plafonul total 700 kB, ADR 0144; conflict doar în DEVLOG).
+- **Probele întâi:** poze sintetice cu cerneala știută (`test/unit/ajutor-poze.ts`: lumina dintr-o parte, o pată plină,
+  o umbră tare, foaia pe masă, creta pe tablă, desene dese și rare, hârtia foarte întunecată, poza subexpusă), 20 de
+  probe ale luminii, 4 ale ușii, 4 e2e.
+- **Nucleul** (`src/trasare/lumina.ts`, pur): fundalul neted (polinomul de gradul 3, pe 40 000 de eșantioane, de patru
+  ori, evaluat pe o grilă de 32 px), fundalul local (închiderea, van Herk – Gil-Werman, pe linii și pe coloane câte 16),
+  raportul cu pragul de jos (un sfert din hârtia cea mai deschisă), creta întinsă după percentila 99,5, polaritatea din
+  mediana din jur; „Ignoră ce atinge marginea” în curățare și pe culori; sugestia la „Uniformă” (variația hârtiei).
+- **Găsite pe drum:** (1) pragul automat de azi cade la acoperirea ~0,47 pe trăsăturile subțiri (în prototip, ascuns de
+  acoperirea cuantizată): probele numără doar greșelile clare; (2) regula polarității din ADR (închiderea și deschiderea)
+  mergea doar pe desene dese: pe un desen rar (e2e-ul, pe canvas) lua hârtia drept cerneală; înlocuită cu mediana din jur;
+  (3) zgomotul mesei închise, împărțit la fundalul ei, ieșea pete (1–2,7 %): pragul de jos al fundalului; (4) pe 12 Mpx,
+  `campul` cu o lumină de poză ținea 3 s (un `Float32Array.from` cu funcție, histograma cu `for…of`, patru imagini de
+  48 MB): acum +0,4 s (Neuniformă) și +0,7 s (Cu umbre).
+- **Zona** (un decupaj în calcul, lățimea a ei, pixelul cu aceeași mărime din DPI), fereastra (Lumina cu sfatul ei, bifa,
+  butonul Zona, Shift, mutarea, întinderea, „Toată imaginea”, umbra din afară, vectorii la locul zonei; raportul), textele
+  și manualul, în ambele limbi; privită în temă deschisă și închisă, mărită.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), regulile de import, licențele, suita unitară 8883 (0 căzute),
+  e2e-urile importului, ale trasării și tutorialul 44 / 44, determinismul (293 de fișiere identice); totalul 582,5 / 700 kB,
+  pornirea 101,9 / 110. Otrăvurile: 48 / 48 (la prima rulare 46 / 49: L12 și T06 au primit probe, hârtia foarte întunecată și poza subexpusă; L15, echivalentă, scoasă din listă cu pragul de zgomot al polarității). Commituri: `fe21e56`, `56d8138`, `3ecf19b`; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 09.12), amprenta `3ecf19befdd7`.
+
 ## 2026-11-09 — Felia 11.4↑b: «Din CSV…» (ADR 0210 §4) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.4↑b («Din CSV…»), întâi cu unirea lui main?”: „Da, 11.4↑b”.

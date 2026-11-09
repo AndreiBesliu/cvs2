@@ -742,16 +742,28 @@ preview on the right:
 - **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
   tones; without it, the slider moves it;
 - **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
+- **Lighting** (with Brightness): **Even** (the default) uses one threshold for the whole image, for a clean scan or a logo;
+  **Uneven** compares the paper with a smooth surface fitted on it, for a photo lit from one side, with dark corners or solid
+  patches; **With shadows** compares it with the background around each point, for the shadow of a phone or a hand (a solid
+  patch wider than a twelfth of the image comes out hollow: then use Uneven). With both, the drawing is whatever stands out
+  from the paper, whatever the image's edge is (a sheet photographed on a table); if it still comes out inverted, use
+  **Invert**. When the paper varies a lot under Even, the report suggests Uneven;
 - **Smoothness**: **Faithful** follows the edge closely and keeps small corners, **Balanced** smooths the pixel steps,
   **Smooth** rounds small corners and gives fewer nodes;
 - **Ignore specks under** and **Fill holes under** (in mm, with the pixels beside them): specks of drawing and holes in it
   smaller than that disappear (the dust of a scan, the noise of a photo); a shape touching the image's edge stays;
+- **Ignore what touches the edge**: a piece of drawing touching the edge of the image (or of the area) is removed, however
+  large: the table around a photographed sheet, a letter cut by the area; the report counts them. It works on colours too;
 - **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the DPI written in the file, and without
   it from 96 px per inch, as for an SVG; the line under it shows the height, the pixel's size and where the scale comes from.
 
 The preview shows the **Image**, the **Vectors** or **Both** (with **Fade the image**, so the vectors show over it); the wheel
 zooms around the mouse, dragging moves the image, **Zoom in** and **Zoom out** do the same from buttons, and **Fit** shows the
-whole image. Under it is the report: the **largest deviation** of the vectors from the edge in the image (in mm and in
+whole image. **Area** picks only part of it: while the button is pressed, dragging on the preview draws the
+rectangle, moves it or stretches it by its sides and corners (Shift + drag draws it without the button), and **Whole image**
+removes it. Only the area is traced, as if it were the image: the automatic threshold and the lighting no longer see what
+is outside it, its bottom-left corner lands on the sheet's corner, and **Width** is its width. Under the preview is the
+report: the **largest deviation** of the vectors from the edge in the image (in mm and in
 pixels, measured on every outline), the image's size, how many specks and holes were cleaned up, and whether the edges were
 hard (no shades: then the pixel steps are smoothed). Every change traces the image again, on the side: the window stays
 responsive, and a new change stops the one under way.
@@ -793,7 +805,8 @@ Under **Result: Centre lines** sit their options:
 - **Loops:** **On the line** (the default) or **Closed vectors**: an O or a ring becomes a closed outline, cut on the
   outside, and a loop inside another one, on the inside.
 
-The traced drawing comes in as one shape, with the image as its page: the image's bottom-left corner is the sheet's corner.
+The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
+sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
 - centre lines by colour and straightened scans come later;
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their

@@ -2561,6 +2561,15 @@ main h1 {
   display: grid;
   gap: 2px;
 }
+/* Lumina (ADR 0224): lista, cu rândul ei de sfat dedesubt. */
+.trasare-lumina,
+.trasare-lumina > label {
+  display: grid;
+  gap: 2px;
+}
+.trasare-lumina p {
+  margin: 0;
+}
 .trasare-comenzi label.rand,
 .trasare-bara label.rand {
   display: flex;
@@ -2644,6 +2653,10 @@ main h1 {
     linear-gradient(45deg, var(--l-margine) 25%, transparent 25%, transparent 75%, var(--l-margine) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 8px 8px;
+}
+/* Cu butonul Zona apăsat, tragerea desenează zona (ADR 0224). */
+.trasare-panza.zona {
+  cursor: crosshair;
 }
 .trasare-raport p {
   margin: 2px 0;
