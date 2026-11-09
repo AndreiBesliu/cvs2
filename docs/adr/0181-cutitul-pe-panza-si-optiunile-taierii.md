@@ -229,6 +229,38 @@ primului commit de cod, `origin/main` unit în ramură.
   (`fasieAproximativa`). Sfatul Cuțitului spune spațiul activ.
 - **Mărimea:** pe aceeași bază (`1ff4271`), pornirea nu crește (101,8 kB; cu ușa 105,5 / 110), iar totalul crește cu 2,1 kB (565,7 → 567,8 / 600), cât estima ADR-ul (~2 kB): grupul „Între bucăți”, fâșia de pe pânză, cuțitul mutat și verificarea bucăților mâncate (în worker). Cu `main` de pe 09.11 (`3797e17`, 578,8), o unire de probă dă 600,1 / 600: linia trece de plafon cu 0,1 kB (fără 10.3↑i, ~598,0); decizia e a owner-ului.
 
+**Felia 10.3↑j, la cod** (09.11):
+- **Îmbinarea** (§6): `imbinare = { model, pas, inaltime, raza }` în cerere, doar cu închidere (`imbinare-inchide`), pasul și
+  înălțimea pozitive, raza cel puțin 0, toate cel mult 1 000 mm (`valoare`), doar pe tăieturile drepte: linia din panou (X, Y,
+  la unghi, ghidajul) și calea trasă din două puncte, cu prelungirile ei pe aceeași dreaptă (`imbinare-dreapta` la felul
+  Formă, la o cale frântă sau cu arce, la mâna liberă).
+- **Modelele** (`imbinare.ts`, pur, comun workerului și previzualizării): pe o coardă de lungime l, n = ⌊l / pas − 1⌋ dinți
+  întregi la mijloc, iar restul, egal la capete (cel puțin o jumătate de pas fiecare). Zigzagul, dinții drepți și coada de
+  rândunică (laturile înclinate 1 : 6) sunt poligoane cu colțurile rotunjite tangent cu raza (o rotunjire care nu încape pe
+  latura ei: `imbinare-raza`); valul, trei arce de aceeași rază, (p² / 16 + H² / 4) / (2H), pe fiecare cocoașă; puzzle-ul,
+  capul de rază H / 4 și flancurile de raza dată, la √(H · r) de mijloc (capul mai lat decât gâtul și arcele cel puțin de raza
+  dată, altfel `imbinare-raza`). Fiecare drum e simetric față de mijlocul coardei (rotit cu 180°): sensul dreptei nu contează,
+  iar bucățile unei forme simetrice au aceeași arie.
+- **Drumul** (`drumCuImbinare`): trecerile dreptei prin contururile închise ale instanței, împerecheate par-impar; pe fiecare
+  coardă toată pe tăietură (la calea trasă, între capetele ei), modelul, fără capetele coardei (sunt pe marginea formei).
+  Dinții care ar atinge un contur (o latură oblică, o gaură prea aproape): `imbinare-margine`; niciun dinte în toată
+  tăietura: `imbinare`.
+- **Tăierea:** drumul e un cuțit-formă deschis, iar spațiul și suprapunerea de la §2 sunt jocul dintre dinți (cuțitul mutat
+  cu w / 2). La linia din panou, fețele se grupează pe laturi, ca la tăierea dreaptă (o parte de fiecare latură, A întâi;
+  `grupat`); la calea trasă, fiecare față e o parte, ca la Cuțit.
+- **Interfața:** „Îmbinarea: dreaptă / zigzag / val / dinți drepți / coadă de rândunică / puzzle”, cu pasul, înălțimea și
+  raza (implicit 40, 20 și 3 mm), al patrulea grup din `GrupuriTaiere` (câmpurile, prin `CampMm`), stins fără închidere și pe
+  tăieturile care nu sunt drepte; ținut în browser (`cncvs2.taiere-imbinare`). Pe pânză, dinții în locul fâșiei: pe coardele
+  formelor alese, în jurul liniei din panou, și cât tragi Linia (`corziAproximative`, `dintiAproximativi`). Sfatul Cuțitului
+  spune îmbinarea activă.
+- **Bara de sus** (CLAUDE.md: încape la 1280 px și cu un font lat): unirea de probă a liniei în `main` a căzut pe proba ei
+  (`ancore.spec.ts:512`): cu Cuțitul în bara uneltelor, bara Transformării, cu grila și cu fontul lat, ajungea la 1296 px, iar
+  a Cuțitului, la 1340. „Închide bucățile” trece din bara Cuțitului în opțiunile lui (primul rând; debifată, punctul roșu și
+  sfatul o spun; la Foarfecă și Retează nu se aplica), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare
+  parte, nu 12 (38 px, peste ținta de 36). Capetele, cu grila și fontul lat: Transformarea 1264 (en 1250), Cuțitul 1216 (en
+  1211), Foarfeca 1197.
+- **Mărimea:** pe aceeași bază (`33e65f9`), pornirea nu crește (102,0 kB; cu ușa 105,6 / 110), iar totalul crește cu 4,2 kB (600,1 → 604,3 / 700; plafonul e 700 din 09.11, ADR 0144), peste estimarea de mai sus (~3 kB): modelele, comune workerului și previzualizării, grupul „Îmbinarea”, dinții arătați, manualul și reparația barei. **Bara, mai departe:** owner-ul a cerut fișierele (Importă, Exportă vectorii, Exportă G-code) în bara de sus, lângă Imprimanta; schița, cu cinci întrebări: <https://claude.ai/artifact/94AHZeAD9KvEmZsBt6MQW6>. Schimbarea vine după răspunsuri și înlocuiește reparația de mai sus.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în

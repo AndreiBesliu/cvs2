@@ -558,6 +558,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `spatiu-cutit` când cuțitul nu se poate muta. `partiLinie` e scos din `taieInstanta`, `grupare` și `pastrate` din
   `taieCuForma`. Oracolul: `judecaSpatiul`, `judecaConvexMutat` și `mancatRaster` (o rețea care găsește singură bucățile
   mâncate), în `taiere.spatiu.oracol.test.ts`.
+  **Îmbinarea (felia 10.3↑j)** gata pe 09.11: `imbinare = { model, pas, inaltime, raza }` în cerere (doar cu închidere, doar
+  pe tăieturile drepte: linia din panou și calea trasă din două puncte); modelele în `src/model/imbinare.ts` (pur, comun
+  workerului și previzualizării): dinții întregi la mijlocul fiecărei coarde, ⌊l / pas − 1⌋, cu cel puțin o jumătate de pas la
+  capete, colțurile rotunjite cu raza (valul și puzzle-ul, arce tangente), fiecare drum simetric față de mijlocul coardei.
+  Drumul (`drumCuImbinare`) se taie ca un cuțit-formă deschis, cu spațiul de la 10.3↑i drept joc; la linia din panou, fețele
+  se grupează pe laturi (`grupat`). Refuzurile: `imbinare`, `imbinare-raza`, `imbinare-margine`, `imbinare-dreapta`,
+  `imbinare-inchide`. Oracolul: `judecaImbinarea` (`taiere.imbinare.oracol.test.ts`). **Bara Cuțitului nu mai are „Închide
+  bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
+  în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
+  fiecare fel, în `cutit.spec.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

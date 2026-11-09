@@ -7843,3 +7843,44 @@ la cele patru întrebări din ADR 0181).
 - **Porțile:** pe `1c60f43`: traducerile 697 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 19 / 0; licențele; unit 8 873 (8 865 trecute, 0 căderi, 8 sărite); build-ul determinist (287 de fișiere): pornirea 101,8 kB (cu ușa 105,5 / 110), totalul 567,8 / 600, iar felia, pe aceeași bază (`1ff4271`), lasă pornirea neschimbată și adaugă 2,1 kB la total (565,7 → 567,8), cât estima ADR-ul (~2 kB); e2e 416 / 416, cu doi lucrători; emulatoarele 101 / 101 și 21 / 21. **Bugetul:** o unire de probă cu `main` de pe 09.11 (`3797e17`, 578,8) dă 600,1 / 600: linia trece de plafon cu 0,1 kB (fără 10.3↑i, ~598,0), deci unirea ei cere decizia owner-ului.
 - **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 09.12), `c9dd793`, verificat în Edge fără fereastră: din panou, spațiul 6 la X = 50 (fâșia, pe pânză) lasă două forme de 47 × 100, iar la X = 98 refuzul, cu motiv; în opțiunile Cuțitului, suprapunerea 2 (sfatul o spune; cât tragi, fâșia) lasă două forme de 100 × 51; felul Formă, un cerc R20 cu spațiul 4: discul de 36 × 36 și placa cu golul; nicio eroare în consolă.
 
+## 2026-11-09 — Felia 10.3↑j: îmbinarea pe tăieturile drepte (ADR 0181 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 10.3↑j” (owner-ul, în sesiunea liniei `taiere`).
+**Started:** 09.11, 16:44. **Completed:** 09.11, 21:02.
+
+- **`origin/main` unit întâi:** `3797e17` (trasarea 25.1↑–25.3↑b, 6.V↑d și reparația barei de sus), în `913ecf0`; apoi
+  `dbf7354` (plafonul total 700 kB, ADR 0144), în `33e65f9` (singurul conflict, în DEVLOG: intrările lui `main` întâi).
+  Jurnalul lui `main` spunea că unirea de probă a tăierii (`08dca64`, neîmpinsă) căzuse pe proba barei de sus
+  (`ancore.spec.ts:512`): cu Cuțitul în bara uneltelor, bara Transformării ajungea la 1296 px cu grila și fontul lat, iar
+  reparația era a liniei, pe ramura ei.
+- **Modelul:** `src/model/imbinare.ts` (nou, pur, comun workerului și previzualizării): zigzag, val, dinți drepți, coadă de
+  rândunică (laturile 1 : 6) și puzzle pe o coardă, cu pasul, înălțimea și raza colțurilor; dinții întregi la mijloc,
+  ⌊l / pas − 1⌋, cu cel puțin o jumătate de pas drept la capete; colțurile poligonale rotunjite tangent cu raza, valul din trei
+  arce de aceeași rază pe cocoașă, puzzle-ul cu capul de rază H / 4 și flancurile de raza dată la √(H · r) de mijloc (capul mai
+  lat decât gâtul); fiecare drum, simetric față de mijlocul coardei. În `taie()`: `imbinare` doar cu închidere și doar pe
+  tăieturile drepte (linia din panou, calea trasă din două puncte); drumul pe coardele dreptei prin fiecare instanță
+  (`drumCuImbinare`), tăiat ca un cuțit-formă deschis, cu spațiul de la 10.3↑i drept joc; la linia din panou, fețele grupate pe
+  laturi (`grupat`, A întâi). Refuzurile: `imbinare` (niciun dinte), `imbinare-raza`, `imbinare-margine` (dinții ar atinge un
+  contur), `imbinare-dreapta`, `imbinare-inchide`.
+- **Interfața:** grupul „Îmbinarea” din `GrupuriTaiere` (modelul, apoi pasul, înălțimea și raza prin câmpul comun `CampMm`),
+  în panou și în opțiunile Cuțitului, stins fără închidere și pe tăieturile care nu sunt drepte; ținut în browser. Pe pânză,
+  dinții în locul fâșiei: pe coardele formelor alese, la linia din panou, și cât tragi Linia (`corziAproximative`,
+  `dintiAproximativi`). Sfatul Cuțitului spune îmbinarea. Manualul (ro, en): paragraful „Îmbinarea” și opțiunile Cuțitului.
+- **Bara de sus (reparația cerută de `main`):** măsurată la 1280 px cu grila și fontul lat, la fiecare unealtă: treceau de
+  fereastră Transformarea (1296 px; en 1276) și Cuțitul (Linie 1340, Foarfeca 1302). „Închide bucățile” trece din bara
+  Cuțitului în opțiunile lui (primul rând; debifată, punctul roșu și sfatul spun „bucățile rămân deschise”; la Foarfecă și
+  Retează nu se aplica), iar sub 95rem butoanele barei doar cu iconiță (anulează, reface, importul, exportul vectorilor) au 8
+  px de fiecare parte, nu 12 (38 px, peste ținta de 36; ca „Caută”, în același bloc). Capetele acum: Transformarea 1264 (en
+  1250), Cuțitul 1216 (en 1211), Foarfeca 1197. Proba din `main` (`ancore.spec.ts:512`, ro și en) trece; a Cuțitului, nouă, la
+  fiecare fel, cu grila, în ro și en.
+- **Probe:** generatorul pe hârtie (10: dinții pe coardă, zigzagul fără și cu rază, simetria, valul, puzzle-ul, dinții drepți,
+  coada, valorile, fără laturi de lungime zero), tăierea (10: zigzagul pe pătrat, cu raza, cu jocul și suprapunerea, fiecare
+  model, linia la 30°, coarda scurtă, cuțitul tras, refuzurile, insula în fâșie, cuțitul din gaura unui inel), oracolul
+  (`judecaImbinarea`, trei probe pe corpusuri din sămânță), partea pură (3), e2e (panoul: zigzagul la X = 50, 55 × 100, cu
+  alegerea ținută după reîncărcare; refuzurile; puzzle-ul la Y = 50, 100 × 60; Cuțitul: zigzagul cu spațiul 0,2, 100 × 54,86,
+  și Liber fără dinți; bara la 1280 px, ro și en). La privirea mărită (placa 200 × 100 tăiată cu fiecare model): puzzle-ul are
+  capul mai lat decât gâtul, coada se lărgește spre vârf, jocul de 1 mm se vede ca două contururi paralele.
+- **Otrăvurile** (`test/otravuri/10.3j.py`, în clonă, pe 4179): 54 de otrăvuri, toate aplicabile: 15 ale generatorului, 17 ale tăierii și 7 ale părții pure, pe seturile `imbinare` și `unealta`, plus 15 de interfață (e2e, cu bara de sus). La prima rulare, 47 / 54 prinse; au scăpat șapte: vârfurile lipite ale drumului (G14), cuțitul-formă drept (M03), coarda din spatele cuțitului tras dintr-o gaură (M06), calea cu un arc între capete (M15), ordinea părților cu joc (M16), insula din fâșie cu suprapunerea (M17) și raza 0 arătată greșit (H10). Pentru fiecare, o probă nouă (`8eccb32`, `4eb8649`), apoi prinsă. Înainte de rulare, verificarea dublă din `CampMm` (depozitul opțiunilor o face) a fost scoasă: otrava ei ar fi fost echivalentă. Prima rulare s-a oprit la primul diacritic (`python -I` cu ieșirea în fișier: cp1252); reluată cu `-X utf8`.
+- **Porțile:** pe `4eb8649`: traducerile 714 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 20 / 0; licențele; unit 9 027 (9 019 trecute, 0 căderi, 8 sărite); build-ul determinist; e2e 441 / 442, cu doi lucrători (singura cădere, `ancore.spec.ts:99`, la încărcare: bara editorului n-a apărut în 5 s; toată suita, 15 / 15 la rerulare); emulatoarele 101 / 101 și 21 / 21 (din PowerShell, cu `npxshim`: `npm` lipsește din instalarea Node).
+- **Mărimea:** pe aceeași bază (`33e65f9`, cu `main` de pe 09.11), pornirea nu crește (102,0 kB; cu ușa 105,6 / 110), iar totalul crește cu 4,2 kB (600,1 → 604,3 / 700), peste estimarea ADR-ului (~3 kB): modelele (comune workerului și previzualizării), grupul „Îmbinarea”, dinții arătați, manualul și reparația barei.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 09.12), `4eb8649`, verificat în Edge fără fereastră: din panou, zigzagul 20 / 10 / 0 la X = 50 (dinții pe pânză) lasă două forme de 55 × 100, puzzle-ul la Y = 50, două de 100 × 60; din opțiunile Cuțitului, zigzagul cu spațiul 0,2 (sfatul îl spune; cât tragi, dinții, nu fâșia) lasă două forme de 100 × 54,86; bara de sus la 1280 px, cu grila și fontul lat: Transformarea la 1264 (en 1250), Cuțitul la 1216 (en 1211); nicio eroare în consolă. **După raportul barei, owner-ul a cerut altceva:** Importă, Exportă vectorii și Exportă G-code în bara de sus, lângă Imprimanta. Schița, cu cinci întrebări și capturile prototipului (construit în clonă): <https://claude.ai/artifact/94AHZeAD9KvEmZsBt6MQW6>; schimbarea vine după răspunsuri și înlocuiește reparația de acum.
