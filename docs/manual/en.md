@@ -1075,11 +1075,27 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the address is the one on its screen.
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
-  **Temperatures** of the nozzle, the bed and the enclosure (read only: the app heats nothing) and the code the printer
-  reported (its screen shows the text).
+  **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.
+- **Controls while printing** (only what the connected printer has; today the K1 family). A requested value shows as
+  “→ 120 % · waiting for the printer” until the printer reports it; if it does not within 6 s, the window goes back to the
+  printer’s value, with “the printer did not confirm”. A slider sends when you let go, a field on `Enter` or when you
+  leave it; a number outside the range is not sent.
+  - **Temperatures:** **Nozzle target** and **Bed target** are written directly, in whole degrees, between 0 and the
+    maximum the printer reports (320 and 115 °C on the K1C). With the printer free, **Preheat** opens the slicer’s material
+    list (the same as in “From drawing…”), with the first-layer temperatures, and **Cool down** sets the targets to 0. While
+    a target is on without a job, the strip says **Heating**, with **Cool down** next to it. **Cool down by itself after**
+    30 **min without a print** (ticked by default, the minutes can be changed): after a preheat from the app, if no print
+    starts, the window sets the targets to 0 and says when; it works only while the window is open and connected. While
+    printing, the file may change the targets on the next layers.
+  - **Speed** and **Flow**, while printing or paused: between 1 and 200 %, with the slider, the field and **100 %**, which
+    brings them back.
+  - **Fans and light:** **Light**, on or off; the part, enclosure and side fans, between 0 and 100 % (on the K1 an `M106`
+    written only by the app goes out: the window has no G-code console). **Home (X, Y, Z)**, only while the printer is
+    free, after the **The bed is clear** tick: the head moves on X and Y first, then the nozzle comes down to the bed for
+    Z; **Cancel** closes the confirmation.
 - **The files on the printer** (sent from Creality Print or OrcaSlicer): **Start** opens the confirmation, with the file, the
   material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
   the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it

@@ -1040,11 +1040,27 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   de pe ecranul ei.
 - **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
   firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
-  patului și din carcasă (doar citite: aplicația nu încălzește nimic) și codul semnalat de imprimantă (textul lui îl arată
-  ecranul ei).
+  patului și din carcasă și codul semnalat de imprimantă (textul lui îl arată ecranul ei).
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.
+- **Comenzile din timpul imprimării** (doar ce are imprimanta legată; azi familia K1). O valoare cerută se vede
+  „→ 120 % · așteaptă imprimanta” până o raportează imprimanta; dacă nu vine în 6 s, fereastra revine la valoarea ei, cu
+  „imprimanta n-a confirmat”. Un glisor trimite când îl lași, un câmp la `Enter` sau când ieși din el; un număr în afara
+  intervalului nu pleacă.
+  - **Temperaturile:** **Ținta duzei** și **Ținta patului** se scriu direct, în grade întregi, între 0 și maximul spus de
+    imprimantă (320 și 115 °C pe K1C). Cu imprimanta liberă, **Preîncălzește** deschide lista materialelor felierului
+    (aceeași ca în „Din desen…”), cu temperaturile primului strat, iar **Răcește** pune țintele la 0. Cât o țintă e pornită
+    fără o lucrare, banda spune **Încălzește**, cu **Răcește** lângă. **Răcește singură după** 30 **min fără imprimare**
+    (bifată din fabrică, cu minutele de schimbat): după o preîncălzire din aplicație, dacă nu pornește nicio imprimare,
+    fereastra pune țintele la 0 și spune ora; merge doar cât fereastra e deschisă și legată. Cât imprimă, fișierul poate
+    schimba țintele la straturile următoare.
+  - **Viteza** și **Debitul**, cât imprimă sau stă în pauză: între 1 și 200 %, cu glisorul, câmpul și **100 %**, care le
+    readuce.
+  - **Ventilatoarele și lumina:** **Lumina**, aprinsă sau stinsă; ventilatorul piesei, al carcasei și cel lateral, între 0
+    și 100 % (pe K1 pleacă un `M106` scris doar de aplicație: fereastra n-are consolă de G-code). **Homing (X, Y, Z)**,
+    doar cu imprimanta liberă, după bifa **Patul e gol**: capul merge întâi pe X și Y, apoi duza coboară spre pat, pentru
+    Z; **Renunță** închide confirmarea.
 - **Fișierele din imprimantă** (trimise din Creality Print sau OrcaSlicer): **Pornește** deschide confirmarea, cu fișierul,
   materialul și timpul estimat. **Pornește imprimarea** se aprinde abia după bifa **Patul e gol** (nicio piesă rămasă sub
   duză); **Renunță** închide confirmarea. Imprimanta se încălzește și își face singură verificările; imediat după pornire

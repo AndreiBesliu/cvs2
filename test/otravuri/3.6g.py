@@ -34,8 +34,10 @@ o('C11', CR, '    const finalizare = (i.cod === 1 || i.cod === 5) && i.ramas !==
   '100 % cu timp rămas (K1C) trece drept gata')
 o('C12', CR, '  if (i.autotest !== null && i.autotest >= 1 && i.autotest <= 99) return \'autotest\';', '  if (i.autotest !== null && i.autotest >= 1) return \'autotest\';',
   'creality', '`withSelfTest` 100 ține lucrarea în verificare')
-o('C13', CR, "export const sePoatePorni = (s: StareLucrare): boolean => s === 'libera' || s === 'gata' || s === 'oprita';",
-  "export const sePoatePorni = (s: StareLucrare): boolean => s !== 'imprima';", 'creality', 'pornirea e lăsată și în pauză sau la pregătire')
+# C13, S01, S02, T07, T08, U03: refăcute pe codul mutat de 3.6o (ADR 0192: starea lucrării în `driver.ts`, sesiunea și proba
+# peste driver), cu aceleași intenții.
+o('C13', 'src/machine/imprimanta/driver.ts', "export const esteLibera = (s: StareLucrare): boolean => s === 'libera' || s === 'gata' || s === 'oprita';",
+  "export const esteLibera = (s: StareLucrare): boolean => s !== 'imprima';", 'creality', 'pornirea e lăsată și în pauză sau la pregătire')
 o('C14', CR, 'export const COMANDA_REIA = cerere(\'set\', { pause: 0 });', 'export const COMANDA_REIA = cerere(\'set\', { pause: 1 });', 'creality',
   'Reia trimite pauza')
 o('C15', CR, "cerere('set', { opGcodeFile: `printprt:${c}` })", "cerere('set', { opGcodeFile: c })", 'creality', 'pornirea fără `printprt:`')
@@ -43,8 +45,8 @@ o('C16', CR, 'export const esteCreality = (c: Cadru): boolean => c.inima || Obje
   'export const esteCreality = (c: Cadru): boolean => c.inima;', 'creality', 'starea singură nu arată o imprimantă')
 
 # Sesiunea.
-o('S01', SE, '      if (c.inima) this.trimite(RASPUNS_INIMA);\n', '', 'sesiune', 'fără `ok` la bătaia inimii (imprimanta ar închide legătura)')
-o('S02', SE, '      this.trimite(CERERE_STARE);\n      this.trimite(CERERE_FISIERE);\n', '      this.trimite(CERERE_STARE);\n', 'sesiune',
+o('S01', SE, '      if (c.raspuns !== null) this.trimite(c.raspuns);\n', '', 'sesiune', 'fără `ok` la bătaia inimii (imprimanta ar închide legătura)')
+o('S02', SE, '      for (const c of this.s.driver.citiri) this.trimite(c);\n', '      for (const c of this.s.driver.citiri.slice(0, 1)) this.trimite(c);\n', 'sesiune',
   'lista fișierelor nu se cere la deschidere')
 o('S03', SE, "    return this.s.legatura === 'conectat' && this.trimite(t);", '    return this.trimite(t);', 'sesiune',
   'comenzile pleacă înainte ca imprimanta să fi răspuns')
@@ -74,8 +76,8 @@ o('T04', TI, '    id, adresa: c.adresa.trim(), port: c.port, model: c.model ?? v
 o('T05', TI, '  return [noua, ...l.filter((x) => x.id !== id)].slice(0, MAX_IMPRIMANTE);', '  return [noua, ...l.filter((x) => x.id !== id)].slice(0, MAX_IMPRIMANTE + 1);',
   'tinute', 'plafonul lasă o imprimantă în plus')
 o('T06', TI, '    folosita: Math.max(acum, ...l.map((x) => x.folosita + 1)),', '    folosita: acum,', 'tinute', 'la aceeași oră, cea nouă nu urcă prima')
-o('T07', TI, '      if (c.inima) ws.send(RASPUNS_INIMA);\n', '', 'tinute', 'proba nu răspunde la bătaia inimii')
-o('T08', TI, '      if (c.inima && model === null && nume === null) {', '      if (false) {', 'tinute', 'proba nu așteaptă starea după bătaia inimii')
+o('T07', TI, '      if (c.raspuns !== null) ws.send(c.raspuns);\n', '', 'tinute', 'proba nu răspunde la bătaia inimii')
+o('T08', TI, '      if (model === null && nume === null) {', '      if (false) {', 'tinute', 'proba nu așteaptă starea după bătaia inimii')
 o('T09', TI, "  if (p === 'prompt' && total > 0) {", '  if (false) {', 'tinute', 'cu permisiunea neîntrebată, toate gazdele pleacă deodată')
 o('T10', TI, "  return retele.length > 0 ? retele : ['192.168.0', '192.168.1'];", '  return retele;', 'tinute', 'fără IP-uri știute, nicio rețea căutată')
 
@@ -84,7 +86,7 @@ o('U01', UI, 'data-imprimanta="pornire-confirma" disabled={!patGol}', 'data-impr
   'pornirea fără bifa „Patul e gol”')
 o('U02', UI, "            onClick={() => { setConfirmare({ fel: 'oprire' }); }}>{t('imprimanta.opreste')}</button>",
   "            onClick={() => { sesiune.opresteImprimarea(); }}>{t('imprimanta.opreste')}</button>", 'e2e', 'Oprește fără confirmare')
-o('U03', UI, '    tine((l) => tineImprimanta(l, { adresa: adresa.gazda, port: adresa.port, model, nume }, Date.now()));\n', '', 'e2e',
+o('U03', UI, '    tine((l) => tineImprimanta(l, { adresa: adresa.gazda, port: adresa.port, model, nume, driver }, Date.now()));\n', '', 'e2e',
   'imprimanta legată nu se ține')
 o('U04', UI, "disabled={!legata || !sePoatePauza(stare)} onClick={() => { sesiune.pauza(); }}", "disabled={!legata || !sePoatePauza(stare)} onClick={() => { sesiune.reia(); }}",
   'e2e', 'Pauză trimite reluarea')

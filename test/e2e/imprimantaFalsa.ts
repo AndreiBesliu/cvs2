@@ -17,7 +17,12 @@ import type { AddressInfo, Socket } from 'node:net';
  *   urcarea e pe 80; proba își mută cererea pe portul imprimantei false (`page.route`), aplicația rămâne pe 80;
  * - din 3.6i, `fel: 'k1c-2025'`, după transcrierea owner-ului (K1C 2025, firmware V1.0.0.26, 07.11): fără bătăi ale inimii (la
  *   `inimaMs`, doar o bucată de stare, `{"maxBedTemp":115}`), lista ca text (`retGcodeFileInfo.fileInfo`, cu mărimile), urmată de
- *   istoric (`historyList`) și de filme (`elapseVideoList`), firmware-ul în `DWIN sw ver`.
+ *   istoric (`historyList`) și de filme (`elapseVideoList`), firmware-ul în `DWIN sw ver`;
+ * - din 3.6o (ADR 0192), comenzile din timpul imprimării, cu numele din integrarea Home Assistant: `lightSw` 0 / 1; `gcodeCmd`
+ *   doar `M106 P<0|1|2> S<0–255>` (ventilatoarele piesei, carcasei și cel lateral, în `modelFanPct`, `caseFanPct`,
+ *   `auxiliaryFanPct`; orice alt text e ignorat); `setFeedratePct` și `setFlowratePct`, întregi 1–200; `nozzleTempControl` și
+ *   `bedTempControl` (`{num: 0, val}`), între 0 și maxime (320 și 115); `autohome` „X Y”, apoi „Z”, fiecare cu `deviceState` 7
+ *   cât durează (`homingMs`), cu axele în `autohome` („X:1 Y:1 Z:0”). `ignora` face imprimanta să nu răspundă la câmpurile date.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -43,6 +48,8 @@ export type OptiuniImprimantaFalsa = {
   readonly imprima?: { readonly fisier: string; readonly progres: number };
   /** `k1` (implicit): bătăile inimii și lista `retGcodeFileInfo2`; `k1c-2025`: ca imprimanta owner-ului (vezi antetul). */
   readonly fel?: 'k1' | 'k1c-2025';
+  /** Cât durează fiecare pas al homing-ului (`deviceState` 7), în ms. */
+  readonly homingMs?: number;
 };
 
 export interface ImprimantaFalsa {
@@ -60,6 +67,8 @@ export interface ImprimantaFalsa {
   urcarea(fel: 'primeste' | 'pierde'): void;
   /** O eroare semnalată, ca `err` în stare (0: niciuna). */
   eroare(cod: number, cheie: number): void;
+  /** Imprimanta nu mai răspunde la comenzile `set` cu aceste câmpuri (de exemplu `setFlowratePct`): primite, dar fără efect. */
+  ignora(campuri: readonly string[]): void;
   taie(): void;
   /**
    * Ca imprimanta owner-ului la o pornire de pe ecran (3.6i): legăturile de acum tac, fără să se închidă, iar adresa nu mai
@@ -131,7 +140,12 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     state: 0, printFileName: '', printProgress: 0, printJobTime: 0, printLeftTime: 0, layer: 0, TotalLayer: 0,
     nozzleTemp: temp(28), targetNozzleTemp: temp(0), bedTemp0: temp(24), targetBedTemp0: temp(0), boxTemp: temp(23),
     err: { errcode: 0, key: 0 }, withSelfTest: 0, lightSw: 1,
+    // Din 3.6o, ca în transcrierea owner-ului (07.11): ventilatoarele, viteza, debitul, maximele, „ocupată” și axele.
+    fan: 0, fanCase: 0, fanAuxiliary: 0, modelFanPct: 0, caseFanPct: 0, auxiliaryFanPct: 0, curFeedratePct: 100, curFlowratePct: 100,
+    maxNozzleTemp: 320, maxBedTemp: 115, deviceState: 0, autohome: 'X:0 Y:0 Z:0',
   };
+  const ignorate = new Set<string>();
+  const homingMs = opt.homingMs ?? 600;
   /** Schimbă câmpurile și le trimite, doar pe ele, tuturor. */
   const schimba = (c: Readonly<Record<string, string | number | Record<string, number>>>): void => {
     Object.assign(s, c);
@@ -237,6 +251,39 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         return;
       }
       if (o.method !== 'set') return;
+      // Comenzile din timpul imprimării (3.6o): fiecare câmp, doar cu o valoare bună; unul ignorat (`ignora`) nu schimbă nimic.
+      const camp = Object.keys(p)[0] ?? '';
+      if (ignorate.has(camp)) return;
+      const intreg = (v: unknown, min: number, max: number): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null);
+      if (camp === 'lightSw') { const v = intreg(p['lightSw'], 0, 1); if (v !== null) schimba({ lightSw: v }); return; }
+      if (camp === 'gcodeCmd') {
+        const m = typeof p['gcodeCmd'] === 'string' ? /^M106 P([012]) S(\d{1,3})$/.exec(p['gcodeCmd']) : null;
+        const sv = m === null ? null : intreg(Number(m[2]), 0, 255);
+        if (m === null || sv === null) return;
+        const canale: readonly (readonly [string, string])[] = [['modelFanPct', 'fan'], ['caseFanPct', 'fanCase'], ['auxiliaryFanPct', 'fanAuxiliary']];
+        const [procent, pornit] = canale[Number(m[1])] ?? ['', ''];
+        schimba({ [procent]: Math.round((sv / 255) * 100), [pornit]: sv > 0 ? 1 : 0 });
+        return;
+      }
+      if (camp === 'setFeedratePct' || camp === 'setFlowratePct') {
+        const v = intreg(p[camp], 1, 200);
+        if (v !== null) schimba(camp === 'setFeedratePct' ? { curFeedratePct: v } : { curFlowratePct: v });
+        return;
+      }
+      if (camp === 'nozzleTempControl') { const v = intreg(p[camp], 0, 320); if (v !== null) schimba({ targetNozzleTemp: temp(v) }); return; }
+      if (camp === 'bedTempControl') {
+        const b = p[camp] as { num?: unknown; val?: unknown } | null;
+        const v = b !== null && typeof b === 'object' && b.num === 0 ? intreg(b.val, 0, 115) : null;
+        if (v !== null) schimba({ targetBedTemp0: temp(v) });
+        return;
+      }
+      if (camp === 'autohome') {
+        const axe = p['autohome'] === 'X Y' ? 'X:1 Y:1 Z:0' : p['autohome'] === 'Z' ? 'X:1 Y:1 Z:1' : null;
+        if (axe === null || s['state'] === 1 || s['state'] === 5) return;
+        schimba({ deviceState: 7 });
+        setTimeout(() => { schimba({ deviceState: 0, autohome: axe }); }, homingMs);
+        return;
+      }
       if (p['pause'] === 1 && s['state'] === 1) schimba({ state: 5 });
       else if (p['pause'] === 0 && s['state'] === 5) schimba({ state: 1 });
       else if (p['stop'] === 1 && (s['state'] === 1 || s['state'] === 5)) {
@@ -296,6 +343,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         urcate: () => [...urcate],
         urcarea: (fel) => { pierde = fel === 'pierde'; },
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
+        ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {
           for (const x of socketuri) tacute.add(x);

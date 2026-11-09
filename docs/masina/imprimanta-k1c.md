@@ -60,6 +60,27 @@ nume.
 6. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: e transcrierea pe care o rejucăm pe imprimanta
    falsă din probe.
 
+## 5. Comenzile din timpul imprimării (felia 3.6o)
+
+Pe imprimanta ta, cu imprimanta liberă și fără nimic pe pat, apoi pe o imprimare scurtă:
+
+1. **Lumina:** comutatorul din cardul **Ventilatoarele și lumina**; lumina din imprimantă se stinge și se aprinde, iar
+   fereastra arată starea nouă fără „imprimanta n-a confirmat”.
+2. **Un ventilator:** al piesei la 30 %, din câmp, apoi la 0 %. Ar trebui să-l auzi pornind; fereastra arată 30 %.
+3. **Preîncălzește → PLA:** țintele duzei și patului devin 220 și 55 °C, iar banda spune **Încălzește**. Apoi **Răcește**
+   (din bandă): țintele revin la 0.
+4. **Răcirea singură:** preîncălzește din nou, schimbă minutele la 2 și așteaptă, cu fereastra deschisă: după 2 minute,
+   țintele revin singure la 0, iar fereastra spune ora. Pune minutele înapoi la 30. Dacă vrei să știm și ce face imprimanta
+   singură: preîncălzește cu bifa scoasă și lasă fereastra deschisă 15 minute; jurnalul arată dacă imprimanta își coboară
+   singură țintele (nemăsurat pe K1C).
+5. **Homing (X, Y, Z):** cu patul gol, bifa **Patul e gol**, apoi **Homing**: capul merge pe X și Y, apoi duza coboară spre
+   pat, pentru Z; la final, fereastra spune „Axele știute: X, Y, Z”. Uită-te unde coboară duza la Z (mijlocul patului?):
+   spune-mi, ca ghidul să știe ce înseamnă „patul gol”.
+6. **Viteza și debitul**, pe o imprimare scurtă (cubul de la pasul 4 al probei de mai sus): viteza la 120 %, apoi **100 %**;
+   debitul la 95 %, apoi **100 %**. Ecranul imprimantei arată aceleași valori.
+7. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: comenzile și răspunsurile imprimantei intră în
+   imprimanta falsă din probe.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).
@@ -76,13 +97,19 @@ nume.
   nemăsurate încă (de mai jos).
 - **„Fișierul a plecat, dar nu apare în lista imprimantei”**: poate n-a ajuns întreg (WiFi slab). **Încearcă din nou** sau
   trimite-l din Creality Print.
+- **„imprimanta n-a confirmat”** lângă o comandă: imprimanta n-a raportat valoarea cerută în 6 s. Încearcă încă o dată; dacă
+  rămâne, trimite-mi jurnalul: poate firmware-ul tău are alt nume pentru comanda aceea.
 
 ## De știut
 
 - **O legătură căzută nu oprește imprimarea:** fișierul e în memoria imprimantei. Oprirea de urgență rămâne **ecranul
   imprimantei** (și întrerupătorul ei).
 - Singură, fereastra doar citește starea și răspunde `ok` la bătăile inimii imprimantei; orice comandă pleacă dintr-un clic.
-  Temperaturile doar se citesc: aplicația nu încălzește nimic.
+  Singura excepție (din 3.6o): **răcirea singură**, care doar coboară țintele la 0, după o preîncălzire din aplicație fără
+  imprimare, cât fereastra e deschisă și legată (implicit după 30 de minute; se oprește din bifă).
+- **Încălzirea** pleacă doar la clic, în grade întregi, până la maximul spus de imprimantă (320 °C la duză, 115 °C la pat, pe
+  K1C). Homing-ul merge doar cu imprimanta liberă, după bifa **Patul e gol**. Fereastra n-are consolă de G-code: pentru
+  ventilatoare pleacă un `M106` scris de aplicație, nimic scris de mână.
 - **Portul 9999 n-are parolă:** oricine din rețeaua atelierului poate comanda imprimanta (la fel și din Creality Print). Ține-o
   într-o rețea doar a ta.
 
@@ -104,7 +131,13 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
   - citiri: `{"method":"get","params":{"ReqPrinterPara":1}}` (toată starea), `{"method":"get","params":{"reqGcodeFile":1}}`
     (lista: `{"retGcodeFileInfo2":[{"name","path","timeCost","material",…}]}`, sau, la K1C 2025, un text, mai jos);
   - comenzi: `{"method":"set","params":{"pause":1}}`, `{"pause":0}`, `{"stop":1}`,
-    `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura).
+    `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura);
+  - din 3.6o (integrarea Home Assistant): `{"lightSw":0|1}`; `{"gcodeCmd":"M106 P<0|1|2> S<0–255>"}` (ventilatorul piesei,
+    al carcasei, cel lateral; starea: `modelFanPct`, `caseFanPct`, `auxiliaryFanPct`, %); `{"setFeedratePct":v}`,
+    `{"setFlowratePct":v}` (1–200; starea: `curFeedratePct`, `curFlowratePct`); `{"nozzleTempControl":t}`,
+    `{"bedTempControl":{"num":0,"val":t}}` (până la `maxNozzleTemp`, `maxBedTemp`); homing-ul: `{"autohome":"X Y"}`, apoi,
+    după ce `deviceState` nu mai e 7 (cel mult 15 s), `{"autohome":"Z"}`; axele știute, în `autohome` („X:1 Y:1 Z:0”).
+    Nicio K1 n-are încălzitor al carcasei, deși K1C trimite uneori `targetBoxTemp`.
 - HTTP pe 80: `POST /upload/<nume codat>` (multipart, doar câmpul `file`, cu numele fișierului; fără câmpul `path`, ca
   OrcaSlicer pentru K1C), fișierul ajunge în `/usr/data/printer_data/gcodes/`; aplicația nu citește răspunsul (cererea pleacă
   `no-cors`) și caută apoi numele în lista de pe 9999. Mai e `GET /info` (`model`, `mac`), nefolosit.
@@ -117,4 +150,5 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
     avea spații), apoi `{"historyList":[…]}` (istoricul imprimărilor) și `{"elapseVideoList":[]}`;
   - starea are și `deviceState`, `curPosition`, `powerLoss`, `tfCard`, `video`, `webrtcSupport`, `maxBedTemp`, `maxNozzleTemp`.
 - Nemăsurat încă pe imprimanta ta: dacă `/upload` primește fișierul trimis de pe pagina aplicației, pornirea, pauza, reluarea și
-  oprirea pe o imprimare reală, marginile reale ale patului (unde își face linia de curățare a duzei).
+  oprirea pe o imprimare reală, marginile reale ale patului (unde își face linia de curățare a duzei); din 3.6o, comenzile de
+  la pasul 5, unde coboară duza la Z și dacă imprimanta își coboară singură țintele după o vreme.

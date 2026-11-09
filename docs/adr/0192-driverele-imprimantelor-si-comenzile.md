@@ -1,7 +1,8 @@
 # ADR 0192 — Driverele imprimantelor și comenzile din timpul imprimării
 
-**Starea:** propus pe 08.11.2026, pentru felia 3.6o (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta
-owner-ului, după ghid), în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 08.11, la
+**Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a, 3a), pentru felia
+3.6o (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în worktree-ul `imprimanta`
+(ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 08.11, la
 răspunsul cu cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi: „in principiu, vreau sa pot conecta orice fel de
 imprimanta, deci codul pe care il dezvolti trebuie sa fie pregatit pentru asta. poti incepe cu 1”. Grupul 1: comenzile din
 timpul imprimării (lumina, viteza și debitul, ventilatoarele, preîncălzirea și răcirea, homing-ul). **Schimbă:** ADR 0190 §A.2
@@ -153,6 +154,9 @@ owner-ului, [nemăsurat] de aflat.
 - **Pe imprimanta owner-ului:** ghidul, cu transcrierea rejucată pe imprimanta falsă (ca 3.6i).
 
 ## Întrebările (owner)
+
+**Răspunsurile, din 08.11:** „Da, recomandările”: 1a (fereastra ca în planșe), 2a (ventilatoarele prin `gcodeCmd`, cu textul
+făcut doar de aplicație), 3a (răcirea singură, pornită, la 30 de minute).
 
 1. **Schița ferestrei** (linkul din mesaj): a) așa (recomandat: comenzile lângă ce schimbă, §C.12); b) altfel (spune unde).
 2. **Ventilatoarele pe K1,** prin `gcodeCmd`, cu textul făcut doar de aplicație (`M106 P0–2 S0–255`), fără consolă: a) da

@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
-  aplica, CERERE_FISIERE, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE,
-  esteCreality, firmwareDin, IMPRIMANTA_NECUNOSCUTA, numar, numeDin, numeSigur, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua,
-  stareLucrare, type Imprimanta, type StareLucrare,
+  CERERE_FISIERE, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
+  firmwareDin, numar, numeDin, numeSigur, stareLucrare,
 } from '../../src/machine/imprimanta/creality.ts';
+import {
+  aplica, IMPRIMANTA_NECUNOSCUTA, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua, type Imprimanta, type StareLucrare,
+} from '../../src/machine/imprimanta/driver.ts';
 
 /*
  * Protocolul Creality al familiei K1 (ADR 0190 §A), pe hârtie: cadrele, cum le scrie imprimanta (numerele ca text, starea pe
@@ -48,10 +50,11 @@ test('starea pe bucăți, cu numerele ca text: fiecare câmp știut, la locul lu
     modelVersion: 'printer hw ver:;printer sw ver:1.3.3.5;', err: { errcode: 0, key: 0 }, curPosition: 'X:1.00 Y:2.00 Z:0.20', lightSw: 1,
   }));
   assert.equal(c.inima, false);
+  // Din 3.6o, și lumina (`lightSw`); poziția capului (`curPosition`) nu se citește.
   assert.deepEqual(c.stare, {
     cod: 1, progres: 26, trecut: 302, ramas: 842, strat: 12, straturi: 46, duza: 220, duzaTinta: 220, pat: 49.5, patTinta: 50,
     carcasa: 32, autotest: 0, model: 'K1C', nume: 'K1C-8578', fisier: '/usr/data/printer_data/gcodes/output_11031835.gcode',
-    firmware: '1.3.3.5', eroare: null, cheieEroare: null,
+    firmware: '1.3.3.5', eroare: null, cheieEroare: null, lumina: true,
   });
   assert.ok(esteCreality(c));
 });
@@ -188,8 +191,8 @@ test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca 
   assert.deepEqual(lista.stare, {});
   // Istoricul imprimărilor și filmele: cadre JSON fără nimic din ce citește fereastra.
   for (const c of [istoric, video]) assert.deepEqual([c.json, c.inima, c.stare, c.fisiere], [true, false, {}, null]);
-  // Fără bătăi ale inimii: din 3 în 3 s, doar bucăți de stare (`maxBedTemp`, `boxTemp`).
-  assert.deepEqual(delte.map((c) => [c.inima, c.stare]), [[false, {}], [false, { carcasa: 24 }]]);
+  // Fără bătăi ale inimii: din 3 în 3 s, doar bucăți de stare (`maxBedTemp`, din 3.6o maximul patului, și `boxTemp`).
+  assert.deepEqual(delte.map((c) => [c.inima, c.stare]), [[false, { patMax: 115 }], [false, { patMax: 115, carcasa: 24 }]]);
   // O listă goală e o listă (nu „încă nimic”); un text stricat nu dă fișiere.
   assert.deepEqual(citesteCadru('{"retGcodeFileInfo":{"totalNum":0,"fileInfo":""}}').fisiere, []);
   assert.deepEqual(citesteCadru('{"retGcodeFileInfo":{"totalNum":1,"fileInfo":"/etc:passwd:1:0:0:0:/x.png;scurt:a:b;"}}').fisiere, []);

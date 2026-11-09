@@ -74,8 +74,11 @@ test('legarea după adresă: starea, temperaturile, codul și fișierele; bătă
   await expect(page.getByTestId('imprimanta-nume')).toHaveText('K1C-8578');
   await expect(page.getByTestId('imprimanta-banda')).toContainText(`${IP} · prin WiFi · firmware 1.3.3.5`);
   await expect(page.getByTestId('imprimanta-fisier')).toHaveText('output_11031835.gcode');
-  await expect(page.getByTestId('imprimanta-temp-duza')).toHaveText('220 / 220 °C');
-  await expect(page.getByTestId('imprimanta-temp-pat')).toHaveText('50 / 50 °C');
+  // Temperatura de acum și ținta, în câmpul ei (din 3.6o, ținta se scrie direct).
+  await expect(page.getByTestId('imprimanta-temp-duza')).toHaveText('220 /  °C');
+  await expect(page.locator('[data-imprimanta="tinta-duza"]')).toHaveValue('220');
+  await expect(page.getByTestId('imprimanta-temp-pat')).toHaveText('50 /  °C');
+  await expect(page.locator('[data-imprimanta="tinta-pat"]')).toHaveValue('50');
   await expect(page.getByTestId('imprimanta-cod')).toContainText('Cod 5000');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('caramida-2x4.gcode');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('PLA · 41 min');
@@ -92,9 +95,11 @@ test('legarea după adresă: starea, temperaturile, codul și fișierele; bătă
   // Singură, fereastra a trimis doar citirile.
   expect(imp.comenzi()).toEqual(CITIRI);
   // Ținută în browser, cu numele și modelul ei; „Deconectează” n-o atinge.
-  const tinute = await page.evaluate(() => JSON.parse(localStorage.getItem('cncvs2.imprimanta.retea') ?? 'null') as { v: number; imprimante: { adresa: string; port: number; model: string; nume: string }[] });
+  const tinute = await page.evaluate(() => JSON.parse(localStorage.getItem('cncvs2.imprimanta.retea') ?? 'null') as { v: number; imprimante: { adresa: string; port: number; driver: string; model: string; nume: string }[] });
   expect(tinute.v).toBe(1);
-  expect(tinute.imprimante.map(({ adresa, port, model, nume }) => ({ adresa, port, model, nume }))).toEqual([{ adresa: IP, port: 9999, model: 'K1C', nume: 'K1C-8578' }]);
+  // Din 3.6o, cu driverul ei (ADR 0192 §A.5).
+  expect(tinute.imprimante.map(({ adresa, port, driver, model, nume }) => ({ adresa, port, driver, model, nume })))
+    .toEqual([{ adresa: IP, port: 9999, driver: 'creality-k1', model: 'K1C', nume: 'K1C-8578' }]);
   await page.locator('[data-imprimanta="deconecteaza"]').click();
   await expect(page.getByTestId('imprimanta-conectare')).toContainText('K1C-8578');
   expect(comenziSet(imp)).toEqual([]);
@@ -343,6 +348,119 @@ test('IP-ul schimbat (ca imprimanta owner-ului la o pornire de pe ecran): legăt
 // ── Piesele plate din desen (ADR 0191, felia 3.6j) ───────────────────────────────────────────────────────────────────────
 
 /** Dialogul „Din desen…” gata: felierea s-a terminat (cu fișier sau fără). */
+/** Textul din `gcodeCmd` al fiecărei comenzi trimise: doar `M106` pe canalele 0–2 (ADR 0192 §B.8: fără consolă). */
+const gcodeTrimis = (i: ImprimantaFalsa): readonly string[] => i.comenzi()
+  .map((c) => (JSON.parse(c) as { params?: { gcodeCmd?: unknown } }).params?.gcodeCmd).filter((x): x is string => typeof x === 'string');
+
+test('comenzile (3.6o), cu imprimanta liberă: lumina, un ventilator, Preîncălzește și Răcește din bandă, ținta scrisă, homing-ul cu bifa; gcodeCmd doar M106', async ({ page }) => {
+  const imp = await porneste({ homingMs: 400 });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  // Fără o lucrare, viteza și debitul nu se arată; nicio comandă încă.
+  await expect(page.getByTestId('imprimanta-reglaj-viteza')).toHaveCount(0);
+  expect(comenziSet(imp)).toEqual([]);
+  // Lumina: aprinsă (lightSw 1), apoi stinsă la clic.
+  const lumina = page.locator('[data-imprimanta="lumina"]');
+  await expect(lumina).toHaveAttribute('aria-checked', 'true');
+  await lumina.click();
+  await expect(lumina).toHaveAttribute('aria-checked', 'false');
+  await expect.poll(() => imp.stare()['lightSw']).toBe(0);
+  await expect(page.getByTestId('imprimanta-ventilatoare').locator('[data-cerere]')).toHaveCount(0);
+  await lumina.click();
+  await expect.poll(() => imp.stare()['lightSw']).toBe(1);
+  await expect(lumina).toHaveAttribute('aria-checked', 'true');
+  // Ventilatorul piesei la 50 %, din câmp (M106 P0 S128); un număr în afara intervalului nu pleacă.
+  const piesa = page.locator('[data-imprimanta="ventilator-camp"][data-ventilator="piesa"]');
+  await piesa.fill('50');
+  await piesa.press('Enter');
+  await expect.poll(() => imp.stare()['modelFanPct']).toBe(50);
+  await expect(page.getByTestId('imprimanta-vent-piesa')).toContainText('50 %');
+  await piesa.fill('150');
+  await piesa.press('Enter');
+  await expect(page.getByTestId('imprimanta-vent-piesa').getByRole('alert')).toContainText('Între 0 și 100 %');
+  await piesa.press('Escape');
+  // Ventilatorul lateral, din glisor, la tastatură: un pas, la eliberarea tastei.
+  await page.locator('[data-imprimanta="ventilator"][data-ventilator="lateral"]').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => imp.stare()['auxiliaryFanPct']).toBe(1);
+  // Preîncălzește PLA: 220 / 55, temperaturile primului strat; banda spune încălzirea, cu Răcește; răcirea singură, la ora ei.
+  await page.locator('[data-imprimanta="preincalzeste"]').click();
+  await expect(page.locator('[data-imprimanta="preincalzeste-material"][data-material="pla"]')).toContainText('220 / 55 °C');
+  // Primul strat al materialului (PC: 270 la duză, nu 280, cât merge apoi), din lista felierului.
+  await expect(page.locator('[data-imprimanta="preincalzeste-material"][data-material="pc"]')).toContainText('270 / 110 °C');
+  await page.locator('[data-imprimanta="preincalzeste-material"][data-material="pla"]').click();
+  await expect.poll(() => [imp.stare()['targetNozzleTemp'], imp.stare()['targetBedTemp0']]).toEqual(['220.000000', '55.000000']);
+  await expect(page.getByTestId('imprimanta-incalzeste')).toContainText('Încălzește: 220 / 55 °C');
+  await expect(page.getByTestId('imprimanta-racire-la')).toBeVisible();
+  await page.locator('[data-imprimanta="incalzeste-raceste"]').click();
+  await expect.poll(() => [imp.stare()['targetNozzleTemp'], imp.stare()['targetBedTemp0']]).toEqual(['0.000000', '0.000000']);
+  await expect(page.getByTestId('imprimanta-incalzeste')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-racire-la')).toHaveCount(0);
+  // Fără nicio țintă caldă, Răcește din card n-are ce face.
+  await expect(page.locator('[data-imprimanta="raceste"]')).toBeDisabled();
+  // Ținta duzei, scrisă direct; peste maximul imprimantei (320), refuzată.
+  const tinta = page.locator('[data-imprimanta="tinta-duza"]');
+  await tinta.fill('205');
+  await tinta.press('Enter');
+  await expect.poll(() => imp.stare()['targetNozzleTemp']).toBe('205.000000');
+  await tinta.fill('400');
+  await tinta.press('Enter');
+  await expect(page.getByTestId('imprimanta-temperaturi').getByRole('alert')).toContainText('Între 0 și 320 °C');
+  await tinta.press('Escape');
+  await page.locator('[data-imprimanta="raceste"]').click();
+  await expect.poll(() => imp.stare()['targetNozzleTemp']).toBe('0.000000');
+  // Homing-ul: doar după bifa „Patul e gol”; X și Y, apoi, după ce imprimanta nu mai e ocupată, Z.
+  await page.locator('[data-imprimanta="homing"]').click();
+  await expect(page.locator('[data-imprimanta="homing-confirma"]')).toBeDisabled();
+  await page.locator('[data-imprimanta="homing-pat-gol"]').check();
+  await page.locator('[data-imprimanta="homing-confirma"]').click();
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeDisabled();
+  await expect(page.getByTestId('imprimanta-axe')).toHaveText('Axele știute: X, Y, Z.', { timeout: 10_000 });
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeEnabled();
+  const set = comenziSet(imp);
+  expect(set.filter((c) => c.includes('autohome'))).toEqual(['{"method":"set","params":{"autohome":"X Y"}}', '{"method":"set","params":{"autohome":"Z"}}']);
+  expect(set.indexOf('{"method":"set","params":{"autohome":"Z"}}') - set.indexOf('{"method":"set","params":{"autohome":"X Y"}}')).toBe(1);
+  // Fără consolă: în gcodeCmd a plecat doar M106, pe canalele lui.
+  expect(gcodeTrimis(imp)).toEqual(['M106 P0 S128', 'M106 P2 S3']);
+  expect(set).toContain('{"method":"set","params":{"lightSw":0}}');
+  expect(set).toContain('{"method":"set","params":{"bedTempControl":{"num":0,"val":55}}}');
+});
+
+test('cât imprimă (3.6o): viteza și debitul, din câmp și „100 %”; homing-ul oprit; o comandă fără răspuns arată „n-a confirmat”', async ({ page }) => {
+  const imp = await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 10 }, pasMs: 2000 });
+  imp.ignora(['setFlowratePct']);
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeDisabled();
+  await expect(page.getByTestId('imprimanta-axe')).toHaveText('Doar cu imprimanta liberă.');
+  // Preîncălzește și Răcește nu se arată cât imprimă: doar nota că fișierul poate schimba țintele.
+  await expect(page.locator('[data-imprimanta="preincalzeste"]')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-temperaturi')).toContainText('Fișierul poate schimba țintele');
+  // Viteza la 120 %, apoi înapoi la 100 % din buton.
+  const viteza = page.locator('[data-imprimanta="viteza-camp"]');
+  await viteza.fill('120');
+  await viteza.press('Enter');
+  await expect.poll(() => imp.stare()['curFeedratePct']).toBe(120);
+  await expect(page.getByTestId('imprimanta-reglaj-viteza')).toContainText('120 %');
+  await page.locator('[data-imprimanta="viteza-suta"]').click();
+  await expect.poll(() => imp.stare()['curFeedratePct']).toBe(100);
+  await expect(page.locator('[data-imprimanta="viteza-suta"]')).toBeDisabled();
+  // Debitul: imprimanta nu răspunde. Întâi „așteaptă imprimanta”, apoi, după 6 s, „n-a confirmat” și valoarea raportată.
+  const debit = page.locator('[data-imprimanta="debit-camp"]');
+  await debit.fill('95');
+  await debit.press('Enter');
+  const randDebit = page.getByTestId('imprimanta-reglaj-debit');
+  await expect(randDebit.locator('[data-cerere="asteapta"]')).toContainText('→ 95 % · așteaptă imprimanta');
+  await expect(randDebit.locator('[data-cerere="esuata"]')).toHaveText('imprimanta n-a confirmat', { timeout: 9000 });
+  await expect(debit).toHaveValue('100');
+  expect(comenziSet(imp)).toEqual([
+    '{"method":"set","params":{"setFeedratePct":120}}', '{"method":"set","params":{"setFeedratePct":100}}',
+    '{"method":"set","params":{"setFlowratePct":95}}',
+  ]);
+});
+
 const felieGata = async (page: Page): Promise<void> => {
   await expect(page.getByTestId('imprimanta-felie')).not.toHaveAttribute('data-stare', 'lucreaza');
 };

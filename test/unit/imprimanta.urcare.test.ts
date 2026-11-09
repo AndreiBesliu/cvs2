@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CSP } from '../../shared/csp.ts';
-import type { FisierImprimanta } from '../../src/machine/imprimanta/creality.ts';
+import type { FisierImprimanta } from '../../src/machine/imprimanta/driver.ts';
 import { CERERI_LISTA, numeDeTrimis, urca, type ListaImprimantei } from '../../src/machine/imprimanta/urcare.ts';
 import { adresaRetea, type AdresaRetea } from '../../src/machine/reteaLocala.ts';
 

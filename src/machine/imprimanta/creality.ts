@@ -7,7 +7,14 @@
  * (`{"ModeCode":"heart_beat",…}`), la care clientul răspunde `ok` (text simplu, nu JSON), altfel ea închide legătura; și starea,
  * pe bucăți: doar câmpurile schimbate, cu numerele adesea ca text („220.000000”). Cererile și comenzile sunt
  * `{"method":"get"|"set","params":{…}}`. Pe 9999 nu e nicio parolă: oricine din rețea poate comanda imprimanta.
+ *
+ * Din 3.6o, driverul `creality-k1` (ADR 0192): starea comună (`driver.ts`), capabilitățile și comenzile din timpul imprimării
+ * (lumina, ventilatoarele, viteza, debitul, țintele, homing-ul), cu numele din integrarea Home Assistant.
  */
+import {
+  intregIn, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
+  type Interval, type IdVentilator, type Pas, type StareLucrare,
+} from './driver.ts';
 
 export const PORT_CREALITY = 9999;
 /** Răspunsul la bătaia inimii: text simplu. */
@@ -15,49 +22,30 @@ export const RASPUNS_INIMA = 'ok';
 /** Unde ține familia K1 fișierele G-code (OrcaSlicer: `/usr/data` la K1, `/mnt/UDISK` la K2). */
 export const DIR_GCODE = '/usr/data/printer_data/gcodes/';
 
-/** Ce se știe despre imprimantă: ultima valoare primită a fiecărui câmp (null: încă necunoscut). */
-export type Imprimanta = {
-  readonly model: string | null;
-  readonly nume: string | null;
-  /** Versiunea firmware-ului, din `modelVersion` („printer sw ver:…”). */
-  readonly firmware: string | null;
-  /** `state`, cum îl trimite imprimanta: 1 imprimă, 5 pauză, 4 oprită, 7 oprirea în curs, 9 pornirea, 0 pregătirea. */
-  readonly cod: number | null;
-  /** `printFileName`: calea întreagă (pe K1C) sau doar numele. */
-  readonly fisier: string | null;
-  readonly progres: number | null;
-  /** Timpul trecut și cel rămas, în secunde. */
-  readonly trecut: number | null;
-  readonly ramas: number | null;
-  readonly strat: number | null;
-  readonly straturi: number | null;
-  /** Temperaturile, în °C: duza și patul cu țintele lor, aerul din carcasă. */
-  readonly duza: number | null;
-  readonly duzaTinta: number | null;
-  readonly pat: number | null;
-  readonly patTinta: number | null;
-  readonly carcasa: number | null;
-  /** `err.errcode` (0 = fără eroare, deci null) și `err.key`. */
-  readonly eroare: number | null;
-  readonly cheieEroare: number | null;
-  /** `withSelfTest`: 1–99 cât își face verificările. */
-  readonly autotest: number | null;
-};
+type CampNumeric = 'cod' | 'progres' | 'trecut' | 'ramas' | 'strat' | 'straturi' | 'duza' | 'duzaTinta' | 'duzaMax' | 'pat' | 'patTinta'
+  | 'patMax' | 'carcasa' | 'viteza' | 'debit' | 'autotest';
 
-export const IMPRIMANTA_NECUNOSCUTA: Imprimanta = {
-  model: null, nume: null, firmware: null, cod: null, fisier: null, progres: null, trecut: null, ramas: null, strat: null,
-  straturi: null, duza: null, duzaTinta: null, pat: null, patTinta: null, carcasa: null, eroare: null, cheieEroare: null,
-  autotest: null,
-};
-
-type CampNumeric = 'cod' | 'progres' | 'trecut' | 'ramas' | 'strat' | 'straturi' | 'duza' | 'duzaTinta' | 'pat' | 'patTinta' | 'carcasa' | 'autotest';
-
-/** Câmpurile numerice ale stării, cu numele lor din protocol. `dProgress` e rezerva lui `printProgress`. */
+/**
+ * Câmpurile numerice ale stării, cu numele lor din protocol. `dProgress` e rezerva lui `printProgress`. `state`: 1 imprimă, 5
+ * pauză, 4 oprită, 7 oprirea în curs, 9 pornirea, 0 pregătirea; `withSelfTest`: 1–99 cât își face verificările.
+ */
 const NUMERE: readonly (readonly [string, CampNumeric])[] = [
   ['state', 'cod'], ['printProgress', 'progres'], ['printJobTime', 'trecut'], ['printLeftTime', 'ramas'], ['layer', 'strat'],
-  ['TotalLayer', 'straturi'], ['nozzleTemp', 'duza'], ['targetNozzleTemp', 'duzaTinta'], ['bedTemp0', 'pat'],
-  ['targetBedTemp0', 'patTinta'], ['boxTemp', 'carcasa'], ['withSelfTest', 'autotest'],
+  ['TotalLayer', 'straturi'], ['nozzleTemp', 'duza'], ['targetNozzleTemp', 'duzaTinta'], ['maxNozzleTemp', 'duzaMax'], ['bedTemp0', 'pat'],
+  ['targetBedTemp0', 'patTinta'], ['maxBedTemp', 'patMax'], ['boxTemp', 'carcasa'], ['curFeedratePct', 'viteza'],
+  ['curFlowratePct', 'debit'], ['withSelfTest', 'autotest'],
 ];
+
+/** Ventilatoarele, în procente, cu canalul lor `M106` (integrarea Home Assistant): 0 al piesei, 1 al carcasei, 2 cel lateral. */
+const VENTILATOARE_K1: Readonly<Record<IdVentilator, { readonly camp: string; readonly canal: number }>> = {
+  piesa: { camp: 'modelFanPct', canal: 0 }, carcasa: { camp: 'caseFanPct', canal: 1 }, lateral: { camp: 'auxiliaryFanPct', canal: 2 },
+};
+
+/** Axele știute, din `autohome` („X:1 Y:1 Z:0”: X și Y, nu Z), ca „XY”; null pentru un text de altă formă. */
+export function axeDin(t: string): string | null {
+  const m = /^\s*X:([01])\s+Y:([01])\s+Z:([01])\s*$/.exec(t);
+  return m === null ? null : ['X', 'Y', 'Z'].filter((_, k) => m[k + 1] === '1').join('');
+}
 const TEXTE: readonly (readonly [string, 'model' | 'nume' | 'fisier'])[] = [['model', 'model'], ['hostname', 'nume'], ['printFileName', 'fisier']];
 
 /**
@@ -83,18 +71,7 @@ export function firmwareDin(text: string): string | null {
   return v['printer sw ver'] || v['dwin sw ver'] || null;
 }
 
-/** Un fișier din imprimantă, din lista ei (`retGcodeFileInfo2` sau `retGcodeFileInfo`): numele, calea și ce mai știe ea despre el. */
-export type FisierImprimanta = {
-  readonly nume: string;
-  readonly cale: string;
-  /** Timpul estimat de feliator (`timeCost`), în secunde. */
-  readonly timp: number | null;
-  readonly material: string | null;
-  /** Mărimea, în octeți (lista K1C 2025 o are). */
-  readonly marime: number | null;
-};
-
-const text = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v : null);
+const text =(v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v : null);
 
 /** Calea unui fișier din directorul G-code al imprimantei, fără `..` și fără caractere de control; altfel null. */
 function caleSigura(cale: string): string | null {
@@ -180,6 +157,21 @@ export function citesteCadru(t: string): Cadru {
     if (typeof v === 'string') stare[camp] = v.trim() === '' ? null : v;
   }
   if (typeof r['modelVersion'] === 'string') stare.firmware = firmwareDin(r['modelVersion']);
+  // Lumina (`lightSw`, doar 0 / 1), ventilatoarele (%), „ocupată” (`deviceState` 7: homing-ul în curs) și axele știute.
+  const lumina = numar(r['lightSw']);
+  if (lumina !== null) stare.lumina = lumina > 0;
+  const vent: { -readonly [K in IdVentilator]?: number } = {};
+  for (const id of VENTILATOARE) {
+    const v = numar(r[VENTILATOARE_K1[id].camp]);
+    if (v !== null) vent[id] = v;
+  }
+  if (Object.keys(vent).length > 0) stare.ventilatoare = vent;
+  const ocupata = numar(r['deviceState']);
+  if (ocupata !== null) stare.ocupata = ocupata === 7;
+  if (typeof r['autohome'] === 'string') {
+    const axe = axeDin(r['autohome']);
+    if (axe !== null) stare.axe = axe;
+  }
   const err = r['err'];
   const cod = typeof err === 'object' && err !== null ? numar((err as Record<string, unknown>)['errcode']) : numar(err);
   if (cod !== null) {
@@ -196,13 +188,8 @@ export function citesteCadru(t: string): Cadru {
 /** Cadrul arată ca al unei imprimante Creality: bătaia inimii sau măcar un câmp știut al stării. */
 export const esteCreality = (c: Cadru): boolean => c.inima || Object.keys(c.stare).length > 0;
 
-export const aplica = (i: Imprimanta, s: Partial<Imprimanta>): Imprimanta => ({ ...i, ...s });
-
-/** Starea lucrării, ca s-o arate panoul (fără eroare: codul ei are cardul lui, și uneori rămâne pus după ce a trecut). */
-export type StareLucrare = 'necunoscuta' | 'libera' | 'pregatire' | 'imprima' | 'pauza' | 'oprita' | 'gata' | 'autotest';
-
 /**
- * Starea, ca integrarea Home Assistant (capturile K1C): cu un fișier, 100 % e „gata”, afară de K1C care arată 100 cu timp rămas
+ * Starea lucrării (fără eroare: codul ei are cardul lui, și uneori rămâne pus după ce a trecut), ca integrarea Home Assistant (capturile K1C): cu un fișier, 100 % e „gata”, afară de K1C care arată 100 cu timp rămas
  * (apoi 99, abia apoi încheie); 5 pauză, 4 oprită, 1 imprimă, iar 0, 7 (oprirea în curs) și 9 (pornirea, sub o secundă)
  * pregătire. Numele ultimului fișier și 100 % rămân după final: „gata” până la lucrarea următoare.
  */
@@ -220,13 +207,7 @@ export function stareLucrare(i: Imprimanta): StareLucrare {
   return 'libera';
 }
 
-/** Ce comenzi au rost acum. Pornirea, doar cu imprimanta liberă (sau după o lucrare încheiată sau oprită). */
-export const sePoatePauza = (s: StareLucrare): boolean => s === 'imprima';
-export const sePoateRelua = (s: StareLucrare): boolean => s === 'pauza';
-export const sePoateOpri = (s: StareLucrare): boolean => s === 'imprima' || s === 'pauza' || s === 'pregatire';
-export const sePoatePorni = (s: StareLucrare): boolean => s === 'libera' || s === 'gata' || s === 'oprita';
-
-const cerere = (method: 'get' | 'set', params: Readonly<Record<string, unknown>>): string => JSON.stringify({ method, params });
+const cerere =(method: 'get' | 'set', params: Readonly<Record<string, unknown>>): string => JSON.stringify({ method, params });
 
 /** Toată starea (`ReqPrinterPara`) și lista fișierelor: doar citiri. */
 export const CERERE_STARE = cerere('get', { ReqPrinterPara: 1 });
@@ -243,3 +224,90 @@ export function comandaPornire(cale: string): string | null {
 
 /** Cererile de citire: singurele pe care legătura le trimite fără un clic al omului (pe lângă `ok`). */
 export const CITIRI: ReadonlySet<string> = new Set([CERERE_STARE, CERERE_FISIERE]);
+
+/** Viteza și debitul pe K1: întregi 1–200 % (integrarea Home Assistant). */
+export const PROCENTE_K1: Interval = { min: 1, max: 200 };
+const PROCENT_VENTILATOR: Interval = { min: 0, max: 100 };
+/** Maximul țintelor, cât imprimanta nu-l spune (ca integrarea Home Assistant). */
+export const MAX_DUZA_K1 = 300;
+export const MAX_PAT_K1 = 100;
+/** Homing-ul: între X Y și Z, cel puțin o secundă, apoi cât imprimanta e ocupată, cel mult 15 s (integrarea Home Assistant). */
+export const HOMING_MIN_MS = 1000;
+export const HOMING_MAX_MS = 15_000;
+
+const maxim = (v: number | null, implicit: number): number => (v !== null && v > 0 ? v : implicit);
+
+/**
+ * Ce poate o imprimantă K1, după ce a spus ea: lumina și fiecare ventilator doar dacă le raportează (o K1 SE n-are ventilatorul
+ * lateral), viteza și debitul la fel; țintele duzei și patului cu maximul ei. Nicio K1 n-are încălzitor al carcasei, deși K1C
+ * trimite uneori `targetBoxTemp` (integrarea Home Assistant și-a scos comanda, care nu făcea nimic).
+ */
+export function capabilitatiK1(i: Imprimanta): Capabilitati {
+  return {
+    lumina: i.lumina !== null,
+    ventilatoare: VENTILATOARE.filter((id) => i.ventilatoare[id] !== undefined),
+    viteza: i.viteza === null ? null : PROCENTE_K1,
+    debit: i.debit === null ? null : PROCENTE_K1,
+    tinte: [{ incalzitor: 'duza', max: maxim(i.duzaMax, MAX_DUZA_K1) }, { incalzitor: 'pat', max: maxim(i.patMax, MAX_PAT_K1) }],
+    homing: true,
+    fisiere: true,
+    trimitere: true,
+  };
+}
+
+const set = (params: Readonly<Record<string, unknown>>): readonly Pas[] => [{ trimite: cerere('set', params) }];
+
+/**
+ * O comandă comună în protocolul K1, ca pași; null: refuzată (un număr care nu e întreg sau iese din interval, un ventilator
+ * necunoscut, o cale în afara directorului G-code). Ventilatoarele trec prin `gcodeCmd`, dar textul îl face doar driverul, dintr-un
+ * canal și un procent verificate (ADR 0192 §B.8): nimic scris de om nu ajunge acolo.
+ */
+export function comandaK1(c: ComandaImprimanta, i: Imprimanta): readonly Pas[] | null {
+  switch (c.fel) {
+    case 'pauza': return [{ trimite: COMANDA_PAUZA }];
+    case 'reia': return [{ trimite: COMANDA_REIA }];
+    case 'opreste': return [{ trimite: COMANDA_OPRESTE }];
+    case 'porneste': {
+      const t = comandaPornire(c.cale);
+      return t === null ? null : [{ trimite: t }];
+    }
+    case 'lumina': return set({ lightSw: c.aprinsa ? 1 : 0 });
+    case 'ventilator': {
+      const v = Object.hasOwn(VENTILATOARE_K1, c.id) ? VENTILATOARE_K1[c.id] : undefined;
+      const p = intregIn(c.procent, PROCENT_VENTILATOR);
+      return v === undefined || p === null ? null : set({ gcodeCmd: `M106 P${v.canal} S${Math.round((255 * p) / 100)}` });
+    }
+    case 'viteza':
+    case 'debit': {
+      const p = intregIn(c.procent, PROCENTE_K1);
+      return p === null ? null : set(c.fel === 'viteza' ? { setFeedratePct: p } : { setFlowratePct: p });
+    }
+    case 'tinta': {
+      const t = capabilitatiK1(i).tinte.find((x) => x.incalzitor === c.incalzitor);
+      const g = t === undefined ? null : intregIn(c.grade, { min: 0, max: t.max });
+      if (g === null) return null;
+      return set(c.incalzitor === 'duza' ? { nozzleTempControl: g } : { bedTempControl: { num: 0, val: g } });
+    }
+    case 'homing': return [
+      { trimite: cerere('set', { autohome: 'X Y' }) },
+      { gata: (x) => x.ocupata !== true, minMs: HOMING_MIN_MS, maxMs: HOMING_MAX_MS },
+      { trimite: cerere('set', { autohome: 'Z' }) },
+    ];
+    default: return null;
+  }
+}
+
+/** Driverul familiei K1 (ADR 0192 §A.5): `creality-k1`, pe 9999. */
+export const CREALITY_K1: DriverText = {
+  id: 'creality-k1',
+  port: PORT_CREALITY,
+  citiri: [...CITIRI],
+  citeste: (t) => {
+    const c = citesteCadru(t);
+    return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, raspuns: c.inima ? RASPUNS_INIMA : null };
+  },
+  lucrare: stareLucrare,
+  capabilitati: capabilitatiK1,
+  codifica: comandaK1,
+  inchideDupaPornire: true,
+};

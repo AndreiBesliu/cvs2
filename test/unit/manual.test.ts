@@ -243,6 +243,14 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   // Felia 3.6l: piesa „după CNC” și înălțimea (una pentru toate, a fiecărei piese; rândul unei piese poartă numele ei).
   'felie-dupa-cnc': 'imprimanta.felie.dupa-cnc', 'felie-inaltime-toate': 'imprimanta.felie.inaltime.toate',
   'felie-inaltime-piese': 'imprimanta.felie.inaltime.piese', 'felie-inaltime-piesa': 'imprimanta.felie.inaltime.piese',
+  // Felia 3.6o (ADR 0192): comenzile din timpul imprimării (un ventilator, oricare: `data-ventilator` spune care).
+  lumina: 'imprimanta.lumina', ventilator: 'imprimanta.ventilatoare', 'ventilator-camp': 'imprimanta.ventilatoare',
+  viteza: 'imprimanta.viteza', 'viteza-camp': 'imprimanta.viteza', 'viteza-suta': 'imprimanta.reglaj.suta', debit: 'imprimanta.debit',
+  'debit-camp': 'imprimanta.debit', 'debit-suta': 'imprimanta.reglaj.suta', 'tinta-duza': 'imprimanta.tinta.duza',
+  'tinta-pat': 'imprimanta.tinta.pat', preincalzeste: 'imprimanta.preincalzeste', 'preincalzeste-material': 'imprimanta.preincalzeste',
+  raceste: 'imprimanta.raceste', 'incalzeste-raceste': 'imprimanta.raceste', racire: 'imprimanta.racire.bifa',
+  'racire-minute': 'imprimanta.racire.bifa', homing: 'imprimanta.homing', 'homing-pat-gol': 'imprimanta.pornire.pat-gol',
+  'homing-confirma': 'imprimanta.homing.confirma', 'homing-renunta': 'imprimanta.homing.renunta',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
