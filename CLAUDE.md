@@ -681,6 +681,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Cu `main` unit pe 08.11 (`8dde2d2`, cu incrustațiile) și 25.3↑b: pornirea 101,9 / 110 kB, totalul 574,8 / 600.**
   **Linia trasării (25.1↑–25.3↑b) unită în `main` pe 09.11** („Yes, merge trasarea”; `e277836`; conflicte doar în
   documente). **Pornirea 101,9 (cu ușa 105,5 / 110 kB), totalul 577,2 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **25.4↑ (scanările și pozele: Lumina, Zona, „Ignoră ce atinge marginea”; ADR 0224, propus pe 09.11) așteaptă răspunsurile;
+  la luminile pentru poze, polaritatea vine din minoritatea locală a cernelii: marginea întoarce foaia pozată pe masă.**
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

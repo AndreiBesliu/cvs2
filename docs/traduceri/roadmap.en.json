@@ -21,6 +21,10 @@
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
     },
+    "034fcaf1a7cfab81": {
+      "ro": "Răspunsurile la cele două întrebări din ADR 0224 (scanările și pozele; propus pe ramura `wip/25.1-trasare`): formularul din schiță (<https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>: luminile pe cazurile prototipului, zona, marginea), apoi „gata” în sesiune; dacă ai, o poză de telefon cu un desen pe hârtie și o scanare, trimise în sesiune (intră în probe înaintea codului)",
+      "en": "The answers to the two questions in ADR 0224 (scans and photos; proposed on the `wip/25.1-trasare` branch): the form in the sketch (<https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>: the lighting options on the prototype’s cases, the area, the edge), then “done” in the session; if you have one, a phone photo of a drawing on paper and a scan, sent in the session (they go into the tests before the code)"
+    },
     "0360dd0ba18ef822": {
       "ro": "Emulatorul GRBL 1.1h ca fixtură (ADR 0079): numără ce primește (bufferul de 128 de octeți, timpul real, pierderile), liniile, planificatorul de 15 blocuri cu timpul lui, stările (hold, alarmă, repornire), răspunsurile `$`; un flux de probă cu numărarea caracterelor; 100 000 de linii fără pierderi; rejucarea programelor plăcilor 1 și 2",
       "en": "The GRBL 1.1h emulator as a fixture (ADR 0079): it counts what it receives (the 128-byte buffer, the realtime bytes, the losses), the lines, the 15-block planner with its timing, the states (hold, alarm, restart), the `$` replies; a test stream with character counting; 100,000 lines without losses; replaying the programs of plates 1 and 2"
@@ -128,6 +132,10 @@
     "0a7887b0082312c0": {
       "ro": "regiunea păstrată, urechile, intrările",
       "en": "the kept region, tabs, lead-ins"
+    },
+    "0a7d4d62d2a0823f": {
+      "ro": "Scanările și pozele",
+      "en": "Scans and photos"
     },
     "0a85bfda7cc862e9": {
       "ro": "Frezele de rest",
@@ -824,6 +832,10 @@
     "449772f5c59a39f9": {
       "ro": "Forma „cale” în document",
       "en": "The “path” shape in the document"
+    },
+    "454f442fad17ea02": {
+      "ro": "25.4↑",
+      "en": "25.4↑"
     },
     "45b472faaf813b41": {
       "ro": "Joburile cu mai multe scule din document",
@@ -1984,6 +1996,10 @@
     "b3247d3e0efd14c3": {
       "ro": "**Estimarea timpului jobului, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0046): modelul planificatorului GRBL 1.1h (pașii, limitele pe axe, joncțiunile din $11, fereastra de 15 blocuri, arcele din `mc_arc`, pauza în pași de 50 ms, sincronizările), pe G-code-ul exportat; profilul mașinii ca date (implicitele 1.1h, peste ele `$$` lipit); rezumatul în dialogul exportului, pe operație și pe sculă, în bucata calculului exportului. Probele pe hârtie înaintea modelului; oracolul independent (o sesiune fără `src/`) se potrivește cu aplicația la 10⁻¹⁴ pe 300 de programe aleatoare și pe plăci, iar aplicația trece cele 16 cazuri pe hârtie ale lui. Recenzia (un verificator): niciun defect mare; M3 → M4, M30, cititorul ca `protocol.c`, două operații pe hârtie, plafonul, remediate cu proba lor. Sabotajele: 48 / 48 pe codul final. Placa 2: 10 min 23 s pe implicite (fișa plăcii cere cronometrul și `$$`). Comparația cu cronometrul: după tăiere.",
       "en": "**Job time estimate, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0046): a model of the GRBL 1.1h planner (steps, per-axis limits, the junctions from $11, the 15-block window, arcs from `mc_arc`, the dwell in 50 ms steps, synchronisations), on the exported G-code; the machine profile as data (the 1.1h defaults, with pasted `$$` on top); the summary in the export dialog, per operation and per tool, in the export calculation chunk. The checks on paper before the model; the independent oracle (a session without `src/`) agrees with the app to 10⁻¹⁴ on 300 random programs and on the plates, and the app passes its 16 cases on paper. The review (one verifier): no big defect; M3 → M4, M30, the reader like `protocol.c`, two operations on paper, the cap, fixed with their checks. Sabotages: 48 / 48 on the final code. Plate 2: 10 min 23 s on the defaults (the plate file asks for the stopwatch and `$$`). The comparison with the stopwatch: after cutting."
+    },
+    "b374433e8f0317a8": {
+      "ro": "**Scanările și pozele** (propus; ADR 0224; worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, neunită; pornită la „continua”, după unirea liniei trasării în `main`). Cercetarea: LightBurn (pragul local pentru schițe, trasarea în dreptunghiul tras), Vectric (decuparea, zona), CorelDRAW (scoaterea fundalului), ImageJ („rolling ball”, pragurile locale, „exclude on edges”); Sauvola, închiderea van Herk – Gil-Werman. Prototipul, pe imagini sintetice cu cerneala știută (lumina scade de cinci ori; o pată plină, o umbră tare, foaia pe masă, creta pe tablă): „Neuniformă” (un polinom de gradul 3 potrivit pe hârtie) și „Cu umbre” (închiderea morfologică) țin desenul la 0–0,7 % în plus și 0,7–1,1 % lipsă, fiecare acolo unde celălalt greșește (umbra: 648 % în plus; pata: 26 % lipsă); polaritatea din minoritatea locală a cernelii (cea din margine întoarce foaia pe masă și pe umbră); Sauvola respins (marginea trăsăturii nu stă la jumătatea acoperirii). Propus: Lumina (Uniformă / Neuniformă / Cu umbre), Zona trasă pe previzualizare, „Ignoră ce atinge marginea”; ~+3–4 kB. Schița, cu macheta pe toate cazurile și formularul: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>; două întrebări (lumina implicită, ce e zona).",
+      "en": "**Scans and photos** (proposed; ADR 0224; the `trasare` worktree, the `wip/25.1-trasare` branch, brought up to `origin/main`, not merged; started at “continua”, after the tracing line was merged into `main`). The research: LightBurn (the local threshold for sketches, tracing inside the dragged box), Vectric (cropping, the area), CorelDRAW (background removal), ImageJ (“rolling ball”, the local thresholds, “exclude on edges”); Sauvola, the van Herk – Gil-Werman closing. The prototype, on synthetic images with the ink known (the light falls fivefold; a solid patch, a hard shadow, the sheet on a table, chalk on a blackboard): “Uneven” (a degree-3 polynomial fitted on the paper) and “With shadows” (the morphological closing) keep the drawing at 0–0.7 % extra and 0.7–1.1 % missing, each where the other fails (the shadow: 648 % extra; the patch: 26 % missing); the polarity from the local minority of the ink (the one from the edge flips the sheet on the table and under the shadow); Sauvola rejected (the stroke edge does not sit at half coverage). Proposed: Lighting (Even / Uneven / With shadows), the Area dragged on the preview, “Ignore what touches the edge”; ~+3–4 kB. The sketch, with the mock-up on every case and the form: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>; two questions (the default lighting, what the area is)."
     },
     "b3a774f3f3c7708d": {
       "ro": "Oracolul G-code din s4 în `test/oracles/`",

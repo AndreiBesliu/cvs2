@@ -7515,3 +7515,32 @@ ta”: proba „Alt ține fix” (`ancore.spec.ts:354`) cădea pe Linux, unde `s
   sub 1250 în engleză.
 - **Porțile:** tipurile, unit 72 (manualul, testul din aplicație, i18n, documentația, editarea), traducerile, e2e 35 (ancorele
   cu cele două probe noi, tutorialul, editarea, fereastra).
+
+## 2026-11-09 — Felia 25.4↑ pornită: scanările și pozele (ADR 0224, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea liniei în `main`).
+**Started:** 09.11, 16:49. **Completed:** 09.11, 17:25.
+
+- **Ramura** adusă la `origin/main` (`3797e17`, fast-forward); sesiunea principală, rugată să nu scoată worktree-ul `trasare`.
+- **Cercetarea:** LightBurn (pragul local pentru schițe, trasarea în dreptunghiul tras), Vectric (decuparea, zona),
+  CorelDRAW (scoaterea fundalului), ImageJ („rolling ball”, pragurile locale, „exclude on edges”); Sauvola (2000), imaginile
+  integrale (Shafait, Keysers, Breuel 2008), Bradley–Roth (2007), maximul pe fereastră în trei comparații pe pixel (van Herk
+  1992, Gil și Werman 1993), corecția câmpului plat.
+- **Prototipul** (`.tmp/proto-254.ts`, `.tmp/metode-254.ts`, `.tmp/proto-254-inchidere.ts`, `.tmp/proto-254-creta.ts`,
+  `.tmp/polaritate-254.ts`), pe imagini sintetice de 1200 × 800 cu cerneala știută (lumina scade de cinci ori dintr-un colț în
+  cel opus): pragul de azi dă 259–2519 % cerneală în plus; „Neuniformă” (un polinom de gradul 3 potrivit pe hârtie, cerneala
+  ca raport) ține desenul la 0–0,3 % în plus și 0,7–1,1 % lipsă, și pata plină, dar umbra tare iese cerneală (648 %); „Cu
+  umbre” (închiderea morfologică pe 1/12 din latura mică) ține umbra (0,7 / 1,1 %), dar golește pata (26 % lipsă); foaia pe
+  masă, cu „Ignoră ce atinge marginea” sau cu zona: 0,3–0,4 / 0,8–0,9 %; creta pe tablă: 0,2 / 0,8 % (Neuniformă).
+- **Găsite pe drum:** (1) Sauvola pune marginea trăsăturii unde cade pragul local (pe lumina egală, +2,4 %; în oglindă, pe
+  cretă, +10,5 %), deci „Cu umbre” e închiderea, cu raportul și Otsu; (2) polaritatea din margine (nucleul de azi) întoarce
+  foaia pozată pe masă și poza cu umbră, iar clasa cea mai mare după Otsu cade pe umbră (Otsu desparte lumina): minoritatea
+  locală a cernelii le nimerește pe toate șase (5–12 % față de 29,5–31,5 %); (3) pe cretă, raportul la fundalul închis
+  amplifică zgomotul: numărătoarea polarității se face față de mijlocul dintre închidere și deschidere, pe imaginea redusă
+  la ~0,25 Mpx și netezită 3 × 3.
+- **Timpul pe 12 Mpx** (Node 26): Neuniformă 7–14 + 69–120 ms, Cu umbre 546–590 ms, polaritatea 71–93 ms, Sauvola 120–189 ms
+  (cu sumele pe coloane: memoria O(W), în locul celor 192 MB ale imaginilor integrale).
+- **ADR 0224** propus: Lumina (Uniformă / Neuniformă / Cu umbre), Zona trasă pe previzualizare, „Ignoră ce atinge marginea”
+  (și pe culori); două întrebări (lumina implicită; zona: decupaj sau filtru). Schița, cu macheta pe toate cazurile și
+  formularul: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>.
+- **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului (0 lipsă).
