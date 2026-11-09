@@ -18,6 +18,8 @@
  * Felia 10.3↑i: spațiul și suprapunerea (fiecare parte, regiunea veche tăiată cu cuțitul mutat cu w / 2; la spațiu, bucățile la
  * cel puțin w una de alta; la suprapunere, partea comună cât fâșia de lățime w) și, pe o rețea, bucățile pe care spațiul le-ar
  * mânca de tot (componentele regiunii de lângă cuțit care nu trec de cel mutat).
+ * Felia 10.3↑j: îmbinarea (reuniunea bucăților e forma veche: ariile lor fac aria ei, fără joc, și nu se suprapun; cu joc,
+ * bucățile stau la cel puțin jocul una de alta, iar undeva chiar la el; nimic în afara formei vechi; dinții chiar se văd).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -1206,6 +1208,66 @@ export function judecaConvexMutat(o: {
     const asteptat = p.inK ? inMutat : tot - inMutat;
     const are = ariePar(p.forme);
     if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`${p.nume}: aria ${are}, nu ${asteptat}`);
+  }
+  return rau;
+}
+
+// ——— Felia 10.3↑j (ADR 0181 §6): îmbinarea ———
+
+/** Poligoanele dese ale formelor închise. */
+const poligoaneInchise = (forme: readonly FormaOracol[]): P[][] => forme.filter((f) => f.inchis).map((f) => esantioane(f, 256));
+/** Punctul q stă în regiunea par-impar a poligoanelor? */
+const inRegiunePar = (q: P, pol: readonly P[][]): boolean => pol.filter((p) => inPoligon(q, p)).length % 2 === 1;
+
+/**
+ * Judecata unei tăieri cu îmbinare (ADR 0181 §6; lista abaterilor): reuniunea bucăților e forma veche, iar distanța dintre ele e
+ * jocul. Fără joc, ariile bucăților fac aria formei vechi și niciun punct al unei bucăți nu stă înăuntrul alteia (doar pe
+ * marginea comună); cu joc, fiecare punct al unei bucăți stă la cel puțin jocul de celelalte, iar undeva chiar la el (de-a
+ * lungul îmbinării). Niciun punct nou în afara formei vechi. `dinte`, dacă e dat: cât trebuie să se depărteze măcar un punct nou
+ * de linia n · q = v (dinții chiar se văd).
+ */
+export function judecaImbinarea(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly parti: ReadonlyArray<readonly FormaOracol[]>;
+  readonly joc: number;
+  readonly dinte?: { readonly n: P; readonly v: number; readonly cat: number };
+}): string[] {
+  const rau: string[] = [];
+  const tot = ariePar(o.inainte);
+  const probe = o.parti.map((parte) => parte.flatMap((f) => esantioane(f, 48)));
+  const vechi = poligoaneInchise(o.inainte), noi = o.parti.map(poligoaneInchise);
+  for (const [k, ps] of probe.entries()) {
+    for (const q of ps) {
+      if (distantaLaForme(q, o.inainte) <= 1e-6 || inRegiunePar(q, vechi)) continue;
+      rau.push(`partea ${k}: un punct (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) în afara formei vechi`);
+      break;
+    }
+  }
+  if (o.joc === 0) {
+    const suma = o.parti.reduce((a, parte) => a + ariePar(parte), 0);
+    if (Math.abs(suma - tot) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`ariile bucăților: ${suma}, nu ${tot}`);
+    for (const [k, ps] of probe.entries()) {
+      for (const [j, alta] of o.parti.entries()) {
+        if (j === k) continue;
+        const q = ps.find((x) => inRegiunePar(x, noi[j] as P[][]) && distantaLaForme(x, alta) > 1e-6);
+        if (q) { rau.push(`partea ${k} intră în partea ${j}, în (${q.x.toFixed(4)}, ${q.y.toFixed(4)})`); break; }
+      }
+    }
+  } else if (o.parti.length > 1) {
+    let min = Infinity;
+    for (const [k, ps] of probe.entries()) {
+      for (const [j, alta] of o.parti.entries()) {
+        if (j <= k) continue;
+        for (const q of ps) min = Math.min(min, distantaLaForme(q, alta));
+      }
+    }
+    if (min < o.joc - 1e-6) rau.push(`între bucăți, doar ${min}, nu ${o.joc}`);
+    if (min > o.joc + 1e-3) rau.push(`bucățile nu se apropie la joc (${min}, nu ${o.joc})`);
+  }
+  if (o.dinte) {
+    const d = o.dinte;
+    const max = Math.max(...probe.flat().filter((q) => distantaLaForme(q, o.inainte) > 1e-6).map((q) => Math.abs(d.n.x * q.x + d.n.y * q.y - d.v)), 0);
+    if (max < d.cat) rau.push(`dinții nu se văd: cel mai departe de linie, ${max}, sub ${d.cat}`);
   }
   return rau;
 }

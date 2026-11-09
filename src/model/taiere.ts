@@ -61,6 +61,7 @@ import { compune, IDENTITATE, transformaContur, type Matrice } from '../geom/mat
 import { autointersectii, indexCutii, intersectiiIntre, offsetDeschis, offsetFigura, offsetInchis } from '../geom/offset.ts';
 import type { Document, ElementNod, FormaDoc, Instanta, Nod, Operatie, Piesa, SegmentDoc, VarfDoc } from './document.ts';
 import { conturElement, cutieElement } from './forme.ts';
+import { dintiPe, drumImbinare, imbinareBuna, type Imbinare } from './imbinare.ts';
 import { latimeBuna } from './intreBucati.ts';
 import type { Degrupata } from './jurnal.ts';
 import { elementeFoaie, elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
@@ -143,6 +144,12 @@ export type CerereTaiere = {
    * cuțitul-formă (nu la decupare, la intersecții, la foarfecă și la retezat).
    */
   readonly intre?: Intre;
+  /**
+   * Îmbinarea (ADR 0181 §6; `imbinare.ts`): pe o tăietură dreaptă (liniile din panou, ghidajul, calea trasă din două puncte),
+   * marginea nouă urmează modelul, iar spațiul sau suprapunerea de mai sus sunt jocul dintre bucăți; lipsă: tăietura dreaptă.
+   * Doar cu închidere.
+   */
+  readonly imbinare?: Imbinare;
 };
 
 /**
@@ -157,9 +164,13 @@ export type CerereTaiere = {
  * despărțit), `spatiu` (spațiul ar mânca o bucată întreagă de partea păstrată: o fâșie mai îngustă decât el), `spatiu-cutit`
  * (cuțitul nu se poate muta cu jumătate din lățime: offsetul lui se rupe, nu încape într-o curbă strânsă sau, mutat, se
  * oprește într-o formă), `spatiu-inchide` (spațiul și suprapunerea cer închiderea). La spațiu, `valoare`: lățimea nu e un număr
- * între `LATIME_MINIMA` și `LATIME_MAXIMA` (`intreBucati.ts`).
+ * între `LATIME_MINIMA` și `LATIME_MAXIMA` (`intreBucati.ts`). La îmbinare: `imbinare` (în nicio coardă a tăieturii nu încape un
+ * dinte întreg), `imbinare-raza` (modelul nu iese cu pasul, înălțimea și raza date), `imbinare-margine` (dinții ar atinge
+ * marginea unei forme: o latură oblică sau o gaură prea aproape), `imbinare-dreapta` (cuțitul nu e o dreaptă), `imbinare-inchide`
+ * (cere închiderea), `valoare` (pasul, înălțimea sau raza nu sunt numere bune).
  */
-export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide';
+export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
+  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide';
 
 export type RezultatTaiere =
   | {
@@ -621,6 +632,15 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     if (!cerere.inchide) return { ok: false, motiv: 'spatiu-inchide' };
     if (!latimeBuna(intre.latime)) return { ok: false, motiv: 'valoare' };
   }
+  // Îmbinarea (ADR 0181 §6), doar pe tăieturile drepte, cu închidere; dinții drumurilor, numărați pentru refuzul `imbinare`.
+  const imbinare = c.fel === 'decupare' || c.fel === 'intersectii' || c.fel === 'foarfeca' || c.fel === 'reteaza' ? undefined : cerere.imbinare;
+  if (imbinare) {
+    if (!cerere.inchide) return { ok: false, motiv: 'imbinare-inchide' };
+    if (!imbinareBuna(imbinare)) return { ok: false, motiv: 'valoare' };
+    if (c.fel === 'forma' || c.fel === 'forme' || (c.fel === 'cale' && c.netezire !== undefined)) return { ok: false, motiv: 'imbinare-dreapta' };
+  }
+  let dinti = 0;
+  const numara = (n: number): void => { dinti += n; };
   let taieUna: (inst: Instanta, p: Piesa) => Rezultat | Stearsa | MotivTaiere | null;
   // Cuțitul-formă de șters după tăiere (ADR 0181 §2), doar dacă s-a tăiat ceva.
   let cutitSters: readonly string[] = [];
@@ -647,7 +667,12 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     }
     const K = cutitulDin(xs);
     if (typeof K === 'string') return { ok: false, motiv: K };
-    if (intre) {
+    if (imbinare) {
+      // Calea trasă din două puncte (cu prelungirile ei): fiecare instanță își are drumul cu dinți.
+      const dr = caleDreapta(xs);
+      if (!dr) return { ok: false, motiv: 'imbinare-dreapta' };
+      taieUna = (inst, p) => taieCuImbinare(inst, p, dr, imbinare, pastreaza, intre, null, numara);
+    } else if (intre) {
       const M = cutiteMutate(K, intre, pastreaza);
       if (typeof M === 'string') return { ok: false, motiv: M };
       taieUna = (inst, p) => taieCuFormaIntre(K, M, inst, p, pastreaza, intre.fel);
@@ -678,7 +703,13 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
   } else {
     const L = linia(doc, c, indexFoaie);
     if (typeof L === 'string') return { ok: false, motiv: L };
-    taieUna = intre ? (inst, p) => taieInstantaIntre(L, inst, p, pastreaza, intre) : (inst, p) => taieInstanta(L, inst, p, cerere.inchide, pastreaza);
+    if (imbinare) {
+      // Drumul merge în sensul liniei; partea A (semnul −1) vine întâi, ca la tăierea fără îmbinare.
+      const dr: Dreapta = { A: { x: L.n.x * L.v, y: L.n.y * L.v }, u: L.u };
+      taieUna = (inst, p) => taieCuImbinare(inst, p, dr, imbinare, pastreaza, intre, stangaLiniei(L), numara);
+    } else {
+      taieUna = intre ? (inst, p) => taieInstantaIntre(L, inst, p, pastreaza, intre) : (inst, p) => taieInstanta(L, inst, p, cerere.inchide, pastreaza);
+    }
   }
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const folosiri = new Map<string, number>();
@@ -724,6 +755,7 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     degrupate.push({ instanta: inst, piesa: p, parti });
   }
   if (degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'nimic-taiat' };
+  if (imbinare && dinti === 0) return { ok: false, motiv: 'imbinare' };
   for (const id of cutitSters) if (!sterse.includes(id)) sterse.push(id);
   return { ok: true, degrupate, ids, forme, scoase, sterse };
 }
@@ -1903,9 +1935,11 @@ function parteaDin(Ks: Cutitul | null, s: 1 | -1, inst: Instanta, p: Piesa, ambe
 /**
  * O instanță tăiată de cuțitul-formă cu spațiu sau suprapunere (ADR 0181 §2): fiecare latură păstrată vine din tăierea cu
  * cuțitul mutat spre ea (spațiul) sau spre cealaltă (suprapunerea); un contur netăiat din afara fețelor, o singură dată, la
- * urmă. Null dacă cuțitul nemutat nu taie instanța (rămâne neschimbată, chiar dacă cel mutat ar atinge-o).
+ * urmă. Null dacă cuțitul nemutat nu taie instanța (rămâne neschimbată, chiar dacă cel mutat ar atinge-o). Cu `grupat`
+ * (îmbinarea pe linia din panou, §6), tot ce e de o latură e o singură parte, cu restul de partea lui; `grupat` e semnul părții
+ * liniei din stânga drumului, iar partea A (semnul −1) vine întâi.
  */
-function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastreaza: Pastrare, fel: Intre['fel']): Rezultat | Stearsa | MotivTaiere | null {
+function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastreaza: Pastrare, fel: Intre['fel'], grupat: 1 | -1 | null = null): Rezultat | Stearsa | MotivTaiere | null {
   const z = impartireCuForma(K, inst, p, true);
   if (z === null || typeof z === 'string') return z;
   const mi = matriceInstanta(inst);
@@ -1913,6 +1947,7 @@ function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastr
   const laturiPastrate: ReadonlyArray<1 | -1> = pastreaza === 'ambele' ? [1, -1] : [pastreaza === 'stanga' ? 1 : -1];
   const parti: Parte[] = [];
   const rest = new Map<string, ElementNou>();
+  const peLatura = new Map<number, ElementNou[]>();
   for (const s of laturiPastrate) {
     const m = (fel === 'spatiu' ? s : -s) === 1 ? M.st : M.dr;
     if (m === undefined) return 'nereusita';
@@ -1921,12 +1956,140 @@ function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastr
     if (fel === 'spatiu' && mancataDeForma(K, gz, s, Ks, mi)) return 'spatiu';
     const x = parteaDin(Ks, s, inst, p, pastreaza === 'ambele');
     if (typeof x === 'string') return x;
-    for (const el of x.parti) parti.push({ elemente: el });
-    for (const y of x.rest) rest.set(y.e.surse[0]?.nod ?? `#${rest.size}`, y.e);
+    const toate = x.parti.flat();
+    if (grupat === null) for (const el of x.parti) parti.push({ elemente: el });
+    for (const y of x.rest) {
+      const cheie = y.e.surse[0]?.nod ?? `#${rest.size}`;
+      if (grupat !== null && !rest.has(cheie)) toate.push(y.e);
+      rest.set(cheie, y.e);
+    }
+    peLatura.set(s, toate);
   }
-  if (rest.size > 0) parti.push({ elemente: [...rest.values()] });
+  if (grupat !== null) {
+    for (const s of grupat === -1 ? [1, -1] : [-1, 1]) {
+      const el = peLatura.get(s);
+      if (el && el.length > 0) parti.push({ elemente: el });
+    }
+  } else if (rest.size > 0) {
+    parti.push({ elemente: [...rest.values()] });
+  }
   if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
   return { parti, taiate: z.taiate };
+}
+
+// ——— Îmbinarea (ADR 0181 §6) ———
+
+/**
+ * Dreapta unei tăieturi cu îmbinare: prin A, pe direcția u (unitară). `de`, `pana`: capetele căii trase (poziții u · P); lipsă
+ * la linia din panou, unde drumul trece de cutia fiecărei instanțe cu 10 mm.
+ */
+type Dreapta = { readonly A: Punct; readonly u: Punct; readonly de?: number; readonly pana?: number };
+
+/** Calea trasă din două puncte, cu prelungirile ei pe aceeași dreaptă: capetele ei, sau null dacă nu e dreaptă. */
+function caleDreapta(xs: ReadonlyArray<{ readonly c: Contur }>): Dreapta | null {
+  const c = xs.length === 1 ? (xs[0] as { readonly c: Contur }).c : null;
+  if (!c || c.inchis || c.varfuri.length < 2) return null;
+  const A = (c.varfuri[0] as Varf).p, B = (c.varfuri[c.varfuri.length - 1] as Varf).p;
+  const l = Math.hypot(B.x - A.x, B.y - A.y);
+  if (!(l > 0)) return null;
+  const u = { x: (B.x - A.x) / l, y: (B.y - A.y) / l };
+  for (let k = 0; k < c.varfuri.length; k++) {
+    const v = c.varfuri[k] as Varf;
+    if ((k + 1 < c.varfuri.length && v.s.tip !== 'L') || Math.abs((v.p.x - A.x) * u.y - (v.p.y - A.y) * u.x) > eps(v.p)) return null;
+  }
+  return { A, u, de: u.x * A.x + u.y * A.y, pana: u.x * B.x + u.y * B.y };
+}
+
+/**
+ * Drumul tăieturii cu îmbinare pentru o instanță (contururile ei închise, în lume): dreapta de la `de` la `pana`, cu modelul
+ * pus pe fiecare coardă a ei prin regiune (trecerile, împerecheate par-impar) în care încape măcar un dinte întreg; o coardă mai
+ * scurtă rămâne dreaptă, iar una care nu stă toată pe tăietură, la fel. `imbinare-margine`: dinții unei coarde ar atinge un
+ * contur (o latură oblică sau o gaură prea aproape). Vârfurile de pe marginea formei (capetele coardelor) nu intră în drum.
+ */
+function drumCuImbinare(A: Punct, u: Punct, de: number, pana: number, inchise: readonly Contur[], im: Imbinare): { readonly c: Contur; readonly dinti: number } | MotivTaiere {
+  const n = { x: -u.y, y: u.x };
+  const L: Linie = { n, u, v: n.x * A.x + n.y * A.y };
+  const poz: number[] = [];
+  for (const c of inchise) {
+    const tr = treceri(L, c);
+    if (tr === 'pe-linie') return 'pe-linie';
+    for (const x of tr) poz.push(dealungul(L, punctLa(c, x)));
+  }
+  if (poz.length % 2 === 1) return 'nereusita';
+  poz.sort((a, b) => a - b);
+  const tA = dealungul(L, A);
+  const la = (t: number, s: number): Punct => ({ x: A.x + (t - tA) * u.x + s * n.x, y: A.y + (t - tA) * u.y + s * n.y });
+  const vf = (t: number, s: number, b: number): Varf => ({ p: la(t, s), s: b === 0 ? LINIE_GEOM : { tip: 'A', bulge: b } });
+  const varfuri: Varf[] = [vf(de, 0, 0)];
+  let dinti = 0;
+  // Contururile formei în cavalier, pentru marginea dinților: o singură dată și doar dacă vreo coardă primește dinți.
+  let cav: ReadonlyArray<Cav | null | 'esuat'> | null = null;
+  for (let k = 0; k + 1 < poz.length; k += 2) {
+    const a = poz[k] as number, b = poz[k + 1] as number;
+    if (a <= de || b >= pana) continue;
+    const d = drumImbinare(b - a, im);
+    if (d === 'imbinare-raza') return d;
+    if (d === null) continue;
+    const dinti0 = d.slice(1, -1).map((x) => vf(a + x.t, x.s, x.b));
+    let D: Cav | null | 'esuat';
+    try {
+      D = laCavalier({ inchis: false, varfuri: dinti0 });
+    } catch {
+      return 'nereusita';
+    }
+    if (D === 'esuat' || D === null) return 'nereusita';
+    cav ??= inchise.map((c): Cav | null | 'esuat' => {
+      try {
+        return laCavalier(c);
+      } catch {
+        return 'esuat';
+      }
+    });
+    for (const C of cav) {
+      if (C && C !== 'esuat' && seAting(D.cutie, C.cutie) && intalniri(D, C).puncte.length > 0) return 'imbinare-margine';
+    }
+    dinti += dintiPe(b - a, im.pas).n;
+    varfuri.push(...dinti0);
+  }
+  varfuri.push(vf(pana, 0, 0));
+  return { c: { inchis: false, varfuri }, dinti };
+}
+
+/**
+ * O instanță tăiată cu îmbinare (ADR 0181 §6): drumul ei, tăiat ca un cuțit-formă deschis, cu spațiul sau suprapunerea drept
+ * joc (§2). Cu `grupat` (linia din panou), ce e de o parte a drumului e o singură parte, ca la linie (partea A întâi; `grupat`
+ * e semnul părții liniei din stânga drumului); altfel (calea trasă), fiecare față e o parte. `numara` primește dinții drumului.
+ */
+function taieCuImbinare(inst: Instanta, p: Piesa, dr: Dreapta, im: Imbinare, pastreaza: Pastrare, intre: Intre | undefined, grupat: 1 | -1 | null, numara: (n: number) => void): Rezultat | Stearsa | MotivTaiere | null {
+  const mi = matriceInstanta(inst);
+  let w: Contur[];
+  try {
+    w = elementeInstanta(p.radacina, inst, mi).map((e) => conturElement(e));
+  } catch {
+    return 'nereusita';
+  }
+  const k = w.reduce((x, c) => uneste(x, cutieContur(c)), CUTIE_GOALA);
+  const pr = [k.minX, k.maxX].flatMap((x) => [k.minY, k.maxY].map((y) => dr.u.x * x + dr.u.y * y));
+  const d = drumCuImbinare(dr.A, dr.u, dr.de ?? Math.min(...pr) - 10, dr.pana ?? Math.max(...pr) + 10, w.filter((c) => c.inchis), im);
+  if (typeof d === 'string') return d;
+  numara(d.dinti);
+  const K = cutitulDin([{ c: d.c, e: null }]);
+  if (typeof K === 'string') return K;
+  if (intre) {
+    const M = cutiteMutate(K, intre, pastreaza);
+    return typeof M === 'string' ? M : taieCuFormaIntre(K, M, inst, p, pastreaza, intre.fel, grupat);
+  }
+  if (grupat === null) return taieCuForma(K, inst, p, true, pastreaza);
+  const r = impartireCuForma(K, inst, p, true);
+  if (r === null || typeof r === 'string') return r;
+  const g = grupare(K, r, mi);
+  const st: ElementNou[] = [], drp: ElementNou[] = [];
+  for (const x of g.parti) (x.latura === -1 ? drp : st).push(...x.elemente);
+  for (const x of g.rest) (laturaPunctelor(K, x.proba) === -1 ? drp : st).push(x.e);
+  const ramase = pastreaza === 'stanga' ? [st] : pastreaza === 'dreapta' ? [drp] : grupat === -1 ? [st, drp] : [drp, st];
+  const parti = ramase.filter((x) => x.length > 0).map((elemente) => ({ elemente }));
+  if (parti.length === 0) return pastreaza === 'ambele' ? null : { sterge: true };
+  return { parti, taiate: r.taiate };
 }
 
 // ——— Decuparea (ADR 0180 §4, §6) ———
