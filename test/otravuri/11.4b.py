@@ -23,15 +23,15 @@ DC = 'src/app/DialogCsv.tsx'
 PP = 'src/app/PanouProprietati.tsx'
 
 # Codarea și cititorul (unitare).
-o('C01', CS, "  if (bom && codare !== 'windows-1250') return { text: new TextDecoder('utf-8').decode(octeti.subarray(3)), codare: 'utf-8' };",
-  "  if (bom && codare !== 'windows-1250') return { text: new TextDecoder('utf-8').decode(octeti), codare: 'utf-8' };", 'csv', 'BOM-ul rămâne în text')
+# C01 („BOM-ul rămâne în text”) și C05 („fără perechea CRLF”) au scăpat la prima rulare (`4bd0c40`): echivalente, fiindcă
+# `TextDecoder` scoate singur BOM-ul, iar rândul gol dintre `\r` și `\n` se sare ca orice rând gol. Codul lor a plecat
+# (mutantul mai bun = codul scos); rămân aici doar ca istorie.
 o('C02', CS, "    return { text: new TextDecoder('utf-8', { fatal: true }).decode(octeti), codare: 'utf-8' };",
   "    return { text: new TextDecoder('utf-8').decode(octeti), codare: 'utf-8' };", 'csv', 'Windows-1250 citit ca UTF-8 (diacriticele stricate)')
 o('C03', CS, "        if (t[i + 1] === '\"') { celula += '\"'; i++; } else ghilimele = false;", "        ghilimele = false;", 'csv',
   'ghilimelele dublate închid celula')
 o('C04', CS, "    if (c === '\"' && celula === '' && !inCeluleGhilimele) { ghilimele = true; inCeluleGhilimele = true; continue; }",
   "    if (c === '\"') { ghilimele = true; inCeluleGhilimele = true; continue; }", 'csv', 'ghilimelele din mijlocul celulei deschid citarea')
-o('C05', CS, "      if (c === '\\r' && t[i + 1] === '\\n') i++;\n", '', 'csv', 'CRLF dă un rând gol în plus (sau o celulă stricată)')
 o('C06', CS, "    if (rand.some((c) => c.trim() !== '')) {", '    if (true) {', 'csv', 'rândurile goale rămân în tabel')
 o('C07', CS, "    if (randuri.length >= PLAFON_CSV.randuri) { taiat = true; return false; }", '    if (false) { taiat = true; return false; }', 'csv',
   'fără plafonul rândurilor')

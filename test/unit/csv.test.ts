@@ -28,6 +28,10 @@ test('separatorul găsit: ; (Excel în română), , și tab (celulele lipite); o
   // Virgula din nume nu păcălește: cu ; rândurile au toate 2 coloane, cu , doar unele.
   assert.equal(separatorGasit('Nume;Funcție\nPopescu, Ana;Director\nIon;Inginer\n'), ';');
   assert.equal(separatorGasit('Ana\nIon\n'), ';');
+  // La egalitate (cu tab și cu ; rândurile au câte 2 coloane), celulele lipite din Excel câștigă: tab.
+  assert.equal(separatorGasit('Ana\tStr. A; nr 1\nIon\tStr. B; nr 2\n'), '\t');
+  // Fără tab pe primul rând, la egalitate, ; (Excel în română) înaintea virgulei.
+  assert.equal(separatorGasit('a;b,c\nd;e,f\n'), ';');
 });
 
 test('ghilimelele: separatorul, rândul nou și ghilimelele dublate stau în celulă; CRLF; rândurile goale se sar', () => {

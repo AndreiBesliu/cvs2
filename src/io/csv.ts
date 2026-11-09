@@ -14,10 +14,11 @@ export const CODARI: readonly Codare[] = ['utf-8', 'windows-1250'];
 /** Marginile citirii: fișierul, rândurile (cu antetul) și coloanele unui rând; celula rămâne cât plafonul câmpului. */
 export const PLAFON_CSV = { octeti: 5_000_000, randuri: 1_001, coloane: 100 } as const;
 
-/** Textul octeților, cu codarea dată, sau găsită: BOM-ul UTF-8, apoi UTF-8 valid, altfel Windows-1250. */
+/**
+ * Textul octeților, cu codarea dată, sau găsită: UTF-8 valid, altfel Windows-1250. BOM-ul UTF-8 îl scoate chiar
+ * `TextDecoder` (implicit, `ignoreBOM: false`); un fișier cu BOM e UTF-8 valid.
+ */
 export function decodeazaCsv(octeti: Uint8Array, codare?: Codare): { readonly text: string; readonly codare: Codare } {
-  const bom = octeti[0] === 0xef && octeti[1] === 0xbb && octeti[2] === 0xbf;
-  if (bom && codare !== 'windows-1250') return { text: new TextDecoder('utf-8').decode(octeti.subarray(3)), codare: 'utf-8' };
   if (codare) return { text: new TextDecoder(codare).decode(octeti), codare };
   try {
     return { text: new TextDecoder('utf-8', { fatal: true }).decode(octeti), codare: 'utf-8' };
@@ -61,8 +62,8 @@ export function citesteCsv(text: string, sep: Separator): { readonly randuri: st
     // Ghilimelele deschid o celulă doar la începutul ei; altundeva sunt un caracter ca oricare.
     if (c === '"' && celula === '' && !inCeluleGhilimele) { ghilimele = true; inCeluleGhilimele = true; continue; }
     if (c === sep) { rand.push(celula); celula = ''; inCeluleGhilimele = false; continue; }
+    // `\r` și `\n` închid fiecare un rând: rândul gol dintre ele (din `\r\n`) se sare, ca orice rând gol.
     if (c === '\r' || c === '\n') {
-      if (c === '\r' && t[i + 1] === '\n') i++;
       if (!inchideRand()) return { randuri, taiat: true };
       continue;
     }

@@ -145,6 +145,39 @@ test('textul unui șablon grupat (rama și textul): rama rămâne, literele noi 
   assert.equal(b2!.bloc.spatieri, undefined);
 });
 
+test('textul grupat schimbat: un id al ramei ca al unei litere noi (c1) primește sufix; spațierile vechi pleacă; operația golurilor, fără goluri, pleacă', () => {
+  // Textul „OAO”, cu o spațiere după primul O; rama e elementul `c1` (ca o literă nouă) și stă prima pe foaie, deci își
+  // păstrează id-ul la grupare, iar literele textului vechi îl primesc cu sufix.
+  const p0 = P('OAO', { spatieri: [{ dupa: 0, mm: 2 }] });
+  const r = piesaText(aseazaText(font, p0), bloc(p0), 't');
+  assert.ok(r.ok);
+  const t = r.piesa;
+  assert.ok(t.operatii.some((o) => o.latura === 'interior'), 'golurile lui O și A au profilul lor');
+  const rama: Piesa = {
+    id: 'r', radacina: { tip: 'element', id: 'c1', forma: { tip: 'dreptunghi', latime: 80, inaltime: 30, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: -5, f: -10 } },
+    operatii: [{ ...t.operatii[0]!, id: 'o-rama', noduri: ['c1'], latura: 'exterior' }],
+  };
+  const d0 = doc([rama, t], [{ id: 'r', piesa: 'r', x: 50, y: 50, rotire: 0 }, { id: 't', piesa: 't', x: 50, y: 50, rotire: 0 }]);
+  let h = istoricNou(d0);
+  let s: readonly string[] = ['r', 't'];
+  const ctx: ContextDocument = { istoric: () => h, scrie: (x) => { h = x; }, selectie: () => s, selecteaza: (x) => { s = x; }, doarCitire: () => false, foaie: () => 'f1' };
+  assert.deepEqual(ruleaza(R, 'document.grupeaza', ctx), { ok: true });
+  const sablon = h.doc.piese[0]!;
+  const [b] = blocuriPiesei(sablon);
+  assert.ok(b && b.bloc.spatieri?.length === 1, 'textul grupat își are spațierea');
+  assert.ok(noduriPiesa(sablon.radacina).some((x) => x.nod.id === 'c1' && x.nod.tip === 'element' && x.nod.forma.tip === 'dreptunghi'));
+  // „{x}”: acoladele și x n-au goluri.
+  const nou = sablonCuContinut(sablon, b.grup.id, '{x}', font);
+  assert.ok(nou.ok);
+  const ids = noduriPiesa(nou.piesa.radacina).map((x) => x.nod.id);
+  assert.equal(new Set(ids).size, ids.length, 'id-urile rămân unice');
+  assert.ok(ids.includes('c1_2'), 'litera nouă c1 a primit sufixul');
+  assert.equal(blocuriPiesei(nou.piesa)[0]?.bloc.spatieri, undefined);
+  assert.ok(nou.piesa.operatii.every((o) => o.noduri.length > 0), 'nicio operație fără nimic de tăiat');
+  assert.ok(!nou.piesa.operatii.some((o) => o.latura === 'interior'), 'profilul golurilor a plecat');
+  trece({ ...h.doc, piese: [nou.piesa] });
+});
+
 test('caseta „Limitat de casetă”: plăcuța cu un nume prea lung e micșorată, iar rezultatul spune cât', () => {
   const caseta = { fel: 'limita' as const, latime: 40, inaltime: 15, ceruta: 10 };
   const a = aseazaText(font, P('{nume}', { caseta }));
