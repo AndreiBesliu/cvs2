@@ -551,6 +551,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`optiuniTaiere.ts`, cu `useSyncExternalStore`), cu grupurile comune în `GrupuriTaiere.tsx`; în bara Cuțitului, într-un panou
   sub butonul „Opțiunile tăierii” (bara de sus n-are loc de ele pe rând); `useInFereastra` stă acum în `inFereastra.ts`.
   Oracolul: `judecaLinia`, `judecaPastrareaConvex` (`taiere.optiuni.oracol.test.ts`).
+  **Spațiul și suprapunerea (felia 10.3↑i)** gata pe 09.11: `intre = { fel, latime }` în cerere (doar cu închidere; limitele
+  în `intreBucati.ts`, comune cu interfața): fiecare parte se taie cu cuțitul mutat cu w / 2 (linia: paralela; calea:
+  `offsetDeschis`, o bucată, capetele prelungite cât au rămas într-un contur tăiat; cel închis: `offsetFigura`), doar formele
+  tăiate de cuțitul nemutat; `spatiu` când o bucată de partea păstrată nu trece de cuțitul mutat (`mancata`; găurile scapă),
+  `spatiu-cutit` când cuțitul nu se poate muta. `partiLinie` e scos din `taieInstanta`, `grupare` și `pastrate` din
+  `taieCuForma`. Oracolul: `judecaSpatiul`, `judecaConvexMutat` și `mancatRaster` (o rețea care găsește singură bucățile
+  mâncate), în `taiere.spatiu.oracol.test.ts`.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

@@ -202,6 +202,33 @@ primului commit de cod, `origin/main` unit în ramură.
   firul principal, ca locurile. La Pen și la Formă, doar tăierea (exactă) le aplică.
 - **Mărimea:** pe aceeași bază (`8303b68`), pornirea nu crește (101,9 kB; cu ușa 105,5 / 110), iar totalul crește cu 4,6 kB (559,0 → 563,6 / 600), peste estimarea de ~2 kB: panoul, panoul opțiunilor din bară, previzualizarea și depozitul opțiunilor.
 
+**Felia 10.3↑i, la cod** (09.11):
+- **Între bucăți** (§2): `intre = { fel: 'spatiu' | 'suprapunere', latime }` în cerere, doar cu închidere (`spatiu-inchide`),
+  lățimea de la 0,01 mm (dublul celei mai mici distanțe a offsetului) la 1 000 (`intreBucati.ts`, comun cu interfața).
+  Fiecare parte păstrată se taie cu cuțitul mutat cu w / 2: spre ea (spațiul) sau spre cealaltă (suprapunerea); doar formele
+  pe care cuțitul nemutat le taie (una de lângă el rămâne, chiar dacă fâșia ar atinge-o).
+- **Cuțitul mutat:** linia, cu paralela ei; calea trasă și cuțitul-formă deschis, cu offsetul căii (`offsetDeschis`, pe
+  biarcele cuțitului), dintr-o singură bucată, altfel `spatiu-cutit`; o buclă închisă a unui cuțit deschis, cu offsetul
+  conturului, în sensul ei; cuțitul închis, cu offsetul figurii (`offsetFigura`: înăuntru se strânge, în afară crește;
+  strâns până dispare, înăuntru nu rămâne nimic, în afară tot). Capetele căilor mutate merg mai departe pe tangentă cât au
+  rămas într-un contur închis pe care cuțitul nemutat îl taie: un cuțit care iese dintr-o formă pe sub un unghi mic, chiar
+  după margine, ar lăsa altfel cuțitul mutat oprit înăuntru. Doar cuțitele mutate de care e nevoie: cu „Păstrează” o parte,
+  cealaltă nu contează (nici refuzul ei).
+- **Bucata mâncată** (`spatiu`, §8): fiecare contur al tăieturii fără spațiu, de partea păstrată, care nu e gaură (o față, o
+  insulă netăiată, o bucată de cale, restul cuțitului deschis), trebuie să treacă de cuțitul mutat: la linie, cel mai mare
+  s · (n · p − v) al lui (cutia lui în reperul liniei, exactă) peste w / 2 + 1e-6 mm; la cuțitul-formă, o trecere de-a
+  binelea (conturul de o parte și de alta a lui, nu o atingere), un punct dincolo de el sau, la cel închis, o buclă a lui
+  care stă în contur, în regiunea părții (insula din mijlocul unui „O”). O gaură (adâncime impară în parte) pleacă odată
+  cu fâșia.
+- **Părțile:** la linie, ca înainte (A, apoi B); la cuțitul-formă, întâi cele din stânga (înăuntru), apoi cele din dreapta,
+  apoi restul cuțitului deschis, o singură dată (cu suprapunerea, păstrat de ambele părți); o parte nehotărâtă, cu ambele
+  părți păstrate, se refuză (`spatiu-cutit`): ar intra în amândouă.
+- **Interfața:** „Între bucăți: nimic / spațiu / suprapunere”, cu lățimea în mm (implicit 3), al treilea grup din
+  `GrupuriTaiere`, deci în panou și în opțiunile Cuțitului, stins fără închidere; ținut în browser. Pe pânză, fâșia: în
+  jurul liniei din panou, două paralele; cât tragi Linia sau Liber, urma mutată aproximativ de fiecare parte
+  (`fasieAproximativa`). Sfatul Cuțitului spune spațiul activ.
+- **Mărimea:** pe aceeași bază (`1ff4271`), pornirea nu crește (101,8 kB; cu ușa 105,5 / 110), iar totalul crește cu 2,1 kB (565,7 → 567,8 / 600), cât estima ADR-ul (~2 kB): grupul „Între bucăți”, fâșia de pe pânză, cuțitul mutat și verificarea bucăților mâncate (în worker). Cu `main` de pe 09.11 (`3797e17`, 578,8), o unire de probă dă 600,1 / 600: linia trece de plafon cu 0,1 kB (fără 10.3↑i, ~598,0); decizia e a owner-ului.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în
