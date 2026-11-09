@@ -1501,6 +1501,10 @@
       "ro": "Documentația live: manualul utilizatorului",
       "en": "Live documentation: the user manual"
     },
+    "84261a1191f05908": {
+      "ro": "Planșele: textul care iese din plăcuță",
+      "en": "Sheets: the text that comes out of the plate"
+    },
     "843f39f162905f38": {
       "ro": "Exportul G-code din aplicație",
       "en": "G-code export from the app"
@@ -2760,6 +2764,10 @@
     "f761a91abba82672": {
       "ro": "Pânza v0",
       "en": "Canvas v0"
+    },
+    "f790ead6f9747e00": {
+      "ro": "**Planșele: textul care iese din plăcuță** (fără mașină; ADR 0210 §4, răspunsul 5 al owner-ului, „Da, toate”; „Da, 11.4↑c”, la „Pornesc 11.4↑c (textul care iese din plăcuță), întâi cu unirea lui main?”). Întâi `main` adus în ramură (trasarea din imagine și 6.V↑d; porțile pe codul unit, 427 / 427 e2e). Plăcuța e conturul închis cel mai mare al piesei, din afara textelor: când textul unei plăcuțe trece de el, plăcuța e roșie în listă, bara de jos și panoul o spun (niciodată pe pânză). În **Din CSV…**, **Dacă textul iese din plăcuță**: avertismentul (implicit) sau și confirmarea la export, unde **Exportă** așteaptă bifa. Unealta Text alege textul unei rame la clic pe literele lui, iar **Aplică** îl schimbă cu rama păstrată și reface plăcuțele. Locul la pornire: motivele planșelor trec în mesajele editorului (pornirea cu ușa 109,9 / 110). Totalul 607,2 / 700 (plafonul ridicat de owner pe 09.11, ADR 0144, adus din `main`). Otrăvurile: 36 / 36 pe codul final (21 unitare, 15 prin e2e; la prima rulare, I05 scăpată, cu proba ei nouă: gaura înaintea ramei în arbore). Pe canalul `plansele` al instanței de test.",
+      "en": "**Sheets: the text that comes out of the plate** (no machine; ADR 0210 §4, the owner’s answer 5, “Yes, all”; “Yes, 11.4↑c”, to “Shall I start 11.4↑c (the text that comes out of the plate), merging main first?”). First `main` brought into the branch (tracing from an image and 6.V↑d; the gates on the merged code, 427 / 427 e2e). The plate is the largest closed contour of the part, outside its texts: when the text of a plate goes past it, the plate is red in the list, and the bottom bar and the panel say so (never on the canvas). In **From CSV…**, **If the text comes out of the plate**: the warning (by default) or also the confirmation at export, where **Export** waits for the tick. The Text tool chooses the text of a frame with a click on its letters, and **Apply** changes it with the frame kept and redoes the plates. Room at startup: the motives of the sheets move into the editor’s messages (startup with the door 109.9 / 110). Total 607.2 / 700 (the cap raised by the owner on 09.11, ADR 0144, brought from `main`). Mutations: 36 / 36 on the final code (21 unit, 15 through e2e; on the first run, I05 escaped, with its new test: the hole before the frame in the tree). On the `plansele` channel of the test instance."
     },
     "f7b2ca36d5c6c694": {
       "ro": "**Copierea în rețea și pe cerc, adusă din etapa 6** (fără mașină; ADR 0061; „continua”: următorul pas al rândului „Transformare și copiere”). Secțiunea Copiere din extensia barei deschide panoul „Copiază în rețea”: rânduri × coloane, cu spațiul dintre copii, sau pe cerc, cu câte forme, unghiul, centrul și rotirea copiilor. Copiile se văd pe pânză cât panoul e deschis, sunt piese independente (ca la Duplică) și se fac într-un singur pas de anulare; panoul spune de ce nu se poate (valorile, nimic ales, plafonul, prea departe). Pornirea rămâne 99,8 / 100 cu ușa; manualul (capitolul transformărilor) e la zi. **Treceri:** (1) modulul pur, acțiunea cu verdictul comun panoului, panoul și previzualizarea, probele; (2) proba „prea departe” nu verifica refuzul (doar cazuri bune): refăcută cu o instanță aproape de plafonul translației; Esc nu închidea panoul cu focusul pe butonul lui: reparat.",

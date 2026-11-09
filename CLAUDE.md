@@ -565,6 +565,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   textului are cererile `sablon` și `placute` (un pas, așezat cu `planAsezare`). **Pornirea neschimbată (cu ușa 109,9 /
   110), totalul 571,7 / 600.** Rămâne 11.4↑c: textul care iese din plăcuță fără casetă (roșu, avertismentul sau
   confirmarea la export) și editarea cu unealta Text a unui șablon grupat.
+  **Textul care iese din plăcuță și unealta Text pe un șablon cu ramă (ADR 0210 §4, felia 11.4↑c)** gata pe 09.11, după
+  unirea lui `main` (trasarea, 6.V↑d și reparația ei: `bb13a6e`, `dbf2cbf`): plăcuța e conturul închis cel mai mare al
+  piesei, din afara textelor (`src/model/placuteIesire.ts`, adus de aplicație doar când documentul are plăcuțe, cu
+  avertismentele printr-un cârlig, `inregistreazaPlacute`); roșu în listă, bara de jos, panoul; în «Din CSV…», avertismentul
+  sau și confirmarea la export (`cncvs2.placute.iesire`, în browser; bifa exportului legată de lista văzută). Unealta Text
+  alege textul grupat la clic (`src/app/texteGrupate.ts`), «Aplică» trece prin `sablonCuAsezat` și cererea `editat` cu
+  `grup`. **Motivele planșelor stau în mesajele editorului** (calculul acțiunilor le cere la evaluare): un motiv nou al
+  planșelor, dat doar de calcul, intră acolo, nu în dicționarul de bază. **Pornirea cu ușa 109,9 / 110 (rămân ~0,1 kB),
+  totalul 607,2 / 700 (ADR 0144, adus din `main`).**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

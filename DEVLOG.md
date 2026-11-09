@@ -7733,3 +7733,40 @@ ta”: proba „Alt ține fix” (`ancore.spec.ts:354`) cădea pe Linux, unde `s
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
 
 **Completed:** 09.11, 12:27.
+
+## 2026-11-09 — Felia 11.4↑c: textul care iese din plăcuță, unealta Text pe un șablon cu ramă (ADR 0210 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.4↑c (textul care iese din plăcuță), întâi cu unirea lui main?”:
+„Da, 11.4↑c”.
+**Started:** 09.11, 15:36.
+
+- **Unirea lui `main` (`bb13a6e`, apoi `dbf2cbf`):** trasarea din imagine (25.1↑–25.3↑b), 6.V↑d și reparația ei (bara de
+  sus la 1280 px). Conflictele: `transformare.ts` (forma rotită oblic, scalată pe o axă, trece prin geometrie, cu piesa pusă
+  de mai multe ori schimbată o dată, ADR 0210 §2; literele unei plăcuțe care ar ieși oblice: refuz), proba ei, importul cu
+  mai multe piese deodată (pe foaia activă a ferestrei), mânerele (foaia și ce ține fix Alt), freza importului (a foii
+  active), DEVLOG, indexul ADR. Porțile pe codul unit: unitare 8 960 / 0 (8 sărite), e2e 427 / 427.
+- **Mărimea, după unire:** totalul 604,0 / 600 (trasarea și 6.V↑d intraseră în `main` după măsurarea din 09.11 dimineața),
+  iar pornirea cu ușa 110,0 / 110, peste plafon la a doua zecimală (6.V↑d a adus ~0,1 kB la pornire).
+- **Locul la pornire:** cele 14 motive ale planșelor (date doar de calculul acțiunilor) trec din dicționarul de bază în
+  mesajele editorului, pe care calculul le cere la evaluare; ferestrele care îl aduc le așteaptă înainte de randare.
+  Dicționarul de bază 3,9 → 3,5 kB: pornirea cu ușa 109,9 / 110, cu felia în ea.
+- **Felia (`9d9b677`; lista și proba cu două fonturi `06ca803`; proba I05 `1c4b000`):** plăcuța e conturul închis cel mai
+  mare al piesei, din afara textelor (`src/model/placuteIesire.ts`, adus la cerere când documentul are plăcuțe); textul
+  iese peste 0,001 mm: roșu în listă, bara de jos, nota din panou. În «Din CSV…», avertismentul sau și confirmarea la
+  export (ținută în browser); fereastra exportului arată plăcuțele și, cu confirmarea, așteaptă bifa. Unealta Text alege
+  textul grupat al unei rame la clic (`src/app/texteGrupate.ts`), iar «Aplică» trece prin `sablonCuAsezat` (din
+  `sablonCuContinut`) și cererea `editat` cu `grup`, cu fonturile celorlalte texte aduse pentru plăcuțe.
+- **Ce a ieșit din drum:** (1) panoul uneltei Text acoperă stânga pânzei, deci un clic acolo nu ajunge la pânză (proba
+  e2e lucrează în dreapta foii). (2) Selecția cu dreptunghi, trasă de jos-stânga spre sus-dreapta, lua doar textul:
+  proba o trage de sus-stânga spre jos-dreapta, ca proba importului (comportamentul vechi, nu al feliei). (3) Excluderea
+  literelor grupate dintre curbele unui text nou n-avea cum fi atinsă (un clic lângă litere le alege): codul a plecat.
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile, unitare 8 979 / 0 (8
+  sărite) pe codul feliei (probele adăugate după, rulate singure: 12 / 12), e2e pe suita întreagă 429 / 429, build-ul
+  determinist: pornirea cu ușa 109,9 / 110, totalul 607,2 / 700 (plafonul ridicat de owner, ADR 0144, adus din `main` la
+  capătul feliei).
+- **Otrăvurile (`test/otravuri/11.4c.py`, alese de autor, în două clone):** prima rulare (`06ca803`): 20 / 21 unitare,
+  I05 scăpată (parcurgerea întâlnea rama ultima, deci „ultimul contur” era tot rama: proba nouă pune gaura înaintea
+  ramei); prin e2e 15 / 15. Pe codul final (`1c4b000`): 21 / 21 unitare.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
+
+**Completed:** 09.11, 20:12.

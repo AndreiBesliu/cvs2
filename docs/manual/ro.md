@@ -182,6 +182,15 @@ cel puțin freza profilului exterior). **Fă plăcuțele**: primul rând pe plă
 pe foi (ca „Așază pe foi”), într-un singur pas. Cu caseta **Limitat de casetă** pe text, panoul spune câte plăcuțe s-au
 micșorat și cât.
 
+**Textul care iese din plăcuță.** Plăcuța e conturul închis cel mai mare al piesei, în afara textelor (rama, marginea plăcii).
+Când textul unei plăcuțe trece de el (un nume prea lung, fără casetă), plăcuța e roșie în listă, bara de jos o spune, iar
+panoul o spune la **Pe această plăcuță**: scurtează textul, micșorează-l sau pune-l într-o casetă. În fereastra **Din CSV…**,
+**Dacă textul iese din plăcuță** alege ce se întâmplă: **avertisment** (implicit) sau **avertisment și confirmare la export**;
+cu a doua, fereastra exportului arată plăcuțele și **Exportă** pornește abia după bifă.
+
+**Textul unei rame.** Pe un șablon cu ramă (textul grupat cu alte forme), unealta Text alege textul la clic pe literele lui;
+**Aplică** îl schimbă și lasă rama și locul lui pe ea, iar plăcuțele se refac.
+
 Fiecare gest e un singur pas de anulare (`Ctrl+Z`).
 
 ## Desenul

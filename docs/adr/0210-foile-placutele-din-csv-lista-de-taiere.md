@@ -540,3 +540,50 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   `;` și numerotarea), manualul. Otrăvurile `test/otravuri/11.4b.py`: la prima rulare (`4bd0c40`) 22 / 28 unitare: C01
   și C05 echivalente (codul scos), C10, T02, T03, T05 cu probe noi; prin e2e 8 / 8; pe codul final (`0895c94`) 26 / 26
   unitare.
+
+## Felia 11.4↑c (gata pe 09.11)
+
+- **Unirea întâi:** `main` (trasarea din imagine 25.1↑–25.3↑b, 6.V↑d și reparația ei) adus în ramură (`bb13a6e`, `dbf2cbf`):
+  o formă rotită oblic, scalată pe o axă, trece prin geometrie (ADR 0240 §F.30), cu piesa pusă de mai multe ori schimbată o
+  dată (`oSinguraSchimbare`); literele unei plăcuțe care ar ieși oblice (un text pe o curbă) refuză scalarea, ca piesa
+  împărțită; importul cu mai multe piese deodată (trasarea pe culori) pe foaia activă a ferestrei. Porțile pe codul unit:
+  unitare 8 960 / 0, e2e 427 / 427. Unit cu `main`, totalul a ajuns la 604,0 / 600 (trasarea și 6.V↑d), iar pornirea cu ușa
+  la 110,0 / 110, peste plafon la a doua zecimală.
+- **Locul la pornire:** cele 14 motive ale planșelor (foile, «Încă…», așezarea, plăcuțele) le dă doar calculul acțiunilor, la
+  cerere; trec în mesajele editorului, pe care calculul le cere la evaluare (`import '../i18n/editare.ts'`), iar ferestrele
+  care îl aduc (editorul, panoul, exportul, importul, așezarea) așteaptă mesajele cerute înainte de randare. Dicționarul de
+  bază 3,9 → 3,5 kB, deci pornirea cu ușa 109,9 / 110, cu felia în ea.
+- **Plăcuța** (`src/model/placuteIesire.ts`, adus la cerere când documentul are plăcuțe): conturul închis cel mai mare al
+  piesei, din afara textelor (rama, marginea plăcii; o gaură mică, un text fix sau o linie deschisă nu sunt plăcuța); o piesă
+  doar cu text n-are din ce ieși. **Textul iese** când o literă a plăcuței trece de el cu peste 0,001 mm (toleranța
+  proiectului): întâi cutia literei, exactă; pe o ramă care nu e un dreptunghi drept (un cerc, o elipsă, colțuri rotunjite),
+  și vârfurile literei, cu trei puncte pe fiecare arc sau curbă dintre ele. Judecata e ținută pe obiecte (literele plăcuței,
+  piesa): o editare o reface doar pentru plăcuțele atinse.
+- **Unde se vede** (răspunsul 5, cu regula owner-ului din 07.10: niciodată pe pânză): plăcuța e roșie în listă, cu motivul în
+  titlu („Textul plăcuței „Constantin Brâncoveanu” iese din ea”), bara de jos îl spune (mai multe: „Textul iese din 3
+  plăcuțe”; amestecate cu formele ieșite din foaie: „5 avertismente”), iar panoul îl spune la „Pe această plăcuță”, cu ce se
+  poate face. Avertismentele vin printr-un cârlig (`inregistreazaPlacute`), ca pornirea să nu ducă judecata.
+- **Avertismentul sau confirmarea** (răspunsul 5): în fereastra «Din CSV…», „Dacă textul iese din plăcuță”: avertisment
+  (implicit) sau avertisment și confirmare la export, ținut în browser (`cncvs2.placute.iesire`, ca „Ține minte” al
+  grupării); rezultatul spune din câte plăcuțe iese textul. Fereastra exportului arată plăcuțele foii (primele 5 nume); cu
+  confirmarea, Exportă rămâne oprit până la bifă, iar bifa e legată de lista văzută (alt document vine nebifat).
+- **Unealta Text pe un șablon cu ramă:** clicul pe literele unui text grupat (cutia lor în lume; pe o plăcuță, ale ei) îl
+  alege, cu grupul lui (`texteGrupate.ts`); un clic în altă parte a ramei pune ancora unui text nou, ca până acum. «Aplică»
+  îi înlocuiește literele (`sablonCuAsezat`, scos din `sablonCuContinut`): rama, locul textului pe ea și operațiile rămân,
+  literele noi au id-uri libere, iar plăcuțele piesei se refac în același pas, cu fonturile celorlalte texte aduse
+  (`fonturiPiesei`). Cererea `editat` a acțiunii textului primește grupul; un grup care nu e text e refuzat ca vectori.
+- **Măsurat:** pornirea cu ușa 109,9 / 110 (dicționarul de bază −0,4 kB, aplicația +0,3 kB: cârligul și textele
+  avertismentului); totalul 607,2 / 700: după prima unire cu `main` era 604,0 / 600, felia a adus +3,3 kB, iar
+  owner-ul a ridicat între timp plafonul la 700 kB (ADR 0144, „Yes, 700 kB”, adus din `main` la capătul feliei).
+- **Probele:** `placute.iesire.test.ts` (pe hârtie: rama dreptunghi cu literele lipite, peste și sub toleranță, pe fiecare
+  latură; deplasarea grupului; rama cerc cu cutia literei în cutia cercului dar colțul afară; cercul-literă și curba care ies
+  doar între vârfuri; gaura (și înaintea ramei în arbore), textul fix, linia deschisă; fontul: „I” și 20 de „W”; judecata ținută pe obiecte;
+  avertismentele pe foi; numele plăcuței), `placute.text.test.ts` (înălțimea 10 → 6 cu raportul 0,6 al literelor, rama și
+  operațiile păstrate, rădăcina care nu e text; cererea `editat` cu grupul, plăcuțele refăcute, anularea exactă; alegerea la
+  clic), `placute-iesire.spec.ts` (e2e: rama și textul grupate, «Din CSV…» cu un nume prea lung și confirmarea aleasă: roșu
+  în listă, bara de jos, panoul, bifa exportului, redeschis; unealta Text care repară textul; textul grupat ales la clic, cu
+  rama păstrată; două texte în fonturi diferite), manualul. Otrăvurile `test/otravuri/11.4c.py`: la prima rulare
+  (`06ca803`) 20 / 21 unitare: I05 („plăcuța e ultimul contur închis”) scăpată, fiindcă parcurgerea întâlnea rama
+  ultima; proba nouă pune gaura înaintea ramei. Prin e2e 15 / 15. Pe codul final (`1c4b000`) 21 / 21 unitare.
+- **Rămâne în etapa 11:** 11.5↑ („Toate foile” la export: arhiva, foile identice ×N, timpii), 11.6↑ (raportul foilor și
+  lista de tăiere), 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină).

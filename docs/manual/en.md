@@ -189,6 +189,15 @@ to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets:
 the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
 by the box** box on the text, the panel says how many plates were shrunk and by how much.
 
+**Text coming out of the plate.** The plate is the largest closed contour of the part, outside its texts (the frame, the edge
+of the plate). When the text of a plate goes past it (a name too long, without a box), the plate is red in the list, the
+bottom bar says so, and the panel says so under **On this plate**: shorten the text, make it smaller or put it in a box. In the
+**From CSV…** window, **If the text comes out of the plate** chooses what happens: **warning** (by default) or **warning and
+confirmation at export**; with the second, the export window shows the plates and **Export** starts only after the tick.
+
+**The text of a frame.** On a template with a frame (the text grouped with other shapes), the Text tool chooses the text with a
+click on its letters; **Apply** changes it and keeps the frame and its place on it, and the plates are redone.
+
 Each gesture is a single undo step (`Ctrl+Z`).
 
 ## Drawing
