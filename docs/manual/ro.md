@@ -593,16 +593,27 @@ dreapta:
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
+- **Lumina** (la Luminozitatea): **Uniformă** (implicit) ia un singur prag pe toată imaginea, pentru o scanare curată sau
+  un logo; **Neuniformă** raportează hârtia la o suprafață netedă potrivită pe ea, pentru o poză luminată dintr-o parte, cu
+  colțurile întunecate sau cu pete pline; **Cu umbre** o raportează la fundalul din jurul fiecărui punct, pentru umbra
+  telefonului sau a mâinii (o pată plină mai lată decât o douăsprezecime din imagine iese golită: atunci, Neuniformă). La
+  amândouă, desenul e ce iese din hârtie, oricum ar fi marginea imaginii (o foaie pozată pe masă); dacă iese totuși
+  întors, **Inversează**. Când hârtia variază mult la Uniformă, raportul îți propune Neuniformă;
 - **Netezimea**: **Fidel** urmează marginea de aproape și păstrează colțurile mici, **Echilibrat** netezește treptele
   pixelilor, **Neted** rotunjește colțurile mici și dă mai puține noduri;
 - **Ignoră petele sub** și **Umple golurile sub** (în mm, cu pixelii alături): petele de desen și golurile din el mai mici de
   atât dispar (praful unei scanări, zgomotul unei fotografii); o formă lipită de marginea imaginii rămâne;
+- **Ignoră ce atinge marginea**: o bucată de desen lipită de marginea imaginii (sau a zonei) se șterge, oricât de mare: masa
+  din jurul unei foi pozate, o literă tăiată de zonă; raportul le numără. Merge și pe culori;
 - **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din DPI-ul scris în fișier, iar fără el din 96 px pe
   țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine scara.
 
 Previzualizarea arată **Imaginea**, **Vectorii** sau **Amândouă** (cu **Estompează imaginea**, ca vectorii să se vadă peste
 ea); rotița mărește în jurul mausului, tragerea mută imaginea, **Mărește** și **Micșorează** fac la fel din butoane, iar
-**Încadrează** arată toată imaginea. Sub ea stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
+**Încadrează** arată toată imaginea. **Zona** alege doar o parte din ea: cât e apăsat butonul, tragerea pe previzualizare
+desenează dreptunghiul, îl mută sau îl întinde de laturi și colțuri (Shift + tragere îl desenează și fără buton), iar
+**Toată imaginea** îl scoate. Se trasează doar zona, ca și cum ar fi imaginea: pragul automat și lumina nu mai văd ce e în
+afara ei, colțul ei stânga-jos ajunge în colțul foii, iar **Lățimea** e a ei. Sub previzualizare stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
 mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat și dacă marginile erau dure
 (fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
 rămâne vie, iar o schimbare nouă o oprește pe cea începută.
@@ -644,8 +655,8 @@ Sub **Rezultatul: Linii mediane** stau opțiunile lor:
 - **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
   iar o buclă aflată în alta, pe interior.
 
-Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
-afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
+Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
+Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
 - liniile mediane pe culori și scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;

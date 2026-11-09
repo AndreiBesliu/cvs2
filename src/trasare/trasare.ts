@@ -8,6 +8,8 @@
  * aici fără cod străin: potrace e GPL, iar `marchingsquares` din ediția întâi era AGPL.
  */
 
+import { cernealaLuminata, variatieHartie, type Lumina } from './lumina.ts';
+
 export type ImagineRGBA = { readonly latime: number; readonly inaltime: number; readonly date: ArrayLike<number> };
 export type SursaTrasare = 'auto' | 'alfa' | 'lum';
 export type Netezime = 'fidel' | 'echilibrat' | 'neted';
@@ -22,6 +24,13 @@ export type OptiuniTrasare = {
   readonly petePx: number;
   /** Aria, în px², sub care un gol din cerneală se umple (0: niciunul). */
   readonly gauriPx: number;
+  /**
+   * Lumina (ADR 0224), doar pe sursa luminozității: „uniforma” (lipsă: pragul global, polaritatea din margine), „neuniforma”
+   * (fundalul neted) sau „umbre” (fundalul local), cu polaritatea din minoritatea locală a cernelii.
+   */
+  readonly lumina?: Lumina;
+  /** „Ignoră ce atinge marginea” (ADR 0224): bucățile de cerneală lipite de marginea imaginii se șterg (lipsă: nu). */
+  readonly margine?: boolean;
 };
 
 /** Plafoanele trasării (ADR 0220 §9, lecția D6): peste ele, refuzul spune ce să schimbi. */
@@ -56,8 +65,15 @@ export type RaportTrasare = {
   readonly prag: number; readonly automat: boolean;
   /** Marginile desenului: netezite (cu nuanțe între desen și fundal) sau dure (pixeli plini sau goi). */
   readonly margini: 'netezite' | 'dure';
-  /** Petele șterse și golurile umplute la curățare. */
-  readonly pete: number; readonly gauri: number;
+  /** Petele șterse și golurile umplute la curățare; bucățile lipite de margine, șterse (ADR 0224). */
+  readonly pete: number; readonly gauri: number; readonly margine: number;
+  /** Lumina folosită (pe transparență, mereu „uniforma”). */
+  readonly lumina: Lumina;
+  /**
+   * La „Uniformă”, pe luminozitate: cât variază hârtia, (max − min) / max a fundalului neted (sugestia raportului, ADR 0224
+   * §1); altfel null.
+   */
+  readonly inegala: number | null;
   readonly contururi: number; readonly exterioare: number; readonly varfuri: number;
   /** Cea mai mare distanță dintre conturul sub-pixel și curbele trasate, în px. */
   readonly abatere: number;
@@ -98,7 +114,7 @@ export function netezeste(b: Float64Array): Float64Array {
  * acoperirea: alfa față de nivelul plin al imaginii (percentila 98 a pixelilor vizibili), deci literele albe, negre sau
  * colorate ies la fel. Pe o imagine opacă, cerneala e întunecimea (pusă pe alb), iar ce domină marginea imaginii e fundalul.
  */
-export function cerneala(img: ImagineRGBA, o: Pick<OptiuniTrasare, 'sursa' | 'inverseaza'>): { f: Float32Array; transparenta: boolean; sursa: 'alfa' | 'lum' } {
+export function cerneala(img: ImagineRGBA, o: Pick<OptiuniTrasare, 'sursa' | 'inverseaza' | 'lumina'>): { f: Float32Array; transparenta: boolean; sursa: 'alfa' | 'lum'; lumina: Lumina } {
   const { latime: W, inaltime: H, date: d } = img;
   const n = W * H;
   const hist = new Float64Array(256);
@@ -117,10 +133,19 @@ export function cerneala(img: ImagineRGBA, o: Pick<OptiuniTrasare, 'sursa' | 'in
     }
     for (let p = 0; p < n; p++) f[p] = Math.min(1, (d[4 * p + 3] ?? 0) / plin);
   } else {
+    // O lumină de poză (ADR 0224): cerneala raportată la fundalul hârtiei, cu polaritatea din minoritatea locală (Inversează
+    // o întoarce acolo, înaintea corecției). `f` ține întâi luminozitatea; pragul Otsu pe întunecime (histograma ei) începe
+    // potrivirea fundalului neted.
+    const lumina = o.lumina ?? 'uniforma', poza = lumina !== 'uniforma', hi = poza ? new Float64Array(256) : null;
     for (let p = 0; p < n; p++) {
       const a = (d[4 * p + 3] ?? 0) / 255, k = 255 * (1 - a);
       const l = 0.2126 * ((d[4 * p] ?? 0) * a + k) + 0.7152 * ((d[4 * p + 1] ?? 0) * a + k) + 0.0722 * ((d[4 * p + 2] ?? 0) * a + k);
-      f[p] = 1 - l / 255;
+      if (hi) { f[p] = l / 255; const i = Math.round(255 - l); hi[i] = (hi[i] ?? 0) + 1; } else f[p] = 1 - l / 255;
+    }
+    if (hi && lumina !== 'uniforma') {
+      // `pragAutomat` ia din câmp doar numărul pixelilor, când primește histograma.
+      const prag0 = 1 - pragAutomat(f, hi);
+      return { f: cernealaLuminata(f, W, H, lumina, o.inverseaza, prag0), transparenta, sursa, lumina };
     }
     let s = 0;
     for (let x = 0; x < W; x++) s += (f[x] ?? 0) + (f[(H - 1) * W + x] ?? 0);
@@ -128,13 +153,13 @@ export function cerneala(img: ImagineRGBA, o: Pick<OptiuniTrasare, 'sursa' | 'in
     if (s / (2 * (W + H)) > 0.5) for (let p = 0; p < n; p++) f[p] = 1 - (f[p] ?? 0);
   }
   if (o.inverseaza) for (let p = 0; p < n; p++) f[p] = 1 - (f[p] ?? 0);
-  return { f, transparenta, sursa };
+  return { f, transparenta, sursa, lumina: 'uniforma' };
 }
 
 /** Câți pixeli are fiecare din cele 256 de trepte ale cernelii. */
 export function histograma(f: Float32Array): Float64Array {
   const h = new Float64Array(256);
-  for (const v of f) { const i = Math.round(v * 255); h[i] = (h[i] ?? 0) + 1; }
+  for (let p = 0; p < f.length; p++) { const i = Math.round((f[p] ?? 0) * 255); h[i] = (h[i] ?? 0) + 1; }
   return h;
 }
 
@@ -216,19 +241,23 @@ function componente(masca: Uint8Array, W: number, H: number, v: number, opt: boo
 }
 
 /**
- * Petele de cerneală sub `petePx` se șterg din câmp, iar golurile sub `gauriPx` (care nu ating marginea) se umplu. Contururile
- * se trag apoi pe câmpul curățat, cu aceeași regulă de vecinătate (punctele-șa leagă cerneala), deci nu contrazic componentele.
+ * Bucățile de cerneală lipite de marginea imaginii se șterg (cu `margine`, ADR 0224), petele de cerneală sub `petePx` la fel,
+ * iar golurile sub `gauriPx` (care nu ating marginea) se umplu. Contururile se trag apoi pe câmpul curățat, cu aceeași regulă
+ * de vecinătate (punctele-șa leagă cerneala), deci nu contrazic componentele.
  */
-function curata(f: Float32Array, W: number, H: number, T: number, petePx: number, gauriPx: number): { pete: number; gauri: number } {
-  let pete = 0, gauri = 0;
-  if (petePx <= 0 && gauriPx <= 0) return { pete, gauri };
+function curata(f: Float32Array, W: number, H: number, T: number, petePx: number, gauriPx: number, margine: boolean): { pete: number; gauri: number; margine: number } {
+  let pete = 0, gauri = 0, laMargine = 0;
+  if (petePx <= 0 && gauriPx <= 0 && !margine) return { pete, gauri, margine: laMargine };
   const m = new Uint8Array(W * H);
   for (let p = 0; p < m.length; p++) m[p] = (f[p] ?? 0) >= T ? 1 : 0;
-  if (petePx > 0) {
-    const { et, arie } = componente(m, W, H, 1, true);
-    const sterse = arie.map((a) => a < petePx);
-    pete = sterse.filter(Boolean).length;
-    if (pete > 0) for (let p = 0; p < m.length; p++) { const c = et[p] ?? -1; if (c >= 0 && sterse[c]) { f[p] = 0; m[p] = 0; } }
+  if (petePx > 0 || margine) {
+    const { et, arie, margine: atinge } = componente(m, W, H, 1, true);
+    const sterse = arie.map((a, c) => {
+      if (margine && atinge[c] === true) { laMargine++; return true; }
+      if (a < petePx) { pete++; return true; }
+      return false;
+    });
+    if (pete + laMargine > 0) for (let p = 0; p < m.length; p++) { const c = et[p] ?? -1; if (c >= 0 && sterse[c]) { f[p] = 0; m[p] = 0; } }
   }
   if (gauriPx > 0) {
     const { et, arie, margine } = componente(m, W, H, 0, false);
@@ -236,7 +265,7 @@ function curata(f: Float32Array, W: number, H: number, T: number, petePx: number
     gauri = umplute.filter(Boolean).length;
     if (gauri > 0) for (let p = 0; p < m.length; p++) { const c = et[p] ?? -1; if (c >= 0 && umplute[c]) f[p] = 1; }
   }
-  return { pete, gauri };
+  return { pete, gauri, margine: laMargine };
 }
 
 // ── Conturul sub-pixel: marching squares, cu buclele orientate ──────────────────────────────────────────────────────────
@@ -868,11 +897,13 @@ export type BazaRaport = Omit<RaportTrasare, 'contururi' | 'exterioare' | 'varfu
  */
 export function campul(img: ImagineRGBA, o: OptiuniTrasare): { readonly f: Float32Array; readonly T: number; readonly baza: BazaRaport } {
   const { latime: W, inaltime: H } = img;
-  const { f, transparenta, sursa } = cerneala(img, o);
+  const { f, transparenta, sursa, lumina } = cerneala(img, o);
   const automat = o.prag === null;
   const h = histograma(f);
   const T = automat ? (sursa === 'alfa' ? 0.5 : pragAutomat(f, h)) : (Math.max(1, Math.min(254, o.prag)) - 0.5) / 255;
-  const { pete, gauri } = curata(f, W, H, T, o.petePx, o.gauriPx);
+  // Sugestia (ADR 0224 §1): la „Uniformă”, pe luminozitate, cât variază hârtia, înainte de curățare.
+  const inegala = sursa === 'lum' && lumina === 'uniforma' ? variatieHartie(f, W, H, T) : null;
+  const { pete, gauri, margine } = curata(f, W, H, T, o.petePx, o.gauriPx, o.margine === true);
   let langa = 0, nuante = 0;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x + 1 < W; x++) {
@@ -884,7 +915,10 @@ export function campul(img: ImagineRGBA, o: OptiuniTrasare): { readonly f: Float
     }
   }
   const margini = langa > 0 && nuante / langa < 0.15 ? 'dure' : 'netezite';
-  return { f, T, baza: { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri, histograma: Array.from(h) } };
+  return {
+    f, T,
+    baza: { latime: W, inaltime: H, transparenta, sursa, prag: Math.round(T * 255), automat, margini, pete, gauri, margine, lumina, inegala, histograma: Array.from(h) },
+  };
 }
 
 /** Trasarea unei imagini: căile închise, în pixeli, și raportul; peste plafoane, refuzul, cu raportul (ce s-a numărat). */

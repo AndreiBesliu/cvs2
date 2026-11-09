@@ -2,8 +2,9 @@
  * Calculul trasării din imagine (ADR 0220 §2): decodarea (în workerul trasării, cu `createImageBitmap`, peste 16 Mpx redusă),
  * scara (lățimea aleasă, altfel DPI-ul fișierului, altfel 96 px / țol), pragurile curățării din mm în px și nucleul
  * (`src/trasare/trasare.ts`), sau liniile mediane (ADR 0222, `src/trasare/mediana.ts`), sau, pe culori (ADR 0221), nucleul
- * culorilor (`src/trasare/culori.ts`), cu imaginea pictată în culorile ei pentru previzualizare. Rulează în
- * `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
+ * culorilor (`src/trasare/culori.ts`), cu imaginea pictată în culorile ei pentru previzualizare. Zona aleasă (ADR 0224) e
+ * un decupaj: se trasează doar ea, iar pagina e ea. Rulează în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii
+ * dați direct.
  */
 import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
 import { traseazaMediana, type OptiuniMediana, type RaportMediana } from '../trasare/mediana.ts';
@@ -18,6 +19,9 @@ export const DPI_PRESUPUS = 96;
 
 /** Imaginea pictată a previzualizării pe culori: cel mult atâția pixeli (fereastra n-are nevoie de mai mult). */
 export const PIXELI_POSTER = 1_000_000;
+
+/** Un dreptunghi în pixelii imaginii decodate (după reducere), y în jos: zona aleasă (ADR 0224). */
+export type ZonaTrasare = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
 
 export type CerereTrasare = {
   /** Fișierul (decodat în worker) sau pixelii (în probe). */
@@ -37,6 +41,8 @@ export type CerereTrasare = {
   readonly rezultat?: 'contururi' | 'mediane';
   /** Opțiunile liniei mediane (ADR 0223), cu pragul părților late în mm (null: automat); lipsă: ca în ADR 0222. */
   readonly mediane?: Omit<OptiuniMediana, 'pragLatPx'> & { readonly pragLatMm: number | null };
+  /** Zona aleasă (ADR 0224, răspunsul 2a): un decupaj, trasat singur; lățimea scrisă e a ei. Lipsă sau null: toată imaginea. */
+  readonly zona?: ZonaTrasare | null;
 };
 
 /** Culoarea fiecărui pixel al imaginii pictate (indicele din paletă; 255: transparent), redusă sub `PIXELI_POSTER`. */
@@ -50,6 +56,9 @@ type Scara = {
   readonly dpi: number;
   /** Mărimea imaginii din fișier, dacă decodarea a redus-o. */
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
+  /** Imaginea decodată întreagă, în px, și zona trasată din ea (tăiată la imagine), sau null: toată. */
+  readonly intreg: { readonly latime: number; readonly inaltime: number };
+  readonly zona: ZonaTrasare | null;
 };
 
 export type RaspunsTrasare =
@@ -100,6 +109,24 @@ async function decodeaza(b: Blob, maxPixeli: number): Promise<{ img: ImagineRGBA
   return { img: { latime: d.width, inaltime: d.height, date: d.data }, redusDin };
 }
 
+/** Zona în pixelii imaginii: rotunjită la pixeli întregi și tăiată la imagine; null dacă nu prinde niciun pixel. */
+export function zonaIn(z: ZonaTrasare, W: number, H: number): ZonaTrasare | null {
+  const x0 = Math.max(0, Math.round(z.x)), y0 = Math.max(0, Math.round(z.y));
+  const x1 = Math.min(W, Math.round(z.x + z.w)), y1 = Math.min(H, Math.round(z.y + z.h));
+  return x1 > x0 && y1 > y0 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
+}
+
+/** Pixelii zonei, rând cu rând, ca o imagine a ei. */
+function decupeaza(img: ImagineRGBA, z: ZonaTrasare): ImagineRGBA {
+  const d = new Uint8ClampedArray(z.w * z.h * 4), s = img.date;
+  for (let y = 0; y < z.h; y++) {
+    const a = ((z.y + y) * img.latime + z.x) * 4, o = y * z.w * 4;
+    if (s instanceof Uint8ClampedArray) d.set(s.subarray(a, a + z.w * 4), o);
+    else for (let i = 0; i < z.w * 4; i++) d[o + i] = s[a + i] ?? 0;
+  }
+  return { latime: z.w, inaltime: z.h, date: d };
+}
+
 /** Aria în px² a cercului cu diametrul d mm, la scara dată: cel puțin 4 px (2 × 2), dacă pragul nu e 0. */
 export function ariePx(dMm: number, mmPePx: number): number {
   if (!(dMm > 0)) return 0;
@@ -115,20 +142,25 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       return { raspuns: { ok: false, cod: 'citire', detaliu: e instanceof Error ? e.message : String(e) }, transfer: [] };
     }
   } else img = c.imagine;
-  // Scara: lățimea aleasă e a imaginii întregi; fără ea, mărimea fizică din DPI (a fișierului, nu a imaginii reduse).
-  const latimeFisier = redusDin?.latime ?? img.latime;
-  const latimeMm = c.latimeMm ?? (latimeFisier / (c.dpi ?? DPI_PRESUPUS)) * 25.4;
-  const mmPePx = latimeMm / img.latime;
+  // Zona (ADR 0224, răspunsul 2a): un decupaj; de aici încolo, imaginea trasată e ea.
+  const intreg = { latime: img.latime, inaltime: img.inaltime };
+  const zona = c.zona ? zonaIn(c.zona, img.latime, img.inaltime) : null;
+  if (zona) img = decupeaza(img, zona);
+  // Scara: lățimea aleasă e a imaginii trasate (a zonei, dacă e una); fără ea, mărimea fizică din DPI (a fișierului, nu a
+  // imaginii reduse), deci pixelul are aceeași mărime cu sau fără zonă.
+  const pxFisier = (redusDin?.latime ?? intreg.latime) / intreg.latime;
+  const mmPePx = c.latimeMm !== null ? c.latimeMm / img.latime : (25.4 / (c.dpi ?? DPI_PRESUPUS)) * pxFisier;
   const scara = c.latimeMm !== null ? 'latime' : c.dpi !== null ? 'fisier' : 'presupus';
-  const dpi = (latimeFisier / latimeMm) * 25.4;
+  const dpi = (25.4 * pxFisier) / mmPePx;
   const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
+  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona } as const;
   if (c.culori) {
-    const r = traseazaCulori(img, { ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx });
-    if (!r.ok) return { raspuns: { ...r, fel: 'culori', mmPePx, scara, dpi, redusDin }, transfer: [] };
+    const r = traseazaCulori(img, { ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx, ...(c.optiuni.margine === true ? { margine: true } : {}) });
+    if (!r.ok) return { raspuns: { ...r, fel: 'culori', ...sc }, transfer: [] };
     const posterizare = posterizeaza(r.etichete, img.latime, img.inaltime);
     const vederi = r.piese.flatMap((p) => [p.cai.inceput, p.cai.tip, p.cai.xy, p.cai.exterior]);
     return {
-      raspuns: { ok: true, fel: 'culori', piese: r.piese, raport: r.raport, posterizare, mmPePx, scara, dpi, redusDin },
+      raspuns: { ok: true, fel: 'culori', piese: r.piese, raport: r.raport, posterizare, ...sc },
       transfer: deTransferat([...vederi, posterizare.etichete]),
     };
   }
@@ -138,14 +170,14 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       ? { capete: m.capete, late: m.late, semnaleaza: m.semnaleaza, bucle: m.bucle, pragLatPx: m.pragLatMm !== null && m.pragLatMm > 0 ? m.pragLatMm / mmPePx : null }
       : undefined;
     const r = traseazaMediana(img, { ...c.optiuni, petePx, gauriPx }, om);
-    if (!r.ok) return { raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin }, transfer: [] };
+    if (!r.ok) return { raspuns: { ...r, fel: 'mediane', ...sc }, transfer: [] };
     const late = r.late ? [r.late.inceput, r.late.tip, r.late.xy, r.late.exterior] : [];
     return {
-      raspuns: { ...r, fel: 'mediane', mmPePx, scara, dpi, redusDin },
+      raspuns: { ...r, fel: 'mediane', ...sc },
       transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior, r.cai.deschisa, r.cai.peLinie, ...late]),
     };
   }
   const r = traseaza(img, { ...c.optiuni, petePx, gauriPx });
-  if (!r.ok) return { raspuns: { ...r, fel: 'alb-negru', mmPePx, scara, dpi, redusDin }, transfer: [] };
-  return { raspuns: { ...r, fel: 'alb-negru', mmPePx, scara, dpi, redusDin }, transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior]) };
+  if (!r.ok) return { raspuns: { ...r, fel: 'alb-negru', ...sc }, transfer: [] };
+  return { raspuns: { ...r, fel: 'alb-negru', ...sc }, transfer: deTransferat([r.cai.inceput, r.cai.tip, r.cai.xy, r.cai.exterior]) };
 }
