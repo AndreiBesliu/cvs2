@@ -954,6 +954,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **toate cele patru direcții de interfață, la alegerea omului** („imi plac toate, si vreau sa fie la
+  dispozitia userilor”, după schițele de pe canvas, <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>): Insule (azi),
+  Clasic, Atelier și Pas cu pas devin aranjamente ale aceluiași registru, alese de om. ADR 0250 propus (feliile
+  28.1↑–28.7↑, din etapa 28 „Cele două interfețe”), cu cinci întrebări; codul vine după răspunsuri.
 - 09.11.2026: **25.4↑ (scanările și pozele) unită în `main`** („putem uni si trasarea din imagine.”): fără conflicte, cu
   totalul 582,5 / 700 kB; worktree-ul `trasare` rămâne (linia continuă, la cuvântul owner-ului).
 - 09.11.2026: **worktree-ul `ancore` scos** („Yes, remove it”, la „Remove the finished ancore worktree and archive its

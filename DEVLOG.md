@@ -7635,3 +7635,25 @@ un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
 - **Publicat pe test:** rularea `42683082986`, serverul întâi, apoi site-ul; amprenta `30448ea61b9b` pe toate țintele;
   adresa de test servește `30448ea61b9b`.
 - **Semnul:** liniei trasării, după push (worktree-ul ei rămâne; linia continuă la cuvântul owner-ului).
+
+## 2026-11-09 — Schițele interfeței, apoi ADR 0250 propus: patru aranjamente la alegere (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa facem mai multe variante de design pentru cvs2”, apoi „Toate, pe rând” și „imi plac toate, si vreau sa
+fie la dispozitia userilor”.
+**Started:** 09.11, ~20:40. **Completed:** 09.11, 22:30.
+
+- **Schițele:** canvas-ul <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane în patru direcții:
+  - A Insule: Proiectarea, Mașina, telefonul;
+  - B Clasic: Proiectarea, Mașina, fereastra exportului;
+  - C Atelier: Proiectarea, Mașina oprită la M6, telefonul ca telecomandă;
+  - D Pas cu pas: Tăierile, Simularea, Mașina cu lista de dinainte de pornire.
+
+  Toate pe același desen de probă și cu textele aplicației.
+- **ADR 0250 propus** (etapa 28, „Cele două interfețe”):
+  - cele patru devin aranjamente ale aceluiași registru, alese din meniul contului, din paletă și la prima pornire;
+  - alegerea se ține pe dispozitiv;
+  - feliile 28.1↑–28.7↑, cu ~40 kB pe total;
+  - cinci întrebări: fonturile, worktree-ul, asistentul din prag, prima pornire, ordinea.
+
+  Codul vine după răspunsuri.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), traducerile roadmap-ului (1 nouă, 0 lipsă).

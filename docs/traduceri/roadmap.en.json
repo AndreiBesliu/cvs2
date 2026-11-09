@@ -1585,6 +1585,10 @@
       "ro": "3.6e (senderul prin WiFi pe mașină)",
       "en": "3.6e (the sender over WiFi on the machine)"
     },
+    "8ef51e576a8736a5": {
+      "ro": "Patru aranjamente ale interfeței",
+      "en": "Four interface layouts"
+    },
     "8f2ab49ca7dd76e9": {
       "ro": "three.js în pachetul extensiei",
       "en": "three.js in the extension package"
