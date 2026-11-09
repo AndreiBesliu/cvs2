@@ -7516,6 +7516,51 @@ ta”: proba „Alt ține fix” (`ancore.spec.ts:354`) cădea pe Linux, unde `s
 - **Porțile:** tipurile, unit 72 (manualul, testul din aplicație, i18n, documentația, editarea), traducerile, e2e 35 (ancorele
   cu cele două probe noi, tutorialul, editarea, fereastra).
 
+## 2026-11-09 — Unirea lui 6.V↑d în main; CI-ul roșu pe bara de sus, reparația și publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea ancorelor, după raportul ei: „Dacă e bine, spune „unește”. Ramura o unește
+în `main` sesiunea principală.”), transmis aici de sesiunea liniei; apoi, la CI-ul roșu, „Yes, merge the fix” (la „Merge the
+ancore fix into main when it's ready?”).
+**Started:** 09.11, 11:27. **Completed:** 09.11, 17:30.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii ancorelor, imediat după raportul liniei.
+- **Unirea (`e481e55`, `--no-ff`):** de la `7dcb7a2` (6.V↑d: ce ține fix Alt, cercul din colț, poligonul întins, rândul
+  tastelor, ancora X / Y în panou, formele rotite oblic trase de o latură). Conflictele, doar în `DEVLOG.md`, fișa etapei 3
+  și traduceri, păstrate amândouă părțile; în coada owner-ului, rândul ancorelor al liniei (fără decizia pe plafon, acum
+  făcută). Porțile din prima: 8 861 de teste unitare (nicio cădere), build-ul determinist, e2e 411 / 411, emulatoarele 101 /
+  101 și 21 / 21; totalul 578,8 / 600 kB. Documentele (`c9bbf52`): CLAUDE.md; în fișă, încercările trasării și ale lui 6.V↑d
+  pe adresa principală de test și pașii ancorelor renumerotați (11, 12, 13: 6.V↑d a adăugat pasul 6).
+- **CI-ul complet pe `cbdaf64` (`42598259552`), roșu:** `ancore.spec.ts:354`, bara de sus la 1280 px. Pe Linux, `system-ui`
+  e lat: capătul barei la 1300 px (pe Windows, cu Segoe UI, la 1245). Reprodus local cu `--font: Verdana, 'DejaVu Sans'` (ca
+  în `fereastra.spec.ts`). Nimic publicat: testul rămăsese pe trasare (`9773cd6`). Ramura liniei nu rulase e2e pe Linux
+  (rapidul n-are e2e), iar porțile locale sunt pe Windows.
+- **Reparația liniei (`4246279`, unită prin `df19f8c`):** textele listei colțurilor mai scurte (explicația rămâne în titlu),
+  cu motivul refuzului, manualul și pasul din testul aplicației; proba barei, separată, cu fontul lat pus înainte de
+  măsurare, pe Transformare și pe cerc, în română și în engleză (capătul la 1260 / 1248 px). Porțile din prima: 8 861 de
+  teste unitare, e2e 413 / 413, emulatoarele 101 / 101 și 21 / 21. CLAUDE.md (`3797e17`): o opțiune nouă în bara de sus se
+  probează și cu fontul lat.
+- **CI:** rapid `42629427425` și complet `42633579690` (pornit de mână) pe `3797e17`, verzi: `main` verde din nou.
+- **Publicat pe test:** rularea `42641540149`, serverul întâi, apoi site-ul; amprenta `3797e17ed2e1` pe toate țintele.
+
+## 2026-11-09 — Plafonul total 700 kB (ADR 0144); unirea tăierii oprită de proba barei de sus (Model: Claude Opus 5.5)
+
+**Prompt:** „ce se mai poate uni?”, apoi „Yes, 700 kB” (la „Raise the total bundle limit to 700 kB?”) și „Yes, merge
+tăierea” (la „Merge tăierea into main?”).
+**Started:** 09.11, 16:40. **Completed:** 09.11, 17:30.
+
+- **Ce se mai poate uni:** pe `main` (`3797e17`, 578,7 / 600 kB), unirile de probă în clona din afara Drive-ului: tăierea
+  600,1 (+21,4), imprimanta 617,2 (+38,5), amândouă 638,5; planșele (conflicte de cod cu `main`), vârful față de baza lor:
+  +25,2, cu pornirea și ușa la ~110,1 / 110 peste `main`-ul de acum. Fiecare trecea singură de plafon.
+- **Plafonul (`d46fd15`):** ADR 0144 (700 kB, cu cifrele de mai sus; pornirea rămâne 110 kB), ADR 0143 „Schimbat de”, rândul
+  din index, `PLAFON_TOTAL_KB = 700` în `scripts/build-determinist.ts`, CLAUDE.md (starea, decizia). Porțile: traducerile,
+  compilatorul, probele documentației (34 / 34), build-ul determinist (578,8 / 700).
+- **Unirea tăierii, de probă (`08dca64`, neîmpinsă):** de la `21492d3` (10.3↑f–10.3↑i), conflicte doar în documente (în
+  coada owner-ului, rândul întrebărilor ADR 0180, acceptat din 06.11, scos, cum îl scosese linia). Porțile: 9 001 de teste
+  unitare (nicio cădere), build-ul determinist (600,2 / 700), emulatoarele 101 / 101 și 21 / 21; e2e 436 / 437: proba nouă a
+  barei (`ancore.spec.ts:512`) cade și singură: cu Cuțitul (K) în bara uneltelor, capătul barei Transformării e la 1296 px
+  cu fontul lat, în română. Proba a prins depășirea înainte de push: unirea e păstrată local
+  (`backup/unire-taiere-08dca64`), `main` a rămas pe `d46fd15`, iar reparația o face linia tăierii, pe ramura ei.
+
 ## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 10.3↑c”.

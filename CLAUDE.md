@@ -693,6 +693,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
   iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
   105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Plafonul total 700 kB (ADR 0144, decizia owner-ului din 09.11, „Yes, 700 kB”):** după unirea trasării și a lui 6.V↑d,
+  totalul era 578,7 / 600, iar tăierea (+21,4), planșele (+25,2) și imprimanta (+38,5), gata pe ramuri, treceau fiecare
+  singură de plafon (măsurat pe unirile de probă peste `3797e17`); cu toate trei, ~663,8, deci rămân ~36 kB. O creștere
+  următoare cere iar decizia scrisă (sau modulele aduse la prima folosire). **Pornirea rămâne 110 kB:** planșele o ating (cu
+  ușa ~110,1 cu `main`-ul de acum), deci linia își micșorează întâi calea ușii (sau altă decizie, ADR 0100).
   **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
   (ramura `wip/25.1-trasare`, canalul `trasare`; **unită în `main` pe 09.11**, mai jos), cu toate recomandările („Da,
   1a–8a”): o imagine (PNG, JPEG, WebP, GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
@@ -730,7 +735,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
-  5b).
+  5b): luată tot pe 09.11, 700 kB (ADR 0144, mai sus).
   **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
   08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
   (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`
@@ -987,6 +992,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **worktree-ul `ancore` scos** („Yes, remove it”, la „Remove the finished ancore worktree and archive its
+  session?”): linia ancorelor (ADR 0240) e încheiată și unită (`0c81ccf`, `e481e55`, `df19f8c`). Joncțiunile `node_modules`
+  și `functions\node_modules` scoase întâi (poarta cu legăturile), apoi `git worktree remove`; `.git/worktrees/ancore`
+  rămăsese ReadOnly (cu `logs/` și `refs/`), curățat; ramura locală ștearsă cu `-d`; sesiunea arhivată. Pe `origin`,
+  `wip/6.V-ancore` intră în lista de șters a owner-ului (acum 18). Rămân cinci worktree-uri: `imprimanta`, `incrustatii`,
+  `plansele`, `taiere`, `trasare`.
+- 09.11.2026: **plafonul total 700 kB** („Yes, 700 kB”, la „Raise the total bundle limit to 700 kB?”, după „ce se mai poate
+  uni?”): pe `main`, totalul era 578,7 / 600, iar fiecare linie rămasă trecea singură de plafon (tăierea 600,1, planșele
+  ~603,9, imprimanta 617,2). ADR 0144; pornirea rămâne 110 kB. Tăierea se poate uni (la cuvântul owner-ului); imprimanta
+  așteaptă proba plăcii pe K1C; planșele aduc `main` și își micșorează calea ușii.
 - 09.11.2026: **6.V↑d unită în `main`** („Da, unește”, în sesiunea ancorelor, după raportul ei: „Dacă e bine, spune
   „unește”. Ramura o unește în `main` sesiunea principală.”): linia ancorelor (ADR 0240) e întreagă în `main`; conflicte doar
   în documente, păstrate ambele părți.
