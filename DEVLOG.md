@@ -7181,7 +7181,7 @@ sesiunea liniei.
 ## 2026-11-08 — 6.V↑d: opțiunile ancorei și ale tastelor transformării (ADR 0240) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 6.V↑d acum” (la „Fac acum 6.V↑d, opțiunile rămase (~1,5 kB)?”, după unirea liniei în `main`, `0c81ccf`).
-**Started:** 08.11, 18:17. **Completed:** —
+**Started:** 08.11, 18:17. **Completed:** 09.11, 10:50.
 
 - **Pornirea:** ramura `wip/6.V-ancore` adusă la `origin/main` (`8714306`, fast-forward); rândul 6.V↑d în jurnalul fișei (în
   lucru), iar rândul liniei din coada owner-ului trimite acum la adresa principală de test (6.V↑–6.V↑c unite și publicate pe
@@ -7200,3 +7200,10 @@ sesiunea liniei.
 - **Otrăvurile** (`test/otravuri/6.Vd.py`, 29, din worktree, pe rând, `9012d81`): toate prinse la prima rulare (15 pe
   hârtie, 14 prin e2e). Două probe e2e întărite înaintea lor: ținta neumplută cu „Alt: centrul”, eticheta cercului din colț
   cu Alt.
+- **Porțile** (pe `8b9c085`; sesiunea s-a întrerupt o dată în timpul suitei unitare, reluată de la capăt): unit 8737 (8729 +
+  8 sărite, 0 căderi), traducerile 690 / 0 lipsă, tipurile, importurile, build-ul determinist (286 de fișiere), e2e 161 / 161
+  (24 de spec-uri; 9 căzute sub încărcare, toate la încărcarea editorului în 5 s, trec reluate cu un lucrător).
+- **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 09.12), versiunea `8b9c08541170`; proba de
+  fum de acolo, în Edge: pornirea fără erori, cercul din colț (R 15 în (75, 75)), listele „Colțuri” și „Alt”, rândul
+  tastelor cu Shift plin, ancora în panou (X / Y), testul din aplicație cu 35 de pași. Neunită: unirea în `main` o face
+  sesiunea principală, la cuvântul owner-ului.
