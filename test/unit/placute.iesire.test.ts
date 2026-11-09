@@ -103,6 +103,10 @@ test('plăcuța e conturul închis cel mai mare din afara textelor: o gaură mic
   const cuGaura = piesa([dreptunghi('rama', 0, 0, 100, 30), cerc('gaura', 5, 5, 2), grupText('t', 0, 0)]);
   assert.deepEqual(placaPiesei(cuGaura)?.cutie, { minX: 0, minY: 0, maxX: 100, maxY: 30 });
   assert.equal(textIese(cuGaura, litere('t', dreptunghi('l1', 20, 10, 10, 10))), false, 'în afara găurii, în ramă');
+  // Și cu gaura înaintea ramei în arbore (parcurgerea o întâlnește ultima): tot rama, cea mai mare.
+  const gauraIntai = piesa([cerc('gaura', 5, 5, 2), dreptunghi('rama', 0, 0, 100, 30), grupText('t', 0, 0)]);
+  assert.deepEqual(placaPiesei(gauraIntai)?.cutie, { minX: 0, minY: 0, maxX: 100, maxY: 30 });
+  assert.equal(textIese(gauraIntai, litere('t', dreptunghi('l1', 20, 10, 10, 10))), false);
   // Fără ramă, doar textul cu câmp și un text fix („Masa”, alt bloc): n-are plăcuță, deci nimic nu iese, oricât de mare.
   const doarText = piesa([grupText('t', 0, 0), grupText('fix', 0, 50, 'Masa')]);
   assert.equal(placaPiesei(doarText), null);
