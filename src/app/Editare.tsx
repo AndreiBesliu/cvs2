@@ -3234,7 +3234,7 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
       : (() => {
         const mod = modManer(c, gest.m === 'rotire' ? 'e' : gest.m, gest.taste, fixAlt);
         const neuniform = gest.t.sx !== gest.t.sy;
-        // Colțurile: raza rămâne la întindere (implicit) sau mereu; cu „se scalează mereu”, întinse devin curbe.
+        // Colțurile: raza rămâne la întindere (implicit) sau mereu; cu „Colțuri: se scalează”, întinse devin curbe.
         const nota = !forme.colturi ? null
           : neuniform ? (felColturi === 'scaleaza' ? 'editare.mod.colturi.curbe' : 'editare.mod.colturi.raza')
             : felColturi === 'pastreaza' ? 'editare.mod.colturi.raza' : null;

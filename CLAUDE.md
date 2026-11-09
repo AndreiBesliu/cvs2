@@ -778,7 +778,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   rotită oblic, scalată pe o axă, trece prin geometrie** (ca înclinarea), fără refuz. Pe ramură, totalul +1,5 kB; testul din
   aplicație are acum 35 de pași („Opțiunile desenului” e pasul 6, „Opțiunile transformării” 14). **După unire, cu trasarea:
   pornirea 101,9 (cu ușa 105,6 / 110 kB), totalul 578,8 / 600, /admin 106,5 / 200, contul 29,6 / 32; sub plafon mai încap
-  ~21 kB.**
+  ~21 kB.** **Bara de sus trebuie să încapă la 1280 px și cu un font lat** (Verdana aici, DejaVu Sans pe Linux, unde
+  `system-ui` e lat): proba ei e în `ancore.spec.ts` (Transformarea și cercul, în română și în engleză). Pe 09.11, CI-ul
+  complet a căzut pe `main` exact aici (capătul barei la 1300 px pe Linux, 1245 pe Windows), reparat cu textele mai scurte
+  ale listei colțurilor (`4246279`). O opțiune nouă în bara de sus se probează cu fontul lat, nu doar pe Windows.
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

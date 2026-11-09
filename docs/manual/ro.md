@@ -433,10 +433,11 @@ importate) scalate pe o axă devin **curbe**, la cel mult 0,001 mm de arcul înt
 `Ctrl+Z` le readuce.
 
 **Colțurile rotunjite** ale unui dreptunghi urmează lista de lângă selectorul ancorei, ținută în browser:
-- **Colțuri: raza rămâne la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
+- **Colțuri: rămân la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
   cu raza editabilă în panou; scalată proporțional, raza crește cu forma;
-- **Colțuri: raza rămâne mereu**: și la scalarea proporțională;
-- **Colțuri: se scalează mereu**: trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma devine o cale).
+- **Colțuri: rămân mereu**: raza rămâne și la scalarea proporțională;
+- **Colțuri: se scalează**: raza crește mereu cu forma; trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma
+  devine o cale).
 
 Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. O formă **rotită
 oblic** (altfel decât cu 90°), trasă pe o axă, se scalează în axele foii prin geometrie, ca înclinarea: devine o cale (un

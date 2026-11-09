@@ -112,7 +112,7 @@ jurul ancorei”. Dublu clic o întoarce în colțul ales.
 %% pas: t-colturi
 %% faci
 Un dreptunghi cu Raza colțurilor 10 (în panou). Transformare: trage latura dreaptă spre dreapta. Apoi, în lista de lângă
-selectorul ancorei, „Colțuri: se scalează mereu”, și trage din nou.
+selectorul ancorei, „Colțuri: se scalează”, și trage din nou.
 %% vezi
 Prima dată eticheta spune „colțurile își păstrează raza”, iar panoul arată tot un dreptunghi cu raza 10; a doua oară,
 „colțurile devin curbe”, iar forma devine o cale, cu colțurile întinse.

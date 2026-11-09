@@ -7685,6 +7685,23 @@ sesiunea liniei.
 - **Semnul:** liniei trasării, după push. Între timp, owner-ul a cerut și unirea lui 6.V↑d: unită local (`e481e55`), împinsă
   după publicarea asta.
 
+## 2026-11-09 — 6.V↑d, după CI-ul roșu: bara de sus la 1280 px cu un font lat (ADR 0240) (Model: Claude Opus 5.5)
+
+**Prompt:** sesiunea principală: „CI-ul complet e roșu pe `main` (`cbdaf64`) din cauza lui 6.V↑d … Îți cer reparația pe ramura
+ta”: proba „Alt ține fix” (`ancore.spec.ts:354`) cădea pe Linux, unde `system-ui` e lat (DejaVu Sans): bara de sus trecea de
+1280 px cu 20 px; reprodusă cu Verdana, ca la 13.A↑c. **Started:** 09.11, 12:43. **Completed:** 09.11, 14:16.
+
+- **Ramura** adusă la `origin/main` (`cbdaf64`, fast-forward).
+- **Proba întâi:** verificarea lățimii a ieșit din proba „Alt ține fix” într-una a ei, cu fontul lat pus înainte de măsurare
+  (ca în `fereastra.spec.ts`), pe Transformare (selectorul ancorei, colțurile, Alt) și pe cerc (raza, felul lui), în română
+  și în engleză. Pe codul de dinainte cădea și pe Windows: capătul barei la 1300 px.
+- **Reparația:** textele listei colțurilor, mai scurte („Colțuri: rămân la întindere” / „rămân mereu” / „se scalează”; în
+  engleză „Corners: keep on stretch” / „always keep” / „scale”), cu explicația întreagă în titlu; motivul refuzului, manualul
+  și pasul „Colțurile rotunjite” din testul aplicației citează textele noi. Cu fontul lat, capătul barei: 1260 px în română,
+  sub 1250 în engleză.
+- **Porțile:** tipurile, unit 72 (manualul, testul din aplicație, i18n, documentația, editarea), traducerile, e2e 35 (ancorele
+  cu cele două probe noi, tutorialul, editarea, fereastra).
+
 ## 2026-11-09 — Felia 11.4↑b: «Din CSV…» (ADR 0210 §4) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.4↑b («Din CSV…»), întâi cu unirea lui main?”: „Da, 11.4↑b”.
