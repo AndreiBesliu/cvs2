@@ -81,6 +81,20 @@ Pe imprimanta ta, cu imprimanta liberă și fără nimic pe pat, apoi pe o impri
 7. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: comenzile și răspunsurile imprimantei intră în
    imprimanta falsă din probe.
 
+## 6. Pauza la un strat (felia 3.6p)
+
+Cu placa de probă din „Din desen…” (40 × 20 × 3 mm, PLA 0,20: 15 straturi), pe patul gol:
+
+1. Mută glisorul **Stratul** pe 9 și apasă **Pauză înaintea acestui strat**: fereastra spune că imprimanta se oprește după
+   stratul 8, la 1,6 mm. Scrie o notă (de exemplu „probă”), apoi **Trimite la imprimantă**: dialogul spune pauza din
+   fișier, iar la pornire o spune din nou, lângă bifa **Patul e gol**.
+2. Pornește imprimarea și uită-te la stratul 9: imprimanta ar trebui să se oprească singură, iar fereastra să arate
+   **Pauză**. Spune-mi unde a parcat capul (în spate, într-o parte, sus?) și dacă duza rămâne caldă (temperatura din
+   fereastră); lasă-o în pauză cam 2 minute.
+3. Apasă **Reia** în fereastră: imprimarea continuă de unde a rămas, iar piesa nu are o treaptă sau o dungă la 1,6 mm.
+4. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: cu el aflăm și cum numără K1C straturile
+   unui fișier al nostru (`layer`) și filamentul folosit, pentru placa din felia 3.6q.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).

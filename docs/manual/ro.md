@@ -1139,6 +1139,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
     **cu o treaptă:** suprafața de sus a treptei, plinul de sub o față, umplerea rară), apoi
     straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame. Bifa **deplasările** arată, punctat, și
     drumurile duzei dintre linii.
+  - **Pauză înaintea acestui strat** (sub glisor) pune o pauză la stratul arătat: imprimanta se oprește după stratul de
+    dedesubt, de exemplu ca să schimbi filamentul pentru o a doua culoare de la o înălțime în sus (un text sau un desen
+    adâncit), sau ca să pui ceva într-un locaș deschis; apoi apeși **Reia** în fereastra Imprimanta sau pe ecranul ei. Un
+    nou clic pe buton o scoate. Pauzele apar ca semne roșii pe glisor și în lista **Pauzele**, fiecare cu stratul și
+    înălțimea ei (un clic pe ea arată stratul), cu o **Nota pauzei** (de exemplu „filament negru”) și cu **Scoate pauza**.
+    O pauză ține înălțimea până la care s-a imprimat: la altă grosime a straturilor rămâne în același loc al piesei, iar
+    peste piese nu intră în fișier. Pauzele se țin în browser pentru aceleași piese (revin când redeschizi fereastra pe
+    ele), iar rezumatul le numără. În fișier, pauza e comanda `PAUSE` a imprimantei, înaintea primei piese a stratului;
+    timpul estimat nu cuprinde cât stă imprimanta în ea. Înaintea primului strat nu se pune pauză.
   - **Duza** și **Patul** din „Simplu” schimbă și temperaturile primului strat (cu aceeași diferență față de ele cât are
     profilul materialului: PC pornește cu 10 °C mai jos). Brim-ul e unul pentru toate piesele: ocolește piesele vecine. Tot ce
     se extrudează, brim-ul inclus, trebuie să încapă în pat cu marginea de 5 mm, iar ultimul strat sub 250 mm; altfel

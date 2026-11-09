@@ -37,6 +37,77 @@ export function planStraturi(ordini: readonly (readonly FelStrat[])[], s: Setari
   return rez;
 }
 
+/** O pauză aleasă de om (felia 3.6p, ADR 0193 §A): înălțimea până la care s-a imprimat (mm) și o notă. */
+export type Pauza = { readonly h: number; readonly nota: string };
+/** O pauză pe planul straturilor: înaintea stratului `k` (de la 2), după vârful stratului k − 1 (`z`); `k` null: peste piese. */
+export type PauzaPusa = Pauza & { readonly k: number | null; readonly z: number | null };
+/** Cel mult atâtea caractere într-o notă. */
+export const NOTA_PAUZA_MAX = 40;
+const EPS_PAUZA = 1e-6;
+
+/** Nota scrisă de om: fără caractere de control (deci fără rânduri noi), fără spațiile de la capete, cel mult `NOTA_PAUZA_MAX`. */
+export function notaPauza(t: string): string {
+  return t.replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ').trim().slice(0, NOTA_PAUZA_MAX).trim();
+}
+
+/**
+ * Nota, în fișier: doar ASCII tipăribil, cu diacriticele scoase („roșu” → „rosu”), ca restul fișierului (Klipper-ul Creality
+ * oprește imprimarea la un text pe care nu-l poate citi: `key571`).
+ */
+export function notaInFisier(t: string): string {
+  return notaPauza(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Straturile pauzelor: fiecare vine înaintea primului strat k ≥ 2 care începe (de la vârful stratului k − 1) la cel puțin
+ * înălțimea ei, deci la altă grosime a straturilor rămâne în același loc al piesei; peste vârful penultimului strat, cade
+ * (`k` null). Planul dă vârful fiecărui strat (`z`).
+ */
+export function punePauze(plan: readonly { readonly z: number }[], pauze: readonly Pauza[]): PauzaPusa[] {
+  return pauze.map((p) => {
+    for (let k = 2; k <= plan.length; k++) {
+      const z = plan[k - 2]!.z;
+      if (z >= p.h - EPS_PAUZA) return { ...p, k, z };
+    }
+    return { ...p, k: null, z: null };
+  });
+}
+
+/**
+ * Fișierul cu pauzele (ADR 0193 §A.2), ca OrcaSlicer: după schimbarea stratului k (`;AFTER_LAYER_CHANGE`, Z-ul lui și, la al
+ * doilea strat, temperaturile lui), înaintea oricărei piese, `;PAUSE_PRINT`, nota ca un comentariu și comanda de pauză a
+ * imprimantei. Două pauze pe același strat: una singură, cu notele alăturate; cele căzute nu se scriu. Restul fișierului
+ * (și timpul estimat, fără pauze) rămâne neschimbat, deci o notă schimbată nu cere o feliere nouă.
+ */
+export function cuPauze(text: string, pauze: readonly PauzaPusa[], comanda: string): string {
+  const pe = new Map<number, string[]>();
+  for (const p of pauze) {
+    if (p.k === null) continue;
+    const n = notaInFisier(p.nota);
+    const x = pe.get(p.k) ?? [];
+    if (n !== '' && !x.includes(n)) x.push(n);
+    pe.set(p.k, x);
+  }
+  if (pe.size === 0) return text;
+  const linii = text.split('\n');
+  const rez: string[] = [];
+  let k = 0;
+  for (let i = 0; i < linii.length; i++) {
+    rez.push(linii[i]!);
+    if (linii[i] !== ';AFTER_LAYER_CHANGE') continue;
+    k++;
+    const note = pe.get(k);
+    if (note === undefined) continue;
+    // Z-ul stratului (comentariul de după), apoi temperaturile celui de-al doilea strat, dacă sunt.
+    if (i + 1 < linii.length) rez.push(linii[++i]!);
+    while (i + 1 < linii.length && /^M1(?:04|40) S\d+$/.test(linii[i + 1]!)) rez.push(linii[++i]!);
+    rez.push(';PAUSE_PRINT');
+    if (note.length > 0) rez.push(`; pause note: ${note.join(' / ')}`);
+    rez.push(comanda);
+  }
+  return rez.join('\n');
+}
+
 /** Timpul în formatul OrcaSlicer (`get_time_dhms`): „1h 2m 3s”, „3m 2s”, „45s”. */
 export function timpText(t: number): string {
   let x = Math.max(0, Math.round(t));

@@ -1,7 +1,8 @@
 # ADR 0193 — Imprimarea văzută din cvs2: pauza la un strat, placa cu stratul viu, anularea unei piese
 
-**Starea:** propus pe 09.11.2026, pentru feliile 3.6p, 3.6q și 3.6r (fără imprimantă, pe imprimanta falsă; apoi proba pe
-imprimanta owner-ului, după ghid), în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea owner-ului: grupul 2
+**Starea:** acceptat pe 09.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a, 3a, 4a), pentru
+feliile 3.6p, 3.6q și 3.6r (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în
+worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea owner-ului: grupul 2
 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11, „Ce ar face-o specială: imprimarea „văzută” din
 cvs2”), după grupul 1 (ADR 0192, „poti incepe cu 1”), la „continua” (09.11). **Schimbă:** ADR 0192 §B.8 (al doilea text făcut
 doar de driver în `gcodeCmd`, anularea unei piese, dacă owner-ul o vrea: întrebarea 2) și ADR 0191 §E.7 (fișierul primește
@@ -139,6 +140,10 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   `usedMaterialLength` pe un fișier al nostru; o placă cu două piese și anularea uneia (după răspunsul 2), cu transcrierea.
 
 ## Întrebările (owner)
+
+**Răspunsurile, din 09.11:** „Da, recomandările”: 1a (planșele așa), 2a (anularea prin `gcodeCmd`, cu textul făcut doar
+de aplicație), 3a (cererea pentru piesa de acum așteaptă, retrimisă cel mult 2 minute), 4a (pauzele, în browser, pentru
+aceleași piese).
 
 1. **Schița** (linkul din mesaj): a) așa (recomandat); b) altfel (spune unde).
 2. **Anularea pe K1,** prin `gcodeCmd`, cu textul făcut doar de aplicație (`EXCLUDE_OBJECT NAME=` și un nume din lista

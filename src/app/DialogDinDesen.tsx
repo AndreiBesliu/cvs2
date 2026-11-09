@@ -19,9 +19,11 @@ import { limba, t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
 import { CAMPURI_AVANSATE, cuCalitate, cuMaterial, cuTemperatura, type CampAvansat } from '../cam/feliere/campuri.ts';
 import {
-  CALITATI, citesteFel, feliaza, K1C, LIMITE, material, MATERIALE, numeFisier, pieseDinDocument, puncte, setariImplicite, setariValide, timpText,
-  type Brim, type Cale, type Miniatura, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
+  CALITATI, citesteFel, cuPauze, feliaza, K1C, LIMITE, material, MATERIALE, NOTA_PAUZA_MAX, numeFisier, pieseDinDocument, punePauze, puncte,
+  setariImplicite, setariValide, timpText,
+  type Brim, type Cale, type Miniatura, type Pauza, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
 } from '../cam/feliere/index.ts';
+import { cheiePauze, citestePauze, scriePauze } from './pauzeDesen.ts';
 
 /** Desenul de feliat: documentul și instanțele selectate. */
 export type DesenImprimanta = { readonly doc: Document; readonly selectie: readonly string[] };
@@ -253,6 +255,16 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
     dupaCnc: alegeri.dupaCnc,
     ...(alegeri.inaltimi === 'piese' ? { inaltimi: new Map(pieseAlese.map((p) => [p.id, p.h ?? inaltime])) } : {}),
   }), [desen, cheieSursa, inaltime, alegeri, pieseAlese]);
+  // Pauzele (felia 3.6p, ADR 0193 §A): ținute în browser pentru aceleași piese (răspunsul 4a), citite din nou la altă alegere.
+  const cheieP = useMemo(() => cheiePauze(alese.piese.map((p) => p.id)), [alese]);
+  const [pauze, setPauze] = useState<readonly Pauza[]>(() => citestePauze(cheieP));
+  const [cheieCitita, setCheieCitita] = useState(cheieP);
+  if (cheieCitita !== cheieP) { setCheieCitita(cheieP); setPauze(citestePauze(cheieP)); }
+  const schimbaPauze = (nou: readonly Pauza[]): void => {
+    const ordonate = [...nou].sort((a, b) => a.h - b.h);
+    setPauze(ordonate);
+    scriePauze(cheieP, ordonate);
+  };
   const [rez, setRez] = useState<RezultatFeliere | null>(null);
   const [lucreaza, setLucreaza] = useState(true);
   // Stratul arătat: 0 = încă neales de om (atunci cel din mijloc), altfel cel ales, cel mult ultimul.
@@ -317,8 +329,18 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
                 ...(tr && tr.bs >= 0 ? [textRar()] : []),
               ].join(' + '),
             });
+  // Pauzele pe planul straturilor: cea de la stratul arătat (înaintea lui, după vârful stratului de dedesubt) și cele scrise.
+  const pus = useMemo(() => punePauze(g?.plan ?? [], pauze), [g, pauze]);
+  const aici = strat > 1 && g !== null && g.plan.length >= strat ? g.plan[strat - 2]!.z : null;
+  const pauzaAici = pus.some((p) => p.k === strat);
+  const straturiPauze = [...new Set(pus.flatMap((p) => (p.k === null ? [] : [p.k])))];
+  const comutaPauza = (): void => {
+    if (aici === null) return;
+    schimbaPauze(pauzaAici ? pauze.filter((_, i) => pus[i]?.k !== strat) : [...pauze, { h: aici, nota: '' }]);
+  };
   const numeBaza = alese.piese.length === 1 ? alese.piese[0]!.eticheta : (foaie?.nume ?? 'cvs2');
-  const fisier = (): File | null => (g === null ? null : new File([g.text], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' }));
+  const fisier = (): File | null => (g === null ? null
+    : new File([cuPauze(g.text, pus, K1C.pauza)], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' }));
   const salveaza = (): void => {
     const f = fisier();
     if (!f) return;
@@ -450,12 +472,47 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
               <Previzualizare rez={rez} strat={strat} deplasari={deplasari} />
               <label className="imprimanta-felie-glisor">
                 <span>{t('imprimanta.felie.strat')}</span>
-                <input type="range" min={1} max={n} value={strat} data-imprimanta="felie-strat" onChange={(e) => { setStrat(Number(e.target.value)); }} />
+                <span className="imprimanta-felie-pista">
+                  <input type="range" min={1} max={n} value={strat} data-imprimanta="felie-strat" onChange={(e) => { setStrat(Number(e.target.value)); }} />
+                  {n > 1 && straturiPauze.length > 0 && (
+                    <span className="imprimanta-felie-semne" aria-hidden="true" data-testid="imprimanta-felie-semne">
+                      {straturiPauze.map((k) => <i key={k} data-strat={k} style={{ left: `calc(${(k - 1) / (n - 1)} * (100% - 16px) + 8px)` }} />)}
+                    </span>
+                  )}
+                </span>
                 <output data-testid="imprimanta-felie-strat">{t('imprimanta.felie.strat.din', { k: strat, n })}</output>
               </label>
               <p className="imprimanta-slab" data-testid="imprimanta-felie-fel">
                 {t('imprimanta.felie.z', { z: numar(s.strat1 + (strat - 1) * s.strat) })} · {textFel}
               </p>
+              <div className="imprimanta-felie-pauza">
+                <button type="button" data-imprimanta="felie-pauza" aria-pressed={pauzaAici} disabled={aici === null} onClick={comutaPauza}>
+                  {t('imprimanta.felie.pauza')}
+                </button>
+                <span className="imprimanta-ajutor" data-testid="imprimanta-felie-pauza-ajutor">
+                  {aici === null ? t('imprimanta.felie.pauza.prim') : t('imprimanta.felie.pauza.ajutor', { k: strat - 1, z: numar(aici) })}
+                </span>
+              </div>
+              {pus.length > 0 && (
+                <div className="imprimanta-felie-pauze" data-testid="imprimanta-felie-pauze">
+                  <p className="imprimanta-felie-pauze-titlu">{t('imprimanta.felie.pauze')}</p>
+                  <ul>
+                    {pus.map((p, i) => (
+                      <li key={`${i}-${p.h}`} data-pauza-strat={p.k ?? 'cade'}>
+                        <button type="button" data-imprimanta="felie-pauza-du" disabled={p.k === null} onClick={() => { if (p.k !== null) setStrat(p.k); }}>
+                          {p.k === null ? t('imprimanta.felie.pauza.cade', { h: numar(p.h) }) : t('imprimanta.felie.pauza.unde', { k: p.k, z: numar(p.z ?? p.h) })}
+                        </button>
+                        <input type="text" maxLength={NOTA_PAUZA_MAX} data-imprimanta="felie-pauza-nota" aria-label={t('imprimanta.felie.pauza.nota')}
+                          placeholder={t('imprimanta.felie.pauza.nota.loc')} value={p.nota} autoComplete="off"
+                          onChange={(e) => { const nota = e.target.value.slice(0, NOTA_PAUZA_MAX); schimbaPauze(pauze.map((x, j) => (j === i ? { ...x, nota } : x))); }} />
+                        <button type="button" className="imprimanta-felie-pauza-scoate" data-imprimanta="felie-pauza-scoate"
+                          aria-label={t('imprimanta.felie.pauza.scoate')} title={t('imprimanta.felie.pauza.scoate')}
+                          onClick={() => { schimbaPauze(pauze.filter((_, j) => j !== i)); }}>×</button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <ul className="imprimanta-felie-legenda" aria-label={t('imprimanta.felie.legenda')}>
                 {(['exterior', 'interior', 'plin', 'sus', 'rar', 'brim', 'calcare', 'fusta'] as const).map((r) => (
                   <li key={r}><i style={{ background: `var(${CULORI[r]})` }} />{t(`imprimanta.felie.rol.${r}`)}</li>
@@ -465,6 +522,11 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
               </ul>
               <p className="imprimanta-felie-rezumat" data-testid="imprimanta-felie-rezumat">
                 {t('imprimanta.felie.rezumat', { n, timp: timpText(g.timp), m: numar(g.filamentMm / 1000), g: numar(g.filamentG, 1), material: mt.nume })}
+                {straturiPauze.length > 0 && (
+                  <span data-testid="imprimanta-felie-rezumat-pauze">
+                    {' · '}{t(straturiPauze.length === 1 ? 'imprimanta.felie.rezumat.pauza' : 'imprimanta.felie.rezumat.pauze', { n: straturiPauze.length })}
+                  </span>
+                )}
               </p>
               {Math.abs(hReal - hCerut) > 1e-3 && (
                 <p className="imprimanta-ajutor" data-testid="imprimanta-felie-inaltime-reala">

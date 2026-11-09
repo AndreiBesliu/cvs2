@@ -21,6 +21,8 @@ export const K1C = {
   vitezaZ: 10,
   /** Colțul pătrat al lui Klipper (`square_corner_velocity`, implicitul lui), pentru estimarea timpului. */
   colt: 5,
+  /** Comanda de pauză a imprimantei (`machine_pause_gcode` al profilului K1C: macroul `PAUSE`), felia 3.6p. */
+  pauza: 'PAUSE',
 } as const;
 
 /** Un material (filamentul generic K1 din OrcaSlicer). */

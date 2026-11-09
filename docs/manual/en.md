@@ -1173,6 +1173,16 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
     step:** the top surface of the step, the solid under a face, the sparse infill),
     then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
     also shows, dotted, the nozzle’s paths between lines.
+  - **Pause before this layer** (under the slider) adds a pause at the layer shown: the printer stops after the layer
+    below, for example to change the filament for a second colour from a height upwards (sunken text or a drawing), or to
+    place something into an open pocket; then you press **Resume** in the Printer window or on its screen. Another click
+    on the button removes it. Pauses show as red marks on the slider and in the **Pauses** list, each with its layer and
+    height (a click on it shows the layer), a **Pause note** (for example “black filament”) and **Remove the pause**. A
+    pause keeps the height printed so far: with another layer height it stays at the same place in the part, and above
+    the parts it is left out of the file. Pauses are kept in the browser for the same parts (they come back when you
+    reopen the window on them), and the summary counts them. In the file, a pause is the printer’s `PAUSE` command, before
+    the first part of the layer; the estimated time does not include how long the printer waits. There is no pause before
+    the first layer.
   - **Nozzle** and **Bed** in “Simple” also change the first layer temperatures (with the same difference from them as the
     material profile has: PC starts 10 °C lower). The brim is one for all the parts: it goes around neighbouring parts.
     Everything extruded, the brim included, must fit the bed with its 5 mm margin, and the last layer must stay under

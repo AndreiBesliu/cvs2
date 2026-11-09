@@ -21,7 +21,9 @@ export {
   CALITATI, K1C, MATERIALE, LIMITE, setariImplicite, setariValide, material, calitate, MODELE_RAR, MODELE_PLIN, CUSATURI, CALCARI,
   MODELE_CALCARE, FUSTE, GROSIMI_VERTICALE, type SetariFeliere, type Brim,
 } from './profil.ts';
-export { timpText, type Miniatura } from './gcode.ts';
+export {
+  cuPauze, NOTA_PAUZA_MAX, notaInFisier, notaPauza, punePauze, timpText, type Miniatura, type Pauza, type PauzaPusa,
+} from './gcode.ts';
 export { citesteFel, puncte, type Cale, type Rol } from './straturi.ts';
 
 export type AvertismentFeliere =

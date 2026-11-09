@@ -243,6 +243,9 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   // Felia 3.6l: piesa „după CNC” și înălțimea (una pentru toate, a fiecărei piese; rândul unei piese poartă numele ei).
   'felie-dupa-cnc': 'imprimanta.felie.dupa-cnc', 'felie-inaltime-toate': 'imprimanta.felie.inaltime.toate',
   'felie-inaltime-piese': 'imprimanta.felie.inaltime.piese', 'felie-inaltime-piesa': 'imprimanta.felie.inaltime.piese',
+  // Felia 3.6p (ADR 0193): pauza la un strat (rândul unei pauze din listă poartă stratul ei).
+  'felie-pauza': 'imprimanta.felie.pauza', 'felie-pauza-du': 'imprimanta.felie.pauze', 'felie-pauza-nota': 'imprimanta.felie.pauza.nota',
+  'felie-pauza-scoate': 'imprimanta.felie.pauza.scoate',
   // Felia 3.6o (ADR 0192): comenzile din timpul imprimării (un ventilator, oricare: `data-ventilator` spune care).
   lumina: 'imprimanta.lumina', ventilator: 'imprimanta.ventilatoare', 'ventilator-camp': 'imprimanta.ventilatoare',
   viteza: 'imprimanta.viteza', 'viteza-camp': 'imprimanta.viteza', 'viteza-suta': 'imprimanta.reglaj.suta', debit: 'imprimanta.debit',

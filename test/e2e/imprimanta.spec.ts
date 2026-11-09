@@ -778,3 +778,94 @@ test('Din desen…, cu imprimanta legată: „Trimite la imprimantă” trece pr
   // Pe 9999, doar citiri: nimic pornit singur.
   expect(comenziSet(imp)).toEqual([]);
 });
+
+test('Din desen…, pauza la un strat (3.6p): butonul, semnul de pe glisor, lista cu nota, rezumatul; PAUSE în fișier; ținută pentru aceleași piese', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '3');
+  const strat = page.locator('[data-imprimanta="felie-strat"]'), buton = page.locator('[data-imprimanta="felie-pauza"]');
+  const ajutor = page.getByTestId('imprimanta-felie-pauza-ajutor'), lista = page.getByTestId('imprimanta-felie-pauze');
+  // Înaintea primului strat: fără pauză.
+  await strat.fill('1');
+  await expect(buton).toBeDisabled();
+  await expect(ajutor).toHaveText('Înaintea primului strat nu se pune pauză.');
+  await expect(lista).toHaveCount(0);
+  // Înaintea stratului 11: imprimanta se oprește după stratul 10, la 2 mm.
+  await strat.fill('11');
+  await expect(ajutor).toHaveText('Imprimanta se oprește după stratul 10, la 2 mm.');
+  await expect(buton).toHaveAttribute('aria-pressed', 'false');
+  await buton.click();
+  await expect(buton).toHaveAttribute('aria-pressed', 'true');
+  await expect(lista.locator('li')).toHaveCount(1);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-du"]')).toHaveText('înaintea stratului 11 · la 2 mm');
+  await expect(page.locator('[data-testid="imprimanta-felie-semne"] i[data-strat="11"]')).toHaveCount(1);
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('15 straturi');
+  await expect(page.getByTestId('imprimanta-felie-rezumat-pauze')).toContainText('1 pauză, plus cât stă în ea');
+  await lista.locator('[data-imprimanta="felie-pauza-nota"]').fill('filament roșu');
+  // Alt strat: butonul nu e apăsat; un clic pe pauza din listă aduce stratul ei.
+  await strat.fill('5');
+  await expect(buton).toHaveAttribute('aria-pressed', 'false');
+  await lista.locator('[data-imprimanta="felie-pauza-du"]').click();
+  await expect(page.getByTestId('imprimanta-felie-strat')).toHaveText('11 / 15');
+  await expect(buton).toHaveAttribute('aria-pressed', 'true');
+  // Fișierul: PAUSE înaintea stratului 11, cu nota în ASCII; o singură comandă nouă.
+  const citeste = async (): Promise<string> => {
+    const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+    return (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  };
+  const text = await citeste();
+  expect(text).toContain('\n;AFTER_LAYER_CHANGE\n;2.2\n;PAUSE_PRINT\n; pause note: filament rosu\nPAUSE\n');
+  expect(text.split('\n').filter((l) => l === 'PAUSE')).toHaveLength(1);
+  expect([...text].every((c) => c.charCodeAt(0) < 128)).toBe(true);
+  // La 0,12 mm (și primul strat de 0,12), pauza ține înălțimea (2 mm): înaintea primului strat care începe de la ea, al
+  // 18-lea (de la 17 × 0,12 = 2,04 mm).
+  await page.locator('[data-imprimanta="felie-calitate"]').selectOption('0.12');
+  await felieGata(page);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-du"]')).toHaveText('înaintea stratului 18 · la 2,04 mm');
+  // Ținută pentru aceleași piese: închisă și redeschisă, pauza revine, cu nota.
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(lista.locator('li')).toHaveCount(1);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-nota"]')).toHaveValue('filament roșu');
+  // Scoasă: nici în rezumat, nici în fișier, nici la redeschidere.
+  await lista.locator('[data-imprimanta="felie-pauza-scoate"]').click();
+  await expect(lista).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-felie-rezumat-pauze')).toHaveCount(0);
+  expect(await citeste()).not.toContain('PAUSE');
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(lista).toHaveCount(0);
+});
+
+test('pauza din fișier, la trimitere și la pornire (3.6p): spusă lângă verificare și lângă bifa „Patul e gol”; nimic pornit singur', async ({ page }) => {
+  const imp = await porneste({});
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '2');
+  await page.locator('[data-imprimanta="felie-strat"]').fill('6');
+  await page.locator('[data-imprimanta="felie-pauza"]').click();
+  await page.locator('[data-imprimanta="felie-pauza-nota"]').fill('magnet');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-pauze')).toHaveText('Pauzele din fișier (1): înaintea stratului 6 (la 1 mm): magnet.');
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  expect(imp.urcate()[0]!.text).toContain('\n;PAUSE_PRINT\n; pause note: magnet\nPAUSE\n');
+  await page.locator('[data-imprimanta="trimite-porneste"]').click();
+  await expect(page.getByTestId('imprimanta-pornire-pauze'))
+    .toHaveText('Imprimanta se va opri la pauzele din fișier: înaintea stratului 6 (la 1 mm): magnet. Apasă Reia după fiecare.');
+  // Fără bifă, nimic nu pornește; renunțarea nu trimite nimic.
+  await expect(page.locator('[data-imprimanta="pornire-confirma"]')).toBeDisabled();
+  await page.locator('[data-imprimanta="pornire-renunta"]').click();
+  expect(comenziSet(imp)).toEqual([]);
+});

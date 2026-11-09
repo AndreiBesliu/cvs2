@@ -31,7 +31,7 @@ import {
   type IdVentilator, type Imprimanta as ImprimantaCitita, type Incalzitor, type Interval, type StareLucrare,
 } from '../machine/imprimanta/driver.ts';
 import { DRIVER_IMPLICIT, DRIVERE, driverDupaId, esteIdDriver } from '../machine/imprimanta/drivere.ts';
-import { analizeazaFisier, patPentru, type AnalizaGcode } from '../machine/imprimanta/gcode3d.ts';
+import { analizeazaFisier, patPentru, type AnalizaGcode, type PauzaFisier } from '../machine/imprimanta/gcode3d.ts';
 import { RACIRE_IMPLICITA_MIN, SesiuneImprimanta, type LinieJurnal, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, CHEIE_IMPRIMANTE, citesteImprimante, reteleDeCautat, scrieImprimante, tineImprimanta, uitaImprimanta, type ImprimantaTinuta,
@@ -129,6 +129,16 @@ const durata = (s: number): string => {
 };
 const grade = (v: number | null): string => (v === null ? '—' : String(Math.round(v)));
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
+
+/** Pauzele unui fișier, pe scurt (felia 3.6p): „înaintea stratului 11 (la 2 mm): filament negru; …”, cel mult 5, apoi „…”. */
+const listaPauze = (p: readonly PauzaFisier[]): string => {
+  const una = (x: PauzaFisier): string => {
+    const unde = x.strat === null ? t('imprimanta.pauza.linie', { comanda: x.comanda, n: x.linie })
+      : x.z === null ? t('imprimanta.pauza.inainte', { k: x.strat }) : t('imprimanta.pauza.inainte-z', { k: x.strat, z: x.z.toLocaleString(loc()) });
+    return x.nota === null ? unde : `${unde}: ${x.nota}`;
+  };
+  return p.slice(0, 5).map(una).join('; ') + (p.length > 5 ? '; …' : '');
+};
 const ora = (ms: number): string => new Date(ms).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
 /** Mărimea unui fișier: MB cu o zecimală de la 1 MB, altfel kB. */
 const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(o / 1e3))} kB`);
@@ -307,7 +317,10 @@ function Conectare({ st, tinute, uita, dinDesen }: {
 }
 
 /** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării și homing-ul (3.6o). */
-type Confirmare = { readonly fel: 'pornire'; readonly fisier: FisierImprimanta } | { readonly fel: 'oprire' } | { readonly fel: 'homing' };
+type Confirmare =
+  | { readonly fel: 'pornire'; readonly fisier: FisierImprimanta; readonly pauze?: readonly PauzaFisier[] }
+  | { readonly fel: 'oprire' }
+  | { readonly fel: 'homing' };
 
 function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
   readonly st: StareImprimanta; readonly dinDesen: ((el: HTMLElement) => void) | null;
@@ -417,7 +430,7 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setAles((x) => ({ f, k: (x?.k ?? 0) + 1 })); }} />
       {ales !== null && (
         <DialogTrimitere key={ales.k} fisier={ales.f} st={st} stare={stare} alt={alege} inchide={() => { setAles(null); }}
-          porneste={(f) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f }); }} />
+          porneste={(f, pauze) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f, pauze }); }} />
       )}
       <div className="imprimanta-coloane">
         <div className="imprimanta-stiva">
@@ -931,14 +944,14 @@ type PasTrimitere =
   | { readonly fel: 'citeste' }
   | { readonly fel: 'gata' | 'trimite'; readonly a: AnalizaGcode }
   | { readonly fel: 'esec'; readonly a: AnalizaGcode | null; readonly motiv: MotivUrcare | 'citire' }
-  | { readonly fel: 'ajuns'; readonly f: FisierImprimanta };
+  | { readonly fel: 'ajuns'; readonly f: FisierImprimanta; readonly a: AnalizaGcode };
 
 /** Numele unei imprimante, de comparat („Creality K1C” îl conține pe „K1C”). */
 const simplu = (s: string): string => s.toLowerCase().replace(/[\s_-]/g, '');
 
 function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
   readonly fisier: File; readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alt: () => void; readonly inchide: () => void;
-  readonly porneste: (f: FisierImprimanta) => void;
+  readonly porneste: (f: FisierImprimanta, pauze: readonly PauzaFisier[]) => void;
 }): ReactNode {
   const legata = st.legatura === 'conectat';
   const model = st.imprimanta.model;
@@ -968,7 +981,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     oprire.current = c;
     setPas({ fel: 'trimite', a });
     urca({ adresa, nume, date: fisier, lista: sesiune, semnal: c.signal }).then(
-      (r) => { if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier } : { fel: 'esec', a, motiv: r.motiv }); },
+      (r) => { if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier, a } : { fel: 'esec', a, motiv: r.motiv }); },
       () => undefined,
     );
   };
@@ -1011,6 +1024,9 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
           <div>
             {despre !== '' && <p data-testid="imprimanta-trimite-despre">{avert.length === 0 ? '✓ ' : ''}{despre}</p>}
             {a.iesire === null && a.miscari > 0 && <p className="imprimanta-slab" data-testid="imprimanta-trimite-incape">{t('imprimanta.trimite.incape', { x: pat[0], y: pat[1], z: pat[2] })}</p>}
+            {a.pauze.length > 0 && (
+              <p className="imprimanta-trimite-pauze" data-testid="imprimanta-trimite-pauze">{t('imprimanta.trimite.pauze', { n: a.pauze.length, lista: listaPauze(a.pauze) })}</p>
+            )}
           </div>
         </div>
       )}
@@ -1034,7 +1050,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
           ? (
             <>
               <button type="button" className="principal" data-imprimanta="trimite-porneste" disabled={!legata || !sePoatePorni(stare)}
-                onClick={() => { porneste(pas.f); }}>{t('imprimanta.trimite.porneste')}</button>
+                onClick={() => { porneste(pas.f, pas.a.pauze); }}>{t('imprimanta.trimite.porneste')}</button>
               <button type="button" data-imprimanta="trimite-inchide" onClick={inchide}>{t('imprimanta.trimite.inchide')}</button>
             </>
           )
@@ -1097,6 +1113,9 @@ function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; re
           onChange={(e) => { setPatGol(e.target.checked); }} />
         <span>{t('imprimanta.pornire.pat-gol')}</span>
       </label>
+      {c.pauze !== undefined && c.pauze.length > 0 && (
+        <p className="imprimanta-pornire-pauze" data-testid="imprimanta-pornire-pauze">{t('imprimanta.pornire.pauze', { lista: listaPauze(c.pauze) })}</p>
+      )}
       <p className="imprimanta-ajutor">{t('imprimanta.pornire.nota')}</p>
       <div className="imprimanta-butoane">
         <button type="button" className="principal" data-imprimanta="pornire-confirma" disabled={!patGol} onClick={confirma}>{t('imprimanta.pornire.confirma')}</button>

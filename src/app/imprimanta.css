@@ -611,6 +611,104 @@
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Pauza la un strat (felia 3.6p, ADR 0193 §A, după schița acceptată): butonul de sub glisor, semnele pauzelor pe glisor (în
+ * roșu, ca oprirea, nu în culoarea glisorului), lista lor cu nota fiecăreia; în trimitere și la pornire, pauzele fișierului.
+ */
+.imprimanta-felie-pista {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.imprimanta-felie-semne {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.imprimanta-felie-semne i {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  margin: -10px 0 0 -1.5px;
+  border-radius: 2px;
+  background: var(--rosu);
+}
+
+.imprimanta-felie-pauza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.imprimanta-felie-pauza button[aria-pressed='true'] {
+  border-color: var(--rosu);
+  background: var(--s-rosu);
+  font-weight: 600;
+}
+
+.imprimanta-felie-pauze {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.imprimanta-felie-pauze-titlu {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-pauze ul {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imprimanta-felie-pauze li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.imprimanta-felie-pauze li[data-pauza-strat='cade'] {
+  border-style: dashed;
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-pauze li button[data-imprimanta='felie-pauza-du'] {
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-felie-pauze li input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.imprimanta-felie-pauza-scoate {
+  margin-left: auto;
+  min-width: var(--tinta);
+}
+
+.imprimanta-trimite-pauze,
+.imprimanta-pornire-pauze {
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: var(--s-rosu);
+}
+
 .imprimanta-din-desen {
   display: grid;
   gap: var(--sp-1);
