@@ -648,8 +648,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
   105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
   **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
-  (ramura `wip/25.1-trasare`, neunită; canalul `trasare`), cu toate recomandările („Da, 1a–8a”): o imagine (PNG, JPEG, WebP,
-  GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
+  (ramura `wip/25.1-trasare`, canalul `trasare`; **unită în `main` pe 09.11**, mai jos), cu toate recomandările („Da,
+  1a–8a”): o imagine (PNG, JPEG, WebP, GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
   pragul cu histograma, Inversează, Netezimea, petele și golurile în mm, lățimea cu DPI-ul sau 96 px pe țol; previzualizarea;
   abaterea măsurată), iar desenul intră ca o piesă, cu laturile din sensul contururilor. **Nucleul, `src/trasare/trasare.ts`,
   e cod propriu, fără niciun import din aplicație** (regula `trasare-izolat`; potrace e GPL, `marchingsquares` AGPL), și
@@ -658,14 +658,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   următor și demontarea dialogului (Renunță, Escape) opresc trasarea, cu workerul. **Proba nucleului e corpusul Python**
   (`test/oracles-py/trasare_corpus.py`, cu acoperirea exactă, valorile pe hârtie și martorul scikit-image, verificat și în CI)
   plus o probă pe o margine zgomotoasă (acele de un pixel: 0,56–0,63 px).
-  **Trasarea pe culori (ADR 0221, felia 25.2↑)** gata pe 07.11, în același worktree (neunită; canalul `trasare`), cu toate
+  **Trasarea pe culori (ADR 0221, felia 25.2↑)** gata pe 07.11, în același worktree (canalul `trasare`), cu toate
   recomandările („Da, 1a–5a”): sursa „Culorile”, numărul automat sau 2–16, pastilele cu legarea prin tragere, granițele
   comune (netezite o dată pentru amândouă culorile), o piesă pe culoare, aliniate, într-un pas. **Nucleul,
   `src/trasare/culori.ts`, tot fără importuri din aplicație;** reducerea e în OKLab cu luminozitatea pe jumătate, pe pixelii
   plini fără amestecurile de margine, cu multe clase unite după distanță (testul vechi de „pixel plin” pierdea liniile
   subțiri ale logoului). **Piesele aduse împreună trec prin `ImportPregatit.impreuna`;** legăturile, prin
   `src/trasare/legaturi.ts` (nucleul și pastilele).
-  **Linia mediană (ADR 0222, felia 25.3↑)** gata pe 08.11, tot acolo (neunită; canalul `trasare`), cu toate recomandările
+  **Linia mediană (ADR 0222, felia 25.3↑)** gata pe 08.11, tot acolo (canalul `trasare`), cu toate recomandările
   („Da, 1a–5a”): „Rezultatul: Linii mediane” la sursele alb-negru. **Nucleul, `src/trasare/mediana.ts`, tot fără importuri
   din aplicație;** partea comună cu contururile (cerneala, pragul, curățarea, marginile) e `campul`, în `trasare.ts`.
   **Zhang–Suen are nevoie de îndreptarea lui Lü și Wang** (fără ea, o trăsătură la 45° dispare). **Căile deschise au
@@ -679,6 +679,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   R0 + 0,5 px de el; bucățile rămase care ating partea lată și stau toate la cel mult 2·R0 + 1 de miez îi aparțin** (altfel,
   zeci de cioturi în jurul unui bloc). **`CaiTrasate.peLinie` (lipsă: toate pe linie) dă latura căilor mediane închise.**
   **Cu `main` unit pe 08.11 (`8dde2d2`, cu incrustațiile) și 25.3↑b: pornirea 101,9 / 110 kB, totalul 574,8 / 600.**
+  **Linia trasării (25.1↑–25.3↑b) unită în `main` pe 09.11** („Yes, merge trasarea”; `e277836`; conflicte doar în
+  documente). **Pornirea 101,9 (cu ușa 105,5 / 110 kB), totalul 577,2 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
+  ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
+  mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
+  5b).
   **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
   08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
   (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`
@@ -924,6 +930,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **linia trasării din imagine (25.1↑–25.3↑b) unită în `main`** („Yes, merge trasarea”, la „Merge trasarea
+  into main now?”, după „vezi ce mai este gata de unit cu main”): singura linie gata care încape sub plafon. Tăierea și
+  planșele aduc întâi `main` în ramură (conflicte de cod cu ancorele), imprimanta așteaptă proba plăcii pe K1C (condiția
+  owner-ului), 6.V↑d e încă în lucru; toate la un loc ar trece de 600 kB (~650).
 - 08.11.2026: **linia ancorelor (6.V↑, 6.V↑b, 6.V↑c) unită în `main`** („Da, unește”, în sesiunea liniei, după raportul ei:
   „Dacă e bine, spune „unește”; ramura o unește în `main` sesiunea principală”): conflicte doar în documente, păstrate ambele
   părți. 6.V↑d (opțiunile) rămâne pe linie, după decizia owner-ului pe plafon.
