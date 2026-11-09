@@ -7589,3 +7589,29 @@ tăierea” (la „Merge tăierea into main?”).
   (și pe culori); două întrebări (lumina implicită; zona: decupaj sau filtru). Schița, cu macheta pe toate cazurile și
   formularul: <https://claude.ai/artifact/U1jHQbsKGXNwopvJMBppCj>.
 - **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului (0 lipsă).
+
+## 2026-11-09 — Felia 25.4↑: scanările și pozele (ADR 0224, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–2a” (owner-ul, la cele două întrebări din ADR 0224: „Uniformă” implicit, cu sugestia din raport; zona e
+un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:55.
+
+- **Ramura** adusă la `origin/main` (`01f6673`: plafonul total 700 kB, ADR 0144; conflict doar în DEVLOG).
+- **Probele întâi:** poze sintetice cu cerneala știută (`test/unit/ajutor-poze.ts`: lumina dintr-o parte, o pată plină,
+  o umbră tare, foaia pe masă, creta pe tablă, desene dese și rare, hârtia foarte întunecată, poza subexpusă), 20 de
+  probe ale luminii, 4 ale ușii, 4 e2e.
+- **Nucleul** (`src/trasare/lumina.ts`, pur): fundalul neted (polinomul de gradul 3, pe 40 000 de eșantioane, de patru
+  ori, evaluat pe o grilă de 32 px), fundalul local (închiderea, van Herk – Gil-Werman, pe linii și pe coloane câte 16),
+  raportul cu pragul de jos (un sfert din hârtia cea mai deschisă), creta întinsă după percentila 99,5, polaritatea din
+  mediana din jur; „Ignoră ce atinge marginea” în curățare și pe culori; sugestia la „Uniformă” (variația hârtiei).
+- **Găsite pe drum:** (1) pragul automat de azi cade la acoperirea ~0,47 pe trăsăturile subțiri (în prototip, ascuns de
+  acoperirea cuantizată): probele numără doar greșelile clare; (2) regula polarității din ADR (închiderea și deschiderea)
+  mergea doar pe desene dese: pe un desen rar (e2e-ul, pe canvas) lua hârtia drept cerneală; înlocuită cu mediana din jur;
+  (3) zgomotul mesei închise, împărțit la fundalul ei, ieșea pete (1–2,7 %): pragul de jos al fundalului; (4) pe 12 Mpx,
+  `campul` cu o lumină de poză ținea 3 s (un `Float32Array.from` cu funcție, histograma cu `for…of`, patru imagini de
+  48 MB): acum +0,4 s (Neuniformă) și +0,7 s (Cu umbre).
+- **Zona** (un decupaj în calcul, lățimea a ei, pixelul cu aceeași mărime din DPI), fereastra (Lumina cu sfatul ei, bifa,
+  butonul Zona, Shift, mutarea, întinderea, „Toată imaginea”, umbra din afară, vectorii la locul zonei; raportul), textele
+  și manualul, în ambele limbi; privită în temă deschisă și închisă, mărită.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), regulile de import, licențele, suita unitară 8883 (0 căzute),
+  e2e-urile importului, ale trasării și tutorialul 44 / 44, determinismul (293 de fișiere identice); totalul 582,5 / 700 kB,
+  pornirea 101,9 / 110. Otrăvurile: 48 / 48 (la prima rulare 46 / 49: L12 și T06 au primit probe, hârtia foarte întunecată și poza subexpusă; L15, echivalentă, scoasă din listă cu pragul de zgomot al polarității). Commituri: `fe21e56`, `56d8138`, `3ecf19b`; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 09.12), amprenta `3ecf19befdd7`.

@@ -1,8 +1,9 @@
 # ADR 0224 — Scanările și pozele: lumina inegală, zona aleasă, „Ignoră ce atinge marginea”
 
-**Starea:** propus pe 09.11.2026, la „continua” (owner-ul, după unirea liniei trasării în `main`). Felia 25.4↑, adusă din
-etapa 25, fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`,
-`3797e17`; neunită). Codul vine abia după răspunsurile la întrebările de la final.
+**Starea:** acceptat pe 09.11.2026, cu toate recomandările („Da, 1a–2a”, la întrebările de la final); propus tot atunci, la
+„continua” (owner-ul, după unirea liniei trasării în `main`). Felia 25.4↑, adusă din etapa 25, fără mașină, în linia
+trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `01f6673`; neunită); implementat în
+aceeași zi (secțiunea „Implementarea”).
 **Completează:** ADR 0220 §3 (cerneala și pragul: „pragul local (25.4↑) e altă sursă a cernelii, pe aceeași cale”), §4
 (curățarea), §10 (fereastra), §12 (felia 25.4↑); ADR 0222 și 0223 (liniile mediane primesc același câmp); ADR 0221
 (culorile primesc zona și marginea; lumina lor, într-o felie a ei, dacă o vrei).
@@ -57,7 +58,7 @@ hârtia devine cerneală, iar desenul, găuri în ea.
     ms; Cu umbre, închiderea pe 231 px 546–590 ms; polaritatea 71–93 ms; Sauvola 120–189 ms. Trasarea însăși: ~6,7 s (ADR
     0220). Cu umbre ține încă două imagini de numere (2 × 48 MB pe 12 Mpx) cât lucrează.
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Fereastra trasării**, sub prag și Inversează, doar pe sursa luminozității (o imagine cu transparență n-are lumină):
    - **Lumina:** „Uniformă” (pragul global și polaritatea din margine, ca acum) | „Neuniformă” | „Cu umbre”; implicitul,
@@ -83,7 +84,7 @@ hârtia devine cerneală, iar desenul, găuri în ea.
    - **marginea:** componentele de cerneală care ating marginea (`componente` le știe deja, ADR 0220 §4) se șterg la curățare.
 3. **Culorile** (ADR 0221) primesc zona și marginea; lumina lor (fiecare canal raportat la fundal) e o felie a ei, 25.4↑b,
    dacă o vrei. **Îndreptarea foii** pozate oblic (cele patru colțuri) e tot o felie a ei, după, dacă o vrei.
-4. **Mărimea:** ~+3–4 kB (totalul ~582 / 600; sub plafon mai încap ~21 kB, iar tăierea și planșele așteaptă cu ~19 fiecare).
+4. **Mărimea:** ~+3–4 kB (totalul ~582; plafonul e 700 kB din 09.11, ADR 0144).
 5. **Probele, scrise întâi:**
    - nucleul (`test/unit/trasare.lumina.test.ts`): cazurile prototipului, generate cu adevărul știut, cu plafoanele măsurate
      (plus și lipsă, numărul componentelor); polaritatea pe toate șase; închiderea păstrează exact o treaptă; polinomul
@@ -94,6 +95,52 @@ hârtia devine cerneală, iar desenul, găuri în ea.
      sintetică cu masa în jur → Importă, fără nicio cale pe masă;
    - fișierul real întâi (lecția D7): o poză de telefon a unui desen pe hârtie și o scanare, dacă le trimiți;
    - otrăvurile la capăt (`test/otravuri/25.4.py`).
+
+## Implementarea (09.11)
+
+**Ce s-a schimbat față de propunere** (fiecare, găsit de probe):
+
+1. **Polaritatea, din mediana din jur:** regula propusă (închiderea și deschiderea, cu pixelii de sub mijlocul lor) mergea pe
+   desenul sintetic doar fiindcă zigzagurile lui sunt dese: hârtia dintre dinți, mai îngustă decât fereastra, ieșea
+   „deschisă”. Pe un desen rar (un zigzag larg, un cerc, o linie: e2e-ul) lua hârtia drept cerneală. Acum, pe imaginea redusă
+   la ~0,25 Mpx, mediana luminozității în fereastra fiecărui pixel (1/12 din latura mică, glisantă pe rânduri, după Huang,
+   1979) e a hârtiei, iar abaterile de la ea se adună: cerneala are semnul sumei (hârtia se abate puțin și în ambele sensuri,
+   cerneala mult și într-unul). Un prag de zgomot, încercat întâi, n-a schimbat nicio probă (otrava lui a scăpat): a ieșit
+   din cod. Toate cele nouă cazuri ies bine (șase dese, trei rare); logoul opac care umple cadrul, ca în propunere.
+2. **Fundalul are cel puțin un sfert din hârtia cea mai deschisă** (percentila 95 a lui), pe hârtia deschisă: pe masa
+   închisă, zgomotul împărțit la fundalul ei ieșea pete („Cu umbre” cu marginea: 1 % în plus pe desenul des, 2,7 % pe cel
+   rar; acum 0,01 %). Prețul: o pată plină se pierde toată cu „Cu umbre” (48 % lipsă, nu 33 %), cum oricum se golea.
+3. **Probele numără doar greșelile clare** (un pixel cu acoperirea sub 0,4 luat drept cerneală, sau unul de cel puțin 0,6
+   pierdut): pe trăsăturile subțiri, pragul automat de azi (mijlocul mediilor claselor) cade la acoperirea ~0,47, fiindcă
+   pixelii parțiali trag media cernelii spre hârtie. În prototip nu se vedea: acolo, acoperirea era cuantizată la 1/16.
+4. **Viteza:** luminozitatea scrisă direct în bufferul cernelii, histograma cu index (un `for…of` pe 12 M de pixeli ținea
+   ~180 ms), filtrul pe loc și raportul scris peste fundal (de la patru imagini de câte 48 MB la două): pe 12 Mpx, „Neuniformă”
+   adaugă ~0,4 s, „Cu umbre” ~0,7 s (la început, 2,2–2,5 s).
+5. **Pragul inițial al fundalului neted îl dă nucleul** (`pragAutomat`, Otsu pe întunecime): `lumina.ts` nu importă din
+   `trasare.ts` (fără import circular), iar lista de otrăvuri 25.1, care țintește pragul, rămâne valabilă.
+6. **Zona** se decupează în calcul, înaintea nucleului; răspunsul poartă imaginea întreagă și zona tăiată la ea, iar
+   previzualizarea arată toată imaginea, cu vectorii zonei la locul ei; un clic fără tragere (sub 4 px) nu face o zonă.
+
+**Măsurat** [09.11, Node 26 și Edge fără fereastră, pe `fe21e56` și `3ecf19b`]:
+- pe pozele sintetice de 600 × 400 (`.tmp/masoara-lumina-0224.ts`, greșelile clare): „Neuniformă” 0–0,06 % în plus și
+  0 % lipsă pe lumina dintr-o parte, pe pata plină, pe masă (cu marginea) și pe cretă; „Cu umbre” 0–0,1 % pe lumina dintr-o
+  parte, pe umbra tare și pe masă (cu marginea), 1,5 / 0,7 % pe cretă; pragul de azi, 156–1267 % în plus, iar pe umbră și pe
+  masă cu polaritatea întoarsă (95 % lipsă);
+- timpul pe 12 Mpx (Node): polaritatea 65–100 ms, fundalul neted 84–102 ms, fundalul local 716–874 ms (fereastra de 251 px),
+  raportul 22–40 ms; `campul` întreg 0,57–1,07 s cu „Uniformă”, 1,0–1,2 s cu „Neuniformă”, 1,2–1,35 s cu „Cu umbre”;
+- probele: 20 ale luminii (cu trei desene rare, hârtia foarte întunecată, poza subexpusă), 4 ale ușii, 4 e2e (lumina și
+  sugestia; masa, marginea și Importă; zona cu butonul, cu Shift, clicul, mutarea, întinderea și vectorii la locul ei;
+  transparența și culorile); suita unitară întreagă 8883 (0 căzute, pe `fe21e56`), e2e-urile importului, ale trasării și
+  tutorialul 44 / 44 (și pe `3ecf19b`);
+- otrăvurile (`test/otravuri/25.4.py`, alese de autor): 48 / 48. La prima rulare 46 / 49: L12 și T06 au primit probe (hârtia
+  foarte întunecată, cu contrastul întreg al cernelii, și poza subexpusă); L15, echivalentă, a ieșit din listă cu pragul de
+  zgomot al polarității;
+- mărimea: totalul 582,5 / 700 kB (+3,7), pornirea 101,9 / 110, cu un proiect salvat 105,6.
+
+**Limitele, scrise:** „Cu umbre” golește o pată plină mai lată decât fereastra (o douăsprezecime din imagine) și lasă, pe
+cretă, puțină cerneală în plus (zgomotul tablei închise, ~1,5 %); polaritatea din mediană se poate întoarce pe un desen în
+care cerneala e majoritatea ferestrei (hașuri dese pe toată foaia: atunci, Inversează); pe 16 Mpx, „Cu umbre” adaugă ~1 s;
+sugestia se calculează cu polaritatea din margine, deci nu apare pe o foaie pozată pe masă (acolo, marginea e masa).
 
 ## Ce am respins
 
@@ -115,6 +162,8 @@ hârtia devine cerneală, iar desenul, găuri în ea.
 Cu umbre trece de 1 s pe 16 Mpx în browser; zona se încurcă cu mutarea previzualizării pe un ecran tactil.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (09.11):** „Da, 1a–2a”: toate recomandările.
 
 Opțiunile de mai sus vin toate (regula „toate opțiunile”); întrebările sunt doar despre ce se exclude.
 
