@@ -178,3 +178,67 @@ test('unealta Text pe un șablon cu ramă, fără plăcuțe: clicul pe litere al
   await expect(page.getByTestId('text-stare')).toContainText('Text nou');
   expect(erori).toEqual([]);
 });
+
+test('două texte cu câmpuri, în fonturi diferite, pe o ramă: clicul alege textul lui; «Aplică» pe unul reface plăcuțele și cu fontul celuilalt', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  const la = await ecran(page, await vedere(page));
+  // Rama 120 × 30 din (160, 20); „Ana” (Roboto) în (170, 30) și „Clasa” (Droid Serif) în (230, 30), amândouă de 8 mm.
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await page.mouse.move(la(160, 20).x, la(160, 20).y);
+  await page.mouse.down();
+  await page.mouse.move(la(280, 50).x, la(280, 50).y, { steps: 6 });
+  await page.mouse.up();
+  for (const [continut, font, x] of [['Ana', 'roboto', 170], ['Clasa', 'droid-serif', 230]] as const) {
+    await page.locator('[data-unealta="text"]').click();
+    await page.locator('[data-text="continut"]').fill(continut);
+    await page.locator('[data-text="font"]').selectOption(font);
+    await page.locator('[data-text="inaltime"]').fill('8');
+    await page.mouse.click(la(x, 30).x, la(x, 30).y);
+    await page.click('[data-text="adauga"]');
+    await page.keyboard.press('Escape');
+  }
+  await page.locator('[data-unealta="selectie"]').click();
+  await page.mouse.move(la(150, 60).x, la(150, 60).y);
+  await page.mouse.down();
+  await page.mouse.move(la(290, 10).x, la(290, 10).y, { steps: 6 });
+  await page.mouse.up();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+g');
+  await expect(lista(page)).toHaveCount(1);
+  // Unealta Text: clicul pe „Clasa” îl alege pe el (nu primul text al ramei), apoi clicul pe „Ana”, pe ea.
+  await page.locator('[data-unealta="text"]').click();
+  await page.mouse.click(la(234, 33).x, la(234, 33).y);
+  await expect(page.locator('[data-text="continut"]')).toHaveValue('Clasa');
+  await page.mouse.click(la(173, 33).x, la(173, 33).y);
+  await expect(page.locator('[data-text="continut"]')).toHaveValue('Ana');
+  await page.keyboard.press('Escape');
+  // Câmpurile, din fereastra CSV: {Nume} din „Ana”, {Clasa} din „Clasa”; două plăcuțe.
+  await page.locator('[data-unealta="selectie"]').click();
+  await lista(page).first().click();
+  await page.getByTestId('prop-piesa').locator('[data-buton="din-csv"]').click();
+  await dialog(page).locator('[data-camp="csv-lipire"]').fill('Nume\tClasa\nIon\t5A\nEva\t6B\n');
+  const t = dialog(page).locator('[data-camp="csv-text"]');
+  for (const [k, continut, camp] of [[0, 'Ana', 'Nume'], [1, 'Clasa', 'Clasa']] as const) {
+    await dialog(page).locator('[data-camp="csv-text-ales"]').selectOption(String(k));
+    await expect(t).toHaveValue(continut);
+    await dialog(page).locator('[data-camp="csv-camp-nume"]').fill(camp);
+    await t.focus();
+    await page.keyboard.press('Control+a');
+    await dialog(page).locator('[data-buton="csv-fa-camp"]').click();
+    await expect(t).toHaveValue(`{${camp}}`);
+  }
+  await dialog(page).locator('[data-buton="csv-fa"]').click();
+  await expect(dialog(page)).toHaveCount(0);
+  await salvat(page, (x) => x.foi[0]?.instante.length === 2);
+  // Unealta Text pe plăcuța „Ion”: textul {Nume} (Roboto), de 6 mm; plăcuțele se refac, cu {Clasa} în Droid Serif.
+  await page.locator('[data-unealta="text"]').click();
+  await lista(page).first().click();
+  await expect(page.locator('[data-text="continut"]')).toHaveValue('{Nume}');
+  await page.locator('[data-text="inaltime"]').fill('6');
+  await page.click('[data-text="aplica"]');
+  const d = await salvat(page, (x) => x.piese[0]?.radacina.copii?.some((c) => c.text?.continut === '{Nume}' && c.text.inaltime === 6) === true);
+  expect(d.foi[0]?.instante.map((i) => Object.values(i.texte ?? {}).map((x) => x.continut).sort().join('|'))).toEqual(['5A|Ion', '6B|Eva']);
+  expect(erori).toEqual([]);
+});
