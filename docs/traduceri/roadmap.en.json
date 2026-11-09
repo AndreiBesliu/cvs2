@@ -297,10 +297,6 @@
       "ro": "Postul familiei GRBL (ADR 0083): contractele grblHAL și FluidNC ca date, alese în fereastra exportului, inch cu 5 zecimale, elicea doar unde contractul o declară, pauza în unitatea controlerului; schimbarea sculei ca eveniment în IR, cu cele 4 strategii și blocul de după `M6` (PORTARE §3.4), probată prin sender pe emulator",
       "en": "The GRBL-family post (ADR 0083): the grblHAL and FluidNC contracts as data, chosen in the export window, inches with 5 decimals, the helix only where the contract declares it, the dwell in the controller’s unit; the tool change as an event in the IR, with the 4 strategies and the block after `M6` (PORTARE §3.4), proven through the sender on the emulator"
     },
-    "18e125ad0144dfe2": {
-      "ro": "Încercarea scanărilor și a pozelor (25.4↑) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>): din „Importă…”, o poză de telefon a unui desen pe hârtie (luminată dintr-o parte, cu umbra telefonului sau pe masă) și o scanare: **Lumina** „Neuniformă” sau „Cu umbre”, **Ignoră ce atinge marginea**, **Zona** trasă pe previzualizare (butonul ei, sau Shift + tragere). Spune unde iese mai rău decât în LightBurn sau în ArtCAM (ADR 0224, „Se redeschide dacă”); poza trimisă intră în probe",
-      "en": "Trying scans and photos (25.4↑) on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>): from “Import…”, a phone photo of a drawing on paper (lit from one side, with the phone’s shadow or on a table) and a scan: **Lighting** “Uneven” or “With shadows”, **Ignore what touches the edge**, the **Area** dragged on the preview (its button, or Shift + drag). Say where it comes out worse than in LightBurn or ArtCAM (ADR 0224, “Reopens if”); the photo you send goes into the tests"
-    },
     "19093c54d4ba0aa1": {
       "ro": "da; **pachetul la ateliere**",
       "en": "yes; **the package to the workshops**"
@@ -1664,6 +1660,10 @@
     "9494cd00c92a6dab": {
       "ro": "Traseul pe pânză și panoul de proprietăți editabil",
       "en": "The toolpath on the canvas and the editable properties panel"
+    },
+    "94b0745ff87d28d7": {
+      "ro": "Încercarea scanărilor și a pozelor (25.4↑) pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 25.4↑ unită în `main` și publicată pe 09.11): din „Importă…”, o poză de telefon a unui desen pe hârtie (luminată dintr-o parte, cu umbra telefonului sau pe masă) și o scanare: **Lumina** „Neuniformă” sau „Cu umbre”, **Ignoră ce atinge marginea**, **Zona** trasă pe previzualizare (butonul ei, sau Shift + tragere). Spune unde iese mai rău decât în LightBurn sau în ArtCAM (ADR 0224, „Se redeschide dacă”); poza trimisă intră în probe",
+      "en": "Trying scans and photos (25.4↑) on the main test address (<https://cncvectorstudio-test.web.app/>; 25.4↑ merged into `main` and published on 09.11): from “Import…”, a phone photo of a drawing on paper (lit from one side, with the phone’s shadow or on a table) and a scan: **Lighting** “Uneven” or “With shadows”, **Ignore what touches the edge**, the **Area** dragged on the preview (its button, or Shift + drag). Say where it comes out worse than in LightBurn or ArtCAM (ADR 0224, “Reopens if”); the photo you send goes into the tests"
     },
     "950c55ab39d07325": {
       "ro": "Loc în pachetul de pornire (ADR 0042), felie fără mașină, prin workflow (măsurătoarea, 3 propuneri, judecătorul, implementarea, 4 verificatori): pornirea 99,1 → **92,3 / 100 kB**; cu un proiect salvat 101,5 → 96,9. Ferestrele exportului, importului și panoului își aduc calculul, schemele documentului stau în modulul lor, dicționarul limbii active și alegerea cu clicul vin la cerere. Recenzia: 9 constatări, 7 remediate cu proba lor (limba nu se mai abandonează după 4 s, ultimul clic de limbă câștigă, pagina „fără texte” accesibilă, otrava C01 repusă, ușa plafonată la 8 kB), fiecare probă pică pe sabotajul remedierii; 2 limite scrise (tragerea și tasta date înaintea sosirii alegerii).",
