@@ -20,12 +20,14 @@ export type CumPoza = {
   readonly pata?: boolean; readonly umbra?: boolean; readonly masa?: boolean; readonly creta?: boolean;
   /** Un desen rar (un zigzag larg, un cerc, o linie: cerneala nu umple nicio fereastră), în locul celui des. */
   readonly rar?: boolean;
+  /** Un desen dat (liniile lui), în locul celui des sau rar. */
+  readonly desen?: readonly Linie[];
   /** Abaterea zgomotului (aproape gaussian); lipsă: 0,025. */
   readonly zgomot?: number;
   readonly samanta?: number;
 };
 
-type Linie = { readonly P: ReadonlyArray<readonly [number, number]>; readonly w: number };
+export type Linie = { readonly P: ReadonlyArray<readonly [number, number]>; readonly w: number };
 
 /** Desenul, pe o foaie de W × H: patru rânduri de zigzaguri (3–6 px), un cerc (4 px), o spirală (3 px). */
 export function desenPoza(W: number, H: number, masa = false): Linie[] {
@@ -95,7 +97,7 @@ export function poza(o: CumPoza): Poza {
   // Ca în prototip: suma a șase uniforme, centrată (abaterea ~0,71), înmulțită cu `zgomot`.
   const gauss = (): number => { let t = 0; for (let i = 0; i < 6; i++) t += r(); return t - 3; };
   const pline: Array<readonly [number, number, number, number]> = o.pata ? [[0.125 * W, 0.65 * H, 0.39 * W, 0.875 * H]] : [];
-  const ac = acoperirePoza(W, H, o.rar ? desenRar(W, H) : desenPoza(W, H, o.masa), pline);
+  const ac = acoperirePoza(W, H, o.desen ?? (o.rar ? desenRar(W, H) : desenPoza(W, H, o.masa)), pline);
   const lumina = o.lumina ?? ((): number => 0.97), zg = o.zgomot ?? 0.025;
   const date = new Uint8ClampedArray(W * H * 4), adevar = new Uint8Array(W * H), hartie = new Uint8Array(W * H).fill(1), l = new Float32Array(W * H);
   const acoperire = new Float32Array(W * H);

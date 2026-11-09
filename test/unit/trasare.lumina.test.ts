@@ -90,6 +90,20 @@ test('un desen rar (un zigzag larg, un cerc, o linie): ambele lumini de poză î
   }
 });
 
+test('hârtia foarte întunecată: o linie pe un sfert din hârtia cea mai deschisă se găsește (pragul de jos al fundalului)', () => {
+  // Lumina scade de la stânga la dreapta de cinci ori; patru linii verticale, ultima la 95 % din lățime (hârtia: ~0,22).
+  const linii = [0.15, 0.5, 0.85, 0.95].map((fx) => ({ P: [[fx * W, 0.2 * H], [fx * W, 0.8 * H]] as const, w: 5 }));
+  const p = poza({ W, H, lumina: (x) => 1 - 0.8 * (x / W), desen: linii });
+  const e = cu(p, 'neuniforma');
+  assert.ok(e.plus <= 0.005 && e.lipsa <= 0.005, `în plus ${pct(e.plus)}, lipsă ${pct(e.lipsa)}`);
+});
+
+test('o poză subexpusă (hârtia sub jumătate, de la 37 % la 7 %): fundalul neted pornește din pragul Otsu, nu dintr-unul fix', () => {
+  const p = poza({ W, H, lumina: (x, y) => 0.45 * lat(x, y) });
+  const e = cu(p, 'neuniforma');
+  assert.ok(e.plus <= 0.005 && e.lipsa <= 0.005, `în plus ${pct(e.plus)}, lipsă ${pct(e.lipsa)}`);
+});
+
 test('creta pe tablă (cerneala deschisă): raportul față de fondul închis ține toată creta, și în colțul întunecat', () => {
   const u = cu(CAZURI.creta, 'uniforma');
   assert.ok(u.lipsa > 0.015, `Uniformă: lipsă ${pct(u.lipsa)} (măsurat: 3 %)`);

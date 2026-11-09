@@ -258,10 +258,10 @@ export function raportFundal(l: Float32Array, B: Float32Array, hartieDeschisa: b
 /**
  * Polaritatea pe o poză (ADR 0224 §2): true dacă cerneala e deschisă pe un fond închis. Pe imaginea redusă la ~0,25 Mpx,
  * mediana luminozității în fereastra fiecărui pixel (1/12 din latura mică): acolo, hârtia e majoritatea, deci mediana e a
- * hârtiei, iar cerneala e ce se abate de la ea. Abaterile de peste zgomot (de trei ori abaterea mediană absolută, cel puțin
- * 5 / 255) se adună pe semne, iar cerneala are semnul celor mai mari. Lumina nu se abate (mediana o urmează), nici o treaptă
- * de umbră sau marginea mesei (de fiecare parte, mediana e a părții); marginea imaginii nu mai decide. Un desen în care
- * cerneala e majoritatea ferestrei (o pată plină mare) se abate doar pe marginile lui, deci nu decide.
+ * hârtiei, iar cerneala e ce se abate de la ea. Abaterile se adună, iar cerneala are semnul sumei: hârtia se abate puțin și
+ * în ambele sensuri (zgomotul), cerneala mult și într-unul. Lumina nu se abate (mediana o urmează), nici o treaptă de umbră
+ * sau marginea mesei (de fiecare parte, mediana e a părții); marginea imaginii nu mai decide. Un desen în care cerneala e
+ * majoritatea ferestrei (o pată plină mare) se abate doar pe marginile lui, deci nu decide.
  */
 export function cernealaDeschisa(l: Float32Array, W: number, H: number): boolean {
   const s = Math.max(1, Math.round(Math.sqrt((W * H) / 250_000))), w = Math.max(1, Math.floor(W / s)), h = Math.max(1, Math.floor(H / s));
@@ -275,7 +275,8 @@ export function cernealaDeschisa(l: Float32Array, W: number, H: number): boolean
   }
   // Mediana pe fereastră, glisantă pe rânduri (Huang, 1979): histograma ferestrei, cu coloana nouă adăugată și cea veche
   // scoasă, și mediana mutată pas cu pas.
-  const k = Math.max(3, Math.round(Math.min(w, h) / 24)), dev = new Int16Array(w * h), hist = new Int32Array(256);
+  const k = Math.max(3, Math.round(Math.min(w, h) / 24)), hist = new Int32Array(256);
+  let suma = 0;
   for (let y = 0; y < h; y++) {
     hist.fill(0);
     const y0 = Math.max(0, y - k), y1 = Math.min(h - 1, y + k);
@@ -293,22 +294,10 @@ export function cernealaDeschisa(l: Float32Array, W: number, H: number): boolean
       const tinta = (n + 1) >> 1;
       while (sub + (hist[m] ?? 0) < tinta && m < 255) { sub += hist[m] ?? 0; m++; }
       while (m > 0 && sub >= tinta) { m--; sub -= hist[m] ?? 0; }
-      dev[y * w + x] = (r[y * w + x] ?? 0) - m;
+      suma += (r[y * w + x] ?? 0) - m;
     }
   }
-  // Zgomotul: abaterea mediană absolută (pe o histogramă a abaterilor), de trei ori, ca abaterea tipică a hârtiei.
-  const ha = new Int32Array(256);
-  for (let p = 0; p < w * h; p++) { const a = Math.min(255, Math.abs(dev[p] ?? 0)); ha[a] = (ha[a] ?? 0) + 1; }
-  let mad = 0;
-  for (let a = 0, c = 0; a < 256; a++) { c += ha[a] ?? 0; if (c >= (w * h) / 2) { mad = a; break; } }
-  const prag = Math.max(5, 3 * 1.4826 * mad);
-  let inchise = 0, deschise = 0;
-  for (let p = 0; p < w * h; p++) {
-    const d = dev[p] ?? 0;
-    if (d > prag) deschise += d - prag;
-    else if (d < -prag) inchise += -d - prag;
-  }
-  return deschise > inchise;
+  return suma > 0;
 }
 
 /**

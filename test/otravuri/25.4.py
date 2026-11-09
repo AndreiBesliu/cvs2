@@ -50,10 +50,11 @@ o('L12', LU, '    const jos = Math.max(0.02, 0.25 * percentila(B, 0.95,', '    c
 o('L13', LU, '  const s = p995 > 1.01 ? p995 - 1 : 1;', '  const s = 1;', 'nuc', 'creta neîntinsă după percentila 99,5')
 
 # ---- Polaritatea ----
-o('L14', LU, '  return deschise > inchise;', '  return deschise < inchise;', 'nuc', 'polaritatea întoarsă')
-o('L15', LU, '  const prag = Math.max(5, 3 * 1.4826 * mad);', '  const prag = 0;', 'nuc', 'și zgomotul hârtiei se numără')
-o('L16', LU, '  const k = Math.max(3, Math.round(Math.min(w, h) / 24)), dev = new Int16Array(w * h), hist = new Int32Array(256);',
-  '  const k = 1, dev = new Int16Array(w * h), hist = new Int32Array(256);', 'nuc', 'mediana pe 3 × 3: pe trăsăturile groase, cerneala e majoritatea')
+o('L14', LU, '  return suma > 0;', '  return suma < 0;', 'nuc', 'polaritatea întoarsă')
+# L15 (și zgomotul hârtiei se numără): scăpată la prima rulare, echivalentă (zgomotul se abate în ambele sensuri); pragul
+# de zgomot al polarității scos din cod, cu otrava.
+o('L16', LU, '  const k = Math.max(3, Math.round(Math.min(w, h) / 24)), hist = new Int32Array(256);',
+  '  const k = 1, hist = new Int32Array(256);', 'nuc', 'mediana pe 3 × 3: pe trăsăturile groase, cerneala e majoritatea')
 o('L17', LU, '      const tinta = (n + 1) >> 1;', '      const tinta = n;', 'nuc', 'maximul ferestrei în locul medianei')
 o('L18', LU, '  const hartieDeschisa = cernealaDeschisa(l, W, H) === inverseaza;', '  const hartieDeschisa = !inverseaza;', 'nuc',
   'polaritatea nu se caută: creta e luată drept hârtie')
