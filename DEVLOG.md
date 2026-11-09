@@ -6903,3 +6903,23 @@ făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
 - **Mărimea:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din ADR: bucata ferestrei, adusă la cerere, +8,0, din care 2,0
   e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată). **Acceptat de
   owner pe 09.11, 12:05** („Da, accept”, la „Accepți cei 5,8 kB în plus (cu 1,8 peste ținta din ADR)?”).
+
+## 2026-11-09 — Reparat: un număr luat cu Enter în „Din desen…” se pierdea la o ieșire din câmp grăbită (3.6k) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, caut-o” (owner-ul, la „Caut acum cauza probei 3.6k, la care fusta pierde buclele?”, după 3.6o).
+**Started:** 09.11, 12:15. **Completed:** 09.11, 13:50.
+
+- **Cauza** (`CampNumar`, din `src/app/DialogDinDesen.tsx`): la Enter, câmpul primea înapoi valoarea *veche* (`setText(arata(valoare))`,
+  cu valoarea de dinaintea luării), iar un efect o aducea la cea nouă abia la o randare de mai târziu. O ieșire din câmp
+  între ele lua textul vechi drept o valoare nouă și o scria peste cea tocmai luată. Proba 3.6k („Avansat”) mută focusul pe
+  glisorul stratului imediat după fustă: cădea cam o dată din patru (3 din 12 în diagnostic), cu fusta salvată 2, apoi 0.
+- **Dovezile:** un diagnostic cu starea notată după fiecare pas (câmpul „0” cu focusul în el, setarea salvată 2, apoi 0 la
+  ieșire); apoi o reproducere sigură, în aceeași sarcină: Enter, microsarcinile randării lui, ieșirea din câmp (5 din 5
+  căderi). Enter urmat de Tab, de un clic sau de `fill` pe glisor nu nimerea fereastra.
+- **Reparația:** textul scris stă în câmp doar cât îl scrie omul; altfel câmpul arată valoarea, chiar din randarea lui Enter,
+  iar o ieșire din câmp fără nimic scris nu ia nimic (efectul care sincroniza textul nu mai e nevoie).
+- **Probe:** una nouă în `test/e2e/imprimanta.spec.ts` (câmpul pereților, cu reproducerea sigură; căzută înaintea reparației,
+  trecută după); proba 3.6k, 15 din 15 la rând; proba imprimantei întreagă, 16 / 16 (la o rulare de dinainte, proba 3.6l a
+  așteptat o dată butonul „Din desen…” după deschiderea proiectului, înaintea oricărui câmp; singură, 6 din 6, apoi și în
+  rularea întreagă). Otrava `E06` din `test/otravuri/3.6k.py` aduce înapoi textul vechi. Mărimea: totalul 573,1 / 600,
+  build-ul determinist.

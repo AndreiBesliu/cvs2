@@ -186,25 +186,27 @@ function Previzualizare({ rez, strat, deplasari }: { readonly rez: RezultatFelie
 /**
  * Un câmp numeric: textul se scrie liber, iar valoarea se ia la ieșirea din câmp sau la Enter, doar dacă e alta decât cea de
  * acum (altfel nimic nu se refeliază, iar un clic pe un buton nu se pierde); după aceea, câmpul arată valoarea luată (adusă
- * în limite), nu textul scris.
+ * în limite), nu textul scris. Textul scris stă în câmp doar cât îl scrie omul (`text`); altfel câmpul arată valoarea, chiar
+ * din randarea lui Enter, iar o ieșire din câmp fără nimic scris nu ia nimic. Înainte (3.6k), Enter lăsa în câmp valoarea veche
+ * până la o randare de mai târziu, iar o ieșire din câmp grăbită o lua drept nouă (proba 3.6k cădea cam o dată din patru).
  */
 function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data, dezactivat }: {
   readonly valoare: number; readonly procent?: boolean; readonly pas: number; readonly la: (v: number) => void; readonly id: string;
   readonly eticheta: string; readonly unitate: string; readonly data?: string; readonly dezactivat?: boolean;
 }): ReactNode {
   const arata = (v: number): string => String(Number((procent ? v * 100 : v).toFixed(4)));
-  const [text, setText] = useState(arata(valoare));
-  useEffect(() => { setText(arata(valoare)); }, [valoare]);
+  const [text, setText] = useState<string | null>(null);
   const ia = (): void => {
+    if (text === null) return;
     const v = Number(text.replace(',', '.'));
     const nou = procent ? v / 100 : v;
     if (Number.isFinite(v) && text.trim() !== '' && Math.abs(nou - valoare) > 1e-12) la(nou);
-    setText(arata(valoare));
+    setText(null);
   };
   return (
     <label className="imprimanta-camp imprimanta-felie-camp" htmlFor={id}>
       <span>{eticheta}{unitate ? ` (${unitate})` : ''}</span>
-      <input id={id} type="text" inputMode="decimal" value={text} step={pas} autoComplete="off" spellCheck={false} disabled={dezactivat === true}
+      <input id={id} type="text" inputMode="decimal" value={text ?? arata(valoare)} step={pas} autoComplete="off" spellCheck={false} disabled={dezactivat === true}
         {...(data ? { 'data-imprimanta': data } : { 'data-felie': id.replace(/^felie-/, '') })}
         onChange={(e) => { setText(e.target.value); }} onBlur={ia}
         onKeyDown={(e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); ia(); } }} />

@@ -280,6 +280,10 @@ La „Da, 3.6k”: răspunsul 3b mai departe, cu toate variantele OrcaSlicer car
   citite; tăierea polilinilor); e2e +1 (listele și bifele din „Avansat”, giroidul, călcarea, fusta pe pânză, ștergerea în
   fișier și oprită); otrăvurile `test/otravuri/3.6k.py` (58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate)). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
 
+**Reparat pe 09.11** (proba 3.6k cădea cam o dată din patru): în câmpurile numerice ale dialogului, Enter lăsa valoarea
+veche în câmp până la o randare de mai târziu, iar o ieșire din câmp grăbită o lua drept nouă. Acum textul scris stă în câmp
+doar cât îl scrie omul; o probă e2e nouă reproduce fereastra, iar otrava `E06` din `test/otravuri/3.6k.py` o readuce.
+
 ## Felia 3.6l (acceptată, 08.11.2026): piesa „după CNC” și înălțimea fiecărei piese
 
 **Răspunsul owner-ului (08.11):** „Da, recomandările”: A a (V-carve-ul se ignoră, cu o notă în dialog) și B a (adâncimile

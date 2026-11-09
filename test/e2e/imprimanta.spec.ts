@@ -549,6 +549,33 @@ test('Din desen…, fără imprimantă: foaia goală spusă; un dreptunghi felia
   await expect(page.locator('[data-imprimanta="din-desen"]')).toBeFocused();
 });
 
+test('Din desen…: un număr luat cu Enter nu se pierde la o ieșire din câmp grăbită (găsit pe 09.11, proba 3.6k instabilă)', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  const pereti = page.locator('[data-imprimanta="felie-pereti"]');
+  const inainte = await pereti.inputValue();
+  expect(inainte).not.toBe('4');
+  await pereti.fill('4');
+  // Enter, apoi, după randarea lui (în microsarcini) și înaintea celei programate de după ea, ieșirea din câmp: fereastra în care
+  // câmpul arăta încă valoarea veche, iar o ieșire din câmp o lua drept nouă (din 3.6k; cădea cam o dată din patru).
+  await pereti.evaluate(async (el) => {
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+    (el as HTMLInputElement).blur();
+  });
+  await expect(pereti).toHaveValue('4');
+  await felieGata(page);
+  await expect.poll(() => page.evaluate(() => (JSON.parse(localStorage.getItem('cvs2.imprimanta.feliere') ?? 'null') as { pereti?: number } | null)?.pereti)).toBe(4);
+  // Și o ieșire din câmp fără nimic scris nu ia nimic.
+  await pereti.focus();
+  await pereti.blur();
+  await expect(pereti).toHaveValue('4');
+});
+
 test('Din desen…, Avansat (3.6k): modelul umplerii, călcarea și fusta, în previzualizare și în fișier; ștergerea, din profil, oprită la cerere', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');
