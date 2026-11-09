@@ -1670,6 +1670,11 @@ nav button[aria-pressed='true'] {
   gap: var(--sp-2);
 }
 
+/* „Dacă textul iese din plăcuță” (ADR 0210 §4, felia 11.4↑c): alegerile au texte lungi, deci lista nu se taie la 9 rem. */
+.dialog-csv select.csv-iesire {
+  max-width: 100%;
+}
+
 .dialog-csv .legatura {
   border: 0;
   background: none;

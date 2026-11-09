@@ -354,7 +354,7 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
         <div className="campuri">
           <label>
             {t('csv.iesire')}
-            <select data-camp="csv-iesire" value={iesire} disabled={lucreaza}
+            <select className="csv-iesire" data-camp="csv-iesire" value={iesire} disabled={lucreaza}
               onChange={(e) => { const v = e.target.value === 'confirmare' ? 'confirmare' : 'avertisment'; setIesire(v); tineIesireaTextului(v); }}>
               <option value="avertisment">{t('csv.iesire.avertisment')}</option>
               <option value="confirmare">{t('csv.iesire.confirmare')}</option>
