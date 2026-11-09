@@ -954,7 +954,10 @@ test('placa (3.6q): un fișier trimis din „Din desen…”, „imprimat” de 
   await expect(placa.locator('.imprimanta-placa-semn-pauza[data-strat="6"]')).toHaveCount(1);
   await page.locator('[data-imprimanta="reia"]').click();
   await expect(stare(page)).toHaveText('Imprimă');
-  await expect(pauza).toHaveCount(0);
+  // Cât imprimă, nota pauzei pleacă de pe placă chiar în aceeași randare (stratul e încă lângă pauză, nu după el): fără
+  // reîncercări, altfel imprimanta trece de strat și nota ar pleca oricum (otrava U06 a scăpat așa).
+  expect(Number(await placa.getAttribute('data-strat'))).toBeLessThanOrEqual(7);
+  expect(await pauza.count()).toBe(0);
   // La capăt, lucrarea e gata, iar placa pleacă.
   await expect(placa).toHaveCount(0, { timeout: 20_000 });
   expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile') && !c.includes('"pause":0'))).toEqual([]);
