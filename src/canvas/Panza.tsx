@@ -233,7 +233,7 @@ export function Panza({
     }
     if (e.button !== 0) return;
     const p = laDocument(e, vedere);
-    const mod = { alt: e.altKey, shift: e.shiftKey };
+    const mod = { alt: e.altKey, shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey };
     if (desen) {
       gest.current = { tip: 'desen', x0: e.clientX, y0: e.clientY, v0: vedere };
       desen('start', p.x, p.y, vedere.scara, mod);
@@ -252,7 +252,7 @@ export function Panza({
     if (!g) return;
     if (g.tip === 'desen') {
       const p = laDocument(e, g.v0);
-      desen?.('misca', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey });
+      desen?.('misca', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
       return;
     }
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
@@ -273,7 +273,7 @@ export function Panza({
     gest.current = null;
     if (g?.tip === 'desen') {
       const p = laDocument(e, g.v0);
-      desen?.('gata', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey });
+      desen?.('gata', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey, ctrl: e.ctrlKey || e.metaKey });
     }
     if (g?.tip === 'mutare') {
       const dx = (e.clientX - g.x0) / g.v0.scara, dy = -(e.clientY - g.y0) / g.v0.scara;
@@ -301,7 +301,7 @@ export function Panza({
       onPointerDown={apasa}
       onPointerMove={misca}
       onPointerUp={elibereaza}
-      onPointerCancel={() => { if (gest.current?.tip === 'desen') desen?.('anulat', 0, 0, 1, { alt: false, shift: false }); gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
+      onPointerCancel={() => { if (gest.current?.tip === 'desen') desen?.('anulat', 0, 0, 1, { alt: false, shift: false, ctrl: false }); gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
       onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
       // Dublu-clic pe o foaie estompată (ADR 0210 §1): devine activă, iar vederea se mută odată cu originea, deci pânza nu sare.

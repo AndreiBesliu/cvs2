@@ -703,10 +703,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/incrustatieDreapta.ts` (cazurile pe hârtie în `incrustatieDreapta.cazuri.ts`). **O freză în plus a dopului
   drept sau a decupării, bifată, pornește de la primul T liber.** **Punțile pe buclele mici:** pe fiecare buclă, câte încap din
   cele cerute (`urechiCareIncap` din `src/cam/urechi.ts`, aceeași regulă ca a lucrării; `puntiPeBucle` din
-  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. Pe linie rămân, după unire („1 si 2 acum 3-6
-  dupa”): lemnul din jurul dopului ales și din panou, punțile dopului drept alese în fereastră, arborele („cu bandă”) și
-  legăturile rândurilor în fereastră, viteza benzii. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,0 / 600, /admin
-  106,5 / 200, contul 29,6 / 32.**
+  `src/cam/incrustatie.ts`), cu avertisment; refuzul doar dacă nu încape niciuna. **Pornirea 101,8 (cu ușa 105,5 / 110 kB),
+  totalul 544,0 / 600.** **Felia 12.1↑c-2, unită tot pe 08.11** („Da, unește”; `079d225`): lemnul din jurul dopului în V se
+  alege și din panou (Tăierea, `inc-jur`), cu valorile benzii pe hârtie înaintea exportului; arborele spune „cu banda
+  îngustă”; în fereastra exportului, două incrustații în V ale aceleiași piese, cu valori diferite, nu mai stau pe un rând
+  (`incrustatieVRand`); banda merge de ~2,6 ori mai repede, ca orice V-carve cu fund plat, cu aceiași octeți
+  (`indexContururi` în `src/cam/axaMediala.ts`, `traversariArc` și `distantaLaArcCerc` în `src/geom/distanta.ts`; proba
+  `test/unit/axaMediala.index.test.ts`). Pe linie rămâne punctul 4, punțile dopului drept alese în fereastră: un câmp nou,
+  deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
+  29,6 / 32.**
+  **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
+  worktree-ul `ancore` (ramura `wip/6.V-ancore`), **unite în `main` tot pe 08.11** („Da, unește”; `0c81ccf`), cu
+  recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
+  proporțional pe orice mâner, Ctrl = liber pe orice mâner, Alt = față de ancoră**, combinate (Shift câștigă peste Ctrl),
+  citite și la apăsarea tastei cu mausul pe loc; la desen, Shift pătrat / cerc / 15°, Ctrl face cercul elipsă, Alt din centru.
+  **Alt nu mai inversează lipirea la mânere și la desen** (acolo, butonul Lipire și Shift+L); o inversează încă la mutare,
+  ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul nu se
+  schimbă) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
+  arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
+  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
+  poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
+  Pe ramură, pornirea neschimbată și totalul +2,1 kB. Pe canalul `ancore` al instanței de test:
+  <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12). **După unire, cu incrustațiile: pornirea 101,8 (cu
+  ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -919,11 +938,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 08.11.2026: **linia ancorelor (6.V↑, 6.V↑b, 6.V↑c) unită în `main`** („Da, unește”, în sesiunea liniei, după raportul ei:
+  „Dacă e bine, spune „unește”; ramura o unește în `main` sesiunea principală”): conflicte doar în documente, păstrate ambele
+  părți. 6.V↑d (opțiunile) rămâne pe linie, după decizia owner-ului pe plafon.
+- 08.11.2026: **felia 12.1↑c-2 unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia 12.1↑c-2 în
+  main?”): punctele 3, 5 și 6 din lista de după prima unire (lemnul din jurul dopului din panou, arborele și rândurile
+  legate, viteza benzii). Documentul rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe linie, cu
+  v24, după v23 a planșelor.
 - 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
   „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
   documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
   punțile dopului drept alese în fereastră, pe linia incrustațiilor) ia versiunea de după. Worktree-ul `incrustatii` rămâne,
   cu 3–6 din lista dinaintea unirii („1 si 2 acum 3-6 dupa”).
+- 08.11.2026: **ancora și tastele transformării: răspunsurile la ADR 0240** („Ok la toate”, la „Accepți recomandările la cele
+  4 întrebări din ADR 0240?”, în sesiunea liniei): ancora e a selecției de acum (unul din cele 9 puncte ale cutiei, ales în
+  bara Transformării și ținut în browser, sau trasă de mână), nu se ține în proiect, deci documentul rămâne v20; la mânere și
+  la desen, Alt e „față de ancoră” / „din centru”, iar lipirea urmează acolo butonul Lipire, comutat și cu Shift+L (Alt rămâne
+  „lipirea invers” la mutare, ghidaje, ancoră, Noduri și Pen); cu Shift și Ctrl ținute împreună câștigă Shift; feliile 6.V↑,
+  6.V↑b și 6.V↑c acum, 6.V↑d (opțiunile) după decizia owner-ului pe plafon, când se unesc liniile.
 - 08.11.2026: **o linie nouă, în worktree: ancorele vectorilor și modificatorii transformării** („vreau un worktree care sa se
   ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau
   hotkeys care sa influenteze unealta. […] SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar

@@ -115,13 +115,24 @@ test('document.transforma: scalarea schimbă piesa și locul, rotirea doar insta
   assert.deepEqual([i?.x, i?.y, i?.rotire], [20, 20, 90]);
   assert.deepEqual(forma(r), { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, 'rotirea nu atinge piesa');
 
-  // Cercul scalat neuniform ar deveni elipsă: refuz, nicio comandă.
+  // Cercul scalat neuniform devine elipsa uneltei Elipsă (ADR 0240 §F): un pas, iar documentul trece de ușă.
   const n = context(false, { transformare: () => ({ fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }) });
   n.selecteaza(['e2']);
   const tn = n.h().trecut.length;
-  assert.deepEqual(stare(R, 'document.transforma', n), { ok: false, motiv: 'motiv.transformare-inexacta' });
-  ruleaza(R, 'document.transforma', n);
-  assert.equal(n.h().trecut.length, tn);
+  assert.deepEqual(ruleaza(R, 'document.transforma', n), { ok: true });
+  assert.equal(n.h().trecut.length, tn + 1);
+  const e2 = n.h().doc.piese.find((p) => p.id === n.h().doc.foi[0]?.instante.find((i) => i.id === 'e2')?.piesa)?.radacina;
+  assert.equal(e2?.tip === 'element' ? e2.forma.tip : null, 'cale');
+  assert.ok(incarca(JSON.parse(JSON.stringify(n.h().doc))).ok);
+  // Inexactul: o scalare neuniformă pe o formă rotită oblic (30°): refuz, nicio comandă.
+  const o = context(false, { transformare: () => ({ fel: 'rotire', unghi: 30, centru: { x: 0, y: 0 } }) });
+  o.selecteaza(['e1']);
+  assert.deepEqual(ruleaza(R, 'document.transforma', o), { ok: true });
+  const oblic = { ...o, transformare: () => ({ fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }) as const };
+  const to = o.h().trecut.length;
+  assert.deepEqual(stare(R, 'document.transforma', oblic), { ok: false, motiv: 'motiv.transformare-inexacta' });
+  ruleaza(R, 'document.transforma', oblic);
+  assert.equal(o.h().trecut.length, to);
   // Prea departe: locul nou trece de plafonul translației.
   const d = context(false, { transformare: () => ({ fel: 'scalare', sx: 1e9, sy: 1e9, ancora: { x: 0, y: 0 } }) });
   d.selecteaza(['e1']);

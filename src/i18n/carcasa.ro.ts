@@ -309,6 +309,7 @@ export const roCarcasa = {
   },
   'arbore.vcarve.fund': ', fundul plat cu T{t} Ø{d}',
   'arbore.vcarve.incrustatie': ', incrustație cu dop (jocul {joc} mm)',
+  'arbore.vcarve.incrustatie-banda': ', incrustație cu dop, cu banda îngustă (jocul {joc} mm)',
   'arbore.buzunar.incrustatie': ', incrustație cu pereți drepți (jocul lateral {joc} mm)',
   'arbore.fara-operatii': 'Nicio operație de tăiere',
   // Extensiile (ADR 0127): butonul de lângă marcă, meniul, spațiul și ferestrele instalării.

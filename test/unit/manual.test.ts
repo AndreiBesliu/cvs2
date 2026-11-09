@@ -89,6 +89,7 @@ const USI: readonly Usa[] = [
  */
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
+  ancora: 'unealta.transformare', colturi: 'unealta.transformare',
   aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
   // Butonul benzii violet (ADR 0210 §2): «Desprinde-o doar pe aceasta».

@@ -2,7 +2,7 @@ import { test, expect, type Download, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { masoaraPotrivirea, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
-import { adauga } from './ajutor-panza.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -194,4 +194,136 @@ test('banda fără decupare: placa „cel puțin”, tăietura de mână; ce s-a
   await detalii.locator('[data-camp="banda-diametru"]').fill('3');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   await expect(page.getByTestId('export-invalid')).toContainText(`T${numarV}`);
+});
+
+/**
+ * Rândurile legate (ADR 0133 §2) ale incrustațiilor în V: lucrarea sapă locașele aceleiași piese ca o singură regiune doar cu
+ * aceeași incrustație (`valoriVcarve`: și jocurile, lemnul din jurul dopului, banda), deci și fereastra le leagă doar atunci.
+ * Piesa: dreptunghiul minus cercul (două operații); amândouă rândurile devin incrustații în V cu freza V. Înainte, fereastra le
+ * lega după freză, adâncime, pas, sens și fundul plat, oricare ar fi fost incrustația.
+ */
+test('rândurile legate: două incrustații în V ale aceleiași piese, legate doar cu aceeași incrustație și aceeași bandă', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  await randuri.first().click();
+  await expect(page.locator('[data-editare="lipire"]')).toBeAttached();
+  const pe = (await ecran(page, await vedere(page)))(85, 50);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(pe.x, pe.y);
+  await page.keyboard.up('Shift');
+  await page.locator('[data-editare="boolean-scade"]').click();
+  await expect(randuri).toHaveCount(1);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const principale = page.locator('tr[data-operatie]:has(td.ordine)');
+  await expect(principale).toHaveCount(2);
+  const [prima, a2] = await principale.evaluateAll((l) => l.map((e) => e.getAttribute('data-operatie'))) as [string, string];
+  const rand = (k: string, c: string) => page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="${c}"]`);
+  const det = (k: string, c: string) => page.locator(`tr[data-detalii="${k}"] [data-camp="${c}"]`);
+  const legat = page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`);
+  for (const k of [prima, a2]) {
+    await rand(k, 'latura').selectOption('incrustatie');
+    await rand(k, 'forma-scula').selectOption('v');
+  }
+  // Aceeași incrustație: al doilea locaș se sapă odată cu primul.
+  await expect(legat).toHaveText('cu 1');
+  // Alt joc pentru clei pe al doilea: două regiuni, fără legătură; jocul de dinainte, iar legate.
+  const joc = await det(a2, 'inc-joc').inputValue();
+  await det(a2, 'inc-joc').fill('0.4');
+  await expect(page.locator('[data-legat]')).toHaveCount(0);
+  await det(a2, 'inc-joc').fill(joc);
+  await expect(legat).toHaveText('cu 1');
+  // Banda doar pe al doilea: alt lemn din jurul dopului; pe amândouă, iar legate.
+  await det(a2, 'inc-jur').selectOption('banda');
+  await expect(page.locator('[data-legat]')).toHaveCount(0);
+  await det(prima, 'inc-jur').selectOption('banda');
+  await expect(legat).toHaveText('cu 1');
+  // Altă lățime a benzii pe al doilea: fără legătură; lățimea goală (cea mai mică) pe amândouă, iar legate.
+  await det(a2, 'banda-latime').fill('20');
+  await expect(page.locator('[data-legat]')).toHaveCount(0);
+  await det(a2, 'banda-latime').fill('');
+  await expect(legat).toHaveText('cu 1');
+});
+
+/**
+ * Lemnul din jurul dopului ales din panou (punctul 3 de după unirea lui 12.1↑c): cu „banda îngustă” aleasă în secțiunea
+ * Tăierea, panoul arată banda pe hârtie înainte de orice export, cu banda implicită (lățimea cea mai mică 9,31; marginea
+ * semifabricatului 15,75; decuparea prin placa S + H + 1 = 5,5, exactă; punțile 4 × 4 × 1), arborele spune „cu banda îngustă”,
+ * iar fereastra exportului pornește pe bandă, cu lățimea goală. Înapoi pe fața coborâtă: banda pleacă de pe hârtie, din arbore
+ * și din fereastră. Același cerc R15 ca la proba de sus.
+ */
+test('lemnul din jurul dopului ales din panou: banda pe hârtie înainte de export, arborele, fereastra', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'cerc');
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
+  await scrie(page, 'adancime', '3');
+  await scrie(page, 'inc-fierastrau', '2');
+  const jur = taierea(page).locator('[data-camp="inc-jur"]');
+  const hartie = page.getByTestId('prop-incrustatie-hartie');
+  await expect(jur).toHaveValue('fata');
+  await expect(hartie).toContainText('Semifabricatul dopuluigros de cel puțin 5.50 mm');
+  await expect(hartie).not.toContainText('Banda');
+  await jur.selectOption('banda');
+  await expect(page.locator('.prop-operatie')).toContainText('Lemnul din jurul dopuluibanda îngustă');
+  await expect(hartie).toContainText('Bandalată de 9.31 mm (cea mai mică: 9.31 mm)');
+  await expect(hartie).toContainText('Semifabricatul, în plancutia desenului plus 15.75 mm pe fiecare parte');
+  await expect(hartie).toContainText('Decupareaprin placa de 5.50 mm; punți pe buclă: 4, de 4.00 × 1.00 mm');
+  await expect(hartie).toContainText('Semifabricatul dopuluigros de 5.50 mm');
+  const comuta = page.locator('button[data-comuta]').first();
+  if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
+  await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop, cu banda îngustă (jocul 0.5 mm)');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const detalii = page.locator('tr[data-detalii]').first();
+  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('banda');
+  await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveValue('');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // Înapoi pe fața coborâtă.
+  await jur.selectOption('fata');
+  await expect(hartie).not.toContainText('Banda');
+  await expect(hartie).toContainText('Semifabricatul dopuluigros de cel puțin 5.50 mm');
+  await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop (jocul 0.5 mm)');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('fata');
+});
+
+/** Trage o fereastră de selecție între două puncte ale foii (mm): alege formele cuprinse în întregime (ca în `rol.spec.ts`). */
+async function fereastra(page: Page, a: { x: number; y: number }, b: { x: number; y: number }): Promise<void> {
+  const la = await ecran(page, await vedere(page));
+  const [sa, sb] = [la(a.x, a.y), la(b.x, b.y)];
+  await page.mouse.move(sa.x, sa.y);
+  await page.mouse.down();
+  await page.mouse.move((sa.x + sb.x) / 2, (sa.y + sb.y) / 2, { steps: 4 });
+  await page.mouse.move(sb.x, sb.y, { steps: 4 });
+  await page.mouse.up();
+}
+
+/**
+ * Lemnul din jurul dopului pe mai multe piese (punctul 3): două incrustații în V, una cu banda: alese amândouă, lista arată
+ * „— (diferite)”; banda aleasă din panou le face la fel pe amândouă, într-un singur pas (o anulare le întoarce).
+ */
+test('lemnul din jurul dopului, pe două piese: „—” cu valori diferite; ales din panou, același pe amândouă, într-un pas', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  const alese = page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]');
+  await fereastra(page, { x: 10, y: 10 }, { x: 130, y: 90 });
+  await expect(alese).toHaveCount(2);
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
+  const jur = taierea(page).locator('[data-camp="inc-jur"]');
+  await expect(jur).toHaveValue('fata');
+  // Doar a doua piesă, pe bandă.
+  await randuri.nth(1).click();
+  await expect(alese).toHaveCount(1);
+  await jur.selectOption('banda');
+  await expect(jur).toHaveValue('banda');
+  await fereastra(page, { x: 10, y: 10 }, { x: 130, y: 90 });
+  await expect(alese).toHaveCount(2);
+  await expect(jur).toHaveValue('');
+  await expect(jur.locator('option:checked')).toHaveText('— (diferite)');
+  await jur.selectOption('banda');
+  await expect(jur).toHaveValue('banda');
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(jur).toHaveValue('');
 });

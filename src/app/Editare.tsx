@@ -9,11 +9,12 @@ import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj, Nod } from '../model/document.ts';
-import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
+import { areArce, formeScalate, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import type { ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, numeScurt, punctManer, ROTIRE_PX, susEticheta, tinteFoaie,
-  transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
+  adaugaLaSelectie, aleseInCadru, ancoraLipita, ancoraLovita, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea,
+  fractiiDinPunct, fractiiPunct, idGhidaj, manerLovit, manereVazute, modManer, numeScurt, punctDinFractii, punctManer, PUNCTE_CUTIE, ROTIRE_PX, susEticheta,
+  tasteDin, tinteFoaie, transformareManer, transformareManerLipita, type Fractii, type LipirePunct, type Maner, type PunctCutie, type Taste, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
@@ -65,6 +66,12 @@ mesaje.catch(() => undefined);
 export const TOLERANTA_LIPIRE_PX = 6;
 
 const CHEIE_LIPIRE = 'cncvs2.lipire';
+/** Punctul din care pornește ancora transformării (ADR 0240 §A.2), unul din cele 9 ale cutiei; implicit centrul. */
+const CHEIE_ANCORA = 'cncvs2.ancora';
+/** Colțurile rotunjite la scalarea din mânere (ADR 0240 §F.28): '' = raza rămâne la întindere (implicit). */
+const CHEIE_COLTURI = 'cncvs2.colturi';
+const FELURI_COLTURI = ['', 'pastreaza', 'scaleaza'] as const;
+type FelColturi = (typeof FELURI_COLTURI)[number];
 const CHEIE_GRILA = 'cncvs2.grila';
 const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
@@ -308,6 +315,33 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Documentul văzut din foaia activă (ADR 0210 §5), pentru vederea 3D: ținut, ca simularea să nu se refacă la fiecare randare.
   const docFoaie = useMemo(() => doarFoaia(doc, idFoaie), [doc, idFoaie]);
   const ghidaje = useMemo(() => foaie?.ghidaje ?? [], [foaie]);
+  // Ancora transformării (ADR 0240 §A): pornește din punctul ales în selector (ținut în browser), se trage cu mâna (fracțiile ei
+  // pe cutia selecției), iar o selecție nouă o întoarce în punctul ales; nu se ține în proiect (răspunsul 1a).
+  const [startAncora, setStartAncora] = useState<PunctCutie>(() => {
+    const v = citeste(CHEIE_ANCORA);
+    return PUNCTE_CUTIE.find((k) => k === v) ?? 'c';
+  });
+  const [ancoraLibera, setAncoraLibera] = useState<Fractii | null>(null);
+  const cheieSelectie = selectie.join(' ');
+  useEffect(() => { setAncoraLibera(null); }, [cheieSelectie]);
+  const ancora = cutie ? punctDinFractii(cutie, ancoraLibera ?? fractiiPunct(startAncora)) : null;
+  // După o transformare în jurul ei (rotirea, Alt, oglindirea, înclinarea), ancora rămâne pe loc: fracțiile ei pe cutia nouă.
+  const ancoraDeTinut = useRef<Punct | null>(null);
+  useEffect(() => {
+    const a = ancoraDeTinut.current;
+    if (!a || !cutie) return;
+    ancoraDeTinut.current = null;
+    setAncoraLibera(fractiiDinPunct(cutie, a));
+  }, [cutie]);
+  const alegeStartAncora = (k: PunctCutie): void => {
+    setStartAncora(k);
+    setAncoraLibera(null);
+    scrieLocal(CHEIE_ANCORA, k);
+  };
+  const [colturi, setColturi] = useState<FelColturi>(() => {
+    const v = citeste(CHEIE_COLTURI);
+    return FELURI_COLTURI.find((k) => k === v) ?? '';
+  });
   const [lipire, setLipire] = useState(() => citeste(CHEIE_LIPIRE) !== '0');
   const [grila, setGrila] = useState<{ readonly pornita: boolean; readonly pas: number }>(() => {
     const s = citeste(CHEIE_GRILA);
@@ -332,7 +366,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const n = Number(citeste(CHEIE_LATURI));
     return Number.isInteger(n) && n >= LATURI_MIN && n <= LATURI_MAX ? n : 6;
   });
-  const [traseu, setTraseu] = useState<{ readonly a: Punct; readonly b: Punct } | null>(null);
+  const [traseu, setTraseu] = useState<{ readonly a: Punct; readonly b: Punct; readonly taste: Taste } | null>(null);
   const [raza, setRaza] = useState(() => {
     const n = citesteNumar(citeste(CHEIE_RAZA) ?? '');
     return n !== null && n > 0 ? n : RAZA_IMPLICITA;
@@ -386,11 +420,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const ux = citesteNumar(formInclinare.x.replace(/^\s*$/, '0'), true), uy = citesteNumar(formInclinare.y.replace(/^\s*$/, '0'), true);
     if (ux === null || uy === null || Math.abs(ux) > UNGHI_MAXIM_INCLINARE || Math.abs(uy) > UNGHI_MAXIM_INCLINARE) return 'unghi';
     if (ux === 0 && uy === 0) return 'zero';
+    // Față de ancoră (ADR 0240 §A.5; implicit centrul cutiei, ca înainte).
     return {
-      fel: 'inclinare', unghiX: ux, unghiY: uy, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 },
+      fel: 'inclinare', unghiX: ux, unghiY: uy, centru: ancora ?? { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 },
       ...(arceInCurbe ? { arceInCurbe: true } : {}),
     };
-  }, [panouInclinare, cutie, formInclinare, arceInCurbe]);
+  }, [panouInclinare, cutie, formInclinare, arceInCurbe, ancora?.x, ancora?.y]);
   const [modOffset, setModOffset] = useState<ModulOffset | 'eroare' | null>(null);
   useEffect(() => {
     if (!panouOffset || (modOffset !== null && modOffset !== 'eroare')) return;
@@ -528,46 +563,55 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Gestul îl dă pânza printr-o funcție stabilă; starea de acum o citește de aici (fără închideri vechi).
   const scrieRaza = (r: number): void => { setRaza(r); setTextRaza(textNumar(r)); scrieLocal(CHEIE_RAZA, String(r)); };
   unealtaRef.current = unealta;
-  const acum = useRef({ unealta, laturi, raza, scrieRaza, lipire, pasGrila, tinteToate, ruleaza, a: null as Punct | null });
+  const acum = useRef({ unealta, laturi, raza, scrieRaza, lipire, pasGrila, tinteToate, ruleaza, a: null as Punct | null, ultim: null as { x: number; y: number; scara: number } | null });
   acum.current = { ...acum.current, unealta, laturi, raza, scrieRaza, lipire, pasGrila, tinteToate, ruleaza };
+  // Butonul Lipire și Shift+L (ADR 0240, răspunsul 2a: la mânere și la desen, Alt înseamnă acum centrul, nu lipirea).
+  const comutaLipire = (): void => {
+    const nou = !acum.current.lipire;
+    setLipire(nou);
+    scrieLocal(CHEIE_LIPIRE, nou ? '1' : '0');
+  };
   const [gestDesen] = useState(() => {
     const g: GestDesen = (faza, x, y, scara, mod) => {
       const s = acum.current;
       if (faza === 'anulat' || !deseneaza(s.unealta)) {
         s.a = null;
+        s.ultim = null;
         setTraseu(null);
         setLiniiDesen([]);
         return;
       }
       const u: UnealtaDesen = s.unealta;
+      s.ultim = { x, y, scara };
       // Un punct nelipit vine din pixelii mausului (60,000002661): se rotunjește la 0,001 mm; unul lipit stă exact pe țintă.
       const rot = (v: number): number => Math.round(v * 1000) / 1000;
       let linii: readonly LinieGhid[] = [];
       let q: Punct = { x: rot(x), y: rot(y) };
-      // Alt inversează lipirea (ADR 0052): o oprește când e pornită, o pornește când e oprită.
-      if (s.lipire !== mod.alt) {
+      // La desen, Alt înseamnă „din centru”: lipirea urmează doar butonul Lipire (ADR 0240, răspunsul 2a).
+      if (s.lipire) {
         const r = lipeste(s.tinteToate, { minX: x, minY: y, maxX: x, maxY: y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / scara, grila: s.pasGrila });
         linii = r.linii;
         q = { x: linii.some((l) => l.axa === 'x') ? x + r.dx : rot(x), y: linii.some((l) => l.axa === 'y') ? y + r.dy : rot(y) };
       }
       if (faza === 'start') {
         s.a = q;
-        setTraseu({ a: q, b: q });
+        setTraseu({ a: q, b: q, taste: mod });
         setLiniiDesen(linii);
         return;
       }
       const a = s.a;
       if (!a) return;
-      const b = capatConstrans(u, a, q, mod.shift);
+      const b = capatConstrans(u, a, q, mod);
       if (faza === 'misca') {
-        setTraseu({ a, b });
+        setTraseu({ a, b, taste: mod });
         setLiniiDesen(linii);
         return;
       }
       s.a = null;
+      s.ultim = null;
       setTraseu(null);
       setLiniiDesen([]);
-      const tras = formaDesenata(u, a, b, s.laturi, MINIM_DESEN_PX / scara);
+      const tras = formaDesenata(u, a, b, s.laturi, MINIM_DESEN_PX / scara, mod);
       // Cercul: un clic fără tragere îl pune cu raza din câmp; o tragere scrie raza ei în câmp (ADR 0052).
       const f = tras ?? (u === 'cerc' ? { forma: { tip: 'cerc' as const, raza: s.raza }, x: a.x, y: a.y } : null);
       if (u === 'cerc' && tras?.forma.tip === 'cerc') s.scrieRaza(Math.round(tras.forma.raza * 1000) / 1000);
@@ -578,6 +622,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => {
     onDesen(!deseneaza(unealta) || p.doarCitire ? null : gestDesen);
   }, [unealta, p.doarCitire, onDesen, gestDesen]);
+  // Shift, Ctrl (⌘) și Alt schimbă și desenul început cu mausul pe loc (ADR 0240): ultimul punct, cu tastele de acum.
+  useEffect(() => {
+    const tasta = (e: KeyboardEvent): void => {
+      const s = acum.current;
+      if (!s.a || !s.ultim || !['Shift', 'Control', 'Meta', 'Alt'].includes(e.key)) return;
+      if (e.key === 'Alt') e.preventDefault();
+      gestDesen('misca', s.ultim.x, s.ultim.y, s.ultim.scara, tasteDin(e));
+    };
+    window.addEventListener('keydown', tasta, true);
+    window.addEventListener('keyup', tasta, true);
+    return () => {
+      window.removeEventListener('keydown', tasta, true);
+      window.removeEventListener('keyup', tasta, true);
+    };
+  }, [gestDesen]);
   useEffect(() => () => { onDesen(null); }, [onDesen]);
 
   useEffect(() => {
@@ -719,15 +778,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return () => { onRefuz(null); };
   }, [onRefuz]);
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
-    if (!cutie || selectie.length === 0 || p.doarCitire) return;
-    const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
+    if (!cutie || !ancora || selectie.length === 0 || p.doarCitire) return;
+    // Față de ancoră (ADR 0240 §A.5; implicit centrul cutiei, ca înainte).
+    const tr: Transformare = { fel: 'oglindire', directie, centru: ancora };
     const r = transforma(doc, indexFoaie, selectie, tr);
     if (!r.ok) {
       setMotivOglinda(t(`editare.transformare.${r.motiv}`));
       return;
     }
     setMotivOglinda(null);
-    ruleaza('document.transforma', { transformare: () => tr });
+    if (ruleaza('document.transforma', { transformare: () => tr }).ok) ancoraDeTinut.current = ancora;
   };
   const oglindesteRef = useRef(oglindeste);
   oglindesteRef.current = oglindeste;
@@ -755,6 +815,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         if (e.key === 'Escape') setVedere3d(false);
         return;
       }
+      // Shift+L comută lipirea, și cât se trage (ADR 0240, răspunsul 2a).
+      if (e.shiftKey && !e.altKey && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        comutaLipire();
+        return;
+      }
       // Tastele uneltelor (V, R, O, E, L, P); Escape anulează forma începută, apoi întoarce la selecție.
       const u = e.altKey || e.shiftKey ? undefined : TASTE_UNELTE[e.key.toLowerCase()];
       if (u) {
@@ -772,7 +838,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.key === 'Escape') {
         // Întâi panoul deschis (rețeaua, ADR 0061; offsetul, ADR 0064), apoi forma începută, apoi unealta.
         if (panouRef.current) setPanou(null);
-        else if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false });
+        else if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false, ctrl: false });
         else setUnealta('selectie');
         return;
       }
@@ -813,8 +879,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Meniul de clic dreapta (ADR 0103), în pixeli din colțul editării, cu motivul ultimului refuz din el.
   const [meniu, setMeniu] = useState<Punct | null>(null);
   const [motivMeniu, setMotivMeniu] = useState<string | null>(null);
-  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, indexFoaie });
-  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, indexFoaie };
+  // Ținta ancorei se arată (și se apucă) doar cât se arată și mânerele: pe o formă prea mică pe ecran, nu.
+  const ancoraArata = ancora && cutie && manereVazute((cutie.maxX - cutie.minX) * vedere.scara, (cutie.maxY - cutie.minY) * vedere.scara).length > 0 ? ancora : null;
+  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie });
+  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza, ancoraArata, indexFoaie };
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -829,7 +897,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const s = pentruCadru.current;
       if (e.target !== panza || e.button !== 0 || spatiu || e.defaultPrevented || s.vedere3d || (s.unealta !== 'selectie' && s.unealta !== 'transformare')) return;
       const p = local(e), v = s.vedere;
-      if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && manerLovit(s.cutie, v, p.x, p.y)) return;
+      if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && (manerLovit(s.cutie, v, p.x, p.y) || ancoraLovita(s.ancoraArata, v, p.x, p.y))) return;
       const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara, s.indexFoaie);
       if (lovita && !e.shiftKey) return;
       e.preventDefault();
@@ -1186,7 +1254,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
-          onLinii={setLiniiManere} />
+          onLinii={setLiniiManere}
+          ancora={ancora}
+          onAncora={(q) => { setAncoraLibera(q ? fractiiDinPunct(cutie, q) : null); }}
+          onTine={(q) => { ancoraDeTinut.current = q; }}
+          colturi={colturi || undefined} />
       ) : null}
       {panouRetea && cutie && selectie.length > 0 && !vedere3d ? (() => {
         // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată (pe curbă: cutia formelor, fără curbă).
@@ -1269,9 +1341,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           }} />
       ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
-        <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
-          <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
-        </svg>
+        <>
+          <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
+            <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} taste={traseu.taste} vedere={vedere} />
+          </svg>
+          {traseu.a.x !== traseu.b.x || traseu.a.y !== traseu.b.y ? (
+            <div className="manere">
+              <EtichetaDesen unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} taste={traseu.taste} vedere={vedere} />
+            </div>
+          ) : null}
+        </>
       ) : null}
       {unealta === 'text' && !vedere3d ? (
         <>
@@ -1333,7 +1412,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 motiv={selectie.length === 0 || !cutie ? t('editare.inclinare.nicio-selectie') : p.doarCitire ? t('motiv.doar-citire')
                   : inclinare === 'unghi' ? t('editare.inclinare.motiv.unghi') : inclinare === 'zero' ? t('editare.inclinare.motiv.zero')
                     : inclinare === null ? null : (() => { const r = transforma(doc, indexFoaie, selectie, inclinare); return r.ok ? null : t(`editare.transformare.${r.motiv}`); })()}
-                onAplica={() => { if (inclinare !== null && typeof inclinare !== 'string') ruleaza('document.transforma', { transformare: () => inclinare }); setPanou(null); }}
+                onAplica={() => {
+                  if (inclinare !== null && typeof inclinare !== 'string' && ruleaza('document.transforma', { transformare: () => inclinare }).ok && inclinare.fel === 'inclinare') {
+                    ancoraDeTinut.current = inclinare.centru;
+                  }
+                  setPanou(null);
+                }}
                 onInchide={() => { setPanou(null); }} />
             ) : null}
           </span>
@@ -1553,9 +1637,29 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                   }
                 }} />
             ) : null}
+            {unealta === 'transformare' ? (
+              <>
+                {/* Selectorul ancorei (ADR 0240 §A.2): unul din cele 9 puncte ale cutiei, de unde pornește ancora. */}
+                <span className="selector-ancora" role="group" aria-label={t('editare.ancora')} title={t('editare.ancora')} data-editare="ancora">
+                  {PUNCTE_CUTIE.map((k) => (
+                    <button key={k} type="button" aria-pressed={startAncora === k} aria-label={t(`editare.ancora.${k}`)} title={t(`editare.ancora.${k}`)}
+                      data-ancora={k} onClick={() => { alegeStartAncora(k); }} />
+                  ))}
+                </span>
+                {/* Colțurile rotunjite la scalare (ADR 0240 §F.28): trei feluri, ținute în browser. */}
+                <select className="laturi felul-colturi" value={colturi} aria-label={t('editare.colturi')} title={t('editare.colturi.titlu')} data-editare="colturi"
+                  onChange={(e) => {
+                    const k = FELURI_COLTURI.find((x) => x === e.target.value) ?? '';
+                    setColturi(k);
+                    scrieLocal(CHEIE_COLTURI, k);
+                  }}>
+                  {FELURI_COLTURI.map((k) => <option key={k} value={k}>{t(`editare.colturi.${k || 'intindere'}`)}</option>)}
+                </select>
+              </>
+            ) : null}
             <span className="separator" aria-hidden="true" />
             <button type="button" className="aliniaza" aria-pressed={lipire} title={t('editare.lipire-sfat')} aria-label={t('editare.lipire')} data-editare="lipire"
-              onClick={() => { setLipire(!lipire); scrieLocal(CHEIE_LIPIRE, lipire ? '0' : '1'); }}>
+              onClick={comutaLipire}>
               <IconaUnealta u="lipire" />
             </button>
             <button type="button" className="aliniaza" aria-pressed={grila.pornita} title={t('editare.grila')} aria-label={t('editare.grila')} data-editare="grila"
@@ -1729,27 +1833,60 @@ function Icona({ fel }: { readonly fel: FelAliniere }): ReactElement {
 }
 
 /** Conturul formei trase, pe ecran, cât se trage (ADR 0051). */
-function Previzualizare({ unealta, a, b, laturi, vedere: v }: {
-  readonly unealta: UnealtaDesen; readonly a: Punct; readonly b: Punct; readonly laturi: number; readonly vedere: Vedere;
+/**
+ * Previzualizarea formei care se desenează: exact forma pe care o va pune eliberarea (`formaDesenata`, cu tastele de acum,
+ * ADR 0240), cu eticheta de lângă cursor: mărimea și ce fac tastele (din centru, pătrat, pași de 15°).
+ */
+function Previzualizare({ unealta, a, b, laturi, taste, vedere: v }: {
+  readonly unealta: UnealtaDesen; readonly a: Punct; readonly b: Punct; readonly laturi: number; readonly taste: Taste; readonly vedere: Vedere;
 }): ReactElement | null {
   const sx = (x: number): number => v.tx + x * v.scara;
   const sy = (y: number): number => v.ty - y * v.scara;
-  switch (unealta) {
-    case 'dreptunghi':
-      return <rect className="desen-previzualizare" x={Math.min(sx(a.x), sx(b.x))} y={Math.min(sy(a.y), sy(b.y))} width={Math.abs(b.x - a.x) * v.scara} height={Math.abs(b.y - a.y) * v.scara} />;
-    case 'cerc':
-      return <circle className="desen-previzualizare" cx={sx(a.x)} cy={sy(a.y)} r={Math.hypot(b.x - a.x, b.y - a.y) * v.scara} />;
-    case 'elipsa':
-      return <ellipse className="desen-previzualizare" cx={sx((a.x + b.x) / 2)} cy={sy((a.y + b.y) / 2)} rx={(Math.abs(b.x - a.x) / 2) * v.scara} ry={(Math.abs(b.y - a.y) / 2) * v.scara} />;
-    case 'linie':
-      return <line className="desen-previzualizare" x1={sx(a.x)} y1={sy(a.y)} x2={sx(b.x)} y2={sy(b.y)} />;
-    case 'poligon': {
-      const f = formaDesenata('poligon', a, b, laturi, 0);
-      if (!f || f.forma.tip !== 'cale') return null;
-      const pct = f.forma.varfuri.map((q) => `${sx(f.x + q.p.x)},${sy(f.y + q.p.y)}`).join(' ');
-      return <polygon className="desen-previzualizare" points={pct} />;
-    }
+  const f = formaDesenata(unealta, a, b, laturi, 0, taste);
+  if (!f) return null;
+  const fo = f.forma;
+  if (fo.tip === 'dreptunghi') return <rect className="desen-previzualizare" x={sx(f.x)} y={sy(f.y + fo.inaltime)} width={fo.latime * v.scara} height={fo.inaltime * v.scara} />;
+  if (fo.tip === 'cerc') return <circle className="desen-previzualizare" cx={sx(f.x)} cy={sy(f.y)} r={fo.raza * v.scara} />;
+  const p = (q: Punct): string => `${sx(f.x + q.x)} ${sy(f.y + q.y)}`;
+  const n = fo.varfuri.length;
+  const d = fo.varfuri.map((q, k) => {
+    const urm = fo.varfuri[(k + 1) % n];
+    const cap = k === 0 ? `M${p(q.p)}` : '';
+    if (!urm || (!fo.inchis && k === n - 1)) return cap;
+    return `${cap}${q.s.tip === 'C' ? `C${p(q.s.c1)} ${p(q.s.c2)} ${p(urm.p)}` : `L${p(urm.p)}`}`;
+  }).join('');
+  return <path className="desen-previzualizare" d={fo.inchis ? `${d}Z` : d} />;
+}
+
+/** Eticheta desenului, lângă cursor (ADR 0240 §E): mărimea formei și ce fac tastele ținute. */
+function EtichetaDesen({ unealta, a, b, laturi, taste, vedere: v }: {
+  readonly unealta: UnealtaDesen; readonly a: Punct; readonly b: Punct; readonly laturi: number; readonly taste: Taste; readonly vedere: Vedere;
+}): ReactElement | null {
+  const f = formaDesenata(unealta, a, b, laturi, 0, taste);
+  if (!f) return null;
+  const mm = (x: number): string => textNumar(Math.round(x * 100) / 100, true);
+  const fo = f.forma;
+  const parti: string[] = [];
+  if (fo.tip === 'dreptunghi') parti.push(`${mm(fo.latime)} × ${mm(fo.inaltime)} mm`);
+  else if (fo.tip === 'cerc') parti.push(`R ${mm(fo.raza)} mm`);
+  else {
+    const xs = fo.varfuri.map((q) => q.p.x), ys = fo.varfuri.map((q) => q.p.y);
+    if (unealta === 'linie') {
+      const [p0, p1] = fo.varfuri;
+      parti.push(`${mm(Math.hypot((p1?.p.x ?? 0) - (p0?.p.x ?? 0), (p1?.p.y ?? 0) - (p0?.p.y ?? 0)))} mm`);
+    } else if (unealta === 'poligon') parti.push(`R ${mm(Math.hypot(b.x - a.x, b.y - a.y))} mm`);
+    else parti.push(`${mm(Math.max(...xs) - Math.min(...xs))} × ${mm(Math.max(...ys) - Math.min(...ys))} mm`);
   }
+  if (taste.alt && (unealta === 'dreptunghi' || unealta === 'elipsa')) parti.push(t('editare.desen.din-centru'));
+  if (taste.alt && unealta === 'linie') parti.push(t('editare.desen.din-mijloc'));
+  if (taste.shift && unealta === 'dreptunghi') parti.push(t('editare.desen.patrat'));
+  if (taste.shift && (unealta === 'linie' || unealta === 'poligon')) parti.push(t('editare.desen.pas15'));
+  if (unealta === 'cerc' && fo.tip !== 'cerc') parti.push(t('editare.desen.elipsa'));
+  return (
+    <span className="manere-eticheta desen-eticheta" style={{ left: v.tx + b.x * v.scara + 14, top: v.ty - b.y * v.scara + 14 }} data-testid="desen-eticheta">
+      {parti.join(' · ')}
+    </span>
+  );
 }
 
 /** Pictogramele uneltelor: săgeata selecției și conturul fiecărei forme; magnetul lipirii și grila. */
@@ -2788,32 +2925,61 @@ const CURSOR_MANER: Record<Maner | 'rotire', string> = {
  * (o scalare care n-ar mai fi exactă) se spune deasupra cutiei, cu motivul. Cât e apăsată pânza în altă parte (mutarea,
  * panoramarea), mânerele se ascund: n-ar urma forma.
  */
-function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire, onLinii }: {
+function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire, onLinii, ancora: ancoraData, onAncora, onTine, colturi: felColturi }: {
   readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly indexFoaie: number; readonly selectie: readonly string[];
   /** Acțiunea `document.transforma`, cu rezultatul ei: un refuz al ușii documentului (schema) se spune ca unul al scalării. */
   readonly aplica: (t: Transformare) => RezultatActiune;
   /** Lipirea mânerului tras (ADR 0055), după Alt ținut (care o inversează): null = mânerul merge liber. */
   readonly lipire: (alt: boolean) => LipirePunct | null;
   readonly onLinii: (l: readonly LinieGhid[]) => void;
+  /** Ancora transformării (ADR 0240 §A): rotirea e în jurul ei, Alt scalează față de ea; null = centrul cutiei. */
+  readonly ancora: Punct | null;
+  /** Ancora trasă de mână (punctul foii), sau `null` (dublu clic pe țintă): înapoi în punctul ales în selector. */
+  readonly onAncora: (p: Punct | null) => void;
+  /** După o transformare în jurul ei, ancora rămâne pe loc (punctul foii de dinainte). */
+  readonly onTine: (p: Punct) => void;
+  /** Colțurile rotunjite la scalare (ADR 0240 §F.28); lipsă = raza rămâne la întindere. */
+  readonly colturi: 'pastreaza' | 'scaleaza' | undefined;
 }): ReactElement {
   const ex = (x: number): number => v.tx + x * v.scara;
   const ey = (y: number): number => v.ty - y * v.scara;
   const cx = (c.minX + c.maxX) / 2, cy = (c.minY + c.maxY) / 2;
-  const [gest, setGest] = useState<{ readonly m: Maner | 'rotire'; readonly t: TransformareManer } | null>(null);
+  const ancora = ancoraData ?? { x: cx, y: cy };
+  const [gest, setGest] = useState<{ readonly m: Maner | 'rotire'; readonly t: TransformareManer; readonly taste: Taste } | null>(null);
+  // Ținta ancorei cât e trasă (ADR 0240 §A.3), lipită.
+  const [tinta, setTinta] = useState<Punct | null>(null);
   const [motiv, setMotiv] = useState<string | null>(null);
   const [ascunse, setAscunse] = useState(false);
   const radacina = useRef<HTMLDivElement | null>(null);
-  const acum = useRef({ c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii });
-  acum.current = { c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii };
+  const vazute = manereVazute((c.maxX - c.minX) * v.scara, (c.maxY - c.minY) * v.scara);
+  // Ținta se arată (și se apucă) doar cât se arată și mânerele.
+  const arataAncora = vazute.length > 0;
+  const acum = useRef({ c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine, felColturi });
+  acum.current = { c, v, doc, indexFoaie, selectie, aplica, lipire, onLinii, ancora, arataAncora, onAncora, onTine, felColturi };
   // Motivul unui refuz rămâne până la următorul gest sau până se schimbă selecția.
   useEffect(() => { setMotiv(null); }, [selectie]);
+  // Ce schimbă scalarea formelor alese (ADR 0240 §F): cercul devine elipsă, arcele curbe, colțurile după felul ales, textul
+  // vectori; eticheta o spune cât se trage.
+  const forme = useMemo(() => formeScalate(doc, indexFoaie, selectie), [doc, indexFoaie, selectie]);
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
     if (!el || !panza) return undefined;
     let spatiu = false;
-    let g: { readonly m: Maner | 'rotire'; readonly start: Punct; readonly ecran: Punct; readonly id: number } | null = null;
+    // Gestul de acum, cu ultimul punct al cursorului: o tastă apăsată cu mausul pe loc schimbă previzualizarea (ADR 0240).
+    let g: { readonly m: Maner | 'rotire'; readonly start: Punct; readonly ecran: Punct; readonly id: number; ultim: Punct } | null = null;
+    // Ținta ancorei trasă (ADR 0240 §A.3): apăsarea, locul ancorei la apăsare.
+    let ga: { readonly start: Punct; readonly de: Punct; readonly ecran: Punct; readonly id: number } | null = null;
     let apasata: number | null = null;
+    // La mânere, Alt înseamnă „față de ancoră”: lipirea urmează doar butonul Lipire (ADR 0240, răspunsul 2a).
+    const calcul = (x: { readonly m: Maner | 'rotire'; readonly start: Punct }, q: Punct, taste: Taste) =>
+      transformareManerLipita(acum.current.c, x.m, x.start, q, taste, acum.current.lipire(false), acum.current.ancora);
+    // Ancora trasă urmează deplasarea cursorului față de apăsare; se lipește de cele 9 puncte ale cutiei și de ținte (Alt
+    // inversează lipirea: aici n-are alt sens).
+    const ancoraTrasa = (x: { readonly start: Punct; readonly de: Punct }, e: { clientX: number; clientY: number; altKey: boolean }) => {
+      const { c: k, v: w, lipire: lip } = acum.current, q = laFoaie(e);
+      return ancoraLipita(k, { x: x.de.x + q.x - x.start.x, y: x.de.y + q.y - x.start.y }, lip(e.altKey), TOLERANTA_LIPIRE_PX / w.scara);
+    };
     const local = (e: { clientX: number; clientY: number }): Punct => {
       const r = el.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -2823,51 +2989,79 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
       const p = local(e);
       return { x: (p.x - w.tx) / w.scara, y: (w.ty - p.y) / w.scara };
     };
+    const peAncora = (p: Punct): boolean => acum.current.arataAncora && ancoraLovita(acum.current.ancora, acum.current.v, p.x, p.y);
     const apasa = (e: PointerEvent): void => {
       if (e.target !== panza) return;
       const p = local(e);
+      // Mânerele întâi (și când ancora stă pe unul), apoi ținta ancorei.
       const m = e.button === 0 && !spatiu ? manerLovit(acum.current.c, acum.current.v, p.x, p.y) : null;
-      if (!m) {
+      const a = !m && e.button === 0 && !spatiu && peAncora(p);
+      if (!m && !a) {
         apasata = e.pointerId;
         setAscunse(true);
         return;
       }
-      // Apăsarea e a mânerului: pânza n-o mai primește (nici alegerea, nici mutarea).
+      // Apăsarea e a mânerului sau a ancorei: pânza n-o mai primește (nici alegerea, nici mutarea).
       e.preventDefault();
       e.stopPropagation();
       panza.setPointerCapture(e.pointerId);
-      g = { m, start: laFoaie(e), ecran: { x: e.clientX, y: e.clientY }, id: e.pointerId };
+      const start = laFoaie(e);
       setMotiv(null);
-      setGest({ m, t: transformareManer(acum.current.c, m, g.start, g.start, e.shiftKey) });
+      if (!m) {
+        ga = { start, de: acum.current.ancora, ecran: { x: e.clientX, y: e.clientY }, id: e.pointerId };
+        return;
+      }
+      g = { m, start, ecran: { x: e.clientX, y: e.clientY }, id: e.pointerId, ultim: start };
+      setGest({ m, t: transformareManer(acum.current.c, m, start, start, tasteDin(e), {}, acum.current.ancora), taste: tasteDin(e) });
     };
     const misca = (e: PointerEvent): void => {
+      if (ga) {
+        if (e.pointerId !== ga.id) return;
+        const r = ancoraTrasa(ga, e);
+        setTinta(r.punct);
+        acum.current.onLinii(r.linii);
+        return;
+      }
       if (g) {
         if (e.pointerId !== g.id) return;
-        const r = transformareManerLipita(acum.current.c, g.m, g.start, laFoaie(e), e.shiftKey, acum.current.lipire(e.altKey));
-        setGest({ m: g.m, t: r.t });
+        g.ultim = laFoaie(e);
+        const r = calcul(g, g.ultim, tasteDin(e));
+        setGest({ m: g.m, t: r.t, taste: tasteDin(e) });
         acum.current.onLinii(r.linii);
         return;
       }
       if (apasata !== null) return;
       const p = local(e);
       const m = e.target === panza && !spatiu ? manerLovit(acum.current.c, acum.current.v, p.x, p.y) : null;
-      panza.style.cursor = m ? CURSOR_MANER[m] : '';
+      panza.style.cursor = m ? CURSOR_MANER[m] : e.target === panza && !spatiu && peAncora(p) ? 'move' : '';
     };
     const elibereaza = (e: PointerEvent): void => {
       if (apasata === e.pointerId) {
         apasata = null;
         setAscunse(false);
       }
+      if (ga && e.pointerId === ga.id) {
+        const x = ga;
+        ga = null;
+        setTinta(null);
+        acum.current.onLinii([]);
+        // Un clic pe țintă (sub 3 px) n-o mută.
+        if (Math.hypot(e.clientX - x.ecran.x, e.clientY - x.ecran.y) >= MINIM_DESEN_PX) acum.current.onAncora(ancoraTrasa(x, e).punct);
+        return;
+      }
       if (!g || e.pointerId !== g.id) return;
       const s = g;
       g = null;
       setGest(null);
-      const { c: cutie, doc: d, indexFoaie: k, selectie: alese, aplica: ap, lipire: lip, onLinii: linii } = acum.current;
+      const { doc: d, indexFoaie: k, selectie: alese, aplica: ap, onLinii: linii, ancora: a, onTine } = acum.current;
       linii([]);
       // Un clic (sub 3 px de tragere) nu e o transformare.
       if (Math.hypot(e.clientX - s.ecran.x, e.clientY - s.ecran.y) < MINIM_DESEN_PX) return;
-      const tr = transformareManerLipita(cutie, s.m, s.start, laFoaie(e), e.shiftKey, lip(e.altKey)).t;
-      if (tr.fel === 'rotire' ? tr.unghi === 0 : tr.sx === 1 && tr.sy === 1) return;
+      const taste = tasteDin(e);
+      const tm = calcul(s, laFoaie(e), taste).t;
+      if (tm.fel === 'rotire' ? tm.unghi === 0 : tm.sx === 1 && tm.sy === 1) return;
+      const fc = acum.current.felColturi;
+      const tr: Transformare = tm.fel === 'scalare' && fc ? { ...tm, colturi: fc } : tm;
       const r = transforma(d, k, alese, tr);
       if (!r.ok) {
         setMotiv(t(`editare.transformare.${r.motiv}`));
@@ -2877,21 +3071,39 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
       // revenea fără niciun motiv (DXF-ul owner-ului, 28.10).
       const rez = ap(tr);
       if (!rez.ok) setMotiv(t(rez.motiv));
+      // În jurul ancorei (rotirea, Alt), ancora rămâne pe loc (ADR 0240 §A.4).
+      else if (tr.fel === 'rotire' || taste.alt) onTine(a);
     };
     const anuleaza = (): void => {
       g = null;
+      ga = null;
       apasata = null;
       setGest(null);
+      setTinta(null);
       setAscunse(false);
       acum.current.onLinii([]);
     };
+    // Dublu clic pe țintă: ancora înapoi în punctul ales în selector (ADR 0240 §A.3).
+    const dublu = (e: MouseEvent): void => {
+      if (e.target !== panza || !peAncora(local(e))) return;
+      e.preventDefault();
+      e.stopPropagation();
+      acum.current.onAncora(null);
+    };
     const tasta = (e: KeyboardEvent): void => {
       if (e.code === 'Space') spatiu = e.type === 'keydown';
-      if (e.type === 'keydown' && e.key === 'Escape' && g) {
+      if (e.type === 'keydown' && e.key === 'Escape' && (g || ga)) {
         e.preventDefault();
         e.stopImmediatePropagation();
         anuleaza();
+        return;
       }
+      // Shift, Ctrl (⌘) și Alt schimbă gestul și cu mausul pe loc (ADR 0240); Alt nu ajunge la meniul browserului.
+      if (!g || !['Shift', 'Control', 'Meta', 'Alt'].includes(e.key)) return;
+      if (e.key === 'Alt') e.preventDefault();
+      const r = calcul(g, g.ultim, tasteDin(e));
+      setGest({ m: g.m, t: r.t, taste: tasteDin(e) });
+      acum.current.onLinii(r.linii);
     };
     const uita = (): void => { spatiu = false; };
     window.addEventListener('pointerdown', apasa, true);
@@ -2900,6 +3112,7 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
     window.addEventListener('pointercancel', anuleaza, true);
     window.addEventListener('keydown', tasta, true);
     window.addEventListener('keyup', tasta, true);
+    window.addEventListener('dblclick', dublu, true);
     window.addEventListener('blur', uita);
     return () => {
       window.removeEventListener('pointerdown', apasa, true);
@@ -2908,6 +3121,7 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
       window.removeEventListener('pointercancel', anuleaza, true);
       window.removeEventListener('keydown', tasta, true);
       window.removeEventListener('keyup', tasta, true);
+      window.removeEventListener('dblclick', dublu, true);
       window.removeEventListener('blur', uita);
       panza.style.cursor = '';
     };
@@ -2918,19 +3132,40 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
     const tr = gest?.t;
     if (!tr) return q;
     if (tr.fel === 'rotire') {
-      const co = Math.cos((tr.unghi * Math.PI) / 180), si = Math.sin((tr.unghi * Math.PI) / 180);
-      return { x: cx + co * (q.x - cx) - si * (q.y - cy), y: cy + si * (q.x - cx) + co * (q.y - cy) };
+      const co = Math.cos((tr.unghi * Math.PI) / 180), si = Math.sin((tr.unghi * Math.PI) / 180), o = tr.centru;
+      return { x: o.x + co * (q.x - o.x) - si * (q.y - o.y), y: o.y + si * (q.x - o.x) + co * (q.y - o.y) };
     }
     return { x: tr.ancora.x + (q.x - tr.ancora.x) * tr.sx, y: tr.ancora.y + (q.y - tr.ancora.y) * tr.sy };
   });
   const mm = (x: number): string => textNumar(Math.round(x * 100) / 100, true);
+  const inCentru = ancora.x === cx && ancora.y === cy;
+  // Eticheta spune și ce fac tastele (ADR 0240 §E): proporția, punctul fix, cercul care devine elipsă.
   const eticheta = gest
     ? gest.t.fel === 'rotire'
-      ? `${textNumar(gest.t.unghi, true)}°`
-      : `${mm((c.maxX - c.minX) * gest.t.sx)} × ${mm((c.maxY - c.minY) * gest.t.sy)} mm`
+      ? `${textNumar(gest.t.unghi, true)}° · ${t(inCentru ? 'editare.mod.rotire.centru' : 'editare.mod.rotire.ancora')}`
+      : (() => {
+        const mod = modManer(c, gest.m === 'rotire' ? 'e' : gest.m, gest.taste, ancora);
+        const neuniform = gest.t.sx !== gest.t.sy;
+        // Colțurile: raza rămâne la întindere (implicit) sau mereu; cu „se scalează mereu”, întinse devin curbe.
+        const nota = !forme.colturi ? null
+          : neuniform ? (felColturi === 'scaleaza' ? 'editare.mod.colturi.curbe' : 'editare.mod.colturi.raza')
+            : felColturi === 'pastreaza' ? 'editare.mod.colturi.raza' : null;
+        return [
+          `${mm((c.maxX - c.minX) * gest.t.sx)} × ${mm((c.maxY - c.minY) * gest.t.sy)} mm`,
+          t(`editare.mod.${mod.proportie}`), t(`editare.mod.fix.${mod.fix}`),
+          ...(mod.peLinie ? [t('editare.mod.pe-linie')] : []),
+          ...(forme.cerc && neuniform ? [t('editare.mod.elipsa')] : []),
+          ...(forme.arce && neuniform ? [t('editare.mod.arce')] : []),
+          ...(nota ? [t(nota)] : []),
+          ...(forme.text && neuniform ? [t('editare.mod.text')] : []),
+        ].join(' · ');
+      })()
     : null;
+  const fix = gest ? (gest.t.fel === 'rotire' ? gest.t.centru : gest.t.ancora) : null;
+  // Ținta e punctul fix al gestului (rotirea, Alt): se umple.
+  const ancoraFixa = gest !== null && (gest.t.fel === 'rotire' || gest.taste.alt);
+  const a = tinta ?? ancora;
   const sus = ey(c.maxY);
-  const vazute = manereVazute((c.maxX - c.minX) * v.scara, (c.maxY - c.minY) * v.scara);
   // Banda în care eticheta se vede: între barele de sus și bara de jos sau insula selecției de deasupra ei (care altfel o
   // acoperea, la verificarea lui 9.3↑b), măsurată când eticheta apare.
   const [vizibil, setVizibil] = useState({ sus: 0, jos: Number.POSITIVE_INFINITY });
@@ -2959,6 +3194,13 @@ function Manere({ cutie: c, vedere: v, doc, indexFoaie, selectie, aplica, lipire
         return <div key={m} className={`maner maner-${m}`} style={{ left: ex(q.x) - 5, top: ey(q.y) - 5 }} data-maner={m} />;
       })}
       <div className="maner maner-rotire" style={{ left: ex(cx) - 6, top: sus - ROTIRE_PX - 6 }} data-maner="rotire" />
+      {/* Ținta ancorei (ADR 0240 §A): trasă de mână, dublu clic o întoarce; plină cât e punctul fix al gestului. */}
+      {arataAncora ? (
+        <div className={ancoraFixa ? 'ancora-sel fixa' : 'ancora-sel'} style={{ left: ex(a.x) - 7, top: ey(a.y) - 7 }} data-testid="ancora"
+          data-x={Math.round(a.x * 1e6) / 1e6} data-y={Math.round(a.y * 1e6) / 1e6} />
+      ) : null}
+      {/* Punctul fix al gestului (mânerul opus, centrul, ancora), cât se trage. */}
+      {fix ? <div className="manere-fix" style={{ left: ex(fix.x) - 4, top: ey(fix.y) - 4 }} data-testid="manere-fix" data-x={fix.x} data-y={fix.y} /> : null}
       {eticheta || motiv ? (
         <span className={motiv && !eticheta ? 'manere-eticheta manere-motiv' : 'manere-eticheta'} role={motiv && !eticheta ? 'status' : undefined}
           style={{ left: ex(cx), top: topEticheta }} data-testid={motiv && !eticheta ? 'manere-motiv' : 'manere-eticheta'}>
