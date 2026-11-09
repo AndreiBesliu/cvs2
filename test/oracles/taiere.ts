@@ -15,6 +15,9 @@
  * mult toleranța de cea veche, ca distanță Hausdorff măsurată din nou; cu mărimea dată, centrul în centrul cutiei vechi).
  * Felia 10.3↑e: netezirea (la cel mult toleranța; arcele, curbele și liniile mai lungi de „Păstrează”, neschimbate; colțurile
  * ascuțite, peste 60° pe 4 × toleranța, vârfuri; cubicele noi doar între vârfuri vechi; nicio frântură ascuțită nouă).
+ * Felia 10.3↑i: spațiul și suprapunerea (fiecare parte, regiunea veche tăiată cu cuțitul mutat cu w / 2; la spațiu, bucățile la
+ * cel puțin w una de alta; la suprapunere, partea comună cât fâșia de lățime w) și, pe o rețea, bucățile pe care spațiul le-ar
+ * mânca de tot (componentele regiunii de lângă cuțit care nu trec de cel mutat).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -938,6 +941,271 @@ export function judecaPastrareaConvex(o: {
     const asteptat = o.inauntru ? inK : tot - inK;
     const are = ariePar(o.ramase);
     if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria părții păstrate: ${are}, nu ${asteptat}`);
+  }
+  return rau;
+}
+
+// ——— Felia 10.3↑i (ADR 0181 §2): spațiul și suprapunerea ———
+
+/**
+ * Judecata spațiului sau a suprapunerii cu o linie n · q = v (n unitară) și lățimea w (lista abaterilor). Partea de semn s e
+ * regiunea veche tăiată cu semiplanul s · (n · q − v) ≥ σ · w / 2 (σ = 1 la spațiu, −1 la suprapunere), deci:
+ * - fiecare parte stă de partea ei a liniei mutate (la spațiu, fiecare punct al ei la cel puțin w / 2 de cuțit);
+ * - acoperirea: fiecare punct vechi de dincolo de linia mutată stă pe o formă nouă de partea lui;
+ * - nimic inventat: fiecare punct nou stă pe o formă veche sau pe linia mutată;
+ * - aria părților de fiecare parte e aria regiunii vechi tăiate cu semiplanul ei;
+ * - la spațiu, bucățile stau la cel puțin w una de alta; la suprapunere, partea lor comună are lățimea w: ariile celor două
+ *   părți depășesc aria veche cu aria fâșiei |n · q − v| ≤ w / 2.
+ * O parte toată în fâșia suprapunerii (un ciot de cale de lângă cuțit) se potrivește ambelor laturi: se încearcă amândouă.
+ * `doar`: semnul singurei părți păstrate. `doua`: exact o parte de fiecare latură (linia din panou); altfel oricâte.
+ */
+export function judecaSpatiul(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly parti: ReadonlyArray<readonly FormaOracol[]>;
+  readonly n: P;
+  readonly v: number;
+  readonly fel: 'spatiu' | 'suprapunere';
+  readonly latime: number;
+  readonly doua: boolean;
+  readonly doar?: 1 | -1;
+}): string[] {
+  const d = o.latime / 2, sigma = o.fel === 'spatiu' ? 1 : -1;
+  const fata = (q: P): number => o.n.x * q.x + o.n.y * q.y - o.v;
+  // Laturile în care încape fiecare parte: s, dacă toată stă în s · fata ≥ σ · d.
+  const incape = o.parti.map((parte) => {
+    const z = parte.flatMap((f) => esantioane(f, 32)).map(fata);
+    return ([1, -1] as const).filter((s) => z.length > 0 && z.every((x) => s * x >= sigma * d - 1e-7));
+  });
+  if (incape.some((x) => x.length === 0)) return ['o parte trece de linia ei mutată'];
+  const nehotarate = incape.flatMap((x, k) => (x.length === 2 ? [k] : []));
+  let primele: string[] | null = null;
+  for (let masca = 0; masca < 1 << Math.min(nehotarate.length, 8); masca++) {
+    const laturi = incape.map((x, k) => {
+      const i = nehotarate.indexOf(k);
+      return i < 0 ? (x[0] as 1 | -1) : (masca >> i) & 1 ? 1 : -1;
+    });
+    const rau = judecaSpatiulPeLaturi(o, laturi, d, sigma, fata);
+    if (rau.length === 0) return [];
+    primele ??= rau;
+  }
+  return primele ?? [];
+}
+
+/** `judecaSpatiul`, cu latura fiecărei părți dată. */
+function judecaSpatiulPeLaturi(
+  o: Parameters<typeof judecaSpatiul>[0], laturi: ReadonlyArray<1 | -1>, d: number, sigma: number, fata: (q: P) => number,
+): string[] {
+  const rau: string[] = [];
+  const doar = o.doar;
+  if (doar !== undefined) {
+    if (laturi.some((s) => s === -doar)) rau.push('a rămas ceva de partea ștearsă');
+    if (o.doua && o.parti.length !== 1) rau.push(`părțile: ${o.parti.length}, nu 1`);
+  } else if (o.doua && (o.parti.length !== 2 || !(laturi.includes(1) && laturi.includes(-1)))) {
+    rau.push(`părțile nu sunt două, de o parte și de alta (${laturi.join(', ')})`);
+  }
+  if (rau.length > 0) return rau;
+  const tot = ariePar(o.inainte);
+  for (const s of doar !== undefined ? [doar] : [-1, 1]) {
+    const ale = o.parti.filter((_, k) => laturi[k] === s).flat();
+    const vMutat = o.v + s * sigma * d;
+    for (const f of o.inainte) {
+      for (const q of esantioane(f, 48)) {
+        if (s * fata(q) <= sigma * d + 1e-7) continue;
+        const dist = distantaLaForme(q, ale);
+        if (dist > 1e-6) { rau.push(`un punct vechi de partea ${s > 0 ? '+' : '−'} (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) lipsește (${dist})`); break; }
+      }
+    }
+    for (const f of ale) {
+      for (const q of esantioane(f, 48)) {
+        if (Math.abs(o.n.x * q.x + o.n.y * q.y - vMutat) <= 1e-7) continue;
+        const dist = distantaLaForme(q, o.inainte);
+        if (dist > 1e-6) { rau.push(`un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche (${dist}), nici pe linia mutată`); break; }
+      }
+    }
+    const asteptat = arieParSemiplan(o.inainte, o.n, vMutat, s);
+    const are = ariePar(ale);
+    if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`aria de partea ${s > 0 ? '+' : '−'}: ${are}, nu ${asteptat}`);
+  }
+  if (doar === undefined && rau.length === 0) {
+    const A = o.parti.filter((_, k) => laturi[k] === -1).flat(), B = o.parti.filter((_, k) => laturi[k] === 1).flat();
+    if (o.fel === 'spatiu') {
+      for (const q of A.flatMap((f) => esantioane(f, 48))) {
+        const dist = distantaLaForme(q, B);
+        if (dist < o.latime - 1e-6) { rau.push(`între bucăți, doar ${dist}, nu ${o.latime}`); break; }
+      }
+    } else {
+      const fasie = arieParSemiplan(o.inainte, o.n, o.v - d, 1) - arieParSemiplan(o.inainte, o.n, o.v + d, 1);
+      const comun = ariePar(A) + ariePar(B) - tot;
+      if (Math.abs(comun - fasie) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`partea comună: ${comun}, nu fâșia de ${o.latime} (${fasie})`);
+    }
+  }
+  return rau;
+}
+
+/**
+ * Ar mânca spațiul o bucată întreagă de partea păstrată? `dist(q)`: distanța cu semn a punctului față de cuțit, pozitivă de
+ * partea păstrată (la linie, s · (n · q − v); la un poligon convex, cu semnul laturii). Pe o rețea de pas `pas` mm, regiunea
+ * veche (par-impar) de partea păstrată, pe componente conexe (cei opt vecini: vârful îngust al unei pene, între o margine și
+ * cuțit, rămâne legat), cercetată doar în fâșia de lângă cuțit: o componentă care atinge ce e dincolo de fâșie trece; altfel,
+ * cel mai mare `dist` al ei decide (sub w / 2, cu o margine de doi pași: mâncată). O componentă de câteva celule e sub
+ * rezoluție: cel mult nehotărâtă. Căile deschise: fiecare bucată a lor de partea păstrată (între treceri, eșantionată des), la
+ * fel. Întoarce 'da', 'nu' sau 'nehotarat' (lângă prag, sub rezoluția rețelei).
+ */
+export function mancatRaster(forme: readonly FormaOracol[], dist: (q: P) => number, latime: number, pas = 0.25): 'da' | 'nu' | 'nehotarat' {
+  const d = latime / 2, marja = 2 * pas, prag = d + marja + pas;
+  let rez = 'nu' as 'da' | 'nu' | 'nehotarat';
+  const judeca = (max: number): void => {
+    if (max < d - marja) rez = 'da';
+    else if (max <= d + marja && rez === 'nu') rez = 'nehotarat';
+  };
+  const mancata = (): boolean => rez === 'da';
+  for (const f of forme) {
+    if (f.inchis) continue;
+    let max = -Infinity;
+    for (const q of esantioane(f, 4096)) {
+      const z = dist(q);
+      if (z > 0) max = Math.max(max, z);
+      else if (max > -Infinity) { judeca(max); max = -Infinity; }
+    }
+    if (max > -Infinity) judeca(max);
+  }
+  const poligoane = forme.filter((f) => f.inchis).map((f) => esantioane(f, 1024));
+  if (poligoane.length === 0 || rez === 'da') return rez;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of poligoane) for (const q of p) { minX = Math.min(minX, q.x); minY = Math.min(minY, q.y); maxX = Math.max(maxX, q.x); maxY = Math.max(maxY, q.y); }
+  const nx = Math.ceil((maxX - minX) / pas) + 1, ny = Math.ceil((maxY - minY) / pas) + 1;
+  // 0: gol sau de cealaltă parte; 1: în fâșie (de cercetat); 2: dincolo de fâșie.
+  const stare = new Uint8Array(nx * ny);
+  const z = new Float64Array(nx * ny);
+  const xs: number[] = [];
+  for (let j = 0; j < ny; j++) {
+    const y = minY + (j + 0.5) * pas;
+    xs.length = 0;
+    for (const p of poligoane) {
+      for (let i = 0; i < p.length; i++) {
+        const a = p[i] as P, b = p[(i + 1) % p.length] as P;
+        if ((a.y > y) !== (b.y > y)) xs.push(a.x + ((y - a.y) * (b.x - a.x)) / (b.y - a.y));
+      }
+    }
+    xs.sort((u, w) => u - w);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const i0 = Math.max(0, Math.ceil(((xs[k] as number) - minX) / pas - 0.5)), i1 = Math.min(nx - 1, Math.floor(((xs[k + 1] as number) - minX) / pas - 0.5));
+      for (let i = i0; i <= i1; i++) {
+        const zz = dist({ x: minX + (i + 0.5) * pas, y });
+        if (!(zz > 0)) continue;
+        stare[j * nx + i] = zz > prag ? 2 : 1;
+        z[j * nx + i] = zz;
+      }
+    }
+  }
+  const vazut = new Uint8Array(nx * ny);
+  const stiva: number[] = [];
+  for (let s0 = 0; s0 < nx * ny; s0++) {
+    if (stare[s0] !== 1 || vazut[s0]) continue;
+    let max = -Infinity, trece = false, celule = 0;
+    stiva.length = 0;
+    stiva.push(s0);
+    vazut[s0] = 1;
+    while (stiva.length > 0) {
+      const c = stiva.pop() as number;
+      celule++;
+      max = Math.max(max, z[c] as number);
+      const i = c % nx, j = (c - i) / nx;
+      for (let jj = j - 1; jj <= j + 1; jj++) {
+        for (let ii = i - 1; ii <= i + 1; ii++) {
+          if (ii < 0 || jj < 0 || ii >= nx || jj >= ny || (ii === i && jj === j)) continue;
+          const v = jj * nx + ii;
+          if (stare[v] === 2) trece = true;
+          else if (stare[v] === 1 && !vazut[v]) { vazut[v] = 1; stiva.push(v); }
+        }
+      }
+    }
+    if (trece) continue;
+    if (celule < 6) { if (rez === 'nu') rez = 'nehotarat'; continue; }
+    judeca(max);
+    if (mancata()) return 'da';
+  }
+  return rez;
+}
+
+/** Distanța cu semn a lui q față de marginea poligonului convex k: pozitivă înăuntru, negativă în afară. */
+export function distantaConvex(q: P, k: readonly P[]): number {
+  const m = laPoligon(q, k);
+  return inPoligon(q, k) ? m : -m;
+}
+
+/** Poligonul convex k (trigonometric) strâns cu d (fiecare latură mutată înăuntru): tot un poligon convex, sau gol. */
+export function convexStrans(k: readonly P[], d: number): P[] {
+  let rez: P[] = [...k];
+  for (let i = 0; i < k.length && rez.length > 0; i++) {
+    const a = k[i] as P, b = k[(i + 1) % k.length] as P;
+    const l = Math.hypot(b.x - a.x, b.y - a.y);
+    const n = { x: -(b.y - a.y) / l, y: (b.x - a.x) / l };
+    rez = taieSemiplan(rez, n, n.x * a.x + n.y * a.y + d, 1);
+  }
+  return rez.length >= 3 ? rez : [];
+}
+
+/** Poligonul convex k (trigonometric) crescut cu d: laturile mutate în afară, colțurile arce de rază d, prin `pe` coarde fiecare. */
+export function convexCrescut(k: readonly P[], d: number, pe = 256): P[] {
+  const rez: P[] = [];
+  const n = k.length;
+  for (let i = 0; i < n; i++) {
+    const a = k[(i - 1 + n) % n] as P, b = k[i] as P, c = k[(i + 1) % n] as P;
+    const u1 = Math.atan2(-(b.x - a.x), b.y - a.y), u2 = Math.atan2(-(c.x - b.x), c.y - b.y);
+    let du = u2 - u1;
+    while (du < 0) du += 2 * Math.PI;
+    while (du >= 2 * Math.PI) du -= 2 * Math.PI;
+    for (let t = 0; t <= pe; t++) rez.push({ x: b.x + d * Math.cos(u1 + (du * t) / pe), y: b.y + d * Math.sin(u1 + (du * t) / pe) });
+  }
+  return rez;
+}
+
+/**
+ * Judecata spațiului sau a suprapunerii cu un cuțit închis convex k (trigonometric) și lățimea w (lista abaterilor). Partea
+ * dinăuntru e regiunea veche din k strâns (spațiul) sau crescut (suprapunerea) cu w / 2; cea din afară, regiunea veche din
+ * afara lui k crescut (spațiul) sau strâns (suprapunerea): fiecare stă acolo, acoperă punctele vechi de acolo, nu inventează
+ * nimic (pe forma veche sau pe cuțitul mutat) și are aria regiunii vechi de acolo. `inauntru`, `afara`: formele părților (cea
+ * nepăstrată, null).
+ */
+export function judecaConvexMutat(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly inauntru: readonly FormaOracol[] | null;
+  readonly afara: readonly FormaOracol[] | null;
+  readonly k: readonly P[];
+  readonly fel: 'spatiu' | 'suprapunere';
+  readonly latime: number;
+}): string[] {
+  const rau: string[] = [];
+  const d = o.latime / 2;
+  const strans = convexStrans(o.k, d), crescut = convexCrescut(o.k, d);
+  const tol = 1e-3;
+  const tot = ariePar(o.inainte);
+  const parti: Array<{ readonly nume: string; readonly forme: readonly FormaOracol[]; readonly mutat: readonly P[]; readonly inK: boolean }> = [];
+  if (o.inauntru) parti.push({ nume: 'înăuntru', forme: o.inauntru, mutat: o.fel === 'spatiu' ? strans : crescut, inK: true });
+  if (o.afara) parti.push({ nume: 'în afară', forme: o.afara, mutat: o.fel === 'spatiu' ? crescut : strans, inK: false });
+  for (const p of parti) {
+    const goala = p.mutat.length < 3;
+    const deParte = (q: P): boolean => (goala ? !p.inK : inPoligon(q, p.mutat) === p.inK);
+    const pe = (q: P): boolean => !goala && laPoligon(q, p.mutat) <= tol;
+    for (const f of o.inainte) {
+      for (const q of esantioane(f, 48)) {
+        if (pe(q) || !deParte(q)) continue;
+        const dist = distantaLaForme(q, p.forme);
+        if (dist > 1e-6) { rau.push(`${p.nume}: un punct vechi (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) lipsește (${dist})`); break; }
+      }
+    }
+    for (const f of p.forme) {
+      for (const q of esantioane(f, 48)) {
+        if (pe(q)) continue;
+        if (!deParte(q)) { rau.push(`${p.nume}: un punct (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) de cealaltă parte a cuțitului mutat`); break; }
+        if (distantaLaForme(q, o.inainte) > 1e-6) { rau.push(`${p.nume}: un punct nou (${q.x.toFixed(4)}, ${q.y.toFixed(4)}) nu e nici pe forma veche, nici pe cuțitul mutat`); break; }
+      }
+    }
+    const inMutat = goala ? 0 : arieParInConvex(o.inainte, p.mutat);
+    const asteptat = p.inK ? inMutat : tot - inMutat;
+    const are = ariePar(p.forme);
+    if (Math.abs(are - asteptat) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`${p.nume}: aria ${are}, nu ${asteptat}`);
   }
   return rau;
 }
