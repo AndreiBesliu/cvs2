@@ -12,7 +12,7 @@ import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { GrupuriTaiere, type NumeParti } from './GrupuriTaiere.tsx';
-import { schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
+import { intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
 import './taiere.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -38,10 +38,13 @@ export { UnealtaCutit } from './UnealtaCutit.tsx';
  * doar dacă desenul nu s-a schimbat între timp.
  */
 
-/** Linia de tăiere de arătat pe pânză, în mm ai foii (verticala, orizontala sau linia prin x, y la unghiul dat), sau nimic. */
+/**
+ * Linia de tăiere de arătat pe pânză, în mm ai foii (verticala, orizontala sau linia prin x, y la unghiul dat), sau nimic. Cu
+ * spațiu sau suprapunere (ADR 0181 §2), `fasie`: lățimea lor, arătată ca două linii paralele, la jumătate de fiecare parte.
+ */
 export type LinieTaiere =
-  | { readonly axa: 'x' | 'y'; readonly v: number }
-  | { readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number }
+  | { readonly axa: 'x' | 'y'; readonly v: number; readonly fasie?: number }
+  | { readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number; readonly fasie?: number }
   | null;
 
 type Fel = 'x' | 'y' | 'unghi' | 'ghidaj' | 'forma';
@@ -101,10 +104,13 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const cutit: Cutit | null = fel === 'x' ? (x === null ? null : { fel: 'x', x }) : fel === 'y' ? (y === null ? null : { fel: 'y', y })
     : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { fel: 'unghi', x: ux, y: uy, unghi })
       : fel === 'ghidaj' ? (g ? { fel: 'ghidaj', id: g.id } : null) : forma ? { fel: 'forma', id: forma } : null;
-  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y })
-    : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { axa: 'u', x: ux, y: uy, unghi })
-      : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz } : null;
-  const cheieLinie = linie ? (linie.axa === 'u' ? `u${linie.x},${linie.y},${linie.unghi}` : `${linie.axa}${linie.v}`) : '';
+  // Spațiul sau suprapunerea (ADR 0181 §2), doar cu închidere; pe pânză, fâșia lor în jurul liniei.
+  const intre = intreDin(optiuni);
+  const fasie = intre ? { fasie: intre.latime } : {};
+  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x, ...fasie }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y, ...fasie })
+    : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { axa: 'u', x: ux, y: uy, unghi, ...fasie })
+      : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz, ...fasie } : null;
+  const cheieLinie = linie ? `${linie.axa === 'u' ? `u${linie.x},${linie.y},${linie.unghi}` : `${linie.axa}${linie.v}`}|${linie.fasie ?? ''}` : '';
   // „Păstrează”, cu numele părților după cuțit: deasupra / dedesubt la orizontală, înăuntru / în afară la un cuțit închis.
   const orizontala = fel === 'y' || (fel === 'ghidaj' && g?.axa === 'y');
   const numeParti: NumeParti = orizontala ? ['deasupra', 'dedesubt'] : fel === 'forma' && formaInchisa ? ['inauntru', 'afara'] : ['stanga', 'dreapta'];
@@ -155,6 +161,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     if (cutit === null) return;
     ruleaza(cutit, {
       inchide, pastreaza: optiuni.pastreaza, prelungeste: cuCapete ? optiuni.prelungeste : 'nu', stergeCutitul: fel === 'forma' && optiuni.stergeCutitul,
+      ...(intre ? { intre } : {}),
     });
   };
   const intersectii = (): void => { ruleaza({ fel: 'intersectii' }, { inchide: false }); };
@@ -276,29 +283,32 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   );
 }
 
-/** Linia de tăiere pe pânză, cât panoul e deschis: punctată, de-a curmezișul ferestrei, la X, la Y sau prin X, Y la unghiul ei. */
+/**
+ * Linia de tăiere pe pânză, cât panoul e deschis: punctată, de-a curmezișul ferestrei, la X, la Y sau prin X, Y la unghiul ei;
+ * cu spațiu sau suprapunere, și fâșia lor (două linii paralele, mai rar punctate, la jumătate din lățime de fiecare parte).
+ */
 export function LiniaTaierii({ linie, vedere, marime }: {
   readonly linie: LinieTaiere;
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
 }): ReactElement | null {
   if (!linie) return null;
-  if (linie.axa === 'u') {
-    // Prin punctul ei, pe direcția ei (pe ecran, y crește în jos), cât să treacă de toată fereastra.
-    const px = vedere.tx + linie.x * vedere.scara, py = vedere.ty - linie.y * vedere.scara;
-    const a = (linie.unghi * Math.PI) / 180, dx = Math.cos(a), dy = -Math.sin(a);
-    const l = Math.abs(px) + Math.abs(py) + 2 * (marime.latime + marime.inaltime);
-    return (
-      <svg className="rigle-desen linia-taierii" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="taiere-linia" data-axa="u">
-        <line x1={px - dx * l} y1={py - dy * l} x2={px + dx * l} y2={py + dy * l} />
-      </svg>
-    );
-  }
-  const x = vedere.tx + linie.v * vedere.scara;
-  const y = vedere.ty - linie.v * vedere.scara;
+  // Pe ecran: un punct al liniei, direcția ei (y crește în jos) și cât să treacă de toată fereastra.
+  const a = linie.axa === 'u' ? (linie.unghi * Math.PI) / 180 : linie.axa === 'x' ? Math.PI / 2 : 0;
+  const px = vedere.tx + (linie.axa === 'u' ? linie.x : linie.axa === 'x' ? linie.v : 0) * vedere.scara;
+  const py = vedere.ty - (linie.axa === 'u' ? linie.y : linie.axa === 'y' ? linie.v : 0) * vedere.scara;
+  const dx = linie.axa === 'x' ? 0 : Math.cos(a), dy = linie.axa === 'y' ? 0 : -Math.sin(a);
+  const l = Math.abs(px) + Math.abs(py) + 2 * (marime.latime + marime.inaltime);
+  const h = linie.fasie === undefined ? 0 : (linie.fasie / 2) * vedere.scara;
+  const paralela = (o: number, cls?: string): ReactElement => (
+    <line className={cls} x1={px - dx * l - dy * o} y1={py - dy * l + dx * o} x2={px + dx * l - dy * o} y2={py + dy * l + dx * o} />
+  );
   return (
-    <svg className="rigle-desen linia-taierii" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="taiere-linia" data-axa={linie.axa}>
-      {linie.axa === 'x' ? <line x1={x} y1={0} x2={x} y2={marime.inaltime} /> : <line x1={0} y1={y} x2={marime.latime} y2={y} />}
+    <svg className="rigle-desen linia-taierii" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="taiere-linia" data-axa={linie.axa}
+      data-fasie={linie.fasie ?? 0}>
+      {paralela(0)}
+      {h > 0 ? paralela(-h, 'fasie-taierii') : null}
+      {h > 0 ? paralela(h, 'fasie-taierii') : null}
     </svg>
   );
 }

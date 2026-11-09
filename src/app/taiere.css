@@ -133,6 +133,13 @@
   stroke-dasharray: 8 4;
 }
 
+/* Fâșia spațiului sau a suprapunerii (ADR 0181 §2): două linii paralele, subțiri și mai rar punctate decât linia tăierii. */
+.linia-taierii line.fasie-taierii {
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.85;
+}
+
 /*
  * Unealta Cuțit (ADR 0181, felia 10.3↑f): felurile și bifa în bara de sus; pe pânză, urma cuțitului (punctată, ca linia
  * tăierii), locurile unde taie și formele adunate în cuțit. Stratul nu prinde evenimente: gestul e al pânzei.
@@ -255,4 +262,27 @@
 .pen-cutit .pen-elastic {
   stroke: var(--rosu);
   stroke-dasharray: 8 4;
+}
+
+/* Cât tragi, fâșia spațiului sau a suprapunerii (ADR 0181 §2): calea mutată de fiecare parte, ca la linia din panou. */
+.urma-cutit .fasie-cutit {
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.85;
+}
+
+/* „Între bucăți”: lățimea, un câmp scurt cu unitatea lui, pe același rând cu alegerile (se rupe cu ele). */
+.camp-latime-intre {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.camp-latime-intre .camp-taiere {
+  width: 3.6rem;
+  min-width: 0;
+}
+
+.camp-latime-intre .camp-taiere[aria-invalid='true']:not(:disabled) {
+  border-color: var(--rosu);
 }

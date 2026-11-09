@@ -11,6 +11,9 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  * deschisă în două; **Retează** arată bucata de sub maus și, cu opt clicuri, face dintr-un „#” pătratul din mijloc, tot o formă;
  * cu o formă aleasă, bucata unei forme nealese se vede și pleacă până la cea aleasă; **Desparte**, din unealta Noduri, deschide
  * dreptunghiul în colțul ales.
+ *
+ * Felia 10.3↑i (ADR 0181 §2): din opțiunile Cuțitului, suprapunerea 2: cât tragi Linia, fâșia se vede, iar placa devine două
+ * forme de 100 × 51 mm (aceeași alegere în panoul Taie); Linia cu Shift ține pașii de 15° (orizontala, de la y = 48).
  */
 test.use({ locale: 'ro-RO' });
 
@@ -345,4 +348,57 @@ test('Formă, cu „Șterge cuțitul”: un cerc pus pe placă o decupează și 
   // Din placă: discul și placa cu golul; cercul-cuțit a plecat.
   await expect(randuri(page)).toHaveCount(2);
   await expect(page.locator(`[data-instanta="${cercul ?? '—'}"]`)).toHaveCount(0);
+});
+
+/** Cutia (în proprietăți) a formei de pe rândul k al listei, aleasă cu Selecția; `alta`: cutia dinainte, de așteptat schimbată. */
+async function cutia(page: Page, k: number, alta?: string): Promise<string> {
+  await page.locator('[data-unealta="selectie"]').click();
+  const cutie = page.locator('#root, body').getByText(/^100\.00 × \d+\.\d\d mm$/);
+  await randuri(page).nth(k).click();
+  await expect(cutie).toBeVisible();
+  if (alta !== undefined) await expect(cutie).not.toHaveText(alta);
+  return (await cutie.textContent()) ?? '';
+}
+
+test('Între bucăți, din opțiunile Cuțitului: cu suprapunerea 2, cât tragi Linia se vede fâșia, iar placa devine două forme de 100 × 51 mm', async ({ page }) => {
+  const la = await placa(page);
+  await cutit(page, 'linie');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.locator('[data-cutit="intre-suprapunere"]').check();
+  await page.locator('[data-cutit="latime"]').fill('2');
+  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '1');
+  await expect(page.getByTestId('cutit-sfat')).toContainText('Opțiuni: suprapunere de 2 mm.');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  const a = la(-10, 50), b = la(110, 50);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 6 });
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-fasie', '2');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
+  await expect(randuri(page)).toHaveCount(2);
+  expect(await cutia(page, 0)).toBe('100.00 × 51.00 mm');
+  expect(await cutia(page, 1)).toBe('100.00 × 51.00 mm');
+  // Aceeași alegere în panoul Taie.
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="intre-suprapunere"]')).toBeChecked();
+  await expect(page.locator('[data-taiere="latime"]')).toHaveValue('2');
+});
+
+test('Linie, cu Shift: tăietura ține pașii de 15° (trasă de la y = 48 spre y = 52, rămâne orizontala de la 48)', async ({ page }) => {
+  const la = await placa(page);
+  await cutit(page, 'linie');
+  const a = la(-10, 48), b = la(110, 52);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.keyboard.down('Shift');
+  await page.mouse.move(b.x, b.y, { steps: 6 });
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
+  await expect(randuri(page)).toHaveCount(2);
+  const prima = await cutia(page, 0);
+  const aDoua = await cutia(page, 1, prima);
+  expect([prima, aDoua].sort()).toEqual(['100.00 × 48.00 mm', '100.00 × 52.00 mm']);
 });

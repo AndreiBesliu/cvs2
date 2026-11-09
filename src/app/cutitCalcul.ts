@@ -371,3 +371,30 @@ export function regiuniAtinse(puncte: readonly P[], inchis: boolean, regiuni: re
     return n >= 2 || (inchis && n === 0 && inRegiuneAproximativa(puncte[0] as P, r));
   });
 }
+
+/**
+ * Fâșia spațiului sau a suprapunerii (ADR 0181 §2) în jurul căii trase, cât tragi: calea mutată cu jumătate din lățime de fiecare
+ * parte (întâi stânga sensului, apoi dreapta), aproximată pe vârfuri (normala, media celor ale laturilor vecine); doar de
+ * arătat, căci tăierea mută calea exact, cu offsetul ei. Null: o cale fără lungime sau o lățime care nu e pozitivă.
+ */
+export function fasieAproximativa(puncte: readonly P[], latime: number): readonly [P[], P[]] | null {
+  const p = puncte.filter((q, i) => i === 0 || Math.hypot(q.x - (puncte[i - 1] as P).x, q.y - (puncte[i - 1] as P).y) > 1e-9);
+  if (p.length < 2 || !(latime > 0)) return null;
+  const h = latime / 2;
+  const normala = (a: P, b: P): P => {
+    const l = Math.hypot(b.x - a.x, b.y - a.y);
+    return { x: -(b.y - a.y) / l, y: (b.x - a.x) / l };
+  };
+  const st: P[] = [], dr: P[] = [];
+  for (let i = 0; i < p.length; i++) {
+    const q = p[i] as P;
+    const n0 = i > 0 ? normala(p[i - 1] as P, q) : null, n1 = i + 1 < p.length ? normala(q, p[i + 1] as P) : null;
+    const s = n0 && n1 ? { x: n0.x + n1.x, y: n0.y + n1.y } : ((n0 ?? n1) as P);
+    const l = Math.hypot(s.x, s.y);
+    // O întoarcere pe loc: normala laturii de după.
+    const n = l > 1e-9 ? { x: s.x / l, y: s.y / l } : ((n1 ?? n0) as P);
+    st.push({ x: q.x + h * n.x, y: q.y + h * n.y });
+    dr.push({ x: q.x - h * n.x, y: q.y - h * n.y });
+  }
+  return [st, dr];
+}

@@ -635,6 +635,17 @@ an angle, the left of the direction the angle gives; for an open shape knife, of
 one, **inside** or **outside**. The other part of the cut shapes goes in the same step; a shape the cut does not touch
 stays, even on the other side. The app remembers the choices, the same in the [Knife](#cutit) bar.
 
+**Between pieces** (it needs **Close the pieces**): **nothing** (the default), a **gap** or an **overlap**, of the given
+**width** (in mm, 3 by default, from 0.01 to 1 000), centred on the cut. Each part is cut with the cut moved by half the
+width: for a gap, towards it, so an empty strip stays between the pieces, like the cut of a saw blade (the 100 × 100 square
+cut at X = 50 with a gap of 6 gives two rectangles of 47 × 100); for an overlap, towards the other one, so the pieces
+overlap over the whole width (53 × 100 each). For an open shape knife, the moved cut is its path moved in parallel (the
+corners come out rounded on the outer side); for a closed one, the inside shrinks and the outside grows. While the panel is
+open, the strip shows on the canvas, with two lines dotted more sparsely. Only the shapes the cut goes through are cut: one
+next to it stays, even if the strip would touch it. A gap that would eat a whole piece on the kept side (a strip narrower
+than it, an island inside the strip) is not made, and the panel says why; a hole inside the strip goes with it. Neither can
+a knife that cannot be moved (it breaks in a curve tighter than half the width) be used.
+
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
 **Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
@@ -686,12 +697,14 @@ While you drag, the stroke is dotted and the places where it cuts show in red. T
 (for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
 cut (or why not) is said in the corner of the canvas.
 
-The **Cutting options** button (the sliders next to the checkbox) opens **Extend the ends** and **Keep**, the same as in the
-[Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves the shape, and the part on the
-right or on the left of the direction you drag in goes in the same step. For the Shape kind, the parts are called **inside**
+The **Cutting options** button (the sliders next to the checkbox) opens **Extend the ends**, **Keep** and **Between
+pieces**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
+the shape, the part on the right or on the left of the direction you drag in goes in the same step, and the gap (or the
+overlap) moves the knife by half the width for each part. For the Shape kind, the parts are called **inside**
 and **outside**, and **Delete the knife** removes the knife shapes after the cut. When an option is not the default, the
 button has a red dot, and the hint in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends
-show dotted, and the part that goes is faded, with a red tint, over the shapes the knife splits right through.
+show dotted, and the part that goes is faded, with a red tint, over the shapes the knife splits right through; with a gap
+or an overlap, their strip shows on both sides of the trace, dotted more sparsely.
 
 ## Converting vectors
 %% capitol: conversie

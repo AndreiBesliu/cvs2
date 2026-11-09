@@ -2,14 +2,16 @@
  * Unealta Cuțit (ADR 0181 §1; felia 10.3↑f), partea pură (`src/app/cutitCalcul.ts`): formele de tăiat (răspunsul 2a: cele
  * alese, sau, fără alegere, toate de pe foaie; niciodată cuțitul), urma mâinii libere (un punct nou doar la un pixel de ultimul),
  * calea cuțitului din urmă (prea scurtă: nimic), calea Pen-ului mutată pe foaie (cu mânerele) și locurile aproximative arătate
- * cât tragi (pătratul trecut de o linie oblică: două locuri, pe laturi).
+ * cât tragi (pătratul trecut de o linie oblică: două locuri, pe laturi). Felia 10.3↑i: fâșia spațiului arătată cât tragi
+ * (calea mutată cu jumătate din lățime de fiecare parte) și spațiul cerut doar cu închidere.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cuPrelungiri, cutiePuncte, esteModCutit, locuriAproximative, locuriComune,
-  lungimeUrma, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie, tinteCutit, type RegiuneAproximativa,
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cuPrelungiri, cutiePuncte, esteModCutit, fasieAproximativa, locuriAproximative,
+  locuriComune, lungimeUrma, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie, tinteCutit, type RegiuneAproximativa,
 } from '../../src/app/cutitCalcul.ts';
+import { intreDin, type OptiuniTaiere } from '../../src/app/optiuniTaiere.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const stoc = { latime: 1000, inaltime: 1000, grosime: 18 };
@@ -200,4 +202,27 @@ test('regiunile atinse: cuțitul care trece pătratul de tot, da; cel care se op
   const inel = [{ x: 40, y: 40 }, { x: 60, y: 40 }, { x: 60, y: 60 }, { x: 40, y: 60 }];
   assert.deepEqual(regiuniAtinse(inel, true, [p, q]).map((r) => r.instanta), ['a']);
   assert.deepEqual(regiuniAtinse(inel, false, [p, q]), [], 'aceeași cale, deschisă: nu trece nimic');
+});
+
+test('fâșia arătată cât tragi (ADR 0181 §2): linia mutată cu 2 de fiecare parte; la un colț drept, pe bisectoare; nimic fără lungime', () => {
+  assert.deepEqual(fasieAproximativa([{ x: 0, y: 0 }, { x: 10, y: 0 }], 4), [[{ x: 0, y: 2 }, { x: 10, y: 2 }], [{ x: 0, y: -2 }, { x: 10, y: -2 }]]);
+  const colt = fasieAproximativa([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }], 2);
+  assert.ok(colt);
+  const [st, dr] = colt;
+  const h = Math.SQRT1_2;
+  assert.ok(Math.hypot((st[1]?.x ?? 0) - (10 - h), (st[1]?.y ?? 0) - h) < 1e-12, 'stânga, înăuntrul colțului');
+  assert.ok(Math.hypot((dr[1]?.x ?? 0) - (10 + h), (dr[1]?.y ?? 0) + h) < 1e-12, 'dreapta, în afara lui');
+  assert.deepEqual(st[2], { x: 9, y: 10 });
+  // Întoarcerea pe loc ia normala laturii de după; punctele repetate nu contează.
+  assert.deepEqual(fasieAproximativa([{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 0 }], 2)?.[0][1], { x: 10, y: -1 });
+  assert.equal(fasieAproximativa([{ x: 1, y: 1 }, { x: 1, y: 1 }], 4), null);
+  assert.equal(fasieAproximativa([{ x: 0, y: 0 }, { x: 10, y: 0 }], 0), null);
+});
+
+test('spațiul cerut din opțiuni: doar cu închidere și fără „nimic”, cu lățimea lor', () => {
+  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'spatiu', latime: 3 };
+  assert.deepEqual(intreDin(o), { fel: 'spatiu', latime: 3 });
+  assert.deepEqual(intreDin({ ...o, intre: 'suprapunere', latime: 0.5 }), { fel: 'suprapunere', latime: 0.5 });
+  assert.equal(intreDin({ ...o, intre: 'nimic' }), undefined);
+  assert.equal(intreDin({ ...o, inchide: false }), undefined, 'fără închidere, nimic');
 });

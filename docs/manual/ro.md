@@ -611,6 +611,17 @@ de unghi; la un cuțit-formă deschis, a sensului în care a fost desenat; la un
 cealaltă a formelor tăiate pleacă în același pas; o formă pe care tăietura n-o atinge rămâne, chiar dacă e de partea
 cealaltă. Aplicația își amintește alegerile, aceleași și în bara [Cuțitului](#cutit).
 
+**Între bucăți** (cere **Închide bucățile**): **nimic** (implicit), **spațiu** sau **suprapunere**, de **lățimea** dată
+(în mm, implicit 3, de la 0,01 la 1 000), centrate pe tăietură. Fiecare parte se taie cu tăietura mutată cu jumătate din
+lățime: la spațiu, spre ea, deci între bucăți rămâne o fâșie goală, ca tăietura unei pânze (pătratul 100 × 100 tăiat la
+X = 50 cu spațiul 6 dă două dreptunghiuri de 47 × 100); la suprapunere, spre cealaltă, deci bucățile se suprapun pe toată
+lățimea (53 × 100 fiecare). La un cuțit-formă deschis, tăietura mutată e drumul lui mutat paralel (colțurile ies rotunjite
+pe partea dinafară); la unul închis, înăuntru se strânge, iar în afară crește. Cât panoul e deschis, fâșia se vede pe pânză,
+cu două linii punctate mai rar. Se taie doar formele prin care trece tăietura: una de lângă ea rămâne, chiar dacă fâșia ar
+atinge-o. Un spațiu care ar mânca o bucată întreagă de partea păstrată (o fâșie mai îngustă decât el, o insulă din fâșie)
+nu se face, iar panoul spune de ce; o gaură din fâșie pleacă odată cu ea. Nici un cuțit care nu se poate muta (se rupe într-o
+curbă mai strânsă decât jumătatea lățimii) nu se poate folosi.
+
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
 tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
@@ -658,12 +669,14 @@ Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea 
 într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se
 spune în colțul pânzei.
 
-Butonul **Opțiunile tăierii** (glisoarele de lângă bifă) deschide **Prelungește capetele** și **Păstrează**, aceleași ca în
-[panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până iese din ea, iar partea din dreapta sau din
-stânga sensului în care tragi pleacă în același pas. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar
+Butonul **Opțiunile tăierii** (glisoarele de lângă bifă) deschide **Prelungește capetele**, **Păstrează** și **Între
+bucăți**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până iese din ea,
+partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, iar spațiul (sau suprapunerea) mută
+cuțitul cu jumătate din lățime pentru fiecare parte. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar
 **Șterge cuțitul** scoate formele-cuțit după tăiere. Când o opțiune nu e cea implicită, butonul are un punct roșu, iar sfatul
 din colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e
-estompată, cu o nuanță roșie, peste formele pe care cuțitul le împarte de tot.
+estompată, cu o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede
+de o parte și de alta a urmei, punctată mai rar.
 
 ## Conversia vectorilor
 %% capitol: conversie

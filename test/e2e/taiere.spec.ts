@@ -20,6 +20,10 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * „Păstrează stânga” la X = 30 lasă partea de 30 × 100, iar la Y părțile se cheamă deasupra și dedesubt; o linie scurtă aleasă
  * ultima nu taie nimic fără prelungire, iar „până ies din formă” și „și șterge-o după tăiere” fac din pătrat două fețe și scot
  * cuțitul.
+ *
+ * Felia 10.3↑i (ADR 0181 §2): „Între bucăți” e stinsă fără „Închide bucățile”; spațiul 6 la X = 50 lasă două forme de
+ * 47 × 100 mm (fâșia lui se vede pe pânză, în jurul liniei); suprapunerea 6, două de 53 × 100; spațiul care ar mânca fâșia de
+ * 2 mm de la X = 98 e refuzat, cu motiv.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -237,4 +241,51 @@ test('Ultima formă aleasă, o linie scurtă înăuntrul pătratului: fără pre
   await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese. Cuțitul-formă a fost șters.');
   await expect(randuri(page)).toHaveCount(2);
   await expect(page.locator(`[data-instanta="${cutitul ?? '—'}"]`)).toHaveCount(0);
+});
+
+/** Fiecare formă a listei, aleasă din listă, are în proprietăți cutia dată. */
+async function cutii(page: Page, text: string): Promise<void> {
+  const n = await randuri(page).count();
+  for (let k = 0; k < n; k++) {
+    await randuri(page).nth(k).click();
+    await expect(page.locator('#root, body').getByText(text)).toBeVisible();
+  }
+}
+
+test('Între bucăți: stinsă fără închidere; spațiul 6 la X = 50 lasă două forme de 47 × 100 mm, iar fâșia se vede pe pânză', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="x"]').fill('50');
+  await page.locator('[data-taiere="inchide"]').uncheck();
+  await expect(page.locator('[data-taiere="intre-spatiu"]')).toBeDisabled();
+  await expect(page.locator('[data-taiere="latime"]')).toBeDisabled();
+  await page.locator('[data-taiere="inchide"]').check();
+  await page.locator('[data-taiere="intre-spatiu"]').check();
+  await expect(page.locator('[data-taiere="latime"]')).toHaveValue('3');
+  await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-fasie', '3');
+  await page.locator('[data-taiere="latime"]').fill('6');
+  await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-fasie', '6');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
+  await page.keyboard.press('Escape');
+  await expect(randuri(page)).toHaveCount(2);
+  await cutii(page, '47.00 × 100.00 mm');
+});
+
+test('Între bucăți: spațiul 6 la X = 98 ar mânca fâșia de 2 mm și e refuzat; suprapunerea 6 la X = 50 lasă două forme de 53 × 100 mm', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="intre-spatiu"]').check();
+  await page.locator('[data-taiere="latime"]').fill('6');
+  await page.locator('[data-taiere="x"]').fill('98');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Spațiul ar mânca o bucată întreagă (o fâșie mai îngustă decât el): alege un spațiu mai mic, mută cuțitul sau păstrează doar partea cealaltă.');
+  await expect(randuri(page)).toHaveCount(1);
+  await page.locator('[data-taiere="intre-suprapunere"]').check();
+  await page.locator('[data-taiere="x"]').fill('50');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
+  await page.keyboard.press('Escape');
+  await expect(randuri(page)).toHaveCount(2);
+  await cutii(page, '53.00 × 100.00 mm');
 });
