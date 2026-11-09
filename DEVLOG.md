@@ -7615,3 +7615,23 @@ un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
 - **Porțile:** tipurile (aplicația, extensia, funcțiile), regulile de import, licențele, suita unitară 8883 (0 căzute),
   e2e-urile importului, ale trasării și tutorialul 44 / 44, determinismul (293 de fișiere identice); totalul 582,5 / 700 kB,
   pornirea 101,9 / 110. Otrăvurile: 48 / 48 (la prima rulare 46 / 49: L12 și T06 au primit probe, hârtia foarte întunecată și poza subexpusă; L15, echivalentă, scoasă din listă cu pragul de zgomot al polarității). Commituri: `fe21e56`, `56d8138`, `3ecf19b`; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 09.12), amprenta `3ecf19befdd7`.
+
+## 2026-11-09 — Unirea lui 25.4↑ (scanările și pozele) în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „putem uni si trasarea din imagine.”
+**Started:** 09.11, 19:25. **Completed:** 09.11, 21:30.
+
+- **Unirea (`0ebbd99`, `--no-ff`):** de la `304ea37` (25.4↑, ADR 0224: Lumina uniformă / neuniformă / cu umbre, Zona trasă
+  pe previzualizare, „Ignoră ce atinge marginea”; otrăvurile 48 / 48), fără conflicte: ramura avea `main` adus.
+- **Porțile pe `0ebbd99`:** traducerile (705, 0 lipsă), compilatoarele, importurile, 8 885 de teste unitare (nicio cădere),
+  licențele, build-ul determinist; e2e 417 / 417 (`export.spec.ts:578` a căzut la prima rulare cu EBUSY la citirea
+  fișierului descărcat, ținut de Windows, și a trecut singur; proba barei de sus a trecut), emulatoarele 101 / 101 și 21 /
+  21. Mărimile: pornirea 101,9 (cu ușa 105,6 / 110 kB), totalul 582,5 / 700.
+- **Documentele (`30448ea`):** CLAUDE.md (25.4↑ unită, cu cifrele, decizia din 09.11); încercarea scanărilor și a pozelor
+  din coada owner-ului trece de pe canalul `trasare` pe adresa principală de test.
+- **CI:** complet `42674242104` (pornit de mână) pe `30448ea`, verde. Rapidul `42671124969` a ieșit „failure” cu toate cele
+  șase felii verzi: GitHub nu pornise deloc al șaptelea job, oracolul exportului 2D (lipsea din listă, fără nicio schimbare
+  în fluxuri). Reluat (încercarea 2, cu toate cele șapte joburi), verde.
+- **Publicat pe test:** rularea `42683082986`, serverul întâi, apoi site-ul; amprenta `30448ea61b9b` pe toate țintele;
+  adresa de test servește `30448ea61b9b`.
+- **Semnul:** liniei trasării, după push (worktree-ul ei rămâne; linia continuă la cuvântul owner-ului).
