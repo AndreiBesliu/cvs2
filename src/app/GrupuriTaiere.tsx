@@ -87,8 +87,8 @@ export function GrupuriTaiere({ loc, parti, cuCapete, drept }: {
 }
 
 /**
- * Un câmp în mm al opțiunilor: textul scris rămâne cât scrii (o valoare care nu e bună se arată ca greșită și nu ajunge în
- * opțiuni); altfel urmează opțiunile, schimbate și din celălalt loc.
+ * Un câmp în mm al opțiunilor: textul scris rămâne cât scrii (o valoare care nu e bună, după `bun`, se arată ca greșită, iar
+ * depozitul opțiunilor o refuză); altfel urmează opțiunile, schimbate și din celălalt loc.
  */
 function CampMm({ valoare, bun, scrie, eticheta, date, oprit }: {
   readonly valoare: number;
@@ -109,7 +109,7 @@ function CampMm({ valoare, bun, scrie, eticheta, date, oprit }: {
       onChange={(e) => {
         setText(e.target.value);
         const v = citesteNumar(e.target.value);
-        if (v !== null && bun(v)) scrie(v);
+        if (v !== null) scrie(v);
       }} />
   );
 }
