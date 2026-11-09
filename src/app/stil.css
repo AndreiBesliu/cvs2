@@ -1593,6 +1593,13 @@ nav button[aria-pressed='true'] {
   gap: var(--sp-3);
 }
 
+/* Butoanele dinăuntru (fișierul, „Fă din textul ales câmpul”): cu marginea butoanelor din ferestre, nu ca un text. */
+.dialog-csv .csv-fisier button,
+.dialog-csv .csv-rand button {
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-4);
+}
+
 .dialog-csv h2 {
   margin-bottom: 0;
 }
