@@ -180,7 +180,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       const a0 = a;
       if (!a0) return;
       if (s.mod === 'linie') {
-        const b = capatConstrans('linie', a0, q, m.shift);
+        const b = capatConstrans('linie', a0, q, m);
         if (faza === 'misca') {
           setUrma({ fel: 'linie', a: a0, b });
           s.onLinii(linii);

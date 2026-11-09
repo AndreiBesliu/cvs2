@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "texte": {
+    "0166900bbd4c6c74": {
+      "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”. Separat, decizia pe plafon pentru 6.V↑d (opțiunile din ADR 0240: Alt ține fix, cercul din colț, poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite; ~1,5 kB)",
+      "en": "Trying the transform anchor and keys on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c merged into `main` and published on 08.11): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 10 “Handles”, 11 “Anchor” and 12 “Rounded corners”. Separately, the decision on the cap for 6.V↑d (the options in ADR 0240: Alt holds fixed, the circle from a corner, the stretched polygon, the keys row, X / Y of the anchor, rotated instances; ~1.5 kB)"
+    },
     "01e32a3cdf30b065": {
       "ro": "Piesele plate „după CNC”",
       "en": "Flat parts “as the CNC leaves them”"
@@ -577,6 +581,10 @@
       "ro": "Cele două interfețe, ghidul de pornire",
       "en": "The two interfaces, the getting-started guide"
     },
+    "31623b8674de1dc9": {
+      "ro": "Ancora și tastele transformării, aduse din etapa 6",
+      "en": "The transform anchor and keys, brought forward from stage 6"
+    },
     "319b2eab9f275712": {
       "ro": "Buzunarul",
       "en": "The pocket"
@@ -880,6 +888,10 @@
     "4c406e91372c2884": {
       "ro": "**Simularea, felia 2 din 2: vederea 3D, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0057; „Vreau sa continui”, cu vederea separată, simularea la deschidere și 0,1 mm la apropiere). Butonul „3D” din extensia barei pune placa tăiată în locul pânzei: programul documentului de acum se simulează pe toată placa, iar relieful din benzi (cel mai jos Z pe bloc de 1–16 celule; la blocul 1, chiar celulele nucleului) urcă într-o textură WebGL2 și se desenează ca suprafață luminată, cu pereții marginilor. Tragerea rotește, butonul drept mută, rotița apropie spre cursor, iar încadrarea pune toată placa în zona liberă. Apropiată destul, zona de 204,8 mm din jurul centrului se simulează la 0,1 mm, peste placă. Bucata vine la primul clic (6,7 kB gzip); pornirea rămâne neschimbată (cu ușa 99,8 / 100). Foaia de 2440 × 1220 se simulează în 0,9 s, pe blocuri de 1 mm; fereastra fină, în 1,2 s. **Treceri:** (1) relieful în benzi, calculul camerei, vederea, probele unitare și e2e, cu controalele negative; (2) încadrarea pe colțuri (prima punea placa sub panouri), plasa din build, garda reliefului; plasa veche a nucleului a prins un `Math.log2` (înlocuit cu un calcul pe întregi).",
       "en": "**Simulation, slice 2 of 2: the 3D view, brought forward from stage 4** (the plates are not cut yet: `PLAN.md` §4.6, point 7; ADR 0057; “I want to continue”, with a separate view, simulation on opening and 0.1 mm when zoomed in). The “3D” button in the bar extension puts the cut sheet in place of the canvas: the current document's program is simulated over the whole sheet, and the relief from the bands (the lowest Z per block of 1–16 cells; at block 1, the kernel cells themselves) goes into a WebGL2 texture and is drawn as a lit surface, with the edge walls. Dragging rotates, the right button pans, the wheel zooms towards the cursor, and fitting puts the whole sheet in the free area. Zoomed in far enough, the 204.8 mm area around the centre is simulated at 0.1 mm, drawn over the sheet. The chunk loads on the first click (6.7 kB gzip); startup stays unchanged (99.8 / 100 with the door). The 2440 × 1220 sheet simulates in 0.9 s, in 1 mm blocks; the fine window in 1.2 s. **Passes:** (1) the relief in bands, the camera maths, the view, the unit and e2e checks, with negative controls; (2) fitting by corners (the first version put the sheet under the panels), the build net, the relief guard; the kernel's old net caught a `Math.log2` (replaced with integer arithmetic)."
+    },
+    "4c5029d1e54f7e2e": {
+      "ro": "**Ancora și tastele transformării, aduse din etapa 6** (fără mașină; ADR 0240, acceptat pe 08.11: „Ok la toate”, deci 6.V↑–6.V↑c acum, 6.V↑d după decizia pe plafon; linia deschisă de sesiunea principală la cererea owner-ului: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori. si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta”; worktree-ul `ancore`, ramura `wip/6.V-ancore`, neunită). Întâi cercetarea (ArtCAM, CorelDRAW, Illustrator, Inkscape), ADR-ul propus și [schița, cu patru întrebări](https://claude.ai/artifact/6YMwTjXNiQDTcME6BjFNgv), cu recomandările primite (1a–4a); apoi codul, în trei felii. **6.V↑:** la mânere, Shift păstrează proporția pe orice mâner, Ctrl o ignoră pe orice mâner, Alt scalează față de ancoră (implicit centrul), combinate (cu Shift și Ctrl, câștigă Shift), citite și la apăsarea tastei cu mausul pe loc; la desen, Shift pătrat, cerc sau 15°, Ctrl face cercul elipsă, Alt din centru (linia, din mijloc); eticheta spune modul, lângă cutie și lângă cursor; la mânere și la desen, lipirea urmează butonul Lipire, comutat și cu Shift+L; cercul întins pe o axă devine elipsa uneltei Elipsă, cu razele editabile. **6.V↑b:** ancora, din selectorul 3 × 3 (ținut în browser) sau trasă de mână, lipită de cele 9 puncte ale cutiei și de ținte, dublu clic înapoi; rotirea, Alt, oglindirea și înclinarea în jurul ei, după care rămâne pe loc; o selecție nouă o întoarce; documentul rămâne v20. **6.V↑c:** arcele căilor întinse pe o axă devin curbe sub 0,001 mm; colțurile rotunjite în trei feluri (lista din bara Transformării: raza rămâne la întindere, implicit; rămâne mereu; se scalează mereu, cu colțurile curbe); textul aldin devine vectori; eticheta spune ce se întâmplă. Testul din aplicație: pașii „Ancora” și „Colțurile rotunjite”, iar pașii desenului cer și Alt și Ctrl. **Probele, scrise întâi:** pe hârtie, tabelele tastelor pe fiecare mâner și combinație, ancora, arcele (și într-un grup scalat de 50 de ori), colțurile, eticheta, textul; e2e (`ancore.spec.ts`, 8). **Otrăvurile** (`test/otravuri/6.V.py`, 50): 48 prinse la prima rulare; cele două scăpate (⌘ pe Mac luat drept Ctrl, fracția ancorei pe o linie fără lățime) au primit probele lor, care le prind acum. Proba importului care aștepta refuzul „doar proporțional” la întinderea unei piese cu arce verifică acum eticheta („arcele devin curbe”), în același loc pe ecran. **Pornirea 101,7 / 110 kB, neschimbată; totalul 535,0 → 537,1 / 600 kB.** **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12), verificat acolo: versiunea `8d4e06bb3e97`, pornirea fără erori, selectorul ancorei și lista colțurilor, cercul întins devine elipsă, cu eticheta; testul din aplicație (`?test`) are 33 de pași.",
+      "en": "**The transform anchor and keys, brought forward from stage 6** (no machine; ADR 0240, accepted on 08.11: “Ok la toate”, so 6.V↑–6.V↑c now, 6.V↑d after the decision on the cap; the line opened by the main session at the owner’s request: “I want a worktree that handles origin/anchor points for vectors, and I will want the transform tool to take them into account; moreover I want hotkeys that influence the tool”; the `ancore` worktree, the `wip/6.V-ancore` branch, not merged). First the research (ArtCAM, CorelDRAW, Illustrator, Inkscape), the proposed ADR and [the sketch, with four questions](https://claude.ai/artifact/6YMwTjXNiQDTcME6BjFNgv), answered with the recommendations (1a–4a); then the code, in three slices. **6.V↑:** on the handles, Shift keeps the proportion on any handle, Ctrl ignores it on any handle, Alt scales about the anchor (the centre by default), combined (with Shift and Ctrl, Shift wins), also read when a key is pressed with the mouse still; when drawing, Shift gives a square, a circle or 15° steps, Ctrl makes the circle an ellipse, Alt draws from the centre (a line, from its middle); the label says the mode, next to the box and next to the cursor; on the handles and when drawing, snapping follows the Snap button, also toggled with Shift+L; a circle stretched on one axis becomes the ellipse of the Ellipse tool, with editable radii. **6.V↑b:** the anchor, from the 3 × 3 picker (kept in the browser) or dragged by hand, snapping to the 9 points of the box and to targets, a double-click brings it back; rotation, Alt, mirroring and skewing about it, after which it stays put; a new selection brings it back; the document stays v20. **6.V↑c:** the arcs of paths stretched on one axis become curves within 0.001 mm; rounded corners in three ways (the list in the Transform bar: the radius stays when stretched, the default; it always stays; they always scale, with curved corners); bold text becomes vectors; the label says what happens. The in-app test: the “Anchor” and “Rounded corners” steps, and the drawing steps ask for Alt and Ctrl too. **The proofs, written first:** on paper, the key tables on every handle and combination, the anchor, the arcs (also in a group scaled 50 times), the corners, the label, the text; e2e (`ancore.spec.ts`, 8). **The poisons** (`test/otravuri/6.V.py`, 50): 48 caught on the first run; the two that escaped (⌘ on a Mac taken as Ctrl, the anchor fraction on a line with no width) got their own proofs, which catch them now. The import proof that expected the “proportionally only” refusal when stretching a part with arcs now checks the label (“arcs become curves”), in the same place on screen. **Startup 101.7 / 110 kB, unchanged; total 535.0 → 537.1 / 600 kB.** **On the channel:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (until 08.12), checked there: version `8d4e06bb3e97`, startup without errors, the anchor picker and the corners list, a stretched circle becomes an ellipse, with the label; the in-app test (`?test`) has 33 steps."
     },
     "4c7a639ac3fcd856": {
       "ro": "Fundul plat al V-carve-ului",
@@ -1373,6 +1385,10 @@
       "ro": "— (pornește profilul)",
       "en": "— (starts the profile)"
     },
+    "7d2ac660f7f9e6e9": {
+      "ro": "6.V↑–6.V↑c pe test; 6.V↑d",
+      "en": "6.V↑–6.V↑c on test; 6.V↑d"
+    },
     "7d2bb8ecc8518633": {
       "ro": "Netezește",
       "en": "Smoothing"
@@ -1657,6 +1673,10 @@
       "ro": "Fără izolare cross-origin",
       "en": "No cross-origin isolation"
     },
+    "96cea0bd56bc5a82": {
+      "ro": "când vrei; 6.V↑d când se unesc liniile",
+      "en": "whenever you like; 6.V↑d when the lines are merged"
+    },
     "97782b935c8ff9d0": {
       "ro": "Importul WMF, cu cititor propriu",
       "en": "WMF import, with our own reader"
@@ -1884,6 +1904,10 @@
     "abe20d4a7a063768": {
       "ro": "Biblioteca extensiilor: Easy 3Draw instalat și actualizat dintr-un clic",
       "en": "The extensions library: Easy 3Draw installed and updated in one click"
+    },
+    "abf83860d0031ebb": {
+      "ro": "Ancora și tastele transformării",
+      "en": "The transform anchor and keys"
     },
     "ac0858ac19654dfe": {
       "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",

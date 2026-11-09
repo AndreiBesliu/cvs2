@@ -52,8 +52,9 @@ cu dublu clic pe el îi scrii poziția exactă. Ghidajele se salvează cu proiec
 **Grilă**: butonul cu grila din bara de sus o arată pe foaie; pasul ei (între 0,1 și 1000 mm) se scrie în câmpul de lângă.
 
 **Lipire**: cât e pornită, ce tragi (o formă, un mâner, capătul unei forme noi, un ghidaj) se lipește de ghidaje, de
-marginile și centrul foii, de celelalte forme și de grilă; liniile de aliniere arată de ce s-a lipit. Ține apăsat `Alt` cât
-tragi ca s-o inversezi: o oprește când e pornită, o pornește când e oprită.
+marginile și centrul foii, de celelalte forme și de grilă; liniile de aliniere arată de ce s-a lipit. `Shift+L` o pornește
+sau o oprește, și cât tragi (butonul arată starea). Când muți o formă, un ghidaj sau un nod, ține apăsat `Alt` cât tragi ca
+s-o inversezi; la mânere și la desen, `Alt` înseamnă „din centru” (vezi [Transformările](#transformari)).
 
 ## Foaia
 %% capitol: foaia
@@ -76,14 +77,16 @@ iese).
 Uneltele de desen stau în bara de sus; fiecare are o tastă. Alegi unealta, apoi tragi pe pânză. **Desenează** o formă
 nouă, cu operația ei implicită; unealta rămâne aleasă pentru forma următoare.
 
-| Unealta | Tasta | Cum se trage | Cu Shift |
-|---|---|---|---|
-| Dreptunghi | `R` | din colț în colț | pătrat |
-| Cerc | `O` | din centru; tragerea dă raza | — |
-| Elipsă | `E` | din colț în colț | cerc |
-| Linie | `L` | din capăt în capăt | pași de 15° |
-| Poligon | `P` | din centru (poligon regulat) | pași de 15° |
+| Unealta | Tasta | Cum se trage | Cu Shift | Cu Ctrl | Cu Alt |
+|---|---|---|---|---|---|
+| Dreptunghi | `R` | din colț în colț | pătrat | ca fără tastă | din centru |
+| Cerc | `O` | din centru; tragerea dă raza | — | elipsă, cu cursorul în colțul cutiei ei | — (pornește oricum din centru) |
+| Elipsă | `E` | din colț în colț | cerc | ca fără tastă | din centru |
+| Linie | `L` | din capăt în capăt | pași de 15° | — | din mijloc |
+| Poligon | `P` | din centru (poligon regulat) | pași de 15° | — | — |
 
+- Tastele se pot ține împreună (Alt + Shift: pătrat sau cerc din centru); cu Shift și Ctrl, câștigă Shift. Se pot apăsa și
+  în timpul tragerii, cu mausul pe loc. Lângă cursor, eticheta arată mărimea formei și ce fac tastele. Pe Mac, `Ctrl` e `⌘`.
 - La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp.
 - La **Poligon**, numărul de laturi (3–64) se scrie în câmpul de lângă unealtă.
 - Capetele formei se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)).
@@ -167,7 +170,8 @@ cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
 Lățimea și înălțimea literelor scalează literele înaintea oricărui alt pas: spațiul dintre litere, aldinul și distanța
 de curbă rămân în mm, iar cursivul înclină litera deja scalată. Trasă cu mânerele doar în lățime (sau doar în înălțime),
 un text drept fără aldin rămâne text: i se schimbă lățimea literelor (și mărimea, când tragi în înălțime). Un text pe o
-curbă devine vectori, iar unul aldin nu se scalează așa (literele lui au arce); scalarea uniformă le crește pe toate.
+curbă sau unul aldin devine vectori (arcele aldinului, curbe), iar eticheta mânerelor o spune; scalarea uniformă le crește
+pe toate.
 
 **Vertical** pune literele una sub alta, drepte: fiecare rând devine o coloană, iar coloanele merg de la stânga la dreapta,
 la **distanța dintre coloane** (ca multiplu al rândului fontului). Fiecare literă stă centrată pe axa coloanei, iar între două
@@ -235,8 +239,8 @@ majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se taie în stilu
 lățimile și crenarea lui; textul ține stilul și se redeschide cu el. Un WOFF2 se încarcă întâi convertit în TTF sau OTF.
 
 Textul rămâne editabil și după salvare, cât timp contururile lui nu se schimbă pe altă cale: mutarea, rotirea, oglindirea și
-scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou); o scalare neuniformă, o înclinare sau o editare de
-noduri îl fac vectori obișnuiți. **Degrupează** îl desface în litere, ca vectori. Ș și Ț se scriu cu virgulă (Ș ș Ț ț), ca
+scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou), la fel scalarea pe o axă a unui text drept fără
+aldin; scalarea pe o axă a unui text pe curbă sau aldin, o înclinare sau o editare de noduri îl fac vectori obișnuiți. **Degrupează** îl desface în litere, ca vectori. Ș și Ț se scriu cu virgulă (Ș ș Ț ț), ca
 în română. Un caracter pe care fontul nu-l are nu se desenează, iar panoul îl spune.
 
 ## Selecția și editarea
@@ -279,21 +283,46 @@ câmp.
 %% capitol: transformari
 %% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
-Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce):
-- **colțurile** scalează proporțional, cu colțul opus fix; cu Shift, liber pe ambele axe;
-- **laturile** scalează pe o singură axă;
-- **mânerul rotund de deasupra** rotește în jurul centrului; cu Shift, în pași de 15°.
+Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce cât
+scalarea e proporțională):
+- **colțurile** scalează proporțional, cu colțul opus fix; **laturile** scalează pe o singură axă, cu latura opusă fixă;
+- **Shift**: proporțional pe orice mâner (și pe o latură: cealaltă axă crește la fel, simetric față de mijloc);
+- **Ctrl** (`⌘` pe Mac): liber pe orice mâner (și pe un colț, fiecare axă cu tragerea ei);
+- **Alt**: față de **ancoră** (implicit centrul cutiei): ancora rămâne pe loc, nu mânerul opus;
+- tastele se pot ține împreună (Alt + Shift: proporțional față de ancoră; Alt + Ctrl: liber față de ancoră); cu Shift și
+  Ctrl, câștigă Shift. Se pot apăsa și în timpul tragerii, cu mausul pe loc;
+- **mânerul rotund de deasupra** rotește în jurul ancorei; cu Shift, în pași de 15°.
 
-Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar pe axa pe care o scalează (`Alt` inversează lipirea).
-Unele scalări nu se pot face exact și sunt refuzate, cu motivul: un cerc, o cale cu arce, un dreptunghi cu colțuri rotunjite
-sau o formă rotită oblic se scalează doar proporțional; o piesă folosită și de alte forme nu se schimbă.
+**Ancora** e punctul fix al transformărilor: rotirea e în jurul ei, Alt scalează față de ea, oglindirea și înclinarea o
+folosesc. Pe pânză e ținta albastră, un cerc cu cruce. Pornește dintr-unul din cele 9 puncte ale cutiei (colțurile, mijloacele
+laturilor, centrul), ales în **selectorul** de lângă unealtă și ținut în browser. O tragi cu mâna oriunde, și în afara cutiei:
+se lipește de cele 9 puncte ale cutiei și de ținte (`Alt` inversează lipirea); **dublu clic** pe ea o întoarce în punctul
+ales. Când ancora stă pe un mâner (un colț ales în selector), mânerul are întâietate, iar ancora o muți din selector. Merge cu
+selecția când o muți sau o scalezi din alt mâner; după o rotire, o scalare cu Alt, o oglindire sau o înclinare în jurul ei,
+rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect.
+
+Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
+opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
+pe axa pe care o scalează, cât e pornită lipirea (`Shift+L` o comută). Un **cerc** scalat pe o singură axă devine **elipsă**:
+aceeași elipsă ca una desenată cu Elipsa, cu razele editabile în panou. Arcele unei căi (colțurile unui offset, arcele
+importate) scalate pe o axă devin **curbe**, la cel mult 0,001 mm de arcul întins; eticheta spune „arcele devin curbe”, iar
+`Ctrl+Z` le readuce.
+
+**Colțurile rotunjite** ale unui dreptunghi urmează lista de lângă selectorul ancorei, ținută în browser:
+- **Colțuri: raza rămâne la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
+  cu raza editabilă în panou; scalată proporțional, raza crește cu forma;
+- **Colțuri: raza rămâne mereu**: și la scalarea proporțională;
+- **Colțuri: se scalează mereu**: trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma devine o cale).
+
+Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. Rămân refuzate,
+cu motivul, scalarea pe o axă a unei forme rotite oblic și schimbarea unei piese folosite și de alte forme.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
-(`Shift+V`, sus ↔ jos), față de centrul cutiei selecției. Se taie oglinda, cu același sens de tăiere.
+(`Shift+V`, sus ↔ jos), față de ancoră (implicit centrul cutiei selecției). Se taie oglinda, cu același sens de tăiere.
 
 **Înclină** (lângă oglindire, butonul cu un pătrat și paralelogramul lui) deschide un panou cu două unghiuri, în grade, între
 −75° și 75° (gol = 0): **Orizontal** mută punctele spre dreapta cu cât sunt mai sus (un unghi negativ, spre stânga), apoi
-**Vertical** le ridică cu cât sunt mai la dreapta, față de centrul cutiei selecției. Aria rămâne aceeași. Cât panoul e deschis,
+**Vertical** le ridică cu cât sunt mai la dreapta, față de ancoră (implicit centrul cutiei selecției). Aria rămâne aceeași. Cât panoul e deschis,
 cutia înclinată se vede pe pânză, punctat. Înclinarea intră exact în geometrie: liniile și curbele rămân linii și curbe, iar un
 dreptunghi devine o cale (un paralelogram). O formă cu arce (un cerc, un dreptunghi cu colțuri rotunjite, o cale cu arce) se
 înclină doar cu bifa **Arcele devin curbe (cercul devine elipsă)**, care apare în panou doar atunci: arcele devin curbe Bézier,
@@ -1414,7 +1443,11 @@ tu, iar interfața aplicației rămâne aceeași.
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Alt+←`, `Alt+→` (în textul uneltei Text) | spațiul între literele alese, cu 0,1 mm mai strâns / mai larg |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
-| `Alt`, cât tragi | inversează lipirea |
+| `Shift+L` | pornește sau oprește lipirea, și cât tragi |
+| `Alt`, cât tragi o formă, un ghidaj sau un nod (și cu Pen) | inversează lipirea |
+| `Shift` / `Ctrl` / `Alt`, cât tragi un mâner (unealta Transformare) | proporțional pe orice mâner / liber pe orice mâner / față de ancoră (implicit centrul); se pot ține împreună, iar cu Shift și Ctrl câștigă Shift |
+| dublu clic pe ținta ancorei (unealta Transformare) | ancora înapoi în punctul ales în selector |
+| `Shift` / `Ctrl` / `Alt`, cât desenezi | pătrat, cerc, pași de 15° / fără proporție (cercul devine elipsă) / din centru (linia, din mijloc) |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
 | `Enter` (cu unealta Pen) | termină calea începută |
 | `Ctrl+Z`, `Ctrl+Y` (cu unealta Pen și o cale începută) | anulează / reface ultimul pas al căii |

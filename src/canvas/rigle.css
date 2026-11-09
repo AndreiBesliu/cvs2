@@ -460,6 +460,43 @@
   border-radius: var(--r-1);
 }
 
+/* Colțurile rotunjite la scalare (ADR 0240 §F.28): o listă cu aspectul câmpurilor barei, cât textul felului ales. */
+.laturi.felul-colturi {
+  width: auto;
+}
+
+/* Selectorul ancorei (ADR 0240 §A.2): cele 9 puncte ale cutiei, 3 × 3, în bara uneltei Transformare, cât bara de înalt
+   (34 px); butoanele lui nu iau minimul de atingere al barei (s-ar suprapune). */
+.selector-ancora {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 8px);
+  grid-auto-rows: 8px;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  background: var(--s-camp);
+}
+
+.bara-editare .selector-ancora button,
+.selector-ancora button {
+  width: 8px;
+  height: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1.5px solid var(--t-slab);
+  border-radius: 2px;
+  background: var(--s-panou);
+  cursor: pointer;
+}
+
+.bara-editare .selector-ancora button[aria-pressed='true'],
+.selector-ancora button[aria-pressed='true'] {
+  border-color: var(--l-focus);
+  background: var(--l-focus);
+}
+
 .icona-aliniere .contur {
   fill: none;
   stroke: currentColor;
@@ -871,4 +908,55 @@
   white-space: normal;
   text-align: center;
   color: var(--rosu, var(--t));
+}
+
+/* Punctul fix al gestului pe mânere (ADR 0240): mânerul opus, centrul sau ancora, cât se trage. */
+.manere-fix {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--l-focus);
+  box-shadow: 0 0 0 1.5px var(--s-panou);
+}
+
+/* Ținta ancorei transformării (ADR 0240 §A): un cerc cu cruce; plin cât e punctul fix al gestului. Doar desen. */
+.ancora-sel {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--l-focus);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--s-panou) 70%, transparent);
+}
+
+.ancora-sel::before,
+.ancora-sel::after {
+  content: '';
+  position: absolute;
+  background: var(--l-focus);
+}
+
+.ancora-sel::before {
+  left: -5px;
+  right: -5px;
+  top: 5.25px;
+  height: 1.5px;
+}
+
+.ancora-sel::after {
+  top: -5px;
+  bottom: -5px;
+  left: 5.25px;
+  width: 1.5px;
+}
+
+.ancora-sel.fixa {
+  background: var(--l-focus);
+}
+
+/* Eticheta desenului, lângă cursor (ADR 0240): mărimea formei și ce fac tastele. */
+.desen-eticheta {
+  transform: none;
 }

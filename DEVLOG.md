@@ -7071,6 +7071,141 @@ de după”): punctele 3, 5 și 6; punctul 4 (punțile dopului drept alese în f
 - **Rămâne:** punctul 4 (punțile dopului drept alese în fereastră: câte, lățimea, grosimea): un câmp nou în document, deci
   v24, după ce v23 a planșelor intră în `main`.
 
+## 2026-11-08 — 6.V↑ pornită: ancora și tastele transformării (ADR 0240, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, către sesiunea principală: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori.
+si o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta. de exemplu,
+daca vreau sa deformez un cerc si sa il fac elipsa coltul pastreaza proportia cercului, dar lateralele nu, eu vreau sa pot
+apasa SHIFT si sa pastrez proportia orice ar fi si pe CTRL sa ignor proportia orice ar fi, si pe ALT, chiar si in combinatie
+cu celelalte, vreau sa imi pastreze centrul formei. Aceste hotkeys trebuie sa functioneze asa si cand creez formele (cercul,
+dreptunghiul etc.)”. Sarcina sesiunii principale către linie: worktree-ul `ancore` (ramura `wip/6.V-ancore`, e2e pe 4181 și
+`127.0.8`, ADR-urile 0240–0249, canalul `ancore`); prima rundă fără cod: cercetarea (ArtCAM, CorelDRAW, Illustrator,
+Inkscape; ADR 0051–0055, 0065, 0078, 0102, 0138; `Editare.tsx` și `src/geom/`), ADR 0240 propus, schița cu formularul și
+întrebările grupate, cu recomandarea întâi; codul, după răspunsuri.
+**Started:** 08.11, 11:31. **Completed:** 08.11, 12:15 (propunerea; codul așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\ancore` (ramura `wip/6.V-ancore`, din `main` `b56f0e1`), cu joncțiunile
+  `node_modules` și `functions\node_modules`; `.tmp/pw.config.ts` cu portul 4181 în trei locuri, `.tmp/pw.emulator.config.ts`
+  copiat.
+- **Cercetarea:** ArtCAM 2018 (originea transformării: un mâner tras după lacăt, 9 poziții sau X / Y; Shift păstrează
+  raportul, Alt scalează față de origine, rotirea în jurul ei), CorelDRAW (colțul proporțional implicit, Shift din centru,
+  Ctrl multipli, Alt „stretch”; originea obiectului în 9 puncte; tastele se pot schimba între ele), Illustrator (Shift
+  proporția, Alt din centru, punctul de referință în 9 puncte, originea uneltelor Scale și Rotate), Inkscape (Ctrl proporția,
+  Shift simetric față de centrul rotirii, salvat în fișier; la desen Ctrl pătrat, Shift din centru). În cod: tastele se citesc
+  doar din evenimentele mausului; Alt inversează lipirea la mutare, desen, mânere, Noduri, Pen; Shift face colțul liber;
+  Ctrl nu e citit de niciun gest; modelul are deja punctul fix ca parametru (`centru`, `ancora`); scalarea neuniformă refuză
+  cercul, arcele, colțurile rotunjite și instanțele rotite.
+- **ADR 0240 (propus):** Shift proporțional pe orice mâner, Ctrl liber pe orice mâner, Alt față de ancoră (implicit centrul),
+  combinate, citite și la apăsarea tastei; la desen, Shift pătrat sau cerc, Ctrl fără proporție (cercul devine elipsă), Alt
+  din centru (linia din mijloc); ancora într-unul din cele 9 puncte ale cutiei sau trasă de mână, urmată de selecție, cu
+  rotirea, oglindirea și înclinarea în jurul ei, neținută în proiect (documentul rămâne v20); cercul scalat neuniform devine
+  elipsa generatorului (editabilă în panou), arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite își păstrează raza
+  (trei feluri, ca opțiune), textul cu aldin devine vectori. Toate variantele care pot sta împreună sunt opțiuni, pe feliile
+  6.V↑–6.V↑d (~5 kB în total, fiecare sub 3 kB); patru întrebări: ancora în proiect, unde trece lipirea invers după ce Alt
+  devine centrul (recomandat: butonul Lipire și Shift+L), Shift + Ctrl, bugetul.
+- **Schița:** <https://claude.ai/artifact/6YMwTjXNiQDTcME6BjFNgv> (privată, a owner-ului); macheta mânerelor și a desenului,
+  cu tastele și butoanele lor; formularul scrie `raspunsuri/owner` (`q1`–`q4`, `nota1`–`nota4`, `general`, `trimisLa`),
+  colecția goală la publicare. Verificată o dată în Edge fără fereastră: exemplul owner-ului pe machetă (latura dreaptă
+  +10 mm: 50 × 40, Ø 50, 60 × 40, Ø 60; colțul (10, 4): Ø 50, 50 × 44, 60 × 48), Shift apăsat cu mausul pe loc, 0 erori în
+  consolă, nimic peste lățimea de 390 px. Desenul de pe machetă n-a fost atins de probă (planșa era sub ecran).
+- **Fișa și documentele:** rândul 6.V↑ (în lucru) în jurnal și răspunsurile în coada owner-ului; indexul ADR; traducerile
+  roadmap-ului (679 de texte, 0 lipsă). `documentatie.test.ts` cerea toate feliile etapei 6 „gata”: acum le cere gata afară
+  de cele numite, adică 6.V↑, în lucru. Probele documentației, traducerilor, manualului și pașilor testului: 55 / 55;
+  generatorul documentației din build: 187 de fișiere, ADR 0240 în catalog și în roadmap.
+
+## 2026-11-08 — 6.V↑, 6.V↑b, 6.V↑c: tastele la mânere și la desen, ancora, arcele (ADR 0240) (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok la toate” (la „Accepți recomandările la cele 4 întrebări din ADR 0240?”), deci 1a–4a: ancora neținută în
+proiect, lipirea la mânere și la desen pe butonul Lipire și Shift+L, Shift câștigă peste Ctrl, feliile 6.V↑–6.V↑c acum.
+**Started:** 08.11, 12:21. **Completed:** 08.11, 16:50.
+
+- **Răspunsurile:** ADR 0240 acceptat (starea și secțiunea „Răspunsurile owner-ului”), indexul ADR, fișa (rândul cozii
+  owner-ului scos, rândul 6.V↑ cu răspunsul), decizia în CLAUDE.md. `origin/main` (`6c79ff9`) adus în ramură (`ff0693d`;
+  DEVLOG-ul cu ambele intrări, în ordinea lor).
+- **6.V↑** (`e8c4f90`): tastele la mânere (`transformareManer`, `modManer`: Shift proporțional, Ctrl liber, Alt față de
+  ancoră, Shift câștigă peste Ctrl, citite și la apăsarea tastei cu mausul pe loc) și la desen (`formaDesenata`: Alt din
+  centru, linia din mijloc, Ctrl face cercul elipsă); eticheta cu modul, lângă cutie și lângă cursor; lipirea la mânere și la
+  desen pe butonul Lipire, comutat cu Shift+L și în timpul tragerii; cercul scalat pe o axă devine elipsa generatorului,
+  recunoscută de panou (o elipsă recunoscută se reface din generator). Probele vechi cu Shift = colțul liber și Alt = lipirea
+  la mânere, rescrise pe regula nouă. Totalul 535,0 → 535,6 / 600 kB.
+- **6.V↑b** (`ae84182`): ancora, din selectorul 3 × 3 (`cncvs2.ancora`) sau trasă de mână (lipită de cele 9 puncte ale
+  cutiei, apoi de ținte; dublu clic înapoi), ținută ca fracții ale cutiei; rotirea, Alt, oglindirea și înclinarea în jurul ei,
+  după care rămâne pe loc; o selecție nouă o întoarce. Totalul 535,6 → 536,6 / 600 kB.
+- **6.V↑c** (`4b82bdb`): arcele căilor scalate pe o axă devin curbe sub 0,001 mm (conversia comună cu înclinarea), colțurile
+  rotunjite în trei feluri (lista din bara Transformării, `cncvs2.colturi`; refuzul nou `colturi-nu-incap`), textul aldin
+  devine vectori; eticheta spune ce se întâmplă (`formeScalate`). E2e-ul a primit și pașii care lipseau liniei (Shift apăsat
+  în timpul desenului, Alt la mâner cu lipirea, selecția nouă, înclinarea față de ancoră); testul din aplicație, pașii
+  „Ancora” și „Colțurile rotunjite”. Totalul 536,6 → 537,1 / 600 kB; pornirea 101,7 / 110, neschimbată în toată linia.
+- **Suita unitară sub încărcare:** 10 căderi „Data cannot be cloned, out of memory” în probele cu documente de 100 000 de
+  noduri (alte sesiuni pe mașină), toate verzi rulate pe rând (1596 / 1596).
+- **Otrăvurile** (`test/otravuri/6.V.py`, 50, din worktree, pe rând): 48 prinse la prima rulare. V06 (⌘ luat drept Ctrl) și
+  V26 (fracția ancorei pe o linie fără lățime) au scăpat: probele noi din `editare.test.ts` și `ancora.test.ts` le prind
+  acum (`tinte`). Proba din `import.spec.ts` care aștepta refuzul „doar proporțional” la întinderea unei piese cu arce verifică
+  acum eticheta („arcele devin curbe”), în același loc pe ecran (sub bare, neacoperită de insula selecției).
+- **Porțile** (pe `b722ba3`): tipurile (aplicația, extensia, funcțiile), importurile (19 reguli), licențele, unit 8683
+  (8674 + 8 sărite; singura căzută, traducerea rândului din fișă, scrisă apoi), traducerile 677 / 0 lipsă, e2e 126 / 126 (21
+  de spec-uri: ancorele, editarea, importul, selecția, Pen, textul, booleanul, curba, exportul, nodurile, rețeaua, offsetul,
+  înclinarea, tutorialul, tastele uneltelor, pânza, rigla, manualul, vectorii, panoul).
+- **Pe canal:** <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12), publicat întâi cu `b722ba343091`,
+  apoi cu `8d4e06bb3e97` (pașii desenului din testul aplicației cer și Alt și Ctrl; e2e-ul tutorialului și al ancorelor,
+  11 / 11, pe build-ul lui); proba de fum de acolo, în Edge, la amândouă: pornirea fără erori, selectorul ancorei (9), lista
+  colțurilor (3), cercul întins devine elipsă cu eticheta „cercul devine elipsă”, testul din aplicație (`?test`) cu 33 de
+  pași. Neunite: unirea în `main` o face sesiunea principală, la cuvântul owner-ului; coada owner-ului are încercarea pe canal.
+
+## 2026-11-08 — Unirea lui 12.1↑c-2 în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea incrustațiilor, la „Unim felia 12.1↑c-2 în main?”), transmis aici de
+sesiunea liniei.
+**Started:** 08.11, 16:42. **Completed:** 08.11, 17:56.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii incrustațiilor (mesajul lui, imediat după raportul
+  liniei despre 12.1↑c-2).
+- **Unirea (`079d225`, `--no-ff`):** fără conflicte; ramura conținea deja `main` (`4eb34da`), deci arborele unirii e chiar
+  al lui `3afc575`. Patru commit-uri: codul (`050588e`: punctele 3, 5 și 6), proba arcelor de 90° (`dbcd168`), documentele
+  (`3875510`), `main` adus (`3afc575`). Schema rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe
+  linie, cu v24, după v23 a planșelor.
+- **Porțile pe `079d225`:** traducerile (680, 0 lipsă), compilatoarele, importurile, 8 717 teste unitare (0 căzute, opt
+  sărite), licențele, build-ul determinist (286 de fișiere identice); e2e 384 / 384 (o cădere la încărcare,
+  `fonturi.spec.ts:250`: „Aplică” oprit 30 s după reîncărcare, ca `fonturi.spec.ts:149` la unirea de dinainte; trecută
+  singură; apoi 20 / 20 cu 8 lucrători și `--repeat-each=10`, deci nereprodusă; porțile locale păstrează de acum urmele
+  căderilor), emulatoarele 101 / 101 și 21 / 21. Mărimile: pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600,
+  /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele (`0d54112`):** CLAUDE.md (starea 12.1↑c-2, ce rămâne pe linie, cifrele, decizia din 08.11), comis după porți
+  (nu cât rulau).
+- **CI:** rapid `42492908784` și complet `42493020362` (pornit de mână) pe `0d54112`, verzi.
+- **Publicat pe test:** rularea `42496803926`, serverul întâi, apoi site-ul; amprenta `0d54112308de` pe toate țintele
+  (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `0d54112308de`.
+- **Semnul:** liniei incrustațiilor, după publicare. Între timp, owner-ul a cerut și unirea liniei ancorelor: unită local
+  (`0c81ccf`), împinsă după publicarea asta, ca publicările pe test să meargă în ordinea commit-urilor.
+
+## 2026-11-08 — Unirea liniei ancorelor (6.V↑, 6.V↑b, 6.V↑c) în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (owner-ul, în sesiunea liniei, după raportul ei: „Dacă e bine, spune „unește”; ramura o unește în
+`main` sesiunea principală”), transmis aici de sesiunea liniei.
+**Started:** 08.11, 17:06. **Completed:** 08.11, 19:02.
+
+- **Verificarea:** cuvintele owner-ului, găsite în transcrierea sesiunii ancorelor (mesajul lui, imediat după raportul
+  liniei).
+- **Unirea (`0c81ccf`, `--no-ff`):** linia, de la `6c79ff9` până la `8be82c4` (10 commit-uri: ADR 0240, 6.V↑, 6.V↑b, 6.V↑c,
+  otrăvurile 50 / 50, documentele), peste `main` cu incrustațiile până la 12.1↑c-2. Conflictele, doar în `CLAUDE.md` (starea
+  și deciziile) și `DEVLOG.md` (coada), adăugări ale ambelor părți în același loc, păstrate amândouă (întâi `main`, apoi
+  linia; deciziile, cele mai noi întâi); restul (manualul, tutorialul, fișa, indexul ADR, traducerile) s-a unit singur.
+  Documentul rămâne v22: ancora stă în browser, nu în proiect.
+- **Porțile pe `0c81ccf`:** traducerile (686, 0 lipsă, 0 nefolosite), compilatoarele, importurile, 8 733 de teste unitare
+  (nicio cădere, opt sărite), licențele, build-ul determinist; e2e 392 / 392 din prima (tutorialul cu 33 de pași, importul
+  arcului plat pe regula nouă, ancorele), emulatoarele 101 / 101 și 21 / 21. Mărimile, cu incrustațiile: pornirea 101,8 (cu
+  ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele:** CLAUDE.md (`18cddfd`: starea ancorelor unite, documentul neschimbat, cifrele de după unire, decizia din
+  08.11); aici, în fișa etapei 3, încercarea owner-ului pentru ancore trece de pe canal pe adresa principală de test („apoi
+  unește” e făcut; decizia pe plafon pentru 6.V↑d rămâne), cu traducerile (686 de texte, 0 lipsă). Fișa ajunge pe test odată
+  cu următoarea publicare.
+- **Ordinea publicărilor:** linia a fost împinsă abia după publicarea lui 12.1↑c-2 (`0d54112`), ca publicările pe test să
+  meargă în ordinea commit-urilor.
+- **CI:** rapid `42498012961` și complet `42498107617` (pornit de mână) pe `8714306`, verzi.
+- **Publicat pe test:** rularea `42502036442`, serverul întâi, apoi site-ul; amprenta `8714306e9b62` pe toate țintele
+  (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `8714306e9b62`.
+- **Semnele:** liniei ancorelor (unirea și CI-ul) și liniei incrustațiilor (`main` are acum și ancorele).
+
 ## 2026-11-07 — Felia 10.3↑c: decuparea la ultima formă aleasă (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 10.3↑c”.
