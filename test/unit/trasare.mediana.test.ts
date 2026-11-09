@@ -1,0 +1,781 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { MEDIANA, MEDIANA_SIMPLA, subtiaza, traseazaMediana } from '../../src/trasare/mediana.ts';
+import { campul, PLAFON_TRASARE, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare } from '../../src/trasare/trasare.ts';
+import { esantioaneCai, grila } from './ajutor-trasare.ts';
+
+/**
+ * Probele țintite ale liniei mediane (ADR 0222), pe lângă corpus: subțierea cu cozi e exact cea clasică, zgomotul și marginile
+ * dure nu lasă cioturi, punctele se numără, curățarea lucrează înainte, plafonul, căile care trec printr-o încrucișare (un 8,
+ * o acadea), un umflet pe o trăsătură și aceeași ieșire la fiecare rulare.
+ */
+
+const IMPLICITE: OptiuniTrasare = { sursa: 'auto', prag: null, inverseaza: false, netezime: 'echilibrat', petePx: 0, gauriPx: 0 };
+type Pt = readonly [number, number];
+
+/** Imaginea cu cerneala închisă pe alb, din acoperirea dată pe pixel. */
+function imagine(W: number, H: number, acop: (x: number, y: number) => number): ImagineRGBA {
+  const date = new Uint8ClampedArray(4 * W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const v = 255 - Math.round(255 * Math.max(0, Math.min(1, acop(x, y))));
+      date.set([v, v, v, 255], 4 * (y * W + x));
+    }
+  }
+  return { latime: W, inaltime: H, date };
+}
+
+/** Distanța de la un punct la o linie frântă. */
+function laLinie(x: number, y: number, P: readonly Pt[], inchisa = false): number {
+  let d = Infinity;
+  const n = P.length;
+  for (let k = 0; k < (inchisa ? n : n - 1); k++) {
+    const [ax, ay] = P[k] ?? [0, 0], [bx, by] = P[(k + 1) % n] ?? [0, 0];
+    const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+    const u = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2));
+    d = Math.min(d, Math.hypot(ax + u * dx - x, ay + u * dy - y));
+  }
+  return d;
+}
+
+/** Trăsăturile (linii frânte cu grosimea w, capete rotunde), eșantionate 4 × 4 pe pixel; `dur`: doar centrul pixelului. */
+function trasaturi(W: number, H: number, linii: ReadonlyArray<{ readonly P: readonly Pt[]; readonly inchisa?: boolean }>, w: number, dur = false): ImagineRGBA {
+  const s = dur ? 1 : 4;
+  return imagine(W, H, (x, y) => {
+    if (Math.min(...linii.map((l) => laLinie(x + 0.5, y + 0.5, l.P, l.inchisa))) > w / 2 + 1) return 0;
+    let a = 0;
+    for (let j = 0; j < s; j++) for (let i = 0; i < s; i++) if (Math.min(...linii.map((l) => laLinie(x + (i + 0.5) / s, y + (j + 0.5) / s, l.P, l.inchisa))) <= w / 2) a++;
+    return a / (s * s);
+  });
+}
+
+/** Distanța cea mai mare de la eșantioanele curbelor la linii (în afara cercurilor date) și înapoi. */
+function abateri(c: ReturnType<typeof esantioaneCai>, linii: ReadonlyArray<{ readonly P: readonly Pt[]; readonly inchisa?: boolean }>, ocolite: readonly Pt[], raza: number): { dus: number; intors: number } {
+  const departe = (x: number, y: number): boolean => ocolite.every((q) => Math.hypot(q[0] - x, q[1] - y) > raza);
+  let dus = 0;
+  for (const k of c) {
+    for (let i = 0; i < k.puncte.length; i += 2) {
+      const x = k.puncte[i] ?? 0, y = k.puncte[i + 1] ?? 0;
+      if (departe(x, y)) dus = Math.max(dus, Math.min(...linii.map((l) => laLinie(x, y, l.P, l.inchisa))));
+    }
+  }
+  const g = grila(c.flatMap((k) => k.puncte));
+  let intors = 0;
+  for (const l of linii) {
+    const n = l.P.length;
+    for (let k = 0; k < (l.inchisa ? n : n - 1); k++) {
+      const [ax, ay] = l.P[k] ?? [0, 0], [bx, by] = l.P[(k + 1) % n] ?? [0, 0];
+      const pasi = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 0.25));
+      for (let i = 0; i <= pasi; i++) {
+        const x = ax + ((bx - ax) * i) / pasi, y = ay + ((by - ay) * i) / pasi;
+        if (departe(x, y)) intors = Math.max(intors, g(x, y));
+      }
+    }
+  }
+  return { dus, intors };
+}
+
+/** Cel mai slab punct al căilor: câmpul cernelii în el (interpolat), ca fracție din prag. */
+function celMaiSlab(img: ImagineRGBA, o: OptiuniTrasare, cai: CaiTrasate): number {
+  const { f, T } = campul(img, o);
+  const W = img.latime, H = img.inaltime;
+  const camp = (x: number, y: number): number => {
+    const fx = x - 0.5, fy = y - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
+    const g = (i: number, j: number): number => (i < 0 || j < 0 || i >= W || j >= H ? 0 : f[j * W + i] ?? 0);
+    return (1 - u) * (1 - v) * g(x0, y0) + u * (1 - v) * g(x0 + 1, y0) + (1 - u) * v * g(x0, y0 + 1) + u * v * g(x0 + 1, y0 + 1);
+  };
+  let m = Infinity;
+  for (const c of esantioaneCai(cai)) for (let i = 0; i < c.puncte.length; i += 2) m = Math.min(m, camp(c.puncte[i] ?? 0, c.puncte[i + 1] ?? 0) / T);
+  return m;
+}
+
+/** Subțierea de referință: Zhang–Suen cu B între 3 și 6 (Lü și Wang), pe toată imaginea la fiecare sub-trecere. */
+function subtiazaClasic(m: Uint8Array, W: number, H: number): Uint8Array {
+  const s = new Uint8Array(m);
+  const v = (x: number, y: number): number => (x >= 0 && y >= 0 && x < W && y < H ? s[y * W + x] ?? 0 : 0);
+  for (let schimbat = true; schimbat;) {
+    schimbat = false;
+    for (const sub of [0, 1]) {
+      const scoase: number[] = [];
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (!s[y * W + x]) continue;
+          const p2 = v(x, y - 1), p3 = v(x + 1, y - 1), p4 = v(x + 1, y), p5 = v(x + 1, y + 1);
+          const p6 = v(x, y + 1), p7 = v(x - 1, y + 1), p8 = v(x - 1, y), p9 = v(x - 1, y - 1);
+          const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+          if (B < 3 || B > 6) continue;
+          const tr = [p2, p3, p4, p5, p6, p7, p8, p9, p2];
+          let A = 0;
+          for (let k = 0; k < 8; k++) if (!tr[k] && tr[k + 1]) A++;
+          if (A !== 1) continue;
+          if (sub === 0 ? p2 * p4 * p6 || p4 * p6 * p8 : p2 * p4 * p8 || p2 * p6 * p8) continue;
+          scoase.push(y * W + x);
+        }
+      }
+      for (const p of scoase) s[p] = 0;
+      if (scoase.length > 0) schimbat = true;
+    }
+  }
+  return s;
+}
+
+test('subțierea cu cozi (doar pixelii cu vecinătatea schimbată) e exact cea clasică, pe pete, bare și zgomot', () => {
+  let sem = 7;
+  const r = (): number => { sem = (sem * 1103515245 + 12345) & 0x7fffffff; return sem / 0x7fffffff; };
+  for (let caz = 0; caz < 12; caz++) {
+    const W = 40 + Math.floor(r() * 50), H = 30 + Math.floor(r() * 50);
+    const m = new Uint8Array(W * H);
+    for (let k = 0; k < 6; k++) {
+      const cx = r() * W, cy = r() * H, a = 2 + r() * 12, b = 2 + r() * 12, u = r() * Math.PI;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          const dx = x - cx, dy = y - cy, p = dx * Math.cos(u) + dy * Math.sin(u), q = -dx * Math.sin(u) + dy * Math.cos(u);
+          if ((p / a) ** 2 + (q / b) ** 2 <= 1) m[y * W + x] = 1;
+        }
+      }
+    }
+    // Zgomot: pixeli răsturnați, ca să apară găuri, ace și trepte.
+    for (let k = 0; k < (W * H) / 25; k++) { const p = Math.floor(r() * W * H); m[p] = 1 - (m[p] ?? 0); }
+    assert.deepEqual(subtiaza(m, W, H), subtiazaClasic(m, W, H), `cazul ${caz}`);
+  }
+});
+
+test('o trăsătură la 45° rămâne (Zhang–Suen fără îndreptarea lui Lü și Wang o ștergea toată)', () => {
+  const img = trasaturi(64, 64, [{ P: [[8.4, 8.1], [52.6, 52.3]] }], 4);
+  const r = traseazaMediana(img, IMPLICITE);
+  assert.ok(r.ok);
+  assert.equal(r.raport.contururi, 1);
+  const [c] = esantioaneCai(r.cai);
+  assert.ok(c?.deschisa);
+  const n = c.varfuri.length / 2;
+  const [ax, ay, bx, by] = [c.varfuri[0] ?? 0, c.varfuri[1] ?? 0, c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0];
+  // Capetele în centrul capetelor rotunde, la cel mult 0,4 px fiecare (în orice ordine).
+  const d0 = Math.max(Math.hypot(ax - 8.4, ay - 8.1), Math.hypot(bx - 52.6, by - 52.3));
+  const d1 = Math.max(Math.hypot(bx - 8.4, by - 8.1), Math.hypot(ax - 52.6, ay - 52.3));
+  assert.ok(Math.min(d0, d1) <= 0.4, `capetele: (${ax.toFixed(2)}, ${ay.toFixed(2)}) și (${bx.toFixed(2)}, ${by.toFixed(2)})`);
+});
+
+test('zgomot ca pe o poză (±12 niveluri): aceleași căi și capete, fără cioturi, linia la cel mult 0,5 px', () => {
+  // Un T, un arc și o trăsătură liberă, cu zgomot pe fiecare pixel (aceeași secvență la fiecare rulare).
+  let sem = 99;
+  const r = (): number => { sem = (sem * 1103515245 + 12345) & 0x7fffffff; return sem / 0x7fffffff; };
+  const arc: Pt[] = Array.from({ length: 65 }, (_, k) => [150 + 30 * Math.cos((Math.PI * k) / 64), 60 + 30 * Math.sin((Math.PI * k) / 64)] as const);
+  const linii = [{ P: [[12.3, 20.4], [92.6, 20.4]] as Pt[] }, { P: [[52.5, 20.4], [52.5, 95.1]] as Pt[] }, { P: arc }, { P: [[20.2, 110.3], [180.8, 118.9]] as Pt[] }];
+  const curat = trasaturi(200, 130, linii, 6);
+  const date = new Uint8ClampedArray(curat.date.length);
+  for (let i = 0; i < date.length; i += 4) {
+    const v = (curat.date[i] ?? 0) + Math.round(24 * (r() - 0.5));
+    date.set([v, v, v, 255], i);
+  }
+  const img = { latime: 200, inaltime: 130, date };
+  const t = traseazaMediana(img, { ...IMPLICITE, petePx: 4, gauriPx: 4 });
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 4, 'bara T-ului, piciorul, arcul, trăsătura liberă');
+  assert.equal(t.raport.jonctiuni, 1);
+  const c = esantioaneCai(t.cai);
+  const capete: Pt[] = [[12.3, 20.4], [92.6, 20.4], [52.5, 95.1], arc[0] ?? [0, 0], arc[64] ?? [0, 0], [20.2, 110.3], [180.8, 118.9]];
+  const { dus, intors } = abateri(c, linii, [...capete, [52.5, 20.4]], 6);
+  assert.ok(dus <= 0.5 && intors <= 0.5, `linia: ${dus.toFixed(3)} / ${intors.toFixed(3)} px`);
+  assert.ok(Math.abs(t.raport.grosime - 6) <= 0.3, `grosimea ${t.raport.grosime.toFixed(2)}`);
+});
+
+test('marginile dure (fără nuanțe): T-ul la 17° iese tot din două căi, cu linia la cel mult 0,6 px', () => {
+  const u = (17 * Math.PI) / 180, c = Math.cos(u), s = Math.sin(u);
+  const R = (x: number, y: number): Pt => [60 + (x - 60) * c - (y - 40) * s, 40 + (x - 60) * s + (y - 40) * c];
+  const linii = [{ P: [R(15.3, 30.2), R(105.1, 30.2)] }, { P: [R(60.2, 30.2), R(60.2, 75.4)] }];
+  const img = trasaturi(120, 100, linii, 7, true);
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.margini, 'dure');
+  assert.equal(t.raport.contururi, 2);
+  assert.equal(t.raport.jonctiuni, 1);
+  const { dus, intors } = abateri(esantioaneCai(t.cai), linii, [R(15.3, 30.2), R(105.1, 30.2), R(60.2, 75.4), R(60.2, 30.2)], 7);
+  assert.ok(dus <= 0.6 && intors <= 0.6, `linia: ${dus.toFixed(3)} / ${intors.toFixed(3)} px`);
+});
+
+test('punctele (trăsături mai scurte decât grosimea lor) se numără, fără cale; petele sub prag se șterg întâi', () => {
+  const linie: Pt[] = [[10.2, 20.3], [70.4, 20.3]];
+  const img = imagine(80, 50, (x, y) => {
+    if (laLinie(x + 0.5, y + 0.5, linie) <= 3) return 1;
+    if (Math.hypot(x + 0.5 - 40.2, y + 0.5 - 38.1) <= 3.5) return 1;
+    return x === 70 && y === 44 ? 1 : 0;
+  });
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1, 'doar linia');
+  assert.equal(t.raport.puncte, 2, 'discul și pixelul');
+  const curat = traseazaMediana(img, { ...IMPLICITE, petePx: 2 });
+  assert.ok(curat.ok);
+  assert.equal(curat.raport.puncte, 1, 'pixelul, șters la curățare');
+  assert.equal(curat.raport.pete, 1);
+});
+
+test('un gol mic în trăsătură face o buclă; „Umple golurile sub” îl umple înainte de schelet', () => {
+  const linie: Pt[] = [[10.2, 20.3], [90.4, 20.3]];
+  const img = imagine(100, 40, (x, y) => (laLinie(x + 0.5, y + 0.5, linie) <= 5 && !(x >= 49 && x <= 50 && y >= 19 && y <= 20) ? 1 : 0));
+  const cu = traseazaMediana(img, IMPLICITE);
+  assert.ok(cu.ok);
+  assert.equal(cu.raport.bucle + cu.raport.jonctiuni > 0, true, 'golul se vede în schelet');
+  const fara = traseazaMediana(img, { ...IMPLICITE, gauriPx: 9 });
+  assert.ok(fara.ok);
+  assert.equal(fara.raport.contururi, 1);
+  assert.equal(fara.raport.jonctiuni, 0);
+  assert.equal(fara.raport.gauri, 1);
+});
+
+test('un umflet pe marginea trăsăturii (sub o rază) nu lasă ciot: o cale, două capete', () => {
+  const linie: Pt[] = [[10.2, 30.3], [90.4, 30.3]];
+  const img = imagine(100, 60, (x, y) => (laLinie(x + 0.5, y + 0.5, linie) <= 4 || Math.hypot(x + 0.5 - 50.3, y + 0.5 - 35.6) <= 3.2 ? 1 : 0));
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1);
+  assert.equal(t.raport.jonctiuni, 0);
+});
+
+test('un 8 (o curbă închisă care se încrucișează o dată) e o singură buclă, trecută drept prin încrucișare', () => {
+  // Lemniscata lui Gerono: x = 50 + 34 cos t, y = 35 + 34 sin t cos t; se încrucișează în (50, 35).
+  const P: Pt[] = Array.from({ length: 400 }, (_, k) => {
+    const u = (2 * Math.PI * k) / 400;
+    return [50.3 + 34 * Math.cos(u), 35.4 + 34 * Math.sin(u) * Math.cos(u)] as const;
+  });
+  const img = trasaturi(101, 72, [{ P, inchisa: true }], 4);
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1);
+  assert.equal(t.raport.bucle, 1);
+  assert.equal(t.raport.jonctiuni, 1);
+  const { dus, intors } = abateri(esantioaneCai(t.cai), [{ P, inchisa: true }], [[50.3, 35.4]], 4);
+  assert.ok(dus <= 0.4 && intors <= 0.4, `linia: ${dus.toFixed(3)} / ${intors.toFixed(3)} px`);
+});
+
+test('o acadea (o coadă care intră tangent într-un cerc): o cale, din capătul cozii, de-a lungul cercului, până în joncțiune', () => {
+  const cerc: Pt[] = Array.from({ length: 200 }, (_, k) => [60.2 + 20 * Math.cos((2 * Math.PI * k) / 200), 30.4 + 20 * Math.sin((2 * Math.PI * k) / 200)] as const);
+  // Coada vine de jos, din stânga, tangentă cercului în punctul lui cel mai de jos (60,2; 50,4).
+  const coada: Pt[] = [[10.3, 50.4], [60.2, 50.4]];
+  const img = trasaturi(90, 62, [{ P: cerc, inchisa: true }, { P: coada }], 4);
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1);
+  assert.equal(t.raport.bucle, 0);
+  const [c] = esantioaneCai(t.cai);
+  assert.ok(c?.deschisa);
+});
+
+test(`plafonul (ADR 0220 §9): peste ${PLAFON_TRASARE.contururi} de căi, refuzul spune câte au fost`, () => {
+  // Liniuțe de 4 × 1 px, la câte 6 × 2 px: 150 × 134 = 20 100 de căi.
+  const img = imagine(900, 268, (x, y) => (y % 2 === 0 && x % 6 < 4 ? 1 : 0));
+  const r = traseazaMediana(img, { ...IMPLICITE, sursa: 'lum' });
+  assert.equal(r.ok, false);
+  assert.ok(r.raport.contururi > PLAFON_TRASARE.contururi, `${r.raport.contururi}`);
+});
+
+test('aceeași imagine dă aceleași căi, octet cu octet (fără ordine dependentă de Map sau de timp)', () => {
+  const img = trasaturi(80, 60, [{ P: [[10.3, 15.2], [70.3, 15.2]] }, { P: [[40.3, 15.2], [40.3, 52.7]] }], 5);
+  const a = traseazaMediana(img, IMPLICITE), b = traseazaMediana(img, IMPLICITE);
+  assert.ok(a.ok && b.ok);
+  assert.deepEqual(Array.from(a.cai.xy), Array.from(b.cai.xy));
+  assert.deepEqual(Array.from(a.cai.inceput), Array.from(b.cai.inceput));
+  assert.equal(MEDIANA.cotitura, 30);
+});
+
+// ── Probele țintite ale otrăvurilor scăpate (lista 25.3, prima rulare) ─────────────────────────────────────────────────
+
+/** Trăsături drepte cu capete drepte (dreptunghiuri), eșantionate 4 × 4 pe pixel. */
+function dreptunghiuri(W: number, H: number, seg: ReadonlyArray<readonly [Pt, Pt]>, w: number): ImagineRGBA {
+  return imagine(W, H, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if (seg.some(([A, B]) => {
+          const L = Math.hypot(B[0] - A[0], B[1] - A[1]), ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+          const t = (px - A[0]) * ux + (py - A[1]) * uy, d = Math.abs(-(px - A[0]) * uy + (py - A[1]) * ux);
+          return t >= 0 && t <= L && d <= w / 2;
+        })) a++;
+      }
+    }
+    return a / 16;
+  });
+}
+
+test('furcile de 20–45° (o trăsătură dreaptă și o ramură din mijlocul ei): dreapta rămâne o cale, prin joncțiune, la cel mult 0,2 px', () => {
+  // Măsurat la scriere: linia la cel mult 0,17 px, curbele la cel mult 0,21 px de punctul furcii. Cu perechile cele mai strâmbe
+  // întâi (L04), dreapta se rupe sub 30°; cu brațele curățate larg (B02), se rupe la 20° și linia trece de 0,25 px la 40°; cu
+  // raza grupului din primul pixel (P04), linia ajunge la 0,23 px la 35°.
+  const c: Pt = [60.3, 45.2], u = 0.31, L = 45;
+  for (const unghi of [20, 25, 30, 35, 40, 45]) {
+    for (const w of [3, 4, 6, 8]) {
+      const A: Pt = [c[0] - L * Math.cos(u), c[1] - L * Math.sin(u)], B: Pt = [c[0] + L * Math.cos(u), c[1] + L * Math.sin(u)];
+      const C: Pt = [c[0] + L * Math.cos(u + (unghi * Math.PI) / 180), c[1] + L * Math.sin(u + (unghi * Math.PI) / 180)];
+      const linii = [{ P: [A, B] }, { P: [c, C] }];
+      const t = traseazaMediana(trasaturi(120, 100, linii, w), IMPLICITE);
+      const caz = `${unghi}°, w ${w}`;
+      assert.ok(t.ok, caz);
+      const cai = esantioaneCai(t.cai);
+      assert.equal(cai.length, 2, caz);
+      const lang = (p: Pt, q: Pt): boolean => Math.hypot(p[0] - q[0], p[1] - q[1]) < w;
+      const capete = cai.map((k) => { const n = k.varfuri.length / 2; return [[k.varfuri[0] ?? 0, k.varfuri[1] ?? 0], [k.varfuri[2 * n - 2] ?? 0, k.varfuri[2 * n - 1] ?? 0]] as const; });
+      assert.ok(capete.some(([p, q]) => (lang(p, A) && lang(q, B)) || (lang(p, B) && lang(q, A))), `${caz}: A și B pe aceeași cale`);
+      let jonct = Infinity;
+      for (const k of cai) for (let i = 0; i < k.puncte.length; i += 2) jonct = Math.min(jonct, Math.hypot((k.puncte[i] ?? 0) - c[0], (k.puncte[i + 1] ?? 0) - c[1]));
+      assert.ok(jonct <= 0.25, `${caz}: curbele trec la ${jonct.toFixed(3)} px de furcă`);
+      const zona = w / Math.sin((unghi * Math.PI) / 180) + w;
+      const departe = (x: number, y: number): boolean => Math.hypot(x - c[0], y - c[1]) > zona && [A, B, C].every((p) => Math.hypot(x - p[0], y - p[1]) > w);
+      let abatere = 0;
+      for (const k of cai) {
+        for (let i = 0; i < k.puncte.length; i += 2) {
+          const x = k.puncte[i] ?? 0, y = k.puncte[i + 1] ?? 0;
+          if (departe(x, y)) abatere = Math.max(abatere, Math.min(laLinie(x, y, [A, B]), laLinie(x, y, [c, C])));
+        }
+      }
+      assert.ok(abatere <= 0.2, `${caz}: linia la ${abatere.toFixed(3)} px`);
+    }
+  }
+});
+
+test('un colț ascuțit (un V de ~37°, subțire): o singură cale, fiindcă joncțiunea cu două brațe rămasă după ciot e o trecere', () => {
+  // Configurația care a despărțit otrava L03: fără trecerea forțată, V-ul ieșea în două căi.
+  const t = traseazaMediana(trasaturi(90, 80, [{ P: [[22.31, 57.49], [56.19, 53.12], [31.38, 29.63]] }], 3.13), IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.contururi, 1);
+  const [c] = esantioaneCai(t.cai);
+  assert.ok(c?.deschisa);
+});
+
+test('capetele drepte ale trăsăturilor groase și oblice: centrul lor, recentrat de-a curmezișul, la cel mult 0,2 px', () => {
+  // Fără recentrare, direcția puțin strâmbă a capătului (scheletul cotit spre un colț) muta capătul cu până la 0,71 px într-o
+  // parte; cu ea, 0,14 px pe 61 de trăsături întâmplătoare. Aici, cele patru cele mai rele de atunci.
+  const cazuri: Array<readonly [Pt, Pt, number]> = [[[75.94, 25.23], [49.36, 77.67], 8.17], [[71.07, 27.7], [49.09, 77.19], 8.9],
+    [[95.17, 40.24], [40.88, 55.79], 9.16], [[86.95, 36.97], [35.05, 62.42], 6.7]];
+  for (const [A, B, w] of cazuri) {
+    const t = traseazaMediana(dreptunghiuri(120, 90, [[A, B]], w), { ...IMPLICITE, petePx: 4, gauriPx: 4 });
+    assert.ok(t.ok);
+    const [c] = esantioaneCai(t.cai);
+    assert.ok(c);
+    const L = Math.hypot(B[0] - A[0], B[1] - A[1]), ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+    const n = c.varfuri.length / 2;
+    const capete: Pt[] = [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]];
+    for (const q of [[A[0] + (ux * w) / 2, A[1] + (uy * w) / 2], [B[0] - (ux * w) / 2, B[1] - (uy * w) / 2]] as Pt[]) {
+      const d = Math.min(...capete.map((p) => Math.hypot(p[0] - q[0], p[1] - q[1])));
+      assert.ok(d <= 0.2, `w ${w}: capătul (${q.map((v) => v.toFixed(2)).join(', ')}) la ${d.toFixed(3)} px`);
+    }
+  }
+});
+
+// ── Logoul owner-ului (imaginea reală): colțurile literelor și joncțiunile ──────────────────────────────────────────────
+
+test('logoul owner-ului: nicio întoarcere bruscă, nicio linie în afara cernelii, colțurile de lângă joncțiuni întregi', async () => {
+  // Pe 08.11, după 25.3↑, logoul a arătat ce corpusul (îmbinări rotunde) nu arăta: zigzaguri în colțurile drepte ale
+  // literelor (61 de eșantioane cu întoarceri peste 120°, cea mai mare 180°) și o joncțiune pusă între „V” și „e”, în afara
+  // cernelii, la 15 px de pixelii ei. Acum: cea mai mare cotitură 92°, un colț adevărat.
+  const { readFileSync } = await import('node:fs');
+  const { citestePng } = await import('./ajutor-png.ts');
+  const img = citestePng(readFileSync(new URL('../fixtures/trasare/logo-cvs.png', import.meta.url)));
+  const o = { ...IMPLICITE, petePx: 4, gauriPx: 4 };
+  const t = traseazaMediana(img, o);
+  assert.ok(t.ok);
+  let cea = 0;
+  const toate: Pt[] = [];
+  for (const c of esantioaneCai(t.cai)) {
+    const p: number[] = [c.puncte[0] ?? 0, c.puncte[1] ?? 0];
+    for (let i = 0; i < c.puncte.length; i += 2) toate.push([c.puncte[i] ?? 0, c.puncte[i + 1] ?? 0]);
+    for (let i = 2; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      if (Math.hypot(x - (p[p.length - 2] ?? 0), y - (p[p.length - 1] ?? 0)) >= 0.5) p.push(x, y);
+    }
+    const n = p.length / 2;
+    for (let i = 3; i + 3 < n; i++) {
+      const ax = (p[2 * i] ?? 0) - (p[2 * i - 6] ?? 0), ay = (p[2 * i + 1] ?? 0) - (p[2 * i - 5] ?? 0);
+      const bx = (p[2 * i + 6] ?? 0) - (p[2 * i] ?? 0), by = (p[2 * i + 7] ?? 0) - (p[2 * i + 1] ?? 0);
+      const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+      if (la > 1e-9 && lb > 1e-9) cea = Math.max(cea, (Math.acos(Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)))) * 180) / Math.PI);
+    }
+  }
+  assert.ok(cea <= 120, `cea mai bruscă întoarcere: ${cea.toFixed(0)}°`);
+  // Fiecare punct al liniilor stă în cerneală (câmpul la cel puțin jumătate din prag: curbele pot ieși puțin lângă margine).
+  const slab = celMaiSlab(img, o, t.cai);
+  assert.ok(slab >= 0.5, `cel mai slab punct: ${slab.toFixed(2)} din prag`);
+  // Colțurile celor două urechi (pe mijlocul benzii inelelor) și colțul buclei lui „e”: curățarea de lângă joncțiune trecea de
+  // colț și îl tăia cu o coardă (2,7–4,1 px), iar dreapta laturii scurte a buclei, trasă și pe curba de sus, scotea colțul din
+  // cerneală (teșit, 4,0 px). Acum cel mult 1,6 px: diagonala scheletului, unde colțul e la mai puțin de 1,5 grosimi de
+  // joncțiune (latura dintre ele are doar două puncte măsurate).
+  for (const q of [[29.2, 145], [51, 145], [29.2, 167], [51, 167], [291, 144.9], [313, 144.9], [291, 167], [313, 167], [720, 179.3]] as Pt[]) {
+    const d = toate.reduce((m, p) => Math.min(m, Math.hypot(p[0] - q[0], p[1] - q[1])), Infinity);
+    assert.ok(d <= 2, `colțul (${q.join(', ')}): căile trec la ${d.toFixed(2)} px`);
+  }
+  // Urechile: la fiecare joncțiune se termină o singură cale, a trăsăturii groase, iar latura inelului trece prin ea (la urechea
+  // din dreapta, latura de două puncte dintre joncțiune și colț își ia direcția din coarda lor; altfel, trei căi acolo).
+  const capete: Pt[] = esantioaneCai(t.cai).filter((c) => c.deschisa).flatMap((c) => {
+    const k = c.varfuri.length / 2;
+    return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * k - 2] ?? 0, c.varfuri[2 * k - 1] ?? 0]] as Pt[];
+  });
+  for (const q of [[41, 145], [41, 167.4], [299.6, 144.9], [301, 167.2]] as Pt[]) {
+    const n = capete.filter((p) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 2.5).length;
+    assert.equal(n, 1, `joncțiunea urechii (${q.join(', ')}): ${n} capete de căi`);
+  }
+  // „e”: latura din stânga, lângă bara din mijloc (x = 678,6), rămâne pe mijloc; înainte, un „<” de 4,4 px.
+  let lat = 0;
+  for (const p of toate) if (p[1] >= 174 && p[1] <= 185 && p[0] >= 671 && p[0] <= 684 && !(Math.abs(p[1] - 179.3) < 0.75 && p[0] > 678.6)) lat = Math.max(lat, Math.abs(p[0] - 678.6));
+  assert.ok(lat <= 0.75, `latura lui „e” lângă bară: la ${lat.toFixed(2)} px de mijloc`);
+});
+
+test('o ureche ca în logo (o trăsătură groasă care atinge un inel pătrat subțire): joncțiunile pe latura inelului, inelul o buclă', () => {
+  // Laturile inelului cotesc la 8 px de joncțiune, deci dreptele brațelor lui (trase pe 1,5 grosimi) nu se întâlnesc cu a
+  // trăsăturii: punctul celor mai mici pătrate urca ~7 px în trăsătura groasă. Cu regula (dreptele chiar se întâlnesc, în
+  // medie la cel mult max(0,5 px, 0,15 raze)), joncțiunea rămâne în media pixelilor ei, pe latură.
+  const gros = 9, subtire = 4.5;
+  const sus: Pt[] = [[40.2, 4.6], [40.2, 30.3]], jos: Pt[] = [[40.2, 46.3], [40.2, 74.4]];
+  const inel: Pt[] = [[32.2, 30.3], [48.2, 30.3], [48.2, 46.3], [32.2, 46.3]];
+  // Inelul cu colțuri drepte: distanța Chebyshev de la pătratul liniei lui, cel mult jumătate de grosime.
+  const inInel = (x: number, y: number): boolean => {
+    const cx = 40.2, cy = 38.3, h = 8, dx = Math.abs(x - cx), dy = Math.abs(y - cy);
+    return Math.max(dx, dy) <= h + subtire / 2 && Math.max(dx, dy) >= h - subtire / 2;
+  };
+  const img = imagine(80, 80, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if (inInel(px, py) || laLinie(px, py, sus) <= gros / 2 || laLinie(px, py, jos) <= gros / 2) a++;
+      }
+    }
+    return a / 16;
+  });
+  const t = traseazaMediana(img, IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.jonctiuni, 2);
+  const cai = esantioaneCai(t.cai);
+  const capete = (c: (typeof cai)[number]): [Pt, Pt] => {
+    const n = c.varfuri.length / 2;
+    return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]];
+  };
+  // Fiecare trăsătură e calea ei, de la capătul liber până în joncțiunea ei, pe latura inelului (cel mult o jumătate din grosimea
+  // inelului de linia laturii, 2,25 px: în cerneala laturii); înainte,
+  // trăsătura de sus continua în jumătatea stângă a inelului și în trăsătura de jos (2 căi în loc de 3).
+  for (const [liber, j] of [[[40.2, 4.6], [40.2, 30.3]], [[40.2, 74.4], [40.2, 46.3]]] as Array<[Pt, Pt]>) {
+    const c = cai.find((k) => k.deschisa && capete(k).some((p) => Math.hypot(p[0] - liber[0], p[1] - liber[1]) < 2));
+    assert.ok(c, `calea trăsăturii din (${liber.join(', ')})`);
+    const d = Math.min(...capete(c).map((p) => Math.hypot(p[0] - j[0], p[1] - j[1])));
+    assert.ok(d <= subtire / 2, `trăsătura din (${liber.join(', ')}) se oprește la ${d.toFixed(2)} px de joncțiunea (${j.join(', ')})`);
+  }
+  // Inelul: celelalte căi (o buclă, sau două jumătăți între joncțiuni) stau pe pătratul lui.
+  for (const c of cai) {
+    if (c.deschisa && capete(c).some((p) => p[1] < 10 || p[1] > 70)) continue;
+    for (let i = 0; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      assert.ok(laLinie(x, y, [...inel, inel[0] as Pt]) <= 2, `inelul trece la ${laLinie(x, y, [...inel, inel[0] as Pt]).toFixed(2)} px de pătrat`);
+    }
+  }
+});
+
+test('un „e”: latura scurtă dintre două curbe, cu bara la mijloc, rămâne pe mijloc și trece prin joncțiune (o cale)', () => {
+  // La „e”-ul logoului, latura din stânga e dreaptă doar câțiva pixeli de o parte și de alta a barei, apoi se curbează; dreptele
+  // brațelor, trase și pe curbă (abaterea admisă era 0,1 grosimi), se înclinau spre ea și se tăiau în afara mijlocului, iar
+  // brațele nu se mai legau. Măsurat la scriere: înainte, 1,6–5,1 px și trei căi; acum, cel mult 0,3 px și două.
+  const w = 12, R = 10;
+  for (const D of [9, 11, 13]) {
+    const sus: Pt[] = [], jos: Pt[] = [];
+    for (let k = 0; k <= 24; k++) {
+      const f = (k / 24) * (Math.PI / 2);
+      sus.push([40 + R - R * Math.cos(f), 40 - D - R * Math.sin(f)]);
+      jos.push([40 + R - R * Math.cos(f), 40 + D + R * Math.sin(f)]);
+    }
+    const latura: Pt[] = [[78, 40 - D - R], ...sus.slice().reverse(), ...jos, [78, 40 + D + R]];
+    const t = traseazaMediana(trasaturi(100, 40 + D + R + 16, [{ P: latura }, { P: [[40, 40], [78, 40]] }], w), IMPLICITE);
+    assert.ok(t.ok);
+    assert.equal(t.raport.contururi, 2, `D ${D}: latura și bara`);
+    let lat = 0, jonct = Infinity;
+    for (const c of esantioaneCai(t.cai)) {
+      for (let i = 0; i < c.puncte.length; i += 2) {
+        const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+        jonct = Math.min(jonct, Math.hypot(x - 40, y - 40));
+        if (y >= 40 - D + 1 && y <= 40 + D - 1 && x >= 33 && x <= 46 && !(Math.abs(y - 40) < 0.75 && x > 40)) lat = Math.max(lat, Math.abs(x - 40));
+      }
+    }
+    assert.ok(lat <= 0.5, `D ${D}: latura la ${lat.toFixed(2)} px de mijloc`);
+    assert.ok(jonct <= 0.5, `D ${D}: curbele trec la ${jonct.toFixed(2)} px de joncțiune`);
+  }
+});
+
+test('un X îngust (~20°): liniile trec drept prin încrucișare, fără cârlige spre cele două Y-uri', () => {
+  // Aici, o pereche leagă o trăsătură de puntea dintre cele două Y-uri (pe bisectoare, la 10° de ea): o dreaptă comună a
+  // perechii, ca la „e”, ducea linia la 1,3 px; brațul vecin, la 20°, o oprește, iar dreptele rămân separate (0,04 px).
+  const A: Pt = [80.839, 23.946], B: Pt = [48.828, 72.106], C: Pt = [88.732, 31.75], D: Pt = [40.935, 64.302], w = 6.288;
+  const linii = [{ P: [A, B] }, { P: [C, D] }];
+  const t = traseazaMediana(trasaturi(120, 90, linii, w), { ...IMPLICITE, petePx: 4, gauriPx: 4 });
+  assert.ok(t.ok);
+  const { dus } = abateri(esantioaneCai(t.cai), linii, [[64.834, 48.026], A, B, C, D], 1.5 * w);
+  assert.ok(dus <= 0.3, `linia la ${dus.toFixed(2)} px`);
+});
+
+test('un X din două arce strânse (o buclă îngustă lângă încrucișare): nicio linie în afara cernelii', () => {
+  // Configurația care a despărțit otrava B10: încrucișarea dreptelor brațelor curbe cădea la 8 px de hârtie, între arce.
+  const c: Pt = [65.0496, 48.7177], u0 = 2.20641, cot = -1.45291, L = 28.2385, a = 0.86212, w = 3.8831;
+  const arc = (u: number, k: number): Pt[] => {
+    const P: Pt[] = [c];
+    let x = c[0], y = c[1], t = u;
+    for (let i = 0; i < 64; i++) { t += k / 64; x += (L / 64) * Math.cos(t); y += (L / 64) * Math.sin(t); P.push([x, y]); }
+    return P;
+  };
+  const linii = [
+    { P: [...arc(u0 + Math.PI, -cot / 2).reverse(), ...arc(u0, cot / 2).slice(1)] },
+    { P: [...arc(u0 + a + Math.PI, cot / 2).reverse(), ...arc(u0 + a, -cot / 2).slice(1)] },
+  ];
+  const o = { ...IMPLICITE, petePx: 4, gauriPx: 4 };
+  const img = trasaturi(120, 90, linii, w);
+  const t = traseazaMediana(img, o);
+  assert.ok(t.ok);
+  const slab = celMaiSlab(img, o, t.cai);
+  assert.ok(slab >= 0.5, `cel mai slab punct: ${slab.toFixed(2)} din prag`);
+});
+
+// ── Opțiunile liniei mediane (ADR 0223) ─────────────────────────────────────────────────────────────────────────────────
+
+/** Trăsături cu capete rotunde și dreptunghiuri pline (colțurile lor drepte), eșantionate 4 × 4 pe pixel. */
+function desen(W: number, H: number, linii: ReadonlyArray<{ readonly P: readonly Pt[]; readonly inchisa?: boolean }>, w: number,
+  pline: ReadonlyArray<readonly [number, number, number, number]>): ImagineRGBA {
+  return imagine(W, H, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if (pline.some(([x0, y0, x1, y1]) => px >= x0 && px <= x1 && py >= y0 && py <= y1) || linii.some((l) => laLinie(px, py, l.P, l.inchisa) <= w / 2)) a++;
+      }
+    }
+    return a / 16;
+  });
+}
+
+/** Aria cu semn a unei căi închise, din eșantioanele ei (pozitivă pe marginea de afară, ca la trasare). */
+function arieEsantioane(P: readonly number[]): number {
+  let s = 0;
+  const n = P.length / 2;
+  for (let k = 0; k < n; k++) { const q = (k + 1) % n; s += (P[2 * k] ?? 0) * (P[2 * q + 1] ?? 0) - (P[2 * q] ?? 0) * (P[2 * k + 1] ?? 0); }
+  return s / 2;
+}
+
+// Un desen cu linii și o pată plină: o trăsătură orizontală de 6 px lipită de latura stângă a unui dreptunghi plin de 30 × 20
+// (cercul înscris, de rază 10; al trăsăturilor, 3), plus o trăsătură verticală separată. Pragul automat: 2 × 6 = 12 px.
+const LIPITA: Pt[] = [[8.3, 40.2], [40, 40.2]], SEPARATA: Pt[] = [[95.4, 12.6], [95.4, 68.3]];
+const DREPTUNGHI = [40, 30, 70, 50] as const;
+const imgPlin = (): ImagineRGBA => desen(110, 80, [{ P: LIPITA }, { P: SEPARATA }], 6, [DREPTUNGHI]);
+
+test('semnalarea părților late nu schimbă liniile: le numără (câte, ce parte din cerneală) și le dă conturul, separat', () => {
+  const img = imgPlin();
+  const simplu = traseazaMediana(img, IMPLICITE);
+  const semnalat = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, semnaleaza: true });
+  assert.ok(simplu.ok && semnalat.ok);
+  assert.deepEqual(Array.from(semnalat.cai.xy), Array.from(simplu.cai.xy));
+  assert.deepEqual(Array.from(semnalat.cai.inceput), Array.from(simplu.cai.inceput));
+  assert.equal(semnalat.cai.peLinie, undefined, 'toate pe linie');
+  assert.equal(simplu.raport.parti, undefined, 'fără semnalare, necăutate');
+  assert.equal(semnalat.raport.parti?.numar, 1);
+  // Aria dreptunghiului (600 px²) din cerneala întregului desen (trăsăturile, ~6 · 31,7 + 6 · 55,7 + capetele rotunde).
+  const cerneala = 600 + 6 * (40 - 8.3) + Math.PI * 9 / 2 + 6 * (68.3 - 12.6) + Math.PI * 9;
+  assert.ok(Math.abs((semnalat.raport.parti?.arie ?? 0) - 600 / cerneala) <= 0.03, `aria părții late: ${semnalat.raport.parti?.arie}`);
+  assert.ok(Math.abs((semnalat.raport.parti?.pragPx ?? 0) - 12) <= 0.5, `pragul automat: ${semnalat.raport.parti?.pragPx}`);
+  assert.ok(semnalat.late);
+  const [contur] = esantioaneCai(semnalat.late);
+  assert.ok(contur && !contur.deschisa);
+  assert.ok(Math.abs(arieEsantioane(contur.puncte) - 600) <= 18, `conturul: ${arieEsantioane(contur.puncte).toFixed(1)} px²`);
+});
+
+test('părțile late ca contururi: dreptunghiul plin, un contur exterior cu colțurile lui; linia lipită ajunge pe latura lui', () => {
+  const img = imgPlin();
+  const t = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, late: 'contur' });
+  assert.ok(t.ok);
+  const cai = esantioaneCai(t.cai);
+  assert.equal(cai.length, 3, 'două linii și conturul');
+  assert.ok(t.cai.peLinie);
+  const inchise = cai.flatMap((c, k) => (c.deschisa ? [] : [k]));
+  assert.equal(inchise.length, 1);
+  const k = inchise[0] ?? -1, contur = cai[k];
+  assert.ok(contur);
+  assert.equal(t.cai.peLinie[k], 0, 'conturul nu se taie pe linie');
+  assert.equal(t.cai.exterior[k], 1, 'marginea de afară');
+  assert.ok(Math.abs(arieEsantioane(contur.puncte) - 600) <= 18, `aria conturului: ${arieEsantioane(contur.puncte).toFixed(1)} px²`);
+  // Colțurile dreptunghiului (nu rotunjite de disc): conturul trece la cel mult 1 px de fiecare.
+  for (const q of [[40, 30], [70, 30], [70, 50], [40, 50]] as Pt[]) {
+    let d = Infinity;
+    for (let i = 0; i < contur.puncte.length; i += 2) d = Math.min(d, Math.hypot((contur.puncte[i] ?? 0) - q[0], (contur.puncte[i + 1] ?? 0) - q[1]));
+    assert.ok(d <= 1, `colțul (${q.join(', ')}): ${d.toFixed(2)} px`);
+  }
+  // Linia lipită: de la centrul capătului ei rotund până pe conturul părții late (fără punte: capătul la cel mult 0,5 px de
+  // contur); acolo, deschiderea face o mică racordare în trăsătură (cercurile înscrise lângă lipitură sunt mai mari), deci
+  // capătul stă la cel mult 1,5 px de latura dreptunghiului. Cea separată, neatinsă.
+  const capete = cai.filter((c) => c.deschisa).map((c) => { const n = c.varfuri.length / 2; return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]] as [Pt, Pt]; });
+  const lang = (p: Pt, q: Pt, d: number): boolean => Math.hypot(p[0] - q[0], p[1] - q[1]) <= d;
+  const pePerete = (p: Pt): boolean => {
+    let d = Infinity;
+    for (let i = 0; i < contur.puncte.length; i += 2) d = Math.min(d, Math.hypot((contur.puncte[i] ?? 0) - p[0], (contur.puncte[i + 1] ?? 0) - p[1]));
+    return d <= 0.5 && lang(p, [40, 40.2], 1.5);
+  };
+  assert.ok(capete.some(([p, q]) => (lang(p, [8.3, 40.2], 0.4) && pePerete(q)) || (lang(q, [8.3, 40.2], 0.4) && pePerete(p))),
+    `linia lipită: ${JSON.stringify(capete)}`);
+  assert.ok(capete.some(([p, q]) => (lang(p, SEPARATA[0] as Pt, 0.4) && lang(q, SEPARATA[1] as Pt, 0.4)) || (lang(q, SEPARATA[0] as Pt, 0.4) && lang(p, SEPARATA[1] as Pt, 0.4))));
+  for (const c of cai.filter((x) => x.deschisa)) {
+    for (let i = 0; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      assert.ok(!(x > 40.5 && x < 69.5 && y > 30.5 && y < 49.5), `o linie intră în partea lată: (${x.toFixed(2)}, ${y.toFixed(2)})`);
+    }
+  }
+});
+
+test('pragul părților late dat în px: peste cercul înscris al petei, nicio parte lată; sub grosimea trăsăturilor, nici ele nu sunt', () => {
+  const img = imgPlin();
+  const mare = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, late: 'contur', pragLatPx: 22 });
+  assert.ok(mare.ok);
+  assert.equal(mare.raport.parti?.numar, 0);
+  assert.equal(mare.cai.peLinie, undefined, 'totul linii mediane');
+  const mic = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, late: 'contur', pragLatPx: 8 });
+  assert.ok(mic.ok);
+  assert.equal(mic.raport.parti?.numar, 1, 'doar dreptunghiul (trăsăturile au 6 px)');
+});
+
+test('capetele în vârf: capătul rotund se termină în vârful lui, capătul drept în margine, la cel mult 0,3 px', () => {
+  for (const [A, B, w] of [[[20.4, 30.2], [80.7, 30.2], 8], [[22.6, 18.3], [83.1, 58.9], 6.5]] as Array<[Pt, Pt, number]>) {
+    const L = Math.hypot(B[0] - A[0], B[1] - A[1]), ux = (B[0] - A[0]) / L, uy = (B[1] - A[1]) / L;
+    const rotund = traseazaMediana(trasaturi(110, 80, [{ P: [A, B] }], w), IMPLICITE, { ...MEDIANA_SIMPLA, capete: 'varf' });
+    const drept = traseazaMediana(dreptunghiuri(110, 80, [[A, B]], w), IMPLICITE, { ...MEDIANA_SIMPLA, capete: 'varf' });
+    assert.ok(rotund.ok && drept.ok);
+    for (const [t, varfuri] of [[rotund, [[A[0] - (ux * w) / 2, A[1] - (uy * w) / 2], [B[0] + (ux * w) / 2, B[1] + (uy * w) / 2]]], [drept, [A, B]]] as const) {
+      const [c] = esantioaneCai(t.cai);
+      assert.ok(c && c.deschisa);
+      const n = c.varfuri.length / 2;
+      const capete: Pt[] = [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]];
+      for (const q of varfuri) {
+        const d = Math.min(...capete.map((p) => Math.hypot(p[0] - q[0], p[1] - q[1])));
+        assert.ok(d <= 0.3, `w ${w}: vârful (${q.map((v) => v.toFixed(2)).join(', ')}) la ${d.toFixed(3)} px`);
+      }
+    }
+  }
+});
+
+test('buclele ca vectori închiși: din două inele concentrice, cel din afară exterior, cel dinăuntru interior; implicit, pe linie', () => {
+  const cerc = (r: number): Pt[] => Array.from({ length: 96 }, (_, k) => [50.3 + r * Math.cos((2 * Math.PI * k) / 96), 50.1 + r * Math.sin((2 * Math.PI * k) / 96)] as Pt);
+  const img = trasaturi(100, 100, [{ P: cerc(32), inchisa: true }, { P: cerc(16), inchisa: true }], 4);
+  const pe = traseazaMediana(img, IMPLICITE);
+  assert.ok(pe.ok);
+  assert.equal(pe.cai.peLinie, undefined);
+  const t = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, bucle: 'inchise' });
+  assert.ok(t.ok);
+  const cai = esantioaneCai(t.cai);
+  assert.equal(cai.length, 2);
+  for (const [k, c] of cai.entries()) {
+    assert.ok(!c.deschisa);
+    assert.equal(t.cai.peLinie?.[k], 0);
+    const r = Math.hypot((c.puncte[0] ?? 0) - 50.3, (c.puncte[1] ?? 0) - 50.1);
+    assert.equal(t.cai.exterior[k], r > 24 ? 1 : 0, `bucla de rază ${r.toFixed(1)}`);
+  }
+});
+
+test('logoul owner-ului cu părțile late ca contururi: blocurile frezei (două), nicio linie mediană în ele, capetele lipite pe contur', async () => {
+  // Măsurat la scriere: 2 părți late, 15,3 % din cerneală; pe rest, 51 de căi; resturile (colțurile rotunjite de disc,
+  // fâșia de pe margini) țin de partea lată, altfel ar fi fost zeci de cioturi în jurul blocurilor.
+  const { readFileSync } = await import('node:fs');
+  const { citestePng } = await import('./ajutor-png.ts');
+  const img = citestePng(readFileSync(new URL('../fixtures/trasare/logo-cvs.png', import.meta.url)));
+  const t = traseazaMediana(img, { ...IMPLICITE, petePx: 4, gauriPx: 4 }, { ...MEDIANA_SIMPLA, late: 'contur', semnaleaza: true });
+  assert.ok(t.ok);
+  assert.equal(t.raport.parti?.numar, 2);
+  assert.ok((t.raport.parti?.arie ?? 0) >= 0.13 && (t.raport.parti?.arie ?? 0) <= 0.17, `aria: ${t.raport.parti?.arie}`);
+  const cai = esantioaneCai(t.cai);
+  const contururi = cai.filter((c, k) => t.cai.peLinie?.[k] === 0);
+  assert.equal(contururi.length, 2);
+  assert.ok(cai.length - contururi.length <= 55, `${cai.length - contururi.length} linii mediane`);
+  const laContur = (x: number, y: number): number => {
+    let d = Infinity;
+    for (const c of contururi) for (let i = 0; i < c.puncte.length; i += 2) d = Math.min(d, Math.hypot((c.puncte[i] ?? 0) - x, (c.puncte[i + 1] ?? 0) - y));
+    return d;
+  };
+  const inContur = (x: number, y: number): boolean => contururi.some((c) => {
+    let in_ = false;
+    const n = c.puncte.length / 2;
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+      const xi = c.puncte[2 * i] ?? 0, yi = c.puncte[2 * i + 1] ?? 0, xj = c.puncte[2 * j] ?? 0, yj = c.puncte[2 * j + 1] ?? 0;
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) in_ = !in_;
+    }
+    return in_;
+  });
+  let lipite = 0;
+  for (const c of cai.filter((x, k) => t.cai.peLinie?.[k] !== 0)) {
+    for (let i = 0; i < c.puncte.length; i += 2) {
+      const x = c.puncte[i] ?? 0, y = c.puncte[i + 1] ?? 0;
+      if (inContur(x, y)) assert.ok(laContur(x, y) <= 0.75, `o linie intră în partea lată: (${x.toFixed(1)}, ${y.toFixed(1)})`);
+    }
+    if (c.deschisa) {
+      const n = c.varfuri.length / 2;
+      for (const [x, y] of [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]]) if (laContur(x ?? 0, y ?? 0) <= 0.75) lipite++;
+    }
+  }
+  assert.ok(lipite >= 3, `capete lipite de contur: ${lipite}`);
+});
+
+test('o parte lată cu un gol (un inel gros) e una singură: conturul de afară pe exterior, al golului pe interior', () => {
+  // Inelul: razele 10 și 25 (lățimea 15, cercul înscris 7,5); trăsăturile de 4 px (pragul automat 8, raza discului 4).
+  const cerc = (r: number): Pt[] => Array.from({ length: 128 }, (_, k) => [50.2 + r * Math.cos((2 * Math.PI * k) / 128), 45.1 + r * Math.sin((2 * Math.PI * k) / 128)] as Pt);
+  const img = trasaturi(110, 90, [{ P: cerc(17.5), inchisa: true }, { P: [[80.3, 10.2], [104.6, 80.4]] }], 15);
+  const subtiri = trasaturi(110, 90, [{ P: [[80.3, 10.2], [104.6, 80.4]] }, { P: [[8.2, 85.3], [60.1, 85.3]] }], 4);
+  const date = new Uint8ClampedArray(img.date);
+  for (let i = 0; i < date.length; i += 4) date[i] = date[i + 1] = date[i + 2] = Math.min(img.date[i] ?? 255, subtiri.date[i] ?? 255);
+  const desenul: ImagineRGBA = { latime: 110, inaltime: 90, date };
+  // Inelul și trăsătura groasă de 15 px trec de prag; cea de 4 px, nu. Fără grosimea obișnuită pe 4 px, pragul se dă.
+  const t = traseazaMediana(desenul, IMPLICITE, { ...MEDIANA_SIMPLA, late: 'contur', pragLatPx: 10 });
+  assert.ok(t.ok);
+  assert.equal(t.raport.parti?.numar, 2, 'inelul și trăsătura groasă');
+  const cai = esantioaneCai(t.cai);
+  const laturi = cai.flatMap((c, k) => (t.cai.peLinie?.[k] === 0 ? [t.cai.exterior[k] === 1 ? 'exterior' : 'interior'] : []));
+  assert.deepEqual(laturi.sort(), ['exterior', 'exterior', 'interior']);
+  const gol = cai.find((c, k) => t.cai.peLinie?.[k] === 0 && t.cai.exterior[k] === 0);
+  assert.ok(gol);
+  for (let i = 0; i < gol.puncte.length; i += 2) {
+    const r = Math.hypot((gol.puncte[i] ?? 0) - 50.2, (gol.puncte[i + 1] ?? 0) - 45.1);
+    assert.ok(Math.abs(r - 10) <= 0.75, `golul trece la raza ${r.toFixed(2)}`);
+  }
+});
+
+test('o liniuță și un punct lângă o pată plină, fără s-o atingă, rămân ale lor (doar resturile care o ating țin de ea)', () => {
+  // Pata: 30 × 30 (cercul înscris 15); pragul 16 px (raza discului 8). Punctul (un disc de rază 3, la 2,5 px de pată) stă tot
+  // la cel mult 2·8 + 1 de miez, ca un rest; nu atinge pata, deci rămâne punct.
+  const disc = (x: number, y: number): boolean => Math.hypot(x - 75.5, y - 15.1) <= 3;
+  const img = imagine(110, 80, (x, y) => {
+    let a = 0;
+    for (let j = 0; j < 4; j++) {
+      for (let i = 0; i < 4; i++) {
+        const px = x + (i + 0.5) / 4, py = y + (j + 0.5) / 4;
+        if ((px >= 40 && px <= 70 && py >= 5 && py <= 35) || disc(px, py) || laLinie(px, py, [[74.2, 60.1], [95.3, 60.1]]) <= 3) a++;
+      }
+    }
+    return a / 16;
+  });
+  const t = traseazaMediana(img, IMPLICITE, { ...MEDIANA_SIMPLA, late: 'contur', pragLatPx: 16 });
+  assert.ok(t.ok);
+  assert.equal(t.raport.parti?.numar, 1, 'doar pata');
+  assert.equal(t.raport.puncte, 1, 'punctul');
+  const deschise = esantioaneCai(t.cai).filter((c) => c.deschisa);
+  assert.equal(deschise.length, 1, 'liniuța');
+  const [c] = deschise;
+  assert.ok(c);
+  const n = c.varfuri.length / 2;
+  const capete = [c.varfuri[0] ?? 0, c.varfuri[2 * n - 2] ?? 0].sort((x, y) => x - y);
+  assert.ok(Math.abs((capete[0] ?? 0) - 74.2) <= 0.4 && Math.abs((capete[1] ?? 0) - 95.3) <= 0.4, `capetele: ${capete.join(', ')}`);
+});
+
+test('capetele în vârf, pe logo: talpa scurtă a lui „t” iese drept prin marginea ei, nu oblic spre colț', async () => {
+  // Talpa e dreaptă doar ~1,5 grosimi după curbă: direcția vârfului vine din porțiunea dreaptă de lângă capăt. Înainte, dreapta
+  // celor 1,5 grosimi prindea curba, iar vârful ieșea cu ~4 px mai jos, în colț.
+  const { readFileSync } = await import('node:fs');
+  const { citestePng } = await import('./ajutor-png.ts');
+  const img = citestePng(readFileSync(new URL('../fixtures/trasare/logo-cvs.png', import.meta.url)));
+  const t = traseazaMediana(img, { ...IMPLICITE, petePx: 4, gauriPx: 4 }, { ...MEDIANA_SIMPLA, capete: 'varf' });
+  assert.ok(t.ok);
+  const capete = esantioaneCai(t.cai).filter((c) => c.deschisa).flatMap((c) => {
+    const n = c.varfuri.length / 2;
+    return [[c.varfuri[0] ?? 0, c.varfuri[1] ?? 0], [c.varfuri[2 * n - 2] ?? 0, c.varfuri[2 * n - 1] ?? 0]] as Pt[];
+  });
+  // Marginea din dreapta a celor două tălpi (x 820 și 1057) și mijlocul lor (y 200,4, unde se oprește linia cu capetele în centru).
+  for (const x of [820, 1057]) {
+    const p = capete.reduce((m, q) => (Math.hypot(q[0] - x, q[1] - 200.4) < Math.hypot(m[0] - x, m[1] - 200.4) ? q : m), [1e9, 1e9] as Pt);
+    assert.ok(Math.abs(p[0] - x) <= 0.3 && Math.abs(p[1] - 200.4) <= 0.75, `talpa de la x ${x}: vârful în (${p[0].toFixed(2)}, ${p[1].toFixed(2)})`);
+  }
+});

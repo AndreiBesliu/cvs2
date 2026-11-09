@@ -109,10 +109,19 @@ module.exports = {
     {
       name: 'bazinul-fara-interfata',
       severity: 'error',
-      comment: 'Bazinul de workere (src/jobs) transportă joburile grele: simularea (ADR 0047) și calculul CAM (ADR 0109: CAM-ul, '
-        + 'postul, estimarea). Importă domeniul de sub el, nu interfața, pânza, adminul, mașina, ușile sau norul.',
+      comment: 'Bazinul de workere (src/jobs) transportă joburile grele: simularea (ADR 0047), calculul CAM (ADR 0109: CAM-ul, '
+        + 'postul, estimarea) și trasarea din imagine (ADR 0220). Importă domeniul de sub el, nu interfața, pânza, adminul, '
+        + 'mașina, ușile sau norul.',
       from: { path: modul('jobs') },
-      to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model)/' },
+      to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model|trasare)/' },
+    },
+    {
+      name: 'trasare-izolat',
+      severity: 'error',
+      comment: 'Trasarea din imagine (src/trasare, ADR 0220) e pură: pixelii intră, căile ies. Nu importă nimic din aplicație; '
+        + 'o cheamă workerul trasării (src/jobs), iar ușa importului îi face căile document.',
+      from: { path: modul('trasare') },
+      to: { path: '^src/', pathNot: '^src/trasare/' },
     },
     {
       name: 'masina-fara-post-si-document',

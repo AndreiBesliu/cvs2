@@ -84,6 +84,11 @@ export const tasteDin = (e: { readonly shiftKey: boolean; readonly ctrlKey: bool
 
 const centrul = (c: Cutie): Punct => ({ x: (c.minX + c.maxX) / 2, y: (c.minY + c.maxY) / 2 });
 
+/** Ce ține fix Alt la mânere, și rotirea (ADR 0240 §B.17, opțiunea din bara Transformării): ancora sau centrul cutiei. */
+export type AltFix = 'ancora' | 'centru';
+/** Pură: punctul fix al lui Alt și al rotirii: ancora, sau, cu opțiunea „centrul cutiei”, centrul, oriunde ar sta ancora. */
+export const fixulLuiAlt = (c: Cutie, ancora: Punct, altFix: AltFix): Punct => (altFix === 'centru' ? centrul(c) : ancora);
+
 /**
  * Pură: transformarea gestului pe un mâner (ADR 0052, ADR 0240). Scalarea: fix e mânerul opus, sau, cu Alt, `ancora`
  * (implicit centrul cutiei); colțurile scalează proporțional (după axa care s-a schimbat mai mult), laturile pe o singură

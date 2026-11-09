@@ -5,7 +5,8 @@ import { incarca } from '../../src/model/incarcare.ts';
 import type { Document, FormaDoc } from '../../src/model/document.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
-import { elementeFoaie } from '../../src/model/lume.ts';
+import { elementeFoaie, matriceInstanta } from '../../src/model/lume.ts';
+import { aplica } from '../../src/geom/matrice.ts';
 import { conturElement, cutieElement } from '../../src/model/forme.ts';
 import { elipsa, parametri } from '../../src/model/formeParametrice.ts';
 
@@ -140,13 +141,23 @@ test('ce spune eticheta mânerelor (ADR 0240 §F, `formeScalate`): cercul, arcel
   const d = docDin(STOC,
     { id: 'c', forma: { tip: 'cerc', raza: 10 }, matrice: ID }, { id: 'a', forma: semi, matrice: ID },
     { id: 'rc', forma: { ...R, razaColt: 10 }, matrice: ID }, { id: 'r', forma: R, matrice: ID }, { id: 'o', forma: deschisa, matrice: ID });
-  const nimic = { cerc: false, arce: false, colturi: false, text: false };
+  const nimic = { cerc: false, arce: false, colturi: false, text: false, rotite: false };
   assert.deepEqual(formeScalate(d, 0, ['r', 'o']), nimic);
   assert.deepEqual(formeScalate(d, 0, ['c']), { ...nimic, cerc: true });
   assert.deepEqual(formeScalate(d, 0, ['a', 'r']), { ...nimic, arce: true });
   assert.deepEqual(formeScalate(d, 0, ['rc']), { ...nimic, colturi: true });
-  assert.deepEqual(formeScalate(d, 0, ['c', 'a', 'rc']), { cerc: true, arce: true, colturi: true, text: false });
+  assert.deepEqual(formeScalate(d, 0, ['c', 'a', 'rc']), { cerc: true, arce: true, colturi: true, text: false, rotite: false });
   assert.deepEqual(formeScalate(d, 0, []), nimic);
+  // O instanță rotită oblic (6.V↑d, §F.30): pe o axă, trece prin geometrie (devine o cale); la 90°, nu.
+  d.foi[0]!.instante.find((i) => i.id === 'r')!.rotire = 30;
+  d.foi[0]!.instante.find((i) => i.id === 'o')!.rotire = 90;
+  assert.deepEqual(formeScalate(d, 0, ['r']), { ...nimic, rotite: true });
+  assert.deepEqual(formeScalate(d, 0, ['o']), nimic);
+  // Și un nod rotit oblic în piesă, într-o instanță dreaptă.
+  const u45 = Math.SQRT1_2;
+  const pr = d.piese.find((p) => p.id === 'c')!;
+  const dg: Document = { ...d, piese: d.piese.map((p) => (p === pr ? { ...p, radacina: { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [{ ...pr.radacina, id: 'e', matrice: { a: u45, b: u45, c: -u45, d: u45, e: 0, f: 0 } }] } } : p)) };
+  assert.deepEqual(formeScalate(dg, 0, ['c']), { ...nimic, cerc: true, rotite: true });
 });
 
 /** Abaterea colțurilor curbe ale dreptunghiului 100 × 60 cu R 10, scalat cu (1,5; 1): fiecare cubică, față de cercul colțului ei. */
@@ -201,12 +212,65 @@ test('cercul scalat neuniform devine elipsa generatorului, recunoscută de panou
   }
 });
 
-test('refuzurile: rotirea oblică neuniformă, scara zero sau negativă; piesa pusă de mai multe ori (ADR 0210 §2)', () => {
+test('o formă rotită oblic, scalată pe o axă (ADR 0240 §F.30, 6.V↑d): scalarea în axele foii intră în geometrie, ca înclinarea', () => {
+  // Dreptunghiul 100 × 60 din (10, 20), rotit cu 30°, scalat cu (2; 1) față de (0, 0): instanța (locul, rotirea) rămâne, iar
+  // geometria devine o cale cu fiecare vârf, în lume, egal cu vârful de dinainte, scalat.
   const d = doc1(R);
-  const i0 = d.foi[0]?.instante[0];
-  if (i0) i0.rotire = 30;
-  assert.deepEqual(transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'neuniform-rotit' });
+  const i0 = d.foi[0]!.instante[0]!;
+  i0.rotire = 30;
+  const W = matriceInstanta(i0);
+  const r = transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } });
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  assert.deepEqual(r.instante, [], 'instanța rămâne');
+  const f = r.piese[0]?.radacina.tip === 'element' ? r.piese[0].radacina.forma : null;
+  assert.ok(f?.tip === 'cale' && f.inchis && f.varfuri.length === 4);
+  if (f?.tip !== 'cale') return;
+  const scalate = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 60 }, { x: 0, y: 60 }].map((p) => { const w = aplica(W, p); return { x: 2 * w.x, y: w.y }; });
+  for (const v of f.varfuri) {
+    const w = aplica(W, v.p);
+    assert.ok(scalate.some((s) => Math.abs(s.x - w.x) < 1e-9 && Math.abs(s.y - w.y) < 1e-9), JSON.stringify(w));
+  }
+  // Uniform, ca înainte: exact, prin instanță.
   assert.ok(transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }).ok, 'uniform merge și oblic');
+  // Un cerc R 10 în (50, 50), rotit cu 30°, scalat cu (2; 1) față de centrul lui: curbe la cel mult 0,001 mm de elipsa 20 / 10
+  // din lume; documentul de după trece de ușă.
+  const dc = doc1({ tip: 'cerc', raza: 10 }, 50, 50);
+  dc.foi[0]!.instante[0]!.rotire = 30;
+  const Wc = matriceInstanta(dc.foi[0]!.instante[0]!);
+  const rc = transforma(dc, 0, ['p'], { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 50, y: 50 } });
+  assert.ok(rc.ok);
+  if (!rc.ok) return;
+  const fc = rc.piese[0]?.radacina.tip === 'element' ? rc.piese[0].radacina.forma : null;
+  assert.ok(fc?.tip === 'cale' && fc.varfuri.every((v) => v.s.tip === 'C'));
+  if (fc?.tip !== 'cale') return;
+  let max = 0;
+  fc.varfuri.forEach((a, k) => {
+    const b = fc.varfuri[(k + 1) % fc.varfuri.length]!;
+    if (a.s.tip !== 'C') return;
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40, u = 1 - t, s = a.s;
+      const q = aplica(Wc, {
+        x: u * u * u * a.p.x + 3 * u * u * t * s.c1.x + 3 * u * t * t * s.c2.x + t * t * t * b.p.x,
+        y: u * u * u * a.p.y + 3 * u * u * t * s.c1.y + 3 * u * t * t * s.c2.y + t * t * t * b.p.y,
+      });
+      max = Math.max(max, Math.abs(Math.hypot((q.x - 50) / 2, q.y - 50) - 10) * 2);
+    }
+  });
+  assert.ok(max <= 0.001, String(max));
+  assert.ok(incarca(JSON.parse(JSON.stringify({ ...dc, piese: rc.piese }))).ok);
+  // Un nod rotit oblic într-un grup (instanța la 0°): la fel, prin geometrie, fără refuz.
+  const dg = docDin(STOC, { id: 'p', forma: R, matrice: { ...ID, e: 10, f: 20 } });
+  const pz = dg.piese[0]!;
+  const u45 = Math.SQRT1_2;
+  const grup = { tip: 'grup' as const, id: 'g', matrice: { ...ID }, copii: [{ ...pz.radacina, id: 'e', matrice: { a: u45, b: u45, c: -u45, d: u45, e: 0, f: 0 } }] };
+  const rg = transforma({ ...dg, piese: [{ ...pz, radacina: grup }] }, 0, ['p'], { fel: 'scalare', sx: 1, sy: 3, ancora: { x: 0, y: 0 } });
+  assert.ok(rg.ok);
+  const eg = rg.ok && rg.piese[0]?.radacina.tip === 'grup' ? rg.piese[0].radacina.copii[0] : null;
+  assert.ok(eg?.tip === 'element' && eg.forma.tip === 'cale');
+});
+
+test('refuzurile: scara zero sau negativă; piesa pusă de mai multe ori (ADR 0210 §2)', () => {
   for (const s of [0, -1, Number.NaN]) assert.deepEqual(transforma(doc1(R), 0, ['p'], { fel: 'scalare', sx: s, sy: 1, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'scara-invalida' });
   // O piesă pusă de mai multe ori se scalează pentru toate: piesa o dată, locul doar al instanței alese.
   const imp = doc1(R);

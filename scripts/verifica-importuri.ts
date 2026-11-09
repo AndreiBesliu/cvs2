@@ -28,6 +28,7 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['post-doar-ir', 'test/capcane/post/importa-app.ts'],
   ['sim-doar-ir', 'test/capcane/sim/importa-app.ts'],
   ['bazinul-fara-interfata', 'test/capcane/jobs/importa-ui.ts'],
+  ['trasare-izolat', 'test/capcane/trasare/importa-ui.ts'],
   ['functiile-doar-shared', 'test/capcane/functions/importa-src.ts'],
   ['masina-fara-post-si-document', 'test/capcane/machine/importa-geom.ts'],
   ['cavalier-doar-prin-fatada', 'test/capcane/geom/importa-cavalier.ts'],

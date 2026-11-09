@@ -37,7 +37,7 @@ export const ACTIUNI_IMPORT: readonly Actiune<ContextImport>[] = [
       if (!f) return;
       const unitate = ctx.unitate?.();
       const pagina = ctx.pagina?.();
-      const o = { pxPeTol: ctx.pxPeTol(), limba: ctx.limba(), unitateWmf: ctx.unitateWmf?.(), ...(unitate ? { unitate } : {}), ...(pagina ? { pagina } : {}) };
+      const o = { pxPeTol: ctx.pxPeTol(), limba: ctx.limba(), unitateWmf: ctx.unitateWmf?.(), trasare: ctx.trasare?.(), semnal: ctx.semnal, ...(unitate ? { unitate } : {}), ...(pagina ? { pagina } : {}) };
       void previzualizeaza(f, o).then(ctx.rezultat, (e: unknown) => {
         ctx.jurnal?.(e);
         ctx.rezultat({ ok: false, cod: 'parsare', detaliu: e instanceof Error ? e.message : String(e) });

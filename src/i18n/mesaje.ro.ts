@@ -147,7 +147,7 @@ export const ro = {
   'actualizare.dupa-lucrare.titlu': 'O lucrare merge pe mașină: o pagină reîncărcată acum ar opri-o la mijloc.',
   'admin.cere-retea': 'Pagina de administrare cere rețea: reîncarcă pagina când ai rețea.',
   'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',
-  'actiune.importa-svg': 'Importă SVG / DXF / PDF / AI / EPS / WMF…',
+  'actiune.importa-svg': 'Importă SVG / DXF / PDF / AI / EPS / WMF / imagine…',
   'import.lasa-aici': 'Lasă fișierele SVG aici: fiecare cade cu centrul unde îl lași',
   'actiune.importa': 'Importă',
   'motiv.import-refuzat': 'Desenul importat n-ar trece de verificarea proiectului: proiectul n-ar mai putea fi deschis.',

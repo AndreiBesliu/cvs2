@@ -142,3 +142,28 @@ test('lăsat pe planșă (2.8b): centrul cutiei desenului cade în punctul lăsa
   const [j] = fara.h().doc.foi[0]?.instante ?? [];
   assert.deepEqual([j?.x, j?.y], [20, 30]);
 });
+
+test('importul adus împreună (culorile unei imagini, ADR 0221 §6): toate piesele într-un pas, aliniate, selectate', () => {
+  const pg = (nume: string, x: number, y: number): ImportPregatit =>
+    pregateste({ nume, cai: [{ varfuri: patrat(x, y, 20) }], laturi: ['exterior'], pagina: { latime: 200, inaltime: 150 } });
+  const trei: ImportPregatit = { ...pg('logo #c82828', 10, 20), impreuna: [pg('logo #08609c', 50, 20), pg('logo #353c45', 90, 60)] };
+  const ctx = context(trei);
+  assert.deepEqual(stare(registru, 'document.importa', ctx), { ok: true });
+  ruleaza(registru, 'document.importa', ctx);
+  const h = ctx.h();
+  assert.equal(h.trecut.length, 1);
+  assert.deepEqual(h.doc.piese.map((p) => p.nume), ['logo #c82828', 'logo #08609c', 'logo #353c45']);
+  const inst = h.doc.foi[0]?.instante ?? [];
+  // Fiecare la locul ei din pagină: aliniate între ele ca în imagine.
+  assert.deepEqual(inst.map((i) => [i.x, i.y]), [[10, 20], [50, 20], [90, 60]]);
+  assert.equal(new Set(inst.map((i) => i.id)).size, 3);
+  assert.deepEqual(ctx.sel(), inst.map((i) => i.id));
+  // Un singur Ctrl+Z le scoate pe toate.
+  ruleaza(registru, 'istoric.anuleaza', ctx);
+  assert.equal(ctx.h().doc.piese.length, 0);
+  assert.equal(ctx.h().doc.foi[0]?.instante.length, 0);
+  // Lăsate pe planșă: centrul cutiei comune (10–110 × 20–80) cade în punctul lăsat; fiecare rămâne la locul ei față de celelalte.
+  const lasat = { ...context(trei), locImport: () => ({ x: 200, y: 100 }) };
+  ruleaza(registru, 'document.importa', lasat);
+  assert.deepEqual((lasat.h().doc.foi[0]?.instante ?? []).map((i) => [i.x, i.y]), [[150, 70], [190, 70], [230, 110]]);
+});

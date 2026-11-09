@@ -25,7 +25,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   // Martorul probei de mai jos: cu `?test`, bucata panoului e cerută.
   expect(cereri.some(bucataTestului)).toBe(true);
   await expect(panou(page)).toContainText('Fereastra și versiunea');
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 33 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 35 rămase');
 
   // Bine, apoi focusul e al paginii: tasta R alege dreptunghiul.
   await panou(page).locator('[data-test-stare="bine"]').click();
@@ -43,7 +43,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   await panou(page).locator('[data-test="inainte"]').click();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');
   await panou(page).locator('[data-test-stare="nu"]').click();
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 31 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 33 rămase');
 
   // Reîncărcarea: rezultatele, pasul și poza rămân (în browser). Scrierea în bază e asincronă: reîncărcarea vine după ce „Nu”
   // a ajuns acolo (pe CI, 30.10, o reîncărcare imediată l-a pierdut).
@@ -64,7 +64,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   // Adresa păstrează `?test`: după reîncărcare, panoul se deschide singur.
   await page.reload();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 31 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 33 rămase');
   await panou(page).locator('[data-test="pas"]').selectOption('0');
   await expect(panou(page)).toContainText('Poze la pasul acesta: 1');
   await expect(panou(page).locator('[data-test="nota"]')).toHaveValue('rotunjirea arată bine');
@@ -76,7 +76,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   expect(d.suggestedFilename()).toMatch(/^raport-test-unelte-desen-\d{4}-\d{2}-\d{2}-\d{4}\.html$/);
   const html = readFileSync(await d.path(), 'utf8');
   expect(html).toContain('<h1>Testul uneltelor de desen</h1>');
-  expect(html).toContain('1 bine · 1 nu · 0 sărite · 31 rămase');
+  expect(html).toContain('1 bine · 1 nu · 0 sărite · 33 rămase');
   expect(html).toContain('<b>Nota:</b> rotunjirea arată bine');
   const poze = [...html.matchAll(/<img data-pas="([a-z-]+)" src="(data:image\/png;base64,[^"]+)"/g)];
   expect(poze.map((m) => m[1])).toEqual(['p-deschide']);
@@ -108,7 +108,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   await panou(page).locator('[data-test="reia"]').click();
   await expect(panou(page).locator('[data-test="reia"]')).toHaveText('Da, șterge rezultatele și pozele');
   await panou(page).locator('[data-test="reia"]').click();
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 33 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 35 rămase');
   await expect(panou(page)).toContainText('Poze la pasul acesta: 0');
   expect(erori).toEqual([]);
 });

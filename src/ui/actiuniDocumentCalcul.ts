@@ -50,37 +50,44 @@ import {
  */
 
 /**
- * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas. Documentul de după trebuie să treacă de
- * plafoane și de ușa documentului întreagă: ce intră prin import se și redeschide. Ținută pe (document, import): `activa`
- * și `ruleaza` cer aceeași judecată. Piesa o face constructorul adus cu importul, cu freza și grosimea foii curente
- * (adâncimea căilor deschise, ADR 0037 §11).
+ * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas; cu piesele aduse împreună (culorile unei
+ * imagini, ADR 0221 §6), toate în același pas, fiecare la locul ei din pagină (lăsate pe planșă, centrul cutiei lor comune
+ * cade în punctul lăsat). Documentul de după trebuie să treacă de plafoane și de ușa documentului întreagă: ce intră prin
+ * import se și redeschide. Ținută pe (document, import): `activa` și `ruleaza` cer aceeași judecată. Piesa o face
+ * constructorul adus cu importul, cu freza și grosimea foii curente (adâncimea căilor deschise, ADR 0037 §11).
  */
-type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
+type ComandaImport =
+  | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
+  | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
 type Loc = { readonly x: number; readonly y: number } | null;
 let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; foaie: string | undefined; rez: ComandaImport } | null = null;
 function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie: string | undefined): ComandaImport {
   const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
   if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)
     && ultimulImport.foaie === idFoaie) return ultimulImport.rez;
-  const id = idNou(doc);
   const scula = sculaFoii(doc, idFoaie);
-  const pus = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc, idFoaie).stoc.grosime });
-  const { piesa } = pus;
-  // Lăsat pe planșă: centrul cutiei desenului în punctul lăsat; altfel, locul din pagina fișierului.
-  const x = la ? la.x - pus.latime / 2 : pus.x;
-  const y = la ? la.y - pus.inaltime / 2 : pus.y;
-  const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
-  const elemente = pregatit.cai.length;
+  const foaie = foaieCurenta(doc, idFoaie);
+  const ocupate = new Set<string>();
+  const puse = [pregatit, ...(pregatit.impreuna ?? [])].map((p) => {
+    const id = idNou(doc, ocupate);
+    ocupate.add(id);
+    return { id, p, pus: p.piesa(id, { ...(scula ? { scula } : {}), grosime: foaie.stoc.grosime }) };
+  });
+  // Lăsat pe planșă: centrul cutiei desenelor în punctul lăsat; altfel, locul din pagina fișierului.
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const { pus } of puse) { x0 = Math.min(x0, pus.x); y0 = Math.min(y0, pus.y); x1 = Math.max(x1, pus.x + pus.latime); y1 = Math.max(y1, pus.y + pus.inaltime); }
+  const dx = la ? la.x - (x0 + x1) / 2 : 0, dy = la ? la.y - (y0 + y1) / 2 : 0;
+  let varfuri = 0, elemente = 0, operatii = 0;
+  for (const { p, pus } of puse) { varfuri += p.cai.reduce((s, c) => s + c.varfuri.length, 0); elemente += p.cai.length; operatii += pus.piesa.operatii.length; }
   let rez: ComandaImport;
-  if (!incape(doc, { noduri: elemente + 1, instante: 1, elementeLume: elemente, operatii: piesa.operatii.length, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
+  if (!incape(doc, { noduri: elemente + puse.length, instante: puse.length, elementeLume: elemente, operatii, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
-    const foaie = foaieCurenta(doc, idFoaie);
-    const comanda: Comanda = {
-      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x, y, rotire: 0 }, pozitie: foaie.instante.length,
-      piesa: { piesa, pozitie: doc.piese.length },
-    };
-    rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+    const comanda = pas(puse.map(({ id, pus }, i): Comanda => ({
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: pus.x + dx, y: pus.y + dy, rotire: 0 }, pozitie: foaie.instante.length + i,
+      piesa: { piesa: pus.piesa, pozitie: doc.piese.length + i },
+    }))) as Comanda;
+    rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, ids: puse.map((q) => q.id) } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
   ultimulImport = { doc, pregatit, la, foaie: idFoaie, rez };
   return rez;
@@ -374,7 +381,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
-      ctx.selecteaza([r.id]);
+      ctx.selecteaza([...r.ids]);
     },
   },
   'document.aplica-operatii': {

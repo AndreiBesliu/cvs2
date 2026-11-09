@@ -13,7 +13,7 @@ import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { doarFoaia, indexFoaieActiva, locuriFoi, materialFoaie, numeFoaie } from '../model/foi.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
-import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
@@ -596,6 +596,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const doc = istoric.doc;
   // Foaia activă (ADR 0210 §1): pânza, lista, panoul, traseul și exportul sunt ale ei.
   const foaie = doc.foi[indexActiva] ?? documentNou(FOAIA_IMPLICITA).foi[0];
+  // Freza foii active, cât e deschis importul: liniile mediane ale unei imagini o compară cu grosimea trăsăturilor (ADR 0222 §5).
+  const frezaImport = coadaImport ? sculaFoii(doc, foaie?.id)?.diametru : undefined;
   const foaieStoc = foaie?.stoc;
   /** „Foaia N”, numele arătat al unei foi fără nume (ADR 0210 §1). */
   const sablonFoaie = (n: number): string => t('foaia.n', { n: String(n) });
@@ -1028,12 +1030,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * Contextul ușilor pentru un fișier și alegerile lui (px-ul unui SVG, unitatea unui DXF sau a unui WMF fără antet, pagina
    * unui PDF); citirea lui o face dialogul (`ImportConectat`).
    */
-  const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
+  const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void, semnal?: AbortSignal): ContextImport => ({
+    ...(semnal ? { semnal } : {}),
     fisier: () => f,
     pxPeTol: () => a.pxPeTol,
     unitate: () => a.unitate,
     unitateWmf: () => a.unitateWmf,
     pagina: () => a.pagina,
+    trasare: () => a.trasare,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,
@@ -1335,7 +1339,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </div>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf" multiple hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf,.png,.jpg,.jpeg,.jfif,.webp,.gif,.bmp,.tif,.tiff" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru" inert={acoperita}>
           <Panza
@@ -1421,7 +1425,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {/* Fereastra extensiei deschise (ADR 0160 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}
         <section className="fereastra-extensie" id="loc-spatiu-extensie" aria-label={extensie?.nume}
           hidden={fereastra !== FEREASTRA_EXTENSIE || extensie === null} />
-        <footer className="jos">{grupuri('jos')}</footer>
+        {/* Locul rândului tastelor (ADR 0240 §E.25), umplut de `Editare` cât unealta aleasă are taste. */}
+        <footer className="jos">{grupuri('jos')}<div className="loc-taste" id="loc-taste" /></footer>
       </div>
       {paleta && (
         <Suspense fallback={null}>
@@ -1475,6 +1480,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           fisiere={coadaImport.fisiere}
           punct={coadaImport.punct}
           {...(coadaImport.de === undefined ? {} : { de: coadaImport.de })}
+          {...(frezaImport === undefined ? {} : { freza: frezaImport })}
           registruImport={registruImport}
           contextImport={contextImport}
           stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}
