@@ -6923,3 +6923,18 @@ făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
   așteptat o dată butonul „Din desen…” după deschiderea proiectului, înaintea oricărui câmp; singură, 6 din 6, apoi și în
   rularea întreagă). Otrava `E06` din `test/otravuri/3.6k.py` aduce înapoi textul vechi. Mărimea: totalul 573,1 / 600,
   build-ul determinist.
+
+## 2026-11-09 — 3.6p–3.6r: imprimarea văzută din cvs2 (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, după 3.6o și reparația probei 3.6k; urmează grupul 2 din cele șapte grupuri de
+îmbunătățiri ale legăturii prin WiFi, din 08.11: stratul viu, anularea unei singure piese, pauza la un strat).
+**Started:** 09.11, 16:21. **Completed:** —
+
+- **Cercetarea:** transcrierea din 07.11 (starea la ~3 s; `curPosition` cu X și Y bune, Z „00” cât imprimă și valori în
+  afara patului cât se pregătește; `layer` între două numărători la 5 una de alta; `usedMaterialLength` lin; cadrul
+  `objects`); sursa Klipper a seriei K1 (straturile numărate după comentariile fișierului, `SET_PRINT_STATS_INFO`,
+  `EXCLUDE_OBJECT` care refuză piesa de acum); OrcaSlicer (numele pieselor); forumul Creality (`PAUSE` din fișier merge pe
+  K1 fără root, la începutul stratului).
+- **Propunerea** (ADR 0193, propus): 3.6p pauza la un strat, 3.6q placa cu stratul viu, 3.6r anularea unei piese; patru
+  întrebări care se exclud (schița, anularea prin `gcodeCmd`, piesa de acum, unde se țin pauzele). Schița, cu formularul:
+  <https://claude.ai/artifact/5h1Y3RFM7wZvhZXzhMLNBw>. Codul vine după răspunsuri și după schiță.
