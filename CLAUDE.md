@@ -717,12 +717,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Pe ramură, pornirea neschimbată și totalul +2,1 kB. Pe canalul `ancore` al instanței de test:
   <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12). **După unire, cu incrustațiile: pornirea 101,8 (cu
   ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
-  **6.V↑d, opțiunile („Da, 6.V↑d acum”)**, gata pe 08.11 pe aceeași ramură, neunită: „Ce ține fix Alt” (`cncvs2.alt-fix`:
+  **6.V↑d, opțiunile („Da, 6.V↑d acum”)**, gata pe 08.11 pe aceeași ramură, **unită în `main` pe 09.11** („Da, unește”;
+  `e481e55`): „Ce ține fix Alt” (`cncvs2.alt-fix`:
   ancora sau centrul cutiei, și la rotire), „De unde pornește cercul” (`cncvs2.cerc-mod`: din centru sau din colț, ca elipsa
   cu Shift), poligonul întins cu Ctrl, **rândul tastelor în bara de jos** (locul `loc-taste` din `App.tsx`, umplut de
   editor), **X / Y ale ancorei în panoul de proprietăți** (starea `ancoraPanou`, împărțită de editor și panou), iar **o formă
-  rotită oblic, scalată pe o axă, trece prin geometrie** (ca înclinarea), fără refuz. Totalul 546,4 → 547,9 / 600 kB,
-  pornirea 101,8 (cu ușa 105,5 / 110).
+  rotită oblic, scalată pe o axă, trece prin geometrie** (ca înclinarea), fără refuz. Pe ramură, totalul +1,5 kB; testul din
+  aplicație are acum 35 de pași („Opțiunile desenului” e pasul 6, „Opțiunile transformării” 14). **După unire, cu trasarea:
+  pornirea 101,9 (cu ușa 105,6 / 110 kB), totalul 578,8 / 600, /admin 106,5 / 200, contul 29,6 / 32; sub plafon mai încap
+  ~21 kB.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -935,6 +938,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **6.V↑d unită în `main`** („Da, unește”, în sesiunea ancorelor, după raportul ei: „Dacă e bine, spune
+  „unește”. Ramura o unește în `main` sesiunea principală.”): linia ancorelor (ADR 0240) e întreagă în `main`; conflicte doar
+  în documente, păstrate ambele părți.
 - 09.11.2026: **linia trasării din imagine (25.1↑–25.3↑b) unită în `main`** („Yes, merge trasarea”, la „Merge trasarea
   into main now?”, după „vezi ce mai este gata de unit cu main”): singura linie gata care încape sub plafon. Tăierea și
   planșele aduc întâi `main` în ramură (conflicte de cod cu ancorele), imprimanta așteaptă proba plăcii pe K1C (condiția

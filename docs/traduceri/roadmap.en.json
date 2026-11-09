@@ -349,6 +349,10 @@
       "ro": "Reparațiile din verificarea vectorilor, aduse din etapa 10",
       "en": "The repairs in the vector check, brought forward from stage 10"
     },
+    "1e88f9e29e0e1491": {
+      "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 11 „Mânerele”, 12 „Ancora” și 13 „Colțurile rotunjite”",
+      "en": "Trying the transform anchor and keys on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c merged into `main` and published on 08.11): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 11 “Handles”, 12 “Anchor” and 13 “Rounded corners”"
+    },
     "1ea6b137708996c6": {
       "ro": "Intrările compuse cu rampa: rampa pe sfertul intrării (ADR 0031; din 10.10, nu „bucla tăiată continuu”: invarianta 1 cere ieșirea coborâtă cu un pas la fiecare trecere)",
       "en": "Lead-ins combined with the ramp: the ramp on the lead-in quarter (ADR 0031; since 10.10, not “the loop cut continuously”: invariant 1 requires the lead-out lowered by one step on every pass)"
@@ -392,6 +396,10 @@
     "23042c52d5cc20d4": {
       "ro": "Sensul de tăiere pe operație (ADR 0027, documentul v4 cu migrarea v3 → v4), implicit urcare (decizia owner-ului); dialogul are coloana Sens; numerele cu virgulă în română; placa 1 regenerată. **Recenzia (0,48 M, 22 min) a prins o greșeală critică a contractului:** prima versiune a ADR-ului avea regula întoarsă (urcare = materialul în stânga), preluată din notițele ediției întâi; aplicația o urma întocmai, deci „urcare” tăia în opoziție, iar testele care copiau tabelul treceau. Reparat înainte de orice publicare: urcare = materialul păstrat în DREAPTA (G41 + M3); gaura rămâne în G3, insula trece în G2; convenția e ancorată într-un test fizic (modelul așchiei), care pică pe tabelul vechi. Oracolul (sesiune independentă, 0,62 M, 116 min, construit pe tabelul reparat și pe un model propriu al așchiei): documentul v4 și invarianta 9 în poartă; 370 de cazuri de lipire, 806 bucle judecate, fără încălcări; 40 de sabotaje, prinse. E2e-ul exportului dă porții documentul salvat (invariantele 2 și 9 pe programul din browser). Otrăvuri: 16 din 16 prinse. **Treceri:** (1) contractul și aplicația; (2) recenzia și tabelul reparat; (3) oracolul; (4) otrăvurile. 1434 de teste unitare, 37 e2e.",
       "en": "Cutting direction per operation (ADR 0027, document v4 with the v3 → v4 migration), climb by default (the owner's decision); the dialog has a Direction column; numbers with a comma in Romanian; plate 1 regenerated. **The review (0.48 M, 22 min) caught a critical mistake in the contract:** the ADR's first version had the rule backwards (climb = material on the left), taken from the first edition's notes; the app followed it exactly, so “climb” cut conventional, and the tests that copied the table passed. Fixed before any publishing: climb = kept material on the RIGHT (G41 + M3); the hole stays G3, the island becomes G2; the convention is anchored in a physical test (the chip model), which fails on the old table. The oracle (independent session, 0.62 M, 116 min, built on the fixed table and its own chip model): document v4 and invariant 9 in the gate; 370 snapping cases, 806 loops judged, no violations; 40 sabotages, caught. The export e2e gives the gate the saved document (invariants 2 and 9 on the program from the browser). Poisons: 16 of 16 caught. **Passes:** (1) the contract and the app; (2) the review and the fixed table; (3) the oracle; (4) the poisons. 1434 unit tests, 37 e2e."
+    },
+    "231d43e40f2e6e47": {
+      "ro": "Încercarea trasării pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 25.1↑–25.3↑b unite în `main` și publicate pe 09.11): din „Importă…”, logoul tău sau o imagine pe care o trasezi de obicei (un desen scanat, o poză, un logo de client), alb-negru (25.1↑), cu Sursa: Culorile, pe culori (25.2↑): numărul automat sau din glisor, pastilele, legarea prin tragere, Importă cu o piesă pe culoare; și, cu Rezultatul: Linii mediane (25.3↑), o semnătură sau un scris de mână: liniile, joncțiunile, grosimea față de freza foii, Importă cu totul pe linie. Spune unde iese mai rău decât în ediția întâi sau în ArtCAM (ADR 0220, 0221 și 0222, „Se redeschide dacă”); imaginile trimise intră în corpus (răspunsul 8a)",
+      "en": "Trying the tracing on the main test address (<https://cncvectorstudio-test.web.app/>; 25.1↑–25.3↑b merged into `main` and published on 09.11): from “Import…”, your logo or an image you usually trace (a scanned drawing, a photo, a client’s logo), in black and white (25.1↑), with Source: Colours, by colour (25.2↑): the automatic number or the slider, the swatches, linking by dragging, Import with one part per colour; and, with Result: Centre lines (25.3↑), a signature or handwriting: the lines, the junctions, the width against the sheet’s cutter, Import with everything on the line. Say where it comes out worse than in the first edition or in ArtCAM (ADR 0220, 0221 and 0222, “Reopened if”); the images you send go into the corpus (answer 8a)"
     },
     "231fe608e7d39571": {
       "ro": "Caneluri, teșire, Raised Round, freze desenate",
@@ -585,6 +593,10 @@
       "ro": "**Poarta invariantelor completă** și unealta de otrăvuri (§4.3), cu cele 7 otrăvuri din s4.",
       "en": "**The complete invariant gate** and the poison tool (§4.3), with the 7 poisons from s4."
     },
+    "321c2a50f1948334": {
+      "ro": "6.V↑d pe test",
+      "en": "6.V↑d on test"
+    },
     "324c01f4f6f85b73": {
       "ro": "Pe **live**, înaintea comutării (inventarul de mai jos): bucket-ul `gs://cncvectorstudio-backup` în `us-central1` (îl poate crea asistentul, la cerere); apoi `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell (WIF, contul de publicare, contul backup-ului, PITR); mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044); protecția la ștergere a bazei (recomandată); un export manual chiar înaintea comutării. Pe test: făcut pe 18.10",
       "en": "On **live**, before switching over (the inventory below): the `gs://cncvectorstudio-backup` bucket in `us-central1` (the assistant can create it, on request); then `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` in Cloud Shell (WIF, the publishing account, the backup account, PITR); the GitHub `live` environment with **Required reviewers** and `main` only, with the variables printed by the script (ADR 0044); delete protection on the database (recommended); a manual export right before switching over. On test: done on 18.10"
@@ -777,10 +789,6 @@
       "ro": "Profil cu urechi, intrări, sens; dog-bone / T-bone",
       "en": "Profile with tabs, lead-ins, direction; dog-bone / T-bone"
     },
-    "423d41033df9eb34": {
-      "ro": "când vrei; pe canal sunt și liniile mediane corectate după logoul tău (08.11: colțurile literelor și ale urechilor, joncțiunea lui „e”)",
-      "en": "whenever you like; the channel also has the centre lines corrected after your logo (08.11: the corners of the letters and the ears, the junction of the “e”)"
-    },
     "42519929dcaf879a": {
       "ro": "**Gazda extensiilor** (fără mașină; ADR 0127; a doua felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da”, la „Pornesc felia următoare, 3.Xa, gazda extensiilor?”). Extensiile se instalează, nu fac parte din aplicație: un pachet `.zip` cu `extensie.json` (id, versiunea, `api` 1, intrarea, stilurile, permisiunile din catalog, SHA-256 pe fișier), din fișier, de la o adresă HTTPS sau prin linkul `#instaleaza=`, cu confirmarea omului, în IndexedDB. Butonul Extensii stă lângă marcă; spațiul extensiei ia locul pânzei, cu numele ei și „Înapoi la planșă” deasupra (lângă marcă nu e loc la 1280 px), iar acțiunile documentului nu rulează cât e deschis. Extensia rulează într-un cadru izolat (iframe cu sandbox și `srcdoc`, încărcătorul cu amprenta în CSP, un CSP propriu fără rețea), cu `HostApi` v1 prin `MessagePort`; CSP-ul aplicației primește `blob:`, amprenta și `https:`. Extensia de probă `extensii/salut`, împachetatorul, două reguli de import cu capcanele lor, capitolul din manual. Probele: 12 teste unitare noi, 3 e2e în Edge (instalarea, izolarea încercată din cadru, linkul), 32 / 32 de otrăvuri prinse (una, după o probă nouă).",
       "en": "**The extension host** (no machine; ADR 0127; the second slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da”, to “Shall I start the next slice, 3.Xa, the extension host?”). Extensions are installed, not part of the app: a `.zip` package with `extensie.json` (id, version, `api` 1, entry, styles, permissions from the catalog, SHA-256 per file), from a file, from an HTTPS address or through the `#instaleaza=` link, with the person’s confirmation, in IndexedDB. The Extensions button sits next to the brand; the extension’s workspace takes the canvas’s place, with its name and “Back to the sheet” above it (there’s no room next to the brand at 1280 px), and document actions don’t run while it’s open. The extension runs in an isolated frame (a sandboxed iframe with `srcdoc`, the loader with its hash in the CSP, a CSP of its own without network), with `HostApi` v1 through a `MessagePort`; the app’s CSP gets `blob:`, the hash and `https:`. The probe extension `extensii/salut`, the packer, two import rules with their traps, the manual chapter. The proofs: 12 new unit tests, 3 e2e in Edge (installing, the isolation tried from inside the frame, the link), 32 / 32 poisons caught (one after a new test)."
@@ -860,6 +868,10 @@
     "48b4b815f5b981aa": {
       "ro": "Estimarea timpului cu modelul planificatorului GRBL și rezumatul jobului, comparate cu cronometrul plăcilor 2 și 3.",
       "en": "Time estimate with the GRBL planner model and the job summary, compared with the stopwatch on plates 2 and 3."
+    },
+    "49023609a248b1f1": {
+      "ro": "când vrei; liniile mediane sunt cele corectate după logoul tău (08.11: colțurile literelor și ale urechilor, joncțiunea lui „e”)",
+      "en": "whenever you like; the centre lines are the ones corrected after your logo (08.11: the corners of the letters and the ears, the junction of the “e”)"
     },
     "490e21c559fce6fb": {
       "ro": "CI rapid: `tsc`, regulile de import cu capcana, testele, build-ul determinist, lista albă de licențe; cârligul `git add -A`",
@@ -1120,6 +1132,10 @@
     "5fe5a4a2184ea2db": {
       "ro": "Alinierea ca bloc",
       "en": "Aligning as a block"
+    },
+    "61216cb7bba77539": {
+      "ro": "25.1↑–25.3↑b pe test",
+      "en": "25.1↑–25.3↑b on test"
     },
     "612f682f4c69fc17": {
       "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",
@@ -1536,10 +1552,6 @@
     "8b7d4dbed71f5550": {
       "ro": "Meniul contului",
       "en": "The account menu"
-    },
-    "8b9181a019633638": {
-      "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 10 „Mânerele”, 11 „Ancora” și 12 „Colțurile rotunjite”",
-      "en": "Trying the transform anchor and keys on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c merged into `main` and published on 08.11): in the in-app test, steps 3–5 (drawing with Shift, Alt and Ctrl), 10 “Handles”, 11 “Anchor” and 12 “Rounded corners”"
     },
     "8b973fa451e18232": {
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
@@ -1989,10 +2001,6 @@
       "ro": "Simularea",
       "en": "Simulation"
     },
-    "b52fa600758895b5": {
-      "ro": "6.V↑d în `main`",
-      "en": "6.V↑d in `main`"
-    },
     "b585e6ff16935d58": {
       "ro": "6.V↑–6.V↑c pe test",
       "en": "6.V↑–6.V↑c on test"
@@ -2152,10 +2160,6 @@
     "c13aacc11d5d7cec": {
       "ro": "Trasare din imagine (importul avansează)",
       "en": "Tracing from an image (import moves forward)"
-    },
-    "c169bd253df01918": {
-      "ro": "Încercarea opțiunilor ancorei și ale tastelor (6.V↑d) pe canalul `ancore` (<https://cncvectorstudio-test--ancore-vy17zado.web.app/?test>): în testul din aplicație, pașii „Opțiunile desenului” și „Opțiunile transformării”; apoi „unește” sesiunii principale",
-      "en": "Trying the options of the anchor and keys (6.V↑d) on the `ancore` channel (<https://cncvectorstudio-test--ancore-vy17zado.web.app/?test>): in the in-app test, the “Drawing options” and “Transform options” steps; then “unește” (merge) to the main session"
     },
     "c18376b038bc74d6": {
       "ro": "Incrustațiile",
@@ -2617,10 +2621,6 @@
       "ro": "3.5 (transcrierile rejucate pe emulator) și prima felie a etapei",
       "en": "3.5 (the transcripts replayed on the emulator) and the stage's first slice"
     },
-    "ef2cfe607c9a7b25": {
-      "ro": "Încercarea trasării pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>): din „Importă…”, logoul tău sau o imagine pe care o trasezi de obicei (un desen scanat, o poză, un logo de client), alb-negru (25.1↑), cu Sursa: Culorile, pe culori (25.2↑): numărul automat sau din glisor, pastilele, legarea prin tragere, Importă cu o piesă pe culoare; și, cu Rezultatul: Linii mediane (25.3↑), o semnătură sau un scris de mână: liniile, joncțiunile, grosimea față de freza foii, Importă cu totul pe linie. Spune unde iese mai rău decât în ediția întâi sau în ArtCAM (ADR 0220, 0221 și 0222, „Se redeschide dacă”); imaginile trimise intră în corpus (răspunsul 8a)",
-      "en": "Trying the tracing on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>): from “Import…”, your logo or an image you usually trace (a scanned drawing, a photo, a client’s logo), in black and white (25.1↑), with Source: Colours, by colour (25.2↑): the automatic number or the slider, the swatches, linking by dragging, Import with one part per colour; and, with Result: Centre lines (25.3↑), a signature or handwriting: the lines, the junctions, the width against the sheet’s cutter, Import with everything on the line. Say where it comes out worse than in the first edition or in ArtCAM (ADR 0220, 0221 and 0222, “Reopened if”); the images you send go into the corpus (answer 8a)"
-    },
     "ef590086e8e244da": {
       "ro": "STL-ul de referință în trepte + semisfera",
       "en": "the stepped reference STL + the hemisphere"
@@ -2660,6 +2660,10 @@
     "f3382346df64579e": {
       "ro": "Oracolul independent al ușii documentului v11–v18",
       "en": "The independent oracle of the v11–v18 document door"
+    },
+    "f34ef4bec3d12bca": {
+      "ro": "Încercarea opțiunilor ancorei și ale tastelor (6.V↑d) pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑d unită în `main` și publicată pe 09.11): în testul din aplicație, pașii 6 „Opțiunile desenului” și 14 „Opțiunile transformării”",
+      "en": "Trying the options of the anchor and keys (6.V↑d) on the main test address (<https://cncvectorstudio-test.web.app/?test>; 6.V↑d merged into `main` and published on 09.11): in the in-app test, steps 6 “Drawing options” and 14 “Transform options”"
     },
     "f36efad36bd5ad69": {
       "ro": "Corpusul de aur al documentului, adus din etapa 4",
@@ -2776,14 +2780,6 @@
     "fd187f6e7097a463": {
       "ro": "Extensia e „pornită” abia după ce pagina ei e gata",
       "en": "The extension is “started” only once its page is ready"
-    },
-    "fd21d28a21eb3019": {
-      "ro": "după publicarea pe canal",
-      "en": "after the channel publication"
-    },
-    "fd23b6b37d5f5e01": {
-      "ro": "25.1↑, 25.2↑ și 25.3↑",
-      "en": "25.1↑, 25.2↑ and 25.3↑"
     },
     "fd24b6d3ddb56f60": {
       "ro": "Elipsa e un cerc sub o matrice neuniformă",
