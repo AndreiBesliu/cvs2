@@ -20,7 +20,9 @@ import {
 import { instantaLa } from '../model/alegere.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
 import { blocText } from '../model/blocText.ts';
+import { blocuriPiesei } from '../model/placute.ts';
 import { PanouText } from './PanouText.tsx';
+import { textLovit, texteGrupate } from './texteGrupate.ts';
 import {
   capatConstrans, cerculElipsa, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, tasteUneltei, UNELTE, type FormaDesenata, type ModCerc,
   type Unealta, type UnealtaDesen,
@@ -1061,15 +1063,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [ancoraText, setAncoraText] = useState<Punct | null>(null);
   const [curbaText, setCurbaText] = useState<{ readonly contur: Contur; readonly s: number } | null>(null);
   useEffect(() => { if (unealta !== 'text') { setAncoraText(null); setCurbaText(null); } }, [unealta]);
+  // Textul grupat ales la clic într-un șablon cu ramă (ADR 0210 §4, felia 11.4↑c), pe instanța lui.
+  const [grupText, setGrupText] = useState<{ readonly instanta: string; readonly grup: string } | null>(null);
   const textAles = useMemo(() => {
     if (selectie.length !== 1) return null;
     const inst = doc.foi[indexFoaie]?.instante.find((i) => i.id === selectie[0]);
     const piesa = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
-    const bloc = piesa ? blocText(piesa.radacina) : null;
+    if (!inst || !piesa) return null;
+    // Textul: chiar piesa (blocul pe rădăcină), sau, într-un șablon cu ramă, textul ales la clic (altfel primul din arbore).
+    const radacina = blocText(piesa.radacina);
+    const blocuri = radacina ? [] : blocuriPiesei(piesa);
+    const b = blocuri.find((x) => grupText?.instanta === inst.id && x.grup.id === grupText.grup) ?? blocuri[0];
+    const bloc = radacina ?? b?.bloc;
     // De câte ori e pusă piesa și câte plăcuțe are (ADR 0210 §2, §4), pe toate foile: «Aplică» le schimbă pe toate.
-    const ale = piesa ? doc.foi.flatMap((f) => f.instante.filter((i) => i.piesa === piesa.id)) : [];
-    return inst && bloc ? { instanta: inst.id, bloc, pusa: ale.length, placute: ale.filter((i) => i.texte).length } : null;
-  }, [doc, indexFoaie, selectie]);
+    const ale = doc.foi.flatMap((f) => f.instante.filter((i) => i.piesa === piesa.id));
+    return bloc ? { instanta: inst.id, bloc, ...(b ? { grup: b.grup.id } : {}), piesa, pusa: ale.length, placute: ale.filter((i) => i.texte).length } : null;
+  }, [doc, indexFoaie, selectie, grupText]);
   useEffect(() => {
     if (unealta !== 'text') return undefined;
     const el = radacina.current;
@@ -1089,8 +1098,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
         return;
       }
-      // Conturul cel mai apropiat (al unei forme care nu e text), la cel mult toleranța clicului de linia lui, nu din interior.
       const tol = TOLERANTA_CLIC_PX / v.scara;
+      // Un text grupat (un șablon cu ramă, ADR 0210 §4): clicul pe literele lui îl alege, cu grupul lui.
+      const lovit = lovita && inst && piesa ? textLovit(texteGrupate(piesa, inst), x, y, tol) : null;
+      if (lovita && lovit) {
+        setGrupText({ instanta: lovita, grup: lovit.grup });
+        s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
+        return;
+      }
+      // Conturul cel mai apropiat (al unei forme care nu e text), la cel mult toleranța clicului de linia lui, nu din interior.
+      // Literele unui text grupat nu ajung aici: un clic lângă ele cade în cutia lor, deci le alege (mai sus).
       const piese = new Map(s.doc.piese.map((q) => [q.id, q]));
       let curba: { contur: Contur; d: number } | null = null;
       for (const e of elementeFoaie(s.doc, s.indexFoaie)) {

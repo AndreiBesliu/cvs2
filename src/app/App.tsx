@@ -6,7 +6,7 @@ import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
-import { avertismente } from '../model/avertismente.ts';
+import { avertismente, type Avertisment } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
@@ -636,8 +636,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lista de desen și elementele în lume se refac doar când se schimbă documentul sau foaia activă.
   const lume = useMemo(() => elementeFoaie(doc, indexActiva), [doc, indexActiva]);
   const forme = useMemo(() => listaDesen(doc, indexActiva), [doc, indexActiva]);
-  // Avertismentele: tot după fiecare schimbare a documentului; în bara de jos și în listă, niciodată pe pânză.
-  const avert = useMemo(() => avertismente(doc, indexActiva), [doc, indexActiva]);
+  // Avertismentele: tot după fiecare schimbare a documentului; în bara de jos și în listă, niciodată pe pânză. Ale plăcuțelor
+  // (textul ieșit din plăcuță, ADR 0210 §4) vin cu judecata lor, adusă la cerere când documentul are plăcuțe.
+  const [placuteGata, setPlacuteGata] = useState(false);
+  const arePlacute = doc.foi.some((f) => f.instante.some((i) => i.texte));
+  useEffect(() => {
+    if (arePlacute && !placuteGata) import('../model/placuteIesire.ts').then(() => { setPlacuteGata(true); }, () => undefined);
+  }, [arePlacute, placuteGata]);
+  const avert = useMemo(() => avertismente(doc, indexActiva), [doc, indexActiva, placuteGata]);
   // Hărțile listei, o dată pe document: un rând costă cât elementele lui, nu cât toată foaia.
   const harti = useMemo(() => {
     const peInstanta = new Map<string, ElementLume[]>();
@@ -930,9 +936,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const e = harti.dupaIdLume.get(idLume);
     return e ? descriere(e) : idLume;
   };
+  /** Un avertisment, în cuvinte: forma care iese din foaie, sau plăcuța din care iese textul, cu numele ei din listă. */
+  const textAvertisment = (a: Avertisment): string => (a.tip === 'iese-din-foaie'
+    ? t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }) : t('avertisment.text-iese-din-placuta', { nume: numePiesa(a.id) ?? a.id }));
   const avertInstanta = new Map<string, string[]>();
   for (const a of avert) {
-    const text = t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) });
+    const text = textAvertisment(a);
     const l = avertInstanta.get(a.instanta);
     if (l) l.push(text);
     else avertInstanta.set(a.instanta, [text]);
@@ -1181,10 +1190,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         if (avert.length === 0) return null;
         // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu și, cu roșu, în
         // lista de vectori.
-        const texte = avert.map((a) => t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }));
+        const texte = avert.map(textAvertisment);
+        // Mai multe: câte, după felul lor (formele ieșite din foaie, plăcuțele cu textul ieșit), sau doar câte, amestecate.
+        const n = texte.length, fel = avert.every((a) => a.tip === avert[0]?.tip) ? avert[0]?.tip : null;
         return (
           <span className="cip cip-rosu avertisment-bara" data-testid="avertisment" title={texte.join('\n')}>
-            {texte.length === 1 ? texte[0] : t('avertisment.forme-ies-din-foaie', { n: texte.length })}
+            {n === 1 ? texte[0] : t(fel === 'iese-din-foaie' ? 'avertisment.forme-ies-din-foaie' : fel ? 'avertisment.placute-text-iesit' : 'avertisment.n', { n })}
           </span>
         );
       }

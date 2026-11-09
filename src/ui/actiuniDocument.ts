@@ -42,6 +42,8 @@ export type CerereText =
   }
   | {
     readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa, grosime?: number) => RezultatPiesaText;
+    /** Grupul textului editat, într-un șablon cu ramă (ADR 0210 §4, felia 11.4↑c); lipsă: textul e chiar piesa (rădăcina). */
+    readonly grup?: string;
     /**
      * Literele unei plăcuțe a piesei noi cu valorile ei (ADR 0210 §4): editarea unui șablon le reface pe toate în același
      * pas. Fără ea, un șablon cu plăcuțe nu se editează.

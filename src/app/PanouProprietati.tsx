@@ -12,6 +12,7 @@ import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
 import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
 import { blocuriPiesei, campuriPiesei } from '../model/placute.ts';
+import { textIese } from '../model/placuteIesire.ts';
 import type { RezultatPlacuta } from '../text/placute.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import type { CampEticheta } from '../model/jurnal.ts';
@@ -438,6 +439,8 @@ export function PanouProprietati({
           {placuta?.cheie === cheie && placuta.motiv === null && <p className="prop-nota-piesa" data-testid="placuta-face">{t('prop.placuta.face')}</p>}
           {placuta?.cheie === cheie && placuta.motiv !== null && <p className="camp-motiv" role="alert" data-motiv="placuta">{placuta.motiv}</p>}
           {rezultatCsv?.cheie === cheie && <p className="prop-nota-piesa" role="status" data-testid="placuta-csv">{rezultatCsv.mesaj}</p>}
+          {/* Textul plăcuței iese din ea (ADR 0210 §4, răspunsul 5): spus și aici, lângă valorile ei. */}
+          {piesa && instanta.texte && textIese(piesa, instanta.texte) && <p className="camp-motiv" data-testid="placuta-iese">{t('prop.placuta.iese')}</p>}
         </section>
       )}
       {par && (

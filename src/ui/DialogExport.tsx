@@ -177,7 +177,15 @@ type Props = {
   readonly onDeschideInMasina?: () => void;
   /** Foaia exportată (ADR 0210 §5), în titlu, când proiectul are mai multe. */
   readonly foaie?: string;
+  /**
+   * Plăcuțele foii din care iese textul (ADR 0210 §4, răspunsul 5; felia 11.4↑c), cu numele lor: o notă, sau, cu `confirmare`
+   * (aleasă în fereastra CSV), o bifă fără de care Exportă rămâne oprit. Bifa ține chiar obiectul văzut: altul vine nebifat.
+   */
+  readonly placute?: { readonly nume: readonly string[]; readonly confirmare: boolean };
 };
+
+/** Câte nume de plăcuțe arată nota exportului; restul, „…”. */
+const PLACUTE_NUMITE = 5;
 
 const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
   ['stanga', 'export.iesire.stanga'], ['dreapta', 'export.iesire.dreapta'], ['jos', 'export.iesire.jos'], ['sus', 'export.iesire.sus'],
@@ -462,7 +470,7 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina, foaie,
+    onSetariMasina, onDeschideInMasina, foaie, placute,
   }: Props,
 ) {
   const limba = useLimba();
@@ -580,6 +588,12 @@ export function DialogExport(
     setRiscAcceptat(false);
   }
   const bifat = cere !== undefined && confirmata === cere;
+  // Plăcuțele cu textul ieșit (răspunsul 5): bifa ține lista văzută; cu confirmarea aleasă, fără ea nu se exportă.
+  const [placuteVazute, setPlacuteVazute] = useState<object | null>(null);
+  const placuteOprite = placute?.confirmare === true && placuteVazute !== placute;
+  const textPlacute = placute ? t('export.placute.iese', {
+    n: placute.nume.length, nume: [...placute.nume.slice(0, PLACUTE_NUMITE), ...(placute.nume.length > PLACUTE_NUMITE ? ['…'] : [])].join('; '),
+  }) : null;
   const cutie = useRef<HTMLDivElement>(null);
   const cerereVizibila = useRef<HTMLDivElement>(null);
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
@@ -1517,6 +1531,16 @@ export function DialogExport(
             </label>
           </div>
         )}
+        {placute && textPlacute && (placute.confirmare ? (
+          <div className="confirmare-iesire" data-testid="placute-iesire">
+            <div role="alert"><p>{textPlacute}</p></div>
+            <label>
+              <input type="checkbox" checked={!placuteOprite} data-camp="confirma-placute"
+                onChange={(e) => { setPlacuteVazute(e.target.checked ? placute : null); }} />
+              {t('export.placute.confirma')}
+            </label>
+          </div>
+        ) : <p role="status" className="avertisment" data-testid="placute-iesire">{textPlacute}</p>)}
         {riscuriOrdine.length > 0 && (
           <div className="confirmare-iesire" data-testid="risc-ordine">
             <div role="alert">
@@ -1531,10 +1555,10 @@ export function DialogExport(
           </div>
         )}
         <div className="butoane">
-          <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat)} data-buton="exporta"
-            title={valid ? undefined : motivInvalid}
+          <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite}
+            data-buton="exporta" title={valid ? undefined : motivInvalid}
             onClick={() => {
-              if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat)) return;
+              if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite) return;
               onExporta({
                 origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea,

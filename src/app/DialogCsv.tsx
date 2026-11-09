@@ -4,12 +4,14 @@ import { citesteCsv, CODARI, decodeazaCsv, PLAFON_CSV, SEPARATOARE, separatorGas
 import { ASEZARE_MAXIM, distantaMinima, peFoi, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
 import type { Document, Instanta, Piesa, TextePlacuta } from '../model/document.ts';
 import { blocuriPiesei, campuriPiesei } from '../model/placute.ts';
+import { textIese } from '../model/placuteIesire.ts';
 import { CIFRE_MAXIM, cuCamp, surseImplicite, valoriRand, type SursaCamp } from '../model/valoriCsv.ts';
 import type { RezultatPlacuta } from '../text/placute.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { optiuniTinute, tineOptiunile } from './asezareTinuta.ts';
+import { iesireTextTinuta, tineIesireaTextului, type IesireText } from './iesireTextTinuta.ts';
 
 /** Câte rânduri ale tabelului arată previzualizarea. */
 const PREVIZUALIZARE = 4;
@@ -62,6 +64,8 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
   const [alegere, setAlegere] = useState<{ readonly a: number; readonly b: number } | null>(null);
   const [numeCamp, setNumeCamp] = useState('');
   const [indexText, setIndexText] = useState(0);
+  // Un text care tot iese din plăcuță (răspunsul 5): avertismentul, implicit, sau și confirmarea la export; ținut în browser.
+  const [iesire, setIesire] = useState<IesireText>(iesireTextTinuta);
   const cutie = useRef<HTMLDivElement>(null);
   const fisier = useRef<HTMLInputElement>(null);
   useEffect(() => { cutie.current?.focus(); }, []);
@@ -159,7 +163,7 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
   };
 
   // „Fă plăcuțele”: valorile fiecărui rând, literele (fonturile aduse o dată), apoi un singur pas: primul rând pe plăcuța
-  // aleasă, restul plăcuțe noi, toate așezate pe foi. La capăt, câte s-au micșorat în casetă și cât.
+  // aleasă, restul plăcuțe noi, toate așezate pe foi. La capăt, câte s-au micșorat în casetă și cât, și din câte iese textul.
   const fa = async (): Promise<void> => {
     if (!intervalBun || n === 0 || campuri.length === 0 || de === null) return;
     setStare({ fel: 'lucru', k: 0, n });
@@ -168,12 +172,13 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
       const f = await m.fonturiPiesei(piesa);
       if (!f.ok) { setStare({ fel: 'motiv', text: t('prop.placuta.motiv.font', { font: f.font }) }); return; }
       const randuri: Array<{ campuri: Record<string, string>; texte: Record<string, TextePlacuta> | undefined }> = [];
-      let micsorate = 0, minim = 1;
+      let micsorate = 0, minim = 1, iesite = 0;
       for (let k = 0; k < n; k++) {
         const r = m.textePlacutei(piesa, valoriRand(campuri, Object.fromEntries(campuri.map((c) => [c, sursaCamp(c)])), date[de - 1 + k] ?? [], k), f.font);
         if (!r.ok) { setStare({ fel: 'motiv', text: t('csv.motiv.rand', { k: de + k, motiv: motivPlacuta(r) }) }); return; }
         randuri.push({ campuri: r.campuri, texte: r.texte });
         if (r.micsorat !== undefined) { micsorate++; minim = Math.min(minim, r.micsorat); }
+        if (r.texte && textIese(piesa, r.texte)) iesite++;
         if (k % PAS_LUCRU === PAS_LUCRU - 1) {
           setStare({ fel: 'lucru', k: k + 1, n });
           await new Promise((gata) => { setTimeout(gata, 0); });
@@ -182,7 +187,10 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
       const rez = onCerere({ fel: 'placute', instanta: instanta.id, piesa, randuri, asezare });
       if (!rez.ok) { setStare({ fel: 'motiv', text: t(rez.motiv) }); return; }
       tineOptiunile(asezare);
-      onGata([unde, micsorate > 0 ? t('csv.micsorate', { n: micsorate, p: textNumar(Math.floor(minim * 100), true) }) : null].filter(Boolean).join(' '));
+      onGata([
+        unde, micsorate > 0 ? t('csv.micsorate', { n: micsorate, p: textNumar(Math.floor(minim * 100), true) }) : null,
+        iesite > 0 ? t(iesire === 'confirmare' ? 'csv.iesite.confirmare' : 'csv.iesite', { n: iesite }) : null,
+      ].filter(Boolean).join(' '));
     } catch {
       setStare({ fel: 'motiv', text: t('prop.placuta.motiv.modul') });
     }
@@ -341,6 +349,18 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
             })}
           </div>
         )}
+        {/* Un text care tot iese din plăcuță (fără casetă, sau prea lung și pentru ea): plăcuța e roșie în listă, cu avertismentul
+            în bara de jos; la alegere, și exportul cere confirmarea (răspunsul 5). */}
+        <div className="campuri">
+          <label>
+            {t('csv.iesire')}
+            <select data-camp="csv-iesire" value={iesire} disabled={lucreaza}
+              onChange={(e) => { const v = e.target.value === 'confirmare' ? 'confirmare' : 'avertisment'; setIesire(v); tineIesireaTextului(v); }}>
+              <option value="avertisment">{t('csv.iesire.avertisment')}</option>
+              <option value="confirmare">{t('csv.iesire.confirmare')}</option>
+            </select>
+          </label>
+        </div>
         {stare?.fel === 'lucru' && <p className="csv-nota" role="status" data-testid="csv-lucru">{stare.n > 0 ? t('csv.lucru', { k: stare.k, n: stare.n }) : t('prop.placuta.face')}</p>}
         {stare?.fel === 'motiv' && <p className="camp-motiv" role="alert" data-motiv="csv">{stare.text}</p>}
         <div className="butoane">

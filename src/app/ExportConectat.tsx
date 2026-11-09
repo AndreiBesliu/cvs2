@@ -6,6 +6,8 @@ import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.
 import { conturElement } from '../model/forme.ts';
 import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
 import { cuprinse } from '../model/ordine.ts';
+import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
+import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
@@ -145,6 +147,16 @@ export function ExportConectat({
   }, [doc, dupaIdLume, lume, descriere, limba]);
 
   /**
+   * Plăcuțele foii cu textul ieșit din ele (ADR 0210 §4, răspunsul 5): o notă, sau confirmarea, dacă omul a ales-o în fereastra
+   * CSV. Un obiect nou la fiecare document: o bifă pusă pe plăcuțele de dinainte nu trece pe altele.
+   */
+  const placute = useMemo(() => {
+    const piese = new Map(doc.piese.map((p) => [p.id, p]));
+    const nume = placuteCuTextIesit(doc, 0).map((i) => numePlacutei(i, piese.get(i.piesa)));
+    return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
+  }, [doc]);
+
+  /**
    * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
    * rangul fiecăreia în ordinea omului, 0 … n − 1, sau fără rang în ordinea automată (ADR 0133 §3).
    */
@@ -179,6 +191,7 @@ export function ExportConectat({
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
+      {...(placute ? { placute } : {})}
     />
   );
 }

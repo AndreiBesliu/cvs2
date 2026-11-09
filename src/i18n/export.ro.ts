@@ -200,6 +200,13 @@ export const roExport = {
   'export.iesire.sus': '{mm} mm sus',
   'export.iesire.unde': 'Unde: {etichete}',
   'export.iesire.confirma': 'Am verificat că acolo nu e nimic în cale (cleme, șuruburi): freza poate tăia și în afara foii. Confirmarea se scrie în antetul programului.',
+  // Plăcuțele cu textul ieșit din ele (ADR 0210 §4, răspunsul 5; felia 11.4↑c).
+  'export.placute.iese': {
+    one: 'Textul iese din plăcuța „{nume}”: e cu roșu în listă.',
+    few: 'Textul iese din {n} plăcuțe ({nume}): sunt cu roșu în listă.',
+    other: 'Textul iese din {n} de plăcuțe ({nume}): sunt cu roșu în listă.',
+  },
+  'export.placute.confirma': 'Am văzut plăcuțele: le export așa, cu textul ieșit din ele.',
   // Ordinea tăierii (ADR 0133 §3).
   'export.ordine': 'Ordinea tăierii',
   'export.ordine.automata': 'Automată',

@@ -194,6 +194,12 @@ export const enExport = {
   'export.iesire.sus': '{mm} mm at the top',
   'export.iesire.unde': 'Where: {etichete}',
   'export.iesire.confirma': 'I checked that nothing is in the way there (clamps, screws): the bit may cut outside the sheet. The confirmation is written in the program header.',
+  // The plates whose text comes out of them (ADR 0210 §4, answer 5; slice 11.4↑c).
+  'export.placute.iese': {
+    one: 'The text comes out of the plate “{nume}”: it is red in the list.',
+    other: 'The text comes out of {n} plates ({nume}): they are red in the list.',
+  },
+  'export.placute.confirma': 'I saw the plates: I export them like this, with the text coming out of them.',
   // Ordinea tăierii (ADR 0133 §3).
   'export.ordine': 'Cutting order',
   'export.ordine.automata': 'Automatic',

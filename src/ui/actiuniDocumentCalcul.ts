@@ -2,7 +2,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
+import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
 import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
@@ -26,6 +26,10 @@ import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
 import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
+// Motivele planșelor (ADR 0210) stau în mesajele editorului, nu în pachetul de pornire: le dă doar calculul acesta, deci el
+// și le cere la evaluare. Ferestrele care îl aduc (editorul, panoul, exportul, importul, așezarea) așteaptă mesajele cerute
+// înainte de randare (`cuMesaje`), deci un motiv nu se arată niciodată fără textul lui.
+import '../i18n/editare.ts';
 import { indexFoaieActiva } from '../model/foi.ts';
 import { comandaEticheta, comandaFoaieNoua, comandaMutaFoaie, comandaStergeFoaie, comenziMutaPeFoaie, idFoaieNoua } from '../model/foiComenzi.ts';
 import {
@@ -352,7 +356,9 @@ function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined)
     const inst = foaie.instante.find((i) => i.id === c.instanta);
     const vechi = inst ? doc.piese.find((p) => p.id === inst.piesa) : undefined;
     if (!inst || !vechi) return { ok: false, motiv: 'motiv.nimic-ales' };
-    if (!blocText(vechi.radacina)) return { ok: false, motiv: 'motiv.text-vectori' };
+    // Textul editat: piesa întreagă, sau grupul unui text dintr-un șablon cu ramă (ADR 0210 §4); unul devenit vectori, refuz.
+    const g = c.grup === undefined ? vechi.radacina : noduriPiesa(vechi.radacina).find((x) => x.nod.id === c.grup)?.nod;
+    if (!g || !blocText(g)) return { ok: false, motiv: 'motiv.text-vectori' };
     const r = c.piesa(vechi, foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     id = inst.id;

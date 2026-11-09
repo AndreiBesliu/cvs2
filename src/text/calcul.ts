@@ -22,7 +22,7 @@ export type { Font } from './font.ts';
 export { adaugaFisier, adaugaGoogle, FaraStocare, listaBiblioteca, stergeFont, type FontSalvat, type RezultatAdaugare } from './biblioteca.ts';
 export { listaSistem, sistemDisponibil, stareSistem, type FontSistem, type StareSistem } from './sistem.ts';
 export { idFont, numeVarianta, PLAFON_FONTURI, sursaFont } from './fonturiOmului.ts';
-export { sablonCuContinut, textePlacutei, type MotivPlacuta, type RezultatPlacuta } from './placute.ts';
+export { sablonCuAsezat, sablonCuContinut, textePlacutei, type MotivPlacuta, type RezultatPlacuta } from './placute.ts';
 
 /**
  * Ce iese din aducerea unui font: citit, refuzat de cititor, sau negăsit (`lipseste`: nu e în bibliotecă ori pe calculatorul

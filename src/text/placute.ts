@@ -110,7 +110,19 @@ export function sablonCuContinut(
   const asezat = aseazaBloc(font, bloc, continut);
   if (typeof asezat === 'string') return { ok: false, motiv: asezat };
   const { amprenta: _a, spatieri: _s, ...rest } = bloc;
-  const blocNou = { ...rest, continut, ...(bloc.caseta ? { inaltime: asezat.inaltime } : {}) };
+  return sablonCuAsezat(p, g, asezat, { ...rest, continut, ...(bloc.caseta ? { inaltime: asezat.inaltime } : {}) }, grosime);
+}
+
+/**
+ * Piesa `p` cu textul grupului `g` înlocuit de textul așezat `asezat`, cu blocul `blocNou` (fără amprentă: se calculează din
+ * literele noi). Un text pe rădăcină trece prin `piesaText` (ca editarea din panou: numele piesei, oglindirea, operațiile mutate
+ * pe contururile de același fel); unul grupat (șablonul cu ramă) își păstrează locul în arbore (matricea grupului), cu id-uri
+ * libere față de restul piesei, iar operațiile care îi tăiau literele le taie pe cele noi de același fel. O folosesc „Fă din
+ * textul ales câmpul” (`sablonCuContinut`) și unealta Text pe un șablon cu ramă (felia 11.4↑c).
+ */
+export function sablonCuAsezat(p: Piesa, g: string, asezat: TextAsezat, blocNou: Omit<BlocText, 'amprenta'>, grosime?: number): RezultatPiesaText {
+  const grup = noduriPiesa(p.radacina).find((x) => x.nod.id === g)?.nod;
+  if (!grup || grup.tip !== 'grup' || !blocText(grup)) return { ok: false, motiv: 'gol' };
   if (p.radacina.id === g) return piesaText(asezat, blocNou, p.id, undefined, p, grosime);
   // Id-urile literelor noi: libere față de restul piesei (literele vechi pleacă, deci id-urile lor se pot refolosi).
   const vechi = new Set(grup.copii.flatMap((c) => noduriPiesa(c).map((x) => x.nod.id)));

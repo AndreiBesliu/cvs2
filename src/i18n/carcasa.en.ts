@@ -191,6 +191,7 @@ export const enCarcasa = {
   'prop.placuta': 'On this plate',
   'prop.placuta.nota': 'The fields in the text of the part ({camp}): each plate has its own values; the shape, the font and the size belong to the part.',
   'prop.placuta.face': 'Making the letters…',
+  'prop.placuta.iese': 'The text comes out of the plate: shorten it, make it smaller or put it in a box (the Text tool).',
   'prop.placuta.motiv.font': 'The font {font} is not on this computer: the letters of the plate cannot be made.',
   'prop.placuta.motiv.aldin': 'Bold could not thicken a letter of the plate.',
   'prop.placuta.motiv.caseta': 'The text of the plate does not fit the box even at the smallest height.',
@@ -244,6 +245,15 @@ export const enCarcasa = {
   'csv.motiv.gol': 'The new text would have no letter to cut.',
   'csv.motiv.plafon': 'The new text exceeds the limits of the document.',
   'csv.micsorate': { one: 'One plate is shrunk in its box, to {p} %.', other: '{n} plates are shrunk in their boxes, the most to {p} %.' },
+  // The text that comes out of the plate (ADR 0210 §4, answer 5; slice 11.4↑c).
+  'csv.iesire': 'If the text comes out of the plate',
+  'csv.iesire.avertisment': 'warning (in the bottom bar, red in the list)',
+  'csv.iesire.confirmare': 'warning and confirmation at export',
+  'csv.iesite': { one: 'The text comes out of one plate: it is red in the list.', other: 'The text comes out of {n} plates: they are red in the list.' },
+  'csv.iesite.confirmare': {
+    one: 'The text comes out of one plate: it is red in the list, and the export asks for confirmation.',
+    other: 'The text comes out of {n} plates: they are red in the list, and the export asks for confirmation.',
+  },
   'prop.cutia': 'Bounding box',
   'prop.mm2': '{latime} × {inaltime} mm',
   'prop.elemente': 'Shapes in the selection',
