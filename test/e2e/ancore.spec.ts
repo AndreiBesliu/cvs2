@@ -283,7 +283,7 @@ test('colțurile rotunjite (ADR 0240 §F.28): raza rămâne la întindere, refuz
   await expect(raza).toHaveValue('10');
   // Strâns la 10 mm, R 10 nu mai încape: refuzul, cu motivul; forma rămâne.
   await trageLatura(page, 110);
-  await expect(page.getByTestId('manere-motiv')).toHaveText('Colțurile rotunjite nu mai încap în dreptunghiul scalat: alege „Colțuri: se scalează mereu” sau micșorează raza.');
+  await expect(page.getByTestId('manere-motiv')).toHaveText('Colțurile rotunjite nu mai încap în dreptunghiul scalat: alege „Colțuri: se scalează” sau micșorează raza.');
   await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 100.00, Y 60.00']);
   // „Se scalează mereu”, ținut în browser: întinsă la 180, forma devine o cale (colțurile, sferturi de elipsă din curbe).
   await fel.selectOption('scaleaza');
@@ -349,9 +349,6 @@ test('„Alt ține fix: centrul cutiei” (ADR 0240 §B.17, 6.V↑d): Alt și ro
   await page.locator('[data-unealta="dreptunghi"]').click();
   await trage(page, la(100, 60), la(140, 80));
   await page.locator('[data-unealta="transformare"]').click();
-  // La 1280 px, cu grila și cele trei opțiuni ale Transformării, bara de sus rămâne întreagă în fereastră.
-  const bara = await page.locator('.sus > .bara').boundingBox();
-  expect(bara && bara.x >= 0 && bara.x + bara.width <= 1280).toBe(true);
   await page.locator('[data-ancora="sv"]').click();
   await expect.poll(() => ancora(page)).toEqual([100, 60]);
   await page.locator('[data-editare="alt-fix"]').selectOption('centru');
@@ -486,4 +483,39 @@ test('o formă rotită oblic, întinsă pe o axă (ADR 0240 §F.30, 6.V↑d): de
   await expect(randuri(page)).toHaveText([/^cale /]);
   await expect(rotire).toHaveValue('30');
   expect(erori).toEqual([]);
+});
+
+/**
+ * La 1280 px și cu un font lat (13.A↑c: Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum lat), bara de sus rămâne
+ * întreagă în fereastră cu Transformarea (selectorul ancorei, colțurile, Alt) și cu cercul (raza, felul lui): cu fontul lat,
+ * bara a ieșit din fereastră în CI (09.11), deși pe Windows, cu Segoe UI, încăpea.
+ */
+async function baraIncape(page: Page): Promise<void> {
+  const erori: string[] = [];
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+  for (const u of ['transformare', 'cerc']) {
+    await page.locator(`[data-unealta="${u}"]`).click();
+    await expect(page.locator(u === 'cerc' ? '[data-editare="cerc-mod"]' : '[data-editare="alt-fix"]')).toBeVisible();
+    const bara = await page.locator('.sus > .bara').boundingBox();
+    if (!bara) throw new Error('bara n-are cutie');
+    expect(bara.x, u).toBeGreaterThanOrEqual(0);
+    expect(bara.x + bara.width, u).toBeLessThanOrEqual(1280);
+  }
+  expect(erori).toEqual([]);
+}
+
+test('bara de sus întreagă la 1280 px și cu un font lat: Transformarea cu toate opțiunile ei, cercul cu felul lui (6.V↑d)', async ({ page }) => {
+  await baraIncape(page);
+});
+
+test.describe('în engleză', () => {
+  test.use({ locale: 'en-US' });
+  test('bara de sus întreagă la 1280 px și cu un font lat, cu textele englezești (6.V↑d)', async ({ page }) => {
+    await baraIncape(page);
+  });
 });

@@ -329,11 +329,11 @@ imported arcs) scaled on one axis become **curves**, within 0.001 mm of the stre
 curves”, and `Ctrl+Z` brings them back.
 
 The **rounded corners** of a rectangle follow the list next to the anchor picker, kept in the browser:
-- **Corners: keep radius when stretched** (the default): dragged on one axis, the radius stays the same and the rectangle
+- **Corners: keep on stretch** (the default): dragged on one axis, the radius stays the same and the rectangle
   stays a rectangle, with its radius editable in the panel; scaled proportionally, the radius grows with the shape;
-- **Corners: always keep radius**: also with proportional scaling;
-- **Corners: always scale**: dragged on one axis, the corners become quarter ellipses, made of curves (the shape becomes a
-  path).
+- **Corners: always keep**: the radius stays with proportional scaling too;
+- **Corners: scale**: the radius always grows with the shape; dragged on one axis, the corners become quarter ellipses, made
+  of curves (the shape becomes a path).
 
 A corner that no longer fits in the scaled side (for example R 10 in a 15 mm side) is refused, with the reason. A shape
 **rotated at an angle** (other than 90°), dragged on one axis, is scaled in the sheet's axes through the geometry, like
