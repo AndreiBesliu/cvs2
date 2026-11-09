@@ -946,6 +946,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **worktree-ul `ancore` scos** („Yes, remove it”, la „Remove the finished ancore worktree and archive its
+  session?”): linia ancorelor (ADR 0240) e încheiată și unită (`0c81ccf`, `e481e55`, `df19f8c`). Joncțiunile `node_modules`
+  și `functions\node_modules` scoase întâi (poarta cu legăturile), apoi `git worktree remove`; `.git/worktrees/ancore`
+  rămăsese ReadOnly (cu `logs/` și `refs/`), curățat; ramura locală ștearsă cu `-d`; sesiunea arhivată. Pe `origin`,
+  `wip/6.V-ancore` intră în lista de șters a owner-ului (acum 18). Rămân cinci worktree-uri: `imprimanta`, `incrustatii`,
+  `plansele`, `taiere`, `trasare`.
 - 09.11.2026: **plafonul total 700 kB** („Yes, 700 kB”, la „Raise the total bundle limit to 700 kB?”, după „ce se mai poate
   uni?”): pe `main`, totalul era 578,7 / 600, iar fiecare linie rămasă trecea singură de plafon (tăierea 600,1, planșele
   ~603,9, imprimanta 617,2). ADR 0144; pornirea rămâne 110 kB. Tăierea se poate uni (la cuvântul owner-ului); imprimanta
