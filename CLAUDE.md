@@ -675,11 +675,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul nu se
   schimbă) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
   arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
-  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
-  poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
+  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori.
   Pe ramură, pornirea neschimbată și totalul +2,1 kB. Pe canalul `ancore` al instanței de test:
   <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12). **După unire, cu incrustațiile: pornirea 101,8 (cu
   ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **6.V↑d, opțiunile („Da, 6.V↑d acum”)**, gata pe 08.11 pe aceeași ramură, neunită: „Ce ține fix Alt” (`cncvs2.alt-fix`:
+  ancora sau centrul cutiei, și la rotire), „De unde pornește cercul” (`cncvs2.cerc-mod`: din centru sau din colț, ca elipsa
+  cu Shift), poligonul întins cu Ctrl, **rândul tastelor în bara de jos** (locul `loc-taste` din `App.tsx`, umplut de
+  editor), **X / Y ale ancorei în panoul de proprietăți** (starea `ancoraPanou`, împărțită de editor și panou), iar **o formă
+  rotită oblic, scalată pe o axă, trece prin geometrie** (ca înclinarea), fără refuz. Totalul 546,4 → 547,9 / 600 kB,
+  pornirea 101,8 (cu ușa 105,5 / 110).
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea

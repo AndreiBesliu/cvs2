@@ -188,8 +188,8 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   assert.equal(sase.puncte.length, 0);
   assert.deepEqual(sase.felii.slice(0, 8).map((x) => x.id), ['6.A↑', '6.B↑', '6.C↑', '6.D↑', '6.E↑', '6.F↑', '6.G↑', '6.H↑']);
   assert.ok(sase.felii.every((x) => x.adusa));
-  // Toate gata, afară de cele numite aici, în lucru: opțiunile ancorei și ale tastelor (ADR 0240, 6.V↑d, pornită pe 08.11).
-  assert.deepEqual(sase.felii.filter((x) => x.stare !== 'gata').map((x) => [x.id, x.stare]), [['6.V↑d', 'in-lucru']]);
+  // Toate gata (ancora și tastele transformării, ADR 0240: 6.V↑–6.V↑c și opțiunile din 6.V↑d, gata pe 08.11).
+  assert.deepEqual(sase.felii.filter((x) => x.stare !== 'gata').map((x) => [x.id, x.stare]), []);
   assert.deepEqual(etapa('14').felii.map((x) => x.id), ['14.A↑', '14.A↑b', '14.B↑', '14.B↑b', '14.C↑', '14.C↑b', '14.C↑c']);
 });
 

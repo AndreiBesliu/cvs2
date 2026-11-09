@@ -7186,3 +7186,17 @@ sesiunea liniei.
 - **Pornirea:** ramura `wip/6.V-ancore` adusă la `origin/main` (`8714306`, fast-forward); rândul 6.V↑d în jurnalul fișei (în
   lucru), iar rândul liniei din coada owner-ului trimite acum la adresa principală de test (6.V↑–6.V↑c unite și publicate pe
   08.11; 6.V↑d e decisă).
+- **Codul** (`95556bc`, probele scrise întâi): „Ce ține fix Alt” (`fixulLuiAlt`, lista din bara Transformării), „De unde
+  pornește cercul” (din colț = elipsa cu Shift), poligonul întins (Ctrl), rândul tastelor în bara de jos (`tasteUneltei`,
+  locul `loc-taste` din `App.tsx`, tasta ținută plină), X / Y ale ancorei în panoul de proprietăți (`ancoraPanou`, cu
+  `useSyncExternalStore`: editorul și panoul se încarcă la cerere, în orice ordine), formele rotite oblic scalate pe o axă prin
+  geometrie (`inclinaNod` cu scalarea față de ancoră; și un nod oblic din piesă), cu eticheta „formele rotite oblic devin
+  căi”; motivul `neuniform-rotit` a ieșit. Proba acțiunii care aștepta refuzul piesei rotite cu 30° verifică acum pasul (un
+  pas, instanța neschimbată, ușa), iar refuzul „inexact” e al scării zero.
+- **Bara de sus la 1280 px:** cu grila și trei opțiuni ale Transformării ieșea din fereastră (1313 px): textele listei lui
+  Alt s-au scurtat („Alt: ancora” / „Alt: centrul”, explicația în titlu), iar proba „Alt ține fix” verifică bara la 1280 px.
+- **Testul din aplicație:** pașii „Opțiunile desenului” și „Opțiunile transformării” (35 de pași).
+- **Mărimile:** totalul 546,4 → 547,9 / 600 kB; pornirea 101,8 / 110 (cu ușa 105,4 → 105,5).
+- **Otrăvurile** (`test/otravuri/6.Vd.py`, 29, din worktree, pe rând, `9012d81`): toate prinse la prima rulare (15 pe
+  hârtie, 14 prin e2e). Două probe e2e întărite înaintea lor: ținta neumplută cu „Alt: centrul”, eticheta cercului din colț
+  cu Alt.
