@@ -32,11 +32,15 @@ import {
 } from '../machine/imprimanta/driver.ts';
 import { DRIVER_IMPLICIT, DRIVERE, driverDupaId, esteIdDriver } from '../machine/imprimanta/drivere.ts';
 import { analizeazaFisier, patPentru, type AnalizaGcode, type PauzaFisier } from '../machine/imprimanta/gcode3d.ts';
+import { hartaFisier, type HartaGcode } from '../machine/imprimanta/harta.ts';
 import { RACIRE_IMPLICITA_MIN, SesiuneImprimanta, type LinieJurnal, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, CHEIE_IMPRIMANTE, citesteImprimante, reteleDeCautat, scrieImprimante, tineImprimanta, uitaImprimanta, type ImprimantaTinuta,
 } from '../machine/imprimanta/tinute.ts';
+import { stratViu } from '../machine/imprimanta/stratViu.ts';
 import { numeDeTrimis, urca, type MotivUrcare } from '../machine/imprimanta/urcare.ts';
+import { ETICHETE, gasesteFisier, tineFisier } from './fisiereImprimanta.ts';
+import { Placa } from './PlacaImprimanta.tsx';
 import './imprimanta.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -316,6 +320,35 @@ function Conectare({ st, tinute, uita, dinDesen }: {
   );
 }
 
+/** Ultima hartă citită (cheia: numele și mărimea fișierului), ca o fereastră redeschisă să n-o citească din nou (felia 3.6q). */
+let hartaTinuta: { readonly cheie: string; readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null } | null = null;
+
+/**
+ * Harta fișierului de acum (ADR 0193 §B.7): dacă a fost trimis din cvs2 și e încă ținut în browser, citit o dată pe lucrare;
+ * altfel null (placa arată atunci doar piesele, duza și numărul stratului).
+ */
+function useHartaLucrarii(st: StareImprimanta, stare: StareLucrare): { readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null } {
+  const fisier = st.imprimanta.fisier;
+  const nume = fisier === null ? null : numeDin(fisier);
+  const marime = nume === null ? null : (st.fisiere?.find((f) => f.nume === nume)?.marime ?? null);
+  const activa = stare === 'imprima' || stare === 'pauza' || stare === 'pregatire';
+  const cheie = activa && nume !== null ? `${nume}|${marime ?? '?'}` : null;
+  const [, setCitita] = useState(0);
+  useEffect(() => {
+    if (cheie === null || nume === null || hartaTinuta?.cheie === cheie) return;
+    const c = new AbortController();
+    void (async () => {
+      const f = await gasesteFisier(nume, marime);
+      const harta = f === null ? null : await hartaFisier(f.date, c.signal).catch(() => null);
+      if (c.signal.aborted) return;
+      hartaTinuta = { cheie, harta, etichete: f?.etichete ?? null };
+      setCitita((x) => x + 1);
+    })();
+    return () => { c.abort(); };
+  }, [cheie]);
+  return cheie !== null && hartaTinuta?.cheie === cheie ? hartaTinuta : { harta: null, etichete: null };
+}
+
 /** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării și homing-ul (3.6o). */
 type Confirmare =
   | { readonly fel: 'pornire'; readonly fisier: FisierImprimanta; readonly pauze?: readonly PauzaFisier[] }
@@ -332,6 +365,13 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
   const cap = st.driver.capabilitati(i);
   const cereri = useCereri(i);
   const legata = st.legatura === 'conectat';
+  // Placa și stratul de acum (felia 3.6q): harta fișierului, dacă e unul trimis din cvs2, și stratul ales din ce spune imprimanta.
+  const { harta, etichete } = useHartaLucrarii(st, stare);
+  const viu = stratViu({
+    harta, straturi: i.straturi, progres: i.progres, filament: i.filament, recente: st.straturiRecente.map((x) => x.v), inPauza: stare === 'pauza',
+  });
+  const totalStraturi = harta !== null && harta.straturi.length > 0 ? harta.straturi.length : i.straturi;
+  const cuPlaca = (stare === 'imprima' || stare === 'pauza') && (harta !== null || (i.piese?.length ?? 0) > 0);
   // Încălzirea pornită fără o lucrare stă la vedere, în bandă, cu Răcește (ADR 0192 §D.15).
   const calda = (i.duzaTinta ?? 0) > 0 || (i.patTinta ?? 0) > 0;
   const raceste = (): void => {
@@ -432,7 +472,7 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
         <DialogTrimitere key={ales.k} fisier={ales.f} st={st} stare={stare} alt={alege} inchide={() => { setAles(null); }}
           porneste={(f, pauze) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f, pauze }); }} />
       )}
-      <div className="imprimanta-coloane">
+      <div className={cuPlaca ? 'imprimanta-coloane imprimanta-cu-placa' : 'imprimanta-coloane'}>
         <div className="imprimanta-stiva">
           <section className="imprimanta-card" aria-labelledby="imprimanta-lucrarea" data-testid="imprimanta-lucrarea">
             <h3 id="imprimanta-lucrarea">{t('imprimanta.lucrarea')}</h3>
@@ -449,10 +489,11 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
                     <dt>{t('imprimanta.progres')}</dt><dd data-testid="imprimanta-progres">{i.progres === null ? '—' : `${Math.round(i.progres)} %`}</dd>
                     <dt>{t('imprimanta.trecut')}</dt><dd>{i.trecut === null ? '—' : durata(i.trecut)}</dd>
                     <dt>{t('imprimanta.ramas')}</dt><dd data-testid="imprimanta-ramas">{i.ramas === null ? '—' : durata(i.ramas)}</dd>
-                    {i.strat !== null && i.straturi !== null && i.straturi > 0 && (
-                      <><dt>{t('imprimanta.strat')}</dt><dd>{t('imprimanta.strat.din', { strat: i.strat, straturi: i.straturi })}</dd></>
+                    {viu.strat !== null && totalStraturi !== null && totalStraturi > 0 && (
+                      <><dt>{t('imprimanta.strat')}</dt><dd data-testid="imprimanta-strat">{t('imprimanta.strat.din', { strat: viu.strat, straturi: totalStraturi })}</dd></>
                     )}
                   </dl>
+                  {cuPlaca && <Placa i={i} stare={stare} harta={harta} etichete={etichete} viu={viu} pat={patPentru(i.model)} />}
                 </>
               )}
             {/* Viteza și debitul țin de lucrarea de acum: doar cât imprimă sau stă în pauză (ADR 0192 §B.9). */}
@@ -981,7 +1022,11 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     oprire.current = c;
     setPas({ fel: 'trimite', a });
     urca({ adresa, nume, date: fisier, lista: sesiune, semnal: c.signal }).then(
-      (r) => { if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier, a } : { fel: 'esec', a, motiv: r.motiv }); },
+      (r) => {
+        // Fișierul ajuns se ține în browser, ca placa să-i poată desena straturile cât imprimă (felia 3.6q).
+        if (r.ok) void tineFisier({ nume: r.fisier.nume, marime: r.fisier.marime ?? fisier.size, la: Date.now(), date: fisier, etichete: ETICHETE.get(fisier) ?? null });
+        if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier, a } : { fel: 'esec', a, motiv: r.motiv });
+      },
       () => undefined,
     );
   };

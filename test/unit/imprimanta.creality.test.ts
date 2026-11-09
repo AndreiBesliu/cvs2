@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   CERERE_FISIERE, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
-  firmwareDin, numar, numeDin, numeSigur, stareLucrare,
+  firmwareDin, numar, numeDin, numeSigur, pozitieDin, stareLucrare,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
   aplica, IMPRIMANTA_NECUNOSCUTA, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua, type Imprimanta, type StareLucrare,
@@ -50,13 +50,52 @@ test('starea pe bucăți, cu numerele ca text: fiecare câmp știut, la locul lu
     modelVersion: 'printer hw ver:;printer sw ver:1.3.3.5;', err: { errcode: 0, key: 0 }, curPosition: 'X:1.00 Y:2.00 Z:0.20', lightSw: 1,
   }));
   assert.equal(c.inima, false);
-  // Din 3.6o, și lumina (`lightSw`); poziția capului (`curPosition`) nu se citește.
+  // Din 3.6o, și lumina (`lightSw`); din 3.6q, poziția duzei (`curPosition`), doar X și Y.
   assert.deepEqual(c.stare, {
     cod: 1, progres: 26, trecut: 302, ramas: 842, strat: 12, straturi: 46, duza: 220, duzaTinta: 220, pat: 49.5, patTinta: 50,
     carcasa: 32, autotest: 0, model: 'K1C', nume: 'K1C-8578', fisier: '/usr/data/printer_data/gcodes/output_11031835.gcode',
-    firmware: '1.3.3.5', eroare: null, cheieEroare: null, lumina: true,
+    firmware: '1.3.3.5', eroare: null, cheieEroare: null, lumina: true, pozitie: { x: 1, y: 2 },
   });
   assert.ok(esteCreality(c));
+});
+
+test('3.6q: piesele (cadrul `objects` al imprimantei owner-ului, text JSON în JSON), cele anulate, piesa de acum', () => {
+  // Întocmai cadrul din transcrierea din 07.11 (K1C 2025, V1.0.0.26).
+  const c = citesteCadru('{"current_object":"","excluded_objects":"[]","objects":"[{\\"name\\":\\"PAT_1.STL_ID_0_COPY_0\\",\\"center\\":[110,110],'
+    + '\\"polygon\\":[[94.1,102.1],[125.9,102.1],[125.9,117.9],[94.1,117.9],[94.1,102.1]]}]"}');
+  assert.deepEqual(c.stare, {
+    piese: [{ nume: 'PAT_1.STL_ID_0_COPY_0', centru: [110, 110], contur: [[94.1, 102.1], [125.9, 102.1], [125.9, 117.9], [94.1, 117.9], [94.1, 102.1]] }],
+    anulate: [], piesaAcum: null,
+  });
+  assert.ok(esteCreality(c));
+  // Ca liste adevărate (Moonraker le dă așa), cu o piesă anulată și piesa de acum.
+  const d = citesteCadru(JSON.stringify({ objects: [{ name: 'A', center: [1, 2], polygon: [[0, 0], [2, 0], [2, 4]] }, { name: 'B' }], excluded_objects: ['B'], current_object: 'A' }));
+  assert.deepEqual(d.stare, {
+    piese: [{ nume: 'A', centru: [1, 2], contur: [[0, 0], [2, 0], [2, 4]] }, { nume: 'B', centru: null, contur: [] }], anulate: ['B'], piesaAcum: 'A',
+  });
+  // Stricate: o piesă fără nume, cu un nume cu un rând nou, puncte care nu sunt numere; textul care nu e JSON nu schimbă nimic.
+  const e = citesteCadru(JSON.stringify({
+    objects: JSON.stringify([{ center: [1, 1] }, { name: 'X\nY' }, { name: 'C', polygon: [[1, 'a'], [2, 2], 'x', [Infinity, 1], [200000, 1]] }]),
+    excluded_objects: '[nu e json', current_object: 5,
+  }));
+  assert.deepEqual(e.stare, { piese: [{ nume: 'C', centru: null, contur: [[2, 2]] }] });
+  assert.deepEqual(citesteCadru(JSON.stringify({ excluded_objects: ['B', '', ' ', 7] })).stare, { anulate: ['B'] });
+  // Plafonul: cel mult 64 de piese, 256 de puncte pe contur.
+  const multe = citesteCadru(JSON.stringify({ objects: Array.from({ length: 80 }, (_, k) => ({ name: `P${k}`, polygon: Array.from({ length: 300 }, () => [1, 1]) })) }));
+  assert.equal(multe.stare.piese?.length, 64);
+  assert.equal(multe.stare.piese?.[0]?.contur.length, 256);
+  // `current_object` null: nicio piesă.
+  assert.deepEqual(citesteCadru('{"current_object":null}').stare, { piesaAcum: null });
+});
+
+test('3.6q: poziția duzei (X și Y, și negative cât se pregătește) și filamentul folosit', () => {
+  assert.deepEqual(pozitieDin('X:102 Y:104 Z:00'), { x: 102, y: 104 });
+  assert.deepEqual(pozitieDin('X:-124 Y:10 Z:05'), { x: -124, y: 10 });
+  assert.deepEqual(pozitieDin('X:1.5 Y:2'), { x: 1.5, y: 2 });
+  assert.equal(pozitieDin('X:a Y:1 Z:0'), null);
+  assert.equal(pozitieDin(''), null);
+  assert.deepEqual(citesteCadru('{"curPosition":"X:94 Y:102 Z:00","usedMaterialLength":92}').stare, { pozitie: { x: 94, y: 102 }, filament: 92 });
+  assert.deepEqual(citesteCadru('{"curPosition":"necunoscut","usedMaterialLength":"96"}').stare, { filament: 96 });
 });
 
 test('un cadru cu un singur câmp schimbă doar câmpul lui; restul rămâne', () => {

@@ -1076,6 +1076,15 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
   **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
+- **The plate**, while printing or paused, in the job card: the bed seen from above, zoomed on the parts, with the
+  printer’s front at the bottom. It shows the parts (their outline; the **current part** with a teal outline; a
+  **cancelled** one, crossed out), the **nozzle** (a white dot, only while printing) and, for files sent from cvs2, the
+  **current layer** (orange) over the one below. Next to it, the layer bar (the finished layers, the current one, the pauses
+  in the file) and “Layer 6 / 10 · 1.2 mm”: the K1C mixes two layer counters, so the window takes the layer from the
+  filament used (for files sent from cvs2) or the one that matches the progress. Below, the **Parts**, with their cvs2
+  names. While the printer waits in a pause of the file, the plate shows that pause and its note. Files sent from cvs2
+  are kept in the browser (the last 5) so their layers can be drawn; for other files, the plate shows only the parts, the
+  nozzle and the layer number.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.

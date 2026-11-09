@@ -1041,6 +1041,14 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
 - **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
   firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
   patului și din carcasă și codul semnalat de imprimantă (textul lui îl arată ecranul ei).
+- **Placa**, cât imprimă sau stă în pauză, în cardul lucrării: patul văzut de sus, mărit pe piese, cu fața imprimantei jos.
+  Arată piesele (conturul lor; **piesa de acum**, cu un contur turcoaz; una **anulată**, tăiată), **duza** (un punct alb,
+  doar cât imprimă) și, pentru fișierele trimise din cvs2, **stratul de acum** (portocaliu) peste cel de dedesubt. Lângă ea,
+  bara straturilor (cele făcute, stratul de acum, pauzele din fișier) și „Stratul 6 / 10 · 1,2 mm”: imprimanta K1C amestecă
+  două numărători ale stratului, deci fereastra îl ia după filamentul folosit (pentru fișierele trimise din cvs2) sau pe cel
+  care se potrivește cu progresul. Dedesubt, **Piesele**, cu numele din cvs2. Cât imprimanta stă într-o pauză a fișierului,
+  placa spune pauza și nota ei. Fișierele trimise din cvs2 se țin în browser (ultimele 5), ca să li se poată desena
+  straturile; pentru altele, placa arată doar piesele, duza și numărul stratului.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.

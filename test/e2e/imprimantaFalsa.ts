@@ -50,6 +50,17 @@ export type OptiuniImprimantaFalsa = {
   readonly fel?: 'k1' | 'k1c-2025';
   /** Cât durează fiecare pas al homing-ului (`deviceState` 7), în ms. */
   readonly homingMs?: number;
+  /**
+   * Din 3.6q: un fișier trimis se „imprimă” din conținutul lui, în atâția pași (implicit 40): straturile, poziția, filamentul,
+   * piesele, oprirea la o pauză.
+   */
+  readonly pasiFisier?: number;
+  /** Ca K1C (transcrierea din 07.11): `layer` sare între numărătoarea adevărată și una cu 5 mai mare. */
+  readonly numaratoriDuble?: boolean;
+  /** Filamentul liniei de curățare din `START_PRINT`, numărat de imprimantă în plus față de fișier (mm; implicit 12). */
+  readonly filamentInPlus?: number;
+  /** Conținutul unor fișiere din listă, ca și cum ar fi fost trimise din altă parte (Creality Print): se „imprimă” din el. */
+  readonly continut?: Readonly<Record<string, string>>;
 };
 
 export interface ImprimantaFalsa {
@@ -69,6 +80,8 @@ export interface ImprimantaFalsa {
   eroare(cod: number, cheie: number): void;
   /** Imprimanta nu mai răspunde la comenzile `set` cu aceste câmpuri (de exemplu `setFlowratePct`): primite, dar fără efect. */
   ignora(campuri: readonly string[]): void;
+  /** Stratul adevărat al fișierului „imprimat” acum (null: niciunul), oricât de des ar sări `layer`. */
+  stratAdevarat(): number | null;
   taie(): void;
   /**
    * Ca imprimanta owner-ului la o pornire de pe ecran (3.6i): legăturile de acum tac, fără să se închidă, iar adresa nu mai
@@ -160,9 +173,75 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     });
   };
   if (opt.imprima) imprima(`${DIR}${opt.imprima.fisier}`, opt.imprima.progres);
+  // Din 3.6q: conținutul fișierelor trimise și „imprimarea” lor, linie cu linie (ca `virtual_sdcard` al lui Klipper).
+  const continut = new Map<string, string>(Object.entries(opt.continut ?? {}));
+  type Rulare = {
+    readonly linii: readonly string[]; readonly marime: number; readonly pePas: number; i: number; octeti: number;
+    strat: number; e: number; absE: boolean; x: number; y: number; piesa: string; alterna: boolean;
+  };
+  let rulare: Rulare | null = null;
+  const imprimaFisier = (cale: string, text: string): void => {
+    const linii = text.split('\n');
+    const piese: { name: string; center?: number[]; polygon?: number[][] }[] = [];
+    for (const l of linii) {
+      const m = /^EXCLUDE_OBJECT_DEFINE NAME=(\S+)(?: CENTER=(\S+))?(?: POLYGON=(\S+))?/.exec(l);
+      if (m === null) continue;
+      piese.push({ name: m[1]!.toUpperCase(), ...(m[2] ? { center: m[2].split(',').map(Number) } : {}), ...(m[3] ? { polygon: JSON.parse(m[3]) as number[][] } : {}) });
+    }
+    const straturi = linii.filter((l) => l === ';LAYER_CHANGE').length;
+    rulare = {
+      linii, marime: Buffer.byteLength(text), pePas: Math.max(1, Math.ceil(linii.length / (opt.pasiFisier ?? 40))), i: 0, octeti: 0,
+      strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false,
+    };
+    schimba({
+      state: 1, printFileName: cale, printProgress: 0, printJobTime: 0, printLeftTime: 600, TotalLayer: straturi, layer: 0, usedMaterialLength: 0,
+      curPosition: 'X:00 Y:00 Z:00', targetNozzleTemp: temp(220), nozzleTemp: temp(220), targetBedTemp0: temp(55), bedTemp0: temp(55),
+    });
+    schimba({ current_object: '', excluded_objects: '[]', objects: JSON.stringify(piese) });
+  };
+  /** Un pas al „imprimării” unui fișier: liniile pasului, până la capăt sau la o pauză; apoi starea, ca la K1C. */
+  const pasFisier = (r: Rulare): void => {
+    let pauza = false;
+    const piesaInainte = r.piesa;
+    for (let n = 0; n < r.pePas && r.i < r.linii.length && !pauza; n++) {
+      const l = r.linii[r.i]!;
+      r.i++;
+      r.octeti += Buffer.byteLength(l) + 1;
+      const cod = l.split(';')[0]!.trim().toUpperCase();
+      if (l === ';LAYER_CHANGE') r.strat++;
+      else if (/^(PAUSE|M600|M601|M0|M25)(\s|$)/.test(cod)) pauza = true;
+      else if (cod.startsWith('EXCLUDE_OBJECT_START')) r.piesa = (/NAME=(\S+)/.exec(cod)?.[1] ?? '').toUpperCase();
+      else if (cod.startsWith('EXCLUDE_OBJECT_END')) r.piesa = '';
+      else if (cod === 'M82') r.absE = true;
+      else if (cod === 'M83') r.absE = false;
+      else if (/^G92\b/.test(cod)) { /* E pus la loc: în modul relativ nu schimbă nimic, iar fișierele cvs2 sunt relative. */ }
+      else if (/^G[01]\b/.test(cod)) {
+        const v = (k: string): number | null => { const m = new RegExp(`\\b${k}(-?[\\d.]+)`).exec(cod); return m ? Number(m[1]) : null; };
+        r.x = v('X') ?? r.x;
+        r.y = v('Y') ?? r.y;
+        const e = v('E');
+        if (e !== null && !r.absE) r.e += e;
+      }
+    }
+    r.alterna = !r.alterna;
+    const trecut = Number(s['printJobTime']) + 1;
+    schimba({
+      // La pauză, numărătoarea cu 5 în plus (cazul greu: ultima valoare bună rămâne pe stratul de dinainte).
+      layer: opt.numaratoriDuble && (r.alterna || pauza) ? r.strat + 5 : r.strat, printProgress: Math.min(99, Math.floor((100 * r.octeti) / r.marime)),
+      curPosition: `X:${Math.round(r.x)} Y:${Math.round(r.y)} Z:00`, usedMaterialLength: Math.round(r.e + (opt.filamentInPlus ?? 12)),
+      printJobTime: trecut, printLeftTime: Math.max(1, Number(s['printLeftTime']) - 1),
+    });
+    if (r.piesa !== piesaInainte) schimba({ current_object: r.piesa });
+    if (pauza) { schimba({ state: 5 }); return; }
+    if (r.i >= r.linii.length) {
+      rulare = null;
+      schimba({ printProgress: 100, current_object: '' });
+    }
+  };
   let finalizare = 0;
   const pas = setInterval(() => {
     if (s['state'] !== 1) return;
+    if (rulare !== null) { pasFisier(rulare); return; }
     const p = Number(s['printProgress']);
     const total = Number(s['printJobTime']) + Number(s['printLeftTime']);
     if (p < 100) {
@@ -192,6 +271,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         const k = fisiere.findIndex((x) => x.name === f.nume);
         if (k >= 0) fisiere[k] = nou;
         else fisiere.push(nou);
+        continut.set(f.nume, f.date.toString('utf8'));
       }
       // Fără antete CORS (nemăsurat pe K1C): aplicația oricum nu citește răspunsul.
       raspuns.writeHead(200, { 'Content-Type': 'application/json' }).end('{"code":0}');
@@ -287,13 +367,17 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       if (p['pause'] === 1 && s['state'] === 1) schimba({ state: 5 });
       else if (p['pause'] === 0 && s['state'] === 5) schimba({ state: 1 });
       else if (p['stop'] === 1 && (s['state'] === 1 || s['state'] === 5)) {
+        rulare = null;
         schimba({ state: 7 });
+        // Ca imprimanta owner-ului (07.11): după oprire, piesele se golesc.
+        schimba({ current_object: '', excluded_objects: '[]', objects: '[]' });
         setTimeout(() => { schimba({ state: 4, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) }); }, 800);
       } else if (typeof p['opGcodeFile'] === 'string' && p['opGcodeFile'].startsWith('printprt:') && s['state'] !== 1 && s['state'] !== 5) {
         const cale = p['opGcodeFile'].slice('printprt:'.length);
         if (!fisiere.some((f) => `${DIR}${f.name}` === cale)) return;
         schimba({ state: 9, printFileName: cale, printProgress: 0 });
-        setTimeout(() => { imprima(cale, 0); }, 100);
+        const text = continut.get(cale.slice(DIR.length));
+        setTimeout(() => { if (text !== undefined) imprimaFisier(cale, text); else imprima(cale, 0); }, 100);
         // Ca K1: după pornire, imprimanta închide legătura.
         setTimeout(inchide, 50);
       }
@@ -344,6 +428,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         urcarea: (fel) => { pierde = fel === 'pierde'; },
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
+        stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {
           for (const x of socketuri) tacute.add(x);

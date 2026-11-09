@@ -23,6 +23,16 @@ export type IdVentilator = (typeof VENTILATOARE)[number];
 /** Încălzitoarele cu o țintă de comandat. Camera încălzită intră odată cu primul driver care o are. */
 export type Incalzitor = 'duza' | 'pat';
 
+/**
+ * O piesă de pe placă, cum o spune imprimanta (`EXCLUDE_OBJECT_DEFINE` al fișierului, felia 3.6q, ADR 0193 §B.9): numele (Klipper
+ * îl scrie cu majuscule), centrul și conturul, în mm (null / gol: nespuse).
+ */
+export type PiesaPlaca = {
+  readonly nume: string;
+  readonly centru: readonly [number, number] | null;
+  readonly contur: readonly (readonly [number, number])[];
+};
+
 /** Ce se știe despre imprimantă: ultima valoare primită a fiecărui câmp (null: încă necunoscut, sau nespus de ea). */
 export type Imprimanta = {
   readonly model: string | null;
@@ -62,12 +72,24 @@ export type Imprimanta = {
   readonly cheieEroare: number | null;
   /** 1–99 cât își face verificările. */
   readonly autotest: number | null;
+  /** Piesele de pe placă, cele anulate (după nume) și piesa la care lucrează acum (null: niciuna sau nespusă), felia 3.6q. */
+  readonly piese: readonly PiesaPlaca[] | null;
+  readonly anulate: readonly string[] | null;
+  readonly piesaAcum: string | null;
+  /**
+   * Poziția duzei pe X și Y, în mm, cum o spune imprimanta (fără înălțime: K1C trimite Z „00” cât imprimă, ADR 0193); cât se
+   * pregătește, poate ieși din pat, deci fereastra o arată doar cât imprimă și doar în pat.
+   */
+  readonly pozitie: { readonly x: number; readonly y: number } | null;
+  /** Filamentul folosit de lucrarea de acum, în mm: mișcarea extruderului cerută de fișier (nu se schimbă cu debitul). */
+  readonly filament: number | null;
 };
 
 export const IMPRIMANTA_NECUNOSCUTA: Imprimanta = {
   model: null, nume: null, firmware: null, cod: null, fisier: null, progres: null, trecut: null, ramas: null, strat: null,
   straturi: null, duza: null, duzaTinta: null, duzaMax: null, pat: null, patTinta: null, patMax: null, carcasa: null, lumina: null,
   ventilatoare: {}, viteza: null, debit: null, axe: null, ocupata: null, eroare: null, cheieEroare: null, autotest: null,
+  piese: null, anulate: null, piesaAcum: null, pozitie: null, filament: null,
 };
 
 /** Bucățile de stare intră peste cea știută; ventilatoarele, fiecare la locul lui (un cadru poate aduce doar unul). */

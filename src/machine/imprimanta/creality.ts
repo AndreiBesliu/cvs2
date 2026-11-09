@@ -13,7 +13,7 @@
  */
 import {
   intregIn, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
-  type Interval, type IdVentilator, type Pas, type StareLucrare,
+  type Interval, type IdVentilator, type Pas, type PiesaPlaca, type StareLucrare,
 } from './driver.ts';
 
 export const PORT_CREALITY = 9999;
@@ -47,6 +47,47 @@ export function axeDin(t: string): string | null {
   return m === null ? null : ['X', 'Y', 'Z'].filter((_, k) => m[k + 1] === '1').join('');
 }
 const TEXTE: readonly (readonly [string, 'model' | 'nume' | 'fisier'])[] = [['model', 'model'], ['hostname', 'nume'], ['printFileName', 'fisier']];
+
+/** Cel mult atâtea piese și puncte pe un contur: un cadru stricat sau uriaș nu umple fereastra (felia 3.6q). */
+export const MAX_PIESE = 64;
+export const MAX_PUNCTE_CONTUR = 256;
+
+/** O listă venită ca text JSON în JSON („[{…}]”, cum trimite K1C cadrul `exclude_object`) sau ca listă; null: altceva. */
+function listaJson(v: unknown): unknown[] | null {
+  if (Array.isArray(v)) return v;
+  if (typeof v !== 'string') return null;
+  try {
+    const x = JSON.parse(v) as unknown;
+    return Array.isArray(x) ? x : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Un punct `[x, y]`, în mm, dacă amândouă sunt numere finite, rezonabile. */
+function punctDin(v: unknown): [number, number] | null {
+  if (!Array.isArray(v) || v.length < 2) return null;
+  const [x, y] = v as unknown[];
+  return typeof x === 'number' && typeof y === 'number' && Number.isFinite(x) && Number.isFinite(y) && Math.abs(x) < 1e5 && Math.abs(y) < 1e5
+    ? [x, y] : null;
+}
+
+/** O piesă din `objects`: un nume (fără caractere de control, cel mult 200), centrul și conturul, cât sunt bune. */
+function piesaDin(o: unknown): PiesaPlaca | null {
+  if (typeof o !== 'object' || o === null) return null;
+  const r = o as Record<string, unknown>;
+  const nume = r['name'];
+  if (typeof nume !== 'string' || nume.trim() === '' || nume.length > 200 || /[\x00-\x1f\x7f]/.test(nume)) return null;
+  const poligon = r['polygon'];
+  const contur = Array.isArray(poligon) ? poligon.slice(0, MAX_PUNCTE_CONTUR).map(punctDin).filter((p): p is [number, number] => p !== null) : [];
+  return { nume, centru: punctDin(r['center']), contur };
+}
+
+/** Poziția din `curPosition` („X:102 Y:104 Z:00”; „X:-124 Y:10 Z:05” cât se pregătește): X și Y; null pentru alt text. */
+export function pozitieDin(t: string): { readonly x: number; readonly y: number } | null {
+  const m = /^\s*X:(-?\d+(?:\.\d+)?)\s+Y:(-?\d+(?:\.\d+)?)(?:\s+Z:-?\d+(?:\.\d+)?)?\s*$/.exec(t);
+  return m === null ? null : { x: Number(m[1]), y: Number(m[2]) };
+}
 
 /**
  * Un număr, cum îl scrie imprimanta: număr JSON sau text („31.030000”, „0”, „-2.5”). Nu „007” sau „ 42”: un zero în față sau
@@ -178,6 +219,21 @@ export function citesteCadru(t: string): Cadru {
     stare.eroare = cod === 0 ? null : cod;
     stare.cheieEroare = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
   }
+  // Piesele de pe placă (cadrul `exclude_object` al lui Klipper, felia 3.6q): listele, ca text JSON în JSON; piesa de acum, „”
+  // fiind niciuna. Poziția duzei și filamentul folosit vin cu starea, la ~3 s cât imprimă (transcrierea din 07.11).
+  const piese = listaJson(r['objects']);
+  if (piese !== null) stare.piese = piese.slice(0, MAX_PIESE).map(piesaDin).filter((p): p is PiesaPlaca => p !== null);
+  const anulate = listaJson(r['excluded_objects']);
+  if (anulate !== null) stare.anulate = anulate.slice(0, MAX_PIESE).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
+  const acum = r['current_object'];
+  if (typeof acum === 'string') stare.piesaAcum = acum.trim() === '' ? null : acum;
+  else if (acum === null) stare.piesaAcum = null;
+  if (typeof r['curPosition'] === 'string') {
+    const p = pozitieDin(r['curPosition']);
+    if (p !== null) stare.pozitie = p;
+  }
+  const filament = numar(r['usedMaterialLength']);
+  if (filament !== null) stare.filament = filament;
   const lista = r['retGcodeFileInfo2'];
   const textLista = (r['retGcodeFileInfo'] as { fileInfo?: unknown } | null | undefined)?.fileInfo;
   const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null)

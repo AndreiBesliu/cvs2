@@ -5,8 +5,8 @@ import {
   CERERE_FISIERE, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
-  MAX_JURNAL, MAX_LINIE_JURNAL, PAS_ASTEPTARE_MS, PAUZE_RECONECTARE_MS, RACIRE_IMPLICITA_MIN, SesiuneImprimanta, TIMP_PRIMUL_CADRU_MS,
-  TIMP_TACERE_MS, type CeasImprimanta, type WebSocketText,
+  MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, PAS_ASTEPTARE_MS, PAUZE_RECONECTARE_MS, RACIRE_IMPLICITA_MIN, SesiuneImprimanta,
+  TIMP_PRIMUL_CADRU_MS, TIMP_STRATURI_MS, TIMP_TACERE_MS, type CeasImprimanta, type WebSocketText,
 } from '../../src/machine/imprimanta/sesiune.ts';
 
 /*
@@ -550,4 +550,31 @@ test('răcirea singură: setarea (oprită, minutele schimbate) și legătura că
     assert.deepEqual(setTrimise(x.ultimul()), [RACESTE[0]]);
     assert.equal(x.s.stare().racireLa, null);
   }
+});
+
+test('3.6q: valorile recente ale stratului, cu momentul lor: ultimele 15 s, cel mult 8; un alt fișier le uită', async () => {
+  const { s, ceas, ultimul } = sesiune();
+  const r = s.conecteaza(ADRESA);
+  const w = ultimul();
+  w.deschide();
+  w.primeste(STARE);
+  assert.deepEqual(await r, { ok: true });
+  assert.deepEqual(s.stare().straturiRecente, []);
+  // Ca transcrierea din 07.11: K1C trimite la 3 s, amestecând două numărători.
+  for (const v of [3, 8, 3, 4]) { ceas.trece(3000); w.primeste(JSON.stringify({ layer: v })); }
+  assert.deepEqual(s.stare().straturiRecente.map((x) => x.v), [3, 8, 3, 4]);
+  // Un cadru fără `layer` nu adaugă nimic, dar le uită pe cele mai vechi de 15 s (aici, 3 și 8, de la 3 și 6 s).
+  ceas.trece(TIMP_STRATURI_MS - 6000 + 1);
+  w.primeste('{"printProgress":30}');
+  assert.deepEqual(s.stare().straturiRecente.map((x) => x.v), [3, 4]);
+  // Cel mult 8.
+  for (let k = 0; k < 12; k++) w.primeste(JSON.stringify({ layer: 10 + k }));
+  assert.equal(s.stare().straturiRecente.length, MAX_STRATURI_RECENTE);
+  assert.equal(s.stare().straturiRecente.at(-1)?.v, 21);
+  // Alt fișier: cele vechi se uită (cadrul care îl aduce poate avea și el un strat).
+  w.primeste(JSON.stringify({ printFileName: `${DIR_GCODE}b.gcode`, layer: 1 }));
+  assert.deepEqual(s.stare().straturiRecente.map((x) => x.v), [1]);
+  // O nouă legare pornește de la zero.
+  void s.conecteaza(ADRESA);
+  assert.deepEqual(s.stare().straturiRecente, []);
 });

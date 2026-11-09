@@ -95,6 +95,18 @@ Cu placa de probă din „Din desen…” (40 × 20 × 3 mm, PLA 0,20: 15 stratu
 4. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: cu el aflăm și cum numără K1C straturile
    unui fișier al nostru (`layer`) și filamentul folosit, pentru placa din felia 3.6q.
 
+## 7. Placa (felia 3.6q)
+
+Pe aceeași imprimare (placa de probă trimisă din „Din desen…”), în cardul **Lucrarea**:
+
+1. **Placa** apare cât imprimă: piesa ta, văzută de sus, cu stratul de acum (portocaliu) și duza (un punct alb). Spune-mi
+   dacă punctul duzei stă pe piesă și se mută la ~3 s.
+2. **„Stratul N / 15”** de deasupra plăcii: compară-l cu ecranul imprimantei de câteva ori. Lângă el scrie de unde vine
+   („după imprimantă” sau „după filamentul folosit”); dacă vezi un număr care sare (de exemplu 3, apoi 8), spune-mi.
+3. La pauza de la pasul 6, placa spune „Pauza din fișier, înaintea stratului 9” și nota ta.
+4. **Copiază jurnalul** la final: cadrele cu `layer`, `curPosition`, `usedMaterialLength` și piesele (`objects`) intră în
+   imprimanta falsă din probe.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).

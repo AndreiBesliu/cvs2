@@ -709,6 +709,251 @@
   background: var(--s-rosu);
 }
 
+/*
+ * Placa (felia 3.6q, ADR 0193 §B, după schița acceptată): cât imprimă, cardul lucrării ia două coloane, iar temperaturile și
+ * ventilatoarele stau una sub alta, în dreapta. Pânza e neagră în ambele teme, cu culorile căilor din „Din desen…”; bara
+ * straturilor e verticală lângă placă, iar pe telefon orizontală, sub ea.
+ */
+.imprimanta-coloane.imprimanta-cu-placa {
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  /* Temperaturile își păstrează înălțimea; restul cardului lucrării merge în al doilea rând, sub ventilatoare. */
+  grid-template-rows: auto 1fr;
+}
+
+.imprimanta-coloane.imprimanta-cu-placa > .imprimanta-stiva {
+  grid-row: span 2;
+}
+
+@media (max-width: 60rem) {
+  .imprimanta-coloane.imprimanta-cu-placa {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .imprimanta-coloane.imprimanta-cu-placa > .imprimanta-stiva {
+    grid-row: auto;
+  }
+}
+
+.imprimanta-placa {
+  --plc-pat: #22262c;
+  --plc-grila: #2f343b;
+  --plc-cale: #ff8a1f;
+  --plc-jos: #3b4149;
+  --plc-contur: #c9ced6;
+  --plc-acum: #4fd1c5;
+  --plc-anulata: #ff3b30;
+  --plc-duza: #ffffff;
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--l-margine);
+  min-width: 0;
+}
+
+.imprimanta-placa-cap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-placa-pauza {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid color-mix(in oklab, var(--rosu) 45%, var(--s-panou));
+  border-radius: var(--r-2);
+  background: var(--s-rosu);
+}
+
+.imprimanta-placa-corp {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: var(--sp-3);
+  align-items: stretch;
+}
+
+.imprimanta-placa-pat {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-2);
+  background: var(--plc-pat);
+}
+
+.imprimanta-placa-bara {
+  position: relative;
+  margin: var(--sp-3) 0;
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+  box-shadow: inset 0 0 0 1px var(--l-margine);
+}
+
+.imprimanta-placa-bara i {
+  position: absolute;
+  font-style: normal;
+}
+
+.imprimanta-placa-facut {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--k) * 100%);
+  border-radius: 0 0 var(--r-2) var(--r-2);
+  background: color-mix(in oklab, var(--a) 35%, var(--s-peste));
+}
+
+.imprimanta-placa-acum,
+.imprimanta-placa-semn-pauza {
+  left: -6px;
+  right: -6px;
+  bottom: calc(var(--k) * 100%);
+  transform: translateY(50%);
+  display: grid;
+  place-items: center;
+  height: 18px;
+  border-radius: 99px;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-placa-acum {
+  z-index: 1;
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+}
+
+.imprimanta-placa-semn-pauza {
+  height: 6px;
+  background: var(--rosu);
+}
+
+@media (max-width: 40rem) {
+  .imprimanta-placa-corp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .imprimanta-placa-bara {
+    height: 18px;
+    margin: var(--sp-1) 0;
+  }
+
+  .imprimanta-placa-facut {
+    top: 0;
+    bottom: 0;
+    height: auto;
+    width: calc(var(--k) * 100%);
+    border-radius: var(--r-2) 0 0 var(--r-2);
+  }
+
+  .imprimanta-placa-acum,
+  .imprimanta-placa-semn-pauza {
+    left: calc(var(--k) * 100%);
+    right: auto;
+    bottom: auto;
+    top: 0;
+    width: 28px;
+    transform: translateX(-50%);
+  }
+
+  .imprimanta-placa-semn-pauza {
+    width: 6px;
+    height: 18px;
+  }
+}
+
+.imprimanta-placa-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.imprimanta-placa-legenda i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--plc-pat);
+}
+
+.imprimanta-placa-legenda i[data-fel='cale'] { background: var(--plc-cale); }
+.imprimanta-placa-legenda i[data-fel='acum'] { box-shadow: inset 0 0 0 2px var(--plc-acum); }
+.imprimanta-placa-legenda i[data-fel='anulata'] { box-shadow: inset 0 0 0 2px var(--plc-anulata); }
+.imprimanta-placa-legenda i[data-fel='duza'] { border-radius: 50%; box-shadow: inset 0 0 0 3px var(--plc-duza); }
+.imprimanta-placa-legenda i[data-fel='pauza'] { height: 4px; background: var(--rosu); }
+
+.imprimanta-placa-titlu {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 40rem) {
+  .imprimanta-placa-piese {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.imprimanta-placa-piese li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  min-width: 0;
+}
+
+.imprimanta-placa-piesa {
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-placa-piese li[data-acum='da'] {
+  border-color: color-mix(in oklab, var(--a) 60%, var(--l-margine));
+  background: var(--s-ales);
+}
+
+.imprimanta-placa-piese li[data-anulata='da'] .imprimanta-placa-piesa {
+  text-decoration: line-through;
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese small {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese li[data-anulata='da'] small {
+  color: var(--rosu);
+}
+
 .imprimanta-din-desen {
   display: grid;
   gap: var(--sp-1);

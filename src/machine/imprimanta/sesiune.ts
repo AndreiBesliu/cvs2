@@ -71,6 +71,11 @@ export type StareImprimanta = {
   /** Răcirea singură: când pleacă (ms), cât e armată; când a plecat ultima dată. */
   readonly racireLa: number | null;
   readonly racitaLa: number | null;
+  /**
+   * Valorile stratului primite în ultimele `TIMP_STRATURI_MS` (cel mult `MAX_STRATURI_RECENTE`), cu momentul lor: K1C amestecă
+   * două numărători (3, 8, 3, 4, 10, 5, ADR 0193), deci fereastra o alege pe cea care se potrivește (`stratViu.ts`), felia 3.6q.
+   */
+  readonly straturiRecente: readonly { readonly v: number; readonly la: number }[];
 };
 
 /** Cât așteaptă primul cadru al imprimantei după deschidere: o altă aplicație pe port nu răspunde ca ea. */
@@ -94,9 +99,13 @@ export const PAS_ASTEPTARE_MS = 250;
 export const RACIRE_IMPLICITA_MIN = 30;
 const DESCHIS = 1;
 
+/** Cât de departe în urmă țin valorile stratului (K1C le trimite la ~3 s) și câte (felia 3.6q). */
+export const TIMP_STRATURI_MS = 15_000;
+export const MAX_STRATURI_RECENTE = 8;
+
 export const STARE_INITIALA: StareImprimanta = {
   legatura: 'deconectat', adresa: null, driver: CREALITY_K1, imprimanta: IMPRIMANTA_NECUNOSCUTA, fisiere: null, motiv: null,
-  incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null,
+  incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null, straturiRecente: [],
 };
 
 export type RezultatLegatura = { readonly ok: true } | { readonly ok: false; readonly motiv: MotivImprimanta };
@@ -434,10 +443,16 @@ export class SesiuneImprimanta {
         if (gata) gata({ ok: true });
       }
       if (schimbari || c.fisiere !== null) {
+        // Valorile stratului, cu momentul lor (felia 3.6q); un alt fișier le uită pe cele vechi.
+        const acum = this.ceas.acum();
+        const altFisier = c.stare.fisier !== undefined && c.stare.fisier !== this.s.imprimanta.fisier;
+        const straturi = altFisier ? [] : this.s.straturiRecente.filter((x) => acum - x.la <= TIMP_STRATURI_MS);
+        const strat = c.stare.strat;
         this.pune({
           ...this.s,
           imprimanta: schimbari ? aplica(this.s.imprimanta, c.stare) : this.s.imprimanta,
           fisiere: c.fisiere ?? this.s.fisiere,
+          straturiRecente: strat === undefined || strat === null ? straturi : [...straturi, { v: strat, la: acum }].slice(-MAX_STRATURI_RECENTE),
         });
       }
       if (schimbari) this.verificaRacire();

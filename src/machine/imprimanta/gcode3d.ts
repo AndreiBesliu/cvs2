@@ -51,7 +51,7 @@ export type AnalizaGcode = {
 /** Câte pauze ține analiza (un fișier cu mii de `M0` nu umple memoria). */
 export const MAX_PAUZE = 50;
 /** Comenzile care opresc imprimarea până la o reluare: macroul Klipper, schimbarea filamentului, pauzele Marlin și Prusa. */
-const RE_PAUZA = /^(PAUSE|M0|M1|M25|M226|M600|M601)(?=\s|$)/;
+export const RE_PAUZA = /^(PAUSE|M0|M1|M25|M226|M600|M601)(?=\s|$)/;
 
 /** Câtă imprecizie de calcul trece drept „pe margine”, în mm. */
 const EPS = 1e-6;
