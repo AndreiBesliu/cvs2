@@ -101,3 +101,7 @@ jobs:
         run: |
           python test/oracles-py/wmf_import_corpus.py .tmp/wmf-corpus --fara-gdi
           diff -r .tmp/wmf-corpus test/fixtures/wmf
+      # Trasarea din imagine (ADR 0220): generatorul scrie imaginile cu acoperirea exactă pe pixel și martorul scikit-image;
+      # aici le reface în memorie și cere aceiași pixeli și același asteptat.json ca cele comise (octeții PNG țin de zlib).
+      - name: Corpusul trasării, refăcut, egal cu cel comis
+        run: python -X utf8 test/oracles-py/trasare_corpus.py --verifica

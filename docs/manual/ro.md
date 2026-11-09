@@ -491,11 +491,11 @@ centrarea pe foaie lucrează la fel cu el sau fără. Ca niște forme să se mi�
 [Gruparea](#grupare)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG, DXF, PDF, AI, EPS și WMF
+## Importul SVG, DXF, PDF, AI, EPS, WMF și al imaginilor
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
+Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF / imagine** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
 „Exportă G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu
 centrul unde îl lași.
 
@@ -510,11 +510,13 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 - la un WMF fără antet placeable, **unitatea**: 1/96 țol (px, ca LibreOffice), 1/1440 țol (twip), 0,01 mm, 0,1 mm sau mm
   (vezi mai jos);
 - la un PDF cu mai multe pagini, **pagina** de importat (vezi mai jos);
+- la o imagine, **trasarea**: cum devine desenul din pixeli contururi (vezi mai jos);
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF, AI, EPS și WMF, de cel mult 16 MB, nearhivate (nu
-`.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de export.
+**Renunță la toate** închid fereastra. Se importă fișierele SVG, DXF, PDF, AI, EPS și WMF, precum și imaginile PNG, JPEG,
+WebP, GIF și BMP, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
+export.
 
 Un **DXF** se citește așa:
 - DXF-ul text (ASCII), de la R12 la cele noi; unul binar e refuzat (salvează-l ca ASCII);
@@ -565,6 +567,76 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
   se aplică;
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
+
+O **imagine** (PNG, JPEG, WebP, GIF sau BMP: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
+marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
+dreapta:
+- **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
+  transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
+  rândul de sub listă spune ce a ales;
+- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
+  fiecărei trăsături, tăiat pe linie: vezi mai jos);
+- **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
+  glisorul îl mută;
+- **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
+- **Netezimea**: **Fidel** urmează marginea de aproape și păstrează colțurile mici, **Echilibrat** netezește treptele
+  pixelilor, **Neted** rotunjește colțurile mici și dă mai puține noduri;
+- **Ignoră petele sub** și **Umple golurile sub** (în mm, cu pixelii alături): petele de desen și golurile din el mai mici de
+  atât dispar (praful unei scanări, zgomotul unei fotografii); o formă lipită de marginea imaginii rămâne;
+- **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din DPI-ul scris în fișier, iar fără el din 96 px pe
+  țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine scara.
+
+Previzualizarea arată **Imaginea**, **Vectorii** sau **Amândouă** (cu **Estompează imaginea**, ca vectorii să se vadă peste
+ea); rotița mărește în jurul mausului, tragerea mută imaginea, **Mărește** și **Micșorează** fac la fel din butoane, iar
+**Încadrează** arată toată imaginea. Sub ea stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
+mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat și dacă marginile erau dure
+(fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
+rămâne vie, iar o schimbare nouă o oprește pe cea începută.
+
+Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
+exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
+incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apoi:
+- **Numărul culorilor**: **Automat** găsește singur culorile deosebite ale imaginii (umbrirea unei suprafețe rămâne o
+  singură culoare, iar o culoare mică dar clară, ca o linie subțire, rămâne a ei); fără el, glisorul alege de la 2 la 16.
+  Un număr nou face culorile din nou, fără legăturile și bifele de dinainte;
+- **pastilele**: fiecare culoare, cu cât din desen are și bifa **Se trasează**. La o imagine opacă, culoarea marginii e
+  **fundalul**, nebifată (o poți bifa); la una transparentă, transparentul nu e o culoare;
+- **legarea**: trage o pastilă peste alta și cele două devin o singură culoare (de exemplu, umbra unei litere și litera);
+  **Leagă de…** face același lucru de la tastatură, iar pastila legată are **Dezleagă**;
+- mausul pe o pastilă îi arată regiunea în previzualizare; **Imaginea** e aici imaginea pictată în culorile găsite.
+
+**Importă** pune câte o formă pe culoare bifată, toate aliniate ca în imagine, într-un singur pas (un Ctrl+Z le scoate pe
+toate); numele fiecăreia are culoarea ei (de exemplu „logo #0c619c”). Rolul fiecăreia (buzunar, V-carve, incrustație) îl
+alegi apoi din panou.
+
+Cu **Rezultatul: Linii mediane**, fiecare trăsătură devine linia ei de mijloc, nu conturul: un scris de mână, o semnătură,
+un desen cu linii. O linie se termină în centrul capătului rotund al trăsăturii (acolo se oprește o freză cât trăsătura);
+unde se întâlnesc trăsături, liniile se întâlnesc într-un punct, iar cele care se continuă (bara unui T, un X, o buclă care
+se încrucișează) rămân o singură linie; un O sau un inel devine o buclă. O pată plină dă linia ei de mijloc (un dreptunghi
+lung, o linie; un disc, doar un punct): punctele, adică trăsăturile mai scurte decât grosimea lor, nu au linie, iar raportul
+le numără. Raportul spune și **grosimea obișnuită a trăsăturilor**, în mm, iar dacă foaia are o singură freză, cum stă ea
+față de trăsătură: mai lată (gravura ar mânca din jur), mai îngustă (ar ieși mai subțire) sau cât ea. **Arată grosimea**
+desenează, sub linii, banda pe care ar tăia-o o freză cât trăsătura. **Importă** pune liniile într-o formă, toate tăiate
+pe linie (și buclele), ca liniile deschise ale unui SVG.
+
+Sub **Rezultatul: Linii mediane** stau opțiunile lor:
+- **Capetele:** **Centrul capătului** (implicit) sau **Vârful trăsăturii**: linia merge până la marginea trăsăturii, pentru o
+  freză în V care trebuie să ajungă până în vârf;
+- **Părțile late:** **Linii mediane** (implicit: o pată plină dă linia ei de mijloc) sau **Contururi**: părțile mai late
+  decât pragul rămân contururi închise, tăiate pe exterior (golurile lor pe interior), iar liniile care ajung la ele se
+  opresc pe conturul lor, fără punte; **Mai late de**: **Automat** (de două ori grosimea obișnuită) sau o valoare în mm;
+- **Arată părțile late** (pornită implicit): previzualizarea le colorează, iar raportul spune câte sunt și ce parte din
+  cerneală, ca să vezi că desenul are părți pline înainte să imporți;
+- **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
+  iar o buclă aflată în alta, pe interior.
+
+Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
+afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
+- liniile mediane pe culori și scanările îndreptate vin mai târziu;
+- o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
+  numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
+- o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
+- TIFF-ul nu se citește încă (salvează imaginea ca PNG), iar imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
 
 ## Tăierea vectorilor
 %% capitol: taiere

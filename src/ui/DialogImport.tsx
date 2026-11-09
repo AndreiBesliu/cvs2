@@ -9,17 +9,22 @@ import { CODURI_AVERTISMENT_WMF, UNITATI_WMF } from '../io/wmfCoduri.ts';
 import {
   CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismenteEps, type AvertismentePdf, type AvertismenteWmf,
   type CodAvertisment, type CodAvertismentDxf, type CodAvertismentEps, type CodAvertismentPdf, type CodAvertismentWmf, type CodEntitati,
-  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf,
+  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf, type AlegeriTrasare,
+  type AvertismenteImagine,
 } from './actiuniImport.ts';
+import { PanouTrasare } from './FereastraTrasare.tsx';
 import { useLimba } from './useLimba.ts';
 
-const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
+// „prea-multe” (o imagine trasată) e plural, după numărul contururilor: textRefuz îl scrie înaintea tabelului.
+const REFUZ: Readonly<Record<Exclude<CodRefuzImport, 'prea-multe'>, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
   neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
+  tiff: 'import.imagine.tiff', 'imagine-citire': 'import.imagine.citire', 'imagine-timp': 'import.imagine.timp',
+  anulat: 'import.imagine.anulat',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -111,9 +116,13 @@ const UNITATE_WMF = {
 
 /** Raportul ușii care a citit fișierul, în ordinea codurilor ei. */
 function ListaAvertismente({ a, format }: {
-  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | undefined; readonly format: FormatImport | undefined;
+  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | AvertismenteImagine | undefined;
+  readonly format: FormatImport | undefined;
 }) {
-  const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'dxf'
+  const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'imagine'
+    ? (['sub-rezolutie', 'prea-mari'] as const).filter((c) => ((a as AvertismenteImagine)[c] ?? 0) > 0)
+      .map((c) => ({ cod: c, text: t(`import.imagine.${c}`, { n: (a as AvertismenteImagine)[c] }) }))
+    : format === 'dxf'
     ? CODURI_AVERTISMENT_DXF.filter((c) => ((a as AvertismenteDxf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_DXF[c], { n: (a as AvertismenteDxf)[c] }) }))
     : format === 'pdf'
       ? CODURI_AVERTISMENT_PDF.filter((c) => ((a as AvertismentePdf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_PDF[c], { n: (a as AvertismentePdf)[c] }) }))
@@ -138,11 +147,14 @@ function ListaAvertismente({ a, format }: {
  * PostScript). `nume`: fișierul (o eroare de citire a unui DXF, PDF sau EPS nu spune „nu e un SVG”; un AI fără conținut PDF
  * își primește sfatul).
  */
-function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined): string {
+function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined, culori = false, puncte = 0): string {
   if (cod === 'parsare' && formatImport(nume, '') !== 'svg' && format !== 'svg') return t('import.refuz.citire');
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
+  // Liniile mediane fără nicio linie, dar cu puncte (ADR 0222): o pată plină sau doar puncte; pentru ele, contururile.
+  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : puncte > 0 ? 'import.imagine.gol-mediane' : 'import.imagine.gol');
+  if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
@@ -186,6 +198,12 @@ type Props = {
   readonly onSari?: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C): „Propus de <extensie>”, sub titlu. */
   readonly de?: string;
+  /** O imagine (ADR 0220 §10): alegerile trasării, schimbarea lor și octeții imaginii pentru previzualizare. */
+  readonly trasare?: {
+    readonly alegeri: AlegeriTrasare; readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly octeti: Uint8Array | null;
+    /** Diametrul frezei foii, dacă are una singură: raportul liniilor mediane îl compară cu trăsătura (ADR 0222 §5). */
+    readonly freza?: number;
+  };
 };
 
 /**
@@ -197,7 +215,7 @@ type Props = {
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, seRecitesc, motiv, onPx, onUnitate, onUnitateWmf, onPagina, onImporta,
-  onInchide, coada, onSari, de,
+  onInchide, coada, onSari, de, trasare,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -214,15 +232,23 @@ export function DialogImport({
   const ok = stare !== 'citire' && stare.ok ? stare : null;
   // Paginile unui PDF citit până la lista lor (și refuzat după aceea): peste una, alegerea paginii.
   const pagini = stare === 'citire' ? 0 : stare.ok ? (stare.format === 'pdf' ? stare.pagini : 0) : (stare.pagini ?? 0);
+  // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
+  const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
-      <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
+      <div className={imagine ? 'dialog-cutie dialog-trasare' : 'dialog-cutie'} ref={cutie} tabIndex={-1}>
         <h2 id="import-titlu">
           {t('import.titlu', { nume })}
           {coada && <span data-testid="import-coada">{' '}{t('import.coada', { k: coada.k, n: coada.n })}</span>}
         </h2>
         {de !== undefined && <p className="mic" data-testid="import-de">{t('import.propus-de', { nume: de })}</p>}
-        {stare === 'citire' && <p role="status">{t('import.citeste')}</p>}
+        {stare === 'citire' && !imagine && <p role="status">{t('import.citeste')}</p>}
+        {/* Un panou pentru fiecare fișier al cozii: ciorna câmpurilor (lățimea scrisă la imaginea dinainte) și mărirea nu trec
+            la imaginea următoare. */}
+        {imagine && (
+          <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare}
+            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })} />
+        )}
         {pagini > 1 && (
           <div className="campuri">
             <label>
@@ -235,7 +261,7 @@ export function DialogImport({
         )}
         {stare !== 'citire' && !stare.ok && (
           <>
-            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format)}</p>
+            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori', stare.trasare?.mediane?.puncte ?? 0)}</p>
             <ListaAvertismente a={stare.avertismente} format={stare.format} />
           </>
         )}
@@ -243,15 +269,21 @@ export function DialogImport({
           <>
             <p data-testid="import-marime">{t('import.marime', { latime: ok.latime.toFixed(2), inaltime: ok.inaltime.toFixed(2) })}</p>
             {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
-              <p data-testid="import-cai">{t('import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+              <p data-testid="import-cai">{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+            )}
+            {ok.format === 'imagine' && ok.trasare.sursa === 'culori' && (
+              <p data-testid="import-piese">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>
             )}
             {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
-            {ok.deschise > 0 && (
+            {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (
+              // Liniile mediane (ADR 0222 §7): deschise și bucle, toate pe linie; grosimea e în raportul ferestrei.
+              <p data-testid="import-deschise">{t('import.mediane', { n: ok.deschise })}</p>
+            ) : (
               <>
                 <p data-testid="import-deschise">{t('import.deschise', { n: ok.deschise })}</p>
                 <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
               </>
-            )}
+            ))}
             {ok.format === 'dxf' && (ok.unitati.declarate ? (
               <p data-testid="import-unitati">
                 {t('import.unitati.declarate', { unitate: ok.unitati.unitate ? t(UNITATE[ok.unitati.unitate]) : t('import.unitati.alta', { mm: mm.format(ok.unitati.mmPeUnitate) }) })}

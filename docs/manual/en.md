@@ -512,11 +512,11 @@ browser, like Snap; distributing and centring on the sheet work the same with it
 move together, group them (see [Grouping](#grupare)).
 Each alignment can be undone with `Ctrl+Z`.
 
-## Importing SVG, DXF, PDF, AI, EPS and WMF
+## Importing SVG, DXF, PDF, AI, EPS, WMF and images
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG / DXF / PDF / AI / EPS / WMF** button in the top bar (the first of the files, next to “Export vectors” and
+The **Import SVG / DXF / PDF / AI / EPS / WMF / image** button in the top bar (the first of the files, next to “Export vectors” and
 “Export G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands
 centred where you drop it.
 
@@ -531,11 +531,12 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - for a WMF without a placeable header, **the unit**: 1/96 inch (px, as in LibreOffice), 1/1440 inch (twip), 0.01 mm, 0.1 mm
   or mm (see below);
 - for a PDF with several pages, **the page** to import (see below);
+- for an image, **the tracing**: how the drawing's pixels become outlines (see below);
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, up to 16 MB, not compressed (no `.svgz`).
-Text has to be converted to outlines in the drawing program before export.
+**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF and BMP
+images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
 - the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
@@ -587,6 +588,76 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - skipped, and counted: texts, images and raster operations, painted regions, unknown records; clipping is not applied;
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
+
+An **image** (PNG, JPEG, WebP, GIF or BMP: a logo, a scanned drawing, a signature) is **traced**: the application finds the
+drawing's edge and writes it as vectors, in black and white. The window widens, with the settings on the left and the
+preview on the right:
+- **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
+  background (the drawing is everything that is not transparent, whatever its colour) and **Brightness** for an opaque one
+  (the background has the colour of the image's edge); the line under the list says which it chose;
+- **Result** (with Transparency and Brightness): **Outlines** (the drawing's edge) or **Centre lines** (the middle of each
+  stroke, cut on the line: see below);
+- **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
+  tones; without it, the slider moves it;
+- **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
+- **Smoothness**: **Faithful** follows the edge closely and keeps small corners, **Balanced** smooths the pixel steps,
+  **Smooth** rounds small corners and gives fewer nodes;
+- **Ignore specks under** and **Fill holes under** (in mm, with the pixels beside them): specks of drawing and holes in it
+  smaller than that disappear (the dust of a scan, the noise of a photo); a shape touching the image's edge stays;
+- **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the DPI written in the file, and without
+  it from 96 px per inch, as for an SVG; the line under it shows the height, the pixel's size and where the scale comes from.
+
+The preview shows the **Image**, the **Vectors** or **Both** (with **Fade the image**, so the vectors show over it); the wheel
+zooms around the mouse, dragging moves the image, **Zoom in** and **Zoom out** do the same from buttons, and **Fit** shows the
+whole image. Under it is the report: the **largest deviation** of the vectors from the edge in the image (in mm and in
+pixels, measured on every outline), the image's size, how many specks and holes were cleaned up, and whether the edges were
+hard (no shades: then the pixel steps are smoothed). Every change traces the image again, on the side: the window stays
+responsive, and a new change stops the one under way.
+
+With **Source: Colours**, the image is traced by colour: each colour becomes a shape of its own, and two neighbouring
+colours share exactly the same edge (no strip and no overlap between them), so you can carve them at different depths or
+inlay them. The threshold and **Invert** are hidden; the other settings stay. Then:
+- **Number of colours**: **Automatic** finds the image's distinct colours by itself (the shading of a surface stays one
+  colour, and a small but clear colour, such as a thin line, keeps its own); without it, the slider picks from 2 to 16. A
+  new number makes the colours again, without the earlier links and ticks;
+- **the swatches**: each colour, with its share of the drawing and the **Trace** tick. On an opaque image, the colour of
+  the image's edge is the **background**, unticked (you can tick it); on a transparent one, transparency is not a colour;
+- **linking**: drag a swatch onto another and the two become one colour (for example, a letter's shadow and the letter);
+  **Link to…** does the same from the keyboard, and a linked swatch has **Unlink**;
+- the mouse over a swatch shows its region in the preview; the **Image** here is the image painted in the colours found.
+
+**Import** adds one shape per ticked colour, all aligned as in the image, in a single step (one Ctrl+Z removes them all);
+each one's name has its colour (for example “logo #0c619c”). You then pick each one's role (pocket, V-carve, inlay) in the
+panel.
+
+With **Result: Centre lines**, each stroke becomes its middle line, not its outline: handwriting, a signature, a line
+drawing. A line ends at the centre of the stroke's round end (where a cutter as wide as the stroke stops); where strokes
+meet, the lines meet at one point, and those that carry on (the bar of a T, an X, a loop that crosses itself) stay one
+line; an O or a ring becomes a loop. A filled blob gives its middle line (a long rectangle, a line; a disc, only a dot):
+dots, that is strokes shorter than their width, have no line, and the report counts them. The report also gives the
+**usual stroke width**, in mm, and, if the sheet has a single cutter, how it compares with the stroke: wider (the
+engraving would eat into its surroundings), narrower (it would come out thinner) or as wide. **Show the width** draws,
+under the lines, the band a cutter as wide as the stroke would cut. **Import** adds the lines as one shape, all cut on the
+line (the loops too), like the open paths of an SVG.
+
+Under **Result: Centre lines** sit their options:
+- **Line ends:** **Centre of the end** (the default) or **Tip of the stroke**: the line runs to the stroke's edge, for a
+  V-bit that has to reach the tip;
+- **Wide parts:** **Centre lines** (the default: a filled blob gives its middle line) or **Outlines**: parts wider than the
+  threshold stay closed outlines, cut on the outside (their holes on the inside), and the lines that reach them stop on
+  their outline, with no bridge; **Wider than**: **Automatic** (twice the usual stroke width) or a value in mm;
+- **Show the wide parts** (on by default): the preview colours them and the report says how many there are and what share
+  of the ink, so you see that the drawing has filled parts before you import;
+- **Loops:** **On the line** (the default) or **Closed vectors**: an O or a ring becomes a closed outline, cut on the
+  outside, and a loop inside another one, on the inside.
+
+The traced drawing comes in as one shape, with the image as its page: the image's bottom-left corner is the sheet's corner.
+Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
+- centre lines by colour and straightened scans come later;
+- an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
+  number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
+- a photo is read turned the way the phone shows it (the orientation stored in the file);
+- TIFF is not read yet (save the image as PNG), and images inside PDFs and SVGs are skipped, as before.
 
 ## Cutting vectors
 %% capitol: taiere

@@ -6759,6 +6759,218 @@ căzute, din CI).
   doar după `cadru(page)`, iar celelalte locuri ajung în cadru prin alte nume. Completul pe `c73177f` a căzut la fel în
   `extensii.spec.ts` (butonul „eroare”, după filă); sesiunea principală a mutat ajutorul în `test/e2e/ajutor-extensii.ts` și
   l-a pus în toate cele patru locuri (`a88b00f`).
+## 2026-11-07 — Felia 25.1↑ pornită: trasarea din imagine (ADR 0220, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „**Trasarea din imagine (bitmap → vectori) în cncvs2**, adusă din etapa 25, într-un worktree al tău. **Întâi
+cercetarea, un ADR propus și o schiță, cu întrebările pentru owner; codul abia după răspunsuri.**” (sesiunea principală, după
+ce owner-ul a întrebat ce se mai poate face în paralel).
+**Started:** 07.11, 14:05. **Completed:** 07.11, 14:44 (cercetarea, ADR-ul și schița; codul lui 25.1↑ așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\trasare`, ramura `wip/25.1-trasare` (din `main` `36c75cb`), cu
+  joncțiunile `node_modules`; e2e pe 4179 (`.tmp/pw.config.ts`) cu `CNCVS2_E2E_RETEA=127.0.6`; ADR-urile 0220–0229; canalul
+  `trasare`.
+- **Cercetarea:** ArtCAM 2018 (referință funcțională: culorile reduse, apoi granița sau linia mediană a culorii alese, petele în
+  pixeli, netezimea, imaginea estompată), Vectric, LightBurn și Inkscape; algoritmii din lucrări (Otsu, marching squares,
+  Selinger 2003 pentru poligon, colțuri și cubice); licențele (potrace GPL, autotrace GPL, `marchingsquares` AGPL-3.0,
+  `imagetracerjs` Unlicense fără sub-pixel, `vtracer` MIT dar WASM prea mare; scikit-image BSD-3, doar ca oracol); lecțiile
+  ediției întâi (D4–D8, D15; eroarea ≈ 0,65 px). Verdictul de portare: rescris, cu vechiul ca martor (logoul owner-ului din
+  ediția întâi, 1288 × 325, alb pe transparent).
+- **Măsurat:** în Edge 157 fără fereastră (o sondă Playwright locală): PNG, JPEG, WebP, GIF și BMP decodate de
+  `createImageBitmap`, TIFF refuzat; orientarea EXIF aplicată mereu; culoarea pixelilor aproape transparenți se pierde prin
+  canvas (alfa rămâne exactă); 12 Mpx în worker: decodarea 37 ms, pixelii 20 ms. Build curat la `36c75cb`: totalul 506,0 / 550
+  kB, pornirea 101,4 (104,9 cu ușa) / 110; bucata importului 34,7 kB pentru cinci uși.
+- **ADR 0220, propus:** ușa imaginilor în „Importă…”; calculul în workerul CAM, cu nucleul ca bucată la cerere a workerului;
+  cerneala din RGBA (transparența ca acoperire, altfel întunecimea, cu fundalul din margine); pragul Otsu la jumătatea
+  acoperirii; petele și golurile mici în mm; conturul sub-pixel; poligonul, colțurile și cubicele după Selinger, cu abaterea
+  măsurată și arătată; mărimea din DPI sau 96 px / țol; aceeași piesă ca la SVG, documentul tot v19; plafoanele și termenul
+  (lecția D6); probele întâi (corpusul Python cu valorile pe hârtie, scikit-image ca al doilea martor, fișierul real întâi).
+  Feliile 25.1↑ (alb-negru, ~6 h, ~8 kB), 25.2↑ (culorile), 25.3↑ (linia mediană), 25.4↑ (scanările, la cerere). Opt
+  întrebări, cu recomandarea întâi.
+- **Schița:** șapte planșe, <https://claude.ai/artifact/6qm1Kdx7By22tPAxSHtHKj>: fereastra trasării ca machetă vie (pragul,
+  petele și conturul brut calculate în pagină, cu greșeala D7 reprodusă), drumul unei imagini cu muchia sub-pixel de aproape
+  (0,08 px față de 0,53 px ale treptelor), lecțiile, alte programe și licențele, probele, feliile cu bugetul la scară,
+  întrebările cu formularul (colecția `raspunsuri`, documentul `owner`).
+- **În fișă:** rândul 25.1↑ (în lucru) în jurnal și rândul răspunsurilor în coada owner-ului; ADR-ul în index; traducerile (5
+  texte, `--verifica` cu 0 lipsuri). Probele documentației și ale traducerilor: 28 / 28.
+- **Rămâne:** răspunsurile owner-ului (formularul din schiță), apoi codul lui 25.1↑, cu proba scrisă întâi. Nimic unit în
+  `main` (decizia owner-ului).
+
+## 2026-11-07 — Felia 25.1↑: trasarea alb-negru (ADR 0220, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–8a” (owner-ul, în sesiunea liniei trasării, la cele opt întrebări din ADR 0220).
+**Started:** 07.11, 14:57. **Completed:** 07.11, 18:45.
+
+- **Răspunsurile:** toate recomandările: trasarea în „Importă…”; 96 px / țol fără DPI, cu lățimea în fereastră; linii și cubice;
+  ordinea 25.1↑ → 25.2↑ → 25.3↑ (25.4↑ la cerere); TIFF refuzat acum; în precache; scikit-image ca al doilea martor (descărcarea
+  permisă); logoul din ediția întâi în corpusul public. Scrise în ADR 0220 (acceptat), în `CLAUDE.md` („Decizii luate”) și în
+  fișă (rândul cozii scos).
+- **Înainte de cod:** `main` (`8003cb2`, cu incrustațiile și tăierea vectorilor) unit în ramură (`54168c5`; ciocnirile doar la
+  capetele indexului ADR și ale DEVLOG-ului).
+- **Pasul 1** (`f7c8431`): nucleul (`src/trasare/trasare.ts`, cod propriu din lucrări, fără importuri din aplicație) și corpusul
+  lui independent (`test/oracles-py/trasare_corpus.py`: 10 imagini cu acoperirea exactă, valorile pe hârtie, martorul
+  scikit-image pe disc și pe logoul owner-ului, refăcut și comparat în CI), cu judecătorul în ambele sensuri.
+- **Pasul 2** (`e13a179`): ușa imaginilor (`formatImport`, DPI-ul din antet), workerul trasării (al lui: workerele se
+  construiesc IIFE, nucleul ar fi crescut workerul CAM), fereastra (sursa, pragul, Inversează, Netezimea, curățarea în mm,
+  lățimea; previzualizarea cu mărirea; raportul). Laturile din sensul contururilor: imbricarea ținea firul principal 553 ms
+  pe o poză de 12 Mpx.
+- **Pasul 3** (`68b331d`): sonda în Edge fără fereastră (panoul era ascuns), apoi în Node, pe o poză JPEG zgomotoasă: abaterea
+  raportată ajungea la 1,6 px din trei cauze, fiecare pe conturul ei (latura care se întorcea în discul startului sărea un ac
+  de un pixel; o limbă subțire nu era colț; mutarea vârfului spre coardă scurta un ac). Reparate, cu proba pe zgomot:
+  1,52 / 1,56 / 1,65 → 0,56 / 0,61 / 0,63 px. Sosirea unui rezultat mare: praful judecat întâi pe cutia vârfurilor, cel mai
+  lung cadru 518 → 183 ms (profilul CPU: cutia exactă a fiecărei cubice). Abaterea ascunsă la un refuz, pluralele, capitolul
+  din manual.
+- **Pasul 4** (`0104c83`): oprirea citirii prin contextul importului (o citire nouă, fișierul următor, demontarea dialogului);
+  e2e-urile trasării: logoul ca în Node (48: 40 + 8), lecția D7, Escape cu tasta reală, o poză de 3000 × 2000 (cel mai lung
+  gol 17 ms; Inversează oprește calculul vechi fără răspuns).
+- **Pasul 5** (`598913a`): histograma sub glisorul pragului (decizia o cerea, fereastra n-o avea), probele ușii (DPI-ul din PNG,
+  JPEG JFIF și EXIF, BMP; scara; căile în mm, cu Y în sus: un desen întors ar fi trecut de e2e), o imagine de 17 Mpx redusă,
+  lista otrăvurilor.
+- **Pasul 6** (`1738160`, `87d37b1`): otrăvurile, din worktree, serial: 69; la prima rulare 58 prinse, 9 scăpate, una VOID (P04,
+  linia schimbată de histogramă). Probe țintite pentru cele scăpate (nivelul plin al alfa, transparentul pus pe alb, Otsu pe
+  hârtie, golul lipit de margine, bucla prin șa pe hârtie, marginea dură cu nuanțe, colțurile strânse de cel puțin 25°, banda
+  pe zgomot, pragul de 50 % pe transparență). E01 era echivalentă: Renunță și Escape demontează dialogul, iar demontarea
+  oprește citirea; oprirea dublă din `inchide` a ieșit, iar otrava a trecut pe demontare. Rejucate: toate prinse; pe codul
+  final, 69 / 69 (cele 58 din prima rulare pe aceleași fișiere, cu aceleași probe sau mai strânse). Tot aici, un defect găsit
+  la citirea codului: într-o coadă de imagini, panoul trasării trecea de la o imagine la alta cu ciorna (lățimea scrisă) și
+  mărirea; acum are cheia fișierului, cu proba e2e (otrava E07).
+- **Porțile:** typecheck (aplicația, extensia, funcțiile), regulile de import (20, cu capcana nouă `trasare-izolat`),
+  licențele, corpusul Python, suita unitară întreagă, e2e-urile trasării (6) și ale importului (23), build-ul determinist.
+- **Mărimea:** totalul 531,8 / 550 kB (`main` 519,5: +12,3; estimarea era ~8), pornirea 101,6 / 110 (105,2 cu ușa); workerul
+  trasării 7,0 kB gzip, bucata ușilor +2,0 kB.
+- **Publicat** pe canalul `trasare` al instanței de test (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe
+  07.12), din `6da7d74`; încercat acolo, în Edge fără fereastră: logoul owner-ului, 48 de contururi, piesa pe foaie, 0 erori.
+  Suita unitară pe codul final: 8619 teste, 8611 trecute, 0 picate, 8 sărite. Neunit în `main` (decizia owner-ului).
+
+## 2026-11-07 — Felia 25.2↑ pornită: trasarea pe culori (ADR 0221, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.2↑” (owner-ul, la „Pornesc felia 25.2↑ (culorile)?”, după raportul feliei 25.1↑).
+**Started:** 07.11, 19:11. **Completed:** 07.11, 19:25 (cercetarea, ADR-ul și schița; codul lui 25.2↑ așteaptă răspunsurile).
+
+- **De ce întâi propunerea:** ADR 0220 (§12) hotărâse doar conturul feliei; interfața culorilor (pastilele, legarea) e o
+  decizie de aspect, deci schița vine înaintea codului (regula din 02.11), ca la 25.1↑.
+- **Cercetarea:** ArtCAM 2018 și Carveco (reducerea culorilor cu un glisor, legarea prin tragerea unei pastile peste alta,
+  legăturile șterse la o reducere nouă), Inkscape (culorile trasate separat lasă goluri; cu „Stack”, se suprapun), vtracer
+  (în 0.6, „cutout” cu cusături; mozaicul fără cusături doar în 1.0 alfa); OKLab (Ottosson, 2020), k-means++ (Arthur și
+  Vassilvitskii, 2007), plasa duală (Surface Nets, Gibson, 1998).
+- **Măsurat** (sonda `.tmp/dbg-culori.ts`, Node 26): logoul owner-ului are 3 culori naturale în OKLab, pe cei 25 203 pixeli
+  plini: albastru `#07609c` 22 %, gri închis `#353c45` 61 %, gri deschis `#4e5560` 17 % (cel puțin 0,095 între centre); la 4,
+  o lumină de 1,8 % se desparte la 0,055, deci regula „Automat” (0,08 și 1 %) se oprește la 3. Pe 12 Mpx: 8 culori în 260 ms.
+- **ADR 0221 (propus):** sursa „Culorile” în fereastra trasării; reducerea pe pixelii plini (fără amestecurile de pe
+  margini); numărul automat sau 2–16; pastilele cu ponderea, bifa și legarea; granițele comune la amestecul de 50 %, pe o
+  plasă duală a etichetelor, netezite o dată pentru ambele culori; o piesă pe culoare, aliniate; probele (corpusul pe culori,
+  logoul față de alb-negru și față de scikit-image, e2e, otrăvurile); ~+5–7 kB. Cinci întrebări, cu recomandarea întâi.
+- **Schița:** <https://claude.ai/artifact/DGtMAHCKrGFPqCor4vxjVY> (sursa: `.tmp/schita-0221-culori.html`): macheta vie a
+  ferestrei pe culori (reducerea rulează în pagină, legarea prin tragere, fundalul unei imagini opace), drumul unei imagini
+  color, de ce granițe comune (separat, suprapuse, comune; plasa duală pe o grilă), ce fac alte programe, probele și
+  pachetul, întrebările cu formularul (`raspunsuri/owner`). Privită o dată (lat și telefon, ambele teme, fără erori).
+- Fără cod; nimic unit în `main`.
+
+## 2026-11-07 — Felia 25.2↑: trasarea pe culori (ADR 0221, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0221).
+**Started:** 07.11, 19:24. **Completed:** 07.11, 22:20
+
+- **Răspunsurile:** toate recomandările: numărul culorilor automat (2–16 cu glisorul); legarea prin tragerea pastilei, cu
+  „Dezleagă”; pe o imagine opacă, culoarea marginii e fundalul, nebifată; o piesă pe culoare, aliniate, cu rolul din panou;
+  culoarea doar în numele piesei. Scrise în ADR 0221 (acceptat), în `CLAUDE.md` („Decizii luate”) și în fișă (rândul cozii
+  scos).
+- **Înainte de cod:** `main` (`63d6af5`, cu biblioteca extensiilor, 3.Xg) unit în ramură (`ffae8a1`; ciocnirile doar la
+  capetele documentelor comune).
+- **Felia, în patru treceri** (`9fe27dd`, `c39e46c`, `672c199`, `88b2e10`, apoi documentele): (1) nucleul
+  (`src/trasare/culori.ts`) și corpusul lui pe hârtie (sectoarele cu joncțiunile, inelul, tabla de șah) plus logoul; reducerea
+  refăcută pe logo: testul „plin” de 3 × 3 pierdea liniile portocalii (0 din 414 pixeli), iar k-means împărțea umbrirea
+  griului la orice număr; acum pixelii plini fără amestecurile de margine, OKLab cu luminozitatea pe jumătate, 32 de clase
+  unite după distanță; paleta automată a logoului: griul, albastrul, portocaliul (48 de contururi, reuniunea la 0,02 % de
+  alb-negru); (2) calculul, ușa (o piesă pe culoare, din aceeași pagină, „<fișier> #hex”), `document.importa` cu piesele
+  aduse împreună (un pas de anulare, aliniate; lăsate pe planșă, centrul cutiei comune în punct), fereastra (sursa
+  „Culorile”, numărul, pastilele, legarea prin tragere și de la tastatură, imaginea pictată cu regiunea de sub maus),
+  manualul, e2e; (3)–(4) otrăvurile: prima rulare 42 / 51 (lotul s-a oprit cu trei înainte de capăt: `lot` cere numărul din
+  `verifica`); scăpatele: probe noi (șase culori; culoarea legată de fundal și fundalul legat de o culoare; marginile la
+  jumătate de pixel; golul lipit de margine printr-un colț; joncțiunea lângă un colț), o regulă nouă la atingerile în colț
+  (bucla ocolește aceeași vecină, fără unghiuri: proba trecea doar fiindcă bucla pornea din punct), cod scos (dreapta
+  joncțiunii verificată pe rest, cubica arcelor scurte), echivalente (ordinea paletei, acum după pondere; marginea
+  indicilor la teșiturile arcelor), otrava R03 reparată; a doua rulare 49 / 50, X04 prinsă cu proba ei: 50 / 50. Lista
+  25.1: T02, B02, E05 cu rândurile noi; T02 și B02, prinse.
+- **Măsurat:** corpusul pe culori la 0,08–0,22 px de hârtie, granițele comune cât pe hârtie; barele subțiri au aceeași arie
+  ca alb-negrul la 50 % (pierderea de ~3 % la Echilibrat e a curbelor comune, la capetele de 3 px); cu 4–8 culori, reuniunea
+  logoului stă cu 0,2–0,35 % sub alb-negru (joncțiunile dese); poza de 12 Mpx pe culori: 6,8–8,8 s, 320–370 MB. Totalul
+  545,1 / 550 kB (+9,7 față de `251355e`, pe un build curat; estimarea din ADR era 5–7), pornirea 101,6 / 110.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), importurile, licențele, suita unitară (8 656 trecute, 0 căzute),
+  determinismul (279 de fișiere) și mărimile, corpusul Python (`--verifica`), e2e: trasarea (10) și importul (23).
+- **Pe canal:** `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>).
+
+## 2026-11-07 — Felia 25.3↑ pornită: linia mediană (ADR 0222, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.3↑” (owner-ul, la „Pornesc 25.3↑ (linia mediană)?”, după raportul feliei 25.2↑).
+**Started:** 07.11, 22:31. **Completed:** 07.11, 23:35 (cercetarea, ADR-ul și schița; codul lui 25.3↑ așteaptă răspunsurile).
+
+- **Întâi `main`:** `e9cf6ee` (imprimanta 3D 3.6g–3.6i, raportările 15.B↑b, DEVLOG-ul bibliotecii) unit în ramură (`e4eb7e4`;
+  ciocnirile doar la capetele documentelor comune). Pe rezultat: tipurile (și funcțiile), importurile, suita unitară (8 716
+  trecute, 0 căzute), determinismul (285 de fișiere); **mărimea: 557,1 / 550 kB**, deci poarta cade (`main` singur, pe un
+  build curat, 535,0; linia trasării, 22,1). Unirea și propunerea stau locale, neîmpinse: cu ele, CI-ul ramurii ar fi roșu.
+- **Cercetarea:** ArtCAM / Carveco („Create centreline”, cu vectori deschiși sau bucle), CorelDRAW („Centerline Trace”, două
+  presetări), Inkscape (AutoTrace, GPL / LGPL: nimic din el), LightBurn și Vectric fără linie mediană; Zhang–Suen (1984),
+  axa medială (Blum), joncțiunile (Noris și alții, 2013).
+- **Măsurat:** axa medială exactă a V-carve-ului (`axaMediala.ts` cu `delaunator` și `robust-predicates`) ar costa 9,2 kB
+  gzip în workerul trasării; un prototip pe pixeli (`.tmp/proto-mediana.ts`: transformarea distanței, Zhang–Suen, graful,
+  cioturile, joncțiunile unite, centrul la marginile de 50 %, curbele arcelor din 25.2↑), pe 21 de trăsături de hârtie:
+  topologia corectă în toate, linia la 0,04–0,30 px în medie (0,93 px la colțul unui L gros), grosimea la 0,1 px. Subțierea
+  în ordinea distanței, făcută pe rând, a mâncat miezurile de 2 px (un L de 6 px și-a pierdut brațul): respinsă.
+- **ADR 0222 propus**, cu schița <https://claude.ai/artifact/MQqzj1TaxZgRp5pmnsPCLu> (bugetul la scară, macheta contururi / linii mediane din
+  prototip, măsurătorile, formularul care scrie `raspunsuri/owner`): cinci întrebări, întâi bugetul (575 kB, trasarea doar
+  online, sau 550 cu tăieri), apoi calea, capetele, părțile pline, buclele.
+
+## 2026-11-08 — Felia 25.3↑: linia mediană (ADR 0222, acceptat și implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–5a” (owner-ul, în sesiunea liniei trasării, la cele cinci întrebări din ADR 0222).
+**Started:** 08.11, 09:00. **Completed:** 08.11, 10:50.
+
+- **Răspunsurile:** toate recomandările: bugetul (hotărât între timp de ADR 0143: 600 kB), scheletul pe pixeli cu centrul la
+  marginile de 50 %, capetele în centrul capătului rotund, totul linii mediane, buclele pe linie. Alternativele care pot sta
+  împreună (3b, 4b, 4c, 5b), ca opțiuni în 25.3↑b (regula „toate opțiunile”). Scrise în ADR 0222 (acceptat), în `CLAUDE.md`
+  („Decizii luate”) și în fișă (rândul cozii scos).
+- **Înainte de cod:** `origin/main` (`0060a86`, cu plafonul de 600 kB) unit în ramură (`ed43b49`; ciocnirile doar la capetele
+  documentelor comune): totalul 557,1 / 600, poarta mărimii verde; unirea de ieri (`e4eb7e4`) și propunerea (`6ad0106`),
+  împinse odată cu ea.
+- **Corpusul** (`trasare_corpus.py`, `mediana.json`): 24 de trăsături cu centrul, capetele și joncțiunile pe hârtie (drepte la
+  trei grosimi și unghiuri, capete drepte, arc, T, plus, X la 60°, Y, L, inel, S, K, o trăsătură groasă, o semnătură cu două
+  bucle); martorul scikit-image (`skeletonize`, `euler_number`, cu scipy) dă aceleași capete, joncțiuni și goluri.
+- **Nucleul** (`src/trasare/mediana.ts`): Zhang–Suen cu îndreptarea lui Lü și Wang (fără ea, trăsătura la 45° dispare), cu
+  cozi; coturile treptelor; cioturile (1,5 · raza + 1); joncțiunile unite și puse în încrucișarea brațelor curățate;
+  centrul la mijlocul trecerilor pragului; capetele în centrul capătului rotund, recentrate; brațele din prelungire legate.
+  `campul` e comun cu `traseaza`.
+- **Ușa și fereastra:** „Rezultatul”, `CaiTrasate.deschisa`, buclele în operația căilor deschise, raportul grosimii și al
+  frezei foii (`sculaFoii`, din App), banda grosimii, punctele numărate, refuzul unui desen doar din puncte; manualul.
+- **Otrăvurile** (`test/otravuri/25.3.py`): 50 / 59, apoi, cu furcile, capetele drepte oblice și colțul ascuțit despărțite
+  (garda de distanță a joncțiunii și limita de sus a lățimii la capăt, scoase din cod), 57 / 57.
+- **Porțile:** tipurile (și funcțiile), importurile, licențele, corpusul `--verifica`, suita unitară, e2e (trasarea alb-negru,
+  culorile, liniile mediane, importul), determinismul. Totalul 561,7 / 600 kB (+4,6), pornirea 101,8 / 110.
+
+## 2026-11-08 — 25.3↑ corectată după logo; felia 25.3↑b pornită: opțiunile liniei mediane (ADR 0223, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.3↑b” (owner-ul, în sesiunea liniei trasării, după raportul lui 25.3↑).
+**Started:** 08.11, 11:00. **Completed:** 08.11, 12:45.
+
+- **Corectura lui 25.3↑**, găsită pe logoul owner-ului privit mărit, bucată cu bucată (probele, doar cu îmbinări rotunde,
+  trecuseră toate), în trei pași, fiecare cu probe noi care cad pe codul de dinainte:
+  (1) `ab336f1`: centrarea după lățimea locală, colțurile drepte refăcute în încrucișarea laturilor, joncțiunea doar în
+  cerneală, capetele drepte (zigzagurile din colțurile literelor: 61 de întoarceri peste 120° → 0; „n” de 10 px: 1,69 →
+  0,10 px); (2) `ad11061`: direcția brațelor scurte, insulele colțurilor (pătratul: 0,87 → 0,13 px); (3) `0430183`:
+  dreptele brațelor și ale colțurilor doar pe porțiunea dreaptă (0,5 px), curățarea brațelor cât intră normala în celelalte
+  ((w/2)/tan(θ/2), θ din dreptele unei prime treceri), perechile ca o singură dreaptă când se curbează (colțurile urechilor:
+  2,7–4,1 → ≤ 1,6 px; joncțiunea lui „e”: 4,4 px → pe mijloc; colțul buclei lui „e”: 4,0 → 0,2 px). Pe 434 de configurații
+  întâmplătoare, față de pasul 2: 15 mai bune, 6 mai rele (Y-uri groase din arce, deja la 1,3–2,1 px), topologia neschimbată.
+- **Otrăvurile:** 60 / 66, 64 / 66, 75 / 77, apoi 77 / 77; scăpatele, despărțite (un X din arce strânse, un X îngust, un
+  „e” sintetic, reperele logoului, numărul capetelor la joncțiunile urechilor) sau scoase cu motivul în listă (P04, E03, E05
+  echivalente; B09 cu codul ei).
+- **25.3↑b:** cercetarea (Illustrator „Strokes” cu lățimea maximă, ArtCAM și Carveco „Closed vector loops”, CorelDRAW);
+  prototipul părților late (deschiderea morfologică, două transformări ale distanței: pe logo, 2 părți late, 14,4 % din
+  cerneală; 59 de linii mediane pe rest, 18 lipite de contur; ~0,19 s în plus); ADR 0223 propus, cu trei întrebări (locul
+  opțiunilor, pragul automat, semnalarea implicită); schița, cu toate combinațiile pe logo și formularul:
+  <https://claude.ai/artifact/DzjN21HCFDDnZTZY8q38Pr>.
+- **Porțile** (pe `0430183`): tipurile (aplicația, extensia, funcțiile), corpusul `--verifica`, suita unitară (8774, 0
+  căzute), e2e (trasarea alb-negru, culorile, liniile mediane, importul: 36 / 36), determinismul. Totalul 563,3 / 600 kB
+  (+1,6), pornirea 101,8 / 110.
 
 ## 2026-11-07 — Plafonul total 550 → 600 kB (ADR 0143), clicul pierdut din CI, publicarea pe test (Model: Claude Opus 5.5)
 
@@ -7205,3 +7417,26 @@ sesiunea liniei.
 - **Publicat pe test:** rularea `42502036442`, serverul întâi, apoi site-ul; amprenta `8714306e9b62` pe toate țintele
   (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `8714306e9b62`.
 - **Semnele:** liniei ancorelor (unirea și CI-ul) și liniei incrustațiilor (`main` are acum și ancorele).
+
+## 2026-11-08 — Felia 25.3↑b: opțiunile liniei mediane (ADR 0223, acceptat și implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării, la cele trei întrebări din ADR 0223).
+**Started:** 08.11, 14:05. **Completed:** 08.11, 15:59.
+
+- **Răspunsurile:** toate recomandările: opțiunile sub „Rezultatul”, doar la „Linii mediane”; pragul automat, de două ori
+  grosimea obișnuită; „Arată părțile late” pornită implicit. Scrise în ADR 0223 (acceptat) și în `CLAUDE.md`.
+- **Înainte de cod:** `origin/main` (`031e41a`: incrustațiile 12.1↑b–c, 3.Tg) unit în ramură (`8dde2d2`; ciocnirile doar în
+  documentele comune, păstrate ambele părți; traducerile, reuniunea cheilor): totalul 572,3 / 600, pornirea 101,9 / 110.
+- **Nucleul:** `src/trasare/partiLate.ts` (nou: transformarea distanței Felzenszwalb–Huttenlocher, deschiderea cu discul de
+  rază R0 + 0,5 px, resturile alipite); `traseazaMediana(img, o, om)`: liniile întregului desen (grosimea), părțile late cu
+  pragul dat sau automat, retrasarea pe rest, capetele lipite de contur, contururile cu latura din sensul lor, buclele
+  închise cu latura din încuibare, capetele în vârf (pe direcția porțiunii drepte); `CaiTrasate.peLinie`.
+- **Ușa și fereastra:** `AlegeriTrasare.mediane` (pragul în mm), workerul îl trece în px, transferă `peLinie` și contururile
+  părților late; ușa pune laturile; fereastra: grupul de patru sub „Rezultatul”, părțile late colorate în previzualizare,
+  raportul lor; manualul (ro, en).
+- **Găsite pe logo și de probe:** resturile deschiderii (67 de căi → 51, colțurile blocurilor întregi), marginea deschiderii
+  cuantizată (golul inelului gros: 0,77 px → jumătatea de pixel), racordarea de lângă lipitură (capătul pe contur, nu pe latura
+  de hârtie), talpa lui „t” cu vârful oblic (direcția din porțiunea dreaptă).
+- **Otrăvurile:** lista nouă `25.3b` (37), 36 / 36 la prima rulare (lista 25.3, rulată din nou pe nucleul schimbat: 77 / 77); lista 25.3, cu șapte rânduri aduse la textul nou.
+- **Porțile:** tipurile (aplicația, extensia, funcțiile), corpusul `--verifica`, suita unitară, e2e (trasarea, culorile,
+  liniile mediane, importul), determinismul. Totalul 574,8 / 600 kB, pornirea 101,9 / 110.
