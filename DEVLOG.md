@@ -7593,7 +7593,7 @@ tăierea” (la „Merge tăierea into main?”).
 ## 2026-11-09 — Felia 25.4↑: scanările și pozele (ADR 0224, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–2a” (owner-ul, la cele două întrebări din ADR 0224: „Uniformă” implicit, cu sugestia din raport; zona e
-un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:55.
+un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
 
 - **Ramura** adusă la `origin/main` (`01f6673`: plafonul total 700 kB, ADR 0144; conflict doar în DEVLOG).
 - **Probele întâi:** poze sintetice cu cerneala știută (`test/unit/ajutor-poze.ts`: lumina dintr-o parte, o pată plină,
