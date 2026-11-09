@@ -7860,6 +7860,8 @@ un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
   e2e lucrează în dreapta foii). (2) Selecția cu dreptunghi, trasă de jos-stânga spre sus-dreapta, lua doar textul:
   proba o trage de sus-stânga spre jos-dreapta, ca proba importului (comportamentul vechi, nu al feliei). (3) Excluderea
   literelor grupate dintre curbele unui text nou n-avea cum fi atinsă (un clic lângă litere le alege): codul a plecat.
+  (4) În captura ferestrei CSV, lista „Dacă textul iese din plăcuță” se tăia la 9 rem („avertisment și co…”): lărgită
+  (`f13e3b9`), văzută din nou în captură.
 - **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări), traducerile, unitare 8 979 / 0 (8
   sărite) pe codul feliei (probele adăugate după, rulate singure: 12 / 12), e2e pe suita întreagă 429 / 429, build-ul
   determinist: pornirea cu ușa 109,9 / 110, totalul 607,2 / 700 (plafonul ridicat de owner, ADR 0144, adus din `main` la
@@ -7867,6 +7869,10 @@ un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
 - **Otrăvurile (`test/otravuri/11.4c.py`, alese de autor, în două clone):** prima rulare (`06ca803`): 20 / 21 unitare,
   I05 scăpată (parcurgerea întâlnea rama ultima, deci „ultimul contur” era tot rama: proba nouă pune gaura înaintea
   ramei); prin e2e 15 / 15. Pe codul final (`1c4b000`): 21 / 21 unitare.
+- **Unirea lui `main` de la capăt (`7c22a09`):** plafonul total 700 kB (ADR 0144, decizia owner-ului din 09.11) și
+  25.4↑ (scanările și pozele în trasare, ADR 0224). Porțile pe codul unit: unitare 8 996 / 0 (8 sărite), e2e 434 / 434
+  (una instabilă, exportul offline al PWA, trecută la reluare și apoi singură); pornirea cu ușa 109,9 / 110, totalul
+  611,0 / 700.
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
 
-**Completed:** 09.11, 20:12.
+**Completed:** 09.11, 20:34.
