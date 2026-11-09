@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 import { pornesteImprimanta, type ImprimantaFalsa, type OptiuniImprimantaFalsa } from './imprimantaFalsa.ts';
 
 /**
@@ -73,8 +74,11 @@ test('legarea după adresă: starea, temperaturile, codul și fișierele; bătă
   await expect(page.getByTestId('imprimanta-nume')).toHaveText('K1C-8578');
   await expect(page.getByTestId('imprimanta-banda')).toContainText(`${IP} · prin WiFi · firmware 1.3.3.5`);
   await expect(page.getByTestId('imprimanta-fisier')).toHaveText('output_11031835.gcode');
-  await expect(page.getByTestId('imprimanta-temp-duza')).toHaveText('220 / 220 °C');
-  await expect(page.getByTestId('imprimanta-temp-pat')).toHaveText('50 / 50 °C');
+  // Temperatura de acum și ținta, în câmpul ei (din 3.6o, ținta se scrie direct).
+  await expect(page.getByTestId('imprimanta-temp-duza')).toHaveText('220 /  °C');
+  await expect(page.locator('[data-imprimanta="tinta-duza"]')).toHaveValue('220');
+  await expect(page.getByTestId('imprimanta-temp-pat')).toHaveText('50 /  °C');
+  await expect(page.locator('[data-imprimanta="tinta-pat"]')).toHaveValue('50');
   await expect(page.getByTestId('imprimanta-cod')).toContainText('Cod 5000');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('caramida-2x4.gcode');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('PLA · 41 min');
@@ -91,9 +95,11 @@ test('legarea după adresă: starea, temperaturile, codul și fișierele; bătă
   // Singură, fereastra a trimis doar citirile.
   expect(imp.comenzi()).toEqual(CITIRI);
   // Ținută în browser, cu numele și modelul ei; „Deconectează” n-o atinge.
-  const tinute = await page.evaluate(() => JSON.parse(localStorage.getItem('cncvs2.imprimanta.retea') ?? 'null') as { v: number; imprimante: { adresa: string; port: number; model: string; nume: string }[] });
+  const tinute = await page.evaluate(() => JSON.parse(localStorage.getItem('cncvs2.imprimanta.retea') ?? 'null') as { v: number; imprimante: { adresa: string; port: number; driver: string; model: string; nume: string }[] });
   expect(tinute.v).toBe(1);
-  expect(tinute.imprimante.map(({ adresa, port, model, nume }) => ({ adresa, port, model, nume }))).toEqual([{ adresa: IP, port: 9999, model: 'K1C', nume: 'K1C-8578' }]);
+  // Din 3.6o, cu driverul ei (ADR 0192 §A.5).
+  expect(tinute.imprimante.map(({ adresa, port, driver, model, nume }) => ({ adresa, port, driver, model, nume })))
+    .toEqual([{ adresa: IP, port: 9999, driver: 'creality-k1', model: 'K1C', nume: 'K1C-8578' }]);
   await page.locator('[data-imprimanta="deconecteaza"]').click();
   await expect(page.getByTestId('imprimanta-conectare')).toContainText('K1C-8578');
   expect(comenziSet(imp)).toEqual([]);
@@ -337,4 +343,730 @@ test('IP-ul schimbat (ca imprimanta owner-ului la o pornire de pe ecran): legăt
   await expect(jurnal).not.toContainText('{"maxBedTemp":115}');
   await expect(page.getByTestId('imprimanta-repaus')).toBeVisible();
   expect(comenziSet(noua)).toEqual([]);
+});
+
+// ── Piesele plate din desen (ADR 0191, felia 3.6j) ───────────────────────────────────────────────────────────────────────
+
+/** Dialogul „Din desen…” gata: felierea s-a terminat (cu fișier sau fără). */
+/** Textul din `gcodeCmd` al fiecărei comenzi trimise: doar `M106` pe canalele 0–2 (ADR 0192 §B.8: fără consolă). */
+const gcodeTrimis = (i: ImprimantaFalsa): readonly string[] => i.comenzi()
+  .map((c) => (JSON.parse(c) as { params?: { gcodeCmd?: unknown } }).params?.gcodeCmd).filter((x): x is string => typeof x === 'string');
+
+test('comenzile (3.6o), cu imprimanta liberă: lumina, un ventilator, Preîncălzește și Răcește din bandă, ținta scrisă, homing-ul cu bifa; gcodeCmd doar M106', async ({ page }) => {
+  const imp = await porneste({ homingMs: 400 });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  // Fără o lucrare, viteza și debitul nu se arată; nicio comandă încă.
+  await expect(page.getByTestId('imprimanta-reglaj-viteza')).toHaveCount(0);
+  expect(comenziSet(imp)).toEqual([]);
+  // Lumina: aprinsă (lightSw 1), apoi stinsă la clic.
+  const lumina = page.locator('[data-imprimanta="lumina"]');
+  await expect(lumina).toHaveAttribute('aria-checked', 'true');
+  await lumina.click();
+  await expect(lumina).toHaveAttribute('aria-checked', 'false');
+  await expect.poll(() => imp.stare()['lightSw']).toBe(0);
+  await expect(page.getByTestId('imprimanta-ventilatoare').locator('[data-cerere]')).toHaveCount(0);
+  await lumina.click();
+  await expect.poll(() => imp.stare()['lightSw']).toBe(1);
+  await expect(lumina).toHaveAttribute('aria-checked', 'true');
+  // Ventilatorul piesei la 50 %, din câmp (M106 P0 S128); un număr în afara intervalului nu pleacă.
+  const piesa = page.locator('[data-imprimanta="ventilator-camp"][data-ventilator="piesa"]');
+  await piesa.fill('50');
+  await piesa.press('Enter');
+  await expect.poll(() => imp.stare()['modelFanPct']).toBe(50);
+  await expect(page.getByTestId('imprimanta-vent-piesa')).toContainText('50 %');
+  await piesa.fill('150');
+  await piesa.press('Enter');
+  await expect(page.getByTestId('imprimanta-vent-piesa').getByRole('alert')).toContainText('Între 0 și 100 %');
+  await piesa.press('Escape');
+  // Ventilatorul lateral, din glisor, la tastatură: un pas, la eliberarea tastei.
+  await page.locator('[data-imprimanta="ventilator"][data-ventilator="lateral"]').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => imp.stare()['auxiliaryFanPct']).toBe(1);
+  // Preîncălzește PLA: 220 / 55, temperaturile primului strat; banda spune încălzirea, cu Răcește; răcirea singură, la ora ei.
+  await page.locator('[data-imprimanta="preincalzeste"]').click();
+  await expect(page.locator('[data-imprimanta="preincalzeste-material"][data-material="pla"]')).toContainText('220 / 55 °C');
+  // Primul strat al materialului (PC: 270 la duză, nu 280, cât merge apoi), din lista felierului.
+  await expect(page.locator('[data-imprimanta="preincalzeste-material"][data-material="pc"]')).toContainText('270 / 110 °C');
+  await page.locator('[data-imprimanta="preincalzeste-material"][data-material="pla"]').click();
+  await expect.poll(() => [imp.stare()['targetNozzleTemp'], imp.stare()['targetBedTemp0']]).toEqual(['220.000000', '55.000000']);
+  await expect(page.getByTestId('imprimanta-incalzeste')).toContainText('Încălzește: 220 / 55 °C');
+  await expect(page.getByTestId('imprimanta-racire-la')).toBeVisible();
+  await page.locator('[data-imprimanta="incalzeste-raceste"]').click();
+  await expect.poll(() => [imp.stare()['targetNozzleTemp'], imp.stare()['targetBedTemp0']]).toEqual(['0.000000', '0.000000']);
+  await expect(page.getByTestId('imprimanta-incalzeste')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-racire-la')).toHaveCount(0);
+  // Fără nicio țintă caldă, Răcește din card n-are ce face.
+  await expect(page.locator('[data-imprimanta="raceste"]')).toBeDisabled();
+  // Ținta duzei, scrisă direct; peste maximul imprimantei (320), refuzată.
+  const tinta = page.locator('[data-imprimanta="tinta-duza"]');
+  await tinta.fill('205');
+  await tinta.press('Enter');
+  await expect.poll(() => imp.stare()['targetNozzleTemp']).toBe('205.000000');
+  await tinta.fill('400');
+  await tinta.press('Enter');
+  await expect(page.getByTestId('imprimanta-temperaturi').getByRole('alert')).toContainText('Între 0 și 320 °C');
+  await tinta.press('Escape');
+  await page.locator('[data-imprimanta="raceste"]').click();
+  await expect.poll(() => imp.stare()['targetNozzleTemp']).toBe('0.000000');
+  // Homing-ul: doar după bifa „Patul e gol”; X și Y, apoi, după ce imprimanta nu mai e ocupată, Z.
+  await page.locator('[data-imprimanta="homing"]').click();
+  await expect(page.locator('[data-imprimanta="homing-confirma"]')).toBeDisabled();
+  await page.locator('[data-imprimanta="homing-pat-gol"]').check();
+  await page.locator('[data-imprimanta="homing-confirma"]').click();
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeDisabled();
+  await expect(page.getByTestId('imprimanta-axe')).toHaveText('Axele știute: X, Y, Z.', { timeout: 10_000 });
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeEnabled();
+  const set = comenziSet(imp);
+  expect(set.filter((c) => c.includes('autohome'))).toEqual(['{"method":"set","params":{"autohome":"X Y"}}', '{"method":"set","params":{"autohome":"Z"}}']);
+  expect(set.indexOf('{"method":"set","params":{"autohome":"Z"}}') - set.indexOf('{"method":"set","params":{"autohome":"X Y"}}')).toBe(1);
+  // Fără consolă: în gcodeCmd a plecat doar M106, pe canalele lui.
+  expect(gcodeTrimis(imp)).toEqual(['M106 P0 S128', 'M106 P2 S3']);
+  expect(set).toContain('{"method":"set","params":{"lightSw":0}}');
+  expect(set).toContain('{"method":"set","params":{"bedTempControl":{"num":0,"val":55}}}');
+});
+
+test('cât imprimă (3.6o): viteza și debitul, din câmp și „100 %”; homing-ul oprit; o comandă fără răspuns arată „n-a confirmat”', async ({ page }) => {
+  const imp = await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 10 }, pasMs: 2000 });
+  imp.ignora(['setFlowratePct']);
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  await expect(page.locator('[data-imprimanta="homing"]')).toBeDisabled();
+  await expect(page.getByTestId('imprimanta-axe')).toHaveText('Doar cu imprimanta liberă.');
+  // Preîncălzește și Răcește nu se arată cât imprimă: doar nota că fișierul poate schimba țintele.
+  await expect(page.locator('[data-imprimanta="preincalzeste"]')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-temperaturi')).toContainText('Fișierul poate schimba țintele');
+  // Viteza la 120 %, apoi înapoi la 100 % din buton.
+  const viteza = page.locator('[data-imprimanta="viteza-camp"]');
+  await viteza.fill('120');
+  await viteza.press('Enter');
+  await expect.poll(() => imp.stare()['curFeedratePct']).toBe(120);
+  await expect(page.getByTestId('imprimanta-reglaj-viteza')).toContainText('120 %');
+  await page.locator('[data-imprimanta="viteza-suta"]').click();
+  await expect.poll(() => imp.stare()['curFeedratePct']).toBe(100);
+  await expect(page.locator('[data-imprimanta="viteza-suta"]')).toBeDisabled();
+  // Debitul: imprimanta nu răspunde. Întâi „așteaptă imprimanta”, apoi, după 6 s, „n-a confirmat” și valoarea raportată.
+  const debit = page.locator('[data-imprimanta="debit-camp"]');
+  await debit.fill('95');
+  await debit.press('Enter');
+  const randDebit = page.getByTestId('imprimanta-reglaj-debit');
+  await expect(randDebit.locator('[data-cerere="asteapta"]')).toContainText('→ 95 % · așteaptă imprimanta');
+  await expect(randDebit.locator('[data-cerere="esuata"]')).toHaveText('imprimanta n-a confirmat', { timeout: 9000 });
+  await expect(debit).toHaveValue('100');
+  expect(comenziSet(imp)).toEqual([
+    '{"method":"set","params":{"setFeedratePct":120}}', '{"method":"set","params":{"setFeedratePct":100}}',
+    '{"method":"set","params":{"setFlowratePct":95}}',
+  ]);
+});
+
+const felieGata = async (page: Page): Promise<void> => {
+  await expect(page.getByTestId('imprimanta-felie')).not.toHaveAttribute('data-stare', 'lucreaza');
+};
+const inaltime = async (page: Page, mm: string): Promise<void> => {
+  const camp = page.locator('[data-imprimanta="felie-inaltime"]');
+  await camp.fill(mm);
+  await camp.press('Enter');
+  await felieGata(page);
+};
+
+test('Din desen…, fără imprimantă: foaia goală spusă; un dreptunghi feliat (straturile, rolul lor), Avansat, materialul; Salvează .gcode', async ({ page }) => {
+  await deschide(page);
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  const dialog = page.getByTestId('imprimanta-felie');
+  await expect(dialog).toBeVisible();
+  await felieGata(page);
+  await expect(page.getByTestId('imprimanta-felie-avert')).toContainText('Foaia n-are piese');
+  await expect(page.locator('[data-imprimanta="felie-salveaza"]')).toBeDisabled();
+  // Fără imprimantă, nu se trimite: doar se salvează.
+  await expect(page.locator('[data-imprimanta="felie-trimite"]')).toHaveCount(0);
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await expect(dialog).toHaveCount(0);
+  // Un dreptunghi de 100 × 60 în Proiectare, apoi din nou în fereastra Imprimanta.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  // Implicit, grosimea foii (18 mm): 90 de straturi de 0,2.
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('90 straturi');
+  await inaltime(page, '3');
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('15 straturi');
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('de PLA');
+  await expect(page.getByTestId('imprimanta-felie-avert')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-felie-strat')).toHaveText('8 / 15');
+  await expect(page.getByTestId('imprimanta-felie-fel')).toContainText('umplere rară');
+  await page.locator('[data-imprimanta="felie-strat"]').fill('1');
+  await expect(page.getByTestId('imprimanta-felie-fel')).toContainText('primul strat');
+  await page.locator('[data-imprimanta="felie-strat"]').fill('15');
+  await expect(page.getByTestId('imprimanta-felie-fel')).toContainText('suprafața de sus');
+  // Patul desenat: pixeli de culoarea peretelui exterior pe pânza previzualizării.
+  await expect.poll(() => page.getByTestId('imprimanta-felie-pat').evaluate((c) => {
+    const x = (c as HTMLCanvasElement).getContext('2d')!.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data;
+    let n = 0;
+    for (let i = 0; i < x.length; i += 4) if (x[i]! > 240 && x[i + 1]! > 120 && x[i + 1]! < 150 && x[i + 2]! < 50) n++;
+    return n;
+  })).toBeGreaterThan(100);
+  // Avansat: câmpurile, pe grupuri; un perete în plus se vede în fișier.
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  await expect(page.getByTestId('imprimanta-felie-avansat')).toBeVisible();
+  await expect(page.locator('[data-felie="vExterior"]')).toHaveValue('200');
+  // PETG: temperaturile lui (250 / 70), în rezumat și în fișier.
+  await page.locator('[data-imprimanta="felie-material"]').selectOption('petg');
+  await felieGata(page);
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('de PETG');
+  await expect(page.locator('[data-imprimanta="felie-duza"]')).toHaveValue('250');
+  // Duza din „Simplu” schimbă și primul strat: pornirea (START_PRINT, M109) folosește temperatura scrisă de om.
+  const duza = page.locator('[data-imprimanta="felie-duza"]');
+  await duza.fill('245');
+  await duza.press('Enter');
+  await felieGata(page);
+  // Bifa deplasărilor (previzualizarea, la cerere).
+  await page.locator('[data-imprimanta="felie-deplasari"]').check();
+  await expect(page.locator('[data-imprimanta="felie-deplasari"]')).toBeChecked();
+  const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+  expect(d.suggestedFilename()).toMatch(/_PETG_\d+m\d+s\.gcode$/);
+  const text = (await (await import('node:fs/promises')).readFile(await d.path(), 'utf8'));
+  expect(text.startsWith('; HEADER_BLOCK_START\n; generated by CNC Vector Studio 2 on ')).toBe(true);
+  expect(text).toContain('\n; total layer number: 15\n');
+  expect(text).toContain('\n; thumbnail begin 300x300 ');
+  expect(text).toContain('\nSTART_PRINT EXTRUDER_TEMP=245 BED_TEMP=70\n');
+  expect(text).toContain('\nM109 S245\n');
+  expect(text.split('\n').filter((l) => l === ';LAYER_CHANGE')).toHaveLength(15);
+  expect(text).toContain('\nEND_PRINT\n');
+  expect(text).toContain('\n; printer_model = Creality K1C\n');
+  // Desenul se citește din nou când se schimbă: cu fereastra deschisă, un cerc adăugat în Proiectare apare la întoarcere.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(page.getByTestId('imprimanta-felie')).toBeVisible();
+  await expect(page.getByTestId('imprimanta-felie')).toContainText('Piesele foii (2)');
+  // Escape închide fereastra și după un clic în ea; focusul revine pe „Din desen…”.
+  await page.getByTestId('imprimanta-felie-pat').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('imprimanta-felie')).toHaveCount(0);
+  await expect(page.locator('[data-imprimanta="din-desen"]')).toBeFocused();
+});
+
+test('Din desen…: un număr luat cu Enter nu se pierde la o ieșire din câmp grăbită (găsit pe 09.11, proba 3.6k instabilă)', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  const pereti = page.locator('[data-imprimanta="felie-pereti"]');
+  const inainte = await pereti.inputValue();
+  expect(inainte).not.toBe('4');
+  await pereti.fill('4');
+  // Enter, apoi, după randarea lui (în microsarcini) și înaintea celei programate de după ea, ieșirea din câmp: fereastra în care
+  // câmpul arăta încă valoarea veche, iar o ieșire din câmp o lua drept nouă (din 3.6k; cădea cam o dată din patru).
+  await pereti.evaluate(async (el) => {
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+    (el as HTMLInputElement).blur();
+  });
+  await expect(pereti).toHaveValue('4');
+  await felieGata(page);
+  await expect.poll(() => page.evaluate(() => (JSON.parse(localStorage.getItem('cvs2.imprimanta.feliere') ?? 'null') as { pereti?: number } | null)?.pereti)).toBe(4);
+  // Și o ieșire din câmp fără nimic scris nu ia nimic.
+  await pereti.focus();
+  await pereti.blur();
+  await expect(pereti).toHaveValue('4');
+});
+
+test('Din desen…, Avansat (3.6k): modelul umplerii, călcarea și fusta, în previzualizare și în fișier; ștergerea, din profil, oprită la cerere', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '3');
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  // Ștergerea e pornită de profilul K1C; modelul rar implicit, grila.
+  await expect(page.locator('[data-felie="stergere"]')).toBeChecked();
+  await expect(page.locator('[data-felie="modelRar"]')).toHaveValue('grid');
+  await page.locator('[data-felie="modelRar"]').selectOption('gyroid');
+  await felieGata(page);
+  await page.locator('[data-imprimanta="felie-strat"]').fill('8');
+  await expect(page.getByTestId('imprimanta-felie-fel')).toContainText('umplere rară: Giroid');
+  await page.locator('[data-felie="calcare"]').selectOption('sus');
+  await felieGata(page);
+  const fusta = page.locator('[data-felie="fusta"]');
+  await fusta.fill('2');
+  await fusta.press('Enter');
+  await felieGata(page);
+  await expect(page.locator('.imprimanta-felie-legenda')).toContainText('călcarea');
+  await expect(page.locator('.imprimanta-felie-legenda')).toContainText('fusta');
+  // Pe primul strat, fusta se vede: pixeli de culoarea ei (#c9ced6) pe pânză.
+  await page.locator('[data-imprimanta="felie-strat"]').fill('1');
+  await expect.poll(() => page.getByTestId('imprimanta-felie-pat').evaluate((c) => {
+    const x = (c as HTMLCanvasElement).getContext('2d')!.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data;
+    let n = 0;
+    for (let i = 0; i < x.length; i += 4) if (Math.abs(x[i]! - 0xc9) < 12 && Math.abs(x[i + 1]! - 0xce) < 12 && Math.abs(x[i + 2]! - 0xd6) < 12) n++;
+    return n;
+  })).toBeGreaterThan(100);
+  const citeste = async (): Promise<string> => {
+    const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+    return (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  };
+  const text = await citeste();
+  for (const x of ['; sparse_infill_pattern = gyroid', '; ironing_type = top', '; skirt_loops = 2', '; wipe = 1', ';WIPE_START']) expect(text).toContain(`\n${x}\n`);
+  // Ștergerea oprită: retragerea întreagă, fără drumul ei.
+  await page.locator('[data-felie="stergere"]').uncheck();
+  await felieGata(page);
+  const fara = await citeste();
+  expect(fara).not.toContain(';WIPE_START');
+  expect(fara).toContain('\n; wipe = 0\n');
+});
+
+/** Proiectul unei plăci de 100 × 60 × 18, cu operațiile ei: profil exterior prin tot, buzunar de 6, găurire prin tot, găurire de 3, canelură de 2, V-carve. */
+const I3 = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+const op3 = (id: string, tip: string, noduri: string[], latura: string, adancime: number, extra: Record<string, unknown> = {}) => ({
+  id, tip, noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime, pas: 3, urechi: null, rampa: null, intrari: null,
+  colturi: null, ...(tip === 'buzunar' ? { pasLateral: 2.4 } : {}), ...extra,
+});
+const el3 = (id: string, forma: Record<string, unknown>, e = 0, f = 0) => ({ tip: 'element', id, matrice: { ...I3, e, f }, forma });
+const cale3 = (pts: [number, number][], inchis = false) => ({ tip: 'cale', inchis, varfuri: pts.map(([x, y]) => ({ p: { x, y }, s: { tip: 'L' } })) });
+// `rev` = cheia versiunii puse în bază: altfel prima salvare a filei ar fi un conflict (o versiune mai nouă, a altei file).
+const PROIECT_CNC = {
+  schema: 20, rev: 1_000_000,
+  piese: [{
+    id: 'p', nume: 'Placă', radacina: { tip: 'grup', id: 'g', matrice: { ...I3 }, copii: [
+      el3('a', cale3([[0, 0], [100, 0], [100, 60], [0, 60]], true)), el3('b', cale3([[50, 15], [90, 15], [90, 45], [50, 45]], true)),
+      el3('c', { tip: 'cerc', raza: 5 }, 15, 30), el3('d', { tip: 'cerc', raza: 4 }, 30, 15), el3('e', cale3([[10, 50], [40, 50]])),
+      el3('v', cale3([[20, 5], [30, 5], [30, 10], [20, 10]], true)),
+    ] },
+    operatii: [
+      op3('o1', 'profil', ['a'], 'exterior', 18.5), op3('o2', 'buzunar', ['b'], 'interior', 6), op3('o3', 'gaurire', ['c'], 'interior', 19),
+      op3('o4', 'gaurire', ['d'], 'interior', 3), op3('o5', 'profil', ['e'], 'pe-linie', 2),
+      op3('o6', 'vcarve', ['v'], 'interior', 2, { scula: { numar: 2, nume: 'V', diametru: 10, forma: { tip: 'v', unghi: 60 } } }),
+    ],
+  }],
+  foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 20, y: 20, rotire: 0 }] }],
+};
+
+/** Scrie proiectul direct în baza aplicației (ca o salvare), apoi reîncarcă: aplicația îl deschide. */
+const deschideProiect = async (page: Page, text: string): Promise<void> => {
+  await page.goto('/');
+  await expect(page.getByTestId('lista-vectori')).toBeVisible();
+  await page.evaluate(async (t) => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-proiecte', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    await new Promise<void>((ok, eroare) => {
+      const tx = db.transaction('versiuni', 'readwrite');
+      tx.objectStore('versiuni').put(t, ['proiect', 1_000_000]);
+      tx.oncomplete = () => { ok(); };
+      tx.onerror = () => { eroare(tx.error); };
+    });
+    db.close();
+  }, text);
+  await page.reload();
+  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible();
+};
+
+test('Din desen…, după CNC (3.6l): treptele buzunarului, V-carve-ul spus; înălțimea piesei scrisă în proiect, anulată, refăcută și ținută la redeschidere', async ({ page }) => {
+  await deschideProiect(page, JSON.stringify(PROIECT_CNC));
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  // Formele desenate: 90 de straturi, fără trepte (buzunarul e o gaură, ca orice formă închisă dinăuntru).
+  const rezumat = page.getByTestId('imprimanta-felie-rezumat'), fel = page.getByTestId('imprimanta-felie-fel'), strat = page.locator('[data-imprimanta="felie-strat"]');
+  await expect(rezumat).toContainText('90 straturi');
+  await strat.fill('60');
+  await expect(fel).toContainText('umplere rară');
+  await expect(fel).not.toContainText('treaptă');
+  // După CNC: nota V-carve-ului; fundul buzunarului (stratul 60) e o treaptă, cu suprafața de sus și umplerea rară.
+  await page.locator('[data-imprimanta="felie-dupa-cnc"]').check();
+  await felieGata(page);
+  await expect(page.getByTestId('imprimanta-felie-vcarve')).toContainText('O tăietură în V');
+  await expect(page.getByTestId('imprimanta-felie-avert')).toHaveCount(0);
+  await strat.fill('60');
+  await expect(fel).toContainText('cu o treaptă: suprafața de sus');
+  await expect(fel).toContainText('umplere rară');
+  await strat.fill('61');
+  await expect(fel).not.toContainText('treaptă');
+  // Grosimea verticală (3.6n), implicit „toată”: pe fața buzunarului, și plinul inelului de sub pereții de deasupra; „fără”, nu.
+  await strat.fill('60');
+  await expect(fel).toContainText('+ plin:');
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  const grosime = page.locator('[data-felie="grosimeVerticala"]');
+  await expect(grosime).toHaveValue('ensure_all');
+  await grosime.selectOption('none');
+  await felieGata(page);
+  await strat.fill('60');
+  await expect(fel).toContainText('cu o treaptă: suprafața de sus');
+  await expect(fel).not.toContainText('plin:');
+  await grosime.selectOption('ensure_all');
+  await felieGata(page);
+  await page.locator('[data-imprimanta="felie-avansat"]').click();
+  // Înălțimea piesei, ținută în proiect: 10 mm dau 50 de straturi; buzunarul de 6 mm are fundul la 4 mm (stratul 20).
+  await page.locator('[data-imprimanta="felie-inaltime-piese"]').check();
+  const rand = page.getByTestId('imprimanta-felie-piese').locator('[data-imprimanta="felie-inaltime-piesa"]');
+  await expect(rand).toHaveCount(1);
+  await expect(rand).toHaveValue('18');
+  await rand.fill('10');
+  await rand.press('Enter');
+  await felieGata(page);
+  await expect(rezumat).toContainText('50 straturi');
+  await expect(rand).toHaveValue('10');
+  // Înălțimea cerută e a piesei (10 mm), deci nota „Piesa iese de … mm” nu apare.
+  await expect(page.getByTestId('imprimanta-felie-inaltime-reala')).toHaveCount(0);
+  await strat.fill('20');
+  await expect(fel).toContainText('cu o treaptă');
+  const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+  const text = await (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  expect(text.split('\n').filter((l) => l === ';LAYER_CHANGE')).toHaveLength(50);
+  expect(text).toContain('\n;Z:4\n');
+  // Anularea, din Proiectare: înălțimea piesei se scoate; în dialog, cea pentru toate (18), 90 de straturi.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.keyboard.press('Control+z');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(rand).toHaveValue('18');
+  await felieGata(page);
+  await expect(rezumat).toContainText('90 straturi');
+  // Refacerea, apoi redeschiderea: înălțimea vine din proiect, iar alegerile dialogului, din browser.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.keyboard.press('Control+Y');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(rand).toHaveValue('10');
+  await page.reload();
+  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible();
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(page.locator('[data-imprimanta="felie-dupa-cnc"]')).toBeChecked();
+  await expect(page.locator('[data-imprimanta="felie-inaltime-piese"]')).toBeChecked();
+  await expect(rand).toHaveValue('10');
+  await expect(rezumat).toContainText('50 straturi');
+  // Una pentru toate: înălțimea piesei rămâne în proiect, dar nu se folosește.
+  await page.locator('[data-imprimanta="felie-inaltime-toate"]').check();
+  await felieGata(page);
+  await expect(rezumat).toContainText('90 straturi');
+});
+
+test('Din desen…, cu imprimanta legată: „Trimite la imprimantă” trece prin verificarea de la 3.6h, iar fișierul ajunge întreg', async ({ page }) => {
+  const imp = await porneste({});
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '2');
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('10 straturi');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await expect(page.getByTestId('imprimanta-felie')).toHaveCount(0);
+  // Cât trimiterea e deschisă, „Din desen…” așteaptă (nu o oprește).
+  await expect(page.locator('[data-imprimanta="din-desen"]')).toBeDisabled();
+  await expect(page.getByTestId('imprimanta-trimite-nume')).toHaveText(/_PLA_\d+m\d+s\.gcode$/);
+  await expect(page.getByTestId('imprimanta-trimite-despre')).toContainText('✓ Feliat pentru Creality K1C (duza 0,4) · PLA · 220 / 55 °C');
+  await expect(page.getByTestId('imprimanta-trimite-incape')).toBeVisible();
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  const urcat = imp.urcate();
+  expect(urcat).toHaveLength(1);
+  const t = urcat[0]!.text;
+  expect(t.split('\n').filter((l) => l === ';LAYER_CHANGE')).toHaveLength(10);
+  expect(t).toContain('\nEXCLUDE_OBJECT_DEFINE NAME=');
+  // Pe 9999, doar citiri: nimic pornit singur.
+  expect(comenziSet(imp)).toEqual([]);
+});
+
+test('Din desen…, pauza la un strat (3.6p): butonul, semnul de pe glisor, lista cu nota, rezumatul; PAUSE în fișier; ținută pentru aceleași piese', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '3');
+  const strat = page.locator('[data-imprimanta="felie-strat"]'), buton = page.locator('[data-imprimanta="felie-pauza"]');
+  const ajutor = page.getByTestId('imprimanta-felie-pauza-ajutor'), lista = page.getByTestId('imprimanta-felie-pauze');
+  // Înaintea primului strat: fără pauză.
+  await strat.fill('1');
+  await expect(buton).toBeDisabled();
+  await expect(ajutor).toHaveText('Înaintea primului strat nu se pune pauză.');
+  await expect(lista).toHaveCount(0);
+  // Înaintea stratului 11: imprimanta se oprește după stratul 10, la 2 mm.
+  await strat.fill('11');
+  await expect(ajutor).toHaveText('Imprimanta se oprește după stratul 10, la 2 mm.');
+  await expect(buton).toHaveAttribute('aria-pressed', 'false');
+  await buton.click();
+  await expect(buton).toHaveAttribute('aria-pressed', 'true');
+  await expect(lista.locator('li')).toHaveCount(1);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-du"]')).toHaveText('înaintea stratului 11 · la 2 mm');
+  await expect(page.locator('[data-testid="imprimanta-felie-semne"] i[data-strat="11"]')).toHaveCount(1);
+  await expect(page.getByTestId('imprimanta-felie-rezumat')).toContainText('15 straturi');
+  await expect(page.getByTestId('imprimanta-felie-rezumat-pauze')).toContainText('1 pauză, plus cât stă în ea');
+  await lista.locator('[data-imprimanta="felie-pauza-nota"]').fill('filament roșu');
+  // Alt strat: butonul nu e apăsat; un clic pe pauza din listă aduce stratul ei.
+  await strat.fill('5');
+  await expect(buton).toHaveAttribute('aria-pressed', 'false');
+  await lista.locator('[data-imprimanta="felie-pauza-du"]').click();
+  await expect(page.getByTestId('imprimanta-felie-strat')).toHaveText('11 / 15');
+  await expect(buton).toHaveAttribute('aria-pressed', 'true');
+  // Fișierul: PAUSE înaintea stratului 11, cu nota în ASCII; o singură comandă nouă.
+  const citeste = async (): Promise<string> => {
+    const [d] = await Promise.all([page.waitForEvent('download'), page.locator('[data-imprimanta="felie-salveaza"]').click()]);
+    return (await import('node:fs/promises')).readFile(await d.path(), 'utf8');
+  };
+  const text = await citeste();
+  expect(text).toContain('\n;AFTER_LAYER_CHANGE\n;2.2\n;PAUSE_PRINT\n; pause note: filament rosu\nPAUSE\n');
+  expect(text.split('\n').filter((l) => l === 'PAUSE')).toHaveLength(1);
+  expect([...text].every((c) => c.charCodeAt(0) < 128)).toBe(true);
+  // La 0,12 mm (și primul strat de 0,12), pauza ține înălțimea (2 mm): înaintea primului strat care începe de la ea, al
+  // 18-lea (de la 17 × 0,12 = 2,04 mm).
+  await page.locator('[data-imprimanta="felie-calitate"]').selectOption('0.12');
+  await felieGata(page);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-du"]')).toHaveText('înaintea stratului 18 · la 2,04 mm');
+  // Ținută pentru aceleași piese: închisă și redeschisă, pauza revine, cu nota.
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(lista.locator('li')).toHaveCount(1);
+  await expect(lista.locator('[data-imprimanta="felie-pauza-nota"]')).toHaveValue('filament roșu');
+  // Scoasă: nici în rezumat, nici în fișier, nici la redeschidere.
+  await lista.locator('[data-imprimanta="felie-pauza-scoate"]').click();
+  await expect(lista).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-felie-rezumat-pauze')).toHaveCount(0);
+  expect(await citeste()).not.toContain('PAUSE');
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(lista).toHaveCount(0);
+});
+
+test('pauza din fișier, la trimitere și la pornire (3.6p): spusă lângă verificare și lângă bifa „Patul e gol”; nimic pornit singur', async ({ page }) => {
+  const imp = await porneste({});
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '2');
+  await page.locator('[data-imprimanta="felie-strat"]').fill('6');
+  await page.locator('[data-imprimanta="felie-pauza"]').click();
+  await page.locator('[data-imprimanta="felie-pauza-nota"]').fill('magnet');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-pauze')).toHaveText('Pauzele din fișier (1): înaintea stratului 6 (la 1 mm): magnet.');
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  expect(imp.urcate()[0]!.text).toContain('\n;PAUSE_PRINT\n; pause note: magnet\nPAUSE\n');
+  await page.locator('[data-imprimanta="trimite-porneste"]').click();
+  await expect(page.getByTestId('imprimanta-pornire-pauze'))
+    .toHaveText('Imprimanta se va opri la pauzele din fișier: înaintea stratului 6 (la 1 mm): magnet. Apasă Reia după fiecare.');
+  // Fără bifă, nimic nu pornește; renunțarea nu trimite nimic.
+  await expect(page.locator('[data-imprimanta="pornire-confirma"]')).toBeDisabled();
+  await page.locator('[data-imprimanta="pornire-renunta"]').click();
+  expect(comenziSet(imp)).toEqual([]);
+});
+
+/** Pixelii căilor stratului de acum (portocaliu, ca peretele exterior din „Din desen…”) pe pânza plăcii. */
+const pixeliCale = (page: Page): Promise<number> => page.getByTestId('imprimanta-placa-pat').evaluate((c) => {
+  const x = (c as HTMLCanvasElement).getContext('2d')!.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data;
+  let n = 0;
+  for (let i = 0; i < x.length; i += 4) if (x[i]! > 240 && x[i + 1]! > 120 && x[i + 1]! < 150 && x[i + 2]! < 50) n++;
+  return n;
+});
+
+/** Un fișier ca din OrcaSlicer, cu două piese (`EXCLUDE_OBJECT`; din 3.6r, și trei) și `straturi` straturi de 0,2 mm, fără numele din cvs2. */
+const gcodeCuPiese = (straturi: number, piese: 2 | 3 = 2): string => {
+  const toate = ([['cub_a.stl_id_0_copy_0', 80], ['cub_b.stl_id_1_copy_0', 120], ['cub_c.stl_id_2_copy_0', 160]] as const).slice(0, piese);
+  const l: string[] = ['; generated by OrcaSlicer 2.3.0', '; total layer number: ' + straturi,
+    ...toate.map(([nume, x0]) => `EXCLUDE_OBJECT_DEFINE NAME=${nume} CENTER=${x0 + 10},110 POLYGON=[[${x0},100],[${x0 + 20},100],[${x0 + 20},120],[${x0},120]]`),
+    'START_PRINT EXTRUDER_TEMP=220 BED_TEMP=55', 'G90', 'M83'];
+  for (let k = 1; k <= straturi; k++) {
+    l.push(';LAYER_CHANGE', ';Z:' + (0.2 * k).toFixed(1), ';AFTER_LAYER_CHANGE', 'G1 Z' + (0.2 * k).toFixed(1) + ' F600');
+    for (const [nume, x0] of toate) {
+      l.push('EXCLUDE_OBJECT_START NAME=' + nume, 'G1 X' + x0 + ' Y100 F12000');
+      for (const [x, y] of [[x0 + 20, 100], [x0 + 20, 120], [x0, 120], [x0, 100]] as const) l.push('G1 X' + x + ' Y' + y + ' E0.6');
+      l.push('EXCLUDE_OBJECT_END NAME=' + nume);
+    }
+  }
+  l.push('END_PRINT', '');
+  return l.join('\n');
+};
+
+test('placa (3.6q): un fișier trimis din „Din desen…”, „imprimat” de imprimanta falsă: piesele cu numele din cvs2, stratul (K1C cu două numărători), duza, căile; pauza din fișier, cu nota; Reia', async ({ page }) => {
+  const imp = await porneste({ numaratoriDuble: true, pasiFisier: 24 });
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  // Cercul adăugat ultimul e selectat: amândouă piesele foii, nu doar selecția.
+  await page.locator('[data-imprimanta="felie-ce-foaie"]').check();
+  await felieGata(page);
+  await inaltime(page, '2');
+  await page.locator('[data-imprimanta="felie-strat"]').fill('6');
+  await page.locator('[data-imprimanta="felie-pauza"]').click();
+  await page.locator('[data-imprimanta="felie-pauza-nota"]').fill('magnet');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  await page.locator('[data-imprimanta="trimite-porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  // Imprimanta închide legătura după pornire; fereastra se leagă singură din nou și arată placa, cu căile fișierului.
+  const placa = page.getByTestId('imprimanta-placa');
+  await expect(placa).toBeVisible({ timeout: 15_000 });
+  await expect(placa).toHaveAttribute('data-cai', 'da');
+  const lista = page.getByTestId('imprimanta-placa-piese');
+  // Numele din cvs2 („#1”, „#2”: piesele fără nume), nu cele ASCII ale fișierului („1_ID_0_COPY_0”).
+  await expect(lista.locator('.imprimanta-placa-piesa')).toHaveText(['#1', '#2']);
+  // Cât imprimă: duza pe piese, o piesă „se imprimă acum”, căile stratului de acum pe pânză; stratul, niciodată cel cu 5 în
+  // plus al K1C (la cel mult un strat de cel adevărat al imprimantei).
+  await expect.poll(async () => {
+    const d = (await placa.getAttribute('data-duza')) ?? '';
+    const [x, y] = d.split(',').map(Number);
+    return d !== '' && x! > 60 && x! < 160 && y! > 60 && y! < 160;
+  }).toBe(true);
+  await expect(lista.locator('li[data-acum="da"]')).toHaveCount(1);
+  await expect.poll(() => pixeliCale(page)).toBeGreaterThan(50);
+  for (let n = 0; n < 6; n++) {
+    const k = Number(await placa.getAttribute('data-strat'));
+    const a = imp.stratAdevarat();
+    if (a !== null && k > 0) expect(Math.abs(k - a), `stratul ${k}, adevărat ${a}`).toBeLessThanOrEqual(1);
+    await page.waitForTimeout(250);
+  }
+  // Pauza din fișier, înaintea stratului 6: imprimanta se oprește, iar placa arată nota; în pauză, duza nu se arată.
+  await expect(stare(page)).toHaveText('Pauză', { timeout: 15_000 });
+  const pauza = page.getByTestId('imprimanta-placa-pauza');
+  await expect(pauza).toContainText('Pauza din fișier, înaintea stratului 6 (la 1 mm)');
+  await expect(pauza).toContainText('magnet');
+  await expect(placa).toHaveAttribute('data-strat', '6');
+  await expect(page.getByTestId('imprimanta-placa-strat')).toHaveText('Stratul 6 / 10 · 1,2 mm');
+  await expect(page.getByTestId('imprimanta-strat')).toHaveText('6 din 10');
+  await expect(placa).toHaveAttribute('data-duza', '');
+  await expect(placa.locator('.imprimanta-placa-semn-pauza[data-strat="6"]')).toHaveCount(1);
+  await page.locator('[data-imprimanta="reia"]').click();
+  await expect(stare(page)).toHaveText('Imprimă');
+  // Cât imprimă, nota pauzei pleacă de pe placă chiar în aceeași randare (stratul e încă lângă pauză, nu după el): fără
+  // reîncercări, altfel imprimanta trece de strat și nota ar pleca oricum (otrava U06 a scăpat așa).
+  expect(Number(await placa.getAttribute('data-strat'))).toBeLessThanOrEqual(7);
+  expect(await pauza.count()).toBe(0);
+  // La capăt, lucrarea e gata, iar placa pleacă.
+  await expect(placa).toHaveCount(0, { timeout: 20_000 });
+  expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile') && !c.includes('"pause":0'))).toEqual([]);
+});
+
+test('placa fără hartă (3.6q): un fișier trimis din altă parte, pornit din listă: conturul pieselor spuse de imprimantă, numele fără sufixul OrcaSlicer, stratul cel apropiat de progres; fără căi', async ({ page }) => {
+  const imp = await porneste({
+    fisiere: [...FISIERE, { name: 'cuburi_PLA_5m.gcode', timeCost: 300, material: 'PLA' }], continut: { 'cuburi_PLA_5m.gcode': gcodeCuPiese(20) },
+    numaratoriDuble: true, pasiFisier: 30,
+  });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.getByTestId('imprimanta-fisiere').locator('li', { hasText: 'cuburi_PLA_5m.gcode' }).locator('[data-imprimanta="porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  const placa = page.getByTestId('imprimanta-placa');
+  await expect(placa).toBeVisible({ timeout: 15_000 });
+  await expect(placa).toHaveAttribute('data-cai', 'nu');
+  await expect(page.getByTestId('imprimanta-placa-fara-cai')).toBeVisible();
+  const lista = page.getByTestId('imprimanta-placa-piese');
+  await expect(lista.locator('.imprimanta-placa-piesa')).toHaveText(['CUB A.STL', 'CUB B.STL']);
+  // Stratul: dintre cele două numărători ale K1C, cea apropiată de progres (la cel mult un strat de cel adevărat).
+  await expect.poll(() => imp.stratAdevarat() ?? 0).toBeGreaterThan(6);
+  for (let n = 0; n < 6; n++) {
+    const k = Number(await placa.getAttribute('data-strat'));
+    const a = imp.stratAdevarat();
+    if (a !== null && k > 0) expect(Math.abs(k - a), `stratul ${k}, adevărat ${a}`).toBeLessThanOrEqual(1);
+    await page.waitForTimeout(250);
+  }
+  expect(await pixeliCale(page)).toBe(0);
+});
+
+/** Pixelii semnului „anulată” (roșu, ×) pe pânza plăcii. */
+const pixeliAnulate = (page: Page): Promise<number> => page.getByTestId('imprimanta-placa-pat').evaluate((c) => {
+  const x = (c as HTMLCanvasElement).getContext('2d')!.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data;
+  let n = 0;
+  for (let i = 0; i < x.length; i += 4) if (x[i]! > 230 && x[i + 1]! < 90 && x[i + 2]! < 80) n++;
+  return n;
+});
+
+test('anularea unei piese (3.6r): din placă și din listă, cu confirmare; piesa de acum așteaptă (K1 o refuză), cu Renunță, până imprimanta trece la alta; ultima rămasă, fără buton', async ({ page }) => {
+  // Imprimanta falsă face un pas doar când i-l dă proba: piesa de acum e știută, iar retrimiterea nu depinde de noroc.
+  const imp = await porneste({
+    fisiere: [...FISIERE, { name: 'trei_PLA_9m.gcode', timeCost: 540, material: 'PLA' }], continut: { 'trei_PLA_9m.gcode': gcodeCuPiese(12, 3) },
+    pasMs: 3_600_000, pasiFisier: 120,
+  });
+  const [A, B, C] = ['CUB_A.STL_ID_0_COPY_0', 'CUB_B.STL_ID_1_COPY_0', 'CUB_C.STL_ID_2_COPY_0'];
+  const exclude = (n: string): string => `{"method":"set","params":{"gcodeCmd":"EXCLUDE_OBJECT NAME=${n}"}}`;
+  const trimise = (n: string): number => imp.comenzi().filter((c) => c === exclude(n)).length;
+  const acum = (): string => String(imp.stare()['current_object'] ?? '');
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.getByTestId('imprimanta-fisiere').locator('li', { hasText: 'trei_PLA_9m.gcode' }).locator('[data-imprimanta="porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  const placa = page.getByTestId('imprimanta-placa');
+  await expect(placa).toBeVisible({ timeout: 15_000 });
+  const lista = page.getByTestId('imprimanta-placa-piese');
+  await expect(lista.locator('.imprimanta-placa-piesa')).toHaveText(['CUB A.STL', 'CUB B.STL', 'CUB C.STL']);
+  const rand = (n: string) => lista.locator(`li[data-piesa="${n}"]`);
+  // Imprimanta lucrează la A.
+  for (let k = 0; k < 40 && acum() !== A; k++) imp.pas();
+  expect(acum()).toBe(A);
+  await expect(rand(A)).toHaveAttribute('data-acum', 'da');
+  const dialog = page.getByTestId('imprimanta-anulare');
+  // Un clic pe placă, în mijloc (piesa B, între A și C): confirmarea; Renunță nu trimite nimic.
+  await page.getByTestId('imprimanta-placa-pat').click();
+  await expect(dialog.locator('h3')).toHaveText('Anulezi CUB B.STL?');
+  await expect(dialog).toContainText('Restul pieselor merg mai departe. Piesa anulată nu se mai reia.');
+  await expect(page.getByTestId('imprimanta-anulare-acum')).toHaveCount(0);
+  await page.locator('[data-imprimanta="anulare-renunta"]').click();
+  await expect(dialog).toHaveCount(0);
+  expect(trimise(B)).toBe(0);
+  // B, din listă: pleacă pe loc, iar imprimanta o trece printre cele anulate; pe placă, tăiată.
+  await rand(B).locator('[data-imprimanta="anuleaza-piesa"]').click();
+  await page.locator('[data-imprimanta="anulare-confirma"]').click();
+  await expect(rand(B)).toHaveAttribute('data-anulata', 'da');
+  await expect(rand(B).locator('small')).toHaveText('anulată');
+  await expect(rand(B).locator('[data-imprimanta="anuleaza-piesa"]')).toHaveCount(0);
+  expect(trimise(B)).toBe(1);
+  await expect.poll(() => pixeliAnulate(page)).toBeGreaterThan(20);
+  // A, piesa de acum: confirmarea o spune; K1 o refuză, iar rândul ei așteaptă, cu Renunță.
+  await rand(A).locator('[data-imprimanta="anuleaza-piesa"]').click();
+  await expect(page.getByTestId('imprimanta-anulare-acum')).toContainText('cel mult 2 minute');
+  await page.locator('[data-imprimanta="anulare-confirma"]').click();
+  await expect(rand(A)).toHaveAttribute('data-cerere', 'asteapta');
+  await expect(rand(A).locator('.imprimanta-asteapta')).toHaveText('→ se anulează când imprimanta trece la altă piesă');
+  expect(trimise(A)).toBe(1);
+  expect(imp.stare()['excluded_objects']).toBe(JSON.stringify([B]));
+  // Renunță: cererea pleacă de pe rând și nu se mai retrimite.
+  await rand(A).locator('[data-imprimanta="anulare-retrage"]').click();
+  await expect(rand(A)).not.toHaveAttribute('data-cerere');
+  const dupaRetragere = trimise(A);
+  await page.waitForTimeout(3500);
+  expect(trimise(A)).toBe(dupaRetragere);
+  // Din nou, apoi imprimanta trece la altă piesă (B se sare): retrimisă, primită, anulată.
+  await rand(A).locator('[data-imprimanta="anuleaza-piesa"]').click();
+  await page.locator('[data-imprimanta="anulare-confirma"]').click();
+  await expect(rand(A)).toHaveAttribute('data-cerere', 'asteapta');
+  for (let k = 0; k < 40 && acum() === A; k++) imp.pas();
+  expect(acum()).toBe(C);
+  await expect(rand(A)).toHaveAttribute('data-anulata', 'da', { timeout: 8000 });
+  expect(imp.stare()['excluded_objects']).toBe(JSON.stringify([B, A]));
+  // C, ultima rămasă: fără buton (pentru ea, Oprește), iar placa nu mai ia clicuri.
+  await expect(rand(C).locator('[data-imprimanta="anuleaza-piesa"]')).toHaveCount(0);
+  await expect(page.getByTestId('imprimanta-placa-ultima')).toHaveText('Ultima piesă rămasă nu se anulează: pentru ea, Oprește.');
+  await expect(page.getByTestId('imprimanta-placa-pat')).not.toHaveAttribute('data-anulare');
+  // Doar comenzile din clicuri: pornirea și anulările lui A și B.
+  expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile') && c !== exclude(A) && c !== exclude(B))).toEqual([]);
 });

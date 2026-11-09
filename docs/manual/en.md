@@ -1412,11 +1412,43 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the address is the one on its screen.
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
-  **Temperatures** of the nozzle, the bed and the enclosure (read only: the app heats nothing) and the code the printer
-  reported (its screen shows the text).
+  **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
+- **The plate**, while printing or paused, in the job card: the bed seen from above, zoomed on the parts, with the
+  printer’s front at the bottom. It shows the parts (their outline; the **current part** with a teal outline; a
+  **cancelled** one, crossed out), the **nozzle** (a white dot, only while printing) and, for files sent from cvs2, the
+  **current layer** (orange) over the one below. Next to it, the layer bar (the finished layers, the current one, the pauses
+  in the file) and “Layer 6 / 10 · 1.2 mm”: the K1C mixes two layer counters, so the window takes the layer from the
+  filament used (for files sent from cvs2) or the one that matches the progress. Below, the **Parts**, with their cvs2
+  names. While the printer waits in a pause of the file, the plate shows that pause and its note. Files sent from cvs2
+  are kept in the browser (the last 5) so their layers can be drawn; for other files, the plate shows only the parts, the
+  nozzle and the layer number.
+- **Cancelling one part** (only what the connected printer has; today the K1 family), while printing or paused:
+  **Cancel…** next to a part in the list (or a click on it, on the plate) opens the confirmation: **Cancel the part** or
+  **Keep it**. The other parts carry on, and a cancelled part is not printed again. The part’s row shows “→ being cancelled ·
+  waiting for the printer” until the printer lists it as cancelled; without that within 6 s, “the printer did not confirm”.
+  K1 does not cancel the part it is working on at that moment: the request stays in view, with **Withdraw**, and is resent
+  until the printer takes it, at most 2 minutes. The last part left has no button: for it, use Stop. Only a name from the
+  printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.
+- **Controls while printing** (only what the connected printer has; today the K1 family). A requested value shows as
+  “→ 120 % · waiting for the printer” until the printer reports it; if it does not within 6 s, the window goes back to the
+  printer’s value, with “the printer did not confirm”. A slider sends when you let go, a field on `Enter` or when you
+  leave it; a number outside the range is not sent.
+  - **Temperatures:** **Nozzle target** and **Bed target** are written directly, in whole degrees, between 0 and the
+    maximum the printer reports (320 and 115 °C on the K1C). With the printer free, **Preheat** opens the slicer’s material
+    list (the same as in “From drawing…”), with the first-layer temperatures, and **Cool down** sets the targets to 0. While
+    a target is on without a job, the strip says **Heating**, with **Cool down** next to it. **Cool down by itself after**
+    30 **min without a print** (ticked by default, the minutes can be changed): after a preheat from the app, if no print
+    starts, the window sets the targets to 0 and says when; it works only while the window is open and connected. While
+    printing, the file may change the targets on the next layers.
+  - **Speed** and **Flow**, while printing or paused: between 1 and 200 %, with the slider, the field and **100 %**, which
+    brings them back.
+  - **Fans and light:** **Light**, on or off; the part, enclosure and side fans, between 0 and 100 % (on the K1 an `M106`
+    written only by the app goes out: the window has no G-code console). **Home (X, Y, Z)**, only while the printer is
+    free, after the **The bed is clear** tick: the head moves on X and Y first, then the nozzle comes down to the bed for
+    Z; **Cancel** closes the confirmation.
 - **The files on the printer** (sent from Creality Print or OrcaSlicer): **Start** opens the confirmation, with the file, the
   material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
   the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it
@@ -1433,6 +1465,87 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   does not arrive, the window says why (the printer does not answer on port 80, the file is not in its list, or its size
   differs), with
   **Try again**.
+- **From drawing…** (under the list; with no printer connected, under the opening text) slices flat parts from the drawing
+  here, without Creality Print: a plate, a spacer, a template, a calibration cube, that is a closed outline raised to a
+  thickness. Holes come from the drawing (a shape inside another is a hole, one inside a hole is an island), overlapping shapes
+  are joined, text prints too, and open paths are left aside, with a message. In the **Flat part for the printer** window:
+  - **What to print:** **The parts of the sheet**, **The selected parts** or **One part**, picked from the list. The parts keep
+    their layout from the sheet and are centred on the bed; what does not fit (220 × 220 mm on a K1C, with a 5 mm margin on
+    each side) is said.
+  - **After CNC: pockets, drillings and partial profiles as steps** (the tick box under “What to print”): each part prints as
+    the cutter leaves it, from its operations, not from the drawn shapes. The edge and the holes come from the through
+    profiles (outside or inside, at least as deep as the sheet); a pocket, a drilling or a partial profile (the cutter’s width,
+    on the side of the cut) lowers its area to the height minus the depth, and the depth stays in mm, measured from the top,
+    whatever the chosen height; what goes all the way through (or deeper than the height) is a hole. Each step gets the solid
+    top layers, like the face of the part. Tabs, ramps and leads do not count; V-carves and engravings with a V bit do not
+    print (a V engraving has no straight steps), and the window says how many there are. A part without a through outside
+    profile has no edge: the window says so.
+  - **Height:** **One for all** (the **Height for all** field, by default the sheet thickness) or **Each part’s own, kept in
+    the project**: the list of the chosen parts, each with its height, written into the part (in the project, with the usual
+    undo), so next time it comes by itself; a part without one takes the height for all (with the project open read-only, the
+    list cannot change).
+  - **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
+    ASA, PC, PA-CF, TPU, with the values of the Creality K1 profiles in OrcaSlicer), **Quality** (0.08, 0.12, 0.16, 0.20 or
+    0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage)
+    and **Brim** (Automatic: for narrow or tall parts; Yes; No).
+  - **Advanced** shows the other settings, in groups. Layers: Layer height, First layer height, Top layers, Top thickness at
+    least, Bottom layers, Ensure vertical shell thickness (All (also under the walls of steps), the default: on a part with
+    steps, solid infill also goes under the walls above a step, so they do not stand on sparse infill; Moderate; Critical
+    only; None: solid only under top faces, with narrow solid regions widened or, with None and Critical only, the very
+    narrow ones removed). First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
+    wall width, Solid infill width, Sparse infill width, Top surface width, First layer width. Speeds: Outer wall speed, Inner
+    wall speed, Solid infill speed, Sparse infill speed, Top surface speed, First layer speed, First layer infill speed, Travel
+    speed. Accelerations: Wall acceleration, Top surface acceleration, Infill acceleration, First layer acceleration, Travel
+    acceleration. Retraction: Retraction length, Retraction speed, Z hop. Cooling: Part fan, minimum; Part fan, maximum; Fan
+    off for the first layers; Auxiliary fan; Minimum layer time (a shorter layer prints slower, so it can cool); Slowest
+    cooling speed. Material flow: Flow ratio, Maximum volumetric speed (speeds are capped so the material fits through the
+    nozzle). Edges: Elephant foot compensation (the first layer, shrunk a little), Sparse infill overlap on walls, Solid infill
+    overlap on walls, Brim width, Brim gap. Infill patterns: Sparse infill pattern (Grid, the default; Rectilinear, turned
+    by 90° from one layer to the next; Aligned rectilinear; Line, every other line slightly slanted; Triangles; Tri-hexagon;
+    Cubic, Cross hatch and Gyroid, which change with height, as a 3D infill; Honeycomb; Concentric; Hilbert curve;
+    Archimedean chords; Octagram spiral; at 0.12 mm the profile starts with Cross hatch), Sparse infill direction, Internal
+    solid infill pattern, Top surface pattern and Bottom surface pattern (Monotonic line, the top default; Monotonic, the
+    bottom and internal default: the lines always in the same order, for an even face; Rectilinear; Aligned rectilinear;
+    Concentric; Hilbert curve; Archimedean chords; Octagram spiral), Solid infill direction. Wipe: Wipe while retracting (on
+    in the K1C profile: before a travel, the nozzle moves a little along the line it just made, so it leaves no blob), Wipe
+    distance, Retract amount before wipe (the rest of the retraction happens on the way), Role-based wipe speed (at the
+    speed of the last line), Wipe speed, of travel speed. Seam: Seam position (Aligned, the default: in the most hidden
+    corner, the same on every layer; Aligned back; Back; Nearest, to the nozzle; Random), Staggered inner seams (each inner
+    wall starts a little further along, so the seams do not stack), Seam gap. Ironing: Ironing type (No ironing, the
+    default; All top surfaces; Topmost surface only; All solid layers): one extra pass with a small flow over the face, to
+    smooth it; Ironing pattern (Rectilinear, Concentric), Ironing flow, Ironing line spacing, Ironing speed, Ironing inset
+    (0: half a nozzle), Ironing angle offset (from the lines of the face). Skirt: Skirt loops (0: no skirt, the default),
+    Skirt distance (from the parts or the brim), Skirt height, Skirt speed, Skirt type (Combined; Per object), Skirt minimum
+    extrusion length (loops are added until they reach it), Draft shield (the skirt as tall as the parts, against drafts,
+    for ABS or ASA), Skirt start point (the angle, from the centre of the parts), Single loop after first layer. The skirt
+    is printed first, on the first layer: it primes the nozzle and shows whether the bed is level. **Profile values** puts
+    back those of the chosen material and quality. The chosen settings are kept in the browser, for next time.
+  - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
+    surface, sparse infill, brim, ironing, skirt) over the part outline, thin and red: where only the red shows, the part is narrower than one
+    line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role (on a part with steps, a layer can have several: **with a
+    step:** the top surface of the step, the solid under a face, the sparse infill),
+    then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
+    also shows, dotted, the nozzle’s paths between lines.
+  - **Pause before this layer** (under the slider) adds a pause at the layer shown: the printer stops after the layer
+    below, for example to change the filament for a second colour from a height upwards (sunken text or a drawing), or to
+    place something into an open pocket; then you press **Resume** in the Printer window or on its screen. Another click
+    on the button removes it. Pauses show as red marks on the slider and in the **Pauses** list, each with its layer and
+    height (a click on it shows the layer), a **Pause note** (for example “black filament”) and **Remove the pause**. A
+    pause keeps the height printed so far: with another layer height it stays at the same place in the part, and above
+    the parts it is left out of the file. Pauses are kept in the browser for the same parts (they come back when you
+    reopen the window on them), and the summary counts them. In the file, a pause is the printer’s `PAUSE` command, before
+    the first part of the layer; the estimated time does not include how long the printer waits. There is no pause before
+    the first layer.
+  - **Nozzle** and **Bed** in “Simple” also change the first layer temperatures (with the same difference from them as the
+    material profile has: PC starts 10 °C lower). The brim is one for all the parts: it goes around neighbouring parts.
+    Everything extruded, the brim included, must fit the bed with its 5 mm margin, and the last layer must stay under
+    250 mm; otherwise no file is made, and the window says how far it goes out. If the drawing changes in Design while the
+    window is open, the parts are read again.
+  - **Send to the printer** (only with the printer connected) passes the file through the same check and sending as **Send a
+    file…**, with the same **The bed is clear** check at start. **Save .gcode** downloads it, for a USB stick or to send later;
+    **Cancel** (or `Escape`) closes the window. The file uses only the commands OrcaSlicer writes for the K1C: the start
+    (`START_PRINT`) and the end (`END_PRINT`) stay the printer’s, with its levelling, purge line and cooling; each part is an
+    object the printer can skip if it comes loose.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
   and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen. A
   printer silent for more than 20 s counts as lost (a connection can die without closing), and one that no longer answers at

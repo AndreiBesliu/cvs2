@@ -5,25 +5,43 @@
  * imprimantă, pornite cu confirmare („Patul e gol”), și jurnalul cadrelor. Din felia 3.6h, și trimiterea unui `.gcode` de pe
  * calculator: verificat întâi pe calculator (antetul feliatorului, mișcările față de pat), apoi căutat în lista imprimantei.
  *
- * Siguranța (ADR 0190 §E): singură, fereastra doar citește și răspunde `ok` la bătaia inimii; fiecare comandă pleacă dintr-un
- * clic. Pornirea cere bifa „Patul e gol”, oprirea o confirmare (o imprimare oprită nu se mai poate relua), pauza pleacă pe loc.
- * O legătură căzută nu oprește imprimarea: fereastra spune asta și se leagă singură din nou; oprirea de urgență rămâne ecranul
- * imprimantei. Temperaturile doar se citesc.
+ * Siguranța (ADR 0190 §E, ADR 0192 §D): singură, fereastra doar citește și răspunde `ok` la bătaia inimii; fiecare comandă
+ * pleacă dintr-un clic. Pornirea cere bifa „Patul e gol”, oprirea o confirmare (o imprimare oprită nu se mai poate relua), pauza
+ * pleacă pe loc. O legătură căzută nu oprește imprimarea: fereastra spune asta și se leagă singură din nou; oprirea de urgență
+ * rămâne ecranul imprimantei.
+ *
+ * Din felia 3.6o (ADR 0192): comenzile din timpul imprimării, după capabilitățile imprimantei legate (driverul ei): lumina,
+ * ventilatoarele, viteza și debitul cât imprimă, țintele duzei și patului, cu Preîncălzește (materialele felierului) și Răcește,
+ * homing-ul (cu bifa „Patul e gol”, doar cu imprimanta liberă). O valoare cerută se arată „în așteptare” până o raportează
+ * imprimanta (după 6 s fără ea: „n-a confirmat”). Încălzirea pornită fără lucrare stă la vedere în bandă, cu Răcește; după o
+ * preîncălzire din aplicație fără imprimare, imprimanta se răcește singură (implicit în 30 de minute, de schimbat sau de oprit).
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ChangeEvent, type FormEvent, type KeyboardEvent, type ReactNode,
+} from 'react';
+import { MATERIALE, type Material } from '../cam/feliere/profil.ts';
+import type { DesenImprimanta } from './DialogDinDesen.tsx';
 import '../i18n/imprimanta.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { limba, t } from '../i18n/t.ts';
 import { adresaRetea, type AdresaRetea } from '../machine/reteaLocala.ts';
+import { numeDin } from '../machine/imprimanta/creality.ts';
 import {
-  numeDin, PORT_CREALITY, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRelua, stareLucrare, type FisierImprimanta, type StareLucrare,
-} from '../machine/imprimanta/creality.ts';
-import { analizeazaFisier, patPentru, type AnalizaGcode } from '../machine/imprimanta/gcode3d.ts';
-import { SesiuneImprimanta, type LinieJurnal, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
+  esteLibera, intregIn, piesaAnulabila, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRegla, sePoateRelua, type Capabilitati,
+  type FisierImprimanta,
+  type IdVentilator, type Imprimanta as ImprimantaCitita, type Incalzitor, type Interval, type StareLucrare,
+} from '../machine/imprimanta/driver.ts';
+import { DRIVER_IMPLICIT, DRIVERE, driverDupaId, esteIdDriver } from '../machine/imprimanta/drivere.ts';
+import { analizeazaFisier, patPentru, type AnalizaGcode, type PauzaFisier } from '../machine/imprimanta/gcode3d.ts';
+import { hartaFisier, type HartaGcode } from '../machine/imprimanta/harta.ts';
+import { RACIRE_IMPLICITA_MIN, SesiuneImprimanta, type LinieJurnal, type MotivImprimanta, type StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, CHEIE_IMPRIMANTE, citesteImprimante, reteleDeCautat, scrieImprimante, tineImprimanta, uitaImprimanta, type ImprimantaTinuta,
 } from '../machine/imprimanta/tinute.ts';
+import { stratViu } from '../machine/imprimanta/stratViu.ts';
 import { numeDeTrimis, urca, type MotivUrcare } from '../machine/imprimanta/urcare.ts';
+import { ETICHETE, gasesteFisier, tineFisier } from './fisiereImprimanta.ts';
+import { Placa } from './PlacaImprimanta.tsx';
 import './imprimanta.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
@@ -32,6 +50,63 @@ mesaje.catch(() => undefined);
 
 /** O singură sesiune pe pagină: fereastra rămâne montată după prima deschidere, iar legătura trăiește cu pagina. */
 const sesiune = new SesiuneImprimanta();
+
+/** Driverul unei adrese scrise de mână și al căutării în rețea: azi singurul (ADR 0192 §A.5). */
+const IMPLICIT = DRIVERE[DRIVER_IMPLICIT];
+
+/**
+ * Răcirea singură (ADR 0192 §D.16, răspunsul 3a): pornită sau nu, și după câte minute, ținută în browser
+ * (`cncvs2.imprimanta.racire`, `v: 1`); implicit, pornită, la 30 de minute. Sesiunea o primește de la început.
+ */
+type SetareRacire = { readonly pornita: boolean; readonly minute: number };
+const CHEIE_RACIRE = 'cncvs2.imprimanta.racire';
+const MINUTE_RACIRE: Interval = { min: 1, max: 240 };
+
+function citesteRacire(): SetareRacire {
+  try {
+    const o = JSON.parse(localStorage.getItem(CHEIE_RACIRE) ?? 'null') as unknown;
+    if (typeof o === 'object' && o !== null && (o as { v?: unknown }).v === 1) {
+      const { pornita, minute } = o as { pornita?: unknown; minute?: unknown };
+      if (typeof pornita === 'boolean' && typeof minute === 'number' && intregIn(minute, MINUTE_RACIRE) !== null) return { pornita, minute };
+    }
+  } catch {
+    // Fără stocare (sau o valoare stricată): implicitul.
+  }
+  return { pornita: true, minute: RACIRE_IMPLICITA_MIN };
+}
+
+function scrieRacire(r: SetareRacire): void {
+  try {
+    localStorage.setItem(CHEIE_RACIRE, JSON.stringify({ v: 1, pornita: r.pornita, minute: r.minute }));
+  } catch {
+    // Fără stocare: setarea ține doar cât pagina.
+  }
+}
+
+const racireInitiala = citesteRacire();
+sesiune.seteazaRacire(racireInitiala.pornita ? racireInitiala.minute : null);
+
+/**
+ * Dialogul „Din desen…” (ADR 0191, felia 3.6j), cu felierea pieselor plate: o bucată a lui, adusă la primul clic, ca
+ * fereastra să nu crească pentru cine doar trimite fișiere gata feliate. O bucată care nu vine (o publicare nouă, cu alte
+ * nume de fișiere, peste o filă veche) spune asta, cu „Reîncarcă”, ca dialogurile aplicației.
+ */
+const DialogDinDesen = lazy(() => import('./DialogDinDesen.tsx').then((m) => ({ default: m.DialogDinDesen }), () => ({ default: FelieNeincarcata })));
+
+function FelieNeincarcata({ inchide }: { readonly inchide: () => void }): ReactNode {
+  return (
+    <div className="imprimanta-dialog" role="alert" data-testid="imprimanta-felie-neincarcata">
+      <p>{t('dialog.neincarcat')}</p>
+      <div className="imprimanta-butoane">
+        <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
+        <button type="button" onClick={inchide}>{t('imprimanta.felie.renunta')}</button>
+      </div>
+    </div>
+  );
+}
+
+/** Desenul de feliat: documentul și selecția, citite din aplicație la clicul pe „Din desen…”. */
+export type SursaDesen = () => DesenImprimanta;
 
 function citesteTinute(): readonly ImprimantaTinuta[] {
   try {
@@ -59,13 +134,27 @@ const durata = (s: number): string => {
 };
 const grade = (v: number | null): string => (v === null ? '—' : String(Math.round(v)));
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
+
+/** Pauzele unui fișier, pe scurt (felia 3.6p): „înaintea stratului 11 (la 2 mm): filament negru; …”, cel mult 5, apoi „…”. */
+const listaPauze = (p: readonly PauzaFisier[]): string => {
+  const una = (x: PauzaFisier): string => {
+    const unde = x.strat === null ? t('imprimanta.pauza.linie', { comanda: x.comanda, n: x.linie })
+      : x.z === null ? t('imprimanta.pauza.inainte', { k: x.strat }) : t('imprimanta.pauza.inainte-z', { k: x.strat, z: x.z.toLocaleString(loc()) });
+    return x.nota === null ? unde : `${unde}: ${x.nota}`;
+  };
+  return p.slice(0, 5).map(una).join('; ') + (p.length > 5 ? '; …' : '');
+};
 const ora = (ms: number): string => new Date(ms).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
 /** Mărimea unui fișier: MB cu o zecimală de la 1 MB, altfel kB. */
 const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(o / 1e3))} kB`);
-const gazdaPort = (a: AdresaRetea): string => (a.port === PORT_CREALITY ? a.gazda : `${a.gazda}:${a.port}`);
-const textMotiv = (m: MotivImprimanta, a: AdresaRetea | null): string => t(`imprimanta.motiv.${m}`, { adresa: a ? gazdaPort(a) : '—' });
+/** Adresa, cu portul doar dacă nu e cel din fabrică al driverului. */
+const gazdaPort = (a: AdresaRetea, port: number): string => (a.port === port ? a.gazda : `${a.gazda}:${a.port}`);
+const textMotiv = (m: MotivImprimanta, st: StareImprimanta): string => t(`imprimanta.motiv.${m}`, { adresa: st.adresa ? gazdaPort(st.adresa, st.driver.port) : '—' });
 
-export function PanouImprimanta(): ReactNode {
+/** `scrieInaltimi`: scrie înălțimea de imprimare a pieselor în proiect (3.6l); null în doar-citire, lipsă fără proiect. */
+export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi }: {
+  readonly desen?: SursaDesen; readonly versiuneDesen?: string; readonly scrieInaltimi?: ((m: ReadonlyMap<string, number | null>) => void) | null;
+}): ReactNode {
   const st = useSyncExternalStore((f) => sesiune.aboneaza(f), () => sesiune.stare());
   const [tinute, setTinute] = useState<readonly ImprimantaTinuta[]>(citesteTinute);
   const tine = (f: (l: readonly ImprimantaTinuta[]) => readonly ImprimantaTinuta[]): void => {
@@ -75,39 +164,64 @@ export function PanouImprimanta(): ReactNode {
       return noua;
     });
   };
-  // O imprimantă legată intră prima în listă; modelul și numele ei, când le spune.
+  // Dialogul „Din desen…” (3.6j): unul singur, deasupra vederilor, ca să nu dispară când legătura se schimbă; fișierul feliat
+  // trece la trimitere prin `deTrimis`. La închidere, focusul revine la butonul care l-a deschis.
+  const [dinDesen, setDinDesen] = useState(false);
+  const [deTrimis, setDeTrimis] = useState<{ readonly f: File; readonly k: number } | null>(null);
+  const deschizator = useRef<HTMLElement | null>(null);
+  const deschideDinDesen = desen === undefined ? null : (el: HTMLElement): void => { deschizator.current = el; setDinDesen(true); };
+  const inchideDinDesen = (): void => {
+    setDinDesen(false);
+    requestAnimationFrame(() => {
+      const b = deschizator.current;
+      (b?.isConnected ? b : document.querySelector<HTMLElement>('[data-imprimanta="din-desen"]'))?.focus();
+    });
+  };
+  const sePoateTrimite = st.legatura === 'conectat' && st.fisiere !== null && st.driver.capabilitati(st.imprimanta).trimitere;
+  // O imprimantă legată intră prima în listă, cu driverul ei; modelul și numele ei, când le spune.
   const { legatura, adresa } = st;
   const { model, nume } = st.imprimanta;
+  const driver = esteIdDriver(st.driver.id) ? st.driver.id : DRIVER_IMPLICIT;
   useEffect(() => {
     if (legatura !== 'conectat' || adresa === null) return;
-    tine((l) => tineImprimanta(l, { adresa: adresa.gazda, port: adresa.port, model, nume }, Date.now()));
-  }, [legatura, adresa, model, nume]);
+    tine((l) => tineImprimanta(l, { adresa: adresa.gazda, port: adresa.port, model, nume, driver }, Date.now()));
+  }, [legatura, adresa, model, nume, driver]);
 
   return (
     <div className="imprimanta" data-testid="imprimanta">
       <h2 className="imprimanta-ascuns">{t('vedere.imprimanta')}</h2>
+      {dinDesen && desen !== undefined && (
+        <Suspense fallback={<p role="status">{t('imprimanta.felie.lucreaza')}</p>}>
+          <DialogDinDesen sursa={desen} versiune={versiuneDesen ?? ''} model={st.imprimanta.model} inchide={inchideDinDesen}
+            scrieInaltimi={scrieInaltimi ?? null}
+            trimite={sePoateTrimite ? (f) => { setDinDesen(false); setDeTrimis((x) => ({ f, k: (x?.k ?? 0) + 1 })); } : null} />
+        </Suspense>
+      )}
       {st.legatura === 'deconectat' || (st.legatura === 'se-leaga' && st.imprimanta.cod === null && st.imprimanta.model === null)
-        ? <Conectare st={st} tinute={tinute} uita={(id) => { tine((l) => uitaImprimanta(l, id)); }} />
-        : <Imprimanta st={st} />}
+        ? <Conectare st={st} tinute={tinute} uita={(id) => { tine((l) => uitaImprimanta(l, id)); }} dinDesen={deschideDinDesen} />
+        : <Imprimanta st={st} dinDesen={deschideDinDesen} deTrimis={deTrimis} inchideDinDesen={() => { setDinDesen(false); }} />}
     </div>
   );
 }
 
-function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonly tinute: readonly ImprimantaTinuta[]; readonly uita: (id: string) => void }): ReactNode {
+function Conectare({ st, tinute, uita, dinDesen }: {
+  readonly st: StareImprimanta; readonly tinute: readonly ImprimantaTinuta[]; readonly uita: (id: string) => void;
+  readonly dinDesen: ((el: HTMLElement) => void) | null;
+}): ReactNode {
   const [text, setText] = useState('');
   const [refuz, setRefuz] = useState<string | null>(null);
   const [cautare, setCautare] = useState<{ readonly n: number; readonly total: number } | null>(null);
   const [nimic, setNimic] = useState<string | null>(null);
   const oprire = useRef<AbortController | null>(null);
   useEffect(() => () => { oprire.current?.abort(); }, []);
-  const lega = (a: AdresaRetea): void => {
+  const lega = (a: AdresaRetea, driver = IMPLICIT): void => {
     setRefuz(null);
     setNimic(null);
-    void sesiune.conecteaza(a);
+    void sesiune.conecteaza(a, driver);
   };
   const trimis = (e: FormEvent): void => {
     e.preventDefault();
-    const a = adresaRetea(text, PORT_CREALITY);
+    const a = adresaRetea(text, IMPLICIT.port);
     if (!a.ok) { setRefuz(t(`imprimanta.refuz.${a.motiv}`)); return; }
     lega(a.adresa);
   };
@@ -117,7 +231,7 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
     setNimic(null);
     const retele = reteleDeCautat(tinute.map((x) => x.adresa));
     setCautare({ n: 0, total: retele.length * 254 });
-    void cautaInRetea(retele, { semnal: c.signal, laProgres: (n, total) => { setCautare({ n, total }); } }).then((g) => {
+    void cautaInRetea(retele, { semnal: c.signal, driver: IMPLICIT, laProgres: (n, total) => { setCautare({ n, total }); } }).then((g) => {
       if (oprire.current !== c) return;
       oprire.current = null;
       setCautare(null);
@@ -137,14 +251,15 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
             <ul className="imprimanta-tinute" aria-label={t('imprimanta.tinute')}>
               {tinute.map((x) => {
                 const a = adresaRetea(x.adresa, x.port);
+                const d = driverDupaId(x.driver) ?? IMPLICIT;
                 return (
                   <li key={x.id} className="imprimanta-tinuta">
                     <span className="imprimanta-tinuta-nume">
                       <strong>{x.nume ?? x.model ?? t('imprimanta.tinuta.fara-nume')}</strong>
-                      <span className="imprimanta-slab">{x.port === PORT_CREALITY ? x.adresa : `${x.adresa}:${x.port}`}{x.model && x.nume ? ` · ${x.model}` : ''}</span>
+                      <span className="imprimanta-slab">{x.port === d.port ? x.adresa : `${x.adresa}:${x.port}`}{x.model && x.nume ? ` · ${x.model}` : ''}</span>
                     </span>
                     <button type="button" className="principal" data-imprimanta="tinuta" disabled={seLeaga || !a.ok}
-                      onClick={() => { if (a.ok) lega(a.adresa); }}>{t('imprimanta.tinuta.conecteaza')}</button>
+                      onClick={() => { if (a.ok) lega(a.adresa, d); }}>{t('imprimanta.tinuta.conecteaza')}</button>
                     <button type="button" data-imprimanta="uita" disabled={seLeaga} onClick={() => { uita(x.id); }}>{t('imprimanta.tinuta.uita')}</button>
                   </li>
                 );
@@ -170,14 +285,14 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
             : <p className="imprimanta-ajutor">{t('imprimanta.cauta.ajutor')}</p>}
           {nimic !== null && <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-nimic">{nimic}</p>}
         </form>
-        {seLeaga && st.adresa !== null && <p role="status" data-testid="imprimanta-se-leaga">{t('imprimanta.se-leaga', { adresa: gazdaPort(st.adresa) })}</p>}
+        {seLeaga && st.adresa !== null && <p role="status" data-testid="imprimanta-se-leaga">{t('imprimanta.se-leaga', { adresa: gazdaPort(st.adresa, st.driver.port) })}</p>}
       </section>
       <section className="imprimanta-card" aria-labelledby="imprimanta-pasi">
         {st.motiv !== null
           ? (
             <>
               <h3 id="imprimanta-pasi">{t('imprimanta.pasi')}</h3>
-              <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-motiv" data-motiv={st.motiv}>{textMotiv(st.motiv, st.adresa)}</p>
+              <p className="imprimanta-refuz" role="alert" data-testid="imprimanta-motiv" data-motiv={st.motiv}>{textMotiv(st.motiv, st)}</p>
               {st.motiv !== 'retea-permisiune' && (
                 <ul className="imprimanta-pasi">
                   <li>{t('imprimanta.pasi.pornita')}</li>
@@ -194,18 +309,76 @@ function Conectare({ st, tinute, uita }: { readonly st: StareImprimanta; readonl
               <p>{t('imprimanta.prima')}</p>
             </>
           )}
+        {dinDesen !== null && (
+          <div className="imprimanta-din-desen">
+            {/* „Din desen…” merge și fără imprimantă legată: atunci fișierul doar se salvează. */}
+            <button type="button" data-imprimanta="din-desen" onClick={(e) => { dinDesen(e.currentTarget); }}>{t('imprimanta.felie.din-desen')}</button>
+            <p className="imprimanta-ajutor">{t('imprimanta.felie.din-desen.ajutor')}</p>
+          </div>
+        )}
       </section>
     </div>
   );
 }
 
-/** Cele două ferestre de confirmare: pornirea unui fișier și oprirea imprimării. */
-type Confirmare = { readonly fel: 'pornire'; readonly fisier: FisierImprimanta } | { readonly fel: 'oprire' };
+/** Ultima hartă citită (cheia: numele și mărimea fișierului), ca o fereastră redeschisă să n-o citească din nou (felia 3.6q). */
+let hartaTinuta: { readonly cheie: string; readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null } | null = null;
 
-function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
+/**
+ * Harta fișierului de acum (ADR 0193 §B.7): dacă a fost trimis din cvs2 și e încă ținut în browser, citit o dată pe lucrare;
+ * altfel null (placa arată atunci doar piesele, duza și numărul stratului).
+ */
+function useHartaLucrarii(st: StareImprimanta, stare: StareLucrare): { readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null } {
+  const fisier = st.imprimanta.fisier;
+  const nume = fisier === null ? null : numeDin(fisier);
+  const marime = nume === null ? null : (st.fisiere?.find((f) => f.nume === nume)?.marime ?? null);
+  const activa = stare === 'imprima' || stare === 'pauza' || stare === 'pregatire';
+  const cheie = activa && nume !== null ? `${nume}|${marime ?? '?'}` : null;
+  const [, setCitita] = useState(0);
+  useEffect(() => {
+    if (cheie === null || nume === null || hartaTinuta?.cheie === cheie) return;
+    const c = new AbortController();
+    void (async () => {
+      const f = await gasesteFisier(nume, marime);
+      const harta = f === null ? null : await hartaFisier(f.date, c.signal).catch(() => null);
+      if (c.signal.aborted) return;
+      hartaTinuta = { cheie, harta, etichete: f?.etichete ?? null };
+      setCitita((x) => x + 1);
+    })();
+    return () => { c.abort(); };
+  }, [cheie]);
+  return cheie !== null && hartaTinuta?.cheie === cheie ? hartaTinuta : { harta: null, etichete: null };
+}
+
+/** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării, homing-ul (3.6o) și anularea unei piese (3.6r). */
+type Confirmare =
+  | { readonly fel: 'pornire'; readonly fisier: FisierImprimanta; readonly pauze?: readonly PauzaFisier[] }
+  | { readonly fel: 'oprire' }
+  | { readonly fel: 'homing' }
+  | { readonly fel: 'anulare'; readonly nume: string; readonly eticheta: string };
+
+function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
+  readonly st: StareImprimanta; readonly dinDesen: ((el: HTMLElement) => void) | null;
+  readonly deTrimis: { readonly f: File; readonly k: number } | null; readonly inchideDinDesen: () => void;
+}): ReactNode {
   const i = st.imprimanta;
-  const stare: StareLucrare = stareLucrare(i);
+  const stare: StareLucrare = st.driver.lucrare(i);
+  // Ce poate imprimanta legată (ADR 0192 §A.4): fereastra arată doar comenzile de aici.
+  const cap = st.driver.capabilitati(i);
+  const cereri = useCereri(i);
   const legata = st.legatura === 'conectat';
+  // Placa și stratul de acum (felia 3.6q): harta fișierului, dacă e unul trimis din cvs2, și stratul ales din ce spune imprimanta.
+  const { harta, etichete } = useHartaLucrarii(st, stare);
+  const viu = stratViu({
+    harta, straturi: i.straturi, progres: i.progres, filament: i.filament, recente: st.straturiRecente.map((x) => x.v), inPauza: stare === 'pauza',
+  });
+  const totalStraturi = harta !== null && harta.straturi.length > 0 ? harta.straturi.length : i.straturi;
+  const cuPlaca = (stare === 'imprima' || stare === 'pauza') && (harta !== null || (i.piese?.length ?? 0) > 0);
+  // Încălzirea pornită fără o lucrare stă la vedere, în bandă, cu Răcește (ADR 0192 §D.15).
+  const calda = (i.duzaTinta ?? 0) > 0 || (i.patTinta ?? 0) > 0;
+  const raceste = (): void => {
+    for (const x of cap.tinte) cereri.cere(`tinta:${x.incalzitor}`, 0, () => sesiune.comanda({ fel: 'tinta', incalzitor: x.incalzitor, grade: 0 }));
+  };
   const [confirmare, setConfirmare] = useState<Confirmare | null>(null);
   // După Oprește, imprimanta trece prin 7 („oprirea în curs”, pe care altfel o arătăm neutru, ca pregătire) până la 4.
   const [oprireCeruta, setOprireCeruta] = useState(false);
@@ -214,13 +387,21 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
   // O confirmare veche nu rămâne după o legătură pierdută sau o stare în care comanda n-ar mai avea rost: se închide de tot,
   // ca să nu reapară singură când legătura revine.
   const rost = confirmare === null || !legata ? false
-    : confirmare.fel === 'oprire' ? sePoateOpri(stare) : sePoatePorni(stare);
+    : confirmare.fel === 'oprire' ? sePoateOpri(stare)
+      : confirmare.fel === 'homing' ? esteLibera(stare) && st.secventa === null && i.ocupata !== true
+        // Anularea (3.6r): cât piesa se mai poate anula și nu e deja cerută.
+        : confirmare.fel === 'anulare' ? cap.anulare && sePoateRegla(stare) && piesaAnulabila(i, confirmare.nume) === null
+          && !st.anulari.some((a) => a.esuataLa === null && a.nume.toUpperCase() === confirmare.nume.toUpperCase())
+          : sePoatePorni(stare);
   const afisata = rost ? confirmare : null;
   useEffect(() => { if (confirmare !== null && !rost) setConfirmare(null); }, [confirmare, rost]);
   // Fișierul ales pentru trimitere (3.6h); `k` repornește dialogul la fiecare alegere.
   const [ales, setAles] = useState<{ readonly f: File; readonly k: number } | null>(null);
   const intrare = useRef<HTMLInputElement | null>(null);
-  const alege = (): void => { intrare.current?.click(); };
+  // „Trimite un fișier…” închide dialogul „Din desen…” (altfel ar reveni singur, cu valorile de început, după trimitere).
+  const alege = (): void => { inchideDinDesen(); intrare.current?.click(); };
+  // Piesele plate din desen (3.6j): fișierul feliat trece prin aceeași trimitere ca unul de pe calculator.
+  useEffect(() => { if (deTrimis !== null) setAles((x) => ({ f: deTrimis.f, k: (x?.k ?? 0) + 1 })); }, [deTrimis]);
   // IP-ul schimbat (3.6i: imprimanta owner-ului și-a luat altă adresă la o pornire de pe ecran): după o reîncercare căzută, o
   // caută o dată în rețea, după numele ei, și se leagă acolo; lista ținută o mută la noua adresă (`tineImprimanta`).
   const cautare = useRef<AbortController | null>(null);
@@ -234,7 +415,7 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
     cautare.current = c;
     setCautNume(nume);
     sesiune.noteaza(`search ${nume}`);
-    void cautaInRetea(reteleDeCautat([veche.gazda]), { semnal: c.signal, nume }).then((g) => {
+    void cautaInRetea(reteleDeCautat([veche.gazda]), { semnal: c.signal, nume, driver: st.driver }).then((g) => {
       if (c.signal.aborted) return;
       setCautNume(null);
       if (g === null || g.adresa.url === veche.url) return;
@@ -245,7 +426,7 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
   useEffect(() => { if (st.legatura !== 'pierduta') { cautare.current?.abort(); cautare.current = null; setCautNume(null); } }, [st.legatura]);
   useEffect(() => () => { cautare.current?.abort(); }, []);
   const numeImprimanta = i.nume ?? i.model ?? t('imprimanta.tinuta.fara-nume');
-  const detalii = [st.adresa ? t('imprimanta.prin-wifi', { adresa: gazdaPort(st.adresa) }) : null, i.firmware ? t('imprimanta.firmware', { versiune: i.firmware }) : null]
+  const detalii = [st.adresa ? t('imprimanta.prin-wifi', { adresa: gazdaPort(st.adresa, st.driver.port) }) : null, i.firmware ? t('imprimanta.firmware', { versiune: i.firmware }) : null]
     .filter((x): x is string => x !== null).join(' · ');
   return (
     <>
@@ -253,6 +434,12 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
         {st.legatura === 'pierduta'
           ? <span className="imprimanta-cip" data-stare="pierduta" data-testid="imprimanta-stare">{t('imprimanta.pierduta')}</span>
           : <span className="imprimanta-cip" data-stare={stare} data-testid="imprimanta-stare">{seOpreste ? t('imprimanta.stare.se-opreste') : t(`imprimanta.stare.${stare}`)}</span>}
+        {legata && esteLibera(stare) && calda && (
+          <span className="imprimanta-incalzeste" data-testid="imprimanta-incalzeste">
+            {t('imprimanta.incalzeste', { duza: grade(i.duzaTinta), pat: grade(i.patTinta) })}
+            <button type="button" data-imprimanta="incalzeste-raceste" onClick={raceste}>{t('imprimanta.raceste')}</button>
+          </span>
+        )}
         <span className="imprimanta-cine">
           <strong data-testid="imprimanta-nume">{numeImprimanta}</strong>
           <span className="imprimanta-slab">{detalii}</span>
@@ -277,9 +464,12 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
       )}
       {st.legatura === 'se-leaga' && <p className="imprimanta-nota" role="status" data-testid="imprimanta-reface">{t('imprimanta.reface')}</p>}
       {afisata !== null && (
-        <DialogConfirmare c={afisata} renunta={() => { setConfirmare(null); }}
+        <DialogConfirmare key={afisata.fel === 'anulare' ? `anulare:${afisata.nume}` : afisata.fel} c={afisata} piesaAcum={i.piesaAcum}
+          renunta={() => { setConfirmare(null); }}
           confirma={() => {
             if (afisata.fel === 'oprire') { if (sesiune.opresteImprimarea()) setOprireCeruta(true); }
+            else if (afisata.fel === 'homing') sesiune.comanda({ fel: 'homing' });
+            else if (afisata.fel === 'anulare') sesiune.anuleazaPiesa(afisata.nume);
             else sesiune.porneste(afisata.fisier);
             setConfirmare(null);
           }} />
@@ -288,70 +478,486 @@ function Imprimanta({ st }: { readonly st: StareImprimanta }): ReactNode {
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setAles((x) => ({ f, k: (x?.k ?? 0) + 1 })); }} />
       {ales !== null && (
         <DialogTrimitere key={ales.k} fisier={ales.f} st={st} stare={stare} alt={alege} inchide={() => { setAles(null); }}
-          porneste={(f) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f }); }} />
+          porneste={(f, pauze) => { setAles(null); setConfirmare({ fel: 'pornire', fisier: f, pauze }); }} />
       )}
-      <div className="imprimanta-coloane">
-        <section className="imprimanta-card" aria-labelledby="imprimanta-lucrarea" data-testid="imprimanta-lucrarea">
-          <h3 id="imprimanta-lucrarea">{t('imprimanta.lucrarea')}</h3>
-          {i.fisier === null
-            ? <p className="imprimanta-slab">{t('imprimanta.fara-lucrare')}</p>
-            : (
-              <>
-                <p className="imprimanta-fisier" data-testid="imprimanta-fisier">{numeDin(i.fisier)}</p>
-                <div className="imprimanta-progres" role="progressbar" aria-label={t('imprimanta.progres')} aria-valuemin={0} aria-valuemax={100}
-                  aria-valuenow={Math.round(i.progres ?? 0)}>
-                  <i style={{ width: `${Math.min(100, Math.max(0, i.progres ?? 0))}%` }} />
-                </div>
-                <dl className="imprimanta-cifre">
-                  <dt>{t('imprimanta.progres')}</dt><dd data-testid="imprimanta-progres">{i.progres === null ? '—' : `${Math.round(i.progres)} %`}</dd>
-                  <dt>{t('imprimanta.trecut')}</dt><dd>{i.trecut === null ? '—' : durata(i.trecut)}</dd>
-                  <dt>{t('imprimanta.ramas')}</dt><dd data-testid="imprimanta-ramas">{i.ramas === null ? '—' : durata(i.ramas)}</dd>
-                  {i.strat !== null && i.straturi !== null && i.straturi > 0 && (
-                    <><dt>{t('imprimanta.strat')}</dt><dd>{t('imprimanta.strat.din', { strat: i.strat, straturi: i.straturi })}</dd></>
+      <div className={cuPlaca ? 'imprimanta-coloane imprimanta-cu-placa' : 'imprimanta-coloane'}>
+        <div className="imprimanta-stiva">
+          <section className="imprimanta-card" aria-labelledby="imprimanta-lucrarea" data-testid="imprimanta-lucrarea">
+            <h3 id="imprimanta-lucrarea">{t('imprimanta.lucrarea')}</h3>
+            {i.fisier === null
+              ? <p className="imprimanta-slab">{t('imprimanta.fara-lucrare')}</p>
+              : (
+                <>
+                  <p className="imprimanta-fisier" data-testid="imprimanta-fisier">{numeDin(i.fisier)}</p>
+                  <div className="imprimanta-progres" role="progressbar" aria-label={t('imprimanta.progres')} aria-valuemin={0} aria-valuemax={100}
+                    aria-valuenow={Math.round(i.progres ?? 0)}>
+                    <i style={{ width: `${Math.min(100, Math.max(0, i.progres ?? 0))}%` }} />
+                  </div>
+                  <dl className="imprimanta-cifre">
+                    <dt>{t('imprimanta.progres')}</dt><dd data-testid="imprimanta-progres">{i.progres === null ? '—' : `${Math.round(i.progres)} %`}</dd>
+                    <dt>{t('imprimanta.trecut')}</dt><dd>{i.trecut === null ? '—' : durata(i.trecut)}</dd>
+                    <dt>{t('imprimanta.ramas')}</dt><dd data-testid="imprimanta-ramas">{i.ramas === null ? '—' : durata(i.ramas)}</dd>
+                    {viu.strat !== null && totalStraturi !== null && totalStraturi > 0 && (
+                      <><dt>{t('imprimanta.strat')}</dt><dd data-testid="imprimanta-strat">{t('imprimanta.strat.din', { strat: viu.strat, straturi: totalStraturi })}</dd></>
+                    )}
+                  </dl>
+                  {cuPlaca && (
+                    <Placa i={i} stare={stare} harta={harta} etichete={etichete} viu={viu} pat={patPentru(i.model)} anulari={st.anulari}
+                      anuleaza={cap.anulare && legata ? (nume, eticheta) => { setConfirmare({ fel: 'anulare', nume, eticheta }); } : null}
+                      retrage={(nume) => { sesiune.renuntaLaAnulare(nume); }} />
                   )}
-                </dl>
-              </>
-            )}
-        </section>
-        <section className="imprimanta-card" aria-labelledby="imprimanta-temperaturi" data-testid="imprimanta-temperaturi">
-          <h3 id="imprimanta-temperaturi">{t('imprimanta.temperaturi')}</h3>
-          <Temperatura nume={t('imprimanta.duza')} v={i.duza} tinta={i.duzaTinta} id="duza" />
-          <Temperatura nume={t('imprimanta.pat')} v={i.pat} tinta={i.patTinta} id="pat" />
-          <Temperatura nume={t('imprimanta.carcasa')} v={i.carcasa} tinta={null} id="carcasa" />
-        </section>
-        <section className="imprimanta-card" aria-labelledby="imprimanta-de-la">
-          <h3 id="imprimanta-de-la">{t('imprimanta.de-la')}</h3>
-          {i.eroare === null
-            ? <p className="imprimanta-slab">{t('imprimanta.fara-eroare')}</p>
-            : (
-              <div className="imprimanta-cod" data-testid="imprimanta-cod">
-                <strong>{t('imprimanta.eroare', { cod: i.eroare })}</strong>
-                <span>{t('imprimanta.eroare.text')}</span>
+                </>
+              )}
+            {/* Viteza și debitul țin de lucrarea de acum: doar cât imprimă sau stă în pauză (ADR 0192 §B.9). */}
+            {sePoateRegla(stare) && (cap.viteza !== null || cap.debit !== null) && (
+              <div className="imprimanta-reglaje">
+                {cap.viteza !== null && <RandProcent fel="viteza" iv={cap.viteza} raportat={i.viteza} legata={legata} cereri={cereri} />}
+                {cap.debit !== null && <RandProcent fel="debit" iv={cap.debit} raportat={i.debit} legata={legata} cereri={cereri} />}
               </div>
             )}
-        </section>
-        <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }} />
+          </section>
+          <section className="imprimanta-card" aria-labelledby="imprimanta-de-la">
+            <h3 id="imprimanta-de-la">{t('imprimanta.de-la')}</h3>
+            {i.eroare === null
+              ? <p className="imprimanta-slab">{t('imprimanta.fara-eroare')}</p>
+              : (
+                <div className="imprimanta-cod" data-testid="imprimanta-cod">
+                  <strong>{t('imprimanta.eroare', { cod: i.eroare })}</strong>
+                  <span>{t('imprimanta.eroare.text')}</span>
+                </div>
+              )}
+          </section>
+        </div>
+        <Temperaturi st={st} cap={cap} stare={stare} legata={legata} cereri={cereri} raceste={raceste} />
+        {(cap.lumina || cap.ventilatoare.length > 0 || cap.homing) && (
+          <VentilatoareLumina st={st} cap={cap} stare={stare} legata={legata} cereri={cereri} homing={() => { setConfirmare({ fel: 'homing' }); }} />
+        )}
+        {cap.fisiere && (
+          <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }}
+            dinDesen={dinDesen} trimitere={ales !== null} cuTrimitere={cap.trimitere} />
+        )}
         <Jurnal st={st} />
       </div>
     </>
   );
 }
 
-function Temperatura({ nume, v, tinta, id }: { readonly nume: string; readonly v: number | null; readonly tinta: number | null; readonly id: string }): ReactNode {
+/**
+ * O valoare cerută imprimantei (ADR 0192 §C.13): se arată „în așteptare” până o raportează imprimanta; după `CONFIRMARE_MS` fără
+ * ea, fereastra revine la valoarea raportată, cu „n-a confirmat” încă `NOTA_ESEC_MS`.
+ */
+type Cerere = { readonly v: number; readonly la: number; readonly esuata: boolean };
+const CONFIRMARE_MS = 6000;
+const NOTA_ESEC_MS = 8000;
+
+type Cereri = {
+  /** Ce se arată: valoarea cerută, cât așteaptă imprimanta; altfel cea raportată. */
+  readonly afisat: (k: string, raportat: number | null) => number | null;
+  readonly cerere: (k: string) => Cerere | undefined;
+  /** Trimite comanda (`trimite`: a plecat?) și ține minte valoarea cerută, dacă nu e deja cea raportată. */
+  readonly cere: (k: string, v: number, trimite: () => boolean) => void;
+};
+
+/** Valorile urmărite, cu cheile lor: lumina (1 / 0), ventilatoarele, viteza, debitul, țintele. */
+const raportate = (i: ImprimantaCitita): Readonly<Record<string, number | null>> => ({
+  lumina: i.lumina === null ? null : i.lumina ? 1 : 0,
+  'vent:piesa': i.ventilatoare.piesa ?? null, 'vent:carcasa': i.ventilatoare.carcasa ?? null, 'vent:lateral': i.ventilatoare.lateral ?? null,
+  viteza: i.viteza, debit: i.debit, 'tinta:duza': i.duzaTinta, 'tinta:pat': i.patTinta,
+});
+
+function useCereri(i: ImprimantaCitita): Cereri {
+  const [m, setM] = useState<ReadonlyMap<string, Cerere>>(() => new Map());
+  const r = useMemo(() => raportate(i), [i.lumina, i.ventilatoare, i.viteza, i.debit, i.duzaTinta, i.patTinta]);
+  // Confirmată: imprimanta raportează valoarea cerută.
+  useEffect(() => {
+    setM((x) => {
+      let n: Map<string, Cerere> | null = null;
+      for (const [k, c] of x) {
+        if (!c.esuata && r[k] === c.v) { n ??= new Map(x); n.delete(k); }
+      }
+      return n ?? x;
+    });
+  }, [r]);
+  // Termenul cel mai apropiat: o cerere neconfirmată devine „n-a confirmat”, iar nota ei pleacă după o vreme.
+  useEffect(() => {
+    if (m.size === 0) return undefined;
+    let urm = Number.POSITIVE_INFINITY;
+    for (const c of m.values()) urm = Math.min(urm, c.la + CONFIRMARE_MS + (c.esuata ? NOTA_ESEC_MS : 0));
+    const id = setTimeout(() => {
+      const acum = Date.now();
+      setM((x) => {
+        const n = new Map<string, Cerere>();
+        for (const [k, c] of x) {
+          if (!c.esuata) n.set(k, acum >= c.la + CONFIRMARE_MS ? { ...c, esuata: true } : c);
+          else if (acum < c.la + CONFIRMARE_MS + NOTA_ESEC_MS) n.set(k, c);
+        }
+        return n;
+      });
+    }, Math.max(0, urm - Date.now()));
+    return () => { clearTimeout(id); };
+  }, [m]);
+  return {
+    afisat: (k, raportat) => { const c = m.get(k); return c !== undefined && !c.esuata ? c.v : raportat; },
+    cerere: (k) => m.get(k),
+    cere: (k, v, trimite) => {
+      if (!trimite()) return;
+      setM((x) => {
+        const n = new Map(x);
+        if (r[k] === v) n.delete(k);
+        else n.set(k, { v, la: Date.now(), esuata: false });
+        return n;
+      });
+    },
+  };
+}
+
+/** Starea unei cereri: „→ 120 % · așteaptă imprimanta” sau „imprimanta n-a confirmat”; nimic, fără cerere. */
+function NotaCerere({ cerere, text }: { readonly cerere: Cerere | undefined; readonly text: (v: number) => string }): ReactNode {
+  if (cerere === undefined) return null;
+  return cerere.esuata
+    ? <span className="imprimanta-neconfirmat" data-cerere="esuata">{t('imprimanta.cerere.esuata')}</span>
+    : <span className="imprimanta-asteapta" data-cerere="asteapta">→ {text(cerere.v)} · {t('imprimanta.cerere.asteapta')}</span>;
+}
+
+/** Rândul de sus al unui reglaj: eticheta și valoarea, sau starea cererii. */
+function AntetReglaj({ eticheta, cerere, valoare, text }: {
+  readonly eticheta: string; readonly cerere: Cerere | undefined; readonly valoare: number | null; readonly text: (v: number) => string;
+}): ReactNode {
+  return (
+    <span className="imprimanta-reglaj-sus">
+      <span>{eticheta}</span>
+      <span aria-live="polite">
+        {cerere !== undefined
+          ? <NotaCerere cerere={cerere} text={text} />
+          : <span className="imprimanta-reglaj-val">{valoare === null ? '—' : text(valoare)}</span>}
+      </span>
+    </span>
+  );
+}
+
+const procent = (v: number): string => `${Math.round(v)} %`;
+
+/**
+ * Glisorul și câmpul unui procent (viteza, debitul, un ventilator), ca proprietăți de pus pe intrări (`data-imprimanta` rămâne
+ * scris la vedere, la fiecare intrare): glisorul trimite la eliberare, câmpul la Enter sau la ieșire; un număr greșit nu pleacă.
+ */
+function useReglaj(o: {
+  readonly iv: Interval; readonly afisat: number | null; readonly trimite: (v: number) => void; readonly dezactivat: boolean; readonly eticheta: string;
+}) {
+  const [trag, setTrag] = useState<number | null>(null);
+  const [text, setText] = useState<string | null>(null);
+  const [refuz, setRefuz] = useState(false);
+  const gata = (): void => {
+    if (trag === null) return;
+    setTrag(null);
+    if (trag !== o.afisat) o.trimite(trag);
+  };
+  const scris = (): void => {
+    if (text === null) return;
+    const x = text.trim() === '' ? Number.NaN : Number(text);
+    if (intregIn(x, o.iv) === null) { setRefuz(true); return; }
+    setText(null);
+    setRefuz(false);
+    if (x !== o.afisat) o.trimite(x);
+  };
+  const v = trag ?? o.afisat ?? o.iv.min;
+  return {
+    refuz,
+    glisor: {
+      type: 'range', min: o.iv.min, max: o.iv.max, step: 1, value: Math.min(o.iv.max, Math.max(o.iv.min, Math.round(v))), disabled: o.dezactivat,
+      'aria-label': o.eticheta, onChange: (e: ChangeEvent<HTMLInputElement>) => { setTrag(Number(e.target.value)); },
+      onPointerUp: gata, onKeyUp: gata, onBlur: gata,
+    },
+    camp: {
+      type: 'number', inputMode: 'numeric', min: o.iv.min, max: o.iv.max, step: 1, disabled: o.dezactivat, className: 'imprimanta-camp-mic',
+      value: text ?? (o.afisat === null ? '' : String(Math.round(o.afisat))), 'aria-label': t('imprimanta.reglaj.camp', { nume: o.eticheta }),
+      'aria-invalid': refuz, onBlur: scris,
+      onChange: (e: ChangeEvent<HTMLInputElement>) => { setText(e.target.value); setRefuz(false); },
+      onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') { e.preventDefault(); scris(); } else if (e.key === 'Escape' && text !== null) { e.stopPropagation(); setText(null); setRefuz(false); }
+      },
+    },
+  } as const;
+}
+
+/** Viteza sau debitul, cât imprimă (ADR 0192 §B.9): glisorul, câmpul și „100 %”. */
+function RandProcent({ fel, iv, raportat, legata, cereri }: {
+  readonly fel: 'viteza' | 'debit'; readonly iv: Interval; readonly raportat: number | null; readonly legata: boolean; readonly cereri: Cereri;
+}): ReactNode {
+  const afisat = cereri.afisat(fel, raportat);
+  const trimite = (v: number): void => { cereri.cere(fel, v, () => sesiune.comanda({ fel, procent: v })); };
+  const eticheta = fel === 'viteza' ? t('imprimanta.viteza') : t('imprimanta.debit');
+  const r = useReglaj({ iv, afisat, trimite, dezactivat: !legata, eticheta });
+  const sutaOprita = !legata || afisat === 100;
+  return (
+    <div className="imprimanta-reglaj" data-testid={`imprimanta-reglaj-${fel}`}>
+      <AntetReglaj eticheta={eticheta} cerere={cereri.cerere(fel)} valoare={afisat} text={procent} />
+      <span className="imprimanta-reglaj-jos imprimanta-reglaj-trei">
+        {fel === 'viteza' ? <input {...r.glisor} data-imprimanta="viteza" /> : <input {...r.glisor} data-imprimanta="debit" />}
+        {fel === 'viteza' ? <input {...r.camp} data-imprimanta="viteza-camp" /> : <input {...r.camp} data-imprimanta="debit-camp" />}
+        {fel === 'viteza'
+          ? <button type="button" data-imprimanta="viteza-suta" disabled={sutaOprita} onClick={() => { trimite(100); }}>{t('imprimanta.reglaj.suta')}</button>
+          : <button type="button" data-imprimanta="debit-suta" disabled={sutaOprita} onClick={() => { trimite(100); }}>{t('imprimanta.reglaj.suta')}</button>}
+      </span>
+      {r.refuz && <span className="imprimanta-refuz" role="alert">{t('imprimanta.reglaj.refuz', { min: iv.min, max: iv.max })}</span>}
+    </div>
+  );
+}
+
+function Temperatura({ nume, v, tinta, id, camp, nota }: {
+  readonly nume: string; readonly v: number | null; readonly tinta: number | null; readonly id: string; readonly camp?: ReactNode; readonly nota?: ReactNode;
+}): ReactNode {
   const parte = v !== null && tinta !== null && tinta > 0 ? Math.min(100, Math.max(0, (v / tinta) * 100)) : null;
   return (
     <div className="imprimanta-temp">
       <span className="imprimanta-temp-rand">
         <span>{nume}</span>
-        <span data-testid={`imprimanta-temp-${id}`}><b>{grade(v)}</b>{tinta !== null && tinta > 0 ? ` / ${grade(tinta)}` : ''} °C</span>
+        {camp === undefined
+          ? <span data-testid={`imprimanta-temp-${id}`}><b>{grade(v)}</b>{tinta !== null && tinta > 0 ? ` / ${grade(tinta)}` : ''} °C</span>
+          : <span className="imprimanta-temp-tinta" data-testid={`imprimanta-temp-${id}`}><b>{grade(v)}</b> / {camp} °C</span>}
       </span>
       {parte !== null && <span className="imprimanta-bara" aria-hidden="true"><i style={{ width: `${parte}%` }} /></span>}
+      {nota}
     </div>
   );
 }
 
-function Fisiere({ st, stare, alege, porneste }: {
+/** Ținta unui încălzitor, scrisă direct (ADR 0192 §B.10): întregi între 0 și maximul imprimantei; pleacă la Enter sau la ieșire. */
+function CampTinta({ inc, max, afisat, dezactivat, trimite, refuz, setRefuz }: {
+  readonly inc: Incalzitor; readonly max: number; readonly afisat: number | null; readonly dezactivat: boolean; readonly trimite: (g: number) => void;
+  readonly refuz: boolean; readonly setRefuz: (x: boolean) => void;
+}): ReactNode {
+  const [text, setText] = useState<string | null>(null);
+  const scris = (): void => {
+    if (text === null) return;
+    const x = text.trim() === '' ? Number.NaN : Number(text);
+    if (intregIn(x, { min: 0, max }) === null) { setRefuz(true); return; }
+    setText(null);
+    setRefuz(false);
+    if (afisat === null || x !== Math.round(afisat)) trimite(x);
+  };
+  const p = {
+    type: 'number', inputMode: 'numeric', min: 0, max, step: 1, disabled: dezactivat, className: 'imprimanta-camp-mic',
+    value: text ?? (afisat === null ? '' : String(Math.round(afisat))), 'aria-label': t(`imprimanta.tinta.${inc}`), 'aria-invalid': refuz,
+    onBlur: scris, onChange: (e: ChangeEvent<HTMLInputElement>) => { setText(e.target.value); setRefuz(false); },
+    onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') { e.preventDefault(); scris(); } else if (e.key === 'Escape' && text !== null) { e.stopPropagation(); setText(null); setRefuz(false); }
+    },
+  } as const;
+  return inc === 'duza' ? <input {...p} data-imprimanta="tinta-duza" /> : <input {...p} data-imprimanta="tinta-pat" />;
+}
+
+/** Temperaturile primului strat ale unui material, tăiate la maximul imprimantei. */
+const tintePentru = (m: Material, tinte: Capabilitati['tinte']): Readonly<Record<Incalzitor, number>> => {
+  const max = (inc: Incalzitor): number => tinte.find((x) => x.incalzitor === inc)?.max ?? Number.POSITIVE_INFINITY;
+  return { duza: Math.min(m.duza1, max('duza')), pat: Math.min(m.pat1, max('pat')) };
+};
+
+/** „Preîncălzește”: lista materialelor felierului (aceeași, nu o copie), cu temperaturile primului strat. */
+function MeniuPreincalzire({ tinte, dezactivat, alege }: {
+  readonly tinte: Capabilitati['tinte']; readonly dezactivat: boolean; readonly alege: (v: Readonly<Record<Incalzitor, number>>) => void;
+}): ReactNode {
+  const [deschis, setDeschis] = useState(false);
+  const cutie = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!deschis) return undefined;
+    cutie.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    const afara = (e: PointerEvent): void => { if (!cutie.current?.contains(e.target as Node)) setDeschis(false); };
+    document.addEventListener('pointerdown', afara);
+    return () => { document.removeEventListener('pointerdown', afara); };
+  }, [deschis]);
+  const inchide = (): void => { setDeschis(false); cutie.current?.querySelector<HTMLElement>('[data-imprimanta="preincalzeste"]')?.focus(); };
+  const tasta = (e: KeyboardEvent<HTMLDivElement>): void => {
+    if (!deschis) return;
+    if (e.key === 'Escape') { e.stopPropagation(); inchide(); return; }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const x = [...(cutie.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    const k = x.indexOf(document.activeElement as HTMLElement);
+    x[(k + (e.key === 'ArrowDown' ? 1 : x.length - 1)) % x.length]?.focus();
+  };
+  return (
+    <div className="imprimanta-meniu" ref={cutie} onKeyDown={tasta}>
+      <button type="button" className="principal" data-imprimanta="preincalzeste" aria-haspopup="menu" aria-expanded={deschis} disabled={dezactivat}
+        onClick={() => { setDeschis((x) => !x); }}>{t('imprimanta.preincalzeste')}</button>
+      {deschis && (
+        <ul className="imprimanta-meniu-lista" role="menu" aria-label={t('imprimanta.preincalzeste.lista')}>
+          {MATERIALE.map((m) => {
+            const v = tintePentru(m, tinte);
+            return (
+              <li key={m.id} role="none">
+                <button type="button" role="menuitem" data-imprimanta="preincalzeste-material" data-material={m.id}
+                  onClick={() => { inchide(); alege(v); }}>
+                  <span>{m.nume}</span><span className="imprimanta-slab">{v.duza} / {v.pat} °C</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Temperaturile (ADR 0192 §B.10, §D.15–§D.16): țintele scrise direct; cu imprimanta liberă, Preîncălzește, Răcește și răcirea singură. */
+function Temperaturi({ st, cap, stare, legata, cereri, raceste }: {
+  readonly st: StareImprimanta; readonly cap: Capabilitati; readonly stare: StareLucrare; readonly legata: boolean; readonly cereri: Cereri;
+  readonly raceste: () => void;
+}): ReactNode {
+  const i = st.imprimanta;
+  const libera = esteLibera(stare);
+  const [refuzuri, setRefuzuri] = useState<Readonly<Partial<Record<Incalzitor, boolean>>>>({});
+  const trimite = (inc: Incalzitor, g: number): void => {
+    cereri.cere(`tinta:${inc}`, g, () => sesiune.comanda({ fel: 'tinta', incalzitor: inc, grade: g }));
+  };
+  const rand = (inc: Incalzitor, nume: string, v: number | null, raportat: number | null): ReactNode => {
+    const c = cap.tinte.find((x) => x.incalzitor === inc);
+    if (c === undefined) return <Temperatura nume={nume} v={v} tinta={raportat} id={inc} />;
+    const k = `tinta:${inc}`;
+    const afisat = cereri.afisat(k, raportat);
+    const cerere = cereri.cerere(k);
+    const refuz = refuzuri[inc] === true;
+    return (
+      <Temperatura nume={nume} v={v} tinta={afisat} id={inc}
+        camp={<CampTinta inc={inc} max={c.max} afisat={afisat} dezactivat={!legata} trimite={(g) => { trimite(inc, g); }} refuz={refuz}
+          setRefuz={(x) => { setRefuzuri((r) => ({ ...r, [inc]: x })); }} />}
+        nota={refuz
+          ? <span className="imprimanta-refuz" role="alert">{t('imprimanta.tinta.refuz', { max: c.max })}</span>
+          : <span className="imprimanta-temp-nota" aria-live="polite"><NotaCerere cerere={cerere} text={(x) => `${x} °C`} /></span>} />
+    );
+  };
+  const calde = cap.tinte.some((x) => ((x.incalzitor === 'duza' ? i.duzaTinta : i.patTinta) ?? 0) > 0);
+  return (
+    <section className="imprimanta-card" aria-labelledby="imprimanta-temperaturi" data-testid="imprimanta-temperaturi">
+      <h3 id="imprimanta-temperaturi">{t('imprimanta.temperaturi')}</h3>
+      {rand('duza', t('imprimanta.duza'), i.duza, i.duzaTinta)}
+      {rand('pat', t('imprimanta.pat'), i.pat, i.patTinta)}
+      <Temperatura nume={t('imprimanta.carcasa')} v={i.carcasa} tinta={null} id="carcasa" />
+      {cap.tinte.length > 0 && (libera
+        ? (
+          <>
+            <div className="imprimanta-butoane">
+              <MeniuPreincalzire tinte={cap.tinte} dezactivat={!legata}
+                alege={(v) => { for (const x of cap.tinte) trimite(x.incalzitor, v[x.incalzitor]); }} />
+              <button type="button" data-imprimanta="raceste" disabled={!legata || !calde} onClick={raceste}>{t('imprimanta.raceste')}</button>
+            </div>
+            <Racire st={st} />
+          </>
+        )
+        : <p className="imprimanta-ajutor">{t('imprimanta.tinte.fisierul')}</p>)}
+    </section>
+  );
+}
+
+/** Răcirea singură (ADR 0192 §D.16): bifa și minutele, ținute în browser; când pleacă, sau când a plecat. */
+function Racire({ st }: { readonly st: StareImprimanta }): ReactNode {
+  const [setare, setSetare] = useState<SetareRacire>(citesteRacire);
+  const [text, setText] = useState<string | null>(null);
+  const [refuz, setRefuz] = useState(false);
+  const schimba = (r: SetareRacire): void => {
+    setSetare(r);
+    scrieRacire(r);
+    sesiune.seteazaRacire(r.pornita ? r.minute : null);
+  };
+  const scris = (): void => {
+    if (text === null) return;
+    const x = text.trim() === '' ? Number.NaN : Number(text);
+    if (intregIn(x, MINUTE_RACIRE) === null) { setRefuz(true); return; }
+    setText(null);
+    setRefuz(false);
+    if (x !== setare.minute) schimba({ ...setare, minute: x });
+  };
+  return (
+    <div className="imprimanta-racire">
+      <div className="imprimanta-racire-rand">
+        <input type="checkbox" id="imprimanta-racire" data-imprimanta="racire" checked={setare.pornita}
+          onChange={(e) => { schimba({ ...setare, pornita: e.target.checked }); }} />
+        <label htmlFor="imprimanta-racire">{t('imprimanta.racire.bifa')}</label>
+        <input type="number" inputMode="numeric" className="imprimanta-camp-mic" data-imprimanta="racire-minute" min={MINUTE_RACIRE.min} max={MINUTE_RACIRE.max}
+          step={1} value={text ?? String(setare.minute)} disabled={!setare.pornita} aria-label={t('imprimanta.racire.minute.camp')} aria-invalid={refuz}
+          onChange={(e) => { setText(e.target.value); setRefuz(false); }} onBlur={scris}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); scris(); } }} />
+        <span>{t('imprimanta.racire.minute')}</span>
+      </div>
+      {refuz && <p className="imprimanta-refuz" role="alert">{t('imprimanta.racire.refuz', { min: MINUTE_RACIRE.min, max: MINUTE_RACIRE.max })}</p>}
+      {st.racireLa !== null && <p className="imprimanta-ajutor" data-testid="imprimanta-racire-la">{t('imprimanta.racire.la', { ora: ora(st.racireLa) })}</p>}
+      {st.racireLa === null && st.racitaLa !== null && (
+        <p className="imprimanta-ajutor" data-testid="imprimanta-racita">{t('imprimanta.racire.facuta', { ora: ora(st.racitaLa) })}</p>
+      )}
+    </div>
+  );
+}
+
+/** Un ventilator (ADR 0192 §B.8): 0–100 %, glisorul și câmpul. */
+function RandVentilator({ id, raportat, legata, cereri }: {
+  readonly id: IdVentilator; readonly raportat: number | null; readonly legata: boolean; readonly cereri: Cereri;
+}): ReactNode {
+  const k = `vent:${id}`;
+  const afisat = cereri.afisat(k, raportat);
+  const r = useReglaj({
+    iv: { min: 0, max: 100 }, afisat, dezactivat: !legata, eticheta: t(`imprimanta.vent.${id}.nume`),
+    trimite: (v) => { cereri.cere(k, v, () => sesiune.comanda({ fel: 'ventilator', id, procent: v })); },
+  });
+  return (
+    <div className="imprimanta-reglaj" data-testid={`imprimanta-vent-${id}`}>
+      <AntetReglaj eticheta={t(`imprimanta.vent.${id}`)} cerere={cereri.cerere(k)} valoare={afisat} text={procent} />
+      <span className="imprimanta-reglaj-jos">
+        <input {...r.glisor} data-imprimanta="ventilator" data-ventilator={id} />
+        <input {...r.camp} data-imprimanta="ventilator-camp" data-ventilator={id} />
+      </span>
+      {r.refuz && <span className="imprimanta-refuz" role="alert">{t('imprimanta.reglaj.refuz', { min: 0, max: 100 })}</span>}
+    </div>
+  );
+}
+
+/** Lumina, ventilatoarele și homing-ul (ADR 0192 §B.7, §B.8, §B.11), după ce are imprimanta. */
+function VentilatoareLumina({ st, cap, stare, legata, cereri, homing }: {
+  readonly st: StareImprimanta; readonly cap: Capabilitati; readonly stare: StareLucrare; readonly legata: boolean; readonly cereri: Cereri;
+  readonly homing: () => void;
+}): ReactNode {
+  const i = st.imprimanta;
+  const lumina = cereri.afisat('lumina', i.lumina === null ? null : i.lumina ? 1 : 0);
+  const cerereLumina = cereri.cerere('lumina');
+  const libera = esteLibera(stare);
+  const axe = st.secventa === 'homing' ? t('imprimanta.homing.in-curs')
+    : !libera ? t('imprimanta.homing.libera')
+      : i.axe ? t('imprimanta.homing.axe', { axe: i.axe.split('').join(', ') }) : t('imprimanta.homing.axe.niciuna');
+  return (
+    <section className="imprimanta-card imprimanta-ventilatoare" aria-labelledby="imprimanta-ventilatoare" data-testid="imprimanta-ventilatoare">
+      <h3 id="imprimanta-ventilatoare">{t('imprimanta.ventilatoare')}</h3>
+      {cap.lumina && (
+        <div className="imprimanta-lumina">
+          <span id="imprimanta-lumina-eticheta">{t('imprimanta.lumina')}</span>
+          <span className="imprimanta-lumina-stare">
+            <span aria-live="polite">
+              <NotaCerere cerere={cerereLumina} text={(x) => (x === 1 ? t('imprimanta.lumina.aprinsa') : t('imprimanta.lumina.stinsa'))} />
+            </span>
+            <button type="button" role="switch" className="imprimanta-comutator" data-imprimanta="lumina" aria-checked={lumina === 1}
+              aria-labelledby="imprimanta-lumina-eticheta" disabled={!legata}
+              onClick={() => { const v = lumina === 1 ? 0 : 1; cereri.cere('lumina', v, () => sesiune.comanda({ fel: 'lumina', aprinsa: v === 1 })); }}>
+              <i aria-hidden="true" />{lumina === 1 ? t('imprimanta.lumina.aprinsa') : t('imprimanta.lumina.stinsa')}
+            </button>
+          </span>
+        </div>
+      )}
+      {cap.ventilatoare.map((id) => <RandVentilator key={id} id={id} raportat={i.ventilatoare[id] ?? null} legata={legata} cereri={cereri} />)}
+      {cap.ventilatoare.length > 0 && !libera && <p className="imprimanta-ajutor">{t('imprimanta.ventilatoare.fisierul')}</p>}
+      {cap.homing && (
+        <div className="imprimanta-homing">
+          <button type="button" data-imprimanta="homing" disabled={!legata || !libera || st.secventa !== null || i.ocupata === true} onClick={homing}>
+            {t('imprimanta.homing')}
+          </button>
+          <span className="imprimanta-ajutor" data-testid="imprimanta-axe">{axe}</span>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** `cuTrimitere`: imprimanta primește fișiere de la calculator (capabilitatea `trimitere` a driverului). */
+function Fisiere({ st, stare, alege, porneste, dinDesen, trimitere, cuTrimitere }: {
   readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alege: () => void; readonly porneste: (f: FisierImprimanta) => void;
+  readonly dinDesen: ((el: HTMLElement) => void) | null; readonly trimitere: boolean; readonly cuTrimitere: boolean;
 }): ReactNode {
   const legata = st.legatura === 'conectat';
   const libera = sePoatePorni(stare);
@@ -375,10 +981,13 @@ function Fisiere({ st, stare, alege, porneste }: {
           )}
       {!libera && st.fisiere !== null && st.fisiere.length > 0 && <p className="imprimanta-ajutor">{t('imprimanta.porneste.ocupata')}</p>}
       <div className="imprimanta-butoane">
-        <button type="button" data-imprimanta="trimite" disabled={!legata || st.fisiere === null} onClick={alege}>{t('imprimanta.trimite')}</button>
+        {cuTrimitere && <button type="button" data-imprimanta="trimite" disabled={!legata || st.fisiere === null} onClick={alege}>{t('imprimanta.trimite')}</button>}
+        {/* Cât o trimitere e deschisă (sau în curs), „Din desen…” așteaptă: nu o oprește pe aceea. */}
+        {dinDesen !== null && <button type="button" data-imprimanta="din-desen" disabled={trimitere} onClick={(e) => { dinDesen(e.currentTarget); }}>{t('imprimanta.felie.din-desen')}</button>}
         <button type="button" data-imprimanta="fisiere-reimprospateaza" disabled={!legata} onClick={() => { sesiune.reimprospateaza(); }}>{t('imprimanta.fisiere.reimprospateaza')}</button>
       </div>
-      <p className="imprimanta-ajutor">{t('imprimanta.trimite.ajutor')}</p>
+      {cuTrimitere && <p className="imprimanta-ajutor">{t('imprimanta.trimite.ajutor')}</p>}
+      {dinDesen !== null && <p className="imprimanta-ajutor">{t('imprimanta.felie.din-desen.ajutor')}</p>}
     </section>
   );
 }
@@ -388,14 +997,14 @@ type PasTrimitere =
   | { readonly fel: 'citeste' }
   | { readonly fel: 'gata' | 'trimite'; readonly a: AnalizaGcode }
   | { readonly fel: 'esec'; readonly a: AnalizaGcode | null; readonly motiv: MotivUrcare | 'citire' }
-  | { readonly fel: 'ajuns'; readonly f: FisierImprimanta };
+  | { readonly fel: 'ajuns'; readonly f: FisierImprimanta; readonly a: AnalizaGcode };
 
 /** Numele unei imprimante, de comparat („Creality K1C” îl conține pe „K1C”). */
 const simplu = (s: string): string => s.toLowerCase().replace(/[\s_-]/g, '');
 
 function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
   readonly fisier: File; readonly st: StareImprimanta; readonly stare: StareLucrare; readonly alt: () => void; readonly inchide: () => void;
-  readonly porneste: (f: FisierImprimanta) => void;
+  readonly porneste: (f: FisierImprimanta, pauze: readonly PauzaFisier[]) => void;
 }): ReactNode {
   const legata = st.legatura === 'conectat';
   const model = st.imprimanta.model;
@@ -425,7 +1034,11 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     oprire.current = c;
     setPas({ fel: 'trimite', a });
     urca({ adresa, nume, date: fisier, lista: sesiune, semnal: c.signal }).then(
-      (r) => { if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier } : { fel: 'esec', a, motiv: r.motiv }); },
+      (r) => {
+        // Fișierul ajuns se ține în browser, ca placa să-i poată desena straturile cât imprimă (felia 3.6q).
+        if (r.ok) void tineFisier({ nume: r.fisier.nume, marime: r.fisier.marime ?? fisier.size, la: Date.now(), date: fisier, etichete: ETICHETE.get(fisier) ?? null });
+        if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier, a } : { fel: 'esec', a, motiv: r.motiv });
+      },
       () => undefined,
     );
   };
@@ -468,6 +1081,9 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
           <div>
             {despre !== '' && <p data-testid="imprimanta-trimite-despre">{avert.length === 0 ? '✓ ' : ''}{despre}</p>}
             {a.iesire === null && a.miscari > 0 && <p className="imprimanta-slab" data-testid="imprimanta-trimite-incape">{t('imprimanta.trimite.incape', { x: pat[0], y: pat[1], z: pat[2] })}</p>}
+            {a.pauze.length > 0 && (
+              <p className="imprimanta-trimite-pauze" data-testid="imprimanta-trimite-pauze">{t('imprimanta.trimite.pauze', { n: a.pauze.length, lista: listaPauze(a.pauze) })}</p>
+            )}
           </div>
         </div>
       )}
@@ -491,7 +1107,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
           ? (
             <>
               <button type="button" className="principal" data-imprimanta="trimite-porneste" disabled={!legata || !sePoatePorni(stare)}
-                onClick={() => { porneste(pas.f); }}>{t('imprimanta.trimite.porneste')}</button>
+                onClick={() => { porneste(pas.f, pas.a.pauze); }}>{t('imprimanta.trimite.porneste')}</button>
               <button type="button" data-imprimanta="trimite-inchide" onClick={inchide}>{t('imprimanta.trimite.inchide')}</button>
             </>
           )
@@ -501,7 +1117,9 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
   );
 }
 
-function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; readonly confirma: () => void; readonly renunta: () => void }): ReactNode {
+function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
+  readonly c: Confirmare; readonly piesaAcum: string | null; readonly confirma: () => void; readonly renunta: () => void;
+}): ReactNode {
   const [patGol, setPatGol] = useState(false);
   const primul = useRef<HTMLElement | null>(null);
   useEffect(() => { primul.current?.focus(); }, []);
@@ -521,6 +1139,40 @@ function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; re
       </div>
     );
   }
+  if (c.fel === 'anulare') {
+    // Anularea unei piese (ADR 0193 §C.11): restul merg mai departe; pentru piesa de acum, cererea așteaptă (răspunsul 3a).
+    return (
+      <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-anulare-titlu" aria-describedby="imprimanta-anulare-text"
+        data-testid="imprimanta-anulare" onKeyDown={tasta}>
+        <h3 id="imprimanta-anulare-titlu">{t('imprimanta.anulare.titlu', { piesa: c.eticheta })}</h3>
+        <p id="imprimanta-anulare-text">{t('imprimanta.anulare.text')}</p>
+        {piesaAcum?.toUpperCase() === c.nume.toUpperCase() && <p className="imprimanta-ajutor" data-testid="imprimanta-anulare-acum">{t('imprimanta.anulare.acum')}</p>}
+        <div className="imprimanta-butoane">
+          <button type="button" className="imprimanta-opreste plin" data-imprimanta="anulare-confirma" onClick={confirma}>{t('imprimanta.anulare.confirma')}</button>
+          <button type="button" data-imprimanta="anulare-renunta" ref={(b) => { primul.current = b; }} onClick={renunta}>{t('imprimanta.anulare.renunta')}</button>
+        </div>
+      </div>
+    );
+  }
+  if (c.fel === 'homing') {
+    // Homing-ul (ADR 0192 §B.11): la Z, duza coboară spre pat; doar după bifa „Patul e gol”, ca pornirea.
+    return (
+      <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-homing-titlu" aria-describedby="imprimanta-homing-text"
+        data-testid="imprimanta-homing" onKeyDown={tasta}>
+        <h3 id="imprimanta-homing-titlu">{t('imprimanta.homing.titlu')}</h3>
+        <p id="imprimanta-homing-text">{t('imprimanta.homing.text')}</p>
+        <label className="imprimanta-bifa">
+          <input type="checkbox" data-imprimanta="homing-pat-gol" checked={patGol} ref={(x) => { primul.current = x; }}
+            onChange={(e) => { setPatGol(e.target.checked); }} />
+          <span>{t('imprimanta.pornire.pat-gol')}</span>
+        </label>
+        <div className="imprimanta-butoane">
+          <button type="button" className="principal" data-imprimanta="homing-confirma" disabled={!patGol} onClick={confirma}>{t('imprimanta.homing.confirma')}</button>
+          <button type="button" data-imprimanta="homing-renunta" onClick={renunta}>{t('imprimanta.homing.renunta')}</button>
+        </div>
+      </div>
+    );
+  }
   const f = c.fisier;
   return (
     <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-pornire-titlu" data-testid="imprimanta-pornire" onKeyDown={tasta}>
@@ -535,6 +1187,9 @@ function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; re
           onChange={(e) => { setPatGol(e.target.checked); }} />
         <span>{t('imprimanta.pornire.pat-gol')}</span>
       </label>
+      {c.pauze !== undefined && c.pauze.length > 0 && (
+        <p className="imprimanta-pornire-pauze" data-testid="imprimanta-pornire-pauze">{t('imprimanta.pornire.pauze', { lista: listaPauze(c.pauze) })}</p>
+      )}
       <p className="imprimanta-ajutor">{t('imprimanta.pornire.nota')}</p>
       <div className="imprimanta-butoane">
         <button type="button" className="principal" data-imprimanta="pornire-confirma" disabled={!patGol} onClick={confirma}>{t('imprimanta.pornire.confirma')}</button>

@@ -5,7 +5,9 @@ owner-ului, în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea
 sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”. Răspunsurile lui, din formularul schiței
 (07.11): 1a, 2a, 3a, 4a, adică recomandările, cu o notă la 1 (§B, „Mai târziu”); imprimanta e o K1C (2024), rootarea nu o
 știe, IP-ul ei e 192.168.1.12, iar verificarea de pe calculatorul lui, doar cu citiri, e permisă. **Felia 3.6g** gata pe
-07.11 (secțiunea „Felia 3.6g”). **Completează:** ADR 0119 (§13–§14: imprimantele 3D pe
+07.11 (secțiunea „Felia 3.6g”). **Schimbat în parte de ADR 0192** (08.11: §A.2, modulele, cu un driver pe familie; §A.3 și
+§E.14, comenzile din timpul imprimării și încălzirea la clic, cu răcirea singură; §C.8, lumina și temperaturile; consola de
+G-code rămâne „nu”). **Completează:** ADR 0119 (§13–§14: imprimantele 3D pe
 același drum, fără slicer în aplicație; răspunsul din 03.11, o Creality K1C), ADR 0136 (conexiunile ținute, căutarea), ADR 0132
 (ferestrele din meniul global). **Schimbă, cu feliile lui:** `BRIEF.md` §12 („Senderul lucrează doar cu familia GRBL”), cum
 anunța deja ADR 0119. **Documentul:** neschimbat (v19); imprimanta ține de atelier, nu de proiect.

@@ -675,13 +675,39 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
   găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
   evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
-  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 acceptat pe 07.11: „vreau
-  sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”, deci toate variantele care pot
-  sta împreună devin opțiuni, pe feliile 3.6j–3.6m): desenul feliat direct în cvs2 pentru
-  K1C, cu valorile din profilele K1C ale OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
-  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
-  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
-  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
+  vede și ce pornește aplicația Creality. **Piesele plate (ADR 0191, felia 3.6j)** gata pe 07.11, fără imprimantă (ADR-ul
+  acceptat cu „vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”: toate
+  variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m): **Din desen…** feliază în cvs2 piesele foii (toate,
+  selecția sau una), ridicate la o înălțime, pentru K1C, cu valorile profilelor OrcaSlicer (5 calități, 11 materiale K1),
+  „Simplu” și „Avansat”, straturile văzute de sus, **Salvează .gcode** și **Trimite la imprimantă** (prin 3.6h). Fișierul are
+  **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C** (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare
+  rămân ale imprimantei). **Codul stă în `src/cam/feliere/`, nu în `src/machine/`:** regula importurilor
+  `masina-fara-post-si-document` ține transportul fără document. Adus la primul clic, fără importuri din nucleu spre el (gata
+  de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 550,8 / 600** cu `main` adus în ramură (+15,9 kB cu
+  recenzia; plafonul 600, ADR 0143). Modulele (5b) rămân pentru 3.6m (ADR 0191 §G).
+  **3.6k gata pe 08.11** (modelele, cusătura, ștergerea, călcarea, fusta, cu implicitele profilelor K1C; codul nou în
+  `src/cam/feliere/linii.ts` și `modele.ts`); totalul 558,4 / 600.
+  **3.6l gata pe 08.11** (piesa „după CNC”, treptele în motor, înălțimea fiecărei piese în proiect: câmpul opțional
+  `inaltimeImprimanta` al piesei, în tip și în schemă, scris prin `comandaInaltimi`; codul nou în `fel.ts`, `trepte.ts`,
+  `dupaCnc.ts`); totalul 566,2 / 600, pornirea 102,0.
+  **3.6n gata pe 08.11** (grosimea verticală, `ensure_vertical_shell_thickness`: plinul sub pereții treptelor, cu toate
+  valorile OrcaSlicer; uneltele în `trepte.ts`); totalul 567,3 / 600.
+  **3.6o gata pe 09.11** (ADR 0192, acceptat cu 1a–3a, la „vreau sa pot conecta orice fel de imprimanta”): un contract comun
+  al driverelor (`driver.ts`: starea, comenzile ca pași, capabilitățile; `drivere.ts`, azi `creality-k1`), sesiunea și
+  imprimantele ținute peste driver; comenzile din timpul imprimării (lumina, ventilatoarele prin `M106` scris doar de driver,
+  viteza, debitul, țintele cu Preîncălzește și Răcește, homing-ul) și răcirea singură (singura comandă fără clic). Un driver
+  nou (Moonraker, Marlin pe USB…) = un `DriverText` nou, nu o fereastră nouă. Totalul 573,1 / 600 kB (+5,8: bucata ferestrei, la cerere; ținta din ADR era +4).
+  **3.6p gata pe 09.11** (ADR 0193, acceptat cu 1a–4a, grupul 2: „imprimarea văzută din cvs2”): pauza la un strat, aleasă în
+  „Din desen…” (`punePauze` / `cuPauze` în `src/cam/feliere/gcode.ts`; `PAUSE` din profilul K1C, înaintea primei piese a
+  stratului; nota doar ASCII), ținută în browser pentru aceleași piese (`src/app/pauzeDesen.ts`), spusă la trimitere și la
+  pornire (`gcode3d.ts` găsește pauzele oricărui fișier). Totalul 574,9 / 600 kB.
+  **3.6q gata pe 09.11** (placa și stratul viu): driverul K1 citește piesele, poziția și filamentul; `harta.ts` (straturile
+  unui fișier, pe bucăți), `stratViu.ts` (stratul din filament: K1C amestecă două numărători), fișierele trimise ținute în
+  IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB.
+  **3.6r gata pe 09.11** (anularea unei piese): `anuleazaPiesa` în driver (K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`, doar
+  un nume din lista imprimantei) și în sesiune (retrimisă la 3 s, confirmată din `excluded_objects`; 6 s, iar pentru
+  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata; urmează proba pe K1C (ghidul,
+  pașii 6–8) și unirea în `main`, la cuvântul owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

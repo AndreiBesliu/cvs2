@@ -17,7 +17,16 @@ import type { AddressInfo, Socket } from 'node:net';
  *   urcarea e pe 80; proba își mută cererea pe portul imprimantei false (`page.route`), aplicația rămâne pe 80;
  * - din 3.6i, `fel: 'k1c-2025'`, după transcrierea owner-ului (K1C 2025, firmware V1.0.0.26, 07.11): fără bătăi ale inimii (la
  *   `inimaMs`, doar o bucată de stare, `{"maxBedTemp":115}`), lista ca text (`retGcodeFileInfo.fileInfo`, cu mărimile), urmată de
- *   istoric (`historyList`) și de filme (`elapseVideoList`), firmware-ul în `DWIN sw ver`.
+ *   istoric (`historyList`) și de filme (`elapseVideoList`), firmware-ul în `DWIN sw ver`;
+ * - din 3.6o (ADR 0192), comenzile din timpul imprimării, cu numele din integrarea Home Assistant: `lightSw` 0 / 1; `gcodeCmd`
+ *   doar `M106 P<0|1|2> S<0–255>` (ventilatoarele piesei, carcasei și cel lateral, în `modelFanPct`, `caseFanPct`,
+ *   `auxiliaryFanPct`; orice alt text e ignorat); `setFeedratePct` și `setFlowratePct`, întregi 1–200; `nozzleTempControl` și
+ *   `bedTempControl` (`{num: 0, val}`), între 0 și maxime (320 și 115); `autohome` „X Y”, apoi „Z”, fiecare cu `deviceState` 7
+ *   cât durează (`homingMs`), cu axele în `autohome` („X:1 Y:1 Z:0”). `ignora` face imprimanta să nu răspundă la câmpurile date.
+ * - din 3.6r (ADR 0193 §C), `gcodeCmd` `EXCLUDE_OBJECT NAME=<piesă>`, cât „imprimă” un fișier (și în pauză): o piesă din
+ *   listă, încă neanulată, intră în `excluded_objects` (listă JSON ca text, ca K1C); piesa la care lucrează acum e refuzată
+ *   (ca firmware-ul Creality, „Forbidden”), fără niciun răspuns. Ca Klipper, o piesă anulată se sare repede (fără să țină un
+ *   pas), capul nu merge acolo, iar filamentul numărat rămâne cel al fișierului.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -43,6 +52,19 @@ export type OptiuniImprimantaFalsa = {
   readonly imprima?: { readonly fisier: string; readonly progres: number };
   /** `k1` (implicit): bătăile inimii și lista `retGcodeFileInfo2`; `k1c-2025`: ca imprimanta owner-ului (vezi antetul). */
   readonly fel?: 'k1' | 'k1c-2025';
+  /** Cât durează fiecare pas al homing-ului (`deviceState` 7), în ms. */
+  readonly homingMs?: number;
+  /**
+   * Din 3.6q: un fișier trimis se „imprimă” din conținutul lui, în atâția pași (implicit 40): straturile, poziția, filamentul,
+   * piesele, oprirea la o pauză.
+   */
+  readonly pasiFisier?: number;
+  /** Ca K1C (transcrierea din 07.11): `layer` sare între numărătoarea adevărată și una cu 5 mai mare. */
+  readonly numaratoriDuble?: boolean;
+  /** Filamentul liniei de curățare din `START_PRINT`, numărat de imprimantă în plus față de fișier (mm; implicit 12). */
+  readonly filamentInPlus?: number;
+  /** Conținutul unor fișiere din listă, ca și cum ar fi fost trimise din altă parte (Creality Print): se „imprimă” din el. */
+  readonly continut?: Readonly<Record<string, string>>;
 };
 
 export interface ImprimantaFalsa {
@@ -60,6 +82,12 @@ export interface ImprimantaFalsa {
   urcarea(fel: 'primeste' | 'pierde'): void;
   /** O eroare semnalată, ca `err` în stare (0: niciuna). */
   eroare(cod: number, cheie: number): void;
+  /** Imprimanta nu mai răspunde la comenzile `set` cu aceste câmpuri (de exemplu `setFlowratePct`): primite, dar fără efect. */
+  ignora(campuri: readonly string[]): void;
+  /** Stratul adevărat al fișierului „imprimat” acum (null: niciunul), oricât de des ar sări `layer`. */
+  stratAdevarat(): number | null;
+  /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
+  pas(): void;
   taie(): void;
   /**
    * Ca imprimanta owner-ului la o pornire de pe ecran (3.6i): legăturile de acum tac, fără să se închidă, iar adresa nu mai
@@ -131,7 +159,12 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     state: 0, printFileName: '', printProgress: 0, printJobTime: 0, printLeftTime: 0, layer: 0, TotalLayer: 0,
     nozzleTemp: temp(28), targetNozzleTemp: temp(0), bedTemp0: temp(24), targetBedTemp0: temp(0), boxTemp: temp(23),
     err: { errcode: 0, key: 0 }, withSelfTest: 0, lightSw: 1,
+    // Din 3.6o, ca în transcrierea owner-ului (07.11): ventilatoarele, viteza, debitul, maximele, „ocupată” și axele.
+    fan: 0, fanCase: 0, fanAuxiliary: 0, modelFanPct: 0, caseFanPct: 0, auxiliaryFanPct: 0, curFeedratePct: 100, curFlowratePct: 100,
+    maxNozzleTemp: 320, maxBedTemp: 115, deviceState: 0, autohome: 'X:0 Y:0 Z:0',
   };
+  const ignorate = new Set<string>();
+  const homingMs = opt.homingMs ?? 600;
   /** Schimbă câmpurile și le trimite, doar pe ele, tuturor. */
   const schimba = (c: Readonly<Record<string, string | number | Record<string, number>>>): void => {
     Object.assign(s, c);
@@ -146,9 +179,80 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     });
   };
   if (opt.imprima) imprima(`${DIR}${opt.imprima.fisier}`, opt.imprima.progres);
+  // Din 3.6q: conținutul fișierelor trimise și „imprimarea” lor, linie cu linie (ca `virtual_sdcard` al lui Klipper).
+  const continut = new Map<string, string>(Object.entries(opt.continut ?? {}));
+  type Rulare = {
+    readonly linii: readonly string[]; readonly marime: number; readonly pePas: number; i: number; octeti: number;
+    strat: number; e: number; absE: boolean; x: number; y: number; piesa: string; alterna: boolean;
+    /** Din 3.6r: numele pieselor din fișier (mari, ca Klipper) și cele anulate. */
+    readonly piese: ReadonlySet<string>; readonly excluse: Set<string>;
+  };
+  let rulare: Rulare | null = null;
+  const imprimaFisier = (cale: string, text: string): void => {
+    const linii = text.split('\n');
+    const piese: { name: string; center?: number[]; polygon?: number[][] }[] = [];
+    for (const l of linii) {
+      const m = /^EXCLUDE_OBJECT_DEFINE NAME=(\S+)(?: CENTER=(\S+))?(?: POLYGON=(\S+))?/.exec(l);
+      if (m === null) continue;
+      piese.push({ name: m[1]!.toUpperCase(), ...(m[2] ? { center: m[2].split(',').map(Number) } : {}), ...(m[3] ? { polygon: JSON.parse(m[3]) as number[][] } : {}) });
+    }
+    const straturi = linii.filter((l) => l === ';LAYER_CHANGE').length;
+    rulare = {
+      linii, marime: Buffer.byteLength(text), pePas: Math.max(1, Math.ceil(linii.length / (opt.pasiFisier ?? 40))), i: 0, octeti: 0,
+      strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false, piese: new Set(piese.map((p) => p.name)), excluse: new Set(),
+    };
+    schimba({
+      state: 1, printFileName: cale, printProgress: 0, printJobTime: 0, printLeftTime: 600, TotalLayer: straturi, layer: 0, usedMaterialLength: 0,
+      curPosition: 'X:00 Y:00 Z:00', targetNozzleTemp: temp(220), nozzleTemp: temp(220), targetBedTemp0: temp(55), bedTemp0: temp(55),
+    });
+    schimba({ current_object: '', excluded_objects: '[]', objects: JSON.stringify(piese) });
+  };
+  /** Un pas al „imprimării” unui fișier: liniile pasului, până la capăt sau la o pauză; apoi starea, ca la K1C. */
+  const pasFisier = (r: Rulare): void => {
+    let pauza = false;
+    const piesaInainte = r.piesa;
+    for (let n = 0; n < r.pePas && r.i < r.linii.length && !pauza;) {
+      const l = r.linii[r.i]!;
+      r.i++;
+      r.octeti += Buffer.byteLength(l) + 1;
+      const cod = l.split(';')[0]!.trim().toUpperCase();
+      // Din 3.6r: liniile unei piese anulate trec fără să țină pasul, iar capul nu merge acolo.
+      const sarita = r.excluse.has(r.piesa);
+      if (!sarita) n++;
+      if (l === ';LAYER_CHANGE') r.strat++;
+      else if (/^(PAUSE|M600|M601|M0|M25)(\s|$)/.test(cod)) pauza = true;
+      else if (cod.startsWith('EXCLUDE_OBJECT_START')) r.piesa = (/NAME=(\S+)/.exec(cod)?.[1] ?? '').toUpperCase();
+      else if (cod.startsWith('EXCLUDE_OBJECT_END')) r.piesa = '';
+      else if (cod === 'M82') r.absE = true;
+      else if (cod === 'M83') r.absE = false;
+      else if (/^G92\b/.test(cod)) { /* E pus la loc: în modul relativ nu schimbă nimic, iar fișierele cvs2 sunt relative. */ }
+      else if (/^G[01]\b/.test(cod)) {
+        const v = (k: string): number | null => { const m = new RegExp(`\\b${k}(-?[\\d.]+)`).exec(cod); return m ? Number(m[1]) : null; };
+        if (!sarita) { r.x = v('X') ?? r.x; r.y = v('Y') ?? r.y; }
+        // Filamentul numărat e cel al fișierului, și pe o piesă anulată (Klipper: `print_stats.filament_used`).
+        const e = v('E');
+        if (e !== null && !r.absE) r.e += e;
+      }
+    }
+    r.alterna = !r.alterna;
+    const trecut = Number(s['printJobTime']) + 1;
+    schimba({
+      // La pauză, numărătoarea cu 5 în plus (cazul greu: ultima valoare bună rămâne pe stratul de dinainte).
+      layer: opt.numaratoriDuble && (r.alterna || pauza) ? r.strat + 5 : r.strat, printProgress: Math.min(99, Math.floor((100 * r.octeti) / r.marime)),
+      curPosition: `X:${Math.round(r.x)} Y:${Math.round(r.y)} Z:00`, usedMaterialLength: Math.round(r.e + (opt.filamentInPlus ?? 12)),
+      printJobTime: trecut, printLeftTime: Math.max(1, Number(s['printLeftTime']) - 1),
+    });
+    if (r.piesa !== piesaInainte) schimba({ current_object: r.piesa });
+    if (pauza) { schimba({ state: 5 }); return; }
+    if (r.i >= r.linii.length) {
+      rulare = null;
+      schimba({ printProgress: 100, current_object: '' });
+    }
+  };
   let finalizare = 0;
-  const pas = setInterval(() => {
+  const unPas = (): void => {
     if (s['state'] !== 1) return;
+    if (rulare !== null) { pasFisier(rulare); return; }
     const p = Number(s['printProgress']);
     const total = Number(s['printJobTime']) + Number(s['printLeftTime']);
     if (p < 100) {
@@ -162,7 +266,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       finalizare = 0;
       schimba({ state: 0, printLeftTime: 0, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) });
     }
-  }, pasMs);
+  };
+  const pas = setInterval(unPas, pasMs);
 
   const server = createServer((cerere, raspuns) => {
     const url = cerere.url ?? '';
@@ -178,6 +283,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         const k = fisiere.findIndex((x) => x.name === f.nume);
         if (k >= 0) fisiere[k] = nou;
         else fisiere.push(nou);
+        continut.set(f.nume, f.date.toString('utf8'));
       }
       // Fără antete CORS (nemăsurat pe K1C): aplicația oricum nu citește răspunsul.
       raspuns.writeHead(200, { 'Content-Type': 'application/json' }).end('{"code":0}');
@@ -237,16 +343,63 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         return;
       }
       if (o.method !== 'set') return;
+      // Comenzile din timpul imprimării (3.6o): fiecare câmp, doar cu o valoare bună; unul ignorat (`ignora`) nu schimbă nimic.
+      const camp = Object.keys(p)[0] ?? '';
+      if (ignorate.has(camp)) return;
+      const intreg = (v: unknown, min: number, max: number): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null);
+      if (camp === 'lightSw') { const v = intreg(p['lightSw'], 0, 1); if (v !== null) schimba({ lightSw: v }); return; }
+      if (camp === 'gcodeCmd') {
+        // Din 3.6r: anularea unei piese (vezi antetul); orice refuz, fără răspuns.
+        const x = typeof p['gcodeCmd'] === 'string' ? /^EXCLUDE_OBJECT NAME=([A-Za-z0-9_.-]+)$/.exec(p['gcodeCmd']) : null;
+        if (x !== null) {
+          const r = rulare as Rulare | null;
+          const nume = x[1]!.toUpperCase();
+          if (r === null || (s['state'] !== 1 && s['state'] !== 5) || !r.piese.has(nume) || r.excluse.has(nume) || s['current_object'] === nume) return;
+          r.excluse.add(nume);
+          schimba({ excluded_objects: JSON.stringify([...r.excluse]) });
+          return;
+        }
+        const m = typeof p['gcodeCmd'] === 'string' ? /^M106 P([012]) S(\d{1,3})$/.exec(p['gcodeCmd']) : null;
+        const sv = m === null ? null : intreg(Number(m[2]), 0, 255);
+        if (m === null || sv === null) return;
+        const canale: readonly (readonly [string, string])[] = [['modelFanPct', 'fan'], ['caseFanPct', 'fanCase'], ['auxiliaryFanPct', 'fanAuxiliary']];
+        const [procent, pornit] = canale[Number(m[1])] ?? ['', ''];
+        schimba({ [procent]: Math.round((sv / 255) * 100), [pornit]: sv > 0 ? 1 : 0 });
+        return;
+      }
+      if (camp === 'setFeedratePct' || camp === 'setFlowratePct') {
+        const v = intreg(p[camp], 1, 200);
+        if (v !== null) schimba(camp === 'setFeedratePct' ? { curFeedratePct: v } : { curFlowratePct: v });
+        return;
+      }
+      if (camp === 'nozzleTempControl') { const v = intreg(p[camp], 0, 320); if (v !== null) schimba({ targetNozzleTemp: temp(v) }); return; }
+      if (camp === 'bedTempControl') {
+        const b = p[camp] as { num?: unknown; val?: unknown } | null;
+        const v = b !== null && typeof b === 'object' && b.num === 0 ? intreg(b.val, 0, 115) : null;
+        if (v !== null) schimba({ targetBedTemp0: temp(v) });
+        return;
+      }
+      if (camp === 'autohome') {
+        const axe = p['autohome'] === 'X Y' ? 'X:1 Y:1 Z:0' : p['autohome'] === 'Z' ? 'X:1 Y:1 Z:1' : null;
+        if (axe === null || s['state'] === 1 || s['state'] === 5) return;
+        schimba({ deviceState: 7 });
+        setTimeout(() => { schimba({ deviceState: 0, autohome: axe }); }, homingMs);
+        return;
+      }
       if (p['pause'] === 1 && s['state'] === 1) schimba({ state: 5 });
       else if (p['pause'] === 0 && s['state'] === 5) schimba({ state: 1 });
       else if (p['stop'] === 1 && (s['state'] === 1 || s['state'] === 5)) {
+        rulare = null;
         schimba({ state: 7 });
+        // Ca imprimanta owner-ului (07.11): după oprire, piesele se golesc.
+        schimba({ current_object: '', excluded_objects: '[]', objects: '[]' });
         setTimeout(() => { schimba({ state: 4, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) }); }, 800);
       } else if (typeof p['opGcodeFile'] === 'string' && p['opGcodeFile'].startsWith('printprt:') && s['state'] !== 1 && s['state'] !== 5) {
         const cale = p['opGcodeFile'].slice('printprt:'.length);
         if (!fisiere.some((f) => `${DIR}${f.name}` === cale)) return;
         schimba({ state: 9, printFileName: cale, printProgress: 0 });
-        setTimeout(() => { imprima(cale, 0); }, 100);
+        const text = continut.get(cale.slice(DIR.length));
+        setTimeout(() => { if (text !== undefined) imprimaFisier(cale, text); else imprima(cale, 0); }, 100);
         // Ca K1: după pornire, imprimanta închide legătura.
         setTimeout(inchide, 50);
       }
@@ -296,6 +449,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         urcate: () => [...urcate],
         urcarea: (fel) => { pierde = fel === 'pierde'; },
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
+        ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
+        stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
+        pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {
           for (const x of socketuri) tacute.add(x);

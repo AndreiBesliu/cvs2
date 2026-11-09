@@ -6643,7 +6643,7 @@ care userii/clientii respectivi chiar le folosesc.” (owner-ul, în sesiunea li
 diferite si pot fi disponibile in soft” (owner-ul, la cele cinci întrebări ale ADR 0191), apoi, în timpul lucrului: „as vrea
 totusi, sa trimitem pe main, ce s-a facut deja si am vazut ca functioneaza bine. daca se va modifica ceva de aici incolo se
 va face update si pe main ulterior”.
-**Started:** 07.11, 19:31. **Completed:** —
+**Started:** 07.11, 19:31. **Completed:** 07.11, 23:29.
 
 - **ADR 0191, acceptat:** toate variantele care pot sta împreună devin opțiuni, pe felii: 3.6j (motorul, cu înălțimea fiecărei
   piese ținută de la început; „Din desen…” cu piesele foii, selecția sau o piesă, o înălțime, „Simplu” și „Avansat”; salvarea
@@ -6654,6 +6654,57 @@ va face update si pe main ulterior”.
 - **Pentru `main` (cererea owner-ului):** `main` (`63d6af5`, biblioteca extensiilor) unit în ramură (`5f729e8`; conflictele,
   doar în documente, cu ambele părți păstrate); porțile pe rezultat, apoi unirea în `main` o face sesiunea principală, cu
   cuvintele owner-ului, trimise ei.
+- **Porțile pe `cd2f234`** (unirea și ADR-ul acceptat): unit cod 0; build-ul determinist: pornirea 101,7 (cu ușa 105,3 / 110),
+  totalul 534,9 / 550; e2e: prima rulare a căzut în masă sub încărcarea mașinii (317 / 365 la prima interacțiune, 34 min, ~31
+  de procese node ale altor sesiuni), reluarea căderilor cu 4 lucrători: 327 / 327. Ramura împinsă la `cd2f234`, iar cererea
+  owner-ului, cu cuvintele lui, trimisă sesiunii principale.
+- **Felia 3.6j, codul:** felierea în `src/cam/feliere/` (`profil.ts`: imprimanta, 5 calități, 11 materiale, setările și
+  limitele lor; `piese.ts`: piesele din foaie, unirea pe componente, centrarea; `straturi.ts`: pereții cu `offsetFigura`, la
+  pasul OrcaSlicer, umplerea pe linii aliniate la pat, lanțurile zigzag, grila, brim-ul, ce e prea subțire; `gcode.ts`:
+  fișierul, timpul cu joncțiunile lui Klipper, încetinirea pentru răcire, ventilatoarele, obiectele; `campuri.ts`: „Avansat”;
+  `index.ts`). Propus în `src/machine/imprimanta/feliere/`, mutat după poarta importurilor (`masina-fara-post-si-document`:
+  transportul nu importă documentul). Dialogul `src/app/DialogDinDesen.tsx`, adus la primul clic; „Din desen…” în ambele
+  vederi ale ferestrei; aplicația dă desenul ca funcție (`desen`). Textele (en / ro), manualul (secțiunea „Din desen…”, cu
+  fiecare control și fiecare setare din „Avansat”), stilurile.
+- **Măsurat:** placa de probă de 40 × 20 × 3 mm, cu gaura și fanta: 15 straturi, 1,75 g, ~3 min 36 s; E pe mm pe valorile de pe hârtie. Felierea: ~0,1 s
+  pentru o placă mică, ~1 s pentru 180 × 180 × 20 mm, ~1,6 s la 0,08 mm (16 MB). Mărimea: bucata dialogului 14,2 kB gzip (doar
+  codul felierii, fără geometrie dublată), totalul 549,6 / 550 (+14,7, peste estimarea de 8–12), pornirea 101,8.
+- **Găsit pe drum:** unirea pe perechi lăsa o formă care intră într-un gol apărut din unire drept gaură, reluând diferența la
+  nesfârșit (acum pe componente, cu proba ei); încetinirea pentru răcire nu ajungea la timpul minim pe piesele mici (acum prin
+  înjumătățire); otrava numelor cu diacritice ar fi scăpat pe „Placă de probă” (proba are acum „Ștanță”).
+- **Probe:** `imprimanta.feliere.test.ts` 18 / 18; manualul și traducerile 32 / 32; e2e `imprimanta.spec.ts` 11 / 11 (cu cele
+  două noi: fără imprimantă, cu fișierul descărcat; cu imprimanta falsă, prin verificarea și trimiterea 3.6h); compilatorul;
+  importurile 19 / 0.
+- **Porțile pe `819b37d`** (felia și rezerva bucății care nu vine): unit 8 671 (8 663 trecute, 0 căderi, 8 sărite); build-ul
+  determinist: pornirea 101,8 (cu ușa 105,4 / 110), totalul 549,6 / 550, /admin 105,4 / 200; e2e 377 / 377 din prima (cu 4
+  lucrători, cât mașina era încărcată).
+- **Otrăvurile** (`test/otravuri/3.6j.py`, în clona din afara Drive-ului, baza verde întâi: 18 / 18 și e2e 11 / 11): prima rulare
+  (`748cb17`) 32 prinse, F28 VOID: unealta de scriere pusese în sursă caracterele combinate U+0300 și U+036F în locul
+  escape-urilor `\u0300-\u036f` (codul mergea, textul otrăvii nu se găsea); escape-urile, puse la loc printr-un script
+  (`6c2d7f9`), iar F28 prinsă: 33 / 33.
+- **Recenzia cu agenți** (ultracode pornit; 4 lentile: G-code-ul față de OrcaSlicer și Klipper, geometria, dialogul, probele;
+  fiecare cu un verificator care a încercat s-o răstoarne; 8 agenți, ~2,6 milioane de tokeni, 49 min): 51 de constatări, 49
+  confirmate. Grave: brim-ul în afara verificării patului, brim-ul peste piesele vecine, trăsăturile înguste pierdute pe
+  primul strat, temperaturile din Simplu doar după primul strat, coborârea la Z0.2 pe loc după `START_PRINT`. Toate reparate
+  (ADR 0191, „Felia 3.6j”, recenzia), cu probele lor: `imprimanta.feliere.recenzie.test.ts` (22), fixtura profilelor
+  OrcaSlicer K1, e2e-ul extins; otrăvurile, 50 (+17 pentru reparații). Tot recenzia a prins cifrele „măsurate” puse de mine
+  pe o placă de 20 × 20 (erau ale plăcii de 40 × 20, cu gaura și fanta).
+- **Porțile pe `6720782`** (reparațiile): unit 8 693 (8 685 trecute, 0 căderi, 8 sărite); build-ul determinist: 284 de
+  fișiere identice, pornirea 101,8 (cu ușa 105,4 / 110), dar **totalul 550,8 / 550: peste plafon cu 0,8 kB** (bucata „Din
+  desen…” 15,2 kB, +1,0 din reparații; `PanouImprimanta` +0,2); e2e 376 / 377, iar căzuta (senderul extensiei,
+  `extensii.masina.spec.ts:83`: legătura mașinii simulate „pierdut” sub 4 lucrători) trece singură, 4 / 4.
+- **Otrăvurile după recenzie:** unitare 41 / 42 la prima rulare. R09 (ventilatorul lăsat la minim pe straturile lungi)
+  scăpase: proba căuta `M106 S0` oriunde după stratul 4, iar sfârșitul fișierului îl scrie oricum. Proba citește acum
+  comanda primului strat plin de sus (`1ff1580`): R09 prinsă, 42 / 42; e2e 8 / 8, baza verde întâi.
+- **Placa de probă, după recenzie** (40 × 20 × 3 mm, gaura de 10 mm, fanta de 12 × 2 mm): PLA 0,20, 15 straturi, 1,78 g,
+  ~3 min 45 s fără încălzire; PLA 0,12, 25 de straturi, ~5 min; PETG 0,20, ~4 min 45 s.
+- **Plafonul:** cât porțile rulau, owner-ul a ridicat plafonul total la 600 kB în `main` (ADR 0143, „Yes, 600 kB”, mesajul
+  sesiunii principale). `origin/main` (`c73177f`) unit în ramură (`b29d6dc`; conflictul, doar în DEVLOG, cu ambele părți).
+  **Porțile pe unire:** unit 8 701 (8 693 trecute, 0 căderi); build-ul determinist: totalul 550,8 / 600, pornirea
+  101,8 (cu ușa 105,4 / 110); e2e 377 / 377 din prima (4 lucrători).
+- **Canalul `imprimanta`**, republicat din `e24fac9` (pagina și bucata felierii, identice cu build-ul local), până pe 07.12:
+  <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>. Ramura împinsă la `e24fac9`. În coada owner-ului (fișa), proba plăcii pe K1C, înaintea unirii lui 3.6j în
+  `main`.
 
 ## 2026-11-07 — Unirea bibliotecii extensiilor (3.Xg) în main (Model: Claude Opus 5.5)
 
@@ -7981,3 +8032,203 @@ la cele patru întrebări din ADR 0181).
 - **Porțile:** pe `4eb8649`: traducerile 714 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile); importurile 20 / 0; licențele; unit 9 027 (9 019 trecute, 0 căderi, 8 sărite); build-ul determinist; e2e 441 / 442, cu doi lucrători (singura cădere, `ancore.spec.ts:99`, la încărcare: bara editorului n-a apărut în 5 s; toată suita, 15 / 15 la rerulare); emulatoarele 101 / 101 și 21 / 21 (din PowerShell, cu `npxshim`: `npm` lipsește din instalarea Node).
 - **Mărimea:** pe aceeași bază (`33e65f9`, cu `main` de pe 09.11), pornirea nu crește (102,0 kB; cu ușa 105,6 / 110), iar totalul crește cu 4,2 kB (600,1 → 604,3 / 700), peste estimarea ADR-ului (~3 kB): modelele (comune workerului și previzualizării), grupul „Îmbinarea”, dinții arătați, manualul și reparația barei.
 - **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 09.12), `4eb8649`, verificat în Edge fără fereastră: din panou, zigzagul 20 / 10 / 0 la X = 50 (dinții pe pânză) lasă două forme de 55 × 100, puzzle-ul la Y = 50, două de 100 × 60; din opțiunile Cuțitului, zigzagul cu spațiul 0,2 (sfatul îl spune; cât tragi, dinții, nu fâșia) lasă două forme de 100 × 54,86; bara de sus la 1280 px, cu grila și fontul lat: Transformarea la 1264 (en 1250), Cuțitul la 1216 (en 1211); nicio eroare în consolă. **După raportul barei, owner-ul a cerut altceva:** Importă, Exportă vectorii și Exportă G-code în bara de sus, lângă Imprimanta. Schița, cu cinci întrebări și capturile prototipului (construit în clonă): <https://claude.ai/artifact/94AHZeAD9KvEmZsBt6MQW6>; schimbarea vine după răspunsuri și înlocuiește reparația de acum.
+
+## 2026-11-08 — 3.6k: piesele plate, setările avansate mai departe (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6k” (owner-ul, la „Încep 3.6k (alte modele de umplere, cusătura, ștergerea, călcarea, fusta) sau aștept
+întâi proba plăcii?”).
+**Started:** 08.11, 08:59. **Completed:** 08.11, 10:38.
+
+- **Cercetarea** (OrcaSlicer la `9005b64`, ca la 3.6j): definițiile și implicitele din `PrintConfig.cpp`, profilele K1C
+  rezolvate pe fiecare calitate (0,12 are hașura în cruce, fără cusăturile decalate, călcarea la 100 mm/s și 0°; ștergerea e
+  pornită pe imprimantă: 2 mm, 70 % din retragere înainte), algoritmii din `Fill/`, `GCode.cpp` (`Wipe`), `SeamPlacer.cpp`,
+  `make_ironing`, `_make_skirt`. Fixtura `orca-k1.json`, extinsă cu cheile 3.6k (cele lipsă din profile, din implicitele
+  `PrintConfig.cpp`).
+- **Felia** (`887507f`): ADR 0191, „Felia 3.6k”. 14 modele rare, 8 pentru fiecare suprafață plină, cusătura (5 locuri,
+  decalarea, golul), ștergerea, călcarea, fusta, ca opțiuni în „Avansat” (liste și bife), cu textele, manualul și
+  previzualizarea (rolurile noi). **Reparat pe drum:** pasul grilei rare, din pasul liniei, nu din lățimea ei (~10 % mai
+  rară decât în OrcaSlicer, de la 3.6j). Nu intră încă (ADR): modelele rare care cer straturile de deasupra, legăturile
+  umplerii rare pe lângă pereți (`infill_anchor`), ridicarea „Auto Lift”.
+- **Găsit pe drum, în probe:** o funcție de probă care citea distanța unei linii cu sensul ei (liniile întoarse ieșeau cu semn
+  schimbat, pasul părea dublu); retragerea dinaintea ștergerii golea și ea șirul buclei citite; un inel de 0,8 mm nu dă nimic
+  pe primul strat. Toate, în probe, nu în motor.
+- **Măsurat:** densitățile față de aria · d / sp (liniile și curbele 1,000; giroidul ~0,91; fagurele ~1,25); felierea, sub
+  0,3 s. Mărimea: totalul 558,4 / 600 kB (+7,6 față de 3.6j; bucata „Din desen…” 23,2 kB gzip, +8,0), pornirea 101,8 (cu ușa 105,4 / 110), neschimbată.
+- **Probe:** `imprimanta.feliere.modele.test.ts` (16), cele 3.6j adaptate la implicitele noi (pasul grilei, cheile
+  straturilor; la retragere și la pereți, ștergerea și decalarea oprite explicit, cu probele lor separat); e2e +1.
+  Otrăvurile: 58, toate prinse: la prima rulare (`887507f`), 49 din 53 unitare; M08 (aproape echivalentă: muta doar faza fagurelui) mutată pe latura scurtă, cu proba hexagoanelor regulate, iar N01, N03 (U-ul probei n-avea linii cu două intervale) și S04 (fusta după primul strat, probată doar în previzualizare), prinse după întărirea probelor (`9cf9d5a`); cele 5 e2e, prinse. Lista 3.6j, refăcută pe codul mutat: 50 / 50 (F09 mutată pe cusătura pereților; la R11, revenirile numărate). Porțile: unit 8 717 (8 709 trecute, 0 căderi, 8 sărite); build-ul determinist (285 de fișiere identice); e2e 378 / 378 din prima (4 lucrători).
+
+## 2026-11-08 — 3.6l: piesele plate „după CNC” și înălțimea fiecărei piese în proiect (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6l” (owner-ul, la „Încep 3.6l?”, după 3.6k); apoi, la cele două întrebări ale ADR-ului: „Da, recomandările”.
+**Started:** 08.11, 10:49. **Completed:** 08.11, 12:21.
+
+- **Felia** (`f2a9a54`): ADR 0191, „Felia 3.6l” (implementarea). **După CNC** (`src/cam/feliere/dupaCnc.ts`): marginea și
+  golurile din profilele prin tot (adâncimea cel puțin cât foaia; `regiunePastrata`, inelele de margine), treptele din
+  buzunare (pe adâncimi, cu insulele), găuriri și profile parțiale sau pe căi deschise (capsulele frezei pe traseul centrului,
+  din `profil()`, cu oglindirea), golurile prin tot (adâncimea cel puțin cât foaia sau cât înălțimea), V-carve-ul și freza în V
+  numărate. **Motorul:** benzile și booleanele (`trepte.ts`: `normalizeaza` din ușa importului, cu o cutie), felul straturilor
+  cu benzile lor (`fel.ts`, mutat din `straturi.ts` / `gcode.ts`), șablonul pe benzi (fața treptei, plinul de sub ea, umplerea
+  rară, fiecare în regiunea ei; pereții benzii; călcarea pe trepte; ce nu iese, pe fiecare bandă), deplasările pe conturul
+  benzii. **Înălțimea în proiect:** `inaltimeImprimanta` în tipul piesei și în schemă (opțională, fără versiune nouă),
+  `comandaInaltimi` (un pas, cu anularea), App -> fereastra Imprimanta -> dialog. **Dialogul:** bifa „După CNC” (cu nota
+  V-carve-ului), „Înălțimea” (una pentru toate / a fiecărei piese), stratul „cu o treaptă”; manualul, în ambele limbi.
+- **Piesele fără trepte nu se schimbă:** 171 de variante (modelele, cusăturile, călcarea, fusta, brim-ul; trei piese),
+  aceleași fișiere, octet cu octet, ca pe `9cf9d5a`.
+- **Găsit pe drum, în probe:** proiectul pus direct în bază, în e2e, cere `rev` egal cu cheia versiunii (altfel prima salvare a
+  filei e un conflict, iar fila trece pe doar-citire); liniile unei umpleri n-au vârfuri în regiunile pe care le traversează
+  (o probă pe vârfuri nu vede o linie care trece prin buzunar); `Math.min(...)` pe zeci de mii de puncte depășește stiva.
+- **Măsurat:** felierea plăcii de 18 mm cu buzunar, găurire și canelură, ~0,2 s; booleanul unei benzi, ~10 ms.
+  Mărimea: totalul 566,2 / 600 kB (+7,8), pornirea 102,0 (+0,2; cu ușa 105,6 / 110).
+- **Probe:** `imprimanta.feliere.trepte.test.ts` (12, pe hârtie: booleanele, capsulele cu distanța exactă, benzile, cheile,
+  „după CNC” dintr-un document, refuzurile, insula, canelura, partea, oglindirea, inelul interior, freza în V, felierea pe
+  roluri și călcare, ce nu iese, deplasările, comanda și schema); manualul (4 controale noi); e2e +1 (proiectul cu operații,
+  bifa, treptele, înălțimea scrisă, anulată, refăcută, ținută la redeschidere). Otrăvurile `test/otravuri/3.6l.py`: 58, toate
+  prinse: la prima rulare (`f2a9a54`), 48 din 50 unitare; D02 (o găurire prin tot la o piesă mai înaltă decât foaia) și S04
+  (umplerea rară peste treaptă, văzută doar între vârfuri), prinse după întărirea probelor (`3607398`); cele 8 e2e, prinse de
+  proba 3.6l (E05, la prima trecere, căzuse pe proba 3.6k, sub încărcare; reluată singură, prinsă de proba ei). Porțile: unit
+  8 728 (8 720 trecute, 0 căderi, 8 sărite); importurile, tipurile; build-ul determinist (287 de fișiere identice); e2e
+  379 / 379 din prima (4 lucrători).
+
+## 2026-11-08 — 3.6n: grosimea verticală sub pereții treptelor (ADR 0191) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pereții treptelor” (owner-ul, la „Fac și opțiunea cu plin sub pereții treptelor cât aștepți proba plăcii?”, după 3.6l).
+**Started:** 08.11, 12:35. **Completed:** 08.11, 15:18.
+
+- **Cercetarea** (OrcaSlicer la `9005b64`): `ensure_vertical_shell_thickness` (`PrintConfig.cpp`: patru valori, implicit
+  „ensure_all”; toate profilele K1C, „ensure_all”), `discover_vertical_shells` și `discover_horizontal_shells`
+  (`PrintObject.cpp`, descărcat pentru felie): constantele regularizării, ale filtrului și ale lățirii.
+- **Felia** (`c227afd`): setarea, cu toate valorile, în „Avansat” → „Straturile”, în subsol și în fixtură; banda bt în cheia
+  stratului; plinul unui strat amestecat lucrat după mod (uneltele, pure, în `trepte.ts`); umplerea rară = internul minus
+  plinul; călcarea plinului cu inelul; manualul, în ambele limbi.
+- **Găsit pe drum:** (1) deschiderea cu offsetul nostru rotunjește colțurile convexe (OrcaSlicer le ține drepte), deci la
+  modurile cu lățire fiecare colț de buzunar părea îngust și se lățea cu 1,26 mm: lățirea ia acum regiunile întregi care
+  dispar la strângere; (2) ce scoate filtrul îngust trebuie să redevină umplere rară, nu gol; (3) la OrcaSlicer, o bucată mică
+  se scoate doar dacă nu acoperă o regiune internă; (4) listele lungi din „Avansat” ieșeau din coloană (și două de la 3.6k):
+  reparat (`73c2c5f`), măsurat la 1400 și la 390 px.
+- **Măsurat:** inelul ajunge la 0,906 mm de marginea buzunarului (0,827 marginea pereților + 0,079 lărgirea), exact pe
+  hârtie; felierea plăcii cu buzunar, ~0,1 s. Mărimea: totalul 567,3 / 600 kB (+1,1), pornirea 102,0.
+- **Probe:** 4 noi în `imprimanta.feliere.trepte.test.ts`, cele 3.6l pe modul „fără”; e2e (lista din „Avansat”, eticheta
+  stratului cu inel). Otrăvurile `test/otravuri/3.6n.py`: 28 / 28 din prima (26 unitare, 2 e2e, fiecare de proba ei). Porțile:
+  unit 8 733 (8 725 trecute, 0 căderi, 8 sărite); build-ul determinist (287 de fișiere identice); e2e 379 / 379 din prima,
+  apoi proba imprimantei 13 / 13 după reparația de așezare. Piesele fără trepte: aceleași drumuri (171 de variante).
+
+## 2026-11-08 — 3.6o: driverele imprimantelor și comenzile din timpul imprimării (ADR 0192) (Model: Claude Opus 5.5)
+
+**Prompt:** „in principiu, vreau sa pot conecta orice fel de imprimanta, deci codul pe care il dezvolti trebuie sa fie pregatit pentru asta. poti incepe cu 1” (owner-ul, la răspunsul cu cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi; grupul 1: comenzile din timpul imprimării).
+**Started:** 08.11, 18:12. **Completed:** 09.11, 11:32.
+
+**Răspunsul owner-ului:** „Da, recomandările” (1a: fereastra ca în schiță; 2a: ventilatoarele prin `gcodeCmd`, cu textul
+făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
+
+- **Cercetarea:** comenzile K1 din integrarea Home Assistant (lumina, ventilatoarele prin `M106` în `gcodeCmd`, viteza și
+  debitul 1–200, țintele, homing-ul în doi pași cu `deviceState` 7 între ei, K1 fără încălzitor de carcasă); câmpurile din
+  transcrierea owner-ului (toate, fără `targetBoxTemp`); ce diferă la Moonraker, OctoPrint, PrusaLink, Elegoo SDCP, Bambu și
+  Marlin pe USB (transportul, parola, comenzile, intervalele, procent sau trepte).
+- **Propunerea** (ADR 0192, propus): driverul pur (starea comună, comenzile ca pași, capabilitățile) peste o legătură comună
+  pe transport; fereastra după capabilități; trei întrebări care se exclud (schița, ventilatoarele prin `gcodeCmd`, răcirea
+  singură). Codul vine după răspunsuri și după schiță.
+- **Felia** (`2ad9617`): contractul (`driver.ts`), driverul K1 și lista driverelor; sesiunea peste driver (pașii
+  comenzilor, răcirea singură); imprimantele ținute cu driverul lor; fereastra după schiță; imprimanta falsă învață
+  comenzile; manualul (ambele limbi) și ghidul (pasul 5, proba pe imprimanta owner-ului).
+- **Găsit pe drum:** șase ținte ale listei 3.6g mutate odată cu codul (refăcute); „răcită” imediat după o legare din nou,
+  cu țintele încă nespuse (reparat); proba manualului cere `data-imprimanta` scris la fiecare control.
+- **Privit în browser,** pe două imprimante false (127.0.0.1 imprimă, 127.0.0.2 liberă): viteza la 120 %, Preîncălzește PLA,
+  banda „Încălzește”, ora răcirii, homing-ul (X Y, apoi Z, în jurnal), pe telefon și în ambele teme.
+- **Porțile:** unit 8 751 (8 743 trecute, 0 căderi, 8 sărite); build-ul determinist (288 de fișiere identice); e2e 381 / 381
+  (378 din prima; proba 3.6k și cele două de după ea, trecute la reluare). Otrăvurile `test/otravuri/3.6o.py`: 59 / 59 din
+  prima (46 pe probele unitare, 13 prin e2e, fiecare de proba ei), plus cele șase refăcute din 3.6g.
+- **Proba 3.6k („Din desen…, Avansat”) e instabilă, și înainte de 3.6o:** A/B în clona otrăvurilor, 3 + 3 rulări alternate:
+  a căzut o dată pe `87297e5` (dinainte) și niciodată pe `2ad9617`. Când cade, instantaneul paginii arată 0 bucle de fustă,
+  deși proba a scris 2, deci nu e un termen prea scurt (cu 15 s, la fel). De căutat separat.
+- **Mărimea:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din ADR: bucata ferestrei, adusă la cerere, +8,0, din care 2,0
+  e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată). **Acceptat de
+  owner pe 09.11, 12:05** („Da, accept”, la „Accepți cei 5,8 kB în plus (cu 1,8 peste ținta din ADR)?”).
+
+## 2026-11-09 — Reparat: un număr luat cu Enter în „Din desen…” se pierdea la o ieșire din câmp grăbită (3.6k) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, caut-o” (owner-ul, la „Caut acum cauza probei 3.6k, la care fusta pierde buclele?”, după 3.6o).
+**Started:** 09.11, 12:15. **Completed:** 09.11, 13:50.
+
+- **Cauza** (`CampNumar`, din `src/app/DialogDinDesen.tsx`): la Enter, câmpul primea înapoi valoarea *veche* (`setText(arata(valoare))`,
+  cu valoarea de dinaintea luării), iar un efect o aducea la cea nouă abia la o randare de mai târziu. O ieșire din câmp
+  între ele lua textul vechi drept o valoare nouă și o scria peste cea tocmai luată. Proba 3.6k („Avansat”) mută focusul pe
+  glisorul stratului imediat după fustă: cădea cam o dată din patru (3 din 12 în diagnostic), cu fusta salvată 2, apoi 0.
+- **Dovezile:** un diagnostic cu starea notată după fiecare pas (câmpul „0” cu focusul în el, setarea salvată 2, apoi 0 la
+  ieșire); apoi o reproducere sigură, în aceeași sarcină: Enter, microsarcinile randării lui, ieșirea din câmp (5 din 5
+  căderi). Enter urmat de Tab, de un clic sau de `fill` pe glisor nu nimerea fereastra.
+- **Reparația:** textul scris stă în câmp doar cât îl scrie omul; altfel câmpul arată valoarea, chiar din randarea lui Enter,
+  iar o ieșire din câmp fără nimic scris nu ia nimic (efectul care sincroniza textul nu mai e nevoie).
+- **Probe:** una nouă în `test/e2e/imprimanta.spec.ts` (câmpul pereților, cu reproducerea sigură; căzută înaintea reparației,
+  trecută după); proba 3.6k, 15 din 15 la rând; proba imprimantei întreagă, 16 / 16 (la o rulare de dinainte, proba 3.6l a
+  așteptat o dată butonul „Din desen…” după deschiderea proiectului, înaintea oricărui câmp; singură, 6 din 6, apoi și în
+  rularea întreagă). Otrava `E06` din `test/otravuri/3.6k.py` aduce înapoi textul vechi. Mărimea: totalul 573,1 / 600,
+  build-ul determinist.
+
+## 2026-11-09 — 3.6p–3.6r: imprimarea văzută din cvs2 (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, după 3.6o și reparația probei 3.6k; urmează grupul 2 din cele șapte grupuri de
+îmbunătățiri ale legăturii prin WiFi, din 08.11: stratul viu, anularea unei singure piese, pauza la un strat).
+**Started:** 09.11, 16:21. **Completed:** 09.11, 17:02 (ADR 0193 acceptat cu recomandările: „Da, recomandările”).
+
+- **Cercetarea:** transcrierea din 07.11 (starea la ~3 s; `curPosition` cu X și Y bune, Z „00” cât imprimă și valori în
+  afara patului cât se pregătește; `layer` între două numărători la 5 una de alta; `usedMaterialLength` lin; cadrul
+  `objects`); sursa Klipper a seriei K1 (straturile numărate după comentariile fișierului, `SET_PRINT_STATS_INFO`,
+  `EXCLUDE_OBJECT` care refuză piesa de acum); OrcaSlicer (numele pieselor); forumul Creality (`PAUSE` din fișier merge pe
+  K1 fără root, la începutul stratului).
+- **Propunerea** (ADR 0193, propus): 3.6p pauza la un strat, 3.6q placa cu stratul viu, 3.6r anularea unei piese; patru
+  întrebări care se exclud (schița, anularea prin `gcodeCmd`, piesa de acum, unde se țin pauzele). Schița, cu formularul:
+  <https://claude.ai/artifact/5h1Y3RFM7wZvhZXzhMLNBw>. Codul vine după răspunsuri și după schiță.
+
+## 2026-11-09 — 3.6p: pauza la un strat (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, la ADR 0193 și schița lui: 1a planșele, 2a anularea prin `gcodeCmd`, 3a cererea
+care așteaptă piesa de acum, 4a pauzele în browser pentru aceleași piese).
+**Started:** 09.11, 17:02. **Completed:** 09.11, 18:30.
+
+- **Felierul:** stratul fiecărei pauze (`punePauze`: înaintea primului strat care începe de la înălțimea ei; peste piese,
+  cade) și pauza în fișier (`cuPauze`: `;PAUSE_PRINT`, nota, `PAUSE`, după schimbarea stratului și temperaturile celui
+  de-al doilea, înaintea primei piese), peste textul feliat, deci o notă nu cere o feliere nouă; comanda, din profilul
+  K1C. Nota intră în fișier doar ca ASCII (Klipper-ul Creality: `key571` la un text pe care nu-l citește).
+- **Dialogul „Din desen…”**, după schiță: butonul, semnele de pe glisor, lista cu nota, rezumatul; pauzele ținute în
+  browser pentru aceleași piese (`src/app/pauzeDesen.ts`).
+- **Verificarea fișierului:** pauzele oricărui `.gcode`, cu stratul, înălțimea și nota, spuse la trimitere și la pornire.
+- **Probe și porți:** `test/unit/imprimanta.pauza.test.ts` (9), două e2e; unit 8 760 (8 752 trecute, 0
+  căderi), e2e 384 / 384, build-ul determinist; totalul 574,9 / 600 kB (+1,8), pornirea 102,0.
+  Manualul (ro, en) și ghidul imprimantei (pasul 6: pauza pe imprimanta owner-ului).
+- **Otrăvurile** (`test/otravuri/3.6p.py`, în clona din afara Drive-ului): 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei).
+- **Capcana uneltelor, a patra oară:** `Edit` a scris `/[\u0300-\u036f]/` cu literele de combinare reale; prinsă de
+  `otravuri.py … verifica` (otrava N01 VOID), reparată cu `chr(92)`.
+
+## 2026-11-09 — 3.6q: placa și stratul viu (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6q” (owner-ul, la „Trec la 3.6q (placa cu stratul viu)?”, după 3.6p).
+**Started:** 09.11, 19:27. **Completed:** 09.11, 20:55.
+
+- **Starea și driverul K1:** piesele (`objects`, text JSON în JSON), cele anulate, piesa de acum, poziția duzei (X, Y),
+  filamentul folosit; sesiunea ține valorile recente ale stratului.
+- **Harta fișierului** (`harta.ts`) și **stratul viu** (`stratViu.ts`): stratul din filament, cu numărul imprimantei luat
+  doar aproape de el; în pauza fișierului, stratul pauzei; pe alt fișier, valoarea apropiată de progres.
+- **Fișierele ținute** în browser (IndexedDB, ultimele 5) și **placa** în cardul lucrării, după schiță.
+- **Imprimanta falsă** „imprimă” fișierul primit (straturile, poziția, filamentul, piesele, pauza, cele două numărători).
+- **Probe și porți:** `imprimanta.placa.test.ts` (10), sesiunea, driverul, două e2e; unit 8 773 (8 765 trecute,
+  0 căderi), e2e 386 / 386 (385 din prima: `animatie.spec.ts:49`, animația simulării, a căzut o dată la limită, apoi 25 / 25 singură), build-ul determinist; totalul 579,7 / 600 kB (+4,8), pornirea 102,0.
+  Otrăvurile (`test/otravuri/3.6q.py`): 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h). Manualul (ro, en) și ghidul (pasul 7).
+- **Găsit pe drum:** în pauza fișierului, stratul rămânea pe cel de dinainte (K1C trimite numărătoarea greșită) și cardul
+  ventilatoarelor stătea departe de temperaturi; văzute la privirea în browser, reparate.
+
+## 2026-11-09 — 3.6r: anularea unei piese (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6r” (owner-ul, la „Trec la 3.6r (anularea unei piese), cu ~1 kB peste ținta de mărime a grupului?”,
+după 3.6q).
+**Started:** 09.11, 21:02. **Completed:** 09.11, 22:45.
+
+- **Driverul și sesiunea:** `anuleazaPiesa` (doar cât imprimă sau stă în pauză), `piesaAnulabila` (din lista imprimantei,
+  neanulată, nu ultima, cu un nume sigur); K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`. Sesiunea retrimite cererea la 3 s,
+  o confirmă din `excluded_objects`, o lasă 6 s (2 minute pentru piesa de acum), apoi „n-a confirmat”; Renunță.
+- **Fereastra:** Anulează… pe placă (din listă și cu un clic pe piesă), confirmarea, cererea pe rândul piesei; ultima
+  piesă rămasă, fără buton.
+- **Imprimanta falsă:** anularea prin `gcodeCmd`, refuzul piesei de acum, piesa anulată sărită; `pas()` la cerere.
+- **Probe și porți:** driverul, sesiunea (2), placa, manualul, un e2e; unit 8 778 (8 770 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 387 / 387; totalul 581,1 / 600 kB (+1,4; grupul 2: +8,0 față de 573,1, peste ținta de +7 acceptată de owner), pornirea 102,0. Otrăvurile
+  (`test/otravuri/3.6r.py`): 33 / 33 (25 pe probele unitare, 8 prin e2e). Manualul (ro, en) și ghidul (pasul 8).
+- **Găsit pe drum:** proba manualului nu citea controalele plăcii; acum le citește.

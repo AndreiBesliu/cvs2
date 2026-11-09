@@ -19,6 +19,15 @@ const AXE = ['X', 'Y', 'Z'] as const;
 /** Prima mișcare care iese din pat: linia (de la 1), textul ei, axa și valoarea atinsă. */
 export type IesirePat = { readonly linie: number; readonly text: string; readonly axa: (typeof AXE)[number]; readonly valoare: number };
 
+/**
+ * O pauză din fișier (felia 3.6p, ADR 0193 §A): comanda (`PAUSE`, `M600`, `M601`, `M0`, `M1`, `M25`, `M226`), linia (de la 1),
+ * stratul înaintea căruia vine și înălțimea imprimată până la ea (după comentariile straturilor; null: neștiute), nota scrisă
+ * de cvs2 (`; pause note: …`).
+ */
+export type PauzaFisier = {
+  readonly comanda: string; readonly linie: number; readonly strat: number | null; readonly z: number | null; readonly nota: string | null;
+};
+
 export type AnalizaGcode = {
   readonly imprimanta: string | null;
   readonly duza: number | null;
@@ -35,7 +44,14 @@ export type AnalizaGcode = {
   readonly min: readonly (number | null)[];
   readonly max: readonly (number | null)[];
   readonly iesire: IesirePat | null;
+  /** Pauzele din fișier, în ordine (cel mult `MAX_PAUZE`). */
+  readonly pauze: readonly PauzaFisier[];
 };
+
+/** Câte pauze ține analiza (un fișier cu mii de `M0` nu umple memoria). */
+export const MAX_PAUZE = 50;
+/** Comenzile care opresc imprimarea până la o reluare: macroul Klipper, schimbarea filamentului, pauzele Marlin și Prusa. */
+export const RE_PAUZA = /^(PAUSE|M0|M1|M25|M226|M600|M601)(?=\s|$)/;
 
 /** Câtă imprecizie de calcul trece drept „pe margine”, în mm. */
 const EPS = 1e-6;
@@ -70,6 +86,13 @@ export function analizor(pat: readonly [number, number, number]): AnalizorGcode 
   let iesire: IesirePat | null = null;
   let miscari = 0;
   let mini: string[] | null = null;
+  // Straturile, după primul fel de comentariu găsit (ca Klipper-ul Creality): `;LAYER_CHANGE` (OrcaSlicer, Creality Print,
+  // cvs2) sau `;LAYER:n` (Cura, de la 0); înălțimea, din `;Z:`; nota unei pauze, din comentariul scris de cvs2 înaintea ei.
+  let felStrat: 'schimbare' | 'cura' | null = null;
+  let strat = 0;
+  let zAcum: number | null = null, zAnterior: number | null = null;
+  let nota: string | null = null;
+  const pauze: PauzaFisier[] = [];
   const a: { -readonly [K in 'imprimanta' | 'duza' | 'material' | 'tDuza' | 'tPat' | 'timp' | 'miniatura']: AnalizaGcode[K] } = {
     imprimanta: null, duza: null, material: null, tDuza: null, tPat: null, timp: null, miniatura: null,
   };
@@ -144,12 +167,33 @@ export function analizor(pat: readonly [number, number, number]): AnalizorGcode 
     n++;
     const l = brut.trim();
     const k = l.indexOf(';');
+    if (k === 0 && mini === null) {
+      const c = l.slice(1).trim();
+      let m: RegExpExecArray | null;
+      if (c === 'LAYER_CHANGE') {
+        if (felStrat !== 'cura') { felStrat = 'schimbare'; strat++; nota = null; }
+      } else if ((m = /^LAYER:(-?\d+)$/.exec(c)) !== null) {
+        if (felStrat !== 'schimbare') { felStrat = 'cura'; strat = Number(m[1]) + 1; nota = null; }
+      } else if ((m = /^Z:\s*(-?\d+(?:\.\d+)?)$/.exec(c)) !== null) {
+        zAnterior = zAcum; zAcum = Number(m[1]);
+      } else if ((m = /^pause note:\s*(.*)$/i.exec(c)) !== null) {
+        nota = (m[1] ?? '').trim().slice(0, 80) || null;
+      }
+    }
     if (k >= 0) comentariu(l.slice(k + 1).trim());
     const cod = (k < 0 ? l : l.slice(0, k)).trim().toUpperCase();
     if (cod === '') return;
     if (/^(?:START_PRINT|PRINT_START)\b/.test(cod)) {
       a.tDuza ??= pozitiv(Number(/EXTRUDER_TEMP=(\d+(?:\.\d+)?)/.exec(cod)?.[1]));
       a.tPat ??= pozitiv(Number(/BED_TEMP=(\d+(?:\.\d+)?)/.exec(cod)?.[1]));
+      return;
+    }
+    const pz = RE_PAUZA.exec(cod);
+    if (pz !== null) {
+      if (pauze.length < MAX_PAUZE) {
+        pauze.push({ comanda: pz[1]!, linie: n, strat: felStrat === null ? null : strat, z: felStrat === 'schimbare' ? zAnterior : null, nota });
+      }
+      nota = null;
       return;
     }
     // „G1X10” (fără spații) e tot G1.
@@ -189,7 +233,7 @@ export function analizor(pat: readonly [number, number, number]): AnalizorGcode 
     gata: () => {
       if (rest !== '') linie(rest);
       rest = '';
-      return { ...a, miscari, min: [...mn], max: [...mx], iesire };
+      return { ...a, miscari, min: [...mn], max: [...mx], iesire, pauze: [...pauze] };
     },
   };
 }

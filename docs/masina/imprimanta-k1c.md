@@ -60,6 +60,68 @@ nume.
 6. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: e transcrierea pe care o rejucăm pe imprimanta
    falsă din probe.
 
+## 5. Comenzile din timpul imprimării (felia 3.6o)
+
+Pe imprimanta ta, cu imprimanta liberă și fără nimic pe pat, apoi pe o imprimare scurtă:
+
+1. **Lumina:** comutatorul din cardul **Ventilatoarele și lumina**; lumina din imprimantă se stinge și se aprinde, iar
+   fereastra arată starea nouă fără „imprimanta n-a confirmat”.
+2. **Un ventilator:** al piesei la 30 %, din câmp, apoi la 0 %. Ar trebui să-l auzi pornind; fereastra arată 30 %.
+3. **Preîncălzește → PLA:** țintele duzei și patului devin 220 și 55 °C, iar banda spune **Încălzește**. Apoi **Răcește**
+   (din bandă): țintele revin la 0.
+4. **Răcirea singură:** preîncălzește din nou, schimbă minutele la 2 și așteaptă, cu fereastra deschisă: după 2 minute,
+   țintele revin singure la 0, iar fereastra spune ora. Pune minutele înapoi la 30. Dacă vrei să știm și ce face imprimanta
+   singură: preîncălzește cu bifa scoasă și lasă fereastra deschisă 15 minute; jurnalul arată dacă imprimanta își coboară
+   singură țintele (nemăsurat pe K1C).
+5. **Homing (X, Y, Z):** cu patul gol, bifa **Patul e gol**, apoi **Homing**: capul merge pe X și Y, apoi duza coboară spre
+   pat, pentru Z; la final, fereastra spune „Axele știute: X, Y, Z”. Uită-te unde coboară duza la Z (mijlocul patului?):
+   spune-mi, ca ghidul să știe ce înseamnă „patul gol”.
+6. **Viteza și debitul**, pe o imprimare scurtă (cubul de la pasul 4 al probei de mai sus): viteza la 120 %, apoi **100 %**;
+   debitul la 95 %, apoi **100 %**. Ecranul imprimantei arată aceleași valori.
+7. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: comenzile și răspunsurile imprimantei intră în
+   imprimanta falsă din probe.
+
+## 6. Pauza la un strat (felia 3.6p)
+
+Cu placa de probă din „Din desen…” (40 × 20 × 3 mm, PLA 0,20: 15 straturi), pe patul gol:
+
+1. Mută glisorul **Stratul** pe 9 și apasă **Pauză înaintea acestui strat**: fereastra spune că imprimanta se oprește după
+   stratul 8, la 1,6 mm. Scrie o notă (de exemplu „probă”), apoi **Trimite la imprimantă**: dialogul spune pauza din
+   fișier, iar la pornire o spune din nou, lângă bifa **Patul e gol**.
+2. Pornește imprimarea și uită-te la stratul 9: imprimanta ar trebui să se oprească singură, iar fereastra să arate
+   **Pauză**. Spune-mi unde a parcat capul (în spate, într-o parte, sus?) și dacă duza rămâne caldă (temperatura din
+   fereastră); lasă-o în pauză cam 2 minute.
+3. Apasă **Reia** în fereastră: imprimarea continuă de unde a rămas, iar piesa nu are o treaptă sau o dungă la 1,6 mm.
+4. **Jurnalul cadrelor** → **Copiază jurnalul**, și lipește-l în conversație: cu el aflăm și cum numără K1C straturile
+   unui fișier al nostru (`layer`) și filamentul folosit, pentru placa din felia 3.6q.
+
+## 7. Placa (felia 3.6q)
+
+Pe aceeași imprimare (placa de probă trimisă din „Din desen…”), în cardul **Lucrarea**:
+
+1. **Placa** apare cât imprimă: piesa ta, văzută de sus, cu stratul de acum (portocaliu) și duza (un punct alb). Spune-mi
+   dacă punctul duzei stă pe piesă și se mută la ~3 s.
+2. **„Stratul N / 15”** de deasupra plăcii: compară-l cu ecranul imprimantei de câteva ori. Lângă el scrie de unde vine
+   („după imprimantă” sau „după filamentul folosit”); dacă vezi un număr care sare (de exemplu 3, apoi 8), spune-mi.
+3. La pauza de la pasul 6, placa spune „Pauza din fișier, înaintea stratului 9” și nota ta.
+4. **Copiază jurnalul** la final: cadrele cu `layer`, `curPosition`, `usedMaterialLength` și piesele (`objects`) intră în
+   imprimanta falsă din probe.
+
+## 8. Anularea unei piese (felia 3.6r)
+
+Cu trei piese mici pe pat (în „Din desen…”: trei dreptunghiuri, **Piesele foii**), trimise și pornite din cvs2. O piesă
+anulată rămâne neterminată: folosește o probă de care nu-ți pare rău.
+
+1. Cât imprimă, în **Piesele** de sub placă: **Anulează…** lângă o piesă la care imprimanta **nu** lucrează acum →
+   **Anulează piesa**. În câteva secunde, rândul ei arată „anulată”, iar pe placă e tăiată. Uită-te la stratul următor:
+   imprimanta n-o mai face, iar celelalte merg mai departe.
+2. Dacă rândul spune „imprimanta n-a confirmat”, K1C n-a primit comanda prin `gcodeCmd`: copiază jurnalul și lipește-l
+   în conversație; până atunci, anularea rămâne pe ecranul imprimantei.
+3. **Anulează…** lângă piesa care „se imprimă acum”: rândul ei arată „→ se anulează când imprimanta trece la altă piesă”.
+   Spune-mi dacă devine „anulată” după ce imprimanta o termină pe stratul de acum. A treia piesă, rămasă singură, n-are
+   buton: pentru ea, Oprește.
+4. **Copiază jurnalul** la final: cadrele cu `excluded_objects` și `current_object` ne spun ce trimite K1C când anulează.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).
@@ -76,13 +138,19 @@ nume.
   nemăsurate încă (de mai jos).
 - **„Fișierul a plecat, dar nu apare în lista imprimantei”**: poate n-a ajuns întreg (WiFi slab). **Încearcă din nou** sau
   trimite-l din Creality Print.
+- **„imprimanta n-a confirmat”** lângă o comandă: imprimanta n-a raportat valoarea cerută în 6 s. Încearcă încă o dată; dacă
+  rămâne, trimite-mi jurnalul: poate firmware-ul tău are alt nume pentru comanda aceea.
 
 ## De știut
 
 - **O legătură căzută nu oprește imprimarea:** fișierul e în memoria imprimantei. Oprirea de urgență rămâne **ecranul
   imprimantei** (și întrerupătorul ei).
 - Singură, fereastra doar citește starea și răspunde `ok` la bătăile inimii imprimantei; orice comandă pleacă dintr-un clic.
-  Temperaturile doar se citesc: aplicația nu încălzește nimic.
+  Singura excepție (din 3.6o): **răcirea singură**, care doar coboară țintele la 0, după o preîncălzire din aplicație fără
+  imprimare, cât fereastra e deschisă și legată (implicit după 30 de minute; se oprește din bifă).
+- **Încălzirea** pleacă doar la clic, în grade întregi, până la maximul spus de imprimantă (320 °C la duză, 115 °C la pat, pe
+  K1C). Homing-ul merge doar cu imprimanta liberă, după bifa **Patul e gol**. Fereastra n-are consolă de G-code: pentru
+  ventilatoare pleacă un `M106` scris de aplicație, nimic scris de mână.
 - **Portul 9999 n-are parolă:** oricine din rețeaua atelierului poate comanda imprimanta (la fel și din Creality Print). Ține-o
   într-o rețea doar a ta.
 
@@ -104,7 +172,13 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
   - citiri: `{"method":"get","params":{"ReqPrinterPara":1}}` (toată starea), `{"method":"get","params":{"reqGcodeFile":1}}`
     (lista: `{"retGcodeFileInfo2":[{"name","path","timeCost","material",…}]}`, sau, la K1C 2025, un text, mai jos);
   - comenzi: `{"method":"set","params":{"pause":1}}`, `{"pause":0}`, `{"stop":1}`,
-    `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura).
+    `{"opGcodeFile":"printprt:/usr/data/printer_data/gcodes/<nume>"}` (după ea, K1 închide legătura);
+  - din 3.6o (integrarea Home Assistant): `{"lightSw":0|1}`; `{"gcodeCmd":"M106 P<0|1|2> S<0–255>"}` (ventilatorul piesei,
+    al carcasei, cel lateral; starea: `modelFanPct`, `caseFanPct`, `auxiliaryFanPct`, %); `{"setFeedratePct":v}`,
+    `{"setFlowratePct":v}` (1–200; starea: `curFeedratePct`, `curFlowratePct`); `{"nozzleTempControl":t}`,
+    `{"bedTempControl":{"num":0,"val":t}}` (până la `maxNozzleTemp`, `maxBedTemp`); homing-ul: `{"autohome":"X Y"}`, apoi,
+    după ce `deviceState` nu mai e 7 (cel mult 15 s), `{"autohome":"Z"}`; axele știute, în `autohome` („X:1 Y:1 Z:0”).
+    Nicio K1 n-are încălzitor al carcasei, deși K1C trimite uneori `targetBoxTemp`.
 - HTTP pe 80: `POST /upload/<nume codat>` (multipart, doar câmpul `file`, cu numele fișierului; fără câmpul `path`, ca
   OrcaSlicer pentru K1C), fișierul ajunge în `/usr/data/printer_data/gcodes/`; aplicația nu citește răspunsul (cererea pleacă
   `no-cors`) și caută apoi numele în lista de pe 9999. Mai e `GET /info` (`model`, `mac`), nefolosit.
@@ -117,4 +191,5 @@ Home Assistant `ha_creality_ws` (capturi de pe o K1C, 25.10.2026). Imprimanta fa
     avea spații), apoi `{"historyList":[…]}` (istoricul imprimărilor) și `{"elapseVideoList":[]}`;
   - starea are și `deviceState`, `curPosition`, `powerLoss`, `tfCard`, `video`, `webrtcSupport`, `maxBedTemp`, `maxNozzleTemp`.
 - Nemăsurat încă pe imprimanta ta: dacă `/upload` primește fișierul trimis de pe pagina aplicației, pornirea, pauza, reluarea și
-  oprirea pe o imprimare reală, marginile reale ale patului (unde își face linia de curățare a duzei).
+  oprirea pe o imprimare reală, marginile reale ale patului (unde își face linia de curățare a duzei); din 3.6o, comenzile de
+  la pasul 5, unde coboară duza la Z și dacă imprimanta își coboară singură țintele după o vreme.
