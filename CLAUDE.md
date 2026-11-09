@@ -558,6 +558,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   reface pe toate; rolul, scalarea, «Desprinde», gruparea și degruparea le țin. Oracolul v23 (agentul, din ADR-uri) e în
   `test/oracles/document.ts`. **Pornirea 106,0 (cu ușa 109,9 / 110 kB: rămâne sub 0,1 kB), totalul 563,0 / 600.** Rămâne
   pentru 11.4↑b: «Din CSV…», editarea textului unui șablon grupat, lista plăcuțelor micșorate de casetă.
+  **«Din CSV…» (ADR 0210 §4, felia 11.4↑b)** gata pe 09.11, după unirea lui `main` (ancorele, 12.1↑c-2: `3cdb96a`):
+  fereastra `DialogCsv.tsx` (din panou, adusă la cerere), cititorul `src/io/csv.ts` (codarea, separatorul găsit,
+  ghilimelele), valorile `src/model/valoriCsv.ts` (potrivirea după `numeComparabil`, numerotarea, `cuCamp`), textul
+  șablonului schimbat și pe un șablon grupat (`sablonCuContinut`), fonturile piesei o dată (`fonturiPiesei`); acțiunea
+  textului are cererile `sablon` și `placute` (un pas, așezat cu `planAsezare`). **Pornirea neschimbată (cu ușa 109,9 /
+  110), totalul 571,7 / 600.** Rămâne 11.4↑c: textul care iese din plăcuță fără casetă (roșu, avertismentul sau
+  confirmarea la export) și editarea cu unealta Text a unui șablon grupat.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

@@ -499,3 +499,44 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   degruparea; rolul; scalarea, și a celor de pe altă foaie; nodurile și înclinarea refuzate; cheile `__proto__` și
   `constructor`, judecate de ușă), `placute.spec.ts` (e2e: câmpul, valoarea, copiile, editarea șablonului cu nota, «Desprinde»,
   Ctrl+Z), manualul. Otrăvurile `test/otravuri/11.4.py`: la prima rulare (`c2784f2`) 30 / 32 unitare prinse: P07 echivalentă (limitat de casetă, așezarea caută oricum de la `caseta.ceruta`: ramura din `parametriBloc` era cod în plus, scoasă) și U02 scăpată (proba strica literele într-un fel prins oricum mai jos: proba nouă, o literă cu forma stricată sub cheia `constructor`); pe codul final (`ca7c0b6`) 40 / 40: 31 / 31 unitare și 9 / 9 prin e2e, în două clone, pe portul 4178.
+
+## Felia 11.4↑b (gata pe 09.11)
+
+- **Unirea întâi:** `main` (linia ancorelor 6.V↑–6.V↑c, 12.1↑c-2) adus în ramură (`3cdb96a`): `transformare.ts` primește
+  colțurile și arcele la scalare (ADR 0240) și le dă și literelor plăcuțelor (`texteScalate` cu felul colțurilor); mânerele,
+  ancora și tastele lucrează pe foaia activă (în `main`, `FOAIA = 0`). Porțile pe codul unit: unitare 8 827 / 0, e2e 404 / 404.
+- **«Din CSV…»** (planșa 4 a schiței; `DialogCsv.tsx`, adusă la primul clic, din panou, la „Piesa”, pe orice piesă cu un text,
+  și grupată, cu ramă): fișierul (`.csv`, `.txt`, cel mult 5 MB, cu butonul aplicației, nu câmpul browserului) sau celulele
+  lipite din Excel; separatorul (`;`, `,`, tab) și codarea (UTF-8 cu sau fără BOM, altfel Windows-1250) găsite singure, cu
+  alegerea la vedere; „Primul rând are numele coloanelor”; previzualizarea (primele 4 rânduri și câte mai sunt); cel mult
+  1 000 de rânduri de date și 100 de coloane, restul tăiat cu nota lui. Cititorul (`src/io/csv.ts`) ține ghilimelele ca RFC
+  4180 (separatorul, rândul nou și ghilimelele dublate în celulă; ghilimelele din mijlocul unei celule sunt un caracter) și
+  sare rândurile goale.
+- **Potrivirea** (`src/model/valoriCsv.ts`): fiecare câmp ia coloana cu același nume, fără litere mari și diacritice
+  („potrivit singur”); unul fără ea ia prima coloană rămasă (un tabel fără antet), altfel o valoare goală; la alegere, altă
+  coloană, o valoare scrisă sau numerotarea (de la, pasul, cifrele, cu zerourile din față și semnul). Valorile pierd spațiile
+  de la capete, ca în panou. „Rândurile de la … până la” aleg rândurile.
+- **„Fă din textul ales câmpul {Coloana}”** (răspunsul 4b): în fereastră, textul piesei (și al unui șablon grupat, cu ramă);
+  bucata aleasă devine `{Nume}` (numele coloanei, sau cel scris, fără acolade), iar textul se reface din font
+  (`sablonCuContinut`: pe rădăcină prin `piesaText`, ca editarea din panou; grupat, cu id-uri libere față de ramă și cu
+  operațiile textului mutate pe literele noi de același fel; spațierile literelor alese nu trec). Plăcuțele piesei se refac în
+  același pas (cererea `sablon` a acțiunii textului, refuzată dacă piesa s-a schimbat între timp).
+- **„Fă N plăcuțe”:** fonturile textelor piesei aduse o dată (`fonturiPiesei`), literele fiecărui rând (cu progresul, „Se fac
+  literele: 340 din 1 000…”), apoi un singur pas (cererea `placute`): primul rând pe plăcuța aleasă, celelalte instanțe noi
+  ale piesei, toate așezate pe foi cu `planAsezare` (din colțul și cu marginea, distanța, ordinea și rotirea ținute ale lui
+  „Așază pe foi”, cu vărsarea pe foile următoare goale și pe foi noi). Unde omul n-a scris nimic, distanța urcă singură până
+  la freza profilului exterior (ca la „Mută și așază”). Cel mult 1 000 de instanțe ale piesei (ca «Încă…»). Înainte, fereastra
+  spune unde ajung („6 plăcuțe pe 3 foi: 2 + 2 + 2. Marginea 10, distanța 6 mm.”, „Schimbă…”); după, panoul spune ce s-a
+  făcut și câte plăcuțe s-au micșorat în caseta „Limitat de casetă” și cât (răspunsul 5a, partea listei).
+- **Rămâne pentru 11.4↑c:** textul care iese din plăcuță fără casetă (plăcuța roșie, avertismentul în bara de jos sau
+  confirmarea la export, alese în fereastră: răspunsul 5) și editarea textului unui șablon grupat cu unealta Text.
+- **Măsurat:** pornirea neschimbată (105,9 kB, cu ușa 109,9 / 110), totalul 565,4 → 571,7 / 600 (fereastra și cititorul
+  vin la primul clic; peste estimarea de ~5 kB a venit „Fă din textul ales câmpul” pe un șablon grupat).
+- **Probele:** `csv.test.ts` (pe hârtie: Windows-1250 cu diacriticele lui, ghilimelele, separatorul, și la egalitate,
+  plafoanele, potrivirea, numerotarea cu semn și zerouri, „Fă din textul ales câmpul”), `placute.csv.test.ts` (un pas cu
+  anularea exactă, refuzurile, șablonul pe rădăcină și grupat, id-ul ramei ca al unei litere noi, spațierile vechi,
+  operația golurilor fără goluri, micșorarea în casetă egală cu a unui text obișnuit), `placute-csv.spec.ts` (e2e:
+  celulele lipite și „Fă din textul ales câmpul {Nume}”, trei plăcuțe într-un pas și Ctrl+Z; un fișier Windows-1250 cu
+  `;` și numerotarea), manualul. Otrăvurile `test/otravuri/11.4b.py`: la prima rulare (`4bd0c40`) 22 / 28 unitare: C01
+  și C05 echivalente (codul scos), C10, T02, T03, T05 cu probe noi; prin e2e 8 / 8; pe codul final (`0895c94`) 26 / 26
+  unitare.

@@ -7391,3 +7391,35 @@ sesiunea liniei.
 - **Publicat pe test:** rularea `42502036442`, serverul întâi, apoi site-ul; amprenta `8714306e9b62` pe toate țintele
   (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `8714306e9b62`.
 - **Semnele:** liniei ancorelor (unirea și CI-ul) și liniei incrustațiilor (`main` are acum și ancorele).
+
+## 2026-11-09 — Felia 11.4↑b: «Din CSV…» (ADR 0210 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.4↑b («Din CSV…»), întâi cu unirea lui main?”: „Da, 11.4↑b”.
+**Started:** 09.11, 10:29.
+
+- **Unirea lui `main` (`3cdb96a`):** linia ancorelor (6.V↑–6.V↑c) și 12.1↑c-2. Conflictele: `transformare.ts` (colțurile și
+  arcele la scalare, plus piesele legate și literele plăcuțelor), proba ei, `Editare.tsx` (ancora, tastele, colțurile, pe
+  foaia activă în locul lui `FOAIA`), `PanouProprietati.tsx`, DEVLOG. Porțile pe codul unit: unitare 8 827 / 0, e2e 404 / 404;
+  pornirea cu ușa 109,9 / 110, totalul 565,4 / 600.
+- **Felia (`4bd0c40`, otrăvurile `0895c94`):** fereastra «Din CSV…» (`DialogCsv.tsx`, la cerere, din panou), cititorul (`src/io/csv.ts`: codarea,
+  separatorul găsit, ghilimelele, plafoanele), valorile (`src/model/valoriCsv.ts`: potrivirea după nume, coloana rămasă,
+  valoarea, numerotarea, „Fă din textul ales câmpul”), textul șablonului schimbat și pe un șablon grupat
+  (`sablonCuContinut`), fonturile piesei aduse o dată (`fonturiPiesei`), micșorarea în casetă, cererile `sablon` și
+  `placute` ale acțiunii textului (un pas: primul rând pe plăcuța aleasă, restul instanțe noi, toate așezate pe foi), manualul.
+- **Ce a ieșit din drum:** (1) distanța ținută a lui „Așază pe foi” (5 mm) e sub freza Ø6 a profilului exterior al unui text,
+  deci planul era refuzat fără ca omul să fi ales ceva (prins de proba e2e): ca la „Mută și așază”, distanța urcă singură la
+  freză unde omul n-a scris nimic. (2) Câmpul de fișier al browserului scria „Choose File” (văzut în captură): un buton al
+  aplicației. (3) Două fișiere scrise cu caracterele invizibile în loc de scăpări (`\u0300-\u036f`, `\uFEFF`): rescrise cu
+  scăpările explicite.
+- **Porțile:** tsc (aplicația, extensia, funcțiile), importurile (0 încălcări, 1 109 module), traducerile (696 / 0),
+  unitare 8 839 / 0 (8 sărite), e2e pe suita întreagă 406 / 406, build-ul determinist: pornirea 105,9 kB (cu ușa 109,9 /
+  110), totalul 565,4 → 571,7 / 600. După otrăvuri (`csv.ts` cu cod scos), din nou: unitarele plăcuțelor și ale CSV-ului
+  30 / 30 și e2e-ul plăcuțelor 3 / 3.
+- **Otrăvurile (`test/otravuri/11.4b.py`, alese de autor, în două clone):** prima rulare (`4bd0c40`): 22 / 28 unitare prinse;
+  C01 („BOM-ul rămâne”) și C05 („fără perechea CRLF”) echivalente (`TextDecoder` scoate singur BOM-ul; rândul gol dintre
+  `\r` și `\n` se sare ca orice rând gol), deci codul lor a plecat; C10, T02, T03, T05 scăpate: patru probe noi (separatorul
+  la egalitate, spațierile vechi, id-ul ramei ca al unei litere noi, operația golurilor fără goluri). Prin e2e: 8 / 8 (E03
+  nevalidă la prima rulare, prinsă rulată singură). Pe codul final (`0895c94`): 26 / 26 unitare.
+- **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
+
+**Completed:** 09.11, 12:27.
