@@ -91,7 +91,7 @@ const USI: readonly Usa[] = [
  */
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
-  ancora: 'unealta.transformare', colturi: 'unealta.transformare',
+  ancora: 'unealta.transformare', colturi: 'unealta.transformare', 'alt-fix': 'unealta.transformare', 'cerc-mod': 'unealta.cerc',
   aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',

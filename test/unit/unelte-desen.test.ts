@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { capatConstrans, formaDesenata, TASTA_UNELTEI, TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
+import { capatConstrans, formaDesenata, TASTA_UNELTEI, TASTE_UNELTE, tasteUneltei, UNELTE, type Unealta } from '../../src/app/desenCalcul.ts';
 import { TOLERANTA_IMPORT } from '../../src/geom/toleranta.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { documentNou, operatieImplicita, type FormaDoc } from '../../src/model/document.ts';
-import { elipsa } from '../../src/model/formeParametrice.ts';
+import { elipsa, parametri } from '../../src/model/formeParametrice.ts';
 
 /** Uneltele de desen (ADR 0051), pure: fiecare unealtă cu valori pe hârtie, Shift, tragerea prea scurtă, ușa. */
 
@@ -100,11 +100,62 @@ test('tastele la desen (ADR 0240), pe hârtie: apăsat în (10, 10), lăsat în 
   assert.ok(ls && ls.forma.tip === 'cale' && Math.abs(ls.x - (10 - cx)) < 1e-12 && Math.abs(ls.y - (10 - cy)) < 1e-12);
   const b = ls?.forma.tip === 'cale' ? ls.forma.varfuri[1]?.p : undefined;
   assert.ok(b && Math.abs(b.x - 2 * cx) < 1e-12 && Math.abs(b.y - 2 * cy) < 1e-12);
-  // Poligonul pornește oricum din centru: Alt nu-l schimbă; Ctrl (poligonul întins) e opțiunea din 6.V↑d.
+  // Poligonul pornește oricum din centru: Alt nu-l schimbă; Ctrl îl întinde (6.V↑d, proba de mai jos).
   assert.deepEqual(des('poligon', 'A'), des('poligon', ''));
-  assert.deepEqual(des('poligon', 'C'), des('poligon', ''));
+  assert.notDeepEqual(des('poligon', 'C'), des('poligon', ''));
   // Din centru, o tragere sub minim pe o axă nu face nimic (lățimea 2 · 0,04 = 0,08 < 0,1).
   assert.equal(formaDesenata('dreptunghi', P, { x: 10.04, y: 30 }, 6, 0.1, K('A')), null);
+});
+
+test('opțiunile desenului (ADR 0240 §C.19–§C.20, 6.V↑d): cercul din colț, ca elipsa cu Shift; poligonul întins cu Ctrl', () => {
+  const P = { x: 10, y: 10 }, Q = { x: 40, y: 30 };
+  const colt = (taste: string, b = Q) => formaDesenata('cerc', P, capatConstrans('cerc', P, b, K(taste)), 6, 0.1, K(taste), 'colt');
+  // Din colț: cercul din cutia pătrată (latura cea mai mare, 30), deci R 15 în (25, 25); Shift, la fel; Alt, din centru, cu
+  // cursorul în colțul cutiei (R 30 în (10, 10)); Ctrl, elipsa din colț în colț (razele 15 și 10, în (25, 20)); Alt + Ctrl,
+  // elipsa din centru (30 și 20); Shift + Ctrl, câștigă Shift.
+  assert.deepEqual(colt(''), { forma: { tip: 'cerc', raza: 15 }, x: 25, y: 25 });
+  assert.deepEqual(colt('S'), colt(''));
+  assert.deepEqual(colt('A'), { forma: { tip: 'cerc', raza: 30 }, x: 10, y: 10 });
+  assert.deepEqual(colt('AS'), colt('A'));
+  assert.deepEqual(colt('C'), { forma: elipsa({ x: 0, y: 0 }, 15, 10), x: 25, y: 20 });
+  assert.deepEqual(colt('AC'), { forma: elipsa({ x: 0, y: 0 }, 30, 20), x: 10, y: 10 });
+  assert.deepEqual(colt('SC'), colt('S'));
+  // Tras spre stânga-jos: cutia pătrată merge în direcția tragerii, de la (10, 10) la (−20, −20).
+  assert.deepEqual(colt('', { x: -20, y: -5 }), { forma: { tip: 'cerc', raza: 15 }, x: -5, y: -5 });
+  // Din centru (implicit), ca înainte.
+  assert.deepEqual(formaDesenata('cerc', P, Q, 6, 0.1, K(''), 'centru'), formaDesenata('cerc', P, Q, 6, 0.1, K('')));
+
+  // Poligonul întins (Ctrl): vârfurile pe elipsa cu semiaxele |dx| = 30 și |dy| = 20, primul sus, în sens trigonometric; nu
+  // mai e regulat, deci panoul nu-l editează ca poligon. Shift + Ctrl: câștigă Shift (regulat, primul vârf în pași de 15°).
+  const intins = formaDesenata('poligon', P, Q, 5, 0.1, K('C'));
+  assert.ok(intins && intins.forma.tip === 'cale' && intins.forma.inchis);
+  assert.deepEqual([intins.x, intins.y], [10, 10]);
+  if (intins.forma.tip !== 'cale') return;
+  assert.equal(intins.forma.varfuri.length, 5);
+  intins.forma.varfuri.forEach((v, k) => {
+    const u = Math.PI / 2 + (2 * Math.PI * k) / 5;
+    assert.ok(Math.abs(v.p.x - 30 * Math.cos(u)) < 1e-12 && Math.abs(v.p.y - 20 * Math.sin(u)) < 1e-12 && v.s.tip === 'L', `vârful ${k}`);
+  });
+  assert.notEqual(parametri(intins.forma)?.tip, 'poligon');
+  assert.deepEqual(formaDesenata('poligon', P, Q, 5, 0.1, K('AC')), intins);
+  const regulat = (taste: string) => formaDesenata('poligon', P, capatConstrans('poligon', P, Q, K(taste)), 5, 0.1, K(taste));
+  assert.deepEqual(regulat('SC'), regulat('S'));
+  // Întins pe o axă fără înălțime (sub minim): nimic.
+  assert.equal(formaDesenata('poligon', P, { x: 40, y: 10.04 }, 5, 0.1, K('C')), null);
+});
+
+test('rândul tastelor din bara de jos (ADR 0240 §E.25, 6.V↑d): ce face fiecare tastă, pe unealtă și pe opțiuni', () => {
+  const r = (u: Unealta, o: { altFix?: 'ancora' | 'centru'; cerc?: 'centru' | 'colt' } = {}) =>
+    tasteUneltei(u, { altFix: o.altFix ?? 'ancora', cerc: o.cerc ?? 'centru' }).map((x) => `${x.tasta} ${x.cheie}`);
+  assert.deepEqual(r('transformare'), ['shift editare.mod.proportional', 'ctrl editare.mod.liber', 'alt editare.mod.fix.ancora']);
+  assert.deepEqual(r('transformare', { altFix: 'centru' }), ['shift editare.mod.proportional', 'ctrl editare.mod.liber', 'alt editare.mod.fix.centru']);
+  assert.deepEqual(r('dreptunghi'), ['shift editare.desen.patrat', 'ctrl editare.mod.liber', 'alt editare.desen.din-centru']);
+  assert.deepEqual(r('elipsa'), ['shift editare.desen.cerc', 'ctrl editare.mod.liber', 'alt editare.desen.din-centru']);
+  assert.deepEqual(r('cerc'), ['ctrl editare.desen.elipsa']);
+  assert.deepEqual(r('cerc', { cerc: 'colt' }), ['ctrl editare.desen.elipsa', 'alt editare.desen.din-centru']);
+  assert.deepEqual(r('linie'), ['shift editare.desen.pas15', 'alt editare.desen.din-mijloc']);
+  assert.deepEqual(r('poligon'), ['shift editare.desen.pas15', 'ctrl editare.desen.intins']);
+  for (const u of ['selectie', 'noduri', 'pen', 'text'] as const) assert.deepEqual(r(u), [], u);
 });
 
 test('fiecare formă desenată, pusă într-un document, trece de ușă', () => {
@@ -112,6 +163,12 @@ test('fiecare formă desenată, pusă într-un document, trece de ușă', () => 
   for (const u of ['dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const) {
     const f = formaDesenata(u, A, { x: 87.3, y: 61.9 }, 7, 0.1);
     assert.ok(f, u);
+    if (f) forme.push(f.forma);
+  }
+  // Și opțiunile din 6.V↑d: cercul din colț (cu Ctrl, elipsa), poligonul întins.
+  for (const [u, taste] of [['cerc', ''], ['cerc', 'C'], ['poligon', 'C']] as const) {
+    const f = formaDesenata(u, A, { x: 87.3, y: 61.9 }, 7, 0.1, K(taste), 'colt');
+    assert.ok(f, `${u} ${taste}`);
     if (f) forme.push(f.forma);
   }
   const d = documentNou({ latime: 300, inaltime: 200, grosime: 18 });

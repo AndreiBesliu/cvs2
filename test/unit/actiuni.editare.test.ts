@@ -124,15 +124,25 @@ test('document.transforma: scalarea schimbă piesa și locul, rotirea doar insta
   const e2 = n.h().doc.piese.find((p) => p.id === n.h().doc.foi[0]?.instante.find((i) => i.id === 'e2')?.piesa)?.radacina;
   assert.equal(e2?.tip === 'element' ? e2.forma.tip : null, 'cale');
   assert.ok(incarca(JSON.parse(JSON.stringify(n.h().doc))).ok);
-  // Inexactul: o scalare neuniformă pe o formă rotită oblic (30°): refuz, nicio comandă.
+  // O scalare neuniformă pe o formă rotită oblic (30°) trece prin geometrie (ADR 0240 §F.30): un pas, instanța rămâne, iar
+  // piesa devine o cale; documentul trece de ușă.
   const o = context(false, { transformare: () => ({ fel: 'rotire', unghi: 30, centru: { x: 0, y: 0 } }) });
   o.selecteaza(['e1']);
   assert.deepEqual(ruleaza(R, 'document.transforma', o), { ok: true });
   const oblic = { ...o, transformare: () => ({ fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }) as const };
   const to = o.h().trecut.length;
-  assert.deepEqual(stare(R, 'document.transforma', oblic), { ok: false, motiv: 'motiv.transformare-inexacta' });
-  ruleaza(R, 'document.transforma', oblic);
-  assert.equal(o.h().trecut.length, to);
+  const io = o.h().doc.foi[0]?.instante.find((x) => x.id === 'e1');
+  assert.deepEqual(ruleaza(R, 'document.transforma', oblic), { ok: true });
+  assert.equal(o.h().trecut.length, to + 1);
+  assert.deepEqual(o.h().doc.foi[0]?.instante.find((x) => x.id === 'e1'), io, 'instanța rămâne');
+  assert.equal(forma(o)?.tip, 'cale');
+  assert.ok(incarca(JSON.parse(JSON.stringify(o.h().doc))).ok);
+  // Inexactul: o scară zero (mânerul tras peste ancoră): refuz, nicio comandă.
+  const zero = { ...o, transformare: () => ({ fel: 'scalare', sx: 0, sy: 1, ancora: { x: 0, y: 0 } }) as const };
+  const tz = o.h().trecut.length;
+  assert.deepEqual(stare(R, 'document.transforma', zero), { ok: false, motiv: 'motiv.transformare-inexacta' });
+  ruleaza(R, 'document.transforma', zero);
+  assert.equal(o.h().trecut.length, tz);
   // Prea departe: locul nou trece de plafonul translației.
   const d = context(false, { transformare: () => ({ fel: 'scalare', sx: 1e9, sy: 1e9, ancora: { x: 0, y: 0 } }) });
   d.selecteaza(['e1']);

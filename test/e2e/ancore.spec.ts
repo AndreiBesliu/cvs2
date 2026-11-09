@@ -283,7 +283,7 @@ test('colțurile rotunjite (ADR 0240 §F.28): raza rămâne la întindere, refuz
   await expect(raza).toHaveValue('10');
   // Strâns la 10 mm, R 10 nu mai încape: refuzul, cu motivul; forma rămâne.
   await trageLatura(page, 110);
-  await expect(page.getByTestId('manere-motiv')).toHaveText('Colțurile rotunjite nu mai încap în dreptunghiul scalat: alege „Colțuri: se scalează mereu” sau micșorează raza.');
+  await expect(page.getByTestId('manere-motiv')).toHaveText('Colțurile rotunjite nu mai încap în dreptunghiul scalat: alege „Colțuri: se scalează” sau micșorează raza.');
   await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 100.00, Y 60.00']);
   // „Se scalează mereu”, ținut în browser: întinsă la 180, forma devine o cale (colțurile, sferturi de elipsă din curbe).
   await fel.selectOption('scaleaza');
@@ -339,4 +339,183 @@ test('arcele unei căi întinse pe o axă devin curbe (ADR 0240 §F.27): conturu
   const segmente = Number(/, (\d+) (de )?segmente/.exec((await rand.textContent()) ?? '')?.[1]);
   expect(segmente).toBeGreaterThan(8);
   expect(erori).toEqual([]);
+});
+
+test('„Alt ține fix: centrul cutiei” (ADR 0240 §B.17, 6.V↑d): Alt și rotirea față de centru, oriunde ar sta ancora', async ({ page }) => {
+  const erori: string[] = [];
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await page.locator('[data-unealta="transformare"]').click();
+  await page.locator('[data-ancora="sv"]').click();
+  await expect.poll(() => ancora(page)).toEqual([100, 60]);
+  await page.locator('[data-editare="alt-fix"]').selectOption('centru');
+  expect(await page.evaluate(() => localStorage.getItem('cncvs2.alt-fix'))).toBe('centru');
+  // Latura dreaptă de la 140 la 150, cu Alt: fix e centrul (120, 70), nu ancora: sx = 30 / 20 = 1,5, lățimea 60 din 90.
+  const e = await maner(page, 'e');
+  await page.mouse.move(e.x, e.y);
+  await page.keyboard.down('Alt');
+  await page.mouse.down();
+  await page.mouse.move(la(150, 70).x, e.y, { steps: 5 });
+  await expect(page.getByTestId('manere-eticheta')).toHaveText('60 × 20 mm · pe o axă · față de centru');
+  await expect(page.getByTestId('manere-fix')).toHaveAttribute('data-x', '120');
+  // Ancora nu e punctul fix: ținta nu se umple.
+  await expect(page.getByTestId('ancora')).not.toHaveClass(/fixa/);
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
+  await expect(randuri(page)).toHaveText(['dreptunghi 60.00 × 20.00 la X 90.00, Y 60.00']);
+  // Ancora n-a fost punctul fix: merge cu selecția, în colțul stânga-jos al cutiei noi.
+  await expect.poll(() => ancora(page)).toEqual([90, 60]);
+  // Rotirea e și ea în jurul centrului.
+  const r = await maner(page, 'rotire');
+  await page.mouse.move(r.x, r.y);
+  await page.mouse.down();
+  await page.mouse.move(r.x + 40, r.y + 10, { steps: 4 });
+  await expect(page.getByTestId('manere-eticheta')).toContainText('în jurul centrului');
+  await page.keyboard.press('Escape');
+  await page.mouse.up();
+  expect(erori).toEqual([]);
+});
+
+test('X / Y ale ancorei în panoul de proprietăți (ADR 0240 §A.7, 6.V↑d): scrise, mută ancora, nu formele', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await expect(page.getByTestId('prop-ancora')).toHaveCount(0);
+  await page.locator('[data-unealta="transformare"]').click();
+  await expect(page.getByTestId('prop-ancora')).toBeVisible();
+  const x = page.locator('[data-camp="ancora-x"]'), y = page.locator('[data-camp="ancora-y"]');
+  await expect(x).toHaveValue('120');
+  await expect(y).toHaveValue('70');
+  await x.fill('100');
+  await x.press('Enter');
+  await expect.poll(() => ancora(page)).toEqual([100, 70]);
+  await expect(randuri(page)).toHaveText(['dreptunghi 40.00 × 20.00 la X 100.00, Y 60.00']);
+  // Ancora trasă pe pânză se vede în panou: întâi dusă în (110, 70) din panou (în (100, 70) stă mânerul stâng, care are
+  // întâietate la apăsare), apoi trasă de mână în (130, 80), pe grilă.
+  await x.fill('110');
+  await x.press('Enter');
+  await expect.poll(() => ancora(page)).toEqual([110, 70]);
+  await trage(page, la(110, 70), la(130.2, 80.3));
+  await expect(x).toHaveValue('130');
+  await expect(y).toHaveValue('80');
+  await expect(randuri(page)).toHaveText(['dreptunghi 40.00 × 20.00 la X 100.00, Y 60.00']);
+  // Fără Transformare, rândul pleacă.
+  await page.locator('[data-unealta="selectie"]').click();
+  await expect(page.getByTestId('prop-ancora')).toHaveCount(0);
+  expect(erori).toEqual([]);
+});
+
+test('cercul din colț și poligonul întins (ADR 0240 §C.19–§C.20, 6.V↑d)', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="cerc"]').click();
+  await page.locator('[data-editare="cerc-mod"]').selectOption('colt');
+  expect(await page.evaluate(() => localStorage.getItem('cncvs2.cerc-mod'))).toBe('colt');
+  // Din colț: (60, 60) → (90, 80), cutia pătrată cu latura 30: cercul R 15 în (75, 75).
+  await trage(page, la(60, 60), la(90, 80));
+  await expect(randuri(page).nth(0)).toHaveText('cerc R15.00 cu centrul la X 75.00, Y 75.00');
+  // Cu Alt, din centru: R 30 în (200, 100); eticheta o spune.
+  await page.mouse.move(la(200, 100).x, la(200, 100).y);
+  await page.keyboard.down('Alt');
+  await page.mouse.down();
+  await page.mouse.move(la(230, 120).x, la(230, 120).y, { steps: 5 });
+  await expect(page.getByTestId('desen-eticheta')).toHaveText('R 30 mm · din centru');
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R30.00 cu centrul la X 200.00, Y 100.00');
+  // Poligonul (6 laturi) cu Ctrl, din (100, 150) spre (130, 170): întins pe elipsa 30 / 20, primul vârf sus.
+  await page.locator('[data-unealta="poligon"]').click();
+  await page.locator('[data-editare="laturi"]').fill('6');
+  const p = la(100, 150), q = la(130, 170);
+  await page.mouse.move(p.x, p.y);
+  await page.keyboard.down('Control');
+  await page.mouse.down();
+  await page.mouse.move(q.x, q.y, { steps: 5 });
+  await expect(page.getByTestId('desen-eticheta')).toHaveText('51,96 × 40 mm · întins');
+  await page.mouse.up();
+  await page.keyboard.up('Control');
+  await expect(randuri(page).nth(2)).toHaveText(/^cale 51\.96 × 40\.00, 6 segmente, la X 74\.02, Y 130\.00$/);
+  expect(erori).toEqual([]);
+});
+
+test('rândul tastelor din bara de jos (ADR 0240 §E.25, 6.V↑d): ce fac tastele, cu tasta ținută plină', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const rand = page.getByTestId('taste-unealta');
+  await page.locator('[data-unealta="selectie"]').click();
+  await expect(rand).toHaveCount(0);
+  await page.locator('[data-unealta="transformare"]').click();
+  await expect(rand.locator('[data-tasta]')).toHaveText(['Shift proporțional', 'Ctrl liber', 'Alt față de ancoră']);
+  await page.locator('body').focus();
+  await page.keyboard.down('Shift');
+  await expect(rand.locator('[data-tasta="shift"]')).toHaveClass('tinuta');
+  await page.keyboard.up('Shift');
+  await expect(rand.locator('[data-tasta="shift"]')).not.toHaveClass('tinuta');
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await expect(rand.locator('[data-tasta]')).toHaveText(['Shift pătrat', 'Ctrl liber', 'Alt din centru']);
+  expect(erori).toEqual([]);
+});
+
+test('o formă rotită oblic, întinsă pe o axă (ADR 0240 §F.30, 6.V↑d): devine o cale, fără refuz, cu eticheta', async ({ page }) => {
+  const erori: string[] = [];
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  const rotire = page.locator('[data-camp="rotire"]');
+  await rotire.fill('30');
+  await rotire.press('Enter');
+  await expect(rotire).toHaveValue('30');
+  await page.locator('[data-unealta="transformare"]').click();
+  const e = await maner(page, 'e');
+  await page.mouse.move(e.x, e.y);
+  await page.mouse.down();
+  await page.mouse.move(e.x + 40, e.y, { steps: 5 });
+  await expect(page.getByTestId('manere-eticheta')).toContainText('formele rotite oblic devin căi');
+  await page.mouse.up();
+  await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
+  await expect(randuri(page)).toHaveText([/^cale /]);
+  await expect(rotire).toHaveValue('30');
+  expect(erori).toEqual([]);
+});
+
+/**
+ * La 1280 px și cu un font lat (13.A↑c: Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum lat), bara de sus rămâne
+ * întreagă în fereastră cu Transformarea (selectorul ancorei, colțurile, Alt) și cu cercul (raza, felul lui): cu fontul lat,
+ * bara a ieșit din fereastră în CI (09.11), deși pe Windows, cu Segoe UI, încăpea.
+ */
+async function baraIncape(page: Page): Promise<void> {
+  const erori: string[] = [];
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await deschide(page, erori);
+  const la = await ecran(page, await vedere(page));
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await trage(page, la(100, 60), la(140, 80));
+  await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+  for (const u of ['transformare', 'cerc']) {
+    await page.locator(`[data-unealta="${u}"]`).click();
+    await expect(page.locator(u === 'cerc' ? '[data-editare="cerc-mod"]' : '[data-editare="alt-fix"]')).toBeVisible();
+    const bara = await page.locator('.sus > .bara').boundingBox();
+    if (!bara) throw new Error('bara n-are cutie');
+    expect(bara.x, u).toBeGreaterThanOrEqual(0);
+    expect(bara.x + bara.width, u).toBeLessThanOrEqual(1280);
+  }
+  expect(erori).toEqual([]);
+}
+
+test('bara de sus întreagă la 1280 px și cu un font lat: Transformarea cu toate opțiunile ei, cercul cu felul lui (6.V↑d)', async ({ page }) => {
+  await baraIncape(page);
+});
+
+test.describe('în engleză', () => {
+  test.use({ locale: 'en-US' });
+  test('bara de sus întreagă la 1280 px și cu un font lat, cu textele englezești (6.V↑d)', async ({ page }) => {
+    await baraIncape(page);
+  });
 });

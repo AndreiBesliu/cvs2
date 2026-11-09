@@ -48,6 +48,15 @@ Elipsă (`E`); Linie (`L`) trasă cu `Shift`, apoi cu `Alt`; Poligon (`P`) cu 5 
 Elipsa din colț în colț; linia în pași de 15° cu Shift, iar cu Alt pornește din mijloc (punctul apăsat e mijlocul ei); un
 pentagon regulat, din centru.
 
+### Opțiunile desenului
+%% pas: d-optiuni
+%% faci
+Cerc: în lista de lângă rază, „Cercul: din colț”, apoi trage pe foaie (și o dată ținând `Alt`). Poligon: trage ținând `Ctrl`.
+Cât tragi, uită-te la rândul tastelor din bara de jos și ține `Shift`.
+%% vezi
+Cercul din colț stă în cutia trasă (cu Alt, din centru); poligonul cu Ctrl iese întins, cu primul vârf sus. Rândul tastelor
+spune ce fac Shift, Ctrl și Alt cu unealta aleasă, iar tasta ținută se umple.
+
 ### Lipirea
 %% pas: d-lipire
 %% faci
@@ -103,10 +112,19 @@ jurul ancorei”. Dublu clic o întoarce în colțul ales.
 %% pas: t-colturi
 %% faci
 Un dreptunghi cu Raza colțurilor 10 (în panou). Transformare: trage latura dreaptă spre dreapta. Apoi, în lista de lângă
-selectorul ancorei, „Colțuri: se scalează mereu”, și trage din nou.
+selectorul ancorei, „Colțuri: se scalează”, și trage din nou.
 %% vezi
 Prima dată eticheta spune „colțurile își păstrează raza”, iar panoul arată tot un dreptunghi cu raza 10; a doua oară,
 „colțurile devin curbe”, iar forma devine o cale, cu colțurile întinse.
+
+### Opțiunile transformării
+%% pas: t-optiuni
+%% faci
+Transformare, pe o formă: în panou, la „Ancora transformării”, scrie un alt X. Alege „Alt: centrul” și trage o latură ținând
+`Alt`. Apoi rotește forma cu 30° (panoul, Rotirea) și trage-i o latură.
+%% vezi
+Ținta ancorei se mută la X-ul scris, formele nu. Cu „Alt: centrul”, Alt scalează față de centrul cutiei, oriunde ar fi
+ancora. Forma rotită oblic se scalează și ea (devine o cale), cu eticheta „formele rotite oblic devin căi”.
 
 ### Oglindirea
 %% pas: t-oglinda

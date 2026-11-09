@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import '../ui/actiuniDocumentCalcul.ts';
 import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
 import { formatImport } from '../io/formatImport.ts';
+import { TRASARE_IMPLICITA } from '../io/imagine.ts';
 import {
   PLAFON_IMPORT, type AlegeriImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
 } from '../ui/actiuniImport.ts';
@@ -34,8 +35,8 @@ type StareDialog = AlegeriImport & {
   readonly seRecitesc?: boolean;
 };
 
-/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină. */
-const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1 };
+/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină, trasarea implicită. */
+const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1, trasare: TRASARE_IMPLICITA };
 
 type Props = {
   /** Coada fișierelor alese sau lăsate pe planșă (felia 2.8b), cel puțin unul: dialogul le trece pe rând. */
@@ -43,13 +44,15 @@ type Props = {
   readonly punct: Loc;
   readonly registruImport: Registru<ContextImport>;
   /** Contextul ușilor pentru un fișier și alegerile lui (limba, fila care doar citește, jurnalul: ale aplicației). */
-  readonly contextImport: (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void) => ContextImport;
+  readonly contextImport: (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void, semnal?: AbortSignal) => ContextImport;
   /** Starea și rularea lui `document.importa`, prin registrul și contextul aplicației. */
   readonly stareImporta: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly importa: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly onInchide: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
   readonly de?: string;
+  /** Diametrul frezei foii, dacă are una singură (liniile mediane îl compară cu trăsătura, ADR 0222 §5). */
+  readonly freza?: number;
 };
 
 /**
@@ -67,11 +70,21 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de, freza }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
   const cerere = useRef(0);
+  /**
+   * Oprirea citirii în curs (ADR 0220): o citire nouă, fișierul următor și demontarea o opresc; închiderea (Renunță,
+   * Escape) demontează dialogul, deci o oprește tot de acolo. Trasarea unei imagini își oprește workerul; celelalte uși
+   * citesc pe loc și doar își aruncă rezultatul.
+   */
+  const oprire = useRef<AbortController | null>(null);
+  const opresteCitirea = (): void => {
+    oprire.current?.abort();
+    oprire.current = null;
+  };
 
   const inchide = (): void => {
     cerere.current++;
@@ -83,15 +96,19 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
    */
   const citeste = (f: FisierImport, a: AlegeriImport, automat: boolean, vechi?: PrevizualizareImport): void => {
     const c = ++cerere.current;
+    opresteCitirea();
+    const ac = new AbortController();
+    oprire.current = ac;
     setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, ...(vechi ? { stare: vechi, seRecitesc: true } : { stare: 'citire' }) });
     const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, a, (r) => {
       if (c !== cerere.current) return;
+      if (oprire.current === ac) oprire.current = null;
       if (!automat && a.pxPeTol === 96 && r.ok && r.format === 'svg' && r.px && r.illustrator) {
         citeste(f, { ...a, pxPeTol: 72 }, true);
         return;
       }
       setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, stare: r });
-    }));
+    }, ac.signal));
     // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.
     if (!pornit.ok) inchide();
   };
@@ -99,6 +116,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   const incepe = (f: File): void => {
     const initiala = stareInitiala(f);
     const c = ++cerere.current;
+    opresteCitirea();
     setDialog(initiala);
     if (initiala.stare !== 'citire') return;
     f.arrayBuffer().then((b) => {
@@ -112,7 +130,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   useEffect(() => {
     const f = fisiere[0];
     if (f) incepe(f);
-    return () => { cerere.current++; };
+    return () => { cerere.current++; opresteCitirea(); };
   }, []);
   /** Fișierul următor din coadă (după „Importă” sau „Sari peste”), sau închiderea dialogului. */
   const urmatorul = (): void => {
@@ -132,7 +150,10 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   /** Recitirea cu o alegere schimbată: ce e pe ecran (previzualizarea sau refuzul) rămâne acolo până sosește noul rezultat. */
   const recitesteCu = (schimbare: Partial<AlegeriImport>): void => {
     if (!dialog.fisier) return;
-    const a = { pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina, ...schimbare };
+    const a = {
+      pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina,
+      trasare: dialog.trasare ?? TRASARE_IMPLICITA, ...schimbare,
+    };
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
   return (
@@ -159,6 +180,12 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       onInchide={inchide}
       {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
       {...(de === undefined ? {} : { de })}
+      trasare={{
+        alegeri: dialog.trasare ?? TRASARE_IMPLICITA,
+        onSchimba: (s) => { recitesteCu({ trasare: { ...(dialog.trasare ?? TRASARE_IMPLICITA), ...s } }); },
+        octeti: dialog.fisier?.octeti ?? null,
+        ...(freza === undefined ? {} : { freza }),
+      }}
     />
   );
 }

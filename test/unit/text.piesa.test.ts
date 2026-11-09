@@ -95,8 +95,14 @@ test('scalarea uniformă crește blocul (înălțimea, spațierea, amprenta nou�
   const arce = (n: Nod): boolean => (n.tip === 'element' ? n.forma.tip === 'cale' && n.forma.varfuri.some((x) => x.s.tip === 'A' && x.s.bulge !== 0) : n.copii.some(arce));
   assert.equal(arce(gros.piese[0]!.radacina), false, 'niciun arc nu rămâne');
   // Eticheta mânerelor o spune o dată, pentru tot textul (și arcele aldinului); textul drept rămâne text, deci nimic.
-  assert.deepEqual(formeScalate(docCu(piesa({ ...PARAM, aldin: 0.6 })), 0, ['i1']), { cerc: false, arce: false, colturi: false, text: true });
-  assert.deepEqual(formeScalate(d, 0, ['i1']), { cerc: false, arce: false, colturi: false, text: false });
+  assert.deepEqual(formeScalate(docCu(piesa({ ...PARAM, aldin: 0.6 })), 0, ['i1']), { cerc: false, arce: false, colturi: false, text: true, rotite: false });
+  assert.deepEqual(formeScalate(d, 0, ['i1']), { cerc: false, arce: false, colturi: false, text: false, rotite: false });
+  // Rotit oblic (6.V↑d, ADR 0240 §F.30), și textul drept devine vectori pe o axă: scalarea trece prin geometrie.
+  const oblic = docCu(p, 50, 50, 30);
+  assert.deepEqual(formeScalate(oblic, 0, ['i1']), { cerc: false, arce: false, colturi: false, text: true, rotite: true });
+  const no = transforma(oblic, 0, ['i1'], { fel: 'scalare', sx: 1.5, sy: 1, ancora: { x: 0, y: 0 } });
+  assert.ok(no.ok);
+  assert.equal(blocText(no.piese[0]!.radacina), null, 'rotit oblic, devine vectori');
   const o = transforma(d, 0, ['i1'], { fel: 'oglindire', directie: 'orizontal', centru: { x: 50, y: 50 } });
   assert.ok(o.ok);
   assert.ok(blocText(o.piese[0]!.radacina));

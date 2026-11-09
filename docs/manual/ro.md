@@ -83,11 +83,16 @@ nouă, cu operația ei implicită; unealta rămâne aleasă pentru forma următo
 | Cerc | `O` | din centru; tragerea dă raza | — | elipsă, cu cursorul în colțul cutiei ei | — (pornește oricum din centru) |
 | Elipsă | `E` | din colț în colț | cerc | ca fără tastă | din centru |
 | Linie | `L` | din capăt în capăt | pași de 15° | — | din mijloc |
-| Poligon | `P` | din centru (poligon regulat) | pași de 15° | — | — |
+| Poligon | `P` | din centru (poligon regulat) | pași de 15° | întins: vârfurile pe elipsa cutiei, primul sus | — |
 
 - Tastele se pot ține împreună (Alt + Shift: pătrat sau cerc din centru); cu Shift și Ctrl, câștigă Shift. Se pot apăsa și
   în timpul tragerii, cu mausul pe loc. Lângă cursor, eticheta arată mărimea formei și ce fac tastele. Pe Mac, `Ctrl` e `⌘`.
-- La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp.
+  În bara de jos, **rândul tastelor** spune ce fac Shift, Ctrl și Alt cu unealta aleasă; tasta ținută se umple.
+- La **Cerc**, un clic fără tragere pune un cerc cu raza din câmpul de lângă unealtă; o tragere scrie raza ei în câmp. Lista
+  de lângă rază alege de unde pornește cercul: **Cercul: din centru** (implicit, ca în tabel) sau **Cercul: din colț**: cercul
+  din cutia trasă, ca elipsa cu Shift; cu Alt, din centru (cursorul în colțul cutiei), cu Ctrl, elipsă. Lista se ține în
+  browser.
+- Poligonul **întins** (Ctrl) nu mai e regulat: panoul îl arată ca pe o cale, fără laturi și rază.
 - La **Poligon**, numărul de laturi (3–64) se scrie în câmpul de lângă unealtă.
 - Capetele formei se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)).
 - `Esc` anulează forma începută; încă un Esc întoarce la Selecție.
@@ -299,7 +304,12 @@ laturilor, centrul), ales în **selectorul** de lângă unealtă și ținut în 
 se lipește de cele 9 puncte ale cutiei și de ținte (`Alt` inversează lipirea); **dublu clic** pe ea o întoarce în punctul
 ales. Când ancora stă pe un mâner (un colț ales în selector), mânerul are întâietate, iar ancora o muți din selector. Merge cu
 selecția când o muți sau o scalezi din alt mâner; după o rotire, o scalare cu Alt, o oglindire sau o înclinare în jurul ei,
-rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect.
+rămâne pe loc. O selecție nouă o întoarce în punctul ales; ancora nu se salvează în proiect. În panoul de proprietăți, rândul
+**Ancora transformării** îi arată locul, cu X / Y: scrise acolo, mută ancora, nu formele.
+
+Lista **Ce ține fix Alt**, de lângă selector, ținută în browser: **Alt: ancora** (implicit) sau **Alt: centrul**: atunci Alt
+scalează față de centrul cutiei, oriunde ar sta ancora, iar rotirea e și ea în jurul centrului (ancora rămâne pentru oglindire
+și înclinare).
 
 Cât tragi, eticheta de deasupra arată mărimea și ce fac tastele (de exemplu „50 × 40 mm · pe o axă · față de latura
 opusă”), iar un punct albastru arată ce rămâne pe loc. Mânerele se lipesc de ghidaje, foaie, celelalte forme și grilă, doar
@@ -309,13 +319,17 @@ importate) scalate pe o axă devin **curbe**, la cel mult 0,001 mm de arcul înt
 `Ctrl+Z` le readuce.
 
 **Colțurile rotunjite** ale unui dreptunghi urmează lista de lângă selectorul ancorei, ținută în browser:
-- **Colțuri: raza rămâne la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
+- **Colțuri: rămân la întindere** (implicit): trasă pe o axă, raza rămâne aceeași, iar dreptunghiul rămâne dreptunghi,
   cu raza editabilă în panou; scalată proporțional, raza crește cu forma;
-- **Colțuri: raza rămâne mereu**: și la scalarea proporțională;
-- **Colțuri: se scalează mereu**: trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma devine o cale).
+- **Colțuri: rămân mereu**: raza rămâne și la scalarea proporțională;
+- **Colțuri: se scalează**: raza crește mereu cu forma; trasă pe o axă, colțurile devin sferturi de elipsă, din curbe (forma
+  devine o cale).
 
-Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. Rămân refuzate,
-cu motivul, scalarea pe o axă a unei forme rotite oblic și schimbarea unei piese folosite și de alte forme.
+Un colț care nu mai încape în latura scalată (de exemplu R 10 într-o latură de 15 mm) se refuză, cu motivul. O formă **rotită
+oblic** (altfel decât cu 90°), trasă pe o axă, se scalează în axele foii prin geometrie, ca înclinarea: devine o cale (un
+dreptunghi rotit iese un paralelogram), arcele devin curbe, iar locul și rotirea ei rămân; eticheta spune „formele rotite
+oblic devin căi”. Rămâne refuzată, cu motivul, schimbarea unei piese folosite și de alte forme. În bara de jos, **rândul
+tastelor** spune ce fac Shift, Ctrl și Alt cu Transformarea; tasta ținută se umple.
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
 (`Shift+V`, sus ↔ jos), față de ancoră (implicit centrul cutiei selecției). Se taie oglinda, cu același sens de tăiere.
@@ -493,11 +507,11 @@ centrarea pe foaie lucrează la fel cu el sau fără. Ca niște forme să se mi�
 [Gruparea](#grupare)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG, DXF, PDF, AI, EPS și WMF
+## Importul SVG, DXF, PDF, AI, EPS, WMF și al imaginilor
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
+Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF / imagine** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
 „Exportă G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu
 centrul unde îl lași.
 
@@ -512,11 +526,13 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 - la un WMF fără antet placeable, **unitatea**: 1/96 țol (px, ca LibreOffice), 1/1440 țol (twip), 0,01 mm, 0,1 mm sau mm
   (vezi mai jos);
 - la un PDF cu mai multe pagini, **pagina** de importat (vezi mai jos);
+- la o imagine, **trasarea**: cum devine desenul din pixeli contururi (vezi mai jos);
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF, AI, EPS și WMF, de cel mult 16 MB, nearhivate (nu
-`.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de export.
+**Renunță la toate** închid fereastra. Se importă fișierele SVG, DXF, PDF, AI, EPS și WMF, precum și imaginile PNG, JPEG,
+WebP, GIF și BMP, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
+export.
 
 Un **DXF** se citește așa:
 - DXF-ul text (ASCII), de la R12 la cele noi; unul binar e refuzat (salvează-l ca ASCII);
@@ -567,6 +583,76 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
   se aplică;
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
+
+O **imagine** (PNG, JPEG, WebP, GIF sau BMP: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
+marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
+dreapta:
+- **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
+  transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
+  rândul de sub listă spune ce a ales;
+- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
+  fiecărei trăsături, tăiat pe linie: vezi mai jos);
+- **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
+  glisorul îl mută;
+- **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
+- **Netezimea**: **Fidel** urmează marginea de aproape și păstrează colțurile mici, **Echilibrat** netezește treptele
+  pixelilor, **Neted** rotunjește colțurile mici și dă mai puține noduri;
+- **Ignoră petele sub** și **Umple golurile sub** (în mm, cu pixelii alături): petele de desen și golurile din el mai mici de
+  atât dispar (praful unei scanări, zgomotul unei fotografii); o formă lipită de marginea imaginii rămâne;
+- **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din DPI-ul scris în fișier, iar fără el din 96 px pe
+  țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine scara.
+
+Previzualizarea arată **Imaginea**, **Vectorii** sau **Amândouă** (cu **Estompează imaginea**, ca vectorii să se vadă peste
+ea); rotița mărește în jurul mausului, tragerea mută imaginea, **Mărește** și **Micșorează** fac la fel din butoane, iar
+**Încadrează** arată toată imaginea. Sub ea stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
+mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat și dacă marginile erau dure
+(fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
+rămâne vie, iar o schimbare nouă o oprește pe cea începută.
+
+Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
+exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
+incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apoi:
+- **Numărul culorilor**: **Automat** găsește singur culorile deosebite ale imaginii (umbrirea unei suprafețe rămâne o
+  singură culoare, iar o culoare mică dar clară, ca o linie subțire, rămâne a ei); fără el, glisorul alege de la 2 la 16.
+  Un număr nou face culorile din nou, fără legăturile și bifele de dinainte;
+- **pastilele**: fiecare culoare, cu cât din desen are și bifa **Se trasează**. La o imagine opacă, culoarea marginii e
+  **fundalul**, nebifată (o poți bifa); la una transparentă, transparentul nu e o culoare;
+- **legarea**: trage o pastilă peste alta și cele două devin o singură culoare (de exemplu, umbra unei litere și litera);
+  **Leagă de…** face același lucru de la tastatură, iar pastila legată are **Dezleagă**;
+- mausul pe o pastilă îi arată regiunea în previzualizare; **Imaginea** e aici imaginea pictată în culorile găsite.
+
+**Importă** pune câte o formă pe culoare bifată, toate aliniate ca în imagine, într-un singur pas (un Ctrl+Z le scoate pe
+toate); numele fiecăreia are culoarea ei (de exemplu „logo #0c619c”). Rolul fiecăreia (buzunar, V-carve, incrustație) îl
+alegi apoi din panou.
+
+Cu **Rezultatul: Linii mediane**, fiecare trăsătură devine linia ei de mijloc, nu conturul: un scris de mână, o semnătură,
+un desen cu linii. O linie se termină în centrul capătului rotund al trăsăturii (acolo se oprește o freză cât trăsătura);
+unde se întâlnesc trăsături, liniile se întâlnesc într-un punct, iar cele care se continuă (bara unui T, un X, o buclă care
+se încrucișează) rămân o singură linie; un O sau un inel devine o buclă. O pată plină dă linia ei de mijloc (un dreptunghi
+lung, o linie; un disc, doar un punct): punctele, adică trăsăturile mai scurte decât grosimea lor, nu au linie, iar raportul
+le numără. Raportul spune și **grosimea obișnuită a trăsăturilor**, în mm, iar dacă foaia are o singură freză, cum stă ea
+față de trăsătură: mai lată (gravura ar mânca din jur), mai îngustă (ar ieși mai subțire) sau cât ea. **Arată grosimea**
+desenează, sub linii, banda pe care ar tăia-o o freză cât trăsătura. **Importă** pune liniile într-o formă, toate tăiate
+pe linie (și buclele), ca liniile deschise ale unui SVG.
+
+Sub **Rezultatul: Linii mediane** stau opțiunile lor:
+- **Capetele:** **Centrul capătului** (implicit) sau **Vârful trăsăturii**: linia merge până la marginea trăsăturii, pentru o
+  freză în V care trebuie să ajungă până în vârf;
+- **Părțile late:** **Linii mediane** (implicit: o pată plină dă linia ei de mijloc) sau **Contururi**: părțile mai late
+  decât pragul rămân contururi închise, tăiate pe exterior (golurile lor pe interior), iar liniile care ajung la ele se
+  opresc pe conturul lor, fără punte; **Mai late de**: **Automat** (de două ori grosimea obișnuită) sau o valoare în mm;
+- **Arată părțile late** (pornită implicit): previzualizarea le colorează, iar raportul spune câte sunt și ce parte din
+  cerneală, ca să vezi că desenul are părți pline înainte să imporți;
+- **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
+  iar o buclă aflată în alta, pe interior.
+
+Desenul trasat intră ca o formă, cu imaginea drept pagină: colțul stânga-jos al imaginii e colțul foii. Contururile din
+afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
+- liniile mediane pe culori și scanările îndreptate vin mai târziu;
+- o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
+  numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
+- o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
+- TIFF-ul nu se citește încă (salvează imaginea ca PNG), iar imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
 
 ## Tăierea vectorilor
 %% capitol: taiere

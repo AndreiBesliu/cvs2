@@ -693,6 +693,44 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (trasarea, piesele plate, incrustațiile, planșele, tăierea), deci cu toate unite rămân ~5 kB; o creștere următoare cere
   iar decizia scrisă (sau modulele aduse la prima folosire, ADR 0191 5b). Pornirea rămâne 110 kB. **Pornirea 101,7 (cu ușa
   105,3 / 110 kB), totalul 535,0 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
+  (ramura `wip/25.1-trasare`, canalul `trasare`; **unită în `main` pe 09.11**, mai jos), cu toate recomandările („Da,
+  1a–8a”): o imagine (PNG, JPEG, WebP, GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
+  pragul cu histograma, Inversează, Netezimea, petele și golurile în mm, lățimea cu DPI-ul sau 96 px pe țol; previzualizarea;
+  abaterea măsurată), iar desenul intră ca o piesă, cu laturile din sensul contururilor. **Nucleul, `src/trasare/trasare.ts`,
+  e cod propriu, fără niciun import din aplicație** (regula `trasare-izolat`; potrace e GPL, `marchingsquares` AGPL), și
+  rulează **în workerul lui** (`src/jobs/lucratorTrasare.ts`: workerele se construiesc IIFE, deci o bucată la cerere a
+  workerului CAM nu se poate). **O citire a importului are semnalul ei** (`ContextImport.semnal`): o citire nouă, fișierul
+  următor și demontarea dialogului (Renunță, Escape) opresc trasarea, cu workerul. **Proba nucleului e corpusul Python**
+  (`test/oracles-py/trasare_corpus.py`, cu acoperirea exactă, valorile pe hârtie și martorul scikit-image, verificat și în CI)
+  plus o probă pe o margine zgomotoasă (acele de un pixel: 0,56–0,63 px).
+  **Trasarea pe culori (ADR 0221, felia 25.2↑)** gata pe 07.11, în același worktree (canalul `trasare`), cu toate
+  recomandările („Da, 1a–5a”): sursa „Culorile”, numărul automat sau 2–16, pastilele cu legarea prin tragere, granițele
+  comune (netezite o dată pentru amândouă culorile), o piesă pe culoare, aliniate, într-un pas. **Nucleul,
+  `src/trasare/culori.ts`, tot fără importuri din aplicație;** reducerea e în OKLab cu luminozitatea pe jumătate, pe pixelii
+  plini fără amestecurile de margine, cu multe clase unite după distanță (testul vechi de „pixel plin” pierdea liniile
+  subțiri ale logoului). **Piesele aduse împreună trec prin `ImportPregatit.impreuna`;** legăturile, prin
+  `src/trasare/legaturi.ts` (nucleul și pastilele).
+  **Linia mediană (ADR 0222, felia 25.3↑)** gata pe 08.11, tot acolo (canalul `trasare`), cu toate recomandările
+  („Da, 1a–5a”): „Rezultatul: Linii mediane” la sursele alb-negru. **Nucleul, `src/trasare/mediana.ts`, tot fără importuri
+  din aplicație;** partea comună cu contururile (cerneala, pragul, curățarea, marginile) e `campul`, în `trasare.ts`.
+  **Zhang–Suen are nevoie de îndreptarea lui Lü și Wang** (fără ea, o trăsătură la 45° dispare). **Căile deschise au
+  `CaiTrasate.deschisa`;** buclele tăiate pe linie intră în operația căilor deschise (`piesaDinImport`).
+  **Corectată pe 08.11 după logoul owner-ului, privit mărit (probele, cu îmbinări rotunde, trecuseră): o dreaptă (brațul unei
+  joncțiuni, latura unui colț) se trage doar pe porțiunea dreaptă (0,5 px); curățarea de lângă o joncțiune merge doar cât
+  intră normala în celelalte brațe, (w/2)/tan(θ/2).**
+  **Opțiunile liniei mediane (ADR 0223, felia 25.3↑b)** gata pe 08.11, tot acolo, cu toate recomandările („Da, 1a–3a”): sub
+  „Rezultatul: Linii mediane”, capetele, părțile late (linii mediane sau contururi, cu pragul), „Arată părțile late” și
+  buclele. **Părțile late sunt deschiderea morfologică a cernelii (`src/trasare/partiLate.ts`): miezul, apoi ce e la cel mult
+  R0 + 0,5 px de el; bucățile rămase care ating partea lată și stau toate la cel mult 2·R0 + 1 de miez îi aparțin** (altfel,
+  zeci de cioturi în jurul unui bloc). **`CaiTrasate.peLinie` (lipsă: toate pe linie) dă latura căilor mediane închise.**
+  **Cu `main` unit pe 08.11 (`8dde2d2`, cu incrustațiile) și 25.3↑b: pornirea 101,9 / 110 kB, totalul 574,8 / 600.**
+  **Linia trasării (25.1↑–25.3↑b) unită în `main` pe 09.11** („Yes, merge trasarea”; `e277836`; conflicte doar în
+  documente). **Pornirea 101,9 (cu ușa 105,5 / 110 kB), totalul 577,2 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
+  ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
+  mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
+  5b).
   **Incrustația cu pereți drepți (ADR 0171, felia 12.1↑b) și banda dopului în V (ADR 0172, felia 12.1↑c), unite în `main` pe
   08.11** („Da, așa”; `9692385`, fără conflicte): **documentul v22.** v21 aduce `incrustatie` cu `fel: 'drept'` pe buzunar
   (`jocLateral`, `dop` ridicat sau decupat, `sprijin`, `frezeDop`), v22 aduce `banda` pe incrustația în V cu `jurDop: 'banda'`
@@ -721,11 +759,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ghidaje, ancoră, Noduri și Pen. Ancora: selectorul 3 × 3 (`cncvs2.ancora`, ținut în browser, nu în proiect: documentul nu se
   schimbă) sau ținta trasă pe pânză; rotirea, Alt, oglindirea și înclinarea în jurul ei. **Scalarea pe o axă nu mai refuză
   arcele:** cercul devine elipsa generatorului, arcele căilor devin curbe sub 0,001 mm, colțurile rotunjite urmează lista din
-  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori. **6.V↑d (opțiunile: Alt ține fix, cercul din colț,
-  poligonul întins, rândul tastelor, X / Y ale ancorei, instanțele rotite) așteaptă decizia owner-ului pe plafon.**
+  bara Transformării (`cncvs2.colturi`), textul aldin devine vectori.
   Pe ramură, pornirea neschimbată și totalul +2,1 kB. Pe canalul `ancore` al instanței de test:
   <https://cncvectorstudio-test--ancore-vy17zado.web.app> (până pe 08.12). **După unire, cu incrustațiile: pornirea 101,8 (cu
   ușa 105,4 / 110 kB), totalul 546,4 / 600, /admin 106,5 / 200, contul 29,6 / 32.**
+  **6.V↑d, opțiunile („Da, 6.V↑d acum”)**, gata pe 08.11 pe aceeași ramură, **unită în `main` pe 09.11** („Da, unește”;
+  `e481e55`): „Ce ține fix Alt” (`cncvs2.alt-fix`:
+  ancora sau centrul cutiei, și la rotire), „De unde pornește cercul” (`cncvs2.cerc-mod`: din centru sau din colț, ca elipsa
+  cu Shift), poligonul întins cu Ctrl, **rândul tastelor în bara de jos** (locul `loc-taste` din `App.tsx`, umplut de
+  editor), **X / Y ale ancorei în panoul de proprietăți** (starea `ancoraPanou`, împărțită de editor și panou), iar **o formă
+  rotită oblic, scalată pe o axă, trece prin geometrie** (ca înclinarea), fără refuz. Pe ramură, totalul +1,5 kB; testul din
+  aplicație are acum 35 de pași („Opțiunile desenului” e pasul 6, „Opțiunile transformării” 14). **După unire, cu trasarea:
+  pornirea 101,9 (cu ușa 105,6 / 110 kB), totalul 578,8 / 600, /admin 106,5 / 200, contul 29,6 / 32; sub plafon mai încap
+  ~21 kB.** **Bara de sus trebuie să încapă la 1280 px și cu un font lat** (Verdana aici, DejaVu Sans pe Linux, unde
+  `system-ui` e lat): proba ei e în `ancore.spec.ts` (Transformarea și cercul, în română și în engleză). Pe 09.11, CI-ul
+  complet a căzut pe `main` exact aici (capătul barei la 1300 px pe Linux, 1245 pe Windows), reparat cu textele mai scurte
+  ale listei colțurilor (`4246279`). O opțiune nouă în bara de sus se probează cu fontul lat, nu doar pe Windows.
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -938,6 +987,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 09.11.2026: **6.V↑d unită în `main`** („Da, unește”, în sesiunea ancorelor, după raportul ei: „Dacă e bine, spune
+  „unește”. Ramura o unește în `main` sesiunea principală.”): linia ancorelor (ADR 0240) e întreagă în `main`; conflicte doar
+  în documente, păstrate ambele părți.
+- 09.11.2026: **linia trasării din imagine (25.1↑–25.3↑b) unită în `main`** („Yes, merge trasarea”, la „Merge trasarea
+  into main now?”, după „vezi ce mai este gata de unit cu main”): singura linie gata care încape sub plafon. Tăierea și
+  planșele aduc întâi `main` în ramură (conflicte de cod cu ancorele), imprimanta așteaptă proba plăcii pe K1C (condiția
+  owner-ului), 6.V↑d e încă în lucru; toate la un loc ar trece de 600 kB (~650).
 - 08.11.2026: **linia ancorelor (6.V↑, 6.V↑b, 6.V↑c) unită în `main`** („Da, unește”, în sesiunea liniei, după raportul ei:
   „Dacă e bine, spune „unește”; ramura o unește în `main` sesiunea principală”): conflicte doar în documente, păstrate ambele
   părți. 6.V↑d (opțiunile) rămâne pe linie, după decizia owner-ului pe plafon.
@@ -945,6 +1001,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   main?”): punctele 3, 5 și 6 din lista de după prima unire (lemnul din jurul dopului din panou, arborele și rândurile
   legate, viteza benzii). Documentul rămâne v22; punctul 4 (punțile dopului drept alese în fereastră) rămâne pe linie, cu
   v24, după v23 a planșelor.
+- 08.11.2026: **opțiunile liniei mediane, cu toate recomandările** („Da, 1a–3a”, la cele trei întrebări din ADR 0223, în
+  sesiunea liniei trasării): sub „Rezultatul: Linii mediane”, vizibile doar atunci, un grup de patru (capetele în centru sau
+  în vârf, părțile late linii mediane sau contururi, „Arată părțile late”, buclele pe linie sau vectori închiși); pragul
+  automat al părților late e de două ori grosimea obișnuită a trăsăturilor (în mm în fereastră); „Arată părțile late” e
+  pornită implicit.
 - 08.11.2026: **incrustațiile (12.1↑b, 12.1↑c) unite în `main`, înaintea planșelor** („Da, așa”, în sesiunea planșelor, la
   „întâi unești incrustațiile în `main` (prin sesiunea principală), apoi aduc `main` în ramura mea și iau v23 peste ele”):
   documentul v22 în `main`; **v23 e a planșelor** (11.4↑, literele plăcuțelor), deci un câmp nou pe altă linie (de exemplu
@@ -976,6 +1037,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   remove`; ramurile locale șterse cu `-d`; sesiunile arhivate (a lui `trenulet` era deja). Pe `origin`, `wip/3.Xg-biblioteca`
   și `wip/15.B-raportari` intră în lista de șters a owner-ului (acum 17). Rămân cinci worktree-uri, cu felii încă neunite:
   `imprimanta`, `incrustatii`, `plansele`, `taiere`, `trasare`.
+- 08.11.2026: **linia mediană, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0222, în sesiunea liniei
+  trasării): rezultatul „Linii mediane” în fereastra trasării (sursele alb-negru), scheletul pe pixeli cu centrul la
+  marginile de 50 % (nu axa medială a V-carve-ului, ~12 kB); o linie se termină în centrul capătului rotund; o pată plină dă
+  scheletul ei; buclele se taie pe linie. Bugetul era deja hotărât (ADR 0143, 600 kB). Alternativele care pot sta împreună
+  (capetele în vârf, părțile late rămase contururi și semnalarea lor, buclele ca vectori închiși) vin ca opțiuni în 25.3↑b.
+- 07.11.2026: **trasarea pe culori, cu toate recomandările** („Da, 1a–5a”, la cele cinci întrebări din ADR 0221, în sesiunea
+  liniei trasării): numărul culorilor e automat (cele distincte, 2–16), cu glisorul pentru alt număr; o culoare se leagă de
+  alta trăgându-i pastila peste a ei (ca în ArtCAM), cu „Dezleagă” pe pastilă; pe o imagine opacă, culoarea care domină
+  marginea e fundalul, nebifată; „Importă” face o piesă pe culoare, toate aliniate, cu rolul ales din panou pe fiecare;
+  culoarea stă doar în numele piesei (documentul nu se schimbă).
 - 07.11.2026: **plafonul total 600 kB** („Yes, 600 kB”, la „Raise the total bundle cap to 600 kB (new ADR), startup staying
   at 110 kB?”): după unirea raportărilor și a imprimantei, totalul era 535,0 / 550 kB, iar liniile paralele aveau gata pe
   ramuri încă ~60 kB. ADR 0143; pornirea rămâne 110 kB.
@@ -998,6 +1069,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `#biblioteca=<id>`; Easy 3Draw ajunge pe live odată cu aplicația; secțiunea Biblioteca stă în meniul Extensii. Linia lucrează
   în worktree-ul `biblioteca` (`wip/3.Xg-biblioteca`, `C:\Users\besli\cncvs2-lucru\biblioteca`, e2e pe 4180 și `127.0.7`,
   ADR-urile 0230–0239, canalul `biblioteca`).
+- 07.11.2026: **trasarea din imagine, cu toate recomandările** („Da, 1a–8a”, la cele opt întrebări din ADR 0220, în sesiunea
+  liniei trasării): trasarea stă în „Importă…” (o imagine aleasă sau lăsată pe planșă deschide fereastra trasării); o imagine
+  fără DPI primește 96 px / țol, cu lățimea scrisă în fereastră; curbele ies linii și cubice; ordinea: 25.1↑ alb-negru, 25.2↑
+  culorile, 25.3↑ linia mediană (25.4↑ scanările, doar la cerere); TIFF refuzat acum, iar imaginile din PDF rămân sărite; codul
+  în precache, în totalul de 550 kB; scikit-image (BSD-3) e al doilea martor al probei, în venv-ul oracolelor și în CI
+  (descărcarea permisă); logoul din ediția întâi intră în corpusul public, plus imaginile pe care owner-ul le trimite.
 - 07.11.2026: **mărimea lui 3.6h acceptată** („Da, accept”, la „Accepți cei 3,3 kB în plus pentru 3.6h?”): trimiterea unui `.gcode`
   la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
   în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul

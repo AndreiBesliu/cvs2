@@ -1,8 +1,9 @@
 # ADR 0240 — Ancora și tastele transformării: Shift, Ctrl și Alt la mânere și la desen
 
 **Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), cu răspunsul owner-ului la cele patru întrebări: „Ok la toate”,
-deci recomandările 1a–4a (secțiunea „Răspunsurile owner-ului”, la capăt). Feliile 6.V↑–6.V↑c implementate pe 08.11, pe
-ramură (secțiunea „Implementarea”); 6.V↑d, după decizia owner-ului pe plafon. Lucrat în worktree-ul `ancore` (ramura
+deci recomandările 1a–4a (secțiunea „Răspunsurile owner-ului”, la capăt). Feliile 6.V↑–6.V↑c implementate și unite în
+`main` pe 08.11 (`0c81ccf`); 6.V↑d („Da, 6.V↑d acum”) implementată pe 08.11, pe ramură (secțiunea „Implementarea”). Lucrat
+în worktree-ul `ancore` (ramura
 `wip/6.V-ancore`, din `main` `b56f0e1`). Cererea owner-ului, exactă: „vreau un worktree care sa se ocupe de origin/anchor points pentru vectori. si
 o sa vreau ca unealta transform sa tina cont de ele ba mai mult vreau hotkeys care sa influenteze unealta. de exemplu, daca
 vreau sa deformez un cerc si sa il fac elipsa coltul pastreaza proportia cercului, dar lateralele nu, eu vreau sa pot apasa
@@ -283,7 +284,8 @@ ar lua singură linia asta. Textele noi stau în dicționarele modulelor (date, 
 ## Limitele
 
 - După Ctrl+Z, o ancoră mutată de mână rămâne în aceleași fracții ale cutiei, nu în locul de dinaintea transformării anulate.
-- Un cerc dintr-o piesă rotită altfel decât cu 90° rămâne refuzat la o scalare neuniformă, până la opțiunea din 6.V↑d (§F.30).
+- O formă rotită altfel decât cu 90°, scalată pe o axă, trece prin geometrie (6.V↑d, §F.30): un cerc iese o cale de curbe, nu
+  elipsa generatorului (e rotită față de axele piesei), deci panoul nu-i mai editează razele.
 
 ## Implementarea (08.11)
 
@@ -299,12 +301,22 @@ ar lua singură linia asta. Textele noi stau în dicționarele modulelor (date, 
   încape are motivul lui, `colturi-nu-incap`. Lista colțurilor stă în bara Transformării, lângă selectorul ancorei
   (`cncvs2.colturi`, implicit felul a). Eticheta spune ce se întâmplă formelor alese (`formeScalate`: cercul, arcele, colțurile,
   textul care devine vectori, o dată pentru tot textul).
+- **6.V↑d** (`95556bc`, după unirea primelor trei în `main`): §A.7, §B.17, §C.19–§C.20, §E.25, §F.30. „Ce ține fix Alt”
+  (`cncvs2.alt-fix`, „Alt: ancora” / „Alt: centrul”, scurte ca bara de sus să încapă la 1280 px; `fixulLuiAlt`): cu centrul,
+  ancora nu e ținută pe loc după gest și ținta nu se umple. „De unde pornește cercul” (`cncvs2.cerc-mod`): din colț, cercul
+  e elipsa cu Shift. Poligonul întins (Ctrl). Rândul tastelor (`tasteUneltei`) stă în bara de jos, într-un loc gol al
+  aplicației (`loc-taste`, `display: contents`). Ancora ajunge în panoul de proprietăți printr-o stare mică (`ancoraPanou`,
+  `useSyncExternalStore`), fiindcă editorul și panoul se încarcă la cerere, în orice ordine. Formele rotite oblic trec prin
+  `inclinaNod` cu scalarea S față de ancoră (și un nod oblic din piesă), cu instanța neschimbată; motivul `neuniform-rotit` a
+  ieșit.
 
-**Pe lângă plan:** testul din aplicație are doi pași noi, „Ancora” și „Colțurile rotunjite” (33 de pași). Manualul spunea că
-orice scalare neuniformă face textul vectori; acum spune regula din ADR 0138 (textul drept fără aldin rămâne text).
+**Pe lângă plan:** testul din aplicație are patru pași noi, „Ancora”, „Colțurile rotunjite”, „Opțiunile desenului” și
+„Opțiunile transformării” (35 de pași), iar pașii desenului cer și Alt și Ctrl. Manualul spunea că orice scalare neuniformă
+face textul vectori; acum spune regula din ADR 0138 (textul drept fără aldin rămâne text).
 
 **Mărimile:** totalul 535,0 → 535,6 (6.V↑) → 536,6 (6.V↑b) → 537,1 / 600 kB (6.V↑c), adică 2,1 kB pe trei felii (estimat
-~3,5); pornirea 101,7 / 110, neschimbată.
+~3,5); pornirea 101,7 / 110, neschimbată. 6.V↑d, peste `main` cu incrustațiile: 546,4 → 547,9 / 600 kB (estimat ~1,5);
+pornirea 101,8 / 110 (cu ușa 105,4 → 105,5: locul rândului tastelor din aplicație).
 
 **Probele:** pe hârtie, tabelele din §B și §C, ancora (§Proba), arcele sub 0,001 mm (și într-un grup scalat de 50 de ori),
 colțurile în cele trei feluri, eticheta (`formeScalate`), textul aldin; e2e (Edge, `ancore.spec.ts`, 8): tastele pe cercul
@@ -312,7 +324,10 @@ colțurile în cele trei feluri, eticheta (`formeScalate`), textul aldin; e2e (E
 oglindirea, selectorul, dublu clic, selecția nouă, Alt), colțurile (eticheta, refuzul, felul ținut și citit la pornire),
 arcele unui offset rotunjit, înclinarea față de ancoră. **Otrăvurile** (`test/otravuri/6.V.py`, 50): 48 prinse la prima
 rulare; cele două scăpate (⌘ pe Mac luat drept Ctrl, în `tasteDin`; fracția ancorei pe o linie fără lățime) au primit
-probele lor și sunt prinse acum, fiecare de proba ei.
+probele lor și sunt prinse acum, fiecare de proba ei. **6.V↑d:** pe hârtie, cercul din colț în toate combinațiile, poligonul
+întins, rândul tastelor, „Alt ține fix”, formele rotite oblic (vârfurile în lume, curbele sub 0,001 mm, nodul oblic, ușa) și
+eticheta; e2e (5 noi): „Alt ține fix” (și bara întreagă la 1280 px), X / Y în panou, cercul din colț și poligonul întins,
+rândul tastelor, forma rotită întinsă. Otrăvurile (`test/otravuri/6.Vd.py`, 29): toate prinse la prima rulare.
 
 ## Sursele
 
