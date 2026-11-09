@@ -12,6 +12,9 @@
  * - **dinții drepți** cu înălțimea 10 și raza 3: treapta de 5 nu ține două rotunjiri de 3 (`imbinare-raza`); cu raza 2, da;
  * - **coada de rândunică:** laturile înclinate cu înălțimea / 6, dintele mai lat la vârf decât la bază;
  * - **simetria:** fiecare drum, rotit cu 180° în jurul mijlocului coardei, e tot el (ariile celor două bucăți, egale);
+ * - **fără laturi de lungime zero:** cocoașele valului se ating (capătul uneia e începutul celeilalte), nodurile puzzle-ului la
+ *   fel când picioarele lor stau la un sfert de pas (40 / 25 / 4), iar treapta dinților drepți de 12 cu raza 3 e cât două
+ *   rotunjiri: vârful lipit se scoate;
  * - **valorile:** pasul și înălțimea pozitive, raza cel puțin 0, cel mult 1 000, modelul cunoscut.
  */
 import { test } from 'node:test';
@@ -142,4 +145,14 @@ test('valorile: pasul și înălțimea pozitive, raza cel puțin 0, cel mult 1 0
     assert.ok(!imbinareBuna(i), JSON.stringify(i));
   }
   assert.ok(!imbinareBuna({ model: 'altul' as Imbinare['model'], pas: 20, inaltime: 10, raza: 3 }));
+});
+
+test('fără laturi de lungime zero: cocoașele lipite ale valului, nodurile puzzle-ului care se ating, treapta dinților cât două rotunjiri', () => {
+  for (const i of [im('val', 40, 20, 3), im('puzzle', 40, 25, 4), im('dinti', 40, 12, 3), im('zigzag', 20, 10, 0), im('coada', 40, 24, 2)]) {
+    const v = drum(100, i);
+    for (let k = 0; k + 1 < v.length; k++) {
+      const a = v[k] as VarfImbinare, b = v[k + 1] as VarfImbinare;
+      assert.ok(Math.hypot(b.t - a.t, b.s - a.s) > 1e-9, `${JSON.stringify(i)}: vârfurile ${k} și ${k + 1} sunt lipite`);
+    }
+  }
 });

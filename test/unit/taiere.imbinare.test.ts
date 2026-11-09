@@ -11,8 +11,12 @@
  * - **cuțitul tras (Linie):** două fețe; cel oprit înăuntru, cu „Prelungește”, la fel;
  * - **„Păstrează” stânga:** doar partea A (5 000);
  * - **refuzurile:** niciun dinte întreg (pasul 60: `imbinare`); raza care nu încape (`imbinare-raza`); dinții care ar atinge o
- *   gaură (`imbinare-margine`; mai departe, nu); cuțitul care nu e o dreaptă (`imbinare-dreapta`: felul Formă, o cale frântă,
- *   mâna liberă); fără închidere (`imbinare-inchide`); valorile greșite (`valoare`).
+ *   gaură (`imbinare-margine`; mai departe, nu); cuțitul care nu e o dreaptă (`imbinare-dreapta`: felul Formă, chiar și cu o
+ *   linie dreaptă aleasă ultima, o cale frântă, mâna liberă); fără închidere (`imbinare-inchide`); valorile greșite (`valoare`);
+ * - **cu suprapunerea, o insulă a piesei în fâșie** (pătrățelul 1 × 1 din (51, 150), lângă linia X = 50): o singură dată, la
+ *   linia din panou, care grupează pe laturi; partea A (stânga) întâi, cu joc sau fără;
+ * - **cuțitul tras din gaura unui inel** (200 × 100, cu gaura 20 × 20 în mijloc), spre dreapta: dinți doar pe coarda pe care o
+ *   trece (110 … 200), nu și pe cea din spatele lui; inelul, deschis, rămâne o formă, de 19 600 mm².
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -148,13 +152,18 @@ test('zigzagul cu raza 3: tot 5 000 și 5 000, colțurile rotunjite (vârful din
 
 test('cu jocul 0,2 (spațiul), bucățile stau la 0,2 una de alta peste tot; cu suprapunerea 0,4, se suprapun, egale', () => {
   const d = docDin(stoc, patrat('a'));
+  // Partea A (cea din stânga liniei, x mai mic) vine întâi, cu joc sau fără.
+  const stangaIntai = (t: ReturnType<typeof taiat>): boolean => cutie(t.dupa, t.r.ids[0] ?? '').minX < 25;
+  assert.ok(stangaIntai(taiat(d, cerere(X50, ['a'], { imbinare: im('zigzag', 20, 10, 3) }))), 'fără joc, A întâi');
   const sp = taiat(d, cerere(X50, ['a'], { imbinare: im('zigzag', 20, 10, 3), intre: { fel: 'spatiu', latime: 0.2 } }));
+  assert.ok(stangaIntai(sp), 'cu spațiul, A întâi');
   const [a, b] = sp.r.ids as [string, string];
   aproape(departare(sp.dupa, a, b), 0.2, 1e-6, 'între bucăți');
   const [ia, ib] = arii(sp) as [number, number];
   aproape(ia, ib, 1e-9, 'aceeași arie');
   assert.ok(ia < 5000, 'fiecare pierde jumătate din joc');
   const su = taiat(d, cerere(X50, ['a'], { imbinare: im('zigzag', 20, 10, 3), intre: { fel: 'suprapunere', latime: 0.4 } }));
+  assert.ok(stangaIntai(su), 'cu suprapunerea, A întâi');
   const [ja, jb] = arii(su) as [number, number];
   aproape(ja, jb, 1e-9, 'aceeași arie');
   assert.ok(ja > 5000, 'fiecare trece de drum');
@@ -215,10 +224,38 @@ test('refuzurile: niciun dinte întreg; raza care nu încape; dinții care ar at
   assert.equal(refuz(cuGaura(57), cerere(X50, ['p'], { imbinare: im('zigzag', 20, 10, 3) })), 'imbinare-margine');
   assert.equal(refuz(cuGaura(75), cerere(X50, ['p'], { imbinare: im('zigzag', 20, 10, 3) })), 'tăiată în 2');
   assert.equal(refuz(d, cerere({ fel: 'forma', id: 'k' }, ['a'], { imbinare: ZIGZAG })), 'imbinare-dreapta');
+  // Și un cuțit-formă drept (o linie aleasă ultima): îmbinarea e a liniilor din panou și a Cuțitului, nu a formelor.
+  const cuLinie = docDin(stoc, patrat('a'), forma('l', caleDoc(false, [50, -10], [50, 110])));
+  assert.equal(refuz(cuLinie, cerere({ fel: 'forma', id: 'l' }, ['a'], { imbinare: ZIGZAG })), 'imbinare-dreapta');
   assert.equal(refuz(d, cerere({ fel: 'cale', cale: caleDoc(false, [50, -10], [50, 50], [60, 110]) }, ['a'], { imbinare: ZIGZAG })), 'imbinare-dreapta');
+  // Un arc între două puncte: capetele stau pe o dreaptă, dar tăietura e curbă.
+  const arc: FormaCale = { tip: 'cale', inchis: false, varfuri: [{ p: { x: 50, y: -10 }, s: { tip: 'A', bulge: 0.1 } }, { p: { x: 50, y: 110 }, s: L }] };
+  assert.equal(refuz(d, cerere({ fel: 'cale', cale: arc }, ['a'], { imbinare: ZIGZAG })), 'imbinare-dreapta');
   assert.equal(refuz(d, cerere({ fel: 'cale', cale: caleDoc(false, [50, -10], [50, 110]), netezire: 0.1 }, ['a'], { imbinare: ZIGZAG })), 'imbinare-dreapta');
   assert.equal(refuz(d, cerere(X50, ['a'], { imbinare: ZIGZAG, inchide: false })), 'imbinare-inchide');
   for (const i of [im('zigzag', 0, 10, 0), im('zigzag', 20, Number.NaN, 0), im('zigzag', 20, 10, -1)]) {
     assert.equal(refuz(d, cerere(X50, ['a'], { imbinare: i })), 'valoare', JSON.stringify(i));
   }
+});
+
+test('cuțitul tras din gaura unui inel: dinți doar pe coarda pe care o trece, nu și pe cea din spatele lui; inelul, deschis, rămâne o formă', () => {
+  const d = cuGrup(docDin(stoc), 'p', 0, 0, [{ f: { tip: 'dreptunghi', latime: 200, inaltime: 100, razaColt: 0 }, x: 0, y: 0 }, { f: { tip: 'dreptunghi', latime: 20, inaltime: 20, razaColt: 0 }, x: 90, y: 40 }]);
+  const t = taiat(d, cerere({ fel: 'cale', cale: caleDoc(false, [100, 50], [250, 50]) }, ['p'], { imbinare: ZIGZAG }));
+  assert.equal(t.r.ids.length, 1, 'inelul, deschis');
+  const [id] = t.r.ids;
+  assert.ok(id);
+  aproape(ariePar(t.dupa, id), 19600, 1e-6, 'aria inelului');
+  const cs = contururi(t.dupa, id);
+  // Coarda din dreapta (110 … 200, trei dinți, câte 15 drepți la capete): primul vârf de sus în (130, 55).
+  assert.ok(areVarf(cs, 130, 55), 'dinții pe coarda trecută');
+  // Coarda din stânga (0 … 90), în spatele cuțitului: dreaptă, fără dinți (ar fi avut primul vârf în (20, 55)).
+  assert.ok(!areVarf(cs, 20, 55, 1e-6), 'fără dinți în spatele cuțitului');
+});
+
+test('cu suprapunerea, o insulă a piesei în fâșie rămâne o singură dată (linia din panou grupează pe laturi)', () => {
+  const d = cuGrup(docDin(stoc), 'p', 0, 0, [{ f: { tip: 'dreptunghi', latime: 100, inaltime: 100, razaColt: 0 }, x: 0, y: 0 }, { f: { tip: 'dreptunghi', latime: 1, inaltime: 1, razaColt: 0 }, x: 51, y: 150 }]);
+  const t = taiat(d, cerere(X50, ['p'], { imbinare: ZIGZAG, intre: { fel: 'suprapunere', latime: 6 } }));
+  assert.equal(t.r.ids.length, 2, 'o parte de fiecare latură');
+  const unu = t.r.ids.flatMap((id) => contururi(t.dupa, id).map((c) => Math.abs(arieCuSemn(c)))).filter((a) => Math.abs(a - 1) < 1e-9);
+  assert.equal(unu.length, 1, 'pătrățelul, o dată');
 });
