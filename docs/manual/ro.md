@@ -1049,6 +1049,13 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   care se potrivește cu progresul. Dedesubt, **Piesele**, cu numele din cvs2. Cât imprimanta stă într-o pauză a fișierului,
   placa spune pauza și nota ei. Fișierele trimise din cvs2 se țin în browser (ultimele 5), ca să li se poată desena
   straturile; pentru altele, placa arată doar piesele, duza și numărul stratului.
+- **Anularea unei piese** (doar ce are imprimanta legată; azi familia K1), cât imprimă sau stă în pauză: **Anulează…** lângă
+  o piesă din listă (sau un clic pe ea, pe placă) deschide confirmarea: **Anulează piesa** sau **Renunță**. Restul pieselor
+  merg mai departe, iar piesa anulată nu se mai reia. Rândul piesei arată „→ se anulează · așteaptă imprimanta” până
+  imprimanta o trece printre cele anulate; fără ea în 6 s, „imprimanta n-a confirmat”. K1 nu anulează piesa la care lucrează
+  chiar atunci: cererea rămâne la vedere, cu **Renunță**, și se retrimite până o primește imprimanta, cel mult 2 minute.
+  Ultima piesă rămasă n-are buton: pentru ea, Oprește. La imprimantă ajunge doar un nume din lista ei, din litere, cifre,
+  _ . -; nimic scris de mână.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.

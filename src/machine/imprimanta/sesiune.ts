@@ -16,8 +16,8 @@
 import { permisiuneRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from '../reteaLocala.ts';
 import { CREALITY_K1 } from './creality.ts';
 import {
-  aplica, comandaPermisa, esteLibera, IMPRIMANTA_NECUNOSCUTA, tintaDe, type ComandaImprimanta, type DriverText, type FisierImprimanta,
-  type Imprimanta, type Pas,
+  aplica, comandaPermisa, esteLibera, IMPRIMANTA_NECUNOSCUTA, piesaAnulabila, sePoateRegla, tintaDe, type ComandaImprimanta, type DriverText,
+  type FisierImprimanta, type Imprimanta, type Pas,
 } from './driver.ts';
 
 /** Ce folosim dintr-un WebSocket (probele îl înlocuiesc): doar cadre text. */
@@ -76,7 +76,15 @@ export type StareImprimanta = {
    * două numărători (3, 8, 3, 4, 10, 5, ADR 0193), deci fereastra o alege pe cea care se potrivește (`stratViu.ts`), felia 3.6q.
    */
   readonly straturiRecente: readonly { readonly v: number; readonly la: number }[];
+  /** Anulările cerute încă neconfirmate de imprimantă, și cele expirate, cât fereastra le spune (felia 3.6r). */
+  readonly anulari: readonly AnulareCeruta[];
 };
+
+/**
+ * O anulare cerută (felia 3.6r, ADR 0193 §C.13–14): piesa, când a cerut-o omul, dacă imprimanta a fost văzută lucrând chiar la
+ * ea (K1 o refuză atunci) și, după termen, când a expirat („imprimanta n-a confirmat”).
+ */
+export type AnulareCeruta = { readonly nume: string; readonly la: number; readonly acum: boolean; readonly esuataLa: number | null };
 
 /** Cât așteaptă primul cadru al imprimantei după deschidere: o altă aplicație pe port nu răspunde ca ea. */
 export const TIMP_PRIMUL_CADRU_MS = 6000;
@@ -102,10 +110,19 @@ const DESCHIS = 1;
 /** Cât de departe în urmă țin valorile stratului (K1C le trimite la ~3 s) și câte (felia 3.6q). */
 export const TIMP_STRATURI_MS = 15_000;
 export const MAX_STRATURI_RECENTE = 8;
+/**
+ * Anularea unei piese (felia 3.6r): se retrimite la `PAS_ANULARE_MS` până imprimanta o trece printre cele anulate; termenul,
+ * 6 s pentru o piesă la care imprimanta nu lucrează (ca o comandă de la 3.6o) și 2 minute pentru cea de acum (răspunsul 3a);
+ * apoi „n-a confirmat”, spus încă `NOTA_ANULARE_MS`.
+ */
+export const PAS_ANULARE_MS = 3000;
+export const TERMEN_ANULARE_MS = 6000;
+export const TERMEN_ANULARE_ACUM_MS = 120_000;
+export const NOTA_ANULARE_MS = 8000;
 
 export const STARE_INITIALA: StareImprimanta = {
   legatura: 'deconectat', adresa: null, driver: CREALITY_K1, imprimanta: IMPRIMANTA_NECUNOSCUTA, fisiere: null, motiv: null,
-  incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null, straturiRecente: [],
+  incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null, straturiRecente: [], anulari: [],
 };
 
 export type RezultatLegatura = { readonly ok: true } | { readonly ok: false; readonly motiv: MotivImprimanta };
@@ -133,6 +150,8 @@ export class SesiuneImprimanta {
   private racireNume: string | null = null;
   private racireCalda = false;
   private ceasRacire: unknown = null;
+  /** Pasul anulărilor cerute (felia 3.6r), cât e una. */
+  private ceasAnulari: unknown = null;
 
   constructor(opt: { readonly ceas?: CeasImprimanta; readonly fabrica?: FabricaWsText; readonly permisiune?: () => Promise<string | null> } = {}) {
     this.ceas = opt.ceas ?? CEAS_BROWSER;
@@ -162,7 +181,7 @@ export class SesiuneImprimanta {
   deconecteaza(): void {
     this.opreste();
     this.dezarmeaza('disconnected');
-    this.pune({ ...this.s, legatura: 'deconectat', motiv: null, incercari: 0, pierdutaLa: null });
+    this.pune({ ...this.s, legatura: 'deconectat', motiv: null, incercari: 0, pierdutaLa: null, anulari: [] });
   }
 
   /**
@@ -180,6 +199,38 @@ export class SesiuneImprimanta {
     if (c.fel === 'porneste' && d.inchideDupaPornire) this.pornitLa = this.ceas.acum();
     if (c.fel === 'tinta' && c.grade > 0 && esteLibera(lucrare)) this.armeaza();
     return true;
+  }
+
+  /**
+   * Anulează o piesă (felia 3.6r, după confirmarea omului): doar cât imprimă sau stă în pauză, doar una din lista imprimantei,
+   * încă neanulată, nu ultima rămasă, cu un nume sigur (`piesaAnulabila`). Comanda pleacă pe loc, apoi la `PAS_ANULARE_MS`, până
+   * imprimanta o trece printre cele anulate sau trece termenul (K1 refuză piesa la care lucrează: atunci se așteaptă să treacă la
+   * alta, cel mult 2 minute). False dacă n-a plecat.
+   */
+  anuleazaPiesa(nume: string): boolean {
+    const i = this.s.imprimanta;
+    const c: ComandaImprimanta = { fel: 'anuleazaPiesa', nume };
+    if (this.s.legatura !== 'conectat' || !comandaPermisa(c, this.s.driver.lucrare(i)) || piesaAnulabila(i, nume) !== null) return false;
+    const sus = nume.toUpperCase();
+    if (this.s.anulari.some((a) => a.esuataLa === null && a.nume.toUpperCase() === sus)) return false;
+    const pasi = this.s.driver.codifica(c, i);
+    const p = pasi?.length === 1 ? pasi[0] : undefined;
+    if (p === undefined || !('trimite' in p) || !this.trimiteComanda(p.trimite)) return false;
+    const acum = i.piesaAcum !== null && i.piesaAcum.toUpperCase() === sus;
+    const altele = this.s.anulari.filter((a) => a.nume.toUpperCase() !== sus);
+    this.pune({ ...this.s, anulari: [...altele, { nume, la: this.ceas.acum(), acum, esuataLa: null }] });
+    this.armeazaAnulari();
+    return true;
+  }
+
+  /** Omul renunță la o anulare cerută (încă neconfirmată): nu se mai retrimite. Una deja primită de imprimantă rămâne. */
+  renuntaLaAnulare(nume: string): void {
+    const sus = nume.toUpperCase();
+    const raman = this.s.anulari.filter((a) => a.nume.toUpperCase() !== sus);
+    if (raman.length === this.s.anulari.length) return;
+    this.adaugaJurnal('stare', `exclude ${nume} withdrawn`);
+    this.pune({ ...this.s, anulari: raman });
+    if (raman.length === 0) this.opresteAnulari();
   }
 
   pauza(): boolean { return this.comanda({ fel: 'pauza' }); }
@@ -244,6 +295,47 @@ export class SesiuneImprimanta {
       return true;
     };
     return de(0);
+  }
+
+  private armeazaAnulari(): void {
+    if (this.ceasAnulari === null) this.ceasAnulari = this.ceas.setTimeout(() => { this.ceasAnulari = null; this.pasAnulari(true); }, PAS_ANULARE_MS);
+  }
+
+  private opresteAnulari(): void {
+    if (this.ceasAnulari !== null) { this.ceas.clearTimeout(this.ceasAnulari); this.ceasAnulari = null; }
+  }
+
+  /**
+   * Anulările cerute, față de starea de acum: cele trecute de imprimantă printre anulate ies (confirmate); piesa văzută ca cea de
+   * acum își primește termenul lung; la termen, „n-a confirmat” (`esuataLa`), spus apoi `NOTA_ANULARE_MS`; o lucrare încheiată le
+   * scoate pe toate. `retrimite`: la pas, comanda pleacă din nou (doar cu legătura vie).
+   */
+  private pasAnulari(retrimite: boolean): void {
+    const i = this.s.imprimanta;
+    const acum = this.ceas.acum();
+    const anulate = new Set((i.anulate ?? []).map((x) => x.toUpperCase()));
+    const deAcum = i.piesaAcum?.toUpperCase() ?? null;
+    const lucreaza = sePoateRegla(this.s.driver.lucrare(i));
+    const noi: AnulareCeruta[] = [];
+    for (const a of this.s.anulari) {
+      const sus = a.nume.toUpperCase();
+      if (a.esuataLa !== null) { if (acum - a.esuataLa < NOTA_ANULARE_MS && lucreaza) noi.push(a); continue; }
+      if (anulate.has(sus) || !lucreaza) continue;
+      const x = a.acum || deAcum === sus ? (a.acum ? a : { ...a, acum: true }) : a;
+      if (acum - x.la >= (x.acum ? TERMEN_ANULARE_ACUM_MS : TERMEN_ANULARE_MS)) {
+        this.adaugaJurnal('stare', `exclude ${x.nume} not confirmed`);
+        noi.push({ ...x, esuataLa: acum });
+        continue;
+      }
+      noi.push(x);
+      if (retrimite && this.s.legatura === 'conectat') {
+        const p = this.s.driver.codifica({ fel: 'anuleazaPiesa', nume: x.nume }, i)?.[0];
+        if (p !== undefined && 'trimite' in p) this.trimite(p.trimite);
+      }
+    }
+    if (noi.length !== this.s.anulari.length || noi.some((x, k) => x !== this.s.anulari[k])) this.pune({ ...this.s, anulari: noi });
+    if (noi.length > 0) this.armeazaAnulari();
+    else this.opresteAnulari();
   }
 
   /** Oprește comanda în pași de acum (dacă e una), cu o linie în jurnal. */
@@ -365,6 +457,7 @@ export class SesiuneImprimanta {
     this.dorita = false;
     this.generatie++;
     this.opresteCeasurile();
+    this.opresteAnulari();
     const ws = this.ws;
     this.ws = null;
     if (ws !== null) {
@@ -456,6 +549,8 @@ export class SesiuneImprimanta {
         });
       }
       if (schimbari) this.verificaRacire();
+      // O anulare cerută se confirmă cu primul cadru care o arată (nu abia la pasul următor).
+      if (schimbari && this.s.anulari.length > 0) this.pasAnulari(false);
       if (raspunde) this.pazeste(ws);
     };
     ws.onclose = (e) => {

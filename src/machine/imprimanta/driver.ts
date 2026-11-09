@@ -122,17 +122,39 @@ export type ComandaImprimanta =
   | { readonly fel: 'viteza'; readonly procent: number }
   | { readonly fel: 'debit'; readonly procent: number }
   | { readonly fel: 'tinta'; readonly incalzitor: Incalzitor; readonly grade: number }
-  | { readonly fel: 'homing' };
+  | { readonly fel: 'homing' }
+  /** Felia 3.6r (ADR 0193 §C): o singură piesă de pe placă nu se mai imprimă, iar restul merg mai departe. */
+  | { readonly fel: 'anuleazaPiesa'; readonly nume: string };
 
 /**
  * Ce comenzi noi au rost în starea lucrării (sesiunea le refuză pe celelalte): homing-ul, doar cu imprimanta liberă (ADR 0192
- * §D.17); viteza și debitul, doar cât imprimă sau stă în pauză. Pauza, reluarea, oprirea și pornirea le judecă fereastra, ca în
- * 3.6g; lumina, ventilatoarele și țintele se pot schimba oricând (ca de pe ecranul imprimantei).
+ * §D.17); viteza, debitul și anularea unei piese, doar cât imprimă sau stă în pauză. Pauza, reluarea, oprirea și pornirea le
+ * judecă fereastra, ca în 3.6g; lumina, ventilatoarele și țintele se pot schimba oricând (ca de pe ecranul imprimantei).
  */
 export function comandaPermisa(c: ComandaImprimanta, s: StareLucrare): boolean {
   if (c.fel === 'homing') return esteLibera(s);
-  if (c.fel === 'viteza' || c.fel === 'debit') return sePoateRegla(s);
+  if (c.fel === 'viteza' || c.fel === 'debit' || c.fel === 'anuleazaPiesa') return sePoateRegla(s);
   return true;
+}
+
+/** De ce nu se poate anula o piesă (felia 3.6r): nu e pe placă, e deja anulată, e ultima rămasă, numele ei nu se poate trimite. */
+export type MotivAnulare = 'necunoscuta' | 'anulata' | 'ultima' | 'nume';
+
+/** Numele unei piese care poate pleca într-o comandă: litere, cifre, `_`, `.` și `-` (ca OrcaSlicer și cvs2), cel mult 100. */
+export const RE_NUME_PIESA = /^[A-Za-z0-9_.-]{1,100}$/;
+
+/**
+ * Se poate anula piesa (ADR 0193 §C.11–12)? Doar una din lista imprimantei, încă neanulată, nu ultima rămasă (pentru ea:
+ * Oprește) și doar cu un nume sigur; null: da. Numele se compară fără majuscule (Klipper le scrie cu).
+ */
+export function piesaAnulabila(i: Imprimanta, nume: string): MotivAnulare | null {
+  const sus = nume.toUpperCase();
+  const piese = i.piese ?? [];
+  if (!piese.some((p) => p.nume.toUpperCase() === sus)) return 'necunoscuta';
+  const anulate = new Set((i.anulate ?? []).map((x) => x.toUpperCase()));
+  if (anulate.has(sus)) return 'anulata';
+  if (piese.filter((p) => !anulate.has(p.nume.toUpperCase())).length <= 1) return 'ultima';
+  return RE_NUME_PIESA.test(nume) ? null : 'nume';
 }
 
 /** Un interval de întregi, cu capetele. */
@@ -154,6 +176,8 @@ export type Capabilitati = {
   /** Lista fișierelor din imprimantă și trimiterea unui fișier în ea. */
   readonly fisiere: boolean;
   readonly trimitere: boolean;
+  /** Anularea unei singure piese de pe placă, cât imprimă (felia 3.6r). */
+  readonly anulare: boolean;
 };
 
 /** Ținta raportată a unui încălzitor. */

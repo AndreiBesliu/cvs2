@@ -3,14 +3,17 @@
  * „Din desen…” (grila la 10 mm, fața imprimantei jos), cu piesele, piesa de acum, cele anulate, duza (doar cât imprimă și doar
  * în pat) și stratul de acum peste cel de dedesubt (căile vin din harta fișierului, pentru fișierele trimise din cvs2); lângă
  * ea, bara straturilor (cele făcute, stratul de acum, pauzele fișierului) și lista pieselor; cât imprimanta stă într-o pauză a
- * fișierului, nota ei.
+ * fișierului, nota ei. Din felia 3.6r (ADR 0193 §C): **Anulează…** pe fiecare piesă din listă (și un clic pe ea, pe placă)
+ * deschide confirmarea; cererea în curs se vede pe rândul piesei, iar pentru piesa de acum, cu **Renunță**. Ultima piesă
+ * rămasă n-are buton (pentru ea, Oprește).
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { limba, t } from '../i18n/t.ts';
-import type { Imprimanta, StareLucrare } from '../machine/imprimanta/driver.ts';
+import { piesaAnulabila, type Imprimanta, type StareLucrare } from '../machine/imprimanta/driver.ts';
 import type { HartaGcode, StratHarta } from '../machine/imprimanta/harta.ts';
+import type { AnulareCeruta } from '../machine/imprimanta/sesiune.ts';
 import type { StratViu } from '../machine/imprimanta/stratViu.ts';
-import { etichetePiese, pauzaDeAcum } from './placaCalcul.ts';
+import { etichetePiese, inContur, pauzaDeAcum } from './placaCalcul.ts';
 
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
 const mm = (v: number): string => v.toLocaleString(loc(), { maximumFractionDigits: 2 });
@@ -42,11 +45,16 @@ function cai(c: CanvasRenderingContext2D, s: StratHarta, X: (x: number) => numbe
   c.globalAlpha = 1;
 }
 
-export function Placa({ i, stare, harta, etichete, viu, pat }: {
+export function Placa({ i, stare, harta, etichete, viu, pat, anuleaza, anulari, retrage }: {
   readonly i: Imprimanta; readonly stare: StareLucrare; readonly harta: HartaGcode | null;
   readonly etichete: Readonly<Record<string, string>> | null; readonly viu: StratViu; readonly pat: readonly [number, number, number];
+  /** Felia 3.6r: deschide confirmarea anulării (null: imprimanta n-o are sau legătura lipsește); cererile; retragerea uneia. */
+  readonly anuleaza: ((nume: string, eticheta: string) => void) | null; readonly anulari: readonly AnulareCeruta[];
+  readonly retrage: (nume: string) => void;
 }): ReactNode {
   const ref = useRef<HTMLCanvasElement | null>(null);
+  // Cutia desenată (mm → pixelii pânzei), pentru clicul pe o piesă.
+  const cutie = useRef<{ readonly x0: number; readonly y0: number; readonly s: number; readonly ox: number; readonly oy: number } | null>(null);
   const [latime, setLatime] = useState(0);
   useEffect(() => {
     const cv = ref.current;
@@ -67,6 +75,19 @@ export function Placa({ i, stare, harta, etichete, viu, pat }: {
   const poz = i.pozitie;
   const duza = stare === 'imprima' && poz !== null && poz.x >= 0 && poz.y >= 0 && poz.x <= pat[0] && poz.y <= pat[1] ? poz : null;
   const pauza = stare === 'pauza' && harta !== null ? pauzaDeAcum(harta.pauze, k) : null;
+  // Anularea (3.6r): cererea în curs a fiecărei piese și piesele care se pot anula acum.
+  const cerere = (p: PiesaArata): AnulareCeruta | undefined => anulari.find((a) => a.nume.toUpperCase() === p.nume);
+  const sePoate = (p: PiesaArata): boolean => anuleaza !== null && piesaAnulabila(i, p.nume) === null && cerere(p)?.esuataLa !== null;
+  const ramase = piese.filter((p) => !anulate.has(p.nume)).length;
+  const clic = (e: MouseEvent<HTMLCanvasElement>): void => {
+    const cv = ref.current, b = cutie.current;
+    if (!cv || !b || anuleaza === null) return;
+    const r = cv.getBoundingClientRect();
+    const x = b.x0 + (((e.clientX - r.left) * cv.width) / r.width - b.ox) / b.s;
+    const y = b.y0 + (cv.height - ((e.clientY - r.top) * cv.height) / r.height - b.oy) / b.s;
+    const p = piese.find((q) => q.contur.length > 2 && inContur(q.contur, x, y));
+    if (p !== undefined && sePoate(p)) anuleaza(p.nume, p.eticheta);
+  };
 
   useEffect(() => {
     const cv = ref.current;
@@ -89,6 +110,7 @@ export function Placa({ i, stare, harta, etichete, viu, pat }: {
     const s = Math.min(cv.width / (x1 - x0), cv.height / (y1 - y0));
     const ox = (cv.width - (x1 - x0) * s) / 2, oy = (cv.height - (y1 - y0) * s) / 2;
     const X = (x: number): number => ox + (x - x0) * s, Y = (y: number): number => cv.height - (oy + (y - y0) * s);
+    cutie.current = { x0, y0, s, ox, oy };
     c.fillStyle = culoare('--plc-pat', '#22262c');
     c.fillRect(0, 0, cv.width, cv.height);
     c.strokeStyle = culoare('--plc-grila', '#2f343b'); c.lineWidth = Math.max(1, dpr * 0.5);
@@ -160,7 +182,8 @@ export function Placa({ i, stare, harta, etichete, viu, pat }: {
         </div>
       )}
       <div className="imprimanta-placa-corp">
-        <canvas ref={ref} className="imprimanta-placa-pat" role="img" aria-label={t('imprimanta.placa.aria')} data-testid="imprimanta-placa-pat" />
+        <canvas ref={ref} className="imprimanta-placa-pat" role="img" aria-label={t('imprimanta.placa.aria')} data-testid="imprimanta-placa-pat"
+          data-anulare={piese.some(sePoate) ? 'da' : undefined} onClick={clic} />
         {n !== null && n > 0 && (
           <div className="imprimanta-placa-bara" aria-label={k === null ? t('imprimanta.placa.bara-fara', { n }) : t('imprimanta.placa.bara', { k, n })} role="img">
             <i className="imprimanta-placa-facut" style={{ ['--k' as string]: String(facute) }} />
@@ -185,14 +208,35 @@ export function Placa({ i, stare, harta, etichete, viu, pat }: {
           <ul className="imprimanta-placa-piese" data-testid="imprimanta-placa-piese">
             {piese.map((p) => {
               const eAcum = acum !== null && p.nume === acum, anulata = anulate.has(p.nume);
+              const c = anulata ? undefined : cerere(p);
+              const asteapta = c !== undefined && c.esuataLa === null;
+              // De ce nu se poate (ADR 0193 §C.12): doar numele nesigur se spune; ultima piesă n-are buton.
+              const motiv = anulata || asteapta || anuleaza === null ? null : piesaAnulabila(i, p.nume);
               return (
-                <li key={p.nume} data-piesa={p.nume} data-acum={eAcum ? 'da' : undefined} data-anulata={anulata ? 'da' : undefined}>
+                <li key={p.nume} data-piesa={p.nume} data-acum={eAcum ? 'da' : undefined} data-anulata={anulata ? 'da' : undefined}
+                  data-cerere={c === undefined ? undefined : asteapta ? 'asteapta' : 'esuata'}>
                   <span className="imprimanta-placa-piesa">{p.eticheta}</span>
                   {anulata ? <small>{t('imprimanta.placa.piesa.anulata')}</small> : eAcum ? <small>{t('imprimanta.placa.piesa.acum')}</small> : null}
+                  {asteapta && (
+                    <span className="imprimanta-placa-cerere">
+                      <span className="imprimanta-asteapta">→ {t(c.acum ? 'imprimanta.anulare.cand-trece' : 'imprimanta.anulare.asteapta')}</span>
+                      {c.acum && <button type="button" data-imprimanta="anulare-retrage" onClick={() => { retrage(c.nume); }}>{t('imprimanta.anulare.retrage')}</button>}
+                      {c.acum && <small>{t('imprimanta.anulare.acum-ajutor')}</small>}
+                    </span>
+                  )}
+                  {c !== undefined && !asteapta && <span className="imprimanta-neconfirmat">{t('imprimanta.cerere.esuata')}</span>}
+                  {anuleaza !== null && (motiv === null || motiv === 'nume') && !anulata && !asteapta && (
+                    <button type="button" className="imprimanta-placa-anuleaza" data-imprimanta="anuleaza-piesa" disabled={motiv !== null}
+                      aria-label={t('imprimanta.anulare.aria', { piesa: p.eticheta })} onClick={() => { anuleaza(p.nume, p.eticheta); }}>
+                      {t('imprimanta.anulare.buton')}
+                    </button>
+                  )}
+                  {motiv === 'nume' && <small>{t('imprimanta.anulare.nume')}</small>}
                 </li>
               );
             })}
           </ul>
+          {anuleaza !== null && piese.length > 1 && ramase === 1 && <p className="imprimanta-ajutor" data-testid="imprimanta-placa-ultima">{t('imprimanta.anulare.ultima')}</p>}
         </>
       )}
     </div>

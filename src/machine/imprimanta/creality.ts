@@ -12,7 +12,7 @@
  * (lumina, ventilatoarele, viteza, debitul, țintele, homing-ul), cu numele din integrarea Home Assistant.
  */
 import {
-  intregIn, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
+  intregIn, RE_NUME_PIESA, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
   type Interval, type IdVentilator, type Pas, type PiesaPlaca, type StareLucrare,
 } from './driver.ts';
 
@@ -308,6 +308,8 @@ export function capabilitatiK1(i: Imprimanta): Capabilitati {
     homing: true,
     fisiere: true,
     trimitere: true,
+    // Anularea unei piese (felia 3.6r): `EXCLUDE_OBJECT` al lui Klipper, prin `gcodeCmd`, cu numele din lista imprimantei.
+    anulare: true,
   };
 }
 
@@ -316,7 +318,8 @@ const set = (params: Readonly<Record<string, unknown>>): readonly Pas[] => [{ tr
 /**
  * O comandă comună în protocolul K1, ca pași; null: refuzată (un număr care nu e întreg sau iese din interval, un ventilator
  * necunoscut, o cale în afara directorului G-code). Ventilatoarele trec prin `gcodeCmd`, dar textul îl face doar driverul, dintr-un
- * canal și un procent verificate (ADR 0192 §B.8): nimic scris de om nu ajunge acolo.
+ * canal și un procent verificate (ADR 0192 §B.8): nimic scris de om nu ajunge acolo. La fel anularea unei piese (felia 3.6r, ADR
+ * 0193 §C.12, răspunsul 2a): `EXCLUDE_OBJECT NAME=` și un nume doar din litere, cifre, `_`, `.` și `-`; altul se refuză.
  */
 export function comandaK1(c: ComandaImprimanta, i: Imprimanta): readonly Pas[] | null {
   switch (c.fel) {
@@ -349,6 +352,7 @@ export function comandaK1(c: ComandaImprimanta, i: Imprimanta): readonly Pas[] |
       { gata: (x) => x.ocupata !== true, minMs: HOMING_MIN_MS, maxMs: HOMING_MAX_MS },
       { trimite: cerere('set', { autohome: 'Z' }) },
     ];
+    case 'anuleazaPiesa': return RE_NUME_PIESA.test(c.nume) ? set({ gcodeCmd: `EXCLUDE_OBJECT NAME=${c.nume}` }) : null;
     default: return null;
   }
 }

@@ -954,6 +954,19 @@
   color: var(--rosu);
 }
 
+/* Felia 3.6r: anularea, din listă și din placă; cererea în curs ia tot rândul piesei. */
+.imprimanta-placa-pat[data-anulare='da'] {
+  cursor: pointer;
+}
+
+.imprimanta-placa-cerere {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+}
+
 .imprimanta-din-desen {
   display: grid;
   gap: var(--sp-1);

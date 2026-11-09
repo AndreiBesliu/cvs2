@@ -27,7 +27,8 @@ import { limba, t } from '../i18n/t.ts';
 import { adresaRetea, type AdresaRetea } from '../machine/reteaLocala.ts';
 import { numeDin } from '../machine/imprimanta/creality.ts';
 import {
-  esteLibera, intregIn, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRegla, sePoateRelua, type Capabilitati, type FisierImprimanta,
+  esteLibera, intregIn, piesaAnulabila, sePoateOpri, sePoatePauza, sePoatePorni, sePoateRegla, sePoateRelua, type Capabilitati,
+  type FisierImprimanta,
   type IdVentilator, type Imprimanta as ImprimantaCitita, type Incalzitor, type Interval, type StareLucrare,
 } from '../machine/imprimanta/driver.ts';
 import { DRIVER_IMPLICIT, DRIVERE, driverDupaId, esteIdDriver } from '../machine/imprimanta/drivere.ts';
@@ -349,11 +350,12 @@ function useHartaLucrarii(st: StareImprimanta, stare: StareLucrare): { readonly 
   return cheie !== null && hartaTinuta?.cheie === cheie ? hartaTinuta : { harta: null, etichete: null };
 }
 
-/** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării și homing-ul (3.6o). */
+/** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării, homing-ul (3.6o) și anularea unei piese (3.6r). */
 type Confirmare =
   | { readonly fel: 'pornire'; readonly fisier: FisierImprimanta; readonly pauze?: readonly PauzaFisier[] }
   | { readonly fel: 'oprire' }
-  | { readonly fel: 'homing' };
+  | { readonly fel: 'homing' }
+  | { readonly fel: 'anulare'; readonly nume: string; readonly eticheta: string };
 
 function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
   readonly st: StareImprimanta; readonly dinDesen: ((el: HTMLElement) => void) | null;
@@ -386,7 +388,11 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
   // ca să nu reapară singură când legătura revine.
   const rost = confirmare === null || !legata ? false
     : confirmare.fel === 'oprire' ? sePoateOpri(stare)
-      : confirmare.fel === 'homing' ? esteLibera(stare) && st.secventa === null && i.ocupata !== true : sePoatePorni(stare);
+      : confirmare.fel === 'homing' ? esteLibera(stare) && st.secventa === null && i.ocupata !== true
+        // Anularea (3.6r): cât piesa se mai poate anula și nu e deja cerută.
+        : confirmare.fel === 'anulare' ? cap.anulare && sePoateRegla(stare) && piesaAnulabila(i, confirmare.nume) === null
+          && !st.anulari.some((a) => a.esuataLa === null && a.nume.toUpperCase() === confirmare.nume.toUpperCase())
+          : sePoatePorni(stare);
   const afisata = rost ? confirmare : null;
   useEffect(() => { if (confirmare !== null && !rost) setConfirmare(null); }, [confirmare, rost]);
   // Fișierul ales pentru trimitere (3.6h); `k` repornește dialogul la fiecare alegere.
@@ -458,10 +464,12 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
       )}
       {st.legatura === 'se-leaga' && <p className="imprimanta-nota" role="status" data-testid="imprimanta-reface">{t('imprimanta.reface')}</p>}
       {afisata !== null && (
-        <DialogConfirmare c={afisata} renunta={() => { setConfirmare(null); }}
+        <DialogConfirmare key={afisata.fel === 'anulare' ? `anulare:${afisata.nume}` : afisata.fel} c={afisata} piesaAcum={i.piesaAcum}
+          renunta={() => { setConfirmare(null); }}
           confirma={() => {
             if (afisata.fel === 'oprire') { if (sesiune.opresteImprimarea()) setOprireCeruta(true); }
             else if (afisata.fel === 'homing') sesiune.comanda({ fel: 'homing' });
+            else if (afisata.fel === 'anulare') sesiune.anuleazaPiesa(afisata.nume);
             else sesiune.porneste(afisata.fisier);
             setConfirmare(null);
           }} />
@@ -493,7 +501,11 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen }: {
                       <><dt>{t('imprimanta.strat')}</dt><dd data-testid="imprimanta-strat">{t('imprimanta.strat.din', { strat: viu.strat, straturi: totalStraturi })}</dd></>
                     )}
                   </dl>
-                  {cuPlaca && <Placa i={i} stare={stare} harta={harta} etichete={etichete} viu={viu} pat={patPentru(i.model)} />}
+                  {cuPlaca && (
+                    <Placa i={i} stare={stare} harta={harta} etichete={etichete} viu={viu} pat={patPentru(i.model)} anulari={st.anulari}
+                      anuleaza={cap.anulare && legata ? (nume, eticheta) => { setConfirmare({ fel: 'anulare', nume, eticheta }); } : null}
+                      retrage={(nume) => { sesiune.renuntaLaAnulare(nume); }} />
+                  )}
                 </>
               )}
             {/* Viteza și debitul țin de lucrarea de acum: doar cât imprimă sau stă în pauză (ADR 0192 §B.9). */}
@@ -1105,7 +1117,9 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
   );
 }
 
-function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; readonly confirma: () => void; readonly renunta: () => void }): ReactNode {
+function DialogConfirmare({ c, piesaAcum, confirma, renunta }: {
+  readonly c: Confirmare; readonly piesaAcum: string | null; readonly confirma: () => void; readonly renunta: () => void;
+}): ReactNode {
   const [patGol, setPatGol] = useState(false);
   const primul = useRef<HTMLElement | null>(null);
   useEffect(() => { primul.current?.focus(); }, []);
@@ -1121,6 +1135,21 @@ function DialogConfirmare({ c, confirma, renunta }: { readonly c: Confirmare; re
         <div className="imprimanta-butoane">
           <button type="button" className="imprimanta-opreste plin" data-imprimanta="oprire-confirma" onClick={confirma}>{t('imprimanta.oprire.confirma')}</button>
           <button type="button" data-imprimanta="oprire-renunta" ref={(b) => { primul.current = b; }} onClick={renunta}>{t('imprimanta.oprire.renunta')}</button>
+        </div>
+      </div>
+    );
+  }
+  if (c.fel === 'anulare') {
+    // Anularea unei piese (ADR 0193 §C.11): restul merg mai departe; pentru piesa de acum, cererea așteaptă (răspunsul 3a).
+    return (
+      <div className="imprimanta-dialog" role="alertdialog" aria-labelledby="imprimanta-anulare-titlu" aria-describedby="imprimanta-anulare-text"
+        data-testid="imprimanta-anulare" onKeyDown={tasta}>
+        <h3 id="imprimanta-anulare-titlu">{t('imprimanta.anulare.titlu', { piesa: c.eticheta })}</h3>
+        <p id="imprimanta-anulare-text">{t('imprimanta.anulare.text')}</p>
+        {piesaAcum?.toUpperCase() === c.nume.toUpperCase() && <p className="imprimanta-ajutor" data-testid="imprimanta-anulare-acum">{t('imprimanta.anulare.acum')}</p>}
+        <div className="imprimanta-butoane">
+          <button type="button" className="imprimanta-opreste plin" data-imprimanta="anulare-confirma" onClick={confirma}>{t('imprimanta.anulare.confirma')}</button>
+          <button type="button" data-imprimanta="anulare-renunta" ref={(b) => { primul.current = b; }} onClick={renunta}>{t('imprimanta.anulare.renunta')}</button>
         </div>
       </div>
     );

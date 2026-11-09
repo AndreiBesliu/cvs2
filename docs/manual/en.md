@@ -1085,6 +1085,13 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   names. While the printer waits in a pause of the file, the plate shows that pause and its note. Files sent from cvs2
   are kept in the browser (the last 5) so their layers can be drawn; for other files, the plate shows only the parts, the
   nozzle and the layer number.
+- **Cancelling one part** (only what the connected printer has; today the K1 family), while printing or paused:
+  **Cancel…** next to a part in the list (or a click on it, on the plate) opens the confirmation: **Cancel the part** or
+  **Keep it**. The other parts carry on, and a cancelled part is not printed again. The part’s row shows “→ being cancelled ·
+  waiting for the printer” until the printer lists it as cancelled; without that within 6 s, “the printer did not confirm”.
+  K1 does not cancel the part it is working on at that moment: the request stays in view, with **Withdraw**, and is resent
+  until the printer takes it, at most 2 minutes. The last part left has no button: for it, use Stop. Only a name from the
+  printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.

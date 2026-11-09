@@ -5,8 +5,9 @@ import {
   CERERE_FISIERE, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
-  MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, PAS_ASTEPTARE_MS, PAUZE_RECONECTARE_MS, RACIRE_IMPLICITA_MIN, SesiuneImprimanta,
-  TIMP_PRIMUL_CADRU_MS, TIMP_STRATURI_MS, TIMP_TACERE_MS, type CeasImprimanta, type WebSocketText,
+  MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, NOTA_ANULARE_MS, PAS_ANULARE_MS, PAS_ASTEPTARE_MS, PAUZE_RECONECTARE_MS,
+  RACIRE_IMPLICITA_MIN, SesiuneImprimanta, TERMEN_ANULARE_ACUM_MS, TERMEN_ANULARE_MS, TIMP_PRIMUL_CADRU_MS, TIMP_STRATURI_MS, TIMP_TACERE_MS,
+  type CeasImprimanta, type WebSocketText,
 } from '../../src/machine/imprimanta/sesiune.ts';
 
 /*
@@ -577,4 +578,88 @@ test('3.6q: valorile recente ale stratului, cu momentul lor: ultimele 15 s, cel 
   // O nouă legare pornește de la zero.
   void s.conecteaza(ADRESA);
   assert.deepEqual(s.stare().straturiRecente, []);
+});
+
+/** O lucrare în curs, cu piesele date și piesa de acum, pe o sesiune legată. */
+async function cuPiese(piese: readonly string[], acum: string) {
+  const x = sesiune();
+  const r = x.s.conecteaza(ADRESA);
+  const w = x.ultimul();
+  w.deschide();
+  w.primeste(STARE);
+  assert.deepEqual(await r, { ok: true });
+  w.primeste(JSON.stringify({ objects: JSON.stringify(piese.map((name) => ({ name }))), excluded_objects: '[]', current_object: acum }));
+  const anulari = (): readonly string[] => w.trimise.filter((t) => t.includes('EXCLUDE_OBJECT'));
+  // Timpul trece cu legătura vie (paza de tăcere e la 20 s).
+  return { ...x, w, anulari, trece: (ms: number): void => treceViu(x, ms) };
+}
+const EXCLUDE = (n: string): string => `{"method":"set","params":{"gcodeCmd":"EXCLUDE_OBJECT NAME=${n}"}}`;
+
+test('3.6r: anularea unei piese: pe loc, apoi la 3 s, până imprimanta o trece printre anulate; una la care nu lucrează, cel mult 6 s', async () => {
+  const { s, trece, w, anulari } = await cuPiese(['A', 'B', 'C'], 'B');
+  // A (imprimanta lucrează la B): pleacă pe loc, din nou la 3 s; la 6 s, „n-a confirmat”, spusă încă 8 s.
+  assert.equal(s.anuleazaPiesa('A'), true);
+  assert.deepEqual(anulari(), [EXCLUDE('A')]);
+  assert.deepEqual(s.stare().anulari.map((a) => [a.nume, a.acum, a.esuataLa]), [['A', false, null]]);
+  trece(PAS_ANULARE_MS);
+  assert.equal(anulari().length, 2);
+  trece(TERMEN_ANULARE_MS - PAS_ANULARE_MS);
+  assert.equal(anulari().length, 2);
+  assert.equal(s.stare().anulari[0]?.esuataLa, TERMEN_ANULARE_MS);
+  assert.ok(s.stare().jurnal.some((l) => l.text === 'exclude A not confirmed'));
+  trece(NOTA_ANULARE_MS + PAS_ANULARE_MS);
+  assert.deepEqual(s.stare().anulari, []);
+  // Din nou, iar imprimanta o trece printre anulate: confirmată cu primul cadru care o arată; nimic nu mai pleacă.
+  assert.equal(s.anuleazaPiesa('A'), true);
+  w.primeste('{"excluded_objects":"[\\"A\\"]"}');
+  assert.deepEqual(s.stare().anulari, []);
+  const n = anulari().length;
+  trece(10 * PAS_ANULARE_MS);
+  assert.equal(anulari().length, n);
+  // Refuzurile: deja anulată, necunoscută, ultima rămasă (pentru ea, Oprește), o cerere încă în curs; nimic nu pleacă.
+  assert.equal(s.anuleazaPiesa('A'), false);
+  assert.equal(s.anuleazaPiesa('Z'), false);
+  assert.equal(s.anuleazaPiesa('C'), true);
+  assert.equal(s.anuleazaPiesa('C'), false);
+  w.primeste('{"excluded_objects":"[\\"A\\",\\"C\\"]"}');
+  assert.equal(s.anuleazaPiesa('B'), false);
+  assert.equal(anulari().length, n + 1);
+});
+
+test('3.6r: piesa de acum (K1 o refuză): retrimisă cel mult 2 minute, confirmată când imprimanta trece la alta; Renunță; o lucrare încheiată sau Deconectează le scot', async () => {
+  const { s, trece, w, anulari } = await cuPiese(['A', 'B', 'C', 'D'], 'A');
+  assert.equal(s.anuleazaPiesa('A'), true);
+  assert.equal(s.stare().anulari[0]?.acum, true);
+  trece(TERMEN_ANULARE_ACUM_MS - 1);
+  assert.equal(s.stare().anulari[0]?.esuataLa, null);
+  assert.equal(anulari().length, 1 + Math.floor((TERMEN_ANULARE_ACUM_MS - 1) / PAS_ANULARE_MS));
+  trece(PAS_ANULARE_MS);
+  assert.notEqual(s.stare().anulari[0]?.esuataLa, null);
+  // O piesă văzută abia mai târziu ca cea de acum primește și ea termenul lung; imprimanta trece la alta și o anulează.
+  trece(NOTA_ANULARE_MS + PAS_ANULARE_MS);
+  assert.equal(s.anuleazaPiesa('B'), true);
+  w.primeste('{"current_object":"B"}');
+  assert.equal(s.stare().anulari[0]?.acum, true);
+  trece(TERMEN_ANULARE_MS + PAS_ANULARE_MS);
+  assert.equal(s.stare().anulari[0]?.esuataLa, null);
+  w.primeste('{"current_object":"C","excluded_objects":"[\\"B\\"]"}');
+  assert.deepEqual(s.stare().anulari, []);
+  // Renunță: nu se mai retrimite, cu o linie în jurnal.
+  assert.equal(s.anuleazaPiesa('D'), true);
+  s.renuntaLaAnulare('D');
+  assert.deepEqual(s.stare().anulari, []);
+  assert.ok(s.stare().jurnal.some((l) => l.text === 'exclude D withdrawn'));
+  const n = anulari().length;
+  trece(5 * PAS_ANULARE_MS);
+  assert.equal(anulari().length, n);
+  // O lucrare oprită scoate cererea; fără lucrare, nimic nu pleacă.
+  assert.equal(s.anuleazaPiesa('D'), true);
+  w.primeste('{"state":4}');
+  assert.deepEqual(s.stare().anulari, []);
+  assert.equal(s.anuleazaPiesa('D'), false);
+  // Deconectează le scoate pe toate.
+  w.primeste('{"state":1}');
+  assert.equal(s.anuleazaPiesa('D'), true);
+  s.deconecteaza();
+  assert.deepEqual(s.stare().anulari, []);
 });

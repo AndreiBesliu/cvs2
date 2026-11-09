@@ -1,6 +1,6 @@
 /**
- * Calculele plăcii din fereastra Imprimanta (felia 3.6q), fără React: eticheta fiecărei piese și pauza fișierului la care stă
- * imprimanta.
+ * Calculele plăcii din fereastra Imprimanta (felia 3.6q), fără React: eticheta fiecărei piese, pauza fișierului la care stă
+ * imprimanta și (felia 3.6r) piesa de sub un clic.
  */
 import type { PauzaHarta } from '../machine/imprimanta/harta.ts';
 
@@ -19,4 +19,14 @@ export function pauzaDeAcum(pauze: readonly PauzaHarta[], strat: number | null):
   let rez: PauzaHarta | null = null;
   for (const p of pauze) if (Math.abs(p.strat - strat) <= 1 && (rez === null || Math.abs(p.strat - strat) < Math.abs(rez.strat - strat))) rez = p;
   return rez;
+}
+
+/** Punctul (x, y) e în conturul dat (o piesă de pe placă, în mm): numărul trecerilor unei raze, impar. */
+export function inContur(c: readonly (readonly [number, number])[], x: number, y: number): boolean {
+  let e = false;
+  for (let a = 0, b = c.length - 1; a < c.length; b = a++) {
+    const [xa, ya] = c[a]!, [xb, yb] = c[b]!;
+    if (ya > y !== yb > y && x < ((xb - xa) * (y - ya)) / (yb - ya) + xa) e = !e;
+  }
+  return e;
 }

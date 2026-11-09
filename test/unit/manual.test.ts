@@ -254,10 +254,14 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   raceste: 'imprimanta.raceste', 'incalzeste-raceste': 'imprimanta.raceste', racire: 'imprimanta.racire.bifa',
   'racire-minute': 'imprimanta.racire.bifa', homing: 'imprimanta.homing', 'homing-pat-gol': 'imprimanta.pornire.pat-gol',
   'homing-confirma': 'imprimanta.homing.confirma', 'homing-renunta': 'imprimanta.homing.renunta',
+  // Felia 3.6r (ADR 0193 §C): anularea unei piese, din placă (`src/app/PlacaImprimanta.tsx`) și confirmarea ei.
+  'anuleaza-piesa': 'imprimanta.anulare.buton', 'anulare-confirma': 'imprimanta.anulare.confirma',
+  'anulare-renunta': 'imprimanta.anulare.renunta', 'anulare-retrage': 'imprimanta.anulare.retrage',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
-  const fereastra = citeste('src/app/PanouImprimanta.tsx'), dialog = citeste('src/app/DialogDinDesen.tsx');
+  // Din 3.6r, și placa are controale (anularea unei piese).
+  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx'), dialog = citeste('src/app/DialogDinDesen.tsx');
   assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
   assert.doesNotMatch(dialog, /data-imprimanta=\{/);
   // În dialog, câmpurile numerice primesc controlul prin `data="felie-…"` (al lui `CampNumar`).

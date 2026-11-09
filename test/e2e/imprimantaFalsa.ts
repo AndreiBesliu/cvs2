@@ -23,6 +23,10 @@ import type { AddressInfo, Socket } from 'node:net';
  *   `auxiliaryFanPct`; orice alt text e ignorat); `setFeedratePct` și `setFlowratePct`, întregi 1–200; `nozzleTempControl` și
  *   `bedTempControl` (`{num: 0, val}`), între 0 și maxime (320 și 115); `autohome` „X Y”, apoi „Z”, fiecare cu `deviceState` 7
  *   cât durează (`homingMs`), cu axele în `autohome` („X:1 Y:1 Z:0”). `ignora` face imprimanta să nu răspundă la câmpurile date.
+ * - din 3.6r (ADR 0193 §C), `gcodeCmd` `EXCLUDE_OBJECT NAME=<piesă>`, cât „imprimă” un fișier (și în pauză): o piesă din
+ *   listă, încă neanulată, intră în `excluded_objects` (listă JSON ca text, ca K1C); piesa la care lucrează acum e refuzată
+ *   (ca firmware-ul Creality, „Forbidden”), fără niciun răspuns. Ca Klipper, o piesă anulată se sare repede (fără să țină un
+ *   pas), capul nu merge acolo, iar filamentul numărat rămâne cel al fișierului.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -82,6 +86,8 @@ export interface ImprimantaFalsa {
   ignora(campuri: readonly string[]): void;
   /** Stratul adevărat al fișierului „imprimat” acum (null: niciunul), oricât de des ar sări `layer`. */
   stratAdevarat(): number | null;
+  /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
+  pas(): void;
   taie(): void;
   /**
    * Ca imprimanta owner-ului la o pornire de pe ecran (3.6i): legăturile de acum tac, fără să se închidă, iar adresa nu mai
@@ -178,6 +184,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   type Rulare = {
     readonly linii: readonly string[]; readonly marime: number; readonly pePas: number; i: number; octeti: number;
     strat: number; e: number; absE: boolean; x: number; y: number; piesa: string; alterna: boolean;
+    /** Din 3.6r: numele pieselor din fișier (mari, ca Klipper) și cele anulate. */
+    readonly piese: ReadonlySet<string>; readonly excluse: Set<string>;
   };
   let rulare: Rulare | null = null;
   const imprimaFisier = (cale: string, text: string): void => {
@@ -191,7 +199,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     const straturi = linii.filter((l) => l === ';LAYER_CHANGE').length;
     rulare = {
       linii, marime: Buffer.byteLength(text), pePas: Math.max(1, Math.ceil(linii.length / (opt.pasiFisier ?? 40))), i: 0, octeti: 0,
-      strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false,
+      strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false, piese: new Set(piese.map((p) => p.name)), excluse: new Set(),
     };
     schimba({
       state: 1, printFileName: cale, printProgress: 0, printJobTime: 0, printLeftTime: 600, TotalLayer: straturi, layer: 0, usedMaterialLength: 0,
@@ -203,11 +211,14 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   const pasFisier = (r: Rulare): void => {
     let pauza = false;
     const piesaInainte = r.piesa;
-    for (let n = 0; n < r.pePas && r.i < r.linii.length && !pauza; n++) {
+    for (let n = 0; n < r.pePas && r.i < r.linii.length && !pauza;) {
       const l = r.linii[r.i]!;
       r.i++;
       r.octeti += Buffer.byteLength(l) + 1;
       const cod = l.split(';')[0]!.trim().toUpperCase();
+      // Din 3.6r: liniile unei piese anulate trec fără să țină pasul, iar capul nu merge acolo.
+      const sarita = r.excluse.has(r.piesa);
+      if (!sarita) n++;
       if (l === ';LAYER_CHANGE') r.strat++;
       else if (/^(PAUSE|M600|M601|M0|M25)(\s|$)/.test(cod)) pauza = true;
       else if (cod.startsWith('EXCLUDE_OBJECT_START')) r.piesa = (/NAME=(\S+)/.exec(cod)?.[1] ?? '').toUpperCase();
@@ -217,8 +228,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       else if (/^G92\b/.test(cod)) { /* E pus la loc: în modul relativ nu schimbă nimic, iar fișierele cvs2 sunt relative. */ }
       else if (/^G[01]\b/.test(cod)) {
         const v = (k: string): number | null => { const m = new RegExp(`\\b${k}(-?[\\d.]+)`).exec(cod); return m ? Number(m[1]) : null; };
-        r.x = v('X') ?? r.x;
-        r.y = v('Y') ?? r.y;
+        if (!sarita) { r.x = v('X') ?? r.x; r.y = v('Y') ?? r.y; }
+        // Filamentul numărat e cel al fișierului, și pe o piesă anulată (Klipper: `print_stats.filament_used`).
         const e = v('E');
         if (e !== null && !r.absE) r.e += e;
       }
@@ -239,7 +250,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     }
   };
   let finalizare = 0;
-  const pas = setInterval(() => {
+  const unPas = (): void => {
     if (s['state'] !== 1) return;
     if (rulare !== null) { pasFisier(rulare); return; }
     const p = Number(s['printProgress']);
@@ -255,7 +266,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       finalizare = 0;
       schimba({ state: 0, printLeftTime: 0, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) });
     }
-  }, pasMs);
+  };
+  const pas = setInterval(unPas, pasMs);
 
   const server = createServer((cerere, raspuns) => {
     const url = cerere.url ?? '';
@@ -337,6 +349,16 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       const intreg = (v: unknown, min: number, max: number): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null);
       if (camp === 'lightSw') { const v = intreg(p['lightSw'], 0, 1); if (v !== null) schimba({ lightSw: v }); return; }
       if (camp === 'gcodeCmd') {
+        // Din 3.6r: anularea unei piese (vezi antetul); orice refuz, fără răspuns.
+        const x = typeof p['gcodeCmd'] === 'string' ? /^EXCLUDE_OBJECT NAME=([A-Za-z0-9_.-]+)$/.exec(p['gcodeCmd']) : null;
+        if (x !== null) {
+          const r = rulare as Rulare | null;
+          const nume = x[1]!.toUpperCase();
+          if (r === null || (s['state'] !== 1 && s['state'] !== 5) || !r.piese.has(nume) || r.excluse.has(nume) || s['current_object'] === nume) return;
+          r.excluse.add(nume);
+          schimba({ excluded_objects: JSON.stringify([...r.excluse]) });
+          return;
+        }
         const m = typeof p['gcodeCmd'] === 'string' ? /^M106 P([012]) S(\d{1,3})$/.exec(p['gcodeCmd']) : null;
         const sv = m === null ? null : intreg(Number(m[2]), 0, 255);
         if (m === null || sv === null) return;
@@ -429,6 +451,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
         stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
+        pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {
           for (const x of socketuri) tacute.add(x);

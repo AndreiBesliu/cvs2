@@ -6,8 +6,8 @@ import {
   HOMING_MAX_MS, HOMING_MIN_MS, MAX_DUZA_K1, MAX_PAT_K1, PORT_CREALITY, PROCENTE_K1, RASPUNS_INIMA,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
-  aplica, comandaPermisa, esteLibera, IMPRIMANTA_NECUNOSCUTA, intregIn, sePoateRegla, tintaDe, type ComandaImprimanta, type Imprimanta, type Pas,
-  type StareLucrare,
+  aplica, comandaPermisa, esteLibera, IMPRIMANTA_NECUNOSCUTA, intregIn, piesaAnulabila, sePoateRegla, tintaDe, type ComandaImprimanta, type Imprimanta,
+  type Pas, type StareLucrare,
 } from '../../src/machine/imprimanta/driver.ts';
 import { DRIVER_IMPLICIT, DRIVERE, driverDupaId, esteIdDriver } from '../../src/machine/imprimanta/drivere.ts';
 
@@ -60,7 +60,7 @@ test('capabilitățile K1: lumina și fiecare ventilator doar dacă le raporteaz
   const tot = aplica(IMPRIMANTA_NECUNOSCUTA, citesteCadru(K1C_2025.cadre[0] ?? '').stare);
   assert.deepEqual(capabilitatiK1(tot), {
     lumina: true, ventilatoare: ['piesa', 'carcasa', 'lateral'], viteza: { min: 1, max: 200 }, debit: { min: 1, max: 200 },
-    tinte: [{ incalzitor: 'duza', max: 320 }, { incalzitor: 'pat', max: 115 }], homing: true, fisiere: true, trimitere: true,
+    tinte: [{ incalzitor: 'duza', max: 320 }, { incalzitor: 'pat', max: 115 }], homing: true, fisiere: true, trimitere: true, anulare: true,
   });
   // O imprimantă care n-a spus încă nimic: fără lumină, ventilatoare, viteză și debit; maximele din integrarea Home Assistant.
   const nimic = capabilitatiK1(IMPRIMANTA_NECUNOSCUTA);
@@ -177,4 +177,29 @@ test('driverul K1 și lista driverelor: portul, citirile, `ok` la bătaia inimii
   for (const x of ['moonraker', '', 'toString', '__proto__']) assert.equal(driverDupaId(x), null, x);
   assert.equal(esteIdDriver('creality-k1'), true);
   for (const x of [null, 5, 'CREALITY-K1', 'constructor']) assert.equal(esteIdDriver(x), false, String(x));
+});
+
+test('3.6r: anularea unei piese pe K1, octet cu octet (`EXCLUDE_OBJECT` în `gcodeCmd`); un nume nesigur se refuză', () => {
+  const c = (nume: string): readonly string[] | null => texte(comandaK1({ fel: 'anuleazaPiesa', nume }, IMPRIMANTA_NECUNOSCUTA));
+  assert.deepEqual(c('PLACA_ID_0_COPY_0'), ['{"method":"set","params":{"gcodeCmd":"EXCLUDE_OBJECT NAME=PLACA_ID_0_COPY_0"}}']);
+  assert.deepEqual(c('PAT_1.STL_ID_0_COPY_0'), ['{"method":"set","params":{"gcodeCmd":"EXCLUDE_OBJECT NAME=PAT_1.STL_ID_0_COPY_0"}}']);
+  // Nimic altceva nu ajunge în `gcodeCmd`: spații, un rând nou (un al doilea G-code), `;`, `=`, gol, prea lung, diacritice.
+  for (const rau of ['A B', 'A\nG28', 'A;M104 S300', 'A=B', '', 'X'.repeat(101), 'PLĂCUȚĂ']) assert.equal(c(rau), null, JSON.stringify(rau));
+  assert.equal(c('X'.repeat(100))?.length, 1);
+  // Doar cât imprimă sau stă în pauză.
+  assert.deepEqual(STARI.filter((s) => comandaPermisa({ fel: 'anuleazaPiesa', nume: 'A' }, s)), ['imprima', 'pauza']);
+});
+
+test('3.6r: ce piesă se poate anula: doar din lista imprimantei, încă neanulată, nu ultima rămasă, cu un nume sigur', () => {
+  const p = (nume: string) => ({ nume, centru: null, contur: [] });
+  const i = cu({ piese: [p('A_ID_0_COPY_0'), p('B_ID_1_COPY_0'), p('C D')], anulate: [] });
+  assert.equal(piesaAnulabila(i, 'A_ID_0_COPY_0'), null);
+  assert.equal(piesaAnulabila(i, 'a_id_0_copy_0'), null);
+  assert.equal(piesaAnulabila(i, 'Z'), 'necunoscuta');
+  assert.equal(piesaAnulabila(i, 'C D'), 'nume');
+  assert.equal(piesaAnulabila(cu({ ...i, anulate: ['a_id_0_copy_0'] }), 'A_ID_0_COPY_0'), 'anulata');
+  // Două anulate din trei: a treia e ultima (pentru ea, Oprește).
+  assert.equal(piesaAnulabila(cu({ ...i, anulate: ['A_ID_0_COPY_0', 'C D'] }), 'B_ID_1_COPY_0'), 'ultima');
+  assert.equal(piesaAnulabila(cu({ piese: [p('A')], anulate: null }), 'A'), 'ultima');
+  assert.equal(piesaAnulabila(IMPRIMANTA_NECUNOSCUTA, 'A'), 'necunoscuta');
 });

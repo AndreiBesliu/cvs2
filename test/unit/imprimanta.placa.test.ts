@@ -11,7 +11,7 @@ import { cuPauze, feliaza, K1C, punePauze, setariImplicite } from '../../src/cam
 import { numeObiect } from '../../src/cam/feliere/piese.ts';
 import { hartaFisier, hartaText, PRAG_PUNCT } from '../../src/machine/imprimanta/harta.ts';
 import { stratDinFilament, stratViu } from '../../src/machine/imprimanta/stratViu.ts';
-import { etichetePiese, pauzaDeAcum } from '../../src/app/placaCalcul.ts';
+import { etichetePiese, inContur, pauzaDeAcum } from '../../src/app/placaCalcul.ts';
 import { cheieFisier, dePastrat, MAX_FISIERE, MAX_OCTETI } from '../../src/app/fisiereImprimanta.ts';
 
 const piesa = (id: string, k: number, c: ReturnType<typeof conturCerc>, eticheta = 'Placă') => ({
@@ -159,4 +159,17 @@ test('fișierele ținute: cele mai noi, cel mult 5 și cel mult 100 MB; cel mai 
   assert.equal(MAX_OCTETI, 100 * 1024 * 1024);
   assert.deepEqual(dePastrat([x(1, 10), x(2, 150)]), [cheieFisier('f2.gcode', 150)]);
   assert.deepEqual(dePastrat([]), []);
+});
+
+test('3.6r: clicul pe placă găsește piesa: punctul în contur (și într-unul concav), nu lângă el', () => {
+  const patrat = [[120, 100], [140, 100], [140, 120], [120, 120]] as const;
+  assert.equal(inContur(patrat, 130, 110), true);
+  assert.equal(inContur(patrat, 120.5, 119.5), true);
+  for (const [x, y] of [[119.5, 110], [140.5, 110], [130, 99.5], [130, 120.5], [90, 110]] as const) assert.equal(inContur(patrat, x, y), false, `${x}, ${y}`);
+  // Un L: colțul tăiat (sus-dreapta) nu e al piesei.
+  const l = [[0, 0], [20, 0], [20, 10], [10, 10], [10, 20], [0, 20]] as const;
+  assert.equal(inContur(l, 5, 15), true);
+  assert.equal(inContur(l, 15, 5), true);
+  assert.equal(inContur(l, 15, 15), false);
+  assert.equal(inContur([], 0, 0), false);
 });
