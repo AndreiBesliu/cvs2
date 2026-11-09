@@ -8,6 +8,7 @@ import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { operatiiPlacutei } from '../io/placuteOperatii.ts';
+import type { RezultatPlacuta } from '../text/placute.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
@@ -249,6 +250,25 @@ function placuteCuOperatiile(doc: Document, nou: Piesa): Comanda[] | null {
   return comenzi;
 }
 
+/**
+ * Piesa `vechi` înlocuită de `nou`, cu literele fiecărei plăcuțe a ei refăcute din piesa nouă (ADR 0210 §4), pe orice foaie,
+ * în același pas; motivul, dacă o plăcuță nu se poate reface (sau lipsesc literele noi: `motiv.placute`).
+ */
+function cuPlacuteleRefacute(
+  doc: Document, vechi: Piesa, nou: Piesa, texte: ((nou: Piesa, valori: Readonly<Record<string, string>>) => RezultatPlacuta) | undefined,
+): Comanda[] | CheieSimpla {
+  const comenzi: Comanda[] = [{ tip: 'inlocuieste-piesa', vechi, nou }];
+  for (const x of instantePiesei(doc, vechi.id)) {
+    if (!x.instanta.texte) continue;
+    if (!texte) return 'motiv.placute';
+    const t = texte(nou, x.instanta.campuri ?? {});
+    if (!t.ok) return MOTIV_PLACUTA[t.motiv];
+    const f = doc.foi[x.foaie];
+    if (f) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: cuValorile(x.instanta, t.campuri, t.texte) });
+  }
+  return comenzi;
+}
+
 /** Instanța cu valorile și literele noi ale unei plăcuțe; fără litere (piesa nu mai e un șablon), doar cu valorile. */
 function cuValorile(i: Instanta, campuri: Readonly<Record<string, string>>, texte: Readonly<Record<string, TextePlacuta>> | undefined): Instanta {
   const { texte: _texte, campuri: _campuri, ...rest } = i;
@@ -275,6 +295,42 @@ function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined)
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: c.loc.x, y: c.loc.y, rotire: 0 }, pozitie: foaie.instante.length,
       piesa: { piesa: r.piesa, pozitie: doc.piese.length },
     };
+  } else if (c.fel === 'sablon') {
+    // Textul șablonului schimbat din fereastra CSV: piesa nouă e făcută pe cea de acum; plăcuțele ei se refac în același pas.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const vechi = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    if (!inst || !vechi) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (vechi !== c.piesa || c.nou.id !== vechi.id) return { ok: false, motiv: 'motiv.placute' };
+    id = inst.id;
+    const comenzi = cuPlacuteleRefacute(doc, vechi, c.nou, c.texte);
+    if (typeof comenzi === 'string') return { ok: false, motiv: comenzi };
+    comanda = comenzi.length === 1 ? comenzi[0]! : { tip: 'lot', comenzi };
+  } else if (c.fel === 'placute') {
+    // Plăcuțele din CSV: primul rând pe instanța aleasă, restul instanțe noi ale piesei la capătul foii; apoi toate așezate pe
+    // foi (ADR 0210 §3), cu vărsarea pe foile următoare goale și pe foi noi, într-un singur pas.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    const [primul, ...rest] = c.randuri;
+    if (!inst || !p || !primul) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (p !== c.piesa) return { ok: false, motiv: 'motiv.placute' };
+    if ((folosiriPieselor(doc).get(p.id) ?? 0) + rest.length > INCA_MAXIM) return { ok: false, motiv: 'motiv.inca-total' };
+    const comenzi: Comanda[] = [{ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: inst, nou: cuValorile(inst, primul.campuri, primul.texte) }];
+    const { campuri: _campuri, texte: _texte, ...baza } = inst;
+    const ocupate = new Set<string>();
+    const ids = [inst.id];
+    for (const [k, r] of rest.entries()) {
+      const nid = idNou(doc, ocupate);
+      ocupate.add(nid);
+      ids.push(nid);
+      comenzi.push({ tip: 'adauga', foaie: foaie.id, instanta: cuValorile({ ...structuredClone(baza), id: nid }, r.campuri, r.texte), pozitie: foaie.instante.length + k });
+    }
+    const intermediar = executa(istoricDin(doc), { tip: 'lot', comenzi }).doc;
+    const plan = planAsezare(intermediar, ids, foaie.id, c.asezare);
+    if (!plan.ok) return { ok: false, motiv: plan.motiv === 'distanta' ? 'motiv.aseaza-distanta' : plan.motiv === 'valori' ? 'motiv.aseaza-valori' : 'motiv.nimic-ales' };
+    if (doc.foi.length + plan.foiNoi > PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    comenzi.push(...comenziAsezare(intermediar, foaie.id, plan));
+    id = inst.id;
+    comanda = { tip: 'lot', comenzi };
   } else if (c.fel === 'placuta') {
     // Valorile unei plăcuțe (ADR 0210 §4): literele făcute pe piesa de acum; una schimbată între timp le-ar face greșite.
     const inst = foaie.instante.find((i) => i.id === c.instanta);
@@ -293,16 +349,8 @@ function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined)
     const r = c.piesa(vechi, foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     id = inst.id;
-    // Un șablon cu plăcuțe (ADR 0210 §4): literele fiecărei plăcuțe, pe orice foaie, se refac în același pas, cu valorile ei.
-    const comenzi: Comanda[] = [{ tip: 'inlocuieste-piesa', vechi, nou: r.piesa }];
-    for (const x of instantePiesei(doc, vechi.id)) {
-      if (!x.instanta.texte) continue;
-      if (!c.texte) return { ok: false, motiv: 'motiv.placute' };
-      const t = c.texte(r.piesa, x.instanta.campuri ?? {});
-      if (!t.ok) return { ok: false, motiv: MOTIV_PLACUTA[t.motiv] };
-      const f = doc.foi[x.foaie];
-      if (f) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: cuValorile(x.instanta, t.campuri, t.texte) });
-    }
+    const comenzi = cuPlacuteleRefacute(doc, vechi, r.piesa, c.texte);
+    if (typeof comenzi === 'string') return { ok: false, motiv: comenzi };
     comanda = comenzi.length === 1 ? comenzi[0]! : { tip: 'lot', comenzi };
   }
   const dupa = executa(istoricDin(doc), comanda).doc;

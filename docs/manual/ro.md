@@ -170,6 +170,18 @@ tuturor plăcuțelor, cu valorile lor (panoul spune câte). Rolul de tăiere și
 șablonului nu se editează ca noduri și nu se înclină: plăcuțele ar rămâne cu textul vechi (motivul o spune). **Desprinde** pe
 o plăcuță (și pe una singură) îi dă o piesă a ei, cu textul ei obișnuit; gruparea și degruparea o desprind la fel.
 
+**Din CSV.** Pe o piesă cu un text (și una grupată, cu ramă), **Din CSV…** (în panou, la **Piesa**) face câte o plăcuță pe
+rândul unui tabel: un fișier `.csv` sau `.txt` (**Alege fișierul…**), sau celulele lipite din Excel. Separatorul (`;`, `,`
+sau tab) și codarea (UTF-8 sau Windows-1250, cum salvează Excel în română) se găsesc singure și se pot schimba; bifa
+**Primul rând are numele coloanelor** dă numele coloanelor. Fiecare câmp ia coloana cu același nume (fără litere mari și
+diacritice: **potrivit singur**) sau, la alegere, altă coloană, **o valoare** scrisă sau **numerotarea** (de la, pasul,
+cifrele). Un text fără câmp: alegi în **Textul piesei** bucata care se schimbă de la o plăcuță la alta și apeși **Fă din
+textul ales câmpul {Nume}** (numele e al coloanei, sau cel scris). **Rândurile de la … până la** aleg rândurile. Sub ele,
+unde ajung plăcuțele („6 plăcuțe pe 3 foi: 2 + 2 + 2”), cu marginea și distanța lui „Așază pe foi” (**Schimbă…**; distanța e
+cel puțin freza profilului exterior). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
+pe foi (ca „Așază pe foi”), într-un singur pas. Cu caseta **Limitat de casetă** pe text, panoul spune câte plăcuțe s-au
+micșorat și cât.
+
 Fiecare gest e un singur pas de anulare (`Ctrl+Z`).
 
 ## Desenul

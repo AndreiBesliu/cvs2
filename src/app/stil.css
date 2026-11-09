@@ -1586,6 +1586,99 @@ nav button[aria-pressed='true'] {
   max-width: min(36rem, calc(100vw - 2rem));
 }
 
+/* «Din CSV…» (ADR 0210 §4): sursa, tabelul, textul piesei, câmpurile cu sursele lor, rândurile și așezarea. */
+.dialog-csv {
+  width: min(44rem, calc(100vw - 2rem));
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.dialog-csv h2 {
+  margin-bottom: 0;
+}
+
+.dialog-csv .campuri {
+  margin-bottom: 0;
+  align-items: end;
+}
+
+.dialog-csv textarea {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  padding: var(--sp-1) var(--sp-2);
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+
+.csv-sursa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: end;
+}
+
+.csv-fisier button {
+  min-height: 32px;
+  padding: 0 var(--sp-4);
+}
+
+.csv-nota {
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.csv-tabel {
+  display: block;
+  overflow-x: auto;
+}
+
+.csv-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.csv-campuri {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.csv-camp {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.csv-bifa {
+  display: flex !important;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.dialog-csv .legatura {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--a);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .csv-sursa {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .dialog .alegeri {
   display: flex;
   flex-wrap: wrap;

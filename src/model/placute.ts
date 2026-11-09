@@ -20,15 +20,22 @@ export type TextCuCampuri = { readonly grup: GrupNod; readonly bloc: BlocText; r
  * altul (ușa îl refuză).
  */
 export function textePiesei(p: Piesa): TextCuCampuri[] {
+  return blocuriPiesei(p).filter((t) => t.campuri.length > 0);
+}
+
+/**
+ * Textele piesei, cu câmpuri sau fără, în ordinea arborelui: grupurile cu un bloc de text valid (ADR 0105 §4); sub unul nu
+ * se mai caută. Din ele, «Din CSV…» face un șablon („Fă din textul ales câmpul”, răspunsul 4b).
+ */
+export function blocuriPiesei(p: Piesa): TextCuCampuri[] {
   const rez: TextCuCampuri[] = [];
   const stiva: Nod[] = [p.radacina];
   while (stiva.length > 0) {
     const n = stiva.pop();
     if (!n || n.tip !== 'grup') continue;
     const bloc = blocText(n);
-    const campuri = bloc ? [...new Set(campuriDin(bloc.continut))] : [];
-    if (bloc && campuri.length > 0) {
-      rez.push({ grup: n, bloc, campuri });
+    if (bloc) {
+      rez.push({ grup: n, bloc, campuri: [...new Set(campuriDin(bloc.continut))] });
       continue;
     }
     for (let k = n.copii.length - 1; k >= 0; k--) {

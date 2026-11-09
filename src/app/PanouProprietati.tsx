@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
@@ -9,7 +10,7 @@ import { susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta }
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
 import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
-import { campuriPiesei } from '../model/placute.ts';
+import { blocuriPiesei, campuriPiesei } from '../model/placute.ts';
 import type { RezultatPlacuta } from '../text/placute.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import type { CampEticheta } from '../model/jurnal.ts';
@@ -24,6 +25,9 @@ import { CampText } from '../ui/CampText.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** «Din CSV…» (ADR 0210 §4), adusă la primul clic: fereastra și cititorul tabelului nu stau în panou. */
+const DialogCsv = lazy(() => import('./DialogCsv.tsx').then((m) => ({ default: m.DialogCsv })));
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -50,8 +54,11 @@ type Props = {
   readonly onPlusUnu: () => RezultatActiune;
   readonly onInca: (total: number) => RezultatActiune;
   readonly onDesprinde: () => RezultatActiune;
-  /** Valorile și literele singurei plăcuțe alese (ADR 0210 §4), prin acțiunea textului. */
-  readonly onPlacuta?: (c: Extract<CerereText, { readonly fel: 'placuta' }>) => RezultatActiune;
+  /**
+   * Plăcuțele (ADR 0210 §4), prin acțiunea textului: valorile singurei plăcuțe alese, iar din «Din CSV…» textul șablonului și
+   * plăcuțele unui tabel.
+   */
+  readonly onPlacuta?: (c: CerereText) => RezultatActiune;
   /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
   readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
@@ -164,8 +171,11 @@ export function PanouProprietati({
   // Refuzul ultimului rol ales, pentru selecția de atunci; la fel, al lemnului din jurul dopului ales.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
-  // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4).
+  // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
+  // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.
   const [placuta, setPlacuta] = useState<{ readonly cheie: string; readonly motiv: string | null } | null>(null);
+  const [csv, setCsv] = useState<string | null>(null);
+  const [rezultatCsv, setRezultatCsv] = useState<{ readonly cheie: string; readonly mesaj: string } | null>(null);
   const foaie = doc.foi[indexFoaie];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
@@ -385,6 +395,22 @@ export function PanouProprietati({
             </div>
           )}
           {refuzPiesa?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="piesa">{refuzPiesa.motiv}</p>}
+          {/* «Din CSV…» (ADR 0210 §4): pe o piesă cu un text, câte o plăcuță pe rândul unui tabel. */}
+          {blocuriPiesei(piesa).length > 0 && onPlacuta && (
+            <div className="prop-butoane">
+              <button type="button" data-buton="din-csv" disabled={doarCitire} {...(oprit ? { title: oprit } : { title: t('prop.placuta.csv.nota') })}
+                onClick={() => { setRezultatCsv(null); setCsv(cheie); }}>
+                {t('prop.placuta.csv')}
+              </button>
+            </div>
+          )}
+          {csv === cheie && onPlacuta && createPortal(
+            <Suspense fallback={null}>
+              <DialogCsv doc={doc} indexFoaie={indexFoaie} instanta={instanta} piesa={piesa} doarCitire={doarCitire} onCerere={onPlacuta}
+                onGata={(mesaj) => { setCsv(null); setRezultatCsv({ cheie, mesaj }); }} onInchide={() => { setCsv(null); }} />
+            </Suspense>,
+            document.body,
+          )}
         </section>
       )}
       {instanta && campuriSablon.length > 0 && (
@@ -399,6 +425,7 @@ export function PanouProprietati({
           </dl>
           {placuta?.cheie === cheie && placuta.motiv === null && <p className="prop-nota-piesa" data-testid="placuta-face">{t('prop.placuta.face')}</p>}
           {placuta?.cheie === cheie && placuta.motiv !== null && <p className="camp-motiv" role="alert" data-motiv="placuta">{placuta.motiv}</p>}
+          {rezultatCsv?.cheie === cheie && <p className="prop-nota-piesa" role="status" data-testid="placuta-csv">{rezultatCsv.mesaj}</p>}
         </section>
       )}
       {par && (

@@ -55,6 +55,22 @@ export type CerereText =
   | {
     readonly fel: 'placuta'; readonly instanta: string; readonly piesa: Piesa;
     readonly campuri: Readonly<Record<string, string>>; readonly texte: Readonly<Record<string, TextePlacuta>> | undefined;
+  }
+  /**
+   * Textul unui șablon schimbat din fereastra CSV (ADR 0210 §4, „Fă din textul ales câmpul”): piesa nouă, făcută pe piesa de
+   * acum (alta între timp: refuz), și literele plăcuțelor ei, refăcute în același pas.
+   */
+  | {
+    readonly fel: 'sablon'; readonly instanta: string; readonly piesa: Piesa; readonly nou: Piesa;
+    readonly texte: (nou: Piesa, valori: Readonly<Record<string, string>>) => RezultatPlacuta;
+  }
+  /**
+   * Plăcuțele din CSV (ADR 0210 §4): un rând pe plăcuță, cu valorile și literele lui; primul ia instanța aleasă, restul sunt
+   * instanțe noi ale piesei, iar toate se așază pe foi (ADR 0210 §3), cu alegerile date.
+   */
+  | {
+    readonly fel: 'placute'; readonly instanta: string; readonly piesa: Piesa; readonly asezare: OptiuniAsezare;
+    readonly randuri: ReadonlyArray<{ readonly campuri: Readonly<Record<string, string>>; readonly texte: Readonly<Record<string, TextePlacuta>> | undefined }>;
   };
 
 /**

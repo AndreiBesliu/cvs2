@@ -177,6 +177,18 @@ The cutting role and the scale of the part are changed for all of them. The lett
 and are not skewed: the plates would keep the old text (the reason says so). **Detach** on a plate (even a single one) gives it
 a part of its own, with its ordinary text; grouping and ungrouping detach it the same way.
 
+**From CSV.** On a part with a text (even a grouped one, with a frame), **From CSV…** (in the panel, under **Part**) makes one
+plate per row of a table: a `.csv` or `.txt` file (**Choose the file…**), or cells pasted from Excel. The separator (`;`, `,`
+or tab) and the encoding (UTF-8 or Windows-1250, as Excel saves in Romanian) are found automatically and can be changed; the
+**The first row has the column names** box gives the column names. Each field takes the column with the same name (ignoring
+capitals and diacritics: **matched automatically**) or, by choice, another column, **a value** written in, or **numbering**
+(from, step, digits). A text without a field: choose in **The text of the part** the piece that changes from one plate to
+another and press **Make the chosen text the field {Name}** (the name is the column's, or the one written in). **Rows from …
+to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets: 2 + 2 + 2”), with the margin and spacing of
+“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter). **Make the plates**: the first row on
+the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
+by the box** box on the text, the panel says how many plates were shrunk and by how much.
+
 Each gesture is a single undo step (`Ctrl+Z`).
 
 ## Drawing
