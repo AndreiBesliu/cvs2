@@ -1266,7 +1266,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {/* Fereastra extensiei deschise (ADR 0160 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}
         <section className="fereastra-extensie" id="loc-spatiu-extensie" aria-label={extensie?.nume}
           hidden={fereastra !== FEREASTRA_EXTENSIE || extensie === null} />
-        <footer className="jos">{grupuri('jos')}</footer>
+        {/* Locul rândului tastelor (ADR 0240 §E.25), umplut de `Editare` cât unealta aleasă are taste. */}
+        <footer className="jos">{grupuri('jos')}<div className="loc-taste" id="loc-taste" /></footer>
       </div>
       {paleta && (
         <Suspense fallback={null}>

@@ -43,8 +43,7 @@ export type Transformare =
     readonly arceInCurbe?: boolean;
   };
 
-export type MotivTransformare =
-  | 'colturi-nu-incap' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
+export type MotivTransformare = 'colturi-nu-incap' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
 
 /** Cel mai mare unghi de înclinare acceptat, în grade (tan 75° ≈ 3,7). */
 export const UNGHI_MAXIM_INCLINARE = 75;
@@ -70,32 +69,40 @@ function arcDesenat(c: FormaCale, k: number): boolean {
 }
 const areArcCale = (c: FormaCale): boolean => c.varfuri.some((_, k) => arcDesenat(c, k));
 
-/** Piesele instanțelor `ids` ale foii (o piesă folosită de mai multe instanțe, o dată pe instanță). */
-function pieseAlese(doc: Document, indexFoaie: number, ids: readonly string[]): Piesa[] {
+/** Instanțele `ids` ale foii, fiecare cu piesa ei (o piesă folosită de mai multe instanțe, o dată pe instanță). */
+function pieseAlese(doc: Document, indexFoaie: number, ids: readonly string[]): { readonly i: Instanta; readonly p: Piesa }[] {
   const alese = new Set(ids);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   return (doc.foi[indexFoaie]?.instante ?? []).flatMap((i) => {
     const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
-    return p ? [p] : [];
+    return p ? [{ i, p }] : [];
   });
 }
 
 /** Pură: o formă a instanțelor `ids` ale foii are arce (un cerc, colțuri rotunjite, o cale cu arce): înclinarea le-ar refuza. */
 export function areArce(doc: Document, indexFoaie: number, ids: readonly string[]): boolean {
   const inNod = (n: Nod): boolean => (n.tip === 'element' ? areArcCale(caleDinForma(n.forma)) : n.copii.some(inNod));
-  return pieseAlese(doc, indexFoaie, ids).some((p) => inNod(p.radacina));
+  return pieseAlese(doc, indexFoaie, ids).some(({ p }) => inNod(p.radacina));
 }
 
 /**
  * Ce schimbă o scalare formelor instanțelor `ids` (ADR 0240 §F), pentru eticheta mânerelor: un cerc (devine elipsă), arcele
- * unei căi (devin curbe), colțurile rotunjite (după felul ales), un text care devine vectori (cu aldin sau pe o curbă; o spune
- * o dată pentru toate literele lui, cu arcele aldinului).
+ * unei căi (devin curbe), colțurile rotunjite (după felul ales), un text care devine vectori (cu aldin, pe o curbă sau rotit
+ * oblic; o spune o dată pentru toate literele lui, cu arcele aldinului), o formă rotită oblic (pe o axă, trece prin geometrie).
  */
-export type FormeScalate = { readonly cerc: boolean; readonly arce: boolean; readonly colturi: boolean; readonly text: boolean };
+export type FormeScalate = {
+  readonly cerc: boolean; readonly arce: boolean; readonly colturi: boolean; readonly text: boolean; readonly rotite: boolean;
+};
+
+/** Pură: o instanță rotită oblic, sau cu un nod rotit oblic: scalată pe o axă, trece prin geometrie (ADR 0240 §F.30). */
+function oblica(i: Instanta, p: Piesa): boolean {
+  const nod = (n: Nod): boolean => sferturiMatrice(n.matrice) === null || (n.tip === 'grup' && n.copii.some(nod));
+  return sferturi(i.rotire) === null || nod(p.radacina);
+}
 
 /** Pură: `FormeScalate` pentru instanțele `ids` ale foii. */
 export function formeScalate(doc: Document, indexFoaie: number, ids: readonly string[]): FormeScalate {
-  const r = { cerc: false, arce: false, colturi: false, text: false };
+  const r = { cerc: false, arce: false, colturi: false, text: false, rotite: false };
   const inNod = (n: Nod): void => {
     if (n.tip === 'grup') {
       for (const c of n.copii) inNod(c);
@@ -106,9 +113,11 @@ export function formeScalate(doc: Document, indexFoaie: number, ids: readonly st
     else if (f.tip === 'dreptunghi') r.colturi ||= f.razaColt > 0;
     else r.arce ||= areArcCale(f);
   };
-  for (const p of pieseAlese(doc, indexFoaie, ids)) {
+  for (const { i, p } of pieseAlese(doc, indexFoaie, ids)) {
+    const rotita = oblica(i, p);
+    r.rotite ||= rotita;
     const b = blocText(p.radacina);
-    if (b && !textNeuniformPosibil(b)) r.text = true;
+    if (b && (rotita || !textNeuniformPosibil(b))) r.text = true;
     else inNod(p.radacina);
   }
   return r;
@@ -209,15 +218,16 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number, colturi: 'pastreaza'
 
 /**
  * Pură: nodul scalat cu (sx, sy) în axele lui de deasupra: translația lui se scalează, iar copiii (sau forma) primesc scalarea
- * trecută prin rotirea lui (un multiplu de 90°; altfel doar o scalare uniformă trece).
+ * trecută prin rotirea lui (un multiplu de 90°). Un nod rotit oblic, scalat neuniform, dă `oblic`: piesa trece atunci prin
+ * geometrie (ADR 0240 §F.30).
  */
-function scaleazaNod(n: Nod, sx: number, sy: number, colturi: 'pastreaza' | 'scaleaza' | undefined, sW = 1): Nod | MotivTransformare {
+function scaleazaNod(n: Nod, sx: number, sy: number, colturi: 'pastreaza' | 'scaleaza' | undefined, sW = 1): Nod | MotivTransformare | 'oblic' {
   const m = n.matrice;
   const matrice = { ...m, e: m.e * sx, f: m.f * sy };
   let lx = sx, ly = sy;
   if (!uniforma(sx, sy)) {
     const q = sferturiMatrice(m);
-    if (q === null) return 'neuniform-rotit';
+    if (q === null) return 'oblic';
     [lx, ly] = inAxe(sx, sy, q);
   }
   // Scara proprie a nodului (|a, b|) nu se schimbă: scalarea intră în geometrie, în axele locale.
@@ -264,17 +274,23 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
   if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return { ok: false, motiv: 'scara-invalida' };
   const noiPiese: Piesa[] = [];
   const noiInstante: Instanta[] = [];
+  // Scalarea în axele foii, față de ancoră, ca matrice: pentru piesele rotite oblic (mai jos).
+  const S = compune(translatie(ancora.x, ancora.y), compune({ a: sx, b: 0, c: 0, d: sy, e: 0, f: 0 }, translatie(-ancora.x, -ancora.y)));
   for (const i of instante) {
     const piesa = piese.get(i.piesa);
     if (!piesa) continue;
     if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
-    let lx = sx, ly = sy;
-    if (!uniforma(sx, sy)) {
-      const q = sferturi(i.rotire);
-      if (q === null) return { ok: false, motiv: 'neuniform-rotit' };
-      [lx, ly] = inAxe(sx, sy, q);
+    const q = uniforma(sx, sy) ? 0 : sferturi(i.rotire);
+    const [lx, ly] = inAxe(sx, sy, q ?? 0);
+    const scalata = q === null ? 'oblic' : scaleazaNod(piesa.radacina, lx, ly, t.colturi);
+    if (scalata === 'oblic') {
+      // Rotită oblic (instanța sau un nod din ea), pe o axă (ADR 0240 §F.30): scalarea în axele foii intră în geometrie, ca
+      // înclinarea (A = W⁻¹ · S · W: liniile și cubicele exacte, arcele din curbe, un text devine vectori); instanța rămâne.
+      const radacina = inclinaNod(piesa.radacina, compune(translatie(i.x, i.y), rotatie(i.rotire)), S, true);
+      if (typeof radacina === 'string') return { ok: false, motiv: radacina };
+      noiPiese.push({ ...piesa, radacina });
+      continue;
     }
-    const scalata = scaleazaNod(piesa.radacina, lx, ly, t.colturi);
     if (typeof scalata === 'string') return { ok: false, motiv: scalata };
     // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl păstrează doar pe un text drept, fără
     // aldin (ADR 0138 §4). Scara blocului e cea din axele contururilor lui: ale copiilor rădăcinii, sub rotirea ei.
