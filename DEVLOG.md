@@ -6975,3 +6975,19 @@ care așteaptă piesa de acum, 4a pauzele în browser pentru aceleași piese).
   Otrăvurile (`test/otravuri/3.6q.py`): 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h). Manualul (ro, en) și ghidul (pasul 7).
 - **Găsit pe drum:** în pauza fișierului, stratul rămânea pe cel de dinainte (K1C trimite numărătoarea greșită) și cardul
   ventilatoarelor stătea departe de temperaturi; văzute la privirea în browser, reparate.
+
+## 2026-11-09 — 3.6r: anularea unei piese (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6r” (owner-ul, la „Trec la 3.6r (anularea unei piese), cu ~1 kB peste ținta de mărime a grupului?”,
+după 3.6q).
+**Started:** 09.11, 21:02. **Completed:** 09.11, 22:45.
+
+- **Driverul și sesiunea:** `anuleazaPiesa` (doar cât imprimă sau stă în pauză), `piesaAnulabila` (din lista imprimantei,
+  neanulată, nu ultima, cu un nume sigur); K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`. Sesiunea retrimite cererea la 3 s,
+  o confirmă din `excluded_objects`, o lasă 6 s (2 minute pentru piesa de acum), apoi „n-a confirmat”; Renunță.
+- **Fereastra:** Anulează… pe placă (din listă și cu un clic pe piesă), confirmarea, cererea pe rândul piesei; ultima
+  piesă rămasă, fără buton.
+- **Imprimanta falsă:** anularea prin `gcodeCmd`, refuzul piesei de acum, piesa anulată sărită; `pas()` la cerere.
+- **Probe și porți:** driverul, sesiunea (2), placa, manualul, un e2e; unit 8 778 (8 770 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 387 / 387; totalul 581,1 / 600 kB (+1,4; grupul 2: +8,0 față de 573,1, peste ținta de +7 acceptată de owner), pornirea 102,0. Otrăvurile
+  (`test/otravuri/3.6r.py`): 33 / 33 (25 pe probele unitare, 8 prin e2e). Manualul (ro, en) și ghidul (pasul 8).
+- **Găsit pe drum:** proba manualului nu citea controalele plăcii; acum le citește.

@@ -4,7 +4,8 @@
 feliile 3.6p, 3.6q și 3.6r (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în
 worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). **Felia 3.6p** gata pe 09.11 (secțiunea „Felia 3.6p, gata”), fără
 imprimantă; proba pe imprimanta owner-ului (ghidul, pasul 6) rămâne la el. **Felia 3.6q** gata pe 09.11 (secțiunea „Felia 3.6q, gata”); proba
-pe imprimanta owner-ului: ghidul, pasul 7. Cererea owner-ului: grupul 2
+pe imprimanta owner-ului: ghidul, pasul 7. **Felia 3.6r** gata pe 09.11 (secțiunea „Felia 3.6r, gata”): grupul e
+încheiat; proba pe imprimanta owner-ului: ghidul, pasul 8. Cererea owner-ului: grupul 2
 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11, „Ce ar face-o specială: imprimarea „văzută” din
 cvs2”), după grupul 1 (ADR 0192, „poti incepe cu 1”), la „continua” (09.11). **Schimbă:** ADR 0192 §B.8 (al doilea text făcut
 doar de driver în `gcodeCmd`, anularea unei piese, dacă owner-ul o vrea: întrebarea 2) și ADR 0191 §E.7 (fișierul primește
@@ -204,6 +205,33 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   Porțile: unit 8 773 (8 765 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 386 / 386 (385 din prima: `animatie.spec.ts:49`, animația simulării, a căzut o dată la limită, apoi 25 / 25 singură).
   Privită în browser (Edge, imprimanta falsă): 1280 px luminos, cât imprimă (duza, piesa de acum) și în pauza fișierului;
   390 px întunecat, fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6q.py`, 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h).
+
+## Felia 3.6r, gata (09.11.2026)
+
+- **Driverul** (`driver.ts`, `creality.ts`): comanda `anuleazaPiesa`, doar cât imprimă sau stă în pauză (ca viteza);
+  `piesaAnulabila` spune dacă se poate și, altfel, de ce: piesa nu e în lista imprimantei, e deja anulată, e ultima rămasă
+  sau numele are alte semne decât `[A-Za-z0-9_.-]` (cel mult 100). Capabilitatea `anulare`; K1 scrie `EXCLUDE_OBJECT
+  NAME=<nume>` în `gcodeCmd`, după aceeași verificare a numelui (a doua plasă).
+- **Sesiunea** (`sesiune.ts`): cererea pleacă pe loc și se ține (`anulari`), retrimisă la 3 s până imprimanta o trece
+  printre cele anulate (confirmată cu primul cadru care o arată). Termenul: 6 s pentru o piesă la care imprimanta nu
+  lucrează, 2 minute pentru cea de acum (și pentru una văzută mai târziu ca cea de acum); apoi „n-a confirmat”, spus 8 s,
+  cu o linie în jurnal. **Renunță** o retrage; o lucrare încheiată și Deconectează le scot pe toate.
+- **Fereastra** (`PlacaImprimanta.tsx`, după schiță): **Anulează…** pe fiecare piesă din listă și un clic pe ea, pe placă
+  (`inContur`), deschid **Anulezi …?** („Restul pieselor merg mai departe. Piesa anulată nu se mai reia.”), cu **Anulează
+  piesa** și **Renunță**; pentru piesa de acum, confirmarea spune că cererea așteaptă. Rândul piesei: „→ se anulează ·
+  așteaptă imprimanta”, iar pentru piesa de acum „→ se anulează când imprimanta trece la altă piesă”, cu **Renunță** și
+  explicația. Ultima piesă rămasă n-are buton (o notă: pentru ea, Oprește); un nume nesigur: butonul oprit, cu motivul.
+- **Imprimanta falsă** primește `EXCLUDE_OBJECT` prin `gcodeCmd` și refuză piesa de acum (ca Klipper-ul Creality); o
+  piesă anulată se sare repede, capul nu merge acolo, iar filamentul numărat rămâne al fișierului (ca `filament_used`);
+  `pas()` dă un pas la cerere, ca proba să știe piesa de acum.
+- **Găsit pe drum:** proba manualului citea controalele doar din fereastră și din „Din desen…”; acum și pe cele ale
+  plăcii (în ambele limbi).
+- **Măsurat și probat:** totalul 581,1 / 600 kB (+1,4; grupul 2: +8,0 față de 573,1, peste ținta de +7 acceptată de owner), pornirea 102,0; probe noi: driverul (comanda octet cu octet, refuzurile, `piesaAnulabila`),
+  sesiunea (două: piesa la care imprimanta nu lucrează; piesa de acum, Renunță, lucrarea încheiată, Deconectează), placa
+  (punctul în contur), manualul (controalele plăcii) și un e2e (din placă și din listă, piesa de acum cu Renunță, ultima
+  rămasă). Porțile: unit 8 778 (8 770 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 387 / 387. Privită în Edge (imprimanta falsă): 1280 px luminos (lista, confirmarea pentru piesa de
+  acum, așteptarea, piesa tăiată) și 390 px întunecat, fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6r.py`,
+  33 / 33 (25 pe probele unitare, 8 prin e2e).
 
 ## Întrebările (owner)
 

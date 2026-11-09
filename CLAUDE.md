@@ -646,8 +646,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pornire (`gcode3d.ts` găsește pauzele oricărui fișier). Totalul 574,9 / 600 kB.
   **3.6q gata pe 09.11** (placa și stratul viu): driverul K1 citește piesele, poziția și filamentul; `harta.ts` (straturile
   unui fișier, pe bucăți), `stratViu.ts` (stratul din filament: K1C amestecă două numărători), fișierele trimise ținute în
-  IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB. Urmează
-  3.6r (anularea unei piese).
+  IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB.
+  **3.6r gata pe 09.11** (anularea unei piese): `anuleazaPiesa` în driver (K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`, doar
+  un nume din lista imprimantei) și în sesiune (retrimisă la 3 s, confirmată din `excluded_objects`; 6 s, iar pentru
+  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata; urmează proba pe K1C (ghidul,
+  pașii 6–8) și unirea în `main`, la cuvântul owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

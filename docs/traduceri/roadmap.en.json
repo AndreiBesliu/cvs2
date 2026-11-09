@@ -21,10 +21,6 @@
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
     },
-    "035654db10051d3b": {
-      "ro": "Anularea unei singure piese (ADR 0193): din placă, cu confirmare, prin `EXCLUDE_OBJECT` scris doar de driver; piesa de acum, după răspunsul owner-ului; proba pe imprimanta falsă, apoi pe imprimanta owner-ului",
-      "en": "Cancelling a single part (ADR 0193): from the plate, with confirmation, through `EXCLUDE_OBJECT` written only by the driver; the part being printed right now, per the owner's answer; tested on the fake printer, then on the owner's printer"
-    },
     "0360dd0ba18ef822": {
       "ro": "Emulatorul GRBL 1.1h ca fixtură (ADR 0079): numără ce primește (bufferul de 128 de octeți, timpul real, pierderile), liniile, planificatorul de 15 blocuri cu timpul lui, stările (hold, alarmă, repornire), răspunsurile `$`; un flux de probă cu numărarea caracterelor; 100 000 de linii fără pierderi; rejucarea programelor plăcilor 1 și 2",
       "en": "The GRBL 1.1h emulator as a fixture (ADR 0079): it counts what it receives (the 128-byte buffer, the realtime bytes, the losses), the lines, the 15-block planner with its timing, the states (hold, alarm, restart), the `$` replies; a test stream with character counting; 100,000 lines without losses; replaying the programs of plates 1 and 2"
@@ -1049,6 +1045,10 @@
       "ro": "Buzunarul cu mai multe freze, adus din etapa 5",
       "en": "The pocket with several bits, brought forward from stage 5"
     },
+    "5ac70d4f7aff3025": {
+      "ro": "**Anularea unei piese** (fără imprimantă; ADR 0193, acceptat cu recomandările, „Da, recomandările”: 2a, 3a; apoi „Da, 3.6r”; în worktree-ul `imprimanta`). Pe placă: **Anulează…** pe fiecare piesă din listă (și un clic pe piesă) deschide confirmarea **Anulezi …?**; comanda (`EXCLUDE_OBJECT NAME=` în `gcodeCmd`) o scrie doar driverul, cu un nume din lista imprimantei. Rândul piesei arată cererea până imprimanta o trece printre cele anulate (6 s, apoi „n-a confirmat”); piesa de acum, pe care K1 o refuză, așteaptă cel mult 2 minute, retrimisă, cu **Renunță**; ultima piesă rămasă n-are buton (pentru ea, Oprește). Imprimanta falsă primește anularea și refuză piesa de acum. **Probe:** pe hârtie (driverul, sesiunea, punctul în contur, manualul), un e2e; otrăvurile 33 / 33 (25 pe probele unitare, 8 prin e2e). **Mărimea:** totalul 581,1 / 600 kB (+1,4; grupul 2: +8,0 față de 573,1, peste ținta de +7 acceptată de owner), pornirea 102,0. Proba pe imprimanta owner-ului: ghidul, pasul 8.",
+      "en": "**Cancelling one part** (no printer; ADR 0193, accepted with the recommendations, \"Da, recomandările\": 2a, 3a; then \"Da, 3.6r\"; in the `imprimanta` worktree). On the plate: **Cancel…** on each part in the list (and a click on the part) opens the confirmation **Cancel …?**; the command (`EXCLUDE_OBJECT NAME=` in `gcodeCmd`) is written only by the driver, with a name from the printer's list. The part's row shows the request until the printer lists it as cancelled (6 s, then \"the printer did not confirm\"); the current part, which K1 refuses, waits at most 2 minutes, resent, with **Withdraw**; the last part left has no button (for it, Stop). The fake printer takes the cancelling and refuses the current part. **Tests:** on paper (the driver, the session, the point in the outline, the manual), one e2e; poisons 33 / 33 (25 on the unit tests, 8 through e2e). **Size:** total 581.1 / 600 kB (+1.4; group 2: +8.0 over 573.1, above the +7 target accepted by the owner), start-up 102.0. The test on the owner's printer: the guide, step 8."
+    },
     "5ad66faba4962cb5": {
       "ro": "șanțurile de calibrare",
       "en": "the calibration grooves"
@@ -1488,10 +1488,6 @@
     "88a65d8bf6bcaec1": {
       "ro": "**Relieful 1:** nucleul, relieful din imagine, prelucrarea 3D din relief",
       "en": "**Relief 1:** the core, relief from an image, 3D machining from the relief"
-    },
-    "89325b06fa0c2fae": {
-      "ro": "Anularea unei singure piese",
-      "en": "Cancelling a single part"
     },
     "89ee77330a573300": {
       "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
@@ -2644,6 +2640,10 @@
     "f5f9377648ddce6f": {
       "ro": "3.7b",
       "en": "3.7b"
+    },
+    "f60cf31387944b69": {
+      "ro": "**Gata pe 09.11.** Anularea unei singure piese (ADR 0193): din placă sau din listă, cu confirmare, prin `EXCLUDE_OBJECT` scris doar de driver; piesa de acum așteaptă (retrimisă cel mult 2 minute), cu Renunță; imprimanta falsă învață anularea și refuzul piesei de acum",
+      "en": "**Done on 09.11.** Cancelling a single part (ADR 0193): from the plate or the list, with a confirmation, through `EXCLUDE_OBJECT` written only by the driver; the current part waits (resent for at most 2 minutes), with Withdraw; the fake printer learns the cancelling and the refusal of the current part"
     },
     "f69517a92ff2a4a3": {
       "ro": "Jog, zero XY / Z",

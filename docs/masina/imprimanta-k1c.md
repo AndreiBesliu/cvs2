@@ -107,6 +107,21 @@ Pe aceeași imprimare (placa de probă trimisă din „Din desen…”), în car
 4. **Copiază jurnalul** la final: cadrele cu `layer`, `curPosition`, `usedMaterialLength` și piesele (`objects`) intră în
    imprimanta falsă din probe.
 
+## 8. Anularea unei piese (felia 3.6r)
+
+Cu trei piese mici pe pat (în „Din desen…”: trei dreptunghiuri, **Piesele foii**), trimise și pornite din cvs2. O piesă
+anulată rămâne neterminată: folosește o probă de care nu-ți pare rău.
+
+1. Cât imprimă, în **Piesele** de sub placă: **Anulează…** lângă o piesă la care imprimanta **nu** lucrează acum →
+   **Anulează piesa**. În câteva secunde, rândul ei arată „anulată”, iar pe placă e tăiată. Uită-te la stratul următor:
+   imprimanta n-o mai face, iar celelalte merg mai departe.
+2. Dacă rândul spune „imprimanta n-a confirmat”, K1C n-a primit comanda prin `gcodeCmd`: copiază jurnalul și lipește-l
+   în conversație; până atunci, anularea rămâne pe ecranul imprimantei.
+3. **Anulează…** lângă piesa care „se imprimă acum”: rândul ei arată „→ se anulează când imprimanta trece la altă piesă”.
+   Spune-mi dacă devine „anulată” după ce imprimanta o termină pe stratul de acum. A treia piesă, rămasă singură, n-are
+   buton: pentru ea, Oprește.
+4. **Copiază jurnalul** la final: cadrele cu `excluded_objects` și `current_object` ne spun ce trimite K1C când anulează.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).
