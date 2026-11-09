@@ -128,9 +128,11 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
   const t = r.raport;
   const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
+    intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, transparenta: t.transparenta, automat: t.automat,
-    margini: t.margini, pete: t.pete, gauri: t.gauri, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
-  };
+    margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
+    lumina: r.fel === 'culori' ? 'uniforma' : r.raport.lumina, inegala: r.fel === 'culori' ? null : r.raport.inegala,
+  } as const;
   if (r.fel === 'culori') {
     const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai })) : [];
     return { ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese } };
@@ -243,8 +245,11 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
   try {
     r = await trasareInBazin({
       imagine: new Blob([new Uint8Array(f.octeti)]),
-      optiuni: { sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime },
-      peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti),
+      optiuni: {
+        sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime,
+        ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
+      },
+      peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
       ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
     }, semnal ? { semnal } : {});
   } catch (e) {

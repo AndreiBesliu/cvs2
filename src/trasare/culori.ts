@@ -25,6 +25,8 @@ export type OptiuniCulori = {
   /** Petele de culoare sub atâția px² trec la vecina cu care împart cea mai lungă margine; golurile de fundal, la fel. */
   readonly petePx: number;
   readonly gauriPx: number;
+  /** „Ignoră ce atinge marginea” (ADR 0224): o bucată de culoare lipită de marginea imaginii trece la fundal (lipsă: nu). */
+  readonly margine?: boolean;
 };
 
 export type CuloarePaleta = {
@@ -44,6 +46,8 @@ export type RaportCulori = {
   readonly automat: boolean; readonly paleta: readonly CuloarePaleta[];
   readonly margini: 'netezite' | 'dure';
   readonly pete: number; readonly gauri: number;
+  /** Bucățile de culoare lipite de margine, trecute la fundal (ADR 0224). */
+  readonly margine: number;
   /** Granițele (arcele dintre joncțiuni și buclele fără joncțiuni), contururile și bucățile pieselor. */
   readonly granite: number; readonly contururi: number; readonly varfuri: number;
   /** Cea mai mare distanță dintre granițele pe pixeli și curbele lor, în px. */
@@ -480,8 +484,8 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
   };
 
   // 7. Curățarea: componentele (4-vecinătate, plus diagonala câștigătoare a fiecărei celule-șa, ca la plasă).
-  let pete = 0, gauri = 0;
-  if (o.petePx > 0 || o.gauriPx > 0) {
+  let pete = 0, gauri = 0, laMargine = 0;
+  if (o.petePx > 0 || o.gauriPx > 0 || o.margine === true) {
     const par = new Int32Array(n);
     for (let p = 0; p < n; p++) par[p] = p;
     const rad = (a: number): number => { while (par[a] !== a) { const b = par[par[a] ?? a] ?? a; par[a] = b; a = b; } return a; };
@@ -510,8 +514,16 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
       const x = p % W, y = (p - x) / W;
       if (x === 0 || y === 0 || x === W - 1 || y === H - 1) margine[c] = true;
     }
+    // Bucățile de culoare lipite de margine (ADR 0224): la fundal (al imaginii opace, sau transparentul), oricât de mari.
+    const laFundal = fundal >= 0 ? prima[fundal] ?? fundal : transparenta ? T : -1;
+    const laMarg = new Uint8Array(arie.length);
+    if (o.margine === true && laFundal >= 0) {
+      for (let c = 0; c < arie.length; c++) if (margine[c] === true && !eFundal(eticheta[c] ?? 0)) { laMarg[c] = 1; laMargine++; }
+      if (laMargine > 0) for (let p = 0; p < n; p++) if (laMarg[comp[p] ?? 0] === 1) { et[p] = laFundal; orig[p] = laFundal; }
+    }
     const tinte: number[] = [];
     for (let c = 0; c < arie.length; c++) {
+      if (laMarg[c] === 1) continue;
       const l = eticheta[c] ?? 0;
       if (!eFundal(l) && (arie[c] ?? 0) < o.petePx) tinte.push(c);
       else if (eFundal(l) && !margine[c] && (arie[c] ?? 0) < o.gauriPx) tinte.push(c);
@@ -633,7 +645,7 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
     }));
     return {
       latime: W, inaltime: H, transparenta, automat: red.automat, paleta,
-      margini: laturi > 0 && amestecate / laturi < 0.15 ? 'dure' : 'netezite', pete, gauri, granite, contururi, varfuri, abatere,
+      margini: laturi > 0 && amestecate / laturi < 0.15 ? 'dure' : 'netezite', pete, gauri, margine: laMargine, granite, contururi, varfuri, abatere,
     };
   }
   if (preaMulte) return { ok: false, cod: 'prea-multe', raport: raport0() };
