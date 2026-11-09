@@ -14,6 +14,11 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  *
  * Felia 10.3↑i (ADR 0181 §2): din opțiunile Cuțitului, suprapunerea 2: cât tragi Linia, fâșia se vede, iar placa devine două
  * forme de 100 × 51 mm (aceeași alegere în panoul Taie); Linia cu Shift ține pașii de 15° (orizontala, de la y = 48).
+ *
+ * Felia 10.3↑j (ADR 0181 §6): „Îmbinarea” e stinsă la Liber; la Linie, zigzagul cu pasul 20, înălțimea 10 și raza 0 se vede cât
+ * tragi (dinții, în locul fâșiei), iar placa devine două forme de 100 × 55 mm (aceeași alegere în panoul Taie). La 1280 px și cu
+ * fontul lat al probei barei de sus (6.V↑d), bara Cuțitului și panoul opțiunilor, cu îmbinarea aleasă, rămân în fereastră, în
+ * română și în engleză.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -62,7 +67,16 @@ test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, ia
   await expect(page.locator('[data-unealta="cutit"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('bara-cutit')).toBeVisible();
   await page.locator('[data-cutit="linie"]').click();
+  // „Închide bucățile” e în opțiunile tăierii (bifată); debifată, butonul lor are punctul roșu, iar sfatul o spune.
+  await page.locator('[data-cutit="optiuni"]').click();
   await expect(page.locator('[data-cutit="inchide"]')).toBeChecked();
+  await page.locator('[data-cutit="inchide"]').uncheck();
+  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '1');
+  await expect(page.getByTestId('cutit-sfat')).toContainText('Opțiuni: bucățile rămân deschise.');
+  await page.locator('[data-cutit="inchide"]').check();
+  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '0');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
   await expect(page.getByTestId('cutit-sfat')).toContainText('Trage cuțitul peste forme');
   const a = la(-10, 20), b = la(110, 60);
   await page.mouse.move(a.x, a.y);
@@ -401,4 +415,95 @@ test('Linie, cu Shift: tăietura ține pașii de 15° (trasă de la y = 48 spre 
   const prima = await cutia(page, 0);
   const aDoua = await cutia(page, 1, prima);
   expect([prima, aDoua].sort()).toEqual(['100.00 × 48.00 mm', '100.00 × 52.00 mm']);
+});
+
+test('Îmbinarea, din opțiunile Cuțitului: stinsă la Liber; la Linie, zigzagul cu spațiul 0,2 se vede cât tragi (dinții, nu fâșia), iar placa devine două forme de 100 × 54,86 mm; la Liber, urma taie fără dinți', async ({ page }) => {
+  const la = await placa(page);
+  await cutit(page, 'liber');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.locator('[data-cutit="imbinare"]')).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  await cutit(page, 'linie');
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.locator('[data-cutit="imbinare"]').selectOption('zigzag');
+  await page.locator('[data-cutit="imbinare-pas"]').fill('20');
+  await page.locator('[data-cutit="imbinare-inaltime"]').fill('10');
+  await page.locator('[data-cutit="imbinare-raza"]').fill('0');
+  // Spațiul e jocul dintre dinți: fiecare bucată se taie cu drumul mutat cu 0,1 spre ea.
+  await page.locator('[data-cutit="intre-spatiu"]').check();
+  await page.locator('[data-cutit="latime"]').fill('0,2');
+  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '1');
+  await expect(page.getByTestId('cutit-sfat')).toContainText('Opțiuni: spațiu de 0,2 mm; îmbinare zigzag (pasul 20, înălțimea 10, raza 0 mm).');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  const a = la(-10, 50), b = la(110, 50);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 6 });
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-dinti', '1');
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-fasie', '0');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
+  await expect(randuri(page)).toHaveCount(2);
+  // Vârfurile dinților (±5), coborâte cu 0,1 · √2 de drumul mutat (colțul de 90°): 55 − 0,141 = 54,86.
+  expect(await cutia(page, 0)).toBe('100.00 × 54.86 mm');
+  expect(await cutia(page, 1)).toBe('100.00 × 54.86 mm');
+  // Aceeași alegere în panoul Taie.
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="imbinare"]')).toHaveValue('zigzag');
+  await expect(page.locator('[data-taiere="imbinare-raza"]')).toHaveValue('0');
+  await page.locator('[data-taiere="inchide-panoul"]').click();
+  await expect(page.getByTestId('panou-taiere')).toHaveCount(0);
+  // La Liber, îmbinarea aleasă nu se aplică (e stinsă): urma verticală taie amândouă formele, fără dinți.
+  await nimicAles(page, la);
+  await cutit(page, 'liber');
+  const c = la(50, -10), d = la(50, 110);
+  await page.mouse.move(c.x, c.y);
+  await page.mouse.down();
+  await page.mouse.move(d.x, d.y, { steps: 8 });
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-dinti', '0');
+  await page.mouse.up();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Forme tăiate: 2; forme noi: 4.');
+  await expect(randuri(page)).toHaveCount(4);
+});
+
+/**
+ * La 1280 px și cu fontul lat al probei barei de sus (6.V↑d: Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum
+ * lat), cu grila pornită (câmpul pasului ei e și el în bară), bara cu Cuțitul rămâne în fereastră la fiecare fel al lui, iar
+ * panoul opțiunilor, deschis, cu îmbinarea și mărimile ei, la fel. Înainte de 10.3↑j, cu „Închide bucățile” în bară, capătul
+ * ei era la 1340 px.
+ */
+async function baraCutitIncape(page: Page): Promise<void> {
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await placa(page);
+  await page.locator('[data-editare="grila"]').click();
+  await expect(page.locator('[data-editare="pas-grila"]')).toBeVisible();
+  await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+  const inFereastra = async (selector: string, ce: string): Promise<void> => {
+    const c = await page.locator(selector).boundingBox();
+    if (!c) throw new Error(`${selector} n-are cutie`);
+    expect(c.x, `${selector}, ${ce}`).toBeGreaterThanOrEqual(0);
+    expect(c.x + c.width, `${selector}, ${ce}`).toBeLessThanOrEqual(1280);
+  };
+  for (const fel of ['reteaza', 'foarfeca', 'forma', 'liber', 'pen', 'linie'] as const) {
+    await cutit(page, fel);
+    await inFereastra('.sus > .bara', fel);
+  }
+  await page.locator('[data-cutit="optiuni"]').click();
+  await page.locator('[data-cutit="imbinare"]').selectOption('coada');
+  await expect(page.locator('[data-cutit="imbinare-raza"]')).toBeVisible();
+  await inFereastra('.sus > .bara', 'cu opțiunile');
+  await inFereastra('[data-testid="optiuni-cutit"]', 'cu îmbinarea');
+}
+
+test('bara Cuțitului întreagă la 1280 px și cu un font lat, cu opțiunile deschise și îmbinarea aleasă', async ({ page }) => {
+  await baraCutitIncape(page);
+});
+
+test.describe('în engleză', () => {
+  test.use({ locale: 'en-US' });
+  test('bara Cuțitului întreagă la 1280 px și cu un font lat, cu textele englezești', async ({ page }) => {
+    await baraCutitIncape(page);
+  });
 });

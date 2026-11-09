@@ -141,21 +141,14 @@
 }
 
 /*
- * Unealta Cuțit (ADR 0181, felia 10.3↑f): felurile și bifa în bara de sus; pe pânză, urma cuțitului (punctată, ca linia
- * tăierii), locurile unde taie și formele adunate în cuțit. Stratul nu prinde evenimente: gestul e al pânzei.
+ * Unealta Cuțit (ADR 0181, felia 10.3↑f): felurile și butonul opțiunilor în bara de sus („Închide bucățile” e în opțiuni, din
+ * 10.3↑j: la 1280 px și cu un font lat, bara n-avea loc de ea); pe pânză, urma cuțitului (punctată, ca linia tăierii), locurile
+ * unde taie și formele adunate în cuțit. Stratul nu prinde evenimente: gestul e al pânzei.
  */
 .bara-cutit {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-}
-
-.cutit-inchide {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--fs-2);
-  white-space: nowrap;
 }
 
 .cutit {
@@ -271,18 +264,29 @@
   opacity: 0.85;
 }
 
-/* „Între bucăți”: lățimea, un câmp scurt cu unitatea lui, pe același rând cu alegerile (se rupe cu ele). */
-.camp-latime-intre {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-}
-
-.camp-latime-intre .camp-taiere {
+/* Câmpurile în mm ale opțiunilor (lățimea dintre bucăți, pasul, înălțimea și raza îmbinării): scurte, pe rândul alegerilor. */
+.camp-taiere.camp-mm {
   width: 3.6rem;
   min-width: 0;
 }
 
-.camp-latime-intre .camp-taiere[aria-invalid='true']:not(:disabled) {
+.camp-taiere.camp-mm[aria-invalid='true']:not(:disabled) {
   border-color: var(--rosu);
+}
+
+/* „Îmbinarea”: modelul, apoi pasul, înălțimea și raza, fiecare cu eticheta lui (se rup pe rânduri, ca alegerile). */
+.campuri-imbinare {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+/* Dinții îmbinării, arătați: plini, ca drumul pe care se va tăia (linia și urma rămân punctate). */
+.linia-taierii polyline.dinti-taierii,
+.urma-cutit .dinti-cutit {
+  fill: none;
+  stroke: var(--rosu);
+  stroke-width: 1.5;
+  stroke-dasharray: none;
 }

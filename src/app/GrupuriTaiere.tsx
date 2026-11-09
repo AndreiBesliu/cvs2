@@ -1,27 +1,31 @@
 import { useEffect, useState, type ReactElement } from 'react';
 import { t } from '../i18n/t.ts';
+import { MODELE_IMBINARE } from '../model/imbinare.ts';
 import { latimeBuna } from '../model/intreBucati.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
+import { marimeImbinareBuna, schimbaOptiuniTaiere, useOptiuniTaiere, type FelImbinare } from './optiuniTaiere.ts';
 
 /** Numele părților păstrate, după cuțit (ADR 0181 §2): stânga / dreapta, deasupra / dedesubt (orizontala), înăuntru / în afară. */
 export type NumeParti = readonly ['stanga', 'dreapta'] | readonly ['deasupra', 'dedesubt'] | readonly ['inauntru', 'afara'];
 
 /**
- * Grupurile „Prelungește capetele”, „Păstrează” și „Între bucăți” (ADR 0181 §2), comune panoului Taie și opțiunilor din bara
- * Cuțitului: o singură setare, ținută în browser (`optiuniTaiere.ts`). `loc` dă numele grupurilor și atributul de date
- * (`data-taiere` în panou, `data-cutit` în bara cuțitului: amândouă pot fi deschise deodată); `parti`, numele părților după
- * cuțit; `cuCapete`: prelungirea are sens (un cuțit cu capete; liniile din panou sunt deja întregi, iar un cuțit închis n-are
- * capete). „Între bucăți” cere „Închide bucățile”: fără ea, grupul e oprit, iar sfatul lui spune de ce.
+ * Grupurile „Prelungește capetele”, „Păstrează”, „Între bucăți” și „Îmbinarea” (ADR 0181 §2, §6), comune panoului Taie și
+ * opțiunilor din bara Cuțitului: o singură setare, ținută în browser (`optiuniTaiere.ts`). `loc` dă numele grupurilor și
+ * atributul de date (`data-taiere` în panou, `data-cutit` în bara cuțitului: amândouă pot fi deschise deodată); `parti`, numele
+ * părților după cuțit; `cuCapete`: prelungirea are sens (un cuțit cu capete; liniile din panou sunt deja întregi, iar un cuțit
+ * închis n-are capete); `drept`: tăietura e dreaptă (liniile din panou, felul Linie al cuțitului), deci se poate îmbina. „Între
+ * bucăți” și „Îmbinarea” cer „Închide bucățile”: fără ea, grupurile sunt oprite, iar sfatul lor spune de ce.
  */
-export function GrupuriTaiere({ loc, parti, cuCapete }: {
+export function GrupuriTaiere({ loc, parti, cuCapete, drept }: {
   readonly loc: 'taiere' | 'cutit';
   readonly parti: NumeParti;
   readonly cuCapete: boolean;
+  readonly drept: boolean;
 }): ReactElement {
   const o = useOptiuniTaiere();
   const date = (x: string): Record<string, string> => ({ [`data-${loc}`]: x });
+  const faraImbinare = !o.inchide || !drept;
   return (
     <>
       <div className="rand-optiuni-taiere" role="radiogroup" aria-label={t('editare.taiere.prelungeste')} title={t('editare.taiere.prelungeste.titlu')}>
@@ -53,35 +57,59 @@ export function GrupuriTaiere({ loc, parti, cuCapete }: {
             {t(`editare.taiere.intre.${x}`)}
           </label>
         ))}
-        <CampLatime date={date} oprit={!o.inchide || o.intre === 'nimic'} />
+        <CampMm valoare={o.latime} bun={latimeBuna} scrie={(latime) => { schimbaOptiuniTaiere({ latime }); }} eticheta={t('editare.taiere.intre.latime')}
+          date={date('latime')} oprit={!o.inchide || o.intre === 'nimic'} />
+        <span>mm</span>
+      </div>
+      <div className="rand-optiuni-taiere" title={t(!o.inchide ? 'editare.taiere.imbinare.inchide' : !drept ? 'editare.taiere.imbinare.drepte' : 'editare.taiere.imbinare.titlu')}>
+        <label>
+          {t('editare.taiere.imbinare')}
+          <select className="camp-taiere" value={o.imbinare} disabled={faraImbinare} {...date('imbinare')}
+            onChange={(e) => { schimbaOptiuniTaiere({ imbinare: e.target.value as FelImbinare }); }}>
+            {(['dreapta', ...MODELE_IMBINARE] as const).map((m) => <option key={m} value={m}>{t(`editare.taiere.imbinare.${m}`)}</option>)}
+          </select>
+        </label>
+        {o.imbinare === 'dreapta' ? null : (
+          <span className="campuri-imbinare">
+            {(['pas', 'inaltime', 'raza'] as const).map((x) => (
+              <label key={x}>
+                {t(`editare.taiere.imbinare.${x}`)}
+                <CampMm valoare={o[x]} bun={(v) => marimeImbinareBuna(v, x === 'raza')} scrie={(v) => { schimbaOptiuniTaiere({ [x]: v }); }}
+                  eticheta={t(`editare.taiere.imbinare.${x}`)} date={date(`imbinare-${x}`)} oprit={faraImbinare} />
+              </label>
+            ))}
+            <span>mm</span>
+          </span>
+        )}
       </div>
     </>
   );
 }
 
 /**
- * Lățimea dintre bucăți, în mm: textul scris rămâne cât scrii (o valoare care nu e bună se arată ca greșită și nu ajunge în
+ * Un câmp în mm al opțiunilor: textul scris rămâne cât scrii (o valoare care nu e bună se arată ca greșită și nu ajunge în
  * opțiuni); altfel urmează opțiunile, schimbate și din celălalt loc.
  */
-function CampLatime({ date, oprit }: { readonly date: (x: string) => Record<string, string>; readonly oprit: boolean }): ReactElement {
-  const o = useOptiuniTaiere();
+function CampMm({ valoare, bun, scrie, eticheta, date, oprit }: {
+  readonly valoare: number;
+  readonly bun: (x: number) => boolean;
+  readonly scrie: (x: number) => void;
+  readonly eticheta: string;
+  readonly date: Record<string, string>;
+  readonly oprit: boolean;
+}): ReactElement {
   const virgula = useLimba() === 'ro';
-  const [text, setText] = useState(() => textNumar(o.latime, virgula));
+  const [text, setText] = useState(() => textNumar(valoare, virgula));
   const [scriu, setScriu] = useState(false);
-  useEffect(() => { if (!scriu) setText(textNumar(o.latime, virgula)); }, [o.latime, virgula, scriu]);
+  useEffect(() => { if (!scriu) setText(textNumar(valoare, virgula)); }, [valoare, virgula, scriu]);
   const x = citesteNumar(text);
-  const bun = x !== null && latimeBuna(x);
   return (
-    <span className="camp-latime-intre">
-      <input className="camp-taiere" value={text} inputMode="decimal" disabled={oprit} aria-invalid={!bun} aria-label={t('editare.taiere.intre.latime')}
-        title={t('editare.taiere.intre.latime')} {...date('latime')}
-        onFocus={() => { setScriu(true); }} onBlur={() => { setScriu(false); }}
-        onChange={(e) => {
-          setText(e.target.value);
-          const v = citesteNumar(e.target.value);
-          if (v !== null && latimeBuna(v)) schimbaOptiuniTaiere({ latime: v });
-        }} />
-      <span>mm</span>
-    </span>
+    <input className="camp-taiere camp-mm" value={text} inputMode="decimal" disabled={oprit} aria-invalid={x === null || !bun(x)} aria-label={eticheta}
+      title={eticheta} {...date} onFocus={() => { setScriu(true); }} onBlur={() => { setScriu(false); }}
+      onChange={(e) => {
+        setText(e.target.value);
+        const v = citesteNumar(e.target.value);
+        if (v !== null && bun(v)) scrie(v);
+      }} />
   );
 }

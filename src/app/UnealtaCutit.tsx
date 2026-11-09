@@ -23,7 +23,8 @@ import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import {
-  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cuPrelungiri, cutiePuncte, esteModCutit, fasieAproximativa, locuriAproximative,
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, corziAproximative, cuPrelungiri, cutiePuncte, dintiAproximativi, esteModCutit,
+  fasieAproximativa, locuriAproximative,
   locuriComune, MODURI_CUTIT, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie, tinteCutit, type ConturAproximat,
   type ModCutit, type Polilinie, type RegiuneAproximativa,
 } from './cutitCalcul.ts';
@@ -31,7 +32,7 @@ import { capatConstrans, type FormaDesenata } from './desenCalcul.ts';
 import { GrupuriTaiere } from './GrupuriTaiere.tsx';
 import { useInFereastra } from './inFereastra.ts';
 import { drumSvg } from './noduriCalcul.ts';
-import { intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
+import { imbinareDin, intreDin, optiuniTaiere, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
 
 type Punct = { readonly x: number; readonly y: number };
 type Urma = { readonly fel: 'linie'; readonly a: Punct; readonly b: Punct } | { readonly fel: 'liber'; readonly puncte: readonly Punct[] };
@@ -85,6 +86,8 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   // Opțiunile tăierii (ADR 0181 §2), aceleași ca în panoul Taie: închiderea, prelungirea, partea păstrată, cuțitul șters, spațiul.
   const optiuni = useOptiuniTaiere();
   const intre = intreDin(optiuni);
+  // Îmbinarea (ADR 0181 §6), doar la felul Linie (o tăietură dreaptă).
+  const im = imbinareDin(optiuni, mod === 'linie');
   const virgula = useLimba() === 'ro';
   // Opțiunile din bara cuțitului: un panou sub butonul lor, ca panourile extensiei (bara de sus n-are loc de ele pe un rând).
   const [optiuniDeschise, setOptiuniDeschise] = useState(false);
@@ -120,10 +123,11 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       setStare({ fel: 'gata', text: t('editare.taiere.eroare'), rau: true });
     };
     // Opțiunile din clipa tăierii; foarfeca și retezatul nu le folosesc (modelul le lasă deoparte).
-    const o = optiuni, intreCerut = intreDin(o);
+    const o = optiuni, intreCerut = intreDin(o), imCerut = imbinareDin(o, mod === 'linie');
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      const cerere = { cutit, alese, inchide: o.inchide, prelungeste: o.prelungeste, pastreaza: o.pastreaza, stergeCutitul: o.stergeCutitul, ...(intreCerut ? { intre: intreCerut } : {}) };
+      const cerere = { cutit, alese, inchide: o.inchide, prelungeste: o.prelungeste, pastreaza: o.pastreaza, stergeCutitul: o.stergeCutitul, ...(intreCerut ? { intre: intreCerut } : {}),
+        ...(imCerut ? { imbinare: imCerut } : {}) };
       calc.taieVectorii(laCerere, cerere, s.signal).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
@@ -283,10 +287,11 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     const regiuni = [...peForma].map(([instanta, contururi]) => ({ instanta, contururi, cutie: contururi.reduce((u, c) => uneste(u, c.cutie), CUTIE_GOALA) }));
     return { tinte, regiuni, cutie };
   }, [doc, selectie, mod]);
-  // Cât tragi (ADR 0181 §2): capetele prelungite (punctate), locurile unde taie calea prelungită, fâșia spațiului sau a
-  // suprapunerii (calea mutată de fiecare parte) și, cu „Păstrează”, partea care pleacă, estompată peste formele pe care
-  // cuțitul le împarte (cele pe care nu le atinge rămân).
+  // Cât tragi (ADR 0181 §2, §6): capetele prelungite (punctate), locurile unde taie calea prelungită, fâșia spațiului sau a
+  // suprapunerii (calea mutată de fiecare parte) sau, cu îmbinare, dinții ei pe coardele formelor (la Linie) și, cu
+  // „Păstrează”, partea care pleacă, estompată peste formele pe care cuțitul le împarte (cele pe care nu le atinge rămân).
   const latimeFasie = intre?.latime ?? 0;
+  const cheieImbinare = im ? `${im.model}|${im.pas}|${im.inaltime}|${im.raza}` : '';
   const arata = useMemo(() => {
     if (!urma || !deTaiat) return null;
     const puncte = urma.fel === 'linie' ? [urma.a, urma.b] : urma.puncte;
@@ -299,9 +304,17 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       const poligoane = poligonSters(cale, false, optiuni.pastreaza, (2 * Math.hypot(marime.latime, marime.inaltime)) / vedere.scara);
       if (atinse.length > 0 && poligoane) sters = { poligoane, atinse };
     }
-    const fasie = latimeFasie > 0 ? fasieAproximativa(cale, latimeFasie) : null;
-    return { prelungiri, locuri: locuriAproximative(cale, deTaiat.tinte), sters, fasie };
-  }, [urma, deTaiat, optiuni.prelungeste, optiuni.pastreaza, latimeFasie, marime.latime, marime.inaltime, vedere.scara]);
+    // Îmbinarea, la Linie: dreapta de la primul la ultimul punct al căii prelungite, cu dinții pe coardele ei.
+    const imb = urma.fel === 'linie' ? imbinareDin(optiuniTaiere(), true) : undefined;
+    let dinti: Punct[][] = [];
+    const A = cale[0], B = cale[cale.length - 1];
+    if (imb && A && B && Math.hypot(B.x - A.x, B.y - A.y) > 0) {
+      const l = Math.hypot(B.x - A.x, B.y - A.y), u = { x: (B.x - A.x) / l, y: (B.y - A.y) / l };
+      dinti = dintiAproximativi(A, u, corziAproximative(A, u, 0, l, deTaiat.regiuni), imb);
+    }
+    const fasie = latimeFasie > 0 && !imb ? fasieAproximativa(cale, latimeFasie) : null;
+    return { prelungiri, locuri: locuriAproximative(cale, deTaiat.tinte), sters, fasie, dinti };
+  }, [urma, deTaiat, optiuni.prelungeste, optiuni.pastreaza, latimeFasie, cheieImbinare, marime.latime, marime.inaltime, vedere.scara]);
   const locuri = arata?.locuri ?? [];
   const idTaieturi = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   // Formele adunate în cuțit, conturate pe pânză.
@@ -359,6 +372,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   const cuOptiuni = mod === 'linie' || mod === 'pen' || mod === 'liber' || mod === 'forma';
   // Opțiunile care nu sunt cele implicite se spun în sfat și se semnalează pe butonul lor: „Păstrează” șterge ceva.
   const activeOptiuni: string[] = [];
+  if (cuOptiuni && !optiuni.inchide) activeOptiuni.push(t('editare.cutit.activ.deschise'));
   if (cuOptiuni && optiuni.pastreaza !== 'ambele') {
     const parte = mod === 'forma' ? (optiuni.pastreaza === 'stanga' ? 'inauntru' : 'afara') : optiuni.pastreaza;
     activeOptiuni.push(t('editare.cutit.activ.pastreaza', { parte: t(`editare.taiere.parte.${parte}`) }));
@@ -366,6 +380,11 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   if (cuOptiuni && optiuni.prelungeste !== 'nu') activeOptiuni.push(t('editare.cutit.activ.prelungeste', { cum: t(`editare.taiere.prelungeste.${optiuni.prelungeste}`) }));
   if (mod === 'forma' && optiuni.stergeCutitul) activeOptiuni.push(t('editare.cutit.activ.sterge'));
   if (cuOptiuni && intre) activeOptiuni.push(t('editare.cutit.activ.intre', { fel: t(`editare.taiere.intre.${intre.fel}`), latime: textNumar(intre.latime, virgula) }));
+  if (im) {
+    activeOptiuni.push(t('editare.cutit.activ.imbinare', {
+      model: t(`editare.taiere.imbinare.${im.model}`), pas: textNumar(im.pas, virgula), inaltime: textNumar(im.inaltime, virgula), raza: textNumar(im.raza, virgula),
+    }));
+  }
   const cuActive = (text: string): string => (activeOptiuni.length > 0 ? `${text} ${t('editare.cutit.activ', { lista: activeOptiuni.join('; ') })}` : text);
   const sfat = stare?.fel === 'gata' ? stare.text
     : stare?.fel === 'calcul' ? t('editare.cutit.calcul')
@@ -385,10 +404,6 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
           <IconaMod m={m} />
         </button>
       ))}
-      <label className="cutit-inchide" title={t('editare.cutit.inchide-sfat')}>
-        <input type="checkbox" checked={optiuni.inchide} data-cutit="inchide" onChange={(e) => { schimbaOptiuniTaiere({ inchide: e.target.checked }); }} />
-        {t('editare.cutit.inchide')}
-      </label>
       {cuOptiuni ? (
         <span className="optiuni-cutit">
           <button type="button" className="aliniaza" aria-expanded={optiuniDeschise} aria-controls="optiuni-cutit" title={t('editare.cutit.optiuni')}
@@ -404,8 +419,13 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
                 e.stopPropagation();
                 setOptiuniDeschise(false);
               }}>
+              {/* „Închide bucățile” stă aici, nu în bară: la 1280 px și cu un font lat, bara de sus n-are loc de ea (felia 10.3↑j). */}
+              <label className="bifa-taiere" title={t('editare.cutit.inchide-sfat')}>
+                <input type="checkbox" checked={optiuni.inchide} data-cutit="inchide" onChange={(e) => { schimbaOptiuniTaiere({ inchide: e.target.checked }); }} />
+                <span>{t('editare.cutit.inchide')}</span>
+              </label>
               {/* La felul Formă, cuțitul e de obicei închis (un text, un cerc): stânga e înăuntru, dreapta în afară. */}
-              <GrupuriTaiere loc="cutit" parti={mod === 'forma' ? ['inauntru', 'afara'] : ['stanga', 'dreapta']} cuCapete />
+              <GrupuriTaiere loc="cutit" parti={mod === 'forma' ? ['inauntru', 'afara'] : ['stanga', 'dreapta']} cuCapete drept={mod === 'linie'} />
               {mod === 'forma' ? (
                 <label className="bifa-taiere" title={t('editare.cutit.sterge-sfat')}>
                   <input type="checkbox" checked={optiuni.stergeCutitul} data-cutit="sterge" onChange={(e) => { schimbaOptiuniTaiere({ stergeCutitul: e.target.checked }); }} />
@@ -425,7 +445,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       {mod === 'pen' ? pen({ termina: (f) => { const c = caleDinPen(f); if (c) taie({ fel: 'cale', cale: c }, []); }, sfat }) : (
         <div className="cutit" ref={radacina} data-testid="cutit" data-mod={mod} data-locuri={locuri.length} data-adunate={forme.length}
           data-marcaj={marcaj ? marcaj.length : 0} data-prelungiri={arata?.prelungiri.length ?? 0} data-estompate={sters?.atinse.length ?? 0}
-          data-fasie={arata?.fasie ? 2 : 0}>
+          data-fasie={arata?.fasie ? 2 : 0} data-dinti={arata?.dinti.length ?? 0}>
           <svg className="rigle-desen urma-cutit" width={marime.latime} height={marime.inaltime} aria-hidden="true">
             {sters ? (
               <g className="parte-stearsa">
@@ -446,6 +466,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
             ) : null}
             {arata?.prelungiri.map(([de, pana], i) => <line key={`p${i}`} className="prelungire-cutit" x1={sx(de.x)} y1={sy(de.y)} x2={sx(pana.x)} y2={sy(pana.y)} />)}
             {arata?.fasie?.map((ps, i) => <polyline key={`f${i}`} className="fasie-cutit" points={ps.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} />)}
+            {arata?.dinti.map((ps, i) => <polyline key={`d${i}`} className="dinti-cutit" points={ps.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} />)}
             {urma?.fel === 'linie' ? <line x1={sx(urma.a.x)} y1={sy(urma.a.y)} x2={sx(urma.b.x)} y2={sy(urma.b.y)} /> : null}
             {urma?.fel === 'liber' ? <polyline points={urma.puncte.map((q) => `${sx(q.x)},${sy(q.y)}`).join(' ')} /> : null}
             {adunate.map((d, i) => <path key={i} d={d} />)}

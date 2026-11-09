@@ -3,15 +3,17 @@
  * alese, sau, fără alegere, toate de pe foaie; niciodată cuțitul), urma mâinii libere (un punct nou doar la un pixel de ultimul),
  * calea cuțitului din urmă (prea scurtă: nimic), calea Pen-ului mutată pe foaie (cu mânerele) și locurile aproximative arătate
  * cât tragi (pătratul trecut de o linie oblică: două locuri, pe laturi). Felia 10.3↑i: fâșia spațiului arătată cât tragi
- * (calea mutată cu jumătate din lățime de fiecare parte) și spațiul cerut doar cu închidere.
+ * (calea mutată cu jumătate din lățime de fiecare parte) și spațiul cerut doar cu închidere. Felia 10.3↑j: îmbinarea cerută
+ * doar cu închidere, pe o tăietură dreaptă și cu un model; coardele dreptei prin regiuni și dinții arătați pe ele.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, cuPrelungiri, cutiePuncte, esteModCutit, fasieAproximativa, locuriAproximative,
-  locuriComune, lungimeUrma, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie, tinteCutit, type RegiuneAproximativa,
+  adaugaLaUrma, bucataSub, caleCutit, caleDinPen, conturAproximat, corziAproximative, cuPrelungiri, cutiePuncte, dintiAproximativi, esteModCutit,
+  fasieAproximativa, locuriAproximative, locuriComune, lungimeUrma, poligonSters, prelungiriAproximative, regiuniAtinse, selectieDupa, subPolilinie,
+  tinteCutit, type RegiuneAproximativa,
 } from '../../src/app/cutitCalcul.ts';
-import { intreDin, type OptiuniTaiere } from '../../src/app/optiuniTaiere.ts';
+import { imbinareDin, intreDin, type OptiuniTaiere } from '../../src/app/optiuniTaiere.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const stoc = { latime: 1000, inaltime: 1000, grosime: 18 };
@@ -220,9 +222,57 @@ test('fâșia arătată cât tragi (ADR 0181 §2): linia mutată cu 2 de fiecare
 });
 
 test('spațiul cerut din opțiuni: doar cu închidere și fără „nimic”, cu lățimea lor', () => {
-  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'spatiu', latime: 3 };
+  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'spatiu', latime: 3, imbinare: 'dreapta', pas: 40, inaltime: 20, raza: 3 };
   assert.deepEqual(intreDin(o), { fel: 'spatiu', latime: 3 });
   assert.deepEqual(intreDin({ ...o, intre: 'suprapunere', latime: 0.5 }), { fel: 'suprapunere', latime: 0.5 });
   assert.equal(intreDin({ ...o, intre: 'nimic' }), undefined);
   assert.equal(intreDin({ ...o, inchide: false }), undefined, 'fără închidere, nimic');
+});
+
+test('îmbinarea cerută din opțiuni (ADR 0181 §6): doar cu închidere, pe o tăietură dreaptă și cu un model, cu mărimile lor', () => {
+  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'nimic', latime: 3, imbinare: 'zigzag', pas: 40, inaltime: 20, raza: 3 };
+  assert.deepEqual(imbinareDin(o, true), { model: 'zigzag', pas: 40, inaltime: 20, raza: 3 });
+  assert.deepEqual(imbinareDin({ ...o, imbinare: 'puzzle', pas: 30, inaltime: 12, raza: 0.5 }, true), { model: 'puzzle', pas: 30, inaltime: 12, raza: 0.5 });
+  assert.equal(imbinareDin(o, false), undefined, 'tăietura nu e dreaptă');
+  assert.equal(imbinareDin({ ...o, inchide: false }, true), undefined, 'fără închidere');
+  assert.equal(imbinareDin({ ...o, imbinare: 'dreapta' }, true), undefined, 'marginea dreaptă');
+});
+
+test('coardele arătate (ADR 0181 §6): dreapta prin pătrat, de la A; prin inel, două; doar cele toate între capete; în orice sens', () => {
+  const p = regiune('a', 0, 0, 100, 100);
+  assert.deepEqual(corziAproximative({ x: -10, y: 50 }, { x: 1, y: 0 }, 0, 1e9, [p]), [[10, 110]]);
+  assert.deepEqual(corziAproximative({ x: 110, y: 50 }, { x: -1, y: 0 }, 0, 1e9, [p]), [[10, 110]], 'în sens invers, tot de la A');
+  assert.deepEqual(corziAproximative({ x: 30, y: -20 }, { x: 0, y: 1 }, 0, 1e9, [p]), [[20, 120]], 'verticala');
+  assert.deepEqual(corziAproximative({ x: -10, y: 50 }, { x: 1, y: 0 }, 20, 1e9, [p]), [], 'coarda începe înaintea capătului');
+  assert.deepEqual(corziAproximative({ x: -10, y: 50 }, { x: 1, y: 0 }, 0, 100, [p]), [], 'coarda trece de capăt');
+  assert.deepEqual(corziAproximative({ x: -10, y: 150 }, { x: 1, y: 0 }, 0, 1e9, [p]), [], 'dreapta ocolește pătratul');
+  const gaura = [{ x: 40, y: 40 }, { x: 60, y: 40 }, { x: 60, y: 60 }, { x: 40, y: 60 }];
+  const inel: RegiuneAproximativa = { ...p, contururi: [...p.contururi, { puncte: gaura, inchis: true, cutie: cutiePuncte(gaura) }] };
+  assert.deepEqual(corziAproximative({ x: -10, y: 50 }, { x: 1, y: 0 }, 0, 1e9, [inel]), [[10, 50], [70, 110]]);
+  assert.deepEqual(corziAproximative({ x: -10, y: 50 }, { x: 1, y: 0 }, 0, 1e9, [p, regiune('b', 200, 0, 300, 100)]), [[10, 110], [210, 310]], 'două forme');
+});
+
+test('dinții arătați (ADR 0181 §6): zigzagul pe coardă, în lume; rotunjirile, prin arce cu vârful la r(√2 − 1) sub colț; fără dinte, nimic', () => {
+  const A = { x: -10, y: 50 }, u = { x: 1, y: 0 };
+  const aproape = (a: readonly { x: number; y: number }[], b: readonly { x: number; y: number }[]): boolean =>
+    a.length === b.length && a.every((q, i) => Math.hypot(q.x - (b[i]?.x ?? Number.NaN), q.y - (b[i]?.y ?? Number.NaN)) < 1e-9);
+  // Pasul 40 pe 100: un dinte, cu câte 30 drepți la capete; fără rază, colțurile ascuțite.
+  const [z, ...rest] = dintiAproximativi(A, u, [[10, 110]], { model: 'zigzag', pas: 40, inaltime: 20, raza: 0 });
+  assert.equal(rest.length, 0);
+  assert.ok(z && aproape(z, [{ x: 0, y: 50 }, { x: 30, y: 50 }, { x: 40, y: 60 }, { x: 60, y: 40 }, { x: 70, y: 50 }, { x: 100, y: 50 }]), JSON.stringify(z));
+  // Cu raza 3: patru colțuri, fiecare cu două vârfuri și 11 puncte pe arc; vârful de sus, coborât cu 3(√2 − 1).
+  const [r] = dintiAproximativi(A, u, [[10, 110]], { model: 'zigzag', pas: 40, inaltime: 20, raza: 3 });
+  assert.ok(r);
+  assert.equal(r.length, 10 + 4 * 11);
+  assert.ok(aproape([r[0] as { x: number; y: number }, r[r.length - 1] as { x: number; y: number }], [{ x: 0, y: 50 }, { x: 100, y: 50 }]));
+  const sus = Math.max(...r.map((q) => q.y)), jos = Math.min(...r.map((q) => q.y));
+  assert.ok(Math.abs(sus - (60 - 3 * (Math.SQRT2 - 1))) < 1e-9, `sus: ${sus}`);
+  assert.ok(Math.abs(jos - (40 + 3 * (Math.SQRT2 - 1))) < 1e-9, `jos: ${jos}`);
+  // Pe direcția verticală, dinții merg spre stânga ei (−x).
+  const [v] = dintiAproximativi({ x: 50, y: -10 }, { x: 0, y: 1 }, [[10, 110]], { model: 'zigzag', pas: 40, inaltime: 20, raza: 0 });
+  assert.ok(v && aproape(v.slice(2, 4), [{ x: 40, y: 40 }, { x: 60, y: 60 }]), JSON.stringify(v));
+  // Fără dinte întreg (pasul 40 pe 40) sau cu raza care nu încape (dinții drepți de 10 cu raza 3): nimic de arătat.
+  assert.deepEqual(dintiAproximativi(A, u, [[10, 50]], { model: 'zigzag', pas: 40, inaltime: 20, raza: 0 }), []);
+  assert.deepEqual(dintiAproximativi(A, u, [[10, 110]], { model: 'dinti', pas: 20, inaltime: 10, raza: 3 }), []);
+  assert.equal(dintiAproximativi(A, u, [[10, 110], [210, 310]], { model: 'val', pas: 40, inaltime: 20, raza: 3 }).length, 2, 'o polilinie pe coardă');
 });

@@ -24,6 +24,11 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Felia 10.3↑i (ADR 0181 §2): „Între bucăți” e stinsă fără „Închide bucățile”; spațiul 6 la X = 50 lasă două forme de
  * 47 × 100 mm (fâșia lui se vede pe pânză, în jurul liniei); suprapunerea 6, două de 53 × 100; spațiul care ar mânca fâșia de
  * 2 mm de la X = 98 e refuzat, cu motiv.
+ *
+ * Felia 10.3↑j (ADR 0181 §6): „Îmbinarea” e stinsă fără „Închide bucățile” și la ultima formă aleasă (nu e o tăietură
+ * dreaptă); zigzagul cu pasul 20, înălțimea 10 și raza 0 la X = 50 lasă două forme de 55 × 100 mm (dinții se văd pe pânză); un
+ * pas de 0 se arată greșit; alegerea rămâne după reîncărcare. Refuzate, cu motiv: dinții drepți de 10 cu raza 3 (treapta de 5 nu ține două rotunjiri) și pasul
+ * 60 (niciun dinte întreg pe 100 mm); puzzle-ul implicit la Y = 50 lasă două forme de 100 × 60 mm (capul ajunge la ±10).
  */
 test.use({ locale: 'ro-RO' });
 
@@ -288,4 +293,71 @@ test('Între bucăți: spațiul 6 la X = 98 ar mânca fâșia de 2 mm și e refu
   await page.keyboard.press('Escape');
   await expect(randuri(page)).toHaveCount(2);
   await cutii(page, '53.00 × 100.00 mm');
+});
+
+test('Îmbinarea: stinsă fără închidere și la ultima formă aleasă; zigzagul (pasul 20, înălțimea 10, raza 0) la X = 50 lasă două forme de 55 × 100 mm, iar dinții se văd pe pânză', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="x"]').fill('50');
+  await expect(page.locator('[data-taiere="imbinare"]')).toHaveValue('dreapta');
+  await page.locator('[data-taiere="inchide"]').uncheck();
+  await expect(page.locator('[data-taiere="imbinare"]')).toBeDisabled();
+  await page.locator('[data-taiere="inchide"]').check();
+  await page.locator('[data-taiere="imbinare"]').selectOption('zigzag');
+  // Mărimile, cu valorile implicite: pasul 40, înălțimea 20, raza 3 (un dinte pe 100 mm).
+  await expect(page.locator('[data-taiere="imbinare-pas"]')).toHaveValue('40');
+  await expect(page.locator('[data-taiere="imbinare-inaltime"]')).toHaveValue('20');
+  await expect(page.locator('[data-taiere="imbinare-raza"]')).toHaveValue('3');
+  await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-dinti', '1');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('20');
+  await page.locator('[data-taiere="imbinare-inaltime"]').fill('10');
+  await page.locator('[data-taiere="imbinare-raza"]').fill('0');
+  // Un pas de 0 se arată greșit și nu ajunge în opțiuni.
+  await page.locator('[data-taiere="imbinare-pas"]').fill('0');
+  await expect(page.locator('[data-taiere="imbinare-pas"]')).toHaveAttribute('aria-invalid', 'true');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('20');
+  await expect(page.locator('[data-taiere="imbinare-pas"]')).toHaveAttribute('aria-invalid', 'false');
+  // Ultima formă aleasă nu e o tăietură dreaptă: îmbinarea e stinsă.
+  await page.locator('[data-taiere="cu-forma"]').check();
+  await expect(page.locator('[data-taiere="imbinare"]')).toBeDisabled();
+  await page.locator('[data-taiere="cu-x"]').check();
+  await expect(page.locator('[data-taiere="imbinare"]')).toBeEnabled();
+  await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-dinti', '1');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
+  await page.keyboard.press('Escape');
+  await expect(randuri(page)).toHaveCount(2);
+  await cutii(page, '55.00 × 100.00 mm');
+  // Alegerea rămâne după reîncărcare (ținută în browser), cu raza 0.
+  await page.reload();
+  await expect(randuri(page)).toHaveCount(2);
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="imbinare"]')).toHaveValue('zigzag');
+  await expect(page.locator('[data-taiere="imbinare-pas"]')).toHaveValue('20');
+  await expect(page.locator('[data-taiere="imbinare-inaltime"]')).toHaveValue('10');
+  await expect(page.locator('[data-taiere="imbinare-raza"]')).toHaveValue('0');
+});
+
+test('Îmbinarea refuzată, cu motiv: dinții drepți de 10 cu raza 3 și pasul 60 pe 100 mm; puzzle-ul implicit la Y = 50 lasă două forme de 100 × 60 mm', async ({ page }) => {
+  await importa(page, PATRAT);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="x"]').fill('50');
+  await page.locator('[data-taiere="imbinare"]').selectOption('dinti');
+  await page.locator('[data-taiere="imbinare-inaltime"]').fill('10');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Modelul nu iese cu pasul, înălțimea și raza date (o rotunjire nu încape în dinte, sau o rază a valului ori a puzzle-ului e sub cea a frezei): mărește pasul sau înălțimea, ori micșorează raza.');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('60');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Niciun dinte întreg nu încape în tăietură, cu cel puțin o jumătate de pas drept la fiecare capăt: micșorează pasul.');
+  await expect(randuri(page)).toHaveCount(1);
+  await page.locator('[data-taiere="imbinare"]').selectOption('puzzle');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('40');
+  await page.locator('[data-taiere="imbinare-inaltime"]').fill('20');
+  await page.locator('[data-taiere="cu-y"]').check();
+  await expect(page.locator('[data-taiere="y"]')).toHaveValue('50');
+  await page.locator('[data-taiere="taie"]').click();
+  await expect(page.getByTestId('taiere-stare')).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
+  await page.keyboard.press('Escape');
+  await expect(randuri(page)).toHaveCount(2);
+  await cutii(page, '100.00 × 60.00 mm');
 });

@@ -4,6 +4,8 @@ import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
+import { puncteContur } from '../extensii/formeSelectie.ts';
+import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { CerereTaiere, Cutit } from '../model/taiere.ts';
@@ -12,7 +14,8 @@ import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { GrupuriTaiere, type NumeParti } from './GrupuriTaiere.tsx';
-import { intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
+import { corziAproximative, cutiePuncte, dintiAproximativi, type Polilinie, type RegiuneAproximativa } from './cutitCalcul.ts';
+import { imbinareDin, intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
 import './taiere.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -40,15 +43,42 @@ export { UnealtaCutit } from './UnealtaCutit.tsx';
 
 /**
  * Linia de tăiere de arătat pe pânză, în mm ai foii (verticala, orizontala sau linia prin x, y la unghiul dat), sau nimic. Cu
- * spațiu sau suprapunere (ADR 0181 §2), `fasie`: lățimea lor, arătată ca două linii paralele, la jumătate de fiecare parte.
+ * spațiu sau suprapunere (ADR 0181 §2), `fasie`: lățimea lor, arătată ca două linii paralele, la jumătate de fiecare parte. Cu
+ * îmbinare (§6), `dinti`: drumul ei pe coardele formelor alese, ca polilinii în mm.
  */
+type DesenLinie = { readonly fasie?: number; readonly dinti?: ReadonlyArray<ReadonlyArray<{ readonly x: number; readonly y: number }>> };
 export type LinieTaiere =
-  | { readonly axa: 'x' | 'y'; readonly v: number; readonly fasie?: number }
-  | { readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number; readonly fasie?: number }
+  | ({ readonly axa: 'x' | 'y'; readonly v: number } & DesenLinie)
+  | ({ readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number } & DesenLinie)
   | null;
 
 type Fel = 'x' | 'y' | 'unghi' | 'ghidaj' | 'forma';
 type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
+
+/** Peste atâtea puncte ale formelor alese, dinții nu se mai arată pe pânză (doar linia). */
+const PLAFON_PUNCTE = 200_000;
+
+/** Formele alese, ca regiuni aproximate (contururile lor închise, ca polilinii la 0,05 mm), pentru dinții arătați (ADR 0181 §6). */
+function regiuniAlese(doc: Document, selectie: readonly string[]): RegiuneAproximativa[] {
+  const ids = new Set(selectie);
+  const pe = new Map<string, Polilinie[]>();
+  let n = 0;
+  for (const e of elementeFoaie(doc, 0)) {
+    if (!ids.has(e.instanta)) continue;
+    let c;
+    try {
+      c = conturElement(e);
+    } catch {
+      continue;
+    }
+    if (!c.inchis) continue;
+    const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
+    n += p.length;
+    if (n > PLAFON_PUNCTE) return [];
+    if (p.length >= 3) pe.set(e.instanta, [...(pe.get(e.instanta) ?? []), { puncte: p, inchis: true, cutie: cutiePuncte(p) }]);
+  }
+  return [...pe].map(([instanta, contururi]) => ({ instanta, contururi, cutie: contururi.reduce((u, c) => uneste(u, c.cutie), CUTIE_GOALA) }));
+}
 
 /** Un număr rotunjit la 0,001 mm, cu virgulă în română. */
 const numar = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
@@ -104,13 +134,28 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const cutit: Cutit | null = fel === 'x' ? (x === null ? null : { fel: 'x', x }) : fel === 'y' ? (y === null ? null : { fel: 'y', y })
     : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { fel: 'unghi', x: ux, y: uy, unghi })
       : fel === 'ghidaj' ? (g ? { fel: 'ghidaj', id: g.id } : null) : forma ? { fel: 'forma', id: forma } : null;
-  // Spațiul sau suprapunerea (ADR 0181 §2), doar cu închidere; pe pânză, fâșia lor în jurul liniei.
+  // Spațiul sau suprapunerea (ADR 0181 §2), doar cu închidere; îmbinarea (§6), doar la liniile drepte; pe pânză, fâșia sau dinții.
   const intre = intreDin(optiuni);
-  const fasie = intre ? { fasie: intre.latime } : {};
-  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x, ...fasie }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y, ...fasie })
-    : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { axa: 'u', x: ux, y: uy, unghi, ...fasie })
-      : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz, ...fasie } : null;
-  const cheieLinie = linie ? `${linie.axa === 'u' ? `u${linie.x},${linie.y},${linie.unghi}` : `${linie.axa}${linie.v}`}|${linie.fasie ?? ''}` : '';
+  const drept = fel === 'x' || fel === 'y' || fel === 'unghi' || fel === 'ghidaj';
+  const im = imbinareDin(optiuni, drept);
+  // Dreapta liniei (un punct și direcția ei), pentru dinții arătați pe coardele formelor alese.
+  const dreapta = fel === 'x' ? (x === null ? null : { A: { x, y: 0 }, u: { x: 0, y: 1 } }) : fel === 'y' ? (y === null ? null : { A: { x: 0, y }, u: { x: 1, y: 0 } })
+    : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { A: { x: ux, y: uy }, u: { x: Math.cos((unghi * Math.PI) / 180), y: Math.sin((unghi * Math.PI) / 180) } })
+      : fel === 'ghidaj' && g ? (g.axa === 'x' ? { A: { x: g.poz, y: 0 }, u: { x: 0, y: 1 } } : { A: { x: 0, y: g.poz }, u: { x: 1, y: 0 } }) : null;
+  const regiuni = useMemo(() => (im ? regiuniAlese(doc, selectie) : []), [doc, selectie, im !== undefined]);
+  // Dinții arătați, calculați din nou doar când se schimbă formele, linia sau modelul (nu la fiecare randare); intră în cheia
+  // liniei printr-o semnătură (câte puncte și suma lor).
+  const cheieDreapta = dreapta ? `${dreapta.A.x},${dreapta.A.y},${dreapta.u.x},${dreapta.u.y}` : '';
+  const cheieIm = im ? `${im.model},${im.pas},${im.inaltime},${im.raza}` : '';
+  const { dinti, semnatura } = useMemo(() => {
+    const d = im && dreapta ? dintiAproximativi(dreapta.A, dreapta.u, corziAproximative(dreapta.A, dreapta.u, -Infinity, Infinity, regiuni), im) : [];
+    return { dinti: d, semnatura: d.reduce((s, p) => s + p.length + p.reduce((a, q) => a + q.x * 1.3 + q.y, 0), 0).toFixed(3) };
+  }, [regiuni, cheieDreapta, cheieIm]);
+  const desprel = im ? { dinti } : intre ? { fasie: intre.latime } : {};
+  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x, ...desprel }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y, ...desprel })
+    : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { axa: 'u', x: ux, y: uy, unghi, ...desprel })
+      : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz, ...desprel } : null;
+  const cheieLinie = linie ? `${linie.axa === 'u' ? `u${linie.x},${linie.y},${linie.unghi}` : `${linie.axa}${linie.v}`}|${linie.fasie ?? ''}|${semnatura}` : '';
   // „Păstrează”, cu numele părților după cuțit: deasupra / dedesubt la orizontală, înăuntru / în afară la un cuțit închis.
   const orizontala = fel === 'y' || (fel === 'ghidaj' && g?.axa === 'y');
   const numeParti: NumeParti = orizontala ? ['deasupra', 'dedesubt'] : fel === 'forma' && formaInchisa ? ['inauntru', 'afara'] : ['stanga', 'dreapta'];
@@ -162,6 +207,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     ruleaza(cutit, {
       inchide, pastreaza: optiuni.pastreaza, prelungeste: cuCapete ? optiuni.prelungeste : 'nu', stergeCutitul: fel === 'forma' && optiuni.stergeCutitul,
       ...(intre ? { intre } : {}),
+      ...(im ? { imbinare: im } : {}),
     });
   };
   const intersectii = (): void => { ruleaza({ fel: 'intersectii' }, { inchide: false }); };
@@ -225,7 +271,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
         <input type="checkbox" checked={inchide} data-taiere="inchide" onChange={(e) => { bifaInchide(e.target.checked); }} />
         <span>{t('editare.taiere.inchide')}</span>
       </label>
-      <GrupuriTaiere loc="taiere" parti={numeParti} cuCapete={cuCapete} />
+      <GrupuriTaiere loc="taiere" parti={numeParti} cuCapete={cuCapete} drept={drept} />
       {motiv ? <p className="motiv-retea" role="status" data-testid="taiere-motiv">{motiv}</p> : (
         <p className="stare-taiere">
           {fel === 'forma' ? t('editare.taiere.forma.alese', { n: String(selectie.length - 1) }) : t('editare.taiere.alese', { n: String(selectie.length) })}
@@ -285,7 +331,8 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
 
 /**
  * Linia de tăiere pe pânză, cât panoul e deschis: punctată, de-a curmezișul ferestrei, la X, la Y sau prin X, Y la unghiul ei;
- * cu spațiu sau suprapunere, și fâșia lor (două linii paralele, mai rar punctate, la jumătate din lățime de fiecare parte).
+ * cu spațiu sau suprapunere, și fâșia lor (două linii paralele, mai rar punctate, la jumătate din lățime de fiecare parte); cu
+ * îmbinare, dinții ei pe coardele formelor alese (aproximați; tăierea e a workerului).
  */
 export function LiniaTaierii({ linie, vedere, marime }: {
   readonly linie: LinieTaiere;
@@ -305,10 +352,13 @@ export function LiniaTaierii({ linie, vedere, marime }: {
   );
   return (
     <svg className="rigle-desen linia-taierii" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="taiere-linia" data-axa={linie.axa}
-      data-fasie={linie.fasie ?? 0}>
+      data-fasie={linie.fasie ?? 0} data-dinti={linie.dinti?.length ?? 0}>
       {paralela(0)}
       {h > 0 ? paralela(-h, 'fasie-taierii') : null}
       {h > 0 ? paralela(h, 'fasie-taierii') : null}
+      {linie.dinti?.map((p, i) => (
+        <polyline key={i} className="dinti-taierii" points={p.map((q) => `${vedere.tx + q.x * vedere.scara},${vedere.ty - q.y * vedere.scara}`).join(' ')} />
+      ))}
     </svg>
   );
 }

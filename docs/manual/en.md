@@ -729,6 +729,24 @@ next to it stays, even if the strip would touch it. A gap that would eat a whole
 than it, an island inside the strip) is not made, and the panel says why; a hole inside the strip goes with it. Neither can
 a knife that cannot be moved (it breaks in a curve tighter than half the width) be used.
 
+**Joint** (it needs **Close the pieces**; only on straight cuts: the lines of the panel, the guide and the Line kind of the
+[Knife](#cutit)): the new edge of the pieces follows a pattern, so that they hold each other: **straight** (the default, no
+pattern), **zigzag**, **wave**, **square teeth**, **dovetail** or **puzzle**, with the **pitch** (the length of a tooth, 40
+mm by default), the **height** (from the bottom tip to the top one, 20 mm by default) and the **radius** of the corners (3
+mm by default; 0 leaves the corners sharp). On each stretch of the cut that goes through a shape, the whole teeth stay in
+the middle, and at each end a straight margin of at least half a pitch stays, so no tooth is cut by the edge of the shape:
+the 100 × 100 square cut at X = 50 in a zigzag with a pitch of 20 and a height of 10 has four teeth, with 10 mm straight at
+each end, and each piece is 55 × 100. Each corner belongs to both pieces (hollow in one, bulging in the other), so it is
+rounded with the given radius, for a cutter of that radius to cut both; the wave and the puzzle are made of arcs, and their
+arcs must have at least the given radius. The dovetail has its sides slanted 1 : 6, and the puzzle, its head wider than its
+neck (as long as the height is over four radii): both hold the pieces together along the cut as well. The patterns are
+symmetric about their middle, so the two pieces of a symmetric shape have the same area. With **Between pieces**, the teeth
+are cut with the given gap between them (the clearance, so that the pieces fit into each other) or with the given overlap.
+While the panel is open, the teeth show on the canvas, on the chosen shapes, instead of the strip. Not made, and the panel
+says why: a cut where no tooth fits, a pattern that does not work with the given sizes (a rounding that does not fit in a
+tooth, a radius of the wave or of the puzzle below the given one) and teeth that would touch the edge of a shape (a slanted
+side or a hole too close to the cut).
+
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
 **Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
@@ -777,17 +795,19 @@ by its pieces. Pick the knife mode in the bar:
   left are not joined.
 
 While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
-(for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
-cut (or why not) is said in the corner of the canvas.
+(for Pen, on Enter), as a single undo step (Ctrl+Z). What was cut (or why not) is said in the corner of the canvas.
 
-The **Cutting options** button (the sliders next to the checkbox) opens **Extend the ends**, **Keep** and **Between
-pieces**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
-the shape, the part on the right or on the left of the direction you drag in goes in the same step, and the gap (or the
-overlap) moves the knife by half the width for each part. For the Shape kind, the parts are called **inside**
-and **outside**, and **Delete the knife** removes the knife shapes after the cut. When an option is not the default, the
-button has a red dot, and the hint in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends
-show dotted, and the part that goes is faded, with a red tint, over the shapes the knife splits right through; with a gap
-or an overlap, their strip shows on both sides of the trace, dotted more sparsely.
+The **Cutting options** button (the sliders after the knife kinds; Scissors and Trim have none, they have no options) opens
+**Close the pieces**, the same checkbox as in the Cut panel, then **Extend the ends**, **Keep**, **Between pieces** and
+**Joint**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
+the shape, the part on the right or on the left of the direction you drag in goes in the same step, the gap (or the overlap)
+moves the knife by half the width for each part, and the joint, only for the Line kind (a straight cut), puts its pattern on
+the cut. For the Shape kind, the parts are called **inside** and **outside**, and **Delete the knife** removes the knife
+shapes after the cut. When an option is not the default (the pieces left open too), the button has a red dot, and the hint
+in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends show dotted, and the part that goes
+is faded, with a red tint, over the shapes the knife splits right through; with a gap or an overlap, their strip shows on
+both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
+goes right through.
 
 ## Converting vectors
 %% capitol: conversie

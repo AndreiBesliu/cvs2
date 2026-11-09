@@ -6,6 +6,7 @@
  */
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Document, VarfDoc } from '../model/document.ts';
+import { drumImbinare, type Imbinare } from '../model/imbinare.ts';
 import type { FormaCale } from '../model/noduri.ts';
 import type { Prelungire } from '../model/taiere.ts';
 import type { FormaDesenata } from './desenCalcul.ts';
@@ -397,4 +398,54 @@ export function fasieAproximativa(puncte: readonly P[], latime: number): readonl
     dr.push({ x: q.x - h * n.x, y: q.y - h * n.y });
   }
   return [st, dr];
+}
+
+/**
+ * Coardele dreptei prin A, pe direcția u (unitară), prin regiunile date (fiecare, par-impar): trecerile prin contururile ei,
+ * împerecheate, ca poziții de-a lungul dreptei, de la A (mm); doar cele toate între `de` și `pana` (ADR 0181 §6, arătate).
+ */
+export function corziAproximative(A: P, u: P, de: number, pana: number, regiuni: readonly RegiuneAproximativa[]): Array<readonly [number, number]> {
+  const n = { x: -u.y, y: u.x };
+  const rez: Array<readonly [number, number]> = [];
+  for (const r of regiuni) {
+    const t: number[] = [];
+    for (const c of r.contururi) {
+      const p = c.puncte, m = p.length;
+      for (let i = 0; i < m; i++) {
+        const a = p[i] as P, b = p[(i + 1) % m] as P;
+        const fa = n.x * (a.x - A.x) + n.y * (a.y - A.y), fb = n.x * (b.x - A.x) + n.y * (b.y - A.y);
+        if ((fa > 0) === (fb > 0)) continue;
+        const k = fa / (fa - fb);
+        t.push(u.x * (a.x + (b.x - a.x) * k - A.x) + u.y * (a.y + (b.y - a.y) * k - A.y));
+      }
+    }
+    t.sort((x, y) => x - y);
+    for (let i = 0; i + 1 < t.length; i += 2) if ((t[i] as number) > de && (t[i + 1] as number) < pana) rez.push([t[i] as number, t[i + 1] as number]);
+  }
+  return rez;
+}
+
+/** Dinții îmbinării pe coardele date (de la `corziAproximative`), ca polilinii în lume, cu arcele prin câte 12 coarde; doar unde încape un dinte. */
+export function dintiAproximativi(A: P, u: P, corzi: ReadonlyArray<readonly [number, number]>, im: Imbinare): P[][] {
+  const n = { x: -u.y, y: u.x };
+  const la = (t: number, s: number): P => ({ x: A.x + t * u.x + s * n.x, y: A.y + t * u.y + s * n.y });
+  const rez: P[][] = [];
+  for (const [a, b] of corzi) {
+    const d = drumImbinare(b - a, im);
+    if (d === null || typeof d === 'string') continue;
+    const p: P[] = [];
+    d.forEach((v, i) => {
+      const w = d[i + 1];
+      p.push(la(a + v.t, v.s));
+      if (!w || v.b === 0) return;
+      // Arcul de la v la w: centrul și unghiul din bulge, apoi punctele de pe el.
+      const th = 4 * Math.atan(v.b), c = Math.hypot(w.t - v.t, w.s - v.s), r = c / (2 * Math.sin(Math.abs(th) / 2));
+      const h = r * Math.cos(Math.abs(th) / 2) * Math.sign(v.b);
+      const ct = (v.t + w.t) / 2 - ((w.s - v.s) / c) * h, cs = (v.s + w.s) / 2 + ((w.t - v.t) / c) * h;
+      const u0 = Math.atan2(v.s - cs, v.t - ct);
+      for (let k = 1; k < 12; k++) p.push(la(a + ct + r * Math.cos(u0 + (th * k) / 12), cs + r * Math.sin(u0 + (th * k) / 12)));
+    });
+    rez.push(p);
+  }
+  return rez;
 }

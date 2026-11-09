@@ -708,6 +708,23 @@ atinge-o. Un spațiu care ar mânca o bucată întreagă de partea păstrată (o
 nu se face, iar panoul spune de ce; o gaură din fâșie pleacă odată cu ea. Nici un cuțit care nu se poate muta (se rupe într-o
 curbă mai strânsă decât jumătatea lățimii) nu se poate folosi.
 
+**Îmbinarea** (cere **Închide bucățile**; doar la tăieturile drepte: liniile din panou, ghidajul și felul Linie al
+[Cuțitului](#cutit)): marginea nouă a bucăților urmează un model, ca ele să se prindă una de alta: **dreaptă** (implicit,
+fără model), **zigzag**, **val**, **dinți drepți**, **coadă de rândunică** sau **puzzle**, cu **pasul** (lungimea unui
+dinte, implicit 40 mm), **înălțimea** (de la vârful de jos la cel de sus, implicit 20 mm) și **raza** colțurilor (implicit 3
+mm; 0 lasă colțurile ascuțite). Pe fiecare bucată de tăietură care trece printr-o formă, dinții întregi stau la mijloc, iar
+la fiecare capăt rămâne o margine dreaptă de cel puțin o jumătate de pas, deci niciun dinte nu e tăiat de marginea formei:
+pătratul 100 × 100 tăiat la X = 50 în zigzag cu pasul 20 și înălțimea 10 are patru dinți, cu câte 10 mm drepți la capete,
+iar fiecare bucată are 55 × 100. Fiecare colț e al ambelor bucăți (scobit într-una, bombat în cealaltă), deci se rotunjește
+cu raza dată, ca o freză de raza aceea să le taie pe amândouă; valul și puzzle-ul sunt făcute din arce, iar arcele lor
+trebuie să aibă cel puțin raza dată. Coada de rândunică are laturile înclinate 1 : 6, iar puzzle-ul, capul mai lat decât
+gâtul (cât timp înălțimea trece de patru raze): amândouă țin bucățile prinse și pe lungime. Modelele sunt simetrice față de
+mijlocul lor, deci cele două bucăți ale unei forme simetrice au aceeași arie. Cu **Între bucăți**, dinții se taie cu spațiul
+dat între ei (jocul, ca bucățile să intre una în alta) sau cu suprapunerea dată. Cât panoul e deschis, dinții se văd pe
+pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de ce, o tăietură în care nu încape niciun dinte, un
+model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
+și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
+
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
 tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
@@ -752,17 +769,18 @@ toate formele foii), iar o formă aleasă care se taie e înlocuită de bucăți
   singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
 
 Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
-într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu) se
-spune în colțul pânzei.
+într-un singur pas de anulare (Ctrl+Z). Ce s-a tăiat (sau de ce nu) se spune în colțul pânzei.
 
-Butonul **Opțiunile tăierii** (glisoarele de lângă bifă) deschide **Prelungește capetele**, **Păstrează** și **Între
-bucăți**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până iese din ea,
-partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, iar spațiul (sau suprapunerea) mută
-cuțitul cu jumătate din lățime pentru fiecare parte. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar
-**Șterge cuțitul** scoate formele-cuțit după tăiere. Când o opțiune nu e cea implicită, butonul are un punct roșu, iar sfatul
-din colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e
-estompată, cu o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede
-de o parte și de alta a urmei, punctată mai rar.
+Butonul **Opțiunile tăierii** (glisoarele de după felurile cuțitului; la Foarfecă și Retează nu e, ele n-au opțiuni)
+deschide **Închide bucățile**, aceeași bifă ca în panoul Taie, apoi **Prelungește capetele**, **Păstrează**, **Între
+bucăți** și **Îmbinarea**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până
+iese din ea, partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, spațiul (sau suprapunerea) mută
+cuțitul cu jumătate din lățime pentru fiecare parte, iar îmbinarea, doar la felul Linie (o tăietură dreaptă), pune modelul
+ei pe tăietură. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar **Șterge cuțitul** scoate formele-cuțit
+după tăiere. Când o opțiune nu e cea implicită (și bucățile lăsate deschise), butonul are un punct roșu, iar sfatul din
+colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e estompată, cu
+o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și
+de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
 
 ## Conversia vectorilor
 %% capitol: conversie
