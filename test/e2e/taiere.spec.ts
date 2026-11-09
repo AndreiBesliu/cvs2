@@ -312,7 +312,8 @@ test('Îmbinarea: stinsă fără închidere și la ultima formă aleasă; zigzag
   await page.locator('[data-taiere="imbinare-pas"]').fill('20');
   await page.locator('[data-taiere="imbinare-inaltime"]').fill('10');
   await page.locator('[data-taiere="imbinare-raza"]').fill('0');
-  // Un pas de 0 se arată greșit și nu ajunge în opțiuni.
+  // Raza 0 e bună (colțuri ascuțite); un pas de 0 se arată greșit și nu ajunge în opțiuni.
+  await expect(page.locator('[data-taiere="imbinare-raza"]')).toHaveAttribute('aria-invalid', 'false');
   await page.locator('[data-taiere="imbinare-pas"]').fill('0');
   await expect(page.locator('[data-taiere="imbinare-pas"]')).toHaveAttribute('aria-invalid', 'true');
   await page.locator('[data-taiere="imbinare-pas"]').fill('20');
