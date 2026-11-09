@@ -536,7 +536,6 @@ export const roEditare = {
   'editare.cutit.activ.prelungeste': 'prelungește: {cum}',
   'editare.cutit.activ.sterge': 'cuțitul se șterge',
   'editare.cutit.activ.intre': '{fel} de {latime} mm',
-  'editare.cutit.activ.deschise': 'bucățile rămân deschise',
   'editare.cutit.activ.imbinare': 'îmbinare {model} (pasul {pas}, înălțimea {inaltime}, raza {raza} mm)',
   'editare.cutit.sterge': 'Șterge cuțitul',
   'editare.cutit.sterge-sfat': 'Formele-cuțit pleacă după tăiere, în același pas (aceeași bifă ca în panoul Taie)',

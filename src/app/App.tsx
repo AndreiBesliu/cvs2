@@ -14,7 +14,7 @@ import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
+  ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, grupuriZona, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
 } from '../ui/aranjament.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
@@ -31,6 +31,7 @@ import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
+import { useEcranLat } from '../ui/useEcranLat.ts';
 import type { RezultatConfig } from './config.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
@@ -251,6 +252,8 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
 }
 
 export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN, actualizare, progresActualizare }: Props) {
+  // Ecranul lat (peste 75rem): fișierele stau în meniul global; pe cel îngust, la capătul barei de sus (ADR 0104 §8).
+  const ecranLat = useEcranLat();
   const limbaActiva = useLimba();
   const aplicaActualizare = useSyncExternalStore(actualizare.asculta, actualizare.citeste);
   const progres = useSyncExternalStore(progresActualizare.asculta, progresActualizare.citeste);
@@ -1105,10 +1108,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const intrare = (x: Intrare, zona: IdZona): ReactNode => ('actiune' in x ? unealta(x, zona) : 'control' in x ? control(x.control) : cip(x.cip));
 
   /**
-   * Grupurile unei zone, în ordinea aranjamentului. În Mașina, bara de jos păstrează doar cipurile aplicației (ADR 0132 §3):
+   * Grupurile unei zone, în ordinea aranjamentului (pe ecranul îngust, cu cele mutate: `grupuriZona`). Un grup al unei
+   * ferestre (fișierele) se vede doar în ea. În Mașina, bara de jos păstrează doar cipurile aplicației (ADR 0132 §3):
    * cursorul, zoomul, selecția și butoanele vederii sunt ale pânzei acoperite.
    */
-  const grupuri = (zona: IdZona): ReactNode => aranjament.zone[zona].map((g) => {
+  const grupuri = (zona: IdZona): ReactNode => grupuriZona(aranjament, zona, ecranLat).map((g) => {
+    if (g.fereastra !== undefined && g.fereastra !== fereastra) return null;
     const intrari = zona === 'jos' && fereastra !== 'proiectare' ? g.intrari.filter((x) => 'cip' in x && CIPURI_GLOBALE.has(x.cip)) : g.intrari;
     return intrari.length === 0 ? null : (
       <div key={g.id} className="grup" data-grup={g.id}>

@@ -320,6 +320,26 @@ button[data-icona]:disabled > .eticheta {
   min-width: 0;
 }
 
+/*
+ * Fișierele (importul, exportul vectorilor, G-code-ul), după file, despărțite de ele printr-o linie subțire, ca grupurile
+ * barei de desen (ADR 0104 §8, schimbat pe 09.11): doar în Proiectare și doar pe ecranul lat (pe cel îngust stau la capătul
+ * barei de sus).
+ */
+.meniu-global > .grup[data-grup='fisier'] {
+  position: relative;
+  margin-left: 9px;
+}
+
+.meniu-global > .grup[data-grup='fisier']::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--l-margine);
+}
+
 /* Indicatorul lucrării și grupul aplicației stau în dreapta; filele, lângă marcă. */
 .meniu-global > .grup[data-grup='lucrare'] {
   margin-left: auto;
@@ -1124,15 +1144,6 @@ nav button[aria-pressed='true'] {
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
-  }
-
-  /*
-   * Tot sub 95rem, butoanele barei de sus care au doar iconiță (anulează, reface, importul, exportul vectorilor) au 8 px de
-   * fiecare parte, nu 12: 38 px, peste ținta de 36. Cu Cuțitul în bara uneltelor (ADR 0181), bara Transformării, cu grila
-   * și cu un font lat, trecea de 1280 px (capătul la 1296; acum 1264).
-   */
-  .sus > .bara button[data-icona]:not(.cu-eticheta) {
-    padding: 0 var(--sp-2);
   }
 }
 

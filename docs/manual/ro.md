@@ -8,14 +8,15 @@ CNC Vector Studio desenează piese pentru o freză CNC și scrie programul (G-co
 **foaie** (placa de material), pui pe ea forme, fiecare cu **operația** ei de tăiere, apoi exporți G-code-ul.
 
 **Ecranul.** Sus de tot stă **meniul aplicației**, în toate ferestrele: marca, filele ferestrelor (**Proiectare** și
-**Mașina**), indicatorul lucrării (cu mașina conectată, vezi [Mașina](#masina)), apoi „Caută o comandă”, limba (RO / EN),
-tema și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare. Pe telefon,
+**Mașina**), în Proiectare fișierele (importul, „Exportă vectori” și „Exportă G-code”, după file, pe un ecran mai lat de 1
+200 px), indicatorul lucrării (cu mașina conectată, vezi [Mașina](#masina)), apoi „Caută o comandă”, limba (RO / EN), tema
+și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare. Pe telefon,
 meniul are două rânduri: sus marca și celelalte butoane, dedesubt filele și indicatorul; fila deschisă își arată numele,
 celelalte doar iconița.
 
 În fereastra **Proiectare**, pânza ține tot ecranul; deasupra ei plutesc:
-- **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface și, la capăt, fișierele: importul, „Exportă
-  vectori” și „Exportă G-code”;
+- **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface; pe un ecran de cel mult 1 200 px (tabletă,
+  telefon), la capăt și fișierele: importul, „Exportă vectori” și „Exportă G-code” (mai lat, ele stau în meniul aplicației);
 - **extensia barei**, dedesubt: alinierea, oglindirea, copierea, offsetul, booleanul și vederea 3D;
 - în stânga, panoul **Pe foaie**: formele foii, cu piesa și operațiile fiecăreia; în dreapta, panoul **Proprietăți**;
 - jos: ce e selectat, cursorul pe foaie (în mm, din colțul stânga-jos al foii), zoomul, jurnalul de erori, „Arată
@@ -511,8 +512,9 @@ Fiecare aliniere se poate anula cu `Ctrl+Z`.
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF / imagine** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
-„Exportă G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu
+Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF / imagine** (primul dintre fișiere, lângă „Exportă vectori” și „Exportă
+G-code”: în meniul aplicației, după file; pe un ecran de cel mult 1 200 px, la capătul barei de sus) deschide fereastra de
+fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu
 centrul unde îl lași.
 
 Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului și cum se va tăia:
@@ -780,18 +782,18 @@ toate formele foii), iar o formă aleasă care se taie e înlocuită de bucăți
   singur un contur nu e un loc comun: acolo e treaba verificării. Liniile rămase nu se unesc între ele.
 
 Cât tragi, urma e punctată, iar locurile unde taie se văd cu roșu. Tăierea se face când ridici mausul (la Pen, la Enter),
-într-un singur pas de anulare (Ctrl+Z). Ce s-a tăiat (sau de ce nu) se spune în colțul pânzei.
+într-un singur pas de anulare (Ctrl+Z). **Închide bucățile** e aceeași bifă ca în panoul Taie. Ce s-a tăiat (sau de ce nu)
+se spune în colțul pânzei.
 
-Butonul **Opțiunile tăierii** (glisoarele de după felurile cuțitului; la Foarfecă și Retează nu e, ele n-au opțiuni)
-deschide **Închide bucățile**, aceeași bifă ca în panoul Taie, apoi **Prelungește capetele**, **Păstrează**, **Între
-bucăți** și **Îmbinarea**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până
-iese din ea, partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, spațiul (sau suprapunerea) mută
-cuțitul cu jumătate din lățime pentru fiecare parte, iar îmbinarea, doar la felul Linie (o tăietură dreaptă), pune modelul
-ei pe tăietură. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar **Șterge cuțitul** scoate formele-cuțit
-după tăiere. Când o opțiune nu e cea implicită (și bucățile lăsate deschise), butonul are un punct roșu, iar sfatul din
-colțul pânzei o spune. Cât tragi (Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e estompată, cu
-o nuanță roșie, peste formele pe care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și
-de alta a urmei, punctată mai rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
+Butonul **Opțiunile tăierii** (glisoarele de lângă bifă) deschide **Prelungește capetele**, **Păstrează**, **Între bucăți**
+și **Îmbinarea**, aceleași ca în [panoul Taie](#taiere): un capăt oprit înăuntrul unei forme merge pe tangentă până iese din
+ea, partea din dreapta sau din stânga sensului în care tragi pleacă în același pas, spațiul (sau suprapunerea) mută cuțitul
+cu jumătate din lățime pentru fiecare parte, iar îmbinarea, doar la felul Linie (o tăietură dreaptă), pune modelul ei pe
+tăietură. La felul Formă, părțile se cheamă **înăuntru** și **în afară**, iar **Șterge cuțitul** scoate formele-cuțit după
+tăiere. Când o opțiune nu e cea implicită, butonul are un punct roșu, iar sfatul din colțul pânzei o spune. Cât tragi
+(Linie, Liber), capetele prelungite se văd punctate, iar partea care pleacă e estompată, cu o nuanță roșie, peste formele pe
+care cuțitul le împarte de tot; cu spațiu sau suprapunere, fâșia lor se vede de o parte și de alta a urmei, punctată mai
+rar; cu îmbinare, în locul fâșiei se văd dinții, pe formele pe care urma le trece de tot.
 
 ## Conversia vectorilor
 %% capitol: conversie
@@ -1214,7 +1216,7 @@ dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#v
 %% capitol: vectori
 %% acopera: editare.vectori
 
-**Exportă vectori** (în bara de sus, între import și „Exportă G-code”) scrie foaia ca fișier de desen, pentru alte programe (ArtCAM,
+**Exportă vectori** (între import și „Exportă G-code”, în meniul aplicației sau, pe un ecran îngust, în bara de sus) scrie foaia ca fișier de desen, pentru alte programe (ArtCAM,
 Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
 - **DXF (R2007)**, implicit, **SVG**, **PDF** sau **EPS**;
 - în mm, la scara 1:1, din colțul stânga-jos al foii (în SVG, foaia are mărimea ei în mm);

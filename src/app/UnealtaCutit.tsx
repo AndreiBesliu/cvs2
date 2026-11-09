@@ -372,7 +372,6 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   const cuOptiuni = mod === 'linie' || mod === 'pen' || mod === 'liber' || mod === 'forma';
   // Opțiunile care nu sunt cele implicite se spun în sfat și se semnalează pe butonul lor: „Păstrează” șterge ceva.
   const activeOptiuni: string[] = [];
-  if (cuOptiuni && !optiuni.inchide) activeOptiuni.push(t('editare.cutit.activ.deschise'));
   if (cuOptiuni && optiuni.pastreaza !== 'ambele') {
     const parte = mod === 'forma' ? (optiuni.pastreaza === 'stanga' ? 'inauntru' : 'afara') : optiuni.pastreaza;
     activeOptiuni.push(t('editare.cutit.activ.pastreaza', { parte: t(`editare.taiere.parte.${parte}`) }));
@@ -404,6 +403,10 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
           <IconaMod m={m} />
         </button>
       ))}
+      <label className="cutit-inchide" title={t('editare.cutit.inchide-sfat')}>
+        <input type="checkbox" checked={optiuni.inchide} data-cutit="inchide" onChange={(e) => { schimbaOptiuniTaiere({ inchide: e.target.checked }); }} />
+        {t('editare.cutit.inchide')}
+      </label>
       {cuOptiuni ? (
         <span className="optiuni-cutit">
           <button type="button" className="aliniaza" aria-expanded={optiuniDeschise} aria-controls="optiuni-cutit" title={t('editare.cutit.optiuni')}
@@ -419,11 +422,6 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
                 e.stopPropagation();
                 setOptiuniDeschise(false);
               }}>
-              {/* „Închide bucățile” stă aici, nu în bară: la 1280 px și cu un font lat, bara de sus n-are loc de ea (felia 10.3↑j). */}
-              <label className="bifa-taiere" title={t('editare.cutit.inchide-sfat')}>
-                <input type="checkbox" checked={optiuni.inchide} data-cutit="inchide" onChange={(e) => { schimbaOptiuniTaiere({ inchide: e.target.checked }); }} />
-                <span>{t('editare.cutit.inchide')}</span>
-              </label>
               {/* La felul Formă, cuțitul e de obicei închis (un text, un cerc): stânga e înăuntru, dreapta în afară. */}
               <GrupuriTaiere loc="cutit" parti={mod === 'forma' ? ['inauntru', 'afara'] : ['stanga', 'dreapta']} cuCapete drept={mod === 'linie'} />
               {mod === 'forma' ? (

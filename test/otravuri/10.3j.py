@@ -2,7 +2,8 @@
 # (dinții pe coardă, marginea, fiecare model, rotunjirile, razele valului și ale puzzle-ului, vârfurile lipite), cererea
 # (închiderea, valorile, tăieturile care nu sunt drepte, niciun dinte), drumul (coardele de pe tăietură, marginea dinților,
 # capetele coardelor), părțile (latura, ordinea, gruparea pe linie, cu joc), dreapta căii trase; partea pură a uneltei
-# (coardele, dinții arătați, îmbinarea cerută) și legăturile din interfață, cu bara de sus la 1280 px (e2e).
+# (coardele, dinții arătați, îmbinarea cerută) și legăturile din interfață, cu bara de sus la 1280 px (e2e); apoi fișierele lângă
+# Imprimanta (aranjamentul pe ecranul lat și pe cel îngust, verificarea lui, fereastra, pragul) și bifa Cuțitului în bară.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -105,14 +106,30 @@ o('H10', G, "bun={(v) => marimeImbinareBuna(v, x === 'raza')}", "bun={(v) => mar
 o('H11', S, "raza: nr(m['raza'], IMBINARE_IMPLICITA.raza, true),", "raza: nr(m['raza'], IMBINARE_IMPLICITA.raza),", 'e2e',
   'raza 0, citită din browser, devine cea implicită')
 o('H12', S, "(zero ? x >= 0 : x > 0) && x <= IMBINARE_MAXIMA", "x >= 0 && x <= IMBINARE_MAXIMA", 'e2e', 'pasul 0 e primit')
-o('H13', U, "  if (cuOptiuni && !optiuni.inchide) activeOptiuni.push(t('editare.cutit.activ.deschise'));\n", '', 'e2e',
-  'bucățile lăsate deschise nu se mai spun (nici punctul roșu)')
 o('H14', U, "imCerut = imbinareDin(o, mod === 'linie')", "imCerut = imbinareDin(o, true)", 'e2e', 'la Liber, unealta trimite îmbinarea')
-o('H15', Y, "  .sus > .bara button[data-icona]:not(.cu-eticheta) {\n    padding: 0 var(--sp-2);\n  }\n", '', 'e2e',
-  'butoanele barei doar cu iconiță, la loc cu 12 px: bara Transformării trece de 1280 px')
+
+# Fișierele lângă Imprimanta și bifa Cuțitului înapoi în bară (schița din 09.11, „Ok la toate”). H13 (bucățile lăsate deschise,
+# spuse în sfat) și H15 (butoanele de 38 px) au plecat odată cu codul lor.
+A = 'src/ui/aranjament.ts'
+L = 'src/ui/useEcranLat.ts'
+X = 'src/app/App.tsx'
+o('B01', A, "        id: 'fisier', fereastra: 'proiectare', ingust: 'sus',", "        id: 'fisier', fereastra: 'proiectare',", 'aranjament',
+  'pe ecranul îngust, fișierele rămân în meniu')
+o('B02', A, "  if (lat) return a.zone[zona];\n  return [", "  return a.zone[zona];\n  return [", 'aranjament', 'grupurile nu se mută niciodată')
+o('B03', A, "      if (g.ingust !== undefined && (!cunoscut(ZONE, g.ingust) || g.ingust === z)) probleme.add(", "      if (false) probleme.add(",
+  'aranjament', 'zona îngustă greșită (necunoscută sau a lui) nu se mai verifică')
+o('B04', A, "      if (g.fereastra !== undefined && !a.ferestre.includes(g.fereastra)) probleme.add(", "      if (false) probleme.add(",
+  'aranjament', 'fereastra unui grup, lipsă din aranjament, nu se mai verifică')
+o('B05', A, "  for (const lat of [true, false]) for (const z of ZONE) {", "  for (const lat of [true]) for (const z of ZONE) {", 'aranjament',
+  'dublurile de pe ecranul îngust nu se mai caută')
+o('B06', X, "    if (g.fereastra !== undefined && g.fereastra !== fereastra) return null;\n", '', 'e2e', 'fișierele se văd și pe Mașina')
+o('B07', L, "const LAT = '(min-width: 75.0625rem)';", "const LAT = '(min-width: 64rem)';", 'e2e', 'la 1024 px, fișierele urcă în meniu (pragul greșit)')
+o('B08', U, "      <label className=\"cutit-inchide\" title={t('editare.cutit.inchide-sfat')}>",
+  "      <label className=\"cutit-inchide\" hidden title={t('editare.cutit.inchide-sfat')}>", 'e2e', '„Închide bucățile” nu se mai vede în bara Cuțitului')
 
 SETURI = {
     'imbinare': ['test/unit/imbinare.test.ts', 'test/unit/taiere.imbinare.test.ts', 'test/unit/taiere.imbinare.oracol.test.ts'],
     'unealta': ['test/unit/cutitCalcul.test.ts'],
+    'aranjament': ['test/unit/aranjament.test.ts'],
 }
-E2E = ['test/e2e/cutit.spec.ts', 'test/e2e/taiere.spec.ts', 'test/e2e/ancore.spec.ts']
+E2E = ['test/e2e/cutit.spec.ts', 'test/e2e/taiere.spec.ts', 'test/e2e/ancore.spec.ts', 'test/e2e/bara-fisiere.spec.ts']

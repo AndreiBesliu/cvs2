@@ -11,7 +11,7 @@ import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';
 import { ACTIUNI_EXTENSII } from '../../src/ui/actiuniExtensii.ts';
 import {
-  ARANJAMENT_MODERN, CIPURI, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, DOCURI, FERESTRE, PANOURI, verificaAranjament, ZONE,
+  ARANJAMENT_MODERN, cheieIntrare, CIPURI, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, DOCURI, FERESTRE, grupuriZona, PANOURI, verificaAranjament, ZONE,
   ZONE_CU_DATA_ACTIUNE, type Aranjament, type Grup, type IdFereastra, type IdZona,
 } from '../../src/ui/aranjament.ts';
 
@@ -44,9 +44,8 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
 test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași ordine, panourile la locul lor', () => {
   // Primul grup e locul uneltelor de desen (ADR 0052); „Adaugă dreptunghi / cerc” au ieșit din bară (rămân în paletă).
   assert.deepEqual(ARANJAMENT_MODERN.zone.sus[0], { id: 'forme', intrari: [{ control: 'unelte' }] });
-  assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'sus'), [
-    'istoric.anuleaza', 'istoric.reface', 'import.svg', 'export.gcode',
-  ]);
+  // Fișierele au urcat în meniul global (ADR 0104 §8, schimbat pe 09.11); pe ecranul îngust se întorc aici (mai jos).
+  assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'sus'), ['istoric.anuleaza', 'istoric.reface']);
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati', 'extensii.trimite-selectia']);
   // Mașina e o fereastră (ADR 0132), nu un panou: docul din dreapta are doar proprietățile.
   assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati'] });
@@ -54,9 +53,14 @@ test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași or
   assert.deepEqual(DOCURI.flatMap((d) => ARANJAMENT_MODERN.docuri[d]).sort(), [...PANOURI].sort());
 });
 
-test('meniul global (ADR 0132): filele ferestrelor, locul lucrării, apoi căutarea, limba, tema și contul; ferestrele în ordine', () => {
+test('meniul global (ADR 0132): filele ferestrelor, fișierele Proiectării, locul lucrării, apoi căutarea, limba, tema și contul; ferestrele în ordine', () => {
   assert.deepEqual(ARANJAMENT_MODERN.zone.meniu, [
     { id: 'ferestre', intrari: [{ control: 'ferestre' }] },
+    // „Lângă Imprimanta” (schița din 09.11, „Ok la toate”): doar în Proiectare; pe ecranul îngust, la capătul barei de sus.
+    {
+      id: 'fisier', fereastra: 'proiectare', ingust: 'sus',
+      intrari: [{ actiune: 'import.svg' }, { control: 'vectori' }, { actiune: 'export.gcode', aspect: 'principal' }],
+    },
     { id: 'lucrare', intrari: [{ control: 'lucrare' }] },
     { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
   ]);
@@ -131,4 +135,31 @@ test('verificarea ferestrelor (ADR 0132): necunoscută, de două ori, fără Pro
 test('aceeași acțiune în zone diferite e permisă (Anulează și sus, și jos), doar nu de două ori în aceeași zonă', () => {
   const jos = [...ARANJAMENT_MODERN.zone.jos, { id: 'istoric', intrari: [{ actiune: 'istoric.anuleaza' }] }];
   assert.deepEqual(verificaAranjament(cuZona('jos', jos), REGISTRU), []);
+});
+
+test('ecranul îngust (ADR 0104 §8, 09.11): fișierele trec din meniu la capătul barei de sus; pe cel lat, zonele sunt cele scrise', () => {
+  const id = (gs: readonly Grup[]): string[] => gs.map((g) => g.id);
+  for (const z of ZONE) assert.equal(grupuriZona(ARANJAMENT_MODERN, z, true), ARANJAMENT_MODERN.zone[z], `zona ${z}, pe ecranul lat`);
+  assert.deepEqual(id(grupuriZona(ARANJAMENT_MODERN, 'meniu', false)), ['ferestre', 'lucrare', 'vedere']);
+  assert.deepEqual(id(grupuriZona(ARANJAMENT_MODERN, 'sus', false)), ['forme', 'istoric', 'fisier']);
+  // Pe ecranul îngust, ordinea fișierelor e cea de dinainte: importul, exportul vectorilor, G-code-ul, la capătul barei.
+  const sus = grupuriZona(ARANJAMENT_MODERN, 'sus', false).flatMap((g) => g.intrari.map(cheieIntrare));
+  assert.deepEqual(sus.slice(-3), ['actiune:import.svg', 'control:vectori', 'actiune:export.gcode']);
+  // Localizatorii `[data-actiune=…]` rămân unici și pe ecranul îngust.
+  const ids = ZONE_CU_DATA_ACTIUNE.flatMap((z) => grupuriZona(ARANJAMENT_MODERN, z, false).flatMap((g) => g.intrari.flatMap((x) => ('actiune' in x ? [x.actiune] : []))));
+  assert.equal(new Set(ids).size, ids.length, ids.join(', '));
+});
+
+test('verificarea prinde grupul mutat greșit: zona îngustă necunoscută sau a lui, fereastra lipsă, dublura din zona nouă', () => {
+  const meniu = ARANJAMENT_MODERN.zone.meniu;
+  const cuFisier = (g: Partial<Grup>): Aranjament => cuZona('meniu', meniu.map((x) => (x.id === 'fisier' ? { ...x, ...g } : x)));
+  assert.match(verificaAranjament(cuFisier({ ingust: 'nu-exista' as IdZona }), REGISTRU).join('\n'), /grupul „fisier” trece pe ecranul îngust în zona greșită „nu-exista”/);
+  assert.match(verificaAranjament(cuFisier({ ingust: 'meniu' }), REGISTRU).join('\n'), /grupul „fisier” trece pe ecranul îngust în zona greșită „meniu”/);
+  assert.match(verificaAranjament({ ...ARANJAMENT_MODERN, ferestre: ['proiectare', 'masina'] as readonly IdFereastra[], zone: { ...ARANJAMENT_MODERN.zone, meniu: meniu.map((x) => (x.id === 'fisier' ? { ...x, fereastra: 'imprimanta' as IdFereastra } : x)) } }, REGISTRU).join('\n'),
+    /grupul „fisier” e al ferestrei „imprimanta”, care nu e în aranjament/);
+  // În bara de sus, încă un import: pe ecranul lat e bun, pe cel îngust (cu fișierele venite acolo) e o dublură.
+  const cuImport = cuZona('sus', [...ARANJAMENT_MODERN.zone.sus, { id: 'x', intrari: [{ actiune: 'import.svg' }] }]);
+  assert.match(verificaAranjament(cuImport, REGISTRU).join('\n'), /zona sus: actiune:import\.svg apare de două ori/);
+  // Aranjamentul implicit trece de toate.
+  assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
 });

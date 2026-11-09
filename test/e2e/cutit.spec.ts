@@ -17,8 +17,8 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  *
  * Felia 10.3↑j (ADR 0181 §6): „Îmbinarea” e stinsă la Liber; la Linie, zigzagul cu pasul 20, înălțimea 10 și raza 0 se vede cât
  * tragi (dinții, în locul fâșiei), iar placa devine două forme de 100 × 55 mm (aceeași alegere în panoul Taie). La 1280 px și cu
- * fontul lat al probei barei de sus (6.V↑d), bara Cuțitului și panoul opțiunilor, cu îmbinarea aleasă, rămân în fereastră, în
- * română și în engleză.
+ * fontul lat al probei barei de sus (6.V↑d), bara Cuțitului (cu „Închide bucățile”, din nou în ea după schița din 09.11) și
+ * panoul opțiunilor, cu îmbinarea aleasă, rămân în fereastră, în română și în engleză.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -67,16 +67,9 @@ test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, ia
   await expect(page.locator('[data-unealta="cutit"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('bara-cutit')).toBeVisible();
   await page.locator('[data-cutit="linie"]').click();
-  // „Închide bucățile” e în opțiunile tăierii (bifată); debifată, butonul lor are punctul roșu, iar sfatul o spune.
-  await page.locator('[data-cutit="optiuni"]').click();
-  await expect(page.locator('[data-cutit="inchide"]')).toBeChecked();
-  await page.locator('[data-cutit="inchide"]').uncheck();
-  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '1');
-  await expect(page.getByTestId('cutit-sfat')).toContainText('Opțiuni: bucățile rămân deschise.');
-  await page.locator('[data-cutit="inchide"]').check();
-  await expect(page.locator('[data-cutit="optiuni"]')).toHaveAttribute('data-activ', '0');
-  await page.locator('[data-cutit="optiuni"]').click();
-  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  // „Închide bucățile” stă în bara Cuțitului (răspunsul 5 al schiței din 09.11), la vedere și bifată.
+  await expect(page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]')).toBeVisible();
+  await expect(page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]')).toBeChecked();
   await expect(page.getByTestId('cutit-sfat')).toContainText('Trage cuțitul peste forme');
   const a = la(-10, 20), b = la(110, 60);
   await page.mouse.move(a.x, a.y);
@@ -471,8 +464,8 @@ test('Îmbinarea, din opțiunile Cuțitului: stinsă la Liber; la Linie, zigzagu
 /**
  * La 1280 px și cu fontul lat al probei barei de sus (6.V↑d: Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum
  * lat), cu grila pornită (câmpul pasului ei e și el în bară), bara cu Cuțitul rămâne în fereastră la fiecare fel al lui, iar
- * panoul opțiunilor, deschis, cu îmbinarea și mărimile ei, la fel. Înainte de 10.3↑j, cu „Închide bucățile” în bară, capătul
- * ei era la 1340 px.
+ * panoul opțiunilor, deschis, cu îmbinarea și mărimile ei, la fel. Cu fișierele încă în ea (înainte de 09.11), capătul ei era
+ * la 1340 px.
  */
 async function baraCutitIncape(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1280, height: 760 });

@@ -8,14 +8,15 @@ CNC Vector Studio draws parts for a CNC router and writes the program (G-code) t
 board of material), put shapes on it, each with its own cutting **operation**, then export the G-code.
 
 **The screen.** At the very top sits the **application menu**, in every window: the brand, the window tabs (**Design** and
-**Machine**), the job indicator (with the machine connected, see [The machine](#masina)), then “Search commands”, the
-language (RO / EN), the theme and the **Account** button. The pressed tab is the current window; the app reopens in it the
-next time it starts. On a phone, the menu has two rows: the brand and the other buttons on top, the tabs and the job
-indicator below; the open tab shows its name, the others only their icon.
+**Machine**), in Design the files (import, “Export vectors” and “Export G-code”, after the tabs, on a screen wider than 1
+200 px), the job indicator (with the machine connected, see [The machine](#masina)), then “Search commands”, the language
+(RO / EN), the theme and the **Account** button. The pressed tab is the current window; the app reopens in it the next time
+it starts. On a phone, the menu has two rows: the brand and the other buttons on top, the tabs and the job indicator below;
+the open tab shows its name, the others only their icon.
 
 In the **Design** window, the canvas fills the screen; floating above it are:
-- the **top bar**: the drawing tools, Snap and Grid, Undo and Redo and, at its end, the files: import, “Export vectors”
-  and “Export G-code”;
+- the **top bar**: the drawing tools, Snap and Grid, Undo and Redo; on a screen of at most 1 200 px (a tablet, a phone),
+  at its end also the files: import, “Export vectors” and “Export G-code” (wider, they sit in the application menu);
 - the **bar extension** just below: alignment, mirroring, copying, offset, the boolean and the 3D view;
 - on the left, the **On the sheet** panel: the sheet's shapes, with the part and operations of each; on the right, the
   **Properties** panel;
@@ -530,8 +531,9 @@ Each alignment can be undone with `Ctrl+Z`.
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG / DXF / PDF / AI / EPS / WMF / image** button in the top bar (the first of the files, next to “Export vectors” and
-“Export G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands
+The **Import SVG / DXF / PDF / AI / EPS / WMF / image** button (the first of the files, next to “Export vectors” and “Export
+G-code”: in the application menu, after the tabs; on a screen of at most 1 200 px, at the end of the top bar) opens the file
+window (you can pick several). Or drag the files straight onto the canvas: each one lands
 centred where you drop it.
 
 For each file a window opens that shows the drawing's size and how it will be cut:
@@ -808,19 +810,18 @@ by its pieces. Pick the knife mode in the bar:
   left are not joined.
 
 While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
-(for Pen, on Enter), as a single undo step (Ctrl+Z). What was cut (or why not) is said in the corner of the canvas.
+(for Pen, on Enter), as a single undo step (Ctrl+Z). **Close the pieces** is the same checkbox as in the Cut panel. What was
+cut (or why not) is said in the corner of the canvas.
 
-The **Cutting options** button (the sliders after the knife kinds; Scissors and Trim have none, they have no options) opens
-**Close the pieces**, the same checkbox as in the Cut panel, then **Extend the ends**, **Keep**, **Between pieces** and
-**Joint**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
-the shape, the part on the right or on the left of the direction you drag in goes in the same step, the gap (or the overlap)
-moves the knife by half the width for each part, and the joint, only for the Line kind (a straight cut), puts its pattern on
-the cut. For the Shape kind, the parts are called **inside** and **outside**, and **Delete the knife** removes the knife
-shapes after the cut. When an option is not the default (the pieces left open too), the button has a red dot, and the hint
-in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends show dotted, and the part that goes
-is faded, with a red tint, over the shapes the knife splits right through; with a gap or an overlap, their strip shows on
-both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
-goes right through.
+The **Cutting options** button (the sliders next to the checkbox) opens **Extend the ends**, **Keep**, **Between pieces**
+and **Joint**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it
+leaves the shape, the part on the right or on the left of the direction you drag in goes in the same step, the gap (or the
+overlap) moves the knife by half the width for each part, and the joint, only for the Line kind (a straight cut), puts its
+pattern on the cut. For the Shape kind, the parts are called **inside** and **outside**, and **Delete the knife** removes
+the knife shapes after the cut. When an option is not the default, the button has a red dot, and the hint in the corner of
+the canvas says it. While you drag (Line, Freehand), the extended ends show dotted, and the part that goes is faded, with a
+red tint, over the shapes the knife splits right through; with a gap or an overlap, their strip shows on both sides of the
+trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace goes right through.
 
 ## Converting vectors
 %% capitol: conversie
@@ -1256,7 +1257,7 @@ and whether the cutter goes through the sheet. For the sheet seen in 3D, see [Th
 %% capitol: vectori
 %% acopera: editare.vectori
 
-**Export vectors** (in the top bar, between import and “Export G-code”) writes the sheet as a drawing file, for other programs
+**Export vectors** (between import and “Export G-code”, in the application menu or, on a narrow screen, in the top bar) writes the sheet as a drawing file, for other programs
 (ArtCAM, Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) or for the laser:
 - **DXF (R2007)**, the default, **SVG**, **PDF** or **EPS**;
 - in mm, at 1:1 scale, from the lower left corner of the sheet (in SVG, the sheet has its size in mm);

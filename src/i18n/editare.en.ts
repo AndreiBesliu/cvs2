@@ -519,7 +519,6 @@ export const enEditare = {
   'editare.cutit.activ.prelungeste': 'extend: {cum}',
   'editare.cutit.activ.sterge': 'the knife is deleted',
   'editare.cutit.activ.intre': '{fel} of {latime} mm',
-  'editare.cutit.activ.deschise': 'the pieces stay open',
   'editare.cutit.activ.imbinare': '{model} joint (pitch {pas}, height {inaltime}, radius {raza} mm)',
   'editare.cutit.sterge': 'Delete the knife',
   'editare.cutit.sterge-sfat': 'The knife shapes go after the cut, in the same step (the same checkbox as in the Cut panel)',

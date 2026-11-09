@@ -739,7 +739,7 @@ test('numele unui strat scris de fișier se taie în dialog la 60 de caractere (
   expect(doc.piese[0]?.radacina.copii[0]?.nume).toBe(lung);
 });
 
-test('fișierele stau împreună în bara de sus (cererea din 28.10): import, exportul vectorilor, G-code; panoul vectorilor peste extensie', async ({ page }) => {
+test('fișierele stau împreună (cererea din 28.10), în meniul global după file (09.11): import, exportul vectorilor, G-code; panoul vectorilor peste extensie', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/');
   const grup = page.locator('[data-grup="fisier"]');
@@ -759,11 +759,13 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
   expect(bara.x).toBeGreaterThanOrEqual(0);
   expect(bara.x + bara.width).toBeLessThanOrEqual(1280);
   expect(meniu.y + meniu.height).toBeLessThanOrEqual(bara.y);
-  // Sfatul unui buton al barei coboară peste extensie: bara urcă deasupra ei doar cât e nevoie.
+  // Fișierele, în meniul global (pe ecranul lat), imediat după filele ferestrelor.
+  expect(await page.locator('.meniu-global > .grup').evaluateAll((g) => g.map((x) => x.getAttribute('data-grup')))).toEqual(['ferestre', 'fisier', 'lucrare', 'vedere']);
+  // Sfatul unui buton al barei coboară peste extensie: bara urcă deasupra ei doar cât e nevoie (Anulează, rămas în bară).
   const zBara = () => page.locator('.insula.bara').evaluate((el) => getComputedStyle(el).zIndex);
   await page.mouse.move(640, 600);
   await expect.poll(zBara).toBe('1');
-  await page.locator('[data-actiune="import.svg"]').hover();
+  await page.locator('[data-actiune="istoric.anuleaza"]').hover();
   await expect.poll(zBara).toBe('3');
   await page.mouse.move(640, 600);
   await expect.poll(zBara).toBe('1');
