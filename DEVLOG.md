@@ -6875,7 +6875,10 @@ căzute, din CI).
 ## 2026-11-08 — 3.6o: driverele imprimantelor și comenzile din timpul imprimării (ADR 0192) (Model: Claude Opus 5.5)
 
 **Prompt:** „in principiu, vreau sa pot conecta orice fel de imprimanta, deci codul pe care il dezvolti trebuie sa fie pregatit pentru asta. poti incepe cu 1” (owner-ul, la răspunsul cu cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi; grupul 1: comenzile din timpul imprimării).
-**Started:** 08.11, 18:12. **Completed:** —
+**Started:** 08.11, 18:12. **Completed:** 09.11, 11:32.
+
+**Răspunsul owner-ului:** „Da, recomandările” (1a: fereastra ca în schiță; 2a: ventilatoarele prin `gcodeCmd`, cu textul
+făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
 
 - **Cercetarea:** comenzile K1 din integrarea Home Assistant (lumina, ventilatoarele prin `M106` în `gcodeCmd`, viteza și
   debitul 1–200, țintele, homing-ul în doi pași cu `deviceState` 7 între ei, K1 fără încălzitor de carcasă); câmpurile din
@@ -6884,3 +6887,18 @@ căzute, din CI).
 - **Propunerea** (ADR 0192, propus): driverul pur (starea comună, comenzile ca pași, capabilitățile) peste o legătură comună
   pe transport; fereastra după capabilități; trei întrebări care se exclud (schița, ventilatoarele prin `gcodeCmd`, răcirea
   singură). Codul vine după răspunsuri și după schiță.
+- **Felia** (`2ad9617`): contractul (`driver.ts`), driverul K1 și lista driverelor; sesiunea peste driver (pașii
+  comenzilor, răcirea singură); imprimantele ținute cu driverul lor; fereastra după schiță; imprimanta falsă învață
+  comenzile; manualul (ambele limbi) și ghidul (pasul 5, proba pe imprimanta owner-ului).
+- **Găsit pe drum:** șase ținte ale listei 3.6g mutate odată cu codul (refăcute); „răcită” imediat după o legare din nou,
+  cu țintele încă nespuse (reparat); proba manualului cere `data-imprimanta` scris la fiecare control.
+- **Privit în browser,** pe două imprimante false (127.0.0.1 imprimă, 127.0.0.2 liberă): viteza la 120 %, Preîncălzește PLA,
+  banda „Încălzește”, ora răcirii, homing-ul (X Y, apoi Z, în jurnal), pe telefon și în ambele teme.
+- **Porțile:** unit 8 751 (8 743 trecute, 0 căderi, 8 sărite); build-ul determinist (288 de fișiere identice); e2e 381 / 381
+  (378 din prima; proba 3.6k și cele două de după ea, trecute la reluare). Otrăvurile `test/otravuri/3.6o.py`: 59 / 59 din
+  prima (46 pe probele unitare, 13 prin e2e, fiecare de proba ei), plus cele șase refăcute din 3.6g.
+- **Proba 3.6k („Din desen…, Avansat”) e instabilă, și înainte de 3.6o:** A/B în clona otrăvurilor, 3 + 3 rulări alternate:
+  a căzut o dată pe `87297e5` (dinainte) și niciodată pe `2ad9617`. Când cade, instantaneul paginii arată 0 bucle de fustă,
+  deși proba a scris 2, deci nu e un termen prea scurt (cu 15 s, la fel). De căutat separat.
+- **Mărimea:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din ADR: bucata ferestrei, adusă la cerere, +8,0, din care 2,0
+  e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată).

@@ -635,9 +635,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `dupaCnc.ts`); totalul 566,2 / 600, pornirea 102,0.
   **3.6n gata pe 08.11** (grosimea verticală, `ensure_vertical_shell_thickness`: plinul sub pereții treptelor, cu toate
   valorile OrcaSlicer; uneltele în `trepte.ts`); totalul 567,3 / 600.
-  **3.6o propusă pe 08.11** (ADR 0192, la „vreau sa pot conecta orice fel de imprimanta”): un contract comun al driverelor
-  imprimantelor (starea, comenzile ca pași, capabilitățile), driverul Creality K1, comenzile din timpul imprimării; codul,
-  după răspunsuri și după schiță.
+  **3.6o gata pe 09.11** (ADR 0192, acceptat cu 1a–3a, la „vreau sa pot conecta orice fel de imprimanta”): un contract comun
+  al driverelor (`driver.ts`: starea, comenzile ca pași, capabilitățile; `drivere.ts`, azi `creality-k1`), sesiunea și
+  imprimantele ținute peste driver; comenzile din timpul imprimării (lumina, ventilatoarele prin `M106` scris doar de driver,
+  viteza, debitul, țintele cu Preîncălzește și Răcește, homing-ul) și răcirea singură (singura comandă fără clic). Un driver
+  nou (Moonraker, Marlin pe USB…) = un `DriverText` nou, nu o fereastră nouă. Totalul 573,1 / 600 kB (+5,8: bucata ferestrei, la cerere; ținta din ADR era +4).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

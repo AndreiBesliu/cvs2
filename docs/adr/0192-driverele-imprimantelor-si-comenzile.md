@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a, 3a), pentru felia
 3.6o (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în worktree-ul `imprimanta`
-(ramura `wip/3.6g-imprimanta`). Cererea owner-ului, din 08.11, la
+(ramura `wip/3.6g-imprimanta`). **Felia 3.6o** gata pe 09.11 (secțiunea „Felia 3.6o, gata”), fără imprimantă; proba pe
+imprimanta owner-ului (ghidul, pasul 5) rămâne la el. Cererea owner-ului, din 08.11, la
 răspunsul cu cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi: „in principiu, vreau sa pot conecta orice fel de
 imprimanta, deci codul pe care il dezvolti trebuie sa fie pregatit pentru asta. poti incepe cu 1”. Grupul 1: comenzile din
 timpul imprimării (lumina, viteza și debitul, ventilatoarele, preîncălzirea și răcirea, homing-ul). **Schimbă:** ADR 0190 §A.2
@@ -152,6 +153,44 @@ owner-ului, [nemăsurat] de aflat.
   preîncălzirea cu PLA și răcirea, homing-ul cu confirmarea; „n-a confirmat” la o comandă ignorată.
 - **Otrăvurile:** `test/otravuri/3.6o.py`.
 - **Pe imprimanta owner-ului:** ghidul, cu transcrierea rejucată pe imprimanta falsă (ca 3.6i).
+
+## Felia 3.6o, gata (09.11.2026)
+
+- **Contractul** (`src/machine/imprimanta/driver.ts`, pur): starea comună (cu maximele, lumina, ventilatoarele pe nume,
+  viteza, debitul, axele știute, „ocupată”; ventilatoarele dintr-o bucată de stare intră peste cele știute), starea lucrării
+  și ce comenzi au rost (`esteLibera`, `sePoateRegla`, `comandaPermisa`), comenzile, pașii (un text, sau o așteptare cu
+  `minMs` / `maxMs`), capabilitățile, cadrul citit (cu răspunsul de menținere) și `DriverText`. Lista driverelor:
+  `drivere.ts` (`creality-k1`).
+- **Driverul K1** (`creality.ts`): câmpurile noi (`lightSw`, `modelFanPct` / `caseFanPct` / `auxiliaryFanPct`,
+  `curFeedratePct`, `curFlowratePct`, `maxNozzleTemp`, `maxBedTemp`, `deviceState`, `autohome`), capabilitățile după ce
+  spune imprimanta, fiecare comandă cu intervalul ei (un număr greșit, un ventilator necunoscut, o țintă peste maxim: nimic
+  nu pleacă), homing-ul în trei pași; textele din 3.6g, neschimbate.
+- **Sesiunea** (`sesiune.ts`), peste orice driver de text: `comanda` (ce are rost, driverul, pașii; o singură comandă în pași
+  odată; o legătură căzută sau refăcută între pași oprește restul, cu „homing stopped” în jurnal) și răcirea singură:
+  armată de o țintă caldă cu imprimanta liberă, termenul la 30 de minute (setarea, din fereastră), oprită de o imprimare
+  pornită, de țintele văzute calde apoi la 0, de deconectare, de altă imprimantă sau de setare; rămâne peste o legare din
+  nou (IP-ul schimbat), iar la termen, cu legătura căzută, pleacă la primul cadru de după; în jurnal, „auto-cool after N
+  min” și „auto-cool off: …”.
+- **Imprimantele ținute** (`tinute.ts`): câmpul `driver` în lista `v: 1` (fără el, `creality-k1`; unul necunoscut se sare);
+  proba și căutarea, pe portul, citirea și răspunsurile driverului.
+- **Fereastra**, după schiță: viteza și debitul în cardul lucrării (cât imprimă sau stă în pauză), țintele scrise direct,
+  Preîncălzește (primul strat al materialelor felierului, tăiat la maxim) și Răcește, banda „Încălzește”, răcirea singură
+  (`cncvs2.imprimanta.racire`, `v: 1`; implicit pornită, la 30 de minute), cardul Ventilatoarele și lumina, homing-ul cu bifa
+  „Patul e gol”; o valoare cerută rămâne „în așteptare” până o raportează imprimanta (după 6 s, „n-a confirmat”). Cardurile
+  și butoanele, după capabilități (și fișierele, și trimiterea).
+- **Găsit pe drum:** (1) șase ținte ale listei de otrăvuri 3.6g s-au mutat odată cu codul (starea lucrării în contract,
+  sesiunea și proba peste driver): lista e refăcută pe codul nou; (2) imediat după o legare din nou, țintele sunt încă
+  nespuse: răcirea nu le mai ia drept „răcite”; (3) proba manualului cere `data-imprimanta` scris la vedere la fiecare
+  control: glisoarele și câmpurile primesc proprietățile dintr-un hook, iar atributul rămâne pe fiecare intrare.
+- **Măsurat și probat:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din §F: bucata ferestrei, adusă la cerere, are +8,0,
+  din care 2,0 e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată). Probe
+  noi: `imprimanta.driver.test.ts`, sesiunea (pașii homing-ului cu ceasul probei, răcirea singură), imprimantele ținute, două
+  e2e (imprimanta liberă; cât imprimă, cu o comandă fără răspuns). Otrăvurile `test/otravuri/3.6o.py`: 59 / 59 din prima (46
+  pe probele unitare, 13 prin e2e, fiecare de proba ei), plus cele șase refăcute din 3.6g. Porțile: unit 8 751 (8 743
+  trecute, 0 căderi, 8 sărite); build-ul determinist (288 de fișiere identice); e2e 381 / 381 (378 din prima; proba 3.6k,
+  instabilă și înainte de 3.6o, și cele două de după ea, trecute la reluare). Privită în browser, pe două imprimante false:
+  cât imprimă (viteza la 120 %), liberă (Preîncălzește PLA, banda, ora răcirii, homing-ul cu axele X, Y, Z), pe telefon
+  (375 px) și în ambele teme.
 
 ## Întrebările (owner)
 

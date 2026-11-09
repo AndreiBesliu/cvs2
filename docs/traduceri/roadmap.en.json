@@ -1097,6 +1097,10 @@
       "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă (ADR 0190 §C.7, §D): urcarea pe HTTP (`/upload`), verificată în lista fișierelor; verificarea fișierului (antetul feliatorului, mișcările față de patul de 220 × 220 × 250); pornirea cu confirmare; `http:` în `connect-src` (acordul owner-ului, 07.11)",
       "en": "Sending a ready-sliced `.gcode` to the printer (ADR 0190 §C.7, §D): the upload over HTTP (`/upload`), checked in the file list; the file check (the slicer header, the moves against the 220 × 220 × 250 bed); starting with confirmation; `http:` in `connect-src` (the owner’s consent, 07.11)"
     },
+    "62adc5ca19ce0931": {
+      "ro": "Gata pe 09.11",
+      "en": "Done on 09.11"
+    },
     "63760521aca66be1": {
       "ro": "V-carve-ul unei piese, o singură regiune",
       "en": "A part's V-carve, a single region"
@@ -1561,6 +1565,10 @@
       "ro": "Loc în pachetul de pornire pentru 2.8",
       "en": "Room in the startup bundle for 2.8"
     },
+    "915aa557c27788b1": {
+      "ro": "**Comenzile imprimantei, cu driverele** (fără imprimantă; ADR 0192, acceptat cu recomandările, „Da, recomandările”, la „vreau sa pot conecta orice fel de imprimanta, deci codul [...] trebuie sa fie pregatit pentru asta”; în worktree-ul `imprimanta`). Un contract comun al driverelor (starea, comenzile ca pași, capabilitățile), driverul Creality K1 și lista driverelor; sesiunea și imprimantele ținute, peste driver. În fereastra Imprimanta: **Viteza** și **Debitul** cât imprimă, **Ținta duzei** și **Ținta patului** scrise direct, **Preîncălzește** (primul strat al materialelor felierului) și **Răcește**, banda „Încălzește”, **Răcește singură după** 30 min fără imprimare (singura comandă fără clic), **Ventilatoarele și lumina**, **Homing (X, Y, Z)** cu bifa „Patul e gol”; o valoare cerută „în așteptare” până o confirmă imprimanta. **Probe:** pe hârtie (driverul, sesiunea, imprimantele ținute), două e2e; otrăvurile 59 / 59 din prima (46 pe probele unitare, 13 prin e2e, fiecare de proba ei), plus cele șase refăcute din 3.6g. **Mărimea:** totalul 573,1 / 600 kB (+5,8: bucata ferestrei, la cerere; ținta din ADR era +4), pornirea 102,0 (neschimbată). Proba pe imprimanta owner-ului: ghidul, pasul 5.",
+      "en": "**Printer controls, with drivers** (no printer; ADR 0192, accepted with the recommendations, “Yes, the recommendations”, on “I want to be able to connect any kind of printer, so the code [...] has to be ready for that”; in the `imprimanta` worktree). A common driver contract (state, commands as steps, capabilities), the Creality K1 driver and the driver list; the session and the saved printers, over the driver. In the Printer window: **Speed** and **Flow** while printing, **Nozzle target** and **Bed target** written directly, **Preheat** (the first layer of the slicer’s materials) and **Cool down**, the “Heating” strip, **Cool down by itself after** 30 min without a print (the only command without a click), **Fans and light**, **Home (X, Y, Z)** with the “The bed is clear” tick; a requested value stays “waiting” until the printer confirms it. **Proofs:** on paper (the driver, the session, the saved printers), two e2e; poisons 59 / 59 at the first run (46 on unit proofs, 13 through e2e, each by its own proof), plus the six remade in 3.6g. **Size:** total 573.1 / 600 kB (+5.8: the window’s chunk, loaded on demand; the ADR target was +4), startup 102.0 (unchanged). The proof on the owner’s printer: the guide, step 5."
+    },
     "91698bdb1c684e4d": {
       "ro": "**Timpul lângă traseu** (ADR 0046 §8; partea fără mașină care rămăsese din rândul pragului, „afișat imediat după fiecare calcul”): după T, cipul „Timpul jobului”, cu același calcul ca rezumatul exportului (postul pe montajul stânga-jos, Z0 sus), la cerere; stins cu traseul vechi; `$$` comun cu exportul (urcat din dialog în aplicație); durata în cuvinte într-un singur loc. Pornirea 93,9 → 94,2 / 100 kB (cu ușa 98,8). Fără agenți; sabotajele 55 / 55 (7 noi, 4 în e2e).",
       "en": "**Time next to the toolpath** (ADR 0046 §8; the machine-free part left over from the threshold row, “shown right after each calculation”): after T, the “Job time” chip, with the same calculation as the export summary (the post on the bottom-left setup, Z0 top), on demand; switched off with the old toolpath; `$$` shared with the export (moved up from the dialog into the app); the duration in words in a single place. Startup 93.9 → 94.2 / 100 kB (98.8 with the door). No agents; sabotages 55 / 55 (7 new, 4 in e2e)."
@@ -1937,6 +1945,10 @@
       "ro": "Gata pe 08.11",
       "en": "Done on 08.11"
     },
+    "b3dd0164198d88c4": {
+      "ro": "**Gata pe 09.11.** Comenzile imprimantei, cu driverele (ADR 0192, cererea owner-ului din 08.11: „vreau sa pot conecta orice fel de imprimanta”): contractul comun al driverelor (starea, comenzile, capabilitățile) și driverul Creality K1; în fereastra Imprimanta, lumina, ventilatoarele, viteza și debitul cât imprimă, temperaturile (Preîncălzește, Răcește) și homing-ul; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "**Done on 09.11.** Printer controls, with drivers (ADR 0192, the owner’s request of 08.11: “I want to be able to connect any kind of printer”): the common driver contract (state, commands, capabilities) and the Creality K1 driver; in the Printer window, the light, the fans, speed and flow while printing, the temperatures (Preheat, Cool down) and homing; proof on the fake printer, then the guide on the owner’s printer"
+    },
     "b4487110fe6a1b12": {
       "ro": "Oglindirea selecției",
       "en": "Mirroring the selection"
@@ -2236,10 +2248,6 @@
     "d398d322f1fdff6d": {
       "ro": "înainte de 3.6e",
       "en": "before 3.6e"
-    },
-    "d40ec2e42feef6f1": {
-      "ro": "Comenzile imprimantei, cu driverele (ADR 0192, cererea owner-ului din 08.11: „vreau sa pot conecta orice fel de imprimanta”): contractul comun al driverelor (starea, comenzile, capabilitățile) și driverul Creality K1; în fereastra Imprimanta, lumina, ventilatoarele, viteza și debitul cât imprimă, temperaturile (Preîncălzește, Răcește) și homing-ul; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
-      "en": "Printer controls, with drivers (ADR 0192, the owner’s request of 08.11: “I want to be able to connect any kind of printer”): the common driver contract (state, commands, capabilities) and the Creality K1 driver; in the Printer window, the light, the fans, speed and flow while printing, the temperatures (Preheat, Cool down) and homing; proof on the fake printer, then the guide on the owner’s printer"
     },
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
@@ -2600,10 +2608,6 @@
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
-    },
-    "f46865133ce08894": {
-      "ro": "Comenzile imprimantei, cu driverele",
-      "en": "Printer controls, with drivers"
     },
     "f5a0f22b52f21ca7": {
       "ro": "Formele între cvs2 și plugin",

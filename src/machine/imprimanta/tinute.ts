@@ -180,7 +180,7 @@ export function sondeazaImprimanta(adresa: AdresaRetea, opt: OptiuniSondaImprima
 }
 
 /**
- * Căutarea în toată rețeaua (la clic): portul 9999 pe toate gazdele rețelelor date, `CONCURENTA_RETEA` deodată; prima
+ * Căutarea în toată rețeaua (la clic): portul driverului (9999, la K1) pe toate gazdele rețelelor date, `CONCURENTA_RETEA` deodată; prima
  * imprimantă găsită oprește restul. Cu permisiunea rețelei locale încă neîntrebată, prima gazdă merge singură, cât omul
  * răspunde la întrebarea browserului. `laProgres` primește câte gazde s-au terminat, din câte. Cu `nume`, doar imprimanta cu
  * numele acela (una legată, cu IP-ul schimbat: 3.6i, imprimanta owner-ului și-a schimbat adresa de două ori într-o zi).
