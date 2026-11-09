@@ -129,8 +129,10 @@ o('E04', DD, "'rar', 'brim', 'calcare', 'fusta'] as const).map((r) => (", "'rar'
 o('E05', DD, "calcare: '--imp-rol-calcare', fusta: '--imp-rol-fusta',", "calcare: '--imp-rol-calcare', fusta: '--imp-rol-brim',", 'e2e',
   'fusta desenată în culoarea brim-ului')
 # Reparat pe 09.11 (proba 3.6k cădea cam o dată din patru): după Enter, câmpul arăta valoarea veche, iar o ieșire din câmp
-# grăbită o lua drept nouă. Otrava aduce înapoi textul vechi după Enter.
-o('E06', DD, '    setText(null);\n  };\n', '    setText(arata(valoare));\n  };\n', 'e2e', 'după Enter, câmpul ține valoarea veche')
+# grăbită o lua drept nouă. Otrava aduce înapoi exact codul vechi: textul vechi după Enter și efectul care îl aducea la valoarea
+# nouă abia la o randare de mai târziu (prinsă de proba „un număr luat cu Enter nu se pierde la o ieșire din câmp grăbită”).
+o('E06', DD, '    setText(null);\n  };\n', '    setText(arata(valoare));\n  };\n  useEffect(() => { setText(arata(valoare)); }, [valoare]);\n', 'e2e',
+  'după Enter, câmpul arată valoarea veche până la o randare de mai târziu (cursa de dinainte)')
 
 SETURI = {
     'feliere': ['test/unit/imprimanta.feliere.modele.test.ts', 'test/unit/imprimanta.feliere.test.ts', 'test/unit/imprimanta.feliere.recenzie.test.ts'],
