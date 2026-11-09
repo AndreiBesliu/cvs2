@@ -7470,3 +7470,31 @@ sesiunea liniei.
   fum de acolo, în Edge: pornirea fără erori, cercul din colț (R 15 în (75, 75)), listele „Colțuri” și „Alt”, rândul
   tastelor cu Shift plin, ancora în panou (X / Y), testul din aplicație cu 35 de pași. Neunită: unirea în `main` o face
   sesiunea principală, la cuvântul owner-ului.
+
+## 2026-11-09 — Ce e gata de unit; unirea trasării din imagine (25.1↑–25.3↑b) în main, publicarea pe test (Model: Claude Opus 5.5)
+
+**Prompt:** „vezi ce mai este gata de unit cu main”, apoi, la „Merge trasarea into main now?”, „Yes, merge trasarea”.
+**Started:** 09.11, 10:32. **Completed:** 09.11, 12:03.
+
+- **Ce e gata:** fiecare ramură de pe `origin` față de `main` (`4b96a0a`), cu `git merge-tree`, și mărimile măsurate în
+  clona din afara Drive-ului: unirile de probă unde conflictele erau doar în documente, altfel vârful ramurii față de baza
+  ei. Trasarea 577,2 / 600 kB (+30,8), imprimanta 579,0 (+32,6), tăierea +19,4, planșele +18,9 (pornirea +4,2, cu ușa la
+  109,9 din 110 kB), 6.V↑d +1,5; trasarea și imprimanta împreună: 609,8 / 600, iar build-ul determinist cade („Mărimea
+  pachetului trece de plafon.”). Gata de unit: doar trasarea. Tăierea (`Editare.tsx`) și planșele (`Editare.tsx`,
+  `PanouProprietati.tsx`, `transformare.ts`) au conflicte de cod cu ancorele și aduc întâi `main`; imprimanta așteaptă proba
+  plăcii pe K1C (condiția owner-ului); 6.V↑d era încă în lucru.
+- **Unirea (`e277836`, `--no-ff`):** de la `942bf62`, 34 de commit-uri (25.1↑, 25.2↑, 25.3↑, 25.3↑b; ADR 0220–0223).
+  Conflictele, doar în `CLAUDE.md`, `DEVLOG.md`, fișa etapei 3 și traduceri (cum le scria nota de predare a liniei),
+  păstrate amândouă părțile; traducerile, reuniunea cheilor (698 de texte, 0 lipsă, 0 nefolosite); DEVLOG-ul, 251 de
+  intrări, niciuna pierdută sau dublată.
+- **Porțile pe `e277836`:** compilatoarele, importurile, 8 857 de teste unitare (nicio cădere), licențele, build-ul
+  determinist; e2e 406 / 406 din prima; emulatoarele 101 / 101 și 21 / 21 la a doua rulare (la prima, emulatorul de funcții
+  n-a încărcat codul în 10 s, cu procesorul la 80 %, deci patru callable-uri au primit 404; unirea nu atinge funcțiile).
+  Mărimile: pornirea 101,9 (cu ușa 105,5 / 110 kB), totalul 577,2 / 600, /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele:** CLAUDE.md (`9773cd6`: starea, cifrele, ce mai încape sub plafon, decizia din 09.11); încercarea trasării
+  din coada owner-ului trece pe adresa principală de test în `c9bbf52`, împins odată cu 6.V↑d.
+- **CI:** rapid `42591800681` și complet `42593557252` (pornit de mână) pe `9773cd6`, verzi.
+- **Publicat pe test:** rularea `42597326859`, serverul întâi, apoi site-ul; amprenta `9773cd6ba93d` pe toate țintele
+  (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `9773cd6ba93d`.
+- **Semnul:** liniei trasării, după push. Între timp, owner-ul a cerut și unirea lui 6.V↑d: unită local (`e481e55`), împinsă
+  după publicarea asta.
