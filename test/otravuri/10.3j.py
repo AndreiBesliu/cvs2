@@ -124,8 +124,9 @@ o('B05', A, "  for (const lat of [true, false]) for (const z of ZONE) {", "  for
   'dublurile de pe ecranul îngust nu se mai caută')
 o('B06', X, "    if (g.fereastra !== undefined && g.fereastra !== fereastra) return null;\n", '', 'e2e', 'fișierele se văd și pe Mașina')
 o('B07', L, "const LAT = '(min-width: 75.0625rem)';", "const LAT = '(min-width: 64rem)';", 'e2e', 'la 1024 px, fișierele urcă în meniu (pragul greșit)')
-o('B08', U, "      <label className=\"cutit-inchide\" title={t('editare.cutit.inchide-sfat')}>",
-  "      <label className=\"cutit-inchide\" hidden title={t('editare.cutit.inchide-sfat')}>", 'e2e', '„Închide bucățile” nu se mai vede în bara Cuțitului')
+o('B08', U, "data-cutit=\"inchide\" onChange={(e) => { schimbaOptiuniTaiere({ inchide: e.target.checked }); }}",
+  "data-cutit=\"inchide\" onChange={() => { schimbaOptiuniTaiere({}); }}", 'e2e',
+  '„Închide bucățile” din bara Cuțitului nu mai schimbă opțiunile (debifată, închiderea rămâne pornită)')
 
 SETURI = {
     'imbinare': ['test/unit/imbinare.test.ts', 'test/unit/taiere.imbinare.test.ts', 'test/unit/taiere.imbinare.oracol.test.ts'],

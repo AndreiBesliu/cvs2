@@ -70,6 +70,17 @@ test('K alege Cuțitul; Linie: o tragere peste placă o taie în două forme, ia
   // „Închide bucățile” stă în bara Cuțitului (răspunsul 5 al schiței din 09.11), la vedere și bifată.
   await expect(page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]')).toBeVisible();
   await expect(page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]')).toBeChecked();
+  // Debifată în bară, închiderea e oprită pentru toate opțiunile: „Între bucăți” se stinge; bifată din nou, se aprinde.
+  await page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]').uncheck();
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.locator('[data-cutit="intre-spatiu"]')).toBeDisabled();
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
+  await page.getByTestId('bara-cutit').locator('[data-cutit="inchide"]').check();
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.locator('[data-cutit="intre-spatiu"]')).toBeEnabled();
+  await page.locator('[data-cutit="optiuni"]').click();
+  await expect(page.getByTestId('optiuni-cutit')).toHaveCount(0);
   await expect(page.getByTestId('cutit-sfat')).toContainText('Trage cuțitul peste forme');
   const a = la(-10, 20), b = la(110, 60);
   await page.mouse.move(a.x, a.y);
