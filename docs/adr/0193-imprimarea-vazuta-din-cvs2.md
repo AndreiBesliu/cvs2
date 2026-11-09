@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 09.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a, 3a, 4a), pentru
 feliile 3.6p, 3.6q și 3.6r (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în
 worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). **Felia 3.6p** gata pe 09.11 (secțiunea „Felia 3.6p, gata”), fără
-imprimantă; proba pe imprimanta owner-ului (ghidul, pasul 6) rămâne la el. Cererea owner-ului: grupul 2
+imprimantă; proba pe imprimanta owner-ului (ghidul, pasul 6) rămâne la el. **Felia 3.6q** gata pe 09.11 (secțiunea „Felia 3.6q, gata”); proba
+pe imprimanta owner-ului: ghidul, pasul 7. Cererea owner-ului: grupul 2
 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11, „Ce ar face-o specială: imprimarea „văzută” din
 cvs2”), după grupul 1 (ADR 0192, „poti incepe cu 1”), la „continua” (09.11). **Schimbă:** ADR 0192 §B.8 (al doilea text făcut
 doar de driver în `gcodeCmd`, anularea unei piese, dacă owner-ul o vrea: întrebarea 2) și ADR 0191 §E.7 (fișierul primește
@@ -165,6 +166,44 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   sărite), build-ul determinist, e2e 384 / 384. Privit în browser: lat, în română, luminos; pe telefon (375 px),
   întunecat, fără nimic ieșit din ecran; semnele nu acoperă glisorul, iar butoanele au 44 px pe telefon. Otrăvurile:
   `test/otravuri/3.6p.py`, 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei).
+
+## Felia 3.6q, gata (09.11.2026)
+
+- **Starea comună și driverul K1** (`driver.ts`, `creality.ts`): piesele de pe placă (`PiesaPlaca`: numele, centrul,
+  conturul; din cadrul `objects`, ca text JSON în JSON sau ca listă; cel mult 64 de piese și 256 de puncte pe contur; un
+  nume cu caractere de control sau un punct uriaș se sar), cele anulate, piesa de acum („” = niciuna), poziția duzei (X și
+  Y, și negative cât se pregătește), filamentul folosit. Sesiunea ține valorile recente ale stratului, cu momentul lor
+  (ultimele 15 s, cel mult 8; un alt fișier le uită).
+- **Harta fișierului** (`harta.ts`, pură, citită pe bucăți): straturile (vârful, filamentul net de la începutul fiecăruia,
+  căile extrudate, cu piesa fiecăreia; un punct mai aproape de 0,05 mm de cel ținut se sare; cel mult 2 000 000 de puncte,
+  apoi doar vârful și filamentul), piesele (`EXCLUDE_OBJECT_DEFINE`, cu majuscule, ca Klipper) și pauzele; E absolut și
+  relativ, `G92`, straturile Cura (`;LAYER:n`).
+- **Stratul viu** (`stratViu.ts`): pentru un fișier știut, din filamentul folosit, pe filamentul fișierului, cu numărul
+  imprimantei luat doar la cel mult un strat de el; în pauza fișierului, chiar stratul pauzei; pentru alt fișier, dintre
+  ultimele două valori, cea apropiată de progres; fără date, „—”. Rândul „Stratul” al cardului lucrării folosește același
+  număr.
+- **Fișierele ținute** (`src/app/fisiereImprimanta.ts`, baza IndexedDB `cvs2-imprimanta`): cele trimise din cvs2, ultimele
+  5, cel mult 100 MB, după numele și mărimea de pe imprimantă, cu numele pieselor din cvs2 (`ETICHETE`, puse de „Din
+  desen…”: fișierul rămâne ASCII). Harta fișierului de acum se citește o dată pe lucrare.
+- **Placa** (`src/app/PlacaImprimanta.tsx`, `placaCalcul.ts`), după schiță: cât imprimă sau stă în pauză, patul de sus,
+  mărit pe piese, cu stratul de acum peste cel de dedesubt, piesele (piesa de acum, cele anulate), duza (doar cât imprimă și
+  doar în pat), bara straturilor (cele făcute, stratul de acum, pauzele; pe telefon, orizontală), lista pieselor cu numele
+  din cvs2 (altfel, fără sufixul OrcaSlicer) și, în pauza fișierului, pauza cu nota ei. Cât e placa, cardul lucrării ia
+  două coloane, iar temperaturile și ventilatoarele stau una sub alta.
+- **Imprimanta falsă** „imprimă” fișierul primit, linie cu linie: straturile, poziția, filamentul (cu 12 mm de curățare în
+  plus), piesele (`objects`, `current_object`), oprirea la `PAUSE`, iar la cerere cele două numărători ale K1C (și cea
+  greșită chiar la pauză); un fișier din listă poate avea conținutul lui, ca unul trimis din Creality Print.
+- **Găsit pe drum:** (1) în pauza fișierului, ultima valoare bună a imprimantei poate rămâne pe stratul de dinainte (K1C
+  trimite între timp numărătoarea cu 5 în plus): placa arăta „Stratul 5” lângă „înaintea stratului 6”, deci acum stratul e
+  al pauzei; (2) cât e placa, cardul ventilatoarelor stătea departe de temperaturi (rândurile grilei se împărțeau după
+  cardul lucrării): primul rând ține acum înălțimea temperaturilor; (3) „Din desen…” feliază implicit selecția, deci proba
+  cu două piese alege „Piesele foii”.
+- **Măsurat și probat:** totalul 579,7 / 600 kB (+4,8), pornirea 102,0 (neschimbată); probe noi:
+  `test/unit/imprimanta.placa.test.ts` (harta, stratul viu, etichetele, fișierele ținute), sesiunea (valorile recente),
+  driverul K1 (piesele, poziția, filamentul) și două e2e (un fișier trimis din cvs2, cu pauza; unul trimis din altă parte).
+  Porțile: unit 8 773 (8 765 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 386 / 386 (385 din prima: `animatie.spec.ts:49`, animația simulării, a căzut o dată la limită, apoi 25 / 25 singură).
+  Privită în browser (Edge, imprimanta falsă): 1280 px luminos, cât imprimă (duza, piesa de acum) și în pauza fișierului;
+  390 px întunecat, fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6q.py`, 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h).
 
 ## Întrebările (owner)
 

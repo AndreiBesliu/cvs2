@@ -6958,3 +6958,20 @@ care așteaptă piesa de acum, 4a pauzele în browser pentru aceleași piese).
 - **Otrăvurile** (`test/otravuri/3.6p.py`, în clona din afara Drive-ului): 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei).
 - **Capcana uneltelor, a patra oară:** `Edit` a scris `/[\u0300-\u036f]/` cu literele de combinare reale; prinsă de
   `otravuri.py … verifica` (otrava N01 VOID), reparată cu `chr(92)`.
+
+## 2026-11-09 — 3.6q: placa și stratul viu (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6q” (owner-ul, la „Trec la 3.6q (placa cu stratul viu)?”, după 3.6p).
+**Started:** 09.11, 19:27. **Completed:** 09.11, 20:55.
+
+- **Starea și driverul K1:** piesele (`objects`, text JSON în JSON), cele anulate, piesa de acum, poziția duzei (X, Y),
+  filamentul folosit; sesiunea ține valorile recente ale stratului.
+- **Harta fișierului** (`harta.ts`) și **stratul viu** (`stratViu.ts`): stratul din filament, cu numărul imprimantei luat
+  doar aproape de el; în pauza fișierului, stratul pauzei; pe alt fișier, valoarea apropiată de progres.
+- **Fișierele ținute** în browser (IndexedDB, ultimele 5) și **placa** în cardul lucrării, după schiță.
+- **Imprimanta falsă** „imprimă” fișierul primit (straturile, poziția, filamentul, piesele, pauza, cele două numărători).
+- **Probe și porți:** `imprimanta.placa.test.ts` (10), sesiunea, driverul, două e2e; unit 8 773 (8 765 trecute,
+  0 căderi), e2e 386 / 386 (385 din prima: `animatie.spec.ts:49`, animația simulării, a căzut o dată la limită, apoi 25 / 25 singură), build-ul determinist; totalul 579,7 / 600 kB (+4,8), pornirea 102,0.
+  Otrăvurile (`test/otravuri/3.6q.py`): 45 / 45 (35 pe probele unitare, 10 prin e2e; U06 a scăpat întâi, prinsă după ce proba verifică nota pauzei fără reîncercări; U07, prinsă întâi de proba 3.6h). Manualul (ro, en) și ghidul (pasul 7).
+- **Găsit pe drum:** în pauza fișierului, stratul rămânea pe cel de dinainte (K1C trimite numărătoarea greșită) și cardul
+  ventilatoarelor stătea departe de temperaturi; văzute la privirea în browser, reparate.

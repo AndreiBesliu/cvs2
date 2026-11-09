@@ -643,7 +643,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6p gata pe 09.11** (ADR 0193, acceptat cu 1a–4a, grupul 2: „imprimarea văzută din cvs2”): pauza la un strat, aleasă în
   „Din desen…” (`punePauze` / `cuPauze` în `src/cam/feliere/gcode.ts`; `PAUSE` din profilul K1C, înaintea primei piese a
   stratului; nota doar ASCII), ținută în browser pentru aceleași piese (`src/app/pauzeDesen.ts`), spusă la trimitere și la
-  pornire (`gcode3d.ts` găsește pauzele oricărui fișier). Totalul 574,9 / 600 kB. Urmează 3.6q (placa, stratul viu) și
+  pornire (`gcode3d.ts` găsește pauzele oricărui fișier). Totalul 574,9 / 600 kB.
+  **3.6q gata pe 09.11** (placa și stratul viu): driverul K1 citește piesele, poziția și filamentul; `harta.ts` (straturile
+  unui fișier, pe bucăți), `stratViu.ts` (stratul din filament: K1C amestecă două numărători), fișierele trimise ținute în
+  IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB. Urmează
   3.6r (anularea unei piese).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
