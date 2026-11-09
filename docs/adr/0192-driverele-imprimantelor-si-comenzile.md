@@ -131,7 +131,10 @@ owner-ului, [nemăsurat] de aflat.
 ### F. Bugetul
 
 20. Pornirea neschimbată (fereastra vine la cerere). Ținta: cel mult +4 kB în total (contractul, comenzile, cardul nou, textele);
-    lista materialelor vine din `profil.ts` (al felierului), fără să tragă felierul după ea [de măsurat].
+    lista materialelor vine din `profil.ts` (al felierului), fără să tragă felierul după ea [de măsurat]. **Măsurat la 3.6o:**
+    pornirea neschimbată (102,0), totalul 573,1 / 600 (+5,8, deci 1,8 kB peste țintă; lista materialelor doar s-a mutat, fără
+    să se dubleze): **acceptat de owner pe 09.11** („Da, accept”, la „Accepți cei 5,8 kB în plus (cu 1,8 peste ținta din
+    ADR)?”).
 
 ## Felia 3.6o
 
@@ -183,8 +186,8 @@ owner-ului, [nemăsurat] de aflat.
   nespuse: răcirea nu le mai ia drept „răcite”; (3) proba manualului cere `data-imprimanta` scris la vedere la fiecare
   control: glisoarele și câmpurile primesc proprietățile dintr-un hook, iar atributul rămâne pe fiecare intrare.
 - **Măsurat și probat:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din §F: bucata ferestrei, adusă la cerere, are +8,0,
-  din care 2,0 e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată). Probe
-  noi: `imprimanta.driver.test.ts`, sesiunea (pașii homing-ului cu ceasul probei, răcirea singură), imprimantele ținute, două
+  din care 2,0 e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0; acceptat de owner pe 09.11, §F),
+  pornirea 102,0 (neschimbată). Probe noi: `imprimanta.driver.test.ts`, sesiunea (pașii homing-ului cu ceasul probei, răcirea singură), imprimantele ținute, două
   e2e (imprimanta liberă; cât imprimă, cu o comandă fără răspuns). Otrăvurile `test/otravuri/3.6o.py`: 59 / 59 din prima (46
   pe probele unitare, 13 prin e2e, fiecare de proba ei), plus cele șase refăcute din 3.6g. Porțile: unit 8 751 (8 743
   trecute, 0 căderi, 8 sărite); build-ul determinist (288 de fișiere identice); e2e 381 / 381 (378 din prima; proba 3.6k,

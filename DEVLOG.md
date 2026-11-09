@@ -6901,4 +6901,5 @@ făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
   a căzut o dată pe `87297e5` (dinainte) și niciodată pe `2ad9617`. Când cade, instantaneul paginii arată 0 bucle de fustă,
   deși proba a scris 2, deci nu e un termen prea scurt (cu 15 s, la fel). De căutat separat.
 - **Mărimea:** totalul 573,1 / 600 kB (+5,8, peste ținta de +4 din ADR: bucata ferestrei, adusă la cerere, +8,0, din care 2,0
-  e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată).
+  e lista materialelor, mutată din bucata „Din desen…”, care scade cu 2,0), pornirea 102,0 (neschimbată). **Acceptat de
+  owner pe 09.11, 12:05** („Da, accept”, la „Accepți cei 5,8 kB în plus (cu 1,8 peste ținta din ADR)?”).
