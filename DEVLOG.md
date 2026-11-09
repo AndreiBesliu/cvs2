@@ -6928,7 +6928,7 @@ făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
 
 **Prompt:** „continua” (owner-ul, după 3.6o și reparația probei 3.6k; urmează grupul 2 din cele șapte grupuri de
 îmbunătățiri ale legăturii prin WiFi, din 08.11: stratul viu, anularea unei singure piese, pauza la un strat).
-**Started:** 09.11, 16:21. **Completed:** —
+**Started:** 09.11, 16:21. **Completed:** 09.11, 17:02 (ADR 0193 acceptat cu recomandările: „Da, recomandările”).
 
 - **Cercetarea:** transcrierea din 07.11 (starea la ~3 s; `curPosition` cu X și Y bune, Z „00” cât imprimă și valori în
   afara patului cât se pregătește; `layer` între două numărători la 5 una de alta; `usedMaterialLength` lin; cadrul
@@ -6938,3 +6938,23 @@ făcut doar de aplicație; 3a: răcirea singură, pornită, la 30 de minute).
 - **Propunerea** (ADR 0193, propus): 3.6p pauza la un strat, 3.6q placa cu stratul viu, 3.6r anularea unei piese; patru
   întrebări care se exclud (schița, anularea prin `gcodeCmd`, piesa de acum, unde se țin pauzele). Schița, cu formularul:
   <https://claude.ai/artifact/5h1Y3RFM7wZvhZXzhMLNBw>. Codul vine după răspunsuri și după schiță.
+
+## 2026-11-09 — 3.6p: pauza la un strat (ADR 0193) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, la ADR 0193 și schița lui: 1a planșele, 2a anularea prin `gcodeCmd`, 3a cererea
+care așteaptă piesa de acum, 4a pauzele în browser pentru aceleași piese).
+**Started:** 09.11, 17:02. **Completed:** 09.11, 18:30.
+
+- **Felierul:** stratul fiecărei pauze (`punePauze`: înaintea primului strat care începe de la înălțimea ei; peste piese,
+  cade) și pauza în fișier (`cuPauze`: `;PAUSE_PRINT`, nota, `PAUSE`, după schimbarea stratului și temperaturile celui
+  de-al doilea, înaintea primei piese), peste textul feliat, deci o notă nu cere o feliere nouă; comanda, din profilul
+  K1C. Nota intră în fișier doar ca ASCII (Klipper-ul Creality: `key571` la un text pe care nu-l citește).
+- **Dialogul „Din desen…”**, după schiță: butonul, semnele de pe glisor, lista cu nota, rezumatul; pauzele ținute în
+  browser pentru aceleași piese (`src/app/pauzeDesen.ts`).
+- **Verificarea fișierului:** pauzele oricărui `.gcode`, cu stratul, înălțimea și nota, spuse la trimitere și la pornire.
+- **Probe și porți:** `test/unit/imprimanta.pauza.test.ts` (9), două e2e; unit 8 760 (8 752 trecute, 0
+  căderi), e2e 384 / 384, build-ul determinist; totalul 574,9 / 600 kB (+1,8), pornirea 102,0.
+  Manualul (ro, en) și ghidul imprimantei (pasul 6: pauza pe imprimanta owner-ului).
+- **Otrăvurile** (`test/otravuri/3.6p.py`, în clona din afara Drive-ului): 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei).
+- **Capcana uneltelor, a patra oară:** `Edit` a scris `/[\u0300-\u036f]/` cu literele de combinare reale; prinsă de
+  `otravuri.py … verifica` (otrava N01 VOID), reparată cu `chr(92)`.

@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 09.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a, 3a, 4a), pentru
 feliile 3.6p, 3.6q și 3.6r (fără imprimantă, pe imprimanta falsă; apoi proba pe imprimanta owner-ului, după ghid), în
-worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). Cererea owner-ului: grupul 2
+worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`). **Felia 3.6p** gata pe 09.11 (secțiunea „Felia 3.6p, gata”), fără
+imprimantă; proba pe imprimanta owner-ului (ghidul, pasul 6) rămâne la el. Cererea owner-ului: grupul 2
 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11, „Ce ar face-o specială: imprimarea „văzută” din
 cvs2”), după grupul 1 (ADR 0192, „poti incepe cu 1”), la „continua” (09.11). **Schimbă:** ADR 0192 §B.8 (al doilea text făcut
 doar de driver în `gcodeCmd`, anularea unei piese, dacă owner-ul o vrea: întrebarea 2) și ADR 0191 §E.7 (fișierul primește
@@ -138,6 +139,32 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
 - **Pe imprimanta owner-ului** (ghidul, pași noi): placa de probă cu o pauză înaintea stratului 9 (la 1,6 mm), pusă din „Din
   desen…”: se oprește acolo? unde stă capul? duza rămâne caldă? Reia din cvs2; transcrierea, cu `layer` și
   `usedMaterialLength` pe un fișier al nostru; o placă cu două piese și anularea uneia (după răspunsul 2), cu transcrierea.
+
+## Felia 3.6p, gata (09.11.2026)
+
+- **Felierul** (`src/cam/feliere/gcode.ts`): `punePauze` (fiecare pauză, înaintea primului strat k ≥ 2 care începe de la
+  înălțimea ei, cu o toleranță de 1e-6 mm; peste vârful penultimului strat, cade), `cuPauze` (pauza pusă peste textul
+  feliat, după `;AFTER_LAYER_CHANGE`, Z-ul stratului și temperaturile celui de-al doilea, înaintea primei piese:
+  `;PAUSE_PRINT`, `; pause note: …`, `PAUSE`; două pe același strat dau una, cu notele alăturate), `notaPauza`,
+  `notaInFisier`; comanda, din profil (`K1C.pauza`). O notă schimbată nu cere o feliere nouă: doar textul se reface.
+- **Dialogul** (`src/app/DialogDinDesen.tsx`), după schiță: **Pauză înaintea acestui strat** sub glisor (apăsat pe stratul
+  unei pauze, oprit pe primul strat, cu „Imprimanta se oprește după stratul N, la H mm”), semnele roșii pe glisor, lista
+  **Pauzele** (stratul și înălțimea, un clic arată stratul; **Nota pauzei**; **Scoate pauza**), rezumatul („1 pauză, plus
+  cât stă în ea”). Pauzele, ținute în browser pentru aceleași piese (`src/app/pauzeDesen.ts`: cheia
+  `cvs2.imprimanta.felie.pauze`, `v: 1`; cheia unui desen e lista instanțelor alese, ordonată; ultimele 20 de desene).
+- **Verificarea fișierului** (`src/machine/imprimanta/gcode3d.ts`): pauzele oricărui `.gcode` (`PAUSE`, `M600`, `M601`,
+  `M0`, `M1`, `M25`, `M226`), cu stratul (`;LAYER_CHANGE`, sau `;LAYER:` al lui Cura), înălțimea (`;Z:`) și nota; spuse în
+  trimitere și la pornire, lângă bifa „Patul e gol”.
+- **Găsit pe drum:** (1) nota intră în fișier doar ca ASCII (diacriticele scoase), ca restul fișierului: Klipper-ul Creality
+  oprește imprimarea la un fișier pe care nu-l poate citi ca text (`key571`); (2) calitatea 0,12 are și primul strat de
+  0,12, deci pauza de la 2 mm vine acolo înaintea stratului 18, la 2,04 mm: pauza ține înălțimea, nu numărul stratului;
+  (3) rândul cu Z-ul și rolul stratului rămâne lângă glisor, iar pauza vine sub el, ca în schiță.
+- **Măsurat și probat:** totalul 574,9 / 600 kB (+1,8), pornirea 102,0 (neschimbată); probele noi:
+  `test/unit/imprimanta.pauza.test.ts` (locul pauzei, înălțimea la altă grosime, nota, verificarea fișierului, pauzele ținute)
+  și două e2e (dialogul; trimiterea și pornirea). Porțile: unit 8 760 (8 752 trecute, 0 căderi, 8
+  sărite), build-ul determinist, e2e 384 / 384. Privit în browser: lat, în română, luminos; pe telefon (375 px),
+  întunecat, fără nimic ieșit din ecran; semnele nu acoperă glisorul, iar butoanele au 44 px pe telefon. Otrăvurile:
+  `test/otravuri/3.6p.py`, 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei).
 
 ## Întrebările (owner)
 

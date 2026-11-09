@@ -621,10 +621,6 @@
       "ro": "Primirea lucrărilor de la alte aplicații",
       "en": "Receiving jobs from other apps"
     },
-    "355a2ba551cdde67": {
-      "ro": "Pauza la un strat (ADR 0193, propus pe 09.11, grupul 2: „imprimarea văzută din cvs2”): în „Din desen…”, pauzele alese pe glisorul straturilor (cu o notă), scrise în fișier înaintea stratului (`PAUSE` al profilului K1C), ținute ca înălțimi; proba pe hârtie și pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
-      "en": "Pause at a layer (ADR 0193, proposed on 09.11, group 2: \"the print, seen from cvs2\"): in \"From drawing…\", pauses chosen on the layer slider (with a note), written into the file before the layer (the K1C profile's `PAUSE`), kept as heights; tested on paper and on the fake printer, then the guide on the owner's printer"
-    },
     "35c407c4f8470b69": {
       "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
       "en": "Jog, XY / Z zero, Z probing with the touch plate, G54–G59, on the simulated machine (ADR 0082): the pure procedures, the work coordinate system read back, the modal state restored, refusals with a reason; e2e on the emulator"
@@ -692,6 +688,10 @@
     "3c1b57d7f2238ec1": {
       "ro": "**Fila Utilizatori minimă și fila Setări, aduse din etapa 14** (fără mașină; ADR 0116, secțiunea feliei; „Da, 14.C↑b”, la întrebarea de după 14.C↑). În `/admin`, fila **Utilizatori** arată cele mai noi 100 de conturi de client, cu planul de acum, și schimbă planul unui cont: gratuit, o probă de 1–365 de zile de azi, dezactivarea (cu planul de dinainte ținut) și reactivarea; cererea numește planul văzut, iar unul schimbat între timp e refuzat. Fila **Setări**, doar a owner-ului: zilele offline (1–60) și păstrarea tichetelor rezolvate (30–3 650 de zile). Callable-ul `administreazaConturile`, cu auditul în tranzacție; permisiunile noi `conturi.citeste` și `conturi.administreaza`; regula dă lista conturilor cu oricare din ele și setările doar owner-ului. **`/admin` pe Firestore Lite** (doar citiri o dată): 200,5 → 102,8 / 200 kB, cu filele noi. Ce folosesc doar serverul și adminul din conturi stă în `shared/conturiPlan.ts`, ca pornirea să rămână 98,4 (cu ușa 101,9 / 110 kB); totalul 433,1 / 450. **Probele:** pe hârtie, ale callable-ului și ale regulilor pe emulator, cap-coadă pe emulatoare; mutații țintite, toate prinse.",
       "en": "**The minimal Users tab and the Settings tab, brought from stage 14** (no machine; ADR 0116, the slice section; “Da, 14.C↑b”, to the question after 14.C↑). In `/admin`, the **Users** tab shows the newest 100 customer accounts, with the current plan, and changes the plan of an account: free, a trial of 1–365 days from today, deactivation (with the plan from before kept) and reactivation; the request names the plan seen, and one changed in the meantime is refused. The **Settings** tab, the owner’s only: the days offline (1–60) and how long resolved tickets are kept (30–3,650 days). The `administreazaConturile` callable, with the audit in the transaction; the new permissions `conturi.citeste` and `conturi.administreaza`; the rule gives the account list with either of them and the settings only to the owner. **`/admin` on Firestore Lite** (one-time reads only): 200.5 → 102.8 / 200 kB, with the new tabs. What only the server and the admin use from the accounts lives in `shared/conturiPlan.ts`, so the startup stays at 98.4 (with the door 101.9 / 110 kB); the total 433.1 / 450. **The probes:** on paper, of the callable and of the rules on the emulator, end to end on the emulators; targeted mutations, all caught."
+    },
+    "3c33613055a25691": {
+      "ro": "**Gata pe 09.11.** Pauza la un strat (ADR 0193, acceptat pe 09.11, grupul 2: „imprimarea văzută din cvs2”): în „Din desen…”, pauzele alese pe glisorul straturilor (cu o notă), scrise în fișier înaintea stratului (`PAUSE` al profilului K1C), ținute ca înălțimi; proba pe hârtie și pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "**Done on 09.11.** Pause at a layer (ADR 0193, accepted on 09.11, group 2: \"the print, seen from cvs2\"): in \"From drawing…\", pauses chosen on the layer slider (with a note), written into the file before the layer (the K1C profile's `PAUSE`), kept as heights; tested on paper and on the fake printer, then the guide on the owner's printer"
     },
     "3cac31c2ed72eaa1": {
       "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
@@ -884,10 +884,6 @@
     "4c7a639ac3fcd856": {
       "ro": "Fundul plat al V-carve-ului",
       "en": "The V-carve flat floor"
-    },
-    "4ca4c472453ad912": {
-      "ro": "Pauza la un strat",
-      "en": "Pause at a layer"
     },
     "4cbe3ab40582674d": {
       "ro": "Ordinea de mână a operațiilor",
@@ -1376,6 +1372,10 @@
     "7caf74088569d4c9": {
       "ro": "— (pornește profilul)",
       "en": "— (starts the profile)"
+    },
+    "7ce6dd2c3396fa46": {
+      "ro": "**Pauza la un strat** (fără imprimantă; ADR 0193, acceptat cu recomandările, „Da, recomandările”: 1a–4a; în worktree-ul `imprimanta`). În „Din desen…”: **Pauză înaintea acestui strat** sub glisor, semnele pauzelor pe glisor, lista **Pauzele** cu **Nota pauzei** și **Scoate pauza**, rezumatul; în fișier, `;PAUSE_PRINT`, nota (ASCII) și `PAUSE`, după schimbarea stratului, înaintea primei piese; pauza ține înălțimea (la altă grosime a straturilor rămâne în același loc al piesei); pauzele ținute în browser pentru aceleași piese. Verificarea fișierului găsește pauzele oricărui `.gcode` și le spune la trimitere și la pornire, lângă bifa „Patul e gol”. **Probe:** pe hârtie (`imprimanta.pauza.test.ts`), două e2e; otrăvurile 37 / 37 din prima (27 pe probele unitare, 10 prin e2e, fiecare de proba ei). **Mărimea:** totalul 574,9 / 600 kB (+1,8), pornirea 102,0. Proba pe imprimanta owner-ului: ghidul, pasul 6.",
+      "en": "**Pause at a layer** (no printer; ADR 0193, accepted with the recommendations, \"Da, recomandările\": 1a–4a; in the `imprimanta` worktree). In \"From drawing…\": **Pause before this layer** under the slider, the pause marks on the slider, the **Pauses** list with **Pause note** and **Remove the pause**, the summary; in the file, `;PAUSE_PRINT`, the note (ASCII) and `PAUSE`, after the layer change, before the first part; a pause keeps its height (with another layer height it stays at the same place in the part); pauses kept in the browser for the same parts. The file check finds the pauses of any `.gcode` and shows them when sending and at start, next to the \"The bed is clear\" check. **Tests:** on paper (`imprimanta.pauza.test.ts`), two e2e; poisons 37 / 37 at first run (27 on the unit tests, 10 through e2e, each by its own test). **Size:** total 574.9 / 600 kB (+1.8), start-up 102.0. The test on the owner's printer: the guide, step 6."
     },
     "7dae65094e5069b5": {
       "ro": "Gruparea vectorilor",
