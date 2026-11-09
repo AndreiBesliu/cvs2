@@ -591,4 +591,17 @@ export const roEditare = {
   'motiv.aseaza-prea-mari': 'Piesele alese sunt mai mari decât foaia: rămân pe loc.',
   'motiv.aseaza-nimic': 'Piesele stau deja așa: nimic de mutat.',
   'motiv.aceeasi-foaie': 'Alege o altă foaie decât cea activă.',
+  // Etichetele acțiunilor planșelor (ADR 0210): le arată doar ferestrele aduse la cerere (paleta, meniul foii, panoul).
+  'actiune.foaie-duplica': 'Duplică foaia',
+  'actiune.foaie-sterge': 'Șterge foaia',
+  'actiune.foaie-muta-sus': 'Mută foaia mai sus',
+  'actiune.foaie-muta-jos': 'Mută foaia mai jos',
+  'actiune.foaie-eticheta': 'Numele și materialul foii',
+  'actiune.inca': 'Încă…',
+  'actiune.plus-unu': '+1',
+  'actiune.desprinde': 'Desprinde',
+  'actiune.foaie-duplica-legat': 'Duplică foaia cu aceleași piese',
+  'actiune.foaie-aseaza': 'Așază pe foi',
+  'actiune.muta-si-aseaza': 'Mută și așază la capăt',
+  'actiune.muta-pe-foaie': 'Mută pe altă foaie',
 } as const satisfies DictionarRoPentru<typeof enEditare>;

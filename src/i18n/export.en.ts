@@ -200,6 +200,17 @@ export const enExport = {
     other: 'The text comes out of {n} plates ({nume}): they are red in the list.',
   },
   'export.placute.confirma': 'I saw the plates: I export them like this, with the text coming out of them.',
+  // “All sheets” (ADR 0210 §5, slice 11.5↑).
+  'export.foi': 'What to export',
+  'export.foi.activa': 'The active sheet',
+  'export.foi.toate': 'All sheets ({n})',
+  'export.foi.nota': 'One program per sheet, in a .zip archive; identical sheets come out once, with ×N. The rows below are those of the active sheet; the other sheets keep their operations.',
+  'export.foi.gata': { one: 'Archive {arhiva}: one sheet, SHA-256 {sha}.', other: 'Archive {arhiva}: {n} sheets, SHA-256 {sha}.' },
+  'export.foi.foaia': 'Sheet',
+  'export.foi.fisiere': 'Files in the archive',
+  'export.foi.identice': '{foaie} ×{n} (and {alte})',
+  'export.foi.timp': 'All sheets: {timp}',
+  'export.foi.goale': 'Nothing to cut, not in the archive: {foi}.',
   // Ordinea tăierii (ADR 0133 §3).
   'export.ordine': 'Cutting order',
   'export.ordine.automata': 'Automatic',

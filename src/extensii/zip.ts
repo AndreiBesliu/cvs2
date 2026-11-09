@@ -1,3 +1,5 @@
+import { crc32 } from '../io/crc32.ts';
+
 /**
  * Cititorul `.zip` al pachetelor de extensii (ADR 0127 §A): directorul central, metodele 0 (stocat) și 8 (deflate, prin
  * `DecompressionStream('deflate-raw')`), CRC-32 verificat după dezarhivare. Fără criptare și fără ZIP64. Mărimile declarate
@@ -10,22 +12,8 @@ export type RezultatZip =
   | { readonly ok: true; readonly intrari: readonly IntrareZip[] }
   | { readonly ok: false; readonly motiv: MotivZip; readonly nume?: string };
 
-const TABEL = (() => {
-  const t = new Uint32Array(256);
-  for (let n = 0; n < 256; n++) {
-    let c = n;
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    t[n] = c >>> 0;
-  }
-  return t;
-})();
-
-/** CRC-32 (polinomul 0xEDB88320, ca în ZIP). */
-export function crc32(b: Uint8Array): number {
-  let c = 0xffffffff;
-  for (const x of b) c = (TABEL[(c ^ x) & 0xff] ?? 0) ^ (c >>> 8);
-  return (c ^ 0xffffffff) >>> 0;
-}
+// CRC-32 (ca în ZIP), comun cu arhiva exportului: îl dă și cititorul, ca până acum.
+export { crc32 };
 
 /** Deflate-ul unei intrări, oprit dacă trece de mărimea declarată; null dacă iese altă mărime sau fluxul e stricat. */
 async function dezumfla(date: Uint8Array, marime: number): Promise<Uint8Array | null> {

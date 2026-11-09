@@ -7876,3 +7876,23 @@ un decupaj). **Started:** 09.11, 17:29. **Completed:** 09.11, 18:48.
 - **Publicat:** canalul `plansele` al instanței de test: <https://cncvectorstudio-test--plansele-xafrblmh.web.app>.
 
 **Completed:** 09.11, 20:34.
+
+## 2026-11-09 — Felia 11.5↑: „Toate foile” la export (ADR 0210 §5) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.5↑ („Toate foile” la export)?”: „Da, 11.5↑”.
+**Started:** 09.11, 20:45.
+
+- **Pauză la cererea owner-ului** („facem pauza cand se poate”), cu codul și probele comise: fereastra exportului oferă, de la
+  două foi, „Ce exporți: Foaia activă / Toate foile (N)”. „Toate foile” cere workerului CAM fiecare foaie ca pe un document
+  doar cu ea (aceiași parametri), sare foile fără nimic de tăiat, pune foile identice o dată (programele egale fără
+  comentarii: o copie legată diferă doar în id-ul instanței din comentarii), cu `-x<N>` în nume, și scrie o arhivă `.zip`
+  stocată (`src/io/scrieZip.ts`, CRC-32 comun cu cititorul extensiilor în `src/io/crc32.ts`), cu aceiași octeți la fiecare
+  export. Fereastra arată arhiva, foile (×N), fișierele și timpii; „Deschide în Mașina” rămâne al foii active. O foaie din
+  care iese freza (fără aceeași ieșire confirmată) se exportă singură: refuz cu numele ei.
+- **Locul la pornire:** etichetele celor 12 acțiuni ale planșelor trec în mesajele editorului (le arată doar paleta, meniul
+  foii și panoul, care și le cer); `App.tsx` dă parametrii ferestrei întregi. Pornirea cu ușa 109,8 / 110, totalul 614,3 / 700.
+- **Porțile până la pauză:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile, suita unitară 9 004 / 0 (8
+  sărite; pornită înaintea ultimelor două simplificări, probate apoi de probele exportului: 9 / 9), e2e-urile exportului, ale
+  foilor și ale plăcuțelor 29 / 29, build-ul determinist.
+- **Rămâne la reluare:** suita e2e întreagă, otrăvurile (lista `test/otravuri/11.5.py`), documentele (ADR 0210, fișa,
+  manualul, CLAUDE.md), canalul `plansele`.

@@ -555,6 +555,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current, semnal?: AbortSignal): ContextExport => ({
     // Exportul e al foii active (ADR 0210 §5): documentul văzut din ea, deci programul ei e cel al unui document doar cu ea.
     document: () => doarFoaia(curenta.current.istoric.doc, curenta.current.foaie),
+    toate: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
     ...(semnal ? { semnal: () => semnal } : {}),
     rezultat: (r: RezultatExport) => {
@@ -570,13 +571,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         for (const d of dopuri) descarca(d.octeti, d.nume);
         // În panoul mașinii ajunge doar un program pe care senderul îl vorbește (familia GRBL); restul se rulează de pe
         // controlerul lui (ADR 0125): un G4 P în ms ar deveni acolo o pauză de ore.
-        setUltimulExport(r.sender ? fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
+        setUltimulExport(r.sender ? (r.masina ?? fisiere).map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
-          ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}),
+          ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
         // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
         opresteSimularea();
@@ -1016,16 +1017,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       setStareExport({ ok: false, motiv: t(scris.motiv) });
       return;
     }
-    const { origine, z0, post, unitati, strategieScula } = c;
+    // Parametrii, cum i-a dat fereastra (și „Toate foile”, ADR 0210 §5); valorile și ordinea operațiilor sunt scrise mai sus.
+    const { valori: _valori, ordine: _ordine, ...parametri } = c;
     exportInCurs.current = true;
     opresteSimularea();
     opresteExportul();
     const ac = new AbortController();
     exportCalcul.current = ac;
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
-      origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(strategieScula ? { strategieScula } : {}),
-      ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
-      ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
+      ...parametri, ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
     }, ++cerereExport.current, ac.signal));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
     if (!r.ok) {
@@ -1462,6 +1462,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         <DialogExport
           baza={bazaNoua}
           doc={docActiv}
+          toate={doc}
           // Titlul spune foaia (ADR 0210 §5), cu mai multe foi.
           {...(doc.foi.length > 1 && foaie ? { foaie: numeFoaie(foaie, indexActiva, sablonFoaie) } : {})}
           dupaIdLume={harti.dupaIdLume}

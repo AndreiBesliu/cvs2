@@ -4,6 +4,13 @@ import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import { doarFoaia, numeFoaie } from '../model/foi.ts';
+import { taieturiFoaie } from '../model/lume.ts';
+import { t } from '../i18n/t.ts';
+import { scrieZip, type IntrareArhiva } from '../io/scrieZip.ts';
+import { CONTRACTE } from '../post/contracte/index.ts';
+import { sha256Hex, type FisierExportat } from '../post/export.ts';
+import { faraComentarii, foiIdentice, numeInArhiva } from '../post/foi.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
@@ -21,11 +28,72 @@ export { CalculAnulat, LucratorCazut } from '../jobs/bazinCam.ts';
  * 0109): firul principal primește doar octeții, rezumatul și mutările simulării, transferate. Se încarcă la cerere.
  * `semnal` anulează calculul (un export nou, un parametru schimbat, fereastra închisă): workerul se oprește.
  */
-export async function calculeazaExport(doc: Document, p: ParametriExport, semnal?: AbortSignal): Promise<RezultatExport> {
+export async function calculeazaExport(doc: Document, p: ParametriExport, semnal?: AbortSignal, toate?: Document): Promise<RezultatExport> {
+  if (p.toateFoile && toate) return calculeazaToateFoile(toate, doc.foi[0]?.id ?? '', p, semnal);
   const r = await exportInBazin(doc, p, semnal ? { semnal } : {});
   if (!r.ok) return r;
   const { simulare, foaie, ...rest } = r;
   return { ...rest, simulare: (s) => simuleazaExport(simulare, foaie, s) };
+}
+
+/**
+ * „Toate foile” (ADR 0210 §5): câte un program pe foaie, fiecare exact cel al documentului doar cu foaia ei (aceiași parametri),
+ * cerut workerului CAM pe rând; o foaie fără nimic de tăiat se sare. Foile identice (aceleași fișiere, cu programele egale fără
+ * comentarii: o copie legată a foii diferă doar în id-ul instanței din comentarii) ies o dată, cu programul primei și „-x<N>” în nume; fișierele lor și ale dopurilor intră într-o arhivă `.zip` stocată, cu aceiași octeți la
+ * fiecare export. Panoul mașinii, simularea și rezumatul sunt ale foii active (`activa`). Confirmarea ieșirii din foaie trece
+ * doar pe aceeași ieșire (foaia activă, sau una identică cu ea); o altă foaie din care iese freza se exportă singură, cu
+ * confirmarea ei: aici, refuz cu numele ei.
+ */
+async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriExport, semnal?: AbortSignal): Promise<RezultatExport> {
+  const { toateFoile: _toate, ...baza } = p;
+  const contract = CONTRACTE[p.post ?? 'grbl-11'];
+  const facute: Array<{ readonly k: number; readonly nume: string; readonly r: Extract<Awaited<ReturnType<typeof exportInBazin>>, { ok: true }> }> = [];
+  const goale: string[] = [];
+  for (const [k, f] of doc.foi.entries()) {
+    const d = doarFoaia(doc, f.id), nume = numeFoaie(f, k, (n) => t('foaia.n', { n: String(n) }));
+    if (taieturiFoaie(d, 0).length === 0) {
+      goale.push(nume);
+      continue;
+    }
+    const r = await exportInBazin(d, baza, semnal ? { semnal } : {});
+    if (!r.ok) return { ok: false, motiv: 'cereConfirmare' in r ? `${nume}: freza iese din foaie; exportă foaia singură, cu confirmarea ei` : `${nume}: ${r.motiv}` };
+    facute.push({ k, nume, r });
+  }
+  const activ = facute.find((x) => doc.foi[x.k]?.id === activa) ?? facute[0];
+  if (!activ) return { ok: false, motiv: 'nicio foaie n-are ce tăia' };
+  // Semnătura unei foi: fișierele ei și ale dopurilor, cu numele și amprenta programului fără comentarii (ce face mașina).
+  const fisiereFoii = (r: (typeof facute)[number]['r']): FisierExportat[] => [...r.fisiere, ...r.dopuri.flatMap((d) => d.fisiere)];
+  const semnaturi = await Promise.all(facute.map(async ({ r }) => JSON.stringify(await Promise.all(
+    fisiereFoii(r).map(async (x) => [x.nume, await sha256Hex(new TextEncoder().encode(faraComentarii(x.text)))]),
+  ))));
+  const intrari: IntrareArhiva[] = [];
+  let linii = 0;
+  const foi = foiIdentice(semnaturi).flatMap((g) => {
+    const prim = facute[g[0] ?? -1];
+    if (!prim) return [];
+    const fisiere = fisiereFoii(prim.r).map((x) => {
+      linii += x.linii;
+      const intrare = { nume: numeInArhiva(x.nume, prim.k + 1, g.length, p.origine, contract.numeScurt), octeti: x.octeti };
+      intrari.push(intrare);
+      return intrare.nume;
+    });
+    const identice = g.slice(1).flatMap((j) => facute[j]?.nume ?? []);
+    return [{ nume: prim.nume, identice, fisiere, secunde: prim.r.rezumat.ok ? prim.r.rezumat.total.secunde : null }];
+  });
+  const z = scrieZip(intrari);
+  if (!z.ok) return { ok: false, motiv: z.motiv };
+  const arhiva = contract.numeScurt ? 'CNCVS2.ZIP' : `cncvs2-${p.origine}-foile.zip`;
+  const zip: FisierExportat = {
+    text: '', octeti: z.octeti, sha256: await sha256Hex(z.octeti), linii, extensie: 'zip', aproximari: 0, sectiuni: [], scula: null, nume: arhiva,
+  };
+  const secunde = foi.every((f) => f.secunde !== null) ? foi.reduce((s, f) => s + (f.secunde ?? 0) * (1 + f.identice.length), 0) : null;
+  const { simulare, foaie, rezumat, sender, fisiere } = activ.r;
+  return {
+    ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere } : {}),
+    avertismente: facute.flatMap(({ nume, r }) => r.avertismente.map((a) => `${nume}: ${a}`)),
+    foi: { arhiva, foi, goale, secunde },
+    simulare: (s) => simuleazaExport(simulare, foaie, s),
+  };
 }
 
 /**

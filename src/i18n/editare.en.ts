@@ -565,4 +565,17 @@ export const enEditare = {
   'motiv.aseaza-prea-mari': 'The chosen parts are larger than the sheet: they stay where they are.',
   'motiv.aseaza-nimic': 'The parts are already arranged like that: nothing to move.',
   'motiv.aceeasi-foaie': 'Choose a sheet other than the active one.',
+  // The labels of the sheets' actions (ADR 0210): only windows loaded on demand show them (the palette, the sheet menu, the panel).
+  'actiune.foaie-duplica': 'Duplicate the sheet',
+  'actiune.foaie-sterge': 'Delete the sheet',
+  'actiune.foaie-muta-sus': 'Move the sheet up',
+  'actiune.foaie-muta-jos': 'Move the sheet down',
+  'actiune.foaie-eticheta': 'Sheet name and material',
+  'actiune.inca': 'More…',
+  'actiune.plus-unu': '+1',
+  'actiune.desprinde': 'Detach',
+  'actiune.foaie-duplica-legat': 'Duplicate the sheet with the same parts',
+  'actiune.foaie-aseaza': 'Arrange on sheets',
+  'actiune.muta-si-aseaza': 'Move and arrange at the end',
+  'actiune.muta-pe-foaie': 'Move to another sheet',
 } as const satisfies Readonly<Record<string, Mesaj>>;

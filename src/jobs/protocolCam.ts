@@ -47,6 +47,11 @@ export type ParametriExport = {
    * gol: implicitele. Nu schimbă programul, doar rezumatul.
    */
   readonly setariMasina?: string;
+  /**
+   * „Toate foile” (ADR 0210 §5): câte un program pe foaie, într-o arhivă. Doar pe firul principal: calculul desparte documentul
+   * pe foi și cere workerului fiecare foaie ca pe un document doar cu ea, fără steagul acesta.
+   */
+  readonly toateFoile?: boolean;
 };
 
 /** Foaia programului, cum o cere simularea. */

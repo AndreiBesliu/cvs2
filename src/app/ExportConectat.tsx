@@ -43,11 +43,20 @@ type Props = {
   readonly onDeschideInMasina?: () => void;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
   readonly foaie?: string;
+  /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
+  readonly toate: Document;
 };
+
+/** Plăcuțele foii `k` (toate foile, fără el) cu textul ieșit, cu numele lor și confirmarea aleasă în fereastra CSV; altfel nimic. */
+function placuteIesite(d: Document, k?: number): { readonly nume: readonly string[]; readonly confirmare: boolean } | undefined {
+  const piese = new Map(d.piese.map((p) => [p.id, p]));
+  const nume = placuteCuTextIesit(d, k).map((i) => numePlacutei(i, piese.get(i.piesa)));
+  return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
+}
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, foaie,
+  onDeschideInMasina, foaie, toate,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -150,11 +159,9 @@ export function ExportConectat({
    * Plăcuțele foii cu textul ieșit din ele (ADR 0210 §4, răspunsul 5): o notă, sau confirmarea, dacă omul a ales-o în fereastra
    * CSV. Un obiect nou la fiecare document: o bifă pusă pe plăcuțele de dinainte nu trece pe altele.
    */
-  const placute = useMemo(() => {
-    const piese = new Map(doc.piese.map((p) => [p.id, p]));
-    const nume = placuteCuTextIesit(doc, 0).map((i) => numePlacutei(i, piese.get(i.piesa)));
-    return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
-  }, [doc]);
+  const placute = useMemo(() => placuteIesite(doc, 0), [doc]);
+  // Cu „Toate foile” (ADR 0210 §5), plăcuțele tuturor foilor.
+  const placuteToate = useMemo(() => placuteIesite(toate), [toate]);
 
   /**
    * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
@@ -192,6 +199,8 @@ export function ExportConectat({
       onSetariMasina={onSetariMasina}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
       {...(placute ? { placute } : {})}
+      {...(placuteToate ? { placuteToate } : {})}
+      foi={toate.foi.length}
     />
   );
 }
