@@ -96,6 +96,11 @@ test('hârtia foarte întunecată: o linie pe un sfert din hârtia cea mai desch
   const p = poza({ W, H, lumina: (x) => 1 - 0.8 * (x / W), desen: linii });
   const e = cu(p, 'neuniforma');
   assert.ok(e.plus <= 0.005 && e.lipsa <= 0.005, `în plus ${pct(e.plus)}, lipsă ${pct(e.lipsa)}`);
+  // Pe mijlocul ultimei linii, cerneala corectată își păstrează contrastul întreg, 1 − 0,12 / 0,93 ≈ 0,87: hârtia de acolo
+  // (~0,22) e peste pragul de jos al fundalului (un sfert din ~0,9), deci raportul e chiar față de ea.
+  const { f } = campul(p, { ...IMPLICITE, lumina: 'neuniforma' });
+  const x = Math.round(0.95 * W), v = Array.from({ length: 81 }, (_, j) => f[Math.round(0.3 * H + j) * W + x] ?? 0).sort((u, w) => u - w);
+  assert.ok((v[40] ?? 0) > 0.75, `contrastul la 95 % din lățime: ${v[40]}`);
 });
 
 test('o poză subexpusă (hârtia sub jumătate, de la 37 % la 7 %): fundalul neted pornește din pragul Otsu, nu dintr-unul fix', () => {
