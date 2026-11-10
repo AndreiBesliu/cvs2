@@ -1,6 +1,8 @@
 # ADR 0250 — Patru aranjamente ale interfeței, la alegerea omului
 
-**Starea:** propus pe 09.11.2026. Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+**Starea:** acceptat pe 10.11.2026 (propus pe 09.11), cu răspunsurile owner-ului: 1a, 2b, 3a, 4a (provizoriu), 5a
+(secțiunea „Răspunsurile owner-ului”, la capăt). Feliile pornesc pe `main`, după unirile care așteaptă și după ce schițele
+mai cresc. Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -163,3 +165,27 @@ Fiecare felie se încheie cu ceva de încercat pe un canal al instanței de test
    - **a (recomandat):** cum e în tabel: Atelier (cel mai ieftin și se vede imediat), Clasic, linia de comandă, Pas cu pas,
      Insule rafinat, Mașina, prima pornire.
    - **b:** altă ordine, spusă de owner.
+
+## Răspunsurile owner-ului
+
+Pe 10.11.2026, exact: „1a, 2 b e mai bine, pentru ca pot aparea si alte diferente, si deci propun sa facem asta dupa ce
+mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”.
+
+1. **a, fontul sistemului** în toate aranjamentele. Fonturile din schițele din 09.11 (IBM Plex, Inter, Space Grotesk,
+   Manrope) rămân doar ale schițelor; schițele noi folosesc fontul sistemului, ca aplicația.
+2. **b, pe `main`**, nu într-un worktree. Feliile pornesc după două lucruri:
+   - unirile care așteaptă (planșele);
+   - încă o tură de schițe, fiindcă „pot aparea si alte diferente”.
+
+   Worktree-ul `aranjamente`, portul 4182 și rețeaua `127.0.9` nu se mai folosesc. Rămân ale liniei:
+   - ADR-urile 0250–0259;
+   - canalul `aranjamente` al instanței de test, pentru ce nu trebuie să ajungă pe adresa principală.
+3. **a, Pas cu pas e asistentul pentru începători din prag.** Linia închide rândul „Două interfețe”, iar proba etapei 28
+   („un job făcut doar prin asistent”) se face în Pas cu pas.
+4. **a, alegerea la prima pornire** (felia 28.7↑), **provizoriu** („poate il schimbam mai tarziu”). Dacă owner-ul o
+   schimbă, felia se scoate sau se mută, fără alt efect: alegerea din meniul contului și din paletă rămâne.
+5. **a, ordinea din tabel:** Atelier, Clasic, linia de comandă, Pas cu pas, Insule rafinat, Mașina, prima pornire.
+
+**Mărimea, la acceptare:** după unirea tăierii și a imprimantei (09.11), totalul e 654,4 / 700 kB. Cu planșele (~+19) și
+cu această linie (~+40), ar ajunge la ~713, deci peste plafon. Prima felie care trece de el cere decizia scrisă
+(ADR 0144), cu mărimile măsurate atunci.

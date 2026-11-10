@@ -8232,3 +8232,19 @@ după 3.6q).
 - **Probe și porți:** driverul, sesiunea (2), placa, manualul, un e2e; unit 8 778 (8 770 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 387 / 387; totalul 581,1 / 600 kB (+1,4; grupul 2: +8,0 față de 573,1, peste ținta de +7 acceptată de owner), pornirea 102,0. Otrăvurile
   (`test/otravuri/3.6r.py`): 33 / 33 (25 pe probele unitare, 8 prin e2e). Manualul (ro, en) și ghidul (pasul 8).
 - **Găsit pe drum:** proba manualului nu citea controalele plăcii; acum le citește.
+
+## 2026-11-10 — ADR 0250 acceptat: răspunsurile owner-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „1a, 2 b e mai bine, pentru ca pot aparea si alte diferente, si deci propun sa facem asta dupa ce mai dezvoltam
+design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”.
+**Started:** 10.11, 20:26. **Completed:** 10.11, 20:40.
+
+- **ADR 0250 acceptat**, cu secțiunea „Răspunsurile owner-ului”:
+  - fontul sistemului;
+  - pe `main`, după unirile care așteaptă și după încă o tură de schițe (worktree-ul propus nu se mai face);
+  - Pas cu pas e asistentul din prag;
+  - alegerea la prima pornire, provizoriu;
+  - Atelier întâi.
+
+  Mărimea la acceptare: 654,4 / 700 kB; cu planșele și linia, ~713, deci o decizie pe plafon la prima felie care trece.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.

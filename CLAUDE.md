@@ -1046,6 +1046,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 10.11.2026: **ADR 0250 acceptat** („1a, 2 b e mai bine, pentru ca pot aparea si alte diferente, si deci propun sa facem
+  asta dupa ce mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”): fontul
+  sistemului în toate aranjamentele; **linia se lucrează pe `main`, fără worktree, după unirile care așteaptă și după încă o
+  tură de schițe pe canvas**; Pas cu pas e asistentul pentru începători din prag; alegerea la prima pornire, provizoriu;
+  ordinea feliilor din tabel (Atelier întâi). Schițele noi țin cont de fișierele mutate lângă Imprimanta (09.11).
 - 09.11.2026: **tăierea și imprimanta unite în `main` înaintea pauzei** („putem aduce in main ce progres s-a facut, si sa
   luam pauza dupa”): tăierea la `1a81540` („Yes, merge 1a81540”, la „Merge tăierea now at its earlier commit, with the stopgap
   bar fix you didn't pick?”: versiunea finală, cu fișierele lângă Imprimanta, încă pică în e2e), imprimanta cu tot ce e gata
