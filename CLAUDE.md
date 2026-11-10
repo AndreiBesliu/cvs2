@@ -1046,6 +1046,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 10.11.2026: **linia de comandă a Clasicului, ADR 0251 acceptat** („Da, 1a–3a”, după schițele ei de pe canvas): numele
+  comenzilor în română și în engleză, oricare ar fi limba aplicației; „/” aduce cursorul în linie; Enter pe linia goală doar
+  aduce ultima comandă, al doilea Enter o aplică. Tot de atunci, pe canvas: meniurile Clasicului (din 58 de rânduri, 23
+  sunt azi doar butoane și intră întâi în registru, în 28.2↑) și pașii 1 și 3 ai lui Pas cu pas.
 - 10.11.2026: **ADR 0250 acceptat** („1a, 2 b e mai bine, pentru ca pot aparea si alte diferente, si deci propun sa facem
   asta dupa ce mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”): fontul
   sistemului în toate aranjamentele; **linia se lucrează pe `main`, fără worktree, după unirile care așteaptă și după încă o

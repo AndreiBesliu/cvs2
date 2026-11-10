@@ -8248,3 +8248,20 @@ design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”.
 
   Mărimea la acceptare: 654,4 / 700 kB; cu planșele și linia, ~713, deci o decizie pe plafon la prima felie care trece.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-10 — Schițele: Aspectul, prima pornire, pașii lui Pas cu pas, meniurile și linia de comandă; ADR 0251 (Model: Claude Opus 5.5)
+
+**Prompt:** „Pașii lipsă din D”, „Meniurile Clasicului”, „Linia de comandă”, apoi „Da, 1a–3a”.
+**Started:** 10.11, 20:40. **Completed:** 10.11, 22:15.
+
+- **Canvas-ul** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), cu fontul sistemului (1a din ADR 0250):
+  - fereastra Aspectul și prima pornire, pe calculator și pe telefon;
+  - Pas cu pas: pașii 1 (Desenul: foaia, importul, uneltele) și 3 (Verificarea, cu textele și reparațiile reale ale
+    verificării); rândul D în ordinea pașilor, cu legăturile între ei;
+  - Clasic: meniurile deschise și harta lor; din 58 de rânduri, 24 sunt azi acțiuni ale registrului, 23 doar butoane sau
+    panouri (intră întâi în registru, în 28.2↑), 4 din meniul contului, 7 noi;
+  - Clasic: linia de comandă, care merge în Play (completarea, argumentele, refuzul cu motivul, istoricul,
+    previzualizarea), și foaia ei cu stările și cele 18 comenzi.
+- **ADR 0251 acceptat** („Da, 1a–3a”): numele în română și în engleză, „/” aduce cursorul în linie, Enter pe linia goală doar
+  aduce ultima comandă.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), traducerile roadmap-ului (1 nouă, 0 lipsă).
