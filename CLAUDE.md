@@ -1049,6 +1049,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 11.11.2026: **codul aranjamentelor într-un worktree, după planșe** („Worktree după planșe”, la „Unde scriem codul
+  aranjamentelor?”, după recomandarea sesiunii principale: în checkout-ul comun, două sesiuni care scriu se pot ciocni).
+  Înlocuiește 2b din ADR 0250 („pe `main`”). Worktree-ul `aranjamente` (`wip/28.1-aranjamente`,
+  `C:\Users\besli\cncvs2-lucru\aranjamente`, e2e pe 4182 și `127.0.9`, ADR-urile 0250–0259, canalul `aranjamente`) se face
+  din `main` după unirea planșelor; până atunci, schițele continuă pe canvas.
+- 11.11.2026: **designul sesiunii „Variante design CVS2” e direcția** („o sa mergem pe design-ul creat acolo”, la întrebarea
+  despre suprapunerea aranjamentelor, ADR 0250–0251, cu mutarea fișierelor din linia tăierii): mutarea lui Importă, Exportă
+  vectorii și Exportă G-code lângă fila Imprimanta (decizia din 09.11, „Ok la toate”) nu se mai unește; rămâne pe ramura
+  tăierii (`4988fd6`, `314d5fe`), ca referință, iar locul butoanelor îl stabilesc aranjamentele. În `main` rămâne, până
+  atunci, reparația provizorie a barei (bifa în panoul opțiunilor Cuțitului).
 - 10.11.2026: **linia de comandă a Clasicului, ADR 0251 acceptat** („Da, 1a–3a”, după schițele ei de pe canvas): numele
   comenzilor în română și în engleză, oricare ar fi limba aplicației; „/” aduce cursorul în linie; Enter pe linia goală doar
   aduce ultima comandă, al doilea Enter o aplică. Tot de atunci, pe canvas: meniurile Clasicului (din 58 de rânduri, 23
@@ -1057,7 +1067,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   asta dupa ce mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”): fontul
   sistemului în toate aranjamentele; **linia se lucrează pe `main`, fără worktree, după unirile care așteaptă și după încă o
   tură de schițe pe canvas**; Pas cu pas e asistentul pentru începători din prag; alegerea la prima pornire, provizoriu;
-  ordinea feliilor din tabel (Atelier întâi). Schițele noi țin cont de fișierele mutate lângă Imprimanta (09.11).
+  ordinea feliilor din tabel (Atelier întâi). Locul lui Importă, Exportă vectorii și Exportă G-code îl stabilesc
+  aranjamentele (decizia din 11.11).
 - 09.11.2026: **tăierea și imprimanta unite în `main` înaintea pauzei** („putem aduce in main ce progres s-a facut, si sa
   luam pauza dupa”): tăierea la `1a81540` („Yes, merge 1a81540”, la „Merge tăierea now at its earlier commit, with the stopgap
   bar fix you didn't pick?”: versiunea finală, cu fișierele lângă Imprimanta, încă pică în e2e), imprimanta cu tot ce e gata

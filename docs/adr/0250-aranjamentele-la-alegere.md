@@ -1,8 +1,8 @@
 # ADR 0250 — Patru aranjamente ale interfeței, la alegerea omului
 
 **Starea:** acceptat pe 10.11.2026 (propus pe 09.11), cu răspunsurile owner-ului: 1a, 2b, 3a, 4a (provizoriu), 5a
-(secțiunea „Răspunsurile owner-ului”, la capăt). Feliile pornesc pe `main`, după unirile care așteaptă și după ce schițele
-mai cresc. Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+(secțiunea „Răspunsurile owner-ului”, la capăt). **Pe 11.11, owner-ul a schimbat 2b:** codul se scrie într-un worktree
+nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`. Schițele mai cresc până atunci. Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -189,3 +189,22 @@ mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarzi
 **Mărimea, la acceptare:** după unirea tăierii și a imprimantei (09.11), totalul e 654,4 / 700 kB. Cu planșele (~+19) și
 cu această linie (~+40), ar ajunge la ~713, deci peste plafon. Prima felie care trece de el cere decizia scrisă
 (ADR 0144), cu mărimile măsurate atunci.
+
+## Schimbarea din 11.11: worktree după planșe
+
+Pe 11.11.2026, sesiunea principală, care face unirile în checkout-ul comun, a semnalat riscul: două sesiuni care scriu în
+același loc se pot ciocni. Ea a recomandat un worktree, ca la celelalte linii. Owner-ul a ales: „Worktree după planșe”.
+Asta înlocuiește punctul 2 de mai sus. Rămâne ce cerea 2b: codul vine după unirile care așteaptă și după încă o tură de
+schițe.
+
+- **Când:** după unirea planșelor în `main`, din `main`-ul de atunci.
+- **Unde:**
+  - worktree-ul `aranjamente`, în `C:\Users\besli\cncvs2-lucru\aranjamente`, pe ramura `wip/28.1-aranjamente`;
+  - e2e pe 4182 și pe rețeaua de loopback `127.0.9` (libere pe 11.11);
+  - ADR-urile 0250–0259, canalul `aranjamente` al instanței de test.
+- **Unirea în `main`** o face sesiunea principală, la cuvântul owner-ului, ca la celelalte linii.
+
+Tot pe 11.11 (CLAUDE.md, „Decizii luate”): designul acestei linii e direcția („o sa mergem pe design-ul creat acolo”).
+Locul lui Importă, Exportă vectorii și Exportă G-code îl stabilesc aranjamentele; mutarea lor lângă fila Imprimanta, din linia
+tăierii, nu se mai unește. Bara de sus a fiecărui aranjament se probează la 1280 px cu fontul lat (`test/e2e/ancore.spec.ts`
+sau o probă a lui).
