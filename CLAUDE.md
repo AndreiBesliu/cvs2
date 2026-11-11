@@ -675,13 +675,39 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **paza de tăcere** (`TIMP_TACERE_MS`, 20 s) o pierde și o reface, iar **căutarea după nume** (`cautaInRetea` cu `nume`) o
   găsește la noua adresă; o imprimantă cu același nume la altă adresă ia locul intrării vechi din listă. Jurnalul are și
   evenimentele legăturii (`open`, `closed`, `failed`, `silence`, `search`, `found`). Imprimanta trimite tuturor celor legați: cvs2
-  vede și ce pornește aplicația Creality. **Felia următoare a liniei: 3.6j, piesele plate** (ADR 0191 acceptat pe 07.11: „vreau
-  sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”, deci toate variantele care pot
-  sta împreună devin opțiuni, pe feliile 3.6j–3.6m): desenul feliat direct în cvs2 pentru
-  K1C, cu valorile din profilele K1C ale OrcaSlicer și **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C**
-  (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare rămân ale imprimantei); „Din desen…” în fereastra Imprimanta;
-  codul în `src/machine/imprimanta/feliere/`, încărcat la cerere, fără importuri din nucleu spre el (direcția owner-ului din
-  07.11: conectarea și pregătirea fișierelor ca module, după propunerile de acum).
+  vede și ce pornește aplicația Creality. **Piesele plate (ADR 0191, felia 3.6j)** gata pe 07.11, fără imprimantă (ADR-ul
+  acceptat cu „vreau sa le faci pe toate cele care pot functiona ca optiuni diferite si pot fi disponibile in soft”: toate
+  variantele care pot sta împreună devin opțiuni, pe feliile 3.6j–3.6m): **Din desen…** feliază în cvs2 piesele foii (toate,
+  selecția sau una), ridicate la o înălțime, pentru K1C, cu valorile profilelor OrcaSlicer (5 calități, 11 materiale K1),
+  „Simplu” și „Avansat”, straturile văzute de sus, **Salvează .gcode** și **Trimite la imprimantă** (prin 3.6h). Fișierul are
+  **doar comenzile pe care OrcaSlicer le scrie deja pentru K1C** (`START_PRINT` / `END_PRINT`: nivelarea și linia de curățare
+  rămân ale imprimantei). **Codul stă în `src/cam/feliere/`, nu în `src/machine/`:** regula importurilor
+  `masina-fara-post-si-document` ține transportul fără document. Adus la primul clic, fără importuri din nucleu spre el (gata
+  de mutat într-un modul, direcția owner-ului din 07.11). **Totalul: 550,8 / 600** cu `main` adus în ramură (+15,9 kB cu
+  recenzia; plafonul 600, ADR 0143). Modulele (5b) rămân pentru 3.6m (ADR 0191 §G).
+  **3.6k gata pe 08.11** (modelele, cusătura, ștergerea, călcarea, fusta, cu implicitele profilelor K1C; codul nou în
+  `src/cam/feliere/linii.ts` și `modele.ts`); totalul 558,4 / 600.
+  **3.6l gata pe 08.11** (piesa „după CNC”, treptele în motor, înălțimea fiecărei piese în proiect: câmpul opțional
+  `inaltimeImprimanta` al piesei, în tip și în schemă, scris prin `comandaInaltimi`; codul nou în `fel.ts`, `trepte.ts`,
+  `dupaCnc.ts`); totalul 566,2 / 600, pornirea 102,0.
+  **3.6n gata pe 08.11** (grosimea verticală, `ensure_vertical_shell_thickness`: plinul sub pereții treptelor, cu toate
+  valorile OrcaSlicer; uneltele în `trepte.ts`); totalul 567,3 / 600.
+  **3.6o gata pe 09.11** (ADR 0192, acceptat cu 1a–3a, la „vreau sa pot conecta orice fel de imprimanta”): un contract comun
+  al driverelor (`driver.ts`: starea, comenzile ca pași, capabilitățile; `drivere.ts`, azi `creality-k1`), sesiunea și
+  imprimantele ținute peste driver; comenzile din timpul imprimării (lumina, ventilatoarele prin `M106` scris doar de driver,
+  viteza, debitul, țintele cu Preîncălzește și Răcește, homing-ul) și răcirea singură (singura comandă fără clic). Un driver
+  nou (Moonraker, Marlin pe USB…) = un `DriverText` nou, nu o fereastră nouă. Totalul 573,1 / 600 kB (+5,8: bucata ferestrei, la cerere; ținta din ADR era +4).
+  **3.6p gata pe 09.11** (ADR 0193, acceptat cu 1a–4a, grupul 2: „imprimarea văzută din cvs2”): pauza la un strat, aleasă în
+  „Din desen…” (`punePauze` / `cuPauze` în `src/cam/feliere/gcode.ts`; `PAUSE` din profilul K1C, înaintea primei piese a
+  stratului; nota doar ASCII), ținută în browser pentru aceleași piese (`src/app/pauzeDesen.ts`), spusă la trimitere și la
+  pornire (`gcode3d.ts` găsește pauzele oricărui fișier). Totalul 574,9 / 600 kB.
+  **3.6q gata pe 09.11** (placa și stratul viu): driverul K1 citește piesele, poziția și filamentul; `harta.ts` (straturile
+  unui fișier, pe bucăți), `stratViu.ts` (stratul din filament: K1C amestecă două numărători), fișierele trimise ținute în
+  IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB.
+  **3.6r gata pe 09.11** (anularea unei piese): `anuleazaPiesa` în driver (K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`, doar
+  un nume din lista imprimantei) și în sesiune (retrimisă la 3 s, confirmată din `excluded_objects`; 6 s, iar pentru
+  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata; urmează proba pe K1C (ghidul,
+  pașii 6–8) și unirea în `main`, la cuvântul owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -708,6 +734,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   singură de plafon (măsurat pe unirile de probă peste `3797e17`); cu toate trei, ~663,8, deci rămân ~36 kB. O creștere
   următoare cere iar decizia scrisă (sau modulele aduse la prima folosire). **Pornirea rămâne 110 kB:** planșele o ating (cu
   ușa ~110,1 cu `main`-ul de acum), deci linia își micșorează întâi calea ușii (sau altă decizie, ADR 0100).
+  **Tăierea (10.3↑f–10.3↑j, la `1a81540`) și imprimanta (3.6j–3.6r, la `80a1f86`) unite în `main` pe 09.11, seara**,
+  înaintea pauzei („putem aduce in main ce progres s-a facut, si sa luam pauza dupa”; `0fa7e6d`, `1eb4722`; conflicte doar
+  în documente). **Tăierea a intrat cu reparația provizorie a barei** („Închide bucățile” în panoul opțiunilor Cuțitului):
+  aranjamentul ales de owner („Ok la toate” pe schița din 09.11: Importă, Exportă vectorii și Exportă G-code în bara de sus a
+  aplicației, după file, doar în Proiectare, sub 1200 px rămân în bara de desen; bifa înapoi în bara Cuțitului) e pe ramura
+  liniei (`314d5fe`), încă cu `editare.spec.ts:463` căzută (căutarea, limba, tema și contul trec pe al doilea rând la 1280
+  px). **Imprimanta a intrat înaintea probei plăcii pe K1C** (condiția owner-ului, ridicată de el: „Yes, merge it now”);
+  proba rămâne în coada lui, pe adresa principală de test. **Planșele nu încă:** conflicte de cod cu ambele (`Editare.tsx`;
+  `App.tsx`, `schemaDocument.ts`), iar cu imprimanta pornirea cu ușa ar fi ~110,2 / 110. **Pornirea 102,2 (cu ușa 105,9 /
+  110 kB), totalul 654,4 / 700, /admin 106,5 / 200, contul 29,6 / 32.**
   **Trasarea din imagine, alb-negru (ADR 0220, felia 25.1↑, adusă din etapa 25)** gata pe 07.11, în worktree-ul `trasare`
   (ramura `wip/25.1-trasare`, canalul `trasare`; **unită în `main` pe 09.11**, mai jos), cu toate recomandările („Da,
   1a–8a”): o imagine (PNG, JPEG, WebP, GIF, BMP; TIFF refuzat cu motivul lui) aleasă în „Importă…” sau lăsată pe planșă deschide fereastra trasării (sursa,
@@ -1010,6 +1046,28 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 10.11.2026: **linia de comandă a Clasicului, ADR 0251 acceptat** („Da, 1a–3a”, după schițele ei de pe canvas): numele
+  comenzilor în română și în engleză, oricare ar fi limba aplicației; „/” aduce cursorul în linie; Enter pe linia goală doar
+  aduce ultima comandă, al doilea Enter o aplică. Tot de atunci, pe canvas: meniurile Clasicului (din 58 de rânduri, 23
+  sunt azi doar butoane și intră întâi în registru, în 28.2↑) și pașii 1 și 3 ai lui Pas cu pas.
+- 10.11.2026: **ADR 0250 acceptat** („1a, 2 b e mai bine, pentru ca pot aparea si alte diferente, si deci propun sa facem
+  asta dupa ce mai dezvoltam design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”): fontul
+  sistemului în toate aranjamentele; **linia se lucrează pe `main`, fără worktree, după unirile care așteaptă și după încă o
+  tură de schițe pe canvas**; Pas cu pas e asistentul pentru începători din prag; alegerea la prima pornire, provizoriu;
+  ordinea feliilor din tabel (Atelier întâi). Schițele noi țin cont de fișierele mutate lângă Imprimanta (09.11).
+- 09.11.2026: **tăierea și imprimanta unite în `main` înaintea pauzei** („putem aduce in main ce progres s-a facut, si sa
+  luam pauza dupa”): tăierea la `1a81540` („Yes, merge 1a81540”, la „Merge tăierea now at its earlier commit, with the stopgap
+  bar fix you didn't pick?”: versiunea finală, cu fișierele lângă Imprimanta, încă pică în e2e), imprimanta cu tot ce e gata
+  („Yes, merge it now”, deși proba plăcii pe K1C nu e făcută). Planșele, aprobate și ele („Yes, merge it now”), rămân pe
+  ramură: conflicte de cod cu amândouă și pornirea peste 110 kB alături de imprimantă.
+- 09.11.2026: **fișierele lângă Imprimanta** („Exports g-code, import si export trebuie sa fie in topbarul de langa
+  imprimanta”, apoi „Ok la toate” pe schița liniei tăierii): Importă, Exportă vectorii și Exportă G-code în bara de sus a
+  aplicației, după file, cu o linie subțire; ca azi (iconițe, G-code plin cu numele); doar în Proiectare; sub 1200 px rămân în
+  bara de desen; „Închide bucățile” înapoi în bara Cuțitului.
+- 09.11.2026: **toate cele patru direcții de interfață, la alegerea omului** („imi plac toate, si vreau sa fie la
+  dispozitia userilor”, după schițele de pe canvas, <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>): Insule (azi),
+  Clasic, Atelier și Pas cu pas devin aranjamente ale aceluiași registru, alese de om. ADR 0250 propus (feliile
+  28.1↑–28.7↑, din etapa 28 „Cele două interfețe”), cu cinci întrebări; codul vine după răspunsuri.
 - 09.11.2026: **25.4↑ (scanările și pozele) unită în `main`** („putem uni si trasarea din imagine.”): fără conflicte, cu
   totalul 582,5 / 700 kB; worktree-ul `trasare` rămâne (linia continuă, la cuvântul owner-ului).
 - 09.11.2026: **worktree-ul `ancore` scos** („Yes, remove it”, la „Remove the finished ancore worktree and archive its

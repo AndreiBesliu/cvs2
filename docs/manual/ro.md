@@ -1366,11 +1366,42 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   de pe ecranul ei.
 - **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
   firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
-  patului și din carcasă (doar citite: aplicația nu încălzește nimic) și codul semnalat de imprimantă (textul lui îl arată
-  ecranul ei).
+  patului și din carcasă și codul semnalat de imprimantă (textul lui îl arată ecranul ei).
+- **Placa**, cât imprimă sau stă în pauză, în cardul lucrării: patul văzut de sus, mărit pe piese, cu fața imprimantei jos.
+  Arată piesele (conturul lor; **piesa de acum**, cu un contur turcoaz; una **anulată**, tăiată), **duza** (un punct alb,
+  doar cât imprimă) și, pentru fișierele trimise din cvs2, **stratul de acum** (portocaliu) peste cel de dedesubt. Lângă ea,
+  bara straturilor (cele făcute, stratul de acum, pauzele din fișier) și „Stratul 6 / 10 · 1,2 mm”: imprimanta K1C amestecă
+  două numărători ale stratului, deci fereastra îl ia după filamentul folosit (pentru fișierele trimise din cvs2) sau pe cel
+  care se potrivește cu progresul. Dedesubt, **Piesele**, cu numele din cvs2. Cât imprimanta stă într-o pauză a fișierului,
+  placa spune pauza și nota ei. Fișierele trimise din cvs2 se țin în browser (ultimele 5), ca să li se poată desena
+  straturile; pentru altele, placa arată doar piesele, duza și numărul stratului.
+- **Anularea unei piese** (doar ce are imprimanta legată; azi familia K1), cât imprimă sau stă în pauză: **Anulează…** lângă
+  o piesă din listă (sau un clic pe ea, pe placă) deschide confirmarea: **Anulează piesa** sau **Renunță**. Restul pieselor
+  merg mai departe, iar piesa anulată nu se mai reia. Rândul piesei arată „→ se anulează · așteaptă imprimanta” până
+  imprimanta o trece printre cele anulate; fără ea în 6 s, „imprimanta n-a confirmat”. K1 nu anulează piesa la care lucrează
+  chiar atunci: cererea rămâne la vedere, cu **Renunță**, și se retrimite până o primește imprimanta, cel mult 2 minute.
+  Ultima piesă rămasă n-are buton: pentru ea, Oprește. La imprimantă ajunge doar un nume din lista ei, din litere, cifre,
+  _ . -; nimic scris de mână.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.
+- **Comenzile din timpul imprimării** (doar ce are imprimanta legată; azi familia K1). O valoare cerută se vede
+  „→ 120 % · așteaptă imprimanta” până o raportează imprimanta; dacă nu vine în 6 s, fereastra revine la valoarea ei, cu
+  „imprimanta n-a confirmat”. Un glisor trimite când îl lași, un câmp la `Enter` sau când ieși din el; un număr în afara
+  intervalului nu pleacă.
+  - **Temperaturile:** **Ținta duzei** și **Ținta patului** se scriu direct, în grade întregi, între 0 și maximul spus de
+    imprimantă (320 și 115 °C pe K1C). Cu imprimanta liberă, **Preîncălzește** deschide lista materialelor felierului
+    (aceeași ca în „Din desen…”), cu temperaturile primului strat, iar **Răcește** pune țintele la 0. Cât o țintă e pornită
+    fără o lucrare, banda spune **Încălzește**, cu **Răcește** lângă. **Răcește singură după** 30 **min fără imprimare**
+    (bifată din fabrică, cu minutele de schimbat): după o preîncălzire din aplicație, dacă nu pornește nicio imprimare,
+    fereastra pune țintele la 0 și spune ora; merge doar cât fereastra e deschisă și legată. Cât imprimă, fișierul poate
+    schimba țintele la straturile următoare.
+  - **Viteza** și **Debitul**, cât imprimă sau stă în pauză: între 1 și 200 %, cu glisorul, câmpul și **100 %**, care le
+    readuce.
+  - **Ventilatoarele și lumina:** **Lumina**, aprinsă sau stinsă; ventilatorul piesei, al carcasei și cel lateral, între 0
+    și 100 % (pe K1 pleacă un `M106` scris doar de aplicație: fereastra n-are consolă de G-code). **Homing (X, Y, Z)**,
+    doar cu imprimanta liberă, după bifa **Patul e gol**: capul merge întâi pe X și Y, apoi duza coboară spre pat, pentru
+    Z; **Renunță** închide confirmarea.
 - **Fișierele din imprimantă** (trimise din Creality Print sau OrcaSlicer): **Pornește** deschide confirmarea, cu fișierul,
   materialul și timpul estimat. **Pornește imprimarea** se aprinde abia după bifa **Patul e gol** (nicio piesă rămasă sub
   duză); **Renunță** închide confirmarea. Imprimanta se încălzește și își face singură verificările; imediat după pornire
@@ -1385,6 +1416,89 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   când îl găsește, **Pornește imprimarea…** deschide
   confirmarea de mai sus (cu bifa **Patul e gol**), iar **Închide** îl lasă în imprimantă. Dacă nu ajunge, fereastra spune
   de ce (imprimanta nu răspunde pe portul 80, fișierul nu apare în lista ei sau are altă mărime), cu **Încearcă din nou**.
+- **Din desen…** (sub listă; fără imprimantă legată, sub textul de început) feliază aici, fără Creality Print, piesele plate
+  din desen: o placă, un distanțier, un șablon, un cub de calibrare, adică un contur închis ridicat la o grosime. Golurile vin
+  din desen (o formă cuprinsă în alta e gaură, una cuprinsă într-o gaură e insulă), formele suprapuse se unesc, textul se
+  imprimă și el, iar căile deschise sunt lăsate deoparte, cu un mesaj. În fereastra **Piesă plată pentru imprimantă**:
+  - **Ce se imprimă:** **Piesele foii**, **Piesele selectate** sau **O singură piesă**, aleasă din listă. Piesele își păstrează
+    așezarea de pe foaie și se centrează pe pat; ce nu încape (220 × 220 mm la K1C, cu 5 mm margine pe fiecare latură) e spus.
+  - **După CNC: buzunarele, găuririle și profilele parțiale ca trepte** (bifa de sub „Ce se imprimă”): fiecare piesă se
+    imprimă cum o lasă freza, din operațiile ei, nu din formele desenate. Marginea și golurile vin din profilele prin tot (pe
+    exterior sau pe interior, cel puțin cât grosimea foii); un buzunar, o găurire sau un profil parțial (cât lățimea frezei, pe
+    partea tăieturii) coboară zona lor la înălțimea minus adâncime, iar adâncimea rămâne în mm, măsurată de sus, oricare ar fi
+    înălțimea aleasă; ce trece prin tot (sau mai adânc decât înălțimea) e gol. Pe fiecare treaptă vin straturile pline de sus,
+    ca pe fața piesei. Urechile, rampele și intrările nu contează; V-carve-ul și gravura cu freza în V nu se imprimă (o gravură
+    în V n-are trepte drepte), iar fereastra spune câte sunt. O piesă fără profil exterior prin tot n-are margine: fereastra
+    spune asta.
+  - **Înălțimea:** **Una pentru toate** (câmpul **Înălțimea pentru toate**, implicit grosimea foii) sau **A fiecărei piese,
+    ținută în proiect**: lista pieselor alese, fiecare cu înălțimea ei, scrisă în piesă (în proiect, cu anularea obișnuită),
+    deci data viitoare vine singură; o piesă fără ea ia înălțimea pentru toate (cu proiectul deschis doar pentru citit, lista
+    nu se poate schimba).
+  - **Materialul** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS, ASA,
+    PC, PA-CF, TPU, cu valorile profilelor Creality K1 din OrcaSlicer), **Calitatea** (straturi de 0,08, 0,12, 0,16, 0,20 sau
+    0,24 mm), temperaturile **Duza** și **Patul**, **Pereții**, **Umplerea** (procentul umplerii rare) și **Brim**
+    (Automat: pentru piesele înguste sau înalte; Da; Nu).
+  - **Avansat** arată restul setărilor, pe grupuri. Straturile: Înălțimea stratului, Înălțimea primului strat, Straturile pline
+    de sus, Grosimea de sus, cel puțin, Straturile pline de jos, Grosimea verticală a pereților (Toată (și sub pereții
+    treptelor), implicit: la o piesă cu trepte, plinul se pune și sub pereții de deasupra unei trepte, ca ei să nu stea pe
+    umplerea rară; Moderată; Doar ce e critic; Fără: plinul doar sub fețele de sus, cu regiunile pline înguste lățite sau,
+    la Fără și Doar ce e critic, scoase cele foarte înguste). Temperaturile primului strat: Duza, pe primul strat; Patul, pe
+    primul strat. Lățimile liniilor: Lățimea peretelui exterior, Lățimea pereților interiori, Lățimea umplerii pline, Lățimea
+    umplerii rare, Lățimea suprafeței de sus, Lățimea pe primul strat. Vitezele: Viteza peretelui exterior, Viteza pereților
+    interiori, Viteza umplerii pline, Viteza umplerii rare, Viteza suprafeței de sus, Viteza primului strat, Viteza umplerii pe
+    primul strat, Viteza deplasărilor. Accelerațiile: Accelerația pereților, Accelerația suprafeței de sus, Accelerația
+    umplerii, Accelerația primului strat, Accelerația deplasărilor. Retragerea: Lungimea retragerii, Viteza retragerii,
+    Ridicarea pe Z. Răcirea: Ventilatorul piesei, minim; Ventilatorul piesei, maxim; Ventilatorul oprit pe primele straturi;
+    Ventilatorul auxiliar; Timpul minim al unui strat (un strat mai scurt se imprimă mai încet, ca să se răcească); Viteza
+    minimă la răcire. Debitul materialului: Debitul, Debitul volumic maxim (vitezele se taie ca materialul să încapă prin duză).
+    Marginile: Compensarea piciorului de elefant (primul strat, strâns puțin), Suprapunerea umplerii rare pe pereți,
+    Suprapunerea umplerii pline pe pereți, Lățimea brim-ului, Golul brim-ului. Modelele umplerii: Modelul umplerii rare
+    (Grilă, implicit; Dreptunghiular, întors cu 90° de la un strat la altul; Dreptunghiular aliniat; Linii, una din două
+    ușor înclinată; Triunghiuri; Tri-hexagon; Cubic, Hașură în cruce și Giroid, care se schimbă cu înălțimea, ca o umplere
+    în spațiu; Fagure; Concentric; Curba Hilbert; Coardele lui Arhimede; Spirala octogramă; la 0,12 mm, profilul pornește cu
+    Hașură în cruce), Direcția umplerii rare, Modelul plinului dinăuntru, Modelul suprafeței de sus și Modelul suprafeței de
+    jos (Monoton, pe linii, implicit sus; Monoton, implicit jos și dinăuntru: liniile, mereu în aceeași ordine, pentru o
+    față netedă; Dreptunghiular; Dreptunghiular aliniat; Concentric; Curba Hilbert; Coardele lui Arhimede; Spirala
+    octogramă), Direcția plinului. Ștergerea: Șterge la retragere (pornită în profilul K1C: înaintea unei deplasări, duza
+    merge puțin pe linia abia făcută, ca să nu lase o picătură), Distanța ștergerii, Retragerea dinaintea ștergerii (restul
+    retragerii se face pe drum), Viteza ștergerii după rol (cu viteza ultimei linii), Viteza ștergerii, din a deplasării.
+    Cusătura: Locul cusăturii (Aliniată, implicit: în colțul cel mai ascuns, la fel pe fiecare strat; Aliniată, în spate; În
+    spate; Cea mai apropiată, de duză; Aleatoare), Cusăturile dinăuntru decalate (fiecare perete dinăuntru pornește puțin
+    mai departe, ca cusăturile să nu stea una peste alta), Golul cusăturii. Călcarea: Ce se calcă (Fără călcare, implicit;
+    Toate suprafețele de sus; Doar suprafața cea mai de sus; Toate straturile pline): o trecere în plus, cu debit mic, peste
+    față, ca s-o netezească; Modelul călcării (Dreptunghiular, Concentric), Debitul călcării, Pasul călcării, Viteza
+    călcării, Marginea călcării (0: jumătate de duză), Unghiul călcării (față de liniile feței). Fusta: Buclele fustei (0:
+    fără fustă, implicit), Distanța fustei (față de piese sau de brim), Straturile fustei, Viteza fustei, Felul fustei (Una
+    pentru toate piesele; Câte una pe piesă), Filamentul minim al fustei (buclele se adaugă până ajung la el), Scutul (fusta
+    pe toată înălțimea), contra curentului de aer, la ABS sau ASA, Începutul fustei (unghiul, față de centrul pieselor), O
+    singură buclă după primul strat. Fusta se trage prima, pe primul strat: amorsează duza și arată dacă patul e bine
+    nivelat. **Valorile profilului** le pune înapoi pe cele ale materialului și calității alese. Setările alese se țin în
+    browser, pentru data viitoare.
+  - În dreapta, stratul ales, văzut de sus, cu liniile colorate după rol (peretele exterior, pereții interiori, plin, suprafața
+    de sus, umplere rară, brim, călcarea, fusta) peste conturul piesei, subțire și roșu: unde se vede doar roșul, piesa e mai îngustă decât o
+    linie și acolo nu iese nimic (fereastra spune și aria). Glisorul **Stratul** alege stratul; dedesubt stau rolul lui (la o piesă cu trepte, un strat poate avea mai multe:
+    **cu o treaptă:** suprafața de sus a treptei, plinul de sub o față, umplerea rară), apoi
+    straturile, timpul estimat (fără încălzire) și filamentul, în metri și grame. Bifa **deplasările** arată, punctat, și
+    drumurile duzei dintre linii.
+  - **Pauză înaintea acestui strat** (sub glisor) pune o pauză la stratul arătat: imprimanta se oprește după stratul de
+    dedesubt, de exemplu ca să schimbi filamentul pentru o a doua culoare de la o înălțime în sus (un text sau un desen
+    adâncit), sau ca să pui ceva într-un locaș deschis; apoi apeși **Reia** în fereastra Imprimanta sau pe ecranul ei. Un
+    nou clic pe buton o scoate. Pauzele apar ca semne roșii pe glisor și în lista **Pauzele**, fiecare cu stratul și
+    înălțimea ei (un clic pe ea arată stratul), cu o **Nota pauzei** (de exemplu „filament negru”) și cu **Scoate pauza**.
+    O pauză ține înălțimea până la care s-a imprimat: la altă grosime a straturilor rămâne în același loc al piesei, iar
+    peste piese nu intră în fișier. Pauzele se țin în browser pentru aceleași piese (revin când redeschizi fereastra pe
+    ele), iar rezumatul le numără. În fișier, pauza e comanda `PAUSE` a imprimantei, înaintea primei piese a stratului;
+    timpul estimat nu cuprinde cât stă imprimanta în ea. Înaintea primului strat nu se pune pauză.
+  - **Duza** și **Patul** din „Simplu” schimbă și temperaturile primului strat (cu aceeași diferență față de ele cât are
+    profilul materialului: PC pornește cu 10 °C mai jos). Brim-ul e unul pentru toate piesele: ocolește piesele vecine. Tot ce
+    se extrudează, brim-ul inclus, trebuie să încapă în pat cu marginea de 5 mm, iar ultimul strat sub 250 mm; altfel
+    fișierul nu se face, iar fereastra spune cât iese. Dacă desenul se schimbă în Proiectare cât fereastra e deschisă,
+    piesele se citesc din nou.
+  - **Trimite la imprimantă** (doar cu imprimanta legată) trece fișierul prin aceeași verificare și trimitere ca **Trimite un
+    fișier…**, cu aceeași bifă **Patul e gol** la pornire. **Salvează .gcode** îl descarcă, de pus pe stick sau de trimis mai
+    târziu; **Renunță** (sau `Escape`) închide fereastra. Fișierul folosește doar comenzile pe care OrcaSlicer le scrie pentru
+    K1C: începutul (`START_PRINT`) și sfârșitul (`END_PRINT`) rămân ale imprimantei, cu nivelarea, linia de curățare și răcirea
+    lor; fiecare piesă e un obiect pe care imprimanta îl poate sări, dacă se dezlipește.
 - **O legătură căzută nu oprește imprimarea:** imprimanta merge mai departe din memoria ei. Fereastra spune „Legătura s-a
   pierdut” și încearcă singură s-o refacă; cât lipsește, butoanele sunt oprite. Oprirea de urgență rămâne ecranul imprimantei.
   O imprimantă care tace mai mult de 20 s e luată drept pierdută (legătura poate muri fără să se închidă), iar una care nu mai

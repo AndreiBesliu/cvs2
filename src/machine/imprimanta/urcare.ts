@@ -9,7 +9,8 @@
  * care se imprimă), iar unul nou cu același nume primește „-2”, „-3”…
  */
 import type { AdresaRetea } from '../reteaLocala.ts';
-import { numeSigur, type FisierImprimanta } from './creality.ts';
+import { numeSigur } from './creality.ts';
+import type { FisierImprimanta } from './driver.ts';
 
 /** Numele sub care pleacă un fișier: spațiile devin `_` (ca OrcaSlicer), doar `.gcode`, altul decât cele din listă; null: refuzat. */
 export function numeDeTrimis(nume: string, existente: readonly string[]): string | null {
