@@ -1046,6 +1046,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 11.11.2026: **designul sesiunii „Variante design CVS2” e direcția** („o sa mergem pe design-ul creat acolo”, la întrebarea
+  despre suprapunerea aranjamentelor, ADR 0250–0251, cu mutarea fișierelor din linia tăierii): mutarea lui Importă, Exportă
+  vectorii și Exportă G-code lângă fila Imprimanta (decizia din 09.11, „Ok la toate”) nu se mai unește; rămâne pe ramura
+  tăierii (`4988fd6`, `314d5fe`), ca referință, iar locul butoanelor îl stabilesc aranjamentele. În `main` rămâne, până
+  atunci, reparația provizorie a barei (bifa în panoul opțiunilor Cuțitului).
 - 10.11.2026: **linia de comandă a Clasicului, ADR 0251 acceptat** („Da, 1a–3a”, după schițele ei de pe canvas): numele
   comenzilor în română și în engleză, oricare ar fi limba aplicației; „/” aduce cursorul în linie; Enter pe linia goală doar
   aduce ultima comandă, al doilea Enter o aplică. Tot de atunci, pe canvas: meniurile Clasicului (din 58 de rânduri, 23
