@@ -706,8 +706,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB.
   **3.6r gata pe 09.11** (anularea unei piese): `anuleazaPiesa` în driver (K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`, doar
   un nume din lista imprimantei) și în sesiune (retrimisă la 3 s, confirmată din `excluded_objects`; 6 s, iar pentru
-  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata; urmează proba pe K1C (ghidul,
-  pașii 6–8) și unirea în `main`, la cuvântul owner-ului.
+  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata și unit în `main` (09.11); proba
+  pe K1C (ghidul, pașii 5–8) rămâne la owner.
+  **Grupul 3 propus pe 11.11** (ADR 0194, feliile 3.6s–3.6u): notificările și semnul de pe butonul Imprimanta, istoricul
+  imprimărilor cu costul și estimarea care învață, filmele timelapse; doar citiri. Schița cu formularul:
+  <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Codul vine după răspunsurile owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

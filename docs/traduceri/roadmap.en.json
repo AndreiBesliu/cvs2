@@ -1333,6 +1333,10 @@
       "ro": "Aldinul și cursivul sintetic, aduse din etapa 7",
       "en": "Synthetic bold and italic, brought forward from stage 7"
     },
+    "73067df55eb162d3": {
+      "ro": "Notificările și semnul din bară (ADR 0194, propus pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "Notifications and the mark on the bar (ADR 0194, proposed on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
+    },
     "733512c823e0b297": {
       "ro": "Buzunar, găurire, ordinea, frezele, animația",
       "en": "Pocket, drilling, ordering, bits, animation"
@@ -1441,6 +1445,10 @@
       "ro": "Operațiile în document",
       "en": "Operations in the document"
     },
+    "7bde277819197a0f": {
+      "ro": "Notificările și semnul din bară",
+      "en": "Notifications and the mark on the bar"
+    },
     "7c50450482c286a4": {
       "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",
       "en": "`nonzero` normalisation at the door (ADR 0036: the exact arrangement in doubles, without PathKit; replaces the plan's PathKit + R3 facade), loaded only on import"
@@ -1545,6 +1553,10 @@
       "ro": "Unealta Cuțit: Linie, Pen, Liber și Formă",
       "en": "The Knife tool: Line, Pen, Freehand and Shape"
     },
+    "8358313f393ee129": {
+      "ro": "Notificările și istoricul imprimărilor",
+      "en": "Notifications and the print history"
+    },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
@@ -1580,6 +1592,10 @@
     "85bf225ebbcd2c0d": {
       "ro": "Restul feliei: hosting pe adresa principală de test. Exportul Firestore l-a făcut owner-ul din consolă (`gcloud` n-avea cont), în bucket-ul nou `cncvectorstudio-test-backup` din `us-central1`: baza e în `nam5`, iar bucket-ul aplicației e în `europe-central2`, deci primul export a fost refuzat. `public/sw.js` oprește workerul aplicației vechi de la aceeași adresă (șterge cache-urile `cncvs-`, se dezînregistrează, nu reîncarcă nicio filă), cu proba lui e2e. `scripts/publica-test.ts`, doar hosting, cu pregătirea comună cu canalul. Verificat în browser pe https://cncvectorstudio-test.firebaseapp.com/: instanța „test”, `/sw.js` servit `no-cache` cu CSP-ul aplicației, consola curată. **Treceri:** (1) exportul refuzat pe locație; (2) opritorul workerului, descoperit înainte de publicare.",
       "en": "The rest of the slice: hosting on the main test address. The Firestore export was made by the owner from the console (`gcloud` had no account), into the new `cncvectorstudio-test-backup` bucket in `us-central1`: the database is in `nam5` and the app's bucket in `europe-central2`, so the first export was refused. `public/sw.js` stops the old app's worker on the same address (clears the `cncvs-` caches, unregisters, reloads no tab), with its own e2e check. `scripts/publica-test.ts`, hosting only, sharing the preparation with the channel. Checked in the browser on https://cncvectorstudio-test.firebaseapp.com/: the “test” instance, `/sw.js` served `no-cache` with the app's CSP, a clean console. **Passes:** (1) the export refused on location; (2) the worker stopper, found before publishing."
+    },
+    "85f2b56689ffe689": {
+      "ro": "Filmele timelapse (ADR 0194): lista filmelor imprimantei (`elapseVideoList`), potrivite cu istoricul, deschise de pe imprimantă într-o filă nouă",
+      "en": "Timelapse videos (ADR 0194): the printer's list of videos (`elapseVideoList`), matched to the history, opened from the printer in a new tab"
     },
     "871227fd0d578ae3": {
       "ro": "**Postul familiei GRBL, cu schimbarea sculei** (ADR 0083; „Da, pornește 3.8: postul, cu contractele grblHAL și FluidNC și schimbarea sculei (blocul de după M6), probat pe emulator.”). În fereastra exportului: **Postul** (GRBL 1.1, grblHAL, FluidNC; o notă cât un post e doar documentat, neprobat pe mașină) și **Unitățile** (mm sau inch, G20 cu 5 zecimale și avansul în inch/min). Postul știe schimbarea sculei: oprirea în senderul nostru la `T2 M6` (implicit), M6 la controler (grblHAL, FluidNC), M0 cu comentariu sau câte un fișier pe sculă; după oprire, blocul de după (modalul, WCS-ul, Z sigur, axul cu turația noii scule și pauza). Elicea iese în segmente pe un controler care n-o declară. Jobul cu mai multe freze din document vine în 3.8b, deci schimbarea se probează deocamdată pe emulator, nu din interfață. **Treceri:** (1) contractele și postul, cu programul în mm neschimbat octet cu octet (fișierele de aur ale plăcilor); prin sender, palparea noii scule la oprire a dat întâi ALARM:4 (la Z sigur, freza era sub fața plăcii de 20 mm), corect, deci proba ridică freza cu jog înainte, ca omul; mutațiile: 30 / 31 (F ținut minte peste schimbare, prins de o probă nouă), pe fereastră 4 / 4 prinse de e2e.",
@@ -1628,6 +1644,10 @@
     "8b973fa451e18232": {
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
       "en": "**The sender over WiFi** (no machine; ADR 0119, accepted with the owner’s answers: streamed programs, the tablet later, the `ws:` scheme in the CSP). The **Connect (WiFi)** button in the machine panel links the sender to a controller on the local network through a WebSocket (FluidNC, grblHAL or an ESP3D bridge on GRBL), over the same stream: the address (a local IP or a `.local` name) is judged before connecting, with the local network permission of Chrome and Edge 147; the controller, the address and the port stay in the browser; before the first start over WiFi, the panel says what happens if the connection drops. The CSP gets the `ws:` scheme (without it, the browser blocked every WebSocket). On the way, at the owner’s request, the **Account** button moved next to the theme button. **The probes:** on paper (the addresses, the control messages, the transport, the session with a dropped connection) and end to end, with the GRBL emulator behind a local WebSocket server; targeted mutations, all caught."
+    },
+    "8c1716417c268fe4": {
+      "ro": "Istoricul imprimărilor (ADR 0194): al imprimantei (`historyList`) și al cvs2 (după răspunsul owner-ului), cu durata față de estimare, filamentul în metri și grame, costul (prețul pus de om) și exportul CSV; estimarea din „Din desen…” corectată după imprimările încheiate",
+      "en": "The print history (ADR 0194): the printer's own (`historyList`) and cvs2's (per the owner's answer), with the duration against the estimate, the filament in metres and grams, the cost (the price set by the user) and a CSV export; the estimate in \"From drawing…\" corrected from the finished prints"
     },
     "8c243c52eeeb263a": {
       "ro": "„Pornit” abia după pagina extensiei",
@@ -2413,6 +2433,10 @@
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
     },
+    "d290b2db2eadbea1": {
+      "ro": "Istoricul imprimărilor",
+      "en": "The print history"
+    },
     "d2f90d7cd8eae964": {
       "ro": "Imprimanta 3D prin WiFi",
       "en": "3D printer over WiFi"
@@ -2584,6 +2608,10 @@
     "dff5b7d3c0d98514": {
       "ro": "Raportorul de erori din client (ADR 0043): erorile jurnalului local pleacă spre `logClientError`, cu Firebase adus la prima eroare (pornirea 93,5 kB, partea raportorului 1,20 kB); plafoanele pe sesiune (20 / 3), stingerea (401 / 403 / plafon / import / App Check), tokenul cerut explicit cu termen, reîncercarea doar când cererea n-a ajuns; cheia App Check citită la publicare din înregistrarea ei; CSP-ul reCAPTCHA; doar mediul omului rămâne „doar local”. Workflow-uri: implementarea + 4 verificatori (25 de constatări), remedierile + reverificarea (6), integrarea; otrăvurile 31 / 31. **Pe test:** 200 cu token (grupul în `errorLogs`), 401 fără. Pauză peste noapte pe `wip/3.2-raportor`, unită prin squash.",
       "en": "The client error reporter (ADR 0043): the local log's errors go to `logClientError`, with Firebase loaded at the first error (startup 93.5 kB, the reporter's part 1.20 kB); per-session caps (20 / 3), switching off (401 / 403 / cap / import / App Check), the token requested explicitly with a deadline, retrying only when the request did not arrive; the App Check key read at publishing from its registration; the reCAPTCHA CSP; only the user's environment stays “local only”. Workflows: the implementation + 4 verifiers (25 findings), the fixes + the re-check (6), the integration; poisons 31 / 31. **On test:** 200 with a token (the group in `errorLogs`), 401 without. An overnight break on `wip/3.2-raportor`, merged by squash."
+    },
+    "e02a799ad18f939f": {
+      "ro": "Filmele timelapse",
+      "en": "Timelapse videos"
     },
     "e0493dfc8a8a9bd0": {
       "ro": "Intrările cu rampă",

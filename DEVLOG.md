@@ -8265,3 +8265,19 @@ design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”.
 - **ADR 0251 acceptat** („Da, 1a–3a”): numele în română și în engleză, „/” aduce cursorul în linie, Enter pe linia goală doar
   aduce ultima comandă.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), traducerile roadmap-ului (1 nouă, 0 lipsă).
+
+## 2026-11-11 — 3.6s–3.6u propuse: notificările și istoricul imprimărilor (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, grupul 3” (owner-ul, la „După pauză, propun grupul 3 (notificările și istoricul)?”, după 3.6r).
+**Started:** 11.11, 20:12. **Completed:** 11.11, 20:34.
+
+- **Reluarea:** ramura `wip/3.6g-imprimanta` adusă la `main` (`99ff34c`, după unirea 3.6j–3.6r din 09.11); plafonul
+  total e acum 700 kB.
+- **Cercetarea:** stările de final (`state` 2 terminată, 4 oprită, 5 pauză, `materialStatus` 1 fără filament), istoricul
+  (`reqHistory` → `historyList`; o intrare reală din imprimanta owner-ului: Benchy, 1140 s, 3712,4 mm) și filmele
+  (`reqElapseVideoList`, `http://<ip>/downloads/video/<cifre>.mp4`), din transcrierea din 07.11 și din trei proiecte care
+  citesc portul 9999; în browser, notificările (permisiunea, Android), filele în repaus (Edge, 2 ore), conținutul mixt.
+- **Propunerea** (ADR 0194, propus): 3.6s notificările și semnul de pe butonul Imprimanta, 3.6t istoricul cu costul și
+  estimarea care învață, 3.6u filmele; doar citiri. Schița, cu formularul: <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Două întrebări
+  care se exclud (schița; unde se ține istoricul cvs2). Codul vine după răspunsuri.
+- **Găsit pe drum:** rândul ADR 0193 din index nu spunea că 3.6r e gata; reparat.
