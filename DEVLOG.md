@@ -8297,3 +8297,19 @@ provizorie); după pauză, „ce se poate uni?”.
 - **După pauză, „ce se poate uni?”:** nimic nou. Tăierea are pe ramură doar mutarea fișierelor lângă Imprimanta, încă în
   lucru (rândul de sus se rupe la 1280 px); planșele au 11.5↑ începută și conflicte de cod cu `main` în vreo douăsprezece
   fișiere; imprimanta, incrustațiile și trasarea n-au nimic neunit.
+
+## 2026-11-11 — ADR 0250: codul aranjamentelor într-un worktree, după planșe (Model: Claude Opus 5.5)
+
+**Prompt:** „Worktree după planșe” (la „Unde scriem codul aranjamentelor?”).
+**Started:** 11.11, 20:20. **Completed:** 11.11, 20:35.
+
+- **Mesajul sesiunii principale** (11.11): owner-ul a ales designul liniei („o sa mergem pe design-ul creat acolo”).
+  Mutarea fișierelor lângă fila Imprimanta nu se mai unește; locul lor îl stabilesc aranjamentele. Bara de sus rămâne probată
+  la 1280 px cu fontul lat. Planșele se unesc primele. Pentru cod, sesiunea recomandă un worktree, din cauza checkout-ului
+  comun.
+- **ADR 0250:**
+  - Starea spune că 2b s-a schimbat;
+  - secțiunea nouă „Schimbarea din 11.11”: worktree-ul `aranjamente`, `wip/28.1-aranjamente`, e2e pe 4182 și `127.0.9`
+    (libere: niciun worktree de acum nu le folosește), pornit din `main` după unirea planșelor.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG. Rândul din 10.11 despre fișierele de lângă Imprimanta
+  l-a corectat sesiunea principală (`8e18da7`), la cererea acestei sesiuni.

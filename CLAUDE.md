@@ -1046,6 +1046,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 11.11.2026: **codul aranjamentelor într-un worktree, după planșe** („Worktree după planșe”, la „Unde scriem codul
+  aranjamentelor?”, după recomandarea sesiunii principale: în checkout-ul comun, două sesiuni care scriu se pot ciocni).
+  Înlocuiește 2b din ADR 0250 („pe `main`”). Worktree-ul `aranjamente` (`wip/28.1-aranjamente`,
+  `C:\Users\besli\cncvs2-lucru\aranjamente`, e2e pe 4182 și `127.0.9`, ADR-urile 0250–0259, canalul `aranjamente`) se face
+  din `main` după unirea planșelor; până atunci, schițele continuă pe canvas.
 - 11.11.2026: **designul sesiunii „Variante design CVS2” e direcția** („o sa mergem pe design-ul creat acolo”, la întrebarea
   despre suprapunerea aranjamentelor, ADR 0250–0251, cu mutarea fișierelor din linia tăierii): mutarea lui Importă, Exportă
   vectorii și Exportă G-code lângă fila Imprimanta (decizia din 09.11, „Ok la toate”) nu se mai unește; rămâne pe ramura
