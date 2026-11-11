@@ -340,6 +340,33 @@ button[data-icona]:disabled > .eticheta {
   background: var(--l-margine);
 }
 
+/*
+ * Pe ecranul lat, meniul global rămâne pe un rând (pe două ar mânca din pânză): cu fișierele în el, un font mai lat (Linux)
+ * nu-l mai rupe, ci strânge marca, numele și instanța, cu „…” (ca pe telefon); filele, fișierele și grupul aplicației își
+ * păstrează lățimea. Cu fonturile obișnuite, la 1280 px, rămâne loc și nu se strânge nimic.
+ */
+@media (min-width: 75.0625rem) {
+  .meniu-global {
+    flex-wrap: nowrap;
+  }
+
+  .meniu-global > .marca {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  .meniu-global > .marca > .instanta {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meniu-global > .marca > .loc-extensii,
+  .meniu-global > .grup {
+    flex: none;
+  }
+}
+
 /* Indicatorul lucrării și grupul aplicației stau în dreapta; filele, lângă marcă. */
 .meniu-global > .grup[data-grup='lucrare'] {
   margin-left: auto;
