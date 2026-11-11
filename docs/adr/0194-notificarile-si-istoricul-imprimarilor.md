@@ -79,6 +79,9 @@ owner-ului (transcrierea din 07.11, K1C 2025, V1.0.0.26, în `test/fixtures/impr
    - procentul („45 %”);
    - după final, ✓, până deschizi fereastra.
    **Titlul filei** devine „45 % · CNC Vector Studio” cât imprimă (bifa **Procentul în titlul filei**, pornită implicit).
+   Locul și forma butonului le stabilesc aranjamentele (ADR 0250, în worktree-ul lor, după planșe) și designul ales pe
+   11.11 („Variante design CVS2”); semnul merge cu acțiunea, deci nu cere un loc al lui. Atingerile carcasei (`App.tsx`):
+   semnul, titlul filei și legarea la deschidere (punctul 5); de lucrat cu sesiunea principală și cu linia aranjamentelor.
 5. **Legarea la deschidere:** bifa **Leagă imprimanta ținută la deschiderea cvs2** e oprită implicit. Codul imprimantei se
    încarcă după pornire, nu în ea, și trimite doar citiri. Fără bifă, semnul și notificările vin după ce ai deschis
    fereastra o dată (ea rămâne apoi legată și când lucrezi în Proiectare).
