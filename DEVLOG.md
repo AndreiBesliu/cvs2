@@ -8265,3 +8265,35 @@ design-urile inca putin, 3 a, 4 a, dar poate il schimbam mai tarziu, 5, a”.
 - **ADR 0251 acceptat** („Da, 1a–3a”): numele în română și în engleză, „/” aduce cursorul în linie, Enter pe linia goală doar
   aduce ultima comandă.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), traducerile roadmap-ului (1 nouă, 0 lipsă).
+
+## 2026-11-09 — Tăierea (la 1a81540) și imprimanta (3.6j–3.6r) în main, înaintea pauzei; publicarea pe test (11.11) (Model: Claude Opus 5.5)
+
+**Prompt:** „putem aduce in main ce progres s-a facut, si sa luam pauza dupa”; la întrebări, „Yes, merge it now”
+(imprimanta, înaintea probei plăcii pe K1C), „Yes, merge it now” (planșele) și „Yes, merge 1a81540” (tăierea, cu bara
+provizorie); după pauză, „ce se poate uni?”.
+**Started:** 09.11, 22:25. **Completed:** 11.11, 20:20.
+
+- **Ce intra în seara aceea:** unirile de probă în clona din afara Drive-ului (planșele `f7d5435`, imprimanta `9f1d872`,
+  tăierea `1a81540`): planșele singure 611,0 kB, cu pornirea și ușa 109,9 / 110; imprimanta 627,6, ușa 105,9; planșele cu
+  imprimanta, conflicte de cod (`App.tsx`, `schemaDocument.ts`) și ușa ~110,2; tăierea cu planșele, conflict în
+  `Editare.tsx`. Versiunea finală a tăierii (`314d5fe`, fișierele lângă Imprimanta) cădea în e2e (`editare.spec.ts:463`:
+  căutarea, limba, tema și contul pe al doilea rând la 1280 px). Deci au intrat tăierea la `1a81540` și imprimanta; planșele
+  au rămas pe ramură.
+- **Unirile:** tăierea `0fa7e6d` (10.3↑f–10.3↑j, cu „Închide bucățile” în panoul opțiunilor Cuțitului, provizoriu; conflicte
+  doar în DEVLOG și fișă, rândul întrebărilor ADR 0180, acceptat din 06.11, scos), imprimanta `1eb4722` (până la `80a1f86`,
+  cu 3.6r; conflicte doar în DEVLOG, indexul ADR și traduceri). DEVLOG-ul, 279 de intrări, niciuna pierdută sau dublată;
+  indexul ADR, 170 de rânduri pentru 170 de ADR-uri; traducerile, 736 de texte, 0 lipsă.
+- **Porțile pe `1eb4722`:** compilatoarele, importurile, 9 169 de teste unitare (nicio cădere), licențele, build-ul
+  determinist; e2e 458 / 458 din prima; emulatoarele 101 / 101 și 21 / 21. Mărimile: pornirea 102,2 (cu ușa 105,9 / 110 kB),
+  totalul 654,4 / 700, /admin 106,5 / 200, contul 29,6 / 32.
+- **Documentele (`3ced372`):** CLAUDE.md (starea celor două uniri, deciziile din 09.11, între ele fișierele lângă
+  Imprimanta); în fișă, probele owner-ului pe K1C trec pe adresa principală de test, cu ghidul din `main`.
+- **CI:** rapid `42699919152` și complet `42700417881` (pornit de mână) pe `3ced372`, verzi. Jobul care aștepta completul ca
+  să publice a murit la repornirea sesiunii, înainte de publicare; după pauză: completul de noapte (`42982167097`) și
+  rapidul (`42892187559`) verzi pe `99ff34c` (cu ADR 0250 și 0251 ale sesiunii aranjamentelor).
+- **Publicat pe test:** rularea `43075713592` (11.11), cu `99ff34c`: serverul întâi, apoi site-ul; amprenta `99ff34ca6711`
+  pe toate țintele (`meta/deployment`, hosting, funcții, reguli, indecși, stocare); adresa de test servește `99ff34ca6711`,
+  cu tăierea, imprimanta și ADR 0250–0251.
+- **După pauză, „ce se poate uni?”:** nimic nou. Tăierea are pe ramură doar mutarea fișierelor lângă Imprimanta, încă în
+  lucru (rândul de sus se rupe la 1280 px); planșele au 11.5↑ începută și conflicte de cod cu `main` în vreo douăsprezece
+  fișiere; imprimanta, incrustațiile și trasarea n-au nimic neunit.
