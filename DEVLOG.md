@@ -8576,5 +8576,10 @@ provizorie); după pauză, „ce se poate uni?”.
 - **Porțile până la pauză:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile, suita unitară 9 004 / 0 (8
   sărite; pornită înaintea ultimelor două simplificări, probate apoi de probele exportului: 9 / 9), e2e-urile exportului, ale
   foilor și ale plăcuțelor 29 / 29, build-ul determinist.
-- **Rămâne la reluare:** suita e2e întreagă, otrăvurile (lista `test/otravuri/11.5.py`), documentele (ADR 0210, fișa,
-  manualul, CLAUDE.md), canalul `plansele`.
+- **Reluare (11.11, „Da, reiau”) și a doua pauză (12.11, 02:01, „pauza aici”):** `main` unit în ramură (`3aaf5dc`, 99 de
+  commit-uri: tăierea 10.3↑f–j, imprimanta 3.6j–3.6r, ADR 0250–0251), cu foaia activă dusă în codul venit: conversia și
+  Cuțitul trimit `indexFoaie` workerului CAM, desenul imprimantei ia doar foaia activă. Porțile după unire: tipurile,
+  importurile, traducerile (750 de texte, 0 netraduse), suita unitară 9 289 / 0 (8 sărite), build-ul determinist identic,
+  dar **pornirea cu ușa 110,1 / 110** (totalul 686,2 / 700). E2e-ul nu s-a rulat după unire.
+- **Rămâne la reluare:** pornirea cu ușa sub plafon (întâi), suita e2e întreagă, otrăvurile (lista
+  `test/otravuri/11.5.py`), documentele (ADR 0210, fișa, manualul, CLAUDE.md), canalul `plansele`.
