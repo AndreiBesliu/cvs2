@@ -49,11 +49,12 @@ o('K09', T, '        const capat = (vb[vb.length - 1] as VarfDoc).p;', '        
   'coarda pornește din începutul bucății, nu din capătul ei')
 o('K10', T, '      if (x.arie < 0) intregi.push({ e: x.e, proba });', '      if (false) intregi.push({ e: x.e, proba });', 'forma',
   'marginea dinăuntru devine o formă a ei (plină), nu gaura regiunii')
-o('K11', T, '    for (const x of [...noi, ...intregi]) (inauntru(x.proba) ? A : B).push(x.e);',
-  '    for (const x of [...noi, ...intregi]) (inauntru(x.proba) ? B : A).push(x.e);', 'forma', 'părțile cuțitului închis, întoarse')
+o('K11', T, '  for (const x of xs) (inauntru(x.proba) ? A : B).push(x.e);',
+  '  for (const x of xs) (inauntru(x.proba) ? B : A).push(x.e);', 'forma', 'părțile cuțitului închis, întoarse')
 o('K12', T, '  return { contururi, inchis: contururi.every((c) => c.c.inchis), proprii,', '  return { contururi, inchis: false, proprii,', 'forma',
   'cuțitul închis lucrează ca unul deschis: fiecare față, o formă')
-o('K13', T, "    alese.delete(c.id);\n", '', 'forma', 'cuțitul se taie și pe el')
+o('K13', T, "    // Cuțitul rămâne neschimbat: nu e printre formele de tăiat.\n    alese.delete(c.id);\n",
+  "    // Cuțitul rămâne neschimbat: nu e printre formele de tăiat.\n", 'forma', 'cuțitul se taie și pe el')
 o('K14', T, "      return { e: { forma, matrice: inElement ? prima.er.matrice : IDENTITATE, surse, fel: 'inchis', exteriorDreapta: null }, arie };",
   "      return { e: { forma, matrice: IDENTITATE, surse, fel: 'inchis', exteriorDreapta: null }, arie };", 'forma',
   'fața, în coordonatele elementului, dar fără matricea lui (mutată)')

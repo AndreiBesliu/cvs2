@@ -1,6 +1,6 @@
 /*
- * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b) și linia de tăiere de pe pânză. Doar tokenurile temei; stratul de pe pânză nu prinde
- * evenimente. Panoul are lățimea vecinilor (`.panou-retea`).
+ * Panoul Taie (ADR 0180 §3, §5; feliile 10.3↑ și 10.3↑b), panoul Convertește (§8, §10; felia 10.3↑d) și linia de tăiere de pe
+ * pânză. Doar tokenurile temei; stratul de pe pânză nu prinde evenimente. Panourile au lățimea vecinilor (`.panou-retea`).
  */
 .campuri-taiere {
   margin: 0;
@@ -37,9 +37,54 @@
   grid-column: 3 / span 2;
 }
 
+/* Panourile au câte trei blocuri (Taie cu, Decupează, La intersecții; Arce, În cerc, În dreptunghi): ca panoul verificării, nu trec de
+   fereastră, se derulează. */
+.panou-taiere {
+  max-height: min(70vh, 36rem);
+  overflow-y: auto;
+}
+
+/* Un rând de alegeri (Păstrează: înăuntru / în afară; Formele care trec granița: …), rupt pe mai multe rânduri dacă trebuie. */
+.rand-optiuni-taiere {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.rand-optiuni-taiere label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
 /* Un rând fără câmp (cuțitul-formă): eticheta ia tot locul de după bifă. */
 .rand-taiere-lung {
   grid-column: 2 / -1;
+}
+
+/* Linia printr-un punct, la un unghi (ADR 0181 §3): sub rândul ei, X, Y și unghiul, câmpuri scurte, aliniate cu eticheta. */
+.campuri-unghi {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 1.6rem;
+  font-size: var(--fs-2);
+}
+
+.campuri-unghi .camp-taiere {
+  width: 3.6rem;
+  min-width: 0;
+}
+
+.campuri-unghi .camp-taiere.camp-unghi {
+  width: 2.8rem;
+}
+
+/* „și șterge-o după tăiere”, sub rândul cuțitului-formă, aliniată cu eticheta lui. */
+.bifa-taiere.bifa-sub-rand {
+  padding-left: 1.6rem;
 }
 
 .bifa-taiere {
@@ -55,6 +100,29 @@
   color: var(--t-slab);
 }
 
+/* Rândul „cu mărimea” al conversiei: bifa cu eticheta, apoi lățimea × înălțimea, apoi unitatea. */
+.rand-marime-conversie {
+  grid-template-columns: minmax(0, 1fr) 8rem 1.75rem;
+}
+
+.eticheta-marime-conversie {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.marime-conversie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.marime-conversie .camp-taiere {
+  width: 100%;
+  min-width: 0;
+}
+
 .linia-taierii {
   pointer-events: none;
 }
@@ -63,4 +131,162 @@
   stroke: var(--rosu);
   stroke-width: 1.5;
   stroke-dasharray: 8 4;
+}
+
+/* Fâșia spațiului sau a suprapunerii (ADR 0181 §2): două linii paralele, subțiri și mai rar punctate decât linia tăierii. */
+.linia-taierii line.fasie-taierii {
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.85;
+}
+
+/*
+ * Unealta Cuțit (ADR 0181, felia 10.3↑f): felurile și butonul opțiunilor în bara de sus („Închide bucățile” e în opțiuni, din
+ * 10.3↑j: la 1280 px și cu un font lat, bara n-avea loc de ea); pe pânză, urma cuțitului (punctată, ca linia tăierii), locurile
+ * unde taie și formele adunate în cuțit. Stratul nu prinde evenimente: gestul e al pânzei.
+ */
+.bara-cutit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.cutit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.panza-cutie:has(.cutit) .panza {
+  cursor: crosshair;
+}
+
+.urma-cutit line,
+.urma-cutit polyline,
+.urma-cutit path {
+  fill: none;
+  stroke: var(--rosu);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 4;
+}
+
+.urma-cutit .loc-taiere {
+  fill: var(--rosu);
+  stroke: none;
+}
+
+/* Retează: bucata de sub maus, care pleacă la clic (ADR 0181 §5). */
+.urma-cutit .bucata-reteaza {
+  stroke: var(--rosu);
+  stroke-width: 4;
+  stroke-dasharray: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.bara-cutit .contur.gros {
+  stroke-width: 2.6;
+}
+
+/*
+ * Opțiunile tăierii în bara cuțitului (ADR 0181 §2): un buton cu panoul lui dedesubt, ca panourile extensiei (bara de sus n-are
+ * loc de ele pe un rând); un punct pe buton când o opțiune nu e cea implicită.
+ */
+.optiuni-cutit {
+  position: relative;
+  display: inline-flex;
+}
+
+.optiuni-cutit > button {
+  position: relative;
+}
+
+.optiuni-cutit > button[data-activ='1']::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rosu);
+}
+
+.panou-optiuni-cutit {
+  width: 21rem;
+}
+
+/* Cât tragi: capătul prelungit, punctat mai rar decât cuțitul; partea care pleacă, sub culoarea foii, ca estompată. */
+.urma-cutit .prelungire-cutit {
+  stroke-dasharray: 2 5;
+  opacity: 0.85;
+}
+
+.urma-cutit .parte-stearsa path {
+  stroke: none;
+}
+
+.urma-cutit .parte-stearsa .estompare {
+  fill: var(--panza-foaie);
+  fill-opacity: 0.72;
+}
+
+/* Peste estompare, o nuanță slabă a cuțitului: formele sunt mai ales contururi, iar partea care pleacă trebuie să se vadă. */
+.urma-cutit .parte-stearsa .tenta {
+  fill: var(--rosu);
+  fill-opacity: 0.08;
+}
+
+/*
+ * Sfatul cuțitului: cipul se rupe pe rânduri, nu se taie cu „…” (sfaturile felurilor au peste un rând la 36rem); urcă din
+ * marginea lui de jos, ca un rând în plus să nu iasă din pânză.
+ */
+.cip.cutit-sfat {
+  white-space: normal;
+  line-height: 18px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  transform: translateY(-100%);
+}
+
+/* Felul Pen: calea pusă e cuțitul, deci are culoarea lui. */
+.pen-cutit .drum-pen,
+.pen-cutit .pen-elastic {
+  stroke: var(--rosu);
+  stroke-dasharray: 8 4;
+}
+
+/* Cât tragi, fâșia spațiului sau a suprapunerii (ADR 0181 §2): calea mutată de fiecare parte, ca la linia din panou. */
+.urma-cutit .fasie-cutit {
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.85;
+}
+
+/* Câmpurile în mm ale opțiunilor (lățimea dintre bucăți, pasul, înălțimea și raza îmbinării): scurte, pe rândul alegerilor. */
+.camp-taiere.camp-mm {
+  width: 3.6rem;
+  min-width: 0;
+}
+
+.camp-taiere.camp-mm[aria-invalid='true']:not(:disabled) {
+  border-color: var(--rosu);
+}
+
+/* „Îmbinarea”: modelul, apoi pasul, înălțimea și raza, fiecare cu eticheta lui (se rup pe rânduri, ca alegerile). */
+.campuri-imbinare {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+/* Dinții îmbinării, arătați: plini, ca drumul pe care se va tăia (linia și urma rămân punctate). */
+.linia-taierii polyline.dinti-taierii,
+.urma-cutit .dinti-cutit {
+  fill: none;
+  stroke: var(--rosu);
+  stroke-width: 1.5;
+  stroke-dasharray: none;
 }

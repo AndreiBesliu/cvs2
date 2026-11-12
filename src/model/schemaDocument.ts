@@ -189,7 +189,10 @@ const SchemaOperatie = v.looseObject({
     }),
   ])),
 });
-const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
+/** `inaltimeImprimanta` (ADR 0191, 3.6l): opțională, fără schemă nouă (nu schimbă tăierea), ca ghidajele foii. */
+const SchemaPiesa = v.looseObject({
+  id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie), inaltimeImprimanta: v.optional(pozitiv(PLAFON.grosime)),
+});
 /** Literele unei plăcuțe (ADR 0210 §7; v23): forma; potrivirea cu piesa și cu valorile o judecă documentul întreg. */
 /** Un dicționar (ADR 0024): un obiect, nu o listă; `v.record` singur primește și `[]` (îl copiază într-un obiect), deci întâi forma. */
 const dictionar = <T extends v.GenericSchema>(s: T) =>

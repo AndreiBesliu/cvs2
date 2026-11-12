@@ -38,7 +38,7 @@ test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta
     'foaie.muta-sus', 'foaie.muta-jos', 'foaie.eticheta', 'selectie.muta-pe-foaie', 'piesa.inca', 'piesa.plus-unu', 'piesa.desprinde',
     'foaie.duplica-legat', 'foaie.aseaza', 'selectie.muta-si-aseaza', 'document.muta-instantele',
     'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.grupeaza',
-    'document.text', 'document.repara', 'document.taie',
+    'document.text', 'document.repara', 'document.taie', 'document.converteste',
     'istoric.anuleaza',
     'istoric.reface',
   ]);

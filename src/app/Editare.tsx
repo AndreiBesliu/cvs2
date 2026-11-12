@@ -21,6 +21,7 @@ import { instantaLa } from '../model/alegere.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
 import { blocText } from '../model/blocText.ts';
 import { blocuriPiesei } from '../model/placute.ts';
+import { useInFereastra } from './inFereastra.ts';
 import { PanouText } from './PanouText.tsx';
 import { textLovit, texteGrupate } from './texteGrupate.ts';
 import {
@@ -223,6 +224,20 @@ const PanouTaiere = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((
   default: () => <p className="motiv-retea" role="status" data-testid="taiere-neincarcata">{t('editare.taiere.neincarcata')}</p>,
 })));
 const LiniaTaierii = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.LiniaTaierii }), () => ({ default: () => null })));
+/**
+ * Conversia vectorilor (ADR 0180 §8, §10; felia 10.3↑d): panoul Convertește, adus la primul clic pe butonul lui, în aceeași
+ * bucată cu panoul Taie (o singură foaie de stil, `taiere.css`). Dacă nu vine, panoul o spune.
+ */
+const PanouConversie = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.PanouConversie }), () => ({
+  default: () => <p className="motiv-retea" role="status" data-testid="conversie-neincarcata">{t('editare.conversie.neincarcata')}</p>,
+})));
+/**
+ * Unealta Cuțit (ADR 0181, felia 10.3↑f): bara, urma și tăierea ei vin în bucata tăierii, la prima alegere a uneltei. Dacă nu
+ * vine, un cip o spune; editarea merge mai departe.
+ */
+const UnealtaCutit = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.UnealtaCutit }), () => ({
+  default: () => <span className="cip cip-rosu noduri-sfat" role="status" data-testid="cutit-neincarcat">{t('editare.cutit.neincarcat')}</span>,
+})));
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
@@ -257,7 +272,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'foaieTinta' | 'grupareSurori'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere' | 'conversie' | 'foaieTinta' | 'grupareSurori'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -404,7 +419,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
-  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | null>(null);
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | 'conversie' | null>(null);
   const panouRef = useRef(panou);
   panouRef.current = panou;
   const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare', panouVectori = panou === 'vectori';
@@ -414,6 +429,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => { if (!panouVerificare) setVerificare(null); }, [panouVerificare]);
   // Tăierea (ADR 0180): linia de pe pânză ține cât panoul e deschis.
   const panouTaiere = panou === 'taiere';
+  const panouConversie = panou === 'conversie';
   const [linieTaiere, setLinieTaiere] = useState<LinieTaiere>(null);
   useEffect(() => { if (!panouTaiere) setLinieTaiere(null); }, [panouTaiere]);
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
@@ -665,9 +681,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     return g;
   });
+  // Cuțitul (ADR 0181): pânza îi dă gestul printr-un intermediar stabil; gestul lui îl pune unealta, adusă la cerere (null la Pen).
+  const gestCutit = useRef<GestDesen | null>(null);
+  const [intermediarCutit] = useState(() => {
+    const g: GestDesen = (faza, x, y, scara, mod) => { gestCutit.current?.(faza, x, y, scara, mod); };
+    return g;
+  });
+  const [puneGestCutit] = useState(() => (g: GestDesen | null) => { gestCutit.current = g; });
+  const [locCutit, setLocCutit] = useState<HTMLElement | null>(null);
   useEffect(() => {
-    onDesen(!deseneaza(unealta) || p.doarCitire ? null : gestDesen);
-  }, [unealta, p.doarCitire, onDesen, gestDesen]);
+    onDesen(p.doarCitire ? null : deseneaza(unealta) ? gestDesen : unealta === 'cutit' ? intermediarCutit : null);
+  }, [unealta, p.doarCitire, onDesen, gestDesen, intermediarCutit]);
   // Shift, Ctrl (⌘) și Alt schimbă și desenul început cu mausul pe loc (ADR 0240): ultimul punct, cu tastele de acum.
   useEffect(() => {
     const tasta = (e: KeyboardEvent): void => {
@@ -755,6 +779,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit: { fel: 'intersectii' }, alese, inchide: false }, undefined, indexFoaie).then((r) => {
       if (!r.ok) return t(r.motiv === 'nimic-taiat' ? 'editare.taiere.motiv.nimic-intersectii' : `editare.taiere.motiv.${r.motiv}`);
       const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids }) });
+      return v.ok ? null : t(v.motiv);
+    }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
+  };
+  // Desparte, din unealta Noduri (ADR 0181 §4): forma tăiată în nodul ales, ca de foarfeca cuțitului (calculul e al
+  // workerului); după, e aleasă prima bucată, ca unealta să rămână pe ea.
+  const desparteLaNod = (instanta: string, punct: { readonly x: number; readonly y: number }): Promise<string | null> => {
+    if (p.doarCitire) return Promise.resolve(null);
+    const laCerere = doc;
+    const eroare = (e: unknown): string => {
+      reportError(new Error(`despărțirea la nod: ${e instanceof Error ? e.message : String(e)}`));
+      return t('editare.taiere.eroare');
+    };
+    const cutit = { fel: 'foarfeca' as const, id: instanta, punct, toleranta: 1e-6 };
+    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit, alese: [instanta], inchide: false }, undefined, indexFoaie).then((r) => {
+      if (!r.ok) return t(`editare.taiere.motiv.${r.motiv}`);
+      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids.slice(0, 1) }) });
       return v.ok ? null : t(v.motiv);
     }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
   };
@@ -1379,7 +1419,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
           onLinii={setLiniiManere} locBara={locNoduri}
-          aplica={(f, nod) => { ruleaza('document.forma', { formaEditata: () => f, nodEditat: () => nod }); }} />
+          aplica={(f, nod) => { ruleaza('document.forma', { formaEditata: () => f, nodEditat: () => nod }); }}
+          desparte={desparteLaNod} />
       ) : null}
       {unealta === 'pen' && !vedere3d && !p.doarCitire ? (
         <Pen vedere={vedere} marime={marime} zona={zona}
@@ -1401,6 +1442,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             setPenRedeschis((x) => ({ cheie: x.cheie + 1, desen: u.desen }));
             return true;
           }} />
+      ) : null}
+      {unealta === 'cutit' && !vedere3d && !p.doarCitire ? (
+        <Suspense fallback={null}>
+          <UnealtaCutit doc={doc} indexFoaie={indexFoaie} selectie={selectie} vedere={vedere} marime={marime} zona={zona} loc={locCutit} onGest={puneGestCutit}
+            onTaie={(r) => ruleaza('document.taie', { taiere: () => r })} onLinii={setLiniiManere}
+            lipire={(alt) => (lipire !== alt
+              ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+              : null)}
+            pen={(o) => (
+              <Pen vedere={vedere} marime={marime} zona={zona} cutit sfat={o.sfat} initial={null} redeschide={() => false}
+                lipire={(alt) => (lipire !== alt
+                  ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+                  : null)}
+                onLinii={setLiniiManere} termina={(f) => { o.termina(f); }} />
+            )} />
+        </Suspense>
       ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <>
@@ -1562,6 +1619,23 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ) : null}
           </span>
         );
+        // Conversia vectorilor (ADR 0180 §8, §10): arce în locul curbelor, în cerc, în dreptunghi; panoul și calculul vin la cerere.
+        const conversieSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.conversie.sectiune')} data-testid="extensie-conversie">
+            <button type="button" className="aliniaza" aria-expanded={panouConversie} aria-controls="panou-conversie" title={t('editare.conversie')}
+              aria-label={t('editare.conversie')} data-editare="conversie" disabled={p.doarCitire} onClick={() => { setPanou(panouConversie ? null : 'conversie'); }}>
+              <IconaConversie />
+            </button>
+            {panouConversie ? (
+              <CadruConversie onInchide={() => { setPanou(null); }}>
+                <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.conversie.incarca')}</p>}>
+                  <PanouConversie doc={doc} indexFoaie={indexFoaie} selectie={selectie}
+                    onConverteste={(r) => ruleaza('document.converteste', { conversie: () => r })} onInchide={() => { setPanou(null); }} />
+                </Suspense>
+              </CadruConversie>
+            ) : null}
+          </span>
+        );
         // Verificarea vectorilor (ADR 0124): pe formele alese (la bifă) sau pe toată foaia; panoul și calculul vin la cerere.
         const verificareSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.verificare.sectiune')} data-testid="extensie-verificare">
@@ -1646,6 +1720,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {booleanSectiune}
             <span className="separator" aria-hidden="true" />
             {taiereSectiune}
+            {conversieSectiune}
             <span className="separator" aria-hidden="true" />
             {verificareSectiune}
             <span className="separator" aria-hidden="true" />
@@ -1678,6 +1753,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               );
             })}
             {unealta === 'noduri' ? <span className="loc-noduri" ref={setLocNoduri} /> : null}
+            {unealta === 'cutit' ? <span className="loc-noduri" ref={setLocCutit} /> : null}
             {unealta === 'poligon' ? (
               <input className="laturi" value={laturi} inputMode="numeric" aria-label={t('editare.laturi')} title={t('editare.laturi')} data-editare="laturi"
                 onChange={(e) => {
@@ -2001,6 +2077,7 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     linie: <line x1="2.5" y1="13.5" x2="13.5" y2="2.5" className="contur" />,
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
     text: <path className="contur" d="M3 4.5 V3 H13 V4.5 M8 3 V13.5 M5.5 13.5 H10.5" />,
+    cutit: <path className="contur" d="M2 14 L6.2 9.8 M6.2 9.8 L13 3 C14.4 4.4 14.2 6.8 12 9 L8.6 12.2 Z" />,
     pen: (
       <>
         <path className="contur" d="M8 1.5 L12.5 8.5 L8 14.5 L3.5 8.5 Z M8 1.5 V7.2" />
@@ -2032,7 +2109,12 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
  * a conturului pleacă prin `document.forma`, cu elementul ei; dreptunghiul și cercul devin căi la prima schimbare. Apăsările pe
  * noduri și pe mânere nu mai ajung la pânză (nici alegerea, nici mutarea); restul, da.
  */
-function Noduri({ doc, indexFoaie, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma }: {
+function Noduri({ doc, indexFoaie, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, locBara, aplica: aplicaForma, desparte }: {
+  /**
+   * Desparte (ADR 0181 §4): forma tăiată chiar în nodul ales, ca de foarfeca cuțitului; promisiunea dă motivul unui refuz,
+   * sau null.
+   */
+  readonly desparte: (instanta: string, punct: Punct) => Promise<string | null>;
   readonly doc: Document;
   readonly indexFoaie: number;
   readonly selectie: readonly string[];
@@ -2256,6 +2338,16 @@ function Noduri({ doc, indexFoaie, selectie, vedere, marime, zona, doarCitire, l
     setAles({ e: ales.e, i: r.nod });
   };
   const fara = tipAles === null || doarCitire;
+  // Desparte: forma, tăiată în nodul ales (în lume), prin workerul tăierii; refuzul (capătul unei căi deschise) se spune în sfat.
+  const desparteLaNod = (): void => {
+    const c = ales ? cai[ales.e] : undefined;
+    const nod = ales && c ? c.varfuri[ales.i] : undefined;
+    if (!ales || !nod || typeof f === 'string' || doarCitire) return;
+    void desparte(f.instanta, aplica(elemente[ales.e]!.matrice, nod.p)).then((m) => {
+      setMotiv(m);
+      if (!m) setAles(null);
+    });
+  };
   const manere = caleAleasa && ales && tipAles !== null ? manereAfisate(caleAleasa, ales.i) : null;
   const total = vizibile.reduce((n, c) => n + c.varfuri.length, 0);
   return (
@@ -2299,6 +2391,13 @@ function Noduri({ doc, indexFoaie, selectie, vedere, marime, zona, doarCitire, l
             aria-label={t('editare.noduri.o-parte')} data-editare="nod-o-parte" onClick={() => { schimba('o-parte'); }}>
             <IconaTipNod tip="o-parte" />
           </button>
+          <button type="button" className="aliniaza" disabled={fara} title={t('editare.noduri.desparte')}
+            aria-label={t('editare.noduri.desparte')} data-editare="nod-desparte" onClick={desparteLaNod}>
+            <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path className="contur" d="M1.5 9 L6.5 9 M9.5 9 L14.5 9 M6.5 4 L9.5 14" />
+              <rect x="6.2" y="7.2" width="3.6" height="3.6" />
+            </svg>
+          </button>
         </span>, locBara) : null}
     </div>
   );
@@ -2330,7 +2429,10 @@ const RAZA_NOD_PX = 6;
  * Ctrl+Shift+Z îl redeschide (`redeschide`), cu pașii lui. Nodurile se lipesc (Alt inversează), mânerele nu. Forma pleacă prin
  * `document.deseneaza`; apăsările pe pânză sunt ale Pen-ului (nu aleg și nu mută), afară de deplasarea cu Space.
  */
-function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide }: {
+function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide, cutit = false, sfat }: {
+  /** Felul Pen al cuțitului (ADR 0181): calea pusă e cuțitul (culoarea lui), iar sfatul e al lui. */
+  readonly cutit?: boolean;
+  readonly sfat?: string;
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
   readonly zona: Zona;
@@ -2530,7 +2632,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
       : `M ${sx(ultim.p.x)} ${sy(ultim.p.y)} L ${sx(cursor.x)} ${sy(cursor.y)}`)
     : null;
   return (
-    <div className="pen" ref={radacina} data-testid="pen" data-noduri={noduri.length}>
+    <div className={cutit ? 'pen pen-cutit' : 'pen'} ref={radacina} data-testid="pen" data-noduri={noduri.length}>
       {noduri.length > 0 ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
           <path className="drum-pen" d={drumSvg(conturNoduri(caleDinNoduri(noduri, inchidere && sePoateInchide(noduri)), IDENTITATE), vedere)} />
@@ -2552,7 +2654,9 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschi
           })}
         </svg>
       ) : null}
-      <span className="cip noduri-sfat" role="status" data-testid="pen-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{t('editare.pen.sfat')}</span>
+      {/* Pentru cuțit, sfatul lui se rupe pe rânduri, ca în celelalte feluri (`cutit-sfat`, din `taiere.css`). */}
+      <span className={cutit ? 'cip noduri-sfat cutit-sfat' : 'cip noduri-sfat'} role="status" data-testid="pen-sfat"
+        style={{ left: zona.x + 8, top: zona.y + zona.h - (cutit ? 16 : 44) }}>{sfat ?? t('editare.pen.sfat')}</span>
     </div>
   );
 }
@@ -2574,26 +2678,6 @@ function IconaRetea(): ReactElement {
  * motivul pentru care nu se poate (valorile, sau verdictul acțiunii: nicio selecție, doar citire, plafonul, prea departe) și
  * Copiază. Esc îl închide.
  */
-/**
- * Ține un panou plutitor al extensiei în fereastră: așezat sub butonul lui, iar dacă iese pe dreapta (o fereastră îngustă, un
- * buton spre capătul extensiei), mutat spre stânga cât iese, fără să treacă de marginea stângă.
- */
-function useInFereastra(ref: RefObject<HTMLElement | null>): void {
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const aseaza = (): void => {
-      el.style.left = '';
-      const r = el.getBoundingClientRect();
-      const iese = r.right - (window.innerWidth - 8);
-      if (iese > 0) el.style.left = `${-Math.min(iese, Math.max(0, r.left - 8))}px`;
-    };
-    aseaza();
-    window.addEventListener('resize', aseaza);
-    return () => { window.removeEventListener('resize', aseaza); };
-  }, [ref]);
-}
-
 function PanouRetea({ form, onForm, foaie, curba, motivActiune, onCopiaza, onInchide }: {
   readonly form: FormularRetea;
   readonly onForm: (f: FormularRetea) => void;
@@ -2885,6 +2969,34 @@ function CadruTaiere({ onInchide, children }: { readonly onInchide: () => void; 
   return (
     <div className="insula panou-retea panou-taiere" id="panou-taiere" ref={radacina} role="group" aria-label={t('editare.taiere.sectiune')}
       data-testid="panou-taiere" onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      {children}
+    </div>
+  );
+}
+
+/** Conversia vectorilor (ADR 0180 §8, §10): un poligon care devine cerc. */
+function IconaConversie(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M7 8 5.5 10.6h-3L1 8l1.5-2.6h3z" className="contur" />
+      <path d="M8.2 6.6 9.6 8l-1.4 1.4" className="contur" />
+      <circle cx="12.4" cy="8" r="2.6" className="contur" />
+    </svg>
+  );
+}
+
+/** Cadrul panoului Convertește (ADR 0180 §8, §10), ca panourile vecine: sub butonul lui, ținut în fereastră; Esc îl închide. */
+function CadruConversie({ onInchide, children }: { readonly onInchide: () => void; readonly children: ReactNode }): ReactElement {
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
+  return (
+    <div className="insula panou-retea panou-taiere" id="panou-conversie" ref={radacina} role="group" aria-label={t('editare.conversie.sectiune')}
+      data-testid="panou-conversie" onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.preventDefault();
         e.stopPropagation();

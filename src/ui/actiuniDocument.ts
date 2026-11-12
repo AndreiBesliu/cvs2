@@ -86,7 +86,10 @@ export type ReparatieCalculata = { readonly doc: Document; readonly piese: reado
  * părțile care îi iau locul (comanda `degrupeaza`), și instanțele noi, de ales după tăiere. Se aplică într-un pas doar dacă
  * documentul e încă `doc`.
  */
-export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[] };
+/** O tăiere calculată de worker: instanțele înlocuite de părțile lor, cele noi (de ales după) și cele de șters (decuparea). */
+export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[] };
+/** O conversie calculată de worker (ADR 0180, felia 10.3↑d): piesele schimbate, cu aceleași id-uri, pe documentul `doc`. */
+export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[] };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;
@@ -169,6 +172,8 @@ export type ContextDocument = {
   readonly reparatie?: () => ReparatieCalculata;
   /** Tăierea din panoul Taie (ADR 0180), calculată de worker. */
   readonly taiere?: () => TaiereCalculata;
+  /** Conversia din panoul Convertește (ADR 0180, felia 10.3↑d), calculată de worker. */
+  readonly conversie?: () => ConversieCalculata;
 };
 
 /**
@@ -582,6 +587,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.repara', 'actiune.repara', (ctx) => (ctx.reparatie ? true : 'motiv.nimic-ales')),
   // Tăierea și conversia vectorilor (ADR 0180): o tăiere din panoul Taie, calculată de worker, într-un pas.
   laCerere('document.taie', 'actiune.taie', (ctx) => (ctx.taiere ? true : 'motiv.nimic-ales')),
+  // … și o conversie din panoul Convertește (arce, cercuri, dreptunghiuri), tot calculată de worker, într-un pas.
+  laCerere('document.converteste', 'actiune.converteste', (ctx) => (ctx.conversie ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

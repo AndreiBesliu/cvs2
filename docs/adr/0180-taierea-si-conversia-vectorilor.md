@@ -4,7 +4,9 @@
 worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
 cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
-06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) pe 07.11. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) și **felia 10.3↑c** (decuparea, §4) pe 07.11.
+**Schimbat de** ADR 0181 (08.11, răspunsul 4a): §13 și „Ce am respins”, tăierea cu un clic pe bucată (felul Retează al
+cuțitului). **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 
@@ -122,6 +124,66 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
   ale aceleiași piese), la capetele unei suprapuneri (nu și în îmbinările ei); un contur închis cu un singur loc rămâne
   întreg; capătul unei căi deschise nu e un loc de tăiere. Pornește din panoul Taie și din meniul de clic dreapta; ca „Taie”
   (10.3↑), nu și din paletă: calculul cere workerul.
+
+**Felia 10.3↑c, la cod** (07.11):
+- **Decuparea refolosește împărțirea cuțitului închis:** fiecare formă aleasă e împărțită ca de un cuțit închis (granița),
+  apoi păstrează ce e de partea aleasă. O formă toată de partea păstrată rămâne neschimbată; una fără nimic acolo pleacă; una
+  cu câte ceva de ambele părți trece granița (și o piesă cu un contur înăuntru și unul în afară, fără nicio tăietură) și, după
+  alegere, se taie (rămâne partea păstrată), se șterge sau rămâne întreagă.
+- **Ștergerile:** o formă care pleacă se șterge cu piesa ei (dacă n-o mai folosește altă instanță); ștergerile și degruparea
+  sunt un singur pas de anulare (un lot: întâi ștergerile, apoi degruparea). O instanță a unei piese puse de mai multe ori se
+  poate șterge (cealaltă rămâne), dar nu tăia.
+- **Granița** trebuie să fie închisă (refuzul `granita`) și rămâne. „Închide bucățile” e aceeași bifă ca la „Taie cu”,
+  arătată și în blocul decupării, ca în schiță.
+- **Panoul:** cele trei blocuri ale schiței, unul sub altul; nu trece de 70 % din fereastră (se derulează, ca panoul
+  verificării).
+
+**Felia 10.3↑d, la cod** (07.11):
+- **Arce (§8):** fiecare cubică devine biarcele din ADR 0033 (`cubicaInArce`), cu toleranța împărțită la scara elementului
+  (abaterea se spune în lume); un element întins neuniform se sare (un arc întins nu mai e arc). Cu „și liniile scurte”, cel
+  mai lung șir de linii din fiecare vârf, fără colțuri (**o întoarcere de peste 30° e un colț**), devine arcul prin primul,
+  mijlocul și ultimul lui vârf, cât stă la cel mult toleranța de șir în ambele sensuri (vârfurile, laturile, arcul dintre două
+  vârfuri) și **nu trece de 180°**: poligonul închis cu 64 de laturi devine două semicercuri. Numerele unei căi (curbele, arcele,
+  liniile) se adună doar dacă ea se schimbă de tot.
+- **În cerc, doar dacă e (§10, 5a):** cercul celor mai mici pătrate (Kåsa), **pe vârfuri la o formă doar din linii** (deci prin
+  noduri), altfel pe eșantioane. Abaterea e radială, exactă pe linii (și piciorul perpendicularei din centru) și pe arce, **cât
+  forma ocolește centrul o singură dată, fără să se întoarcă**; altfel, distanța Hausdorff (o cale dus-întors pe un sfert de
+  cerc nu e cerc).
+- **În dreptunghi, doar dacă e:** dreptunghiul de arie minimă pe laturile învelitorii convexe, cu unghiul în (−45°, 45°]; raza
+  colțului din cât lipsesc colțurile (distanța de la colț la formă = r·(√2 − 1)), cel mult jumătate din latura mică. **Un cerc
+  (fără laturi drepte pe nicio axă) nu e dreptunghi, o fantă da.** Abaterea, Hausdorff în ambele sensuri (o cale dus-întors pe
+  trei laturi nu e dreptunghi).
+- **Cu mărimea dată:** cercul sau dreptunghiul, drept pe foaie, în centrul cutiei formei; doar formele închise.
+- **Elementul își păstrează id-ul, numele, câmpurile și operațiile;** se schimbă forma și matricea lui, cât să stea pe foaie
+  unde era (matricea nouă = matricea lui · inversa matricei lui în lume · matricea nouă în lume). Găurirea refuză dreptunghiul
+  (numărată, „cu găurire”).
+- **Ce se sare, numărat:** căile deschise (la cerc și dreptunghi), piesele puse de mai multe ori (§12), elementele întinse
+  neuniform (la arce). Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai mare) și,
+  la refuz, cea mai mică abatere a formelor refuzate.
+- **Acțiunea `document.converteste`:** un lot de `inlocuieste-piesa`, un singur pas de anulare, doar dacă documentul e cel de la
+  clic; selecția rămâne. Pornește din panou (calculul cere workerul), ca „Taie”. Butonul Convertește stă lângă Taie, în
+  extensia barei; panoul are câte un bloc pentru Arce, În cerc și În dreptunghi, fiecare cu toleranța și butonul lui.
+  Rezultatul, sub blocuri, e adus în vedere la fiecare schimbare (panoul se derulează; la fel în panoul Taie).
+
+**Felia 10.3↑e, la cod** (07.11):
+- **Netezește (§9):** șirurile de linii scurte (cel mult „Păstrează”, implicit 5 mm, pe foaie) devin cubice potrivite direct
+  pe punctele lor (Schneider: cele mai mici pătrate cu tangentele capetelor date, reparametrizarea Newton, împărțirea în
+  punctul cel mai depărtat, cu tangenta comună, deci netedă), nu simplificate întâi. O cubică se primește doar dacă abaterea
+  Hausdorff față de bucata ei de șir (nodurile și laturile, în ambele sensuri) încape în toleranță; o latură singură care nu
+  încape rămâne linie.
+- **Colțurile ascuțite:** un vârf în care drumul se întoarce cu **peste 60°** (la Arce, 30°), măsurat pe **4 × toleranța** de
+  fiecare parte. Treptele mai mici decât atât nu sunt colțuri: o trasare în trepte se netezește la o toleranță cât treapta (la
+  0,01 rămâne). De ce 60°: la capătul unui platou, treptele se întorc cu 37–45° pe scara toleranței, iar cu 30° fiecare platou
+  lăsa o frântură; pătratul și triunghiul își păstrează colțurile. La mai puțin de 4 × toleranța de capătul unui șir,
+  întoarcerea nu se judecă (coarda ar fi trunchiată și ar măsura treapta).
+- **Ce rămâne:** liniile lungi, arcele și curbele (legătura cu ele e netedă, cu tangenta lor, dacă nu e colț); un șir drept
+  (punctele pe coarda lui) rămâne linii; pe o cale închisă, vârful 0 rămâne vârf, cu tangenta netedă (de el ține intrarea
+  frezei); fiecare contur separat (o literă cu găuri nu se sudează).
+- **În lume:** colțurile, lungimile și abaterea se măsoară pe foaie; mânerele se duc înapoi cu inversa matricei (o cubică
+  rămâne cubică sub orice matrice afină), deci și un element întins neuniform se netezește; capetele bucăților rămân vârfurile
+  vechi, la bit.
+- Măsurarea Hausdorff, comună conversiei și netezirii, stă în `src/model/abatereContur.ts`. Panoul: blocul Netezește, al
+  doilea, ca în schiță (toleranța 0,01, „Păstrează liniile mai lungi de” 5).
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.

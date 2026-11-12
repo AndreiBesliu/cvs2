@@ -2,8 +2,9 @@
  * Generatorii corpusurilor tăierii (ADR 0180): formele din sămânță ale oracolelor (linia dreaptă, felia 10.3↑; cuțitul-formă și
  * „Taie la intersecții”, felia 10.3↑b), aceleași la fiecare rulare.
  */
-import type { FormaDoc, Nod, Operatie, VarfDoc } from '../../src/model/document.ts';
-import { ID } from './ajutor-document.ts';
+import assert from 'node:assert/strict';
+import type { Document, FormaDoc, Instanta, Nod, Operatie, Piesa, VarfDoc } from '../../src/model/document.ts';
+import { docDin, ID } from './ajutor-document.ts';
 
 /** Generatorul din sămânță (mulberry32): același corpus la fiecare rulare. */
 export function aleator(samanta: number): () => number {
@@ -98,3 +99,20 @@ export function inel(r: () => number, id: string, scula: Operatie['scula']): { r
 
 export const stoc = { latime: 1000, inaltime: 1000, grosime: 18 };
 export const NUME = Object.keys(GENERATORI);
+
+/** O formă a corpusului, ca piesă cu instanța ei (rotită), cu inelul ca piesă cu gaură. */
+export function formaCorpus(r: () => number, id: string, x: number, y: number): { readonly piesa: Piesa; readonly instanta: Instanta } {
+  const fel = r() < 0.15 ? 'inel' : (NUME[Math.floor(r() * NUME.length)] as string);
+  const d = docDin(stoc, { id, forma: fel === 'inel' ? { tip: 'cerc', raza: 1 } : (GENERATORI[fel] as Gen)(r), matrice: { ...ID, e: x, f: y } });
+  let piesa = d.piese[0] as Piesa;
+  if (fel === 'inel') piesa = { ...piesa, ...inel(r, id, (piesa.operatii[0] as Operatie).scula) };
+  const rotire = [0, 90, 180, 270][Math.floor(r() * 4)] as number;
+  return { piesa, instanta: { ...(d.foi[0]?.instante[0] as Instanta), rotire } };
+}
+
+export function document(forme: ReadonlyArray<{ readonly piesa: Piesa; readonly instanta: Instanta }>): Document {
+  const d = docDin(stoc);
+  const foaie = d.foi[0];
+  assert.ok(foaie);
+  return { ...d, piese: forme.map((f) => f.piesa), foi: [{ ...foaie, instante: forme.map((f) => f.instanta) }] };
+}

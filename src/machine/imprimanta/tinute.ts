@@ -7,9 +7,13 @@
  * 192.168.0.x și 192.168.1.x, cu aceleași plafoane ca a mașinilor (32 deodată, 9 s pe deschidere: Chrome întârzie fiecare
  * WebSocket nou după multe încercări fără răspuns). O gazdă e imprimanta dacă răspunde ca ea (bătaia inimii sau starea) la
  * citirea stării; i se trimite doar citirea și `ok`.
+ *
+ * Din 3.6o (ADR 0192 §A.5), fiecare imprimantă ținută își poartă driverul (`driver`, în aceeași listă `v: 1`; una fără el, din
+ * lista de dinainte, e `creality-k1`), iar proba și căutarea folosesc portul, citirea și răspunsurile driverului.
  */
 import { adresaRetea, CONCURENTA_RETEA, esteIpv4, permisiuneRetea, primulGasit, TIMP_DESCHIDERE_RETEA_MS, type AdresaRetea } from '../reteaLocala.ts';
-import { CERERE_STARE, citesteCadru, esteCreality, PORT_CREALITY, RASPUNS_INIMA } from './creality.ts';
+import type { DriverText } from './driver.ts';
+import { DRIVER_IMPLICIT, DRIVERE, esteIdDriver, type IdDriver } from './drivere.ts';
 import type { FabricaWsText, MotivImprimanta } from './sesiune.ts';
 
 export const CHEIE_IMPRIMANTE = 'cncvs2.imprimanta.retea';
@@ -20,6 +24,8 @@ export type ImprimantaTinuta = {
   readonly id: string;
   readonly adresa: string;
   readonly port: number;
+  /** Driverul imprimantei (ADR 0192 §A.5). */
+  readonly driver: IdDriver;
   readonly model: string | null;
   readonly nume: string | null;
   /** Ordinea: cea folosită ultima, prima (ms). */
@@ -52,16 +58,19 @@ export function citesteImprimante(text: string | null): readonly ImprimantaTinut
     if (typeof adresa !== 'string' || !portBun(port)) continue;
     // Doar adrese pe care browserul le-ar lăsa (un IP local sau un nume `.local`).
     if (!adresaRetea(adresa, port).ok) continue;
+    // Fără driver: lista de dinainte de 3.6o (K1). Un driver necunoscut (scris de o versiune mai nouă) nu se poate lega: rândul se sare.
+    const driver = r['driver'] === undefined ? DRIVER_IMPLICIT : r['driver'];
+    if (!esteIdDriver(driver)) continue;
     const id = idImprimanta(adresa, port);
     if (out.some((y) => y.id === id)) continue;
-    out.push({ id, adresa, port, model: textSau(r['model']), nume: textSau(r['nume']), folosita: typeof r['folosita'] === 'number' ? r['folosita'] : 0 });
+    out.push({ id, adresa, port, driver, model: textSau(r['model']), nume: textSau(r['nume']), folosita: typeof r['folosita'] === 'number' ? r['folosita'] : 0 });
   }
   return out.sort((a, b) => b.folosita - a.folosita).slice(0, MAX_IMPRIMANTE);
 }
 
 export const scrieImprimante = (l: readonly ImprimantaTinuta[]): string => JSON.stringify({
   v: 1,
-  imprimante: l.map(({ adresa, port, model, nume, folosita }) => ({ adresa, port, model, nume, folosita })),
+  imprimante: l.map(({ adresa, port, driver, model, nume, folosita }) => ({ adresa, port, driver, model, nume, folosita })),
 });
 
 /**
@@ -71,13 +80,14 @@ export const scrieImprimante = (l: readonly ImprimantaTinuta[]): string => JSON.
  */
 export function tineImprimanta(
   l: readonly ImprimantaTinuta[],
-  c: { readonly adresa: string; readonly port: number; readonly model: string | null; readonly nume: string | null },
+  c: { readonly adresa: string; readonly port: number; readonly model: string | null; readonly nume: string | null; readonly driver?: IdDriver },
   acum: number,
 ): readonly ImprimantaTinuta[] {
   const id = idImprimanta(c.adresa, c.port);
   const veche = l.find((x) => x.id === id);
   const nume = c.nume ?? veche?.nume ?? null;
   const noua: ImprimantaTinuta = {
+    driver: c.driver ?? veche?.driver ?? DRIVER_IMPLICIT,
     id, adresa: c.adresa.trim(), port: c.port, model: c.model ?? veche?.model ?? null, nume,
     folosita: Math.max(acum, ...l.map((x) => x.folosita + 1)),
   };
@@ -101,6 +111,8 @@ export type Gasita = { readonly adresa: AdresaRetea; readonly model: string | nu
 export type RezultatSondaImprimanta = { readonly ok: true; readonly gasita: Gasita } | { readonly ok: false; readonly motiv: MotivImprimanta | 'oprit' };
 
 export type OptiuniSondaImprimanta = {
+  /** Driverul căutat (implicit, `creality-k1`): portul, citirea stării și răspunsurile lui. */
+  readonly driver?: DriverText;
   readonly fabrica?: FabricaWsText;
   readonly timpDeschidereMs?: number;
   readonly timpRaspunsMs?: number;
@@ -111,10 +123,11 @@ export type OptiuniSondaImprimanta = {
 const fabricaBrowser: FabricaWsText = (url) => new WebSocket(url) as unknown as ReturnType<FabricaWsText>;
 
 /**
- * O încercare pe o adresă: deschiderea, citirea stării și primul răspuns al imprimantei (modelul și numele, dacă le spune).
- * Trimite doar citirea și `ok` la o bătaie a inimii; închide legătura la final.
+ * O încercare pe o adresă: deschiderea, citirea stării (prima citire a driverului) și primul răspuns al imprimantei (modelul și
+ * numele, dacă le spune). Trimite doar citirea și răspunsurile de menținere (`ok` la o bătaie a inimii); închide legătura la final.
  */
 export function sondeazaImprimanta(adresa: AdresaRetea, opt: OptiuniSondaImprimanta = {}): Promise<RezultatSondaImprimanta> {
+  const driver = opt.driver ?? DRIVERE[DRIVER_IMPLICIT];
   const ws = (opt.fabrica ?? fabricaBrowser)(adresa.url);
   return new Promise((rezolva) => {
     let gata = false;
@@ -145,18 +158,19 @@ export function sondeazaImprimanta(adresa: AdresaRetea, opt: OptiuniSondaImprima
     ws.onclose = () => { if (!gata) { if (deschis) incheie({ ok: false, motiv: 'tacut' }); else nedeschis(); } };
     ws.onopen = () => {
       deschis = true;
-      ws.send(CERERE_STARE);
+      const citire = driver.citiri[0];
+      if (citire !== undefined) ws.send(citire);
       ceasuri.push(setTimeout(() => { incheie({ ok: false, motiv: 'tacut' }); }, opt.timpRaspunsMs ?? 4000));
     };
     ws.onmessage = (e) => {
       if (typeof e.data !== 'string') return;
-      const c = citesteCadru(e.data);
-      if (c.inima) ws.send(RASPUNS_INIMA);
-      if (!esteCreality(c)) return;
+      const c = driver.citeste(e.data);
+      if (c.raspuns !== null) ws.send(c.raspuns);
+      if (!c.recunoscut) return;
       model = c.stare.model ?? model;
       nume = c.stare.nume ?? nume;
-      // Primul cadru ajunge; dacă e doar bătaia inimii, mai așteaptă puțin starea, cu modelul și numele.
-      if (c.inima && model === null && nume === null) {
+      // Primul cadru ajunge; dacă n-a adus modelul sau numele (doar bătaia inimii), le mai așteaptă puțin.
+      if (model === null && nume === null) {
         ceasuri.push(setTimeout(() => { incheie({ ok: true, gasita: { adresa, model, nume } }); }, 1500));
         return;
       }
@@ -166,7 +180,7 @@ export function sondeazaImprimanta(adresa: AdresaRetea, opt: OptiuniSondaImprima
 }
 
 /**
- * Căutarea în toată rețeaua (la clic): portul 9999 pe toate gazdele rețelelor date, `CONCURENTA_RETEA` deodată; prima
+ * Căutarea în toată rețeaua (la clic): portul driverului (9999, la K1) pe toate gazdele rețelelor date, `CONCURENTA_RETEA` deodată; prima
  * imprimantă găsită oprește restul. Cu permisiunea rețelei locale încă neîntrebată, prima gazdă merge singură, cât omul
  * răspunde la întrebarea browserului. `laProgres` primește câte gazde s-au terminat, din câte. Cu `nume`, doar imprimanta cu
  * numele acela (una legată, cu IP-ul schimbat: 3.6i, imprimanta owner-ului și-a schimbat adresa de două ori într-o zi).
@@ -178,7 +192,7 @@ export async function cautaInRetea(retele: readonly string[], opt: OptiuniSondaI
   const gazde = retele.flatMap((r) => Array.from({ length: 254 }, (_, k) => `${r}.${k + 1}`));
   const total = gazde.length;
   const incearca = async (i: number, semnal: AbortSignal): Promise<Gasita | null> => {
-    const a = adresaRetea(gazde[i] ?? '', PORT_CREALITY);
+    const a = adresaRetea(gazde[i] ?? '', (opt.driver ?? DRIVERE[DRIVER_IMPLICIT]).port);
     if (!a.ok) return null;
     const r = await sondeazaImprimanta(a.adresa, { ...opt, semnal });
     return r.ok && (opt.nume === undefined || r.gasita.nume === opt.nume) ? r.gasita : null;

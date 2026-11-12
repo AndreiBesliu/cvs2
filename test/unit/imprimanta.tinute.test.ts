@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { adresaRetea, type AdresaRetea } from '../../src/machine/reteaLocala.ts';
-import { CERERE_STARE, RASPUNS_INIMA } from '../../src/machine/imprimanta/creality.ts';
+import { CERERE_STARE, CREALITY_K1, RASPUNS_INIMA } from '../../src/machine/imprimanta/creality.ts';
+import type { DriverText } from '../../src/machine/imprimanta/driver.ts';
 import type { WebSocketText } from '../../src/machine/imprimanta/sesiune.ts';
 import {
   cautaInRetea, citesteImprimante, idImprimanta, MAX_IMPRIMANTE, reteleDeCautat, scrieImprimante, sondeazaImprimanta, tineImprimanta,
@@ -182,4 +183,57 @@ test('căutarea cu permisiunea neîntrebată: întâi o singură gazdă (cât om
   assert.equal(cuPrima, 1, 'cât prima gazdă e în curs, nicio alta');
   assert.equal(urls.length, 254);
   assert.ok(maxDeodata <= 32, `cel mult 32 deodată (${maxDeodata})`);
+});
+
+test('3.6o: fiecare imprimantă ținută își poartă driverul; una fără el (lista de dinainte) e `creality-k1`; un driver necunoscut se sare', () => {
+  const l = citesteImprimante(JSON.stringify({
+    v: 1,
+    imprimante: [
+      { adresa: '192.168.1.12', port: 9999, nume: 'K1C-8578', folosita: 4 },
+      { adresa: '192.168.1.13', port: 9999, driver: 'creality-k1', folosita: 3 },
+      { adresa: '192.168.1.14', port: 7125, driver: 'moonraker', folosita: 2 },
+      { adresa: '192.168.1.15', port: 9999, driver: 5, folosita: 1 },
+      { adresa: '192.168.1.16', port: 9999, driver: 'toString', folosita: 1 },
+    ],
+  }));
+  assert.deepEqual(l.map((x) => [x.adresa, x.driver]), [['192.168.1.12', 'creality-k1'], ['192.168.1.13', 'creality-k1']]);
+  // Scrisă cu driverul, citită înapoi la fel.
+  assert.deepEqual((JSON.parse(scrieImprimante(l)) as { imprimante: { driver: string }[] }).imprimante.map((x) => x.driver), ['creality-k1', 'creality-k1']);
+  assert.deepEqual(citesteImprimante(scrieImprimante(l)), l);
+  // Ținută din nou fără driver: îl păstrează pe al ei; una nouă primește driverul dat, altfel pe cel implicit.
+  const a = tineImprimanta(l, { adresa: '192.168.1.13', port: 9999, model: null, nume: null }, 9000);
+  assert.equal(a[0]?.driver, 'creality-k1');
+  assert.equal(tineImprimanta([], { adresa: '10.0.0.2', port: 9999, model: null, nume: null, driver: 'creality-k1' }, 1)[0]?.driver, 'creality-k1');
+  assert.equal(tineImprimanta([], { adresa: '10.0.0.3', port: 9999, model: null, nume: null }, 1)[0]?.driver, 'creality-k1');
+});
+
+test('3.6o: proba unei adrese și căutarea folosesc portul, citirea și răspunsurile driverului', async () => {
+  const fals: DriverText = {
+    ...CREALITY_K1, id: 'fals', port: 7125, citiri: ['{"citeste":1}', '{"lista":1}'],
+    citeste: (t) => (t === 'ping' ? { recunoscut: true, stare: {}, fisiere: null, raspuns: 'pong' }
+      : t === 'eu' ? { recunoscut: true, stare: { model: 'X1', nume: 'X1-01' }, fisiere: null, raspuns: null }
+        : { recunoscut: false, stare: {}, fisiere: null, raspuns: null }),
+  };
+  const ws: WsFals[] = [];
+  const fabrica = (url: string): WsFals => {
+    const w = new WsFals(url);
+    ws.push(w);
+    setTimeout(() => {
+      if (url !== 'ws://10.0.9.40:7125/') { w.onerror?.(); w.onclose?.({ code: 1006 }); return; }
+      w.readyState = 1;
+      w.onopen?.();
+      w.onmessage?.({ data: 'altceva' });
+      w.onmessage?.({ data: 'ping' });
+      setTimeout(() => { w.onmessage?.({ data: 'eu' }); }, 20);
+    }, 1);
+    return w;
+  };
+  const a = (() => { const r = adresaRetea('10.0.9.40', 7125); if (!r.ok) throw new Error('adresa'); return r.adresa; })();
+  assert.deepEqual(await sondeazaImprimanta(a, { driver: fals, fabrica, permisiune: permisa, timpRaspunsMs: 500 }),
+    { ok: true, gasita: { adresa: a, model: 'X1', nume: 'X1-01' } });
+  // Doar prima citire a driverului și răspunsul lui de menținere.
+  assert.deepEqual(ws[0]?.trimise, ['{"citeste":1}', 'pong']);
+  ws.length = 0;
+  assert.deepEqual(await cautaInRetea(['10.0.9'], { driver: fals, fabrica, permisiune: permisa }), { adresa: a, model: 'X1', nume: 'X1-01' });
+  assert.ok(ws.length > 0 && ws.every((w) => /^ws:\/\/10\.0\.9\.\d+:7125\/$/.test(w.url)), 'portul driverului');
 });

@@ -353,6 +353,13 @@
   gap: 4px;
 }
 
+/* O bifă din „Avansat” (felia 3.6k): căsuța înaintea etichetei, pe același rând. */
+.imprimanta-camp-bifa {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 .imprimanta-pasi {
   margin: 0;
   padding-left: 1.2em;
@@ -421,4 +428,793 @@
   border-left: 3px solid var(--a);
   border-radius: var(--r-1);
   background: var(--s-atentie);
+}
+
+/*
+ * Dialogul „Din desen…” (ADR 0191, felia 3.6j): pe toată lățimea ferestrei, setările în stânga (o coloană de ~20 rem),
+ * straturile în dreapta; o coloană pe telefon. Patul previzualizării e negru în ambele teme (placa K1C), iar rolurile
+ * liniilor au culorile lor, aceleași în ambele teme, ca în previzualizarea unui feliator.
+ */
+.imprimanta-felie {
+  max-width: none;
+  --imp-pat: #22262c;
+  --imp-pat-grila: #2f343b;
+  --imp-rol-exterior: #ff8a1f;
+  --imp-rol-interior: #ffe27a;
+  --imp-rol-plin: #b48cff;
+  --imp-rol-sus: #ff6b6b;
+  --imp-rol-rar: #4fd1c5;
+  --imp-rol-brim: #8fb8ff;
+  --imp-rol-calcare: #7cf29c;
+  --imp-rol-fusta: #c9ced6;
+  --imp-rol-subtire: #ff3b30;
+  --imp-deplasare: #9aa3ad;
+}
+
+.imprimanta-felie-corp {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+@media (max-width: 48rem) {
+  .imprimanta-felie-corp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.imprimanta-felie-setari,
+.imprimanta-felie-vedere {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.imprimanta-felie-ce {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.imprimanta-felie-ce legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-weight: 600;
+}
+
+.imprimanta-felie-ce label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Înălțimea (felia 3.6l): câmpurile numerice rămân pe două rânduri (eticheta, apoi câmpul), ca în restul dialogului. */
+.imprimanta-felie-ce label.imprimanta-camp {
+  display: grid;
+  align-items: stretch;
+  gap: 4px;
+}
+
+/* Lista pieselor, fiecare cu înălțimea ei, sub alegerea ei. */
+.imprimanta-felie-piese {
+  display: grid;
+  gap: var(--sp-1);
+  padding-left: 1.6em;
+  min-width: 0;
+}
+
+.imprimanta-felie-doua {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-avansat {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-avansat fieldset {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.imprimanta-felie-avansat legend {
+  padding: 0 var(--sp-1);
+  font-weight: 600;
+}
+
+/*
+ * Listele din „Avansat” (3.6k, 3.6n) se strâng la lățimea celulei lor: o valoare lungă („Toată (și sub pereții treptelor)”,
+ * „Doar suprafața cea mai de sus”) nu mai împinge lista peste coloana vecină sau în afara panoului; textul ales se taie.
+ */
+.imprimanta-felie-avansat label {
+  min-width: 0;
+}
+
+.imprimanta-felie-avansat select {
+  width: 100%;
+  min-width: 0;
+}
+
+.imprimanta-felie-camp span {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-camp input {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-felie-pat {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-2);
+  background: var(--imp-pat);
+}
+
+.imprimanta-felie-glisor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.imprimanta-felie-glisor input {
+  width: 100%;
+  accent-color: var(--a);
+}
+
+.imprimanta-felie-glisor output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.imprimanta-felie-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.imprimanta-felie-legenda i {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.imprimanta-felie-rezumat {
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--t) 5%, var(--s-panou));
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Pauza la un strat (felia 3.6p, ADR 0193 §A, după schița acceptată): butonul de sub glisor, semnele pauzelor pe glisor (în
+ * roșu, ca oprirea, nu în culoarea glisorului), lista lor cu nota fiecăreia; în trimitere și la pornire, pauzele fișierului.
+ */
+.imprimanta-felie-pista {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.imprimanta-felie-semne {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.imprimanta-felie-semne i {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  margin: -10px 0 0 -1.5px;
+  border-radius: 2px;
+  background: var(--rosu);
+}
+
+.imprimanta-felie-pauza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.imprimanta-felie-pauza button[aria-pressed='true'] {
+  border-color: var(--rosu);
+  background: var(--s-rosu);
+  font-weight: 600;
+}
+
+.imprimanta-felie-pauze {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.imprimanta-felie-pauze-titlu {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-pauze ul {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imprimanta-felie-pauze li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.imprimanta-felie-pauze li[data-pauza-strat='cade'] {
+  border-style: dashed;
+  color: var(--t-slab);
+}
+
+.imprimanta-felie-pauze li button[data-imprimanta='felie-pauza-du'] {
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-felie-pauze li input {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.imprimanta-felie-pauza-scoate {
+  margin-left: auto;
+  min-width: var(--tinta);
+}
+
+.imprimanta-trimite-pauze,
+.imprimanta-pornire-pauze {
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  background: var(--s-rosu);
+}
+
+/*
+ * Placa (felia 3.6q, ADR 0193 §B, după schița acceptată): cât imprimă, cardul lucrării ia două coloane, iar temperaturile și
+ * ventilatoarele stau una sub alta, în dreapta. Pânza e neagră în ambele teme, cu culorile căilor din „Din desen…”; bara
+ * straturilor e verticală lângă placă, iar pe telefon orizontală, sub ea.
+ */
+.imprimanta-coloane.imprimanta-cu-placa {
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  /* Temperaturile își păstrează înălțimea; restul cardului lucrării merge în al doilea rând, sub ventilatoare. */
+  grid-template-rows: auto 1fr;
+}
+
+.imprimanta-coloane.imprimanta-cu-placa > .imprimanta-stiva {
+  grid-row: span 2;
+}
+
+@media (max-width: 60rem) {
+  .imprimanta-coloane.imprimanta-cu-placa {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .imprimanta-coloane.imprimanta-cu-placa > .imprimanta-stiva {
+    grid-row: auto;
+  }
+}
+
+.imprimanta-placa {
+  --plc-pat: #22262c;
+  --plc-grila: #2f343b;
+  --plc-cale: #ff8a1f;
+  --plc-jos: #3b4149;
+  --plc-contur: #c9ced6;
+  --plc-acum: #4fd1c5;
+  --plc-anulata: #ff3b30;
+  --plc-duza: #ffffff;
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--l-margine);
+  min-width: 0;
+}
+
+.imprimanta-placa-cap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-placa-pauza {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid color-mix(in oklab, var(--rosu) 45%, var(--s-panou));
+  border-radius: var(--r-2);
+  background: var(--s-rosu);
+}
+
+.imprimanta-placa-corp {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: var(--sp-3);
+  align-items: stretch;
+}
+
+.imprimanta-placa-pat {
+  display: block;
+  width: 100%;
+  border-radius: var(--r-2);
+  background: var(--plc-pat);
+}
+
+.imprimanta-placa-bara {
+  position: relative;
+  margin: var(--sp-3) 0;
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+  box-shadow: inset 0 0 0 1px var(--l-margine);
+}
+
+.imprimanta-placa-bara i {
+  position: absolute;
+  font-style: normal;
+}
+
+.imprimanta-placa-facut {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--k) * 100%);
+  border-radius: 0 0 var(--r-2) var(--r-2);
+  background: color-mix(in oklab, var(--a) 35%, var(--s-peste));
+}
+
+.imprimanta-placa-acum,
+.imprimanta-placa-semn-pauza {
+  left: -6px;
+  right: -6px;
+  bottom: calc(var(--k) * 100%);
+  transform: translateY(50%);
+  display: grid;
+  place-items: center;
+  height: 18px;
+  border-radius: 99px;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-placa-acum {
+  z-index: 1;
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+}
+
+.imprimanta-placa-semn-pauza {
+  height: 6px;
+  background: var(--rosu);
+}
+
+@media (max-width: 40rem) {
+  .imprimanta-placa-corp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .imprimanta-placa-bara {
+    height: 18px;
+    margin: var(--sp-1) 0;
+  }
+
+  .imprimanta-placa-facut {
+    top: 0;
+    bottom: 0;
+    height: auto;
+    width: calc(var(--k) * 100%);
+    border-radius: var(--r-2) 0 0 var(--r-2);
+  }
+
+  .imprimanta-placa-acum,
+  .imprimanta-placa-semn-pauza {
+    left: calc(var(--k) * 100%);
+    right: auto;
+    bottom: auto;
+    top: 0;
+    width: 28px;
+    transform: translateX(-50%);
+  }
+
+  .imprimanta-placa-semn-pauza {
+    width: 6px;
+    height: 18px;
+  }
+}
+
+.imprimanta-placa-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.imprimanta-placa-legenda i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--plc-pat);
+}
+
+.imprimanta-placa-legenda i[data-fel='cale'] { background: var(--plc-cale); }
+.imprimanta-placa-legenda i[data-fel='acum'] { box-shadow: inset 0 0 0 2px var(--plc-acum); }
+.imprimanta-placa-legenda i[data-fel='anulata'] { box-shadow: inset 0 0 0 2px var(--plc-anulata); }
+.imprimanta-placa-legenda i[data-fel='duza'] { border-radius: 50%; box-shadow: inset 0 0 0 3px var(--plc-duza); }
+.imprimanta-placa-legenda i[data-fel='pauza'] { height: 4px; background: var(--rosu); }
+
+.imprimanta-placa-titlu {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 40rem) {
+  .imprimanta-placa-piese {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.imprimanta-placa-piese li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  min-width: 0;
+}
+
+.imprimanta-placa-piesa {
+  overflow-wrap: anywhere;
+}
+
+.imprimanta-placa-piese li[data-acum='da'] {
+  border-color: color-mix(in oklab, var(--a) 60%, var(--l-margine));
+  background: var(--s-ales);
+}
+
+.imprimanta-placa-piese li[data-anulata='da'] .imprimanta-placa-piesa {
+  text-decoration: line-through;
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese small {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.imprimanta-placa-piese li[data-anulata='da'] small {
+  color: var(--rosu);
+}
+
+/* Felia 3.6r: anularea, din listă și din placă; cererea în curs ia tot rândul piesei. */
+.imprimanta-placa-pat[data-anulare='da'] {
+  cursor: pointer;
+}
+
+.imprimanta-placa-cerere {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.imprimanta-din-desen {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}
+
+/*
+ * Comenzile din timpul imprimării (felia 3.6o, ADR 0192), după schița acceptată: lucrarea și codul de la imprimantă, una sub
+ * alta, în prima coloană; reglajele (glisorul, câmpul, „100 %”), țintele scrise direct, lista materialelor de sub
+ * „Preîncălzește”, lumina, homing-ul, iar în bandă încălzirea pornită fără lucrare.
+ */
+.imprimanta-stiva {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  min-width: 0;
+}
+
+/* Pe două coloane, cardul ventilatoarelor ar sta singur pe rândul lui: ia toată lățimea. */
+@media (max-width: 60rem) {
+  .imprimanta-ventilatoare {
+    grid-column: 1 / -1;
+  }
+}
+
+.imprimanta-reglaje {
+  display: grid;
+  gap: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--l-margine);
+}
+
+.imprimanta-reglaj {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.imprimanta-reglaj-sus {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px var(--sp-2);
+}
+
+.imprimanta-reglaj-val {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-reglaj-jos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.imprimanta-reglaj-trei {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.imprimanta-reglaj input[type='range'] {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  accent-color: var(--a);
+}
+
+.imprimanta-camp-mic {
+  width: 4.5rem;
+  min-width: 0;
+  min-height: 32px;
+  padding: 2px 6px;
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  background: var(--s-camp);
+  color: var(--t);
+  font: inherit;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-camp-mic[aria-invalid='true'] {
+  border-color: var(--rosu);
+}
+
+.imprimanta-asteapta {
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--a);
+}
+
+.imprimanta-neconfirmat {
+  font-size: var(--fs-2);
+  color: var(--rosu);
+}
+
+.imprimanta-temp-tinta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-temp-tinta .imprimanta-camp-mic {
+  width: 4rem;
+}
+
+.imprimanta-temp-nota:empty {
+  display: none;
+}
+
+.imprimanta-meniu {
+  position: relative;
+}
+
+.imprimanta-meniu-lista {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  min-width: 15rem;
+  max-width: min(22rem, calc(100vw - 2 * var(--sp-4)));
+  max-height: 20rem;
+  overflow: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  background: var(--s-panou);
+  box-shadow: var(--umbra-2);
+}
+
+.imprimanta-meniu-lista button {
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.imprimanta-racire {
+  display: grid;
+  gap: 4px;
+}
+
+.imprimanta-racire-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.imprimanta-racire-rand input[type='checkbox'] {
+  margin: 0;
+  accent-color: var(--a);
+}
+
+.imprimanta-lumina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.imprimanta-lumina-stare {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* Comutatorul luminii: un buton cu `role="switch"`, starea în `aria-checked`. */
+.imprimanta-comutator {
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+}
+
+.imprimanta-comutator > i {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 99px;
+  background: var(--s-peste);
+  box-shadow: inset 0 0 0 1px var(--l-camp);
+}
+
+.imprimanta-comutator > i::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--l-camp);
+}
+
+.imprimanta-comutator[aria-checked='true'] > i {
+  background: var(--a-plin);
+  box-shadow: none;
+}
+
+.imprimanta-comutator[aria-checked='true'] > i::after {
+  left: 19px;
+  background: var(--t-pe-a);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .imprimanta-comutator > i::after {
+    transition: left 120ms ease;
+  }
+}
+
+.imprimanta-homing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--l-margine);
+}
+
+/* Încălzirea pornită fără lucrare, în bandă, cu Răcește lângă (ADR 0192 §D.15). */
+.imprimanta-incalzeste {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-2);
+  padding: 2px 4px 2px 10px;
+  border-radius: 99px;
+  font-size: var(--fs-2);
+  font-weight: 650;
+  color: var(--a);
+  background: var(--s-atentie);
+}
+
+.imprimanta-incalzeste button {
+  border-color: var(--a);
+  color: var(--a);
+  background: var(--s-panou);
 }

@@ -610,7 +610,9 @@ the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top 
   (the node becomes smooth): the average of the two, the length of the one there is, or, with none, a third of each segment. On
   a node with split handles, it joins them again;
 - **Curve on one side**: keeps the forward handle (or puts one in line with the incoming line, so the line flows into the
-  curve) and removes the other; another click moves the curve to the other side.
+  curve) and removes the other; another click moves the curve to the other side;
+- **Split**: cuts the shape right at the chosen node, like the [knife's scissors](#cutit): a closed path opens there, an open
+  one becomes two shapes (the first stays chosen). The end of an open path is not split.
 
 **Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
 `Alt`, the handles split (the node stays a curve on both sides, but with a corner); on split handles, `Alt` joins them again:
@@ -822,9 +824,12 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 **Cut with**:
 - **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
   shapes);
+- **The line through a point, at an angle**: the point (X, Y, in sheet millimetres) and the angle (0° is horizontal, 90°
+  vertical), exact too;
 - **Guide**: one of the sheet guides, dragged from the ruler;
 - **The last chosen shape (Shift + click)**: the knife is one of your shapes. Choose the shapes to cut, then, last, the
-  knife, with Shift + click; the knife stays unchanged.
+  knife, with Shift + click; the knife stays unchanged, and with **and delete it after the cut** it goes in the same step as
+  the cut.
 
 While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
 what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
@@ -832,7 +837,9 @@ cross stays as it is. The cut is exact: an arc is cut into two arcs of the same 
 nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
 touches it is not cut.
 
-A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. An open
+A closed knife (a circle, a rectangle) leaves two shapes from each shape: what is inside it and what is outside it. A closed
+knife lying wholly inside a shape, without touching its edge (a text on a plate), cuts it too, with **Close the
+pieces**: the letters come out of the plate, and the plate keeps their holes. An open
 knife (a polyline, a curve) makes each piece a shape; the contours it does not cross stay together, and an uncut hole goes
 with the piece it lies in. The knife cuts where it crosses the shape and where its end enters the shape through a side; a
 knife that only touches the shape does not cut it.
@@ -841,7 +848,53 @@ knife that only touches the shape does not cut it.
 cut: with a straight line, for the line and the guide, or along the knife, with its nodes. A shape with holes is read as a
 region: a ring cut in two gives two closed “U” shapes. Unticked, the pieces stay open: a circle cut through its centre gives
 two half circles, one arc each. Ticked, a knife that stops inside a shape or crosses itself inside it cannot be used (the
-panel says why): extend it or cut without the tick.
+panel says why): extend it (or choose “until they leave the shape”, below) or cut without the tick.
+
+**Extend the ends** (only for an open shape knife; the lines are whole already): **no** (the default); **until they leave the
+shape**: an end stopped inside a shape to cut goes on along its tangent (the line, the arc or the curve at the end) until it
+leaves the shape, and the shapes it enters that way, so that the cut goes right through; **whole line**: the ends go on along
+the tangent past all the shapes to cut (for a straight line, the line without ends).
+
+**Keep**: **both parts** (the default), the **left** or the **right** of the cut, relative to its direction: for the
+vertical line, left is the smaller x; for the horizontal one, the parts are called **above** and **below**; for the line at
+an angle, the left of the direction the angle gives; for an open shape knife, of the direction it was drawn in; for a closed
+one, **inside** or **outside**. The other part of the cut shapes goes in the same step; a shape the cut does not touch
+stays, even on the other side. The app remembers the choices, the same in the [Knife](#cutit) bar.
+
+**Between pieces** (it needs **Close the pieces**): **nothing** (the default), a **gap** or an **overlap**, of the given
+**width** (in mm, 3 by default, from 0.01 to 1 000), centred on the cut. Each part is cut with the cut moved by half the
+width: for a gap, towards it, so an empty strip stays between the pieces, like the cut of a saw blade (the 100 × 100 square
+cut at X = 50 with a gap of 6 gives two rectangles of 47 × 100); for an overlap, towards the other one, so the pieces
+overlap over the whole width (53 × 100 each). For an open shape knife, the moved cut is its path moved in parallel (the
+corners come out rounded on the outer side); for a closed one, the inside shrinks and the outside grows. While the panel is
+open, the strip shows on the canvas, with two lines dotted more sparsely. Only the shapes the cut goes through are cut: one
+next to it stays, even if the strip would touch it. A gap that would eat a whole piece on the kept side (a strip narrower
+than it, an island inside the strip) is not made, and the panel says why; a hole inside the strip goes with it. Neither can
+a knife that cannot be moved (it breaks in a curve tighter than half the width) be used.
+
+**Joint** (it needs **Close the pieces**; only on straight cuts: the lines of the panel, the guide and the Line kind of the
+[Knife](#cutit)): the new edge of the pieces follows a pattern, so that they hold each other: **straight** (the default, no
+pattern), **zigzag**, **wave**, **square teeth**, **dovetail** or **puzzle**, with the **pitch** (the length of a tooth, 40
+mm by default), the **height** (from the bottom tip to the top one, 20 mm by default) and the **radius** of the corners (3
+mm by default; 0 leaves the corners sharp). On each stretch of the cut that goes through a shape, the whole teeth stay in
+the middle, and at each end a straight margin of at least half a pitch stays, so no tooth is cut by the edge of the shape:
+the 100 × 100 square cut at X = 50 in a zigzag with a pitch of 20 and a height of 10 has four teeth, with 10 mm straight at
+each end, and each piece is 55 × 100. Each corner belongs to both pieces (hollow in one, bulging in the other), so it is
+rounded with the given radius, for a cutter of that radius to cut both; the wave and the puzzle are made of arcs, and their
+arcs must have at least the given radius. The dovetail has its sides slanted 1 : 6, and the puzzle, its head wider than its
+neck (as long as the height is over four radii): both hold the pieces together along the cut as well. The patterns are
+symmetric about their middle, so the two pieces of a symmetric shape have the same area. With **Between pieces**, the teeth
+are cut with the given gap between them (the clearance, so that the pieces fit into each other) or with the given overlap.
+While the panel is open, the teeth show on the canvas, on the chosen shapes, instead of the strip. Not made, and the panel
+says why: a cut where no tooth fits, a pattern that does not work with the given sizes (a rounding that does not fit in a
+tooth, a radius of the wave or of the puzzle below the given one) and teeth that would touch the edge of a shape (a slanted
+side or a hole too close to the cut).
+
+**Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
+**inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
+**Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
+that is cut stays closed along the boundary: a rectangle clipped to a circle becomes their common part; unticked, only its
+pieces inside remain, open. **Clip** is a single undo step too.
 
 **Cut at intersections** (the button at the bottom of the panel, or from the right-click menu) cuts the chosen shapes by
 each other, at all their common points: where they cross, where they touch and at the ends of a shared side. Each piece
@@ -853,6 +906,82 @@ open piece of a closed shape is cut on the same side of the bit (outside or insi
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
 placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
 (Ctrl+Z).
+
+## The Knife tool
+%% capitol: cutit
+%% acopera: unealta.cutit
+
+The **Knife** tool (`K`, after Nodes) cuts the shapes it crosses, right on the canvas. It cuts the chosen shapes; with nothing
+chosen, all the shapes of the sheet. The drawn knife does not stay in the drawing, and the cut is the one from [Cutting
+vectors](#taiere): exact, with the pieces in their place and with their cutting role. The choice stays as it was: with nothing
+chosen, nothing stays chosen (the next cuts still have all the shapes of the sheet), and a chosen shape that is cut is replaced
+by its pieces. Pick the knife mode in the bar:
+- **Line**: a drag across the shapes, from end to end; **Shift** gives 15° steps, and the ends snap as in drawing (Alt
+  inverts snapping).
+- **Pen**: the knife nodes, as in the [Pen](#pen) tool (click = corner, drag = curve); **Enter** or a double-click cuts,
+  **Backspace** removes the last node, **Esc** cancels.
+- **Freehand**: drag by hand; the stroke is smoothed when you release the mouse, finer when zoomed in, with sharp corners
+  kept.
+- **Shape**: click a shape that already exists (a text, a circle, a piece with several contours) and it becomes the knife; it
+  stays unchanged. A text cuts the letters out of the plate under it, and the plate keeps their holes (the middle of an “O”
+  stays in the plate). **Shift + click** adds shapes to the knife (their contours are read together); a click without Shift,
+  or **Enter**, cuts with all of them; **Esc** drops them.
+- **Scissors**: a click on the outline of a shape splits it there (near a node, right at it): a closed path opens at that
+  point, an open one becomes two shapes. An opened circle stays a circle, as a path: two half circles. The end of an open path
+  is not split.
+- **Trim**: the piece of the outline under the mouse, between the two nearest places where other outlines cross it (of the
+  chosen shapes or, with nothing chosen, of all the shapes of the sheet; and the other outlines of the same piece), shows in
+  red, and the click removes it. With something chosen, the chosen shapes are the edges, and the shape under the mouse can be
+  any, even one not chosen. What is left stays in the same shape, so that a DXF with overshooting lines stays, once cleaned, a
+  single shape: the eight ends of a “#” leave the square in the middle. An outline without two common points (an open path:
+  without any) goes entirely. Where an outline crosses itself is not a common point: that is the checking's job. The lines
+  left are not joined.
+
+While you drag, the stroke is dotted and the places where it cuts show in red. The cut happens when you release the mouse
+(for Pen, on Enter), as a single undo step (Ctrl+Z). What was cut (or why not) is said in the corner of the canvas.
+
+The **Cutting options** button (the sliders after the knife kinds; Scissors and Trim have none, they have no options) opens
+**Close the pieces**, the same checkbox as in the Cut panel, then **Extend the ends**, **Keep**, **Between pieces** and
+**Joint**, the same as in the [Cut panel](#taiere): an end stopped inside a shape goes on along the tangent until it leaves
+the shape, the part on the right or on the left of the direction you drag in goes in the same step, the gap (or the overlap)
+moves the knife by half the width for each part, and the joint, only for the Line kind (a straight cut), puts its pattern on
+the cut. For the Shape kind, the parts are called **inside** and **outside**, and **Delete the knife** removes the knife
+shapes after the cut. When an option is not the default (the pieces left open too), the button has a red dot, and the hint
+in the corner of the canvas says it. While you drag (Line, Freehand), the extended ends show dotted, and the part that goes
+is faded, with a red tint, over the shapes the knife splits right through; with a gap or an overlap, their strip shows on
+both sides of the trace, dotted more sparsely; with a joint, the teeth show instead of the strip, on the shapes the trace
+goes right through.
+
+## Converting vectors
+%% capitol: conversie
+%% acopera: editare.conversie, document.converteste
+
+**Convert** (the button with the polygon turning into a circle, next to Cut, in the bar's extension) changes the form of the
+chosen shapes without changing their place, their names or their operations. The panel has four blocks, each with its
+button:
+- **Arcs instead of curves**: each curve becomes arcs and lines, straying from it no more than the **tolerance** (0.01 mm by
+  default); lines and arcs stay. With **and the short lines lying on a circle** (ticked by default), a run of short lines
+  whose vertices lie on a circle (a polyline from a DXF) becomes an arc, of at most half a circle; corners (where the path
+  turns by more than 30°) and long lines stay.
+- **Smooth**: runs of short lines (a polyline from a DXF, the steps of a trace) become smooth curves, straying from them no
+  more than the **tolerance** (0.01 mm by default). Lines longer than **Keep lines longer than** (5 mm by default), arcs and
+  curves stay, and the new curve joins them without a kink; sharp corners (where the path turns by more than 60°) stay
+  corners. Steps smaller than four times the tolerance are not corners: for a stepped trace to become a curve, choose a
+  tolerance as large as the steps.
+- **Into a circle**: **only if it is a circle** (tolerance 0.1 mm by default), the shape becomes the circle through its
+  nodes, if all of it lies within the tolerance of it: a Ø100 circle drawn with 64 sides stays Ø100 (its sides stray from the
+  circle by 0.06 mm). **With the diameter** given (8 mm by default), any closed shape becomes that circle, at the centre of
+  its box: the drilling marks from a DXF become circles you can drill.
+- **Into a rectangle**: **only if it is a rectangle** (0.1 mm), the shape becomes the smallest rectangle around it, however
+  rotated, with rounded corners if it has them. **With the size** given (40 × 20 mm by default), any closed shape becomes that
+  rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
+  circle.
+
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
+along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
+lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
+were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
+converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare
@@ -1414,11 +1543,43 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the address is the one on its screen.
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
-  **Temperatures** of the nozzle, the bed and the enclosure (read only: the app heats nothing) and the code the printer
-  reported (its screen shows the text).
+  **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
+- **The plate**, while printing or paused, in the job card: the bed seen from above, zoomed on the parts, with the
+  printer’s front at the bottom. It shows the parts (their outline; the **current part** with a teal outline; a
+  **cancelled** one, crossed out), the **nozzle** (a white dot, only while printing) and, for files sent from cvs2, the
+  **current layer** (orange) over the one below. Next to it, the layer bar (the finished layers, the current one, the pauses
+  in the file) and “Layer 6 / 10 · 1.2 mm”: the K1C mixes two layer counters, so the window takes the layer from the
+  filament used (for files sent from cvs2) or the one that matches the progress. Below, the **Parts**, with their cvs2
+  names. While the printer waits in a pause of the file, the plate shows that pause and its note. Files sent from cvs2
+  are kept in the browser (the last 5) so their layers can be drawn; for other files, the plate shows only the parts, the
+  nozzle and the layer number.
+- **Cancelling one part** (only what the connected printer has; today the K1 family), while printing or paused:
+  **Cancel…** next to a part in the list (or a click on it, on the plate) opens the confirmation: **Cancel the part** or
+  **Keep it**. The other parts carry on, and a cancelled part is not printed again. The part’s row shows “→ being cancelled ·
+  waiting for the printer” until the printer lists it as cancelled; without that within 6 s, “the printer did not confirm”.
+  K1 does not cancel the part it is working on at that moment: the request stays in view, with **Withdraw**, and is resent
+  until the printer takes it, at most 2 minutes. The last part left has no button: for it, use Stop. Only a name from the
+  printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.
+- **Controls while printing** (only what the connected printer has; today the K1 family). A requested value shows as
+  “→ 120 % · waiting for the printer” until the printer reports it; if it does not within 6 s, the window goes back to the
+  printer’s value, with “the printer did not confirm”. A slider sends when you let go, a field on `Enter` or when you
+  leave it; a number outside the range is not sent.
+  - **Temperatures:** **Nozzle target** and **Bed target** are written directly, in whole degrees, between 0 and the
+    maximum the printer reports (320 and 115 °C on the K1C). With the printer free, **Preheat** opens the slicer’s material
+    list (the same as in “From drawing…”), with the first-layer temperatures, and **Cool down** sets the targets to 0. While
+    a target is on without a job, the strip says **Heating**, with **Cool down** next to it. **Cool down by itself after**
+    30 **min without a print** (ticked by default, the minutes can be changed): after a preheat from the app, if no print
+    starts, the window sets the targets to 0 and says when; it works only while the window is open and connected. While
+    printing, the file may change the targets on the next layers.
+  - **Speed** and **Flow**, while printing or paused: between 1 and 200 %, with the slider, the field and **100 %**, which
+    brings them back.
+  - **Fans and light:** **Light**, on or off; the part, enclosure and side fans, between 0 and 100 % (on the K1 an `M106`
+    written only by the app goes out: the window has no G-code console). **Home (X, Y, Z)**, only while the printer is
+    free, after the **The bed is clear** tick: the head moves on X and Y first, then the nozzle comes down to the bed for
+    Z; **Cancel** closes the confirmation.
 - **The files on the printer** (sent from Creality Print or OrcaSlicer): **Start** opens the confirmation, with the file, the
   material and the estimated time. **Start printing** lights up only after the **The bed is clear** check (no part left under
   the nozzle); **Cancel** closes the confirmation. The printer heats up and runs its own checks; right after the start it
@@ -1435,6 +1596,87 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   does not arrive, the window says why (the printer does not answer on port 80, the file is not in its list, or its size
   differs), with
   **Try again**.
+- **From drawing…** (under the list; with no printer connected, under the opening text) slices flat parts from the drawing
+  here, without Creality Print: a plate, a spacer, a template, a calibration cube, that is a closed outline raised to a
+  thickness. Holes come from the drawing (a shape inside another is a hole, one inside a hole is an island), overlapping shapes
+  are joined, text prints too, and open paths are left aside, with a message. In the **Flat part for the printer** window:
+  - **What to print:** **The parts of the sheet**, **The selected parts** or **One part**, picked from the list. The parts keep
+    their layout from the sheet and are centred on the bed; what does not fit (220 × 220 mm on a K1C, with a 5 mm margin on
+    each side) is said.
+  - **After CNC: pockets, drillings and partial profiles as steps** (the tick box under “What to print”): each part prints as
+    the cutter leaves it, from its operations, not from the drawn shapes. The edge and the holes come from the through
+    profiles (outside or inside, at least as deep as the sheet); a pocket, a drilling or a partial profile (the cutter’s width,
+    on the side of the cut) lowers its area to the height minus the depth, and the depth stays in mm, measured from the top,
+    whatever the chosen height; what goes all the way through (or deeper than the height) is a hole. Each step gets the solid
+    top layers, like the face of the part. Tabs, ramps and leads do not count; V-carves and engravings with a V bit do not
+    print (a V engraving has no straight steps), and the window says how many there are. A part without a through outside
+    profile has no edge: the window says so.
+  - **Height:** **One for all** (the **Height for all** field, by default the sheet thickness) or **Each part’s own, kept in
+    the project**: the list of the chosen parts, each with its height, written into the part (in the project, with the usual
+    undo), so next time it comes by itself; a part without one takes the height for all (with the project open read-only, the
+    list cannot change).
+  - **Material** (PLA, PLA High Speed, PLA Matte, PLA Silk, PLA-CF, PETG, ABS,
+    ASA, PC, PA-CF, TPU, with the values of the Creality K1 profiles in OrcaSlicer), **Quality** (0.08, 0.12, 0.16, 0.20 or
+    0.24 mm layers), the **Nozzle** and **Bed** temperatures, **Walls**, **Infill** (the sparse infill percentage)
+    and **Brim** (Automatic: for narrow or tall parts; Yes; No).
+  - **Advanced** shows the other settings, in groups. Layers: Layer height, First layer height, Top layers, Top thickness at
+    least, Bottom layers, Ensure vertical shell thickness (All (also under the walls of steps), the default: on a part with
+    steps, solid infill also goes under the walls above a step, so they do not stand on sparse infill; Moderate; Critical
+    only; None: solid only under top faces, with narrow solid regions widened or, with None and Critical only, the very
+    narrow ones removed). First layer temperatures: Nozzle, first layer; Bed, first layer. Line widths: Outer wall width, Inner
+    wall width, Solid infill width, Sparse infill width, Top surface width, First layer width. Speeds: Outer wall speed, Inner
+    wall speed, Solid infill speed, Sparse infill speed, Top surface speed, First layer speed, First layer infill speed, Travel
+    speed. Accelerations: Wall acceleration, Top surface acceleration, Infill acceleration, First layer acceleration, Travel
+    acceleration. Retraction: Retraction length, Retraction speed, Z hop. Cooling: Part fan, minimum; Part fan, maximum; Fan
+    off for the first layers; Auxiliary fan; Minimum layer time (a shorter layer prints slower, so it can cool); Slowest
+    cooling speed. Material flow: Flow ratio, Maximum volumetric speed (speeds are capped so the material fits through the
+    nozzle). Edges: Elephant foot compensation (the first layer, shrunk a little), Sparse infill overlap on walls, Solid infill
+    overlap on walls, Brim width, Brim gap. Infill patterns: Sparse infill pattern (Grid, the default; Rectilinear, turned
+    by 90° from one layer to the next; Aligned rectilinear; Line, every other line slightly slanted; Triangles; Tri-hexagon;
+    Cubic, Cross hatch and Gyroid, which change with height, as a 3D infill; Honeycomb; Concentric; Hilbert curve;
+    Archimedean chords; Octagram spiral; at 0.12 mm the profile starts with Cross hatch), Sparse infill direction, Internal
+    solid infill pattern, Top surface pattern and Bottom surface pattern (Monotonic line, the top default; Monotonic, the
+    bottom and internal default: the lines always in the same order, for an even face; Rectilinear; Aligned rectilinear;
+    Concentric; Hilbert curve; Archimedean chords; Octagram spiral), Solid infill direction. Wipe: Wipe while retracting (on
+    in the K1C profile: before a travel, the nozzle moves a little along the line it just made, so it leaves no blob), Wipe
+    distance, Retract amount before wipe (the rest of the retraction happens on the way), Role-based wipe speed (at the
+    speed of the last line), Wipe speed, of travel speed. Seam: Seam position (Aligned, the default: in the most hidden
+    corner, the same on every layer; Aligned back; Back; Nearest, to the nozzle; Random), Staggered inner seams (each inner
+    wall starts a little further along, so the seams do not stack), Seam gap. Ironing: Ironing type (No ironing, the
+    default; All top surfaces; Topmost surface only; All solid layers): one extra pass with a small flow over the face, to
+    smooth it; Ironing pattern (Rectilinear, Concentric), Ironing flow, Ironing line spacing, Ironing speed, Ironing inset
+    (0: half a nozzle), Ironing angle offset (from the lines of the face). Skirt: Skirt loops (0: no skirt, the default),
+    Skirt distance (from the parts or the brim), Skirt height, Skirt speed, Skirt type (Combined; Per object), Skirt minimum
+    extrusion length (loops are added until they reach it), Draft shield (the skirt as tall as the parts, against drafts,
+    for ABS or ASA), Skirt start point (the angle, from the centre of the parts), Single loop after first layer. The skirt
+    is printed first, on the first layer: it primes the nozzle and shows whether the bed is level. **Profile values** puts
+    back those of the chosen material and quality. The chosen settings are kept in the browser, for next time.
+  - On the right, the chosen layer, seen from above, with the lines coloured by role (outer wall, inner walls, solid, top
+    surface, sparse infill, brim, ironing, skirt) over the part outline, thin and red: where only the red shows, the part is narrower than one
+    line and nothing prints there (the window also says the area). The **Layer** slider picks the layer; below it, its role (on a part with steps, a layer can have several: **with a
+    step:** the top surface of the step, the solid under a face, the sparse infill),
+    then the layers, the estimated time (without heating) and the filament, in metres and grams. The **travel moves** check
+    also shows, dotted, the nozzle’s paths between lines.
+  - **Pause before this layer** (under the slider) adds a pause at the layer shown: the printer stops after the layer
+    below, for example to change the filament for a second colour from a height upwards (sunken text or a drawing), or to
+    place something into an open pocket; then you press **Resume** in the Printer window or on its screen. Another click
+    on the button removes it. Pauses show as red marks on the slider and in the **Pauses** list, each with its layer and
+    height (a click on it shows the layer), a **Pause note** (for example “black filament”) and **Remove the pause**. A
+    pause keeps the height printed so far: with another layer height it stays at the same place in the part, and above
+    the parts it is left out of the file. Pauses are kept in the browser for the same parts (they come back when you
+    reopen the window on them), and the summary counts them. In the file, a pause is the printer’s `PAUSE` command, before
+    the first part of the layer; the estimated time does not include how long the printer waits. There is no pause before
+    the first layer.
+  - **Nozzle** and **Bed** in “Simple” also change the first layer temperatures (with the same difference from them as the
+    material profile has: PC starts 10 °C lower). The brim is one for all the parts: it goes around neighbouring parts.
+    Everything extruded, the brim included, must fit the bed with its 5 mm margin, and the last layer must stay under
+    250 mm; otherwise no file is made, and the window says how far it goes out. If the drawing changes in Design while the
+    window is open, the parts are read again.
+  - **Send to the printer** (only with the printer connected) passes the file through the same check and sending as **Send a
+    file…**, with the same **The bed is clear** check at start. **Save .gcode** downloads it, for a USB stick or to send later;
+    **Cancel** (or `Escape`) closes the window. The file uses only the commands OrcaSlicer writes for the K1C: the start
+    (`START_PRINT`) and the end (`END_PRINT`) stay the printer’s, with its levelling, purge line and cooling; each part is an
+    object the printer can skip if it comes loose.
 - **A lost connection does not stop the print:** the printer keeps going from its memory. The window says “Connection lost”
   and tries to reconnect by itself; while it is gone, the buttons are off. The emergency stop stays the printer screen. A
   printer silent for more than 20 s counts as lost (a connection can die without closing), and one that no longer answers at
@@ -1622,7 +1864,7 @@ it, and the app’s interface stays the same.
 | `Home` | Show the whole sheet |
 | `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
+| `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Alt+←`, `Alt+→` (in the Text tool's text) | the space between selected letters, 0.1 mm tighter / looser |

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
 import { numeScurt } from '../../src/app/editareCalcul.ts';
 import { FELURI_ALINIERE } from '../../src/geom/aliniere.ts';
+import { CAMPURI_AVANSATE } from '../../src/cam/feliere/campuri.ts';
 import { enCarcasa } from '../../src/i18n/carcasa.en.ts';
 import { roCarcasa } from '../../src/i18n/carcasa.ro.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
@@ -64,6 +65,8 @@ const USI: readonly Usa[] = [
   { id: 'editare.verificare', eticheta: eticheta('editare.verificare') },
   // Tăierea vectorilor (ADR 0180): butonul Taie din extensia barei.
   { id: 'editare.taiere', eticheta: eticheta('editare.taiere') },
+  // Conversia vectorilor (ADR 0180, felia 10.3↑d): butonul Convertește, lângă Taie.
+  { id: 'editare.conversie', eticheta: eticheta('editare.conversie') },
   { id: 'editare.text.fonturi', eticheta: eticheta('editare.text.fonturi') },
   { id: 'editare.text.aldin', eticheta: eticheta('editare.text.aldin') },
   { id: 'editare.text.cursiv', eticheta: eticheta('editare.text.cursiv') },
@@ -95,7 +98,8 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   // Butonul benzii violet (ADR 0210 §2): «Desprinde-o doar pe aceasta».
   desprinde: 'piesa.desprinde',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
+  conversie: 'editare.conversie',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
 };
 
 // Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același
@@ -134,12 +138,13 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // textul încă patru: aldinul și cursivul (ADR 0123), verticalul (ADR 0141) și caseta (ADR 0142); verificarea
   // vectorilor (ADR 0124), a 76-a, iar reparațiile ei (acțiunea `document.repara`, ADR 0124 §10), a 77-a. Din linia
   // extensiilor: butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), și „Trimite la extensie” (ADR 0166).
-  // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și
-  // spațierea literelor alese. Tăierea vectorilor (ADR 0180), încă două: butonul Taie și acțiunea `document.taie`.
-  // Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
+  // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
+  // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă patru: butonul Taie și acțiunea `document.taie`, butonul
+  // Convertește și acțiunea `document.converteste`. Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
+  // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
-  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b).
-  assert.equal(USI.length, 103);
+  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor.
+  assert.equal(USI.length, 106);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -236,12 +241,43 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   trimite: 'imprimanta.trimite', 'trimite-alt': 'imprimanta.trimite.alt', 'trimite-confirma': 'imprimanta.trimite.confirma',
   'trimite-oricum': 'imprimanta.trimite.oricum', 'trimite-renunta': 'imprimanta.trimite.renunta', 'trimite-reia': 'imprimanta.trimite.reia',
   'trimite-porneste': 'imprimanta.trimite.porneste', 'trimite-inchide': 'imprimanta.trimite.inchide',
+  // Piesele plate din desen (felia 3.6j, ADR 0191): butonul și dialogul lui (`src/app/DialogDinDesen.tsx`).
+  'din-desen': 'imprimanta.felie.din-desen', 'felie-ce-foaie': 'imprimanta.felie.ce.foaie', 'felie-ce-selectie': 'imprimanta.felie.ce.selectie',
+  'felie-ce-piesa': 'imprimanta.felie.ce.piesa', 'felie-piesa': 'imprimanta.felie.ce.piesa', 'felie-inaltime': 'imprimanta.felie.inaltime.camp',
+  'felie-material': 'imprimanta.felie.material', 'felie-calitate': 'imprimanta.felie.calitate', 'felie-duza': 'imprimanta.felie.duza',
+  'felie-pat': 'imprimanta.felie.pat-temp', 'felie-pereti': 'imprimanta.felie.pereti', 'felie-umplere': 'imprimanta.felie.umplere',
+  'felie-brim': 'imprimanta.felie.brim', 'felie-avansat': 'imprimanta.felie.avansat', 'felie-implicite': 'imprimanta.felie.implicite',
+  'felie-strat': 'imprimanta.felie.strat', 'felie-trimite': 'imprimanta.felie.trimite', 'felie-salveaza': 'imprimanta.felie.salveaza',
+  'felie-renunta': 'imprimanta.felie.renunta', 'felie-deplasari': 'imprimanta.felie.deplasari',
+  // Felia 3.6l: piesa „după CNC” și înălțimea (una pentru toate, a fiecărei piese; rândul unei piese poartă numele ei).
+  'felie-dupa-cnc': 'imprimanta.felie.dupa-cnc', 'felie-inaltime-toate': 'imprimanta.felie.inaltime.toate',
+  'felie-inaltime-piese': 'imprimanta.felie.inaltime.piese', 'felie-inaltime-piesa': 'imprimanta.felie.inaltime.piese',
+  // Felia 3.6p (ADR 0193): pauza la un strat (rândul unei pauze din listă poartă stratul ei).
+  'felie-pauza': 'imprimanta.felie.pauza', 'felie-pauza-du': 'imprimanta.felie.pauze', 'felie-pauza-nota': 'imprimanta.felie.pauza.nota',
+  'felie-pauza-scoate': 'imprimanta.felie.pauza.scoate',
+  // Felia 3.6o (ADR 0192): comenzile din timpul imprimării (un ventilator, oricare: `data-ventilator` spune care).
+  lumina: 'imprimanta.lumina', ventilator: 'imprimanta.ventilatoare', 'ventilator-camp': 'imprimanta.ventilatoare',
+  viteza: 'imprimanta.viteza', 'viteza-camp': 'imprimanta.viteza', 'viteza-suta': 'imprimanta.reglaj.suta', debit: 'imprimanta.debit',
+  'debit-camp': 'imprimanta.debit', 'debit-suta': 'imprimanta.reglaj.suta', 'tinta-duza': 'imprimanta.tinta.duza',
+  'tinta-pat': 'imprimanta.tinta.pat', preincalzeste: 'imprimanta.preincalzeste', 'preincalzeste-material': 'imprimanta.preincalzeste',
+  raceste: 'imprimanta.raceste', 'incalzeste-raceste': 'imprimanta.raceste', racire: 'imprimanta.racire.bifa',
+  'racire-minute': 'imprimanta.racire.bifa', homing: 'imprimanta.homing', 'homing-pat-gol': 'imprimanta.pornire.pat-gol',
+  'homing-confirma': 'imprimanta.homing.confirma', 'homing-renunta': 'imprimanta.homing.renunta',
+  // Felia 3.6r (ADR 0193 §C): anularea unei piese, din placă (`src/app/PlacaImprimanta.tsx`) și confirmarea ei.
+  'anuleaza-piesa': 'imprimanta.anulare.buton', 'anulare-confirma': 'imprimanta.anulare.confirma',
+  'anulare-renunta': 'imprimanta.anulare.renunta', 'anulare-retrage': 'imprimanta.anulare.retrage',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
-  const sursa = citeste('src/app/PanouImprimanta.tsx');
-  assert.doesNotMatch(sursa, /data-imprimanta=\{/);
-  const controale = [...new Set([...sursa.matchAll(/data-imprimanta="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
+  // Din 3.6r, și placa are controale (anularea unei piese).
+  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx'), dialog = citeste('src/app/DialogDinDesen.tsx');
+  assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
+  assert.doesNotMatch(dialog, /data-imprimanta=\{/);
+  // În dialog, câmpurile numerice primesc controlul prin `data="felie-…"` (al lui `CampNumar`).
+  const controale = [...new Set([
+    ...[...fereastra.matchAll(/data-imprimanta="([a-z0-9-]+)"/g)].map((x) => x[1]!),
+    ...[...dialog.matchAll(/data-imprimanta="([a-z0-9-]+)"|\bdata="(felie-[a-z0-9-]+)"/g)].map((x) => (x[1] ?? x[2])!),
+  ])].sort();
   assert.deepEqual(controale, Object.keys(CONTROALE_IMPRIMANTA).sort(), 'fiecare control din fereastră, și doar ele, în CONTROALE_IMPRIMANTA');
   for (const m of manuale()) {
     const cap = m.capitole.find((c) => c.id === 'imprimanta');
@@ -250,6 +286,21 @@ test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capi
     for (const c of controale) {
       const nume = numeScurt(eticheta(CONTROALE_IMPRIMANTA[c] ?? '')[m.limba]).toLocaleLowerCase(m.limba);
       assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-imprimanta="${c}") nu e în capitolul „imprimanta”`);
+    }
+  }
+});
+
+test('fiecare setare din „Avansat” (piesele plate, ADR 0191) și grupul ei sunt numite în capitolul „imprimanta”, în ambele limbi', () => {
+  for (const m of manuale()) {
+    const cap = m.capitole.find((c) => c.id === 'imprimanta');
+    assert.ok(cap, `${m.limba}: capitolul „imprimanta”`);
+    const text = `${cap.titlu}\n${cap.text}`.toLocaleLowerCase(m.limba).replace(/\s+/g, ' ');
+    for (const g of CAMPURI_AVANSATE) {
+      const chei = [`imprimanta.felie.g.${g.grup}`, ...g.campuri.map((c) => `imprimanta.felie.c.${c.k}`)];
+      for (const k of chei) {
+        const nume = numeScurt(eticheta(k)[m.limba]).toLocaleLowerCase(m.limba);
+        assert.ok(text.includes(nume), `${m.limba}: „${nume}” (${k}) nu e în capitolul „imprimanta”`);
+      }
     }
   }
 });

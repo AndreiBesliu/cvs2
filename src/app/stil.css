@@ -1232,6 +1232,15 @@ nav button[aria-pressed='true'] {
     overflow: hidden;
     clip-path: inset(50%);
   }
+
+  /*
+   * Tot sub 95rem, butoanele barei de sus care au doar iconiță (anulează, reface, importul, exportul vectorilor) au 8 px de
+   * fiecare parte, nu 12: 38 px, peste ținta de 36. Cu Cuțitul în bara uneltelor (ADR 0181), bara Transformării, cu grila
+   * și cu un font lat, trecea de 1280 px (capătul la 1296; acum 1264).
+   */
+  .sus > .bara button[data-icona]:not(.cu-eticheta) {
+    padding: 0 var(--sp-2);
+  }
 }
 
 /*
