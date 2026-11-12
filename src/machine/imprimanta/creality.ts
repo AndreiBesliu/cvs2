@@ -234,6 +234,9 @@ export function citesteCadru(t: string): Cadru {
   }
   const filament = numar(r['usedMaterialLength']);
   if (filament !== null) stare.filament = filament;
+  // Felia 3.6s: senzorul de filament (integrarea Home Assistant: 1 = s-a terminat; K1C 2025 trimite 0 cu filamentul pus).
+  const material = numar(r['materialStatus']);
+  if (material !== null) stare.faraFilament = material === 1;
   const lista = r['retGcodeFileInfo2'];
   const textLista = (r['retGcodeFileInfo'] as { fileInfo?: unknown } | null | undefined)?.fileInfo;
   const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null)
@@ -246,13 +249,15 @@ export const esteCreality = (c: Cadru): boolean => c.inima || Object.keys(c.star
 
 /**
  * Starea lucrării (fără eroare: codul ei are cardul lui, și uneori rămâne pus după ce a trecut), ca integrarea Home Assistant (capturile K1C): cu un fișier, 100 % e „gata”, afară de K1C care arată 100 cu timp rămas
- * (apoi 99, abia apoi încheie); 5 pauză, 4 oprită, 1 imprimă, iar 0, 7 (oprirea în curs) și 9 (pornirea, sub o secundă)
- * pregătire. Numele ultimului fișier și 100 % rămân după final: „gata” până la lucrarea următoare.
+ * (apoi 99, abia apoi încheie); 2 terminată (din 3.6s: pe K3, ~5 s, apoi 0; ADR 0194), 5 pauză, 4 oprită, 1 imprimă, iar 0,
+ * 7 (oprirea în curs) și 9 (pornirea, sub o secundă) pregătire. Numele ultimului fișier și 100 % rămân după final: „gata”
+ * până la lucrarea următoare.
  */
 export function stareLucrare(i: Imprimanta): StareLucrare {
   if (i.cod === null && i.fisier === null && i.progres === null) return 'necunoscuta';
   if (i.autotest !== null && i.autotest >= 1 && i.autotest <= 99) return 'autotest';
   if (i.fisier !== null) {
+    if (i.cod === 2) return 'gata';
     const finalizare = (i.cod === 1 || i.cod === 5) && i.ramas !== null && i.ramas > 0;
     if ((i.progres ?? -1) >= 100 && !finalizare) return 'gata';
     if (i.cod === 5) return 'pauza';

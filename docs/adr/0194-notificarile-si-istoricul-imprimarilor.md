@@ -1,6 +1,6 @@
 # ADR 0194 — Notificările și istoricul imprimărilor: semnul din bară, istoricul cu costul, estimarea care învață, filmele
 
-**Starea:** propus pe 11.11.2026, pentru feliile 3.6s, 3.6t și 3.6u (fără imprimantă, pe imprimanta falsă; apoi proba pe
+**Starea:** acceptat pe 11.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a), pentru feliile 3.6s, 3.6t și 3.6u (fără imprimantă, pe imprimanta falsă; apoi proba pe
 imprimanta owner-ului, după ghid), în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`, adusă la `main` pe 11.11,
 `99ff34c`). Cererea owner-ului: grupul 3 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11,
 „Notificările și istoricul”), la „Da, grupul 3” (11.11), după grupul 2 (ADR 0193), unit în `main` pe 09.11 (`1eb4722`).
@@ -163,6 +163,8 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   notificarea? sunetul?); istoricul (durata, filamentul, față de estimare); un film, cu timelapse-ul pornit pe ecran.
 
 ## Întrebările (owner)
+
+**Răspunsurile, din 11.11:** „Da, recomandările”: 1a (planșele așa), 2a (istoricul cvs2 în browser).
 
 1. **Schița** (<https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>): a) așa (recomandat); b) altfel (spune unde).
 2. **Istoricul cvs2 se ține:** a) în browser, pe calculatorul acesta (recomandat acum: nimic nou în cont, iar exportul CSV
