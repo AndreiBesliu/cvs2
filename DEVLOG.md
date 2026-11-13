@@ -8677,3 +8677,20 @@ provizorie); după pauză, „ce se poate uni?”.
   dar **pornirea cu ușa 110,1 / 110** (totalul 686,2 / 700). E2e-ul nu s-a rulat după unire.
 - **Rămâne la reluare:** pornirea cu ușa sub plafon (întâi), suita e2e întreagă, otrăvurile (lista
   `test/otravuri/11.5.py`), documentele (ADR 0210, fișa, manualul, CLAUDE.md), canalul `plansele`.
+- **A doua reluare (13.11, „Da, reiau”) și încheierea:** întâi pornirea sub plafon: încă 11 motive date doar de calculul
+  acțiunilor (ale lui `main`: gruparea, degruparea, textul, rolul, foaia, importul) trec în mesajele editorului
+  (`4b32996`; dicționarul de bază 3,4 → 2,8 kB, pornirea cu ușa 110,1 → 109,6 / 110). E2e întreg pe codul unit: 472
+  trecute, 2 instabile (senderul pe mașina simulată, trecute la reluare și apoi singure) și 2 căderi: manualul are 35 de
+  capitole după unire (proba număra 33). Probe noi (`28bacaf`): antetele arhivei, rândurile ei, RichAuto, foaia activă
+  fără „Toate foile”, toate foile goale; în e2e, Mașina cu amprenta foii active și bifa plăcuțelor la „Toate foile”.
+  Otrăvurile (`41daf8a`): 61 / 61 la prima rulare (44 unitare, 17 prin e2e), în două clone. Procesul sesiunii a căzut o
+  dată (15:46), după otrăvurile unitare: reluat din jurnalul lor. La capăt, `main` (doar documente: ADR 0250, schițele
+  aranjamentelor) adus în ramură (`00ecac9`).
+- **Porțile pe codul final:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile (752 de texte, 0
+  netraduse), suita unitară 9 292 / 0 (8 sărite), build-ul determinist (314 fișiere identice; pornirea cu ușa 109,6 / 110,
+  totalul 686,2 / 700, manualul cu 35 de capitole).
+- **Publicat:** canalul `plansele` al instanței de test (<https://cncvectorstudio-test--plansele-xafrblmh.web.app>, până pe
+  13.12): pagina și cele 98 de bucăți ca `dist` din `ac679b1`; fereastra exportului văzută acolo, cu trei foi („All
+  sheets (3)” și nota arhivei).
+
+**Completed:** 13.11, 18:30.
