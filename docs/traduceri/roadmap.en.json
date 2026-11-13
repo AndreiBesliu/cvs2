@@ -61,6 +61,10 @@
       "ro": "Raportorul din client",
       "en": "The client reporter"
     },
+    "0653498d6db9557f": {
+      "ro": "Foaia pozată oblic",
+      "en": "The sheet photographed at an angle"
+    },
     "0683a94c575aa2de": {
       "ro": "Piesele plate pe imprimanta 3D",
       "en": "Flat parts on the 3D printer"
@@ -368,6 +372,10 @@
     "1e04a1bb83d106cd": {
       "ro": "Reparațiile din verificarea vectorilor, aduse din etapa 10",
       "en": "The repairs in the vector check, brought forward from stage 10"
+    },
+    "1e6b1ae49bbf4d51": {
+      "ro": "**Foaia pozată oblic** (fără mașină; ADR 0225, acceptat și implementat; worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main` (`29b69c0`), neunită; pornită la „continua”, după unirea lui 25.4↑ în `main`; răspunsurile: „Da la 1-3a”, toate recomandările). Cercetarea: Microsoft Lens, LightBurn, Vectric, ArtCAM, Inkscape, GIMP; omografia, Zhang și He (2007); schița, cu formularul: <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax>. În fereastra trasării, pe imaginile opace, **Îndreaptă foaia** (oprită implicit; raportul o sugerează când vede o foaie oblică): colțurile găsite singure (`src/trasare/foaia.ts`: componenta deschisă, învelitoarea, patrulaterul de arie maximă, rafinarea sub-pixel; un colț ieșit din cadru, extrapolat), **Formatul** (A4 implicit, A5, A3, Letter, „Alt format”, „Din poză”), orientat după poză; scara din format; zona, lumina și culorile pe foaia îndreptată; butonul **Colțurile** (poza cu mânerele, „Găsește singur”), previzualizarea foii îndreptate cu vectorii. **Găsite pe drum:** pe poza înclinată doar înainte, focala nu se poate afla (raportul, −4 %): proporțiile au acum un interval și „nesigure”; un colț ieșit din cadru ieșea la 106 px (apoi 47): extrapolat din laturile vecine, cu reperul cel mai depărtat; a doua potrivire a dreptei ține o agrafă pe margine. **Treceri:** (1) propunerea (`a077d6d`); (2) felia (`906b518`; după otrăvuri, `8b972c5`). Otrăvurile: 61 / 61 pe codul final (`8b972c5`; 44 unitare, 17 prin e2e). La prima rulare (`906b518`), 42 / 47 unitare: K01 (pivotul minim al omografiei) și P05 (focalele de telefon la focala nedeterminată) au primit probe (trei puncte coliniare cu zecimale; camerele de 0,5 și 1,5 diagonale); G09, G10 și G13, echivalente (intersecția vecinelor e mereu dincolo de margine, rafinarea reface dreapta grosieră, o normală tăiată de cadru n-are contrast), au ieșit din cod. Totalul 660,2 / 700 kB, pornirea 102,2 / 110; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta `b476904f7281`.",
+      "en": "**The sheet photographed at an angle** (no machine; ADR 0225, accepted and implemented; the `trasare` worktree, the `wip/25.1-trasare` branch, brought up to `origin/main` (`29b69c0`), not merged; started at “continua”, after 25.4↑ was merged into `main`; the answers: “Yes to 1-3a”, all the recommendations). The research: Microsoft Lens, LightBurn, Vectric, ArtCAM, Inkscape, GIMP; the homography, Zhang and He (2007); the sketch, with the form: <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax>. In the tracing window, on opaque images, **Straighten the sheet** (off by default; the report suggests it when it sees a slanted sheet): the corners found automatically (`src/trasare/foaia.ts`: the largest bright component, the hull, the largest-area quadrilateral, the sub-pixel refinement; a corner outside the frame, extrapolated), the **Paper size** (A4 by default, A5, A3, Letter, “Other size”, “From the photo”), oriented as in the photo; the scale from the paper size; the area, the lighting and the colours on the straightened sheet; the **Corners** button (the photo with the handles, “Find automatically”), the preview of the straightened sheet with the vectors. **Found on the way:** on a photo tilted forward only, the focal length cannot be found (the ratio, −4 %): the proportions now have an interval and “uncertain”; a corner outside the frame came out 106 px off (then 47): extrapolated from the neighbouring sides, with the farthest anchor; the second fit of the line copes with a clip on the edge. **Passes:** (1) the proposal (`a077d6d`); (2) the slice (`906b518`; after the poisons, `8b972c5`). The poisons: 61 / 61 on the final code (`8b972c5`; 44 unit, 17 through e2e). On the first run (`906b518`), 42 / 47 unit: K01 (the homography’s minimum pivot) and P05 (the phone focal lengths when the focal length is undetermined) got tests (three collinear points with decimals; cameras of 0.5 and 1.5 diagonals); G09, G10 and G13, equivalent (the neighbours’ intersection is always beyond the edge, the refinement redoes the coarse line, a normal cut by the frame has no contrast), were removed from the code. The total 660.2 / 700 kB, the startup 102.2 / 110; published on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, until 13.12), fingerprint `b476904f7281`."
     },
     "1e88f9e29e0e1491": {
       "ro": "Încercarea ancorei și a tastelor transformării pe adresa principală de test (<https://cncvectorstudio-test.web.app/?test>; 6.V↑–6.V↑c unite în `main` și publicate pe 08.11): în testul din aplicație, pașii 3–5 (desenul cu Shift, Alt și Ctrl), 11 „Mânerele”, 12 „Ancora” și 13 „Colțurile rotunjite”",
@@ -893,6 +901,10 @@
       "ro": "Forma „cale” în document",
       "en": "The “path” shape in the document"
     },
+    "45b46a5637d0a242": {
+      "ro": "25.5↑",
+      "en": "25.5↑"
+    },
     "45b472faaf813b41": {
       "ro": "Joburile cu mai multe scule din document",
       "en": "Multi-tool jobs from the document"
@@ -1048,6 +1060,10 @@
     "50bf305566dde0c5": {
       "ro": "Simulare 3D (3 axe); Timpul estimat; Calcul pe mai multe fire",
       "en": "3D simulation (3 axes); estimated time; multi-threaded computation"
+    },
+    "510b32fee41f6a26": {
+      "ro": "Încercarea foii pozate oblic (25.5↑, ADR 0225) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; ramura `wip/25.1-trasare`, neunită): din „Importă…”, o poză de telefon a unui desen pe o foaie A4, pusă pe o masă mai închisă și pozată oblic: sugestia din raport, **Îndreaptă foaia** (desenul ia mărimea adevărată), butonul **Colțurile** (mânerele, „Găsește singur”), **Formatul**. Spune unde nu găsește foaia sau unde formele ies strâmbe (ADR 0225, „Se redeschide dacă”); poza trimisă intră în probe. Apoi unirea în `main`",
+      "en": "Trying the sheet photographed at an angle (25.5↑, ADR 0225) on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; the `wip/25.1-trasare` branch, not merged): from “Import…”, a phone photo of a drawing on an A4 sheet, laid on a darker table and photographed at an angle: the suggestion in the report, **Straighten the sheet** (the drawing takes its true size), the **Corners** button (the handles, “Find automatically”), the **Paper size**. Say where it does not find the sheet or where the shapes come out skewed (ADR 0225, “Reopens if”); the photo you send goes into the tests. Then the merge into `main`"
     },
     "513a4b1a76651fa9": {
       "ro": "Contururile deschise (ADR 0037, documentul v10), în sub-feliile 2.3c-0…6: pe linie, pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile (115 rulate, 86 prinse din prima, 27 închise cu teste, 2 echivalente). Detaliile: blocul „2.3c, contururile deschise: încheiată pe 16.10” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Ora încheierii nu e scrisă acolo.",
@@ -2700,6 +2716,10 @@
     "e0e343d87851b0d5": {
       "ro": "Încercarea benzii dopului în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑c unită în `main` și publicată pe 08.11): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci",
       "en": "Trying the V plug band on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑c merged into `main` and published on 08.11): a drawing, the “V inlay” role from the panel, then in Export “Wood around the plug: narrow band” (the width, the cut-out, the board, the tabs, another bit for the cut-out); on plate 12, the cut-out plug (tabs broken off and cleaned) glued into the pocket: it should stop on the walls, with the saw gap between the boards"
+    },
+    "e17155484936018f": {
+      "ro": "Plafonul pornirii, 110 → 115 kB",
+      "en": "The startup cap, 110 → 115 kB"
     },
     "e18bff728797799e": {
       "ro": "Biarcele proprii sunt singura ușă de aproximare",

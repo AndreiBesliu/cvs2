@@ -2601,6 +2601,21 @@ main h1 {
 .trasare-lumina p {
   margin: 0;
 }
+/* Foaia pozată (ADR 0225): bifa, formatul și, la „Alt format”, lățimea și înălțimea, una lângă alta. */
+.trasare-foaie,
+.trasare-foaie > label:not(.rand),
+.trasare-format-alt > label {
+  display: grid;
+  gap: 2px;
+}
+.trasare-foaie p {
+  margin: 0;
+}
+.trasare-format-alt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-2);
+}
 .trasare-comenzi label.rand,
 .trasare-bara label.rand {
   display: flex;
@@ -2687,6 +2702,10 @@ main h1 {
 }
 /* Cu butonul Zona apăsat, tragerea desenează zona (ADR 0224). */
 .trasare-panza.zona {
+  cursor: crosshair;
+}
+/* Cu butonul Colțurile apăsat, mânerele colțurilor foii se trag (ADR 0225). */
+.trasare-panza.colturi {
   cursor: crosshair;
 }
 .trasare-raport p {

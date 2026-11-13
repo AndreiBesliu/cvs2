@@ -22,7 +22,9 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  * - la pornire, ce cere `index.html` (scriptul de intrare și `modulepreload`): măsurat 81 kB la felia 1.9c (React +
  *   valibot + aplicația; calculul exportului se încarcă la cerere); din 17.10, plus dicționarul limbii active, cerut
  *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”); 100 kB până pe 28.10, 110 kB
- *   din 28.10 (ADR 0100: decizia owner-ului; fiecare bucată nouă la cerere își pune numele în lista de preîncărcare din pornire);
+ *   din 28.10 (ADR 0100: decizia owner-ului; fiecare bucată nouă la cerere își pune numele în lista de preîncărcare din pornire),
+ *   115 kB din 13.11 (ADR 0252: decizia owner-ului, „Da, 115 ／ 800”; după unirea planșelor, pornirea cu ușa era 109,7 kB,
+ *   iar aranjamentele cer alegerea și densitatea înaintea primei randări, ~1–1,5 kB);
  * - totalul, cu bucățile încărcate la cerere și workerele; 330 kB din 25.10 (ADR 0075: totul rămâne în precache, ca
  *   aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se descarcă în fundal, cu
  *   progresul în bara de jos, ADR 0097), 450 kB din 30.10 (ADR 0109: decizia owner-ului, „1”; workerul CAM are copia lui de
@@ -32,15 +34,16 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   merge și offline, a dus totalul la 503,1 kB), 600 kB din 07.11 (ADR 0143: decizia owner-ului, „Yes, 600 kB”; după
  *   unirea raportărilor și a imprimantei, totalul era 535,0 kB, iar liniile paralele aveau gata pe ramuri încă ~60 kB),
  *   700 kB din 09.11 (ADR 0144: decizia owner-ului, „Yes, 700 kB”; după unirea trasării și a lui 6.V↑d, totalul era
- *   578,7 kB, iar tăierea, planșele și imprimanta, gata pe ramuri, aduceau împreună încă ~85 kB);
+ *   578,7 kB, iar tăierea, planșele și imprimanta, gata pe ramuri, aduceau împreună încă ~85 kB), 800 kB din 13.11 (ADR 0253:
+ *   decizia owner-ului, „Da, 115 ／ 800”; după unirea planșelor, totalul era 690,1 kB, iar linia aranjamentelor aduce ~40 kB);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
  *   eroare. Din 3.2, Firebase-ul comun (aplicația, App Check, funcțiile: `conexiuneBaza-*`) e o bucată împărțită de admin
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
-const PLAFON_PORNIRE_KB = 110;
-const PLAFON_TOTAL_KB = 700;
+const PLAFON_PORNIRE_KB = 115;
+const PLAFON_TOTAL_KB = 800;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are

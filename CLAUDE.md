@@ -869,6 +869,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/trasare/lumina.ts`; la luminile de poză, polaritatea vine din mediana din jur, nu din margine (marginea întoarce
   foaia pozată pe masă), iar prima regulă (închiderea și deschiderea) mergea doar pe desene dese.** Probele luminii
   numără doar greșelile clare (acoperirea sub 0,4 sau peste 0,6): pe trăsături subțiri, pragul automat cade la ~0,47.
+  **25.5↑ (foaia pozată oblic, ADR 0225) gata pe 13.11, cu toate recomandările („Da la 1-3a”), pe ramura
+  `wip/25.1-trasare`, unită în `main` pe 13.11 (`07df71f`, „Yes, merge it”):** „Îndreaptă foaia” (oprită implicit, sugerată de raport), colțurile
+  găsite singure (`src/trasare/foaia.ts`; geometria lor, fără importuri, în `src/trasare/colturi.ts`, ca fereastra s-o
+  folosească fără nucleu), formatul (A4 implicit) cu mărimea adevărată, `CerereTrasare.foaie` (îndreptarea înaintea zonei;
+  zona e în pixelii foii îndreptate), butonul Colțurile cu mânerele. Proporțiile din poză au un interval: pe poza înclinată
+  doar înainte, focala nu se poate afla, deci sunt „nesigure”. Lumina pe culori (25.4↑b) și liniile mediane pe culori vin
+  după ea.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1135,12 +1142,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **felia 25.5↑ a trasării unită în `main`, cu plafoanele 115 / 800 înaintea ei** („Yes, merge it”, la „Merge
+  trasarea 25.5↑ (straightening an angled sheet) into main?”, în sesiunea principală): unită exact la `1ca446b` (`07df71f`);
+  ADR 0226 (propus) rămâne pe ramură. Plafoanele din ADR 0252–0253 („Da, 115 ／ 800”, în sesiunea designului; „Yes, 800 kB”,
+  în sesiunea principală) au intrat în `main` înaintea liniei aranjamentelor, prin commit-ul lor (`6c37075`, unit în
+  `70844ce`): trasarea și tăierea 10.3↑k treceau împreună de 700. Totalul 695,8 / 800, pornirea cu ușa 109,7 / 115.
 - 13.11.2026: **banda vestirilor imprimantei (3.6s) reparată înainte, nu scoasă din `main`** („Fix forward”, la „Fix 3.6s
   forward, or revert it from main?”, în sesiunea principală): CI-ul complet pe `50f2595` a picat pe Linux
   (`imprimanta.spec.ts:108`: banda „pauză”, fixă, sus, la mijloc, acoperea butonul Reia; pe Windows trecea). Reparația
   liniei (`231e347`, ramura `fix/3.6s-anunt`, din `main`, fără 3.6t): banda stă într-un rând al meniului global și nu mai
   acoperă nimic, cu proba de lovire pe controale cât banda pauzei e la vedere (pica la 1024 px pe Windows înaintea
   reparației). Unită prin `2daddcc`, după porți.
+- 13.11.2026: **plafoanele: pornirea 115 kB, totalul 800 kB** („Da, 115 ／ 800”, la „Ridic plafoanele la 115 kB pornirea și
+  800 kB totalul?”, în linia aranjamentelor, înaintea feliei 28.1↑). După unirea planșelor, pornirea cu ușa era
+  109,7 / 110 și totalul 690,1 / 700. 28.1↑ cere ~1–1,5 kB în pornire, iar linia ~40 kB. ADR 0252 și 0253, scrise pe ramura
+  `wip/28.1-aranjamente` (worktree-ul `aranjamente`, din `d62e6b8`); ajung în `main` odată cu unirea liniei.
 - 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
   principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
   `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e
