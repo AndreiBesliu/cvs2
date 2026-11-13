@@ -150,3 +150,78 @@ test('incrustația din fereastra exportului: fundul plat bifat singur; „Acela�
   await expect(taierea(page).locator('[data-camp="inc-fierastrau"]')).toHaveValue('0,6');
   await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Dopul intră2.40 mm în locaș');
 });
+
+/**
+ * Fundul doar cu freza V (ADR 0173), pe cercul R15 (rolul din panou, adâncimea 3, fierăstrăul 2, V60 Ø6): cu bifa Fund plat
+ * scoasă în fereastra exportului, nota rândului spune că freza V face tot. Cu banda, decuparea (pusă implicit) cere freza ei:
+ * bifa e marcată greșită și Exportă se oprește, până o bifezi. Pe fața coborâtă, Exportă descarcă locașul și dopul fără nicio
+ * schimbare de sculă; avertismentul spune inelele locașului (la g·t = 0,289 mm, creasta 0,25), iar oracolul potrivirii, pe
+ * octeții din browser, cere oprirea la S ± 0,05, contactul pe 95 %, sub dop între g/2 = 0,25 și g, între plăci între H/2 = 1
+ * și H. În proiect, operația rămâne fără fund plat, iar panoul arată pe hârtie inelele: 0,29 mm în locaș, 1,15 mm pe dop.
+ */
+test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu freza ei, exportul doar cu V, potrivirea, panoul', async ({ page }) => {
+  // Oracolul potrivirii, pe octeții din browser, plus inelele dese ale fundului: ia timp cu trei lucrători.
+  test.setTimeout(120_000);
+  await page.goto('/');
+  await adauga(page, 'cerc');
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
+  await scrie(page, 'adancime', '3');
+  await scrie(page, 'inc-fierastrau', '2');
+  const hartie = page.getByTestId('prop-incrustatie-hartie');
+  await expect(hartie).toContainText('Semifabricatul dopului');
+  await expect(hartie).not.toContainText('doar cu freza V');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const detalii = page.locator('tr[data-detalii]').first();
+  const nota = detalii.locator('.nota-incrustatie');
+  await expect(nota).toHaveAttribute('data-fund', 'plat');
+  await detalii.locator('[data-camp="fund-plat"]').uncheck();
+  await expect(nota).toHaveAttribute('data-fund', 'v');
+  await expect(nota).toContainText('Fără freză dreaptă, freza în V face tot');
+  // Cu banda: decuparea cere freza ei; bifată, Exportă pornește.
+  const exporta = page.locator('[data-buton="exporta"]');
+  await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
+  await expect(nota).toContainText('decuparea din placă cere „Altă freză pentru decupare”');
+  await expect(detalii.locator('[data-camp="banda-freza"]')).toHaveAttribute('aria-invalid', 'true');
+  await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveCount(0);
+  await expect(exporta).toBeDisabled();
+  await detalii.locator('[data-camp="banda-freza"]').check();
+  await expect(detalii.locator('[data-camp="banda-freza"]')).toHaveAttribute('aria-invalid', 'false');
+  await expect(exporta).toBeEnabled();
+  // Banda cea mai îngustă fără freza fundului: 2·2·tan 30° + Ø6 (decuparea) + 1 = 9,309; fără decupare, 2,309 + 1 = 3,309.
+  await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveText('cea mai mică: 9,31 mm');
+  await detalii.locator('[data-camp="banda-decupare"]').uncheck();
+  await expect(detalii.locator('[data-camp="banda-minima"]')).toHaveText('cea mai mică: 3,31 mm');
+  await detalii.locator('[data-camp="banda-decupare"]').check();
+  await detalii.locator('[data-camp="inc-jur"]').selectOption('fata');
+
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  await exporta.click();
+  // R15: inelele la 1,732 + j·0,2887 cât încap sub 15, deci 45.
+  await expect(page.getByTestId('export-avertismente')).toContainText('fundul îl fac 45 de inele ale frezei în V, la 0.289 mm unul de altul (creasta cel mult 0.25 mm)');
+  await expect.poll(() => descarcari.length).toBe(2);
+  const dop = descarcari.find((d) => /-dop-1\b/.test(d.suggestedFilename()));
+  const foaie = descarcari.find((d) => !/-dop-/.test(d.suggestedFilename()));
+  if (!dop || !foaie) throw new Error(`descărcările: ${descarcari.map((d) => d.suggestedFilename()).join(', ')}`);
+  const locas = readFileSync(await foaie.path(), 'ascii'), textDop = readFileSync(await dop.path(), 'ascii');
+  expect(locas).not.toMatch(/^T\d+ M6$/m);
+  expect(textDop).not.toMatch(/^T\d+ M6$/m);
+  const m = masoaraPotrivirea(
+    { text: locas, scule: scule(locas) }, { text: textDop, scule: scule(textDop) }, [poligonCerc(70, 50, 15)],
+    { D: 3, g: 0.5, H: 2, margine: 5, unghi: 60, celula: 0.1, lat: 2 * Math.tan(Math.PI / 6) + 1 },
+  );
+  const unde = `oprirea ${m.asezare.toFixed(4)}, contactul ${(m.contact * 100).toFixed(1)} % din ${m.nContact}, sub ${JSON.stringify(m.sub)}, între ${JSON.stringify(m.intre)}`;
+  expect(Math.abs(m.asezare - 2.5), unde).toBeLessThanOrEqual(0.05);
+  expect(m.contact, unde).toBeGreaterThanOrEqual(0.95);
+  expect(m.sub.n, unde).toBeGreaterThan(0);
+  expect(m.sub.min, unde).toBeGreaterThanOrEqual(0.24);
+  expect(m.sub.min, unde).toBeLessThan(0.45);
+  expect(m.sub.max, unde).toBeLessThanOrEqual(0.55);
+  expect(m.intre.n, unde).toBeGreaterThan(0);
+  expect(m.intre.min, unde).toBeGreaterThanOrEqual(0.99);
+  expect(m.intre.max, unde).toBeLessThanOrEqual(2.05);
+
+  // În proiect: fără fund plat; panoul arată inelele pe hârtie.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(hartie).toContainText('Fundul, doar cu freza Vinele la 0.29 mm în locaș (creasta cel mult 0.25 mm) și la 1.15 mm pe dop (creasta cel mult 1.00 mm)');
+});

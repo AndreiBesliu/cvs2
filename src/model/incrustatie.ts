@@ -22,6 +22,11 @@ export type ValoriIncrustatie = {
   readonly contact: number;
   /** Grosimea cea mai mică a semifabricatului dopului: S + H + `SUB_FATA_DOPULUI`. */
   readonly grosimeMinima: number;
+  /**
+   * Fundul doar cu freza V (ADR 0173, fără freză dreaptă): creasta cel mult g/2 în locaș (sub dop rămân cel puțin g/2) și H/2
+   * pe fața coborâtă a dopului sau pe fundul benzii (între plăci, cel puțin H/2); inelele, la 2·creasta·t unul de altul.
+   */
+  readonly creastaLocas: number; readonly creastaDop: number;
 };
 
 /** Valorile pe hârtie ale incrustației operației, sau null fără incrustație ori fără freză în V. */
@@ -29,7 +34,7 @@ export function valoriIncrustatie(op: Pick<Operatie, 'adancime' | 'scula' | 'inc
   const i = op.incrustatie, f = op.scula.forma;
   if (i?.fel !== 'v' || f?.tip !== 'v') return null;
   const S = op.adancime - i.joc, H = i.fierastrau, t = Math.tan((f.unghi * Math.PI) / 360);
-  return { S, H, t, fata: S + H, contact: S * t, grosimeMinima: S + H + SUB_FATA_DOPULUI };
+  return { S, H, t, fata: S + H, contact: S * t, grosimeMinima: S + H + SUB_FATA_DOPULUI, creastaLocas: i.joc / 2, creastaDop: H / 2 };
 }
 
 /** Rezerva benzii (ADR 0172, c): cât stă tăietura decupării de peretele dopului și de marginea fundului plat (mm). */
@@ -39,7 +44,8 @@ export const PUNTI_BANDA: Urechi = { numar: 4, latime: 4, grosime: 1 };
 
 /**
  * Lățimea cea mai mică a benzii (ADR 0172, răspunsul 1): pereții (H·t de fiecare parte), fundul plat cu freza lui și tăietura
- * decupării cu a ei, cu rezerva c pe fiecare parte: 2·H·t + max(Ø fundului plat, Ø decupării) + 2c.
+ * decupării cu a ei, cu rezerva c pe fiecare parte: 2·H·t + max(Ø fundului plat, Ø decupării) + 2c. Fără freză dreaptă
+ * (ADR 0173), Ø fundului plat e 0: fundul îl fac inelele frezei V.
  */
 export const latimeMinimaBanda = (H: number, t: number, fund: number, decupare: number): number => 2 * H * t + Math.max(fund, decupare) + 2 * REZERVA_BANDA;
 
@@ -59,23 +65,28 @@ export type ValoriBanda = {
   readonly decupare: boolean;
   /** Grosimea plăcii (exactă, cu decuparea) și cea mai mică cu decuparea: S + H + grosimea punților. */
   readonly placa: number; readonly placaMinima: number;
-  /** Freza decupării: a benzii sau a fundului plat. */
-  readonly freza: Scula;
+  /**
+   * Freza decupării: a benzii sau a fundului plat; null fără amândouă (fundul doar cu freza V, ADR 0173), când decuparea
+   * cere „Altă freză pentru decupare”.
+   */
+  readonly freza: Scula | null;
   readonly punti: Urechi;
 };
 
 /**
- * Valorile pe hârtie ale benzii din jurul dopului în V (ADR 0172), sau null: doar cu `jurDop: 'banda'`, freza în V și fundul
- * plat. Fără câmpul `banda` (un document de dinainte de v22), banda implicită. Singurul loc al lor: panoul le arată, fereastra
+ * Valorile pe hârtie ale benzii din jurul dopului în V (ADR 0172), sau null: doar cu `jurDop: 'banda'` și freza în V. Fără
+ * câmpul `banda` (un document de dinainte de v22), banda implicită. Fără freză dreaptă (ADR 0173), fundul benzii îl fac
+ * inelele frezei V, deci lățimea cea mai mică n-are freza fundului plat. Singurul loc al lor: panoul le arată, fereastra
  * exportului le pune ca implicite, iar dopul (`cam/incrustatie.ts`) se taie cu ele.
  */
 export function valoriBanda(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie' | 'fundPlat'>): ValoriBanda | null {
   const v = valoriIncrustatie(op), i = op.incrustatie, fp = op.fundPlat;
-  if (!v || i?.fel !== 'v' || i.jurDop !== 'banda' || !fp) return null;
+  if (!v || i?.fel !== 'v' || i.jurDop !== 'banda') return null;
   const b = i.banda ?? bandaImplicita(v.S, v.H);
-  const freza = b.freza ?? fp.scula;
-  // Freza decupării lărgește banda doar cu decuparea (fără ea, nu taie nimic).
-  const minima = latimeMinimaBanda(v.H, v.t, fp.scula.diametru, b.decupare ? freza.diametru : fp.scula.diametru);
+  const freza = b.freza ?? fp?.scula ?? null;
+  // Freza decupării lărgește banda doar cu decuparea (fără ea, nu taie nimic); fundul doar cu V n-are freză de fund.
+  const fund = fp?.scula.diametru ?? 0;
+  const minima = latimeMinimaBanda(v.H, v.t, fund, b.decupare ? (freza?.diametru ?? 0) : fund);
   const latime = b.latime ?? minima;
   return {
     minima, latime, e: v.H * v.t + REZERVA_BANDA, margine: latime + v.contact + i.margine, decupare: b.decupare,

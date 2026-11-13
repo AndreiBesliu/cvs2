@@ -61,13 +61,14 @@ test('dopul săpat peste con: D − g + H = 3 − 0,5 + 2,7 = 5,2 > 5,196 e refu
   assert.equal(refuz({ incrustatie: { ...INC, fierastrau: 2.69 } }), null);
 });
 
-test('freza cu vârf plat, dopul fără freză dreaptă și incrustația pe un profil: refuzate, cu felia care le aduce sau cu rolul potrivit; banda e primită', () => {
+test('freza cu vârf plat și incrustația pe un profil: refuzate, cu rolul potrivit; banda și dopul fără freză dreaptă sunt primite', () => {
   assert.match(refuz({ scula: { numar: 2, nume: 'freza V60 varf 0.2', diametru: 6, forma: { tip: 'v', unghi: 60, varf: 0.2 } } }) ?? '', /vârf plat/);
   // Din 12.1↑c (ADR 0172), banda e primită: fără câmpul ei (un document de dinainte de v22), cu valorile implicite.
   assert.equal(refuz({ incrustatie: { ...INC, jurDop: 'banda' } }), null);
+  // Din 12.1↑d (ADR 0173), fără freză dreaptă, fundul îl fac inelele frezei V: nu mai e un refuz.
   const { fundPlat: _f, ...faraFund } = operatie();
   void _f;
-  assert.match(refuzIncrustatie(faraFund as unknown as Operatie, 'e1/a') ?? '', /freza dreaptă: alege-o în coloana Fund plat .*12\.1↑d/);
+  assert.equal(refuzIncrustatie(faraFund as unknown as Operatie, 'e1/a'), null);
   assert.match(refuz({ tip: 'profil', latura: 'interior', scula: { numar: 2, nume: 'freza plata', diametru: 6 } }) ?? '',
     /incrustația în V e a unui V-carve \(pe un buzunar, alege incrustația cu pereți drepți\)/);
 });
@@ -78,9 +79,19 @@ test('banda (ADR 0172): fără freza dreaptă, cu freza decupării în V sau cu 
   // (punțile) = 5,5. Fără decupare, freza ei nu contează: nici pentru lățime, nici ca număr.
   const banda = (b: Record<string, unknown>): Record<string, unknown> => ({ incrustatie: { ...INC, jurDop: 'banda', banda: { decupare: true, grosimePlaca: 5.5, punti: { numar: 4, latime: 4, grosime: 1 }, ...b } } });
   assert.equal(refuz(banda({})), null);
-  const { fundPlat: _f, ...faraFund } = operatie({ incrustatie: { ...INC, jurDop: 'banda' } });
-  void _f;
-  assert.match(refuzIncrustatie(faraFund as unknown as Operatie, 'e1/a') ?? '', /fundul benzii din jurul dopului se scoate cu freza dreaptă: alege-o în coloana Fund plat$/);
+  // Fără freză dreaptă (ADR 0173): fundul benzii îl fac inelele V, dar decuparea (pusă implicit) cere freza ei; fără decupare
+  // sau cu freza ei, primită. Banda cea mai îngustă n-are atunci freza fundului: 2,309 + 1 = 3,309, cu decuparea Ø4, 7,309.
+  const faraFundCu = (b?: Record<string, unknown>): Operatie => {
+    const { fundPlat: _f, ...o } = operatie({ incrustatie: { ...INC, jurDop: 'banda', ...(b ? { banda: { decupare: true, grosimePlaca: 5.5, punti: { numar: 4, latime: 4, grosime: 1 }, ...b } } : {}) } });
+    void _f;
+    return o as unknown as Operatie;
+  };
+  assert.match(refuzIncrustatie(faraFundCu(), 'e1/a') ?? '', /e1\/a: fără freză dreaptă, decuparea dopului cere freza ei: bifează „Altă freză pentru decupare” \(o freză dreaptă care taie prin placă\) sau scoate decuparea$/);
+  assert.equal(refuzIncrustatie(faraFundCu({ decupare: false }), 'e1/a'), null);
+  assert.equal(refuzIncrustatie(faraFundCu({ freza: { numar: 3, nume: 'dreapta', diametru: 4 } }), 'e1/a'), null);
+  assert.match(refuzIncrustatie(faraFundCu({ decupare: false, latime: 3.3 }), 'e1/a') ?? '', /banda dopului, de 3\.3 mm, e mai îngustă decât cea mai mică, de 3\.31 mm \(pereții, fundul, fiecare cu freza lui\)/);
+  assert.equal(refuzIncrustatie(faraFundCu({ decupare: false, latime: 3.31 }), 'e1/a'), null);
+  assert.match(refuzIncrustatie(faraFundCu({ freza: { numar: 3, nume: 'dreapta', diametru: 4 }, latime: 7.3 }), 'e1/a') ?? '', /de 7\.31 mm \(pereții, fundul și tăietura decupării/);
   assert.match(refuz(banda({ freza: { numar: 3, nume: 'V90', diametru: 6, forma: { tip: 'v', unghi: 90 } } })) ?? '', /freza decupării dopului trebuie să fie dreaptă \(T3 e în V\)/);
   assert.match(refuz(banda({ freza: { numar: 2, nume: 'dreapta', diametru: 3 } })) ?? '', /freza decupării \(T2\) are numărul frezei în V/);
   assert.match(refuz(banda({ freza: { numar: 1, nume: 'dreapta', diametru: 4 } })) ?? '', /T1 are două diametre \(3 și 4 mm\)/);
