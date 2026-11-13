@@ -1066,6 +1066,13 @@ a role: **V inlay**, in the **Cutting** section of the properties panel or in th
 The row's bit is a sharp V bit (no flat tip), and the flat floor with the straight bit is on: it clears the bottom of the
 pocket and the wood around the plug.
 
+**Without a straight bit**, untick **Flat floor with a straight bit** on the inlay row: the V bit then does it all. It clears
+the pocket floor with dense rings, glue gap · tan(θ/2) apart (a crest of at most half the gap, so at least half of it stays
+under the plug for glue), and the lowered face of the plug or the band floor with rings saw gap · tan(θ/2) apart (a crest of
+at most half of it, between the boards). It is slower than with a straight bit: the warning says how many rings it cuts;
+above 400 in one region, the export is refused, with the advice. With the band, cutting the plug out of the board then needs
+**Another bit for the cut-out** (a straight bit); without one, untick the cut-out.
+
 The inlay's values, under Depth and Step down in the panel and on its row in the export window:
 
 - **Glue gap** (g; default 0.5 mm, at least 0.1): what stays under the plug. The plug is carved from the pocket depth minus
@@ -1118,9 +1125,9 @@ of the board. With the cut-out, first cut the tabs and clean them flush with the
 
 **Refusals**, with the reason, on export: a flat bit or one with a flat tip; a glue gap under 0.1 mm (the ridges in the
 pocket's corners would hold the plug) or at least the depth; a plug carved (depth − gap + saw gap) deeper than the bit's cone;
-no flat floor with the straight bit (the V-bit-only variant comes later). With the band: narrower than the narrowest; with
+more than 400 rings with the V-bit-only floor. With the band: narrower than the narrowest; with
 the cut-out, a board thinner than the band floor plus the tabs, a V cut-out bit, or one with another bit's number and another
-diameter. The plug in the 3D view comes in a later slice; straight walls have their own chapter ([The straight-walled
+diameter, or, without a straight bit, no cut-out bit. The plug in the 3D view comes in a later slice; straight walls have their own chapter ([The straight-walled
 inlay](#incrustatie-drept)).
 
 ## The straight-walled inlay

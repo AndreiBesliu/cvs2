@@ -1,7 +1,8 @@
 # ADR 0260 — Pagina `/admin` reproiectată: bara laterală, fila Azi și filele după schițe
 
 **Starea:** acceptat pe 13.11.2026, cu toate cele 12 idei din schițe („Da la toate”, la „Accepți recomandările la ideile
-adminului 51–62?”). Cererea owner-ului, exactă: „vreau sa faci design si pentru admin”, după schițele aranjamentelor.
+adminului 51–62?”), completat tot pe 13.11 cu ideea 76 (intrarea și stările goale; secțiunea de la capăt). Cererea
+owner-ului, exactă: „vreau sa faci design si pentru admin”, după schițele aranjamentelor.
 Schițele stau pe canvas, rândul G (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), iar ideile, pe tabla „Harta
 schițelor”, la 51–62. **Intră în:** o linie a ei, nu în feliile aranjamentelor (ADR 0250); pornește la cuvântul owner-ului,
 cu feliile A.1–A.7 de mai jos. **Continuă:** ADR 0040 (pagina și fila Erori), 0048 (Roadmap și Documentație), 0049
@@ -82,3 +83,14 @@ sub 640 px.
 - `/admin` e azi 106,5 / 200 kB. Ținta liniei: cel mult +25 kB pe toată linia.
 - Graficul aparițiilor se desenează în SVG, fără bibliotecă.
 - Totalul aplicației și pornirea nu se schimbă: adminul are pachetul lui.
+
+## Completarea din 13.11: intrarea și stările goale
+
+După tabla „Admin · Intrarea și stările goale”, owner-ul a acceptat și ideea 76 („Da la toate”, la „Accepți recomandările la
+ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
+
+- intrarea și „Contul ăsta nu e în personal” într-un card centrat, cu insigna instanței deasupra. La „fără rol” se adaugă o
+  propoziție: ceri o invitație, iar uid-ul e pentru primul owner;
+- lista goală a unei file are un semn și ultima rezolvare, nu doar textul;
+- eroarea citirii păstrează motivul de azi și primește „Deschide Diagnoza”;
+- „Se încarcă…” arată rânduri schițate.
