@@ -29,14 +29,23 @@ test('arhiva cu „a.txt” = „hi”: 30 + 5 + 2 (antetul local) + 46 + 5 (dir
   assert.equal(z.octeti.length, 110);
   const v = new DataView(z.octeti.buffer);
   assert.equal(v.getUint32(0, true), 0x04034b50, 'antetul local');
+  assert.equal(v.getUint16(4, true), 20, 'versiunea care o citește (2.0)');
   assert.equal(v.getUint16(8, true), 0, 'stocat (metoda 0)');
   assert.equal(v.getUint16(10, true), 0, 'ora 00:00');
   assert.equal(v.getUint16(12, true), (1 << 5) | 1, '01.01.1980');
   assert.equal(v.getUint32(14, true), crc32(b('hi')));
   assert.equal(v.getUint32(18, true), 2, 'mărimea arhivată');
   assert.equal(v.getUint32(22, true), 2, 'mărimea întreagă');
+  assert.equal(v.getUint16(26, true), 5, 'lungimea numelui');
+  assert.equal(v.getUint16(28, true), 0, 'fără câmpuri în plus');
   assert.equal(v.getUint32(37, true), 0x02014b50, 'directorul, după 30 + 5 + 2 octeți');
+  assert.equal(v.getUint16(41, true), 20, 'directorul: scrisă de versiunea 2.0');
+  assert.equal(v.getUint16(43, true), 20, 'directorul: citită de versiunea 2.0');
+  assert.equal(v.getUint16(65, true), 5, 'directorul: lungimea numelui');
+  assert.equal(v.getUint16(67, true), 0, 'directorul: fără câmpuri în plus');
+  assert.equal(v.getUint32(79, true), 0, 'directorul: antetul local e la 0');
   assert.equal(v.getUint32(88, true), 0x06054b50, 'capătul, după încă 46 + 5');
+  assert.equal(v.getUint16(96, true), 1, 'o intrare pe disc');
   assert.equal(v.getUint16(98, true), 1, 'o intrare');
   assert.equal(v.getUint32(100, true), 51, 'directorul are 51 de octeți');
   assert.equal(v.getUint32(104, true), 37, 'și începe la 37');
@@ -133,6 +142,12 @@ test('„Toate foile”: fiecare program din arhivă e, octet cu octet, cel expo
   assert.notEqual(text(await singura('f3')), text(citit.intrari[0]!.octeti));
   assert.equal(faraComentarii(text(await singura('f3'))), faraComentarii(text(citit.intrari[0]!.octeti)), 'foaia 3 taie la fel');
   assert.ok(Buffer.from(citit.intrari[1]!.octeti).equals(Buffer.from(await singura('f2'))), 'foaia 2');
+  // Rândurile arhivei: ale programelor din ea (foaia 1 o dată, foaia 2).
+  const linii = async (id: string): Promise<number> => {
+    const s = await calculeazaExport(doarFoaia(d, id), p);
+    return s.ok ? s.fisiere[0]!.linii : Number.NaN;
+  };
+  assert.equal(zip.linii, (await linii('f1')) + (await linii('f2')));
   // Rezumatul: foile, cea identică, fișierele, foaia goală; timpul tuturor = 2 × foaia 1 + foaia 2.
   const foi = r.foi;
   assert.ok(foi);
@@ -146,6 +161,33 @@ test('„Toate foile”: fiecare program din arhivă e, octet cu octet, cel expo
   assert.ok(r.masina && Buffer.from(r.masina[0]!.octeti).equals(Buffer.from(await singura('f2'))));
   const iar = await calculeazaExport(doarFoaia(d, 'f2'), { ...p, toateFoile: true }, undefined, d);
   assert.ok(iar.ok && Buffer.from(iar.fisiere[0]!.octeti).equals(Buffer.from(zip.octeti)), 'aceiași octeți');
+});
+
+test('fără „Toate foile”, exportul rămâne al foii active (un program), chiar cu documentul întreg dat', async () => {
+  const d = patruFoi();
+  const r = await calculeazaExport(doarFoaia(d, 'f2'), { origine: 'stanga-jos', z0: 'sus' }, undefined, d);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  assert.deepEqual(r.fisiere.map((x) => x.nume), ['cncvs2-stanga-jos.nc']);
+  assert.equal(r.foi, undefined);
+});
+
+test('„Toate foile” pe RichAuto (nume scurte): arhiva CNCVS2.ZIP, fiecare foaie în dosarul ei (F1X2/, F2/)', async () => {
+  const d = patruFoi();
+  const r = await calculeazaExport(doarFoaia(d, 'f2'), { origine: 'stanga-jos', z0: 'sus', post: 'richauto', toateFoile: true }, undefined, d);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  assert.equal(r.fisiere[0]!.nume, 'CNCVS2.ZIP');
+  const citit = await citesteZip(r.fisiere[0]!.octeti, LIMITE);
+  assert.ok(citit.ok);
+  assert.deepEqual(citit.intrari.map((x) => x.nume), ['F1X2/CNCVS2.NC', 'F2/CNCVS2.NC']);
+});
+
+test('„Toate foile” fără nimic de tăiat pe nicio foaie: refuz', async () => {
+  const d = patruFoi();
+  const goale: Document = { ...d, foi: d.foi.map((f) => ({ ...f, instante: [] })) };
+  const r = await calculeazaExport(doarFoaia(goale, 'f1'), { origine: 'stanga-jos', z0: 'sus', toateFoile: true }, undefined, goale);
+  assert.deepEqual(r, { ok: false, motiv: 'nicio foaie n-are ce tăia' });
 });
 
 test('„Toate foile” cu o foaie din care iese freza: refuz cu numele ei (se exportă singură, cu confirmarea ei)', async () => {

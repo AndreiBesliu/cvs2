@@ -2,11 +2,12 @@
  * Felia 11.4↑c (ADR 0210 §4, răspunsul 5): textul care iese din plăcuță și unealta Text pe un șablon cu ramă. O ramă 120 × 30
  * și textul „Ana” grupate; «Din CSV…»: „Fă din textul ales câmpul {Nume}”, „avertisment și confirmare la export”, două
  * plăcuțe (Ion; Constantin Brâncoveanu, prea lung pentru ramă). Plăcuța lungă e roșie în listă, bara de jos o spune, panoul
- * o spune lângă valori, iar exportul nu pornește fără bifă. Apoi unealta Text, pe plăcuța aleasă: mărimea 3 în loc de 8,
+ * o spune lângă valori, iar exportul nu pornește fără bifă (nici „Toate foile”, de pe o a doua foaie fără plăcuțe, care
+ * singură nu cere bifa). Apoi unealta Text, pe plăcuța aleasă: mărimea 3 în loc de 8,
  * «Aplică»: plăcuțele se refac, textul încape, avertismentul pleacă.
  */
 import { test, expect, type Page } from '@playwright/test';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { adauga, ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -112,6 +113,24 @@ test('textul care iese din plăcuță: roșu în listă, bara de jos, panoul, bi
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   await page.getByRole('button', { name: 'Închide' }).click();
   await expect(cerere).toHaveCount(0);
+  // Cu o a doua foaie activă (un cerc, fără plăcuțe), exportul foii ei nu cere bifa; „Toate foile” o cere, pentru plăcuța
+  // foii 1 (ADR 0210 §5). Apoi înapoi pe foaia 1.
+  const foi = page.getByTestId('lista-vectori');
+  await foi.locator('[data-actiune="foaie.adauga"]').click();
+  await expect(foi.locator('[data-foaie]')).toHaveCount(2);
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.getByTestId('export-foi-alegere')).toBeVisible();
+  await expect(cerere).toHaveCount(0);
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  await page.locator('[data-foi="toate"]').click();
+  await expect(cerere).toContainText('Textul iese din plăcuța „Constantin Brâncoveanu”: e cu roșu în listă.');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await cerere.locator('[data-camp="confirma-placute"]').check();
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await foi.locator('[data-foaie="f1"] [data-nod="foaie"]').click();
+  await expect(lista(page)).toHaveCount(2);
   // Redeschis: judecata plăcuțelor vine la cerere, fără fereastra CSV: lista și bara de jos o spun din nou.
   await page.reload();
   await expect(page.getByTestId('avertisment')).toHaveText('Textul plăcuței „Constantin Brâncoveanu” iese din ea');
@@ -127,7 +146,8 @@ test('textul care iese din plăcuță: roșu în listă, bara de jos, panoul, bi
   await page.locator('[data-text="inaltime"]').fill('3');
   await page.click('[data-text="aplica"]');
   const d = await salvat(page, (x) => textGrupat(x)?.inaltime === 3);
-  expect(d.piese).toHaveLength(1);
+  // Șablonul (prima piesă) și cercul foii 2.
+  expect(d.piese).toHaveLength(2);
   expect(d.piese[0]?.radacina.copii).toHaveLength(2);
   expect(textGrupat(d)?.continut).toBe('{Nume}');
   expect(d.foi[0]?.instante.map((i) => Object.values(i.texte ?? {})[0]?.continut)).toEqual(['Ion', 'Constantin Brâncoveanu']);

@@ -2,9 +2,10 @@
  * Felia 11.5↑ (ADR 0210 §5): „Toate foile” la export. Cu o singură foaie, fereastra nu oferă alegerea. Un dreptunghi, copia
  * legată a foii („Duplică foaia cu aceleași piese”) și o foaie nouă cu un cerc: „Toate foile (3)” descarcă o arhivă cu două
  * programe (foaia 1 o dată, cu -x2, și foaia 3), fiecare cel al foii lui exportate singure; fereastra arată foile, ×2 și
- * timpul tuturor; „Deschide în Mașina” rămâne al foii active.
+ * timpul tuturor; „Deschide în Mașina” rămâne al foii active (amprenta programului ei).
  */
 import { test, expect, type Page } from '@playwright/test';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { adauga } from './ajutor-panza.ts';
@@ -65,5 +66,8 @@ test('„Toate foile”: arhiva cu foaia 1 ×2 și foaia 3, fiecare programul fo
   await expect(foi.locator('tbody tr').nth(1).locator('th')).toHaveText('Foaia 3');
   await expect(foi.locator('[data-foi="timp"]')).toContainText('Toate foile:');
   await expect(page.locator('[data-buton="in-masina"]')).toBeVisible();
+  // „Deschide în Mașina” încarcă programul foii active (amprenta exportului ei singur), nu arhiva.
+  await page.locator('[data-buton="in-masina"]').click();
+  await expect(page.locator('.masina-sha')).toHaveAttribute('data-sha', createHash('sha256').update(singura.octeti).digest('hex'));
   expect(erori).toEqual([]);
 });
