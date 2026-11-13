@@ -6,8 +6,9 @@ nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`
 completat:** și fereastra Imprimanta urmează aranjamentul („Da, ca Mașina”). **Tot pe 13.11, schițele acoperă toate
 ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intră în feliile 28.x, 3 devin linii separate.
 După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată. După tura a noua, încă 11 („Da la
-toate”), toate în feliile 28.x. După tura a zecea, încă 12 („Da la toate”): 11 în feliile 28.x, una linie separată
-(toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+toate”), toate în feliile 28.x. După tura a zecea, încă 12 („Da la toate”): 11 în feliile 28.x, una linie separată. După
+tura a unsprezecea, încă 13 în feliile 28.x („Da la toate”; a 14-a e a adminului, în ADR 0260) (toate, în secțiunile de la
+capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -339,3 +340,24 @@ fereastră, deci de toate aranjamentele.
 
 **Ce nu există azi** și intră prin aceste felii: câmpul de rotire scris (azi rotirea se face din mâner), butoanele − / + de
 pe pânză (azi zoomul e cu rotița, iar bara de jos are „Zoom N %” și „Arată toată foaia”).
+
+### Ideile turei a unsprezecea, acceptate tot pe 13.11
+
+După tura a unsprezecea (tablele Exportă vectori…, Verifică vectorii, Tăierea și rolurile mele, „Din desen…” al
+imprimantei), owner-ul a fost întrebat: „Accepți recomandările la ideile noi 63–76?”. A răspuns „Da la toate”. Ideea 76
+ține de admin și stă în ADR 0260.
+
+| Ideea | Felia |
+| --- | --- |
+| Plăcile formatelor la Exportă vectori, cu conturul foii ca comutator, în Atelier | 28.1↑ |
+| Problemele verificării ca carduri cu „Arată”, reparațiile de 64 px, în Atelier | 28.1↑ |
+| Rolurile mele ca plăci și adâncimea cu − / +, în Atelier | 28.1↑ |
+| Dialogul Exportă vectori al Clasicului (numele, formatul, straturile); formatul ales ultima dată, ținut în browser | 28.2↑ |
+| Verificarea ca panou andocat jos, cu problemele în tabel și dublu clic spre locul lor | 28.2↑ |
+| Panoul andocat „Rolurile mele” | 28.2↑ |
+| Comenzile „exportvectori dxf” și „rol "Buzunar ușă"” (rolul după nume) | 28.3↑ |
+| „Alte fișiere: desenul, fără tăieri” în pasul 5 | 28.4↑ |
+| Rolurile pe înțeles („Decupat pe contur”, „Scobit înăuntru”, „Gravat în V”, „Găuri”), rolurile tale ca butoane, restul sub „Alt rol…” | 28.4↑ |
+| Exportă vectori sub iconița din capul ferestrei, cu lista straturilor înainte de export | 28.5↑ |
+| Verificarea vectorilor ca insulă la dreapta, deschisă cât repari | 28.5↑ |
+| „Din desen…” după aranjament: dialogul cu file (Clasic), plăcile pentru material și calitate (Atelier), pasul 1 al imprimantei „Ce imprimi?” (Pas cu pas) | 28.6↑ |

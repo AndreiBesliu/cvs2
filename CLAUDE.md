@@ -1053,6 +1053,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **ideile 63–76 din tura a unsprezecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 63–76?”, după tablele Exportă vectori…, Verifică vectorii, Tăierea și rolurile mele, „Din
+  desen…” al imprimantei și Admin · Intrarea): 13 intră în feliile 28.x (ADR 0250, „Ideile turei a unsprezecea”), iar
+  intrarea și stările goale ale adminului intră în ADR 0260, felia A.1.
 - 13.11.2026: **felia 3.6s a imprimantei unită în `main`, înaintea planșelor** („Merge 3.6s now”, la „Merge planșele and
   3.6s together once planșele reports done?”, în sesiunea principală): unită exact la `e489f34` (notificările și semnul din
   bară, ADR 0194 §A); ramura merge mai departe cu 3.6t. Neîncercată încă pe K1C (canalul `imprimanta` o servește). Planșele
