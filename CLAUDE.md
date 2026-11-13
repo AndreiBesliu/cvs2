@@ -103,8 +103,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
-  plăcuțelor, 11.4↑, ramura `wip/11.1-plansele`), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v24 pe altă linie, după unirea planșelor) intră acolo, ca rangul și incrustația:** rândul
+  plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
+  (v24, de exemplu punțile dopului drept ale incrustațiilor) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -1130,6 +1130,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
+  principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
+  `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e
+  v23 (literele plăcuțelor), deci un câmp nou de acum ia v24. Pornirea cu ușa 109,7 / 110, totalul 690,0 / 700. Codul
+  aranjamentelor (ADR 0250) pornește din acest `main`, în worktree-ul `aranjamente`. Lucrul necomis al liniei (raportul
+  foilor) rămâne în worktree-ul ei.
 - 13.11.2026: **felia 12.1↑d a incrustațiilor unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia
   12.1↑d în main?”; verificat în transcrierea ei): fundul doar cu freza V (ADR 0173), fără câmp nou (documentul rămâne v22,
   v23 rămâne a planșelor). Unită cât CI-ul complet de pe `main` era roșu din cauza lui 3.6s (banda „pauză” acoperea butonul
