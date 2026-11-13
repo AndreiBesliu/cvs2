@@ -11,7 +11,8 @@
  *   pe inelul regiunii decalate cu D·tan(θ/2), la −D. Fundul dintre ele îl scoate freza dreaptă (`fundPlat`, ADR 0091):
  *   întâi ea, buzunar pe fiecare nivel L în zona {d ≥ L·tan(θ/2) + `MARJA_FUND`}; apoi freza V, cu axa doar unde freza
  *   dreaptă n-a ajuns și cu inele dese (creasta `CREASTA_FUND`) în colțurile pe care ea nu le atinge. Fără freză dreaptă,
- *   fundul rămâne, iar lucrarea o spune, ca avertisment.
+ *   fundul rămâne, iar lucrarea o spune, ca avertisment; pe o incrustație (`fundV`, ADR 0173), îl fac inelele frezei V, la
+ *   sv = t + 2c·tan(θ/2) unul de altul (creasta c, din jocul incrustației).
  * - Trecerile: la trecerea k se taie doar bucățile de sub nivelul k − 1, oprite la −k·pas (cu punctele inserate la treceri),
  *   deci nicio trecere nu scoate mai mult decât pasul: conul se mută cu cel mult un pas între treceri.
  * - Legăturile: lanțurile în ordinea capătului cel mai apropiat (inversate la nevoie), ridicare la Z-ul de siguranță între
@@ -41,6 +42,12 @@ export const TOLERANTA_GARDA = 0.0005;
 export const MARJA_FUND = 0.002;
 /** Creasta lăsată de inelele V în colțurile pe care freza dreaptă nu le atinge (mm, s3: un compromis cost / precizie). */
 export const CREASTA_FUND = 0.05;
+/** Câte inele pot face fundul doar cu freza V într-o regiune (ADR 0173); peste, refuzul, cu sfatul (timpul și calculul). */
+export const INELE_FUND_V_MAXIME = 400;
+
+/** „un inel”, „4 inele”, „20 de inele” (numeralul cu „de” de la 20 încolo, afară de 101–119, 201–219…). */
+const numarInele = (n: number): string => (n === 1 ? 'un inel' : n % 100 >= 20 || (n >= 100 && n % 100 === 0) ? `${n} de inele` : `${n} inele`);
+const fix3 = (x: number): string => String(Math.round(x * 1000) / 1000);
 
 export type ParametriVcarve = {
   /** Contururile închise ale regiunii, citite par-impar (literele, cu golurile lor). */
@@ -65,6 +72,11 @@ export type ParametriVcarve = {
   readonly zSigur: number;
   /** Freza dreaptă care scoate fundul plat (ADR 0091): diametrul ei, distanța dintre inele și sensul buzunarului. */
   readonly fundPlat?: FundPlatVcarve;
+  /**
+   * Fundul doar cu freza V (ADR 0173: o incrustație fără freză dreaptă): inelele regiunii decalate cu wD + j·sv, la −D, cât
+   * există, cu sv = t + 2c·tan(θ/2), deci creasta cel mult `creasta` (c). Doar fără `fundPlat`.
+   */
+  readonly fundV?: { readonly creasta: number };
 };
 
 /**
@@ -372,7 +384,35 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
       }
       for (const r of o.regiuni) inele.push(r.exterior, ...r.gauri);
     }
-    if (!p.fundPlat) avertismente.push(`regiunea e mai lată decât freza la ${D} mm (${(2 * wD).toFixed(3)} mm): pereții și axa se taie, iar fundul plat dintre ei rămâne pentru freza dreaptă`);
+    if (!p.fundPlat && p.fundV) {
+      // Fundul doar cu freza V (ADR 0173): inelele la wD + j·sv, la −D, tăiate ca inelul peretelui (pe contur, cu arcele lor, pe
+      // fiecare trecere la −nivel), cât există. Un punct de fund e la cel mult sv/2 de un inel sau de axă (distanța la contur
+      // crește cu cel mult 1 pe mm, iar unde inelul următor lipsește, axa e mai aproape), deci creasta e cel mult c.
+      const c = p.fundV.creasta;
+      if (!(c > 0 && Number.isFinite(c))) return { ok: false, motiv: `creasta fundului cu freza V trebuie să fie pozitivă (${c} mm)` };
+      const sv = varf + 2 * c * tan;
+      const nevoie = Math.ceil((razaMax - wD) / sv);
+      if (nevoie > INELE_FUND_V_MAXIME) {
+        return { ok: false, motiv: `fundul doar cu freza V ar cere ${numarInele(nevoie)} (cel mult ${INELE_FUND_V_MAXIME}), la ${fix3(sv)} mm unul de altul: alege o freză dreaptă în coloana Fund plat sau un joc mai mare` };
+      }
+      let n = 0;
+      for (let j = 1; j <= nevoie + 1; j++) {
+        let gol = true;
+        for (const g of grupe) {
+          const o = offsetDepartat(g, wD + j * sv);
+          if (!o.ok) {
+            if (nuIncape(o.motiv)) continue;
+            return { ok: false, motiv: `fundul cu freza V, inelul la ${(wD + j * sv).toFixed(3)} mm de contur: ${o.motiv}` };
+          }
+          for (const r of o.regiuni) { gol = false; inele.push(r.exterior, ...r.gauri); n += 1 + r.gauri.length; }
+        }
+        if (gol) break;
+      }
+      const cine = n === 1 ? 'fundul îl face un inel al frezei în V' : `fundul îl fac ${numarInele(n)} ale frezei în V, la ${fix3(sv)} mm unul de altul`;
+      avertismente.push(`${cine} (creasta cel mult ${fix3(c)} mm): mai lent decât cu o freză dreaptă`);
+    } else if (!p.fundPlat) {
+      avertismente.push(`regiunea e mai lată decât freza la ${D} mm (${(2 * wD).toFixed(3)} mm): pereții și axa se taie, iar fundul plat dintre ei rămâne pentru freza dreaptă`);
+    }
   } else if (p.fundPlat) {
     avertismente.push(`regiunea nu e nicăieri mai lată decât freza în V la ${D} mm (${(2 * wD).toFixed(3)} mm): n-are fund plat, deci freza dreaptă nu se montează`);
   }

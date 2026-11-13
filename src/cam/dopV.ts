@@ -22,6 +22,8 @@
  *   lărgite cu e + r (e = H·t + c), prin toată placa, cu punți pe buclele exterioare (palierul e lățimea plus freza, ca la
  *   12.1↑b), fără punți pe golurile reuniunii. Pe linie, nu pe o parte: tăietura stă la cel puțin e de orice parte a desenului,
  *   oricât de aproape ar fi literele între ele, iar piesa păstrată ajunge cel mult la e + r, deci stă pe fundul plat.
+ * Fără freză dreaptă (ADR 0173), fața coborâtă sau fundul benzii le fac inelele frezei V (creasta cel mult H/2), iar regiunea
+ * feței se lărgește doar cu e = H·t + 1; decuparea cere atunci freza ei (refuzul e în `incrustatie.ts`).
  */
 import { VERSIUNE_SCHEMA, type Document, type Operatie } from '../model/document.ts';
 import { valoriBanda, valoriIncrustatie } from '../model/incrustatie.ts';
@@ -71,7 +73,8 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
     const op = operatieDe(t)!;
     const refuz = refuzIncrustatie(op, t.idLume);
     if (refuz) return { ok: false, motiv: refuz };
-    const val = valoriIncrustatie(op)!, inc = op.incrustatie!, fp = op.fundPlat!;
+    // Fără freză dreaptă (ADR 0173), `fp` lipsește: fundul îl fac inelele frezei V.
+    const val = valoriIncrustatie(op)!, inc = op.incrustatie!, fp = op.fundPlat;
     // Banda (ADR 0172), sau null pe fața coborâtă: lățimea, marginea, decuparea, din același loc ca panoul.
     const banda = valoriBanda(op);
     const contururi: Contur[] = [];
@@ -101,22 +104,26 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       regiune = [...contururiRegiuni(larg.regiuni), ...desen];
     } else {
       const w = val.H * val.t + MARJA_FUND;
-      const e = Math.max(val.H * val.t + DINCOLO_DE_MARGINE, fp.scula.diametru + 2 * w - m + TRECERE_FUND);
+      const e = Math.max(val.H * val.t + DINCOLO_DE_MARGINE, fp ? fp.scula.diametru + 2 * w - m + TRECERE_FUND : 0);
       regiune = [conturDreptunghi(-e, -e, latime + 2 * e, inaltime + 2 * e), ...desen];
       // Cât trece freza de marginile semifabricatului, cel mult: marginea regiunii plus raza celei mai late freze.
-      const dincolo = e + Math.max(op.scula.diametru, fp.scula.diametru) / 2;
+      const dincolo = e + Math.max(op.scula.diametru, fp?.scula.diametru ?? 0) / 2;
       avertismente.push(`dopul ${t.idLume}: freza trece cu până la ${Math.ceil(dincolo * 10) / 10} mm dincolo de marginile semifabricatului (fața coborâtă până la margine): fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă`);
     }
     const f = op.scula.forma!;
     const v = traseuVcarve({
       contururi: regiune, unghi: f.unghi, varf: 0, diametruScula: op.scula.diametru, adancime: val.S + val.H, adancimeStart: val.S,
       pas: op.pas, avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
-      fundPlat: {
-        diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: op.sens,
-        ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
-      },
+      ...(fp ? {
+        fundPlat: {
+          diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: op.sens,
+          ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+        },
+      } : { fundV: { creasta: val.creastaDop } }),
     });
     if (!v.ok) return { ok: false, motiv: `${t.idLume}, dopul: ${v.motiv}` };
+    // Fundul doar cu freza V (ADR 0173): câte inele și la ce distanță, spus omului (mai lent decât cu freza dreaptă).
+    for (const a of v.avertismente) if (/inel(e)? al(e)? frezei în V/.test(a)) avertismente.push(`dopul ${t.idLume}: ${banda ? 'fundul benzii' : 'fața coborâtă'}: ${a}`);
     const miscari: Miscare[] = [];
     const eticheta = (text: string): void => { miscari.push({ tip: 'eticheta', text, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` }); };
     let initiala: Scula | null = null, curenta: Scula | null = null;
@@ -126,12 +133,12 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       curenta = sculaIR(s);
       miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
     };
-    if (v.fund.length > 0) {
+    if (fp && v.fund.length > 0) {
       monteaza(fp.scula);
       eticheta(`dopul ${t.idLume}: ${banda ? 'fundul benzii' : 'fața coborâtă'} la ${fix(val.S + val.H)} mm cu T${fp.scula.numar} Ø${fp.scula.diametru}`);
       for (const x of v.fund) miscari.push(x);
     }
-    for (const [kr, r] of (fp.rest ?? []).entries()) {
+    for (const [kr, r] of (fp?.rest ?? []).entries()) {
       const mr = v.fundRest[kr] ?? [];
       if (mr.length === 0) continue;
       monteaza(r.scula);
@@ -144,7 +151,8 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
     let semifabricat: SemifabricatDop = { latime, inaltime, grosimeMinima: val.grosimeMinima };
     if (banda?.decupare) {
       // Decuparea, la urmă (după ea, dopul ține doar în punți): pe linie, pe exterioarele lărgite cu e + r, prin toată placa.
-      const d = banda.freza, T = banda.placa, p = banda.punti;
+      // Freza decupării există: fără ea (fundul doar cu V, ADR 0173), `refuzIncrustatie` a refuzat decuparea mai sus.
+      const d = banda.freza!, T = banda.placa, p = banda.punti;
       const linie = offsetFigura(exterioare(), banda.e + d.diametru / 2);
       if (!linie.ok) return { ok: false, motiv: `${t.idLume}, decuparea dopului: ${linie.motiv}` };
       const bucle = linie.regiuni.map((r) => r.exterior), goluri = linie.regiuni.flatMap((r) => r.gauri);
