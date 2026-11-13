@@ -8898,3 +8898,12 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
   verificat în Edge fără fereastră, ro și en: firma de 2 400 × 1 000 cu o literă (Degrupează), la 1 200 × 900, egale: grila 2 ×
   2 pe pânză, patru panouri, „Panoul 1” grupul cu litera; Anulează, apoi blocul ia toate formele foii (2); din colț, cu zigzag,
   tot patru, cu litera în „Panoul 1”; nicio eroare în consolă.
+- **Pauză (14.11, „pauza peste tot”, de la owner, prin sesiunea principală): felia NU e încă gata de unit pe `main`-ul de
+  acum.** După încheiere, `main` a primit planșele 11.1↑–11.5↑: `d62e6b8` unit în `f24ec10` (conflictele: cererea tăierii cu
+  `indexFoaie`, `judecaTaierea` cu `idFoaie` și `motivDupa`; panourile pe foaia activă: cererea `panouri`, workerul,
+  `PanouriTaiere`), proba foii a doua (`511971f`), otrava H08 mutată (`ba5a3ed`). Pe unire: unit-urile tăierii, acțiunilor și
+  documentelor 263 / 263; e2e `taiere` și `cutit` 32 / 32; build-ul determinist; mărimea 690,0 → 694,8 / 700 (pornirea cu ușa
+  109,7 / 110, ca `main`); otrăvurile 45 / 46, M03 echivalentă. Porțile întregi și emulatoarele, nerulate pe ea. **La reluare:**
+  unește `origin/main` `0e3725c` (reparația benzii 3.6s, plafoanele 115 / 800, trasarea 25.5↑), porțile întregi și emulatoarele
+  pe rezultat, mărimea finală în documente (ADR 0181, fișa și traducerea ei, DEVLOG), împingerea, canalul `taiere` (acum pe
+  `9835062`, de dinaintea planșelor), raportul „gata de unit”.
