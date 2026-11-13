@@ -18,7 +18,7 @@
  *   fiecare bucată; **un id vechi eliberat de o tăietură** nu ajunge pe o bucată nouă; **cutia** e a tuturor contururilor
  *   unei piese (un text singur, în două panouri: câte o literă);
  * - **acțiunea `document.taie`:** un singur pas de anulare (tăierea și gruparea), alese rămân panourile; fără nicio tăietură,
- *   doar grupurile;
+ *   doar grupurile; pe foaia activă (a doua), cu prima neatinsă;
  * - **refuzurile:** peste plafon; nimic ales; o piesă pusă de două ori (și una netăiată, care ar intra într-un grup); un singur panou (`nimic-taiat`); valorile; spațiul fără
  *   închidere; dinții care ar ieși din fâșia de 100 mm a panourilor din colț (`imbinare-margine`).
  */
@@ -295,6 +295,26 @@ test('document.taie: tăierea și gruparea panourilor, un singur pas de anulare;
   assert.equal(h.doc.piese.find((p) => p.id === h.doc.foi[0]?.instante[0]?.piesa)?.nume, 'Panoul 1');
   ruleaza(R, 'istoric.anuleaza', ctx);
   assert.deepEqual({ ...h.doc, rev: d.rev }, d, 'anularea pune documentul de dinainte');
+});
+
+test('pe foaia activă (planșele): panourile stau pe foaia a doua, cu grupurile lor, iar prima rămâne neatinsă', () => {
+  const baza = docDin(stoc, patrat('s', 0, 0, 100, 100), FIRMA, patrat('a', 100, 100, 100, 200));
+  const f0 = baza.foi[0];
+  assert.ok(f0);
+  const d: Document = { ...baza, foi: [{ ...f0, instante: f0.instante.filter((i) => i.id === 's') }, { ...f0, id: 'foaia-2', instante: f0.instante.filter((i) => i.id !== 's') }] };
+  assert.deepEqual(taieInPanouri(d, cerere(['f', 'a'], EGALE)), { ok: false, motiv: 'nimic-ales' }, 'pe prima foaie, firma nu e');
+  const r = taieInPanouri(d, cerere(['f', 'a'], EGALE), 1);
+  if (!r.ok) return assert.fail(r.motiv);
+  const R = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  let h: Istoric = istoricNou(d);
+  let sel: readonly string[] = ['f', 'a'];
+  const ctx: ContextDocument = { istoric: () => h, scrie: (x) => { h = x; }, selectie: () => sel, selecteaza: (ids) => { sel = ids; }, doarCitire: () => false, foaie: () => 'foaia-2' };
+  assert.deepEqual(ruleaza(R, 'document.taie', { ...ctx, taiere: () => ({ doc: d, degrupate: r.degrupate, ids: r.ids, grupuri: r.grupuri ?? [] }) }), { ok: true });
+  assert.deepEqual(h.doc.foi[0], d.foi[0], 'prima foaie, neatinsă');
+  assert.equal(h.doc.foi[1]?.instante.length, 4);
+  assert.equal(sel.length, 4);
+  assert.equal(h.doc.piese.find((p) => p.id === h.doc.foi[1]?.instante[0]?.piesa)?.radacina.tip, 'grup', '„Panoul 1”: placa și litera');
+  assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(h.doc))));
 });
 
 test('refuzurile: plafonul, nimic ales, piesa pusă de două ori, un singur panou, valorile, spațiul fără închidere, dinții prea înalți', () => {
