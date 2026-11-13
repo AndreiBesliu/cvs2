@@ -8431,7 +8431,7 @@ provizorie); după pauză, „ce se poate uni?”.
 ## 2026-11-13 — Felia 25.5↑: foaia pozată oblic (ADR 0225, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da la 1-3a” (owner-ul, la cele trei întrebări din ADR 0225: îndreptarea oprită implicit, cu sugestia din raport;
-A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **Started:** 13.11, 18:16. **Completed:** —.
+A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **Started:** 13.11, 18:16. **Completed:** 13.11, 21:56.
 
 - **Ramura** adusă la `origin/main` (`29b69c0`; conflict doar în DEVLOG).
 - **Probele întâi:** generatorul pozelor prototipului în `test/unit/ajutor-poze.ts` (o foaie A4 cu un pătrat de 60 mm, un
@@ -8461,3 +8461,5 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   au primit probe (trei puncte coliniare cu zecimale: fără pivotul minim, o „omografie” de 1e18; camerele de 0,5 și 1,5
   diagonale: cu o singură focală presupusă, intervalul nu mai cuprinde A4); G09, G10 și G13, echivalente, au ieșit din
   cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
+  `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
