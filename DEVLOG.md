@@ -8390,3 +8390,18 @@ provizorie); după pauză, „ce se poate uni?”.
   estimarea care învață, 3.6u filmele; doar citiri. Schița, cu formularul: <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Două întrebări
   care se exclud (schița; unde se ține istoricul cvs2). Codul vine după răspunsuri.
 - **Găsit pe drum:** rândul ADR 0193 din index nu spunea că 3.6r e gata; reparat.
+
+## 2026-11-13 — 3.6s: notificările și semnul din bară (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, 11.11, la „Accepți recomandările din schiță (1a, 2a)?”); după pauza din 12.11
+(„pauza aici”), „continua” (13.11).
+**Started:** 11.11, 20:37. **Completed:** 13.11, 17:45.
+
+- **Driverul și evenimentele:** `state` 2 = „gata”, `materialStatus` → `faraFilament`; `evenimente.ts` (pur), doar din
+  schimbări, cu cheile pe lucrare.
+- **Fereastra și carcasa:** banda (din orice fereastră), notificarea sistemului cât cvs2 e ascuns, sunetul, cardul
+  Notificările, semnul pe fila Imprimanta, titlul filei din părți (și pentru mașina CNC), legarea la deschidere.
+- **Imprimanta falsă:** finalul cu `state` 2, senzorul de filament.
+- **Probe și porți:** 9 pe hârtie, manualul, două e2e; unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms); totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Otrăvurile (`test/otravuri/3.6s.py`):
+  32 / 32 (22 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 9).
+- **Găsit pe drum:** „0 m de filament” pe o lucrare scurtă (văzut în Edge); reparat.

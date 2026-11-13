@@ -449,6 +449,10 @@
       "ro": "Nivelul rapid local în 12 s: `tsc`, regulile de import (11 reguli, 10 capcane, 48 de module; controalele: o regulă stricată și o încălcare reală pică), 26 de teste, build determinist (69,9 kB gzip, plafon 100), licențele (4 dependențe de rulare, MIT). `dependency-cruiser` nu suportă TypeScript 7, deci citește prin swc. Cârligul `git add -A` în `.claude/`. Workflow-urile `rapid` (push) și `complet` (noaptea, e2e în Edge). Treceri: ciclul raportat o dată, binarul nedeclarat în `exports`, licențele din lanțul de dependențe, nu din marcajul `dev`.",
       "en": "Local rapid level in 12 s: `tsc`, import rules (11 rules, 10 traps, 48 modules; controls: a broken rule and a real violation both fail), 26 tests, deterministic build (69.9 kB gzip, cap 100), licences (4 runtime dependencies, MIT). `dependency-cruiser` does not support TypeScript 7, so it reads through swc. The `git add -A` hook in `.claude/`. Workflows `rapid` (push) and `complet` (nightly, e2e in Edge). Passes: the cycle reported once, the binary not declared in `exports`, licences taken from the dependency chain, not from the `dev` flag."
     },
+    "26a42280c8029adf": {
+      "ro": "**Notificările și semnul din bară** (fără imprimantă; ADR 0194, acceptat cu recomandările, „Da, recomandările”: 1a, 2a; reluată după pauză, „continua”; în worktree-ul `imprimanta`). cvs2 anunță finalul, oprirea, pauza din fișier (cu nota scrisă în cvs2), altă pauză, lipsa filamentului, o eroare și legătura pierdută cât imprimă (primul strat, la cerere): o bandă în aplicație, văzută din orice fereastră, cu sunet, și notificarea sistemului cât cvs2 e ascuns. Pe fila Imprimanta, un punct și procentul; procentul și în titlul filei (din părți, ca să nu se certe cu mașina CNC); cu o bifă, imprimanta se leagă la deschiderea cvs2. Driverul K1 citește finalul (`state` 2) și senzorul de filament; imprimanta falsă le are. **Probe:** pe hârtie (evenimentele, driverul, setările, semnul, textele, titlul), manualul, două e2e; otrăvurile 32 / 32 (22 pe probele unitare, 10 prin e2e). **Mărimea:** totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Proba pe imprimanta owner-ului: ghidul, pasul 9.",
+      "en": "**Notifications and the mark on the bar** (no printer; ADR 0194, accepted with the recommendations, \"Da, recomandările\": 1a, 2a; resumed after a pause, \"continua\"; in the `imprimanta` worktree). cvs2 announces the end, the stop, the pause from the file (with the note written in cvs2), another pause, running out of filament, an error and a connection lost while printing (the first layer, on request): a banner in the app, seen from any window, with a sound, and the system notification while cvs2 is hidden. On the Printer tab, a dot and the percentage; the percentage also in the tab title (built from parts, so it does not clash with the CNC machine); with a checkbox, the printer connects when cvs2 opens. The K1 driver reads the end (`state` 2) and the filament sensor; the fake printer has them. **Tests:** on paper (the events, the driver, the settings, the mark, the texts, the title), the manual, two e2e; poisons 32 / 32 (22 on the unit tests, 10 through e2e). **Size:** total 657.5 / 700 kB (+3.1), start-up 102.4 (with the door 106.1 / 110; +0.2: the mark's slot and the start-up checkbox). The test on the owner's printer: the guide, step 9."
+    },
     "27053aa739611fa9": {
       "ro": "Contractele atelierelor",
       "en": "The workshop contracts"
@@ -764,6 +768,10 @@
     "3d35cb85efc5e1ae": {
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
+    },
+    "3d64c66453dc43e5": {
+      "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
     },
     "3e46274cb0ba0363": {
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
@@ -1237,6 +1245,10 @@
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
     },
+    "686612f44bf1fa8c": {
+      "ro": "Gata pe 13.11",
+      "en": "Done on 13.11"
+    },
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
       "en": "The 500 kB total cap"
@@ -1332,10 +1344,6 @@
     "728386c91d815bc8": {
       "ro": "Aldinul și cursivul sintetic, aduse din etapa 7",
       "en": "Synthetic bold and italic, brought forward from stage 7"
-    },
-    "73067df55eb162d3": {
-      "ro": "Notificările și semnul din bară (ADR 0194, propus pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
-      "en": "Notifications and the mark on the bar (ADR 0194, proposed on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
     },
     "733512c823e0b297": {
       "ro": "Buzunar, găurire, ordinea, frezele, animația",
@@ -1444,10 +1452,6 @@
     "7b9ef2336dbee5f8": {
       "ro": "Operațiile în document",
       "en": "Operations in the document"
-    },
-    "7bde277819197a0f": {
-      "ro": "Notificările și semnul din bară",
-      "en": "Notifications and the mark on the bar"
     },
     "7c50450482c286a4": {
       "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",

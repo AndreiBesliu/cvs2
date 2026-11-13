@@ -8,7 +8,9 @@ Pe 07.11, owner-ul acceptase deja ideile („in primul rand, accept toate sugest
 (semn și notificare) și istoricul. **Completează:** ADR 0190 (fereastra Imprimanta), ADR 0192 (starea comună a driverelor
 primește istoricul și filmele, tot doar citiri) și ADR 0193 (pauza din fișier ajunge într-o notificare, cu nota ei).
 **Documentul:** neschimbat (cu răspunsul recomandat la întrebarea 2). **Schița,** cu formularul răspunsurilor (colecția
-`raspunsuri`): <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>.
+`raspunsuri`): <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. **Felia 3.6s** gata pe 13.11 (secțiunea „Felia 3.6s,
+gata”); proba pe imprimanta owner-ului: ghidul, pasul 9. Fereastra Imprimanta urmează aranjamentul (ADR 0250 §6, completat
+pe 13.11), deci cardul Notificările e încă un modul de așezat acolo; semnul merge cu fila.
 
 **Problema.** O imprimare ține o oră sau cinci, iar omul nu stă în fereastra Imprimanta: lucrează în Proiectare sau în alt
 program. Azi află că imprimarea s-a terminat, s-a oprit la pauza din fișier (magnetul de pus), a rămas fără filament sau
@@ -161,6 +163,33 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
 - **Otrăvurile:** `test/otravuri/3.6s.py`, `3.6t.py`, `3.6u.py`.
 - **Pe imprimanta owner-ului** (ghidul, pași noi): o imprimare scurtă cu notificările pornite și cvs2 în fundal (vine
   notificarea? sunetul?); istoricul (durata, filamentul, față de estimare); un film, cu timelapse-ul pornit pe ecran.
+
+## Felia 3.6s, gata (13.11.2026)
+
+- **Driverul K1:** `state` 2 e „gata” (și la 99 %: procentul pâlpâie la final); `materialStatus` ajunge în starea comună
+  ca `faraFilament`.
+- **Evenimentele** (`src/machine/imprimanta/evenimente.ts`, pur): finalul, oprirea, pauza din fișier (stratul și nota
+  scrisă în cvs2, cu diacritice, ținută cu fișierul), altă pauză, lipsa filamentului (și venită în pauză), o eroare nouă
+  (alt cod sau altă cheie), legătura pierdută cât lucrează, primul strat. Doar din schimbări: nimic din prima stare după
+  legare, iar cât lipsește legătura starea veche nu anunță nimic. Durata și filamentul sunt cele de dinaintea finalului
+  (imprimanta le poate pune pe 0); cheile țin cât lucrarea, ca o stare care pâlpâie să nu anunțe de două ori.
+- **Fereastra** (`VestiriImprimanta.tsx`, `notificariImprimanta.ts`): banda, pusă în pagină, deci văzută din orice
+  fereastră (jos pe telefon), închisă singură la Reia sau la revenirea legăturii; notificarea sistemului cât cvs2 e
+  ascuns (clicul aduce fereastra Imprimanta; pe Android, prin service worker); sunetul (Web Audio); cardul Notificările
+  (`cvs2.imprimanta.notificari`, `v: 1`); semnul pe fila Imprimanta; partea imprimantei din titlul filei.
+- **Carcasa** (`App.tsx`, cât mai puțin la pornire): locul semnului în fila Imprimanta (un copil opțional al lui
+  `buton`), `vizibila` și `onDeschide` pentru fereastră, montarea ei după pornire cu bifa „leagă la deschidere”. Titlul
+  filei se face din părți (`titluFila.ts`): îl folosește și indicatorul mașinii CNC, cu același titlu ca înainte (cheia
+  `masina.titlu.stare` a ieșit), ca imprimanta și mașina să nu-și șteargă una alteia titlul.
+- **Imprimanta falsă:** un fișier se încheie cu `state` 2, apoi 0, cu timpul și filamentul pe 0 (ca o K3);
+  `faraFilament()` pune `materialStatus` 1 și pauza; Reia îl pune la loc.
+- **Găsit pe drum:** pe o lucrare scurtă, banda scria „0 m de filament” (văzut în Edge): sub un metru, două zecimale;
+  sub 1 cm, deloc.
+- **Măsurat și probat:** totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Probe noi: `test/unit/imprimanta.notificari.test.ts` (9: evenimentele, driverul,
+  setările, semnul, textele, titlul), manualul (8 controale noi, citite și din `VestiriImprimanta.tsx`), două e2e
+  (notificările cu API-ul browserului înlocuit; legarea la deschidere). Porțile: unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms). Privită în Edge: 1280 px
+  luminos (semnul în Proiectare, banda la lipsa filamentului și la final, cardul) și 390 px întunecat (banda jos, semnul),
+  fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6s.py`, 32 / 32 (22 pe probele unitare, 10 prin e2e); listele 3.6p–3.6r se aplică în continuare.
 
 ## Întrebările (owner)
 
