@@ -5,7 +5,8 @@
 nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`. Schițele mai cresc până atunci. **Pe 13.11, §6 s-a
 completat:** și fereastra Imprimanta urmează aranjamentul („Da, ca Mașina”). **Tot pe 13.11, schițele acoperă toate
 ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intră în feliile 28.x, 3 devin linii separate.
-După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată (toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată. După tura a noua, încă 11 („Da la
+toate”), toate în feliile 28.x (toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -289,3 +290,25 @@ recomandările la ideile noi 17–27?”. A răspuns „Da la toate”.
 | Conectarea după aranjament: dialogul Clasicului, cardurile Atelierului, „Leagă mașina” la începutul pasului 5, cu avertismentul WiFi înainte de „Conectează” | 28.6↑ |
 
 **Linie separată:** editarea textului direct pe planșă, cu dublu clic. Ține de unealta Text, deci de toate aranjamentele.
+
+### Ideile turei a noua, acceptate tot pe 13.11
+
+După tura a noua (tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În engleză), owner-ul a fost
+întrebat: „Accepți recomandările la ideile noi 28–38?”. A răspuns „Da la toate”.
+
+| Ideea | Felia |
+| --- | --- |
+| Bara selecției a Atelierului, cu acțiunile pe forme ca butoane de 60 px; offsetul cu − / + | 28.1↑ |
+| Comenzile animației de 72 px, cu operația și freza scrise sub timp, în Atelier | 28.1↑ |
+| O zonă „mesaj” în tipul `Aranjament`: toate uneltele scriu acolo rezultatul lor, cu „Anulează” (Ctrl Z) lângă mesaj | 28.1↑ |
+| Confirmarea ieșirii din foaie pe tot ecranul, cu bifa de 36 px, în Atelier | 28.1↑ |
+| Meniul Vectori cu submeniurile Aliniere, Copiere, Booleanul; Offset… și Taie… ca dialoguri; comanda „offset 10 ext” | 28.2↑ (comanda: 28.3↑) |
+| Animația ca panou andocat jos, cu banda operațiilor; timpul jobului în bara de stare | 28.2↑ |
+| Confirmările ca dialog clasic, cu Renunță ca buton implicit | 28.2↑ |
+| Cardul „Formele alese” în pasul 1, cu acțiunile grupate după scop și o propoziție | 28.4↑ |
+| În pasul 2, lista operațiilor cu timpul fiecăreia și traseul operației alese | 28.4↑ |
+| Numele pașilor în engleză: Drawing, Cutting, Checking, Simulation, Machine | 28.4↑ |
+| Panoul animației plutește între insule, fără să acopere proprietățile | 28.5↑ |
+| Bara fiecărui aranjament probată în ambele limbi, cu fontul lat (Verdana / DejaVu Sans) | fiecare felie |
+
+Zona „mesaj” schimbă unde scriu uneltele, nu ce scriu: textele mesajelor rămân aceleași.

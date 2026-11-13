@@ -1048,6 +1048,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **ideile 28–38 din tura a noua a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 28–38?”, după tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În
+  engleză): toate intră în feliile 28.x (ADR 0250, „Ideile turei a noua”). Între ele, o zonă „mesaj” în tipul `Aranjament`,
+  în care scriu toate uneltele, cu „Anulează” lângă mesaj, și proba fiecărei bare în ambele limbi, cu fontul lat.
 - 13.11.2026: **ideile 17–27 din tura a opta a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 17–27?”, după tablele Conectarea mașinii, Proiectul gol, Textul și Tastatura): 10 intră în
   feliile 28.x (ADR 0250, „Ideile turei a opta”), între ele F6 prin zonele aranjamentului, cu ordinea în tipul
