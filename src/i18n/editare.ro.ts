@@ -746,6 +746,19 @@ export const roEditare = {
   'motiv.aseaza-prea-mari': 'Piesele alese sunt mai mari decât foaia: rămân pe loc.',
   'motiv.aseaza-nimic': 'Piesele stau deja așa: nimic de mutat.',
   'motiv.aceeasi-foaie': 'Alege o altă foaie decât cea activă.',
+  // Motivele date doar de calculul acțiunilor (gruparea, degruparea, textul, rolul, foaia, importul): mutate din dicționarul
+  // de bază la felia 11.5↑ (ADR 0210 §5), ca ale planșelor; pornirea nu le mai aduce.
+  'motiv.rol-nepotrivit': 'Rolul ales nu se potrivește tuturor formelor alese.',
+  'motiv.foaie-invalida': 'Foaia trebuie să aibă lățimea și înălțimea între 0 și 10 000 mm, iar grosimea între 0 și 1 000 mm.',
+  'motiv.transformare-inexacta': 'Transformarea nu se poate face: piesa ar trece de plafoanele documentului (o latură sau o rază peste 10 m, un loc prea departe) sau n-ar mai fi exactă.',
+  'motiv.nimic-de-degrupat': 'Nicio formă aleasă nu e un grup: fiecare piesă are o singură formă.',
+  'motiv.degrupare-vcarve': 'Un V-carve își sapă contururile împreună (literele cu golurile lor): degrupate, golurile s-ar săpa și ele. Schimbă întâi operația, în fereastra exportului.',
+  'motiv.degrupare-impartita': 'Piesa e pusă de mai multe ori: degruparea le-ar desface pe toate. Desprinde-o întâi.',
+  'motiv.grupare-vcarve': 'Două forme alese au câte un V-carve cu aceleași valori (freza, adâncimea, pasul) și se ating sau se suprapun: grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată. Depărtează-le, sau dă-i uneia altă adâncime sau alt pas (panoul de proprietăți, Tăierea).',
+  'motiv.text-gol': 'Textul n-are nicio literă de tăiat: doar spații, sau litere pe care fontul nu le are.',
+  'motiv.text-includeri': 'Textul are prea multe contururi ca să judec golurile literelor.',
+  'motiv.text-vectori': 'Forma aleasă nu mai e text: contururile i-au fost schimbate altfel decât din panoul textului.',
+  'motiv.import-refuzat': 'Desenul importat n-ar trece de verificarea proiectului: proiectul n-ar mai putea fi deschis.',
   // Etichetele acțiunilor planșelor (ADR 0210): le arată doar ferestrele aduse la cerere (paleta, meniul foii, panoul).
   'actiune.foaie-duplica': 'Duplică foaia',
   'actiune.foaie-sterge': 'Șterge foaia',

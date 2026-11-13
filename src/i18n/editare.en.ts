@@ -720,6 +720,19 @@ export const enEditare = {
   'motiv.aseaza-prea-mari': 'The chosen parts are larger than the sheet: they stay where they are.',
   'motiv.aseaza-nimic': 'The parts are already arranged like that: nothing to move.',
   'motiv.aceeasi-foaie': 'Choose a sheet other than the active one.',
+  // The motives given only by the action calculation (grouping, ungrouping, text, role, sheet, import): moved out of the base
+  // dictionary in slice 11.5↑ (ADR 0210 §5), like the sheets' ones; startup no longer brings them.
+  'motiv.rol-nepotrivit': 'The chosen role does not fit all the chosen shapes.',
+  'motiv.foaie-invalida': 'The sheet width and height must be between 0 and 10,000 mm, and its thickness between 0 and 1,000 mm.',
+  'motiv.transformare-inexacta': 'The transform cannot be done: the piece would go past the document limits (a side or radius over 10 m, a place too far away) or would no longer be exact.',
+  'motiv.nimic-de-degrupat': 'None of the chosen shapes is a group: each piece has a single shape.',
+  'motiv.degrupare-vcarve': 'A V-carve cuts its contours together (letters with their holes): ungrouped, the holes would be cut too. Change the operation first, in the export window.',
+  'motiv.degrupare-impartita': 'The part is placed more than once: ungrouping would take all of them apart. Detach it first.',
+  'motiv.grupare-vcarve': 'Two chosen shapes each have a V-carve with the same values (tool, depth, step) and they touch or overlap: grouped, they would be carved as a single region, and the overlap would be left uncut. Move them apart, or give one of them another depth or step (properties panel, Cutting).',
+  'motiv.text-gol': 'The text has no letter to cut: only spaces, or letters the font does not have.',
+  'motiv.text-includeri': 'The text has too many outlines to work out the holes of the letters.',
+  'motiv.text-vectori': 'The chosen shape is no longer text: its outlines were changed other than from the text panel.',
+  'motiv.import-refuzat': 'The imported drawing would not pass the project check, so the project could not be opened again.',
   // The labels of the sheets' actions (ADR 0210): only windows loaded on demand show them (the palette, the sheet menu, the panel).
   'actiune.foaie-duplica': 'Duplicate the sheet',
   'actiune.foaie-sterge': 'Delete the sheet',
