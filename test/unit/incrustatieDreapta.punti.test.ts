@@ -39,45 +39,78 @@ async function exporta(brut: unknown) {
 }
 
 /**
- * Bucățile netăiate (lemnul punților) la înălțimea z a programului dopului, pe linia de mijloc a șanțului (3 mm în afara
- * dopului [8,1; 37,9] × [8,1; 27,9]), pe laturile drepte, din 0,1 în 0,1 mm, în ordinea de pe buclă.
+ * Linia de mijloc a șanțului, toată (laturile și colțurile): dopul e [8,1; 37,9] × [8,1; 27,9] cu colțurile R2,9 (locașul
+ * 30 × 20 cu colțurile R3 ale frezei, micșorat cu 0,1), iar linia e la 3 mm în afara lui: laturile de 24 și 14 mm, colțurile
+ * R5,9 în jurul centrelor (11, 11), (35, 11), (35, 25), (11, 25). Lungimea ei: 2 · 24 + 2 · 14 + 2π · 5,9 ≈ 113,07 mm.
+ */
+const R_COLT = 5.9;
+const BUCLA: ReadonlyArray<{ readonly l: number; readonly punct: (s: number) => readonly [number, number] }> = [
+  { l: 24, punct: (s) => [11 + s, 5.1] },
+  { l: (Math.PI / 2) * R_COLT, punct: (s) => [35 + R_COLT * Math.sin(s / R_COLT), 11 - R_COLT * Math.cos(s / R_COLT)] },
+  { l: 14, punct: (s) => [40.9, 11 + s] },
+  { l: (Math.PI / 2) * R_COLT, punct: (s) => [35 + R_COLT * Math.cos(s / R_COLT), 25 + R_COLT * Math.sin(s / R_COLT)] },
+  { l: 24, punct: (s) => [35 - s, 30.9] },
+  { l: (Math.PI / 2) * R_COLT, punct: (s) => [11 - R_COLT * Math.sin(s / R_COLT), 25 + R_COLT * Math.cos(s / R_COLT)] },
+  { l: 14, punct: (s) => [5.1, 25 - s] },
+  { l: (Math.PI / 2) * R_COLT, punct: (s) => [11 - R_COLT * Math.cos(s / R_COLT), 11 - R_COLT * Math.sin(s / R_COLT)] },
+];
+const P = BUCLA.reduce((a, b) => a + b.l, 0);
+
+/**
+ * Bucățile netăiate (lemnul punților) la înălțimea z a programului dopului, pe toată linia de mijloc a șanțului, din 0,02 în
+ * 0,02 mm, în ordinea de pe buclă (pornind dintr-un loc tăiat, ca o bucată să nu fie ruptă de capătul buclei). Oracolul
+ * (`functieTaiere`) ia doar mutările aflate toate sub z, deci flancurile punții (care urcă) nu taie la z.
  */
 function puntiLa(program: string, z: number): number[] {
   const scule: SculaOracol[] = Array.from({ length: 1 + [...program.matchAll(/^T\d+ M6$/gm)].length }, () => ({ tip: 'plata', diametru: 6 }));
   const taiat = functieTaiere(mutariPeScule(program, scule), z);
-  const x0 = 8.1 - 3, x1 = 37.9 + 3, y0 = 8.1 - 3, y1 = 27.9 + 3;
-  const puncte: Array<readonly [number, number]> = [];
-  for (let x = 8.1; x <= 37.9 + 1e-9; x += 0.1) puncte.push([x, y0]);
-  for (let y = 8.1; y <= 27.9 + 1e-9; y += 0.1) puncte.push([x1, y]);
-  for (let x = 37.9; x >= 8.1 - 1e-9; x -= 0.1) puncte.push([x, y1]);
-  for (let y = 27.9; y >= 8.1 - 1e-9; y -= 0.1) puncte.push([x0, y]);
+  const pas = 0.02;
+  const netaiat: boolean[] = [];
+  for (const seg of BUCLA) for (let s = 0; s < seg.l - 1e-9; s += pas) netaiat.push(taiat(...seg.punct(s)) > 0);
+  const start = netaiat.findIndex((x) => !x);
+  if (start < 0) return [P];
   const bucati: number[] = [];
   let lungime = 0;
-  for (const [x, y] of puncte) {
-    if (taiat(x, y) > 0) lungime += 0.1;
+  for (let k = 0; k < netaiat.length; k++) {
+    if (netaiat[(start + k) % netaiat.length]) lungime += pas;
     else if (lungime > 0) { bucati.push(lungime); lungime = 0; }
   }
   if (lungime > 0) bucati.push(lungime);
   return bucati;
 }
 
-test('punțile alese (2 pe buclă, late de 6 mm, groase de 1,5 mm): exact atâtea, cel puțin atât de late, cu vârful la 1,5 mm de fund', async () => {
+/**
+ * Bucata netăiată a unei punți, pe hârtie (ADR 0029, `geometrieUrechi`): palierul W = lățimea + Ø, flancul
+ * ℓ = min(W / 2, 0,45 · (S − W)) cu S = P / n, iar trecerile adânci taie până la ℓ de palier, cu raza frezei în jur: W + 2ℓ − Ø.
+ */
+const bucataPeHartie = (n: number, latime: number, d = 6): number => {
+  const W = latime + d;
+  return W + 2 * Math.min(W / 2, 0.45 * (P / n - W)) - d;
+};
+
+test('punțile alese (2 pe buclă, late de 6 mm, groase de 1,5 mm): exact atâtea, cu palierul lor, cu vârful la 1,5 mm de fund', async () => {
   const r = await exporta(document({ numar: 2, latime: 6, grosime: 1.5 }));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   assert.ok(r.avertismente.includes('dopul i/a: e decupat cu 2 punți pe buclă, late de 6 mm și groase de 1.5 mm; taie-le și curăță-le la nivelul pereților înainte de lipire'),
     r.avertismente.join(' | '));
   const program = r.dopuri[0]!.program.text;
-  // Placa de 5: vârful punților la 5 − 1,5 = 3,5 mm de față. Sub el (la −4,25), lemnul punților; deasupra (la −3,25), nimic.
-  const sub = puntiLa(program, -4.25);
-  assert.equal(sub.length, 2, `bucățile netăiate la −4,25: ${sub.map((b) => b.toFixed(1)).join(', ')}`);
-  for (const b of sub) assert.ok(b >= 5.9, `o punte lată de ${b.toFixed(1)} mm, sub 6`);
+  // Placa de 5: vârful punților la 5 − 1,5 = 3,5 mm de față. Lățimea se citește chiar deasupra fundului (la −4,99), unde taie
+  // doar trecerea de la −5 (un flanc peste un colț se taie în bucăți, iar cea de jos ar tăia și mai sus): 2 bucăți de
+  // 12 + 2 · 6 − 6 = 18 mm (cu punțile de 4 mm, palierul 10, ar fi 14). Deasupra vârfului (la −3,25), nimic.
+  assert.ok(Math.abs(bucataPeHartie(2, 6) - 18) < 1e-9 && Math.abs(bucataPeHartie(2, 4) - 14) < 1e-9);
+  const sub = puntiLa(program, -4.99);
+  assert.equal(sub.length, 2, `bucățile netăiate la −4,99: ${sub.map((b) => b.toFixed(2)).join(', ')}`);
+  for (const b of sub) assert.ok(Math.abs(b - 18) <= 0.15, `o punte de ${b.toFixed(2)} mm pe linia șanțului, pe hârtie 18`);
   assert.deepEqual(puntiLa(program, -3.25), [], 'deasupra vârfului punților rămâne lemn');
   // Cu punțile implicite (groase de 1), la −3,75 nu mai rămâne nimic; cu cele de 1,5, da: grosimea e chiar a incrustației.
   assert.equal(puntiLa(program, -3.75).length, 2);
   const implicit = await exporta(document(undefined));
   assert.ok(implicit.ok, implicit.ok ? '' : implicit.motiv);
   assert.deepEqual(puntiLa(implicit.dopuri[0]!.program.text, -3.75), []);
-  assert.equal(puntiLa(implicit.dopuri[0]!.program.text, -4.5).length, 4);
+  // Implicitele: 4 punți de 4 mm, palierul 10, flancul 5: bucățile de 14 mm.
+  const patru = puntiLa(implicit.dopuri[0]!.program.text, -4.99);
+  assert.equal(patru.length, 4, patru.map((b) => b.toFixed(2)).join(', '));
+  for (const b of patru) assert.ok(Math.abs(b - bucataPeHartie(4, 4)) <= 0.15, `o punte implicită de ${b.toFixed(2)} mm, pe hârtie ${bucataPeHartie(4, 4).toFixed(2)}`);
 });
 
 test('punțile cu un câmp necunoscut trec; aceleași valori ca implicitele dau același program ca fără câmp', async () => {
@@ -94,11 +127,11 @@ test('punțile cel puțin cât placa dopului: refuzul lucrării, cu motivul (ca 
 });
 
 test('o buclă pe care nu încape nicio punte (lățimea plus freza peste lungimea ei): refuzul, cu bucla și palierul', async () => {
-  // Traseul frezei Ø6 în jurul dopului de 29,8 × 19,8 (colțurile R3,1): 2·(29,8 + 19,8) + 2π·3,1 ≈ 118,7 mm; palierul 200 + 6.
+  // Traseul frezei Ø6 în jurul dopului (linia de mijloc a șanțului, `BUCLA`): P ≈ 113,07 mm; palierul 200 + 6.
   const r = await exporta(document({ numar: 4, latime: 200, grosime: 1 }));
   assert.ok(!r.ok);
-  assert.match(r.motiv, /^i\/a, dopul: bucla 1 a decupării, de 11\d(\.\d+)? mm, e prea mică pentru o punte cu palierul de 206 mm \(lățimea plus freza\)$/);
-  // Late de 60: palierul 66, deci încape una (⌊0,9 · 118,7 / 66⌋ = 1), cu avertismentul buclei mici.
+  assert.match(r.motiv, /^i\/a, dopul: bucla 1 a decupării, de 113\.0\d+ mm, e prea mică pentru o punte cu palierul de 206 mm \(lățimea plus freza\)$/);
+  // Late de 60: palierul 66, deci încape una (⌊0,9 · 113,07 / 66⌋ = 1), cu avertismentul buclei mici.
   const una = await exporta(document({ numar: 4, latime: 60, grosime: 1 }));
   assert.ok(una.ok, una.ok ? '' : una.motiv);
   assert.ok(una.avertismente.includes('dopul i/a: pe o buclă mică încap mai puține punți decât cele 4 cerute (cel puțin 1 pe buclă)'), una.avertismente.join(' | '));
