@@ -8391,3 +8391,15 @@ provizorie); după pauză, „ce se poate uni?”.
 
 - **ADR 0250, „Ideile turei a noua, acceptate tot pe 13.11”:** 11 idei, toate în feliile 28.x, fiecare cu felia ei.
 - **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Schițele, tura a zecea (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, după acceptarea ideilor 28–38. **Completed:** 13.11, 18:01.
+
+- **Canvas-ul**, acum 62 de table. Patru table noi, fiecare în cele patru aranjamente, cu textele de azi: Transformarea (S)
+  și ancora, Nodurile (N) și Pen-ul (B), navigarea pe planșă cu ajutoarele de desen (riglele, ghidajele, lipirea, grila,
+  zoomul), fereastra Fonturi. Rândul F e așezat din nou, fără goluri.
+- **Verificat în cod înaintea publicării:** azi nu există câmp de rotire în bara Transformării (rotirea e din mâner) și
+  nici butoane − / + pe pânză. Zoomul merge cu rotița, iar bara de jos are „Zoom 100 %” și „Arată toată foaia”. Pe table,
+  acestea apar ca idei noi.
+- **Harta schițelor:** rândurile noi și 12 idei noi (39–50), cu recomandarea, încă de hotărât.
