@@ -142,12 +142,12 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
     case 'timp':
       return { raspuns: rezumatTraseu(despacheteaza(c.program), c.foaie, c.setari), transfer: [] };
     case 'verificare':
-      return { raspuns: verificaPentruPanou(c.document, c.optiuni), transfer: [] };
+      return { raspuns: verificaPentruPanou(c.document, c.optiuni, c.indexFoaie ?? 0), transfer: [] };
     case 'reparare':
-      return { raspuns: repara(c.document, c.cerere, c.optiuni), transfer: [] };
+      return { raspuns: repara(c.document, c.cerere, c.optiuni, c.indexFoaie ?? 0), transfer: [] };
     case 'taiere':
-      return { raspuns: taie(c.document, c.cerere), transfer: [] };
+      return { raspuns: taie(c.document, c.cerere, c.indexFoaie ?? 0), transfer: [] };
     case 'conversie':
-      return { raspuns: converteste(c.document, c.cerere), transfer: [] };
+      return { raspuns: converteste(c.document, c.cerere, c.indexFoaie ?? 0), transfer: [] };
   }
 }

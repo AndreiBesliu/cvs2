@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import '../i18n/carcasa.ts';
+// Etichetele acțiunilor planșelor stau în mesajele editorului (ADR 0210): fereastra le așteaptă înainte de randare.
+import '../i18n/editare.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { RezultatActiune } from './actiuni.ts';
 import { useLimba } from './useLimba.ts';

@@ -56,7 +56,8 @@ export const ISTORIE: ReadonlyArray<{ readonly versiune: number; readonly commit
   { versiune: 19, commit: '5fbdb67' },
   { versiune: 20, commit: 'dbb3e2b' },
   { versiune: 21, commit: '452f06c' },
-  { versiune: 22, commit: 'f7b4c04' },
+  { versiune: 22, commit: 'a4e448b' },
+  { versiune: 23, commit: '4c0f0d7' },
 ];
 
 export interface IntrareCorpus {

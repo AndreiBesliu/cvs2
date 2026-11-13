@@ -59,11 +59,11 @@ type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text:
 const PLAFON_PUNCTE = 200_000;
 
 /** Formele alese, ca regiuni aproximate (contururile lor închise, ca polilinii la 0,05 mm), pentru dinții arătați (ADR 0181 §6). */
-function regiuniAlese(doc: Document, selectie: readonly string[]): RegiuneAproximativa[] {
+function regiuniAlese(doc: Document, selectie: readonly string[], indexFoaie: number): RegiuneAproximativa[] {
   const ids = new Set(selectie);
   const pe = new Map<string, Polilinie[]>();
   let n = 0;
-  for (const e of elementeFoaie(doc, 0)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     if (!ids.has(e.instanta)) continue;
     let c;
     try {
@@ -83,8 +83,10 @@ function regiuniAlese(doc: Document, selectie: readonly string[]): RegiuneAproxi
 /** Un număr rotunjit la 0,001 mm, cu virgulă în română. */
 const numar = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
 
-export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, onInchide }: {
+export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, onLinie, onTaie, onInchide }: {
   readonly doc: Document;
+  /** Foaia activă (ADR 0210 §1): pe ea se taie. */
+  readonly indexFoaie?: number;
   /** Selecția aplicației: id-urile instanțelor. */
   readonly selectie: readonly string[];
   readonly ghidaje: readonly Ghidaj[];
@@ -124,13 +126,13 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   // Un cuțit-formă închis (toate contururile lui închise) are înăuntru și în afară, nu capete de prelungit.
   const formaInchisa = useMemo(() => {
     if (!forma) return false;
-    const es = elementeFoaie(doc).filter((e) => e.instanta === forma);
+    const es = elementeFoaie(doc, indexFoaie).filter((e) => e.instanta === forma);
     try {
       return es.length > 0 && es.every((e) => conturElement(e).inchis);
     } catch {
       return false;
     }
-  }, [doc, forma]);
+  }, [doc, forma, indexFoaie]);
   const cutit: Cutit | null = fel === 'x' ? (x === null ? null : { fel: 'x', x }) : fel === 'y' ? (y === null ? null : { fel: 'y', y })
     : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { fel: 'unghi', x: ux, y: uy, unghi })
       : fel === 'ghidaj' ? (g ? { fel: 'ghidaj', id: g.id } : null) : forma ? { fel: 'forma', id: forma } : null;
@@ -142,7 +144,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const dreapta = fel === 'x' ? (x === null ? null : { A: { x, y: 0 }, u: { x: 0, y: 1 } }) : fel === 'y' ? (y === null ? null : { A: { x: 0, y }, u: { x: 1, y: 0 } })
     : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { A: { x: ux, y: uy }, u: { x: Math.cos((unghi * Math.PI) / 180), y: Math.sin((unghi * Math.PI) / 180) } })
       : fel === 'ghidaj' && g ? (g.axa === 'x' ? { A: { x: g.poz, y: 0 }, u: { x: 0, y: 1 } } : { A: { x: 0, y: g.poz }, u: { x: 1, y: 0 } }) : null;
-  const regiuni = useMemo(() => (im ? regiuniAlese(doc, selectie) : []), [doc, selectie, im !== undefined]);
+  const regiuni = useMemo(() => (im ? regiuniAlese(doc, selectie, indexFoaie) : []), [doc, selectie, indexFoaie, im !== undefined]);
   // Dinții arătați, calculați din nou doar când se schimbă formele, linia sau modelul (nu la fiecare randare); intră în cheia
   // liniei printr-o semnătură (câte puncte și suma lor).
   const cheieDreapta = dreapta ? `${dreapta.A.x},${dreapta.A.y},${dreapta.u.x},${dreapta.u.y}` : '';
@@ -183,7 +185,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], ...o }, s.signal).then((r) => {
+      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], ...o }, s.signal, indexFoaie).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           const nimic = cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : cu.fel === 'decupare' ? 'editare.taiere.motiv.nimic-decupat' : null;

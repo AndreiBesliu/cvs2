@@ -1,4 +1,6 @@
 import { MIGRARI } from './migrari.ts';
+// Judecata literelor plăcuțelor (v23): ușa întreagă o are mereu (se înregistrează în `schemaDocument.ts`).
+import './judecataTexte.ts';
 import { incarcaCu, type RezultatIncarcare } from './usaCurenta.ts';
 
 /**

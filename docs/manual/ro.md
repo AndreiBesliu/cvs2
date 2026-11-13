@@ -68,7 +68,130 @@ Toate pozițiile se măsoară din **colțul stânga-jos** al foii, cu X spre dre
 la tăiere: o operație nu coboară sub fața de jos a foii, iar vederea 3D arată ce trece prin ea.
 
 O formă care iese din foaie e semnalată în panoul Pe foaie, jos, în bara de stare, și pe riglă, cu linia de cotă (cu câți mm
-iese).
+iese). Un proiect poate avea mai multe foi: vezi [Foile](#foile).
+
+## Foile
+%% capitol: foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile, foaie.aseaza, selectie.muta-si-aseaza
+
+Un proiect poate avea mai multe foi de material: plăci diferite (alt material, altă grosime) sau piese care nu încap pe una.
+Fiecare foaie are mărimea ei, piesele ei și, dacă vrei, un nume și un material.
+
+**Foaia activă.** Lucrezi pe o singură foaie odată, foaia activă: ale ei sunt pânza, uneltele, panoul Proprietăți,
+verificarea, traseul, timpul, vederea 3D și [exportul](#export). Panoul **Pe foaie** arată toate foile, una sub alta, cu
+mărimea, materialul și câte piese are fiecare; piesele se văd doar sub foaia activă. Un clic pe rândul unei foi o face activă
+(selecția se golește); `PageUp` (**Foaia de dinainte**) și `PageDown` (**Foaia următoare**) trec prin listă. Cu mai multe foi,
+bara de jos arată foaia activă și locul ei („Foaia 2 · 2 din 3”). Aplicația ține minte foaia activă în browser: la
+redeschidere, proiectul pornește pe ea.
+
+**Toate foile pe pânză.** Foile stau pe pânză una lângă alta, în ordinea listei, la 100 mm una de alta, fiecare cu numele
+deasupra. Cea activă e vie, cu riglele ei; celelalte sunt estompate și nu se pot edita. **Dublu-clic** pe o foaie estompată o
+face activă, fără ca pânza să sară. Butonul **Toate foile pe pânză**, din dreapta-jos (lângă „Arată traseul”), oprește și
+pornește foile estompate: pornit, le încadrează pe toate; oprit, rămâne doar foaia activă, încadrată. Alegerea se ține minte
+în browser. `Home` încadrează foaia activă.
+
+**Foaie nouă.** Butonul **+ Foaie nouă**, sub listă, adaugă o foaie după cea activă, cu aceeași mărime și același material,
+și o face activă. O foaie fără nume se cheamă după numărul ei („Foaia 2”); numărul rămâne și când muți sau ștergi alte foi.
+
+**Meniul foii** (butonul ⋯ de pe rândul ei, sau clic dreapta pe rând):
+- **Nume, mărime și material…** face foaia activă și deschide panoul Proprietăți, unde scrii **Numele și materialul foii**
+  (până la 200 de caractere; un câmp gol le șterge) și mărimea ei. Materialul e o etichetă („MDF alb 18”): nu schimbă
+  tăierea.
+- **Duplică foaia** face o foaie nouă după ea, cu aceeași mărime, același material și copii separate ale pieselor ei (ca
+  `Ctrl+D`).
+- **Duplică foaia cu aceleași piese** face la fel, dar cu aceleași piese: vezi [Piesele puse de mai multe ori](#piese-legate).
+- **Mută foaia mai sus** și **Mută foaia mai jos** schimbă ordinea foilor în listă.
+- **Șterge foaia** o scoate, cu piesele ei; dacă are piese, meniul întreabă întâi. Ultima foaie a proiectului rămâne.
+
+**Mută pe altă foaie.** Piesele alese trec pe altă foaie din [meniul de clic dreapta](#meniu) al pânzei: **Mută pe** și numele
+foii, sau **Mută pe o foaie nouă**. Sau tragi rândul unei piese din listă peste altă foaie (dacă e în selecție, pleacă toată
+selecția). Fiecare piesă își păstrează locul și rotirea; dacă iese din foaia nouă, apare avertismentul obișnuit. Foaia activă
+rămâne aceeași.
+
+**Așază pe foi.** **Așază pe foi…** (din meniul de clic dreapta al pânzei sau din meniul foii) deschide fereastra
+așezării. Alegi ce se așază (piesele alese sau toate de pe foaie), colțul de pornire (implicit stânga-sus), marginea foii și
+distanța dintre piese, pe X și pe Y (cu **Aceeași pe X și pe Y** bifată, un singur număr). Piesele se pun după cutia
+fiecăreia, cu rotirea ei, rând cu rând; cele care rămân pe foaie se ocolesc. Ce nu mai încape trece pe foaia următoare, dacă
+e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia rămâne pe loc. Nicio mărime nu se schimbă. Distanța
+e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul.
+**Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
+încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
+minte în browser.
+
+**Mută și așază la capăt.** În meniul de clic dreapta, lângă **Mută pe**, **Mută și așază la capăt pe** și numele foii mută
+piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări; **Mută și așază pe o foaie nouă** le așază
+pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca mai sus, pe foile următoare.
+
+Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi, o așezare) e un singur pas de anulare
+(`Ctrl+Z`).
+
+## Piesele puse de mai multe ori
+%% capitol: piese-legate
+%% acopera: piesa.inca, piesa.plus-unu, piesa.desprinde, foaie.duplica-legat
+
+O piesă se poate pune de mai multe ori: aceeași formă, cu aceleași operații, în mai multe locuri, pe aceeași foaie sau pe
+altele. Fiecare loc e o instanță a piesei, cu locul și rotirea ei; forma și operațiile sunt ale piesei, deci o schimbare a lor
+se vede la toate.
+
+**Încă și +1.** Cu o singură piesă aleasă, panoul Proprietăți arată, la **Piesa**, de câte ori e pusă și pe ce foi.
+**Încă…** cere **Câte în total** (mai multe decât acum, cel mult 1 000) și arată, înainte să adaugi, unde ajung cele noi: pe
+rândul piesei, la dreapta ei, apoi pe rânduri dedesubt, de la marginea foii (10 mm), ocolind piesele de pe foaie. Între
+piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare. Ce nu încape trece
+pe foaia următoare, dacă e goală, apoi pe foi noi, ca foaia piesei. **+1** pune încă una după ultima. `Ctrl+D` rămâne o copie
+separată, cu piesa ei.
+
+**Cum se văd.** Rândul unei piese puse de mai multe ori are în listă, violet, al câtelea e („(3 din 12)”). Cât e aleasă una,
+o bandă violet, jos pe pânză, spune de câte ori e pusă piesa (cu panoul textului deschis, o spune panoul): o schimbare a formei, a nodurilor, a textului, a scării, a
+oglindirii, a înclinării sau a operațiilor se face pentru toate. Locul și rotirea rămân ale fiecăreia. Două instanțe alese ale
+aceleiași piese, rotite altfel, s-ar schimba diferit la o scalare neuniformă, o oglindire sau o înclinare: atunci schimbarea
+se refuză, cu motivul.
+
+**Desprinde.** **Desprinde** (în panou, sau **Desprinde-o doar pe aceasta**, din bandă) dă fiecărei instanțe alese o piesă a
+ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare),
+reparațiile [verificării](#verificare) și [tăierea vectorilor](#taiere) nu schimbă o piesă pusă de mai multe ori: întâi o
+desprinzi. O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
+
+**Gruparea.** Cu o piesă pusă de mai multe ori printre formele alese, **Grupează** întreabă: **Doar aceasta** (o desprinde,
+apoi grupează) sau **În toate cele N** (formele celelalte intră în piesă, deci apar lângă fiecare instanță a ei; merge cu o
+singură piesă de felul acesta printre cele alese). Bifa **Ține minte alegerea** o păstrează în browser: gruparea nu mai
+întreabă. Meniul de clic dreapta are amândouă rândurile, **Grupează doar aceasta** și **Grupează în toată piesa**.
+
+**Duplică foaia cu aceleași piese**, din meniul foii, face o foaie nouă după ea, cu aceleași piese (instanțe noi, în aceleași
+locuri): o schimbare a unei piese se vede pe ambele foi. **Duplică foaia** face, ca înainte, copii separate.
+
+**Plăcuțele.** Un câmp se scrie în textul unei piese între acolade: `{nume}`, `Masa {nr}`. Piesa devine un șablon: forma,
+fontul și mărimea sunt ale ei, iar fiecare instanță e o plăcuță cu valorile ei. Cu una aleasă, panoul Proprietăți arată
+**Pe această plăcuță**, cu un rând pe câmp; o valoare scrisă (`Enter`) face literele plăcuței din fontul textului (pe
+calculatorul acesta trebuie să fie fontul; altfel panoul spune de ce nu). Un câmp fără valoare rămâne gol. Pe foaie, la
+tăiere și la export, plăcuța are textul ei; lista o numește după el. Operațiile șablonului care îi taie textul (profilul pe
+exterior, pe interior, gravura) taie la fel literele fiecărei plăcuțe; rama și găurile rămân ale șablonului. **Încă…** și **+1**
+pun copii cu aceleași valori. Textul șablonului se editează cu unealta Text, pe oricare plăcuță: **Aplică** reface literele
+tuturor plăcuțelor, cu valorile lor (panoul spune câte). Rolul de tăiere și scalarea piesei se fac pentru toate. Literele
+șablonului nu se editează ca noduri și nu se înclină: plăcuțele ar rămâne cu textul vechi (motivul o spune). **Desprinde** pe
+o plăcuță (și pe una singură) îi dă o piesă a ei, cu textul ei obișnuit; gruparea și degruparea o desprind la fel.
+
+**Din CSV.** Pe o piesă cu un text (și una grupată, cu ramă), **Din CSV…** (în panou, la **Piesa**) face câte o plăcuță pe
+rândul unui tabel: un fișier `.csv` sau `.txt` (**Alege fișierul…**), sau celulele lipite din Excel. Separatorul (`;`, `,`
+sau tab) și codarea (UTF-8 sau Windows-1250, cum salvează Excel în română) se găsesc singure și se pot schimba; bifa
+**Primul rând are numele coloanelor** dă numele coloanelor. Fiecare câmp ia coloana cu același nume (fără litere mari și
+diacritice: **potrivit singur**) sau, la alegere, altă coloană, **o valoare** scrisă sau **numerotarea** (de la, pasul,
+cifrele). Un text fără câmp: alegi în **Textul piesei** bucata care se schimbă de la o plăcuță la alta și apeși **Fă din
+textul ales câmpul {Nume}** (numele e al coloanei, sau cel scris). **Rândurile de la … până la** aleg rândurile. Sub ele,
+unde ajung plăcuțele („6 plăcuțe pe 3 foi: 2 + 2 + 2”), cu marginea și distanța lui „Așază pe foi” (**Schimbă…**; distanța e
+cel puțin freza profilului exterior). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
+pe foi (ca „Așază pe foi”), într-un singur pas. Cu caseta **Limitat de casetă** pe text, panoul spune câte plăcuțe s-au
+micșorat și cât.
+
+**Textul care iese din plăcuță.** Plăcuța e conturul închis cel mai mare al piesei, în afara textelor (rama, marginea plăcii).
+Când textul unei plăcuțe trece de el (un nume prea lung, fără casetă), plăcuța e roșie în listă, bara de jos o spune, iar
+panoul o spune la **Pe această plăcuță**: scurtează textul, micșorează-l sau pune-l într-o casetă. În fereastra **Din CSV…**,
+**Dacă textul iese din plăcuță** alege ce se întâmplă: **avertisment** (implicit) sau **avertisment și confirmare la export**;
+cu a doua, fereastra exportului arată plăcuțele și **Exportă** pornește abia după bifă.
+
+**Textul unei rame.** Pe un șablon cu ramă (textul grupat cu alte forme), unealta Text alege textul la clic pe literele lui;
+**Aplică** îl schimbă și lasă rama și locul lui pe ea, iar plăcuțele se refac.
+
+Fiecare gest e un singur pas de anulare (`Ctrl+Z`).
 
 ## Desenul
 %% capitol: desen
@@ -409,8 +532,8 @@ contururi (degroșare și finisare) le taie, după degrupare, contur cu contur. 
 singur `Ctrl+Z` le adună la loc.
 
 Degruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+Shift+G`), dacă un **V-carve** își sapă contururile împreună
-(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio
-formă aleasă nu e un grup.
+(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e pusă de mai multe ori (întâi o desprinzi,
+vezi [Piesele puse de mai multe ori](#piese-legate)) sau dacă nicio formă aleasă nu e un grup.
 
 ## Gruparea
 %% capitol: grupare
@@ -428,8 +551,9 @@ desface gruparea, cu fiecare formă la locul ei.
 
 Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
 literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+G`), dacă e aleasă o singură formă, dacă două
-forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată)
-sau dacă o piesă aleasă e folosită și de alte instanțe.
+forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată).
+Cu o piesă pusă de mai multe ori printre cele alese, gruparea întreabă întâi: vezi [Piesele puse de mai multe
+ori](#piese-legate).
 
 ## Meniul de clic dreapta
 %% capitol: meniu
@@ -438,7 +562,8 @@ sau dacă o piesă aleasă e folosită și de alte instanțe.
 Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Grupează** și **Degrupează**, apoi **Unește**,
 **Scade** și **Intersectează** (booleanul), apoi **Duplică** și **Șterge selecția**, fiecare cu tasta lui. Pe o formă care nu e
 aleasă, clicul dreapta o alege întâi; pe gol, selecția rămâne. Un rând e activ doar când se poate (booleanul, cu două forme;
-gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu.
+gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu. Cu mai multe foi, la capăt:
+**Mută pe** fiecare altă foaie și **Mută pe o foaie nouă** (vezi [Foile](#foile)).
 
 Săgețile trec între rânduri, `Enter` rulează rândul, `Esc` închide meniul; se închide și la un clic în afara lui, la rotiță sau
 după o comandă făcută. În vederea 3D, clicul dreapta nu deschide meniul.
@@ -1154,7 +1279,8 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 %% capitol: export
 %% acopera: export.gcode
 
-**Exportă G-code** deschide fereastra exportului. Pe lângă [operații](#operatii), alegi:
+**Exportă G-code** deschide fereastra exportului, pentru foaia activă (cu mai multe [foi](#foile), titlul ferestrei spune
+care). Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
@@ -1210,6 +1336,17 @@ exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât 
 nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului. După un export pe care îl trimite
 senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
 să-l pornească.
+
+**Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
+foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o
+arhivă `.zip` (`cncvs2-stanga-jos-foile.zip`), cu foaia în numele fiecărui fișier (`cncvs2-stanga-jos-foaia-2.nc`); pe
+RichAuto, `CNCVS2.ZIP`, cu fiecare foaie în dosarul ei (`F2/CNCVS2.NC`). Foile identice (aceleași piese în aceleași locuri,
+cu aceleași operații, ca după „Duplică foaia cu aceleași piese”) ies o dată, cu ×N în nume (`…-foaia-1-x3.nc`: se taie de
+trei ori), iar o foaie fără nimic de tăiat nu intră. Rândurile ferestrei rămân ale foii active: celelalte foi își păstrează
+operațiile lor. După export, fereastra arată foile, fișierele și timpul fiecăreia, apoi timpul tuturor. O foaie din care iese
+freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă singură, cu confirmarea ei. **Deschide în Mașina**
+încarcă programul foii active. Plăcuțele din care iese textul sunt, aici, ale tuturor foilor: dacă ai ales confirmarea în
+**Din CSV…**, **Exportă** așteaptă bifa.
 
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
 mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
@@ -1704,6 +1841,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
+| `PageUp`, `PageDown` | Foaia de dinainte, Foaia următoare (foaia activă, după lista foilor) |
 | `T` | Arată traseul |
 | `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Cuțit, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |

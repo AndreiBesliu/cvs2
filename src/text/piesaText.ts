@@ -20,6 +20,7 @@ import { IDENTITATE } from '../geom/matrice.ts';
 import type { Varf } from '../geom/contur.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { laturiDinImbricare } from '../io/imbricare.ts';
+import { felOperatie } from '../io/placuteOperatii.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import { amprentaContururi, type BlocText } from '../model/blocText.ts';
 import { operatieImplicita, PLAFON, type ElementNod, type GrupNod, type Latura, type Operatie, type Piesa, type VarfDoc } from '../model/document.ts';
@@ -35,15 +36,34 @@ const varfDoc = (v: Varf): VarfDoc => ({
   s: v.s.tip === 'C' ? { tip: 'C', c1: { x: v.s.c1.x, y: v.s.c1.y }, c2: { x: v.s.c2.x, y: v.s.c2.y } } : v.s.tip === 'A' ? { tip: 'A', bulge: v.s.bulge } : { tip: 'L' },
 });
 
-/** Felul unei operații vechi, după care se mută pe contururile noi: de afară, golurile, sau toate. */
-function felOperatie(o: Operatie): 'exterior' | 'interior' | 'toate' | null {
-  if (o.tip === 'gaurire') return null;
-  if (o.tip === 'profil' && (o.latura === 'exterior' || o.latura === 'interior')) return o.latura;
-  return 'toate';
-}
-
 /** Un profil care merge pe o linie deschisă (pe linie, la stânga, la dreapta): rămâne pe trăsăturile unui text cu o linie. */
 const peTrasatura = (o: Operatie): boolean => o.tip === 'profil' && o.latura !== 'exterior' && o.latura !== 'interior';
+
+/** Literele unui text așezat: un grup pe literă, cu contururile ei; id-urile din `idGrup(k)` și `idCale(n)` (de la 1). */
+export type LitereText = {
+  readonly grupuri: GrupNod[]; readonly cai: ReadonlyArray<{ readonly varfuri: readonly Varf[]; readonly inchis: boolean }>; readonly iduri: readonly string[];
+};
+
+/**
+ * Literele textului `asezat` (ADR 0105 §4): câte un grup pe literă (cu caracterul ca nume), cu contururile ei ca forme „cale”;
+ * aceleași pentru piesa unui text și pentru literele unei plăcuțe (ADR 0210 §4), doar cu alte id-uri.
+ */
+export function litereText(asezat: TextAsezat, idGrup: (k: number) => string, idCale: (n: number) => string): LitereText {
+  const grupuri: GrupNod[] = [];
+  const cai: { varfuri: readonly Varf[]; inchis: boolean }[] = [];
+  const iduri: string[] = [];
+  asezat.glife.forEach((g, k) => {
+    const copii: ElementNod[] = [];
+    for (const c of g.cai) {
+      const idElement = idCale(cai.length + 1);
+      cai.push({ varfuri: c.varfuri, inchis: c.inchis });
+      iduri.push(idElement);
+      copii.push({ tip: 'element', id: idElement, forma: { tip: 'cale', inchis: c.inchis, varfuri: c.varfuri.map(varfDoc) }, matrice: { ...IDENTITATE } });
+    }
+    grupuri.push({ tip: 'grup', id: idGrup(k + 1), nume: g.caracter, matrice: { ...IDENTITATE }, copii });
+  });
+  return { grupuri, cai, iduri };
+}
 
 /**
  * Piesa textului `asezat` cu blocul `bloc` (fără amprentă: o pune constructorul) și id-ul `id`. `vechi`: piesa textului
@@ -54,19 +74,7 @@ const peTrasatura = (o: Operatie): boolean => o.tip === 'profil' && o.latura !==
 export function piesaText(
   asezat: TextAsezat, bloc: Omit<BlocText, 'amprenta'>, id: string, scula?: Operatie['scula'], vechi?: Piesa, grosime?: number,
 ): RezultatPiesaText {
-  const grupuri: GrupNod[] = [];
-  const cai: { varfuri: readonly Varf[]; inchis: boolean }[] = [];
-  const iduri: string[] = [];
-  asezat.glife.forEach((g, k) => {
-    const copii: ElementNod[] = [];
-    for (const c of g.cai) {
-      const idElement = `c${cai.length + 1}`;
-      cai.push({ varfuri: c.varfuri, inchis: c.inchis });
-      iduri.push(idElement);
-      copii.push({ tip: 'element', id: idElement, forma: { tip: 'cale', inchis: c.inchis, varfuri: c.varfuri.map(varfDoc) }, matrice: { ...IDENTITATE } });
-    }
-    grupuri.push({ tip: 'grup', id: `l${k + 1}`, nume: g.caracter, matrice: { ...IDENTITATE }, copii });
-  });
+  const { grupuri, cai, iduri } = litereText(asezat, (k) => `l${k}`, (n) => `c${n}`);
   if (cai.length === 0) return { ok: false, motiv: 'gol' };
   const prima = grupuri.find((g) => g.copii.length > 0)!.copii[0] as ElementNod;
   const matrice = vechi && vechi.radacina.tip === 'grup' ? { ...vechi.radacina.matrice } : { ...IDENTITATE };
