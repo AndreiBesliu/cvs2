@@ -57,9 +57,9 @@ o('P06', DOPV, 'adancime: val.S + val.H, adancimeStart: val.S,', 'adancime: val.
 o('P07', DOPV, 'adancime: val.S + val.H, adancimeStart: val.S,', 'adancime: val.S + val.H, adancimeStart: 0,', 'inc', 'dopul fără adâncimea de start')
 o('P08', DOPV, 'conturDreptunghi(-e, -e, latime + 2 * e, inaltime + 2 * e)', 'conturDreptunghi(0, 0, latime, inaltime)',
   'inc', 'regiunea cât semifabricatul: peretele V de pe margine cade în lemn (o ramă)')
-o('P09', DOPV, 'fp.scula.diametru + 2 * w - m + TRECERE_FUND);', '2 * w - m + TRECERE_FUND);', 'e2e',
+o('P09', DOPV, 'fp ? fp.scula.diametru + 2 * w - m + TRECERE_FUND : 0);', 'fp ? 2 * w - m + TRECERE_FUND : 0);', 'e2e',
   'regiunea lărgită fără freza dreaptă: Ø6 nu mai trece pe lângă dop, fâșia o curăță V-ul (creasta între plăci)')
-o('P10', MOD, 'grosimeMinima: S + H + SUB_FATA_DOPULUI };', 'grosimeMinima: S + H };', 'e2e', 'grosimea semifabricatului fără milimetrul de sub față')
+o('P10', MOD, 'grosimeMinima: S + H + SUB_FATA_DOPULUI, creastaLocas', 'grosimeMinima: S + H, creastaLocas', 'e2e', 'grosimea semifabricatului fără milimetrul de sub față')
 o('P11', CAL, "    const ed = await exporta(d.program, { foaie: semifabricat, origine: p.origine, z0: 'sus' }, contract, {",
   "    const ed = await exporta(d.program, { foaie: semifabricat, origine: p.origine, z0: 'jos' }, contract, {", 'inc', 'Z0 al dopului pe fața de jos')
 o('P12', CAL, '  return m ? `${m[1]}-dop-${k + 1}${m[2]}` : `dop-${k + 1}-${nume}`;', '  return m ? `${m[1]}${m[2]}` : `dop-${k + 1}-${nume}`;',
@@ -70,8 +70,8 @@ o('R01', INC, '  if (!(i.joc >= JOC_INCRUSTATIE_MINIM)) {', '  if (!(i.joc >= 0)
 o('R02', INC, '  if (!(i.joc < op.adancime)) return', '  if (!(i.joc <= op.adancime)) return', 'inc', 'jocul cât adâncimea primit')
 o('R03', INC, '  if (pana > con + 1e-9) {', '  if (pana > con + 1) {', 'inc', 'dopul săpat peste con primit')
 o('R04', INC, '  if (f.varf !== undefined && f.varf > 0) {', '  if (f.varf !== undefined && f.varf > 1) {', 'inc', 'freza cu vârf plat primită')
-o('R05', INC, "  if (i.jurDop === 'banda') return", "  if (i.jurDop === 'bandă') return", 'inc', 'banda fără fund plat: motivul feței coborâte (din 12.1↑c, banda e primită)')
-o('R06', INC, '  if (!op.fundPlat) {', '  if (false) {', 'inc', 'dopul fără freza dreaptă primit')
+# R05, R06 retrase la 12.1↑d (ADR 0173): refuzul dopului fără freză dreaptă nu mai există (fundul îl fac inelele frezei V);
+# țintele noi sunt în `12.1d.py` (F03, F10, F16: fundul nescos; F19: decuparea fără freza ei).
 o('R07', INC, "  if (op.tip !== 'vcarve') return", "  if (op.tip === 'buzunar') return", 'inc', 'incrustația pe un profil primită')
 o('R08', JOB, '    const r = op ? refuzIncrustatie(op, t.idLume) : null;', '    const r = null;', 'inc',
   'lucrarea nu judecă incrustația înaintea traseului (locașul se taie, dopul cade)')

@@ -10,6 +10,7 @@ import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
 import { refuzIncrustatie } from './incrustatie.ts';
+import { valoriIncrustatie } from '../model/incrustatie.ts';
 import { figuraDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
@@ -407,7 +408,10 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const forma = t.scula.forma;
       if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e plată)` };
       const ale = taieturi.filter((u) => u.tip === 'vcarve' && cheieVcarve(u) === cheie);
-      const fp = operatieDe(t)?.fundPlat;
+      const op = operatieDe(t);
+      const fp = op?.fundPlat;
+      // Incrustația fără freză dreaptă (ADR 0173): fundul locașului îl fac inelele frezei V, cu creasta cel mult g/2.
+      const inc = !fp && op ? valoriIncrustatie(op) : null;
       const v = traseuVcarve({
         contururi: ale.map(conturDe), unghi: forma.unghi, varf: forma.varf ?? 0, diametruScula: D, adancime: t.adancime, pas: t.pas,
         avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
@@ -416,7 +420,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
             diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens,
             ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
           },
-        } : {}),
+        } : inc ? { fundV: { creasta: inc.creastaLocas } } : {}),
       });
       if (!v.ok) return { ok: false, motiv: `${t.idLume}: ${v.motiv}` };
       const nume = `${t.idLume}${ale.length > 1 ? ` (+${ale.length - 1})` : ''}`;

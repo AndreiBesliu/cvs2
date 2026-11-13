@@ -1256,14 +1256,14 @@
   display: none;
 }
 
+/*
+ * Banda vestirilor: în rândul ei din meniul global (`#loc-anunt-imprimanta`, pus de carcasă), deci în pagină, nu deasupra ei:
+ * barele, panourile și ferestrele coboară cât e ea la vedere, iar ea nu acoperă nimic (13.11: plutind sus, la mijloc, acoperea
+ * Reia și Oprește în fereastra Imprimanta și uneltele în Proiectare; CI-ul complet, pe Linux, a prins-o pe Reia).
+ */
 .imprimanta-anunt {
-  position: fixed;
-  z-index: 40;
-  top: calc(env(safe-area-inset-top, 0px) + 64px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: min(42rem, calc(100vw - 2rem));
+  width: min(42rem, 100%);
+  margin-bottom: 4px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1273,7 +1273,6 @@
   border-radius: var(--r-2);
   background: color-mix(in oklab, var(--traseu-taiere) 12%, var(--s-panou));
   color: var(--t);
-  box-shadow: var(--umbra-2);
 }
 
 .imprimanta-anunt strong {
@@ -1310,13 +1309,8 @@
   margin-left: auto;
 }
 
-/* Pe telefon, banda stă jos (meniul de sus se poate rupe pe două rânduri), iar semnul ține doar punctul și procentul. */
+/* Pe telefon, semnul ține doar punctul și procentul (banda stă tot în meniu, pe ultimul lui rând). */
 @media (max-width: 40rem) {
-  .imprimanta-anunt {
-    top: auto;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
-  }
-
   .semn-imprimanta[data-stare='pauza'] span,
   .semn-imprimanta[data-stare='rau'] span,
   .semn-imprimanta[data-stare='pierduta'] span {

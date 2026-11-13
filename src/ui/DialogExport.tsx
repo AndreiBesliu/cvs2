@@ -279,14 +279,15 @@ type RandRest = { readonly numar: string; readonly diametru: string; readonly pa
 /**
  * Banda dopului pe rând (ADR 0172), din câmpurile lui, ca în lucrare (`valoriBanda`): placa implicită S + H + 1 și cea mai mică
  * cu decuparea (S + H + punțile), din adâncime, joc și fierăstrău; lățimea cea mai mică, și din unghiul V-ului, freza fundului
- * plat și, cu decuparea, a ei (null fără ele). Null fără adâncime, joc sau fierăstrău.
+ * plat (0 fără ea: fundul îl fac inelele V, ADR 0173) și, cu decuparea, a ei (null fără ea). Null fără adâncime, joc sau fierăstrău.
  */
 function bandaRand(p: Rand): { readonly placaImplicita: number; readonly placaMinima: number | null; readonly minima: number | null } | null {
   const D = citesteNumar(p.adancime), g = citesteNumar(p.jocInc), H = p.acelasiSpatiu ? g : citesteNumar(p.fierastrauInc);
   if (D === null || g === null || H === null) return null;
   const S = D - g, u = citesteNumar(p.unghiV), gp = citesteNumar(p.grosimePunti);
-  const fund = p.fundPlat ? citesteNumar(p.diametruSculaFund) : null;
-  const decupare = !p.decupareBanda ? fund : p.frezaBanda ? citesteNumar(p.diametruSculaBanda) : fund;
+  const fund = p.fundPlat ? citesteNumar(p.diametruSculaFund) : 0;
+  // Fără freză dreaptă, decuparea n-are altă freză decât a ei (ADR 0173).
+  const decupare = !p.decupareBanda ? fund : p.frezaBanda ? citesteNumar(p.diametruSculaBanda) : p.fundPlat ? fund : null;
   return {
     placaImplicita: S + H + SUB_FATA_DOPULUI, placaMinima: gp === null ? null : S + H + gp,
     minima: u === null || fund === null || decupare === null ? null : latimeMinimaBanda(H, Math.tan((u * Math.PI) / 360), fund, decupare),
@@ -296,7 +297,8 @@ function bandaRand(p: Rand): { readonly placaImplicita: number; readonly placaMi
 /**
  * Câmpurile benzii unui rând sunt bune (ADR 0172): lățimea goală (cea mai mică) sau cel puțin cea mai mică, sub plafon; cu
  * decuparea, placa goală (S + H + 1) sau sub plafon, oricum cel puțin fundul benzii plus punțile, punțile ca urechile și,
- * cu bifa ei, freza decupării ca a fundului plat. Ce nu se știe încă (un câmp gol) îl spune lucrarea, cu motiv.
+ * cu bifa ei, freza decupării ca a fundului plat; fără freză dreaptă (ADR 0173), decuparea cere bifa ei. Ce nu se știe încă
+ * (un câmp gol) îl spune lucrarea, cu motiv.
  */
 function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean; readonly punti: boolean; readonly freza: boolean } {
   const v = bandaRand(p);
@@ -307,8 +309,8 @@ function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean
     && (placaScrisa === null || v?.placaMinima == null || placaScrisa >= v.placaMinima - 1e-9));
   const punti = !p.decupareBanda || (intregInMargini(p.numarPunti, MARGINI_OPERATIE.urechi) && inMargini(p.latimePunti, MARGINI_OPERATIE.latimeUreche)
     && inMargini(p.grosimePunti, MARGINI_OPERATIE.grosimeUreche));
-  const freza = !p.decupareBanda || !p.frezaBanda || (intregInMargini(p.numarSculaBanda, MARGINI_OPERATIE.numarScula)
-    && inMargini(p.diametruSculaBanda, MARGINI_OPERATIE.diametru));
+  const freza = !p.decupareBanda || (p.frezaBanda ? intregInMargini(p.numarSculaBanda, MARGINI_OPERATIE.numarScula)
+    && inMargini(p.diametruSculaBanda, MARGINI_OPERATIE.diametru) : p.fundPlat);
   return { latime, placa, punti, freza };
 }
 
@@ -1273,7 +1275,7 @@ export function DialogExport(
                       </label>
                       <label title={t('export.banda.freza.titlu')}>
                         <input type="checkbox" checked={p.frezaBanda} data-camp="banda-freza" disabled={doarCitire || !p.decupareBanda}
-                          onChange={(ev) => { schimba(o.cheie, { frezaBanda: ev.target.checked }); }} />
+                          aria-invalid={!ok.freza && !p.frezaBanda} onChange={(ev) => { schimba(o.cheie, { frezaBanda: ev.target.checked }); }} />
                         {t('export.banda.freza')}
                       </label>
                       {p.frezaBanda && (<>
@@ -1289,7 +1291,10 @@ export function DialogExport(
                       </label>
                       </>)}
                       </>))(bandaRand(p), bandaBuna(p))}
-                      <p className="nota-incrustatie">{t(p.jurDop === 'banda' ? 'export.banda.nota' : 'export.incrustatie.nota')}</p>
+                      {/* Fără freză dreaptă (ADR 0173), nota spune că fundul îl fac inelele frezei V. */}
+                      <p className="nota-incrustatie" data-fund={p.fundPlat ? 'plat' : 'v'}>
+                        {t(p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : (p.fundPlat ? 'export.incrustatie.nota' : 'export.incrustatie.nota-v'))}
+                      </p>
                       </div>
                       )}
                       {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}

@@ -320,6 +320,22 @@ button[data-icona]:disabled > .eticheta {
   min-width: 0;
 }
 
+/*
+ * Rândul benzii vestirilor imprimantei (3.6s, ADR 0194 §A): ultimul al meniului, și pe telefon (după `order` 4 al
+ * indicatorului). Gol, nu ocupă nimic; cu banda, meniul crește, iar barele, panourile și ferestrele coboară: banda nu acoperă
+ * niciun control (13.11: plutind deasupra paginii, acoperea Reia și uneltele).
+ */
+.loc-anunt-imprimanta {
+  order: 5;
+  flex: 0 0 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.loc-anunt-imprimanta:empty {
+  display: none;
+}
+
 /* Indicatorul lucrării și grupul aplicației stau în dreapta; filele, lângă marcă. */
 .meniu-global > .grup[data-grup='lucrare'] {
   margin-left: auto;
