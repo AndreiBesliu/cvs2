@@ -1132,6 +1132,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **banda vestirilor imprimantei (3.6s) reparată înainte, nu scoasă din `main`** („Fix forward”, la „Fix 3.6s
+  forward, or revert it from main?”, în sesiunea principală): CI-ul complet pe `50f2595` a picat pe Linux
+  (`imprimanta.spec.ts:108`: banda „pauză”, fixă, sus, la mijloc, acoperea butonul Reia; pe Windows trecea). Reparația
+  liniei (`231e347`, ramura `fix/3.6s-anunt`, din `main`, fără 3.6t): banda stă într-un rând al meniului global și nu mai
+  acoperă nimic, cu proba de lovire pe controale cât banda pauzei e la vedere (pica la 1024 px pe Windows înaintea
+  reparației). Unită prin `2daddcc`, după porți.
 - 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
   principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
   `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e
