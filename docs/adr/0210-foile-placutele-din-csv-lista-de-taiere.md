@@ -632,5 +632,6 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   RichAuto; foaia activă fără „Toate foile”; toate foile goale; refuzul ieșirii din foaie), `export-foi.spec.ts` (e2e: fără
   alegere cu o singură foaie; un dreptunghi, copia legată a foii și o foaie cu un cerc: arhiva, ×2, timpul tuturor, Mașina
   cu amprenta foii active), `placute-iesire.spec.ts` (bifa plăcuțelor la „Toate foile”, nu și la exportul unei foi fără
-  plăcuțe), manualul (35 de capitole după unire). Otrăvurile `test/otravuri/11.5.py`: 44 / 44 unitare la prima rulare.
+  plăcuțe), manualul (35 de capitole după unire). Otrăvurile `test/otravuri/11.5.py`: 61 / 61 la prima rulare (`41daf8a`; 44 unitare, 17 prin
+  e2e, în două clone, pe portul 4178).
 - **Rămâne în etapa 11:** 11.6↑ (raportul foilor și lista de tăiere), 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină).
