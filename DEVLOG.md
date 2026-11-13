@@ -8954,3 +8954,20 @@ pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11,
 - **Otrăvurile** (`test/otravuri/25.4b.py`, 17 alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei.
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
+## 2026-11-13 — Felia 25.3↑c pornită: liniile mediane pe culori (ADR 0227, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propune-le” (owner-ul, la întrebarea de după felia 25.4↑b: „Pornesc propunerea liniilor mediane pe
+culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
+
+- **Ramura** adusă la `origin/main` (`4f379cd`: banda vestirilor imprimantei reparată; conflict doar în DEVLOG).
+- **Cercetarea:** ArtCAM / Carveco fac linia mediană pe culoarea aleasă (cu cele legate de ea); PowerTRACE, Inkscape,
+  LightBurn, Vectric, doar pe alb-negru (PowerTRACE recomandă trecerea întâi la alb-negru).
+- **Prototipul** (`.tmp/proto-mediane-culori.ts`): un desen cu trăsături colorate de 6 px (o linie roșie tăiată de una
+  albastră și de un cerc verde, un pătrat galben plin cu marginea neagră), linia mediană a fiecărei culori pe masca ei, cu
+  nucleul neschimbat: exactă (cel mult 0,17 px); roșul, rupt în patru de încrucișări, legat peste ele (capetele față în
+  față, cel mult trei grosimi, drumul pe desen) iese o linie; pătratul galben iese contur doar cu pragul părților late din
+  grosimea desenului întreg (mediana ponderată cu lungimea liniilor), nu din a lui.
+- **ADR 0227 propus** (Rezultatul și pe Culorile, cu opțiunile din ADR 0223; „Leagă peste alte culori”; pragul comun; piesa
+  fiecărei culori), cu schița <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; două întrebări: legarea implicit bifată sau nu; grosimea pe fiecare culoare sau
+  una singură.

@@ -1441,6 +1441,10 @@
       "ro": "Spațierea literelor alese",
       "en": "Spacing between selected letters"
     },
+    "77718eab42578c5d": {
+      "ro": "Liniile mediane pe culori",
+      "en": "Centre lines on colours"
+    },
     "777c207aa2e71768": {
       "ro": "înainte de 3.7b",
       "en": "before 3.7b"
@@ -2149,6 +2153,14 @@
       "ro": "Intrările compuse cu rampa",
       "en": "Lead-ins combined with the ramp"
     },
+    "afdf71aaaeb080c0": {
+      "ro": "25.3↑c",
+      "en": "25.3↑c"
+    },
+    "b036836467da5257": {
+      "ro": "Răspunsurile la cele două întrebări din ADR 0227 (liniile mediane pe culori; propus pe ramura `wip/25.1-trasare`): formularul din schiță (<https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>: desenul prototipului, liniile fiecărei culori, cu și fără legare, macheta), apoi „gata” în sesiune; dacă ai, o poză sau o scanare a unui desen cu linii colorate (intră în probe înaintea codului)",
+      "en": "The answers to the two questions in ADR 0227 (centre lines on colours; proposed on the `wip/25.1-trasare` branch): the form in the sketch (<https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>: the prototype’s drawing, each colour’s lines, with and without bridging, the mock-up), then “done” in the session; if you have one, a photo or a scan of a drawing with coloured lines (it goes into the tests before the code)"
+    },
     "b052146a0aa660c8": {
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
       "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
@@ -2196,6 +2208,10 @@
     "b3b1a68ec58fc727": {
       "ro": "Gata pe 08.11",
       "en": "Done on 08.11"
+    },
+    "b3d73d098d922ce8": {
+      "ro": "**Liniile mediane pe culori** (propus; ADR 0227; worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main` (`4f379cd`); pornită la „Da, propune-le”, după felia 25.4↑b). Cercetarea: ArtCAM / Carveco („Create centreline” pe culoarea aleasă, cu cele legate de ea), CorelDRAW PowerTRACE (linia mediană doar pe alb-negru), Inkscape, LightBurn, Vectric. Prototipul, pe un desen cu trăsături colorate de 6 px, cu linia mediană a fiecărei culori pe masca ei (nucleul real): buclele și liniile la cel mult 0,17 px de mijloc; o linie roșie tăiată de alte culori iese în patru bucăți, legată peste ele, una; un pătrat galben plin iese contur doar cu pragul din grosimea desenului întreg. Propus: Rezultatul și pe Culorile, „Leagă peste alte culori”, pragul comun; ~+1–2 kB. Schița, cu formularul: <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; două întrebări.",
+      "en": "**Centre lines on colours** (proposed; ADR 0227; the `trasare` worktree, the `wip/25.1-trasare` branch, brought up to `origin/main` (`4f379cd`); started at “Yes, propose them”, after slice 25.4↑b). The research: ArtCAM / Carveco (“Create centreline” on the chosen colour, with the ones linked to it), CorelDRAW PowerTRACE (centre lines only in black and white), Inkscape, LightBurn, Vectric. The prototype, on a drawing with 6 px coloured strokes, with each colour’s centre line on its own mask (the real core): the loops and lines at most 0.17 px from the middle; a red line cut by other colours comes out in four pieces, bridged over them, one; a filled yellow square becomes an outline only with the threshold from the whole drawing’s width. Proposed: the Result on Colours too, “Bridge over other colours”, the shared threshold; ~+1–2 kB. The sketch, with the form: <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; two questions."
     },
     "b3dd0164198d88c4": {
       "ro": "**Gata pe 09.11.** Comenzile imprimantei, cu driverele (ADR 0192, cererea owner-ului din 08.11: „vreau sa pot conecta orice fel de imprimanta”): contractul comun al driverelor (starea, comenzile, capabilitățile) și driverul Creality K1; în fereastra Imprimanta, lumina, ventilatoarele, viteza și debitul cât imprimă, temperaturile (Preîncălzește, Răcește) și homing-ul; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
