@@ -14,8 +14,12 @@
  *   panoul ei (`desparte`; fără el, linia n-o taie; cu îmbinare, o linie care doar desparte nu cere dinți);
  * - **cu îmbinare** (zigzag 100 / 20 / 3): fiecare bucată în celula ei, cu dinții de peste linie (10 mm), ariile fac firma, dinții
  *   se văd; cu jocul 0,2, bucățile la 0,2 una de alta;
- * - **acțiunea `document.taie`:** un singur pas de anulare (tăierea și gruparea), alese rămân panourile;
- * - **refuzurile:** peste plafon; nimic ales; o piesă pusă de două ori; un singur panou (`nimic-taiat`); valorile; spațiul fără
+ * - **V-carve-urile care s-ar amesteca** (două litere lipite, cu același V-carve): panoul rămâne negrupat, cu numele lui pe
+ *   fiecare bucată; **un id vechi eliberat de o tăietură** nu ajunge pe o bucată nouă; **cutia** e a tuturor contururilor
+ *   unei piese (un text singur, în două panouri: câte o literă);
+ * - **acțiunea `document.taie`:** un singur pas de anulare (tăierea și gruparea), alese rămân panourile; fără nicio tăietură,
+ *   doar grupurile;
+ * - **refuzurile:** peste plafon; nimic ales; o piesă pusă de două ori (și una netăiată, care ar intra într-un grup); un singur panou (`nimic-taiat`); valorile; spațiul fără
  *   închidere; dinții care ar ieși din fâșia de 100 mm a panourilor din colț (`imbinare-margine`).
  */
 import { test } from 'node:test';
@@ -199,6 +203,12 @@ test('o piesă cu contururi de ambele părți ale unei linii care nu le trece (u
   aproape(A as Celula, celula(100, 100, 200, 300), 'partea A');
   aproape(B as Celula, celula(1300, 100, 1400, 300), 'partea B');
   assert.ok(taie(d, { cutit: X, alese: ['t'], inchide: true, desparte: true, imbinare: ZIGZAG }).ok, 'o linie care doar desparte nu cere dinți');
+  // Textul singur, în două panouri: cutia e a ambelor litere (100 … 1 400), deci X = 750 le desparte, câte una pe panou.
+  const singur = taiat(d, cerere(['t'], { fel: 'numar', coloane: 2, randuri: 1 }));
+  const ps = panouri(singur.dupa, singur.r.ids);
+  assert.deepEqual(ps.map((x) => x.nume), ['Panoul 1', 'Panoul 2']);
+  aproape(ps[0]?.cutie as Celula, celula(100, 100, 200, 300), 'litera din stânga');
+  aproape(ps[1]?.cutie as Celula, celula(1300, 100, 1400, 300), 'litera din dreapta');
   const { r, dupa } = taiat(d, cerere(['f', 't'], EGALE));
   const p = panouri(dupa, r.ids);
   assert.deepEqual(p.map((x) => x.parti), [2, 2, 1, 1]);
@@ -219,6 +229,40 @@ test('cu îmbinare (zigzag 100 / 20 / 3): fiecare bucată în celula ei, cu din�
     // Dinții chiar trec peste linie: panoul 1 iese din celula lui strictă.
     assert.ok((p[0] as { readonly cutie: Celula }).cutie.maxX > 1200 + 5, 'dinții panoului 1 trec de X = 1 200');
   }
+});
+
+test('V-carve-urile care s-ar amesteca: panoul rămâne negrupat, cu numele lui pe fiecare bucată', () => {
+  const V90 = { numar: 2, nume: 'V90', diametru: 20, forma: { tip: 'v' as const, unghi: 90 } };
+  const baza = docDin(stoc, FIRMA, patrat('v1', 100, 100, 100, 200), patrat('v2', 200, 100, 100, 200));
+  const d: Document = { ...baza, piese: baza.piese.map((p) => (p.id === 'f' ? p : { ...p, operatii: p.operatii.map((o) => ({ ...o, tip: 'vcarve' as const, latura: 'interior' as const, scula: V90, adancime: 10, pas: 10 })) })) };
+  const { r, dupa } = taiat(d, cerere(['f', 'v1', 'v2'], EGALE));
+  assert.equal(r.panouri, 4);
+  assert.equal(r.grupuri?.length, 0);
+  const p = panouri(dupa, r.ids);
+  assert.deepEqual(p.map((x) => x.nume), ['Panoul 1', 'Panoul 1', 'Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4']);
+  assert.deepEqual(r.ids.slice(1, 3), ['v1', 'v2'], 'literele, netăiate, își păstrează id-urile');
+});
+
+test('un id vechi, eliberat de o tăietură, nu ajunge pe o bucată nouă', () => {
+  // Firma „e3”: X = 1 200 o face e2 și e4, iar Y = 500 ar lua întâi id-ul liber e3 (tăierea numără de la numărul pieselor).
+  const d = docDin(stoc, patrat('e3', 0, 0, 2400, 1000));
+  const { r } = taiat(d, cerere(['e3'], EGALE));
+  assert.equal(r.ids.length, 4);
+  assert.ok(!r.ids.includes('e3'), r.ids.join(', '));
+});
+
+test('fără nicio tăietură, doar grupurile: două pătrate în fiecare panou', () => {
+  const d = docDin(stoc, patrat('s1', 0, 0, 100, 100), patrat('s2', 150, 0, 100, 100), patrat('s3', 1000, 0, 100, 100), patrat('s4', 1150, 0, 100, 100));
+  const { r, dupa } = taiat(d, cerere(['s1', 's2', 's3', 's4'], { fel: 'numar', coloane: 2, randuri: 1 }));
+  assert.equal(r.degrupate.length, 0);
+  assert.equal(r.grupuri?.length, 2);
+  assert.deepEqual(panouri(dupa, r.ids).map((x) => [x.nume, x.parti]), [['Panoul 1', 2], ['Panoul 2', 2]]);
+  const R = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  let h: Istoric = istoricNou(d);
+  let sel: readonly string[] = [];
+  const ctx: ContextDocument = { istoric: () => h, scrie: (n) => { h = n; }, selectie: () => sel, selecteaza: (ids) => { sel = ids; }, doarCitire: () => false };
+  assert.deepEqual(ruleaza(R, 'document.taie', { ...ctx, taiere: () => ({ doc: d, degrupate: r.degrupate, ids: r.ids, grupuri: r.grupuri ?? [] }) }), { ok: true });
+  assert.equal(h.doc.foi[0]?.instante.length, 2);
 });
 
 test('document.taie: tăierea și gruparea panourilor, un singur pas de anulare; alese rămân panourile', () => {
@@ -247,6 +291,12 @@ test('refuzurile: plafonul, nimic ales, piesa pusă de două ori, un singur pano
   assert.ok(foaie);
   const dublu: Document = { ...d, foi: [{ ...foaie, instante: [...foaie.instante, { id: 'f2', piesa: 'f', x: 0, y: 1200, rotire: 0 }] }] };
   assert.deepEqual(taieInPanouri(dublu, cerere(['f'], EGALE)), { ok: false, motiv: 'impartita' });
+  // O literă netăiată, cu piesa pusă și în altă parte, ar intra în grupul panoului ei (și ar lua piesa cu ea).
+  const cuLitera = docDin(stoc, FIRMA, patrat('a', 100, 100, 100, 200));
+  const f0 = cuLitera.foi[0];
+  assert.ok(f0);
+  const litereImpartite: Document = { ...cuLitera, foi: [{ ...f0, instante: [...f0.instante, { id: 'a2', piesa: 'a', x: 2600, y: 0, rotire: 0 }] }] };
+  assert.deepEqual(taieInPanouri(litereImpartite, cerere(['f', 'a'], EGALE)), { ok: false, motiv: 'impartita' });
   assert.deepEqual(taieInPanouri(d, cerere(['f'], { fel: 'numar', coloane: 1, randuri: 1 })), { ok: false, motiv: 'nimic-taiat' });
   assert.deepEqual(taieInPanouri(d, cerere(['f'], { ...EGALE, latime: 0 })), { ok: false, motiv: 'valoare' });
   assert.deepEqual(taieInPanouri(d, cerere(['f'], EGALE, { inchide: false, intre: { fel: 'spatiu', latime: 1 } })), { ok: false, motiv: 'spatiu-inchide' });

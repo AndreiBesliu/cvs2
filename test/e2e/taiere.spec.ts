@@ -32,7 +32,8 @@ import { ecran, vedere } from './ajutor-panza.ts';
  *
  * Felia 10.3↑k (ADR 0181 §7): „Taie în panouri”, pe firma de 2 400 × 1 000 mm: cât lucrezi în bloc, pânza arată grila (2 × 2 la
  * 1 200 × 900, egale sau din colț), iar înapoi în blocul de sus, linia; panourile egale fac patru forme de 1 200 × 500 mm,
- * „Panoul 1” … „Panoul 4”, alese; Anulează pune firma la loc. Fără nimic ales, se taie toate formele foii; peste 100 de panouri
+ * „Panoul 1” … „Panoul 4”, alese (o literă de pe firmă, despărțită de ea cu Degrupează, intră în grupul „Panoul 1”); Anulează
+ * pune firma la loc. Fără nimic ales, se taie toate formele foii; peste 100 de panouri
  * și un singur panou, butonul e stins, cu motiv; din colț, două forme de 1 200 × 900 și două de 1 200 × 100.
  */
 test.use({ locale: 'ro-RO' });
@@ -371,9 +372,13 @@ test('Îmbinarea refuzată, cu motiv: dinții drepți de 10 cu raza 3 și pasul 
 // ——— Taie în panouri (felia 10.3↑k, ADR 0181 §7) ———
 
 const FIRMA = lwpolilinie([[0, 0], [2400, 0], [2400, 1000], [0, 1000]], true, { strat: 'FIRMA' });
+const LITERA = lwpolilinie([[100, 100], [200, 100], [200, 300], [100, 300]], true, { strat: 'LITERA' });
 
-test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000 în patru panouri egale de 1 200 × 500, „Panoul 1” … „Panoul 4”; Anulează', async ({ page }) => {
-  await importa(page, FIRMA);
+test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000, cu o literă, în patru panouri egale de 1 200 × 500, „Panoul 1” … „Panoul 4”; Anulează', async ({ page }) => {
+  await importa(page, FIRMA + LITERA);
+  // Litera, despărțită de firmă (altfel ar fi o gaură în ea); amândouă rămân alese.
+  await page.locator('[data-editare="degrupeaza"]').click();
+  await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-editare="taiere"]').click();
   await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-axa', 'x');
   await page.locator('[data-taiere="panouri-latime"]').fill('1200');
@@ -382,7 +387,7 @@ test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000 în patru pano
   await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-axa', 'grila');
   await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-coloane', '2');
   await expect(page.getByTestId('taiere-linia')).toHaveAttribute('data-randuri', '2');
-  await expect(page.getByTestId('panouri-grila')).toHaveText('Formele alese: 1; grila: 2 × 2 panouri, peste 2400 × 1000 mm.');
+  await expect(page.getByTestId('panouri-grila')).toHaveText('Formele alese: 2; grila: 2 × 2 panouri, peste 2400 × 1000 mm.');
   await expect(page.locator('[data-taiere="panouri-egale"]')).toBeChecked();
   // După număr, „egale / din colț” e stinsă; 1 × 1 nu are ce tăia, 11 × 10 trece de plafon.
   await page.locator('[data-taiere="panouri-coloane"]').fill('1');
@@ -405,7 +410,7 @@ test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000 în patru pano
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(4);
   await cutii(page, '1200.00 × 500.00 mm');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page)).toHaveCount(1);
+  await expect(randuri(page)).toHaveCount(2);
 });
 
 test('Taie în panouri, fără nimic ales: toate formele foii; din colț, două forme de 1 200 × 900 și două de 1 200 × 100', async ({ page }) => {

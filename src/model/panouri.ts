@@ -119,9 +119,9 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
     const id = idNou();
     return { ...b, instanta: { ...b.instanta, id, piesa: id }, piesa: { ...b.piesa, id } };
   });
-  // Pe foaie, bucățile unei forme vin în ordinea panourilor (deci și în programul mașinii), iar formele, în ordinea lor: în
-  // celula lui, fiecare panou își ia bucățile în ordinea în care vor sta, ca grupul să ia locul primei.
-  const ordine = new Map(initiale.map((i, k) => [i.id, k]));
+  // Pe foaie, bucățile unei forme vin în ordinea panourilor (deci și în programul mașinii), iar formele, în ordinea lor. Bucățile
+  // stau deja în ordinea formelor (fiecare tăietură le pune în locul celei tăiate), deci în celula lui, fiecare panou le are în
+  // ordinea în care vor sta, iar grupul ia locul primei.
   const pe = new Map<number, number[]>();
   fin.forEach((b, i) => {
     const k = b.r[0] * nx + b.c[0];
@@ -135,7 +135,7 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
   const ids: string[] = [];
   for (const [t, k] of celule.entries()) {
     const nume = `${cerere.nume} ${t + 1}`;
-    const xs = (pe.get(k) as number[]).sort((a, b) => (ordine.get((fin[a] as Bucata).orig) ?? 0) - (ordine.get((fin[b] as Bucata).orig) ?? 0) || a - b);
+    const xs = pe.get(k) as number[];
     if (xs.length > 1) {
       const parti = xs.map((i) => ({ instanta: (fin[i] as Bucata).instanta, piesa: (fin[i] as Bucata).piesa }));
       const id = idNou();
