@@ -8840,3 +8840,28 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
 
 **Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.6↑ (raportul foilor și lista de tăiere)?”: „Da, 11.6↑”.
 **Started:** 13.11, 18:37.
+
+- **Fereastra „Raportul foilor și lista de tăiere”** (`src/app/DialogRaportFoi.tsx`, la cerere; planșa 7 a schiței), din
+  fereastra exportului („Raportul foilor…”, cu colțul și Z0 de acolo) și din paletă (`export.raport`): pe fiecare foaie,
+  previzualizarea (SVG-ul exportului de vectori, cu liniile îngroșate doar aici: `scrieSvg` primește grosimea), materialul,
+  mărimea, cât e folosită, operațiile și piesele (câte, mărimea, rotirile, valorile din CSV); foile identice o dată, ×N;
+  totalurile pe piesă și foile pe material. Calculul pur în `src/model/raportFoi.ts` (mărimea = cutia conturului tăiat prin
+  toată grosimea de un profil exterior, în axele piesei, sau a desenului, la alegere), CSV-ul în `src/app/raportCsv.ts`
+  (BOM, `;` cu virgula zecimală sau `,`), tipărirea printr-un portal sub `body` și `@media print`.
+- **Găsite pe capturi, înainte de raport:** liniile previzualizării, fire de păr (0,1 mm la ~160 px); antetele de rând cu
+  majuscule (stilul tabelelor din dialoguri); la tipar, fereastra îngustă (`vw` e al paginii) și `overflow: hidden` pe `body`,
+  care ar fi tăiat tiparul la o pagină. Măsurate cu stilurile calculate, apoi reparate.
+- **Regula importurilor** a mutat fereastra și CSV-ul din `src/ui` în `src/app`; manualul are capitolul nou (36), iar
+  `export.raport` e ușa a 107-a.
+- **Otrăvurile** (`aa16c19`): 55 / 55 la prima rulare (38 unitare, 17 prin e2e), după probele adăugate la citirea listei
+  (interiorul și despărțirea, urechile, freza în V, materialul și ordinea foilor, rândul nou din CSV).
+- **Unirea de la capăt:** `main` (`d62e6b8`: planșele 11.1↑–11.5↑ unite acolo, imprimanta 3.6s, incrustațiile 12.1↑d) adus
+  în ramură fără conflicte (`13b1f57`); ramura are deasupra lui `main` doar 11.6↑.
+- **Porțile pe codul unit:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile (766 de texte, 0 netraduse),
+  suita unitară 9 322 / 0 (8 sărite), build-ul determinist (319 fișiere identice; pornirea cu ușa 109,8 / 110, totalul
+  694,4 / 700), e2e 480 / 480 din prima.
+- **Publicat:** canalul `plansele` al instanței de test (<https://cncvectorstudio-test--plansele-xafrblmh.web.app>, până pe
+  13.12): pagina și cele 100 de bucăți ca `dist` din `13b1f57`; raportul văzut acolo, din paletă, după actualizarea
+  oferită de aplicație.
+
+**Completed:** 13.11, 23:10.
