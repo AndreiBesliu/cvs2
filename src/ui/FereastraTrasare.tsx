@@ -407,6 +407,25 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     return raport && Number.isFinite(v) && v > 0 ? t('import.trasare.px', { px: nr(v / raport.mmPePx, 1) }) : '';
   };
   const automat = alegeri.prag === null;
+  // Lumina (ADR 0224, pe luminozitate; ADR 0226, pe culori), cu sfatul variantei alese.
+  const panouLumina = (
+    <div className="trasare-lumina">
+      <label>
+        {t('import.trasare.lumina')}
+        <select value={alegeri.lumina} data-camp="trasare-lumina" onChange={(e) => {
+          const v = e.target.value;
+          onSchimba({ lumina: v === 'neuniforma' || v === 'umbre' ? v : 'uniforma' });
+        }}>
+          <option value="uniforma">{t('import.trasare.lumina.uniforma')}</option>
+          <option value="neuniforma">{t('import.trasare.lumina.neuniforma')}</option>
+          <option value="umbre">{t('import.trasare.lumina.umbre')}</option>
+        </select>
+      </label>
+      <p className="mic" data-testid="trasare-lumina-sfat">
+        {t(peCulori ? `import.trasare.lumina.sfat-culori.${alegeri.lumina}` : `import.trasare.lumina.sfat.${alegeri.lumina}`)}
+      </p>
+    </div>
+  );
   return (
     <div className="trasare-corp" data-testid="trasare-panou">
       <div className="trasare-comenzi">
@@ -438,6 +457,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
             onLat={(v) => { setCiorna({ ...ciorna, lat: v }); }}
             automatMm={mediane?.parti && raport ? mediane.parti.pragPx * raport.mmPePx : mediane && raport ? 2 * mediane.grosimePx * raport.mmPePx : null} nr={nr} />
         )}
+        {/* Pe culori (ADR 0226), Lumina vine înaintea culorilor: ea schimbă ce culori se găsesc. */}
+        {peCulori && !raport?.transparenta && panouLumina}
         {peCulori && <PanouCulori alegeri={alegeri} paleta={culori?.paleta ?? null} onSchimba={onSchimba} onEvidentiaza={setEvidentiata} nr={nr} />}
         {raport && !peCulori && <p className="mic" data-testid="trasare-sursa-aleasa">{aleasa}</p>}
         {!peCulori && <div className="trasare-prag">
@@ -462,22 +483,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
             {t('import.trasare.inverseaza')}
           </label>
         )}
-        {!peCulori && (raport ? raport.sursa === 'lum' : alegeri.sursa === 'lum') && (
-          <div className="trasare-lumina">
-            <label>
-              {t('import.trasare.lumina')}
-              <select value={alegeri.lumina} data-camp="trasare-lumina" onChange={(e) => {
-                const v = e.target.value;
-                onSchimba({ lumina: v === 'neuniforma' || v === 'umbre' ? v : 'uniforma' });
-              }}>
-                <option value="uniforma">{t('import.trasare.lumina.uniforma')}</option>
-                <option value="neuniforma">{t('import.trasare.lumina.neuniforma')}</option>
-                <option value="umbre">{t('import.trasare.lumina.umbre')}</option>
-              </select>
-            </label>
-            <p className="mic" data-testid="trasare-lumina-sfat">{t(`import.trasare.lumina.sfat.${alegeri.lumina}`)}</p>
-          </div>
-        )}
+        {!peCulori && (raport ? raport.sursa === 'lum' : alegeri.sursa === 'lum') && panouLumina}
         <label>
           {t('import.trasare.netezime')}
           <select value={alegeri.netezime} data-camp="trasare-netezime" onChange={(e) => {
@@ -683,7 +689,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
                 </p>
               )}
               {foaie && !foaie.indreptata && foaie.sugestie && <p className="avertisment" data-testid="trasare-sugestie-foaie">{t('import.trasare.sugestie-foaie')}</p>}
-              {raport.sursa === 'lum' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA && (
+              {raport.sursa !== 'alfa' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA && (
                 <p className="avertisment" data-testid="trasare-sugestie">{t('import.trasare.sugestie', { procent: nr(100 * raport.inegala, 0) })}</p>
               )}
               {mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}

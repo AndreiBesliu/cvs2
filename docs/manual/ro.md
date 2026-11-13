@@ -720,12 +720,13 @@ dreapta:
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
-- **Lumina** (la Luminozitatea): **Uniformă** (implicit) ia un singur prag pe toată imaginea, pentru o scanare curată sau
-  un logo; **Neuniformă** raportează hârtia la o suprafață netedă potrivită pe ea, pentru o poză luminată dintr-o parte, cu
-  colțurile întunecate sau cu pete pline; **Cu umbre** o raportează la fundalul din jurul fiecărui punct, pentru umbra
-  telefonului sau a mâinii (o pată plină mai lată decât o douăsprezecime din imagine iese golită: atunci, Neuniformă). La
-  amândouă, desenul e ce iese din hârtie, oricum ar fi marginea imaginii (o foaie pozată pe masă); dacă iese totuși
-  întors, **Inversează**. Când hârtia variază mult la Uniformă, raportul îți propune Neuniformă;
+- **Lumina** (la Luminozitatea; la Culorile, mai jos): **Uniformă** (implicit) ia un singur prag pe toată imaginea,
+  pentru o scanare curată sau un logo; **Neuniformă** raportează hârtia la o suprafață netedă potrivită pe ea, pentru o
+  poză luminată dintr-o parte, cu colțurile întunecate sau cu pete pline; **Cu umbre** o raportează la fundalul din
+  jurul fiecărui punct, pentru umbra telefonului sau a mâinii (o pată plină mai lată decât o douăsprezecime din imagine
+  iese golită: atunci, Neuniformă). La amândouă, desenul e ce iese din hârtie, oricum ar fi marginea imaginii (o foaie
+  pozată pe masă); dacă iese totuși întors, **Inversează**. Când hârtia variază mult la Uniformă, raportul îți propune
+  Neuniformă;
 - **Netezimea**: **Fidel** urmează marginea de aproape și păstrează colțurile mici, **Echilibrat** netezește treptele
   pixelilor, **Neted** rotunjește colțurile mici și dă mai puține noduri;
 - **Ignoră petele sub** și **Umple golurile sub** (în mm, cu pixelii alături): petele de desen și golurile din el mai mici de
@@ -760,7 +761,11 @@ rămâne vie, iar o schimbare nouă o oprește pe cea începută.
 
 Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
 exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
-incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apoi:
+incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. **Lumina** (pe o imagine opacă) raportează fiecare
+canal al culorii la hârtie: cu **Neuniformă**, hârtia devine albă peste tot, iar paleta arată culorile desenului, oricare ar
+fi lumina sau dominanta pozei (și creta colorată pe tablă); **Cu umbre** repară și umbra telefonului pe un desen cu linii,
+dar golește formele pline mai late decât o douăsprezecime din imagine (atunci, Neuniformă). O umbră tare peste forme pline
+n-o repară niciuna. Apoi:
 - **Numărul culorilor**: **Automat** găsește singur culorile deosebite ale imaginii (umbrirea unei suprafețe rămâne o
   singură culoare, iar o culoare mică dar clară, ca o linie subțire, rămâne a ei); fără el, glisorul alege de la 2 la 16.
   Un număr nou face culorile din nou, fără legăturile și bifele de dinainte;

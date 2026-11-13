@@ -5,14 +5,17 @@
  * dintre doi pixeli la amestecul lor de 50 %); fiecare graniță dintre două joncțiuni netezită o singură dată (curbele din
  * `trasare.ts`), iar fiecare culoare își adună granițele: două culori vecine au aceeași linie, în sensuri opuse.
  *
+ * Pe o imagine opacă, lumina (ADR 0226): fiecare canal raportat la fundalul lui (`culoriLuminate`), înaintea reducerii.
+ *
  * Pură, fără importuri din aplicație (regula `trasare-izolat`): rulează în workerul trasării; coordonatele sunt în pixeli
  * (x spre dreapta, y în jos, pixelul (0, 0) acoperă pătratul [0, 1]²).
  */
 import {
-  curbeleArcului, curbeleBuclei, EPS_DUR, netezeste, PLAFON_TRASARE, TREPTE,
+  curbeleArcului, curbeleBuclei, EPS_DUR, netezeste, PLAFON_TRASARE, pragAutomat, TREPTE,
   type Bucata, type CaiTrasate, type ImagineRGBA, type Netezime,
 } from './trasare.ts';
 import { primele } from './legaturi.ts';
+import { cernealaDeschisa, fereastraLocala, fundalLocal, fundalNeted, variatieHartie, type Lumina } from './lumina.ts';
 
 export type OptiuniCulori = {
   /** Câte culori (1–16); null: automat. */
@@ -27,6 +30,8 @@ export type OptiuniCulori = {
   readonly gauriPx: number;
   /** „Ignoră ce atinge marginea” (ADR 0224): o bucată de culoare lipită de marginea imaginii trece la fundal (lipsă: nu). */
   readonly margine?: boolean;
+  /** Lumina (ADR 0226), pe o imagine opacă: fiecare canal raportat la fundalul lui, neted sau local (lipsă: „uniforma”). */
+  readonly lumina?: Lumina;
 };
 
 export type CuloarePaleta = {
@@ -48,6 +53,11 @@ export type RaportCulori = {
   readonly pete: number; readonly gauri: number;
   /** Bucățile de culoare lipite de margine, trecute la fundal (ADR 0224). */
   readonly margine: number;
+  /**
+   * Lumina folosită (ADR 0226; pe transparență, „uniforma”) și, la „Uniformă” pe o imagine opacă, cât variază hârtia
+   * ((max − min) / max a fundalului ei neted, pe luminozitate), pentru sugestia raportului; altfel null.
+   */
+  readonly lumina: Lumina; readonly inegala: number | null;
   /** Granițele (arcele dintre joncțiuni și buclele fără joncțiuni), contururile și bucățile pieselor. */
   readonly granite: number; readonly contururi: number; readonly varfuri: number;
   /** Cea mai mare distanță dintre granițele pe pixeli și curbele lor, în px. */
@@ -290,16 +300,59 @@ type Arc = {
   bucati: Bucata[]; sfarsit: [number, number];
 };
 
-export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulori {
-  const { latime: W, inaltime: H, date: d } = img;
+/** Luminozitatea (Rec. 709) fiecărui pixel, în [0, 1]. */
+function luminozitatea(img: ImagineRGBA): Float32Array {
+  const { latime: W, inaltime: H, date: d } = img, L = new Float32Array(W * H);
+  for (let p = 0, q = 0; p < L.length; p++, q += 4) L[p] = (0.2126 * (d[q] ?? 0) + 0.7152 * (d[q + 1] ?? 0) + 0.0722 * (d[q + 2] ?? 0)) / 255;
+  return L;
+}
+
+/**
+ * Lumina pe culori (ADR 0226): fiecare canal (roșul, verdele, albastrul) raportat la fundalul lui: neted („Neuniformă”:
+ * polinomul hârtiei, potrivit pe fiecare canal cu pixelii lui de hârtie, deci un galben e hârtie pe roșu și pe verde și
+ * cerneală pe albastru) sau local („Cu umbre”: închiderea pe fiecare canal; golește o formă plină mai lată decât fereastra).
+ * Pe hârtia deschisă, albul hârtiei ajunge la 255 (balansul de alb, răspunsul 1a: paleta are culorile desenului sub o lumină
+ * albă, oricare ar fi dominanta pozei); pe tablă, fundalul ajunge la media lui (câmpul plat: creta nu se taie). Polaritatea,
+ * din luminozitate (ADR 0224 §2). Alfa rămâne; întoarce o imagine nouă.
+ */
+export function culoriLuminate(img: ImagineRGBA, lumina: Exclude<Lumina, 'uniforma'>): ImagineRGBA {
+  const { latime: W, inaltime: H, date: d } = img, n = W * H, o = new Uint8ClampedArray(4 * n);
+  const f = luminozitatea(img), deschisa = !cernealaDeschisa(f, W, H), h = new Float64Array(256);
+  for (let k = 0; k < 3; k++) {
+    // `f` ține, pe rând, fiecare canal (luminozitatea a dat doar polaritatea).
+    h.fill(0);
+    for (let p = 0, q = k; p < n; p++, q += 4) { const v = d[q] ?? 0, i = Math.round(v); f[p] = v / 255; h[i] = (h[i] ?? 0) + 1; }
+    const B = lumina === 'neuniforma' ? fundalNeted(f, W, H, deschisa, pragAutomat(f, h)).B : fundalLocal(f, W, H, fereastraLocala(W, H), deschisa);
+    let tinta = 255;
+    if (!deschisa) { let m = 0; for (let p = 0; p < n; p++) m += B[p] ?? 0; tinta = (255 * m) / n; }
+    for (let p = 0, q = k; p < n; p++, q += 4) o[q] = (tinta * (f[p] ?? 0)) / Math.max(0.02, B[p] ?? 0);
+  }
+  for (let q = 3; q < 4 * n; q += 4) o[q] = d[q] ?? 255;
+  return { latime: W, inaltime: H, date: o };
+}
+
+/** Cât variază hârtia unei imagini opace, la „Uniformă” (sugestia raportului, ADR 0226 §1): ca la alb-negru, pe luminozitate. */
+function variatiaHartiei(img: ImagineRGBA): number {
+  const f = luminozitatea(img);
+  for (let p = 0; p < f.length; p++) f[p] = 1 - (f[p] ?? 0);
+  return variatieHartie(f, img.latime, img.inaltime, pragAutomat(f));
+}
+
+export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): RezultatCulori {
+  const { latime: W, inaltime: H } = intrare;
   const n = W * H;
-  const A = (p: number): number => d[4 * p + 3] ?? 0;
-  // 1. Transparența și nivelul plin al alfa (ca în ADR 0220).
+  // 1. Transparența și nivelul plin al alfa (ca în ADR 0220); lumina nu schimbă alfa.
   const hist = new Float64Array(256);
-  for (let p = 0; p < n; p++) { const a = A(p); hist[a] = (hist[a] ?? 0) + 1; }
+  for (let p = 0; p < n; p++) { const a = intrare.date[4 * p + 3] ?? 0; hist[a] = (hist[a] ?? 0) + 1; }
   let sub = 0;
   for (let a = 0; a < 128; a++) sub += hist[a] ?? 0;
   const transparenta = sub >= n * 0.01;
+  // Lumina (ADR 0226), doar pe o imagine opacă: fiecare canal raportat la fundalul lui; la „Uniformă”, variația hârtiei.
+  const lumina: Lumina = !transparenta && o.lumina !== undefined ? o.lumina : 'uniforma';
+  const img = lumina === 'uniforma' ? intrare : culoriLuminate(intrare, lumina);
+  const inegala = !transparenta && lumina === 'uniforma' ? variatiaHartiei(intrare) : null;
+  const d = img.date;
+  const A = (p: number): number => d[4 * p + 3] ?? 0;
   let plin = 255;
   for (let a = 255, s = 0, viz = n - (hist[0] ?? 0); a >= 1 && viz > 0; a--) { s += hist[a] ?? 0; if (s >= viz * 0.02) { plin = a; break; } }
   const vizibil = (p: number): boolean => !transparenta || A(p) >= 128;
@@ -646,6 +699,7 @@ export function traseazaCulori(img: ImagineRGBA, o: OptiuniCulori): RezultatCulo
     return {
       latime: W, inaltime: H, transparenta, automat: red.automat, paleta,
       margini: laturi > 0 && amestecate / laturi < 0.15 ? 'dure' : 'netezite', pete, gauri, margine: laMargine, granite, contururi, varfuri, abatere,
+      lumina, inegala,
     };
   }
   if (preaMulte) return { ok: false, cod: 'prea-multe', raport: raport0() };

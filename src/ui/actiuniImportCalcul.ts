@@ -131,7 +131,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
     intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
-    lumina: r.fel === 'culori' ? 'uniforma' : r.raport.lumina, inegala: r.fel === 'culori' ? null : r.raport.inegala,
+    lumina: r.raport.lumina, inegala: r.raport.inegala,
   } as const;
   if (r.fel === 'culori') {
     const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai })) : [];

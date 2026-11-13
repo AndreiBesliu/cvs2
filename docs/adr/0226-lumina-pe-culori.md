@@ -1,8 +1,9 @@
 # ADR 0226 — Lumina pe culori: fiecare canal raportat la fundalul lui
 
-**Starea:** propus pe 13.11.2026, la „Da, 25.4↑b” (owner-ul, după felia 25.5↑). Felia 25.4↑b, lăsată de ADR 0224 §3
-(„lumina lor, fiecare canal raportat la fundal, e o felie a ei”), fără mașină, în linia trasării (worktree-ul `trasare`,
-ramura `wip/25.1-trasare`, adusă la `origin/main`, `ab151b4`). Codul vine abia după răspunsurile la întrebările de la final.
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final); propus tot atunci,
+la „Da, 25.4↑b” (owner-ul, după felia 25.5↑). Felia 25.4↑b, lăsată de ADR 0224 §3 („lumina lor, fiecare canal raportat la
+fundal, e o felie a ei”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la
+`origin/main`, `f663a5b`, cu planșele).
 **Completează:** ADR 0221 (trasarea pe culori), ADR 0224 (lumina, pe sursa luminozității).
 **Schița:** <https://claude.ai/artifact/D39edbszdytPh1zohWXZpd> (pozele prototipului și culorile găsite, fără
 corecție, cu „Neuniformă” și cu „Cu umbre”; macheta ferestrei; ce am măsurat; întrebările, cu formularul).
@@ -51,7 +52,7 @@ repară asta doar pe alb-negru: pe culori, lista ei nici nu apare.
   - **timpul**, pe 12 Mpx, nescris pentru viteză: 1,0–1,1 s cu fundalul neted, 2,4–2,9 s cu cel local (trei închideri).
     Trasarea pe culori însăși ia câteva secunde.
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Fereastra trasării:** lista **Lumina** apare și pe **Culorile** (pe imaginile opace), cu aceleași trei variante și
    același implicit ca la alb-negru („Uniformă”, ADR 0224, răspunsul 1a); sfatul ei spune pe ce merge fiecare: „Neuniformă”
@@ -86,6 +87,8 @@ repară asta doar pe alb-negru: pe culori, lista ei nici nu apare.
 fundalul neted.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (13.11):** „Da la 1-2a”: toate recomandările.
 
 Opțiunile de mai sus vin toate (regula „toate opțiunile”): „Neuniformă” și „Cu umbre” stau împreună, fiecare pe cazul ei;
 întrebările sunt doar despre ce se exclude.

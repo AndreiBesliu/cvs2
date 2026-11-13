@@ -257,7 +257,10 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie } as const;
   const pz = foaie?.previzualizare?.date, deFoaie = pz instanceof Uint8ClampedArray ? [pz] : [];
   if (c.culori) {
-    const r = traseazaCulori(img, { ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx, ...(c.optiuni.margine === true ? { margine: true } : {}) });
+    const r = traseazaCulori(img, {
+      ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx, ...(c.optiuni.margine === true ? { margine: true } : {}),
+      ...(c.optiuni.lumina !== undefined && c.optiuni.lumina !== 'uniforma' ? { lumina: c.optiuni.lumina } : {}),
+    });
     if (!r.ok) return { raspuns: { ...r, fel: 'culori', ...sc }, transfer: deTransferat(deFoaie) };
     const posterizare = posterizeaza(r.etichete, img.latime, img.inaltime);
     const vederi = r.piese.flatMap((p) => [p.cai.inceput, p.cai.tip, p.cai.xy, p.cai.exterior]);

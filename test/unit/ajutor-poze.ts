@@ -255,3 +255,126 @@ export const POZE_FOAIE = {
   inclinata40: { W: 1600, H: 1200, focala: 1400, inclinare: 40, rotire: -12, laterala: 10, dist: 470 },
   rotita30: { W: 1600, H: 1200, focala: 1400, inclinare: 15, rotire: 30, laterala: 0, dist: 470 },
 } as const satisfies Record<string, CumFoaie>;
+
+// ── Poze color (ADR 0226) ──────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Hârtia albă și cele cinci cerneluri ale pozelor color: roșu, albastru, verde, negru și galben (cerneala deschisă). */
+export const HARTIE_COLOR = [242, 240, 234] as const;
+export const CERNELURI_COLOR: ReadonlyArray<readonly [number, number, number]> = [
+  [196, 38, 42], [38, 72, 186], [44, 146, 70], [28, 26, 30], [236, 196, 36],
+];
+
+/** Clasa adevărată în (x, y) (0: hârtia, 1–5: cernelurile): formele pline (un disc, un dreptunghi, un triunghi, linii negre,
+ *  un inel) sau, cu `linii`, un desen cu trăsături de 6 px (cercuri și linii). */
+function clasaColor(x: number, y: number, W: number, H: number, linii: boolean): number {
+  const u = x / W, v = y / H;
+  if (linii) {
+    const g = 3, cerc = (cx: number, cy: number, r: number): boolean => Math.abs(Math.hypot(x - cx, y - cy) - r) < g;
+    if (cerc(0.2 * W, 0.3 * H, 60)) return 1;
+    if ((Math.abs(y - 0.25 * H) < g && x > 0.4 * W && x < 0.6 * W) || (Math.abs(x - 0.5 * W) < g && y > 0.3 * H && y < 0.55 * H)) return 2;
+    if (Math.abs((x - 0.1 * W) - (y - 0.6 * H)) < g * 1.4 && y > 0.6 * H && y < 0.9 * H) return 3;
+    for (const vv of [0.62, 0.72, 0.82]) if (Math.abs(y - vv * H) < g && x > 0.4 * W && x < 0.62 * W) return 4;
+    return cerc(0.8 * W, 0.55 * H, 50) ? 5 : 0;
+  }
+  if (Math.hypot(u - 0.2, (v - 0.3) * (H / W)) < 0.1) return 1;
+  if (u > 0.4 && u < 0.6 && v > 0.15 && v < 0.45) return 2;
+  if (v > 0.6 && v < 0.9 && Math.abs(u - 0.2) < (v - 0.6) * 0.5) return 3;
+  for (const vv of [0.62, 0.72, 0.82]) if (u > 0.4 && u < 0.62 && Math.abs(v - vv) < 0.018) return 4;
+  const r = Math.hypot(u - 0.8, (v - 0.55) * (H / W));
+  return r < 0.11 && r > 0.06 ? 5 : 0;
+}
+
+export type CumColor = {
+  readonly W: number; readonly H: number;
+  /** Lumina dintr-o parte (de la 1 la 1 − laterala, plus 8 % pe verticală), umbra tare (o bandă la 60 %) și o dominantă
+   *  care se schimbă de-a lungul foii (roșul de la +6 % la −6 %, albastrul invers). */
+  readonly laterala?: number; readonly umbra?: boolean; readonly dominanta?: boolean;
+  /** Creta colorată (deschisă) pe tablă (0,12), cu negrul înlocuit de alb. */
+  readonly tabla?: boolean;
+  /** Un desen cu linii colorate de 6 px, în locul formelor pline. */
+  readonly linii?: boolean;
+  /** Fundalul transparent (alfa 0) în locul hârtiei. */
+  readonly transparent?: boolean;
+  readonly zgomot?: number; readonly samanta?: number;
+};
+export type PozaColor = ImagineRGBA & {
+  /** Clasa majoritară a fiecărui pixel și dacă pixelul e curat (o singură clasă, nu pe o margine). */
+  readonly adevar: Uint8Array; readonly curat: Uint8Array;
+};
+
+/** O poză color sintetică, 2 × 2 eșantioane pe pixel, cu zgomot (aproape gaussian, abaterea `zgomot`, implicit 0,02). */
+export function pozaColor(o: CumColor): PozaColor {
+  const { W, H } = o, d = new Uint8ClampedArray(W * H * 4), adevar = new Uint8Array(W * H), curat = new Uint8Array(W * H);
+  let s = o.samanta ?? 11;
+  const rnd = (): number => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  const culoare = (c: number): readonly [number, number, number] => {
+    if (c === 0) return o.tabla ? [30, 34, 32] : HARTIE_COLOR;
+    const k = CERNELURI_COLOR[c - 1] ?? [0, 0, 0];
+    return o.tabla ? (c === 4 ? [235, 235, 230] : [k[0] * 0.5 + 120, k[1] * 0.5 + 120, k[2] * 0.5 + 120]) : k;
+  };
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const nr = [0, 0, 0, 0, 0, 0], acc = [0, 0, 0];
+      let alfa = 0;
+      for (let j = 0; j < 2; j++) {
+        for (let i = 0; i < 2; i++) {
+          const c = clasaColor(x + 0.25 + 0.5 * i, y + 0.25 + 0.5 * j, W, H, o.linii === true);
+          nr[c] = (nr[c] ?? 0) + 1;
+          const k = culoare(c);
+          acc[0] = (acc[0] ?? 0) + k[0]; acc[1] = (acc[1] ?? 0) + k[1]; acc[2] = (acc[2] ?? 0) + k[2];
+          alfa += o.transparent && c === 0 ? 0 : 1;
+        }
+      }
+      let mx = 0;
+      for (let c = 1; c < 6; c++) if ((nr[c] ?? 0) > (nr[mx] ?? 0)) mx = c;
+      adevar[y * W + x] = mx;
+      curat[y * W + x] = (nr[mx] ?? 0) === 4 ? 1 : 0;
+      const u = x / W, v = y / H;
+      let l = 1 - (o.laterala ?? 0) * u - 0.08 * v;
+      if (o.umbra && u > 0.62 && u < 0.72) l *= 0.6;
+      const dr = o.dominanta ? 1.06 - 0.12 * u : 1, db = o.dominanta ? 0.94 + 0.12 * u : 1, z = o.zgomot ?? 0.02;
+      const zg = (): number => 255 * z * (rnd() + rnd() + rnd() - 1.5);
+      const q = 4 * (y * W + x);
+      d[q] = (l * dr * (acc[0] ?? 0)) / 4 + zg(); d[q + 1] = (l * (acc[1] ?? 0)) / 4 + zg(); d[q + 2] = (l * db * (acc[2] ?? 0)) / 4 + zg();
+      d[q + 3] = Math.round((255 * alfa) / 4);
+    }
+  }
+  return { latime: W, inaltime: H, date: d, adevar, curat };
+}
+
+export type CuloriMasurate = {
+  /** Câte culori au ieșit (cu fundalul). */
+  readonly K: number;
+  /** Clasele adevărate rupte în mai multe culori (a doua culoare a clasei are peste 5 % din pixelii ei curați) și perechile
+   *  de clase unite (aceeași culoare majoritară); numele: „hârtia” și indicii cernelurilor, 1–5. */
+  readonly despartite: readonly string[]; readonly unite: readonly string[];
+  /** Pixelii curați care nu au culoarea majoritară a clasei lor. */
+  readonly gresite: number;
+  /** Culoarea majoritară a fiecărei clase, ca [r, g, b] din paletă. */
+  readonly culori: ReadonlyArray<readonly [number, number, number]>;
+};
+
+/** Culorile găsite de trasare față de clasele adevărate ale pozei, pe pixelii curați. */
+export function culoriMasurate(p: PozaColor, r: { readonly etichete: Uint8Array; readonly raport: { readonly paleta: ReadonlyArray<{ readonly hex: string }> } }): CuloriMasurate {
+  const K = r.raport.paleta.length, n = p.latime * p.inaltime, m = Array.from({ length: 6 }, () => new Float64Array(K));
+  for (let i = 0; i < n; i++) {
+    const e = r.etichete[i] ?? 255, c = m[p.adevar[i] ?? 0];
+    if (p.curat[i] && e < K && c) c[e] = (c[e] ?? 0) + 1;
+  }
+  const nume = ['hârtia', '1', '2', '3', '4', '5'];
+  const despartite: string[] = [], maj: number[] = [];
+  let gresite = 0, tot = 0;
+  for (let c = 0; c < 6; c++) {
+    const rand = [...(m[c] ?? [])], suma = rand.reduce((a, b) => a + b, 0), ord = rand.map((v, k) => [v, k] as const).sort((a, b) => b[0] - a[0]);
+    maj.push(ord[0]?.[1] ?? -1);
+    if (suma > 0 && (ord[1]?.[0] ?? 0) > 0.05 * suma) despartite.push(nume[c] ?? '');
+    gresite += suma - (ord[0]?.[0] ?? 0); tot += suma;
+  }
+  const unite: string[] = [];
+  for (let a = 0; a < 6; a++) for (let b = a + 1; b < 6; b++) if (maj[a] === maj[b] && (maj[a] ?? -1) >= 0) unite.push(`${nume[a]}+${nume[b]}`);
+  const hex = (k: number): readonly [number, number, number] => {
+    const h = r.raport.paleta[k]?.hex ?? '#000000';
+    return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  };
+  return { K, despartite, unite, gresite: gresite / Math.max(1, tot), culori: maj.map((k) => hex(k)) };
+}

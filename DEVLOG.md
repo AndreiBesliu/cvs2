@@ -8914,3 +8914,10 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
 - **ADR 0226 propus** (lista Lumina și pe Culorile, același implicit ca la alb-negru; „Neuniformă” și „Cu umbre”, fiecare pe
   cazul ei), cu schița <https://claude.ai/artifact/D39edbszdytPh1zohWXZpd> (pozele și culorile găsite, macheta, măsurătorile, formularul); două întrebări: culorile
   adevărate (balansul de alb) sau tonul pozei; umbra tare pe formele pline acum sau după o poză reală.
+
+## 2026-11-13 — Felia 25.4↑b: lumina pe culori (ADR 0226, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0226: culorile adevărate, cu balansul de alb; umbra tare
+pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** —.
+
+- **Ramura** adusă la `origin/main` (`f663a5b`: planșele, 11.1↑–11.5↑; conflict doar în DEVLOG).
