@@ -14,6 +14,7 @@ import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
 import { grupDin, type ParteGrupata } from '../model/grupare.ts';
+import { comenziGrupuriPanouri } from '../model/grupuriPanouri.ts';
 import { blocText } from '../model/blocText.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
@@ -560,7 +561,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const r = comandaTaiere(h, t);
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
-      ctx.selecteaza(t.ids);
+      ctx.selecteaza(r.ids ?? t.ids);
     },
   },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
@@ -779,7 +780,7 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
  * 0103 §5), într-un singur pas. Refuzată, cu motiv: documentul nu mai e cel pe care s-a calculat tăierea, nimic de tăiat,
  * documentul de după peste plafoane sau refuzat de schemele lui. Ținută pe (document, tăiere), ca reparația.
  */
-type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
+type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda; readonly ids?: readonly string[] } | { readonly ok: false; readonly motiv: CheieSimpla };
 let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly rez: ComandaTaiere } | null = null;
 export function comandaTaiere(h: Istoric, t: TaiereCalculata): ComandaTaiere {
   if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t) return ultimaTaiere.rez;
@@ -828,7 +829,7 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
   const grupuri = t.grupuri ?? [];
   if (t.degrupate.length === 0 && sterse.length === 0 && grupuri.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
   // Decuparea: întâi ștergerile (fiecare pe documentul de după cele dinainte), apoi degruparea; panourile (ADR 0181 §7), apoi
-  // gruparea lor; un singur pas de anulare.
+  // gruparea lor, pe documentul de după degrupare (cu alegerea de după: grupurile în locul bucăților); un singur pas de anulare.
   const comenzi: Comanda[] = [];
   try {
     if (sterse.length > 0) comenzi.push(...comenziStergere(h.doc, new Set(sterse)).comenzi);
@@ -836,7 +837,18 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
   if (t.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: t.degrupate });
-  if (grupuri.length > 0) comenzi.push({ tip: 'regrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: grupuri });
+  let ids: readonly string[] | undefined;
+  if (grupuri.length > 0) {
+    let g: ReturnType<typeof comenziGrupuriPanouri>;
+    try {
+      g = comenziGrupuriPanouri(comenzi.length === 0 ? h.doc : executa(h, { tip: 'lot', comenzi }).doc, foaieCurenta(h.doc).id, grupuri, t.ids);
+    } catch {
+      g = null;
+    }
+    if (!g) return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+    comenzi.push(...g.comenzi);
+    ids = g.ids;
+  }
   const comanda: Comanda = comenzi.length === 1 ? (comenzi[0] as Comanda) : { tip: 'lot', comenzi };
   let dupa: Document;
   try {
@@ -845,7 +857,8 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.taiere.motiv.schema' };
+  if (!is(SchemaDocument, JSON.parse(JSON.stringify(dupa)))) return { ok: false, motiv: 'editare.taiere.motiv.schema' };
+  return ids ? { ok: true, comanda, ids } : { ok: true, comanda };
 }
 
 /**

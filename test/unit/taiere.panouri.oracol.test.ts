@@ -18,6 +18,7 @@ import { is } from 'valibot';
 import type { Document, Instanta, Piesa } from '../../src/model/document.ts';
 import { MODELE_IMBINARE, type Imbinare } from '../../src/model/imbinare.ts';
 import { anuleaza, executa, istoricNou, type Comanda } from '../../src/model/jurnal.ts';
+import { comenziGrupuriPanouri } from '../../src/model/grupuriPanouri.ts';
 import { taieInPanouri, type CererePanouri } from '../../src/model/panouri.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
 import type { GrilaPanouri } from '../../src/model/grilaPanouri.ts';
@@ -41,23 +42,25 @@ function celule(xs: readonly number[], ys: readonly number[]): Cutie[] {
   return Y.slice(1).flatMap((y1, r) => X.slice(1).map((x1, c) => ({ minX: X[c] as number, minY: Y[r] as number, maxX: x1, maxY: y1 })));
 }
 
-function comanda(d: Document, r: Extract<RezultatTaiere, { ok: true }>): Comanda {
+/** Comanda rezultatului, ca acțiunea `document.taie` (degruparea, apoi grupurile panourilor), și panourile, în ordinea lor. */
+function comanda(d: Document, r: Extract<RezultatTaiere, { ok: true }>): { readonly comanda: Comanda; readonly ids: readonly string[] } {
   const id = d.foi[0]?.id as string;
-  return { tip: 'lot', comenzi: [
-    ...(r.degrupate.length > 0 ? [{ tip: 'degrupeaza', foaie: id, degrupate: r.degrupate } as const] : []),
-    ...(r.grupuri && r.grupuri.length > 0 ? [{ tip: 'regrupeaza', foaie: id, degrupate: r.grupuri } as const] : []),
-  ] };
+  const cs: Comanda[] = r.degrupate.length > 0 ? [{ tip: 'degrupeaza', foaie: id, degrupate: r.degrupate }] : [];
+  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, id, r.grupuri ?? [], r.ids);
+  assert.ok(g);
+  return { comanda: { tip: 'lot', comenzi: [...cs, ...g.comenzi] }, ids: g.ids };
 }
 
 /** Judecata unui caz tăiat: documentul, celulele panourilor, numele și oracolul. Întoarce panourile (formele lor). */
 function judeca(d: Document, r: Extract<RezultatTaiere, { ok: true }>, inainte: readonly FormaOracol[], xs: readonly number[], ys: readonly number[], toleranta: number, joc: number, mesaj: string): void {
-  const h = executa(istoricNou(d), comanda(d, r));
+  const { comanda: k, ids } = comanda(d, r);
+  const h = executa(istoricNou(d), k);
   assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(h.doc))), `${mesaj}: documentul de după trece de ușă`);
   assert.deepEqual({ ...anuleaza(h).doc, rev: d.rev }, d, `${mesaj}: anularea pune documentul exact`);
   const toate = celule(xs, ys);
   const t = toleranta + 1e-6;
   let inainteDe = -1;
-  const panouri = r.ids.map((id, k) => {
+  const panouri = ids.map((id, k) => {
     const i = h.doc.foi[0]?.instante.find((x) => x.id === id);
     assert.ok(i, `${mesaj}: panoul ${id}`);
     assert.equal(h.doc.piese.find((p) => p.id === i.piesa)?.nume, `Panoul ${k + 1}`, `${mesaj}: numele panoului ${k + 1}`);
@@ -71,7 +74,7 @@ function judeca(d: Document, r: Extract<RezultatTaiere, { ok: true }>, inainte: 
   });
   assert.deepEqual(judecaPanourile({ inainte, panouri, toleranta, joc }), [], mesaj);
   // Nimic pierdut: pe foaie, doar panourile.
-  assert.equal(h.doc.foi[0]?.instante.length, r.ids.length, `${mesaj}: pe foaie, doar panourile`);
+  assert.equal(h.doc.foi[0]?.instante.length, ids.length, `${mesaj}: pe foaie, doar panourile`);
 }
 
 const cutieTuturor = (forme: readonly FormaOracol[]): Cutie => forme.map(cutieForma).reduce((a, b) => ({
@@ -147,8 +150,9 @@ test('martorul: un panou mutat cu 10 mm iese din celula lui', () => {
   const inainte = formeInstanta(d, 'p');
   const rez = taieInPanouri(d, { alese: ['p'], grila: { fel: 'numar', coloane: 2, randuri: 1 }, inchide: true, nume: 'Panoul' });
   if (!rez.ok) return assert.fail(rez.motiv);
-  const dupa = executa(istoricNou(d), comanda(d, rez)).doc;
-  const [a, b] = rez.ids.map((id) => formeInstanta(dupa, id));
+  const { comanda: k, ids } = comanda(d, rez);
+  const dupa = executa(istoricNou(d), k).doc;
+  const [a, b] = ids.map((id) => formeInstanta(dupa, id));
   const muta = (f: readonly FormaOracol[]): FormaOracol[] => f.map((x) => ({ ...x, seg: x.seg.map((s) => ({ ...s, a: { x: s.a.x + 10, y: s.a.y }, b: { x: s.b.x + 10, y: s.b.y } })) }));
   const panouri = [{ celula: { minX: -MARE, minY: -MARE, maxX: 500, maxY: MARE }, forme: muta(a as FormaOracol[]) }, { celula: { minX: 500, minY: -MARE, maxX: MARE, maxY: MARE }, forme: b as FormaOracol[] }];
   assert.ok(judecaPanourile({ inainte, panouri, toleranta: 0, joc: 0 }).some((x) => x.includes('iese din celula lui')));

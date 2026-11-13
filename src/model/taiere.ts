@@ -192,10 +192,10 @@ export type RezultatTaiere =
     /** Instanțele de șters (decuparea: fără nimic de partea păstrată, sau care trec granița, cu „se șterg”). */
     readonly sterse: readonly string[];
     /**
-     * Panourile (`panouri.ts`): grupurile de făcut după degrupare (comanda `regrupeaza`, cu locurile părților în documentul de
-     * după ea), fiecare cu numele panoului.
+     * Panourile (`panouri.ts`) cu mai multe bucăți, de grupat după degrupare (`grupuriPanouri.ts`, pe firul principal): numele
+     * și bucățile, în ordinea foii.
      */
-    readonly grupuri?: readonly Degrupata[];
+    readonly grupuri?: ReadonlyArray<{ readonly nume: string; readonly ids: readonly string[] }>;
     /** Panourile: câte sunt („Panoul 1” … „Panoul n”). */
     readonly panouri?: number;
   }

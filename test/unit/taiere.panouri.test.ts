@@ -27,6 +27,7 @@ import assert from 'node:assert/strict';
 import { is } from 'valibot';
 import { operatieImplicita, type Document, type FormaDoc, type Piesa } from '../../src/model/document.ts';
 import { grilaPanouri, type GrilaPanouri } from '../../src/model/grilaPanouri.ts';
+import { comenziGrupuriPanouri } from '../../src/model/grupuriPanouri.ts';
 import type { Imbinare } from '../../src/model/imbinare.ts';
 import { anuleaza, executa, istoricNou, type Comanda, type Istoric } from '../../src/model/jurnal.ts';
 import { taieInPanouri, type CererePanouri } from '../../src/model/panouri.ts';
@@ -55,22 +56,27 @@ const celula = (minX: number, minY: number, maxX: number, maxY: number): Celula 
 const CELULE_EGALE = [celula(0, 0, 1200, 500), celula(1200, 0, 2400, 500), celula(0, 500, 1200, 1000), celula(1200, 500, 2400, 1000)];
 const CELULE_COLT = [celula(0, 0, 1200, 900), celula(1200, 0, 2400, 900), celula(0, 900, 1200, 1000), celula(1200, 900, 2400, 1000)];
 
-/** Comanda rezultatului (ca acțiunea `document.taie`): degruparea, apoi gruparea panourilor, într-un singur pas. */
-function comanda(d: Document, r: Ok): Comanda {
+/**
+ * Comanda rezultatului, ca acțiunea `document.taie`: degruparea, apoi grupurile panourilor (`comenziGrupuriPanouri`, pe documentul
+ * de după ea), într-un singur pas; și alegerea de după (panourile, în ordinea lor).
+ */
+function comanda(d: Document, r: Ok): { readonly comanda: Comanda; readonly ids: readonly string[] } {
   const foaie = d.foi[0];
   assert.ok(foaie);
-  const comenzi: Comanda[] = [];
-  if (r.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaie.id, degrupate: r.degrupate });
-  if (r.grupuri && r.grupuri.length > 0) comenzi.push({ tip: 'regrupeaza', foaie: foaie.id, degrupate: r.grupuri });
-  return { tip: 'lot', comenzi };
+  const cs: Comanda[] = r.degrupate.length > 0 ? [{ tip: 'degrupeaza', foaie: foaie.id, degrupate: r.degrupate }] : [];
+  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, foaie.id, r.grupuri ?? [], r.ids);
+  assert.ok(g, 'grupurile se fac pe documentul de după degrupare');
+  return { comanda: { tip: 'lot', comenzi: [...cs, ...g.comenzi] }, ids: g.ids };
 }
+/** Tăiat și aplicat; `r.ids` sunt panourile, în ordinea lor (grupurile în locul bucăților), ca alegerea de după acțiune. */
 function taiat(d: Document, c: CererePanouri): { readonly r: Ok; readonly dupa: Document } {
   const r = taieInPanouri(d, c);
   if (!r.ok) return assert.fail(`refuzată: ${r.motiv}`);
-  const h = executa(istoricNou(d), comanda(d, r));
+  const { comanda: k, ids } = comanda(d, r);
+  const h = executa(istoricNou(d), k);
   assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(h.doc))), 'documentul de după trece de ușă');
   assert.deepEqual({ ...anuleaza(h).doc, rev: d.rev }, d, 'anularea pune documentul exact (doar revizia crește)');
-  return { r, dupa: h.doc };
+  return { r: { ...r, ids }, dupa: h.doc };
 }
 const cutieForme = (f: readonly FormaOracol[]): Celula => f.map(cutieForma).reduce((a, b) => celula(Math.min(a.minX, b.minX), Math.min(a.minY, b.minY), Math.max(a.maxX, b.maxX), Math.max(a.maxY, b.maxY)));
 /** Panourile, în ordinea lor: numele piesei, câte părți are grupul (1: o singură formă), formele în lume și cutia lor. */
@@ -238,7 +244,7 @@ test('V-carve-urile care s-ar amesteca: panoul rămâne negrupat, cu numele lui 
   const d: Document = { ...baza, piese: baza.piese.map((p) => (p.id === 'f' ? p : { ...p, operatii: p.operatii.map((o) => ({ ...o, tip: 'vcarve' as const, latura: 'interior' as const, scula: V90, adancime: 10, pas: 10 })) })) };
   const { r, dupa } = taiat(d, cerere(['f', 'v1', 'v2'], EGALE));
   assert.equal(r.panouri, 4);
-  assert.equal(r.grupuri?.length, 0);
+  assert.equal(r.grupuri?.length, 1, 'panoul 1 e de grupat, dar gruparea îl refuză');
   const p = panouri(dupa, r.ids);
   assert.deepEqual(p.map((x) => x.nume), ['Panoul 1', 'Panoul 1', 'Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4']);
   assert.deepEqual(r.ids.slice(1, 3), ['v1', 'v2'], 'literele, netăiate, își păstrează id-urile');
@@ -258,12 +264,15 @@ test('fără nicio tăietură, doar grupurile: două pătrate în fiecare panou'
   assert.equal(r.degrupate.length, 0);
   assert.equal(r.grupuri?.length, 2);
   assert.deepEqual(panouri(dupa, r.ids).map((x) => [x.nume, x.parti]), [['Panoul 1', 2], ['Panoul 2', 2]]);
+  const brut = taieInPanouri(d, cerere(['s1', 's2', 's3', 's4'], { fel: 'numar', coloane: 2, randuri: 1 }));
+  if (!brut.ok) return assert.fail(brut.motiv);
   const R = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
   let h: Istoric = istoricNou(d);
   let sel: readonly string[] = [];
   const ctx: ContextDocument = { istoric: () => h, scrie: (n) => { h = n; }, selectie: () => sel, selecteaza: (ids) => { sel = ids; }, doarCitire: () => false };
-  assert.deepEqual(ruleaza(R, 'document.taie', { ...ctx, taiere: () => ({ doc: d, degrupate: r.degrupate, ids: r.ids, grupuri: r.grupuri ?? [] }) }), { ok: true });
+  assert.deepEqual(ruleaza(R, 'document.taie', { ...ctx, taiere: () => ({ doc: d, degrupate: brut.degrupate, ids: brut.ids, grupuri: brut.grupuri ?? [] }) }), { ok: true });
   assert.equal(h.doc.foi[0]?.instante.length, 2);
+  assert.deepEqual(sel, r.ids, 'alese, cele două grupuri');
 });
 
 test('document.taie: tăierea și gruparea panourilor, un singur pas de anulare; alese rămân panourile', () => {
@@ -276,7 +285,8 @@ test('document.taie: tăierea și gruparea panourilor, un singur pas de anulare;
   const ctx: ContextDocument = { istoric: () => h, scrie: (n) => { h = n; }, selectie: () => sel, selecteaza: (ids) => { sel = ids; }, doarCitire: () => false };
   assert.deepEqual(ruleaza(R, 'document.taie', { ...ctx, taiere: () => ({ doc: d, degrupate: r.degrupate, ids: r.ids, ...(r.grupuri ? { grupuri: r.grupuri } : {}) }) }), { ok: true });
   assert.equal(h.trecut.length, 1);
-  assert.deepEqual(sel, r.ids);
+  assert.deepEqual(sel, taiat(d, cerere(['f', 'a'], EGALE)).r.ids, 'alese, panourile (grupul în locul bucăților lui)');
+  assert.equal(sel.length, 4);
   assert.equal(h.doc.foi[0]?.instante.length, 4);
   assert.equal(h.doc.piese.find((p) => p.id === h.doc.foi[0]?.instante[0]?.piesa)?.nume, 'Panoul 1');
   ruleaza(R, 'istoric.anuleaza', ctx);

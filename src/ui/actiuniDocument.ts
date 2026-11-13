@@ -5,6 +5,7 @@ import {
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
+import type { PanouDeGrupat } from '../model/grupuriPanouri.ts';
 import type { Retea } from '../model/retea.ts';
 import type { Rol } from '../model/rol.ts';
 import type { RolPersonal } from '../model/rolPersonal.ts';
@@ -51,8 +52,8 @@ export type ReparatieCalculata = { readonly doc: Document; readonly piese: reado
 /** O tăiere calculată de worker: instanțele înlocuite de părțile lor, cele noi (de ales după) și cele de șters (decuparea). */
 export type TaiereCalculata = {
   readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[];
-  /** Tăierea în panouri (ADR 0181 §7): grupurile panourilor, făcute după degrupare, în același pas. */
-  readonly grupuri?: readonly Degrupata[];
+  /** Tăierea în panouri (ADR 0181 §7): panourile de grupat după degrupare, în același pas (`grupuriPanouri.ts`). */
+  readonly grupuri?: readonly PanouDeGrupat[];
 };
 /** O conversie calculată de worker (ADR 0180, felia 10.3↑d): piesele schimbate, cu aceleași id-uri, pe documentul `doc`. */
 export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[] };

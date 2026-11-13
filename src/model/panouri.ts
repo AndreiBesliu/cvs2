@@ -5,13 +5,14 @@
  * verticalele, apoi orizontalele. Fiecare bucată ține coloanele și rândurile între care poate fi, iar o linie taie doar bucățile
  * care o încalecă: o tăietură dă partea A (stânga, dedesubt), apoi B; o bucată netăiată e de partea mijlocului cutiei ei. La
  * capăt, fiecare bucată e într-o celulă; celulele cu bucăți, rând cu rând de jos și de la stânga, sunt „Panoul 1”, „Panoul 2” …:
- * mai multe bucăți devin un grup (`grupDin`) cu numele panoului, una singură își ia numele. Bucățile stau unde erau; o celulă
- * goală nu primește număr. Pe foaie (și în programul mașinii), bucățile unei forme vin în ordinea panourilor.
+ * o bucată singură își ia numele, iar bucățile unui panou cu mai multe se grupează pe firul principal (`grupuriPanouri.ts`: gruparea
+ * trage în worker schemele textului, ~4,5 kB). Bucățile stau unde erau; o celulă goală nu primește număr. Pe foaie (și în programul
+ * mașinii), bucățile unei forme vin în ordinea panourilor.
  *
- * Rezultatul e al tăierii (`RezultatTaiere`), un singur pas de anulare: degruparea compusă (fiecare formă schimbată, cu bucățile
- * ei de la capăt, cu id-uri nefolosite în document; o formă întreagă, singură în panoul ei, rămâne cu id-ul ei și piesa
- * redenumită) și grupurile panourilor (`grupuri`: comanda `regrupeaza`, cu locurile părților în documentul de după degrupare).
- * V-carve-urile care s-ar amesteca într-un grup (ADR 0130) lasă panoul negrupat, cu numele lui pe fiecare bucată.
+ * Rezultatul e al tăierii (`RezultatTaiere`): degruparea compusă (fiecare formă schimbată, cu bucățile ei de la capăt, cu id-uri
+ * nefolosite în document; o formă întreagă, singură în panoul ei, rămâne cu id-ul ei și piesa redenumită), panourile de grupat
+ * (`grupuri`: numele și bucățile, în ordinea foii) și toate bucățile, în ordinea panourilor (`ids`); acțiunea `document.taie` le
+ * aplică pe toate într-un pas.
  *
  * Refuzurile: `nimic-ales`, `impartita` (o piesă pusă de mai multe ori), ale grilei (`valoare`, `panouri`), `nimic-taiat` (un
  * singur panou) și ale tăierii, de la prima linie care le dă.
@@ -20,7 +21,6 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Document, Instanta, Piesa } from './document.ts';
 import { cutieElement } from './forme.ts';
 import { grilaPanouri, type GrilaPanouri } from './grilaPanouri.ts';
-import { grupDin } from './grupare.ts';
 import type { Imbinare } from './imbinare.ts';
 import { executa, istoricNou, type Degrupata } from './jurnal.ts';
 import { elementeInstanta, matriceInstanta } from './lume.ts';
@@ -107,21 +107,16 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
     }
   }
 
-  // Id-uri nefolosite în documentul vechi, pentru bucățile noi și pentru grupuri.
+  // Id-uri nefolosite în documentul vechi, pentru bucățile noi.
   let n = 1;
-  const idNou = (): string => {
-    while (ocupate.has(`e${n}`)) n++;
-    ocupate.add(`e${n}`);
-    return `e${n}`;
-  };
   const fin = vii.map((b) => {
     if (!b.noua) return b;
-    const id = idNou();
+    while (ocupate.has(`e${n}`)) n++;
+    const id = `e${n++}`;
     return { ...b, instanta: { ...b.instanta, id, piesa: id }, piesa: { ...b.piesa, id } };
   });
-  // Pe foaie, bucățile unei forme vin în ordinea panourilor (deci și în programul mașinii), iar formele, în ordinea lor. Bucățile
-  // stau deja în ordinea formelor (fiecare tăietură le pune în locul celei tăiate), deci în celula lui, fiecare panou le are în
-  // ordinea în care vor sta, iar grupul ia locul primei.
+  // Celulele cu bucăți, rând cu rând de jos; în fiecare, bucățile în ordinea foii (fiecare tăietură le pune în locul celei
+  // tăiate, deci formele rămân în ordinea lor).
   const pe = new Map<number, number[]>();
   fin.forEach((b, i) => {
     const k = b.r[0] * nx + b.c[0];
@@ -131,27 +126,16 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
   const panou = new Map(celule.map((k, t) => [k, t]));
   const nrPanou = (i: number): number => panou.get((fin[i] as Bucata).r[0] * nx + (fin[i] as Bucata).c[0]) ?? 0;
   const numite = new Map<number, string>();
-  const grupate: Array<{ readonly g: { readonly instanta: Instanta; readonly piesa: Piesa }; readonly parti: Array<{ readonly instanta: Instanta; readonly piesa: Piesa }> }> = [];
+  const grupuri: Array<{ readonly nume: string; readonly ids: readonly string[] }> = [];
   const ids: string[] = [];
   for (const [t, k] of celule.entries()) {
     const nume = `${cerere.nume} ${t + 1}`;
     const xs = pe.get(k) as number[];
-    if (xs.length > 1) {
-      const parti = xs.map((i) => ({ instanta: (fin[i] as Bucata).instanta, piesa: (fin[i] as Bucata).piesa }));
-      const id = idNou();
-      const g = grupDin(parti, id);
-      if (typeof g !== 'string') {
-        grupate.push({ g: { instanta: g.instanta, piesa: { ...g.piesa, nume } }, parti });
-        ids.push(id);
-        continue;
-      }
-    }
-    for (const i of xs) {
-      numite.set(i, nume);
-      ids.push((fin[i] as Bucata).instanta.id);
-    }
+    if (xs.length > 1) grupuri.push({ nume, ids: xs.map((i) => (fin[i] as Bucata).instanta.id) });
+    else numite.set(xs[0] as number, nume);
+    for (const i of xs) ids.push((fin[i] as Bucata).instanta.id);
   }
-  // Degruparea compusă: fiecare formă schimbată, cu bucățile ei în ordinea panourilor (cele numite, cu numele panoului).
+  // Degruparea compusă: fiecare formă schimbată, cu bucățile ei în ordinea panourilor (cea singură în panoul ei, cu numele lui).
   const peForma = new Map<string, number[]>();
   fin.forEach((b, i) => { peForma.set(b.orig, [...(peForma.get(b.orig) ?? []), i]); });
   const degrupate: Degrupata[] = [];
@@ -164,12 +148,5 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
     if (parti.length === 1 && p0?.instanta === i && p0.piesa === piesa(i)) continue;
     degrupate.push({ instanta: i, piesa: piesa(i), parti });
   }
-  // Locurile părților grupurilor, în documentul de după degrupare.
-  const dupa = degrupate.length > 0 ? executa(istoricNou(doc), { tip: 'degrupeaza', foaie: foaie.id, degrupate }).doc : doc;
-  const locI = new Map((dupa.foi[indexFoaie]?.instante ?? []).map((x, k) => [x.id, k]));
-  const locP = new Map(dupa.piese.map((x, k) => [x.id, k]));
-  const grupuri: Degrupata[] = grupate.map(({ g, parti }) => ({
-    ...g, parti, locuri: { instante: parti.map((x) => locI.get(x.instanta.id) ?? -1), piese: parti.map((x) => locP.get(x.piesa.id) ?? -1) },
-  }));
   return { ok: true, degrupate, ids, forme, scoase, sterse: [], grupuri, panouri: celule.length };
 }
