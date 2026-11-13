@@ -1387,6 +1387,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   chiar atunci: cererea rămâne la vedere, cu **Renunță**, și se retrimite până o primește imprimanta, cel mult 2 minute.
   Ultima piesă rămasă n-are buton: pentru ea, Oprește. La imprimantă ajunge doar un nume din lista ei, din litere, cifre,
   _ . -; nimic scris de mână.
+- **Notificările** (cardul lor, în fereastra Imprimanta): **Pornește notificările** cere o dată permisiunea browserului. Sub
+  **Anunță-mă când** alegi evenimentele: s-a terminat, s-a oprit, pauza din fișier (cu nota ei), altă pauză, fără filament,
+  o eroare, legătura pierdută cât imprimă și primul strat gata (oprit de la început). Cât cvs2 e ascuns, vine o notificare
+  a sistemului (clic pe ea: fereastra Imprimanta); cât e în față, o bandă sus, cu **Deschide Imprimanta** și **Închide**.
+  **Cu sunet**: câteva tonuri scurte. **Și notificarea sistemului cât cvs2 e în față**, dacă o vrei și atunci. **Procentul
+  în titlul filei**: „45 % · CNC Vector Studio”. Pe butonul Imprimanta din bara de sus, un punct și procentul, oriunde ai
+  fi în aplicație, după ce ai deschis fereastra o dată; cu **Leagă imprimanta ținută la deschiderea cvs2**, și fără. Vin
+  cât cvs2 e deschis, și în fundal; pe telefon, doar cât e în față. Pe Edge, o filă inactivă doarme după 2 ore: pune cvs2
+  la „Nu pune niciodată aceste site-uri în repaus”.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.

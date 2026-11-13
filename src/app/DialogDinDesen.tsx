@@ -23,7 +23,7 @@ import {
   setariImplicite, setariValide, timpText,
   type Brim, type Cale, type Miniatura, type Pauza, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
 } from '../cam/feliere/index.ts';
-import { ETICHETE } from './fisiereImprimanta.ts';
+import { ETICHETE, NOTE } from './fisiereImprimanta.ts';
 import { cheiePauze, citestePauze, scriePauze } from './pauzeDesen.ts';
 
 /** Desenul de feliat: documentul și instanțele selectate. */
@@ -345,6 +345,8 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
     const f = new File([cuPauze(g.text, pus, K1C.pauza)], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' });
     // Numele pieselor din cvs2 (cu diacritice), pentru placa din fereastră (3.6q): fișierul are doar numele ASCII, cu majuscule la imprimantă.
     ETICHETE.set(f, Object.fromEntries((rez?.piese ?? alese.piese).map((p) => [p.nume.toUpperCase(), p.eticheta])));
+    // Notele pauzelor, cu diacritice, pentru notificarea pauzei din fișier (3.6s): fișierul are doar nota ASCII.
+    NOTE.set(f, Object.fromEntries(pus.flatMap((p) => (p.k === null || p.nota === '' ? [] : [[String(p.k), p.nota]]))));
     return f;
   };
   const salveaza = (): void => {

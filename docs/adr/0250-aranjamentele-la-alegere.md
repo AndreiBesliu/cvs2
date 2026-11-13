@@ -6,7 +6,8 @@ nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`
 completat:** și fereastra Imprimanta urmează aranjamentul („Da, ca Mașina”). **Tot pe 13.11, schițele acoperă toate
 ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intră în feliile 28.x, 3 devin linii separate.
 După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată. După tura a noua, încă 11 („Da la
-toate”), toate în feliile 28.x (toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+toate”), toate în feliile 28.x. După tura a zecea, încă 12 („Da la toate”): 11 în feliile 28.x, una linie separată
+(toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -312,3 +313,29 @@ După tura a noua (tablele Acțiunile pe forme, Traseul și animația, Mesajele 
 | Bara fiecărui aranjament probată în ambele limbi, cu fontul lat (Verdana / DejaVu Sans) | fiecare felie |
 
 Zona „mesaj” schimbă unde scriu uneltele, nu ce scriu: textele mesajelor rămân aceleași.
+
+### Ideile turei a zecea, acceptate tot pe 13.11
+
+După tura a zecea (tablele Transformarea și ancora, Nodurile și Pen-ul, Navigarea și ajutoarele de desen, Fonturile),
+owner-ul a fost întrebat: „Accepți recomandările la ideile noi 39–50?”. A răspuns „Da la toate”.
+
+| Ideea | Felia |
+| --- | --- |
+| Mânerele transformării de 16 px, cu ținta de atingere de 44 px; selectorul ancorei cu celule de 56 px; comutatorul „Proporțional” în locul lui Shift, în Atelier | 28.1↑ |
+| Bara nodului cu butoane de 56 px (tipul, Desparte, Scoate nodul); nod nou cu apăsare lungă pe o latură, în Atelier | 28.1↑ |
+| Zoomul de 64 px, comutatoarele Lipire, Grilă, Ghidajele de 56 px și gesturile cu două degete, în Atelier | 28.1↑ |
+| Transformarea în Clasic: lățimea, înălțimea, lacătul proporțiilor și rotirea scrise în bara de context; ancora și înclinarea în fila Unealta | 28.2↑ |
+| X / Y ale nodului și ale mânerelor în grila proprietăților; „Scoate nodul” ca buton, în Clasic | 28.2↑ |
+| Lipire, Grilă, Ghidaje ca comutatoare în bara de stare, cu pasul grilei și zoomul ca listă, în Clasic | 28.2↑ |
+| Comenzile „roteste 15”, „pen” (cu puncte scrise X,Y) și „zoom” („zoom toata”, „zoom 200”, „zoom +”) | 28.3↑ |
+| Cardul „Mărimea și locul”, cu ancora explicată într-o propoziție, în Pas cu pas | 28.4↑ |
+| Noduri și Pen grupate ca „forme libere”, cu tipurile Colț și Curbă, în Pas cu pas | 28.4↑ |
+| Doar Lipirea la vedere; grila, ghidajele și riglele sub „Mai multe”, în Pas cu pas | 28.4↑ |
+| Insula zoomului în colțul planșei, cu − și +, în Insule | 28.5↑ |
+| Fereastra Fonturi după aranjament: dialogul clasic (28.2↑), plăcile (28.1↑), „De unde vine fontul” (28.4↑); bifa „Doar cu diacriticele românești” implicită în română (28.1↑, pentru toate) | 28.1↑–28.4↑ |
+
+**Linie separată:** textul de probă din fereastra Fonturi ia textul omului (textul ales pe planșă), nu o frază fixă. Ține de
+fereastră, deci de toate aranjamentele.
+
+**Ce nu există azi** și intră prin aceste felii: câmpul de rotire scris (azi rotirea se face din mâner), butoanele − / + de
+pe pânză (azi zoomul e cu rotița, iar bara de jos are „Zoom N %” și „Arată toată foaia”).
