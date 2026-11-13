@@ -782,10 +782,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Grupul 3 propus pe 11.11** (ADR 0194, feliile 3.6s–3.6u): notificările și semnul de pe butonul Imprimanta, istoricul
   imprimărilor cu costul și estimarea care învață, filmele timelapse; doar citiri. Schița cu formularul:
   <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Acceptat pe 11.11 („Da, recomandările”: 1a, 2a).
-  **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda prin
-  portal în pagină, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
+  **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda în
+  meniul global, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
   `titluFila.ts` (titlul filei din părți, folosit și de `IndicatorLucrare`); carcasa: locul semnului în fila Imprimanta,
   montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110. Urmează 3.6t (istoricul).
+  **Reparată pe 13.11** (CI-ul complet roșu: banda pauzei acoperea Reia pe Linux): banda stă în meniul global, pe rândul
+  `#loc-anunt-imprimanta` din `App.tsx` (gol, ascuns), nu mai plutește deasupra paginii; orice aranjament nou ține locul.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1141,6 +1143,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **banda vestirilor imprimantei (3.6s) reparată înainte, nu scoasă din `main`** („Fix forward”, la „Fix 3.6s
+  forward, or revert it from main?”, în sesiunea principală): CI-ul complet pe `50f2595` a picat pe Linux
+  (`imprimanta.spec.ts:108`: banda „pauză”, fixă, sus, la mijloc, acoperea butonul Reia; pe Windows trecea). Reparația
+  liniei (`231e347`, ramura `fix/3.6s-anunt`, din `main`, fără 3.6t): banda stă într-un rând al meniului global și nu mai
+  acoperă nimic, cu proba de lovire pe controale cât banda pauzei e la vedere (pica la 1024 px pe Windows înaintea
+  reparației). Unită prin `2daddcc`, după porți.
 - 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
   principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
   `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e

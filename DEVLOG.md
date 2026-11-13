@@ -8836,6 +8836,24 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
 
 **Completed:** 13.11, 18:30.
 
+## 2026-11-13 — 3.6s reparată: banda vestirilor nu mai acoperă nimic (ADR 0194 §A) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (13.11): CI-ul complet e roșu pe `main` (`50f2595`), fiindcă „anunțul «pauză»
+acoperă butonul Reia din fereastra Imprimanta, pe Linux”; reparația pe o ramură separată din `origin/main`, întâi o
+probă care pică pe Windows.
+**Started:** 13.11, 20:16. **Completed:** 13.11, 21:02.
+
+- **Cauza:** banda plutea sus, la mijloc, deasupra paginii (`position: fixed`). Măsurat pe Windows, cu un hit-test pe
+  controale: la 1024 px acoperea Reia și Oprește; în Proiectare, la orice lățime, rândul de unelte; pe telefon (jos),
+  câmpurile țintelor. Pe Linux, cu alte fonturi, și Reia, la lățimea probei din CI.
+- **Reparația:** banda stă în meniul global, pe un rând al ei (`#loc-anunt-imprimanta` în `App.tsx`; gol, ascuns): ce e
+  sub meniu coboară cât e ea la vedere. Fără locul acela, stă sus, în fereastra Imprimanta. Pânza nu se mișcă (e sub
+  toată grila).
+- **Proba:** `imprimanta.spec.ts`, „banda vestirilor (3.6s) nu acoperă nimic”: hit-test-ul pe controale, în fereastra
+  Imprimanta (1024 și 390 px) și în Proiectare (1024 și 1280 px), plus rândul gol ascuns; căzută înaintea reparației
+  (Reia și Oprește acoperite la 1024 px), trecută după.
+- **Porțile:** unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist (305 fișiere), e2e 461 / 461; pornirea 102,4 kB (cu ușa 106,1 / 110) și totalul 657,5 / 700, neschimbate. Privită în Edge, cu hit-test-ul: la 1280, 1024, 900, 800 și 390 px, nimic acoperit, nici în Imprimanta, nici în Proiectare.
+
 ## 2026-11-13 — Felia 25.5↑ pornită: foaia pozată oblic (ADR 0225, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea lui 25.4↑ în `main`).
