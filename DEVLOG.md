@@ -8466,3 +8466,17 @@ provizorie); după pauză, „ce se poate uni?”.
   +25 kB peste 106,5 / 200.
 - **Documentele:** indexul ADR-urilor (rândul 0260), traducerea lui în `roadmap.en.json`, CLAUDE.md (decizia), DEVLOG.
   Harta schițelor le arată acceptate.
+
+## 2026-11-13 — Schițele, tura a unsprezecea (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, după ADR 0260. **Completed:** 13.11, 19:55.
+
+- **Canvas-ul**, acum 78 de table. Patru table noi pe rândul F, fiecare în cele patru aranjamente, cu textele de azi:
+  - Exportă vectori… (DXF, SVG, PDF, EPS);
+  - Verifică vectorii, cu reparațiile;
+  - Tăierea, cu rolurile tale (Exterior, Interior, Pe linie, Buzunar, V-carve, Găurire, incrustațiile);
+  - „Din desen…” al imprimantei.
+
+  Pe rândul G, Admin · Intrarea și stările goale.
+- **Harta schițelor:** rândurile noi și 14 idei noi (63–76), cu recomandarea, încă de hotărât; a 76-a e a adminului
+  (ADR 0260, A.1).
