@@ -49,7 +49,11 @@ export type ReparatieCalculata = { readonly doc: Document; readonly piese: reado
  * documentul e încă `doc`.
  */
 /** O tăiere calculată de worker: instanțele înlocuite de părțile lor, cele noi (de ales după) și cele de șters (decuparea). */
-export type TaiereCalculata = { readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[] };
+export type TaiereCalculata = {
+  readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[];
+  /** Tăierea în panouri (ADR 0181 §7): grupurile panourilor, făcute după degrupare, în același pas. */
+  readonly grupuri?: readonly Degrupata[];
+};
 /** O conversie calculată de worker (ADR 0180, felia 10.3↑d): piesele schimbate, cu aceleași id-uri, pe documentul `doc`. */
 export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[] };
 

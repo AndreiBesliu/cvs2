@@ -11,6 +11,7 @@ import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
 import { converteste, type RezultatConversie } from '../model/conversie.ts';
+import { taieInPanouri } from '../model/panouri.ts';
 import { taie, type RezultatTaiere } from '../model/taiere.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
@@ -147,6 +148,8 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       return { raspuns: repara(c.document, c.cerere, c.optiuni), transfer: [] };
     case 'taiere':
       return { raspuns: taie(c.document, c.cerere), transfer: [] };
+    case 'panouri':
+      return { raspuns: taieInPanouri(c.document, c.cerere), transfer: [] };
     case 'conversie':
       return { raspuns: converteste(c.document, c.cerere), transfer: [] };
   }

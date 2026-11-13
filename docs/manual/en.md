@@ -760,6 +760,20 @@ says why: a cut where no tooth fits, a pattern that does not work with the given
 tooth, a radius of the wave or of the puzzle below the given one) and teeth that would touch the edge of a shape (a slanted
 side or a hole too close to the cut).
 
+**Cut into panels** (a block of the panel): a sign bigger than the machine bed is cut into panels, which then fit together.
+The chosen shapes (with nothing chosen, all the shapes on the sheet) are cut on a grid over their box: with the **Panel
+size**, width × height in mm (by default, the sheet's material), or with the **Number of panels**, across × up. With the
+size, the **Panels** are **equal** (the default: the fewest that fit, all the same size) or **from the corner** (full panels
+from the bottom-left corner, plus what is left): a 2 400 × 1 000 mm sign with a 1 200 × 900 panel gives four panels of 1 200
+× 500, or two of 1 200 × 900 and two of 1 200 × 100. Under the fields, the panel says how many panels come out, and while
+you work in the block, the grid shows on the canvas. The cuts are those of the panel's lines, with **Close the pieces**,
+**Between pieces** and the **Joint** above: the teeth hold the panels together, and the clearance lets them slide into each
+other. The pieces of each panel become a group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left), and
+stay where they were; a panel with a single piece is that piece, with the panel's name, and an empty cell of the grid gets
+no number. A text with its letters on both sides of a line that does not touch them is split too, each letter in its panel.
+More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into panels** is a single
+undo step.
+
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
 **Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape

@@ -14,6 +14,7 @@ import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { GrupuriTaiere, type NumeParti } from './GrupuriTaiere.tsx';
+import { PanouriTaiere, type GrilaTaiere } from './PanouriTaiere.tsx';
 import { corziAproximative, cutiePuncte, dintiAproximativi, type Polilinie, type RegiuneAproximativa } from './cutitCalcul.ts';
 import { imbinareDin, intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
 import './taiere.css';
@@ -47,10 +48,11 @@ export { UnealtaCutit } from './UnealtaCutit.tsx';
  * îmbinare (§6), `dinti`: drumul ei pe coardele formelor alese, ca polilinii în mm.
  */
 type DesenLinie = { readonly fasie?: number; readonly dinti?: ReadonlyArray<ReadonlyArray<{ readonly x: number; readonly y: number }>> };
-export type LinieTaiere =
+type Linie =
   | ({ readonly axa: 'x' | 'y'; readonly v: number } & DesenLinie)
-  | ({ readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number } & DesenLinie)
-  | null;
+  | ({ readonly axa: 'u'; readonly x: number; readonly y: number; readonly unghi: number } & DesenLinie);
+/** Sau grila tăierii în panouri (ADR 0181 §7). */
+export type LinieTaiere = Linie | GrilaTaiere | null;
 
 type Fel = 'x' | 'y' | 'unghi' | 'ghidaj' | 'forma';
 type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
@@ -152,7 +154,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
     return { dinti: d, semnatura: d.reduce((s, p) => s + p.length + p.reduce((a, q) => a + q.x * 1.3 + q.y, 0), 0).toFixed(3) };
   }, [regiuni, cheieDreapta, cheieIm]);
   const desprel = im ? { dinti } : intre ? { fasie: intre.latime } : {};
-  const linie: LinieTaiere = fel === 'x' ? (x === null ? null : { axa: 'x', v: x, ...desprel }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y, ...desprel })
+  const linie: Linie | null = fel === 'x' ? (x === null ? null : { axa: 'x', v: x, ...desprel }) : fel === 'y' ? (y === null ? null : { axa: 'y', v: y, ...desprel })
     : fel === 'unghi' ? (ux === null || uy === null || unghi === null ? null : { axa: 'u', x: ux, y: uy, unghi, ...desprel })
       : fel === 'ghidaj' && g ? { axa: g.axa, v: g.poz, ...desprel } : null;
   const cheieLinie = linie ? `${linie.axa === 'u' ? `u${linie.x},${linie.y},${linie.unghi}` : `${linie.axa}${linie.v}`}|${linie.fasie ?? ''}|${semnatura}` : '';
@@ -161,8 +163,10 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
   const numeParti: NumeParti = orizontala ? ['deasupra', 'dedesubt'] : fel === 'forma' && formaInchisa ? ['inauntru', 'afara'] : ['stanga', 'dreapta'];
   // „Prelungește capetele” are sens doar la un cuțit-formă deschis (liniile sunt deja întregi).
   const cuCapete = fel === 'forma' && !formaInchisa;
-  // Linia de pe pânză urmează valoarea (cheia ei), nu fiecare randare.
-  useEffect(() => { onLinie(linie); }, [cheieLinie]);
+  // Linia de pe pânză urmează valoarea (cheia ei), nu fiecare randare; cât lucrezi în blocul panourilor, pânza arată grila lor.
+  const [grila, setGrila] = useState(false);
+  useEffect(() => { if (!grila) onLinie(linie); }, [cheieLinie, grila]);
+  const laLinie = (): void => { setGrila(false); };
   useEffect(() => () => { onLinie(null); }, [onLinie]);
 
   const motiv = selectie.length === 0 ? t('editare.taiere.motiv.nimic-ales')
@@ -216,7 +220,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
 
   return (
     <>
-      <fieldset className="campuri-taiere">
+      <fieldset className="campuri-taiere" onFocus={laLinie} onPointerDown={laLinie}>
         <legend>{t('editare.taiere.cu')}</legend>
         <label className="rand-taiere">
           <input type="radio" name="taiere-cu" checked={fel === 'x'} data-taiere="cu-x" onChange={() => { setFel('x'); }} />
@@ -280,6 +284,7 @@ export function PanouTaiere({ doc, selectie, ghidaje, centru, onLinie, onTaie, o
       <div className="butoane-retea">
         <button type="button" className="principal" data-taiere="taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.taie')}</button>
       </div>
+      <PanouriTaiere doc={doc} selectie={selectie} activ={grila} onActiv={() => { setGrila(true); }} onGrila={onLinie} onTaie={onTaie} />
       <fieldset className="campuri-taiere">
         <legend>{t('editare.taiere.decupare')}</legend>
         <p className="stare-taiere">{t('editare.taiere.decupare.text')}</p>
@@ -340,6 +345,19 @@ export function LiniaTaierii({ linie, vedere, marime }: {
   readonly marime: { readonly latime: number; readonly inaltime: number };
 }): ReactElement | null {
   if (!linie) return null;
+  if (linie.axa === 'grila') {
+    // Grila panourilor: liniile ei, în cutia formelor, și cutia, punctată mai rar.
+    const X = (x: number): number => vedere.tx + x * vedere.scara, Y = (y: number): number => vedere.ty - y * vedere.scara;
+    const k = linie.cutie;
+    return (
+      <svg className="rigle-desen linia-taierii" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="taiere-linia" data-axa="grila"
+        data-coloane={linie.xs.length + 1} data-randuri={linie.ys.length + 1}>
+        <rect x={X(k.minX)} y={Y(k.maxY)} width={(k.maxX - k.minX) * vedere.scara} height={(k.maxY - k.minY) * vedere.scara} />
+        {linie.xs.map((x) => <line key={`x${x}`} x1={X(x)} y1={Y(k.minY)} x2={X(x)} y2={Y(k.maxY)} />)}
+        {linie.ys.map((y) => <line key={`y${y}`} x1={X(k.minX)} y1={Y(y)} x2={X(k.maxX)} y2={Y(y)} />)}
+      </svg>
+    );
+  }
   // Pe ecran: un punct al liniei, direcția ei (y crește în jos) și cât să treacă de toată fereastra.
   const a = linie.axa === 'u' ? (linie.unghi * Math.PI) / 180 : linie.axa === 'x' ? Math.PI / 2 : 0;
   const px = vedere.tx + (linie.axa === 'u' ? linie.x : linie.axa === 'x' ? linie.v : 0) * vedere.scara;

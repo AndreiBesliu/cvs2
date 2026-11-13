@@ -134,6 +134,19 @@
 }
 
 /* Fâșia spațiului sau a suprapunerii (ADR 0181 §2): două linii paralele, subțiri și mai rar punctate decât linia tăierii. */
+/* Grila panourilor (ADR 0181 §7): cutia formelor, punctată mai rar; liniile, ca linia de tăiere. */
+.linia-taierii rect {
+  fill: none;
+  stroke: var(--rosu);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+/* „Panourile: egale / din colț”, sub mărimea panoului, aliniate cu eticheta ei. */
+.panouri-colt {
+  padding-left: 1.6rem;
+}
+
 .linia-taierii line.fasie-taierii {
   stroke-width: 1;
   stroke-dasharray: 2 4;

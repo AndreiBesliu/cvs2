@@ -1,4 +1,4 @@
-import { conversieInBazin, exportInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
@@ -6,6 +6,7 @@ import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
+import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
@@ -74,6 +75,14 @@ export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: O
  */
 export function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal): Promise<RezultatTaiere> {
   return taiereInBazin(doc, cerere, semnal ? { semnal } : {});
+}
+
+/**
+ * Tăierea în panouri (ADR 0181 §7, felia 10.3↑k), pe documentul din clipa cererii, în workerul CAM: degruparea și grupurile
+ * panourilor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
+ */
+export function taiePanourile(doc: Document, cerere: CererePanouri, semnal?: AbortSignal): Promise<RezultatTaiere> {
+  return panouriInBazin(doc, cerere, semnal ? { semnal } : {});
 }
 
 /**

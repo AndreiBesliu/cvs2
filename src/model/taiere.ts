@@ -150,6 +150,11 @@ export type CerereTaiere = {
    * Doar cu închidere.
    */
   readonly imbinare?: Imbinare;
+  /**
+   * Tăierea în panouri (ADR 0181 §7; `panouri.ts`), doar la liniile din panou, cu ambele părți păstrate: o formă pe care linia
+   * n-o trece, dar care are contururi de ambele părți (un text, cu literele de o parte și de alta), se desparte pe laturi.
+   */
+  readonly desparte?: boolean;
 };
 
 /**
@@ -167,10 +172,11 @@ export type CerereTaiere = {
  * între `LATIME_MINIMA` și `LATIME_MAXIMA` (`intreBucati.ts`). La îmbinare: `imbinare` (în nicio coardă a tăieturii nu încape un
  * dinte întreg), `imbinare-raza` (modelul nu iese cu pasul, înălțimea și raza date), `imbinare-margine` (dinții ar atinge
  * marginea unei forme: o latură oblică sau o gaură prea aproape), `imbinare-dreapta` (cuțitul nu e o dreaptă), `imbinare-inchide`
- * (cere închiderea), `valoare` (pasul, înălțimea sau raza nu sunt numere bune).
+ * (cere închiderea), `valoare` (pasul, înălțimea sau raza nu sunt numere bune). În panouri (`panouri.ts`): `panouri` (peste
+ * `PLAFON_PANOURI` celule), `valoare` (mărimea sau numărul panourilor), `nimic-taiat` (formele încap într-un singur panou).
  */
 export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
-  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide';
+  | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide' | 'panouri';
 
 export type RezultatTaiere =
   | {
@@ -185,6 +191,13 @@ export type RezultatTaiere =
     readonly scoase: number;
     /** Instanțele de șters (decuparea: fără nimic de partea păstrată, sau care trec granița, cu „se șterg”). */
     readonly sterse: readonly string[];
+    /**
+     * Panourile (`panouri.ts`): grupurile de făcut după degrupare (comanda `regrupeaza`, cu locurile părților în documentul de
+     * după ea), fiecare cu numele panoului.
+     */
+    readonly grupuri?: readonly Degrupata[];
+    /** Panourile: câte sunt („Panoul 1” … „Panoul n”). */
+    readonly panouri?: number;
   }
   | { readonly ok: false; readonly motiv: MotivTaiere };
 
@@ -710,6 +723,10 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     } else {
       taieUna = intre ? (inst, p) => taieInstantaIntre(L, inst, p, pastreaza, intre) : (inst, p) => taieInstanta(L, inst, p, cerere.inchide, pastreaza);
     }
+    if (cerere.desparte === true && pastreaza === 'ambele') {
+      const taieLinia = taieUna;
+      taieUna = (inst, p) => taieLinia(inst, p) ?? desparte(L, inst, p);
+    }
   }
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const folosiri = new Map<string, number>();
@@ -755,7 +772,7 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     degrupate.push({ instanta: inst, piesa: p, parti });
   }
   if (degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'nimic-taiat' };
-  if (imbinare && dinti === 0) return { ok: false, motiv: 'imbinare' };
+  if (imbinare && dinti === 0 && (forme > 0 || cerere.desparte !== true)) return { ok: false, motiv: 'imbinare' };
   for (const id of cutitSters) if (!sterse.includes(id)) sterse.push(id);
   return { ok: true, degrupate, ids, forme, scoase, sterse };
 }
@@ -778,6 +795,17 @@ function taieInstanta(L: Linie, inst: Instanta, p: Piesa, inchide: boolean, past
   }
   const parti = [-1, 1].map((x) => ({ elemente: pePart.get(x) as ElementNou[] })).filter((x) => x.elemente.length > 0);
   return parti.length === 0 ? null : { parti, taiate };
+}
+
+/**
+ * O instanță pe care linia n-o trece, despărțită pe laturi (A, apoi B; contururile întregi, cu operațiile lor), dacă are
+ * contururi de ambele părți; altfel null (tăierea în panouri, ADR 0181 §7).
+ */
+function desparte(L: Linie, inst: Instanta, p: Piesa): Rezultat | MotivTaiere | null {
+  const r = partiLinie(L, inst, p, false);
+  if (typeof r === 'string') return r;
+  const parti = [-1, 1].map((s) => r.pePart.get(s) ?? []);
+  return r.taiate === 0 && parti.every((x) => x.length > 0) ? { parti: parti.map((elemente) => ({ elemente })), taiate: 0 } : null;
 }
 
 /** Peste atât (mm) trebuie să treacă o bucată de cuțitul mutat, ca spațiul să n-o mănânce: o fâșie mai subțire e zgomot. */

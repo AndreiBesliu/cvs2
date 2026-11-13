@@ -12,6 +12,7 @@ import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
+import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { RaspunsCalcul } from './calculCam.ts';
@@ -128,6 +129,11 @@ export function reparareInBazin(document: Document, cerere: CerereReparare, opti
 /** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul dat: instanțele tăiate și părțile lor. */
 export function taiereInBazin(document: Document, cerere: CerereTaiere, o: OptiuniCam = {}): Promise<RezultatTaiere> {
   return calculeaza({ fel: 'taiere', document, cerere }, [], o) as Promise<RezultatTaiere>;
+}
+
+/** Tăierea în panouri (ADR 0181 §7, felia 10.3↑k), pe documentul dat: degruparea și grupurile panourilor. */
+export function panouriInBazin(document: Document, cerere: CererePanouri, o: OptiuniCam = {}): Promise<RezultatTaiere> {
+  return calculeaza({ fel: 'panouri', document, cerere }, [], o) as Promise<RezultatTaiere>;
 }
 
 /** Conversia vectorilor (ADR 0180, felia 10.3↑d), pe documentul dat: piesele schimbate. */
