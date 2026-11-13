@@ -8882,4 +8882,9 @@ probă care pică pe Windows.
   13.12): pagina și cele 100 de bucăți ca `dist` din `13b1f57`; raportul văzut acolo, din paletă, după actualizarea
   oferită de aplicație.
 
-**Completed:** 13.11, 23:10.
+- **A doua unire de la capăt (14.11):** `main` `e0f9803` (banda vestirilor imprimantei, 3.6s reparată) adus în `9c668fd`, cu
+  conflictul doar în DEVLOG (adăugat la capăt de ambele părți). Porțile din nou: unitare 9 322 / 0, e2e 481 / 481 din prima,
+  build-ul determinist (pornirea cu ușa 109,9 / 110: ~0,1 kB liberi; totalul 694,5 / 700). Canalul republicat din `9c668fd`,
+  100 / 100 bucăți.
+
+**Completed:** 14.11, 00:15.
