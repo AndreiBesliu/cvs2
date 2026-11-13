@@ -237,6 +237,8 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   // Banda (ADR 0172), pe hârtie: doar cu aceeași incrustație și același fund plat pe toate operațiile alese.
   const hartieBanda = hartie && primaInc && operatiiAlese.every((o) => jsonCanonic(o.incrustatie ?? null) === jsonCanonic(primaInc.incrustatie ?? null)
     && o.fundPlat?.scula.diametru === primaInc.fundPlat?.scula.diametru) ? valoriBanda(primaInc) : null;
+  // Fundul doar cu freza V (ADR 0173), pe hârtie: doar dacă niciuna dintre operațiile alese n-are freză dreaptă.
+  const fundV = hartie && operatiiAlese.every((o) => !o.fundPlat);
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -339,6 +341,10 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
                 {rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(primaInc.incrustatie.joc) }))}
                 {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
                 {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
+                {/* Fundul doar cu freza V (ADR 0173): inelele la 2·creasta·t, în locaș și pe dop, cu crestele lor. */}
+                {fundV && rand(t('prop.inc.fund-v'), t('prop.inc.fund-v.valoare', {
+                  locas: mm(2 * hartie.creastaLocas * hartie.t), cl: mm(hartie.creastaLocas), dop: mm(2 * hartie.creastaDop * hartie.t), cd: mm(hartie.creastaDop),
+                }))}
                 {/* Banda (ADR 0172): lățimea și cea mai mică, semifabricatul în plan, decuparea (placa exactă, punțile) sau tăietura de mână. */}
                 {hartieBanda && rand(t('prop.inc.banda'), t('prop.inc.banda.valoare', { latime: mm(hartieBanda.latime), minima: mm(susLaMicron(hartieBanda.minima)) }))}
                 {hartieBanda && rand(t('prop.inc.banda.semifabricat'), t('prop.inc.banda.semifabricat.valoare', { mm: mm(hartieBanda.margine) }))}

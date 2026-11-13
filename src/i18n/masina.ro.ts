@@ -309,7 +309,6 @@ export const roMasina = {
   'masina.indicator.alarma.cod': 'Alarmă ALARM:{cod}',
   'masina.indicator.intrerupta': 'Lucrare întreruptă',
   'masina.indicator.gata': 'Lucrare gata',
-  'masina.titlu.stare': '{stare} · {titlu}',
   'masina.program.in-lucru': 'O lucrare e pornită: programul nou se încarcă din „Ultimul export”, după ea.',
   // Senderul extensiilor (ADR 0160 §B): cine a încărcat programul, confirmarea pornirii și a reluării, lucrarea trimisă.
   'masina.program.de-la': 'de la {extensie}',

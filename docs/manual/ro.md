@@ -1028,6 +1028,13 @@ rol: **incrustație în V**, din secțiunea **Tăierea** a panoului de propriet�
 G-code**. Freza rândului e în V, ascuțită (fără vârf plat), iar fundul plat cu freza dreaptă e pus: el scoate fundul locașului
 și lemnul din jurul dopului.
 
+**Fără freză dreaptă**, scoate bifa **Fundul plat cu freza dreaptă** de pe rândul incrustației: atunci freza în V face tot.
+Fundul locașului îl scoate cu inele dese, la jocul pentru clei · tan(θ/2) unul de altul (creasta cel mult jumătate din joc,
+deci sub dop rămâne cel puțin jumătate pentru clei), iar fața coborâtă a dopului sau fundul benzii, cu inele la spațiul pentru
+fierăstrău · tan(θ/2) (creasta cel mult jumătate din el, între plăci). E mai lent decât cu o freză dreaptă: avertismentul
+spune câte inele face; peste 400 într-o regiune, exportul e refuzat, cu sfatul. Cu banda, decuparea din placă cere atunci
+**Altă freză pentru decupare** (o freză dreaptă); fără ea, scoate decuparea.
+
 Valorile incrustației, sub Adâncime și Pas în panou și pe rândul ei din fereastra exportului:
 
 - **Jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1): cât rămâne sub dop. Dopul se sapă de la adâncimea locașului
@@ -1079,10 +1086,10 @@ cu jocul sub el și spațiul dintre plăci. Apoi taie sau rindeluiește spatele 
 taie punțile și curăță-le la nivelul pereților, ca dopul să intre întreg.
 
 **Refuzurile**, cu motivul, la export: o freză plată sau cu vârf plat; jocul sub 0,1 mm (crestele din colțurile locașului ar
-ține dopul) sau cel puțin cât adâncimea; dopul săpat (adâncimea − jocul + fierăstrăul) mai adânc decât conul frezei; lipsa
-fundului plat cu freza dreaptă (varianta doar cu freza în V vine mai târziu). Cu banda: mai îngustă decât cea mai mică; cu
+ține dopul) sau cel puțin cât adâncimea; dopul săpat (adâncimea − jocul + fierăstrăul) mai adânc decât conul frezei; peste
+400 de inele cu fundul doar cu freza V. Cu banda: mai îngustă decât cea mai mică; cu
 decuparea, o placă mai subțire decât fundul benzii plus punțile, o freză a decupării în V, sau cu numărul altei freze și alt
-diametru. Dopul în vederea 3D vine într-o felie următoare; pereții drepți au capitolul lor ([Incrustația cu pereți
+diametru, ori, fără freză dreaptă, fără freza decupării. Dopul în vederea 3D vine într-o felie următoare; pereții drepți au capitolul lor ([Incrustația cu pereți
 drepți](#incrustatie-drept)).
 
 ## Incrustația cu pereți drepți
@@ -1393,6 +1400,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   chiar atunci: cererea rămâne la vedere, cu **Renunță**, și se retrimite până o primește imprimanta, cel mult 2 minute.
   Ultima piesă rămasă n-are buton: pentru ea, Oprește. La imprimantă ajunge doar un nume din lista ei, din litere, cifre,
   _ . -; nimic scris de mână.
+- **Notificările** (cardul lor, în fereastra Imprimanta): **Pornește notificările** cere o dată permisiunea browserului. Sub
+  **Anunță-mă când** alegi evenimentele: s-a terminat, s-a oprit, pauza din fișier (cu nota ei), altă pauză, fără filament,
+  o eroare, legătura pierdută cât imprimă și primul strat gata (oprit de la început). Cât cvs2 e ascuns, vine o notificare
+  a sistemului (clic pe ea: fereastra Imprimanta); cât e în față, o bandă sus, cu **Deschide Imprimanta** și **Închide**.
+  **Cu sunet**: câteva tonuri scurte. **Și notificarea sistemului cât cvs2 e în față**, dacă o vrei și atunci. **Procentul
+  în titlul filei**: „45 % · CNC Vector Studio”. Pe butonul Imprimanta din bara de sus, un punct și procentul, oriunde ai
+  fi în aplicație, după ce ai deschis fereastra o dată; cu **Leagă imprimanta ținută la deschiderea cvs2**, și fără. Vin
+  cât cvs2 e deschis, și în fundal; pe telefon, doar cât e în față. Pe Edge, o filă inactivă doarme după 2 ore: pune cvs2
+  la „Nu pune niciodată aceste site-uri în repaus”.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.

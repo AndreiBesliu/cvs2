@@ -40,8 +40,8 @@ o('B07', MOD, '({ decupare: true, grosimePlaca: S + H + SUB_FATA_DOPULUI, punti:
   '({ decupare: true, grosimePlaca: S + H, punti: { ...PUNTI_BANDA } });', 'banda', 'placa implicită fără milimetrul punților')
 o('B08', MOD, '({ decupare: true, grosimePlaca: S + H + SUB_FATA_DOPULUI, punti: { ...PUNTI_BANDA } });',
   '({ decupare: false, grosimePlaca: S + H + SUB_FATA_DOPULUI, punti: { ...PUNTI_BANDA } });', 'banda', 'banda implicită fără decupare')
-o('B09', MOD, '  const freza = b.freza ?? fp.scula;', '  const freza = fp.scula;', 'banda', 'freza decupării aleasă, ignorată')
-o('B10', MOD, 'b.decupare ? freza.diametru : fp.scula.diametru);', 'freza.diametru);', 'banda',
+o('B09', MOD, '  const freza = b.freza ?? fp?.scula ?? null;', '  const freza = fp?.scula ?? null;', 'banda', 'freza decupării aleasă, ignorată')
+o('B10', MOD, 'b.decupare ? (freza?.diametru ?? 0) : fund);', '(freza?.diametru ?? 0));', 'banda',
   'freza decupării lărgește banda și fără decupare')
 o('B11', MOD, '  const latime = b.latime ?? minima;', '  const latime = minima;', 'banda', 'lățimea aleasă, ignorată')
 
@@ -113,7 +113,7 @@ o('E11', DLG, "schimba(o.cheie, { jurDop: ev.target.value === 'banda' ? 'banda' 
   'banda nu se poate alege')
 o('E12', DLG, 'data-camp="banda-placa" disabled={doarCitire || !p.decupareBanda}', 'data-camp="banda-placa" disabled={doarCitire}', 'e2e',
   'placa pornită și fără decupare')
-o('E13', DLG, "{t(p.jurDop === 'banda' ? 'export.banda.nota' : 'export.incrustatie.nota')}", "{t('export.incrustatie.nota')}", 'e2e',
+o('E13', DLG, "p.jurDop === 'banda' ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : ", "false ? (p.fundPlat ? 'export.banda.nota' : 'export.banda.nota-v') : ", 'e2e',
   'nota feței coborâte și pe bandă')
 o('E14', DLG, 'numarSculaBanda: text(banda?.freza?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),',
   'numarSculaBanda: text(banda?.freza?.numar ?? (fund?.numar ?? 1) + 1),', 'e2e',

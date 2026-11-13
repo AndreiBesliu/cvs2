@@ -8404,6 +8404,135 @@ provizorie); după pauză, „ce se poate uni?”.
   acestea apar ca idei noi.
 - **Harta schițelor:** rândurile noi și 12 idei noi (39–50), cu recomandarea, încă de hotărât.
 
+## 2026-11-13 — Ideile 39–50 din tura a zecea, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:23. **Completed:** 13.11, 18:23.
+
+- **ADR 0250, „Ideile turei a zecea, acceptate tot pe 13.11”:** 11 idei în feliile 28.x, fiecare cu felia ei; textul de
+  probă al fontului, luat din textul omului, e linie separată.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-11 — 3.6s–3.6u propuse: notificările și istoricul imprimărilor (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, grupul 3” (owner-ul, la „După pauză, propun grupul 3 (notificările și istoricul)?”, după 3.6r).
+**Started:** 11.11, 20:12. **Completed:** 11.11, 20:34.
+
+- **Reluarea:** ramura `wip/3.6g-imprimanta` adusă la `main` (`99ff34c`, după unirea 3.6j–3.6r din 09.11); plafonul
+  total e acum 700 kB.
+- **Cercetarea:** stările de final (`state` 2 terminată, 4 oprită, 5 pauză, `materialStatus` 1 fără filament), istoricul
+  (`reqHistory` → `historyList`; o intrare reală din imprimanta owner-ului: Benchy, 1140 s, 3712,4 mm) și filmele
+  (`reqElapseVideoList`, `http://<ip>/downloads/video/<cifre>.mp4`), din transcrierea din 07.11 și din trei proiecte care
+  citesc portul 9999; în browser, notificările (permisiunea, Android), filele în repaus (Edge, 2 ore), conținutul mixt.
+- **Propunerea** (ADR 0194, propus): 3.6s notificările și semnul de pe butonul Imprimanta, 3.6t istoricul cu costul și
+  estimarea care învață, 3.6u filmele; doar citiri. Schița, cu formularul: <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Două întrebări
+  care se exclud (schița; unde se ține istoricul cvs2). Codul vine după răspunsuri.
+- **Găsit pe drum:** rândul ADR 0193 din index nu spunea că 3.6r e gata; reparat.
+
+## 2026-11-13 — 3.6s: notificările și semnul din bară (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, 11.11, la „Accepți recomandările din schiță (1a, 2a)?”); după pauza din 12.11
+(„pauza aici”), „continua” (13.11).
+**Started:** 11.11, 20:37. **Completed:** 13.11, 17:45.
+
+- **Driverul și evenimentele:** `state` 2 = „gata”, `materialStatus` → `faraFilament`; `evenimente.ts` (pur), doar din
+  schimbări, cu cheile pe lucrare.
+- **Fereastra și carcasa:** banda (din orice fereastră), notificarea sistemului cât cvs2 e ascuns, sunetul, cardul
+  Notificările, semnul pe fila Imprimanta, titlul filei din părți (și pentru mașina CNC), legarea la deschidere.
+- **Imprimanta falsă:** finalul cu `state` 2, senzorul de filament.
+- **Probe și porți:** 9 pe hârtie, manualul, două e2e; unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms); totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Otrăvurile (`test/otravuri/3.6s.py`):
+  32 / 32 (22 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 9).
+- **Găsit pe drum:** „0 m de filament” pe o lucrare scurtă (văzut în Edge); reparat.
+
+## 2026-11-13 — Schițele adminului, rândul G al canvas-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa faci design si pentru admin”. **Started:** 13.11, după acceptarea ideilor 39–50. **Completed:** 13.11,
+18:32.
+
+- **Rândul G al canvas-ului:** 11 table ale paginii `/admin`, un singur design (nu patru aranjamente). Paleta e cea a
+  Insulelor (tokenurile aplicației, ca azi), cu o bară laterală grupată: Probleme, Produs, Clienți, Echipa. Tablele: Azi
+  (filă nouă), Erori, Tichete, Sugestii (tabla deciziilor), Utilizatori, Personal (matricea rolurilor), Diagnoză, Roadmap,
+  Documentație, Setări și Contul meu, Adminul pe telefon. Textele vin din `src/i18n/admin.ro.ts`.
+- **Verificat în cod înaintea publicării:** verificarea Funcțiilor (`logClientError` răspunde 401), implicitul păstrării
+  raportărilor (365 de zile), numele etapelor din `PLAN.md` §5.4, regula de 640 px din `admin.css`.
+- **Harta schițelor:** 12 idei ale adminului (51–62), cu recomandarea „linia adminului” (o linie a ei, cu ADR-ul și
+  feliile ei), încă de hotărât.
+
+## 2026-11-13 — ADR 0260: adminul reproiectat, acceptat (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:40. **Completed:** 13.11, 18:40.
+
+- **ADR 0260 acceptat:** cele 12 idei ale adminului (51–62), împărțite pe feliile A.1–A.7, o linie a ei, pornită la
+  cuvântul owner-ului. Permisiunile (`fileVizibile`), regulile și Firestore Lite rămân, iar `/admin` are ținta de
+  +25 kB peste 106,5 / 200.
+- **Documentele:** indexul ADR-urilor (rândul 0260), traducerea lui în `roadmap.en.json`, CLAUDE.md (decizia), DEVLOG.
+  Harta schițelor le arată acceptate.
+
+## 2026-11-13 — Schițele, tura a unsprezecea (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, după ADR 0260. **Completed:** 13.11, 19:55.
+
+- **Canvas-ul**, acum 78 de table. Patru table noi pe rândul F, fiecare în cele patru aranjamente, cu textele de azi:
+  - Exportă vectori… (DXF, SVG, PDF, EPS);
+  - Verifică vectorii, cu reparațiile;
+  - Tăierea, cu rolurile tale (Exterior, Interior, Pe linie, Buzunar, V-carve, Găurire, incrustațiile);
+  - „Din desen…” al imprimantei.
+
+  Pe rândul G, Admin · Intrarea și stările goale.
+- **Harta schițelor:** rândurile noi și 14 idei noi (63–76), cu recomandarea, încă de hotărât; a 76-a e a adminului
+  (ADR 0260, A.1).
+
+## 2026-11-13 — Ideile 63–76 din tura a unsprezecea, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 20:16. **Completed:** 13.11, 20:16.
+
+- **ADR 0250, „Ideile turei a unsprezecea, acceptate tot pe 13.11”:** 13 idei în feliile 28.x, fiecare cu felia ei.
+- **ADR 0260, „Completarea din 13.11: intrarea și stările goale”:** ideea 76, în felia A.1.
+- **Documentele:** indexul ADR-urilor (0250, 0260), CLAUDE.md (decizia), DEVLOG. Harta schițelor le arată acceptate.
+
+## 2026-11-13 — Felia 12.1↑d: fundul doar cu freza V, la incrustația în V (ADR 0173) (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, start 12.1↑d” (owner-ul, în sesiunea principală, la „Start 12.1↑d on incrustații now?”), transmis de sesiunea
+principală: „pornește felia 12.1↑d, fundul doar cu freza V … Verifică asta întâi: dacă felia cere totuși un câmp în document,
+oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
+**Started:** 13.11, 17:58. **Completed:** 13.11, 19:32.
+
+- **Câmpul:** ADR 0170 §4 („4, ambele”) a ales deja: fără freză dreaptă în coloana Fund plat, pe o incrustație, fundul îl scoate
+  V-ul (creasta cel mult g/2 în locaș și H/2 pe fața dopului). Deci nu e câmp nou: documentul rămâne v22.
+- **`main` în ramură:** fast-forward de la `3afc575` la `2225a54` (183 de commit-uri: ancorele, trasarea, tăierea,
+  imprimanta, plafonul de 700 kB, ADR 0250–0251); baza: compilatoarele ×3, unit 9 169 (0 căderi), build determinist (304 de
+  fișiere; pornirea 102,2, cu ușa 105,9 / 110; totalul 654,4 / 700).
+- **ADR 0173** (acceptat, din răspunsul 4b): inelele regiunii decalate cu wD + j·sv, la −D, cu sv = 2c·tan(θ/2), deci creasta
+  cel mult c (un punct de fund e la cel mult sv/2 de un inel sau de axă); c = g/2 în locaș, H/2 pe fața dopului și pe fundul
+  benzii; decuparea benzii cere atunci freza ei; peste 400 de inele, refuzul. Respinse: creasta aleasă de om (un câmp, v24),
+  decuparea cu V-ul, fundul doar cu V la un V-carve obișnuit.
+- **Codul** (`5192da6`): `traseuVcarve` primește `fundV: { creasta }` (inelele tăiate pe contur ca inelul peretelui, pe fiecare
+  trecere la −nivel; avertismentul cu câte inele; plafonul); lucrarea îl dă locașului (`creastaLocas` = g/2), dopul feței și
+  benzii (`creastaDop` = H/2, regiunea lărgită doar cu H·t + 1); crestele stau în `valoriIncrustatie`; `valoriBanda` merge și
+  fără freza fundului (lățimea 2·H·t + 2c, + Ø decupării; freza decupării poate lipsi); refuzul vechi scos, cel nou: decuparea
+  fără freza ei. Fereastra: banda fără freză dreaptă (lățimea cea mai mică, bifa freziei marcată, Exportă oprit), nota rândului;
+  panoul: „Fundul, doar cu freza V” pe hârtie; manualul (ro, en).
+- **Probele, scrise întâi:** oracolul potrivirii pe cele șase cazuri pe hârtie, fără freză dreaptă (oprirea la S ± 0,05,
+  contactul ≥ 95 %, sub dop între g/2 și g + 0,05, între plăci între H/2 și H + 0,05, creasta reală unde fundul e lat, nicio
+  schimbare de sculă), cu 10 din 11 verzi la prima rulare (al 11-lea, plafonul, pica la axa medială a unui dreptunghi de 200 ×
+  100, o limită veche: mutat pe un cerc R30); pe hârtie, 4 inele pe dreptunghiul 12 × 6 la 0,289 mm; banda cu decuparea și freza
+  T3 Ø3; refuzurile; creasta nulă; V-carve-ul obișnuit neschimbat. E2e: fereastra (nota, banda, bifa, lățimea 9,31 / 3,31),
+  exportul pe oracol (45 de inele pe R15), panoul.
+- **Porțile:** compilatoarele ×3, importurile 20 / 0 (1 162 de module), licențele, traducerile (737, 0 lipsă), unit 9 181: 9 170 verzi și 3 căderi (două probe grele ale ușii documentului, sub încărcare, 556 / 556 singure; proba traducerilor, până la titlul ADR-ului 0173 tradus), build determinist (304 fișiere; pornirea 102,2, cu ușa 105,9 / 110; totalul 654,9 / 700), e2e 459 / 459 din prima (7,8 min, 3 lucrători).
+- **Otrăvurile:** lista nouă `12.1d.py`, 25 de otrăvuri: la prima rulare (`5192da6`) 24 prinse (F01–F17, F19, F20 pe probele lor; F21–F25 prin e2e) și F18 scăpată: dopul trimitea deja toate avertismentele V-carve-ului, deci rândul nou dădea avertismentul inelelor de două ori în fereastră; rândul scos, F18 retrasă, iar proba cere avertismentul o singură dată (`18e8c60`): 24 / 24. Reorientate pe codul schimbat și prinse: 12.1 P09, P10 și 12.1c B09, B10, E13; 12.1 R05, R06 retrase (refuzul lor nu mai există).
+- **Publicat:** pe canalul `incrustatii`, build-ul `18e8c60` (versiunea `18e8c6024b77`, până pe 13.12), verificat în browserul aplicației, în engleză, fără export: pe un cerc R15 cu rolul „V inlay”, fără bifa „Flat floor with a straight bit”, nota rândului spune că freza V face tot; cu banda, Exportă se oprește, bifa „Another bit for the cut-out” e marcată greșită și lățimea cea mai mică lipsește, iar bifată (T3 Ø6), lățimea apare (7,578 mm) și Exportă pornește; închisă fără export, foaia lăsată goală, fără erori în consolă.
+- **Mărimea:** totalul 654,4 → 654,9 / 700 kB (+0,5), pornirea 102,2 (cu ușa 105,9 / 110), neschimbată.
+- **Nu acum:** 12.1↑e (dopul în 3D) doar la cuvântul owner-ului; punctul 4 (punțile dopului drept alese în fereastră) și 12.1↑f
+  (gaura și treptele) după v23 a planșelor.
+
+## 2026-11-13 — Schițele aranjamentelor, declarate gata (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, sunt gata”. **Started:** 13.11, 20:23. **Completed:** 13.11, 20:23.
+
+- **ADR 0250, „Schițele, încheiate pe 13.11”:** canvas-ul e referința feliilor 28.1↑–28.7↑. Codul așteaptă doar unirea
+  planșelor (`wip/11.1-plansele`: 11.5↑ gata, 46 de commit-uri neunite), apoi pornește worktree-ul `aranjamente`, cu
+  28.1↑ întâi.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
 ## 2026-11-13 — Felia 25.5↑ pornită: foaia pozată oblic (ADR 0225, propus) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea lui 25.4↑ în `main`).

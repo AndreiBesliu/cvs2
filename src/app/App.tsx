@@ -38,6 +38,7 @@ import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
+import { legareLaPornire } from './imprimantaLaPornire.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import type { CerereLucrare } from './DialogLucrare.tsx';
 import type { LucrarePrimita } from './primireLucrare.ts';
@@ -331,6 +332,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [masinaMontata, setMasinaMontata] = useState(fereastra === 'masina');
   /** Imprimanta (ADR 0190), ca Mașina: montată la prima deschidere, apoi ținută (legătura și ce vede omul rămân). */
   const [imprimantaMontata, setImprimantaMontata] = useState(fereastra === 'imprimanta');
+  // Cu bifa „Leagă imprimanta ținută la deschiderea cvs2” (ADR 0194 §A.5): fereastra se montează, ascunsă, după pornire.
+  useEffect(() => {
+    if (!legareLaPornire()) return;
+    const c = setTimeout(() => { setImprimantaMontata(true); }, 2000);
+    return () => { clearTimeout(c); };
+  }, []);
   const fereastraRef = useRef(fereastra);
   fereastraRef.current = fereastra;
   const deschideFereastra = (f: Fereastra): void => {
@@ -950,7 +957,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const buton = (
     id: string, atribut: 'data-actiune' | 'data-context',
-    extra?: ButtonHTMLAttributes<HTMLButtonElement> & { readonly 'data-icona'?: string }, text = t(eticheta(id)),
+    extra?: ButtonHTMLAttributes<HTMLButtonElement> & { readonly 'data-icona'?: string }, text = t(eticheta(id)), copil?: ReactNode,
   ) => {
     const s = stareActiune(id);
     const k = tastaActiunii(id);
@@ -959,6 +966,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         onClick={() => { executa(id); }} {...extra}>
         <span className="eticheta">{text}</span>
         <span className="sfat" aria-hidden="true">{text}{s.ok ? k && <kbd>{k}</kbd> : `: ${t(s.motiv)}`}</span>
+        {copil}
       </button>
     );
   };
@@ -1022,9 +1030,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         // Fila ferestrei de acum poartă `aria-current`; fiecare filă e acțiunea ei, deci și în paletă și în manual.
         return (
           <nav className="ferestre" aria-label={t('meniu.ferestre')}>
+            {/* Semnul imprimantei (ADR 0194 §A.4) stă pe fila ei, pus de fereastra Imprimanta printr-un portal. */}
             {aranjament.ferestre.map((f) => buton(DESCHIDE_FEREASTRA[f], 'data-actiune', {
               className: 'cu-eticheta fila', ...(f === fereastra ? { 'aria-current': 'page' } : {}),
-            }))}
+            }, undefined, f === 'imprimanta' ? <span id="loc-semn-imprimanta" className="loc-semn-imprimanta" /> : null))}
             {/* Fila extensiei deschise (ADR 0160 §A), pusă de modulul extensiilor: nu e o fereastră a aranjamentului. */}
             <span id="loc-fila-extensie" className="loc-fila-extensie" />
           </nav>
@@ -1272,7 +1281,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {imprimantaMontata && (
           <section className="fereastra-imprimanta" aria-label={t('vedere.imprimanta')} hidden={fereastra !== 'imprimanta'}>
             <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="imprimanta-incarca">{t('fereastra.imprimanta.incarca')}</p>}>
-              <PanouImprimanta desen={desenImprimanta} versiuneDesen={`${doc.rev}|${selectieValida.join(',')}`} scrieInaltimi={scrieInaltimiImprimanta} />
+              <PanouImprimanta desen={desenImprimanta} versiuneDesen={`${doc.rev}|${selectieValida.join(',')}`} scrieInaltimi={scrieInaltimiImprimanta}
+                vizibila={fereastra === 'imprimanta'} onDeschide={() => { deschideFereastra('imprimanta'); }} />
             </Suspense>
           </section>
         )}

@@ -1070,3 +1070,135 @@ test('anularea unei piese (3.6r): din placă și din listă, cu confirmare; pies
   // Doar comenzile din clicuri: pornirea și anulările lui A și B.
   expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile') && c !== exclude(A) && c !== exclude(B))).toEqual([]);
 });
+
+/**
+ * Notificările browserului, înlocuite în probă (3.6s): fiecare notificare ținută în `window.__notificari` (titlul, textul,
+ * clicul), permisiunea în `window.__permisiune` (la început nedecisă), iar `window.__ascuns` face fila „ascunsă”.
+ */
+const notificariInlocuite = async (page: Page): Promise<void> => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __notificari: unknown[]; __permisiune: string; __ascuns: boolean };
+    w.__notificari = [];
+    w.__permisiune = 'default';
+    w.__ascuns = false;
+    class NotificareInlocuita {
+      onclick: (() => void) | null = null;
+      readonly title: string;
+      readonly o: { readonly body?: string; readonly tag?: string } | undefined;
+      constructor(title: string, o?: { readonly body?: string; readonly tag?: string }) {
+        this.title = title;
+        this.o = o;
+        w.__notificari.push(this);
+      }
+      close(): void { /* nimic */ }
+      static get permission(): string { return w.__permisiune; }
+      static requestPermission(): Promise<string> { w.__permisiune = 'granted'; return Promise.resolve('granted'); }
+    }
+    Object.defineProperty(window, 'Notification', { value: NotificareInlocuita, configurable: true, writable: true });
+    Object.defineProperty(document, 'visibilityState', { get: () => (w.__ascuns ? 'hidden' : 'visible'), configurable: true });
+  });
+};
+const notificarile = (page: Page) => page.evaluate(() =>
+  (window as unknown as { __notificari: { title: string; o?: { body?: string } }[] }).__notificari.map((n) => ({ titlu: n.title, text: n.o?.body ?? '' })));
+
+test('notificările (3.6s): permisiunea dintr-un clic; din Proiectare, semnul pe fila Imprimanta și procentul în titlu; fără filament, cu cvs2 ascuns, notificarea sistemului (clicul aduce fereastra); Reia închide banda; o eroare în față, doar banda; finalul, cu ✓ până deschizi fereastra', async ({ page }) => {
+  await notificariInlocuite(page);
+  // Pașii îi dă proba: starea de la fiecare clipă e știută.
+  const imp = await porneste({
+    fisiere: [...FISIERE, { name: 'cuburi_PLA_5m.gcode', timeCost: 300, material: 'PLA' }], continut: { 'cuburi_PLA_5m.gcode': gcodeCuPiese(6) },
+    pasMs: 3_600_000, pasiFisier: 30,
+  });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  const card = page.getByTestId('imprimanta-notificari');
+  await card.locator('[data-imprimanta="notificari-porneste"]').click();
+  await expect(card).toContainText('Notificările sunt permise în acest browser.');
+  await page.getByTestId('imprimanta-fisiere').locator('li', { hasText: 'cuburi_PLA_5m.gcode' }).locator('[data-imprimanta="porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  await expect(stare(page)).toHaveText('Imprimă', { timeout: 15_000 });
+  // Primul strat trece (stratul 2 începe), dar bifa lui e oprită implicit: nicio bandă.
+  for (let k = 0; k < 10; k++) imp.pas();
+  await expect(page.getByTestId('imprimanta-strat')).toHaveText(/^[2-6] din 6$/);
+  await page.waitForTimeout(300);
+  await expect(page.getByTestId('imprimanta-anunt')).toHaveCount(0);
+  // Din Proiectare: semnul pe fila Imprimanta, procentul în titlul filei.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const semn = page.locator('[data-actiune="vedere.imprimanta"] [data-testid="imprimanta-semn"]');
+  await expect(semn).toHaveAttribute('data-stare', 'imprima');
+  await expect(semn).toHaveText(/^\d+ %$/);
+  await expect(page).toHaveTitle(/^\d+ % · CNC Vector Studio$/);
+  // Fără filament, cu cvs2 ascuns: notificarea sistemului, o singură dată; banda și semnul roșu; titlul spune pauza.
+  await page.evaluate(() => { (window as unknown as { __ascuns: boolean }).__ascuns = true; });
+  imp.faraFilament();
+  await expect.poll(() => notificarile(page)).toEqual([{ titlu: 'K1C-8578: s-a terminat filamentul', text: 'Pune filament nou, apoi apasă Reia.' }]);
+  const banda = page.getByTestId('imprimanta-anunt');
+  await expect(banda).toHaveAttribute('data-fel', 'faraFilament');
+  await expect(semn).toHaveAttribute('data-stare', 'rau');
+  await expect(page).toHaveTitle(/^Pauză \d+ % · CNC Vector Studio$/);
+  // Clicul pe notificare aduce fereastra Imprimanta.
+  await page.evaluate(() => {
+    const w = window as unknown as { __ascuns: boolean; __notificari: { onclick: (() => void) | null }[] };
+    w.__ascuns = false;
+    w.__notificari[0]?.onclick?.();
+  });
+  await expect(page.getByTestId('imprimanta')).toBeVisible();
+  await expect(banda.locator('[data-imprimanta="anunt-deschide"]')).toHaveCount(0);
+  // Reia: imprimanta merge mai departe, iar banda pleacă singură.
+  await page.locator('[data-imprimanta="reia"]').click();
+  await expect(stare(page)).toHaveText('Imprimă');
+  await expect(banda).toHaveCount(0);
+  // O eroare, cu cvs2 în față: doar banda (fără notificarea sistemului), cu cheia.
+  imp.eroare(5000, 12);
+  await expect(banda).toHaveAttribute('data-fel', 'eroare');
+  await expect(banda).toContainText('K1C-8578: o eroare');
+  await expect(banda).toContainText('Cheia 12');
+  expect(await notificarile(page)).toHaveLength(1);
+  imp.eroare(0, 0);
+  await banda.locator('[data-imprimanta="anunt-inchide"]').click();
+  await expect(banda).toHaveCount(0);
+  // Finalul, din Proiectare: banda cu „Deschide Imprimanta”, semnul ✓, care rămâne și după ce imprimanta trece pe liberă.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  for (let k = 0; k < 80 && imp.stare()['state'] !== 2; k++) imp.pas();
+  expect(imp.stare()['state']).toBe(2);
+  await expect(banda).toHaveAttribute('data-fel', 'gata');
+  await expect(banda).toContainText('K1C-8578: imprimarea s-a terminat');
+  await expect(banda).toContainText('cuburi_PLA_5m.gcode');
+  await expect(semn).toHaveText('✓ Gata');
+  imp.pas();
+  imp.pas();
+  expect(imp.stare()['state']).toBe(0);
+  await expect(semn).toHaveText('✓ Gata');
+  await expect(page).toHaveTitle('CNC Vector Studio');
+  await banda.locator('[data-imprimanta="anunt-deschide"]').click();
+  await expect(page.getByTestId('imprimanta')).toBeVisible();
+  await expect(semn).toHaveCount(0);
+  // Doar comenzile din clicuri: pornirea și Reia.
+  expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile') && !c.includes('"pause":0'))).toEqual([]);
+});
+
+test('notificările (3.6s): bifa „Leagă imprimanta ținută la deschiderea cvs2” leagă după o reîncărcare, cu fereastra Imprimanta neatinsă; fără ea, nimic', async ({ page }) => {
+  const imp = await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 40 }, pasMs: 600_000 });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  await page.locator('[data-imprimanta="notificari-legare"]').check();
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const inainte = imp.conexiuni();
+  await page.reload();
+  const semn = page.locator('[data-actiune="vedere.imprimanta"] [data-testid="imprimanta-semn"]');
+  await expect(semn).toHaveText('40 %', { timeout: 15_000 });
+  expect(imp.conexiuni()).toBeGreaterThan(inainte);
+  await expect(page.locator('.fereastra-imprimanta')).toBeHidden();
+  // Fără bifă: după reîncărcare, nicio legătură nouă și niciun semn.
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="notificari-legare"]').uncheck();
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const apoi = imp.conexiuni();
+  await page.reload();
+  await page.waitForTimeout(3500);
+  expect(imp.conexiuni()).toBe(apoi);
+  await expect(semn).toHaveCount(0);
+  expect(comenziSet(imp)).toEqual([]);
+});

@@ -1218,3 +1218,147 @@
   color: var(--a);
   background: var(--s-panou);
 }
+
+/* Felia 3.6s (ADR 0194 §A): semnul de pe fila Imprimanta, banda vestirilor (pusă în pagină, deasupra oricărei ferestre) și
+   cardul Notificările. Culorile, ca ale stării din bandă: verde cât imprimă, accentul în pauză, roșu la ce cere atenție. */
+.semn-imprimanta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--traseu-taiere);
+}
+
+.semn-imprimanta i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.semn-imprimanta[data-stare='pauza'] {
+  color: var(--a);
+}
+
+.semn-imprimanta[data-stare='rau'] {
+  color: var(--rosu);
+}
+
+.semn-imprimanta[data-stare='pierduta'] {
+  color: var(--t-slab);
+}
+
+.semn-imprimanta[data-stare='gata'] i {
+  display: none;
+}
+
+.imprimanta-anunt {
+  position: fixed;
+  z-index: 40;
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(42rem, calc(100vw - 2rem));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid color-mix(in oklab, var(--traseu-taiere) 45%, var(--s-panou));
+  border-radius: var(--r-2);
+  background: color-mix(in oklab, var(--traseu-taiere) 12%, var(--s-panou));
+  color: var(--t);
+  box-shadow: var(--umbra-2);
+}
+
+.imprimanta-anunt strong {
+  color: var(--traseu-taiere);
+}
+
+.imprimanta-anunt[data-fel='pauza'],
+.imprimanta-anunt[data-fel='pauzaFisier'],
+.imprimanta-anunt[data-fel='oprita'] {
+  border-color: color-mix(in oklab, var(--a) 50%, var(--s-panou));
+  background: var(--s-atentie);
+}
+
+.imprimanta-anunt[data-fel='eroare'],
+.imprimanta-anunt[data-fel='faraFilament'],
+.imprimanta-anunt[data-fel='pierduta'] {
+  border-color: color-mix(in oklab, var(--rosu) 50%, var(--s-panou));
+  background: var(--s-rosu);
+}
+
+.imprimanta-anunt[data-fel='pauza'] strong,
+.imprimanta-anunt[data-fel='pauzaFisier'] strong,
+.imprimanta-anunt[data-fel='oprita'] strong {
+  color: var(--a);
+}
+
+.imprimanta-anunt[data-fel='eroare'] strong,
+.imprimanta-anunt[data-fel='faraFilament'] strong,
+.imprimanta-anunt[data-fel='pierduta'] strong {
+  color: var(--rosu);
+}
+
+.imprimanta-anunt .imprimanta-butoane {
+  margin-left: auto;
+}
+
+/* Pe telefon, banda stă jos (meniul de sus se poate rupe pe două rânduri), iar semnul ține doar punctul și procentul. */
+@media (max-width: 40rem) {
+  .imprimanta-anunt {
+    top: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+  }
+
+  .semn-imprimanta[data-stare='pauza'] span,
+  .semn-imprimanta[data-stare='rau'] span,
+  .semn-imprimanta[data-stare='pierduta'] span {
+    display: none;
+  }
+}
+
+.imprimanta-bife {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.imprimanta-bife legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.imprimanta-bifa-mica {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.imprimanta-bifa-mica input {
+  margin-top: 3px;
+  accent-color: var(--a);
+}
+
+.imprimanta-permis {
+  padding: 6px var(--sp-2);
+  border-radius: var(--r-1);
+  font-weight: 600;
+  color: var(--traseu-taiere);
+  background: color-mix(in oklab, var(--traseu-taiere) 12%, var(--s-panou));
+}
