@@ -607,15 +607,28 @@ dreapta:
   atât dispar (praful unei scanări, zgomotul unei fotografii); o formă lipită de marginea imaginii rămâne;
 - **Ignoră ce atinge marginea**: o bucată de desen lipită de marginea imaginii (sau a zonei) se șterge, oricât de mare: masa
   din jurul unei foi pozate, o literă tăiată de zonă; raportul le numără. Merge și pe culori;
-- **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din DPI-ul scris în fișier, iar fără el din 96 px pe
-  țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine scara.
+- **Îndreaptă foaia** (pe o imagine opacă; implicit oprită): pentru o foaie pozată oblic, pe o masă mai închisă decât ea.
+  Aplicația îi găsește singură colțurile și o face dreptunghi; de aici încolo, imaginea trasată e foaia îndreptată (zona,
+  lumina, pragul și culorile lucrează pe ea). **Formatul** îi dă mărimea: **A4** (implicit), **A5**, **A3**, **Letter** sau
+  **Alt format** (lățimea și înălțimea foii, în mm), culcat sau în picioare după poză; atunci desenul are mărimea lui
+  adevărată. **Din poză** ia proporțiile foii din perspectivă, iar mărimea vine ca fără foaie (DPI-ul, 96 px pe țol sau
+  Lățimea); când poza nu le fixează bine (înclinată doar într-o parte, sau mică), raportul spune că sunt nesigure. Raportul
+  arată formatul, de unde vin colțurile și proporțiile din poză, spune când nu se potrivesc cu formatul și, fără îndreptare,
+  ți-o propune când vede o foaie oblică. Dacă foaia nu se găsește (un scan, o foaie pe o masă albă), colțurile stau lângă
+  marginile pozei: mută-le cu butonul **Colțurile**;
+- **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din formatul foii îndreptate, din DPI-ul scris în
+  fișier, iar fără ele din 96 px pe țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine
+  scara.
 
 Previzualizarea arată **Imaginea**, **Vectorii** sau **Amândouă** (cu **Estompează imaginea**, ca vectorii să se vadă peste
 ea); rotița mărește în jurul mausului, tragerea mută imaginea, **Mărește** și **Micșorează** fac la fel din butoane, iar
 **Încadrează** arată toată imaginea. **Zona** alege doar o parte din ea: cât e apăsat butonul, tragerea pe previzualizare
 desenează dreptunghiul, îl mută sau îl întinde de laturi și colțuri (Shift + tragere îl desenează și fără buton), iar
 **Toată imaginea** îl scoate. Se trasează doar zona, ca și cum ar fi imaginea: pragul automat și lumina nu mai văd ce e în
-afara ei, colțul ei stânga-jos ajunge în colțul foii, iar **Lățimea** e a ei. Sub previzualizare stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
+afara ei, colțul ei stânga-jos ajunge în colțul foii, iar **Lățimea** e a ei. Cu foaia îndreptată, previzualizarea arată
+foaia îndreptată, cu vectorii; **Colțurile** arată poza, cu marginea foii și patru mânere pe care le tragi pe colțurile ei
+(Zona și Colțurile nu stau apăsate împreună), iar **Găsește singur** le caută din nou; colțuri noi sau alt format scot
+zona. Sub previzualizare stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
 mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat și dacă marginile erau dure
 (fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
 rămâne vie, iar o schimbare nouă o oprește pe cea începută.

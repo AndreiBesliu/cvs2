@@ -626,15 +626,29 @@ preview on the right:
   smaller than that disappear (the dust of a scan, the noise of a photo); a shape touching the image's edge stays;
 - **Ignore what touches the edge**: a piece of drawing touching the edge of the image (or of the area) is removed, however
   large: the table around a photographed sheet, a letter cut by the area; the report counts them. It works on colours too;
-- **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the DPI written in the file, and without
-  it from 96 px per inch, as for an SVG; the line under it shows the height, the pixel's size and where the scale comes from.
+- **Straighten the sheet** (on an opaque image; off by default): for a sheet photographed at an angle, on a table darker
+  than it. The app finds its corners by itself and makes it a rectangle; from then on, the traced image is the straightened
+  sheet (the area, the lighting, the threshold and the colours work on it). The **Paper size** gives it its size: **A4**
+  (the default), **A5**, **A3**, **Letter** or **Other size** (the sheet's width and height, in mm), landscape or portrait
+  as in the photo; the drawing then has its true size. **From the photo** takes the sheet's proportions from the
+  perspective, and the size comes as without a sheet (the DPI, 96 px per inch or the Width); when the photo does not pin
+  them down (tilted one way only, or small), the report says they are uncertain. The report shows the paper size, where the
+  corners come from and the proportions in the photo, says when they do not match the paper size and, without
+  straightening, suggests it when it sees a slanted sheet. If the sheet is not found (a scan, a sheet on a white table),
+  the corners sit near the photo's edges: move them with the **Corners** button;
+- **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the straightened sheet's paper size,
+  from the DPI written in the file, and without them from 96 px per inch, as for an SVG; the line under it shows the
+  height, the pixel's size and where the scale comes from.
 
 The preview shows the **Image**, the **Vectors** or **Both** (with **Fade the image**, so the vectors show over it); the wheel
 zooms around the mouse, dragging moves the image, **Zoom in** and **Zoom out** do the same from buttons, and **Fit** shows the
 whole image. **Area** picks only part of it: while the button is pressed, dragging on the preview draws the
 rectangle, moves it or stretches it by its sides and corners (Shift + drag draws it without the button), and **Whole image**
 removes it. Only the area is traced, as if it were the image: the automatic threshold and the lighting no longer see what
-is outside it, its bottom-left corner lands on the sheet's corner, and **Width** is its width. Under the preview is the
+is outside it, its bottom-left corner lands on the sheet's corner, and **Width** is its width. With the sheet straightened,
+the preview shows the straightened sheet with the vectors; **Corners** shows the photo, with the sheet's outline and four
+handles you drag onto its corners (Area and Corners are not pressed together), and **Find automatically** looks for them
+again; new corners or another paper size remove the area. Under the preview is the
 report: the **largest deviation** of the vectors from the edge in the image (in mm and in
 pixels, measured on every outline), the image's size, how many specks and holes were cleaned up, and whether the edges were
 hard (no shades: then the pixel steps are smoothed). Every change traces the image again, on the side: the window stays

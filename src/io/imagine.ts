@@ -6,6 +6,46 @@
 
 export type FelImagine = 'png' | 'jpeg' | 'gif' | 'bmp' | 'webp' | 'tiff';
 
+/** Formatul foii pozate (ADR 0225 §1): unul știut, altul (lățimea și înălțimea scrise) sau „Din poză” (proporțiile estimate). */
+export type FormatFoaie = 'a4' | 'a5' | 'a3' | 'letter' | 'alt' | 'poza';
+
+/** Mărimile formatelor știute, în mm, în picioare (orientarea o ia îndreptarea din poză). */
+export const FORMATE_FOAIE = {
+  a4: { w: 210, h: 297 }, a5: { w: 148, h: 210 }, a3: { w: 297, h: 420 }, letter: { w: 215.9, h: 279.4 },
+} as const satisfies Record<Exclude<FormatFoaie, 'alt' | 'poza'>, { readonly w: number; readonly h: number }>;
+
+/**
+ * Colțurile foii în poză, în px (stânga-sus, dreapta-sus, dreapta-jos, stânga-jos): tipul `Colturi` al nucleului foii
+ * (`src/trasare/colturi.ts`), scris aici structural, fiindcă ușa nu importă nucleul trasării (regula io-doar-model-geom).
+ */
+export type ColturiFoaie = readonly [readonly [number, number], readonly [number, number], readonly [number, number], readonly [number, number]];
+
+/** Alegerile foii pozate oblic (ADR 0225 §1). */
+export type AlegeriFoaie = {
+  /** „Îndreaptă foaia” (răspunsul 1a: implicit oprită, cu sugestia din raport). */
+  readonly indreapta: boolean;
+  /** Formatul (răspunsul 2a: implicit A4) și mărimea „Altui format”, în mm. */
+  readonly format: FormatFoaie;
+  readonly alt: { readonly w: number; readonly h: number };
+  /** Colțurile mutate cu mausul, în pixelii pozei decodate; null: găsite singure. */
+  readonly colturi: ColturiFoaie | null;
+};
+
+/** Formatul știut cu mărimea dată (în orice orientare), sau „alt”: numele din raport vine din foaia trasată, nu din alegeri. */
+export function formatDupaMarime(f: { readonly w: number; readonly h: number }): Exclude<FormatFoaie, 'poza'> {
+  for (const [k, v] of Object.entries(FORMATE_FOAIE) as Array<[keyof typeof FORMATE_FOAIE, { readonly w: number; readonly h: number }]>) {
+    if ((v.w === f.w && v.h === f.h) || (v.w === f.h && v.h === f.w)) return k;
+  }
+  return 'alt';
+}
+
+/** Mărimea foii după format (mm, în picioare), sau null: „Din poză”. Un „Alt format” fără mărime bună ia A4. */
+export function formatFoaie(a: Pick<AlegeriFoaie, 'format' | 'alt'>): { readonly w: number; readonly h: number } | null {
+  if (a.format === 'poza') return null;
+  if (a.format === 'alt') return a.alt.w > 0 && a.alt.h > 0 && Number.isFinite(a.alt.w + a.alt.h) ? { w: a.alt.w, h: a.alt.h } : FORMATE_FOAIE.a4;
+  return FORMATE_FOAIE[a.format];
+}
+
 /** Alegerile trasării pe culori (ADR 0221 §2–§3), după indicele culorii din reducere. */
 export type AlegeriCulori = {
   /** Câte culori (2–16); null: automat. */
@@ -49,8 +89,13 @@ export type AlegeriTrasare = {
   readonly lumina: 'uniforma' | 'neuniforma' | 'umbre';
   /** „Ignoră ce atinge marginea” (ADR 0224): implicit oprită. */
   readonly margine: boolean;
-  /** Zona trasă pe previzualizare, în pixelii imaginii trasate (ADR 0224, răspunsul 2a: un decupaj), sau null: toată. */
+  /**
+   * Zona trasă pe previzualizare, în pixelii imaginii trasate (ADR 0224, răspunsul 2a: un decupaj), sau null: toată. Cu
+   * foaia îndreptată (ADR 0225), în pixelii foii îndreptate.
+   */
   readonly zona: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } | null;
+  /** Foaia pozată oblic (ADR 0225), pe imaginile opace. */
+  readonly foaie: AlegeriFoaie;
 };
 
 /** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
@@ -59,13 +104,16 @@ export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifa
 /** Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită. */
 export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: true, bucle: 'linie' };
 
+/** Foaia, implicit (ADR 0225, răspunsurile 1a, 2a): neîndreptată, A4, colțurile găsite singure. */
+export const FOAIE_IMPLICITA: AlegeriFoaie = { indreapta: false, format: 'a4', alt: { w: 210, h: 297 }, colturi: null };
+
 /**
- * Implicitele (ADR 0220 §3–§7, ADR 0222 §2, ADR 0224): sursa aleasă singură, contururile, pragul automat, Echilibrat, petele
- * și golurile sub 0,3 mm, lumina uniformă, fără zonă și fără ștergerea marginii.
+ * Implicitele (ADR 0220 §3–§7, ADR 0222 §2, ADR 0224, ADR 0225): sursa aleasă singură, contururile, pragul automat,
+ * Echilibrat, petele și golurile sub 0,3 mm, lumina uniformă, fără zonă, fără ștergerea marginii și fără îndreptarea foii.
  */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
   sursa: 'auto', rezultat: 'contururi', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
-  culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE, lumina: 'uniforma', margine: false, zona: null,
+  culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE, lumina: 'uniforma', margine: false, zona: null, foaie: FOAIE_IMPLICITA,
 };
 
 /**

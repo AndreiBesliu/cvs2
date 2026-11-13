@@ -8427,3 +8427,10 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0225** propus, cu trei întrebări (îndreptarea implicită; formatul implicit; ce arată previzualizarea). Schița, cu
   pozele prototipului, macheta și formularul: <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax>.
 - **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului.
+
+## 2026-11-13 — Felia 25.5↑: foaia pozată oblic (ADR 0225, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-3a” (owner-ul, la cele trei întrebări din ADR 0225: îndreptarea oprită implicit, cu sugestia din raport;
+A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **Started:** 13.11, 18:16. **Completed:** —.
+
+- **Ramura** adusă la `origin/main` (`29b69c0`; conflict doar în DEVLOG).

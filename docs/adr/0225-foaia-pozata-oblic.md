@@ -1,9 +1,9 @@
 # ADR 0225 — Foaia pozată oblic: colțurile găsite, îndreptarea, formatul și mărimea adevărată
 
-**Starea:** propus pe 13.11.2026, la „continua” (owner-ul, după unirea lui 25.4↑ în `main`). Felia 25.5↑, adusă din etapa
-25, fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `ba876c0`).
-Codul vine abia după răspunsurile la întrebările de la final. Am pus-o înaintea luminii pe culori (25.4↑b) și a liniilor
-mediane pe culori: strâmbă orice poză de telefon, nu doar pe cele colorate.
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-3a”, la întrebările de la final); propus tot atunci, la
+„continua” (owner-ul, după unirea lui 25.4↑ în `main`). Felia 25.5↑, adusă din etapa 25, fără mașină, în linia trasării
+(worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `29b69c0`). Am pus-o înaintea luminii pe culori
+(25.4↑b) și a liniilor mediane pe culori: strâmbă orice poză de telefon, nu doar pe cele colorate.
 **Completează:** ADR 0220 §7 (mărimea: DPI-ul fișierului sau 96 px pe țol, „Lățimea”), ADR 0224 (zona, lumina și marginea
 lucrează pe foaia îndreptată).
 **Schița:** <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax> (pozele prototipului: colțurile găsite, foaia îndreptată cu
@@ -50,7 +50,7 @@ din 96 px pe țol sau din „Lățimea” scrisă de mână.
   - **timpul:** găsirea 17–99 ms pe 1,9 Mpx, rafinarea 2–5 ms; pe 12 Mpx, îndreptarea (ieșirea de 10,3 Mpx, biliniară,
     bucla scrisă direct) 219–255 ms. Trasarea însăși ia ~6,7 s (ADR 0220).
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Fereastra trasării**, pe imaginile opace, grupul **Foaia**:
    - **Îndreaptă foaia** (bifa; implicitul, întrebarea 1): aplicația caută foaia și îi găsește colțurile; dacă nu o
@@ -96,6 +96,8 @@ din 96 px pe țol sau din „Lățimea” scrisă de mână.
 mărimea lor; îndreptarea trece de 0,5 s pe 16 Mpx.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (13.11):** „Da la 1-3a”: toate recomandările.
 
 Opțiunile de mai sus vin toate (regula „toate opțiunile”); întrebările sunt doar despre ce se exclude.
 

@@ -9,7 +9,7 @@ import type { AlegeriTrasare } from '../io/imagine.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
 import type { Lumina } from '../trasare/lumina.ts';
-import type { Posterizare, ZonaTrasare } from '../jobs/calculTrasare.ts';
+import type { FoaieTrasata, Posterizare, ZonaTrasare } from '../jobs/calculTrasare.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
@@ -50,8 +50,16 @@ export type RaportImagine = {
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
   /** Mărimea imaginii pe foaie și a pixelului, în mm. */
   readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
-  /** De unde vine scara: lățimea scrisă, DPI-ul fișierului sau 96 px / țol (presupus); `dpi` e cel folosit. */
-  readonly scara: 'latime' | 'fisier' | 'presupus'; readonly dpi: number;
+  /**
+   * De unde vine scara: lățimea scrisă, formatul foii îndreptate (ADR 0225), DPI-ul fișierului sau 96 px / țol (presupus);
+   * `dpi` e cel folosit.
+   */
+  readonly scara: 'latime' | 'foaie' | 'fisier' | 'presupus'; readonly dpi: number;
+  /**
+   * Foaia din poză (ADR 0225): îndreptată (pagina e ea; colțurile, proporțiile, formatul, previzualizarea), sau doar găsită
+   * (sugestia); null: niciuna.
+   */
+  readonly foaie: FoaieTrasata | null;
   /** Sursa cernelii (alb-negru) sau culorile (ADR 0221); pe culori, `prag` e 0, histograma goală, iar `automat` e al numărului. */
   readonly sursa: 'alfa' | 'lum' | 'culori'; readonly transparenta: boolean;
   readonly prag: number; readonly automat: boolean; readonly margini: 'netezite' | 'dure';
