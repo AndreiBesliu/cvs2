@@ -33,7 +33,7 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Felia 10.3↑k (ADR 0181 §7): „Taie în panouri”, pe firma de 2 400 × 1 000 mm: cât lucrezi în bloc, pânza arată grila (2 × 2 la
  * 1 200 × 900, egale sau din colț), iar înapoi în blocul de sus, linia; panourile egale fac patru forme de 1 200 × 500 mm,
  * „Panoul 1” … „Panoul 4”, alese (o literă de pe firmă, despărțită de ea cu Degrupează, intră în grupul „Panoul 1”); Anulează
- * pune firma la loc. Fără nimic ales, se taie toate formele foii; peste 100 de panouri
+ * pune firma la loc, iar blocul, cu alegerea rămasă spre panourile anulate, ia toate formele foii; Reface le pune înapoi. Fără nimic ales, se taie toate formele foii; peste 100 de panouri
  * și un singur panou, butonul e stins, cu motiv; din colț, două forme de 1 200 × 900 și două de 1 200 × 100.
  */
 test.use({ locale: 'ro-RO' });
@@ -408,12 +408,17 @@ test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000, cu o literă,
   await page.keyboard.press('Escape');
   await expect(randuri(page)).toHaveText(['Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4']);
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(4);
-  await cutii(page, '1200.00 × 500.00 mm');
+  // Anulează, cu panourile încă alese: alegerea rămasă arată spre forme care nu mai sunt, deci blocul ia toate formele foii
+  // (firma și litera), nu una dintre ele.
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(2);
-  // Alegerea rămasă arată spre panourile anulate: blocul ia toate formele foii (firma și litera), nu una dintre ele.
   await page.locator('[data-editare="taiere"]').click();
   await expect(page.getByTestId('panouri-grila')).toContainText('Nicio formă aleasă: toate formele foii (2)');
+  await page.keyboard.press('Escape');
+  // Reface: din nou cele patru panouri, fiecare de 1 200 × 500.
+  await page.locator('[data-actiune="istoric.reface"]').click();
+  await expect(randuri(page)).toHaveText(['Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4']);
+  await cutii(page, '1200.00 × 500.00 mm');
 });
 
 test('Taie în panouri, fără nimic ales: toate formele foii; din colț, două forme de 1 200 × 900 și două de 1 200 × 100', async ({ page }) => {
