@@ -8,7 +8,7 @@ ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intr
 După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată. După tura a noua, încă 11 („Da la
 toate”), toate în feliile 28.x. După tura a zecea, încă 12 („Da la toate”): 11 în feliile 28.x, una linie separată. După
 tura a unsprezecea, încă 13 în feliile 28.x („Da la toate”; a 14-a e a adminului, în ADR 0260) (toate, în secțiunile de la
-capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+capăt). **Tot pe 13.11, owner-ul a declarat schițele gata** („Da, sunt gata”; codul pornește după unirea planșelor). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -361,3 +361,20 @@ imprimantei), owner-ul a fost întrebat: „Accepți recomandările la ideile no
 | Exportă vectori sub iconița din capul ferestrei, cu lista straturilor înainte de export | 28.5↑ |
 | Verificarea vectorilor ca insulă la dreapta, deschisă cât repari | 28.5↑ |
 | „Din desen…” după aranjament: dialogul cu file (Clasic), plăcile pentru material și calitate (Atelier), pasul 1 al imprimantei „Ce imprimi?” (Pas cu pas) | 28.6↑ |
+
+## Schițele, încheiate pe 13.11
+
+Pe 13.11.2026, după a unsprezecea tură, owner-ul a fost întrebat: „Declari schițele gata, ca să pornim codul aranjamentelor
+după planșe?”. A răspuns „Da, sunt gata”.
+
+- **Canvas-ul** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>) e referința feliilor 28.1↑–28.7↑:
+  - rândurile A–D: cele patru aranjamente;
+  - rândurile E și F: ce e comun tuturor;
+  - tabla „Harta schițelor”: fiecare ecran în fiecare aranjament și cele 76 de idei hotărâte;
+  - rândul G e al adminului (ADR 0260).
+- **Ce mai trebuie înaintea codului:** doar unirea planșelor în `main` (decizia din 11.11, „Worktree după planșe”). La
+  13.11, seara, ramura `wip/11.1-plansele` avea 11.5↑ gata și 46 de commit-uri neunite. Unirea o face sesiunea
+  principală, la cuvântul owner-ului.
+- **Apoi:** worktree-ul `aranjamente` (`wip/28.1-aranjamente`, `C:\Users\besli\cncvs2-lucru\aranjamente`, e2e pe 4182 și
+  `127.0.9`), din `main`-ul cu planșele, cu felia 28.1↑ întâi (Atelier, alegerea și ținerea). O schimbare de design de
+  acum încolo trece întâi pe canvas, apoi în ADR.

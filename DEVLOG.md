@@ -8488,3 +8488,12 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0250, „Ideile turei a unsprezecea, acceptate tot pe 13.11”:** 13 idei în feliile 28.x, fiecare cu felia ei.
 - **ADR 0260, „Completarea din 13.11: intrarea și stările goale”:** ideea 76, în felia A.1.
 - **Documentele:** indexul ADR-urilor (0250, 0260), CLAUDE.md (decizia), DEVLOG. Harta schițelor le arată acceptate.
+
+## 2026-11-13 — Schițele aranjamentelor, declarate gata (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, sunt gata”. **Started:** 13.11, 20:23. **Completed:** 13.11, 20:23.
+
+- **ADR 0250, „Schițele, încheiate pe 13.11”:** canvas-ul e referința feliilor 28.1↑–28.7↑. Codul așteaptă doar unirea
+  planșelor (`wip/11.1-plansele`: 11.5↑ gata, 46 de commit-uri neunite), apoi pornește worktree-ul `aranjamente`, cu
+  28.1↑ întâi.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.

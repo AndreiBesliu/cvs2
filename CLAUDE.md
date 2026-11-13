@@ -1053,6 +1053,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **schițele aranjamentelor sunt gata** („Da, sunt gata”, la „Declari schițele gata, ca să pornim codul
+  aranjamentelor după planșe?”, după 11 ture și cele 76 de idei hotărâte):
+  - canvas-ul e referința feliilor 28.1↑–28.7↑ (ADR 0250, „Schițele, încheiate pe 13.11”), iar o schimbare de design trece
+    întâi pe canvas, apoi în ADR;
+  - codul mai așteaptă doar unirea planșelor în `main` (`wip/11.1-plansele`, 11.5↑ gata, 46 de commit-uri neunite la
+    13.11 seara), apoi pornește în worktree-ul `aranjamente`, cu 28.1↑ întâi.
 - 13.11.2026: **ideile 63–76 din tura a unsprezecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 63–76?”, după tablele Exportă vectori…, Verifică vectorii, Tăierea și rolurile mele, „Din
   desen…” al imprimantei și Admin · Intrarea): 13 intră în feliile 28.x (ADR 0250, „Ideile turei a unsprezecea”), iar
