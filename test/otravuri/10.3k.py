@@ -83,7 +83,7 @@ o('H04', P, "const laLinie = (): void => { setGrila(false); };", "const laLinie 
 o('H05', P, "onActiv={() => { setGrila(true); }}", "onActiv={() => {}}", 'e2e', 'blocul panourilor nu arată grila')
 o('H06', B, "nume: t('editare.taiere.panouri.nume')", "nume: 'Panou'", 'e2e', 'numele panourilor nu vine din texte')
 o('H07', B, "...(rez.grupuri ? { grupuri: rez.grupuri } : {})", "", 'e2e', 'panoul nu trimite grupurile acțiunii')
-o('H08', K, "      return { raspuns: taieInPanouri(c.document, c.cerere), transfer: [] };", "      return { raspuns: { ok: false, motiv: 'nimic-ales' }, transfer: [] };",
+o('H08', K, "      return { raspuns: taieInPanouri(c.document, c.cerere, c.indexFoaie ?? 0), transfer: [] };", "      return { raspuns: { ok: false, motiv: 'nimic-ales' }, transfer: [] };",
   'e2e', 'workerul nu taie în panouri')
 o('H09', B, "        : c * r === 1 ? t('editare.taiere.panouri.unul') : null;", "        : null;", 'e2e', 'un singur panou nu stinge butonul')
 o('R05', R, "new Set([doc, inainte].flatMap(", "new Set([doc].flatMap(", 'panouri', 'grupul poate lua id-ul formei tăiate (eliberat de degrupare)')
