@@ -8384,3 +8384,10 @@ provizorie); după pauză, „ce se poate uni?”.
   mesajele de după o acțiune și confirmarea ieșirii din foaie, aplicația în engleză (cu literele câștigate sau pierdute
   față de română).
 - **Harta schițelor:** rândurile noi și 11 idei noi (28–38), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 28–38 din tura a noua, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 17:53. **Completed:** 13.11, 17:53.
+
+- **ADR 0250, „Ideile turei a noua, acceptate tot pe 13.11”:** 11 idei, toate în feliile 28.x, fiecare cu felia ei.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
