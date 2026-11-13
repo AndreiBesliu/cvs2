@@ -8960,4 +8960,12 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   build-ul determinist (pornirea cu ușa 109,9 / 110: ~0,1 kB liberi; totalul 694,5 / 700). Canalul republicat din `9c668fd`,
   100 / 100 bucăți.
 
+- **A treia unire de la capăt și pauza (14.11, „pauza peste tot”, cerută de owner prin sesiunea principală):** `main`
+  `0e3725c` (trasarea 25.5↑, plafoanele 115 / 800 din ADR 0252–0253) adus în `f8a19a9`, cu conflictul doar în DEVLOG.
+  Trecute pe el: tipurile (aplicația, extensia, funcțiile), importurile, traducerile (771 de texte, 0 netraduse), probele
+  manualului și ale raportului (67 / 67), build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9 / 115,
+  totalul 700,2 / 800). **Oprite de pauză:** suita unitară întreagă (neterminată) și e2e-ul întreg (nepornit). Canalul
+  `plansele` servește încă `9c668fd` (porțile lui, toate trecute). La reluare: suita unitară și e2e-ul întreg pe vârf
+  (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
+
 **Completed:** 14.11, 00:15.
