@@ -8853,3 +8853,16 @@ probă care pică pe Windows.
   Imprimanta (1024 și 390 px) și în Proiectare (1024 și 1280 px), plus rândul gol ascuns; căzută înaintea reparației
   (Reia și Oprește acoperite la 1024 px), trecută după.
 - **Porțile:** unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist (305 fișiere), e2e 461 / 461; pornirea 102,4 kB (cu ușa 106,1 / 110) și totalul 657,5 / 700, neschimbate. Privită în Edge, cu hit-test-ul: la 1280, 1024, 900, 800 și 390 px, nimic acoperit, nici în Imprimanta, nici în Proiectare.
+
+## 2026-11-13 — Linia aranjamentelor pornește: worktree-ul și plafoanele 115 / 800 (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 115 ／ 800”, după „Da, sunt gata” și unirea planșelor (`d62e6b8`). **Started:** 13.11, seara.
+**Completed:** 13.11, 22:19.
+
+- **Worktree-ul `aranjamente`:** `C:\Users\besli\cncvs2-lucru\aranjamente`, ramura `wip/28.1-aranjamente` din
+  `d62e6b8`. Are joncțiunile `node_modules` și `functions\node_modules`, e2e pe 4182 (`.tmp/pw.config.ts`) cu rețeaua
+  `127.0.9`.
+- **Baza măsurată** (`node scripts/build-determinist.ts`): pornirea 105,7, cu ușa 109,7 / 110 kB; totalul 690,1 / 700.
+- **ADR 0252** (pornirea 110 → 115 kB) și **ADR 0253** (totalul 700 → 800 kB), acceptate de owner. Constantele din
+  `scripts/build-determinist.ts`, indexul ADR-urilor, traducerea, CLAUDE.md (decizia).
+- **Mai departe:** 28.1↑, împărțită în felii mici. După reparația lui 3.6s din `main`, `main` se aduce în ramură.
