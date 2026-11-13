@@ -1046,6 +1046,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **ideile 39–50 din tura a zecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 39–50?”, după tablele Transformarea și ancora, Nodurile și Pen-ul, Navigarea și ajutoarele de
+  desen, Fonturile): 11 intră în feliile 28.x (ADR 0250, „Ideile turei a zecea”). Între ele, rotirea scrisă și butoanele
+  − / + de zoom, care azi nu există. Textul de probă al fontului, luat din textul omului, devine linie separată.
 - 13.11.2026: **ideile 28–38 din tura a noua a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 28–38?”, după tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În
   engleză): toate intră în feliile 28.x (ADR 0250, „Ideile turei a noua”). Între ele, o zonă „mesaj” în tipul `Aranjament`,
