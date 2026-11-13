@@ -45,8 +45,7 @@ o('B09', DOP, 'urechi: { numar: n, latime: palier, grosime: punti.grosime }', 'u
   'grosimea aleasă ignorată')
 o('B10', DOP, 'e decupat cu ${punti.numar} punți pe buclă,', 'e decupat cu ${PUNTI_DOP_DREPT.numar} punți pe buclă,', 'dop',
   'avertismentul cu numărul implicit')
-o('B11', DOP, '      const palier = punti.latime + mica.scula.diametru;', '      const palier = punti.latime;', 'dop',
-  'palierul fără freză (puntea mai îngustă cu diametrul)')
+# B11 retrasă înainte de rulare: e chiar 12.1b P11 (palierul fără freză), reorientată pe codul acesta.
 o('B12', MOD, 'export const PUNTI_DOP_DREPT: Urechi = { numar: 4, latime: 4, grosime: 1 };',
   'export const PUNTI_DOP_DREPT: Urechi = { numar: 3, latime: 4, grosime: 1 };', 'dop', 'implicitele schimbate (3 pe buclă)')
 

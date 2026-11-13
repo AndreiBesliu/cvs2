@@ -65,11 +65,11 @@ test('plăcuțele: câmpul din textul piesei, valorile pe plăcuță, copiile, e
   await expect(camp(page)).toHaveAttribute('placeholder', '{nr}');
   // Șablonul pus o dată, fără valori: nimic de desprins.
   await expect(page.getByTestId('prop-piesa').locator('[data-buton="desprinde"]')).toHaveCount(0);
-  // O valoare: literele plăcuței, scrise în document (v23), iar lista o numește după textul ei.
+  // O valoare: literele plăcuței, scrise în document (v23; documentul de azi e v24, ADR 0174), iar lista o numește după textul ei.
   await camp(page).fill('7');
   await camp(page).press('Enter');
   const d1 = await salvat(page, (d) => texteSalvate(d)[0] === 'Masa 7');
-  expect(d1.schema).toBe(23);
+  expect(d1.schema).toBe(24);
   expect(instante(d1)[0]!.campuri).toEqual({ nr: '7' });
   const t1 = Object.values(instante(d1)[0]!.texte!)[0]!;
   expect(t1.copii.map((g) => g.id)).toEqual(['t1-l1', 't1-l2', 't1-l3', 't1-l4', 't1-l5']);
