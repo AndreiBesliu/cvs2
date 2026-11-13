@@ -51,8 +51,8 @@ o('F15', MOD, '  const fund = fp?.scula.diametru ?? 0;', '  const fund = fp?.scu
 o('F16', DOP, '      } : { fundV: { creasta: val.creastaDop } }),', '      } : {}),', 'fundv', 'fața coborâtă fără inele')
 o('F17', DOP, 'fp ? fp.scula.diametru + 2 * w - m + TRECERE_FUND : 0', 'fp ? fp.scula.diametru + 2 * w - m + TRECERE_FUND : 6 + 2 * w - m + TRECERE_FUND',
   'fundv', 'lărgirea feței ca pentru o freză dreaptă Ø6')
-o('F18', DOP, "    for (const a of v.avertismente) if (/inel(e)? al(e)? frezei în V/.test(a)) avertismente.push(", "    for (const a of v.avertismente) if (false) avertismente.push(",
-  'fundv', 'dopul fără avertismentul inelelor')
+# F18 retrasă (prima rulare, `5192da6`: scăpată): dopul trimite deja toate avertismentele V-carve-ului (`DopCalculat`), deci
+# rândul care trimitea avertismentul inelelor îl dădea de două ori; rândul e scos, iar avertismentul îl judecă proba „pe hârtie”.
 
 # ---- Refuzurile ----
 o('F19', INC, '    if (!d) {', '    if (false) {', 'refuz', 'decuparea fără freza ei, fără refuz')

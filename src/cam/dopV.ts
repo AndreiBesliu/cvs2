@@ -122,8 +122,6 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       } : { fundV: { creasta: val.creastaDop } }),
     });
     if (!v.ok) return { ok: false, motiv: `${t.idLume}, dopul: ${v.motiv}` };
-    // Fundul doar cu freza V (ADR 0173): câte inele și la ce distanță, spus omului (mai lent decât cu freza dreaptă).
-    for (const a of v.avertismente) if (/inel(e)? al(e)? frezei în V/.test(a)) avertismente.push(`dopul ${t.idLume}: ${banda ? 'fundul benzii' : 'fața coborâtă'}: ${a}`);
     const miscari: Miscare[] = [];
     const eticheta = (text: string): void => { miscari.push({ tip: 'eticheta', text, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` }); };
     let initiala: Scula | null = null, curenta: Scula | null = null;

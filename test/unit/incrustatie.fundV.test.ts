@@ -96,6 +96,8 @@ test('fundul doar cu freza V, pe hârtie: dreptunghiul 12 × 6 are 4 inele în l
   // wD = D·t = 1,7321, r = 3: inelele la 2,0207, 2,3094, 2,5981, 2,8868 (al cincilea, la 3,1754, nu mai există).
   assert.ok(av.some((a) => /fundul îl fac 4 inele ale frezei în V, la 0\.289 mm unul de altul \(creasta cel mult 0\.25 mm\)/.test(a)), av.join(' | '));
   assert.ok(av.some((a) => /dopul .*fundul îl fac (\d+ (de )?inele|un inel) ale frezei în V, la 1\.155 mm unul de altul \(creasta cel mult 1 mm\)/.test(a)), av.join(' | '));
+  // O singură dată (otrava F18: dopul trimite deja toate avertismentele V-carve-ului, iar un rând în plus le dubla).
+  assert.equal(av.filter((a) => /^dopul .*ale frezei în V/.test(a)).length, 1, av.join(' | '));
   // Fără freză dreaptă, regiunea feței se lărgește doar cu e = H·t + 1 = 2,155, plus raza V-ului (3): 5,155, arătat 5,2.
   assert.ok(av.some((a) => /freza trece cu până la 5\.2 mm dincolo de marginile semifabricatului/.test(a)), av.join(' | '));
 });
