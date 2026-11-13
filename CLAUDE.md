@@ -785,9 +785,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda în
   meniul global, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
   `titluFila.ts` (titlul filei din părți, folosit și de `IndicatorLucrare`); carcasa: locul semnului în fila Imprimanta,
-  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110. Urmează 3.6t (istoricul).
+  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110.
   **Reparată pe 13.11** (CI-ul complet roșu: banda pauzei acoperea Reia pe Linux): banda stă în meniul global, pe rândul
   `#loc-anunt-imprimanta` din `App.tsx` (gol, ascuns), nu mai plutește deasupra paginii; orice aranjament nou ține locul.
+  **3.6t gata pe 14.11** (istoricul, costul, estimarea care învață): `istoricImprimari.ts` (pur), `IstoricImprimanta.tsx`
+  (cardul, înregistrarea), magazia `imprimari` în `cvs2-imprimanta` (versiunea 2), `DIN_DESEN` (ce pune „Din desen…” lângă
+  fișier), driverul cu `historyList`. Totalul 694,9 / 700 (peste ținta ADR-ului: la acordul owner-ului). Urmează 3.6u.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

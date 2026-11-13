@@ -111,4 +111,5 @@ SETURI = {
     'ist2': ['test/unit/imprimanta.istoric.test.ts', 'test/unit/imprimanta.sesiune.test.ts', 'test/unit/imprimanta.creality.test.ts',
              'test/unit/imprimanta.driver.test.ts', 'test/unit/imprimanta.notificari.test.ts'],
 }
-E2E = ['test/e2e/imprimanta.spec.ts']
+# Doar cele două probe e2e ale feliei (liniile lor la commit-ul probat), ca fiecare otravă să nu ruleze tot fișierul.
+E2E = ['test/e2e/imprimanta.spec.ts:1213', 'test/e2e/imprimanta.spec.ts:1282']

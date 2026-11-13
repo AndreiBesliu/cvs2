@@ -136,6 +136,21 @@ Pe o imprimare scurtă (placa de probă de la pasul 6, cu pauza ei), cu cvs2 des
    imprimanta să stea în pauză. Spune-mi ce a arătat ecranul ei.
 5. **Copiază jurnalul** la final: cadrele cu `state` și `materialStatus` ne spun cum anunță K1C finalul și filamentul.
 
+## 10. Istoricul (felia 3.6t)
+
+După o imprimare scurtă din „Din desen…” (placa de probă de la pasul 6), cu fereastra Imprimanta deschisă la final:
+
+1. În cardul **Istoricul**, rândul de sus are numele piesei din cvs2, „✓ gata”, durata față de estimare și filamentul.
+   Spune-mi cifrele: le compar cu ce arată imprimanta pe ecranul ei, la istoric.
+2. Mai jos apar și imprimările vechi ale imprimantei (cele din Creality Print sau de pe ecran), cu materialul ghicit
+   din numele fișierului. Spune-mi dacă vreuna lipsește sau apare de două ori.
+3. Pune **Prețul pe kg** al filamentului tău (PLA): costul apare pe fiecare rând și în totalul lunii. Dacă vrei și
+   curentul, pune **Puterea medie** (W; pentru K1C, în jur de 150 W cât imprimă PLA) și **Prețul kWh**.
+4. **Exportă CSV** și deschide fișierul în Excel: coloanele trebuie să fie separate, cu virgula zecimală.
+5. După trei imprimări din „Din desen…” cu același material, „Din desen…” arată estimarea învățată („~21m după 3
+   imprimări pe K1C-8578 (feliatorul: 18m)”). Spune-mi cât a durat de fapt următoarea, față de ea.
+6. **Copiază jurnalul** la final: cadrul cu `historyList` ne spune ce înseamnă `startway` și ce mai cuprinde `totaltime`.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).

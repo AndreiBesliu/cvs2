@@ -8854,7 +8854,20 @@ probă care pică pe Windows.
   (Reia și Oprește acoperite la 1024 px), trecută după.
 - **Porțile:** unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist (305 fișiere), e2e 461 / 461; pornirea 102,4 kB (cu ușa 106,1 / 110) și totalul 657,5 / 700, neschimbate. Privită în Edge, cu hit-test-ul: la 1280, 1024, 900, 800 și 390 px, nimic acoperit, nici în Imprimanta, nici în Proiectare.
 
-## 2026-11-13 — 3.6t: istoricul imprimărilor, costul și estimarea care învață (ADR 0194 §B) (Model: Claude Opus 5.5)
+## 2026-11-14 — 3.6t: istoricul imprimărilor, costul și estimarea care învață (ADR 0194 §B) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 3.6t” (owner-ul, 13.11, la „Trec la 3.6t (istoricul imprimărilor)?”).
-**Started:** 13.11, 18:01. **Completed:** —
+**Started:** 13.11, 18:01. **Completed:** 14.11, 00:09.
+
+- **Driverul și sesiunea:** `historyList` citit în starea comună (`istoric`), `reqHistory` printre citiri, cerut din nou la
+  final și la deschiderea cardului (cel mult o dată la 5 s).
+- **Istoricul cvs2 și unirea:** `istoricImprimari.ts` (pur): înregistrarea, contopirea, unirea cu al imprimantei, gramele,
+  costul, totalurile, CSV-ul, estimarea care învață; magazia `imprimari` (baza `cvs2-imprimanta`, versiunea 2).
+- **Fereastra:** cardul Istoricul (tabel; pe telefon, carduri), prețurile și curentul, Exportă CSV, Golește istoricul cvs2;
+  „Din desen…” cu estimarea învățată, bifa ei și costul.
+- **Imprimanta falsă:** istoricul la cerere, după listă și la final.
+- **Probe și porți:** 11 pe hârtie, una a sesiunii, manualul, două e2e; unit 9 333 (9 325 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 482 / 482, pe unirea cu main (e0f9803: planșele, 12.1↑d, reparația benzii); totalul 694,9 / 700 kB (+4,8, peste ținta de ~3,5 din ADR: la acordul owner-ului), pornirea 105,8 (cu ușa 109,7 / 110; neschimbată). Otrăvurile
+  (`test/otravuri/3.6t.py`): 57 / 57 (47 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 10).
+- **Pe drum:** CI-ul complet era roșu pe `main` din cauza lui 3.6s (banda pauzei acoperea Reia, pe Linux): reparată pe
+  `fix/3.6s-anunt` (`231e347`, la cererea sesiunii principale; banda stă acum în meniul global), unită și aici (`44d1b81`),
+  cu `main` de la `7cc9800` (12.1↑d).

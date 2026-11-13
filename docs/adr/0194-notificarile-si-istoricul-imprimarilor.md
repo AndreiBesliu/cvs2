@@ -10,7 +10,8 @@ primește istoricul și filmele, tot doar citiri) și ADR 0193 (pauza din fișie
 **Documentul:** neschimbat (cu răspunsul recomandat la întrebarea 2). **Schița,** cu formularul răspunsurilor (colecția
 `raspunsuri`): <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. **Felia 3.6s** gata pe 13.11 (secțiunea „Felia 3.6s,
 gata”); proba pe imprimanta owner-ului: ghidul, pasul 9. Fereastra Imprimanta urmează aranjamentul (ADR 0250 §6, completat
-pe 13.11), deci cardul Notificările e încă un modul de așezat acolo; semnul merge cu fila.
+pe 13.11), deci cardurile Notificările și Istoricul sunt module de așezat acolo; semnul merge cu fila. **Felia 3.6t** gata
+pe 14.11 (secțiunea „Felia 3.6t, gata”); proba pe imprimanta owner-ului: ghidul, pasul 10.
 
 **Problema.** O imprimare ține o oră sau cinci, iar omul nu stă în fereastra Imprimanta: lucrează în Proiectare sau în alt
 program. Azi află că imprimarea s-a terminat, s-a oprit la pauza din fișier (magnetul de pus), a rămas fără filament sau
@@ -198,6 +199,43 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   Imprimanta. Proba: un hit-test pe controale (`imprimanta.spec.ts`, „banda vestirilor (3.6s) nu acoperă nimic”), căzută
   pe Windows înaintea reparației. **Pentru linia aranjamentelor** (ADR 0250): fiecare aranjament ține locul
   `#loc-anunt-imprimanta` în meniul lui, ca pe `#loc-semn-imprimanta` în fila Imprimanta.
+
+## Felia 3.6t, gata (14.11.2026)
+
+- **Driverul K1** (contractul din ADR 0192): `historyList` ajunge în cadrul citit (`istoric`), cu intrări normalizate:
+  fișierul (doar numele, fără `..` și caractere de control), începutul (`starttime`, din secunde în ms; doar până în anul
+  2286), durata (`usagetime`; `totaltime` are ~40 s în plus, nemăsurat ce), filamentul (`usagematerial`), rezultatul
+  (`printfinish` 1 gata, 0 oprită, 2 și 3 eroare; altul, nespus); primit și ca text JSON în JSON, cel mult 100. `reqHistory`
+  e printre citirile de la legare; fereastra îl cere din nou la final (după 5 s) și la deschiderea cardului, cel mult o
+  dată la 5 s (`cereIstoric`). Nicio comandă nouă.
+- **Istoricul cvs2** (`istoricImprimari.ts`, pur; magazia `imprimari` din baza `cvs2-imprimanta`, versiunea 2): fiecare
+  imprimare văzută de fereastră, scrisă la început (o pagină închisă la mijloc n-o pierde) și la final, cu durata și
+  filamentul de dinaintea finalului și procentul la oprire. „Din desen…” pune lângă fișier estimarea feliatorului și
+  materialul (cu piesele și notele, într-un singur `DIN_DESEN`), ținute cu fișierul trimis. Aceeași lucrare văzută din nou
+  (o legare din nou, o pagină redeschisă) se contopește cu înregistrarea ei neîncheiată; rămân ultimele 500.
+- **Unirea:** o imprimare a imprimantei și una a cvs2 sunt aceeași dacă au același fișier, aceeași imprimantă (când o spun
+  amândouă) și începuturi la cel mult 10 minute; perechile cele mai apropiate se leagă întâi, câte una. Imprimanta dă
+  rezultatul, durata și filamentul; cvs2, piesele, estimarea și materialul; altfel, estimarea din lista imprimantei și
+  materialul din numele fișierului (`…_PLA_19m.gcode`, ca Creality Print și cvs2). „De pe ecran” și „din Creality Print”,
+  din schiță, nu se arată: `startway` e nemăsurat.
+- **Cardul Istoricul** (`IstoricImprimanta.tsx`): tabelul (pe telefon, câte un card, cu eticheta lângă valoare), cele mai
+  noi 50 (restul, în CSV), totalurile lunii (imprimările, timpul, gramele și costul știute), **Exportă CSV** (în limba
+  ferestrei; în română cu `;` și virgula zecimală, cu BOM; un text care ar porni o formulă în Excel primește un apostrof),
+  **Golește istoricul cvs2…** cu confirmare, prețul pe kg după felul materialului (PLA, PETG…), puterea medie și prețul
+  kWh (`cvs2.imprimanta.istoric`, `v: 1`). Gramele, cu densitatea din lista felierului (Ø 1,75 mm).
+- **Estimarea care învață:** mediana duratei reale față de estimarea feliatorului, din ultimele 10 imprimări duse la
+  capăt ale fișierelor feliate în cvs2, pe aceeași imprimantă și cu același material; cel puțin 3; un raport absurd (sub
+  0,2 sau peste 5) nu intră. În „Din desen…”, la minut: „~41m după 3 imprimări pe K1C-8578 (feliatorul: 37m)”, cu costul
+  dacă ai pus prețul, și bifa **Corectează estimarea după istoric** (pornită). Fișierul nu se schimbă.
+- **Imprimanta falsă:** `historyList` la `reqHistory`, după lista fișierelor (K1C 2025) și la finalul sau oprirea unei
+  lucrări (`printfinish` 1 sau 0), pornind de la istoricul dat.
+- **Măsurat și probat:** totalul 694,9 / 700 kB (+4,8, peste ținta de ~3,5 din ADR: la acordul owner-ului), pornirea 105,8 (cu ușa 109,7 / 110; neschimbată). Probe noi: `test/unit/imprimanta.istoric.test.ts` (11: istoricul K1 pe transcrierea
+  K1C 2025, înregistrarea, istoricul cvs2 ținut, unirea, gramele, costul, totalurile, CSV-ul, estimarea care învață,
+  setările), o probă a sesiunii (cererea istoricului), manualul (8 controale noi, citite și din `IstoricImprimanta.tsx`),
+  două e2e (istoricul cap-coadă, cu CSV-ul, reîncărcarea și golirea; estimarea care învață, cu bifa și costul). Porțile: unit 9 333 (9 325 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 482 / 482, pe unirea cu main (e0f9803: planșele, 12.1↑d, reparația benzii).
+  Privită în Edge: 1280 px luminos (cardul, „Din desen…” cu estimarea învățată și costul) și 390 px întunecat (cardurile
+  pe telefon), fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6t.py`, 57 / 57 (47 pe probele unitare, 10 prin e2e); listele 3.6p–3.6s se aplică în
+  continuare.
 
 ## Întrebările (owner)
 
