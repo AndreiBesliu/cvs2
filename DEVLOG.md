@@ -8425,3 +8425,13 @@ provizorie); după pauză, „ce se poate uni?”.
   raportărilor (365 de zile), numele etapelor din `PLAN.md` §5.4, regula de 640 px din `admin.css`.
 - **Harta schițelor:** 12 idei ale adminului (51–62), cu recomandarea „linia adminului” (o linie a ei, cu ADR-ul și
   feliile ei), încă de hotărât.
+
+## 2026-11-13 — ADR 0260: adminul reproiectat, acceptat (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:40. **Completed:** 13.11, 18:40.
+
+- **ADR 0260 acceptat:** cele 12 idei ale adminului (51–62), împărțite pe feliile A.1–A.7, o linie a ei, pornită la
+  cuvântul owner-ului. Permisiunile (`fileVizibile`), regulile și Firestore Lite rămân, iar `/admin` are ținta de
+  +25 kB peste 106,5 / 200.
+- **Documentele:** indexul ADR-urilor (rândul 0260), traducerea lui în `roadmap.en.json`, CLAUDE.md (decizia), DEVLOG.
+  Harta schițelor le arată acceptate.
