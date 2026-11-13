@@ -8434,3 +8434,30 @@ provizorie); după pauză, „ce se poate uni?”.
 A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **Started:** 13.11, 18:16. **Completed:** —.
 
 - **Ramura** adusă la `origin/main` (`29b69c0`; conflict doar în DEVLOG).
+- **Probele întâi:** generatorul pozelor prototipului în `test/unit/ajutor-poze.ts` (o foaie A4 cu un pătrat de 60 mm, un
+  disc de 50, un dreptunghi de 120 × 25, un inel de 70 / 50, pozată cu o cameră pinhole, pe masă, luminată dintr-o parte);
+  15 probe ale nucleului, 7 ale ușii, 4 e2e (poza desenată în pagină, cu colțurile din generator).
+- **Nucleul** (`src/trasare/foaia.ts`, pur; geometria colțurilor, fără importuri, în `src/trasare/colturi.ts`): găsirea pe
+  imaginea redusă (Otsu, componenta deschisă, învelitoarea, Visvalingam până la 40, patrulaterul de arie maximă),
+  rafinarea pe imaginea întreagă (48 de normale pe latură, două potriviri ale dreptei), proporțiile (Zhang și He, cu
+  intervalul lor), oblicitatea (sugestia), îndreptarea biliniară mersă pe rând (0,17–0,18 s pe 16 Mpx).
+- **Găsite pe drum:** (1) pe poza înclinată doar înainte, focala nu se poate afla: raportul ieșea cu 4 % pe lângă, deci
+  proporțiile au acum un interval (colțurile mișcate cu 1 px, focala între 0,5 și 1,5 diagonale), „nesigure” peste 2 %;
+  (2) o foaie cu un colț ieșit din cadru era „găsită” cu colțul la 106 px: extrapolat din laturile vecine ale învelitorii
+  reduse, cu reperul cel mai depărtat de pe aceeași dreaptă (cu vârful de alături, 47 px), acum la 0,01–0,05 px; (3) o
+  agrafă care intră 6 px pe foaie: a doua potrivire a dreptei o scoate (0,57 → 0,05 px); (4) privită, fereastra tăia lista
+  formatelor (9 rem): opțiunile scurte, mărimea în raport; numele formatului, din foaia trasată; mesajul „nesigure” spunea o
+  cauză greșită pe o poză cu focala găsită; (5) ușa nu poate importa tipul colțurilor din nucleu (io-doar-model-geom): scris
+  structural.
+- **Ușa:** `CerereTrasare.foaie`, îndreptarea înaintea zonei, scara „foaie” din format (lățimea scrisă rămâne mai tare),
+  răspunsul cu foaia și previzualizarea redusă sub 1 Mpx; `cerereTrasare` din alegeri, exportată.
+- **Fereastra:** grupul Foaia (bifa, Formatul, „Alt format”), butonul Colțurile cu mânerele (ciorna doar convexă; micșorarea
+  până la jumătate, pentru un colț în afara pozei) și „Găsește singur”, foaia îndreptată sub vectori, raportul și
+  avertismentele; textele și manualul, în ambele limbi; privită mărită, în temă deschisă și închisă.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile (0 lipsă), suita unitară 9 191 (0 căzute), e2e-urile
+  trasării, importului și tutorialul 48 / 48 (toată suita e2e: 461 + animația, căzută doar sub încărcare, trecută singură),
+  build-ul determinist; totalul 660,2 / 700 kB (+5,8), pornirea 102,2 / 110.
+- **Otrăvurile** (`test/otravuri/25.5.py`, 64 alese de autor): la prima rulare (`906b518`), 42 / 47 unitare. K01 și P05
+  au primit probe (trei puncte coliniare cu zecimale: fără pivotul minim, o „omografie” de 1e18; camerele de 0,5 și 1,5
+  diagonale: cu o singură focală presupusă, intervalul nu mai cuprinde A4); G09, G10 și G13, echivalente, au ieșit din
+  cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).

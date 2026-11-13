@@ -1,6 +1,7 @@
 # ADR 0225 — Foaia pozată oblic: colțurile găsite, îndreptarea, formatul și mărimea adevărată
 
-**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-3a”, la întrebările de la final); propus tot atunci, la
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-3a”, la întrebările de la final), și implementat tot
+atunci (felia 25.5↑, mai jos); propus tot atunci, la
 „continua” (owner-ul, după unirea lui 25.4↑ în `main`). Felia 25.5↑, adusă din etapa 25, fără mașină, în linia trasării
 (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `29b69c0`). Am pus-o înaintea luminii pe culori
 (25.4↑b) și a liniilor mediane pe culori: strâmbă orice poză de telefon, nu doar pe cele colorate.
@@ -76,6 +77,50 @@ din 96 px pe țol sau din „Lățimea” scrisă de mână.
    îndreptată; colțul rotunjit (cazul Visvalingam); o imagine fără foaie; poza aproape din față (focala nedeterminată); ușa
    (mărimea din format, zona pe foaia îndreptată); e2e (bifa, formatul, colțurile mutate cu mausul, Importă cu mărimea A4);
    fișierul real întâi (lecția D7), dacă îl trimiți; otrăvurile la capăt.
+
+## Implementarea (13.11)
+
+**Ce s-a schimbat față de propunere** (fiecare, găsit de probe sau de privirea ferestrei):
+
+1. **Proporțiile au un interval.** Pe poza cea mai obișnuită, cu telefonul înclinat doar înainte, laturile de sus și de jos
+   rămân paralele în poză: focala nu se poate afla (Zhang și He o spun), iar raportul, luat cu o focală obișnuită de telefon
+   (0,85 din diagonală), iese cu 4 % pe lângă. Acum `proportiiDinPoza` dă și intervalul: colțurile mișcate cu câte 1 px (pe
+   pozele mari, o două-miime din diagonală) și, cu focala nedeterminată, focala între 0,5 și 1,5 diagonale. Mai lat de 2 %:
+   „nesigure”, iar cu „Din poză” raportul spune să alegi formatul; „nu se potrivesc cu A4” vine doar când formatul iese din
+   interval (cu 3 % de o parte și de alta). O focală în afara oricărui telefon (sub 0,3 sau peste 3 diagonale) e
+   nedeterminată.
+2. **Un colț ieșit din cadru se extrapolează.** O foaie tăiată puțin de cadru (sub 10 % din perimetrul învelitorii pe
+   marginea pozei) era „găsită” cu colțul din afară la 106 px: latura învelitorii de pe margine se înlocuiește acum cu
+   intersecția laturilor vecine (după reducerea Visvalingam, cu reperul cel mai depărtat de pe aceeași dreaptă: vârful de
+   alături, la 1 px, dădea direcția din zgomot și colțul la 47 px). O normală a rafinării tăiată de cadru citește marginea
+   pozei: n-are contrast și se sare, iar trecerea găsită lângă ieșire pleacă la a doua potrivire (încercat întâi: dreptele
+   fără pixelii de pe marginea pozei și normalele tăiate sărite; otrăvurile lor au scăpat, deci au ieșit din cod). Cu
+   mânerele, un colț se trage și în afara pozei (vederea se micșorează până la jumătate, doar cu Colțurile).
+3. **A doua potrivire a dreptei** (fără punctele la peste 1 px de prima): o agrafă care intră 6 px pe foaie muta colțurile
+   la 0,57 px; acum, 0,05.
+4. **Geometria colțurilor stă singură** (`src/trasare/colturi.ts`, fără importuri): fereastra verifică un patrulater
+   convex la tragerea mânerelor fără să aducă nucleul trasării în bucata ei; ușa (`src/io`) își scrie tipul colțurilor
+   structural (regula io-doar-model-geom).
+5. **Fereastra:** formatele scurte în listă (A4, A5, A3, Letter; lista dialogului are 9 rem), cu mărimea în raport; numele
+   formatului din raport vine din foaia trasată (după mărimea ei), nu din alegerea de acum, care poate aștepta o trasare.
+
+**Măsurat** [13.11, Node 26 și Edge fără fereastră]:
+- pe cele patru poze ale probelor (1600 × 1200, focala 1400): colțurile la 0,02–0,19 px; proporțiile la 0,10 % cel mult
+  (focala 1400–1407), intervalul lor 0,4–3,3 % lat, cuprinzând mereu A4; pe poza înclinată doar înainte, focala
+  nedeterminată, raportul 0,6788 (−4 %), intervalul 0,55–0,74 („nesigure”); formele pe foaia îndreptată cu A4, la
+  0,12–0,27 mm cel mult (media 0,04–0,09; pixelul foii, 0,27–0,31 mm), cu proporțiile din poză 0,12–0,35 mm; desenul din
+  e2e (1200 × 900 px), importat: 144,97 × 225,04 mm (adevărat: 145 × 225);
+- colțul ieșit din cadru cu 94 și cu 135 px: 0,01–0,05 px; agrafa: 0,05 px;
+- timpul (Node): găsirea 24–43 ms pe 1,9 Mpx și 79–110 ms pe 16 Mpx; îndreptarea 0,17–0,18 s pe 16 Mpx (ieșirea 7,2 Mpx),
+  0,33 s pe 12 Mpx (ieșirea ~10 Mpx);
+- probele: 15 ale nucleului (cu agrafa, colțul ieșit din cadru, poza înclinată doar înainte), 7 ale ușii, 4 e2e (sugestia,
+  A4 cu mărimea adevărată și Importă; Colțurile, cu mânerele, ciorna convexă și colțul tras în afara pozei; formatele;
+  scanul și transparența); suita unitară întreagă 9 191 (0 căzute); e2e-urile trasării, importului și tutorialul 48 / 48;
+- otrăvurile (`test/otravuri/25.5.py`, alese de autor): 61 / 61 pe codul final (44 unitare, 17 prin e2e). La prima
+  rulare, 42 / 47 unitare: K01 (pivotul minim al omografiei) și P05 (focalele de telefon la focala nedeterminată) au primit
+  probe (trei puncte coliniare cu zecimale; camerele de 0,5 și 1,5 diagonale); G09, G10 și G13, echivalente, au ieșit din
+  cod (punctul 2, mai sus);
+- mărimea: totalul 660,2 / 700 kB (+5,8 față de `main`), pornirea 102,2 / 110 (105,9 cu ușa).
 
 ## Ce am respins
 
