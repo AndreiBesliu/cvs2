@@ -1117,6 +1117,29 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **ideile 28–38 din tura a noua a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 28–38?”, după tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În
+  engleză): toate intră în feliile 28.x (ADR 0250, „Ideile turei a noua”). Între ele, o zonă „mesaj” în tipul `Aranjament`,
+  în care scriu toate uneltele, cu „Anulează” lângă mesaj, și proba fiecărei bare în ambele limbi, cu fontul lat.
+- 13.11.2026: **ideile 17–27 din tura a opta a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 17–27?”, după tablele Conectarea mașinii, Proiectul gol, Textul și Tastatura): 10 intră în
+  feliile 28.x (ADR 0250, „Ideile turei a opta”), între ele F6 prin zonele aranjamentului, cu ordinea în tipul
+  `Aranjament`; editarea textului pe loc, cu dublu clic, devine linie separată.
+- 13.11.2026: **cele 16 idei din schițele aranjamentelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la cele 16 idei de pe Harta schițelor?”, după tura care a acoperit toate ecranele în cele patru aranjamente):
+  - 13 intră în feliile 28.x. Lista și felia fiecăreia stau în ADR 0250, „Completarea din 13.11: ideile din schițe”.
+  - Trei devin linii ale lor, fiecare cu ADR-ul ei: simularea ca vedere unică, proiectele multiple cu fișierul `.cvs2`,
+    clipboardul.
+  - Două butoane din stări au nevoie de altceva întâi: „Salvează ca fișier…” vine cu fișierul `.cvs2`, iar „Scrie aici”
+    cere o felie a depozitului cu un singur scriitor.
+- 13.11.2026: **fereastra Imprimanta urmează aranjamentul, ca Mașina** („Da, ca Mașina”, la „Fereastra Imprimanta urmează și
+  ea aranjamentul, ca Mașina?”, după schița ei în Insule): se schimbă doar așezarea, cu aceleași module
+  (`src/machine/imprimanta/`). ADR 0250 §6 completat; felia 28.6↑ cuprinde ambele ferestre.
+- 11.11.2026: **codul aranjamentelor într-un worktree, după planșe** („Worktree după planșe”, la „Unde scriem codul
+  aranjamentelor?”, după recomandarea sesiunii principale: în checkout-ul comun, două sesiuni care scriu se pot ciocni).
+  Înlocuiește 2b din ADR 0250 („pe `main`”). Worktree-ul `aranjamente` (`wip/28.1-aranjamente`,
+  `C:\Users\besli\cncvs2-lucru\aranjamente`, e2e pe 4182 și `127.0.9`, ADR-urile 0250–0259, canalul `aranjamente`) se face
+  din `main` după unirea planșelor; până atunci, schițele continuă pe canvas.
 - 11.11.2026: **designul sesiunii „Variante design CVS2” e direcția** („o sa mergem pe design-ul creat acolo”, la întrebarea
   despre suprapunerea aranjamentelor, ADR 0250–0251, cu mutarea fișierelor din linia tăierii): mutarea lui Importă, Exportă
   vectorii și Exportă G-code lângă fila Imprimanta (decizia din 09.11, „Ok la toate”) nu se mai unește; rămâne pe ramura
