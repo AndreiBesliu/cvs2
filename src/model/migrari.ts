@@ -577,6 +577,26 @@ function v22v23(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v23 → v24 (ADR 0174): punțile dopului drept decupat schimbă doar numărul. Un v23 poate avea, ca necunoscut, câmpul `punti` în
+ * `incrustatie`, pe care v24 îl folosește: un astfel de document nu e un v23 valid.
+ */
+function v23v24(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const inc = (o as Brut)['incrustatie'];
+      if (typeof inc === 'object' && inc !== null && Object.hasOwn(inc, 'punti')) {
+        return { ok: false, motiv: `operația v23 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are în incrustație câmpul „punti”, pe care v24 îl folosește: nu e un document v23 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 24 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -615,5 +635,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   20: v20v21,
   21: v21v22,
   22: v22v23,
+  23: v23v24,
 };
 

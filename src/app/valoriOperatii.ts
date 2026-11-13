@@ -1,4 +1,5 @@
-import type { BandaDop, FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, IncrustatieV, Operatie } from '../model/document.ts';
+import type { BandaDop, FrezaRest, FundPlat, Incrustatie, IncrustatieDreapta, IncrustatieV, Operatie, Urechi } from '../model/document.ts';
+import { PUNTI_DOP_DREPT } from '../model/incrustatie.ts';
 import type {
   BandaOperatie, FrezaRestOperatie, FundPlatOperatie, IncrustatieDreaptaOperatie, IncrustatieOperatie, SculaOperatie, ValoriOperatie,
 } from '../ui/DialogExport.tsx';
@@ -52,15 +53,18 @@ function restScris(vechi: readonly FrezaRest[] | undefined, noi: readonly FrezaR
 /**
  * Incrustația cu pereți drepți scrisă de Exportă (ADR 0171): valorile rândului peste cea din document, dacă și ea are pereți
  * drepți (ÎMBINATĂ: un câmp necunoscut rămâne); frezele dopului peste ale ei, pe poziție, ca frezele de rest (fără ele, câmpul
- * pleacă: dopul se taie cu frezele locașului).
+ * pleacă: dopul se taie cu frezele locașului). Punțile dopului decupat (ADR 0174) se îmbină ca urechile, dar cele implicite nu
+ * se scriu peste un dop care nu le are (un Exportă fără schimbare nu scrie o comandă); pe dopul ridicat, câmpul pleacă.
  */
 function incrustatieDreaptaScrisa(o: Incrustatie | undefined, i: IncrustatieDreaptaOperatie): IncrustatieDreapta {
   const vechi = o?.fel === 'drept' ? o : undefined;
-  const { frezeDop: _vechi, ...fara } = vechi ?? {};
+  const { frezeDop: _vechi, punti: puntiVechi, ...fara } = vechi ?? {};
   void _vechi;
-  const { frezeDop: noi, ...valori } = i;
+  const { frezeDop: noi, punti: puntiNoi, ...valori } = i;
   const frezeDop = restScris(vechi?.frezeDop, noi ?? [], 'freza plata');
-  return { ...fara, ...valori, fel: 'drept', ...(frezeDop.length > 0 ? { frezeDop } : {}) };
+  const implicite = (p: Urechi): boolean => p.numar === PUNTI_DOP_DREPT.numar && p.latime === PUNTI_DOP_DREPT.latime && p.grosime === PUNTI_DOP_DREPT.grosime;
+  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...(puntiVechi ?? {}), ...puntiNoi } : undefined;
+  return { ...fara, ...valori, fel: 'drept', ...(frezeDop.length > 0 ? { frezeDop } : {}), ...(punti ? { punti } : {}) };
 }
 
 /**

@@ -76,3 +76,57 @@ test('o incrustație în V rămasă pe un buzunar nu-și lasă câmpurile în ce
   const o = operatieDinDocument({ fel: 'v', joc: 0.5, fierastrau: 2, margine: 5, jurDop: 'fata' });
   assert.deepEqual(operatieDinDialog(o, randul({ ...BAZA }), scula).incrustatie, { fel: 'drept', ...BAZA });
 });
+
+// ── Punțile dopului decupat (ADR 0174, felia 12.1↑b-2) ──────────────────────────────────────────────────────────────
+
+const DECUPAT = { ...BAZA, dop: 'decupat' } as const;
+const PUNTI_IMPLICITE = { numar: 4, latime: 4, grosime: 1 } as const;
+/** Buzunarul unui document v24, cu dopul decupat și punțile date (ori fără ele). */
+const decupatV24 = (punti?: unknown): Operatie => {
+  const r = incarca({
+    schema: 24, rev: 0,
+    piese: [{
+      id: 'p', radacina: { tip: 'element', id: 'a', matrice: I, forma: { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 } },
+      operatii: [{
+        id: 'o', tip: 'buzunar', noduri: ['a'], latura: 'interior', sens: 'urcare', adancime: 6, pas: 3, pasLateral: 1.2,
+        scula: { numar: 1, nume: 'freza plata', diametru: 3 }, urechi: null, rampa: null, intrari: null, colturi: null,
+        incrustatie: { fel: 'drept', ...DECUPAT, ...(punti === undefined ? {} : { punti }) },
+      }],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 100, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
+  });
+  if (!r.ok) assert.fail(r.motiv);
+  return r.doc.piese[0]!.operatii[0]!;
+};
+const puntiScrise = (o: Operatie): unknown => (o.incrustatie?.fel === 'drept' ? o.incrustatie.punti : null);
+
+test('punțile alese se scriu pe dopul decupat; cele implicite, peste un dop fără ele, nu (Exportă fără schimbare = aceeași operație)', () => {
+  const fara = decupatV24();
+  assert.deepEqual(puntiScrise(operatieDinDialog(fara, randul({ ...DECUPAT, punti: { numar: 2, latime: 6, grosime: 1.5 } }), scula)), { numar: 2, latime: 6, grosime: 1.5 });
+  // Un singur câmp schimbat (oricare): tot se scriu, toate trei.
+  for (const schimbat of [{ numar: 3 }, { latime: 5 }, { grosime: 2 }]) {
+    const p = { ...PUNTI_IMPLICITE, ...schimbat };
+    assert.deepEqual(puntiScrise(operatieDinDialog(fara, randul({ ...DECUPAT, punti: p }), scula)), p, JSON.stringify(schimbat));
+  }
+  const neschimbat = operatieDinDialog(fara, randul({ ...DECUPAT, punti: { ...PUNTI_IMPLICITE } }), scula);
+  assert.deepEqual(neschimbat, fara);
+  assert.ok(neschimbat.incrustatie?.fel === 'drept' && !Object.hasOwn(neschimbat.incrustatie, 'punti'));
+});
+
+test('punțile din document se îmbină (un câmp necunoscut rămâne) și rămân scrise când revin la cele implicite', () => {
+  const cu = decupatV24({ numar: 2, latime: 6, grosime: 1.5, nota: 'x' });
+  assert.deepEqual(puntiScrise(operatieDinDialog(cu, randul({ ...DECUPAT, punti: { numar: 3, latime: 6, grosime: 1.5 } }), scula)), { numar: 3, latime: 6, grosime: 1.5, nota: 'x' });
+  assert.deepEqual(puntiScrise(operatieDinDialog(cu, randul({ ...DECUPAT, punti: { ...PUNTI_IMPLICITE } }), scula)), { ...PUNTI_IMPLICITE, nota: 'x' });
+  // Aceleași valori: aceeași operație.
+  assert.deepEqual(operatieDinDialog(cu, randul({ ...DECUPAT, punti: { numar: 2, latime: 6, grosime: 1.5 } }), scula), cu);
+});
+
+test('pe dopul ridicat (fără punți din fereastră), câmpul pleacă; fără valori din dialog, rămâne', () => {
+  const cu = decupatV24({ numar: 2, latime: 6, grosime: 1.5 });
+  const ridicat = operatieDinDialog(cu, randul({ ...BAZA }), scula);
+  assert.ok(ridicat.incrustatie?.fel === 'drept' && ridicat.incrustatie.dop === 'ridicat' && !Object.hasOwn(ridicat.incrustatie, 'punti'));
+  // Decupat, dar fără punți în valorile rândului (un apelant vechi): câmpul pleacă la fel, dopul ia cele implicite.
+  const faraValori = operatieDinDialog(cu, randul({ ...DECUPAT }), scula);
+  assert.ok(faraValori.incrustatie?.fel === 'drept' && !Object.hasOwn(faraValori.incrustatie, 'punti'));
+  assert.deepEqual(operatieDinDialog(cu, undefined, scula).incrustatie, cu.incrustatie);
+});

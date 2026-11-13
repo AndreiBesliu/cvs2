@@ -12,14 +12,16 @@
  * - „(c) …”: ușa aplicației față de oracol pe corpusul existent și pe documentele generate cu plăcuțe;
  * - „(u) …”: ușa documentului curent (ADR 0070 §2, `incarcaCurent`): `null` pe o versiune întreagă 1 … 22, altfel exact ușa
  *   întreagă.
- * Cât timp aplicația e pe v22, probele (a), (c) și (u) cad (ușa ei refuză un document v23): e așteptat. Modulele aplicației
+ * Cât timp aplicația e pe v22, probele (a), (c) și (u) cad (ușa ei refuză un document v23): e așteptat. De la 12.1↑b-2
+ * (ADR 0174), aplicația e pe v24, care urcă un v23 doar cu numărul: (a), (c) și (u) compară cu oracolul ridicat până la
+ * versiunea aplicației (`laApp`), nu cu v23-ul neschimbat. Modulele aplicației
  * se aduc la cerere, doar în probele care le folosesc, ca (o) să ruleze și cu aplicația în lucru.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   amprentaContururiO, amprentaSirO, CAMPURI_NOI_O, campurileO, categoriiO, ciocniriO, diferenta, jsonCanonicO, PE_INSTANTA_O,
-  ridicaPanaLaO, ridicaV23O, SCHEMA_V23_O, textCuValorileO, usaCurentaV23O, verificaPanaLaO, verificaPanaLaV23O, verificaVnO, type Liber,
+  ridicaPanaLaO, ridicaV23O, SCHEMA_V23_O, textCuValorileO, usaCurentaPanaLaO, usaCurentaV23O, verificaPanaLaO, verificaPanaLaV23O, verificaVnO, type Liber,
 } from '../oracles/document.ts';
 import * as cazuri from '../oracles/document.cazuri.ts';
 import {
@@ -265,6 +267,8 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
     16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'], 19: ['rang'],
     20: ['incrustatie'], 21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
     22: ['incrustatie.banda'], 23: ['instanta:texte'],
+    // ADR 0174 (v24): punțile dopului drept, pe operație; ciocnirea lor o judecă proba v24.
+    24: ['incrustatie.punti'],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).
@@ -395,11 +399,17 @@ test('(f) amprenta contururilor: oracolul dă exact ce dă aplicația, pe litere
 
 // ── Ușa aplicației, pe cazurile de pe hârtie (cad cât aplicația e pe v22) ────────────────────────────────────────────
 
-test('(a) ușa aplicației e pe v23', async () => {
-  assert.equal((await app()).versiune, SCHEMA_V23_O);
+test('(a) ușa aplicației e pe v23 sau mai nouă (de la 12.1↑b-2, v24)', async () => {
+  assert.ok((await app()).versiune >= SCHEMA_V23_O, `aplicația e pe v${(await app()).versiune}`);
 });
 
-test('(a) ușa aplicației primește documentele v23 valide neschimbate, ca o copie', async () => {
+/** Ce dă ușa aplicației pentru un document primit, pe hârtie: oracolul îl ridică până la versiunea ei (v23 → v24: doar numărul). */
+const laApp = async (d: unknown): Promise<unknown> => ridicaPanaLaO(d, (await app()).versiune);
+
+/** Un refuz „scris de o versiune mai nouă” al ușii v23 (R01, un v24) pe care aplicația, pe v24, îl primește. */
+const primitDeApp = async (s: unknown): Promise<boolean> => typeof s === 'number' && Number.isInteger(s) && s > SCHEMA_V23_O && s <= (await app()).versiune;
+
+test('(a) ușa aplicației primește documentele v23 valide (la v24, urcate doar cu numărul), ca o copie', async () => {
   const { incarca } = await app();
   const rele: string[] = [];
   for (const { nume, doc } of VALIDE_V23) {
@@ -409,7 +419,7 @@ test('(a) ușa aplicației primește documentele v23 valide neschimbate, ca o co
       rele.push(`${nume}: refuzat (${String(r.motiv)})`);
       continue;
     }
-    const d = diferenta(r.doc, doc);
+    const d = diferenta(r.doc, await laApp(doc));
     if (d !== undefined) rele.push(`${nume}: ${d}`);
     if ((r.doc as unknown) === brut) rele.push(`${nume}: ușa a întors chiar intrarea, nu o copie`);
   }
@@ -424,7 +434,7 @@ test('(a) ușa aplicației urcă documentele vechi exact ca pe hârtie și păst
       rele.push(`${nume}: refuzat (${r.motiv})`);
       continue;
     }
-    const d = diferenta(r.doc, v23);
+    const d = diferenta(r.doc, await laApp(v23));
     if (d !== undefined) rele.push(`${nume}: ${d}`);
   }
   assert.deepEqual(rele, []);
@@ -442,7 +452,7 @@ test('(a) ușa aplicației pe frontierele v23: fiecare valoare are verdictul de 
         continue;
       }
       if (r.ok) {
-        const d = diferenta(r.doc, doc);
+        const d = diferenta(r.doc, await laApp(doc));
         if (d !== undefined) rele.push(`${e}: primit, dar schimbat (${d})`);
       } else if (r.motiv.trim() === '') {
         rele.push(`${e}: refuzat fără motiv`);
@@ -463,6 +473,7 @@ test('(a) ușa aplicației pe frontierele v23: fiecare valoare are verdictul de 
 test('(a) ușa aplicației refuză fiecare document stricat, cu motiv (textul citat de ADR, câmpul operației, la ciocnire `texte`)', async (t) => {
   const rele: string[] = [];
   for (const c of REFUZATE_V23) {
+    if (c.categorie === 'schema' && await primitDeApp((c.doc as Liber | null)?.['schema'])) continue;
     const r = await usa(c.doc);
     if (r.ok) {
       rele.push(`${c.nume}: primit (${c.motiv})`);
@@ -490,7 +501,7 @@ test('(a) ușa aplicației pe plafoanele cu literele plăcuțelor (documente mar
   for (const { nume, doc } of valide) {
     const r = await usa(doc);
     if (!r.ok) rele.push(`${nume}: refuzat („${r.motiv.slice(0, 200)}”)`);
-    else if (diferenta(r.doc, doc) !== undefined) rele.push(`${nume}: primit, dar schimbat`);
+    else if (diferenta(r.doc, await laApp(doc)) !== undefined) rele.push(`${nume}: primit, dar schimbat`);
   }
   for (const { nume, doc } of refuzate) {
     const r = await usa(doc);
@@ -528,13 +539,14 @@ async function corpus(): Promise<{ readonly tot: number; readonly mici: unknown[
   return { tot: tot.length, mici: tot.filter((d) => marime(d) <= 20_000) };
 }
 
-test('(c) pe corpusul oracolului documentului și pe plăcuțele generate, ușa aplicației dă verdictul oracolului v23', async (t) => {
+test('(c) pe corpusul oracolului documentului și pe plăcuțele generate, ușa aplicației dă verdictul oracolului la versiunea ei (v23 sau mai nouă)', async (t) => {
+  const versiune = (await app()).versiune;
   const { tot, mici: CORPUS } = await corpus();
   const rele: string[] = [];
   let primite = 0;
   let refuzate = 0;
   for (const [k, doc] of CORPUS.entries()) {
-    const p = verificaPanaLaV23O(doc);
+    const p = verificaPanaLaO(doc, versiune);
     const r = await usa(doc);
     const e = `documentul ${k} (schema ${String((doc as Liber | null)?.['schema'])}, ${marime(doc)} obiecte)`;
     if (r.ok !== (p.length === 0)) {
@@ -543,7 +555,7 @@ test('(c) pe corpusul oracolului documentului și pe plăcuțele generate, ușa 
     }
     if (r.ok) {
       primite++;
-      const d = diferenta(r.doc, ridicaV23O(doc));
+      const d = diferenta(r.doc, ridicaPanaLaO(doc, versiune));
       if (d !== undefined) rele.push(`${e}: primit, dar altfel decât oracolul (${d.slice(0, 300)})`);
     } else {
       refuzate++;
@@ -558,17 +570,17 @@ test('(c) pe corpusul oracolului documentului și pe plăcuțele generate, ușa 
 
 // ── Ușa documentului curent (ADR 0070 §2) ────────────────────────────────────────────────────────────────────────────
 
-test('(u) ușa documentului curent: null pe o versiune întreagă 1 … 22 (migrările), altfel exact ce dă ușa întreagă', async () => {
-  const { incarca, incarcaCurent } = await app();
+test('(u) ușa documentului curent: null pe o versiune întreagă de la 1 până sub a ei (migrările), altfel exact ce dă ușa întreagă', async () => {
+  const { incarca, incarcaCurent, versiune } = await app();
   const rele: string[] = [];
   const toate: unknown[] = [
-    ...(await corpus()).mici, null, [], 'text', 7, { schema: 21, rev: 0 }, { schema: 22, rev: 0 }, { schema: 23, rev: 0 }, { schema: 24, rev: 0 },
+    ...(await corpus()).mici, null, [], 'text', 7, { schema: 21, rev: 0 }, { schema: 22, rev: 0 }, { schema: 23, rev: 0 }, { schema: 24, rev: 0 }, { schema: 25, rev: 0 },
     { schema: 0.5 }, { schema: 22.5 }, { schema: '22' }, { schema: -1 }, { rev: 0 },
   ];
   for (const [k, doc] of toate.entries()) {
     const curent = incarcaCurent(copie(doc));
     const e = `documentul ${k} (schema ${typeof doc === 'object' && doc !== null ? String((doc as Liber)['schema']) : JSON.stringify(doc)})`;
-    if (usaCurentaV23O(doc) === 'migrari') {
+    if (usaCurentaPanaLaO(doc, versiune) === 'migrari') {
       if (curent !== null) rele.push(`${e}: ușa curentă a răspuns (${curent.ok ? 'primit' : String(curent.motiv)}), nu null`);
     } else if (curent === null) {
       rele.push(`${e}: ușa curentă cere migrările`);

@@ -5,7 +5,7 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, laturiOferite, latimeMinimaBanda, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, PUNTI_BANDA,
+  INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, laturiOferite, latimeMinimaBanda, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, PUNTI_BANDA, PUNTI_DOP_DREPT,
   SUB_FATA_DOPULUI, susLaMicron, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
   type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatFoi, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
   type Unitati,
@@ -90,11 +90,12 @@ export type BandaOperatie = {
 /**
  * Incrustația cu pereți drepți (ADR 0171 §1, răspunsurile 1, 2 și 4): jocul lateral, dopul ridicat sau decupat, sprijinul
  * celui ridicat, jocul de sub dop (g) și spațiul de deasupra (H), marginea semifabricatului, în mm; frezele dopului, prima și
- * cele de rest (lipsă = ale locașului).
+ * cele de rest (lipsă = ale locașului); punțile dopului decupat (ADR 0174; lipsă pe dopul ridicat).
  */
 export type IncrustatieDreaptaOperatie = {
   readonly jocLateral: number; readonly dop: 'ridicat' | 'decupat'; readonly sprijin: 'fund' | 'fata';
   readonly joc: number; readonly fierastrau: number; readonly margine: number; readonly frezeDop?: readonly FrezaRestOperatie[];
+  readonly punti?: { readonly numar: number; readonly latime: number; readonly grosime: number };
 };
 /** O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm). */
 export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
@@ -278,6 +279,7 @@ type Rand = {
   readonly jurDop: 'fata' | 'banda';
   readonly latimeBanda: string; readonly decupareBanda: boolean; readonly placaBanda: string;
   readonly frezaBanda: boolean; readonly numarSculaBanda: string; readonly diametruSculaBanda: string;
+  /** Punțile, ca text: ale benzii (V) ori, pe pereții drepți, ale dopului decupat (ADR 0174); rămân scrise și pe dopul ridicat. */
   readonly numarPunti: string; readonly latimePunti: string; readonly grosimePunti: string;
   /**
    * Incrustația cu pereți drepți (ADR 0171): un buzunar care își declară dopul, cu jocul lateral, felul dopului și sprijinul
@@ -315,6 +317,10 @@ function bandaRand(p: Rand): { readonly placaImplicita: number; readonly placaMi
  * cu bifa ei, freza decupării ca a fundului plat; fără freză dreaptă (ADR 0173), decuparea cere bifa ei. Ce nu se știe încă
  * (un câmp gol) îl spune lucrarea, cu motiv.
  */
+/** Punțile rândului (ale benzii, ADR 0172, ori ale dopului drept decupat, ADR 0174), ca urechile: câte, lățimea, grosimea. */
+const puntiBune = (p: Rand): boolean => intregInMargini(p.numarPunti, MARGINI_OPERATIE.urechi) && inMargini(p.latimePunti, MARGINI_OPERATIE.latimeUreche)
+  && inMargini(p.grosimePunti, MARGINI_OPERATIE.grosimeUreche);
+
 function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean; readonly punti: boolean; readonly freza: boolean } {
   const v = bandaRand(p);
   const latime = p.latimeBanda.trim() === '' || (inMargini(p.latimeBanda, MARGINI_OPERATIE.latimeBanda)
@@ -322,8 +328,7 @@ function bandaBuna(p: Rand): { readonly latime: boolean; readonly placa: boolean
   const placaScrisa = p.placaBanda.trim() === '' ? v?.placaImplicita ?? null : citesteNumar(p.placaBanda);
   const placa = !p.decupareBanda || ((p.placaBanda.trim() === '' || inMargini(p.placaBanda, MARGINI_OPERATIE.placaBanda))
     && (placaScrisa === null || v?.placaMinima == null || placaScrisa >= v.placaMinima - 1e-9));
-  const punti = !p.decupareBanda || (intregInMargini(p.numarPunti, MARGINI_OPERATIE.urechi) && inMargini(p.latimePunti, MARGINI_OPERATIE.latimeUreche)
-    && inMargini(p.grosimePunti, MARGINI_OPERATIE.grosimeUreche));
+  const punti = !p.decupareBanda || puntiBune(p);
   const freza = !p.decupareBanda || (p.frezaBanda ? intregInMargini(p.numarSculaBanda, MARGINI_OPERATIE.numarScula)
     && inMargini(p.diametruSculaBanda, MARGINI_OPERATIE.diametru) : p.fundPlat);
   return { latime, placa, punti, freza };
@@ -538,6 +543,8 @@ export function DialogExport(
     const fund = o.valori.fundPlat ?? null;
     const diametruFund = fund?.diametru ?? DIAMETRU_FUND_IMPLICIT;
     const dr = o.valori.incrustatieDreapta, inc = o.valori.incrustatie ?? dr, dop0 = dr?.frezeDop?.[0], banda = o.valori.incrustatie?.banda;
+    // Punțile rândului: ale benzii ori ale dopului drept; altfel cele implicite (ale benzii sunt aceleași, ADR 0172 răspunsul 5).
+    const puntiRand = banda?.punti ?? dr?.punti ?? PUNTI_DOP_DREPT;
     const diametruDop = dop0?.diametru ?? Math.round((o.valori.scula?.diametru ?? 6) * 500) / 1000;
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
@@ -578,8 +585,8 @@ export function DialogExport(
       placaBanda: banda ? text(banda.grosimePlaca) : '', frezaBanda: banda?.freza !== undefined,
       numarSculaBanda: text(banda?.freza?.numar ?? Math.min(MARGINI_OPERATIE.numarScula, tMaxim + 1)),
       diametruSculaBanda: text(banda?.freza?.diametru ?? diametruFund),
-      numarPunti: text(banda?.punti.numar ?? PUNTI_BANDA.numar), latimePunti: text(banda?.punti.latime ?? PUNTI_BANDA.latime),
-      grosimePunti: text(banda?.punti.grosime ?? PUNTI_BANDA.grosime),
+      // Punțile dopului drept decupat (ADR 0174), în aceleași câmpuri: ale incrustației, altfel 4 × 4 × 1 mm.
+      numarPunti: text(puntiRand.numar), latimePunti: text(puntiRand.latime), grosimePunti: text(puntiRand.grosime),
       // Pereții drepți (ADR 0171): implicit jocul lateral 0,1, dopul ridicat, pe fund; frezele dopului, ale locașului (bifa
       // scoasă), iar cu bifa pornesc de la primul T de după toate frezele operațiilor (ca freza decupării benzii; T-ul locașului
       // + 1 putea fi al altei freze) și de la jumătate din diametrul locașului.
@@ -643,7 +650,7 @@ export function DialogExport(
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
     pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean; rest: boolean;
-    strategie: boolean; incrustatie: boolean; dreapta: boolean; frezaDop: boolean; banda: boolean;
+    strategie: boolean; incrustatie: boolean; dreapta: boolean; frezaDop: boolean; banda: boolean; puntiDop: boolean;
   } => ({
     // Incrustația (ADR 0170 §1): jocul și fierăstrăul în (0, 1 000], marginea în [0, 10 000]; restul (jocul față de adâncime,
     // conul) îl judecă lucrarea, cu motiv.
@@ -658,6 +665,8 @@ export function DialogExport(
     frezaDop: p !== undefined && (p.tip !== 'buzunar' || !p.incrustatieDreapta || !p.frezaDop || (intregInMargini(p.numarSculaDop, MARGINI_OPERATIE.numarScula)
       && inMargini(p.diametruSculaDop, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralDop, d / 2))(citesteNumar(p.diametruSculaDop))
       && restBun(p.restDop, p.diametruSculaDop).every(Boolean))),
+    // Punțile dopului drept (ADR 0174): doar pe dopul decupat, ca urechile.
+    puntiDop: p !== undefined && (p.tip !== 'buzunar' || !p.incrustatieDreapta || p.dopInc !== 'decupat' || puntiBune(p)),
     // Banda dopului în V (ADR 0172): doar pe o incrustație în V cu banda (`bandaBuna`).
     banda: p !== undefined && (p.tip !== 'vcarve' || !p.incrustatie || p.jurDop !== 'banda' || Object.values(bandaBuna(p)).every(Boolean)),
     // Strategia paralelă (ADR 0094): unghiul liniilor în [0, 180).
@@ -751,8 +760,9 @@ export function DialogExport(
   const drepteBune = randuri.every((b) => b.dreapta);
   const frezeDopBune = randuri.every((b) => b.frezaDop);
   const benziBune = randuri.every((b) => b.banda);
+  const puntiDopBune = randuri.every((b) => b.puntiDop);
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune;
+    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -933,7 +943,14 @@ export function DialogExport(
           if (numar === null || diametru === null || pasLateralDop === null || restDop === null) return [];
           frezeDop = [{ numar, diametru, pasLateral: pasLateralDop }, ...restDop];
         }
-        incrustatieDreapta = { jocLateral, dop: p.dopInc, sprijin: p.sprijinInc, joc, fierastrau, margine, ...(frezeDop ? { frezeDop } : {}) };
+        // Punțile dopului decupat (ADR 0174): ale rândului; pe dopul ridicat nu se scriu (câmpul pleacă).
+        let punti: IncrustatieDreaptaOperatie['punti'];
+        if (p.dopInc === 'decupat') {
+          const numar = citesteNumar(p.numarPunti), latime = citesteNumar(p.latimePunti), grosime = citesteNumar(p.grosimePunti);
+          if (numar === null || latime === null || grosime === null) return [];
+          punti = { numar, latime, grosime };
+        }
+        incrustatieDreapta = { jocLateral, dop: p.dopInc, sprijin: p.sprijinInc, joc, fierastrau, margine, ...(frezeDop ? { frezeDop } : {}), ...(punti ? { punti } : {}) };
       }
       return [[o.cheie, {
         scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
@@ -988,6 +1005,7 @@ export function DialogExport(
     ...(drepteBune ? [] : [t('motiv.incrustatie-dreapta-invalida', { max: fmtFreza.format(MARGINI_OPERATIE.margineDop) })]),
     ...(frezeDopBune ? [] : [t('motiv.freza-dop-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(benziBune ? [] : [t('motiv.banda-invalida', { n: MARGINI_OPERATIE.numarScula })]),
+    ...(puntiDopBune ? [] : [t('motiv.punti-dop-invalide', { n: MARGINI_OPERATIE.urechi })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -1481,6 +1499,24 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.margineInc} data-camp="inc-margine" disabled={doarCitire}
                           aria-invalid={!margineBuna(p.margineInc)} onChange={(ev) => { schimba(o.cheie, { margineInc: ev.target.value }); }} />
                       </label>
+                      {/* Punțile dopului decupat (ADR 0174), ca ale benzii; pe dopul ridicat, ascunse (valorile rămân în rând). */}
+                      {p.dopInc === 'decupat' && (<>
+                      <label title={t('export.banda.punti.numar.titlu')}>
+                        {t('export.banda.punti.numar')}
+                        <input type="text" inputMode="numeric" value={p.numarPunti} data-camp="dop-punti-numar" disabled={doarCitire}
+                          aria-invalid={!b.puntiDop} onChange={(ev) => { schimba(o.cheie, { numarPunti: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.banda.punti.latime.titlu')}>
+                        {t('export.banda.punti.latime')}
+                        <input type="text" inputMode="decimal" value={p.latimePunti} data-camp="dop-punti-latime" disabled={doarCitire}
+                          aria-invalid={!b.puntiDop} onChange={(ev) => { schimba(o.cheie, { latimePunti: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.incrustatie-drept.punti.grosime.titlu')}>
+                        {t('export.banda.punti.grosime')}
+                        <input type="text" inputMode="decimal" value={p.grosimePunti} data-camp="dop-punti-grosime" disabled={doarCitire}
+                          aria-invalid={!b.puntiDop} onChange={(ev) => { schimba(o.cheie, { grosimePunti: ev.target.value }); }} />
+                      </label>
+                      </>)}
                       <label title={t('export.incrustatie-drept.freza-dop.titlu')}>
                         <input type="checkbox" checked={p.frezaDop} data-camp="inc-freza-dop" disabled={doarCitire}
                           onChange={(ev) => { schimba(o.cheie, { frezaDop: ev.target.checked }); }} />

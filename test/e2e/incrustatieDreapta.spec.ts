@@ -223,3 +223,53 @@ test('freza dopului, bifată, pornește de la primul T liber al proiectului, fă
   await expect(dop.locator('[data-camp="dop-scula"]')).toHaveValue(String(Math.max(...numere) + 1));
   await expect(page.getByTestId('export-invalid')).toHaveCount(0);
 });
+
+/**
+ * Punțile dopului decupat, alese în fereastră (ADR 0174, felia 12.1↑b-2): pe rândul cu pereți drepți, „Punți pe buclă”,
+ * „Lățimea punții” și „Grosimea punții” apar doar la dopul decupat (implicit 4, 4 și 1), judecate ca urechile (0 pe buclă:
+ * motivul, Exportă oprit); 2 × 6 × 1,5 ajung în avertismentul dopului, în proiect (panoul, pe hârtie) și înapoi în fereastră.
+ */
+test('punțile dopului decupat: alese în fereastră, judecate, scrise în proiect și citite înapoi', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('tr[data-operatie]').first();
+  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  // Pe dopul ridicat (implicit), fără punți.
+  await expect(inc.locator('[data-camp="dop-punti-numar"]')).toHaveCount(0);
+  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await expect(inc.locator('[data-camp="dop-punti-numar"]')).toHaveValue('4');
+  await expect(inc.locator('[data-camp="dop-punti-latime"]')).toHaveValue('4');
+  await expect(inc.locator('[data-camp="dop-punti-grosime"]')).toHaveValue('1');
+  // 0 pe buclă: refuzat, ca urechile.
+  await inc.locator('[data-camp="dop-punti-numar"]').fill('0');
+  await expect(inc.locator('[data-camp="dop-punti-numar"]')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.getByTestId('export-invalid')).toContainText('Punțile dopului decupat cer');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await inc.locator('[data-camp="dop-punti-numar"]').fill('2');
+  await inc.locator('[data-camp="dop-punti-latime"]').fill('6');
+  await inc.locator('[data-camp="dop-punti-grosime"]').fill('1,5');
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
+  await rand.locator('[data-camp="adancime"]').fill('6');
+  // Dopul decupat cu freza Ø6 a locașului cere marginea cel puțin 6.
+  await inc.locator('[data-camp="inc-margine"]').fill('8');
+
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-avertismente')).toContainText('e decupat cu 2 punți pe buclă, late de 6 mm și groase de 1.5 mm');
+  await expect.poll(() => descarcari.length).toBe(2);
+
+  // În proiect: panoul, pe hârtie, arată punțile.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Punțile dopuluipe buclă: 2, de 6.00 × 1.50 mm');
+  // Înapoi în fereastră: valorile din proiect; pe dopul ridicat, ascunse.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const din = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(din.locator('[data-camp="dop-punti-numar"]')).toHaveValue('2');
+  await expect(din.locator('[data-camp="dop-punti-latime"]')).toHaveValue('6');
+  await expect(din.locator('[data-camp="dop-punti-grosime"]')).toHaveValue('1,5');
+  await din.locator('[data-camp="inc-dop"]').selectOption('ridicat');
+  await expect(din.locator('[data-camp="dop-punti-numar"]')).toHaveCount(0);
+});
