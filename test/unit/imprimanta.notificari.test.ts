@@ -6,7 +6,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { citesteCadru, stareLucrare } from '../../src/machine/imprimanta/creality.ts';
 import { IMPRIMANTA_NECUNOSCUTA } from '../../src/machine/imprimanta/driver.ts';
-import { cheieEveniment, evenimente, lucrareNoua, type Clipa } from '../../src/machine/imprimanta/evenimente.ts';
+import { cheieEveniment, evenimente, lucrareNoua, type Clipa, type Eveniment } from '../../src/machine/imprimanta/evenimente.ts';
+import { adaugaMesaje } from '../../src/i18n/t.ts';
+import { enImprimanta } from '../../src/i18n/imprimanta.en.ts';
+import { roImprimanta } from '../../src/i18n/imprimanta.ro.ts';
+import { CHEIE_NOTIFICARI } from '../../src/app/imprimantaLaPornire.ts';
+import {
+  cereAtentie, citesteSetari, scrieSetari, semnImprimanta, SETARI_IMPLICITE, textEveniment,
+} from '../../src/app/notificariImprimanta.ts';
 
 const F = '/usr/data/printer_data/gcodes/placute_PLA_18m.gcode';
 const clipa = (x: Partial<Clipa> = {}): Clipa => ({
@@ -81,4 +88,88 @@ test('3.6s: driverul K1: `state` 2 e „gata” și la 99 % (procentul pâlpâie
   assert.deepEqual(citesteCadru('{"materialStatus":1}').stare, { faraFilament: true });
   assert.deepEqual(citesteCadru('{"materialStatus":0}').stare, { faraFilament: false });
   assert.deepEqual(citesteCadru('{"materialStatus":"x"}').stare, {});
+});
+
+// --- Partea din aplicație (felia 3.6s): setările ținute, semnul de pe butonul Imprimanta, textele, titlul filei. ---
+
+adaugaMesaje({ ro: roImprimanta, en: enImprimanta });
+
+const depozit = (initial: string | null = null) => {
+  let v = initial;
+  return { getItem: (k: string) => (k === CHEIE_NOTIFICARI ? v : null), setItem: (k: string, x: string) => { if (k === CHEIE_NOTIFICARI) v = x; }, text: () => v };
+};
+
+test('3.6s: setările notificărilor, ținute în browser (v: 1): implicitul, o valoare stricată ia implicitul ei, dus-întors', () => {
+  assert.deepEqual(citesteSetari(depozit()), SETARI_IMPLICITE);
+  assert.equal(SETARI_IMPLICITE.evenimente.primulStrat, false);
+  assert.equal(SETARI_IMPLICITE.legare, false);
+  assert.deepEqual(citesteSetari(depozit('{"v":2,"sunet":false}')), SETARI_IMPLICITE);
+  assert.deepEqual(citesteSetari(depozit('{nu e json')), SETARI_IMPLICITE);
+  const s = citesteSetari(depozit('{"v":1,"sunet":false,"legare":"da","evenimente":{"primulStrat":true,"gata":1,"necunoscut":true}}'));
+  assert.equal(s.sunet, false);
+  assert.equal(s.legare, false);
+  assert.equal(s.evenimente.primulStrat, true);
+  assert.equal(s.evenimente.gata, true);
+  assert.equal('necunoscut' in s.evenimente, false);
+  const d = depozit();
+  const alta = { ...SETARI_IMPLICITE, sistemInFata: true, legare: true, evenimente: { ...SETARI_IMPLICITE.evenimente, pauza: false } };
+  scrieSetari(alta, d);
+  assert.deepEqual(citesteSetari(d), alta);
+  assert.equal(JSON.parse(d.text() ?? '{}').v, 1);
+  const strica = { getItem: () => { throw new Error('blocat'); }, setItem: () => { throw new Error('blocat'); } };
+  assert.deepEqual(citesteSetari(strica), SETARI_IMPLICITE);
+  assert.doesNotThrow(() => { scrieSetari(alta, strica); });
+});
+
+test('3.6s: semnul de pe butonul Imprimanta: procentul cât imprimă, pauza, roșu la eroare sau fără filament, gri fără legătură, ✓ până se vede', () => {
+  const s = (x: Partial<Parameters<typeof semnImprimanta>[0]>) =>
+    semnImprimanta({ legatura: 'vie', lucrare: 'imprima', progres: 45.4, faraFilament: false, eroare: null, gataNevazut: false, ...x });
+  assert.deepEqual(s({}), { fel: 'imprima', text: '45 %' });
+  assert.deepEqual(s({ progres: null }), { fel: 'imprima', text: '…' });
+  assert.deepEqual(s({ lucrare: 'pregatire' }), { fel: 'imprima', text: '…' });
+  assert.deepEqual(s({ lucrare: 'pauza' }), { fel: 'pauza', text: 'Pauză' });
+  assert.deepEqual(s({ lucrare: 'pauza', faraFilament: true }), { fel: 'rau', text: 'Fără filament' });
+  assert.deepEqual(s({ eroare: 5000 }), { fel: 'rau', text: 'Eroare' });
+  assert.equal(s({ lucrare: 'libera', eroare: 5000 }), null);
+  assert.deepEqual(s({ legatura: 'pierduta' }), { fel: 'pierduta', text: 'Fără legătură' });
+  assert.equal(s({ legatura: 'pierduta', lucrare: 'gata' }), null);
+  assert.equal(s({ legatura: 'alta' }), null);
+  assert.deepEqual(s({ lucrare: 'gata', gataNevazut: true }), { fel: 'gata', text: '✓ Gata' });
+  assert.equal(s({ lucrare: 'gata' }), null);
+  assert.equal(s({ lucrare: 'oprita' }), null);
+});
+
+test('3.6s: textele: titlul cu numele imprimantei; finalul cu fișierul, durata și metrii; pauza cu stratul și nota; eroarea cu cheia', () => {
+  const durata = (x: number): string => `${Math.round(x / 60)} min`;
+  const e = (x: Partial<Eveniment>): Eveniment => ({ fel: 'gata', fisier: F, strat: null, nota: null, cheie: null, durata: null, filament: null, ...x });
+  const g = textEveniment(e({ durata: 1140, filament: 3712.4 }), 'K1C-8578', 'placute_PLA_18m.gcode', durata);
+  assert.deepEqual(g, { titlu: 'K1C-8578: imprimarea s-a terminat', corp: 'placute_PLA_18m.gcode · 19 min · 3,7 m de filament' });
+  assert.equal(textEveniment(e({ filament: 0 }), 'K', 'a.gcode', durata).corp, 'a.gcode');
+  // O lucrare scurtă: centimetri de filament, cu două zecimale; sub 1 cm, deloc.
+  assert.equal(textEveniment(e({ filament: 48 }), 'K', 'a.gcode', durata).corp, 'a.gcode · 0,05 m de filament');
+  assert.equal(textEveniment(e({ filament: 9 }), 'K', 'a.gcode', durata).corp, 'a.gcode');
+  const p = textEveniment(e({ fel: 'pauzaFisier', strat: 11, nota: 'filament negru' }), 'K1C-8578', 'x', durata);
+  assert.deepEqual(p, { titlu: 'K1C-8578: pauza din fișier', corp: 'Înaintea stratului 11: filament negru. Apasă Reia în cvs2 când ești gata.' });
+  assert.equal(textEveniment(e({ fel: 'pauzaFisier', strat: 9 }), 'K', 'x', durata).corp, 'Înaintea stratului 9. Apasă Reia în cvs2 când ești gata.');
+  assert.equal(textEveniment(e({ fel: 'eroare', cheie: 12 }), 'K', 'x', durata).corp, 'Cheia 12: textul ei e pe ecranul imprimantei.');
+  assert.equal(textEveniment(e({ fel: 'faraFilament' }), 'K', 'x', durata).corp, 'Pune filament nou, apoi apasă Reia.');
+  assert.deepEqual(['gata', 'primulStrat', 'pauza', 'eroare', 'pierduta'].map((f) => cereAtentie(f as Eveniment['fel'])), [false, false, true, true, true]);
+});
+
+test('3.6s: titlul filei, din părțile ferestrelor: mașina întâi, apoi imprimanta; fiecare își scoate doar partea ei', async () => {
+  const doc = { title: 'CNC Vector Studio' };
+  (globalThis as { document?: unknown }).document = doc;
+  try {
+    const { parteTitlu } = await import('../../src/app/titluFila.ts');
+    parteTitlu('imprimanta', '45 %');
+    assert.equal(doc.title, '45 % · CNC Vector Studio');
+    parteTitlu('masina', 'Pauză 12 %');
+    assert.equal(doc.title, 'Pauză 12 % · 45 % · CNC Vector Studio');
+    parteTitlu('imprimanta', null);
+    assert.equal(doc.title, 'Pauză 12 % · CNC Vector Studio');
+    parteTitlu('masina', '');
+    assert.equal(doc.title, 'CNC Vector Studio');
+  } finally {
+    delete (globalThis as { document?: unknown }).document;
+  }
 });

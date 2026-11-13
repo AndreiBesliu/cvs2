@@ -262,11 +262,18 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   // Felia 3.6r (ADR 0193 §C): anularea unei piese, din placă (`src/app/PlacaImprimanta.tsx`) și confirmarea ei.
   'anuleaza-piesa': 'imprimanta.anulare.buton', 'anulare-confirma': 'imprimanta.anulare.confirma',
   'anulare-renunta': 'imprimanta.anulare.renunta', 'anulare-retrage': 'imprimanta.anulare.retrage',
+  // Felia 3.6s (ADR 0194 §A): cardul Notificările și banda vestirilor (`src/app/VestiriImprimanta.tsx`); bifele evenimentelor
+  // sunt un singur control (`data-eveniment` spune care).
+  'notificari-porneste': 'imprimanta.notificari.porneste', 'notificare-eveniment': 'imprimanta.notificari.cand',
+  'notificari-sunet': 'imprimanta.notificari.sunet', 'notificari-sistem': 'imprimanta.notificari.sistem',
+  'notificari-titlu': 'imprimanta.notificari.titlu', 'notificari-legare': 'imprimanta.notificari.legare',
+  'anunt-deschide': 'imprimanta.anunt.deschide', 'anunt-inchide': 'imprimanta.anunt.inchide',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
   // Din 3.6r, și placa are controale (anularea unei piese).
-  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx'), dialog = citeste('src/app/DialogDinDesen.tsx');
+  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx');
+  const dialog = citeste('src/app/DialogDinDesen.tsx');
   assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
   assert.doesNotMatch(dialog, /data-imprimanta=\{/);
   // În dialog, câmpurile numerice primesc controlul prin `data="felie-…"` (al lui `CampNumar`).
