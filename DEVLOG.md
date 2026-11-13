@@ -8854,6 +8854,79 @@ probă care pică pe Windows.
   (Reia și Oprește acoperite la 1024 px), trecută după.
 - **Porțile:** unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist (305 fișiere), e2e 461 / 461; pornirea 102,4 kB (cu ușa 106,1 / 110) și totalul 657,5 / 700, neschimbate. Privită în Edge, cu hit-test-ul: la 1280, 1024, 900, 800 și 390 px, nimic acoperit, nici în Imprimanta, nici în Proiectare.
 
+## 2026-11-13 — Linia aranjamentelor pornește: worktree-ul și plafoanele 115 / 800 (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 115 ／ 800”, după „Da, sunt gata” și unirea planșelor (`d62e6b8`). **Started:** 13.11, seara.
+**Completed:** 13.11, 22:19.
+
+- **Worktree-ul `aranjamente`:** `C:\Users\besli\cncvs2-lucru\aranjamente`, ramura `wip/28.1-aranjamente` din
+  `d62e6b8`. Are joncțiunile `node_modules` și `functions\node_modules`, e2e pe 4182 (`.tmp/pw.config.ts`) cu rețeaua
+  `127.0.9`.
+- **Baza măsurată** (`node scripts/build-determinist.ts`): pornirea 105,7, cu ușa 109,7 / 110 kB; totalul 690,1 / 700.
+- **ADR 0252** (pornirea 110 → 115 kB) și **ADR 0253** (totalul 700 → 800 kB), acceptate de owner. Constantele din
+  `scripts/build-determinist.ts`, indexul ADR-urilor, traducerea, CLAUDE.md (decizia).
+- **Mai departe:** 28.1↑, împărțită în felii mici. După reparația lui 3.6s din `main`, `main` se aduce în ramură.
+
+## 2026-11-13 — Felia 25.5↑ pornită: foaia pozată oblic (ADR 0225, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea lui 25.4↑ în `main`).
+**Started:** 13.11, 17:47. **Completed:** 13.11, 18:10.
+
+- **Ramura** adusă la `origin/main` (`ba876c0`, fast-forward: 107 commituri, între ele tăierea, planșele și imprimanta);
+  mărimea din `main`: totalul 654,4 / 700 kB, pornirea 102,2 / 110 (105,9 cu ușa).
+- **Alegerea:** îndreptarea foii înaintea luminii pe culori și a liniilor mediane pe culori (ADR 0224, „Ce poate urma”),
+  fiindcă strâmbă orice poză de telefon, nu doar pe cele colorate.
+- **Cercetarea:** Microsoft Lens (marginile documentului găsite singure, mutate de mână), LightBurn (perspectiva doar pentru
+  camera de deasupra mașinii), Vectric, ArtCAM, Inkscape (nimic), GIMP (unealta de perspectivă); Zhang și He (2007):
+  proporțiile unui dreptunghi dintr-o singură poză, din focala estimată.
+- **Prototipul** (`.tmp/proto-255.ts`): o foaie A4 cu patru forme de mărime știută, pozată cu o cameră pinhole sub patru
+  unghiuri, pe o masă, cu lumina dintr-o parte. Colțurile, găsite pe imaginea redusă la 1,6–2,2 px și rafinate pe cea
+  întreagă la 0,02–0,20 px; focala 1400–1409 (adevărată 1400), proporțiile 0,7062–0,7073 (A4: 0,7071); formele pe foaia
+  îndreptată, la 0,12–0,27 mm (cu proporțiile estimate, 0,12–0,36 mm); fără îndreptare, pătratul de 60 mm are laturile de
+  58–65 mm. Pe 12 Mpx, îndreptarea (ieșirea de 10,3 Mpx) 219–255 ms.
+- **Găsite pe drum:** (1) reducerea Visvalingam a învelitorii la patru vârfuri pierdea colțul adevărat, rotunjit de pixeli
+  în trei vârfuri apropiate (29 px pe lângă): patrulaterul de arie maximă; (2) orientarea A4 dată îndreptării era întoarsă
+  în prima rulare (eroarea de 25 mm venea de acolo, nu din colțuri).
+- **ADR 0225** propus, cu trei întrebări (îndreptarea implicită; formatul implicit; ce arată previzualizarea). Schița, cu
+  pozele prototipului, macheta și formularul: <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax>.
+- **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului.
+
+## 2026-11-13 — Felia 25.5↑: foaia pozată oblic (ADR 0225, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-3a” (owner-ul, la cele trei întrebări din ADR 0225: îndreptarea oprită implicit, cu sugestia din raport;
+A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **Started:** 13.11, 18:16. **Completed:** 13.11, 21:56.
+
+- **Ramura** adusă la `origin/main` (`29b69c0`; conflict doar în DEVLOG).
+- **Probele întâi:** generatorul pozelor prototipului în `test/unit/ajutor-poze.ts` (o foaie A4 cu un pătrat de 60 mm, un
+  disc de 50, un dreptunghi de 120 × 25, un inel de 70 / 50, pozată cu o cameră pinhole, pe masă, luminată dintr-o parte);
+  15 probe ale nucleului, 7 ale ușii, 4 e2e (poza desenată în pagină, cu colțurile din generator).
+- **Nucleul** (`src/trasare/foaia.ts`, pur; geometria colțurilor, fără importuri, în `src/trasare/colturi.ts`): găsirea pe
+  imaginea redusă (Otsu, componenta deschisă, învelitoarea, Visvalingam până la 40, patrulaterul de arie maximă),
+  rafinarea pe imaginea întreagă (48 de normale pe latură, două potriviri ale dreptei), proporțiile (Zhang și He, cu
+  intervalul lor), oblicitatea (sugestia), îndreptarea biliniară mersă pe rând (0,17–0,18 s pe 16 Mpx).
+- **Găsite pe drum:** (1) pe poza înclinată doar înainte, focala nu se poate afla: raportul ieșea cu 4 % pe lângă, deci
+  proporțiile au acum un interval (colțurile mișcate cu 1 px, focala între 0,5 și 1,5 diagonale), „nesigure” peste 2 %;
+  (2) o foaie cu un colț ieșit din cadru era „găsită” cu colțul la 106 px: extrapolat din laturile vecine ale învelitorii
+  reduse, cu reperul cel mai depărtat de pe aceeași dreaptă (cu vârful de alături, 47 px), acum la 0,01–0,05 px; (3) o
+  agrafă care intră 6 px pe foaie: a doua potrivire a dreptei o scoate (0,57 → 0,05 px); (4) privită, fereastra tăia lista
+  formatelor (9 rem): opțiunile scurte, mărimea în raport; numele formatului, din foaia trasată; mesajul „nesigure” spunea o
+  cauză greșită pe o poză cu focala găsită; (5) ușa nu poate importa tipul colțurilor din nucleu (io-doar-model-geom): scris
+  structural.
+- **Ușa:** `CerereTrasare.foaie`, îndreptarea înaintea zonei, scara „foaie” din format (lățimea scrisă rămâne mai tare),
+  răspunsul cu foaia și previzualizarea redusă sub 1 Mpx; `cerereTrasare` din alegeri, exportată.
+- **Fereastra:** grupul Foaia (bifa, Formatul, „Alt format”), butonul Colțurile cu mânerele (ciorna doar convexă; micșorarea
+  până la jumătate, pentru un colț în afara pozei) și „Găsește singur”, foaia îndreptată sub vectori, raportul și
+  avertismentele; textele și manualul, în ambele limbi; privită mărită, în temă deschisă și închisă.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile (0 lipsă), suita unitară 9 191 (0 căzute), e2e-urile
+  trasării, importului și tutorialul 48 / 48 (toată suita e2e: 461 + animația, căzută doar sub încărcare, trecută singură),
+  build-ul determinist; totalul 660,2 / 700 kB (+5,8), pornirea 102,2 / 110.
+- **Otrăvurile** (`test/otravuri/25.5.py`, 64 alese de autor): la prima rulare (`906b518`), 42 / 47 unitare. K01 și P05
+  au primit probe (trei puncte coliniare cu zecimale: fără pivotul minim, o „omografie” de 1e18; camerele de 0,5 și 1,5
+  diagonale: cu o singură focală presupusă, intervalul nu mai cuprinde A4); G09, G10 și G13, echivalente, au ieșit din
+  cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
+  `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
 ## 2026-11-13 — Felia 11.6↑: raportul foilor și lista de tăiere (ADR 0210 §6) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.6↑ (raportul foilor și lista de tăiere)?”: „Da, 11.6↑”.

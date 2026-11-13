@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dpiImagine, felImagine } from '../../src/io/imagine.ts';
+import { dpiImagine, felImagine, formatDupaMarime, formatFoaie, TRASARE_IMPLICITA, type AlegeriFoaie } from '../../src/io/imagine.ts';
 import { formatDupaAntet, formatImport } from '../../src/io/formatImport.ts';
-import { posterizeaza, raspundeTrasare, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
+import { PIXELI_POSTER, posterizeaza, raspundeTrasare, reduceImaginea, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
+import { colturiImplicite, type Colturi } from '../../src/trasare/foaia.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
-import { caiDinTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
-import { luminaLaterala, poza } from './ajutor-poze.ts';
+import { caiDinTrasare, cerereTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
+import { distFormeFoaie, luminaLaterala, poza, POZE_FOAIE, pozaFoaie } from './ajutor-poze.ts';
 
 /**
  * Ușa imaginilor (ADR 0220 §1, §7, §8): semnăturile, DPI-ul din antet (PNG `pHYs`, JPEG JFIF și EXIF, BMP), scara și
@@ -441,4 +442,172 @@ test('lumina și marginea trec prin cerere: o poză cu masa în jur, „Neunifor
   const t = (await raspundeTrasare(cerere({ imagine: { latime: 40, inaltime: 30, date: transp }, optiuni: o }))).raspuns;
   assert.ok(t.ok && t.fel === 'alb-negru');
   assert.equal(t.raport.lumina, 'uniforma');
+});
+
+// ── Foaia pozată oblic (ADR 0225) ──────────────────────────────────────────────────────────────────────────────────────
+
+const A4 = { w: 210, h: 297 } as const;
+/** Cât de departe e cel mai depărtat colț de al lui adevărat. */
+const abatere = (c: Colturi, adevarate: Colturi): number =>
+  Math.max(...c.map((q, i) => Math.hypot(q[0] - (adevarate[i]?.[0] ?? 0), q[1] - (adevarate[i]?.[1] ?? 0))));
+/** Cutia vârfurilor căilor trasate, în mm (Y în sus). */
+function cutieMm(r: { cai: CaiTrasate; mmPePx: number; raport: { inaltime: number } }): { x0: number; x1: number; y0: number; y1: number } {
+  const { cai } = caiDinTrasare(r.cai, r.mmPePx, r.raport.inaltime);
+  const xs = cai.flatMap((c) => c.varfuri.map((v) => v.p.x)), ys = cai.flatMap((c) => c.varfuri.map((v) => v.p.y));
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+}
+const lang = (a: number, b: number, tol: number, m: string): void => { assert.ok(Math.abs(a - b) <= tol, `${m}: ${a.toFixed(3)} față de ${b}`); };
+
+test('foaia îndreptată cu A4 (ADR 0225): pagina e foaia (210 × 297 mm), formele la locul și mărimea lor; previzualizarea, redusă', async () => {
+  const p = pozaFoaie(POZE_FOAIE.inclinata25);
+  const o = { ...cerere({}).optiuni, lumina: 'neuniforma', margine: true } as const;
+  const r = (await raspundeTrasare(cerere({ imagine: p, optiuni: o, peteMm: 2, gauriMm: 2, foaie: { colturi: null, format: A4 } }))).raspuns;
+  assert.ok(r.ok && r.fel === 'alb-negru');
+  assert.equal(r.scara, 'foaie');
+  const f = r.foaie;
+  assert.ok(f && f.indreptata);
+  assert.equal(f.sursa, 'gasite');
+  assert.deepEqual(f.poza, { latime: 1600, inaltime: 1200 });
+  assert.ok(abatere(f.colturi, p.colturi) <= 0.5, `colțurile la ${abatere(f.colturi, p.colturi).toFixed(2)} px`);
+  assert.deepEqual(f.format, A4);
+  assert.equal(f.potrivit, true);
+  assert.equal(f.sugestie, false);
+  // Foaia îndreptată: 210 mm pe lățimea ei, 297 pe înălțime (la un pixel), cele cinci contururi ale formelor.
+  lang(r.mmPePx * r.intreg.latime, 210, 1e-9, 'lățimea foii');
+  lang(r.mmPePx * r.intreg.inaltime, 297, r.mmPePx, 'înălțimea foii');
+  assert.equal(r.zona, null);
+  assert.equal(r.raport.contururi, 5);
+  // Formele importate (mm, Y în sus, cu pagina cât foaia): fiecare vârf la cel mult 0,5 mm de marginea formei adevărate.
+  const { cai } = caiDinTrasare(r.cai, r.mmPePx, r.raport.inaltime), sus = r.raport.inaltime * r.mmPePx;
+  const e = Math.max(...cai.flatMap((c) => c.varfuri.map((v) => distFormeFoaie(v.p.x, sus - v.p.y))));
+  assert.ok(e <= 0.5, `formele la ${e.toFixed(2)} mm`);
+  // Laturile drepte ale pătratului (30–90 × 40–100 mm de sus) stau pe colțurile lui: stânga la 30, sus la 297 − 40.
+  const k = cutieMm(r);
+  lang(k.x0, 30, 0.5, 'stânga'); lang(k.y1, 257, 0.6, 'sus');
+  // Previzualizarea: foaia îndreptată, sub plafonul imaginii pictate, cu proporțiile ei.
+  const pz = f.previzualizare;
+  assert.ok(pz && pz.latime * pz.inaltime <= PIXELI_POSTER);
+  lang(pz.latime / pz.inaltime, r.intreg.latime / r.intreg.inaltime, 0.01, 'proporțiile previzualizării');
+  // Ușa: pagina e foaia, iar raportul imaginii poartă foaia.
+  const pv = previzualizareDinRaspuns({ nume: 'poza.jpg', octeti: new Uint8Array() }, r);
+  assert.ok(pv.ok && pv.format === 'imagine');
+  lang(pv.pregatit.pagina?.latime ?? 0, 210, 1e-9, 'pagina');
+  assert.equal(pv.trasare.scara, 'foaie');
+  assert.equal(pv.trasare.foaie?.sursa, 'gasite');
+});
+
+test('foaia: colțurile date (mutate) se folosesc, cele încrucișate nu; „Din poză”: proporțiile estimate, mărimea ca înainte', async () => {
+  const p = pozaFoaie(POZE_FOAIE.inclinata40);
+  const date = (await raspundeTrasare(cerere({ imagine: p, foaie: { colturi: p.colturi, format: A4 } }))).raspuns;
+  assert.ok(date.ok && date.foaie);
+  assert.equal(date.foaie.sursa, 'date');
+  assert.deepEqual(date.foaie.colturi, p.colturi);
+  const [a, b, c, d] = p.colturi;
+  const rele = (await raspundeTrasare(cerere({ imagine: p, foaie: { colturi: [a, c, b, d], format: A4 } }))).raspuns;
+  assert.ok(rele.ok && rele.foaie);
+  assert.equal(rele.foaie.sursa, 'gasite', 'colțurile încrucișate se ignoră: foaia se caută');
+  // „Din poză”: fără format, proporțiile foii vin din perspectivă, iar scara ca fără foaie (aici 96 px pe țol).
+  const dp = (await raspundeTrasare(cerere({ imagine: p, foaie: { colturi: null, format: null } }))).raspuns;
+  assert.ok(dp.ok && dp.foaie);
+  assert.equal(dp.scara, 'presupus');
+  aproape(dp.mmPePx, 25.4 / 96);
+  assert.equal(dp.foaie.format, null);
+  assert.equal(dp.foaie.potrivit, null);
+  lang(dp.intreg.latime / dp.intreg.inaltime / (210 / 297), 1, 0.01, 'proporțiile');
+  // Lățimea scrisă bate formatul: e a foii îndreptate.
+  const lat = (await raspundeTrasare(cerere({ imagine: p, latimeMm: 100, foaie: { colturi: null, format: A4 } }))).raspuns;
+  assert.ok(lat.ok);
+  assert.equal(lat.scara, 'latime');
+  lang(lat.mmPePx * lat.intreg.latime, 100, 1e-9, 'lățimea scrisă');
+  // Letter pe o foaie A4: proporțiile din poză nu se potrivesc (raportul spune „nu pare”).
+  const letter = (await raspundeTrasare(cerere({ imagine: p, foaie: { colturi: null, format: { w: 215.9, h: 279.4 } } }))).raspuns;
+  assert.ok(letter.ok && letter.foaie);
+  assert.equal(letter.foaie.potrivit, false);
+});
+
+test('foaia și zona: zona e în pixelii foii îndreptate, un decupaj din ea, cu scara formatului', async () => {
+  const p = pozaFoaie(POZE_FOAIE.rotita30), foaie = { colturi: null, format: A4 } as const;
+  const tot = (await raspundeTrasare(cerere({ imagine: p, foaie }))).raspuns;
+  assert.ok(tot.ok);
+  // Zona x 20–100 mm, y 30–110 mm (de sus) prinde doar pătratul (30–90 × 40–100).
+  const k = 1 / tot.mmPePx, zona = { x: 20 * k, y: 30 * k, w: 80 * k, h: 80 * k };
+  const r = (await raspundeTrasare(cerere({ imagine: p, foaie, zona, peteMm: 2, gauriMm: 2 }))).raspuns;
+  assert.ok(r.ok && r.fel === 'alb-negru');
+  assert.deepEqual(r.intreg, tot.intreg);
+  assert.ok(r.zona && Math.abs(r.zona.x - zona.x) <= 0.5 && Math.abs(r.zona.w - zona.w) <= 1);
+  assert.equal(r.mmPePx, tot.mmPePx);
+  assert.equal(r.scara, 'foaie');
+  assert.equal(r.raport.contururi, 1);
+  // În pagina zonei (80 × 80 mm, Y în sus), pătratul e la 10–70 mm pe ambele axe.
+  const c = cutieMm(r);
+  lang(c.x0, 10, 0.6, 'stânga'); lang(c.x1, 70, 0.6, 'dreapta'); lang(c.y0, 10, 0.6, 'jos'); lang(c.y1, 70, 0.6, 'sus');
+});
+
+test('foaia, sugestia: fără îndreptare, o foaie oblică găsită o propune (colțurile în pixelii pozei); un scan, nu', async () => {
+  const p = pozaFoaie(POZE_FOAIE.inclinata25);
+  const r = (await raspundeTrasare(cerere({ imagine: p }))).raspuns;
+  assert.ok(r.ok && r.foaie);
+  assert.equal(r.foaie.indreptata, false);
+  assert.equal(r.foaie.sugestie, true);
+  assert.equal(r.foaie.previzualizare, null);
+  assert.ok(abatere(r.foaie.colturi, p.colturi) <= 0.5);
+  // Fără îndreptare, nimic altceva nu se schimbă: scara, imaginea trasată.
+  assert.equal(r.scara, 'presupus');
+  assert.deepEqual(r.intreg, { latime: 1600, inaltime: 1200 });
+  // `imagine` (100 × 50, un dreptunghi negru pe alb, ca un scan): fără foaie, fără sugestie.
+  const scan = (await raspundeTrasare(cerere({}))).raspuns;
+  assert.ok(scan.ok);
+  assert.equal(scan.foaie, null);
+});
+
+test('foaia negăsită, cu îndreptarea pornită: colțurile implicite (puțin înăuntrul pozei), iar formatul se întoarce după ele', async () => {
+  const r = (await raspundeTrasare(cerere({ foaie: { colturi: null, format: A4 } }))).raspuns;
+  assert.ok(r.ok && r.foaie);
+  assert.equal(r.foaie.sursa, 'implicite');
+  assert.deepEqual(r.foaie.colturi, colturiImplicite(100, 50));
+  // Colțurile implicite fac un dreptunghi culcat (92 × 46 px): A4 culcat, deci 297 mm pe lățime.
+  assert.deepEqual(r.foaie.format, { w: 297, h: 210 });
+  lang(r.mmPePx * r.intreg.latime, 297, 1e-9, 'lățimea');
+  assert.equal(r.foaie.potrivit, false);
+});
+
+test('cererea din alegeri: îndreptarea oprită nu trimite foaia; pornită, formatul (A4, Letter, „Alt format”, „Din poză”) și colțurile', () => {
+  const f = { nume: 'poza.jpg', octeti: new Uint8Array([0xff, 0xd8, 0xff, 0xd9]) };
+  assert.equal(cerereTrasare(f, TRASARE_IMPLICITA).foaie, undefined);
+  const cu = (foaie: Partial<AlegeriFoaie>): CerereTrasare['foaie'] =>
+    cerereTrasare(f, { ...TRASARE_IMPLICITA, foaie: { ...TRASARE_IMPLICITA.foaie, indreapta: true, ...foaie } }).foaie;
+  assert.deepEqual(cu({}), { colturi: null, format: A4 });
+  assert.deepEqual(cu({ format: 'letter' }), { colturi: null, format: { w: 215.9, h: 279.4 } });
+  assert.deepEqual(cu({ format: 'a5' }), { colturi: null, format: { w: 148, h: 210 } });
+  assert.deepEqual(cu({ format: 'a3' }), { colturi: null, format: { w: 297, h: 420 } });
+  assert.deepEqual(cu({ format: 'alt', alt: { w: 100, h: 150 } }), { colturi: null, format: { w: 100, h: 150 } });
+  assert.deepEqual(cu({ format: 'poza' }), { colturi: null, format: null });
+  const c: Colturi = [[1, 2], [30, 4], [35, 60], [7, 58]];
+  assert.deepEqual(cu({ colturi: c }), { colturi: c, format: A4 });
+  // „Alt format” fără mărime bună: A4.
+  assert.deepEqual(formatFoaie({ format: 'alt', alt: { w: 0, h: 150 } }), A4);
+  assert.deepEqual(formatFoaie({ format: 'alt', alt: { w: 100, h: Number.NaN } }), A4);
+  // Numele din raport, după mărimea foii trasate, în orice orientare.
+  assert.equal(formatDupaMarime({ w: 297, h: 210 }), 'a4');
+  assert.equal(formatDupaMarime({ w: 215.9, h: 279.4 }), 'letter');
+  assert.equal(formatDupaMarime({ w: 100, h: 150 }), 'alt');
+  // Implicitele (ADR 0225, răspunsurile 1a, 2a): îndreptarea oprită, A4, colțurile găsite singure.
+  assert.deepEqual(TRASARE_IMPLICITA.foaie, { indreapta: false, format: 'a4', alt: { w: 210, h: 297 }, colturi: null });
+});
+
+test('previzualizarea foii: redusă sub plafon prin media blocurilor de latură întreagă; una mică rămâne aceeași', () => {
+  const W = 1500, H = 1000, d = new Uint8ClampedArray(W * H * 4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) d.set([(x * 3) & 255, (y * 5) & 255, ((x + y) * 7) & 255, 200 + ((x * y) & 15)], 4 * (y * W + x));
+  const r = reduceImaginea({ latime: W, inaltime: H, date: d });
+  // 1,5 Mpx: blocuri de 2 × 2, deci 750 × 500.
+  assert.deepEqual([r.latime, r.inaltime], [750, 500]);
+  for (const [x, y] of [[0, 0], [123, 77], [749, 499]] as const) {
+    for (let k = 0; k < 4; k++) {
+      let s = 0;
+      for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) s += d[4 * ((2 * y + j) * W + 2 * x + i) + k] ?? 0;
+      assert.ok(Math.abs((r.date[4 * (y * 750 + x) + k] ?? 0) - s / 4) <= 0.5, `(${x}, ${y}) canalul ${k}`);
+    }
+  }
+  const mica = { latime: 10, inaltime: 10, date: new Uint8ClampedArray(400) };
+  assert.equal(reduceImaginea(mica), mica);
 });
