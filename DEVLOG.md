@@ -8355,3 +8355,14 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0250, „Completarea din 13.11: ideile din schițe”** („Da la toate”): 13 idei în feliile 28.x, fiecare cu felia ei;
   3 linii separate (simularea unică, proiectele multiple cu `.cvs2`, clipboardul).
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG, traducerea roadmap-ului.
+
+## 2026-11-13 — Schițele, tura a opta (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, 16:30. **Completed:** 13.11, 17:10.
+
+- **Canvas-ul**, acum 54 de table. Patru table noi, fiecare în cele patru aranjamente: conectarea mașinii (USB, WiFi,
+  conexiunile ținute), proiectul gol, Textul (X), tastatura și focusul (zonele în ordinea lui F6).
+- **Meniurile Clasicului, aliniate** pe tablele turelor 6–7 la cele din schița Clasicului: Fișier, Editare, Vedere,
+  Vectori, Trasee, Mașina, Extensii, Ajutor (fără „Ferestre”). În ADR 0250, rândul meniului Extensii spune acum „între
+  Mașina și Ajutor”.
+- **Harta schițelor:** rândurile noi și 11 idei noi (17–27), cu recomandarea, încă de hotărât.

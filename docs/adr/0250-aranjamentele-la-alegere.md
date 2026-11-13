@@ -243,7 +243,7 @@ toate”.
 | Poza planșei bifată din start la raportare, în Atelier | 28.1↑ |
 | „Ce fac?” lângă „Salvarea n-a mers”: capitolul din manual | 28.1↑ (zona stărilor) |
 | Straturile ascunse sau blocate doar pe ecran, în panourile Clasicului | 28.2↑ |
-| Meniul Extensii, între Ferestre și Ajutor, cu „Trimite selecția la …” | 28.2↑ |
+| Meniul Extensii (în bara de meniuri a Clasicului, între Mașina și Ajutor), cu „Trimite selecția la …” | 28.2↑ |
 | Filele foilor sub planșă, în Clasic | 28.2↑, după unirea planșelor |
 | Comanda „extensie” / „ext” | 28.3↑ |
 | Linia de comandă pe tabletă doar cu o tastatură legată | 28.3↑ |
