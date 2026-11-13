@@ -152,8 +152,9 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
-  // Liniile mediane fără nicio linie, dar cu puncte (ADR 0222): o pată plină sau doar puncte; pentru ele, contururile.
-  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : puncte > 0 ? 'import.imagine.gol-mediane' : 'import.imagine.gol');
+  // Liniile mediane fără nicio linie, dar cu puncte (ADR 0222; și pe culori, ADR 0227): o pată plină sau doar puncte;
+  // pentru ele, contururile.
+  if (cod === 'gol' && format === 'imagine') return t(puncte > 0 ? 'import.imagine.gol-mediane' : culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');
   if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');

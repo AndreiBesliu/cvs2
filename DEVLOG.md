@@ -8971,3 +8971,10 @@ culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
 - **ADR 0227 propus** (Rezultatul și pe Culorile, cu opțiunile din ADR 0223; „Leagă peste alte culori”; pragul comun; piesa
   fiecărei culori), cu schița <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; două întrebări: legarea implicit bifată sau nu; grosimea pe fiecare culoare sau
   una singură.
+
+## 2026-11-13 — Felia 25.3↑c: liniile mediane pe culori (ADR 0227, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0227: „Leagă peste alte culori” bifată implicit; grosimea
+pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** —.
+
+- **Ramura** la zi cu `origin/main` (`4f379cd`, nimic nou de atunci).

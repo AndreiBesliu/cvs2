@@ -69,7 +69,7 @@ test('semnătura: Linii mediane, cu grosimea și freza foii în raport; banda gr
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('Contururi ↔ Linii mediane: inelul devine o buclă pe linie; pe culori alegerea dispare, iar înapoi rămâne cea făcută', async ({ page }) => {
+test('Contururi ↔ Linii mediane: inelul devine o buclă pe linie; pe culori alegerea rămâne (ADR 0227), cu legarea peste alte culori', async ({ page }) => {
   await page.goto('/');
   await deschide(page, 'mediana-inel-w8');
   await expect(page.getByTestId('import-cai')).toHaveText('2 contururi închise: 1 tăiate pe exterior, 1 pe interior (după sensul fiecărui contur)');
@@ -80,10 +80,14 @@ test('Contururi ↔ Linii mediane: inelul devine o buclă pe linie; pe culori al
   await expect(page.getByTestId('trasare-grosime')).toBeVisible();
   await expect(page.getByTestId('trasare-freza')).toHaveCount(0);
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
-  await expect(page.locator('[data-camp="trasare-rezultat"]')).toHaveCount(0);
+  await expect(page.locator('[data-camp="trasare-rezultat"]')).toHaveValue('mediane');
+  await expect(page.locator('[data-camp="trasare-leaga-culori"]')).toBeChecked();
   await expect(page.getByTestId('trasare-pastile')).toBeVisible();
+  await expect(page.getByTestId('import-deschise')).toContainText('1 linie mediană');
+  await expect(page.getByTestId('trasare-pastila-grosime')).toHaveText(/^trăsătura: \d+,\d\d mm$/);
   await page.locator('[data-camp="trasare-sursa"]').selectOption('auto');
   await expect(page.locator('[data-camp="trasare-rezultat"]')).toHaveValue('mediane');
+  await expect(page.locator('[data-camp="trasare-leaga-culori"]')).toHaveCount(0);
   await expect(page.getByTestId('import-deschise')).toContainText('1 linie mediană');
 });
 
@@ -94,6 +98,10 @@ test('un disc plin dă doar un punct: refuzul spune să alegi Contururi, iar rap
   await expect(page.getByTestId('import-refuz')).toHaveText('Nicio linie mediană: desenul are doar puncte (trăsături sau pete mai scurte decât grosimea lor). Pentru ele, alege Contururi.');
   await expect(page.getByTestId('trasare-puncte')).toHaveText('1 punct (o trăsătură mai scurtă decât grosimea ei) n-are linie mediană: pentru el, alege Contururi.');
   await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
+  // Pe culori, la fel (ADR 0227): discul negru e o culoare bifată, cu doar un punct.
+  await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
+  await expect(page.getByTestId('import-refuz')).toHaveText('Nicio linie mediană: desenul are doar puncte (trăsături sau pete mai scurte decât grosimea lor). Pentru ele, alege Contururi.');
+  await page.locator('[data-camp="trasare-sursa"]').selectOption('auto');
   await page.locator('[data-camp="trasare-rezultat"]').selectOption('contururi');
   await expect(page.getByTestId('import-cai')).toHaveText('1 contur închis: 1 tăiate pe exterior, 0 pe interior (după sensul fiecărui contur)');
 });

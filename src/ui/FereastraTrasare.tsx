@@ -174,6 +174,14 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   const late = stare !== 'citire' && stare.ok && stare.format === 'imagine' ? stare.late ?? null : null;
   const caleLate = useMemo(() => (late ? caleDin(late) : null), [late]);
   const arataLate = alegeri.rezultat === 'mediane' && om.semnaleaza && caleLate !== null;
+  // Pe culori (ADR 0227, răspunsul 2a): grosimea fiecărei culori, în pastila ei, față de freza foii; banda, cu grosimea ei.
+  const grosimeCuloare = (k: number): string | null => {
+    const g = alegeri.rezultat === 'mediane' ? culori?.piese.find((p) => p.culoare === k)?.grosimePx : undefined;
+    if (!g || !raport) return null;
+    const mm = g * raport.mmPePx, fel = felFreza(freza, mm);
+    return t(fel ? `import.trasare.culori.grosime-${fel}` : 'import.trasare.culori.grosime', { mm: nr(mm, 2), d: nr(freza ?? 0, 2) });
+  };
+  const benzi = useMemo(() => (arataGrosimea && culori ? culori.piese.flatMap((p) => (p.grosimePx ? [{ g: p.grosimePx, p: caleDin(p.contur) }] : [])) : null), [arataGrosimea, culori]);
   // Câmpurile cu valori: ciorna lor, trimisă după 250 ms fără altă schimbare.
   const [ciorna, setCiorna] = useState(() => ({
     prag: alegeri.prag ?? 128, pete: String(alegeri.peteMm), gauri: String(alegeri.gauriMm), latime: alegeri.latimeMm === null ? '' : String(alegeri.latimeMm),
@@ -335,7 +343,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       g.lineWidth = mediane.grosimePx;
       g.lineCap = 'round';
       g.lineJoin = 'round';
-      for (const p of cai) g.stroke(p);
+      if (benzi) for (const b of benzi) { g.lineWidth = b.g; g.stroke(b.p); }
+      else for (const p of cai) g.stroke(p);
       g.globalAlpha = 1;
       g.lineCap = 'butt';
     }
@@ -374,7 +383,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
         }
       }
     }
-  }, [bmp, baza, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, caleLate, arataLate, zonaArata, zonaTrasata, zx, zy, modZona, zonaCiorna, raport, peColturi, colturiArata]);
+  }, [bmp, baza, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, benzi, caleLate, arataLate, zonaArata, zonaTrasata, zx, zy, modZona, zonaCiorna, raport, peColturi, colturiArata]);
   const mareste = (f: number, px?: number, py?: number): void => {
     // Punctul de sub maus rămâne pe loc (fără maus: centrul).
     const ox = px ?? marime.w / 2, oy = py ?? marime.h / 2;
@@ -442,24 +451,22 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
             <option value="culori">{t('import.trasare.sursa.culori')}</option>
           </select>
         </label>
-        {!peCulori && (
-          <label>
-            {t('import.trasare.rezultat')}
-            <select value={alegeri.rezultat} data-camp="trasare-rezultat" onChange={(e) => { onSchimba({ rezultat: e.target.value === 'mediane' ? 'mediane' : 'contururi' }); }}>
-              <option value="contururi">{t('import.trasare.rezultat.contururi')}</option>
-              <option value="mediane">{t('import.trasare.rezultat.mediane')}</option>
-            </select>
-          </label>
-        )}
-        {!peCulori && alegeri.rezultat === 'mediane' && <p className="mic">{t('import.trasare.rezultat.sfat')}</p>}
-        {!peCulori && alegeri.rezultat === 'mediane' && (
-          <OptiuniMediane om={om} onSchimba={(m) => { onSchimba({ mediane: m }); }} lat={ciorna.lat}
+        <label>
+          {t('import.trasare.rezultat')}
+          <select value={alegeri.rezultat} data-camp="trasare-rezultat" onChange={(e) => { onSchimba({ rezultat: e.target.value === 'mediane' ? 'mediane' : 'contururi' }); }}>
+            <option value="contururi">{t('import.trasare.rezultat.contururi')}</option>
+            <option value="mediane">{t('import.trasare.rezultat.mediane')}</option>
+          </select>
+        </label>
+        {alegeri.rezultat === 'mediane' && <p className="mic">{t(peCulori ? 'import.trasare.rezultat.sfat-culori' : 'import.trasare.rezultat.sfat')}</p>}
+        {alegeri.rezultat === 'mediane' && (
+          <OptiuniMediane om={om} peCulori={peCulori} onSchimba={(m) => { onSchimba({ mediane: m }); }} lat={ciorna.lat}
             onLat={(v) => { setCiorna({ ...ciorna, lat: v }); }}
             automatMm={mediane?.parti && raport ? mediane.parti.pragPx * raport.mmPePx : mediane && raport ? 2 * mediane.grosimePx * raport.mmPePx : null} nr={nr} />
         )}
         {/* Pe culori (ADR 0226), Lumina vine înaintea culorilor: ea schimbă ce culori se găsesc. */}
         {peCulori && !raport?.transparenta && panouLumina}
-        {peCulori && <PanouCulori alegeri={alegeri} paleta={culori?.paleta ?? null} onSchimba={onSchimba} onEvidentiaza={setEvidentiata} nr={nr} />}
+        {peCulori && <PanouCulori alegeri={alegeri} paleta={culori?.paleta ?? null} onSchimba={onSchimba} onEvidentiaza={setEvidentiata} nr={nr} grosime={grosimeCuloare} />}
         {raport && !peCulori && <p className="mic" data-testid="trasare-sursa-aleasa">{aleasa}</p>}
         {!peCulori && <div className="trasare-prag">
           <span id="trasare-prag-eticheta">{t('import.trasare.prag')}</span>
@@ -692,8 +699,9 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               {raport.sursa !== 'alfa' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA && (
                 <p className="avertisment" data-testid="trasare-sugestie">{t('import.trasare.sugestie', { procent: nr(100 * raport.inegala, 0) })}</p>
               )}
-              {mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}
+              {!peCulori && mediane && mediane.grosimePx > 0 && <RaportGrosime grosimeMm={mediane.grosimePx * raport.mmPePx} grosimePx={mediane.grosimePx} freza={freza} nr={nr} />}
               {mediane && mediane.puncte > 0 && <p data-testid="trasare-puncte">{t('import.trasare.puncte', { n: mediane.puncte })}</p>}
+              {peCulori && om.leaga && mediane?.legaturi !== undefined && <p data-testid="trasare-legaturi">{t('import.trasare.legaturi', { n: mediane.legaturi })}</p>}
               {mediane?.parti && (
                 <p data-testid="trasare-parti">
                   {mediane.parti.numar > 0
@@ -721,10 +729,10 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
  * Opțiunile liniei mediane (ADR 0223, răspunsurile 1a–3a): sub „Rezultatul”, doar la „Linii mediane”: capetele (în centrul
  * capătului rotund sau în vârf), părțile late (linii mediane sau contururi) cu pragul lor („Automat”: de două ori grosimea
  * obișnuită; altfel, în mm), „Arată părțile late” (pornită implicit) și buclele (pe linie sau vectori închiși). Pragul are
- * efect doar cu contururi sau cu semnalarea.
+ * efect doar cu contururi sau cu semnalarea. Pe culori (ADR 0227), și „Leagă peste alte culori” (bifată implicit).
  */
-function OptiuniMediane({ om, onSchimba, lat, onLat, automatMm, nr }: {
-  readonly om: AlegeriTrasare['mediane']; readonly onSchimba: (m: AlegeriTrasare['mediane']) => void;
+function OptiuniMediane({ om, peCulori, onSchimba, lat, onLat, automatMm, nr }: {
+  readonly om: AlegeriTrasare['mediane']; readonly peCulori: boolean; readonly onSchimba: (m: AlegeriTrasare['mediane']) => void;
   readonly lat: string; readonly onLat: (v: string) => void; readonly automatMm: number | null; readonly nr: (x: number, z: number) => string;
 }) {
   const automat = om.pragLatMm === null;
@@ -770,8 +778,19 @@ function OptiuniMediane({ om, onSchimba, lat, onLat, automatMm, nr }: {
           <option value="inchise">{t('import.trasare.bucle.inchise')}</option>
         </select>
       </label>
+      {peCulori && (
+        <label className="rand" title={t('import.trasare.leaga-culori.titlu')}>
+          <input type="checkbox" checked={om.leaga} data-camp="trasare-leaga-culori" onChange={(e) => { onSchimba({ ...om, leaga: e.target.checked }); }} />
+          {t('import.trasare.leaga-culori')}
+        </label>
+      )}
     </div>
   );
+}
+
+/** Cum stă freza foii față de trăsătură (ADR 0222 §5): cât ea (cel mult 10 % sau 0,05 mm diferență), mai lată, mai îngustă. */
+function felFreza(freza: number | undefined, grosimeMm: number): 'potrivita' | 'lata' | 'ingusta' | null {
+  return freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'lata' : 'ingusta';
 }
 
 /**
@@ -781,7 +800,7 @@ function OptiuniMediane({ om, onSchimba, lat, onLat, automatMm, nr }: {
 function RaportGrosime({ grosimeMm, grosimePx, freza, nr }: {
   readonly grosimeMm: number; readonly grosimePx: number; readonly freza: number | undefined; readonly nr: (x: number, z: number) => string;
 }) {
-  const fel = freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'lata' : 'ingusta';
+  const fel = felFreza(freza, grosimeMm);
   return (
     <>
       <p data-testid="trasare-grosime">{t('import.trasare.grosime', { mm: nr(grosimeMm, 2), px: nr(grosimePx, 1) })}</p>
@@ -797,12 +816,13 @@ const TRAGERE_CULOARE = 'application/x-cncvs2-culoare';
  * Culorile (ADR 0221 §2–§3): numărul (automat, sau din glisor, 2–16; un număr nou șterge legăturile și bifele, ca în ArtCAM),
  * apoi pastilele: culoarea, ponderea ei în desen (la fundal, „fundalul”) și bifa „Se trasează”. O pastilă trasă peste alta se
  * leagă de ea (devin o singură culoare); „Leagă de…” face același lucru de la tastatură, iar pastila legată are „Dezleagă”.
- * Mausul (sau focusul) pe o pastilă îi evidențiază regiunea în previzualizare.
+ * Mausul (sau focusul) pe o pastilă îi evidențiază regiunea în previzualizare. Cu liniile mediane (ADR 0227), pastila își
+ * spune și grosimea trăsăturilor, față de freza foii (`grosime`).
  */
-function PanouCulori({ alegeri, paleta, onSchimba, onEvidentiaza, nr }: {
+function PanouCulori({ alegeri, paleta, onSchimba, onEvidentiaza, nr, grosime }: {
   readonly alegeri: AlegeriTrasare; readonly paleta: readonly CuloarePaleta[] | null;
   readonly onSchimba: (s: Partial<AlegeriTrasare>) => void; readonly onEvidentiaza: (k: number | null) => void;
-  readonly nr: (x: number, z: number) => string;
+  readonly nr: (x: number, z: number) => string; readonly grosime: (k: number) => string | null;
 }) {
   const c = alegeri.culori;
   const automat = c.numar === null;
@@ -845,7 +865,7 @@ function PanouCulori({ alegeri, paleta, onSchimba, onEvidentiaza, nr }: {
       {lista.length > 0 && <p className="mic">{t('import.trasare.culori.sfat')}</p>}
       <ul className="trasare-pastile" data-testid="trasare-pastile">
         {lista.map((x, k) => {
-          const p = prime[k] ?? k, legata = p !== k;
+          const p = prime[k] ?? k, legata = p !== k, gr = legata ? null : grosime(k);
           return (
             <li key={k} className="trasare-pastila" data-culoare={k} data-hex={x.hex} data-legata={legata ? p : undefined}
               draggable={!legata}
@@ -862,6 +882,7 @@ function PanouCulori({ alegeri, paleta, onSchimba, onEvidentiaza, nr }: {
               <span className="trasare-pastila-text">
                 <span>{x.hex}</span>
                 <span className="mic">{x.fundal ? t('import.trasare.culori.fundal') : t('import.trasare.culori.pondere', { p: nr(100 * x.pondere, 1) })}</span>
+                {gr !== null && <span className="mic" data-testid="trasare-pastila-grosime">{gr}</span>}
               </span>
               {legata ? (
                 <span className="trasare-pastila-legatura">

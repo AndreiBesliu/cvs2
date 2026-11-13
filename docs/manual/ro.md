@@ -715,8 +715,8 @@ dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
   transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
   rândul de sub listă spune ce a ales;
-- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
-  fiecărei trăsături, tăiat pe linie: vezi mai jos);
+- **Rezultatul**: **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul fiecărei trăsături, tăiat pe linie:
+  vezi mai jos; pe Culorile, ale fiecărei culori);
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
@@ -800,9 +800,18 @@ Sub **Rezultatul: Linii mediane** stau opțiunile lor:
 - **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
   iar o buclă aflată în alta, pe interior.
 
+Pe **Culorile**, cu **Rezultatul: Linii mediane**, fiecare culoare bifată își are liniile ei mediane (culorile legate,
+împreună), cu aceleași opțiuni pentru toate: o schemă, un desen cu carioci. Pragul automat al părților late vine din
+grosimea obișnuită a desenului întreg, deci o culoare plină (un fond, o pată) iese „lată”. **Leagă peste alte culori**
+(bifată implicit): o linie întreruptă de o culoare desenată peste ea (o încrucișare) continuă peste ea, într-o singură
+cale: două capete ale aceleiași culori, față în față, la cel mult trei grosimi ale ei, cu drumul dintre ele peste altă
+culoare (nu peste hârtie); raportul numără legăturile. Fiecare pastilă spune grosimea trăsăturilor culorii ei și, dacă
+foaia are o singură freză, cum stă ea față de trăsătură; **Arată grosimea** desenează banda fiecărei culori cu grosimea
+ei. **Importă** pune câte o formă pe culoare, cu liniile ei tăiate pe linie.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- liniile mediane pe culori și scanările îndreptate vin mai târziu;
+- scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);

@@ -1,9 +1,9 @@
 # ADR 0227 — Liniile mediane pe culori
 
-**Starea:** propus pe 13.11.2026, la „Da, propune-le” (owner-ul, după felia 25.4↑b). Felia 25.3↑c, lăsată de ADR 0222 §1
-(„pe culori, linia mediană a fiecărei culori bifate vine mai târziu, la cerere”), fără mașină, în linia trasării
-(worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `4f379cd`). Codul vine abia după răspunsurile la
-întrebările de la final.
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final); propus tot atunci,
+la „Da, propune-le” (owner-ul, după felia 25.4↑b). Felia 25.3↑c, lăsată de ADR 0222 §1 („pe culori, linia mediană a
+fiecărei culori bifate vine mai târziu, la cerere”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura
+`wip/25.1-trasare`, adusă la `origin/main`, `4f379cd`).
 **Completează:** ADR 0221 (trasarea pe culori), ADR 0222 și 0223 (linia mediană și opțiunile ei).
 **Schița:** <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91> (desenul prototipului, culorile, liniile mediane ale fiecărei
 culori fără legare și cu legarea și părțile late; macheta ferestrei; ce am măsurat; întrebările, cu formularul).
@@ -38,7 +38,7 @@ linie, cu adâncimea sau freza ei.
   - **timpul:** fiecare culoare, o trecere a liniei mediane (20–70 ms aici); pe 12 Mpx, o trecere alb-negru ia ~1,5 s
     (ADR 0222), deci pe culori contează decuparea fiecărei culori la cutia ei.
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **Fereastra trasării**, pe **Culorile**: apare „Rezultatul” (**Contururi** sau **Linii mediane**), cu opțiunile liniei
    mediane din ADR 0223 (capetele, părțile late și pragul lor, semnalarea, buclele), comune tuturor culorilor. Fiecare culoare
@@ -77,6 +77,8 @@ linie, cu adâncimea sau freza ei.
 apropie de o a treia) sau lasă rupte trăsături evidente; trasarea pe culori cu linii mediane trece de 30 s pe 12 Mpx.
 
 ## Întrebările (recomandarea întâi)
+
+**Răspunsurile (13.11):** „Da la 1-2a”: toate recomandările.
 
 Opțiunile de mai sus vin toate (regula „toate opțiunile”); întrebările sunt doar despre ce se exclude.
 
