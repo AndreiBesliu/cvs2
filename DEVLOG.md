@@ -8918,7 +8918,7 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
 ## 2026-11-13 — Felia 25.4↑b: lumina pe culori (ADR 0226, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0226: culorile adevărate, cu balansul de alb; umbra tare
-pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** —.
+pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** 13.11, 22:50.
 
 - **Ramura** adusă la `origin/main` (`f663a5b`: planșele, 11.1↑–11.5↑; conflict doar în DEVLOG).
 - **Probele întâi:** generatorul pozelor color în `test/unit/ajutor-poze.ts` (o foaie albă cu un disc roșu, un dreptunghi
@@ -8934,3 +8934,5 @@ pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11,
   trasării, importului și tutorialul 49 / 49, build-ul determinist; totalul 696,1 / 700 kB (`main`, cu planșele, 690,0),
   pornirea 105,7 / 110, ca în `main`. Privită mărit, în temă deschisă și închisă.
 - **Otrăvurile** (`test/otravuri/25.4b.py`, 17 alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
+  `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
