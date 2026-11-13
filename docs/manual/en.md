@@ -1429,6 +1429,15 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   K1 does not cancel the part it is working on at that moment: the request stays in view, with **Withdraw**, and is resent
   until the printer takes it, at most 2 minutes. The last part left has no button: for it, use Stop. Only a name from the
   printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
+- **Notifications** (their card, in the Printer window): **Turn on notifications** asks the browser for permission, once.
+  Under **Tell me when** you choose the events: it finished, it stopped, the pause from the file (with its note), another
+  pause, out of filament, an error, the connection lost while printing and the first layer done (off at first). While
+  cvs2 is hidden, a system notification comes (click it: the Printer window); while it is in front, a banner at the top,
+  with **Open Printer** and **Close**. **With sound**: a few short tones. **Also the system notification while cvs2 is in
+  front**, if you want it then too. **Percentage in the tab title**: “45 % · CNC Vector Studio”. On the Printer button in
+  the top bar, a dot and the percentage, wherever you are in the app, once you have opened the window; with **Connect the
+  kept printer when cvs2 opens**, also without that. They come while cvs2 is open, also in the background; on a phone,
+  only while it is in front. On Edge, an inactive tab sleeps after 2 hours: add cvs2 to “Never put these sites to sleep”.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.

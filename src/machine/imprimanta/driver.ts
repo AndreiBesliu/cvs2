@@ -83,13 +83,15 @@ export type Imprimanta = {
   readonly pozitie: { readonly x: number; readonly y: number } | null;
   /** Filamentul folosit de lucrarea de acum, în mm: mișcarea extruderului cerută de fișier (nu se schimbă cu debitul). */
   readonly filament: number | null;
+  /** Felia 3.6s: senzorul spune că s-a terminat filamentul (K1: `materialStatus` 1, cu imprimanta în pauză); null: nespus. */
+  readonly faraFilament: boolean | null;
 };
 
 export const IMPRIMANTA_NECUNOSCUTA: Imprimanta = {
   model: null, nume: null, firmware: null, cod: null, fisier: null, progres: null, trecut: null, ramas: null, strat: null,
   straturi: null, duza: null, duzaTinta: null, duzaMax: null, pat: null, patTinta: null, patMax: null, carcasa: null, lumina: null,
   ventilatoare: {}, viteza: null, debit: null, axe: null, ocupata: null, eroare: null, cheieEroare: null, autotest: null,
-  piese: null, anulate: null, piesaAcum: null, pozitie: null, filament: null,
+  piese: null, anulate: null, piesaAcum: null, pozitie: null, filament: null, faraFilament: null,
 };
 
 /** Bucățile de stare intră peste cea știută; ventilatoarele, fiecare la locul lui (un cadru poate aduce doar unul). */
