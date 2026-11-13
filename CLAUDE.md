@@ -1046,6 +1046,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **cele 16 idei din schițele aranjamentelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la cele 16 idei de pe Harta schițelor?”, după tura care a acoperit toate ecranele în cele patru aranjamente):
+  - 13 intră în feliile 28.x. Lista și felia fiecăreia stau în ADR 0250, „Completarea din 13.11: ideile din schițe”.
+  - Trei devin linii ale lor, fiecare cu ADR-ul ei: simularea ca vedere unică, proiectele multiple cu fișierul `.cvs2`,
+    clipboardul.
+  - Două butoane din stări au nevoie de altceva întâi: „Salvează ca fișier…” vine cu fișierul `.cvs2`, iar „Scrie aici”
+    cere o felie a depozitului cu un singur scriitor.
 - 13.11.2026: **fereastra Imprimanta urmează aranjamentul, ca Mașina** („Da, ca Mașina”, la „Fereastra Imprimanta urmează și
   ea aranjamentul, ca Mașina?”, după schița ei în Insule): se schimbă doar așezarea, cu aceleași module
   (`src/machine/imprimanta/`). ADR 0250 §6 completat; felia 28.6↑ cuprinde ambele ferestre.

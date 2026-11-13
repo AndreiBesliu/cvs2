@@ -8337,3 +8337,21 @@ provizorie); după pauză, „ce se poate uni?”.
   - straturile ascunse sau blocate doar pe ecran;
   - alegerea controlerului în Pas cu pas.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Schițele, turele 5–7, pe toate ecranele; ideile din ele acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură” (de două ori), apoi „vreau sa faci toate schitele pana le termini pe toate”, apoi „Da la toate”.
+**Started:** 13.11, după intrarea de mai sus. **Completed:** 13.11, 16:25.
+
+- **Canvas-ul** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), acum 50 de table:
+  - **tura 5:** paleta (Ctrl K), aceeași în toate; proiectele și versiunile; stările aplicației în cele patru aranjamente
+    (textele din `mesaje.ro.ts` și `carcasa.ro.ts`);
+  - **tura 6:** extensiile (Easy 3Draw); simularea ca vedere a proiectului; cele patru la 1024 × 768;
+  - **tura 7, rândul F:** Importă cu trasarea, planșele (ADR 0210, de pe ramură), opțiunile uneltei (Cuțitul), meniul de
+    context, contul și ajutorul, ghidul de după alegere, telefonul și tableta; tabla „Harta schițelor” (ecran × aranjament
+    și cele 16 idei, cu recomandarea).
+- **Corectură:** tabla Simularea spunea că vederea 3D vine mai târziu. Ea există (ADR 0057), la fel animația traseului
+  (ADR 0099). Comentariul din `src/ui/PrevizualizareSimulare.tsx` („până la afișarea pe WebGL2”) e vechi.
+- **ADR 0250, „Completarea din 13.11: ideile din schițe”** („Da la toate”): 13 idei în feliile 28.x, fiecare cu felia ei;
+  3 linii separate (simularea unică, proiectele multiple cu `.cvs2`, clipboardul).
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG, traducerea roadmap-ului.
