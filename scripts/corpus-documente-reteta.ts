@@ -4,7 +4,7 @@
  * folosește doar ce are orice versiune: `documentNou`, `operatieImplicita` (din v3), ușa `incarca` și `jsonCanonic`.
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
- * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v22 banda dopului în V), apoi
+ * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -12,7 +12,7 @@
  * Cu `<deschis>`, rețeta scrie și documentul deschis de ușa versiunii N din salvarea N − 1, înaintea adăugirii: ce a făcut
  * atunci migrarea N − 1 → N. Proba corpusului îl compară cu migrarea de azi.
  *
- * O versiune nouă (v23) își scrie aici adăugirea, la `ADAUGIRI[23]`, cu câmpul ei.
+ * O versiune nouă (v24) își scrie aici adăugirea, la `ADAUGIRI[24]`, cu câmpul ei.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as D from '../src/model/document.ts';
@@ -21,6 +21,8 @@ import { incarca, jsonCanonic } from '../src/model/incarcare.ts';
 type Obj = Record<string, any>;
 
 const N: number = (D as Obj)['VERSIUNE_SCHEMA'];
+// Amprenta contururilor unui bloc de text (ADR 0105 §4), doar din v23 (plăcuța ei): o versiune mai veche n-are modulul.
+const amprentaContururi: ((copii: unknown[]) => string) | null = N >= 23 ? (await import('../src/model/amprentaBloc.ts')).amprentaContururi as (copii: unknown[]) => string : null;
 const [intrare, iesire, fel, deschis] = process.argv.slice(2);
 if (!intrare || !iesire || (fel !== 'proiect' && fel !== 'gol')) throw new Error('folosire: <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]');
 
@@ -174,6 +176,27 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     inc['banda'] = {
       latime: 8, decupare: true, grosimePlaca: 6, freza: { numar: 8, nume: 'freza dreapta', diametru: 2 }, punti: { numar: 3, latime: 5, grosime: 1.5 },
     };
+    d['rev'] += 1;
+  },
+  // v23 (ADR 0210 §4, §7): o plăcuță de masă, textul șablonului „Masa {nr}” (două litere-dreptunghi, cu blocul de text valid)
+  // și instanța ei cu nr = 7, cu literele ei (trei), tăiate de profilul piesei.
+  23: (d) => {
+    if (!amprentaContururi) throw new Error('v23 fără amprenta blocului');
+    const litera = (g: string, c: string, x: number, latime: number): Obj => ({
+      tip: 'grup', id: g, matrice: tr(x, 0), copii: [{ tip: 'element', id: c, forma: { tip: 'dreptunghi', latime, inaltime: 8, razaColt: 0 }, matrice: tr(0, 0) }],
+    });
+    const sablon = [litera('l1', 'c1', 0, 5), litera('l2', 'c2', 7, 4)];
+    const forma = { tip: 'dreptunghi', latime: 5, inaltime: 8, razaColt: 0 };
+    const bloc = { continut: 'Masa {nr}', font: 'f:roboto', inaltime: 8, spatiere: 0, interlinie: 1.2, aliniere: 'stanga', amprenta: amprentaContururi(sablon) };
+    d['piese'].push({
+      id: 'masa', nume: 'Plăcuță de masă', radacina: { tip: 'grup', id: 'g', matrice: tr(0, 0), copii: sablon, text: bloc },
+      operatii: [{ ...operatie('litere', forma), noduri: ['c1', 'c2'], latura: 'pe-linie', adancime: 1, pas: 1 }],
+    });
+    const placuta = [litera('p1', 'q1', 0, 5), litera('p2', 'q2', 7, 4), litera('p3', 'q3', 14, 3)];
+    d['foi'][0]['instante'].push({
+      id: 'masa-7', piesa: 'masa', x: 60, y: 330, rotire: 0, campuri: { nr: '7' },
+      texte: { g: { continut: 'Masa 7', copii: placuta, operatii: { litere: ['q1', 'q2', 'q3'] } } },
+    });
     d['rev'] += 1;
   },
 };

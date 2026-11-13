@@ -806,6 +806,12 @@
   min-width: 15rem;
 }
 
+/* Cu multe foi, rândurile „Mută pe …” (ADR 0210 §1) lungesc meniul: derulează în el, nu iese din pânză. */
+.meniu-context {
+  max-height: min(70vh, 32rem);
+  overflow-y: auto;
+}
+
 .meniu-cont-cap {
   display: flex;
   flex-direction: column;

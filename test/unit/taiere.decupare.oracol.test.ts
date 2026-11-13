@@ -59,7 +59,7 @@ test('decuparea, pe corpusul din sămânță: ce rămâne e de partea păstrată
     }
     const foaie = d.foi[0];
     assert.ok(foaie);
-    const comenzi: Comanda[] = [...comenziStergere(d, new Set(rez.sterse)).comenzi];
+    const comenzi: Comanda[] = [...comenziStergere(d, new Set(rez.sterse), foaie.id).comenzi];
     if (rez.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaie.id, degrupate: rez.degrupate });
     const dupa = executa(istoricNou(d), { tip: 'lot', comenzi }).doc;
     assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(dupa))), `${mesaj}: documentul de după trece de ușă`);

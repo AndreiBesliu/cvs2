@@ -98,9 +98,10 @@ test('ce formă se poate edita: una singură, cu piesa doar a ei și un singur e
     assert.ok(Math.abs(r.x - q.x) < 1e-9 && Math.abs(r.y - q.y) < 1e-9);
   }
   assert.equal(inversa({ a: 1, b: 2, c: 2, d: 4, e: 0, f: 0 }), null, 'degenerată');
-  // O piesă cu două instanțe: împărțită.
+  // O piesă cu două instanțe (ADR 0210 §2): nodurile ei se editează, pentru amândouă.
   const imp = { ...d, foi: [{ ...d.foi[0]!, instante: [...d.foi[0]!.instante, { id: 'r2', piesa: 'r', x: 0, y: 0, rotire: 0 }] }] };
-  assert.equal(formaNoduri(imp, ['r']), 'piesa-impartita');
+  const fi = formaNoduri(imp, ['r']);
+  assert.ok(typeof fi !== 'string' && fi.instanta === 'r');
   const comp = { ...d, piese: d.piese.map((p) => (p.id === 'c' ? { ...p, radacina: { tip: 'grup' as const, id: 'c', matrice: ID, copii: [p.radacina] } } : p)) };
   // O piesă cu mai multe contururi (ADR 0068): fiecare contur, cu id-ul elementului lui.
   const fc = formaNoduri(comp, ['c']);

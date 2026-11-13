@@ -8,6 +8,8 @@ import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
 import { majusculaDinMarime, marimeDinMajuscula, raportMajuscula, rotunjesteMarime, UNITATI_MARIME, type UnitateMarime } from '../text/marime.ts';
 import { cuGoluri, dupaEditare, goluriAtinse, pePuncte, valoareComuna } from '../text/spatieri.ts';
 import type { AliniereText, CasetaText, SpatiuLitera } from '../text/asezare.ts';
+import type { Piesa } from '../model/document.ts';
+import type { Font } from '../text/font.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
@@ -229,8 +231,14 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   readonly ancora: Punct | null;
   /** Curba pe care a căzut ancora (ADR 0108 §3): conturul în coordonatele foii și distanța ancorei pe el. */
   readonly curba: { readonly contur: Contur; readonly s: number } | null;
-  /** Textul ales, cu blocul lui valid: „Aplică” îl înlocuiește. */
-  readonly editat: { readonly instanta: string; readonly bloc: BlocText } | null;
+  /**
+   * Textul ales, cu blocul lui valid: „Aplică” îl înlocuiește; și câte plăcuțe are piesa lui (ADR 0210 §4), refăcute odată cu
+   * el. Într-un șablon cu ramă (felia 11.4↑c), `grup` e grupul textului, iar `piesa`, piesa lui: celelalte texte ale ei își aduc
+   * fonturile pentru plăcuțe.
+   */
+  readonly editat: {
+    readonly instanta: string; readonly bloc: BlocText; readonly grup?: string; readonly piesa?: Piesa; readonly pusa?: number; readonly placute?: number;
+  } | null;
   readonly ruleaza: (cerere: CerereText) => RezultatActiune;
   readonly onInchide: () => void;
   readonly doarCitire: boolean;
@@ -269,7 +277,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   useEffect(() => { if (modul !== null && modul !== 'eroare') reincarcaListe(modul); }, [modul, reincarcaListe]);
 
   // Textul ales intră în panou: conținutul și alegerile lui (o dată pe instanță și pe bloc).
-  const cheieEditat = editat ? `${editat.instanta}:${editat.bloc.amprenta}` : null;
+  const cheieEditat = editat ? `${editat.instanta}:${editat.grup ?? ''}:${editat.bloc.amprenta}` : null;
   useEffect(() => {
     if (!editat) return;
     const b = editat.bloc;
@@ -451,9 +459,24 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
     if (!gata || !ancora || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
     trimite({ fel: 'nou', loc: ancora, piesa: (id, scula, grosime) => modul.piesaText(asezat, bloc(p, asezat), id, scula, undefined, grosime) });
   };
-  const aplica = (): void => {
+  const aplica = async (): Promise<void> => {
     if (!gata || !editat || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, bloc(p, asezat), vechi.id, undefined, vechi, grosime) });
+    // Plăcuțele șablonului (ADR 0210 §4): literele lor, cu fontul textului (cel adus aici), din blocul nou; într-un șablon cu
+    // ramă, celelalte texte ale piesei își aduc fonturile lor (o lipsă o spune refacerea plăcuțelor, cu motiv).
+    const font = rezFont?.ok ? rezFont.font : null;
+    let altele: ((id: string) => Font | null) | null = null;
+    if (editat.grup !== undefined && editat.piesa && editat.placute) {
+      const f = await modul.fonturiPiesei(editat.piesa).catch(() => null);
+      if (f?.ok) altele = f.font;
+    }
+    const grup = editat.grup;
+    trimite({
+      fel: 'editat', instanta: editat.instanta,
+      piesa: (vechi, grosime) => (grup === undefined ? modul.piesaText(asezat, bloc(p, asezat), vechi.id, undefined, vechi, grosime)
+        : modul.sablonCuAsezat(vechi, grup, asezat, bloc(p, asezat), grosime)),
+      ...(grup === undefined ? {} : { grup }),
+      texte: (nou, valori) => modul.textePlacutei(nou, valori, (id) => (id === form.font ? font : altele?.(id) ?? null)),
+    });
   };
   /** Fontul ales s-a schimbat în bibliotecă (încărcat, descărcat, șters): listele se recitesc, fontul se caută din nou. */
   const schimbat = (id?: string): void => {
@@ -678,9 +701,11 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         </div>
         {asezat ? <Previzualizare asezat={asezat} /> : null}
         {mesaj ? <p className="motiv-retea" role="status" data-testid="text-motiv">{mesaj}</p> : null}
+        {editat?.placute ? <p className="nota-retea" data-testid="text-placute">{t('editare.text.placute', { n: editat.placute })}</p>
+          : (editat?.pusa ?? 0) > 1 ? <p className="nota-retea" data-testid="text-legata">{t('editare.text.legata', { n: editat?.pusa ?? 0 })}</p> : null}
         <div className="butoane-retea">
           <button type="button" className="principal" data-text="adauga" disabled={!gata || !ancora} onClick={adauga}>{t('editare.text.adauga')}</button>
-          {editat ? <button type="button" data-text="aplica" disabled={!gata} onClick={aplica}>{t('editare.text.aplica')}</button> : null}
+          {editat ? <button type="button" data-text="aplica" disabled={!gata} onClick={() => { void aplica(); }}>{t('editare.text.aplica')}</button> : null}
           <button type="button" data-text="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
         </div>
       </div>

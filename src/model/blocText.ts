@@ -10,9 +10,8 @@
  * aldin (ADR 0138 §4), prin lățimea literelor.
  */
 import * as v from 'valibot';
-import { amprentaSir } from './amprenta.ts';
+import { amprentaContururi } from './amprentaBloc.ts';
 import type { Nod } from './document.ts';
-import { jsonCanonic } from './jsonCanonic.ts';
 
 export const ALINIERI_TEXT = ['stanga', 'centru', 'dreapta'] as const;
 /** Textul pe curbă (ADR 0108): poziția blocului față de curbă și orientarea literelor. */
@@ -146,16 +145,8 @@ export const SchemaBlocText = v.pipe(
 
 export type BlocText = v.InferOutput<typeof SchemaBlocText>;
 
-const amprente = new WeakMap<readonly Nod[], string>();
-
-/** Amprenta contururilor unui bloc (copiii grupului rădăcină), ținută pe obiect: documentul nu se schimbă pe loc. */
-export function amprentaContururi(copii: readonly Nod[]): string {
-  const gata = amprente.get(copii);
-  if (gata !== undefined) return gata;
-  const a = amprentaSir(jsonCanonic(copii));
-  amprente.set(copii, a);
-  return a;
-}
+// Amprenta contururilor stă în `amprentaBloc.ts` (o folosește și ușa documentului); de aici, aceeași funcție.
+export { amprentaContururi };
 
 /** Blocul de text valid al unei rădăcini (cu amprenta contururilor de acum), sau null: piesa e doar vectori. */
 export function blocText(radacina: Nod): BlocText | null {

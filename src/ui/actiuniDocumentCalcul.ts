@@ -2,10 +2,13 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
+import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
+import { operatiiPlacutei } from '../io/placuteOperatii.ts';
+import type { RezultatPlacuta } from '../text/placute.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
@@ -14,14 +17,30 @@ import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
 import { grupDin, type ParteGrupata } from '../model/grupare.ts';
+import { placutaCoapta } from '../model/placute.ts';
 import { blocText } from '../model/blocText.ts';
+// Judecata literelor plăcuțelor (v23) se înregistrează în ușă la import: acțiunile o cer pe documentul de după.
+import { judecaTexte } from '../model/judecataTexte.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
 import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
+// Motivele planșelor (ADR 0210) stau în mesajele editorului, nu în pachetul de pornire: le dă doar calculul acesta, deci el
+// și le cere la evaluare. Ferestrele care îl aduc (editorul, panoul, exportul, importul, așezarea) așteaptă mesajele cerute
+// înainte de randare (`cuMesaje`), deci un motiv nu se arată niciodată fără textul lui.
+import '../i18n/editare.ts';
+import { indexFoaieActiva } from '../model/foi.ts';
+import { comandaEticheta, comandaFoaieNoua, comandaMutaFoaie, comandaStergeFoaie, comenziMutaPeFoaie, idFoaieNoua } from '../model/foiComenzi.ts';
 import {
-  alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
+  comandaDuplicareLegata, comenziCopii, comenziDesprinde, folosiri as folosiriPieselor, INCA_MAXIM, instantePiesei, planCopii,
+} from '../model/pieseLegate.ts';
+import { aplica } from '../geom/matrice.ts';
+import { comenziAsezare, distantaMinima, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { optiuniTinute } from '../app/asezareTinuta.ts';
+import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
+import {
+  alesePreaDeparte, copieArbore, cresteCopia, foaieCtx, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
   comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type ConversieCalculata, type FormaNoua, type ReparatieCalculata,
   type TaiereCalculata,
 } from './actiuniDocument.ts';
@@ -45,12 +64,13 @@ type ComandaImport =
   | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
   | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
 type Loc = { readonly x: number; readonly y: number } | null;
-let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; rez: ComandaImport } | null = null;
-function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null): ComandaImport {
+let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; foaie: string | undefined; rez: ComandaImport } | null = null;
+function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie: string | undefined): ComandaImport {
   const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
-  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)) return ultimulImport.rez;
-  const scula = sculaFoii(doc);
-  const foaie = foaieCurenta(doc);
+  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)
+    && ultimulImport.foaie === idFoaie) return ultimulImport.rez;
+  const scula = sculaFoii(doc, idFoaie);
+  const foaie = foaieCurenta(doc, idFoaie);
   const ocupate = new Set<string>();
   const puse = [pregatit, ...(pregatit.impreuna ?? [])].map((p) => {
     const id = idNou(doc, ocupate);
@@ -73,7 +93,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null):
     }))) as Comanda;
     rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, ids: puse.map((q) => q.id) } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
-  ultimulImport = { doc, pregatit, la, rez };
+  ultimulImport = { doc, pregatit, la, foaie: idFoaie, rez };
   return rez;
 }
 
@@ -97,9 +117,9 @@ function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Oper
 }
 
 /** Cutia elementelor instanțelor alese, în lume (mm ai foii), sau null fără niciun element. */
-function cutieAlese(doc: Document, alese: ReadonlySet<string>): Cutie | null {
+function cutieAlese(doc: Document, alese: ReadonlySet<string>, indexFoaie: number): Cutie | null {
   let k: Cutie | null = null;
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     if (!alese.has(e.instanta)) continue;
     const c = cutieElement(e);
     k = k ? uneste(k, c) : c;
@@ -119,7 +139,8 @@ const PRAG_MUTARE = 1e-9;
 function deplasarePozitie(ctx: ContextDocument): { readonly dx: number; readonly dy: number } | 'motiv.valoare-invalida' | 'motiv.nicio-selectie' {
   const p = ctx.pozitieNoua?.() ?? {};
   if ((p.x !== undefined && !Number.isFinite(p.x)) || (p.y !== undefined && !Number.isFinite(p.y))) return 'motiv.valoare-invalida';
-  const k = cutieAlese(ctx.istoric().doc, new Set(ctx.selectie()));
+  const doc = ctx.istoric().doc;
+  const k = cutieAlese(doc, new Set(ctx.selectie()), indexFoaieActiva(doc, ctx.foaie?.()));
   if (!k) return 'motiv.nicio-selectie';
   const prag = (d: number): number => (Math.abs(d) < PRAG_MUTARE ? 0 : d);
   return { dx: prag(p.x === undefined ? 0 : p.x - k.minX), dy: prag(p.y === undefined ? 0 : p.y - k.minY) };
@@ -156,7 +177,7 @@ function instantaRotita(doc: Document, i: Instanta, rotire: number): Instanta {
 
 /** Materialul nou al foii, cu mărimile nescrise păstrate, sau motivul: în plafoanele schemei (ADR 0024), strict pozitive. */
 function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
-  const vechi = foaieCurenta(ctx.istoric().doc).stoc;
+  const vechi = foaieCtx(ctx).stoc;
   const n = ctx.stocNou?.() ?? {};
   const bun = (x: number | undefined, max: number): boolean => x === undefined || (Number.isFinite(x) && x > 0 && x <= max);
   if (!bun(n.latime, PLAFON.latura) || !bun(n.inaltime, PLAFON.latura) || !bun(n.grosime, PLAFON.grosime)) return 'motiv.foaie-invalida';
@@ -167,25 +188,26 @@ function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
  * Copierea în rețea (ADR 0061): copiile selecției, fiecare cu piesa ei (independente, ca la Duplică), sau motivul pentru care
  * nu se poate. Verdictul e comun acțiunii și panoului din extensia barei (care îl arată sub câmpuri).
  */
-function copiiPentru(doc: Document, selectie: readonly string[], r: Retea): { readonly copii: ReturnType<typeof copiiRetea>; readonly instante: Instanta[] } {
+function copiiPentru(doc: Document, selectie: readonly string[], r: Retea, idFoaie: string | undefined): { readonly copii: ReturnType<typeof copiiRetea>; readonly instante: Instanta[] } {
+  const k = indexFoaieActiva(doc, idFoaie);
   // Pe curbă (ADR 0066): locurile vin din curbă, iar curba nu se copiază.
   if (r.fel === 'curba') {
-    const c = copiiPeCurba(doc, FOAIA, selectie, r);
+    const c = copiiPeCurba(doc, k, selectie, r);
     return typeof c === 'string' ? { copii: [], instante: [] } : c;
   }
   const alese = new Set(selectie);
-  const cutii = elementeFoaie(doc, FOAIA).filter((e) => alese.has(e.instanta)).map((e) => cutieElement(e));
+  const cutii = elementeFoaie(doc, k).filter((e) => alese.has(e.instanta)).map((e) => cutieElement(e));
   const cutie = cutii.reduce(uneste, CUTIE_GOALA);
-  return { copii: cutii.length > 0 ? copiiRetea(cutie, r) : [], instante: foaieCurenta(doc).instante.filter((i) => alese.has(i.id)) };
+  return { copii: cutii.length > 0 ? copiiRetea(cutie, r) : [], instante: foaieCurenta(doc, idFoaie).instante.filter((i) => alese.has(i.id)) };
 }
 
-export function motivCopiereRetea(doc: Document, selectie: readonly string[], r: Retea, doarCitire: boolean): CheieSimpla | null {
-  if (selectie.length === 0 || !foaieCurenta(doc).instante.some((i) => selectie.includes(i.id))) return 'motiv.nicio-selectie';
+export function motivCopiereRetea(doc: Document, selectie: readonly string[], r: Retea, doarCitire: boolean, idFoaie?: string): CheieSimpla | null {
+  if (selectie.length === 0 || !foaieCurenta(doc, idFoaie).instante.some((i) => selectie.includes(i.id))) return 'motiv.nicio-selectie';
   if (doarCitire) return 'motiv.doar-citire';
   if (motivRetea(r)) return 'motiv.nimic-ales';
-  const { copii, instante } = copiiPentru(doc, selectie, r);
+  const { copii, instante } = copiiPentru(doc, selectie, r, idFoaie);
   if (copii.length === 0) return 'motiv.nicio-selectie';
-  const una = cresteCopia(doc, selectie);
+  const una = cresteCopia(doc, selectie, idFoaie);
   const toate = Object.fromEntries(Object.entries(una).map(([k, v]) => [k, v * copii.length])) as typeof una;
   if (!incape(doc, toate)) return 'motiv.plafon';
   for (const k of copii) for (const i of instante) {
@@ -202,41 +224,151 @@ export function motivCopiereRetea(doc: Document, selectie: readonly string[], r:
  */
 type ComandaText = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
 const MOTIV_TEXT = { gol: 'motiv.text-gol', includeri: 'motiv.text-includeri', plafon: 'motiv.plafon' } as const;
-let ultimulText: { doc: Document; cerere: CerereText; rez: ComandaText } | null = null;
-export function comandaText(doc: Document, cerere: CerereText): ComandaText {
-  if (ultimulText && ultimulText.doc === doc && ultimulText.cerere === cerere) return ultimulText.rez;
-  const rez = judecaTextul(doc, cerere);
-  ultimulText = { doc, cerere, rez };
+/** De ce o plăcuță nu se poate reface cu textul nou al șablonului (ADR 0210 §4). */
+const MOTIV_PLACUTA = {
+  font: 'editare.text.placute.font', aldin: 'editare.text.placute.aldin', caseta: 'editare.text.placute.caseta',
+  curba: 'editare.text.placute.curba', includeri: 'editare.text.placute.includeri',
+} as const;
+
+/**
+ * Motivul unui document de după refuzat de ușă: de schemele lui (cel dat), sau de judecata literelor plăcuțelor (ADR 0210
+ * §7: o schimbare a șablonului care le-ar strica, `judecataTexte.ts`), pe documentul brut, ca ușa. Null: documentul trece.
+ */
+export function motivDupa(dupa: Document, altfel: CheieSimpla): CheieSimpla | null {
+  const brut = JSON.parse(JSON.stringify(dupa)) as Document;
+  if (!is(SchemaDocument, brut)) return altfel;
+  return judecaTexte(brut) === null ? null : 'motiv.placute';
+}
+
+/**
+ * Plăcuțele piesei `nou` (pe toate foile) cu operațiile ei noi mutate pe literele lor (ADR 0210 §4, `operatiiPlacutei`): o
+ * comandă pe plăcuța care se schimbă. Null: imbricarea literelor unei plăcuțe trece de plafonul ei.
+ */
+function placuteCuOperatiile(doc: Document, nou: Piesa): Comanda[] | null {
+  const comenzi: Comanda[] = [];
+  for (const x of instantePiesei(doc, nou.id)) {
+    const texte = x.instanta.texte;
+    const f = doc.foi[x.foaie];
+    if (!texte || !f) continue;
+    const noi: Record<string, TextePlacuta> = {};
+    for (const [g, t] of Object.entries(texte)) {
+      const operatii = operatiiPlacutei(nou, g, t.copii);
+      if (!operatii) return null;
+      noi[g] = { ...t, operatii };
+    }
+    if (jsonCanonic(noi) !== jsonCanonic(texte)) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: { ...x.instanta, texte: noi } });
+  }
+  return comenzi;
+}
+
+/**
+ * Piesa `vechi` înlocuită de `nou`, cu literele fiecărei plăcuțe a ei refăcute din piesa nouă (ADR 0210 §4), pe orice foaie,
+ * în același pas; motivul, dacă o plăcuță nu se poate reface (sau lipsesc literele noi: `motiv.placute`).
+ */
+function cuPlacuteleRefacute(
+  doc: Document, vechi: Piesa, nou: Piesa, texte: ((nou: Piesa, valori: Readonly<Record<string, string>>) => RezultatPlacuta) | undefined,
+): Comanda[] | CheieSimpla {
+  const comenzi: Comanda[] = [{ tip: 'inlocuieste-piesa', vechi, nou }];
+  for (const x of instantePiesei(doc, vechi.id)) {
+    if (!x.instanta.texte) continue;
+    if (!texte) return 'motiv.placute';
+    const t = texte(nou, x.instanta.campuri ?? {});
+    if (!t.ok) return MOTIV_PLACUTA[t.motiv];
+    const f = doc.foi[x.foaie];
+    if (f) comenzi.push({ tip: 'inlocuieste-instanta', foaie: f.id, vechi: x.instanta, nou: cuValorile(x.instanta, t.campuri, t.texte) });
+  }
+  return comenzi;
+}
+
+/** Instanța cu valorile și literele noi ale unei plăcuțe; fără litere (piesa nu mai e un șablon), doar cu valorile. */
+function cuValorile(i: Instanta, campuri: Readonly<Record<string, string>>, texte: Readonly<Record<string, TextePlacuta>> | undefined): Instanta {
+  const { texte: _texte, campuri: _campuri, ...rest } = i;
+  return { ...rest, ...(Object.keys(campuri).length > 0 ? { campuri: { ...campuri } } : {}), ...(texte ? { texte: structuredClone(texte) } : {}) };
+}
+let ultimulText: { doc: Document; cerere: CerereText; foaie: string | undefined; rez: ComandaText } | null = null;
+export function comandaText(doc: Document, cerere: CerereText, idFoaie?: string): ComandaText {
+  if (ultimulText && ultimulText.doc === doc && ultimulText.cerere === cerere && ultimulText.foaie === idFoaie) return ultimulText.rez;
+  const rez = judecaTextul(doc, cerere, idFoaie);
+  ultimulText = { doc, cerere, foaie: idFoaie, rez };
   return rez;
 }
 
-function judecaTextul(doc: Document, c: CerereText): ComandaText {
-  const foaie = foaieCurenta(doc);
+function judecaTextul(doc: Document, c: CerereText, idFoaie: string | undefined): ComandaText {
+  const foaie = foaieCurenta(doc, idFoaie);
   let comanda: Comanda;
   let id: string;
   if (c.fel === 'nou') {
     if (instantaPreaDeparte(c.loc.x, c.loc.y)) return { ok: false, motiv: 'motiv.prea-departe' };
     id = idNou(doc);
-    const r = c.piesa(id, sculaFoii(doc), foaie.stoc.grosime);
+    const r = c.piesa(id, sculaFoii(doc, idFoaie), foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     comanda = {
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: c.loc.x, y: c.loc.y, rotire: 0 }, pozitie: foaie.instante.length,
       piesa: { piesa: r.piesa, pozitie: doc.piese.length },
     };
+  } else if (c.fel === 'sablon') {
+    // Textul șablonului schimbat din fereastra CSV: piesa nouă e făcută pe cea de acum; plăcuțele ei se refac în același pas.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const vechi = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    if (!inst || !vechi) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (vechi !== c.piesa || c.nou.id !== vechi.id) return { ok: false, motiv: 'motiv.placute' };
+    id = inst.id;
+    const comenzi = cuPlacuteleRefacute(doc, vechi, c.nou, c.texte);
+    if (typeof comenzi === 'string') return { ok: false, motiv: comenzi };
+    comanda = comenzi.length === 1 ? comenzi[0]! : { tip: 'lot', comenzi };
+  } else if (c.fel === 'placute') {
+    // Plăcuțele din CSV: primul rând pe instanța aleasă, restul instanțe noi ale piesei la capătul foii; apoi toate așezate pe
+    // foi (ADR 0210 §3), cu vărsarea pe foile următoare goale și pe foi noi, într-un singur pas.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    const [primul, ...rest] = c.randuri;
+    if (!inst || !p || !primul) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (p !== c.piesa) return { ok: false, motiv: 'motiv.placute' };
+    if ((folosiriPieselor(doc).get(p.id) ?? 0) + rest.length > INCA_MAXIM) return { ok: false, motiv: 'motiv.inca-total' };
+    const comenzi: Comanda[] = [{ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: inst, nou: cuValorile(inst, primul.campuri, primul.texte) }];
+    const { campuri: _campuri, texte: _texte, ...baza } = inst;
+    const ocupate = new Set<string>();
+    const ids = [inst.id];
+    for (const [k, r] of rest.entries()) {
+      const nid = idNou(doc, ocupate);
+      ocupate.add(nid);
+      ids.push(nid);
+      comenzi.push({ tip: 'adauga', foaie: foaie.id, instanta: cuValorile({ ...structuredClone(baza), id: nid }, r.campuri, r.texte), pozitie: foaie.instante.length + k });
+    }
+    const intermediar = executa(istoricDin(doc), { tip: 'lot', comenzi }).doc;
+    const plan = planAsezare(intermediar, ids, foaie.id, c.asezare);
+    if (!plan.ok) return { ok: false, motiv: plan.motiv === 'distanta' ? 'motiv.aseaza-distanta' : plan.motiv === 'valori' ? 'motiv.aseaza-valori' : 'motiv.nimic-ales' };
+    if (doc.foi.length + plan.foiNoi > PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    comenzi.push(...comenziAsezare(intermediar, foaie.id, plan));
+    id = inst.id;
+    comanda = { tip: 'lot', comenzi };
+  } else if (c.fel === 'placuta') {
+    // Valorile unei plăcuțe (ADR 0210 §4): literele făcute pe piesa de acum; una schimbată între timp le-ar face greșite.
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const p = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    if (!inst || !p) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (p !== c.piesa) return { ok: false, motiv: 'motiv.placute' };
+    const nou = cuValorile(inst, c.campuri, c.texte);
+    if (jsonCanonic(nou) === jsonCanonic(inst)) return { ok: false, motiv: 'motiv.nimic-ales' };
+    id = inst.id;
+    comanda = { tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: inst, nou };
   } else {
     const inst = foaie.instante.find((i) => i.id === c.instanta);
     const vechi = inst ? doc.piese.find((p) => p.id === inst.piesa) : undefined;
     if (!inst || !vechi) return { ok: false, motiv: 'motiv.nimic-ales' };
-    if (!blocText(vechi.radacina)) return { ok: false, motiv: 'motiv.text-vectori' };
-    const folosiri = doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === vechi.id).length, 0);
-    if (folosiri > 1) return { ok: false, motiv: 'motiv.text-impartit' };
+    // Textul editat: piesa întreagă, sau grupul unui text dintr-un șablon cu ramă (ADR 0210 §4); unul devenit vectori, refuz.
+    const g = c.grup === undefined ? vechi.radacina : noduriPiesa(vechi.radacina).find((x) => x.nod.id === c.grup)?.nod;
+    if (!g || !blocText(g)) return { ok: false, motiv: 'motiv.text-vectori' };
     const r = c.piesa(vechi, foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     id = inst.id;
-    comanda = { tip: 'inlocuieste-piesa', vechi, nou: r.piesa };
+    const comenzi = cuPlacuteleRefacute(doc, vechi, r.piesa, c.texte);
+    if (typeof comenzi === 'string') return { ok: false, motiv: comenzi };
+    comanda = comenzi.length === 1 ? comenzi[0]! : { tip: 'lot', comenzi };
   }
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id } : { ok: false, motiv };
 }
 
 /** Calculul celor cinci acțiuni, după id; `inregistreazaCalcul` îl leagă de registrul documentului. */
@@ -246,13 +378,13 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.importNou) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null);
+      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.importNou) return;
       const h = ctx.istoric();
-      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null);
+      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza([...r.ids]);
@@ -287,13 +419,13 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.rolNou) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaRol(ctx.istoric(), ctx.selectie(), ctx.rolNou());
+      const r = comandaRol(ctx.istoric(), ctx.selectie(), ctx.rolNou(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.rolNou) return;
       const h = ctx.istoric();
-      const r = comandaRol(h, ctx.selectie(), ctx.rolNou());
+      const r = comandaRol(h, ctx.selectie(), ctx.rolNou(), ctx.foaie?.());
       if (r.ok) ctx.scrie(executa(h, r.comanda));
     },
   },
@@ -311,7 +443,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const d = deplasarePozitie(ctx);
       if (typeof d === 'string' || (d.dx === 0 && d.dy === 0) || alesePreaDeparte(ctx, d.dx, d.dy)) return;
       const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
+      const foaie = foaieCtx(ctx, h.doc);
       const alese = new Set(ctx.selectie());
       const c = pas(foaie.instante
         .filter((i) => alese.has(i.id))
@@ -329,7 +461,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const r = ctx.rotireNoua();
       if (!Number.isFinite(r)) return 'motiv.valoare-invalida';
       const doc = ctx.istoric().doc;
-      const i = foaieCurenta(doc).instante.find((x) => x.id === ctx.selectie()[0]);
+      const i = foaieCtx(ctx, doc).instante.find((x) => x.id === ctx.selectie()[0]);
       if (!i) return 'motiv.nicio-selectie';
       const nou = instantaRotita(doc, i, rotireNormalizata(r));
       return instantaPreaDeparte(nou.x, nou.y) ? 'motiv.prea-departe' : true;
@@ -337,7 +469,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     ruleaza: (ctx) => {
       const r = ctx.rotireNoua?.();
       const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
+      const foaie = foaieCtx(ctx, h.doc);
       const vechi = ctx.selectie().length === 1 ? foaie.instante.find((x) => x.id === ctx.selectie()[0]) : undefined;
       if (r === undefined || !Number.isFinite(r) || !vechi) return;
       const rotire = rotireNormalizata(r);
@@ -358,7 +490,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     ruleaza: (ctx) => {
       const nou = stocCerut(ctx);
       const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
+      const foaie = foaieCtx(ctx, h.doc);
       if (typeof nou === 'string' || jsonCanonic(nou) === jsonCanonic(foaie.stoc)) return;
       ctx.scrie(executa(h, { tip: 'inlocuieste-stoc', foaie: foaie.id, vechi: foaie.stoc, nou }));
     },
@@ -376,7 +508,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     ruleaza: (ctx) => {
       const nou = ctx.ghidajeNoi?.();
       const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
+      const foaie = foaieCtx(ctx, h.doc);
       const vechi = foaie.ghidaje ?? [];
       if (!nou || !ghidajeBune(nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
@@ -389,13 +521,13 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     activa: (ctx) => {
       const r = ctx.retea?.();
       if (!r) return 'motiv.nimic-ales';
-      return motivCopiereRetea(ctx.istoric().doc, ctx.selectie(), r, ctx.doarCitire?.() === true) ?? true;
+      return motivCopiereRetea(ctx.istoric().doc, ctx.selectie(), r, ctx.doarCitire?.() === true, ctx.foaie?.()) ?? true;
     },
     ruleaza: (ctx) => {
       const r = ctx.retea?.();
       if (!r) return;
       const h = ctx.istoric();
-      const { copii, instante } = copiiPentru(h.doc, ctx.selectie(), r);
+      const { copii, instante } = copiiPentru(h.doc, ctx.selectie(), r, ctx.foaie?.());
       const comenzi: Comanda[] = [];
       const noi: string[] = [];
       let doc = h.doc;
@@ -405,7 +537,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
           if (!piesaVeche) continue;
           const id = idNou(doc);
           const { radacina, ...restPiesa } = piesaVeche;
-          const foaie = foaieCurenta(doc);
+          const foaie = foaieCtx(ctx, doc);
           const c: Comanda = {
             tip: 'adauga', foaie: foaie.id,
             instanta: { ...structuredClone(original), ...instantaCopiei(original, k), id, piesa: id },
@@ -431,11 +563,11 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (s !== true) return s;
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       const c = comenziTransformare(ctx);
-      return c === null ? 'motiv.transformare-inexacta' : true;
+      return typeof c === 'string' ? c : true;
     },
     ruleaza: (ctx) => {
       const c = comenziTransformare(ctx);
-      const p = c ? pas(c) : null;
+      const p = typeof c === 'string' ? null : pas(c);
       if (p) ctx.scrie(executa(ctx.istoric(), p));
     },
   },
@@ -449,10 +581,12 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (s !== true) return s;
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
-      return comandaForma(ctx) === null ? 'prop.forma.refuzata' : true;
+      const r = comandaForma(ctx);
+      return r === null ? 'prop.forma.refuzata' : 'motiv' in r ? r.motiv : true;
     },
     ruleaza: (ctx) => {
-      const c = comandaForma(ctx)?.comanda;
+      const r = comandaForma(ctx);
+      const c = r && 'comanda' in r ? r.comanda : null;
       if (c) ctx.scrie(executa(ctx.istoric(), c));
     },
   },
@@ -462,13 +596,13 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.textNou) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaText(ctx.istoric().doc, ctx.textNou());
+      const r = comandaText(ctx.istoric().doc, ctx.textNou(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.textNou) return;
       const h = ctx.istoric();
-      const r = comandaText(h.doc, ctx.textNou());
+      const r = comandaText(h.doc, ctx.textNou(), ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza([r.id]);
@@ -479,12 +613,12 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     activa: (ctx) => {
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaDegrupare(ctx.istoric().doc, ctx.selectie());
+      const r = comandaDegrupare(ctx.istoric().doc, ctx.selectie(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       const h = ctx.istoric();
-      const r = comandaDegrupare(h.doc, ctx.selectie());
+      const r = comandaDegrupare(h.doc, ctx.selectie(), ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza(r.ids);
@@ -495,12 +629,12 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     activa: (ctx) => {
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaGrupare(ctx.istoric().doc, ctx.selectie());
+      const r = comandaGrupare(ctx.istoric().doc, ctx.selectie(), ctx.foaie?.(), ctx.grupareSurori?.() ?? alegereTinuta());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       const h = ctx.istoric();
-      const r = comandaGrupare(h.doc, ctx.selectie());
+      const r = comandaGrupare(h.doc, ctx.selectie(), ctx.foaie?.(), ctx.grupareSurori?.() ?? alegereTinuta());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza([r.id]);
@@ -513,14 +647,14 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.reparatie) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaReparatie(ctx.istoric(), ctx.reparatie());
+      const r = comandaReparatie(ctx.istoric(), ctx.reparatie(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.reparatie) return;
       const h = ctx.istoric();
       const rep = ctx.reparatie();
-      const r = comandaReparatie(h, rep);
+      const r = comandaReparatie(h, rep, ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       const sterse = new Set(rep.sterse);
@@ -550,14 +684,14 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.taiere) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaTaiere(ctx.istoric(), ctx.taiere());
+      const r = comandaTaiere(ctx.istoric(), ctx.taiere(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.taiere) return;
       const h = ctx.istoric();
       const t = ctx.taiere();
-      const r = comandaTaiere(h, t);
+      const r = comandaTaiere(h, t, ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza(t.ids);
@@ -570,14 +704,14 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!f) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaDesen(ctx.istoric().doc, f, ctx.sterge?.());
+      const r = comandaDesen(ctx.istoric().doc, f, ctx.sterge?.(), ctx.foaie?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       const f = ctx.formaNoua?.();
       if (!f) return;
       const h = ctx.istoric();
-      const r = comandaDesen(h.doc, f, ctx.sterge?.());
+      const r = comandaDesen(h.doc, f, ctx.sterge?.(), ctx.foaie?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza(r.ids);
@@ -590,20 +724,276 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!d) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const c = comenziDeplasare(ctx.istoric().doc, d);
+      const c = comenziDeplasare(ctx.istoric().doc, d, ctx.foaie?.());
       return typeof c === 'string' ? c : true;
     },
     ruleaza: (ctx) => {
       const d = ctx.deplasari?.();
       if (!d) return;
       const h = ctx.istoric();
-      const c = comenziDeplasare(h.doc, d);
+      const c = comenziDeplasare(h.doc, d, ctx.foaie?.());
       if (typeof c === 'string') return;
       const p = pas(c);
       if (p) ctx.scrie(executa(h, p));
     },
   },
+  // Foile proiectului (ADR 0210 §1, felia 11.1↑). O foaie nouă vine după cea aleasă (sau activă), ca ea, și devine activă.
+  'foaie.adauga': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return ctx.istoric().doc.foi.length >= PLAFON.foi ? 'motiv.plafon' : true;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      if (h.doc.foi.length >= PLAFON.foi) return;
+      const { comanda, id } = comandaFoaieNoua(h.doc, foaieDeLucru(ctx));
+      ctx.scrie(executa(h, comanda));
+      ctx.selecteaza([]);
+      ctx.activeazaFoaie?.(id);
+    },
+  },
+  // Copia foii: piese separate (ca Ctrl+D), la aceleași locuri, pe o foaie nouă după ea, care devine activă.
+  'foaie.duplica': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaDuplicare(ctx.istoric().doc, foaieDeLucru(ctx));
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaDuplicare(h.doc, foaieDeLucru(ctx));
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([]);
+      ctx.activeazaFoaie?.(r.id);
+    },
+  },
+  // Ștergerea foii, cu piesele care stau doar pe ea; documentul păstrează cel puțin o foaie. Ștearsă cea activă, devine activă
+  // vecina de dinainte (sau următoarea, dacă era prima).
+  'foaie.sterge': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return comandaStergeFoaie(ctx.istoric().doc, foaieDeLucru(ctx)) ? true : 'motiv.ultima-foaie';
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const id = foaieDeLucru(ctx);
+      const c = comandaStergeFoaie(h.doc, id);
+      if (!c) return;
+      const k = h.doc.foi.findIndex((f) => f.id === id);
+      const activa = foaieCtx(ctx, h.doc).id;
+      ctx.scrie(executa(h, c));
+      if (activa !== id) return;
+      ctx.selecteaza([]);
+      const vecina = h.doc.foi[k - 1] ?? h.doc.foi[k + 1];
+      if (vecina) ctx.activeazaFoaie?.(vecina.id);
+    },
+  },
+  'foaie.muta-sus': mutaFoaia(-1),
+  'foaie.muta-jos': mutaFoaia(1),
+  // Numele sau materialul foii, din panou: un text gol scoate eticheta.
+  'foaie.eticheta': {
+    activa: (ctx) => {
+      if (!ctx.etichetaNoua) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return ctx.etichetaNoua().valoare.trim().length > PLAFON.numeLungime ? 'motiv.eticheta-lunga' : true;
+    },
+    ruleaza: (ctx) => {
+      const e = ctx.etichetaNoua?.();
+      if (!e || e.valoare.trim().length > PLAFON.numeLungime) return;
+      const h = ctx.istoric();
+      const c = comandaEticheta(h.doc, foaieDeLucru(ctx), e.camp, e.valoare);
+      if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  // Mutarea selecției pe altă foaie (ADR 0210 §1): fiecare piesă își păstrează locul; pe o foaie nouă (null), făcută după cea
+  // activă. Foaia activă rămâne, iar selecția se golește: piesele au plecat de pe ea. Un singur pas de anulare.
+  'selectie.muta-pe-foaie': {
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (!ctx.foaieTinta) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const doc = ctx.istoric().doc;
+      const tinta = ctx.foaieTinta();
+      if (tinta === null) return doc.foi.length >= PLAFON.foi ? 'motiv.plafon' : true;
+      return tinta === foaieCtx(ctx, doc).id || !doc.foi.some((f) => f.id === tinta) ? 'motiv.aceeasi-foaie' : true;
+    },
+    ruleaza: (ctx) => {
+      const tinta = ctx.foaieTinta?.();
+      if (tinta === undefined) return;
+      const h = ctx.istoric();
+      const din = foaieCtx(ctx, h.doc).id;
+      const comenzi: Comanda[] = [];
+      let doc = h.doc;
+      let spre = tinta;
+      if (spre === null) {
+        if (doc.foi.length >= PLAFON.foi) return;
+        const noua = comandaFoaieNoua(doc, din);
+        comenzi.push(noua.comanda);
+        doc = executa(istoricDin(doc), noua.comanda).doc;
+        spre = noua.id;
+      }
+      const mutari = comenziMutaPeFoaie(doc, new Set(ctx.selectie()), din, spre);
+      const c = mutari.length === 0 ? null : pas([...comenzi, ...mutari]);
+      if (!c) return;
+      ctx.scrie(executa(h, c));
+      ctx.selecteaza([]);
+    },
+  },
+  // Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑). «Încă…» și «+1» pun instanțe legate ale piesei alese, pe rânduri
+  // după ea (cu foile noi, ca foaia ei); selecția rămâne. Un pas de anulare.
+  'piesa.inca': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaInca(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const r = comandaInca(ctx);
+      if (r.ok) ctx.scrie(executa(ctx.istoric(), r.comanda));
+    },
+  },
+  'piesa.plus-unu': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaPlusUnu(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const r = comandaPlusUnu(ctx);
+      if (r.ok) ctx.scrie(executa(ctx.istoric(), r.comanda));
+    },
+  },
+  // «Desprinde»: fiecare instanță aleasă cu surori primește o piesă a ei, în același loc; selecția rămâne.
+  'piesa.desprinde': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return comenziDesprinde(ctx.istoric().doc, new Set(ctx.selectie()), foaieCtx(ctx).id).length > 0 ? true : 'motiv.fara-surori';
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const c = pas(comenziDesprinde(h.doc, new Set(ctx.selectie()), foaieCtx(ctx, h.doc).id));
+      if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  // „Așază pe foi” (ADR 0210 §3): instanțele alese (sau toate) ale foii de lucru, din colț, rând cu rând, cu vărsarea pe
+  // foaia următoare goală și pe foi noi; un pas. Selecția rămâne, cu instanțele care au rămas pe foaie.
+  'foaie.aseaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaAsezare(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaAsezare(ctx);
+      if (!r.ok) return;
+      const dupa = executa(h, r.comanda);
+      ctx.scrie(dupa);
+      const ramase = new Set(foaieCtx(ctx, dupa.doc).instante.map((i) => i.id));
+      ctx.selecteaza(ctx.selectie().filter((id) => ramase.has(id)));
+    },
+  },
+  // „Mută și așază la capăt”: selecția pleacă pe foaia țintă (sau pe una nouă, ca foaia activă) și se așază după piesele ei,
+  // cu alegerile ultimei așezări; foaia activă rămâne, iar selecția se golește (ca la „Mută pe”).
+  'selectie.muta-si-aseaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaMutaSiAseaza(ctx);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const r = comandaMutaSiAseaza(ctx);
+      if (!r.ok) return;
+      ctx.scrie(executa(ctx.istoric(), r.comanda));
+      ctx.selecteaza([]);
+    },
+  },
+  // „Duplică foaia cu aceleași piese”: instanțe legate, la aceleași locuri, pe o foaie nouă după ea, care devine activă.
+  'foaie.duplica-legat': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const doc = ctx.istoric().doc;
+      const r = comandaDuplicareLegata(doc, foaieDeLucru(ctx));
+      if (!r) return 'motiv.nimic-ales';
+      if (doc.foi.length >= PLAFON.foi) return 'motiv.plafon';
+      const dupa = executa(istoricDin(doc), r.comanda).doc;
+      return plafonDepasit(numara(dupa)) ? 'motiv.plafon' : true;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaDuplicareLegata(h.doc, foaieDeLucru(ctx));
+      if (!r) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([]);
+      ctx.activeazaFoaie?.(r.id);
+    },
+  },
 };
+
+/** Foaia unei acțiuni a listei foilor: cea din meniul ei, altfel cea activă. */
+function foaieDeLucru(ctx: ContextDocument): string {
+  return ctx.foaieAleasa?.() ?? foaieCtx(ctx).id;
+}
+
+/** Foaia mutată cu un loc în listă (ordinea fișierelor la export); la capăt, motivul. */
+function mutaFoaia(directie: -1 | 1): Pick<Actiune<ContextDocument>, 'activa' | 'ruleaza'> {
+  return {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return comandaMutaFoaie(ctx.istoric().doc, foaieDeLucru(ctx), directie) ? true : 'motiv.foaie-capat';
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const c = comandaMutaFoaie(h.doc, foaieDeLucru(ctx), directie);
+      if (c) ctx.scrie(executa(h, c));
+    },
+  };
+}
+
+/**
+ * Copia foii `id` („Duplică foaia”, ADR 0210 §1): o foaie nouă după ea, cu aceeași mărime, același material și aceleași
+ * ghidaje, fără numele ei (copia se numește după id-ul ei); pe ea, copii separate ale instanțelor, ca la Ctrl+D (o piesă nouă cu
+ * copia arborelui și a operațiilor, la același loc, cu aceleași câmpuri), în ordinea foii, cu piesele noi la capătul listei.
+ * Refuzată la plafoane și de schemele documentului.
+ */
+function comandaDuplicare(doc: Document, id: string): { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla } {
+  const k = doc.foi.findIndex((f) => f.id === id);
+  const sursa = doc.foi[k];
+  if (!sursa) return { ok: false, motiv: 'motiv.nimic-ales' };
+  if (doc.foi.length >= PLAFON.foi || !incape(doc, cresteCopia(doc, sursa.instante.map((i) => i.id), id))) return { ok: false, motiv: 'motiv.plafon' };
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const ocupate = new Set<string>();
+  const noi: Array<{ readonly piesa: Piesa; readonly pozitie: number }> = [];
+  const instante: Instanta[] = [];
+  for (const original of sursa.instante) {
+    const vechi = piese.get(original.piesa);
+    if (!vechi) continue;
+    const nid = idNou(doc, ocupate);
+    ocupate.add(nid);
+    const { radacina, ...rest } = vechi;
+    noi.push({ piesa: { ...structuredClone(rest), radacina: copieArbore(radacina), id: nid }, pozitie: doc.piese.length + noi.length });
+    instante.push({ ...structuredClone(original), id: nid, piesa: nid });
+  }
+  const { instante: _instante, nume: _nume, ...restFoaie } = sursa;
+  const idCopie = idFoaieNoua(doc);
+  const foaie: Foaie = { ...structuredClone(restFoaie), id: idCopie, instante };
+  const comanda: Comanda = { tip: 'adauga-foaie', foaie, pozitie: k + 1, piese: noi };
+  const dupa = executa(istoricDin(doc), comanda).doc;
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id: idCopie } : { ok: false, motiv: 'motiv.plafon' };
+}
 
 /**
  * Comanda formelor desenate (ADR 0051; mai multe deodată, ADR 0064): fiecare formă e o piesă nouă, cu operația implicită (a
@@ -614,9 +1004,9 @@ export const CALCUL_DOCUMENT: CalculDocument = {
 type ComandaDesen =
   | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
   | { readonly ok: false; readonly motiv: 'motiv.nimic-ales' | 'motiv.plafon' | 'motiv.import-refuzat' };
-let ultimulDesen: { doc: Document; f: FormaNoua | readonly FormaNoua[]; sterge: readonly string[] | undefined; rez: ComandaDesen } | null = null;
-function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge?: readonly string[]): ComandaDesen {
-  if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f && ultimulDesen.sterge === sterge) return ultimulDesen.rez;
+let ultimulDesen: { doc: Document; f: FormaNoua | readonly FormaNoua[]; sterge: readonly string[] | undefined; foaie: string | undefined; rez: ComandaDesen } | null = null;
+function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge: readonly string[] | undefined, idFoaie: string | undefined): ComandaDesen {
+  if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f && ultimulDesen.sterge === sterge && ultimulDesen.foaie === idFoaie) return ultimulDesen.rez;
   const forme: readonly FormaNoua[] = 'forma' in f ? [f] : f;
   const varfuriForma = (x: FormaDoc): number => (x.tip === 'cale' ? x.varfuri.length : 0);
   const varfuri = forme.reduce((n, x) => n + varfuriForma(x.forma) + (x.gauri ?? []).reduce((m, g) => m + varfuriForma(g), 0), 0);
@@ -628,17 +1018,17 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge
   else if (!incape(doc, { noduri: elemente + grupuri, instante: k, elementeLume: elemente, operatii: k + grupuri, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
-    const scula = sculaFoii(doc);
+    const scula = sculaFoii(doc, idFoaie);
     // Întâi ștergerile (booleanul înlocuiește formele alese), apoi formele noi, cu id-uri care nu le refolosesc pe cele șterse.
     const sterse = new Set(sterge ?? []);
-    const st = comenziStergere(doc, sterse);
+    const st = comenziStergere(doc, sterse, idFoaie);
     const comenzi: Comanda[] = [...st.comenzi];
     const ids: string[] = [];
     let dupa = st.doc;
     const ID = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
     for (const x of forme) {
       const id = idNou(dupa, sterse);
-      const foaie = foaieCurenta(dupa);
+      const foaie = foaieCurenta(dupa, idFoaie);
       const baza = scula ? operatieImplicita(id, x.forma, scula) : operatieImplicita(id, x.forma);
       const deschisa = x.forma.tip === 'cale' && !x.forma.inchis;
       const adancime = adancimeDeschise(foaie.stoc.grosime);
@@ -668,7 +1058,7 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge
     // cerere (probele „schemele care nu vin” le cer separate), iar migrările și arcele în lume nu privesc o formă nouă.
     rez = comanda && is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
-  ultimulDesen = { doc, f, sterge, rez };
+  ultimulDesen = { doc, f, sterge, foaie: idFoaie, rez };
   return rez;
 }
 
@@ -680,16 +1070,16 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge
  * (document, selecție): `activa` și `ruleaza` cer aceeași judecată.
  */
 type ComandaDegrupare = { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] } | { readonly ok: false; readonly motiv: CheieSimpla };
-let ultimaDegrupare: { readonly doc: Document; readonly selectie: readonly string[]; readonly rez: ComandaDegrupare } | null = null;
-export function comandaDegrupare(doc: Document, selectie: readonly string[]): ComandaDegrupare {
-  if (ultimaDegrupare && ultimaDegrupare.doc === doc && ultimaDegrupare.selectie === selectie) return ultimaDegrupare.rez;
-  const rez = judecaDegruparea(doc, selectie);
-  ultimaDegrupare = { doc, selectie, rez };
+let ultimaDegrupare: { readonly doc: Document; readonly selectie: readonly string[]; readonly foaie: string | undefined; readonly rez: ComandaDegrupare } | null = null;
+export function comandaDegrupare(doc: Document, selectie: readonly string[], idFoaie?: string): ComandaDegrupare {
+  if (ultimaDegrupare && ultimaDegrupare.doc === doc && ultimaDegrupare.selectie === selectie && ultimaDegrupare.foaie === idFoaie) return ultimaDegrupare.rez;
+  const rez = judecaDegruparea(doc, selectie, idFoaie);
+  ultimaDegrupare = { doc, selectie, foaie: idFoaie, rez };
   return rez;
 }
 
-function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDegrupare {
-  const foaie = foaieCurenta(doc);
+function judecaDegruparea(doc: Document, selectie: readonly string[], idFoaie: string | undefined): ComandaDegrupare {
+  const foaie = foaieCurenta(doc, idFoaie);
   const alese = new Set(selectie);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const folosiri = new Map<string, number>();
@@ -713,7 +1103,9 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
   for (const i of foaie.instante) {
     if (!alese.has(i.id)) continue;
     const p = piese.get(i.piesa);
-    const parti = p ? partiDegrupare(p) : 'o-singura-forma';
+    // O plăcuță (ADR 0210 §4) se desface cu literele ei: întâi coaptă în piesa ei (anularea pune la loc plăcuța).
+    const coapta = p && i.texte ? placutaCoapta(p, i, p.id) : null;
+    const parti = p ? partiDegrupare(coapta?.piesa ?? p) : 'o-singura-forma';
     if (!p || parti === 'o-singura-forma') {
       ids.push(i.id);
       continue;
@@ -728,7 +1120,7 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
         const id = idLiber();
         ids.push(id);
         return {
-          instanta: { ...structuredClone(i), id, piesa: id },
+          instanta: { ...structuredClone(coapta?.instanta ?? i), id, piesa: id },
           piesa: { ...structuredClone(rest), id, radacina: copieArbore(x.radacina), operatii: structuredClone([...x.operatii]) },
         };
       }),
@@ -737,7 +1129,8 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
   if (degrupate.length === 0) return { ok: false, motiv: 'motiv.nimic-de-degrupat' };
   const comanda: Comanda = { tip: 'degrupeaza', foaie: foaie.id, degrupate };
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, ids } : { ok: false, motiv };
 }
 
 /**
@@ -747,15 +1140,15 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
  * Ținută pe (document, reparație): `activa` și `ruleaza` cer aceeași judecată.
  */
 type ComandaReparatie = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
-let ultimaReparatie: { readonly doc: Document; readonly r: ReparatieCalculata; readonly rez: ComandaReparatie } | null = null;
-export function comandaReparatie(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
-  if (ultimaReparatie && ultimaReparatie.doc === h.doc && ultimaReparatie.r === r) return ultimaReparatie.rez;
-  const rez = judecaReparatia(h, r);
-  ultimaReparatie = { doc: h.doc, r, rez };
+let ultimaReparatie: { readonly doc: Document; readonly r: ReparatieCalculata; readonly foaie: string | undefined; readonly rez: ComandaReparatie } | null = null;
+export function comandaReparatie(h: Istoric, r: ReparatieCalculata, idFoaie?: string): ComandaReparatie {
+  if (ultimaReparatie && ultimaReparatie.doc === h.doc && ultimaReparatie.r === r && ultimaReparatie.foaie === idFoaie) return ultimaReparatie.rez;
+  const rez = judecaReparatia(h, r, idFoaie);
+  ultimaReparatie = { doc: h.doc, r, foaie: idFoaie, rez };
   return rez;
 }
 
-function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
+function judecaReparatia(h: Istoric, r: ReparatieCalculata, idFoaie: string | undefined): ComandaReparatie {
   if (r.doc !== h.doc) return { ok: false, motiv: 'editare.verificare.motiv.veche' };
   const comenzi: Comanda[] = [];
   let doc = h.doc;
@@ -766,12 +1159,13 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
     doc = executa(istoricDin(doc), c).doc;
     comenzi.push(c);
   }
-  comenzi.push(...comenziStergere(doc, new Set(r.sterse)).comenzi);
+  comenzi.push(...comenziStergere(doc, new Set(r.sterse), idFoaie).comenzi);
   const comanda = pas(comenzi);
   if (!comanda) return { ok: false, motiv: 'motiv.nimic-ales' };
   const dupa = executa(h, comanda).doc;
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.verificare.motiv.schema' };
+  const motiv = motivDupa(dupa, 'editare.verificare.motiv.schema');
+  return motiv === null ? { ok: true, comanda } : { ok: false, motiv };
 }
 
 /**
@@ -780,11 +1174,11 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
  * documentul de după peste plafoane sau refuzat de schemele lui. Ținută pe (document, tăiere), ca reparația.
  */
 type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
-let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly rez: ComandaTaiere } | null = null;
-export function comandaTaiere(h: Istoric, t: TaiereCalculata): ComandaTaiere {
-  if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t) return ultimaTaiere.rez;
-  const rez = judecaTaierea(h, t);
-  ultimaTaiere = { doc: h.doc, t, rez };
+let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly foaie: string | undefined; readonly rez: ComandaTaiere } | null = null;
+export function comandaTaiere(h: Istoric, t: TaiereCalculata, idFoaie?: string): ComandaTaiere {
+  if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t && ultimaTaiere.foaie === idFoaie) return ultimaTaiere.rez;
+  const rez = judecaTaierea(h, t, idFoaie);
+  ultimaTaiere = { doc: h.doc, t, foaie: idFoaie, rez };
   return rez;
 }
 
@@ -819,21 +1213,23 @@ function judecaConversia(h: Istoric, c: ConversieCalculata): ComandaTaiere {
     return { ok: false, motiv: 'editare.conversie.motiv.veche' };
   }
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.conversie.motiv.schema' };
+  // Ușa întreagă, pe documentul brut (și literele plăcuțelor, ADR 0210 §7): o conversie pe un șablon le-ar strica.
+  const motiv = motivDupa(dupa, 'editare.conversie.motiv.schema');
+  return motiv === null ? { ok: true, comanda } : { ok: false, motiv };
 }
 
-function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
+function judecaTaierea(h: Istoric, t: TaiereCalculata, idFoaie: string | undefined): ComandaTaiere {
   if (t.doc !== h.doc) return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   const sterse = t.sterse ?? [];
   if (t.degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
   // Decuparea: întâi ștergerile (fiecare pe documentul de după cele dinainte), apoi degruparea; un singur pas de anulare.
   const comenzi: Comanda[] = [];
   try {
-    if (sterse.length > 0) comenzi.push(...comenziStergere(h.doc, new Set(sterse)).comenzi);
+    if (sterse.length > 0) comenzi.push(...comenziStergere(h.doc, new Set(sterse), idFoaie).comenzi);
   } catch {
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
-  if (t.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaieCurenta(h.doc).id, degrupate: t.degrupate });
+  if (t.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaieCurenta(h.doc, idFoaie).id, degrupate: t.degrupate });
   const comanda: Comanda = comenzi.length === 1 ? (comenzi[0] as Comanda) : { tip: 'lot', comenzi };
   let dupa: Document;
   try {
@@ -842,7 +1238,8 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
   if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.taiere.motiv.schema' };
+  const motiv = motivDupa(dupa, 'editare.taiere.motiv.schema');
+  return motiv === null ? { ok: true, comanda } : { ok: false, motiv };
 }
 
 /**
@@ -853,16 +1250,20 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
  * (plafoanele, nivelurile arborelui). Ținută pe (document, selecție), ca degruparea.
  */
 type ComandaGrupare = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
-let ultimaGrupare: { readonly doc: Document; readonly selectie: readonly string[]; readonly rez: ComandaGrupare } | null = null;
-export function comandaGrupare(doc: Document, selectie: readonly string[]): ComandaGrupare {
-  if (ultimaGrupare && ultimaGrupare.doc === doc && ultimaGrupare.selectie === selectie) return ultimaGrupare.rez;
-  const rez = judecaGruparea(doc, selectie);
-  ultimaGrupare = { doc, selectie, rez };
+let ultimaGrupare: {
+  readonly doc: Document; readonly selectie: readonly string[]; readonly foaie: string | undefined; readonly alegere: AlegereGrupare | null;
+  readonly rez: ComandaGrupare;
+} | null = null;
+export function comandaGrupare(doc: Document, selectie: readonly string[], idFoaie?: string, alegere: AlegereGrupare | null = null): ComandaGrupare {
+  if (ultimaGrupare && ultimaGrupare.doc === doc && ultimaGrupare.selectie === selectie && ultimaGrupare.foaie === idFoaie
+    && ultimaGrupare.alegere === alegere) return ultimaGrupare.rez;
+  const rez = judecaGruparea(doc, selectie, idFoaie, alegere);
+  ultimaGrupare = { doc, selectie, foaie: idFoaie, alegere, rez };
   return rez;
 }
 
-function judecaGruparea(doc: Document, selectie: readonly string[]): ComandaGrupare {
-  const foaie = foaieCurenta(doc);
+function judecaGruparea(doc: Document, selectie: readonly string[], idFoaie: string | undefined, alegere: AlegereGrupare | null): ComandaGrupare {
+  const foaie = foaieCurenta(doc, idFoaie);
   const alese = new Set(selectie);
   const piese = new Map(doc.piese.map((p, k) => [p.id, { p, k }]));
   const parti: ParteGrupata[] = [];
@@ -877,14 +1278,156 @@ function judecaGruparea(doc: Document, selectie: readonly string[]): ComandaGrup
   if (parti.length < 2) return { ok: false, motiv: 'motiv.grupare-doua' };
   const folosiri = new Map<string, number>();
   for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
-  if (parti.some((x) => (folosiri.get(x.piesa.id) ?? 0) > 1)) return { ok: false, motiv: 'motiv.grupare-impartita' };
+  // O piesă pusă de mai multe ori (ADR 0210 §2): fără alegere, întrebarea; «Doar aceasta» o desprinde întâi, «În toate» pune
+  // celelalte forme în piesa ei.
+  const cuSurori = parti.filter((x) => (folosiri.get(x.piesa.id) ?? 0) > 1);
+  if (cuSurori.length > 0) {
+    if (alegere === null) return { ok: false, motiv: 'motiv.grupare-intrebare' };
+    return alegere === 'doar' ? grupareDesprinsa(doc, selectie, foaie.id, cuSurori) : gruparePiesa(doc, foaie.id, parti, cuSurori);
+  }
   const id = idNou(doc);
-  const g = grupDin(parti, id);
+  // O plăcuță (ADR 0210 §4) intră în grup cu literele ei (coaptă); comanda ține părțile de dinainte, pentru anulare.
+  const g = grupDin(parti.map((x) => (x.instanta.texte ? placutaCoapta(x.piesa, x.instanta, x.piesa.id) : x)), id);
   if (g === 'vcarve') return { ok: false, motiv: 'motiv.grupare-vcarve' };
   if (g === 'doua') return { ok: false, motiv: 'motiv.grupare-doua' };
   const comanda: Comanda = { tip: 'regrupeaza', foaie: foaie.id, degrupate: [{ ...g, parti, locuri }] };
   const dupa = executa(istoricDin(doc), comanda).doc;
-  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(dupa, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id } : { ok: false, motiv };
+}
+
+/** «Doar aceasta»: piesele alese cu surori se desprind întâi (fiecare cu piesa ei), apoi gruparea obișnuită, în același pas. */
+function grupareDesprinsa(doc: Document, selectie: readonly string[], idFoaie: string, cuSurori: readonly ParteGrupata[]): ComandaGrupare {
+  const desprinde = comenziDesprinde(doc, new Set(cuSurori.map((x) => x.instanta.id)), idFoaie);
+  const p = pas(desprinde);
+  if (!p) return { ok: false, motiv: 'motiv.grupare-doua' };
+  const r = judecaGruparea(executa(istoricDin(doc), p).doc, selectie, idFoaie, null);
+  return r.ok ? { ok: true, comanda: { tip: 'lot', comenzi: [...desprinde, r.comanda] }, id: r.id } : r;
+}
+
+/**
+ * «În toate cele N»: celelalte forme alese intră în piesa care are surori (una singură), la locul lor față de instanța ei,
+ * deci apar pe fiecare instanță a piesei, în același loc. Instanța ei rămâne unde e; celelalte pleacă, cu piesele lor.
+ */
+function gruparePiesa(doc: Document, idFoaie: string, parti: readonly ParteGrupata[], cuSurori: readonly ParteGrupata[]): ComandaGrupare {
+  const [gazda] = cuSurori;
+  if (!gazda || cuSurori.length !== 1) return { ok: false, motiv: 'motiv.grupare-toate-una' };
+  // Fiecare parte, văzută din instanța gazdei: locul ei rotit înapoi cu rotirea gazdei, rotirea ei minus a gazdei.
+  const g = gazda.instanta;
+  const fata = rotatie(-g.rotire);
+  const relativa = (i: Instanta): Instanta => {
+    const p = aplica(fata, { x: i.x - g.x, y: i.y - g.y });
+    return { ...i, x: p.x, y: p.y, rotire: (((i.rotire - g.rotire) % 360) + 360) % 360 };
+  };
+  const altele = parti.filter((x) => x !== gazda);
+  const grup = grupDin([{ instanta: { ...g, x: 0, y: 0, rotire: 0 }, piesa: gazda.piesa }, ...altele.map((x) => ({ instanta: relativa(x.instanta), piesa: x.piesa }))], gazda.piesa.id);
+  if (grup === 'vcarve') return { ok: false, motiv: 'motiv.grupare-vcarve' };
+  if (grup === 'doua') return { ok: false, motiv: 'motiv.grupare-doua' };
+  const nou: Piesa = { ...gazda.piesa, radacina: grup.piesa.radacina, operatii: grup.piesa.operatii };
+  const inlocuire: Comanda = { tip: 'inlocuieste-piesa', vechi: gazda.piesa, nou };
+  const dupaInlocuire = executa(istoricDin(doc), inlocuire).doc;
+  const stergere = comenziStergere(dupaInlocuire, new Set(altele.map((x) => x.instanta.id)), idFoaie);
+  const comanda: Comanda = { tip: 'lot', comenzi: [inlocuire, ...stergere.comenzi] };
+  const motiv = plafonDepasit(numara(stergere.doc)) ? 'motiv.plafon' : motivDupa(stergere.doc, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda, id: g.id } : { ok: false, motiv };
+}
+
+/** Așezarea pe foi (ADR 0210 §3), ținută pe cerere: `activa` și `ruleaza` (și dialogul, la fiecare tastă) o calculează o dată. */
+let ultimaAsezare: { readonly cheie: string; readonly doc: Document; readonly rez: ComandaCopii } | null = null;
+
+/**
+ * Comanda unei așezări: planul instanțelor `ids` ale foii `din` pe foaia `spre` (cu o foaie nouă întâi, când `noua` o dă),
+ * ca un pas; refuzul, cu motivul lui: nimic, valori greșite, distanța sub freză, toate prea mari, nimic de schimbat, plafonul.
+ */
+function comandaPlan(doc: Document, ids: readonly string[], din: string, optiuni: OptiuniAsezare, spre: string | null): ComandaCopii {
+  const cheie = JSON.stringify([ids, din, optiuni, spre]);
+  if (ultimaAsezare && ultimaAsezare.doc === doc && ultimaAsezare.cheie === cheie) return ultimaAsezare.rez;
+  const rez = ((): ComandaCopii => {
+    // Pe o foaie nouă: întâi foaia (ca foaia activă, după ea), apoi așezarea pe ea, în documentul de după.
+    const noua = spre === null ? comandaFoaieNoua(doc, din) : null;
+    if (noua && doc.foi.length >= PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    const baza = noua ? executa(istoricDin(doc), noua.comanda).doc : doc;
+    const p = planAsezare(baza, ids, din, optiuni, noua ? noua.id : spre ?? din);
+    if (!p.ok) return { ok: false, motiv: p.motiv === 'distanta' ? 'motiv.aseaza-distanta' : p.motiv === 'valori' ? 'motiv.aseaza-valori' : 'motiv.nimic-ales' };
+    if (p.locuri.length === 0) return { ok: false, motiv: 'motiv.aseaza-prea-mari' };
+    const comenzi = [...(noua ? [noua.comanda] : []), ...comenziAsezare(baza, din, p)];
+    const comanda = noua || comenzi.length > 0 ? pas(comenzi) : null;
+    if (!comanda) return { ok: false, motiv: 'motiv.aseaza-nimic' };
+    if (doc.foi.length + p.foiNoi + (noua ? 1 : 0) > PLAFON.foi) return { ok: false, motiv: 'motiv.plafon' };
+    const dupa = executa(istoricDin(doc), comanda).doc;
+    return plafonDepasit(numara(dupa)) || !is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: false, motiv: 'motiv.plafon' } : { ok: true, comanda };
+  })();
+  ultimaAsezare = { cheie, doc, rez };
+  return rez;
+}
+
+/** „Așază pe foi”: instanțele cerute de dialog, pe foaia de lucru. */
+function comandaAsezare(ctx: ContextDocument): ComandaCopii {
+  const c = ctx.asezare?.();
+  if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const doc = ctx.istoric().doc;
+  const din = foaieCtx(ctx, doc).id;
+  return comandaPlan(doc, c.ids, din, c.optiuni, din);
+}
+
+/**
+ * „Mută și așază la capăt”: selecția, pe foaia țintă (null: una nouă), cu alegerile date sau cu cele ținute; omul n-a scris
+ * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz).
+ */
+function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
+  const tinta = ctx.foaieTinta?.();
+  if (tinta === undefined) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const doc = ctx.istoric().doc;
+  const din = foaieCtx(ctx, doc).id;
+  if (tinta !== null && (tinta === din || !doc.foi.some((f) => f.id === tinta))) return { ok: false, motiv: 'motiv.aceeasi-foaie' };
+  const o = ctx.asezare?.().optiuni ?? optiuniTinute();
+  const d = distantaMinima(doc, ctx.selectie(), din);
+  return comandaPlan(doc, ctx.selectie(), din, { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) }, tinta);
+}
+
+/** Copiile legate (ADR 0210 §2), ținute pe (document, instanță, câte): `activa` și `ruleaza` le calculează o dată. */
+type ComandaCopii = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
+let ultimeleCopii: { readonly doc: Document; readonly id: string; readonly cate: number; readonly rez: ComandaCopii } | null = null;
+function copiiDupa(doc: Document, id: string, cate: number): ComandaCopii {
+  if (ultimeleCopii && ultimeleCopii.doc === doc && ultimeleCopii.id === id && ultimeleCopii.cate === cate) return ultimeleCopii.rez;
+  const plan = planCopii(doc, id, cate);
+  let rez: ComandaCopii;
+  if (!plan.ok) rez = { ok: false, motiv: plan.motiv === 'prea-mare' ? 'motiv.inca-prea-mare' : 'motiv.nimic-ales' };
+  else {
+    const comanda = pas(comenziCopii(doc, id, plan).comenzi);
+    const dupa = comanda ? executa(istoricDin(doc), comanda).doc : null;
+    rez = !comanda || !dupa ? { ok: false, motiv: 'motiv.nimic-ales' }
+      : plafonDepasit(numara(dupa)) || !is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: false, motiv: 'motiv.plafon' } : { ok: true, comanda };
+  }
+  ultimeleCopii = { doc, id, cate, rez };
+  return rez;
+}
+
+/** Singura instanță aleasă de pe foaia de lucru, sau null. */
+function singuraAleasa(ctx: ContextDocument, doc: Document): Instanta | null {
+  const [id] = ctx.selectie();
+  return ctx.selectie().length === 1 && id ? foaieCtx(ctx, doc).instante.find((i) => i.id === id) ?? null : null;
+}
+
+/** «Încă…»: instanțe noi ale piesei alese, până la totalul cerut (mai mare decât acum, cel mult `INCA_MAXIM`), după ea. */
+function comandaInca(ctx: ContextDocument): ComandaCopii {
+  const doc = ctx.istoric().doc;
+  const i = singuraAleasa(ctx, doc);
+  const total = ctx.cateInTotal?.();
+  if (!i || total === undefined) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const n = folosiriPieselor(doc).get(i.piesa) ?? 0;
+  if (!Number.isInteger(total) || total <= n || total > INCA_MAXIM) return { ok: false, motiv: 'motiv.inca-total' };
+  return copiiDupa(doc, i.id, total - n);
+}
+
+/** «+1»: încă o instanță a piesei alese, după ultima ei (în ordinea proiectului). */
+function comandaPlusUnu(ctx: ContextDocument): ComandaCopii {
+  const doc = ctx.istoric().doc;
+  const i = singuraAleasa(ctx, doc);
+  const ultima = i ? instantePiesei(doc, i.piesa).at(-1) : undefined;
+  if (!i || !ultima) return { ok: false, motiv: 'motiv.nimic-ales' };
+  if ((folosiriPieselor(doc).get(i.piesa) ?? 0) >= INCA_MAXIM) return { ok: false, motiv: 'motiv.inca-total' };
+  return copiiDupa(doc, ultima.instanta.id, 1);
 }
 
 /**
@@ -892,20 +1435,20 @@ function judecaGruparea(doc: Document, selectie: readonly string[]): ComandaGrup
  * plafonul documentului, schema), sau null. Panoul offsetului (ADR 0064) îl arată înainte de Aplică; booleanul (ADR 0067),
  * cu instanțele pe care le înlocuiește.
  */
-export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitire: boolean, sterge?: readonly string[]): CheieSimpla | null {
+export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitire: boolean, sterge?: readonly string[], idFoaie?: string): CheieSimpla | null {
   if (doarCitire) return 'motiv.doar-citire';
-  const r = comandaDesen(doc, forme, sterge);
+  const r = comandaDesen(doc, forme, sterge, idFoaie);
   return r.ok ? null : r.motiv;
 }
 
 /** Comenzile unei transformări (instanțele și piesele schimbate), sau null dacă ar ieși inexactă sau n-ar trece de schemă. */
-function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
+function comenziTransformare(ctx: ContextDocument): Comanda[] | CheieSimpla {
   const t = ctx.transformare?.();
-  if (!t) return null;
+  if (!t) return 'motiv.transformare-inexacta';
   const h = ctx.istoric();
-  const r = transforma(h.doc, FOAIA, ctx.selectie(), t);
-  if (!r.ok) return null;
-  const foaie = foaieCurenta(h.doc);
+  const r = transforma(h.doc, indexFoaieActiva(h.doc, ctx.foaie?.()), ctx.selectie(), t);
+  if (!r.ok) return 'motiv.transformare-inexacta';
+  const foaie = foaieCtx(ctx, h.doc);
   const vechi = new Map(foaie.instante.map((i) => [i.id, i]));
   const vechiPiese = new Map(h.doc.piese.map((p) => [p.id, p]));
   const comenzi: Comanda[] = [];
@@ -915,29 +1458,29 @@ function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
   }
   for (const i of r.instante) {
     const v = vechi.get(i.id);
-    if (!v || instantaPreaDeparte(i.x, i.y)) return null;
+    if (!v || instantaPreaDeparte(i.x, i.y)) return 'motiv.transformare-inexacta';
     comenzi.push({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: v, nou: i });
   }
+  // Plăcuțele neselectate ale pieselor scalate (ADR 0210 §4): literele lor, scalate odată cu piesa.
+  for (const x of r.placute ?? []) comenzi.push({ tip: 'inlocuieste-instanta', foaie: x.foaie, vechi: x.vechi, nou: x.nou });
   const p = pas(comenzi);
   if (!p) return [];
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, p).doc))) ? comenzi : null;
+  return motivDupa(executa(h, p).doc, 'motiv.transformare-inexacta') ?? comenzi;
 }
 
 /**
- * Comanda formei editate din panou (ADR 0053): piesa singurei instanțe alese, cu forma nouă; `comanda: null` când forma e
- * aceeași; null când nu se poate (piesa împărțită sau cu mai multe elemente, documentul de după refuzat de schemă).
+ * Comanda formei editate din panou (ADR 0053) și a nodurilor (ADR 0068): piesa singurei instanțe alese, cu forma nouă;
+ * `comanda: null` când forma e aceeași; null când nu se poate (elementul cerut lipsește, documentul de după refuzat de schemă).
+ * O piesă pusă de mai multe ori se schimbă pentru toate instanțele ei (ADR 0210 §2).
  */
-function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null } | null {
+function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null } | { readonly motiv: CheieSimpla } | null {
   const f = ctx.formaEditata?.();
   const h = ctx.istoric();
   const alese = ctx.selectie();
   if (!f || alese.length !== 1) return null;
-  const i = foaieCurenta(h.doc).instante.find((x) => x.id === alese[0]);
+  const i = foaieCtx(ctx, h.doc).instante.find((x) => x.id === alese[0]);
   const vechi = i ? h.doc.piese.find((p) => p.id === i.piesa) : undefined;
   if (!vechi) return null;
-  let folosiri = 0;
-  for (const fo of h.doc.foi) for (const x of fo.instante) if (x.piesa === vechi.id) folosiri++;
-  if (folosiri > 1) return null;
   // Elementul cerut (ADR 0068): rădăcina, dacă e element (fără `nodEditat` sau cu id-ul ei), altfel elementul cu id-ul dat din grup.
   const id = ctx.nodEditat?.();
   let gasit = false;
@@ -954,7 +1497,9 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
   const nou = { ...vechi, radacina };
   if (jsonCanonic(nou) === jsonCanonic(vechi)) return { comanda: null };
   const comanda: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, comanda).doc))) ? { comanda } : null;
+  // Literele unui șablon de plăcuțe (ADR 0210 §4) nu se editează ca noduri: plăcuțele lor ar rămâne cu textul vechi.
+  const motiv = motivDupa(executa(h, comanda).doc, 'prop.forma.refuzata');
+  return motiv === null ? { comanda } : motiv === 'motiv.placute' ? { motiv } : null;
 }
 
 /**
@@ -963,11 +1508,11 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
  * dată, față de restul proiectului, ca toate piesele să primească aceleași numere. Motivul: rolul nu se potrivește uneia
  * dintre piese, nimic de schimbat, sau documentul de după refuzat de schemă (plafoanele).
  */
-function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal): { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla } {
+function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal, idFoaie: string | undefined): { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla } {
   const piese = new Map(h.doc.piese.map((p) => [p.id, p]));
   const ale = new Set(alese);
   const lista: Piesa[] = [];
-  for (const i of foaieCurenta(h.doc).instante) {
+  for (const i of foaieCurenta(h.doc, idFoaie).instante) {
     const p = ale.has(i.id) ? piese.get(i.piesa) : undefined;
     if (p && !lista.includes(p)) lista.push(p);
   }
@@ -979,12 +1524,18 @@ function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal
     // Piesa își păstrează locul în ordinea de mână (ADR 0133 §4).
     const operatii = cuRangulPiesei(vechi.operatii, ale);
     if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
-    comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
+    const nou = { ...vechi, operatii };
+    comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou });
+    // Plăcuțele piesei (ADR 0210 §4): operațiile noi se mută și pe literele lor, în același pas.
+    const placute = placuteCuOperatiile(h.doc, nou);
+    if (!placute) return { ok: false, motiv: 'motiv.text-includeri' };
+    comenzi.push(...placute);
   }
   if (lista.length === 0) return { ok: false, motiv: 'motiv.nicio-selectie' };
   const c = pas(comenzi);
   if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
-  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, c).doc))) ? { ok: true, comanda: c } : { ok: false, motiv: 'motiv.plafon' };
+  const motiv = motivDupa(executa(h, c).doc, 'motiv.plafon');
+  return motiv === null ? { ok: true, comanda: c } : { ok: false, motiv };
 }
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */
@@ -1003,8 +1554,8 @@ function ghidajeBune(g: readonly Ghidaj[]): boolean {
  * Comenzile deplasărilor: doar instanțele foii curente, fiecare o singură dată, cu deplasarea finită și locul nou în
  * plafon; altfel motivul. Deplasările nule nu sunt comenzi.
  */
-function comenziDeplasare(doc: Document, d: readonly { readonly id: string; readonly dx: number; readonly dy: number }[]): Comanda[] | 'motiv.nimic-ales' | 'motiv.prea-departe' {
-  const foaie = foaieCurenta(doc);
+function comenziDeplasare(doc: Document, d: readonly { readonly id: string; readonly dx: number; readonly dy: number }[], idFoaie: string | undefined): Comanda[] | 'motiv.nimic-ales' | 'motiv.prea-departe' {
+  const foaie = foaieCurenta(doc, idFoaie);
   const dupaId = new Map(foaie.instante.map((i) => [i.id, i]));
   const vazute = new Set<string>();
   const comenzi: Comanda[] = [];

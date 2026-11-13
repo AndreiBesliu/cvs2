@@ -9,6 +9,10 @@ import { citesteFont, type RezultatFont } from './font.ts';
 import { FONTURI_INCLUSE } from './fonturi.ts';
 import { instantaCeruta, sursaFont } from './fonturiOmului.ts';
 import { octetiSistem, stareSistem } from './sistem.ts';
+import { blocuriPiesei } from '../model/placute.ts';
+import type { Piesa } from '../model/document.ts';
+import { textePlacutei, type RezultatPlacuta } from './placute.ts';
+import type { Font } from './font.ts';
 
 export { aseazaText, type ParametriText, type TextAsezat } from './asezare.ts';
 export { piesaText, type RezultatPiesaText } from './piesaText.ts';
@@ -18,6 +22,7 @@ export type { Font } from './font.ts';
 export { adaugaFisier, adaugaGoogle, FaraStocare, listaBiblioteca, stergeFont, type FontSalvat, type RezultatAdaugare } from './biblioteca.ts';
 export { listaSistem, sistemDisponibil, stareSistem, type FontSistem, type StareSistem } from './sistem.ts';
 export { idFont, numeVarianta, PLAFON_FONTURI, sursaFont } from './fonturiOmului.ts';
+export { sablonCuAsezat, sablonCuContinut, textePlacutei, type MotivPlacuta, type RezultatPlacuta } from './placute.ts';
 
 /**
  * Ce iese din aducerea unui font: citit, refuzat de cititor, sau negăsit (`lipseste`: nu e în bibliotecă ori pe calculatorul
@@ -88,4 +93,31 @@ export function incarcaFont(id: string): Promise<RezultatIncarcare> {
 /** Uită fontul `id` (șters din bibliotecă): următoarea cerere îl caută din nou. */
 export function uitaFont(id: string): void {
   citite.delete(id);
+}
+
+/** Fonturile citite ale textelor unei piese: al unui id, sau null dacă nu e al piesei. */
+export type FonturiPiesei = (id: string) => Font | null;
+
+/**
+ * Fonturile tuturor textelor piesei `p` (cu câmpuri sau fără), aduse o dată fiecare (ca în panoul textului). Un font care nu
+ * vine e refuzul `font`, cu numele lui arătat (al blocului, al unui font inclus, sau id-ul).
+ */
+export async function fonturiPiesei(p: Piesa): Promise<{ readonly ok: true; readonly font: FonturiPiesei } | { readonly ok: false; readonly motiv: 'font'; readonly font: string }> {
+  const fonturi = new Map<string, Font>();
+  for (const t of blocuriPiesei(p)) {
+    const id = t.bloc.font;
+    if (fonturi.has(id)) continue;
+    const r = await incarcaFont(id);
+    if (!r.ok) return { ok: false, motiv: 'font', font: t.bloc.numeFont ?? FONTURI_INCLUSE.find((f) => f.id === id)?.nume ?? id };
+    fonturi.set(id, r.font);
+  }
+  return { ok: true, font: (id) => fonturi.get(id) ?? null };
+}
+
+/**
+ * Literele unei plăcuțe a piesei `p` cu valorile `valori` (ADR 0210 §4), cu fonturile textelor ei aduse întâi (`fonturiPiesei`).
+ */
+export async function textePlacuteiCuFonturi(p: Piesa, valori: Readonly<Record<string, string>>): Promise<RezultatPlacuta> {
+  const f = await fonturiPiesei(p);
+  return f.ok ? textePlacutei(p, valori, f.font) : f;
 }

@@ -182,7 +182,7 @@ test('document.forma (ADR 0053): forma singurei instanțe alese, un pas; aceeaș
     ruleaza(R, 'document.forma', x);
     assert.equal(x.h().trecut.length, t);
   }
-  // Piesa împărțită (duplicatul legat ar schimba-o și pe ea): refuz.
+  // O piesă pusă de două ori (ADR 0210 §2): forma se schimbă pentru amândouă, într-un pas; locurile rămân.
   const imp = context(false, { formaEditata: () => ({ tip: 'cerc', raza: 3 }) });
   imp.selecteaza(['e1']);
   const d = imp.h().doc;
@@ -191,7 +191,15 @@ test('document.forma (ADR 0053): forma singurei instanțe alese, un pas; aceeaș
   if (!f0 || !i1) throw new Error('fără foaie');
   imp.scrie(executa(imp.h(), { tip: 'adauga', foaie: f0.id, instanta: { ...i1, id: 'e9', x: 200 }, pozitie: f0.instante.length }));
   imp.selecteaza(['e1']);
-  assert.deepEqual(stare(R, 'document.forma', imp), { ok: false, motiv: 'prop.forma.refuzata' });
+  const ti = imp.h().trecut.length;
+  assert.deepEqual(ruleaza(R, 'document.forma', imp), { ok: true });
+  assert.equal(imp.h().trecut.length, ti + 1);
+  const dupa = imp.h().doc;
+  const p1 = dupa.foi[0]?.instante.find((x) => x.id === 'e1'), p9 = dupa.foi[0]?.instante.find((x) => x.id === 'e9');
+  assert.ok(p1 && p9 && p1.piesa === p9.piesa);
+  assert.equal(p9.x, 200);
+  const rad = dupa.piese.find((p) => p.id === p1.piesa)?.radacina;
+  assert.deepEqual(rad?.tip === 'element' ? rad.forma : null, { tip: 'cerc', raza: 3 });
   // Două alese, niciuna, doar-citirea, fără formă.
   const doua = context(false, { formaEditata: () => ({ tip: 'cerc', raza: 3 }) });
   doua.selecteaza(['e1', 'e2']);

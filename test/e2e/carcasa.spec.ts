@@ -229,7 +229,9 @@ test('garda barei selecției: al doilea clic al unui dublu-clic pe „Importă�
 test('arborele proiectului: foaia, piesa importată și operațiile ei, deschise de selecție, de săgeată și de la tastatură', async ({ page }) => {
   await page.goto('/');
   const arbore = page.getByTestId('lista-vectori');
-  await expect(arbore.locator('[data-nod="foaie"]')).toHaveText('Foaia 1 · 300 × 200 × 18 mm');
+  // Foaia (ADR 0210 §1): numele; dedesubt, mărimea și câte piese are.
+  await expect(arbore.locator('[data-nod="foaie"] .foaie-nume')).toHaveText('Foaia 1');
+  await expect(arbore.locator('[data-nod="foaie"] .foaie-detalii')).toHaveText('300 × 200 × 18 mm · 0 piese');
   await expect(arbore).toContainText('Nimic pe foaie încă.');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(LOGO);
   await page.locator('[data-buton="importa"]').click();

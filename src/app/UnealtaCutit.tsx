@@ -63,8 +63,10 @@ function scrieMod(m: ModCutit): void {
   }
 }
 
-export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest, onTaie, lipire, onLinii, pen }: {
+export function UnealtaCutit({ doc, indexFoaie, selectie, vedere, marime, zona, loc, onGest, onTaie, lipire, onLinii, pen }: {
   readonly doc: Document;
+  /** Foaia activă a ferestrei (ADR 0210 §1): formele de tăiat și selecția sunt ale ei. */
+  readonly indexFoaie: number;
   /** Selecția aplicației: id-urile instanțelor. */
   readonly selectie: readonly string[];
   readonly vedere: Vedere;
@@ -101,14 +103,14 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   useEffect(() => () => { semnal.current?.abort(); }, []);
   // O formă adunată care nu mai e pe foaie (ștearsă, anulată) iese din cuțit.
   useEffect(() => {
-    const pe = new Set((doc.foi[0]?.instante ?? []).map((i) => i.id));
+    const pe = new Set((doc.foi[indexFoaie]?.instante ?? []).map((i) => i.id));
     setForme((f) => (f.every((id) => pe.has(id)) ? f : f.filter((id) => pe.has(id))));
-  }, [doc]);
+  }, [doc, indexFoaie]);
 
   /** Tăierea, calculată de worker pe documentul de acum; aplicată prin acțiunea documentului. Un eșec (nu o anulare) merge în jurnal. */
   const taie = (cutit: Cutit, cutitIds: readonly string[]): void => {
     const laCerere = doc, alegerea = selectie;
-    const alese = tinteCutit(laCerere, alegerea, cutitIds);
+    const alese = tinteCutit(laCerere, alegerea, cutitIds, indexFoaie);
     if (alese.length === 0) {
       setStare({ fel: 'gata', text: t('editare.cutit.nimic-de-taiat'), rau: true });
       return;
@@ -128,7 +130,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
       if (s.signal.aborted) return;
       const cerere = { cutit, alese, inchide: o.inchide, prelungeste: o.prelungeste, pastreaza: o.pastreaza, stergeCutitul: o.stergeCutitul, ...(intreCerut ? { intre: intreCerut } : {}),
         ...(imCerut ? { imbinare: imCerut } : {}) };
-      calc.taieVectorii(laCerere, cerere, s.signal).then((r) => {
+      calc.taieVectorii(laCerere, cerere, s.signal, indexFoaie).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           setStare({ fel: 'gata', text: t(`editare.taiere.motiv.${r.motiv}`), rau: true });
@@ -267,12 +269,12 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   // tragi, și regiunile lor (contururile închise ale fiecărei forme), pentru prelungirea capetelor și partea care pleacă.
   const deTaiat = useMemo((): { readonly tinte: Polilinie[]; readonly regiuni: RegiuneAproximativa[]; readonly cutie: Cutie } | null => {
     if (mod !== 'linie' && mod !== 'liber') return null;
-    const ids = new Set(tinteCutit(doc, selectie, []));
+    const ids = new Set(tinteCutit(doc, selectie, [], indexFoaie));
     const tinte: Polilinie[] = [];
     const peForma = new Map<string, Polilinie[]>();
     let cutie: Cutie = CUTIE_GOALA;
     let n = 0;
-    for (const e of elementeFoaie(doc, 0)) {
+    for (const e of elementeFoaie(doc, indexFoaie)) {
       if (!ids.has(e.instanta)) continue;
       const c = conturElement(e);
       const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
@@ -286,7 +288,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     }
     const regiuni = [...peForma].map(([instanta, contururi]) => ({ instanta, contururi, cutie: contururi.reduce((u, c) => uneste(u, c.cutie), CUTIE_GOALA) }));
     return { tinte, regiuni, cutie };
-  }, [doc, selectie, mod]);
+  }, [doc, selectie, mod, indexFoaie]);
   // Cât tragi (ADR 0181 §2, §6): capetele prelungite (punctate), locurile unde taie calea prelungită, fâșia spațiului sau a
   // suprapunerii (calea mutată de fiecare parte) sau, cu îmbinare, dinții ei pe coardele formelor (la Linie) și, cu
   // „Păstrează”, partea care pleacă, estompată peste formele pe care cuțitul le împarte (cele pe care nu le atinge rămân).
@@ -321,18 +323,18 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
   const adunate = useMemo(() => {
     if (forme.length === 0) return [];
     const ids = new Set(forme);
-    return elementeFoaie(doc, 0).filter((e) => ids.has(e.instanta)).map((e) => drumSvg(conturElement(e), vedere));
-  }, [forme, doc, vedere]);
+    return elementeFoaie(doc, indexFoaie).filter((e) => ids.has(e.instanta)).map((e) => drumSvg(conturElement(e), vedere));
+  }, [forme, doc, vedere, indexFoaie]);
 
   // Retează: contururile tuturor formelor foii (sub clic poate fi oricare, chiar nealeasă) și locurile lor comune cu partenerii
   // (formele alese, fără alegere toate ale foii, și aceeași formă), aproximate, pentru bucata arătată sub maus; peste plafon,
   // doar clicul (tăierea e tot exactă, a workerului).
   const retezare = useMemo((): { readonly forme: ConturAproximat[]; readonly locuri: number[][] } | null => {
     if (mod !== 'reteaza') return null;
-    const parteneri = new Set(tinteCutit(doc, selectie, []));
+    const parteneri = new Set(tinteCutit(doc, selectie, [], indexFoaie));
     const forme: ConturAproximat[] = [];
     let n = 0;
-    for (const e of elementeFoaie(doc, 0)) {
+    for (const e of elementeFoaie(doc, indexFoaie)) {
       const c = conturElement(e);
       const p = puncteContur(c, 0.05).map(([x, y]) => ({ x, y }));
       n += p.length;
@@ -341,7 +343,7 @@ export function UnealtaCutit({ doc, selectie, vedere, marime, zona, loc, onGest,
     }
     const locuri = locuriComune(forme, undefined, parteneri);
     return locuri ? { forme, locuri } : null;
-  }, [doc, selectie, mod]);
+  }, [doc, selectie, mod, indexFoaie]);
   const [marcaj, setMarcaj] = useState<readonly Punct[] | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
   const acumRetezare = useRef({ retezare, vedere });

@@ -1,4 +1,4 @@
-import type { Document, Ghidaj, Instanta, Piesa, Stoc } from './document.ts';
+import type { Document, Foaie, Ghidaj, Instanta, Piesa, Stoc } from './document.ts';
 
 /**
  * Jurnalul de comenzi (T16, ADR 0016): fiecare schimbare e o comandă cu valorile vechi și cele noi, deci anularea și
@@ -14,6 +14,10 @@ import type { Document, Ghidaj, Instanta, Piesa, Stoc } from './document.ts';
  * - `degrupeaza` / `regrupeaza` pun în locul fiecărei instanțe (și piese) vechi părțile ei, sau invers, într-o singură
  *   trecere prin liste (ADR 0103): o degrupare de mii de părți nu copiază listele o dată pe parte. Gruparea (ADR 0130) e un
  *   `regrupeaza` cu locurile părților, deci inversa ei le pune exact unde erau;
+ * - `adauga-foaie` / `sterge-foaie` pun sau scot o foaie întreagă, cu instanțele ei, la locul ei din listă, și piesele care
+ *   vin sau pleacă odată cu ea (ale căror instanțe sunt toate pe ea), fiecare la locul ei (ADR 0210 §1);
+ * - `muta-foaie` mută o foaie în lista foilor (ordinea fișierelor la export); `eticheta-foaie` schimbă numele sau materialul
+ *   ei, cu valoarea veche exactă (null: câmpul lipsește);
  * - `lot` e un singur pas de anulare pentru o acțiune pe mai multe lucruri.
  */
 export type Comanda =
@@ -30,7 +34,26 @@ export type Comanda =
   | { readonly tip: 'inlocuieste-ghidaje'; readonly foaie: string; readonly vechi: readonly Ghidaj[]; readonly nou: readonly Ghidaj[] }
   | { readonly tip: 'degrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | { readonly tip: 'regrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
+  | ({ readonly tip: 'adauga-foaie' } & FoaieIntreaga)
+  | ({ readonly tip: 'sterge-foaie' } & FoaieIntreaga)
+  | { readonly tip: 'muta-foaie'; readonly foaie: string; readonly de: number; readonly la: number }
+  | { readonly tip: 'eticheta-foaie'; readonly foaie: string; readonly camp: CampEticheta; readonly vechi: ValoareEticheta; readonly nou: ValoareEticheta }
   | { readonly tip: 'lot'; readonly comenzi: readonly Comanda[] };
+
+/** Piesele care vin sau pleacă odată cu o foaie (ADR 0210 §1), fiecare cu locul ei în lista pieselor. */
+export type PieseFoaie = ReadonlyArray<{ readonly piesa: Piesa; readonly pozitie: number }>;
+
+/** O foaie întreagă, cu locul ei în lista foilor și piesele care vin sau pleacă odată cu ea. */
+type FoaieIntreaga = { readonly foaie: Foaie; readonly pozitie: number; readonly piese: PieseFoaie };
+
+/** Etichetele unei foi, scrise de om (ADR 0210 §1): nu schimbă ce se taie. */
+export type CampEticheta = 'nume' | 'material';
+
+/**
+ * Valoarea unei etichete în comandă: null când câmpul lipsește, altfel valoarea lui, oricare ar fi. Un `material` străin (un câmp
+ * necunoscut dintr-un document mai vechi, cu orice valoare) se întoarce astfel exact, la anulare.
+ */
+export type ValoareEticheta = { readonly valoare: unknown } | null;
 
 /**
  * O instanță degrupată (ADR 0103): cea veche, cu piesa ei (doar a ei), și părțile care îi iau locul, în ordine. La o grupare
@@ -58,7 +81,7 @@ export function istoricNou(doc: Document): Istoric {
   return { doc, trecut: [], viitor: [] };
 }
 
-function indexFoaie(doc: Document, id: string): number {
+export function indexFoaie(doc: Document, id: string): number {
   const i = doc.foi.findIndex((f) => f.id === id);
   if (i < 0) throw new Error(`foaia ${id} nu există`);
   return i;
@@ -166,9 +189,26 @@ function aplicaDegrupare(doc: Document, c: Extract<Comanda, { readonly tip: 'deg
   return { ...doc, piese: pieseNoi, foi };
 }
 
+type ComandaFoaie = Extract<Comanda, { readonly tip: 'adauga-foaie' | 'sterge-foaie' | 'muta-foaie' | 'eticheta-foaie' }>;
+
+/**
+ * Aplicarea comenzilor foilor (ADR 0210 §1) vine cu modulul lor (`jurnalFoi.ts`, adus de calculul acțiunilor, la cerere), nu
+ * în pachetul de pornire. O comandă a foilor se naște doar acolo, deci ajunge în jurnal după ce modulul s-a înregistrat.
+ */
+let aplicaFoaie: ((doc: Document, c: ComandaFoaie) => Document) | null = null;
+
+/** Înregistrarea aplicării comenzilor foilor, de modulul lor. */
+export function inregistreazaFoile(f: (doc: Document, c: ComandaFoaie) => Document): void {
+  aplicaFoaie = f;
+}
+
 function aplicaPas(doc: Document, c: Comanda): Document {
   if (c.tip === 'lot') return c.comenzi.reduce(aplicaPas, doc);
   if (c.tip === 'degrupeaza' || c.tip === 'regrupeaza') return aplicaDegrupare(doc, c);
+  if (c.tip === 'adauga-foaie' || c.tip === 'sterge-foaie' || c.tip === 'muta-foaie' || c.tip === 'eticheta-foaie') {
+    if (!aplicaFoaie) throw new Error(`${c.tip}: comenzile foilor n-au venit încă (jurnalFoi.ts)`);
+    return aplicaFoaie(doc, c);
+  }
   if (c.tip === 'inlocuieste-piesa') {
     const i = doc.piese.findIndex((p) => p.id === c.vechi.id);
     if (i < 0) throw new Error(`piesa ${c.vechi.id} nu există`);
@@ -232,6 +272,10 @@ function inversa(c: Comanda): Comanda {
     case 'inlocuieste-ghidaje': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'degrupeaza': return { ...c, tip: 'regrupeaza' };
     case 'regrupeaza': return { ...c, tip: 'degrupeaza' };
+    case 'adauga-foaie': return { ...c, tip: 'sterge-foaie' };
+    case 'sterge-foaie': return { ...c, tip: 'adauga-foaie' };
+    case 'muta-foaie': return { tip: c.tip, foaie: c.foaie, de: c.la, la: c.de };
+    case 'eticheta-foaie': return { tip: c.tip, foaie: c.foaie, camp: c.camp, vechi: c.nou, nou: c.vechi };
   }
 }
 

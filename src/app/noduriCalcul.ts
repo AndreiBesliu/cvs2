@@ -10,29 +10,26 @@ import { laturaLovita } from '../geom/apropiat.ts';
 import type { Document, FormaDoc } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import { FOAIA } from '../ui/actiuniDocument.ts';
 
 /** Un contur de sub unealtă: id-ul elementului în piesă, forma lui și matricea lui în lume. */
 export type ElementNoduri = { readonly nod: string; readonly forma: FormaDoc; readonly matrice: Matrice };
 /** Forma de sub unealtă: instanța și contururile piesei ei (unul la o formă desenată; mai multe la un import sau un boolean cu găuri). */
 export type FormaNoduri = { readonly instanta: string; readonly elemente: readonly ElementNoduri[] };
-export type MotivNoduri = 'nimic' | 'mai-multe' | 'piesa-impartita';
+export type MotivNoduri = 'nimic' | 'mai-multe';
 
 /**
- * Pură: forma pe care unealta Noduri o poate edita: o singură instanță aleasă, cu piesa doar a ei, cu toate contururile ei
- * (fiecare se editează separat, prin `document.forma` cu elementul lui, ADR 0068); altfel motivul.
+ * Pură: forma pe care unealta Noduri o poate edita: o singură instanță aleasă, cu toate contururile piesei ei (fiecare se
+ * editează separat, prin `document.forma` cu elementul lui, ADR 0068); altfel motivul. O piesă pusă de mai multe ori se
+ * editează pentru toate instanțele ei (ADR 0210 §2).
  */
-export function formaNoduri(doc: Document, selectie: readonly string[]): FormaNoduri | MotivNoduri {
+export function formaNoduri(doc: Document, selectie: readonly string[], indexFoaie = 0): FormaNoduri | MotivNoduri {
   if (selectie.length === 0) return 'nimic';
   if (selectie.length > 1) return 'mai-multe';
-  const foaie = doc.foi[FOAIA];
+  const foaie = doc.foi[indexFoaie];
   const i = foaie?.instante.find((x) => x.id === selectie[0]);
   const piesa = i ? doc.piese.find((p) => p.id === i.piesa) : undefined;
   if (!i || !piesa) return 'nimic';
-  let folosiri = 0;
-  for (const f of doc.foi) for (const x of f.instante) if (x.piesa === piesa.id) folosiri++;
-  if (folosiri > 1) return 'piesa-impartita';
-  const elemente = elementeFoaie(doc, FOAIA).filter((x) => x.instanta === i.id).map((x) => ({ nod: x.nod, forma: x.forma, matrice: x.matrice }));
+  const elemente = elementeFoaie(doc, indexFoaie).filter((x) => x.instanta === i.id).map((x) => ({ nod: x.nod, forma: x.forma, matrice: x.matrice }));
   return elemente.length > 0 ? { instanta: i.id, elemente } : 'nimic';
 }
 
