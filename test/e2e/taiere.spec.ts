@@ -411,6 +411,9 @@ test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000, cu o literă,
   await cutii(page, '1200.00 × 500.00 mm');
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(2);
+  // Alegerea rămasă arată spre panourile anulate: blocul ia toate formele foii (firma și litera), nu una dintre ele.
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.getByTestId('panouri-grila')).toContainText('Nicio formă aleasă: toate formele foii (2)');
 });
 
 test('Taie în panouri, fără nimic ales: toate formele foii; din colț, două forme de 1 200 × 900 și două de 1 200 × 100', async ({ page }) => {

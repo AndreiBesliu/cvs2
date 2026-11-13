@@ -85,6 +85,9 @@ o('H07', B, "...(rez.grupuri ? { grupuri: rez.grupuri } : {})", "", 'e2e', 'pano
 o('H08', K, "      return { raspuns: taieInPanouri(c.document, c.cerere), transfer: [] };", "      return { raspuns: { ok: false, motiv: 'nimic-ales' }, transfer: [] };",
   'e2e', 'workerul nu taie în panouri')
 o('H09', B, "        : c * r === 1 ? t('editare.taiere.panouri.unul') : null;", "        : null;", 'e2e', 'un singur panou nu stinge butonul')
+o('R05', R, "new Set([doc, inainte].flatMap(", "new Set([doc].flatMap(", 'panouri', 'grupul poate lua id-ul formei tăiate (eliberat de degrupare)')
+o('H10', B, "const x = selectie.filter((id) => peFoaie.includes(id));", "const x = [...selectie];", 'e2e',
+  'după Anulează, blocul numără și ia formele alese care nu mai sunt pe foaie')
 
 SETURI = {
     'panouri': ['test/unit/taiere.panouri.test.ts', 'test/unit/taiere.panouri.oracol.test.ts'],

@@ -13,15 +13,16 @@ export type PanouDeGrupat = { readonly nume: string; readonly ids: readonly stri
 
 /**
  * Comenzile grupurilor, pe documentul de după degrupare (`doc`, foaia `idFoaie`), și alegerea de după: toate bucățile, în ordinea
- * panourilor (`ids`), cu grupul în locul bucăților lui. Id-urile grupurilor, nefolosite în document. Null dacă o bucată lipsește
- * (documentul nu mai e cel calculat).
+ * panourilor (`ids`), cu grupul în locul bucăților lui. Id-urile grupurilor, nefolosite nici în `doc`, nici în documentul de
+ * dinaintea tăierii (`inainte`): altfel un grup ar putea lua id-ul formei tăiate, iar după Anulează, alegerea rămasă ar arăta
+ * spre ea. Null dacă o bucată lipsește (documentul nu mai e cel calculat).
  */
-export function comenziGrupuriPanouri(doc: Document, idFoaie: string, grupuri: readonly PanouDeGrupat[], ids: readonly string[]): { readonly comenzi: Comanda[]; readonly ids: string[] } | null {
+export function comenziGrupuriPanouri(doc: Document, idFoaie: string, grupuri: readonly PanouDeGrupat[], ids: readonly string[], inainte: Document = doc): { readonly comenzi: Comanda[]; readonly ids: string[] } | null {
   const foaie = doc.foi.find((f) => f.id === idFoaie);
   if (!foaie) return null;
   const locI = new Map(foaie.instante.map((x, k) => [x.id, k]));
   const piese = new Map(doc.piese.map((p, k) => [p.id, { p, k }]));
-  const ocupate = new Set([...piese.keys(), ...doc.foi.flatMap((f) => f.instante.map((x) => x.id))]);
+  const ocupate = new Set([doc, inainte].flatMap((d) => [...d.piese.map((p) => p.id), ...d.foi.flatMap((f) => f.instante.map((x) => x.id))]));
   let n = 1;
   const regrupate: Degrupata[] = [];
   const comenzi: Comanda[] = [];

@@ -64,7 +64,7 @@ function comanda(d: Document, r: Ok): { readonly comanda: Comanda; readonly ids:
   const foaie = d.foi[0];
   assert.ok(foaie);
   const cs: Comanda[] = r.degrupate.length > 0 ? [{ tip: 'degrupeaza', foaie: foaie.id, degrupate: r.degrupate }] : [];
-  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, foaie.id, r.grupuri ?? [], r.ids);
+  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, foaie.id, r.grupuri ?? [], r.ids, d);
   assert.ok(g, 'grupurile se fac pe documentul de după degrupare');
   return { comanda: { tip: 'lot', comenzi: [...cs, ...g.comenzi] }, ids: g.ids };
 }
@@ -250,12 +250,16 @@ test('V-carve-urile care s-ar amesteca: panoul rămâne negrupat, cu numele lui 
   assert.deepEqual(r.ids.slice(1, 3), ['v1', 'v2'], 'literele, netăiate, își păstrează id-urile');
 });
 
-test('un id vechi, eliberat de o tăietură, nu ajunge pe o bucată nouă', () => {
+test('un id vechi, eliberat de o tăietură, nu ajunge pe o bucată nouă și nici pe un grup', () => {
   // Firma „e3”: X = 1 200 o face e2 și e4, iar Y = 500 ar lua întâi id-ul liber e3 (tăierea numără de la numărul pieselor).
   const d = docDin(stoc, patrat('e3', 0, 0, 2400, 1000));
   const { r } = taiat(d, cerere(['e3'], EGALE));
   assert.equal(r.ids.length, 4);
   assert.ok(!r.ids.includes('e3'), r.ids.join(', '));
+  // Nici grupul: firma „e1” cu o literă, tăiată, eliberează e1 (bucățile ei iau e2 … e5), dar grupul panoului 1 nu-l ia.
+  const cuLitera = docDin(stoc, patrat('e1', 0, 0, 2400, 1000), patrat('a', 100, 100, 100, 200));
+  const g = taiat(cuLitera, cerere(['e1', 'a'], EGALE));
+  assert.ok(!g.r.ids.includes('e1') && !g.r.ids.includes('a'), g.r.ids.join(', '));
 });
 
 test('fără nicio tăietură, doar grupurile: două pătrate în fiecare panou', () => {

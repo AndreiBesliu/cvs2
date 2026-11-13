@@ -46,7 +46,7 @@ function celule(xs: readonly number[], ys: readonly number[]): Cutie[] {
 function comanda(d: Document, r: Extract<RezultatTaiere, { ok: true }>): { readonly comanda: Comanda; readonly ids: readonly string[] } {
   const id = d.foi[0]?.id as string;
   const cs: Comanda[] = r.degrupate.length > 0 ? [{ tip: 'degrupeaza', foaie: id, degrupate: r.degrupate }] : [];
-  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, id, r.grupuri ?? [], r.ids);
+  const g = comenziGrupuriPanouri(cs.length > 0 ? executa(istoricNou(d), { tip: 'lot', comenzi: cs }).doc : d, id, r.grupuri ?? [], r.ids, d);
   assert.ok(g);
   return { comanda: { tip: 'lot', comenzi: [...cs, ...g.comenzi] }, ids: g.ids };
 }

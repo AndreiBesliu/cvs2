@@ -841,7 +841,7 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata): ComandaTaiere {
   if (grupuri.length > 0) {
     let g: ReturnType<typeof comenziGrupuriPanouri>;
     try {
-      g = comenziGrupuriPanouri(comenzi.length === 0 ? h.doc : executa(h, { tip: 'lot', comenzi }).doc, foaieCurenta(h.doc).id, grupuri, t.ids);
+      g = comenziGrupuriPanouri(comenzi.length === 0 ? h.doc : executa(h, { tip: 'lot', comenzi }).doc, foaieCurenta(h.doc).id, grupuri, t.ids, h.doc);
     } catch {
       g = null;
     }
