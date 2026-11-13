@@ -261,6 +261,35 @@ primului commit de cod, `origin/main` unit în ramură.
   1211), Foarfeca 1197.
 - **Mărimea:** pe aceeași bază (`33e65f9`), pornirea nu crește (102,0 kB; cu ușa 105,6 / 110), iar totalul crește cu 4,2 kB (600,1 → 604,3 / 700; plafonul e 700 din 09.11, ADR 0144), peste estimarea de mai sus (~3 kB): modelele, comune workerului și previzualizării, grupul „Îmbinarea”, dinții arătați, manualul și reparația barei. **Bara, mai departe:** owner-ul a cerut fișierele (Importă, Exportă vectorii, Exportă G-code) în bara de sus, lângă Imprimanta; schița, cu cinci întrebări: <https://claude.ai/artifact/94AHZeAD9KvEmZsBt6MQW6>. Schimbarea vine după răspunsuri și înlocuiește reparația de mai sus.
 
+**Felia 10.3↑k, la cod** (13.11):
+- **Grila** (`grilaPanouri.ts`, pur, comun workerului și previzualizării): liniile peste cutia exactă a formelor de tăiat,
+  crescătoare, fără marginile ei. După mărime, egale (n = ⌈(w − 1e-6) / L⌉ pe fiecare axă, liniile la k · w / n) sau din colț
+  (la k · L de colțul din stânga-jos, cât rămâne ceva); după număr, egale. Zgomotul cutiei (sub 1e-6 mm peste un multiplu) nu
+  face un panou în plus. Peste 100 de celule, `panouri`, socotit înaintea liniilor; o mărime care nu e un număr pozitiv sau un
+  număr de panouri care nu e întreg, cel puțin 1, `valoare`; un singur panou, `nimic-taiat`.
+- **Tăierea** (`panouri.ts`, în worker): verticalele, apoi orizontalele, fiecare cu tăierea dreaptă a liniei din panou
+  (închiderea, spațiul și îmbinarea opțiunilor), doar pe bucățile care o încalecă: fiecare bucată ține coloanele și rândurile
+  între care poate fi, iar o tăietură dă partea A (stânga, dedesubt), apoi B. **Nou în `taie`:** `desparte` (doar la liniile din
+  panou, cu ambele părți păstrate): o formă pe care linia n-o trece, dar care are contururi de ambele părți (un text, cu
+  literele de o parte și de alta), se desparte pe laturi; o linie care doar desparte nu cere dinți.
+- **Panourile:** celulele cu bucăți, rând cu rând de jos și de la stânga, sunt „Panoul 1” … (numele vine din interfață, în
+  limba ei); o celulă goală nu primește număr. Una singură își ia numele (o formă întreagă își păstrează id-ul); mai multe devin
+  un grup cu numele panoului. Pe foaie (deci și în programul mașinii), bucățile unei forme vin în ordinea panourilor.
+- **Rezultatul,** un singur pas de anulare, prin acțiunea `document.taie`: degruparea compusă, din worker (fiecare formă
+  schimbată, cu bucățile ei de la capăt, cu id-uri nefolosite în documentul vechi: un id eliberat de o tăietură nu ajunge pe o
+  bucată nouă), apoi grupurile, pe firul principal (`grupuriPanouri.ts`, pe documentul de după degrupare: `grupDin`, comanda
+  `regrupeaza` cu locurile părților; V-carve-urile care s-ar amesteca, ADR 0130, lasă panoul negrupat, cu numele lui pe fiecare
+  bucată). **Schimbat față de prima variantă:** gruparea stătea în worker, dar ea citește blocurile de text cu schemele lor
+  (valibot), deci aducea în worker ~4,5 kB. Refuzat și `impartita` pentru o formă netăiată cu piesa pusă și în altă parte (ar
+  intra într-un grup, cu piesa ei).
+- **Interfața:** blocul „Taie în panouri” din panoul Taie (`PanouriTaiere.tsx`), după butonul Taie: mărimea panoului (implicit,
+  materialul foii), „egale / din colț”, numărul de panouri; câte ies, peste ce cutie; cât lucrezi în bloc, pânza arată grila
+  (cutia punctată și liniile), iar înapoi în blocul de sus, linia.
+- **Mărimea:** pe aceeași bază (`main` `44c47fa`, cu imprimanta 3.6s), pornirea nu crește (102,4 kB; cu ușa 106,1 / 110), iar
+  totalul crește cu 4,7 kB (657,5 → 662,2 / 700), peste estimarea de mai sus (~2,5 kB): workerul +2,7 (grila, tăierea pe linii,
+  `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4
+  (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în

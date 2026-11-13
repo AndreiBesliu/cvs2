@@ -568,6 +568,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
   în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
   fiecare fel, în `cutit.spec.ts`).
+  **Tăierea în panouri (felia 10.3↑k)** gata pe 13.11, pe `wip/10.3k-panouri` (făcută din `main`), neunită: grila în
+  `src/model/grilaPanouri.ts` (pur, comun workerului și previzualizării), tăierea în `src/model/panouri.ts` (în worker, linie cu
+  linie, cu `desparte` în `taie`: o formă cu contururi de ambele părți ale unei linii care nu le trece se desparte), gruparea
+  panourilor pe firul principal (`src/model/grupuriPanouri.ts`, din `document.taie`: gruparea citește blocurile de text cu
+  valibot, deci în worker ar aduce ~4,5 kB). Rezultatul tăierii are `grupuri` (panourile de grupat) și `panouri` (câte sunt);
+  alegerea de după, din comanda tăierii (`ids`). Oracolul: `judecaPanourile` (`taiere.panouri.oracol.test.ts`).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

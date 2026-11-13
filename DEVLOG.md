@@ -8480,3 +8480,66 @@ provizorie); după pauză, „ce se poate uni?”.
   Pe rândul G, Admin · Intrarea și stările goale.
 - **Harta schițelor:** rândurile noi și 14 idei noi (63–76), cu recomandarea, încă de hotărât; a 76-a e a adminului
   (ADR 0260, A.1).
+
+## 2026-11-13 — Felia 10.3↑k: tăierea în panouri (ADR 0181 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, după pauza din 11.11: pasul următor al liniei).
+**Started:** 13.11, 11:27. **Completed:** 13.11, 21:40.
+
+- **Ramura nouă din `main`:** `wip/10.3k-panouri`, din `5e4caa2` (nu din vârful cu mutarea fișierelor, oprită pe 11.11 și
+  ținută pe `wip/10.3-taiere-conversie` la `e39ddc4`, ca referință); `origin/main` `c85cc18` (ADR 0250, doar documente), unit
+  întâi, fără conflicte; apoi `44c47fa` (imprimanta 3.6s, la cererea sesiunii principale), în `c8adea6`, fără conflicte.
+- **Grila** (`src/model/grilaPanouri.ts`, pur, comun workerului și previzualizării): peste cutia exactă a formelor, după
+  mărime (egale: ⌈(w − 1e-6) / L⌉ panouri pe axă, liniile la k · w / n; din colț: la k · L de colțul din stânga-jos) sau după
+  număr; zgomotul cutiei nu face un panou în plus; peste 100 de celule, `panouri`, socotit înaintea liniilor.
+- **Tăierea** (`src/model/panouri.ts`, în worker): verticalele, apoi orizontalele, cu tăierea dreaptă a liniei din panou
+  (închiderea, spațiul, îmbinarea), doar pe bucățile care încalecă linia; fiecare bucată ține coloanele și rândurile ei (A,
+  apoi B). În `taie`, `desparte`: o formă cu contururi de ambele părți ale unei linii care nu le trece (un text) se desparte pe
+  laturi; o linie care doar desparte nu cere dinți. La capăt, celulele cu bucăți, rând cu rând de jos, sunt „Panoul 1” …: bucata
+  singură își ia numele, iar panourile cu mai multe se întorc de grupat. Rezultatul: degruparea compusă, cu id-uri nefolosite în
+  documentul vechi; pe foaie, bucățile unei forme în ordinea panourilor.
+- **Gruparea, pe firul principal** (`src/model/grupuriPanouri.ts`, din `document.taie`, pe documentul de după degrupare):
+  `grupDin` și `regrupeaza` cu locurile; V-carve-urile care s-ar amesteca lasă panoul negrupat, cu numele pe fiecare bucată;
+  alegerea de după, cu grupul în locul bucăților. Totul într-un pas de anulare.
+- **Interfața:** blocul „Taie în panouri” al panoului Taie (`PanouriTaiere.tsx`): mărimea (implicit, materialul foii), egale
+  / din colț, numărul de panouri; câte ies; grila pe pânză cât lucrezi în bloc (înapoi în blocul de sus, linia). Manualul (ro,
+  en), textele (ro, en).
+- **Treceri:** (1) e2e: panourile ieșeau pe foaie în ordinea tăierii (1, 3, 2, 4), nu a panourilor: bucățile fiecărei forme se
+  pun acum în ordinea panourilor, iar locurile grupurilor se citesc din documentul de după degrupare; (2) la scrierea
+  otrăvurilor, cinci locuri fără probă (V-carve-urile, id-ul eliberat, cutia din toate contururile, panourile fără tăietură,
+  piesa împărțită netăiată): cinci probe noi; o sortare fără efect, scoasă; (3) otrava G02 scăpase (o cutie fără lățime, cu
+  zero coloane, trecea de plafon cu oricâte rânduri): proba ei; (4) mărimea: prima variantă creștea totalul cu 9,1 kB, din care
+  7,4 în worker, fiindcă gruparea citește blocurile de text cu schemele lor (valibot); gruparea a trecut pe firul principal
+  (unde e deja încărcată, pentru Grupează), iar felia a ajuns la +4,7 kB; (5) la verificarea canalului: id-ul grupului se
+  alegea din documentul de după degrupare, deci putea fi al formei tăiate; după Anulează, alegerea rămasă (panourile) arăta din
+  nou spre ea (aplicația păstrează din alegere ce mai e pe foaie), iar a doua tăiere lua doar placa, fără litera de pe ea:
+  id-urile grupurilor ocolesc și documentul de dinainte; proba e2e: Anulează cu panourile încă alese, apoi blocul ia toate
+  formele foii, apoi Reface; (6) un filtru al alegerii, pus atunci și în blocul panourilor, s-a dovedit de prisos (otrava H10
+  scăpa: aplicația dă panoului doar alegerea care mai e pe foaie): scos. La privirea capturilor (ro, en): nimic de schimbat.
+- **Probe:** pe hârtie (`taiere.panouri.test.ts`, 12: grila; firma de 2 400 × 1 000 la 1 200 × 900, egale și din colț;
+  celulele goale; literele; textul despărțit; îmbinarea, cu și fără joc; V-carve-urile; id-ul eliberat; doar grupuri; acțiunea;
+  refuzurile), oracolul (`judecaPanourile`: fiecare bucată în celula ei, nimic în afara formei, ariile; corpusul din sămânță,
+  forme și plăci cu îmbinare, cu martorul), e2e (2).
+- **Otrăvurile** (`test/otravuri/10.3k.py`, în clonă, pe 4179): 46 de otrăvuri, toate aplicabile: 8 ale grilei, 18 ale tăierii
+  pe linii și ale panourilor, 3 ale despărțirii, 3 ale acțiunii și 5 ale grupării (`grupuriPanouri.ts`), pe setul `panouri`,
+  plus 9 de interfață (e2e). La prima rulare (`4ab274a`, 40), 38 prinse: G02 (o cutie fără lățime: zero coloane, deci plafonul
+  trecea cu oricâte rânduri), prinsă după proba ei (`162c068`); M03 echivalentă (fiecare linie încercată pe toate bucățile, nu
+  doar pe cele care o încalecă: liniile vin crescător și celula se citește din prima coloană și primul rând al bucății, iar o
+  bucată din afara intervalului ar fi tăiată doar de dinți care trec de linia vecină, refuzați la margine; filtrul doar scutește
+  lucru). După mutarea grupării (`0cf6bfc`, 45): 44, M03. După reparația id-ului grupului (`4bc3c23`, 47): H10 scăpată,
+  echivalentă (aplicația dă panoului doar alegerea care mai e pe foaie), deci filtrul ei, scos (`9835062`); H01, mutată pe linia
+  de acum, prinsă. La capăt: 46, 45 prinse, M03 echivalentă.
+- **Porțile:** pe unirea cu `main` (`95fdada`, cu `44c47fa`): traducerile 745 / 0 lipsă; compilatoarele (aplicația,
+  planificatorul, funcțiile); importurile 20 / 0; licențele; unit 9 193 (9 185 trecute, 0 căderi, 8 sărite); build-ul
+  determinist; e2e 461 / 462, cu doi lucrători (singura cădere, `fonturi.spec.ts:149`, la încărcare: Aplică rămas stins cât se
+  încărca fontul; trece singură; căzuse la fel și pe `0cf6bfc`, a trecut pe `d18c37e` și `64e69fb`); emulatoarele 101 / 101 și
+  21 / 21 (la o rulare de dinainte, emulatorul de funcții n-a încărcat codul în 10 s: patru callable-uri cu 404; la rerulare,
+  toate). Pe vârf (`9835062`, doar filtrul scos): build-ul determinist, e2e `taiere`, `cutit` și `fonturi` 37 / 37.
+- **Mărimea:** pe aceeași bază (`main` `44c47fa`, cu imprimanta 3.6s), pornirea nu crește (102,4 kB; cu ușa 106,1 / 110), iar
+  totalul crește cu 4,7 kB (657,5 → 662,2 / 700), peste estimarea ADR-ului (~2,5 kB): workerul +2,7 (grila, tăierea pe linii,
+  `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4
+  (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 13.12), `9835062`,
+  verificat în Edge fără fereastră, ro și en: firma de 2 400 × 1 000 cu o literă (Degrupează), la 1 200 × 900, egale: grila 2 ×
+  2 pe pânză, patru panouri, „Panoul 1” grupul cu litera; Anulează, apoi blocul ia toate formele foii (2); din colț, cu zigzag,
+  tot patru, cu litera în „Panoul 1”; nicio eroare în consolă.
