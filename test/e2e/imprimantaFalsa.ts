@@ -27,6 +27,9 @@ import type { AddressInfo, Socket } from 'node:net';
  *   listă, încă neanulată, intră în `excluded_objects` (listă JSON ca text, ca K1C); piesa la care lucrează acum e refuzată
  *   (ca firmware-ul Creality, „Forbidden”), fără niciun răspuns. Ca Klipper, o piesă anulată se sare repede (fără să țină un
  *   pas), capul nu merge acolo, iar filamentul numărat rămâne cel al fișierului.
+ * - din 3.6s (ADR 0194 §A), un fișier „imprimat” se încheie cu `state` 2 (ca o K3: doi pași, apoi 0, cu `printJobTime` și
+ *   `usedMaterialLength` puse pe 0); `faraFilament()` pune `materialStatus` 1 și pauza (ca senzorul K1), iar Reia îl pune
+ *   la loc (0).
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -86,6 +89,8 @@ export interface ImprimantaFalsa {
   ignora(campuri: readonly string[]): void;
   /** Stratul adevărat al fișierului „imprimat” acum (null: niciunul), oricât de des ar sări `layer`. */
   stratAdevarat(): number | null;
+  /** Din 3.6s: senzorul spune că s-a terminat filamentul (`materialStatus` 1), iar o imprimare trece în pauză. */
+  faraFilament(): void;
   /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
   pas(): void;
   taie(): void;
@@ -162,6 +167,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     // Din 3.6o, ca în transcrierea owner-ului (07.11): ventilatoarele, viteza, debitul, maximele, „ocupată” și axele.
     fan: 0, fanCase: 0, fanAuxiliary: 0, modelFanPct: 0, caseFanPct: 0, auxiliaryFanPct: 0, curFeedratePct: 100, curFlowratePct: 100,
     maxNozzleTemp: 320, maxBedTemp: 115, deviceState: 0, autohome: 'X:0 Y:0 Z:0',
+    // Din 3.6s: senzorul de filament (0: filamentul e pus), ca K1C-ul owner-ului.
+    materialStatus: 0,
   };
   const ignorate = new Set<string>();
   const homingMs = opt.homingMs ?? 600;
@@ -246,11 +253,20 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     if (pauza) { schimba({ state: 5 }); return; }
     if (r.i >= r.linii.length) {
       rulare = null;
-      schimba({ printProgress: 100, current_object: '' });
+      // Din 3.6s: „terminată” (2), ca o K3; după doi pași, liberă (0), cu timpul și filamentul pe 0.
+      schimba({ printProgress: 100, current_object: '', state: 2, printLeftTime: 0 });
     }
   };
   let finalizare = 0;
   const unPas = (): void => {
+    if (s['state'] === 2) {
+      finalizare++;
+      if (finalizare >= 2) {
+        finalizare = 0;
+        schimba({ state: 0, printJobTime: 0, usedMaterialLength: 0, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) });
+      }
+      return;
+    }
     if (s['state'] !== 1) return;
     if (rulare !== null) { pasFisier(rulare); return; }
     const p = Number(s['printProgress']);
@@ -387,7 +403,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         return;
       }
       if (p['pause'] === 1 && s['state'] === 1) schimba({ state: 5 });
-      else if (p['pause'] === 0 && s['state'] === 5) schimba({ state: 1 });
+      else if (p['pause'] === 0 && s['state'] === 5) schimba({ state: 1, materialStatus: 0 });
       else if (p['stop'] === 1 && (s['state'] === 1 || s['state'] === 5)) {
         rulare = null;
         schimba({ state: 7 });
@@ -451,6 +467,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
         stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
+        faraFilament: () => { schimba(s['state'] === 1 ? { materialStatus: 1, state: 5 } : { materialStatus: 1 }); },
         pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {

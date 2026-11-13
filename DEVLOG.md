@@ -8355,3 +8355,128 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0250, „Completarea din 13.11: ideile din schițe”** („Da la toate”): 13 idei în feliile 28.x, fiecare cu felia ei;
   3 linii separate (simularea unică, proiectele multiple cu `.cvs2`, clipboardul).
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG, traducerea roadmap-ului.
+
+## 2026-11-13 — Schițele, tura a opta (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, 16:30. **Completed:** 13.11, 16:50.
+
+- **Canvas-ul**, acum 54 de table. Patru table noi, fiecare în cele patru aranjamente: conectarea mașinii (USB, WiFi,
+  conexiunile ținute), proiectul gol, Textul (X), tastatura și focusul (zonele în ordinea lui F6).
+- **Meniurile Clasicului, aliniate** pe tablele turelor 6–7 la cele din schița Clasicului: Fișier, Editare, Vedere,
+  Vectori, Trasee, Mașina, Extensii, Ajutor (fără „Ferestre”). În ADR 0250, rândul meniului Extensii spune acum „între
+  Mașina și Ajutor”.
+- **Harta schițelor:** rândurile noi și 11 idei noi (17–27), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 17–27 din tura a opta, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 16:55. **Completed:** 13.11, 17:20.
+
+- **ADR 0250, „Ideile turei a opta, acceptate tot pe 13.11”:** 10 idei în feliile 28.x, fiecare cu felia ei; editarea
+  textului pe loc, cu dublu clic, e linie separată.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Schițele, tura a noua (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, 17:00. **Completed:** 13.11, 17:51.
+
+- **Canvas-ul**, acum 58 de table. Patru table noi, fiecare în cele patru aranjamente, cu textele de azi: acțiunile pe
+  forme (extensia barei: Aliniere, Copiere, Oglindire, Offset, Booleanul), traseul (T) și animația lui (ADR 0099),
+  mesajele de după o acțiune și confirmarea ieșirii din foaie, aplicația în engleză (cu literele câștigate sau pierdute
+  față de română).
+- **Harta schițelor:** rândurile noi și 11 idei noi (28–38), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 28–38 din tura a noua, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 17:53. **Completed:** 13.11, 17:53.
+
+- **ADR 0250, „Ideile turei a noua, acceptate tot pe 13.11”:** 11 idei, toate în feliile 28.x, fiecare cu felia ei.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Schițele, tura a zecea (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, după acceptarea ideilor 28–38. **Completed:** 13.11, 18:01.
+
+- **Canvas-ul**, acum 62 de table. Patru table noi, fiecare în cele patru aranjamente, cu textele de azi: Transformarea (S)
+  și ancora, Nodurile (N) și Pen-ul (B), navigarea pe planșă cu ajutoarele de desen (riglele, ghidajele, lipirea, grila,
+  zoomul), fereastra Fonturi. Rândul F e așezat din nou, fără goluri.
+- **Verificat în cod înaintea publicării:** azi nu există câmp de rotire în bara Transformării (rotirea e din mâner) și
+  nici butoane − / + pe pânză. Zoomul merge cu rotița, iar bara de jos are „Zoom 100 %” și „Arată toată foaia”. Pe table,
+  acestea apar ca idei noi.
+- **Harta schițelor:** rândurile noi și 12 idei noi (39–50), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 39–50 din tura a zecea, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:23. **Completed:** 13.11, 18:23.
+
+- **ADR 0250, „Ideile turei a zecea, acceptate tot pe 13.11”:** 11 idei în feliile 28.x, fiecare cu felia ei; textul de
+  probă al fontului, luat din textul omului, e linie separată.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-11 — 3.6s–3.6u propuse: notificările și istoricul imprimărilor (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, grupul 3” (owner-ul, la „După pauză, propun grupul 3 (notificările și istoricul)?”, după 3.6r).
+**Started:** 11.11, 20:12. **Completed:** 11.11, 20:34.
+
+- **Reluarea:** ramura `wip/3.6g-imprimanta` adusă la `main` (`99ff34c`, după unirea 3.6j–3.6r din 09.11); plafonul
+  total e acum 700 kB.
+- **Cercetarea:** stările de final (`state` 2 terminată, 4 oprită, 5 pauză, `materialStatus` 1 fără filament), istoricul
+  (`reqHistory` → `historyList`; o intrare reală din imprimanta owner-ului: Benchy, 1140 s, 3712,4 mm) și filmele
+  (`reqElapseVideoList`, `http://<ip>/downloads/video/<cifre>.mp4`), din transcrierea din 07.11 și din trei proiecte care
+  citesc portul 9999; în browser, notificările (permisiunea, Android), filele în repaus (Edge, 2 ore), conținutul mixt.
+- **Propunerea** (ADR 0194, propus): 3.6s notificările și semnul de pe butonul Imprimanta, 3.6t istoricul cu costul și
+  estimarea care învață, 3.6u filmele; doar citiri. Schița, cu formularul: <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Două întrebări
+  care se exclud (schița; unde se ține istoricul cvs2). Codul vine după răspunsuri.
+- **Găsit pe drum:** rândul ADR 0193 din index nu spunea că 3.6r e gata; reparat.
+
+## 2026-11-13 — 3.6s: notificările și semnul din bară (ADR 0194) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, 11.11, la „Accepți recomandările din schiță (1a, 2a)?”); după pauza din 12.11
+(„pauza aici”), „continua” (13.11).
+**Started:** 11.11, 20:37. **Completed:** 13.11, 17:45.
+
+- **Driverul și evenimentele:** `state` 2 = „gata”, `materialStatus` → `faraFilament`; `evenimente.ts` (pur), doar din
+  schimbări, cu cheile pe lucrare.
+- **Fereastra și carcasa:** banda (din orice fereastră), notificarea sistemului cât cvs2 e ascuns, sunetul, cardul
+  Notificările, semnul pe fila Imprimanta, titlul filei din părți (și pentru mașina CNC), legarea la deschidere.
+- **Imprimanta falsă:** finalul cu `state` 2, senzorul de filament.
+- **Probe și porți:** 9 pe hârtie, manualul, două e2e; unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms); totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Otrăvurile (`test/otravuri/3.6s.py`):
+  32 / 32 (22 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 9).
+- **Găsit pe drum:** „0 m de filament” pe o lucrare scurtă (văzut în Edge); reparat.
+
+## 2026-11-13 — Schițele adminului, rândul G al canvas-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa faci design si pentru admin”. **Started:** 13.11, după acceptarea ideilor 39–50. **Completed:** 13.11,
+18:32.
+
+- **Rândul G al canvas-ului:** 11 table ale paginii `/admin`, un singur design (nu patru aranjamente). Paleta e cea a
+  Insulelor (tokenurile aplicației, ca azi), cu o bară laterală grupată: Probleme, Produs, Clienți, Echipa. Tablele: Azi
+  (filă nouă), Erori, Tichete, Sugestii (tabla deciziilor), Utilizatori, Personal (matricea rolurilor), Diagnoză, Roadmap,
+  Documentație, Setări și Contul meu, Adminul pe telefon. Textele vin din `src/i18n/admin.ro.ts`.
+- **Verificat în cod înaintea publicării:** verificarea Funcțiilor (`logClientError` răspunde 401), implicitul păstrării
+  raportărilor (365 de zile), numele etapelor din `PLAN.md` §5.4, regula de 640 px din `admin.css`.
+- **Harta schițelor:** 12 idei ale adminului (51–62), cu recomandarea „linia adminului” (o linie a ei, cu ADR-ul și
+  feliile ei), încă de hotărât.
+
+## 2026-11-13 — ADR 0260: adminul reproiectat, acceptat (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:40. **Completed:** 13.11, 18:40.
+
+- **ADR 0260 acceptat:** cele 12 idei ale adminului (51–62), împărțite pe feliile A.1–A.7, o linie a ei, pornită la
+  cuvântul owner-ului. Permisiunile (`fileVizibile`), regulile și Firestore Lite rămân, iar `/admin` are ținta de
+  +25 kB peste 106,5 / 200.
+- **Documentele:** indexul ADR-urilor (rândul 0260), traducerea lui în `roadmap.en.json`, CLAUDE.md (decizia), DEVLOG.
+  Harta schițelor le arată acceptate.
+
+## 2026-11-13 — Schițele, tura a unsprezecea (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, după ADR 0260. **Completed:** 13.11, 19:55.
+
+- **Canvas-ul**, acum 78 de table. Patru table noi pe rândul F, fiecare în cele patru aranjamente, cu textele de azi:
+  - Exportă vectori… (DXF, SVG, PDF, EPS);
+  - Verifică vectorii, cu reparațiile;
+  - Tăierea, cu rolurile tale (Exterior, Interior, Pe linie, Buzunar, V-carve, Găurire, incrustațiile);
+  - „Din desen…” al imprimantei.
+
+  Pe rândul G, Admin · Intrarea și stările goale.
+- **Harta schițelor:** rândurile noi și 14 idei noi (63–76), cu recomandarea, încă de hotărât; a 76-a e a adminului
+  (ADR 0260, A.1).

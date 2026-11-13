@@ -122,6 +122,20 @@ anulată rămâne neterminată: folosește o probă de care nu-ți pare rău.
    buton: pentru ea, Oprește.
 4. **Copiază jurnalul** la final: cadrele cu `excluded_objects` și `current_object` ne spun ce trimite K1C când anulează.
 
+## 9. Notificările (felia 3.6s)
+
+Pe o imprimare scurtă (placa de probă de la pasul 6, cu pauza ei), cu cvs2 deschis:
+
+1. În cardul **Notificările**, din fereastra Imprimanta: **Pornește notificările**, apoi permite-le în browser. Lasă
+   bifele cum sunt.
+2. Treci în **Proiectare**: pe butonul **Imprimanta** din bara de sus apar un punct verde și procentul, iar titlul filei
+   începe cu procentul.
+3. Ascunde cvs2 (alt program în față). La pauza din fișier ar trebui să vină o notificare a sistemului, cu nota ta, iar la
+   final încă una. Spune-mi dacă au venit și cât au întârziat față de imprimantă.
+4. Dacă vrei să încerci și senzorul: scoate filamentul cât imprimă. Ar trebui să vină „s-a terminat filamentul”, iar
+   imprimanta să stea în pauză. Spune-mi ce a arătat ecranul ei.
+5. **Copiază jurnalul** la final: cadrele cu `state` și `materialStatus` ne spun cum anunță K1C finalul și filamentul.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).
