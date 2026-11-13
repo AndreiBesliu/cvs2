@@ -1370,6 +1370,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             <span id="loc-extensii" className="loc-extensii" />
           </div>
           {grupuri('meniu')}
+          {/* Rândul benzii vestirilor imprimantei (3.6s, ADR 0194 §A), umplut de fereastra ei: gol, nu ocupă nimic. */}
+          <div id="loc-anunt-imprimanta" className="loc-anunt-imprimanta" />
         </header>
         <div className="sus" inert={acoperita}>
           <div className="insula bara" role="toolbar" aria-label={t('bara.actiuni')}>

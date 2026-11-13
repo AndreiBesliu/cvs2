@@ -1202,3 +1202,55 @@ test('notificările (3.6s): bifa „Leagă imprimanta ținută la deschiderea cv
   await expect(semn).toHaveCount(0);
   expect(comenziSet(imp)).toEqual([]);
 });
+
+/**
+ * Controalele vizibile pe care banda vestirilor le acoperă: centrul lor lovește banda (hit-test, `elementFromPoint`). Găsit
+ * pe 13.11 de CI-ul complet, pe Linux: banda pauzei, plutind sus, la mijloc, acoperea Reia (cu alte fonturi, alt loc).
+ */
+const acoperite = (page: Page, selector: string): Promise<string[]> => page.evaluate((sel) => {
+  const banda = document.querySelector('[data-testid="imprimanta-anunt"]');
+  if (banda === null) throw new Error('fără bandă');
+  const rez: string[] = [];
+  for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+    if (banda.contains(el)) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0 || r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth) continue;
+    const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    if (t !== null && banda.contains(t)) rez.push(el.getAttribute('data-imprimanta') ?? el.getAttribute('data-actiune') ?? el.getAttribute('aria-label') ?? '?');
+  }
+  return rez;
+}, selector);
+
+test('banda vestirilor (3.6s) nu acoperă nimic: nici Reia și Oprește din fereastra Imprimanta, nici uneltele din Proiectare; pe telefon, nici țintele', async ({ page }) => {
+  await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 40 }, pasMs: 600_000 });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  // Rândul benzii din meniul global: gol, nu ocupă nimic (meniul nu crește fără un anunț).
+  const rand = page.locator('#loc-anunt-imprimanta');
+  const afisare = (): Promise<string> => rand.evaluate((e) => getComputedStyle(e).display);
+  expect(await afisare()).toBe('none');
+  await page.locator('[data-imprimanta="pauza"]').click();
+  const banda = page.getByTestId('imprimanta-anunt');
+  await expect(banda).toHaveAttribute('data-fel', 'pauza');
+  const fereastra = '[data-testid="imprimanta"] button, [data-testid="imprimanta"] input, [data-testid="imprimanta"] select';
+  expect(await acoperite(page, fereastra)).toEqual([]);
+  // Din Proiectare, banda se vede mai departe, fără să acopere uneltele.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await expect(banda).toBeVisible();
+  for (const [latime, inaltime] of [[1024, 768], [1280, 800]] as const) {
+    await page.setViewportSize({ width: latime, height: inaltime });
+    expect(await acoperite(page, 'button, input, select'), `${latime} px`).toEqual([]);
+  }
+  // Pe telefon, în fereastra Imprimanta.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(banda).toBeVisible();
+  expect(await acoperite(page, fereastra)).toEqual([]);
+  // Reia, cu banda la vedere: imprimanta merge mai departe, iar banda pleacă, cu rândul ei.
+  await page.locator('[data-imprimanta="reia"]').click();
+  await expect(stare(page)).toHaveText('Imprimă');
+  await expect(banda).toHaveCount(0);
+  expect(await afisare()).toBe('none');
+});
