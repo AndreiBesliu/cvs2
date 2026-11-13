@@ -1,13 +1,21 @@
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { lazy, Suspense, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { ancoraPanou } from './ancoraPanou.ts';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import { inaltimeConV, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
+import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
 import { susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
+import { materialFoaie, numeFoaie } from '../model/foi.ts';
+import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
+import { blocuriPiesei, campuriPiesei } from '../model/placute.ts';
+import { textIese } from '../model/placuteIesire.ts';
+import type { RezultatPlacuta } from '../text/placute.ts';
+import type { CerereText } from '../ui/actiuniDocument.ts';
+import type { CampEticheta } from '../model/jurnal.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
@@ -15,9 +23,13 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { useRoluriMele } from './roluriMele.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
+import { CampText } from '../ui/CampText.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** «Din CSV…» (ADR 0210 §4), adusă la primul clic: fereastra și cititorul tabelului nu stau în panou. */
+const DialogCsv = lazy(() => import('./DialogCsv.tsx').then((m) => ({ default: m.DialogCsv })));
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -25,6 +37,8 @@ mesaje.catch(() => undefined);
 
 type Props = {
   readonly doc: Document;
+  /** Foaia activă (ADR 0210 §1): a ei sunt selecția și câmpurile foii; piesele puse și pe alte foi se numără pe toate. */
+  readonly indexFoaie?: number;
   /** Instanțele selectate care există pe foaie. */
   readonly alese: readonly string[];
   /** Elementele lor în lume, câte sunt, și cutia lor comună, în mm (le calculează deja aplicația, pentru pânză). */
@@ -38,6 +52,17 @@ type Props = {
   /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
   readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
+  /** Piesele puse de mai multe ori (ADR 0210 §2): «+1», «Încă…» (câte să fie în total) și «Desprinde», prin registru. */
+  readonly onPlusUnu: () => RezultatActiune;
+  readonly onInca: (total: number) => RezultatActiune;
+  readonly onDesprinde: () => RezultatActiune;
+  /**
+   * Plăcuțele (ADR 0210 §4), prin acțiunea textului: valorile singurei plăcuțe alese, iar din «Din CSV…» textul șablonului și
+   * plăcuțele unui tabel.
+   */
+  readonly onPlacuta?: (c: CerereText) => RezultatActiune;
+  /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
+  readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
   readonly onRol: (r: Rol | RolPersonal) => RezultatActiune;
   /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
@@ -47,11 +72,11 @@ type Props = {
 };
 
 /** Piesele instanțelor alese de pe foaie, fiecare o dată, în ordinea foii. */
-function pieseAlese(doc: Document, alese: readonly string[]): Piesa[] {
+function pieseAlese(doc: Document, alese: readonly string[], indexFoaie: number): Piesa[] {
   const ale = new Set(alese);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const rez = new Map<string, Piesa>();
-  for (const i of doc.foi[0]?.instante ?? []) {
+  for (const i of doc.foi[indexFoaie]?.instante ?? []) {
     const p = ale.has(i.id) ? piese.get(i.piesa) : undefined;
     if (p) rez.set(p.id, p);
   }
@@ -61,6 +86,11 @@ function pieseAlese(doc: Document, alese: readonly string[]): Piesa[] {
 const mm = (x: number): string => x.toFixed(2);
 /** Diametrul unei freze: cu a treia zecimală când o are (Ø3,175, 1/8″), altfel ca restul (Ø6.00). */
 const mmFreza = (x: number): string => (x.toFixed(3).endsWith('0') ? x.toFixed(2) : x.toFixed(3));
+
+/** De ce literele plăcuței nu s-au putut face, în cuvinte (fontul, cu numele lui). */
+function motivPlacuta(r: Extract<RezultatPlacuta, { readonly ok: false }>): string {
+  return r.motiv === 'font' ? t('prop.placuta.motiv.font', { font: r.font ?? '' }) : t(`prop.placuta.motiv.${r.motiv}`);
+}
 
 /** Un rând „etichetă: valoare”, doar de citit. */
 const rand = (eticheta: string, valoare: ReactNode): ReactNode => (
@@ -131,15 +161,26 @@ function operatie(o: Operatie, n: number): ReactNode {
  * registrului (un pas de anulare). Tăierea (ADR 0112): rolul pieselor alese, adâncimea și pasul tuturor operațiilor lor; restul
  * valorilor operațiilor se arată aici și se schimbă din dialogul exportului. Se încarcă la cerere.
  */
-export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
+export function PanouProprietati({
+  doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
+  onPlusUnu, onInca, onDesprinde, onPlacuta,
+}: Props): ReactNode {
   useLimba();
   // Ancora transformării (ADR 0240 §A.7), cât unealta Transformare are o selecție: X / Y o mută, nu formele.
   const ancora = useSyncExternalStore(ancoraPanou.asculta, ancoraPanou.citeste);
   const roluriMele = useRoluriMele().roluri;
+  // «Încă…» deschis: totul scris (text, ca omul să poată scrie liber), pentru instanța de atunci; și refuzul ultimului buton.
+  const [inca, setInca] = useState<{ readonly cheie: string; readonly text: string } | null>(null);
+  const [refuzPiesa, setRefuzPiesa] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Refuzul ultimului rol ales, pentru selecția de atunci; la fel, al lemnului din jurul dopului ales.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
-  const foaie = doc.foi[0];
+  // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
+  // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.
+  const [placuta, setPlacuta] = useState<{ readonly cheie: string; readonly motiv: string | null } | null>(null);
+  const [csv, setCsv] = useState<string | null>(null);
+  const [rezultatCsv, setRezultatCsv] = useState<{ readonly cheie: string; readonly mesaj: string } | null>(null);
+  const foaie = doc.foi[indexFoaie];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
   // Câmpurile țin minte textul scris; la altă selecție pornesc de la zero.
@@ -153,7 +194,6 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   // Forma singurei instanțe alese, dacă piesa ei e un singur element cu parametri (ADR 0053).
   const forma = instanta && piesa?.radacina.tip === 'element' ? piesa.radacina.forma : null;
   const par = forma ? parametri(forma) : null;
-  const impartita = piesa ? doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === piesa.id).length, 0) > 1 : false;
   const schimba = (p: Parametri): RezultatActiune => onForma(dinParametri(p));
   const campForma = (eticheta: string, numeCamp: string, valoare: number, unitate: string, onAplica: (x: number) => RezultatActiune): ReactNode =>
     rand(eticheta, camp(eticheta, numeCamp, valoareDerivata(valoare), unitate, false, onAplica));
@@ -184,7 +224,7 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   // Tăierea (ADR 0112): rolul pieselor alese (doar rolurile care se potrivesc tuturor), adâncimea și pasul tuturor operațiilor
   // lor; cu valori diferite, câmpul e gol, iar lista arată „—”. Sub rolurile de bază, rolurile omului (ADR 0114 §4) al căror
   // rol de bază se potrivește; arătat e rolul personalizat al tuturor pieselor, dacă au unul (§6), altfel cel de bază.
-  const piese = pieseAlese(doc, alese);
+  const piese = pieseAlese(doc, alese, indexFoaie);
   const oferite = ROLURI.filter((r) => piese.length > 0 && piese.every((p) => roluriOferite(p).includes(r)));
   const roluri = piese.map(rolPiesei);
   const rolComun = roluri.length > 0 && roluri.every((r) => r !== null && r === roluri[0]) ? roluri[0] ?? null : null;
@@ -239,6 +279,47 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
     && o.fundPlat?.scula.diametru === primaInc.fundPlat?.scula.diametru) ? valoriBanda(primaInc) : null;
   // Fundul doar cu freza V (ADR 0173), pe hârtie: doar dacă niciuna dintre operațiile alese n-are freză dreaptă.
   const fundV = hartie && operatiiAlese.every((o) => !o.fundPlat);
+  // Piesa singurei instanțe alese (ADR 0210 §2): de câte ori e pusă, pe ce foi, și unde ar ajunge copiile lui «Încă…».
+  const sablonFoaie = (n: number): string => t('foaia.n', { n: String(n) });
+  const pusa = piesa ? folosiri(doc).get(piesa.id) ?? 0 : 0;
+  const peFoi = piesa && pusa > 1 ? doc.foi.flatMap((f, k) => {
+    const c = f.instante.filter((i) => i.piesa === piesa.id).length;
+    return c > 0 ? [`${numeFoaie(f, k, sablonFoaie)}: ${c}`] : [];
+  }).join(' · ') : '';
+  const totalInca = inca?.cheie === cheie && /^\d{1,4}$/.test(inca.text.trim()) ? Number(inca.text.trim()) : null;
+  const planInca = instanta && totalInca !== null && totalInca > pusa && totalInca <= INCA_MAXIM ? planCopii(doc, instanta.id, totalInca - pusa) : null;
+  const undeInca = planInca?.ok ? [
+    ...doc.foi.flatMap((f, k) => {
+      const c = planInca.locuri.filter((l) => l.foaie === f.id).length;
+      return c > 0 ? [t('prop.piesa.inca.pe', { k: String(c), foaie: numeFoaie(f, k, sablonFoaie) })] : [];
+    }),
+    ...(planInca.foiNoi > 0 ? [t('prop.piesa.inca.noi', { n: planInca.foiNoi, k: String(planInca.locuri.filter((l) => typeof l.foaie === 'number').length) })] : []),
+  ].join(', ') : '';
+  const butonPiesa = (r: RezultatActiune): void => { setRefuzPiesa(r.ok ? null : { cheie, motiv: t(r.motiv) }); };
+  const adaugaInca = (): void => {
+    if (totalInca === null) return;
+    const r = onInca(totalInca);
+    butonPiesa(r);
+    if (r.ok) setInca(null);
+  };
+  // Plăcuța (ADR 0210 §4): câmpurile din textul piesei, cu valorile instanței alese. O valoare nouă cere literele ei, din
+  // fontul fiecărui text (adus la cerere, cu modulul textului), apoi acțiunea textului le scrie într-un pas.
+  const campuriSablon = instanta && piesa ? campuriPiesei(piesa) : [];
+  const scrieValoare = (nume: string, text: string): RezultatActiune => {
+    if (!instanta || !piesa || !onPlacuta) return { ok: false, motiv: 'motiv.nimic-ales' };
+    const valori = { ...(instanta.campuri ?? {}), [nume]: text.trim() };
+    const [k, inst, p] = [cheie, instanta, piesa];
+    setPlacuta({ cheie: k, motiv: null });
+    import('../text/calcul.ts').then((m) => m.textePlacuteiCuFonturi(p, valori)).then((r) => {
+      if (!r.ok) {
+        setPlacuta({ cheie: k, motiv: motivPlacuta(r) });
+        return;
+      }
+      const rez = onPlacuta({ fel: 'placuta', instanta: inst.id, piesa: p, campuri: r.campuri, texte: r.texte });
+      setPlacuta(rez.ok ? null : { cheie: k, motiv: t(rez.motiv) });
+    }, () => { setPlacuta({ cheie: k, motiv: t('prop.placuta.motiv.modul') }); });
+    return { ok: true };
+  };
   const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
@@ -252,6 +333,13 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
         <section>
           <h3>{t('prop.foaia')}</h3>
           <dl>
+            {/* Numele și materialul (ADR 0210 §1): fără nume, foaia se cheamă după locul ei („Foaia 2”), arătat ca exemplu. */}
+            {rand(t('prop.foaia.nume'), <CampText key={`${foaie.id}/nume`} eticheta={t('prop.foaia.nume')} camp="foaie-nume" valoare={foaie.nume ?? ''}
+              exemplu={numeFoaie({ id: foaie.id }, indexFoaie, (n) => t('foaia.n', { n: String(n) }))} lungime={PLAFON.numeLungime}
+              dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => onEticheta('nume', x)} />)}
+            {rand(t('prop.foaia.material'), <CampText key={`${foaie.id}/material`} eticheta={t('prop.foaia.material')} camp="foaie-material"
+              valoare={materialFoaie(foaie) ?? ''} exemplu={t('prop.foaia.material.exemplu')} lungime={PLAFON.numeLungime}
+              dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => onEticheta('material', x)} />)}
             {rand(t('prop.latimea'), camp(t('prop.latimea'), 'foaie-latime', foaie.stoc.latime, 'mm', false, (x) => onStoc({ latime: x })))}
             {rand(t('prop.inaltimea'), camp(t('prop.inaltimea'), 'foaie-inaltime', foaie.stoc.inaltime, 'mm', false, (x) => onStoc({ inaltime: x })))}
             {rand(t('prop.grosimea'), camp(t('prop.grosimea'), 'foaie-grosime', foaie.stoc.grosime, 'mm', false, (x) => onStoc({ grosime: x })))}
@@ -282,10 +370,85 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
           )}
         </section>
       )}
+      {instanta && piesa && (
+        <section data-testid="prop-piesa" className={pusa > 1 ? 'prop-piesa legata' : 'prop-piesa'}>
+          <h3>{t('prop.piesa')}</h3>
+          <p className="prop-nota-piesa" data-pusa={pusa}>{t('prop.piesa.pusa', { n: pusa })}{peFoi ? ` (${peFoi})` : ''}</p>
+          <div className="prop-butoane">
+            <button type="button" data-buton="plus-unu" disabled={doarCitire} {...(oprit ? { title: oprit } : {})} onClick={() => { butonPiesa(onPlusUnu()); }}>
+              {t('actiune.plus-unu')}
+            </button>
+            <button type="button" data-buton="inca" aria-expanded={inca?.cheie === cheie} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+              onClick={() => { setInca(inca?.cheie === cheie ? null : { cheie, text: String(Math.min(INCA_MAXIM, Math.max(2, pusa + 1))) }); }}>
+              {t('actiune.inca')}
+            </button>
+            {/* O plăcuță (ADR 0210 §4) se desprinde și singură: piesa ei primește literele ei, cu textul ei obișnuit. */}
+            {(pusa > 1 || !!instanta.texte) && (
+              <button type="button" className="violet" data-buton="desprinde" disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+                onClick={() => { butonPiesa(onDesprinde()); }}>
+                {t('actiune.desprinde')}
+              </button>
+            )}
+          </div>
+          {inca?.cheie === cheie && (
+            <div className="prop-inca" data-testid="prop-inca">
+              <label>
+                {t('prop.piesa.inca')}
+                <input type="text" inputMode="numeric" autoComplete="off" data-camp="inca-total" value={inca.text}
+                  onChange={(e) => { setInca({ cheie, text: e.target.value }); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); adaugaInca(); } else if (e.key === 'Escape') { e.preventDefault(); setInca(null); } }} />
+              </label>
+              <p className="prop-nota-piesa">{totalInca !== null && totalInca > pusa
+                ? t('prop.piesa.inca.acum', { n: String(pusa), m: String(totalInca - pusa) }) : t('motiv.inca-total')}</p>
+              {undeInca && <p className="prop-nota-piesa" data-testid="inca-unde">{undeInca}</p>}
+              <div className="prop-butoane">
+                <button type="button" data-buton="inca-adauga" disabled={totalInca === null || totalInca <= pusa || !planInca?.ok} onClick={adaugaInca}>
+                  {t('prop.piesa.inca.adauga', { n: totalInca !== null && totalInca > pusa ? totalInca - pusa : 0 })}
+                </button>
+                <button type="button" data-buton="inca-renunta" onClick={() => { setInca(null); }}>{t('lista.renunta')}</button>
+              </div>
+            </div>
+          )}
+          {refuzPiesa?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="piesa">{refuzPiesa.motiv}</p>}
+          {/* «Din CSV…» (ADR 0210 §4): pe o piesă cu un text, câte o plăcuță pe rândul unui tabel. */}
+          {blocuriPiesei(piesa).length > 0 && onPlacuta && (
+            <div className="prop-butoane">
+              <button type="button" data-buton="din-csv" disabled={doarCitire} {...(oprit ? { title: oprit } : { title: t('prop.placuta.csv.nota') })}
+                onClick={() => { setRezultatCsv(null); setCsv(cheie); }}>
+                {t('prop.placuta.csv')}
+              </button>
+            </div>
+          )}
+          {csv === cheie && onPlacuta && createPortal(
+            <Suspense fallback={null}>
+              <DialogCsv doc={doc} indexFoaie={indexFoaie} instanta={instanta} piesa={piesa} doarCitire={doarCitire} onCerere={onPlacuta}
+                onGata={(mesaj) => { setCsv(null); setRezultatCsv({ cheie, mesaj }); }} onInchide={() => { setCsv(null); }} />
+            </Suspense>,
+            document.body,
+          )}
+        </section>
+      )}
+      {instanta && campuriSablon.length > 0 && (
+        <section data-testid="prop-placuta" className="prop-placuta">
+          <h3>{t('prop.placuta')}</h3>
+          <p className="prop-nota-piesa">{t('prop.placuta.nota', { camp: campuriSablon.map((c) => `{${c}}`).join(', ') })}</p>
+          <dl>
+            {campuriSablon.map((c) => rand(c, (
+              <CampText key={`${cheie}/placuta/${c}`} eticheta={c} camp={`placuta-${c}`} valoare={instanta.campuri && Object.hasOwn(instanta.campuri, c) ? instanta.campuri[c] ?? '' : ''} exemplu={`{${c}}`}
+                lungime={PLAFON.campLungime} dezactivat={doarCitire || !onPlacuta} {...(oprit ? { titlu: oprit } : {})} onAplica={(x) => scrieValoare(c, x)} />
+            )))}
+          </dl>
+          {placuta?.cheie === cheie && placuta.motiv === null && <p className="prop-nota-piesa" data-testid="placuta-face">{t('prop.placuta.face')}</p>}
+          {placuta?.cheie === cheie && placuta.motiv !== null && <p className="camp-motiv" role="alert" data-motiv="placuta">{placuta.motiv}</p>}
+          {rezultatCsv?.cheie === cheie && <p className="prop-nota-piesa" role="status" data-testid="placuta-csv">{rezultatCsv.mesaj}</p>}
+          {/* Textul plăcuței iese din ea (ADR 0210 §4, răspunsul 5): spus și aici, lângă valorile ei. */}
+          {piesa && instanta.texte && textIese(piesa, instanta.texte) && <p className="camp-motiv" data-testid="placuta-iese">{t('prop.placuta.iese')}</p>}
+        </section>
+      )}
       {par && (
         <section data-testid="prop-forma" data-forma={par.tip}>
           <h3>{t(`prop.forma.${par.tip}`)}</h3>
-          {impartita ? <p className="prop-nota">{t('prop.forma.impartita')}</p> : <dl>{campuriForma(par)}</dl>}
+          <dl>{campuriForma(par)}</dl>
         </section>
       )}
       {oferite.length > 0 && (

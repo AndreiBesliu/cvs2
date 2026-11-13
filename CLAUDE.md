@@ -102,10 +102,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22). **Un câmp nou al
-  documentului (v23 e a planșelor, 11.4↑; altă linie ia versiunea de după) intră acolo, ca rangul și incrustația:** rândul
+  cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
+  plăcuțelor, 11.4↑, ramura `wip/11.1-plansele`), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
+  (v24 pe altă linie, după unirea planșelor) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
-  versiunea curentă se mută pe ea (`schema: 22` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
+  versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
@@ -568,6 +569,76 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
   în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
   fiecare fel, în `cutit.spec.ts`).
+  **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
+  (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
+  revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
+  lucrează pe ea. Lista arată foile (piesele doar sub cea activă), cu „+ Foaie nouă” și meniul foii (⋯ sau clic dreapta, la
+  cerere, `MeniuFoaie.tsx`); PgUp / PgDn trec între foi (cu Ctrl, ale browserului); mutarea pe altă foaie, din meniul de clic
+  dreapta al pânzei sau trăgând rândul. **Foaia activă se dă explicit (`ContextDocument.foaie`; `indexFoaie` în editare și în
+  workerul CAM, la verificare, reparare și tăiere, pe documentul întreg); CAM-ul care doar citește primește documentul văzut
+  din foaie (`doarFoaia`), deci programul unei foi e octet cu octet al documentului doar cu ea.** Comenzile noi ale jurnalului
+  au inversa exactă și se aplică din `jurnalFoi.ts`, înregistrat odată cu calculul acțiunilor (nu stă în pornire). **`material`
+  nu intră în schemă:** în documentele de până la el era un câmp necunoscut al foii, cu orice valoare (oracolul îl generează
+  așa); aplicația îl citește doar când e text și scrie doar text; comanda etichetei ține valoarea veche exactă. **Pornirea
+  101,5 → 103,7 (cu ușa 107,2 / 110 kB), totalul 519,5 → 524,7 / 550.**
+  **Toate foile pe pânză (ADR 0210 §1, felia 11.1↑b)** gata pe 07.11: foile stau una lângă alta, în ordinea listei, la
+  100 mm (`locuriFoi`), cea activă vie, celelalte estompate, needitabile, cu numele deasupra; dublu-clic pe una o face
+  activă (vederea se mută cu originea: pânza nu sare); comutatorul „Toate foile pe pânză” (`vedere.toate-foile`, ținut în
+  browser, `cncvs2.toate-foile`), pornit, le încadrează pe toate. **Originea rămâne a foii active** (riglele, ghidajele,
+  uneltele, traseul neschimbate); foile vecine merg la workerul pânzei într-un mesaj al lor (`CerereFoi`), doar când se
+  schimbă. **Pornirea 104,3 (cu ușa 107,8 / 110 kB), totalul 525,5 / 550.**
+  **Piesele puse de mai multe ori (ADR 0210 §2, felia 11.2↑)** gata pe 08.11: «Încă…» și «+1» adaugă instanțe ale aceleiași
+  piese (`planCopii` în `src/model/pieseLegate.ts`: rândurile după ea, distanța din freză, foaia următoare goală, foile noi),
+  «Desprinde» îi dă instanței o copie a piesei (ultima păstrează piesa), „Duplică foaia cu aceleași piese” face instanțe noi
+  ale acelorași piese. **Editarea unei piese puse de mai multe ori o schimbă pentru toate** (refuzurile vechi au ieșit din
+  transformări, noduri, forma din panou și text; două instanțe alese care ar schimba-o diferit se refuză, `piesa-impartita`);
+  degruparea, reparațiile și tăierea vectorilor rămân refuzate, cu „Desprinde-o întâi”. Gruparea cu surori întreabă („Doar
+  aceasta” / „În toate cele N”, ținută în `cncvs2.grupare-surori`); banda violet stă jos, la mijlocul zonei libere (sus,
+  riglele urmează foaia), întrebarea sus, sub bare. `idNou` și `copieArbore` stau în `src/model/copii.ts`. **Pornirea 104,9
+  (cu ușa 108,5 / 110 kB), totalul 544,4 / 600.**
+  **„Așază pe foi” (ADR 0210 §3, felia 11.3↑)** gata pe 08.11: fereastra `DialogAsezare.tsx` (la cerere) și
+  `planAsezare` / `comenziAsezare` în `src/model/asezare.ts` (din colț, rând cu rând, ocolind piesele rămase cu freza lor,
+  vărsarea pe foaia următoare goală și pe foi noi, piesele prea mari pe loc; rotirea „90” ia varianta culcată doar când e
+  strict mai bună). Distanța minimă e freza profilului exterior: scrisă mai jos, refuz; unde omul n-a scris (deschiderea
+  ferestrei, „Mută și așază la capăt” din meniu), urcă singură. Alegerile se țin în `cncvs2.asezare`
+  (`src/app/asezareTinuta.ts`: `src/ui` nu importă modelul, regula `interfata-prin-actiuni`). Scrierea ferestrei trece pe
+  lângă garda „dialog deschis” (`ruleaza(registru, …)`), ca exportul. **Pornirea 105,3 (cu ușa 108,9 / 110 kB: rămân
+  1,1 kB), totalul 548,7 / 600.**
+  **Plăcuțele, nucleul (ADR 0210 §4, §7, felia 11.4↑)** gata pe 08.11: documentul **v23** (`Instanta.texte`: textul, literele
+  și operațiile fiecărei plăcuțe; `lume.ts` le pune în locul literelor șablonului); judecata lor în `judecataTexte.ts`, adusă
+  doar pentru un document cu plăcuțe, și rulată de ușă **pe documentul brut** (`problemaTexte`, `usaCurenta.ts`), nu în
+  validator: `v.record` sare cheile `__proto__` / `constructor` / `prototype`, care sunt date (ADR 0024 §9). Acțiunile cer
+  același verdict prin `motivDupa` (refuzul plăcuțelor e `motiv.placute`). Literele din font în `src/text/placute.ts`,
+  operațiile lor fără font în `src/io/placuteOperatii.ts`, șablonul și coacerea în `src/model/placute.ts`. Valorile din
+  panou trec prin acțiunea textului (cererea `placuta`; nicio acțiune nouă la pornire); editarea textului șablonului le
+  reface pe toate; rolul, scalarea, «Desprinde», gruparea și degruparea le țin. Oracolul v23 (agentul, din ADR-uri) e în
+  `test/oracles/document.ts`. **Pornirea 106,0 (cu ușa 109,9 / 110 kB: rămâne sub 0,1 kB), totalul 563,0 / 600.** Rămâne
+  pentru 11.4↑b: «Din CSV…», editarea textului unui șablon grupat, lista plăcuțelor micșorate de casetă.
+  **«Din CSV…» (ADR 0210 §4, felia 11.4↑b)** gata pe 09.11, după unirea lui `main` (ancorele, 12.1↑c-2: `3cdb96a`):
+  fereastra `DialogCsv.tsx` (din panou, adusă la cerere), cititorul `src/io/csv.ts` (codarea, separatorul găsit,
+  ghilimelele), valorile `src/model/valoriCsv.ts` (potrivirea după `numeComparabil`, numerotarea, `cuCamp`), textul
+  șablonului schimbat și pe un șablon grupat (`sablonCuContinut`), fonturile piesei o dată (`fonturiPiesei`); acțiunea
+  textului are cererile `sablon` și `placute` (un pas, așezat cu `planAsezare`). **Pornirea neschimbată (cu ușa 109,9 /
+  110), totalul 571,7 / 600.** Rămâne 11.4↑c: textul care iese din plăcuță fără casetă (roșu, avertismentul sau
+  confirmarea la export) și editarea cu unealta Text a unui șablon grupat.
+  **Textul care iese din plăcuță și unealta Text pe un șablon cu ramă (ADR 0210 §4, felia 11.4↑c)** gata pe 09.11, după
+  unirea lui `main` (trasarea, 6.V↑d și reparația ei: `bb13a6e`, `dbf2cbf`): plăcuța e conturul închis cel mai mare al
+  piesei, din afara textelor (`src/model/placuteIesire.ts`, adus de aplicație doar când documentul are plăcuțe, cu
+  avertismentele printr-un cârlig, `inregistreazaPlacute`); roșu în listă, bara de jos, panoul; în «Din CSV…», avertismentul
+  sau și confirmarea la export (`cncvs2.placute.iesire`, în browser; bifa exportului legată de lista văzută). Unealta Text
+  alege textul grupat la clic (`src/app/texteGrupate.ts`), «Aplică» trece prin `sablonCuAsezat` și cererea `editat` cu
+  `grup`. **Motivele planșelor stau în mesajele editorului** (calculul acțiunilor le cere la evaluare): un motiv nou al
+  planșelor, dat doar de calcul, intră acolo, nu în dicționarul de bază. **Pornirea cu ușa 109,9 / 110 (rămân ~0,1 kB),
+  totalul felia 607,2; cu 25.4↑ adusă din `main` la capăt, 611,0 / 700 (ADR 0144).**
+  **„Toate foile” la export (ADR 0210 §5, felia 11.5↑)** gata pe 13.11, după două pauze cerute de owner și unirea lui
+  `main` (tăierea 10.3↑f–j, imprimanta 3.6j–3.6r: `3aaf5dc`; codul venit trimite `indexFoaie` workerului CAM, iar desenul
+  ferestrei Imprimanta e al foii active). De la două foi, fereastra exportului întreabă „Foaia activă / Toate foile (N)”;
+  `calculeazaToateFoile` (`actiuniExportCalcul.ts`) cere fiecare foaie ca un document doar cu ea (`doarFoaia`), deci
+  programul ei e cel exportat singur; foile identice (`src/post/foi.ts`: fișierele cu programele egale fără comentarii, o
+  copie legată diferind doar în id-ul instanței) ies o dată, cu `-x<N>`; arhiva stocată, cu aceiași octeți
+  (`src/io/scrieZip.ts`, CRC-32 comun în `src/io/crc32.ts`); nume scurte: `CNCVS2.ZIP`, `F<k>X<N>/`. Mașina, simularea și
+  rezumatul rămân ale foii active. **Încă 11 motive date doar de calcul (ale lui `main`: gruparea, degruparea, textul,
+  rolul, foaia, importul) au trecut în mesajele editorului**: pornirea cu ușa 110,1 → 109,6 / 110, totalul 686,2 / 700.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -1242,6 +1313,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   la imprimantă adaugă 3,3 kB, peste cei ~2 kB rămași din ținta liniei imprimantei (ADR 0190 §G); cu `main` din 07.11 unit
   în ramură, totalul e 530,8 / 550. Unirea ramurii `wip/3.6g-imprimanta` în `main` rămâne a sesiunii principale, la cuvântul
   owner-ului.
+- 07.11.2026: **planșele: toate variantele rămân opțiuni pentru utilizator, cu recomandarea ca implicit** (ADR 0210, în
+  linia `plansele`). La ADR-ul propus, owner-ul a întrebat „ma intreb cate dintre raspunsuri/optiuni pot coexista ca optiuni
+  pentru utilizator”; la răspuns (șapte din opt, plafonul nefiind o opțiune a utilizatorului) și la „Le fac pe toate opțiuni,
+  cu recomandarea ca implicit?”: „Da, toate”. Deci: comutatorul „Toate foile” / „Doar foaia activă” (implicit toate);
+  exportul foii active și „Toate foile” (arhiva, foile identice ×N), iar programul unic cu oprire între foi după etapa 13;
+  ambele moduri ale lui „Așază pe foi”; câmpurile `{nume}` și „Fă din textul ales câmpul”; modurile casetei și, pentru un
+  text care tot iese, avertismentul sau confirmarea; gruparea cu surori întreabă, cu „Ține minte” și cu rândurile din meniu;
+  CSV-ul listei cu `;` sau `,`; „Mută și așază la capăt”, „Duplică foaia” separat sau legat, mărimea tăiată sau a desenului.
+  **Plafonul total 550 → 600 kB** (8a), luat din același „Da, toate” (răspunsul spunea că opțiunile îl cer); l-a scris
+  ADR 0143, în `main`, cu pornirea tot la 110 kB. Rămân reguli: distanța dintre piese cel puțin cât freza
+  și un singur marcaj al câmpurilor. Codul pornește cu felia 11.1↑ (foaia activă și lista cu foile).
 - 07.11.2026: **liniile incrustațiilor și a tăierii vectorilor, unite în `main`** („Yes, merge both”, la „Merge the finished
   inlays and vectors branches into main?”): 12.1↑ (documentul v20; 12.1↑b doar ca ADR propus) și 10.3↑–10.3↑b. Linia
   imprimantei (3.6g, gata pe ramura ei, fără proba pe imprimanta reală, care nu răspunde) rămâne pe ramură. Tot atunci, la

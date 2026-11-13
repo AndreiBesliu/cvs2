@@ -4,6 +4,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 /** Mesajele dialogului de export G-code, în română: exact cheile din engleză (`export.en.ts`). */
 export const roExport = {
   'export.titlu': 'Exportă G-code ({post})',
+  'export.titlu.foaie': 'Exportă G-code ({post}) · {foaie}',
   'export.origine': 'Colțul de origine',
   'export.colt.stanga-jos': 'stânga-jos',
   'export.colt.dreapta-jos': 'dreapta-jos',
@@ -201,6 +202,28 @@ export const roExport = {
   'export.iesire.sus': '{mm} mm sus',
   'export.iesire.unde': 'Unde: {etichete}',
   'export.iesire.confirma': 'Am verificat că acolo nu e nimic în cale (cleme, șuruburi): freza poate tăia și în afara foii. Confirmarea se scrie în antetul programului.',
+  // Plăcuțele cu textul ieșit din ele (ADR 0210 §4, răspunsul 5; felia 11.4↑c).
+  'export.placute.iese': {
+    one: 'Textul iese din plăcuța „{nume}”: e cu roșu în listă.',
+    few: 'Textul iese din {n} plăcuțe ({nume}): sunt cu roșu în listă.',
+    other: 'Textul iese din {n} de plăcuțe ({nume}): sunt cu roșu în listă.',
+  },
+  'export.placute.confirma': 'Am văzut plăcuțele: le export așa, cu textul ieșit din ele.',
+  // „Toate foile” (ADR 0210 §5, felia 11.5↑).
+  'export.foi': 'Ce exporți',
+  'export.foi.activa': 'Foaia activă',
+  'export.foi.toate': 'Toate foile ({n})',
+  'export.foi.nota': 'Câte un program pe foaie, într-o arhivă .zip; foile identice ies o dată, cu ×N. Rândurile de mai jos sunt ale foii active; celelalte foi își păstrează operațiile.',
+  'export.foi.gata': {
+    one: 'Arhiva {arhiva}: o foaie, SHA-256 {sha}.',
+    few: 'Arhiva {arhiva}: {n} foi, SHA-256 {sha}.',
+    other: 'Arhiva {arhiva}: {n} de foi, SHA-256 {sha}.',
+  },
+  'export.foi.foaia': 'Foaia',
+  'export.foi.fisiere': 'Fișierele din arhivă',
+  'export.foi.identice': '{foaie} ×{n} (și {alte})',
+  'export.foi.timp': 'Toate foile: {timp}',
+  'export.foi.goale': 'Fără nimic de tăiat, nu sunt în arhivă: {foi}.',
   // Ordinea tăierii (ADR 0133 §3).
   'export.ordine': 'Ordinea tăierii',
   'export.ordine.automata': 'Automată',

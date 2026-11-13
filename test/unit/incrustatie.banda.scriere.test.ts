@@ -23,7 +23,7 @@ const BANDA = {
 /** Operația de incrustație din document (prin ușă), v22, cu banda dată (null: fără ea). */
 function operatieDinDocument(banda: unknown = BANDA, jurDop: 'fata' | 'banda' = 'banda'): Operatie {
   const r = incarca({
-    schema: 22, rev: 0,
+    schema: 23, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'element', id: 'a', matrice: I, forma: { tip: 'dreptunghi', latime: 20, inaltime: 10, razaColt: 0 } },
       operatii: [{
@@ -79,7 +79,7 @@ test('lățimea lipsă (cea mai mică) și freza lipsă (a fundului plat) pleac�
   assert.deepEqual(noua.incrustatie.banda, { decupare: true, grosimePlaca: 5.5, freza: { numar: 3, nume: 'freza dreapta', diametru: 4 }, punti: { numar: 4, latime: 4, grosime: 1 } });
   // Ce scrie Exportă trece de ușă (o operație v22 validă).
   const r = incarca({
-    schema: 22, rev: 0,
+    schema: 23, rev: 0,
     piese: [{ id: 'p', radacina: { tip: 'element', id: 'a', matrice: I, forma: { tip: 'dreptunghi', latime: 20, inaltime: 10, razaColt: 0 } }, operatii: [noua] }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 100, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
   });

@@ -59,8 +59,10 @@ function textRezultat(c: CerereConversie, r: Extract<RezultatConversie, { ok: tr
   return parti.join(' ');
 }
 
-export function PanouConversie({ doc, selectie, onConverteste, onInchide }: {
+export function PanouConversie({ doc, indexFoaie, selectie, onConverteste, onInchide }: {
   readonly doc: Document;
+  /** Foaia activă a ferestrei (ADR 0210 §1): selecția e a ei. */
+  readonly indexFoaie: number;
   /** Selecția aplicației: id-urile instanțelor. */
   readonly selectie: readonly string[];
   /** Aplică o conversie calculată (acțiunea `document.converteste`), cu verdictul ei. */
@@ -119,7 +121,7 @@ export function PanouConversie({ doc, selectie, onConverteste, onInchide }: {
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.convertesteVectorii(laCerere, c, s.signal).then((r) => {
+      calc.convertesteVectorii(laCerere, c, s.signal, indexFoaie).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           setStare({ fel: 'gata', text: t(`editare.conversie.motiv.${r.motiv}`), rau: true });

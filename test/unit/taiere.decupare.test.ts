@@ -42,7 +42,7 @@ function aplica(d: Document, r: RezultatTaiere): Document {
   if (!r.ok) assert.fail(`refuzată: ${r.motiv}`);
   const foaie = d.foi[0];
   assert.ok(foaie);
-  const comenzi: Comanda[] = [...comenziStergere(d, new Set(r.sterse)).comenzi];
+  const comenzi: Comanda[] = [...comenziStergere(d, new Set(r.sterse), foaie.id).comenzi];
   if (r.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie: foaie.id, degrupate: r.degrupate });
   const dupa = executa(istoricNou(d), { tip: 'lot', comenzi }).doc;
   assert.ok(is(SchemaDocument, JSON.parse(JSON.stringify(dupa))), 'documentul de după trece de ușă');

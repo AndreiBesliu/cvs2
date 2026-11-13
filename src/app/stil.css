@@ -27,6 +27,9 @@
   --a-plin: #a64d00;
   --t-pe-a: #ffffff;
   --rosu: #b3261e;
+  /* Piesele puse de mai multe ori (ADR 0210 §2): numărul din listă, banda și butoanele lor. */
+  --violet: #6b3fa0;
+  --t-pe-violet: #ffffff;
   --l-focus: #0b5cd5;
   --l-camp: #868b93;
   --fond: rgb(20 24 29 / 0.4);
@@ -51,6 +54,8 @@
     --a-plin: #f2a33a;
     --t-pe-a: #1a1206;
     --rosu: #ff8a80;
+    --violet: #b892ff;
+    --t-pe-violet: #1a1033;
     --l-focus: #7cb2ff;
     --l-camp: #737b86;
     --fond: rgb(0 0 0 / 0.55);
@@ -74,6 +79,8 @@
   --a-plin: #f2a33a;
   --t-pe-a: #1a1206;
   --rosu: #ff8a80;
+  --violet: #b892ff;
+  --t-pe-violet: #1a1033;
   --l-focus: #7cb2ff;
   --l-camp: #737b86;
   --fond: rgb(0 0 0 / 0.55);
@@ -862,8 +869,108 @@ nav button[aria-pressed='true'] {
   margin: 0 0 0 14px;
 }
 
-.lista-vectori .nod-foaie + .lista-goala {
+.lista-vectori .foaie-lista > .lista-goala {
   padding-left: calc(13px + var(--sp-2));
+}
+
+/*
+ * Foile (ADR 0210 §1): fiecare cu capul ei (numele și mărimea; dedesubt, mai slab, materialul și câte piese), butonul ⋯ al
+ * meniului alături. Cea activă e marcată cu linia accentului; celelalte, mai slabe. Peste o foaie pe care se trage un rând,
+ * conturul punctat spune unde ajunge.
+ */
+.lista-vectori .foaie-lista + .foaie-lista {
+  margin-top: var(--sp-1);
+}
+
+.lista-vectori .foaie-cap {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.lista-vectori .foaie-cap .nod-foaie {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  column-gap: 6px;
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--r-1);
+}
+
+.lista-vectori .foaie-cap .nod-foaie::before {
+  grid-row: 1 / span 2;
+}
+
+.lista-vectori .foaie-cap .nod-foaie > span {
+  grid-column: 2;
+}
+
+.lista-vectori .foaie-lista[data-activa='da'] .nod-foaie {
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.lista-vectori .foaie-lista[data-activa='nu'] .nod-foaie {
+  color: var(--t-slab);
+  font-weight: 500;
+}
+
+.lista-vectori .foaie-detalii {
+  color: var(--t-slab);
+  font-weight: 400;
+}
+
+/* Mărimea și câte piese are nu se rup pe două rânduri; materialul, oricât de lung, da. */
+.lista-vectori .foaie-detalii > span:first-child,
+.lista-vectori .foaie-detalii > span:last-child {
+  white-space: nowrap;
+}
+
+.lista-vectori .foaie-meniu-buton {
+  width: auto;
+  min-width: 32px;
+  justify-content: center;
+  color: var(--t-slab);
+}
+
+.lista-vectori .foaie-lista.peste {
+  outline: 1px dashed var(--a);
+  outline-offset: -1px;
+  border-radius: var(--r-1);
+}
+
+.lista-vectori .foaie-noua {
+  margin-top: var(--sp-1);
+  color: var(--t-slab);
+}
+
+/* Meniul foii (`MeniuFoaie.tsx`): sub capul ei, cu rândurile ca ale meniului de clic dreapta, întrebarea ștergerii deasupra. */
+.lista-vectori .meniu-foaie {
+  display: grid;
+  gap: 1px;
+  margin: 2px 0 var(--sp-1) 14px;
+  padding: var(--sp-1);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+}
+
+.lista-vectori .meniu-foaie button:disabled {
+  color: var(--t-slab);
+  cursor: default;
+}
+
+.meniu-foaie-intrebare {
+  margin: 0;
+  padding: 4px var(--sp-2);
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+
+/* O piesă pusă de mai multe ori (ADR 0210 §2): „(4 din 12)” lângă rând, violet. */
+.lista-vectori .legata {
+  color: var(--violet);
+  white-space: nowrap;
 }
 
 /* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
@@ -1446,9 +1553,10 @@ nav button[aria-pressed='true'] {
   font-size: var(--fs-2);
 }
 
-/* Rezumatul jobului (ADR 0046): prima coloană e antetul rândului, scrisă ca restul rândului. */
+/* Rezumatul jobului (ADR 0046) și foile exportate (ADR 0210 §5): prima coloană e antetul rândului, scrisă ca restul rândului. */
 .dialog .rezumat tbody th,
-.dialog .rezumat tfoot th {
+.dialog .rezumat tfoot th,
+.dialog .export-foi tbody th {
   font-size: var(--fs-2);
   font-weight: 400;
   letter-spacing: normal;
@@ -1481,6 +1589,171 @@ nav button[aria-pressed='true'] {
 
 .avertisment {
   color: var(--a);
+}
+
+/* „Așază pe foi” (ADR 0210 §3): grupurile de alegeri pe câte un rând, cu eticheta lor; minimul din freză, rezultatul. */
+.dialog-asezare {
+  max-width: min(36rem, calc(100vw - 2rem));
+}
+
+/* «Din CSV…» (ADR 0210 §4): sursa, tabelul, textul piesei, câmpurile cu sursele lor, rândurile și așezarea. */
+.dialog-csv {
+  width: min(44rem, calc(100vw - 2rem));
+  display: grid;
+  gap: var(--sp-3);
+}
+
+/* Butoanele dinăuntru (fișierul, „Fă din textul ales câmpul”): cu marginea butoanelor din ferestre, nu ca un text. */
+.dialog-csv .csv-fisier button,
+.dialog-csv .csv-rand button {
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-4);
+}
+
+.dialog-csv h2 {
+  margin-bottom: 0;
+}
+
+.dialog-csv .campuri {
+  margin-bottom: 0;
+  align-items: end;
+}
+
+.dialog-csv textarea {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  padding: var(--sp-1) var(--sp-2);
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+
+.csv-sursa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: end;
+}
+
+.csv-fisier button {
+  min-height: 32px;
+  padding: 0 var(--sp-4);
+}
+
+.csv-nota {
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.csv-tabel {
+  display: block;
+  overflow-x: auto;
+}
+
+.csv-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.csv-campuri {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.csv-camp {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.csv-bifa {
+  display: flex !important;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* „Dacă textul iese din plăcuță” (ADR 0210 §4, felia 11.4↑c): alegerile au texte lungi, deci lista nu se taie la 9 rem. */
+.dialog-csv select.csv-iesire {
+  max-width: 100%;
+}
+
+.dialog-csv .legatura {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--a);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .csv-sursa {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dialog .alegeri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  border: 0;
+}
+
+.dialog .alegeri legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 650;
+  color: var(--t);
+}
+
+.dialog .alegeri input[type='text'] {
+  max-width: 6rem;
+}
+
+.dialog label.alegere {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--t);
+  font-size: var(--fs-3);
+}
+
+.dialog label.alegere input[type='radio'] {
+  accent-color: var(--a-plin);
+}
+
+.dialog .aseaza-minim {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog .aseaza-noi {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog .aseaza-rezultat {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--a) 12%, var(--s-panou));
+  font-weight: 600;
 }
 
 .dialog .butoane {
@@ -1876,7 +2149,8 @@ main h1 {
 [data-icona='document.muta-selectia'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3'/%3E%3C/svg%3E");
 }
-[data-icona='arbore.foaie'] {
+[data-icona='arbore.foaie'],
+[data-icona='vedere.toate-foile'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='m3 9 9-5 9 5-9 5zM3 14l9 5 9-5'/%3E%3C/svg%3E");
 }
 
@@ -1905,6 +2179,22 @@ main h1 {
   text-align: center;
   pointer-events: none;
   z-index: 5;
+}
+
+/* Câmpul de text al panoului (ADR 0210 §1): numele și materialul foii, cât rândul, cu motivul unui refuz sub el. */
+.camp-text {
+  display: inline-grid;
+  gap: 4px;
+  width: 100%;
+}
+
+.camp-text input {
+  width: 100%;
+  font: inherit;
+}
+
+.camp-text input[aria-invalid='true'] {
+  border-color: var(--a);
 }
 
 /* Câmpul numeric unic (ADR 0038 §5) în panoul de proprietăți: valoarea, unitatea, motivul unui refuz sub ele. */
@@ -1953,6 +2243,115 @@ main h1 {
 
 .prop-export {
   margin-top: var(--sp-3);
+}
+
+/* Piesele puse de mai multe ori (ADR 0210 §2), la mijlocul zonei libere a pânzei (locul îl dă Editare): banda violet jos,
+ * cu marginea de jos a cutiei; întrebarea grupării sus. Doar ele prind clicurile, nu golul din jur. */
+.legate-jos,
+.legate-sus {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: max-content;
+  max-width: min(44rem, calc(100vw - 2 * var(--sp-3)));
+  pointer-events: none;
+}
+
+.legate-jos {
+  translate: -50% -100%;
+}
+
+.legate-sus {
+  translate: -50% 0;
+}
+
+.banda-legata {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-pe-violet);
+  background: var(--violet);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+  pointer-events: auto;
+}
+
+.banda-legata button {
+  color: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+
+/* Întrebarea grupării cu o piesă pusă de mai multe ori (ADR 0210 §2), sus, sub bare. */
+.intrebare-grupare {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 4px var(--sp-2);
+  border: 1px solid var(--violet);
+  border-radius: var(--r-1);
+  background: var(--s-panou);
+  box-shadow: var(--umbra-1);
+  font-size: var(--fs-2);
+  pointer-events: auto;
+}
+
+.intrebare-grupare label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Piesa singurei instanțe alese (ADR 0210 §2): de câte ori e pusă, «+1», «Încă…», «Desprinde»; violet când are surori. */
+.prop-piesa.legata h3 {
+  color: var(--violet);
+}
+
+.prop-nota-piesa {
+  margin: 0 0 var(--sp-2);
+  color: var(--t-slab);
+}
+
+.prop-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.prop-butoane button.violet {
+  color: var(--violet);
+  border-color: var(--violet);
+}
+
+.prop-inca {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.prop-inca label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+
+.prop-inca input {
+  width: 6rem;
+  font: inherit;
+  text-align: right;
 }
 
 /* Panoul contului (ADR 0116): logarea, confirmarea adresei, planul și nota de confidențialitate. */

@@ -66,7 +66,7 @@ test('dopul decupat al unei părți mici (cercul R2, freza Ø1): câte punți î
   // Pe hârtie: dopul e cercul tăiat R2 micșorat cu 0,1 (R1,9); traseul frezei Ø1, la 0,5 în afara lui (R2,4), are 2π·2,4 =
   // 15,08 mm, iar palierul punții e 4 + 1 = 5 mm: încap ⌊0,9·15,08 / 5⌋ = 2. Înainte, lucrarea refuza tot exportul.
   const d = incarca({
-    schema: 22, rev: 0,
+    schema: 23, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'element', id: 'a', matrice: { ...I, e: 30, f: 30 }, forma: { tip: 'cerc', raza: 2 } },
       operatii: [{

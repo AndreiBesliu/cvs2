@@ -558,6 +558,25 @@ function v21v22(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v22 → v23 (ADR 0210 §4, §7): literele plăcuțelor (`texte` pe instanță) schimbă doar numărul. Un v22 poate avea, ca
+ * necunoscut, câmpul `texte` pe o instanță, pe care v23 îl folosește: un astfel de document nu e un v22 valid (ciocnire,
+ * ca la ADR 0024 §7).
+ */
+function v22v23(doc: Brut): ReturnType<Migrare> {
+  const foi = doc['foi'];
+  for (const f of Array.isArray(foi) ? foi : []) {
+    if (typeof f !== 'object' || f === null) continue;
+    const instante = (f as Brut)['instante'];
+    for (const i of Array.isArray(instante) ? instante as unknown[] : []) {
+      if (typeof i === 'object' && i !== null && Object.hasOwn(i, 'texte')) {
+        return { ok: false, motiv: `instanța v22 ${String((i as Brut)['id'])} are câmpul „texte”, pe care v23 îl folosește: nu e un document v22 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 23 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
  * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v19 → v20
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
@@ -595,5 +614,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   19: v19v20,
   20: v20v21,
   21: v21v22,
+  22: v22v23,
 };
 

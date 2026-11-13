@@ -170,6 +170,10 @@
  * ADR-urilor: secțiunea „Documentul v11–v18” de la finalul fișierului, cu contractul și alegerile ei în antet. Ea stă
  * peste partea de aici, care rămâne contractul v1–v10 (`verificaV10`, `verificaPanaLaV10O`, `ridicaV10O`). Din felia 5.9↑,
  * aceeași secțiune ține și v19 (ADR 0133: rangul operației), iar din felia 12.1↑, v20 (ADR 0170: incrustația).
+ *
+ * Partea v23 (felia 11.4↑, ADR 0210 §7: literele plăcuțelor din CSV, `Instanta.texte`) e scrisă tot de o sesiune
+ * independentă, doar din ADR-uri: secțiunea „Documentul v23” de la capătul fișierului, cu contractul, ALEGERILE și punctele
+ * DESCHISE în antetul ei.
  */
 
 export type MatriceO = {
@@ -276,7 +280,9 @@ export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
   | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi' | 'cale'
-  | 'despartire' | 'pas-lateral' | 'coborare' | 'retragere' | 'fund-plat' | 'directie' | 'rest' | 'strategie';
+  | 'despartire' | 'pas-lateral' | 'coborare' | 'retragere' | 'fund-plat' | 'directie' | 'rest' | 'strategie'
+  // v23 (ADR 0210 §7): literele plăcuțelor (`Instanta.texte`).
+  | 'texte';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -315,7 +321,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 22;
+export const SCHEMA_CURENTA_O = 23;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -1157,8 +1163,9 @@ export function problemeColturiO(op: Liber): string[] {
 /**
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
+ * `ajustari` (doar de la v23, ADR 0210 §7): literele plăcuțelor în plafoanele de ansamblu; fără ele, ca până la v22.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10, ajustari?: AjustariLumeO): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
   const u = unelte(semnaleaza, schema);
@@ -1371,6 +1378,13 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1
           elementeLume += elementePiesa.get(piesa) ?? 0;
           varfuriLume += varfuriPiesa.get(piesa) ?? 0;
           taieturiLume += referintePiesa.get(piesa) ?? 0;
+          // v23 (ADR 0210 §7): literele plăcuței stau în lume în locul literelor șablonului.
+          const delta = ajustari?.instanta(i, k);
+          if (delta !== undefined) {
+            elementeLume += delta.elemente;
+            varfuriLume += delta.varfuri;
+            taieturiLume += delta.taieturi;
+          }
         }
         for (const axa of ['x', 'y'] as const) {
           const v = u.finit(`${ci}.${axa}`, inst[axa]);
@@ -1405,6 +1419,8 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1
       });
     });
   }
+  // v23 (ADR 0210 §7, ALEGERE din antetul părții v23): nodurile literelor plăcuțelor sunt noduri ale documentului.
+  noduri += ajustari?.noduri ?? 0;
   if (noduri > PLAFOANE_O.noduri) semnaleaza('plafon', `${noduri} noduri > ${PLAFOANE_O.noduri}`);
   if (instante > PLAFOANE_O.instante) semnaleaza('plafon', `${instante} instanțe > ${PLAFOANE_O.instante}`);
   if (elementeLume > PLAFOANE_O.elementeLume) semnaleaza('margini', `${elementeLume} elemente în lume > ${PLAFOANE_O.elementeLume}`);
@@ -2106,7 +2122,8 @@ export const DIRECTII_O = ['invers', 'scurt'] as const;
 
 /**
  * Câmpurile pe care le aduce fiecare versiune pe operație (cele cu `.` sunt mai adânc). Tot de aici vin ciocnirile
- * migrării vN-1 → vN (vezi `ciocniriO`).
+ * migrării vN-1 → vN (vezi `ciocniriO`). v23 (ADR 0210 §7) aduce un câmp pe INSTANȚĂ, nu pe operație: el se scrie cu
+ * prefixul `instanta:` (`PE_INSTANTA_O`), iar ciocnirea lui e pe orice instanță a oricărei foi.
  */
 export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   11: ['pasLateral'],
@@ -2121,7 +2138,12 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   20: ['incrustatie'],
   21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
   22: ['incrustatie.banda'],
+  // ADR 0210 §7: „o instanță care are deja un câmp necunoscut `texte` e refuzată, cu motiv (ciocnire, ca la ADR 0024 §7)”.
+  23: ['instanta:texte'],
 };
+
+/** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
+export const PE_INSTANTA_O = 'instanta:';
 
 // ---------------------------------------------------------------------------------------------------------------
 // Tipurile.
@@ -2200,7 +2222,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v22, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2224,6 +2246,20 @@ function operatiile(doc: Liber): Array<{ readonly op: Liber; readonly unde: stri
     if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
     (p['operatii'] as unknown[]).forEach((op, k) => {
       if (esteObiect(op)) rez.push({ op, unde: `piese[${i}].operatii[${k}]` });
+    });
+  });
+  return rez;
+}
+
+/** Instanțele documentului, cu poziția lor (`foi[i].instante[k]`); doar unde forma permite (restul îl spune v10). */
+function instantele(doc: Liber): Array<{ readonly inst: Liber; readonly unde: string; readonly i: number; readonly k: number }> {
+  const rez: Array<{ readonly inst: Liber; readonly unde: string; readonly i: number; readonly k: number }> = [];
+  const foi = doc['foi'];
+  if (!Array.isArray(foi)) return rez;
+  foi.forEach((f: unknown, i) => {
+    if (!esteObiect(f) || !Array.isArray(f['instante'])) return;
+    (f['instante'] as unknown[]).forEach((inst, k) => {
+      if (esteObiect(inst)) rez.push({ inst, unde: `foi[${i}].instante[${k}]`, i, k });
     });
   });
   return rez;
@@ -2431,8 +2467,14 @@ function laV10(doc: Liber, versiune: number): Liber {
         if (camp === 'scula.forma') {
           const s = op['scula'];
           if (esteObiect(s)) delete s['forma'];
-        } else if (!camp.includes('.')) delete op[camp];
+        } else if (!camp.includes('.') && !camp.startsWith(PE_INSTANTA_O)) delete op[camp];
       }
+    }
+  }
+  // v23 (ADR 0210 §7): câmpul nou al instanței îl judecă partea lui (`problemeTexteO`), nu contractul v10.
+  for (const { inst } of instantele(c)) {
+    for (let v = PRIMA_NOUA_O; v <= versiune; v++) {
+      for (const camp of CAMPURI_NOI_O[v] ?? []) if (camp.startsWith(PE_INSTANTA_O)) delete inst[camp.slice(PE_INSTANTA_O.length)];
     }
   }
   return c;
@@ -2447,8 +2489,10 @@ export function verificaVnO(doc: unknown, versiune: number): string[] {
   if (doc['schema'] !== versiune) return [`[schema] schema = ${arata(doc['schema'])}, nu ${versiune}`];
   // Întâi imbricarea: un document mult prea adânc nu se poate nici copia (`laV10`).
   if (preaAdancJsonO(doc, PLAFOANE_O.adancimeJson)) return [`[adancime] JSON-ul documentului are peste ${PLAFOANE_O.adancimeJson} de niveluri`];
-  const rez = [...verificaV10(laV10(doc, versiune))];
+  // v23 (ADR 0210 §7): plafoanele de ansamblu se socotesc pe lumea cu literele plăcuțelor (`ajustariLumeV23O`).
+  const rez = versiune >= SCHEMA_V23_O ? verificaArboreO(laV10(doc, versiune), 10, ajustariLumeV23O(doc)) : [...verificaV10(laV10(doc, versiune))];
   for (const { op, unde } of operatiile(doc)) rez.push(...problemeOperatieO(op, versiune, unde));
+  if (versiune >= SCHEMA_V23_O) rez.push(...problemeTexteO(doc));
   return rez;
 }
 
@@ -2458,7 +2502,8 @@ export function verificaVnO(doc: unknown, versiune: number): string[] {
  */
 export function ciocniriO(doc: Liber, de: number): string[] {
   const rez: string[] = [];
-  const campuri = CAMPURI_NOI_O[de + 1] ?? [];
+  const toate = CAMPURI_NOI_O[de + 1] ?? [];
+  const campuri = toate.filter((c) => !c.startsWith(PE_INSTANTA_O));
   for (const { op, unde } of operatiile(doc)) {
     for (const camp of campuri) {
       // Calea câmpului pe operație: fiecare pas trebuie să fie un obiect cu cheia PROPRIE.
@@ -2473,6 +2518,15 @@ export function ciocniriO(doc: Liber, de: number): string[] {
         x = x[pas];
       }
       if (gasit) rez.push(`[ciocnire] ${unde}.${camp}: un document v${de} nu are câmpul (nu e un document v${de} valid)`);
+    }
+  }
+  // v23 (ADR 0210 §7): un câmp propriu al instanței, oricare i-ar fi valoarea (și `null`, și `{}`), pe orice foaie.
+  for (const camp of toate.filter((c) => c.startsWith(PE_INSTANTA_O))) {
+    const nume = camp.slice(PE_INSTANTA_O.length);
+    for (const { inst, unde } of instantele(doc)) {
+      if (Object.hasOwn(inst, nume)) {
+        rez.push(`[ciocnire] ${unde}.${nume}: un document v${de} nu are câmpul pe instanță (nu e un document v${de} valid; ciocnire, ca la ADR 0024 §7)`);
+      }
     }
   }
   return rez;
@@ -2516,9 +2570,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v22 (o copie; un v22 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV22O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV22O;
+/** Un document primit de ușa curentă, cum iese din ea: v23 (o copie; un v23 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV23O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV23O;
 }
 
 /**
@@ -2526,9 +2580,14 @@ export function ridicaO(doc: unknown): DocV22O {
  * pentru care pornirea aduce migrările (`incarcaCurent` întoarce `null`); `'usa'` = același verdict ca ușa întreagă.
  */
 export function usaCurentaO(doc: unknown): 'migrari' | 'usa' {
+  return usaCurentaPanaLaO(doc, SCHEMA_CURENTA_O);
+}
+
+/** ADR 0070 §2, pentru ușa documentului curent a versiunii `pana` (v23: `'migrari'` pe o versiune întreagă 1 … 22). */
+export function usaCurentaPanaLaO(doc: unknown, pana: number): 'migrari' | 'usa' {
   if (!esteObiect(doc)) return 'usa';
   const s = doc['schema'];
-  return typeof s === 'number' && Number.isInteger(s) && s >= 1 && s < SCHEMA_CURENTA_O ? 'migrari' : 'usa';
+  return typeof s === 'number' && Number.isInteger(s) && s >= 1 && s < pana ? 'migrari' : 'usa';
 }
 
 // Numele pe versiuni, pentru probele lipirii și ale versiunilor de dinainte: fiecare e una dintre funcțiile de mai sus.
@@ -2663,3 +2722,622 @@ export function migreazaV1V21O(v1: DocV1O): DocV21O { return ridicaPanaLaO(v1, 2
 export function migreazaV20V21O(v20: DocV20O): DocV21O { return ridicaPanaLaO(v20, 21) as DocV21O; }
 export function migreazaV1V22O(v1: DocV1O): DocV22O { return ridicaPanaLaO(v1, 22) as DocV22O; }
 export function migreazaV21V22O(v21: DocV21O): DocV22O { return ridicaPanaLaO(v21, 22) as DocV22O; }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v23 (felia 11.4↑, ADR 0210 §4 și §7): literele plăcuțelor din CSV, `Instanta.texte`.
+
+/**
+ * Partea v23 a oracolului (sesiune independentă, 08.11.2026: scrisă doar din textul ADR-urilor 0210 §4, §7 și
+ * „Răspunsurile owner-ului” 4–5, 0105 §3–§4, 0138, 0142 §5, 0024, 0070 și 0121, fără ușa aplicației, fără migrările ei,
+ * fără `lume.ts` și fără codul nou al plăcuțelor). Două lucruri sunt definiții de format, nu reguli ale ușii, și le-am luat
+ * de unde stau: forma blocului de text (`SchemaBlocText` și `blocText` din `src/model/blocText.ts`, pe care v23 nu le
+ * schimbă), transcrisă aici în `problemeBlocO`, și amprenta unui șir (`src/model/amprenta.ts`; ADR 0105 §4 spune doar
+ * „FNV-1a”), rescrisă în `amprentaSirO`. JSON-ul canonic (ADR 0024, precizarea 10, ADR 0121 §4: cheile sortate, −0 scris 0)
+ * e scris din ADR-uri și comparat, ca o cutie neagră, cu al aplicației. Numărul: ADR 0210 §7 spune v21 sau v22, luate între
+ * timp de incrustații, deci planșele iau v23 (CLAUDE.md). Ușa curentă a oracolului e v23 (`SCHEMA_CURENTA_O`), odată cu
+ * aplicația; ușa v23 e și `verificaPanaLaO(doc, 23)` (`verificaPanaLaV23O`, `ridicaV23O`, `usaCurentaV23O`).
+ *
+ * Ce spune textul (urmat literal):
+ * - `Instanta.texte`, opțional (lipsa = instanța taie literele șablonului, ca până la v22): un dicționar; cheia e id-ul unui
+ *   GRUP al piesei instanței; valoarea, `{ continut, copii, operatii }`: textul așezat, literele, iar id-ul unei operații a
+ *   piesei → literele pe care le taie (§7);
+ * - grupul are un bloc de text VALID (ADR 0105 §4: forma blocului și amprenta copiilor grupului, ca `blocText`) și are
+ *   câmpuri: `{nume}`, `Masa {nr}` (§4; răspunsul 4: „un singur marcaj al câmpurilor”);
+ * - `continut` = textul blocului cu fiecare câmp înlocuit cu valoarea lui din `campuri`: o verificare de șiruri, fără font
+ *   și fără normalizare (Ș cu virgulă ≠ Ş cu sedilă ≠ S urmat de virgula combinată). Înlocuirea e a textului BLOCULUI, o
+ *   singură trecere: o valoare cu acolade (`{b}`) sau cu `$&` intră așa cum e;
+ * - id-urile literelor (toate nodurile din `copii`, la orice adâncime) sunt unice și diferite de ale nodurilor piesei (și
+ *   de ale literelor șablonului, care sunt noduri ale piesei);
+ * - fiecare cheie din `operatii` e id-ul unei operații a piesei, cu o listă de id-uri ale literelor din `copii`;
+ * - literele sunt noduri ale lumii („`lume.ts` le pune în locul literelor șablonului, deci pânza, CAM-ul, verificarea și
+ *   exportul le văd fără să știe de CSV”, §4), deci le judec ca pe nodurile piesei, sub grupul lor: id-ul (ADR 0024), numele,
+ *   matricea (finită, compusă în margini față de rădăcina piesei), forma, arcele doar sub o similitudine (și în lume, cu
+ *   instanța: precizarea recenziei ADR 0034 §2);
+ * - plafoanele rămân, cu literele plăcuțelor (§7: „100 000 de elemente în lume, cu literele plăcuțelor”): elementele,
+ *   vârfurile și tăieturile în lume se socotesc pe lumea fiecărei instanțe;
+ * - migrarea v22 → v23 schimbă doar numărul; o instanță v22 (sau mai veche: tot lanțul, ADR 0070, „Respinse”) cu un câmp
+ *   propriu `texte`, oricare i-ar fi valoarea, e o ciocnire (`CAMPURI_NOI_O[23]`). `texte` în altă parte (pe piesă, pe nod,
+ *   pe foaie, pe operație, sus) e un câmp necunoscut oarecare.
+ *
+ * ALEGERI (textul le cere fără să le numească; verdictul lor e ferm, cu cazuri în `VALIDE_V23` / `REFUZATE_V23`):
+ * - unicitatea literelor e pe INSTANȚĂ, peste toate grupurile ei: id-ul în lume e `<instanță>/<nod>` (ADR 0024), deci două
+ *   litere cu același id în aceeași instanță s-ar suprapune în lume; între instanțe se pot repeta;
+ * - câmpurile necunoscute dintr-o intrare și de pe litere se păstrează (ADR 0024, ca peste tot);
+ * - o plăcuță fără litere (`copii: []`, de pildă textul doar din spații) e validă: ușa nu așază textul;
+ * - categoriile: tot ce e al lui `texte` e `[texte]`; nodurile literelor păstrează categoriile nodurilor (`[schema]`,
+ *   `[id]`, `[finit]`, `[pozitiv]`, `[forma]`, `[cale]`, `[margini]`, `[plafon]`, `[adancime]`); plafoanele de ansamblu, ca
+ *   până acum (`[margini]` pentru elementele și vârfurile în lume, `[plafon]` pentru tăieturi și noduri).
+ *
+ * DESCHIS (textul tace; verdictul de aici e o alegere, marcată `// DESCHIS:` în cod, iar cazurile ei stau în
+ * `AMBIGUE_V23` și în `plafoaneV23`, unde aplicația doar se raportează):
+ * - ce e un câmp: aici un nume nevid între acolade, fără acolade în el (spațiile, diacriticele și Enter-ul fac parte din
+ *   nume; `{}` nu e câmp; `{{a}}` are câmpul `a`; `{a` rămâne text); numele se potrivește EXACT cu cheia din `campuri`;
+ * - un câmp fără valoare în `campuri` (sau o instanță fără `campuri`): aici refuz (textul plăcuței nu se poate scrie);
+ * - `texte: {}`: aici primit (nicio intrare de judecat);
+ * - `continut` gol sau mai lung de 1 000 de caractere (marginile blocului, nu ale plăcuței): aici primite;
+ * - `operatii` lipsă: aici refuz (valoarea are trei câmpuri); o listă goală: primită; un id repetat: refuz (ca `noduri`,
+ *   ADR 0025); un grup al literelor în listă: refuz (operațiile taie elemente, ADR 0025); o literă din altă intrare a
+ *   instanței: refuz („literele din `copii`” ei); plafonul unei operații (10 000 de noduri, ADR 0025) e pe ce taie ea în
+ *   lumea instanței: nodurile ei din afara literelor șablonului înlocuite, plus literele plăcuței date pentru ea (`[plafon]`);
+ * - forma literelor: orice nod valid (și un cerc, și un element fără grupul literei);
+ * - un grup cu intrare în `texte` aflat în alt grup cu intrare al aceleiași instanțe: refuz (literele lui sunt printre
+ *   literele șablonului celuilalt, înlocuite, deci n-au loc în lume);
+ * - adâncimea: literele stau sub grupul lor, deci nivelul grupului plus nivelurile lor ≤ 32 (ADR 0024, precizarea 1);
+ * - plafoanele: literele plăcuței stau ÎN LOCUL literelor șablonului, nu pe lângă ele (elementele, vârfurile și tăieturile
+ *   în lume), iar nodurile tuturor literelor plăcuțelor se adună la nodurile documentului (≤ 100 000); vârfurile căilor
+ *   PIESELOR (≤ 200 000) nu le cuprind.
+ */
+
+/** Versiunea plăcuțelor din CSV (ADR 0210 §7; numărul liber la unire, din CLAUDE.md). */
+export const SCHEMA_V23_O = 23;
+
+/**
+ * Marginile blocului de text (ADR 0105 §3, ADR 0123, ADR 0138 §1–§6, ADR 0141, ADR 0142 §5), transcrise din `LIMITE_TEXT`:
+ * caracterele, înălțimea majusculei, spațierea, rândurile, fontul și numele lui, curba, aldinul, cursivul, caseta, procentele.
+ */
+export const LIMITE_BLOC_O = {
+  caractere: 1_000, inaltimeMin: 0.1, inaltimeMax: 1_000, spatiere: 1_000, interlinieMin: 0.5, interlinieMax: 5, font: 128, numeFont: 128,
+  varfuriCurba: 10_000, distantaCurba: 1_000, aldinMin: 0.01, aldinRaport: 0.2, cursiv: 45, casetaMin: 0.1, casetaMax: 10_000,
+  procentMin: 10, procentMax: 1_000, amprenta: 64,
+} as const;
+const ALINIERI_BLOC_O: readonly unknown[] = ['stanga', 'centru', 'dreapta'];
+const POZITII_CURBA_O: readonly unknown[] = ['deasupra', 'baza', 'centru', 'dedesubt'];
+const ORIENTARI_CURBA_O: readonly unknown[] = ['rotita', 'verticala'];
+const UNITATI_BLOC_O: readonly unknown[] = ['pt', 'in'];
+
+/** Marginile plăcuțelor (ALEGERI și DESCHIS din antet). */
+export const PLAFOANE_V23_O = {
+  /**
+   * DESCHIS: ce taie o operație în lumea unei instanțe cu `texte` (nodurile ei din afara literelor șablonului înlocuite, plus
+   * literele plăcuței date pentru ea), cel mult cât `noduri` ale unei operații (ADR 0025).
+   */
+  noduriOperatie: PLAFOANE_O.noduriOperatie,
+} as const;
+
+/**
+ * DESCHIS (ce e un câmp; ADR 0210 §4, răspunsul 4: „`{nume}`”): un nume nevid între acolade, fără acolade în el. O expresie
+ * nouă la fiecare folosire (`g` ține starea).
+ */
+const campuriRe = (): RegExp => /\{([^{}]+)\}/g;
+
+/** Textul unei plăcuțe pe un grup al piesei ei (ADR 0210 §7). */
+export type TextPlacutaO = Liber & { continut: string; copii: NodO[]; operatii: { [idOperatie: string]: string[] } };
+/** Instanța v23: și literele plăcuței, pe grup (ADR 0210 §7). */
+export type InstantaV23O = InstantaO & { texte?: { [idGrup: string]: TextPlacutaO } };
+export type DocV23O = Liber & { schema: 23; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+
+/** v23: ce schimbă literele plăcuțelor în plafoanele de ansamblu (`verificaArboreO`, din `verificaVnO`). */
+export type AjustariLumeO = {
+  /** Nodurile literelor tuturor plăcuțelor (DESCHIS: se adună la nodurile documentului). */
+  readonly noduri: number;
+  /** Pe instanța `k` a foii `i`: cât se adaugă (sau se scade) la elementele, vârfurile și tăieturile ei în lume. */
+  readonly instanta: (i: number, k: number) => { readonly elemente: number; readonly varfuri: number; readonly taieturi: number } | undefined;
+};
+
+// Amprenta contururilor (ADR 0105 §4) și JSON-ul canonic.
+
+/** Amprenta unui șir: două FNV-1a pe 32 de biți, pe unitățile UTF-16, alăturate în 16 cifre hexazecimale. */
+export function amprentaSirO(text: string): string {
+  let h1 = 0x811c9dc5;
+  let h2 = (0x01000193 ^ text.length) >>> 0;
+  for (let k = 0; k < text.length; k++) {
+    const c = text.charCodeAt(k);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
+  }
+  return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+}
+
+/**
+ * JSON-ul canonic (ADR 0024, precizarea 10; ADR 0121 §4): cheile proprii sortate după unitățile UTF-16 (și `__proto__`, ca
+ * dată), listele în ordine, −0 scris `0`, restul ca `JSON.stringify`.
+ */
+export function jsonCanonicO(v: unknown): string {
+  if (typeof v === 'number') return Object.is(v, -0) ? '0' : JSON.stringify(v);
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
+  if (Array.isArray(v)) return `[${v.map((x: unknown) => jsonCanonicO(x)).join(',')}]`;
+  const o = v as Liber;
+  return `{${Object.keys(o).sort().map((k) => `${JSON.stringify(k)}:${jsonCanonicO(o[k])}`).join(',')}}`;
+}
+
+/** ADR 0105 §4: amprenta contururilor unui bloc = amprenta JSON-ului canonic al copiilor grupului lui. */
+export function amprentaContururiO(copii: unknown): string {
+  return amprentaSirO(jsonCanonicO(copii));
+}
+
+// Blocul de text (ADR 0105 §3–§4, ADR 0108, 0123, 0138, 0141, 0142 §5), cu forma lui din `SchemaBlocText`.
+
+/** Un număr finit în [min, max] (`v.number()` refuză și NaN). */
+const intreO = (v: unknown, min: number, max: number): boolean => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
+/** Un text cu lungimea (unități UTF-16) în [min, max]. */
+const sirO = (v: unknown, min: number, max: number): boolean => typeof v === 'string' && v.length >= min && v.length <= max;
+/** Un punct `{ x, y }` cu coordonatele finite. */
+const punctBlocO = (p: unknown): boolean => esteObiect(p) && Number.isFinite(p['x']) && Number.isFinite(p['y']);
+
+/** ADR 0108 §2 (`SchemaCurbaText`): curba unui text pe curbă. */
+function problemeCurbaO(c: unknown): string[] {
+  if (!esteObiect(c)) return [` = ${arata(c)} nu e un obiect`];
+  const L = LIMITE_BLOC_O;
+  const rez: string[] = [];
+  if (typeof c['inchis'] !== 'boolean') rez.push('.inchis nu e boolean');
+  const varfuri = c['varfuri'];
+  if (!Array.isArray(varfuri) || varfuri.length < 2 || varfuri.length > L.varfuriCurba) {
+    rez.push(`.varfuri nu e o listă de 2–${L.varfuriCurba} vârfuri`);
+  } else {
+    (varfuri as unknown[]).forEach((x, k) => {
+      const s = esteObiect(x) ? x['s'] : undefined;
+      if (!esteObiect(x) || !punctBlocO(x['p'])) rez.push(`.varfuri[${k}].p nu e un punct finit`);
+      if (!esteObiect(s)) rez.push(`.varfuri[${k}].s nu e un segment`);
+      else if (s['tip'] === 'A') {
+        if (!Number.isFinite(s['bulge'])) rez.push(`.varfuri[${k}].s.bulge nu e finit`);
+      } else if (s['tip'] === 'C') {
+        if (!punctBlocO(s['c1']) || !punctBlocO(s['c2'])) rez.push(`.varfuri[${k}].s: c1, c2 nu sunt puncte finite`);
+      } else if (s['tip'] !== 'L') rez.push(`.varfuri[${k}].s.tip = ${arata(s['tip'])} nu e L, A sau C`);
+    });
+  }
+  const s = c['s'];
+  if (!(typeof s === 'number' && Number.isFinite(s) && s >= 0)) rez.push(`.s = ${arata(s)} nu e finit, ≥ 0`);
+  if (!POZITII_CURBA_O.includes(c['pozitie'])) rez.push(`.pozitie = ${arata(c['pozitie'])} nu e ${POZITII_CURBA_O.join(' / ')}`);
+  if (!intreO(c['distanta'], -L.distantaCurba, L.distantaCurba)) rez.push(`.distanta = ${arata(c['distanta'])} nu e în ±${L.distantaCurba}`);
+  if (typeof c['invers'] !== 'boolean') rez.push('.invers nu e boolean');
+  if (!ORIENTARI_CURBA_O.includes(c['orientare'])) rez.push(`.orientare = ${arata(c['orientare'])} nu e ${ORIENTARI_CURBA_O.join(' / ')}`);
+  if (typeof c['intinsa'] !== 'boolean') rez.push('.intinsa nu e boolean');
+  return rez;
+}
+
+/** ADR 0142 §5 (`SchemaCasetaText`): caseta, limitat de ea (cu înălțimea cerută) sau scalat la ea. */
+function problemeCasetaO(c: unknown): string[] {
+  if (!esteObiect(c)) return [` = ${arata(c)} nu e un obiect`];
+  const L = LIMITE_BLOC_O;
+  const rez: string[] = [];
+  if (c['fel'] !== 'limita' && c['fel'] !== 'scala') return [`.fel = ${arata(c['fel'])} nu e limita / scala`];
+  for (const k of ['latime', 'inaltime'] as const) {
+    if (!intreO(c[k], L.casetaMin, L.casetaMax)) rez.push(`.${k} = ${arata(c[k])} nu e în [${L.casetaMin}, ${L.casetaMax}]`);
+  }
+  if (c['fel'] === 'limita' && !intreO(c['ceruta'], L.inaltimeMin, L.inaltimeMax)) rez.push(`.ceruta = ${arata(c['ceruta'])} nu e în [${L.inaltimeMin}, ${L.inaltimeMax}]`);
+  return rez;
+}
+
+/**
+ * De ce blocul de text nu e bun (`SchemaBlocText`, cu verificările lui de ansamblu); goală = forma e bună. Câmpurile
+ * necunoscute ale blocului nu contează (`v.object` le lasă). Amprenta o judecă `motivBlocO`.
+ */
+export function problemeBlocO(t: unknown): string[] {
+  if (!esteObiect(t)) return [` = ${arata(t)} nu e un obiect`];
+  const L = LIMITE_BLOC_O;
+  const rez: string[] = [];
+  const continut = t['continut'];
+  if (!sirO(continut, 1, L.caractere)) rez.push(`.continut nu e un text de 1–${L.caractere} caractere (ADR 0105 §3)`);
+  if (!sirO(t['font'], 1, L.font)) rez.push(`.font nu e un text de 1–${L.font} caractere`);
+  if (are(t, 'numeFont') && !sirO(t['numeFont'], 0, L.numeFont)) rez.push(`.numeFont nu e un text de cel mult ${L.numeFont} caractere`);
+  if (are(t, 'curba')) for (const m of problemeCurbaO(t['curba'])) rez.push(`.curba${m}`);
+  if (!intreO(t['inaltime'], L.inaltimeMin, L.inaltimeMax)) rez.push(`.inaltime = ${arata(t['inaltime'])} nu e în [${L.inaltimeMin}, ${L.inaltimeMax}] (ADR 0105 §3)`);
+  if (!intreO(t['spatiere'], -L.spatiere, L.spatiere)) rez.push(`.spatiere = ${arata(t['spatiere'])} nu e în ±${L.spatiere}`);
+  if (!intreO(t['interlinie'], L.interlinieMin, L.interlinieMax)) rez.push(`.interlinie = ${arata(t['interlinie'])} nu e în [${L.interlinieMin}, ${L.interlinieMax}]`);
+  if (!ALINIERI_BLOC_O.includes(t['aliniere'])) rez.push(`.aliniere = ${arata(t['aliniere'])} nu e ${ALINIERI_BLOC_O.join(' / ')}`);
+  if (are(t, 'aldin') && t['aldin'] !== 0 && !intreO(t['aldin'], L.aldinMin, L.inaltimeMax * L.aldinRaport)) rez.push(`.aldin = ${arata(t['aldin'])} nu e 0 sau în [${L.aldinMin}, ${L.inaltimeMax * L.aldinRaport}] (ADR 0123)`);
+  if (are(t, 'cursiv') && !intreO(t['cursiv'], -L.cursiv, L.cursiv)) rez.push(`.cursiv = ${arata(t['cursiv'])} nu e în ±${L.cursiv}`);
+  if (are(t, 'vertical') && t['vertical'] !== true) rez.push(`.vertical = ${arata(t['vertical'])}: lipsă sau true (ADR 0141)`);
+  if (are(t, 'caseta')) for (const m of problemeCasetaO(t['caseta'])) rez.push(`.caseta${m}`);
+  if (are(t, 'unitate') && !UNITATI_BLOC_O.includes(t['unitate'])) rez.push(`.unitate = ${arata(t['unitate'])}: lipsă (mm), pt sau in (ADR 0138 §1)`);
+  const pr = t['proportii'];
+  if (are(t, 'proportii') && !(esteObiect(pr) && intreO(pr['latime'], L.procentMin, L.procentMax) && intreO(pr['inaltime'], L.procentMin, L.procentMax))) {
+    rez.push(`.proportii = ${arata(pr)} nu e { latime, inaltime } în [${L.procentMin}, ${L.procentMax}] % (ADR 0138 §2)`);
+  }
+  if (are(t, 'crenare') && t['crenare'] !== false) rez.push(`.crenare = ${arata(t['crenare'])}: lipsă sau false (ADR 0138 §3)`);
+  const sp = t['spatieri'];
+  if (are(t, 'spatieri') && !(Array.isArray(sp) && sp.length <= L.caractere
+    && (sp as unknown[]).every((s) => esteObiect(s) && intreg(s['dupa'], 0, L.caractere - 1) && intreO(s['mm'], -L.spatiere, L.spatiere)))) {
+    rez.push(`.spatieri nu e o listă de { dupa, mm } (ADR 0138 §5)`);
+  }
+  if (!sirO(t['amprenta'], 0, L.amprenta)) rez.push(`.amprenta nu e un text de cel mult ${L.amprenta} caractere`);
+  if (rez.length > 0) return rez;
+  // Verificările de ansamblu ale blocului (`v.check`), pe un bloc cu forma bună, cu aceleași operații în aceeași ordine.
+  if (Array.isArray(sp)) {
+    const n = Array.from((continut as string).replace(/\r/g, '')).length;
+    const l = sp as Liber[];
+    const bune = l.every((s, k) => s['mm'] !== 0 && (k === 0 || (l[k - 1]?.['dupa'] as number) < (s['dupa'] as number)) && (s['dupa'] as number) + 1 < n);
+    if (!bune) rez.push('.spatieri nu sunt sortate, unice, nenule și în text (ADR 0138 §5)');
+  }
+  if (are(t, 'aldin')) {
+    const inaltime = t['inaltime'] as number;
+    const majuscula = esteObiect(pr) ? inaltime * ((pr['inaltime'] as number) / 100) : inaltime;
+    if (!((t['aldin'] as number) <= majuscula * L.aldinRaport + 1e-9)) rez.push('.aldin trece de o cincime din majuscula tăiată (ADR 0123, ADR 0138 §2)');
+  }
+  if (t['vertical'] === true && are(t, 'curba')) rez.push(': textul vertical nu stă pe o curbă (ADR 0141)');
+  if (are(t, 'caseta') && are(t, 'curba')) rez.push(': textul în casetă nu stă pe o curbă (ADR 0142 §5)');
+  return rez;
+}
+
+/**
+ * ADR 0105 §4 (`blocText`): de ce grupul n-are un bloc de text valid (forma blocului și amprenta copiilor grupului), sau
+ * `undefined` dacă are.
+ */
+export function motivBlocO(grup: unknown): string | undefined {
+  if (!esteObiect(grup) || grup['tip'] !== 'grup') return 'nu e un grup';
+  if (!are(grup, 'text')) return 'grupul n-are blocul de text (`text`)';
+  const p = problemeBlocO(grup['text']);
+  if (p.length > 0) return `text${p.join('; text')}`;
+  const amprenta = amprentaContururiO(grup['copii']);
+  const scrisa = (grup['text'] as Liber)['amprenta'];
+  return scrisa === amprenta ? undefined : `amprenta blocului ${arata(scrisa)} nu e a copiilor grupului (${amprenta}): contururile s-au schimbat pe altă cale`;
+}
+
+// Câmpurile textului (ADR 0210 §4, §7).
+
+/** Câmpurile unui text, în ordine, cu repetări (DESCHIS: sintaxa numelui, `campuriRe`). */
+export function campurileO(text: string): string[] {
+  return Array.from(text.matchAll(campuriRe()), (m) => m[1] as string);
+}
+
+/**
+ * ADR 0210 §7: textul cu fiecare câmp înlocuit cu valoarea lui din `campuri` (cheia proprie, exact numele), într-o singură
+ * trecere, cu valoarea pusă așa cum e (fără `$&`, fără câmpuri din valori); sau primul câmp fără valoare.
+ */
+export function textCuValorileO(text: string, campuri: unknown): { readonly text: string } | { readonly lipsa: string } {
+  const stare: { lipsa: string | undefined } = { lipsa: undefined };
+  const rez = text.replace(campuriRe(), (_tot: string, nume: string): string => {
+    const v = esteObiect(campuri) && Object.hasOwn(campuri, nume) ? campuri[nume] : undefined;
+    if (typeof v === 'string') return v;
+    stare.lipsa ??= nume;
+    return '';
+  });
+  return stare.lipsa === undefined ? { text: rez } : { lipsa: stare.lipsa };
+}
+
+// Piesele, cu locul fiecărui nod.
+
+/** Un nod al piesei, cu locul lui: nivelul (rădăcina 1), matricea compusă față de rădăcină, lanțul matricelor locale, părintele. */
+type NodPiesaO = {
+  readonly nod: Liber; readonly nivel: number; readonly compus: MatriceO | undefined; readonly lant: readonly MatriceO[] | undefined;
+  readonly parinte: string | undefined;
+};
+type PiesaTexteO = {
+  readonly id: string; readonly noduri: ReadonlyMap<string, NodPiesaO>; readonly operatii: readonly Liber[]; readonly idOperatii: ReadonlySet<string>;
+};
+
+/** O matrice cu cei șase coeficienți finiți, sau nimic (o matrice stricată o spune partea v1–v10). */
+function matriceFinitaO(v: unknown): MatriceO | undefined {
+  if (!esteObiect(v)) return undefined;
+  const [a, b, c, d, e, f] = (['a', 'b', 'c', 'd', 'e', 'f'] as const).map((k) => v[k]);
+  const finite = [a, b, c, d, e, f].every((x) => typeof x === 'number' && Number.isFinite(x));
+  return finite ? { a: a as number, b: b as number, c: c as number, d: d as number, e: e as number, f: f as number } : undefined;
+}
+
+/**
+ * Piesele documentului după id (prima, la id-uri repetate), cu nodurile lor (primul, la id-uri repetate: le refuză partea
+ * v1–v10), până la nivelul 32, și operațiile lor.
+ */
+function pieseTexteO(doc: Liber): Map<string, PiesaTexteO> {
+  const rez = new Map<string, PiesaTexteO>();
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return rez;
+  for (const p of piese as unknown[]) {
+    if (!esteObiect(p) || typeof p['id'] !== 'string' || rez.has(p['id'])) continue;
+    const noduri = new Map<string, NodPiesaO>();
+    type Pas = { readonly nod: unknown; readonly nivel: number; readonly deasupra: MatriceO | undefined; readonly lant: readonly MatriceO[] | undefined; readonly parinte: string | undefined };
+    const stiva: Pas[] = [{ nod: p['radacina'], nivel: 1, deasupra: IDENTITATE_O, lant: [], parinte: undefined }];
+    while (stiva.length > 0) {
+      const x = stiva.pop() as Pas;
+      if (x.nivel > PLAFOANE_O.adancime || !esteObiect(x.nod)) continue;
+      const local = matriceFinitaO(x.nod['matrice']);
+      const compus = x.deasupra !== undefined && local !== undefined ? compuneO(x.deasupra, local) : undefined;
+      const lant = x.lant !== undefined && local !== undefined ? [...x.lant, local] : undefined;
+      const id = typeof x.nod['id'] === 'string' ? x.nod['id'] : undefined;
+      if (id !== undefined && !noduri.has(id)) noduri.set(id, { nod: x.nod, nivel: x.nivel, compus, lant, parinte: x.parinte });
+      const copii = x.nod['tip'] === 'grup' ? x.nod['copii'] : undefined;
+      if (Array.isArray(copii)) {
+        for (let k = copii.length - 1; k >= 0; k--) stiva.push({ nod: copii[k], nivel: x.nivel + 1, deasupra: compus, lant, parinte: id });
+      }
+    }
+    const operatii = Array.isArray(p['operatii']) ? (p['operatii'] as unknown[]).filter(esteObiect) : [];
+    const idOperatii = new Set(operatii.map((o) => o['id']).filter((x): x is string => typeof x === 'string'));
+    rez.set(p['id'], { id: p['id'], noduri, operatii, idOperatii });
+  }
+  return rez;
+}
+
+/** Matricea instanței în lume (translație ∘ rotație), dacă poziția și rotirea ei sunt bune (altfel le spune partea v1–v10). */
+function matriceInstantaO(inst: Liber): MatriceO | undefined {
+  const x = inst['x'];
+  const y = inst['y'];
+  const r = inst['rotire'];
+  if (typeof x !== 'number' || typeof y !== 'number' || typeof r !== 'number') return undefined;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !(Number.isFinite(r) && r >= 0 && r < 360)) return undefined;
+  return compuneO(translatieO(x, y), rotatieO(r));
+}
+
+/**
+ * Literele șablonului unui grup (copiii lui, până la nivelul 32): câte elemente, câte vârfuri de cale, câte tăieturi ale
+ * piesei sunt pe ele și id-urile elementelor lor.
+ */
+function sablonulO(piesa: PiesaTexteO, grup: NodPiesaO): { readonly elemente: number; readonly varfuri: number; readonly taieturi: number; readonly idElemente: ReadonlySet<string> } {
+  const idElemente = new Set<string>();
+  let elemente = 0;
+  let varfuri = 0;
+  const copii = grup.nod['copii'];
+  const stiva: Array<{ readonly nod: unknown; readonly nivel: number }> = Array.isArray(copii) ? (copii as unknown[]).map((nod) => ({ nod, nivel: grup.nivel + 1 })) : [];
+  while (stiva.length > 0) {
+    const x = stiva.pop() as { readonly nod: unknown; readonly nivel: number };
+    if (x.nivel > PLAFOANE_O.adancime || !esteObiect(x.nod)) continue;
+    if (x.nod['tip'] === 'element') {
+      elemente++;
+      if (typeof x.nod['id'] === 'string') idElemente.add(x.nod['id']);
+      const f = x.nod['forma'];
+      if (esteObiect(f) && f['tip'] === 'cale' && Array.isArray(f['varfuri'])) varfuri += (f['varfuri'] as unknown[]).length;
+    } else if (x.nod['tip'] === 'grup' && Array.isArray(x.nod['copii'])) {
+      for (const c of x.nod['copii'] as unknown[]) stiva.push({ nod: c, nivel: x.nivel + 1 });
+    }
+  }
+  let taieturi = 0;
+  for (const op of piesa.operatii) {
+    if (Array.isArray(op['noduri'])) for (const n of op['noduri'] as unknown[]) if (typeof n === 'string' && idElemente.has(n)) taieturi++;
+  }
+  return { elemente, varfuri, taieturi, idElemente };
+}
+
+/** Literele unei plăcuțe (orice adâncime): câte noduri, câte elemente, câte vârfuri de cale. */
+function numaraLitereO(copii: unknown): { readonly noduri: number; readonly elemente: number; readonly varfuri: number } {
+  let noduri = 0;
+  let elemente = 0;
+  let varfuri = 0;
+  const stiva: unknown[] = Array.isArray(copii) ? [...(copii as unknown[])] : [];
+  while (stiva.length > 0) {
+    const x = stiva.pop();
+    noduri++;
+    if (!esteObiect(x)) continue;
+    if (x['tip'] === 'element') {
+      elemente++;
+      const f = x['forma'];
+      if (esteObiect(f) && f['tip'] === 'cale' && Array.isArray(f['varfuri'])) varfuri += (f['varfuri'] as unknown[]).length;
+    } else if (x['tip'] === 'grup' && Array.isArray(x['copii'])) stiva.push(...(x['copii'] as unknown[]));
+  }
+  return { noduri, elemente, varfuri };
+}
+
+/**
+ * ADR 0210 §7 („plafoanele rămân, … cu literele plăcuțelor”): pe fiecare instanță cu `texte`, literele plăcuței stau în lume
+ * în locul literelor șablonului (DESCHIS: nu pe lângă ele), deci elementele, vârfurile și tăieturile ei în lume se schimbă cu
+ * diferența; nodurile tuturor literelor plăcuțelor se adună la nodurile documentului (DESCHIS).
+ */
+export function ajustariLumeV23O(doc: Liber): AjustariLumeO {
+  const piese = pieseTexteO(doc);
+  const pe = new Map<string, { readonly elemente: number; readonly varfuri: number; readonly taieturi: number }>();
+  let noduri = 0;
+  for (const { inst, i, k } of instantele(doc)) {
+    const texte = inst['texte'];
+    if (!esteObiect(texte)) continue;
+    const piesa = typeof inst['piesa'] === 'string' ? piese.get(inst['piesa']) : undefined;
+    let elemente = 0;
+    let varfuri = 0;
+    let taieturi = 0;
+    for (const [g, intrare] of Object.entries(texte)) {
+      if (!esteObiect(intrare)) continue;
+      const litere = numaraLitereO(intrare['copii']);
+      noduri += litere.noduri;
+      const grup = piesa?.noduri.get(g);
+      if (piesa === undefined || grup === undefined || grup.nod['tip'] !== 'grup') continue;
+      const sablon = sablonulO(piesa, grup);
+      elemente += litere.elemente - sablon.elemente;
+      varfuri += litere.varfuri - sablon.varfuri;
+      taieturi -= sablon.taieturi;
+      const ops = intrare['operatii'];
+      if (esteObiect(ops)) for (const l of Object.values(ops)) if (Array.isArray(l)) taieturi += l.length;
+    }
+    if (piesa !== undefined) pe.set(`${i}/${k}`, { elemente, varfuri, taieturi });
+  }
+  return { noduri, instanta: (i, k) => pe.get(`${i}/${k}`) };
+}
+
+/**
+ * ADR 0210 §7: încălcările lui `Instanta.texte` pe un document v23 (forma lui, grupul și blocul lui, textul așezat,
+ * literele, operațiile), cu categoriile din antet; goală = bun. Plafoanele de ansamblu le judecă `verificaArboreO`, cu
+ * `ajustariLumeV23O`; o instanță fără piesă (sau cu alte probleme ale părții v1–v10) nu se mai judecă aici.
+ */
+export function problemeTexteO(doc: Liber): string[] {
+  const rez: string[] = [];
+  const semnaleaza: Semnaleaza = (categorie, mesaj) => { rez.push(`[${categorie}] ${mesaj}`); };
+  const u = unelte(semnaleaza, 10);
+  const piese = pieseTexteO(doc);
+  for (const { inst, unde: ci } of instantele(doc)) {
+    if (!are(inst, 'texte')) continue;
+    const texte = inst['texte'];
+    if (!esteObiect(texte)) {
+      semnaleaza('texte', `${ci}.texte = ${arata(texte)} nu e un dicționar: grupul de text → { continut, copii, operatii } (ADR 0210 §7)`);
+      continue;
+    }
+    // Trimiterea la o piesă lipsă e a părții v1–v10 (`[referinta]`): fără piesă, nimic de judecat aici.
+    const piesa = typeof inst['piesa'] === 'string' ? piese.get(inst['piesa']) : undefined;
+    if (piesa === undefined) continue;
+    const idInst = typeof inst['id'] === 'string' ? inst['id'] : ci;
+    const start = matriceInstantaO(inst);
+    /** ALEGERE (antetul): id-urile literelor sunt unice pe instanță; id → locul unde a apărut întâi. */
+    const litere = new Map<string, string>();
+    const grupuri: string[] = [];
+    for (const [g, intrare] of Object.entries(texte)) {
+      const ct = `${ci}.texte.${g}`;
+      // Grupul: al piesei, un grup, cu blocul valid și cu câmpuri (ADR 0210 §7).
+      const grup = piesa.noduri.get(g);
+      let bloc: Liber | undefined;
+      if (grup === undefined) {
+        semnaleaza('texte', `${ct}: ${arata(g)} nu e un nod al piesei ${piesa.id}; cheia e id-ul unui grup de text al ei (ADR 0210 §7)`);
+      } else if (grup.nod['tip'] !== 'grup') {
+        semnaleaza('texte', `${ct}: ${g} e un element al piesei ${piesa.id}, nu un grup de text (ADR 0210 §7)`);
+      } else {
+        grupuri.push(g);
+        const motiv = motivBlocO(grup.nod);
+        const continutBloc = motiv === undefined ? ((grup.nod['text'] as Liber)['continut'] as string) : '';
+        if (motiv !== undefined) semnaleaza('texte', `${ct}: grupul n-are un bloc de text valid (ADR 0105 §4): ${motiv}`);
+        else if (campurileO(continutBloc).length === 0) semnaleaza('texte', `${ct}: textul grupului ${arata(continutBloc)} n-are câmpuri între acolade (ADR 0210 §4, §7)`);
+        else bloc = grup.nod['text'] as Liber;
+      }
+      if (!esteObiect(intrare)) {
+        semnaleaza('texte', `${ct} = ${arata(intrare)} nu e un obiect { continut, copii, operatii } (ADR 0210 §7)`);
+        continue;
+      }
+      // Textul așezat: textul blocului cu valorile din `campuri`, o verificare de șiruri.
+      const continut = intrare['continut'];
+      if (typeof continut !== 'string') {
+        semnaleaza('texte', `${ct}.continut = ${are(intrare, 'continut') ? arata(continut) : '(lipsă)'} nu e text (ADR 0210 §7)`);
+      } else if (bloc !== undefined) {
+        const asteptat = textCuValorileO(bloc['continut'] as string, inst['campuri']);
+        // DESCHIS: un câmp fără valoare în `campuri` (sau fără `campuri`); aici refuz: textul plăcuței nu se poate scrie.
+        if ('lipsa' in asteptat) semnaleaza('texte', `${ct}.continut: câmpul {${asteptat.lipsa}} n-are valoare în ${ci}.campuri (DESCHIS, ALEGERE: refuz)`);
+        else if (continut !== asteptat.text) {
+          semnaleaza('texte', `${ct}.continut = ${arata(continut)} nu e ${arata(asteptat.text)}, textul blocului cu valorile din campuri (ADR 0210 §7)`);
+        }
+      }
+      // Literele: noduri ale lumii, sub grupul lor (ADR 0210 §4); id-urile unice pe instanță și diferite de ale piesei.
+      const elementeIntrare = new Set<string>();
+      const grupuriIntrare = new Set<string>();
+      const copii = intrare['copii'];
+      if (!Array.isArray(copii)) {
+        semnaleaza('texte', `${ct}.copii = ${are(intrare, 'copii') ? arata(copii) : '(lipsă)'} nu e o listă de litere (ADR 0210 §7)`);
+      } else {
+        type Pas = { readonly nod: unknown; readonly nivel: number; readonly deasupra: MatriceO | undefined; readonly lant: readonly MatriceO[] | undefined; readonly cale: string };
+        const stiva: Pas[] = [];
+        for (let j = copii.length - 1; j >= 0; j--) {
+          stiva.push({ nod: copii[j], nivel: (grup?.nivel ?? 1) + 1, deasupra: grup?.compus, lant: grup?.lant, cale: `${ct}.copii[${j}]` });
+        }
+        let preaAdanc = false;
+        let pesteMargini = false;
+        while (stiva.length > 0) {
+          const x = stiva.pop() as Pas;
+          // DESCHIS: nivelul literelor se socotește de la grupul lor (literele stau sub el, în locul literelor șablonului).
+          if (grup !== undefined && x.nivel > PLAFOANE_O.adancime) {
+            if (!preaAdanc) semnaleaza('adancime', `${x.cale}: o literă pe nivelul ${x.nivel} > ${PLAFOANE_O.adancime} (grupul ${g} e pe nivelul ${grup.nivel}; DESCHIS)`);
+            preaAdanc = true;
+            continue;
+          }
+          if (!esteObiect(x.nod)) {
+            semnaleaza('schema', `${x.cale}: litera nu e obiect`);
+            continue;
+          }
+          const id = u.id(`${x.cale}.id`, x.nod['id']);
+          if (id !== undefined) {
+            if (piesa.noduri.has(id)) semnaleaza('texte', `${x.cale}.id = ${id} e și id-ul unui nod al piesei ${piesa.id}; literele au id-uri diferite de ale piesei (ADR 0210 §7)`);
+            const prima = litere.get(id);
+            if (prima !== undefined) {
+              semnaleaza('texte', `${x.cale}.id = ${id} se repetă printre literele instanței ${idInst} (și ${prima}.id) (ADR 0210 §7, ALEGERE: pe instanță)`);
+            } else litere.set(id, x.cale);
+          }
+          u.nume(x.cale, x.nod);
+          const local = u.matrice(`${x.cale}.matrice`, x.nod['matrice']);
+          const compus = x.deasupra !== undefined && local !== undefined ? compuneO(x.deasupra, local) : undefined;
+          const lant = x.lant !== undefined && local !== undefined ? [...x.lant, local] : undefined;
+          if (compus !== undefined && !inMarginiO(compus)) {
+            if (!pesteMargini) semnaleaza('margini', `${x.cale}: matricea compusă a literei ${id ?? '?'} iese din margini: ${JSON.stringify(compus)}`);
+            pesteMargini = true;
+          }
+          if (x.nod['tip'] === 'grup') {
+            if (id !== undefined) grupuriIntrare.add(id);
+            const cc = x.nod['copii'];
+            if (!Array.isArray(cc)) semnaleaza('schema', `${x.cale}: grupul literei n-are lista copii`);
+            else for (let m = cc.length - 1; m >= 0; m--) stiva.push({ nod: cc[m], nivel: x.nivel + 1, deasupra: compus, lant, cale: `${x.cale}.copii[${m}]` });
+          } else if (x.nod['tip'] === 'element') {
+            if (id !== undefined) elementeIntrare.add(id);
+            u.forma(`${x.cale}.forma`, x.nod['forma'], compus);
+            // ADR 0034 §2 (recenzia): în lume, cu instanța, un element cu arce stă tot sub o similitudine.
+            if (compus !== undefined && inMarginiO(compus) && lant !== undefined && start !== undefined && areArceO(x.nod['forma'])) {
+              const lume = lant.reduce((m, y) => compuneO(m, y), start);
+              if (!esteSimilitudineO(lume, PLAFOANE_O.similitudineLume)) semnaleaza('forma', `instanța ${idInst}: litera ${id ?? '?'} (${x.cale}) are arce sub o matrice neuniformă în lume`);
+            }
+          } else {
+            semnaleaza('schema', `${x.cale}.tip = ${arata(x.nod['tip'])} nu e grup sau element`);
+          }
+        }
+      }
+      // Operațiile: ale piesei, pe literele din `copii`.
+      const ops = intrare['operatii'];
+      // DESCHIS: `operatii` lipsă; aici refuz (valoarea are trei câmpuri, ADR 0210 §7).
+      if (!esteObiect(ops)) {
+        semnaleaza('texte', `${ct}.operatii = ${are(intrare, 'operatii') ? arata(ops) : '(lipsă)'} nu e un dicționar: operația piesei → literele tăiate (ADR 0210 §7)`);
+        continue;
+      }
+      for (const [o, lista] of Object.entries(ops)) {
+        const co = `${ct}.operatii.${o}`;
+        if (!piesa.idOperatii.has(o)) semnaleaza('texte', `${co}: ${arata(o)} nu e o operație a piesei ${piesa.id} (ADR 0210 §7)`);
+        if (!Array.isArray(lista)) {
+          semnaleaza('texte', `${co} = ${arata(lista)} nu e o listă de litere (ADR 0210 §7)`);
+          continue;
+        }
+        // DESCHIS: o listă goală e primită (nicio literă tăiată de operație); plafonul ei e cel al operației, mai jos.
+        const vazute = new Set<string>();
+        for (const x of lista as unknown[]) {
+          if (typeof x !== 'string') {
+            semnaleaza('texte', `${co} conține ${arata(x)}, nu un id de literă`);
+            continue;
+          }
+          // DESCHIS: un id repetat (aici refuz, ca `noduri`, ADR 0025).
+          if (vazute.has(x)) semnaleaza('texte', `${co}: ${x} se repetă (DESCHIS, ALEGERE: ca noduri, ADR 0025)`);
+          vazute.add(x);
+          // DESCHIS: un grup al literelor (aici refuz: operațiile taie elemente, ADR 0025) și o literă a altei intrări (refuz).
+          if (grupuriIntrare.has(x)) semnaleaza('texte', `${co}: ${x} e un grup al literelor, nu un element tăiat (DESCHIS, ALEGERE: ca noduri, ADR 0025)`);
+          else if (!elementeIntrare.has(x)) semnaleaza('texte', `${co}: ${arata(x)} nu e o literă din ${ct}.copii (ADR 0210 §7)`);
+        }
+      }
+    }
+    // DESCHIS: plafonul unei operații (ADR 0025: cel mult 10 000 de noduri) e pe ce taie ea în lumea instanței: nodurile ei
+    // din afara literelor șablonului înlocuite, plus literele plăcuței date pentru ea în fiecare intrare.
+    const inlocuite = new Set<string>();
+    for (const g of grupuri) {
+      const grup = piesa.noduri.get(g);
+      if (grup !== undefined) for (const id of sablonulO(piesa, grup).idElemente) inlocuite.add(id);
+    }
+    for (const op of piesa.operatii) {
+      const ido = op['id'];
+      if (typeof ido !== 'string') continue;
+      let taie = Array.isArray(op['noduri']) ? (op['noduri'] as unknown[]).filter((n) => !(typeof n === 'string' && inlocuite.has(n))).length : 0;
+      for (const intrare of Object.values(texte)) {
+        const ops = esteObiect(intrare) ? intrare['operatii'] : undefined;
+        const lista = esteObiect(ops) && Object.hasOwn(ops, ido) ? ops[ido] : undefined;
+        if (Array.isArray(lista)) taie += lista.length;
+      }
+      if (taie > PLAFOANE_V23_O.noduriOperatie) {
+        semnaleaza('plafon', `${ci}: operația ${ido} taie în lumea instanței ${taie} > ${PLAFOANE_V23_O.noduriOperatie} de noduri, cu literele plăcuței (DESCHIS)`);
+      }
+    }
+    // DESCHIS: un grup cu intrare aflat în alt grup cu intrare al aceleiași instanțe; aici refuz.
+    const cuTexte = new Set(grupuri);
+    for (const g of grupuri) {
+      let pasi = 0;
+      for (let p = piesa.noduri.get(g)?.parinte; p !== undefined && pasi <= PLAFOANE_O.adancime; p = piesa.noduri.get(p)?.parinte, pasi++) {
+        if (cuTexte.has(p)) {
+          semnaleaza('texte', `${ci}.texte.${g}: grupul e în grupul ${p}, care are și el literele plăcuței (DESCHIS, ALEGERE: refuz)`);
+          break;
+        }
+      }
+    }
+  }
+  return rez;
+}
+
+// Numele pe versiuni (v23).
+export function verificaV23(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V23_O); }
+export function verificaPanaLaV22O(doc: unknown): string[] { return verificaPanaLaO(doc, 22); }
+export function verificaPanaLaV23O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V23_O); }
+export function ridicaV22O(doc: unknown): DocV22O { return ridicaPanaLaO(doc, 22) as DocV22O; }
+export function ridicaV23O(doc: unknown): DocV23O { return ridicaPanaLaO(doc, SCHEMA_V23_O) as DocV23O; }
+export function usaCurentaV23O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V23_O); }
+export function migreazaV1V23O(v1: DocV1O): DocV23O { return ridicaPanaLaO(v1, SCHEMA_V23_O) as DocV23O; }
+export function migreazaV22V23O(v22: DocV22O): DocV23O { return ridicaPanaLaO(v22, SCHEMA_V23_O) as DocV23O; }

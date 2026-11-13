@@ -33,7 +33,7 @@ test('avertismentul: doar formele care trec de marginea foii, cu cât trec; cea 
   assert.deepEqual(avertismente(doc(dreptunghi('e1', 200, 140))), []);
   // Cercul R15 cu centrul în (10, 190): 5 mm la stânga și 5 mm sus, prin punctele lui de pe axe.
   const [a] = avertismente(doc(cerc('e1', 10, 190)));
-  assert.ok(a);
+  assert.ok(a?.tip === 'iese-din-foaie');
   assert.ok(Math.abs(a.depasire.stanga - 5) < 1e-9 && Math.abs(a.depasire.sus - 5) < 1e-9 && a.depasire.dreapta === 0 && a.depasire.jos === 0);
 });
 

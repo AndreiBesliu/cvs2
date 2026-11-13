@@ -1,17 +1,18 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
-import { avertismente } from '../model/avertismente.ts';
+import { avertismente, type Avertisment } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
 import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
+import { doarFoaia, indexFoaieActiva, locuriFoi, materialFoaie, numeFoaie } from '../model/foi.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
@@ -30,7 +31,7 @@ import {
 } from '../ui/actiuniImport.ts';
 import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
-import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
+import { incarcaMeniuFoaie, incarcaNivelPiesa, ListaVectori, type ActiuniFoi, type FoaieLista, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
@@ -39,6 +40,7 @@ import { listaDesen } from './desen.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import { legareLaPornire } from './imprimantaLaPornire.ts';
+import { foaiaTinuta, tineFoaia, tineToateFoile, toateFoileTinute } from './foaiaActiva.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import type { CerereLucrare } from './DialogLucrare.tsx';
 import type { LucrarePrimita } from './primireLucrare.ts';
@@ -117,6 +119,9 @@ const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.
 // Primirea unei lucrări (ADR 0126): ascultarea și dialogul vin doar când fila a fost deschisă de aplicația care trimite.
 const incarcaPrimirea = () => import('./DialogLucrare.tsx').then(cuMesaje);
 const DialogLucrare = lazy(() => incarcaPrimirea().then((m) => ({ default: m.DialogLucrare }), () => ({ default: DialogNeincarcat })));
+// „Așază pe foi” (ADR 0210 §3): dialogul și calculul lui vin la primul gest.
+const incarcaAsezarea = () => import('./DialogAsezare.tsx').then(cuMesaje);
+const DialogAsezare = lazy(() => incarcaAsezarea().then((m) => ({ default: m.DialogAsezare }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
@@ -191,6 +196,8 @@ const INTARZIERE_TRASEU_MS = 300;
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
+/** Fără foi vecine pe pânză (ADR 0210 §1): aceeași listă, ca pânza să nu i-o trimită workerului din nou la fiecare editare. */
+const NICIO_VECINA: readonly FoaieVecina[] = [];
 
 /** Temele, în ordinea în care le trece butonul: după sistem, luminoasă, întunecată. */
 const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
@@ -263,6 +270,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   );
   const [istoric, setIstoric] = useState<Istoric>(() => istoricNou(docPornire));
   const [selectie, setSelectie] = useState<readonly string[]>([]);
+  // Foaia activă a ferestrei (ADR 0210 §1): o vedere, ținută în browser; fără ea, sau ștearsă, prima foaie.
+  const [foaieAleasa, setFoaieAleasa] = useState<string | null>(() => foaiaTinuta());
+  // Toate foile pe pânză (ADR 0210 §1, felia 11.1↑b), estompate în jurul celei active; ținut în browser, implicit da.
+  const [toateFoile, setToateFoile] = useState(toateFoileTinute);
+  // Ce încadrează potrivirea următoare (toate foile); null: foaia activă, ca Home.
+  const [cadruPotrivire, setCadruPotrivire] = useState<{ x: number; y: number; latime: number; inaltime: number } | null>(null);
   const [eroareSalvare, setEroareSalvare] = useState<string | null>(null);
   const [mod, setMod] = useState<ModFila>(proiect.mod);
   const [motivNecitit, setMotivNecitit] = useState('');
@@ -270,10 +283,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Ultimul document venit din bază (la deschidere sau de la fila care scrie): nu se salvează înapoi. */
   const dinBaza = useRef<Document>(docPornire);
   // Acțiunile citesc și scriu starea sincron: referința ține mereu ultima valoare, starea React redesenează.
-  const curenta = useRef({ istoric, selectie });
-  curenta.current = { istoric, selectie };
-  // Desenul pentru „Din desen…” al ferestrei Imprimanta (ADR 0191): citit la clic, din referință (o funcție stabilă).
-  const [desenImprimanta] = useState(() => () => ({ doc: curenta.current.istoric.doc, selectie: curenta.current.selectie }));
+  const indexActiva = indexFoaieActiva(istoric.doc, foaieAleasa);
+  const idActiva = istoric.doc.foi[indexActiva]?.id ?? '';
+  const curenta = useRef({ istoric, selectie, foaie: idActiva });
+  curenta.current = { istoric, selectie, foaie: idActiva };
+  // Desenul pentru „Din desen…” al ferestrei Imprimanta (ADR 0191): citit la clic, din referință (o funcție stabilă); al foii
+  // active (ADR 0210 §1), ca exportul.
+  const [desenImprimanta] = useState(() => () => ({ doc: doarFoaia(curenta.current.istoric.doc, curenta.current.foaie), selectie: curenta.current.selectie }));
   // Înălțimea de imprimare a pieselor (ADR 0191, 3.6l), scrisă din același dialog: o comandă obișnuită (cu anularea), pe
   // documentul de acum; în doar-citire, niciuna.
   const scrieInaltimiImprimanta = doarCiteste(mod) ? null : (inaltimi: ReadonlyMap<string, number | null>): void => {
@@ -300,6 +316,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
   const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
+  /** Dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
+  const [dialogAsezare, setDialogAsezare] = useState(false);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
@@ -452,11 +470,29 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     exportInCurs.current = false;
     setBazaNoua((n) => n + 1);
     const h = istoricNou(d);
-    const existente = new Set(d.foi[0]?.instante.map((i) => i.id) ?? []);
+    const existente = new Set(d.foi[indexFoaieActiva(d, curenta.current.foaie)]?.instante.map((i) => i.id) ?? []);
     const sel = curenta.current.selectie.filter((id) => existente.has(id));
-    curenta.current = { istoric: h, selectie: sel };
+    curenta.current = { ...curenta.current, istoric: h, selectie: sel };
     setIstoric(h);
     setSelectie(sel);
+  };
+
+  /**
+   * Foaia activă (ADR 0210 §1): o vedere a ferestrei, ținută în browser, nu o comandă a documentului. Selecția e a ei, deci se
+   * golește; traseul arătat se calculează din nou pentru ea (efectul de lângă traseu).
+   */
+  const activeazaFoaie = (id: string): void => {
+    if (curenta.current.foaie === id) return;
+    curenta.current = { ...curenta.current, foaie: id, selectie: [] };
+    setFoaieAleasa(id);
+    setSelectie([]);
+    tineFoaia(id);
+  };
+  /** Foaia de dinainte sau următoarea din listă (PgUp / PgDn); la capăt, nimic. */
+  const foaiaVecina = (pas: -1 | 1): void => {
+    const d = curenta.current.istoric.doc;
+    const f = d.foi[indexFoaieActiva(d, curenta.current.foaie) + pas];
+    if (f) activeazaFoaie(f.id);
   };
 
   // Fila care citește: primește fiecare versiune salvată de scriitor și devine ea scriitorul când acela se închide.
@@ -494,8 +530,26 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     proiectare: () => { deschideFereastra('proiectare'); },
     masina: () => { deschideFereastra('masina'); },
     imprimanta: () => { deschideFereastra('imprimanta'); },
-    potriveste: () => { setPotrivire((n) => n + 1); },
+    potriveste: () => { setCadruPotrivire(null); setPotrivire((n) => n + 1); },
     traseu: () => { comutaTraseu(); },
+    'foaia-anterioara': () => { foaiaVecina(-1); },
+    'foaia-urmatoare': () => { foaiaVecina(1); },
+    // Pornit, le încadrează pe toate; oprit, încadrează foaia activă (ca Home).
+    'toate-foile': () => {
+      const da = !toateFoile;
+      setToateFoile(da);
+      tineToateFoile(da);
+      const d = curenta.current.istoric.doc;
+      const k = indexFoaieActiva(d, curenta.current.foaie);
+      const locuri = locuriFoi(d);
+      const ultima = d.foi.length - 1;
+      const x0 = locuri[k] ?? 0;
+      setCadruPotrivire(da ? {
+        x: -x0, y: 0, latime: (locuri[ultima] ?? 0) + (d.foi[ultima]?.stoc.latime ?? 0),
+        inaltime: Math.max(...d.foi.map((f) => f.stoc.inaltime)),
+      } : null);
+      setPotrivire((n) => n + 1);
+    },
     tema: () => {
       const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
       setTema(noua);
@@ -514,13 +568,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       if (!trimite) return;
       const { istoric: h, selectie: ales } = curenta.current;
       void import('../extensii/formeSelectie.ts').then((m) => {
-        trimite(m.formeSelectie(h.doc, ales));
+        trimite(m.formeSelectie(h.doc, ales, indexFoaieActiva(h.doc, curenta.current.foaie)));
         deschideFereastra(FEREASTRA_EXTENSIE);
       }, (e: unknown) => { jurnal.adauga('fereastra', e); });
     },
   };
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current, semnal?: AbortSignal): ContextExport => ({
-    document: () => curenta.current.istoric.doc,
+    // Exportul e al foii active (ADR 0210 §5): documentul văzut din ea, deci programul ei e cel al unui document doar cu ea.
+    document: () => doarFoaia(curenta.current.istoric.doc, curenta.current.foaie),
+    toate: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
     ...(semnal ? { semnal: () => semnal } : {}),
     rezultat: (r: RezultatExport) => {
@@ -536,13 +592,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         for (const d of dopuri) descarca(d.octeti, d.nume);
         // În panoul mașinii ajunge doar un program pe care senderul îl vorbește (familia GRBL); restul se rulează de pe
         // controlerul lui (ADR 0125): un G4 P în ms ar deveni acolo o pauză de ore.
-        setUltimulExport(r.sender ? fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
+        setUltimulExport(r.sender ? (r.masina ?? fisiere).map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({
           ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
-          ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}),
+          ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
         // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
         opresteSimularea();
@@ -560,15 +616,56 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     },
   });
   const doc = istoric.doc;
-  // Freza foii, cât e deschis importul: liniile mediane ale unei imagini o compară cu grosimea trăsăturilor (ADR 0222 §5).
-  const frezaImport = coadaImport ? sculaFoii(doc)?.diametru : undefined;
-  const foaie = doc.foi[0] ?? documentNou(FOAIA_IMPLICITA).foi[0];
+  // Foaia activă (ADR 0210 §1): pânza, lista, panoul, traseul și exportul sunt ale ei.
+  const foaie = doc.foi[indexActiva] ?? documentNou(FOAIA_IMPLICITA).foi[0];
+  // Freza foii active, cât e deschis importul: liniile mediane ale unei imagini o compară cu grosimea trăsăturilor (ADR 0222 §5).
+  const frezaImport = coadaImport ? sculaFoii(doc, foaie?.id)?.diametru : undefined;
   const foaieStoc = foaie?.stoc;
-  // Lista de desen și elementele în lume se refac doar când se schimbă documentul.
-  const lume = useMemo(() => elementeFoaie(doc, 0), [doc]);
-  const forme = useMemo(() => listaDesen(doc), [doc]);
-  // Avertismentele: tot după fiecare schimbare a documentului; în bara de jos și în listă, niciodată pe pânză.
-  const avert = useMemo(() => avertismente(doc, 0), [doc]);
+  /** „Foaia N”, numele arătat al unei foi fără nume (ADR 0210 §1). */
+  const sablonFoaie = (n: number): string => t('foaia.n', { n: String(n) });
+  // Documentul văzut din foaia activă (ADR 0210 §5), pentru panou și pentru fereastra exportului: ținut, ca să nu se refacă la
+  // fiecare randare.
+  const docActiv = useMemo(() => doarFoaia(doc, idActiva), [doc, idActiva]);
+  // Foile de lângă cea activă, pe rândul pânzei (ADR 0210 §1, felia 11.1↑b): locul, numele și desenul fiecăreia. Desenul unei
+  // foi se ține cât rămân aceeași foaie și aceleași piese: o editare pe foaia activă nu le reface pe celelalte.
+  const desenFoi = useRef(new WeakMap<Document['foi'][number], { readonly piese: Document['piese']; readonly forme: ReturnType<typeof listaDesen> }>());
+  const vecine = useMemo(() => {
+    if (!toateFoile || doc.foi.length < 2) return NICIO_VECINA;
+    const locuri = locuriFoi(doc);
+    const x0 = locuri[indexActiva] ?? 0;
+    return doc.foi.flatMap((f, k) => {
+      if (k === indexActiva) return [];
+      let d = desenFoi.current.get(f);
+      if (d?.piese !== doc.piese) {
+        d = { piese: doc.piese, forme: listaDesen(doc, k) };
+        desenFoi.current.set(f, d);
+      }
+      return [{ id: f.id, x: (locuri[k] ?? 0) - x0, y: 0, latime: f.stoc.latime, inaltime: f.stoc.inaltime, nume: numeFoaie(f, k, sablonFoaie), forme: d.forme }];
+    });
+  }, [doc, indexActiva, toateFoile, limbaActiva]);
+  // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
+  // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
+  const surori = useMemo(() => {
+    const n = new Map<string, number>();
+    const k = new Map<string, number>();
+    for (const f of doc.foi) for (const i of f.instante) {
+      const c = (n.get(i.piesa) ?? 0) + 1;
+      n.set(i.piesa, c);
+      k.set(i.id, c);
+    }
+    return { n, k };
+  }, [doc]);
+  // Lista de desen și elementele în lume se refac doar când se schimbă documentul sau foaia activă.
+  const lume = useMemo(() => elementeFoaie(doc, indexActiva), [doc, indexActiva]);
+  const forme = useMemo(() => listaDesen(doc, indexActiva), [doc, indexActiva]);
+  // Avertismentele: tot după fiecare schimbare a documentului; în bara de jos și în listă, niciodată pe pânză. Ale plăcuțelor
+  // (textul ieșit din plăcuță, ADR 0210 §4) vin cu judecata lor, adusă la cerere când documentul are plăcuțe.
+  const [placuteGata, setPlacuteGata] = useState(false);
+  const arePlacute = doc.foi.some((f) => f.instante.some((i) => i.texte));
+  useEffect(() => {
+    if (arePlacute && !placuteGata) import('../model/placuteIesire.ts').then(() => { setPlacuteGata(true); }, () => undefined);
+  }, [arePlacute, placuteGata]);
+  const avert = useMemo(() => avertismente(doc, indexActiva), [doc, indexActiva, placuteGata]);
   // Hărțile listei, o dată pe document: un rând costă cât elementele lui, nu cât toată foaia.
   const harti = useMemo(() => {
     const peInstanta = new Map<string, ElementLume[]>();
@@ -578,10 +675,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       else peInstanta.set(e.instanta, [e]);
     }
     const piese = new Map(doc.piese.map((p) => [p.id, p]));
-    const piesaInstantei = new Map((doc.foi[0]?.instante ?? []).map((i) => [i.id, piese.get(i.piesa)]));
-    const nume = new Map([...piesaInstantei].map(([i, p]) => [i, p?.nume]));
+    const piesaInstantei = new Map((foaie?.instante ?? []).map((i) => [i.id, piese.get(i.piesa)]));
+    // O plăcuță (ADR 0210 §4) se numește după textul ei (primul rând), nu după șablon.
+    const nume = new Map((foaie?.instante ?? []).map((i) => [i.id, (i.texte && Object.values(i.texte)[0]?.continut.split('\n')[0]?.trim()) || piese.get(i.piesa)?.nume]));
     return { peInstanta, nume, piesaInstantei, dupaIdLume: new Map(lume.map((e) => [e.idLume, e])) };
-  }, [lume, doc]);
+  }, [lume, doc, foaie]);
   // Selecția ține instanțe; doar cele care există încă se arată (o anulare le poate scoate de pe foaie).
   const selectieValida = useMemo(() => selectie.filter((id) => harti.nume.has(id)), [selectie, harti]);
   // Pânza primește elementele în lume ale instanțelor alese, și cutia lor (bara selecției stă lângă ea).
@@ -606,12 +704,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
     selecteaza: (ids) => { curenta.current = { ...curenta.current, selectie: ids }; setSelectie(ids); },
     doarCitire: () => doarCiteste(mod),
+    foaie: () => curenta.current.foaie,
+    activeazaFoaie,
     ...extra,
   });
 
@@ -632,6 +732,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       void incarcaPaleta().catch(() => undefined);
       void incarcaProprietati().catch(() => undefined);
       void incarcaNivelPiesa().catch(() => undefined);
+      void incarcaMeniuFoaie().catch(() => undefined);
       void incarcaMasina().catch(() => undefined);
       preincarcaImport();
     }, 1_000);
@@ -644,7 +745,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -705,7 +806,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       // Traseul de dinainte rămâne sub cipul „se calculează”, ca pânza să nu clipească (și, dacă documentul se schimbă
       // între timp, rămâne el, stins).
       setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, ...(v?.program ? { program: v.program } : {}), motiv: null }));
-      calc.programTraseu(d, ac.signal).then((r) => {
+      calc.programTraseu(doarFoaia(d, curenta.current.foaie), ac.signal).then((r) => {
         if (cerere !== cerereTraseu.current) return;
         traseuInCurs.current = null;
         if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, motiv: null });
@@ -744,6 +845,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }, INTARZIERE_TRASEU_MS);
     return () => { clearTimeout(ceas); };
   }, [doc.rev, traseuArata, traseuRev]);
+  // O altă foaie activă (ADR 0210 §1): traseul arătat era al celei de dinainte; se calculează din nou, pentru cea nouă.
+  const foaieTraseu = useRef(idActiva);
+  useEffect(() => {
+    if (foaieTraseu.current === idActiva) return;
+    foaieTraseu.current = idActiva;
+    if (!traseuArata) return;
+    setTraseu((v) => (v ? { ...v, stare: 'calcul', miscari: null, motiv: null } : v));
+    calculeazaTraseuRef.current();
+  }, [idActiva, traseuArata]);
   // Bucățile stratului: din program, la treapta de zoom și sub buget (modulul vine la cerere, cu stratul).
   const miscariTraseu = traseu?.arata ? traseu.miscari : null;
   useEffect(() => {
@@ -848,9 +958,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const e = harti.dupaIdLume.get(idLume);
     return e ? descriere(e) : idLume;
   };
+  /** Un avertisment, în cuvinte: forma care iese din foaie, sau plăcuța din care iese textul, cu numele ei din listă. */
+  const textAvertisment = (a: Avertisment): string => (a.tip === 'iese-din-foaie'
+    ? t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }) : t('avertisment.text-iese-din-placuta', { nume: numePiesa(a.id) ?? a.id }));
   const avertInstanta = new Map<string, string[]>();
   for (const a of avert) {
-    const text = t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) });
+    const text = textAvertisment(a);
     const l = avertInstanta.get(a.instanta);
     if (l) l.push(text);
     else avertInstanta.set(a.instanta, [text]);
@@ -860,14 +973,51 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const randuri: RandLista[] = (foaie?.instante ?? []).map((i) => ({
     id: i.id,
     descriere: descriereInstanta(elementeInstanta(i.id), numePiesa(i.id)),
+    legata: (surori.n.get(i.piesa) ?? 0) > 1 ? t('lista.din', { k: String(surori.k.get(i.id) ?? 0), n: String(surori.n.get(i.piesa) ?? 0) }) : null,
     avertisment: avertInstanta.get(i.id)?.join('\n') ?? null,
     selectat: alese.has(i.id),
     elemente: elementeInstanta(i.id).length,
     operatii: harti.piesaInstantei.get(i.id)?.operatii ?? [],
   }));
   const stoc = foaie?.stoc ?? FOAIA_IMPLICITA;
-  // Rădăcina arborelui: foaia, cu mărimile exacte din document (cu punct, ca descrierile formelor).
-  const radacinaArbore = t('arbore.foaia', { nume: foaie?.nume ?? '1', latime: stoc.latime, inaltime: stoc.inaltime, grosime: stoc.grosime });
+  // Foile proiectului, în listă (ADR 0210 §1): numele; dedesubt, mărimile exacte din document (cu punct, ca descrierile
+  // formelor), materialul și câte piese are fiecare.
+  const foiLista: FoaieLista[] = doc.foi.map((f, k) => {
+    const material = materialFoaie(f);
+    const detalii = [t('arbore.foaia', { latime: f.stoc.latime, inaltime: f.stoc.inaltime, grosime: f.stoc.grosime }),
+      ...(material === null ? [] : [material]), t('lista.foaie-piese', { n: f.instante.length })];
+    return { id: f.id, eticheta: numeFoaie(f, k, sablonFoaie), detalii, piese: f.instante.length, activa: k === indexActiva };
+  });
+  /** Ce face lista cu foile (ADR 0210 §1): totul prin registru, ca bara și paleta; meniul foii (la cerere) le cere pe foaia lui. */
+  const actiuniFoi: ActiuniFoi = {
+    adauga: () => { ruleazaDocument('foaie.adauga', context()); },
+    stare: (actiune, id) => stare(registru, actiune, context({ foaieAleasa: () => id })),
+    ruleaza: (actiune, id) => { ruleazaDocument(actiune, context({ foaieAleasa: () => id })); },
+    // Numele, mărimea și materialul foii stau în panoul de proprietăți, fără selecție: foaia devine activă și panoul se deschide.
+    proprietati: (id) => {
+      activeazaFoaie(id);
+      curenta.current = { ...curenta.current, selectie: [] };
+      setSelectie([]);
+      setPanouri((p) => ({ ...p, proprietati: true }));
+    },
+    // „Așază pe foi…” din meniul foii: foaia devine activă (o alta golește selecția), iar dialogul se deschide pe ea.
+    aseaza: (id) => {
+      if (id !== idActiva) {
+        activeazaFoaie(id);
+        curenta.current = { ...curenta.current, selectie: [] };
+        setSelectie([]);
+      }
+      setDialogAsezare(true);
+    },
+    // Un rând tras pe altă foaie: îl ia cu selecția lui, dacă e în ea; altfel doar pe el.
+    muta: (instanta, spre) => {
+      if (dialogDeschis.current) return;
+      const sel = curenta.current.selectie.includes(instanta) ? curenta.current.selectie : [instanta];
+      curenta.current = { ...curenta.current, selectie: sel };
+      setSelectie(sel);
+      ruleazaDocument('selectie.muta-pe-foaie', context({ foaieTinta: () => spre }));
+    },
+  };
   const mesaj = mesajProiect(mod, proiect, motivNecitit);
 
   /**
@@ -888,16 +1038,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       setStareExport({ ok: false, motiv: t(scris.motiv) });
       return;
     }
-    const { origine, z0, post, unitati, strategieScula } = c;
+    // Parametrii, cum i-a dat fereastra (și „Toate foile”, ADR 0210 §5); valorile și ordinea operațiilor sunt scrise mai sus.
+    const { valori: _valori, ordine: _ordine, ...parametri } = c;
     exportInCurs.current = true;
     opresteSimularea();
     opresteExportul();
     const ac = new AbortController();
     exportCalcul.current = ac;
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
-      origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(strategieScula ? { strategieScula } : {}),
-      ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
-      ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
+      ...parametri, ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
     }, ++cerereExport.current, ac.signal));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
     if (!r.ok) {
@@ -1008,6 +1157,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (id === 'extensii.trimite-selectia') return extensie?.forme ? buton(id, atribut, extra, t('actiune.trimite-la', { nume: extensie.nume })) : null;
     const p = panouAl(id);
     if (id === 'vedere.traseu') return buton(id, atribut, { ...extra, 'aria-pressed': traseu?.arata === true });
+    // Comutatorul foilor de pe pânză (ADR 0210 §1), doar cu mai multe foi.
+    if (id === 'vedere.toate-foile') return doc.foi.length < 2 ? null : buton(id, atribut, { ...extra, 'aria-pressed': toateFoile });
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
   };
 
@@ -1062,10 +1213,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         if (avert.length === 0) return null;
         // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu și, cu roșu, în
         // lista de vectori.
-        const texte = avert.map((a) => t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }));
+        const texte = avert.map(textAvertisment);
+        // Mai multe: câte, după felul lor (formele ieșite din foaie, plăcuțele cu textul ieșit), sau doar câte, amestecate.
+        const n = texte.length, fel = avert.every((a) => a.tip === avert[0]?.tip) ? avert[0]?.tip : null;
         return (
           <span className="cip cip-rosu avertisment-bara" data-testid="avertisment" title={texte.join('\n')}>
-            {texte.length === 1 ? texte[0] : t('avertisment.forme-ies-din-foaie', { n: texte.length })}
+            {n === 1 ? texte[0] : t(fel === 'iese-din-foaie' ? 'avertisment.forme-ies-din-foaie' : fel ? 'avertisment.placute-text-iesit' : 'avertisment.n', { n })}
           </span>
         );
       }
@@ -1097,6 +1250,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               : <button type="button" onClick={aplicaActualizare}>{t('eroare.reincarca')}</button>}
           </span>
         );
+      case 'foaia': {
+        // Foaia activă (ADR 0210 §1), doar cu mai multe foi: numele și locul ei în listă.
+        const f = doc.foi[indexActiva];
+        if (doc.foi.length < 2 || !f) return null;
+        const text = t('stare.foaia', { nume: numeFoaie(f, indexActiva, sablonFoaie), k: String(indexActiva + 1), n: String(doc.foi.length) });
+        return <span data-testid="foaia-activa" className="cip" title={t('stare.foaia.titlu')}>{text}</span>;
+      }
       case 'cursor':
         return <CipCursor cursor={cursor} />;
       case 'zoom':
@@ -1145,16 +1305,24 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       case 'lista':
         return (
           <ListaVectori
-            foaie={radacinaArbore}
+            foi={foiLista}
             randuri={randuri}
             onAlege={(id) => { ruleazaDocument('selectie.din-lista', context({ alese: () => [id] })); }}
+            onActiveaza={(id) => { if (!dialogDeschis.current) activeazaFoaie(id); }}
+            actiuni={doarCiteste(mod) ? null : actiuniFoi}
           />
         );
       case 'proprietati':
         return (
           <Suspense fallback={null}>
             <PanouProprietati
-              doc={doc} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie} doarCitire={doarCiteste(mod)}
+              doc={doc} indexFoaie={indexActiva} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie}
+              doarCitire={doarCiteste(mod)}
+              onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
+              onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
+              onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
+              onDesprinde={() => aplicaDinPanou('piesa.desprinde', {})}
+              onPlacuta={(c) => aplicaDinPanou('document.text', { textNou: () => c })}
               onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
               onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}
@@ -1211,6 +1379,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           <Panza
             forme={forme}
             foaie={stoc}
+            vecine={vecine}
+            onActiveaza={(id) => { if (!dialogDeschis.current) activeazaFoaie(id); }}
+            cadru={cadruPotrivire}
             selectie={selectieDesen}
             onClic={(x, y, toleranta) => {
               const punct = () => ({ x, y, toleranta });
@@ -1240,10 +1411,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {...(desen ? { desen } : {})}
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
-                <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
+                <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
+                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1314,7 +1485,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       {dialogExport && (
         <DialogExport
           baza={bazaNoua}
-          doc={doc}
+          doc={docActiv}
+          toate={doc}
+          // Titlul spune foaia (ADR 0210 §5), cu mai multe foi.
+          {...(doc.foi.length > 1 && foaie ? { foaie: numeFoaie(foaie, indexActiva, sablonFoaie) } : {})}
           dupaIdLume={harti.dupaIdLume}
           lume={lume}
           descriere={descriere}
@@ -1349,6 +1523,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           importa={(p, loc) => ruleaza(registru, 'document.importa', contextImportNou(p, loc))}
           onInchide={() => { setCoadaImport(null); }}
         />
+      )}
+      {/* Scrierea dialogului trece pe lângă ușa oprită sub el (ca exportul și importul): e chiar gestul lui. */}
+      {dialogAsezare && (
+        <DialogAsezare doc={doc} idFoaie={idActiva} selectie={selectieValida}
+          stare={(c) => stare(registru, 'foaie.aseaza', context({ asezare: () => c }))}
+          aseaza={(c) => ruleaza(registru, 'foaie.aseaza', context({ asezare: () => c }))}
+          onInchide={() => { setDialogAsezare(false); }} />
       )}
       {cerereLucrare && (
         <DialogLucrare
