@@ -104,8 +104,9 @@ test('grila: egale, din colț și după număr; cutia mutată; zgomotul nu face 
     const g = grilaPanouri({ ...CUTIE, maxX: 2400 + 1e-9 }, { ...EGALE, colt });
     assert.ok(typeof g === 'object' && g.xs.length === 1, `zgomotul, ${colt ? 'din colț' : 'egale'}`);
   }
-  // O cutie fără lățime (o linie verticală): o singură coloană.
+  // O cutie fără lățime (o linie verticală): o singură coloană, numărată ca una și la plafon (1 × 1 000 de rânduri).
   assert.deepEqual(grilaPanouri(celula(5, 0, 5, 1000), EGALE), { xs: [], ys: [500] });
+  assert.equal(grilaPanouri(celula(5, 0, 5, 1000), { ...EGALE, inaltime: 1 }), 'panouri');
   // Plafonul: 100 de panouri trec, 101 nu; fără să le numere pe rând.
   assert.equal(typeof grilaPanouri(CUTIE, { fel: 'numar', coloane: 100, randuri: 1 }), 'object');
   assert.equal(grilaPanouri(CUTIE, { fel: 'numar', coloane: 101, randuri: 1 }), 'panouri');
