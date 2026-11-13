@@ -630,6 +630,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `grup`. **Motivele planșelor stau în mesajele editorului** (calculul acțiunilor le cere la evaluare): un motiv nou al
   planșelor, dat doar de calcul, intră acolo, nu în dicționarul de bază. **Pornirea cu ușa 109,9 / 110 (rămân ~0,1 kB),
   totalul felia 607,2; cu 25.4↑ adusă din `main` la capăt, 611,0 / 700 (ADR 0144).**
+  **„Toate foile” la export (ADR 0210 §5, felia 11.5↑)** gata pe 13.11, după două pauze cerute de owner și unirea lui
+  `main` (tăierea 10.3↑f–j, imprimanta 3.6j–3.6r: `3aaf5dc`; codul venit trimite `indexFoaie` workerului CAM, iar desenul
+  ferestrei Imprimanta e al foii active). De la două foi, fereastra exportului întreabă „Foaia activă / Toate foile (N)”;
+  `calculeazaToateFoile` (`actiuniExportCalcul.ts`) cere fiecare foaie ca un document doar cu ea (`doarFoaia`), deci
+  programul ei e cel exportat singur; foile identice (`src/post/foi.ts`: fișierele cu programele egale fără comentarii, o
+  copie legată diferind doar în id-ul instanței) ies o dată, cu `-x<N>`; arhiva stocată, cu aceiași octeți
+  (`src/io/scrieZip.ts`, CRC-32 comun în `src/io/crc32.ts`); nume scurte: `CNCVS2.ZIP`, `F<k>X<N>/`. Mașina, simularea și
+  rezumatul rămân ale foii active. **Încă 11 motive date doar de calcul (ale lui `main`: gruparea, degruparea, textul,
+  rolul, foaia, importul) au trecut în mesajele editorului**: pornirea cu ușa 110,1 → 109,6 / 110, totalul 686,2 / 700.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

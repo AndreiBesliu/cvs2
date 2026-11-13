@@ -1377,6 +1377,17 @@ export asks you to confirm that nothing is in the way there (clamps, screws); th
 header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
 in [the Machine](#masina), without starting it.
 
+**All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
+sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
+`.zip` archive (`cncvs2-stanga-jos-foile.zip`), with the sheet in each file's name (`cncvs2-stanga-jos-foaia-2.nc`); on
+RichAuto, `CNCVS2.ZIP`, with each sheet in its own folder (`F2/CNCVS2.NC`). Identical sheets (the same parts in the same
+places, with the same operations, as after “Duplicate the sheet with the same parts”) come out once, with ×N in the name
+(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. The window's rows stay those of the
+active sheet: the other sheets keep their own operations. After the export, the window shows the sheets, the files and the
+time of each, then the time of all. A sheet the cutter leaves (other than the active one, whose confirmation you give here)
+is exported alone, with its own confirmation. **Open in Machine** loads the active sheet's program. The plates the text comes
+out of are, here, those of all sheets: if you chose the confirmation in **From CSV…**, **Export** waits for the tick.
+
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
 answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
 

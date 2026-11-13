@@ -1330,6 +1330,17 @@ nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul program
 senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
 să-l pornească.
 
+**Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
+foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o
+arhivă `.zip` (`cncvs2-stanga-jos-foile.zip`), cu foaia în numele fiecărui fișier (`cncvs2-stanga-jos-foaia-2.nc`); pe
+RichAuto, `CNCVS2.ZIP`, cu fiecare foaie în dosarul ei (`F2/CNCVS2.NC`). Foile identice (aceleași piese în aceleași locuri,
+cu aceleași operații, ca după „Duplică foaia cu aceleași piese”) ies o dată, cu ×N în nume (`…-foaia-1-x3.nc`: se taie de
+trei ori), iar o foaie fără nimic de tăiat nu intră. Rândurile ferestrei rămân ale foii active: celelalte foi își păstrează
+operațiile lor. După export, fereastra arată foile, fișierele și timpul fiecăreia, apoi timpul tuturor. O foaie din care iese
+freza (alta decât cea activă, a cărei confirmare o dai aici) se exportă singură, cu confirmarea ei. **Deschide în Mașina**
+încarcă programul foii active. Plăcuțele din care iese textul sunt, aici, ale tuturor foilor: dacă ai ales confirmarea în
+**Din CSV…**, **Exportă** așteaptă bifa.
+
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
 mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
 

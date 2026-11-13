@@ -3,8 +3,9 @@
 **Starea:** acceptat pe 07.11.2026, cu toate variantele ca opțiuni pentru utilizator și recomandarea ca implicit („Da,
 toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi „Răspunsurile owner-ului”). Propus în aceeași zi,
 în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
-07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑ și 11.3↑ pe 08.11** (piesele puse de mai multe
-ori; „Așază pe foi”; vezi la capăt).
+07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑, 11.3↑ și 11.4↑ pe 08.11** (piesele puse de mai
+multe ori; „Așază pe foi”; plăcuțele, nucleul), **11.4↑b și 11.4↑c pe 09.11** («Din CSV…»; textul care iese din plăcuță),
+**11.5↑ pe 13.11** („Toate foile” la export; vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -587,3 +588,49 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   ultima; proba nouă pune gaura înaintea ramei. Prin e2e 15 / 15. Pe codul final (`1c4b000`) 21 / 21 unitare.
 - **Rămâne în etapa 11:** 11.5↑ („Toate foile” la export: arhiva, foile identice ×N, timpii), 11.6↑ (raportul foilor și
   lista de tăiere), 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină).
+
+## Felia 11.5↑ (gata pe 13.11)
+
+- **Pauzele și unirea:** felia a stat de două ori la cererea owner-ului (09.11 la `c8b9358`, 12.11 la `0f1aee4`). La reluare,
+  `main` (tăierea 10.3↑f–j, imprimanta 3.6j–3.6r, ADR 0250–0251; 99 de commit-uri) a venit în ramură (`3aaf5dc`), iar codul
+  venit lucrează pe foaia activă: conversia și Cuțitul trimit `indexFoaie` workerului CAM, tăierea și conversia din acțiuni
+  judecă foaia aleasă, iar desenul ferestrei Imprimanta („Din desen…”) e al foii active, ca exportul.
+- **Locul la pornire:** unit cu `main`, pornirea cu ușa ajungea la 110,1 / 110. Încă 11 motive date doar de calculul
+  acțiunilor (gruparea, degruparea, textul, rolul, foaia, importul, din `main`) trec în mesajele editorului, după regula de
+  la 11.4↑c (`4b32996`): dicționarul de bază 3,4 → 2,8 kB, pornirea cu ușa 109,6 / 110. Etichetele celor 12 acțiuni ale
+  planșelor (paleta, meniul foii, panoul) trecuseră acolo înaintea primei pauze. Câmpul numeric și fereastra exportului își
+  păstrează motivele lor în dicționarul de bază (nu toate gazdele lor își cer mesajele editorului).
+- **Fereastra exportului**, de la două foi: „Ce exporți: Foaia activă / Toate foile (N)”, implicit foaia activă, ca până
+  acum. Cu „Toate foile”, titlul o spune, iar nota: câte un program pe foaie, într-o arhivă `.zip`, foile identice o dată,
+  cu ×N; rândurile ferestrei (operațiile) sunt ale foii active, celelalte foi își păstrează operațiile lor.
+- **Calculul** (`calculeazaToateFoile`, în `actiuniExportCalcul.ts`): fiecare foaie cerută workerului CAM ca un document doar
+  cu ea (`doarFoaia`), cu aceiași parametri, pe rând; programul ei e deci, octet cu octet, cel exportat doar din ea. O foaie
+  fără nimic de tăiat se sare și se spune la capăt; toate goale: refuz. Confirmarea ieșirii din foaie trece doar pe aceeași
+  ieșire (foaia activă, sau una identică cu ea): o altă foaie din care iese freza se exportă singură, cu confirmarea ei, deci
+  „Toate foile” o refuză, cu numele ei. Panoul mașinii, simularea și rezumatul rămân ale foii active, iar „Deschide în
+  Mașina” încarcă programul ei, nu arhiva.
+- **Foile identice** (`src/post/foi.ts`): aceleași fișiere, cu numele și programul fără comentarii (parantezele și `;` până
+  la capătul rândului), adică ce face mașina. O copie legată a foii („Duplică foaia cu aceleași piese”) diferă doar în
+  comentarii (id-ul instanței: `r2/r` față de `r/r`), deci taie la fel. Ies o dată, cu programul primei și `-x<N>` în nume;
+  lista spune care („Foaia 1 ×2 (și Foaia 2)”).
+- **Numele:** după baza exportului, `cncvs2-<origine>-foaia-<k>[-x<N>]…`, cu fișierele pe freze și dopurile foii
+  (`cncvs2-stanga-jos-foaia-2-x3-1-T2.nc`); arhiva, `cncvs2-<origine>-foile.zip`. Pe un controler cu nume scurte (RichAuto,
+  FAT 8.3), numele fișierelor rămân, fiecare foaie în dosarul ei (`F2X3/CV1T2.NC`), iar arhiva e `CNCVS2.ZIP`.
+- **Arhiva** (`src/io/scrieZip.ts`): intrările stocate (metoda 0), data fixă 01.01.1980, fără câmpuri în plus, deci aceleași
+  intrări dau aceiași octeți; fără ZIP64 (peste 65 535 de fișiere sau 4 GB, refuz, judecat înaintea alocării). CRC-32 e unul
+  singur, comun cu cititorul arhivelor extensiilor (`src/io/crc32.ts`, reexportat de `src/extensii/zip.ts`), care o și
+  citește înapoi în probe.
+- **După export, fereastra** arată arhiva și amprenta ei, foile (×N, cu cele identice), fișierele fiecăreia și timpul ei; la
+  capăt, timpul tuturor (fiecare foaie de câte ori se taie) și foile fără nimic de tăiat. Plăcuțele cu textul ieșit (11.4↑c)
+  sunt, la „Toate foile”, ale tuturor foilor: cu confirmarea aleasă, bifa e cerută și de pe o foaie fără plăcuțe.
+- **Măsurat:** felia a adus +3,3 kB (611,0 → 614,3 / 700, înainte de unire; estimarea era ~3,5 kB); cu `main`, totalul
+  686,2 / 700, pornirea cu ușa 109,6 / 110.
+- **Probele:** `export.foi.test.ts` (pe hârtie: arhiva cu „a.txt” = „hi”, 110 octeți, câmp cu câmp; CRC-ul lui „123456789”;
+  mai multe intrări citite înapoi de cititorul extensiilor, aceiași octeți la a doua scriere; refuzurile fără ZIP64; numele,
+  comentariile, foile identice; calculul pe patru foi: fiecare program din arhivă e exportul foii lui singure, foile 1 și 3
+  o dată cu `-x2`, foaia goală, timpul și rândurile tuturor, Mașina cu foaia activă, aceiași octeți la al doilea export;
+  RichAuto; foaia activă fără „Toate foile”; toate foile goale; refuzul ieșirii din foaie), `export-foi.spec.ts` (e2e: fără
+  alegere cu o singură foaie; un dreptunghi, copia legată a foii și o foaie cu un cerc: arhiva, ×2, timpul tuturor, Mașina
+  cu amprenta foii active), `placute-iesire.spec.ts` (bifa plăcuțelor la „Toate foile”, nu și la exportul unei foi fără
+  plăcuțe), manualul (35 de capitole după unire). Otrăvurile `test/otravuri/11.5.py`: 44 / 44 unitare la prima rulare.
+- **Rămâne în etapa 11:** 11.6↑ (raportul foilor și lista de tăiere), 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină).
