@@ -869,8 +869,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   găsite singure (`src/trasare/foaia.ts`; geometria lor, fără importuri, în `src/trasare/colturi.ts`, ca fereastra s-o
   folosească fără nucleu), formatul (A4 implicit) cu mărimea adevărată, `CerereTrasare.foaie` (îndreptarea înaintea zonei;
   zona e în pixelii foii îndreptate), butonul Colțurile cu mânerele. Proporțiile din poză au un interval: pe poza înclinată
-  doar înainte, focala nu se poate afla, deci sunt „nesigure”. **25.4↑b (lumina pe culori: fiecare canal raportat la
-  fundalul lui; ADR 0226, propus pe 13.11) așteaptă răspunsurile.** Liniile mediane pe culori vin după ea.
+  doar înainte, focala nu se poate afla, deci sunt „nesigure”. **25.4↑b (lumina pe culori, ADR 0226) gata pe 13.11, cu
+  toate recomandările („Da la 1-2a”), pe aceeași ramură, neunită, pe canalul `trasare`:** Lumina și pe Culorile (imaginile
+  opace), înaintea numărului culorilor; `culoriLuminate` (`src/trasare/culori.ts`: fiecare canal raportat la fundalul lui
+  din `lumina.ts`; stă în culori fiindcă pragul Otsu pe canal e în `trasare.ts`, pe care `lumina.ts` nu-l poate importa);
+  pe hârtie, balansul de alb (culorile adevărate), pe tablă, nivelul ei mediu. **Totalul ramurii: 696,1 / 700 kB** (`main`,
+  cu planșele, 690,0): sub plafon mai încap 3,9 kB. Liniile mediane pe culori vin după ea.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

@@ -8921,3 +8921,16 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
 pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** —.
 
 - **Ramura** adusă la `origin/main` (`f663a5b`: planșele, 11.1↑–11.5↑; conflict doar în DEVLOG).
+- **Probele întâi:** generatorul pozelor color în `test/unit/ajutor-poze.ts` (o foaie albă cu un disc roșu, un dreptunghi
+  albastru, un triunghi verde, linii negre și un inel galben, sau un desen cu linii colorate de 6 px; lumina dintr-o parte,
+  umbra tare, dominanta, tabla, transparența), cu măsura lui (culorile automate, clasele rupte și unite); 9 probe ale
+  nucleului, una a ușii, una e2e.
+- **Nucleul** (`culoriLuminate`, în `src/trasare/culori.ts`): fiecare canal raportat la fundalul lui (neted sau local, din
+  `lumina.ts`), cu balansul de alb pe hârtie (răspunsul 1a) și nivelul mediu pe tablă; raportul culorilor spune lumina și
+  variația hârtiei. **Găsit pe drum:** `lumina.ts` nu poate lua pragul Otsu din `trasare.ts` (import circular, iar lista 25.1
+  îl țintește acolo), deci corecția stă în culori; privită fereastra, Lumina ieșea sub pastile: acum vine înaintea
+  numărului culorilor; sfatul ei are texte proprii pe culori.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile (0 lipsă), suita unitară 9 353 (0 căzute), e2e-urile
+  trasării, importului și tutorialul 49 / 49, build-ul determinist; totalul 696,1 / 700 kB (`main`, cu planșele, 690,0),
+  pornirea 105,7 / 110, ca în `main`. Privită mărit, în temă deschisă și închisă.
+- **Otrăvurile** (`test/otravuri/25.4b.py`, 17 alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei.

@@ -1,6 +1,7 @@
 # ADR 0226 — Lumina pe culori: fiecare canal raportat la fundalul lui
 
-**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final); propus tot atunci,
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final), și implementat tot
+atunci (felia 25.4↑b, mai jos); propus tot atunci,
 la „Da, 25.4↑b” (owner-ul, după felia 25.5↑). Felia 25.4↑b, lăsată de ADR 0224 §3 („lumina lor, fiecare canal raportat la
 fundal, e o felie a ei”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la
 `origin/main`, `f663a5b`, cu planșele).
@@ -70,6 +71,33 @@ repară asta doar pe alb-negru: pe culori, lista ei nici nu apare.
    lumina egală nu se strică; ușa (lumina trece pe culori; sugestia); e2e (lista pe Culorile, sfatul, sugestia, o poză
    colorată luminată dintr-o parte → numărul culorilor); fișierul real întâi (lecția D7), dacă îl trimiți; otrăvurile la
    capăt.
+
+## Implementarea (13.11)
+
+**Ce s-a schimbat față de propunere:**
+
+1. **Corecția stă în `src/trasare/culori.ts`** (`culoriLuminate`), nu în `lumina.ts`: pragul Otsu al fiecărui canal (prima
+   potrivire a polinomului) e `pragAutomat` din `trasare.ts`, pe care `lumina.ts` nu-l poate importa (import circular; lista
+   de otrăvuri 25.1 îl țintește acolo). `lumina.ts` dă fundalurile (neted, local), polaritatea și variația hârtiei.
+2. **Pe culori, Lumina vine înaintea numărului culorilor** (sub Sursă): privită fereastra, sub cele șapte pastile ale pozei
+   neîndreptate, lista ieșea la capătul panoului, deși ea schimbă culorile găsite.
+3. **Sfatul Luminii are texte proprii pe culori** (culorile, nu pragul; „Neuniformă” face hârtia albă; „Cu umbre” golește
+   formele pline mai late).
+
+**Măsurat** [13.11, Node 26 și Edge fără fereastră]:
+- pe pozele color ale probelor (600 × 400, numărul automat de culori): lumina dintr-o parte cu dominantă, 6 culori (fără
+  corecție, 7: hârtia ruptă, 36 % din pixelii curați greșiți), paleta la cel mult 2 trepte de culorile desenului sub o
+  lumină albă (hârtia #fefefe, galbenul al lui); creta pe tablă, 6 (fără, 4, unite), fundalul tablei închis; liniile
+  colorate cu umbra tare, 6 cu „Cu umbre”; formele pline cu umbra tare, nereparate (răspunsul 2a): „Neuniformă” rupe
+  hârtia, „Cu umbre” unește formele pline cu hârtia; lumina egală, neschimbată;
+- în fereastră (e2e, o poză desenată în pagină): cu „Uniformă”, 7 culori, partea umbrită a hârtiei „65 % din desen”, iar
+  raportul sugerează „Neuniformă” (hârtia variază cu 50 %); cu ea, 6 culori, hârtia #fffefe, roșul #ce282e;
+- timpul corecției pe 12 Mpx (Node): „Neuniformă” 0,64–0,74 s, „Cu umbre” 2,5–3,1 s (o închidere pe fiecare canal);
+- probele: 9 ale nucleului, una a ușii, una e2e (plus titlul celei de transparență, „nici pe culori”); suita unitară
+  întreagă 9 353 (0 căzute); e2e-urile trasării, importului și tutorialul 49 / 49;
+- otrăvurile (`test/otravuri/25.4b.py`, alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei;
+- mărimea: totalul 696,1 / 700 kB (`main`, cu planșele, 690,0; felia 25.5↑ și aceasta, împreună, +6,1), pornirea 105,7 /
+  110, cu ușa 109,7 (ca în `main`). Sub plafonul total mai încap 3,9 kB.
 
 ## Ce am respins
 
