@@ -8405,3 +8405,8 @@ provizorie); după pauză, „ce se poate uni?”.
 - **Probe și porți:** 9 pe hârtie, manualul, două e2e; unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms); totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Otrăvurile (`test/otravuri/3.6s.py`):
   32 / 32 (22 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 9).
 - **Găsit pe drum:** „0 m de filament” pe o lucrare scurtă (văzut în Edge); reparat.
+
+## 2026-11-13 — 3.6t: istoricul imprimărilor, costul și estimarea care învață (ADR 0194 §B) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6t” (owner-ul, 13.11, la „Trec la 3.6t (istoricul imprimărilor)?”).
+**Started:** 13.11, 18:01. **Completed:** —
