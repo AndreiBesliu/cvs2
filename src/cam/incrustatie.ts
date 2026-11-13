@@ -51,11 +51,12 @@ export function puntiPeBucle(lungimi: readonly number[], palier: number, cerute:
 }
 
 /**
- * De ce nu se poate tăia incrustația (ADR 0170 §4, ADR 0172), sau null: doar pe un V-carve, cu o freză în V ascuțită; jocul
- * cel puțin `JOC_INCRUSTATIE_MINIM` și sub adâncime; dopul săpat (S + H) cel mult cât conul frezei; fața dopului sau fundul
- * benzii cer freza dreaptă (varianta doar cu V vine în 12.1↑d). Banda (ADR 0172): freza decupării dreaptă, cu numărul ei; cel
- * puțin lățimea cea mai mică; cu decuparea, placa cel puțin cât fundul benzii plus punțile. Locașul (adâncimea cât conul,
- * fundul plat) îl judecă V-carve-ul lui.
+ * De ce nu se poate tăia incrustația (ADR 0170 §4, ADR 0172, ADR 0173), sau null: doar pe un V-carve, cu o freză în V
+ * ascuțită; jocul cel puțin `JOC_INCRUSTATIE_MINIM` și sub adâncime; dopul săpat (S + H) cel mult cât conul frezei. Fără
+ * freză dreaptă, fundul locașului, fața dopului și fundul benzii le fac inelele frezei V (ADR 0173), deci nu e un refuz. Banda
+ * (ADR 0172): cu decuparea, o freză a decupării (fără freză dreaptă, doar „Altă freză pentru decupare”), dreaptă, cu numărul
+ * ei; cel puțin lățimea cea mai mică; cu decuparea, placa cel puțin cât fundul benzii plus punțile. Locașul (adâncimea cât
+ * conul, fundul) îl judecă V-carve-ul lui.
  */
 export function refuzIncrustatie(op: Operatie, unde: string): string | null {
   const i = op.incrustatie;
@@ -77,24 +78,24 @@ export function refuzIncrustatie(op: Operatie, unde: string): string | null {
   if (pana > con + 1e-9) {
     return `${unde}: dopul se sapă până la ${fix(pana)} mm (adâncimea − jocul + spațiul pentru fierăstrău), iar conul frezei în V (Ø${op.scula.diametru}, ${f.unghi}°) are ${fix(con)} mm: micșorează spațiul pentru fierăstrău sau alege o freză mai lată`;
   }
-  if (!op.fundPlat) {
-    if (i.jurDop === 'banda') return `${unde}: fundul benzii din jurul dopului se scoate cu freza dreaptă: alege-o în coloana Fund plat`;
-    return `${unde}: fața dopului se coboară cu freza dreaptă: alege-o în coloana Fund plat (varianta doar cu freza V vine în felia 12.1↑d)`;
-  }
   const b = valoriBanda(op);
   if (b?.decupare) {
-    // Freza decupării: doar cu decuparea (fără ea, nu taie nimic).
+    // Freza decupării: doar cu decuparea (fără ea, nu taie nimic). Fără freză dreaptă (ADR 0173), doar a ei: freza V nu taie
+    // prin placă cu pereți drepți.
     const d = b.freza;
+    if (!d) {
+      return `${unde}: fără freză dreaptă, decuparea dopului cere freza ei: bifează „Altă freză pentru decupare” (o freză dreaptă care taie prin placă) sau scoate decuparea`;
+    }
     if (d.forma !== undefined) return `${unde}: freza decupării dopului trebuie să fie dreaptă (T${d.numar} e în V)`;
     if (d.numar === op.scula.numar) return `${unde}: freza decupării (T${d.numar}) are numărul frezei în V a operației: fiecare freză cere numărul ei`;
-    for (const s of [op.fundPlat.scula, ...(op.fundPlat.rest ?? []).map((r) => r.scula)]) {
+    for (const s of op.fundPlat ? [op.fundPlat.scula, ...(op.fundPlat.rest ?? []).map((r) => r.scula)] : []) {
       if (s.numar === d.numar && s.diametru !== d.diametru) {
         return `${unde}: T${d.numar} are două diametre (${s.diametru} și ${d.diametru} mm), la fundul plat și la decuparea dopului: fiecare freză cere numărul ei`;
       }
     }
   }
   if (b && b.latime < b.minima - 1e-9) {
-    return `${unde}: banda dopului, de ${fix(b.latime)} mm, e mai îngustă decât cea mai mică, de ${susLaMicron(b.minima)} mm (pereții, fundul plat${b.decupare ? ' și tăietura decupării' : ''}, fiecare cu freza lui): lărgește-o sau las-o calculată`;
+    return `${unde}: banda dopului, de ${fix(b.latime)} mm, e mai îngustă decât cea mai mică, de ${susLaMicron(b.minima)} mm (pereții, fundul${op.fundPlat ? ' plat' : ''}${b.decupare ? ' și tăietura decupării' : ''}, fiecare cu freza lui): lărgește-o sau las-o calculată`;
   }
   if (b?.decupare && b.placa < b.placaMinima - 1e-9) {
     return `${unde}: placa dopului, de ${fix(b.placa)} mm, trebuie să aibă cel puțin ${susLaMicron(b.placaMinima)} mm (fundul benzii plus grosimea punților), ca decuparea să lase punțile sub fundul benzii`;

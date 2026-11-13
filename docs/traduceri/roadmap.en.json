@@ -13,6 +13,10 @@
       "ro": "Scheletul: `t()` en / ro cu paritatea verificată de compilator, ErrorBoundary + jurnalul local de erori, configul citit de la gazdă, CSP fără `unsafe-eval`",
       "en": "The skeleton: `t()` en / ro with compiler-checked parity, ErrorBoundary + local error log, config read from the host, CSP without `unsafe-eval`"
     },
+    "02d8c983d10002a5": {
+      "ro": "Pagina `/admin` reproiectată",
+      "en": "The redesigned `/admin` page"
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -317,6 +321,10 @@
       "ro": "Relieful 4: două fețe, bas-relieful, conturul",
       "en": "Relief 4: two sides, bas-relief, the contour"
     },
+    "1a6b7d6acc6c3a97": {
+      "ro": "Fundul doar cu freza V, la incrustația în V",
+      "en": "The floor with the V bit only, for the V inlay"
+    },
     "1a8651b702f2d91d": {
       "ro": "Verificarea vectorilor, detectarea și panoul",
       "en": "Vector check, detection and panel"
@@ -465,6 +473,10 @@
       "ro": "Nivelul rapid local în 12 s: `tsc`, regulile de import (11 reguli, 10 capcane, 48 de module; controalele: o regulă stricată și o încălcare reală pică), 26 de teste, build determinist (69,9 kB gzip, plafon 100), licențele (4 dependențe de rulare, MIT). `dependency-cruiser` nu suportă TypeScript 7, deci citește prin swc. Cârligul `git add -A` în `.claude/`. Workflow-urile `rapid` (push) și `complet` (noaptea, e2e în Edge). Treceri: ciclul raportat o dată, binarul nedeclarat în `exports`, licențele din lanțul de dependențe, nu din marcajul `dev`.",
       "en": "Local rapid level in 12 s: `tsc`, import rules (11 rules, 10 traps, 48 modules; controls: a broken rule and a real violation both fail), 26 tests, deterministic build (69.9 kB gzip, cap 100), licences (4 runtime dependencies, MIT). `dependency-cruiser` does not support TypeScript 7, so it reads through swc. The `git add -A` hook in `.claude/`. Workflows `rapid` (push) and `complet` (nightly, e2e in Edge). Passes: the cycle reported once, the binary not declared in `exports`, licences taken from the dependency chain, not from the `dev` flag."
     },
+    "26a42280c8029adf": {
+      "ro": "**Notificările și semnul din bară** (fără imprimantă; ADR 0194, acceptat cu recomandările, „Da, recomandările”: 1a, 2a; reluată după pauză, „continua”; în worktree-ul `imprimanta`). cvs2 anunță finalul, oprirea, pauza din fișier (cu nota scrisă în cvs2), altă pauză, lipsa filamentului, o eroare și legătura pierdută cât imprimă (primul strat, la cerere): o bandă în aplicație, văzută din orice fereastră, cu sunet, și notificarea sistemului cât cvs2 e ascuns. Pe fila Imprimanta, un punct și procentul; procentul și în titlul filei (din părți, ca să nu se certe cu mașina CNC); cu o bifă, imprimanta se leagă la deschiderea cvs2. Driverul K1 citește finalul (`state` 2) și senzorul de filament; imprimanta falsă le are. **Probe:** pe hârtie (evenimentele, driverul, setările, semnul, textele, titlul), manualul, două e2e; otrăvurile 32 / 32 (22 pe probele unitare, 10 prin e2e). **Mărimea:** totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Proba pe imprimanta owner-ului: ghidul, pasul 9.",
+      "en": "**Notifications and the mark on the bar** (no printer; ADR 0194, accepted with the recommendations, \"Da, recomandările\": 1a, 2a; resumed after a pause, \"continua\"; in the `imprimanta` worktree). cvs2 announces the end, the stop, the pause from the file (with the note written in cvs2), another pause, running out of filament, an error and a connection lost while printing (the first layer, on request): a banner in the app, seen from any window, with a sound, and the system notification while cvs2 is hidden. On the Printer tab, a dot and the percentage; the percentage also in the tab title (built from parts, so it does not clash with the CNC machine); with a checkbox, the printer connects when cvs2 opens. The K1 driver reads the end (`state` 2) and the filament sensor; the fake printer has them. **Tests:** on paper (the events, the driver, the settings, the mark, the texts, the title), the manual, two e2e; poisons 32 / 32 (22 on the unit tests, 10 through e2e). **Size:** total 657.5 / 700 kB (+3.1), start-up 102.4 (with the door 106.1 / 110; +0.2: the mark's slot and the start-up checkbox). The test on the owner's printer: the guide, step 9."
+    },
     "27053aa739611fa9": {
       "ro": "Contractele atelierelor",
       "en": "The workshop contracts"
@@ -592,6 +604,10 @@
     "2f2818f9ad494728": {
       "ro": "proba închisă: aplicația arătată cuiva din afara echipei",
       "en": "the closed trial: the app shown to anyone outside the team"
+    },
+    "2f81c7ff8432f351": {
+      "ro": "Fundul doar cu freza V",
+      "en": "The floor with the V bit only"
     },
     "2fcd385ec36adccb": {
       "ro": "Regula `nonzero` la ușă (ADR 0036): **designul** (3 prototipuri + judecător, 1,71 M) a scos PathKit de la ușă (pierdea tăcut detalii de µm la scara foii și refuza textul real); aranjamentul exact în double, cu toleranța relativă la întindere, calea rapidă exactă, geometria ieșirii a sursei. **Recenzia (1,77 M)**: 8 constatări, între ele încrucișările la unghi mic ratate (lentila de înfășurare 2 ieșea gaură, tăcut) și clasele CSS Illustrator ignorate; toate reparate. **Oracolul (0,87 M)**: K1 (calea cu un vârf), K7 (forma sub τ). Logoul AS Roma de pe test: 2 refuzuri din mânerul retras rămas la 1 ulp după închidere, reparat la ușă. Otrăvuri: 45 din 54, plus 4 cu teste noi (2 goluri reale, tăcute: bucla cubicei pe calea rapidă, incluziunea pe bucăți monotone pe x), 5 echivalente. **Treceri:** (1) designul; (2) portarea; (3) recenzia și reparațiile; (4) oracolul, K1 și K7; (5) logoul AS Roma; (6) otrăvurile.",
@@ -784,6 +800,10 @@
     "3d35cb85efc5e1ae": {
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
+    },
+    "3d64c66453dc43e5": {
+      "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
     },
     "3e46274cb0ba0363": {
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
@@ -1261,6 +1281,10 @@
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
     },
+    "686612f44bf1fa8c": {
+      "ro": "Gata pe 13.11",
+      "en": "Done on 13.11"
+    },
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
       "en": "The 500 kB total cap"
@@ -1569,6 +1593,10 @@
       "ro": "Unealta Cuțit: Linie, Pen, Liber și Formă",
       "en": "The Knife tool: Line, Pen, Freehand and Shape"
     },
+    "8358313f393ee129": {
+      "ro": "Notificările și istoricul imprimărilor",
+      "en": "Notifications and the print history"
+    },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
       "en": "The cutting role in the panel and the up-to-date toolpath, brought forward from stage 5"
@@ -1608,6 +1636,10 @@
     "85bf225ebbcd2c0d": {
       "ro": "Restul feliei: hosting pe adresa principală de test. Exportul Firestore l-a făcut owner-ul din consolă (`gcloud` n-avea cont), în bucket-ul nou `cncvectorstudio-test-backup` din `us-central1`: baza e în `nam5`, iar bucket-ul aplicației e în `europe-central2`, deci primul export a fost refuzat. `public/sw.js` oprește workerul aplicației vechi de la aceeași adresă (șterge cache-urile `cncvs-`, se dezînregistrează, nu reîncarcă nicio filă), cu proba lui e2e. `scripts/publica-test.ts`, doar hosting, cu pregătirea comună cu canalul. Verificat în browser pe https://cncvectorstudio-test.firebaseapp.com/: instanța „test”, `/sw.js` servit `no-cache` cu CSP-ul aplicației, consola curată. **Treceri:** (1) exportul refuzat pe locație; (2) opritorul workerului, descoperit înainte de publicare.",
       "en": "The rest of the slice: hosting on the main test address. The Firestore export was made by the owner from the console (`gcloud` had no account), into the new `cncvectorstudio-test-backup` bucket in `us-central1`: the database is in `nam5` and the app's bucket in `europe-central2`, so the first export was refused. `public/sw.js` stops the old app's worker on the same address (clears the `cncvs-` caches, unregisters, reloads no tab), with its own e2e check. `scripts/publica-test.ts`, hosting only, sharing the preparation with the channel. Checked in the browser on https://cncvectorstudio-test.firebaseapp.com/: the “test” instance, `/sw.js` served `no-cache` with the app's CSP, a clean console. **Passes:** (1) the export refused on location; (2) the worker stopper, found before publishing."
+    },
+    "85f2b56689ffe689": {
+      "ro": "Filmele timelapse (ADR 0194): lista filmelor imprimantei (`elapseVideoList`), potrivite cu istoricul, deschise de pe imprimantă într-o filă nouă",
+      "en": "Timelapse videos (ADR 0194): the printer's list of videos (`elapseVideoList`), matched to the history, opened from the printer in a new tab"
     },
     "871227fd0d578ae3": {
       "ro": "**Postul familiei GRBL, cu schimbarea sculei** (ADR 0083; „Da, pornește 3.8: postul, cu contractele grblHAL și FluidNC și schimbarea sculei (blocul de după M6), probat pe emulator.”). În fereastra exportului: **Postul** (GRBL 1.1, grblHAL, FluidNC; o notă cât un post e doar documentat, neprobat pe mașină) și **Unitățile** (mm sau inch, G20 cu 5 zecimale și avansul în inch/min). Postul știe schimbarea sculei: oprirea în senderul nostru la `T2 M6` (implicit), M6 la controler (grblHAL, FluidNC), M0 cu comentariu sau câte un fișier pe sculă; după oprire, blocul de după (modalul, WCS-ul, Z sigur, axul cu turația noii scule și pauza). Elicea iese în segmente pe un controler care n-o declară. Jobul cu mai multe freze din document vine în 3.8b, deci schimbarea se probează deocamdată pe emulator, nu din interfață. **Treceri:** (1) contractele și postul, cu programul în mm neschimbat octet cu octet (fișierele de aur ale plăcilor); prin sender, palparea noii scule la oprire a dat întâi ALARM:4 (la Z sigur, freza era sub fața plăcii de 20 mm), corect, deci proba ridică freza cu jog înainte, ca omul; mutațiile: 30 / 31 (F ținut minte peste schimbare, prins de o probă nouă), pe fereastră 4 / 4 prinse de e2e.",
@@ -1656,6 +1688,10 @@
     "8b973fa451e18232": {
       "ro": "**Senderul prin WiFi** (fără mașină; ADR 0119, acceptat cu răspunsurile owner-ului: programele pe flux, tableta mai târziu, schema `ws:` în CSP). Butonul **Conectează (WiFi)** din panoul mașinii leagă senderul de un controler din rețeaua locală printr-un WebSocket (FluidNC, grblHAL sau un pod ESP3D pe GRBL), peste același flux: adresa (un IP local sau un nume `.local`) se judecă înainte de conectare, cu permisiunea rețelei locale din Chrome și Edge 147; controlerul, adresa și portul rămân în browser; înaintea primei porniri prin WiFi, panoul spune ce se întâmplă dacă legătura cade. CSP-ul primește schema `ws:` (fără ea, browserul bloca orice WebSocket). Pe drum, la cererea owner-ului, butonul **Cont** s-a mutat lângă butonul temei. **Probele:** pe hârtie (adresele, mesajele de control, transportul, sesiunea cu legătura căzută) și cap-coadă, cu emulatorul GRBL în spatele unui server WebSocket local; mutații țintite, toate prinse.",
       "en": "**The sender over WiFi** (no machine; ADR 0119, accepted with the owner’s answers: streamed programs, the tablet later, the `ws:` scheme in the CSP). The **Connect (WiFi)** button in the machine panel links the sender to a controller on the local network through a WebSocket (FluidNC, grblHAL or an ESP3D bridge on GRBL), over the same stream: the address (a local IP or a `.local` name) is judged before connecting, with the local network permission of Chrome and Edge 147; the controller, the address and the port stay in the browser; before the first start over WiFi, the panel says what happens if the connection drops. The CSP gets the `ws:` scheme (without it, the browser blocked every WebSocket). On the way, at the owner’s request, the **Account** button moved next to the theme button. **The probes:** on paper (the addresses, the control messages, the transport, the session with a dropped connection) and end to end, with the GRBL emulator behind a local WebSocket server; targeted mutations, all caught."
+    },
+    "8c1716417c268fe4": {
+      "ro": "Istoricul imprimărilor (ADR 0194): al imprimantei (`historyList`) și al cvs2 (după răspunsul owner-ului), cu durata față de estimare, filamentul în metri și grame, costul (prețul pus de om) și exportul CSV; estimarea din „Din desen…” corectată după imprimările încheiate",
+      "en": "The print history (ADR 0194): the printer's own (`historyList`) and cvs2's (per the owner's answer), with the duration against the estimate, the filament in metres and grams, the cost (the price set by the user) and a CSV export; the estimate in \"From drawing…\" corrected from the finished prints"
     },
     "8c243c52eeeb263a": {
       "ro": "„Pornit” abia după pagina extensiei",
@@ -2469,6 +2505,10 @@
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
     },
+    "d290b2db2eadbea1": {
+      "ro": "Istoricul imprimărilor",
+      "en": "The print history"
+    },
     "d2f90d7cd8eae964": {
       "ro": "Imprimanta 3D prin WiFi",
       "en": "3D printer over WiFi"
@@ -2488,6 +2528,10 @@
     "d398d322f1fdff6d": {
       "ro": "înainte de 3.6e",
       "en": "before 3.6e"
+    },
+    "d3c7eb6307e6264d": {
+      "ro": "**Fundul doar cu freza V, la incrustația în V** (fără mașină; ADR 0173, acceptat, din răspunsul 4 al ADR 0170, „4a+b”; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`, cu `main` adus la `2225a54`; „Yes, start 12.1↑d”, dat în sesiunea principală). Documentul rămâne v22: alegerea e coloana Fund plat goală, deci fără câmp nou. Fără freză dreaptă, freza V scoate fundul locașului cu inele la g·t (creasta cel mult g/2: sub dop rămân cel puțin g/2) și fața coborâtă a dopului sau fundul benzii cu inele la H·t (creasta cel mult H/2, între plăci), tăiate pe contur ca inelul peretelui, la −D pe fiecare trecere; regiunea feței, lărgită doar cu H·t + 1; avertismentul spune câte inele, iar peste 400 într-o regiune exportul e refuzat, cu sfatul. Banda fără freza fundului: lățimea cea mai mică 2·H·t + 2c (+ Ø decupării), iar decuparea cere „Altă freză pentru decupare” (refuzul nou; fereastra marchează bifa și oprește Exportă). Fereastra: nota rândului; panoul, pe hârtie: „Fundul, doar cu freza V” (inelele la 0,29 mm în locaș și la 1,15 mm pe dop, pe exemplul R15); manualul (ro, en). Probele: oracolul potrivirii pe toate cazurile pe hârtie, fără freză dreaptă (oprirea la S, contactul, sub dop între g/2 și g, între plăci între H/2 și H, creasta reală, doar freza V), banda cu decuparea și freza ei, refuzurile, plafonul; e2e: fereastra, banda, exportul pe oracol, panoul. Porțile: compilatoarele ×3, importurile 20 / 0 (1 162 de module), licențele, traducerile (737, 0 lipsă), unit 9 181: 9 170 verzi și 3 căderi (două probe grele ale ușii documentului, sub încărcare, 556 / 556 singure; proba traducerilor, până la titlul ADR-ului 0173 tradus), build determinist (304 fișiere; pornirea 102,2, cu ușa 105,9 / 110; totalul 654,9 / 700), e2e 459 / 459 din prima (7,8 min, 3 lucrători). Otrăvurile: lista nouă `12.1d.py`, 25 de otrăvuri: la prima rulare (`5192da6`) 24 prinse (F01–F17, F19, F20 pe probele lor; F21–F25 prin e2e) și F18 scăpată: dopul trimitea deja toate avertismentele V-carve-ului, deci rândul nou dădea avertismentul inelelor de două ori în fereastră; rândul scos, F18 retrasă, iar proba cere avertismentul o singură dată (`18e8c60`): 24 / 24. Reorientate pe codul schimbat și prinse: 12.1 P09, P10 și 12.1c B09, B10, E13; 12.1 R05, R06 retrase (refuzul lor nu mai există). Publicat pe canalul `incrustatii`, build-ul `18e8c60` (versiunea `18e8c6024b77`, până pe 13.12), verificat în browserul aplicației, în engleză, fără export: pe un cerc R15 cu rolul „V inlay”, fără bifa „Flat floor with a straight bit”, nota rândului spune că freza V face tot; cu banda, Exportă se oprește, bifa „Another bit for the cut-out” e marcată greșită și lățimea cea mai mică lipsește, iar bifată (T3 Ø6), lățimea apare (7,578 mm) și Exportă pornește; închisă fără export, foaia lăsată goală, fără erori în consolă. Mărimea: totalul 654,4 → 654,9 / 700 kB, pornirea 102,2 (cu ușa 105,9 / 110), neschimbată. Nu acum: 12.1↑e (dopul în 3D) doar la cuvântul owner-ului; punctul 4 și 12.1↑f după v23.",
+      "en": "**The floor with the V bit only, for the V inlay** (no machine; ADR 0173, accepted, from answer 4 of ADR 0170, “4a+b”; the `incrustatii` worktree, branch `wip/12.1-incrustatii`, with `main` brought to `2225a54`; “Yes, start 12.1↑d”, given in the main session). The document stays v22: the choice is the empty Flat floor column, so no new field. Without a straight bit, the V bit clears the pocket floor with rings g·t apart (a crest of at most g/2: at least g/2 stays under the plug) and the lowered face of the plug or the band floor with rings H·t apart (a crest of at most H/2, between the boards), cut along the outline like the wall ring, at −D on every pass; the face region is widened only by H·t + 1; the warning says how many rings, and above 400 in one region the export is refused, with the advice. The band without the floor bit: the narrowest is 2·H·t + 2c (+ the cut-out bit), and the cut-out needs “Another bit for the cut-out” (the new refusal; the window marks the tick box and stops Export). The window: the row note; the panel, on paper: “Floor, V bit only” (rings 0.29 mm apart in the pocket and 1.15 mm on the plug, on the R15 example); the manual (ro, en). The tests: the fit oracle on all the paper cases, without a straight bit (seated at S, the contact, between g/2 and g under the plug, between H/2 and H between the boards, a real crest, the V bit only), the band with the cut-out and its bit, the refusals, the cap; e2e: the window, the band, the export on the oracle, the panel. The gates: the compilers ×3, the imports 20 / 0 (1,162 modules), the licences, the translations (737, none missing), unit 9,181: 9,170 green and 3 failures (two heavy document-door tests, under load, 556 / 556 alone; the translations test, until the title of ADR 0173 was translated), the deterministic build (304 files; startup 102.2, with the door 105.9 / 110; the total 654.9 / 700), e2e 459 / 459 on the first run (7.8 min, 3 workers). The poisons: the new list `12.1d.py`, 25 poisons: on the first run (`5192da6`) 24 caught (F01–F17, F19, F20 by their tests; F21–F25 through e2e) and F18 escaped: the plug already passed on all the V-carve warnings, so the new line gave the ring warning twice in the window; the line removed, F18 retired, and the test now wants the warning once (`18e8c60`): 24 / 24. Retargeted to the changed code and caught: 12.1 P09, P10 and 12.1c B09, B10, E13; 12.1 R05, R06 retired (their refusal is gone). Published on the `incrustatii` channel, build `18e8c60` (version `18e8c6024b77`, until 13.12), checked in the app browser, in English, without exporting: on an R15 circle with the “V inlay” role, without the “Flat floor with a straight bit” tick, the row note says the V bit does it all; with the band, Export stops, the “Another bit for the cut-out” box is marked wrong and the narrowest width is missing, and once ticked (T3 Ø6), the width shows (7.578 mm) and Export starts; closed without exporting, the sheet left empty, no console errors. The size: the total 654.4 → 654.9 / 700 kB, startup 102.2 (with the door 105.9 / 110), unchanged. Not now: 12.1↑e (the plug in 3D) only at the owner’s word; item 4 and 12.1↑f after v23."
     },
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
@@ -2644,6 +2688,10 @@
     "dff5b7d3c0d98514": {
       "ro": "Raportorul de erori din client (ADR 0043): erorile jurnalului local pleacă spre `logClientError`, cu Firebase adus la prima eroare (pornirea 93,5 kB, partea raportorului 1,20 kB); plafoanele pe sesiune (20 / 3), stingerea (401 / 403 / plafon / import / App Check), tokenul cerut explicit cu termen, reîncercarea doar când cererea n-a ajuns; cheia App Check citită la publicare din înregistrarea ei; CSP-ul reCAPTCHA; doar mediul omului rămâne „doar local”. Workflow-uri: implementarea + 4 verificatori (25 de constatări), remedierile + reverificarea (6), integrarea; otrăvurile 31 / 31. **Pe test:** 200 cu token (grupul în `errorLogs`), 401 fără. Pauză peste noapte pe `wip/3.2-raportor`, unită prin squash.",
       "en": "The client error reporter (ADR 0043): the local log's errors go to `logClientError`, with Firebase loaded at the first error (startup 93.5 kB, the reporter's part 1.20 kB); per-session caps (20 / 3), switching off (401 / 403 / cap / import / App Check), the token requested explicitly with a deadline, retrying only when the request did not arrive; the App Check key read at publishing from its registration; the reCAPTCHA CSP; only the user's environment stays “local only”. Workflows: the implementation + 4 verifiers (25 findings), the fixes + the re-check (6), the integration; poisons 31 / 31. **On test:** 200 with a token (the group in `errorLogs`), 401 without. An overnight break on `wip/3.2-raportor`, merged by squash."
+    },
+    "e02a799ad18f939f": {
+      "ro": "Filmele timelapse",
+      "en": "Timelapse videos"
     },
     "e0493dfc8a8a9bd0": {
       "ro": "Intrările cu rampă",

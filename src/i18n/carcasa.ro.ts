@@ -315,6 +315,8 @@ export const roCarcasa = {
   'prop.inc.mm': '{mm} mm',
   'prop.inc.con': 'Conul frezei',
   'prop.inc.con.valoare': '{folosit} din {con} mm',
+  'prop.inc.fund-v': 'Fundul, doar cu freza V',
+  'prop.inc.fund-v.valoare': 'inele la {locas} mm în locaș (creasta cel mult {cl} mm) și la {dop} mm pe dop (creasta cel mult {cd} mm)',
   'prop.inc.semifabricat': 'Semifabricatul dopului',
   'prop.inc.semifabricat.valoare': 'gros de cel puțin {mm} mm',
   'prop.inc.lateral': 'Jocul lateral',

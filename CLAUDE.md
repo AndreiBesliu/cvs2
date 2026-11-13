@@ -103,8 +103,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
-  plăcuțelor, 11.4↑, ramura `wip/11.1-plansele`), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v24 pe altă linie, după unirea planșelor) intră acolo, ca rangul și incrustația:** rândul
+  plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
+  (v24, de exemplu punțile dopului drept ale incrustațiilor) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -785,8 +785,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   IndexedDB (`src/app/fisiereImprimanta.ts`), placa (`src/app/PlacaImprimanta.tsx`). Totalul 579,7 / 600 kB.
   **3.6r gata pe 09.11** (anularea unei piese): `anuleazaPiesa` în driver (K1: `EXCLUDE_OBJECT NAME=` în `gcodeCmd`, doar
   un nume din lista imprimantei) și în sesiune (retrimisă la 3 s, confirmată din `excluded_objects`; 6 s, iar pentru
-  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata; urmează proba pe K1C (ghidul,
-  pașii 6–8) și unirea în `main`, la cuvântul owner-ului.
+  piesa de acum 2 minute); Anulează… pe placă. Totalul 581,1 / 600 kB. Grupul 2 e gata și unit în `main` (09.11); proba
+  pe K1C (ghidul, pașii 5–8) rămâne la owner.
+  **Grupul 3 propus pe 11.11** (ADR 0194, feliile 3.6s–3.6u): notificările și semnul de pe butonul Imprimanta, istoricul
+  imprimărilor cu costul și estimarea care învață, filmele timelapse; doar citiri. Schița cu formularul:
+  <https://claude.ai/artifact/VdM6u5SLVa83jh4czpyTfQ>. Acceptat pe 11.11 („Da, recomandările”: 1a, 2a).
+  **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda prin
+  portal în pagină, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
+  `titluFila.ts` (titlul filei din părți, folosit și de `IndicatorLucrare`); carcasa: locul semnului în fila Imprimanta,
+  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110. Urmează 3.6t (istoricul).
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -888,6 +895,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/axaMediala.index.test.ts`). Pe linie rămâne punctul 4, punțile dopului drept alese în fereastră: un câmp nou,
   deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
   29,6 / 32.**
+  **Felia 12.1↑d (fundul doar cu freza V, ADR 0173), unită pe 13.11** („Da, unește”; `0f4c22c`): fără freză dreaptă în
+  coloana Fund plat, pe o incrustație, fundul îl scoate V-ul, prin inelele regiunii decalate (`fundV` în
+  `src/cam/vcarve.ts`; creasta cel mult g/2 în locaș, H/2 pe fața dopului și pe fundul benzii; peste 400 de inele, refuzul),
+  cu crestele în `valoriIncrustatie`; banda merge și fără freza fundului, iar decuparea fără freza ei se refuză. Documentul
+  rămâne v22. Pe linie rămân punctul 4 și 12.1↑f (gaura și treptele), după v23 a planșelor; 12.1↑e (dopul în 3D și
+  potrivirea simulată) doar la cuvântul owner-ului. **Totalul cu felia 658,0 / 700 kB, pornirea cu ușa 106,1 / 110.**
   **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
   worktree-ul `ancore` (ramura `wip/6.V-ancore`), **unite în `main` tot pe 08.11** („Da, unește”; `0c81ccf`), cu
   recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
@@ -1125,6 +1138,40 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
+  principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
+  `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e
+  v23 (literele plăcuțelor), deci un câmp nou de acum ia v24. Pornirea cu ușa 109,7 / 110, totalul 690,0 / 700. Codul
+  aranjamentelor (ADR 0250) pornește din acest `main`, în worktree-ul `aranjamente`. Lucrul necomis al liniei (raportul
+  foilor) rămâne în worktree-ul ei.
+- 13.11.2026: **felia 12.1↑d a incrustațiilor unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia
+  12.1↑d în main?”; verificat în transcrierea ei): fundul doar cu freza V (ADR 0173), fără câmp nou (documentul rămâne v22,
+  v23 rămâne a planșelor). Unită cât CI-ul complet de pe `main` era roșu din cauza lui 3.6s (banda „pauză” acoperea butonul
+  Reia pe Linux): felia nu atinge imprimanta, deci nu ascunde nimic acolo.
+- 13.11.2026: **schițele aranjamentelor sunt gata** („Da, sunt gata”, la „Declari schițele gata, ca să pornim codul
+  aranjamentelor după planșe?”, după 11 ture și cele 76 de idei hotărâte):
+  - canvas-ul e referința feliilor 28.1↑–28.7↑ (ADR 0250, „Schițele, încheiate pe 13.11”), iar o schimbare de design trece
+    întâi pe canvas, apoi în ADR;
+  - codul mai așteaptă doar unirea planșelor în `main` (`wip/11.1-plansele`, 11.5↑ gata, 46 de commit-uri neunite la
+    13.11 seara), apoi pornește în worktree-ul `aranjamente`, cu 28.1↑ întâi.
+- 13.11.2026: **ideile 63–76 din tura a unsprezecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 63–76?”, după tablele Exportă vectori…, Verifică vectorii, Tăierea și rolurile mele, „Din
+  desen…” al imprimantei și Admin · Intrarea): 13 intră în feliile 28.x (ADR 0250, „Ideile turei a unsprezecea”), iar
+  intrarea și stările goale ale adminului intră în ADR 0260, felia A.1.
+- 13.11.2026: **felia 3.6s a imprimantei unită în `main`, înaintea planșelor** („Merge 3.6s now”, la „Merge planșele and
+  3.6s together once planșele reports done?”, în sesiunea principală): unită exact la `e489f34` (notificările și semnul din
+  bară, ADR 0194 §A); ramura merge mai departe cu 3.6t. Neîncercată încă pe K1C (canalul `imprimanta` o servește). Planșele
+  aduc `main` cu ea: un conflict de importuri în `App.tsx`, iar pornirea cu ușa urcă cu ~0,2 kB (planșele 109,6 / 110
+  înainte).
+- 13.11.2026: **pagina `/admin` reproiectată, ADR 0260 acceptat** („vreau sa faci design si pentru admin”, apoi „Da la
+  toate”, la „Accepți recomandările la ideile adminului 51–62?”, după cele 11 table ale rândului G de pe canvas):
+  - o linie a ei, cu feliile A.1–A.7, pornită la cuvântul owner-ului, nu în feliile aranjamentelor;
+  - bara laterală grupată, fila Azi prima, insigna TEST / LIVE, căutarea din antet, filele după schițe, adminul pe telefon;
+  - permisiunile, regulile și Firestore Lite rămân; ADR-urile liniei sunt 0260–0269.
+- 13.11.2026: **ideile 39–50 din tura a zecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 39–50?”, după tablele Transformarea și ancora, Nodurile și Pen-ul, Navigarea și ajutoarele de
+  desen, Fonturile): 11 intră în feliile 28.x (ADR 0250, „Ideile turei a zecea”). Între ele, rotirea scrisă și butoanele
+  − / + de zoom, care azi nu există. Textul de probă al fontului, luat din textul omului, devine linie separată.
 - 13.11.2026: **ideile 28–38 din tura a noua a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 28–38?”, după tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În
   engleză): toate intră în feliile 28.x (ADR 0250, „Ideile turei a noua”). Între ele, o zonă „mesaj” în tipul `Aranjament`,

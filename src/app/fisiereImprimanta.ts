@@ -20,12 +20,16 @@ export type FisierTinut = {
   readonly date: Blob;
   /** Numele din cvs2 ale pieselor, după numele lor cu majuscule din fișier (null: un fișier de pe calculator). */
   readonly etichete: Readonly<Record<string, string>> | null;
+  /** Notele pauzelor scrise în cvs2, cu diacritice, după stratul lor (fișierul are doar nota ASCII); null: niciuna (3.6s). */
+  readonly note?: Readonly<Record<string, string>> | null;
 };
 
 type Inregistrare = FisierTinut & { readonly cheie: string };
 
 /** Numele pieselor unui fișier făcut în „Din desen…”, până la trimitere (cheia: fișierul). */
 export const ETICHETE = new WeakMap<Blob, Readonly<Record<string, string>>>();
+/** Notele pauzelor unui fișier făcut în „Din desen…”, după strat, până la trimitere (felia 3.6s). */
+export const NOTE = new WeakMap<Blob, Readonly<Record<string, string>>>();
 
 export const cheieFisier = (nume: string, marime: number): string => `${nume}|${marime}`;
 

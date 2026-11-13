@@ -301,6 +301,8 @@ export const enCarcasa = {
   'prop.inc.mm': '{mm} mm',
   'prop.inc.con': 'Bit cone',
   'prop.inc.con.valoare': '{folosit} of {con} mm',
+  'prop.inc.fund-v': 'Floor, V bit only',
+  'prop.inc.fund-v.valoare': 'rings {locas} mm apart in the pocket (crest at most {cl} mm) and {dop} mm apart on the plug (crest at most {cd} mm)',
   'prop.inc.semifabricat': 'Plug blank',
   'prop.inc.semifabricat.valoare': 'at least {mm} mm thick',
   'prop.inc.lateral': 'Side gap',

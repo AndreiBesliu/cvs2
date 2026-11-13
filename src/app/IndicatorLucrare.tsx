@@ -3,16 +3,15 @@
  * locul ei din meniu (`#loc-lucrare`), printr-un portal. Un clic pe el deschide Mașina; lângă el stă doar Pauză (cât rulează)
  * sau Reia (cât stă în Hold): Oprește rămâne în fereastră, fiindcă o repornire în mișcare pierde poziția. Tot el ține titlul
  * filei browserului: procentul cât rulează lucrarea, starea cât e oprită. Pe telefon rămân punctul colorat, procentul și
- * iconițele (numele întreg stă în eticheta accesibilă).
+ * iconițele (numele întreg stă în eticheta accesibilă). Din 3.6s (ADR 0194), titlul trece prin `titluFila.ts`, ca partea
+ * imprimantei să nu-l șteargă pe al mașinii (și invers).
  */
 import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { t } from '../i18n/t.ts';
 import { indicatorLucrare, type Indicator } from '../machine/indicator.ts';
 import type { SesiuneMasina, StareSesiune } from '../machine/sesiune.ts';
-
-/** Titlul paginii fără lucrare (cel din `index.html`), citit o dată, la sosirea modulului. */
-const TITLU = typeof document === 'undefined' ? '' : document.title;
+import { parteTitlu } from './titluFila.ts';
 
 /** Cuvântul stării, în limba omului (fără procent: acela vine separat, ca pe telefon să rămână doar el). */
 function cuvant(i: Indicator): string {
@@ -33,12 +32,12 @@ function cuvant(i: Indicator): string {
 const procentul = (i: Indicator): string | null =>
   ((i.fel === 'ruleaza' || i.fel === 'pauza') && i.procent !== null ? t('masina.indicator.procent', { procent: i.procent }) : null);
 
-/** Titlul filei: fără lucrare, cel al paginii; cât rulează, procentul întâi; altfel starea întâi. */
-function titluFila(i: Indicator | null): string {
-  if (!i || i.fel === 'conectata') return TITLU;
+/** Partea mașinii din titlul filei: fără lucrare, nimic; cât rulează, procentul; altfel starea (cu procentul, dacă e). */
+function parteMasina(i: Indicator | null): string | null {
+  if (!i || i.fel === 'conectata') return null;
   const p = procentul(i);
-  if (i.fel === 'ruleaza' && p !== null) return t('masina.titlu.stare', { stare: p, titlu: TITLU });
-  return t('masina.titlu.stare', { stare: p === null ? cuvant(i) : `${cuvant(i)} ${p}`, titlu: TITLU });
+  if (i.fel === 'ruleaza' && p !== null) return p;
+  return p === null ? cuvant(i) : `${cuvant(i)} ${p}`;
 }
 
 export function IndicatorLucrare({ s, st, onDeschide }: {
@@ -51,9 +50,9 @@ export function IndicatorLucrare({ s, st, onDeschide }: {
   const [loc, setLoc] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => { setLoc(document.getElementById('loc-lucrare')); });
   const i = indicatorLucrare(st);
-  const titlu = titluFila(i);
-  useEffect(() => { document.title = titlu; }, [titlu]);
-  useEffect(() => () => { document.title = TITLU; }, []);
+  const parte = parteMasina(i);
+  useEffect(() => { parteTitlu('masina', parte); }, [parte]);
+  useEffect(() => () => { parteTitlu('masina', null); }, []);
   if (!i || !loc) return null;
   const c = cuvant(i);
   const p = procentul(i);
