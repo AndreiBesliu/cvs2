@@ -867,7 +867,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   foaia pozată pe masă), iar prima regulă (închiderea și deschiderea) mergea doar pe desene dese.** Probele luminii
   numără doar greșelile clare (acoperirea sub 0,4 sau peste 0,6): pe trăsături subțiri, pragul automat cade la ~0,47.
   **25.5↑ (foaia pozată oblic, ADR 0225) gata pe 13.11, cu toate recomandările („Da la 1-3a”), pe ramura
-  `wip/25.1-trasare`, neunită, pe canalul `trasare`:** „Îndreaptă foaia” (oprită implicit, sugerată de raport), colțurile
+  `wip/25.1-trasare`, unită în `main` pe 13.11 (`07df71f`, „Yes, merge it”):** „Îndreaptă foaia” (oprită implicit, sugerată de raport), colțurile
   găsite singure (`src/trasare/foaia.ts`; geometria lor, fără importuri, în `src/trasare/colturi.ts`, ca fereastra s-o
   folosească fără nucleu), formatul (A4 implicit) cu mărimea adevărată, `CerereTrasare.foaie` (îndreptarea înaintea zonei;
   zona e în pixelii foii îndreptate), butonul Colțurile cu mânerele. Proporțiile din poză au un interval: pe poza înclinată
@@ -1139,6 +1139,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **felia 25.5↑ a trasării unită în `main`, cu plafoanele 115 / 800 înaintea ei** („Yes, merge it”, la „Merge
+  trasarea 25.5↑ (straightening an angled sheet) into main?”, în sesiunea principală): unită exact la `1ca446b` (`07df71f`);
+  ADR 0226 (propus) rămâne pe ramură. Plafoanele din ADR 0252–0253 („Da, 115 ／ 800”, în sesiunea designului; „Yes, 800 kB”,
+  în sesiunea principală) au intrat în `main` înaintea liniei aranjamentelor, prin commit-ul lor (`6c37075`, unit în
+  `70844ce`): trasarea și tăierea 10.3↑k treceau împreună de 700. Totalul 695,8 / 800, pornirea cu ușa 109,7 / 115.
 - 13.11.2026: **banda vestirilor imprimantei (3.6s) reparată înainte, nu scoasă din `main`** („Fix forward”, la „Fix 3.6s
   forward, or revert it from main?”, în sesiunea principală): CI-ul complet pe `50f2595` a picat pe Linux
   (`imprimanta.spec.ts:108`: banda „pauză”, fixă, sus, la mijloc, acoperea butonul Reia; pe Windows trecea). Reparația
