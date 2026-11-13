@@ -8338,6 +8338,43 @@ provizorie); după pauză, „ce se poate uni?”.
   - alegerea controlerului în Pas cu pas.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
 
+## 2026-11-13 — Schițele, turele 5–7, pe toate ecranele; ideile din ele acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură” (de două ori), apoi „vreau sa faci toate schitele pana le termini pe toate”, apoi „Da la toate”.
+**Started:** 13.11, după intrarea de mai sus. **Completed:** 13.11, 16:25.
+
+- **Canvas-ul** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), acum 50 de table:
+  - **tura 5:** paleta (Ctrl K), aceeași în toate; proiectele și versiunile; stările aplicației în cele patru aranjamente
+    (textele din `mesaje.ro.ts` și `carcasa.ro.ts`);
+  - **tura 6:** extensiile (Easy 3Draw); simularea ca vedere a proiectului; cele patru la 1024 × 768;
+  - **tura 7, rândul F:** Importă cu trasarea, planșele (ADR 0210, de pe ramură), opțiunile uneltei (Cuțitul), meniul de
+    context, contul și ajutorul, ghidul de după alegere, telefonul și tableta; tabla „Harta schițelor” (ecran × aranjament
+    și cele 16 idei, cu recomandarea).
+- **Corectură:** tabla Simularea spunea că vederea 3D vine mai târziu. Ea există (ADR 0057), la fel animația traseului
+  (ADR 0099). Comentariul din `src/ui/PrevizualizareSimulare.tsx` („până la afișarea pe WebGL2”) e vechi.
+- **ADR 0250, „Completarea din 13.11: ideile din schițe”** („Da la toate”): 13 idei în feliile 28.x, fiecare cu felia ei;
+  3 linii separate (simularea unică, proiectele multiple cu `.cvs2`, clipboardul).
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG, traducerea roadmap-ului.
+
+## 2026-11-13 — Schițele, tura a opta (Model: Claude Opus 5.5)
+
+**Prompt:** „Încă o tură”. **Started:** 13.11, 16:30. **Completed:** 13.11, 16:50.
+
+- **Canvas-ul**, acum 54 de table. Patru table noi, fiecare în cele patru aranjamente: conectarea mașinii (USB, WiFi,
+  conexiunile ținute), proiectul gol, Textul (X), tastatura și focusul (zonele în ordinea lui F6).
+- **Meniurile Clasicului, aliniate** pe tablele turelor 6–7 la cele din schița Clasicului: Fișier, Editare, Vedere,
+  Vectori, Trasee, Mașina, Extensii, Ajutor (fără „Ferestre”). În ADR 0250, rândul meniului Extensii spune acum „între
+  Mașina și Ajutor”.
+- **Harta schițelor:** rândurile noi și 11 idei noi (17–27), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 17–27 din tura a opta, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 16:55. **Completed:** 13.11, 17:20.
+
+- **ADR 0250, „Ideile turei a opta, acceptate tot pe 13.11”:** 10 idei în feliile 28.x, fiecare cu felia ei; editarea
+  textului pe loc, cu dublu clic, e linie separată.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
 ## 2026-11-11 — 3.6s–3.6u propuse: notificările și istoricul imprimărilor (ADR 0194) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, grupul 3” (owner-ul, la „După pauză, propun grupul 3 (notificările și istoricul)?”, după 3.6r).
