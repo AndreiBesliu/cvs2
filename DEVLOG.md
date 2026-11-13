@@ -8592,3 +8592,22 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
+## 2026-11-13 — Felia 25.4↑b pornită: lumina pe culori (ADR 0226, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.4↑b” (owner-ul, la întrebarea de după felia 25.5↑: „Pornesc lumina pe culori (25.4↑b)?”).
+**Started:** 13.11, 21:58. **Completed:** 13.11, 22:10.
+
+- **Ramura** adusă la `origin/main` (`ab151b4`: imprimanta 3.6s, incrustațiile 12.1↑d, ADR 0250 și 0260; conflict doar în
+  DEVLOG); totalul, după unire: 663,7 / 700 kB.
+- **Cercetarea:** CorelDRAW PowerTRACE, Inkscape, Vectric, Carveco: reduc culorile și scot fundalul, dar nu corectează
+  lumina înaintea culorilor; harta umbrei (fundalul local raportat la cel de referință, Bako și alții, ACCV 2016).
+- **Prototipul** (`.tmp/proto-254b.ts`, `.tmp/proto-254b-linii.ts`): o foaie albă cu forme colorate (roșu, albastru,
+  verde, negru, galben), cu adevărul știut, trasată cu nucleul real al culorilor. Fără corecție, lumina dintr-o parte rupe
+  hârtia în două culori (37 %); fiecare canal raportat la fundalul lui neted (polinomul, potrivit pe fiecare canal cu
+  pixelii lui de hârtie) repară lumina dintr-o parte, dominanta și tabla (6 culori, 0 %), nu și umbra tare; fundalul local
+  (închiderea pe fiecare canal) repară umbra tare pe liniile colorate, dar golește formele pline; luminozitatea singură nu
+  repară tabla. Pe 12 Mpx, nescris pentru viteză: 1,0–1,1 s (neted), 2,4–2,9 s (local).
+- **ADR 0226 propus** (lista Lumina și pe Culorile, același implicit ca la alb-negru; „Neuniformă” și „Cu umbre”, fiecare pe
+  cazul ei), cu schița <https://claude.ai/artifact/D39edbszdytPh1zohWXZpd> (pozele și culorile găsite, macheta, măsurătorile, formularul); două întrebări: culorile
+  adevărate (balansul de alb) sau tonul pozei; umbra tare pe formele pline acum sau după o poză reală.
