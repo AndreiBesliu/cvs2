@@ -786,6 +786,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/trasare/lumina.ts`; la luminile de poză, polaritatea vine din mediana din jur, nu din margine (marginea întoarce
   foaia pozată pe masă), iar prima regulă (închiderea și deschiderea) mergea doar pe desene dese.** Probele luminii
   numără doar greșelile clare (acoperirea sub 0,4 sau peste 0,6): pe trăsături subțiri, pragul automat cade la ~0,47.
+  **25.5↑ (foaia pozată oblic: „Îndreaptă foaia”, colțurile găsite singure, formatul cu mărimea adevărată; ADR 0225,
+  propus pe 13.11) așteaptă răspunsurile.** Lumina pe culori (25.4↑b) și liniile mediane pe culori vin după ea.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

@@ -8374,3 +8374,27 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0250, „Ideile turei a opta, acceptate tot pe 13.11”:** 10 idei în feliile 28.x, fiecare cu felia ei; editarea
   textului pe loc, cu dublu clic, e linie separată.
 - **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Felia 25.5↑ pornită: foaia pozată oblic (ADR 0225, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei trasării, după unirea lui 25.4↑ în `main`).
+**Started:** 13.11, 17:47. **Completed:** 13.11, 18:10.
+
+- **Ramura** adusă la `origin/main` (`ba876c0`, fast-forward: 107 commituri, între ele tăierea, planșele și imprimanta);
+  mărimea din `main`: totalul 654,4 / 700 kB, pornirea 102,2 / 110 (105,9 cu ușa).
+- **Alegerea:** îndreptarea foii înaintea luminii pe culori și a liniilor mediane pe culori (ADR 0224, „Ce poate urma”),
+  fiindcă strâmbă orice poză de telefon, nu doar pe cele colorate.
+- **Cercetarea:** Microsoft Lens (marginile documentului găsite singure, mutate de mână), LightBurn (perspectiva doar pentru
+  camera de deasupra mașinii), Vectric, ArtCAM, Inkscape (nimic), GIMP (unealta de perspectivă); Zhang și He (2007):
+  proporțiile unui dreptunghi dintr-o singură poză, din focala estimată.
+- **Prototipul** (`.tmp/proto-255.ts`): o foaie A4 cu patru forme de mărime știută, pozată cu o cameră pinhole sub patru
+  unghiuri, pe o masă, cu lumina dintr-o parte. Colțurile, găsite pe imaginea redusă la 1,6–2,2 px și rafinate pe cea
+  întreagă la 0,02–0,20 px; focala 1400–1409 (adevărată 1400), proporțiile 0,7062–0,7073 (A4: 0,7071); formele pe foaia
+  îndreptată, la 0,12–0,27 mm (cu proporțiile estimate, 0,12–0,36 mm); fără îndreptare, pătratul de 60 mm are laturile de
+  58–65 mm. Pe 12 Mpx, îndreptarea (ieșirea de 10,3 Mpx) 219–255 ms.
+- **Găsite pe drum:** (1) reducerea Visvalingam a învelitorii la patru vârfuri pierdea colțul adevărat, rotunjit de pixeli
+  în trei vârfuri apropiate (29 px pe lângă): patrulaterul de arie maximă; (2) orientarea A4 dată îndreptării era întoarsă
+  în prima rulare (eroarea de 25 mm venea de acolo, nu din colțuri).
+- **ADR 0225** propus, cu trei întrebări (îndreptarea implicită; formatul implicit; ce arată previzualizarea). Schița, cu
+  pozele prototipului, macheta și formularul: <https://claude.ai/artifact/SnirKdXpgvCjcbWkcEn4Ax>.
+- **Documentele:** indexul ADR-urilor, fișa (coada owner-ului, jurnalul), CLAUDE.md, traducerile roadmap-ului.
