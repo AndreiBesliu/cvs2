@@ -8835,3 +8835,47 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
   sheets (3)” și nota arhivei).
 
 **Completed:** 13.11, 18:30.
+
+## 2026-11-13 — Felia 12.1↑b-2: punțile dopului drept decupat, alese în fereastră; documentul v24 (ADR 0174) (Model: Claude Opus 5.5)
+
+**Prompt:** punctul 4 din lista aprobată de owner pe 08.11 („1 si 2 acum 3-6 dupa”), cu condiția v23 în `main`, transmis de
+sesiunea principală: „v23 e în `main`: planșele sunt unite la `d62e6b8` (la cuvântul owner-ului), deci punctul 4 (punțile
+dopului drept alese în fereastră, v24) nu mai e blocat”.
+**Started:** 13.11, 22:12. **Completed:** 14.11, 00:20.
+
+- **`main` în ramură:** fast-forward de la `2c9173c` la `d62e6b8` (planșele, v23).
+- **ADR 0174** (acceptat): `punti` opțional pe incrustația cu pereți drepți, ca urechile; documentul v24 (migrarea v23 → v24
+  schimbă doar numărul; un v23 cu `punti` în incrustație, pe orice fel, e o ciocnire). Precizarea de la cod: punțile implicite
+  nu se scriu peste un dop care nu le are (un Exportă fără schimbare nu scrie o comandă).
+- **Codul (`9185658`):** ușa (schema, migrarea, tipul; +7 octeți gzip la pornire, măsurați înainte), dopul decupat
+  (`dopDrept.ts`: punțile incrustației, altfel `PUNTI_DOP_DREPT` din model, 4 × 4 × 1, cu ale benzii aceleași; palierul =
+  lățimea plus freza; avertismentul cu valorile), fereastra (trei câmpuri doar la dopul decupat, judecate ca urechile, motivul
+  nou, citite din proiect), scrierea (îmbinată; implicitele nescrise; pe dopul ridicat câmpul pleacă), panoul pe hârtie
+  („Punțile dopului”), manualul (ro, en), traducerea.
+- **Probele:** oracolul documentului la v24 (rândul `CAMPURI_NOI_O[24]`, judecata punților; cazurile pe hârtie la capătul lui
+  `document.cazuri.ts`; proba nouă `document.v24.oracol.test.ts`, 15 / 15 față de ușa aplicației din prima); 26 de fișiere de
+  probă trecute pe versiunea curentă 24 (cea mai nouă: 25; probele v22 și v23 compară acum cu ușa curentă, care urcă un v23
+  doar cu numărul); dopul pe program (`incrustatieDreapta.punti.test.ts`); scrierea (3 probe noi); e2e-ul ferestrei (prima
+  rulare a prins chiar proba: marginea 5 sub freza Ø6, refuz corect; proba pune marginea 8). Corpusul de aur la v24
+  (`919b80c`): v23 scrisă de `d62e6b8`, v24 de `9185658`; intrările v1–v23, aceiași octeți.
+- **Porțile:** compilatoarele ×3, importurile (20 / 0, 1 219 module), licențele, traducerile (765, 0 lipsă), unit 9 344:
+  9 336 / 0 (8 sărite, 7,1 min), build determinist (318 fișiere identice; pornirea 105,7, cu ușa 109,7 / 110; totalul
+  690,3 / 700), e2e 480: 474 din prima (9,8 min, 3 lucrători, cu alte sesiuni pe mașină), 3 căzute și 3 nerulate, reluate
+  singure 28 / 28: două de încărcare (stratul imprimantei 3.6q, reîncărcarea ușii din recenzia A) și una a feliei:
+  `placute.spec.ts` cerea `schema` 23 la salvare (`7ee2ca2`; căutarea mea după numărul 23 în e2e n-o prinsese, forma era
+  `.schema).toBe(23)`).
+- **Otrăvurile (`test/otravuri/12.1b-2.py`, alese de autor):** 26 (B11 retrasă înainte de rulare: era chiar 12.1b P11). Prima
+  rulare (`7ee2ca2`): 26 / 26 prinse (B01–B18 pe probele lor, B19–B27 prin e2e), dar B07 (lățimea aleasă ignorată) doar de
+  proba buclei. Pragul „≥ 5,9 mm” al lățimii trecea pentru orice lățime: oracolul `functieTaiere` ia doar mutările aflate toate
+  sub z, deci flancurile punții lungesc bucata netăiată (14 mm la punțile implicite, nu 4), iar măsurătoarea pe laturi o tăia la
+  colțuri; un flanc peste un colț se taie în bucăți, iar cea de jos taie și mai sus. Proba măsoară acum toată linia de mijloc a
+  șanțului, la −4,99, cu bucata de pe hârtie (ADR 0029, `geometrieUrechi`): W + 2ℓ − Ø, 18 mm pentru 2 × 6 și 14 mm pentru
+  4 × 4 (`0aac269`); B06–B12 reluate, prinse, B07 și de lățime. 12.1b P06 și P11 (ancorate pe constanta `PUNTI`, scoasă)
+  reorientate pe punțile din incrustație, prinse; nicio altă listă atinsă (ancorele bune la `d62e6b8` și VOID acum: doar ele).
+- **Mărimea:** pornirea cu ușa 109,7 / 110 (neschimbată), pornirea 105,7, totalul 690,0 → 690,3 / 700.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 14.12), build-ul
+  `0aac269`, verificat în browserul aplicației, în engleză, fără export: pe un dreptunghi cu „straight-walled inlay”, dopul
+  ridicat fără câmpurile punților; decupat, „Tabs per loop”, „Tab width”, „Tab thickness” cu 4, 4, 1; 0 pe buclă: câmpul
+  marcat, motivul nou, Exportă oprit; 2, 6, 1,5: primite; pe ridicat ascunse, înapoi pe decupat aceleași valori; fereastra
+  închisă fără export, foaia lăsată goală, fără erori în consolă.
+- **La unire (pentru sesiunea principală):** în CLAUDE.md, regula versiunii: următorul câmp nou ia v25.
