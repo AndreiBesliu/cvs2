@@ -1394,6 +1394,32 @@ answer to `$$` (from the sender's console) under “Machine settings”; the pro
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
 
+## Sheets report and cut list
+%% capitol: raport
+%% acopera: export.raport
+
+The **Sheets report and cut list** opens from the [export](#export) window, with **Sheets report…**, or from the command
+palette (Ctrl+K). It shows the whole project, not only the active sheet.
+
+For each sheet: the preview (the shapes, coloured by operation, as in [exporting vectors](#vectori)), the material, the sheet
+size, how much of it the parts use (the area of their boxes against the sheet's) and the operations (the kind, the cutter,
+the depth with its passes, the tabs). Then the parts: the name (for a part without one, the kind of shape), how many, the
+size, the rotations and the CSV values of the [plates](#piese-legate). Identical sheets (the same parts, in the same places,
+with the same operations) are listed once, with ×N, as in the export. At the end, **Totals per part** (how many in the whole
+project, with the material and the sheets they are on) and **Sheets, by material** (how many sheets of each size and
+material: what you buy).
+
+**Part size:** **cut** (the default) is the box of the contour that cuts the part out of the board (the outside profile
+through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
+such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
+Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
+sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the
+sheets by material. **CSV with `;`** (the default) has the decimal comma, so Excel in Romanian opens it directly; with
+**`,`**, the decimal point, for Excel in English. **Print** opens the browser's printing (and “Save as PDF”), with the report
+only, over as many pages as it needs.
+
 ## Exporting vectors
 %% capitol: vectori
 %% acopera: editare.vectori

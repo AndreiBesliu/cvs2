@@ -46,7 +46,11 @@ function cale(e: Extract<Entitate, { fel: 'polilinie' | 'spline' }>, H: number):
   return d.join('');
 }
 
-export function scrieSvg(v: VectoriFoaie): string {
+/**
+ * `grosime`: grosimea liniilor, în mm; implicit 0,1 (fișierul exportat). Previzualizarea mică a raportului foilor (ADR 0210
+ * §6) le cere mai groase, cât să se vadă.
+ */
+export function scrieSvg(v: VectoriFoaie, grosime = 0.1): string {
   const H = v.inaltime;
   const linii = [
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -55,7 +59,7 @@ export function scrieSvg(v: VectoriFoaie): string {
   for (const s of STRATURI) {
     const din = v.entitati.filter((e) => e.strat === s);
     if (din.length === 0) continue;
-    linii.push(`<g id="${s}" inkscape:groupmode="layer" inkscape:label="${s}" fill="none" stroke="${CULORI_SVG[s]}" stroke-width="0.1">`);
+    linii.push(`<g id="${s}" inkscape:groupmode="layer" inkscape:label="${s}" fill="none" stroke="${CULORI_SVG[s]}" stroke-width="${nr(grosime)}">`);
     for (const e of din) {
       linii.push(e.fel === 'cerc'
         ? `<circle cx="${nr(e.centru.x)}" cy="${nr(H - e.centru.y)}" r="${nr(e.raza)}"/>`

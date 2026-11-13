@@ -1844,6 +1844,99 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): previzualizarea foii lângă rândurile ei, pe un ecran îngust
+ * una sub alta. Previzualizarea e SVG-ul exportului de vectori, desenat pentru hârtie albă: stă pe alb și în tema întunecată.
+ */
+.dialog .raport-foi {
+  width: min(56rem, calc(100vw - 2rem));
+}
+
+.raport-foaie {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+  padding-block: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}
+
+.raport-foaie img {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--l-margine);
+}
+
+.raport-foaie h3 {
+  margin: 0 0 var(--sp-1);
+}
+
+/* Rândurile tabelelor raportului se citesc ca text, nu ca antete de coloană. */
+.raport-foi tbody th {
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--t);
+}
+
+@media (max-width: 40rem) {
+  .raport-foaie {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .raport-foaie img {
+    max-width: 12rem;
+  }
+}
+
+/*
+ * Tipărirea raportului (PDF din browser): fereastra stă direct sub body, deci restul paginii pleacă, iar ea curge pe oricâte
+ * pagini, negru pe alb, fără butoane; o foaie nu se rupe între pagini.
+ */
+@media print {
+  body {
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body > :not(.raport-foi-tipar) {
+    display: none !important;
+  }
+
+  .raport-foi-tipar {
+    position: static;
+    display: block;
+    background: none;
+  }
+
+  /* Lățimea ferestrei (din vw, care la tipar e a paginii) și cutia ei de pe ecran nu trec pe hârtie. */
+  .raport-foi-tipar .dialog-cutie {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+  }
+
+  .raport-foi-tipar .dialog-cutie * {
+    color: #000;
+  }
+
+  .raport-foi-tipar .fara-tipar {
+    display: none;
+  }
+
+  .raport-foaie {
+    break-inside: avoid;
+  }
+}
+
+/*
  * Prima coloană: mânerul, locul în ordine, „cu N” și săgețile, una peste alta, ca s-o țină îngustă. Mânerul are 28 px,
  * fiecare săgeată 28 × 24 (ținta minimă din WCAG 2.5.8); la atingere, mai mari.
  */

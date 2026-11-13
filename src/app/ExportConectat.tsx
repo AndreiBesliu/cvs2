@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
+import type { ColtOrigine } from '../ir/montaj.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
 import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
 import { conturElement } from '../model/forme.ts';
@@ -45,6 +46,8 @@ type Props = {
   readonly foaie?: string;
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
   readonly toate: Document;
+  /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
+  readonly onRaport?: (p: { readonly origine: ColtOrigine; readonly z0: 'sus' | 'jos' }) => void;
 };
 
 /** Plăcuțele foii `k` (toate foile, fără el) cu textul ieșit, cu numele lor și confirmarea aleasă în fereastra CSV; altfel nimic. */
@@ -56,7 +59,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, foaie, toate,
+  onDeschideInMasina, foaie, toate, onRaport,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -201,6 +204,7 @@ export function ExportConectat({
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
+      {...(onRaport ? { onRaport } : {})}
     />
   );
 }

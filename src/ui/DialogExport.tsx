@@ -187,6 +187,8 @@ type Props = {
   /** Câte foi are proiectul (ADR 0210 §5): de la două, fereastra oferă „Toate foile”, cu plăcuțele tuturor (`placuteToate`). */
   readonly foi?: number;
   readonly placuteToate?: { readonly nume: readonly string[]; readonly confirmare: boolean };
+  /** „Raportul foilor…” (ADR 0210 §6, felia 11.6↑): deschide raportul, cu colțul și Z0 alese aici. */
+  readonly onRaport?: (p: Pick<ParametriExport, 'origine' | 'z0'>) => void;
 };
 
 /** Câte nume de plăcuțe arată nota exportului; restul, „…”. */
@@ -502,7 +504,7 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina, foaie, placute, foi, placuteToate,
+    onSetariMasina, onDeschideInMasina, foaie, placute, foi, placuteToate, onRaport,
   }: Props,
 ) {
   const limba = useLimba();
@@ -1612,6 +1614,7 @@ export function DialogExport(
             {t('export.exporta')}
           </button>
           <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
+          {onRaport && <button type="button" data-buton="raport" onClick={() => { onRaport({ origine, z0 }); }}>{t('export.raport.deschide')}</button>}
         </div>
         {stare?.ok && stare.foi && <ListaFoi foi={stare.foi} sha256={stare.sha256} limba={limba} />}
         {stare?.ok && !stare.foi && (stare.fisiere && stare.fisiere.length > 1

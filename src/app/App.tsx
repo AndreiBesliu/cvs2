@@ -121,6 +121,9 @@ const DialogLucrare = lazy(() => incarcaPrimirea().then((m) => ({ default: m.Dia
 // „Așază pe foi” (ADR 0210 §3): dialogul și calculul lui vin la primul gest.
 const incarcaAsezarea = () => import('./DialogAsezare.tsx').then(cuMesaje);
 const DialogAsezare = lazy(() => incarcaAsezarea().then((m) => ({ default: m.DialogAsezare }), () => ({ default: DialogNeincarcat })));
+// Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): din fereastra exportului și din paletă.
+const incarcaRaport = () => import('./DialogRaportFoi.tsx').then(cuMesaje);
+const DialogRaportFoi = lazy(() => incarcaRaport().then((m) => ({ default: m.DialogRaportFoi }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
@@ -317,6 +320,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
   /** Dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
   const [dialogAsezare, setDialogAsezare] = useState(false);
+  /** Raportul foilor (ADR 0210 §6): colțul și Z0 ale exportului, de la fereastra lui; din paletă, cele implicite. */
+  const [raport, setRaport] = useState<Pick<ParametriExport, 'origine' | 'z0'> | null>(null);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
@@ -726,6 +731,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       void incarcaProprietati().catch(() => undefined);
       void incarcaNivelPiesa().catch(() => undefined);
       void incarcaMeniuFoaie().catch(() => undefined);
+      void incarcaRaport().catch(() => undefined);
       void incarcaMasina().catch(() => undefined);
       preincarcaImport();
     }, 1_000);
@@ -738,7 +744,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || raport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -894,7 +900,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Starea oricărei acțiuni din bare și din paletă, citită din registrul ei. */
   const stareActiune = (id: string): RezultatActiune => (
     id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
-      : id === 'export.gcode' ? stare(registruExport, id, contextExport())
+      : registruExport.actiuni.has(id) ? stare(registruExport, id, contextExport())
         : registruVedere.actiuni.has(id) ? stare(registruVedere, id, contextVedere)
           : registruExtensii.actiuni.has(id) ? stare(registruExtensii, id, contextExtensii) : stare(registru, id, context()));
   const eticheta = (id: string): CheieSimpla => (registru.actiuni.get(id) ?? registruImport.actiuni.get(id)
@@ -916,6 +922,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
     if (id === 'import.svg') fisierImport.current?.click();
     else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
+    else if (id === 'export.raport') setRaport({ origine: 'stanga-jos', z0: 'sus' });
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
     else if (registruExtensii.actiuni.has(id)) ruleaza(registruExtensii, id, contextExtensii);
     else {
@@ -1490,6 +1497,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
+          onRaport={(p) => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); setRaport(p); }}
           // „Deschide în Mașina” (ADR 0132 §7): doar după un export pe care senderul îl vorbește; închide dialogul, deschide
           // Mașina și îi cere să încarce exportul, fără să-l pornească.
           {...(stareExport?.ok && ultimulExport ? {
@@ -1514,6 +1522,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onInchide={() => { setCoadaImport(null); }}
         />
       )}
+      {raport && <DialogRaportFoi doc={doc} origine={raport.origine} z0={raport.z0} onInchide={() => { setRaport(null); }} />}
       {/* Scrierea dialogului trece pe lângă ușa oprită sub el (ca exportul și importul): e chiar gestul lui. */}
       {dialogAsezare && (
         <DialogAsezare doc={doc} idFoaie={idActiva} selectie={selectieValida}

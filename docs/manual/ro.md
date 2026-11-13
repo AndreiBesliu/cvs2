@@ -1347,6 +1347,30 @@ mașinii” răspunsul controlerului la `$$` (din consola senderului); programul
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
 
+## Raportul foilor și lista de tăiere
+%% capitol: raport
+%% acopera: export.raport
+
+**Raportul foilor și lista de tăiere** se deschide din fereastra [exportului](#export), cu **Raportul foilor…**, sau din
+paleta de comenzi (Ctrl+K). Arată tot proiectul, nu doar foaia activă.
+
+Pe fiecare foaie: previzualizarea (formele, colorate pe operații, ca la [exportul vectorilor](#vectori)), materialul, mărimea
+foii, cât din ea folosesc piesele (aria cutiilor lor față de a foii) și operațiile (felul, freza, adâncimea cu trecerile,
+urechile). Apoi piesele: numele (pentru o piesă fără nume, felul formei), câte sunt, mărimea, rotirile și valorile din CSV
+ale [plăcuțelor](#piese-legate). Foile identice (aceleași piese, în aceleași locuri, cu aceleași operații) se spun o dată, cu
+×N, ca la export. La capăt, **Totalurile pe piesă** (câte în tot proiectul, cu materialul și foile pe care stau) și **Foile,
+pe material** (câte foi de fiecare mărime și material: ce cumperi).
+
+**Mărimea pieselor:** **tăiată** (implicit) e cutia conturului care decupează piesa din placă (profilul exterior prin toată
+grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
+desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
+exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
+piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**
+(implicit) are virgula zecimală, ca Excel în română să-l deschidă direct; cu **`,`**, punctul, pentru Excel în engleză.
+**Tipărește** deschide tipărirea browserului (și „Salvează ca PDF”), doar cu raportul, pe oricâte pagini.
+
 ## Exportul vectorilor
 %% capitol: vectori
 %% acopera: editare.vectori
