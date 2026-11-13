@@ -13,6 +13,10 @@
       "ro": "Scheletul: `t()` en / ro cu paritatea verificată de compilator, ErrorBoundary + jurnalul local de erori, configul citit de la gazdă, CSP fără `unsafe-eval`",
       "en": "The skeleton: `t()` en / ro with compiler-checked parity, ErrorBoundary + local error log, config read from the host, CSP without `unsafe-eval`"
     },
+    "02d8c983d10002a5": {
+      "ro": "Pagina `/admin` reproiectată",
+      "en": "The redesigned `/admin` page"
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"

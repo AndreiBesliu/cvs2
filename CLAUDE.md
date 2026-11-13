@@ -1053,6 +1053,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **felia 3.6s a imprimantei unită în `main`, înaintea planșelor** („Merge 3.6s now”, la „Merge planșele and
+  3.6s together once planșele reports done?”, în sesiunea principală): unită exact la `e489f34` (notificările și semnul din
+  bară, ADR 0194 §A); ramura merge mai departe cu 3.6t. Neîncercată încă pe K1C (canalul `imprimanta` o servește). Planșele
+  aduc `main` cu ea: un conflict de importuri în `App.tsx`, iar pornirea cu ușa urcă cu ~0,2 kB (planșele 109,6 / 110
+  înainte).
+- 13.11.2026: **pagina `/admin` reproiectată, ADR 0260 acceptat** („vreau sa faci design si pentru admin”, apoi „Da la
+  toate”, la „Accepți recomandările la ideile adminului 51–62?”, după cele 11 table ale rândului G de pe canvas):
+  - o linie a ei, cu feliile A.1–A.7, pornită la cuvântul owner-ului, nu în feliile aranjamentelor;
+  - bara laterală grupată, fila Azi prima, insigna TEST / LIVE, căutarea din antet, filele după schițe, adminul pe telefon;
+  - permisiunile, regulile și Firestore Lite rămân; ADR-urile liniei sunt 0260–0269.
+- 13.11.2026: **ideile 39–50 din tura a zecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 39–50?”, după tablele Transformarea și ancora, Nodurile și Pen-ul, Navigarea și ajutoarele de
+  desen, Fonturile): 11 intră în feliile 28.x (ADR 0250, „Ideile turei a zecea”). Între ele, rotirea scrisă și butoanele
+  − / + de zoom, care azi nu există. Textul de probă al fontului, luat din textul omului, devine linie separată.
+- 13.11.2026: **ideile 28–38 din tura a noua a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 28–38?”, după tablele Acțiunile pe forme, Traseul și animația, Mesajele și confirmările, În
+  engleză): toate intră în feliile 28.x (ADR 0250, „Ideile turei a noua”). Între ele, o zonă „mesaj” în tipul `Aranjament`,
+  în care scriu toate uneltele, cu „Anulează” lângă mesaj, și proba fiecărei bare în ambele limbi, cu fontul lat.
 - 13.11.2026: **ideile 17–27 din tura a opta a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 17–27?”, după tablele Conectarea mașinii, Proiectul gol, Textul și Tastatura): 10 intră în
   feliile 28.x (ADR 0250, „Ideile turei a opta”), între ele F6 prin zonele aranjamentului, cu ordinea în tipul
