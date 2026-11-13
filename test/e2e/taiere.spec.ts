@@ -408,8 +408,8 @@ test('Taie în panouri: grila pe pânză; firma de 2 400 × 1 000, cu o literă,
   await page.keyboard.press('Escape');
   await expect(randuri(page)).toHaveText(['Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4']);
   await expect(page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]')).toHaveCount(4);
-  // Anulează, cu panourile încă alese: alegerea rămasă arată spre forme care nu mai sunt, deci blocul ia toate formele foii
-  // (firma și litera), nu una dintre ele.
+  // Anulează, cu panourile încă alese: niciunul nu mai e pe foaie, deci blocul ia toate formele foii (firma și litera). Dacă un
+  // grup ar fi luat id-ul firmei (eliberat de tăiere), alegerea rămasă ar arăta spre ea și blocul ar tăia doar firma.
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-editare="taiere"]').click();

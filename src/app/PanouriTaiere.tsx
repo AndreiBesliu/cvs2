@@ -47,14 +47,9 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
   useEffect(() => () => { semnal.current?.abort(); }, []);
   const optiuni = useOptiuniTaiere();
 
-  // Formele de tăiat: cele alese (care mai sunt pe foaie: după Anulează, alegerea poate arăta spre forme care nu mai sunt); fără
-  // alegere, toate ale foii. Cutia lor, exactă, e cea a grilei.
-  const peFoaie = useMemo(() => (doc.foi[0]?.instante ?? []).map((i) => i.id), [doc]);
-  const alese = useMemo(() => {
-    const x = selectie.filter((id) => peFoaie.includes(id));
-    return x.length > 0 ? x : peFoaie;
-  }, [peFoaie, selectie]);
-  const cuAlegere = alese !== peFoaie;
+  // Formele de tăiat: cele alese (aplicația dă doar alegerea care mai e pe foaie, `selectieValida`); fără alegere, toate ale foii.
+  // Cutia lor, exactă, e cea a grilei.
+  const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[0]?.instante ?? []).map((i) => i.id)), [doc, selectie]);
   const cutie = useMemo(() => {
     const ids = new Set(alese);
     let k = CUTIE_GOALA;
@@ -155,7 +150,7 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
       </div>
       {motiv ? <p className="motiv-retea" role="status" data-testid="panouri-motiv">{motiv}</p> : (
         <p className="stare-taiere" data-testid="panouri-grila">
-          {t(cuAlegere ? 'editare.taiere.panouri.alese' : 'editare.taiere.panouri.toate', {
+          {t(selectie.length > 0 ? 'editare.taiere.panouri.alese' : 'editare.taiere.panouri.toate', {
             n: String(alese.length), c: String(c), r: String(r), l: mm(cutie.maxX - cutie.minX, virgula), i: mm(cutie.maxY - cutie.minY, virgula),
           })}
         </p>

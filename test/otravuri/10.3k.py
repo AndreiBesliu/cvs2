@@ -2,7 +2,8 @@
 # de panouri pe axă, plafonul, valorile, egale și din colț), tăierea pe linii (despărțirea, partea A / B, liniile care nu taie
 # nimic, cutia), id-urile noi, numele și ordinea panourilor (pe foaie și în grilă, piesele împărțite, un singur panou), gruparea
 # lor pe firul principal (`grupuriPanouri.ts`: locurile, numele, id-urile, V-carve-urile, alegerea de după), acțiunea
-# `document.taie` și legăturile din interfață (e2e). M03 e echivalentă (vezi docs/otravuri.md).
+# `document.taie` și legăturile din interfață (e2e). M03 e echivalentă (vezi docs/otravuri.md); H10, echivalentă, a scos
+# filtrul alegerii din blocul panourilor (aplicația dă deja doar alegerea care mai e pe foaie).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
@@ -74,7 +75,8 @@ o('R04', R, "    while (ocupate.has(`e${n}`)) n++;\n", "", 'panouri', 'id-ul gru
 o('A02', A, "t.degrupate.length === 0 && sterse.length === 0 && grupuri.length === 0)", "t.degrupate.length === 0 && sterse.length === 0)", 'panouri',
   'fără nicio tăietură (doar grupuri), acțiunea refuză')
 # Interfața (e2e).
-o('H01', B, "    return x.length > 0 ? x : peFoaie;", "    return x;", 'e2e', 'fără nimic ales, blocul nu ia formele foii')
+o('H01', B, "const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[0]?.instante ?? []).map((i) => i.id)), [doc, selectie]);",
+  "const alese = useMemo(() => selectie, [doc, selectie]);", 'e2e', 'fără nimic ales, blocul nu ia formele foii')
 o('H02', B, "onGrila(xs ? { axa: 'grila', cutie, xs, ys } : null)", "onGrila(null)", 'e2e', 'grila nu se arată pe pânză')
 o('H03', B, "disabled={fel !== 'marime'}", "disabled={false}", 'e2e', '„egale / din colț” nu se stinge după număr')
 o('H04', P, "const laLinie = (): void => { setGrila(false); };", "const laLinie = (): void => {};", 'e2e', 'înapoi în blocul de sus, pânza ține grila')
@@ -85,8 +87,6 @@ o('H08', K, "      return { raspuns: taieInPanouri(c.document, c.cerere), transf
   'e2e', 'workerul nu taie în panouri')
 o('H09', B, "        : c * r === 1 ? t('editare.taiere.panouri.unul') : null;", "        : null;", 'e2e', 'un singur panou nu stinge butonul')
 o('R05', R, "new Set([doc, inainte].flatMap(", "new Set([doc].flatMap(", 'panouri', 'grupul poate lua id-ul formei tăiate (eliberat de degrupare)')
-o('H10', B, "const x = selectie.filter((id) => peFoaie.includes(id));", "const x = [...selectie];", 'e2e',
-  'după Anulează, blocul numără și ia formele alese care nu mai sunt pe foaie')
 
 SETURI = {
     'panouri': ['test/unit/taiere.panouri.test.ts', 'test/unit/taiere.panouri.oracol.test.ts'],
