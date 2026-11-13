@@ -5,7 +5,7 @@ toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi 
 în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
 07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑, 11.3↑ și 11.4↑ pe 08.11** (piesele puse de mai
 multe ori; „Așază pe foi”; plăcuțele, nucleul), **11.4↑b și 11.4↑c pe 09.11** («Din CSV…»; textul care iese din plăcuță),
-**11.5↑ pe 13.11** („Toate foile” la export; vezi la capăt).
+**11.5↑ și 11.6↑ pe 13.11** („Toate foile” la export; raportul foilor și lista de tăiere; vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -635,3 +635,48 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   plăcuțe), manualul (35 de capitole după unire). Otrăvurile `test/otravuri/11.5.py`: 61 / 61 la prima rulare (`41daf8a`; 44 unitare, 17 prin
   e2e, în două clone, pe portul 4178).
 - **Rămâne în etapa 11:** 11.6↑ (raportul foilor și lista de tăiere), 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină).
+
+## Felia 11.6↑ (gata pe 13.11)
+
+- **Fereastra** (`src/app/DialogRaportFoi.tsx`, adusă la cerere și preîncărcată după pornire; planșa 7 a schiței): din
+  fereastra exportului („Raportul foilor…”, cu colțul și Z0 alese acolo; exportul se închide) și din paletă (acțiunea
+  `export.raport`, cu eticheta în mesajele editorului, ca ale planșelor). Pe fiecare foaie: previzualizarea, materialul,
+  mărimea, cât e folosită (aria cutiilor pieselor față de a foii), operațiile (felul, freza cu unghiul V, adâncimea cu
+  trecerile, urechile; despărțirea foii) și piesele (numele sau felul primei forme, câte, mărimea, rotirile, valorile din CSV:
+  primele trei și câte sunt). La capăt, totalurile pe piesă (în tot proiectul, cu materialele și foile) și foile pe material
+  (de cumpărat). Z0 și colțul nu sunt ale foii în cvs2, ci ale exportului (cele din fereastra lui; din paletă, cele
+  implicite), deci raportul îi spune o dată, sus.
+- **Previzualizarea** e SVG-ul exportului de vectori (`vectoriFoaie` cu foaia, `scrieSvg`), pe alb și în tema întunecată.
+  Liniile lui de 0,1 mm (pentru tăiere) erau fire de păr în cei ~160 px: `scrieSvg` primește acum grosimea, implicit 0,1 mm
+  (fișierul exportat rămâne octet cu octet același), iar raportul cere a 150-a parte din latura mare a foii.
+- **Mărimea piesei** (`src/model/raportFoi.ts`, pur): cutia contururilor tăiate de un profil exterior care nu e o despărțire
+  a foii și ajunge la grosimea ei (prin toată grosimea), în axele piesei: rotirea instanței n-o schimbă. Fără el, cutia
+  desenului, marcată „(desen)”; „Mărimea pieselor: tăiată / desen” e implicitul devenit opțiune (răspunsurile). Pe o foaie mai
+  groasă decât adâncimea profilului, aceeași piesă primește acolo mărimea desenului, cu rândul ei și la totaluri; instanțele
+  unei piese cu mărimi diferite (în modul desen, plăcuțele cu texte de lungimi diferite) au rânduri separate.
+- **Foile identice:** semnătura foii e mărimea, materialul, formele în lume (forma și matricea, rotunjite la 1e-6) și
+  operațiile cu formele pe care le taie, fără id-uri și fără numele frezei, în orice ordine. O copie legată a foii și una
+  cu piese separate, dar egale, ies o dată, ×N, ca la export; alt loc, altă mărime sau alt material, nu. Exportul (11.5↑)
+  judecă după programe; aici, fără CAM, după document, cu aceleași grupuri pe aceleași foi.
+- **CSV-ul** (`src/app/raportCsv.ts`, `cncvs2-lista-de-taiere.csv`): UTF-8 cu BOM; `;` cu virgula zecimală (implicit, Excel
+  în română) sau `,` cu punctul; trei tabele, cu un rând gol între ele: foile (un rând pe piesă, cu foaia, de câte ori se
+  taie, materialul, mărimea foii și cât e folosită; o foaie goală are rândul ei, fără piesă), totalurile pe piesă și foile pe
+  material. Ghilimelele ca RFC 4180 (separatorul, ghilimelele, rândul nou), fiecare rând cu CRLF.
+- **Tipărirea** (PDF din browser): fereastra stă direct sub `body` (un portal), iar `@media print` scoate restul paginii,
+  cutia ferestrei și butoanele: raportul curge pe oricâte pagini, negru pe alb, iar o foaie nu se rupe între pagini. La tipar,
+  `vw` e lățimea paginii (regula lățimii ferestrei cere `!important` acolo), iar `body:has(.aplicatie)` avea `overflow:
+  hidden`, care ar fi tăiat tiparul la o pagină: ambele, găsite pe capturi și măsurate înainte de reparație.
+- **Regula importurilor:** fereastra și CSV-ul stau în `src/app`, lângă celelalte ferestre care citesc modelul (interfața din
+  `src/ui` ajunge la model doar prin registrul de acțiuni).
+- **Manualul:** capitolul nou „Raportul foilor și lista de tăiere” (ro, en; 36 de capitole); `export.raport` e ușa a 107-a.
+- **Măsurat:** pornirea +0,2 kB (cu ușa 109,7 / 110), totalul 686,2 → 690,5 / 700 (estimarea era ~4,7 kB).
+- **Probele:** `raport.foi.test.ts` (pe hârtie: criteriul din prag, 25 de plăcuțe 80 × 30 pe foi 300 × 200, 15 + 10,
+  folosite 60 % și 40 %, cu valorile lor; prototipul, 12 suporturi 150 × 100 pe 600 × 400, 9 + 3, 56,25 % și 18,75 %; mărimea
+  tăiată, a desenului și marcajul; rotirea în axele piesei; foile identice, legate și separate, cu mărimea, locul, materialul
+  și ordinea; interiorul și despărțirea care nu decupează piesa, urechile, freza în V; CSV-ul în ambele limbi, cu ghilimele,
+  rândul nou, virgula zecimală, foaia goală), `raport-foi.spec.ts` (e2e: din paletă și din export; foile identice ×2,
+  operațiile, piesele, totalurile, materialele; mărimea desenului; CSV-ul cu `;` și cu `,`; tipărirea doar cu raportul;
+  Escape), manualul. Otrăvurile `test/otravuri/11.6.py`: 55 / 55 la prima rulare (`aa16c19`; 38 unitare,
+  17 prin e2e, în două clone, pe portul 4178).
+- **Rămâne în etapa 11:** 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină). Fișa de lucru (ordinea, schimbările de
+  freză, timpul) rămâne funcția ei, în etapa 15, și pornește din raportul acesta.

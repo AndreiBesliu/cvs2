@@ -639,6 +639,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/io/scrieZip.ts`, CRC-32 comun în `src/io/crc32.ts`); nume scurte: `CNCVS2.ZIP`, `F<k>X<N>/`. Mașina, simularea și
   rezumatul rămân ale foii active. **Încă 11 motive date doar de calcul (ale lui `main`: gruparea, degruparea, textul,
   rolul, foaia, importul) au trecut în mesajele editorului**: pornirea cu ușa 110,1 → 109,6 / 110, totalul 686,2 / 700.
+  **Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑)** gata pe 13.11: fereastra `src/app/DialogRaportFoi.tsx`
+  (din export, cu colțul și Z0 de acolo, și din paletă, `export.raport`), calculul pur `src/model/raportFoi.ts` (mărimea =
+  cutia contururilor tăiate de un profil exterior prin toată grosimea, fără despărțire, în axele piesei; altfel a desenului,
+  marcată; foile identice după o semnătură fără id-uri și fără numele frezei), CSV-ul `src/app/raportCsv.ts` (BOM, `;` cu
+  virgula zecimală sau `,`; trei tabele). Tipărirea: fereastra e un portal sub `body`, iar `@media print` din `stil.css`
+  scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
+  0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
+  110 (rămân ~0,3 kB), totalul 690,5 / 700.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
