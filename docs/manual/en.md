@@ -70,7 +70,135 @@ thickness matters for cutting: an operation does not go below the sheet's bottom
 through it.
 
 A shape that goes off the sheet is flagged in the On the sheet panel, at the bottom in the status bar, and on the ruler, with
-the dimension line (by how many mm it goes past).
+the dimension line (by how many mm it goes past). A project can have several sheets: see [Sheets](#foile).
+
+## Sheets
+%% capitol: foile
+%% acopera: foaie.adauga, foaie.duplica, foaie.sterge, foaie.muta-sus, foaie.muta-jos, foaie.eticheta, selectie.muta-pe-foaie, vedere.foaia-anterioara, vedere.foaia-urmatoare, vedere.toate-foile, foaie.aseaza, selectie.muta-si-aseaza
+
+A project can have several sheets of material: different boards (another material, another thickness) or parts that do not
+fit on one. Each sheet has its own size, its own parts and, if you like, a name and a material.
+
+**The active sheet.** You work on one sheet at a time, the active sheet: the canvas, the tools, the Properties panel, the
+check, the toolpath, the time, the 3D view and the [export](#export) are all its own. The **On the sheet** panel shows all the
+sheets, one below the other, with the size, the material and how many parts each has; the parts show only under the active
+sheet. A click on a sheet's row makes it active (the selection is cleared); `PageUp` (**Previous sheet**) and `PageDown`
+(**Next sheet**) go through the list. With several sheets, the bottom bar shows the active sheet and its place ("Sheet 2 · 2
+of 3"). The app remembers the active sheet in the browser: when you open the project again, it starts on it.
+
+**All sheets on the canvas.** The sheets sit on the canvas side by side, in the order of the list, 100 mm apart, each with its
+name above it. The active one is live, with its rulers; the others are dimmed and cannot be edited. A **double click** on a
+dimmed sheet makes it active, without the canvas jumping. The **All sheets on the canvas** button, at the bottom right (next to
+"Show toolpath"), turns the dimmed sheets off and on: on, it frames them all; off, only the active sheet stays, framed. The
+choice is remembered in the browser. `Home` frames the active sheet.
+
+**New sheet.** The **+ New sheet** button, under the list, adds a sheet after the active one, with the same size and the same
+material, and makes it active. A sheet without a name is called by its number ("Sheet 2"); the number stays when you move or
+delete other sheets.
+
+**The sheet menu** (the ⋯ button on its row, or a right click on the row):
+- **Name, size and material…** makes the sheet active and opens the Properties panel, where you write the
+  **Sheet name and material** (up to 200 characters; an empty field removes them) and its size. The material is a label
+  ("white MDF 18"): it does not change the cutting.
+- **Duplicate the sheet** makes a new sheet after it, with the same size, the same material and separate copies of its parts
+  (like `Ctrl+D`).
+- **Duplicate the sheet with the same parts** does the same, but with the same parts: see [Parts placed more than
+  once](#piese-legate).
+- **Move the sheet up** and **Move the sheet down** change the order of the sheets in the list.
+- **Delete the sheet** removes it, with its parts; if it has parts, the menu asks first. The project's last sheet stays.
+
+**Move to another sheet.** The chosen parts go to another sheet from the canvas [right-click menu](#meniu): **Move to** and the
+sheet's name, or **Move to a new sheet**. Or drag a part's row from the list onto another sheet (if it is in the selection, the
+whole selection goes). Each part keeps its place and rotation; if it goes past the new sheet, the usual warning shows. The
+active sheet stays the same.
+
+**Arrange on sheets.** **Arrange on sheets…** (from the canvas right-click menu or from the sheet menu) opens the
+arranging window. You choose what is arranged (the chosen parts or all on the sheet), the starting corner (top left by
+default), the sheet margin and the distance between parts, on X and on Y (with **Same on X and Y** ticked, a single
+number). The parts are placed by the box of each one, with its rotation, row by row; the ones staying on the sheet are
+avoided. Whatever no longer fits goes to the next sheet, if it is empty, then to new sheets, like the active sheet. A part
+larger than the sheet stays where it is. No size changes. The distance is at least the cutter of the outside profile
+(otherwise one part’s cut would run into its neighbour), and the window says the minimum. **Order**: as in the list
+(default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
+**Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
+
+**Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
+sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement;
+**Move and arrange on a new sheet** arranges them on a new sheet, like the active one. Whatever does not fit goes, as
+above, to the next sheets.
+
+Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets, an arrangement) is a single undo step
+(`Ctrl+Z`).
+
+## Parts placed more than once
+%% capitol: piese-legate
+%% acopera: piesa.inca, piesa.plus-unu, piesa.desprinde, foaie.duplica-legat
+
+A part can be placed more than once: the same shape, with the same operations, in several places, on the same sheet or on
+others. Each place is an instance of the part, with its own place and rotation; the shape and the operations belong to the
+part, so a change to them shows on all of them.
+
+**More and +1.** With a single part chosen, the Properties panel shows, under **Part**, how many times it is placed and on
+which sheets. **More…** asks **How many in total** (more than now, at most 1,000) and shows, before you add them, where the
+new ones go: on the part's row, to its right, then on rows below, from the sheet's margin (10 mm), going around the parts on
+the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger.
+Whatever does not fit goes to the next sheet, if it is empty, then to new sheets, like the part's sheet. **+1** places one
+more after the last. `Ctrl+D` stays a separate copy, with its own part.
+
+**How they show.** The row of a part placed more than once shows in the list, in violet, which one it is ("(3 of 12)"). While
+one is chosen, a violet band at the bottom of the canvas says how many times the part is placed (with the text panel open, the panel says it): a change to the shape, the
+nodes, the text, the scale, the mirroring, the skew or the operations is made for all of them. The place and the rotation stay
+each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
+a mirror or a skew: then the change is refused, with the reason.
+
+**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its own,
+a copy, in the same place: from then on it changes on its own. The last instance keeps the part. [Ungrouping](#degrupare),
+the [check](#verificare)'s repairs and [cutting the vectors](#taiere) do not change a part placed more than once: detach it
+first. A deleted instance goes alone; the part goes with its last instance.
+
+**Grouping.** With a part placed more than once among the chosen shapes, **Group** asks: **Just this one** (detaches it, then
+groups) or **In all N** (the other shapes go into the part, so they show next to each of its instances; it works with a single
+part of this kind among the chosen ones). The **Remember the choice** box keeps it in the browser: grouping no longer asks.
+The right-click menu has both rows, **Group just this one** and **Group in the whole part**.
+
+**Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
+instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
+copies.
+
+**Plates.** A field is written in the text of a part between braces: `{name}`, `Table {no}`. The part becomes a template: the
+shape, the font and the size are its own, and each instance is a plate with its own values. With one chosen, the Properties
+panel shows **On this plate**, with a row per field; a value written (`Enter`) makes the letters of the plate from the font of
+the text (the font must be on this computer; otherwise the panel says why not). A field without a value stays empty. On the
+sheet, when cutting and in the export, the plate has its own text; the list names it after it. The operations of the template
+that cut its text (the outside profile, the inside one, the engraving) cut the letters of every plate the same way; the frame
+and the holes stay the template's. **More…** and **+1** place copies with the same values. The text of the template is edited
+with the Text tool, on any plate: **Apply** redoes the letters of all the plates, with their values (the panel says how many).
+The cutting role and the scale of the part are changed for all of them. The letters of the template are not edited as nodes
+and are not skewed: the plates would keep the old text (the reason says so). **Detach** on a plate (even a single one) gives it
+a part of its own, with its ordinary text; grouping and ungrouping detach it the same way.
+
+**From CSV.** On a part with a text (even a grouped one, with a frame), **From CSV…** (in the panel, under **Part**) makes one
+plate per row of a table: a `.csv` or `.txt` file (**Choose the file…**), or cells pasted from Excel. The separator (`;`, `,`
+or tab) and the encoding (UTF-8 or Windows-1250, as Excel saves in Romanian) are found automatically and can be changed; the
+**The first row has the column names** box gives the column names. Each field takes the column with the same name (ignoring
+capitals and diacritics: **matched automatically**) or, by choice, another column, **a value** written in, or **numbering**
+(from, step, digits). A text without a field: choose in **The text of the part** the piece that changes from one plate to
+another and press **Make the chosen text the field {Name}** (the name is the column's, or the one written in). **Rows from …
+to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets: 2 + 2 + 2”), with the margin and spacing of
+“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter). **Make the plates**: the first row on
+the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
+by the box** box on the text, the panel says how many plates were shrunk and by how much.
+
+**Text coming out of the plate.** The plate is the largest closed contour of the part, outside its texts (the frame, the edge
+of the plate). When the text of a plate goes past it (a name too long, without a box), the plate is red in the list, the
+bottom bar says so, and the panel says so under **On this plate**: shorten the text, make it smaller or put it in a box. In the
+**From CSV…** window, **If the text comes out of the plate** chooses what happens: **warning** (by default) or **warning and
+confirmation at export**; with the second, the export window shows the plates and **Export** starts only after the tick.
+
+**The text of a frame.** On a template with a frame (the text grouped with other shapes), the Text tool chooses the text with a
+click on its letters; **Apply** changes it and keeps the frame and its place on it, and the plates are redone.
+
+Each gesture is a single undo step (`Ctrl+Z`).
 
 ## Drawing
 %% capitol: desen
@@ -427,8 +555,8 @@ outlines (roughing and finishing) cuts them, after ungrouping, outline by outlin
 and a single `Ctrl+Z` puts them back together.
 
 Ungrouping is refused, with the reason shown next to the buttons (also on `Ctrl+Shift+G`), if a **V-carve** cuts its outlines
-together (letters with their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none
-of the chosen shapes is a group.
+together (letters with their holes: apart, the holes would be cut too), if the part is placed more than once (detach it first,
+see [Parts placed more than once](#piese-legate)), or if none of the chosen shapes is a group.
 
 ## Grouping
 %% capitol: grupare
@@ -448,7 +576,8 @@ place.
 Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
 letter comes out the same. Grouping is refused, with the reason shown next to the buttons (also on `Ctrl+G`), if a single shape
 is chosen, if two shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the
-overlap would be left uncut) or if a chosen part is also used by other instances.
+overlap would be left uncut). With a part placed more than once among the chosen ones, grouping asks first: see [Parts placed
+more than once](#piese-legate).
 
 ## The right-click menu
 %% capitol: meniu
@@ -458,6 +587,7 @@ A right click on the canvas opens the **right-click menu**, with what can be don
 **Subtract** and **Intersect** (the boolean), then **Duplicate** and **Delete selection**, each with its key. On a shape that is
 not chosen, the right click chooses it first; on empty space, the selection stays. A row is active only when it can run (the
 boolean with two shapes, grouping with at least two, ungrouping with a group chosen); a refusal shows its reason in the menu.
+With several sheets, at the end: **Move to** each other sheet and **Move to a new sheet** (see [Sheets](#foile)).
 
 The arrow keys move between rows, `Enter` runs the row, `Esc` closes the menu; it also closes on a click outside it, on the
 wheel or after a command has run. In the 3D view, a right click does not open the menu.
@@ -1207,7 +1337,8 @@ drawing, it closes by itself.
 %% capitol: export
 %% acopera: export.gcode
 
-**Export G-code** opens the export window. Besides the [operations](#operatii), you choose:
+**Export G-code** opens the export window, for the active sheet (with several [sheets](#foile), the window's title says
+which). Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
@@ -1266,6 +1397,17 @@ exactly this file reaches the machine). If the cutter would leave the sheet, the
 export asks you to confirm that nothing is in the way there (clamps, screws); the confirmation is written in the program's
 header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
 in [the Machine](#masina), without starting it.
+
+**All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
+sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
+`.zip` archive (`cncvs2-stanga-jos-foile.zip`), with the sheet in each file's name (`cncvs2-stanga-jos-foaia-2.nc`); on
+RichAuto, `CNCVS2.ZIP`, with each sheet in its own folder (`F2/CNCVS2.NC`). Identical sheets (the same parts in the same
+places, with the same operations, as after “Duplicate the sheet with the same parts”) come out once, with ×N in the name
+(`…-foaia-1-x3.nc`: cut it three times), and a sheet with nothing to cut is left out. The window's rows stay those of the
+active sheet: the other sheets keep their own operations. After the export, the window shows the sheets, the files and the
+time of each, then the time of all. A sheet the cutter leaves (other than the active one, whose confirmation you give here)
+is exported alone, with its own confirmation. **Open in Machine** loads the active sheet's program. The plates the text comes
+out of are, here, those of all sheets: if you chose the confirmation in **From CSV…**, **Export** waits for the tick.
 
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
 answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
@@ -1761,6 +1903,7 @@ it, and the app’s interface stays the same.
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
+| `PageUp`, `PageDown` | Previous sheet, Next sheet (the active sheet, along the list of sheets) |
 | `T` | Show toolpath |
 | `V` `S` `N` `K` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Knife, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |

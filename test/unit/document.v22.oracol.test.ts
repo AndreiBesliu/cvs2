@@ -155,11 +155,13 @@ test('(o) documentele v21 valide: contractul v21 și ușa le primesc, iar ușa v
   assert.ok(VALIDE_V21.length >= VALIDE_V20.length + 6);
 });
 
-test('(o) documentele v22 valide: contractul v22 și ușa le primesc, iar ușa le dă neschimbate; ușa v21 le refuză', () => {
+test('(o) documentele v22 valide: contractul v22 și ușa le primesc, ușa v22 le dă neschimbate, ușa v23 le urcă doar cu numărul; ușa v21 le refuză', () => {
   for (const { nume, doc } of VALIDE_V22) {
     assert.deepEqual(verificaVnO(doc, 22), [], nume);
     assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), doc), undefined, nume);
+    assert.equal(diferenta(ridicaPanaLaO(doc, 22), doc), undefined, nume);
+    // Felia 11.4↑ (ADR 0210 §7): v22 → v23 schimbă doar numărul.
+    assert.equal(diferenta(ridicaO(doc), { ...(doc as Liber), schema: 23 }), undefined, `${nume}: ușa v23`);
     assert.deepEqual(categoriiO(verificaPanaLaO(doc, 21)), ['schema'], `${nume}: ușa v21`);
   }
   assert.ok(VALIDE_V22.length >= VALIDE_V21.length + 6);
@@ -169,7 +171,8 @@ test('(o) documentele vechi urcă la v22 exact ca pe hârtie; ușa nu-și schimb
   for (const { nume, vechi, v22 } of MIGRARI_V22_HARTIE) {
     const inainte = JSON.stringify(vechi);
     assert.deepEqual(verificaO(vechi), [], nume);
-    assert.equal(diferenta(ridicaO(vechi), v22), undefined, nume);
+    assert.equal(diferenta(ridicaPanaLaO(vechi, 22), v22), undefined, nume);
+    assert.equal(diferenta(ridicaO(vechi), { ...(v22 as Liber), schema: 23 }), undefined, `${nume}: la v23, doar numărul`);
     assert.equal(JSON.stringify(vechi), inainte, `${nume}: intrarea s-a schimbat`);
     assert.deepEqual(verificaVnO(v22, 22), [], `${nume}: rezultatul e un v22 valid`);
   }
@@ -178,7 +181,7 @@ test('(o) documentele vechi urcă la v22 exact ca pe hârtie; ușa nu-și schimb
 test('(o) un câmp nou în afara locului lui e un câmp necunoscut oarecare: primit și păstrat', () => {
   for (const { nume, doc, v22 } of NECIOCNIRI_V22) {
     assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), v22), undefined, nume);
+    assert.equal(diferenta(ridicaPanaLaO(doc, 22), v22), undefined, nume);
   }
 });
 
@@ -208,8 +211,9 @@ test('(o) frontierele: fiecare valoare are verdictul de pe hârtie, iar un refuz
 
 test('(o) refuzurile: fiecare document stricat are exact categoria lui, iar motivul numește câmpul', () => {
   const rele: string[] = [];
+  // Refuzurile ușii v22 (R01: un v23 e, pentru ea, o versiune mai nouă).
   for (const r of REFUZATE_V22) {
-    const p = verificaO(r.doc);
+    const p = verificaPanaLaO(r.doc, 22);
     if (JSON.stringify(categoriiO(p)) !== JSON.stringify([r.categorie])) {
       rele.push(`${r.nume}: ${p.length === 0 ? 'primit' : `categoriile ${categoriiO(p).join(', ')} (${p.join('; ')})`}, nu ${r.categorie}`);
       continue;
@@ -242,10 +246,11 @@ test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, s
     11: ['pasLateral'], 12: ['coborare'], 13: ['retragereCompleta'], 14: ['scula.forma'], 15: ['fundPlat'],
     16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'], 19: ['rang'],
     20: ['incrustatie'], 21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
-    22: ['incrustatie.banda'],
+    22: ['incrustatie.banda'], 23: ['instanta:texte'],
   });
   const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1, rang: 1, incrustatie: { jocLateral: 1, dop: 1, sprijin: 1, frezeDop: 1, banda: 1 } }]);
-  for (let de = 10; de < SCHEMA_CURENTA_O; de++) {
+  // Rândul 23 e al instanței (`texte`, ADR 0210 §7): îl judecă proba v23; aici, pașii pe operație, până la v22.
+  for (let de = 10; de < 22; de++) {
     const c = ciocniriO(op, de);
     assert.equal(c.length, (CAMPURI_NOI_O[de + 1] ?? []).length, `v${de} → v${de + 1}: ${c.join('; ')}`);
     assert.ok(c.every((m) => m.startsWith('[ciocnire]') && m.includes(`nu e un document v${de} valid`)), c.join('; '));
@@ -271,7 +276,7 @@ test('(o) ușa întoarce o copie: nimic din rezultat nu e un obiect al intrării
 
 const DOAR_CURENTA = SCHEMA_APP === SCHEMA_CURENTA_O ? false : `aplicația e pe schema ${SCHEMA_APP}; cazurile sunt ale ușii v${SCHEMA_CURENTA_O}`;
 
-test('(a) ușa aplicației primește documentele v22 valide neschimbate, ca o copie', { skip: DOAR_CURENTA }, () => {
+test('(a) ușa aplicației primește documentele v22 valide, urcate la v23 doar cu numărul, ca o copie', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
   for (const { nume, doc } of VALIDE_V22) {
     const brut = structuredClone(doc);
@@ -280,7 +285,7 @@ test('(a) ușa aplicației primește documentele v22 valide neschimbate, ca o co
       rele.push(`${nume}: refuzat (${String(r.motiv)})`);
       continue;
     }
-    const d = diferenta(r.doc, doc);
+    const d = diferenta(r.doc, { ...(doc as Liber), schema: SCHEMA_CURENTA_O });
     if (d !== undefined) rele.push(`${nume}: ${d}`);
     if ((r.doc as unknown) === brut) rele.push(`${nume}: ușa a întors chiar intrarea, nu o copie`);
   }
@@ -295,7 +300,7 @@ test('(a) ușa aplicației urcă documentele vechi exact ca pe hârtie și păst
       rele.push(`${nume}: refuzat (${r.motiv})`);
       continue;
     }
-    const d = diferenta(r.doc, v22);
+    const d = diferenta(r.doc, { ...(v22 as Liber), schema: SCHEMA_CURENTA_O });
     if (d !== undefined) rele.push(`${nume}: ${d}`);
   }
   assert.deepEqual(rele, []);
@@ -329,7 +334,8 @@ test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hâ
 
 test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul pe un document curent, textul citat de ADR la o ciocnire', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
-  for (const c of REFUZATE_V22) {
+  // R01 (un v23, „mai nou” pentru ușa v22) e chiar versiunea aplicației: el nu se mai cere refuzat.
+  for (const c of REFUZATE_V22.filter((x) => !(x.categorie === 'schema' && (x.doc as Liber)['schema'] === SCHEMA_APP))) {
     const r = usa(c.doc);
     if (r.ok) {
       rele.push(`${c.nume}: primit (${c.motiv})`);

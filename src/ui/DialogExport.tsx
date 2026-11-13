@@ -7,7 +7,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import {
   INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, laturiOferite, latimeMinimaBanda, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, PUNTI_BANDA,
   SUB_FATA_DOPULUI, susLaMicron, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
-  type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
+  type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatFoi, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
   type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
@@ -143,6 +143,8 @@ export type StareExport =
     }[];
     /** `calcul`: simularea rulează (după descărcare); apoi rezultatul ei. */
     readonly rezumat: RezumatJob; readonly simulare: SimulareExport | 'calcul';
+    /** „Toate foile” (ADR 0210 §5): arhiva, foile ei (identice ×N), fișierele și timpii. */
+    readonly foi?: RezumatFoi;
   }
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare?: IesireFoaie };
 
@@ -175,7 +177,20 @@ type Props = {
    * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
    */
   readonly onDeschideInMasina?: () => void;
+  /** Foaia exportată (ADR 0210 §5), în titlu, când proiectul are mai multe. */
+  readonly foaie?: string;
+  /**
+   * Plăcuțele foii din care iese textul (ADR 0210 §4, răspunsul 5; felia 11.4↑c), cu numele lor: o notă, sau, cu `confirmare`
+   * (aleasă în fereastra CSV), o bifă fără de care Exportă rămâne oprit. Bifa ține chiar obiectul văzut: altul vine nebifat.
+   */
+  readonly placute?: { readonly nume: readonly string[]; readonly confirmare: boolean };
+  /** Câte foi are proiectul (ADR 0210 §5): de la două, fereastra oferă „Toate foile”, cu plăcuțele tuturor (`placuteToate`). */
+  readonly foi?: number;
+  readonly placuteToate?: { readonly nume: readonly string[]; readonly confirmare: boolean };
 };
+
+/** Câte nume de plăcuțe arată nota exportului; restul, „…”. */
+const PLACUTE_NUMITE = 5;
 
 const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
   ['stanga', 'export.iesire.stanga'], ['dreapta', 'export.iesire.dreapta'], ['jos', 'export.iesire.jos'], ['sus', 'export.iesire.sus'],
@@ -456,13 +471,40 @@ const SENSURI: readonly Sens[] = ['urcare', 'opozitie'];
 const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.urcare', opozitie: 'export.sens.opozitie' };
 
 /**
+ * „Toate foile” exportate (ADR 0210 §5): arhiva și amprenta ei; pe fiecare foaie (cu cele identice, ×N), fișierele ei din arhivă
+ * și timpul estimat; la capăt, timpul tuturor (fiecare foaie de câte ori se taie) și foile fără nimic de tăiat.
+ */
+function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonly sha256: string; readonly limba: Limba }): ReactNode {
+  const n = r.foi.reduce((s, f) => s + 1 + f.identice.length, 0);
+  return (
+    <div role="status" className="export-foi" data-testid="export-foi">
+      <p>{t('export.foi.gata', { arhiva: r.arhiva, n, sha: sha256 })}</p>
+      <table data-rezumat="foi" aria-label={t('export.foi')}>
+        <thead><tr><th>{t('export.foi.foaia')}</th><th>{t('export.foi.fisiere')}</th><th>{t('export.rezumat.durata')}</th></tr></thead>
+        <tbody>
+          {r.foi.map((f) => (
+            <tr key={f.nume} data-foaie={f.nume}>
+              <th scope="row">{f.identice.length > 0 ? t('export.foi.identice', { foaie: f.nume, n: f.identice.length + 1, alte: f.identice.join(', ') }) : f.nume}</th>
+              <td>{f.fisiere.join(', ')}</td>
+              <td>{f.secunde === null ? '—' : durata(f.secunde, limba)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {r.secunde !== null && <p data-foi="timp"><strong>{t('export.foi.timp', { timp: durata(r.secunde, limba) })}</strong></p>}
+      {r.goale.length > 0 && <p className="nota" data-foi="goale">{t('export.foi.goale', { foi: r.goale.join(', ') })}</p>}
+    </div>
+  );
+}
+
+/**
  * Exportul G-code: colțul de origine, Z0, freza și profilul fiecărei operații. Operațiile vin din document și se scriu
  * înapoi în el la Exportă, ca o singură comandă (ADR 0025): se salvează și se anulează cu Ctrl+Z.
  */
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina,
+    onSetariMasina, onDeschideInMasina, foaie, placute, foi, placuteToate,
   }: Props,
 ) {
   const limba = useLimba();
@@ -580,6 +622,15 @@ export function DialogExport(
     setRiscAcceptat(false);
   }
   const bifat = cere !== undefined && confirmata === cere;
+  // Plăcuțele cu textul ieșit (răspunsul 5): bifa ține lista văzută; cu confirmarea aleasă, fără ea nu se exportă.
+  // „Toate foile” (ADR 0210 §5): un program pe foaie, într-o arhivă; plăcuțele de judecat sunt atunci ale tuturor foilor.
+  const [toate, setToate] = useState(false);
+  const pl = toate ? placuteToate : placute;
+  const [placuteVazute, setPlacuteVazute] = useState<object | null>(null);
+  const placuteOprite = pl?.confirmare === true && placuteVazute !== pl;
+  const textPlacute = pl ? t('export.placute.iese', {
+    n: pl.nume.length, nume: [...pl.nume.slice(0, PLACUTE_NUMITE), ...(pl.nume.length > PLACUTE_NUMITE ? ['…'] : [])].join('; '),
+  }) : null;
   const cutie = useRef<HTMLDivElement>(null);
   const cerereVizibila = useRef<HTMLDivElement>(null);
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
@@ -949,7 +1000,18 @@ export function DialogExport(
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
       <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
-        <h2 id="export-titlu">{t('export.titlu', { post: postAles?.nume ?? '' })}</h2>
+        <h2 id="export-titlu">{foaie === undefined ? t('export.titlu', { post: postAles?.nume ?? '' })
+          : t('export.titlu.foaie', { post: postAles?.nume ?? '', foaie: toate ? t('export.foi.toate', { n: foi ?? 0 }) : foaie })}</h2>
+        {(foi ?? 0) > 1 && (
+          <div className="ordine-taierii" data-testid="export-foi-alegere">
+            <span className="eticheta">{t('export.foi')}</span>
+            <div role="group" aria-label={t('export.foi')}>
+              <button type="button" aria-pressed={!toate} data-foi="activa" onClick={() => { setToate(false); }}>{t('export.foi.activa')}</button>
+              <button type="button" aria-pressed={toate} data-foi="toate" onClick={() => { setToate(true); }}>{t('export.foi.toate', { n: foi ?? 0 })}</button>
+            </div>
+            {toate && <span className="nota" data-testid="export-foi-nota">{t('export.foi.nota')}</span>}
+          </div>
+        )}
         <div className="campuri">
           <label>
             {t('export.origine')}
@@ -1519,6 +1581,16 @@ export function DialogExport(
             </label>
           </div>
         )}
+        {pl && textPlacute && (pl.confirmare ? (
+          <div className="confirmare-iesire" data-testid="placute-iesire">
+            <div role="alert"><p>{textPlacute}</p></div>
+            <label>
+              <input type="checkbox" checked={!placuteOprite} data-camp="confirma-placute"
+                onChange={(e) => { setPlacuteVazute(e.target.checked ? pl : null); }} />
+              {t('export.placute.confirma')}
+            </label>
+          </div>
+        ) : <p role="status" className="avertisment" data-testid="placute-iesire">{textPlacute}</p>)}
         {riscuriOrdine.length > 0 && (
           <div className="confirmare-iesire" data-testid="risc-ordine">
             <div role="alert">
@@ -1533,20 +1605,21 @@ export function DialogExport(
           </div>
         )}
         <div className="butoane">
-          <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat)} data-buton="exporta"
-            title={valid ? undefined : motivInvalid}
+          <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite}
+            data-buton="exporta" title={valid ? undefined : motivInvalid}
             onClick={() => {
-              if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat)) return;
+              if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite) return;
               onExporta({
                 origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
-                ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea,
+                ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
               });
             }}>
             {t('export.exporta')}
           </button>
           <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
         </div>
-        {stare?.ok && (stare.fisiere && stare.fisiere.length > 1
+        {stare?.ok && stare.foi && <ListaFoi foi={stare.foi} sha256={stare.sha256} limba={limba} />}
+        {stare?.ok && !stare.foi && (stare.fisiere && stare.fisiere.length > 1
           ? (
             <ul role="status" data-testid="export-stare">
               {stare.fisiere.map((f) => <li key={f.nume} data-fisier={f.nume}>{t('export.gata.fisier', { nume: f.nume, n: f.linii, sha: f.sha256 })}</li>)}

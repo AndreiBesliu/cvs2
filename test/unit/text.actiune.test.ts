@@ -56,9 +56,10 @@ test('refuzurile: piesa care nu mai e text, piesa împărțită, textul fără l
   const rad = p.radacina as Extract<Piesa['radacina'], { tip: 'grup' }>;
   const stricat: Document = { ...d1, piese: [{ ...p, radacina: { ...rad, text: { ...(rad['text'] as object), amprenta: '0' } } }] };
   assert.deepEqual(comandaText(stricat, editat(c.id, PARAM)), { ok: false, motiv: 'motiv.text-vectori' });
-  // A doua instanță a aceleiași piese: editarea le-ar schimba pe amândouă.
+  // A doua instanță a aceleiași piese (ADR 0210 §2): editarea schimbă piesa, deci amândouă.
   const doua: Document = { ...d1, foi: [{ ...d1.foi[0]!, instante: [...d1.foi[0]!.instante, { id: 'alta', piesa: p.id, x: 100, y: 100, rotire: 0 }] }] };
-  assert.deepEqual(comandaText(doua, editat(c.id, PARAM)), { ok: false, motiv: 'motiv.text-impartit' });
+  const ed = comandaText(doua, editat(c.id, { ...PARAM, continut: 'Alt' }));
+  assert.ok(ed.ok && ed.comanda.tip === 'inlocuieste-piesa');
   assert.deepEqual(comandaText(d0, nou({ ...PARAM, continut: '  ' })), { ok: false, motiv: 'motiv.text-gol' });
   assert.deepEqual(comandaText(d0, nou(PARAM, 2e7, 0)), { ok: false, motiv: 'motiv.prea-departe' });
   assert.deepEqual(comandaText(d1, editat('lipsa', PARAM)), { ok: false, motiv: 'motiv.nimic-ales' });

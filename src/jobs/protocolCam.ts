@@ -49,6 +49,11 @@ export type ParametriExport = {
    * gol: implicitele. Nu schimbă programul, doar rezumatul.
    */
   readonly setariMasina?: string;
+  /**
+   * „Toate foile” (ADR 0210 §5): câte un program pe foaie, într-o arhivă. Doar pe firul principal: calculul desparte documentul
+   * pe foi și cere workerului fiecare foaie ca pe un document doar cu ea, fără steagul acesta.
+   */
+  readonly toateFoile?: boolean;
 };
 
 /** Foaia programului, cum o cere simularea. */
@@ -72,15 +77,15 @@ export type CerereCam =
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
-  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare }
+  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare; readonly indexFoaie?: number }
   /** O reparație a verificării (ADR 0124 §10): piesele schimbate și instanțele de șters, pe documentul cererii. */
-  | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare }
+  | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare; readonly indexFoaie?: number }
   /** Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑): instanțele tăiate și părțile lor, pe documentul cererii. */
-  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere }
-  /** Tăierea în panouri (ADR 0181 §7, felia 10.3↑k): degruparea și grupurile panourilor, pe documentul cererii. */
-  | { readonly fel: 'panouri'; readonly document: Document; readonly cerere: CererePanouri }
+  | { readonly fel: 'taiere'; readonly document: Document; readonly cerere: CerereTaiere; readonly indexFoaie?: number }
+  /** Tăierea în panouri (ADR 0181 §7, felia 10.3↑k): degruparea și grupurile panourilor, pe foaia dată a documentului cererii. */
+  | { readonly fel: 'panouri'; readonly document: Document; readonly cerere: CererePanouri; readonly indexFoaie?: number }
   /** Conversia vectorilor (ADR 0180, felia 10.3↑d): piesele schimbate (arce, cercuri, dreptunghiuri), pe documentul cererii. */
-  | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie };
+  | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie; readonly indexFoaie?: number };
 
 export type RaspunsExport =
   | {

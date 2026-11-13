@@ -75,8 +75,8 @@ o('R04', R, "    while (ocupate.has(`e${n}`)) n++;\n", "", 'panouri', 'id-ul gru
 o('A02', A, "t.degrupate.length === 0 && sterse.length === 0 && grupuri.length === 0)", "t.degrupate.length === 0 && sterse.length === 0)", 'panouri',
   'fără nicio tăietură (doar grupuri), acțiunea refuză')
 # Interfața (e2e).
-o('H01', B, "const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[0]?.instante ?? []).map((i) => i.id)), [doc, selectie]);",
-  "const alese = useMemo(() => selectie, [doc, selectie]);", 'e2e', 'fără nimic ales, blocul nu ia formele foii')
+o('H01', B, "const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[indexFoaie]?.instante ?? []).map((i) => i.id)), [doc, selectie, indexFoaie]);",
+  "const alese = useMemo(() => selectie, [doc, selectie, indexFoaie]);", 'e2e', 'fără nimic ales, blocul nu ia formele foii')
 o('H02', B, "onGrila(xs ? { axa: 'grila', cutie, xs, ys } : null)", "onGrila(null)", 'e2e', 'grila nu se arată pe pânză')
 o('H03', B, "disabled={fel !== 'marime'}", "disabled={false}", 'e2e', '„egale / din colț” nu se stinge după număr')
 o('H04', P, "const laLinie = (): void => { setGrila(false); };", "const laLinie = (): void => {};", 'e2e', 'înapoi în blocul de sus, pânza ține grila')

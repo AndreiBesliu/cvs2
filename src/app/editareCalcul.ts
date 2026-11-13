@@ -11,7 +11,6 @@ import type { Transformare } from '../model/transformare.ts';
 
 /** Ce poate da un mâner: rotirea sau scalarea (oglindirea și înclinarea au butoanele lor, ADR 0054, ADR 0065). */
 export type TransformareManer = Exclude<Transformare, { readonly fel: 'oglindire' | 'inclinare' }>;
-import { FOAIA } from '../ui/actiuniDocument.ts';
 import { citesteNumar } from '../ui/numar.ts';
 
 type Punct = { readonly x: number; readonly y: number };
@@ -20,12 +19,12 @@ type Punct = { readonly x: number; readonly y: number };
  * Pură: țintele lipirii pe foaia curentă: foaia (marginile, mijlocul), ghidajele (dacă le cer), marginile și mijlocul
  * cutiei fiecărui element al instanțelor NEalese și capetele căilor deschise ale lor.
  */
-export function tinteFoaie(doc: Document, alese: ReadonlySet<string>, cuGhidaje: boolean): Tinte {
-  const foaie = doc.foi[FOAIA];
+export function tinteFoaie(doc: Document, alese: ReadonlySet<string>, cuGhidaje: boolean, indexFoaie = 0): Tinte {
+  const foaie = doc.foi[indexFoaie];
   if (!foaie) return tinteDin([]);
   const lista: TintaLipire[] = tinteCutie({ minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime }, 'foaie');
   if (cuGhidaje) for (const g of foaie.ghidaje ?? []) lista.push({ axa: g.axa, poz: g.poz, de: -Infinity, la: Infinity, fel: 'ghidaj' });
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     if (alese.has(e.instanta)) continue;
     for (const x of tinteCutie(cutieElement(e), 'forma')) lista.push(x);
     if (e.forma.tip === 'cale' && !e.forma.inchis) {
@@ -41,9 +40,9 @@ export function tinteFoaie(doc: Document, alese: ReadonlySet<string>, cuGhidaje:
 }
 
 /** Pură: cutia fiecărei instanțe alese a foii curente (unirea cutiilor elementelor ei). */
-export function cutiiAlese(doc: Document, alese: ReadonlySet<string>): Array<{ readonly id: string; readonly cutie: Cutie }> {
+export function cutiiAlese(doc: Document, alese: ReadonlySet<string>, indexFoaie = 0): Array<{ readonly id: string; readonly cutie: Cutie }> {
   const cutii = new Map<string, { minX: number; minY: number; maxX: number; maxY: number }>();
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     if (!alese.has(e.instanta)) continue;
     const c = cutieElement(e);
     const v = cutii.get(e.instanta);
@@ -273,9 +272,9 @@ export function felCadru(x0: number, x1: number): FelCadru {
  * Pură: instanțele foii curente prinse de cadrul `r` (mm), în ordinea documentului. Fereastra cere ca fiecare element al
  * instanței (o piesă importată are mai multe contururi) să stea în cadru; intersecția, ca măcar unul să-l atingă.
  */
-export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru): string[] {
+export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru, indexFoaie = 0): string[] {
   const stare = new Map<string, boolean>();
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     const pana = stare.get(e.instanta);
     if (fel === 'fereastra') {
       if (pana === false) continue;
@@ -291,9 +290,9 @@ export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru): string[] {
 }
 
 /** Pură: cutia tuturor formelor foii curente (mm), sau `null` dacă foaia e goală (liniile de cotă ale riglelor, ADR 0060). */
-export function cutieFormelor(doc: Document): Cutie | null {
+export function cutieFormelor(doc: Document, indexFoaie = 0): Cutie | null {
   let r: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
-  for (const e of elementeFoaie(doc, FOAIA)) {
+  for (const e of elementeFoaie(doc, indexFoaie)) {
     const k = cutieElement(e);
     r = r ? { minX: Math.min(r.minX, k.minX), minY: Math.min(r.minY, k.minY), maxX: Math.max(r.maxX, k.maxX), maxY: Math.max(r.maxY, k.maxY) } : { ...k };
   }

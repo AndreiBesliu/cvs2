@@ -193,22 +193,31 @@ const SchemaOperatie = v.looseObject({
 const SchemaPiesa = v.looseObject({
   id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie), inaltimeImprimanta: v.optional(pozitiv(PLAFON.grosime)),
 });
+/** Literele unei plăcuțe (ADR 0210 §7; v23): forma; potrivirea cu piesa și cu valorile o judecă documentul întreg. */
+/** Un dicționar (ADR 0024): un obiect, nu o listă; `v.record` singur primește și `[]` (îl copiază într-un obiect), deci întâi forma. */
+const dictionar = <T extends v.GenericSchema>(s: T) =>
+  v.pipe(v.custom<unknown>((x) => typeof x === 'object' && x !== null && !Array.isArray(x), 'un dicționar, nu o listă'), s);
+export const SchemaTextePlacuta = v.looseObject({ continut: v.string(), copii: v.array(SchemaNod), operatii: dictionar(v.record(Id, v.array(Id))) });
 const SchemaInstanta = v.looseObject({
   id: Id,
   piesa: Id,
   x: finit,
   y: finit,
   rotire: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(360)),
-  campuri: v.optional(v.pipe(
+  campuri: v.optional(dictionar(v.pipe(
     v.record(v.pipe(v.string(), v.maxLength(PLAFON.campCheie)), v.pipe(v.string(), v.maxLength(PLAFON.campLungime))),
     v.check((c) => Object.keys(c).length <= PLAFON.campuri, `cel mult ${PLAFON.campuri} de câmpuri pe instanță`),
-  )),
+  ))),
+  texte: v.optional(dictionar(v.record(Id, SchemaTextePlacuta))),
 });
 /** Ghidajele foii (ADR 0050): opționale, fără schemă nouă (nu schimbă tăierea); plafonul și poziția, ca la instanțe. */
 const SchemaGhidaj = v.looseObject({ id: Id, axa: v.picklist(['x', 'y']), poz: coordonata });
 const SchemaFoaie = v.looseObject({
   id: Id,
   nume: Nume,
+  // `material` (ADR 0210 §1) nu e judecat aici: în documentele de până la el era un câmp necunoscut al foii, cu orice valoare
+  // (oracolul documentului îl generează așa), iar un document valid ieri rămâne valid. Aplicația îl citește doar când e text
+  // (`materialFoaie`) și scrie doar text de cel mult 200 de caractere; altceva rămâne neatins.
   stoc: v.looseObject({ latime: pozitiv(PLAFON.latura), inaltime: pozitiv(PLAFON.latura), grosime: pozitiv(PLAFON.grosime) }),
   instante: v.array(SchemaInstanta),
   ghidaje: v.optional(v.pipe(v.array(SchemaGhidaj), v.maxLength(PLAFON.ghidaje, `cel mult ${PLAFON.ghidaje} de ghidaje pe foaie`))),
@@ -218,7 +227,7 @@ const SchemaFoaie = v.looseObject({
  * Matricea compusă a fiecărui nod față de rădăcina piesei rămâne finită și mărginită: un lanț de 32 de scalări mari ar
  * da altfel Infinity sau NaN în lume (pe pânză și în CAM). Compunerea e cea din `lume.ts`, de sus în jos.
  */
-function matriciInMargini(p: Piesa): string | null {
+export function matriciInMargini(p: Piesa): string | null {
   const stiva = [{ nod: p.radacina, m: IDENTITATE }];
   while (stiva.length > 0) {
     const x = stiva.pop();
@@ -249,6 +258,17 @@ function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | nul
     if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
   }
   return null;
+}
+
+/**
+ * Judecata literelor plăcuțelor (v23, ADR 0210 §7) stă în `judecataTexte.ts`, adus doar pentru un document cu plăcuțe
+ * (ușa de la pornire îl cere înaintea primei randări, ca migrările pentru unul vechi, ADR 0070) și mereu de ușa întreagă
+ * (`incarcare.ts`) și de acțiunile care fac litere. Se înregistrează aici când vine; fără el, un document cu plăcuțe nu trece.
+ */
+let judecataTexte: ((d: Document) => string | null) | null = null;
+
+export function inregistreazaJudecataTexte(judeca: (d: Document) => string | null): void {
+  judecataTexte = judeca;
 }
 
 /** Ce cere contractul peste forma fiecărui câmp: unicitatea, referințele și plafoanele de ansamblu. */
@@ -293,6 +313,16 @@ function problemaDeAnsamblu(d: Document): string | null {
     if (m) return m;
   }
   return null;
+}
+
+/**
+ * Literele plăcuțelor (v23), judecate de ușă după schemă (după plafoane: o plăcuță uriașă nu se judecă literă cu literă), pe
+ * documentul BRUT, cel pe care îl întoarce: cheile `__proto__`, `constructor` și `prototype` sunt date (ADR 0024 §9), iar
+ * ieșirea validatorului nu le are (o plăcuță cu o asemenea cheie n-ar fi fost judecată). Null: n-are plăcuțe, sau trec.
+ */
+export function problemaTexte(d: Document): string | null {
+  if (!d.foi.some((f) => f.instante.some((i) => i.texte !== undefined))) return null;
+  return judecataTexte ? judecataTexte(d) : 'documentul are plăcuțe cu litere, iar judecata lor nu e încărcată';
 }
 
 export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(

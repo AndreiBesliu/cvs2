@@ -86,8 +86,11 @@ test('refuzurile: cercul, colțurile rotunjite, o cale cu arce, piesa împărți
     { id: 'p', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { ...ID, e: 200, f: 50 } });
   const t = (unghiX: number): Transformare => ({ fel: 'inclinare', unghiX, unghiY: 0, centru: P(0, 0) });
   for (const id of ['o', 'r', 'a']) assert.deepEqual(transforma(doc, 0, [id], t(20)), { ok: false, motiv: 'inclinare-arc' }, id);
+  // Pusă de două ori (ADR 0210 §2): înclinarea schimbă piesa pentru amândouă; alese amândouă, în locuri diferite, refuz.
   const imp = { ...doc, foi: doc.foi.map((f) => ({ ...f, instante: [...f.instante, { id: 'p2', piesa: 'p', x: 0, y: 0, rotire: 0 }] })) };
-  assert.deepEqual(transforma(imp, 0, ['p'], t(20)), { ok: false, motiv: 'piesa-impartita' });
+  const i1 = transforma(imp, 0, ['p'], t(20));
+  assert.ok(i1.ok && i1.piese.length === 1);
+  assert.deepEqual(transforma(imp, 0, ['p', 'p2'], t(20)), { ok: false, motiv: 'piesa-impartita' });
   for (const u of [75.5, -80, Number.NaN]) assert.deepEqual(transforma(doc, 0, ['p'], t(u)), { ok: false, motiv: 'unghi-invalid' }, String(u));
   assert.ok(transforma(doc, 0, ['p'], t(75)).ok, '75° trece');
 });

@@ -6,6 +6,8 @@ import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.
 import { conturElement } from '../model/forme.ts';
 import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
 import { cuprinse } from '../model/ordine.ts';
+import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
+import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
@@ -39,11 +41,22 @@ type Props = {
   readonly onSetariMasina: (text: string) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
+  /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
+  readonly foaie?: string;
+  /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
+  readonly toate: Document;
 };
+
+/** Plăcuțele foii `k` (toate foile, fără el) cu textul ieșit, cu numele lor și confirmarea aleasă în fereastra CSV; altfel nimic. */
+function placuteIesite(d: Document, k?: number): { readonly nume: readonly string[]; readonly confirmare: boolean } | undefined {
+  const piese = new Map(d.piese.map((p) => [p.id, p]));
+  const nume = placuteCuTextIesit(d, k).map((i) => numePlacutei(i, piese.get(i.piesa)));
+  return nume.length > 0 ? { nume, confirmare: iesireTextTinuta() === 'confirmare' } : undefined;
+}
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina,
+  onDeschideInMasina, foaie, toate,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -143,6 +156,14 @@ export function ExportConectat({
   }, [doc, dupaIdLume, lume, descriere, limba]);
 
   /**
+   * Plăcuțele foii cu textul ieșit din ele (ADR 0210 §4, răspunsul 5): o notă, sau confirmarea, dacă omul a ales-o în fereastra
+   * CSV. Un obiect nou la fiecare document: o bifă pusă pe plăcuțele de dinainte nu trece pe altele.
+   */
+  const placute = useMemo(() => placuteIesite(doc, 0), [doc]);
+  // Cu „Toate foile” (ADR 0210 §5), plăcuțele tuturor foilor.
+  const placuteToate = useMemo(() => placuteIesite(toate), [toate]);
+
+  /**
    * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
    * rangul fiecăreia în ordinea omului, 0 … n − 1, sau fără rang în ordinea automată (ADR 0133 §3).
    */
@@ -165,6 +186,7 @@ export function ExportConectat({
   return (
     <DialogExport
       baza={baza}
+      {...(foaie === undefined ? {} : { foaie })}
       operatii={exportFoaie.randuri}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
@@ -176,6 +198,9 @@ export function ExportConectat({
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
+      {...(placute ? { placute } : {})}
+      {...(placuteToate ? { placuteToate } : {})}
+      foi={toate.foi.length}
     />
   );
 }

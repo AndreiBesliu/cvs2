@@ -83,6 +83,6 @@ test('cu calculul încărcat, garda + calculul = calculul singur, pe toată matr
   }
 });
 
-test('calculul înregistrat acoperă exact cele cinci acțiuni la cerere, plus cele ale editării (ADR 0050–0053, 0061), textul (ADR 0105), rolul (ADR 0112), reparația vectorilor (ADR 0124) și tăierea lor (ADR 0180)', () => {
-  assert.deepEqual(Object.keys(CALCUL_DOCUMENT).sort(), [...LA_CERERE, 'foaie.ghidaje', 'document.muta-instantele', 'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.grupeaza', 'document.text', 'document.rol', 'document.repara', 'document.taie', 'document.converteste'].sort());
+test('calculul înregistrat acoperă exact cele cinci acțiuni la cerere, plus cele ale editării (ADR 0050–0053, 0061), textul (ADR 0105), rolul (ADR 0112), reparația vectorilor (ADR 0124), tăierea și conversia lor (ADR 0180), foile și piesele legate (ADR 0210)', () => {
+  assert.deepEqual(Object.keys(CALCUL_DOCUMENT).sort(), [...LA_CERERE, 'foaie.ghidaje', 'document.muta-instantele', 'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.grupeaza', 'document.text', 'document.rol', 'document.repara', 'document.taie', 'foaie.adauga', 'foaie.duplica', 'foaie.sterge', 'foaie.muta-sus', 'foaie.muta-jos', 'foaie.eticheta', 'selectie.muta-pe-foaie', 'piesa.inca', 'piesa.plus-unu', 'piesa.desprinde', 'foaie.duplica-legat', 'foaie.aseaza', 'selectie.muta-si-aseaza', 'document.converteste'].sort());
 });

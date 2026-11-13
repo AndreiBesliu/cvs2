@@ -153,6 +153,10 @@ export type RezultatExport =
     readonly dopuri: readonly DopExportat[];
     /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */
     readonly sender: boolean;
+    /** „Toate foile” (ADR 0210 §5): fișierele foii active, pentru panoul mașinii (cele de descărcat sunt arhiva). */
+    readonly masina?: readonly FisierExportat[];
+    /** „Toate foile”: foile din arhivă, cu foile identice, fișierele și timpul fiecăreia. */
+    readonly foi?: RezumatFoi;
     /**
      * Simularea, pornită de aplicație DUPĂ descărcare (recenzia 19.10: descărcarea aștepta simularea, până la 10 s pe o
      * foaie mare și un fir); semnalul o anulează (un export nou, un parametru schimbat, dialogul închis).
@@ -163,8 +167,23 @@ export type RezultatExport =
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };
 
+/**
+ * O foaie din arhiva „Toate foile” (ADR 0210 §5): numele ei, numele foilor identice cu ea (ies o dată, ×N), fișierele ei din
+ * arhivă și timpul estimat al uneia (null: estimarea n-a mers).
+ */
+export type FoaieExportata = {
+  readonly nume: string; readonly identice: readonly string[]; readonly fisiere: readonly string[]; readonly secunde: number | null;
+};
+
+/** Arhiva „Toate foile”: numele ei, foile cu program, foile fără nimic de tăiat și timpul tuturor (fiecare foaie de N ori). */
+export type RezumatFoi = {
+  readonly arhiva: string; readonly foi: readonly FoaieExportata[]; readonly goale: readonly string[]; readonly secunde: number | null;
+};
+
 export type ContextExport = {
   readonly document: () => Document;
+  /** Documentul cu toate foile, pentru „Toate foile” (ADR 0210 §5); `document` e cel al foii active. */
+  readonly toate?: () => Document;
   readonly parametri: () => ParametriExport;
   /** Anularea calculului (ADR 0109): workerul CAM se oprește din mijlocul lui. */
   readonly semnal?: () => AbortSignal;

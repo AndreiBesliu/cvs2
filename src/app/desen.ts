@@ -57,14 +57,14 @@ export function directiaDeStart(c: Contur): { readonly ux: number; readonly uy: 
  * foaie (cu aceeași funcție ca CAM-ul, deci corectă și sub oglindire), pentru liniuță. Pe linie, sensul nu schimbă
  * tăietura, deci săgeata nu apare (decizia owner-ului, 13.10; ADR 0037 §12).
  */
-export function listaDesen(doc: Document): FormaDesen[] {
+export function listaDesen(doc: Document, indexFoaie = 0): FormaDesen[] {
   const parti = new Map<string, 1 | -1>();
-  for (const t of taieturiFoaie(doc, 0)) {
+  for (const t of taieturiFoaie(doc, indexFoaie)) {
     if ((t.latura === 'stanga' || t.latura === 'dreapta') && !parti.has(t.idLume)) {
       parti.set(t.idLume, parteaLume(t.latura, oglindeste(t.matrice)) === 'stanga' ? 1 : -1);
     }
   }
-  return elementeFoaie(doc, 0).map((e) => {
+  return elementeFoaie(doc, indexFoaie).map((e) => {
     const c = conturElement(e);
     const p = c.varfuri[0]?.p;
     const parte = parti.get(e.idLume);

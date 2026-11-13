@@ -25,8 +25,10 @@ const mm = (x: number, virgula: boolean): string => textNumar(Math.round(x * 100
  * `onGrila`), iar sub câmpuri, câte panouri ies. Calculul e al workerului CAM, pe documentul din clipa clicului; tăierea și
  * gruparea panourilor se aplică prin acțiunea `document.taie`, într-un pas de anulare.
  */
-export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }: {
+export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, onGrila, onTaie }: {
   readonly doc: Document;
+  /** Foaia de lucru (planșele, etapa 11): formele, cutia și materialul ei. */
+  readonly indexFoaie?: number;
   readonly selectie: readonly string[];
   /** Grila e cea arătată pe pânză (nu linia de deasupra). */
   readonly activ: boolean;
@@ -35,7 +37,7 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
   readonly onTaie: (t: TaiereCalculata) => RezultatActiune;
 }): ReactElement {
   const virgula = useLimba() === 'ro';
-  const stoc = doc.foi[0]?.stoc;
+  const stoc = doc.foi[indexFoaie]?.stoc;
   const [fel, setFel] = useState<'marime' | 'numar'>('marime');
   const [textL, setTextL] = useState(() => (stoc ? mm(stoc.latime, virgula) : ''));
   const [textI, setTextI] = useState(() => (stoc ? mm(stoc.inaltime, virgula) : ''));
@@ -49,11 +51,11 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
 
   // Formele de tăiat: cele alese (aplicația dă doar alegerea care mai e pe foaie, `selectieValida`); fără alegere, toate ale foii.
   // Cutia lor, exactă, e cea a grilei.
-  const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[0]?.instante ?? []).map((i) => i.id)), [doc, selectie]);
+  const alese = useMemo(() => (selectie.length > 0 ? selectie : (doc.foi[indexFoaie]?.instante ?? []).map((i) => i.id)), [doc, selectie, indexFoaie]);
   const cutie = useMemo(() => {
     const ids = new Set(alese);
     let k = CUTIE_GOALA;
-    for (const e of elementeFoaie(doc, 0)) {
+    for (const e of elementeFoaie(doc, indexFoaie)) {
       if (!ids.has(e.instanta)) continue;
       try {
         k = uneste(k, cutieElement(e));
@@ -62,7 +64,7 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
       }
     }
     return k;
-  }, [doc, alese]);
+  }, [doc, alese, indexFoaie]);
   const L = citesteNumar(textL), I = citesteNumar(textI), C = citesteNumar(textC), R = citesteNumar(textR);
   const g: GrilaPanouri | null = fel === 'marime' ? (L === null || I === null ? null : { fel, latime: L, inaltime: I, colt })
     : C === null || R === null ? null : { fel, coloane: C, randuri: R };
@@ -96,7 +98,7 @@ export function PanouriTaiere({ doc, selectie, activ, onActiv, onGrila, onTaie }
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taiePanourile(laCerere, cerere, s.signal).then((rez) => {
+      calc.taiePanourile(laCerere, cerere, s.signal, indexFoaie).then((rez) => {
         if (s.signal.aborted) return;
         if (!rez.ok) {
           const m = rez.motiv === 'valoare' ? 'editare.taiere.panouri.valoare' : rez.motiv === 'nimic-taiat' ? 'editare.taiere.panouri.unul' : (`editare.taiere.motiv.${rez.motiv}` as const);

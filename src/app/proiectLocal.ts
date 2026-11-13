@@ -113,8 +113,11 @@ type Usa = (brut: unknown) => RezultatIncarcare | Promise<RezultatIncarcare>;
  * se aduc abia pentru un document mai vechi, o dată după o actualizare a aplicației. Workerul PWA (ADR 0017) le ține pe
  * amândouă în cache, cu celelalte bucăți încărcate la cerere: altfel, offline, proiectul salvat nu s-ar deschide.
  */
-const usaLaCerere = (): Promise<Usa> => import('../model/usaCurenta.ts').then((m) => (brut: unknown) =>
-  m.incarcaCurent(brut) ?? import('../model/incarcare.ts').then((x) => x.incarca(brut)));
+const usaLaCerere = (): Promise<Usa> => import('../model/usaCurenta.ts').then((m) => (brut: unknown) => {
+  const deschide = (): RezultatIncarcare | Promise<RezultatIncarcare> => m.incarcaCurent(brut) ?? import('../model/incarcare.ts').then((x) => x.incarca(brut));
+  // Un document cu plăcuțe (v23): întâi judecata literelor lor, adusă la cerere ca migrările (ADR 0070).
+  return m.cuPlacute(brut) ? import('../model/judecataTexte.ts').then(deschide) : deschide();
+});
 
 /**
  * Versiunea citită, prin singura ușă. Orice valoare care nu e text e un proiect care nu se deschide, nu „niciun proiect”.

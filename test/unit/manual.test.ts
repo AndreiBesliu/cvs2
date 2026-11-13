@@ -95,6 +95,8 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   ancora: 'unealta.transformare', colturi: 'unealta.transformare', 'alt-fix': 'unealta.transformare', 'cerc-mod': 'unealta.cerc',
   aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
+  // Butonul benzii violet (ADR 0210 §2): «Desprinde-o doar pe aceasta».
+  desprinde: 'piesa.desprinde',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
   conversie: 'editare.conversie',
   'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
@@ -126,7 +128,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 87)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 103)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -139,8 +141,10 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Restul textului (ADR 0138), încă cinci: unitatea mărimii, lățimea și înălțimea literelor, crenarea fontului și spațierea
   // literelor alese (§5). Tăierea vectorilor (ADR 0180), încă patru: butonul Taie și acțiunea `document.taie`, butonul
   // Convertește și acțiunea `document.converteste`. Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
-  // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`.
-  assert.equal(USI.length, 90);
+  // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
+  // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
+  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor.
+  assert.equal(USI.length, 106);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

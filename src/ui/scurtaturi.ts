@@ -14,13 +14,20 @@ export const TASTE: ReadonlyArray<readonly [tasta: string, actiune: string]> = [
   ['Ctrl+K', 'vedere.paleta'],
   ['Home', 'vedere.potriveste'],
   ['T', 'vedere.traseu'],
+  // Foaia activă (ADR 0210 §1): fără Ctrl, fiindcă Ctrl + PgUp / PgDn schimbă filele browserului.
+  ['PageUp', 'vedere.foaia-anterioara'],
+  ['PageDown', 'vedere.foaia-urmatoare'],
 ];
 
+/** Tastele care se citesc cu modificatorii lor, deși nu sunt un caracter: Ctrl + PgUp / PgDn sunt ale browserului (ADR 0210 §1). */
+const CU_MODIFICATORI: ReadonlySet<string> = new Set(['PageUp', 'PageDown']);
+
 /**
- * Tasta apăsată, scrisă ca în tabel. Modificatorii contează doar la tastele cu un caracter (litere, cifre): Delete și
- * Home rămân ele însele cu orice modificator, ca înainte (Ctrl pe Windows și ⌘ pe Mac sunt același „Ctrl”).
+ * Tasta apăsată, scrisă ca în tabel. Modificatorii contează la tastele cu un caracter (litere, cifre) și la PgUp / PgDn:
+ * Delete și Home rămân ele însele cu orice modificator, ca înainte (Ctrl pe Windows și ⌘ pe Mac sunt același „Ctrl”).
  */
 export function tastaApasata(e: { readonly key: string; readonly ctrlKey: boolean; readonly metaKey: boolean; readonly shiftKey: boolean }): string {
+  if (CU_MODIFICATORI.has(e.key)) return `${e.ctrlKey || e.metaKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key}`;
   if (e.key.length !== 1) return e.key;
   return `${e.ctrlKey || e.metaKey ? 'Ctrl+' : ''}${e.shiftKey ? 'Shift+' : ''}${e.key.toUpperCase()}`;
 }

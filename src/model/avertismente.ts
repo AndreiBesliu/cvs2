@@ -11,14 +11,24 @@ import { elementeFoaie } from './lume.ts';
  * Unde se arată (owner-ul, la încercarea prototipului de planșe, 07.10.2026): în bara de jos și, cu roșu, în lista de
  * vectori. Niciodată pe pânză: „încarcă spațiul de lucru”.
  */
-export type Avertisment = {
-  /** Forma trece de marginea foii. Poate fi intenționat (freza urmează vectorul și în afara foii), iar exportul cere atunci confirmare. */
-  readonly tip: 'iese-din-foaie';
-  /** Elementul în lume (`<instanță>/<element>`) și instanța lui, pe care o arată lista de vectori. */
-  readonly id: string;
-  readonly instanta: string;
-  readonly depasire: Depasire;
-};
+export type Avertisment =
+  | {
+    /** Forma trece de marginea foii. Poate fi intenționat (freza urmează vectorul și în afara foii), iar exportul cere atunci confirmare. */
+    readonly tip: 'iese-din-foaie';
+    /** Elementul în lume (`<instanță>/<element>`) și instanța lui, pe care o arată lista de vectori. */
+    readonly id: string;
+    readonly instanta: string;
+    readonly depasire: Depasire;
+  }
+  /** Textul unei plăcuțe iese din ea (ADR 0210 §4, felia 11.4↑c): `id` e chiar plăcuța (instanța). */
+  | { readonly tip: 'text-iese-din-placuta'; readonly id: string; readonly instanta: string };
+
+/** Avertismentele plăcuțelor: vin cu modulul lor (`placuteIesire.ts`), adus de aplicație când documentul are plăcuțe. */
+let placute: ((doc: Document, indexFoaie: number) => readonly Avertisment[]) | null = null;
+
+export function inregistreazaPlacute(f: (doc: Document, indexFoaie: number) => readonly Avertisment[]): void {
+  placute = f;
+}
 
 export function avertismente(doc: Document, indexFoaie = 0): Avertisment[] {
   const foaie = doc.foi[indexFoaie];
@@ -28,5 +38,5 @@ export function avertismente(doc: Document, indexFoaie = 0): Avertisment[] {
     const d = depasire(cutieContur(conturElement(e)), foaie.stoc.latime, foaie.stoc.inaltime);
     if (areDepasire(d)) rez.push({ tip: 'iese-din-foaie', id: e.idLume, instanta: e.instanta, depasire: d });
   }
-  return rez;
+  return placute ? rez.concat(placute(doc, indexFoaie)) : rez;
 }

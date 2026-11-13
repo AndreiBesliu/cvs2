@@ -364,10 +364,13 @@ test('refuzurile, cu motiv: o singură formă, piesa împărțită, nivelurile',
   const B = forma('e2', cerc(6), 140, 50);
   const d = doc(A, B);
   for (const alese of [['e1'], [], ['e1', 'nu-e']]) assert.deepEqual(comandaGrupare(d, alese), { ok: false, motiv: 'motiv.grupare-doua' });
-  // Piesa lui e1 are și instanța i2: gruparea ar lua-o și pe a ei; la fel, alese amândouă.
+  // Piesa lui e1 are și instanța i2 (ADR 0210 §2): fără alegere, întrebarea; la fel, alese amândouă.
   const imp: Document = { ...d, foi: d.foi.map((f) => ({ ...f, instante: [...f.instante, { ...A.instanta, id: 'i2', x: 200 }] })) };
-  assert.deepEqual(comandaGrupare(imp, ['e1', 'e2']), { ok: false, motiv: 'motiv.grupare-impartita' });
-  assert.deepEqual(comandaGrupare(imp, ['e1', 'i2']), { ok: false, motiv: 'motiv.grupare-impartita' });
+  assert.deepEqual(comandaGrupare(imp, ['e1', 'e2']), { ok: false, motiv: 'motiv.grupare-intrebare' });
+  assert.deepEqual(comandaGrupare(imp, ['e1', 'i2']), { ok: false, motiv: 'motiv.grupare-intrebare' });
+  // În toată piesa merge cu o singură piesă cu surori printre cele alese; doar aceasta le desprinde întâi.
+  assert.deepEqual(comandaGrupare(imp, ['e1', 'i2'], undefined, 'toate'), { ok: false, motiv: 'motiv.grupare-toate-una' });
+  assert.equal(comandaGrupare(imp, ['e1', 'i2'], undefined, 'doar').ok, true);
   // O singură formă aleasă, chiar împărțită: întâi motivul numărului.
   assert.deepEqual(comandaGrupare(imp, ['i2']), { ok: false, motiv: 'motiv.grupare-doua' });
   // O piesă cu toate nivelurile arborelui (PLAFON.adancime): grupul i-ar adăuga unul. Cu unul mai puțin, încape.

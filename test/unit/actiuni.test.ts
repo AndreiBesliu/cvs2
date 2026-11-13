@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 // Dicționarele de bază vin la cerere (`t.ts`): testele care cer texte le încarcă întâi pe amândouă.
 import './limbi.ts';
 import { esteCapabilitate } from '../../shared/capabilitati.ts';
-import { traduce } from '../../src/i18n/t.ts';
+import { adaugaMesaje, traduce } from '../../src/i18n/t.ts';
+import { enEditare } from '../../src/i18n/editare.en.ts';
+import { roEditare } from '../../src/i18n/editare.ro.ts';
 import { documentNou, operatieImplicita, type Operatie } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -36,6 +38,9 @@ function context(deplasare?: { dx: number; dy: number }): ContextDocument & { h:
 }
 
 test('fiecare acțiune declară o capabilitate din catalog și o etichetă în ambele limbi', () => {
+  // Etichetele acțiunilor planșelor (ADR 0210) stau în mesajele editorului: le arată doar ferestrele aduse la cerere (paleta,
+  // meniul foii, panoul), care își cer mesajele editorului înainte de randare. Aici, ca acolo, cu ele încărcate.
+  adaugaMesaje({ ro: roEditare, en: enEditare });
   assert.ok(ACTIUNI_DOCUMENT.length > 0);
   for (const a of [...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT, ...ACTIUNI_VEDERE, ...ACTIUNI_EXTENSII]) {
     assert.ok(a.id.length > 0, 'id gol');
