@@ -40,7 +40,9 @@ import {
 } from '../machine/imprimanta/tinute.ts';
 import { stratViu, type StratViu } from '../machine/imprimanta/stratViu.ts';
 import { numeDeTrimis, urca, type MotivUrcare } from '../machine/imprimanta/urcare.ts';
-import { ETICHETE, gasesteFisier, NOTE, tineFisier } from './fisiereImprimanta.ts';
+import { DIN_DESEN, gasesteFisier, tineFisier, type FisierTinut } from './fisiereImprimanta.ts';
+import { CardIstoric, useImprimariCvs2, useInregistrare } from './IstoricImprimanta.tsx';
+import { citesteSetariIstoric, scrieSetariIstoric, uneste, type DinFisier, type Istoric, type SetariIstoric } from './istoricImprimari.ts';
 import { citesteSetari, scrieSetari, type SetariNotificari } from './notificariImprimanta.ts';
 import { pauzaDeAcum } from './placaCalcul.ts';
 import { CardNotificari, Vestiri } from './VestiriImprimanta.tsx';
@@ -152,6 +154,11 @@ const ora = (ms: number): string => new Date(ms).toLocaleTimeString(loc(), { hou
 const marimeText = (o: number): string => (o >= 1e6 ? `${(o / 1e6).toLocaleString(loc(), { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(o / 1e3))} kB`);
 /** Adresa, cu portul doar dacă nu e cel din fabrică al driverului. */
 const gazdaPort = (a: AdresaRetea, port: number): string => (a.port === port ? a.gazda : `${a.gazda}:${a.port}`);
+/** Ce a pus „Din desen…” lângă un fișier feliat (piesele, notele, estimarea, materialul), ținut cu el; nimic pentru unul de pe calculator. */
+const dinDesen = (f: Blob): Pick<FisierTinut, 'etichete' | 'note' | 'estimare' | 'material'> => {
+  const d = DIN_DESEN.get(f);
+  return { etichete: d?.etichete ?? null, note: d?.note ?? null, estimare: d?.estimare ?? null, material: d?.material ?? null };
+};
 const textMotiv = (m: MotivImprimanta, st: StareImprimanta): string => t(`imprimanta.motiv.${m}`, { adresa: st.adresa ? gazdaPort(st.adresa, st.driver.port) : '—' });
 
 /**
@@ -167,7 +174,7 @@ export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi, vizibila 
   const stare: StareLucrare = st.driver.lucrare(i);
   // Placa și stratul de acum (3.6q): harta fișierului, dacă e unul trimis din cvs2, și stratul ales din ce spune imprimanta;
   // aici, sus, ca vestirile (3.6s) să le aibă și cât fereastra e ascunsă.
-  const { harta, etichete, note } = useHartaLucrarii(st, stare);
+  const { harta, etichete, note, din } = useHartaLucrarii(st, stare);
   const viu = stratViu({
     harta, straturi: i.straturi, progres: i.progres, filament: i.filament, recente: st.straturiRecente.map((x) => x.v), inPauza: stare === 'pauza',
   });
@@ -183,6 +190,15 @@ export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi, vizibila 
       return noua;
     });
   };
+  // Istoricul (3.6t): fiecare imprimare văzută intră în istoricul cvs2; unit cu al imprimantei, pentru card și pentru estimarea
+  // care învață din „Din desen…” (imprimanta: cea legată, altfel ultima ținută).
+  useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); });
+  const cvs2 = useImprimariCvs2();
+  const [setariIstoric, setSetariIstoric] = useState<SetariIstoric>(citesteSetariIstoric);
+  const schimbaSetariIstoric = (s: SetariIstoric): void => { setSetariIstoric(s); scrieSetariIstoric(s); };
+  const numeIstoric = i.nume ?? tinute[0]?.nume ?? null;
+  const randuri = useMemo(() => uneste(st.istoric, cvs2, numeIstoric, st.fisiere), [st.istoric, cvs2, numeIstoric, st.fisiere]);
+  const istoric: Istoric = { randuri, nCvs2: cvs2.length, setari: setariIstoric, schimba: schimbaSetariIstoric, imprimanta: numeIstoric };
   // Dialogul „Din desen…” (3.6j): unul singur, deasupra vederilor, ca să nu dispară când legătura se schimbă; fișierul feliat
   // trece la trimitere prin `deTrimis`. La închidere, focusul revine la butonul care l-a deschis.
   const [dinDesen, setDinDesen] = useState(false);
@@ -222,14 +238,14 @@ export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi, vizibila 
       {dinDesen && desen !== undefined && (
         <Suspense fallback={<p role="status">{t('imprimanta.felie.lucreaza')}</p>}>
           <DialogDinDesen sursa={desen} versiune={versiuneDesen ?? ''} model={st.imprimanta.model} inchide={inchideDinDesen}
-            scrieInaltimi={scrieInaltimi ?? null}
+            scrieInaltimi={scrieInaltimi ?? null} istoric={istoric}
             trimite={sePoateTrimite ? (f) => { setDinDesen(false); setDeTrimis((x) => ({ f, k: (x?.k ?? 0) + 1 })); } : null} />
         </Suspense>
       )}
       {st.legatura === 'deconectat' || (st.legatura === 'se-leaga' && st.imprimanta.cod === null && st.imprimanta.model === null)
         ? <Conectare st={st} tinute={tinute} uita={(id) => { tine((l) => uitaImprimanta(l, id)); }} dinDesen={deschideDinDesen} />
         : <Imprimanta st={st} dinDesen={deschideDinDesen} deTrimis={deTrimis} inchideDinDesen={() => { setDinDesen(false); }}
-          harta={harta} etichete={etichete} viu={viu} setari={setari} schimbaSetari={schimbaSetari} />}
+          harta={harta} etichete={etichete} viu={viu} setari={setari} schimbaSetari={schimbaSetari} istoric={istoric} />}
     </div>
   );
 }
@@ -356,6 +372,8 @@ type HartaTinuta = {
   readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null;
   /** Notele pauzelor scrise în cvs2 (cu diacritice), după stratul lor (3.6s). */
   readonly note: Readonly<Record<string, string>> | null;
+  /** Ce știe cvs2 despre fișier, pentru istoric (3.6t): estimarea feliatorului, materialul, numele pieselor. */
+  readonly din: DinFisier | null;
 };
 let hartaTinuta: (HartaTinuta & { readonly cheie: string }) | null = null;
 
@@ -377,12 +395,14 @@ function useHartaLucrarii(st: StareImprimanta, stare: StareLucrare): HartaTinuta
       const f = await gasesteFisier(nume, marime);
       const harta = f === null ? null : await hartaFisier(f.date, c.signal).catch(() => null);
       if (c.signal.aborted) return;
-      hartaTinuta = { cheie, harta, etichete: f?.etichete ?? null, note: f?.note ?? null };
+      const din: DinFisier | null = f === null ? null
+        : { estimare: f.estimare ?? null, material: f.material ?? null, piese: f.etichete === null ? null : Object.values(f.etichete) };
+      hartaTinuta = { cheie, harta, etichete: f?.etichete ?? null, note: f?.note ?? null, din };
       setCitita((x) => x + 1);
     })();
     return () => { c.abort(); };
   }, [cheie]);
-  return cheie !== null && hartaTinuta?.cheie === cheie ? hartaTinuta : { harta: null, etichete: null, note: null };
+  return cheie !== null && hartaTinuta?.cheie === cheie ? hartaTinuta : { harta: null, etichete: null, note: null, din: null };
 }
 
 /** Ferestrele de confirmare: pornirea unui fișier, oprirea imprimării, homing-ul (3.6o) și anularea unei piese (3.6r). */
@@ -392,11 +412,11 @@ type Confirmare =
   | { readonly fel: 'homing' }
   | { readonly fel: 'anulare'; readonly nume: string; readonly eticheta: string };
 
-function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, viu, setari, schimbaSetari }: {
+function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, viu, setari, schimbaSetari, istoric }: {
   readonly st: StareImprimanta; readonly dinDesen: ((el: HTMLElement) => void) | null;
   readonly deTrimis: { readonly f: File; readonly k: number } | null; readonly inchideDinDesen: () => void;
   readonly harta: HartaGcode | null; readonly etichete: Readonly<Record<string, string>> | null; readonly viu: StratViu;
-  readonly setari: SetariNotificari; readonly schimbaSetari: (s: SetariNotificari) => void;
+  readonly setari: SetariNotificari; readonly schimbaSetari: (s: SetariNotificari) => void; readonly istoric: Istoric;
 }): ReactNode {
   const i = st.imprimanta;
   const stare: StareLucrare = st.driver.lucrare(i);
@@ -568,6 +588,8 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
           <Fisiere st={st} stare={stare} alege={alege} porneste={(f) => { setConfirmare({ fel: 'pornire', fisier: f }); }}
             dinDesen={dinDesen} trimitere={ales !== null} cuTrimitere={cap.trimitere} />
         )}
+        <CardIstoric randuri={istoric.randuri} nCvs2={istoric.nCvs2} setari={istoric.setari} schimba={istoric.schimba} durata={durata}
+          cere={() => { sesiune.cereIstoric(); }} />
         <CardNotificari setari={setari} schimba={schimbaSetari} />
         <Jurnal st={st} />
       </div>
@@ -1069,7 +1091,7 @@ function DialogTrimitere({ fisier, st, stare, alt, inchide, porneste }: {
     urca({ adresa, nume, date: fisier, lista: sesiune, semnal: c.signal }).then(
       (r) => {
         // Fișierul ajuns se ține în browser, ca placa să-i poată desena straturile cât imprimă (felia 3.6q).
-        if (r.ok) void tineFisier({ nume: r.fisier.nume, marime: r.fisier.marime ?? fisier.size, la: Date.now(), date: fisier, etichete: ETICHETE.get(fisier) ?? null, note: NOTE.get(fisier) ?? null });
+        if (r.ok) void tineFisier({ nume: r.fisier.nume, marime: r.fisier.marime ?? fisier.size, la: Date.now(), date: fisier, ...dinDesen(fisier) });
         if (!c.signal.aborted) setPas(r.ok ? { fel: 'ajuns', f: r.fisier, a } : { fel: 'esec', a, motiv: r.motiv });
       },
       () => undefined,

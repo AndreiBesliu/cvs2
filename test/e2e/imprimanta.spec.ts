@@ -21,7 +21,7 @@ test.use({ locale: 'ro-RO' });
 test.describe.configure({ mode: 'serial' });
 
 const DIR = '/usr/data/printer_data/gcodes/';
-const CITIRI = ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}'];
+const CITIRI = ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}', '{"method":"get","params":{"reqHistory":1}}'];
 const FISIERE = [{ name: 'output_11031835.gcode', timeCost: 1140, material: 'PLA' }, { name: 'caramida-2x4.gcode', timeCost: 2460, material: 'PLA' }];
 
 const pornite: ImprimantaFalsa[] = [];
@@ -1201,4 +1201,133 @@ test('notificările (3.6s): bifa „Leagă imprimanta ținută la deschiderea cv
   expect(imp.conexiuni()).toBe(apoi);
   await expect(semn).toHaveCount(0);
   expect(comenziSet(imp)).toEqual([]);
+});
+
+/** Benchy-ul din transcrierea owner-ului (07.11, K1C 2025): o intrare a istoricului imprimantei. */
+const BENCHY = {
+  id: 1, filename: `${DIR}3DBenchy_PLA_19m.gcode`, size: 2513968, ctime: 1761305272, starttime: 1761305276, totaltime: 1180, usagematerial: 3712.4,
+  startway: 9, usagetime: 1140, printfinish: 1, thumbnail: `${DIR}.thumbs/dummpy.png`,
+};
+const randuriIstoric = (page: Page) => page.getByTestId('imprimanta-istoric-rand');
+
+test('istoricul (3.6t): al imprimantei (Benchy-ul transcrierii) și o imprimare din „Din desen…”, dusă la capăt: numele piesei, durata față de estimare, gramele, costul după preț; totalurile lunii; CSV-ul; ținut după reîncărcare; Golește istoricul cvs2, cu confirmare', async ({ page }) => {
+  const imp = await porneste({ pasiFisier: 12, istoric: [BENCHY] });
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  // Istoricul imprimantei, cerut la legare: Benchy-ul din 24.10.2025, cu materialul din numele fișierului; fără preț, costul e „—”.
+  const card = page.getByTestId('imprimanta-istoric');
+  await expect(randuriIstoric(page)).toHaveCount(1);
+  const benchy = randuriIstoric(page).first();
+  for (const x of ['24.10.2025', '3DBenchy_PLA_19m.gcode', '✓ gata', '19 min', '3,71 m', '11,1 g PLA']) await expect(benchy).toContainText(x);
+  await expect(benchy.getByTestId('imprimanta-istoric-cost')).toHaveText('—');
+  await card.locator('[data-imprimanta="istoric-pret"][data-material="PLA"]').fill('110');
+  await expect(benchy.getByTestId('imprimanta-istoric-cost')).toHaveText('1,22 lei');
+  // O imprimare din „Din desen…”: trimisă, pornită, dusă la capăt (`state` 2, apoi istoricul trimis de imprimantă).
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '1');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  await page.locator('[data-imprimanta="trimite-porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  await expect(stare(page)).toHaveText('Imprimă', { timeout: 15_000 });
+  // Cât imprimă, rândul ei e deja în istoricul cvs2 (scris la început), fără rezultat.
+  await expect(randuriIstoric(page)).toHaveCount(2);
+  await expect(randuriIstoric(page).first()).toHaveAttribute('data-rez', 'necunoscut');
+  await expect(stare(page)).toHaveText('Gata', { timeout: 30_000 });
+  // Unit cu rândul imprimantei (aceeași lucrare: tot două rânduri), cu numele din cvs2, durata față de estimare și costul.
+  const nou = randuriIstoric(page).first();
+  await expect(nou).toHaveAttribute('data-rez', 'gata', { timeout: 15_000 });
+  await expect(randuriIstoric(page)).toHaveCount(2);
+  for (const x of ['#1', '· din cvs2', '✓ gata']) await expect(nou).toContainText(x);
+  await expect(nou.getByTestId('imprimanta-istoric-estimat')).toContainText('estimat');
+  await expect(nou.getByTestId('imprimanta-istoric-cost')).toHaveText(/^\d+,\d\d lei$/);
+  // Totalurile lunii: doar imprimarea de azi (Benchy-ul e din 2025).
+  await expect(page.getByTestId('imprimanta-istoric-luna')).toContainText(': o imprimare');
+  // CSV-ul: antetul și câte un rând, cu „;” și virgula zecimală.
+  const [d] = await Promise.all([page.waitForEvent('download'), card.locator('[data-imprimanta="istoric-csv"]').click()]);
+  expect(d.suggestedFilename()).toMatch(/^cvs2-istoric-\d{4}-\d{2}-\d{2}\.csv$/);
+  const csv = (await (await import('node:fs/promises')).readFile(await d.path(), 'utf8')).replace(/^\uFEFF/, '').split('\r\n');
+  expect(csv[0]).toBe('Data;Fișierul;Piesele;Imprimanta;Rezultatul;Durata (min);Estimarea (min);Filamentul (m);Grame;Materialul;Costul (lei)');
+  expect(csv).toHaveLength(4);
+  expect(csv[1]).toContain(';#1;K1C-8578;gata;');
+  expect(csv[2]).toMatch(/^2025-10-2[34] \d\d:\d\d;3DBenchy_PLA_19m\.gcode;;K1C-8578;gata;19,0;;3,71;11,1;PLA;1,22$/);
+  // Ținut în browser: după o reîncărcare, rândul are tot numele din cvs2, iar prețul a rămas.
+  await page.reload();
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await page.locator('[data-imprimanta="tinuta"]').first().click();
+  await expect(randuriIstoric(page).first()).toContainText('#1', { timeout: 15_000 });
+  await expect(randuriIstoric(page)).toHaveCount(2);
+  await expect(card.locator('[data-imprimanta="istoric-pret"][data-material="PLA"]')).toHaveValue('110');
+  // Golește istoricul cvs2: întâi „Păstrează-l”, apoi „Golește”; rămâne istoricul imprimantei, fără numele din cvs2.
+  await card.locator('[data-imprimanta="istoric-goleste"]').click();
+  await card.locator('[data-imprimanta="istoric-goleste-renunta"]').click();
+  await expect(page.getByTestId('imprimanta-istoric-goleste')).toHaveCount(0);
+  await expect(randuriIstoric(page).first()).toContainText('#1');
+  await card.locator('[data-imprimanta="istoric-goleste"]').click();
+  await card.locator('[data-imprimanta="istoric-goleste-confirma"]').click();
+  await expect(card).not.toContainText('din cvs2');
+  await expect(randuriIstoric(page)).toHaveCount(2);
+  await expect(card.locator('[data-imprimanta="istoric-goleste"]')).toBeDisabled();
+  // Doar citiri: istoricul cerut la legare, la final și la deschiderea cardului; nicio comandă în plus.
+  expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile'))).toEqual([]);
+});
+
+test('estimarea care învață (3.6t): după 3 imprimări încheiate ale fișierelor feliate în cvs2, „Din desen…” arată estimarea corectată, pe imprimantă și material; bifa o oprește; costul, în rezumat', async ({ page }) => {
+  await porneste({});
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  // Trei imprimări din „Din desen…”, cu PLA, pe K1C-8578, fiecare de 3 ori cât estimase feliatorul (istoricul cvs2, în browser).
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok, rau) => {
+      const r = indexedDB.open('cvs2-imprimanta', 2);
+      r.onupgradeneeded = () => { r.result.createObjectStore('fisiere', { keyPath: 'cheie' }); r.result.createObjectStore('imprimari', { keyPath: 'id' }); };
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { rau(r.error ?? new Error('IndexedDB')); };
+    });
+    const tx = db.transaction('imprimari', 'readwrite');
+    for (let k = 0; k < 3; k++) {
+      const inceput = Date.now() - (k + 1) * 86_400_000;
+      tx.objectStore('imprimari').put({
+        v: 1, id: `${inceput}|placa_${k}.gcode`, fisier: `placa_${k}.gcode`, imprimanta: 'K1C-8578', inceput, sfarsit: inceput + 3_600_000, rezultat: 'gata',
+        durata: 3000, filament: 1000, progres: 100, estimare: 1000, material: 'PLA', piese: ['Placa'],
+      });
+    }
+    await new Promise((ok) => { tx.oncomplete = ok; });
+    db.close();
+  });
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await expect(randuriIstoric(page)).toHaveCount(3);
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  const rezumat = page.getByTestId('imprimanta-felie-rezumat');
+  await expect(rezumat).toContainText('după 3 imprimări pe K1C-8578 (feliatorul: ');
+  const text = (await rezumat.textContent()) ?? '';
+  const m = /~(?:(\d+)h )?(\d+)m după 3 imprimări pe K1C-8578 \(feliatorul: (?:(\d+)h )?(\d+)m\)/.exec(text);
+  expect(m, text).not.toBeNull();
+  const minute = (h: string | undefined, mm: string | undefined): number => Number(h ?? 0) * 60 + Number(mm);
+  expect(minute(m?.[1], m?.[2]), text).toBeGreaterThan(minute(m?.[3], m?.[4]));
+  // Bifa (pornită): fără ea, estimarea feliatorului.
+  const bifa = page.locator('[data-imprimanta="felie-corecteaza"]');
+  await expect(bifa).toBeChecked();
+  await bifa.uncheck();
+  await expect(rezumat).toContainText('fără încălzire');
+  await expect(rezumat).not.toContainText('după 3 imprimări');
+  await bifa.check();
+  await expect(rezumat).toContainText('după 3 imprimări');
+  // Costul, după ce pui prețul PLA în cardul Istoricul.
+  await expect(page.getByTestId('imprimanta-felie-cost')).toHaveCount(0);
+  await page.locator('[data-imprimanta="felie-renunta"]').click();
+  await page.locator('[data-imprimanta="istoric-pret"][data-material="PLA"]').fill('100');
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await expect(page.getByTestId('imprimanta-felie-cost')).toHaveText(/^ · \d+,\d\d lei$/);
 });

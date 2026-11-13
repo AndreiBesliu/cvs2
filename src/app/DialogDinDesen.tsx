@@ -23,7 +23,8 @@ import {
   setariImplicite, setariValide, timpText,
   type Brim, type Cale, type Miniatura, type Pauza, type PiesaPlata, type RezultatFeliere, type SetariFeliere, type SursaFeliere,
 } from '../cam/feliere/index.ts';
-import { ETICHETE, NOTE } from './fisiereImprimanta.ts';
+import { DIN_DESEN } from './fisiereImprimanta.ts';
+import { cost, invatat, type Istoric } from './istoricImprimari.ts';
 import { cheiePauze, citestePauze, scriePauze } from './pauzeDesen.ts';
 
 /** Desenul de feliat: documentul și instanțele selectate. */
@@ -67,6 +68,8 @@ const inaltimePiesa = (h: unknown): number | null => (typeof h === 'number' && N
 
 const loc = (): string => (limba() === 'ro' ? 'ro-RO' : 'en-GB');
 const numar = (v: number, z = 2): string => v.toLocaleString(loc(), { maximumFractionDigits: z });
+/** O durată la minut, ca feliatorul („21m”, „1h 12m”): estimarea învățată n-are precizia secundelor. */
+const minute = (s: number): string => timpText(Math.max(60, Math.round(s / 60) * 60)).replace(/ 0s$/, '');
 
 /** Data antetului, ca în OrcaSlicer: „2026-11-07 at 19:41:00”. */
 const dataAntet = (d: Date): string => {
@@ -217,11 +220,13 @@ function CampNumar({ valoare, procent, pas, la, id, eticheta, unitate, data, dez
   );
 }
 
-export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrieInaltimi = null }: {
+export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrieInaltimi = null, istoric = null }: {
   readonly sursa: () => DesenImprimanta; readonly versiune: string; readonly model: string | null;
   readonly trimite: ((f: File) => void) | null; readonly inchide: () => void;
   /** Scrie înălțimea pieselor în proiect (după id; null = scoate); null: proiectul nu se poate scrie. */
   readonly scrieInaltimi?: ((m: ReadonlyMap<string, number | null>) => void) | null;
+  /** Istoricul imprimărilor (3.6t): estimarea care învață și costul; null: fără. */
+  readonly istoric?: Istoric | null;
 }): ReactNode {
   const [desen, setDesen] = useState(sursa);
   const prima = useRef(true);
@@ -286,6 +291,10 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
 
   const g = rez?.gcode ?? null;
   const mt = material(s.material);
+  // Estimarea care învață și costul (3.6t, ADR 0194 §B.10–11): din istoric, pe imprimantă și material; fișierul nu se schimbă
+  // (numele lui poartă tot estimarea feliatorului).
+  const inv = istoric !== null && istoric.setari.corecteaza ? invatat(istoric.randuri, istoric.imprimanta, mt.nume) : null;
+  const pret = istoric === null || g === null ? null : cost({ durata: g.timp * (inv?.raport ?? 1), filament: g.filamentMm, material: mt.nume }, istoric.setari);
   const avert: string[] = [];
   if (instante.length === 0) avert.push(t('imprimanta.felie.foaie-goala'));
   if (model !== null && !/k1c/i.test(model.replace(/[\s_-]/g, ''))) avert.push(t('imprimanta.felie.alt-model', { model }));
@@ -343,10 +352,14 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
   const fisier = (): File | null => {
     if (g === null) return null;
     const f = new File([cuPauze(g.text, pus, K1C.pauza)], numeFisier(numeBaza, mt.tip, timpText(g.timp)), { type: 'text/plain' });
-    // Numele pieselor din cvs2 (cu diacritice), pentru placa din fereastră (3.6q): fișierul are doar numele ASCII, cu majuscule la imprimantă.
-    ETICHETE.set(f, Object.fromEntries((rez?.piese ?? alese.piese).map((p) => [p.nume.toUpperCase(), p.eticheta])));
-    // Notele pauzelor, cu diacritice, pentru notificarea pauzei din fișier (3.6s): fișierul are doar nota ASCII.
-    NOTE.set(f, Object.fromEntries(pus.flatMap((p) => (p.k === null || p.nota === '' ? [] : [[String(p.k), p.nota]]))));
+    DIN_DESEN.set(f, {
+      // Numele pieselor din cvs2 (cu diacritice), pentru placa din fereastră (3.6q): fișierul are doar numele ASCII, cu majuscule la imprimantă.
+      etichete: Object.fromEntries((rez?.piese ?? alese.piese).map((p) => [p.nume.toUpperCase(), p.eticheta])),
+      // Notele pauzelor, cu diacritice, pentru notificarea pauzei din fișier (3.6s): fișierul are doar nota ASCII.
+      note: Object.fromEntries(pus.flatMap((p) => (p.k === null || p.nota === '' ? [] : [[String(p.k), p.nota]]))),
+      // Estimarea feliatorului și materialul, pentru istoric și pentru estimarea care învață (3.6t).
+      estimare: g.timp, material: mt.nume,
+    });
     return f;
   };
   const salveaza = (): void => {
@@ -529,13 +542,26 @@ export function DialogDinDesen({ sursa, versiune, model, trimite, inchide, scrie
                   {t('imprimanta.felie.deplasari')}</label></li>
               </ul>
               <p className="imprimanta-felie-rezumat" data-testid="imprimanta-felie-rezumat">
-                {t('imprimanta.felie.rezumat', { n, timp: timpText(g.timp), m: numar(g.filamentMm / 1000), g: numar(g.filamentG, 1), material: mt.nume })}
+                {inv !== null && istoric !== null
+                  ? t('imprimanta.felie.rezumat.invatat', {
+                    n, timp: minute(g.timp * inv.raport), k: inv.n, imprimanta: istoric.imprimanta ?? '', feliator: minute(g.timp), m: numar(g.filamentMm / 1000),
+                    g: numar(g.filamentG, 1), material: mt.nume,
+                  })
+                  : t('imprimanta.felie.rezumat', { n, timp: timpText(g.timp), m: numar(g.filamentMm / 1000), g: numar(g.filamentG, 1), material: mt.nume })}
+                {pret !== null && <span data-testid="imprimanta-felie-cost">{' · '}{t('imprimanta.istoric.lei', { v: pret.toLocaleString(loc(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</span>}
                 {straturiPauze.length > 0 && (
                   <span data-testid="imprimanta-felie-rezumat-pauze">
                     {' · '}{t(straturiPauze.length === 1 ? 'imprimanta.felie.rezumat.pauza' : 'imprimanta.felie.rezumat.pauze', { n: straturiPauze.length })}
                   </span>
                 )}
               </p>
+              {istoric !== null && (
+                <label className="imprimanta-bifa-mica">
+                  <input type="checkbox" data-imprimanta="felie-corecteaza" checked={istoric.setari.corecteaza}
+                    onChange={(e) => { istoric.schimba({ ...istoric.setari, corecteaza: e.target.checked }); }} />
+                  <span>{t('imprimanta.felie.corecteaza')} <span className="imprimanta-slab">{t('imprimanta.felie.corecteaza.ajutor')}</span></span>
+                </label>
+              )}
               {Math.abs(hReal - hCerut) > 1e-3 && (
                 <p className="imprimanta-ajutor" data-testid="imprimanta-felie-inaltime-reala">
                   {t('imprimanta.felie.inaltime-reala', { h: numar(hReal), n, s: numar(s.strat) })}</p>

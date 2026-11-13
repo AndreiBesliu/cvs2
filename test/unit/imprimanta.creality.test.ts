@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
-  CERERE_FISIERE, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
+  CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
   firmwareDin, numar, numeDin, numeSigur, pozitieDin, stareLucrare,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
@@ -38,7 +38,7 @@ test('firmware-ul, din `modelVersion`: „printer sw ver”; altfel nimic', () =
 
 test('bătaia inimii: cere `ok`; nu aduce stare', () => {
   const c = citesteCadru('{"ModeCode":"heart_beat","msg":"2026-11-07 10:48:00"}');
-  assert.deepEqual(c, { json: true, inima: true, stare: {}, fisiere: null });
+  assert.deepEqual(c, { json: true, inima: true, stare: {}, fisiere: null, istoric: null });
   assert.ok(esteCreality(c));
 });
 
@@ -115,7 +115,7 @@ test('eroarea: `err.errcode` (0 = fără eroare), cu `key`; și ca număr gol', 
 
 test('textul care nu e un obiect JSON (`ok`, o listă, un text rupt) nu aduce nimic', () => {
   for (const t of ['ok', '[1,2]', '{"state":', '"text"', 'null', '']) {
-    assert.deepEqual(citesteCadru(t), { json: false, inima: false, stare: {}, fisiere: null }, t);
+    assert.deepEqual(citesteCadru(t), { json: false, inima: false, stare: {}, fisiere: null, istoric: null }, t);
     assert.equal(esteCreality(citesteCadru(t)), false, t);
   }
   // Un obiect fără niciun câmp știut nu e un semn că răspunde o imprimantă.
@@ -206,7 +206,7 @@ test('cererile și comenzile, octet cu octet (OrcaSlicer, `ha_creality_ws`)', ()
     assert.equal(comandaPornire(rea), null, rea);
   }
   // Doar citirile pleacă fără clic; nicio comandă `set` nu e printre ele.
-  assert.deepEqual([...CITIRI], [CERERE_STARE, CERERE_FISIERE]);
+  assert.deepEqual([...CITIRI], [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
   for (const c of CITIRI) assert.match(c, /"method":"get"/);
 });
 
@@ -215,7 +215,7 @@ const K1C_2025 = JSON.parse(readFileSync('test/fixtures/imprimanta/k1c-2025.json
   cadre: string[]; fisiere: { nume: string; marime: number }[];
 };
 
-test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca text cu mărimile, istoricul și filmele sărite', () => {
+test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca text cu mărimile, istoricul (din 3.6t citit, în proba lui) și filmele sărite', () => {
   const [stare, lista, istoric, video, ...delte] = K1C_2025.cadre.map(citesteCadru);
   assert.ok(stare && lista && istoric && video);
   assert.ok(esteCreality(stare));
@@ -228,7 +228,7 @@ test('K1C 2025 (transcrierea owner-ului): firmware-ul din DWIN sw ver, lista ca 
   // Lista: 11 fișiere, cu numele întregi (și cele cu spații), calea din director, mărimea; fără timp și material.
   assert.deepEqual(lista.fisiere, K1C_2025.fisiere.map(({ nume, marime }) => ({ nume, cale: `${DIR_GCODE}${nume}`, timp: null, material: null, marime })));
   assert.deepEqual(lista.stare, {});
-  // Istoricul imprimărilor și filmele: cadre JSON fără nimic din ce citește fereastra.
+  // Istoricul imprimărilor (din 3.6t citit: `imprimanta.istoric.test.ts`) și filmele: fără stare și fără listă.
   for (const c of [istoric, video]) assert.deepEqual([c.json, c.inima, c.stare, c.fisiere], [true, false, {}, null]);
   // Fără bătăi ale inimii: din 3 în 3 s, doar bucăți de stare (`maxBedTemp`, din 3.6o maximul patului, și `boxTemp`).
   assert.deepEqual(delte.map((c) => [c.inima, c.stare]), [[false, { patMax: 115 }], [false, { patMax: 115, carcasa: 24 }]]);

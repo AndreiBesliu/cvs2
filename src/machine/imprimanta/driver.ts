@@ -193,6 +193,21 @@ export type Pas =
   | { readonly trimite: string }
   | { readonly gata: (i: Imprimanta) => boolean; readonly minMs: number; readonly maxMs: number };
 
+/** Cum s-a încheiat o imprimare (felia 3.6t, ADR 0194 §B): dusă la capăt, oprită, cu o eroare. */
+export type RezultatImprimare = 'gata' | 'oprita' | 'eroare';
+
+/**
+ * O imprimare din istoricul imprimantei (felia 3.6t, ADR 0194 §B.12), normalizată de driver: numele fișierului, începutul (ms,
+ * după ceasul imprimantei), durata (s) și filamentul (mm) spuse de ea, rezultatul (null: nespuse).
+ */
+export type ImprimareIstoric = {
+  readonly fisier: string;
+  readonly inceput: number;
+  readonly durata: number | null;
+  readonly filament: number | null;
+  readonly rezultat: RezultatImprimare | null;
+};
+
 /** Un cadru citit de driver. */
 export type CadruCitit = {
   /** Arată ca imprimanta driverului (un câmp știut al ei): primul cadru așa leagă legătura. */
@@ -200,6 +215,8 @@ export type CadruCitit = {
   readonly stare: Partial<Imprimanta>;
   /** Lista fișierelor, dacă a adus-o (null: nu). */
   readonly fisiere: readonly FisierImprimanta[] | null;
+  /** Istoricul imprimărilor, dacă l-a adus (null: nu), felia 3.6t. */
+  readonly istoric: readonly ImprimareIstoric[] | null;
   /** De trimis pe loc, ca legătura să rămână vie (K1: `ok` la bătaia inimii); null: nimic. */
   readonly raspuns: string | null;
 };
@@ -212,6 +229,11 @@ export interface DriverText {
   readonly port: number;
   /** Citirile trimise la fiecare deschidere și la „Reîmprospătează”: singurele, cu răspunsurile de menținere, fără un clic. */
   readonly citiri: readonly string[];
+  /**
+   * Cererea istoricului (felia 3.6t, ADR 0194 §B.12), una dintre citiri, trimisă din nou la finalul unei lucrări și la
+   * deschiderea cardului Istoricul; null: imprimanta n-are istoric.
+   */
+  readonly cerereIstoric: string | null;
   citeste(text: string): CadruCitit;
   lucrare(i: Imprimanta): StareLucrare;
   capabilitati(i: Imprimanta): Capabilitati;

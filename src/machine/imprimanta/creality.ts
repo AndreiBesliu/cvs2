@@ -13,7 +13,7 @@
  */
 import {
   intregIn, RE_NUME_PIESA, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
-  type Interval, type IdVentilator, type Pas, type PiesaPlaca, type StareLucrare,
+  type ImprimareIstoric, type Interval, type IdVentilator, type Pas, type PiesaPlaca, type RezultatImprimare, type StareLucrare,
 } from './driver.ts';
 
 export const PORT_CREALITY = 9999;
@@ -163,15 +163,46 @@ function fisiereDinText(t: string): FisierImprimanta[] {
   return out;
 }
 
-/** Ce aduce un cadru: bătaia inimii (cere `ok`), câmpurile stării, lista fișierelor; `json` fals: text care nu e un obiect JSON. */
+/** Cel mult atâtea imprimări dintr-un istoric (K1 ține ultimele ~30–50): un cadru stricat sau uriaș nu umple fereastra. */
+export const MAX_ISTORIC = 100;
+
+/** `printfinish` (felia 3.6t; `filament-tracker`): 1 gata, 0 oprită, 2 și 3 erori; altul rămâne nespus. */
+const REZULTATE: ReadonlyMap<number, RezultatImprimare> = new Map([[1, 'gata'], [0, 'oprita'], [2, 'eroare'], [3, 'eroare']]);
+
+const pozitiv = (v: unknown): number | null => {
+  const x = numar(v);
+  return x !== null && x >= 0 ? x : null;
+};
+
+/**
+ * O imprimare din `historyList` (felia 3.6t, ADR 0194; transcrierea din 07.11): fișierul (`filename`, calea întreagă), începutul
+ * (`starttime`, în secunde), durata (`usagetime`; `totaltime` are în plus ~40 s, nemăsurat ce), filamentul (`usagematerial`,
+ * mm) și rezultatul (`printfinish`). Fără un nume bun sau fără un început rezonabil, intrarea se sare.
+ */
+function imprimareDin(o: unknown): ImprimareIstoric | null {
+  if (typeof o !== 'object' || o === null) return null;
+  const r = o as Record<string, unknown>;
+  const cale = text(r['filename']);
+  const fisier = cale === null ? null : numeSigur(numeDin(cale));
+  const inceput = numar(r['starttime']);
+  if (fisier === null || inceput === null || inceput <= 0 || inceput >= 1e10) return null;
+  const pf = numar(r['printfinish']);
+  return { fisier, inceput: inceput * 1000, durata: pozitiv(r['usagetime']), filament: pozitiv(r['usagematerial']), rezultat: (pf === null ? null : REZULTATE.get(pf)) ?? null };
+}
+
+/**
+ * Ce aduce un cadru: bătaia inimii (cere `ok`), câmpurile stării, lista fișierelor, istoricul (3.6t); `json` fals: text care nu
+ * e un obiect JSON.
+ */
 export type Cadru = {
   readonly json: boolean;
   readonly inima: boolean;
   readonly stare: Partial<Imprimanta>;
   readonly fisiere: readonly FisierImprimanta[] | null;
+  readonly istoric: readonly ImprimareIstoric[] | null;
 };
 
-const NIMIC: Cadru = { json: false, inima: false, stare: {}, fisiere: null };
+const NIMIC: Cadru = { json: false, inima: false, stare: {}, fisiere: null, istoric: null };
 
 /** Citește un cadru text al imprimantei. Câmpurile necunoscute rămân pe dinafară; un câmp cu altă formă nu schimbă nimic. */
 export function citesteCadru(t: string): Cadru {
@@ -241,7 +272,10 @@ export function citesteCadru(t: string): Cadru {
   const textLista = (r['retGcodeFileInfo'] as { fileInfo?: unknown } | null | undefined)?.fileInfo;
   const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null)
     : typeof textLista === 'string' ? fisiereDinText(textLista) : null;
-  return { json: true, inima: r['ModeCode'] === 'heart_beat', stare, fisiere };
+  // Istoricul (3.6t): o listă JSON (K1C 2025, după lista fișierelor și la `reqHistory`), primită și ca text JSON în JSON.
+  const ist = listaJson(r['historyList']);
+  const istoric = ist === null ? null : ist.slice(0, MAX_ISTORIC).map(imprimareDin).filter((x): x is ImprimareIstoric => x !== null);
+  return { json: true, inima: r['ModeCode'] === 'heart_beat', stare, fisiere, istoric };
 }
 
 /** Cadrul arată ca al unei imprimante Creality: bătaia inimii sau măcar un câmp știut al stării. */
@@ -270,9 +304,10 @@ export function stareLucrare(i: Imprimanta): StareLucrare {
 
 const cerere =(method: 'get' | 'set', params: Readonly<Record<string, unknown>>): string => JSON.stringify({ method, params });
 
-/** Toată starea (`ReqPrinterPara`) și lista fișierelor: doar citiri. */
+/** Toată starea (`ReqPrinterPara`), lista fișierelor și istoricul imprimărilor (`reqHistory`, felia 3.6t): doar citiri. */
 export const CERERE_STARE = cerere('get', { ReqPrinterPara: 1 });
 export const CERERE_FISIERE = cerere('get', { reqGcodeFile: 1 });
+export const CERERE_ISTORIC = cerere('get', { reqHistory: 1 });
 export const COMANDA_PAUZA = cerere('set', { pause: 1 });
 export const COMANDA_REIA = cerere('set', { pause: 0 });
 export const COMANDA_OPRESTE = cerere('set', { stop: 1 });
@@ -284,7 +319,7 @@ export function comandaPornire(cale: string): string | null {
 }
 
 /** Cererile de citire: singurele pe care legătura le trimite fără un clic al omului (pe lângă `ok`). */
-export const CITIRI: ReadonlySet<string> = new Set([CERERE_STARE, CERERE_FISIERE]);
+export const CITIRI: ReadonlySet<string> = new Set([CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
 
 /** Viteza și debitul pe K1: întregi 1–200 % (integrarea Home Assistant). */
 export const PROCENTE_K1: Interval = { min: 1, max: 200 };
@@ -367,9 +402,10 @@ export const CREALITY_K1: DriverText = {
   id: 'creality-k1',
   port: PORT_CREALITY,
   citiri: [...CITIRI],
+  cerereIstoric: CERERE_ISTORIC,
   citeste: (t) => {
     const c = citesteCadru(t);
-    return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, raspuns: c.inima ? RASPUNS_INIMA : null };
+    return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, istoric: c.istoric, raspuns: c.inima ? RASPUNS_INIMA : null };
   },
   lucrare: stareLucrare,
   capabilitati: capabilitatiK1,

@@ -268,11 +268,18 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'notificari-sunet': 'imprimanta.notificari.sunet', 'notificari-sistem': 'imprimanta.notificari.sistem',
   'notificari-titlu': 'imprimanta.notificari.titlu', 'notificari-legare': 'imprimanta.notificari.legare',
   'anunt-deschide': 'imprimanta.anunt.deschide', 'anunt-inchide': 'imprimanta.anunt.inchide',
+  // Felia 3.6t (ADR 0194 §B): cardul Istoricul (`src/app/IstoricImprimanta.tsx`; câmpul de preț e unul pentru toate materialele,
+  // `data-material` spune care) și bifa estimării care învață, din „Din desen…”.
+  'istoric-csv': 'imprimanta.istoric.csv', 'istoric-goleste': 'imprimanta.istoric.goleste',
+  'istoric-goleste-confirma': 'imprimanta.istoric.goleste.confirma', 'istoric-goleste-renunta': 'imprimanta.istoric.goleste.renunta',
+  'istoric-pret': 'imprimanta.istoric.pret', 'istoric-putere': 'imprimanta.istoric.putere', 'istoric-kwh': 'imprimanta.istoric.kwh',
+  'felie-corecteaza': 'imprimanta.felie.corecteaza',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
   // Din 3.6r, și placa are controale (anularea unei piese).
-  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx');
+  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx')
+    + citeste('src/app/IstoricImprimanta.tsx');
   const dialog = citeste('src/app/DialogDinDesen.tsx');
   assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
   assert.doesNotMatch(dialog, /data-imprimanta=\{/);

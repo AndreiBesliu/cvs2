@@ -1389,6 +1389,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   fi în aplicație, după ce ai deschis fereastra o dată; cu **Leagă imprimanta ținută la deschiderea cvs2**, și fără. Vin
   cât cvs2 e deschis, și în fundal; pe telefon, doar cât e în față. Pe Edge, o filă inactivă doarme după 2 ore: pune cvs2
   la „Nu pune niciodată aceste site-uri în repaus”.
+- **Istoricul** (cardul lui, în fereastra Imprimanta): imprimările, cele mai noi sus, din două locuri: istoricul imprimantei
+  (toate, și cele pornite de pe ecran sau din Creality Print) și istoricul cvs2, ținut în acest browser (ultimele 500), cu
+  numele pieselor, estimarea și materialul. Pentru fiecare: data, fișierul, rezultatul (✓ gata, ⏹ oprită, ⚠ eroare), durata
+  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul. Dedesubt, totalurile lunii,
+  **Exportă CSV** și **Golește istoricul cvs2…**, cu o confirmare: **Golește** sau **Păstrează-l** (istoricul imprimantei
+  rămâne în ea). **Prețul pe kg** al fiecărui material îl pui tu; până atunci, costul e „—”. Curentul intră în cost după ce
+  pui **Puterea medie** a imprimantei (W) și **Prețul kWh**. În „Din desen…”, **Corectează estimarea după istoric** (pornită)
+  arată estimarea învățată din imprimările duse la capăt ale fișierelor feliate în cvs2, pe aceeași imprimantă și cu același
+  material (mediana ultimelor, cel puțin 3): „~21m după 5 imprimări pe K1C-8578 (feliatorul: 18m)”. Fișierul nu se schimbă.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.

@@ -1438,6 +1438,16 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the top bar, a dot and the percentage, wherever you are in the app, once you have opened the window; with **Connect the
   kept printer when cvs2 opens**, also without that. They come while cvs2 is open, also in the background; on a phone,
   only while it is in front. On Edge, an inactive tab sleeps after 2 hours: add cvs2 to “Never put these sites to sleep”.
+- **History** (its card, in the Printer window): the prints, newest first, from two places: the printer's history (all of
+  them, also those started from its screen or from Creality Print) and the cvs2 history, kept in this browser (the last 500),
+  with the part names, the estimate and the material. For each: the date, the file, the result (✓ done, ⏹ stopped, ⚠ error),
+  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost. Below,
+  the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
+  printer keeps its own history). You set the **Price per kg** of each material; until then, the cost is “—”. Electricity
+  joins the cost once you set the printer's **Average power** (W) and the **Price per kWh**. In “From drawing…”, **Correct
+  the estimate from history** (on) shows the estimate learned from the finished prints of files sliced in cvs2, on the same
+  printer and with the same material (the median of the last ones, at least 3): “~21m after 5 prints on K1C-8578 (slicer:
+  18m)”. The file does not change.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.
