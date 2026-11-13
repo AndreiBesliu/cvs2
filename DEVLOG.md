@@ -8523,3 +8523,12 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
 - **Mărimea:** totalul 654,4 → 654,9 / 700 kB (+0,5), pornirea 102,2 (cu ușa 105,9 / 110), neschimbată.
 - **Nu acum:** 12.1↑e (dopul în 3D) doar la cuvântul owner-ului; punctul 4 (punțile dopului drept alese în fereastră) și 12.1↑f
   (gaura și treptele) după v23 a planșelor.
+
+## 2026-11-13 — Schițele aranjamentelor, declarate gata (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, sunt gata”. **Started:** 13.11, 20:23. **Completed:** 13.11, 20:23.
+
+- **ADR 0250, „Schițele, încheiate pe 13.11”:** canvas-ul e referința feliilor 28.1↑–28.7↑. Codul așteaptă doar unirea
+  planșelor (`wip/11.1-plansele`: 11.5↑ gata, 46 de commit-uri neunite), apoi pornește worktree-ul `aranjamente`, cu
+  28.1↑ întâi.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
