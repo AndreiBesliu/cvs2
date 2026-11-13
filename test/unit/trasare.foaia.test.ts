@@ -5,7 +5,7 @@ import {
   pareOblica, potrivesteFormatul, proportiiDinPoza, type Colturi, type Punct,
 } from '../../src/trasare/foaia.ts';
 import { traseaza, type ImagineRGBA, type OptiuniTrasare } from '../../src/trasare/trasare.ts';
-import { FOAIE_A4, POZE_FOAIE, distFormeFoaie, pozaFoaie, type CumFoaie, type PozaFoaie } from './ajutor-poze.ts';
+import { colturiFoaie, FOAIE_A4, POZE_FOAIE, distFormeFoaie, pozaFoaie, type CumFoaie, type PozaFoaie } from './ajutor-poze.ts';
 
 /**
  * Probele foii pozate oblic (ADR 0225, felia 25.5↑): pe poze sintetice ale unei foi A4 cu patru forme de mărime știută
@@ -74,6 +74,9 @@ test('omografia: duce cele patru puncte exact în perechile lor, cea inversă le
   const [u, v] = aplicaOmografia(H, 77, 123);
   assert.ok(dist(aplicaOmografia(I, u, v), [77, 123]) < 1e-9, 'dus și întors');
   assert.equal(omografie([[0, 0], [1, 1], [2, 2], [0, 5]], la), null);
+  // Trei puncte coliniare cu zecimale: rotunjirea lasă un pivot mic, nenul (fără pivotul minim, o „omografie” de 10¹⁸).
+  assert.equal(omografie([[0.1, 0.2], [0.4, 0.8], [0.7, 1.4], [3, 0.3]], la), null);
+  assert.equal(omografie([[1 / 3, 2 / 3], [2 / 3, 4 / 3], [1, 2], [5, 1]], la), null);
 });
 
 test('colțurile foii, pe patru poze (de la aproape din față la 40°): găsite singure la cel mult 0,5 px de cele adevărate', () => {
@@ -105,7 +108,7 @@ test('o agrafă peste marginea foii (intră 6 px pe ea): normalele ei ies din dr
   assert.ok(abatere(c, p.colturi) <= 0.5, `colțurile la ${abatere(c, p.colturi).toFixed(2)} px`);
 });
 
-test('un colț ieșit din cadru (cu 135 px): se extrapolează din laturile vecine; normalele tăiate de cadru nu se iau', () => {
+test('un colț ieșit din cadru (cu 135 px): se extrapolează din laturile vecine; normalele tăiate de cadru nu strică laturile', () => {
   const p = pozaFoaie({ ...POZE_FOAIE.rotita30, dist: 380 });
   assert.ok((p.colturi[0]?.[1] ?? 0) < -100, `colțul stânga-sus: ${p.colturi[0]?.join(', ')}`);
   const c = gasesteFoaia(p);
@@ -141,6 +144,13 @@ test('o poză înclinată doar înainte (laturile de sus și de jos paralele): f
   assert.equal(g.focala, null);
   assert.ok(g.nesigure && g.max / g.min - 1 > PROPORTII_NESIGURE, `între ${g.min.toFixed(4)} și ${g.max.toFixed(4)}`);
   assert.ok(g.min <= A4 && A4 <= g.max);
+  // Oricare ar fi camera (focala de la 0,5 la 1,5 diagonale: de la unghiul larg la teleobiectiv), intervalul cuprinde A4;
+  // cu o singură focală presupusă, nu (măsurat: 0,61–0,69 la 0,5 diagonale, 0,75 la 1,5).
+  for (const focala of [1000, 1700, 3000]) {
+    const c2 = colturiFoaie({ ...POZE_FOAIE.inclinata25, rotire: 0, laterala: 0, focala, dist: (440 * focala) / 1400 });
+    const g2 = proportiiDinPoza(c2, 1600, 1200);
+    assert.ok(g2.focala === null && g2.min <= A4 && A4 <= g2.max, `focala ${focala}: între ${g2.min.toFixed(4)} și ${g2.max.toFixed(4)}`);
+  }
   // Nesigure: A4 se potrivește (e în interval); o foaie pătrată, nu (nicio focală de telefon n-o face așa).
   assert.ok(potrivesteFormatul(g, { w: 210, h: 297 }));
   assert.equal(potrivesteFormatul(g, { w: 200, h: 200 }), false);

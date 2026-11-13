@@ -92,8 +92,8 @@ function peMarginea(a: Punct, b: Punct, w: number, h: number): boolean {
 
 /**
  * Colțurile foii ieșite din cadru: o latură a învelitorii pe marginea imaginii (foaia tăiată puțin de cadru) se înlocuiește
- * cu intersecția laturilor vecine ei (care stau pe marginile foii), dacă ea cade în afara imaginii, după capetele laturii
- * (învelitoarea rămâne convexă). Altfel, latura rămâne.
+ * cu intersecția laturilor vecine ei (care stau pe marginile foii), după capetele laturii (învelitoarea rămâne convexă;
+ * acolo, dincolo de margine, e afara imaginii). Altfel, latura rămâne.
  */
 function colturiIesite(inv: readonly Punct[], w: number, h: number): Punct[] {
   const n = inv.length, scos = new Array<boolean>(n).fill(false), pus = new Map<number, Punct>();
@@ -119,9 +119,8 @@ function colturiIesite(inv: readonly Punct[], w: number, h: number): Punct[] {
     const ux = a[0] - p[0], uy = a[1] - p[1], vx = q[0] - b[0], vy = q[1] - b[1], det = ux * vy - uy * vx;
     if (Math.abs(det) < 1e-9) continue;
     const t = ((b[0] - p[0]) * vy - (b[1] - p[1]) * vx) / det, u = ((b[0] - p[0]) * uy - (b[1] - p[1]) * ux) / det;
-    const x: Punct = [p[0] + t * ux, p[1] + t * uy];
-    if (!(t > 1 && u < 0) || (x[0] >= 0 && x[1] >= 0 && x[0] <= w && x[1] <= h)) continue;
-    scos[i] = true; scos[(i + 1) % n] = true; pus.set(i, x);
+    if (!(t > 1 && u < 0)) continue;
+    scos[i] = true; scos[(i + 1) % n] = true; pus.set(i, [p[0] + t * ux, p[1] + t * uy]);
   }
   const rez: Punct[] = [];
   for (let i = 0; i < n; i++) {
@@ -252,15 +251,14 @@ export function gasesteFoaia(img: ImagineRGBA): Colturi | null {
   const q = patrulaterMaxim(toata);
   if (q.length !== 4 || aria(q) < PLINATATE * aria(toata)) return null;
   const grosier = ordoneaza(q);
-  // Laturile: dreapta potrivită pe punctele de margine de lângă latură (la cel mult 3 px), fără capete (15 % din fiecare) și
-  // fără pixelii de pe marginea imaginii (acolo e cadrul, nu foaia).
+  // Laturile: dreapta potrivită pe punctele de margine de lângă latură (la cel mult 3 px), fără capete (15 % din fiecare).
   const laturi: Dreapta[] = [];
   for (let i = 0; i < 4; i++) {
     const a = grosier[i] ?? [0, 0], b = grosier[(i + 1) % 4] ?? [0, 0];
     const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
     const alese = pct.filter((p) => {
       const t = ((p[0] - a[0]) * ux + (p[1] - a[1]) * uy) / L, dn = Math.abs((p[0] - a[0]) * uy - (p[1] - a[1]) * ux);
-      return t > 0.15 && t < 0.85 && dn < 3 && p[0] > 1 && p[1] > 1 && p[0] < w - 1 && p[1] < h - 1;
+      return t > 0.15 && t < 0.85 && dn < 3;
     });
     const dr = dreaptaPrin(alese);
     laturi.push(dr ?? { px: a[0], py: a[1], dx: ux, dy: uy });
@@ -288,7 +286,6 @@ function rafineaza(img: ImagineRGBA, c: Colturi, s: number): Colturi {
   const gx = c.reduce((t, p) => t + p[0], 0) / 4, gy = c.reduce((t, p) => t + p[1], 0) / 4;
   const med = (v: Float64Array, a: number, b: number): number => { const t = v.slice(a, b).sort(); return t[(t.length - 1) >> 1] ?? 0; };
   const sir = new Float64Array(n);
-  const inImagine = (x: number, y: number): boolean => x >= 0.5 && y >= 0.5 && x <= W - 0.5 && y <= H - 0.5;
   const laturi: Dreapta[] = [];
   for (let i = 0; i < 4; i++) {
     const a = c[i] ?? [0, 0], b = c[(i + 1) % 4] ?? [0, 0], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
@@ -297,9 +294,9 @@ function rafineaza(img: ImagineRGBA, c: Colturi, s: number): Colturi {
     if (nx * ((a[0] + b[0]) / 2 - gx) + ny * ((a[1] + b[1]) / 2 - gy) < 0) { nx = -nx; ny = -ny; }
     const pct: Punct[] = [];
     for (let k = 0; k < 48; k++) {
+      // O normală tăiată de cadru citește marginea pozei (eșantioanele se opresc la ea): fără contrast, se sare, iar o
+      // trecere găsită acolo pleacă la a doua potrivire.
       const t = 0.15 + (0.7 * k) / 47, px = a[0] + t * (b[0] - a[0]), py = a[1] + t * (b[1] - a[1]);
-      // Doar normalele întregi în imagine: una tăiată de cadru ar găsi marginea pozei, nu a foii.
-      if (!inImagine(px - nx * R, py - ny * R) || !inImagine(px + nx * R, py + ny * R)) continue;
       for (let j = 0; j < n; j++) sir[j] = lum(px + nx * (j * pas - R), py + ny * (j * pas - R));
       const inauntru = med(sir, 0, sfert), afara = med(sir, n - sfert, n);
       if (Math.abs(inauntru - afara) < 0.1) continue;

@@ -43,15 +43,13 @@ o('G07', FO, '  const toata = colturiIesite(redus([...inv]), w, h);', '  const t
   'colțul ieșit din cadru nu se extrapolează')
 o('G08', FO, '      for (let j = 1; j < k && drept; j++) drept = Math.abs(cr(a, c, v(i + j * pas))) / L <= 1.5;',
   '      for (let j = 1; j < k && drept; j++) drept = false;', 'nuc', 'reperul laturii vecine e vârful de alături: direcția e zgomot')
-o('G09', FO, '    if (!(t > 1 && u < 0) || (x[0] >= 0 && x[1] >= 0 && x[0] <= w && x[1] <= h)) continue;',
-  '    if (!(t > 1 && u < 0)) continue;', 'nuc', 'și o intersecție din imagine înlocuiește latura de pe margine')
-o('G10', FO, '      return t > 0.15 && t < 0.85 && dn < 3 && p[0] > 1 && p[1] > 1 && p[0] < w - 1 && p[1] < h - 1;',
-  '      return t > 0.15 && t < 0.85 && dn < 3;', 'nuc', 'pixelii de pe marginea pozei intră în dreapta laturii')
+# G09 (și o intersecție din imagine înlocuiește latura de pe margine), G10 (pixelii de pe marginea pozei în dreapta
+# grosieră) și G13 (normalele tăiate de cadru se iau): scăpate la prima rulare, echivalente (intersecția e mereu dincolo de
+# margine; rafinarea reface dreapta grosieră; o normală tăiată n-are contrast sau pleacă la a doua potrivire, și pe tăieturi
+# de 183 px); codul lor, scos.
 o('G11', FO, '  return rafineaza(img, mare, s);', '  return mare;', 'nuc', 'fără rafinare: colțurile grosiere')
 o('G12', FO, '          const q = (j + (u === 0 ? 0 : u / (u - v))) * pas - R;', '          const q = (j + (u === 0 ? 0 : u / (u - v))) * pas - R + 0.5;', 'nuc',
   'trecerea de 50 % mutată cu o jumătate de pixel spre masă')
-o('G13', FO, '      if (!inImagine(px - nx * R, py - ny * R) || !inImagine(px + nx * R, py + ny * R)) continue;\n', '', 'nuc',
-  'normalele tăiate de cadru se iau')
 o('G14', FO, '      if (Math.abs(inauntru - afara) < 0.1) continue;', '      if (Math.abs(inauntru - afara) < 0.9) continue;', 'nuc',
   'nicio normală destul de contrastată: rămâne dreapta grosieră')
 o('G15', FO, '      if (aproape.length >= 8) dr = dreaptaPrin(aproape);', '      void aproape;', 'nuc', 'fără a doua potrivire: agrafa strică latura')
