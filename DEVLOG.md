@@ -8835,3 +8835,16 @@ oprește-te și spune-i owner-ului (ar lua v24, după v23)”.
   sheets (3)” și nota arhivei).
 
 **Completed:** 13.11, 18:30.
+
+## 2026-11-13 — Linia aranjamentelor pornește: worktree-ul și plafoanele 115 / 800 (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 115 ／ 800”, după „Da, sunt gata” și unirea planșelor (`d62e6b8`). **Started:** 13.11, seara.
+**Completed:** 13.11, 22:19.
+
+- **Worktree-ul `aranjamente`:** `C:\Users\besli\cncvs2-lucru\aranjamente`, ramura `wip/28.1-aranjamente` din
+  `d62e6b8`. Are joncțiunile `node_modules` și `functions\node_modules`, e2e pe 4182 (`.tmp/pw.config.ts`) cu rețeaua
+  `127.0.9`.
+- **Baza măsurată** (`node scripts/build-determinist.ts`): pornirea 105,7, cu ușa 109,7 / 110 kB; totalul 690,1 / 700.
+- **ADR 0252** (pornirea 110 → 115 kB) și **ADR 0253** (totalul 700 → 800 kB), acceptate de owner. Constantele din
+  `scripts/build-determinist.ts`, indexul ADR-urilor, traducerea, CLAUDE.md (decizia).
+- **Mai departe:** 28.1↑, împărțită în felii mici. După reparația lui 3.6s din `main`, `main` se aduce în ramură.

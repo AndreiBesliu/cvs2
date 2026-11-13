@@ -1130,6 +1130,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **plafoanele: pornirea 115 kB, totalul 800 kB** („Da, 115 ／ 800”, la „Ridic plafoanele la 115 kB pornirea și
+  800 kB totalul?”, în linia aranjamentelor, înaintea feliei 28.1↑). După unirea planșelor, pornirea cu ușa era
+  109,7 / 110 și totalul 690,1 / 700. 28.1↑ cere ~1–1,5 kB în pornire, iar linia ~40 kB. ADR 0252 și 0253, scrise pe ramura
+  `wip/28.1-aranjamente` (worktree-ul `aranjamente`, din `d62e6b8`); ajung în `main` odată cu unirea liniei.
 - 13.11.2026: **planșele (11.1↑–11.5↑) unite în `main`** („Da, cere-i”, în sesiunea designului, la „Îi cer sesiunii
   principale să unească planșele în main?”; verificat în transcrierea ei), exact la `8e8c755` (11.5↑ gata), prin unirea
   `fecce54`: mai multe foi, piesele legate, așezarea pe foi, plăcuțele și «Din CSV…», „Toate foile” la export. Documentul e

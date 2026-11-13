@@ -2697,6 +2697,10 @@
       "ro": "Încercarea benzii dopului în V pe adresa principală de test (<https://cncvectorstudio-test.web.app/>; 12.1↑c unită în `main` și publicată pe 08.11): un desen, rolul „incrustație în V” din panou, apoi în Exportă „Lemnul din jurul dopului: banda îngustă” (lățimea, decuparea, placa, punțile, altă freză pentru decupare); pe placa 12, dopul decupat (punțile rupte și curățate) lipit în locaș: să se oprească pe pereți, cu spațiul pentru fierăstrău între plăci",
       "en": "Trying the V plug band on the main test address (<https://cncvectorstudio-test.web.app/>; 12.1↑c merged into `main` and published on 08.11): a drawing, the “V inlay” role from the panel, then in Export “Wood around the plug: narrow band” (the width, the cut-out, the board, the tabs, another bit for the cut-out); on plate 12, the cut-out plug (tabs broken off and cleaned) glued into the pocket: it should stop on the walls, with the saw gap between the boards"
     },
+    "e17155484936018f": {
+      "ro": "Plafonul pornirii, 110 → 115 kB",
+      "en": "The startup cap, 110 → 115 kB"
+    },
     "e18bff728797799e": {
       "ro": "Biarcele proprii sunt singura ușă de aproximare",
       "en": "Our own biarcs are the only approximation door"
