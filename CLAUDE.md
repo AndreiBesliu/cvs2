@@ -816,6 +816,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/axaMediala.index.test.ts`). Pe linie rămâne punctul 4, punțile dopului drept alese în fereastră: un câmp nou,
   deci v24, după v23 a planșelor. **Pornirea 101,8 (cu ușa 105,5 / 110 kB), totalul 544,3 / 600, /admin 106,5 / 200, contul
   29,6 / 32.**
+  **Felia 12.1↑d (fundul doar cu freza V, ADR 0173), unită pe 13.11** („Da, unește”; `0f4c22c`): fără freză dreaptă în
+  coloana Fund plat, pe o incrustație, fundul îl scoate V-ul, prin inelele regiunii decalate (`fundV` în
+  `src/cam/vcarve.ts`; creasta cel mult g/2 în locaș, H/2 pe fața dopului și pe fundul benzii; peste 400 de inele, refuzul),
+  cu crestele în `valoriIncrustatie`; banda merge și fără freza fundului, iar decuparea fără freza ei se refuză. Documentul
+  rămâne v22. Pe linie rămân punctul 4 și 12.1↑f (gaura și treptele), după v23 a planșelor; 12.1↑e (dopul în 3D și
+  potrivirea simulată) doar la cuvântul owner-ului. **Totalul cu felia 658,0 / 700 kB, pornirea cu ușa 106,1 / 110.**
   **Ancora și tastele transformării (ADR 0240, feliile 6.V↑, 6.V↑b, 6.V↑c, aduse din etapa 6)** gata pe 08.11, în
   worktree-ul `ancore` (ramura `wip/6.V-ancore`), **unite în `main` tot pe 08.11** („Da, unește”; `0c81ccf`), cu
   recomandările („Ok la toate”, 1a–4a): la mânere, **Shift =
@@ -1053,6 +1059,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **felia 12.1↑d a incrustațiilor unită în `main`** („Da, unește”, în sesiunea incrustațiilor, la „Unim felia
+  12.1↑d în main?”; verificat în transcrierea ei): fundul doar cu freza V (ADR 0173), fără câmp nou (documentul rămâne v22,
+  v23 rămâne a planșelor). Unită cât CI-ul complet de pe `main` era roșu din cauza lui 3.6s (banda „pauză” acoperea butonul
+  Reia pe Linux): felia nu atinge imprimanta, deci nu ascunde nimic acolo.
 - 13.11.2026: **ideile 63–76 din tura a unsprezecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 63–76?”, după tablele Exportă vectori…, Verifică vectorii, Tăierea și rolurile mele, „Din
   desen…” al imprimantei și Admin · Intrarea): 13 intră în feliile 28.x (ADR 0250, „Ideile turei a unsprezecea”), iar
