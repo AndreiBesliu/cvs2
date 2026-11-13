@@ -1053,6 +1053,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **pagina `/admin` reproiectată, ADR 0260 acceptat** („vreau sa faci design si pentru admin”, apoi „Da la
+  toate”, la „Accepți recomandările la ideile adminului 51–62?”, după cele 11 table ale rândului G de pe canvas):
+  - o linie a ei, cu feliile A.1–A.7, pornită la cuvântul owner-ului, nu în feliile aranjamentelor;
+  - bara laterală grupată, fila Azi prima, insigna TEST / LIVE, căutarea din antet, filele după schițe, adminul pe telefon;
+  - permisiunile, regulile și Firestore Lite rămân; ADR-urile liniei sunt 0260–0269.
 - 13.11.2026: **ideile 39–50 din tura a zecea a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la ideile noi 39–50?”, după tablele Transformarea și ancora, Nodurile și Pen-ul, Navigarea și ajutoarele de
   desen, Fonturile): 11 intră în feliile 28.x (ADR 0250, „Ideile turei a zecea”). Între ele, rotirea scrisă și butoanele

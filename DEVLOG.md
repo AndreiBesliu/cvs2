@@ -8442,3 +8442,27 @@ provizorie); după pauză, „ce se poate uni?”.
 - **Probe și porți:** 9 pe hârtie, manualul, două e2e; unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms); totalul 657,5 / 700 kB (+3,1), pornirea 102,4 (cu ușa 106,1 / 110; +0,2: locul semnului și bifa de pornire). Otrăvurile (`test/otravuri/3.6s.py`):
   32 / 32 (22 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 9).
 - **Găsit pe drum:** „0 m de filament” pe o lucrare scurtă (văzut în Edge); reparat.
+
+## 2026-11-13 — Schițele adminului, rândul G al canvas-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa faci design si pentru admin”. **Started:** 13.11, după acceptarea ideilor 39–50. **Completed:** 13.11,
+18:32.
+
+- **Rândul G al canvas-ului:** 11 table ale paginii `/admin`, un singur design (nu patru aranjamente). Paleta e cea a
+  Insulelor (tokenurile aplicației, ca azi), cu o bară laterală grupată: Probleme, Produs, Clienți, Echipa. Tablele: Azi
+  (filă nouă), Erori, Tichete, Sugestii (tabla deciziilor), Utilizatori, Personal (matricea rolurilor), Diagnoză, Roadmap,
+  Documentație, Setări și Contul meu, Adminul pe telefon. Textele vin din `src/i18n/admin.ro.ts`.
+- **Verificat în cod înaintea publicării:** verificarea Funcțiilor (`logClientError` răspunde 401), implicitul păstrării
+  raportărilor (365 de zile), numele etapelor din `PLAN.md` §5.4, regula de 640 px din `admin.css`.
+- **Harta schițelor:** 12 idei ale adminului (51–62), cu recomandarea „linia adminului” (o linie a ei, cu ADR-ul și
+  feliile ei), încă de hotărât.
+
+## 2026-11-13 — ADR 0260: adminul reproiectat, acceptat (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 18:40. **Completed:** 13.11, 18:40.
+
+- **ADR 0260 acceptat:** cele 12 idei ale adminului (51–62), împărțite pe feliile A.1–A.7, o linie a ei, pornită la
+  cuvântul owner-ului. Permisiunile (`fileVizibile`), regulile și Firestore Lite rămân, iar `/admin` are ținta de
+  +25 kB peste 106,5 / 200.
+- **Documentele:** indexul ADR-urilor (rândul 0260), traducerea lui în `roadmap.en.json`, CLAUDE.md (decizia), DEVLOG.
+  Harta schițelor le arată acceptate.
