@@ -1046,6 +1046,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **fereastra Imprimanta urmează aranjamentul, ca Mașina** („Da, ca Mașina”, la „Fereastra Imprimanta urmează și
+  ea aranjamentul, ca Mașina?”, după schița ei în Insule): se schimbă doar așezarea, cu aceleași module
+  (`src/machine/imprimanta/`). ADR 0250 §6 completat; felia 28.6↑ cuprinde ambele ferestre.
 - 11.11.2026: **codul aranjamentelor într-un worktree, după planșe** („Worktree după planșe”, la „Unde scriem codul
   aranjamentelor?”, după recomandarea sesiunii principale: în checkout-ul comun, două sesiuni care scriu se pot ciocni).
   Înlocuiește 2b din ADR 0250 („pe `main`”). Worktree-ul `aranjamente` (`wip/28.1-aranjamente`,

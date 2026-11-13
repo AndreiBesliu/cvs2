@@ -8313,3 +8313,27 @@ provizorie); după pauză, „ce se poate uni?”.
     (libere: niciun worktree de acum nu le folosește), pornit din `main` după unirea planșelor.
 - **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG. Rândul din 10.11 despre fișierele de lângă Imprimanta
   l-a corectat sesiunea principală (`8e18da7`), la cererea acestei sesiuni.
+
+## 2026-11-13 — Schițele, turele 2–4; ADR 0250 §6 completat: Imprimanta urmează aranjamentul (Model: Claude Opus 5.5)
+
+**Prompt:** „continua sa dezvolti restul de design-uri”, apoi „Încă o tură” (de două ori), apoi „Da, ca Mașina”.
+**Started:** 11.11, 20:40. **Completed:** 13.11, 11:45.
+
+- **Canvas-ul** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), acum 33 de ecrane:
+  - **cele 12 ecrane din 09.11, pe fontul sistemului (1a);** în Insule, fișierele stau după file, cu căutarea ca iconiță;
+  - **Atelier:** pe tabletă, pe telefon, „Trimite la mașină” cu lista de dinainte de pornire, Mașina în alarmă (ALARM:1,
+    textul din `src/machine/coduri/texte.ro.ts`);
+  - **Pas cu pas:** pe telefon (pasul 2), proiectul gol, pasul 5 fără mașină legată (NcStudio: fișierele descărcate, fișa
+    lucrării);
+  - **Clasic:** meniul de clic dreapta, panourile Proiect și Vectori (straturile după rol);
+  - **Insule:** meniul contului cu „Aspectul…”, fereastra Imprimanta;
+  - **tabla „Tema și butoanele mari”:** se încearcă în Play.
+- **ADR 0250 §6 completat** („Da, ca Mașina”): fereastra Imprimanta urmează aranjamentul, cu aceleași module; felia 28.6↑
+  cuprinde ambele ferestre.
+- **Idei din schițe, încă neaprobate:**
+  - plăcile recente ca variante gata făcute;
+  - Shift + F10 pentru meniul de clic dreapta;
+  - tutorialul ca intrare în proiectul gol;
+  - straturile ascunse sau blocate doar pe ecran;
+  - alegerea controlerului în Pas cu pas.
+- **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.

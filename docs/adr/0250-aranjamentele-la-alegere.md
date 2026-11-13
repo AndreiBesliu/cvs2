@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 10.11.2026 (propus pe 09.11), cu răspunsurile owner-ului: 1a, 2b, 3a, 4a (provizoriu), 5a
 (secțiunea „Răspunsurile owner-ului”, la capăt). **Pe 11.11, owner-ul a schimbat 2b:** codul se scrie într-un worktree
-nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`. Schițele mai cresc până atunci. Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`. Schițele mai cresc până atunci. **Pe 13.11, §6 s-a
+completat:** și fereastra Imprimanta urmează aranjamentul („Da, ca Mașina”; secțiunea de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -102,7 +103,7 @@ al doilea șablon, clasic […] și interfața personalizabilă”, momentul ale
 | 28.3↑ | Linia de comandă a Clasicului: o acțiune a registrului după nume, cu argumentele ei simple („offset 3”); Enter aplică, Escape renunță, istoricul pe săgeți. |
 | 28.4↑ | **Pas cu pas**: rândul pașilor, panoul fiecărui pas (Desenul = uneltele; Tăierile = piesele fără rol, apoi rolurile, cu planșa colorată pe roluri; Verificarea = verificarea vectorilor; Simularea = vederea 3D; Mașina = pasul 5), „Continuă” cu motivul când lipsește ceva. |
 | 28.5↑ | **Insule** rafinat după schița A: bara selecției cu „Rolul…”, cipul traseului cu Animează, zoomul pe pânză, arborele proiectului cu operațiile pe piese; telefonul (punctul 7). |
-| 28.6↑ | Fereastra Mașina după aranjament (punctul 6), cu lista de dinainte de pornire în Pas cu pas. |
+| 28.6↑ | Ferestrele Mașina și Imprimanta după aranjament (punctul 6 și completarea din 13.11), cu lista de dinainte de pornire în Pas cu pas. |
 | 28.7↑ | Prima pornire (dacă răspunsul la întrebarea 4 e „a”): alegerea aranjamentului o dată, ca primul pas al ghidului de pornire (rândul de prag „Ghid la prima pornire”). |
 
 Fiecare felie se încheie cu ceva de încercat pe un canal al instanței de test (`aranjamente`).
@@ -208,3 +209,20 @@ Tot pe 11.11 (CLAUDE.md, „Decizii luate”): designul acestei linii e direcți
 Locul lui Importă, Exportă vectorii și Exportă G-code îl stabilesc aranjamentele; mutarea lor lângă fila Imprimanta, din linia
 tăierii, nu se mai unește. Bara de sus a fiecărui aranjament se probează la 1280 px cu fontul lat (`test/e2e/ancore.spec.ts`
 sau o probă a lui).
+
+## Completarea din 13.11: Imprimanta urmează aranjamentul, ca Mașina
+
+Pe 13.11.2026, la schița ferestrei Imprimanta în Insule, owner-ul a fost întrebat: „Fereastra Imprimanta urmează și ea
+aranjamentul, ca Mașina?”. A răspuns „Da, ca Mașina”. §6 se completează astfel:
+
+- **Regula e aceeași ca la Mașina:** se schimbă doar așezarea. Modulele imprimantei rămân aceleași în toate aranjamentele
+  (`src/machine/imprimanta/`, ADR 0190–0194): legătura, starea, temperaturile doar citite, placa cu anularea unei piese,
+  pauza din fișier, fișierele și trimiterea lor, „Din desen…” și jurnalul.
+- **Așezarea, pe aranjament:**
+  - **Insule:** trei coloane: imprimanta (legătura, temperaturile, ventilatoarele și lumina), placa cu progresul și
+    butoanele, fișierele. Schița e pe canvas, „A · Imprimanta”.
+  - **Clasic:** bara de comenzi, cu tastele, și fișierele ca tabel, ca fereastra Mașina a Clasicului.
+  - **Atelier:** butoane mari, temperaturile cu cifre mari, Pauză și Oprește la un deget.
+  - **Pas cu pas:** confirmarea de dinainte de pornire („Patul e gol”) e o listă, ca la pasul 5 al mașinii.
+- **Felia:** intră în 28.6↑, „fereastra Mașina după aranjament”, care devine „ferestrele Mașina și Imprimanta după
+  aranjament”. Dacă felia iese prea mare, Imprimanta se desparte într-o felie a ei, imediat după.
