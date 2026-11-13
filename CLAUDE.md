@@ -1046,6 +1046,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 13.11.2026: **ideile 17–27 din tura a opta a schițelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
+  recomandările la ideile noi 17–27?”, după tablele Conectarea mașinii, Proiectul gol, Textul și Tastatura): 10 intră în
+  feliile 28.x (ADR 0250, „Ideile turei a opta”), între ele F6 prin zonele aranjamentului, cu ordinea în tipul
+  `Aranjament`; editarea textului pe loc, cu dublu clic, devine linie separată.
 - 13.11.2026: **cele 16 idei din schițele aranjamentelor, acceptate cu recomandarea** („Da la toate”, la „Accepți
   recomandările la cele 16 idei de pe Harta schițelor?”, după tura care a acoperit toate ecranele în cele patru aranjamente):
   - 13 intră în feliile 28.x. Lista și felia fiecăreia stau în ADR 0250, „Completarea din 13.11: ideile din schițe”.

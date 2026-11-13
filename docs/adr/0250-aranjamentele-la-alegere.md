@@ -4,8 +4,8 @@
 (secțiunea „Răspunsurile owner-ului”, la capăt). **Pe 11.11, owner-ul a schimbat 2b:** codul se scrie într-un worktree
 nou, pornit după unirea planșelor („Worktree după planșe”), nu pe `main`. Schițele mai cresc până atunci. **Pe 13.11, §6 s-a
 completat:** și fereastra Imprimanta urmează aranjamentul („Da, ca Mașina”). **Tot pe 13.11, schițele acoperă toate
-ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intră în feliile 28.x, 3 devin linii separate
-(ambele, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intră în feliile 28.x, 3 devin linii separate.
+După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată (toate, în secțiunile de la capăt). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -269,3 +269,23 @@ un singur scriitor (felia 1.7), cu proba ei, deci o felie mică a depozitului, n
   aranjamentele.
 
 Mărimea fiecărei idei intră în ținta feliei ei (secțiunea „Mărimea”).
+
+### Ideile turei a opta, acceptate tot pe 13.11
+
+După tura a opta (tablele Conectarea mașinii, Proiectul gol, Textul și Tastatura), owner-ul a fost întrebat: „Accepți
+recomandările la ideile noi 17–27?”. A răspuns „Da la toate”.
+
+| Ideea | Felia |
+| --- | --- |
+| Plăcile mari ale Atelierului în proiectul gol, cu „Am deja G-code” (deschide Mașina, cu „Fișier…”) | 28.1↑ |
+| Plăcile fonturilor și tastatura tabletei, în Atelier | 28.1↑ |
+| F6 trece prin zonele aranjamentului, Shift + F6 înapoi; ordinea stă în tipul `Aranjament`, cu o probă care le parcurge pe toate | 28.1↑ |
+| Pagina de start a Clasicului, ca filă de document, închisă singură la primul desen | 28.2↑ |
+| Textul în grila proprietăților, pe grupuri (Textul, Forma literelor, Așezarea); Alt cu literele meniurilor și F10 | 28.2↑ |
+| Comanda „conecteaza <nume>” | 28.3↑ |
+| Fontul ales după scop în Pas cu pas („simplu”, „cu serife”, „pentru gravură pe linie”); Ctrl + Enter apasă „Continuă” | 28.4↑ |
+| Cardul „Foaia e goală” pe planșă, cu cele trei începuturi, plecat la primul gest | 28.5↑ |
+| Opțiunile rare ale textului, pliate sub „Mai mult”, în Insule | 28.5↑ |
+| Conectarea după aranjament: dialogul Clasicului, cardurile Atelierului, „Leagă mașina” la începutul pasului 5, cu avertismentul WiFi înainte de „Conectează” | 28.6↑ |
+
+**Linie separată:** editarea textului direct pe planșă, cu dublu clic. Ține de unealta Text, deci de toate aranjamentele.

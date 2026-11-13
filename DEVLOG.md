@@ -8366,3 +8366,11 @@ provizorie); după pauză, „ce se poate uni?”.
   Vectori, Trasee, Mașina, Extensii, Ajutor (fără „Ferestre”). În ADR 0250, rândul meniului Extensii spune acum „între
   Mașina și Ajutor”.
 - **Harta schițelor:** rândurile noi și 11 idei noi (17–27), cu recomandarea, încă de hotărât.
+
+## 2026-11-13 — Ideile 17–27 din tura a opta, acceptate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la toate”. **Started:** 13.11, 16:55. **Completed:** 13.11, 17:20.
+
+- **ADR 0250, „Ideile turei a opta, acceptate tot pe 13.11”:** 10 idei în feliile 28.x, fiecare cu felia ei; editarea
+  textului pe loc, cu dublu clic, e linie separată.
+- **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
