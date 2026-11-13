@@ -8411,3 +8411,17 @@ provizorie); după pauză, „ce se poate uni?”.
 - **ADR 0250, „Ideile turei a zecea, acceptate tot pe 13.11”:** 11 idei în feliile 28.x, fiecare cu felia ei; textul de
   probă al fontului, luat din textul omului, e linie separată.
 - **Harta schițelor** le arată acceptate. **Documentele:** indexul ADR-urilor, CLAUDE.md (decizia), DEVLOG.
+
+## 2026-11-13 — Schițele adminului, rândul G al canvas-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa faci design si pentru admin”. **Started:** 13.11, după acceptarea ideilor 39–50. **Completed:** 13.11,
+18:32.
+
+- **Rândul G al canvas-ului:** 11 table ale paginii `/admin`, un singur design (nu patru aranjamente). Paleta e cea a
+  Insulelor (tokenurile aplicației, ca azi), cu o bară laterală grupată: Probleme, Produs, Clienți, Echipa. Tablele: Azi
+  (filă nouă), Erori, Tichete, Sugestii (tabla deciziilor), Utilizatori, Personal (matricea rolurilor), Diagnoză, Roadmap,
+  Documentație, Setări și Contul meu, Adminul pe telefon. Textele vin din `src/i18n/admin.ro.ts`.
+- **Verificat în cod înaintea publicării:** verificarea Funcțiilor (`logClientError` răspunde 401), implicitul păstrării
+  raportărilor (365 de zile), numele etapelor din `PLAN.md` §5.4, regula de 640 px din `admin.css`.
+- **Harta schițelor:** 12 idei ale adminului (51–62), cu recomandarea „linia adminului” (o linie a ei, cu ADR-ul și
+  feliile ei), încă de hotărât.
