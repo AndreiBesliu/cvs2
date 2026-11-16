@@ -8968,4 +8968,10 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   `plansele` servește încă `9c668fd` (porțile lui, toate trecute). La reluare: suita unitară și e2e-ul întreg pe vârf
   (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
 
-**Completed:** 14.11, 00:15.
+- **Reluare (16.11, „poti sa continui ... sau poti sa unesti ce se poate”, transmis de sesiunea principală; „Da, reiau”):**
+  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă
+  rulare Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu
+  ușa 109,9 / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe
+  16.12. Gata de unit.
+
+**Completed:** 16.11, 18:55.
