@@ -1,12 +1,18 @@
 # ADR 0175 — Incrustația cu pereți drepți: gaura și treptele (documentul v25)
 
-**Starea:** propus pe 16.11.2026, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia
+**Starea:** acceptat pe 16.11.2026, cu „Da, cu recomandările” al owner-ului (1a, 2a, 3a). Propus tot pe 16.11, în linia incrustațiilor (worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`). Felia
 12.1↑f din ADR 0170 („gaura și treptele”), fără mașină. Cererea owner-ului, transmisă de sesiunea principală: „poti sa continui
 si sa pornesti si worktrees care s-au oprit”; sesiunea principală: „pe linia ta: 12.1↑f (gaura și treptele), din ADR 0170. Dacă
 cere decizii, propune-le cu recomandarea întâi”. **Documentul:** v25 (v24 e al punților dopului drept, ADR 0174).
 **Rândul din prag:** „Inlay în V (D) ȘI inlay cu pereți drepți, simplu sau în trepte (S), fiecare cu criteriul lui”
 (`ACOPERIRE-ARTCAM-DESKPROTO.md`). **Schița:** <https://claude.ai/artifact/L9buqcaGfDVW4oajmuCxZR> (patru planșe: fereastra
 exportului și panoul pe hârtie, gaura în secțiune, treptele în secțiune, întrebările).
+
+**Ce au schimbat răspunsurile:** nimic față de propunere; fixează doar alegerile care se excludeau.
+- **1a:** gaura se alege („Locașul: gaură”), iar adâncimea ei e grosimea foii plus supracursa, ținută la zi cu foaia.
+- **2a:** gaura se taie doar ca buzunar prin toată placa (nu și ca profil cu urechi).
+- **3a:** gaura întâi (12.1↑f, cu documentul v25 pentru ambele câmpuri; treapta refuzată de lucrare până la felia ei), apoi
+  treptele (12.1↑f-2).
 
 ## Problema
 
@@ -55,8 +61,8 @@ Două lucruri se schimbă față de buzunar:
 1. **Documentul v25:** pe incrustația cu pereți drepți, două câmpuri opționale.
    - `locas: 'gaura'` (lipsă = buzunar). La gaură, adâncimea locașului e grosimea foii plus supracursa (ținută la zi cu foaia,
      nu cea scrisă în operație), iar panoul o arată „prin foaie”.
-   - `treapta: { adancime, latime, spre? }`: d în (0, D) (la gaură, în (0, T)), s pozitiv, `spre: 'exterior'` (lipsă = spre
-     interior). Contractul ușii: un obiect deschis; refuzurile de geometrie sunt ale lucrării.
+   - `treapta: { adancime, latime, spre? }`: d în (0, D) (la gaură, în (0, T)), s pozitiv, `spre: 'interior' | 'exterior'`
+     (lipsă = spre interior). Contractul ușii: un obiect deschis; refuzurile de geometrie sunt ale lucrării.
    - `sprijin` primește și `'umar'` (doar cu treaptă; implicit cu treaptă). La gaură, „pe fund” nu există.
    - Migrarea v24 → v25 schimbă doar numărul; un v24 cu `locas` sau `treapta` în `incrustatie` (câmpuri necunoscute atunci)
      e refuzat, ca ciocnire. Oracolul documentului, corpusul de aur și probele versiunii curente trec la v25.

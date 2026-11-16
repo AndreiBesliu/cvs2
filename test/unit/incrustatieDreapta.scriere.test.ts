@@ -130,3 +130,42 @@ test('pe dopul ridicat (fără punți din fereastră), câmpul pleacă; fără v
   assert.ok(faraValori.incrustatie?.fel === 'drept' && !Object.hasOwn(faraValori.incrustatie, 'punti'));
   assert.deepEqual(operatieDinDialog(cu, undefined, scula).incrustatie, cu.incrustatie);
 });
+
+// ── Locașul (ADR 0175, felia 12.1↑f) ─────────────────────────────────────────────────────────────────────────────
+
+/** Buzunarul unui document v25, cu incrustația dreaptă dată (peste valorile de bază). */
+const dreptV25 = (inc: Record<string, unknown> = {}): Operatie => {
+  const r = incarca({
+    schema: 25, rev: 0,
+    piese: [{
+      id: 'p', radacina: { tip: 'element', id: 'a', matrice: I, forma: { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 } },
+      operatii: [{
+        id: 'o', tip: 'buzunar', noduri: ['a'], latura: 'interior', sens: 'urcare', adancime: 6, pas: 3, pasLateral: 1.2,
+        scula: { numar: 1, nume: 'freza plata', diametru: 3 }, urechi: null, rampa: null, intrari: null, colturi: null,
+        incrustatie: { fel: 'drept', ...BAZA, ...inc },
+      }],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 100, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
+  });
+  if (!r.ok) assert.fail(r.motiv);
+  return r.doc.piese[0]!.operatii[0]!;
+};
+const locasScris = (o: Operatie): unknown => (o.incrustatie?.fel === 'drept' ? o.incrustatie.locas : null);
+
+test('locașul: gaura se scrie din rând; fără ea (buzunar), câmpul pleacă; cu aceleași valori, operația e aceeași', () => {
+  assert.equal(locasScris(operatieDinDialog(dreptV25(), randul({ ...BAZA, sprijin: 'fata', locas: 'gaura' }), scula)), 'gaura');
+  const gaura = dreptV25({ sprijin: 'fata', locas: 'gaura' });
+  const buzunar = operatieDinDialog(gaura, randul({ ...BAZA, sprijin: 'fata' }), scula);
+  assert.ok(buzunar.incrustatie?.fel === 'drept' && !Object.hasOwn(buzunar.incrustatie, 'locas'));
+  assert.deepEqual(operatieDinDialog(gaura, randul({ ...BAZA, sprijin: 'fata', locas: 'gaura' }), scula), gaura);
+  // Un „buzunar” scris de mână pleacă și el (lipsa e buzunarul).
+  const scrisBuzunar = operatieDinDialog(dreptV25({ locas: 'buzunar' }), randul({ ...BAZA }), scula);
+  assert.ok(scrisBuzunar.incrustatie?.fel === 'drept' && !Object.hasOwn(scrisBuzunar.incrustatie, 'locas'));
+});
+
+test('treapta (12.1↑f-2) și un câmp necunoscut rămân în incrustație, oricare ar fi locașul ales', () => {
+  const cu = dreptV25({ treapta: { adancime: 3, latime: 5 }, notaAtelier: 'x' });
+  const scrisa = operatieDinDialog(cu, randul({ ...BAZA, sprijin: 'fata', locas: 'gaura' }), scula);
+  assert.ok(scrisa.incrustatie?.fel === 'drept');
+  assert.deepEqual([scrisa.incrustatie.treapta, scrisa.incrustatie['notaAtelier'], scrisa.incrustatie.locas], [{ adancime: 3, latime: 5 }, 'x', 'gaura']);
+});

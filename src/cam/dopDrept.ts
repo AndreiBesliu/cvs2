@@ -78,7 +78,8 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
     const { dop: freze } = frezeIncrustatieDreapta(op);
     const lata = Math.max(...freze.map((x) => x.scula.diametru));
     // Înălțimea dopului și grosimea semifabricatului: din același loc ca panoul (`valoriIncrustatieDreapta`).
-    const { inaltime: h, grosime } = valoriIncrustatieDreapta(op)!;
+    // La gaură (ADR 0175), adâncimea e grosimea foii: dopul decupat e gros de T + H, cel ridicat pe față înalt de T.
+    const { inaltime: h, grosime } = valoriIncrustatieDreapta(op, doc.foi[0]?.stoc.grosime)!;
     const avertismente: string[] = [];
     let piesa: Document['piese'][number];
     if (inc.dop === 'ridicat') {

@@ -124,6 +124,7 @@ export function ExportConectat({
               fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
               ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
               ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
+              ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
             } : null,
           } : {}),
           ...(o.tip === 'vcarve' ? {
@@ -189,6 +190,7 @@ export function ExportConectat({
     <DialogExport
       baza={baza}
       {...(foaie === undefined ? {} : { foaie })}
+      {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}
       operatii={exportFoaie.randuri}
       ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}

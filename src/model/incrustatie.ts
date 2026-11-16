@@ -4,7 +4,7 @@
  * H spațiul pentru fierăstrău: dopul pornește la S = D − g și se sapă până la S + H; întors, intră S în locaș, cu pereții
  * lipiți pe S·t de la contur (pe orizontală), g sub el și H între plăci; semifabricatul lui are cel puțin S + H + 1 mm.
  */
-import type { BandaDop, Operatie, Scula, Urechi } from './document.ts';
+import type { BandaDop, Document, Operatie, Scula, Urechi } from './document.ts';
 
 /** Cât lasă grosimea cea mai mică a semifabricatului sub fața coborâtă (mm): dopul nu se taie prin placă. */
 export const SUB_FATA_DOPULUI = 1;
@@ -109,24 +109,40 @@ export type ValoriIncrustatieDreapta = {
   /** Colțurile dopului: vârfurile max(0, rLocas − c), unghiurile rho + c. */
   readonly varfDop: number; readonly unghiDop: number;
   readonly c: number;
-  /** Înălțimea dopului: D + H pe fund sau decupat, D − g pe față. */
+  /** Înălțimea dopului: D + H pe fund sau decupat, D − g pe față (la gaură, D e grosimea foii și pe față rămâne D). */
   readonly inaltime: number;
   /** Grosimea semifabricatului dopului: cea mai mică la cel ridicat (h + 1), cea exactă la cel decupat (D + H). */
   readonly grosime: number;
 };
 
+/** Gaura (ADR 0175 §1): locașul cu pereți drepți trece prin foaie (adâncimea lui e a foii, nu a operației). */
+export const esteGaura = (op: Pick<Operatie, 'incrustatie'>): boolean => op.incrustatie?.fel === 'drept' && op.incrustatie.locas === 'gaura';
+
+/**
+ * Documentul pe care îl taie lucrarea (ADR 0175 §1): fiecare gaură cu adâncimea = grosimea foii (prima) plus supracursa;
+ * restul, neschimbat (același obiect, fără nicio gaură).
+ */
+export function cuGauriPrinFoaie(doc: Document, supracursa = 0): Document {
+  const foaie = doc.foi[0];
+  if (!foaie || !doc.piese.some((p) => p.operatii.some(esteGaura))) return doc;
+  const adancime = foaie.stoc.grosime + supracursa;
+  return { ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => (esteGaura(o) ? { ...o, adancime } : o)) })) };
+}
+
 /**
  * Valorile pe hârtie ale incrustației cu pereți drepți a operației, sau null: singurul loc al razelor (panoul le arată, iar
- * lucrarea închide și deschide desenul cu ele, `cam/incrustatieDreapta.ts`).
+ * lucrarea închide și deschide desenul cu ele, `cam/incrustatieDreapta.ts`). La gaură (ADR 0175), adâncimea e `grosimeFoaie`
+ * (fără ea, a operației), iar dopul ridicat pe față e înalt cât ea (n-are fund sub el, deci nici joc).
  */
-export function valoriIncrustatieDreapta(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie' | 'rest'>): ValoriIncrustatieDreapta | null {
+export function valoriIncrustatieDreapta(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie' | 'rest'>, grosimeFoaie?: number): ValoriIncrustatieDreapta | null {
   const i = op.incrustatie;
   if (i?.fel !== 'drept') return null;
   const raza = (d: readonly { readonly scula: { readonly diametru: number } }[]): number => Math.min(...d.map((f) => f.scula.diametru / 2));
   const locas = [{ scula: op.scula }, ...(op.rest ?? [])];
   const rLocas = raza(locas), rDop = i.frezeDop && i.frezeDop.length > 0 ? raza(i.frezeDop) : rLocas;
   const c = i.jocLateral, rho = Math.max(0, rDop - c);
-  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? op.adancime - i.joc : op.adancime + i.fierastrau;
+  const gaura = esteGaura(op), D = gaura && grosimeFoaie !== undefined ? grosimeFoaie : op.adancime;
+  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;
   return {
     rLocas, rDop, rho, varfDop: Math.max(0, rLocas - c), unghiDop: rho + c, c, inaltime,
     grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI,

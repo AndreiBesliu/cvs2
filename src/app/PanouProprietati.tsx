@@ -7,7 +7,7 @@ import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
-import { PUNTI_DOP_DREPT, susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { esteGaura, PUNTI_DOP_DREPT, susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
 import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
@@ -106,7 +106,8 @@ function coborare(c: Operatie['coborare']): string {
   return t('prop.coborare.rampa', { nume, unghi: c.unghi });
 }
 
-function operatie(o: Operatie, n: number): ReactNode {
+/** Rezumatul unei operații; la gaură (ADR 0175), adâncimea e a foii (`grosimeFoaie`), nu cea scrisă în operație. */
+function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
   return (
     <section key={o.id} className="prop-operatie">
       <h3>{t('prop.operatia', { n })}</h3>
@@ -119,7 +120,7 @@ function operatie(o: Operatie, n: number): ReactNode {
         {o.tip === 'buzunar' && !o.strategie && rand(t('export.coborare'), coborare(o.coborare))}
         {o.tip === 'gaurire' && rand(t('export.gaurire.retragere'), String(o.retragereCompleta ?? 1))}
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
-        {rand(t('export.adancime'), mm(o.adancime))}
+        {rand(t('export.adancime'), esteGaura(o) && grosimeFoaie !== undefined ? t('prop.inc.gaura.adancime', { mm: mm(grosimeFoaie) }) : mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}
         {rand(t('prop.freza'), o.scula.forma
           ? o.scula.forma.varf
@@ -139,6 +140,7 @@ function operatie(o: Operatie, n: number): ReactNode {
           lateral: mm(o.incrustatie.jocLateral), margine: mm(o.incrustatie.margine),
           dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata' : 'prop.inc.dop.ridicat-fund'),
         }))}
+        {o.tip === 'buzunar' && esteGaura(o) && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && (o.incrustatie.frezeDop ?? []).length > 0 && rand(t('prop.inc.freze-dop'),
           (o.incrustatie.frezeDop ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
@@ -267,7 +269,7 @@ export function PanouProprietati({
   const cheieHartie = (o: Operatie): string => jsonCanonic({
     adancime: o.adancime, diametru: o.scula.diametru, rest: (o.rest ?? []).map((r) => r.scula.diametru), incrustatie: o.incrustatie ?? null,
   });
-  const hartieDreapta = primaDreapta && operatiiAlese.every((o) => cheieHartie(o) === cheieHartie(primaDreapta)) ? valoriIncrustatieDreapta(primaDreapta) : null;
+  const hartieDreapta = primaDreapta && operatiiAlese.every((o) => cheieHartie(o) === cheieHartie(primaDreapta)) ? valoriIncrustatieDreapta(primaDreapta, foaie?.stoc.grosime) : null;
   const incDreapta = primaDreapta ? dreptOp(primaDreapta) : null;
   const primaInc = incrustatii ? operatiiAlese[0] : undefined;
   const hartie = primaInc && operatiiAlese.every((o) => o.adancime === primaInc.adancime && o.scula.diametru === primaInc.scula.diametru
@@ -471,7 +473,10 @@ export function PanouProprietati({
                 )}
               </select>
             ))}
-            {operatiiAlese.length > 0 && rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x })))}
+            {/* La gaură (ADR 0175), adâncimea e a foii: doar de citit. */}
+            {operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)
+              ? rand(t('prop.adancime'), t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) }))
+              : rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x }))))}
             {operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
             {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
             {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
@@ -529,7 +534,8 @@ export function PanouProprietati({
                 {rand(t('prop.inc.colturi-dop'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.varfDop), unghi: mm(hartieDreapta.unghiDop) }))}
                 {rand(t('prop.inc.joc-contur'), t('prop.inc.mm', { mm: mm(hartieDreapta.c) }))}
                 {rand(t('prop.inc.inaltime'), t('prop.inc.mm', { mm: mm(hartieDreapta.inaltime) }))}
-                {incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
+                {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
+                {incDreapta.locas === 'gaura' && incDreapta.dop === 'ridicat' ? null : incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
                   ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
                   : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
                 {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
@@ -543,7 +549,7 @@ export function PanouProprietati({
           <PanouRoluri piese={piese} cheie={cheie} />
         </section>
       )}
-      {piesa?.operatii.map((o, i) => operatie(o, i + 1))}
+      {piesa?.operatii.map((o, i) => operatie(o, i + 1, foaie?.stoc.grosime))}
       {piesa && piesa.operatii.length > 0 && (
         <button type="button" className="prop-export" data-buton="editeaza-export" onClick={onEditeazaOperatii}>{t('prop.editeaza-export')}</button>
       )}
