@@ -123,6 +123,17 @@
   }
 }
 
+/* Densitatea mare (ADR 0250 §2, §5, felia 28.1↑a), cu orice aranjament: 48 px cu mausul, 56 px la atingere. */
+:root[data-densitate='mare'] {
+  --tinta: 48px;
+}
+
+@media (pointer: coarse) {
+  :root[data-densitate='mare'] {
+    --tinta: 56px;
+  }
+}
+
 body {
   margin: 0;
   background: var(--panza-fundal);

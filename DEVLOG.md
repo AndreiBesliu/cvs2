@@ -9128,3 +9128,24 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   40 ms a probei, față de un `setTimeout(0)` al gazdei false; viteza luminii pe 12 Mpx: 4,0 s), trecute amândouă pe mașina
   liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
   (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
+
+## 2026-11-16 — Felia 28.1↑a: alegerea aranjamentului și densitatea, citite înaintea primei randări (Model: Claude Opus 5.5)
+
+**Prompt:** „Poti sa adopti si sesiunea de design si sa o pornesti” (owner-ul, în sesiunea principală, transmis de ea și
+verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 19:10.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `0e3725c` (fast-forward), în worktree-ul `aranjamente`.
+- **Codul:**
+  - `src/ui/alegereAranjament.ts`: cheia `cncvs2.aranjament`, JSON `{ v: 1, aranjament, densitate }`, implicit Insule cu
+    densitatea normală;
+  - `main.tsx`: `data-aranjament` și `data-densitate` pe `<html>`, înaintea primei randări;
+  - `ARANJAMENTE` în `aranjament.ts`;
+  - densitatea mare în `stil.css`.
+- **Probele:**
+  - 10 unitare și 4 e2e noi; `ancore`, `cont`, `pornire`: 22 / 22;
+  - suita unitară întreagă: 9 353, 0 căderi;
+  - `tsc` și regulile de import, curate;
+  - otrăvurile: 7 / 7 prinse.
+- **Mărimea** (față de un build curat al lui `0e3725c`): pornirea +0,5 kB (106,2; cu ușa 110,1 / 115), totalul +0,4 kB
+  (696,2 / 800).
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), DEVLOG.
