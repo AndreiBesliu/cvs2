@@ -844,16 +844,22 @@ test('o bucată mică, dar nu plină, rămâne linii (25.3↑d): un „o” de 1
 });
 
 test('cu capetele în vârf (ADR 0223), nicio bucată nu e punct (25.3↑d): discul mic e o linie de la o margine la alta', () => {
+  // Și discurile al căror schelet era o liniuță (discul de 10 px pe un colț de pixel): liniuța iese, dreapta axei intră.
   const varf = { ...MEDIANA_SIMPLA, capete: 'varf' } as const;
-  for (const [cx, cy] of [[30, 30], [30.25, 30.5]] as const) {
-    const t = traseazaMediana(imagine(60, 60, (x, y) => (Math.hypot(x + 0.5 - cx, y + 0.5 - cy) < 4 ? 1 : 0)), IMPLICITE, varf);
-    assert.ok(t.ok);
-    assert.equal(t.raport.puncte, 0, `(${cx}, ${cy}): puncte`);
-    assert.equal(t.raport.contururi, 1, `(${cx}, ${cy}): căi`);
-    // De la o margine la alta: cât diametrul (8 px), ±1 px.
-    const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
-    assert.ok(Math.abs(l - 8) <= 1, `(${cx}, ${cy}): linia de ${l.toFixed(2)} px`);
+  const gresite: string[] = [];
+  for (const d of [4, 6, 8, 10, 12]) {
+    for (const [cx, cy] of [[30, 30], [30.25, 30.5], [30.5, 30.5]] as const) {
+      const t = traseazaMediana(imagine(60, 60, (x, y) => (Math.hypot(x + 0.5 - cx, y + 0.5 - cy) < d / 2 ? 1 : 0)), IMPLICITE, varf);
+      if (!t.ok || t.raport.puncte !== 0 || t.raport.contururi !== 1) {
+        gresite.push(`d ${d} (${cx}, ${cy}): ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+        continue;
+      }
+      // De la o margine la alta: cât diametrul, ±1,5 px (pixelii discului, după cum cade pe grilă).
+      const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
+      if (Math.abs(l - d) > 1.5) gresite.push(`d ${d} (${cx}, ${cy}): linia de ${l.toFixed(2)} px`);
+    }
   }
+  assert.deepEqual(gresite, []);
 });
 
 test('o linie oblică de un pixel e o bucată (8-vecinătate), nu un șir de puncte (25.3↑d)', () => {
