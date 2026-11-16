@@ -772,4 +772,6 @@ export const roEditare = {
   'actiune.foaie-aseaza': 'Așază pe foi',
   'actiune.muta-si-aseaza': 'Mută și așază la capăt',
   'actiune.muta-pe-foaie': 'Mută pe altă foaie',
+  // Raportul foilor (ADR 0210 §6, felia 11.6↑): eticheta lui în paletă, singurul loc care o arată.
+  'actiune.raport-foi': 'Raportul foilor și lista de tăiere',
 } as const satisfies DictionarRoPentru<typeof enEditare>;
