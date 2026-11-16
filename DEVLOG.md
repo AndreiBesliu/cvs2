@@ -8988,7 +8988,7 @@ culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
 ## 2026-11-13 — Felia 25.3↑c: liniile mediane pe culori (ADR 0227, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0227: „Leagă peste alte culori” bifată implicit; grosimea
-pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** —.
+pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 16.11, 18:51.
 
 - **Ramura** la zi cu `origin/main` (`4f379cd`, nimic nou de atunci).
 - **Felia** (`405c2d1`): `src/trasare/medianeCulori.ts` (nou: masca fiecărei culori bifate, ca alfa, la cutia ei; întâi
@@ -9012,3 +9012,14 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** �
   documentele (ADR 0227 Implementarea, indexul, fișa, CLAUDE.md, ACOPERIRE, DEVLOG, `roadmap.en.json`; scripturile
   pregătite în `.tmp/` ale worktree-ului: `docs-0227.py`, `memorie-0227b.py`, `nota-0227.md`, cu numerele de reluat);
   raportul.
+- **Reluare** (16.11, owner-ul, prin sesiunea principală: „poti sa continui si sa pornesti si worktrees care s-au oprit, sau
+  poti sa unesti ce se poate”): `origin/main` (`0e3725c`) adus în ramură (`78901a2`; conflict doar în DEVLOG, ambele părți
+  păstrate). Porțile din nou pe arborele unit: compilatoarele (3), importurile, licențele, traducerile; suita unitară
+  9 364, cu 2 căzute din timp cât rulau alături e2e-urile planșelor (plafoanele DXF, sonda GRBL), trecute singure (40 / 40);
+  e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,3 / 800 kB, pornirea 105,7 / 115
+  (cu ușa 109,7).
+- **Otrăvurile ferestrei:** F01–F05 prinse; F06 a scăpat: proba refuzului pe culori citea, din cursă, textul vechi de la
+  alb-negru (același). Proba așteaptă acum răspunsul pe culori (`6352153`), iar F06 e prinsă. În total 27 / 27, fiecare pe
+  proba ei (15 unitare, 4 ale ușii, 8 prin e2e).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 16.12), amprenta
+  `63521531d5a9` (adresa principală de test, neatinsă: `e0f98030284e`).

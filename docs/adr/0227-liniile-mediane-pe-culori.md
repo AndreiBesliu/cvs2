@@ -1,9 +1,9 @@
 # ADR 0227 — Liniile mediane pe culori
 
-**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final); propus tot atunci,
-la „Da, propune-le” (owner-ul, după felia 25.4↑b). Felia 25.3↑c, lăsată de ADR 0222 §1 („pe culori, linia mediană a
-fiecărei culori bifate vine mai târziu, la cerere”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura
-`wip/25.1-trasare`, adusă la `origin/main`, `4f379cd`).
+**Starea:** acceptat pe 13.11.2026, cu toate recomandările („Da la 1-2a”, la întrebările de la final), și implementat
+(felia 25.3↑c, 14–16.11, cu o pauză; mai jos); propus pe 13.11, la „Da, propune-le” (owner-ul, după felia 25.4↑b). Felia
+25.3↑c, lăsată de ADR 0222 §1 („pe culori, linia mediană a fiecărei culori bifate vine mai târziu, la cerere”), fără
+mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `4f379cd`).
 **Completează:** ADR 0221 (trasarea pe culori), ADR 0222 și 0223 (linia mediană și opțiunile ei).
 **Schița:** <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91> (desenul prototipului, culorile, liniile mediane ale fiecărei
 culori fără legare și cu legarea și părțile late; macheta ferestrei; ce am măsurat; întrebările, cu formularul).
@@ -56,6 +56,54 @@ linie, cu adâncimea sau freza ei.
 6. **Probele, scrise întâi:** desene colorate sintetice cu mijlocul trăsăturilor știut (încrucișările, culoarea plină, o
    culoare doar cu puncte, culorile legate), cu plafoanele măsurate; ușa (piesele, `pe-linie`, numele); e2e (Rezultatul pe
    Culorile, legarea, Importă); fișierul real întâi (lecția D7), dacă îl trimiți; otrăvurile la capăt.
+
+## Implementarea (14–16.11)
+
+**Ce s-a schimbat față de propunere:**
+
+1. **Grosimea desenului întreg e mediana tuturor lățimilor măsurate**, din toate culorile (fiecare lățime e un pas pe o
+   linie, deci mediana e ponderată cu lungimea), nu mediana grosimilor culorilor ponderată cu lungimea lor: aceeași idee,
+   fără pasul de mijloc; pe o singură culoare, exact cea de la alb-negru. Pe desenul probelor, 6,00 px: pragul, 12 px.
+2. **Legarea lucrează pe liniile în pixeli, în nucleu** (`traseazaMediana(img, o, om, cu)`: liniile gata din
+   `liniiMediane` și un cârlig chemat după părțile late, înaintea curbelor), nu pe căile gata: curbele se potrivesc peste
+   legătură (roșul legat de trei ori e o singură dreaptă, cu două vârfuri), iar un lanț care se închide (un cerc tăiat de
+   o linie desenată peste el) e o buclă ca oricare, cu latura ei la „Vectori închiși”.
+3. **Masca fiecărei culori e alfa** (sursa „Transparența”): fără polaritate de ghicit, pragul 0,5. `traseazaCulori` dă
+doar
+   etichetele (`doarEtichete`): fără plasă și contururi, deci mai repede și fără refuzul plasei.
+4. **Pe culori, raportul nu mai spune grosimea desenului întreg** (e în pastile, răspunsul 2a): spune punctele, părțile
+  late și legăturile (joncțiunile și buclele rămân în date, ca la alb-negru). „Arată grosimea” desenează fiecare culoare
+  cu
+   grosimea ei: la o culoare plină, un disc mare (pătratul galben al probelor, 42 mm), semn că e o umplutură.
+5. **Rezultatul e o singură alegere, comună surselor:** trecând de la alb-negru la Culorile, rămâne cea făcută.
+6. **Refuzul cu doar puncte, pe culori,** spunea „Nicio culoare de trasat: bifează…”; acum, ca la alb-negru, că desenul
+   are doar puncte.
+
+**Măsurat** [14–16.11, Node 26 și Edge fără fereastră]:
+- pe desenul probelor (600 × 400, trăsături de 6 px): 5 piese; roșul, 4 bucăți fără legare și o singură dreaptă cu ea (3
+  legături); albastrul o dreaptă, negrul un pătrat cu 4 vârfuri, verdele o buclă cu 25; vârfurile și mijlocul curbelor la
+  cel mult 0,26 px de mijlocul adevărat (la verde; dreptele, exact); grosimea fiecărei culori, 6,00–6,04 px; galbenul, cu
+  „Părțile late: Contururi”, un contur;
+- legarea se oprește unde trebuie: un V cu vârful sub un disc albastru se leagă la 10° de orizontală, nu la 30°; peste o
+  bandă albastră de 20 px (capetele la 26 px), nu; peste un gol de hârtie, nici cu o linie albastră de 2 px prin el; peste
+  o pată lată de aceeași culoare (ca contur), nu; un cerc verde sub o linie roșie se închide la loc (2 legături);
+- în fereastră (e2e, desenul făcut în pagină): ca în Node pe același PNG: 3 legături, grosimea în pastile („trăsătura:
+  1,59 mm”), liniile numărate; fără legare, 3 linii în plus;
+- timpul pe 12 Mpx (Node, trăsături de 40 px): 3,7 s (contururile pe culori 2,4 s, linia mediană alb-negru 1,7 s); pe
+  10,7 Mpx, 2,8 s;
+- probele: 10 ale nucleului, una a ușii, una e2e nouă și două schimbate (Rezultatul rămâne pe culori; refuzul cu puncte pe
+  culori); pe arborele unit cu `main` (`78901a2`), suita unitară întreagă 9 364 (2 căzute din timp cât rulau alături
+  e2e-urile planșelor, plafoanele DXF și sonda GRBL, trecute singure: 40 / 40) și e2e-urile trasării,
+  importului și tutorialul 50 / 50;
+- otrăvurile (`test/otravuri/25.3c.py`, alese de autor): 27 / 27, fiecare pe proba ei: 21 la prima rulare (`405c2d1`),
+  F01–F05 pe arborele unit (`78901a2`), F06 după repararea probei ei (`6352153`: proba refuzului pe culori citea, din
+  cursă, textul vechi de la alb-negru, la fel); 15 unitare, 4 ale ușii, 8 prin e2e;
+- mărimea: totalul 698,3 / 800 kB (+2,2 kB, cât estima propunerea), pornirea 105,7 / 115, cu ușa 109,7 (plafoanele din
+  13.11, ADR 0252 și 0253).
+
+**Găsit în nucleul de alb-negru (o urmare, nu aici):** un disc mic centrat pe un colț de pixel (scheletul simetric) nu dă
+nici linie, nici punct numărat, iar un pătrat plin de 4 × 4 px dă o liniuță; proba punctelor de la alb-negru (25.3↑) are
+discul decalat, deci n-o vede. Pe culori, la fel (proba culorii doar cu puncte are și ea punctele decalate).
 
 ## Ce am respins
 

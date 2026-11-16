@@ -875,9 +875,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   toate recomandările („Da la 1-2a”), pe aceeași ramură, neunită, pe canalul `trasare`:** Lumina și pe Culorile (imaginile
   opace), înaintea numărului culorilor; `culoriLuminate` (`src/trasare/culori.ts`: fiecare canal raportat la fundalul lui
   din `lumina.ts`; stă în culori fiindcă pragul Otsu pe canal e în `trasare.ts`, pe care `lumina.ts` nu-l poate importa);
-  pe hârtie, balansul de alb (culorile adevărate), pe tablă, nivelul ei mediu. **Totalul ramurii: 696,1 / 700 kB** (`main`,
-  cu planșele, 690,0): sub plafon mai încap 3,9 kB. **25.3↑c (liniile mediane pe culori: fiecare culoare, linia ei
-  mediană; legarea peste încrucișări; ADR 0227, propus pe 13.11) așteaptă răspunsurile.**
+  pe hârtie, balansul de alb (culorile adevărate), pe tablă, nivelul ei mediu. **25.3↑c (liniile mediane pe culori, ADR
+  0227) gata pe 16.11, cu toate recomandările („Da la 1-2a”), pe aceeași ramură, pe canalul `trasare`:**
+  `src/trasare/medianeCulori.ts` (după etichetele culorilor, fără plasă: masca fiecărei culori bifate ca alfa, decupată la
+  cutia ei; întâi liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late;
+  apoi „Leagă peste alte culori”, pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea
+  curbelor). **Totalul ramurii: 698,3 / 800 kB**, pornirea 105,7 / 115 (cu ușa 109,7).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
