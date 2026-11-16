@@ -134,8 +134,13 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
     lumina: r.raport.lumina, inegala: r.raport.inegala,
   } as const;
   if (r.fel === 'culori') {
-    const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai })) : [];
-    return { ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese } };
+    // Cu liniile mediane (ADR 0227): grosimea fiecărei culori, în pastila ei, și raportul lor.
+    const piese = r.ok ? r.piese.map((p) => ({ culoare: p.culoare, hex: p.hex, contur: p.cai, ...(p.grosime !== undefined ? { grosimePx: p.grosime } : {}) })) : [];
+    const m = r.ok ? r.raport.mediane : undefined;
+    return {
+      ...baza, sursa: 'culori', prag: 0, histograma: [], culori: { paleta: r.raport.paleta, posterizare: r.ok ? r.posterizare : null, piese },
+      ...(m ? { mediane: { grosimePx: m.grosime, bucle: m.bucle, jonctiuni: m.jonctiuni, puncte: m.puncte, legaturi: m.legaturi, ...(m.parti ? { parti: m.parti } : {}) } } : {}),
+    };
   }
   if (r.fel === 'mediane') {
     const { grosime, bucle, jonctiuni, puncte, parti } = r.raport;
@@ -147,18 +152,26 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
   return { ...baza, sursa: r.raport.sursa, prag: r.raport.prag, histograma: r.raport.histograma };
 }
 
-/** Căile mai multor trasări, una după alta (contururile tuturor culorilor, pentru desenul previzualizării). */
+/**
+ * Căile mai multor trasări, una după alta (contururile tuturor culorilor, pentru desenul previzualizării), cu căile deschise
+ * și laturile liniilor mediane (ADR 0227), dacă le au.
+ */
 function laolalta(lista: readonly CaiTrasate[]): CaiTrasate {
   let nc = 0, nv = 0;
   for (const c of lista) { nc += c.inceput.length - 1; nv += c.tip.length; }
   const inceput = new Uint32Array(nc + 1), tip = new Uint8Array(nv), xy = new Float64Array(6 * nv), exterior = new Uint8Array(nc);
+  const deschisa = lista.some((c) => c.deschisa) ? new Uint8Array(nc) : null, peLinie = lista.some((c) => c.peLinie) ? new Uint8Array(nc) : null;
   let k = 0, v = 0;
   for (const c of lista) {
-    for (let j = 0; j + 1 < c.inceput.length; j++) { inceput[k + j + 1] = v + (c.inceput[j + 1] ?? 0); exterior[k + j] = c.exterior[j] ?? 0; }
+    for (let j = 0; j + 1 < c.inceput.length; j++) {
+      inceput[k + j + 1] = v + (c.inceput[j + 1] ?? 0); exterior[k + j] = c.exterior[j] ?? 0;
+      if (deschisa) deschisa[k + j] = c.deschisa?.[j] ?? 0;
+      if (peLinie) peLinie[k + j] = c.peLinie?.[j] ?? 1;
+    }
     tip.set(c.tip, v); xy.set(c.xy, 6 * v);
     k += c.inceput.length - 1; v += c.tip.length;
   }
-  return { inceput, tip, xy, exterior };
+  return { inceput, tip, xy, exterior, ...(deschisa ? { deschisa } : {}), ...(peLinie ? { peLinie } : {}) };
 }
 
 /**
@@ -185,10 +198,11 @@ function previzualizareCulori(f: FisierImport, r: Extract<RaspunsTrasare, { fel:
   if (preaDeparte(toate)) return { ok: false, cod: 'departe', format: 'imagine', trasare };
   const cutie = cutieCai(toate);
   return {
-    ok: true, format: 'imagine', trasare, avertismente, contur: laolalta(r.piese.map((p) => p.cai)),
+    ok: true, format: 'imagine', trasare, avertismente, contur: laolalta(r.piese.map((p) => p.cai)), ...(r.late ? { late: r.late } : {}),
     pregatit: rest.length > 0 ? { ...prima.pregatit, impreuna: rest.map((p) => p.pregatit) } : prima.pregatit,
     latime: cutie.maxX - cutie.minX, inaltime: cutie.maxY - cutie.minY,
-    exterioare: piese.reduce((s, p) => s + p.exterioare, 0), interioare: piese.reduce((s, p) => s + p.interioare, 0), deschise: 0,
+    exterioare: piese.reduce((s, p) => s + p.exterioare, 0), interioare: piese.reduce((s, p) => s + p.interioare, 0),
+    deschise: piese.reduce((s, p) => s + p.deschise, 0),
   };
 }
 
@@ -263,7 +277,7 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
       ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
     },
     peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
-    ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
+    ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
     ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
   };
 }
