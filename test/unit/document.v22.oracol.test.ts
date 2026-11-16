@@ -155,13 +155,13 @@ test('(o) documentele v21 valide: contractul v21 și ușa le primesc, iar ușa v
   assert.ok(VALIDE_V21.length >= VALIDE_V20.length + 6);
 });
 
-test('(o) documentele v22 valide: contractul v22 și ușa le primesc, ușa v22 le dă neschimbate, ușa v23 le urcă doar cu numărul; ușa v21 le refuză', () => {
+test('(o) documentele v22 valide: contractul v22 și ușa le primesc, ușa v22 le dă neschimbate, ușa curentă (v23, v24) le urcă doar cu numărul; ușa v21 le refuză', () => {
   for (const { nume, doc } of VALIDE_V22) {
     assert.deepEqual(verificaVnO(doc, 22), [], nume);
     assert.deepEqual(verificaO(doc), [], nume);
     assert.equal(diferenta(ridicaPanaLaO(doc, 22), doc), undefined, nume);
-    // Felia 11.4↑ (ADR 0210 §7): v22 → v23 schimbă doar numărul.
-    assert.equal(diferenta(ridicaO(doc), { ...(doc as Liber), schema: 23 }), undefined, `${nume}: ușa v23`);
+    // Felia 11.4↑ (ADR 0210 §7): v22 → v23 schimbă doar numărul; felia 12.1↑b-2 (ADR 0174): și v23 → v24.
+    assert.equal(diferenta(ridicaO(doc), { ...(doc as Liber), schema: SCHEMA_CURENTA_O }), undefined, `${nume}: ușa curentă`);
     assert.deepEqual(categoriiO(verificaPanaLaO(doc, 21)), ['schema'], `${nume}: ușa v21`);
   }
   assert.ok(VALIDE_V22.length >= VALIDE_V21.length + 6);
@@ -172,7 +172,7 @@ test('(o) documentele vechi urcă la v22 exact ca pe hârtie; ușa nu-și schimb
     const inainte = JSON.stringify(vechi);
     assert.deepEqual(verificaO(vechi), [], nume);
     assert.equal(diferenta(ridicaPanaLaO(vechi, 22), v22), undefined, nume);
-    assert.equal(diferenta(ridicaO(vechi), { ...(v22 as Liber), schema: 23 }), undefined, `${nume}: la v23, doar numărul`);
+    assert.equal(diferenta(ridicaO(vechi), { ...(v22 as Liber), schema: SCHEMA_CURENTA_O }), undefined, `${nume}: la ușa curentă, doar numărul`);
     assert.equal(JSON.stringify(vechi), inainte, `${nume}: intrarea s-a schimbat`);
     assert.deepEqual(verificaVnO(v22, 22), [], `${nume}: rezultatul e un v22 valid`);
   }
@@ -246,7 +246,7 @@ test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, s
     11: ['pasLateral'], 12: ['coborare'], 13: ['retragereCompleta'], 14: ['scula.forma'], 15: ['fundPlat'],
     16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'], 19: ['rang'],
     20: ['incrustatie'], 21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
-    22: ['incrustatie.banda'], 23: ['instanta:texte'],
+    22: ['incrustatie.banda'], 23: ['instanta:texte'], 24: ['incrustatie.punti'],
   });
   const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1, rang: 1, incrustatie: { jocLateral: 1, dop: 1, sprijin: 1, frezeDop: 1, banda: 1 } }]);
   // Rândul 23 e al instanței (`texte`, ADR 0210 §7): îl judecă proba v23; aici, pașii pe operație, până la v22.
@@ -334,8 +334,10 @@ test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hâ
 
 test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul pe un document curent, textul citat de ADR la o ciocnire', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
-  // R01 (un v23, „mai nou” pentru ușa v22) e chiar versiunea aplicației: el nu se mai cere refuzat.
-  for (const c of REFUZATE_V22.filter((x) => !(x.categorie === 'schema' && (x.doc as Liber)['schema'] === SCHEMA_APP))) {
+  // R01 (un v23, „mai nou” pentru ușa v22) e o versiune pe care aplicația o primește (de la 11.4↑, v23; de la 12.1↑b-2, v24,
+  // care urcă un v23 doar cu numărul): el nu se mai cere refuzat.
+  const primitDeApp = (s: unknown): boolean => typeof s === 'number' && Number.isInteger(s) && s > 22 && s <= SCHEMA_APP;
+  for (const c of REFUZATE_V22.filter((x) => !(x.categorie === 'schema' && primitDeApp((x.doc as Liber)['schema'])))) {
     const r = usa(c.doc);
     if (r.ok) {
       rele.push(`${c.nume}: primit (${c.motiv})`);

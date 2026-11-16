@@ -78,14 +78,15 @@ o('P04', DOP, '      const contururi = contururiRegiuni(f.figura.dop).map((c) =>
   '      const contururi = contururiRegiuni(f.figura.taiat).map((c) => transformaContur(c, oglinda));', 'drept', 'dopul cât locașul (fără joc)')
 o('P05', DOP, '      const e = Math.max(DINCOLO_DE_MARGINE, lata + TRECERE - m);', '      const e = DINCOLO_DE_MARGINE;', 'e2e',
   'regiunea feței nelărgită pentru freză (freza nu trece pe lângă dop)')
-o('P06', DOP, 'urechi: { numar: n, latime: palier, grosime: PUNTI.grosime }, ...baza,', 'urechi: null, ...baza,',
+# P06 și P11, reorientate la 12.1↑b-2 (ADR 0174, `9185658`): punțile vin din incrustație (`punti`), nu din constanta `PUNTI`.
+o('P06', DOP, 'urechi: { numar: n, latime: palier, grosime: punti.grosime }, ...baza,', 'urechi: null, ...baza,',
   'drept', 'dopul decupat fără punți (cade din placă)')
 o('P07', DOP, '      const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '      const mica = freze[0]!;', 'drept',
   'dopul decupat cu prima freză, nu cu cea mai mică (unghiurile lui rotunjite prea larg)')
 o('P08', DOP, "...(inc.dop === 'decupat' ? { exacta: true } : {}) },", '},', 'e2e', 'placa dopului decupat arătată „cel puțin”, nu exactă')
 o('P09', CAL, '  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  const calculate = { dopuri: [...inV.dopuri] };', 'drept',
   'dopul cu pereți drepți nu iese din export')
-o('P11', DOP, '      const palier = PUNTI.latime + mica.scula.diametru;', '      const palier = PUNTI.latime;', 'drept',
+o('P11', DOP, '      const palier = punti.latime + mica.scula.diametru;', '      const palier = punti.latime;', 'drept',
   'palierul punților fără freză (lucrarea refuză dopul decupat cu freza Ø6)')
 o('P10', JOB, "        const ale = taieturi.filter((u) => u.tip === 'buzunar' && cheieDreapta(u) === cheie);", '        const ale = [t];', 'drept',
   'locașul fără celelalte contururi ale regiunii (golul inelului tăiat)')

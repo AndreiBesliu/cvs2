@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 23;
+export const VERSIUNE_SCHEMA = 24;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -201,11 +201,12 @@ export type BandaDop = {
  * `fund` (înalt de D + H; între plăci rămâne H) sau pe `fata` coborâtă (înalt de D − g; sub el rămâne g); `joc` = g;
  * `fierastrau` = H, ce rămâne peste placă (și grosimea dopului decupat e D + H); `margine` ca la V; `frezeDop` = frezele
  * dopului, dacă nu sunt ale locașului (prima, apoi cele de rest). Locașul se închide cu raza celei mai mici freze a dopului
- * minus c, iar dopul e conturul tăiat al locașului micșorat cu c (colțurile potrivite).
+ * minus c, iar dopul e conturul tăiat al locașului micșorat cu c (colțurile potrivite). `punti` (ADR 0174, documentul v24): punțile
+ * dopului decupat, ca urechile; fără ele, cele implicite (4 × 4 × 1 mm).
  */
 export type IncrustatieDreapta = {
   fel: 'drept'; jocLateral: number; dop: 'ridicat' | 'decupat'; sprijin: 'fund' | 'fata'; joc: number; fierastrau: number; margine: number;
-  frezeDop?: FrezaRest[]; [cheie: string]: unknown;
+  frezeDop?: FrezaRest[]; punti?: Urechi; [cheie: string]: unknown;
 };
 export type Incrustatie = IncrustatieV | IncrustatieDreapta;
 /** Jocul cel mai mic pentru clei (ADR 0170 §4), în mm: de două ori creasta inelelor V din colțurile fundului plat (0,05). */
@@ -290,7 +291,7 @@ export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]:
 export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown;
 };
-export type Document = { schema: 23; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 24; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

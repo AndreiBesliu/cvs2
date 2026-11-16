@@ -116,12 +116,14 @@ export function ExportConectat({
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
           ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
           ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
-          // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului).
+          // Incrustația cu pereți drepți (ADR 0171): rândul o arată ca rol, cu valorile ei și frezele dopului (lipsă = ale locașului);
+          // punțile dopului decupat (ADR 0174), dacă le are.
           ...(o.tip === 'buzunar' ? {
             incrustatieDreapta: o.incrustatie?.fel === 'drept' ? {
               jocLateral: o.incrustatie.jocLateral, dop: o.incrustatie.dop, sprijin: o.incrustatie.sprijin, joc: o.incrustatie.joc,
               fierastrau: o.incrustatie.fierastrau, margine: o.incrustatie.margine,
               ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+              ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
             } : null,
           } : {}),
           ...(o.tip === 'vcarve' ? {
