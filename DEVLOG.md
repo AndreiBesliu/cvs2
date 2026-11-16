@@ -9129,6 +9129,81 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
   (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
 
+## 2026-11-16 — Felia 28.1↑a: alegerea aranjamentului și densitatea, citite înaintea primei randări (Model: Claude Opus 5.5)
+
+**Prompt:** „Poti sa adopti si sesiunea de design si sa o pornesti” (owner-ul, în sesiunea principală, transmis de ea și
+verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 19:10.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `0e3725c` (fast-forward), în worktree-ul `aranjamente`.
+- **Codul:**
+  - `src/ui/alegereAranjament.ts`: cheia `cncvs2.aranjament`, JSON `{ v: 1, aranjament, densitate }`, implicit Insule cu
+    densitatea normală;
+  - `main.tsx`: `data-aranjament` și `data-densitate` pe `<html>`, înaintea primei randări;
+  - `ARANJAMENTE` în `aranjament.ts`;
+  - densitatea mare în `stil.css`.
+- **Probele:**
+  - 10 unitare și 4 e2e noi; `ancore`, `cont`, `pornire`: 22 / 22;
+  - suita unitară întreagă: 9 353, 0 căderi;
+  - `tsc` și regulile de import, curate;
+  - otrăvurile: 7 / 7 prinse.
+- **Mărimea** (față de un build curat al lui `0e3725c`): pornirea +0,5 kB (106,2; cu ușa 110,1 / 115), totalul +0,4 kB
+  (696,2 / 800).
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), DEVLOG.
+
+## 2026-11-13 — Felia 11.6↑: raportul foilor și lista de tăiere (ADR 0210 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.6↑ (raportul foilor și lista de tăiere)?”: „Da, 11.6↑”.
+**Started:** 13.11, 18:37.
+
+- **Fereastra „Raportul foilor și lista de tăiere”** (`src/app/DialogRaportFoi.tsx`, la cerere; planșa 7 a schiței), din
+  fereastra exportului („Raportul foilor…”, cu colțul și Z0 de acolo) și din paletă (`export.raport`): pe fiecare foaie,
+  previzualizarea (SVG-ul exportului de vectori, cu liniile îngroșate doar aici: `scrieSvg` primește grosimea), materialul,
+  mărimea, cât e folosită, operațiile și piesele (câte, mărimea, rotirile, valorile din CSV); foile identice o dată, ×N;
+  totalurile pe piesă și foile pe material. Calculul pur în `src/model/raportFoi.ts` (mărimea = cutia conturului tăiat prin
+  toată grosimea de un profil exterior, în axele piesei, sau a desenului, la alegere), CSV-ul în `src/app/raportCsv.ts`
+  (BOM, `;` cu virgula zecimală sau `,`), tipărirea printr-un portal sub `body` și `@media print`.
+- **Găsite pe capturi, înainte de raport:** liniile previzualizării, fire de păr (0,1 mm la ~160 px); antetele de rând cu
+  majuscule (stilul tabelelor din dialoguri); la tipar, fereastra îngustă (`vw` e al paginii) și `overflow: hidden` pe `body`,
+  care ar fi tăiat tiparul la o pagină. Măsurate cu stilurile calculate, apoi reparate.
+- **Regula importurilor** a mutat fereastra și CSV-ul din `src/ui` în `src/app`; manualul are capitolul nou (36), iar
+  `export.raport` e ușa a 107-a.
+- **Otrăvurile** (`aa16c19`): 55 / 55 la prima rulare (38 unitare, 17 prin e2e), după probele adăugate la citirea listei
+  (interiorul și despărțirea, urechile, freza în V, materialul și ordinea foilor, rândul nou din CSV).
+- **Unirea de la capăt:** `main` (`d62e6b8`: planșele 11.1↑–11.5↑ unite acolo, imprimanta 3.6s, incrustațiile 12.1↑d) adus
+  în ramură fără conflicte (`13b1f57`); ramura are deasupra lui `main` doar 11.6↑.
+- **Porțile pe codul unit:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile (766 de texte, 0 netraduse),
+  suita unitară 9 322 / 0 (8 sărite), build-ul determinist (319 fișiere identice; pornirea cu ușa 109,8 / 110, totalul
+  694,4 / 700), e2e 480 / 480 din prima.
+- **Publicat:** canalul `plansele` al instanței de test (<https://cncvectorstudio-test--plansele-xafrblmh.web.app>, până pe
+  13.12): pagina și cele 100 de bucăți ca `dist` din `13b1f57`; raportul văzut acolo, din paletă, după actualizarea
+  oferită de aplicație.
+
+- **A doua unire de la capăt (14.11):** `main` `e0f9803` (banda vestirilor imprimantei, 3.6s reparată) adus în `9c668fd`, cu
+  conflictul doar în DEVLOG (adăugat la capăt de ambele părți). Porțile din nou: unitare 9 322 / 0, e2e 481 / 481 din prima,
+  build-ul determinist (pornirea cu ușa 109,9 / 110: ~0,1 kB liberi; totalul 694,5 / 700). Canalul republicat din `9c668fd`,
+  100 / 100 bucăți.
+
+- **A treia unire de la capăt și pauza (14.11, „pauza peste tot”, cerută de owner prin sesiunea principală):** `main`
+  `0e3725c` (trasarea 25.5↑, plafoanele 115 / 800 din ADR 0252–0253) adus în `f8a19a9`, cu conflictul doar în DEVLOG.
+  Trecute pe el: tipurile (aplicația, extensia, funcțiile), importurile, traducerile (771 de texte, 0 netraduse), probele
+  manualului și ale raportului (67 / 67), build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9 / 115,
+  totalul 700,2 / 800). **Oprite de pauză:** suita unitară întreagă (neterminată) și e2e-ul întreg (nepornit). Canalul
+  `plansele` servește încă `9c668fd` (porțile lui, toate trecute). La reluare: suita unitară și e2e-ul întreg pe vârf
+  (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
+
+- **Reluare (16.11, „poti sa continui ... sau poti sa unesti ce se poate”, transmis de sesiunea principală; „Da, reiau”):**
+  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă
+  rulare Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu
+  ușa 109,9 / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe
+  16.12.
+- **Ultima unire de la capăt (16.11):** `main` `bfdf2ed` (12.1↑b-2 cu documentul v24, 25.4↑b, reparația 3.6q) adus în
+  `cfd195d`, cu conflictul doar în DEVLOG. Porțile din nou: tipurile, importurile, traducerile (778 de texte, 0 netraduse),
+  e2e 487 / 487 din prima (după un minut fără altă rulare Playwright), suita unitară 9 377 / 0 (8 sărite), build-ul
+  determinist (324 de fișiere identice; pornirea cu ușa 109,9 / 115, totalul 700,9 / 800). Canalul republicat din
+  `cfd195d`, 100 / 100 bucăți. Gata de unit.
+
+**Completed:** 16.11, 19:30.
+
 ## 2026-11-13 — Felia 10.3↑k: tăierea în panouri (ADR 0181 §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, după pauza din 11.11: pasul următor al liniei).

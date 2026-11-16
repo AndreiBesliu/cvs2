@@ -5,6 +5,8 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { programeazaPwa } from '../pwa/pornire.ts';
 import { semnal } from '../ui/CipuriVedere.tsx';
+import { ARANJAMENT_MODERN, ARANJAMENTE, ARANJAMENTE_DISPONIBILE } from '../ui/aranjament.ts';
+import { CHEIE_ARANJAMENT, citesteAlegerea } from '../ui/alegereAranjament.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import { App } from './App.tsx';
 import { esteRutaAdmin, incarcaConfig } from './config.ts';
@@ -114,6 +116,18 @@ try {
 } catch {
   // Fără depozit, tema urmează sistemul.
 }
+
+// Aranjamentul și densitatea (ADR 0250 §4, felia 28.1↑a), tot înaintea primei randări: aranjamentul nu se schimbă pe ecran
+// după pornire. Fără depozit sau cu o valoare stricată: Insule, densitatea normală.
+let alegereTinuta: string | null = null;
+try {
+  alegereTinuta = depozit?.getItem(CHEIE_ARANJAMENT) ?? null;
+} catch {
+  alegereTinuta = null;
+}
+const alegere = citesteAlegerea(alegereTinuta, ARANJAMENTE_DISPONIBILE);
+document.documentElement.dataset['aranjament'] = alegere.aranjament;
+document.documentElement.dataset['densitate'] = alegere.densitate;
 
 function alegeTema(tema: string): void {
   document.documentElement.dataset['tema'] = tema;
@@ -275,6 +289,7 @@ async function porneste(): Promise<void> {
           alegeLimba={alegeLimba}
           alegeTema={alegeTema}
           proiect={proiect}
+          aranjament={ARANJAMENTE[alegere.aranjament] ?? ARANJAMENT_MODERN}
           actualizare={actualizare}
           progresActualizare={progresActualizare}
         />

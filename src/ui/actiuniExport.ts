@@ -30,4 +30,6 @@ export const ACTIUNI_EXPORT: readonly Actiune<ContextExport>[] = [
       });
     },
   },
+  // Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): fereastra lui o deschide aplicația, ca pe a exportului.
+  { id: 'export.raport', eticheta: 'actiune.raport-foi', capabilitate: 'desen', activa: () => true, ruleaza: () => undefined },
 ];

@@ -646,6 +646,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/io/scrieZip.ts`, CRC-32 comun în `src/io/crc32.ts`); nume scurte: `CNCVS2.ZIP`, `F<k>X<N>/`. Mașina, simularea și
   rezumatul rămân ale foii active. **Încă 11 motive date doar de calcul (ale lui `main`: gruparea, degruparea, textul,
   rolul, foaia, importul) au trecut în mesajele editorului**: pornirea cu ușa 110,1 → 109,6 / 110, totalul 686,2 / 700.
+  **Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑)** gata pe 13.11: fereastra `src/app/DialogRaportFoi.tsx`
+  (din export, cu colțul și Z0 de acolo, și din paletă, `export.raport`), calculul pur `src/model/raportFoi.ts` (mărimea =
+  cutia contururilor tăiate de un profil exterior prin toată grosimea, fără despărțire, în axele piesei; altfel a desenului,
+  marcată; foile identice după o semnătură fără id-uri și fără numele frezei), CSV-ul `src/app/raportCsv.ts` (BOM, `;` cu
+  virgula zecimală sau `,`; trei tabele). Tipărirea: fereastra e un portal sub `body`, iar `@media print` din `stil.css`
+  scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
+  0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
+  110 (rămân ~0,3 kB), totalul 690,5 / 700.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -1076,6 +1084,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
+  **Aranjamentele, felia 28.1↑a (ADR 0250 §4, §5)** gata pe 16.11, în worktree-ul `aranjamente` (ramura
+  `wip/28.1-aranjamente`), neunită: alegerea și densitatea se citesc înaintea primei randări.
+  - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`.
+  - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
+  - `ARANJAMENTE` din `aranjament.ts` ține aranjamentele build-ului; azi, doar Insulele.
+  - **Un aranjament nou intră în `ARANJAMENTE`;** o alegere ținută a unuia care lipsește dă Insule, fără s-o șteargă.
+  - Densitatea mare: `--tinta` 48 px, 56 la atingere.
+  - Pornirea 106,2 (cu ușa 110,1 / 115 kB), totalul 696,2 / 800.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
@@ -1154,6 +1170,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **a doua rundă din 16.11, unită la „unește ce se poate”:** trasarea 25.3↑c (liniile mediane pe culori, ADR
+  0227; `380c053`), prima felie a aranjamentelor, 28.1↑a (alegerea aranjamentului și densitatea, citite înaintea primei
+  randări, ADR 0250 §4–§5; `8ea3057`), și planșele 11.6↑ (raportul foilor și lista de tăiere; `7d19a73`). Pornirea cu ușa
+  110,3 / 115, totalul 703,4 / 800. Apoi, la „Start the three recommended slices: plate sheet 11, 25.3↑d and 28.1↑b?”,
+  owner-ul: „Yes, all three”: fișa plăcii 11 (pregătită fără mașină; tăierea, a owner-ului), 25.3↑d (punctele pierdute de
+  linia mediană) și 28.1↑b (fereastra Aspectul).
 - 16.11.2026: **unirile de după pauză** („poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti
   ce se poate”, în sesiunea principală; apoi „Poti sa adopti si sesiunea de design si sa o pornesti”): liniile reluate, iar
   sesiunea designului coordonată ca o linie (commit-urile doar pe `wip/28.1-aranjamente`, unirea a sesiunii principale).
