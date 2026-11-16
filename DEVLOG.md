@@ -9032,3 +9032,37 @@ apoi proba care judecă stratul față de mesajul arătat, nu față de impriman
 - **Porțile:** tipurile; `imprimanta.spec.ts` întreg, 24 / 24, pe un lucrător. Doar probe: nimic din aplicație nu se schimbă.
 - **De știut:** cu `--repeat-each`, copiile unei probe a imprimantei rulează pe mai mulți lucrători și se bat pe 127.0.R.5:9999
   (`EADDRINUSE`): pe un singur lucrător (`--workers=1`).
+
+## 2026-11-13 — Unirile din 13.11: imprimanta 3.6s (cu reparația benzii), 12.1↑d, planșele 11.1↑–11.5↑, plafoanele 115 / 800, trasarea 25.5↑ (Model: Claude Opus 5.5)
+
+**Prompt:** „Merge 3.6s now”; „Fix forward” (la „Fix 3.6s forward, or revert it from main?”); „Da, unește” (12.1↑d, în
+sesiunea incrustațiilor); „Da, cere-i” (planșele, în sesiunea designului); „Yes, 800 kB” (aici) și „Da, 115 ／ 800” (în
+sesiunea designului); „Yes, merge it” (25.5↑); la capăt, „pauza peste tot”. Aprobările transmise de alte sesiuni, verificate
+în transcrierile lor.
+**Started:** 13.11, 18:26. **Completed:** 13.11, 23:30 (pauza; intrarea, scrisă la reluare, pe 16.11).
+
+- **Unde:** un worktree nou, `C:\Users\besli\cncvs2-lucru\unire` (câte o ramură `unire/<felia>` din `main`), fiindcă
+  sesiunea designului comite documente în `main` din checkout-ul principal, iar probele emulatoarelor compară `dist/` cu
+  HEAD-ul din clipa probei. Porțile acolo, apoi fast-forward în checkout-ul principal și push. Unirile de probă, fără
+  fișiere atinse: `git merge-tree --write-tree`.
+- **3.6s** (exact `e489f34`, unirea `a52e9c7`): porțile verzi (unit 9 170 / 0, e2e 460 / 460, emulatoarele), `main` la
+  `50f2595`. Rapidul verde, dar **completul roșu**: `imprimanta.spec.ts:108` pe Linux, banda „pauză” (fixă, sus, la mijloc)
+  acoperea butonul Reia; pe Windows trecea. Nimic publicat. Owner-ul: „Fix forward”. Reparația liniei (`231e347`, pe o
+  ramură din `main`, cu proba de lovire care pica la 1024 px pe Windows) unită în `2daddcc`: porțile verzi (unit 9 313 / 0,
+  e2e 480 / 480), `main` la `e0f9803`, completul verde (rularea 43504242833), **publicat pe test** (`e0f98030284e`).
+- **12.1↑d** (unirea `0f4c22c`, cod identic cu ramura): porțile verzi; o cădere `EBUSY` pe un artefact Playwright a lăsat 9
+  probe ale lui `imprimanta.spec.ts` nerulate (fișier în mod serial), iar fișierul rulat singur pica pe rețeaua implicită:
+  imprimanta falsă de pe `127.0.0.5:9999` se călca cu alt worktree. Cu rețeaua proprie, 23 / 23. `main` la `7cc9800`.
+- **Planșele 11.1↑–11.5↑** (exact `8e8c755`, unirea `fecce54`; documentul v23): conflicte în DEVLOG, un import din `App.tsx`
+  (lângă al lui 3.6s) și `PanouProprietati.tsx` (`fundV` al lui 12.1↑d lângă blocul piesei), toate păstrate pe ambele părți.
+  Porțile: unit 9 313 / 0, e2e 479 / 479, emulatoarele; pornirea cu ușa 109,7 / 110, totalul 690,0 / 700. `main` la
+  `d62e6b8`.
+- **Plafoanele 115 / 800** (ADR 0252–0253, commit-ul sesiunii designului `6c37075`, unit singur în `70844ce`) și **trasarea
+  25.5↑** (exact `1ca446b`, unirea `07df71f`): trasarea și tăierea 10.3↑k treceau împreună de 700. Porțile: unit 9 335 / 0,
+  e2e 484 / 484, emulatoarele 21 / 21 la a doua rulare, singure (prima: o probă de cont la 4,1 min, sub încărcare); totalul
+  695,8 / 800, pornirea cu ușa 109,7 / 115. `main` la `0e3725c`, rapidul verde.
+- **Porțile, întărite pe drum:** `porti-lente-d.sh` reia fișierele întregi ale căzutelor (unul serial sare restul) și
+  folosește rețeaua proprie `127.0.42` (`127.0.9` e a worktree-ului `aranjamente`).
+- **După pauză (16.11):** completul de noapte pe `0e3725c` verde pe 14.11 și 15.11, roșu pe 16.11, la
+  `imprimanta.spec.ts:966` (3.6q): stratul plăcii rămânea cu 2 în urma imprimantei false (toleranța 1, un strat la 300 ms),
+  sub încărcarea runner-ului. Instabilă, nu defect: linia imprimantei o repară pe o ramură din `main`.

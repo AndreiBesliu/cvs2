@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v24, de exemplu punțile dopului drept ale incrustațiilor) intră acolo, ca rangul și incrustația:** rândul
+  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -1143,6 +1143,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **unirile de după pauză** („poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti
+  ce se poate”, în sesiunea principală; apoi „Poti sa adopti si sesiunea de design si sa o pornesti”): liniile reluate, iar
+  sesiunea designului coordonată ca o linie (commit-urile doar pe `wip/28.1-aranjamente`, unirea a sesiunii principale).
+  Unite, fiecare felie gata pe linia ei: 12.1↑b-2 (punțile dopului drept, documentul v24, ADR 0174; exact `9a73aa6`),
+  trasarea 25.4↑b (lumina pe culori, ADR 0226; exact `94bf287`) și reparația probei instabile `imprimanta.spec.ts:966`
+  (`ead04c2`, doar probe), care făcuse roșu completul de noapte din 16.11. Feliile următoare, cu „unește ce se poate”, se
+  unesc când linia raportează gata, fără altă întrebare.
 - 13.11.2026: **felia 25.5↑ a trasării unită în `main`, cu plafoanele 115 / 800 înaintea ei** („Yes, merge it”, la „Merge
   trasarea 25.5↑ (straightening an angled sheet) into main?”, în sesiunea principală): unită exact la `1ca446b` (`07df71f`);
   ADR 0226 (propus) rămâne pe ramură. Plafoanele din ADR 0252–0253 („Da, 115 ／ 800”, în sesiunea designului; „Yes, 800 kB”,
