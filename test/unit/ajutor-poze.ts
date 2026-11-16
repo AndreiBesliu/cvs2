@@ -140,3 +140,118 @@ export function erori(p: Poza, f: Float32Array, T: number): { readonly plus: num
   }
   return { plus: plus / Math.max(1, ad), lipsa: lipsa / Math.max(1, ad) };
 }
+
+// ── Foaia pozată oblic (ADR 0225) ──────────────────────────────────────────────────────────────────────────────────
+
+/** Foaia A4 (mm) și formele de pe ea, de mărime știută: un pătrat de 60 mm, un disc de 50, un dreptunghi de 120 × 25 și un
+ *  inel de 70 / 50 (y în jos, din colțul stânga-sus al foii). */
+export const FOAIE_A4 = { w: 210, h: 297 } as const;
+type FormaFoaie = { readonly fel: 'patrat' | 'disc' | 'drept' | 'inel'; readonly cx: number; readonly cy: number; readonly a: number; readonly b: number };
+export const FORME_FOAIE: readonly FormaFoaie[] = [
+  { fel: 'patrat', cx: 60, cy: 70, a: 60, b: 60 },
+  { fel: 'disc', cx: 150, cy: 75, a: 25, b: 0 },
+  { fel: 'drept', cx: 105, cy: 155, a: 120, b: 25 },
+  { fel: 'inel', cx: 105, cy: 230, a: 35, b: 25 },
+];
+/** Distanța cu semn de la (x, y) mm la marginea formei (negativă înăuntru). */
+function distForma(f: FormaFoaie, x: number, y: number): number {
+  const dx = x - f.cx, dy = y - f.cy;
+  if (f.fel === 'disc') return Math.hypot(dx, dy) - f.a;
+  if (f.fel === 'inel') { const r = Math.hypot(dx, dy); return Math.max(r - f.a, f.b - r); }
+  const qx = Math.abs(dx) - f.a / 2, qy = Math.abs(dy) - f.b / 2;
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0);
+}
+/** Distanța de la (x, y) mm la marginea celei mai apropiate forme de pe foaie. */
+export const distFormeFoaie = (x: number, y: number): number => Math.min(...FORME_FOAIE.map((f) => Math.abs(distForma(f, x, y))));
+
+type P2 = readonly [number, number];
+/** Omografia care duce `de[i]` în `la[i]` (4 perechi), cu h33 = 1 (Gauss cu pivot pe 8 × 8). */
+function omografie4(de: readonly P2[], la: readonly P2[]): Float64Array {
+  const M: number[][] = [];
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = de[i] ?? [0, 0], [u, v] = la[i] ?? [0, 0];
+    M.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u], [0, 0, 0, x, y, 1, -v * x, -v * y, v]);
+  }
+  for (let k = 0; k < 8; k++) {
+    let p = k;
+    for (let i = k + 1; i < 8; i++) if (Math.abs(M[i]?.[k] ?? 0) > Math.abs(M[p]?.[k] ?? 0)) p = i;
+    [M[k], M[p]] = [M[p] ?? [], M[k] ?? []];
+    for (let i = 0; i < 8; i++) {
+      if (i === k) continue;
+      const f = (M[i]?.[k] ?? 0) / (M[k]?.[k] ?? 1);
+      for (let j = k; j <= 8; j++) (M[i] as number[])[j] = (M[i]?.[j] ?? 0) - f * (M[k]?.[j] ?? 0);
+    }
+  }
+  return Float64Array.from([...M.map((r, i) => (r[8] ?? 0) / (r[i] ?? 1)), 1]);
+}
+const prin = (H: Float64Array, x: number, y: number): P2 => {
+  const w = (H[6] ?? 0) * x + (H[7] ?? 0) * y + (H[8] ?? 1);
+  return [((H[0] ?? 0) * x + (H[1] ?? 0) * y + (H[2] ?? 0)) / w, ((H[3] ?? 0) * x + (H[4] ?? 0) * y + (H[5] ?? 0)) / w];
+};
+
+export type PozaFoaie = ImagineRGBA & {
+  /** Colțurile adevărate ale foii în poză (stânga-sus, dreapta-sus, dreapta-jos, stânga-jos ai foii), în px. */
+  readonly colturi: readonly [P2, P2, P2, P2];
+};
+export type CumFoaie = {
+  readonly W: number; readonly H: number; readonly focala: number;
+  /** Unghiurile foii față de cameră (grade): înclinarea în jurul lui X, rotirea în planul ei, și în jurul lui Y. */
+  readonly inclinare: number; readonly rotire: number; readonly laterala: number;
+  /** Depărtarea centrului foii de cameră, în mm. */
+  readonly dist: number;
+  /** Foaia toată (fără masă în jur): masa nu se vede. */
+  readonly faraMasa?: boolean;
+};
+
+/** Colțurile foii A4 în poză (stânga-sus, dreapta-sus, dreapta-jos, stânga-jos ai foii), cu camera dată. */
+export function colturiFoaie(o: CumFoaie): readonly [P2, P2, P2, P2] {
+  const { W, H, focala: f } = o;
+  const rx = (o.inclinare * Math.PI) / 180, rz = (o.rotire * Math.PI) / 180, ry = (o.laterala * Math.PI) / 180;
+  const Rx = [[1, 0, 0], [0, Math.cos(rx), -Math.sin(rx)], [0, Math.sin(rx), Math.cos(rx)]];
+  const Ry = [[Math.cos(ry), 0, Math.sin(ry)], [0, 1, 0], [-Math.sin(ry), 0, Math.cos(ry)]];
+  const Rz = [[Math.cos(rz), -Math.sin(rz), 0], [Math.sin(rz), Math.cos(rz), 0], [0, 0, 1]];
+  const mul = (A: number[][], B: number[][]): number[][] => A.map((r) => (B[0] ?? []).map((_, j) => r.reduce((s, a, k) => s + a * (B[k]?.[j] ?? 0), 0)));
+  const R = mul(Rx, mul(Ry, Rz));
+  const proiecteaza = (x: number, y: number): P2 => {
+    const u = x - FOAIE_A4.w / 2, v = y - FOAIE_A4.h / 2, r = (i: number, j: number): number => R[i]?.[j] ?? 0;
+    const X = r(0, 0) * u + r(0, 1) * v, Y = r(1, 0) * u + r(1, 1) * v, Z = r(2, 0) * u + r(2, 1) * v + o.dist;
+    return [W / 2 + (f * X) / Z, H / 2 + (f * Y) / Z];
+  };
+  return [proiecteaza(0, 0), proiecteaza(FOAIE_A4.w, 0), proiecteaza(FOAIE_A4.w, FOAIE_A4.h), proiecteaza(0, FOAIE_A4.h)];
+}
+
+/**
+ * O foaie A4 cu formele ei, pozată cu o cameră pinhole (centrul optic în mijlocul imaginii), pe o masă (0,2, cu o textură
+ * în dungi), cu lumina dintr-o parte (de la 100 % la 50 %) și zgomot; 3 × 3 eșantioane pe pixel.
+ */
+export function pozaFoaie(o: CumFoaie): PozaFoaie {
+  const { W, H } = o, colturi = colturiFoaie(o);
+  const inv = omografie4(colturi, [[0, 0], [FOAIE_A4.w, 0], [FOAIE_A4.w, FOAIE_A4.h], [0, FOAIE_A4.h]]);
+  let s = 9;
+  const r = (): number => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  const date = new Uint8ClampedArray(W * H * 4);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let t = 0;
+      for (let j = 0; j < 3; j++) {
+        for (let i = 0; i < 3; i++) {
+          const [u, v] = prin(inv, x + (i + 0.5) / 3, y + (j + 0.5) / 3);
+          const peFoaie = o.faraMasa === true || (u >= 0 && v >= 0 && u <= FOAIE_A4.w && v <= FOAIE_A4.h);
+          t += peFoaie ? (FORME_FOAIE.some((fo) => distForma(fo, u, v) <= 0) ? 0.12 : 0.93) : 0.2 + 0.05 * Math.sin(x * 0.07 + y * 0.013);
+        }
+      }
+      const g = Math.max(0, Math.min(1, ((1 - 0.35 * (x / W) - 0.15 * (y / H)) * t) / 9 + 0.015 * (r() + r() + r() - 1.5)));
+      const b = Math.round(255 * g);
+      date[4 * (y * W + x)] = b; date[4 * (y * W + x) + 1] = b; date[4 * (y * W + x) + 2] = b; date[4 * (y * W + x) + 3] = 255;
+    }
+  }
+  return { latime: W, inaltime: H, date, colturi };
+}
+
+/** Pozele probelor (1600 × 1200 px, focala 1400): aproape din față, înclinată 25°, 40°, rotită 30° în planul ei. */
+export const POZE_FOAIE = {
+  fata: { W: 1600, H: 1200, focala: 1400, inclinare: 8, rotire: 3, laterala: 2, dist: 420 },
+  inclinata25: { W: 1600, H: 1200, focala: 1400, inclinare: 25, rotire: 8, laterala: 5, dist: 440 },
+  inclinata40: { W: 1600, H: 1200, focala: 1400, inclinare: 40, rotire: -12, laterala: 10, dist: 470 },
+  rotita30: { W: 1600, H: 1200, focala: 1400, inclinare: 15, rotire: 30, laterala: 0, dist: 470 },
+} as const satisfies Record<string, CumFoaie>;
