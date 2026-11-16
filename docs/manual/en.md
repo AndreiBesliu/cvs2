@@ -744,12 +744,13 @@ preview on the right:
 - **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
   tones; without it, the slider moves it;
 - **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
-- **Lighting** (with Brightness): **Even** (the default) uses one threshold for the whole image, for a clean scan or a logo;
-  **Uneven** compares the paper with a smooth surface fitted on it, for a photo lit from one side, with dark corners or solid
-  patches; **With shadows** compares it with the background around each point, for the shadow of a phone or a hand (a solid
-  patch wider than a twelfth of the image comes out hollow: then use Uneven). With both, the drawing is whatever stands out
-  from the paper, whatever the image's edge is (a sheet photographed on a table); if it still comes out inverted, use
-  **Invert**. When the paper varies a lot under Even, the report suggests Uneven;
+- **Lighting** (with Brightness; with Colours, below): **Even** (the default) uses one threshold for the whole image,
+  for a clean scan or a logo; **Uneven** compares the paper with a smooth surface fitted on it, for a photo lit from one
+  side, with dark corners or solid patches; **With shadows** compares it with the background around each point, for the
+  shadow of a phone or a hand (a solid patch wider than a twelfth of the image comes out hollow: then use Uneven). With
+  both, the drawing is whatever stands out from the paper, whatever the image's edge is (a sheet photographed on a
+  table); if it still comes out inverted, use **Invert**. When the paper varies a lot under Even, the report suggests
+  Uneven;
 - **Smoothness**: **Faithful** follows the edge closely and keeps small corners, **Balanced** smooths the pixel steps,
   **Smooth** rounds small corners and gives fewer nodes;
 - **Ignore specks under** and **Fill holes under** (in mm, with the pixels beside them): specks of drawing and holes in it
@@ -786,7 +787,11 @@ responsive, and a new change stops the one under way.
 
 With **Source: Colours**, the image is traced by colour: each colour becomes a shape of its own, and two neighbouring
 colours share exactly the same edge (no strip and no overlap between them), so you can carve them at different depths or
-inlay them. The threshold and **Invert** are hidden; the other settings stay. Then:
+inlay them. The threshold and **Invert** are hidden; the other settings stay. **Lighting** (on an opaque image) compares
+each channel of the colour with the paper: with **Uneven**, the paper becomes white everywhere and the palette shows the
+drawing's colours, whatever the photo's light or colour cast (and coloured chalk on a board); **With shadows** also fixes the
+shadow of a phone on a line drawing, but empties filled shapes wider than a twelfth of the image (then use Uneven). Neither
+fixes a hard shadow over filled shapes. Then:
 - **Number of colours**: **Automatic** finds the image's distinct colours by itself (the shading of a surface stays one
   colour, and a small but clear colour, such as a thin line, keeps its own); without it, the slider picks from 2 to 16. A
   new number makes the colours again, without the earlier links and ticks;

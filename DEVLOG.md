@@ -8970,3 +8970,44 @@ dopului drept alese în fereastră, v24) nu mai e blocat”.
   marcat, motivul nou, Exportă oprit; 2, 6, 1,5: primite; pe ridicat ascunse, înapoi pe decupat aceleași valori; fereastra
   închisă fără export, foaia lăsată goală, fără erori în consolă.
 - **La unire (pentru sesiunea principală):** în CLAUDE.md, regula versiunii: următorul câmp nou ia v25.
+
+## 2026-11-13 — Felia 25.4↑b pornită: lumina pe culori (ADR 0226, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.4↑b” (owner-ul, la întrebarea de după felia 25.5↑: „Pornesc lumina pe culori (25.4↑b)?”).
+**Started:** 13.11, 21:58. **Completed:** 13.11, 22:10.
+
+- **Ramura** adusă la `origin/main` (`ab151b4`: imprimanta 3.6s, incrustațiile 12.1↑d, ADR 0250 și 0260; conflict doar în
+  DEVLOG); totalul, după unire: 663,7 / 700 kB.
+- **Cercetarea:** CorelDRAW PowerTRACE, Inkscape, Vectric, Carveco: reduc culorile și scot fundalul, dar nu corectează
+  lumina înaintea culorilor; harta umbrei (fundalul local raportat la cel de referință, Bako și alții, ACCV 2016).
+- **Prototipul** (`.tmp/proto-254b.ts`, `.tmp/proto-254b-linii.ts`): o foaie albă cu forme colorate (roșu, albastru,
+  verde, negru, galben), cu adevărul știut, trasată cu nucleul real al culorilor. Fără corecție, lumina dintr-o parte rupe
+  hârtia în două culori (37 %); fiecare canal raportat la fundalul lui neted (polinomul, potrivit pe fiecare canal cu
+  pixelii lui de hârtie) repară lumina dintr-o parte, dominanta și tabla (6 culori, 0 %), nu și umbra tare; fundalul local
+  (închiderea pe fiecare canal) repară umbra tare pe liniile colorate, dar golește formele pline; luminozitatea singură nu
+  repară tabla. Pe 12 Mpx, nescris pentru viteză: 1,0–1,1 s (neted), 2,4–2,9 s (local).
+- **ADR 0226 propus** (lista Lumina și pe Culorile, același implicit ca la alb-negru; „Neuniformă” și „Cu umbre”, fiecare pe
+  cazul ei), cu schița <https://claude.ai/artifact/D39edbszdytPh1zohWXZpd> (pozele și culorile găsite, macheta, măsurătorile, formularul); două întrebări: culorile
+  adevărate (balansul de alb) sau tonul pozei; umbra tare pe formele pline acum sau după o poză reală.
+
+## 2026-11-13 — Felia 25.4↑b: lumina pe culori (ADR 0226, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0226: culorile adevărate, cu balansul de alb; umbra tare
+pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** 13.11, 22:50.
+
+- **Ramura** adusă la `origin/main` (`f663a5b`: planșele, 11.1↑–11.5↑; conflict doar în DEVLOG).
+- **Probele întâi:** generatorul pozelor color în `test/unit/ajutor-poze.ts` (o foaie albă cu un disc roșu, un dreptunghi
+  albastru, un triunghi verde, linii negre și un inel galben, sau un desen cu linii colorate de 6 px; lumina dintr-o parte,
+  umbra tare, dominanta, tabla, transparența), cu măsura lui (culorile automate, clasele rupte și unite); 9 probe ale
+  nucleului, una a ușii, una e2e.
+- **Nucleul** (`culoriLuminate`, în `src/trasare/culori.ts`): fiecare canal raportat la fundalul lui (neted sau local, din
+  `lumina.ts`), cu balansul de alb pe hârtie (răspunsul 1a) și nivelul mediu pe tablă; raportul culorilor spune lumina și
+  variația hârtiei. **Găsit pe drum:** `lumina.ts` nu poate lua pragul Otsu din `trasare.ts` (import circular, iar lista 25.1
+  îl țintește acolo), deci corecția stă în culori; privită fereastra, Lumina ieșea sub pastile: acum vine înaintea
+  numărului culorilor; sfatul ei are texte proprii pe culori.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile (0 lipsă), suita unitară 9 353 (0 căzute), e2e-urile
+  trasării, importului și tutorialul 49 / 49, build-ul determinist; totalul 696,1 / 700 kB (`main`, cu planșele, 690,0),
+  pornirea 105,7 / 110, ca în `main`. Privită mărit, în temă deschisă și închisă.
+- **Otrăvurile** (`test/otravuri/25.4b.py`, 17 alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
+  `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
