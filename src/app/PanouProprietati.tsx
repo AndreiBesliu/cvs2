@@ -7,7 +7,7 @@ import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
-import { susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { PUNTI_DOP_DREPT, susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
 import { folosiri, INCA_MAXIM, planCopii } from '../model/pieseLegate.ts';
@@ -519,7 +519,8 @@ export function PanouProprietati({
               </dl>
             </div>
           )}
-          {/* Pe hârtie, pereții drepți (ADR 0171 §5): razele colțurilor, jocul, înălțimea dopului, spațiul folosit, semifabricatul. */}
+          {/* Pe hârtie, pereții drepți (ADR 0171 §5): razele colțurilor, jocul, înălțimea dopului, spațiul folosit, semifabricatul;
+              la dopul decupat, punțile lui (ADR 0174, alese în fereastră; fără ele, cele implicite). */}
           {hartieDreapta && incDreapta && (
             <div className="prop-hartie" data-testid="prop-incrustatie-hartie" data-fel="drept">
               <p className="prop-grup">{t('prop.inc.hartie')}</p>
@@ -532,6 +533,7 @@ export function PanouProprietati({
                   ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
                   : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
                 {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
+                {incDreapta.dop === 'decupat' && ((p) => rand(t('prop.inc.punti'), t('prop.inc.punti.valoare', { punti: p.numar, latime: mm(p.latime), grosime: mm(p.grosime) })))(incDreapta.punti ?? PUNTI_DOP_DREPT)}
               </dl>
             </div>
           )}

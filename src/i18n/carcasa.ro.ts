@@ -342,6 +342,8 @@ export const roCarcasa = {
   'prop.inc.decupare': 'Decuparea',
   'prop.inc.decupare.valoare': 'prin placa de {placa} mm; punți pe buclă: {punti}, de {latime} × {grosime} mm',
   'prop.inc.decupare.fara': 'fără: tai dopul tu, pe fundul benzii, la cel puțin {e} mm de desen',
+  'prop.inc.punti': 'Punțile dopului',
+  'prop.inc.punti.valoare': 'pe buclă: {punti}, de {latime} × {grosime} mm',
   'prop.selectate': {
     one: '{n} piesă selectată',
     few: '{n} piese selectate',

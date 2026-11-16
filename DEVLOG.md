@@ -8927,6 +8927,7 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
 
+<<<<<<< HEAD
 ## 2026-11-13 — Felia 10.3↑k: tăierea în panouri (ADR 0181 §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, după pauza din 11.11: pasul următor al liniei).
@@ -8998,3 +8999,144 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   unește `origin/main` `0e3725c` (reparația benzii 3.6s, plafoanele 115 / 800, trasarea 25.5↑), porțile întregi și emulatoarele
   pe rezultat, mărimea finală în documente (ADR 0181, fișa și traducerea ei, DEVLOG), împingerea, canalul `taiere` (acum pe
   `9835062`, de dinaintea planșelor), raportul „gata de unit”.
+=======
+## 2026-11-13 — Felia 12.1↑b-2: punțile dopului drept decupat, alese în fereastră; documentul v24 (ADR 0174) (Model: Claude Opus 5.5)
+
+**Prompt:** punctul 4 din lista aprobată de owner pe 08.11 („1 si 2 acum 3-6 dupa”), cu condiția v23 în `main`, transmis de
+sesiunea principală: „v23 e în `main`: planșele sunt unite la `d62e6b8` (la cuvântul owner-ului), deci punctul 4 (punțile
+dopului drept alese în fereastră, v24) nu mai e blocat”.
+**Started:** 13.11, 22:12. **Completed:** 14.11, 00:20.
+
+- **`main` în ramură:** fast-forward de la `2c9173c` la `d62e6b8` (planșele, v23).
+- **ADR 0174** (acceptat): `punti` opțional pe incrustația cu pereți drepți, ca urechile; documentul v24 (migrarea v23 → v24
+  schimbă doar numărul; un v23 cu `punti` în incrustație, pe orice fel, e o ciocnire). Precizarea de la cod: punțile implicite
+  nu se scriu peste un dop care nu le are (un Exportă fără schimbare nu scrie o comandă).
+- **Codul (`9185658`):** ușa (schema, migrarea, tipul; +7 octeți gzip la pornire, măsurați înainte), dopul decupat
+  (`dopDrept.ts`: punțile incrustației, altfel `PUNTI_DOP_DREPT` din model, 4 × 4 × 1, cu ale benzii aceleași; palierul =
+  lățimea plus freza; avertismentul cu valorile), fereastra (trei câmpuri doar la dopul decupat, judecate ca urechile, motivul
+  nou, citite din proiect), scrierea (îmbinată; implicitele nescrise; pe dopul ridicat câmpul pleacă), panoul pe hârtie
+  („Punțile dopului”), manualul (ro, en), traducerea.
+- **Probele:** oracolul documentului la v24 (rândul `CAMPURI_NOI_O[24]`, judecata punților; cazurile pe hârtie la capătul lui
+  `document.cazuri.ts`; proba nouă `document.v24.oracol.test.ts`, 15 / 15 față de ușa aplicației din prima); 26 de fișiere de
+  probă trecute pe versiunea curentă 24 (cea mai nouă: 25; probele v22 și v23 compară acum cu ușa curentă, care urcă un v23
+  doar cu numărul); dopul pe program (`incrustatieDreapta.punti.test.ts`); scrierea (3 probe noi); e2e-ul ferestrei (prima
+  rulare a prins chiar proba: marginea 5 sub freza Ø6, refuz corect; proba pune marginea 8). Corpusul de aur la v24
+  (`919b80c`): v23 scrisă de `d62e6b8`, v24 de `9185658`; intrările v1–v23, aceiași octeți.
+- **Porțile:** compilatoarele ×3, importurile (20 / 0, 1 219 module), licențele, traducerile (765, 0 lipsă), unit 9 344:
+  9 336 / 0 (8 sărite, 7,1 min), build determinist (318 fișiere identice; pornirea 105,7, cu ușa 109,7 / 110; totalul
+  690,3 / 700), e2e 480: 474 din prima (9,8 min, 3 lucrători, cu alte sesiuni pe mașină), 3 căzute și 3 nerulate, reluate
+  singure 28 / 28: două de încărcare (stratul imprimantei 3.6q, reîncărcarea ușii din recenzia A) și una a feliei:
+  `placute.spec.ts` cerea `schema` 23 la salvare (`7ee2ca2`; căutarea mea după numărul 23 în e2e n-o prinsese, forma era
+  `.schema).toBe(23)`).
+- **Otrăvurile (`test/otravuri/12.1b-2.py`, alese de autor):** 26 (B11 retrasă înainte de rulare: era chiar 12.1b P11). Prima
+  rulare (`7ee2ca2`): 26 / 26 prinse (B01–B18 pe probele lor, B19–B27 prin e2e), dar B07 (lățimea aleasă ignorată) doar de
+  proba buclei. Pragul „≥ 5,9 mm” al lățimii trecea pentru orice lățime: oracolul `functieTaiere` ia doar mutările aflate toate
+  sub z, deci flancurile punții lungesc bucata netăiată (14 mm la punțile implicite, nu 4), iar măsurătoarea pe laturi o tăia la
+  colțuri; un flanc peste un colț se taie în bucăți, iar cea de jos taie și mai sus. Proba măsoară acum toată linia de mijloc a
+  șanțului, la −4,99, cu bucata de pe hârtie (ADR 0029, `geometrieUrechi`): W + 2ℓ − Ø, 18 mm pentru 2 × 6 și 14 mm pentru
+  4 × 4 (`0aac269`); B06–B12 reluate, prinse, B07 și de lățime. 12.1b P06 și P11 (ancorate pe constanta `PUNTI`, scoasă)
+  reorientate pe punțile din incrustație, prinse; nicio altă listă atinsă (ancorele bune la `d62e6b8` și VOID acum: doar ele).
+- **Mărimea:** pornirea cu ușa 109,7 / 110 (neschimbată), pornirea 105,7, totalul 690,0 → 690,3 / 700.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 14.12), build-ul
+  `0aac269`, verificat în browserul aplicației, în engleză, fără export: pe un dreptunghi cu „straight-walled inlay”, dopul
+  ridicat fără câmpurile punților; decupat, „Tabs per loop”, „Tab width”, „Tab thickness” cu 4, 4, 1; 0 pe buclă: câmpul
+  marcat, motivul nou, Exportă oprit; 2, 6, 1,5: primite; pe ridicat ascunse, înapoi pe decupat aceleași valori; fereastra
+  închisă fără export, foaia lăsată goală, fără erori în consolă.
+- **La unire (pentru sesiunea principală):** în CLAUDE.md, regula versiunii: următorul câmp nou ia v25.
+
+## 2026-11-13 — Felia 25.4↑b pornită: lumina pe culori (ADR 0226, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 25.4↑b” (owner-ul, la întrebarea de după felia 25.5↑: „Pornesc lumina pe culori (25.4↑b)?”).
+**Started:** 13.11, 21:58. **Completed:** 13.11, 22:10.
+
+- **Ramura** adusă la `origin/main` (`ab151b4`: imprimanta 3.6s, incrustațiile 12.1↑d, ADR 0250 și 0260; conflict doar în
+  DEVLOG); totalul, după unire: 663,7 / 700 kB.
+- **Cercetarea:** CorelDRAW PowerTRACE, Inkscape, Vectric, Carveco: reduc culorile și scot fundalul, dar nu corectează
+  lumina înaintea culorilor; harta umbrei (fundalul local raportat la cel de referință, Bako și alții, ACCV 2016).
+- **Prototipul** (`.tmp/proto-254b.ts`, `.tmp/proto-254b-linii.ts`): o foaie albă cu forme colorate (roșu, albastru,
+  verde, negru, galben), cu adevărul știut, trasată cu nucleul real al culorilor. Fără corecție, lumina dintr-o parte rupe
+  hârtia în două culori (37 %); fiecare canal raportat la fundalul lui neted (polinomul, potrivit pe fiecare canal cu
+  pixelii lui de hârtie) repară lumina dintr-o parte, dominanta și tabla (6 culori, 0 %), nu și umbra tare; fundalul local
+  (închiderea pe fiecare canal) repară umbra tare pe liniile colorate, dar golește formele pline; luminozitatea singură nu
+  repară tabla. Pe 12 Mpx, nescris pentru viteză: 1,0–1,1 s (neted), 2,4–2,9 s (local).
+- **ADR 0226 propus** (lista Lumina și pe Culorile, același implicit ca la alb-negru; „Neuniformă” și „Cu umbre”, fiecare pe
+  cazul ei), cu schița <https://claude.ai/artifact/D39edbszdytPh1zohWXZpd> (pozele și culorile găsite, macheta, măsurătorile, formularul); două întrebări: culorile
+  adevărate (balansul de alb) sau tonul pozei; umbra tare pe formele pline acum sau după o poză reală.
+
+## 2026-11-13 — Felia 25.4↑b: lumina pe culori (ADR 0226, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0226: culorile adevărate, cu balansul de alb; umbra tare
+pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11, 22:13. **Completed:** 13.11, 22:50.
+
+- **Ramura** adusă la `origin/main` (`f663a5b`: planșele, 11.1↑–11.5↑; conflict doar în DEVLOG).
+- **Probele întâi:** generatorul pozelor color în `test/unit/ajutor-poze.ts` (o foaie albă cu un disc roșu, un dreptunghi
+  albastru, un triunghi verde, linii negre și un inel galben, sau un desen cu linii colorate de 6 px; lumina dintr-o parte,
+  umbra tare, dominanta, tabla, transparența), cu măsura lui (culorile automate, clasele rupte și unite); 9 probe ale
+  nucleului, una a ușii, una e2e.
+- **Nucleul** (`culoriLuminate`, în `src/trasare/culori.ts`): fiecare canal raportat la fundalul lui (neted sau local, din
+  `lumina.ts`), cu balansul de alb pe hârtie (răspunsul 1a) și nivelul mediu pe tablă; raportul culorilor spune lumina și
+  variația hârtiei. **Găsit pe drum:** `lumina.ts` nu poate lua pragul Otsu din `trasare.ts` (import circular, iar lista 25.1
+  îl țintește acolo), deci corecția stă în culori; privită fereastra, Lumina ieșea sub pastile: acum vine înaintea
+  numărului culorilor; sfatul ei are texte proprii pe culori.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile (0 lipsă), suita unitară 9 353 (0 căzute), e2e-urile
+  trasării, importului și tutorialul 49 / 49, build-ul determinist; totalul 696,1 / 700 kB (`main`, cu planșele, 690,0),
+  pornirea 105,7 / 110, ca în `main`. Privită mărit, în temă deschisă și închisă.
+- **Otrăvurile** (`test/otravuri/25.4b.py`, 17 alese de autor): 17 / 17 la prima rulare (`e6550b2`; 13 unitare, 4 prin e2e), fiecare pe proba ei.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
+  `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
+## 2026-11-16 — 3.6q: proba plăcii fără hartă, judecată față de cadrul arătat (completul de noapte) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (16.11, la reluare, după „poti sa continui si sa pornesti si worktrees care s-au oprit,
+sau poti sa unesti ce se poate” al owner-ului): completul de azi (rularea 43828221998) a căzut pe `main` `0e3725c` la
+`imprimanta.spec.ts:966` („stratul 10, adevărat 12”); reparația pe o ramură separată din `origin/main`, întâi o reproducere,
+apoi proba care judecă stratul față de mesajul arătat, nu față de imprimanta de acum.
+**Started:** 16.11, 17:48. **Completed:** 16.11, 18:06.
+
+- **Cauza:** proba compara stratul arătat de fereastră cu stratul imprimantei false din clipa citirii, cu imprimanta
+  înaintând un pas la 300 ms. Pe un runner încărcat, fereastra arată un cadru mai vechi, deci diferența trece de 1 fără
+  vreun defect al ferestrei.
+- **Reproducerea:** imprimanta falsă primește `intarziereMs` (fiecare cadru pleacă mai târziu, în ordine; așteptarea lui
+  `ok` crește la fel). Cu 1 s, proba veche cade 3 / 3, pe un singur lucrător („stratul 6, adevărat 8”).
+- **Reparația:** imprimanta falsă ține stratul adevărat al fiecărui cadru, după procentul lui (`stratLaProgres`); proba
+  citește deodată, din aceeași randare, stratul și procentul arătate și judecă stratul față de cadrul cu procentul acela.
+  Toleranța rămâne 1, iar întârzierea de 1 s rămâne în probă. Trece 5 / 5; o otravă în alegerea numărătorii
+  (`stratViu.ts`, mereu ultima valoare) e prinsă („stratul 10, adevărat 5 în cadrul cu 26 %”).
+- **Porțile:** tipurile; `imprimanta.spec.ts` întreg, 24 / 24, pe un lucrător. Doar probe: nimic din aplicație nu se schimbă.
+- **De știut:** cu `--repeat-each`, copiile unei probe a imprimantei rulează pe mai mulți lucrători și se bat pe 127.0.R.5:9999
+  (`EADDRINUSE`): pe un singur lucrător (`--workers=1`).
+
+## 2026-11-13 — Unirile din 13.11: imprimanta 3.6s (cu reparația benzii), 12.1↑d, planșele 11.1↑–11.5↑, plafoanele 115 / 800, trasarea 25.5↑ (Model: Claude Opus 5.5)
+
+**Prompt:** „Merge 3.6s now”; „Fix forward” (la „Fix 3.6s forward, or revert it from main?”); „Da, unește” (12.1↑d, în
+sesiunea incrustațiilor); „Da, cere-i” (planșele, în sesiunea designului); „Yes, 800 kB” (aici) și „Da, 115 ／ 800” (în
+sesiunea designului); „Yes, merge it” (25.5↑); la capăt, „pauza peste tot”. Aprobările transmise de alte sesiuni, verificate
+în transcrierile lor.
+**Started:** 13.11, 18:26. **Completed:** 13.11, 23:30 (pauza; intrarea, scrisă la reluare, pe 16.11).
+
+- **Unde:** un worktree nou, `C:\Users\besli\cncvs2-lucru\unire` (câte o ramură `unire/<felia>` din `main`), fiindcă
+  sesiunea designului comite documente în `main` din checkout-ul principal, iar probele emulatoarelor compară `dist/` cu
+  HEAD-ul din clipa probei. Porțile acolo, apoi fast-forward în checkout-ul principal și push. Unirile de probă, fără
+  fișiere atinse: `git merge-tree --write-tree`.
+- **3.6s** (exact `e489f34`, unirea `a52e9c7`): porțile verzi (unit 9 170 / 0, e2e 460 / 460, emulatoarele), `main` la
+  `50f2595`. Rapidul verde, dar **completul roșu**: `imprimanta.spec.ts:108` pe Linux, banda „pauză” (fixă, sus, la mijloc)
+  acoperea butonul Reia; pe Windows trecea. Nimic publicat. Owner-ul: „Fix forward”. Reparația liniei (`231e347`, pe o
+  ramură din `main`, cu proba de lovire care pica la 1024 px pe Windows) unită în `2daddcc`: porțile verzi (unit 9 313 / 0,
+  e2e 480 / 480), `main` la `e0f9803`, completul verde (rularea 43504242833), **publicat pe test** (`e0f98030284e`).
+- **12.1↑d** (unirea `0f4c22c`, cod identic cu ramura): porțile verzi; o cădere `EBUSY` pe un artefact Playwright a lăsat 9
+  probe ale lui `imprimanta.spec.ts` nerulate (fișier în mod serial), iar fișierul rulat singur pica pe rețeaua implicită:
+  imprimanta falsă de pe `127.0.0.5:9999` se călca cu alt worktree. Cu rețeaua proprie, 23 / 23. `main` la `7cc9800`.
+- **Planșele 11.1↑–11.5↑** (exact `8e8c755`, unirea `fecce54`; documentul v23): conflicte în DEVLOG, un import din `App.tsx`
+  (lângă al lui 3.6s) și `PanouProprietati.tsx` (`fundV` al lui 12.1↑d lângă blocul piesei), toate păstrate pe ambele părți.
+  Porțile: unit 9 313 / 0, e2e 479 / 479, emulatoarele; pornirea cu ușa 109,7 / 110, totalul 690,0 / 700. `main` la
+  `d62e6b8`.
+- **Plafoanele 115 / 800** (ADR 0252–0253, commit-ul sesiunii designului `6c37075`, unit singur în `70844ce`) și **trasarea
+  25.5↑** (exact `1ca446b`, unirea `07df71f`): trasarea și tăierea 10.3↑k treceau împreună de 700. Porțile: unit 9 335 / 0,
+  e2e 484 / 484, emulatoarele 21 / 21 la a doua rulare, singure (prima: o probă de cont la 4,1 min, sub încărcare); totalul
+  695,8 / 800, pornirea cu ușa 109,7 / 115. `main` la `0e3725c`, rapidul verde.
+- **Porțile, întărite pe drum:** `porti-lente-d.sh` reia fișierele întregi ale căzutelor (unul serial sare restul) și
+  folosește rețeaua proprie `127.0.42` (`127.0.9` e a worktree-ului `aranjamente`).
+- **După pauză (16.11):** completul de noapte pe `0e3725c` verde pe 14.11 și 15.11, roșu pe 16.11, la
+  `imprimanta.spec.ts:966` (3.6q): stratul plăcii rămânea cu 2 în urma imprimantei false (toleranța 1, un strat la 300 ms),
+  sub încărcarea runner-ului. Instabilă, nu defect: linia imprimantei o repară pe o ramură din `main`.
+>>>>>>> origin/main

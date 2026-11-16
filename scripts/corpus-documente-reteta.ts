@@ -4,7 +4,8 @@
  * folosește doar ce are orice versiune: `documentNou`, `operatieImplicita` (din v3), ușa `incarca` și `jsonCanonic`.
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
- * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe), apoi
+ * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
+ * punțile dopului decupat), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -197,6 +198,13 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
       id: 'masa-7', piesa: 'masa', x: 60, y: 330, rotire: 0, campuri: { nr: '7' },
       texte: { g: { continut: 'Masa 7', copii: placuta, operatii: { litere: ['q1', 'q2', 'q3'] } } },
     });
+    d['rev'] += 1;
+  },
+  // v24 (ADR 0174): dopul buzunarului se decupează prin placă, cu 2 punți pe buclă de 6 × 0,8 mm.
+  24: (d) => {
+    const inc = op(d, 'buzunar')['incrustatie'];
+    inc['dop'] = 'decupat';
+    inc['punti'] = { numar: 2, latime: 6, grosime: 0.8 };
     d['rev'] += 1;
   },
 };
