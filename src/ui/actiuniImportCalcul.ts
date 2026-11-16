@@ -11,9 +11,9 @@ import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
 import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
 import { REZOLUTIE } from '../geom/toleranta.ts';
 import { praf, preaDeparte } from '../io/caleImport.ts';
-import { dpiImagine, felImagine, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
+import { dpiImagine, felImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
 import { trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
-import type { RaspunsTrasare } from '../jobs/calculTrasare.ts';
+import type { CerereTrasare, RaspunsTrasare } from '../jobs/calculTrasare.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
 import type { AvertismenteImagine, FisierImport, PrevizualizareImport, RaportImagine, UnitateDxf, UnitateWmf } from './actiuniImportTipuri.ts';
 
@@ -129,7 +129,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportIma
   const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
     intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
-    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, transparenta: t.transparenta, automat: t.automat,
+    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
     lumina: r.fel === 'culori' ? 'uniforma' : r.raport.lumina, inegala: r.fel === 'culori' ? null : r.raport.inegala,
   } as const;
@@ -239,25 +239,33 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
  */
 export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal): Promise<PrevizualizareImport> {
   if (felImagine(f.octeti) === 'tiff' || (/\.tiff?$/i.test(f.nume) && !felImagine(f.octeti))) return { ok: false, cod: 'tiff', format: 'imagine' };
-  const a = t ?? TRASARE_IMPLICITA;
-  const peCulori = a.sursa === 'culori';
   let r: RaspunsTrasare;
   try {
-    r = await trasareInBazin({
-      imagine: new Blob([new Uint8Array(f.octeti)]),
-      optiuni: {
-        sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime,
-        ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
-      },
-      peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
-      ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
-    }, semnal ? { semnal } : {});
+    r = await trasareInBazin(cerereTrasare(f, t ?? TRASARE_IMPLICITA), semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
     if (e instanceof TrasareCazuta) return { ok: false, cod: 'imagine-timp', format: 'imagine', detaliu: e.message };
     throw e;
   }
   return previzualizareDinRaspuns(f, r);
+}
+
+/**
+ * Cererea trasării din alegerile ferestrei: opțiunile nucleului (lumina și marginea doar când nu sunt implicite), curățarea,
+ * scara, zona, culorile sau liniile mediane și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate).
+ */
+export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare {
+  const peCulori = a.sursa === 'culori';
+  return {
+    imagine: new Blob([new Uint8Array(f.octeti)]),
+    optiuni: {
+      sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime,
+      ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
+    },
+    peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
+    ...(peCulori ? { culori: a.culori } : a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
+    ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
+  };
 }
 
 /**

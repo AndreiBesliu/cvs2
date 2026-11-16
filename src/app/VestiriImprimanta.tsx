@@ -1,9 +1,13 @@
 /**
  * Vestirile imprimantei (felia 3.6s, ADR 0194 §A, după schița acceptată): evenimentele din schimbările de stare, anunțate o
- * dată pe lucrare, printr-o bandă în aplicație (pusă în pagină, deci văzută din orice fereastră), cu sunet, și prin
- * notificarea sistemului cât cvs2 e ascuns; semnul de pe butonul Imprimanta (locul îl pune carcasa, `#loc-semn-imprimanta`)
- * și partea imprimantei din titlul filei. Fereastra Imprimanta rămâne montată după prima deschidere, deci vestirile merg și
- * cât lucrezi în Proiectare. Cardul Notificările ține setările.
+ * dată pe lucrare, printr-o bandă în aplicație, cu sunet, și prin notificarea sistemului cât cvs2 e ascuns; semnul de pe
+ * butonul Imprimanta (locul îl pune carcasa, `#loc-semn-imprimanta`) și partea imprimantei din titlul filei. Fereastra
+ * Imprimanta rămâne montată după prima deschidere, deci vestirile merg și cât lucrezi în Proiectare. Cardul Notificările ține
+ * setările.
+ *
+ * Banda stă în meniul global, pe rândul ei (`#loc-anunt-imprimanta`, pus tot de carcasă), deci se vede din orice fereastră și
+ * nu acoperă nimic: ce e sub meniu coboară cât e ea la vedere. Până la 13.11 plutea deasupra paginii și acoperea Reia și
+ * uneltele (CI-ul complet, pe Linux). Fără locul acela, stă sus, în fereastra Imprimanta.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -75,23 +79,28 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
   useEffect(() => () => { parteTitlu('imprimanta', null); }, []);
 
   const [loc, setLoc] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => { setLoc(document.getElementById('loc-semn-imprimanta')); });
+  const [locAnunt, setLocAnunt] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    setLoc(document.getElementById('loc-semn-imprimanta'));
+    setLocAnunt(document.getElementById('loc-anunt-imprimanta'));
+  });
   const semn = semnImprimanta({ legatura, lucrare: stare, progres: i.progres, faraFilament: i.faraFilament, eroare: i.eroare, gataNevazut });
+  const banda = anunt === null ? null : (
+    <div className="imprimanta-anunt" data-fel={anunt.e.fel} role={cereAtentie(anunt.e.fel) ? 'alert' : 'status'} data-testid="imprimanta-anunt">
+      <strong>{anunt.titlu}</strong>
+      {anunt.corp !== '' && <span>{anunt.corp}</span>}
+      <span className="imprimanta-butoane">
+        {!vizibila && <button type="button" data-imprimanta="anunt-deschide" onClick={deschide}>{t('imprimanta.anunt.deschide')}</button>}
+        <button type="button" data-imprimanta="anunt-inchide" onClick={() => { setAnunt(null); }}>{t('imprimanta.anunt.inchide')}</button>
+      </span>
+    </div>
+  );
   return (
     <>
       {loc !== null && semn !== null && createPortal(
         <span className="semn-imprimanta" data-stare={semn.fel} data-testid="imprimanta-semn"><i aria-hidden="true" /><span>{semn.text}</span></span>, loc,
       )}
-      {anunt !== null && createPortal(
-        <div className="imprimanta-anunt" data-fel={anunt.e.fel} role={cereAtentie(anunt.e.fel) ? 'alert' : 'status'} data-testid="imprimanta-anunt">
-          <strong>{anunt.titlu}</strong>
-          {anunt.corp !== '' && <span>{anunt.corp}</span>}
-          <span className="imprimanta-butoane">
-            {!vizibila && <button type="button" data-imprimanta="anunt-deschide" onClick={deschide}>{t('imprimanta.anunt.deschide')}</button>}
-            <button type="button" data-imprimanta="anunt-inchide" onClick={() => { setAnunt(null); }}>{t('imprimanta.anunt.inchide')}</button>
-          </span>
-        </div>, document.body,
-      )}
+      {banda !== null && (locAnunt === null ? banda : createPortal(banda, locAnunt))}
     </>
   );
 }

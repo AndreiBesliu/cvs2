@@ -173,8 +173,8 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   (alt cod sau altă cheie), legătura pierdută cât lucrează, primul strat. Doar din schimbări: nimic din prima stare după
   legare, iar cât lipsește legătura starea veche nu anunță nimic. Durata și filamentul sunt cele de dinaintea finalului
   (imprimanta le poate pune pe 0); cheile țin cât lucrarea, ca o stare care pâlpâie să nu anunțe de două ori.
-- **Fereastra** (`VestiriImprimanta.tsx`, `notificariImprimanta.ts`): banda, pusă în pagină, deci văzută din orice
-  fereastră (jos pe telefon), închisă singură la Reia sau la revenirea legăturii; notificarea sistemului cât cvs2 e
+- **Fereastra** (`VestiriImprimanta.tsx`, `notificariImprimanta.ts`): banda, în aplicație, deci văzută din orice
+  fereastră (din 13.11 în meniul global, vezi „Reparat”), închisă singură la Reia sau la revenirea legăturii; notificarea sistemului cât cvs2 e
   ascuns (clicul aduce fereastra Imprimanta; pe Android, prin service worker); sunetul (Web Audio); cardul Notificările
   (`cvs2.imprimanta.notificari`, `v: 1`); semnul pe fila Imprimanta; partea imprimantei din titlul filei.
 - **Carcasa** (`App.tsx`, cât mai puțin la pornire): locul semnului în fila Imprimanta (un copil opțional al lui
@@ -190,6 +190,14 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   (notificările cu API-ul browserului înlocuit; legarea la deschidere). Porțile: unit 9 178 (9 170 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 459 / 460 (căderea, proba pornirii, sub procesorul la ~90 %: trece 10 / 10 singură, cu titlul la ~135 ms). Privită în Edge: 1280 px
   luminos (semnul în Proiectare, banda la lipsa filamentului și la final, cardul) și 390 px întunecat (banda jos, semnul),
   fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6s.py`, 32 / 32 (22 pe probele unitare, 10 prin e2e); listele 3.6p–3.6r se aplică în continuare.
+- **Reparat pe 13.11** (CI-ul complet, pe Linux, la cererea sesiunii principale): banda plutea sus, la mijloc, deasupra
+  paginii (`position: fixed`). Pe Windows, la 1024 px, acoperea Reia și Oprește din fereastra Imprimanta; în Proiectare, la
+  orice lățime, rândul de unelte; pe telefon (jos), câmpurile țintelor; pe Linux, cu alte fonturi, și Reia la lățimea
+  probei. Acum stă în meniul global, pe un rând al ei (`#loc-anunt-imprimanta`, pus de carcasă; gol, ascuns), și pe
+  telefon: ce e sub meniu coboară cât e ea la vedere, deci nu acoperă nimic. Fără locul acela, stă sus, în fereastra
+  Imprimanta. Proba: un hit-test pe controale (`imprimanta.spec.ts`, „banda vestirilor (3.6s) nu acoperă nimic”), căzută
+  pe Windows înaintea reparației. **Pentru linia aranjamentelor** (ADR 0250): fiecare aranjament ține locul
+  `#loc-anunt-imprimanta` în meniul lui, ca pe `#loc-semn-imprimanta` în fila Imprimanta.
 
 ## Întrebările (owner)
 
