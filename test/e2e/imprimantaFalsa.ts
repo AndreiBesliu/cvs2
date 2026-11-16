@@ -32,6 +32,9 @@ import type { AddressInfo, Socket } from 'node:net';
  *   la loc (0).
  * - din 3.6t (ADR 0194 §B), istoricul (`historyList`, câmpurile din transcrierea owner-ului): trimis la `reqHistory`, după
  *   lista fișierelor (`k1c-2025`) și la finalul sau oprirea unei lucrări (cu `printfinish` 1 sau 0), pornind de la `istoric`.
+ * - din 16.11, `intarziereMs`: fiecare cadru trimis ajunge cu atâta întârziere, în ordine (ca pe un runner încărcat, unde
+ *   fereastra arată un mesaj mai vechi decât imprimanta de acum); `stratLaProgres(p)`: stratul adevărat din cadrul care a spus
+ *   procentul `p`, ca o probă să judece stratul arătat față de mesajul arătat, nu față de imprimanta de acum.
  * Ține minte cadrele primite (fără `ok`) și câte `ok` a primit; `taie` închide socket-urile fără cadrul de închidere (1006).
  */
 
@@ -72,6 +75,8 @@ export type OptiuniImprimantaFalsa = {
   readonly continut?: Readonly<Record<string, string>>;
   /** Din 3.6t: istoricul de la pornire (intrările `historyList`, ca în transcriere). */
   readonly istoric?: readonly Readonly<Record<string, string | number>>[];
+  /** Din 16.11: fiecare cadru trimis ajunge cu atâta întârziere (ms), în ordine; așteptarea lui `ok` crește la fel. */
+  readonly intarziereMs?: number;
 };
 
 export interface ImprimantaFalsa {
@@ -93,6 +98,8 @@ export interface ImprimantaFalsa {
   ignora(campuri: readonly string[]): void;
   /** Stratul adevărat al fișierului „imprimat” acum (null: niciunul), oricât de des ar sări `layer`. */
   stratAdevarat(): number | null;
+  /** Din 16.11: stratul adevărat din cadrul care a spus procentul `p` al fișierului de acum (null: niciun cadru cu el). */
+  stratLaProgres(p: number): number | null;
   /** Din 3.6s: senzorul spune că s-a terminat filamentul (`materialStatus` 1), iar o imprimare trece în pauză. */
   faraFilament(): void;
   /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
@@ -159,6 +166,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   let pierde = false;
   const pasMs = opt.pasMs ?? 200;
   const k2025 = opt.fel === 'k1c-2025';
+  const intarziere = Math.max(0, opt.intarziereMs ?? 0);
+  /** Din 16.11: stratul adevărat din fiecare cadru al fișierului de acum, după procentul spus în el. */
+  const straturiPeProgres = new Map<number, number>();
   // Starea imprimantei, cum o trimite ea.
   const s: Record<string, string | number | Record<string, number>> = {
     model: opt.model ?? 'K1C', hostname: opt.nume ?? 'K1C-8578',
@@ -228,6 +238,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       linii, marime: Buffer.byteLength(text), pePas: Math.max(1, Math.ceil(linii.length / (opt.pasiFisier ?? 40))), i: 0, octeti: 0,
       strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false, piese: new Set(piese.map((p) => p.name)), excluse: new Set(),
     };
+    straturiPeProgres.clear();
+    straturiPeProgres.set(0, 0);
     schimba({
       state: 1, printFileName: cale, printProgress: 0, printJobTime: 0, printLeftTime: 600, TotalLayer: straturi, layer: 0, usedMaterialLength: 0,
       curPosition: 'X:00 Y:00 Z:00', targetNozzleTemp: temp(220), nozzleTemp: temp(220), targetBedTemp0: temp(55), bedTemp0: temp(55),
@@ -263,9 +275,12 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     }
     r.alterna = !r.alterna;
     const trecut = Number(s['printJobTime']) + 1;
+    const progres = Math.min(99, Math.floor((100 * r.octeti) / r.marime));
+    // Stratul adevărat al cadrului, după procentul lui (16.11): fereastra poate arăta un cadru mai vechi decât imprimanta de acum.
+    straturiPeProgres.set(progres, r.strat);
     schimba({
       // La pauză, numărătoarea cu 5 în plus (cazul greu: ultima valoare bună rămâne pe stratul de dinainte).
-      layer: opt.numaratoriDuble && (r.alterna || pauza) ? r.strat + 5 : r.strat, printProgress: Math.min(99, Math.floor((100 * r.octeti) / r.marime)),
+      layer: opt.numaratoriDuble && (r.alterna || pauza) ? r.strat + 5 : r.strat, printProgress: progres,
       curPosition: `X:${Math.round(r.x)} Y:${Math.round(r.y)} Z:00`, usedMaterialLength: Math.round(r.e + (opt.filamentInPlus ?? 12)),
       printJobTime: trecut, printLeftTime: Math.max(1, Number(s['printLeftTime']) - 1),
     });
@@ -273,6 +288,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     if (pauza) { schimba({ state: 5 }); return; }
     if (r.i >= r.linii.length) {
       rulare = null;
+      straturiPeProgres.set(100, r.strat);
       // Din 3.6s: „terminată” (2), ca o K3; după doi pași, liberă (0), cu timpul și filamentul pe 0. Din 3.6t, și istoricul.
       schimba({ printProgress: 100, current_object: '', state: 2, printLeftTime: 0 });
       inIstoric(1);
@@ -334,7 +350,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     socket.write(['HTTP/1.1 101 Switching Protocols', 'Upgrade: websocket', 'Connection: Upgrade', `Sec-WebSocket-Accept: ${accept}`, '', ''].join('\r\n'));
     socketuri.add(socket);
     conexiuni++;
-    const trimite = (t: string): void => { if (!socket.destroyed && !tacute.has(socket)) socket.write(cadru(1, Buffer.from(t, 'utf8'))); };
+    const scrie = (t: string): void => { if (!socket.destroyed && !tacute.has(socket)) socket.write(cadru(1, Buffer.from(t, 'utf8'))); };
+    // Din 16.11: cu `intarziereMs`, fiecare cadru pleacă mai târziu, în ordine (textul e cel din clipa trimiterii).
+    const trimite = (t: string): void => { if (intarziere > 0) setTimeout(() => { scrie(t); }, intarziere); else scrie(t); };
     const json = (o: unknown): void => { trimite(JSON.stringify(o)); };
     const laSchimbare = (c: Readonly<Record<string, unknown>>): void => { json(c); };
     trimitatori.add(laSchimbare);
@@ -350,7 +368,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       if (k2025) { json({ maxBedTemp: 115 }); return; }
       inimi++;
       json({ ModeCode: 'heart_beat', msg: new Date().toISOString() });
-      if (asteaptaOk === null) asteaptaOk = setTimeout(inchide, opt.asteptareOkMs ?? 3000);
+      if (asteaptaOk === null) asteaptaOk = setTimeout(inchide, (opt.asteptareOkMs ?? 3000) + intarziere);
     }, opt.inimaMs ?? 1000);
     const comanda = (text: string): void => {
       if (tacute.has(socket)) return;
@@ -490,6 +508,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         eroare: (cod, cheieEroare) => { schimba({ err: { errcode: cod, key: cheieEroare } }); },
         ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
         stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
+        stratLaProgres: (p) => straturiPeProgres.get(p) ?? null,
         faraFilament: () => { schimba(s['state'] === 1 ? { materialStatus: 1, state: 5 } : { materialStatus: 1 }); },
         pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
