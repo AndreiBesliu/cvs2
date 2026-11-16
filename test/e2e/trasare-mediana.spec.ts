@@ -98,8 +98,10 @@ test('un disc plin dă doar un punct: refuzul spune să alegi Contururi, iar rap
   await expect(page.getByTestId('import-refuz')).toHaveText('Nicio linie mediană: desenul are doar puncte (trăsături sau pete mai scurte decât grosimea lor). Pentru ele, alege Contururi.');
   await expect(page.getByTestId('trasare-puncte')).toHaveText('1 punct (o trăsătură mai scurtă decât grosimea ei) n-are linie mediană: pentru el, alege Contururi.');
   await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
-  // Pe culori, la fel (ADR 0227): discul negru e o culoare bifată, cu doar un punct.
+  // Pe culori, la fel (ADR 0227): discul negru e o culoare bifată, cu doar un punct. Întâi răspunsul pe culori (pastilele,
+  // cu fundalul): până atunci, pe ecran e încă refuzul de la alb-negru, cu același text.
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
+  await expect(page.getByTestId('trasare-pastile').locator('li', { hasText: 'fundalul' })).toHaveCount(1);
   await expect(page.getByTestId('import-refuz')).toHaveText('Nicio linie mediană: desenul are doar puncte (trăsături sau pete mai scurte decât grosimea lor). Pentru ele, alege Contururi.');
   await page.locator('[data-camp="trasare-sursa"]').selectOption('auto');
   await page.locator('[data-camp="trasare-rezultat"]').selectOption('contururi');
