@@ -964,9 +964,11 @@ test('placa (3.6q): un fișier trimis din „Din desen…”, „imprimat” de 
 });
 
 test('placa fără hartă (3.6q): un fișier trimis din altă parte, pornit din listă: conturul pieselor spuse de imprimantă, numele fără sufixul OrcaSlicer, stratul cel apropiat de progres; fără căi', async ({ page }) => {
+  // Cadrele imprimantei ajung cu 1 s întârziere, ca pe un runner încărcat: fereastra arată un cadru mai vechi decât imprimanta
+  // de acum (16.11: completul de noapte a căzut așa, „stratul 10, adevărat 12”, cu stratul judecat față de imprimanta de acum).
   const imp = await porneste({
     fisiere: [...FISIERE, { name: 'cuburi_PLA_5m.gcode', timeCost: 300, material: 'PLA' }], continut: { 'cuburi_PLA_5m.gcode': gcodeCuPiese(20) },
-    numaratoriDuble: true, pasiFisier: 30,
+    numaratoriDuble: true, pasiFisier: 30, intarziereMs: 1000,
   });
   await deschide(page);
   await leaga(page, IP);
@@ -980,14 +982,24 @@ test('placa fără hartă (3.6q): un fișier trimis din altă parte, pornit din 
   await expect(page.getByTestId('imprimanta-placa-fara-cai')).toBeVisible();
   const lista = page.getByTestId('imprimanta-placa-piese');
   await expect(lista.locator('.imprimanta-placa-piesa')).toHaveText(['CUB A.STL', 'CUB B.STL']);
-  // Stratul: dintre cele două numărători ale K1C, cea apropiată de progres (la cel mult un strat de cel adevărat).
+  // Stratul: dintre cele două numărători ale K1C, cea apropiată de progres, la cel mult un strat de cel adevărat al cadrului
+  // arătat. Stratul și procentul se citesc deodată, din aceeași randare; stratul adevărat e cel din cadrul cu procentul acela.
   await expect.poll(() => imp.stratAdevarat() ?? 0).toBeGreaterThan(6);
-  for (let n = 0; n < 6; n++) {
-    const k = Number(await placa.getAttribute('data-strat'));
-    const a = imp.stratAdevarat();
-    if (a !== null && k > 0) expect(Math.abs(k - a), `stratul ${k}, adevărat ${a}`).toBeLessThanOrEqual(1);
+  const aratat = (): Promise<{ readonly strat: number; readonly progres: number }> => page.evaluate(() => ({
+    strat: Number(document.querySelector('[data-testid="imprimanta-placa"]')?.getAttribute('data-strat') ?? 0),
+    progres: Number.parseInt(document.querySelector('[data-testid="imprimanta-progres"]')?.textContent ?? '', 10),
+  }));
+  let judecate = 0;
+  for (let n = 0; n < 8; n++) {
+    const { strat: k, progres } = await aratat();
+    const a = imp.stratLaProgres(progres);
+    if (a !== null && k > 0) {
+      expect(Math.abs(k - a), `stratul ${k}, adevărat ${a} în cadrul cu ${progres} %`).toBeLessThanOrEqual(1);
+      judecate++;
+    }
     await page.waitForTimeout(250);
   }
+  expect(judecate, 'cadre judecate').toBeGreaterThan(3);
   expect(await pixeliCale(page)).toBe(0);
 });
 
