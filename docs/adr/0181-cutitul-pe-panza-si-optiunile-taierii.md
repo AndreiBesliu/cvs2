@@ -285,10 +285,10 @@ primului commit de cod, `origin/main` unit în ramură.
 - **Interfața:** blocul „Taie în panouri” din panoul Taie (`PanouriTaiere.tsx`), după butonul Taie: mărimea panoului (implicit,
   materialul foii), „egale / din colț”, numărul de panouri; câte ies, peste ce cutie; cât lucrezi în bloc, pânza arată grila
   (cutia punctată și liniile), iar înapoi în blocul de sus, linia.
-- **Mărimea:** pe aceeași bază (`main` `44c47fa`, cu imprimanta 3.6s), pornirea nu crește (102,4 kB; cu ușa 106,1 / 110), iar
-  totalul crește cu 4,7 kB (657,5 → 662,2 / 700), peste estimarea de mai sus (~2,5 kB): workerul +2,7 (grila, tăierea pe linii,
-  `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4
-  (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
+- **Mărimea:** pe aceeași bază (`main` `380c053`, cu planșele și plafoanele 115 / 800 din ADR 0252 și 0253), pornirea nu crește
+  (105,7 kB; cu ușa 109,7 / 115), iar totalul crește cu 4,7 kB (698,7 → 703,4 / 800), peste estimarea ADR-ului (~2,5 kB):
+  workerul +2,7 (grila, tăierea pe linii, `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză,
+  textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
 
 ## Proba
 

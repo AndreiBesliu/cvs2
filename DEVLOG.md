@@ -9132,7 +9132,7 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
 ## 2026-11-13 — Felia 10.3↑k: tăierea în panouri (ADR 0181 §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, după pauza din 11.11: pasul următor al liniei).
-**Started:** 13.11, 11:27. **Completed:** 13.11, 21:40.
+**Started:** 13.11, 11:27. **Completed:** 16.11, 20:10 (încheiată pe 13.11, 21:40; pauză 14.11; reluată 16.11).
 
 - **Ramura nouă din `main`:** `wip/10.3k-panouri`, din `5e4caa2` (nu din vârful cu mutarea fișierelor, oprită pe 11.11 și
   ținută pe `wip/10.3-taiere-conversie` la `e39ddc4`, ca referință); `origin/main` `c85cc18` (ADR 0250, doar documente), unit
@@ -9183,10 +9183,10 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   încărca fontul; trece singură; căzuse la fel și pe `0cf6bfc`, a trecut pe `d18c37e` și `64e69fb`); emulatoarele 101 / 101 și
   21 / 21 (la o rulare de dinainte, emulatorul de funcții n-a încărcat codul în 10 s: patru callable-uri cu 404; la rerulare,
   toate). Pe vârf (`9835062`, doar filtrul scos): build-ul determinist, e2e `taiere`, `cutit` și `fonturi` 37 / 37.
-- **Mărimea:** pe aceeași bază (`main` `44c47fa`, cu imprimanta 3.6s), pornirea nu crește (102,4 kB; cu ușa 106,1 / 110), iar
-  totalul crește cu 4,7 kB (657,5 → 662,2 / 700), peste estimarea ADR-ului (~2,5 kB): workerul +2,7 (grila, tăierea pe linii,
-  `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4
-  (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
+- **Mărimea:** pe aceeași bază (`main` `380c053`, cu planșele și plafoanele 115 / 800 din ADR 0252 și 0253), pornirea nu crește
+  (105,7 kB; cu ușa 109,7 / 115), iar totalul crește cu 4,7 kB (698,7 → 703,4 / 800), peste estimarea ADR-ului (~2,5 kB):
+  workerul +2,7 (grila, tăierea pe linii, `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză,
+  textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
 - **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 13.12), `9835062`,
   verificat în Edge fără fereastră, ro și en: firma de 2 400 × 1 000 cu o literă (Degrupează), la 1 200 × 900, egale: grila 2 ×
   2 pe pânză, patru panouri, „Panoul 1” grupul cu litera; Anulează, apoi blocul ia toate formele foii (2); din colț, cu zigzag,
@@ -9200,3 +9200,13 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   unește `origin/main` `0e3725c` (reparația benzii 3.6s, plafoanele 115 / 800, trasarea 25.5↑), porțile întregi și emulatoarele
   pe rezultat, mărimea finală în documente (ADR 0181, fișa și traducerea ei, DEVLOG), împingerea, canalul `taiere` (acum pe
   `9835062`, de dinaintea planșelor), raportul „gata de unit”.
+- **Reluare (16.11, „poti sa continui … sau poti sa unesti ce se poate”, de la owner, prin sesiunea principală):** `origin/main`
+  `0e3725c` (reparația benzii lui 3.6s, plafoanele 115 / 800, trasarea 25.5↑) unit în `096134b` (conflictul, doar în DEVLOG);
+  porțile întregi pe el: traducerile 771 / 0, importurile 20 / 0, unit 9 359 (9 351 trecute, 0 căderi), build-ul determinist,
+  e2e 486 / 486 (pornit după un minut fără altă rulare Playwright pe mașină), emulatoarele 101 / 101 și 21 / 21. Apoi `main` a
+  primit 12.1↑b-2 (documentul v24), 25.4↑b și reparația lui 3.6q: `bfdf2ed`, unit în `50fb4b4` (conflictele: DEVLOG și rândul
+  lui 12.1b din lista otrăvurilor; marcajele din DEVLOG, scăpate în unire, scoase în `0133c76`); porțile întregi pe `0133c76`:
+  unit 9 392 (9 384 trecute, 0 căderi), build-ul determinist, e2e 488 / 488, emulatoarele 101 / 101 și 21 / 21. Apoi trasarea
+  25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
+  20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
+  `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Mărimea finală, mai sus.
