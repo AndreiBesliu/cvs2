@@ -186,6 +186,8 @@ const SchemaOperatie = v.looseObject({
       fierastrau: pozitiv(PLAFON.adancimeOperatie),
       margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),
       frezeDop: v.optional(SchemaRest),
+      // ADR 0174 (v24): punțile dopului decupat, ca urechile; potrivirea (pe buclă, față de placă) e a lucrării.
+      punti: v.optional(SchemaUrechi),
     }),
   ])),
 });

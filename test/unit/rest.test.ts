@@ -376,7 +376,7 @@ test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (c�
   const curat = doc([DR80], [buz(['a'], { rest: undefined })], 16);
   const c = incarca(JSON.parse(JSON.stringify(curat)));
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 23 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 24 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

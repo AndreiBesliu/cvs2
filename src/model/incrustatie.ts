@@ -39,8 +39,14 @@ export function valoriIncrustatie(op: Pick<Operatie, 'adancime' | 'scula' | 'inc
 
 /** Rezerva benzii (ADR 0172, c): cât stă tăietura decupării de peretele dopului și de marginea fundului plat (mm). */
 export const REZERVA_BANDA = 0.5;
+/**
+ * Punțile dopului decupat cu pereți drepți fără `punti` în incrustație (ADR 0171, ADR 0174): câte pe buclă, lățimea lemnului
+ * rămas și grosimea lui (de la fața de jos), mm; și implicitele ferestrei. Pe traseul frezei, palierul punții e lățimea plus
+ * diametrul frezei (ADR 0031: coloana punții e palierul minus diametrul), deci lucrarea nu le refuză ca mai scurte decât freza.
+ */
+export const PUNTI_DOP_DREPT: Urechi = { numar: 4, latime: 4, grosime: 1 };
 /** Punțile implicite ale decupării (ADR 0172, răspunsul 5): ca la dopul decupat cu pereți drepți. */
-export const PUNTI_BANDA: Urechi = { numar: 4, latime: 4, grosime: 1 };
+export const PUNTI_BANDA: Urechi = PUNTI_DOP_DREPT;
 
 /**
  * Lățimea cea mai mică a benzii (ADR 0172, răspunsul 1): pereții (H·t de fiecare parte), fundul plat cu freza lui și tăietura

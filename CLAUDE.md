@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v24, de exemplu punțile dopului drept ale incrustațiilor) intră acolo, ca rangul și incrustația:** rândul
+  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -874,8 +874,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   găsite singure (`src/trasare/foaia.ts`; geometria lor, fără importuri, în `src/trasare/colturi.ts`, ca fereastra s-o
   folosească fără nucleu), formatul (A4 implicit) cu mărimea adevărată, `CerereTrasare.foaie` (îndreptarea înaintea zonei;
   zona e în pixelii foii îndreptate), butonul Colțurile cu mânerele. Proporțiile din poză au un interval: pe poza înclinată
-  doar înainte, focala nu se poate afla, deci sunt „nesigure”. Lumina pe culori (25.4↑b) și liniile mediane pe culori vin
-  după ea.
+  doar înainte, focala nu se poate afla, deci sunt „nesigure”. **25.4↑b (lumina pe culori, ADR 0226) gata pe 13.11, cu
+  toate recomandările („Da la 1-2a”), pe aceeași ramură, neunită, pe canalul `trasare`:** Lumina și pe Culorile (imaginile
+  opace), înaintea numărului culorilor; `culoriLuminate` (`src/trasare/culori.ts`: fiecare canal raportat la fundalul lui
+  din `lumina.ts`; stă în culori fiindcă pragul Otsu pe canal e în `trasare.ts`, pe care `lumina.ts` nu-l poate importa);
+  pe hârtie, balansul de alb (culorile adevărate), pe tablă, nivelul ei mediu. **Totalul ramurii: 696,1 / 700 kB** (`main`,
+  cu planșele, 690,0): sub plafon mai încap 3,9 kB. Liniile mediane pe culori vin după ea.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1142,6 +1146,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **unirile de după pauză** („poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti
+  ce se poate”, în sesiunea principală; apoi „Poti sa adopti si sesiunea de design si sa o pornesti”): liniile reluate, iar
+  sesiunea designului coordonată ca o linie (commit-urile doar pe `wip/28.1-aranjamente`, unirea a sesiunii principale).
+  Unite, fiecare felie gata pe linia ei: 12.1↑b-2 (punțile dopului drept, documentul v24, ADR 0174; exact `9a73aa6`),
+  trasarea 25.4↑b (lumina pe culori, ADR 0226; exact `94bf287`) și reparația probei instabile `imprimanta.spec.ts:966`
+  (`ead04c2`, doar probe), care făcuse roșu completul de noapte din 16.11. Feliile următoare, cu „unește ce se poate”, se
+  unesc când linia raportează gata, fără altă întrebare.
 - 13.11.2026: **felia 25.5↑ a trasării unită în `main`, cu plafoanele 115 / 800 înaintea ei** („Yes, merge it”, la „Merge
   trasarea 25.5↑ (straightening an angled sheet) into main?”, în sesiunea principală): unită exact la `1ca446b` (`07df71f`);
   ADR 0226 (propus) rămâne pe ramură. Plafoanele din ADR 0252–0253 („Da, 115 ／ 800”, în sesiunea designului; „Yes, 800 kB”,

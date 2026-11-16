@@ -52,6 +52,46 @@ async function alegePoza(page: Page, fel: 'laterala' | 'masa' | 'transparenta'):
   await expect(page.getByTestId('trasare-panou')).toBeVisible();
 }
 
+/**
+ * O poză colorată (ADR 0226): o foaie albă cu un disc roșu, un dreptunghi albastru, un triunghi verde, trei bare negre și un
+ * inel galben, luminată dintr-o parte (înmulțită cu un gradient de la alb la 50 %).
+ */
+async function alegePozaColor(page: Page): Promise<void> {
+  await page.locator('[data-camp="fisier-svg"]').waitFor({ state: 'attached' });
+  await page.evaluate(async ([W, H]) => {
+    const c = new OffscreenCanvas(W, H);
+    const g = c.getContext('2d');
+    if (!g) throw new Error('fără context 2d');
+    g.fillStyle = 'rgb(242, 240, 234)';
+    g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgb(196, 38, 42)';
+    g.beginPath(); g.arc(120, 120, 60, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = 'rgb(38, 72, 186)';
+    g.fillRect(240, 60, 120, 120);
+    g.fillStyle = 'rgb(44, 146, 70)';
+    g.beginPath(); g.moveTo(120, 240); g.lineTo(200, 360); g.lineTo(40, 360); g.closePath(); g.fill();
+    g.fillStyle = 'rgb(28, 26, 30)';
+    for (const y of [245, 285, 325]) g.fillRect(240, y, 130, 14);
+    g.strokeStyle = 'rgb(236, 196, 36)';
+    g.lineWidth = 28;
+    g.beginPath(); g.arc(480, 220, 50, 0, 2 * Math.PI); g.stroke();
+    g.globalCompositeOperation = 'multiply';
+    const gr = g.createLinearGradient(0, 0, W, 0);
+    gr.addColorStop(0, '#ffffff');
+    gr.addColorStop(1, '#808080');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, W, H);
+    const b = await c.convertToBlob({ type: 'image/png' });
+    const dt = new DataTransfer();
+    dt.items.add(new File([b], 'culori.png', { type: 'image/png' }));
+    const intrare = document.querySelector<HTMLInputElement>('[data-camp="fisier-svg"]');
+    if (!intrare) throw new Error('fără fereastra de fișiere a importului');
+    intrare.files = dt.files;
+    intrare.dispatchEvent(new Event('change', { bubbles: true }));
+  }, [W, H] as const);
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+}
+
 /** Punctul (x, y) al imaginii, pe ecran, în previzualizarea încadrată (cum o arată „Încadrează”). */
 async function peEcran(page: Page, x: number, y: number): Promise<{ x: number; y: number }> {
   const b = await page.getByTestId('trasare-previzualizare').boundingBox();
@@ -159,7 +199,30 @@ test('zona: cu butonul, tragerea alege cercul (decupajul e pagina); „Toată im
   await expect(page.getByTestId('trasare-zona')).toBeVisible();
 });
 
-test('pe transparență și pe culori, Lumina nu apare; „Ignoră ce atinge marginea” rămâne', async ({ page }) => {
+test('pe culori, Lumina (ADR 0226): pe o poză luminată dintr-o parte, Uniformă rupe hârtia și raportul sugerează Neuniformă; cu ea, culorile desenului', async ({ page }) => {
+  await page.goto('/');
+  await alegePozaColor(page);
+  await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
+  await expect(page.getByTestId('trasare-culori')).toBeVisible();
+  await expect(page.locator('[data-camp="trasare-lumina"]')).toHaveValue('uniforma');
+  await expect(page.getByTestId('trasare-lumina-sfat')).toHaveText('Culorile cum sunt în imagine: o scanare curată, un logo.');
+  await expect(page.getByTestId('trasare-sugestie')).toContainText('Hârtia pare luminată inegal (variază cu');
+  // Cu „Uniformă”, hârtia luminată și cea umbrită ies culori diferite: peste cele 6 ale desenului (cu hârtia).
+  await expect.poll(async () => Number(await page.getByTestId('trasare-culori-valoare').textContent())).toBeGreaterThan(6);
+  await page.locator('[data-camp="trasare-lumina"]').selectOption('neuniforma');
+  await expect(page.getByTestId('trasare-culori-valoare')).toHaveText('6');
+  await expect(page.getByTestId('trasare-sugestie')).toHaveCount(0);
+  await expect(page.getByTestId('trasare-lumina-sfat')).toContainText('Fiecare culoare raportată la hârtie, care devine albă');
+  // Balansul de alb: hârtia e albă în paletă.
+  const albe = await page.locator('.trasare-pastila').evaluateAll((l) => l.map((e) => e.getAttribute('data-hex') ?? '')
+    .filter((h) => [1, 3, 5].every((i) => parseInt(h.slice(i, i + 2), 16) >= 0xf5)).length);
+  expect(albe).toBe(1);
+  await page.locator('[data-camp="trasare-lumina"]').selectOption('umbre');
+  await expect(page.getByTestId('trasare-lumina-sfat')).toContainText('o formă plină mai lată se golește');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('pe transparență, Lumina nu apare, nici pe culori; „Ignoră ce atinge marginea” rămâne', async ({ page }) => {
   await page.goto('/');
   await alegePoza(page, 'transparenta');
   await expect(page.getByTestId('trasare-sursa-aleasa')).toHaveText('Transparența: imaginea are fundal transparent.');
