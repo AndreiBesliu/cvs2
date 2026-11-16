@@ -855,3 +855,32 @@ test('cu capetele în vârf (ADR 0223), nicio bucată nu e punct (25.3↑d): dis
     assert.ok(Math.abs(l - 8) <= 1, `(${cx}, ${cy}): linia de ${l.toFixed(2)} px`);
   }
 });
+
+test('o linie oblică de un pixel e o bucată (8-vecinătate), nu un șir de puncte (25.3↑d)', () => {
+  // Pixelii ei se ating doar pe diagonală: pe 4-vecinătate, fiecare ar fi o bucată de un pixel, deci un punct.
+  const t = traseazaMediana(imagine(60, 60, (x, y) => (x === y && x >= 10 && x <= 50 ? 1 : 0)), IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.puncte, 0);
+  assert.equal(t.raport.contururi, 1);
+});
+
+test('cu capetele în vârf, o trăsătură lungă rămâne o singură linie, de la un vârf la celălalt (25.3↑d)', () => {
+  // Vârful stă pe marginea trăsăturii, deci pixelul de sub el poate fi de fundal: calea se leagă de bucată prin vecinii lui,
+  // altfel bucata ar părea fără cale și ar primi, pe lângă ea, și dreapta axei.
+  const varf = { ...MEDIANA_SIMPLA, capete: 'varf' } as const;
+  const gresite: string[] = [];
+  for (const L of [14, 20, 30]) {
+    for (const grade of [0, 17, 30, 45, 60, 73, 90]) {
+      const ux = Math.cos((grade * Math.PI) / 180), uy = Math.sin((grade * Math.PI) / 180), h = (L - 6) / 2;
+      const a: Pt = [30.3 - h * ux, 30.1 - h * uy], b: Pt = [30.3 + h * ux, 30.1 + h * uy];
+      const t = traseazaMediana(imagine(60, 60, (x, y) => (laLinie(x + 0.5, y + 0.5, [a, b]) < 3 ? 1 : 0)), IMPLICITE, varf);
+      if (!t.ok || t.raport.contururi !== 1 || t.raport.puncte !== 0) {
+        gresite.push(`L ${L}, ${grade}°: ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+        continue;
+      }
+      const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
+      if (Math.abs(l - L) > 1.5) gresite.push(`L ${L}, ${grade}°: linia de ${l.toFixed(2)} px`);
+    }
+  }
+  assert.deepEqual(gresite, []);
+});
