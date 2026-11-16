@@ -1163,6 +1163,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **a doua rundă din 16.11, unită la „unește ce se poate”:** trasarea 25.3↑c (liniile mediane pe culori, ADR
+  0227; `380c053`), prima felie a aranjamentelor, 28.1↑a (alegerea aranjamentului și densitatea, citite înaintea primei
+  randări, ADR 0250 §4–§5; `8ea3057`), și planșele 11.6↑ (raportul foilor și lista de tăiere; `7d19a73`). Pornirea cu ușa
+  110,3 / 115, totalul 703,4 / 800. Apoi, la „Start the three recommended slices: plate sheet 11, 25.3↑d and 28.1↑b?”,
+  owner-ul: „Yes, all three”: fișa plăcii 11 (pregătită fără mașină; tăierea, a owner-ului), 25.3↑d (punctele pierdute de
+  linia mediană) și 28.1↑b (fereastra Aspectul).
 - 16.11.2026: **unirile de după pauză** („poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti
   ce se poate”, în sesiunea principală; apoi „Poti sa adopti si sesiunea de design si sa o pornesti”): liniile reluate, iar
   sesiunea designului coordonată ca o linie (commit-urile doar pe `wip/28.1-aranjamente`, unirea a sesiunii principale).
