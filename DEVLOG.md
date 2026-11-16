@@ -9112,6 +9112,11 @@ sesiunea designului); „Yes, merge it” (25.5↑); la capăt, „pauza peste t
   `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă
   rulare Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu
   ușa 109,9 / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe
-  16.12. Gata de unit.
+  16.12.
+- **Ultima unire de la capăt (16.11):** `main` `bfdf2ed` (12.1↑b-2 cu documentul v24, 25.4↑b, reparația 3.6q) adus în
+  `cfd195d`, cu conflictul doar în DEVLOG. Porțile din nou: tipurile, importurile, traducerile (778 de texte, 0 netraduse),
+  e2e 487 / 487 din prima (după un minut fără altă rulare Playwright), suita unitară 9 377 / 0 (8 sărite), build-ul
+  determinist (324 de fișiere identice; pornirea cu ușa 109,9 / 115, totalul 700,9 / 800). Canalul republicat din
+  `cfd195d`, 100 / 100 bucăți. Gata de unit.
 
-**Completed:** 16.11, 18:55.
+**Completed:** 16.11, 19:30.
