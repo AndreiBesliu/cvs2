@@ -5976,3 +5976,95 @@ export const OTRAVURI_V23: ReadonlyArray<{ readonly nume: string; readonly doc: 
     const s = stricaV23(c.doc, fel);
     return s === undefined ? [] : [{ nume: `${c.nume}, stricat: ${fel}`, doc: s.doc, categorie: s.categorie }];
   }));
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v24 (felia 12.1↑b-2, ADR 0174): punțile dopului drept decupat, alese în fereastră, pe hârtie. Cazurile v23 de
+// mai sus rămân ale contractului v23; la ușa v24, un v23 valid urcă schimbând doar numărul, iar frontierele se judecă pe un
+// document al versiunii curente.
+
+/** Un document al cazurilor v23, adus la v24: doar numărul (ADR 0174 §2). */
+const laV24 = (d: Liber): Liber => cuSchema(d, 24);
+/** Punțile din ADR 0174 §1, cu valorile implicite ale dopului (4 pe buclă, 4 × 1 mm). */
+const puntiD = (v: Liber = {}): Liber => ({ numar: 4, latime: 4, grosime: 1, ...v });
+/** Incrustația cu pereți drepți, dopul decupat, cu punțile date. */
+const incDP = (p: unknown = puntiD(), v: Liber = {}): Liber => incD({ dop: 'decupat', punti: p, ...v });
+
+/** Documente v24 valide: ușa le primește neschimbate (v23-urile valide, renumerotate, și punțile la frontieră). */
+export const VALIDE_V24: readonly CazV18[] = [
+  ...VALIDE_V23.map((c) => ({ nume: `${c.nume} (v24)`, doc: laV24(c.doc) })),
+  { nume: 'L01 dopul decupat cu punțile implicite (ADR 0174 §1)', doc: docV18(D, [buzunar({ incrustatie: incDP() })], 24) },
+  { nume: 'L02 punțile la plafon (100 pe buclă, 10 000 × 1 000 mm)', doc: docV18(D, [buzunar({ incrustatie: incDP(puntiD({ numar: 100, latime: 10_000, grosime: 1_000 })) })], 24) },
+  { nume: 'L03 o punte pe buclă, cea mai mică lățime și grosime', doc: docV18(D, [buzunar({ incrustatie: incDP(puntiD({ numar: 1, latime: 0.001, grosime: 0.001 })) })], 24) },
+  { nume: 'L04 punțile cu un câmp necunoscut (rămâne)', doc: docV18(D, [buzunar({ incrustatie: incDP(puntiD({ nota: 'x' })) })], 24) },
+  { nume: 'L05 punțile pe dopul ridicat (ușa le primește; lucrarea nu le folosește)', doc: docV18(D, [buzunar({ incrustatie: incDP(puntiD(), { dop: 'ridicat' }) })], 24) },
+  { nume: 'L06 punțile, cu frezele dopului și sprijinul pe față', doc: docV18(D, [buzunar({ incrustatie: incDP(puntiD({ numar: 2 }), { sprijin: 'fata', frezeDop: [{ scula: plata(5, 2), pasLateral: 0.8 }] }) })], 24) },
+  { nume: 'L07 `punti` pe incrustația în V: un câmp necunoscut oarecare (ADR 0174 §1: doar pe pereți drepți)', doc: docV18(D, [vcarve({ incrustatie: inc({ punti: 'oricum' }) })], 24) },
+];
+
+/** Documentele vechi urcă la v24: ce dădea hârtia la v23, cu numărul 24; un v23 curat urcă doar cu numărul. */
+export const MIGRARI_V24_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v24: Liber }> = [
+  ...MIGRARI_V23_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v24: laV24(c.v23) })),
+  {
+    nume: 'M24a un v23 cu dopul decupat (fără punți: lucrarea ia 4 × 4 × 1) urcă la v24 doar cu numărul',
+    vechi: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat' }) })], 23),
+    v24: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat' }) })], 24),
+  },
+  {
+    nume: 'M24b un v21 cu dopul decupat urcă la v24 doar cu numărul (prin v22, v23)',
+    vechi: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat' }) })], 21),
+    v24: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat' }) })], 24),
+  },
+];
+
+/** `punti` în afara incrustației (și punțile benzii) sunt câmpuri necunoscute ori știute: primite și păstrate, fără ciocnire. */
+export const NECIOCNIRI_V24: ReadonlyArray<CazV18 & { readonly v24: Liber }> = [
+  ...NECIOCNIRI_V23.map((c) => ({ nume: c.nume, doc: c.doc, v24: laV24(c.v23) })),
+  (() => {
+    const d = docV18(D, [buzunar({ punti: puntiD(), incrustatie: incD({ dop: 'decupat' }) })], 23);
+    return { nume: 'N24a un v23 cu `punti` pe operație, nu în incrustație', doc: d, v24: laV24(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: { scula: plata(3, 3), pasLateral: 1.2, punti: 1 } })], 23);
+    return { nume: 'N24b un v23 cu `punti` pe fundul plat', doc: d, v24: laV24(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ incrustatie: incB() })], 23);
+    return { nume: 'N24c un v23 cu punțile benzii (`incrustatie.banda.punti`, ADR 0172): știute, nu o ciocnire', doc: d, v24: laV24(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [buzunar({ incrustatie: incD({ frezeDop: [{ scula: plata(5, 2), pasLateral: 0.8, punti: 2 }] }) })], 23);
+    return { nume: 'N24d un v23 cu `punti` pe o freză a dopului', doc: d, v24: laV24(d) };
+  })(),
+];
+
+/** Frontierele v24: punțile dopului decupat, câmp cu câmp (ADR 0174 §1: ca urechile). */
+export const FRONTIERE_V24: readonly FrontieraV18[] = [
+  {
+    cale: 'incrustatie.punti', operatie: buzunar({ incrustatie: incDP() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0174 §1: opțional, un obiect ca urechile',
+    valori: [[LIPSA, true], [puntiD(), true], [null, false], ['4', false], [4, false], [true, false]],
+  },
+  {
+    cale: 'incrustatie.punti.numar', operatie: buzunar({ incrustatie: incDP() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0174 §1: ca urechile, un întreg 1–100',
+    valori: [[4, true], [1, true], [100, true], [0, false], [101, false], [2.5, false], [-4, false], ['4', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.punti.latime', operatie: buzunar({ incrustatie: incDP() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0174 §1: ca urechile, în (0, 10 000]',
+    valori: [[4, true], [0.001, true], [10_000, true], [0, false], [-4, false], [10_000.001, false], ['4', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.punti.grosime', operatie: buzunar({ incrustatie: incDP() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0174 §1: ca urechile, în (0, 1 000]',
+    valori: [[1, true], [0.5, true], [1_000, true], [0, false], [-1, false], [1_000.001, false], ['1', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+];
+
+/** Refuzurile v24: cele v23 (versiunea mai nouă e acum v25), plus punțile greșite și ciocnirea lor. */
+export const REFUZATE_V24: readonly RefuzV18[] = [
+  ...REFUZATE_V23.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v25)', doc: docV(25, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RP0 un v23 cu `punti` în incrustația dreaptă', doc: docV(23, buzunar({ incrustatie: incDP() })), categorie: 'ciocnire', camp: `${opC}.incrustatie.punti`, motiv: 'ADR 0174 §2: câmpul propriu', text: 'nu e un document v23 valid' },
+  { nume: 'RP1 un v23 cu `punti` în incrustația în V (ciocnirea e pe orice fel)', doc: docV(23, vcarve({ incrustatie: inc({ punti: puntiD() }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.punti`, motiv: 'ADR 0174 §2: câmpul propriu, ca la v21', text: 'nu e un document v23 valid' },
+  { nume: 'RP2 un v24 cu punțile null', doc: docV(24, buzunar({ incrustatie: incDP(null) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti`, motiv: 'ADR 0174 §1: un obiect, ca urechile' },
+  { nume: 'RP3 un v24 cu punțile fără număr', doc: docV(24, buzunar({ incrustatie: incDP({ latime: 4, grosime: 1 }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti.numar`, motiv: 'ADR 0174 §1: cerut' },
+  { nume: 'RP4 un v24 cu punțile o listă', doc: docV(24, buzunar({ incrustatie: incDP([puntiD()]) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti`, motiv: 'ADR 0174 §1: un obiect' },
+  { nume: 'RP5 un v24 cu punțile groase de 0 pe dopul ridicat (ușa judecă la fel pe ambele)', doc: docV(24, buzunar({ incrustatie: incDP(puntiD({ grosime: 0 }), { dop: 'ridicat' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti.grosime`, motiv: 'ADR 0174 §1: ca urechile' },
+];

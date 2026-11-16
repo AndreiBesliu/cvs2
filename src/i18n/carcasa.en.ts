@@ -328,6 +328,8 @@ export const enCarcasa = {
   'prop.inc.decupare': 'Cut-out',
   'prop.inc.decupare.valoare': 'through the {placa} mm board; tabs per loop: {punti}, {latime} × {grosime} mm',
   'prop.inc.decupare.fara': 'none: you saw the plug out on the band floor, at least {e} mm from the drawing',
+  'prop.inc.punti': 'Plug tabs',
+  'prop.inc.punti.valoare': 'per loop: {punti}, {latime} × {grosime} mm',
   'prop.selectate': { one: '{n} part selected', other: '{n} parts selected' },
   'arbore.piesa': { one: 'Part: {n} shape', other: 'Part: {n} shapes' },
   'arbore.operatie': {
