@@ -569,6 +569,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
   în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
   fiecare fel, în `cutit.spec.ts`).
+  **Tăierea în panouri (felia 10.3↑k)** gata pe 13.11, pe `wip/10.3k-panouri` (făcută din `main`), neunită: grila în
+  `src/model/grilaPanouri.ts` (pur, comun workerului și previzualizării), tăierea în `src/model/panouri.ts` (în worker, pe foaia
+  activă, ca restul tăierii: `indexFoaie`; linie cu linie, cu `desparte` în `taie`: o formă cu contururi de ambele părți ale
+  unei linii care nu le trece se desparte), gruparea panourilor pe firul principal (`src/model/grupuriPanouri.ts`, din
+  `document.taie`: gruparea citește blocurile de text cu valibot, deci în worker ar aduce ~4,5 kB). Rezultatul tăierii are
+  `grupuri` (panourile de grupat) și `panouri` (câte sunt); alegerea de după, din comanda tăierii (`ids`). Oracolul:
+  `judecaPanourile` (`taiere.panouri.oracol.test.ts`).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
