@@ -9122,3 +9122,9 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   proba ei (15 unitare, 4 ale ușii, 8 prin e2e).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 16.12), amprenta
   `63521531d5a9` (adresa principală de test, neatinsă: `e0f98030284e`).
+- **`main` adus din nou, înaintea unirii** (`bfdf2ed`: 25.4↑b unită, 12.1↑b-2 cu documentul v24, reparația probei 3.6q),
+  în `e34b93d` (ciocnire doar în DEVLOG, ambele părți păstrate). Porțile din nou: compilatoarele (3), importurile,
+  licențele, traducerile (0 de tradus); suita unitară 9 387, cu 2 căzute sub sarcină (sonda GRBL: fereastra de răspuns de
+  40 ms a probei, față de un `setTimeout(0)` al gazdei false; viteza luminii pe 12 Mpx: 4,0 s), trecute amândouă pe mașina
+  liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
+  (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
