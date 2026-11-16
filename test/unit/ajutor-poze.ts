@@ -378,3 +378,52 @@ export function culoriMasurate(p: PozaColor, r: { readonly etichete: Uint8Array;
   };
   return { K, despartite, unite, gresite: gresite / Math.max(1, tot), culori: maj.map((k) => hex(k)) };
 }
+
+// ── Desen cu linii colorate (ADR 0227) ─────────────────────────────────────────────────────────────────────────────────
+
+/** Culorile desenului cu linii colorate, după nume. */
+export const LINII_COLORATE: Readonly<Record<'rosu' | 'albastru' | 'verde' | 'negru' | 'galben', readonly [number, number, number]>> = {
+  rosu: [196, 38, 42], albastru: [38, 72, 186], verde: [44, 146, 70], negru: [28, 26, 30], galben: [236, 196, 36],
+};
+/** Distanța de la (x, y) la mijlocul adevărat al trăsăturilor fiecărei culori (px), pe desenul de 600 × 400. */
+export const MIJLOC_LINII: Readonly<Record<'rosu' | 'albastru' | 'verde' | 'negru', (x: number, y: number) => number>> = {
+  rosu: (x, y) => (x < 50 ? Math.hypot(x - 50, y - 200) : x > 550 ? Math.hypot(x - 550, y - 200) : Math.abs(y - 200)),
+  albastru: (x, y) => (y < 50 ? Math.hypot(x - 300, y - 50) : y > 350 ? Math.hypot(x - 300, y - 350) : Math.abs(x - 300)),
+  verde: (x, y) => Math.abs(Math.hypot(x - 150, y - 200) - 80),
+  negru: (x, y) => Math.abs(Math.max(Math.abs(x - 450), Math.abs(y - 300)) - 60),
+};
+
+/**
+ * Un desen de 600 × 400 cu trăsături de 6 px (3 × 3 eșantioane pe pixel, puțin zgomot): o linie roșie (y 200, x 50–550)
+ * tăiată de o linie albastră (x 300) și de două ori de un cerc verde (centrul (150, 200), raza 80), desenate peste ea, și un
+ * pătrat galben plin (120 × 120, centrul (450, 300)) cu marginea neagră. Cu `golRosu`, linia roșie are și un gol de hârtie
+ * de 10 px (x 420–430): acolo nu trece altă culoare.
+ */
+export function desenLiniiColorate(o: { readonly golRosu?: boolean } = {}): ImagineRGBA {
+  const W = 600, H = 400, G = 3, d = new Uint8ClampedArray(W * H * 4);
+  const clasa = (x: number, y: number): readonly [number, number, number] | null => {
+    if (Math.abs(Math.max(Math.abs(x - 450), Math.abs(y - 300)) - 60) < G) return LINII_COLORATE.negru;
+    if (Math.abs(x - 450) < 60 && Math.abs(y - 300) < 60) return LINII_COLORATE.galben;
+    if (MIJLOC_LINII.verde(x, y) < G) return LINII_COLORATE.verde;
+    if (MIJLOC_LINII.albastru(x, y) < G) return LINII_COLORATE.albastru;
+    if (MIJLOC_LINII.rosu(x, y) < G && !(o.golRosu === true && x > 420 && x < 430)) return LINII_COLORATE.rosu;
+    return null;
+  };
+  let s = 7;
+  const rnd = (): number => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const acc = [0, 0, 0];
+      for (let j = 0; j < 3; j++) {
+        for (let i = 0; i < 3; i++) {
+          const k = clasa(x + (i + 0.5) / 3, y + (j + 0.5) / 3) ?? HARTIE_COLOR;
+          acc[0] = (acc[0] ?? 0) + k[0]; acc[1] = (acc[1] ?? 0) + k[1]; acc[2] = (acc[2] ?? 0) + k[2];
+        }
+      }
+      const q = 4 * (y * W + x);
+      for (let k = 0; k < 3; k++) d[q + k] = (acc[k] ?? 0) / 9 + 4 * (rnd() + rnd() + rnd() - 1.5);
+      d[q + 3] = 255;
+    }
+  }
+  return { latime: W, inaltime: H, date: d };
+}

@@ -739,8 +739,8 @@ preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
   background (the drawing is everything that is not transparent, whatever its colour) and **Brightness** for an opaque one
   (the background has the colour of the image's edge); the line under the list says which it chose;
-- **Result** (with Transparency and Brightness): **Outlines** (the drawing's edge) or **Centre lines** (the middle of each
-  stroke, cut on the line: see below);
+- **Result**: **Outlines** (the drawing's edge) or **Centre lines** (the middle of each stroke, cut on the line: see
+  below; with Colours, of each colour);
 - **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
   tones; without it, the slider moves it;
 - **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
@@ -826,10 +826,19 @@ Under **Result: Centre lines** sit their options:
 - **Loops:** **On the line** (the default) or **Closed vectors**: an O or a ring becomes a closed outline, cut on the
   outside, and a loop inside another one, on the inside.
 
+With **Colours** and **Result: Centre lines**, each ticked colour gets its own centre lines (linked colours together),
+with the same options for all: a diagram, a felt-tip drawing. The automatic threshold of the wide parts comes from the
+usual stroke width of the whole drawing, so a filled colour (a background, a blot) comes out “wide”. **Join across other
+colours** (ticked by default): a line broken by a colour drawn over it (a crossing) carries on across it, as one path:
+two ends of the same colour, facing each other, at most three of its widths apart, with the way between them over
+another colour (not over the paper); the report counts the joins. Each swatch gives the stroke width of its colour and,
+if the sheet has a single cutter, how it compares with the stroke; **Show the width** draws each colour's band with its
+own width. **Import** adds one shape per colour, with its lines cut on the line.
+
 The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
 sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
-- centre lines by colour and straightened scans come later;
+- straightened scans come later;
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);

@@ -9066,3 +9066,65 @@ sesiunea designului); „Yes, merge it” (25.5↑); la capăt, „pauza peste t
 - **După pauză (16.11):** completul de noapte pe `0e3725c` verde pe 14.11 și 15.11, roșu pe 16.11, la
   `imprimanta.spec.ts:966` (3.6q): stratul plăcii rămânea cu 2 în urma imprimantei false (toleranța 1, un strat la 300 ms),
   sub încărcarea runner-ului. Instabilă, nu defect: linia imprimantei o repară pe o ramură din `main`.
+
+## 2026-11-13 — Felia 25.3↑c pornită: liniile mediane pe culori (ADR 0227, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propune-le” (owner-ul, la întrebarea de după felia 25.4↑b: „Pornesc propunerea liniilor mediane pe
+culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
+
+- **Ramura** adusă la `origin/main` (`4f379cd`: banda vestirilor imprimantei reparată; conflict doar în DEVLOG).
+- **Cercetarea:** ArtCAM / Carveco fac linia mediană pe culoarea aleasă (cu cele legate de ea); PowerTRACE, Inkscape,
+  LightBurn, Vectric, doar pe alb-negru (PowerTRACE recomandă trecerea întâi la alb-negru).
+- **Prototipul** (`.tmp/proto-mediane-culori.ts`): un desen cu trăsături colorate de 6 px (o linie roșie tăiată de una
+  albastră și de un cerc verde, un pătrat galben plin cu marginea neagră), linia mediană a fiecărei culori pe masca ei, cu
+  nucleul neschimbat: exactă (cel mult 0,17 px); roșul, rupt în patru de încrucișări, legat peste ele (capetele față în
+  față, cel mult trei grosimi, drumul pe desen) iese o linie; pătratul galben iese contur doar cu pragul părților late din
+  grosimea desenului întreg (mediana ponderată cu lungimea liniilor), nu din a lui.
+- **ADR 0227 propus** (Rezultatul și pe Culorile, cu opțiunile din ADR 0223; „Leagă peste alte culori”; pragul comun; piesa
+  fiecărei culori), cu schița <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; două întrebări: legarea implicit bifată sau nu; grosimea pe fiecare culoare sau
+  una singură.
+
+## 2026-11-13 — Felia 25.3↑c: liniile mediane pe culori (ADR 0227, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0227: „Leagă peste alte culori” bifată implicit; grosimea
+pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 16.11, 18:51.
+
+- **Ramura** la zi cu `origin/main` (`4f379cd`, nimic nou de atunci).
+- **Felia** (`405c2d1`): `src/trasare/medianeCulori.ts` (nou: masca fiecărei culori bifate, ca alfa, la cutia ei; întâi
+  liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late; legarea peste
+  alte culori pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea curbelor), `mediana.ts`
+  (`liniiMediane`, parametrul `cu`), `culori.ts` (`doarEtichete`), calculul, ușa, fereastra (Rezultatul și pe Culorile,
+  bifa legării, grosimea în pastile), refuzul cu puncte pe culori, textele, manualul; probele (10 ale nucleului, una a
+  ușii, una e2e nouă, două schimbate); lista otrăvurilor `test/otravuri/25.3c.py` (27).
+- **Porțile, pe arborele lui `405c2d1`:** compilatoarele (3), importurile, licențele, traducerile, 9 359 unitare (0 căderi),
+  e2e-urile trasării, importului și tutorialul 50 / 50, build-ul determinist: totalul 698,3 / 700 kB (+2,2), pornirea
+  105,7 / 110 (cu ușa 109,7); pe 12 Mpx, 3,7 s; fereastra privită mărită, luminoasă și întunecată.
+- **Otrăvurile:** 21 / 21 prinse (P01–C06 unitare, J01–A02 ale ușii, A03–A04 prin e2e); F01–F06 (fereastra, prin e2e)
+  nerulate: rularea s-a oprit din afară în mijlocul lui F01 (ieșirea 4, fără restaurare); `src/ui/FereastraTrasare.tsx`,
+  găsit cu otrava F01 (o linie), readus la HEAD pe 16.11 și verificat cu `cmp`. `dist/` a rămas build-ul otrăvit al lui
+  F01: întâi un build din HEAD, înaintea oricărui e2e sau a publicării.
+- **Pauză** (16.11, 17:47; „pauza peste tot”, owner-ul, prin sesiunea principală): felia NU e gata; nepublicată pe canal,
+  fără cerere de unire. Răspunsurile la ADR 0227 („Da la 1-2a”) sunt date din 13.11, ca și cele la ADR 0226 (25.4↑b,
+  implementată și publicată pe canal la `94bf287`): pe linia trasării nu mai e nicio întrebare deschisă. În `main` e doar
+  25.5↑ (`1ca446b`, prin `07df71f`). **La reluare:** `origin/main` (`0e3725c`: 25.5↑ unită, plafoanele 115 / 800) adus
+  în ramură; porțile întregi din nou; otrăvurile F01–F06 (`lot 21 27`); build din HEAD și publicarea pe canalul `trasare`;
+  documentele (ADR 0227 Implementarea, indexul, fișa, CLAUDE.md, ACOPERIRE, DEVLOG, `roadmap.en.json`; scripturile
+  pregătite în `.tmp/` ale worktree-ului: `docs-0227.py`, `memorie-0227b.py`, `nota-0227.md`, cu numerele de reluat);
+  raportul.
+- **Reluare** (16.11, owner-ul, prin sesiunea principală: „poti sa continui si sa pornesti si worktrees care s-au oprit, sau
+  poti sa unesti ce se poate”): `origin/main` (`0e3725c`) adus în ramură (`78901a2`; conflict doar în DEVLOG, ambele părți
+  păstrate). Porțile din nou pe arborele unit: compilatoarele (3), importurile, licențele, traducerile; suita unitară
+  9 364, cu 2 căzute din timp cât rulau alături e2e-urile planșelor (plafoanele DXF, sonda GRBL), trecute singure (40 / 40);
+  e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,3 / 800 kB, pornirea 105,7 / 115
+  (cu ușa 109,7).
+- **Otrăvurile ferestrei:** F01–F05 prinse; F06 a scăpat: proba refuzului pe culori citea, din cursă, textul vechi de la
+  alb-negru (același). Proba așteaptă acum răspunsul pe culori (`6352153`), iar F06 e prinsă. În total 27 / 27, fiecare pe
+  proba ei (15 unitare, 4 ale ușii, 8 prin e2e).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 16.12), amprenta
+  `63521531d5a9` (adresa principală de test, neatinsă: `e0f98030284e`).
+- **`main` adus din nou, înaintea unirii** (`bfdf2ed`: 25.4↑b unită, 12.1↑b-2 cu documentul v24, reparația probei 3.6q),
+  în `e34b93d` (ciocnire doar în DEVLOG, ambele părți păstrate). Porțile din nou: compilatoarele (3), importurile,
+  licențele, traducerile (0 de tradus); suita unitară 9 387, cu 2 căzute sub sarcină (sonda GRBL: fereastra de răspuns de
+  40 ms a probei, față de un `setTimeout(0)` al gazdei false; viteza luminii pe 12 Mpx: 4,0 s), trecute amândouă pe mașina
+  liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
+  (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
