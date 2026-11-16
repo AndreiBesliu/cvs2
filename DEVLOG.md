@@ -9192,10 +9192,9 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
 
 - **Reluare (16.11, „poti sa continui ... sau poti sa unesti ce se poate”, transmis de sesiunea principală; „Da, reiau”):**
-  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă
-  rulare Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu
-  ușa 109,9 / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe
-  16.12.
+  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă rulare
+  Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9
+  / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe 16.12.
 - **Ultima unire de la capăt (16.11):** `main` `bfdf2ed` (12.1↑b-2 cu documentul v24, 25.4↑b, reparația 3.6q) adus în
   `cfd195d`, cu conflictul doar în DEVLOG. Porțile din nou: tipurile, importurile, traducerile (778 de texte, 0 netraduse),
   e2e 487 / 487 din prima (după un minut fără altă rulare Playwright), suita unitară 9 377 / 0 (8 sărite), build-ul
@@ -9258,10 +9257,11 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   încărca fontul; trece singură; căzuse la fel și pe `0cf6bfc`, a trecut pe `d18c37e` și `64e69fb`); emulatoarele 101 / 101 și
   21 / 21 (la o rulare de dinainte, emulatorul de funcții n-a încărcat codul în 10 s: patru callable-uri cu 404; la rerulare,
   toate). Pe vârf (`9835062`, doar filtrul scos): build-ul determinist, e2e `taiere`, `cutit` și `fonturi` 37 / 37.
-- **Mărimea:** pe aceeași bază (`main` `380c053`, cu planșele și plafoanele 115 / 800 din ADR 0252 și 0253), pornirea nu crește
-  (105,7 kB; cu ușa 109,7 / 115), iar totalul crește cu 4,7 kB (698,7 → 703,4 / 800), peste estimarea ADR-ului (~2,5 kB):
-  workerul +2,7 (grila, tăierea pe linii, `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6 (blocul, grila pe pânză,
-  textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în worker, dădea +9,1 kB.
+- **Mărimea:** pe aceeași bază (`main` `5ab3941`, cu planșele, aranjamentele 28.1↑a și plafoanele 115 / 800 din ADR 0252 și
+  0253), pornirea nu crește (106,3 kB; cu ușa 110,3 / 115), iar totalul crește cu 4,8 kB (703,4 → 708,2 / 800), peste estimarea
+  ADR-ului (~2,5 kB): workerul +2,7 (grila, tăierea pe linii, `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6
+  (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în
+  worker, dădea +9,1 kB.
 - **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 13.12), `9835062`,
   verificat în Edge fără fereastră, ro și en: firma de 2 400 × 1 000 cu o literă (Degrupează), la 1 200 × 900, egale: grila 2 ×
   2 pe pânză, patru panouri, „Panoul 1” grupul cu litera; Anulează, apoi blocul ia toate formele foii (2); din colț, cu zigzag,
@@ -9284,4 +9284,4 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   unit 9 392 (9 384 trecute, 0 căderi), build-ul determinist, e2e 488 / 488, emulatoarele 101 / 101 și 21 / 21. Apoi trasarea
   25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
   20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
-  `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Mărimea finală, mai sus.
+  `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Apoi aranjamentele 28.1↑a și planșele 11.6↑ (`5ab3941`), unite în `6d64b25` (conflictul, doar în DEVLOG); porțile pe ce ating ele: unit-urile aranjamentelor, raportului foilor, exportului, tăierii, acțiunilor și documentelor 399 / 399, build-ul determinist, e2e `aranjament`, `raport-foi`, `manual`, `ancore`, `editare`, `taiere` și `cutit` 66 / 66. Mărimea finală, mai sus.
