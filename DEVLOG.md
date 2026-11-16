@@ -8978,3 +8978,24 @@ culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
 pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** —.
 
 - **Ramura** la zi cu `origin/main` (`4f379cd`, nimic nou de atunci).
+- **Felia** (`405c2d1`): `src/trasare/medianeCulori.ts` (nou: masca fiecărei culori bifate, ca alfa, la cutia ei; întâi
+  liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late; legarea peste
+  alte culori pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea curbelor), `mediana.ts`
+  (`liniiMediane`, parametrul `cu`), `culori.ts` (`doarEtichete`), calculul, ușa, fereastra (Rezultatul și pe Culorile,
+  bifa legării, grosimea în pastile), refuzul cu puncte pe culori, textele, manualul; probele (10 ale nucleului, una a
+  ușii, una e2e nouă, două schimbate); lista otrăvurilor `test/otravuri/25.3c.py` (27).
+- **Porțile, pe arborele lui `405c2d1`:** compilatoarele (3), importurile, licențele, traducerile, 9 359 unitare (0 căderi),
+  e2e-urile trasării, importului și tutorialul 50 / 50, build-ul determinist: totalul 698,3 / 700 kB (+2,2), pornirea
+  105,7 / 110 (cu ușa 109,7); pe 12 Mpx, 3,7 s; fereastra privită mărită, luminoasă și întunecată.
+- **Otrăvurile:** 21 / 21 prinse (P01–C06 unitare, J01–A02 ale ușii, A03–A04 prin e2e); F01–F06 (fereastra, prin e2e)
+  nerulate: rularea s-a oprit din afară în mijlocul lui F01 (ieșirea 4, fără restaurare); `src/ui/FereastraTrasare.tsx`,
+  găsit cu otrava F01 (o linie), readus la HEAD pe 16.11 și verificat cu `cmp`. `dist/` a rămas build-ul otrăvit al lui
+  F01: întâi un build din HEAD, înaintea oricărui e2e sau a publicării.
+- **Pauză** (16.11, 17:47; „pauza peste tot”, owner-ul, prin sesiunea principală): felia NU e gata; nepublicată pe canal,
+  fără cerere de unire. Răspunsurile la ADR 0227 („Da la 1-2a”) sunt date din 13.11, ca și cele la ADR 0226 (25.4↑b,
+  implementată și publicată pe canal la `94bf287`): pe linia trasării nu mai e nicio întrebare deschisă. În `main` e doar
+  25.5↑ (`1ca446b`, prin `07df71f`). **La reluare:** `origin/main` (`0e3725c`: 25.5↑ unită, plafoanele 115 / 800) adus
+  în ramură; porțile întregi din nou; otrăvurile F01–F06 (`lot 21 27`); build din HEAD și publicarea pe canalul `trasare`;
+  documentele (ADR 0227 Implementarea, indexul, fișa, CLAUDE.md, ACOPERIRE, DEVLOG, `roadmap.en.json`; scripturile
+  pregătite în `.tmp/` ale worktree-ului: `docs-0227.py`, `memorie-0227b.py`, `nota-0227.md`, cu numerele de reluat);
+  raportul.
