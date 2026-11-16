@@ -8926,3 +8926,24 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
+## 2026-11-16 — 3.6q: proba plăcii fără hartă, judecată față de cadrul arătat (completul de noapte) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (16.11, la reluare, după „poti sa continui si sa pornesti si worktrees care s-au oprit,
+sau poti sa unesti ce se poate” al owner-ului): completul de azi (rularea 43828221998) a căzut pe `main` `0e3725c` la
+`imprimanta.spec.ts:966` („stratul 10, adevărat 12”); reparația pe o ramură separată din `origin/main`, întâi o reproducere,
+apoi proba care judecă stratul față de mesajul arătat, nu față de imprimanta de acum.
+**Started:** 16.11, 17:48. **Completed:** 16.11, 18:06.
+
+- **Cauza:** proba compara stratul arătat de fereastră cu stratul imprimantei false din clipa citirii, cu imprimanta
+  înaintând un pas la 300 ms. Pe un runner încărcat, fereastra arată un cadru mai vechi, deci diferența trece de 1 fără
+  vreun defect al ferestrei.
+- **Reproducerea:** imprimanta falsă primește `intarziereMs` (fiecare cadru pleacă mai târziu, în ordine; așteptarea lui
+  `ok` crește la fel). Cu 1 s, proba veche cade 3 / 3, pe un singur lucrător („stratul 6, adevărat 8”).
+- **Reparația:** imprimanta falsă ține stratul adevărat al fiecărui cadru, după procentul lui (`stratLaProgres`); proba
+  citește deodată, din aceeași randare, stratul și procentul arătate și judecă stratul față de cadrul cu procentul acela.
+  Toleranța rămâne 1, iar întârzierea de 1 s rămâne în probă. Trece 5 / 5; o otravă în alegerea numărătorii
+  (`stratViu.ts`, mereu ultima valoare) e prinsă („stratul 10, adevărat 5 în cadrul cu 26 %”).
+- **Porțile:** tipurile; `imprimanta.spec.ts` întreg, 24 / 24, pe un lucrător. Doar probe: nimic din aplicație nu se schimbă.
+- **De știut:** cu `--repeat-each`, copiile unei probe a imprimantei rulează pe mai mulți lucrători și se bat pe 127.0.R.5:9999
+  (`EADDRINUSE`): pe un singur lucrător (`--workers=1`).
