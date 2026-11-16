@@ -8926,3 +8926,24 @@ A4 implicit; previzualizarea foii îndreptate, cu butonul „Colțurile”). **S
   cod și din listă (`8b972c5`). Pe codul final: 61 / 61 (44 unitare, 17 prin e2e, fiecare pe proba ei).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `b476904f7281` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
+
+## 2026-11-16 — Felia 28.1↑a: alegerea aranjamentului și densitatea, citite înaintea primei randări (Model: Claude Opus 5.5)
+
+**Prompt:** „Poti sa adopti si sesiunea de design si sa o pornesti” (owner-ul, în sesiunea principală, transmis de ea și
+verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 19:10.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `0e3725c` (fast-forward), în worktree-ul `aranjamente`.
+- **Codul:**
+  - `src/ui/alegereAranjament.ts`: cheia `cncvs2.aranjament`, JSON `{ v: 1, aranjament, densitate }`, implicit Insule cu
+    densitatea normală;
+  - `main.tsx`: `data-aranjament` și `data-densitate` pe `<html>`, înaintea primei randări;
+  - `ARANJAMENTE` în `aranjament.ts`;
+  - densitatea mare în `stil.css`.
+- **Probele:**
+  - 10 unitare și 4 e2e noi; `ancore`, `cont`, `pornire`: 22 / 22;
+  - suita unitară întreagă: 9 353, 0 căderi;
+  - `tsc` și regulile de import, curate;
+  - otrăvurile: 7 / 7 prinse.
+- **Mărimea** (față de un build curat al lui `0e3725c`): pornirea +0,5 kB (106,2; cu ușa 110,1 / 115), totalul +0,4 kB
+  (696,2 / 800).
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), DEVLOG.

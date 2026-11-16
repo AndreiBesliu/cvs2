@@ -1061,6 +1061,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
+  **Aranjamentele, felia 28.1↑a (ADR 0250 §4, §5)** gata pe 16.11, în worktree-ul `aranjamente` (ramura
+  `wip/28.1-aranjamente`), neunită: alegerea și densitatea se citesc înaintea primei randări.
+  - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`.
+  - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
+  - `ARANJAMENTE` din `aranjament.ts` ține aranjamentele build-ului; azi, doar Insulele.
+  - **Un aranjament nou intră în `ARANJAMENTE`;** o alegere ținută a unuia care lipsește dă Insule, fără s-o șteargă.
+  - Densitatea mare: `--tinta` 48 px, 56 la atingere.
+  - Pornirea 106,2 (cu ușa 110,1 / 115 kB), totalul 696,2 / 800.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
