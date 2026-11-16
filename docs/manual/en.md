@@ -739,8 +739,8 @@ preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
   background (the drawing is everything that is not transparent, whatever its colour) and **Brightness** for an opaque one
   (the background has the colour of the image's edge); the line under the list says which it chose;
-- **Result** (with Transparency and Brightness): **Outlines** (the drawing's edge) or **Centre lines** (the middle of each
-  stroke, cut on the line: see below);
+- **Result**: **Outlines** (the drawing's edge) or **Centre lines** (the middle of each stroke, cut on the line: see
+  below; with Colours, of each colour);
 - **Threshold**: where the drawing separates from the background. **Automatic** picks it from the image, between its two
   tones; without it, the slider moves it;
 - **Invert**: the background becomes the drawing and the other way round (for example, white text on a black plate);
@@ -826,10 +826,19 @@ Under **Result: Centre lines** sit their options:
 - **Loops:** **On the line** (the default) or **Closed vectors**: an O or a ring becomes a closed outline, cut on the
   outside, and a loop inside another one, on the inside.
 
+With **Colours** and **Result: Centre lines**, each ticked colour gets its own centre lines (linked colours together),
+with the same options for all: a diagram, a felt-tip drawing. The automatic threshold of the wide parts comes from the
+usual stroke width of the whole drawing, so a filled colour (a background, a blot) comes out “wide”. **Join across other
+colours** (ticked by default): a line broken by a colour drawn over it (a crossing) carries on across it, as one path:
+two ends of the same colour, facing each other, at most three of its widths apart, with the way between them over
+another colour (not over the paper); the report counts the joins. Each swatch gives the stroke width of its colour and,
+if the sheet has a single cutter, how it compares with the stroke; **Show the width** draws each colour's band with its
+own width. **Import** adds one shape per colour, with its lines cut on the line.
+
 The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
 sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
-- centre lines by colour and straightened scans come later;
+- straightened scans come later;
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);
@@ -1423,6 +1432,32 @@ answer to `$$` (from the sender's console) under “Machine settings”; the pro
 
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
+
+## Sheets report and cut list
+%% capitol: raport
+%% acopera: export.raport
+
+The **Sheets report and cut list** opens from the [export](#export) window, with **Sheets report…**, or from the command
+palette (Ctrl+K). It shows the whole project, not only the active sheet.
+
+For each sheet: the preview (the shapes, coloured by operation, as in [exporting vectors](#vectori)), the material, the sheet
+size, how much of it the parts use (the area of their boxes against the sheet's) and the operations (the kind, the cutter,
+the depth with its passes, the tabs). Then the parts: the name (for a part without one, the kind of shape), how many, the
+size, the rotations and the CSV values of the [plates](#piese-legate). Identical sheets (the same parts, in the same places,
+with the same operations) are listed once, with ×N, as in the export. At the end, **Totals per part** (how many in the whole
+project, with the material and the sheets they are on) and **Sheets, by material** (how many sheets of each size and
+material: what you buy).
+
+**Part size:** **cut** (the default) is the box of the contour that cuts the part out of the board (the outside profile
+through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
+such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
+Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
+sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the
+sheets by material. **CSV with `;`** (the default) has the decimal comma, so Excel in Romanian opens it directly; with
+**`,`**, the decimal point, for Excel in English. **Print** opens the browser's printing (and “Save as PDF”), with the report
+only, over as many pages as it needs.
 
 ## Exporting vectors
 %% capitol: vectori

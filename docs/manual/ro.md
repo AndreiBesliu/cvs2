@@ -715,8 +715,8 @@ dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
   transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
   rândul de sub listă spune ce a ales;
-- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
-  fiecărei trăsături, tăiat pe linie: vezi mai jos);
+- **Rezultatul**: **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul fiecărei trăsături, tăiat pe linie:
+  vezi mai jos; pe Culorile, ale fiecărei culori);
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
@@ -800,9 +800,18 @@ Sub **Rezultatul: Linii mediane** stau opțiunile lor:
 - **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
   iar o buclă aflată în alta, pe interior.
 
+Pe **Culorile**, cu **Rezultatul: Linii mediane**, fiecare culoare bifată își are liniile ei mediane (culorile legate,
+împreună), cu aceleași opțiuni pentru toate: o schemă, un desen cu carioci. Pragul automat al părților late vine din
+grosimea obișnuită a desenului întreg, deci o culoare plină (un fond, o pată) iese „lată”. **Leagă peste alte culori**
+(bifată implicit): o linie întreruptă de o culoare desenată peste ea (o încrucișare) continuă peste ea, într-o singură
+cale: două capete ale aceleiași culori, față în față, la cel mult trei grosimi ale ei, cu drumul dintre ele peste altă
+culoare (nu peste hârtie); raportul numără legăturile. Fiecare pastilă spune grosimea trăsăturilor culorii ei și, dacă
+foaia are o singură freză, cum stă ea față de trăsătură; **Arată grosimea** desenează banda fiecărei culori cu grosimea
+ei. **Importă** pune câte o formă pe culoare, cu liniile ei tăiate pe linie.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- liniile mediane pe culori și scanările îndreptate vin mai târziu;
+- scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
@@ -1375,6 +1384,30 @@ mașinii” răspunsul controlerului la `$$` (din consola senderului); programul
 
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
+
+## Raportul foilor și lista de tăiere
+%% capitol: raport
+%% acopera: export.raport
+
+**Raportul foilor și lista de tăiere** se deschide din fereastra [exportului](#export), cu **Raportul foilor…**, sau din
+paleta de comenzi (Ctrl+K). Arată tot proiectul, nu doar foaia activă.
+
+Pe fiecare foaie: previzualizarea (formele, colorate pe operații, ca la [exportul vectorilor](#vectori)), materialul, mărimea
+foii, cât din ea folosesc piesele (aria cutiilor lor față de a foii) și operațiile (felul, freza, adâncimea cu trecerile,
+urechile). Apoi piesele: numele (pentru o piesă fără nume, felul formei), câte sunt, mărimea, rotirile și valorile din CSV
+ale [plăcuțelor](#piese-legate). Foile identice (aceleași piese, în aceleași locuri, cu aceleași operații) se spun o dată, cu
+×N, ca la export. La capăt, **Totalurile pe piesă** (câte în tot proiectul, cu materialul și foile pe care stau) și **Foile,
+pe material** (câte foi de fiecare mărime și material: ce cumperi).
+
+**Mărimea pieselor:** **tăiată** (implicit) e cutia conturului care decupează piesa din placă (profilul exterior prin toată
+grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
+desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
+exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
+piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**
+(implicit) are virgula zecimală, ca Excel în română să-l deschidă direct; cu **`,`**, punctul, pentru Excel în engleză.
+**Tipărește** deschide tipărirea browserului (și „Salvează ca PDF”), doar cu raportul, pe oricâte pagini.
 
 ## Exportul vectorilor
 %% capitol: vectori

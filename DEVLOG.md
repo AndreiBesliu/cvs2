@@ -9084,3 +9084,140 @@ sesiunea designului); „Yes, merge it” (25.5↑); la capăt, „pauza peste t
 - **După pauză (16.11):** completul de noapte pe `0e3725c` verde pe 14.11 și 15.11, roșu pe 16.11, la
   `imprimanta.spec.ts:966` (3.6q): stratul plăcii rămânea cu 2 în urma imprimantei false (toleranța 1, un strat la 300 ms),
   sub încărcarea runner-ului. Instabilă, nu defect: linia imprimantei o repară pe o ramură din `main`.
+
+## 2026-11-13 — Felia 25.3↑c pornită: liniile mediane pe culori (ADR 0227, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propune-le” (owner-ul, la întrebarea de după felia 25.4↑b: „Pornesc propunerea liniilor mediane pe
+culori?”). **Started:** 13.11, 22:52. **Completed:** 13.11, 23:01.
+
+- **Ramura** adusă la `origin/main` (`4f379cd`: banda vestirilor imprimantei reparată; conflict doar în DEVLOG).
+- **Cercetarea:** ArtCAM / Carveco fac linia mediană pe culoarea aleasă (cu cele legate de ea); PowerTRACE, Inkscape,
+  LightBurn, Vectric, doar pe alb-negru (PowerTRACE recomandă trecerea întâi la alb-negru).
+- **Prototipul** (`.tmp/proto-mediane-culori.ts`): un desen cu trăsături colorate de 6 px (o linie roșie tăiată de una
+  albastră și de un cerc verde, un pătrat galben plin cu marginea neagră), linia mediană a fiecărei culori pe masca ei, cu
+  nucleul neschimbat: exactă (cel mult 0,17 px); roșul, rupt în patru de încrucișări, legat peste ele (capetele față în
+  față, cel mult trei grosimi, drumul pe desen) iese o linie; pătratul galben iese contur doar cu pragul părților late din
+  grosimea desenului întreg (mediana ponderată cu lungimea liniilor), nu din a lui.
+- **ADR 0227 propus** (Rezultatul și pe Culorile, cu opțiunile din ADR 0223; „Leagă peste alte culori”; pragul comun; piesa
+  fiecărei culori), cu schița <https://claude.ai/artifact/ETpi7XDNW8ApGivaNZKb91>; două întrebări: legarea implicit bifată sau nu; grosimea pe fiecare culoare sau
+  una singură.
+
+## 2026-11-13 — Felia 25.3↑c: liniile mediane pe culori (ADR 0227, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da la 1-2a” (owner-ul, la cele două întrebări din ADR 0227: „Leagă peste alte culori” bifată implicit; grosimea
+pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 16.11, 18:51.
+
+- **Ramura** la zi cu `origin/main` (`4f379cd`, nimic nou de atunci).
+- **Felia** (`405c2d1`): `src/trasare/medianeCulori.ts` (nou: masca fiecărei culori bifate, ca alfa, la cutia ei; întâi
+  liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late; legarea peste
+  alte culori pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea curbelor), `mediana.ts`
+  (`liniiMediane`, parametrul `cu`), `culori.ts` (`doarEtichete`), calculul, ușa, fereastra (Rezultatul și pe Culorile,
+  bifa legării, grosimea în pastile), refuzul cu puncte pe culori, textele, manualul; probele (10 ale nucleului, una a
+  ușii, una e2e nouă, două schimbate); lista otrăvurilor `test/otravuri/25.3c.py` (27).
+- **Porțile, pe arborele lui `405c2d1`:** compilatoarele (3), importurile, licențele, traducerile, 9 359 unitare (0 căderi),
+  e2e-urile trasării, importului și tutorialul 50 / 50, build-ul determinist: totalul 698,3 / 700 kB (+2,2), pornirea
+  105,7 / 110 (cu ușa 109,7); pe 12 Mpx, 3,7 s; fereastra privită mărită, luminoasă și întunecată.
+- **Otrăvurile:** 21 / 21 prinse (P01–C06 unitare, J01–A02 ale ușii, A03–A04 prin e2e); F01–F06 (fereastra, prin e2e)
+  nerulate: rularea s-a oprit din afară în mijlocul lui F01 (ieșirea 4, fără restaurare); `src/ui/FereastraTrasare.tsx`,
+  găsit cu otrava F01 (o linie), readus la HEAD pe 16.11 și verificat cu `cmp`. `dist/` a rămas build-ul otrăvit al lui
+  F01: întâi un build din HEAD, înaintea oricărui e2e sau a publicării.
+- **Pauză** (16.11, 17:47; „pauza peste tot”, owner-ul, prin sesiunea principală): felia NU e gata; nepublicată pe canal,
+  fără cerere de unire. Răspunsurile la ADR 0227 („Da la 1-2a”) sunt date din 13.11, ca și cele la ADR 0226 (25.4↑b,
+  implementată și publicată pe canal la `94bf287`): pe linia trasării nu mai e nicio întrebare deschisă. În `main` e doar
+  25.5↑ (`1ca446b`, prin `07df71f`). **La reluare:** `origin/main` (`0e3725c`: 25.5↑ unită, plafoanele 115 / 800) adus
+  în ramură; porțile întregi din nou; otrăvurile F01–F06 (`lot 21 27`); build din HEAD și publicarea pe canalul `trasare`;
+  documentele (ADR 0227 Implementarea, indexul, fișa, CLAUDE.md, ACOPERIRE, DEVLOG, `roadmap.en.json`; scripturile
+  pregătite în `.tmp/` ale worktree-ului: `docs-0227.py`, `memorie-0227b.py`, `nota-0227.md`, cu numerele de reluat);
+  raportul.
+- **Reluare** (16.11, owner-ul, prin sesiunea principală: „poti sa continui si sa pornesti si worktrees care s-au oprit, sau
+  poti sa unesti ce se poate”): `origin/main` (`0e3725c`) adus în ramură (`78901a2`; conflict doar în DEVLOG, ambele părți
+  păstrate). Porțile din nou pe arborele unit: compilatoarele (3), importurile, licențele, traducerile; suita unitară
+  9 364, cu 2 căzute din timp cât rulau alături e2e-urile planșelor (plafoanele DXF, sonda GRBL), trecute singure (40 / 40);
+  e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,3 / 800 kB, pornirea 105,7 / 115
+  (cu ușa 109,7).
+- **Otrăvurile ferestrei:** F01–F05 prinse; F06 a scăpat: proba refuzului pe culori citea, din cursă, textul vechi de la
+  alb-negru (același). Proba așteaptă acum răspunsul pe culori (`6352153`), iar F06 e prinsă. În total 27 / 27, fiecare pe
+  proba ei (15 unitare, 4 ale ușii, 8 prin e2e).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 16.12), amprenta
+  `63521531d5a9` (adresa principală de test, neatinsă: `e0f98030284e`).
+- **`main` adus din nou, înaintea unirii** (`bfdf2ed`: 25.4↑b unită, 12.1↑b-2 cu documentul v24, reparația probei 3.6q),
+  în `e34b93d` (ciocnire doar în DEVLOG, ambele părți păstrate). Porțile din nou: compilatoarele (3), importurile,
+  licențele, traducerile (0 de tradus); suita unitară 9 387, cu 2 căzute sub sarcină (sonda GRBL: fereastra de răspuns de
+  40 ms a probei, față de un `setTimeout(0)` al gazdei false; viteza luminii pe 12 Mpx: 4,0 s), trecute amândouă pe mașina
+  liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
+  (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
+
+## 2026-11-16 — Felia 28.1↑a: alegerea aranjamentului și densitatea, citite înaintea primei randări (Model: Claude Opus 5.5)
+
+**Prompt:** „Poti sa adopti si sesiunea de design si sa o pornesti” (owner-ul, în sesiunea principală, transmis de ea și
+verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 19:10.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `0e3725c` (fast-forward), în worktree-ul `aranjamente`.
+- **Codul:**
+  - `src/ui/alegereAranjament.ts`: cheia `cncvs2.aranjament`, JSON `{ v: 1, aranjament, densitate }`, implicit Insule cu
+    densitatea normală;
+  - `main.tsx`: `data-aranjament` și `data-densitate` pe `<html>`, înaintea primei randări;
+  - `ARANJAMENTE` în `aranjament.ts`;
+  - densitatea mare în `stil.css`.
+- **Probele:**
+  - 10 unitare și 4 e2e noi; `ancore`, `cont`, `pornire`: 22 / 22;
+  - suita unitară întreagă: 9 353, 0 căderi;
+  - `tsc` și regulile de import, curate;
+  - otrăvurile: 7 / 7 prinse.
+- **Mărimea** (față de un build curat al lui `0e3725c`): pornirea +0,5 kB (106,2; cu ușa 110,1 / 115), totalul +0,4 kB
+  (696,2 / 800).
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), DEVLOG.
+
+## 2026-11-13 — Felia 11.6↑: raportul foilor și lista de tăiere (ADR 0210 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.6↑ (raportul foilor și lista de tăiere)?”: „Da, 11.6↑”.
+**Started:** 13.11, 18:37.
+
+- **Fereastra „Raportul foilor și lista de tăiere”** (`src/app/DialogRaportFoi.tsx`, la cerere; planșa 7 a schiței), din
+  fereastra exportului („Raportul foilor…”, cu colțul și Z0 de acolo) și din paletă (`export.raport`): pe fiecare foaie,
+  previzualizarea (SVG-ul exportului de vectori, cu liniile îngroșate doar aici: `scrieSvg` primește grosimea), materialul,
+  mărimea, cât e folosită, operațiile și piesele (câte, mărimea, rotirile, valorile din CSV); foile identice o dată, ×N;
+  totalurile pe piesă și foile pe material. Calculul pur în `src/model/raportFoi.ts` (mărimea = cutia conturului tăiat prin
+  toată grosimea de un profil exterior, în axele piesei, sau a desenului, la alegere), CSV-ul în `src/app/raportCsv.ts`
+  (BOM, `;` cu virgula zecimală sau `,`), tipărirea printr-un portal sub `body` și `@media print`.
+- **Găsite pe capturi, înainte de raport:** liniile previzualizării, fire de păr (0,1 mm la ~160 px); antetele de rând cu
+  majuscule (stilul tabelelor din dialoguri); la tipar, fereastra îngustă (`vw` e al paginii) și `overflow: hidden` pe `body`,
+  care ar fi tăiat tiparul la o pagină. Măsurate cu stilurile calculate, apoi reparate.
+- **Regula importurilor** a mutat fereastra și CSV-ul din `src/ui` în `src/app`; manualul are capitolul nou (36), iar
+  `export.raport` e ușa a 107-a.
+- **Otrăvurile** (`aa16c19`): 55 / 55 la prima rulare (38 unitare, 17 prin e2e), după probele adăugate la citirea listei
+  (interiorul și despărțirea, urechile, freza în V, materialul și ordinea foilor, rândul nou din CSV).
+- **Unirea de la capăt:** `main` (`d62e6b8`: planșele 11.1↑–11.5↑ unite acolo, imprimanta 3.6s, incrustațiile 12.1↑d) adus
+  în ramură fără conflicte (`13b1f57`); ramura are deasupra lui `main` doar 11.6↑.
+- **Porțile pe codul unit:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile (766 de texte, 0 netraduse),
+  suita unitară 9 322 / 0 (8 sărite), build-ul determinist (319 fișiere identice; pornirea cu ușa 109,8 / 110, totalul
+  694,4 / 700), e2e 480 / 480 din prima.
+- **Publicat:** canalul `plansele` al instanței de test (<https://cncvectorstudio-test--plansele-xafrblmh.web.app>, până pe
+  13.12): pagina și cele 100 de bucăți ca `dist` din `13b1f57`; raportul văzut acolo, din paletă, după actualizarea
+  oferită de aplicație.
+
+- **A doua unire de la capăt (14.11):** `main` `e0f9803` (banda vestirilor imprimantei, 3.6s reparată) adus în `9c668fd`, cu
+  conflictul doar în DEVLOG (adăugat la capăt de ambele părți). Porțile din nou: unitare 9 322 / 0, e2e 481 / 481 din prima,
+  build-ul determinist (pornirea cu ușa 109,9 / 110: ~0,1 kB liberi; totalul 694,5 / 700). Canalul republicat din `9c668fd`,
+  100 / 100 bucăți.
+
+- **A treia unire de la capăt și pauza (14.11, „pauza peste tot”, cerută de owner prin sesiunea principală):** `main`
+  `0e3725c` (trasarea 25.5↑, plafoanele 115 / 800 din ADR 0252–0253) adus în `f8a19a9`, cu conflictul doar în DEVLOG.
+  Trecute pe el: tipurile (aplicația, extensia, funcțiile), importurile, traducerile (771 de texte, 0 netraduse), probele
+  manualului și ale raportului (67 / 67), build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9 / 115,
+  totalul 700,2 / 800). **Oprite de pauză:** suita unitară întreagă (neterminată) și e2e-ul întreg (nepornit). Canalul
+  `plansele` servește încă `9c668fd` (porțile lui, toate trecute). La reluare: suita unitară și e2e-ul întreg pe vârf
+  (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
+
+- **Reluare (16.11, „poti sa continui ... sau poti sa unesti ce se poate”, transmis de sesiunea principală; „Da, reiau”):**
+  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă
+  rulare Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu
+  ușa 109,9 / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe
+  16.12.
+- **Ultima unire de la capăt (16.11):** `main` `bfdf2ed` (12.1↑b-2 cu documentul v24, 25.4↑b, reparația 3.6q) adus în
+  `cfd195d`, cu conflictul doar în DEVLOG. Porțile din nou: tipurile, importurile, traducerile (778 de texte, 0 netraduse),
+  e2e 487 / 487 din prima (după un minut fără altă rulare Playwright), suita unitară 9 377 / 0 (8 sărite), build-ul
+  determinist (324 de fișiere identice; pornirea cu ușa 109,9 / 115, totalul 700,9 / 800). Canalul republicat din
+  `cfd195d`, 100 / 100 bucăți. Gata de unit.
+
+**Completed:** 16.11, 19:30.

@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { ariePx } from '../../src/jobs/calculTrasare.ts';
 import { traseazaCulori } from '../../src/trasare/culori.ts';
+import { traseazaCuloriMediane } from '../../src/trasare/medianeCulori.ts';
 import { citestePng } from '../unit/ajutor-png.ts';
 import { esantioane } from '../unit/ajutor-trasare.ts';
 import { documentSalvat } from './ajutor-document.ts';
@@ -16,6 +17,7 @@ import { documentSalvat } from './ajutor-document.ts';
 test.use({ locale: 'ro-RO' });
 
 const MM = 25.4 / 96;
+const zec = (x: number, z: number): string => new Intl.NumberFormat('ro-RO', { minimumFractionDigits: z, maximumFractionDigits: z }).format(x);
 
 /** Paleta și piesele în Node (cu legăturile date), cu colțul stânga-jos al fiecărei piese pe foaie, în mm (Y în sus). */
 function inNode(nume: string, legaturi: readonly number[] = []) {
@@ -201,5 +203,86 @@ test('pe culori, alt număr în timpul trasării unei poze: calculul vechi se op
   expect(Number.isNaN(vechi.raspuns), 'calculul vechi pe culori s-a oprit fără răspuns').toBe(true);
   expect(vechi.oprit - nou.pornit, 'oprit chiar la schimbare').toBeLessThan(100);
   expect(Number.isNaN(nou.raspuns), 'calculul nou a răspuns').toBe(false);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+/**
+ * Desenul cu linii colorate (ADR 0227), făcut în pagină (canvas, 600 × 400, trăsături de 6 px): o linie roșie tăiată de o
+ * linie albastră și de două ori de un cerc verde, desenate peste ea; un pătrat galben plin cu marginea neagră. Octeții PNG-ului,
+ * pentru nucleul din Node și pentru fereastră.
+ */
+async function desenLiniiColorate(page: Page): Promise<Buffer> {
+  const b64 = await page.evaluate(async () => {
+    const c = new OffscreenCanvas(600, 400);
+    const g = c.getContext('2d');
+    if (!g) throw new Error('fără context 2d');
+    g.fillStyle = 'rgb(242, 240, 234)';
+    g.fillRect(0, 0, 600, 400);
+    g.lineWidth = 6;
+    g.lineCap = 'round';
+    const linie = (culoare: string, f: () => void): void => { g.strokeStyle = culoare; g.beginPath(); f(); g.stroke(); };
+    linie('rgb(196, 38, 42)', () => { g.moveTo(50, 200); g.lineTo(550, 200); });
+    linie('rgb(38, 72, 186)', () => { g.moveTo(300, 50); g.lineTo(300, 350); });
+    linie('rgb(44, 146, 70)', () => { g.arc(150, 200, 80, 0, 2 * Math.PI); });
+    g.fillStyle = 'rgb(236, 196, 36)';
+    g.fillRect(390, 240, 120, 120);
+    linie('rgb(28, 26, 30)', () => { g.rect(390, 240, 120, 120); });
+    const u = new Uint8Array(await (await c.convertToBlob({ type: 'image/png' })).arrayBuffer());
+    let t = '';
+    for (const x of u) t += String.fromCharCode(x);
+    return btoa(t);
+  });
+  return Buffer.from(b64, 'base64');
+}
+
+/** Liniile mediane pe culori în Node, cu opțiunile implicite ale ferestrei: piesele și câte căi se taie pe linie. */
+function medianeInNode(png: Buffer, leaga: boolean) {
+  const p = ariePx(0.3, MM);
+  const r = traseazaCuloriMediane(citestePng(new Uint8Array(png)), { numar: null, legaturi: [], bifate: null, netezime: 'echilibrat', petePx: p, gauriPx: p },
+    { capete: 'centru', late: 'mediane', pragLatPx: null, semnaleaza: true, bucle: 'linie', leaga });
+  if (!r.ok) throw new Error(r.cod);
+  let peLinie = 0;
+  for (const pc of r.piese) for (let k = 0; k + 1 < pc.cai.inceput.length; k++) if (pc.cai.deschisa?.[k] === 1 || pc.cai.peLinie?.[k] !== 0) peLinie++;
+  return { r, peLinie };
+}
+
+test('liniile mediane pe culori (ADR 0227): Rezultatul și pe Culori; legarea peste alte culori, bifată; grosimea în pastile; Importă pune piesele pe linie', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').waitFor({ state: 'attached' });
+  const png = await desenLiniiColorate(page);
+  const cu = medianeInNode(png, true), fara = medianeInNode(png, false);
+  // În Node, pe același PNG: roșul, rupt de albastru și de două ori de verde, legat peste ele într-o singură cale.
+  expect(cu.r.raport.mediane.legaturi).toBe(3);
+  expect(fara.peLinie - cu.peLinie).toBe(3);
+  const linii = (n: number): string => (n === 1 ? '1 linie mediană' : `${n} linii mediane`);
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'linii.png', mimeType: 'image/png', buffer: png });
+  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
+  await expect(page.locator('[data-camp="trasare-leaga-culori"]')).toHaveCount(0);
+  await page.locator('[data-camp="trasare-rezultat"]').selectOption('mediane');
+  await expect(page.locator('[data-camp="trasare-leaga-culori"]')).toBeChecked();
+  await expect(page.getByTestId('trasare-legaturi')).toHaveText('3 legături peste alte culori');
+  await expect(page.getByTestId('import-deschise')).toContainText(linii(cu.peLinie));
+  await expect(page.getByTestId('import-piese')).toHaveText(`„Importă” adaugă ${cu.r.piese.length} piese, câte una pe culoare, aliniate ca în imagine.`);
+  // Grosimea fiecărei culori, în pastila ei (fără freză pe foaie, doar grosimea); grosimea desenului întreg nu mai e în raport.
+  for (const pc of cu.r.piese) {
+    await expect(pastila(page, pc.hex).getByTestId('trasare-pastila-grosime')).toHaveText(`trăsătura: ${zec(pc.grosime * MM, 2)} mm`);
+  }
+  await expect(page.getByTestId('trasare-grosime')).toHaveCount(0);
+  // Fără legare, roșul iese în patru bucăți; înapoi, o singură cale.
+  await page.locator('[data-camp="trasare-leaga-culori"]').uncheck();
+  await expect(page.getByTestId('import-deschise')).toContainText(linii(fara.peLinie));
+  await expect(page.getByTestId('trasare-legaturi')).toHaveCount(0);
+  await page.locator('[data-camp="trasare-leaga-culori"]').check();
+  await expect(page.getByTestId('import-deschise')).toContainText(linii(cu.peLinie));
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const doc = JSON.parse(await documentSalvat(page, 1)) as { piese: Array<{ nume: string; operatii: Array<{ id: string; latura: string }> }> };
+  expect(doc.piese.length).toBe(cu.r.piese.length);
+  // Fiecare piesă, cu numele culorii, tăiată pe linie.
+  for (const pc of cu.r.piese) {
+    const piesa = doc.piese.find((x) => x.nume === `linii ${pc.hex}`);
+    expect(piesa?.operatii.map((o) => [o.id, o.latura]), `${pc.hex}: ${doc.piese.map((x) => x.nume).join(', ')}`).toEqual([['deschise', 'pe-linie']]);
+  }
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

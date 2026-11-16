@@ -338,7 +338,7 @@ function centreaza(P0: Float64Array, inchis: boolean, f: Float32Array, W: number
   return { P: Q, L };
 }
 
-function mediana(v: readonly number[]): number {
+export function mediana(v: readonly number[]): number {
   if (v.length === 0) return 0;
   const s = v.slice().sort((a, b) => a - b);
   return s[s.length >> 1] ?? 0;
@@ -508,7 +508,7 @@ type Muchie = {
 };
 
 /** Căile asamblate ale liniilor mediane, în pixeli, înaintea curbelor; lățimile măsurate, joncțiunile și punctele. */
-type Linii = {
+export type Linii = {
   readonly cai: Array<{ P: number[]; inchisa: boolean }>; readonly latimi: number[]; readonly jonctiuni: number; readonly puncte: number;
 };
 
@@ -876,16 +876,26 @@ function lipeste(cai: Linii['cai'], laMiez: Float32Array, W: number, H: number, 
   return lipite;
 }
 
+/** Prima parte a liniei mediane (ADR 0227): liniile câmpului, cu lățimile măsurate, înaintea părților late și a curbelor. */
+export function liniiMediane(img: ImagineRGBA, o: OptiuniTrasare, om: OptiuniMediana): Linii {
+  const { f, T } = campul(img, o);
+  return linii(f, T, img.latime, img.inaltime, om.capete === 'varf');
+}
+
 /**
  * Linia mediană a unei imagini (ADR 0222), cu opțiunile din ADR 0223 (`om`; lipsă: ca în ADR 0222, fără părțile late).
  * Părțile late se caută cu pragul dat sau cu de două ori grosimea obișnuită (din liniile întregului desen): ca contururi,
- * liniile se retrasează pe rest, cu capetele lipite de conturul lor.
+ * liniile se retrasează pe rest, cu capetele lipite de conturul lor. Pe culori (ADR 0227, `cu`): liniile gata, din
+ * `liniiMediane`, și legarea lor peste alte culori, înaintea curbelor.
  */
-export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare, om: OptiuniMediana = MEDIANA_SIMPLA): RezultatMediana {
+export function traseazaMediana(
+  img: ImagineRGBA, o: OptiuniTrasare, om: OptiuniMediana = MEDIANA_SIMPLA,
+  cu: { readonly L?: Linii; readonly leaga?: (cai: Linii['cai'], grosime: number) => void } = {},
+): RezultatMediana {
   const { latime: W, inaltime: H } = img;
   const { f, T, baza } = campul(img, o);
   const varf = om.capete === 'varf';
-  let L = linii(f, T, W, H, varf);
+  let L = cu.L ?? linii(f, T, W, H, varf);
   const grosime = mediana(L.latimi);
   // Părțile late: căutate pentru semnalare sau ca să rămână contururi; fără grosime măsurată (doar puncte), nu.
   let late: Float64Array[] = [];
@@ -900,6 +910,7 @@ export function traseazaMediana(img: ImagineRGBA, o: OptiuniTrasare, om: Optiuni
       lipeste(L.cai, pl.laMiez, W, H, pl.R0, grosime);
     }
   }
+  cu.leaga?.(L.cai, grosime);
   // Curbele, cu treptele Netezimii (pe marginile dure, banda cel puțin `EPS_DUR`, ca la trasare).
   const trepte = TREPTE[o.netezime];
   const dure = baza.margini === 'dure';

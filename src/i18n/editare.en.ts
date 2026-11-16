@@ -746,4 +746,6 @@ export const enEditare = {
   'actiune.foaie-aseaza': 'Arrange on sheets',
   'actiune.muta-si-aseaza': 'Move and arrange at the end',
   'actiune.muta-pe-foaie': 'Move to another sheet',
+  // The sheets report (ADR 0210 §6, slice 11.6↑): its label in the palette, the only place that shows it.
+  'actiune.raport-foi': 'Sheets report and cut list',
 } as const satisfies Readonly<Record<string, Mesaj>>;

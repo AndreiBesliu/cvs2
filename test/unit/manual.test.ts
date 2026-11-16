@@ -143,8 +143,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Convertește și acțiunea `document.converteste`. Fila Imprimanta (ADR 0190, felia 3.6g), încă una: `vedere.imprimanta`.
   // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
-  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor.
-  assert.equal(USI.length, 106);
+  // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor. Raportul foilor și
+  // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`.
+  assert.equal(USI.length, 107);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

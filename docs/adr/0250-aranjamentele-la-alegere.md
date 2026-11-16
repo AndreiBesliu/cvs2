@@ -378,3 +378,18 @@ după planșe?”. A răspuns „Da, sunt gata”.
 - **Apoi:** worktree-ul `aranjamente` (`wip/28.1-aranjamente`, `C:\Users\besli\cncvs2-lucru\aranjamente`, e2e pe 4182 și
   `127.0.9`), din `main`-ul cu planșele, cu felia 28.1↑ întâi (Atelier, alegerea și ținerea). O schimbare de design de
   acum încolo trece întâi pe canvas, apoi în ADR.
+
+## Implementarea
+
+- **28.1↑a, 16.11: alegerea și densitatea, citite înaintea primei randări** (worktree-ul `aranjamente`, ramura
+  `wip/28.1-aranjamente`):
+  - `src/ui/alegereAranjament.ts` citește cheia `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`.
+  - Fiecare câmp se judecă singur și doar ca proprietate proprie (`Object.hasOwn`).
+  - O valoare stricată sau altă versiune dă Insule cu densitatea normală.
+  - Un aranjament pe care build-ul nu-l are încă dă Insule, iar alegerea ținută rămâne: citirea nu scrie.
+  - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă, înaintea primei randări. Tot acolo îi dă
+    lui `App` aranjamentul din `ARANJAMENTE` (`aranjament.ts`). Deocamdată acolo stau doar Insulele, iar fiecare felie 28.x
+    adaugă unul.
+  - Densitatea mare: `--tinta` 48 px, 56 la atingere (`stil.css`).
+  - Mărimea, față de un build curat al lui `main` `0e3725c`: pornirea 105,7 → 106,2 kB (cu ușa 110,1 / 115), totalul
+    695,8 → 696,2 / 800.

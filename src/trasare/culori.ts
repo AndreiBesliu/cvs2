@@ -32,6 +32,8 @@ export type OptiuniCulori = {
   readonly margine?: boolean;
   /** Lumina (ADR 0226), pe o imagine opacă: fiecare canal raportat la fundalul lui, neted sau local (lipsă: „uniforma”). */
   readonly lumina?: Lumina;
+  /** Doar etichetele, fără plasă și contururi (piesele, goale): liniile mediane pe culori le iau de aici (ADR 0227). */
+  readonly doarEtichete?: boolean;
 };
 
 export type CuloarePaleta = {
@@ -647,6 +649,13 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
   };
   let susJos = new Int32Array(W + 2).fill(-1), jos = new Int32Array(W + 2).fill(-1);
   const raport0 = (): RaportCulori => raportFinal(0, 0, 0, 0);
+  /** Culoarea fiecărui pixel, după legături și curățare (255: transparent). */
+  const eticheteFinale = (): Uint8Array => {
+    const e = new Uint8Array(n);
+    for (let p = 0; p < n; p++) { const l = et[p] ?? 0; e[p] = l < K ? l : 255; }
+    return e;
+  };
+  if (o.doarEtichete === true) return { ok: true, piese: [], raport: raport0(), etichete: eticheteFinale() };
   let preaMulte = false;
   for (let cy = 0; cy <= H && !preaMulte; cy++) {
     jos.fill(-1);
@@ -907,7 +916,5 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
   }
   const raport = raportFinal(arce.filter(folosit).length, contururi, varfuri, abatere);
   if (contururi > PLAFON_TRASARE.contururi || varfuri > PLAFON_TRASARE.varfuri) return { ok: false, cod: 'prea-multe', raport };
-  const etichete = new Uint8Array(n);
-  for (let p = 0; p < n; p++) { const l = et[p] ?? 0; etichete[p] = l < K ? l : 255; }
-  return { ok: true, piese, raport, etichete };
+  return { ok: true, piese, raport, etichete: eticheteFinale() };
 }
