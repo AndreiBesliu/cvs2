@@ -576,8 +576,6 @@ function linii(f: Float32Array, T: number, W: number, H: number, varf: boolean):
     if (v) { v.x += x; v.y += y; v.n++; v.r = Math.max(v.r, R(p)); } else grupuri.set(g, { x, y, r: R(p), n: 1 });
   }
   for (const v of grupuri.values()) { v.x /= v.n; v.y /= v.n; }
-  let puncte = 0;
-  for (const p of schelet) if (grad[p] === 0) puncte++;
   // Muchiile: fiecare lanț (afară de punți), fără pixelii din cercul joncțiunii, centrat, cu colțurile refăcute și, la fiecare
   // capăt dintr-o joncțiune, direcția brută a brațului: media pixelilor scheletului de la cercul joncțiunii până la încă 1,5
   // grosimi de el (din ea, verificarea dreptei brațului și direcția lui, dacă n-are dreaptă).
@@ -716,7 +714,7 @@ function linii(f: Float32Array, T: number, W: number, H: number, varf: boolean):
   }
   const muchii: Muchie[] = [];
   for (const mu of curata(unghiuri)) {
-    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0.5) { puncte++; continue; }
+    if (!mu.a && !mu.b && lungimeXY(mu.P) < 0.5) continue;
     muchii.push(mu);
   }
   const brate = brateDin(muchii);
@@ -824,7 +822,74 @@ function linii(f: Float32Array, T: number, W: number, H: number, varf: boolean):
   }
   for (const [e] of muchii.entries()) if (!folosita[e]) mergi(e, 'a', true);
   for (const b of bucleLibere) cai.push({ P: Array.from(b.P), inchisa: true });
-  return { cai, latimi, jonctiuni: locuri.size, puncte };
+  return { cai, latimi, jonctiuni: locuri.size, puncte: bucati(m, W, H, cai, latimi, varf) };
+}
+
+/**
+ * Bucățile de cerneală (8-vecinătate; ADR 0222 §5, felia 25.3↑d): una mai scurtă decât grosimea ei (lungimea pe axa ei
+ * principală sub grosime + 0,5 px) e un punct, fără căile ei; una mai lungă rămasă fără nicio cale (subțierea Zhang–Suen
+ * șterge un bloc de 2 × 2 și resturile scurte de doi pixeli grosime) primește dreapta axei ei, între centrele capetelor.
+ * Cu capetele în vârf (ADR 0223, `varf`), nicio bucată nu e punct: cea scurtă și cea fără cale sunt dreapta axei, de la un
+ * vârf la celălalt (punctul unui „i” devine o linie de la o margine la alta).
+ * Grosimea: lățimea bucății de-a curmezișul axei, cel mult diametrul cercului înscris în centrul ei (un „+” mic nu e un
+ * disc). Schimbă `cai` și `latimi` pe loc; întoarce câte puncte sunt.
+ */
+function bucati(m: Uint8Array, W: number, H: number, cai: Linii['cai'], latimi: number[], varf: boolean): number {
+  // Căile, după pixelul de cerneală de sub primul lor punct (sau un vecin al lui).
+  const caleLa = new Map<number, number[]>();
+  for (const [i, c] of cai.entries()) {
+    const x = Math.floor(c.P[0] ?? 0), y = Math.floor(c.P[1] ?? 0);
+    for (let k = -1; k < 8; k++) {
+      const xx = x + (k < 0 ? 0 : DX[k] ?? 0), yy = y + (k < 0 ? 0 : DY[k] ?? 0), q = yy * W + xx;
+      if (xx >= 0 && yy >= 0 && xx < W && yy < H && m[q]) { (caleLa.get(q) ?? caleLa.set(q, []).get(q))?.push(i); break; }
+    }
+  }
+  const vazut = new Uint8Array(W * H), scoase = new Set<number>(), stiva: number[] = [];
+  let puncte = 0;
+  for (let p0 = 0; p0 < m.length; p0++) {
+    if (!m[p0] || vazut[p0]) continue;
+    const pix: number[] = [], aici: number[] = [];
+    let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    vazut[p0] = 1;
+    stiva.push(p0);
+    while (stiva.length > 0) {
+      const p = stiva.pop() ?? 0, x = p % W, y = (p - x) / W;
+      pix.push(p); sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y;
+      for (const i of caleLa.get(p) ?? []) aici.push(i);
+      for (let k = 0; k < 8; k++) {
+        const xx = x + (DX[k] ?? 0), yy = y + (DY[k] ?? 0), q = yy * W + xx;
+        if (xx >= 0 && yy >= 0 && xx < W && yy < H && m[q] && !vazut[q]) { vazut[q] = 1; stiva.push(q); }
+      }
+    }
+    // Axa principală (direcția celor mai mici pătrate ale pixelilor), lungimea și lățimea pe ea, pixelul cel mai central.
+    const n = pix.length, cx = sx / n, cy = sy / n;
+    const t = 0.5 * Math.atan2(2 * (sxy / n - cx * cy), sxx / n - cx * cx - (syy / n - cy * cy)), ux = Math.cos(t), uy = Math.sin(t);
+    let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity, centru = p0, dc = Infinity;
+    for (const p of pix) {
+      const x = (p % W) - cx, y = Math.floor(p / W) - cy, u = x * ux + y * uy, v = y * ux - x * uy;
+      a = Math.min(a, u); b = Math.max(b, u); c = Math.min(c, v); d = Math.max(d, v);
+      if (x * x + y * y < dc) { dc = x * x + y * y; centru = p; }
+    }
+    // Lungimea, între centrele pixelilor de la capete (un pixel mai puțin decât pixelii: un disc de 3 px acoperă, după cum
+    // cade pe grilă, 3 × 2 pixeli). Diametrul înscris, 2 · raza + 1: raza se măsoară între centrele pixelilor, iar pe
+    // diagonală un disc pixelat e mai scurt (discul de 7 px: 2 · raza = 5,66; măsurat).
+    const g = Math.min(d - c + 1, 2 * raza(m, W, H, centru) + 1);
+    const scurta = b - a < g + 0.5;
+    if (scurta) for (const i of aici) scoase.add(i);
+    if (scurta && !varf) {
+      puncte++;
+    } else if (scurta || aici.length === 0) {
+      const r = varf ? 0 : g / 2, i0 = a - 0.5 + r, i1 = b + 0.5 - r, X = cx + 0.5, Y = cy + 0.5;
+      cai.push({ P: [X + ux * i0, Y + uy * i0, X + ux * i1, Y + uy * i1], inchisa: false });
+      latimi.push(g);
+    }
+  }
+  if (scoase.size > 0) {
+    let j = 0;
+    for (const [i, c] of cai.entries()) if (!scoase.has(i)) cai[j++] = c;
+    cai.length = j;
+  }
+  return puncte;
 }
 
 /** Inelul închis P (x0, y0, x1, y1, …) cuprinde punctul (x, y)? (paritatea tăieturilor unei raze spre dreapta) */

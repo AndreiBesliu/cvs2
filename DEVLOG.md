@@ -9128,3 +9128,10 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   40 ms a probei, față de un `setTimeout(0)` al gazdei false; viteza luminii pe 12 Mpx: 4,0 s), trecute amândouă pe mașina
   liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
   (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
+
+## 2026-11-16 — Felia 25.3↑d: punctele pierdute de linia mediană (ADR 0222) (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, all three” (owner-ul, în sesiunea principală, la „Start the three recommended slices: plate sheet 11,
+25.3↑d and 28.1↑b?”; transmis de sesiunea principală). **Started:** 16.11, 19:42. **Completed:** —.
+
+- **Ramura** adusă la `origin/main` (`380c053`, cu 25.3↑c unită; înainte rapidă, fără commit de unire).
