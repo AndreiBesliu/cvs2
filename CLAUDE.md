@@ -654,6 +654,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
   0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
   110 (rămân ~0,3 kB), totalul 690,5 / 700.**
+  **Fișa plăcii 11 (ADR 0210, felia 11.7↑)** pregătită pe 17.11, fără mașină: `docs/etape/placa-11.md`, generatorul și
+  fișierele de aur în `test/placi/placa-11/` (documentul pe drumul ferestrei «Din CSV…», exportul „Toate foile”). Cotele pe
+  hârtie, pe exportul proaspăt, în `test/unit/placa11.test.ts`, cu proba urechilor (rasterul fundului foii la 0,1 mm, umplut
+  din margine; controlul, fără urechi); octeții, în `placa11.aur.test.ts`. **Urechile nu țin sub 2 × freza:** la distanța
+  implicită de 5, cu Ø3,175, ramele vecine scot tot lemnul dintre piese, iar urechile (la un sfert și la trei sferturi din
+  drum) nu stau față în față, deci piesele din mijloc cad. Placa folosește 10, pe foi de 300 × 220; avertismentul în
+  aplicație e la owner.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

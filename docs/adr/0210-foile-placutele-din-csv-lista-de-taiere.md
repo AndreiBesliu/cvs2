@@ -5,7 +5,8 @@ toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi 
 în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `36c75cb`). **Feliile 11.1↑ și 11.1↑b gata pe
 07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑, 11.3↑ și 11.4↑ pe 08.11** (piesele puse de mai
 multe ori; „Așază pe foi”; plăcuțele, nucleul), **11.4↑b și 11.4↑c pe 09.11** («Din CSV…»; textul care iese din plăcuță),
-**11.5↑ și 11.6↑ pe 13.11** („Toate foile” la export; raportul foilor și lista de tăiere; vezi la capăt).
+**11.5↑ și 11.6↑ pe 13.11** („Toate foile” la export; raportul foilor și lista de tăiere), **fișa plăcii 11 (11.7↑)
+pregătită pe 17.11**, fără mașină (vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -680,3 +681,36 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   17 prin e2e, în două clone, pe portul 4178).
 - **Rămâne în etapa 11:** 11.5↑b după etapa 13 și 11.7 (fișa plăcii, pe mașină). Fișa de lucru (ordinea, schimbările de
   freză, timpul) rămâne funcția ei, în etapa 15, și pornește din raportul acesta.
+
+## Felia 11.7↑ (fișa plăcii 11, pregătită pe 17.11)
+
+- **Fișa** (`docs/etape/placa-11.md`) și fișierele (`test/placi/placa-11/`): 25 de plăcuțe 80 × 30 cu nume, din `nume.csv`
+  (UTF-8 cu BOM; Ionuț și Ștefan, pentru diacritice), pe un șablon: rama, profil exterior cu freza plată Ø3,175 (T5) în
+  patru treceri de 3 mm, cu două urechi de 6 × 2, și numele, V-carve cu V90 Ø6 (T3), cu majuscula de 8 mm, centrat. Așezate
+  pe rânduri din stânga-sus, 15 + 10 pe două foi de MDF 12, exportate cu „Toate foile” (o arhivă, câte un program pe foaie și
+  pe freză, GRBL 1.1). Documentul e făcut pe drumul ferestrei «Din CSV…» (cititorul și potrivirea coloanelor, literele
+  fiecărei plăcuțe, cererea `placute` cu așezarea, ușa), iar exportul, cu `calculeazaExport`. Fișa are amprentele, timpii
+  estimați pe fișier, cotele de măsurat (plăcuțele; în foaia rămasă, fâșiile dintre găuri și cele de la margine) și ce devin
+  ele (diametrul efectiv al frezei; zero-ul XY sau Z).
+- **Găsit pe programele reale, înainte de fișă: la distanța implicită, urechile nu țin.** Distanța minimă din §3 (freza
+  profilului exterior) ține piesele întregi, nu și urechile. Sub 2 × freza, tăieturile a două piese vecine se unesc. Urechile a
+  două vecine nu stau față în față: sunt la un sfert și la trei sferturi din drum, deci pe dreptunghiul plăcuței, sus la 22,5
+  de stânga și jos la 22,5 de dreapta. Urechile de pe laturile dinspre vecini nu mai țin deci de nimic. Măsurat cu proba
+  urechilor: rasterul fundului foii la 0,1 mm, tăiat de discul frezei pe fiecare segment coborât la toată grosimea, umplut din
+  marginea foii prin lemnul rămas. La distanța 5, cad 9 din 15 plăcuțe pe foaia 1 (rândurile 2–4) și 4 din 10 pe foaia 2;
+  fără urechi (controlul), toate. Placa folosește deci distanța 10, care lasă 3,65 mm de lemn între tăieturi, și foi de
+  300 × 220, ca 15 plăcuțe să încapă tot pe o foaie: colțurile la x = 10 / 100 / 190 și y = 180 / 140 / 100 / 60 / 20, foile
+  folosite 6/11 și 4/11. Criteriul pe hârtie de mai sus (80 × 30 pe 300 × 200, distanța 5) rămâne proba așezării
+  (`asezare.test.ts`, `raport.foi.test.ts`); pe lemn, ar lăsa plăcuțe libere sub freză.
+- **De hotărât (owner-ul):** aplicația permite așezarea care lasă piese libere. Variantele pot sta împreună, pe felii:
+  **a)** recomandarea: în „Așază pe foi” și în «Din CSV…», distanța propusă devine 2 × freza + 1 mm (rotunjită în sus) când
+  piesele au urechi pe un profil exterior, iar sub ea apare un avertisment („urechile pieselor din mijloc nu vor ține”);
+  minimul rămâne freza; **b)** proba urechilor la export, pe programe, pentru orice așezare, inclusiv mutată de mână
+  (rasterul cere o rezoluție după mărimea foii); **c)** urechile așezate față în față între vecini (o opțiune a profilului).
+- **Probele:** `placa11.test.ts`, pe hârtie, pe exportul proaspăt: locurile, numele în ordinea CSV-ului, raportul, ramele
+  (cutia drumului = plăcuțele ± raza, patru treceri, două urechi de 6 mm la Z −10 pe plăcuță), numele (V90 cel mult 3 mm,
+  fiecare pe plăcuța lui, centrat la cel mult 1 mm, între 8 și 19,5; „Ana” de la 11 la 19), regimul și urechile care țin, cu
+  controlul. `placa11.aur.test.ts`: arhiva și programele, octet cu octet, și fiecare foaie, exportul ei singure. Otrăvurile
+  `test/otravuri/11.7.py`, pe generator, judecate doar de cotele pe hârtie: 17 / 17 la prima rulare (`ffc8b2c`), martorul
+  scăpat.
+- **Rămâne:** tăierea (owner-ul), apoi transcrierea măsurătorilor în probe; 11.5↑b, după etapa 13.
