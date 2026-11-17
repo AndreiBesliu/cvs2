@@ -34,6 +34,27 @@ deschide la capitolul a ce faci acum
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
 salvarea](#proiect).
 
+## Aspectul interfeței
+%% capitol: aspect
+%% acopera: vedere.aspect
+
+Fereastra **Aspectul** se deschide din meniul **Cont** (rândul **Aspectul…**, care arată și aranjamentul de acum) sau din
+paleta de comenzi („Aspectul interfeței”). Ce alegi se vede pe loc; **Păstrează** ține alegerea, iar **Renunță** (sau Esc)
+pune la loc ce era când ai deschis fereastra.
+
+**Aranjamentul** e felul în care stau barele și panourile în jurul pânzei:
+- **Insule** (implicit): pânza pe tot ecranul, barele plutesc deasupra ei;
+- **Clasic**: meniuri, panouri andocate și linia de comandă;
+- **Atelier**: butoane mari, pentru tabletă și lângă mașină;
+- **Pas cu pas**: te duce de la desen la mașină, pas cu pas.
+
+Deocamdată se poate alege doar Insule; celelalte trei apar în fereastră cu „în curând” și vin pe rând.
+
+**Tema** e aceeași cu a butonului „Tema” din bară: după sistem, luminoasă sau întunecată. **Butoane mari** face butoanele
+mai înalte (48 px; 56 pe un ecran tactil), cu orice aranjament: se nimeresc mai ușor pe tabletă sau cu mănuși.
+
+Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate arăta altfel decât calculatorul din birou.
+
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza
 %% acopera: vedere.potriveste, foaie.ghidaje, editare.lipire, editare.grila

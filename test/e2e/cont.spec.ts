@@ -48,7 +48,7 @@ test('butonul Cont deschide meniul: fără cont, logarea, manualul și sugestia;
   await expect(buton).toHaveAttribute('aria-expanded', 'true');
   await expect(meniu.locator('[data-testid="meniu-cont-cap"] strong')).toHaveText('Nu ești logat');
   await expect(meniu.locator('[data-testid="meniu-cont-cap"] span')).toHaveText('Un cont nou: 14 zile de probă, fără card');
-  await expect(meniu.locator('[role="menuitem"] > span')).toHaveText(['Intră sau creează cont…', 'Manualul', 'Trimite o sugestie…']);
+  await expect(meniu.locator('[role="menuitem"] > span')).toHaveText(['Intră sau creează cont…', 'Manualul', 'Aspectul…', 'Trimite o sugestie…']);
   await expect(meniu.locator('[data-meniu-cont="manual"] kbd')).toHaveText('F1');
   const cutie = await meniu.boundingBox();
   const b = await buton.boundingBox();
@@ -105,7 +105,7 @@ test('cu un cont ținut: inițialele și numele pe buton; în meniu numele, prob
   await expect(meniu.locator('[data-testid="meniu-cont-cap"] strong')).toHaveText('Ana');
   await expect(meniu.locator('[data-testid="meniu-cont-cap"] span')).toHaveText('Proba: încă 10 zile');
   await expect(meniu.locator('[role="menuitem"] > span')).toHaveText([
-    'Contul meu…', 'Raportările mele', 'Manualul', 'Raportează o problemă…', 'Trimite o sugestie…', 'Ieși din cont',
+    'Contul meu…', 'Raportările mele', 'Manualul', 'Aspectul…', 'Raportează o problemă…', 'Trimite o sugestie…', 'Ieși din cont',
   ]);
   await expect(meniu.locator('[role="separator"]')).toHaveCount(1);
   // Fără server, niciun răspuns nou: fără semn pe buton și fără număr pe rând.

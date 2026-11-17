@@ -35,6 +35,27 @@ doing now (the chosen tool, the 3D view, the open window, the Machine). You can 
 **Where it is saved.** The project saves itself, in this browser, on every change. See [The project and
 saving](#proiect).
 
+## Interface appearance
+%% capitol: aspect
+%% acopera: vedere.aspect
+
+The **Appearance** window opens from the **Account** menu (the **Appearance…** row, which also shows the current layout) or
+from the command palette (“Interface appearance”). What you choose shows right away; **Keep** keeps the choice, and
+**Cancel** (or Esc) puts back what was there when you opened the window.
+
+The **layout** is how the bars and panels sit around the canvas:
+- **Islands** (default): the canvas fills the screen; the bars float above it;
+- **Classic**: menus, docked panels and the command line;
+- **Workshop**: big buttons, for a tablet and next to the machine;
+- **Step by step**: takes you from the drawing to the machine, step by step.
+
+For now only Islands can be chosen; the other three show in the window as “coming soon” and arrive one at a time.
+
+The **theme** is the same as the “Theme” button in the bar: as the system, light or dark. **Big buttons** makes the buttons
+taller (48 px; 56 on a touch screen), with any layout: easier to hit on a tablet or with gloves.
+
+The choice stays on this device (in the browser): the tablet in the workshop can look different from the office computer.
+
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza
 %% acopera: vedere.potriveste, foaie.ghidaje, editare.lipire, editare.grila

@@ -278,7 +278,7 @@ Alege trei forme; Aliniază la stânga; apoi Distribuie pe orizontală.
 %% vezi
 Formele se aliniază pe marginea stângă; apoi au spații egale între ele.
 
-## Anularea, manualul, exportul
+## Anularea, manualul, aspectul, exportul
 
 ### Anulează și reface
 %% pas: x-anulare
@@ -293,6 +293,16 @@ Fiecare schimbare se anulează pe rând, iar Ctrl+Y le reface.
 Apasă „?” (lângă butonul Test, în extensie); închide; apoi, cu Pen ales, `F1`.
 %% vezi
 Manualul cu capitolele; F1 îl deschide la capitolul „Unealta Pen”.
+
+### Aspectul interfeței
+%% pas: x-aspect
+%% faci
+Din meniul **Cont** (dreapta-sus), alege „Aspectul…”; pornește „Butoane mari”, apoi apasă Renunță. Deschide fereastra din
+nou, pornește „Butoane mari”, apasă Păstrează și reîncarcă pagina. La final, oprește „Butoane mari” din aceeași fereastră.
+%% vezi
+Fereastra arată patru aranjamente: Insule e ales, iar Clasic, Atelier și Pas cu pas sunt „în curând”, fără să se poată
+alege. Cu „Butoane mari”, butoanele barei cresc pe loc, iar Renunță le aduce înapoi; după Păstrează și reîncărcare, rămân
+mari.
 
 ### Exportul unui desen cu de toate
 %% pas: x-export
