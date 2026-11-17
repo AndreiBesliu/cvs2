@@ -9285,3 +9285,66 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
   20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
   `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Apoi aranjamentele 28.1↑a și planșele 11.6↑ (`5ab3941`), unite în `6d64b25` (conflictul, doar în DEVLOG); porțile pe ce ating ele: unit-urile aranjamentelor, raportului foilor, exportului, tăierii, acțiunilor și documentelor 399 / 399, build-ul determinist, e2e `aranjament`, `raport-foi`, `manual`, `ancore`, `editare`, `taiere` și `cutit` 66 / 66. Mărimea finală, mai sus.
+
+## 2026-11-16 — Felia 12.1↑f: gaura incrustației cu pereți drepți; documentul v25 (ADR 0175) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea liniei, la cele trei întrebări ale ADR 0175: 1a, 2a, 3a), după cererea
+transmisă de sesiunea principală: „pe linia ta: 12.1↑f (gaura și treptele), din ADR 0170. Dacă cere decizii, propune-le cu
+recomandarea întâi”. Reluată pe 17.11, după cuvântul owner-ului („neata! da drumul celorlalte worktrees”), transmis de
+sesiunea principală: „Continuă 12.1↑f de unde ai rămas. `main` e la `22ab3de`, cu 12.1↑b-2 (v24) unită: adu-l în ramură.”
+**Started:** 16.11, 18:18. **Completed:** 17.11, 10:03.
+
+- **ADR 0175** propus (`2fef1ae`, cu schița <https://claude.ai/artifact/L9buqcaGfDVW4oajmuCxZR>), acceptat cu „Da, cu
+  recomandările”: gaura aleasă la export, cu adâncimea din grosimea foii plus supracursa; tăiată doar ca buzunar prin placă;
+  întâi gaura (12.1↑f), apoi treptele (12.1↑f-2).
+- **`main` în ramură:** `0e3725c` (3.6s reparată, plafoanele 115 / 800, 25.5↑) unit în `79a0966`; conflict doar în DEVLOG.
+  Pe 17.11, `22ab3de` (12.1↑b-2 unită, 25.4↑b, 3.6q, 25.3↑c, 28.1↑a, 11.6↑, 10.3↑k) unit în `28ce8ee`; conflictele: DEVLOG și
+  antetul lui `DialogExport` (`onRaport`, din 11.6↑, lângă `grosimeFoaie`).
+- **Codul (`31c04e1`):** ușa (schema: `locas`, buzunar sau gaura; `treapta`, cu adâncimea, lățimea și direcția, spre interior
+  sau exterior; sprijinul „umar”; migrarea v24 → v25 schimbă doar numărul, un v24 cu `locas` sau `treapta` în incrustație, pe
+  orice fel, e o ciocnire, iar sprijinul „umar” pe un v24 e refuzat, ca „buzunar” la v10 → v11), lucrarea (`cuGauriPrinFoaie`,
+  la începutul programului: fiecare gaură cu adâncimea = grosimea foii plus supracursa, nu cea scrisă în operație; dopul din
+  grosimea foii: decupat T + H, la nivel cu fața de jos, sau ridicat pe față, înalt de T, fără joc sub el), refuzurile noi, cu
+  motiv (dopul ridicat pe fund la o gaură; treapta și sprijinul pe umăr, până la felia 12.1↑f-2; jocul de sub dop nu se judecă
+  la gaură), fereastra („Locașul”: buzunar sau gaură prin foaie; la gaură, adâncimea rândului e a foii, oprită, „Se sprijină”
+  doar pe față, fără jocul de sub dop; alegerea gaurii mută sprijinul de pe fund pe față), scrierea (`locas: 'gaura'`; înapoi
+  la buzunar, câmpul pleacă), panoul pe hârtie („Locașul: gaură prin foaie”, iar la Tăierea „prin foaie, T mm”), manualul
+  (ro, en). Supracursa vine din opțiunile exportului, pe care fereastra nu le arată încă (0): din fereastră, gaura merge exact
+  la grosimea foii.
+- **Probele:** oracolul documentului la v25 (rândul `CAMPURI_NOI_O[25]`, judecata locașului, a treptei și a sprijinului pe
+  versiune; cazurile pe hârtie la capătul lui `document.cazuri.ts`: 8 documente valide, 2 migrări, 4 neciocniri, 6 frontiere,
+  8 refuzuri; proba nouă `document.v25.oracol.test.ts`, 15 / 15); probele versiunii curente trecute pe 25 (cea mai nouă: 26),
+  iar proba v24 judecă acum cu ușa v24 (`verificaPanaLaV24O`) și urcă prin ușa curentă; gaura pe oracolul potrivirii
+  (`incrustatieDreapta.gaura.test.ts`: dopul decupat și cel ridicat pe față, jocul lateral 0,1 ± 0,02 pe tot peretele, fără
+  interferență, adâncimea și înălțimea ± 0,05; controlul fără gaură și foaia de 12; supracursa 0,3; refuzurile; valorile pe
+  hârtie); scrierea locașului (2 probe noi); e2e-ul gaurii (fereastra, exportul real pe oracol, panoul, redeschiderea) și, după
+  otrava H20, al gaurii cu dopul ridicat (`2af883d`). Corpusul de aur la v25 (`5ce26ef`): v24 scrisă de `79a0966`, v25 de
+  `31c04e1`; intrările v1–v24, aceiași octeți.
+- **Oprirea (16 → 17.11):** procesul sesiunii s-a oprit peste noapte, în timpul lotului de otrăvuri; jurnalul
+  (`.tmp/otravuri.log`) arată lotul terminat și fiecare otravă restaurată (sha ok), iar arborele era curat. Porțile și
+  otrăvurile s-au rulat din nou pe ramura unită.
+- **Porțile, pe ramura unită (`2af883d`):** compilatoarele ×3, importurile (20 / 0, 1 242 de module), licențele, traducerile
+  (786, 0 lipsă), unit 9 445: 9 437 / 0 (8 sărite, 5,7 min), build determinist (326 de fișiere identice; pornirea 106,3, cu
+  ușa 110,3 / 115; totalul 709,0 / 800), e2e 496: 495 din prima (8,5 min, 3 lucrători) și una căzută din încărcare
+  (`fonturi.spec.ts:149`, fontul SVG cu o singură linie: „Aplică” încă oprit la 30 s), singură 2 / 2 (7,5 s). Înainte de
+  unire (`5ce26ef`): unit 9 389: 9 380 / 1 (o probă cu ceas real a trenulețului, `trenulet.adaptoare.test.ts`, „o salvare
+  amânată”, cu o fereastră de 60 ms, sub încărcare; singură 20 / 20 de trei ori), e2e 486 / 486 din prima (9,0 min).
+- **Otrăvurile (`test/otravuri/12.1f.py`, alese de autor):** 27 (ușa: H01–H06; lucrarea, dopul și refuzurile: H07–H16; scrierea: H17; fereastra și panoul:
+  H18–H27). Prima rulare (`5ce26ef`): 26 / 27 prinse (H01–H17 pe probele lor, H18–H27 prin e2e), H20 scăpată: alegerea gaurii
+  nu mai muta sprijinul de pe fund pe față, iar e2e-ul gaurii nu vedea: fără „pe fund” printre opțiuni, select-ul arată prima
+  opțiune („pe față”) și când rândul a rămas „pe fund”, iar proba trecea apoi pe dopul decupat, unde sprijinul nu contează.
+  Proba nouă exportă cu dopul ridicat (lucrarea ar refuza un sprijin rămas pe fund: „gaura n-are fund”), pe oracol
+  (`2af883d`): H20 prinsă. Pe codul final (`2af883d`, cu `main` unit), tot lotul din nou: 27 / 27 prinse (H18 de ambele probe
+  ale gaurii). Reorientate pe codul nou și prinse, în ambele rulări: 12.1b D04 (înălțimea dopului, acum din D) și S03
+  (sprijinul, acum și „umar”); 12.1b-2 B04 (punțile, urmate acum în schemă de locaș și treaptă) și B16 (scrierea scoate și
+  locașul vechi). Ancorele celorlalte liste ale liniei (12.1, 12.1c, 12.1c2, 12.1d), bune după unire.
+- **Mărimea:** felia, față de build-ul lui `79a0966`: totalul 696,1 → 696,9 / 800 kB (+0,8: lucrătorul CAM +0,3, fereastra
+  exportului +0,2, panoul, migrarea și modelul câte 0,1 sau mai puțin), ușa +34 B gzip, pornirea neschimbată. Pe ramura unită:
+  totalul 709,0 / 800, pornirea 106,3, cu ușa 110,3 / 115.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 17.12), build-ul
+  `2af883d` (versiunea `2af883d930f4`), verificat în browserul aplicației, în engleză, fără export: pe un dreptunghi cu
+  „straight-walled inlay”, rândul are „Recess: pocket / hole through the sheet”; cu gaura, adâncimea devine 18 (grosimea
+  foii), oprită, cu titlul ei, „Rests on” are doar „the board face”, fără jocul de sub dop, iar Exportă rămâne pornit; dopul
+  decupat, pe gaură: punțile 4, 4, 1, nimic marcat; înapoi pe buzunar, adâncimea 3, editabilă; fereastra închisă fără
+  export, foaia lăsată goală, 0 erori în jurnalul local și în consolă.
+- **La unire (pentru sesiunea principală):** în CLAUDE.md, regula versiunii: v25 în `main`, următorul câmp nou ia v26.
