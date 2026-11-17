@@ -805,7 +805,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `#loc-anunt-imprimanta` din `App.tsx` (gol, ascuns), nu mai plutește deasupra paginii; orice aranjament nou ține locul.
   **3.6t gata pe 14.11** (istoricul, costul, estimarea care învață): `istoricImprimari.ts` (pur), `IstoricImprimanta.tsx`
   (cardul, înregistrarea), magazia `imprimari` în `cvs2-imprimanta` (versiunea 2), `DIN_DESEN` (ce pune „Din desen…” lângă
-  fișier), driverul cu `historyList`. Totalul 694,9 / 700 (peste ținta ADR-ului: la acordul owner-ului). Urmează 3.6u.
+  fișier), driverul cu `historyList`. Totalul 713,0 / 800 (+4,8 față de `main`, peste ținta ADR-ului, sub plafon). Urmează 3.6u.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

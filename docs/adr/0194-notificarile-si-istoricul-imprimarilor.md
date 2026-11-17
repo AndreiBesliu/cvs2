@@ -229,10 +229,10 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   dacă ai pus prețul, și bifa **Corectează estimarea după istoric** (pornită). Fișierul nu se schimbă.
 - **Imprimanta falsă:** `historyList` la `reqHistory`, după lista fișierelor (K1C 2025) și la finalul sau oprirea unei
   lucrări (`printfinish` 1 sau 0), pornind de la istoricul dat.
-- **Măsurat și probat:** totalul 694,9 / 700 kB (+4,8, peste ținta de ~3,5 din ADR: la acordul owner-ului), pornirea 105,8 (cu ușa 109,7 / 110; neschimbată). Probe noi: `test/unit/imprimanta.istoric.test.ts` (11: istoricul K1 pe transcrierea
+- **Măsurat și probat:** totalul 713,0 / 800 kB (+4,8 față de `main` `22ab3de`, măsurat A/B pe aceeași mașină: peste ținta de ~3,5 a ADR-ului, dar sub plafonul de 800 din 13.11, ADR 0253), pornirea 106,3 (cu ușa 110,3 / 115; aceeași ca pe `main`: 3.6t nu adaugă nimic în pornire). Probe noi: `test/unit/imprimanta.istoric.test.ts` (11: istoricul K1 pe transcrierea
   K1C 2025, înregistrarea, istoricul cvs2 ținut, unirea, gramele, costul, totalurile, CSV-ul, estimarea care învață,
   setările), o probă a sesiunii (cererea istoricului), manualul (8 controale noi, citite și din `IstoricImprimanta.tsx`),
-  două e2e (istoricul cap-coadă, cu CSV-ul, reîncărcarea și golirea; estimarea care învață, cu bifa și costul). Porțile: unit 9 333 (9 325 trecute, 0 căderi, 8 sărite), build-ul determinist, e2e 482 / 482, pe unirea cu main (e0f9803: planșele, 12.1↑d, reparația benzii).
+  două e2e (istoricul cap-coadă, cu CSV-ul, reîncărcarea și golirea; estimarea care învață, cu bifa și costul). Porțile: unit 9 434 (9 426 trecute, 0 căderi, 8 sărite), build-ul determinist (325 fișiere), e2e 494 / 496 (cele 2 căderi: probe ale altor linii, din încărcarea suitei întregi; singure, 6 / 6; pe `main`, în aceleași condiții, 490 / 494, cu alte 4 căderi din timp), pe unirea cu `main` `22ab3de` (`edb763a`, 17.11: în plus față de `e0f9803`, trasarea 25.5↑, 25.4↑b și 25.3↑c, incrustațiile 12.1↑b-2, aranjamentele 28.1↑a, raportul foilor 11.6↑, panourile 10.3↑k și reparația probei plăcii 3.6q).
   Privită în Edge: 1280 px luminos (cardul, „Din desen…” cu estimarea învățată și costul) și 390 px întunecat (cardurile
   pe telefon), fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6t.py`, 57 / 57 (47 pe probele unitare, 10 prin e2e); listele 3.6p–3.6s se aplică în
   continuare.
