@@ -109,6 +109,10 @@
       "ro": "Măsurarea pe un laptop de atelier",
       "en": "Measuring on a workshop laptop"
     },
+    "099dad5877cccd41": {
+      "ro": "**Punctele pierdute de linia mediană** (fără mașină; corectura ADR 0222; worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main` (`380c053`, apoi `22ab3de`); pornită la „Yes, all three”, owner-ul, prin sesiunea principală, după unirea lui 25.3↑c; oprită peste noapte înaintea publicării, reluată pe 17.11). Un disc mic centrat pe un colț de pixel nu dădea nici linie, nici punct numărat: subțierea Zhang–Suen șterge un bloc de 2 × 2 și resturile scurte de doi pixeli grosime, iar un schelet de 2–3 pixeli rămânea liniuță (115 cazuri pe o grilă de discuri de 2–12 px în 16 poziții). Acum, după linii, un pas pe bucățile de cerneală: una mai scurtă decât grosimea ei e un punct, cu căile scoase; una mai lungă fără cale primește dreapta axei; cu capetele în vârf, dreapta de la un vârf la celălalt. Un pătrat plin, lung cât e de lat, e un punct, ca discul plin. Pe 12 Mpx cu praf necurățat: 7 198 de căi înainte, 4 căi și 7 194 de puncte acum, în același timp. Otrăvurile: 12 / 12, fiecare pe proba ei, toate unitare; la prima rulare (`dbc7431`) D09 și D10 au scăpat (nicio probă cu o linie oblică de un pixel, niciuna cu capetele în vârf pe o trăsătură lungă) și cinci erau VOID (scrise înaintea reglajului capetelor în vârf): probele noi și lista aliniată în `7d9ca29`; D11 a scăpat apoi (proba capetelor în vârf avea doar discuri fără cale), prinsă după lărgirea probei (`16ccf3c`). Totalul 708,7 / 800 kB, pornirea 106,3 / 115; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta `8335052fa1b5`.",
+      "en": "**Dots lost by the centre line** (no machine; a correction to ADR 0222; the `trasare` worktree, the `wip/25.1-trasare` branch, brought up to `origin/main` (`380c053`, then `22ab3de`); started at “Yes, all three”, from the owner, through the main session, after 25.3↑c was merged; stopped overnight before publishing, resumed on 17.11). A small disc centred on a pixel corner gave neither a line nor a counted dot: Zhang–Suen thinning erases a 2 × 2 block and short two-pixel-thick remnants, and a skeleton of 2–3 pixels stayed a tiny line (115 cases on a grid of 2–12 px discs in 16 positions). Now, after the lines, a pass over the pieces of ink: one shorter than its width is a dot, with its paths removed; a longer one without a path gets the straight line of its axis; with ends at the tip, the line runs from one tip to the other. A filled square, as long as it is wide, is a dot, like the filled disc. On 12 Mpx with uncleaned dust: 7,198 paths before, 4 paths and 7,194 dots now, in the same time. Poisons: 12 / 12, each caught by its own test, all unit; at the first run (`dbc7431`) D09 and D10 escaped (no test with a one-pixel diagonal line, none with ends at the tip on a long stroke) and five were VOID (written before the tip-ends adjustment): the new tests and the aligned list in `7d9ca29`; D11 then escaped (the tip-ends test had only discs without a path), caught after the test was widened (`16ccf3c`). Total 708.7 / 800 kB, startup 106.3 / 115; published on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, until 17.12), fingerprint `8335052fa1b5`."
+    },
     "09aab71ff263bc21": {
       "ro": "Editor de forme; Relief din text; Operații; Estompare și pante; Analiza; Suprafață / volum / greutate",
       "en": "Shape editor; Relief from text; Operations; Fading and slopes; Analysis; Surface / volume / weight"
@@ -2580,6 +2584,10 @@
     "d2209e6152f6179f": {
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
+    },
+    "d2490a00e0e16aa2": {
+      "ro": "Punctele pierdute de linia mediană",
+      "en": "Dots lost by the centre line"
     },
     "d29221736affca95": {
       "ro": "Punțile dopului drept decupat, alese în fereastră; documentul v24",

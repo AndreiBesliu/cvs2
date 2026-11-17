@@ -9315,3 +9315,39 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
   20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
   `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Apoi aranjamentele 28.1↑a și planșele 11.6↑ (`5ab3941`), unite în `6d64b25` (conflictul, doar în DEVLOG); porțile pe ce ating ele: unit-urile aranjamentelor, raportului foilor, exportului, tăierii, acțiunilor și documentelor 399 / 399, build-ul determinist, e2e `aranjament`, `raport-foi`, `manual`, `ancore`, `editare`, `taiere` și `cutit` 66 / 66. Mărimea finală, mai sus.
+
+## 2026-11-16 — Felia 25.3↑d: punctele pierdute de linia mediană (ADR 0222) (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, all three” (owner-ul, în sesiunea principală, la „Start the three recommended slices: plate sheet 11,
+25.3↑d and 28.1↑b?”; transmis de sesiunea principală). **Started:** 16.11, 19:42. **Completed:** 17.11, 08:47.
+
+- **Ramura** adusă la `origin/main` (`380c053`, cu 25.3↑c unită; înainte rapidă, fără commit de unire).
+- **Cauza** (găsită pe o grilă de discuri de 2–12 px în 16 poziții față de pixel, dure și netezite; pătrate de 1–6 px):
+  115 cazuri greșite; subțierea Zhang–Suen (cu Lü și Wang) șterge cu totul un bloc de 2 × 2 și resturile scurte de doi
+  pixeli grosime (dispăreau capsula de 9 × 6 și discul de 12 px), iar un schelet de 2–3 pixeli e prea scurt pentru
+  `retrage` (rămânea liniuță).
+- **Reparația** (`dbc7431`): după linii, `bucati` în `src/trasare/mediana.ts`: fiecare bucată de cerneală (8-vecinătate)
+  e linii sau un punct; scurtă (lungimea pe axa principală, între centrele pixelilor de la capete, sub grosime + 0,5) →
+  punct, cu căile scoase; lungă fără cale → dreapta axei, între centrele capetelor; grosimea, lățimea de-a curmezișul
+  axei, cel mult 2 · raza + 1 a cercului înscris în centru (un „o” sau un „+” mic rămân linii). Cu capetele în vârf,
+  nicio bucată nu e punct: dreapta axei, de la un vârf la celălalt (proba logoului din 25.3↑b o cerea: căzuse pe prima
+  formă a reparației, la porți). Punctele, numărate pe bucăți.
+- **Urmări:** pătratul galben plin al probelor pe culori (lung cât e de lat) e un punct, fără piesă: trei probe ale lui
+  25.3↑c, puse la zi (patru piese în loc de cinci). Pe 12 Mpx cu praf necurățat: 7 198 de căi → 4 căi și 7 194 de
+  puncte, în același timp (A/B: 0,86 / 0,88 s).
+- **Oprită peste noapte** (procesul sesiunii, în mijlocul pasului „build din HEAD și canalul”: nimic publicat, nimic
+  pierdut; arborele curat la `16ccf3c`) și reluată pe 17.11 („neata! da drumul celorlalte worktrees”, owner-ul, prin
+  sesiunea principală): `origin/main` (`22ab3de`, cu 28.1↑a, 11.6↑ și 10.3↑k) adus în ramură (`8335052`, ciocnire doar
+  în DEVLOG); porțile de mai jos sunt pe arborele unit.
+- **Porțile:** compilatoarele (3), importurile, licențele, traducerile, suita unitară 9 429 pe arborele unit cu `main`
+  (`8335052`), cu una căzută din timp cât rula alături (plafoanele DXF, 7,4 s; singură, 29 / 29); pe codul feliei,
+  înaintea unirii, 9 392 fără căderi, e2e-urile trasării, importului și tutorialul 50 / 50, build-ul determinist
+  (totalul 708,7 / 800 kB, pornirea 106,3 / 115).
+- **Otrăvurile** (`test/otravuri/25.3d.py`): 12 / 12, fiecare pe proba ei, toate unitare; la prima rulare (`dbc7431`)
+  D09 și D10 au scăpat (nicio probă cu o linie oblică de un pixel, niciuna cu capetele în vârf pe o trăsătură lungă) și
+  cinci erau VOID (scrise înaintea reglajului capetelor în vârf): probele noi și lista aliniată în `7d9ca29`; D11 a
+  scăpat apoi (proba capetelor în vârf avea doar discuri fără cale), prinsă după lărgirea probei (`16ccf3c`). Lista
+  25.3: X01 și X02 (vechea numărătoare a punctelor) sunt VOID acum, înlocuite de D01–D10; F02, F06 (25.3) și F03 (25.3b)
+  se stinseseră în 25.3↑c (textele ferestrei), acoperite de F01–F06 din lista 25.3c.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
+  `8335052fa1b5`.
