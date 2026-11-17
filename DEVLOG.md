@@ -9525,3 +9525,39 @@ prognoza mărimii).
   lui (adusă la cerere), închisă cu Renunță, fără nimic ținut.
 - **Rămâne:** linia adminului (ADR 0260) n-a pornit: owner-ul lucra prin Remote Control, care nu pornește sesiuni noi;
   brief-ul e în `C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Publicarea lui `71d488a7` (3.6t), după complet.
+
+## 2026-11-17 — Felia 28.1↑c: Atelierul pe Proiectare, adus la cerere (ADR 0250 §1, §3, §5, §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 28.1↑c” (owner-ul, la „Pornesc 28.1↑c (Atelier, adus la cerere)?”). **Started:** 17.11 13:28.
+**Completed:** 17.11 20:23.
+
+- **Hotărât la pornire:** felia ia așezarea Atelierului pe Proiectare; butoanele mari ale felului tăierii, − / + la
+  adâncime și pas, cartela frezei și „Trimite la mașină” (o acțiune care nu există încă) rămân pentru 28.1↑d.
+- **Codul:**
+  - `src/ui/aranjamentAtelier.ts` (datele), `src/ui/atelier.ts` + `atelier.css` (bucata la cerere),
+    `src/ui/incarcaAranjament.ts` (aranjamentele build-ului și încărcarea, separat de `aranjament.ts`, fără ciclu);
+  - `main.tsx` așteaptă bucata înaintea primei randări (fără ea: Insulele, motivul în jurnalul local); App ține
+    aranjamentul în stare, fereastra Aspectul îl schimbă pe loc (prima alegere: întunecat, butoane mari; motivul când nu
+    vine bucata);
+  - numele uneltelor în bara editării (`.nume-unealta`, ascuns în Insule);
+  - poarta mărimii numără bucata Atelierului, ca ușa (plafonul ei 8 kB; pornirea cu ușa și Atelierul sub 115).
+- **Găsite pe capturi, înainte de raport:** extensia barei intra sub panouri (acum se rupe pe rânduri); importul cu
+  numele lung împingea „Exportă G-code” sub panouri la 1280 px (acum doar pictograma, ca în Insule); foaia era potrivită
+  pe sub coloana uneltelor (acum locul coloanei e rezervat) și, la 1280 × 720, pe sub extensia care se rupe pe rânduri
+  la sosirea editării (acum foaia se potrivește din nou atunci, o dată); pe telefon, extensia pe patru rânduri strivea
+  pânza (acum un rând, ca în Insule); panoul strâns se întindea pe jumătate de rând. Reparate și privite din nou, la
+  1440, 1280 × 720, 768, 390 și 320 px.
+- **Probele:** 5 unitare (`aranjamentAtelier.test.ts`), 10 e2e (`atelier.spec.ts`), cele ale ferestrei aduse la zi
+  (Atelierul se poate alege; aranjamentul lipsă de la 28.1↑a e acum Clasic).
+  - suita unitară întreagă: 9 476 de teste, 0 căderi ale feliei (8 sărite), pe unire; trei probe pe timp au căzut sub
+    încărcare (plafoanele DXF, viteza trasării, salvarea amânată) și au trecut singure;
+  - e2e: 92 / 92 în 12 spec-uri (aranjament, atelier, cont, tutorial, carcasa, manual, csp, pwa, ancore, pornire,
+    la-cerere, taste-unelte), pe unire;
+  - tipurile (aplicația, extensia, funcțiile), importurile, licențele: curate; build-ul determinist: identic;
+  - otrăvurile, cu unealta (`test/otravuri/28.1c.py`): 16 / 16 prinse; lista lui 28.1↑b, refăcută (E01, E07).
+- **Scăpat la 28.1↑b, reparat de sesiunea principală la unire:** proba tichetelor din `test/e2e-emulator` număra
+  rândurile meniului contului. De acum, caut rândurile și în dosarele e2e cu emulatoare.
+- **Mărimea**, pe unirea cu `main` `b6aaa54` (fără conflicte): pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 /
+  800; bucata Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
+  „Atelierul”), testul din aplicație (pasul nou), lista otrăvurilor și rândul ei, DEVLOG.
