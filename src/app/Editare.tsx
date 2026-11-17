@@ -1613,7 +1613,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.taiere.incarca')}</p>}>
                   <PanouTaiere doc={doc} indexFoaie={indexFoaie} selectie={selectie} ghidaje={ghidaje}
                     centru={p.cutie ? { x: (p.cutie.minX + p.cutie.maxX) / 2, y: (p.cutie.minY + p.cutie.maxY) / 2 } : null}
-                    onLinie={setLinieTaiere} onTaie={(r) => ruleaza('document.taie', { taiere: () => r })} onInchide={() => { setPanou(null); }} />
+                    onLinie={setLinieTaiere} onTaie={(r) => ruleaza('document.taie', { taiere: () => r })}
+                    {...(p.onAseaza ? { onAseaza: p.onAseaza } : {})} onInchide={() => { setPanou(null); }} />
                 </Suspense>
               </CadruTaiere>
             ) : null}

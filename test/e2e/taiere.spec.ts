@@ -35,6 +35,12 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * „Panoul 1” … „Panoul 4”, alese (o literă de pe firmă, despărțită de ea cu Degrupează, intră în grupul „Panoul 1”); Anulează
  * pune firma la loc, iar blocul, cu alegerea rămasă spre panourile anulate, ia toate formele foii; Reface le pune înapoi. Fără nimic ales, se taie toate formele foii; peste 100 de panouri
  * și un singur panou, butonul e stins, cu motiv; din colț, două forme de 1 200 × 900 și două de 1 200 × 100.
+ *
+ * Felia 10.3↑l (ADR 0181 §7, panourile pe foi): pe o foaie de 1 200 × 900, cu dinții drepți de 20 (pasul 100), mărimea implicită
+ * e cât încape un panou la „Așază pe foi” (1 180 × 880, fără marginile de 10, minus 10 pe fiecare latură: 1 160 × 860), deci
+ * firma iese în 3 × 2 panouri; cu mărimea foii scrisă (1 200 × 900), blocul spune că cel mai mare panou, 1 210 × 510 cu dinții,
+ * nu încape, iar „Cât încape” pune înapoi mărimea implicită. Tăiate, cele șase panouri rămân alese, iar „Așază pe foi…” din
+ * bloc deschide dialogul pe ele: câte unul pe foaie, pe șase foi (cinci noi); Anulează le aduce înapoi pe prima foaie.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -440,4 +446,65 @@ test('Taie în panouri, fără nimic ales: toate formele foii; din colț, două 
     await randuri(page).nth(k).click();
     await expect(page.locator('#root, body').getByText(text)).toBeVisible();
   }
+});
+
+// ——— Panourile pe foi (felia 10.3↑l, ADR 0181 §7) ———
+
+test('Panourile pe foi: mărimea implicită încape cu dinții; mărimea foii e spusă prea mare; „Așază pe foi…” din bloc, câte unul pe foaie', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  // Foaia de 1 200 × 900, fără nimic ales (panoul proprietăților arată foaia).
+  const proprietati = page.locator('[data-panou="proprietati"]');
+  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
+  await expect(proprietati).toHaveAttribute('data-deschis', 'true');
+  for (const [camp, v] of [['foaie-latime', '1200'], ['foaie-inaltime', '900']] as const) {
+    await page.locator(`[data-camp="${camp}"]`).fill(v);
+    await page.locator(`[data-camp="${camp}"]`).press('Enter');
+    await expect(page.locator(`[data-camp="${camp}"]`)).toHaveValue(v);
+  }
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('firma.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati: FIRMA })));
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  await expect(randuri(page)).toHaveCount(1);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="imbinare"]').selectOption('dinti');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('100');
+  await page.locator('[data-taiere="imbinare-inaltime"]').fill('20');
+  await page.locator('[data-taiere="imbinare-raza"]').fill('3');
+  // Implicit, cât încape pe foaie: 1 200 − 2 · 10 − 2 · 10 = 1 160 și 900 − 40 = 860; firma, în 3 × 2.
+  const L = page.locator('[data-taiere="panouri-latime"]'), I = page.locator('[data-taiere="panouri-inaltime"]');
+  await expect(L).toHaveValue('1160');
+  await expect(I).toHaveValue('860');
+  await expect(page.getByTestId('panouri-implicit')).toBeVisible();
+  await expect(page.getByTestId('panouri-grila')).toHaveText('Formele alese: 1; grila: 3 × 2 panouri, peste 2400 × 1000 mm.');
+  await expect(page.getByTestId('panouri-iese')).toHaveCount(0);
+  // Mărimea foii: două coloane de 1 200, cu dinții pe o latură, 1 210 × 510 > 1 180 × 880.
+  await L.fill('1200');
+  await I.fill('900');
+  await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 1210 × 510 mm, iar pe foaie încap 1180 × 880: «Așază pe foi» l-ar lăsa pe loc.');
+  await expect(page.getByTestId('panouri-implicit')).toHaveCount(0);
+  await page.locator('[data-taiere="panouri-implicit"]').click();
+  await expect(L).toHaveValue('1160');
+  await expect(I).toHaveValue('860');
+  await expect(page.getByTestId('panouri-iese')).toHaveCount(0);
+  // Tăiate: șase panouri, alese.
+  await page.locator('[data-taiere="panouri-taie"]').click();
+  await expect(page.getByTestId('panouri-stare')).toContainText('Panouri: 6, alese („Panoul 1” … „Panoul 6”)');
+  await expect(randuri(page)).toHaveText(['Panoul 1', 'Panoul 2', 'Panoul 3', 'Panoul 4', 'Panoul 5', 'Panoul 6']);
+  // „Așază pe foi…” din bloc: dialogul, pe panourile alese; câte unul pe foaie.
+  await page.locator('[data-taiere="panouri-aseaza"]').click();
+  const dialog = page.getByTestId('dialog-asezare');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('[data-aseaza="alese"]')).toBeChecked();
+  await expect(page.getByTestId('aseaza-rezultat')).toHaveText('6 piese pe 6 foi: 1 + 1 + 1 + 1 + 1 + 1. 5 sunt foi noi.');
+  await dialog.locator('[data-buton="aseaza"]').click();
+  await expect(dialog).toHaveCount(0);
+  const foi = page.getByTestId('lista-vectori').locator('[data-foaie-meniu]');
+  await expect(foi).toHaveCount(6);
+  // Anulează: așezarea, într-un pas; panourile rămân, pe prima foaie.
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(foi).toHaveCount(1);
+  await expect(randuri(page)).toHaveCount(6);
+  expect(erori).toEqual([]);
 });
