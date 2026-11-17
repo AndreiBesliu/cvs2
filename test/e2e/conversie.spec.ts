@@ -10,6 +10,9 @@ import { dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
  *   măsurate în Node pe același poligon); Arce le face apoi 32 de arce; „Păstrează” 0 oprește butonul, cu motivul; Anulează.
  * - **Arce:** o polilinie de 32 de linii pe un semicerc R50 rămâne la 0,01 mm (săgeata 0,06 nu încape) și devine un arc la 0,1;
  *   o toleranță în afara 0,001 … 1 mm oprește butonul, cu motivul; „În dreptunghi” sare calea deschisă, numărată.
+ * - **O piesă pusă de două ori** (felia 10.3↑m; poligonul, cu «+1», e și pe foaia 2): „În cerc” arată banda întrebării
+ *   („Convertești o piesă pusă de 2 ori”); «Convertește piesa (toate cele 2)» o schimbă în locul ei (încă o conversie nu mai are ce
+ *   face, deci nici întrebare); după Anulează, «Desprinde și convertește» dă instanței alese piesa ei („Pusă o singură dată”).
  */
 test.use({ locale: 'ro-RO' });
 
@@ -90,7 +93,7 @@ test('Arce: semicercul din 32 de linii rămâne la 0,01 și devine un arc la 0,1
 
   await page.locator('[data-conversie="dreptunghi-marime"]').check();
   await page.locator('[data-conversie="dreptunghi"]').click();
-  await expect(stare(page)).toHaveText('Nimic de convertit. Sărite: 1 (căi deschise sau forme puse de mai multe ori pe foaie).');
+  await expect(stare(page)).toHaveText('Nimic de convertit. Sărite: 1 (căi deschise sau șabloane de plăcuțe).');
   await page.locator('[data-conversie="inchide-panoul"]').click();
   await expect(panou(page)).toHaveCount(0);
 });
@@ -117,4 +120,39 @@ test('Netezește: poligonul cu 200 de laturi devine 14 curbe netede, la 0,008 mm
   await page.locator('[data-editare="conversie"]').click();
   await page.locator('[data-conversie="netezire"]').click();
   await expect(stare(page)).toHaveText('Forme schimbate: 1; linii înlocuite: 200; curbe noi: 14; abaterea cea mai mare: 0,008 mm.');
+});
+
+test('O piesă pusă de două ori: «Convertește piesa» o schimbă la toate; «Desprinde și convertește», doar pe cea aleasă', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await importa(page, POLIGON);
+  const proprietati = page.locator('[data-panou="proprietati"]');
+  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
+  await page.getByTestId('prop-piesa').locator('[data-buton="plus-unu"]').click();
+  await expect(page.getByTestId('prop-piesa').locator('[data-pusa]')).toContainText('Pusă de 2 ori');
+  await randuri(page).nth(0).click();
+  await page.locator('[data-editare="conversie"]').click();
+  const banda = page.getByTestId('intrebare-surori');
+  await page.locator('[data-conversie="cerc"]').click();
+  await expect(banda.locator('span').first()).toHaveText('Convertești o piesă pusă de 2 ori:');
+  await expect(stare(page)).toHaveText('Alege sus: o formă aleasă e pusă de mai multe ori.');
+  await expect(banda.locator('[data-surori="desprinde"]')).toHaveText('Desprinde și convertește');
+  await banda.locator('[data-surori="piesa"]').click();
+  await expect(stare(page)).toHaveText('Forme convertite: 1; abaterea cea mai mare: 0,06 mm.');
+  // Piesa e acum un cerc: la amândouă, deci încă o conversie nu mai schimbă nimic și nu mai întreabă.
+  await page.locator('[data-conversie="cerc"]').click();
+  await expect(stare(page)).toContainText('Nimic de convertit');
+  await expect(banda).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  // «Desprinde și convertește»: instanța aleasă primește piesa ei.
+  await randuri(page).nth(0).click();
+  await page.locator('[data-editare="conversie"]').click();
+  await page.locator('[data-conversie="cerc"]').click();
+  await banda.locator('[data-surori="desprinde"]').click();
+  await expect(stare(page)).toHaveText('Forme convertite: 1; abaterea cea mai mare: 0,06 mm.');
+  await page.keyboard.press('Escape');
+  await randuri(page).nth(0).click();
+  await expect(page.getByTestId('prop-piesa').locator('[data-pusa]')).toHaveText('Pusă o singură dată.');
+  expect(erori).toEqual([]);
 });

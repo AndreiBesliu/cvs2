@@ -1,4 +1,4 @@
-import { conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { CalculAnulat, conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
@@ -14,7 +14,9 @@ import { faraComentarii, foiIdentice, numeInArhiva } from '../post/foi.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
 import type { CererePanouri } from '../model/panouri.ts';
-import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
+import { CUTITE_PIESA, type CerereTaiere, type RezultatTaiere } from '../model/taiere.ts';
+import { aleseCuSurori, catePuse, desprinse, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from '../model/taiereSurori.ts';
+import { cereAlegerea } from './intrebareSurori.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
@@ -141,24 +143,71 @@ export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: O
  * Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul din clipa cererii, în workerul CAM: instanțele tăiate și
  * părțile lor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
  */
-export function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatTaiere> {
-  return taiereInBazin(doc, cerere, semnal ? { semnal } : {}, indexFoaie);
+export async function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?: AbortSignal, indexFoaie = 0, laIntrebare?: () => void): Promise<RezultatTaiere & { readonly surori?: SuroriTaiere }> {
+  const o = semnal ? { semnal } : {};
+  const r = await taiereInBazin(doc, cerere, o, indexFoaie);
+  if (r.ok || r.motiv !== 'impartita') return r;
+  const s = await surori(doc, cerere.alese, indexFoaie, CUTITE_PIESA.has(cerere.cutit.fel), 'taie', semnal, laIntrebare);
+  if (s.alegere === null) return { ok: false, motiv: 'renuntat' };
+  if (s.alegere === 'piesa') {
+    const x = await taiereInBazin(doc, { ...cerere, surori: 'piesa' }, o, indexFoaie);
+    return x.ok ? { ...x, surori: { mod: 'piesa' } } : x;
+  }
+  const x = await taiereInBazin(desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
+  if (!x.ok) return x;
+  // Se desprind doar instanțele tăiate; cele care pleacă (decuparea) sau rămân neatinse își păstrează surorile.
+  const taiate = new Set(x.degrupate.map((d) => d.instanta.id));
+  return { ...x, surori: { mod: 'desprinde', ids: s.ids.filter((id) => taiate.has(id)) } };
+}
+
+/**
+ * Alegerea unei operații care ar schimba o piesă pusă de mai multe ori (felia 10.3↑m): instanțele alese cu surori ale foii, de
+ * câte ori e pusă piesa lor și răspunsul (cel ținut, sau al benzii; null: omul a renunțat). `laIntrebare` spune panoului că
+ * așteaptă răspunsul. Un semnal anulat între timp oprește calculul (`CalculAnulat`).
+ */
+async function surori(doc: Document, alese: readonly string[], indexFoaie: number, piesa: boolean, fel: 'taie' | 'converteste', semnal?: AbortSignal,
+  laIntrebare?: () => void): Promise<{ readonly foaie: string; readonly ids: readonly string[]; readonly alegere: AlegereSurori | null }> {
+  const foaie = doc.foi[indexFoaie]?.id ?? '';
+  const ids = aleseCuSurori(doc, foaie, alese);
+  laIntrebare?.();
+  const alegere = await cereAlegerea({ n: catePuse(doc, foaie, ids), piesa, fel }, semnal);
+  if (semnal?.aborted) throw new CalculAnulat();
+  return { foaie, ids, alegere };
 }
 
 /**
  * Tăierea în panouri (ADR 0181 §7, felia 10.3↑k), pe documentul din clipa cererii, în workerul CAM: degruparea și grupurile
  * panourilor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
  */
-export function taiePanourile(doc: Document, cerere: CererePanouri, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatTaiere> {
-  return panouriInBazin(doc, cerere, semnal ? { semnal } : {}, indexFoaie);
+export async function taiePanourile(doc: Document, cerere: CererePanouri, semnal?: AbortSignal, indexFoaie = 0, laIntrebare?: () => void): Promise<RezultatTaiere & { readonly surori?: SuroriTaiere }> {
+  const o = semnal ? { semnal } : {};
+  const r = await panouriInBazin(doc, cerere, o, indexFoaie);
+  if (r.ok || r.motiv !== 'impartita') return r;
+  // Panourile depind de locul fiecărei instanțe pe foaie: doar «Desprinde și taie». Fiecare formă aleasă ajunge într-un panou
+  // (tăiată, grupată sau numită), deci toate cele cu surori se desprind.
+  const s = await surori(doc, cerere.alese, indexFoaie, false, 'taie', semnal, laIntrebare);
+  if (s.alegere === null) return { ok: false, motiv: 'renuntat' };
+  const x = await panouriInBazin(desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
+  return x.ok ? { ...x, surori: { mod: 'desprinde', ids: s.ids } } : x;
 }
 
 /**
  * Conversia vectorilor (ADR 0180, felia 10.3↑d), pe documentul din clipa cererii, în workerul CAM: piesele schimbate, pe care
  * acțiunea `document.converteste` le aplică într-un pas, doar dacă documentul e încă același.
  */
-export function convertesteVectorii(doc: Document, cerere: CerereConversie, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatConversie> {
-  return conversieInBazin(doc, cerere, semnal ? { semnal } : {}, indexFoaie);
+export async function convertesteVectorii(doc: Document, cerere: CerereConversie, semnal?: AbortSignal, indexFoaie = 0, laIntrebare?: () => void): Promise<RezultatConversie & { readonly surori?: SuroriConversie }> {
+  const o = semnal ? { semnal } : {};
+  const r = await conversieInBazin(doc, cerere, o, indexFoaie);
+  if (r.ok || r.motiv !== 'impartita') return r;
+  const s = await surori(doc, cerere.alese, indexFoaie, true, 'converteste', semnal, laIntrebare);
+  if (s.alegere === null) return { ok: false, motiv: 'renuntat' };
+  if (s.alegere === 'piesa') {
+    const x = await conversieInBazin(doc, { ...cerere, surori: 'piesa' }, o, indexFoaie);
+    return x.ok ? { ...x, surori: { mod: 'piesa' } } : x;
+  }
+  const desprins = desprinse(doc, s.foaie, s.ids);
+  const x = await conversieInBazin(desprins, cerere, o, indexFoaie);
+  return x.ok ? { ...x, surori: { mod: 'desprinde', desprins, alese: s.ids, foaie: s.foaie } } : x;
 }
 
 /** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */

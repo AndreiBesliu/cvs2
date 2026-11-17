@@ -151,15 +151,27 @@ nodes, the text, the scale, the mirroring, the skew or the operations is made fo
 each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
 a mirror or a skew: then the change is refused, with the reason.
 
-**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its own,
-a copy, in the same place: from then on it changes on its own. The last instance keeps the part. [Ungrouping](#degrupare),
-the [check](#verificare)'s repairs and [cutting the vectors](#taiere) do not change a part placed more than once: detach it
-first. A deleted instance goes alone; the part goes with its last instance.
+**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its
+own, a copy, in the same place: from then on it changes on its own. The last instance keeps the part.
+[Ungrouping](#degrupare) and the [check](#verificare)'s repairs do not change a part placed more than once: detach it first.
+[Cutting](#taiere) and converting ask (below). A deleted instance goes alone; the part goes with its last instance.
 
 **Grouping.** With a part placed more than once among the chosen shapes, **Group** asks: **Just this one** (detaches it, then
 groups) or **In all N** (the other shapes go into the part, so they show next to each of its instances; it works with a single
 part of this kind among the chosen ones). The **Remember the choice** box keeps it in the browser: grouping no longer asks.
 The right-click menu has both rows, **Group just this one** and **Group in the whole part**.
+
+**Cutting and converting.** When a cut ([Cut vectors](#taiere), the Knife, Cut into panels, Cut at intersections, Clip) or a
+conversion (Arcs, To circle, To rectangle, Smooth) would change a part placed more than once, the question shows at the top:
+**Detach and cut** (the main one: each cut shape gets a part of its own, and the others stay linked to each other) or **Cut
+the part (all N)** (the cut goes into the part: each instance of it, on any sheet, is cut in the same place, and the pieces
+stay placed as many times). **Cut the part** is only offered for cuts that do not depend on what is around each instance (the
+line, the guide, the last chosen shape, the Knife with Line, Pen, Freehand, Shape and Scissors); with Clip, Cut at
+intersections, Trim and Cut into panels, only **Detach and cut**. Two chosen instances of the same part cut in different
+places of it, and the template of some plates (each with its own letters), cannot be cut as a part: the reason says so. When
+converting, **Detach and convert** or **Convert the part**. **Remember the choice** keeps it in the browser; the **Parts
+placed more than once** row in the cutting options and in the conversion panel shows it, changes it or forgets it (**ask**).
+**Cancel** changes nothing. Each operation stays a single undo step.
 
 **Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
 instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
@@ -937,8 +949,8 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 **Arrange on sheets…**, in the block, opens the arrangement window on them (its margins, distance, order and rotation), to
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
-letter in its panel. More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into
-panels** is a single undo step.
+letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
+**Cut into panels** is a single undo step.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -954,8 +966,8 @@ becomes a shape, chosen, so you can delete the one you do not need. A shape that
 The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
 open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
-placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
-(Ctrl+Z).
+placed more than once asks first: see [Parts placed more than once](#piese-legate). Each cut (**Cut vectors**, from the
+panel) is a single undo step (Ctrl+Z).
 
 ## The Knife tool
 %% capitol: cutit
@@ -1027,11 +1039,12 @@ button:
   rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
   circle.
 
-The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
-along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
-lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
-were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
-converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly
+(more along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new
+arcs and lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle,
+how many were open paths (only closed shapes become a circle or a rectangle). A shape placed more than once asks first: see
+[Parts placed more than once](#piese-legate). Each conversion (**Convert vectors**, from the panel) is a single undo step
+(Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare

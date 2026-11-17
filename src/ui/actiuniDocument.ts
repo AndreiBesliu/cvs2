@@ -6,6 +6,7 @@ import {
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { PanouDeGrupat } from '../model/grupuriPanouri.ts';
+import type { SuroriConversie, SuroriTaiere } from '../model/taiereSurori.ts';
 import type { Retea } from '../model/retea.ts';
 // Doar tipul: așezarea pe foi vine cu calculul și cu dialogul ei, la cerere (ADR 0210 §3).
 import type { OptiuniAsezare } from '../model/asezare.ts';
@@ -92,9 +93,11 @@ export type TaiereCalculata = {
   readonly doc: Document; readonly degrupate: readonly Degrupata[]; readonly ids: readonly string[]; readonly sterse?: readonly string[];
   /** Tăierea în panouri (ADR 0181 §7): panourile de grupat după degrupare, în același pas (`grupuriPanouri.ts`). */
   readonly grupuri?: readonly PanouDeGrupat[];
+  /** O piesă pusă de mai multe ori (felia 10.3↑m): «Desprinde și taie» sau «Taie piesa» (`taiereSurori.ts`). */
+  readonly surori?: SuroriTaiere;
 };
 /** O conversie calculată de worker (ADR 0180, felia 10.3↑d): piesele schimbate, cu aceleași id-uri, pe documentul `doc`. */
-export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[] };
+export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[]; readonly surori?: SuroriConversie };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;

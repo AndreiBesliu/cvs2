@@ -9,6 +9,7 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { ConversieCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { RandSurori } from './IntrebareSurori.tsx';
 import './taiere.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -121,7 +122,7 @@ export function PanouConversie({ doc, indexFoaie, selectie, onConverteste, onInc
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.convertesteVectorii(laCerere, c, s.signal, indexFoaie).then((r) => {
+      calc.convertesteVectorii(laCerere, c, s.signal, indexFoaie, () => { if (!s.signal.aborted) setStare({ fel: 'gata', text: t('editare.surori.astept'), rau: false }); }).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           setStare({ fel: 'gata', text: t(`editare.conversie.motiv.${r.motiv}`), rau: true });
@@ -132,7 +133,7 @@ export function PanouConversie({ doc, indexFoaie, selectie, onConverteste, onInc
           setStare({ fel: 'gata', text, rau: true });
           return;
         }
-        const v = onConverteste({ doc: laCerere, piese: r.piese });
+        const v = onConverteste({ doc: laCerere, piese: r.piese, ...(r.surori ? { surori: r.surori } : {}) });
         setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
       }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
     }, cade);
@@ -148,6 +149,7 @@ export function PanouConversie({ doc, indexFoaie, selectie, onConverteste, onInc
       {selectie.length === 0
         ? <p className="motiv-retea" role="status" data-testid="conversie-motiv">{t('editare.conversie.motiv.nimic-ales')}</p>
         : <p className="stare-taiere">{t('editare.conversie.alese', { n: String(selectie.length) })}</p>}
+      <RandSurori date={(x) => ({ 'data-conversie': x })} />
       <fieldset className="campuri-taiere">
         <legend>{t('editare.conversie.arce')}</legend>
         <p className="stare-taiere">{t('editare.conversie.arce.text')}</p>
