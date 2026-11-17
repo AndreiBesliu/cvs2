@@ -49,12 +49,30 @@ The **layout** is how the bars and panels sit around the canvas:
 - **Workshop**: big buttons, for a tablet and next to the machine;
 - **Step by step**: takes you from the drawing to the machine, step by step.
 
-For now only Islands can be chosen; the other three show in the window as “coming soon” and arrive one at a time.
+For now Islands and [Workshop](#atelier) can be chosen; Classic and Step by step show in the window as “coming soon” and
+arrive one at a time.
 
 The **theme** is the same as the “Theme” button in the bar: as the system, light or dark. **Big buttons** makes the buttons
 taller (48 px; 56 on a touch screen), with any layout: easier to hit on a tablet or with gloves.
 
 The choice stays on this device (in the browser): the tablet in the workshop can look different from the office computer.
+
+## The Workshop layout
+%% capitol: atelier
+
+**Workshop** is the layout for a tablet and for the screen next to the machine. Choose it in the **Appearance** window
+(**Account** menu, **Appearance…** row). The first time, it starts with the dark theme and **Big buttons**; you can change
+them in the same window before **Keep**.
+
+- The **drawing tools** sit in a column on the left, with their names and keys in view (Select `V`, Rectangle `R`…);
+  below them, Snap and Grid.
+- The **top bar** has Undo and Redo with their names, then import, vector export and **Export G-code**. The bar extension
+  (alignment, mirroring, copying, offset, boolean, 3D) sits below it, over several rows when it does not fit.
+- The **panels** sit together on the right: **Properties** on top, **On the sheet** below.
+- On a tablet held upright and on a phone, the tools move to a row at the bottom, under the canvas, which scrolls with a
+  finger; the panels sit side by side below it.
+
+The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`).
 
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza

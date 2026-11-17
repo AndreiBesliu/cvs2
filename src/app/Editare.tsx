@@ -1756,6 +1756,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <button key={u} type="button" className="unealta aliniaza" aria-pressed={unealta === u} title={titlu} aria-label={titlu} data-unealta={u}
                   disabled={p.doarCitire && u !== 'selectie'} onClick={() => { setUnealta(u); setVedere3d(false); }}>
                   <IconaUnealta u={u} />
+                  <span className="nume-unealta" aria-hidden="true">{numeScurt(titlu)}</span>
                   <span className="tasta-unealta" aria-hidden="true">{TASTA_UNELTEI[u]}</span>
                 </button>
               );
