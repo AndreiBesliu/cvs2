@@ -9566,3 +9566,57 @@ feliilor următoare: 1 = panourile pe foi). **Started:** 17.11, 09:43. **Complet
 - **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 17.12), pe `2fd63df`,
   verificat (ro: mărimea implicită 280 × 180 pe foaia de 300 × 200, tăierea în două panouri, „Așază pe foi…” cu ele alese,
   Anulează și Reface; nicio eroare în consolă).
+
+## 2026-11-17 — Felia 25.3↑e pornită: Rezultatul pe fiecare culoare (ADR 0228, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Felia următoare (25.3↑e, pastila pe culori, cu ADR nou) pornește la cuvântul owner-ului: dacă vrei, pregătește
+propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în `main`, `dd21a8a`). **Started:** 17.11, 09:25.
+**Completed:** 17.11, 09:44.
+
+- **Ramura** adusă la `origin/main` (`021dcc6`; înainte rapidă).
+- **Cercetarea:** ArtCAM / Carveco aleg felul pe culoare (conturul sau linia mediană a fiecărei culori alese, după
+  reducerea culorilor); CorelDRAW PowerTRACE, Inkscape, Vectric, LightBurn au un singur fel pe toată trasarea.
+- **Prototipul** (`.tmp/proto-0228.ts`, doar nucleele de azi): pe desenul probelor din 25.3↑c, galbenul și negrul pe
+  contururi, roșul, albastrul și verdele pe linii mediane: un contur galben, inelul negru (două contururi), o linie
+  roșie legată de trei ori, o linie albastră, o buclă verde. Tot pe linii mediane, galbenul e un punct, fără piesă; tot
+  pe contururi, roșul iese în patru bucăți. Pe 12 Mpx: reducerea culorilor 1,84 s, contururile ~0,4 s, liniile ~0,7 s;
+  cu reducerea o singură dată, ~3 s (separat, ~4,8 s).
+- **ADR 0228, propus** (`docs/adr/0228-rezultatul-pe-fiecare-culoare.md`): lista „Rezultatul culorii” în fiecare pastilă
+  (Ca Rezultatul, Contururi, Linii mediane); reducerea o singură dată; pragul părților late din culorile pe linii
+  mediane; legarea și peste culorile pe contururi; câte o piesă pe culoare, cu felul ei; ~+1,5–2,5 kB. Două întrebări:
+  implicitul pastilei, locul alegerii.
+- **Schița**, cu formularul (răspunsurile în `raspunsuri/owner`): <https://claude.ai/artifact/DatxQZJuRxdiL32WAxVoh6>;
+  privită local în Edge înaintea publicării (fără erori, cele trei alegeri gata și o pastilă schimbată de mână, fără
+  derulare laterală la 375 px); colecția `raspunsuri` citită după publicare (goală).
+- **Documentele:** indexul ADR-urilor, coada owner-ului și jurnalul (etapa 3), CLAUDE.md, traducerile.
+- **Fără cod:** felia pornește după răspunsuri.
+
+## 2026-11-17 — Felia 25.3↑e: Rezultatul pe fiecare culoare (ADR 0228, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–2a” (owner-ul, în sesiunea liniei trasării, la cele două întrebări din ADR 0228). **Started:** 17.11,
+09:55. **Completed:** 17.11, 19:04.
+
+- **Ramura** la `408f2c0` (propunerea); `origin/main` fără nimic nou.
+- **Felia** (`c4b2abc8`): `traseazaCulori` cu `peLinii` (contururile doar ale culorilor rămase pe contururi, curbele
+  doar pe granițele lor, fără plasă când nu e niciuna); `traseazaCuloriMediane` cu el (o singură reducere; liniile doar
+  ale culorilor alese; piesele în ordinea paletei; numărătorile tuturor); calculul cu `culori.rezultate` („Ca
+  Rezultatul” ia Rezultatul de sus); ușa (opțiunile liniilor în cerere cât o culoare e pe linii; căile laolaltă, buclele
+  contururilor nu pe linie); fereastra (lista din pastilă, ștearsă la un număr nou și la legare; opțiunile, părțile late
+  și grosimea după felul culorilor); textele și manualul.
+- **Probele, întâi** (roșii înaintea codului): 8 ale nucleului, 2 ale ușii, una e2e nouă; două schimbate (tipul
+  pieselor). Prima rulare e2e: legarea prin tragere a picat (centrul pastilei, pe listă): bifa pe rândul ei, lista sub
+  ea.
+- Porțile: tipuri (3), importuri, licențe, traduceri (0); suita unitară 9 439 (9 431 trecute, 8 sărite, 0 căzute);
+  e2e-urile trasării, importului și tutorialul, 51 / 51 (portul e2e al worktree-ului mutat pe 4183: 4179 e și al clonei
+  `otravuri-taiere`); 12 Mpx: amestecul ~3 s.
+- **Otrăvurile** (`test/otravuri/25.3e.py`): 24 / 24, fiecare pe proba ei: 15 unitare (E01–E15) și 9 prin e2e (F01–F09);
+  la prima rulare (`c4b2abc8`), E02 a scăpat (plasa făcută degeaba cu toate culorile pe linii: aceleași piese) și F02 a
+  „căzut” doar pe o cădere din timp a altei probe (comparația desenului prindea o tranziție, pe o scenă fără parte
+  lată): probele lor în `fd58810d`, iar otrăvurile ferestrei, rulate din nou pe proba refăcută.
+- **Mărimea:** totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
+  `fd58810d46ca`.
+- **`main` adus** (`6e62d40c`, de la `b6aaa548`; ciocnire doar în DEVLOG), porțile din nou: tipuri (3), importuri,
+  licențe, traduceri (0); unitare 9 481 (9 473 trecute, 8 sărite, 0 căzute); e2e-urile trasării, importului și
+  tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
+  amprenta `6e62d40c5e55`.

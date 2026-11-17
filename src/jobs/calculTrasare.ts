@@ -2,13 +2,14 @@
  * Calculul trasării din imagine (ADR 0220 §2): decodarea (în workerul trasării, cu `createImageBitmap`, peste 16 Mpx redusă),
  * scara (lățimea aleasă, altfel DPI-ul fișierului, altfel 96 px / țol), pragurile curățării din mm în px și nucleul
  * (`src/trasare/trasare.ts`), sau liniile mediane (ADR 0222, `src/trasare/mediana.ts`), sau, pe culori (ADR 0221), nucleul
- * culorilor (`src/trasare/culori.ts`; cu liniile mediane, ADR 0227, `src/trasare/medianeCulori.ts`), cu imaginea pictată
+ * culorilor (`src/trasare/culori.ts`; cu liniile mediane, ADR 0227, `src/trasare/medianeCulori.ts`, și cu rezultatul ales pe
+ * fiecare culoare, ADR 0228), cu imaginea pictată
  * în culorile ei pentru previzualizare. Foaia pozată oblic (ADR
  * 0225, `src/trasare/foaia.ts`): îndreptată la cerere, înaintea zonei (pagina e foaia, cu mărimea formatului), altfel doar
  * căutată, pentru sugestia raportului. Zona aleasă (ADR 0224) e un decupaj: se trasează doar ea, iar pagina e ea. Rulează
  * în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
  */
-import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
+import { CULORI_MAXIM, traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
 import {
   colturiBune, colturiImplicite, formatOrientat, gasesteFoaia, indreaptaFoaia, pareOblica, potrivesteFormatul, proportiiDinPoza,
   type Colturi, type ProportiiFoaie,
@@ -42,13 +43,18 @@ export type CerereTrasare = {
   /** DPI-ul citit din fișier (pe x), sau null. */
   readonly dpi: number | null;
   readonly maxPixeli?: number;
-  /** Trasarea pe culori (ADR 0221): numărul, legăturile și bifele; lipsă sau null: alb-negru, după `optiuni`. */
-  readonly culori?: Pick<OptiuniCulori, 'numar' | 'legaturi' | 'bifate'> | null;
+  /**
+   * Trasarea pe culori (ADR 0221): numărul, legăturile, bifele și rezultatul fiecărei culori (ADR 0228: „ca” e al lui
+   * `rezultat`; lipsă sau null: toate „ca”); lipsă sau null: alb-negru, după `optiuni`.
+   */
+  readonly culori?: (Pick<OptiuniCulori, 'numar' | 'legaturi' | 'bifate'> & {
+    readonly rezultate?: ReadonlyArray<'ca' | 'contururi' | 'mediane'> | null;
+  }) | null;
   /** Contururile (lipsă) sau liniile mediane (ADR 0222; pe culori, ale fiecărei culori, ADR 0227). */
   readonly rezultat?: 'contururi' | 'mediane';
   /**
    * Opțiunile liniei mediane (ADR 0223), cu pragul părților late în mm (null: automat) și, pe culori, legarea peste alte
-   * culori (ADR 0227; lipsă: da); lipsă: ca în ADR 0222.
+   * culori (ADR 0227; lipsă: da); lipsă: ca în ADR 0222. Pe culori, și cu `rezultat` lipsă, dacă o culoare e pe linii.
    */
   readonly mediane?: Omit<OptiuniMediana, 'pragLatPx'> & { readonly pragLatMm: number | null; readonly leaga?: boolean };
   /**
@@ -230,6 +236,17 @@ function decupeaza(img: ImagineRGBA, z: ZonaTrasare): ImagineRGBA {
   return { latime: z.w, inaltime: z.h, date: d };
 }
 
+/**
+ * Culorile pe linii mediane (ADR 0228), după indicele reducerii, până la cel mai mare număr de culori: felul ales al
+ * fiecăreia, iar „Ca Rezultatul” (și fără alegeri), al lui `rezultat`.
+ */
+function peLiniiDin(c: CerereTrasare): boolean[] {
+  return Array.from({ length: CULORI_MAXIM }, (_, k) => {
+    const x = c.culori?.rezultate?.[k] ?? 'ca';
+    return x === 'ca' ? c.rezultat === 'mediane' : x === 'mediane';
+  });
+}
+
 /** Aria în px² a cercului cu diametrul d mm, la scara dată: cel puțin 4 px (2 × 2), dacă pragul nu e 0. */
 export function ariePx(dMm: number, mmPePx: number): number {
   if (!(dMm > 0)) return 0;
@@ -272,7 +289,9 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       ...c.culori, netezime: c.optiuni.netezime, petePx, gauriPx, ...(c.optiuni.margine === true ? { margine: true } : {}),
       ...(c.optiuni.lumina !== undefined && c.optiuni.lumina !== 'uniforma' ? { lumina: c.optiuni.lumina } : {}),
     };
-    const rm = c.rezultat === 'mediane' ? traseazaCuloriMediane(img, oc, { ...om, leaga: m?.leaga !== false }) : null;
+    // Rezultatul pe fiecare culoare (ADR 0228): cu măcar o culoare pe linii, liniile lor și contururile celorlalte.
+    const linii = peLiniiDin(c);
+    const rm = linii.includes(true) ? traseazaCuloriMediane(img, { ...oc, peLinii: linii }, { ...om, leaga: m?.leaga !== false }) : null;
     const r = rm ?? traseazaCulori(img, oc);
     if (!r.ok) return { raspuns: { ...r, fel: 'culori', ...sc }, transfer: deTransferat(deFoaie) };
     const posterizare = posterizeaza(r.etichete, img.latime, img.inaltime);

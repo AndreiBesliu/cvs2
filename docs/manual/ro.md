@@ -830,6 +830,14 @@ culoare (nu peste hârtie); raportul numără legăturile. Fiecare pastilă spun
 foaia are o singură freză, cum stă ea față de trăsătură; **Arată grosimea** desenează banda fiecărei culori cu grosimea
 ei. **Importă** pune câte o formă pe culoare, cu liniile ei tăiate pe linie.
 
+**Rezultatul fiecărei culori:** sub „Se trasează”, fiecare pastilă are lista ei: **Ca Rezultatul** (implicit: felul ales
+sus), **Contururi** sau **Linii mediane**. Așa, un logo cu forme pline într-o culoare și linii în alta iese dintr-o
+singură trasare: formele pline pe contururi (de buzunărit sau de incrustat), liniile pe linii mediane (tăiate pe linie).
+O culoare legată ia felul primei. Opțiunile liniilor mediane apar cât măcar o culoare e pe linii și sunt comune lor;
+pragul automat al părților late vine atunci doar din grosimea lor, iar legarea trece și peste culorile pe contururi. Un
+număr nou de culori șterge alegerile, ca pe bife și pe legături. **Importă** pune câte o formă pe culoare, fiecare cu
+felul ei.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
 - scanările îndreptate vin mai târziu;

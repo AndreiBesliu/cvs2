@@ -160,13 +160,16 @@ function laolalta(lista: readonly CaiTrasate[]): CaiTrasate {
   let nc = 0, nv = 0;
   for (const c of lista) { nc += c.inceput.length - 1; nv += c.tip.length; }
   const inceput = new Uint32Array(nc + 1), tip = new Uint8Array(nv), xy = new Float64Array(6 * nv), exterior = new Uint8Array(nc);
-  const deschisa = lista.some((c) => c.deschisa) ? new Uint8Array(nc) : null, peLinie = lista.some((c) => c.peLinie) ? new Uint8Array(nc) : null;
+  const deschisa = lista.some((c) => c.deschisa) ? new Uint8Array(nc) : null;
+  // `peLinie`, dacă îl are o piesă, sau dacă liniile mediane stau lângă contururi (ADR 0228): buclele contururilor, nu pe linie.
+  const peLinie = lista.some((c) => c.peLinie) || (deschisa && lista.some((c) => !c.deschisa)) ? new Uint8Array(nc) : null;
   let k = 0, v = 0;
   for (const c of lista) {
     for (let j = 0; j + 1 < c.inceput.length; j++) {
       inceput[k + j + 1] = v + (c.inceput[j + 1] ?? 0); exterior[k + j] = c.exterior[j] ?? 0;
       if (deschisa) deschisa[k + j] = c.deschisa?.[j] ?? 0;
-      if (peLinie) peLinie[k + j] = c.peLinie?.[j] ?? 1;
+      // Fără `peLinie`: toate pe linie la o piesă de linii mediane, niciuna la una de contururi (ADR 0228: alături).
+      if (peLinie) peLinie[k + j] = c.peLinie?.[j] ?? (c.deschisa ? 1 : 0);
     }
     tip.set(c.tip, v); xy.set(c.xy, 6 * v);
     k += c.inceput.length - 1; v += c.tip.length;
@@ -266,10 +269,12 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
 
 /**
  * Cererea trasării din alegerile ferestrei: opțiunile nucleului (lumina și marginea doar când nu sunt implicite), curățarea,
- * scara, zona, culorile sau liniile mediane și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate).
+ * scara, zona, culorile (cu felul fiecăreia, ADR 0228) sau liniile mediane, cu opțiunile lor cât măcar o culoare e pe linii,
+ * și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate).
  */
 export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare {
   const peCulori = a.sursa === 'culori';
+  const peLinii = a.rezultat === 'mediane' || (peCulori && (a.culori.rezultate ?? []).includes('mediane'));
   return {
     imagine: new Blob([new Uint8Array(f.octeti)]),
     optiuni: {
@@ -277,7 +282,8 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
       ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
     },
     peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
-    ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane', mediane: a.mediane } : {}),
+    ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
+    ...(peLinii ? { mediane: a.mediane } : {}),
     ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
   };
 }
