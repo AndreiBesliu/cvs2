@@ -29,7 +29,7 @@ G = 'src/app/GrupuriTaiere.tsx'
 
 # Workerul: refuzul fără alegere și «Taie piesa».
 o('T01', T, "      if (!piesaIntreaga) return { ok: false, motiv: 'impartita' };\n", "", 'surori', 'fără alegere, piesa pusă de mai multe ori se taie')
-o('T02', T, "new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca'])", "new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca', 'intersectii'])",
+o('T02', SU, "new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca'])", "new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca', 'intersectii'])",
   'surori', '«Taie piesa» și la intersecții')
 o('T03', T, "const piesaIntreaga = cerere.surori === 'piesa' && CUTITE_PIESA.has(c.fel);", "const piesaIntreaga = cerere.surori === 'piesa';", 'surori',
   '«Taie piesa» la orice cuțit')

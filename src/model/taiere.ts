@@ -62,6 +62,7 @@ import { autointersectii, indexCutii, intersectiiIntre, offsetDeschis, offsetFig
 import type { Document, ElementNod, FormaDoc, Instanta, Nod, Operatie, Piesa, SegmentDoc, VarfDoc } from './document.ts';
 import { conturElement, cutieElement } from './forme.ts';
 import { dintiPe, drumImbinare, imbinareBuna, type Imbinare } from './imbinare.ts';
+import { CUTITE_PIESA } from './surori.ts';
 import { latimeBuna } from './intreBucati.ts';
 import type { Degrupata } from './jurnal.ts';
 import { elementeFoaie, elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
@@ -172,11 +173,7 @@ export type CerereTaiere = {
   readonly surori?: 'piesa';
 };
 
-/**
- * Cuțitele la care «Taie piesa» are sens (felia 10.3↑m): tăietura cade pe desenul instanței alese, fără să depindă de alte
- * forme. Decuparea, intersecțiile și retezatul depind de ce e în jurul fiecărei instanțe: acolo, doar «Desprinde și taie».
- */
-export const CUTITE_PIESA: ReadonlySet<Cutit['fel']> = new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca']);
+export { CUTITE_PIESA } from './surori.ts';
 
 /**
  * De ce nu s-a tăiat nimic: `nimic-ales` (nicio formă aleasă), `ghidaj` (ghidajul nu mai e pe foaie), `valoare` (X / Y nu e un

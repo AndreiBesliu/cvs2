@@ -22,6 +22,14 @@ export type SuroriConversie =
   | { readonly mod: 'desprinde'; readonly desprins: Document; readonly alese: readonly string[]; readonly foaie: string }
   | { readonly mod: 'piesa' };
 
+/**
+ * Cuțitele la care «Taie piesa» are sens: tăietura cade pe desenul instanței alese, fără să depindă de alte forme. Decuparea,
+ * intersecțiile și retezatul depind de ce e în jurul fiecărei instanțe: acolo, doar «Desprinde și taie». Stă aici, nu în
+ * `taiere.ts`, ca, importată de calcul, să nu tragă după ea modulele tăierii (+1,4 kB într-o bucată comună, măsurat); felurile
+ * cuțitului (`Cutit` din `taiere.ts`), ca șiruri: un import al tipului ar închide un ciclu.
+ */
+export const CUTITE_PIESA: ReadonlySet<string> = new Set(['x', 'y', 'unghi', 'ghidaj', 'forma', 'forme', 'cale', 'foarfeca']);
+
 /** De câte ori e pusă fiecare piesă, pe toate foile. */
 function puse(doc: Document): Map<string, number> {
   const n = new Map<string, number>();
