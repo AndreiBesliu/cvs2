@@ -378,6 +378,11 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
 
 test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circuite; × imediat după schimbări le păstrează', async ({ page }) => {
   await page.addInitScript(() => {
+    // Doar în pagina lui cvs2: scriptul de început rulează în fiecare cadru, iar în cadrul extensiei (sandbox, fără
+    // `allow-same-origin`) `localStorage` aruncă SecurityError. Când Playwright îl punea în cadru după ce raportorul
+    // extensiei asculta deja (sub încărcare), eroarea ajungea în raport și proba cădea (17.11: 5 din 8 rulări, cu 32 de
+    // procese care țin procesorul ocupat).
+    if (window !== window.top) return;
     const acum = Date.now();
     localStorage.setItem('cncvs2.cont', JSON.stringify({
       uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana',

@@ -148,7 +148,10 @@ test('sonda: fără gazdă (timpul), refuzul, permisiunea rețelei locale refuza
 test('sonda unui controler GRBL: un singur octet, ?, în cadrul lui; mesajul de control text (FluidNC) nu e răspunsul', async () => {
   const fluid: Gazdafalsa = {
     deschide: 'da',
-    raspunde(primit, ws) { ws.onmessage?.({ data: 'CURRENT_ID:0' }); if (primit === '?') dupa(() => { ws.primeste('<Idle|MPos:0.000,0.000,0.000|FS:0,0>\r\n'); }); },
+    // Raportul vine după mesajul de control, ca livrare separată, dar într-un microtask: cu un al doilea `setTimeout(0)`, pus
+    // abia după ce primul (`send` → `raspunde`) întârziase sub încărcare, ieșea după fereastra de 40 ms a sondei
+    // (17.11: 12 din 20 de rulări căzute cu 32 de procese care țin procesorul ocupat).
+    raspunde(primit, ws) { ws.onmessage?.({ data: 'CURRENT_ID:0' }); if (primit === '?') queueMicrotask(() => { ws.primeste('<Idle|MPos:0.000,0.000,0.000|FS:0,0>\r\n'); }); },
   };
   const r = retea({ 'fluidnc.local:81': fluid, 'tace.local:81': { deschide: 'da', raspunde(_p, ws) { ws.onmessage?.({ data: 'CURRENT_ID:0' }); } } });
   const ok = await sondeaza(adr('fluidnc.local', 81), GRBL, r.opt);

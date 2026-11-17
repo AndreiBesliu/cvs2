@@ -26,6 +26,11 @@ function versiuneJava(bin: string): number {
 }
 
 const env = { ...process.env };
+// Emulatorul de funcții încarcă codul în cel mult 10 s; sub încărcarea altor sesiuni (worktree-uri paralele, 16–17.11) a
+// trecut de limită („Cannot determine backend specification. Timeout after 10000”), iar probele callable picau cu el, fără
+// nicio vină în cod. Firebase CLI citește limita, în secunde, din FUNCTIONS_DISCOVERY_TIMEOUT; o valoare dată din afară
+// rămâne a ei.
+env['FUNCTIONS_DISCOVERY_TIMEOUT'] ??= '30';
 if (versiuneJava('java') < 21) {
   const jbr = 'C:\\Program Files\\Android\\Android Studio\\jbr';
   if (!existsSync(join(jbr, 'bin', 'java.exe'))) {
