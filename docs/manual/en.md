@@ -835,6 +835,14 @@ another colour (not over the paper); the report counts the joins. Each swatch gi
 if the sheet has a single cutter, how it compares with the stroke; **Show the width** draws each colour's band with its
 own width. **Import** adds one shape per colour, with its lines cut on the line.
 
+**Each colour's result:** under **Trace**, each swatch has its own list: **Same as Result** (the default: the kind
+chosen above), **Outlines** or **Centre lines**. This way, a logo with filled shapes in one colour and lines in another
+comes out of a single trace: the filled shapes as outlines (to pocket or to inlay), the lines as centre lines (cut on
+the line). A linked colour follows the first one. The centre line options show while at least one colour is on centre
+lines and are shared by them; the automatic threshold of the wide parts then comes only from their width, and joining
+also crosses the colours on outlines. A new number of colours clears the choices, like the ticks and the links.
+**Import** adds one shape per colour, each with its own kind.
+
 The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
 sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:

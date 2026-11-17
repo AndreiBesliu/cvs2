@@ -1,9 +1,9 @@
 # ADR 0228 — Rezultatul pe fiecare culoare
 
-**Starea:** propus pe 17.11.2026, la cererea sesiunii principale („dacă vrei, pregătește propunerea, fără cod”), după
-unirea lui 25.3↑d în `main`. Felia 25.3↑e, lăsată de ADR 0227 („Rezultatul ales pe fiecare culoare … rămâne o felie a ei,
-dacă o vrei”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`,
-`021dcc6`). Codul vine abia după răspunsurile la întrebările de la final.
+**Starea:** acceptat pe 17.11.2026, cu toate recomandările („Da, 1a–2a”, owner-ul, la întrebările de la final); propus
+pe 17.11, la cererea sesiunii principale („dacă vrei, pregătește propunerea, fără cod”), după unirea lui 25.3↑d în
+`main`. Felia 25.3↑e, lăsată de ADR 0227 („Rezultatul ales pe fiecare culoare … rămâne o felie a ei, dacă o vrei”),
+fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `021dcc6`).
 **Completează:** ADR 0221 (trasarea pe culori), ADR 0227 (liniile mediane pe culori).
 **Schița:** <https://claude.ai/artifact/DatxQZJuRxdiL32WAxVoh6> (desenul probelor, cu macheta pastilelor și cele trei
 alegeri gata; măsurătorile; întrebările, cu formularul).
@@ -79,3 +79,5 @@ Opțiunile de mai sus vin toate (regula „toate opțiunile”); întrebările s
 2. **Locul alegerii:**
    - **a)** în pastilă, o listă sub „Se trasează” (lângă culoarea ei, cu grosimea ei);
    - b) sub „Rezultatul”, o listă separată a culorilor pe contururi (cu bife).
+
+**Răspunsurile** (17.11, owner-ul, în sesiunea liniei trasării): „Da, 1a–2a”, deci 1a și 2a, toate recomandările.

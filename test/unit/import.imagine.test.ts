@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dpiImagine, felImagine, formatDupaMarime, formatFoaie, TRASARE_IMPLICITA, type AlegeriFoaie } from '../../src/io/imagine.ts';
+import { dpiImagine, felImagine, formatDupaMarime, formatFoaie, TRASARE_IMPLICITA, type AlegeriFoaie, type AlegeriTrasare } from '../../src/io/imagine.ts';
 import { formatDupaAntet, formatImport } from '../../src/io/formatImport.ts';
 import { PIXELI_POSTER, posterizeaza, raspundeTrasare, reduceImaginea, type CerereTrasare } from '../../src/jobs/calculTrasare.ts';
 import { colturiImplicite, type Colturi } from '../../src/trasare/foaia.ts';
@@ -656,4 +656,85 @@ test('pe culori, cu Rezultatul Linii mediane (ADR 0227): piesele au căile pe li
   // Grosimea fiecărei culori (răspunsul 2a), în pixeli, pentru pastile: liniile au 6 px (la 0,25 mm pe pixel, 1,5 mm).
   const g = pv.trasare.culori?.piese.map((p) => p.grosimePx ?? 0) ?? [];
   assert.equal(g.filter((x) => Math.abs(x - 6) <= 1).length, 4, `grosimile: ${g.join(', ')}`);
+});
+
+/** Indicele culorii din paletă cea mai apropiată de `rgb`. */
+function laPaleta(paleta: ReadonlyArray<{ readonly hex: string }>, rgb: readonly number[]): number {
+  let bun = -1, d = Infinity;
+  for (const [k, c] of paleta.entries()) {
+    const v = [1, 3, 5].map((i) => parseInt(c.hex.slice(i, i + 2), 16));
+    const e = v.reduce((s, x, i) => s + (x - (rgb[i] ?? 0)) ** 2, 0);
+    if (e < d) { d = e; bun = k; }
+  }
+  return bun;
+}
+
+test('pe culori, Rezultatul pe fiecare culoare (ADR 0228): galbenul pe Contururi sub Linii mediane, roșul pe Linii mediane sub Contururi', async () => {
+  const mediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: false, bucle: 'linie', leaga: true } as const;
+  const img = desenLiniiColorate();
+  const r0 = (await raspundeTrasare(peCulori({ imagine: img, latimeMm: 150, rezultat: 'mediane', mediane }))).raspuns;
+  assert.ok(r0.ok && r0.fel === 'culori');
+  const paleta = r0.raport.paleta, galben = laPaleta(paleta, [236, 196, 36]), rosu = laPaleta(paleta, [196, 38, 42]);
+  type Fel = 'ca' | 'contururi' | 'mediane';
+  const cu = (rezultat: 'mediane' | null, rezultate: readonly Fel[]): CerereTrasare =>
+    peCulori({ imagine: img, latimeMm: 150, ...(rezultat ? { rezultat } : {}), mediane, culori: { numar: null, legaturi: [], bifate: null, rezultate } });
+  // Linii mediane, galbenul pe Contururi: cinci piese; galbenul, un contur (fără căi deschise, fără grosime), nu un punct.
+  const a = (await raspundeTrasare(cu('mediane', paleta.map((_, k) => (k === galben ? 'contururi' : 'ca'))))).raspuns;
+  assert.ok(a.ok && a.fel === 'culori');
+  assert.equal(a.piese.length, 5);
+  const pg = a.piese.find((p) => p.culoare === galben);
+  assert.ok(pg && pg.cai.deschisa === undefined && pg.grosime === undefined);
+  assert.equal(a.raport.mediane?.puncte, 0);
+  assert.equal(a.raport.mediane?.legaturi, 3);
+  // Ușa: galbenul, un contur tăiat pe exterior; celelalte, pe linie; împreună, într-un singur pas.
+  const pv = previzualizareDinRaspuns({ nume: 'linii.png', octeti: new Uint8Array() }, a);
+  assert.ok(pv.ok && pv.format === 'imagine');
+  const toate = [pv.pregatit, ...(pv.pregatit.impreuna ?? [])];
+  assert.equal(toate.length, 5);
+  const ug = toate.find((p) => p.nume.endsWith(paleta[galben]?.hex ?? '?'));
+  assert.deepEqual(ug?.laturi, ['exterior']);
+  for (const p of toate) if (p !== ug) assert.ok(p.laturi?.every((l) => l === 'pe-linie'), `${p.nume}: ${p.laturi?.join(', ')}`);
+  assert.equal(pv.exterioare, 1);
+  // Desenul previzualizării: bucla conturului galben e închisă și nu e pe linie (e a unui contur).
+  const inainte = a.piese.slice(0, a.piese.indexOf(pg)).reduce((s, p) => s + p.cai.inceput.length - 1, 0);
+  assert.equal(pv.contur.deschisa?.[inainte], 0);
+  assert.equal(pv.contur.peLinie?.[inainte], 0);
+  // Contururi, roșul pe Linii mediane: roșul, o linie legată de trei ori, cu grosimea lui; celelalte, contururi.
+  const b = (await raspundeTrasare(cu(null, paleta.map((_, k) => (k === rosu ? 'mediane' : 'ca'))))).raspuns;
+  assert.ok(b.ok && b.fel === 'culori');
+  assert.equal(b.piese.length, 5);
+  const pr = b.piese.find((p) => p.culoare === rosu);
+  assert.ok(pr && Math.abs((pr.grosime ?? 0) - 6) <= 1, `roșul: ${pr?.grosime}`);
+  assert.equal(Array.from(pr.cai.deschisa ?? []).filter((x) => x === 1).length, 1);
+  assert.equal(b.raport.mediane?.legaturi, 3);
+  assert.ok(b.piese.every((p) => p === pr || (p.cai.deschisa === undefined && p.grosime === undefined)));
+  // „Ca Rezultatul” peste tot: exact cererea fără felurile culorilor, pe linii și pe contururi.
+  assert.deepEqual((await raspundeTrasare(cu('mediane', paleta.map(() => 'ca')))).raspuns, r0);
+  assert.deepEqual((await raspundeTrasare(cu(null, paleta.map(() => 'ca')))).raspuns,
+    (await raspundeTrasare(peCulori({ imagine: img, latimeMm: 150 }))).raspuns);
+});
+
+test('cererea din alegeri, pe culori (ADR 0228): felul fiecărei culori trece; opțiunile liniilor, cât măcar o culoare e pe linii', () => {
+  const f = { nume: 'poza.jpg', octeti: new Uint8Array([0xff, 0xd8, 0xff, 0xd9]) };
+  type Fel = 'ca' | 'contururi' | 'mediane';
+  const din = (rezultat: AlegeriTrasare['rezultat'], rezultate: readonly Fel[] | null, sursa: AlegeriTrasare['sursa'] = 'culori'): CerereTrasare =>
+    cerereTrasare(f, { ...TRASARE_IMPLICITA, sursa, rezultat, culori: { ...TRASARE_IMPLICITA.culori, rezultate } });
+  // Contururi, cu o culoare pe Linii mediane: felurile, cu culorile, și opțiunile liniilor, fără Rezultatul liniilor.
+  const a = din('contururi', ['ca', 'mediane']);
+  assert.deepEqual(a.culori?.rezultate, ['ca', 'mediane']);
+  assert.equal(a.rezultat, undefined);
+  assert.deepEqual(a.mediane, TRASARE_IMPLICITA.mediane);
+  // Nicio culoare pe linii: fără opțiunile liniilor.
+  assert.equal(din('contururi', ['ca', 'contururi']).mediane, undefined);
+  assert.equal(din('contururi', null).mediane, undefined);
+  // Linii mediane: ca până acum.
+  const b = din('mediane', ['contururi']);
+  assert.equal(b.rezultat, 'mediane');
+  assert.deepEqual(b.mediane, TRASARE_IMPLICITA.mediane);
+  // Alb-negru: felurile culorilor nu contează (fără culori, fără opțiunile liniilor).
+  const c = din('contururi', ['mediane'], 'auto');
+  assert.equal(c.culori, undefined);
+  assert.equal(c.mediane, undefined);
+  // Implicit (răspunsul 1a): fiecare culoare „Ca Rezultatul”.
+  assert.equal(TRASARE_IMPLICITA.culori.rezultate, null);
 });
