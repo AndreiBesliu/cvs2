@@ -139,13 +139,17 @@ default), the sheet margin and the distance between parts, on X and on Y (with *
 number). The parts are placed by the box of each one, with its rotation, row by row; the ones staying on the sheet are
 avoided. Whatever no longer fits goes to the next sheet, if it is empty, then to new sheets, like the active sheet. A part
 larger than the sheet stays where it is. No size changes. The distance is at least the cutter of the outside profile
-(otherwise one part’s cut would run into its neighbour), and the window says the minimum. **Order**: as in the list
+(otherwise one part’s cut would run into its neighbour), and the window says the minimum. With tabs on the outside profile,
+the window starts at 2 × the cutter + 3 mm, rounded up (10 mm with a 3.175 cutter), and says why: below 2 × the cutter, the
+cuts of two neighbouring parts merge, and the tabs facing the neighbours have no wood left to hold on to. A smaller
+distance, but at least the cutter, is accepted, with a warning. **Order**: as in the list
 (default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
 **Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
 
 **Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
-sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement;
-**Move and arrange on a new sheet** arranges them on a new sheet, like the active one. Whatever does not fit goes, as
+sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement
+(the distance rises by itself to the cutter, and with tabs to 2 × the cutter + 3 mm); **Move and arrange on a new sheet**
+arranges them on a new sheet, like the active one. Whatever does not fit goes, as
 above, to the next sheets.
 
 Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets, an arrangement) is a single undo step
@@ -162,7 +166,8 @@ part, so a change to them shows on all of them.
 **More and +1.** With a single part chosen, the Properties panel shows, under **Part**, how many times it is placed and on
 which sheets. **More…** asks **How many in total** (more than now, at most 1,000) and shows, before you add them, where the
 new ones go: on the part's row, to its right, then on rows below, from the sheet's margin (10 mm), going around the parts on
-the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger.
+the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger;
+with tabs on an outside profile, at least 2 × the cutter + 3 mm, rounded up (see “Arrange on sheets”).
 Whatever does not fit goes to the next sheet, if it is empty, then to new sheets, like the part's sheet. **+1** places one
 more after the last. `Ctrl+D` stays a separate copy, with its own part.
 
@@ -206,7 +211,8 @@ capitals and diacritics: **matched automatically**) or, by choice, another colum
 (from, step, digits). A text without a field: choose in **The text of the part** the piece that changes from one plate to
 another and press **Make the chosen text the field {Name}** (the name is the column's, or the one written in). **Rows from …
 to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets: 2 + 2 + 2”), with the margin and spacing of
-“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter). **Make the plates**: the first row on
+“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter; with tabs, it starts at 2 × the
+cutter + 3 mm, and below that a warning appears). **Make the plates**: the first row on
 the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
 by the box** box on the text, the panel says how many plates were shrunk and by how much.
 

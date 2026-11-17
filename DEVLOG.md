@@ -9451,3 +9451,37 @@ după pauza de noapte. **Started:** 16.11 19:41. **Completed:** 17.11 11:43.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul nou),
   testul din aplicație (pasul nou), lista otrăvurilor (`test/otravuri/28.1b.py` și rândul ei din `docs/otravuri.md`),
   DEVLOG.
+
+## 2026-11-17 — Felia 11.3↑b: avertismentul urechilor la așezare (ADR 0210) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑b? Răspunde „Da, 11.3↑b” sau „Mai târziu”.”: „Da, 11.3↑b”.
+**Started:** 17.11, 13:29.
+
+- **Ramura:** `main` `e38ca72` (28.1↑b unită, probele instabile reparate) a venit prin avans direct, peste 11.7↑ unită.
+- **Regula** (`src/model/distantaPiese.ts`, nou): cu urechi pe un profil exterior, distanța propusă dintre piese e
+  2 × freza + 3 mm, rotunjită în sus la milimetru (10 cu Ø3,175, ca pe placa 11; 9 cu Ø3; 15 cu Ø6). Sub 2 × freza,
+  tăieturile vecine se unesc și urechile dinspre vecini nu mai țin (placa 11: 9 din 15 plăcuțe cad la 5 mm). ADR-ul spunea
+  +1; cu el ar fi rămas 1,65 mm de lemn între tăieturi, cu +3 rămân 3,65, cât folosește placa. `frezaExterioara` s-a mutat
+  aici din `asezare.ts`, ca așezarea și copiile să aibă aceeași regulă fără un ciclu de importuri.
+- **«Așază pe foi»** (`DialogAsezare.tsx`): distanța pornește de la propunere; sub rândul minimului, nota „cu urechi, 10 mm:
+  între tăieturile vecine rămâne lemnul de care se țin urechile”; sub propunere, nota devine avertismentul (culoarea
+  avertismentelor; contrastul 5,7 pe tema luminoasă, 7,6 pe cea întunecată), iar Așază rămâne pornit; sub freză, refuzul de
+  până acum. Minimul se scrie acum cu virgula zecimală în română (3,175).
+- **«Din CSV…»** (`DialogCsv.tsx`): distanța ținută urcă singură la propunere; sub ea, scrisă la „Schimbă…”, avertismentul.
+- **«Încă…», «+1»** (`distantaCopii`) și **„Mută și așază la capăt”** (`actiuniDocumentCalcul.ts`): nu întreabă distanța,
+  deci urcă singură la propunere.
+- **Probele:** `asezare.urechi.test.ts` (5: regula pe hârtie, urechile doar pe profilul exterior, distanța propusă, pragul
+  avertismentului, placa 11 refăcută din distanța propusă), copiile cu urechi (`pieseLegate.test.ts`), „Mută și așază” cu
+  urechi (`asezare.actiuni.test.ts`); e2e: Ø3,175 în «Așază pe foi» (proiect v10 pus în baza aplicației, deschis prin
+  migrare) și Ø6 în «Din CSV…» (rama cu urechi din fereastra exportului; literele săpate în V, altfel exportul se oprește la
+  golurile lui „Ana”).
+- **Otrăvurile** `test/otravuri/11.3b.py`: 21 / 21 la prima rulare (`0a9ab92`, clona `m113b`, ștearsă după rulare): 14 unitare
+  și 7 prin e2e. `lot 0 20` lăsa pe dinafară ultima otravă (E07): rulată separat. Două gărzi au ieșit din cod la alegerea
+  listei: −1e-9 la rotunjire și „propunerea peste minim” la avertisment (nicio otravă nu le putea prinde).
+- **Documentele:** ADR 0210 (alegerea „a”, cu +3, și secțiunea feliei), indexul ADR-urilor, manualul (ro, en: „Așază pe
+  foi”, „Mută și așază”, «Încă…», «Din CSV…»), fișa plăcii 11 (aplicația propune singură distanța 10), `CLAUDE.md`,
+  `etapa-03.md` și traducerea rândului, `otravuri.md`.
+- **Porțile:** tsc ×3, importurile 20 / 0, traducerile 796 / 0, unitare 9 466 (9 458 trec, 0 căzute, 8 sărite), build-ul determinist (329 de fișiere identice; pornirea 106,6 kB, cu ușa 110,6 / 115, neschimbată față de `main` `e38ca72`; totalul 711,0 / 800, +0,2 kB). E2e-ul complet: 489 / 504 la prima rulare, cu 15 căderi din timp (paleta neapărută în 5 s, „ERR_ABORTED / frame was detached”); rulate apoi singure, 14 trec, iar `pwa.spec.ts:432` (progresul la prima vizită) cade și pe `main` `e38ca72`, alternat cu ramura: câte 2 din 9 rulări pe fiecare (procentul se mută între cele două citiri ale probei).
+- **Canalul `plansele`**, republicat din vârful ramurii.
+
+**Completed:** 17.11, 20:36.
