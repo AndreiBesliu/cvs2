@@ -16,7 +16,9 @@
  *   schimbă în locul ei (o dată, cu „s” și „i2” alese), deci toate cele patru; cu «Desprinde și convertește», doar „s” primește
  *   piesa ei, convertită, iar celelalte trei rămân pe piesa veche.
  * - **la otrăvuri** (felia 10.3↑m): o formă pusă o dată, printre cele alese, nu e „cu surori”, iar de câte ori e pusă e cea mai
- *   folosită; „i2” mutată la X = 300,7 se taie la fel ca „s” (amprenta, rotunjită la 1e-6, ocolește zgomotul scăderii); tăiată
+ *   folosită; „i2” rotită cu 180° la (300, 60) se taie la Y = 30 în același loc al piesei ca „s” (bucățile vin în ordine
+ *   inversă, iar rotirea lasă zgomot: amprenta, fără ordine și rotunjită la 1e-6, le găsește la fel), iar comanda le pune la
+ *   locul fiecărei instanțe (aceeași foaie ca tăiate pe rând, ca forme); tăiată
  *   doar „i2”, a doua aleasă, degruparea arată spre piesa desprinsă acum (alta decât pe documentul de calcul); conversia unui
  *   șablon de plăcuțe, ca piesă, se sare, numărată; la «Desprinde și convertește», o a doua piesă cu surori, neschimbată (o cale
  *   deschisă, la „În dreptunghi”), nu se desprinde.
@@ -135,9 +137,14 @@ test('«Taie piesa»: tăiate în locuri diferite ale piesei, `diferite`; la fel
   assert.ok(f1);
   const mutat: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300, 20)] }, ...d.foi.slice(1)] };
   assert.deepEqual(taie(mutat, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' })), { ok: false, motiv: 'diferite' });
-  // „i2” la X = 300,7: aceeași tăietură în desenul piesei, cu zgomotul scăderii (330,7 − 300,7) rotunjit.
-  const zecimal: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300.7, 0)] }, ...d.foi.slice(1)] };
-  assert.equal(ok(taie(zecimal, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' }))).degrupate.length, 2);
+  // „i2” rotită cu 180° la (300, 60): Y = 30 o taie la 60 − 30 = 30 în desenul piesei, ca pe „s”, cu bucățile invers și zgomotul
+  // rotirii; trece, iar pe foaie bucățile stau unde le-ar pune și tăierea fiecăreia (cutiile, aceleași).
+  const rotita: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300, 60, 180)] }, ...d.foi.slice(1)] };
+  const rr = ok(taie(rotita, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' })));
+  assert.equal(rr.degrupate.length, 2);
+  const peFoaie = aplicat(rotita, comenziTaiePiesa(rotita, 'f1', rr.degrupate));
+  const cutiiI2 = (peFoaie.foi[0]?.instante ?? []).slice(2).map((i) => cutie(peFoaie, 0, i.id)).map((k) => [k.minY, k.maxY].map((v) => Math.round(v * 1e6) / 1e6));
+  assert.deepEqual(cutiiI2.sort((a, b) => (a[0] ?? 0) - (b[0] ?? 0)), [[-40, 30], [30, 60]], '„i2”: bucățile de o parte și de alta a lui Y = 30');
   // O plăcuță: o instanță a piesei (oriunde) are literele ei.
   const placuta: Document = { ...d, foi: [d.foi[0] as Document['foi'][number], { ...(d.foi[1] as Document['foi'][number]), instante: [{ ...inst('i3', 500, 50, 90), texte: {} }, ...(d.foi[1]?.instante.slice(1) ?? [])] }] };
   assert.deepEqual(taie(placuta, cerere(['s'], { surori: 'piesa' })), { ok: false, motiv: 'placute' });
