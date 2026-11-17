@@ -347,21 +347,8 @@ test('rezultatul pe fiecare culoare (ADR 0228): în pastilă, galbenul pe Contur
   await expect.poll(valori).toBe('ca ca ca ca ca');
   await page.locator('[data-camp="trasare-culori-automat"]').check();
   await expect(liste).toHaveCount(toate.paleta.length);
-  // Rezultatul: Contururi; galbenul pe Linii mediane: opțiunile liniilor apar, iar partea lui lată se semnalează pe
-  // previzualizare (bifa „Arată părțile late” o scoate).
+  // Rezultatul: Contururi: opțiunile liniilor dispar.
   await page.locator('[data-camp="trasare-rezultat"]').selectOption('contururi');
-  await expect(page.getByTestId('trasare-optiuni-mediane')).toHaveCount(0);
-  await fel(galben).selectOption('mediane');
-  await expect(page.getByTestId('trasare-optiuni-mediane')).toBeVisible();
-  await expect(page.getByTestId('trasare-parti')).toBeVisible();
-  const panza = page.getByTestId('trasare-previzualizare');
-  const desen = () => panza.evaluate((c) => (c as HTMLCanvasElement).toDataURL());
-  const cuLate = await desen();
-  await page.locator('[data-camp="trasare-arata-late"]').uncheck();
-  await expect(page.getByTestId('trasare-parti')).toHaveCount(0);
-  await expect.poll(desen).not.toBe(cuLate);
-  await page.locator('[data-camp="trasare-arata-late"]').check();
-  await fel(galben).selectOption('ca');
   await expect(page.getByTestId('trasare-optiuni-mediane')).toHaveCount(0);
   // O culoare legată ia felul primei: verdele pe Linii mediane, legat de roșu, își pierde alegerea (opțiunile liniilor dispar).
   const verde = celMaiAproape(toate.paleta, [44, 146, 70]);
@@ -379,6 +366,28 @@ test('rezultatul pe fiecare culoare (ADR 0228): în pastilă, galbenul pe Contur
   await expect(page.getByTestId('import-piese')).toHaveText(piese(5));
   await expect(pastila(page, rosu).getByTestId('trasare-pastila-grosime')).toBeVisible();
   await expect(pastila(page, galben).getByTestId('trasare-pastila-grosime')).toHaveCount(0);
+  // Și galbenul pe Linii mediane: pragul vine din grosimea liniei roșii, deci pătratul e o parte lată, semnalată pe
+  // previzualizare; „Arată părțile late” o scoate. Desenul, comparat după ce s-a liniștit (aceiași pixeli la 400 ms).
+  await fel(galben).selectOption('mediane');
+  await expect(page.getByTestId('trasare-parti')).toContainText('1 parte lată');
+  const panza = page.getByTestId('trasare-previzualizare');
+  const linistit = async (): Promise<string> => {
+    await expect(page.getByTestId('trasare-trasez')).toHaveCount(0);
+    let x = await panza.evaluate((c) => (c as HTMLCanvasElement).toDataURL());
+    for (;;) {
+      await page.waitForTimeout(400);
+      const y = await panza.evaluate((c) => (c as HTMLCanvasElement).toDataURL());
+      if (y === x) return y;
+      x = y;
+    }
+  };
+  const cuLate = await linistit();
+  await page.locator('[data-camp="trasare-arata-late"]').uncheck();
+  await expect(page.getByTestId('trasare-parti')).toHaveCount(0);
+  expect(await linistit()).not.toBe(cuLate);
+  await page.locator('[data-camp="trasare-arata-late"]').check();
+  await fel(galben).selectOption('ca');
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(5));
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   const doc = JSON.parse(await documentSalvat(page, 1)) as { piese: Array<{ nume: string; operatii: Array<{ id: string; latura: string }> }> };

@@ -212,4 +212,8 @@ test('nucleul culorilor, cu `peLinii`: fără contururile culorilor pe linii; cu
   assert.deepEqual(g.piese, []);
   assert.equal(g.raport.granite, 0);
   assert.deepEqual(g.etichete, etichete.etichete);
+  // Exact ca doar etichetele, și pe un desen fără netezire (unde plasa, făcută degeaba, ar spune „margini dure”).
+  const bare = desenBare(), doar = traseazaCulori(bare, { ...OC, doarEtichete: true });
+  assert.ok(doar.ok);
+  assert.deepEqual(traseazaCulori(bare, { ...OC, peLinii: doar.raport.paleta.map((c) => !c.fundal) }), doar);
 });
