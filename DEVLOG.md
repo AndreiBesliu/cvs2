@@ -9129,6 +9129,163 @@ pe fiecare culoare, în pastila ei). **Started:** 13.11, 23:04. **Completed:** 1
   liniștită (20 / 20); e2e-urile trasării, importului și tutorialul 50 / 50; build-ul determinist: totalul 698,6 / 800 kB
   (`main` 696,5: +2,1), pornirea 105,7 / 115 (cu ușa 109,7). Otrăvurile 25.3c se aplică toate (27 / 27).
 
+## 2026-11-16 — Felia 28.1↑a: alegerea aranjamentului și densitatea, citite înaintea primei randări (Model: Claude Opus 5.5)
+
+**Prompt:** „Poti sa adopti si sesiunea de design si sa o pornesti” (owner-ul, în sesiunea principală, transmis de ea și
+verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 19:10.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `0e3725c` (fast-forward), în worktree-ul `aranjamente`.
+- **Codul:**
+  - `src/ui/alegereAranjament.ts`: cheia `cncvs2.aranjament`, JSON `{ v: 1, aranjament, densitate }`, implicit Insule cu
+    densitatea normală;
+  - `main.tsx`: `data-aranjament` și `data-densitate` pe `<html>`, înaintea primei randări;
+  - `ARANJAMENTE` în `aranjament.ts`;
+  - densitatea mare în `stil.css`.
+- **Probele:**
+  - 10 unitare și 4 e2e noi; `ancore`, `cont`, `pornire`: 22 / 22;
+  - suita unitară întreagă: 9 353, 0 căderi;
+  - `tsc` și regulile de import, curate;
+  - otrăvurile: 7 / 7 prinse.
+- **Mărimea** (față de un build curat al lui `0e3725c`): pornirea +0,5 kB (106,2; cu ușa 110,1 / 115), totalul +0,4 kB
+  (696,2 / 800).
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), DEVLOG.
+
+## 2026-11-13 — Felia 11.6↑: raportul foilor și lista de tăiere (ADR 0210 §6) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.6↑ (raportul foilor și lista de tăiere)?”: „Da, 11.6↑”.
+**Started:** 13.11, 18:37.
+
+- **Fereastra „Raportul foilor și lista de tăiere”** (`src/app/DialogRaportFoi.tsx`, la cerere; planșa 7 a schiței), din
+  fereastra exportului („Raportul foilor…”, cu colțul și Z0 de acolo) și din paletă (`export.raport`): pe fiecare foaie,
+  previzualizarea (SVG-ul exportului de vectori, cu liniile îngroșate doar aici: `scrieSvg` primește grosimea), materialul,
+  mărimea, cât e folosită, operațiile și piesele (câte, mărimea, rotirile, valorile din CSV); foile identice o dată, ×N;
+  totalurile pe piesă și foile pe material. Calculul pur în `src/model/raportFoi.ts` (mărimea = cutia conturului tăiat prin
+  toată grosimea de un profil exterior, în axele piesei, sau a desenului, la alegere), CSV-ul în `src/app/raportCsv.ts`
+  (BOM, `;` cu virgula zecimală sau `,`), tipărirea printr-un portal sub `body` și `@media print`.
+- **Găsite pe capturi, înainte de raport:** liniile previzualizării, fire de păr (0,1 mm la ~160 px); antetele de rând cu
+  majuscule (stilul tabelelor din dialoguri); la tipar, fereastra îngustă (`vw` e al paginii) și `overflow: hidden` pe `body`,
+  care ar fi tăiat tiparul la o pagină. Măsurate cu stilurile calculate, apoi reparate.
+- **Regula importurilor** a mutat fereastra și CSV-ul din `src/ui` în `src/app`; manualul are capitolul nou (36), iar
+  `export.raport` e ușa a 107-a.
+- **Otrăvurile** (`aa16c19`): 55 / 55 la prima rulare (38 unitare, 17 prin e2e), după probele adăugate la citirea listei
+  (interiorul și despărțirea, urechile, freza în V, materialul și ordinea foilor, rândul nou din CSV).
+- **Unirea de la capăt:** `main` (`d62e6b8`: planșele 11.1↑–11.5↑ unite acolo, imprimanta 3.6s, incrustațiile 12.1↑d) adus
+  în ramură fără conflicte (`13b1f57`); ramura are deasupra lui `main` doar 11.6↑.
+- **Porțile pe codul unit:** tipurile (aplicația, extensia, funcțiile), importurile, traducerile (766 de texte, 0 netraduse),
+  suita unitară 9 322 / 0 (8 sărite), build-ul determinist (319 fișiere identice; pornirea cu ușa 109,8 / 110, totalul
+  694,4 / 700), e2e 480 / 480 din prima.
+- **Publicat:** canalul `plansele` al instanței de test (<https://cncvectorstudio-test--plansele-xafrblmh.web.app>, până pe
+  13.12): pagina și cele 100 de bucăți ca `dist` din `13b1f57`; raportul văzut acolo, din paletă, după actualizarea
+  oferită de aplicație.
+
+- **A doua unire de la capăt (14.11):** `main` `e0f9803` (banda vestirilor imprimantei, 3.6s reparată) adus în `9c668fd`, cu
+  conflictul doar în DEVLOG (adăugat la capăt de ambele părți). Porțile din nou: unitare 9 322 / 0, e2e 481 / 481 din prima,
+  build-ul determinist (pornirea cu ușa 109,9 / 110: ~0,1 kB liberi; totalul 694,5 / 700). Canalul republicat din `9c668fd`,
+  100 / 100 bucăți.
+
+- **A treia unire de la capăt și pauza (14.11, „pauza peste tot”, cerută de owner prin sesiunea principală):** `main`
+  `0e3725c` (trasarea 25.5↑, plafoanele 115 / 800 din ADR 0252–0253) adus în `f8a19a9`, cu conflictul doar în DEVLOG.
+  Trecute pe el: tipurile (aplicația, extensia, funcțiile), importurile, traducerile (771 de texte, 0 netraduse), probele
+  manualului și ale raportului (67 / 67), build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9 / 115,
+  totalul 700,2 / 800). **Oprite de pauză:** suita unitară întreagă (neterminată) și e2e-ul întreg (nepornit). Canalul
+  `plansele` servește încă `9c668fd` (porțile lui, toate trecute). La reluare: suita unitară și e2e-ul întreg pe vârf
+  (sau pe `main`-ul de atunci, unit întâi), canalul din vârf, apoi cererea de unire.
+
+- **Reluare (16.11, „poti sa continui ... sau poti sa unesti ce se poate”, transmis de sesiunea principală; „Da, reiau”):**
+  `main` nemișcat (`0e3725c`, deja unit). Pe vârf (`92f0849`): e2e 485 / 485 din prima, pornit după un minut fără altă rulare
+  Playwright pe mașină; suita unitară 9 344 / 0 (8 sărite); build-ul determinist (322 de fișiere identice; pornirea cu ușa 109,9
+  / 115, totalul 700,2 / 800). Canalul `plansele` republicat din `92f0849`: pagina și 100 / 100 bucăți, până pe 16.12.
+- **Ultima unire de la capăt (16.11):** `main` `bfdf2ed` (12.1↑b-2 cu documentul v24, 25.4↑b, reparația 3.6q) adus în
+  `cfd195d`, cu conflictul doar în DEVLOG. Porțile din nou: tipurile, importurile, traducerile (778 de texte, 0 netraduse),
+  e2e 487 / 487 din prima (după un minut fără altă rulare Playwright), suita unitară 9 377 / 0 (8 sărite), build-ul
+  determinist (324 de fișiere identice; pornirea cu ușa 109,9 / 115, totalul 700,9 / 800). Canalul republicat din
+  `cfd195d`, 100 / 100 bucăți. Gata de unit.
+
+**Completed:** 16.11, 19:30.
+
+## 2026-11-13 — Felia 10.3↑k: tăierea în panouri (ADR 0181 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, după pauza din 11.11: pasul următor al liniei).
+**Started:** 13.11, 11:27. **Completed:** 16.11, 20:10 (încheiată pe 13.11, 21:40; pauză 14.11; reluată 16.11).
+
+- **Ramura nouă din `main`:** `wip/10.3k-panouri`, din `5e4caa2` (nu din vârful cu mutarea fișierelor, oprită pe 11.11 și
+  ținută pe `wip/10.3-taiere-conversie` la `e39ddc4`, ca referință); `origin/main` `c85cc18` (ADR 0250, doar documente), unit
+  întâi, fără conflicte; apoi `44c47fa` (imprimanta 3.6s, la cererea sesiunii principale), în `c8adea6`, fără conflicte.
+- **Grila** (`src/model/grilaPanouri.ts`, pur, comun workerului și previzualizării): peste cutia exactă a formelor, după
+  mărime (egale: ⌈(w − 1e-6) / L⌉ panouri pe axă, liniile la k · w / n; din colț: la k · L de colțul din stânga-jos) sau după
+  număr; zgomotul cutiei nu face un panou în plus; peste 100 de celule, `panouri`, socotit înaintea liniilor.
+- **Tăierea** (`src/model/panouri.ts`, în worker): verticalele, apoi orizontalele, cu tăierea dreaptă a liniei din panou
+  (închiderea, spațiul, îmbinarea), doar pe bucățile care încalecă linia; fiecare bucată ține coloanele și rândurile ei (A,
+  apoi B). În `taie`, `desparte`: o formă cu contururi de ambele părți ale unei linii care nu le trece (un text) se desparte pe
+  laturi; o linie care doar desparte nu cere dinți. La capăt, celulele cu bucăți, rând cu rând de jos, sunt „Panoul 1” …: bucata
+  singură își ia numele, iar panourile cu mai multe se întorc de grupat. Rezultatul: degruparea compusă, cu id-uri nefolosite în
+  documentul vechi; pe foaie, bucățile unei forme în ordinea panourilor.
+- **Gruparea, pe firul principal** (`src/model/grupuriPanouri.ts`, din `document.taie`, pe documentul de după degrupare):
+  `grupDin` și `regrupeaza` cu locurile; V-carve-urile care s-ar amesteca lasă panoul negrupat, cu numele pe fiecare bucată;
+  alegerea de după, cu grupul în locul bucăților. Totul într-un pas de anulare.
+- **Interfața:** blocul „Taie în panouri” al panoului Taie (`PanouriTaiere.tsx`): mărimea (implicit, materialul foii), egale
+  / din colț, numărul de panouri; câte ies; grila pe pânză cât lucrezi în bloc (înapoi în blocul de sus, linia). Manualul (ro,
+  en), textele (ro, en).
+- **Treceri:** (1) e2e: panourile ieșeau pe foaie în ordinea tăierii (1, 3, 2, 4), nu a panourilor: bucățile fiecărei forme se
+  pun acum în ordinea panourilor, iar locurile grupurilor se citesc din documentul de după degrupare; (2) la scrierea
+  otrăvurilor, cinci locuri fără probă (V-carve-urile, id-ul eliberat, cutia din toate contururile, panourile fără tăietură,
+  piesa împărțită netăiată): cinci probe noi; o sortare fără efect, scoasă; (3) otrava G02 scăpase (o cutie fără lățime, cu
+  zero coloane, trecea de plafon cu oricâte rânduri): proba ei; (4) mărimea: prima variantă creștea totalul cu 9,1 kB, din care
+  7,4 în worker, fiindcă gruparea citește blocurile de text cu schemele lor (valibot); gruparea a trecut pe firul principal
+  (unde e deja încărcată, pentru Grupează), iar felia a ajuns la +4,7 kB; (5) la verificarea canalului: id-ul grupului se
+  alegea din documentul de după degrupare, deci putea fi al formei tăiate; după Anulează, alegerea rămasă (panourile) arăta din
+  nou spre ea (aplicația păstrează din alegere ce mai e pe foaie), iar a doua tăiere lua doar placa, fără litera de pe ea:
+  id-urile grupurilor ocolesc și documentul de dinainte; proba e2e: Anulează cu panourile încă alese, apoi blocul ia toate
+  formele foii, apoi Reface; (6) un filtru al alegerii, pus atunci și în blocul panourilor, s-a dovedit de prisos (otrava H10
+  scăpa: aplicația dă panoului doar alegerea care mai e pe foaie): scos. La privirea capturilor (ro, en): nimic de schimbat.
+- **Probe:** pe hârtie (`taiere.panouri.test.ts`, 12: grila; firma de 2 400 × 1 000 la 1 200 × 900, egale și din colț;
+  celulele goale; literele; textul despărțit; îmbinarea, cu și fără joc; V-carve-urile; id-ul eliberat; doar grupuri; acțiunea;
+  refuzurile), oracolul (`judecaPanourile`: fiecare bucată în celula ei, nimic în afara formei, ariile; corpusul din sămânță,
+  forme și plăci cu îmbinare, cu martorul), e2e (2).
+- **Otrăvurile** (`test/otravuri/10.3k.py`, în clonă, pe 4179): 46 de otrăvuri, toate aplicabile: 8 ale grilei, 18 ale tăierii
+  pe linii și ale panourilor, 3 ale despărțirii, 3 ale acțiunii și 5 ale grupării (`grupuriPanouri.ts`), pe setul `panouri`,
+  plus 9 de interfață (e2e). La prima rulare (`4ab274a`, 40), 38 prinse: G02 (o cutie fără lățime: zero coloane, deci plafonul
+  trecea cu oricâte rânduri), prinsă după proba ei (`162c068`); M03 echivalentă (fiecare linie încercată pe toate bucățile, nu
+  doar pe cele care o încalecă: liniile vin crescător și celula se citește din prima coloană și primul rând al bucății, iar o
+  bucată din afara intervalului ar fi tăiată doar de dinți care trec de linia vecină, refuzați la margine; filtrul doar scutește
+  lucru). După mutarea grupării (`0cf6bfc`, 45): 44, M03. După reparația id-ului grupului (`4bc3c23`, 47): H10 scăpată,
+  echivalentă (aplicația dă panoului doar alegerea care mai e pe foaie), deci filtrul ei, scos (`9835062`); H01, mutată pe linia
+  de acum, prinsă. La capăt: 46, 45 prinse, M03 echivalentă.
+- **Porțile:** pe unirea cu `main` (`95fdada`, cu `44c47fa`): traducerile 745 / 0 lipsă; compilatoarele (aplicația,
+  planificatorul, funcțiile); importurile 20 / 0; licențele; unit 9 193 (9 185 trecute, 0 căderi, 8 sărite); build-ul
+  determinist; e2e 461 / 462, cu doi lucrători (singura cădere, `fonturi.spec.ts:149`, la încărcare: Aplică rămas stins cât se
+  încărca fontul; trece singură; căzuse la fel și pe `0cf6bfc`, a trecut pe `d18c37e` și `64e69fb`); emulatoarele 101 / 101 și
+  21 / 21 (la o rulare de dinainte, emulatorul de funcții n-a încărcat codul în 10 s: patru callable-uri cu 404; la rerulare,
+  toate). Pe vârf (`9835062`, doar filtrul scos): build-ul determinist, e2e `taiere`, `cutit` și `fonturi` 37 / 37.
+- **Mărimea:** pe aceeași bază (`main` `5ab3941`, cu planșele, aranjamentele 28.1↑a și plafoanele 115 / 800 din ADR 0252 și
+  0253), pornirea nu crește (106,3 kB; cu ușa 110,3 / 115), iar totalul crește cu 4,8 kB (703,4 → 708,2 / 800), peste estimarea
+  ADR-ului (~2,5 kB): workerul +2,7 (grila, tăierea pe linii, `desparte`, jurnalul pentru tăierile pe rând), panoul +1,6
+  (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în
+  worker, dădea +9,1 kB.
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 13.12), `9835062`,
+  verificat în Edge fără fereastră, ro și en: firma de 2 400 × 1 000 cu o literă (Degrupează), la 1 200 × 900, egale: grila 2 ×
+  2 pe pânză, patru panouri, „Panoul 1” grupul cu litera; Anulează, apoi blocul ia toate formele foii (2); din colț, cu zigzag,
+  tot patru, cu litera în „Panoul 1”; nicio eroare în consolă.
+- **Pauză (14.11, „pauza peste tot”, de la owner, prin sesiunea principală): felia NU e încă gata de unit pe `main`-ul de
+  acum.** După încheiere, `main` a primit planșele 11.1↑–11.5↑: `d62e6b8` unit în `f24ec10` (conflictele: cererea tăierii cu
+  `indexFoaie`, `judecaTaierea` cu `idFoaie` și `motivDupa`; panourile pe foaia activă: cererea `panouri`, workerul,
+  `PanouriTaiere`), proba foii a doua (`511971f`), otrava H08 mutată (`ba5a3ed`). Pe unire: unit-urile tăierii, acțiunilor și
+  documentelor 263 / 263; e2e `taiere` și `cutit` 32 / 32; build-ul determinist; mărimea 690,0 → 694,8 / 700 (pornirea cu ușa
+  109,7 / 110, ca `main`); otrăvurile 45 / 46, M03 echivalentă. Porțile întregi și emulatoarele, nerulate pe ea. **La reluare:**
+  unește `origin/main` `0e3725c` (reparația benzii 3.6s, plafoanele 115 / 800, trasarea 25.5↑), porțile întregi și emulatoarele
+  pe rezultat, mărimea finală în documente (ADR 0181, fișa și traducerea ei, DEVLOG), împingerea, canalul `taiere` (acum pe
+  `9835062`, de dinaintea planșelor), raportul „gata de unit”.
+- **Reluare (16.11, „poti sa continui … sau poti sa unesti ce se poate”, de la owner, prin sesiunea principală):** `origin/main`
+  `0e3725c` (reparația benzii lui 3.6s, plafoanele 115 / 800, trasarea 25.5↑) unit în `096134b` (conflictul, doar în DEVLOG);
+  porțile întregi pe el: traducerile 771 / 0, importurile 20 / 0, unit 9 359 (9 351 trecute, 0 căderi), build-ul determinist,
+  e2e 486 / 486 (pornit după un minut fără altă rulare Playwright pe mașină), emulatoarele 101 / 101 și 21 / 21. Apoi `main` a
+  primit 12.1↑b-2 (documentul v24), 25.4↑b și reparația lui 3.6q: `bfdf2ed`, unit în `50fb4b4` (conflictele: DEVLOG și rândul
+  lui 12.1b din lista otrăvurilor; marcajele din DEVLOG, scăpate în unire, scoase în `0133c76`); porțile întregi pe `0133c76`:
+  unit 9 392 (9 384 trecute, 0 căderi), build-ul determinist, e2e 488 / 488, emulatoarele 101 / 101 și 21 / 21. Apoi trasarea
+  25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
+  20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
+  `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Apoi aranjamentele 28.1↑a și planșele 11.6↑ (`5ab3941`), unite în `6d64b25` (conflictul, doar în DEVLOG); porțile pe ce ating ele: unit-urile aranjamentelor, raportului foilor, exportului, tăierii, acțiunilor și documentelor 399 / 399, build-ul determinist, e2e `aranjament`, `raport-foi`, `manual`, `ancore`, `editare`, `taiere` și `cutit` 66 / 66. Mărimea finală, mai sus.
+
 ## 2026-11-16 — Felia 25.3↑d: punctele pierdute de linia mediană (ADR 0222) (Model: Claude Opus 5.5)
 
 **Prompt:** „Yes, all three” (owner-ul, în sesiunea principală, la „Start the three recommended slices: plate sheet 11,

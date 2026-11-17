@@ -918,6 +918,20 @@ says why: a cut where no tooth fits, a pattern that does not work with the given
 tooth, a radius of the wave or of the puzzle below the given one) and teeth that would touch the edge of a shape (a slanted
 side or a hole too close to the cut).
 
+**Cut into panels** (a block of the panel): a sign bigger than the machine bed is cut into panels, which then fit together.
+The chosen shapes (with nothing chosen, all the shapes on the sheet) are cut on a grid over their box: with the **Panel
+size**, width × height in mm (by default, the sheet's material), or with the **Number of panels**, across × up. With the
+size, the **Panels** are **equal** (the default: the fewest that fit, all the same size) or **from the corner** (full panels
+from the bottom-left corner, plus what is left): a 2 400 × 1 000 mm sign with a 1 200 × 900 panel gives four panels of 1 200
+× 500, or two of 1 200 × 900 and two of 1 200 × 100. Under the fields, the panel says how many panels come out, and while
+you work in the block, the grid shows on the canvas. The cuts are those of the panel's lines, with **Close the pieces**,
+**Between pieces** and the **Joint** above: the teeth hold the panels together, and the clearance lets them slide into each
+other. The pieces of each panel become a group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left), and
+stay where they were; a panel with a single piece is that piece, with the panel's name, and an empty cell of the grid gets
+no number. A text with its letters on both sides of a line that does not touch them is split too, each letter in its panel.
+More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into panels** is a single
+undo step.
+
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
 **Shapes crossing the boundary** are cut (the default), are deleted or stay whole. With **Close the pieces**, a closed shape
@@ -1432,6 +1446,32 @@ answer to `$$` (from the sender's console) under “Machine settings”; the pro
 
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
+
+## Sheets report and cut list
+%% capitol: raport
+%% acopera: export.raport
+
+The **Sheets report and cut list** opens from the [export](#export) window, with **Sheets report…**, or from the command
+palette (Ctrl+K). It shows the whole project, not only the active sheet.
+
+For each sheet: the preview (the shapes, coloured by operation, as in [exporting vectors](#vectori)), the material, the sheet
+size, how much of it the parts use (the area of their boxes against the sheet's) and the operations (the kind, the cutter,
+the depth with its passes, the tabs). Then the parts: the name (for a part without one, the kind of shape), how many, the
+size, the rotations and the CSV values of the [plates](#piese-legate). Identical sheets (the same parts, in the same places,
+with the same operations) are listed once, with ×N, as in the export. At the end, **Totals per part** (how many in the whole
+project, with the material and the sheets they are on) and **Sheets, by material** (how many sheets of each size and
+material: what you buy).
+
+**Part size:** **cut** (the default) is the box of the contour that cuts the part out of the board (the outside profile
+through the whole sheet thickness), in the part's own axes: its rotation on the sheet does not change it. A part without
+such a profile gets the size of its drawing, marked “(drawing)”. With **drawing**, all get the box of their whole drawing.
+Z0 and the origin corner are the export's: those chosen in its window, when the report comes from there.
+
+**Download CSV** writes the list to `cncvs2-lista-de-taiere.csv`, in UTF-8, with three tables one under the other: the
+sheets (one row per part, with the sheet, how many times it is cut and how much of it is used), the totals per part and the
+sheets by material. **CSV with `;`** (the default) has the decimal comma, so Excel in Romanian opens it directly; with
+**`,`**, the decimal point, for Excel in English. **Print** opens the browser's printing (and “Save as PDF”), with the report
+only, over as many pages as it needs.
 
 ## Exporting vectors
 %% capitol: vectori

@@ -888,6 +888,19 @@ pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de c
 model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
 și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
 
+**Taie în panouri** (un bloc al panoului): o firmă mai mare decât masa mașinii se taie în panouri, care se prind apoi unul
+de altul. Se taie formele alese (fără nimic ales, toate formele foii), pe o grilă peste cutia lor: cu **Mărimea panoului**,
+lățimea × înălțimea în mm (implicit, materialul foii), sau cu **Numărul de panouri**, pe lățime × pe înălțime. Cu mărimea,
+**Panourile** sunt **egale** (implicit: cel mai mic număr care încape, toate de aceeași mărime) sau **din colț** (panouri
+pline de la colțul din stânga-jos, plus ce rămâne): firma de 2 400 × 1 000 mm, cu panoul de 1 200 × 900, dă patru panouri de
+1 200 × 500, respectiv două de 1 200 × 900 și două de 1 200 × 100. Sub câmpuri, panoul spune câte panouri ies, iar cât
+lucrezi în bloc, grila se vede pe pânză. Tăieturile sunt ale liniilor din panou, cu **Închide bucățile**, **Între bucăți**
+și **Îmbinarea** de mai sus: dinții prind panourile între ele, iar jocul le lasă să intre unul în altul. Bucățile fiecărui
+panou devin un grup, **Panoul 1**, **Panoul 2** … (rând cu rând, de jos, de la stânga), și stau unde erau; un panou cu o
+singură bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte
+și de alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie;
+nici o formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
+
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
 tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
@@ -1384,6 +1397,30 @@ mașinii” răspunsul controlerului la `$$` (din consola senderului); programul
 
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
+
+## Raportul foilor și lista de tăiere
+%% capitol: raport
+%% acopera: export.raport
+
+**Raportul foilor și lista de tăiere** se deschide din fereastra [exportului](#export), cu **Raportul foilor…**, sau din
+paleta de comenzi (Ctrl+K). Arată tot proiectul, nu doar foaia activă.
+
+Pe fiecare foaie: previzualizarea (formele, colorate pe operații, ca la [exportul vectorilor](#vectori)), materialul, mărimea
+foii, cât din ea folosesc piesele (aria cutiilor lor față de a foii) și operațiile (felul, freza, adâncimea cu trecerile,
+urechile). Apoi piesele: numele (pentru o piesă fără nume, felul formei), câte sunt, mărimea, rotirile și valorile din CSV
+ale [plăcuțelor](#piese-legate). Foile identice (aceleași piese, în aceleași locuri, cu aceleași operații) se spun o dată, cu
+×N, ca la export. La capăt, **Totalurile pe piesă** (câte în tot proiectul, cu materialul și foile pe care stau) și **Foile,
+pe material** (câte foi de fiecare mărime și material: ce cumperi).
+
+**Mărimea pieselor:** **tăiată** (implicit) e cutia conturului care decupează piesa din placă (profilul exterior prin toată
+grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
+desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
+exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
+piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**
+(implicit) are virgula zecimală, ca Excel în română să-l deschidă direct; cu **`,`**, punctul, pentru Excel în engleză.
+**Tipărește** deschide tipărirea browserului (și „Salvează ca PDF”), doar cu raportul, pe oricâte pagini.
 
 ## Exportul vectorilor
 %% capitol: vectori
