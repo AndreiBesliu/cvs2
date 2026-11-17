@@ -57,8 +57,9 @@ o('T17', REF, "      const n = nivelDreapta(ingust.regiuni, raze, 'deschiderea d
   'trepte', 'deschiderea cât desenul (fără umăr)')
 o('T18', REF, '      if (!are) return { ok: false, motiv: dispare };', '      if (!are) continue;', 'trepte',
   'o parte fără deschidere sub umăr, primită')
-o('T19', REF, '      if (!ingust.ok || ingust.regiuni.length === 0) return { ok: false, motiv: dispare };',
-  '      if (!ingust.ok) return { ok: false, motiv: dispare };', 'trepte', 'deschiderea dispărută cu totul, primită')
+# T19 retrasă după prima rulare (`18210e4`: scăpată): „deschiderea dispărută cu totul” lua din condiție
+# `ingust.regiuni.length === 0`, dar offsetul care golește tot întoarce deja `ok: false` („offsetul interior dispare”), deci
+# condiția era moartă; scoasă din cod. Deschiderea dispărută cu totul (s = 16) și doar într-o parte (T18) rămân probate.
 o('T20', REF, '  const contururiTaiate = contururiRegiuni(alDesenului.nivel.taiat);', '  const contururiTaiate = contururiRegiuni(sus.taiat);', 'trepte',
   'avertismentul colțurilor de pe nivelul de sus, și spre exterior')
 

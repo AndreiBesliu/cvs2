@@ -207,8 +207,10 @@ export function figuraDreapta(desen: readonly Contur[], op: Operatie): { readonl
       sus = n.nivel;
       jos = alDesenului.nivel;
     } else {
+      // Micșorat până dispare de tot, offsetul întoarce `ok: false` („offsetul interior dispare”); o parte dispărută, doar ea,
+      // o prinde verificarea de mai jos (fiecare parte a nivelului de sus are o deschidere).
       const ingust = offset(s, -tr.latime);
-      if (!ingust.ok || ingust.regiuni.length === 0) return { ok: false, motiv: dispare };
+      if (!ingust.ok) return { ok: false, motiv: dispare };
       const n = nivelDreapta(ingust.regiuni, raze, 'deschiderea de sub umăr: ');
       if (!n.ok) return n;
       jos = n.nivel;
