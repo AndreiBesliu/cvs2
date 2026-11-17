@@ -10,7 +10,7 @@ import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
 import { refuzIncrustatie } from './incrustatie.ts';
-import { valoriIncrustatie } from '../model/incrustatie.ts';
+import { cuGauriPrinFoaie, valoriIncrustatie } from '../model/incrustatie.ts';
 import { figuraDreapta, valoriBuzunarDrept } from './incrustatieDreapta.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
@@ -175,6 +175,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     return { ok: false, motiv: `supracursa trebuie să fie între 0 și ${SUPRACURSA_MAXIMA} mm (${supracursa})` };
   }
   const grosime = foaie.stoc.grosime;
+  // Găurile (ADR 0175): locașul prin foaie, cu adâncimea ei plus supracursa, nu cea scrisă în operație.
+  doc = cuGauriPrinFoaie(doc, supracursa);
   // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084), sau ordinea de mână a omului (ADR 0133).
   const taieturi = ordineTaieturi(doc, 0);
   if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };

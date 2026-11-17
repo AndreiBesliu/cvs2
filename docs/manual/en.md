@@ -1307,6 +1307,11 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
 
 - **Side gap** (c; default 0.1 mm): what stays between the plug walls and the pocket walls, on each side. The pocket keeps the
   drawing size, the plug shrinks by c. It must be under the radius of the pocket's smallest bit.
+- **Recess** (in the export window only): a **pocket**, with a floor, at the row depth; or a **hole through the sheet**: the
+  recess goes through the board, as a pocket the whole thickness deep, and the depth is the sheet thickness (plus the
+  overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
+  plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
+  raised plug rests with its face on the board, as tall as the board.
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
@@ -1339,7 +1344,8 @@ cut the tabs and clean them flush with the walls before gluing.
 **Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
 radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
 than the bit; a cut-out plug margin smaller than its bit; tabs at least as thick as the plug board; a loop with no room for a
-single tab (the width plus the bit).
+single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none); the step and the rest on
+the shoulder, until their slice (12.1↑f-2).
 
 ## The toolpath on the canvas
 %% capitol: traseu

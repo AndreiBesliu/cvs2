@@ -58,7 +58,9 @@ function restScris(vechi: readonly FrezaRest[] | undefined, noi: readonly FrezaR
  */
 function incrustatieDreaptaScrisa(o: Incrustatie | undefined, i: IncrustatieDreaptaOperatie): IncrustatieDreapta {
   const vechi = o?.fel === 'drept' ? o : undefined;
-  const { frezeDop: _vechi, punti: puntiVechi, ...fara } = vechi ?? {};
+  // Locașul (ADR 0175) e al rândului: gaura se scrie din el, iar fără el câmpul pleacă (buzunarul).
+  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, ...fara } = vechi ?? {};
+  void _locas;
   void _vechi;
   const { frezeDop: noi, punti: puntiNoi, ...valori } = i;
   const frezeDop = restScris(vechi?.frezeDop, noi ?? [], 'freza plata');

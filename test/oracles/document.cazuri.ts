@@ -6068,3 +6068,104 @@ export const REFUZATE_V24: readonly RefuzV18[] = [
   { nume: 'RP4 un v24 cu punțile o listă', doc: docV(24, buzunar({ incrustatie: incDP([puntiD()]) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti`, motiv: 'ADR 0174 §1: un obiect' },
   { nume: 'RP5 un v24 cu punțile groase de 0 pe dopul ridicat (ușa judecă la fel pe ambele)', doc: docV(24, buzunar({ incrustatie: incDP(puntiD({ grosime: 0 }), { dop: 'ridicat' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.punti.grosime`, motiv: 'ADR 0174 §1: ca urechile' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v25 (felia 12.1↑f, ADR 0175): gaura și treapta incrustației cu pereți drepți, sprijinul pe umăr, pe hârtie.
+// Cazurile v24 de mai sus rămân ale contractului v24; la ușa v25, un v24 valid urcă schimbând doar numărul, iar frontierele se
+// judecă pe un document al versiunii curente. Geometria (d față de adâncime, umărul fără treaptă, „pe fund” la gaură) e a
+// lucrării, nu a ușii.
+
+/** Un document al cazurilor v24, adus la v25: doar numărul (ADR 0175 §1). */
+const laV25 = (d: Liber): Liber => cuSchema(d, 25);
+/** Umărul din exemplul ADR 0175 (d = 3, s = 5), spre interior (lipsă). */
+const treaptaD = (v: Liber = {}): Liber => ({ adancime: 3, latime: 5, ...v });
+
+/** Documente v25 valide: ușa le primește neschimbate (v24-urile valide, renumerotate, și câmpurile noi la frontieră). */
+export const VALIDE_V25: readonly CazV18[] = [
+  ...VALIDE_V24.map((c) => ({ nume: `${c.nume} (v25)`, doc: laV25(c.doc) })),
+  { nume: 'G01 gaura (ADR 0175 §1), cu dopul decupat', doc: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat', locas: 'gaura' }) })], 25) },
+  { nume: 'G02 gaura, cu dopul ridicat pe față', doc: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'fata', locas: 'gaura' }) })], 25) },
+  { nume: 'G03 locașul scris „buzunar” (ca lipsa lui)', doc: docV18(D, [buzunar({ incrustatie: incD({ locas: 'buzunar' }) })], 25) },
+  { nume: 'G04 treapta spre interior, pe umăr', doc: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'umar', treapta: treaptaD() }) })], 25) },
+  { nume: 'G05 treapta spre exterior, la gaură, cu dopul decupat', doc: docV18(D, [buzunar({ incrustatie: incD({ dop: 'decupat', sprijin: 'umar', locas: 'gaura', treapta: treaptaD({ spre: 'exterior' }) }) })], 25) },
+  { nume: 'G06 treapta la plafon (1 000 × 10 000), cu un câmp necunoscut', doc: docV18(D, [buzunar({ incrustatie: incD({ treapta: treaptaD({ adancime: 1_000, latime: 10_000, nota: 'x' }) }) })], 25) },
+  { nume: 'G07 „pe umăr” fără treaptă (ușa îl primește; lucrarea îl refuză, cu motivul)', doc: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'umar' }) })], 25) },
+  { nume: 'G08 `locas` și `treapta` pe incrustația în V: câmpuri necunoscute oarecare', doc: docV18(D, [vcarve({ incrustatie: inc({ locas: 'x', treapta: 1 }) })], 25) },
+];
+
+/** Documentele vechi urcă la v25: ce dădea hârtia la v24, cu numărul 25; un v24 curat urcă doar cu numărul. */
+export const MIGRARI_V25_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v25: Liber }> = [
+  ...MIGRARI_V24_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v25: laV25(c.v24) })),
+  {
+    nume: 'M25a un v24 cu dopul decupat și punțile lui urcă la v25 doar cu numărul',
+    vechi: docV18(D, [buzunar({ incrustatie: incDP() })], 24),
+    v25: docV18(D, [buzunar({ incrustatie: incDP() })], 25),
+  },
+  {
+    nume: 'M25b un v21 cu dopul ridicat pe față urcă la v25 doar cu numărul (prin v22, v23, v24)',
+    vechi: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'fata' }) })], 21),
+    v25: docV18(D, [buzunar({ incrustatie: incD({ sprijin: 'fata' }) })], 25),
+  },
+];
+
+/** `locas` și `treapta` în afara incrustației sunt câmpuri necunoscute oarecare: primite și păstrate, fără ciocnire. */
+export const NECIOCNIRI_V25: ReadonlyArray<CazV18 & { readonly v25: Liber }> = [
+  ...NECIOCNIRI_V24.map((c) => ({ nume: c.nume, doc: c.doc, v25: laV25(c.v24) })),
+  (() => {
+    const d = docV18(D, [buzunar({ locas: 'gaura', treapta: treaptaD(), incrustatie: incD() })], 24);
+    return { nume: 'N25a un v24 cu `locas` și `treapta` pe operație, nu în incrustație', doc: d, v25: laV25(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ fundPlat: { scula: plata(3, 3), pasLateral: 1.2, treapta: 1, locas: 'gaura' } })], 24);
+    return { nume: 'N25b un v24 cu `locas` și `treapta` pe fundul plat', doc: d, v25: laV25(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [vcarve({ incrustatie: incB(banda({ treapta: 2 })) })], 24);
+    return { nume: 'N25c un v24 cu `treapta` în banda incrustației în V', doc: d, v25: laV25(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [buzunar({ incrustatie: incDP(puntiD({ locas: 'gaura' })) })], 24);
+    return { nume: 'N25d un v24 cu `locas` în punțile dopului', doc: d, v25: laV25(d) };
+  })(),
+];
+
+/** Frontierele v25: locașul, treapta și sprijinul pe umăr, câmp cu câmp (ADR 0175 §1). */
+export const FRONTIERE_V25: readonly FrontieraV18[] = [
+  {
+    cale: 'incrustatie.locas', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: opțional, buzunar sau gaura',
+    valori: [[LIPSA, true], ['gaura', true], ['buzunar', true], ['gaură', false], ['Gaura', false], ['', false], [null, false], [1, false]],
+  },
+  {
+    cale: 'incrustatie.sprijin', operatie: buzunar({ incrustatie: incD() }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: fund, fata sau umar',
+    valori: [['fund', true], ['fata', true], ['umar', true], ['umăr', false], ['Umar', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'incrustatie.treapta', operatie: buzunar({ incrustatie: incD({ treapta: treaptaD() }) }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: opțional, un obiect',
+    valori: [[LIPSA, true], [treaptaD(), true], [null, false], [3, false], ['3', false], [[3, 5], false]],
+  },
+  {
+    cale: 'incrustatie.treapta.adancime', operatie: buzunar({ incrustatie: incD({ treapta: treaptaD() }) }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: în (0, 1 000]',
+    valori: [[3, true], [0.001, true], [1_000, true], [0, false], [-3, false], [1_000.001, false], ['3', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.treapta.latime', operatie: buzunar({ incrustatie: incD({ treapta: treaptaD() }) }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: în (0, 10 000]',
+    valori: [[5, true], [0.001, true], [10_000, true], [0, false], [-5, false], [10_000.001, false], ['5', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'incrustatie.treapta.spre', operatie: buzunar({ incrustatie: incD({ treapta: treaptaD() }) }), forma: D, categorie: 'incrustatie', adr: 'ADR 0175 §1: opțional, interior sau exterior',
+    valori: [[LIPSA, true], ['interior', true], ['exterior', true], ['Exterior', false], ['in', false], ['', false], [null, false], [1, false]],
+  },
+];
+
+/** Refuzurile v25: cele v24 (versiunea mai nouă e acum v26), plus locașul, treapta, sprijinul greșite și ciocnirile lor. */
+export const REFUZATE_V25: readonly RefuzV18[] = [
+  ...REFUZATE_V24.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v26)', doc: docV(26, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RG0 un v24 cu `locas` în incrustația dreaptă', doc: docV(24, buzunar({ incrustatie: incD({ locas: 'gaura' }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.locas`, motiv: 'ADR 0175 §1: câmpul propriu', text: 'nu e un document v24 valid' },
+  { nume: 'RG1 un v24 cu `treapta` în incrustația în V (ciocnirea e pe orice fel)', doc: docV(24, vcarve({ incrustatie: inc({ treapta: treaptaD() }) })), categorie: 'ciocnire', camp: `${opC}.incrustatie.treapta`, motiv: 'ADR 0175 §1: câmpul propriu', text: 'nu e un document v24 valid' },
+  { nume: 'RG2 un v24 cu sprijinul „umar” (o valoare a lui v25)', doc: docV(24, buzunar({ incrustatie: incD({ sprijin: 'umar' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.sprijin`, motiv: 'ADR 0175 §1: „umar” vine cu v25', text: 'nu e un document v24 valid' },
+  { nume: 'RG3 un v25 cu locașul „gaură” (cu diacritice)', doc: docV(25, buzunar({ incrustatie: incD({ locas: 'gaură' }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.locas`, motiv: 'ADR 0175 §1: buzunar sau gaura' },
+  { nume: 'RG4 un v25 cu treapta null', doc: docV(25, buzunar({ incrustatie: incD({ treapta: null }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.treapta`, motiv: 'ADR 0175 §1: un obiect' },
+  { nume: 'RG5 un v25 cu treapta fără adâncime', doc: docV(25, buzunar({ incrustatie: incD({ treapta: { latime: 5 } }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.treapta.adancime`, motiv: 'ADR 0175 §1: cerută' },
+  { nume: 'RG6 un v25 cu treapta spre „sus”', doc: docV(25, buzunar({ incrustatie: incD({ treapta: treaptaD({ spre: 'sus' }) }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.treapta.spre`, motiv: 'ADR 0175 §1: interior sau exterior' },
+];

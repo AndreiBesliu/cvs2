@@ -5,7 +5,7 @@
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
  * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v23 literele unei plăcuțe, v24
- * punțile dopului decupat), apoi
+ * punțile dopului decupat, v25 gaura prin foaie), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -205,6 +205,13 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
     const inc = op(d, 'buzunar')['incrustatie'];
     inc['dop'] = 'decupat';
     inc['punti'] = { numar: 2, latime: 6, grosime: 0.8 };
+    d['rev'] += 1;
+  },
+  // v25 (ADR 0175): locașul buzunarului devine o gaură prin foaie; fereastra mută atunci sprijinul de pe fund pe față.
+  25: (d) => {
+    const inc = op(d, 'buzunar')['incrustatie'];
+    inc['locas'] = 'gaura';
+    inc['sprijin'] = 'fata';
     d['rev'] += 1;
   },
 };

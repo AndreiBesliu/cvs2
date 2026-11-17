@@ -9,6 +9,8 @@
  * - „(a) …”: ușa aplicației (`incarca`) pe aceleași cazuri: primește exact ce e pe hârtie (o copie), refuză ce e pe hârtie, cu
  *   motiv (câmpul pe un document v24, textul ciocnirii);
  * - „(u) …”: ușa documentului curent (ADR 0070 §2, `incarcaCurent`): migrările pe o versiune întreagă 1 … 23.
+ * De la 12.1↑f (ADR 0175), ușa curentă e v25 și urcă un v24 doar cu numărul: (o) judecă contractul v24 pe ușa v24
+ * (`verificaPanaLaO(…, 24)`), iar (a) compară cu oracolul ridicat până la versiunea aplicației (`laApp`).
  * Ușa aplicației față de oracol pe tot corpusul (cu cazurile de aici) o judecă deja `document.v22.oracol.test.ts` (c), pe
  * oracolul curent.
  */
@@ -18,8 +20,8 @@ import { incarca } from '../../src/model/incarcare.ts';
 import { incarcaCurent } from '../../src/model/usaCurenta.ts';
 import { VERSIUNE_SCHEMA } from '../../src/model/document.ts';
 import {
-  CAMPURI_NOI_O, categoriiO, ciocniriO, diferenta, ridicaO, ridicaPanaLaO, SCHEMA_CURENTA_O, SCHEMA_V24_O, usaCurentaO, verificaO,
-  verificaPanaLaO, verificaPanaLaV23O, verificaVnO, type Liber,
+  CAMPURI_NOI_O, categoriiO, ciocniriO, diferenta, ridicaPanaLaO, SCHEMA_CURENTA_O, SCHEMA_V24_O, usaCurentaO, usaCurentaV24O, verificaO,
+  verificaPanaLaO, verificaPanaLaV23O, verificaPanaLaV24O, verificaVnO, type Liber,
 } from '../oracles/document.ts';
 import {
   cuSchema, docV18, FRONTIERE_V22, FRONTIERE_V24, LIPSA, MIGRARI_V24_HARTIE, NECIOCNIRI_V24, REFUZATE_V24, VALIDE_V23, VALIDE_V24,
@@ -67,25 +69,34 @@ function usa(brut: unknown): { readonly ok: true; readonly doc: unknown } | { re
 
 const eticheta = (cale: string, valoare: unknown): string => `${cale} = ${valoare === LIPSA ? '(lipsă)' : String(JSON.stringify(valoare) ?? valoare)}`;
 
-/** Frontierele punților, apoi cele ale câmpurilor operației v20 … v22 (aceleași pe un v24), pe un document al versiunii curente. */
+/** Ce dă ușa aplicației pentru un document primit, pe hârtie: oracolul îl ridică până la versiunea ei (v24 → v25: doar numărul). */
+const laApp = (d: unknown): unknown => ridicaPanaLaO(d, VERSIUNE_SCHEMA as number);
+/** Ușa v24 a oracolului: contractul v24 și ciocnirile până la el. */
+const usaV24 = (d: unknown): string[] => verificaPanaLaV24O(d);
+
+/** Frontierele punților, apoi cele ale câmpurilor operației v20 … v22 (aceleași pe un v24), pe un document v24. */
 const FRONTIERE = [...FRONTIERE_V24, ...FRONTIERE_V22];
 
 // ── Oracolul singur ──────────────────────────────────────────────────────────────────────────
 
-test('(o) oracolul e pe v24 (ADR 0174 §2)', () => {
-  assert.equal(SCHEMA_CURENTA_O, SCHEMA_V24_O);
+test('(o) oracolul e pe v24 sau mai nou (ADR 0174 §2; de la 12.1↑f, v25)', () => {
+  assert.ok(SCHEMA_CURENTA_O >= SCHEMA_V24_O);
   assert.equal(SCHEMA_V24_O, 24);
 });
 
-test('(o) documentele v24 valide: contractul v24 și ușa le primesc neschimbate; ușa v23 le refuză', () => {
+test('(o) documentele v24 valide: contractul v24 și ușa v24 le primesc neschimbate, ușa curentă le urcă doar cu numărul; ușa v23 le refuză', () => {
   const rele: string[] = [];
   for (const { nume, doc } of VALIDE_V24) {
     const p = verificaVnO(doc, 24);
     if (p.length > 0) rele.push(`${nume}: contractul v24 îl refuză (${p.slice(0, 3).join('; ')})`);
-    const u = verificaO(doc);
+    const u = usaV24(doc);
     if (u.length > 0) rele.push(`${nume}: ușa v24 îl refuză (${u.slice(0, 3).join('; ')})`);
-    const d = diferenta(ridicaO(doc), doc);
-    if (d !== undefined) rele.push(`${nume}: ușa îl schimbă (${d})`);
+    const d = diferenta(ridicaPanaLaO(doc, 24), doc);
+    if (d !== undefined) rele.push(`${nume}: ușa v24 îl schimbă (${d})`);
+    const c = verificaO(doc);
+    if (c.length > 0) rele.push(`${nume}: ușa curentă îl refuză (${c.slice(0, 3).join('; ')})`);
+    const sus = diferenta(ridicaPanaLaO(doc, SCHEMA_CURENTA_O), cuSchema(doc as Liber, SCHEMA_CURENTA_O));
+    if (sus !== undefined) rele.push(`${nume}: ușa curentă îl schimbă altfel decât numărul (${sus})`);
     const v23 = categoriiO(verificaPanaLaV23O(doc));
     if (JSON.stringify(v23) !== JSON.stringify(['schema'])) rele.push(`${nume}: ușa v23 dă ${v23.join(', ') || 'primit'}, nu [schema]`);
   }
@@ -95,20 +106,20 @@ test('(o) documentele v24 valide: contractul v24 și ușa le primesc neschimbate
 
 test('(o) documentele v23 valide și cele mai vechi urcă la v24 doar cu numărul; ușile v11 … v24 le primesc', () => {
   for (const { nume, doc } of VALIDE_V23) {
-    assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), cuSchema(doc, 24)), undefined, nume);
+    assert.deepEqual(usaV24(doc), [], nume);
+    assert.equal(diferenta(ridicaPanaLaO(doc, 24), cuSchema(doc, 24)), undefined, nume);
   }
   for (const { versiune, doc } of VECHI_NOI) {
-    assert.deepEqual(verificaO(doc), [], `un v${versiune} la ușa v24`);
-    assert.equal(diferenta(ridicaO(doc), cuSchema(doc, 24)), undefined, `un v${versiune} adus la v24: doar numărul`);
+    assert.deepEqual(usaV24(doc), [], `un v${versiune} la ușa v24`);
+    assert.equal(diferenta(ridicaPanaLaO(doc, 24), cuSchema(doc, 24)), undefined, `un v${versiune} adus la v24: doar numărul`);
   }
 });
 
 test('(o) documentele vechi urcă la v24 exact ca pe hârtie; ușa nu-și schimbă intrarea', () => {
   for (const { nume, vechi, v24 } of MIGRARI_V24_HARTIE) {
     const inainte = JSON.stringify(vechi);
-    assert.deepEqual(verificaO(vechi), [], nume);
-    assert.equal(diferenta(ridicaO(vechi), v24), undefined, nume);
+    assert.deepEqual(usaV24(vechi), [], nume);
+    assert.equal(diferenta(ridicaPanaLaO(vechi, 24), v24), undefined, nume);
     assert.equal(JSON.stringify(vechi), inainte, `${nume}: intrarea s-a schimbat`);
     assert.deepEqual(verificaVnO(v24, 24), [], `${nume}: rezultatul e un v24 valid`);
   }
@@ -117,8 +128,8 @@ test('(o) documentele vechi urcă la v24 exact ca pe hârtie; ușa nu-și schimb
 
 test('(o) `punti` în afara incrustației (pe operație, pe fundul plat, pe o freză a dopului) și punțile benzii: primite și păstrate', () => {
   for (const { nume, doc, v24 } of NECIOCNIRI_V24) {
-    assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), v24), undefined, nume);
+    assert.deepEqual(usaV24(doc), [], nume);
+    assert.equal(diferenta(ridicaPanaLaO(doc, 24), v24), undefined, nume);
   }
 });
 
@@ -128,7 +139,7 @@ test('(o) frontierele: fiecare valoare are verdictul de pe hârtie, iar un refuz
   for (const f of FRONTIERE) {
     for (const [valoare, primit] of [...f.valori, ...(f.ambigue ?? []).map(([v, p]) => [v, p] as const)]) {
       const doc = docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)], 24);
-      const p = verificaO(doc);
+      const p = usaV24(doc);
       const e = eticheta(f.cale, valoare);
       n++;
       if ((p.length === 0) !== primit) {
@@ -147,7 +158,7 @@ test('(o) frontierele: fiecare valoare are verdictul de pe hârtie, iar un refuz
 test('(o) refuzurile v24: fiecare document stricat are exact categoria lui, iar motivul numește câmpul', () => {
   const rele: string[] = [];
   for (const r of REFUZATE_V24) {
-    const p = verificaO(r.doc);
+    const p = usaV24(r.doc);
     if (JSON.stringify(categoriiO(p)) !== JSON.stringify([r.categorie])) {
       rele.push(`${r.nume}: ${p.length === 0 ? 'primit' : `categoriile ${categoriiO(p).join(', ')} (${p.slice(0, 3).join('; ')})`}, nu ${r.categorie}`);
       continue;
@@ -169,14 +180,14 @@ test('(o) ciocnirea v24: `punti` în incrustație (pe orice fel), pe un v23, se 
     // Pașii de dinainte nu se ciocnesc pe `punti` (v20 → v21, unde vine incrustația dreaptă, v21 → v22, v22 → v23).
     for (const de of [20, 21, 22]) assert.deepEqual(ciocniriO(v23, de).filter((m) => m.includes('punti')), [], `${nume}v${de} → v${de + 1}`);
     // Refuzul ușii: o ciocnire; același document, scris v24, e valid.
-    assert.deepEqual(categoriiO(verificaO(v23)), ['ciocnire'], nume);
-    assert.deepEqual(verificaO(cuSchema(v23, 24)), [], nume);
+    assert.deepEqual(categoriiO(usaV24(v23)), ['ciocnire'], nume);
+    assert.deepEqual(usaV24(cuSchema(v23, 24)), [], nume);
   }
 });
 
 test('(o) ușa documentului curent v24 (ADR 0070 §2): migrările doar pe o versiune întreagă 1 … 23', () => {
-  for (const s of [1, 2, 10, 22, 23]) assert.equal(usaCurentaO({ schema: s }), 'migrari', String(s));
-  for (const s of [24, 25, 23.5, 0, -1, '23', null]) assert.equal(usaCurentaO({ schema: s }), 'usa', String(s));
+  for (const s of [1, 2, 10, 22, 23]) assert.equal(usaCurentaV24O({ schema: s }), 'migrari', String(s));
+  for (const s of [24, 25, 23.5, 0, -1, '23', null]) assert.equal(usaCurentaV24O({ schema: s }), 'usa', String(s));
   // Ușa unei aplicații rămase pe 23: un v24 e „scris de o versiune mai nouă”.
   assert.deepEqual(categoriiO(verificaPanaLaO(VALIDE_V24.at(-1)!.doc, 23)), ['schema']);
   assert.equal(diferenta(ridicaPanaLaO(VALIDE_V24.at(-1)!.doc, 24), VALIDE_V24.at(-1)!.doc), undefined);
@@ -184,11 +195,14 @@ test('(o) ușa documentului curent v24 (ADR 0070 §2): migrările doar pe o vers
 
 // ── Ușa aplicației, pe cazurile de pe hârtie ──────────────────────────────────────────────────────────
 
-test('(a) ușa aplicației e pe v24', () => {
-  assert.equal(VERSIUNE_SCHEMA as number, 24);
+test('(a) ușa aplicației e pe v24 sau mai nouă (de la 12.1↑f, v25)', () => {
+  assert.ok((VERSIUNE_SCHEMA as number) >= 24);
 });
 
-test('(a) ușa aplicației primește documentele v24 valide neschimbate, ca o copie', () => {
+/** Un refuz „scris de o versiune mai nouă” al ușii v24 (R01, un v25) pe care aplicația, pe v25, îl primește. */
+const primitDeApp = (s: unknown): boolean => typeof s === 'number' && Number.isInteger(s) && s > 24 && s <= (VERSIUNE_SCHEMA as number);
+
+test('(a) ușa aplicației primește documentele v24 valide (de la v25, urcate doar cu numărul), ca o copie', () => {
   const rele: string[] = [];
   for (const { nume, doc } of VALIDE_V24) {
     const brut = structuredClone(doc);
@@ -197,7 +211,7 @@ test('(a) ușa aplicației primește documentele v24 valide neschimbate, ca o co
       rele.push(`${nume}: refuzat (${String(r.motiv)})`);
       continue;
     }
-    const d = diferenta(r.doc, doc);
+    const d = diferenta(r.doc, laApp(doc));
     if (d !== undefined) rele.push(`${nume}: ${d}`);
     if ((r.doc as unknown) === brut) rele.push(`${nume}: ușa a întors chiar intrarea, nu o copie`);
   }
@@ -212,7 +226,7 @@ test('(a) ușa aplicației urcă documentele vechi exact ca pe hârtie și păst
       rele.push(`${nume}: refuzat (${r.motiv})`);
       continue;
     }
-    const d = diferenta(r.doc, v24);
+    const d = diferenta(r.doc, laApp(v24));
     if (d !== undefined) rele.push(`${nume}: ${d}`);
   }
   assert.deepEqual(rele, []);
@@ -230,7 +244,7 @@ test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hâ
         continue;
       }
       if (r.ok) {
-        const d = diferenta(r.doc, doc);
+        const d = diferenta(r.doc, laApp(doc));
         if (d !== undefined) rele.push(`${e}: primit, dar schimbat (${d})`);
       } else if (!r.motiv.includes(`operatii.0.${f.cale.split('.')[0] as string}`)) {
         rele.push(`${e}: motivul nu numește câmpul („${r.motiv}”)`);
@@ -243,6 +257,7 @@ test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hâ
 test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul pe un document v24, textul citat de ADR la o ciocnire', () => {
   const rele: string[] = [];
   for (const c of REFUZATE_V24) {
+    if (c.categorie === 'schema' && primitDeApp((c.doc as Liber | null)?.['schema'])) continue;
     const r = usa(c.doc);
     if (r.ok) {
       rele.push(`${c.nume}: primit (${c.motiv})`);
