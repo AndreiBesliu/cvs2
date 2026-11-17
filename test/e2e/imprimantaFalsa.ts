@@ -32,6 +32,10 @@ import type { AddressInfo, Socket } from 'node:net';
  *   la loc (0).
  * - din 3.6t (ADR 0194 §B), istoricul (`historyList`, câmpurile din transcrierea owner-ului): trimis la `reqHistory`, după
  *   lista fișierelor (`k1c-2025`) și la finalul sau oprirea unei lucrări (cu `printfinish` 1 sau 0), pornind de la `istoric`.
+ * - din 3.6u (ADR 0194 §C), filmele (`elapseVideoList`: `id` = începutul lucrării, în secunde, `videoname`, `gcodename`): trimise
+ *   la `reqElapseVideoList` și după lista fișierelor (`k1c-2025`), pornind de la `filme`; cu `timelapse`, o lucrare încheiată
+ *   sau oprită își lasă filmul (`<început>.mp4`), fără să-l anunțe. `GET /downloads/video/<nume>`, pe același port (pe K1 e 80:
+ *   proba își mută cererea aici), dă un film din listă (`video/mp4`) sau 404; `filmeCerute` le ține.
  * - din 16.11, `intarziereMs`: fiecare cadru trimis ajunge cu atâta întârziere, în ordine (ca pe un runner încărcat, unde
  *   fereastra arată un mesaj mai vechi decât imprimanta de acum); `stratLaProgres(p)`: stratul adevărat din cadrul care a spus
  *   procentul `p`, ca o probă să judece stratul arătat față de mesajul arătat, nu față de imprimanta de acum.
@@ -77,7 +81,14 @@ export type OptiuniImprimantaFalsa = {
   readonly istoric?: readonly Readonly<Record<string, string | number>>[];
   /** Din 16.11: fiecare cadru trimis ajunge cu atâta întârziere (ms), în ordine; așteptarea lui `ok` crește la fel. */
   readonly intarziereMs?: number;
+  /** Din 3.6u: lista filmelor de la pornire (intrările `elapseVideoList`, cele mai noi întâi). */
+  readonly filme?: readonly Readonly<Record<string, string | number>>[];
+  /** Din 3.6u: timelapse-ul pornit pe ecran: o lucrare încheiată sau oprită își lasă filmul. */
+  readonly timelapse?: boolean;
 };
+
+/** Un film fals: doar cutia `ftyp` a unui MP4 (destul ca browserul să-l ia drept video). */
+const FILM = Buffer.from([0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32, 0, 0, 0, 0, 0x6d, 0x70, 0x34, 0x32, 0x69, 0x73, 0x6f, 0x6d]);
 
 export interface ImprimantaFalsa {
   readonly port: number;
@@ -100,6 +111,8 @@ export interface ImprimantaFalsa {
   stratAdevarat(): number | null;
   /** Din 16.11: stratul adevărat din cadrul care a spus procentul `p` al fișierului de acum (null: niciun cadru cu el). */
   stratLaProgres(p: number): number | null;
+  /** Din 3.6u: cererile HTTP ale filmelor (`GET /downloads/video/…`), în ordine, cu codul răspunsului. */
+  filmeCerute(): readonly { readonly url: string; readonly cod: number }[];
   /** Din 3.6s: senzorul spune că s-a terminat filamentul (`materialStatus` 1), iar o imprimare trece în pauză. */
   faraFilament(): void;
   /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
@@ -195,6 +208,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
   const istoric: Readonly<Record<string, string | number>>[] = [...(opt.istoric ?? [])];
   let inceputLucrare = 0;
   const trimiteIstoric = (): void => { for (const t of trimitatori) t({ historyList: istoric }); };
+  // Din 3.6u: filmele (cele mai noi întâi) și cererile lor pe HTTP.
+  const filme: Readonly<Record<string, string | number>>[] = [...(opt.filme ?? [])];
+  const filmeCerute: { url: string; cod: number }[] = [];
   /** Lucrarea de acum intră în istoric (1: gata, 0: oprită), cu timpul și filamentul de dinaintea finalului; apoi istoricul, tuturor. */
   const inIstoric = (printfinish: number): void => {
     const nume = String(s['printFileName']);
@@ -203,6 +219,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       id: istoric.length + 1, filename: nume, size: 1000, ctime: inceputLucrare, starttime: inceputLucrare, totaltime: durata + 40,
       usagematerial: Number(s['usedMaterialLength'] ?? 0), startway: 9, usagetime: durata, printfinish, thumbnail: `${DIR}.thumbs/dummpy.png`,
     });
+    // Cu timelapse-ul pornit, și filmul (lista nu pleacă singură: fereastra o cere).
+    if (opt.timelapse === true) filme.unshift({ id: inceputLucrare, videoname: `${inceputLucrare}.mp4`, gcodename: nume });
     trimiteIstoric();
   };
   const imprima = (fisier: string, progres: number): void => {
@@ -325,6 +343,14 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
 
   const server = createServer((cerere, raspuns) => {
     const url = cerere.url ?? '';
+    // Din 3.6u: un film din listă, ca pe 80 la K1; altul, 404.
+    if (cerere.method === 'GET' && url.startsWith('/downloads/video/')) {
+      const are = filme.some((f) => `/downloads/video/${String(f['videoname'])}` === url);
+      filmeCerute.push({ url, cod: are ? 200 : 404 });
+      if (are) raspuns.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': FILM.length }).end(FILM);
+      else raspuns.writeHead(404).end();
+      return;
+    }
     if (cerere.method !== 'POST' || !url.startsWith('/upload/')) { raspuns.writeHead(426).end(); return; }
     const bucati: Buffer[] = [];
     cerere.on('data', (b: Buffer) => { bucati.push(b); });
@@ -387,13 +413,14 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       const p = o.params ?? {};
       if (o.method === 'get' && p['ReqPrinterPara'] === 1) { json(s); return; }
       if (o.method === 'get' && p['reqHistory'] === 1) { json({ historyList: istoric }); return; }
+      if (o.method === 'get' && p['reqElapseVideoList'] === 1) { json({ elapseVideoList: filme }); return; }
       if (o.method === 'get' && p['reqGcodeFile'] === 1) {
         if (k2025) {
           // Ca în transcrierea owner-ului: `director:nume:mărime:strat:dată:filament:miniatură;…`, apoi istoricul și filmele.
           const text = fisiere.map((f) => `${DIR.slice(0, -1)}:${f.name}:${f.size ?? 1000}:0.200000:1793890905:${f.timeCost ?? 0}:/tmp/creality/local_gcode/humbnail/${f.name.replace(/\.gcode$/, '.png')};`).join('');
           json({ retGcodeFileInfo: { totalNum: fisiere.length, fileInfo: text } });
           json({ historyList: istoric });
-          json({ elapseVideoList: [] });
+          json({ elapseVideoList: filme });
           return;
         }
         json({ retGcodeFileInfo2: fisiere.map((f) => ({ name: f.name, path: `${DIR}${f.name}`, ...(f.timeCost !== undefined ? { timeCost: String(f.timeCost) } : {}), ...(f.material ? { material: f.material } : {}), software: 'Creality Print' })) });
@@ -509,6 +536,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         ignora: (campuri) => { for (const c of campuri) ignorate.add(c); },
         stratAdevarat: () => (rulare === null ? null : (rulare as Rulare).strat),
         stratLaProgres: (p) => straturiPeProgres.get(p) ?? null,
+        filmeCerute: () => [...filmeCerute],
         faraFilament: () => { schimba(s['state'] === 1 ? { materialStatus: 1, state: 5 } : { materialStatus: 1 }); },
         pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },

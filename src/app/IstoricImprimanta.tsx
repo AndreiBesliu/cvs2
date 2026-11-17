@@ -3,7 +3,8 @@
  * fiecărei imprimări văzute de fereastră în istoricul cvs2 (în browser), citirea lui, o dată pe pagină, și cardul Istoricul:
  * data, fișierul (cu numele pieselor din cvs2), rezultatul, durata față de estimare, filamentul, costul; dedesubt totalurile
  * lunii, Exportă CSV, Golește istoricul cvs2 (cu confirmare) și prețurile. Fereastra rămâne montată după prima deschidere, deci
- * înregistrarea merge și cât lucrezi în Proiectare.
+ * înregistrarea merge și cât lucrezi în Proiectare. Din 3.6u (ADR 0194 §C, planșa C), coloana Filmul: filmul timelapse se
+ * deschide de pe imprimantă, într-o filă nouă (în pagină ar fi conținut mixt), fără să trimită adresa cvs2.
  */
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from 'react';
 import { limba, t } from '../i18n/t.ts';
@@ -32,7 +33,8 @@ export function useImprimariCvs2(): readonly ImprimareCvs2[] {
 
 /**
  * Înregistrarea în istoricul cvs2 (pasul pur `inregistreaza`), la fiecare schimbare a clipei: lucrarea nouă, cifrele ei,
- * finalul. La final, cere și istoricul imprimantei, cu imprimarea abia încheiată (K1 îl trimite și singur).
+ * finalul. La final, cere și istoricul imprimantei, cu imprimarea abia încheiată (K1 îl trimite și singur), și lista filmelor
+ * (felia 3.6u).
  */
 export function useInregistrare(st: StareImprimanta, stare: StareLucrare, din: DinFisier | null, cereIstoric: () => void): void {
   const i = st.imprimanta;
@@ -55,7 +57,7 @@ export function useInregistrare(st: StareImprimanta, stare: StareLucrare, din: D
 }
 
 const SIMBOL: Readonly<Record<RezultatImprimare, string>> = { gata: '✓', oprita: '⏹', eroare: '⚠' };
-const COLOANE = ['cand', 'fisier', 'rezultat', 'durata', 'filament', 'cost'] as const;
+const COLOANE = ['cand', 'fisier', 'rezultat', 'durata', 'filament', 'cost', 'film'] as const;
 /** Cele mai noi rânduri arătate; restul sunt în CSV. */
 const MAX_RANDURI = 50;
 const doi = (x: number): string => String(x).padStart(2, '0');
@@ -67,14 +69,16 @@ function valoare(text: string, max: number): number | null | undefined {
   return Number.isFinite(v) && v >= 0 && v <= max ? v : undefined;
 }
 
-export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata }: {
+export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata, adresaFilm }: {
   readonly randuri: readonly RandIstoric[];
   /** Câte imprimări are istoricul cvs2 (Golește doar cu una). */
   readonly nCvs2: number;
   readonly setari: SetariIstoric; readonly schimba: (s: SetariIstoric) => void;
-  /** Cere istoricul imprimantei: la deschiderea cardului (ADR 0194 §B.12). */
+  /** Cere istoricul imprimantei și lista filmelor: la deschiderea cardului (ADR 0194 §B.12, §C.13). */
   readonly cere: () => void;
   readonly durata: (s: number) => string;
+  /** Adresa unui film pe imprimanta legată (felia 3.6u); null: fără gazdă sau nume nesigur. */
+  readonly adresaFilm: (nume: string) => string | null;
 }): ReactNode {
   useEffect(() => { cere(); }, []);
   const [goleste, setGoleste] = useState(false);
@@ -113,7 +117,7 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata }: {
   };
   const tasta = (e: KeyboardEvent): void => { if (e.key === 'Escape') { e.stopPropagation(); setGoleste(false); } };
   // Antetul coloanelor; pe telefon, fiecare celulă își poartă eticheta (`data-th`).
-  const [eCand, eFisier, eRezultat, eDurata, eFilament, eCost] = COLOANE.map((c) => t(`imprimanta.istoric.${c}`));
+  const [eCand, eFisier, eRezultat, eDurata, eFilament, eCost, eFilm] = COLOANE.map((c) => t(`imprimanta.istoric.${c}`));
   return (
     <section className="imprimanta-card imprimanta-lat" aria-labelledby="imprimanta-istoric" data-testid="imprimanta-istoric">
       <h3 id="imprimanta-istoric">{t('imprimanta.istoric')}</h3>
@@ -121,7 +125,7 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata }: {
         <div className="imprimanta-istoric-cutie">
           <table className="imprimanta-istoric">
             <thead>
-              <tr>{[eCand, eFisier, eRezultat, eDurata, eFilament, eCost].map((x) => <th key={x}>{x}</th>)}</tr>
+              <tr>{[eCand, eFisier, eRezultat, eDurata, eFilament, eCost, eFilm].map((x) => <th key={x}>{x}</th>)}</tr>
             </thead>
             <tbody>
               {randuri.slice(0, MAX_RANDURI).map((r, k) => {
@@ -131,6 +135,7 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata }: {
                   ? Math.round((100 * (r.durata - r.estimare)) / r.estimare) : null;
                 const piese = r.dinCvs2 && r.piese !== null && r.piese.length > 0
                   ? r.piese.slice(0, 3).join(', ') + (r.piese.length > 3 ? ', …' : '') : null;
+                const film = r.film === null ? null : adresaFilm(r.film);
                 return (
                   <tr key={k} data-testid="imprimanta-istoric-rand" data-rez={r.rezultat ?? 'necunoscut'}>
                     <td data-th={eCand}>{cand(r.inceput)}</td>
@@ -156,6 +161,12 @@ export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata }: {
                       {g !== null && <small>{t('imprimanta.istoric.grame', { g: numar(g, 1), material: r.material ?? '' })}</small>}
                     </td>
                     <td data-th={eCost} className="imprimanta-numar" data-testid="imprimanta-istoric-cost">{c === null ? '—' : lei(c)}</td>
+                    <td data-th={eFilm} className="imprimanta-istoric-film">
+                      {film === null ? '—' : (
+                        <a href={film} target="_blank" rel="noopener noreferrer" data-imprimanta="istoric-film"
+                          aria-label={t('imprimanta.istoric.film.eticheta', { cand: cand(r.inceput) })}>{t('imprimanta.istoric.film.deschide')}</a>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

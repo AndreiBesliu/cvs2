@@ -23,7 +23,9 @@ PI = 'src/app/PanouImprimanta.tsx'
 DD = 'src/app/DialogDinDesen.tsx'
 
 # Driverul K1.
-o('D01', CR, 'inceput <= 0 || inceput >= 1e10) return null;', 'inceput <= 0) return null;', 'ist', 'un început absurd (după anul 2286) primit')
+# D01, D09, S02 și I03, aduse la textul de după 3.6u (filmele au aceleași tipare lângă ale istoricului).
+o('D01', CR, 'if (fisier === null || inceput === null || inceput <= 0 || inceput >= 1e10) return null;',
+  'if (fisier === null || inceput === null || inceput <= 0) return null;', 'ist', 'un început absurd (după anul 2286) primit')
 o('D02', CR, '{ fisier, inceput: inceput * 1000, durata:', '{ fisier, inceput, durata:', 'ist', 'începutul rămâne în secunde')
 o('D03', CR, "durata: pozitiv(r['usagetime'])", "durata: pozitiv(r['totaltime'])", 'ist', 'durata din `totaltime` (cu ~40 s în plus)')
 o('D04', CR, "[0, 'oprita']", "[0, 'gata']", 'ist', 'o imprimare oprită luată drept dusă la capăt')
@@ -33,20 +35,23 @@ o('D06', CR, "const ist = listaJson(r['historyList']);", "const ist = Array.isAr
 o('D07', CR, 'ist.slice(0, MAX_ISTORIC).map(imprimareDin)', 'ist.map(imprimareDin)', 'ist', 'un istoric uriaș fără plafon')
 o('D08', CR, 'const fisier = cale === null ? null : numeSigur(numeDin(cale));', 'const fisier = cale === null ? null : numeDin(cale);', 'ist',
   'un nume nesigur (`..`, caractere de control) primit')
-o('D09', CR, 'new Set([CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC])', 'new Set([CERERE_STARE, CERERE_FISIERE])', 'ist',
+o('D09', CR, 'new Set([CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME])', 'new Set([CERERE_STARE, CERERE_FISIERE, CERERE_FILME])', 'ist',
   'istoricul necerut la legare')
 # Sesiunea.
 o('S01', SE, 'istoric: c.istoric ?? this.s.istoric,', 'istoric: c.istoric,', 'ist', 'un cadru fără istoric îl uită')
-o('S02', SE, 'if (schimbari || c.fisiere !== null || c.istoric !== null) {', 'if (schimbari || c.fisiere !== null) {', 'ist',
+o('S02', SE, 'if (schimbari || c.fisiere !== null || c.istoric !== null || c.filme !== null) {', 'if (schimbari || c.fisiere !== null || c.filme !== null) {', 'ist',
   'cadrul doar cu istoric (K1C 2025) aruncat')
-o('S03', SE, '(la !== null && this.ceas.acum() - la < PAUZA_ISTORIC_MS)', 'false', 'ist', 'istoricul cerut oricât de des')
+# S03, adusă la textul de după 3.6u (aceeași pauză, numărată și pentru filme): doar cea a istoricului.
+o('S03', SE, 'const la = this.istoricCerutLa;' + NL + "    if (c === null || this.s.legatura !== 'conectat' || (la !== null && this.ceas.acum() - la < PAUZA_ISTORIC_MS)) return false;",
+  'const la = this.istoricCerutLa;' + NL + "    if (c === null || this.s.legatura !== 'conectat' || la === -1) return false;", 'ist', 'istoricul cerut oricât de des')
 o('S04', SE, '    if (t === this.s.driver.cerereIstoric) this.istoricCerutLa = this.ceas.acum();' + NL, '', 'ist',
   'cererea de la deschidere nu ține loc deschiderii cardului')
 # Unirea celor două istorice.
 o('I01', IS, 'd <= TOLERANTA_MS && (y.imprimanta', 'd <= 100 * TOLERANTA_MS && (y.imprimanta', 'ist', 'imprimări departe una de alta, unite')
 o('I02', IS, '(y.imprimanta === null || imprimanta === null || y.imprimanta === imprimanta)) perechi.push', 'true) perechi.push', 'ist',
   'o imprimare a altei imprimante, unită')
-o('I03', IS, '  perechi.sort((p, q) => p.d - q.d);' + NL, '', 'ist', 'perechea nu e cea mai apropiată')
+o('I03', IS, '  perechi.sort((p, q) => p.d - q.d);' + NL + '  const pereche = new Map<number, ImprimareCvs2>();' + NL,
+  '  const pereche = new Map<number, ImprimareCvs2>();' + NL, 'ist', 'perechea nu e cea mai apropiată')
 o('I04', IS, 'if (y === undefined || pereche.has(p.a) || luate.has(p.b)) continue;', 'if (y === undefined) continue;', 'ist',
   'o imprimare unită de două ori')
 o('I05', IS, 'durata: x?.durata ?? y?.durata ?? null', 'durata: y?.durata ?? x?.durata ?? null', 'ist', 'durata ferestrei înaintea imprimantei')
@@ -92,12 +97,15 @@ o('I34', IS, "const v = Object.hasOwn(p, f) ? inInterval(p[f], MAX_PRET) : null;
   'un preț absurd primit')
 # Fereastra (e2e).
 o('U01', II, '    void tineImprimare(r.scrie).then(pune);', '    void tineImprimare(r.scrie);', 'e2e', 'cardul nu vede imprimarea abia scrisă')
-o('U02', PI, "  useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); });" + NL, '', 'e2e', 'nimic înregistrat în istoricul cvs2')
+# U02 și U05, aduse la textul de după 3.6u (filmele cerute și unite odată cu istoricul).
+o('U02', PI, "  useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); sesiune.cereFilme(); });" + NL, '', 'e2e',
+  'nimic înregistrat în istoricul cvs2')
 o('U03', PI, 'estimare: d?.estimare ?? null, material: d?.material ?? null };', 'estimare: null, material: d?.material ?? null };', 'e2e',
   'fișierul trimis fără estimarea feliatorului')
 o('U04', PI, ': { estimare: f.estimare ?? null, material: f.material ?? null, piese: f.etichete === null ? null : Object.values(f.etichete) };',
   ': { estimare: f.estimare ?? null, material: f.material ?? null, piese: null };', 'e2e', 'numele pieselor din cvs2 pierdute')
-o('U05', PI, 'uneste(st.istoric, cvs2, numeIstoric, st.fisiere)', 'uneste(null, cvs2, numeIstoric, st.fisiere)', 'e2e', 'istoricul imprimantei neunit')
+o('U05', PI, 'uneste(st.istoric, cvs2, numeIstoric, st.fisiere, st.filme)', 'uneste(null, cvs2, numeIstoric, st.fisiere, st.filme)', 'e2e',
+  'istoricul imprimantei neunit')
 o('U06', II, 'schimba({ ...setari, preturi: x === null ? preturi : { ...preturi, [f]: x } });', 'schimba({ ...setari, preturi });', 'e2e',
   'prețul scris nu se ține')
 o('U07', II, "sep: ro ? ';' : ','", "sep: ','", 'e2e', 'CSV-ul românesc cu virgulă')

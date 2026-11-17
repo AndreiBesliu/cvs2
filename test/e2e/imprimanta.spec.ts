@@ -21,7 +21,8 @@ test.use({ locale: 'ro-RO' });
 test.describe.configure({ mode: 'serial' });
 
 const DIR = '/usr/data/printer_data/gcodes/';
-const CITIRI = ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}', '{"method":"get","params":{"reqHistory":1}}'];
+const CITIRI = ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}', '{"method":"get","params":{"reqHistory":1}}',
+  '{"method":"get","params":{"reqElapseVideoList":1}}'];
 const FISIERE = [{ name: 'output_11031835.gcode', timeCost: 1140, material: 'PLA' }, { name: 'caramida-2x4.gcode', timeCost: 2460, material: 'PLA' }];
 
 const pornite: ImprimantaFalsa[] = [];
@@ -1394,4 +1395,74 @@ test('banda vestirilor (3.6s) nu acoperă nimic: nici Reia și Oprește din fere
   await expect(stare(page)).toHaveText('Imprimă');
   await expect(banda).toHaveCount(0);
   expect(await afisare()).toBe('none');
+});
+
+test('filmele (3.6u): al Benchy-ului, din lista imprimantei, se deschide de pe ea într-o filă nouă, fără nimic din cvs2; un nume nesigur, fără film; o imprimare din „Din desen…”, cu timelapse-ul pornit, își primește filmul după final', async ({ page }) => {
+  // O a doua imprimare a imprimantei, cu un film al cărui nume nu e doar cifre: rândul ei rămâne fără film.
+  const ALTA = { ...BENCHY, id: 2, filename: `${DIR}placa_PLA_18m.gcode`, starttime: BENCHY.starttime - 86_400 };
+  const imp = await porneste({
+    pasiFisier: 12, istoric: [BENCHY, ALTA], timelapse: true,
+    filme: [{ id: BENCHY.starttime, videoname: `${BENCHY.starttime}.mp4`, gcodename: BENCHY.filename }, { id: ALTA.starttime, videoname: '../x.mp4', gcodename: ALTA.filename }],
+  });
+  await page.route(`http://${IP}/upload/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  // Filmul e pe 80 la K1C: proba îl mută pe portul imprimantei false, și în fila nouă.
+  await page.context().route(`http://${IP}/downloads/video/**`, (r) => r.continue({ url: spreImprimanta(r.request().url()) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await expect(randuriIstoric(page)).toHaveCount(2);
+  const film = randuriIstoric(page).first().locator('[data-imprimanta="istoric-film"]');
+  await expect(film).toHaveText('Filmul ↗');
+  await expect(film).toHaveAttribute('href', `http://${IP}/downloads/video/${BENCHY.starttime}.mp4`);
+  await expect(film).toHaveAttribute('target', '_blank');
+  await expect(film).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(randuriIstoric(page).nth(1).locator('[data-imprimanta="istoric-film"]')).toHaveCount(0);
+  await expect(randuriIstoric(page).nth(1).locator('.imprimanta-istoric-film')).toHaveText('—');
+  // „Filmul ↗”: o filă nouă, la imprimantă, cu filmul ei (cererea ajunge la imprimanta falsă).
+  const [fila] = await Promise.all([page.context().waitForEvent('page'), film.click()]);
+  await expect.poll(() => imp.filmeCerute()).toEqual([{ url: `/downloads/video/${BENCHY.starttime}.mp4`, cod: 200 }]);
+  expect(fila.url()).toBe(`http://${IP}/downloads/video/${BENCHY.starttime}.mp4`);
+  await fila.close();
+  // O imprimare din „Din desen…”, dusă la capăt: imprimanta își face filmul, iar fereastra cere din nou lista, la final.
+  await page.locator('[data-imprimanta="din-desen"]').click();
+  await felieGata(page);
+  await inaltime(page, '1');
+  await page.locator('[data-imprimanta="felie-trimite"]').click();
+  await page.locator('[data-imprimanta="trimite-confirma"]').click();
+  await expect(page.getByTestId('imprimanta-trimite-ajuns')).toContainText('Ajuns în imprimantă');
+  await page.locator('[data-imprimanta="trimite-porneste"]').click();
+  await page.locator('[data-imprimanta="pat-gol"]').check();
+  await page.locator('[data-imprimanta="pornire-confirma"]').click();
+  await expect(stare(page)).toHaveText('Imprimă', { timeout: 15_000 });
+  await expect(randuriIstoric(page).first().locator('[data-imprimanta="istoric-film"]')).toHaveCount(0);
+  await expect(stare(page)).toHaveText('Gata', { timeout: 30_000 });
+  const nou = randuriIstoric(page).first();
+  await expect(nou).toHaveAttribute('data-rez', 'gata', { timeout: 15_000 });
+  await expect(nou.locator('[data-imprimanta="istoric-film"]')).toHaveAttribute('href', new RegExp(`^http://${IP.replaceAll('.', '\.')}/downloads/video/\d{10}\.mp4$`), { timeout: 15_000 });
+  await expect(randuriIstoric(page)).toHaveCount(3);
+  // Doar citiri: filmele cerute la legare, la final și la deschiderea cardului; nicio comandă în plus.
+  expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile'))).toEqual([]);
+});
+
+test('istoricul și filmele (3.6t, 3.6u): cu legarea la deschidere, cardul Istoricul deschis mai târziu le cere din nou, doar ca citiri', async ({ page }) => {
+  const ISTORIC = '{"method":"get","params":{"reqHistory":1}}';
+  const FILME = '{"method":"get","params":{"reqElapseVideoList":1}}';
+  const imp = await porneste({ istoric: [BENCHY], filme: [{ id: BENCHY.starttime, videoname: `${BENCHY.starttime}.mp4`, gcodename: BENCHY.filename }] });
+  const cate = (c: string): number => imp.comenzi().filter((x) => x === c).length;
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Liberă');
+  await page.locator('[data-imprimanta="notificari-legare"]').check();
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.reload();
+  // Legată la deschidere, fără fereastră: citirile încă o dată (a doua legare).
+  await expect.poll(() => [cate(ISTORIC), cate(FILME)], { timeout: 15_000 }).toEqual([2, 2]);
+  // Mai târziu decât pauza cererilor (5 s), fereastra deschisă: cardul le cere din nou, cu filmul la rândul lui.
+  await page.waitForTimeout(6000);
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect.poll(() => [cate(ISTORIC), cate(FILME)]).toEqual([3, 3]);
+  await expect(randuriIstoric(page).first().locator('[data-imprimanta="istoric-film"]')).toHaveAttribute('href', `http://${IP}/downloads/video/${BENCHY.starttime}.mp4`);
+  expect(comenziSet(imp)).toEqual([]);
 });

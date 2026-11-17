@@ -165,13 +165,14 @@ test('întregii dintr-un interval; ținta raportată a unui încălzitor', () =>
 test('driverul K1 și lista driverelor: portul, citirile, `ok` la bătaia inimii, ce recunoaște', () => {
   assert.equal(CREALITY_K1.id, 'creality-k1');
   assert.equal(CREALITY_K1.port, PORT_CREALITY);
-  assert.deepEqual(CREALITY_K1.citiri, ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}', '{"method":"get","params":{"reqHistory":1}}']);
+  assert.deepEqual(CREALITY_K1.citiri, ['{"method":"get","params":{"ReqPrinterPara":1}}', '{"method":"get","params":{"reqGcodeFile":1}}', '{"method":"get","params":{"reqHistory":1}}',
+    '{"method":"get","params":{"reqElapseVideoList":1}}']);
   assert.equal(CREALITY_K1.cerereIstoric, '{"method":"get","params":{"reqHistory":1}}');
   assert.equal(CREALITY_K1.inchideDupaPornire, true);
-  assert.deepEqual(CREALITY_K1.citeste('{"ModeCode":"heart_beat"}'), { recunoscut: true, stare: {}, fisiere: null, istoric: null, raspuns: RASPUNS_INIMA });
-  assert.deepEqual(CREALITY_K1.citeste('{"lightSw":1}'), { recunoscut: true, stare: { lumina: true }, fisiere: null, istoric: null, raspuns: null });
-  assert.deepEqual(CREALITY_K1.citeste('{"altceva":1}'), { recunoscut: false, stare: {}, fisiere: null, istoric: null, raspuns: null });
-  assert.deepEqual(CREALITY_K1.citeste('ok'), { recunoscut: false, stare: {}, fisiere: null, istoric: null, raspuns: null });
+  assert.deepEqual(CREALITY_K1.citeste('{"ModeCode":"heart_beat"}'), { recunoscut: true, stare: {}, fisiere: null, istoric: null, filme: null, raspuns: RASPUNS_INIMA });
+  assert.deepEqual(CREALITY_K1.citeste('{"lightSw":1}'), { recunoscut: true, stare: { lumina: true }, fisiere: null, istoric: null, filme: null, raspuns: null });
+  assert.deepEqual(CREALITY_K1.citeste('{"altceva":1}'), { recunoscut: false, stare: {}, fisiere: null, istoric: null, filme: null, raspuns: null });
+  assert.deepEqual(CREALITY_K1.citeste('ok'), { recunoscut: false, stare: {}, fisiere: null, istoric: null, filme: null, raspuns: null });
   assert.deepEqual(Object.keys(DRIVERE), ['creality-k1']);
   assert.equal(DRIVER_IMPLICIT, 'creality-k1');
   assert.equal(driverDupaId('creality-k1'), CREALITY_K1);
