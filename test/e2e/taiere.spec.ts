@@ -39,8 +39,10 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Felia 10.3↑l (ADR 0181 §7, panourile pe foi): pe o foaie de 1 200 × 900, cu dinții drepți de 20 (pasul 100), mărimea implicită
  * e cât încape un panou la „Așază pe foi” (1 180 × 880, fără marginile de 10, minus 10 pe fiecare latură: 1 160 × 860), deci
  * firma iese în 3 × 2 panouri; cu mărimea foii scrisă (1 200 × 900), blocul spune că cel mai mare panou, 1 210 × 510 cu dinții,
- * nu încape, iar „Cât încape” pune înapoi mărimea implicită. Tăiate, cele șase panouri rămân alese, iar „Așază pe foi…” din
- * bloc deschide dialogul pe ele: câte unul pe foaie, pe șase foi (cinci noi); Anulează le aduce înapoi pe prima foaie.
+ * nu încape (la fel 900 × 1 000, cu panourile de 820 × 1 000, fără rotire), iar „Cât încape” pune înapoi mărimea implicită.
+ * Tăiate, cele șase panouri rămân alese, iar „Așază pe foi…” din bloc deschide dialogul pe ele: câte unul pe foaie, pe șase
+ * foi (cinci noi); Anulează le aduce înapoi pe prima foaie. Cu alegerile ținute ale așezării (marginile 2, sub raza 3 a frezei,
+ * și rotirea cu 90°), mărimea implicită e 1 200 − 2 · 3 − 2 · 10 = 1 174 × 874, iar panourile de 820 × 1 000 încap culcate.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -484,6 +486,10 @@ test('Panourile pe foi: mărimea implicită încape cu dinții; mărimea foii e 
   await I.fill('900');
   await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 1210 × 510 mm, iar pe foaie încap 1180 × 880: «Așază pe foi» l-ar lăsa pe loc.');
   await expect(page.getByTestId('panouri-implicit')).toHaveCount(0);
+  // 900 × 1 000: trei coloane de 800, un singur rând; 820 × 1 000 nu încape (fără rotire, alegerea implicită a așezării).
+  await L.fill('900');
+  await I.fill('1000');
+  await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 820 × 1000 mm, iar pe foaie încap 1180 × 880: «Așază pe foi» l-ar lăsa pe loc.');
   await page.locator('[data-taiere="panouri-implicit"]').click();
   await expect(L).toHaveValue('1160');
   await expect(I).toHaveValue('860');
@@ -507,4 +513,39 @@ test('Panourile pe foi: mărimea implicită încape cu dinții; mărimea foii e 
   await expect(foi).toHaveCount(1);
   await expect(randuri(page)).toHaveCount(6);
   expect(erori).toEqual([]);
+});
+
+test('Panourile pe foi, cu alegerile ținute ale așezării: marginea sub raza frezei urcă la ea; cu rotirea, 820 × 1 000 încape culcat', async ({ page }) => {
+  // Alegerile ultimei „Așază pe foi”, ținute în browser: marginile 2 (sub raza 3 a frezei Ø6), rotirea cu 90°.
+  await page.addInitScript(() => {
+    localStorage.setItem('cncvs2.asezare', JSON.stringify({ colt: 'stanga-sus', margineX: 2, margineY: 2, distantaX: 6, distantaY: 6, ordinea: 'lista', rotirea: '90' }));
+  });
+  await page.goto('/');
+  const proprietati = page.locator('[data-panou="proprietati"]');
+  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
+  for (const [camp, v] of [['foaie-latime', '1200'], ['foaie-inaltime', '900']] as const) {
+    await page.locator(`[data-camp="${camp}"]`).fill(v);
+    await page.locator(`[data-camp="${camp}"]`).press('Enter');
+    await expect(page.locator(`[data-camp="${camp}"]`)).toHaveValue(v);
+  }
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('firma.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati: FIRMA })));
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  await page.locator('[data-editare="taiere"]').click();
+  await page.locator('[data-taiere="imbinare"]').selectOption('dinti');
+  await page.locator('[data-taiere="imbinare-pas"]').fill('100');
+  await page.locator('[data-taiere="imbinare-inaltime"]').fill('20');
+  // Locul: 1 200 − 2 · 3 (raza frezei, peste marginea de 2) = 1 194 și 894; fără dinții de pe ambele laturi, 1 174 × 874.
+  const L = page.locator('[data-taiere="panouri-latime"]'), I = page.locator('[data-taiere="panouri-inaltime"]');
+  await expect(L).toHaveValue('1174');
+  await expect(I).toHaveValue('874');
+  // 820 × 1 000 nu încape drept (1 000 > 894), dar culcat da (1 000 ≤ 1 194, 820 ≤ 894): fără avertisment.
+  await L.fill('900');
+  await I.fill('1000');
+  await expect(page.getByTestId('panouri-grila')).toHaveText('Formele alese: 1; grila: 3 × 1 panouri, peste 2400 × 1000 mm.');
+  await expect(page.getByTestId('panouri-iese')).toHaveCount(0);
+  // 1 200 × 900: 1 210 × 510 nu încape nici culcat (1 210 > 1 194).
+  await L.fill('1200');
+  await I.fill('900');
+  await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 1210 × 510 mm, iar pe foaie încap 1194 × 894: «Așază pe foi» l-ar lăsa pe loc.');
 });
