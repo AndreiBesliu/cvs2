@@ -895,7 +895,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/trasare/medianeCulori.ts` (după etichetele culorilor, fără plasă: masca fiecărei culori bifate ca alfa, decupată la
   cutia ei; întâi liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late;
   apoi „Leagă peste alte culori”, pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea
-  curbelor). **Totalul ramurii: 698,3 / 800 kB**, pornirea 105,7 / 115 (cu ușa 109,7).
+  curbelor), unită în `main` pe 16.11 (`380c053`). **25.3↑d (punctele pierdute, corectura ADR 0222) gata pe 16.11:** după
+  linii, un pas pe bucățile de cerneală (`bucati` în `mediana.ts`): una mai scurtă decât grosimea ei e un punct, cu căile
+  scoase; una mai lungă fără cale primește dreapta axei; cu capetele în vârf, dreapta de la un vârf la celălalt.
+  **Totalul ramurii: 708,7 / 800 kB**, pornirea 106,3 / 115 (cu ușa 110,3).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
