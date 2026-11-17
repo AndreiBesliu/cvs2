@@ -327,3 +327,40 @@ test('gaura prin foaie: aleasă în fereastră, adâncimea din foaie, dopul decu
   await expect(din.locator('[data-camp="inc-locas"]')).toHaveValue('gaura');
   await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
 });
+
+/**
+ * Gaura cu dopul ridicat (ADR 0175 §1): la gaură, dopul ridicat se sprijină doar pe față, deci alegerea gaurii mută sprijinul
+ * rândului de pe fund pe față. Select-ul singur nu o dovedește: fără „pe fund” printre opțiuni, el arată prima opțiune și când
+ * rândul a rămas „pe fund”, iar lucrarea ar refuza atunci exportul („gaura n-are fund”). Deci proba exportă cu dopul ridicat:
+ * dopul înalt cât foaia (18), pe un semifabricat de cel puțin 19 mm; oracolul pereților drepți, pe octeții din browser, cere
+ * locașul prin foaie (D = 18), dopul de 18, jocul 0,1 ± 0,02 pe tot conturul, nicio interferență.
+ */
+test('gaura cu dopul ridicat: sprijinul trece de pe fund pe față, iar Exportă scrie dopul înalt cât foaia', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(inc.locator('[data-camp="inc-dop"]')).toHaveValue('ridicat');
+  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fund');
+  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
+  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('fata');
+
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText('pe un semifabricat de 40 × 30 mm, gros de cel puțin 19 mm');
+  await expect.poll(() => descarcari.length).toBe(2);
+  const { locas, dop } = await programe(descarcari);
+  const ø6 = new Map([[1, 6]]);
+  const m = masoaraPotrivireaDreapta({ text: locas, scule: scule(locas, ø6) }, { text: dop, scule: scule(dop, ø6) }, DESEN,
+    { D: 18, h: 18, dop: 'ridicat', margine: 5, celula: 0.1 });
+  const unde = `jocul ${JSON.stringify(m.joc)}, interferența ${m.interferenta} din ${m.nDop}, D ${m.adancime}, h ${m.inaltime}`;
+  expect(m.joc.n, unde).toBeGreaterThan(100);
+  expect(m.joc.min, unde).toBeGreaterThanOrEqual(0.08);
+  expect(m.joc.max, unde).toBeLessThanOrEqual(0.12);
+  expect(m.nDop, unde).toBeGreaterThan(100);
+  expect(m.interferenta, unde).toBe(0);
+  expect(Math.abs(m.adancime - 18), unde).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(m.inaltime - 18), unde).toBeLessThanOrEqual(0.05);
+});
