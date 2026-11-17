@@ -856,6 +856,14 @@ another colour (not over the paper); the report counts the joins. Each swatch gi
 if the sheet has a single cutter, how it compares with the stroke; **Show the width** draws each colour's band with its
 own width. **Import** adds one shape per colour, with its lines cut on the line.
 
+**Each colour's result:** under **Trace**, each swatch has its own list: **Same as Result** (the default: the kind
+chosen above), **Outlines** or **Centre lines**. This way, a logo with filled shapes in one colour and lines in another
+comes out of a single trace: the filled shapes as outlines (to pocket or to inlay), the lines as centre lines (cut on
+the line). A linked colour follows the first one. The centre line options show while at least one colour is on centre
+lines and are shared by them; the automatic threshold of the wide parts then comes only from their width, and joining
+also crosses the colours on outlines. A new number of colours clears the choices, like the ticks and the links.
+**Import** adds one shape per colour, each with its own kind.
+
 The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
 sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
@@ -941,17 +949,25 @@ side or a hole too close to the cut).
 
 **Cut into panels** (a block of the panel): a sign bigger than the machine bed is cut into panels, which then fit together.
 The chosen shapes (with nothing chosen, all the shapes on the sheet) are cut on a grid over their box: with the **Panel
-size**, width × height in mm (by default, the sheet's material), or with the **Number of panels**, across × up. With the
-size, the **Panels** are **equal** (the default: the fewest that fit, all the same size) or **from the corner** (full panels
-from the bottom-left corner, plus what is left): a 2 400 × 1 000 mm sign with a 1 200 × 900 panel gives four panels of 1 200
-× 500, or two of 1 200 × 900 and two of 1 200 × 100. Under the fields, the panel says how many panels come out, and while
-you work in the block, the grid shows on the canvas. The cuts are those of the panel's lines, with **Close the pieces**,
-**Between pieces** and the **Joint** above: the teeth hold the panels together, and the clearance lets them slide into each
-other. The pieces of each panel become a group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left), and
-stay where they were; a panel with a single piece is that piece, with the panel's name, and an empty cell of the grid gets
-no number. A text with its letters on both sides of a line that does not touch them is split too, each letter in its panel.
-More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into panels** is a single
-undo step.
+size**, width × height in mm, or with the **Number of panels**, across × up. With the size, the **Panels** are **equal** (the
+default: the fewest that fit, all the same size) or **from the corner** (full panels from the bottom-left corner, plus what
+is left): a 2 400 × 1 000 mm sign with a 1 200 × 900 panel gives four panels of 1 200 × 500, or two of 1 200 × 900 and two of
+1 200 × 100. By default, the size is what fits on the sheet in **Arrange on sheets**: the sheet without the arrangement
+margins (the ones kept from the last arrangement, each at least the radius of the outside profile's cutter) and without the
+teeth, clearance or overlap on both sides; on a 1 200 × 900 sheet with 10 mm margins, 1 180 × 880, and with 20 mm teeth, 1
+160 × 860 (the sign above then comes out as six panels of 800 × 500). The default size follows the options until you write
+another; **What fits on the sheet** puts it back. If the largest panel, with its teeth, would not fit on the sheet (as it is
+or, with the arrangement's kept rotation, lying down), the block says so before the cut. Under the fields, the panel says how
+many panels come out, and while you work in the block, the grid shows on the canvas. The cuts are those of the panel's lines,
+with **Close the pieces**, **Between pieces** and the **Joint** above: the teeth hold the panels together, and the clearance
+lets them slide into each other. The teeth of each cut sit between the lines of the other axis: where four panels meet, the
+edges are straight for at least half a pitch, so no tooth is cut by the neighbouring cut. The pieces of each panel become a
+group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left), stay where they were and stay chosen:
+**Arrange on sheets…**, in the block, opens the arrangement window on them (its margins, distance, order and rotation), to
+put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
+cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
+letter in its panel. More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into
+panels** is a single undo step.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.

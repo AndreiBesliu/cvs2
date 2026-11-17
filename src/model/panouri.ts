@@ -82,7 +82,9 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
     if (tinte.length === 0) continue;
     const r = taie(d, {
       cutit: x ? { fel: 'x', x: v } : { fel: 'y', y: v }, alese: tinte.map((b) => b.instanta.id), inchide: cerere.inchide, desparte: true,
-      ...(cerere.intre ? { intre: cerere.intre } : {}), ...(cerere.imbinare ? { imbinare: cerere.imbinare } : {}),
+      ...(cerere.intre ? { intre: cerere.intre } : {}),
+      // Cu îmbinare, dinții se pun între liniile celeilalte axe (felia 10.3↑l): încrucișările rămân drepte.
+      ...(cerere.imbinare ? { imbinare: cerere.imbinare, opriri: x ? grila.ys.map((y) => ({ x: v, y })) : grila.xs.map((q) => ({ x: q, y: v })) } : {}),
     }, indexFoaie);
     if (!r.ok && r.motiv !== 'nimic-taiat') return r;
     const taiate = new Map(r.ok ? r.degrupate.map((g) => [g.instanta.id, g.parti]) : []);

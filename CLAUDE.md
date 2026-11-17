@@ -576,6 +576,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `document.taie`: gruparea citește blocurile de text cu valibot, deci în worker ar aduce ~4,5 kB). Rezultatul tăierii are
   `grupuri` (panourile de grupat) și `panouri` (câte sunt); alegerea de după, din comanda tăierii (`ids`). Oracolul:
   `judecaPanourile` (`taiere.panouri.oracol.test.ts`).
+  **Panourile pe foi (felia 10.3↑l)** gata pe 17.11, pe `wip/10.3l-panouri-foi` (din `main` `021dcc6`, cu `4b52fc3` unit),
+  neunită: mărimea implicită a panoului, locul pe foaie și cel mai mare panou în `src/model/panouriPeFoaie.ts` (pur, pe firul
+  principal; blocul citește marginile ținute ale așezării, `optiuniTinute`, și freza exterioară, `distantaMinima`); „Așază pe
+  foi…” din bloc deschide dialogul pe alegere (`onAseaza`, din `Editare` prin `PanouTaiere`). În `taie`, `opriri` (doar de la
+  panouri, cu îmbinare): coarda se împarte în punctele liniilor celeilalte axe, cu dinții pe fiecare bucată (reparația refuzului
+  `pe-linie` al dinților drepți pe grila egală).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
@@ -907,8 +913,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   apoi „Leagă peste alte culori”, pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea
   curbelor), unită în `main` pe 16.11 (`380c053`). **25.3↑d (punctele pierdute, corectura ADR 0222) gata pe 16.11:** după
   linii, un pas pe bucățile de cerneală (`bucati` în `mediana.ts`): una mai scurtă decât grosimea ei e un punct, cu căile
-  scoase; una mai lungă fără cale primește dreapta axei; cu capetele în vârf, dreapta de la un vârf la celălalt.
-  **Totalul ramurii: 708,7 / 800 kB**, pornirea 106,3 / 115 (cu ușa 110,3).
+  scoase; una mai lungă fără cale primește dreapta axei; cu capetele în vârf, dreapta de la un vârf la celălalt;
+  unită în `main` pe 17.11 (`dd21a8a`). **25.3↑e (rezultatul pe fiecare culoare, ADR 0228) gata pe 17.11, cu toate
+  recomandările („Da, 1a–2a”), pe aceeași ramură, pe canalul `trasare`:** `traseazaCulori` cu `peLinii` (contururile
+  doar ale culorilor rămase pe contururi; fără ele, doar etichetele), chemat o singură dată de `traseazaCuloriMediane`
+  (liniile doar ale culorilor alese; legarea și peste contururi); în pastilă, sub „Se trasează”, lista „Rezultatul
+  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou). **Totalul ramurii, cu `main` adus (`6e62d40c`): 716,0 /
+  800 kB**, pornirea 106,6 / 115 (cu ușa 110,6).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1186,6 +1197,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **10.3↑l și 25.3↑e unite în `main`, după reparația probei de viteză a luminii** (la „unește ce se poate”,
+  după rapoartele liniilor): panourile pe foi (`eb237a77`, exact `e17a3521`: mărimea implicită care încape pe foaie,
+  avertismentul, „Cât încape pe foaie”, „Așază pe foi…”, plus dinții drepți ai lui 10.3↑k pe grila egală) și rezultatul
+  pe fiecare culoare (`a3e81f6d`, exact `19b0faf3`: ADR 0228 cu 1a–2a, lista „Rezultatul culorii” în pastilă). Înainte,
+  completul de pe `71d488a7` (3.6t) căzuse la `trasare.culori.lumina.test.ts:132`: 1 504 ms la pragul de 1,5 s, cu
+  corecția de 0,6–0,7 s local și 0,9–1,5 s în CI (fișierele de probe în paralel, pe 4 procesoare); reluat, a trecut, iar
+  `b6aaa548` e pe test. Pragul e acum cel de redeschidere din ADR 0226 (2 s), cu cea mai bună din cel mult 3 rulări
+  (`9361c831`, probat cu două otrăvuri). Porțile pe unire: unit 9 490 / 0, e2e 507 / 507, emulatoarele 101 / 101 și 21 /
+  21 la reluare (la prima, callable-ul `sugestii` a stat 300 s: lucrătorul funcțiilor n-a pornit în 30 s, cu procesorul
+  la 97 %, iar emulatorul lasă atunci cererea fără răspuns; nu e a unirii). Totalul 716,7 / 800, pornirea cu ușa 110,6 /
+  115. 10.3↑m (`wip/10.3m-surori`) și 3.6u sunt în lucru la linii.
 - 17.11.2026: **felia 3.6t a imprimantei unită în `main`** (din grupul 3 aprobat, „Da, grupul 3”; unită la „unește ce se
   poate”): istoricul imprimărilor (`18d9be07`, exact `02c29f2`), +4,8 kB, peste ținta de ~3,5 din ADR 0194, în plafonul de
   800. Porțile pe unire: unit 9 463 / 0, e2e 504 / 504 (o reluare: `extensii.masina.spec.ts:84`, senderul prin extensie,

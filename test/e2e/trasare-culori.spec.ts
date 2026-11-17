@@ -266,6 +266,7 @@ test('liniile mediane pe culori (ADR 0227): Rezultatul și pe Culori; legarea pe
   await expect(page.getByTestId('import-piese')).toHaveText(`„Importă” adaugă ${cu.r.piese.length} piese, câte una pe culoare, aliniate ca în imagine.`);
   // Grosimea fiecărei culori, în pastila ei (fără freză pe foaie, doar grosimea); grosimea desenului întreg nu mai e în raport.
   for (const pc of cu.r.piese) {
+    if (!('grosime' in pc)) throw new Error(`${pc.hex}: piesa nu e pe linii mediane`);
     await expect(pastila(page, pc.hex).getByTestId('trasare-pastila-grosime')).toHaveText(`trăsătura: ${zec(pc.grosime * MM, 2)} mm`);
   }
   await expect(page.getByTestId('trasare-grosime')).toHaveCount(0);
@@ -283,6 +284,121 @@ test('liniile mediane pe culori (ADR 0227): Rezultatul și pe Culori; legarea pe
   for (const pc of cu.r.piese) {
     const piesa = doc.piese.find((x) => x.nume === `linii ${pc.hex}`);
     expect(piesa?.operatii.map((o) => [o.id, o.latura]), `${pc.hex}: ${doc.piese.map((x) => x.nume).join(', ')}`).toEqual([['deschise', 'pe-linie']]);
+  }
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+/** Amestecul în Node (ADR 0228): culorile alese pe linii mediane, celelalte pe contururi, cu opțiunile implicite ale ferestrei. */
+function amestecInNode(png: Buffer, peLinie: (hex: string) => boolean) {
+  const img = citestePng(new Uint8Array(png));
+  const p = ariePx(0.3, MM);
+  const oc = { numar: null, legaturi: [], bifate: null, netezime: 'echilibrat', petePx: p, gauriPx: p } as const;
+  const e = traseazaCulori(img, { ...oc, doarEtichete: true });
+  if (!e.ok) throw new Error(e.cod);
+  const r = traseazaCuloriMediane(img, { ...oc, peLinii: e.raport.paleta.map((c) => !c.fundal && peLinie(c.hex)) },
+    { capete: 'centru', late: 'mediane', pragLatPx: null, semnaleaza: true, bucle: 'linie', leaga: true });
+  if (!r.ok) throw new Error(r.cod);
+  return { paleta: e.raport.paleta.map((c) => c.hex), r };
+}
+/** Culoarea din paletă cea mai apropiată de `rgb`. */
+function celMaiAproape(paleta: readonly string[], rgb: readonly number[]): string {
+  let bun = '', d = Infinity;
+  for (const h of paleta) {
+    const e = [1, 3, 5].reduce((s, i, j) => s + (parseInt(h.slice(i, i + 2), 16) - (rgb[j] ?? 0)) ** 2, 0);
+    if (e < d) { d = e; bun = h; }
+  }
+  return bun;
+}
+
+test('rezultatul pe fiecare culoare (ADR 0228): în pastilă, galbenul pe Contururi, roșul pe Linii mediane; un număr nou le șterge; Importă, fiecare piesă cu felul ei', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').waitFor({ state: 'attached' });
+  const png = await desenLiniiColorate(page);
+  const toate = amestecInNode(png, () => true);
+  const galben = celMaiAproape(toate.paleta, [236, 196, 36]), rosu = celMaiAproape(toate.paleta, [196, 38, 42]);
+  const a = amestecInNode(png, (h) => h !== galben), b = amestecInNode(png, (h) => h === rosu);
+  // În Node: galbenul pe contururi e o piesă (pe linii, un punct); roșul singur pe linii, legat peste culorile pe contururi.
+  expect([toate.r.piese.length, a.r.piese.length, b.r.piese.length]).toEqual([4, 5, 5]);
+  expect(b.r.raport.mediane.legaturi).toBe(3);
+  const piese = (n: number): string => `„Importă” adaugă ${n} piese, câte una pe culoare, aliniate ca în imagine.`;
+  const liste = page.locator('[data-camp="trasare-culoare-rezultat"]');
+  const fel = (hex: string) => pastila(page, hex).locator('[data-camp="trasare-culoare-rezultat"]');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'linii.png', mimeType: 'image/png', buffer: png });
+  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
+  await page.locator('[data-camp="trasare-rezultat"]').selectOption('mediane');
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(4));
+  // Lista din pastila fiecărei culori (răspunsul 2a), implicit „Ca Rezultatul” (răspunsul 1a).
+  await expect(liste).toHaveCount(toate.paleta.length);
+  await expect(fel(galben)).toHaveValue('ca');
+  await fel(galben).selectOption('contururi');
+  await expect(fel(galben)).toHaveValue('contururi');
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(5));
+  await expect(pastila(page, galben).getByTestId('trasare-pastila-grosime')).toHaveCount(0);
+  await expect(pastila(page, rosu).getByTestId('trasare-pastila-grosime')).toBeVisible();
+  // Un număr nou de culori șterge felurile, ca bifele și legăturile: din „Automat”, apoi din glisor.
+  const valori = () => liste.evaluateAll((e) => e.map((x) => (x as HTMLSelectElement).value).join(' '));
+  await page.locator('[data-camp="trasare-culori-automat"]').uncheck();
+  await expect.poll(valori).toBe(toate.paleta.map(() => 'ca').join(' '));
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(4));
+  await liste.first().selectOption('contururi');
+  await expect(liste.first()).toHaveValue('contururi');
+  await page.locator('[data-camp="trasare-culori-numar"]').fill('5');
+  await expect.poll(valori).toBe('ca ca ca ca ca');
+  await page.locator('[data-camp="trasare-culori-automat"]').check();
+  await expect(liste).toHaveCount(toate.paleta.length);
+  // Rezultatul: Contururi: opțiunile liniilor dispar.
+  await page.locator('[data-camp="trasare-rezultat"]').selectOption('contururi');
+  await expect(page.getByTestId('trasare-optiuni-mediane')).toHaveCount(0);
+  // O culoare legată ia felul primei: verdele pe Linii mediane, legat de roșu, își pierde alegerea (opțiunile liniilor dispar).
+  const verde = celMaiAproape(toate.paleta, [44, 146, 70]);
+  await fel(verde).selectOption('mediane');
+  await expect(page.getByTestId('trasare-optiuni-mediane')).toBeVisible();
+  await pastila(page, verde).locator('[data-camp="trasare-leaga"]').selectOption({ label: rosu });
+  await expect(pastila(page, verde).getByTestId('trasare-legata')).toHaveText(`legată de ${rosu}`);
+  await expect(page.getByTestId('trasare-optiuni-mediane')).toHaveCount(0);
+  await pastila(page, verde).locator('[data-buton="trasare-dezleaga"]').click();
+  await expect(fel(verde)).toHaveValue('ca');
+  // Roșul pe Linii mediane: opțiunile liniilor apar (cu legarea), grosimea doar la roșu.
+  await fel(rosu).selectOption('mediane');
+  await expect(page.getByTestId('trasare-optiuni-mediane')).toBeVisible();
+  await expect(page.getByTestId('trasare-legaturi')).toHaveText('3 legături peste alte culori');
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(5));
+  await expect(pastila(page, rosu).getByTestId('trasare-pastila-grosime')).toBeVisible();
+  await expect(pastila(page, galben).getByTestId('trasare-pastila-grosime')).toHaveCount(0);
+  // Și galbenul pe Linii mediane: pragul vine din grosimea liniei roșii, deci pătratul e o parte lată, semnalată pe
+  // previzualizare; „Arată părțile late” o scoate. Desenul, comparat după ce s-a liniștit (aceiași pixeli la 400 ms).
+  await fel(galben).selectOption('mediane');
+  await expect(page.getByTestId('trasare-parti')).toContainText('1 parte lată');
+  const panza = page.getByTestId('trasare-previzualizare');
+  const linistit = async (): Promise<string> => {
+    await expect(page.getByTestId('trasare-trasez')).toHaveCount(0);
+    let x = await panza.evaluate((c) => (c as HTMLCanvasElement).toDataURL());
+    for (;;) {
+      await page.waitForTimeout(400);
+      const y = await panza.evaluate((c) => (c as HTMLCanvasElement).toDataURL());
+      if (y === x) return y;
+      x = y;
+    }
+  };
+  const cuLate = await linistit();
+  await page.locator('[data-camp="trasare-arata-late"]').uncheck();
+  await expect(page.getByTestId('trasare-parti')).toHaveCount(0);
+  expect(await linistit()).not.toBe(cuLate);
+  await page.locator('[data-camp="trasare-arata-late"]').check();
+  await fel(galben).selectOption('ca');
+  await expect(page.getByTestId('import-piese')).toHaveText(piese(5));
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const doc = JSON.parse(await documentSalvat(page, 1)) as { piese: Array<{ nume: string; operatii: Array<{ id: string; latura: string }> }> };
+  expect(doc.piese.length).toBe(5);
+  // Fiecare piesă cu felul culorii ei: roșul pe linie; celelalte, contururi pe exterior (și pe interior, la inele).
+  for (const pc of b.r.piese) {
+    const piesa = doc.piese.find((x) => x.nume === `linii ${pc.hex}`);
+    const ext = Array.from(pc.cai.exterior);
+    const asteptat = pc.cai.deschisa ? [['deschise', 'pe-linie']]
+      : [...(ext.includes(1) ? [['exterior', 'exterior']] : []), ...(ext.includes(0) ? [['interior', 'interior']] : [])];
+    expect(piesa?.operatii.map((o) => [o.id, o.latura]), `${pc.hex}: ${doc.piese.map((x) => x.nume).join(', ')}`).toEqual(asteptat);
   }
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
