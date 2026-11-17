@@ -1267,12 +1267,23 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
   trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
   rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
   plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
+- **Treapta** (doar în fereastra exportului): **fără**; **spre interior**: locașul are un umăr, cu nivelul de sus cât desenul,
+  până la **Adâncimea umărului** (d; implicit jumătate din adâncimea locașului, la gaură din grosimea foii), iar sub el o
+  deschidere mai îngustă cu **Lățimea umărului** (s; implicit 3 mm) pe fiecare parte, până la fund (sau prin foaie); sau
+  **spre exterior**: desenul e deschiderea, iar nivelul de sus e mai lat cu s pe fiecare parte (ca falțul unui geam).
+  Ambele niveluri au colțurile potrivite ca locașul simplu, cu același joc lateral. Dopul are o **flanșă** pe nivelul de sus
+  și o **tijă** pe deschidere, și se taie mereu oglindit, cu tija în sus, apoi îl întorci în locaș. Fără treaptă, câmpurile
+  umărului se ascund (valorile rămân în rând).
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
-- **Se sprijină** (doar la dopul ridicat): **pe fundul locașului**: dopul e înalt cât adâncimea plus **spațiul pentru
-  fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a semifabricatului stă pe
-  placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1 și sub adâncime).
+- **Se sprijină** (la dopul ridicat; cu treaptă, și la cel decupat): **pe fundul locașului**: dopul e înalt cât adâncimea plus
+  **spațiul pentru fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a
+  semifabricatului stă pe placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1
+  și sub adâncime). Cu treaptă: **pe umăr** (implicit): flanșa stă pe umăr, iar sub tijă rămâne **jocul de sub tijă** (g):
+  tija are D − d − g, flanșa d + H; sau **pe fundul locașului**: tija stă pe fund, iar deasupra umărului rămâne **jocul de
+  deasupra umărului** (g): tija are D − d + g, flanșa d − g + H. La gaura în trepte, dopul stă pe umăr, cu tija la nivel cu
+  fața de jos (T − d), fără joc. „Pe față” e doar al dopului fără treaptă.
 - **Cât iese peste placă** (la dopul decupat; tot H): placa dopului e groasă cât adâncimea plus H, iar partea care iese peste
   placă se rindeluiește după lipire.
 - **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului; la cel decupat, cel puțin
@@ -1288,19 +1299,27 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 dopului (vârfurile R − c, unghiurile r), jocul pe contur, înălțimea dopului și grosimea semifabricatului (cea mai mică la dopul
 ridicat, înălțimea plus 1 mm; exactă la cel decupat) și, la dopul decupat, punțile lui. De exemplu, cu freza Ø6, adâncimea 6, jocul 0,1 și dopul ridicat pe
 fund: vârfurile locașului R3, unghiurile R2,9, ale dopului R2,9 și R3; dopul e înalt de 8 mm, iar semifabricatul are cel
-puțin 9 mm.
+puțin 9 mm. Cu treaptă, panoul arată și umărul (încotro, d, s) și dopul în trepte (tija și flanșa): dreptunghiul de 40 × 30
+cu Ø6, adâncimea 8, umărul spre interior la 3 mm, lat de 5, pe umăr, g 0,5 și H 2 are deschiderea de 30 × 20, tija de 4,5 mm
+și flanșa de 5 mm; dopul e înalt de 9,5 mm, pe un semifabricat de cel puțin 10,5 mm.
 
 **Exportul.** Ca la incrustația în V, se descarcă și un fișier pentru fiecare dop („-dop-1”…), cu semifabricatul lui: XY0 în
 colțul ales, Z0 pe fața lui. La dopul ridicat, fața se coboară în jur cu frezele dopului, până dincolo de marginile
 semifabricatului: fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă. La dopul decupat, conturul se taie ca
 exterior, prin placă, cu punțile alese (implicit 4 pe buclă, late de 4 mm și groase de 1 mm), iar golurile desenului ca
-interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire.
+interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire. Cu treaptă, locașul se taie în două niveluri:
+întâi nivelul de sus, până la umăr, apoi deschiderea, de sub umăr până la fund. Dopul în trepte e mereu oglindit, cu tija în
+sus: în jurul tijei, freza coboară până la flanșă; apoi, la dopul ridicat, fața se coboară în jurul flanșei, iar la cel
+decupat flanșa se taie prin placă, cu punți. Spre exterior, semifabricatul e cutia desenului lărgită cu s, plus marginea.
 
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
-sprijinul pe umăr, până la felia lor (12.1↑f-2).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund). Cu treaptă:
+dopul pe față, sau pe fund la o gaură; umărul la fund sau mai jos (la gaură, la fața de jos); umărul cel mult cât jocul
+lateral de lat; jocul g sub 0,1 mm, pe umăr cel puțin D − d, pe fund cel puțin d; o deschidere care dispare sub umăr (o parte
+mai îngustă decât freza, cu elementul ei); la dopul decupat, marginea mai mică decât prima lui freză plus 0,5 mm, sau flanșa
+cel mult cât punțile de groasă. Fără treaptă, sprijinul pe umăr.
 
 ## Traseul pe pânză
 %% capitol: traseu

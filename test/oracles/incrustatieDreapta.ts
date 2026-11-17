@@ -238,3 +238,126 @@ export function masoaraPotrivireaDreapta(
   const inaltime = p.dop !== 'decupat' ? mediana(inalte) : inalte.length === 0 ? Number.NaN : inalte.reduce((a, b) => Math.max(a, b), -Infinity);
   return { joc: banda(joc), interferenta, nDop, adancime: mediana(adanci), inaltime, margineaPeRaza };
 }
+
+/**
+ * Celulele netăiate la un nivel care ating marginea grilei, și cele legate de ele (rama semifabricatului, nu dopul): umplere
+ * din margini pe celulele cu înălțimea cel puțin `prag`.
+ */
+function ramaLaNivel(z: Float64Array, nx: number, ny: number, prag: number): Uint8Array {
+  const rama = new Uint8Array(nx * ny);
+  const coada: number[] = [];
+  const netaiat = (k: number): boolean => (z[k] ?? 0) >= prag;
+  const pune = (k: number): void => { if (netaiat(k) && !rama[k]) { rama[k] = 1; coada.push(k); } };
+  for (let i = 0; i < nx; i++) { pune(i); pune((ny - 1) * nx + i); }
+  for (let j = 0; j < ny; j++) { pune(j * nx); pune(j * nx + nx - 1); }
+  while (coada.length > 0) {
+    const k = coada.pop()!, i = k % nx, j = (k - i) / nx;
+    if (i + 1 < nx) pune(k + 1);
+    if (i > 0) pune(k - 1);
+    if (j + 1 < ny) pune(k + nx);
+    if (j > 0) pune(k - nx);
+  }
+  return rama;
+}
+
+/** Incrustația în trepte (ADR 0175 §3), pe hârtie: ce se cere locașului și dopului. */
+export type ParametriTrepte = {
+  /** Adâncimea umărului d și a locașului D (mm): pereții nivelului de sus se citesc la d/2, ai deschiderii la (d + D)/2. */
+  readonly d: number; readonly D: number;
+  /**
+   * Lungimea tijei și înălțimea dopului pe semifabricatul lui (mm): tija e sus (dopul în trepte e mereu oglindit, cu tija în
+   * sus), deci pereții ei se citesc la tija/2, iar ai flanșei la jumătatea dintre tijă și h.
+   */
+  readonly tija: number; readonly h: number;
+  readonly dop: 'ridicat' | 'decupat';
+  /** Marginea semifabricatului în jurul cutiei nivelului de sus (mm). */
+  readonly margine: number;
+  /** Cât trece nivelul de sus de cutia desenului: s spre exterior, 0 spre interior. Semifabricatul e cutia lărgită cu ea. */
+  readonly latire: number;
+  readonly celula: number;
+};
+
+/** Un nivel al potrivirii: jocul în fiecare punct al peretelui locașului, punctele peretelui dopului ieșite din locaș, din câte. */
+export type NivelTrepte = { readonly joc: Banda; readonly interferenta: number; readonly nDop: number };
+
+export type MasuraTrepte = {
+  /** Nivelul de sus (locașul până la d) cu flanșa, și deschiderea (de la d la D) cu tija. */
+  readonly sus: NivelTrepte; readonly jos: NivelTrepte;
+  /** Cât trece peretele flanșei de deschiderea locașului (mm, > 0: flanșa are umărul sub ea), în fiecare punct al lui. */
+  readonly reazem: Banda;
+  /** Medianele, mm: fundul nivelului de sus (umărul) și al deschiderii; pe dop, nivelul flanșei din jurul tijei și fața coborâtă. */
+  readonly umar: number; readonly adancime: number; readonly tija: number;
+  /** Fața coborâtă a dopului ridicat (mediana) sau șanțul celui decupat (cel mai adânc punct: punțile îi ridică fundul). */
+  readonly inaltime: number;
+  /** Ca la `MasuraDreapta`, pe nivelul de sus sau pe deschidere. */
+  readonly margineaPeRaza: (nivel: 'sus' | 'jos', p: PunctO, d: PunctO, lungime: number) => number;
+};
+
+/**
+ * Potrivirea incrustației în trepte (ADR 0175 §3, §6): locașul pe foaie, cu două niveluri (sus, până la d; deschiderea, de la d
+ * la D), și dopul pe semifabricatul lui, cu tija în sus și flanșa sub ea. Contractul semifabricatului: cutia nivelului de sus
+ * (desenul, lărgit cu s spre exterior) cu `margine` pe fiecare parte, Z0 pe fața lui; dopul în trepte e mereu oglindit pe X.
+ * Jocul se măsoară ca la `masoaraPotrivireaDreapta`, pe fiecare nivel cu partea lui de dop: nivelul de sus cu flanșa,
+ * deschiderea cu tija. Reazemul: flanșa trebuie să treacă de deschidere, ca să stea pe umăr.
+ */
+export function masoaraPotrivireaTrepte(
+  locas: { readonly text: string; readonly scule: readonly SculaOracol[] },
+  dop: { readonly text: string; readonly scule: readonly SculaOracol[] },
+  desen: DesenO,
+  p: ParametriTrepte,
+): MasuraTrepte {
+  const b = cutieDesen(desen);
+  const x0 = b.x0 - p.latire, y0 = b.y0 - p.latire, x1 = b.x1 + p.latire, y1 = b.y1 + p.latire;
+  const m = p.margine;
+  const spreDop = (x: number, y: number): PunctO => [x1 + m - x, y - y0 + m];
+  const dinDop = (u: number, v: number): PunctO => [x1 + m - u, v + y0 - m];
+  const mutariL = mutariPeScule(locas.text, locas.scule), mutariD = mutariPeScule(dop.text, dop.scule);
+  const zSus = -p.d / 2, zJos = -(p.d + p.D) / 2, zTija = -p.tija / 2, zFlansa = -(p.tija + p.h) / 2;
+  const fSus = functieTaiere(mutariL, zSus), fJos = functieTaiere(mutariL, zJos);
+  const gTija = functieTaiere(mutariD, zTija), gFlansa = functieTaiere(mutariD, zFlansa);
+  const c = p.celula;
+  const gL: GrilaOracol = { x0: x0 - 1, y0: y0 - 1, latime: x1 - x0 + 2, inaltime: y1 - y0 + 2, celula: c };
+  const L = suprafataPeScule(locas.text, gL, locas.scule);
+  const gD: GrilaOracol = { x0: 0, y0: 0, latime: x1 - x0 + 2 * m, inaltime: y1 - y0 + 2 * m, celula: c };
+  const M = suprafataPeScule(dop.text, gD, dop.scule);
+  const nivel = (pragL: number, fL: (x: number, y: number) => number, pragD: number, gD2: (x: number, y: number) => number): { readonly n: NivelTrepte; readonly perete: PunctO[] } => {
+    const joc: number[] = [];
+    for (const [x, y] of puncteDePerete(L.z, L.nx, L.ny, gL, pragL, fL)) {
+      const [u, v] = spreDop(x, y);
+      joc.push(-gD2(u, v));
+    }
+    const rama = ramaLaNivel(M.z, M.nx, M.ny, pragD);
+    const perete = puncteDePerete(M.z, M.nx, M.ny, gD, pragD, gD2, (i, j) => !rama[j * M.nx + i]).map(([u, v]) => dinDop(u, v));
+    const interferenta = perete.filter(([x, y]) => !(fL(x, y) < 0)).length;
+    return { n: { joc: banda(joc), interferenta, nDop: perete.length }, perete };
+  };
+  const sus = nivel(zSus, fSus, zFlansa, gFlansa);
+  const jos = nivel(zJos, fJos, zTija, gTija);
+  const reazem = banda(sus.perete.map(([x, y]) => fJos(x, y)));
+  const umare: number[] = [], adanci: number[] = [];
+  for (const z of L.z) {
+    if (z < zJos) adanci.push(-z);
+    else if (z < zSus) umare.push(-z);
+  }
+  const tije: number[] = [], inalte: number[] = [];
+  for (const z of M.z) {
+    if (z < zFlansa) inalte.push(-z);
+    else if (z < zTija) tije.push(-z);
+  }
+  const margineaPeRaza = (n: 'sus' | 'jos', q: PunctO, d: PunctO, lungime: number): number => {
+    const f = n === 'sus' ? fSus : fJos;
+    const l = Math.hypot(d[0], d[1]), ux = d[0] / l, uy = d[1] / l;
+    const pas = 0.002;
+    const s0 = f(q[0], q[1]) < 0;
+    for (let t = pas; t <= lungime; t += pas) {
+      if ((f(q[0] + t * ux, q[1] + t * uy) < 0) !== s0) {
+        const a: PunctO = [q[0] + (t - pas) * ux, q[1] + (t - pas) * uy], e: PunctO = [q[0] + t * ux, q[1] + t * uy];
+        const x = s0 ? bisectie(f, a, e) : bisectie(f, e, a);
+        return Math.hypot(x[0] - q[0], x[1] - q[1]);
+      }
+    }
+    return NaN;
+  };
+  const inaltime = p.dop !== 'decupat' ? mediana(inalte) : inalte.length === 0 ? Number.NaN : inalte.reduce((a, e) => Math.max(a, e), -Infinity);
+  return { sus: sus.n, jos: jos.n, reazem, umar: mediana(umare), adancime: mediana(adanci), tija: mediana(tije), inaltime, margineaPeRaza };
+}

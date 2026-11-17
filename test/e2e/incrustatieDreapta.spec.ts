@@ -1,6 +1,6 @@
 import { test, expect, type Download, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { masoaraPotrivireaDreapta } from '../oracles/incrustatieDreapta.ts';
+import { masoaraPotrivireaDreapta, masoaraPotrivireaTrepte } from '../oracles/incrustatieDreapta.ts';
 import type { DesenO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
 import { adauga } from './ajutor-panza.ts';
@@ -363,4 +363,121 @@ test('gaura cu dopul ridicat: sprijinul trece de pe fund pe față, iar Exportă
   expect(m.interferenta, unde).toBe(0);
   expect(Math.abs(m.adancime - 18), unde).toBeLessThanOrEqual(0.05);
   expect(Math.abs(m.inaltime - 18), unde).toBeLessThanOrEqual(0.05);
+});
+
+/**
+ * Treapta (ADR 0175 §5, felia 12.1↑f-2), în fereastra exportului, pe dreptunghiul de 30 × 20 cu Ø6, adâncimea 8: „Treapta: spre
+ * interior” arată adâncimea și lățimea umărului și mută sprijinul pe umăr (opțiunile: pe umăr, pe fund; „pe față” nu, la
+ * treaptă). Exportă scrie locașul în două niveluri și dopul în trepte, oglindit: umărul d 3, s 5; tija 8 − 3 − 0,5 = 4,5,
+ * flanșa 3 + 2 = 5, dopul 9,5, semifabricatul cel puțin 10,5. Oracolul treptelor, pe octeții din browser, cere jocul 0,1 ± 0,02
+ * pe ambele niveluri, nicio interferență, flanșa pe umăr, opririle ± 0,05. Înapoi „fără” treaptă, sprijinul pleacă de pe umăr
+ * (pe fund): Exportă trece, deci rândul nu a rămas „pe umăr” (lucrarea l-ar refuza fără treaptă). În proiect, panoul arată
+ * treapta și dopul în trepte, pe hârtie.
+ */
+test('treapta: sprijinul trece pe umăr, Exportă scrie locașul în două niveluri și dopul în trepte, potrivite pe oracol', async ({ page }) => {
+  // Oracolul pe două niveluri, pe octeții din browser: ca proba de mai sus, timpul lui.
+  test.setTimeout(90_000);
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('tr[data-operatie]').first();
+  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  await rand.locator('[data-camp="adancime"]').fill('8');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(inc.locator('[data-camp="inc-treapta"]')).toHaveValue('fara');
+  await expect(inc.locator('[data-camp="inc-treapta-adancime"]')).toHaveCount(0);
+  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
+  await expect(inc.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe umăr', 'pe fundul locașului']);
+  await expect(inc.locator('[data-camp="inc-sprijin"]')).toHaveValue('umar');
+  await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
+  await inc.locator('[data-camp="inc-treapta-latime"]').fill('5');
+  // Pe umăr: jocul de sub tijă (g) și spațiul de deasupra (H), amândouă.
+  await expect(inc.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
+  await expect(inc.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
+
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText(/pe un semifabricat de 40 × 30 mm, gros de cel puțin 10[,.]5 mm/);
+  await expect.poll(() => descarcari.length).toBe(2);
+  const { locas, dop } = await programe(descarcari);
+  const ø6 = new Map([[1, 6]]);
+  const m = masoaraPotrivireaTrepte({ text: locas, scule: scule(locas, ø6) }, { text: dop, scule: scule(dop, ø6) }, DESEN,
+    { d: 3, D: 8, tija: 4.5, h: 9.5, dop: 'ridicat', margine: 5, latire: 0, celula: 0.1 });
+  const unde = `sus ${JSON.stringify(m.sus)}, jos ${JSON.stringify(m.jos)}, reazem ${JSON.stringify(m.reazem)}, d ${m.umar}, D ${m.adancime}, tija ${m.tija}, h ${m.inaltime}`;
+  for (const n of [m.sus, m.jos]) {
+    expect(n.joc.n, unde).toBeGreaterThan(100);
+    expect(n.joc.min, unde).toBeGreaterThanOrEqual(0.08);
+    expect(n.joc.max, unde).toBeLessThanOrEqual(0.12);
+    expect(n.nDop, unde).toBeGreaterThan(100);
+    expect(n.interferenta, unde).toBe(0);
+  }
+  expect(m.reazem.min, unde).toBeGreaterThan(0);
+  for (const [masurat, hartie] of [[m.umar, 3], [m.adancime, 8], [m.tija, 4.5], [m.inaltime, 9.5]] as const) {
+    expect(Math.abs(masurat - hartie), unde).toBeLessThanOrEqual(0.05);
+  }
+
+  // Fără treaptă: sprijinul pleacă de pe umăr, iar exportul trece (cu „pe umăr” rămas, lucrarea l-ar refuza).
+  await inc.locator('[data-camp="inc-treapta"]').selectOption('fara');
+  await expect(inc.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe fundul locașului', 'pe fața plăcii']);
+  await page.locator('[data-buton="exporta"]').click();
+  await expect.poll(() => descarcari.length).toBe(4);
+  await expect(page.getByTestId('export-dopuri')).toContainText('gros de cel puțin 11 mm');
+
+  // Din nou cu treaptă, scrisă în proiect: panoul o arată, pe hârtie, cu tija și flanșa.
+  await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
+  await page.locator('[data-buton="exporta"]').click();
+  await expect.poll(() => descarcari.length).toBe(6);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  const hartie = page.getByTestId('prop-incrustatie-hartie');
+  await expect(hartie).toContainText('Treaptaspre interior: umărul la 3.00 mm, lat de 5.00 mm');
+  await expect(hartie).toContainText('Dopul în treptetija 4.50 mm, flanșa 5.00 mm');
+});
+
+/**
+ * Celelalte căi ale treptei în fereastră (ADR 0175 §5), fără oracol: un câmp al umărului greșit oprește exportul, cu motivul;
+ * spre exterior se scrie în proiect (semifabricatul e cutia desenului lărgită cu s, plus marginea; panoul și Tăierea o arată),
+ * iar fereastra o citește înapoi; la gaură, sprijinul de pe fund trece pe umăr (la treaptă nu există „pe față”), deci Exportă
+ * trece: gaura în trepte prin foaia de 18, tija 15, flanșa 5, dopul 20, semifabricatul cel puțin 21.
+ */
+test('treapta: câmpul greșit oprește exportul; spre exterior scrisă și citită înapoi; la gaură, sprijinul trece pe umăr', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('tr[data-operatie]').first();
+  await rand.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  await rand.locator('[data-camp="adancime"]').fill('8');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await inc.locator('[data-camp="inc-treapta"]').selectOption('exterior');
+  await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
+  await inc.locator('[data-camp="inc-treapta-latime"]').fill('0');
+  await expect(page.getByTestId('export-invalid')).toContainText('adâncimea și lățimea umărului pozitive');
+  await inc.locator('[data-camp="inc-treapta-latime"]').fill('4');
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
+
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  await page.locator('[data-buton="exporta"]').click();
+  // Spre exterior, semifabricatul e cutia desenului lărgită cu 4, plus marginea 5: (30 + 2 · 9) × (20 + 2 · 9).
+  await expect(page.getByTestId('export-dopuri')).toContainText('pe un semifabricat de 48 × 38 mm, gros de cel puțin 10');
+  await expect.poll(() => descarcari.length).toBe(2);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(page.getByTestId('prop-incrustatie-hartie')).toContainText('Treaptaspre exterior: umărul la 3.00 mm, lat de 4.00 mm');
+  // Operația, în panou: treapta și sprijinul pe umăr.
+  await expect(page.locator('.prop-operatie')).toContainText('Treaptaspre exterior: umărul la 3.00 mm, lat de 4.00 mm');
+  await expect(page.locator('.prop-operatie')).toContainText('dopul ridicat, sprijinit pe umăr');
+
+  // Înapoi în fereastră: treapta citită din proiect.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const din = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await expect(din.locator('[data-camp="inc-treapta"]')).toHaveValue('exterior');
+  await expect(din.locator('[data-camp="inc-treapta-adancime"]')).toHaveValue('3');
+  await expect(din.locator('[data-camp="inc-treapta-latime"]')).toHaveValue('4');
+  // Pe fund, apoi gaura: sprijinul trece pe umăr; la gaură, doar el se poate.
+  await din.locator('[data-camp="inc-sprijin"]').selectOption('fund');
+  await din.locator('[data-camp="inc-locas"]').selectOption('gaura');
+  await expect(din.locator('[data-camp="inc-sprijin"] option')).toHaveText(['pe umăr']);
+  await page.locator('[data-buton="exporta"]').click();
+  await expect.poll(() => descarcari.length).toBe(4);
+  await expect(page.getByTestId('export-dopuri')).toContainText('gros de cel puțin 21 mm');
 });

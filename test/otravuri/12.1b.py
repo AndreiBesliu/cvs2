@@ -39,8 +39,9 @@ o('D01', MOD, '  const c = i.jocLateral, rho = Math.max(0, rDop - c);', '  const
 o('D02', MOD, 'varfDop: Math.max(0, rLocas - c),', 'varfDop: rLocas,', 'e2e', 'vârfurile dopului arătate fără joc')
 o('D03', MOD, 'unghiDop: rho + c,', 'unghiDop: rho,', 'e2e', 'unghiurile dopului arătate fără joc')
 # D04 și S03, reorientate la 12.1↑f (ADR 0175): înălțimea dopului din D (adâncimea, sau grosimea foii la gaură); sprijinul și pe umăr.
-o('D04', MOD, "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;",
-  "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.fierastrau) : D + i.fierastrau;", 'drept',
+# D04 reorientată la 12.1↑f-2 (17.11): înălțimea dopului fără treaptă e ramura `else` a celei în trepte.
+o('D04', MOD, "    inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;",
+  "    inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.fierastrau) : D + i.fierastrau;", 'drept',
   'înălțimea dopului sprijinit pe față cu H în loc de g')
 o('D05', MOD, '  const locas = [{ scula: op.scula }, ...(op.rest ?? [])];', '  const locas = [{ scula: op.scula }];', 'drept',
   'raza locașului fără frezele de rest')
@@ -50,14 +51,16 @@ o('D07', MOD, "    grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA
   'placa dopului decupat cu 1 mm mai groasă (tăietura nu mai trece prin ea)')
 
 # ---- Figura: închiderea, deschiderea, jocul, partea îngustă ----
-o('F01', GEO, '  const { rLocas, rDop, rho, c } = raze;', '  const { rLocas, rDop, c } = raze;\n  const rho = 0;', 'drept',
+# F01, F05 reorientate la 12.1↑f-2 (17.11): închiderea și deschiderea unui nivel sunt în `nivelDreapta` (treptele au două).
+o('F01', GEO, '  const { rLocas, rho, c } = raze;', '  const { rLocas, c } = raze;\n  const rho = 0;', 'drept',
   'fără închidere: unghiurile locașului ascuțite, ale dopului cu c (freza dopului lasă lemn în ele)')
 o('F02', GEO, '  const dop = offset(taiat.regiuni, -c);', '  const dop = offset(taiat.regiuni, -2 * c);', 'drept', 'jocul aplicat de două ori')
 o('F03', GEO, '  const dop = offset(taiat.regiuni, -c);', '  const dop = offset(locas.regiuni, -c);', 'drept',
   'dopul din figura închisă, nu din conturul tăiat (vârfuri ascuțite în vârfurile rotunjite ale locașului)')
 o('F04', GEO, '  const taiat = offset(ingust.regiuni, rLocas);', '  const taiat = offset(ingust.regiuni, rLocas + 0.05);', 'drept',
   'conturul tăiat redeschis prea larg (dopul cu 0,05 mai mare)')
-o('F05', GEO, '    if (!are) return', '    if (false) return', 'drept', 'partea mai îngustă decât freza primită (dispare din locaș)')
+o('F05', GEO, "    if (!are) return { ok: false, motiv: ce === '' ?", "    if (false) return { ok: false, motiv: ce === '' ?", 'drept',
+  'partea mai îngustă decât freza primită (dispare din locaș)')
 
 # ---- Refuzurile (ADR 0171 §4) ----
 o('R01', GEO, "  if (op.tip !== 'buzunar') return", "  if (op.tip === 'profil') return", 'drept', 'incrustația dreaptă pe un V-carve primită')
@@ -66,7 +69,8 @@ o('R02', GEO, '  const v = (i.frezeDop ?? []).find((f) => f.scula.forma !== unde
 o('R03', GEO, '  if (raze && !(i.jocLateral < raze.rLocas)) {', '  if (raze && !(i.jocLateral <= raze.rLocas)) {', 'drept', 'jocul lateral cât raza frezei primit')
 o('R04', GEO, '    if (!(i.joc >= JOC_INCRUSTATIE_MINIM)) {', '    if (!(i.joc >= 0)) {', 'drept', 'jocul de sub dop sub 0,1 primit (pe față)')
 o('R05', GEO, '    if (!(i.joc < op.adancime)) return', '    if (!(i.joc <= op.adancime)) return', 'drept', 'jocul de sub dop cât adâncimea primit (pe față)')
-o('R06', DOP, '      if (m < mica.scula.diametru) {', '      if (m < 0) {', 'drept', 'marginea dopului decupat sub freza lui primită')
+# R06, P07, P11 reorientate la 12.1↑f-2 (17.11): decuparea cu punți e o funcție, `decupareCuPunti` (altă indentare).
+o('R06', DOP, '  if (m < mica.scula.diametru) {', '  if (m < 0) {', 'drept', 'marginea dopului decupat sub freza lui primită')
 
 # ---- Dopul: oglinda, decuparea, regiunea, punțile, freza, grosimea exactă ----
 o('P01', DOP, '      const oglinda = { a: -1, b: 0, c: 0, d: 1, e: x1 + m, f: m - y0 };', '      const oglinda = { a: 1, b: 0, c: 0, d: 1, e: m - x0, f: m - y0 };',
@@ -82,12 +86,12 @@ o('P05', DOP, '      const e = Math.max(DINCOLO_DE_MARGINE, lata + TRECERE - m);
 # P06 și P11, reorientate la 12.1↑b-2 (ADR 0174, `9185658`): punțile vin din incrustație (`punti`), nu din constanta `PUNTI`.
 o('P06', DOP, 'urechi: { numar: n, latime: palier, grosime: punti.grosime }, ...baza,', 'urechi: null, ...baza,',
   'drept', 'dopul decupat fără punți (cade din placă)')
-o('P07', DOP, '      const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '      const mica = freze[0]!;', 'drept',
+o('P07', DOP, '  const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '  const mica = freze[0]!;', 'drept',
   'dopul decupat cu prima freză, nu cu cea mai mică (unghiurile lui rotunjite prea larg)')
 o('P08', DOP, "...(inc.dop === 'decupat' ? { exacta: true } : {}) },", '},', 'e2e', 'placa dopului decupat arătată „cel puțin”, nu exactă')
 o('P09', CAL, '  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  const calculate = { dopuri: [...inV.dopuri] };', 'drept',
   'dopul cu pereți drepți nu iese din export')
-o('P11', DOP, '      const palier = punti.latime + mica.scula.diametru;', '      const palier = punti.latime;', 'drept',
+o('P11', DOP, '  const palier = punti.latime + mica.scula.diametru;', '  const palier = punti.latime;', 'drept',
   'palierul punților fără freză (lucrarea refuză dopul decupat cu freza Ø6)')
 o('P10', JOB, "        const ale = taieturi.filter((u) => u.tip === 'buzunar' && cheieDreapta(u) === cheie);", '        const ale = [t];', 'drept',
   'locașul fără celelalte contururi ale regiunii (golul inelului tăiat)')
@@ -126,7 +130,9 @@ o('E06', DLG, "                          : v === 'incrustatie-drept' ? { ...fara
   "                          : v === 'incrustatie-drept' ? { ...fara, tip: 'buzunar' }", 'e2e', 'rolul ales în fereastră rămâne un buzunar obișnuit')
 o('E07', DLG, "...(coborare ? { coborare } : {}), rest, ...strategie, incrustatieDreapta,", '...(coborare ? { coborare } : {}), rest, ...strategie,', 'e2e',
   'fereastra nu scrie incrustația dreaptă')
-o('E08', DLG, "                      {p.dopInc === 'ridicat' && (", '                      {(', 'e2e', 'sprijinul arătat și la dopul decupat')
+# E08 reorientată la 12.1↑f-2 (17.11): cu treaptă, sprijinul se arată și la dopul decupat; otrava îl arată și fără treaptă.
+o('E08', DLG, "                      {(p.dopInc === 'ridicat' || p.treaptaInc !== 'fara') && (",
+  "                      {(p.dopInc === 'ridicat' || p.dopInc === 'decupat' || p.treaptaInc !== 'fara') && (", 'e2e', 'sprijinul arătat și la dopul decupat')
 o('E09', DLG, "{t(p.dopInc === 'decupat' ? 'export.incrustatie-drept.peste' : 'export.incrustatie.fierastrau')}", "{t('export.incrustatie.fierastrau')}",
   'e2e', 'spațiul de deasupra al dopului decupat numit „pentru fierăstrău”')
 o('E10', DLG, '    if (nd !== null && dd !== null) adaugaFreza(nd, dd, null);', '', 'e2e', 'freza dopului în afara verificării T-urilor')

@@ -138,9 +138,13 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {/* Incrustația cu pereți drepți (ADR 0171): jocul lateral, felul dopului și sprijinul lui, marginea; frezele dopului, dacă are. */}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && rand(t('prop.inc'), t('prop.inc.valoare-drept', {
           lateral: mm(o.incrustatie.jocLateral), margine: mm(o.incrustatie.margine),
-          dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata' : 'prop.inc.dop.ridicat-fund'),
+          dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata'
+            : o.incrustatie.sprijin === 'umar' ? 'prop.inc.dop.ridicat-umar' : 'prop.inc.dop.ridicat-fund'),
         }))}
         {o.tip === 'buzunar' && esteGaura(o) && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
+        {/* Treapta (ADR 0175 §5): încotro, adâncimea și lățimea umărului. */}
+        {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && o.incrustatie.treapta && rand(t('prop.inc.treapta'),
+          t(o.incrustatie.treapta.spre === 'exterior' ? 'prop.inc.treapta.exterior' : 'prop.inc.treapta.interior', { d: mm(o.incrustatie.treapta.adancime), s: mm(o.incrustatie.treapta.latime) }))}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && (o.incrustatie.frezeDop ?? []).length > 0 && rand(t('prop.inc.freze-dop'),
           (o.incrustatie.frezeDop ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
@@ -535,7 +539,14 @@ export function PanouProprietati({
                 {rand(t('prop.inc.joc-contur'), t('prop.inc.mm', { mm: mm(hartieDreapta.c) }))}
                 {rand(t('prop.inc.inaltime'), t('prop.inc.mm', { mm: mm(hartieDreapta.inaltime) }))}
                 {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
-                {incDreapta.locas === 'gaura' && incDreapta.dop === 'ridicat' ? null : incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
+                {/* În trepte (ADR 0175 §5): umărul, tija și flanșa dopului, jocul g (sub tijă sau deasupra umărului; nu la gaură) și H. */}
+                {hartieDreapta.treapta ? (<>
+                {rand(t('prop.inc.treapta'), t(hartieDreapta.treapta.spre === 'exterior' ? 'prop.inc.treapta.exterior' : 'prop.inc.treapta.interior',
+                  { d: mm(hartieDreapta.treapta.d), s: mm(hartieDreapta.treapta.s) }))}
+                {rand(t('prop.inc.trepte-dop'), t('prop.inc.trepte-dop.valoare', { tija: mm(hartieDreapta.treapta.tija), flansa: mm(hartieDreapta.treapta.flansa) }))}
+                {incDreapta.locas !== 'gaura' && rand(t(incDreapta.sprijin === 'fund' ? 'prop.inc.clei-umar' : 'prop.inc.clei-tija'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))}
+                {rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
+                </>) : incDreapta.locas === 'gaura' && incDreapta.dop === 'ridicat' ? null : incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
                   ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
                   : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
                 {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
