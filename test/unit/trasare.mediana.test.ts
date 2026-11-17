@@ -779,3 +779,114 @@ test('capetele în vârf, pe logo: talpa scurtă a lui „t” iese drept prin m
     assert.ok(Math.abs(p[0] - x) <= 0.3 && Math.abs(p[1] - 200.4) <= 0.75, `talpa de la x ${x}: vârful în (${p[0].toFixed(2)}, ${p[1].toFixed(2)})`);
   }
 });
+
+/** Acoperirea discului (centrul (cx, cy), raza r) pe pixelul (x, y), din 4 × 4 eșantioane. */
+function discAcoperit(x: number, y: number, cx: number, cy: number, r: number): number {
+  let n = 0;
+  for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) if (Math.hypot(x + (i + 0.5) / 4 - cx, y + (j + 0.5) / 4 - cy) < r) n++;
+  return n / 16;
+}
+
+test('punctele în orice loc față de grila pixelilor (25.3↑d): un disc sau un pătrat mic e un punct numărat, fără cale', () => {
+  // Un disc cu diametrul par, centrat pe un colț de pixel, se subția până la un bloc de 2 × 2 pe care Zhang–Suen îl șterge
+  // tot; un pătrat de 4 × 4 lăsa un lanț prea scurt ca să-i retragă capetele, deci o liniuță în loc de punct.
+  const gresite: string[] = [];
+  const verifica = (nume: string, img: ImagineRGBA): void => {
+    const t = traseazaMediana(img, IMPLICITE);
+    if (!t.ok || t.raport.contururi !== 0 || t.raport.puncte !== 1) {
+      gresite.push(`${nume}: ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+    }
+  };
+  for (const d of [2, 3, 4, 5, 6, 7, 8, 10, 12]) {
+    for (const fx of [0, 0.25, 0.5, 0.75]) {
+      for (const fy of [0, 0.25, 0.5, 0.75]) {
+        const cx = 30 + fx, cy = 30 + fy, r = d / 2;
+        verifica(`discul de ${d} px în (${cx}, ${cy}), dur`, imagine(60, 60, (x, y) => (Math.hypot(x + 0.5 - cx, y + 0.5 - cy) < r ? 1 : 0)));
+        if (d >= 4) verifica(`discul de ${d} px în (${cx}, ${cy}), neted`, imagine(60, 60, (x, y) => discAcoperit(x, y, cx, cy, r)));
+      }
+    }
+  }
+  for (const s of [1, 2, 3, 4, 5, 6]) verifica(`pătratul de ${s} px`, imagine(60, 60, (x, y) => (x >= 30 && x < 30 + s && y >= 30 && y < 30 + s ? 1 : 0)));
+  assert.deepEqual(gresite, []);
+});
+
+test('o trăsătură scurtă, dar mai lungă decât grosimea ei, rămâne linie (25.3↑d): 6 px grosime, 9–18 px lungime', () => {
+  const gresite: string[] = [];
+  for (const L of [9, 12, 15, 18]) {
+    for (const [ux, uy] of [[1, 0], [0.6, 0.8]] as const) {
+      const h = (L - 6) / 2, a: Pt = [30 - h * ux, 30 - h * uy], b: Pt = [30 + h * ux, 30 + h * uy];
+      const t = traseazaMediana(imagine(60, 60, (x, y) => (laLinie(x + 0.5, y + 0.5, [a, b]) < 3 ? 1 : 0)), IMPLICITE);
+      if (!t.ok || t.raport.contururi !== 1 || t.raport.puncte !== 0) {
+        gresite.push(`lungimea ${L} pe (${ux}, ${uy}): ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+        continue;
+      }
+      // Linia, de la centrul unui capăt rotund la al celuilalt: L − 6 (±1 px).
+      const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
+      if (Math.abs(l - (L - 6)) > 1) gresite.push(`lungimea ${L} pe (${ux}, ${uy}): linia de ${l.toFixed(2)} px`);
+    }
+  }
+  assert.deepEqual(gresite, []);
+});
+
+test('o bucată mică, dar nu plină, rămâne linii (25.3↑d): un „o” de 10 px și un „+” de 9 px, cu trăsătura de 2 px', () => {
+  // Lungimea lor e cât lățimea (cât a unui disc), dar grosimea trăsăturii e cea a cercului înscris: 2 px, nu 10.
+  const o = traseazaMediana(imagine(60, 60, (x, y) => (Math.abs(Math.hypot(x + 0.5 - 30, y + 0.5 - 30) - 4) < 1 ? 1 : 0)), IMPLICITE);
+  assert.ok(o.ok);
+  assert.equal(o.raport.puncte, 0, '„o”: niciun punct');
+  assert.equal(o.raport.bucle, 1, '„o”: o buclă');
+  const plus = traseazaMediana(imagine(60, 60, (x, y) => {
+    const cx = x + 0.5 - 30, cy = y + 0.5 - 30;
+    return (Math.abs(cy) < 1 && Math.abs(cx) < 4.5) || (Math.abs(cx) < 1 && Math.abs(cy) < 4.5) ? 1 : 0;
+  }), IMPLICITE);
+  assert.ok(plus.ok);
+  assert.equal(plus.raport.puncte, 0, '„+”: niciun punct');
+  assert.ok(plus.raport.contururi >= 1, `„+”: ${plus.raport.contururi} căi`);
+});
+
+test('cu capetele în vârf (ADR 0223), nicio bucată nu e punct (25.3↑d): discul mic e o linie de la o margine la alta', () => {
+  // Și discurile al căror schelet era o liniuță (discul de 10 px pe un colț de pixel): liniuța iese, dreapta axei intră.
+  const varf = { ...MEDIANA_SIMPLA, capete: 'varf' } as const;
+  const gresite: string[] = [];
+  for (const d of [4, 6, 8, 10, 12]) {
+    for (const [cx, cy] of [[30, 30], [30.25, 30.5], [30.5, 30.5]] as const) {
+      const t = traseazaMediana(imagine(60, 60, (x, y) => (Math.hypot(x + 0.5 - cx, y + 0.5 - cy) < d / 2 ? 1 : 0)), IMPLICITE, varf);
+      if (!t.ok || t.raport.puncte !== 0 || t.raport.contururi !== 1) {
+        gresite.push(`d ${d} (${cx}, ${cy}): ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+        continue;
+      }
+      // De la o margine la alta: cât diametrul, ±1,5 px (pixelii discului, după cum cade pe grilă).
+      const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
+      if (Math.abs(l - d) > 1.5) gresite.push(`d ${d} (${cx}, ${cy}): linia de ${l.toFixed(2)} px`);
+    }
+  }
+  assert.deepEqual(gresite, []);
+});
+
+test('o linie oblică de un pixel e o bucată (8-vecinătate), nu un șir de puncte (25.3↑d)', () => {
+  // Pixelii ei se ating doar pe diagonală: pe 4-vecinătate, fiecare ar fi o bucată de un pixel, deci un punct.
+  const t = traseazaMediana(imagine(60, 60, (x, y) => (x === y && x >= 10 && x <= 50 ? 1 : 0)), IMPLICITE);
+  assert.ok(t.ok);
+  assert.equal(t.raport.puncte, 0);
+  assert.equal(t.raport.contururi, 1);
+});
+
+test('cu capetele în vârf, o trăsătură lungă rămâne o singură linie, de la un vârf la celălalt (25.3↑d)', () => {
+  // Vârful stă pe marginea trăsăturii, deci pixelul de sub el poate fi de fundal: calea se leagă de bucată prin vecinii lui,
+  // altfel bucata ar părea fără cale și ar primi, pe lângă ea, și dreapta axei.
+  const varf = { ...MEDIANA_SIMPLA, capete: 'varf' } as const;
+  const gresite: string[] = [];
+  for (const L of [14, 20, 30]) {
+    for (const grade of [0, 17, 30, 45, 60, 73, 90]) {
+      const ux = Math.cos((grade * Math.PI) / 180), uy = Math.sin((grade * Math.PI) / 180), h = (L - 6) / 2;
+      const a: Pt = [30.3 - h * ux, 30.1 - h * uy], b: Pt = [30.3 + h * ux, 30.1 + h * uy];
+      const t = traseazaMediana(imagine(60, 60, (x, y) => (laLinie(x + 0.5, y + 0.5, [a, b]) < 3 ? 1 : 0)), IMPLICITE, varf);
+      if (!t.ok || t.raport.contururi !== 1 || t.raport.puncte !== 0) {
+        gresite.push(`L ${L}, ${grade}°: ${t.ok ? `${t.raport.contururi} căi, ${t.raport.puncte} puncte` : 'refuz'}`);
+        continue;
+      }
+      const v = t.cai.xy.length / 6, l = Math.hypot((t.cai.xy[6 * v - 6] ?? 0) - (t.cai.xy[0] ?? 0), (t.cai.xy[6 * v - 5] ?? 0) - (t.cai.xy[1] ?? 0));
+      if (Math.abs(l - L) > 1.5) gresite.push(`L ${L}, ${grade}°: linia de ${l.toFixed(2)} px`);
+    }
+  }
+  assert.deepEqual(gresite, []);
+});

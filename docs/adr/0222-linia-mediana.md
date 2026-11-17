@@ -197,6 +197,46 @@ privind logoul mărit, bucată cu bucată, nu din cifrele probelor: **o probă p
 **Limitele, scrise:** un colț aflat la mai puțin de ~1,5 grosimi de o joncțiune rămâne cu diagonala scheletului (cel mult
 1,6 px pe logo); un Y gros din trei arce își pune joncțiunea pe curba perechii netede, la 1–2 px de punctul de pe hârtie.
 
+## Corectura (16.11, felia 25.3↑d: punctele pierdute)
+
+**Ce s-a văzut** (găsit în felia 25.3↑c, ADR 0227): un disc mic centrat pe un colț de pixel nu dădea nici linie, nici
+punct numărat; proba punctelor de mai sus are discul decalat, deci n-o vedea. Pe o grilă de poziții (discuri de 2–12 px,
+în 16 poziții față de pixel, cu marginile dure și netezite; pătrate de 1–6 px), 115 cazuri greșeau: subțierea Zhang–Suen
+(cu îndreptarea lui Lü și Wang) șterge cu totul un bloc de 2 × 2 și resturile scurte de doi pixeli grosime (dispăreau și
+capsula de 9 × 6 px, și discul de 12 px), iar un schelet de 2–3 pixeli e prea scurt ca `retrage` să-i ducă capetele în
+centrele capetelor rotunde (rămânea o liniuță în locul punctului). Omul pierdea, fără să afle, punctul unui „i”.
+
+**Ce s-a schimbat** (`dbc7431`): după linii, un pas pe bucățile de cerneală (8-vecinătate, `bucati` în
+`src/trasare/mediana.ts`) ține regula de la §5 pe fiecare bucată, oricum ar fi ieșit scheletul ei:
+- lungimea pe axa ei principală, între centrele pixelilor de la capete, sub grosime + 0,5 px → **punct**, cu căile ei
+  scoase;
+- mai lungă și fără nicio cale → **dreapta axei**, între centrele capetelor;
+- grosimea: lățimea bucății de-a curmezișul axei, cel mult diametrul cercului înscris în centrul ei (2 · raza + 1: raza
+  se măsoară între centrele pixelilor, iar pe diagonală un disc pixelat e mai scurt: discul de 7 px dă 2 · raza = 5,66),
+  ca un „o” sau un „+” mic să rămână linii;
+- cu capetele în vârf (ADR 0223), nicio bucată nu e punct: cea scurtă și cea fără cale sunt dreapta axei, de la un vârf
+  la celălalt (cum cerea deja proba logoului: punctul lui „i” devine o linie de la o margine la alta).
+
+Punctele se numără acum pe bucăți: o bucată, un punct (înainte, pixelii izolați ai scheletului și lanțurile strânse sub
+0,5 px).
+
+**Urmări:** un pătrat plin, lung cât e de lat (pătratul galben al probelor pe culori, ADR 0227), e acum un punct, ca
+discul plin, nu o liniuță de 2 px în mijlocul lui; pe culori nu mai dă piesă. Pe 12 Mpx, cu un fir de praf de 3 px la
+fiecare 40 px (necurățat): înainte, 7 198 de căi (fiecare fir, o cale); acum, cele 4 căi ale trăsăturilor și 7 194 de
+puncte. Timpul, la fel (A/B alternat, de câte 4 ori: 0,86 față de 0,88 s, mediana).
+
+**Măsurat** [16.11, Node 26 și Edge fără fereastră]: probele noi (discurile și pătratele în toate pozițiile; trăsăturile
+scurte, de 9–18 px, rămân linii de L − 6 px, ±1; un „o” și un „+” mic rămân linii; cu capetele în vârf, discul de 8 px e
+o linie de 8 px; pe culori, punctele centrate pe colțuri) pică toate pe codul de dinainte; suita unitară întreagă 9 429
+pe arborele unit cu `main` (`8335052`), cu una căzută din timp cât rula alături (plafoanele DXF, 7,4 s; singură, 29 /
+29); pe codul feliei, înaintea unirii, 9 392 fără căderi; e2e-urile trasării, importului și tutorialul 50 / 50;
+otrăvurile (`test/otravuri/25.3d.py`, alese de autor): 12 / 12, fiecare pe proba ei, toate unitare; la prima rulare
+(`dbc7431`) D09 și D10 au scăpat (nicio probă cu o linie oblică de un pixel, niciuna cu capetele în vârf pe o trăsătură
+lungă) și cinci erau VOID (scrise înaintea reglajului capetelor în vârf): probele noi și lista aliniată în `7d9ca29`;
+D11 a scăpat apoi (proba capetelor în vârf avea doar discuri fără cale), prinsă după lărgirea probei (`16ccf3c`);
+mărimea: totalul 708,7 / 800 kB pe arborele unit, pornirea 106,3 / 115 (cu ușa 110,3); felia însăși, +0,6 kB (pe
+`380c053`: 698,6 → 699,2).
+
 ## Ce am respins
 
 - **Axa medială exactă a V-carve-ului** în workerul trasării: +9,2 kB doar ea (~12 kB cu felia), pentru o precizie pe care

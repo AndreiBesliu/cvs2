@@ -59,8 +59,10 @@ function abatere(c: CaiTrasate, f: (x: number, y: number) => number): number {
 
 test('fiecare culoare bifată, linia ei mediană: negrul și verdele câte o buclă, albastrul o linie, roșul legat peste celelalte', () => {
   const r = trasat();
-  // Cinci culori de desen (galbenul e și el bifat) și hârtia.
-  assert.equal(r.piese.length, 5);
+  // Cinci culori de desen bifate și hârtia; pătratul galben plin, lung cât e de lat, e un punct (25.3↑d, ca discul plin):
+  // patru piese, un punct.
+  assert.equal(r.piese.length, 4);
+  assert.equal(r.raport.mediane.puncte, 1);
   const rosu = piesa(r, 'rosu'), albastru = piesa(r, 'albastru'), verde = piesa(r, 'verde'), negru = piesa(r, 'negru');
   assert.deepEqual(numara(rosu.cai), { deschise: 1, bucle: 0, contururi: 0 });
   assert.equal(rosu.legaturi, 3, 'peste albastru și de două ori peste verde');
@@ -117,7 +119,7 @@ test('culorile legate (ADR 0221) se trasează împreună: verdele legat de roșu
   const legaturi = paleta.map(() => -1);
   legaturi[idx('verde')] = idx('rosu');
   const r = trasat({}, { legaturi });
-  assert.equal(r.piese.length, 4);
+  assert.equal(r.piese.length, 3);
   assert.ok(!r.piese.some((p) => p.hex === piesa(r0, 'verde').hex));
 });
 
@@ -231,4 +233,23 @@ test('legarea doar pe desen: un gol de hârtie cu o linie albastră subțire pri
   assert.ok(r.ok);
   assert.deepEqual(numara(piesa(r, 'rosu').cai), { deschise: 2, bucle: 0, contururi: 0 });
   assert.equal(piesa(r, 'rosu').legaturi, 0);
+});
+
+test('punctele centrate pe colțul unui pixel se numără și pe culori (25.3↑d): masca lor dură se subția până la 2 × 2', () => {
+  // Cinci puncte portocalii cu diametrul de 6 px, centrate pe colțuri de pixel, și o linie neagră.
+  const W = 200, H = 120, d = new Uint8ClampedArray(W * H * 4), portocaliu = [232, 120, 30] as const;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const cx = x + 0.5, cy = y + 0.5;
+      let k: readonly number[] = HARTIE_COLOR;
+      if (Math.abs(cy - 80) < 3 && cx > 20 && cx < 180) k = LINII_COLORATE.negru;
+      for (let i = 0; i < 5; i++) if (Math.hypot(cx - (30 + 35 * i), cy - 30) < 3) k = portocaliu;
+      const q = 4 * (y * W + x);
+      d[q] = k[0] ?? 0; d[q + 1] = k[1] ?? 0; d[q + 2] = k[2] ?? 0; d[q + 3] = 255;
+    }
+  }
+  const r = traseazaCuloriMediane({ latime: W, inaltime: H, date: d }, OC, OM);
+  assert.ok(r.ok);
+  assert.equal(r.piese.length, 1, r.piese.map((p) => p.hex).join(', '));
+  assert.equal(r.raport.mediane.puncte, 5);
 });
