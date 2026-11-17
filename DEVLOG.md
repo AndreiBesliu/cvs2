@@ -9321,3 +9321,27 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   se stinseseră în 25.3↑c (textele ferestrei), acoperite de F01–F06 din lista 25.3c.
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
   `8335052fa1b5`.
+
+## 2026-11-17 — Felia 25.3↑e pornită: Rezultatul pe fiecare culoare (ADR 0228, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Felia următoare (25.3↑e, pastila pe culori, cu ADR nou) pornește la cuvântul owner-ului: dacă vrei, pregătește
+propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în `main`, `dd21a8a`). **Started:** 17.11, 09:25.
+**Completed:** 17.11, 09:44.
+
+- **Ramura** adusă la `origin/main` (`021dcc6`; înainte rapidă).
+- **Cercetarea:** ArtCAM / Carveco aleg felul pe culoare (conturul sau linia mediană a fiecărei culori alese, după
+  reducerea culorilor); CorelDRAW PowerTRACE, Inkscape, Vectric, LightBurn au un singur fel pe toată trasarea.
+- **Prototipul** (`.tmp/proto-0228.ts`, doar nucleele de azi): pe desenul probelor din 25.3↑c, galbenul și negrul pe
+  contururi, roșul, albastrul și verdele pe linii mediane: un contur galben, inelul negru (două contururi), o linie
+  roșie legată de trei ori, o linie albastră, o buclă verde. Tot pe linii mediane, galbenul e un punct, fără piesă; tot
+  pe contururi, roșul iese în patru bucăți. Pe 12 Mpx: reducerea culorilor 1,84 s, contururile ~0,4 s, liniile ~0,7 s;
+  cu reducerea o singură dată, ~3 s (separat, ~4,8 s).
+- **ADR 0228, propus** (`docs/adr/0228-rezultatul-pe-fiecare-culoare.md`): lista „Rezultatul culorii” în fiecare pastilă
+  (Ca Rezultatul, Contururi, Linii mediane); reducerea o singură dată; pragul părților late din culorile pe linii
+  mediane; legarea și peste culorile pe contururi; câte o piesă pe culoare, cu felul ei; ~+1,5–2,5 kB. Două întrebări:
+  implicitul pastilei, locul alegerii.
+- **Schița**, cu formularul (răspunsurile în `raspunsuri/owner`): <https://claude.ai/artifact/DatxQZJuRxdiL32WAxVoh6>;
+  privită local în Edge înaintea publicării (fără erori, cele trei alegeri gata și o pastilă schimbată de mână, fără
+  derulare laterală la 375 px); colecția `raspunsuri` citită după publicare (goală).
+- **Documentele:** indexul ADR-urilor, coada owner-ului și jurnalul (etapa 3), CLAUDE.md, traducerile.
+- **Fără cod:** felia pornește după răspunsuri.
