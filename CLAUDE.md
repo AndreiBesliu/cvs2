@@ -1170,6 +1170,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **felia 10.3↑k a tăierii unită în `main`** (la „unește ce se poate”, după raportul liniei): tăierea în
+  panouri, pe foaia activă (`c577549`, arborele lui `fc3a785`, cu `main` `5ab3941` adus în ramură). Porțile pe unire: unit 9
+  414 / 0, e2e 494 / 494, emulatoarele verzi; totalul 708,2 / 800, pornirea cu ușa 110,3 / 115.
 - 16.11.2026: **a doua rundă din 16.11, unită la „unește ce se poate”:** trasarea 25.3↑c (liniile mediane pe culori, ADR
   0227; `380c053`), prima felie a aranjamentelor, 28.1↑a (alegerea aranjamentului și densitatea, citite înaintea primei
   randări, ADR 0250 §4–§5; `8ea3057`), și planșele 11.6↑ (raportul foilor și lista de tăiere; `7d19a73`). Pornirea cu ușa
