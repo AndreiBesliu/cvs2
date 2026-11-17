@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
+  (v26; v25, cu gaura și câmpurile treptei incrustațiilor, ADR 0175, e în `main` din 17.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -654,6 +654,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
   0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
   110 (rămân ~0,3 kB), totalul 690,5 / 700.**
+  **Fișa plăcii 11 (ADR 0210, felia 11.7↑)** pregătită pe 17.11, fără mașină: `docs/etape/placa-11.md`, generatorul și
+  fișierele de aur în `test/placi/placa-11/` (documentul pe drumul ferestrei «Din CSV…», exportul „Toate foile”). Cotele pe
+  hârtie, pe exportul proaspăt, în `test/unit/placa11.test.ts`, cu proba urechilor (rasterul fundului foii la 0,1 mm, umplut
+  din margine; controlul, fără urechi); octeții, în `placa11.aur.test.ts`. **Urechile nu țin sub 2 × freza:** la distanța
+  implicită de 5, cu Ø3,175, ramele vecine scot tot lemnul dintre piese, iar urechile (la un sfert și la trei sferturi din
+  drum) nu stau față în față, deci piesele din mijloc cad. Placa folosește 10, pe foi de 300 × 220; avertismentul în
+  aplicație e la owner.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -1173,6 +1180,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **12.1↑f și 11.7↑ unite în `main`** (la „unește ce se poate”): gaura prin foaie a incrustațiilor, documentul
+  v25, cu câmpurile treptei refuzate cu motiv până la 12.1↑f-2 (`d2ef229`; supracursa nu e încă în fereastră, deci gaura
+  merge exact la grosimea foii); fișa plăcii 11, pregătită fără mașină (`b4d5641`, doar probe și documente; distanța 10,
+  fiindcă la 5 urechile nu țin), cu tăierea plăcii la owner. Un câmp nou al documentului ia de acum v26. Totalul 709,5 /
+  800, pornirea cu ușa 110,3 / 115.
 - 17.11.2026: **felia 25.3↑d a trasării unită în `main`** (pornită la „Yes, all three”, unită la „unește ce se poate”):
   punctele pierdute de linia mediană (un disc mic centrat pe un colț de pixel dispărea fără să fie numărat) sunt numărate și
   păstrate (`dd21a8a`, arborele lui `366baf9`). Porțile pe unire: unit 9 421 / 0, e2e 494 / 494, emulatoarele verzi la a

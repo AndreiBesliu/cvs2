@@ -38,8 +38,9 @@ o('D01', MOD, '  const c = i.jocLateral, rho = Math.max(0, rDop - c);', '  const
   'raza închiderii fără jocul lateral (unghiurile locașului cu r, nu r − c)')
 o('D02', MOD, 'varfDop: Math.max(0, rLocas - c),', 'varfDop: rLocas,', 'e2e', 'vârfurile dopului arătate fără joc')
 o('D03', MOD, 'unghiDop: rho + c,', 'unghiDop: rho,', 'e2e', 'unghiurile dopului arătate fără joc')
-o('D04', MOD, "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? op.adancime - i.joc : op.adancime + i.fierastrau;",
-  "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? op.adancime - i.fierastrau : op.adancime + i.fierastrau;", 'drept',
+# D04 și S03, reorientate la 12.1↑f (ADR 0175): înălțimea dopului din D (adâncimea, sau grosimea foii la gaură); sprijinul și pe umăr.
+o('D04', MOD, "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;",
+  "  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.fierastrau) : D + i.fierastrau;", 'drept',
   'înălțimea dopului sprijinit pe față cu H în loc de g')
 o('D05', MOD, '  const locas = [{ scula: op.scula }, ...(op.rest ?? [])];', '  const locas = [{ scula: op.scula }];', 'drept',
   'raza locașului fără frezele de rest')
@@ -94,7 +95,7 @@ o('P10', JOB, "        const ale = taieturi.filter((u) => u.tip === 'buzunar' &&
 # ---- Ușa documentului v21 ----
 o('S01', SCH, '      jocLateral: pozitiv(PLAFON.adancimeOperatie),', '      jocLateral: v.number(),', 'doc', 'jocul lateral zero sau negativ primit')
 o('S02', SCH, "      dop: v.picklist(['ridicat', 'decupat']),", '      dop: v.string(),', 'doc', 'orice text ca felul dopului')
-o('S03', SCH, "      sprijin: v.picklist(['fund', 'fata']),", '      sprijin: v.string(),', 'doc', 'orice text ca sprijinul')
+o('S03', SCH, "      sprijin: v.picklist(['fund', 'fata', 'umar']),", '      sprijin: v.string(),', 'doc', 'orice text ca sprijinul')
 o('S04', SCH, '      frezeDop: v.optional(SchemaRest),', '      frezeDop: v.optional(v.unknown()),', 'doc', 'frezele dopului fără contract')
 o('S05', MIG, '      const camp = CAMPURI_INCRUSTATIE_V21.find((c) => Object.hasOwn(inc, c));', '      const camp = undefined;', 'doc',
   'ciocnirea v20 → v21 nedetectată (un câmp nou luat drept necunoscut)')

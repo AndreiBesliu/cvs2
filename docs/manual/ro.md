@@ -1271,6 +1271,10 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 
 - **Jocul lateral** (c; implicit 0,1 mm): cât rămâne între pereții dopului și ai locașului, pe fiecare parte. Locașul rămâne
   cât desenul, dopul se micșorează cu c. Trebuie să fie sub raza celei mai mici freze a locașului.
+- **Locașul** (doar în fereastra exportului): **buzunar**, cu fund, la adâncimea rândului; sau **gaură prin foaie**: locașul
+  trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
+  rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
+  plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
@@ -1303,7 +1307,8 @@ interioare; taie punțile și curăță-le la nivelul pereților înainte de lip
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
+sprijinul pe umăr, până la felia lor (12.1↑f-2).
 
 ## Traseul pe pânză
 %% capitol: traseu
