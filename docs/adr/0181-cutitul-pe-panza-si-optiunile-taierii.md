@@ -318,6 +318,9 @@ primului commit de cod, `origin/main` unit în ramură.
   dinții stau pe fiecare bucată, cu marginile lor drepte (cel puțin o jumătate de pas). La încrucișare, laturile sunt drepte (pe
   firmă, cu pasul 100 și raza 3, în pătratul de 94 × 94 din jurul ei); pe o coardă de 1 000 tăiată la mijloc, dinții sunt 8, nu
   9.
+- **Mărimea:** pornirea neschimbată (106,3 kB; cu ușa 110,3 / 115), totalul +0,7 kB (709,6 → 710,3 / 800), măsurat A/B în clonă,
+  pe `main` `4b52fc3` și pe ramură (`2fd63df`): blocul, modelul mărimii și textele, în bucata panoului Taie; reparația
+  opririlor, în worker.
 
 ## Proba
 
