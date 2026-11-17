@@ -32,11 +32,18 @@ test.use({ locale: 'ro-RO' });
 const PACHET = Buffer.from(pachetTrenulet().octeti);
 const ZIP = { name: 'trenulet-18.8.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
+/**
+ * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
+ * stocare. Cele 5 s implicite ale lui `expect` au căzut în porțile de unire (13, 16 și 17.11, cu procesorul la 49–77 % din
+ * worktree-urile paralele: „porneste” în loc de „pornit”), iar proba care măsoară pornirea (ADR 0139, mai jos) nu pune
+ * nicio limită de timp. Probele de aici judecă tema, contul, limba și formele, nu cât durează pornirea.
+ */
+const PORNIRE = { timeout: 20_000 } as const;
 
 async function deschide(page: Page): Promise<void> {
   await page.locator('[data-extensii="buton"]').click();
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
-  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit', PORNIRE);
 }
 
 /**
@@ -186,7 +193,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.8.0, instalat peste „Planific
   await page.locator('[data-extensii="buton"]').click();
   await expect(page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"] span')).toHaveText(['Easy 3Draw']);
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
-  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit', PORNIRE);
   await expect(page.getByTestId('extensie-deschisa')).toHaveText('Easy 3Draw');
   await expect(cadru(page).locator('#nume')).toHaveValue('Circuitul de dinainte');
   await faraEroriInJurnal(page);
@@ -378,6 +385,11 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
 
 test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circuite; × imediat după schimbări le păstrează', async ({ page }) => {
   await page.addInitScript(() => {
+    // Doar în pagina lui cvs2: scriptul de început rulează în fiecare cadru, iar în cadrul extensiei (sandbox, fără
+    // `allow-same-origin`) `localStorage` aruncă SecurityError. Când Playwright îl punea în cadru după ce raportorul
+    // extensiei asculta deja (sub încărcare), eroarea ajungea în raport și proba cădea (17.11: 5 din 8 rulări, cu 32 de
+    // procese care țin procesorul ocupat).
+    if (window !== window.top) return;
     const acum = Date.now();
     localStorage.setItem('cncvs2.cont', JSON.stringify({
       uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana',
@@ -499,7 +511,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await page.getByRole('navigation', { name: 'Limba' }).getByRole('button', { name: 'EN', exact: true }).click();
   c = cadru(page);
   await expect(c.locator('#btn-circuite')).toHaveText('Layouts');
-  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit', PORNIRE);
   await expect(c.locator('html')).toHaveAttribute('data-gazda', 'cvs2');
   await expect(c.locator('#nume')).toHaveValue('Păstrat la repornire');
   expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);

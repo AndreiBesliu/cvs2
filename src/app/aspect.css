@@ -1,0 +1,234 @@
+/* Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b): vine cu bucata ei, la cerere. Culorile textului sunt cele derivate ale
+   temei (`--t`, `--t-slab`), deci contrastul ține în ambele teme. */
+.dialog-aspect {
+  width: min(40rem, calc(100vw - 2rem));
+}
+
+.dialog-aspect .aspect-intro {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-4);
+  font-size: var(--fs-3);
+  color: var(--t-slab);
+}
+
+.dialog-aspect h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.aspect-aranjamente {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+/* Un aranjament: miniatura deasupra, apoi butonul radio cu numele și descrierea. Toată cartela e ținta clicului. */
+.dialog .aspect-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'mini mini' 'radio text';
+  align-content: start;
+  align-items: start;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  font-size: var(--fs-3);
+  color: var(--t);
+  cursor: pointer;
+}
+
+.dialog .aspect-card:has(input:checked) {
+  border-color: var(--a-plin);
+  background: var(--s-ales);
+}
+
+.dialog .aspect-card:has(input:focus-visible) {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 2px;
+}
+
+.dialog .aspect-card:has(input:disabled) {
+  cursor: default;
+  color: var(--t-slab);
+}
+
+.dialog .aspect-card input {
+  grid-area: radio;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--a-plin);
+}
+
+.aspect-text {
+  grid-area: text;
+  display: grid;
+  gap: 2px;
+}
+
+.aspect-nume {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.aspect-eticheta {
+  padding: 0 var(--sp-2);
+  border-radius: 99px;
+  background: var(--s-atentie);
+  color: var(--t);
+  font-size: var(--fs-1);
+}
+
+.aspect-descriere {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+/* Miniatura: pânza și cele trei bucăți ale aranjamentului (bare, panouri, butoane), schițate cu dreptunghiuri. */
+.aspect-mini {
+  grid-area: mini;
+  position: relative;
+  height: 64px;
+  border-radius: var(--r-1);
+  background: var(--panza-fundal);
+  box-shadow: inset 0 0 0 1px var(--l-margine);
+  overflow: hidden;
+}
+
+.aspect-mini > i {
+  position: absolute;
+  border-radius: 3px;
+  background: var(--s-panou);
+  box-shadow: 0 0 0 1px var(--l-margine);
+}
+
+/* Pe telefon, miniaturile mai joase: cele patru cartele încap cu mai puțină derulare. */
+@media (max-width: 30rem) {
+  .aspect-mini {
+    height: 44px;
+  }
+}
+
+.dialog .aspect-card:has(input:disabled) .aspect-mini {
+  opacity: 0.6;
+}
+
+/* Insule: barele plutesc deasupra pânzei. */
+.aspect-mini-modern > i:nth-child(1) { left: 25%; right: 25%; top: 6px; height: 10px; border-radius: 99px; }
+.aspect-mini-modern > i:nth-child(2) { left: 6px; top: 22px; bottom: 6px; width: 18%; }
+.aspect-mini-modern > i:nth-child(3) { right: 6px; top: 22px; bottom: 6px; width: 18%; }
+
+/* Clasic: meniurile sus, panoul andocat în stânga, bara de stare jos. */
+.aspect-mini-clasic > i { border-radius: 2px; }
+.aspect-mini-clasic > i:nth-child(1) { left: 4px; right: 4px; top: 4px; height: 9px; }
+.aspect-mini-clasic > i:nth-child(2) { left: 4px; top: 16px; bottom: 15px; width: 24%; }
+.aspect-mini-clasic > i:nth-child(3) { left: 4px; right: 4px; bottom: 4px; height: 8px; }
+
+/* Atelier: uneltele mari, pe două coloane, și „Trimite la mașină”. */
+.aspect-mini-atelier > i:nth-child(1) { left: 6px; top: 6px; bottom: 6px; width: 30%; }
+.aspect-mini-atelier > i:nth-child(2) { right: 6px; top: 6px; width: 22%; height: calc(50% - 9px); }
+.aspect-mini-atelier > i:nth-child(3) { right: 6px; bottom: 6px; width: 22%; height: calc(50% - 9px); background: var(--a-plin); box-shadow: none; }
+
+/* Pas cu pas: rândul pașilor, panoul pasului și „Continuă”. */
+.aspect-mini-pasi > i:nth-child(1) { left: 6px; right: 6px; top: 6px; height: 10px; border-radius: 99px; }
+.aspect-mini-pasi > i:nth-child(2) { left: 6px; top: 22px; bottom: 6px; width: 34%; }
+.aspect-mini-pasi > i:nth-child(3) { right: 6px; bottom: 6px; width: 22%; height: 14px; background: var(--a-plin); box-shadow: none; }
+
+.aspect-tema {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.aspect-optiuni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.dialog .aspect-optiuni label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  font-size: var(--fs-3);
+  color: var(--t);
+  cursor: pointer;
+}
+
+.dialog .aspect-optiuni input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--a-plin);
+}
+
+/* Numele temelor sunt scrise mic (ca pe butonul din bară: „Tema: după sistem”); aici încep cu majusculă. */
+.aspect-optiuni span {
+  display: inline-block;
+}
+
+.aspect-optiuni span::first-letter {
+  text-transform: uppercase;
+}
+
+/* „Butoane mari”: un comutator (căsuța cu `role="switch"`), nota dedesubt. */
+.dialog .aspect-comutator {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--sp-3);
+  row-gap: 0;
+  font-size: var(--fs-3);
+  color: var(--t);
+  cursor: pointer;
+}
+
+.dialog .aspect-comutator input {
+  appearance: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 99px;
+  background: var(--s-peste);
+  box-shadow: inset 0 0 0 1px var(--l-camp);
+  cursor: pointer;
+}
+
+.dialog .aspect-comutator input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--l-camp);
+}
+
+.dialog .aspect-comutator input:checked {
+  background: var(--a-plin);
+  box-shadow: none;
+}
+
+.dialog .aspect-comutator input:checked::after {
+  left: 19px;
+  background: var(--t-pe-a);
+}
+
+.dialog .aspect-comutator input:focus-visible {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 2px;
+}
+
+.aspect-comutator small {
+  grid-column: 2;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}

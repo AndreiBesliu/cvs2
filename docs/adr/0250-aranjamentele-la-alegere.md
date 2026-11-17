@@ -393,3 +393,20 @@ după planșe?”. A răspuns „Da, sunt gata”.
   - Densitatea mare: `--tinta` 48 px, 56 la atingere (`stil.css`).
   - Mărimea, față de un build curat al lui `main` `0e3725c`: pornirea 105,7 → 106,2 kB (cu ușa 110,1 / 115), totalul
     695,8 → 696,2 / 800.
+- **28.1↑b, 17.11: fereastra Aspectul** (aceeași ramură, adusă la `main` `5ab3941`, după unirea lui 28.1↑a în `8ea3057`;
+  la capăt, `main` `4b52fc3`, fără conflicte):
+  - `src/app/Aspectul.tsx` vine la cerere, cu mesajele panourilor (`carcasa`) și cu CSS-ul ei (`aspect.css`). Arată cele
+    patru aranjamente, fiecare cu miniatura și rândul de descriere. Se pot alege doar cele din `ARANJAMENTE_DISPONIBILE`
+    (azi, Insule); Clasic, Atelier și Pas cu pas se văd „în curând”.
+  - Tema și „Butoane mari” se aplică pe loc: densitatea pe `<html>`, tema prin aplicație (butonul din bară o arată).
+    Renunță sau Escape pun la loc ce era la deschidere; Păstrează scrie `cncvs2.aranjament`.
+  - Se deschide din meniul contului (rândul **Aspectul…**, după Manual, cu aranjamentul de acum în dreapta) și din paletă
+    (`vedere.aspect`, „Aspectul interfeței”), din orice fereastră, ca tema.
+  - F1 în fereastră deschide capitolul ei din manual. Ține locul legăturii „Despre aranjamente, în manual” din schiță:
+    manualul e al editorului, iar fereastra stă în aplicație.
+  - `alegereaDeAcum` (în `alegereAranjament.ts`) citește alegerea de pe `<html>`; tot acolo s-a mutat lista temelor, din
+    `App.tsx`.
+  - Manualul are capitolul „Aspectul interfeței” (`vedere.aspect`, ușa a 108-a), iar testul pas cu pas din aplicație, pasul
+    lui (36 de pași).
+  - Mărimea, față de un build curat al lui `main` `5ab3941`: pornirea 106,3 → 106,6 kB (cu ușa 110,6 / 115), totalul
+    703,4 → 704,6 / 800; pe unirea cu `main` `4b52fc3`: pornirea 106,6 kB (cu ușa 110,6 / 115), totalul 710,8 / 800.

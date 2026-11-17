@@ -34,6 +34,27 @@ deschide la capitolul a ce faci acum
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
 salvarea](#proiect).
 
+## Aspectul interfeței
+%% capitol: aspect
+%% acopera: vedere.aspect
+
+Fereastra **Aspectul** se deschide din meniul **Cont** (rândul **Aspectul…**, care arată și aranjamentul de acum) sau din
+paleta de comenzi („Aspectul interfeței”). Ce alegi se vede pe loc; **Păstrează** ține alegerea, iar **Renunță** (sau Esc)
+pune la loc ce era când ai deschis fereastra.
+
+**Aranjamentul** e felul în care stau barele și panourile în jurul pânzei:
+- **Insule** (implicit): pânza pe tot ecranul, barele plutesc deasupra ei;
+- **Clasic**: meniuri, panouri andocate și linia de comandă;
+- **Atelier**: butoane mari, pentru tabletă și lângă mașină;
+- **Pas cu pas**: te duce de la desen la mașină, pas cu pas.
+
+Deocamdată se poate alege doar Insule; celelalte trei apar în fereastră cu „în curând” și vin pe rând.
+
+**Tema** e aceeași cu a butonului „Tema” din bară: după sistem, luminoasă sau întunecată. **Butoane mari** face butoanele
+mai înalte (48 px; 56 pe un ecran tactil), cu orice aranjament: se nimeresc mai ușor pe tabletă sau cu mănuși.
+
+Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate arăta altfel decât calculatorul din birou.
+
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza
 %% acopera: vedere.potriveste, foaie.ghidaje, editare.lipire, editare.grila
@@ -1627,6 +1648,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   fi în aplicație, după ce ai deschis fereastra o dată; cu **Leagă imprimanta ținută la deschiderea cvs2**, și fără. Vin
   cât cvs2 e deschis, și în fundal; pe telefon, doar cât e în față. Pe Edge, o filă inactivă doarme după 2 ore: pune cvs2
   la „Nu pune niciodată aceste site-uri în repaus”.
+- **Istoricul** (cardul lui, în fereastra Imprimanta): imprimările, cele mai noi sus, din două locuri: istoricul imprimantei
+  (toate, și cele pornite de pe ecran sau din Creality Print) și istoricul cvs2, ținut în acest browser (ultimele 500), cu
+  numele pieselor, estimarea și materialul. Pentru fiecare: data, fișierul, rezultatul (✓ gata, ⏹ oprită, ⚠ eroare), durata
+  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul. Dedesubt, totalurile lunii,
+  **Exportă CSV** și **Golește istoricul cvs2…**, cu o confirmare: **Golește** sau **Păstrează-l** (istoricul imprimantei
+  rămâne în ea). **Prețul pe kg** al fiecărui material îl pui tu; până atunci, costul e „—”. Curentul intră în cost după ce
+  pui **Puterea medie** a imprimantei (W) și **Prețul kWh**. În „Din desen…”, **Corectează estimarea după istoric** (pornită)
+  arată estimarea învățată din imprimările duse la capăt ale fișierelor feliate în cvs2, pe aceeași imprimantă și cu același
+  material (mediana ultimelor, cel puțin 3): „~21m după 5 imprimări pe K1C-8578 (feliatorul: 18m)”. Fișierul nu se schimbă.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.
