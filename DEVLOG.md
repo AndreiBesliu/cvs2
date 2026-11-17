@@ -9012,6 +9012,39 @@ pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11,
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
 
+## 2026-11-14 — 3.6t: istoricul imprimărilor, costul și estimarea care învață (ADR 0194 §B) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6t” (owner-ul, 13.11, la „Trec la 3.6t (istoricul imprimărilor)?”).
+**Started:** 13.11, 18:01. **Completed:** 14.11, 00:09.
+
+- **Driverul și sesiunea:** `historyList` citit în starea comună (`istoric`), `reqHistory` printre citiri, cerut din nou la
+  final și la deschiderea cardului (cel mult o dată la 5 s).
+- **Istoricul cvs2 și unirea:** `istoricImprimari.ts` (pur): înregistrarea, contopirea, unirea cu al imprimantei, gramele,
+  costul, totalurile, CSV-ul, estimarea care învață; magazia `imprimari` (baza `cvs2-imprimanta`, versiunea 2).
+- **Fereastra:** cardul Istoricul (tabel; pe telefon, carduri), prețurile și curentul, Exportă CSV, Golește istoricul cvs2;
+  „Din desen…” cu estimarea învățată, bifa ei și costul.
+- **Imprimanta falsă:** istoricul la cerere, după listă și la final.
+- **Probe și porți:** 11 pe hârtie, una a sesiunii, manualul, două e2e; unit 9 434 (9 426 trecute, 0 căderi, 8 sărite), build-ul determinist (325 fișiere), e2e 494 / 496 (cele 2 căderi: probe ale altor linii, din încărcarea suitei întregi; singure, 6 / 6; pe `main`, în aceleași condiții, 490 / 494, cu alte 4 căderi din timp), pe unirea cu `main` `22ab3de` (`edb763a`, 17.11: în plus față de `e0f9803`, trasarea 25.5↑, 25.4↑b și 25.3↑c, incrustațiile 12.1↑b-2, aranjamentele 28.1↑a, raportul foilor 11.6↑, panourile 10.3↑k și reparația probei plăcii 3.6q); totalul 713,0 / 800 kB (+4,8 față de `main` `22ab3de`, măsurat A/B pe aceeași mașină: peste ținta de ~3,5 a ADR-ului, dar sub plafonul de 800 din 13.11, ADR 0253), pornirea 106,3 (cu ușa 110,3 / 115; aceeași ca pe `main`: 3.6t nu adaugă nimic în pornire). Otrăvurile
+  (`test/otravuri/3.6t.py`): 57 / 57 (47 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 10).
+- **Pe drum:** CI-ul complet era roșu pe `main` din cauza lui 3.6s (banda pauzei acoperea Reia, pe Linux): reparată pe
+  `fix/3.6s-anunt` (`231e347`, la cererea sesiunii principale; banda stă acum în meniul global), unită și aici (`44d1b81`),
+  cu `main` de la `7cc9800` (12.1↑d).
+- **Pauza și reluarea:** oprită pe 14.11 („pauza peste tot”), cu ramura împinsă la `8662ad8`. Reluată pe 16.11 („poti sa
+  continui ... sau poti sa unesti ce se poate”): întâi proba instabilă 3.6q (`ead04c2`, pe `fix/3.6q-strat`, unită în `main`),
+  apoi `main` `bfdf2ed` unit aici (`4cfb765`). Porțile de pe `4cfb765` au căzut pe două probe ale altor linii, din încărcarea
+  suitei, nu din 3.6t: pragul de 5 s din `dxf.test.ts:432` (5,9 s în suită; singură, 0,37 s, 3 / 3) și deschiderea
+  manualului în `manual.spec.ts:94` (n-a apărut în 5 s; singur, 15 / 15). Procesul s-a oprit peste noapte. Reluată pe 17.11
+  („neata! da drumul celorlalte worktrees”): `main` `5ab3941` și `22ab3de` unite aici (`25ebd30`, `edb763a`, fără
+  conflicte), mărimea măsurată A/B față de `main`, porțile întregi pe unire și canalul `imprimanta`
+  (<https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei). E2e-ul de pe `edb763a` a căzut
+  tot pe două probe ale altor linii, din încărcare: `incrustatieDreapta.spec.ts:207` (rândurile exportului, peste 5 s) și iar
+  `manual.spec.ts:94`, de data asta cu ușa proiectului peste termenul ei de 4 s (`TERMEN_MS` din `proiectLocal.ts`):
+  aplicația a pornit în memorie, fără paleta Ctrl+K. Singure, 6 / 6. Pe `main` `22ab3de`, în aceleași condiții (A/B): 490 /
+  494, cu alte 4 căderi din timp (așezarea pe foi, extensiile, plăcuțele, importul).
+  Apoi `main` `021dcc6` (25.3↑d) unit aici (`424637b`; un conflict în dicționarul traducerilor, rezolvat cu partea lui
+  `main`), cu porțile întregi: unit 9 441 (9 433 trecute, 0 căderi, 8 sărite), build-ul determinist (325 de fișiere; totalul
+  713,5 / 800, pornirea 106,3, neschimbată), e2e 493 / 496 (alte 3 probe ale altor linii, din încărcare; singure, 6 / 6).
+
 ## 2026-11-16 — 3.6q: proba plăcii fără hartă, judecată față de cadrul arătat (completul de noapte) (Model: Claude Opus 5.5)
 
 **Prompt:** cererea sesiunii principale (16.11, la reluare, după „poti sa continui si sa pornesti si worktrees care s-au oprit,

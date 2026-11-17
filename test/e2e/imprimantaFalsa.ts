@@ -30,6 +30,8 @@ import type { AddressInfo, Socket } from 'node:net';
  * - din 3.6s (ADR 0194 §A), un fișier „imprimat” se încheie cu `state` 2 (ca o K3: doi pași, apoi 0, cu `printJobTime` și
  *   `usedMaterialLength` puse pe 0); `faraFilament()` pune `materialStatus` 1 și pauza (ca senzorul K1), iar Reia îl pune
  *   la loc (0).
+ * - din 3.6t (ADR 0194 §B), istoricul (`historyList`, câmpurile din transcrierea owner-ului): trimis la `reqHistory`, după
+ *   lista fișierelor (`k1c-2025`) și la finalul sau oprirea unei lucrări (cu `printfinish` 1 sau 0), pornind de la `istoric`.
  * - din 16.11, `intarziereMs`: fiecare cadru trimis ajunge cu atâta întârziere, în ordine (ca pe un runner încărcat, unde
  *   fereastra arată un mesaj mai vechi decât imprimanta de acum); `stratLaProgres(p)`: stratul adevărat din cadrul care a spus
  *   procentul `p`, ca o probă să judece stratul arătat față de mesajul arătat, nu față de imprimanta de acum.
@@ -71,6 +73,8 @@ export type OptiuniImprimantaFalsa = {
   readonly filamentInPlus?: number;
   /** Conținutul unor fișiere din listă, ca și cum ar fi fost trimise din altă parte (Creality Print): se „imprimă” din el. */
   readonly continut?: Readonly<Record<string, string>>;
+  /** Din 3.6t: istoricul de la pornire (intrările `historyList`, ca în transcriere). */
+  readonly istoric?: readonly Readonly<Record<string, string | number>>[];
   /** Din 16.11: fiecare cadru trimis ajunge cu atâta întârziere (ms), în ordine; așteptarea lui `ok` crește la fel. */
   readonly intarziereMs?: number;
 };
@@ -187,9 +191,24 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     Object.assign(s, c);
     for (const t of trimitatori) t(c);
   };
+  // Din 3.6t: istoricul (cele mai noi întâi, ca K1) și începutul lucrării de acum (s).
+  const istoric: Readonly<Record<string, string | number>>[] = [...(opt.istoric ?? [])];
+  let inceputLucrare = 0;
+  const trimiteIstoric = (): void => { for (const t of trimitatori) t({ historyList: istoric }); };
+  /** Lucrarea de acum intră în istoric (1: gata, 0: oprită), cu timpul și filamentul de dinaintea finalului; apoi istoricul, tuturor. */
+  const inIstoric = (printfinish: number): void => {
+    const nume = String(s['printFileName']);
+    const durata = Number(s['printJobTime']);
+    istoric.unshift({
+      id: istoric.length + 1, filename: nume, size: 1000, ctime: inceputLucrare, starttime: inceputLucrare, totaltime: durata + 40,
+      usagematerial: Number(s['usedMaterialLength'] ?? 0), startway: 9, usagetime: durata, printfinish, thumbnail: `${DIR}.thumbs/dummpy.png`,
+    });
+    trimiteIstoric();
+  };
   const imprima = (fisier: string, progres: number): void => {
     const f = fisiere.find((x) => `${DIR}${x.name}` === fisier);
     const total = f?.timeCost ?? 600;
+    inceputLucrare = Math.floor(Date.now() / 1000) - Math.round((total * progres) / 100);
     schimba({
       state: 1, printFileName: fisier, printProgress: progres, printJobTime: Math.round((total * progres) / 100), printLeftTime: Math.round(total * (1 - progres / 100)),
       TotalLayer: 50, layer: Math.round(progres / 2), targetNozzleTemp: temp(220), nozzleTemp: temp(220), targetBedTemp0: temp(50), bedTemp0: temp(49.5),
@@ -214,6 +233,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       piese.push({ name: m[1]!.toUpperCase(), ...(m[2] ? { center: m[2].split(',').map(Number) } : {}), ...(m[3] ? { polygon: JSON.parse(m[3]) as number[][] } : {}) });
     }
     const straturi = linii.filter((l) => l === ';LAYER_CHANGE').length;
+    inceputLucrare = Math.floor(Date.now() / 1000);
     rulare = {
       linii, marime: Buffer.byteLength(text), pePas: Math.max(1, Math.ceil(linii.length / (opt.pasiFisier ?? 40))), i: 0, octeti: 0,
       strat: 0, e: 0, absE: true, x: 0, y: 0, piesa: '', alterna: false, piese: new Set(piese.map((p) => p.name)), excluse: new Set(),
@@ -269,8 +289,9 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     if (r.i >= r.linii.length) {
       rulare = null;
       straturiPeProgres.set(100, r.strat);
-      // Din 3.6s: „terminată” (2), ca o K3; după doi pași, liberă (0), cu timpul și filamentul pe 0.
+      // Din 3.6s: „terminată” (2), ca o K3; după doi pași, liberă (0), cu timpul și filamentul pe 0. Din 3.6t, și istoricul.
       schimba({ printProgress: 100, current_object: '', state: 2, printLeftTime: 0 });
+      inIstoric(1);
     }
   };
   let finalizare = 0;
@@ -296,6 +317,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     finalizare++;
     if (finalizare >= 2) {
       finalizare = 0;
+      inIstoric(1);
       schimba({ state: 0, printLeftTime: 0, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) });
     }
   };
@@ -364,12 +386,13 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
       }
       const p = o.params ?? {};
       if (o.method === 'get' && p['ReqPrinterPara'] === 1) { json(s); return; }
+      if (o.method === 'get' && p['reqHistory'] === 1) { json({ historyList: istoric }); return; }
       if (o.method === 'get' && p['reqGcodeFile'] === 1) {
         if (k2025) {
           // Ca în transcrierea owner-ului: `director:nume:mărime:strat:dată:filament:miniatură;…`, apoi istoricul și filmele.
           const text = fisiere.map((f) => `${DIR.slice(0, -1)}:${f.name}:${f.size ?? 1000}:0.200000:1793890905:${f.timeCost ?? 0}:/tmp/creality/local_gcode/humbnail/${f.name.replace(/\.gcode$/, '.png')};`).join('');
           json({ retGcodeFileInfo: { totalNum: fisiere.length, fileInfo: text } });
-          json({ historyList: [] });
+          json({ historyList: istoric });
           json({ elapseVideoList: [] });
           return;
         }
@@ -427,7 +450,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         schimba({ state: 7 });
         // Ca imprimanta owner-ului (07.11): după oprire, piesele se golesc.
         schimba({ current_object: '', excluded_objects: '[]', objects: '[]' });
-        setTimeout(() => { schimba({ state: 4, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) }); }, 800);
+        setTimeout(() => { inIstoric(0); schimba({ state: 4, targetNozzleTemp: temp(0), targetBedTemp0: temp(0) }); }, 800);
       } else if (typeof p['opGcodeFile'] === 'string' && p['opGcodeFile'].startsWith('printprt:') && s['state'] !== 1 && s['state'] !== 5) {
         const cale = p['opGcodeFile'].slice('printprt:'.length);
         if (!fisiere.some((f) => `${DIR}${f.name}` === cale)) return;
