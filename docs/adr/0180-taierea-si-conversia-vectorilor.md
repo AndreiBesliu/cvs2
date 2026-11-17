@@ -215,6 +215,11 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
   (panoul Taie, bara Cuțitului) și al panoului conversiei; „Taie piesa” ținută, la o operație unde nu are sens, întreabă.
 - **Ce nu face:** reparațiile verificării (ADR 0124, decizia 8a) și degruparea (ADR 0103) refuză în continuare o piesă pusă de
   mai multe ori; aceeași întrebare li se poate da, într-o felie a liniilor lor.
+- **Mărimea:** pornirea neschimbată (106,6 kB; cu ușa 110,6 / 115), totalul +4,4 kB cu 10.3↑l (715,7 → 720,1 / 800, A/B în
+  clonă, pe `main` `9361c83`; 10.3↑l, +0,7 pe `4b52fc3`), deci felia ~+3,7: banda (la cerere), întrebarea și alegerea ținută,
+  comenzile pe firul principal, textele. Prima variantă dădea +6,1: calculul importa desprinderea (cu plăcuțele) și
+  `CUTITE_PIESA` din `taiere.ts`, iar modulele pieselor legate și `model/noduri.ts` ieșeau într-o bucată comună; acum calculul
+  ia din `surori.ts` (ușor) doar cine are surori și cuțitele, iar desprinderea o aduce prin calculul acțiunilor, la cerere.
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
