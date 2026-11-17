@@ -92,7 +92,8 @@ asta, trasezi de două ori, cu alte bife, și ștergi ce nu-ți trebuie.
   e2e (F01–F09); la prima rulare (`c4b2abc8`), E02 a scăpat (plasa făcută degeaba cu toate culorile pe linii: aceleași
   piese) și F02 a „căzut” doar pe o cădere din timp a altei probe (comparația desenului prindea o tranziție, pe o scenă
   fără parte lată): probele lor în `fd58810d`, iar otrăvurile ferestrei, rulate din nou pe proba refăcută;
-- mărimea: totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
+- mărimea: totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3); pe arborele unit cu `main`
+  (`6e62d40c`), 716,0 / 800 kB, pornirea 106,6 / 115 (cu ușa 110,6).
 
 ## Ce am respins
 

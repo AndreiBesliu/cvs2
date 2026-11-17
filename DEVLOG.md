@@ -9575,3 +9575,7 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
 - **Mărimea:** totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
   `fd58810d46ca`.
+- **`main` adus** (`6e62d40c`, de la `b6aaa548`; ciocnire doar în DEVLOG), porțile din nou: tipuri (3), importuri,
+  licențe, traduceri (0); unitare 9 481 (9 473 trecute, 8 sărite, 0 căzute); e2e-urile trasării, importului și
+  tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
+  amprenta `6e62d40c5e55`.
