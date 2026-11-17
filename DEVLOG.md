@@ -9012,6 +9012,39 @@ pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11,
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 13.12), amprenta
   `f8574360fbcb` (adresa principală de test, neatinsă); ramura împinsă, neunită (decizia owner-ului).
 
+## 2026-11-14 — 3.6t: istoricul imprimărilor, costul și estimarea care învață (ADR 0194 §B) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 3.6t” (owner-ul, 13.11, la „Trec la 3.6t (istoricul imprimărilor)?”).
+**Started:** 13.11, 18:01. **Completed:** 14.11, 00:09.
+
+- **Driverul și sesiunea:** `historyList` citit în starea comună (`istoric`), `reqHistory` printre citiri, cerut din nou la
+  final și la deschiderea cardului (cel mult o dată la 5 s).
+- **Istoricul cvs2 și unirea:** `istoricImprimari.ts` (pur): înregistrarea, contopirea, unirea cu al imprimantei, gramele,
+  costul, totalurile, CSV-ul, estimarea care învață; magazia `imprimari` (baza `cvs2-imprimanta`, versiunea 2).
+- **Fereastra:** cardul Istoricul (tabel; pe telefon, carduri), prețurile și curentul, Exportă CSV, Golește istoricul cvs2;
+  „Din desen…” cu estimarea învățată, bifa ei și costul.
+- **Imprimanta falsă:** istoricul la cerere, după listă și la final.
+- **Probe și porți:** 11 pe hârtie, una a sesiunii, manualul, două e2e; unit 9 434 (9 426 trecute, 0 căderi, 8 sărite), build-ul determinist (325 fișiere), e2e 494 / 496 (cele 2 căderi: probe ale altor linii, din încărcarea suitei întregi; singure, 6 / 6; pe `main`, în aceleași condiții, 490 / 494, cu alte 4 căderi din timp), pe unirea cu `main` `22ab3de` (`edb763a`, 17.11: în plus față de `e0f9803`, trasarea 25.5↑, 25.4↑b și 25.3↑c, incrustațiile 12.1↑b-2, aranjamentele 28.1↑a, raportul foilor 11.6↑, panourile 10.3↑k și reparația probei plăcii 3.6q); totalul 713,0 / 800 kB (+4,8 față de `main` `22ab3de`, măsurat A/B pe aceeași mașină: peste ținta de ~3,5 a ADR-ului, dar sub plafonul de 800 din 13.11, ADR 0253), pornirea 106,3 (cu ușa 110,3 / 115; aceeași ca pe `main`: 3.6t nu adaugă nimic în pornire). Otrăvurile
+  (`test/otravuri/3.6t.py`): 57 / 57 (47 pe probele unitare, 10 prin e2e). Manualul (ro, en) și ghidul (pasul 10).
+- **Pe drum:** CI-ul complet era roșu pe `main` din cauza lui 3.6s (banda pauzei acoperea Reia, pe Linux): reparată pe
+  `fix/3.6s-anunt` (`231e347`, la cererea sesiunii principale; banda stă acum în meniul global), unită și aici (`44d1b81`),
+  cu `main` de la `7cc9800` (12.1↑d).
+- **Pauza și reluarea:** oprită pe 14.11 („pauza peste tot”), cu ramura împinsă la `8662ad8`. Reluată pe 16.11 („poti sa
+  continui ... sau poti sa unesti ce se poate”): întâi proba instabilă 3.6q (`ead04c2`, pe `fix/3.6q-strat`, unită în `main`),
+  apoi `main` `bfdf2ed` unit aici (`4cfb765`). Porțile de pe `4cfb765` au căzut pe două probe ale altor linii, din încărcarea
+  suitei, nu din 3.6t: pragul de 5 s din `dxf.test.ts:432` (5,9 s în suită; singură, 0,37 s, 3 / 3) și deschiderea
+  manualului în `manual.spec.ts:94` (n-a apărut în 5 s; singur, 15 / 15). Procesul s-a oprit peste noapte. Reluată pe 17.11
+  („neata! da drumul celorlalte worktrees”): `main` `5ab3941` și `22ab3de` unite aici (`25ebd30`, `edb763a`, fără
+  conflicte), mărimea măsurată A/B față de `main`, porțile întregi pe unire și canalul `imprimanta`
+  (<https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei). E2e-ul de pe `edb763a` a căzut
+  tot pe două probe ale altor linii, din încărcare: `incrustatieDreapta.spec.ts:207` (rândurile exportului, peste 5 s) și iar
+  `manual.spec.ts:94`, de data asta cu ușa proiectului peste termenul ei de 4 s (`TERMEN_MS` din `proiectLocal.ts`):
+  aplicația a pornit în memorie, fără paleta Ctrl+K. Singure, 6 / 6. Pe `main` `22ab3de`, în aceleași condiții (A/B): 490 /
+  494, cu alte 4 căderi din timp (așezarea pe foi, extensiile, plăcuțele, importul).
+  Apoi `main` `021dcc6` (25.3↑d) unit aici (`424637b`; un conflict în dicționarul traducerilor, rezolvat cu partea lui
+  `main`), cu porțile întregi: unit 9 441 (9 433 trecute, 0 căderi, 8 sărite), build-ul determinist (325 de fișiere; totalul
+  713,5 / 800, pornirea 106,3, neschimbată), e2e 493 / 496 (alte 3 probe ale altor linii, din încărcare; singure, 6 / 6).
+
 ## 2026-11-16 — 3.6q: proba plăcii fără hartă, judecată față de cadrul arătat (completul de noapte) (Model: Claude Opus 5.5)
 
 **Prompt:** cererea sesiunii principale (16.11, la reluare, după „poti sa continui si sa pornesti si worktrees care s-au oprit,
@@ -9451,6 +9484,142 @@ după pauza de noapte. **Started:** 16.11 19:41. **Completed:** 17.11 11:43.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul nou),
   testul din aplicație (pasul nou), lista otrăvurilor (`test/otravuri/28.1b.py` și rândul ei din `docs/otravuri.md`),
   DEVLOG.
+
+## 2026-11-16 — Reluarea după pauză: liniile repornite, unirile din 16–17.11, probele instabile (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, pe 16.11: „poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti ce se
+poate”; „Poti sa adopti si sesiunea de design si sa o pornesti”; „Yes, all three” (fișa plăcii 11, 25.3↑d, 28.1↑b). Pe
+17.11: „neata! da drumul celorlalte worktrees”; „vreau sa imi spui daca mai este nevoie de ceva”; „ok, ia-le la rand” (la
+lista sesiunii principale: DEVLOG-ul, probele instabile, limita emulatorului, proba pe test, curățenia, linia adminului,
+prognoza mărimii).
+**Started:** 16.11, 17:40. **Completed:** 17.11, 19:10.
+
+- **Reluarea (16.11):** `main` neschimbat de la pauză (`0e3725c`); completul de noapte verde pe 14 și 15.11, roșu pe 16.11
+  (`imprimanta.spec.ts:966`, 3.6q: stratul plăcii în urma imprimantei false, sub încărcare); testul pe `e0f9803`. Liniile,
+  repornite din notele lor de pauză; sesiunea designului, adoptată ca linie (commit-urile doar pe `wip/28.1-aranjamente`).
+- **Unirile**, fiecare în worktree-ul `unire`, cu porțile acolo, apoi fast-forward și push; „unește ce se poate” = la
+  raportul liniei, fără altă întrebare. Pe 16.11: 12.1↑b-2 (`798a11a`, v24), 25.4↑b (`88099ff`), reparația probei 3.6q
+  (`eaf3d0d`), DEVLOG-ul din 13.11 (`bfdf2ed`, publicat); 25.3↑c (`380c053`); 28.1↑a (`8ea3057`) și 11.6↑ (`7d19a73`;
+  publicat `5ab3941`). Pe 17.11, după ce procesele liniilor muriseră peste noapte: 10.3↑k (`c577549`; publicat `22ab3de`),
+  25.3↑d (`dd21a8a`; publicat `021dcc6`), 12.1↑f (`d2ef229`, v25) și 11.7↑ (`b4d5641`, fișa plăcii 11; publicat `4b52fc3`),
+  28.1↑b (`cf0550b`), probele instabile (`912fece`) și reparațiile de după porți (`34da53e`; publicat `e38ca725`), 3.6t
+  (`18d9be07`; `71d488a7`, completul în curs).
+- **Ce au prins porțile de unire:** pe 28.1↑b, proba tichetelor de pe emulatoare (meniul contului fără „Aspectul…”), ruptă
+  de felie și nerulată de linie; emulatorul de funcții peste limita de 10 s la încărcarea codului, de două ori; probe căzute
+  doar sub încărcare și trecute la reluarea fișierului întreg.
+- **Probele instabile** (punctele 2 și 3 ale listei), reproduse întâi sub încărcare (8 sau 32 de procese care țin procesorul
+  ocupat; procesorul paginii încetinit prin CDP) și reparate la cauză: sonda GRBL (al doilea `setTimeout(0)` al FluidNC-ului
+  fals → microtask; 12 / 20 → 0 / 20), salvarea amânată a trenulețului (ceasul probei; 1 / 20 → 0 / 20), scriptul de început
+  al probei trenulețului (rula și în cadrul sandbox, unde `localStorage` aruncă; 7 / 8 → 0 / 8), fontul SVG (`test.slow()`),
+  pornirea extensiei (20 s, după al treilea caz în porți) și `FUNCTIONS_DISCOVERY_TIMEOUT=30` în unealta emulatoarelor.
+  Fiecare probă reparată prinde o otravă. Fără reparație, văzută o dată: `extensii.masina.spec.ts:84` (senderul prin
+  extensie, „pierdut” în loc de „pregatit”).
+- **Curățenia:** cele 10 ramuri locale `unire/*`, deja în `main`, șterse; 16 ramuri de pe GitHub, unite și ale nimănui,
+  lăsate owner-ului (comanda dată în conversație). Uneltele sesiunii principale, mutate din scratchpad (golit de fișierele
+  vechi: publicarea lui `4b52fc3` a căzut întâi cu „No such file”) în `C:\Users\besli\cncvs2-lucru\unelte`.
+- **Mărimea:** totalul 715,6 / 800, pornirea cu ușa 110,6 / 115 (după 3.6t). Prognoza, din estimările liniilor și ale
+  ADR-urilor: ~767 / 800 cu tot ce e în coadă (restul aranjamentelor ~37 kB); adminul (+25 kB) intră în plafonul lui
+  `/admin` (106,5 / 200).
+- **Proba pe test** (`e38ca725`, în browserul aplicației, la 1280 px): versiunea servită, consola fără erori, „0 erori în
+  jurnalul local”, panoul foilor, `data-aranjament` / `data-densitate`, rândul „Aspectul…” în meniul contului și fereastra
+  lui (adusă la cerere), închisă cu Renunță, fără nimic ținut.
+- **Rămâne:** linia adminului (ADR 0260) n-a pornit: owner-ul lucra prin Remote Control, care nu pornește sesiuni noi;
+  brief-ul e în `C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Publicarea lui `71d488a7` (3.6t), după complet.
+
+## 2026-11-17 — Felia 10.3↑l: panourile pe foi (ADR 0181 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „1, dar, vreau sa explici in detaliu ce se cere la punctul 2” (owner-ul, în sesiunea liniei `taiere`, la propunerea
+feliilor următoare: 1 = panourile pe foi). **Started:** 17.11, 09:43. **Completed:** 17.11, 13:32.
+
+- **Ramura nouă din `main`:** `wip/10.3l-panouri-foi`, din `021dcc6`; `origin/main` `4b52fc3` (12.1↑f, documentul v25, și 11.7↑)
+  unit în `2fd63df`, fără conflicte. Punctul 2 al propunerii (piesele puse de mai multe ori) l-am explicat în sesiune, fără cod:
+  rămâne o felie propusă.
+- **Modelul** (`src/model/panouriPeFoaie.ts`, pur, pe firul principal): ce iese o bucată peste linie (H/2, plus jumătate din
+  suprapunere sau minus jumătate din spațiu, cel puțin 0), locul pe foaie la „Așază pe foi” (marginile ținute, fiecare cel puțin
+  raza frezei exterioare), mărimea implicită (locul fără ieșirea de pe ambele laturi), cel mai mare panou al grilei și încăperea
+  lui (și culcat, cu rotirea ținută a așezării).
+- **Blocul panourilor:** mărimea implicită care încape (urmează opțiunile până scrii alta; „Cât încape pe foaie: L × Î” o pune
+  la loc), avertismentul pentru un panou care n-ar încăpea, „Așază pe foi…” (dialogul, pe alegerea de acum: după tăiere,
+  panourile; `onAseaza` din `Editare` prin `PanouTaiere`). Manualul (ro, en), textele (ro, en).
+- **Reparația lui 10.3↑k** (găsită de proba pe hârtie a feliei): cu dinți drepți, linia Y = 500 a grilei egale cădea pe flancul
+  dintelui din mijloc al tăieturii X = 800 (refuzul `pe-linie`, „Tăietura merge pe o latură…”), iar la celelalte modele tăietura
+  a doua tăia dinții de la încrucișare. `taie` primește `opriri` (doar de la panouri, cu îmbinare): coarda se împarte în
+  punctele liniilor celeilalte axe, cu dinții pe fiecare bucată; încrucișarea, privită mărit pe desenul real (și cu jocul 0,6),
+  are laturile drepte.
+- **Probele:** pe hârtie (`taiere.panouri.foi.test.ts`: ieșirea, locul, mărimea, cel mai mare panou, încăperea; firma de 2 400 ×
+  1 000 pe foi de 1 200 × 900, tăiată cu mărimea implicită și așezată: șase panouri, câte unul pe foaie, cutiile măsurate de
+  oracol, exacte la dinții drepți; din colț, panoul cât locul tot încape; cu mărimea foii, verificarea blocului și așezarea spun
+  amândouă că nu încape); încrucișarea dreaptă cu dinți drepți (`taiere.panouri.test.ts`); e2e (mărimea implicită,
+  avertismentul, „Cât încape”, tăierea, „Așază pe foi…”, Anulează; alegerile ținute ale așezării: marginea sub raza frezei,
+  rotirea).
+- **Treceri:** (1) proba pe hârtie: refuzul dinților drepți pe grila egală (reparația de mai sus); (2) la scrierea otrăvurilor,
+  e2e-ul nu dovedea că blocul citește alegerile ținute ale așezării (implicitele lor erau și ale probei) și nici rotirea: proba
+  nouă pune `cncvs2.asezare` în browser (marginile 2, sub raza frezei; rotirea cu 90°).
+- **Otrăvurile** (`test/otravuri/10.3l.py`): 31 / 31 prinse (20 unitare, 11 e2e), în clona din afara Drive-ului, pe `7e323b7`.
+- **Porțile** (pe `2fd63df`): traducerile, cele trei compilatoare, importurile, licențele, unit 9 468 (9 460 trecute, 8 sărite,
+  0 căderi), build-ul determinist (327 de fișiere identice), e2e 498 / 498 (pornit după un minut fără altă rulare Playwright pe
+  mașină), emulatoarele 101 / 101 și 21 / 21 (la a doua rulare; la prima, 20 / 21: fondul etapei 6 din fila Roadmap, citit
+  transparent, o probă de timp a filei, în afara feliei).
+- **Mărimea:** pornirea neschimbată (106,3 kB; cu ușa 110,3 / 115), totalul +0,7 kB (709,6 → 710,3 / 800), măsurat A/B în clonă,
+  pe `main` `4b52fc3` și pe ramură (`2fd63df`): blocul, modelul mărimii și textele, în bucata panoului Taie; reparația
+  opririlor, în worker.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 17.12), pe `2fd63df`,
+  verificat (ro: mărimea implicită 280 × 180 pe foaia de 300 × 200, tăierea în două panouri, „Așază pe foi…” cu ele alese,
+  Anulează și Reface; nicio eroare în consolă).
+
+## 2026-11-17 — Felia 25.3↑e pornită: Rezultatul pe fiecare culoare (ADR 0228, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Felia următoare (25.3↑e, pastila pe culori, cu ADR nou) pornește la cuvântul owner-ului: dacă vrei, pregătește
+propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în `main`, `dd21a8a`). **Started:** 17.11, 09:25.
+**Completed:** 17.11, 09:44.
+
+- **Ramura** adusă la `origin/main` (`021dcc6`; înainte rapidă).
+- **Cercetarea:** ArtCAM / Carveco aleg felul pe culoare (conturul sau linia mediană a fiecărei culori alese, după
+  reducerea culorilor); CorelDRAW PowerTRACE, Inkscape, Vectric, LightBurn au un singur fel pe toată trasarea.
+- **Prototipul** (`.tmp/proto-0228.ts`, doar nucleele de azi): pe desenul probelor din 25.3↑c, galbenul și negrul pe
+  contururi, roșul, albastrul și verdele pe linii mediane: un contur galben, inelul negru (două contururi), o linie
+  roșie legată de trei ori, o linie albastră, o buclă verde. Tot pe linii mediane, galbenul e un punct, fără piesă; tot
+  pe contururi, roșul iese în patru bucăți. Pe 12 Mpx: reducerea culorilor 1,84 s, contururile ~0,4 s, liniile ~0,7 s;
+  cu reducerea o singură dată, ~3 s (separat, ~4,8 s).
+- **ADR 0228, propus** (`docs/adr/0228-rezultatul-pe-fiecare-culoare.md`): lista „Rezultatul culorii” în fiecare pastilă
+  (Ca Rezultatul, Contururi, Linii mediane); reducerea o singură dată; pragul părților late din culorile pe linii
+  mediane; legarea și peste culorile pe contururi; câte o piesă pe culoare, cu felul ei; ~+1,5–2,5 kB. Două întrebări:
+  implicitul pastilei, locul alegerii.
+- **Schița**, cu formularul (răspunsurile în `raspunsuri/owner`): <https://claude.ai/artifact/DatxQZJuRxdiL32WAxVoh6>;
+  privită local în Edge înaintea publicării (fără erori, cele trei alegeri gata și o pastilă schimbată de mână, fără
+  derulare laterală la 375 px); colecția `raspunsuri` citită după publicare (goală).
+- **Documentele:** indexul ADR-urilor, coada owner-ului și jurnalul (etapa 3), CLAUDE.md, traducerile.
+- **Fără cod:** felia pornește după răspunsuri.
+
+## 2026-11-17 — Felia 25.3↑e: Rezultatul pe fiecare culoare (ADR 0228, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–2a” (owner-ul, în sesiunea liniei trasării, la cele două întrebări din ADR 0228). **Started:** 17.11,
+09:55. **Completed:** 17.11, 19:04.
+
+- **Ramura** la `408f2c0` (propunerea); `origin/main` fără nimic nou.
+- **Felia** (`c4b2abc8`): `traseazaCulori` cu `peLinii` (contururile doar ale culorilor rămase pe contururi, curbele
+  doar pe granițele lor, fără plasă când nu e niciuna); `traseazaCuloriMediane` cu el (o singură reducere; liniile doar
+  ale culorilor alese; piesele în ordinea paletei; numărătorile tuturor); calculul cu `culori.rezultate` („Ca
+  Rezultatul” ia Rezultatul de sus); ușa (opțiunile liniilor în cerere cât o culoare e pe linii; căile laolaltă, buclele
+  contururilor nu pe linie); fereastra (lista din pastilă, ștearsă la un număr nou și la legare; opțiunile, părțile late
+  și grosimea după felul culorilor); textele și manualul.
+- **Probele, întâi** (roșii înaintea codului): 8 ale nucleului, 2 ale ușii, una e2e nouă; două schimbate (tipul
+  pieselor). Prima rulare e2e: legarea prin tragere a picat (centrul pastilei, pe listă): bifa pe rândul ei, lista sub
+  ea.
+- Porțile: tipuri (3), importuri, licențe, traduceri (0); suita unitară 9 439 (9 431 trecute, 8 sărite, 0 căzute);
+  e2e-urile trasării, importului și tutorialul, 51 / 51 (portul e2e al worktree-ului mutat pe 4183: 4179 e și al clonei
+  `otravuri-taiere`); 12 Mpx: amestecul ~3 s.
+- **Otrăvurile** (`test/otravuri/25.3e.py`): 24 / 24, fiecare pe proba ei: 15 unitare (E01–E15) și 9 prin e2e (F01–F09);
+  la prima rulare (`c4b2abc8`), E02 a scăpat (plasa făcută degeaba cu toate culorile pe linii: aceleași piese) și F02 a
+  „căzut” doar pe o cădere din timp a altei probe (comparația desenului prindea o tranziție, pe o scenă fără parte
+  lată): probele lor în `fd58810d`, iar otrăvurile ferestrei, rulate din nou pe proba refăcută.
+- **Mărimea:** totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
+  `fd58810d46ca`.
+- **`main` adus** (`6e62d40c`, de la `b6aaa548`; ciocnire doar în DEVLOG), porțile din nou: tipuri (3), importuri,
+  licențe, traduceri (0); unitare 9 481 (9 473 trecute, 8 sărite, 0 căzute); e2e-urile trasării, importului și
+  tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
+  amprenta `6e62d40c5e55`.
 
 ## 2026-11-17 — Felia 11.3↑b: avertismentul urechilor la așezare (ADR 0210) (Model: Claude Opus 5.5)
 

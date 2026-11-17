@@ -1,14 +1,15 @@
 # ADR 0181 — Cuțitul pe pânză și opțiunile tăierii
 
-**Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), pentru feliile 10.3↑f–10.3↑k, fără mașină, în worktree-ul
-`taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 08.11, după linia ADR 0180 încheiată: „vreau sa mai
-lucram la taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”. Răspunsurile lui: „ok, la toate
-recomandarile” (1a, 2a, 3a, 4a), cu nota „vreau sa putem adauga un shape/vector existent ca cutit, de exemplu am facut un text
-anume si vreau sa decupez cu el sau cu alte forme deja existente” (§1, felul Formă, în 10.3↑f). **Completează:** ADR 0180 (tăierea exactă, cuțitul-formă,
-închiderea, unde ajung bucățile și rolul lor), ADR 0050 și ADR 0051 (lipirea, desenul prin tragere), ADR 0063 (gestul
-Pen-ului), ADR 0037 §5 (offsetul unei căi deschise), ADR 0130 (gruparea). **Schimbă** (răspunsul 4a): ADR 0180 §13 și „Ce am
-respins” (tăierea cu un clic pe bucată). **Documentul:** neschimbat (v20): cuțitul uneltei nu se salvează, iar
-rezultatul e din tipurile de azi.
+**Starea:** acceptat pe 08.11.2026 (propus în aceeași zi), pentru feliile 10.3↑f–10.3↑k, fără mașină, în worktree-ul `taiere`
+(ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 08.11, după linia ADR 0180 încheiată: „vreau sa mai lucram la
+taiere, vreau mai multe optiuni de taiere, si vreau un 'cutit' mai versatil”. Răspunsurile lui: „ok, la toate recomandarile”
+(1a, 2a, 3a, 4a), cu nota „vreau sa putem adauga un shape/vector existent ca cutit, de exemplu am facut un text anume si vreau
+sa decupez cu el sau cu alte forme deja existente” (§1, felul Formă, în 10.3↑f). **Completează:** ADR 0180 (tăierea exactă,
+cuțitul-formă, închiderea, unde ajung bucățile și rolul lor), ADR 0050 și ADR 0051 (lipirea, desenul prin tragere), ADR 0063
+(gestul Pen-ului), ADR 0037 §5 (offsetul unei căi deschise), ADR 0130 (gruparea). **Schimbă** (răspunsul 4a): ADR 0180 §13 și
+„Ce am respins” (tăierea cu un clic pe bucată). **Documentul:** neschimbat (v20): cuțitul uneltei nu se salvează, iar rezultatul
+e din tipurile de azi. **Felia 10.3↑l** (panourile pe foi, §7), adăugată pe 17.11 la „1” al owner-ului: declanșatorul „vin
+planșele” din „Se redeschide dacă” s-a împlinit.
 
 **Problema.** Cuțitul de azi stă doar în panoul Taie: linia verticală X = …, cea orizontală Y = …, un ghidaj sau ultima formă
 aleasă, care trebuie desenată întâi cu altă unealtă și rămâne în desen. Nu se poate tăia cu o linie trasă direct pe pânză, la
@@ -94,19 +95,19 @@ de 3 mm, își ține mijlocul legat de foaie); nici face din tăietura dreaptă 
    și ele să se prindă; implicit 3 mm), iar spațiul de la §2 e jocul dintre ele. Pasul rămâne cel scris: dinții întregi stau la
    mijlocul tăieturii, iar ce rămâne se împarte egal la capete, cel puțin o jumătate de pas fiecare, ca niciun dinte să nu fie
    tăiat de marginea formei.
-7. **Taie în panouri** (un bloc nou al panoului Taie): formele alese (fără alegere, toate de pe foaie) se taie pe o grilă,
-   cu mărimea panoului L × Î sau cu numărul de panouri pe lățime × înălțime. Panourile sunt **egale** (implicit: cel mai mic
-   număr care încape, toate de aceeași mărime; firma de 2 400 × 1 000 pe 1 200 × 900 dă patru panouri de 1 200 × 500) sau
-   **din colț** (panouri pline de la colțul din stânga-jos, plus restul: două de 1 200 × 900 și două de 1 200 × 100).
-   Îmbinările dintre ele: drepte sau cu modelul de la §6, cu spațiul de la §2. Bucățile fiecărui panou devin un grup,
-   „Panoul 1”, „Panoul 2” … (rând cu rând, de jos), și stau unde erau; așezarea lor pe foi e a planșelor (etapa 11). Cel mult
-   100 de panouri.
+7. **Taie în panouri** (un bloc nou al panoului Taie): formele alese (fără alegere, toate de pe foaie) se taie pe o grilă, cu
+   mărimea panoului L × Î sau cu numărul de panouri pe lățime × înălțime. Panourile sunt **egale** (implicit: cel mai mic număr
+   care încape, toate de aceeași mărime; firma de 2 400 × 1 000 pe 1 200 × 900 dă patru panouri de 1 200 × 500) sau **din colț**
+   (panouri pline de la colțul din stânga-jos, plus restul: două de 1 200 × 900 și două de 1 200 × 100). Îmbinările dintre ele:
+   drepte sau cu modelul de la §6, cu spațiul de la §2. Bucățile fiecărui panou devin un grup, „Panoul 1”, „Panoul 2” … (rând cu
+   rând, de jos), și stau unde erau; așezarea lor pe foi e a planșelor (etapa 11; felia 10.3↑l: mărimea implicită încape pe
+   foaie, iar „Așază pe foi…” e în bloc). Cel mult 100 de panouri.
 8. **Refuzurile noi, cu motiv:** un cuțit de lungime zero; un clic de foarfecă sau de retezat care nu cade pe un contur; o
    îmbinare în care nu încape niciun dinte întreg; un spațiu care ar mânca o bucată întreagă (o fâșie mai îngustă decât el);
    un offset al cuțitului care se rupe în mai multe bucăți (o curbă prea strânsă pentru spațiul dat); panourile peste plafon.
-9. **Ce nu face:** nu unește căile (ADR 0124 §14); îmbinarea nu merge pe tăieturile curbe; nu așază panourile pe foi (etapa
-   11); nu împarte programul mașinii în bucăți (mutarea materialului sub mașină e altă discuție, a CAM-ului); nu schimbă schema
-   documentului.
+9. **Ce nu face:** nu unește căile (ADR 0124 §14); îmbinarea nu merge pe tăieturile curbe; nu așază singur panourile pe foi (le
+   așază dialogul „Așază pe foi”, deschis din bloc: felia 10.3↑l); nu împarte programul mașinii în bucăți (mutarea materialului
+   sub mașină e altă discuție, a CAM-ului); nu schimbă schema documentului.
 10. **Mărimea.** Pornirea crește doar cu butonul uneltei (iconița, tasta și eticheta, sub 0,5 kB); gestul, previzualizarea și
     bara uneltei vin în bucata tăierii, la prima alegere a cuțitului; calculul stă în worker. Linia a adăugat deja ~18,5 kB
     la total (peste ghidul de ~10 kB al liniei); feliile noi, estimat: f ~5, g ~3, h ~2, i ~2, j ~3, k ~2,5 kB, deci încă
@@ -123,6 +124,8 @@ Ordinea din întrebarea 1, varianta recomandată:
 - **10.3↑i:** spațiul și suprapunerea (§2).
 - **10.3↑j:** îmbinarea (§6).
 - **10.3↑k:** Taie în panouri (§7).
+- **10.3↑l** (adăugată pe 17.11, după planșe): panourile pe foi (§7): mărimea implicită care încape, avertismentul,
+  „Așază pe foi…” din bloc.
 
 Fiecare felie: proba scrisă întâi (valorile pe hârtie, oracolul independent, documentul de după trecut prin ușă), manualul în
 ambele limbi pentru fiecare buton, otrăvurile țintite în clona ramurii, porțile, publicarea pe canalul `taiere`; înaintea
@@ -291,6 +294,34 @@ primului commit de cod, `origin/main` unit în ramură.
   (blocul, grila pe pânză, textele), gruparea pe firul principal +0,4 (măsurate pe `c85cc18`). Prima variantă, cu gruparea în
   worker, dădea +9,1 kB.
 
+**Felia 10.3↑l, la cod** (17.11; panourile pe foi):
+- **Mărimea implicită a panoului** (`panouriPeFoaie.ts`, pur, pe firul principal): cât încape un panou pe foaie la „Așază pe
+  foi”, adică foaia fără marginile ținute ale așezării (`cncvs2.asezare`), fiecare cel puțin raza celei mai mari freze a
+  profilelor exterioare ale formelor de tăiat (altfel freza iese de pe foaie; așezarea nu verifică asta, deci locul poate fi mai
+  mic decât al ei), și fără ce iese o bucată peste linie pe ambele laturi: jumătate din înălțimea dinților (drumul stă între
+  −H/2 și +H/2), plus jumătate din suprapunere sau minus jumătate din spațiu, cel puțin 0. Pe o foaie de 1 200 × 900, cu
+  marginile 10: 1 180 × 880; cu dinții de 20, 1 160 × 860, deci firma de 2 400 × 1 000 iese în șase panouri de 800 × 500, nu în
+  patru de 1 200 × 500, care n-ar încăpea. Mărimea urmează opțiunile până scrie omul alta; „Cât încape pe foaie: L × Î” o pune
+  la loc. Exemplul de la §7 rămâne valabil, cu mărimea scrisă.
+- **Avertismentul:** dacă cel mai mare panou al grilei nu încape în loc (nici culcat, când așezarea ținută rotește), blocul o
+  spune înaintea tăierii, fără s-o oprească (panourile pot merge pe alte foi). Cel mai mare panou: pe fiecare axă, cea mai lată
+  fâșie, cu ieșirea pe laturile ei tăiate (marginea cutiei nu e tăiată); celula cu ambele maxime e în grilă, deci ea decide. E o
+  margine de sus, exactă pe o firmă plină (proba o măsoară cu oracolul: la dinții drepți, la 1e-9); unde celula nu e plină,
+  panoul iese mai mic.
+- **„Așază pe foi…” în bloc:** deschide dialogul așezării pe alegerea de acum; după tăiere, alese sunt panourile, deci un clic
+  le pune pe foi (cu marginile, distanța, ordinea și rotirea dialogului; panourile vin în ordinea lor). Tăierea și așezarea
+  rămân doi pași de anulare.
+- **Reparația lui 10.3↑k, dinții la încrucișări:** cu dinți drepți, o linie a grilei egale cădea pe flancul dintelui din mijloc
+  al tăieturii de pe cealaltă axă (pe o coardă de 1 000, cu pasul 100, dinții centrați au un flanc la 500), deci tăierea refuza
+  cu `pe-linie`; cu celelalte modele, tăietura a doua tăia dinții de la încrucișare (contrar §6: niciun dinte tăiat de marginea
+  formei). Acum `taie` primește `opriri` (punctele liniei prin care trec liniile celeilalte axe): coarda se împarte în ele, iar
+  dinții stau pe fiecare bucată, cu marginile lor drepte (cel puțin o jumătate de pas). La încrucișare, laturile sunt drepte (pe
+  firmă, cu pasul 100 și raza 3, în pătratul de 94 × 94 din jurul ei); pe o coardă de 1 000 tăiată la mijloc, dinții sunt 8, nu
+  9.
+- **Mărimea:** pornirea neschimbată (106,3 kB; cu ușa 110,3 / 115), totalul +0,7 kB (709,6 → 710,3 / 800), măsurat A/B în clonă,
+  pe `main` `4b52fc3` și pe ramură (`2fd63df`): blocul, modelul mărimii și textele, în bucata panoului Taie; reparația
+  opririlor, în worker.
+
 ## Proba
 
 - **Pe hârtie:** valorile de mai sus; foarfeca pe cercul R50 în (50, 0): o cale deschisă de 314,159 mm, cu capetele în
@@ -336,5 +367,5 @@ e cel scris.
 - owner-ul răspunde altfel la întrebări;
 - încercările pe desene reale cer altceva (ca la ADR 0180);
 - se discută unirea căilor (ADR 0124 §14): Retează ar putea închide ce rămâne;
-- vin planșele (etapa 11): panourile se așază pe foi;
+- vine imbricarea după contur (v2 a așezării, ADR 0210 §3): panourile cu dinți ar putea sta mai strâns decât după cutie;
 - trebuie îmbinarea și pe tăieturile curbe.

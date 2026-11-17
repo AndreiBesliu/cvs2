@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
+import { distantaMinima } from '../model/asezare.ts';
 import type { Document } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { grilaPanouri, type GrilaPanouri } from '../model/grilaPanouri.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { CererePanouri } from '../model/panouri.ts';
+import { celMaiMarePanou, incapePeFoaie, iesirePesteLinie, locPeFoaie, marimeImplicita } from '../model/panouriPeFoaie.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { optiuniTinute } from './asezareTinuta.ts';
 import { imbinareDin, intreDin, useOptiuniTaiere } from './optiuniTaiere.ts';
 
 /** Grila de arătat pe pânză (ADR 0181 §7): liniile ei, în cutia formelor. */
@@ -19,13 +22,19 @@ type Stare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text:
 const mm = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
 
 /**
- * Blocul „Taie în panouri” al panoului Taie (ADR 0181 §7, felia 10.3↑k): mărimea panoului (implicit, materialul foii) cu
- * panourile egale sau din colț, ori numărul lor pe lățime și pe înălțime; formele alese, sau, fără alegere, toate ale foii;
- * închiderea, spațiul și îmbinarea sunt opțiunile tăierii de deasupra. Cât lucrezi în bloc, pânza arată grila (`onActiv`, apoi
- * `onGrila`), iar sub câmpuri, câte panouri ies. Calculul e al workerului CAM, pe documentul din clipa clicului; tăierea și
- * gruparea panourilor se aplică prin acțiunea `document.taie`, într-un pas de anulare.
+ * Blocul „Taie în panouri” al panoului Taie (ADR 0181 §7, feliile 10.3↑k și 10.3↑l): mărimea panoului cu panourile egale sau
+ * din colț, ori numărul lor pe lățime și pe înălțime; formele alese, sau, fără alegere, toate ale foii; închiderea, spațiul și
+ * îmbinarea sunt opțiunile tăierii de deasupra. Cât lucrezi în bloc, pânza arată grila (`onActiv`, apoi `onGrila`), iar sub
+ * câmpuri, câte panouri ies. Calculul e al workerului CAM, pe documentul din clipa clicului; tăierea și gruparea panourilor se
+ * aplică prin acțiunea `document.taie`, într-un pas de anulare.
+ *
+ * **Pe foi (10.3↑l):** mărimea implicită e cât încape un panou pe foaie la „Așază pe foi” (foaia fără marginile ținute ale
+ * așezării, fiecare cel puțin raza frezei exterioare, și fără dinții, spațiul sau suprapunerea de pe ambele laturi;
+ * `panouriPeFoaie.ts`) și urmează opțiunile până scrii o mărime; butonul „Cât încape” o pune la loc. Un panou al grilei care
+ * n-ar încăpea (cu dinții; cum e sau, cu rotirea ținută a așezării, culcat) e spus înaintea tăierii. „Așază pe foi…” deschide
+ * dialogul pentru alegerea de acum: după tăiere, panourile.
  */
-export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, onGrila, onTaie }: {
+export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, onGrila, onTaie, onAseaza }: {
   readonly doc: Document;
   /** Foaia de lucru (planșele, etapa 11): formele, cutia și materialul ei. */
   readonly indexFoaie?: number;
@@ -35,12 +44,16 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
   readonly onActiv: () => void;
   readonly onGrila: (l: GrilaTaiere | null) => void;
   readonly onTaie: (t: TaiereCalculata) => RezultatActiune;
+  /** Deschide „Așază pe foi” pe alegerea de acum (lipsă: fără buton). */
+  readonly onAseaza?: () => void;
 }): ReactElement {
   const virgula = useLimba() === 'ro';
-  const stoc = doc.foi[indexFoaie]?.stoc;
+  const foaie = doc.foi[indexFoaie];
+  const stoc = foaie?.stoc;
   const [fel, setFel] = useState<'marime' | 'numar'>('marime');
-  const [textL, setTextL] = useState(() => (stoc ? mm(stoc.latime, virgula) : ''));
-  const [textI, setTextI] = useState(() => (stoc ? mm(stoc.inaltime, virgula) : ''));
+  // Mărimea scrisă de om; null: cea implicită (cât încape pe foaie), care urmează opțiunile.
+  const [textL, setTextL] = useState<string | null>(null);
+  const [textI, setTextI] = useState<string | null>(null);
   const [textC, setTextC] = useState('2');
   const [textR, setTextR] = useState('1');
   const [colt, setColt] = useState(false);
@@ -65,7 +78,16 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
     }
     return k;
   }, [doc, alese, indexFoaie]);
-  const L = citesteNumar(textL), I = citesteNumar(textI), C = citesteNumar(textC), R = citesteNumar(textR);
+  // Locul unui panou pe foaie, la „Așază pe foi” (marginile ținute, cel puțin raza frezei exterioare a formelor de tăiat), cât
+  // iese o bucată peste linie (dinții, spațiul, suprapunerea) și mărimea implicită; fără loc, materialul foii.
+  const tinute = optiuniTinute();
+  const freza = useMemo(() => (foaie ? distantaMinima(doc, alese, foaie.id) : 0), [doc, alese, foaie]);
+  const loc = stoc ? locPeFoaie(stoc, tinute, freza) : null;
+  const iesire = iesirePesteLinie(imbinareDin(optiuni, true), intreDin(optiuni));
+  const implicita = (loc ? marimeImplicita(loc, iesire) : null) ?? stoc ?? null;
+  const valL = textL ?? (implicita ? mm(implicita.latime, virgula) : '');
+  const valI = textI ?? (implicita ? mm(implicita.inaltime, virgula) : '');
+  const L = citesteNumar(valL), I = citesteNumar(valI), C = citesteNumar(textC), R = citesteNumar(textR);
   const g: GrilaPanouri | null = fel === 'marime' ? (L === null || I === null ? null : { fel, latime: L, inaltime: I, colt })
     : C === null || R === null ? null : { fel, coloane: C, randuri: R };
   const goala = !(cutie.minX <= cutie.maxX);
@@ -76,6 +98,9 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
     : grila === 'panouri' ? t('editare.taiere.motiv.panouri')
       : !xs ? t('editare.taiere.panouri.valoare')
         : c * r === 1 ? t('editare.taiere.panouri.unul') : null;
+  // Cel mai mare panou al grilei, cu ce iese peste linii: dacă n-ar încăpea pe foaie la „Așază pe foi”, blocul o spune.
+  const mare = xs && loc ? celMaiMarePanou(cutie, xs, ys, iesire) : null;
+  const iese = mare && loc && !incapePeFoaie(mare, loc, tinute.rotirea === '90') ? { mare, loc } : null;
   // Grila de pe pânză urmează liniile (cheia lor), cât blocul e cel activ.
   const cheie = xs ? `${cutie.minX},${cutie.minY},${cutie.maxX},${cutie.maxY}|${xs.join(',')}|${ys.join(',')}` : '';
   useEffect(() => { if (activ) onGrila(xs ? { axa: 'grila', cutie, xs, ys } : null); }, [activ, cheie]);
@@ -126,11 +151,21 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
         <span className="rand-taiere-lung">{t('editare.taiere.panouri.marime')}</span>
       </label>
       <div className="campuri-unghi">
-        {camp(textL, 'panouri-latime', 'editare.taiere.panouri.latime', setTextL, 'marime')}
+        {camp(valL, 'panouri-latime', 'editare.taiere.panouri.latime', setTextL, 'marime')}
         <span>×</span>
-        {camp(textI, 'panouri-inaltime', 'editare.taiere.panouri.inaltime', setTextI, 'marime')}
+        {camp(valI, 'panouri-inaltime', 'editare.taiere.panouri.inaltime', setTextI, 'marime')}
         <span>mm</span>
       </div>
+      {textL === null && textI === null ? (
+        <p className="stare-taiere" data-testid="panouri-implicit">{t('editare.taiere.panouri.implicit')}</p>
+      ) : implicita ? (
+        <div className="butoane-retea">
+          <button type="button" data-taiere="panouri-implicit" title={t('editare.taiere.panouri.implicit')}
+            onClick={() => { setTextL(null); setTextI(null); setFel('marime'); }}>
+            {t('editare.taiere.panouri.implicit.pune', { l: mm(implicita.latime, virgula), i: mm(implicita.inaltime, virgula) })}
+          </button>
+        </div>
+      ) : null}
       <div className="rand-optiuni-taiere panouri-colt" role="radiogroup" aria-label={t('editare.taiere.panouri.fel')}>
         <span>{t('editare.taiere.panouri.fel')}</span>
         {([false, true] as const).map((x) => (
@@ -157,8 +192,21 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
           })}
         </p>
       )}
+      {!motiv && iese ? (
+        <p className="motiv-retea" role="status" data-testid="panouri-iese">
+          {t('editare.taiere.panouri.iese', {
+            l: mm(iese.mare.latime, virgula), i: mm(iese.mare.inaltime, virgula), L: mm(iese.loc.latime, virgula), I: mm(iese.loc.inaltime, virgula),
+          })}
+        </p>
+      ) : null}
       <div className="butoane-retea">
         <button type="button" data-taiere="panouri-taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.panouri.taie')}</button>
+        {onAseaza ? (
+          <button type="button" data-taiere="panouri-aseaza" title={t('editare.taiere.panouri.aseaza.titlu')}
+            disabled={(foaie?.instante.length ?? 0) === 0 || stare?.fel === 'calcul'} onClick={onAseaza}>
+            {t('editare.taiere.panouri.aseaza')}
+          </button>
+        ) : null}
       </div>
       {stare ? (
         <p className={stare.fel === 'gata' && stare.rau ? 'motiv-retea' : 'stare-taiere'} role="status" data-testid="panouri-stare">

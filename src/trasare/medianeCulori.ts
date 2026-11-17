@@ -5,6 +5,10 @@
  * culorile (deci ponderată cu lungimea liniilor), ca o culoare plină să iasă „lată”. „Leagă peste alte culori”: două capete
  * ale aceleiași culori, față în față, aproape, cu drumul dintre ele pe desen și peste altă culoare, se leagă.
  *
+ * Rezultatul pe fiecare culoare (ADR 0228): cu `peLinii`, doar culorile alese pe linii mediane; celelalte bifate ies
+ * contururi, din aceeași trecere a nucleului culorilor (reducerea, o singură dată). Pragul automat vine atunci doar din
+ * culorile pe linii, iar legarea trece și peste culorile pe contururi.
+ *
  * Pură, fără importuri din aplicație (regula `trasare-izolat`); coordonatele, ca la trasare (pixeli, y în jos).
  */
 import { traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from './culori.ts';
@@ -18,6 +22,8 @@ export type OptiuniMedianeCulori = OptiuniMediana & {
 
 /** Piesa unei culori, cu grosimea obișnuită a trăsăturilor ei (px; 0 fără măsurători) și legăturile ei peste alte culori. */
 export type PiesaMediana = PiesaCuloare & { readonly grosime: number; readonly legaturi: number };
+/** O piesă pe culori (ADR 0228): contururile unei culori (ADR 0221), sau liniile ei mediane, cu grosimea și legăturile. */
+export type PiesaRezultat = PiesaCuloare | PiesaMediana;
 
 export type MedianeCulori = {
   /** Grosimea obișnuită a desenului întreg, în px (din ea, pragul automat al părților late). */
@@ -29,7 +35,7 @@ export type MedianeCulori = {
 
 export type RezultatCuloriMediane =
   | {
-    readonly ok: true; readonly piese: readonly PiesaMediana[]; readonly raport: RaportCulori & { readonly mediane: MedianeCulori };
+    readonly ok: true; readonly piese: readonly PiesaRezultat[]; readonly raport: RaportCulori & { readonly mediane: MedianeCulori };
     readonly etichete: Uint8Array;
     /** Contururile părților late ale tuturor culorilor, dacă s-au căutat: doar pentru semnalare. */
     readonly late?: CaiTrasate;
@@ -119,9 +125,14 @@ function muta(c: CaiTrasate, ox: number, oy: number): CaiTrasate {
   return c;
 }
 
-/** Linia mediană a fiecărei culori bifate (ADR 0227), cu opțiunile liniei mediane comune tuturor culorilor. */
-export function traseazaCuloriMediane(img: ImagineRGBA, oc: OptiuniCulori, om: OptiuniMedianeCulori): RezultatCuloriMediane {
-  const rc = traseazaCulori(img, { ...oc, doarEtichete: true });
+/**
+ * Linia mediană a fiecărei culori bifate (ADR 0227), cu opțiunile liniei mediane comune tuturor culorilor; cu `oc.peLinii`
+ * (ADR 0228), doar a celor alese, iar celelalte bifate, contururi. `cu.culori`: nucleul culorilor (în probe, spionat).
+ */
+export function traseazaCuloriMediane(img: ImagineRGBA, oc: OptiuniCulori, om: OptiuniMedianeCulori,
+  cu: { readonly culori?: typeof traseazaCulori } = {}): RezultatCuloriMediane {
+  // Reducerea culorilor, o singură dată: cu `peLinii`, și contururile culorilor rămase pe contururi; fără, doar etichetele.
+  const rc = (cu.culori ?? traseazaCulori)(img, oc.peLinii ? oc : { ...oc, doarEtichete: true });
   if (!rc.ok) return rc;
   const { latime: W, inaltime: H } = img, et = rc.etichete, paleta = rc.raport.paleta, M = 2;
   const fundal = paleta.find((c) => c.fundal)?.prima ?? -1;
@@ -129,8 +140,8 @@ export function traseazaCuloriMediane(img: ImagineRGBA, oc: OptiuniCulori, om: O
     const X = Math.floor(x), Y = Math.floor(y), e = X >= 0 && Y >= 0 && X < W && Y < H ? et[Y * W + X] ?? 255 : 255;
     return e === 255 || e === fundal ? -1 : e;
   };
-  // Cutia fiecărei culori bifate și aria ei (pixelii).
-  const cutii = paleta.flatMap((c, k) => (c.bifata ? [{ k, x0: W, y0: H, x1: -1, y1: -1, arie: 0 }] : []));
+  // Cutia fiecărei culori bifate pe linii mediane și aria ei (pixelii).
+  const cutii = paleta.flatMap((c, k) => (c.bifata && (oc.peLinii ? oc.peLinii[k] === true : true) ? [{ k, x0: W, y0: H, x1: -1, y1: -1, arie: 0 }] : []));
   const aCutiei = new Int16Array(256).fill(-1);
   for (const [i, c] of cutii.entries()) aCutiei[c.k] = i;
   for (let y = 0, p = 0; y < H; y++) {
@@ -163,8 +174,10 @@ export function traseazaCuloriMediane(img: ImagineRGBA, oc: OptiuniCulori, om: O
   const grosime = mediana(linii.flatMap((x) => x.L.latimi));
   const prag = om.pragLatPx ?? (grosime > 0 ? 2 * grosime : null);
   const cauta = (om.semnaleaza || om.late === 'contur') && prag !== null;
-  const piese: PiesaMediana[] = [], late: CaiTrasate[] = [];
-  let bucle = 0, jonctiuni = 0, puncte = 0, legaturi = 0, numar = 0, lata = 0, cerneala = 0, nCai = 0, varfuri = 0, abatere = 0;
+  // Piesele culorilor pe contururi întâi (cu numărătorile lor: căile, vârfurile, abaterea), apoi liniile.
+  const piese: PiesaRezultat[] = [...rc.piese], late: CaiTrasate[] = [];
+  let bucle = 0, jonctiuni = 0, puncte = 0, legaturi = 0, numar = 0, lata = 0, cerneala = 0;
+  let nCai = rc.raport.contururi, varfuri = rc.raport.varfuri, abatere = rc.raport.abatere;
   for (const { c, L } of linii) {
     const ox = c.x0 - M, oy = c.y0 - M;
     let leg = 0;
@@ -182,8 +195,9 @@ export function traseazaCuloriMediane(img: ImagineRGBA, oc: OptiuniCulori, om: O
     nCai += n; varfuri += r.cai.tip.length;
     piese.push({ culoare: c.k, hex: paleta[c.k]?.hex ?? '#000000', cai: muta(r.cai, ox, oy), grosime: r.raport.grosime, legaturi: leg });
   }
-  // Raportul culorilor, cu numărătorile liniilor mediane (căile, vârfurile, abaterea curbelor).
+  // Raportul culorilor, cu numărătorile tuturor pieselor (căile, vârfurile, abaterea curbelor); piesele, în ordinea paletei.
   const raport = { ...rc.raport, contururi: nCai, varfuri, abatere };
+  piese.sort((a, b) => a.culoare - b.culoare);
   if (nCai > PLAFON_TRASARE.contururi || varfuri > PLAFON_TRASARE.varfuri) return { ok: false, cod: 'prea-multe', raport };
   const mediane: MedianeCulori = {
     grosime, bucle, jonctiuni, puncte, legaturi,
