@@ -1769,6 +1769,12 @@ nav button[aria-pressed='true'] {
   color: var(--t-slab);
 }
 
+/* Cu urechi (felia 11.3↑b): sub distanța propusă, nota devine avertisment, cu culoarea avertismentelor. */
+.dialog .aseaza-minim.avertisment,
+.dialog .csv-nota.avertisment {
+  color: var(--a);
+}
+
 .dialog .aseaza-noi {
   margin: 0 0 var(--sp-2);
   font-size: var(--fs-2);

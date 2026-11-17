@@ -37,7 +37,7 @@ import {
   comandaDuplicareLegata, comenziCopii, comenziDesprinde, folosiri as folosiriPieselor, INCA_MAXIM, instantePiesei, planCopii,
 } from '../model/pieseLegate.ts';
 import { aplica } from '../geom/matrice.ts';
-import { comenziAsezare, distantaMinima, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { comenziAsezare, distantaPropusa, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
 import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
@@ -1389,7 +1389,8 @@ function comandaAsezare(ctx: ContextDocument): ComandaCopii {
 
 /**
  * „Mută și așază la capăt”: selecția, pe foaia țintă (null: una nouă), cu alegerile date sau cu cele ținute; omul n-a scris
- * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz).
+ * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz), iar cu
+ * urechi până la distanța propusă pentru ele (felia 11.3↑b).
  */
 function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
   const tinta = ctx.foaieTinta?.();
@@ -1398,7 +1399,7 @@ function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
   const din = foaieCtx(ctx, doc).id;
   if (tinta !== null && (tinta === din || !doc.foi.some((f) => f.id === tinta))) return { ok: false, motiv: 'motiv.aceeasi-foaie' };
   const o = ctx.asezare?.().optiuni ?? optiuniTinute();
-  const d = distantaMinima(doc, ctx.selectie(), din);
+  const d = distantaPropusa(doc, ctx.selectie(), din);
   return comandaPlan(doc, ctx.selectie(), din, { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) }, tinta);
 }
 
