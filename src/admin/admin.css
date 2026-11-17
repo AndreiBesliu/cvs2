@@ -1,6 +1,10 @@
-/* Pagina /admin (ADR 0040): aceleași tokenuri ca aplicația (`src/app/stil.css`), încărcate doar cu pagina. */
+/* Pagina /admin (ADR 0040): aceleași tokenuri ca aplicația (`src/app/stil.css`), încărcate doar cu pagina. Carcasa (ADR 0260
+   §1, felia A.1): antetul cu insigna, bara laterală grupată, conținutul; intrarea într-un card centrat. Culorile vin din
+   tokeni (și în tema întunecată); doar insigna TEST / LIVE are culoarea ei, cu text alb. */
 .admin {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--s-peste);
   color: var(--t);
 }
@@ -9,8 +13,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-3) var(--sp-5);
-  padding: var(--sp-3) var(--sp-5);
+  gap: var(--sp-2) var(--sp-3);
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-4);
   background: var(--s-panou);
   border-bottom: 1px solid var(--l-margine);
 }
@@ -20,27 +25,321 @@
   font-size: var(--fs-4);
 }
 
-.admin-cont {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3);
+.admin-marca rect {
+  fill: var(--a-plin);
+}
+
+.admin-marca path {
+  stroke: var(--t-pe-a);
+}
+
+.admin-insigna {
+  padding: 3px 10px;
+  border-radius: var(--r-1);
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: #4b525b;
+}
+
+.admin-insigna[data-insigna='test'] {
+  background: #1f5fbf;
+}
+
+.admin-insigna[data-insigna='live'] {
+  background: #b3261e;
+}
+
+.admin-instanta {
   font-size: var(--fs-2);
   color: var(--t-slab);
 }
 
+.admin-antet-spatiu {
+  flex: 1 1 0;
+}
+
 .admin-inapoi {
-  margin-left: auto;
   font-size: var(--fs-2);
   color: var(--a);
 }
 
-.admin-corp {
-  max-width: 1100px;
-  margin: 0 auto;
+.admin-limba {
+  display: flex;
+  gap: 2px;
+}
+
+/* Căutarea din antet: câmpul, iar sub el rezultatele, peste conținut. */
+.admin-cauta {
+  position: relative;
+}
+
+.admin-cauta input {
+  width: 280px;
+  max-width: 100%;
+  min-height: var(--tinta);
+  box-sizing: border-box;
+}
+
+.admin-cauta-rezultate {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  width: min(380px, 90vw);
+  max-height: 60vh;
+  overflow: auto;
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: 0 6px 20px rgb(20 24 29 / 0.16);
+}
+
+.admin-cauta-rezultate h3 {
+  margin: 0;
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-slab);
+}
+
+.admin-cauta-rezultate ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-cauta-rezultate a {
+  display: grid;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-1);
+  color: var(--t);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.admin-cauta-rezultate a:hover,
+.admin-cauta-rezultate a:focus-visible {
+  background: var(--s-ales);
+}
+
+.admin-cauta-rezultate p {
+  margin: 0;
+}
+
+/* Meniul contului: un meniu derulant sub buton. */
+.admin-meniu-cont {
+  position: relative;
+}
+
+.admin-meniu-cont > button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3) 0 var(--sp-1);
+  border-radius: 999px;
+}
+
+.admin-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--s-ales);
+}
+
+.admin-meniu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  min-width: 200px;
+  display: grid;
+  padding: var(--sp-1);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: 0 6px 20px rgb(20 24 29 / 0.16);
+}
+
+.admin-meniu > a,
+.admin-meniu > button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: var(--r-1);
+  background: none;
+  color: var(--t);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+}
+
+.admin-meniu > a:hover,
+.admin-meniu > button:hover {
+  background: var(--s-ales);
+}
+
+/* Intrarea, „fără rol”, eroarea rolului: un card centrat. Ca și conținutul carcasei, un `main` care nu ia lățimea ecranului
+   de eroare al aplicației (`main { max-width: 48rem }` din `stil.css`). */
+.admin-centru,
+.admin-continut {
+  max-width: none;
+  margin: 0;
+}
+
+.admin-centru {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5) var(--sp-4);
+}
+
+.admin-card {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
   padding: var(--sp-5);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+}
+
+.admin-card h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.admin-card p {
+  margin: 0;
+}
+
+.admin-card > .principal {
+  justify-self: stretch;
+}
+
+.admin-card a {
+  color: var(--a);
+}
+
+.admin-uid {
+  justify-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--s-peste);
+  border-radius: var(--r-1);
+}
+
+.admin-uid code {
+  flex: 1 1 auto;
+  font-family: var(--mono);
+  font-size: var(--fs-2);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* Carcasa: bara laterală și conținutul. */
+.admin-carcasa {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.admin-bara {
+  width: 210px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2);
+  box-sizing: border-box;
+  background: var(--s-panou);
+  border-right: 1px solid var(--l-margine);
+}
+
+.admin-bara-grup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-bara-titlu {
+  padding: 0 10px var(--sp-1);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.admin-bara a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tinta);
+  padding: 0 10px;
+  border-radius: var(--r-1);
+  color: var(--t);
+  text-decoration: none;
+}
+
+.admin-bara a:hover {
+  background: var(--s-peste);
+}
+
+.admin-bara a[aria-current='page'] {
+  background: var(--s-ales);
+  font-weight: 600;
+}
+
+.admin-bara-nume {
+  flex: 1 1 auto;
+}
+
+.admin-numar {
+  min-width: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--s-peste);
+  text-align: center;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-punct {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--a);
+}
+
+.admin-punct[data-punct='esec'] {
+  background: var(--rosu);
+}
+
+.admin-continut {
+  flex: 1 1 auto;
+  min-width: 0;
   display: grid;
   gap: var(--sp-4);
+  align-content: start;
+  padding: var(--sp-4) var(--sp-5);
 }
 
 .admin-mesaj,
@@ -59,43 +358,244 @@
   gap: var(--sp-2) var(--sp-3);
 }
 
-.admin-intrare,
-.admin-fara-rol {
+/* Stările unei file (ideea 76): rândurile schițate, lista goală, eroarea citirii. */
+.admin-schita {
   display: grid;
-  gap: var(--sp-3);
-  justify-items: start;
-  padding: var(--sp-5);
+  gap: var(--sp-2);
+  padding: var(--sp-4);
   background: var(--s-panou);
   border: 1px solid var(--l-margine);
   border-radius: var(--r-2);
 }
 
-.admin-fara-rol h2 {
+.admin-schita > span {
+  height: 12px;
+  width: 70%;
+  border-radius: 6px;
+  background: var(--s-peste);
+}
+
+.admin-schita > span:nth-child(2) {
+  width: 50%;
+}
+
+.admin-schita > span:nth-child(3) {
+  width: 60%;
+}
+
+.admin-schita > p {
+  margin: 0;
+  font-size: var(--fs-2);
+}
+
+.admin-gol {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-4);
+  background: var(--s-panou);
+  border: 1px dashed var(--l-margine);
+  border-radius: var(--r-2);
+  text-align: center;
+}
+
+.admin-semn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--traseu-taiere);
+  background: color-mix(in oklab, var(--traseu-taiere) 14%, var(--s-panou));
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.admin-semn[data-semn='atentie'] {
+  color: var(--a);
+  background: var(--s-atentie);
+}
+
+.admin-eroare-citire {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  color: var(--rosu);
+  background: var(--s-rosu);
+  border: 1px solid color-mix(in oklab, var(--rosu) 35%, var(--s-panou));
+  border-radius: var(--r-2);
+}
+
+[data-gasit-aici] {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 2px;
+}
+
+/* Fila Azi. */
+.azi {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.azi-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.azi-cap h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.azi-cap button {
+  margin-left: auto;
+}
+
+.azi-cifre {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--sp-3);
+}
+
+.azi-cartela {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  height: 100%;
+  box-sizing: border-box;
+  padding: 14px var(--sp-4);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  color: var(--t);
+  text-decoration: none;
+}
+
+.azi-cartela:hover,
+.azi-rand:is(a):hover {
+  border-color: var(--a);
+}
+
+.azi-cartela strong {
+  font-size: 1.875rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.azi-cartela .admin-eroare {
+  font-size: var(--fs-1);
+  overflow-wrap: anywhere;
+}
+
+.azi-coloane {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.azi-sectiune {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.azi-sectiune h3 {
   margin: 0;
   font-size: var(--fs-4);
 }
 
-.admin-uid code {
-  font-family: var(--mono);
-  font-size: var(--fs-3);
-  padding: var(--sp-1) var(--sp-2);
-  background: var(--s-peste);
-  border-radius: var(--r-1);
-  user-select: all;
+.azi-sectiune-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
 }
 
-.admin-file {
+.azi-sectiune-cap a {
+  font-size: var(--fs-2);
+  color: var(--a);
+}
+
+.azi-randuri {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.azi-rand {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-1) var(--sp-2);
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  min-height: var(--tinta);
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--l-margine);
+  color: var(--t);
+  text-decoration: none;
 }
 
-.admin-file button[aria-selected='true'] {
-  background: var(--s-ales);
+.azi-randuri > li:last-child > .azi-rand {
+  border-bottom: 0;
+}
+
+.azi-rand-text {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* „Ce așteaptă de la tine”: rândurile roadmap-ului pot fi paragrafe; aici, cel mult două rânduri (întregul, la Roadmap). */
+.azi-sectiune[data-azi='asteapta'] .azi-rand-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.azi-ora {
+  flex: 0 0 auto;
+  min-width: 6.5rem;
+  color: var(--t-slab);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-cip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: var(--fs-1);
   font-weight: 600;
+  white-space: nowrap;
+  color: var(--t-slab);
+  background: var(--s-peste);
 }
 
+.admin-cip[data-stare='bine'] {
+  color: var(--traseu-taiere);
+  background: color-mix(in oklab, var(--traseu-taiere) 14%, var(--s-panou));
+}
+
+.admin-cip[data-stare='atentie'] {
+  color: var(--a);
+  background: var(--s-atentie);
+}
+
+.admin-cip[data-stare='esec'] {
+  color: var(--rosu);
+  background: var(--s-rosu);
+}
+
+/* Filele de până acum (Erori, Diagnoză). */
 .admin-grupuri,
 .admin-verificari {
   list-style: none;
@@ -209,9 +709,38 @@
   color: var(--rosu);
 }
 
+/* Sub 640 px rămâne o singură regulă până la felia telefonului (A.7): bara trece deasupra, pe un rând care derulează. */
 @media (max-width: 640px) {
-  .admin-corp {
+  .admin-carcasa {
+    flex-direction: column;
+  }
+
+  .admin-bara {
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--l-margine);
+  }
+
+  .admin-bara-grup {
+    flex-direction: row;
+  }
+
+  .admin-bara-titlu {
+    display: none;
+  }
+
+  .admin-bara a {
+    white-space: nowrap;
+  }
+
+  .admin-continut {
     padding: var(--sp-4);
+  }
+
+  .admin-cauta input {
+    width: 100%;
   }
 
   .admin-verificari li {

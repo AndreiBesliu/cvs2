@@ -41,6 +41,8 @@ export interface Tichet {
   readonly raspunsuri: readonly RaspunsAdmin[];
   /** Versiunea documentului, trimisă înapoi la răspuns și la stare; null = necunoscută (nicio cerere nu pleacă). */
   readonly versiune: number | null;
+  /** Când s-a rezolvat (redeschiderea îl scoate); lista goală spune ultima rezolvare (ADR 0260, ideea 76). */
+  readonly rezolvatLa: Date | null;
 }
 
 type Date_ = Readonly<Record<string, unknown>>;
@@ -69,6 +71,7 @@ export function tichetDin(id: string, d: Date_): Tichet {
       return { deEmail: textSauNull(o['deEmail']), text: text(o['text']), la: dataDin(o['la']) };
     }),
     versiune: typeof v === 'number' && Number.isSafeInteger(v) && v >= 1 ? v : null,
+    rezolvatLa: dataDin(d['rezolvatLa']),
   };
 }
 

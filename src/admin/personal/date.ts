@@ -70,7 +70,7 @@ export function numeRol(rol: string | null, roluri: readonly RolCustom[]): strin
  * (scrierea sau citirea tuturor, ADR 0107), Utilizatori (citirea sau administrarea conturilor, ADR 0116), Personal și
  * Setări (doar owner-ul), Cont (oricine).
  */
-const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
+const CERE: Readonly<Record<Exclude<Fila, 'azi'>, readonly Permisiune[] | 'owner' | null>> = {
   erori: ['erori.citeste'],
   diagnoza: ['diagnoza.citeste'],
   roadmap: ['documentatie.citeste'],
@@ -83,9 +83,12 @@ const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
   cont: null,
 };
 
-/** Pură: filele pe care le vede omul, în ordinea paginii. */
+/**
+ * Pură: filele pe care le vede omul, în ordinea paginii. Fila Azi (ADR 0260) nu e aici: ea doar adună cifrele acestor
+ * file, deci apare în bară după părțile ei (`fileBarei` din `carcasa/date.ts`).
+ */
 export function fileVizibile(owner: boolean, permisiuni: ReadonlySet<Permisiune>): Fila[] {
-  return FILE.filter((f) => {
+  return FILE.filter((f): f is Exclude<Fila, 'azi'> => f !== 'azi').filter((f) => {
     const c = CERE[f];
     return c === null || (c === 'owner' ? owner : owner || c.some((p) => permisiuni.has(p)));
   });

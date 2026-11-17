@@ -57,7 +57,9 @@ async function intraCaOwner(page: Page): Promise<string> {
 }
 
 async function iesi(page: Page): Promise<void> {
-  await page.locator('.admin-cont button').click();
+  // Ieșirea stă în meniul contului (ADR 0260).
+  await page.locator('[data-admin="meniu-cont"]').click();
+  await page.locator('[data-admin="iesi"]').click();
   await expect(page.locator('[data-admin="intra"]')).toBeVisible();
 }
 
@@ -113,7 +115,7 @@ test('owner-ul: un rol din bife, o invitație, un cont cu parolă; omul își pu
   await page.locator('[data-admin="parola"]').fill('parola-lui-ion-1');
   await page.locator('[data-admin="intra-parola"]').click();
   await expect(page.locator('[data-admin="cont"]')).toContainText('ion@exemplu.ro · Suport');
-  expect(await file(page)).toEqual(['erori', 'roadmap', 'documentatie', 'cont']);
+  expect(await file(page)).toEqual(['azi', 'erori', 'roadmap', 'documentatie', 'cont']);
   await page.locator('[data-fila="cont"]').click();
   await expect(page.locator('[data-metoda="password"]')).toHaveAttribute('data-are', 'true');
   await expect(page.locator('[data-metoda="google.com"]')).toHaveAttribute('data-are', 'false');

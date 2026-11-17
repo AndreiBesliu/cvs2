@@ -55,7 +55,9 @@ test('fila Roadmap: etapele, etapa curentă, o felie cunoscută, feliile aduse, 
   const cereri: string[] = [];
   page.on('request', (r) => { if (r.url().includes('/documentatie/')) cereri.push(new URL(r.url()).pathname); });
   await intraCaOwner(page);
-  expect(cereri, 'nimic din documentație înaintea filei').toEqual([]);
+  // Pentru owner, fila Azi (ADR 0260) aduce doar roadmap-ul, pentru „Ce așteaptă de la tine”; restul documentației, nimic.
+  await expect(page.locator('[data-azi="asteapta"] [data-asteapta]').first()).toBeVisible();
+  expect(cereri, 'din documentație, înaintea filei, doar roadmap-ul filei Azi').toEqual(['/documentatie/roadmap.json']);
 
   await page.locator('[data-fila="roadmap"]').click();
   await expect(page.locator('.rm-etapa')).toHaveCount(33);
@@ -169,7 +171,7 @@ test('fila Documentație: ADR-ul din roadmap, linkul intern din index, codul car
   await page.locator('[data-fila="roadmap"]').click();
   await page.locator('[data-roadmap-etapa="3"] [data-felie="3.4a"] [data-adr="0041"]').click();
 
-  await expect(page.locator('[data-fila="documentatie"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-fila="documentatie"]')).toHaveAttribute('aria-current', 'page');
   const articol = page.locator('article[data-document="docs/adr/0041-backup-si-marcajele.md"]');
   await expect(articol.locator('h2').first()).toContainText('ADR 0041');
   await expect(page).toHaveURL(/#documentatie\/docs\/adr\/0041-backup-si-marcajele\.md$/);
