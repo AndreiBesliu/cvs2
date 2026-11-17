@@ -16,6 +16,7 @@ import {
 } from '../trasare/foaia.ts';
 import { MEDIANA_SIMPLA, traseazaMediana, type OptiuniMediana, type RaportMediana } from '../trasare/mediana.ts';
 import { traseazaCuloriMediane, type MedianeCulori } from '../trasare/medianeCulori.ts';
+import { decodeazaTiff } from '../trasare/tiff.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
 
@@ -43,6 +44,8 @@ export type CerereTrasare = {
   /** DPI-ul citit din fișier (pe x), sau null. */
   readonly dpi: number | null;
   readonly maxPixeli?: number;
+  /** Pagina unui TIFF cu mai multe (ADR 0229), de la 1; lipsă: prima. */
+  readonly pagina?: number;
   /**
    * Trasarea pe culori (ADR 0221): numărul, legăturile, bifele și rezultatul fiecărei culori (ADR 0228: „ca” e al lui
    * `rezultat`; lipsă sau null: toate „ca”); lipsă sau null: alb-negru, după `optiuni`.
@@ -111,6 +114,8 @@ type Scara = {
   readonly zona: ZonaTrasare | null;
   /** Foaia din poză (ADR 0225), sau null: negăsită și neîndreptată (ori o imagine cu transparență). */
   readonly foaie: FoaieTrasata | null;
+  /** Câte pagini are un TIFF (ADR 0229); lipsă la celelalte imagini. */
+  readonly pagini?: number;
 };
 
 export type RaspunsTrasare =
@@ -129,7 +134,9 @@ export type RaspunsTrasare =
     readonly late?: CaiTrasate;
   })
   | (Scara & { readonly ok: false; readonly fel: 'mediane'; readonly cod: 'prea-multe'; readonly raport: RaportMediana })
-  | { readonly ok: false; readonly cod: 'citire'; readonly detaliu: string };
+  | { readonly ok: false; readonly cod: 'citire'; readonly detaliu: string }
+  /** Un TIFF pe care cititorul propriu nu-l știe (`nesprijinit`, cu numele) sau nu-l poate citi (`stricat`), ADR 0229. */
+  | { readonly ok: false; readonly cod: 'tiff'; readonly motiv: 'stricat' | 'nesprijinit'; readonly detaliu: string; readonly pagini?: number };
 
 /** Etichetele imaginii, reduse prin cel mai apropiat pixel sub `PIXELI_POSTER` (aceleași, dacă încap). */
 export function posterizeaza(et: Uint8Array, W: number, H: number, max = PIXELI_POSTER): Posterizare {
@@ -254,12 +261,23 @@ export function ariePx(dMm: number, mmPePx: number): number {
 }
 
 export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: RaspunsTrasare; transfer: ArrayBuffer[] }> {
-  let img: ImagineRGBA, redusDin: Scara['redusDin'] = null;
+  let img: ImagineRGBA, redusDin: Scara['redusDin'] = null, dpiFisier = c.dpi, pagini: number | null = null;
   if (c.imagine instanceof Blob) {
-    try {
-      ({ img, redusDin } = await decodeaza(c.imagine, c.maxPixeli ?? PIXELI_MAXIM));
-    } catch (e) {
-      return { raspuns: { ok: false, cod: 'citire', detaliu: e instanceof Error ? e.message : String(e) }, transfer: [] };
+    // TIFF (ADR 0229): browserul nu-l decodează; îl citește cititorul propriu, cu pagina aleasă și DPI-ul paginii.
+    const antet = new Uint8Array(await c.imagine.slice(0, 4).arrayBuffer());
+    if ((antet[0] === 0x49 && antet[1] === 0x49 && antet[2] === 42 && antet[3] === 0) || (antet[0] === 0x4d && antet[1] === 0x4d && antet[2] === 0 && antet[3] === 42)) {
+      const t = await decodeazaTiff(new Uint8Array(await c.imagine.arrayBuffer()), { pagina: c.pagina ?? 1, maxPixeli: c.maxPixeli ?? PIXELI_MAXIM });
+      if (!t.ok) return { raspuns: { ok: false, cod: 'tiff', motiv: t.cod, detaliu: t.detaliu, ...(t.pagini ? { pagini: t.pagini } : {}) }, transfer: [] };
+      img = t.img;
+      redusDin = t.latime !== img.latime || t.inaltime !== img.inaltime ? { latime: t.latime, inaltime: t.inaltime } : null;
+      dpiFisier = t.dpi ?? c.dpi;
+      pagini = t.pagini;
+    } else {
+      try {
+        ({ img, redusDin } = await decodeaza(c.imagine, c.maxPixeli ?? PIXELI_MAXIM));
+      } catch (e) {
+        return { raspuns: { ok: false, cod: 'citire', detaliu: e instanceof Error ? e.message : String(e) }, transfer: [] };
+      }
     }
   } else img = c.imagine;
   // Pixelii fișierului pe un pixel decodat (decodarea poate reduce imaginea); un pixel al foii îndreptate ține cât unul al pozei.
@@ -274,11 +292,11 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   if (zona) img = decupeaza(img, zona);
   // Scara: lățimea aleasă e a imaginii trasate (a zonei, dacă e una); fără ea, formatul foii îndreptate, apoi mărimea fizică
   // din DPI (a fișierului, nu a imaginii reduse), deci pixelul are aceeași mărime cu sau fără zonă.
-  const mmPePx = c.latimeMm !== null ? c.latimeMm / img.latime : mmFoaie ?? (25.4 / (c.dpi ?? DPI_PRESUPUS)) * pxFisier;
-  const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : c.dpi !== null ? 'fisier' : 'presupus';
+  const mmPePx = c.latimeMm !== null ? c.latimeMm / img.latime : mmFoaie ?? (25.4 / (dpiFisier ?? DPI_PRESUPUS)) * pxFisier;
+  const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
   const dpi = (25.4 * pxFisier) / mmPePx;
   const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
-  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie } as const;
+  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, ...(pagini !== null ? { pagini } : {}) } as const;
   const pz = foaie?.previzualizare?.date, deFoaie = pz instanceof Uint8ClampedArray ? [pz] : [];
   const m = c.mediane;
   const om: OptiuniMediana = m

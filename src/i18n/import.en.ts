@@ -312,7 +312,8 @@ export const enImport = {
   'import.trasare.foaie-nu-pare': 'The proportions in the photo ({p}) do not match {format} ({f}): check the paper size or the corners.',
   'import.trasare.foaie-nesigure': 'The proportions in the photo are uncertain (between {min} and {max}): choose the paper size, if you know it.',
   'import.trasare.sugestie-foaie': 'This looks like a sheet photographed at an angle: tick “Straighten the sheet” to straighten it and give it its true size.',
-  'import.imagine.tiff': 'TIFF images are not read yet: save the image as PNG and import that.',
+  'import.imagine.tiff': 'The TIFF has something the import does not read yet ({ce}): save the image as PNG and import that.',
+  'import.imagine.tiff-stricat': 'The TIFF looks damaged ({ce}): open it in another program, save it as PNG and import that.',
   'import.imagine.citire': 'The browser cannot read this image (a damaged file, or a format it does not know).',
   'import.imagine.prea-multe': {
     one: 'The tracing gives {n} outline, over the limit of 20,000: raise “Ignore specks under” or move the threshold.',

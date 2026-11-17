@@ -23,7 +23,7 @@ const REFUZ: Readonly<Record<Exclude<CodRefuzImport, 'prea-multe'>, CheieSimpla>
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
-  tiff: 'import.imagine.tiff', 'imagine-citire': 'import.imagine.citire', 'imagine-timp': 'import.imagine.timp',
+  tiff: 'import.imagine.tiff', 'tiff-stricat': 'import.imagine.tiff-stricat', 'imagine-citire': 'import.imagine.citire', 'imagine-timp': 'import.imagine.timp',
   anulat: 'import.imagine.anulat',
 };
 
@@ -157,6 +157,8 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'gol' && format === 'imagine') return t(puncte > 0 ? 'import.imagine.gol-mediane' : culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');
   if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
+  // TIFF (ADR 0229): ce nu știe cititorul (compresia, felul) sau de ce e stricat, cu numele tehnic.
+  if (cod === 'tiff' || cod === 'tiff-stricat') return t(REFUZ[cod], { ce: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
   if (cod === 'control' || cod === 'operator' || cod === 'imagine') return t(REFUZ[cod], { operator: detaliu ?? '?' });
@@ -231,8 +233,10 @@ export function DialogImport({
     return () => { document.removeEventListener('keydown', tasta); };
   }, []);
   const ok = stare !== 'citire' && stare.ok ? stare : null;
-  // Paginile unui PDF citit până la lista lor (și refuzat după aceea): peste una, alegerea paginii.
-  const pagini = stare === 'citire' ? 0 : stare.ok ? (stare.format === 'pdf' ? stare.pagini : 0) : (stare.pagini ?? 0);
+  // Paginile unui PDF citit până la lista lor (și refuzat după aceea) sau ale unui TIFF (ADR 0229): peste una, alegerea.
+  const pagini = stare === 'citire' ? 0 : stare.ok
+    ? (stare.format === 'pdf' ? stare.pagini : stare.format === 'imagine' ? stare.trasare.pagini ?? 0 : 0)
+    : (stare.pagini ?? stare.trasare?.pagini ?? 0);
   // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
   const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
   return (

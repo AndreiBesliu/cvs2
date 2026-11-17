@@ -1,8 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { ariePx } from '../../src/jobs/calculTrasare.ts';
+import { decodeazaTiff } from '../../src/trasare/tiff.ts';
 import { traseaza } from '../../src/trasare/trasare.ts';
 import { citestePng } from '../unit/ajutor-png.ts';
+import { scrieTiff } from '../unit/ajutor-tiff.ts';
 import { documentSalvat } from './ajutor-document.ts';
 
 /**
@@ -240,4 +242,41 @@ test('o poză mare: cât trasează workerul, fila primește cadre; Inversează o
   expect(gol).toBeLessThan(0.6 * fereastra);
   expect(nou.oprit - nou.raspuns, 'workerul se oprește la răspuns').toBeLessThan(50);
   await expect(page.locator('[data-camp="trasare-inverseaza"]')).toBeChecked();
+});
+
+/** Nucleul, în Node, pe o pagină a unui TIFF din fixturi (cititorul propriu), cu curățarea implicită la DPI-ul paginii. */
+async function tiffInNode(nume: string, pagina: number): Promise<{ contururi: number; exterioare: number }> {
+  const t = await decodeazaTiff(new Uint8Array(readFileSync(`test/fixtures/trasare/tiff/${nume}.tif`)), { pagina });
+  if (!t.ok) throw new Error(`${nume}: ${t.detaliu}`);
+  const p = ariePx(0.3, 25.4 / (t.dpi ?? 96));
+  const r = traseaza(t.img, { ...IMPLICITE, petePx: p, gauriPx: p });
+  if (!r.ok) throw new Error(`${nume}: ${r.cod}`);
+  return { contururi: r.raport.contururi, exterioare: r.raport.exterioare };
+}
+
+test('TIFF (ADR 0229): o scanare G4 cu două pagini se trasează, cu DPI-ul ei; alegerea paginii; un TIFF cu JPEG, refuzat cu numele', async ({ page }) => {
+  const p1 = await tiffInNode('wic-pagini-g4', 1), p2 = await tiffInNode('wic-pagini-g4', 2);
+  expect(p1.contururi).not.toBe(p2.contururi);
+  const cai = (n: { contururi: number; exterioare: number }): string => `${n.exterioare} tăiate pe exterior, ${n.contururi - n.exterioare} pe interior`;
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/trasare/tiff/wic-pagini-g4.tif');
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('import-cai')).toContainText(cai(p1));
+  // Scara din fișier: 95,987 px pe țol (WIC), deci pixelul 0,265 mm.
+  await expect(page.getByTestId('trasare-scara')).toContainText('px pe țol, din fișier');
+  await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 240 × 160 px');
+  // Două pagini: alegerea paginii, ca la PDF; a doua e alt desen.
+  const pagina = page.locator('[data-camp="pagina"]');
+  await expect(pagina.locator('option')).toHaveCount(2);
+  await pagina.selectOption('2');
+  await expect(page.getByTestId('import-cai')).toContainText(cai(p2));
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 1);
+  expect(doc.split('"tip":"element"').length - 1).toBe(p2.contururi);
+  // JPEG în TIFF: refuzat, cu numele compresiei.
+  const jpeg = scrieTiff([{ etichete: [[256, 4, [8]], [257, 4, [8]], [258, 3, [8]], [259, 3, [7]], [262, 3, [1]], [278, 4, [8]]], bucati: [Uint8Array.of(0xff, 0xd8)] }]);
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'foto.tif', mimeType: 'image/tiff', buffer: Buffer.from(jpeg) });
+  await expect(page.getByRole('dialog')).toContainText('Compression=7 (JPEG)');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

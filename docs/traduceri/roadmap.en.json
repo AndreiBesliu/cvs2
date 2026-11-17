@@ -2049,6 +2049,10 @@
       "ro": "Încadrarea textului în casetă",
       "en": "Fitting the text into a box"
     },
+    "a1f385a075b137e9": {
+      "ro": "Imaginile TIFF",
+      "en": "TIFF images"
+    },
     "a2eb10f6627825ef": {
       "ro": "Proba plăcii pe K1C, feliată în cvs2 (ADR 0191; 3.6j–3.6r unite în `main` și publicate pe 09.11, pe adresa principală de test: <https://cncvectorstudio-test.web.app/>): în Proiectare, un dreptunghi de 40 × 20 mm, cu un cerc de 10 mm și o fantă de 12 × 2 mm (un dreptunghi cu colțurile de 1 mm) în el; în fereastra Imprimanta, **Din desen…**, înălțimea 3 mm, PLA, 0,20 Standard, apoi **Trimite la imprimantă** și pornirea. Cu șublerul: 40,0 și 20,0 (±0,2), 3,0 (±0,1), gaura puțin sub 10; primul strat lipit, pereții și fața de sus închise; pe ecranul imprimantei, miniatura și „stratul x din 15”. Dacă e la îndemână, și un cub de calibrare feliat în Creality Print, ca referință",
       "en": "The test plate on the K1C, sliced in cvs2 (ADR 0191; 3.6j–3.6r merged into `main` and published on 09.11, on the main test address: <https://cncvectorstudio-test.web.app/>): in Design, a 40 × 20 mm rectangle with a 10 mm circle and a 12 × 2 mm slot (a rectangle with 1 mm corners) inside it; in the Printer window, **From drawing…**, height 3 mm, PLA, 0.20 Standard, then **Send to the printer** and start. With the caliper: 40.0 and 20.0 (±0.2), 3.0 (±0.1), the hole slightly under 10; the first layer stuck, the walls and the top face closed; on the printer screen, the thumbnail and “layer x of 15”. If at hand, also a calibration cube sliced in Creality Print, as a reference"

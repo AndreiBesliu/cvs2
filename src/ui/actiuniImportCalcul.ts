@@ -11,7 +11,7 @@ import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
 import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
 import { REZOLUTIE } from '../geom/toleranta.ts';
 import { praf, preaDeparte } from '../io/caleImport.ts';
-import { dpiImagine, felImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
+import { dpiImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
 import { trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
 import type { CerereTrasare, RaspunsTrasare } from '../jobs/calculTrasare.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
@@ -124,14 +124,14 @@ export function previzualizareWmf(f: FisierImport, unitate?: UnitateWmf): Previz
  * refuzat (`tip`).
  */
 /** Raportul imaginii din răspunsul workerului: pixelii, scara și ce a făcut trasarea (pe culori, și paleta, ADR 0221). */
-function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportImagine {
+function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' } | { cod: 'tiff' }>): RaportImagine {
   const t = r.raport;
   const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
     intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
-    lumina: r.raport.lumina, inegala: r.raport.inegala,
+    lumina: r.raport.lumina, inegala: r.raport.inegala, ...(r.pagini !== undefined ? { pagini: r.pagini } : {}),
   } as const;
   if (r.fel === 'culori') {
     // Cu liniile mediane (ADR 0227): grosimea fiecărei culori, în pastila ei, și raportul lor.
@@ -250,15 +250,14 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
 
 /**
  * Previzualizarea unei imagini (ADR 0220): trasarea în workerul ei, cu alegerile din fereastră, apoi aceeași piesă ca la
- * SVG. TIFF-ul se refuză deocamdată (răspunsul 5a); o imagine pe care browserul n-o decodează, prea multe contururi sau
- * trasarea peste termen, la fel, cu motivul lor. `semnal`: al citirii (o citire nouă, Renunță sau Escape o opresc, cu
- * workerul ei, din mijlocul calculului).
+ * SVG. Un TIFF îl citește cititorul propriu (ADR 0229), cu `pagina` aleasă; un TIFF cu ce nu știe încă, unul stricat, o
+ * imagine pe care browserul n-o decodează, prea multe contururi sau trasarea peste termen se refuză, cu motivul lor.
+ * `semnal`: al citirii (o citire nouă, Renunță sau Escape o opresc, cu workerul ei, din mijlocul calculului).
  */
-export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal): Promise<PrevizualizareImport> {
-  if (felImagine(f.octeti) === 'tiff' || (/\.tiff?$/i.test(f.nume) && !felImagine(f.octeti))) return { ok: false, cod: 'tiff', format: 'imagine' };
+export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal, pagina?: number): Promise<PrevizualizareImport> {
   let r: RaspunsTrasare;
   try {
-    r = await trasareInBazin(cerereTrasare(f, t ?? TRASARE_IMPLICITA), semnal ? { semnal } : {});
+    r = await trasareInBazin(cerereTrasare(f, t ?? TRASARE_IMPLICITA, pagina), semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
     if (e instanceof TrasareCazuta) return { ok: false, cod: 'imagine-timp', format: 'imagine', detaliu: e.message };
@@ -272,7 +271,7 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
  * scara, zona, culorile (cu felul fiecăreia, ADR 0228) sau liniile mediane, cu opțiunile lor cât măcar o culoare e pe linii,
  * și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate).
  */
-export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare {
+export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: number): CerereTrasare {
   const peCulori = a.sursa === 'culori';
   const peLinii = a.rezultat === 'mediane' || (peCulori && (a.culori.rezultate ?? []).includes('mediane'));
   return {
@@ -285,6 +284,7 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
     ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
     ...(peLinii ? { mediane: a.mediane } : {}),
     ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
+    ...(pagina !== undefined && pagina > 1 ? { pagina } : {}),
   };
 }
 
@@ -294,6 +294,9 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
  */
 export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): PrevizualizareImport {
   if (!r.ok && r.cod === 'citire') return { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: r.detaliu };
+  if (!r.ok && r.cod === 'tiff') {
+    return { ok: false, cod: r.motiv === 'stricat' ? 'tiff-stricat' : 'tiff', format: 'imagine', detaliu: r.detaliu, ...(r.pagini ? { pagini: r.pagini } : {}) };
+  }
   const trasare = raportImagine(r);
   if (!r.ok) return { ok: false, cod: 'prea-multe', format: 'imagine', detaliu: String(r.raport.contururi), trasare };
   if (r.fel === 'culori') return previzualizareCulori(f, r, trasare);
@@ -307,7 +310,7 @@ export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): Pr
 
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
   const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
-  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal);
+  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal, o.pagina);
   if (format === 'pdf' || format === 'eps') return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f) : previzualizarePdf(f, o.pagina);
   if (format === 'wmf') return previzualizareWmf(f, o.unitateWmf);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);

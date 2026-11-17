@@ -27,10 +27,11 @@ export type { FormatImport } from '../io/formatImport.ts';
 export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array };
 
 /**
- * Refuzurile ușii imaginilor (ADR 0220): TIFF-ul (deocamdată), o imagine pe care browserul n-o decodează, prea multe contururi
- * (plafonul, cu numărul lor), trasarea peste termen și una anulată de o previzualizare nouă.
+ * Refuzurile ușii imaginilor (ADR 0220): un TIFF cu ce cititorul propriu nu știe încă (`tiff`, cu numele) sau stricat
+ * (`tiff-stricat`, ADR 0229), o imagine pe care browserul n-o decodează, prea multe contururi (plafonul, cu numărul lor),
+ * trasarea peste termen și una anulată de o previzualizare nouă.
  */
-export type CodRefuzImagine = 'tiff' | 'imagine-citire' | 'prea-multe' | 'imagine-timp' | 'anulat';
+export type CodRefuzImagine = 'tiff' | 'tiff-stricat' | 'imagine-citire' | 'prea-multe' | 'imagine-timp' | 'anulat';
 
 /** Refuzurile celor șase uși. */
 export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf | CodRefuzImagine;
@@ -48,6 +49,8 @@ export type RaportImagine = {
   readonly intreg: { readonly latimePx: number; readonly inaltimePx: number };
   readonly zona: ZonaTrasare | null;
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
+  /** Câte pagini are un TIFF (ADR 0229: fereastra oferă alegerea alteia); lipsă la celelalte imagini. */
+  readonly pagini?: number;
   /** Mărimea imaginii pe foaie și a pixelului, în mm. */
   readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
   /**

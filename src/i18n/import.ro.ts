@@ -325,7 +325,8 @@ export const roImport = {
   'import.trasare.foaie-nu-pare': 'Proporțiile din poză ({p}) nu se potrivesc cu {format} ({f}): verifică formatul sau colțurile.',
   'import.trasare.foaie-nesigure': 'Proporțiile din poză sunt nesigure (între {min} și {max}): alege formatul, dacă îl știi.',
   'import.trasare.sugestie-foaie': 'Pare o foaie pozată oblic: bifează „Îndreaptă foaia” ca s-o îndrepți și să ia mărimea adevărată.',
-  'import.imagine.tiff': 'Imaginile TIFF nu se citesc încă: salvează imaginea ca PNG și importă-l pe acela.',
+  'import.imagine.tiff': 'TIFF-ul are ceva ce ușa nu citește încă ({ce}): salvează imaginea ca PNG și importă-l pe acela.',
+  'import.imagine.tiff-stricat': 'TIFF-ul pare stricat ({ce}): deschide-l în alt program, salvează-l ca PNG și importă-l pe acela.',
   'import.imagine.citire': 'Browserul nu poate citi imaginea (un fișier stricat sau un format pe care nu-l știe).',
   'import.imagine.prea-multe': {
     one: 'Trasarea dă {n} contur, peste plafonul de 20 000: mărește „Ignoră petele sub” sau mută pragul.',
