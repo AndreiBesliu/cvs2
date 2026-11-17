@@ -9651,6 +9651,9 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   foi”, „Mută și așază”, «Încă…», «Din CSV…»), fișa plăcii 11 (aplicația propune singură distanța 10), `CLAUDE.md`,
   `etapa-03.md` și traducerea rândului, `otravuri.md`.
 - **Porțile:** tsc ×3, importurile 20 / 0, traducerile 796 / 0, unitare 9 466 (9 458 trec, 0 căzute, 8 sărite), build-ul determinist (329 de fișiere identice; pornirea 106,6 kB, cu ușa 110,6 / 115, neschimbată față de `main` `e38ca72`; totalul 711,0 / 800, +0,2 kB). E2e-ul complet: 489 / 504 la prima rulare, cu 15 căderi din timp (paleta neapărută în 5 s, „ERR_ABORTED / frame was detached”); rulate apoi singure, 14 trec, iar `pwa.spec.ts:432` (progresul la prima vizită) cade și pe `main` `e38ca72`, alternat cu ramura: câte 2 din 9 rulări pe fiecare (procentul se mută între cele două citiri ale probei).
+- **`main` `ae5a13c`** (10.3↑l, 25.3↑e, 3.6t) unit în `abad0d6`; ciocnirea, doar în DEVLOG. Pe unire: tsc ×3, importurile,
+  traducerile 803 / 0, unitare 9 497 (9 489 trec, 0 căzute, 8 sărite), build-ul determinist (330 de fișiere identice;
+  pornirea 106,6 kB, cu ușa 110,6 / 115; totalul 716,9 / 800) și e2e-urile așezării, plăcuțelor și tăierii, 25 / 25.
 - **Canalul `plansele`**, republicat din vârful ramurii.
 
 **Completed:** 17.11, 20:36.
