@@ -15,6 +15,11 @@
  * - **conversia** („În dreptunghi”, cu mărimea 40 × 20): fără alegere, `impartita`; cu «Convertește piesa», piesa „s” se
  *   schimbă în locul ei (o dată, cu „s” și „i2” alese), deci toate cele patru; cu «Desprinde și convertește», doar „s” primește
  *   piesa ei, convertită, iar celelalte trei rămân pe piesa veche.
+ * - **la otrăvuri** (felia 10.3↑m): o formă pusă o dată, printre cele alese, nu e „cu surori”, iar de câte ori e pusă e cea mai
+ *   folosită; „i2” mutată la X = 300,7 se taie la fel ca „s” (amprenta, rotunjită la 1e-6, ocolește zgomotul scăderii); tăiată
+ *   doar „i2”, a doua aleasă, degruparea arată spre piesa desprinsă acum (alta decât pe documentul de calcul); conversia unui
+ *   șablon de plăcuțe, ca piesă, se sare, numărată; la «Desprinde și convertește», o a doua piesă cu surori, neschimbată (o cale
+ *   deschisă, la „În dreptunghi”), nu se desprinde.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -77,6 +82,12 @@ test('fără alegere: tăierea și conversia se refuză; alesele cu surori și d
   assert.deepEqual(aleseCuSurori(d, 'f1', ['s', 'nu-e']), ['s']);
   assert.equal(catePuse(d, 'f1', ['s']), 4);
   assert.equal(catePuse(d, 'f1', []), 0);
+  // „x”, pusă o dată, pe foaia 1 după „s” și „i2”: nu e cu surori, iar de câte ori e cea mai folosită (4), nu a ultimei (1).
+  const [f1] = d.foi;
+  assert.ok(f1);
+  const cuX: Document = { ...d, foi: [{ ...f1, instante: [...f1.instante, { id: 'x', piesa: 'x', x: 600, y: 0, rotire: 0 }] }, { ...(d.foi[1] as Document['foi'][number]), instante: (d.foi[1]?.instante ?? []).filter((i) => i.id !== 'x') }] };
+  assert.deepEqual(aleseCuSurori(cuX, 'f1', ['s', 'x']), ['s']);
+  assert.equal(catePuse(cuX, 'f1', ['s', 'x']), 4);
   assert.deepEqual(taie(d, cerere(['s'])), { ok: false, motiv: 'impartita' });
   assert.deepEqual(converteste(d, { fel: 'dreptunghi', alese: ['s'], toleranta: 0.1, marime: { latime: 40, inaltime: 20 } }), { ok: false, motiv: 'impartita' });
 });
@@ -124,6 +135,9 @@ test('«Taie piesa»: tăiate în locuri diferite ale piesei, `diferite`; la fel
   assert.ok(f1);
   const mutat: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300, 20)] }, ...d.foi.slice(1)] };
   assert.deepEqual(taie(mutat, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' })), { ok: false, motiv: 'diferite' });
+  // „i2” la X = 300,7: aceeași tăietură în desenul piesei, cu zgomotul scăderii (330,7 − 300,7) rotunjit.
+  const zecimal: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300.7, 0)] }, ...d.foi.slice(1)] };
+  assert.equal(ok(taie(zecimal, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' }))).degrupate.length, 2);
   // O plăcuță: o instanță a piesei (oriunde) are literele ei.
   const placuta: Document = { ...d, foi: [d.foi[0] as Document['foi'][number], { ...(d.foi[1] as Document['foi'][number]), instante: [{ ...inst('i3', 500, 50, 90), texte: {} }, ...(d.foi[1]?.instante.slice(1) ?? [])] }] };
   assert.deepEqual(taie(placuta, cerere(['s'], { surori: 'piesa' })), { ok: false, motiv: 'placute' });
@@ -146,6 +160,13 @@ test('«Desprinde și taie»: doar instanța tăiată primește piesa ei; celela
   aproape(cutie(dupa, 0, r.ids[0] ?? ''), [0, 0, 50, 100], '„s”, A');
   aproape(cutie(dupa, 0, r.ids[1] ?? ''), [50, 0, 100, 100], '„s”, B');
   assert.equal(f1.find((i) => i.id === 'i2')?.piesa, 's');
+  // Tăiată doar „i2”, a doua aleasă: pe documentul de calcul, piesa ei desprinsă e a doua nouă, acum e prima.
+  const r2 = ok(taie(d1, cerere(['s', 'i2'], { cutit: { fel: 'x', x: 350 } })));
+  assert.deepEqual(r2.degrupate.map((y) => y.instanta.id), ['i2']);
+  const x2 = desprindeSiTaie(d, 'f1', ['i2'], r2.degrupate);
+  assert.notEqual(r2.degrupate[0]?.piesa.id, x2.degrupate[0]?.piesa.id, 'piesa desprinsă acum are alt id decât pe documentul de calcul');
+  const dupa2 = aplicat(d, [...x2.comenzi, { tip: 'degrupeaza', foaie: 'f1', degrupate: x2.degrupate }]);
+  assert.equal(folosiri(dupa2).get('s'), 3, '„s”, „i3” și „i4”');
 });
 
 test('conversia: «Convertește piesa» schimbă piesa „s” în locul ei (o dată); «Desprinde și convertește», doar instanța aleasă', () => {
@@ -171,4 +192,25 @@ test('conversia: «Convertește piesa» schimbă piesa „s” în locul ei (o d
   const ks = cutie(dupa, 0, 's'), k2 = cutie(dupa, 0, 'i2');
   aproape(ks, [30, 40, 70, 60], '„s”, 40 × 20 în mijlocul ei');
   aproape(k2, [300, 0, 400, 100], '„i2”, neschimbată');
+  // Un șablon de plăcuțe (o instanță a piesei are literele ei), convertit ca piesă: sărit, numărat.
+  const placuta: Document = { ...d, foi: [d.foi[0] as Document['foi'][number], { ...(d.foi[1] as Document['foi'][number]), instante: [{ ...inst('i3', 500, 50, 90), texte: {} }, ...(d.foi[1]?.instante.slice(1) ?? [])] }] };
+  const pl = converteste(placuta, { ...c, alese: ['s'], surori: 'piesa' });
+  assert.ok(pl.ok);
+  assert.deepEqual([pl.piese.length, pl.sarite], [0, 1]);
+  // «Desprinde și convertește» cu o a doua piesă cu surori, neschimbată (o cale deschisă nu devine dreptunghi): ea rămâne legată.
+  const L = { tip: 'L' } as const;
+  const deschisa: FormaDoc = { tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: L }, { p: { x: 50, y: 0 }, s: L }, { p: { x: 50, y: 50 }, s: L }] };
+  const baza = docDin(stoc, { id: 's', forma: dreptunghi(100, 100), matrice: { ...ID, e: 0, f: 0 } }, { id: 'l', forma: deschisa, matrice: { ...ID, e: 0, f: 200 } });
+  const [fb] = baza.foi;
+  assert.ok(fb);
+  const dd: Document = { ...baza, foi: [{ ...fb, instante: [...fb.instante, inst('s2', 300, 0), { id: 'l2', piesa: 'l', x: 300, y: 200, rotire: 0 }] }] };
+  const dd1 = desprinse(dd, 'f1', ['s', 'l']);
+  const rr = converteste(dd1, { ...c, alese: ['s', 'l'] });
+  assert.ok(rr.ok);
+  assert.equal(rr.piese.length, 1, 'doar pătratul');
+  const xx = desprindeSiConverteste(dd, dd1, 'f1', ['s', 'l'], rr.piese);
+  const vechi2 = new Map(xx.doc.piese.map((q) => [q.id, q]));
+  const dupa2 = aplicat(dd, [...xx.comenzi, ...xx.piese.map((q): Comanda => ({ tip: 'inlocuieste-piesa', vechi: vechi2.get(q.id) as Document['piese'][number], nou: q }))]);
+  assert.equal(folosiri(dupa2).get('l'), 2, 'calea deschisă rămâne pusă de două ori');
+  assert.equal(folosiri(dupa2).get('s'), 1, 'doar „s2” pe piesa veche');
 });

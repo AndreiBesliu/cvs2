@@ -1,4 +1,4 @@
-import { CalculAnulat, conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
@@ -162,8 +162,8 @@ export async function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?:
 
 /**
  * Alegerea unei operații care ar schimba o piesă pusă de mai multe ori (felia 10.3↑m): instanțele alese cu surori ale foii, de
- * câte ori e pusă piesa lor și răspunsul (cel ținut, sau al benzii; null: omul a renunțat). `laIntrebare` spune panoului că
- * așteaptă răspunsul. Un semnal anulat între timp oprește calculul (`CalculAnulat`).
+ * câte ori e pusă piesa lor și răspunsul (cel ținut, sau al benzii; null: omul a renunțat, sau semnalul s-a anulat: cine a
+ * cerut calculul verifică oricum anularea înaintea rezultatului). `laIntrebare` spune panoului că așteaptă răspunsul.
  */
 async function surori(doc: Document, alese: readonly string[], indexFoaie: number, piesa: boolean, fel: 'taie' | 'converteste', semnal?: AbortSignal,
   laIntrebare?: () => void): Promise<{ readonly foaie: string; readonly ids: readonly string[]; readonly alegere: AlegereSurori | null }> {
@@ -171,7 +171,6 @@ async function surori(doc: Document, alese: readonly string[], indexFoaie: numbe
   const ids = aleseCuSurori(doc, foaie, alese);
   laIntrebare?.();
   const alegere = await cereAlegerea({ n: catePuse(doc, foaie, ids), piesa, fel }, semnal);
-  if (semnal?.aborted) throw new CalculAnulat();
   return { foaie, ids, alegere };
 }
 

@@ -65,13 +65,13 @@ o('W01', W, "  return { ...x, surori: { mod: 'desprinde', ids: s.ids.filter((id)
 o('W02', W, "  const s = await surori(doc, cerere.alese, indexFoaie, CUTITE_PIESA.has(cerere.cutit.fel), 'taie', semnal, laIntrebare);",
   "  const s = await surori(doc, cerere.alese, indexFoaie, true, 'taie', semnal, laIntrebare);", 'e2e', '«Taie piesa» oferită oriunde')
 o('W03', W, "  return x.ok ? { ...x, surori: { mod: 'desprinde', ids: s.ids } } : x;\n}", "  return x;\n}", 'e2e', 'panourile nu desprind alesele')
-o('W04', W, "  if (semnal?.aborted) throw new CalculAnulat();\n", "", 'e2e', 'o întrebare anulată continuă calculul')
 # Alegerea ținută.
 o('Q01', Q, "  if (t === 'desprinde' || (t === 'piesa' && i.piesa)) return Promise.resolve(t);", "  if (false) return Promise.resolve(t);", 'e2e',
   'alegerea ținută nu se folosește')
 o('Q02', Q, "  if (t === 'desprinde' || (t === 'piesa' && i.piesa)) return Promise.resolve(t);", "  if (t !== null) return Promise.resolve(t);", 'e2e',
   '„toată piesa” ținută se folosește și unde nu are sens')
-o('Q03', Q, "    if (a === null) stocare?.removeItem(CHEIE_SURORI);\n", "", 'e2e', '„întreabă” nu uită alegerea')
+o('Q03', Q, "    if (a === null) stocare?.removeItem(CHEIE_SURORI);\n    else stocare?.setItem(CHEIE_SURORI, a);",
+  "    if (a !== null) stocare?.setItem(CHEIE_SURORI, a);", 'e2e', '„întreabă” nu uită alegerea')
 o('Q04', Q, "  if (a !== null && tine) tineAlegerea(a);", "  if (a !== null && false) tineAlegerea(a);", 'e2e', '„Ține minte alegerea” nu ține')
 # Interfața.
 o('U01', E, "  useEffect(() => { raspundeSurori(null); }, [selectie]);\n", "", 'e2e', 'o altă alegere a formelor nu închide întrebarea')

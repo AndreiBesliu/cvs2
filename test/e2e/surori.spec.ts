@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
+import { dxf, linie, lwpolilinie } from '../unit/ajutor-dxf.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
 
 /**
@@ -13,6 +13,7 @@ import { ecran, vedere } from './ajutor-panza.ts';
  *   Anulează le pune la loc. Cu un pătrat de 40 pus de trei ori pe foaia 1 (la (100, 100), pe foaia de 1 000 × 600) și nimic ales,
  *   o linie peste primul, cu «Desprinde și taie», desprinde doar primul (al doilea rămâne „pusă de 2 ori”); „Taie în panouri”
  *   întreabă doar «Desprinde și taie», și cu „toată piesa” ținută în opțiuni; o altă alegere a formelor închide întrebarea;
+ *   Retează (depinde de vecini), pe un „#” pus de două ori, întreabă și el doar «Desprinde și taie»;
  * - **conversia:** poligonul pus de două ori: „În cerc” arată banda („Convertești o piesă pusă de 2 ori”); «Convertește piesa
  *   (toate cele 2)» o schimbă în locul ei (încă o conversie nu mai are ce face, deci nici întrebare); după Anulează, «Desprinde
  *   și convertește» dă instanței alese piesa ei („Pusă o singură dată”).
@@ -56,7 +57,7 @@ async function nimicAles(page: Page, la: La): Promise<void> {
   await expect(alese(page)).toHaveCount(0);
 }
 
-async function cutit(page: Page, fel: 'linie'): Promise<void> {
+async function cutit(page: Page, fel: 'linie' | 'reteaza'): Promise<void> {
   await page.locator('[data-unealta="cutit"]').click();
   await page.locator(`[data-cutit="${fel}"]`).click();
   await expect(page.locator(`[data-cutit="${fel}"]`)).toHaveAttribute('aria-pressed', 'true');
@@ -253,4 +254,27 @@ test('O piesă pusă de două ori: «Convertește piesa» o schimbă la toate; �
   await randuri(page).nth(0).click();
   await expect(page.getByTestId('prop-piesa').locator('[data-pusa]')).toHaveText('Pusă o singură dată.');
   expect(erori).toEqual([]);
+});
+
+test('Retează pe un „#” pus de două ori: banda întrebării, fără «Taie piesa» (retezatul depinde de vecini); Renunță', async ({ page }) => {
+  const DIEZ = [linie(0, 20, 100, 20), linie(0, 80, 100, 80), linie(20, 0, 20, 100), linie(80, 0, 80, 100)].join('');
+  await importa(page, DIEZ);
+  const proprietati = page.locator('[data-panou="proprietati"]');
+  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
+  await page.getByTestId('prop-piesa').locator('[data-buton="plus-unu"]').click();
+  await expect(page.getByTestId('prop-piesa').locator('[data-pusa]')).toContainText('Pusă de 2 ori');
+  await page.locator('[data-editare="lipire"]').click();
+  const la = await ecran(page, await vedere(page));
+  await nimicAles(page, la);
+  await cutit(page, 'reteaza');
+  const q = la(90, 20);
+  await page.mouse.move(q.x, q.y);
+  await expect(page.getByTestId('cutit')).toHaveAttribute('data-marcaj', '2');
+  await page.mouse.click(q.x, q.y);
+  const banda = page.getByTestId('intrebare-surori');
+  await expect(banda.locator('[data-surori="desprinde"]')).toHaveText('Desprinde și taie');
+  await expect(banda.locator('[data-surori="piesa"]')).toHaveCount(0);
+  await banda.locator('[data-surori="renunta"]').click();
+  await expect(page.getByTestId('cutit-sfat')).toHaveText('Nimic tăiat: ai renunțat la întrebare.');
+  await expect(randuri(page)).toHaveCount(1);
 });
