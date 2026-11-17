@@ -9285,3 +9285,36 @@ verificat în transcrierea ei). **Started:** 16.11 18:00. **Completed:** 16.11 1
   25.3↑c (`380c053`), unită în `3c3a4fa` (conflictul, doar în DEVLOG); porțile pe ce atinge ea: traducerile 782 / 0, importurile
   20 / 0, unit-urile trasării, importului, tăierii, acțiunilor și documentelor 511 / 511, build-ul determinist, e2e
   `trasare-culori`, `trasare-mediana`, `taiere` și `cutit` 41 / 41. Apoi aranjamentele 28.1↑a și planșele 11.6↑ (`5ab3941`), unite în `6d64b25` (conflictul, doar în DEVLOG); porțile pe ce ating ele: unit-urile aranjamentelor, raportului foilor, exportului, tăierii, acțiunilor și documentelor 399 / 399, build-ul determinist, e2e `aranjament`, `raport-foi`, `manual`, `ancore`, `editare`, `taiere` și `cutit` 66 / 66. Mărimea finală, mai sus.
+
+## 2026-11-16 — Felia 11.7↑: fișa plăcii 11, pregătită fără mașină (ADR 0210) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Ce pornesc după 11.6↑ în linia planșelor?”: „Fișa plăcii 11”. Reluată pe 17.11,
+după oprirea procesului peste noapte, la „neata! da drumul celorlalte worktrees” (de la owner, prin sesiunea principală).
+**Started:** 16.11, 19:41.
+
+- **Placa 11** (`docs/etape/placa-11.md`, `test/placi/placa-11/`): 25 de plăcuțe 80 × 30 cu nume, din `nume.csv` (UTF-8 cu
+  BOM, cu Ionuț și Ștefan), pe un șablon: rama, profil exterior cu freza plată Ø3,175 (T5), patru treceri de 3 mm, două urechi
+  de 6 × 2; numele, V-carve cu V90 Ø6 (T3), majuscula de 8 mm, centrat. Documentul e făcut pe drumul ferestrei «Din CSV…»
+  (`citesteCsv`, `surseImplicite`, `valoriRand`, `textePlacutei`, `comandaText` cu așezarea, `incarca`), iar exportul „Toate
+  foile”, cu `calculeazaExport`: o arhivă cu patru programe, câte unul pe foaie și pe freză. Fișa are amprentele, pașii
+  tăierii (T3, apoi T5, pe fiecare foaie), regimul și timpii estimați pe fișier: foaia 1, ≈ 1 h 25 min pe setările din fabrică
+  ale GRBL și ≈ 36 min pe o mașină tipică; foaia 2, ≈ 1 h și ≈ 26 min. Mai are cotele de măsurat (plăcuțele, 80 × 30; în
+  foaia rămasă, fâșiile dintre găuri, 3,65, și cele de la margini, 6,83 și 16,83 / 56,83) și ce devin ele.
+- **Găsit pe programele reale, înainte de fișă:** la distanța implicită de 5, ramele vecine (Ø3,175 pe dinafară, fiecare) scot
+  tot lemnul dintre plăcuțe. Urechile, la un sfert și la trei sferturi din drum, nu stau față în față, deci cele dinspre
+  vecini nu țin de nimic. Proba urechilor (rasterul fundului foii la 0,1 mm, tăiat de discul frezei pe segmentele coborâte la
+  toată grosimea, umplut din margine) găsește 9 din 15 plăcuțe căzute pe foaia 1 (rândurile 2–4) și 4 din 10 pe foaia 2; fără
+  urechi (controlul), toate. Placa folosește distanța 10 (3,65 mm de lemn între tăieturi) și foi de 300 × 220, ca 15 să încapă
+  tot pe o foaie: acum țin toate. Avertismentul în aplicație are trei variante (a, b, c), la owner (ADR 0210, la capăt).
+- **`nume.csv` cu LF:** regula `* text=auto eol=lf` din `.gitattributes` l-ar fi trecut din CRLF în LF la commit. E scris
+  direct cu LF, ca fișierul din repo să fie chiar cel citit de probe.
+- **Probele:** `placa11.test.ts`, pe hârtie, pe exportul proaspăt (5 probe), și `placa11.aur.test.ts`, octet cu octet
+  (2 probe). Otrăvurile `test/otravuri/11.7.py`, pe generator: 17 / 17 prinse la prima rulare (`ffc8b2c`, într-o clonă în
+  afara Drive-ului), iar martorul a scăpat.
+- **`main` `22ab3de`** (11.6↑ unită, 25.3↑c, 28.1↑a, 10.3↑k) a venit prin avans direct; fișierele de aur au aceiași octeți
+  pe el.
+- **Porțile:** tsc ×3, importurile 20 / 0, traducerile 788 / 0, unitare 9 421 / 0 (8 sărite; numărul fișelor de plăci din `documentatie.test.ts` urcă la 4), build-ul determinist (326 de fișiere identice; pornirea cu ușa 110,3 / 115, totalul 708,2 / 800, ale lui `main`). E2e-ul nu
+  l-am rulat: aplicația e exact cea din `main` `22ab3de`, iar felia adaugă doar probe, fișierele plăcii și documente.
+- **Canalul `plansele`**, republicat din vârful ramurii.
+
+**Completed:** 17.11, 09:56.

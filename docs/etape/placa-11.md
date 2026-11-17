@@ -66,7 +66,7 @@ Get-FileHash .\cncvs2-stanga-jos-foaia-1-1-T3.nc -Algorithm SHA256
 3. Foaia 2: la fel, pe a doua bucată, cu `cncvs2-stanga-jos-foaia-2-1-T3.nc`, apoi `cncvs2-stanga-jos-foaia-2-2-T5.nc`. Pe o
    singură bucată mare, mută zero-ul XY la colțul stânga-jos al zonei a doua, de exemplu la (320, 0).
 4. Fiecare ramă are două urechi de 6 × 2 mm, una pe latura de sus, una pe cea de jos, care țin plăcuța în foaie până la
-   capăt. Fă întâi măsurătorile din foaie (mai jos), apoi taie urechile cu un cutter și șlefuiește-le.
+   capăt. Uită-te întâi dacă vreo plăcuță s-a mișcat, apoi scoate-le tăind urechile cu un cutter și șlefuiește-le.
 
 Regimul e cel al plăcilor de până acum: axul la 18 000 rot/min, cu o pauză de 3 s după pornire; avansul 1 000 mm/min (pe
 mișcările în pantă ale V-carve-ului și pe urechi, mai mic), plonjarea 300 mm/min; Z sigur la 5 mm.
@@ -88,7 +88,7 @@ pornire până la oprirea axului, și trimite-mi timpii împreună cu răspunsul
 
 ## Ce măsori
 
-Întâi în foaie, cu plăcuțele încă ținute de urechi, apoi, după ce le scoți, pe plăcuțe și pe foaia rămasă:
+După ce scoți plăcuțele: pe ele și pe foaia rămasă, cu găurile lor (fâșiile se prind ușor cu fălcile șublerului, prin gaură):
 
 | Cota | Valoarea | Toleranța |
 |---|---:|---:|
