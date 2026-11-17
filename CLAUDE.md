@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
+  (v26; v25, cu gaura și câmpurile treptei incrustațiilor, ADR 0175, e în `main` din 17.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -1180,6 +1180,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **12.1↑f și 11.7↑ unite în `main`** (la „unește ce se poate”): gaura prin foaie a incrustațiilor, documentul
+  v25, cu câmpurile treptei refuzate cu motiv până la 12.1↑f-2 (`d2ef229`; supracursa nu e încă în fereastră, deci gaura
+  merge exact la grosimea foii); fișa plăcii 11, pregătită fără mașină (`b4d5641`, doar probe și documente; distanța 10,
+  fiindcă la 5 urechile nu țin), cu tăierea plăcii la owner. Un câmp nou al documentului ia de acum v26. Totalul 709,5 /
+  800, pornirea cu ușa 110,3 / 115.
 - 17.11.2026: **felia 25.3↑d a trasării unită în `main`** (pornită la „Yes, all three”, unită la „unește ce se poate”):
   punctele pierdute de linia mediană (un disc mic centrat pe un colț de pixel dispărea fără să fie numărat) sunt numărate și
   păstrate (`dd21a8a`, arborele lui `366baf9`). Porțile pe unire: unit 9 421 / 0, e2e 494 / 494, emulatoarele verzi la a
