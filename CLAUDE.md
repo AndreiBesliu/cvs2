@@ -1173,6 +1173,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **felia 25.3↑d a trasării unită în `main`** (pornită la „Yes, all three”, unită la „unește ce se poate”):
+  punctele pierdute de linia mediană (un disc mic centrat pe un colț de pixel dispărea fără să fie numărat) sunt numărate și
+  păstrate (`dd21a8a`, arborele lui `366baf9`). Porțile pe unire: unit 9 421 / 0, e2e 494 / 494, emulatoarele verzi la a
+  doua rulare (prima: limita de 10 s a emulatorului de funcții, sub încărcare); totalul 708,7 / 800, pornirea cu ușa 110,3 /
+  115.
 - 16.11.2026: **felia 10.3↑k a tăierii unită în `main`** (la „unește ce se poate”, după raportul liniei): tăierea în
   panouri, pe foaia activă (`c577549`, arborele lui `fc3a785`, cu `main` `5ab3941` adus în ramură). Porțile pe unire: unit 9
   414 / 0, e2e 494 / 494, emulatoarele verzi; totalul 708,2 / 800, pornirea cu ușa 110,3 / 115.
