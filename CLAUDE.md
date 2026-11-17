@@ -898,9 +898,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   curbelor), unită în `main` pe 16.11 (`380c053`). **25.3↑d (punctele pierdute, corectura ADR 0222) gata pe 16.11:** după
   linii, un pas pe bucățile de cerneală (`bucati` în `mediana.ts`): una mai scurtă decât grosimea ei e un punct, cu căile
   scoase; una mai lungă fără cale primește dreapta axei; cu capetele în vârf, dreapta de la un vârf la celălalt;
-  unită în `main` pe 17.11 (`dd21a8a`). **Totalul ramurii: 708,7 / 800 kB**, pornirea 106,3 / 115 (cu ușa 110,3).
-  **25.3↑e (rezultatul pe fiecare culoare: în pastila ei, contururi sau linii mediane; ADR 0228, propus pe 17.11)
-  așteaptă răspunsurile.**
+  unită în `main` pe 17.11 (`dd21a8a`). **25.3↑e (rezultatul pe fiecare culoare, ADR 0228) gata pe 17.11, cu toate
+  recomandările („Da, 1a–2a”), pe aceeași ramură, pe canalul `trasare`:** `traseazaCulori` cu `peLinii` (contururile
+  doar ale culorilor rămase pe contururi; fără ele, doar etichetele), chemat o singură dată de `traseazaCuloriMediane`
+  (liniile doar ale culorilor alese; legarea și peste contururi); în pastilă, sub „Se trasează”, lista „Rezultatul
+  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou). **Totalul ramurii: 709,1 / 800 kB**, pornirea 106,3 /
+  115 (cu ușa 110,3).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

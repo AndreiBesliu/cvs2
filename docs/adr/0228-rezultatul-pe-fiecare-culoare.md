@@ -1,9 +1,10 @@
 # ADR 0228 — Rezultatul pe fiecare culoare
 
-**Starea:** acceptat pe 17.11.2026, cu toate recomandările („Da, 1a–2a”, owner-ul, la întrebările de la final); propus
-pe 17.11, la cererea sesiunii principale („dacă vrei, pregătește propunerea, fără cod”), după unirea lui 25.3↑d în
-`main`. Felia 25.3↑e, lăsată de ADR 0227 („Rezultatul ales pe fiecare culoare … rămâne o felie a ei, dacă o vrei”),
-fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`, adusă la `origin/main`, `021dcc6`).
+**Starea:** acceptat pe 17.11.2026, cu toate recomandările („Da, 1a–2a”, owner-ul, la întrebările de la final), și
+implementat (felia 25.3↑e, 17.11; mai jos); propus pe 17.11, la cererea sesiunii principale („dacă vrei, pregătește
+propunerea, fără cod”), după unirea lui 25.3↑d în `main`. Felia 25.3↑e, lăsată de ADR 0227 („Rezultatul ales pe fiecare
+culoare … rămâne o felie a ei, dacă o vrei”), fără mașină, în linia trasării (worktree-ul `trasare`, ramura
+`wip/25.1-trasare`, adusă la `origin/main`, `021dcc6`).
 **Completează:** ADR 0221 (trasarea pe culori), ADR 0227 (liniile mediane pe culori).
 **Schița:** <https://claude.ai/artifact/DatxQZJuRxdiL32WAxVoh6> (desenul probelor, cu macheta pastilelor și cele trei
 alegeri gata; măsurătorile; întrebările, cu formularul).
@@ -31,7 +32,7 @@ asta, trasezi de două ori, cu alte bife, și ștergi ce nu-ți trebuie.
   - **timpul pe 12 Mpx:** reducerea culorilor 1,84 s, plasa contururilor încă ~0,4 s, liniile mediane încă ~0,7 s: cu
     reducerea o singură dată, ~3 s pentru amestec (rulate separat, fiecare cu reducerea ei, ~4,8 s).
 
-## Decizia (propusă)
+## Decizia (cu răspunsurile owner-ului: toate recomandările)
 
 1. **În fiecare pastilă** (o culoare bifată, cu cele legate de ea), o listă **Rezultatul culorii**: **Ca Rezultatul**
    (implicit), **Contururi** sau **Linii mediane**. „Rezultatul” de sus rămâne și dă felul culorilor lăsate „Ca
@@ -49,6 +50,49 @@ asta, trasezi de două ori, cu alte bife, și ștergi ce nu-ți trebuie.
 6. **Probele, scrise întâi:** desenul probelor cu amestecul de mai sus (piesele, căile, legăturile), fiecare culoare pe
    fiecare fel, reducerea o singură dată (spionată), culorile legate cu felul primei; ușa (felul fiecărei piese, laturile);
    e2e (lista din pastilă, „Ca Rezultatul”, Importă); otrăvurile la capăt.
+
+## Implementarea (17.11)
+
+**Ce s-a schimbat față de propunere:**
+
+1. **Contururile vin din aceeași trecere a nucleului culorilor**, nu din etichetele refolosite într-un al doilea apel:
+   `traseazaCulori` primește `peLinii` (culorile pe linii mediane, după indicele reducerii, la prima din lanț) și nu le
+   mai face contururile, iar curbele se potrivesc doar pe granițele culorilor rămase pe contururi; fără nicio culoare pe
+   contururi, se oprește după etichete (fără plasă). `traseazaCuloriMediane` îl cheamă o singură dată, cu `peLinii`,
+   apoi face liniile culorilor alese pe etichetele lui; piesele ies în ordinea paletei, iar numărătorile raportului
+   (căile, vârfurile, abaterea) și plafonul sunt ale tuturor.
+2. **Calculul primește felul fiecărei culori ca alegerile ei** (`culori.rezultate`, după indicele reducerii, ca bifele
+   și legăturile; în fereastră, `AlegeriCulori.rezultate`): „Ca Rezultatul” (și fără alegeri) ia Rezultatul de sus, până
+   la 16 culori. Cu toate „Ca Rezultatul”, răspunsul e exact cel de dinainte (proba o cere, pe linii și pe contururi).
+   Cererea are opțiunile liniilor mediane cât măcar o culoare e pe linii, și sub Rezultatul: Contururi.
+3. **În fereastră,** lista e sub „Se trasează”, lângă „Leagă de…” (răspunsul 2a), iar bifa stă pe rândul ei: cu lista
+   lângă bifă, centrul pastilei cădea pe listă, iar tragerea pastilei (legarea) nu mai pornea de acolo (proba e2e a
+   legării prin tragere a picat la prima rulare). O culoare legată își pierde alegerea (ia felul primei); un număr nou
+   de culori (din „Automat” sau din glisor) le șterge pe toate, ca pe bife și legături. Opțiunile liniilor, semnalarea
+   părților late și grosimea din pastile urmează felul culorilor, nu doar Rezultatul de sus.
+4. **Ușa:** desenul previzualizării (căile pieselor laolaltă) spune că buclele contururilor nu sunt pe linie când stau
+   lângă linii mediane (fără `peLinie`, cu `deschisa`, ar fi fost citite pe linie).
+5. **Textele:** sfatul pastilelor spune de listă, iar sfatul liniilor pe culori, că o culoare poate lua contururile;
+   manualul, în ambele limbi.
+
+**Măsurat** [17.11, Node 26 și Edge fără fereastră]:
+- pe desenul probelor, galbenul și negrul pe contururi, restul pe linii mediane: 5 piese (galbenul un contur exterior,
+  negrul inelul, roșul o linie legată de trei ori, albastrul o linie, verdele o buclă); fiecare culoare pe fiecare fel,
+  în patru amestecuri: piesele, exact cele ale trasării întregi pe contururi sau pe linii;
+- pragul părților late, din culorile pe linii: o linie roșie de 4 px lângă trei bare albastre de 24 px; toate pe linii,
+  grosimea 24 px (pragul 48); barele pe contururi, 4 px (pragul 8); legarea trece și peste culorile pe contururi (roșul
+  singur pe linii, tot 3 legături); reducerea, o singură dată (nucleul culorilor spionat: un apel în amestec, unul cu
+  toate pe linii);
+- timpul pe 12 Mpx (Node, desenul probelor mărit, trăsături de 40 px): amestecul 2,9–3,1 s, tot pe contururi 2,7 s, tot
+  pe linii 3,2–3,4 s;
+- probele: 8 ale nucleului (`test/unit/trasare.rezultat.culori.test.ts`), 2 ale ușii, una e2e nouă (lista, ștergerea ei,
+  opțiunile liniilor și părțile late după felul culorilor, legarea, Importă) și două schimbate (tipul pieselor); suita
+  unitară întreagă 9 439 (9 431 trecute, 8 sărite, 0 căzute) și e2e-urile trasării, importului și tutorialul, 51 / 51;
+- otrăvurile (`test/otravuri/25.3e.py`, alese de autor): 24 / 24, fiecare pe proba ei: 15 unitare (E01–E15) și 9 prin
+  e2e (F01–F09); la prima rulare (`c4b2abc8`), E02 a scăpat (plasa făcută degeaba cu toate culorile pe linii: aceleași
+  piese) și F02 a „căzut” doar pe o cădere din timp a altei probe (comparația desenului prindea o tranziție, pe o scenă
+  fără parte lată): probele lor în `fd58810d`, iar otrăvurile ferestrei, rulate din nou pe proba refăcută;
+- mărimea: totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
 
 ## Ce am respins
 

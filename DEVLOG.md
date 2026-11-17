@@ -9349,6 +9349,25 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
 ## 2026-11-17 — Felia 25.3↑e: Rezultatul pe fiecare culoare (ADR 0228, acceptat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 1a–2a” (owner-ul, în sesiunea liniei trasării, la cele două întrebări din ADR 0228). **Started:** 17.11,
-09:55. **Completed:** —.
+09:55. **Completed:** 17.11, 19:04.
 
 - **Ramura** la `408f2c0` (propunerea); `origin/main` fără nimic nou.
+- **Felia** (`c4b2abc8`): `traseazaCulori` cu `peLinii` (contururile doar ale culorilor rămase pe contururi, curbele
+  doar pe granițele lor, fără plasă când nu e niciuna); `traseazaCuloriMediane` cu el (o singură reducere; liniile doar
+  ale culorilor alese; piesele în ordinea paletei; numărătorile tuturor); calculul cu `culori.rezultate` („Ca
+  Rezultatul” ia Rezultatul de sus); ușa (opțiunile liniilor în cerere cât o culoare e pe linii; căile laolaltă, buclele
+  contururilor nu pe linie); fereastra (lista din pastilă, ștearsă la un număr nou și la legare; opțiunile, părțile late
+  și grosimea după felul culorilor); textele și manualul.
+- **Probele, întâi** (roșii înaintea codului): 8 ale nucleului, 2 ale ușii, una e2e nouă; două schimbate (tipul
+  pieselor). Prima rulare e2e: legarea prin tragere a picat (centrul pastilei, pe listă): bifa pe rândul ei, lista sub
+  ea.
+- Porțile: tipuri (3), importuri, licențe, traduceri (0); suita unitară 9 439 (9 431 trecute, 8 sărite, 0 căzute);
+  e2e-urile trasării, importului și tutorialul, 51 / 51 (portul e2e al worktree-ului mutat pe 4183: 4179 e și al clonei
+  `otravuri-taiere`); 12 Mpx: amestecul ~3 s.
+- **Otrăvurile** (`test/otravuri/25.3e.py`): 24 / 24, fiecare pe proba ei: 15 unitare (E01–E15) și 9 prin e2e (F01–F09);
+  la prima rulare (`c4b2abc8`), E02 a scăpat (plasa făcută degeaba cu toate culorile pe linii: aceleași piese) și F02 a
+  „căzut” doar pe o cădere din timp a altei probe (comparația desenului prindea o tranziție, pe o scenă fără parte
+  lată): probele lor în `fd58810d`, iar otrăvurile ferestrei, rulate din nou pe proba refăcută.
+- **Mărimea:** totalul 709,1 / 800 kB (+0,4 kB), pornirea 106,3 / 115 (cu ușa 110,3).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 17.12), amprenta
+  `fd58810d46ca`.
