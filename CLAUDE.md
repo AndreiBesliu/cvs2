@@ -1186,6 +1186,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **felia 3.6t a imprimantei unită în `main`** (din grupul 3 aprobat, „Da, grupul 3”; unită la „unește ce se
+  poate”): istoricul imprimărilor (`18d9be07`, exact `02c29f2`), +4,8 kB, peste ținta de ~3,5 din ADR 0194, în plafonul de
+  800. Porțile pe unire: unit 9 463 / 0, e2e 504 / 504 (o reluare: `extensii.masina.spec.ts:84`, senderul prin extensie,
+  „pierdut” în loc de „pregatit”, la procesorul 27 %; fișierul singur, 4 / 4; nu e a feliei), emulatoarele verzi. Totalul
+  715,6 / 800, pornirea cu ușa 110,6 / 115. Urmează 3.6u (filmele timelapse).
 - 17.11.2026: **28.1↑b și probele instabile, unite în `main`** (la „unește ce se poate” și „ok, ia-le la rand”): fereastra
   Aspectul (`cf0550b`; rândul „Aspectul…” în meniul contului, după Manual; manualul cu 37 de capitole, ușile 108, testul din
   aplicație cu 36 de pași); probele care cădeau sub încărcare, fiecare reprodusă întâi și reparată la cauză (`912fece`:
