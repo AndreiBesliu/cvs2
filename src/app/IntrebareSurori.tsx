@@ -2,7 +2,7 @@ import { useState, useSyncExternalStore, type ReactElement } from 'react';
 import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
-import type { AlegereSurori } from '../model/taiereSurori.ts';
+import type { AlegereSurori } from '../model/surori.ts';
 import { alegereTinuta, ascultaSurori, raspundeSurori, tineAlegerea, type IntrebareSurori as Intrebare } from '../ui/intrebareSurori.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */

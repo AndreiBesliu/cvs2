@@ -6,7 +6,7 @@ import {
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { PanouDeGrupat } from '../model/grupuriPanouri.ts';
-import type { SuroriConversie, SuroriTaiere } from '../model/taiereSurori.ts';
+import type { SuroriConversie, SuroriTaiere } from '../model/surori.ts';
 import type { Retea } from '../model/retea.ts';
 // Doar tipul: așezarea pe foi vine cu calculul și cu dialogul ei, la cerere (ADR 0210 §3).
 import type { OptiuniAsezare } from '../model/asezare.ts';

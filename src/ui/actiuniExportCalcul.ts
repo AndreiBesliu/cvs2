@@ -15,7 +15,7 @@ import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import { CUTITE_PIESA, type CerereTaiere, type RezultatTaiere } from '../model/taiere.ts';
-import { aleseCuSurori, catePuse, desprinse, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from '../model/taiereSurori.ts';
+import { aleseCuSurori, catePuse, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from '../model/surori.ts';
 import { cereAlegerea } from './intrebareSurori.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
@@ -153,7 +153,7 @@ export async function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?:
     const x = await taiereInBazin(doc, { ...cerere, surori: 'piesa' }, o, indexFoaie);
     return x.ok ? { ...x, surori: { mod: 'piesa' } } : x;
   }
-  const x = await taiereInBazin(desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
+  const x = await taiereInBazin(await desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
   if (!x.ok) return x;
   // Se desprind doar instanțele tăiate; cele care pleacă (decuparea) sau rămân neatinse își păstrează surorile.
   const taiate = new Set(x.degrupate.map((d) => d.instanta.id));
@@ -165,6 +165,15 @@ export async function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?:
  * câte ori e pusă piesa lor și răspunsul (cel ținut, sau al benzii; null: omul a renunțat, sau semnalul s-a anulat: cine a
  * cerut calculul verifică oricum anularea înaintea rezultatului). `laIntrebare` spune panoului că așteaptă răspunsul.
  */
+/**
+ * Documentul de calcul pentru «Desprinde și …», cu desprinderea adusă la cerere (ea stă cu acțiunile, lângă plăcuțe: importată
+ * aici, modulele pieselor legate ar ieși într-o bucată comună).
+ */
+async function desprinse(doc: Document, idFoaie: string, ids: readonly string[]): Promise<Document> {
+  const m = await import('../model/taiereSurori.ts');
+  return m.desprinse(doc, idFoaie, ids);
+}
+
 async function surori(doc: Document, alese: readonly string[], indexFoaie: number, piesa: boolean, fel: 'taie' | 'converteste', semnal?: AbortSignal,
   laIntrebare?: () => void): Promise<{ readonly foaie: string; readonly ids: readonly string[]; readonly alegere: AlegereSurori | null }> {
   const foaie = doc.foi[indexFoaie]?.id ?? '';
@@ -186,7 +195,7 @@ export async function taiePanourile(doc: Document, cerere: CererePanouri, semnal
   // (tăiată, grupată sau numită), deci toate cele cu surori se desprind.
   const s = await surori(doc, cerere.alese, indexFoaie, false, 'taie', semnal, laIntrebare);
   if (s.alegere === null) return { ok: false, motiv: 'renuntat' };
-  const x = await panouriInBazin(desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
+  const x = await panouriInBazin(await desprinse(doc, s.foaie, s.ids), cerere, o, indexFoaie);
   return x.ok ? { ...x, surori: { mod: 'desprinde', ids: s.ids } } : x;
 }
 
@@ -204,7 +213,7 @@ export async function convertesteVectorii(doc: Document, cerere: CerereConversie
     const x = await conversieInBazin(doc, { ...cerere, surori: 'piesa' }, o, indexFoaie);
     return x.ok ? { ...x, surori: { mod: 'piesa' } } : x;
   }
-  const desprins = desprinse(doc, s.foaie, s.ids);
+  const desprins = await desprinse(doc, s.foaie, s.ids);
   const x = await conversieInBazin(desprins, cerere, o, indexFoaie);
   return x.ok ? { ...x, surori: { mod: 'desprinde', desprins, alese: s.ids, foaie: s.foaie } } : x;
 }
