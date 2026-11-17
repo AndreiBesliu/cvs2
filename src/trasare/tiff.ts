@@ -130,7 +130,8 @@ function lzw(d: Uint8Array, n: number): Uint8Array {
     } else if (cod <= urm && cod < 4096) {
       if (urm < 4096) {
         prefix[urm] = prec; lung[urm] = (lung[prec] ?? 0) + 1; prim[urm] = prim[prec] ?? 0;
-        sufix[urm] = cod < urm ? prim[cod] ?? 0 : prim[prec] ?? 0;
+        // Ultimul octet: primul al codului citit; la KwKwK (codul e chiar cel adăugat acum), al lui `prec`, pus mai sus.
+        sufix[urm] = prim[cod] ?? 0;
         urm++;
       }
       scrie(cod);

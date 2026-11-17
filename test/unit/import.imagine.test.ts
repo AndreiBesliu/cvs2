@@ -758,6 +758,9 @@ test('TIFF (ADR 0229): DPI-ul din etichete în ușă; calculul îl citește sing
   assert.equal(r.scara, 'fisier');
   assert.ok(Math.abs(r.dpi - 95.987) < 1e-6, String(r.dpi));
   assert.ok(r.raport.contururi > 5, String(r.raport.contururi));
+  // Pentru previzualizare, imaginea decodată (browserul nu știe TIFF): 240 × 160, sub plafonul pozei, cu negrul desenului.
+  assert.deepEqual([r.poza?.latime, r.poza?.inaltime], [240, 160]);
+  assert.ok(Array.from(r.poza?.date ?? []).some((x, k) => k % 4 === 0 && x === 0), 'fără pixeli negri');
   // Două pagini: implicit prima; a doua, aleasă, e alt desen.
   const p1 = (await raspundeTrasare(cerere({ imagine: new Blob([doua]) }))).raspuns;
   const p2 = (await raspundeTrasare(cerere({ imagine: new Blob([doua]), pagina: 2 }))).raspuns;
@@ -768,6 +771,7 @@ test('TIFF (ADR 0229): DPI-ul din etichete în ușă; calculul îl citește sing
   const pv = previzualizareDinRaspuns({ nume: 'scan.tif', octeti: doua }, p2);
   assert.ok(pv.ok && pv.format === 'imagine');
   assert.equal(pv.trasare.pagini, 2);
+  assert.equal(pv.trasare.poza, p2.poza);
   // Cererea: pagina, doar peste 1.
   const f = { nume: 'scan.tif', octeti: doua };
   assert.equal(cerereTrasare(f, TRASARE_IMPLICITA).pagina, undefined);

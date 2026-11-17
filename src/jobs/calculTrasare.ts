@@ -116,6 +116,11 @@ type Scara = {
   readonly foaie: FoaieTrasata | null;
   /** Câte pagini are un TIFF (ADR 0229); lipsă la celelalte imagini. */
   readonly pagini?: number;
+  /**
+   * Imaginea unui TIFF (ADR 0229), decodată de worker și redusă sub `PIXELI_POSTER`: previzualizarea ferestrei, fiindcă
+   * browserul n-o poate decoda din octeți; lipsă la celelalte imagini.
+   */
+  readonly poza?: ImagineRGBA;
 };
 
 export type RaspunsTrasare =
@@ -261,7 +266,7 @@ export function ariePx(dMm: number, mmPePx: number): number {
 }
 
 export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: RaspunsTrasare; transfer: ArrayBuffer[] }> {
-  let img: ImagineRGBA, redusDin: Scara['redusDin'] = null, dpiFisier = c.dpi, pagini: number | null = null;
+  let img: ImagineRGBA, redusDin: Scara['redusDin'] = null, dpiFisier = c.dpi, pagini: number | null = null, poza: ImagineRGBA | null = null;
   if (c.imagine instanceof Blob) {
     // TIFF (ADR 0229): browserul nu-l decodează; îl citește cititorul propriu, cu pagina aleasă și DPI-ul paginii.
     const antet = new Uint8Array(await c.imagine.slice(0, 4).arrayBuffer());
@@ -272,6 +277,8 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       redusDin = t.latime !== img.latime || t.inaltime !== img.inaltime ? { latime: t.latime, inaltime: t.inaltime } : null;
       dpiFisier = t.dpi ?? c.dpi;
       pagini = t.pagini;
+      // Previzualizarea ferestrei: browserul nu decodează TIFF-ul, deci i-o dă workerul, redusă.
+      poza = reduceImaginea(t.img);
     } else {
       try {
         ({ img, redusDin } = await decodeaza(c.imagine, c.maxPixeli ?? PIXELI_MAXIM));
@@ -296,8 +303,8 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
   const dpi = (25.4 * pxFisier) / mmPePx;
   const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
-  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, ...(pagini !== null ? { pagini } : {}) } as const;
-  const pz = foaie?.previzualizare?.date, deFoaie = pz instanceof Uint8ClampedArray ? [pz] : [];
+  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) } as const;
+  const pz = foaie?.previzualizare?.date, deFoaie = [pz, poza?.date].filter((x): x is Uint8ClampedArray => x instanceof Uint8ClampedArray);
   const m = c.mediane;
   const om: OptiuniMediana = m
     ? { capete: m.capete, late: m.late, semnaleaza: m.semnaleaza, bucle: m.bucle, pragLatPx: m.pragLatMm !== null && m.pragLatMm > 0 ? m.pragLatMm / mmPePx : null }

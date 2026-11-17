@@ -195,6 +195,15 @@ test('CCITT: „Modified Huffman” (2, rânduri pe octeți), T.4 1D cu EOL, T.4
   assert.deepEqual(despacheteaza(decodeazaCcitt(t6, { latime: 8, randuri: 3, fel: 't6' }), 8, 3), TREI);
 });
 
+test('CCITT pe date stricate: un P cu b1 la capătul referinței (după un rând cu mai multe schimbări) închide rândul', () => {
+  // Rândul 1: 0 1 0 1 0 1 0 0 (trei H: alb 1, negru 1; apoi V0); rândul 2: 0 0 0 1 1 0 0 0 (P, V0, VR1, V0). Rândul 3: V0,
+  // H (negru 2, alb 1), apoi un P cu b1 dincolo de ultima schimbare a referinței: b2 nu există, deci rândul se închide (negru).
+  const h = (): string[] => ['001', '000111', '010'];
+  const t6 = biti(...h(), ...h(), ...h(), '1', '0001', '1', '011', '1', '1', '001', '11', '000111', '0001');
+  assert.deepEqual(despacheteaza(decodeazaCcitt(t6, { latime: 8, randuri: 3, fel: 't6' }), 8, 3),
+    [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1]);
+});
+
 test('CCITT, trecerile lungi (completarea, cea extinsă peste 1792): desenul lat de 2600 px, G3 și G4, ca pixelii lui WIC', async () => {
   for (const f of ['wic-lat-g3', 'wic-lat-g4']) {
     const r = await citeste(new Uint8Array(readFileSync(`${DIR}/${f}.tif`)));

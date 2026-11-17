@@ -132,6 +132,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' } | { cod: 'ti
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
     lumina: r.raport.lumina, inegala: r.raport.inegala, ...(r.pagini !== undefined ? { pagini: r.pagini } : {}),
+    ...(r.poza ? { poza: r.poza } : {}),
   } as const;
   if (r.fel === 'culori') {
     // Cu liniile mediane (ADR 0227): grosimea fiecărei culori, în pastila ei, și raportul lor.

@@ -37,8 +37,8 @@ o('C10', CC, '    ref[n] = W; ref[n + 1] = W; ref[n + 2] = W;', '    ref[n] = W;
   'fără a treia santinelă: b2 vechi, de pe un rând mai lung')
 o('T01', TI, '    if (urm >= (1 << latime) - 1 && latime < 12) latime++;', '    if (urm >= 1 << latime && latime < 12) latime++;', 'nuc',
   'LZW fără schimbarea timpurie a lățimii')
-o('T02', TI, '        sufix[urm] = cod < urm ? prim[cod] ?? 0 : prim[prec] ?? 0;', '        sufix[urm] = prim[cod] ?? 0;', 'nuc',
-  'LZW: cazul KwKwK (codul abia adăugat)')
+o('T02', TI, '        sufix[urm] = prim[cod] ?? 0;', '        sufix[urm] = cod < urm ? prim[cod] ?? 0 : 0;', 'nuc',
+  'LZW: cazul KwKwK (codul abia adăugat) cu ultimul octet greșit')
 o('T03', TI, '    else if (c !== -128) { const b = d[i++] ?? 0; for (let j = 0; j < 1 - c; j++) { if (k < n) o[k] = b; k++; } }',
   '    else if (c !== -128) { const b = d[i++] ?? 0; for (let j = 0; j < -c; j++) { if (k < n) o[k] = b; k++; } }', 'nuc',
   'PackBits: o repetare mai scurtă')
@@ -91,6 +91,10 @@ o('W02', DI, "  if (cod === 'tiff' || cod === 'tiff-stricat') return t(REFUZ[cod
   'refuzul TIFF fără numele a ce nu citește')
 o('W03', CA, "  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal, o.pagina);",
   "  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal);", 'e2e', 'pagina aleasă nu ajunge la calcul')
+FE = 'src/ui/FereastraTrasare.tsx'
+o('U07', CT, '      poza = reduceImaginea(t.img);\n', '', 'usa', 'răspunsul fără imaginea TIFF-ului pentru previzualizare')
+o('U08', CA, '    ...(r.poza ? { poza: r.poza } : {}),\n', '', 'usa', 'raportul fără imaginea TIFF-ului')
+o('W04', FE, '  const poza = bmp ?? pozaTiff;', '  const poza = bmp;', 'e2e', 'previzualizarea TIFF-ului fără imagine sub vectori')
 
 SETURI = {
     'nuc': ['test/unit/trasare.tiff.test.ts'],

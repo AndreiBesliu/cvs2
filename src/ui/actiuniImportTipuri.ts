@@ -6,7 +6,7 @@ import type { AvertismentePdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
 import type { Avertismente, CodRefuz } from '../io/svgCoduri.ts';
 import type { AvertismenteWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io/wmfCoduri.ts';
 import type { AlegeriTrasare } from '../io/imagine.ts';
-import type { CaiTrasate } from '../trasare/trasare.ts';
+import type { CaiTrasate, ImagineRGBA } from '../trasare/trasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
 import type { Lumina } from '../trasare/lumina.ts';
 import type { FoaieTrasata, Posterizare, ZonaTrasare } from '../jobs/calculTrasare.ts';
@@ -51,6 +51,8 @@ export type RaportImagine = {
   readonly redusDin: { readonly latime: number; readonly inaltime: number } | null;
   /** Câte pagini are un TIFF (ADR 0229: fereastra oferă alegerea alteia); lipsă la celelalte imagini. */
   readonly pagini?: number;
+  /** Imaginea unui TIFF, decodată de worker (browserul nu știe TIFF), pentru previzualizare; lipsă la celelalte. */
+  readonly poza?: ImagineRGBA;
   /** Mărimea imaginii pe foaie și a pixelului, în mm. */
   readonly latimeMm: number; readonly inaltimeMm: number; readonly mmPePx: number;
   /**

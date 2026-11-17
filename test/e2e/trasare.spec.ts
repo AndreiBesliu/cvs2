@@ -265,6 +265,18 @@ test('TIFF (ADR 0229): o scanare G4 cu două pagini se trasează, cu DPI-ul ei; 
   // Scara din fișier: 95,987 px pe țol (WIC), deci pixelul 0,265 mm.
   await expect(page.getByTestId('trasare-scara')).toContainText('px pe țol, din fișier');
   await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 240 × 160 px');
+  // Sub vectori, scanarea (decodată de worker, browserul nu știe TIFF): doar „Imaginea” are pixelii negri ai desenului.
+  const negri = (): Promise<number> => page.getByTestId('trasare-previzualizare').evaluate((c) => {
+    const p = (c as HTMLCanvasElement).getContext('2d')?.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data ?? new Uint8ClampedArray();
+    let n = 0;
+    for (let i = 0; i < p.length; i += 4) if ((p[i] ?? 255) < 80 && (p[i + 1] ?? 255) < 80 && (p[i + 2] ?? 255) < 80 && (p[i + 3] ?? 0) > 200) n++;
+    return n;
+  });
+  await page.locator('[data-camp="trasare-vedere-vectori"]').check();
+  await expect.poll(negri).toBe(0);
+  await page.locator('[data-camp="trasare-vedere-imagine"]').check();
+  await expect.poll(negri).toBeGreaterThan(100);
+  await page.locator('[data-camp="trasare-vedere-ambele"]').check();
   // Două pagini: alegerea paginii, ca la PDF; a doua e alt desen.
   const pagina = page.locator('[data-camp="pagina"]');
   await expect(pagina.locator('option')).toHaveCount(2);
