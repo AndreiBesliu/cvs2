@@ -1197,6 +1197,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **10.3↑l și 25.3↑e unite în `main`, după reparația probei de viteză a luminii** (la „unește ce se poate”,
+  după rapoartele liniilor): panourile pe foi (`eb237a77`, exact `e17a3521`: mărimea implicită care încape pe foaie,
+  avertismentul, „Cât încape pe foaie”, „Așază pe foi…”, plus dinții drepți ai lui 10.3↑k pe grila egală) și rezultatul
+  pe fiecare culoare (`a3e81f6d`, exact `19b0faf3`: ADR 0228 cu 1a–2a, lista „Rezultatul culorii” în pastilă). Înainte,
+  completul de pe `71d488a7` (3.6t) căzuse la `trasare.culori.lumina.test.ts:132`: 1 504 ms la pragul de 1,5 s, cu
+  corecția de 0,6–0,7 s local și 0,9–1,5 s în CI (fișierele de probe în paralel, pe 4 procesoare); reluat, a trecut, iar
+  `b6aaa548` e pe test. Pragul e acum cel de redeschidere din ADR 0226 (2 s), cu cea mai bună din cel mult 3 rulări
+  (`9361c831`, probat cu două otrăvuri). Porțile pe unire: unit 9 490 / 0, e2e 507 / 507, emulatoarele 101 / 101 și 21 /
+  21 la reluare (la prima, callable-ul `sugestii` a stat 300 s: lucrătorul funcțiilor n-a pornit în 30 s, cu procesorul
+  la 97 %, iar emulatorul lasă atunci cererea fără răspuns; nu e a unirii). Totalul 716,7 / 800, pornirea cu ușa 110,6 /
+  115. 10.3↑m (`wip/10.3m-surori`) și 3.6u sunt în lucru la linii.
 - 17.11.2026: **felia 3.6t a imprimantei unită în `main`** (din grupul 3 aprobat, „Da, grupul 3”; unită la „unește ce se
   poate”): istoricul imprimărilor (`18d9be07`, exact `02c29f2`), +4,8 kB, peste ținta de ~3,5 din ADR 0194, în plafonul de
   800. Porțile pe unire: unit 9 463 / 0, e2e 504 / 504 (o reluare: `extensii.masina.spec.ts:84`, senderul prin extensie,
