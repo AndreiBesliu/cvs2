@@ -73,16 +73,19 @@ o('U02', II, '<a href={film} target="_blank" rel=', '<a href={film} rel=', 'e2e'
 o('U03', II, 'const film = r.film === null ? null : adresaFilm(r.film);', 'const film = null;', 'e2e', 'niciun link al filmului')
 o('U04', PI, 'adresaFilm={(nume) => (st.adresa === null ? null : st.driver.adresaFilm(st.adresa.gazda, nume))}', 'adresaFilm={() => null}', 'e2e',
   'fereastra fără adresa filmului')
-o('U05', PI, 'cere={() => { sesiune.cereIstoric(); sesiune.cereFilme(); }}', 'cere={() => { sesiune.cereIstoric(); }}', 'e2e',
-  'cardul deschis nu cere filmele')
+o('U05', PI, 'useEffect(() => { if (vizibila && conectata) { sesiune.cereIstoric(); sesiune.cereFilme(); } }, [vizibila, conectata]);',
+  'useEffect(() => { if (vizibila && conectata) { sesiune.cereIstoric(); } }, [vizibila, conectata]);', 'e2e', 'fereastra deschisă nu cere filmele')
 o('U06', PI, 'useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); sesiune.cereFilme(); });',
   'useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); });', 'e2e', 'filmele necerute la final')
 o('U07', PI, 'uneste(st.istoric, cvs2, numeIstoric, st.fisiere, st.filme)', 'uneste(st.istoric, cvs2, numeIstoric, st.fisiere)', 'e2e',
   'filmele neunite cu istoricul')
+o('U08', PI, 'useEffect(() => { if (vizibila && conectata) { sesiune.cereIstoric(); sesiune.cereFilme(); } }, [vizibila, conectata]);',
+  'useEffect(() => { if (vizibila && conectata) { sesiune.cereFilme(); } }, [vizibila, conectata]);', 'e2e', 'fereastra deschisă nu cere istoricul')
+o('U09', PI, '} }, [vizibila, conectata]);', '} }, [conectata]);', 'e2e', 'cererile doar la legare, nu la deschiderea ferestrei')
 
 SETURI = {
     'fil': ['test/unit/imprimanta.filme.test.ts', 'test/unit/imprimanta.sesiune.test.ts', 'test/unit/imprimanta.creality.test.ts',
             'test/unit/imprimanta.driver.test.ts'],
 }
 # Doar cele două probe e2e ale feliei (liniile lor la commit-ul probat), ca fiecare otravă să nu ruleze tot fișierul.
-E2E = ['test/e2e/imprimanta.spec.ts:1400', 'test/e2e/imprimanta.spec.ts:1449']
+E2E = ['test/e2e/imprimanta.spec.ts:1400', 'test/e2e/imprimanta.spec.ts:1452']

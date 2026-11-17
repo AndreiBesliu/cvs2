@@ -194,6 +194,11 @@ export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi, vizibila 
   // care învață din „Din desen…” (imprimanta: cea legată, altfel ultima ținută). Din 3.6u, cu filmele imprimantei; la finalul
   // unei lucrări se cer din nou amândouă.
   useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); sesiune.cereFilme(); });
+  // La fiecare deschidere a ferestrei, cu imprimanta legată (ADR 0194 §B.12, §C.13): istoricul și filmele, din nou. Fereastra
+  // se montează înaintea legăturii (sau ascunsă, cu legarea la pornire, 3.6s), deci montarea nu e o deschidere; o legare cu
+  // fereastra la vedere le are deja în citiri, iar pauza de 5 s a sesiunii o oprește pe a doua.
+  const conectata = st.legatura === 'conectat';
+  useEffect(() => { if (vizibila && conectata) { sesiune.cereIstoric(); sesiune.cereFilme(); } }, [vizibila, conectata]);
   const cvs2 = useImprimariCvs2();
   const [setariIstoric, setSetariIstoric] = useState<SetariIstoric>(citesteSetariIstoric);
   const schimbaSetariIstoric = (s: SetariIstoric): void => { setSetariIstoric(s); scrieSetariIstoric(s); };
@@ -590,7 +595,6 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
             dinDesen={dinDesen} trimitere={ales !== null} cuTrimitere={cap.trimitere} />
         )}
         <CardIstoric randuri={istoric.randuri} nCvs2={istoric.nCvs2} setari={istoric.setari} schimba={istoric.schimba} durata={durata}
-          cere={() => { sesiune.cereIstoric(); sesiune.cereFilme(); }}
           adresaFilm={(nume) => (st.adresa === null ? null : st.driver.adresaFilm(st.adresa.gazda, nume))} />
         <CardNotificari setari={setari} schimba={schimbaSetari} />
         <Jurnal st={st} />

@@ -69,18 +69,15 @@ function valoare(text: string, max: number): number | null | undefined {
   return Number.isFinite(v) && v >= 0 && v <= max ? v : undefined;
 }
 
-export function CardIstoric({ randuri, nCvs2, setari, schimba, cere, durata, adresaFilm }: {
+export function CardIstoric({ randuri, nCvs2, setari, schimba, durata, adresaFilm }: {
   readonly randuri: readonly RandIstoric[];
   /** Câte imprimări are istoricul cvs2 (Golește doar cu una). */
   readonly nCvs2: number;
   readonly setari: SetariIstoric; readonly schimba: (s: SetariIstoric) => void;
-  /** Cere istoricul imprimantei și lista filmelor: la deschiderea cardului (ADR 0194 §B.12, §C.13). */
-  readonly cere: () => void;
   readonly durata: (s: number) => string;
   /** Adresa unui film pe imprimanta legată (felia 3.6u); null: fără gazdă sau nume nesigur. */
   readonly adresaFilm: (nume: string) => string | null;
 }): ReactNode {
-  useEffect(() => { cere(); }, []);
   const [goleste, setGoleste] = useState(false);
   const renunta = useRef<HTMLButtonElement | null>(null);
   useEffect(() => { if (goleste) renunta.current?.focus(); }, [goleste]);

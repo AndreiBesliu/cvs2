@@ -1440,7 +1440,10 @@ test('filmele (3.6u): al Benchy-ului, din lista imprimantei, se deschide de pe e
   await expect(stare(page)).toHaveText('Gata', { timeout: 30_000 });
   const nou = randuriIstoric(page).first();
   await expect(nou).toHaveAttribute('data-rez', 'gata', { timeout: 15_000 });
-  await expect(nou.locator('[data-imprimanta="istoric-film"]')).toHaveAttribute('href', new RegExp(`^http://${IP.replaceAll('.', '\.')}/downloads/video/\d{10}\.mp4$`), { timeout: 15_000 });
+  // Numele e începutul lucrării, în secunde (10 cifre), ca la Benchy.
+  const filmNou = nou.locator('[data-imprimanta="istoric-film"]');
+  await expect(filmNou).toHaveAttribute('href', /^http:\/\/127\.0\.\d{1,3}\.5\/downloads\/video\/\d{10}\.mp4$/, { timeout: 15_000 });
+  expect(await filmNou.getAttribute('href')).toContain(`http://${IP}/downloads/video/`);
   await expect(randuriIstoric(page)).toHaveCount(3);
   // Doar citiri: filmele cerute la legare, la final și la deschiderea cardului; nicio comandă în plus.
   expect(comenziSet(imp).filter((c) => !c.includes('opGcodeFile'))).toEqual([]);
