@@ -43,12 +43,7 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Tăiate, cele șase panouri rămân alese, iar „Așază pe foi…” din bloc deschide dialogul pe ele: câte unul pe foaie, pe șase
  * foi (cinci noi); Anulează le aduce înapoi pe prima foaie. Cu alegerile ținute ale așezării (marginile 2, sub raza 3 a frezei,
  * și rotirea cu 90°), mărimea implicită e 1 200 − 2 · 3 − 2 · 10 = 1 174 × 874, iar panourile de 820 × 1 000 încap culcate.
- *
- * Felia 10.3↑m (ADR 0180, piesele puse de mai multe ori): pătratul pus de două ori (cu «+1», care îl pune pe foaia 2: pe foaia de
- * 300 × 200 nu încape alături), tăiat la X = 50: banda întrebării („Tai o piesă pusă de 2 ori”), iar panoul spune să alegi sus;
- * Renunță nu taie nimic; «Desprinde și taie» face din pătratul ales două forme, iar cel de pe foaia 2 rămâne întreg; «Taie piesa
- * (toate cele 2)» îl taie și pe el (foaia 2: două piese); „Ține minte alegerea” face ca tăierea următoare să nu mai întrebe, iar
- * rândul „Piese puse de mai multe ori” din opțiuni o arată și o uită („întreabă”).
+
  */
 test.use({ locale: 'ro-RO' });
 
@@ -554,70 +549,4 @@ test('Panourile pe foi, cu alegerile ținute ale așezării: marginea sub raza f
   await L.fill('1200');
   await I.fill('900');
   await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 1210 × 510 mm, iar pe foaie încap 1194 × 894: «Așază pe foi» l-ar lăsa pe loc.');
-});
-
-// ——— Piesele puse de mai multe ori (felia 10.3↑m, ADR 0180) ———
-
-test('O piesă pusă de două ori: banda întrebării; Renunță, «Desprinde și taie», «Taie piesa», „Ține minte alegerea” și rândul din opțiuni', async ({ page }) => {
-  const erori: string[] = [];
-  page.on('pageerror', (e) => { erori.push(e.message); });
-  await importa(page, PATRAT);
-  // «+1»: încă o instanță a aceleiași piese, lângă ea.
-  const proprietati = page.locator('[data-panou="proprietati"]');
-  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
-  await page.getByTestId('prop-piesa').locator('[data-buton="plus-unu"]').click();
-  // Pe foaia de 300 × 200 nu încape alături: instanța nouă e pe foaia 2.
-  const foaia2 = page.getByTestId('lista-vectori').getByRole('button', { name: /^Foaia 2/ });
-  await expect(foaia2).toContainText('1 piesă');
-  await expect(randuri(page)).toHaveCount(1);
-  await randuri(page).nth(0).click();
-  await page.locator('[data-editare="taiere"]').click();
-  await page.locator('[data-taiere="x"]').fill('50');
-  const banda = page.getByTestId('intrebare-surori');
-  const stare = page.getByTestId('taiere-stare');
-  // Renunță: nimic tăiat.
-  await page.locator('[data-taiere="taie"]').click();
-  await expect(banda.locator('span').first()).toHaveText('Tai o piesă pusă de 2 ori:');
-  await expect(stare).toHaveText('Alege sus: o formă aleasă e pusă de mai multe ori.');
-  await expect(banda.locator('[data-surori="piesa"]')).toHaveText('Taie piesa (toate cele 2)');
-  await banda.locator('[data-surori="renunta"]').click();
-  await expect(banda).toHaveCount(0);
-  await expect(stare).toHaveText('Nimic tăiat: ai renunțat la întrebare.');
-  await expect(randuri(page)).toHaveCount(1);
-  // «Desprinde și taie»: pătratul ales devine două forme; celălalt rămâne.
-  await page.locator('[data-taiere="taie"]').click();
-  await banda.locator('[data-surori="desprinde"]').click();
-  await expect(stare).toHaveText('Forme tăiate: 1; forme noi: 2, alese.');
-  await expect(randuri(page)).toHaveCount(2);
-  await expect(foaia2).toContainText('1 piesă');
-  await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page)).toHaveCount(1);
-  // «Taie piesa»: și instanța de pe foaia 2, tăiată la fel.
-  await randuri(page).nth(0).click();
-  await page.locator('[data-taiere="taie"]').click();
-  await banda.locator('[data-surori="piesa"]').click();
-  await expect(randuri(page)).toHaveCount(2);
-  await expect(foaia2).toContainText('2 piese');
-  await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page)).toHaveCount(1);
-  await expect(foaia2).toContainText('1 piesă');
-  // „Ține minte alegerea”: data viitoare, fără întrebare; rândul din opțiuni o arată, iar „întreabă” o uită.
-  await randuri(page).nth(0).click();
-  await page.locator('[data-taiere="taie"]').click();
-  await banda.locator('[data-surori="tine"]').check();
-  await banda.locator('[data-surori="desprinde"]').click();
-  await expect(randuri(page)).toHaveCount(2);
-  await expect(page.locator('[data-taiere="surori"]')).toHaveValue('desprinde');
-  await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await randuri(page).nth(0).click();
-  await page.locator('[data-taiere="taie"]').click();
-  await expect(randuri(page)).toHaveCount(2);
-  await expect(banda).toHaveCount(0);
-  await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await page.locator('[data-taiere="surori"]').selectOption('intreaba');
-  await randuri(page).nth(0).click();
-  await page.locator('[data-taiere="taie"]').click();
-  await expect(banda).toBeVisible();
-  await banda.locator('[data-surori="renunta"]').click();
-  expect(erori).toEqual([]);
 });

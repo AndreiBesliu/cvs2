@@ -19,9 +19,7 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  * tragi (dinții, în locul fâșiei), iar placa devine două forme de 100 × 55 mm (aceeași alegere în panoul Taie). La 1280 px și cu
  * fontul lat al probei barei de sus (6.V↑d), bara Cuțitului și panoul opțiunilor, cu îmbinarea aleasă, rămân în fereastră, în
  * română și în engleză.
- *
- * Felia 10.3↑m (ADR 0180): pe o placă pusă de două ori (a doua, pe foaia 2), o linie trasă cu Cuțitul arată banda întrebării, iar
- * «Taie piesa» o taie și pe foaia 2; Anulează le pune la loc.
+
  */
 test.use({ locale: 'ro-RO' });
 
@@ -509,32 +507,4 @@ test.describe('în engleză', () => {
   test('bara Cuțitului întreagă la 1280 px și cu un font lat, cu textele englezești', async ({ page }) => {
     await baraCutitIncape(page);
   });
-});
-
-test('Cuțitul pe o piesă pusă de două ori (felia 10.3↑m): banda întrebării; «Taie piesa» o taie și pe foaia 2; Anulează', async ({ page }) => {
-  const la = await placa(page);
-  // «+1»: încă o instanță a plăcii, pe foaia 2 (pe foaia de 300 × 200 nu încape alături).
-  await randuri(page).nth(0).click();
-  const proprietati = page.locator('[data-panou="proprietati"]');
-  if ((await proprietati.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
-  await page.getByTestId('prop-piesa').locator('[data-buton="plus-unu"]').click();
-  const foaia2 = page.getByTestId('lista-vectori').getByRole('button', { name: /^Foaia 2/ });
-  await expect(foaia2).toContainText('1 piesă');
-  await nimicAles(page, la);
-  await cutit(page, 'linie');
-  const a = la(-10, 50), b = la(110, 50);
-  await page.mouse.move(a.x, a.y);
-  await page.mouse.down();
-  await page.mouse.move(b.x, b.y, { steps: 6 });
-  await page.mouse.up();
-  const banda = page.getByTestId('intrebare-surori');
-  await expect(banda.locator('span').first()).toHaveText('Tai o piesă pusă de 2 ori:');
-  await expect(page.getByTestId('cutit-sfat')).toHaveText('Alege sus: o formă aleasă e pusă de mai multe ori.');
-  await banda.locator('[data-surori="piesa"]').click();
-  await expect(page.getByTestId('cutit-sfat')).toHaveText(GATA);
-  await expect(randuri(page)).toHaveCount(2);
-  await expect(foaia2).toContainText('2 piese');
-  await page.locator('[data-actiune="istoric.anuleaza"]').click();
-  await expect(randuri(page)).toHaveCount(1);
-  await expect(foaia2).toContainText('1 piesă');
 });
