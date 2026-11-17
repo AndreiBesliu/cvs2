@@ -877,6 +877,12 @@
   background: var(--a);
 }
 
+/* Aranjamentul de acum, pe rândul „Aspectul…” (ADR 0250 §3). */
+.meniu-indiciu {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
 .meniu-separator {
   height: 1px;
   margin: var(--sp-1) 0;

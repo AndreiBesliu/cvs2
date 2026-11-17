@@ -19,6 +19,7 @@ import {
   ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
 } from '../ui/aranjament.ts';
+import { TEME, type Tema } from '../ui/alegereAranjament.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { ACTIUNI_EXTENSII, type ContextExtensii } from '../ui/actiuniExtensii.ts';
@@ -127,6 +128,8 @@ const incarcaRaport = () => import('./DialogRaportFoi.tsx').then(cuMesaje);
 const DialogRaportFoi = lazy(() => incarcaRaport().then((m) => ({ default: m.DialogRaportFoi }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
+/** Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b): aranjamentul, tema și butoanele mari, din paletă și din meniul contului. */
+const Aspectul = lazy(() => import('./Aspectul.tsx').then(cuMesaje).then((m) => ({ default: m.Aspectul }), () => ({ default: DialogNeincarcat })));
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
@@ -202,14 +205,12 @@ const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
 /** Fără foi vecine pe pânză (ADR 0210 §1): aceeași listă, ca pânza să nu i-o trimită workerului din nou la fiecare editare. */
 const NICIO_VECINA: readonly FoaieVecina[] = [];
 
-/** Temele, în ordinea în care le trece butonul: după sistem, luminoasă, întunecată. */
-const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
-
 /**
- * Acțiunile care rulează din orice fereastră (ADR 0132 §3): paleta, tema și filele ferestrelor. Celelalte sunt ale desenului:
- * din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la Proiectare.
+ * Acțiunile care rulează din orice fereastră (ADR 0132 §3): paleta, tema, fereastra Aspectul (ADR 0250 §3) și filele
+ * ferestrelor. Celelalte sunt ale desenului: din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la
+ * Proiectare.
  */
-const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', ...Object.values(DESCHIDE_FEREASTRA)]);
+const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', ...Object.values(DESCHIDE_FEREASTRA)]);
 /**
  * Fereastra extensiei deschise (ADR 0160 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
@@ -321,6 +322,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
   /** Dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
   const [dialogAsezare, setDialogAsezare] = useState(false);
+  /** Fereastra Aspectul, cu locul focusului de dinainte (acolo se întoarce la închidere). */
+  const [aspect, setAspect] = useState(false);
+  const focusAspect = useRef<Element | null>(null);
   /** Raportul foilor (ADR 0210 §6): colțul și Z0 ale exportului, de la fereastra lui; din paletă, cele implicite. */
   const [raport, setRaport] = useState<Pick<ParametriExport, 'origine' | 'z0'> | null>(null);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
@@ -412,7 +416,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const s = scara.citeste();
     return s === null ? null : treaptaZoom(s, window.devicePixelRatio || 1);
   });
-  const [tema, setTema] = useState(() => TEME.find((x) => x === document.documentElement.dataset['tema']) ?? 'auto');
+  const [tema, setTema] = useState<Tema>(() => TEME.find((x) => x === document.documentElement.dataset['tema']) ?? 'auto');
+  /** Tema aleasă (din bară sau din fereastra Aspectul): pe pagină, ținută, și pe butonul din bară. */
+  const schimbaTema = (noua: Tema): void => {
+    setTema(noua);
+    alegeTema(noua);
+  };
   const [potrivire, setPotrivire] = useState(0);
   /** Zona pânzei pe care n-o acoperă barele și panourile: foaia se potrivește în ea. */
   const zona = useRef<HTMLDivElement>(null);
@@ -555,11 +564,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       } : null);
       setPotrivire((n) => n + 1);
     },
-    tema: () => {
-      const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
-      setTema(noua);
-      alegeTema(noua);
-    },
+    tema: () => { schimbaTema(TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto'); },
+    // Paleta întoarce focusul înaintea acțiunii, iar meniul contului îl pune pe butonul Cont: fereastra îl ține minte.
+    aspect: () => { focusAspect.current = document.activeElement; setAspect(true); },
   };
   /**
    * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
@@ -751,7 +758,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || raport !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || raport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -1423,7 +1430,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }}
+                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1542,6 +1549,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           aseaza={(c) => ruleaza(registru, 'foaie.aseaza', context({ asezare: () => c }))}
           onInchide={() => { setDialogAsezare(false); }} />
       )}
+      {aspect && <Aspectul tema={tema} onTema={schimbaTema} onInchide={() => { setAspect(false); }} focusInapoi={focusAspect.current} />}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}

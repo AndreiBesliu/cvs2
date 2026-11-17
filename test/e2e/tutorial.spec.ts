@@ -25,7 +25,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   // Martorul probei de mai jos: cu `?test`, bucata panoului e cerută.
   expect(cereri.some(bucataTestului)).toBe(true);
   await expect(panou(page)).toContainText('Fereastra și versiunea');
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 35 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 36 rămase');
 
   // Bine, apoi focusul e al paginii: tasta R alege dreptunghiul.
   await panou(page).locator('[data-test-stare="bine"]').click();
@@ -43,7 +43,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   await panou(page).locator('[data-test="inainte"]').click();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');
   await panou(page).locator('[data-test-stare="nu"]').click();
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 33 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 34 rămase');
 
   // Reîncărcarea: rezultatele, pasul și poza rămân (în browser). Scrierea în bază e asincronă: reîncărcarea vine după ce „Nu”
   // a ajuns acolo (pe CI, 30.10, o reîncărcare imediată l-a pierdut).
@@ -64,7 +64,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   // Adresa păstrează `?test`: după reîncărcare, panoul se deschide singur.
   await page.reload();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 33 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 34 rămase');
   await panou(page).locator('[data-test="pas"]').selectOption('0');
   await expect(panou(page)).toContainText('Poze la pasul acesta: 1');
   await expect(panou(page).locator('[data-test="nota"]')).toHaveValue('rotunjirea arată bine');
@@ -76,7 +76,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   expect(d.suggestedFilename()).toMatch(/^raport-test-unelte-desen-\d{4}-\d{2}-\d{2}-\d{4}\.html$/);
   const html = readFileSync(await d.path(), 'utf8');
   expect(html).toContain('<h1>Testul uneltelor de desen</h1>');
-  expect(html).toContain('1 bine · 1 nu · 0 sărite · 33 rămase');
+  expect(html).toContain('1 bine · 1 nu · 0 sărite · 34 rămase');
   expect(html).toContain('<b>Nota:</b> rotunjirea arată bine');
   const poze = [...html.matchAll(/<img data-pas="([a-z-]+)" src="(data:image\/png;base64,[^"]+)"/g)];
   expect(poze.map((m) => m[1])).toEqual(['p-deschide']);
@@ -108,7 +108,7 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   await panou(page).locator('[data-test="reia"]').click();
   await expect(panou(page).locator('[data-test="reia"]')).toHaveText('Da, șterge rezultatele și pozele');
   await panou(page).locator('[data-test="reia"]').click();
-  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 35 rămase');
+  await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 36 rămase');
   await expect(panou(page)).toContainText('Poze la pasul acesta: 0');
   expect(erori).toEqual([]);
 });
@@ -128,12 +128,12 @@ test('fără `?test`, testul nu se deschide, iar bara n-are buton Test; pe live,
   await expect(panou(page)).toHaveCount(0);
 });
 
-test('sugestia (ADR 0111) stă în meniul contului, după manual, și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
+test('sugestia (ADR 0111) stă în meniul contului, după manual și aspect, și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
   await page.goto('/');
   // Din 02.11 (ADR 0120), manualul și sugestia stau în meniul contului, nu în extensia barei; sugestia își păstrează condiția.
   await expect(page.locator('#loc-extensie [data-editare="manual"], #loc-extensie [data-editare="sugestie"]')).toHaveCount(0);
   const meniu = await deschideMeniulContului(page);
-  await expect(meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="sugestie"]')).toBeVisible();
+  await expect(meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="aspect"] + [data-meniu-cont="sugestie"]')).toBeVisible();
   await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
   await page.goto('/');
   const live = await deschideMeniulContului(page);

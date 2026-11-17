@@ -24,6 +24,13 @@ export type Densitate = (typeof DENSITATI)[number];
 
 export type Alegere = { readonly aranjament: IdAranjament; readonly densitate: Densitate };
 
+/**
+ * Temele (ADR 0250 §5: o alegere separată, valabilă cu orice aranjament), în ordinea în care le trece butonul din bară: după
+ * sistem, luminoasă, întunecată. Le ține aplicația (`cncvs2.tema`, în `main.tsx`); fereastra Aspectul le arată pe toate.
+ */
+export const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
+export type Tema = (typeof TEME)[number];
+
 export const ALEGERE_IMPLICITA: Alegere = { aranjament: 'modern', densitate: 'normala' };
 
 const propriu = (o: object, k: string): unknown => (Object.hasOwn(o, k) ? (o as Record<string, unknown>)[k] : undefined);
@@ -43,6 +50,19 @@ export function citesteAlegerea(text: string | null, disponibile: readonly IdAra
   const densitate = propriu(x, 'densitate');
   return {
     aranjament: din(IDURI_ARANJAMENT, aranjament) && disponibile.includes(aranjament) ? aranjament : ALEGERE_IMPLICITA.aranjament,
+    densitate: din(DENSITATI, densitate) ? densitate : ALEGERE_IMPLICITA.densitate,
+  };
+}
+
+/**
+ * Alegerea de acum, de pe atributele lui `<html>`, unde o pune pornirea (`main.tsx`) și fereastra Aspectul. Un atribut
+ * lipsă sau necunoscut dă valoarea implicită, ca la citirea din stocare.
+ */
+export function alegereaDeAcum(d: { readonly [k: string]: string | undefined }): Alegere {
+  const aranjament = d['aranjament'];
+  const densitate = d['densitate'];
+  return {
+    aranjament: din(IDURI_ARANJAMENT, aranjament) ? aranjament : ALEGERE_IMPLICITA.aranjament,
     densitate: din(DENSITATI, densitate) ? densitate : ALEGERE_IMPLICITA.densitate,
   };
 }
