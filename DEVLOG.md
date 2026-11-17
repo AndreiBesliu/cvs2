@@ -9041,6 +9041,9 @@ pe formele pline, într-o felie a ei, după o poză reală). **Started:** 13.11,
   `manual.spec.ts:94`, de data asta cu ușa proiectului peste termenul ei de 4 s (`TERMEN_MS` din `proiectLocal.ts`):
   aplicația a pornit în memorie, fără paleta Ctrl+K. Singure, 6 / 6. Pe `main` `22ab3de`, în aceleași condiții (A/B): 490 /
   494, cu alte 4 căderi din timp (așezarea pe foi, extensiile, plăcuțele, importul).
+  Apoi `main` `021dcc6` (25.3↑d) unit aici (`424637b`; un conflict în dicționarul traducerilor, rezolvat cu partea lui
+  `main`), cu porțile întregi: unit 9 441 (9 433 trecute, 0 căderi, 8 sărite), build-ul determinist (325 de fișiere; totalul
+  713,5 / 800, pornirea 106,3, neschimbată), e2e 493 / 496 (alte 3 probe ale altor linii, din încărcare; singure, 6 / 6).
 
 ## 2026-11-16 — 3.6q: proba plăcii fără hartă, judecată față de cadrul arătat (completul de noapte) (Model: Claude Opus 5.5)
 
