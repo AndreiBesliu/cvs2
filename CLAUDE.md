@@ -1183,6 +1183,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **28.1↑b și probele instabile, unite în `main`** (la „unește ce se poate” și „ok, ia-le la rand”): fereastra
+  Aspectul (`cf0550b`; rândul „Aspectul…” în meniul contului, după Manual; manualul cu 37 de capitole, ușile 108, testul din
+  aplicație cu 36 de pași); probele care cădeau sub încărcare, fiecare reprodusă întâi și reparată la cauză (`912fece`:
+  sonda GRBL, salvarea amânată a trenulețului, scriptul de început al probei trenulețului doar în pagina de sus, fontul SVG
+  cu `test.slow()`, `FUNCTIONS_DISCOVERY_TIMEOUT=30` în unealta emulatoarelor); după porțile de unire (`34da53e`), proba
+  tichetelor de pe emulatoare știe rândul nou din meniul contului, iar pornirea extensiei se așteaptă până la 20 s. Totalul
+  710,8 / 800, pornirea cu ușa 110,6 / 115.
 - 17.11.2026: **12.1↑f și 11.7↑ unite în `main`** (la „unește ce se poate”): gaura prin foaie a incrustațiilor, documentul
   v25, cu câmpurile treptei refuzate cu motiv până la 12.1↑f-2 (`d2ef229`; supracursa nu e încă în fereastră, deci gaura
   merge exact la grosimea foii); fișa plăcii 11, pregătită fără mașină (`b4d5641`, doar probe și documente; distanța 10,
