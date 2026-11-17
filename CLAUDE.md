@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
+  (v26; v25, cu gaura și câmpurile treptei incrustațiilor, ADR 0175, e în `main` din 17.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -654,6 +654,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
   0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
   110 (rămân ~0,3 kB), totalul 690,5 / 700.**
+  **Fișa plăcii 11 (ADR 0210, felia 11.7↑)** pregătită pe 17.11, fără mașină: `docs/etape/placa-11.md`, generatorul și
+  fișierele de aur în `test/placi/placa-11/` (documentul pe drumul ferestrei «Din CSV…», exportul „Toate foile”). Cotele pe
+  hârtie, pe exportul proaspăt, în `test/unit/placa11.test.ts`, cu proba urechilor (rasterul fundului foii la 0,1 mm, umplut
+  din margine; controlul, fără urechi); octeții, în `placa11.aur.test.ts`. **Urechile nu țin sub 2 × freza:** la distanța
+  implicită de 5, cu Ø3,175, ramele vecine scot tot lemnul dintre piese, iar urechile (la un sfert și la trei sferturi din
+  drum) nu stau față în față, deci piesele din mijloc cad. Placa folosește 10, pe foi de 300 × 220; avertismentul în
+  aplicație e la owner.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -800,9 +807,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda în
   meniul global, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
   `titluFila.ts` (titlul filei din părți, folosit și de `IndicatorLucrare`); carcasa: locul semnului în fila Imprimanta,
-  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110. Urmează 3.6t (istoricul).
+  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110.
   **Reparată pe 13.11** (CI-ul complet roșu: banda pauzei acoperea Reia pe Linux): banda stă în meniul global, pe rândul
   `#loc-anunt-imprimanta` din `App.tsx` (gol, ascuns), nu mai plutește deasupra paginii; orice aranjament nou ține locul.
+  **3.6t gata pe 14.11** (istoricul, costul, estimarea care învață): `istoricImprimari.ts` (pur), `IstoricImprimanta.tsx`
+  (cardul, înregistrarea), magazia `imprimari` în `cvs2-imprimanta` (versiunea 2), `DIN_DESEN` (ce pune „Din desen…” lângă
+  fișier), driverul cu `historyList`. Totalul 713,0 / 800 (+4,8 față de `main`, peste ținta ADR-ului, sub plafon). Urmează 3.6u.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1092,14 +1102,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
-  **Aranjamentele, felia 28.1↑a (ADR 0250 §4, §5)** gata pe 16.11, în worktree-ul `aranjamente` (ramura
-  `wip/28.1-aranjamente`), neunită: alegerea și densitatea se citesc înaintea primei randări.
+  **Aranjamentele, feliile 28.1↑a–28.1↑b (ADR 0250 §3–§5),** în worktree-ul `aranjamente` (ramura `wip/28.1-aranjamente`):
+  28.1↑a (alegerea și densitatea, citite înaintea primei randări) unită în `main` pe 16.11 (`8ea3057`); 28.1↑b (fereastra
+  Aspectul) gata pe 17.11, neunită.
   - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`.
   - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
   - `ARANJAMENTE` din `aranjament.ts` ține aranjamentele build-ului; azi, doar Insulele.
   - **Un aranjament nou intră în `ARANJAMENTE`;** o alegere ținută a unuia care lipsește dă Insule, fără s-o șteargă.
   - Densitatea mare: `--tinta` 48 px, 56 la atingere.
-  - Pornirea 106,2 (cu ușa 110,1 / 115 kB), totalul 696,2 / 800.
+  - Fereastra Aspectul (`src/app/Aspectul.tsx`, la cerere): din meniul contului (rândul `aspect`) și din paletă
+    (`vedere.aspect`, în `ORIUNDE`). Se aleg doar aranjamentele din `ARANJAMENTE_DISPONIBILE`; celelalte, „în curând”.
+  - Pornirea 106,6 (cu ușa 110,6 / 115 kB), totalul 710,8 / 800, pe unirea cu `main` `4b52fc3`.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
@@ -1178,6 +1191,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **felia 3.6t a imprimantei unită în `main`** (din grupul 3 aprobat, „Da, grupul 3”; unită la „unește ce se
+  poate”): istoricul imprimărilor (`18d9be07`, exact `02c29f2`), +4,8 kB, peste ținta de ~3,5 din ADR 0194, în plafonul de
+  800. Porțile pe unire: unit 9 463 / 0, e2e 504 / 504 (o reluare: `extensii.masina.spec.ts:84`, senderul prin extensie,
+  „pierdut” în loc de „pregatit”, la procesorul 27 %; fișierul singur, 4 / 4; nu e a feliei), emulatoarele verzi. Totalul
+  715,6 / 800, pornirea cu ușa 110,6 / 115. Urmează 3.6u (filmele timelapse).
+- 17.11.2026: **28.1↑b și probele instabile, unite în `main`** (la „unește ce se poate” și „ok, ia-le la rand”): fereastra
+  Aspectul (`cf0550b`; rândul „Aspectul…” în meniul contului, după Manual; manualul cu 37 de capitole, ușile 108, testul din
+  aplicație cu 36 de pași); probele care cădeau sub încărcare, fiecare reprodusă întâi și reparată la cauză (`912fece`:
+  sonda GRBL, salvarea amânată a trenulețului, scriptul de început al probei trenulețului doar în pagina de sus, fontul SVG
+  cu `test.slow()`, `FUNCTIONS_DISCOVERY_TIMEOUT=30` în unealta emulatoarelor); după porțile de unire (`34da53e`), proba
+  tichetelor de pe emulatoare știe rândul nou din meniul contului, iar pornirea extensiei se așteaptă până la 20 s. Totalul
+  710,8 / 800, pornirea cu ușa 110,6 / 115.
+- 17.11.2026: **12.1↑f și 11.7↑ unite în `main`** (la „unește ce se poate”): gaura prin foaie a incrustațiilor, documentul
+  v25, cu câmpurile treptei refuzate cu motiv până la 12.1↑f-2 (`d2ef229`; supracursa nu e încă în fereastră, deci gaura
+  merge exact la grosimea foii); fișa plăcii 11, pregătită fără mașină (`b4d5641`, doar probe și documente; distanța 10,
+  fiindcă la 5 urechile nu țin), cu tăierea plăcii la owner. Un câmp nou al documentului ia de acum v26. Totalul 709,5 /
+  800, pornirea cu ușa 110,3 / 115.
 - 17.11.2026: **felia 25.3↑d a trasării unită în `main`** (pornită la „Yes, all three”, unită la „unește ce se poate”):
   punctele pierdute de linia mediană (un disc mic centrat pe un colț de pixel dispărea fără să fie numărat) sunt numărate și
   păstrate (`dd21a8a`, arborele lui `366baf9`). Porțile pe unire: unit 9 421 / 0, e2e 494 / 494, emulatoarele verzi la a

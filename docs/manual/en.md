@@ -35,6 +35,27 @@ doing now (the chosen tool, the 3D view, the open window, the Machine). You can 
 **Where it is saved.** The project saves itself, in this browser, on every change. See [The project and
 saving](#proiect).
 
+## Interface appearance
+%% capitol: aspect
+%% acopera: vedere.aspect
+
+The **Appearance** window opens from the **Account** menu (the **Appearance…** row, which also shows the current layout) or
+from the command palette (“Interface appearance”). What you choose shows right away; **Keep** keeps the choice, and
+**Cancel** (or Esc) puts back what was there when you opened the window.
+
+The **layout** is how the bars and panels sit around the canvas:
+- **Islands** (default): the canvas fills the screen; the bars float above it;
+- **Classic**: menus, docked panels and the command line;
+- **Workshop**: big buttons, for a tablet and next to the machine;
+- **Step by step**: takes you from the drawing to the machine, step by step.
+
+For now only Islands can be chosen; the other three show in the window as “coming soon” and arrive one at a time.
+
+The **theme** is the same as the “Theme” button in the bar: as the system, light or dark. **Big buttons** makes the buttons
+taller (48 px; 56 on a touch screen), with any layout: easier to hit on a tablet or with gloves.
+
+The choice stays on this device (in the browser): the tablet in the workshop can look different from the office computer.
+
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza
 %% acopera: vedere.potriveste, foaie.ghidaje, editare.lipire, editare.grila
@@ -1315,6 +1336,11 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
 
 - **Side gap** (c; default 0.1 mm): what stays between the plug walls and the pocket walls, on each side. The pocket keeps the
   drawing size, the plug shrinks by c. It must be under the radius of the pocket's smallest bit.
+- **Recess** (in the export window only): a **pocket**, with a floor, at the row depth; or a **hole through the sheet**: the
+  recess goes through the board, as a pocket the whole thickness deep, and the depth is the sheet thickness (plus the
+  overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
+  plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
+  raised plug rests with its face on the board, as tall as the board.
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
@@ -1347,7 +1373,8 @@ cut the tabs and clean them flush with the walls before gluing.
 **Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
 radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
 than the bit; a cut-out plug margin smaller than its bit; tabs at least as thick as the plug board; a loop with no room for a
-single tab (the width plus the bit).
+single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none); the step and the rest on
+the shoulder, until their slice (12.1↑f-2).
 
 ## The toolpath on the canvas
 %% capitol: traseu
@@ -1667,6 +1694,16 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the top bar, a dot and the percentage, wherever you are in the app, once you have opened the window; with **Connect the
   kept printer when cvs2 opens**, also without that. They come while cvs2 is open, also in the background; on a phone,
   only while it is in front. On Edge, an inactive tab sleeps after 2 hours: add cvs2 to “Never put these sites to sleep”.
+- **History** (its card, in the Printer window): the prints, newest first, from two places: the printer's history (all of
+  them, also those started from its screen or from Creality Print) and the cvs2 history, kept in this browser (the last 500),
+  with the part names, the estimate and the material. For each: the date, the file, the result (✓ done, ⏹ stopped, ⚠ error),
+  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost. Below,
+  the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
+  printer keeps its own history). You set the **Price per kg** of each material; until then, the cost is “—”. Electricity
+  joins the cost once you set the printer's **Average power** (W) and the **Price per kWh**. In “From drawing…”, **Correct
+  the estimate from history** (on) shows the estimate learned from the finished prints of files sliced in cvs2, on the same
+  printer and with the same material (the median of the last ones, at least 3): “~21m after 5 prints on K1C-8578 (slicer:
+  18m)”. The file does not change.
 - **Pause**, **Resume** and **Stop** stay at the top, in the strip, while it prints. Pause goes at once. Stop asks for a
   confirmation, because a stopped print cannot be resumed: **Stop printing** or **Let it run**. **Disconnect** only closes the
   connection; the printer is not touched.

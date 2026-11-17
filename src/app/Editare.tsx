@@ -55,6 +55,7 @@ import type { Config } from './config.ts';
 import { contTinut, puneCont, useContTinut, type ContTinut } from './dreptCont.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { capMeniuCont, initiale, numeButon, randuriMeniuCont, type IdMeniuCont } from './meniuCont.ts';
+import { alegereaDeAcum } from '../ui/alegereAranjament.ts';
 import { useRaportariNecitite } from './raportariNecitite.ts';
 import type { StareVerificare } from './PanouVerificare.tsx';
 import type { LinieTaiere } from './PanouTaiere.tsx';
@@ -241,13 +242,14 @@ const UnealtaCutit = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then(
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
+ * paleta, Aspectul), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
  * altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
  */
 function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean, acoperita: string): string {
   if (document.querySelector('[aria-labelledby="export-titlu"]')) return 'export.gcode';
   if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
   if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
+  if (document.querySelector('[aria-labelledby="aspect-titlu"]')) return 'vedere.aspect';
   if (!activ) return acoperita;
   if (vedere3d) return 'editare.3d';
   return `unealta.${unealta}`;
@@ -295,6 +297,8 @@ export type ProprietatiEditare = {
   readonly ruleaza: (id: string, extra: Extra) => RezultatActiune;
   /** Deschide dialogul „Așază pe foi” (ADR 0210 §3), pe foaia activă. */
   readonly onAseaza?: () => void;
+  /** Fereastra Aspectul (ADR 0250 §3), din rândul ei din meniul contului. */
+  readonly onAspect?: () => void;
   /** Lipirea mutării, dată pânzei (null: lipirea oprită sau modulul plecat). */
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
@@ -530,6 +534,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       setContDeschis(true);
     } else if (id === 'manual') {
       setManual({ usa: null });
+    } else if (id === 'aspect') {
+      // Focusul pe butonul Cont: fereastra îl ține minte și i-l întoarce la închidere.
+      refButonCont.current?.focus();
+      p.onAspect?.();
     } else if (id === 'raporteaza') {
       setRaportare(true);
     } else if (id === 'raportari') {
@@ -1958,6 +1966,8 @@ function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, n
         return t('editare.cont.raportari');
       case 'manual':
         return numeScurt(t('editare.manual'));
+      case 'aspect':
+        return t('editare.cont.aspect');
       case 'raporteaza':
         return t('editare.cont.raporteaza');
       case 'sugestie':
@@ -1979,6 +1989,7 @@ function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, n
             onClick={() => { onAlege(id); }}>
             <span>{eticheta(id)}</span>
             {id === 'manual' ? <kbd>F1</kbd> : null}
+            {id === 'aspect' ? <small className="meniu-indiciu">{t(`aranjament.${alegereaDeAcum(document.documentElement.dataset).aranjament}`)}</small> : null}
             {id === 'raportari' && necitite > 0 ? (
               <span className="meniu-numar" data-testid="meniu-cont-necitite" title={t('editare.cont.raspunsuri-noi', { n: necitite })}>{necitite}</span>
             ) : null}

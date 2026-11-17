@@ -210,9 +210,9 @@ test('3.6o: fiecare imprimantă ținută își poartă driverul; una fără el (
 test('3.6o: proba unei adrese și căutarea folosesc portul, citirea și răspunsurile driverului', async () => {
   const fals: DriverText = {
     ...CREALITY_K1, id: 'fals', port: 7125, citiri: ['{"citeste":1}', '{"lista":1}'],
-    citeste: (t) => (t === 'ping' ? { recunoscut: true, stare: {}, fisiere: null, raspuns: 'pong' }
-      : t === 'eu' ? { recunoscut: true, stare: { model: 'X1', nume: 'X1-01' }, fisiere: null, raspuns: null }
-        : { recunoscut: false, stare: {}, fisiere: null, raspuns: null }),
+    citeste: (t) => (t === 'ping' ? { recunoscut: true, stare: {}, fisiere: null, istoric: null, raspuns: 'pong' }
+      : t === 'eu' ? { recunoscut: true, stare: { model: 'X1', nume: 'X1-01' }, fisiere: null, istoric: null, raspuns: null }
+        : { recunoscut: false, stare: {}, fisiere: null, istoric: null, raspuns: null }),
   };
   const ws: WsFals[] = [];
   const fabrica = (url: string): WsFals => {

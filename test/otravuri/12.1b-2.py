@@ -30,7 +30,8 @@ o('B02', MIG, "      if (typeof inc === 'object' && inc !== null && Object.hasOw
   'ciocnirea doar pe incrustația dreaptă (nu pe orice fel)')
 o('B03', MIG, '  return { ok: true, doc: { ...doc, schema: 24 } };', '  return { ok: true, doc: { ...doc } };', 'doc',
   'migrarea v23 → v24 fără numărul nou')
-o('B04', SCH, '      punti: v.optional(SchemaUrechi),\n    }),', '      punti: v.optional(v.unknown()),\n    }),', 'doc',
+# B04 și B16, reorientate la 12.1↑f (ADR 0175): după punți vin locașul și treapta; scrierea scoate și locașul vechi.
+o('B04', SCH, '      punti: v.optional(SchemaUrechi),', '      punti: v.optional(v.unknown()),', 'doc',
   'punțile nejudecate de ușă (orice valoare primită)')
 o('B05', SCH, '      jurDop: v.picklist([\'fata\', \'banda\']),', "      jurDop: v.picklist(['fata', 'banda']),\n      punti: v.optional(SchemaUrechi),", 'doc',
   'punțile judecate și pe incrustația în V (acolo sunt un câmp necunoscut)')
@@ -57,8 +58,8 @@ o('B14', SCR, '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) 
   'punțile scrise pleacă la întoarcerea pe implicite')
 o('B15', SCR, '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...(puntiVechi ?? {}), ...puntiNoi } : undefined;',
   '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...puntiNoi } : undefined;', 'scriere', 'fără îmbinare (câmpul necunoscut pierdut)')
-o('B16', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, ...fara } = vechi ?? {};',
-  '  const { frezeDop: _vechi, ...fara } = vechi ?? {};\n  const puntiVechi = vechi?.punti;', 'scriere', 'punțile vechi rămân pe dopul ridicat')
+o('B16', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, ...fara } = vechi ?? {};',
+  '  const { frezeDop: _vechi, locas: _locas, ...fara } = vechi ?? {};\n  const puntiVechi = vechi?.punti;', 'scriere', 'punțile vechi rămân pe dopul ridicat')
 o('B17', SCR, ' && p.grosime === PUNTI_DOP_DREPT.grosime;', ';', 'scriere', 'grosimea nu contează la „implicite”')
 o('B18', SCR, 'p.numar === PUNTI_DOP_DREPT.numar && ', '', 'scriere', 'numărul nu contează la „implicite”')
 

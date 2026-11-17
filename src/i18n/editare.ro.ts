@@ -721,6 +721,7 @@ export const roEditare = {
   'editare.cont.al-meu': 'Contul meu…',
   'editare.cont.intra': 'Intră sau creează cont…',
   'editare.cont.iesi': 'Ieși din cont',
+  'editare.cont.aspect': 'Aspectul…',
   'editare.cont.nelogat': 'Nu ești logat',
   'editare.cont.proba-noua': {
     one: 'Un cont nou: {n} zi de probă, fără card',

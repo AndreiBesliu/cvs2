@@ -269,6 +269,8 @@ test('(o) ciocnirile v23: rândul lui CAMPURI_NOI_O, pe orice instanță a oric�
     22: ['incrustatie.banda'], 23: ['instanta:texte'],
     // ADR 0174 (v24): punțile dopului drept, pe operație; ciocnirea lor o judecă proba v24.
     24: ['incrustatie.punti'],
+    // ADR 0175 (v25): gaura și treapta incrustației drepte; ciocnirea lor o judecă proba v25.
+    25: ['incrustatie.locas', 'incrustatie.treapta'],
   });
   assert.equal(PE_INSTANTA_O, 'instanta:');
   // Fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui (cu `texte` pe instanță).

@@ -231,8 +231,8 @@ test('cifrele: din aceleași date, nu scrise de mână', () => {
   const adr = readdirSync('docs/adr').filter((f) => /^\d{4}-.+\.md$/.test(f));
   assert.equal(c.adr.total, adr.length);
   assert.equal(c.adr.acceptate + c.adr.propuse + c.adr.inlocuite + c.adr.altele, adr.length);
-  // Fișele plăcilor 1, 2 și 4 (placa 3 vine cu felia 3.9, la mașină); niciuna tăiată încă.
-  assert.deepEqual(c.placi, { fise: 3, taiate: 0 });
+  // Fișele plăcilor 1, 2, 4 și 11 (placa 3 vine cu felia 3.9, la mașină); niciuna tăiată încă.
+  assert.deepEqual(c.placi, { fise: 4, taiate: 0 });
   assert.equal(Object.keys(roadmap.adr).length, adr.length);
   assert.equal(roadmap.adr['0047']?.cale, 'docs/adr/0047-nucleul-de-simulare.md');
 });

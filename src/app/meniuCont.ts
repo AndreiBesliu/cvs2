@@ -9,10 +9,10 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { ContTinut } from './dreptCont.ts';
 
 /**
- * Un rând al meniului: panoul contului (logat) sau logarea (nelogat), raportările omului, manualul, o raportare nouă, sugestia,
- * ieșirea.
+ * Un rând al meniului: panoul contului (logat) sau logarea (nelogat), raportările omului, manualul, aspectul interfeței (ADR
+ * 0250 §3), o raportare nouă, sugestia, ieșirea.
  */
-export type IdMeniuCont = 'cont' | 'intra' | 'raportari' | 'manual' | 'raporteaza' | 'sugestie' | 'iesi';
+export type IdMeniuCont = 'cont' | 'intra' | 'raportari' | 'manual' | 'aspect' | 'raporteaza' | 'sugestie' | 'iesi';
 
 /**
  * Rândurile, de sus în jos; `null` e linia dinaintea ieșirii. Raportările (ADR 0116 §C) cer contul deschis, cu adresa
@@ -25,6 +25,7 @@ export function randuriMeniuCont(cont: ContTinut | null, sugestie: boolean): rea
     cont ? 'cont' : 'intra',
     ...(deschis ? (['raportari'] as const) : []),
     'manual',
+    'aspect',
     ...(deschis ? (['raporteaza'] as const) : []),
     ...(sugestie ? (['sugestie'] as const) : []),
     ...(cont ? ([null, 'iesi'] as const) : []),

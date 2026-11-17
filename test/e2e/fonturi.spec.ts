@@ -147,6 +147,9 @@ test('o colecție TTC încărcată în Fonturile mele: textul cu fața a doua, d
 });
 
 test('un font SVG cu o singură linie (ADR 0140 §7) încărcat în Fonturile mele: recunoscut, trăsăturile gravate pe linie, editabil după reîncărcare', async ({ page }) => {
+  // Un drum lung (fontul încărcat, previzualizarea, textul, reîncărcarea, editarea): sub încărcarea altor sesiuni, tot drumul
+  // trecea de cele 30 s ale probei (17.11; reprodus cu procesorul paginii încetinit de 20 de ori). Timpul triplu al lui slow().
+  test.slow();
   await page.goto('/');
   await textNou(page, 'HI');
   await page.click('[data-text="fonturi"]');

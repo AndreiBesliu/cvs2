@@ -181,13 +181,19 @@ const SchemaOperatie = v.looseObject({
       fel: v.literal('drept'),
       jocLateral: pozitiv(PLAFON.adancimeOperatie),
       dop: v.picklist(['ridicat', 'decupat']),
-      sprijin: v.picklist(['fund', 'fata']),
+      // ADR 0175 (v25): și „pe umăr” (dopul în trepte).
+      sprijin: v.picklist(['fund', 'fata', 'umar']),
       joc: pozitiv(PLAFON.adancimeOperatie),
       fierastrau: pozitiv(PLAFON.adancimeOperatie),
       margine: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(PLAFON.latura)),
       frezeDop: v.optional(SchemaRest),
       // ADR 0174 (v24): punțile dopului decupat, ca urechile; potrivirea (pe buclă, față de placă) e a lucrării.
       punti: v.optional(SchemaUrechi),
+      // ADR 0175 (v25): locașul prin foaie și umărul treptei; geometria (d față de adâncime, deschiderea) e a lucrării.
+      locas: v.optional(v.picklist(['buzunar', 'gaura'])),
+      treapta: v.optional(v.looseObject({
+        adancime: pozitiv(PLAFON.adancimeOperatie), latime: pozitiv(PLAFON.latura), spre: v.optional(v.picklist(['interior', 'exterior'])),
+      })),
     }),
   ])),
 });

@@ -321,7 +321,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 24;
+export const SCHEMA_CURENTA_O = 25;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2039,6 +2039,10 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
  * - v24 (ADR 0174): incrustația cu pereți drepți poate avea `punti`, ca urechile (un întreg 1–100, lățimea și grosimea
  *   pozitive), un obiect deschis. Potrivirea (pe buclă, față de placă) e a lucrării. Pe un v23, `punti` în `incrustatie` e o
  *   ciocnire la v23 → v24 (pe orice fel de incrustație, ca la v21).
+ * - v25 (ADR 0175): incrustația cu pereți drepți poate avea `locas` ('buzunar' / 'gaura') și `treapta` (un obiect deschis:
+ *   `adancime` în (0, 1 000], `latime` în (0, 10 000], `spre` opțional 'interior' / 'exterior'), iar `sprijin` primește
+ *   'umar'. Geometria (d față de adâncime, deschiderea de sub umăr, sprijinul potrivit locașului) e a lucrării. Pe un v24,
+ *   `locas` sau `treapta` în `incrustatie` e o ciocnire la v24 → v25 (pe orice fel), iar sprijinul 'umar' nu e o valoare v24.
  * - Migrările v10 → … → v22 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
  *   document vN valid”), cu câmpul PROPRIU: v10 cu `pasLateral` pe o operație (un buzunar e refuzat deja de schema v10);
  *   v11 cu `coborare`; v12 cu `retragereCompleta` (găurirea e refuzată de schema v12); v13 cu `forma` pe scula operației
@@ -2103,6 +2107,9 @@ export const RANG_MAXIM_O = 100_000;
 export const INCRUSTATIE_O = {
   jocMax: 1_000, fierastrauMax: 1_000, margineMax: 10_000, jurDop: ['fata', 'banda'], jocLateralMax: 1_000, dop: ['ridicat', 'decupat'],
   sprijin: ['fund', 'fata'], latimeBandaMax: 10_000, grosimePlacaMax: 1_000,
+  // v25 (ADR 0175): sprijinul și pe umăr, locașul, umărul treptei.
+  sprijinV25: ['fund', 'fata', 'umar'], locas: ['buzunar', 'gaura'], spreTreapta: ['interior', 'exterior'], adancimeTreaptaMax: 1_000,
+  latimeTreaptaMax: 10_000,
 } as const;
 
 /** Felurile operației, pe versiune (ADR 0069 §1, ADR 0087 §6, ADR 0090 §5). */
@@ -2145,6 +2152,8 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   23: ['instanta:texte'],
   // ADR 0174: „un document v23 care are deja `punti` în `incrustatie` (un câmp necunoscut) e refuzat, ca ciocnire”.
   24: ['incrustatie.punti'],
+  // ADR 0175: „un v24 cu `locas` sau `treapta` în `incrustatie` (câmpuri necunoscute atunci) e refuzat, ca ciocnire”.
+  25: ['incrustatie.locas', 'incrustatie.treapta'],
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2190,10 +2199,13 @@ export type IncrustatieO = Liber & { fel: 'v'; joc: number; fierastrau: number; 
 export type OperatieV20O = OperatieV19O & { incrustatie?: IncrustatieO };
 /** v21 (ADR 0171): și incrustația cu pereți drepți. */
 export type IncrustatieDreaptaO = Liber & {
-  fel: 'drept'; jocLateral: number; dop: (typeof INCRUSTATIE_O.dop)[number]; sprijin: (typeof INCRUSTATIE_O.sprijin)[number];
+  fel: 'drept'; jocLateral: number; dop: (typeof INCRUSTATIE_O.dop)[number]; sprijin: (typeof INCRUSTATIE_O.sprijinV25)[number];
   joc: number; fierastrau: number; margine: number; frezeDop?: FrezaRestO[];
   /** v24 (ADR 0174): punțile dopului decupat, ca urechile. */
   punti?: Liber & { numar: number; latime: number; grosime: number };
+  /** v25 (ADR 0175): locașul prin foaie și umărul treptei. */
+  locas?: (typeof INCRUSTATIE_O.locas)[number];
+  treapta?: Liber & { adancime: number; latime: number; spre?: (typeof INCRUSTATIE_O.spreTreapta)[number] };
 };
 export type OperatieV21O = OperatieV19O & { incrustatie?: IncrustatieO | IncrustatieDreaptaO };
 /** v22 (ADR 0172): și banda dopului în V. */
@@ -2229,7 +2241,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2381,7 +2393,9 @@ export function problemeIncrustatieO(i: unknown, versiune = 20): string[] {
     const rez: string[] = [];
     if (!pozitivPana(i['jocLateral'], p.jocLateralMax)) rez.push(`.jocLateral = ${are(i, 'jocLateral') ? arata(i['jocLateral']) : '(lipsă)'} nu e în (0, ${p.jocLateralMax}]`);
     if (!(p.dop as readonly unknown[]).includes(i['dop'])) rez.push(`.dop = ${are(i, 'dop') ? arata(i['dop']) : '(lipsă)'} nu e ${p.dop.join(' / ')}`);
-    if (!(p.sprijin as readonly unknown[]).includes(i['sprijin'])) rez.push(`.sprijin = ${are(i, 'sprijin') ? arata(i['sprijin']) : '(lipsă)'} nu e ${p.sprijin.join(' / ')}`);
+    // v25 (ADR 0175): și „umar”.
+    const sprijinuri: readonly string[] = versiune >= 25 ? p.sprijinV25 : p.sprijin;
+    if (!(sprijinuri as readonly unknown[]).includes(i['sprijin'])) rez.push(`.sprijin = ${are(i, 'sprijin') ? arata(i['sprijin']) : '(lipsă)'} nu e ${sprijinuri.join(' / ')}`);
     if (!pozitivPana(i['joc'], p.jocMax)) rez.push(`.joc = ${are(i, 'joc') ? arata(i['joc']) : '(lipsă)'} nu e în (0, ${p.jocMax}]`);
     if (!pozitivPana(i['fierastrau'], p.fierastrauMax)) rez.push(`.fierastrau = ${are(i, 'fierastrau') ? arata(i['fierastrau']) : '(lipsă)'} nu e în (0, ${p.fierastrauMax}]`);
     if (!intre(i['margine'], 0, p.margineMax)) rez.push(`.margine = ${are(i, 'margine') ? arata(i['margine']) : '(lipsă)'} nu e în [0, ${p.margineMax}]`);
@@ -2391,6 +2405,17 @@ export function problemeIncrustatieO(i: unknown, versiune = 20): string[] {
       const punti = i['punti'];
       if (!esteObiect(punti)) rez.push(`.punti = ${arata(punti)} nu e un obiect { numar, latime, grosime }`);
       else for (const m of problemeUrechiO({ urechi: punti })) rez.push(`.punti${m}`);
+    }
+    // v25 (ADR 0175): locașul și treapta, opționale.
+    if (versiune >= 25 && are(i, 'locas') && !(p.locas as readonly unknown[]).includes(i['locas'])) rez.push(`.locas = ${arata(i['locas'])} nu e ${p.locas.join(' / ')}`);
+    if (versiune >= 25 && are(i, 'treapta')) {
+      const t = i['treapta'];
+      if (!esteObiect(t)) rez.push(`.treapta = ${arata(t)} nu e un obiect { adancime, latime }`);
+      else {
+        if (!pozitivPana(t['adancime'], p.adancimeTreaptaMax)) rez.push(`.treapta.adancime = ${are(t, 'adancime') ? arata(t['adancime']) : '(lipsă)'} nu e în (0, ${p.adancimeTreaptaMax}]`);
+        if (!pozitivPana(t['latime'], p.latimeTreaptaMax)) rez.push(`.treapta.latime = ${are(t, 'latime') ? arata(t['latime']) : '(lipsă)'} nu e în (0, ${p.latimeTreaptaMax}]`);
+        if (are(t, 'spre') && !(p.spreTreapta as readonly unknown[]).includes(t['spre'])) rez.push(`.treapta.spre = ${arata(t['spre'])} nu e ${p.spreTreapta.join(' / ')}`);
+      }
     }
     return rez;
   }
@@ -2583,9 +2608,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v24 (o copie; un v24 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV24O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV24O;
+/** Un document primit de ușa curentă, cum iese din ea: v25 (o copie; un v25 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV25O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV25O;
 }
 
 /**
@@ -2840,6 +2865,8 @@ export type InstantaV23O = InstantaO & { texte?: { [idGrup: string]: TextPlacuta
 export type DocV23O = Liber & { schema: 23; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 /** v24 (ADR 0174): aceleași piese (punțile dopului drept intră în `IncrustatieDreaptaO`). */
 export type DocV24O = Liber & { schema: 24; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+/** v25 (ADR 0175): aceleași piese (gaura și treapta intră în `IncrustatieDreaptaO`). */
+export type DocV25O = Liber & { schema: 25; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** v23: ce schimbă literele plăcuțelor în plafoanele de ansamblu (`verificaArboreO`, din `verificaVnO`). */
 export type AjustariLumeO = {
@@ -3365,3 +3392,12 @@ export function ridicaV24O(doc: unknown): DocV24O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV24O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V24_O); }
 export function migreazaV1V24O(v1: DocV1O): DocV24O { return ridicaPanaLaO(v1, SCHEMA_V24_O) as DocV24O; }
 export function migreazaV23V24O(v23: DocV23O): DocV24O { return ridicaPanaLaO(v23, SCHEMA_V24_O) as DocV24O; }
+
+// Numele pe versiuni (v25, ADR 0175: gaura și treapta incrustației drepte).
+export const SCHEMA_V25_O = 25;
+export function verificaV25(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V25_O); }
+export function verificaPanaLaV25O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V25_O); }
+export function ridicaV25O(doc: unknown): DocV25O { return ridicaPanaLaO(doc, SCHEMA_V25_O) as DocV25O; }
+export function usaCurentaV25O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V25_O); }
+export function migreazaV1V25O(v1: DocV1O): DocV25O { return ridicaPanaLaO(v1, SCHEMA_V25_O) as DocV25O; }
+export function migreazaV24V25O(v24: DocV24O): DocV25O { return ridicaPanaLaO(v24, SCHEMA_V25_O) as DocV25O; }

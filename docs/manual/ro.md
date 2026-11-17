@@ -34,6 +34,27 @@ deschide la capitolul a ce faci acum
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
 salvarea](#proiect).
 
+## Aspectul interfeței
+%% capitol: aspect
+%% acopera: vedere.aspect
+
+Fereastra **Aspectul** se deschide din meniul **Cont** (rândul **Aspectul…**, care arată și aranjamentul de acum) sau din
+paleta de comenzi („Aspectul interfeței”). Ce alegi se vede pe loc; **Păstrează** ține alegerea, iar **Renunță** (sau Esc)
+pune la loc ce era când ai deschis fereastra.
+
+**Aranjamentul** e felul în care stau barele și panourile în jurul pânzei:
+- **Insule** (implicit): pânza pe tot ecranul, barele plutesc deasupra ei;
+- **Clasic**: meniuri, panouri andocate și linia de comandă;
+- **Atelier**: butoane mari, pentru tabletă și lângă mașină;
+- **Pas cu pas**: te duce de la desen la mașină, pas cu pas.
+
+Deocamdată se poate alege doar Insule; celelalte trei apar în fereastră cu „în curând” și vin pe rând.
+
+**Tema** e aceeași cu a butonului „Tema” din bară: după sistem, luminoasă sau întunecată. **Butoane mari** face butoanele
+mai înalte (48 px; 56 pe un ecran tactil), cu orice aranjament: se nimeresc mai ușor pe tabletă sau cu mănuși.
+
+Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate arăta altfel decât calculatorul din birou.
+
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza
 %% acopera: vedere.potriveste, foaie.ghidaje, editare.lipire, editare.grila
@@ -1271,6 +1292,10 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 
 - **Jocul lateral** (c; implicit 0,1 mm): cât rămâne între pereții dopului și ai locașului, pe fiecare parte. Locașul rămâne
   cât desenul, dopul se micșorează cu c. Trebuie să fie sub raza celei mai mici freze a locașului.
+- **Locașul** (doar în fereastra exportului): **buzunar**, cu fund, la adâncimea rândului; sau **gaură prin foaie**: locașul
+  trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
+  rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
+  plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
@@ -1303,7 +1328,8 @@ interioare; taie punțile și curăță-le la nivelul pereților înainte de lip
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
+sprijinul pe umăr, până la felia lor (12.1↑f-2).
 
 ## Traseul pe pânză
 %% capitol: traseu
@@ -1609,6 +1635,15 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   fi în aplicație, după ce ai deschis fereastra o dată; cu **Leagă imprimanta ținută la deschiderea cvs2**, și fără. Vin
   cât cvs2 e deschis, și în fundal; pe telefon, doar cât e în față. Pe Edge, o filă inactivă doarme după 2 ore: pune cvs2
   la „Nu pune niciodată aceste site-uri în repaus”.
+- **Istoricul** (cardul lui, în fereastra Imprimanta): imprimările, cele mai noi sus, din două locuri: istoricul imprimantei
+  (toate, și cele pornite de pe ecran sau din Creality Print) și istoricul cvs2, ținut în acest browser (ultimele 500), cu
+  numele pieselor, estimarea și materialul. Pentru fiecare: data, fișierul, rezultatul (✓ gata, ⏹ oprită, ⚠ eroare), durata
+  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul. Dedesubt, totalurile lunii,
+  **Exportă CSV** și **Golește istoricul cvs2…**, cu o confirmare: **Golește** sau **Păstrează-l** (istoricul imprimantei
+  rămâne în ea). **Prețul pe kg** al fiecărui material îl pui tu; până atunci, costul e „—”. Curentul intră în cost după ce
+  pui **Puterea medie** a imprimantei (W) și **Prețul kWh**. În „Din desen…”, **Corectează estimarea după istoric** (pornită)
+  arată estimarea învățată din imprimările duse la capăt ale fișierelor feliate în cvs2, pe aceeași imprimantă și cu același
+  material (mediana ultimelor, cel puțin 3): „~21m după 5 imprimări pe K1C-8578 (feliatorul: 18m)”. Fișierul nu se schimbă.
 - **Pauză**, **Reia** și **Oprește** stau sus, în bandă, cât imprimă. Pauza pleacă pe loc. Oprește cere o confirmare, fiindcă o
   imprimare oprită nu se mai poate relua: **Oprește imprimarea** sau **Lasă-o să meargă**. **Deconectează** închide doar
   legătura; imprimanta nu e atinsă.
