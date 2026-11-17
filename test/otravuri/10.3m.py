@@ -36,9 +36,8 @@ o('T04', T, "      if (cuLitere.has(p.id)) return { ok: false, motiv: 'placute' 
 o('T05', T, "  for (const f of doc.foi) for (const i of f.instante) if (i.texte) cuLitere.add(i.piesa);\n  for (const inst of foaie.instante) {",
   "  for (const i of foaie.instante) if (i.texte) cuLitere.add(i.piesa);\n  for (const inst of foaie.instante) {", 'surori', 'plăcuțele, căutate doar pe foaia de lucru')
 o('T06', T, "      else if (b !== a) return { ok: false, motiv: 'diferite' };\n", "", 'surori', 'tăieturile diferite trec')
-o('T07', T, "JSON.stringify(piese.map(({ id: _id, ...rest }) => rest),", "JSON.stringify(piese,", 'surori', 'amprenta cu id-urile pieselor noi (la fel = diferite)')
-o('T08', T, "const r = (x: number): number => Math.round(x * 1e6) / 1e6 + 0;", "const r = (x: number): number => x;", 'surori', 'amprenta fără rotunjire')
-o('T09', T, "=> (typeof v === 'number' ? r(v) : v))).sort());", "=> (typeof v === 'number' ? r(v) : v))));", 'surori',
+o('T07', T, "piese.map(({ id: _id, ...rest }) => JSON.stringify(rest))", "piese.map((rest) => JSON.stringify(rest))", 'surori', 'amprenta cu id-urile pieselor noi (la fel = diferite)')
+o('T09', T, "=> JSON.stringify(rest)).sort());", "=> JSON.stringify(rest)));", 'surori',
   'amprenta cu ordinea bucăților (o soră rotită cu 180° pare tăiată altfel)')
 # Conversia.
 o('C01', C, "    if (noi.size > 0 && impartita && c.surori !== 'piesa') return { ok: false, motiv: 'impartita' };\n", "", 'surori',

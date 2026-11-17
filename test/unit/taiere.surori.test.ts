@@ -17,7 +17,7 @@
  *   piesa ei, convertită, iar celelalte trei rămân pe piesa veche.
  * - **la otrăvuri** (felia 10.3↑m): o formă pusă o dată, printre cele alese, nu e „cu surori”, iar de câte ori e pusă e cea mai
  *   folosită; „i2” rotită cu 180° la (300, 60) se taie la Y = 30 în același loc al piesei ca „s” (bucățile vin în ordine
- *   inversă, iar rotirea lasă zgomot: amprenta, fără ordine și rotunjită la 1e-6, le găsește la fel), iar comanda le pune la
+ *   inversă: amprenta, fără ordine, le găsește la fel), iar comanda le pune la
  *   locul fiecărei instanțe (aceeași foaie ca tăiate pe rând, ca forme); tăiată
  *   doar „i2”, a doua aleasă, degruparea arată spre piesa desprinsă acum (alta decât pe documentul de calcul); conversia unui
  *   șablon de plăcuțe, ca piesă, se sare, numărată; la «Desprinde și convertește», o a doua piesă cu surori, neschimbată (o cale
@@ -137,8 +137,8 @@ test('«Taie piesa»: tăiate în locuri diferite ale piesei, `diferite`; la fel
   assert.ok(f1);
   const mutat: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300, 20)] }, ...d.foi.slice(1)] };
   assert.deepEqual(taie(mutat, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' })), { ok: false, motiv: 'diferite' });
-  // „i2” rotită cu 180° la (300, 60): Y = 30 o taie la 60 − 30 = 30 în desenul piesei, ca pe „s”, cu bucățile invers și zgomotul
-  // rotirii; trece, iar pe foaie bucățile stau unde le-ar pune și tăierea fiecăreia (cutiile, aceleași).
+  // „i2” rotită cu 180° la (300, 60): Y = 30 o taie la 60 − 30 = 30 în desenul piesei, ca pe „s”, cu bucățile invers; trece, iar
+  // pe foaie bucățile stau unde le-ar pune și tăierea fiecăreia (cutiile, aceleași).
   const rotita: Document = { ...d, foi: [{ ...f1, instante: [f1.instante[0] as Instanta, inst('i2', 300, 60, 180)] }, ...d.foi.slice(1)] };
   const rr = ok(taie(rotita, cerere(['s', 'i2'], { cutit: Y30, surori: 'piesa' })));
   assert.equal(rr.degrupate.length, 2);

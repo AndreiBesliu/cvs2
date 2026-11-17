@@ -817,14 +817,14 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
 }
 
 /**
- * Amprenta bucăților unei instanțe tăiate, în desenul piesei (fără id-urile pieselor noi), cu numerele rotunjite la 1e-6 mm
- * (rotirea instanței lasă zgomot) și fără ordinea lor (o soră rotită cu 180° dă partea A și B invers): două instanțe ale
- * aceleiași piese tăiate în același loc al ei au aceeași amprentă (felia 10.3↑m, «Taie piesa»). Comanda pune bucățile la locul
- * fiecărei instanțe, deci ordinea lor nu schimbă nimic pe foaie.
+ * Amprenta bucăților unei instanțe tăiate, în desenul piesei (fără id-urile pieselor noi), fără ordinea lor (o soră rotită cu
+ * 180° dă partea A și B invers): două instanțe ale aceleiași piese tăiate în același loc al ei au aceeași amprentă (felia 10.3↑m,
+ * «Taie piesa»). Numerele sunt exacte: tăierea lucrează în desenul piesei, iar o singură tăietură prinde două surori în același
+ * loc al lor doar mutate de-a lungul ei sau rotite cu 180°, fără zgomot (rotunjirea la 1e-6, încercată, n-a schimbat nimic: scoasă
+ * la otrăvuri). Comanda pune bucățile la locul fiecărei instanțe, deci ordinea lor nu schimbă nimic pe foaie.
  */
 function amprentaParti(piese: readonly Piesa[]): string {
-  const r = (x: number): number => Math.round(x * 1e6) / 1e6 + 0;
-  return JSON.stringify(piese.map(({ id: _id, ...rest }) => JSON.stringify(rest, (_k, v: unknown) => (typeof v === 'number' ? r(v) : v))).sort());
+  return JSON.stringify(piese.map(({ id: _id, ...rest }) => JSON.stringify(rest)).sort());
 }
 
 /** Elementele instanței de fiecare parte a liniei (A: −1, B: 1) și câte contururi a tăiat ea (0: linia n-o atinge). */
