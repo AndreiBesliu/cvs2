@@ -15,6 +15,7 @@ def o(id, fis, vechi, nou, set, ce):
 T = 'src/model/taiere.ts'
 C = 'src/model/conversie.ts'
 S = 'src/model/taiereSurori.ts'
+SU = 'src/model/surori.ts'
 A = 'src/ui/actiuniDocumentCalcul.ts'
 W = 'src/ui/actiuniExportCalcul.ts'
 Q = 'src/ui/intrebareSurori.ts'
@@ -45,9 +46,9 @@ o('C01', C, "    if (noi.size > 0 && impartita && c.surori !== 'piesa') return {
 o('C02', C, "    if (vazute.has(p.id)) continue;\n", "", 'surori', 'piesa, convertită de două ori (cu două instanțe alese)')
 o('C03', C, "    if (impartita && c.surori === 'piesa' && cuLitere.has(p.id)) {", "    if (false) {", 'surori', 'șablonul plăcuțelor, convertit ca piesă')
 # Comenzile, pe firul principal.
-o('S01', S, "filter((i) => a.has(i.id) && (n.get(i.piesa) ?? 0) > 1)", "filter((i) => a.has(i.id) && (n.get(i.piesa) ?? 0) > 0)", 'surori',
+o('S01', SU, "filter((i) => a.has(i.id) && (n.get(i.piesa) ?? 0) > 1)", "filter((i) => a.has(i.id) && (n.get(i.piesa) ?? 0) > 0)", 'surori',
   'alesele cu surori, și cele puse o dată')
-o('S02', S, "if (a.has(i.id)) m = Math.max(m, n.get(i.piesa) ?? 0);", "if (a.has(i.id)) m = n.get(i.piesa) ?? 0;", 'surori', 'de câte ori: ultima, nu cea mai folosită')
+o('S02', SU, "if (a.has(i.id)) m = Math.max(m, n.get(i.piesa) ?? 0);", "if (a.has(i.id)) m = n.get(i.piesa) ?? 0;", 'surori', 'de câte ori: ultima, nu cea mai folosită')
 o('S03', S, "      return i && p ? { ...x, instanta: i, piesa: p } : x;", "      return x;", 'surori', 'degruparea nu arată spre piesele desprinse')
 o('S04', S, "      comenzi.push({ tip: 'sterge', foaie: f.id, instanta: i, pozitie: k });\n", "", 'surori', 'instanțele de pe celelalte foi nu pleacă')
 o('S05', S, "pozitie: x.k + m + j });", "pozitie: x.k + j });", 'surori', 'bucățile de pe celelalte foi, la locuri greșite')

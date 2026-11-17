@@ -33,7 +33,8 @@ import { anuleaza, executa, istoricNou, type Comanda } from '../../src/model/jur
 import { cutieInstanta, folosiri } from '../../src/model/pieseLegate.ts';
 import { SchemaDocument } from '../../src/model/schemaDocument.ts';
 import { taie, type CerereTaiere, type RezultatTaiere } from '../../src/model/taiere.ts';
-import { aleseCuSurori, catePuse, comenziTaiePiesa, desprindeSiConverteste, desprindeSiTaie, desprinse } from '../../src/model/taiereSurori.ts';
+import { aleseCuSurori, catePuse } from '../../src/model/surori.ts';
+import { comenziTaiePiesa, desprindeSiConverteste, desprindeSiTaie, desprinse } from '../../src/model/taiereSurori.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const stoc = { latime: 1000, inaltime: 600, grosime: 18 };

@@ -2,7 +2,6 @@ import { idNou } from './copii.ts';
 import type { Document, Instanta, Piesa } from './document.ts';
 import { executa, istoricNou, type Comanda, type Degrupata } from './jurnal.ts';
 import { comenziDesprinde, folosiri } from './pieseLegate.ts';
-import { aleseCuSurori } from './surori.ts';
 
 /**
  * Tăierea și conversia unei piese puse de mai multe ori (felia 10.3↑m, ADR 0180, „Se redeschide dacă”: opțiuni, nu doar
@@ -15,7 +14,8 @@ import { aleseCuSurori } from './surori.ts';
  *   fiecărei instanțe a piesei, de pe orice foaie, puse și ele de atâtea ori.
  * - **«Convertește piesa»:** piesa se schimbă în locul ei (workerul), deci toate instanțele ei; aici nu e nimic de făcut.
  */
-export { aleseCuSurori, catePuse, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from './surori.ts';
+// Doar tipurile (calculul cu întrebarea folosește singur `surori.ts`: importat și aici, modulul ar ieși într-o bucată comună).
+export type { AlegereSurori, SuroriConversie, SuroriTaiere } from './surori.ts';
 
 /** Comenzile desprinderii instanțelor `ids` ale foii și documentul de după (același document, dacă n-are ce desprinde). */
 function desprinde(doc: Document, idFoaie: string, ids: readonly string[]): { readonly comenzi: Comanda[]; readonly doc: Document } {
@@ -52,14 +52,14 @@ export function desprindeSiTaie(doc: Document, idFoaie: string, ids: readonly st
 }
 
 /**
- * «Desprinde și convertește», în comanda conversiei: piesele convertite pe documentul desprins (`desprins`, cu toate cele alese
- * desprinse) care sunt ale unor instanțe cu surori în `doc` trec pe piesele desprinderii de acum, care desprinde doar
- * instanțele lor; restul pieselor rămân. Instanțele desprinse își păstrează id-urile, deci se găsesc după ele.
+ * «Desprinde și convertește», în comanda conversiei: piesele convertite pe documentul desprins (`desprins`, cu instanțele
+ * `alese`, cele cu surori ale foii, desprinse) care sunt ale unora dintre ele trec pe piesele desprinderii de acum, care
+ * desprinde doar instanțele lor; restul pieselor rămân. Instanțele desprinse își păstrează id-urile, deci se găsesc după ele.
  */
 export function desprindeSiConverteste(doc: Document, desprins: Document, idFoaie: string, alese: readonly string[], piese: readonly Piesa[]): {
   readonly comenzi: Comanda[]; readonly doc: Document; readonly piese: Piesa[];
 } {
-  const cuSurori = new Set(aleseCuSurori(doc, idFoaie, alese));
+  const cuSurori = new Set(alese);
   const aPiesei = new Map<string, string>();
   for (const i of desprins.foi.find((f) => f.id === idFoaie)?.instante ?? []) if (cuSurori.has(i.id)) aPiesei.set(i.piesa, i.id);
   const ids = piese.flatMap((p) => { const i = aPiesei.get(p.id); return i === undefined ? [] : [i]; });
