@@ -715,17 +715,18 @@ dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
   transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
   rândul de sub listă spune ce a ales;
-- **Rezultatul** (la Transparența și la Luminozitatea): **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul
-  fiecărei trăsături, tăiat pe linie: vezi mai jos);
+- **Rezultatul**: **Contururi** (marginea desenului) sau **Linii mediane** (mijlocul fiecărei trăsături, tăiat pe linie:
+  vezi mai jos; pe Culorile, ale fiecărei culori);
 - **Pragul**: unde se desparte desenul de fundal. **Automat** îl alege din imagine, între cele două tonuri ale ei; fără el,
   glisorul îl mută;
 - **Inversează**: fundalul devine desen și invers (de exemplu, la un text alb pe o placă neagră);
-- **Lumina** (la Luminozitatea): **Uniformă** (implicit) ia un singur prag pe toată imaginea, pentru o scanare curată sau
-  un logo; **Neuniformă** raportează hârtia la o suprafață netedă potrivită pe ea, pentru o poză luminată dintr-o parte, cu
-  colțurile întunecate sau cu pete pline; **Cu umbre** o raportează la fundalul din jurul fiecărui punct, pentru umbra
-  telefonului sau a mâinii (o pată plină mai lată decât o douăsprezecime din imagine iese golită: atunci, Neuniformă). La
-  amândouă, desenul e ce iese din hârtie, oricum ar fi marginea imaginii (o foaie pozată pe masă); dacă iese totuși
-  întors, **Inversează**. Când hârtia variază mult la Uniformă, raportul îți propune Neuniformă;
+- **Lumina** (la Luminozitatea; la Culorile, mai jos): **Uniformă** (implicit) ia un singur prag pe toată imaginea,
+  pentru o scanare curată sau un logo; **Neuniformă** raportează hârtia la o suprafață netedă potrivită pe ea, pentru o
+  poză luminată dintr-o parte, cu colțurile întunecate sau cu pete pline; **Cu umbre** o raportează la fundalul din
+  jurul fiecărui punct, pentru umbra telefonului sau a mâinii (o pată plină mai lată decât o douăsprezecime din imagine
+  iese golită: atunci, Neuniformă). La amândouă, desenul e ce iese din hârtie, oricum ar fi marginea imaginii (o foaie
+  pozată pe masă); dacă iese totuși întors, **Inversează**. Când hârtia variază mult la Uniformă, raportul îți propune
+  Neuniformă;
 - **Netezimea**: **Fidel** urmează marginea de aproape și păstrează colțurile mici, **Echilibrat** netezește treptele
   pixelilor, **Neted** rotunjește colțurile mici și dă mai puține noduri;
 - **Ignoră petele sub** și **Umple golurile sub** (în mm, cu pixelii alături): petele de desen și golurile din el mai mici de
@@ -760,7 +761,11 @@ rămâne vie, iar o schimbare nouă o oprește pe cea începută.
 
 Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
 exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
-incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. Apoi:
+incrustezi. Pragul și **Inversează** se ascund; restul reglajelor rămân. **Lumina** (pe o imagine opacă) raportează fiecare
+canal al culorii la hârtie: cu **Neuniformă**, hârtia devine albă peste tot, iar paleta arată culorile desenului, oricare ar
+fi lumina sau dominanta pozei (și creta colorată pe tablă); **Cu umbre** repară și umbra telefonului pe un desen cu linii,
+dar golește formele pline mai late decât o douăsprezecime din imagine (atunci, Neuniformă). O umbră tare peste forme pline
+n-o repară niciuna. Apoi:
 - **Numărul culorilor**: **Automat** găsește singur culorile deosebite ale imaginii (umbrirea unei suprafețe rămâne o
   singură culoare, iar o culoare mică dar clară, ca o linie subțire, rămâne a ei); fără el, glisorul alege de la 2 la 16.
   Un număr nou face culorile din nou, fără legăturile și bifele de dinainte;
@@ -795,9 +800,18 @@ Sub **Rezultatul: Linii mediane** stau opțiunile lor:
 - **Buclele:** **Pe linie** (implicit) sau **Vectori închiși**: un O sau un inel devine un contur închis, tăiat pe exterior,
   iar o buclă aflată în alta, pe interior.
 
+Pe **Culorile**, cu **Rezultatul: Linii mediane**, fiecare culoare bifată își are liniile ei mediane (culorile legate,
+împreună), cu aceleași opțiuni pentru toate: o schemă, un desen cu carioci. Pragul automat al părților late vine din
+grosimea obișnuită a desenului întreg, deci o culoare plină (un fond, o pată) iese „lată”. **Leagă peste alte culori**
+(bifată implicit): o linie întreruptă de o culoare desenată peste ea (o încrucișare) continuă peste ea, într-o singură
+cale: două capete ale aceleiași culori, față în față, la cel mult trei grosimi ale ei, cu drumul dintre ele peste altă
+culoare (nu peste hârtie); raportul numără legăturile. Fiecare pastilă spune grosimea trăsăturilor culorii ei și, dacă
+foaia are o singură freză, cum stă ea față de trăsătură; **Arată grosimea** desenează banda fiecărei culori cu grosimea
+ei. **Importă** pune câte o formă pe culoare, cu liniile ei tăiate pe linie.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- liniile mediane pe culori și scanările îndreptate vin mai târziu;
+- scanările îndreptate vin mai târziu;
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
@@ -873,6 +887,19 @@ dat între ei (jocul, ca bucățile să intre una în alta) sau cu suprapunerea 
 pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de ce, o tăietură în care nu încape niciun dinte, un
 model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
 și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
+
+**Taie în panouri** (un bloc al panoului): o firmă mai mare decât masa mașinii se taie în panouri, care se prind apoi unul
+de altul. Se taie formele alese (fără nimic ales, toate formele foii), pe o grilă peste cutia lor: cu **Mărimea panoului**,
+lățimea × înălțimea în mm (implicit, materialul foii), sau cu **Numărul de panouri**, pe lățime × pe înălțime. Cu mărimea,
+**Panourile** sunt **egale** (implicit: cel mai mic număr care încape, toate de aceeași mărime) sau **din colț** (panouri
+pline de la colțul din stânga-jos, plus ce rămâne): firma de 2 400 × 1 000 mm, cu panoul de 1 200 × 900, dă patru panouri de
+1 200 × 500, respectiv două de 1 200 × 900 și două de 1 200 × 100. Sub câmpuri, panoul spune câte panouri ies, iar cât
+lucrezi în bloc, grila se vede pe pânză. Tăieturile sunt ale liniilor din panou, cu **Închide bucățile**, **Între bucăți**
+și **Îmbinarea** de mai sus: dinții prind panourile între ele, iar jocul le lasă să intre unul în altul. Bucățile fiecărui
+panou devin un grup, **Panoul 1**, **Panoul 2** … (rând cu rând, de jos, de la stânga), și stau unde erau; un panou cu o
+singură bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte
+și de alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie;
+nici o formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
@@ -1375,6 +1402,30 @@ mașinii” răspunsul controlerului la `$$` (din consola senderului); programul
 
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
+
+## Raportul foilor și lista de tăiere
+%% capitol: raport
+%% acopera: export.raport
+
+**Raportul foilor și lista de tăiere** se deschide din fereastra [exportului](#export), cu **Raportul foilor…**, sau din
+paleta de comenzi (Ctrl+K). Arată tot proiectul, nu doar foaia activă.
+
+Pe fiecare foaie: previzualizarea (formele, colorate pe operații, ca la [exportul vectorilor](#vectori)), materialul, mărimea
+foii, cât din ea folosesc piesele (aria cutiilor lor față de a foii) și operațiile (felul, freza, adâncimea cu trecerile,
+urechile). Apoi piesele: numele (pentru o piesă fără nume, felul formei), câte sunt, mărimea, rotirile și valorile din CSV
+ale [plăcuțelor](#piese-legate). Foile identice (aceleași piese, în aceleași locuri, cu aceleași operații) se spun o dată, cu
+×N, ca la export. La capăt, **Totalurile pe piesă** (câte în tot proiectul, cu materialul și foile pe care stau) și **Foile,
+pe material** (câte foi de fiecare mărime și material: ce cumperi).
+
+**Mărimea pieselor:** **tăiată** (implicit) e cutia conturului care decupează piesa din placă (profilul exterior prin toată
+grosimea foii), în axele piesei: rotirea ei pe foaie n-o schimbă. O piesă fără un astfel de profil primește mărimea
+desenului, marcată „(desen)”. Cu **desen**, toate primesc cutia întregului lor desen. Z0 și colțul de origine sunt ale
+exportului: cele alese în fereastra lui, când raportul vine de acolo.
+
+**Descarcă CSV** scrie lista în `cncvs2-lista-de-taiere.csv`, în UTF-8, cu trei tabele unul sub altul: foile (un rând pe
+piesă, cu foaia, de câte ori se taie și cât e folosită), totalurile pe piesă și foile pe material. **CSV cu `;`**
+(implicit) are virgula zecimală, ca Excel în română să-l deschidă direct; cu **`,`**, punctul, pentru Excel în engleză.
+**Tipărește** deschide tipărirea browserului (și „Salvează ca PDF”), doar cu raportul, pe oricâte pagini.
 
 ## Exportul vectorilor
 %% capitol: vectori

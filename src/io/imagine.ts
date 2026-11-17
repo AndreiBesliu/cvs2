@@ -58,7 +58,7 @@ export type AlegeriCulori = {
 
 /**
  * Opțiunile liniei mediane din fereastră (ADR 0223): capetele, părțile late (cu pragul în mm; null: automat, de două ori
- * grosimea obișnuită), semnalarea lor și buclele.
+ * grosimea obișnuită), semnalarea lor și buclele; pe culori (ADR 0227), legarea peste alte culori.
  */
 export type AlegeriMediane = {
   readonly capete: 'centru' | 'varf';
@@ -66,13 +66,17 @@ export type AlegeriMediane = {
   readonly pragLatMm: number | null;
   readonly semnaleaza: boolean;
   readonly bucle: 'linie' | 'inchise';
+  readonly leaga: boolean;
 };
 
 /** Alegerile trasării din fereastra importului (ADR 0220 §10); pragurile curățării și lățimea, în mm. */
 export type AlegeriTrasare = {
   /** Sursa cernelii (alb-negru), sau culorile (ADR 0221 §1): pragul și inversarea nu se folosesc atunci. */
   readonly sursa: 'auto' | 'alfa' | 'lum' | 'culori';
-  /** Ce iese din cerneala alb-negru (ADR 0222 §2): contururile ei, sau liniile mediane ale trăsăturilor (tăiate pe linie). */
+  /**
+   * Ce iese din cerneala alb-negru (ADR 0222 §2) și, pe culori, din fiecare culoare (ADR 0227): contururile, sau liniile
+   * mediane ale trăsăturilor (tăiate pe linie).
+   */
   readonly rezultat: 'contururi' | 'mediane';
   /** Pragul, din 255; null: automat. */
   readonly prag: number | null;
@@ -101,8 +105,11 @@ export type AlegeriTrasare = {
 /** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
 export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null };
 
-/** Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită. */
-export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: true, bucle: 'linie' };
+/**
+ * Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită;
+ * pe culori, legarea bifată (ADR 0227, răspunsul 1a).
+ */
+export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: true, bucle: 'linie', leaga: true };
 
 /** Foaia, implicit (ADR 0225, răspunsurile 1a, 2a): neîndreptată, A4, colțurile găsite singure. */
 export const FOAIE_IMPLICITA: AlegeriFoaie = { indreapta: false, format: 'a4', alt: { w: 210, h: 297 }, colturi: null };

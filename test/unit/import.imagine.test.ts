@@ -6,7 +6,7 @@ import { PIXELI_POSTER, posterizeaza, raspundeTrasare, reduceImaginea, type Cere
 import { colturiImplicite, type Colturi } from '../../src/trasare/foaia.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
 import { caiDinTrasare, cerereTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
-import { distFormeFoaie, luminaLaterala, poza, POZE_FOAIE, pozaFoaie } from './ajutor-poze.ts';
+import { desenLiniiColorate, distFormeFoaie, luminaLaterala, poza, pozaColor, POZE_FOAIE, pozaFoaie } from './ajutor-poze.ts';
 
 /**
  * Ușa imaginilor (ADR 0220 §1, §7, §8): semnăturile, DPI-ul din antet (PNG `pHYs`, JPEG JFIF și EXIF, BMP), scara și
@@ -610,4 +610,49 @@ test('previzualizarea foii: redusă sub plafon prin media blocurilor de latură 
   }
   const mica = { latime: 10, inaltime: 10, date: new Uint8ClampedArray(400) };
   assert.equal(reduceImaginea(mica), mica);
+});
+
+test('pe culori, lumina trece prin cerere (ADR 0226): Neuniformă dă 6 culori pe o poză colorată luminată dintr-o parte', async () => {
+  const p = pozaColor({ W: 600, H: 400, laterala: 0.5, dominanta: true });
+  const n = (await raspundeTrasare(peCulori({ imagine: p, optiuni: { ...cerere({}).optiuni, lumina: 'neuniforma' } }))).raspuns;
+  assert.ok(n.ok && n.fel === 'culori');
+  assert.equal(n.raport.lumina, 'neuniforma');
+  assert.equal(n.raport.paleta.length, 6);
+  // La „Uniformă”, hârtia ruptă în două (7 culori) și variația ei, pentru sugestie; raportul imaginii le poartă pe amândouă.
+  const u = (await raspundeTrasare(peCulori({ imagine: p }))).raspuns;
+  assert.ok(u.ok && u.fel === 'culori');
+  assert.equal(u.raport.lumina, 'uniforma');
+  assert.equal(u.raport.paleta.length, 7);
+  assert.ok((u.raport.inegala ?? 0) > 0.25, `variația: ${u.raport.inegala}`);
+  const pv = previzualizareDinRaspuns({ nume: 'poza.png', octeti: new Uint8Array() }, u);
+  assert.ok(pv.ok && pv.format === 'imagine');
+  assert.equal(pv.trasare.lumina, 'uniforma');
+  assert.ok((pv.trasare.inegala ?? 0) > 0.25);
+  const pn = previzualizareDinRaspuns({ nume: 'poza.png', octeti: new Uint8Array() }, n);
+  assert.ok(pn.ok && pn.format === 'imagine');
+  assert.equal(pn.trasare.lumina, 'neuniforma');
+  assert.equal(pn.trasare.inegala, null);
+});
+
+test('pe culori, cu Rezultatul Linii mediane (ADR 0227): piesele au căile pe linie, cu numele culorii; grosimea fiecărei culori', async () => {
+  const mediane = { capete: 'centru', late: 'mediane', pragLatMm: null, semnaleaza: false, bucle: 'linie', leaga: true } as const;
+  const r = (await raspundeTrasare(peCulori({ imagine: desenLiniiColorate(), latimeMm: 150, rezultat: 'mediane', mediane }))).raspuns;
+  assert.ok(r.ok && r.fel === 'culori');
+  assert.equal(r.piese.length, 5);
+  // Linia roșie legată peste celelalte culori: o singură cale deschisă; raportul numără legăturile.
+  const deschise = r.piese.map((p) => Array.from({ length: p.cai.inceput.length - 1 }, (_, k) => p.cai.deschisa?.[k] === 1).filter(Boolean).length);
+  assert.deepEqual([...deschise].sort(), [0, 0, 1, 1, 1].sort(), `căile deschise pe piese: ${deschise.join(', ')}`);
+  assert.equal(r.raport.mediane?.legaturi, 3);
+  const pv = previzualizareDinRaspuns({ nume: 'linii.png', octeti: new Uint8Array() }, r);
+  assert.ok(pv.ok && pv.format === 'imagine');
+  // Piesele împreună, fiecare cu numele culorii; căile, pe linie.
+  const toate = [pv.pregatit, ...(pv.pregatit.impreuna ?? [])];
+  assert.equal(toate.length, 5);
+  assert.ok(toate.every((p) => / #[0-9a-f]{6}$/.test(p.nume)), toate.map((p) => p.nume).join(', '));
+  assert.ok(toate.some((p) => p.laturi?.includes('pe-linie')), 'măcar o piesă cu căi pe linie');
+  // Desenul previzualizării: toate căile pieselor, cu cele deschise (roșul, albastrul, liniuța galbenului) deschise.
+  assert.equal(Array.from(pv.contur.deschisa ?? []).filter((x) => x === 1).length, 3);
+  // Grosimea fiecărei culori (răspunsul 2a), în pixeli, pentru pastile: liniile au 6 px (la 0,25 mm pe pixel, 1,5 mm).
+  const g = pv.trasare.culori?.piese.map((p) => p.grosimePx ?? 0) ?? [];
+  assert.equal(g.filter((x) => Math.abs(x - 6) <= 1).length, 4, `grosimile: ${g.join(', ')}`);
 });

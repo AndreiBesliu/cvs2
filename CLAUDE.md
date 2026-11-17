@@ -104,7 +104,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v22.oracol.test.ts` (din 08.11, cu incrustațiile din v20–v22) și, pentru v23 (literele
   plăcuțelor, 11.4↑, în `main` din 13.11), în `test/unit/document.v23.oracol.test.ts`. **Un câmp nou al documentului
-  (v24, de exemplu punțile dopului drept ale incrustațiilor) intră acolo, ca rangul și incrustația:** rândul
+  (v25, de exemplu gaura și treptele incrustațiilor, ADR 0175; v24 e în `main` din 16.11) intră acolo, ca rangul și incrustația:** rândul
   lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie, iar probele care țin
   versiunea curentă se mută pe ea (`schema: 23` în probe; oracolele CAM primesc versiunea nouă cum le primesc pe v21 și v22,
   de exemplu `test/oracles/regiune.ts`). **Și în corpusul de aur
@@ -569,6 +569,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   bucățile”** (e în opțiunile lui), iar sub 95rem butoanele barei de sus doar cu iconiță au 8 px de fiecare parte: cu Cuțitul
   în bara uneltelor, bara Transformării trecea de 1280 px cu grila și fontul lat (proba în `ancore.spec.ts`; a Cuțitului, la
   fiecare fel, în `cutit.spec.ts`).
+  **Tăierea în panouri (felia 10.3↑k)** gata pe 13.11, pe `wip/10.3k-panouri` (făcută din `main`), neunită: grila în
+  `src/model/grilaPanouri.ts` (pur, comun workerului și previzualizării), tăierea în `src/model/panouri.ts` (în worker, pe foaia
+  activă, ca restul tăierii: `indexFoaie`; linie cu linie, cu `desparte` în `taie`: o formă cu contururi de ambele părți ale
+  unei linii care nu le trece se desparte), gruparea panourilor pe firul principal (`src/model/grupuriPanouri.ts`, din
+  `document.taie`: gruparea citește blocurile de text cu valibot, deci în worker ar aduce ~4,5 kB). Rezultatul tăierii are
+  `grupuri` (panourile de grupat) și `panouri` (câte sunt); alegerea de după, din comanda tăierii (`ids`). Oracolul:
+  `judecaPanourile` (`taiere.panouri.oracol.test.ts`).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
@@ -639,6 +646,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/io/scrieZip.ts`, CRC-32 comun în `src/io/crc32.ts`); nume scurte: `CNCVS2.ZIP`, `F<k>X<N>/`. Mașina, simularea și
   rezumatul rămân ale foii active. **Încă 11 motive date doar de calcul (ale lui `main`: gruparea, degruparea, textul,
   rolul, foaia, importul) au trecut în mesajele editorului**: pornirea cu ușa 110,1 → 109,6 / 110, totalul 686,2 / 700.
+  **Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑)** gata pe 13.11: fereastra `src/app/DialogRaportFoi.tsx`
+  (din export, cu colțul și Z0 de acolo, și din paletă, `export.raport`), calculul pur `src/model/raportFoi.ts` (mărimea =
+  cutia contururilor tăiate de un profil exterior prin toată grosimea, fără despărțire, în axele piesei; altfel a desenului,
+  marcată; foile identice după o semnătură fără id-uri și fără numele frezei), CSV-ul `src/app/raportCsv.ts` (BOM, `;` cu
+  virgula zecimală sau `,`; trei tabele). Tipărirea: fereastra e un portal sub `body`, iar `@media print` din `stil.css`
+  scoate restul (cu `!important` la lățime: la tipar, `vw` e al paginii). `scrieSvg` primește grosimea liniilor (implicit
+  0,1 mm). Ferestrele care importă modelul stau în `src/app` (regula `interfata-prin-actiuni`). **Pornirea cu ușa 109,7 /
+  110 (rămân ~0,3 kB), totalul 690,5 / 700.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -871,8 +886,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   găsite singure (`src/trasare/foaia.ts`; geometria lor, fără importuri, în `src/trasare/colturi.ts`, ca fereastra s-o
   folosească fără nucleu), formatul (A4 implicit) cu mărimea adevărată, `CerereTrasare.foaie` (îndreptarea înaintea zonei;
   zona e în pixelii foii îndreptate), butonul Colțurile cu mânerele. Proporțiile din poză au un interval: pe poza înclinată
-  doar înainte, focala nu se poate afla, deci sunt „nesigure”. Lumina pe culori (25.4↑b) și liniile mediane pe culori vin
-  după ea.
+  doar înainte, focala nu se poate afla, deci sunt „nesigure”. **25.4↑b (lumina pe culori, ADR 0226) gata pe 13.11, cu
+  toate recomandările („Da la 1-2a”), pe aceeași ramură, neunită, pe canalul `trasare`:** Lumina și pe Culorile (imaginile
+  opace), înaintea numărului culorilor; `culoriLuminate` (`src/trasare/culori.ts`: fiecare canal raportat la fundalul lui
+  din `lumina.ts`; stă în culori fiindcă pragul Otsu pe canal e în `trasare.ts`, pe care `lumina.ts` nu-l poate importa);
+  pe hârtie, balansul de alb (culorile adevărate), pe tablă, nivelul ei mediu. **25.3↑c (liniile mediane pe culori, ADR
+  0227) gata pe 16.11, cu toate recomandările („Da la 1-2a”), pe aceeași ramură, pe canalul `trasare`:**
+  `src/trasare/medianeCulori.ts` (după etichetele culorilor, fără plasă: masca fiecărei culori bifate ca alfa, decupată la
+  cutia ei; întâi liniile tuturor culorilor, din lățimile lor grosimea desenului întreg și pragul automat al părților late;
+  apoi „Leagă peste alte culori”, pe liniile în pixeli, prin cârligul `cu.leaga` al lui `traseazaMediana`, înaintea
+  curbelor). **Totalul ramurii: 698,3 / 800 kB**, pornirea 105,7 / 115 (cu ușa 109,7).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1061,6 +1084,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
+  **Aranjamentele, felia 28.1↑a (ADR 0250 §4, §5)** gata pe 16.11, în worktree-ul `aranjamente` (ramura
+  `wip/28.1-aranjamente`), neunită: alegerea și densitatea se citesc înaintea primei randări.
+  - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`.
+  - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
+  - `ARANJAMENTE` din `aranjament.ts` ține aranjamentele build-ului; azi, doar Insulele.
+  - **Un aranjament nou intră în `ARANJAMENTE`;** o alegere ținută a unuia care lipsește dă Insule, fără s-o șteargă.
+  - Densitatea mare: `--tinta` 48 px, 56 la atingere.
+  - Pornirea 106,2 (cu ușa 110,1 / 115 kB), totalul 696,2 / 800.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
@@ -1139,6 +1170,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.11.2026: **felia 10.3↑k a tăierii unită în `main`** (la „unește ce se poate”, după raportul liniei): tăierea în
+  panouri, pe foaia activă (`c577549`, arborele lui `fc3a785`, cu `main` `5ab3941` adus în ramură). Porțile pe unire: unit 9
+  414 / 0, e2e 494 / 494, emulatoarele verzi; totalul 708,2 / 800, pornirea cu ușa 110,3 / 115.
+- 16.11.2026: **a doua rundă din 16.11, unită la „unește ce se poate”:** trasarea 25.3↑c (liniile mediane pe culori, ADR
+  0227; `380c053`), prima felie a aranjamentelor, 28.1↑a (alegerea aranjamentului și densitatea, citite înaintea primei
+  randări, ADR 0250 §4–§5; `8ea3057`), și planșele 11.6↑ (raportul foilor și lista de tăiere; `7d19a73`). Pornirea cu ușa
+  110,3 / 115, totalul 703,4 / 800. Apoi, la „Start the three recommended slices: plate sheet 11, 25.3↑d and 28.1↑b?”,
+  owner-ul: „Yes, all three”: fișa plăcii 11 (pregătită fără mașină; tăierea, a owner-ului), 25.3↑d (punctele pierdute de
+  linia mediană) și 28.1↑b (fereastra Aspectul).
+- 16.11.2026: **unirile de după pauză** („poti sa continui si sa pornesti si worktrees care s-au oprit, sau poti sa unesti
+  ce se poate”, în sesiunea principală; apoi „Poti sa adopti si sesiunea de design si sa o pornesti”): liniile reluate, iar
+  sesiunea designului coordonată ca o linie (commit-urile doar pe `wip/28.1-aranjamente`, unirea a sesiunii principale).
+  Unite, fiecare felie gata pe linia ei: 12.1↑b-2 (punțile dopului drept, documentul v24, ADR 0174; exact `9a73aa6`),
+  trasarea 25.4↑b (lumina pe culori, ADR 0226; exact `94bf287`) și reparația probei instabile `imprimanta.spec.ts:966`
+  (`ead04c2`, doar probe), care făcuse roșu completul de noapte din 16.11. Feliile următoare, cu „unește ce se poate”, se
+  unesc când linia raportează gata, fără altă întrebare.
 - 13.11.2026: **felia 25.5↑ a trasării unită în `main`, cu plafoanele 115 / 800 înaintea ei** („Yes, merge it”, la „Merge
   trasarea 25.5↑ (straightening an angled sheet) into main?”, în sesiunea principală): unită exact la `1ca446b` (`07df71f`);
   ADR 0226 (propus) rămâne pe ramură. Plafoanele din ADR 0252–0253 („Da, 115 ／ 800”, în sesiunea designului; „Yes, 800 kB”,

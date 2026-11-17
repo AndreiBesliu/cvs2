@@ -77,10 +77,11 @@ export type RaportImagine = {
   readonly culori?: RaportCuloriImagine;
   /**
    * Liniile mediane (ADR 0222 §5): grosimea obișnuită a trăsăturilor (px), buclele, joncțiunile și punctele fără linie; părțile
-   * late, dacă s-au căutat (ADR 0223): câte, ce parte din cerneală (0–1) și pragul folosit (px).
+   * late, dacă s-au căutat (ADR 0223): câte, ce parte din cerneală (0–1) și pragul folosit (px). Pe culori (ADR 0227), ale
+   * desenului întreg, cu legăturile peste alte culori.
    */
   readonly mediane?: {
-    readonly grosimePx: number; readonly bucle: number; readonly jonctiuni: number; readonly puncte: number;
+    readonly grosimePx: number; readonly bucle: number; readonly jonctiuni: number; readonly puncte: number; readonly legaturi?: number;
     readonly parti?: { readonly numar: number; readonly arie: number; readonly pragPx: number };
   };
 };
@@ -90,8 +91,11 @@ export type RaportCuloriImagine = {
   readonly paleta: readonly CuloarePaleta[];
   /** Imaginea pictată (lipsă la un refuz: prea multe contururi). */
   readonly posterizare: Posterizare | null;
-  /** Câte o piesă pe culoare bifată (indicele din paletă), cu contururile ei în pixelii imaginii. */
-  readonly piese: ReadonlyArray<{ readonly culoare: number; readonly hex: string; readonly contur: CaiTrasate }>;
+  /**
+   * Câte o piesă pe culoare bifată (indicele din paletă), cu contururile ei în pixelii imaginii; cu liniile mediane (ADR
+   * 0227), și grosimea obișnuită a trăsăturilor ei, în px.
+   */
+  readonly piese: ReadonlyArray<{ readonly culoare: number; readonly hex: string; readonly contur: CaiTrasate; readonly grosimePx?: number }>;
 };
 
 /** Ce n-a intrat dintr-o imagine trasată: contururile sub rezoluție și cele peste plafonul unei căi. */
