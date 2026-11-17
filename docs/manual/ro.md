@@ -909,6 +909,19 @@ pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de c
 model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
 și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
 
+**Taie în panouri** (un bloc al panoului): o firmă mai mare decât masa mașinii se taie în panouri, care se prind apoi unul
+de altul. Se taie formele alese (fără nimic ales, toate formele foii), pe o grilă peste cutia lor: cu **Mărimea panoului**,
+lățimea × înălțimea în mm (implicit, materialul foii), sau cu **Numărul de panouri**, pe lățime × pe înălțime. Cu mărimea,
+**Panourile** sunt **egale** (implicit: cel mai mic număr care încape, toate de aceeași mărime) sau **din colț** (panouri
+pline de la colțul din stânga-jos, plus ce rămâne): firma de 2 400 × 1 000 mm, cu panoul de 1 200 × 900, dă patru panouri de
+1 200 × 500, respectiv două de 1 200 × 900 și două de 1 200 × 100. Sub câmpuri, panoul spune câte panouri ies, iar cât
+lucrezi în bloc, grila se vede pe pânză. Tăieturile sunt ale liniilor din panou, cu **Închide bucățile**, **Între bucăți**
+și **Îmbinarea** de mai sus: dinții prind panourile între ele, iar jocul le lasă să intre unul în altul. Bucățile fiecărui
+panou devin un grup, **Panoul 1**, **Panoul 2** … (rând cu rând, de jos, de la stânga), și stau unde erau; un panou cu o
+singură bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte
+și de alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie;
+nici o formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
+
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
 tăiată rămâne închisă pe graniță: un dreptunghi decupat la un cerc devine partea lor comună; fără bifă, rămân doar bucățile
@@ -1271,6 +1284,10 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 
 - **Jocul lateral** (c; implicit 0,1 mm): cât rămâne între pereții dopului și ai locașului, pe fiecare parte. Locașul rămâne
   cât desenul, dopul se micșorează cu c. Trebuie să fie sub raza celei mai mici freze a locașului.
+- **Locașul** (doar în fereastra exportului): **buzunar**, cu fund, la adâncimea rândului; sau **gaură prin foaie**: locașul
+  trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
+  rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
+  plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
@@ -1303,7 +1320,8 @@ interioare; taie punțile și curăță-le la nivelul pereților înainte de lip
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
+sprijinul pe umăr, până la felia lor (12.1↑f-2).
 
 ## Traseul pe pânză
 %% capitol: traseu

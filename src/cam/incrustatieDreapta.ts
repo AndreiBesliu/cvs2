@@ -34,7 +34,8 @@ export function frezeIncrustatieDreapta(op: Operatie): { readonly locas: readonl
  * De ce nu se poate tăia incrustația cu pereți drepți (ADR 0171 §4), sau null: doar pe un buzunar; frezele dopului drepte;
  * jocul lateral sub raza celei mai mici freze a locașului (altfel vârfurile dopului ies ascuțite și jocul crește în ele); dopul
  * ridicat sprijinit pe față cere jocul de sub el cel puțin `JOC_INCRUSTATIE_MINIM` și sub adâncime. Freza în V a buzunarului o
- * refuză lucrarea, ca la orice buzunar.
+ * refuză lucrarea, ca la orice buzunar. Gaura (ADR 0175) n-are fund: dopul ridicat nu se sprijină pe el, iar jocul de sub dop
+ * nu se aplică; treapta și sprijinul pe umăr le aduce felia 12.1↑f-2.
  */
 export function refuzIncrustatieDreapta(op: Operatie, unde: string): string | null {
   const i = op.incrustatie;
@@ -42,11 +43,17 @@ export function refuzIncrustatieDreapta(op: Operatie, unde: string): string | nu
   if (op.tip !== 'buzunar') return `${unde}: incrustația cu pereți drepți e a unui buzunar (pe un V-carve, alege incrustația în V)`;
   const v = (i.frezeDop ?? []).find((f) => f.scula.forma !== undefined);
   if (v) return `${unde}: frezele dopului sunt drepte (T${v.scula.numar} e în V)`;
+  if (i.treapta !== undefined) return `${unde}: treapta (umărul locașului) vine în felia 12.1↑f-2`;
+  if (i.sprijin === 'umar') return `${unde}: sprijinul pe umăr e al dopului în trepte, care vine în felia 12.1↑f-2`;
+  const gaura = i.locas === 'gaura';
+  if (gaura && i.dop === 'ridicat' && i.sprijin === 'fund') {
+    return `${unde}: gaura n-are fund: dopul ridicat se sprijină pe fața plăcii (sau alege dopul decupat)`;
+  }
   const raze = valoriIncrustatieDreapta(op);
   if (raze && !(i.jocLateral < raze.rLocas)) {
     return `${unde}: jocul lateral, de ${i.jocLateral} mm, trebuie să fie sub raza celei mai mici freze a locașului (R${fix(raze.rLocas)}): altfel vârfurile dopului ies ascuțite și jocul crește în ele`;
   }
-  if (i.dop === 'ridicat' && i.sprijin === 'fata') {
+  if (i.dop === 'ridicat' && i.sprijin === 'fata' && !gaura) {
     if (!(i.joc >= JOC_INCRUSTATIE_MINIM)) {
       return `${unde}: jocul de sub dop, de ${i.joc} mm, trebuie să fie cel puțin ${JOC_INCRUSTATIE_MINIM} mm (dopul sprijinit pe față)`;
     }
