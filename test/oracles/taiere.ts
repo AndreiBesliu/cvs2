@@ -20,6 +20,8 @@
  * mânca de tot (componentele regiunii de lângă cuțit care nu trec de cel mutat).
  * Felia 10.3↑j: îmbinarea (reuniunea bucăților e forma veche: ariile lor fac aria ei, fără joc, și nu se suprapun; cu joc,
  * bucățile stau la cel puțin jocul una de alta, iar undeva chiar la el; nimic în afara formei vechi; dinții chiar se văd).
+ * Felia 10.3↑k: panourile (fiecare bucată în celula ei, cu dinții și jocul de peste linie; nimic în afara formei vechi; fără
+ * joc, ariile lor fac aria ei).
  */
 
 type P = { readonly x: number; readonly y: number };
@@ -1268,6 +1270,34 @@ export function judecaImbinarea(o: {
     const d = o.dinte;
     const max = Math.max(...probe.flat().filter((q) => distantaLaForme(q, o.inainte) > 1e-6).map((q) => Math.abs(d.n.x * q.x + d.n.y * q.y - d.v)), 0);
     if (max < d.cat) rau.push(`dinții nu se văd: cel mai departe de linie, ${max}, sub ${d.cat}`);
+  }
+  return rau;
+}
+
+/**
+ * Tăierea în panouri (ADR 0181 §7; felia 10.3↑k): fiecare panou (formele lui, din document, cu celula lui din grilă) stă în
+ * celula lui, lărgită cu `toleranta` (dinții și jocul de peste linie; zero la tăietura dreaptă), cu toate eșantioanele lui; nimic
+ * din el nu iese din forma veche (un punct pe ea sau în regiunea ei); fără joc, ariile panourilor fac aria ei.
+ */
+export function judecaPanourile(o: {
+  readonly inainte: readonly FormaOracol[];
+  readonly panouri: ReadonlyArray<{ readonly celula: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number }; readonly forme: readonly FormaOracol[] }>;
+  readonly toleranta: number;
+  readonly joc: number;
+}): string[] {
+  const rau: string[] = [];
+  const vechi = poligoaneInchise(o.inainte);
+  const t = o.toleranta + 1e-6;
+  for (const [k, p] of o.panouri.entries()) {
+    const c = p.celula, probe = p.forme.flatMap((f) => esantioane(f, 48));
+    const iese = probe.find((q) => q.x < c.minX - t || q.x > c.maxX + t || q.y < c.minY - t || q.y > c.maxY + t);
+    if (iese) rau.push(`panoul ${k + 1}: punctul (${iese.x.toFixed(4)}, ${iese.y.toFixed(4)}) iese din celula lui`);
+    const afara = probe.find((q) => distantaLaForme(q, o.inainte) > 1e-6 && !inRegiunePar(q, vechi));
+    if (afara) rau.push(`panoul ${k + 1}: un punct (${afara.x.toFixed(4)}, ${afara.y.toFixed(4)}) în afara formei vechi`);
+  }
+  if (o.joc === 0) {
+    const tot = ariePar(o.inainte), suma = o.panouri.reduce((a, p) => a + ariePar(p.forme), 0);
+    if (Math.abs(suma - tot) > 1e-4 * Math.max(1, Math.abs(tot))) rau.push(`ariile panourilor: ${suma}, nu ${tot}`);
   }
   return rau;
 }
