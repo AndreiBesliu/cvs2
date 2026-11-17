@@ -9417,3 +9417,37 @@ după oprirea procesului peste noapte, la „neata! da drumul celorlalte worktre
 - **Canalul `plansele`**, republicat din vârful ramurii.
 
 **Completed:** 17.11, 09:56.
+
+## 2026-11-17 — Felia 28.1↑b: fereastra Aspectul (ADR 0250 §3, §5) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, așa” (owner-ul, la „Pornesc 28.1↑b cu celelalte trei aranjamente arătate „în curând”?”), apoi
+„continua”
+după pauza de noapte. **Started:** 16.11 19:41. **Completed:** 17.11 11:43.
+
+- **Ramura:** `wip/28.1-aranjamente`, adusă la `main` `5ab3941` (fast-forward), după unirea lui 28.1↑a (`8ea3057`).
+- **Codul:**
+  - `src/app/Aspectul.tsx` (la cerere, cu `carcasa` și `aspect.css`): cele patru aranjamente, tema, „Butoane mari”;
+    Renunță și Escape pun la loc, Păstrează scrie `cncvs2.aranjament`;
+  - meniul contului: rândul `aspect` după Manual, cu numele aranjamentului de acum; paleta: `vedere.aspect`, din orice
+    fereastră; F1 în fereastră: capitolul ei;
+  - `alegereaDeAcum` și lista temelor în `alegereAranjament.ts` (lista nu mai e scrisă și în `App.tsx`).
+- **Găsite pe capturi, înainte de raport:** la Clasic, benzile miniaturii se pierdeau în fondul cartelei; la Pas cu pas,
+  textul cobora (spațiul în plus se împărțea între rândurile grilei); pe telefon, bucățile Atelierului se suprapuneau în
+  miniatura de 44 px. Reparate și privite din nou, mărite, în ambele teme și la 390 px.
+- **Unirea de la capăt:** `main` `4b52fc3` (25.3↑d, 10.3↑k, 12.1↑f, 11.7↑), adus în ramură fără conflicte; porțile de
+  mai jos sunt pe codul unit.
+- **Găsit la prima rulare e2e:** spec-ul nu fixa limba (`locale: ro-RO`, ca celelalte), iar browserul pornea în engleză.
+- **Probele:**
+  - 6 e2e noi în `aranjament.spec.ts` (cu F1); `cont` și `tutorial` cu rândul și pasul nou;
+  - suita unitară întreagă: 9 459 de teste, 0 căderi (8 sărite), pe unire (înainte de unire, sonda GRBL a căzut o dată
+    sub încărcare și a trecut de 3 ori singură);
+  - e2e-urile atinse și vecinii lor: 81 / 81 în 10 spec-uri (aranjament, cont, tutorial, carcasa, manual, csp, pwa,
+    ancore, pornire, la-cerere); la prima rulare, 4 căderi: două în manual.spec (37 de capitole, cu cel nou; reparat),
+    două pe timp (csp, la-cerere, cu alte sesiuni la teste), trecute singure;
+  - tipurile (aplicația, extensia, funcțiile), importurile, licențele: curate; build-ul determinist: identic;
+  - otrăvurile: 12 / 12 prinse.
+- **Mărimea** (față de un build curat al lui `5ab3941`): pornirea +0,3 kB (106,6; cu ușa 110,6 / 115), totalul +1,2 kB
+  (704,6 / 800); pe unirea cu `main` `4b52fc3`: pornirea 106,6 kB (cu ușa 110,6 / 115), totalul 710,8 / 800.
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul nou),
+  testul din aplicație (pasul nou), lista otrăvurilor (`test/otravuri/28.1b.py` și rândul ei din `docs/otravuri.md`),
+  DEVLOG.
