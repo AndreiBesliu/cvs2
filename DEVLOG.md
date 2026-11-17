@@ -9525,3 +9525,44 @@ prognoza mărimii).
   lui (adusă la cerere), închisă cu Renunță, fără nimic ținut.
 - **Rămâne:** linia adminului (ADR 0260) n-a pornit: owner-ul lucra prin Remote Control, care nu pornește sesiuni noi;
   brief-ul e în `C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Publicarea lui `71d488a7` (3.6t), după complet.
+
+## 2026-11-17 — Felia 10.3↑l: panourile pe foi (ADR 0181 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „1, dar, vreau sa explici in detaliu ce se cere la punctul 2” (owner-ul, în sesiunea liniei `taiere`, la propunerea
+feliilor următoare: 1 = panourile pe foi). **Started:** 17.11, 09:43. **Completed:** 17.11, 13:32.
+
+- **Ramura nouă din `main`:** `wip/10.3l-panouri-foi`, din `021dcc6`; `origin/main` `4b52fc3` (12.1↑f, documentul v25, și 11.7↑)
+  unit în `2fd63df`, fără conflicte. Punctul 2 al propunerii (piesele puse de mai multe ori) l-am explicat în sesiune, fără cod:
+  rămâne o felie propusă.
+- **Modelul** (`src/model/panouriPeFoaie.ts`, pur, pe firul principal): ce iese o bucată peste linie (H/2, plus jumătate din
+  suprapunere sau minus jumătate din spațiu, cel puțin 0), locul pe foaie la „Așază pe foi” (marginile ținute, fiecare cel puțin
+  raza frezei exterioare), mărimea implicită (locul fără ieșirea de pe ambele laturi), cel mai mare panou al grilei și încăperea
+  lui (și culcat, cu rotirea ținută a așezării).
+- **Blocul panourilor:** mărimea implicită care încape (urmează opțiunile până scrii alta; „Cât încape pe foaie: L × Î” o pune
+  la loc), avertismentul pentru un panou care n-ar încăpea, „Așază pe foi…” (dialogul, pe alegerea de acum: după tăiere,
+  panourile; `onAseaza` din `Editare` prin `PanouTaiere`). Manualul (ro, en), textele (ro, en).
+- **Reparația lui 10.3↑k** (găsită de proba pe hârtie a feliei): cu dinți drepți, linia Y = 500 a grilei egale cădea pe flancul
+  dintelui din mijloc al tăieturii X = 800 (refuzul `pe-linie`, „Tăietura merge pe o latură…”), iar la celelalte modele tăietura
+  a doua tăia dinții de la încrucișare. `taie` primește `opriri` (doar de la panouri, cu îmbinare): coarda se împarte în
+  punctele liniilor celeilalte axe, cu dinții pe fiecare bucată; încrucișarea, privită mărit pe desenul real (și cu jocul 0,6),
+  are laturile drepte.
+- **Probele:** pe hârtie (`taiere.panouri.foi.test.ts`: ieșirea, locul, mărimea, cel mai mare panou, încăperea; firma de 2 400 ×
+  1 000 pe foi de 1 200 × 900, tăiată cu mărimea implicită și așezată: șase panouri, câte unul pe foaie, cutiile măsurate de
+  oracol, exacte la dinții drepți; din colț, panoul cât locul tot încape; cu mărimea foii, verificarea blocului și așezarea spun
+  amândouă că nu încape); încrucișarea dreaptă cu dinți drepți (`taiere.panouri.test.ts`); e2e (mărimea implicită,
+  avertismentul, „Cât încape”, tăierea, „Așază pe foi…”, Anulează; alegerile ținute ale așezării: marginea sub raza frezei,
+  rotirea).
+- **Treceri:** (1) proba pe hârtie: refuzul dinților drepți pe grila egală (reparația de mai sus); (2) la scrierea otrăvurilor,
+  e2e-ul nu dovedea că blocul citește alegerile ținute ale așezării (implicitele lor erau și ale probei) și nici rotirea: proba
+  nouă pune `cncvs2.asezare` în browser (marginile 2, sub raza frezei; rotirea cu 90°).
+- **Otrăvurile** (`test/otravuri/10.3l.py`): 31 / 31 prinse (20 unitare, 11 e2e), în clona din afara Drive-ului, pe `7e323b7`.
+- **Porțile** (pe `2fd63df`): traducerile, cele trei compilatoare, importurile, licențele, unit 9 468 (9 460 trecute, 8 sărite,
+  0 căderi), build-ul determinist (327 de fișiere identice), e2e 498 / 498 (pornit după un minut fără altă rulare Playwright pe
+  mașină), emulatoarele 101 / 101 și 21 / 21 (la a doua rulare; la prima, 20 / 21: fondul etapei 6 din fila Roadmap, citit
+  transparent, o probă de timp a filei, în afara feliei).
+- **Mărimea:** pornirea neschimbată (106,3 kB; cu ușa 110,3 / 115), totalul +0,7 kB (709,6 → 710,3 / 800), măsurat A/B în clonă,
+  pe `main` `4b52fc3` și pe ramură (`2fd63df`): blocul, modelul mărimii și textele, în bucata panoului Taie; reparația
+  opririlor, în worker.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 17.12), pe `2fd63df`,
+  verificat (ro: mărimea implicită 280 × 180 pe foaia de 300 × 200, tăierea în două panouri, „Așază pe foi…” cu ele alese,
+  Anulează și Reface; nicio eroare în consolă).

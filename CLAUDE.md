@@ -576,6 +576,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `document.taie`: gruparea citește blocurile de text cu valibot, deci în worker ar aduce ~4,5 kB). Rezultatul tăierii are
   `grupuri` (panourile de grupat) și `panouri` (câte sunt); alegerea de după, din comanda tăierii (`ids`). Oracolul:
   `judecaPanourile` (`taiere.panouri.oracol.test.ts`).
+  **Panourile pe foi (felia 10.3↑l)** gata pe 17.11, pe `wip/10.3l-panouri-foi` (din `main` `021dcc6`, cu `4b52fc3` unit),
+  neunită: mărimea implicită a panoului, locul pe foaie și cel mai mare panou în `src/model/panouriPeFoaie.ts` (pur, pe firul
+  principal; blocul citește marginile ținute ale așezării, `optiuniTinute`, și freza exterioară, `distantaMinima`); „Așază pe
+  foi…” din bloc deschide dialogul pe alegere (`onAseaza`, din `Editare` prin `PanouTaiere`). În `taie`, `opriri` (doar de la
+  panouri, cu îmbinare): coarda se împarte în punctele liniilor celeilalte axe, cu dinții pe fiecare bucată (reparația refuzului
+  `pe-linie` al dinților drepți pe grila egală).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
