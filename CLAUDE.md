@@ -807,9 +807,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6s gata pe 13.11** (notificările și semnul din bară): `evenimente.ts` (pur), `VestiriImprimanta.tsx` (banda în
   meniul global, semnul în `#loc-semn-imprimanta`), `notificariImprimanta.ts` (setările `cvs2.imprimanta.notificari`),
   `titluFila.ts` (titlul filei din părți, folosit și de `IndicatorLucrare`); carcasa: locul semnului în fila Imprimanta,
-  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110. Urmează 3.6t (istoricul).
+  montarea cu bifa „leagă la deschidere”. Totalul 657,5 / 700, pornirea cu ușa 106,1 / 110.
   **Reparată pe 13.11** (CI-ul complet roșu: banda pauzei acoperea Reia pe Linux): banda stă în meniul global, pe rândul
   `#loc-anunt-imprimanta` din `App.tsx` (gol, ascuns), nu mai plutește deasupra paginii; orice aranjament nou ține locul.
+  **3.6t gata pe 14.11** (istoricul, costul, estimarea care învață): `istoricImprimari.ts` (pur), `IstoricImprimanta.tsx`
+  (cardul, înregistrarea), magazia `imprimari` în `cvs2-imprimanta` (versiunea 2), `DIN_DESEN` (ce pune „Din desen…” lângă
+  fișier), driverul cu `historyList`. Totalul 713,0 / 800 (+4,8 față de `main`, peste ținta ADR-ului, sub plafon). Urmează 3.6u.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,
@@ -1183,6 +1186,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 17.11.2026: **felia 3.6t a imprimantei unită în `main`** (din grupul 3 aprobat, „Da, grupul 3”; unită la „unește ce se
+  poate”): istoricul imprimărilor (`18d9be07`, exact `02c29f2`), +4,8 kB, peste ținta de ~3,5 din ADR 0194, în plafonul de
+  800. Porțile pe unire: unit 9 463 / 0, e2e 504 / 504 (o reluare: `extensii.masina.spec.ts:84`, senderul prin extensie,
+  „pierdut” în loc de „pregatit”, la procesorul 27 %; fișierul singur, 4 / 4; nu e a feliei), emulatoarele verzi. Totalul
+  715,6 / 800, pornirea cu ușa 110,6 / 115. Urmează 3.6u (filmele timelapse).
+- 17.11.2026: **28.1↑b și probele instabile, unite în `main`** (la „unește ce se poate” și „ok, ia-le la rand”): fereastra
+  Aspectul (`cf0550b`; rândul „Aspectul…” în meniul contului, după Manual; manualul cu 37 de capitole, ușile 108, testul din
+  aplicație cu 36 de pași); probele care cădeau sub încărcare, fiecare reprodusă întâi și reparată la cauză (`912fece`:
+  sonda GRBL, salvarea amânată a trenulețului, scriptul de început al probei trenulețului doar în pagina de sus, fontul SVG
+  cu `test.slow()`, `FUNCTIONS_DISCOVERY_TIMEOUT=30` în unealta emulatoarelor); după porțile de unire (`34da53e`), proba
+  tichetelor de pe emulatoare știe rândul nou din meniul contului, iar pornirea extensiei se așteaptă până la 20 s. Totalul
+  710,8 / 800, pornirea cu ușa 110,6 / 115.
 - 17.11.2026: **12.1↑f și 11.7↑ unite în `main`** (la „unește ce se poate”): gaura prin foaie a incrustațiilor, documentul
   v25, cu câmpurile treptei refuzate cu motiv până la 12.1↑f-2 (`d2ef229`; supracursa nu e încă în fereastră, deci gaura
   merge exact la grosimea foii); fișa plăcii 11, pregătită fără mașină (`b4d5641`, doar probe și documente; distanța 10,

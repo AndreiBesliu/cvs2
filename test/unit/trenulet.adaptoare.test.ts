@@ -254,16 +254,26 @@ test('gazda: window.cvs2.three() cere three.js din pachet o singură dată (ADR 
   assert.deepEqual(cerute, ['js/three.js']);
 });
 
-test('lucrul (ADR 0164): o salvare amânată ține pagina „nesalvată” până se termină; alta sub aceeași cheie o înlocuiește', async () => {
+test('lucrul (ADR 0164): o salvare amânată ține pagina „nesalvată” până se termină; alta sub aceeași cheie o înlocuiește', async (t) => {
+  // Ceasul e al probei: cu pauze reale (15, apoi 60 ms) față de amânarea de 20 ms, proba cădea sub încărcarea altor sesiuni
+  // (17.11: 1 din 20 de rulări, cu 8 procese care țin procesorul ocupat).
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const treci = async (ms: number): Promise<void> => {
+    t.mock.timers.tick(ms);
+    // ce pornesc ceasurile (promisiuni, apoi ceasul de 0 ms care anunță „salvat”) se încheie înaintea verificării
+    for (let i = 0; i < 10; i++) { await Promise.resolve(); t.mock.timers.tick(0); }
+  };
   const { g, host } = gazda();
   const l = lucruPeste(host);
   const rulate: string[] = [];
   l.amana('circuit', () => { rulate.push('întâi'); }, 20);
   l.amana('circuit', async () => { await pauza(10); rulate.push('a doua'); }, 20);
   assert.deepEqual(g.nesalvat, [true]);
-  await pauza(15);
+  await treci(19);
   assert.deepEqual([rulate, g.nesalvat], [[], [true]]);
-  await pauza(60);
+  await treci(1);
+  assert.deepEqual([rulate, g.nesalvat], [[], [true]], 'la 20 ms pornește doar a doua, care își face pauza de 10 ms');
+  await treci(10);
   assert.deepEqual([rulate, g.nesalvat], [['a doua'], [true, false]]);
 });
 
