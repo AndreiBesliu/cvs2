@@ -18,7 +18,7 @@ import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../mo
 import { partiDegrupare } from '../model/degrupare.ts';
 import { grupDin, type ParteGrupata } from '../model/grupare.ts';
 import { comenziGrupuriPanouri } from '../model/grupuriPanouri.ts';
-import { comenziTaiePiesa, desprindeSiConverteste, desprindeSiTaie } from '../model/taiereSurori.ts';
+import { comenziTaiePiesa, desprindeSiConverteste, desprindeSiTaie, desprinse } from '../model/taiereSurori.ts';
 import { placutaCoapta } from '../model/placute.ts';
 import { blocText } from '../model/blocText.ts';
 // Judecata literelor plăcuțelor (v23) se înregistrează în ușă la import: acțiunile o cer pe documentul de după.
@@ -1177,6 +1177,15 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata, idFoaie: string | un
  */
 type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda; readonly ids?: readonly string[] } | { readonly ok: false; readonly motiv: CheieSimpla };
 let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly foaie: string | undefined; readonly rez: ComandaTaiere } | null = null;
+/**
+ * Documentul de calcul pentru «Desprinde și taie» / «Desprinde și convertește» (felia 10.3↑m): instanțele `ids` ale foii,
+ * desprinse. Stă aici, cu acțiunile, ca desprinderea (și plăcuțele ei) să nu iasă din bucata lor (`actiuniExportCalcul.ts` o
+ * aduce la cerere).
+ */
+export function documentDesprins(doc: Document, idFoaie: string, ids: readonly string[]): Document {
+  return desprinse(doc, idFoaie, ids);
+}
+
 export function comandaTaiere(h: Istoric, t: TaiereCalculata, idFoaie?: string): ComandaTaiere {
   if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t && ultimaTaiere.foaie === idFoaie) return ultimaTaiere.rez;
   const rez = judecaTaierea(h, t, idFoaie);

@@ -166,12 +166,13 @@ export async function taieVectorii(doc: Document, cerere: CerereTaiere, semnal?:
  * cerut calculul verifică oricum anularea înaintea rezultatului). `laIntrebare` spune panoului că așteaptă răspunsul.
  */
 /**
- * Documentul de calcul pentru «Desprinde și …», cu desprinderea adusă la cerere (ea stă cu acțiunile, lângă plăcuțe: importată
- * aici, modulele pieselor legate ar ieși într-o bucată comună).
+ * Documentul de calcul pentru «Desprinde și …», prin calculul acțiunilor (bucata lui, la cerere, are deja desprinderea și
+ * plăcuțele): importate aici, modulele pieselor legate ar ieși într-o bucată comună (+1,9 kB), iar aduse direct, la cerere, într-una
+ * a lor (+2,4 kB), măsurat.
  */
 async function desprinse(doc: Document, idFoaie: string, ids: readonly string[]): Promise<Document> {
-  const m = await import('../model/taiereSurori.ts');
-  return m.desprinse(doc, idFoaie, ids);
+  const m = await import('./actiuniDocumentCalcul.ts');
+  return m.documentDesprins(doc, idFoaie, ids);
 }
 
 async function surori(doc: Document, alese: readonly string[], indexFoaie: number, piesa: boolean, fel: 'taie' | 'converteste', semnal?: AbortSignal,
