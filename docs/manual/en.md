@@ -761,6 +761,9 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 - every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
 - skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
   whole);
+- a **scanned page** (no vectors, one image: from an office scanner or a phone app) is **traced** by itself, like an image
+  (below), at its size on paper; on a page with vectors and images, the **Trace the page image** button traces the largest
+  image instead of the vectors, and **The page vectors** takes you back;
 - a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI saved
   without “Create PDF Compatible File” shows only a text notice, and the window tells you to tick it.
 
@@ -910,7 +913,9 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 - TIFF (from scanners, fax and CAD programs) is read by the application itself: uncompressed, LZW, Deflate, PackBits or
   CCITT (G3, G4: black-and-white scans), with its DPI; for one with several pages, the window lets you pick the page, as for
   a PDF. A TIFF with JPEG inside (or BigTIFF, floating-point colours, YCbCr, CIELab) is refused, naming what it cannot
-  read: save it as PNG then. Images inside PDFs and SVGs are skipped, as before.
+  read: save it as PNG then. Images inside SVGs are skipped, as before;
+- the image of a scanned PDF (JPEG, CCITT G3 / G4 or uncompressed) is traced at its DPI on the page, turned the way the
+  page shows it; a JBIG2 or JPEG 2000 one is refused, naming it: save the page as PNG then.
 
 ## Cutting vectors
 %% capitol: taiere

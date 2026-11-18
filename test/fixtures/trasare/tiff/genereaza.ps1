@@ -132,4 +132,10 @@ Gdi 'gdi-g4' $bw1 $EV::CompressionCCITT4.value__
 Gdi 'gdi-g3' $bw1 $EV::CompressionCCITT3.value__
 Gdi 'gdi-rle' $bw1 $EV::CompressionRle.value__
 Gdi 'gdi-lzw-rgb' $col $EV::CompressionLZW.value__
+# Un JPEG al desenului color (ADR 0270: imaginea unui PDF scanat, cu DCTDecode), calitatea 95.
+$j = New-Object System.Windows.Media.Imaging.JpegBitmapEncoder
+$j.QualityLevel = 95
+$j.Frames.Add([System.Windows.Media.Imaging.BitmapFrame]::Create($rgb))
+$o = [System.IO.File]::Create((Join-Path $PSScriptRoot 'wic-color.jpg'))
+$j.Save($o); $o.Close()
 'gata'

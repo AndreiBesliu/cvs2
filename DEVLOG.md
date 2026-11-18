@@ -9907,3 +9907,40 @@ concentram pe softul nostru”.
 - **Rămâne:** 3.6u (imprimanta), la raportul liniei; de urmărit, nereparate: `extensii.spec.ts:43` (urma din complet, de
   adus cu acordul owner-ului, ar arăta unde stă clicul), `extensii.masina.spec.ts:84`, emulatoarele Playwright sub
   încărcare.
+
+## 2026-11-18 — Felia 25.7↑: PDF-urile scanate (ADR 0270, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mergi inainte si testez la final” (owner-ul, în sesiunea liniei trasării; felia următoare, după 25.6↑).
+**Started:** 18.11, 08:46. **Completed:** 18.11, 13:58.
+
+- **Ramura** la `ba2ecaff` (25.6↑, cu `origin/main` `ae5a13c4` adus). ADR 0270 e în intervalul 0270–0279, dat trasării
+  de sesiunea principală (CLAUDE.md din `main`, 18.11).
+- **Ușa PDF** (`src/io/pdf.ts`): interpretarea ține minte imaginile vizibile, cu harta așezării lor în mm-ii paginii
+  afișate (și `/OC` pe imagini); `citestePdf` spune `imagini`. `imagineaPaginiiPdf`: cea mai mare imagine, ca fișier
+  pentru workerul trasării: JPEG-ul fără segmentele Exif (browserul ar aplica orientarea Exif, pe care un cititor PDF o
+  ignoră), CCITT-ul împachetat într-un TIFF (`src/io/tiffScrie.ts`; K < 0 → 4, K = 0 → 3 sau 2 pe octeți fără EOL, K > 0
+  → 3 2D; BlackIs1 cu Decode), eșantioanele brute într-un TIFF necomprimat (gri, RGB, CMYK, ICCBased după `/N` și
+  `/Alternate`, Indexed, mască, Decode inversat, datele scurte completate cu hârtie); orientarea (1–8) și DPI-ul din
+  așezare. `decodeazaImagine` (`pdfObiecte.ts`) se oprește la un filtru de imagine (ultimul).
+- **Calculul:** `orientare` în cerere, aplicată după decodare (cu `orienteaza` al cititorului TIFF), cu mărimea din
+  fișier întoarsă și ea; `poza` pentru fereastră.
+- **Ușa importului și dialogul:** o pagină fără vectori, dar cu imagine, se trasează singură (paginile, ale PDF-ului);
+  „Trasează imaginea paginii” sub vectori (citiți sau refuzați), „Vectorii paginii” înapoi; alegerea rămâne la recitire
+  (`AlegeriImport.imaginePdf`, prin contextul ușii și acțiunea `import.svg`); refuzurile `pdf-imagine` (cu numele) și
+  `pdf-imagine-stricata` (și un G4 stricat, nu „TIFF stricat”). Manualul (ro, en), fișa (coada owner-ului), traducerile.
+- **Probele, întâi:** 10 unitare (`import.pdf.scanat.test.ts`; fluxurile G4 și G3 ale fixturilor WIC, exact pixelii lui
+  WIC; JPEG-ul WIC nou, `wic-color.jpg`, și cu un Exif adăugat; CCITT 1D pe octeți și 2D, scrise de mână; restul cu
+  valorile pe hârtie), un e2e (G4 și JPEG importate, comutarea pe o imagine rotită, JBIG2 refuzat).
+- **Otrăvurile** (`test/otravuri/25.7.py`): 39 / 39, fiecare pe proba ei (33 unitare, 6 prin e2e, doar pe proba
+  PDF-urilor scanate); la prima rulare (`8425a2c1`), 37 / 39: P10 (G3 1D pe octeți citit ca T.4) a scăpat dintr-o
+  coincidență a probei (pe 8 px, umplerea și codul rândului următor fac albul 29, care umple un rând alb la fel de bine;
+  al doilea rând are acum negru), iar P24 (decodarea obișnuită trece de un filtru de imagine) n-avea probă (un flux de
+  conținut cu DCTDecode e acum un flux stricat, numărat); ambele prinse pe `283c53ff`.
+- **`main` adus** (`8425a2c1`, de la `c302d73a`: 10.3↑m, 11.3↑b, 28.1↑c unite și decizia din 18.11), ciocnirea doar în
+  DEVLOG; porțile pe arborele unit: tipuri (2), importuri, licențe, traduceri (0); unitare 9 529 (9 521 trecute, 8
+  sărite, 0 căzute); e2e-urile importului, trasării și ale celorlalte ferestre care deschid importul, 181 / 181 (21 de
+  specuri; 4 au căzut din timp cu procesorul la ~82 %, cu alte linii la porți: dialogul, paleta, salvarea n-au venit în
+  5 s; reluate singure, 4 / 4); build determinist; totalul 729,8 / 800 kB (felia +3,5), pornirea 107,0 / 115, cu ușa
+  111,0.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
+  `283c53ff12af`.

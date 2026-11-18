@@ -934,8 +934,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `trasare`:** cititorul propriu `src/trasare/tiff.ts` (cu `ccitt.ts`), în workerul trasării (`decodeazaTiff`, pagina
   aleasă, DPI-ul paginii, reducerea pe blocuri, `poza` pentru previzualizare); ușa nu-l mai refuză la semnătură;
   refuzurile `tiff` (cu numele) și `tiff-stricat`; fixturile WIC / GDI+ în `test/fixtures/trasare/tiff`
-  (`genereaza.ps1`). **Totalul ramurii, cu `main` adus (`ddfc3c00`): 722,1 / 800 kB**, pornirea 106,6 / 115 (cu ușa
-  110,6).
+  (`genereaza.ps1`). **25.7↑ (PDF-urile scanate, ADR 0270; 0270–0279 sunt ale trasării) gata pe 18.11, tot la „mergi
+  înainte”, pe aceeași ramură, pe canalul `trasare`:** ușa PDF ține minte imaginile vizibile (`citestePdf` → `imagini`),
+  iar `imagineaPaginiiPdf` o scoate pe cea mai mare ca fișier (JPEG-ul fără Exif, sau un TIFF scris de
+  `src/io/tiffScrie.ts`: CCITT-ul împachetat, eșantioanele brute), cu orientarea (1–8) și DPI-ul așezării; calculul aplică
+  `orientare` și dă `poza`; ușa importului trasează singură o pagină fără vectori, iar una cu vectori la cerere
+  (`AlegeriImport.imaginePdf`; „Trasează imaginea paginii” / „Vectorii paginii”); refuzurile `pdf-imagine` (cu numele) și
+  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`. **Totalul ramurii, cu `main` adus (`8425a2c1`): 729,8 / 800
+  kB**, pornirea 107,0 / 115 (cu ușa 111,0).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

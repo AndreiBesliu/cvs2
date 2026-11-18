@@ -152,7 +152,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     if (!dialog.fisier) return;
     const a = {
       pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina,
-      trasare: dialog.trasare ?? TRASARE_IMPLICITA, ...schimbare,
+      trasare: dialog.trasare ?? TRASARE_IMPLICITA, ...(dialog.imaginePdf ? { imaginePdf: true } : {}), ...schimbare,
     };
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
@@ -171,6 +171,8 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       onUnitate={(u) => { recitesteCu({ unitate: u }); }}
       onUnitateWmf={(u) => { recitesteCu({ unitateWmf: u }); }}
       onPagina={(pagina) => { recitesteCu({ pagina }); }}
+      imaginePdf={dialog.imaginePdf === true}
+      onImaginePdf={(imaginePdf) => { recitesteCu({ imaginePdf }); }}
       onImporta={() => {
         // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
         // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).

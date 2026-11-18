@@ -24,7 +24,7 @@ const REFUZ: Readonly<Record<Exclude<CodRefuzImport, 'prea-multe'>, CheieSimpla>
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
   imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
   tiff: 'import.imagine.tiff', 'tiff-stricat': 'import.imagine.tiff-stricat', 'imagine-citire': 'import.imagine.citire', 'imagine-timp': 'import.imagine.timp',
-  anulat: 'import.imagine.anulat',
+  anulat: 'import.imagine.anulat', 'pdf-imagine': 'import.pdf.imagine', 'pdf-imagine-stricata': 'import.pdf.imagine-stricata',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -157,8 +157,9 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'gol' && format === 'imagine') return t(puncte > 0 ? 'import.imagine.gol-mediane' : culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');
   if (cod === 'prea-multe') return t('import.imagine.prea-multe', { n: Number(detaliu ?? Number.NaN) });
   if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
-  // TIFF (ADR 0229): ce nu știe cititorul (compresia, felul) sau de ce e stricat, cu numele tehnic.
-  if (cod === 'tiff' || cod === 'tiff-stricat') return t(REFUZ[cod], { ce: detaliu ?? '?' });
+  // TIFF (ADR 0229) și imaginea unei pagini PDF (ADR 0270): ce nu știe cititorul (compresia, felul) sau de ce e stricat(ă),
+  // cu numele tehnic.
+  if (cod === 'tiff' || cod === 'tiff-stricat' || cod === 'pdf-imagine' || cod === 'pdf-imagine-stricata') return t(REFUZ[cod], { ce: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
   if (cod === 'control' || cod === 'operator' || cod === 'imagine') return t(REFUZ[cod], { operator: detaliu ?? '?' });
@@ -185,6 +186,12 @@ type Props = {
   readonly unitateWmf: UnitateWmf;
   /** Pagina citită dintr-un PDF (de la 1, ADR 0104 §7). */
   readonly pagina: number;
+  /**
+   * Imaginea paginii unui PDF care are și vectori, trasată în locul lor (ADR 0270), și schimbarea alegerii; lipsă: fără
+   * butoanele ei.
+   */
+  readonly imaginePdf?: boolean;
+  readonly onImaginePdf?: (imagine: boolean) => void;
   /** Se recitește cu altă alegere: previzualizarea de pe ecran e cea veche, deci „Importă” așteaptă. */
   readonly seRecitesc: boolean;
   /** De ce nu se poate importa (plafonul, ușa documentului, fila care doar citește), sau null. */
@@ -217,8 +224,8 @@ type Props = {
  * când contează, unitățile spuse de fișier, straturile unui PDF sau AI și raportul.
  */
 export function DialogImport({
-  nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, seRecitesc, motiv, onPx, onUnitate, onUnitateWmf, onPagina, onImporta,
-  onInchide, coada, onSari, de, trasare,
+  nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, imaginePdf = false, onImaginePdf, seRecitesc, motiv, onPx, onUnitate,
+  onUnitateWmf, onPagina, onImporta, onInchide, coada, onSari, de, trasare,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -239,6 +246,10 @@ export function DialogImport({
     : (stare.pagini ?? stare.trasare?.pagini ?? 0);
   // O imagine (ADR 0220): fereastra lărgită, cu panoul trasării și previzualizarea.
   const imagine = trasare !== undefined && (formatImport(nume, '') === 'imagine' || (stare !== 'citire' && stare.format === 'imagine'));
+  // O pagină PDF cu imagini și vectori (ADR 0270): trasarea imaginii, la cerere, și întoarcerea la vectori.
+  const ofera = stare === 'citire' || !onImaginePdf ? null
+    : !imaginePdf && stare.format === 'pdf' && (stare.imagini ?? 0) > 0 ? 'imagine'
+      : imaginePdf && 'vectoriPdf' in stare && stare.vectoriPdf === true ? 'vectori' : null;
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
       <div className={imagine ? 'dialog-cutie dialog-trasare' : 'dialog-cutie'} ref={cutie} tabIndex={-1}>
@@ -262,6 +273,14 @@ export function DialogImport({
                 {Array.from({ length: pagini }, (_, k) => <option key={k} value={k + 1}>{k + 1}</option>)}
               </select>
             </label>
+          </div>
+        )}
+        {ofera && onImaginePdf && (
+          <div className="campuri">
+            <button type="button" data-buton={ofera === 'imagine' ? 'trasare-pdf' : 'vectori-pdf'} disabled={seRecitesc}
+              onClick={() => { onImaginePdf(ofera === 'imagine'); }}>
+              {t(ofera === 'imagine' ? 'import.pdf.trasare' : 'import.pdf.vectori')}
+            </button>
           </div>
         )}
         {stare !== 'citire' && !stare.ok && (
