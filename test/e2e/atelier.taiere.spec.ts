@@ -31,6 +31,29 @@ async function fereastra(page: Page, a: { x: number; y: number }, b: { x: number
   await page.mouse.up();
 }
 
+/**
+ * Butoanele rolului au cel puțin 56 px (planșa), iar numele lor încap întregi: nimic nu iese din buton și niciun cuvânt nu
+ * se rupe pe două rânduri (fiecare cuvânt are un singur dreptunghi).
+ */
+async function numeIntregi(page: Page): Promise<void> {
+  for (const b of await taierea(page).locator('[data-rol]').all()) {
+    expect((await b.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(56);
+    expect(await b.evaluate((e) => {
+      const n = e.firstChild;
+      if (e.scrollWidth > e.clientWidth || n?.nodeType !== Node.TEXT_NODE) return false;
+      const r = document.createRange();
+      let i = 0;
+      for (const cuvant of (n.textContent ?? '').split(' ')) {
+        r.setStart(n, i);
+        r.setEnd(n, i + cuvant.length);
+        if (r.getClientRects().length !== 1) return false;
+        i += cuvant.length + 1;
+      }
+      return true;
+    }), await b.textContent() ?? '').toBe(true);
+  }
+}
+
 async function inAtelier(page: Page): Promise<void> {
   await page.addInitScript((v) => { localStorage.setItem('cncvs2.aranjament', v); }, ATELIER);
   await page.goto('/');
@@ -70,25 +93,16 @@ test('felul tăierii din butoane: rolul de acum apăsat; alt rol se scrie pe pie
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(rol(page, 'exterior')).toHaveAttribute('aria-pressed', 'true');
-  // Butoanele rolului au cel puțin 56 px (planșa), iar numele lor încap întregi: nimic nu iese din buton și niciun cuvânt nu
-  // se rupe pe două rânduri (fiecare cuvânt are un singur dreptunghi).
-  for (const b of await taierea(page).locator('[data-rol]').all()) {
-    expect((await b.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(56);
-    expect(await b.evaluate((e) => {
-      const n = e.firstChild;
-      if (e.scrollWidth > e.clientWidth || n?.nodeType !== Node.TEXT_NODE) return false;
-      const r = document.createRange();
-      let i = 0;
-      for (const cuvant of (n.textContent ?? '').split(' ')) {
-        r.setStart(n, i);
-        r.setEnd(n, i + cuvant.length);
-        if (r.getClientRects().length !== 1) return false;
-        i += cuvant.length + 1;
-      }
-      return true;
-    }), await b.textContent() ?? '').toBe(true);
-  }
+  await numeIntregi(page);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('la 1024 × 768 (tableta culcată), cu panoul cel mai îngust (248 px), numele rolurilor rămân întregi', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await inAtelier(page);
+  await adauga(page, 'dreptunghi');
+  await expect(rol(page, 'exterior')).toHaveAttribute('aria-pressed', 'true');
+  await numeIntregi(page);
 });
 
 test('găurirea apare doar pentru cercuri, ca în listă: rolurile oferite sunt ale formelor alese', async ({ page }) => {
