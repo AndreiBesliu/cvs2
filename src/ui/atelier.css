@@ -233,6 +233,26 @@
   grid-column: span 3;
 }
 
+/*
+ * Trei pe rând doar unde încap și cu un font lat (DejaVu Sans pe Linux, unde `system-ui` e lat: „Exterior” are ~63 px la
+ * 14 px, iar butonul apăsat lasă textului (grila − 12) / 3 − 16). Sub 16,25rem de grilă (panoul de 248 px de la 1024 px dă
+ * 222), câte două, iar incrustațiile și rolurile omului pe tot rândul („Straight-walled” are ~107 px): altfel numele ies
+ * din butoane sau se rup.
+ */
+:root .aplicatie[data-aranjament='atelier'] .atelier-roluri {
+  container-type: inline-size;
+}
+
+@container (max-width: 16.25rem) {
+  :root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button {
+    grid-column: span 3;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button:is([data-rol^='incrustatie'], [data-rol^='p:']) {
+    grid-column: 1 / -1;
+  }
+}
+
 :root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button[aria-pressed='true'] {
   border: 2px solid var(--a);
   box-shadow: none;

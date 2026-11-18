@@ -61,6 +61,14 @@ async function numeIntregi(page: Page): Promise<void> {
   }
 }
 
+/**
+ * Fontul lat al probelor de așezare (13.A↑c): Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum lat. Completul de
+ * pe `0905a07a` a căzut pe Linux exact aici: „Exterior” ieșea cu 9 px din butonul apăsat, iar pe Windows încăpea.
+ */
+async function fontLat(page: Page): Promise<void> {
+  await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+}
+
 async function inAtelier(page: Page): Promise<void> {
   await page.addInitScript((v) => { localStorage.setItem('cncvs2.aranjament', v); }, ATELIER);
   await page.goto('/');
@@ -109,6 +117,18 @@ test('la 1024 × 768 (tableta culcată), cu panoul cel mai îngust (248 px), num
   await inAtelier(page);
   await adauga(page, 'dreptunghi');
   await expect(rol(page, 'exterior')).toHaveAttribute('aria-pressed', 'true');
+  await numeIntregi(page);
+  await fontLat(page);
+  await numeIntregi(page);
+});
+
+test('în engleză, la 1024 × 768 și cu fontul lat, numele rolurilor rămân întregi', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.addInitScript(() => { localStorage.setItem('cncvs2.limba', 'en'); });
+  await inAtelier(page);
+  await adauga(page, 'dreptunghi');
+  await expect(rol(page, 'exterior')).toHaveText('Outside');
+  await fontLat(page);
   await numeIntregi(page);
 });
 
