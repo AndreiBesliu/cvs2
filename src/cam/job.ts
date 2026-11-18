@@ -29,6 +29,7 @@ import {
   alegeIntrarea, lungimeSfert, MARJA_SCHELET, RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA, razeIncercate, type IntrareAleasa,
 } from './intrari.ts';
 import { RAMPA_MINIMA } from './rampaMinima.ts';
+import { SUPRACURSA_MAXIMA } from './supracursaMaxima.ts';
 import { traseuProfil } from './traseu.ts';
 import { EPS_VARF, geometrieUrechi, type GeometrieUrechi, type ParametriUrechi } from './urechi.ts';
 
@@ -153,9 +154,6 @@ export type Regim = {
 
 export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjare: 300, zSigur: 5 };
 
-/** Cât poate trece o tăietură de fața de jos a foii, în masa de sacrificiu (ADR 0028 §2), în mm. */
-export const SUPRACURSA_MAXIMA = 2;
-
 /**
  * `avertismente`: ce n-a putut face lucrarea fără să fie o greșeală, spus omului la export (ADR 0030 §3: intrarea omisă pe
  * o buclă unde nu încape). Programul rămâne corect fără ele.
@@ -165,8 +163,8 @@ export type RezultatJob =
   | { readonly ok: false; readonly motiv: string };
 
 /**
- * `supracursa`: cât are voie o operație sub fața de jos a foii (mm, 0 … `SUPRACURSA_MAXIMA`). Dialogul nu-l arată încă
- * (vine cu profilul mașinii), deci din interfață e 0.
+ * `supracursa`: cât are voie o operație sub fața de jos a foii (mm, 0 … `SUPRACURSA_MAXIMA`), din fereastra exportului
+ * (ADR 0176); traseul și vederea 3D calculează fără ea (0).
  */
 export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0): RezultatJob {
   const foaie = doc.foi[0];

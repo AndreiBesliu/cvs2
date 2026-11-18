@@ -9,6 +9,8 @@ export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
 export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA } from '../model/document.ts';
 // Banda dopului în V (ADR 0172): lățimea cea mai mică, rotunjirea ei arătată, punțile implicite și ce rămâne sub fața coborâtă.
 export { latimeMinimaBanda, PUNTI_BANDA, PUNTI_DOP_DREPT, SUB_FATA_DOPULUI, susLaMicron } from '../model/incrustatie.ts';
+// Supracursa (ADR 0028 §2, ADR 0176): marginea câmpului din fereastra exportului, aceeași cu a lucrării.
+export { SUPRACURSA_MAXIMA } from '../cam/supracursaMaxima.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';

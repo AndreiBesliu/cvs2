@@ -1424,6 +1424,11 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 care). Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
+- **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
+  ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
+  decupările dopurilor merg cu atât mai jos, singure. O adâncime scrisă de tine poate trece de grosimea foii cu cel mult atât
+  (o tăietură prin foaie de 18 mm cu supracursa 0,5: scrii 18,5). Punțile și urechile își păstrează grosimea, măsurată de la
+  fața de jos a plăcii. Valoarea rămâne cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D o lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
   RichAuto, Syntec, Mach3** și **Mach4** primesc un fișier pe care îl rulezi de pe controlerul lor (în panoul mașinii nu
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul

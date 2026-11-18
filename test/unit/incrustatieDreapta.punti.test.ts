@@ -3,7 +3,8 @@
  * buclă, lățimea, grosimea de la fața de jos), nu cele implicite; palierul pe traseu e lățimea plus freza. Pe programul dopului
  * (dreptunghiul de 30 × 20, freza Ø6, placa de 3 + 2 = 5 mm), sub vârful punților rămâne lemn pe linia de mijloc a șanțului doar
  * în dreptul lor, iar deasupra vârfului nimic. Ce nu se poate tăia îl refuză lucrarea, cu motiv: punți cel puțin cât placa,
- * o buclă pe care nu încape nicio punte. Pe dopul ridicat, câmpul nu schimbă nimic.
+ * o buclă pe care nu încape nicio punte. Pe dopul ridicat, câmpul nu schimbă nimic. Cu supracursa din fereastră (ADR 0176),
+ * decuparea trece cu ea sub placa dopului, iar punțile rămân la fel de groase, de la fața de jos a plăcii (ADR 0028 §2).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,6 +12,7 @@ import { incarca } from '../../src/model/incarcare.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { functieTaiere, mutariPeScule } from '../oracles/incrustatieDreapta.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
+import { zMinim } from './ajutor-incrustatie.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 
@@ -32,10 +34,10 @@ function document(punti: unknown, dop: 'decupat' | 'ridicat' = 'decupat'): unkno
   };
 }
 
-async function exporta(brut: unknown) {
+async function exporta(brut: unknown, supracursa?: number) {
   const d = incarca(brut);
   if (!d.ok) assert.fail(d.motiv);
-  return calculeazaExport(d.doc, { origine: 'stanga-jos', z0: 'sus' });
+  return calculeazaExport(d.doc, { origine: 'stanga-jos', z0: 'sus', ...(supracursa === undefined ? {} : { supracursa }) });
 }
 
 /**
@@ -135,6 +137,29 @@ test('o buclă pe care nu încape nicio punte (lățimea plus freza peste lungim
   const una = await exporta(document({ numar: 4, latime: 60, grosime: 1 }));
   assert.ok(una.ok, una.ok ? '' : una.motiv);
   assert.ok(una.avertismente.includes('dopul i/a: pe o buclă mică încap mai puține punți decât cele 4 cerute (cel puțin 1 pe buclă)'), una.avertismente.join(' | '));
+});
+
+test('supracursa 0,5 (ADR 0176): decuparea trece cu ea sub placa de 5 (−5,5), punțile rămân groase de 1,5 de la fața de jos', async () => {
+  const r = await exporta(document({ numar: 2, latime: 6, grosime: 1.5 }), 0.5);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  const program = r.dopuri[0]!.program.text;
+  assert.equal(zMinim(program), -5.5, 'fundul decupării: placa de 5 plus supracursa 0,5');
+  // Vârful punților, tot la 5 − 1,5 = 3,5 de față (ADR 0028 §2), nu la 5,5 − 1,5 = 4: chiar sub el rămân cele 2 punți, chiar
+  // deasupra lui nimic.
+  assert.equal(puntiLa(program, -3.51).length, 2, 'sub vârful punților (la 3,5 de față) rămân cele 2 punți');
+  assert.deepEqual(puntiLa(program, -3.49), [], 'deasupra vârfului punților nu rămâne lemn');
+  // Chiar deasupra fundului celei mai adânci treceri (−5,5), bucățile de pe hârtie: 18 mm, ca fără supracursă la −5.
+  const sub = puntiLa(program, -5.49);
+  assert.equal(sub.length, 2, `bucățile netăiate la −5,49: ${sub.map((b) => b.toFixed(2)).join(', ')}`);
+  for (const b of sub) assert.ok(Math.abs(b - bucataPeHartie(2, 6)) <= 0.15, `o punte de ${b.toFixed(2)} mm pe linia șanțului, pe hârtie 18`);
+  // Controlul: fără supracursă, decuparea se oprește la fața de jos a plăcii, iar vârful punților e același.
+  const fara = await exporta(document({ numar: 2, latime: 6, grosime: 1.5 }));
+  assert.ok(fara.ok, fara.ok ? '' : fara.motiv);
+  assert.equal(zMinim(fara.dopuri[0]!.program.text), -5);
+  assert.equal(puntiLa(fara.dopuri[0]!.program.text, -3.51).length, 2);
+  assert.deepEqual(puntiLa(fara.dopuri[0]!.program.text, -3.49), []);
+  // Locașul (buzunarul de 3, nu prin foaie) nu se schimbă cu supracursa.
+  assert.equal(r.program.text, fara.program.text);
 });
 
 test('pe dopul ridicat, punțile nu schimbă nimic (dopul n-are punți)', async () => {

@@ -40,6 +40,9 @@ type Props = {
   /** Răspunsul la `$$` lipit (ADR 0046 §8): îl ține aplicația, comun cu timpul de lângă traseu. */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /** Supracursa scrisă de om (ADR 0176): o ține aplicația, ca setările mașinii, de la o fereastră la alta. */
+  readonly supracursa: string;
+  readonly onSupracursa: (text: string) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
@@ -59,7 +62,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, foaie, toate, onRaport,
+  supracursa, onSupracursa, onDeschideInMasina, foaie, toate, onRaport,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -211,6 +214,8 @@ export function ExportConectat({
       onReseteaza={onReseteaza}
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
+      supracursa={supracursa}
+      onSupracursa={onSupracursa}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}

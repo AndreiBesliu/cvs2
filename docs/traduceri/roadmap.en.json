@@ -429,6 +429,10 @@
       "ro": "Scalarea unui arc peste latura documentului",
       "en": "Scaling an arc past the document side"
     },
+    "20473faf0765f4e4": {
+      "ro": "Supracursa în fereastra exportului",
+      "en": "Overtravel in the export window"
+    },
     "208c3df926890da1": {
       "ro": "După unirea lui 12.1↑b–c: viteza benzii, rândurile legate, arborele, lemnul din jurul…",
       "en": "After merging 12.1↑b–c: the band’s speed, the linked rows, the tree, the wood around…"

@@ -40,8 +40,8 @@ export type ParametriExport = {
    */
   readonly confirmareIesire?: IesireFoaie;
   /**
-   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Dialogul nu-l trimite încă (vine cu
-   * profilul mașinii).
+   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Îl trimite fereastra exportului (ADR 0176):
+   * gaura incrustației și decupările dopurilor trec cu atât sub plăcile lor, iar o adâncime scrisă poate trece de foaie cu atât.
    */
   readonly supracursa?: number;
   /**
