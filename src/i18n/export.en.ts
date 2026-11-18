@@ -208,6 +208,13 @@ export const enExport = {
     other: 'The text comes out of {n} plates ({nume}): they are red in the list.',
   },
   'export.placute.confirma': 'I saw the plates: I export them like this, with the text coming out of them.',
+  'export.urechi.desprinse': {
+    one: 'one part comes loose from the sheet while the cutter is still cutting next to it, because its tabs no longer hold on to the wood of the sheet: {piese}. Usually the parts are too close: with tabs, leave at least 2 × the cutter + 3 mm between them.',
+    other: '{n} parts come loose from the sheet while the cutter is still cutting next to them, because their tabs no longer hold on to the wood of the sheet: {piese}. Usually the parts are too close: with tabs, leave at least 2 × the cutter + 3 mm between them.',
+  },
+  'export.urechi.loc': 'near X {x}, Y {y}',
+  'export.urechi.piesa': '{nume} ({loc})',
+  'export.urechi.inca': 'and {n} more',
   // “All sheets” (ADR 0210 §5, slice 11.5↑).
   'export.foi': 'What to export',
   'export.foi.activa': 'The active sheet',

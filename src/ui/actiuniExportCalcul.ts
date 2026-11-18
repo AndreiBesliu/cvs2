@@ -1,11 +1,13 @@
 import { conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
+import type { ParteDesprinsa } from '../jobs/protocolCam.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import { doarFoaia, numeFoaie } from '../model/foi.ts';
 import { taieturiFoaie } from '../model/lume.ts';
+import { cereMesaje } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { scrieZip, type IntrareArhiva } from '../io/scrieZip.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
@@ -27,17 +29,50 @@ import type { FereastraRelief, ParametriExport, ProgramSimulare, ReliefSimulat, 
 // Cine cheamă calculul își recunoaște anularea (nu se arată) și workerul căzut (merge în jurnal).
 export { CalculAnulat, LucratorCazut } from '../jobs/bazinCam.ts';
 
+/** Câte piese desprinse numește avertismentul; celelalte se numără. */
+export const PIESE_DESPRINSE_NUMITE = 5;
+
+/**
+ * Avertismentul probei urechilor (ADR 0210, felia 11.3↑c), în limba omului: câte piese ale foii se desprind și care (valorile
+ * plăcuței, sau numele piesei, cu locul pe foaie), sau nimic. Workerul dă doar părțile; textul se face aici, cu `t`.
+ */
+export function avertismentDesprinse(doc: Document, desprinse: readonly ParteDesprinsa[]): string[] {
+  if (desprinse.length === 0) return [];
+  const instante = new Map((doc.foi[0]?.instante ?? []).map((i) => [i.id, i]));
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const nume = (d: ParteDesprinsa): string | null => {
+    const i = instante.get(d.instanta);
+    const valori = Object.values(i?.campuri ?? {}).map((v) => v.trim()).filter((v) => v !== '').join(' ');
+    return valori !== '' ? valori : (i ? piese.get(i.piesa)?.nume?.trim() || null : null);
+  };
+  const numite = desprinse.slice(0, PIESE_DESPRINSE_NUMITE).map((d) => {
+    const loc = t('export.urechi.loc', { x: String(Math.round(d.x)), y: String(Math.round(d.y)) });
+    const n = nume(d);
+    return n === null ? loc : t('export.urechi.piesa', { nume: n, loc });
+  });
+  const rest = desprinse.length - numite.length;
+  return [t('export.urechi.desprinse', { n: desprinse.length, piese: [...numite, ...(rest > 0 ? [t('export.urechi.inca', { n: String(rest) })] : [])].join('; ') })];
+}
+
+/** Avertismentele foii, cu al pieselor desprinse la capăt: mesajele exportului întâi (le are deja fereastra care exportă). */
+async function cuDesprinse(doc: Document, avertismente: readonly string[], desprinse: readonly ParteDesprinsa[]): Promise<string[]> {
+  if (desprinse.length === 0) return [...avertismente];
+  await cereMesaje('export');
+  return [...avertismente, ...avertismentDesprinse(doc, desprinse)];
+}
+
 /**
  * Exportul propriu-zis (documentul → profilele → IR → postul ales, ADR 0083 → octeții cu SHA-256), în workerul CAM (ADR
  * 0109): firul principal primește doar octeții, rezumatul și mutările simulării, transferate. Se încarcă la cerere.
- * `semnal` anulează calculul (un export nou, un parametru schimbat, fereastra închisă): workerul se oprește.
+ * `semnal` anulează calculul (un export nou, un parametru schimbat, fereastra închisă): workerul se oprește. Piesele
+ * desprinse (proba urechilor) se spun printre avertismente.
  */
 export async function calculeazaExport(doc: Document, p: ParametriExport, semnal?: AbortSignal, toate?: Document): Promise<RezultatExport> {
   if (p.toateFoile && toate) return calculeazaToateFoile(toate, doc.foi[0]?.id ?? '', p, semnal);
   const r = await exportInBazin(doc, p, semnal ? { semnal } : {});
   if (!r.ok) return r;
-  const { simulare, foaie, ...rest } = r;
-  return { ...rest, simulare: (s) => simuleazaExport(simulare, foaie, s) };
+  const { simulare, foaie, desprinse, ...rest } = r;
+  return { ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), simulare: (s) => simuleazaExport(simulare, foaie, s) };
 }
 
 /**
@@ -51,7 +86,7 @@ export async function calculeazaExport(doc: Document, p: ParametriExport, semnal
 async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriExport, semnal?: AbortSignal): Promise<RezultatExport> {
   const { toateFoile: _toate, ...baza } = p;
   const contract = CONTRACTE[p.post ?? 'grbl-11'];
-  const facute: Array<{ readonly k: number; readonly nume: string; readonly r: Extract<Awaited<ReturnType<typeof exportInBazin>>, { ok: true }> }> = [];
+  const facute: Array<{ readonly k: number; readonly nume: string; readonly d: Document; readonly r: Extract<Awaited<ReturnType<typeof exportInBazin>>, { ok: true }> }> = [];
   const goale: string[] = [];
   for (const [k, f] of doc.foi.entries()) {
     const d = doarFoaia(doc, f.id), nume = numeFoaie(f, k, (n) => t('foaia.n', { n: String(n) }));
@@ -61,7 +96,7 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
     }
     const r = await exportInBazin(d, baza, semnal ? { semnal } : {});
     if (!r.ok) return { ok: false, motiv: 'cereConfirmare' in r ? `${nume}: freza iese din foaie; exportă foaia singură, cu confirmarea ei` : `${nume}: ${r.motiv}` };
-    facute.push({ k, nume, r });
+    facute.push({ k, nume, d, r });
   }
   const activ = facute.find((x) => doc.foi[x.k]?.id === activa) ?? facute[0];
   if (!activ) return { ok: false, motiv: 'nicio foaie n-are ce tăia' };
@@ -92,9 +127,10 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   };
   const secunde = foi.every((f) => f.secunde !== null) ? foi.reduce((s, f) => s + (f.secunde ?? 0) * (1 + f.identice.length), 0) : null;
   const { simulare, foaie, rezumat, sender, fisiere } = activ.r;
+  const avertismente = (await Promise.all(facute.map(async ({ nume, d, r }) => (await cuDesprinse(d, r.avertismente, r.desprinse)).map((a) => `${nume}: ${a}`)))).flat();
   return {
     ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere } : {}),
-    avertismente: facute.flatMap(({ nume, r }) => r.avertismente.map((a) => `${nume}: ${a}`)),
+    avertismente,
     foi: { arhiva, foi, goale, secunde },
     simulare: (s) => simuleazaExport(simulare, foaie, s),
   };

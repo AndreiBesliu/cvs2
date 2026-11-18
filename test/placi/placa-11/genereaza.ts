@@ -96,8 +96,11 @@ export function sablon(): Piesa {
   };
 }
 
-/** Documentul plăcii: o foaie, șablonul pus o dată, apoi «Din CSV…» cu cele 25 de nume, așezate pe foi (ușa îl primește). */
-export function documentPlaca11(): Document {
+/**
+ * Documentul plăcii: o foaie, șablonul pus o dată, apoi «Din CSV…» cu cele 25 de nume, așezate pe foi (ușa îl primește). Cu altă
+ * `distanta` decât cea a plăcii, aceeași placă așezată mai strâns (proba urechilor de la export, felia 11.3↑c).
+ */
+export function documentPlaca11(distanta = DISTANTA): Document {
   const p = sablon();
   const d0 = documentNou({ ...FOAIA });
   const foaie = d0.foi[0];
@@ -108,7 +111,7 @@ export function documentPlaca11(): Document {
     if (!r.ok) throw new Error(`plăcuța „${nume}”: ${r.motiv}`);
     return { campuri: r.campuri, texte: r.texte };
   });
-  const asezare = { ...ASEZARE_IMPLICITA, distantaX: DISTANTA, distantaY: DISTANTA };
+  const asezare = { ...ASEZARE_IMPLICITA, distantaX: distanta, distantaY: distanta };
   const c = comandaText(doc, { fel: 'placute', instanta: 'a', piesa: p, randuri, asezare }, foaie.id);
   if (!c.ok) throw new Error(`plăcuțele: ${c.motiv}`);
   const u = incarca(JSON.parse(JSON.stringify(executa(istoricNou(doc), c.comanda).doc)));
