@@ -87,6 +87,9 @@ cărămida Technic, axul, știftul, bucșa), cu jocurile alese la calibrare (gau
   opus (la oblici și la V: perechea se prinde doar așa). Varianta roților în profilul imprimantei, în fila Calibrare (pasul
   nou; „șapte numere”) și în README-ul arhivei. Textele, în engleză (35).
 - **Pachetul:** 18.9.0, înregistrat în bibliotecă (versiunea și amprenta conținutului), cu descrierea „… roți dințate …”.
+- **Manualul:** cel al lui cvs2 descrie extensia doar ca fereastră (biblioteca, contul, limba, lucrările trimise), nu piesele
+  atelierului, deci n-a primit rânduri; roata se explică în atelier (câmpurile, „Se prinde cu…”, avertismentul peretelui) și în
+  fila Calibrare.
 
 ## Feliile
 

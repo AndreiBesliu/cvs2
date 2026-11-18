@@ -9883,3 +9883,25 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   găuri, modulul, perechea).
 - **Documentele:** indexul ADR-urilor, fișa etapei 3 (rândul 3.Th, coada owner-ului) cu traducerile, jurnalul.
 - **Fără cod:** felia pornește după răspunsuri.
+
+## 2026-11-18 — Felia 3.Th: rotițele dințate în atelierul Easy 3Draw (ADR 0169, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea principală, la „Rotițele: mergem cu recomandările (1a, 2a)?”).
+**Started:** 18.11, 15:40. **Completed:** 18.11, 16:55.
+
+- **Motorul** (`lego.ts`): profilul din cremalieră, conturul cu mijlocul capului (coarda scurta diametrul: găsit de proba
+  cutiei), `prismaRasucita` (gaura dreaptă, capacele pe aceleași puncte), tipul `rotita` (drepți, oblici, în V; găurile;
+  modulul; avertismentul peretelui subțire), jocul din varianta nouă a calibrării (0,15 mm la 3, câte 0,05) și cinci roți de
+  probă în set.
+- **Atelierul** (`atelier.ts`): „Roată dințată” în galeria pieselor de legătură, „Se prinde cu…” (distanța și grila), „Fă
+  perechea” (a doua cu sensul opus: la V contează și el, perechea în V se prinde doar oglindită), varianta roților în
+  profilul imprimantei, în fila Calibrare și în README; 35 de texte în engleză. Pachetul 18.9.0, în bibliotecă, cu
+  descrierea „… roți dințate …”.
+- **Probele:** unitare 8 (`trenulet.rotite.test.ts`): la jocul de 0,15 pe flanc, jocul minim al perechii e cel de la picior
+  (0,25 · m), nu cel al flancului; proba cere minimul celor două, niciodată mai aproape decât teoria. E2e 3
+  (`trenulet.rotite.spec.ts`), cu STL-ul descărcat verificat închis și varianta 5 din calibrare. Otrăvurile: 27 / 27.
+- **Porțile:** pe `64cd3042`, toate la prima rulare: unitare 9 548 / 0, e2e 530 / 530, emulatoarele 101 / 101 și 26 / 26;
+  traducerile, compilatoarele, importurile, licențele și build-ul determinist; totalul 729,1 / 800, pornirea cu ușa 111,0 /
+  115, `/admin` 112,2 / 200 (ramura pornește din `e88dbc1e`; motorul și atelierul stau în pachetul extensiei, nu în
+  aplicație).
+- **Schița**, cu întrebările acum închise: <https://claude.ai/artifact/K7CMJUfim5wHZ4JTpK1qPX>.
