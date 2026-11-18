@@ -2,18 +2,20 @@
  * Dialogul „Așază pe foi” (ADR 0210 §3, felia 11.3↑; planșa 3 a schiței): ce se așază (piesele alese sau toate de pe foaia
  * activă), colțul de pornire, marginea foii și distanța dintre piese pe X și pe Y (legate implicit; cel puțin freza
  * profilului exterior), ordinea și rotirea (răspunsul 3: ambele moduri, implicit ordinea listei, fără rotire), foile noi și,
- * înainte de „Așază”, rezultatul („25 de piese pe 2 foi: 15 + 10”). Alegerile se țin în browser; „Mută și așază la capăt”
- * le folosește. Vine la cerere, cu mesajele panoului (`carcasa`) și cu calculul acțiunilor.
+ * înainte de „Așază”, rezultatul („25 de piese pe 2 foi: 15 + 10”). Cu urechi, distanța pornește de la cea propusă pentru
+ * ele, iar sub ea apare avertismentul (felia 11.3↑b). Alegerile se țin în browser; „Mută și așază la capăt” le folosește.
+ * Vine la cerere, cu mesajele panoului (`carcasa`) și cu calculul acțiunilor.
  */
 import { useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
-import { COLTURI_ASEZARE, distantaMinima, peFoi, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { COLTURI_ASEZARE, distantaMinima, distantaPropusa, peFoi, planAsezare, urechiLibere, type OptiuniAsezare } from '../model/asezare.ts';
 import type { Document } from '../model/document.ts';
 import { materialFoaie } from '../model/foi.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import '../ui/actiuniDocumentCalcul.ts';
+import { textNumar } from '../ui/numar.ts';
 import { optiuniTinute, tineOptiunile } from './asezareTinuta.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
@@ -38,15 +40,16 @@ export function DialogAsezare({ doc, idFoaie, selectie, stare, aseaza, onInchide
   readonly aseaza: (c: CerereAsezare) => RezultatActiune;
   readonly onInchide: () => void;
 }): ReactNode {
-  useLimba();
+  const limba = useLimba();
   const foaie = doc.foi.find((f) => f.id === idFoaie);
   const toate = useMemo(() => foaie?.instante.map((i) => i.id) ?? [], [foaie]);
   const alese = useMemo(() => toate.filter((id) => selectie.includes(id)), [toate, selectie]);
   const [ce, setCe] = useState<'alese' | 'toate'>(alese.length > 0 ? 'alese' : 'toate');
-  // Alegerile ținute; distanța pornește cel puțin de la freza profilului exterior al pieselor de așezat (scrisă mai jos de om, refuzată).
+  // Alegerile ținute; distanța pornește cel puțin de la freza profilului exterior al pieselor de așezat (scrisă mai jos de om,
+  // refuzată), iar cu urechi de la distanța propusă pentru ele (scrisă mai jos, primită cu avertismentul).
   const [tinute] = useState(() => {
     const o = optiuniTinute();
-    const d = distantaMinima(doc, alese.length > 0 ? alese : toate, idFoaie);
+    const d = distantaPropusa(doc, alese.length > 0 ? alese : toate, idFoaie);
     return { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) };
   });
   const [alegeri, setAlegeri] = useState<Pick<OptiuniAsezare, 'colt' | 'ordinea' | 'rotirea'>>(tinute);
@@ -64,6 +67,9 @@ export function DialogAsezare({ doc, idFoaie, selectie, stare, aseaza, onInchide
   const cerere: CerereAsezare = { ids, optiuni };
   const plan = useMemo(() => planAsezare(doc, ids, idFoaie, optiuni), [doc, ids, idFoaie, JSON.stringify(optiuni)]);
   const dmin = useMemo(() => distantaMinima(doc, ids, idFoaie), [doc, ids, idFoaie]);
+  const dprop = useMemo(() => distantaPropusa(doc, ids, idFoaie), [doc, ids, idFoaie]);
+  const sub = urechiLibere(doc, ids, idFoaie, optiuni) !== null;
+  const mm = (x: number): string => textNumar(x, limba === 'ro');
   const s = stare(cerere);
 
   const scrieCamp = (camp: keyof Campuri, valoare: string): void => {
@@ -148,7 +154,13 @@ export function DialogAsezare({ doc, idFoaie, selectie, stare, aseaza, onInchide
             <input type="checkbox" data-aseaza="legate" checked={legate} onChange={(e) => { setLegate(e.target.checked); setMotiv(null); }} />
             {t('aseaza.legate')}
           </label>
-          {dmin > 0 ? <p className="aseaza-minim" data-testid="aseaza-minim">{t('aseaza.minim', { d: String(dmin) })}</p> : null}
+          {dmin > 0 ? <p className="aseaza-minim" data-testid="aseaza-minim">{t('aseaza.minim', { d: mm(dmin) })}</p> : null}
+          {/* Cu urechi (felia 11.3↑b): distanța propusă și de ce; sub ea, avertismentul (Așază rămâne pornit). */}
+          {dprop > dmin ? (
+            <p className={sub ? 'aseaza-minim avertisment' : 'aseaza-minim'} role="status" data-testid="aseaza-urechi">
+              {t(sub ? 'aseaza.urechi.sub' : 'aseaza.urechi', { p: mm(dprop) })}
+            </p>
+          ) : null}
         </fieldset>
         <fieldset className="alegeri">
           <legend>{t('aseaza.ordinea')}</legend>

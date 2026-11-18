@@ -4,6 +4,7 @@ import { MODELE_IMBINARE } from '../model/imbinare.ts';
 import { latimeBuna } from '../model/intreBucati.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { RandSurori } from './IntrebareSurori.tsx';
 import { marimeImbinareBuna, schimbaOptiuniTaiere, useOptiuniTaiere, type FelImbinare } from './optiuniTaiere.ts';
 
 /** Numele părților păstrate, după cuțit (ADR 0181 §2): stânga / dreapta, deasupra / dedesubt (orizontala), înăuntru / în afară. */
@@ -82,6 +83,7 @@ export function GrupuriTaiere({ loc, parti, cuCapete, drept }: {
           </span>
         )}
       </div>
+      <RandSurori date={date} />
     </>
   );
 }

@@ -19,6 +19,7 @@ import { adauga, ecran, vedere } from './ajutor-panza.ts';
  * tragi (dinții, în locul fâșiei), iar placa devine două forme de 100 × 55 mm (aceeași alegere în panoul Taie). La 1280 px și cu
  * fontul lat al probei barei de sus (6.V↑d), bara Cuțitului și panoul opțiunilor, cu îmbinarea aleasă, rămân în fereastră, în
  * română și în engleză.
+
  */
 test.use({ locale: 'ro-RO' });
 

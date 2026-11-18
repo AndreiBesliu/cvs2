@@ -5,6 +5,7 @@
  * distanța 6: două pe rând (x 10 și 116), două rânduri (y 130 și 64), deci 7 = 4 + 3; din dreapta-jos, primul la x 190.
  */
 import { test, expect, type Page } from '@playwright/test';
+import { documentSalvat } from './ajutor-document.ts';
 import { adauga, ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
@@ -91,4 +92,77 @@ test('meniul de clic dreapta: „Așază pe foi…” cu piesa aleasă; „Mută
   await expect(randuri(page)).toHaveCount(0);
   await page.locator('body').press('PageDown');
   await expect(randuri(page)).toHaveText([dr(20, 20), dr(10, 130)]);
+});
+
+/** Scrie direct în baza aplicației o versiune a proiectului (după ce aplicația și-a creat baza), ca s-o deschidă la reîncărcare. */
+async function scrieVersiune(page: Page, doc: { rev: number }): Promise<void> {
+  await expect(lista(page)).toBeVisible();
+  await page.evaluate(async (d) => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-proiecte', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    await new Promise<void>((ok, eroare) => {
+      const tx = db.transaction('versiuni', 'readwrite');
+      tx.objectStore('versiuni').put(JSON.stringify(d), ['proiect', d.rev]);
+      tx.oncomplete = () => { ok(); };
+      tx.onerror = () => { eroare(tx.error); };
+    });
+    db.close();
+  }, doc);
+}
+
+/**
+ * Felia 11.3↑b: trei plăcuțe 100 × 60 ale aceleiași piese, tăiate prin foaia de 18 cu Ø3,175 pe dinafară (freza plăcii 11),
+ * cu două urechi. Pe hârtie: distanța propusă 2 × 3,175 + 3 = 9,35 → 10; din stânga-sus, 10 și 10 + 100 + 10 = 120 pe
+ * primul rând (230 + 100 > 290), apoi 130 − 10 − 60 = 60. Un proiect v10, deschis prin migrare.
+ */
+const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+const CU_URECHI = {
+  schema: 10, rev: 1,
+  piese: [{
+    id: 'p',
+    radacina: { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: I },
+    operatii: [{
+      id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 3.175 }, latura: 'exterior', sens: 'urcare',
+      adancime: 18, pas: 6, urechi: { numar: 2, latime: 6, grosime: 2 }, rampa: null, intrari: null, colturi: null,
+    }],
+  }],
+  foi: [{ id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: ['e1', 'e2', 'e3'].map((id) => ({ id, piesa: 'p', x: 20, y: 20, rotire: 0 })) }],
+};
+
+test('cu urechi (felia 11.3↑b): distanța pornește de la 10 (2 × 3,175 + 3, în sus), sub ea avertismentul, sub freză refuzul; Așază la 10', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await scrieVersiune(page, CU_URECHI);
+  await page.reload();
+  await expect(randuri(page)).toHaveCount(3);
+  await dinMeniulFoii(page, 'f1');
+  const d = dialog(page);
+  await expect(d.locator('[data-aseaza="toate"]')).toBeChecked();
+  const distanta = d.locator('[data-camp="aseaza-distantaX"]');
+  const urechi = page.getByTestId('aseaza-urechi');
+  await expect(distanta).toHaveValue('10');
+  await expect(page.getByTestId('aseaza-minim')).toHaveText('cel puțin 3,175 mm: freza Ø3,175 a profilului exterior');
+  await expect(urechi).toHaveText('cu urechi, 10 mm: între tăieturile vecine rămâne lemnul de care se țin urechile');
+  await expect(urechi).not.toHaveClass(/avertisment/);
+  await expect(page.getByTestId('aseaza-rezultat')).toHaveText('3 piese pe o foaie.');
+  // Sub propunere, dar peste freză: avertismentul, iar Așază rămâne pornit.
+  await distanta.fill('5');
+  await expect(urechi).toHaveText('Sub 10 mm, tăieturile pieselor vecine se unesc: urechile dinspre vecini nu mai țin, iar piesele din mijloc pot cădea sub freză.');
+  await expect(urechi).toHaveClass(/avertisment/);
+  await expect(d.locator('[data-buton="aseaza"]')).toBeEnabled();
+  // Sub freză: refuzul, ca înainte.
+  await distanta.fill('3');
+  await expect(page.getByTestId('aseaza-rezultat')).toHaveText('Distanța dintre piese e sub freza profilului exterior: tăietura unei piese ar intra în vecina ei.');
+  await expect(d.locator('[data-buton="aseaza"]')).toBeDisabled();
+  await distanta.fill('10');
+  await expect(urechi).not.toHaveClass(/avertisment/);
+  await d.locator('[data-buton="aseaza"]').click();
+  await expect(d).toHaveCount(0);
+  const doc = JSON.parse(await documentSalvat(page, 2)) as { foi: Array<{ instante: Array<{ x: number; y: number }> }> };
+  expect(doc.foi.map((f) => f.instante.map((i) => [i.x, i.y]))).toEqual([[[10, 130], [120, 130], [10, 60]]]);
+  expect(erori).toEqual([]);
 });

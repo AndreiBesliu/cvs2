@@ -262,3 +262,66 @@ test('două texte cu câmpuri, în fonturi diferite, pe o ramă: clicul alege te
   expect(d.foi[0]?.instante.map((i) => Object.values(i.texte ?? {}).map((x) => x.continut).sort().join('|'))).toEqual(['5A|Ion', '6B|Eva']);
   expect(erori).toEqual([]);
 });
+
+test('«Din CSV…» pe un șablon cu urechi (felia 11.3↑b): distanța urcă singură la 15 (2 × 6 + 3); sub ea, la „Schimbă…”, avertismentul', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  const la = await ecran(page, await vedere(page));
+  // Rama 60 × 20 din (160, 20) și textul „Ana” înăuntru, grupate (ca mai sus).
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await page.mouse.move(la(160, 20).x, la(160, 20).y);
+  await page.mouse.down();
+  await page.mouse.move(la(190, 30).x, la(190, 30).y, { steps: 4 });
+  await page.mouse.move(la(220, 40).x, la(220, 40).y, { steps: 4 });
+  await page.mouse.up();
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('Ana');
+  await page.locator('[data-text="inaltime"]').fill('8');
+  await page.mouse.click(la(165, 25).x, la(165, 25).y);
+  await page.click('[data-text="adauga"]');
+  await page.keyboard.press('Escape');
+  await expect(lista(page)).toHaveCount(2);
+  await page.locator('[data-unealta="selectie"]').click();
+  await page.mouse.move(la(150, 60).x, la(150, 60).y);
+  await page.mouse.down();
+  await page.mouse.move(la(190, 30).x, la(190, 30).y, { steps: 4 });
+  await page.mouse.move(la(230, 10).x, la(230, 10).y, { steps: 4 });
+  await page.mouse.up();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+g');
+  await expect(lista(page)).toHaveCount(1);
+  // Urechile pe profilul exterior al ramei (Ø6), din fereastra exportului: prin foaia de 18, în treceri de 6.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  // Rândul ramei (literele au și ele un profil exterior, pe rândul lor, fără urechi).
+  const rama = page.locator('[data-operatie]').filter({ hasText: 'dreptunghi 60.00 × 20.00' });
+  await expect(rama).toHaveCount(1);
+  await rama.locator('[data-camp="adancime"]').fill('18');
+  await rama.locator('[data-camp="pas"]').fill('6');
+  await rama.locator('[data-camp="urechi"]').check();
+  // Literele, săpate în V (V90 Ø6), ca pe o plăcuță: decupate în rama păstrată, exportul (care scrie urechile) s-ar opri.
+  for (const litere of await page.locator('tr[data-operatie]:has(td.ordine)').filter({ hasText: 'cale ' }).all()) {
+    await litere.locator('[data-camp="latura"]').selectOption('vcarve');
+    await litere.locator('[data-camp="forma-scula"]').selectOption('v');
+    await litere.locator('[data-camp="unghi-v"]').fill('90');
+    await litere.locator('[data-camp="scula"]').fill('3');
+  }
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  await page.getByRole('button', { name: 'Închide', exact: true }).click();
+  await lista(page).first().click();
+  await page.getByTestId('prop-piesa').locator('[data-buton="din-csv"]').click();
+  await expect(dialog(page)).toBeVisible();
+  await dialog(page).locator('[data-camp="csv-lipire"]').fill('Nume\nIon\nAna\n');
+  // Omul n-a scris nicio distanță aici: ținuta (5) urcă la 15, fără avertisment.
+  await expect(page.getByTestId('csv-unde')).toContainText('Marginea 10, distanța 15 mm.');
+  await expect(page.getByTestId('csv-urechi')).toHaveCount(0);
+  await dialog(page).locator('[data-buton="csv-schimba"]').click();
+  await dialog(page).locator('[data-camp="csv-distanta"]').fill('10');
+  await expect(page.getByTestId('csv-urechi')).toHaveText('Plăcuțele au urechi: sub 15 mm, tăieturile vecine se unesc, iar plăcuțele din mijloc pot cădea sub freză.');
+  await expect(page.getByTestId('csv-urechi')).toHaveClass(/avertisment/);
+  await dialog(page).locator('[data-camp="csv-distanta"]').fill('15');
+  await expect(page.getByTestId('csv-urechi')).toHaveCount(0);
+  expect(erori).toEqual([]);
+});

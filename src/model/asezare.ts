@@ -1,3 +1,4 @@
+import { cuUrechi, distantaCuUrechi, frezaExterioara } from './distantaPiese.ts';
 import type { Document, Foaie, Instanta, Piesa } from './document.ts';
 import { materialFoaie } from './foi.ts';
 import { idFoaieNoua } from './foiComenzi.ts';
@@ -9,7 +10,8 @@ import { cutieInstanta } from './pieseLegate.ts';
  * ei), din colțul ales, rând cu rând, cu marginea foii și distanța dintre piese pe X și pe Y. Ce nu mai încape trece pe foaia
  * următoare dacă e goală, apoi pe foi noi, ca foaia pe care se așază; o piesă mai mare decât foaia rămâne pe loc. Nicio
  * mărime nu se schimbă. Distanța e cel puțin cea mai mare freză a profilelor exterioare (altfel tăietura unei piese intră în
- * vecina ei): sub ea, refuz. Ordinea (a listei, sau cele mai mari întâi) și rotirea (fără, sau cu 90° când încap mai multe)
+ * vecina ei): sub ea, refuz. Cu urechi, distanța propusă e mai mare, ca urechile să țină (felia 11.3↑b, `distantaPiese.ts`):
+ * sub ea, doar avertismentul. Ordinea (a listei, sau cele mai mari întâi) și rotirea (fără, sau cu 90° când încap mai multe)
  * sunt ale omului (răspunsul 3, „Da, toate”). „Mută și așază la capăt” e aceeași așezare pe altă foaie, după piesele ei.
  * Funcții pure: dau comenzi ale jurnalului, fiecare cu inversa exactă. Vin cu calculul acțiunilor și cu dialogul, la cerere.
  */
@@ -45,23 +47,38 @@ const EPS = 1e-9;
 /** Un număr cu 6 zecimale (micrometrul nu e o unitate a mașinii): fără resturile rotirii (6e-17). */
 const r6 = (x: number): number => Math.round(x * 1e6) / 1e6 + 0;
 
-/** Cea mai mare freză a profilelor exterioare ale unei piese (mm), sau 0. */
-export function frezaExterioara(p: Piesa): number {
-  let d = 0;
-  for (const o of p.operatii) if (o.tip === 'profil' && o.latura === 'exterior') d = Math.max(d, o.scula.diametru);
-  return d;
+/** Piesele instanțelor `ids` de pe foaia `idFoaie` (fiecare o dată pe instanță). */
+function pieseAlese(doc: Document, ids: readonly string[], idFoaie: string): Piesa[] {
+  const alese = new Set(ids);
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  return (doc.foi.find((f) => f.id === idFoaie)?.instante ?? []).flatMap((i) => {
+    const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
+    return p ? [p] : [];
+  });
 }
 
 /** Distanța minimă dintre piesele așezate: cea mai mare freză a profilelor lor exterioare (0 fără profile exterioare). */
 export function distantaMinima(doc: Document, ids: readonly string[], idFoaie: string): number {
-  const alese = new Set(ids);
-  const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  let d = 0;
-  for (const i of doc.foi.find((f) => f.id === idFoaie)?.instante ?? []) {
-    const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
-    if (p) d = Math.max(d, frezaExterioara(p));
-  }
-  return d;
+  return pieseAlese(doc, ids, idFoaie).reduce((d, p) => Math.max(d, frezaExterioara(p)), 0);
+}
+
+/**
+ * Distanța propusă dintre piesele așezate (felia 11.3↑b): dacă vreuna are urechi pe un profil exterior, 2 × cea mai mare
+ * freză + 3 mm, rotunjită în sus, ca între tăieturile vecine să rămână lemnul de care se țin urechile; altfel minimul. O
+ * distanță între minim și ea se primește, cu avertismentul (`urechiLibere`).
+ */
+export function distantaPropusa(doc: Document, ids: readonly string[], idFoaie: string): number {
+  return distantaCuUrechi(distantaMinima(doc, ids, idFoaie), pieseAlese(doc, ids, idFoaie).some(cuUrechi));
+}
+
+/**
+ * Pragul avertismentului (felia 11.3↑b): distanța propusă, dacă distanța aleasă, pe X sau pe Y, e sub ea, dar nu sub minim;
+ * altfel null. Fără urechi, propunerea e chiar minimul, deci nu se avertizează niciodată; sub minim, planul refuză.
+ */
+export function urechiLibere(doc: Document, ids: readonly string[], idFoaie: string, opt: Pick<OptiuniAsezare, 'distantaX' | 'distantaY'>): number | null {
+  const p = distantaPropusa(doc, ids, idFoaie);
+  const d = Math.min(opt.distantaX, opt.distantaY);
+  return d < p - EPS && d >= distantaMinima(doc, ids, idFoaie) - EPS ? p : null;
 }
 
 /** Valorile sunt numere finite, de la 0 la `ASEZARE_MAXIM`, iar alegerile sunt cele cunoscute. */
