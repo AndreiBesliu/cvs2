@@ -149,3 +149,22 @@ test('alegerile ținute: implicitele fără nimic, cu o valoare stricată sau cu
   assert.doesNotThrow(() => { tineOptiunile(ale, rea); });
   assert.deepEqual(optiuniTinute(null), ASEZARE_IMPLICITA);
 });
+
+test('selectie.muta-si-aseaza cu urechi (felia 11.3↑b): distanța ținută urcă la cea propusă, 2 × 6 + 3 = 15', () => {
+  const b = dreptunghiuri(3);
+  const alese = b.selectie();
+  const doc = b.h().doc;
+  // Urechile pe profilul exterior al fiecărui dreptunghi (freza de 6), fără gestul exportului.
+  b.scrie(istoricNou({ ...doc, piese: doc.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => ({ ...o, urechi: { numar: 2, latime: 6, grosime: 2 } })) })) }));
+  b.selecteaza(alese);
+  ok(b, 'selectie.muta-si-aseaza', { foaieTinta: () => null });
+  const n = b.h().doc;
+  assert.ok(incarca(JSON.parse(JSON.stringify(n))).ok);
+  // Pe foaia nouă: 10 și 10 + 100 + 15 = 125 pe primul rând (240 + 100 > 290), apoi 130 − 15 − 60 = 55.
+  assert.deepEqual(locuri(n)[1], [[10, 130], [125, 130], [10, 55]]);
+  // O distanță mai mare decât cea propusă (20) rămâne: 10, 130 (250 + 100 > 290), apoi 130 − 20 − 60 = 50.
+  ok(b, 'istoric.anuleaza');
+  b.selecteaza(alese);
+  ok(b, 'selectie.muta-si-aseaza', { foaieTinta: () => null, ...aseaza(b, { distantaX: 20, distantaY: 20 }) });
+  assert.deepEqual(locuri(b.h().doc)[1], [[10, 130], [130, 130], [10, 50]]);
+});

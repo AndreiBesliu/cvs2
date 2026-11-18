@@ -48,12 +48,30 @@ pune la loc ce era când ai deschis fereastra.
 - **Atelier**: butoane mari, pentru tabletă și lângă mașină;
 - **Pas cu pas**: te duce de la desen la mașină, pas cu pas.
 
-Deocamdată se poate alege doar Insule; celelalte trei apar în fereastră cu „în curând” și vin pe rând.
+Deocamdată se pot alege Insule și [Atelierul](#atelier); Clasic și Pas cu pas apar în fereastră cu „în curând” și vin
+pe rând.
 
 **Tema** e aceeași cu a butonului „Tema” din bară: după sistem, luminoasă sau întunecată. **Butoane mari** face butoanele
 mai înalte (48 px; 56 pe un ecran tactil), cu orice aranjament: se nimeresc mai ușor pe tabletă sau cu mănuși.
 
 Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate arăta altfel decât calculatorul din birou.
+
+## Atelierul
+%% capitol: atelier
+
+**Atelierul** e aranjamentul pentru tabletă și pentru ecranul de lângă mașină. Îl alegi din fereastra **Aspectul** (meniul
+**Cont**, rândul **Aspectul…**). La prima alegere pornește cu tema întunecată și cu **Butoane mari**; le poți schimba din
+aceeași fereastră, înainte de **Păstrează**.
+
+- **Uneltele de desen** stau într-o coloană, în stânga, cu numele la vedere și cu tasta fiecăreia (Selecție `V`,
+  Dreptunghi `R`…); sub ele, Lipire și Grilă.
+- **Bara de sus** are Anulează și Reface cu numele lor, apoi importul, exportul vectorilor și **Exportă G-code**. Extensia
+  barei (alinierea, oglindirea, copierea, offsetul, booleanul, 3D) stă dedesubt, pe mai multe rânduri când nu încape.
+- **Panourile** stau împreună, în dreapta: **Proprietăți** sus, **Pe foaie** dedesubt.
+- Pe o tabletă ținută în picioare și pe telefon, uneltele trec într-un rând jos, sub pânză, care se derulează cu degetul;
+  panourile stau unul lângă altul, dedesubt.
+
+Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`).
 
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza
@@ -134,14 +152,18 @@ așezării. Alegi ce se așază (piesele alese sau toate de pe foaie), colțul d
 distanța dintre piese, pe X și pe Y (cu **Aceeași pe X și pe Y** bifată, un singur număr). Piesele se pun după cutia
 fiecăreia, cu rotirea ei, rând cu rând; cele care rămân pe foaie se ocolesc. Ce nu mai încape trece pe foaia următoare, dacă
 e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia rămâne pe loc. Nicio mărime nu se schimbă. Distanța
-e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul.
+e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul. Cu
+urechi pe profilul exterior, fereastra pornește de la 2 × freza + 3 mm, rotunjită în sus (10 mm cu freza de 3,175), și spune
+de ce: sub 2 × freza, tăieturile a două piese vecine se unesc, iar urechile dinspre vecini nu mai au lemn de care să se țină.
+O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment.
 **Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
 încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
 minte în browser.
 
 **Mută și așază la capăt.** În meniul de clic dreapta, lângă **Mută pe**, **Mută și așază la capăt pe** și numele foii mută
-piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări; **Mută și așază pe o foaie nouă** le așază
-pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca mai sus, pe foile următoare.
+piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări (distanța urcă singură la freză, iar cu urechi
+la 2 × freza + 3 mm); **Mută și așază pe o foaie nouă** le așază pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca
+mai sus, pe foile următoare.
 
 Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi, o așezare) e un singur pas de anulare
 (`Ctrl+Z`).
@@ -157,7 +179,8 @@ se vede la toate.
 **Încă și +1.** Cu o singură piesă aleasă, panoul Proprietăți arată, la **Piesa**, de câte ori e pusă și pe ce foi.
 **Încă…** cere **Câte în total** (mai multe decât acum, cel mult 1 000) și arată, înainte să adaugi, unde ajung cele noi: pe
 rândul piesei, la dreapta ei, apoi pe rânduri dedesubt, de la marginea foii (10 mm), ocolind piesele de pe foaie. Între
-piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare. Ce nu încape trece
+piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare; cu urechi pe un
+profil exterior, cel puțin 2 × freza + 3 mm, rotunjită în sus (vezi „Așază pe foi”). Ce nu încape trece
 pe foaia următoare, dacă e goală, apoi pe foi noi, ca foaia piesei. **+1** pune încă una după ultima. `Ctrl+D` rămâne o copie
 separată, cu piesa ei.
 
@@ -168,14 +191,26 @@ aceleiași piese, rotite altfel, s-ar schimba diferit la o scalare neuniformă, 
 se refuză, cu motivul.
 
 **Desprinde.** **Desprinde** (în panou, sau **Desprinde-o doar pe aceasta**, din bandă) dă fiecărei instanțe alese o piesă a
-ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare),
-reparațiile [verificării](#verificare) și [tăierea vectorilor](#taiere) nu schimbă o piesă pusă de mai multe ori: întâi o
-desprinzi. O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
+ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare) și
+reparațiile [verificării](#verificare) nu schimbă o piesă pusă de mai multe ori: întâi o desprinzi. [Tăierea](#taiere) și
+conversia întreabă (mai jos). O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
 
 **Gruparea.** Cu o piesă pusă de mai multe ori printre formele alese, **Grupează** întreabă: **Doar aceasta** (o desprinde,
 apoi grupează) sau **În toate cele N** (formele celelalte intră în piesă, deci apar lângă fiecare instanță a ei; merge cu o
 singură piesă de felul acesta printre cele alese). Bifa **Ține minte alegerea** o păstrează în browser: gruparea nu mai
 întreabă. Meniul de clic dreapta are amândouă rândurile, **Grupează doar aceasta** și **Grupează în toată piesa**.
+
+**Tăierea și conversia.** Când o tăiere ([Taie vectorii](#taiere), Cuțitul, Taie în panouri, Taie la intersecții, Decupează)
+sau o conversie (Arce, În cerc, În dreptunghi, Netezește) ar schimba o piesă pusă de mai multe ori, sus apare întrebarea:
+**Desprinde și taie** (principal: fiecare formă tăiată primește piesa ei, iar celelalte rămân legate între ele) sau **Taie
+piesa (toate cele N)** (tăietura trece în piesă: fiecare instanță a ei, de pe orice foaie, se taie în același loc, iar
+bucățile rămân puse de tot atâtea ori). **Taie piesa** e doar la tăieturile care nu depind de ce e în jurul fiecărei instanțe
+(linia, ghidajul, ultima formă aleasă, Cuțitul cu Linie, Pen, Liber, Formă și Foarfecă); la Decupează, Taie la intersecții,
+Retează și Taie în panouri, doar **Desprinde și taie**. Două instanțe alese ale aceleiași piese, tăiate în locuri diferite
+ale ei, și șablonul unor plăcuțe (fiecare cu literele ei) nu se pot tăia ca piesă: motivul o spune. La conversie, **Desprinde
+și convertește** sau **Convertește piesa**. **Ține minte alegerea** o păstrează în browser; rândul **Piese puse de mai multe
+ori** din opțiunile tăierii și din panoul conversiei o arată, o schimbă sau o uită (**întreabă**). **Renunță** nu schimbă
+nimic. Fiecare operație rămâne un singur pas de anulare.
 
 **Duplică foaia cu aceleași piese**, din meniul foii, face o foaie nouă după ea, cu aceleași piese (instanțe noi, în aceleași
 locuri): o schimbare a unei piese se vede pe ambele foi. **Duplică foaia** face, ca înainte, copii separate.
@@ -199,7 +234,7 @@ diacritice: **potrivit singur**) sau, la alegere, altă coloană, **o valoare** 
 cifrele). Un text fără câmp: alegi în **Textul piesei** bucata care se schimbă de la o plăcuță la alta și apeși **Fă din
 textul ales câmpul {Nume}** (numele e al coloanei, sau cel scris). **Rândurile de la … până la** aleg rândurile. Sub ele,
 unde ajung plăcuțele („6 plăcuțe pe 3 foi: 2 + 2 + 2”), cu marginea și distanța lui „Așază pe foi” (**Schimbă…**; distanța e
-cel puțin freza profilului exterior). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
+cel puțin freza profilului exterior; cu urechi, pornește de la 2 × freza + 3 mm, iar mai jos apare avertismentul). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
 pe foi (ca „Așază pe foi”), într-un singur pas. Cu caseta **Limitat de casetă** pe text, panoul spune câte plăcuțe s-au
 micșorat și cât.
 
@@ -677,7 +712,7 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
 **Renunță la toate** închid fereastra. Se importă fișierele SVG, DXF, PDF, AI, EPS și WMF, precum și imaginile PNG, JPEG,
-WebP, GIF și BMP, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
+WebP, GIF, BMP și TIFF, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
 export.
 
 Un **DXF** se citește așa:
@@ -701,6 +736,9 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 - fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
 - se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
   întreg);
+- o **pagină scanată** (fără vectori, cu o imagine: de la scanerul de birou sau de la o aplicație de telefon) se
+  **trasează** singură, ca o imagine (mai jos), la mărimea de pe hârtie; la o pagină cu vectori și cu imagini, butonul
+  **Trasează imaginea paginii** trasează imaginea cea mai mare în locul vectorilor, iar **Vectorii paginii** te întoarce;
 - un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI salvat fără
   „Create PDF Compatible File” arată doar o notă de text, iar fereastra îți spune s-o bifezi.
 
@@ -730,7 +768,7 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
-O **imagine** (PNG, JPEG, WebP, GIF sau BMP: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
+O **imagine** (PNG, JPEG, WebP, GIF, BMP sau TIFF: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
 marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
 dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
@@ -844,7 +882,12 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
-- TIFF-ul nu se citește încă (salvează imaginea ca PNG), iar imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
+- TIFF-ul (al scanerelor, al faxurilor, al programelor de CAD) îl citește aplicația singură: necomprimat, LZW, Deflate,
+  PackBits sau CCITT (G3, G4: scanările alb-negru), cu DPI-ul lui; la unul cu mai multe pagini, fereastra îți dă alegerea
+  paginii, ca la PDF. Un TIFF cu JPEG în el (sau BigTIFF, culori în virgulă mobilă, YCbCr, CIELab) e refuzat, cu numele a
+  ce nu citește: salvează-l atunci ca PNG. Imaginile din SVG-uri se sar, ca până acum;
+- imaginea unui PDF scanat (JPEG, CCITT G3 / G4 sau necomprimată) se trasează la DPI-ul ei de pe pagină, întoarsă cum o
+  arată pagina; una JBIG2 sau JPEG 2000 e refuzată, cu numele ei: salvează atunci pagina ca PNG.
 
 ## Tăierea vectorilor
 %% capitol: taiere
@@ -935,8 +978,8 @@ pas, deci niciun dinte nu e tăiat de tăietura vecină. Bucățile fiecărui pa
 (rând cu rând, de jos, de la stânga), stau unde erau și rămân alese: **Așază pe foi…**, din bloc, deschide fereastra așezării
 pe ele (marginile, distanța, ordinea și rotirea ei), ca să le pună pe foi, câte încap pe fiecare; un panou cu o singură
 bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte și de
-alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; nici o
-formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
+alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; o formă
+pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). **Taie în panouri** e un singur pas de anulare.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
@@ -951,8 +994,8 @@ verificării), iar un contur închis cu un singur loc comun rămâne întreg.
 Bucățile își păstrează rolul de tăiere: un pătrat tăiat pe exterior dă două dreptunghiuri tăiate tot pe exterior. O bucată
 deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afară sau pe dinăuntru, după sensul desenului).
 Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
-pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
-(Ctrl+Z).
+pusă de mai multe ori întreabă întâi: vezi [Piesele puse de mai multe ori](#piese-legate). Fiecare tăiere (**Taie vectorii**,
+din panou) e un singur pas de anulare (Ctrl+Z).
 
 ## Unealta Cuțit
 %% capitol: cutit
@@ -1018,11 +1061,12 @@ le schimbe locul, numele sau operațiile. Panoul are patru blocuri, fiecare cu b
   cu colțurile rotunjite dacă le are. **Cu mărimea** dată (implicit 40 × 20 mm), orice formă închisă devine dreptunghiul
   acela, drept pe foaie, în centrul cutiei ei. O formă găurită nu devine dreptunghi: găurirea cere un cerc.
 
-Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă decât
-pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai
-mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi deschise
-(doar formele închise devin cerc sau dreptunghi) sau forme puse de mai multe ori pe foaie, care nu se convertesc de aici.
-Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare (Ctrl+Z).
+Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă
+decât pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea
+cea mai mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi
+deschise (doar formele închise devin cerc sau dreptunghi). O formă pusă de mai multe ori întreabă întâi: vezi [Piesele puse
+de mai multe ori](#piese-legate). Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare
+(Ctrl+Z).
 
 ## Verificarea vectorilor
 %% capitol: verificare
@@ -1304,12 +1348,23 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
   trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
   rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
   plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
+- **Treapta** (doar în fereastra exportului): **fără**; **spre interior**: locașul are un umăr, cu nivelul de sus cât desenul,
+  până la **Adâncimea umărului** (d; implicit jumătate din adâncimea locașului, la gaură din grosimea foii), iar sub el o
+  deschidere mai îngustă cu **Lățimea umărului** (s; implicit 3 mm) pe fiecare parte, până la fund (sau prin foaie); sau
+  **spre exterior**: desenul e deschiderea, iar nivelul de sus e mai lat cu s pe fiecare parte (ca falțul unui geam).
+  Ambele niveluri au colțurile potrivite ca locașul simplu, cu același joc lateral. Dopul are o **flanșă** pe nivelul de sus
+  și o **tijă** pe deschidere, și se taie mereu oglindit, cu tija în sus, apoi îl întorci în locaș. Fără treaptă, câmpurile
+  umărului se ascund (valorile rămân în rând).
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
-- **Se sprijină** (doar la dopul ridicat): **pe fundul locașului**: dopul e înalt cât adâncimea plus **spațiul pentru
-  fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a semifabricatului stă pe
-  placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1 și sub adâncime).
+- **Se sprijină** (la dopul ridicat; cu treaptă, și la cel decupat): **pe fundul locașului**: dopul e înalt cât adâncimea plus
+  **spațiul pentru fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a
+  semifabricatului stă pe placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1
+  și sub adâncime). Cu treaptă: **pe umăr** (implicit): flanșa stă pe umăr, iar sub tijă rămâne **jocul de sub tijă** (g):
+  tija are D − d − g, flanșa d + H; sau **pe fundul locașului**: tija stă pe fund, iar deasupra umărului rămâne **jocul de
+  deasupra umărului** (g): tija are D − d + g, flanșa d − g + H. La gaura în trepte, dopul stă pe umăr, cu tija la nivel cu
+  fața de jos (T − d), fără joc. „Pe față” e doar al dopului fără treaptă.
 - **Cât iese peste placă** (la dopul decupat; tot H): placa dopului e groasă cât adâncimea plus H, iar partea care iese peste
   placă se rindeluiește după lipire.
 - **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului; la cel decupat, cel puțin
@@ -1325,19 +1380,27 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 dopului (vârfurile R − c, unghiurile r), jocul pe contur, înălțimea dopului și grosimea semifabricatului (cea mai mică la dopul
 ridicat, înălțimea plus 1 mm; exactă la cel decupat) și, la dopul decupat, punțile lui. De exemplu, cu freza Ø6, adâncimea 6, jocul 0,1 și dopul ridicat pe
 fund: vârfurile locașului R3, unghiurile R2,9, ale dopului R2,9 și R3; dopul e înalt de 8 mm, iar semifabricatul are cel
-puțin 9 mm.
+puțin 9 mm. Cu treaptă, panoul arată și umărul (încotro, d, s) și dopul în trepte (tija și flanșa): dreptunghiul de 40 × 30
+cu Ø6, adâncimea 8, umărul spre interior la 3 mm, lat de 5, pe umăr, g 0,5 și H 2 are deschiderea de 30 × 20, tija de 4,5 mm
+și flanșa de 5 mm; dopul e înalt de 9,5 mm, pe un semifabricat de cel puțin 10,5 mm.
 
 **Exportul.** Ca la incrustația în V, se descarcă și un fișier pentru fiecare dop („-dop-1”…), cu semifabricatul lui: XY0 în
 colțul ales, Z0 pe fața lui. La dopul ridicat, fața se coboară în jur cu frezele dopului, până dincolo de marginile
 semifabricatului: fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă. La dopul decupat, conturul se taie ca
 exterior, prin placă, cu punțile alese (implicit 4 pe buclă, late de 4 mm și groase de 1 mm), iar golurile desenului ca
-interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire.
+interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire. Cu treaptă, locașul se taie în două niveluri:
+întâi nivelul de sus, până la umăr, apoi deschiderea, de sub umăr până la fund. Dopul în trepte e mereu oglindit, cu tija în
+sus: în jurul tijei, freza coboară până la flanșă; apoi, la dopul ridicat, fața se coboară în jurul flanșei, iar la cel
+decupat flanșa se taie prin placă, cu punți. Spre exterior, semifabricatul e cutia desenului lărgită cu s, plus marginea.
 
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
-sprijinul pe umăr, până la felia lor (12.1↑f-2).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund). Cu treaptă:
+dopul pe față, sau pe fund la o gaură; umărul la fund sau mai jos (la gaură, la fața de jos); umărul cel mult cât jocul
+lateral de lat; jocul g sub 0,1 mm, pe umăr cel puțin D − d, pe fund cel puțin d; o deschidere care dispare sub umăr (o parte
+mai îngustă decât freza, cu elementul ei); la dopul decupat, marginea mai mică decât prima lui freză plus 0,5 mm, sau flanșa
+cel mult cât punțile de groasă. Fără treaptă, sprijinul pe umăr.
 
 ## Traseul pe pânză
 %% capitol: traseu

@@ -1,5 +1,7 @@
 * text=auto eol=lf
 *.png binary
+*.tif binary
+*.tiff binary
 *.jpg binary
 *.pdf binary
 # Fisierele de schimb si de masina se pastreaza octet cu octet (hash, fixturi de aur, pachetele de proba).

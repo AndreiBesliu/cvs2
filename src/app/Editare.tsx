@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as TastaReact, type ReactElement, type ReactNode, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent as TastaReact, type ReactElement, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Rigle, GROSIME_RIGLA, type Zona } from '../canvas/Rigle.tsx';
 import type { GestDesen, LinieGhid, Lipeste, Vedere } from '../canvas/protocol.ts';
@@ -49,6 +49,7 @@ import { aplica, IDENTITATE } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { tastaActiunii } from '../ui/scurtaturi.ts';
 import { tineAlegerea, type AlegereGrupare } from '../ui/grupareSurori.ts';
+import { ascultaSurori, intrebareaSurori, raspundeSurori } from '../ui/intrebareSurori.ts';
 import { folosiri } from '../model/pieseLegate.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
@@ -221,6 +222,8 @@ const MarcajeVerificare = lazy(() => import('./PanouVerificare.tsx').then(cuMesa
  * Tăierea vectorilor (ADR 0180 §3, felia 10.3↑): panoul Taie și linia de pe pânză, o bucată adusă la primul clic pe butonul ei.
  * Dacă nu vine, panoul o spune.
  */
+// Banda întrebării pentru o piesă pusă de mai multe ori (felia 10.3↑m): la cerere, când calculul unei tăieri o pune.
+const IntrebareSurori = lazy(() => import('./IntrebareSurori.tsx').then(cuMesaje).then((m) => ({ default: m.IntrebareSurori }), () => ({ default: () => null })));
 const PanouTaiere = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.PanouTaiere }), () => ({
   default: () => <p className="motiv-retea" role="status" data-testid="taiere-neincarcata">{t('editare.taiere.neincarcata')}</p>,
 })));
@@ -786,7 +789,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     };
     return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit: { fel: 'intersectii' }, alese, inchide: false }, undefined, indexFoaie).then((r) => {
       if (!r.ok) return t(r.motiv === 'nimic-taiat' ? 'editare.taiere.motiv.nimic-intersectii' : `editare.taiere.motiv.${r.motiv}`);
-      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids }) });
+      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids, ...(r.surori ? { surori: r.surori } : {}) }) });
       return v.ok ? null : t(v.motiv);
     }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
   };
@@ -802,7 +805,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const cutit = { fel: 'foarfeca' as const, id: instanta, punct, toleranta: 1e-6 };
     return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.taieVectorii(laCerere, { cutit, alese: [instanta], inchide: false }, undefined, indexFoaie).then((r) => {
       if (!r.ok) return t(`editare.taiere.motiv.${r.motiv}`);
-      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids.slice(0, 1) }) });
+      const v = ruleaza('document.taie', { taiere: () => ({ doc: laCerere, degrupate: r.degrupate, ids: r.ids.slice(0, 1), ...(r.surori ? { surori: r.surori } : {}) }) });
       return v.ok ? null : t(v.motiv);
     }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
   };
@@ -831,6 +834,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [motivGrupare, setMotivGrupare] = useState<string | null>(null);
   // Întrebarea grupării cu o piesă pusă de mai multe ori (ADR 0210 §2) și bifa „Ține minte alegerea”.
   const [intrebareGrupare, setIntrebareGrupare] = useState(false);
+  // Întrebarea tăierii sau a conversiei unei piese puse de mai multe ori (felia 10.3↑m); o altă alegere a formelor renunță.
+  const intrebareSurori = useSyncExternalStore(ascultaSurori, intrebareaSurori, intrebareaSurori);
+  useEffect(() => { raspundeSurori(null); }, [selectie]);
   const [tineGrupare, setTineGrupare] = useState(false);
   useEffect(() => { setMotivGrupare(null); }, [selectie]);
   // Prima instanță aleasă a unei piese puse de mai multe ori (ADR 0210 §2): de câte ori e pusă și câte stau pe foaia activă.
@@ -1274,6 +1280,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               </button>
             ) : null}
           </div>
+        </div>
+      ) : null}
+      {intrebareSurori ? (
+        <div className="legate-sus" style={{ left: zona.x + zona.w / 2, top: zona.y + 8 }}>
+          <Suspense fallback={null}><IntrebareSurori intrebare={intrebareSurori} /></Suspense>
         </div>
       ) : null}
       {surori && intrebareGrupare && selectie.length >= 2 ? (
@@ -1757,6 +1768,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <button key={u} type="button" className="unealta aliniaza" aria-pressed={unealta === u} title={titlu} aria-label={titlu} data-unealta={u}
                   disabled={p.doarCitire && u !== 'selectie'} onClick={() => { setUnealta(u); setVedere3d(false); }}>
                   <IconaUnealta u={u} />
+                  <span className="nume-unealta" aria-hidden="true">{numeScurt(titlu)}</span>
                   <span className="tasta-unealta" aria-hidden="true">{TASTA_UNELTEI[u]}</span>
                 </button>
               );

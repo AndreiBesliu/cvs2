@@ -49,12 +49,30 @@ The **layout** is how the bars and panels sit around the canvas:
 - **Workshop**: big buttons, for a tablet and next to the machine;
 - **Step by step**: takes you from the drawing to the machine, step by step.
 
-For now only Islands can be chosen; the other three show in the window as “coming soon” and arrive one at a time.
+For now Islands and [Workshop](#atelier) can be chosen; Classic and Step by step show in the window as “coming soon” and
+arrive one at a time.
 
 The **theme** is the same as the “Theme” button in the bar: as the system, light or dark. **Big buttons** makes the buttons
 taller (48 px; 56 on a touch screen), with any layout: easier to hit on a tablet or with gloves.
 
 The choice stays on this device (in the browser): the tablet in the workshop can look different from the office computer.
+
+## The Workshop layout
+%% capitol: atelier
+
+**Workshop** is the layout for a tablet and for the screen next to the machine. Choose it in the **Appearance** window
+(**Account** menu, **Appearance…** row). The first time, it starts with the dark theme and **Big buttons**; you can change
+them in the same window before **Keep**.
+
+- The **drawing tools** sit in a column on the left, with their names and keys in view (Select `V`, Rectangle `R`…);
+  below them, Snap and Grid.
+- The **top bar** has Undo and Redo with their names, then import, vector export and **Export G-code**. The bar extension
+  (alignment, mirroring, copying, offset, boolean, 3D) sits below it, over several rows when it does not fit.
+- The **panels** sit together on the right: **Properties** on top, **On the sheet** below.
+- On a tablet held upright and on a phone, the tools move to a row at the bottom, under the canvas, which scrolls with a
+  finger; the panels sit side by side below it.
+
+The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`).
 
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza
@@ -139,13 +157,17 @@ default), the sheet margin and the distance between parts, on X and on Y (with *
 number). The parts are placed by the box of each one, with its rotation, row by row; the ones staying on the sheet are
 avoided. Whatever no longer fits goes to the next sheet, if it is empty, then to new sheets, like the active sheet. A part
 larger than the sheet stays where it is. No size changes. The distance is at least the cutter of the outside profile
-(otherwise one part’s cut would run into its neighbour), and the window says the minimum. **Order**: as in the list
+(otherwise one part’s cut would run into its neighbour), and the window says the minimum. With tabs on the outside profile,
+the window starts at 2 × the cutter + 3 mm, rounded up (10 mm with a 3.175 cutter), and says why: below 2 × the cutter, the
+cuts of two neighbouring parts merge, and the tabs facing the neighbours have no wood left to hold on to. A smaller
+distance, but at least the cutter, is accepted, with a warning. **Order**: as in the list
 (default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
 **Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
 
 **Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
-sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement;
-**Move and arrange on a new sheet** arranges them on a new sheet, like the active one. Whatever does not fit goes, as
+sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement
+(the distance rises by itself to the cutter, and with tabs to 2 × the cutter + 3 mm); **Move and arrange on a new sheet**
+arranges them on a new sheet, like the active one. Whatever does not fit goes, as
 above, to the next sheets.
 
 Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets, an arrangement) is a single undo step
@@ -162,7 +184,8 @@ part, so a change to them shows on all of them.
 **More and +1.** With a single part chosen, the Properties panel shows, under **Part**, how many times it is placed and on
 which sheets. **More…** asks **How many in total** (more than now, at most 1,000) and shows, before you add them, where the
 new ones go: on the part's row, to its right, then on rows below, from the sheet's margin (10 mm), going around the parts on
-the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger.
+the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger;
+with tabs on an outside profile, at least 2 × the cutter + 3 mm, rounded up (see “Arrange on sheets”).
 Whatever does not fit goes to the next sheet, if it is empty, then to new sheets, like the part's sheet. **+1** places one
 more after the last. `Ctrl+D` stays a separate copy, with its own part.
 
@@ -172,15 +195,27 @@ nodes, the text, the scale, the mirroring, the skew or the operations is made fo
 each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
 a mirror or a skew: then the change is refused, with the reason.
 
-**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its own,
-a copy, in the same place: from then on it changes on its own. The last instance keeps the part. [Ungrouping](#degrupare),
-the [check](#verificare)'s repairs and [cutting the vectors](#taiere) do not change a part placed more than once: detach it
-first. A deleted instance goes alone; the part goes with its last instance.
+**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its
+own, a copy, in the same place: from then on it changes on its own. The last instance keeps the part.
+[Ungrouping](#degrupare) and the [check](#verificare)'s repairs do not change a part placed more than once: detach it first.
+[Cutting](#taiere) and converting ask (below). A deleted instance goes alone; the part goes with its last instance.
 
 **Grouping.** With a part placed more than once among the chosen shapes, **Group** asks: **Just this one** (detaches it, then
 groups) or **In all N** (the other shapes go into the part, so they show next to each of its instances; it works with a single
 part of this kind among the chosen ones). The **Remember the choice** box keeps it in the browser: grouping no longer asks.
 The right-click menu has both rows, **Group just this one** and **Group in the whole part**.
+
+**Cutting and converting.** When a cut ([Cut vectors](#taiere), the Knife, Cut into panels, Cut at intersections, Clip) or a
+conversion (Arcs, To circle, To rectangle, Smooth) would change a part placed more than once, the question shows at the top:
+**Detach and cut** (the main one: each cut shape gets a part of its own, and the others stay linked to each other) or **Cut
+the part (all N)** (the cut goes into the part: each instance of it, on any sheet, is cut in the same place, and the pieces
+stay placed as many times). **Cut the part** is only offered for cuts that do not depend on what is around each instance (the
+line, the guide, the last chosen shape, the Knife with Line, Pen, Freehand, Shape and Scissors); with Clip, Cut at
+intersections, Trim and Cut into panels, only **Detach and cut**. Two chosen instances of the same part cut in different
+places of it, and the template of some plates (each with its own letters), cannot be cut as a part: the reason says so. When
+converting, **Detach and convert** or **Convert the part**. **Remember the choice** keeps it in the browser; the **Parts
+placed more than once** row in the cutting options and in the conversion panel shows it, changes it or forgets it (**ask**).
+**Cancel** changes nothing. Each operation stays a single undo step.
 
 **Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
 instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
@@ -206,7 +241,8 @@ capitals and diacritics: **matched automatically**) or, by choice, another colum
 (from, step, digits). A text without a field: choose in **The text of the part** the piece that changes from one plate to
 another and press **Make the chosen text the field {Name}** (the name is the column's, or the one written in). **Rows from …
 to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets: 2 + 2 + 2”), with the margin and spacing of
-“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter). **Make the plates**: the first row on
+“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter; with tabs, it starts at 2 × the
+cutter + 3 mm, and below that a warning appears). **Make the plates**: the first row on
 the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
 by the box** box on the text, the panel says how many plates were shrunk and by how much.
 
@@ -700,8 +736,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF and BMP
-images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
+**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF, BMP and
+TIFF images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
 - the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
@@ -725,6 +761,9 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 - every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
 - skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
   whole);
+- a **scanned page** (no vectors, one image: from an office scanner or a phone app) is **traced** by itself, like an image
+  (below), at its size on paper; on a page with vectors and images, the **Trace the page image** button traces the largest
+  image instead of the vectors, and **The page vectors** takes you back;
 - a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI saved
   without “Create PDF Compatible File” shows only a text notice, and the window tells you to tick it.
 
@@ -754,7 +793,7 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
-An **image** (PNG, JPEG, WebP, GIF or BMP: a logo, a scanned drawing, a signature) is **traced**: the application finds the
+An **image** (PNG, JPEG, WebP, GIF, BMP or TIFF: a logo, a scanned drawing, a signature) is **traced**: the application finds the
 drawing's edge and writes it as vectors, in black and white. The window widens, with the settings on the left and the
 preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
@@ -871,7 +910,12 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);
-- TIFF is not read yet (save the image as PNG), and images inside PDFs and SVGs are skipped, as before.
+- TIFF (from scanners, fax and CAD programs) is read by the application itself: uncompressed, LZW, Deflate, PackBits or
+  CCITT (G3, G4: black-and-white scans), with its DPI; for one with several pages, the window lets you pick the page, as for
+  a PDF. A TIFF with JPEG inside (or BigTIFF, floating-point colours, YCbCr, CIELab) is refused, naming what it cannot
+  read: save it as PNG then. Images inside SVGs are skipped, as before;
+- the image of a scanned PDF (JPEG, CCITT G3 / G4 or uncompressed) is traced at its DPI on the page, turned the way the
+  page shows it; a JBIG2 or JPEG 2000 one is refused, naming it: save the page as PNG then.
 
 ## Cutting vectors
 %% capitol: taiere
@@ -966,8 +1010,8 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 **Arrange on sheets…**, in the block, opens the arrangement window on them (its margins, distance, order and rotation), to
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
-letter in its panel. More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into
-panels** is a single undo step.
+letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
+**Cut into panels** is a single undo step.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -983,8 +1027,8 @@ becomes a shape, chosen, so you can delete the one you do not need. A shape that
 The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
 open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
-placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
-(Ctrl+Z).
+placed more than once asks first: see [Parts placed more than once](#piese-legate). Each cut (**Cut vectors**, from the
+panel) is a single undo step (Ctrl+Z).
 
 ## The Knife tool
 %% capitol: cutit
@@ -1056,11 +1100,12 @@ button:
   rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
   circle.
 
-The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
-along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
-lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
-were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
-converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly
+(more along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new
+arcs and lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle,
+how many were open paths (only closed shapes become a circle or a rectangle). A shape placed more than once asks first: see
+[Parts placed more than once](#piese-legate). Each conversion (**Convert vectors**, from the panel) is a single undo step
+(Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare
@@ -1349,12 +1394,24 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
   overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
   plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
   raised plug rests with its face on the board, as tall as the board.
+- **Step** (in the export window only): **none**; **inward**: the recess gets a shoulder, with the upper level as big as the
+  drawing, down to the **Shoulder depth** (d; by default half the recess depth, for a hole half the sheet thickness), and
+  below it an opening narrower by the **Shoulder width** (s; default 3 mm) on each side, down to the floor (or through the
+  sheet); or **outward**: the drawing is the opening, and the upper level is wider by s on each side (like a window rebate).
+  Both levels get their corners matched like the plain recess, with the same side gap. The plug gets a **flange** on the
+  upper level and a **stem** in the opening, and is always cut mirrored, stem up; then you flip it into the recess. Without a
+  step, the shoulder fields are hidden (the values stay in the row).
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
-- **Rests on** (raised plug only): **the pocket floor**: the plug is as tall as the depth plus the **saw gap** (H; default
-  2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits on the board, and the plug
-  is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the depth).
+- **Rests on** (raised plug; with a step, the cut-out one too): **the pocket floor**: the plug is as tall as the depth plus
+  the **saw gap** (H; default 2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits
+  on the board, and the plug is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the
+  depth). With a step: **the shoulder** (default): the flange rests on the shoulder, and the **gap under the stem** (g) stays
+  below it: the stem is D − d − g, the flange d + H; or **the pocket floor**: the stem rests on the floor, and the **gap above
+  the shoulder** (g) stays above it: the stem is D − d + g, the flange d − g + H. In a stepped hole, the plug rests on the
+  shoulder, with the stem flush with the bottom face (T − d), without a gap. “The board face” is for a plug without a step
+  only.
 - **Above the board** (cut-out plug; also H): the plug board is as thick as the depth plus H, and the part above the board is
   planed off after gluing.
 - **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank; for a cut-out plug, at least its
@@ -1370,19 +1427,28 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
 the plug corners (tips R − c, inside corners r), the gap along the outline, the plug height and the blank thickness (the
 smallest for a raised plug, the height plus 1 mm; exact for a cut-out one) and, for a cut-out plug, its tabs. For example, with a Ø6 bit, depth 6, gap 0.1 and a
 raised plug resting on the floor: pocket tips R3, inside corners R2.9; plug R2.9 and R3; the plug is 8 mm tall, and the blank
-at least 9 mm.
+at least 9 mm. With a step, the panel also shows the shoulder (which way, d, s) and the stepped plug (stem and flange): the
+40 × 30 rectangle with a Ø6 bit, depth 8, an inward shoulder at 3 mm, 5 mm wide, resting on the shoulder, g 0.5 and H 2, has a
+30 × 20 opening, a 4.5 mm stem and a 5 mm flange; the plug is 9.5 mm tall, on a blank at least 10.5 mm thick.
 
 **Export.** As with the V inlay, a file for each plug is downloaded too (“-dop-1”…), with its blank: XY0 at the chosen corner,
 Z0 on its face. For a raised plug, the face is lowered around it with the plug bits, past the edges of the blank: hold it
 without clamps on the edges, for example with double-sided tape. For a cut-out plug, the outline is cut as an outside profile,
 through the board, with the chosen tabs (by default 4 per loop, 4 mm wide and 1 mm thick), and the drawing's holes as insides;
-cut the tabs and clean them flush with the walls before gluing.
+cut the tabs and clean them flush with the walls before gluing. With a step, the recess is cut in two levels: first the upper
+level, down to the shoulder, then the opening, from below the shoulder to the floor. The stepped plug is always mirrored, stem
+up: around the stem, the bit goes down to the flange; then, for a raised plug, the face is lowered around the flange, and for
+a cut-out one the flange is cut through the board, with tabs. Outward, the blank is the drawing's box widened by s, plus the
+margin.
 
 **Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
 radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
 than the bit; a cut-out plug margin smaller than its bit; tabs at least as thick as the plug board; a loop with no room for a
-single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none); the step and the rest on
-the shoulder, until their slice (12.1↑f-2).
+single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none). With a step: the plug on
+the face, or on the floor in a hole; the shoulder at the floor or lower (in a hole, at the bottom face); a shoulder no wider
+than the side gap; a gap g under 0.1 mm, on the shoulder at least D − d, on the floor at least d; an opening that vanishes
+under the shoulder (a part narrower than the bit, with its element); for a cut-out plug, a margin smaller than its first bit
+plus 0.5 mm, or a flange no thicker than the tabs. Without a step, resting on the shoulder.
 
 ## The toolpath on the canvas
 %% capitol: traseu

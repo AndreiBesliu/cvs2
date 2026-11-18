@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
 import { citesteCsv, CODARI, decodeazaCsv, PLAFON_CSV, SEPARATOARE, separatorGasit, type Codare, type Separator } from '../io/csv.ts';
-import { ASEZARE_MAXIM, distantaMinima, peFoi, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { ASEZARE_MAXIM, distantaPropusa, peFoi, planAsezare, urechiLibere, type OptiuniAsezare } from '../model/asezare.ts';
 import type { Document, Instanta, Piesa, TextePlacuta } from '../model/document.ts';
 import { blocuriPiesei, campuriPiesei } from '../model/placute.ts';
 import { textIese } from '../model/placuteIesire.ts';
@@ -53,10 +53,11 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
   const [surse, setSurse] = useState<Readonly<Record<string, SursaCamp>>>({});
   const [interval, setInterval_] = useState<{ readonly de: string; readonly pana: string } | null>(null);
   // Alegerile ținute ale lui „Așază pe foi”; unde omul n-a scris nimic aici, distanța urcă singură până la freza profilului
-  // exterior al plăcuței (ca la „Mută și așază”, ADR 0210 §3): altfel planul ar fi refuzat fără ca omul să fi ales ceva.
+  // exterior al plăcuței (ca la „Mută și așază”, ADR 0210 §3): altfel planul ar fi refuzat fără ca omul să fi ales ceva. Cu
+  // urechi, urcă până la distanța propusă pentru ele (felia 11.3↑b), ca plăcuțele din mijloc să nu cadă sub freză.
   const [asezare, setAsezare] = useState<OptiuniAsezare>(() => {
     const o = optiuniTinute();
-    const d = distantaMinima(doc, [instanta.id], doc.foi[indexFoaie]?.id ?? '');
+    const d = distantaPropusa(doc, [instanta.id], doc.foi[indexFoaie]?.id ?? '');
     return { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) };
   });
   const [schimba, setSchimba] = useState(false);
@@ -114,6 +115,8 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
     const d: Document = { ...doc, foi: doc.foi.map((f, k) => (k === indexFoaie ? { ...f, instante: [...f.instante, ...copii] } : f)) };
     return planAsezare(d, [instanta.id, ...copii.map((c) => c.id)], foaie.id, asezare);
   }, [doc, indexFoaie, instanta, n, JSON.stringify(asezare)]);
+  // Sub distanța propusă pentru urechi (scrisă la „Schimbă…”): avertismentul, nu refuzul.
+  const prag = urechiLibere(doc, [instanta.id], doc.foi[indexFoaie]?.id ?? '', asezare);
   const unde = ((): string | null => {
     if (!plan) return null;
     if (!plan.ok) return t(plan.motiv === 'distanta' ? 'motiv.aseaza-distanta' : 'motiv.aseaza-valori');
@@ -337,6 +340,7 @@ export function DialogCsv({ doc, indexFoaie, instanta, piesa, doarCitire, onCere
             <button type="button" className="legatura" data-buton="csv-schimba" aria-expanded={schimba} onClick={() => { setSchimba(!schimba); }}>{t('csv.schimba')}</button>
           </p>
         )}
+        {unde && prag !== null && <p className="csv-nota avertisment" role="status" data-testid="csv-urechi">{t('csv.urechi.sub', { p: textNumar(prag, true) })}</p>}
         {schimba && (
           <div className="campuri">
             {camp(t('csv.margine'), 'margine', textNumar(asezare.margineX, true), (x) => {

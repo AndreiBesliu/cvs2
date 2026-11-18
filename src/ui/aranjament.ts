@@ -15,8 +15,6 @@
  * id-ul lor, din listele de mai jos (singurele pe care carcasa știe să le randeze).
  */
 
-import { IDURI_ARANJAMENT, type IdAranjament } from './alegereAranjament.ts';
-
 /** Panourile carcasei. Mașina nu mai e unul (ADR 0132): e o fereastră. */
 export const PANOURI = ['lista', 'proprietati'] as const;
 export type IdPanou = (typeof PANOURI)[number];
@@ -145,13 +143,6 @@ export const ARANJAMENT_MODERN: Aranjament = {
   docuri: { stanga: ['lista'], dreapta: ['proprietati'] },
   ferestre: ['proiectare', 'masina', 'imprimanta'],
 };
-
-/**
- * Aranjamentele pe care le are build-ul (ADR 0250): deocamdată Insulele. Fiecare felie 28.x adaugă unul, iar alegerea ținută
- * a unui aranjament care nu e aici dă Insule (`alegereAranjament.ts`).
- */
-export const ARANJAMENTE: { readonly [I in IdAranjament]?: Aranjament } = { modern: ARANJAMENT_MODERN };
-export const ARANJAMENTE_DISPONIBILE: readonly IdAranjament[] = IDURI_ARANJAMENT.filter((i) => ARANJAMENTE[i] !== undefined);
 
 /** Cheia unei intrări într-o zonă: o acțiune, un control sau un cip apar cel mult o dată pe zonă (și ca cheie React). */
 export function cheieIntrare(x: Intrare): string {

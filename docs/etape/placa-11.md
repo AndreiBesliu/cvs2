@@ -16,6 +16,8 @@ dintre plăcuțe. Urechile a două plăcuțe vecine nu stau față în față (f
 drum), deci urechile de pe laturile dinspre vecini nu mai țin de nimic. La 5, 9 din cele 15 plăcuțe de pe foaia 1 (rândurile
 2–4) și 4 din cele 10 de pe foaia 2 ar cădea sub freză, cât lucrează încă alături. La 10 rămân 10 − 2 · 3,175 = 3,65 mm
 de lemn între tăieturi, iar urechile se țin de el. Ca 15 plăcuțe să încapă tot pe o foaie, foaia are 220 în loc de 200.
+De la felia 11.3↑b, aplicația propune singură distanța asta pieselor cu urechi (2 × freza + 3 mm, rotunjită în sus) și
+avertizează sub ea, în «Așază pe foi» și în «Din CSV…».
 
 Dacă plăcuțele ies la cote, cu numele lor, etapa 11 e închisă și pe lemn. Rămâne 11.5↑b, programul unic pentru toate foile,
 după etapa 13.
