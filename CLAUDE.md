@@ -582,6 +582,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   foi…” din bloc deschide dialogul pe alegere (`onAseaza`, din `Editare` prin `PanouTaiere`). În `taie`, `opriri` (doar de la
   panouri, cu îmbinare): coarda se împarte în punctele liniilor celeilalte axe, cu dinții pe fiecare bucată (reparația refuzului
   `pe-linie` al dinților drepți pe grila egală).
+  **Piesele puse de mai multe ori la tăiere și la conversie (felia 10.3↑m)** gata pe 17.11, pe `wip/10.3m-surori` (din vârful
+  lui 10.3↑l, cu `main` `9361c83` unit; unirea ei aduce și 10.3↑l), neunită: calculul (`actiuniExportCalcul.ts`) întreabă doar
+  la refuzul `impartita` (`cereAlegerea` din `src/ui/intrebareSurori.ts`: alegerea ținută, `cncvs2.taiere-surori`, sau banda
+  `IntrebareSurori.tsx` din `Editare`) și reia: «Desprinde și taie» pe documentul desprins (prin `documentDesprins` din calculul
+  acțiunilor, ca modulele pieselor legate să rămână în bucata lor), «Taie piesa» cu `surori: 'piesa'`; comenzile, în
+  `src/model/taiereSurori.ts` (desprinderea doar a celor schimbate, bucățile pe toate foile), cine are surori și `CUTITE_PIESA`
+  în `src/model/surori.ts` (ușor: importat de calcul, nu din `taiere.ts`). Reparațiile și degruparea refuză în continuare o
+  piesă pusă de mai multe ori.
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul

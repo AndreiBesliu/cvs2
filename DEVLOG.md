@@ -9620,3 +9620,47 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   licențe, traduceri (0); unitare 9 481 (9 473 trecute, 8 sărite, 0 căzute); e2e-urile trasării, importului și
   tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
   amprenta `6e62d40c5e55`.
+
+## 2026-11-17 — Felia 10.3↑m: piesele puse de mai multe ori, la tăiere și la conversie (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea liniei `taiere`, după explicația punctului 2: ambele opțiuni,
+«Desprinde și taie» principal, refuzul când tăieturile diferă, la Convertește întrebarea). **Started:** 17.11, 19:17.
+**Completed:** 17.11, 22:29.
+
+- **Ramura** `wip/10.3m-surori`, din vârful lui 10.3↑l (`e17a352`, încă neunită: ca unirile să nu se ciocnească; unirea ei aduce
+  și 10.3↑l); `origin/main` `9361c83` (3.6t, 28.1↑b, probele instabile) unit în `b235424` (ciocnirea, doar în DEVLOG).
+- **Workerul** (`taiere.ts`, `conversie.ts`): fără alegere, tăierea și conversia unei piese puse de mai multe ori se refuză
+  (`impartita`; la conversie, în locul saltului numărat); «Taie piesa» (`surori: 'piesa'`, doar la `CUTITE_PIESA`), cu
+  refuzurile `diferite` (amprenta bucăților în desenul piesei, fără ordine) și `placute`; «Convertește piesa», piesa în locul
+  ei, o singură dată.
+- **Firul principal** (`taiereSurori.ts`, `surori.ts`): desprinderea doar a instanțelor schimbate (`desprindeSiTaie`,
+  `desprindeSiConverteste`) și bucățile pe toate instanțele, de pe orice foaie (`comenziTaiePiesa`: pleacă cele de pe celelalte
+  foi, degruparea foii de lucru, bucățile în locul lor); acțiunile `document.taie` și `document.converteste` le pun în același
+  pas.
+- **Calculul și interfața:** întrebarea doar la refuzul `impartita`, apoi calculul reia (`actiuniExportCalcul.ts`); banda din
+  capul pânzei (`IntrebareSurori.tsx`, la cerere), „Ține minte alegerea” (`intrebareSurori.ts`) și rândul „Piese puse de mai
+  multe ori” din opțiunile tăierii și din panoul conversiei; panoul care a cerut spune „Alege sus”; toate ușile (panoul Taie,
+  Cuțitul, panourile, meniul de intersecții, „Desparte”, Convertește). Manualul (ro, en), textele (ro, en).
+- **Treceri:** (1) e2e: «+1» pune pătratul pe foaia 2 (pe 300 × 200 nu încape alături), deci proba a luat cazul cu două foi;
+  «Încă…» pornește rândul de la cutia piesei și coboară, deci pătratul de la Y = 0 se vărsa pe foaia 2: pe o foaie mare, la
+  (100, 100); (2) otrăvurile: opt scăpate la prima rulare; șase probe noi pe hârtie (o formă pusă o dată printre cele alese,
+  tăiată doar a doua aleasă, plăcuțele la conversie, o a doua piesă cu surori neschimbată) și proba e2e a retezatului; T08
+  (rotunjirea amprentei) și W04 (aruncarea la anulare), echivalente: codul lor, scos; Q03, nevalidă (un `else` rămas), reparată;
+  (3) căutând zgomotul pentru T08: o soră rotită cu 180° și tăiată în același loc al piesei dă bucățile în ordine inversă și era
+  refuzată greșit (`diferite`): amprenta, fără ordine, cu proba ei (și otrava T09); (4) mărimea: prima variantă dădea +6,1 kB (o
+  bucată comună nouă): legăturile mutate, +4,4 cu 10.3↑l.
+- **Otrăvurile** (`test/otravuri/10.3m.py`, e2e în `surori.spec.ts`): 39 / 39 prinse, în clona din afara Drive-ului; la prima
+  rulare (`3f12ed0`, 40), 30 prinse, 8 scăpate, Q03 nevalidă.
+- **Porțile:** întregi pe unirea cu `main` (`b235424`): traducerile, cele trei compilatoare, importurile, licențele, unit 9 485
+  (9 477 trecute, 8 sărite, 0 căderi), build-ul determinist (334 de fișiere identice), e2e 510 / 511 (`pwa.spec.ts:491`,
+  progresul unei actualizări care cade, căzută din timp sub încărcare; singură, `pwa.spec.ts` 17 / 17), emulatoarele 101 / 101
+  și 21 / 21; apoi, pe ce ating legăturile mutate pentru mărime (`a710b3b`): traducerile, compilatorul, importurile, unit-urile
+  tăierii, conversiei, acțiunilor, importului și documentelor 400 / 400, build-ul determinist (331 de fișiere identice), e2e
+  `surori`, `taiere`, `cutit`, `conversie`, `asezare`, `piese-legate` și `manual` 52 / 52.
+- **Mărimea:** pornirea neschimbată (106,6 kB; cu ușa 110,6 / 115), totalul +4,4 kB cu 10.3↑l (715,7 → 720,1 / 800, A/B în
+  clonă, pe `main` `9361c83`; 10.3↑l, +0,7 pe `4b52fc3`), deci felia ~+3,7: banda (la cerere), întrebarea și alegerea ținută,
+  comenzile pe firul principal, textele. Prima variantă dădea +6,1: calculul importa desprinderea (cu plăcuțele) și
+  `CUTITE_PIESA` din `taiere.ts`, iar modulele pieselor legate și `model/noduri.ts` ieșeau într-o bucată comună; acum calculul
+  ia din `surori.ts` (ușor) doar cine are surori și cuțitele, iar desprinderea o aduce prin calculul acțiunilor, la cerere.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 17.12), pe `a710b3b`,
+  verificat (ro, en: banda la tăiere și la conversie, «Taie piesa» pe două foi, Anulează; nicio eroare în consolă).

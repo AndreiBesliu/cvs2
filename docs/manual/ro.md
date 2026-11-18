@@ -168,14 +168,26 @@ aceleiași piese, rotite altfel, s-ar schimba diferit la o scalare neuniformă, 
 se refuză, cu motivul.
 
 **Desprinde.** **Desprinde** (în panou, sau **Desprinde-o doar pe aceasta**, din bandă) dă fiecărei instanțe alese o piesă a
-ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare),
-reparațiile [verificării](#verificare) și [tăierea vectorilor](#taiere) nu schimbă o piesă pusă de mai multe ori: întâi o
-desprinzi. O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
+ei, o copie, în același loc: de acum se schimbă singură. Ultima instanță păstrează piesa. [Degruparea](#degrupare) și
+reparațiile [verificării](#verificare) nu schimbă o piesă pusă de mai multe ori: întâi o desprinzi. [Tăierea](#taiere) și
+conversia întreabă (mai jos). O instanță ștearsă pleacă singură; piesa pleacă odată cu ultima ei instanță.
 
 **Gruparea.** Cu o piesă pusă de mai multe ori printre formele alese, **Grupează** întreabă: **Doar aceasta** (o desprinde,
 apoi grupează) sau **În toate cele N** (formele celelalte intră în piesă, deci apar lângă fiecare instanță a ei; merge cu o
 singură piesă de felul acesta printre cele alese). Bifa **Ține minte alegerea** o păstrează în browser: gruparea nu mai
 întreabă. Meniul de clic dreapta are amândouă rândurile, **Grupează doar aceasta** și **Grupează în toată piesa**.
+
+**Tăierea și conversia.** Când o tăiere ([Taie vectorii](#taiere), Cuțitul, Taie în panouri, Taie la intersecții, Decupează)
+sau o conversie (Arce, În cerc, În dreptunghi, Netezește) ar schimba o piesă pusă de mai multe ori, sus apare întrebarea:
+**Desprinde și taie** (principal: fiecare formă tăiată primește piesa ei, iar celelalte rămân legate între ele) sau **Taie
+piesa (toate cele N)** (tăietura trece în piesă: fiecare instanță a ei, de pe orice foaie, se taie în același loc, iar
+bucățile rămân puse de tot atâtea ori). **Taie piesa** e doar la tăieturile care nu depind de ce e în jurul fiecărei instanțe
+(linia, ghidajul, ultima formă aleasă, Cuțitul cu Linie, Pen, Liber, Formă și Foarfecă); la Decupează, Taie la intersecții,
+Retează și Taie în panouri, doar **Desprinde și taie**. Două instanțe alese ale aceleiași piese, tăiate în locuri diferite
+ale ei, și șablonul unor plăcuțe (fiecare cu literele ei) nu se pot tăia ca piesă: motivul o spune. La conversie, **Desprinde
+și convertește** sau **Convertește piesa**. **Ține minte alegerea** o păstrează în browser; rândul **Piese puse de mai multe
+ori** din opțiunile tăierii și din panoul conversiei o arată, o schimbă sau o uită (**întreabă**). **Renunță** nu schimbă
+nimic. Fiecare operație rămâne un singur pas de anulare.
 
 **Duplică foaia cu aceleași piese**, din meniul foii, face o foaie nouă după ea, cu aceleași piese (instanțe noi, în aceleași
 locuri): o schimbare a unei piese se vede pe ambele foi. **Duplică foaia** face, ca înainte, copii separate.
@@ -935,8 +947,8 @@ pas, deci niciun dinte nu e tăiat de tăietura vecină. Bucățile fiecărui pa
 (rând cu rând, de jos, de la stânga), stau unde erau și rămân alese: **Așază pe foi…**, din bloc, deschide fereastra așezării
 pe ele (marginile, distanța, ordinea și rotirea ei), ca să le pună pe foi, câte încap pe fiecare; un panou cu o singură
 bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte și de
-alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; nici o
-formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
+alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; o formă
+pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). **Taie în panouri** e un singur pas de anulare.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
@@ -951,8 +963,8 @@ verificării), iar un contur închis cu un singur loc comun rămâne întreg.
 Bucățile își păstrează rolul de tăiere: un pătrat tăiat pe exterior dă două dreptunghiuri tăiate tot pe exterior. O bucată
 deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afară sau pe dinăuntru, după sensul desenului).
 Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
-pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
-(Ctrl+Z).
+pusă de mai multe ori întreabă întâi: vezi [Piesele puse de mai multe ori](#piese-legate). Fiecare tăiere (**Taie vectorii**,
+din panou) e un singur pas de anulare (Ctrl+Z).
 
 ## Unealta Cuțit
 %% capitol: cutit
@@ -1018,11 +1030,12 @@ le schimbe locul, numele sau operațiile. Panoul are patru blocuri, fiecare cu b
   cu colțurile rotunjite dacă le are. **Cu mărimea** dată (implicit 40 × 20 mm), orice formă închisă devine dreptunghiul
   acela, drept pe foaie, în centrul cutiei ei. O formă găurită nu devine dreptunghi: găurirea cere un cerc.
 
-Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă decât
-pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea cea mai
-mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi deschise
-(doar formele închise devin cerc sau dreptunghi) sau forme puse de mai multe ori pe foaie, care nu se convertesc de aici.
-Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare (Ctrl+Z).
+Abaterea se măsoară pe toată forma, la noduri și pe laturi, în ambele sensuri. O formă întinsă inegal (mai mult pe o axă
+decât pe cealaltă) nu primește arce. Panoul spune ce s-a făcut (formele, curbele înlocuite, arcele și liniile noi, abaterea
+cea mai mare) și de ce au rămas celelalte: cât de departe e cea mai apropiată de un cerc sau de un dreptunghi, câte erau căi
+deschise (doar formele închise devin cerc sau dreptunghi). O formă pusă de mai multe ori întreabă întâi: vezi [Piesele puse
+de mai multe ori](#piese-legate). Fiecare conversie (**Convertește vectorii**, din panou) e un singur pas de anulare
+(Ctrl+Z).
 
 ## Verificarea vectorilor
 %% capitol: verificare
