@@ -9788,3 +9788,51 @@ acceptat cu „Da, cu recomandările” (16.11).
   800; bucata Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
   „Atelierul”), testul din aplicație (pasul nou), lista otrăvurilor și rândul ei, DEVLOG.
+
+## 2026-11-18 — Felia 12.1↑f-3: supracursa în fereastra exportului (ADR 0176) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, după „care era intrebarea de ieri?” și răspunsul meu (întrebarea din 17.11: „Pun
+supracursa în fereastra exportului, ca felie mică pe linie?”): „Da, pune-o”.
+**Started:** 18.11, 12:06. **Completed:** 18.11, 16:05.
+
+- **`main` în ramură:** `c302d73` (10.3↑m, 11.3↑b, 28.1↑c, probele instabile reparate) unit în `97a69f0`, ca felia să pornească
+  de pe `main`-ul de acum. Conflictele, doar în documente: DEVLOG (intrarea 12.1↑f-2, apoi intrările lui `main`) și registrul
+  otrăvurilor (rândul 10.3m al lui `main`, apoi rândurile 12.1b și 12.1c ale liniei; ale lui `main` erau cele de la bază). Codul
+  s-a unit fără conflicte.
+- **Proba întâi**, pe programele exportate, cu valorile pe hârtie, rulată pe codul de dinainte: au picat toate 4 probele pe
+  dopuri, iar controlul (dopul ridicat) a trecut.
+  - Dopul decupat simplu (`incrustatieDreapta.punti.test.ts`, placa de 5, supracursa 0,5): fundul decupării la −5,5 (era −5).
+    Punțile alese (2 × 6 × 1,5) au vârful tot la −3,5: chiar sub el rămân 2 punți, chiar deasupra nimic, iar chiar deasupra
+    fundului bucățile au 18 mm, ca pe hârtie. Locașul are același program.
+  - Dopul gaurii (`incrustatieDreapta.gaura.test.ts`): decuparea prin 12 + 0,3 (era 12), cu placa tot exact 12; gaura la −10,3.
+    Dopul ridicat pe față are același program.
+  - Dopul decupat în trepte (`incrustatieDreapta.trepte.test.ts`, cazul din ADR): flanșa prin 9,5 + 0,5 (era 9,5), cu potrivirea
+    pe oracol neschimbată (jocul 0,1 pe ambele niveluri, nicio interferență, tija 4,5) și vârful punților la −8,5, nu la −9.
+  - Banda dopului în V (`incrustatie.banda.test.ts`): decuparea prin T + 0,5, vârful punților la T − 1, placa și locașul
+    neschimbate.
+  - La dopul decupat, oracolul dă șanțul cel mai adânc: cu supracursa, placa plus supracursa. Dopul e placa (exactă).
+- **ADR 0176**, acceptat la „Da, pune-o”: câmpul; ce face pe foaie (ADR 0028 §2 și 0175, neschimbate) și, nou, pe dopuri; ce
+  rămâne fără supracursă (traseul, vederea 3D). Respinse: adaosul singur la tăieturile cât grosimea, valoarea în document sau
+  în browser, implicitul 0,3 al ediției întâi. Rândul din index (tradus) și trimiterea din ADR 0028.
+- **Codul** (`0e3b8e7`):
+  - `programeDopuriDrepte` și `programeDopuri` primesc supracursa: decuparea trece cu ea (`decupareCuPunti` cu h + s, banda cu
+    T + s), iar lucrarea dopului o primește. Calculul exportului le-o dă.
+  - `SUPRACURSA_MAXIMA` stă în `src/cam/supracursaMaxima.ts`, ca fereastra s-o citească fără CAM.
+  - Fereastra: „Supracursa (mm)” lângă Z0, cu explicația pe titlu. Textul greșit e marcat, cu motivul, și oprește Exportă; o
+    valoare nouă scoate rezultatul vechi; 0 nu intră în cerere (aceleași programe ca înainte). Aplicația ține textul
+    (`App.tsx`), ca setările mașinii.
+  - Manualul (ro, en).
+  - Încercată și scoasă: o etichetă de G-code cu supracursa la banda în V. Postul taie comentariile lungi, deci ieșea
+    trunchiată, iar eticheta operației arată deja adâncimea (6,5 mm la placa de 6).
+- **Porțile, pe `0e3b8e7`:** compilatoarele ×3, importurile (20 / 0, 1 270 de module), licențele, traducerile (810, 0 lipsă);
+  unit 9 525: 9 517 / 0 (8 sărite, 6,4 min); build determinist (335 de fișiere identice; pornirea 107,0, cu ușa 111,0 / 115;
+  totalul 723,8 / 800); e2e 528 / 528 din prima (9,5 min, 3 lucrători, cu alte worktree-uri pornite), fără nicio reluare.
+  Prima suită unitară, pe codul nesalvat, a avut 2 căderi de documente, reparate înainte de commit: o ancoră greșită în manual
+  (`#incrustatia-cu-pereti-drepti` în loc de `#incrustatie-drept`) și titlul ADR-ului netradus.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1f-3.py`, 21: dopurile S01–S08 (decuparea simplă oprită la placă sau cu supracursa de două ori, flanșa în trepte și dopul în trepte fără ea, lucrarea dopului drept și a benzii fără ea, banda oprită la placă, vârful punților măsurat de la adâncime), calculul exportului S09–S10, marginea S11, fereastra S12–S19, aplicația S20–S21. Seturile curate întâi (dopurile 40 / 40, banda 20 / 20), apoi 21 / 21 prinse, fiecare de proba ei: cele de CAM de probele dopurilor, cele ale ferestrei de e2e-ul nou (`supracursa.spec.ts`, cu build înainte de fiecare). 12.1c C12 (adâncimea decupării benzii, acum cu supracursa) reorientată și prinsă. Celelalte liste: niciun VOID nou, comparate otravă cu otravă cu HEAD (`97a69f0`). Arborele, curat la capăt, iar build-ul refăcut pe HEAD.
+- **Mărimea:** felia, față de `97a69f0`, cu același build în ambii arbori: JavaScript +62 B gzip (fereastra exportului +116 B,
+  lucrătorul CAM +36 B; restul, ±1–8 B, din numele bucăților importate); totalul 723,7 → 723,8 / 800; pornirea (107,0) și ușa
+  (111,0 / 115), neschimbate.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 18.12), build-ul `0e3b8e7` (versiunea `0e3b8e7d426f`), verificat în browserul aplicației, în engleză, fără export. Fila venea din cache cu `d48ad64623af`; după „Reload” (lucrătorul nou), `0e3b8e7d426f`. Pe un dreptunghi, fereastra arată „Overtravel (mm)” chiar după Z0, cu 0, valid, cu explicația pe titlu, iar Exportă e pornit. „2.5” e marcat (bordura roșie, motivul „Overtravel must be a number from 0 to 2 mm.”), iar Exportă e oprit; „0.5” e valid, motivul pleacă și Exportă pornește. Rândul a rămas cu valorile implicite (adâncimea 3, pasul 3). Închisă și redeschisă, fereastra arată tot 0.5. Fereastra închisă fără export, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
+- **Nu acum:** tăieturile „prin foaie” ținute la zi cu foaia (un câmp în document, v26); păstrarea valorii cu profilul mașinii;
+  12.1↑e (dopul în 3D), doar la cuvântul owner-ului.
