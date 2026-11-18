@@ -118,11 +118,14 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   const inainte = await r2.boundingBox();
   let elibereaza = (): void => {};
   const oprit = new Promise<void>((ok) => { elibereaza = ok; });
-  const aparitiiG2 = `**/errorLogs/${G2}:runQuery`;
-  await page.route(aparitiiG2, async (r) => { await oprit; await r.continue(); });
+  // Pe cale, nu cu un glob: adresa are `?key=…` după `:runQuery` (18.11: globul nu se potrivea și proba trecea din noroc).
+  const aparitiiG2 = (u: URL): boolean => u.pathname.endsWith(`/errorLogs/${G2}:runQuery`);
+  let tinute = 0;
+  await page.route(aparitiiG2, async (r) => { tinute += 1; await oprit; await r.continue(); });
   await r2.click();
   await expect(r2).toHaveAttribute('data-ales', 'true');
   await expect(detaliu).toContainText('FirebaseError: permission-denied');
+  await expect.poll(() => tinute, { message: 'citirea aparițiilor lui G2 e ținută' }).toBe(1);
   await expect(detaliu.locator('[data-schita]')).toBeVisible();
   await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(0);
   elibereaza();
