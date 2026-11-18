@@ -1386,12 +1386,24 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
   overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
   plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
   raised plug rests with its face on the board, as tall as the board.
+- **Step** (in the export window only): **none**; **inward**: the recess gets a shoulder, with the upper level as big as the
+  drawing, down to the **Shoulder depth** (d; by default half the recess depth, for a hole half the sheet thickness), and
+  below it an opening narrower by the **Shoulder width** (s; default 3 mm) on each side, down to the floor (or through the
+  sheet); or **outward**: the drawing is the opening, and the upper level is wider by s on each side (like a window rebate).
+  Both levels get their corners matched like the plain recess, with the same side gap. The plug gets a **flange** on the
+  upper level and a **stem** in the opening, and is always cut mirrored, stem up; then you flip it into the recess. Without a
+  step, the shoulder fields are hidden (the values stay in the row).
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
-- **Rests on** (raised plug only): **the pocket floor**: the plug is as tall as the depth plus the **saw gap** (H; default
-  2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits on the board, and the plug
-  is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the depth).
+- **Rests on** (raised plug; with a step, the cut-out one too): **the pocket floor**: the plug is as tall as the depth plus
+  the **saw gap** (H; default 2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits
+  on the board, and the plug is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the
+  depth). With a step: **the shoulder** (default): the flange rests on the shoulder, and the **gap under the stem** (g) stays
+  below it: the stem is D − d − g, the flange d + H; or **the pocket floor**: the stem rests on the floor, and the **gap above
+  the shoulder** (g) stays above it: the stem is D − d + g, the flange d − g + H. In a stepped hole, the plug rests on the
+  shoulder, with the stem flush with the bottom face (T − d), without a gap. “The board face” is for a plug without a step
+  only.
 - **Above the board** (cut-out plug; also H): the plug board is as thick as the depth plus H, and the part above the board is
   planed off after gluing.
 - **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank; for a cut-out plug, at least its
@@ -1407,19 +1419,28 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
 the plug corners (tips R − c, inside corners r), the gap along the outline, the plug height and the blank thickness (the
 smallest for a raised plug, the height plus 1 mm; exact for a cut-out one) and, for a cut-out plug, its tabs. For example, with a Ø6 bit, depth 6, gap 0.1 and a
 raised plug resting on the floor: pocket tips R3, inside corners R2.9; plug R2.9 and R3; the plug is 8 mm tall, and the blank
-at least 9 mm.
+at least 9 mm. With a step, the panel also shows the shoulder (which way, d, s) and the stepped plug (stem and flange): the
+40 × 30 rectangle with a Ø6 bit, depth 8, an inward shoulder at 3 mm, 5 mm wide, resting on the shoulder, g 0.5 and H 2, has a
+30 × 20 opening, a 4.5 mm stem and a 5 mm flange; the plug is 9.5 mm tall, on a blank at least 10.5 mm thick.
 
 **Export.** As with the V inlay, a file for each plug is downloaded too (“-dop-1”…), with its blank: XY0 at the chosen corner,
 Z0 on its face. For a raised plug, the face is lowered around it with the plug bits, past the edges of the blank: hold it
 without clamps on the edges, for example with double-sided tape. For a cut-out plug, the outline is cut as an outside profile,
 through the board, with the chosen tabs (by default 4 per loop, 4 mm wide and 1 mm thick), and the drawing's holes as insides;
-cut the tabs and clean them flush with the walls before gluing.
+cut the tabs and clean them flush with the walls before gluing. With a step, the recess is cut in two levels: first the upper
+level, down to the shoulder, then the opening, from below the shoulder to the floor. The stepped plug is always mirrored, stem
+up: around the stem, the bit goes down to the flange; then, for a raised plug, the face is lowered around the flange, and for
+a cut-out one the flange is cut through the board, with tabs. Outward, the blank is the drawing's box widened by s, plus the
+margin.
 
 **Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
 radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
 than the bit; a cut-out plug margin smaller than its bit; tabs at least as thick as the plug board; a loop with no room for a
-single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none); the step and the rest on
-the shoulder, until their slice (12.1↑f-2).
+single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none). With a step: the plug on
+the face, or on the floor in a hole; the shoulder at the floor or lower (in a hole, at the bottom face); a shoulder no wider
+than the side gap; a gap g under 0.1 mm, on the shoulder at least D − d, on the floor at least d; an opening that vanishes
+under the shoulder (a part narrower than the bit, with its element); for a cut-out plug, a margin smaller than its first bit
+plus 0.5 mm, or a flange no thicker than the tabs. Without a step, resting on the shoulder.
 
 ## The toolpath on the canvas
 %% capitol: traseu

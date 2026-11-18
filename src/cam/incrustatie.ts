@@ -58,11 +58,11 @@ export function puntiPeBucle(lungimi: readonly number[], palier: number, cerute:
  * ei; cel puțin lățimea cea mai mică; cu decuparea, placa cel puțin cât fundul benzii plus punțile. Locașul (adâncimea cât
  * conul, fundul) îl judecă V-carve-ul lui.
  */
-export function refuzIncrustatie(op: Operatie, unde: string): string | null {
+export function refuzIncrustatie(op: Operatie, unde: string, grosimeFoaie?: number): string | null {
   const i = op.incrustatie;
   if (!i) return null;
   // Cu pereți drepți (ADR 0171), refuzurile ei.
-  if (i.fel === 'drept') return refuzIncrustatieDreapta(op, unde);
+  if (i.fel === 'drept') return refuzIncrustatieDreapta(op, unde, grosimeFoaie);
   if (op.tip !== 'vcarve') return `${unde}: incrustația în V e a unui V-carve (pe un buzunar, alege incrustația cu pereți drepți)`;
   const f = op.scula.forma;
   if (f?.tip !== 'v') return `${unde}: incrustația cere o freză în V (T${op.scula.numar} e plată)`;

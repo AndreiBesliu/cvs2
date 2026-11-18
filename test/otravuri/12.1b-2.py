@@ -37,10 +37,12 @@ o('B05', SCH, '      jurDop: v.picklist([\'fata\', \'banda\']),', "      jurDop:
   'punțile judecate și pe incrustația în V (acolo sunt un câmp necunoscut)')
 
 # ---- Dopul: punțile din incrustație ----
-o('B06', DOP, '      const punti = inc.punti ?? PUNTI_DOP_DREPT;', '      const punti = PUNTI_DOP_DREPT;', 'dop', 'punțile alese ignorate (cele fixe, de azi)')
-o('B07', DOP, '      const palier = punti.latime + mica.scula.diametru;', '      const palier = PUNTI_DOP_DREPT.latime + mica.scula.diametru;', 'dop',
+# B06–B08 reorientate la 12.1↑f-2 (17.11): decuparea cu punți e o funcție, `decupareCuPunti` (dopul simplu și flanșa celui în
+# trepte): aceleași linii, cu altă indentare.
+o('B06', DOP, '  const punti = inc.punti ?? PUNTI_DOP_DREPT;', '  const punti = PUNTI_DOP_DREPT;', 'dop', 'punțile alese ignorate (cele fixe, de azi)')
+o('B07', DOP, '  const palier = punti.latime + mica.scula.diametru;', '  const palier = PUNTI_DOP_DREPT.latime + mica.scula.diametru;', 'dop',
   'lățimea aleasă ignorată (palierul din cea implicită)')
-o('B08', DOP, '      const pePunti = puntiPeBucle(lungimi, palier, punti.numar);', '      const pePunti = puntiPeBucle(lungimi, palier, PUNTI_DOP_DREPT.numar);',
+o('B08', DOP, '  const pePunti = puntiPeBucle(lungimi, palier, punti.numar);', '  const pePunti = puntiPeBucle(lungimi, palier, PUNTI_DOP_DREPT.numar);',
   'dop', 'numărul ales ignorat')
 o('B09', DOP, 'urechi: { numar: n, latime: palier, grosime: punti.grosime }', 'urechi: { numar: n, latime: palier, grosime: PUNTI_DOP_DREPT.grosime }', 'dop',
   'grosimea aleasă ignorată')
@@ -58,8 +60,10 @@ o('B14', SCR, '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) 
   'punțile scrise pleacă la întoarcerea pe implicite')
 o('B15', SCR, '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...(puntiVechi ?? {}), ...puntiNoi } : undefined;',
   '  const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...puntiNoi } : undefined;', 'scriere', 'fără îmbinare (câmpul necunoscut pierdut)')
-o('B16', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, ...fara } = vechi ?? {};',
-  '  const { frezeDop: _vechi, locas: _locas, ...fara } = vechi ?? {};\n  const puntiVechi = vechi?.punti;', 'scriere', 'punțile vechi rămân pe dopul ridicat')
+# B16 reorientată la 12.1↑f-2 (17.11): scrierea scoate și treapta veche (treapta e a rândului).
+o('B16', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, treapta: treaptaVeche, ...fara } = vechi ?? {};',
+  '  const { frezeDop: _vechi, locas: _locas, treapta: treaptaVeche, ...fara } = vechi ?? {};\n  const puntiVechi = vechi?.punti;', 'scriere',
+  'punțile vechi rămân pe dopul ridicat')
 o('B17', SCR, ' && p.grosime === PUNTI_DOP_DREPT.grosime;', ';', 'scriere', 'grosimea nu contează la „implicite”')
 o('B18', SCR, 'p.numar === PUNTI_DOP_DREPT.numar && ', '', 'scriere', 'numărul nu contează la „implicite”')
 
