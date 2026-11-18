@@ -134,6 +134,16 @@ test('corpul e închis la dinți drepți, oblici și în V, cu aceeași cutie ș
   }
 });
 
+test('găurile: crucea axului și cercul știftului, cu măsurile de la calibrare (diferența de volum = diferența ariilor × h)', () => {
+  const e = L.efective(), h = 3.8, v = (gaura: string) => volum(L.construieste({ tip: 'rotita', dinti: 24, gaura }).tri);
+  const crucea = 2 * e['axGauraD']! * e['axGauraLat']! - e['axGauraLat']! ** 2;
+  // cercul gaurii rotunde e un poligon cu 48 de laturi (N_CERC), ca la celelalte piese
+  const cercul = (48 / 2) * (e['gauraD']! / 2) ** 2 * Math.sin((2 * Math.PI) / 48);
+  const [x, r, nu] = [v('x'), v('r'), v('nu')];
+  assert.ok(Math.abs(nu - x - crucea * h) < 0.05, `crucea: ${(nu - x).toFixed(3)} față de ${(crucea * h).toFixed(3)} mm³`);
+  assert.ok(Math.abs(nu - r - cercul * h) < 0.05, `cercul: ${(nu - r).toFixed(3)} față de ${(cercul * h).toFixed(3)} mm³`);
+});
+
 /** Unghiurile vârfurilor (pe cercul de cap) de la o înălțime, aduse în jurul dintelui 0 (−pas/2 … pas/2). */
 function unghiuriCap(tri: readonly Tri[], z: number, zh: number, ra: number, centru: P2): number[] {
   const pas = (2 * Math.PI) / z, u: number[] = [];
@@ -183,8 +193,9 @@ test('setul de calibrare: cinci roți de 16 dinți, cu jocul de 0,05 … 0,25 mm
   for (const [i, p] of roti.entries()) {
     assert.ok(p.titlu.includes(`joc ${String(Math.round(0.05 * (i + 1) * 100) / 100).replace('.', ',')} mm`), p.titlu);
     assert.equal(muchiiRele(p.tri), 0, `${p.nume}: închisă`);
-    // semnul: i + 1 cubulețe de 1,2 mm deasupra feței de sus (3,8 mm)
+    // semnul: i + 1 cubulețe de 1,2 mm deasupra feței de sus (3,8 mm), câte 12 triunghiuri fiecare
     const varf = Math.max(...p.tri.flatMap((t) => t.map((q) => q[2])));
     assert.ok(Math.abs(varf - (3.79 + 1.2)) < 1e-9, `${p.nume}: semnul deasupra (${varf})`);
+    assert.equal(p.tri.length - roti[0]!.tri.length, 12 * i, `${p.nume}: ${i + 1} cubulețe`);
   }
 });

@@ -72,3 +72,34 @@ test('roata de 8 cu gaură de ax spune cât perete rămâne; calibrarea are vari
   await expect(page.locator('ol.pasi')).toContainText('Roțile dințate:');
   await expect(page.locator('ol.pasi')).toContainText('Scrie cele șapte numere');
 });
+
+/** Volumul unui STL binar (corp închis, fețele spre exterior), în mm³. */
+function volumStl(stl: Buffer): number {
+  const n = stl.readUInt32LE(80), f = (o: number) => [0, 1, 2].map((k) => stl.readFloatLE(o + 4 * k));
+  let v = 0;
+  for (let i = 0; i < n; i++) {
+    const o = 84 + 50 * i + 12, [a, b, c] = [f(o), f(o + 12), f(o + 24)] as [number[], number[], number[]];
+    v += a[0]! * (b[1]! * c[2]! - b[2]! * c[1]!) - a[1]! * (b[0]! * c[2]! - b[2]! * c[0]!) + a[2]! * (b[0]! * c[1]! - b[1]! * c[0]!);
+  }
+  return v / 6;
+}
+
+test('varianta roților din calibrare ajunge în roată: la 5 (joc 0,25 mm) dinții ies mai subțiri decât la 3', async ({ page }) => {
+  await atelierRotita(page);
+  const stl = async (): Promise<number> => {
+    const descarcare = page.waitForEvent('download');
+    await page.locator('#at-stl').click();
+    return volumStl(readFileSync(await (await descarcare).path()));
+  };
+  const la3 = await stl();
+  await page.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await page.locator('#at-calib-campuri [data-setare="varianta_dinti"]').fill('5');
+  await page.locator('#at-calib-campuri [data-setare="varianta_dinti"]').blur();
+  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
+  await page.locator('#at-leg [data-leg="rotita"]').click();
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 24');
+  const la5 = await stl();
+  // 24 de dinți × 2 flancuri × 0,1 mm mai mult joc × ~2 mm de flanc × 3,8 mm: în jur de 36 mm³ mai puțin
+  expect(la3 - la5).toBeGreaterThan(20);
+  expect(la3 - la5).toBeLessThan(60);
+});
