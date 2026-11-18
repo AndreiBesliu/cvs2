@@ -331,7 +331,7 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
           <nav className="admin-bara" aria-label={t('admin.file')} data-admin="bara">
             {grupuriBarei(vizibile).map((g) => (
               <div key={g.grup ?? g.file[0]} className="admin-bara-grup">
-                {g.grup ? <span className="admin-bara-titlu" data-grup={g.grup}>{t(`admin.grup.${g.grup}`)}</span> : null}
+                {g.grup ? <span className="admin-bara-titlu" data-grup-bara={g.grup}>{t(`admin.grup.${g.grup}`)}</span> : null}
                 {g.file.map((f) => {
                   const n = numere[f];
                   return (

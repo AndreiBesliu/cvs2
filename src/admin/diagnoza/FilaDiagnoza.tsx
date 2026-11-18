@@ -9,16 +9,18 @@ import { verificari, type Verificare } from './verificari.ts';
 
 /**
  * Măsurătorile Diagnozei (cifra erorilor nerezolvate, apelul fără App Check, marcajele joburilor, amprenta publicării),
- * judecate de `verificari`. Aceleași pentru filă și pentru punctul din bara laterală (ADR 0260 §1).
+ * judecate de `verificari`. Aceleași pentru filă și pentru punctul din bara laterală (ADR 0260 §1), cu o excepție: sonda
+ * funcțiilor (`sondaFunctii`) e o cerere activă spre server, refuzată cu 401 (pe care browserul îl scrie în consolă), deci
+ * se face doar în filă, nu la fiecare intrare.
  */
-export async function masoaraDiagnoza(con: Conexiune, instanta: string, build: string, rol: string): Promise<readonly Verificare[]> {
+export async function masoaraDiagnoza(con: Conexiune, instanta: string, build: string, rol: string, sondaFunctii = true): Promise<readonly Verificare[]> {
   const nerezolvate: Masura<number> = await getCount(query(collection(con.db, 'errorLogs'), where('rezolvat', '==', false))).then(
     (s) => ({ ok: true as const, valoare: s.data().count }),
     (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
   );
   // Fără App Check, la fel ca un străin: trebuie să dea 401. Un 403 de la frontul Google vine fără CORS, deci aici
   // apare ca eroare de rețea (indiciul o spune).
-  const functii: Masura<number> = await fetch(con.adresaFunctiei('logClientError'), {
+  const functii: Masura<number> | null = !sondaFunctii ? null : await fetch(con.adresaFunctiei('logClientError'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"data":{}}',
   }).then((r) => ({ ok: true as const, valoare: r.status }), (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }));
   const marcaje = await getDocs(collection(con.db, 'marcaje')).then(
@@ -30,7 +32,9 @@ export async function masoaraDiagnoza(con: Conexiune, instanta: string, build: s
     (s) => ({ ok: true as const, valoare: s.exists() ? s.data() : null }),
     (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
   );
-  return verificari({ instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, functii, marcaje, amprenta, acum: Date.now() });
+  return verificari({
+    instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, ...(functii ? { functii } : {}), marcaje, amprenta, acum: Date.now(),
+  });
 }
 
 /** Fila Diagnoză (ADR 0040 §5): măsoară (cifra erorilor nerezolvate, apelul fără App Check), apoi judecă. */

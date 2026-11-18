@@ -131,18 +131,28 @@
   margin: 0;
 }
 
-/* Meniul contului: un meniu derulant sub buton. */
+/* Meniul contului: un meniu derulant sub buton; o adresă lungă se taie cu „…”, nu împinge antetul. */
 .admin-meniu-cont {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .admin-meniu-cont > button {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+  max-width: 100%;
   min-height: var(--tinta);
   padding: 0 var(--sp-3) 0 var(--sp-1);
   border-radius: 999px;
+}
+
+.admin-meniu-cont [data-admin='cont'] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-avatar {
@@ -709,7 +719,8 @@
   color: var(--rosu);
 }
 
-/* Sub 640 px rămâne o singură regulă până la felia telefonului (A.7): bara trece deasupra, pe un rând care derulează. */
+/* Sub 640 px rămâne o singură regulă până la felia telefonului (A.7): bara trece deasupra, cu filele pe rânduri (nimic nu
+   iese din ecran în dreapta). */
 @media (max-width: 640px) {
   .admin-carcasa {
     flex-direction: column;
@@ -718,13 +729,15 @@
   .admin-bara {
     width: auto;
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 2px var(--sp-1);
     border-right: 0;
     border-bottom: 1px solid var(--l-margine);
   }
 
   .admin-bara-grup {
     flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .admin-bara-titlu {

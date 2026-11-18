@@ -119,6 +119,10 @@ const bara = (page: Page, fila: string) => page.locator(`[data-admin="bara"] [da
 test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplările; bara cu numerele și punctul; fiecare rând duce în fila lui', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
+  // Și consola, până la fila Diagnoză: rezumatul de la intrare nu face sonda funcțiilor (refuzată cu 401, pe care browserul
+  // o scrie în consolă); fila o face.
+  const consola: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') consola.push(m.text()); });
   await oZi();
   await deschide(page);
   await intraCuRolul(page, 'owner');
@@ -128,7 +132,7 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await expect(page.locator('[data-insigna]')).toHaveAttribute('data-insigna', 'alta');
   await expect(page.locator('[data-insigna]')).toHaveText('LOCAL');
   // Grupurile, în ordinea din ADR, și Contul meu la capăt.
-  await expect(page.locator('[data-admin="bara"] [data-grup]')).toHaveText(['Probleme', 'Produs', 'Clienți', 'Echipa']);
+  await expect(page.locator('[data-admin="bara"] [data-grup-bara]')).toHaveText(['Probleme', 'Produs', 'Clienți', 'Echipa']);
   await expect(page.locator('[data-admin="bara"] [data-fila]')).toHaveCount(11);
   await expect(page.locator('[data-admin="bara"] [data-fila]').last()).toHaveAttribute('data-fila', 'cont');
 
@@ -151,13 +155,15 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await expect(page.locator('[data-azi="asteapta"] [data-asteapta], [data-azi="asteapta"] [data-azi-gol]').first()).toBeVisible(LENT);
   await expect(page.locator('[data-intamplare]')).toHaveCount(2);
   await expect(page.locator('[data-intamplare]').first()).toHaveAttribute('data-intamplare', 'a1');
+  expect(consola, 'intrarea și fila Azi, fără erori în consolă').toEqual([]);
 
-  // Punctul Diagnozei = cea mai rea stare din fila ei.
+  // Punctul Diagnozei = cea mai rea stare din fila ei, fără sonda funcțiilor (doar în filă).
   const punct = await bara(page, 'diagnoza').locator('[data-punct]').getAttribute('data-punct');
   await bara(page, 'diagnoza').click();
-  await expect(page.locator('[data-verificare]').first()).toBeVisible(LENT);
-  const rea = (await page.locator('[data-verificare][data-stare="esec"]').count()) > 0 ? 'esec'
-    : (await page.locator('[data-verificare][data-stare="atentie"]').count()) > 0 ? 'atentie' : null;
+  await expect(page.locator('[data-verificare="functii"]')).toBeVisible(LENT);
+  const fara = '[data-verificare]:not([data-verificare="functii"])';
+  const rea = (await page.locator(`${fara}[data-stare="esec"]`).count()) > 0 ? 'esec'
+    : (await page.locator(`${fara}[data-stare="atentie"]`).count()) > 0 ? 'atentie' : null;
   expect(punct).toBe(rea);
 
   // Fiecare rând duce în fila lui: o întâmplare a sugestiilor, o cartelă, un job.
@@ -171,6 +177,14 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   await bara(page, 'azi').click();
   await page.locator('[data-azi-job="backupZilnic"]').click();
   await expect(bara(page, 'diagnoza')).toHaveAttribute('aria-current', 'page');
+  // Pe telefon (până la A.7): bara deasupra, pe rânduri, iar nimic nu iese din ecran în dreapta.
+  await bara(page, 'azi').click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => {
+    const iese = [...document.querySelectorAll('body *')].filter((el) => el.getBoundingClientRect().right > window.innerWidth + 0.5);
+    return [document.documentElement.scrollWidth - window.innerWidth, ...iese.slice(0, 5).map((el) => `${el.tagName}.${el.className}`)];
+  })).toEqual([0]);
+  await page.setViewportSize({ width: 1280, height: 800 });
   // Contul meu, din bară și din meniul contului; ieșirea din meniu.
   await page.locator('[data-admin="meniu-cont"]').click();
   await page.locator('[data-admin="meniu-contul-meu"]').click();

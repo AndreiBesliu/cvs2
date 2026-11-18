@@ -62,6 +62,8 @@ o('U21', D, "v.filter((x) => !x.id.startsWith('job:') && (x.stare === 'atentie' 
 o('U22', P, "FILE.filter((f): f is Exclude<Fila, 'azi'> => f !== 'azi')", "FILE.filter((f): f is Exclude<Fila, 'azi'> => true)", 'carcasa',
   'fileVizibile știe de Azi')
 o('U23', TD, "rezolvatLa: dataDin(d['rezolvatLa']),", 'rezolvatLa: null,', 'tichete', 'rândul tichetului pierde data rezolvării')
+o('U24', 'src/admin/diagnoza/verificari.ts', '  if (f !== undefined) {', '  if (true) {', 'diagnoza',
+  'Diagnoza fără sonda funcțiilor (rezumatul de la intrare) cade sau o judecă')
 
 # Pagina pe emulatoare (`azi.emulator.spec.ts`).
 o('E01', PA, "?? { fila: 'azi', document: null, ancora: null });", "?? { fila: 'erori', document: null, ancora: null });", 'e2e',
@@ -80,9 +82,17 @@ o('E11', TI, "{lista === null ? <SeIncarca text={t('admin.tic.se-incarca')} />",
 o('E12', PA, "        <p data-admin=\"fara-rol-pasi\">{t('admin.cont.fara-rol-pasi')}</p>\n", '', 'e2e', '„fără rol” fără ce face omul')
 o('E13', PA, '<LegaturaFila fila="cont" data-admin="meniu-contul-meu"', '<LegaturaFila fila="azi" data-admin="meniu-contul-meu"', 'e2e',
   '„Contul meu” din meniu duce în altă parte')
+# Găsite de porțile lente pe 18.11 (emulatoarele): sonda funcțiilor la intrare (401 în consolă), `data-grup` ciocnit cu
+# rândurile Erori, bara care iese din ecran pe telefon.
+o('E14', SU, 'masoaraDiagnoza(con, d.instanta, d.build, d.rol, false)', 'masoaraDiagnoza(con, d.instanta, d.build, d.rol, true)', 'e2e',
+  'rezumatul de la intrare face sonda funcțiilor (401 în consolă la fiecare intrare)')
+o('E15', PA, 'data-grup-bara={g.grup}', 'data-grup={g.grup}', 'e2e', 'titlurile barei poartă atributul rândurilor din fila Erori')
+o('E16', 'src/admin/admin.css', '    flex-direction: row;\n    flex-wrap: wrap;\n    gap: 2px var(--sp-1);', '    flex-direction: row;\n    gap: 2px var(--sp-1);',
+  'e2e', 'pe telefon, bara iese din ecran în dreapta')
 
 SETURI = {
     'carcasa': ['test/unit/admin.carcasa.test.ts', 'test/unit/admin.personal.test.ts'],
     'tichete': ['test/unit/tichete.test.ts'],
+    'diagnoza': ['test/unit/admin.test.ts'],
 }
 E2E = ['test/e2e-emulator/azi.emulator.spec.ts']

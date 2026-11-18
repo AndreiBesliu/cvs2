@@ -41,7 +41,8 @@ export async function citesteSumarul(con: Conexiune, parti: ReadonlySet<ParteAzi
     parti.has('tichete') ? numara(query(col(COLECTIE_TICHETE), where('stare', '==', 'nou'))) : null,
     parti.has('sugestii') ? numara(query(col(COLECTIE_SUGESTII), where('stare', '==', 'noua'))) : null,
     parti.has('conturi') ? numara(query(col(COLECTIE_CONTURI), where('creatLa', '>=', Timestamp.fromMillis(Date.now() - 7 * ZI)))) : null,
-    parti.has('joburi') ? masoaraDiagnoza(con, d.instanta, d.build, d.rol) : null,
+    // Fără sonda funcțiilor: o cerere activă, refuzată cu 401 (în consola browserului), doar în fila Diagnoză.
+    parti.has('joburi') ? masoaraDiagnoza(con, d.instanta, d.build, d.rol, false) : null,
     parti.has('intamplari')
       ? getDocs(query(col('audit'), orderBy('cand', 'desc'), limit(PLAFON_INTAMPLARI))).then(
         (s) => ({ ok: true as const, valoare: s.docs.map((x) => intamplareDin(x.id, x.data(), d.eu)) }),
