@@ -9417,3 +9417,53 @@ după oprirea procesului peste noapte, la „neata! da drumul celorlalte worktre
 - **Canalul `plansele`**, republicat din vârful ramurii.
 
 **Completed:** 17.11, 09:56.
+
+## 2026-11-17 — Felia 12.1↑f-2: treptele incrustației cu pereți drepți (ADR 0175 §3–§6) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale, după unirea lui 12.1↑f: „12.1↑f e în `main`: unirea `d2ef229` (exact `ca0fd4a`), cu
+planșele 11.7↑ peste ea și CLAUDE.md (regula: un câmp nou ia v26), `main` împins la `4b52fc3`. […] Felia următoare, 12.1↑f-2
+(treptele), e în planul tău: adu `origin/main` și continuă; 12.1↑e rămâne la cuvântul owner-ului.” Deciziile sunt ale ADR 0175,
+acceptat cu „Da, cu recomandările” (16.11).
+**Started:** 17.11, 11:16. **Completed:** 17.11, 22:17.
+
+- **`main` în ramură:** `4b52fc3` adus prin fast-forward (ramura era la `ca0fd4a`, deja unită în `d2ef229`).
+- **Proba întâi:** oracolul pereților drepți primește două niveluri (`masoaraPotrivireaTrepte`, fără importuri din `src/`):
+  jocul pe fiecare nivel cu partea lui de dop (nivelul de sus cu flanșa, deschiderea cu tija), interferența, reazemul (flanșa
+  trece de deschidere, deci stă pe umăr), umărul, fundul, tija și înălțimea dopului, pereții pe hârtie pe fiecare nivel. Zece
+  cazuri pe hârtie (`incrustatieDreapta.trepte.cazuri.ts`): exemplul din ADR (40 × 30, Ø6, d 3, s 5, D 8) pe umăr, pe fund și
+  decupat; spre exterior; steaua din prag (s 1: vârful deschiderii se retrage 5,715, unghiul intrând 0,919 spre centru); inelul
+  (litera cu gol); L-ul nesimetric; L-ul decupat cu freza de rest; gaura; fereastra (gaura spre exterior, decupată). Rulată
+  înaintea codului: toate refuzate („vine în felia 12.1↑f-2”).
+- **ADR 0175, precizarea din 17.11 (pe hârtie, fără decizii noi):** pe fund, tija D − d + g și flanșa d − g + H („D − d” din
+  ADR n-ar fi lăsat g deasupra umărului); g, cel puțin 0,1, sub D − d pe umăr, sub d pe fund, nefolosit la gaură; cu treaptă,
+  „pe față” refuzat, iar sprijinul contează și la dopul decupat; semifabricatul spre exterior e cutia lărgită cu s; tăierea
+  dopului în trepte; deschiderea care dispare; avertismentele de pe nivelul care urmează desenul; treapta spre exterior lângă
+  margine, ca orice tăietură (confirmarea ieșirii din foaie).
+- **Codul (``18210e4`, apoi `f01833f`, din otrava T19`):**
+  - valorile pe hârtie: treapta (d, s, încotro), tija și flanșa după sprijin;
+  - refuzurile noi, cu motiv, iar cele vechi „vine în felia 12.1↑f-2” au plecat;
+  - figura: `nivelDreapta`, câte un nivel potrivit ca locașul simplu; spre interior, deschiderea e desenul micșorat cu s, spre
+    exterior, nivelul de sus e desenul lărgit cu s;
+  - lucrarea: nivelul de sus până la d, apoi deschiderea de la d la D, cu trecerile pornite de sub umăr;
+  - dopul (`dopInTrepte`), mereu oglindit, cu tija în sus: buzunarul din jurul tijei, apoi fața coborâtă în jurul flanșei
+    (ridicat) sau flanșa decupată cu punți (decupat). Decuparea cu punți e o singură funcție, `decupareCuPunti`, comună cu
+    dopul decupat simplu (până acum scrisă de două ori);
+  - fereastra: „Treapta”, adâncimea și lățimea umărului (implicit jumătate din locaș și 3 mm); „Se sprijină” cu „pe umăr”
+    doar la treaptă și „pe față” doar fără ea, sprijinul mutat odată cu treapta și cu gaura; jocul g, „de sub tijă” sau „de
+    deasupra umărului”; cheia rândurilor legate ia și locașul, treapta și punțile;
+  - scrierea: treapta e a rândului, îmbinată peste cea veche, cu „spre” doar spre exterior;
+  - panoul, pe hârtie și la operație: treapta, tija și flanșa;
+  - manualul (ro, en); mesajul câmpurilor greșite pomenește umărul.
+- **Găsit pe oracol:** buzunarul din jurul tijei, pe flanșa lărgită doar cu raza frezei plus 0,5, lăsa la un umăr îngust un
+  canal cât freza (s + R + 0,5 = 3 la Ø3 și s = 1). Pe L și pe stea, deschiderea ieșea cu jocul 0,078 sau cu interferență. Cu
+  diametrul în loc de rază, toate zece trec.
+- **Probele:** `incrustatieDreapta.trepte.test.ts`, 14: cele zece cazuri pe oracol; controlul negativ (același dop al L-ului,
+  oglindit înapoi în program, deci neoglindit, pică; oglindit de două ori, se potrivește iar); refuzurile (inclusiv o fâșie
+  fără deschidere lângă un dreptunghi întreg și flanșa cât punțile); valorile pe hârtie; avertismentele colțurilor. Scrierea
+  treptei (proba veche, „treapta rămâne”, a devenit „treapta e a rândului”). Două e2e noi: exportul cu treaptă pe oracol (cu
+  întoarcerea la „fără”, care mută sprijinul de pe umăr) și câmpul greșit, spre exterior scris și citit înapoi, gaura în trepte
+  cu sprijinul mutat pe umăr.
+- **Porțile:** compilatoarele ×3, importurile (20 / 0, 1 247 de module), licențele, traducerile (792, 0 lipsă). Unit 9 473 pe codul final (`f01833f`): 9 464 / 1; căderea e o probă de timp fără legătură (`svg.test.ts`, „bugetul includerilor… repede”, 21,2 s sub încărcare), singură 29 / 29 (4,0 s). Build determinist: 327 de fișiere identice; pornirea 106,3, cu ușa 110,3 / 115; totalul 711,9 / 800. E2e 498 pe `18210e4`, cu mașina la 91 % CPU din celelalte worktree-uri (52 de procese node): 461 din prima (5,9 min, 3 lucrători), 19 căzute din timp (bara de editare sau paleta nevăzute în 5 s după pornire, în 19 fișiere fără legătură cu incrustațiile) și 18 nerulate după ele; cele 19 fișiere, reluate cu un lucrător: 142 / 142 (8,3 min). Spec-ul pereților drepți: 8 / 8.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1f-2.py`, 50: valorile T01–T04, refuzurile T05–T14, figura T15–T20, lucrarea T21–T23, dopul T24–T34, scrierea T35–T37, fereastra și panoul T38–T51, prin e2e. T31 a fost retrasă înainte de rulare: decuparea e comună, deci era chiar 12.1b P07. Prima rulare (`18210e4`): 49 / 50 prinse, fiecare de proba ei; cele e2e, de cele două probe noi ale treptei, nu din timp. T19 („deschiderea dispărută cu totul, primită”) a scăpat: condiția `ingust.regiuni.length === 0` era moartă, fiindcă offsetul care golește tot întoarce deja `ok: false`. Condiția e scoasă din cod, iar T19 retrasă (`f01833f`). Reorientate pe liniile mutate (indentarea din `decupareCuPunti` și `nivelDreapta`, liniile atinse de treaptă) și prinse, toate 20: 12.1 R08; 12.1b D04, F01, F05, R06, P07, P11, E08; 12.1b-2 B06, B07, B08, B16; 12.1c U06; 12.1f H10, H12, H16, H17, H18, H20, H25. Retrase: 12.1f H14, H15 (refuzurile „vine în felia 12.1↑f-2”, scoase de felie; țintele noi sunt T05–T14). Celelalte liste ale repo-ului: niciun VOID nou, comparate otravă cu otravă cu fișierele din HEAD (99 de liste).
+- **Mărimea:** felia, față de `4b52fc3`, cu același script în ambii arbori: totalul 709,5 → 711,9 / 800 kB (+2,4: lucrătorul CAM +1,6, fereastra exportului +0,6, panoul +0,15, modelul incrustației +0,1); pornirea 106,3 și ușa 110,3 / 115, neschimbate. Datele în afara JavaScript-ului: mesajele exportului +1,0 kB, ale carcasei +0,2, manualul +0,8 pe limbă.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 17.12), build-ul `f01833f` (versiunea `f01833f6e765`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi cu „straight-walled inlay”, rândul are „Step: none / inward / outward”, fără câmpurile umărului. „Inward” arată „Shoulder depth” 1,5 (jumătate din 3) și „Shoulder width” 3, mută sprijinul pe „the shoulder” (opțiunile: the shoulder / the pocket floor) și arată „Gap under the stem” 0,5 și „Saw gap” 2; pe fund, jocul devine „Gap above the shoulder”. Cu gaura, sprijinul trece pe umăr (singura opțiune), iar adâncimea rândului e 18, oprită, fără jocul g. Fără treaptă, la gaură, rămâne doar „the board face”. Înapoi pe buzunar, cu „outward”, sprijinul e pe umăr, iar valorile umărului s-au păstrat. Nimic nu e marcat greșit, Exportă e pornit. Fereastra închisă fără export, foaia golită, 0 erori în jurnalul local și în consolă.
