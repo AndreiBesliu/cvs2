@@ -9788,3 +9788,28 @@ acceptat cu „Da, cu recomandările” (16.11).
 - **Mărimea:** felia, față de `4b52fc3`, cu același script în ambii arbori: totalul 709,5 → 711,9 / 800 kB (+2,4: lucrătorul CAM +1,6, fereastra exportului +0,6, panoul +0,15, modelul incrustației +0,1); pornirea 106,3 și ușa 110,3 / 115, neschimbate. Datele în afara JavaScript-ului: mesajele exportului +1,0 kB, ale carcasei +0,2, manualul +0,8 pe limbă.
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 17.12), build-ul `f01833f` (versiunea `f01833f6e765`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi cu „straight-walled inlay”, rândul are „Step: none / inward / outward”, fără câmpurile umărului. „Inward” arată „Shoulder depth” 1,5 (jumătate din 3) și „Shoulder width” 3, mută sprijinul pe „the shoulder” (opțiunile: the shoulder / the pocket floor) și arată „Gap under the stem” 0,5 și „Saw gap” 2; pe fund, jocul devine „Gap above the shoulder”. Cu gaura, sprijinul trece pe umăr (singura opțiune), iar adâncimea rândului e 18, oprită, fără jocul g. Fără treaptă, la gaură, rămâne doar „the board face”. Înapoi pe buzunar, cu „outward”, sprijinul e pe umăr, iar valorile umărului s-au păstrat. Nimic nu e marcat greșit, Exportă e pornit. Fereastra închisă fără export, foaia golită, 0 erori în jurnalul local și în consolă.
 - **Reluarea și unirea (18.11):** procesul sesiunii s-a oprit pe 17.11 la 22:17, în timp ce scria documentele. Reluat la „Try again” al owner-ului, apoi la cererea sesiunii principale („neata! poti sa repornesti toate worktrees”, transmis: „adu `main` (`ae5a13c4`) în ramură”). Starea: cele patru documente scrise întregi (DEVLOG, fișa, registrul, traducerile), confirmate în `8384d56`; niciun proces și niciun port rămas. `main` `ae5a13c` (28.1↑b, probele instabile, 3.6t, proba de viteză a luminii reparată, 10.3↑l, 25.3↑e) unit în `d48ad64`. Conflictele, doar de adăugare, în documente, cu ambele părți păstrate: DEVLOG (al lui `main`, cu intrarea aceasta la capăt), registrul otrăvurilor (rândul 10.3l al lui `main` lângă rândurile cu notele), traducerile roadmap-ului (ale lui `main`, regenerate, plus cele două ale rândului acestuia). Codul s-a unit fără conflicte. Porțile pe ramura unită: compilatoarele ×3, importurile (20 / 0, 1 255 de module), licențele, traducerile (803, 0 lipsă); unit 9 504: 9 495 / 1, căderea fiind o probă de timp a raportorului (120 ms pentru 10 erori, sub încărcare), singură 51 / 51; build determinist (330 de fișiere identice; pornirea 106,6, cu ușa 110,6 / 115; totalul 719,1 / 800); e2e 509: 498 din prima (5,3 min), iar cele 11 căzute din timp, în 10 fișiere fără legătură cu incrustațiile, reluate cu un lucrător, 99 / 99. Listele de otrăvuri ale liniei, fără niciun VOID după unire. În listele altor linii, 7 VOID-uri venite odată cu `main`, pe fișiere pe care felia nu le atinge (identice cu `main`): 10.3j M06, M12; 25.2 E05; 25.3b F01; 25.3c J01, A04; 3.6o K17. Canalul `incrustatii`, republicat cu build-ul `d48ad64` (versiunea `d48ad64623af`, până pe 18.12), verificat în browserul aplicației, fără export: treapta spre interior mută sprijinul pe umăr (umăr / fund), cu jocul de sub tijă 0,5 și umărul 1,5 × 3; foaia golită, 0 erori în jurnalul local și în consolă.
+
+## 2026-11-17 — Felia 25.6↑ pornită: imaginile TIFF (ADR 0229, acceptat cu recomandările) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mergi inainte si testez la final” (owner-ul, în sesiunea liniei trasării, după 25.3↑e).
+**Started:** 17.11, 19:49. **Completed:** 18.11, 08:12.
+
+- **Ramura** la `19b0faf3` (25.3↑e, cu `origin/main` `b6aaa548` adus).
+- **Felia** (`9a6d6b56`): `src/trasare/tiff.ts` și `src/trasare/ccitt.ts` (pure); calculul citește un TIFF cu ele
+  (pagina, DPI-ul paginii, reducerea); ușa (DPI-ul din etichete, refuzurile `tiff` și `tiff-stricat`, paginile în
+  raport); fereastra (alegerea paginii, textele); manualul; `.gitattributes` (TIFF binar); fixturile Windows.
+- **Probele, întâi:** 10 ale cititorului (16 fișiere WIC / GDI+, exact pixelii lui WIC; fișiere scrise de mână cu
+  valorile pe hârtie), una a ușii, una e2e.
+- **Previzualizarea** (`8dfa3190`): vectorii unui TIFF stăteau pe alb (browserul nu decodează TIFF); workerul trimite
+  pagina, redusă sub 1 Mpx.
+- **Otrăvurile** (`test/otravuri/25.6.py`): 41 / 41, fiecare pe proba ei (30 unitare ale cititorului, 8 ale ușii, 4 prin
+  e2e); la prima rulare (`9a6d6b56`), 36 / 38: C10 (fără a treia santinelă a referinței CCITT) a cerut o probă pe date
+  stricate, iar T02 (LZW, KwKwK) era echivalent, deci ramura a ieșit (`8dfa3190`); U07, U08 și W04 păzesc
+  previzualizarea, adăugată după.
+- Sesiunea s-a întrerupt în timpul otrăvurilor; reluată pe 18.11: arborele curat, otrăvurile încheiate (toate prinse).
+- **`main` adus** (`ddfc3c00`, de la `ae5a13c4`: 25.3↑e unită, 10.3↑l, proba de viteză a luminii), fără ciocniri;
+  porțile din nou: tipuri (3), importuri, licențe, traduceri (0); unitare 9 502 (9 494 trecute, 8 sărite, 0 căzute);
+  e2e-urile trasării, importului și tutorialul 52 / 52 (gruparea DXF, căzută o dată din timp, a trecut singură); totalul
+  722,1 / 800 kB (+5,4), pornirea 106,6 / 115 (cu ușa 110,6). O scanare A4 la 600 dpi (35 Mpx): G4 0,7–1,1 s, LZW ~1 s.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
+  `ddfc3c006a80`.

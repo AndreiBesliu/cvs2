@@ -857,6 +857,10 @@
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
     },
+    "3e9dc139e03870aa": {
+      "ro": "**Imaginile TIFF** (fără mașină; ADR 0229, acceptat la „vreau să mergi înainte și testez la final”, cu recomandările, și implementat; worktree-ul `trasare`, ramura `wip/25.1-trasare`). Un cititor TIFF propriu, în workerul trasării (`src/trasare/tiff.ts`, CCITT în `ccitt.ts`): II și MM; benzi și plăci; ordinea planară 1 și 2; compresiile fără, CCITT 2 / 3 / 4, LZW, Deflate (prin `DecompressionStream`), PackBits; predictorul 2; alb-e-zero, negru-e-zero, RGB, paleta, CMYK; 1–16 biți; alfa; FillOrder; orientarea. Refuzate cu numele: JPEG în TIFF, BigTIFF, virgula mobilă, YCbCr, CIELab. Peste 16 Mpx, reducerea din mers, pe blocuri; DPI-ul din etichete; alegerea paginii, ca la PDF; scanarea sub vectori, decodată de worker. Probele: 16 fișiere scrise de WIC și GDI+, cu pixelii citiți de WIC, exact; fișiere scrise de mână, cu valorile pe hârtie. O scanare A4 la 600 dpi: ~1 s. **Treceri:** (1) felia și otrăvurile (`9a6d6b56`, `8dfa3190`: previzualizarea, probele cerute de otrăvuri); (2) reluarea după întrerupere: `main` adus (`ddfc3c00`), porțile din nou, canalul. Otrăvurile: 41 / 41, fiecare pe proba ei (30 unitare ale cititorului, 8 ale ușii, 4 prin e2e); la prima rulare (`9a6d6b56`), 36 / 38: C10 (fără a treia santinelă a referinței CCITT) a cerut o probă pe date stricate, iar T02 (LZW, KwKwK) era echivalent, deci ramura a ieșit (`8dfa3190`); U07, U08 și W04 păzesc previzualizarea, adăugată după. Totalul 722,1 / 800 kB pe arborele unit (+5,4), pornirea 106,6 / 115, cu ușa 110,6; publicat pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta `ddfc3c006a80`.",
+      "en": "**TIFF images** (no machine; ADR 0229, accepted at “I want you to go ahead and I will test at the end”, with the recommendations, and implemented; the `trasare` worktree, the `wip/25.1-trasare` branch). An own TIFF reader, in the tracing worker (`src/trasare/tiff.ts`, CCITT in `ccitt.ts`): II and MM; strips and tiles; planar configuration 1 and 2; uncompressed, CCITT 2 / 3 / 4, LZW, Deflate (through `DecompressionStream`), PackBits; predictor 2; white-is-zero, black-is-zero, RGB, palette, CMYK; 1–16 bits; alpha; FillOrder; orientation. Refused by name: JPEG in TIFF, BigTIFF, floating point, YCbCr, CIELab. Over 16 Mpx, reduced on the fly, in blocks; DPI from the tags; page choice, as for PDF; the scan under the vectors, decoded by the worker. The tests: 16 files written by WIC and GDI+, with the pixels read by WIC, exact; files written by hand, with the values worked out on paper. An A4 scan at 600 dpi: ~1 s. **Passes:** (1) the slice and the poisons (`9a6d6b56`, `8dfa3190`: the preview, the tests the poisons asked for); (2) the restart after an interruption: `main` brought in (`ddfc3c00`), the gates again, the channel. The poisons: 41 / 41, each on its own test (30 unit tests of the reader, 8 of the door, 4 through e2e); on the first run (`9a6d6b56`), 36 / 38: C10 (without the third sentinel of the CCITT reference) asked for a test on damaged data, and T02 (LZW, KwKwK) was equivalent, so the branch went (`8dfa3190`); U07, U08 and W04 guard the preview, added after. Total 722.1 / 800 kB on the merged tree (+5.4), startup 106.6 / 115, with the door 110.6; published on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, until 18.12), fingerprint `ddfc3c006a80`."
+    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -1261,6 +1265,10 @@
       "ro": "Înclinarea cu arcele făcute curbe",
       "en": "Skewing with the arcs made into curves"
     },
+    "5d2f8f27f70ad030": {
+      "ro": "25.6↑",
+      "en": "25.6↑"
+    },
     "5d3cbdafca2f2edb": {
       "ro": "Alegerea aranjamentului și densitatea, citite înaintea primei randări",
       "en": "The layout choice and density, read before the first render"
@@ -1368,6 +1376,10 @@
     "681462eed9b23fdd": {
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
+    },
+    "684c86d264a1ab36": {
+      "ro": "Încercarea TIFF-ului (25.6↑, ADR 0229) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; ramura `wip/25.1-trasare`): din „Importă…”, o scanare TIFF a ta (alb-negru de la scaner, G4, sau color, LZW), una cu mai multe pagini dacă ai: scanarea sub vectori, alegerea paginii, Importă. Un TIFF pe care nu-l citește spune ce are (compresia sau felul): spune-mi ce scrie (JPEG în TIFF e felia următoare, după un fișier real)",
+      "en": "Trying TIFF (25.6↑, ADR 0229) on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; the `wip/25.1-trasare` branch): from “Import…”, a TIFF scan of yours (black and white from a scanner, G4, or colour, LZW), one with several pages if you have it: the scan under the vectors, the page choice, Import. A TIFF it cannot read says what it has (the compression or the kind): tell me what it says (JPEG in TIFF is the next slice, after a real file)"
     },
     "686612f44bf1fa8c": {
       "ro": "Gata pe 13.11",
@@ -2080,6 +2092,10 @@
     "a1b359b91738c408": {
       "ro": "Încadrarea textului în casetă",
       "en": "Fitting the text into a box"
+    },
+    "a1f385a075b137e9": {
+      "ro": "Imaginile TIFF",
+      "en": "TIFF images"
     },
     "a2eb10f6627825ef": {
       "ro": "Proba plăcii pe K1C, feliată în cvs2 (ADR 0191; 3.6j–3.6r unite în `main` și publicate pe 09.11, pe adresa principală de test: <https://cncvectorstudio-test.web.app/>): în Proiectare, un dreptunghi de 40 × 20 mm, cu un cerc de 10 mm și o fantă de 12 × 2 mm (un dreptunghi cu colțurile de 1 mm) în el; în fereastra Imprimanta, **Din desen…**, înălțimea 3 mm, PLA, 0,20 Standard, apoi **Trimite la imprimantă** și pornirea. Cu șublerul: 40,0 și 20,0 (±0,2), 3,0 (±0,1), gaura puțin sub 10; primul strat lipit, pereții și fața de sus închise; pe ecranul imprimantei, miniatura și „stratul x din 15”. Dacă e la îndemână, și un cub de calibrare feliat în Creality Print, ca referință",

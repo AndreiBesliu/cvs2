@@ -929,8 +929,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   recomandările („Da, 1a–2a”), pe aceeași ramură, pe canalul `trasare`:** `traseazaCulori` cu `peLinii` (contururile
   doar ale culorilor rămase pe contururi; fără ele, doar etichetele), chemat o singură dată de `traseazaCuloriMediane`
   (liniile doar ale culorilor alese; legarea și peste contururi); în pastilă, sub „Se trasează”, lista „Rezultatul
-  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou). **Totalul ramurii, cu `main` adus (`6e62d40c`): 716,0 /
-  800 kB**, pornirea 106,6 / 115 (cu ușa 110,6).
+  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou); unită în `main` pe 17.11 (`a3e81f6d`). **25.6↑
+  (imaginile TIFF, ADR 0229) gata pe 18.11, la „mergi înainte și testez la final”, pe aceeași ramură, pe canalul
+  `trasare`:** cititorul propriu `src/trasare/tiff.ts` (cu `ccitt.ts`), în workerul trasării (`decodeazaTiff`, pagina
+  aleasă, DPI-ul paginii, reducerea pe blocuri, `poza` pentru previzualizare); ușa nu-l mai refuză la semnătură;
+  refuzurile `tiff` (cu numele) și `tiff-stricat`; fixturile WIC / GDI+ în `test/fixtures/trasare/tiff`
+  (`genereaza.ps1`). **Totalul ramurii, cu `main` adus (`ddfc3c00`): 722,1 / 800 kB**, pornirea 106,6 / 115 (cu ușa
+  110,6).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
