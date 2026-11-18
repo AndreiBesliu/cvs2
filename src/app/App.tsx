@@ -1114,6 +1114,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     unitateWmf: () => a.unitateWmf,
     pagina: () => a.pagina,
     trasare: () => a.trasare,
+    imaginePdf: () => a.imaginePdf === true,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,

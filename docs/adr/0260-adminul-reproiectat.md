@@ -94,3 +94,90 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
 - lista goală a unei file are un semn și ultima rezolvare, nu doar textul;
 - eroarea citirii păstrează motivul de azi și primește „Deschide Diagnoza”;
 - „Se încarcă…” arată rânduri schițate.
+
+## Implementarea
+
+- **A.1, 17.11: carcasa, fila Azi, intrarea și stările goale** (worktree-ul `admin`, ramura `wip/A.1-admin`, din `main`
+  `b6aaa548`; în jurnalul etapei 3, `3.Aa`, fiindcă id-urile fișei sunt `<etapa>.<felia>`, ca liniile `3.T` și `3.X`):
+  - **Partea pură** stă în `src/admin/carcasa/date.ts`: bara (`BARA`, `grupuriBarei`), filele ei (`fileBarei`: Azi, apoi
+    exact `fileVizibile`, care nu știe de Azi), părțile filei Azi pe care le vede un rol (`partiAzi`), fila deschisă
+    (`filaAratata`: fără `#`, Azi), insigna, punctul Diagnozei, numărul de lângă filă, întâmplările din audit
+    (`intamplareDin`, `cheieIntamplare`, `filaTintei`), căutarea (`cauta`, `simplu`) și ultima rezolvare (`ceaMaiRecenta`,
+    `rezolvareDin`).
+  - **Ce parte din Azi vede un rol:** cifra erorilor cu „Erori: citește”, a tichetelor noi cu „Tichete: citește” sau
+    „răspunde”, a sugestiilor fără decizie doar cu „Sugestii: citește toate” (scrierea dă doar sugestiile proprii; fără cifră),
+    a conturilor noi (7 zile, schița) cu „Conturi: citește” sau „administrează”, joburile cu „Diagnoză: citește”, „Ce așteaptă
+    de la tine” doar owner-ul, ultimele întâmplări cu „Audit: citește”. Un rol fără nicio parte nu are fila Azi și se
+    deschide pe prima filă a lui, ca înainte. Proba trece prin toate cele 2 048 de roluri posibile
+    (`test/unit/admin.carcasa.test.ts`).
+  - **Rezumatul** (`src/admin/carcasa/sumar.ts`): la intrare și la „Reîncarcă” din Azi, doar părțile rolului, prin aceleași
+    reguli: numărători (`count`) pe indexuri simple (`rezolvat`, `stare`, `creatLa`), Diagnoza prin `masoaraDiagnoza` (aceeași
+    funcție ca fila; punctul din bară e cea mai rea stare a ei), ultimele 8 rânduri din `audit` (`cand`, descrescător). O
+    parte pe care rolul n-o vede nu se citește deloc (proba numără cererile spre Firestore). Fără index compus nou, fără
+    reguli noi. **Excepția: sonda funcțiilor** (apelul fără App Check, care trebuie refuzat cu 401) rămâne doar în fila
+    Diagnoză: e o cerere activă spre server, iar browserul scrie „401” în consolă; la intrare ar fi fost la fiecare deschidere
+    a paginii (găsită de proba documentației, care cere consola curată). Punctul din bară e deci cea mai rea stare a
+    Diagnozei fără ea (`functii` lipsă în `verificari`).
+  - **Bara laterală:** legături `#fila` (clicul simplu schimbă fila fără o intrare nouă în istoric, ca bara de până acum;
+    clicul de mijloc deschide o filă nouă a browserului), `aria-current="page"`, numerele (erorile nerezolvate, tichetele
+    noi, sugestiile fără decizie) doar peste 0, punctul Diagnozei (galben la o Atenție, roșu la un Eșec). Sub 640 px, până
+    la A.7, bara trece deasupra, cu filele pe rânduri (nimic nu iese din ecran în dreapta). Titlurile grupurilor poartă
+    `data-grup-bara`: `data-grup` e al rândurilor din fila Erori.
+  - **Antetul:** insigna (TEST albastră, LIVE roșie, altfel neutră, cu numele instanței), căutarea, limba, „Înapoi la
+    aplicație” și meniul contului (cine și rolul, „Contul meu”, „Ieși”). Căutarea găsește în ce au citit filele Erori,
+    Tichete și Utilizatori (`publica` din contextul carcasei), fără diacritice, cel mult 5 pe fel; un fel necitit încă se
+    spune. Un rezultat deschide fila lui și rândul: grupul de erori deschis (cu filtrul „Toate” dacă e rezolvat), tichetul
+    și contul derulate la vedere și marcate.
+  - **Fila Azi** (`src/admin/azi/FilaAzi.tsx`): cartelele cifrelor (una necitită se arată „?”, cu motivul), joburile de
+    noapte din aceleași verificări ca Diagnoza (plus un rând „Diagnoza: alte N probleme”), „Ce așteaptă de la tine” (primele
+    5 din roadmap, tăiate la două rânduri; pentru owner, Azi aduce `roadmap.json`, iar restul documentației vine tot la
+    deschiderea filelor ei) și ultimele întâmplări. Fiecare rând duce în fila lui.
+  - **Intrarea și stările** (ideea 76): intrarea, „fără rol” (cu propoziția nouă și „Ieși”) și eroarea rolului stau într-un
+    card centrat, sub antetul cu insigna; `SeIncarca`, `ListaGoala` și `EroareCitire` (`src/admin/carcasa/stari.tsx`) sunt
+    în toate filele. Ultima rezolvare: la erori, `marcatLa` al ultimei marcări (indexul simplu, descendent); la tichete,
+    `rezolvatLa`; la sugestii, `decisaLa` (din lista citită).
+  - **Ce s-a schimbat pentru probe:** pagina se deschide pe Azi (probele de pe emulatoare intră în filă din bară),
+    `aria-selected` → `aria-current="page"`, „Ieși” stă în meniul contului.
+  - **Probele:** 14 unitare noi (`test/unit/admin.carcasa.test.ts`), Diagnoza fără sondă (`admin.test.ts`) și rândul
+    tichetului cu `rezolvatLa`; 5 e2e noi pe emulatoare (`test/e2e-emulator/azi.emulator.spec.ts`: owner-ul, cu consola
+    curată până la Diagnoză și telefonul la 390 px; un rol doar cu tichetele; căutarea; stările; intrarea). Otrăvurile:
+    40 / 40 prinse (`test/otravuri/A.1.py`: 24 unitare, 16 pe emulatoare).
+  - **Mărimea**, față de un build curat al lui `main` `ae5a13c4`: `/admin` 106,5 → 112,2 / 200 kB (+5,7 din cei +25 ai
+    liniei); pornirea (106,6, cu ușa 110,6 / 115) și totalul (716,7 / 800) neschimbate.
+- **A.2, 18.11: Erori și Diagnoza** (aceeași ramură, `wip/A.1-admin`, peste A.1, cu `main` `c302d73a` adus în `951933e5`;
+  `3.Ab` în jurnalul etapei 3):
+  - **Partea pură:** `src/admin/erori/vedere.ts` (filtrul pe sursă, eroarea aleasă, aparițiile pe 14 zile, barele
+    graficului) și `src/admin/diagnoza/vedere.ts` (sumarul, problemele întâi).
+  - **Erori:** lista în stânga (între 280 și 420 px), eroarea aleasă în dreapta, lipită sus la derulare, deci lista nu se
+    mișcă la alegere; sub 800 px, detaliul trece sub listă. La deschidere e aleasă prima; un grup găsit de căutare vine
+    ales. Aleasă e cea văzută: un filtru care o ascunde mută alegerea pe prima arătată, iar ridicarea filtrului n-o mută
+    înapoi. Filtrul pe stare arată numărul fiecăreia (două numărători `count` la fiecare citire, pe indexul simplu al lui
+    `rezolvat` și pe colecție); filtrul pe sursă (browser / server) lucrează pe ce s-a citit, fără o cerere nouă. În
+    detaliu: ultima apariție, graficul, ultimele 20 de apariții și „Marchează rezolvată” / „Redeschide”, doar cu
+    `erori.rezolva` (ADR 0049). Un grup fără nicio apariție păstrată o spune (se păstrează 90 de zile, ADR 0040 §6).
+  - **Graficul pe 14 zile:** din aparițiile citite (ultimele 20; eticheta spune „din cele citite”), pe zilele calendarului
+    local (între miezurile nopții locale, deci și peste schimbarea orei; proba unitară fixează fusul României, ca să nu
+    treacă degeaba pe CI, în UTC). SVG fără bibliotecă: o serie, fără legendă (titlul o numește), bare cu 2 px între ele,
+    capătul de sus rotunjit (cel mult 4 px) și baza dreaptă pe axă, în culoarea de accent. Barele se desenează la lățimea
+    măsurată a graficului (`ResizeObserver`; fără scalarea SVG, colțurile rămân rotunde), iar graficul are cel mult 28rem,
+    ca barele să rămână subțiri. Ziua și numărul fiecărei bare la hover (`<title>`), totalul în eticheta graficului
+    (`role="img"`). Fără nicio apariție în cele 14 zile, o propoziție în locul axei goale.
+  - **Diagnoza:** sumarul (câte Bine, Atenție, Eșec; informațiile nu se numără) deasupra listei; problemele întâi (Eșec,
+    apoi Atenție, cu fundalul stării), restul în ordinea de până acum; ora verificării lângă „Rulează din nou”.
+  - Fără reguli, permisiuni, indexuri sau date noi; singurele cereri noi sunt cele două numărători ale filtrului.
+  - **Bancul vizual** (1440, 1024 și 760 px, în ambele teme) a găsit patru lucruri, reparate în `8d747031`: textul
+    rândurilor centrat de regula globală a butoanelor (`justify-content: center` strângea grila rândului pe text),
+    colțurile barelor turtite de scalarea SVG, barele late de 50 px pe toată lățimea detaliului și graficul gol, fără
+    nicio vorbă.
+  - **Otrăvurile au găsit o probă care trecea din noroc:** ruta care ține citirea aparițiilor lui G2
+    (`**/errorLogs/<id>:runQuery`) nu se potrivea niciodată, fiindcă adresa are `?key=…` după `:runQuery`; proba trecea
+    doar când răspunsul întârzia de la sine. Trei otrăvuri (E05, E06, E14) au căzut pe aceeași linie, pe care niciuna nu
+    o atinge. Reparată în `ed064a08`: ruta e o funcție pe calea adresei, iar proba cere ca citirea să fie ținută.
+  - **Probele:** 6 unitare noi (`test/unit/admin.vederi.test.ts`); 3 e2e noi pe emulatoare
+    (`test/e2e-emulator/erori.emulator.spec.ts`: owner-ul, cu așezarea, textul rândurilor, numerele, sursa, graficul și
+    graficul gol, alegerea care nu sare înapoi, aparițiile erorii de dinainte care nu rămân sub cea nouă, marcarea și
+    ecranul de 700 px; Diagnoza; un rol care doar citește erorile); probele vechi, pe așezarea nouă. Otrăvurile:
+    28 / 28 prinse pe `ed064a08` (`test/otravuri/A.2.py`: 12 unitare, 16 pe emulatoare), fiecare pe aserțiunea
+    care îi țintește defectul.
+  - **Mărimea**, față de un build curat al lui `951933e5` (A.1 cu `main` `c302d73a`): `/admin` 112,2 → 113,6 / 200 kB
+    (+1,4; linia: +7,1 din cei +25); pornirea (107,0, cu ușa 111,0 / 115) și totalul (721,3 / 800) neschimbate.

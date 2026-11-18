@@ -11,6 +11,8 @@ import { CANAL_POZA, iaPoza, stergePoza, type PozaInAsteptare } from '../../app/
 import { sugestii, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { ceaMaiRecenta } from '../carcasa/date.ts';
+import { EroareCitire, ListaGoala, SeIncarca } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { areDecizie, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin, type Filtru, type Sugestie } from './date.ts';
 import '../personal/personal.css';
@@ -114,6 +116,7 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
   const toate = lista?.ok ? lista.valoare : [];
   const numare = numarePeStare(toate);
   const aratate = filtreaza(toate, filtru, aleMele ? eu : null);
+  const ultimaDecizie = ceaMaiRecenta(toate.map((s) => s.decisaLa));
   const eroareLa = (loc: string): string | null => (lucru.faza === 'eroare' && lucru.loc === loc ? lucru.motiv : null);
   // Un formular deschis sau închis șterge mesajul de dinainte (o eroare veche n-are ce căuta în formularul nou).
   const deschide = (d: Deschis): void => {
@@ -163,10 +166,16 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
           ) : null}
           <button type="button" data-sug="reincarca" onClick={() => { setRev((n) => n + 1); }}>{t('admin.sug.reincarca')}</button>
         </div>
-        {lista === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.sug.se-incarca')}</p>
-          : !lista.ok ? <p className="admin-eroare" role="alert" data-sug="eroare-lista">{t('admin.sug.citire', { motiv: lista.motiv })}</p>
-            : toate.length === 0 ? <p className="admin-mesaj" data-sug="gol">{t('admin.sug.niciuna')}</p>
-              : aratate.length === 0 ? <p className="admin-mesaj" data-sug="gol-filtru">{t('admin.sug.niciuna-filtru')}</p>
+        {lista === null ? <SeIncarca text={t('admin.sug.se-incarca')} />
+          : !lista.ok ? (
+            <EroareCitire text={t('admin.sug.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((n) => n + 1); }}
+              atribute={{ 'data-sug': 'eroare-lista' }} />
+          )
+            : toate.length === 0 ? <ListaGoala text={t('admin.sug.niciuna')} atribute={{ 'data-sug': 'gol' }} />
+              : aratate.length === 0 ? (
+                <ListaGoala text={t('admin.sug.niciuna-filtru')} atribute={{ 'data-sug': 'gol-filtru' }}
+                  ultima={ultimaDecizie ? t('admin.stari.ultima-decizie', { data: dataScurta(ultimaDecizie, limba) }) : null} />
+              )
                 : (
                   <ul className="pers-lista">
                     {aratate.map((s) => (

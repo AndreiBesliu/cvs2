@@ -88,7 +88,9 @@ async function intraCuParola(page: Page, email: string, parola: string): Promise
 }
 
 async function iesi(page: Page): Promise<void> {
-  await page.locator('.admin-cont button').click();
+  // Ieșirea stă în meniul contului (ADR 0260).
+  await page.locator('[data-admin="meniu-cont"]').click();
+  await page.locator('[data-admin="iesi"]').click();
   await expect(page.locator('[data-admin="intra"]')).toBeVisible();
 }
 
@@ -222,7 +224,9 @@ test('decizia pe o sugestie schimbată între timp e refuzată lângă formular;
   // Un rol cu „Sugestii: citește toate” și atât: fila, lista cu decizia, fără formularul nou, fără Decide / Editează.
   await puneRolul(page, await intraCuGoogle(page), CITESTE);
   await expect(page.locator('[data-admin="cont"]')).toContainText('Citește sugestiile');
-  expect(await file(page)).toEqual(['sugestii', 'cont']);
+  // Cine citește toate sugestiile are și cifra lor în fila Azi (ADR 0260), deschisă întâi.
+  expect(await file(page)).toEqual(['azi', 'sugestii', 'cont']);
+  await page.locator('[data-fila="sugestii"]').click();
   await expect(page.locator('[data-sug="doar-citire"]')).toBeVisible();
   await expect(page.locator('[data-sug="formular"]')).toHaveCount(0);
   await expect(page.locator('[data-sugestie="Exportul DXF R12 și R14"] [data-sug="stare"]')).toHaveText('Amânată: mai târziu');
@@ -249,7 +253,7 @@ test('din editor (ADR 0111): „Sugestie” face poza planșei și deschide fila
 
   // Owner-ul intră în fila nouă: fila Sugestii, cu poza planșei în formular.
   await puneRolul(admin, await intraCuGoogle(admin), 'owner');
-  await expect(admin.locator('[data-fila="sugestii"]')).toHaveAttribute('aria-selected', 'true', LENT);
+  await expect(admin.locator('[data-fila="sugestii"]')).toHaveAttribute('aria-current', 'page', LENT);
   const nou = admin.locator('[data-sug="formular"]');
   await expect(nou.locator('[data-sug="poza-atasata"] img')).toBeVisible(LENT);
   await expect.poll(() => latimeImagine(admin, '[data-sug="poza-atasata"] img')).toBeGreaterThan(0);

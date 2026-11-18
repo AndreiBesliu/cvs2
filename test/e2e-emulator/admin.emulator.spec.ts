@@ -105,6 +105,8 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   await scrie(`roluri/${SUPORT}`, { nume: 'Suport', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste'] });
   await scrie(`staff/${uid}`, { rol: SUPORT });
   await page.locator('[data-admin="reincearca"]').click();
+  // Pagina se deschide pe Azi (ADR 0260); Erori, din bara laterală.
+  await page.locator('[data-fila="erori"]').click();
 
   // Nerezolvate: doar G1; toate: amândouă, cea mai recentă întâi.
   await expect(page.locator('[data-grup]')).toHaveCount(1);
@@ -115,20 +117,24 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   await page.locator('[data-filtru="nerezolvate"]').click();
   await expect(page.locator('[data-grup]')).toHaveCount(1);
 
+  // Eroarea aleasă se arată alături (ADR 0260 §2, felia A.2).
   const g1 = page.locator(`[data-grup="${G1}"]`);
-  await g1.locator('button[aria-expanded]').click();
-  await expect(g1).toContainText('b-proba');
-  await expect(g1.locator('.admin-aparitii li')).toHaveCount(1);
-  await expect(g1.locator('[data-admin="fara-appcheck"]')).toHaveCount(0);
+  await g1.locator('button').click();
+  await expect(g1).toHaveAttribute('data-ales', 'true');
+  const detaliu = page.locator('[data-admin="detaliu-eroare"]');
+  await expect(detaliu).toContainText('b-proba');
+  await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(1);
+  await expect(detaliu.locator('[data-admin="fara-appcheck"]')).toHaveCount(0);
 
-  await g1.locator('[data-admin="marcheaza"]').click();
+  await detaliu.locator('[data-admin="marcheaza"]').click();
   // Primul apel al unui callable după pornirea (sau reîncărcarea) emulatorului de funcții trece de 5 s: termen mai lung.
   await expect(page.locator('[data-admin="gol"]')).toBeVisible({ timeout: 30_000 });
   expect((await citeste(`errorLogs/${G1}`))['rezolvat']?.booleanValue).toBe(true);
   expect(await cate('audit')).toBe(1);
 
   await page.locator('[data-fila="diagnoza"]').click();
-  await expect(page.locator('[data-verificare="functii"]')).toHaveAttribute('data-stare', 'bine');
+  // Sonda funcțiilor pornește la rece `logClientError` în emulator (18.11: execuția a început după 5 s): termen mai lung.
+  await expect(page.locator('[data-verificare="functii"]')).toHaveAttribute('data-stare', 'bine', { timeout: 30_000 });
   await expect(page.locator('[data-verificare="nerezolvate"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="instanta"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="appcheck"]')).toHaveAttribute('data-stare', 'info');

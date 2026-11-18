@@ -1,7 +1,7 @@
 /**
- * Ușa imaginilor (ADR 0220 §1, §7): felul imaginii după semnătură (PNG, JPEG, GIF, BMP, WebP; TIFF, refuzat deocamdată) și
- * DPI-ul scris în antet (PNG `pHYs`, JPEG JFIF sau EXIF, BMP). Fără dependențe; decodarea o face browserul, în workerul
- * trasării (`src/jobs/calculTrasare.ts`).
+ * Ușa imaginilor (ADR 0220 §1, §7): felul imaginii după semnătură (PNG, JPEG, GIF, BMP, WebP, TIFF) și DPI-ul scris în
+ * antet (PNG `pHYs`, JPEG JFIF sau EXIF, BMP, TIFF). Fără dependențe; decodarea o face browserul, în workerul trasării
+ * (`src/jobs/calculTrasare.ts`), iar TIFF-ul, cititorul propriu din același worker (ADR 0229).
  */
 
 export type FelImagine = 'png' | 'jpeg' | 'gif' | 'bmp' | 'webp' | 'tiff';
@@ -174,6 +174,8 @@ export function dpiImagine(b: Uint8Array): number | null {
       return ppm > 0 ? plauzibil(ppm * 0.0254) : null;
     }
     if (fel === 'jpeg') return dpiJpeg(b, v);
+    // TIFF (ADR 0229): antetul e chiar cel din EXIF, la începutul fișierului; prima pagină.
+    if (fel === 'tiff') return dpiExif(v, 0);
   } catch {
     return null;
   }

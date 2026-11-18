@@ -2,8 +2,9 @@
  * Adresa paginii `/admin` (ADR 0048): fila și documentul deschis stau în `#` (`#roadmap`,
  * `#documentatie/docs/adr/0047-nucleul-de-simulare.md#decizia`), ca un link spre un ADR să se poată trimite și ca un
  * link intern dintr-un document (deschis cu clic de mijloc) să ducă la același loc. Pure: citirea și scrierea.
+ * Fila Azi (ADR 0260 §1) e prima după intrare: o adresă fără `#` o deschide pe ea.
  */
-export const FILE = ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'personal', 'setari', 'cont'] as const;
+export const FILE = ['azi', 'erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'personal', 'setari', 'cont'] as const;
 export type Fila = (typeof FILE)[number];
 
 export interface Adresa {

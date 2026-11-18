@@ -37,6 +37,23 @@ export const pagina = (continut: string, extra = '', obiecte: ReadonlyArray<stri
   ...obiecte,
 ]);
 
+/**
+ * O pagină de L × H pt (ADR 0270), cu imaginile date (dicționarul fără /Type și /Subtype, și datele; obiectele 5…),
+ * desenate de `continut` (`/Im1`, `/Im2`…), și alte obiecte după ele.
+ */
+export function cuImagini(L: number, H: number, continut: string, imagini: ReadonlyArray<readonly [string, Uint8Array]>, extra = '',
+  obiecte: ReadonlyArray<string | Buffer> = []): Buffer {
+  const xo = imagini.map((_, k) => `/Im${k + 1} ${5 + k} 0 R`).join(' ');
+  return pdf([
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${L} ${H}] /Resources << /XObject << ${xo} >> >> /Contents 4 0 R ${extra} >>`,
+    flux('', continut),
+    ...imagini.map(([d, date]) => flux(`/Type /XObject /Subtype /Image ${d}`, date)),
+    ...obiecte,
+  ]);
+}
+
 /** Un PDF cu câte o pagină de 72 × 72 pt pe fiecare conținut dat, în ordine. */
 export function pagini(continuturi: readonly string[]): Buffer {
   const n = continuturi.length;

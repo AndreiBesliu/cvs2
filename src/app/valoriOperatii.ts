@@ -58,15 +58,22 @@ function restScris(vechi: readonly FrezaRest[] | undefined, noi: readonly FrezaR
  */
 function incrustatieDreaptaScrisa(o: Incrustatie | undefined, i: IncrustatieDreaptaOperatie): IncrustatieDreapta {
   const vechi = o?.fel === 'drept' ? o : undefined;
-  // Locașul (ADR 0175) e al rândului: gaura se scrie din el, iar fără el câmpul pleacă (buzunarul).
-  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, ...fara } = vechi ?? {};
+  // Locașul (ADR 0175) e al rândului: gaura se scrie din el, iar fără el câmpul pleacă (buzunarul). Treapta la fel: a rândului,
+  // îmbinată peste cea veche (un câmp necunoscut al ei rămâne), cu încotro scris doar spre exterior.
+  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, treapta: treaptaVeche, ...fara } = vechi ?? {};
   void _locas;
   void _vechi;
-  const { frezeDop: noi, punti: puntiNoi, ...valori } = i;
+  const { frezeDop: noi, punti: puntiNoi, treapta: treaptaNoua, ...valori } = i;
+  let treapta: IncrustatieDreapta['treapta'];
+  if (treaptaNoua) {
+    const { spre: _spre, ...baza } = treaptaVeche ?? {};
+    void _spre;
+    treapta = { ...baza, adancime: treaptaNoua.adancime, latime: treaptaNoua.latime, ...(treaptaNoua.spre === 'exterior' ? { spre: 'exterior' as const } : {}) };
+  }
   const frezeDop = restScris(vechi?.frezeDop, noi ?? [], 'freza plata');
   const implicite = (p: Urechi): boolean => p.numar === PUNTI_DOP_DREPT.numar && p.latime === PUNTI_DOP_DREPT.latime && p.grosime === PUNTI_DOP_DREPT.grosime;
   const punti = puntiNoi && (puntiVechi || !implicite(puntiNoi)) ? { ...(puntiVechi ?? {}), ...puntiNoi } : undefined;
-  return { ...fara, ...valori, fel: 'drept', ...(frezeDop.length > 0 ? { frezeDop } : {}), ...(punti ? { punti } : {}) };
+  return { ...fara, ...valori, fel: 'drept', ...(frezeDop.length > 0 ? { frezeDop } : {}), ...(punti ? { punti } : {}), ...(treapta ? { treapta } : {}) };
 }
 
 /**

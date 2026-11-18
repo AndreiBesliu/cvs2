@@ -103,6 +103,13 @@ test('Diagnoza funcțiilor: 401 e corect; 2xx = impunerea lipsește; alt cod sau
   assert.deepEqual([retea?.stare, retea?.masura.cheie], ['esec', 'admin.diag.functii.nu-raspunde']);
 });
 
+test('fără sonda funcțiilor (rezumatul de la intrare, ADR 0260), verificarea ei lipsește, iar celelalte rămân la fel', () => {
+  const { functii: _, ...faraSonda } = bun;
+  const v = verificari(faraSonda);
+  assert.deepEqual(v.map((x) => x.id), verificari(bun).map((x) => x.id).filter((id) => id !== 'functii'));
+  assert.deepEqual(v, verificari(bun).filter((x) => x.id !== 'functii'));
+});
+
 test('proiectul fiecărei instanțe', () => {
   assert.equal(proiectAsteptat('test', 'cncvectorstudio-test'), true);
   assert.equal(proiectAsteptat('live', 'cncvectorstudio'), true);

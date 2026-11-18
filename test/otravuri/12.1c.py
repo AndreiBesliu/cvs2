@@ -156,7 +156,8 @@ o('U03', INC, '    avertisment: reduse.length === 0 ? null', '    avertisment: t
 o('U04', INC, '  if (k >= 0) {', '  if (false) {', 'punti', 'o buclă fără nicio punte, primită (piesa ar cădea liberă)')
 o('U05', DOP, '      const pePunti = puntiPeBucle(bucle.map((c) => lungimeBucla(c)), palier, p.numar);',
   '      const pePunti = puntiPeBucle(bucle.map(() => Infinity), palier, p.numar);', 'punti', 'banda: lungimea buclelor ignorată')
-o('U06', DDR, '        return o.ok && o.regiuni[0] ? lungimeBucla(o.regiuni[0].exterior) : Infinity;', '        return Infinity;', 'punti',
+# U06 reorientată la 12.1↑f-2 (17.11): lungimile buclelor sunt în `decupareCuPunti` (altă indentare).
+o('U06', DDR, '    return o.ok && o.regiuni[0] ? lungimeBucla(o.regiuni[0].exterior) : Infinity;', '    return Infinity;', 'punti',
   'dopul drept: lungimea traseului ignorată (partea mică refuză tot exportul)')
 
 SETURI = {
