@@ -102,7 +102,8 @@ imagini de trasat.
 - **Dialogul:** „Trasează imaginea paginii” (`data-buton="trasare-pdf"`) sub un rezultat PDF cu imagini, citit sau refuzat;
   „Vectorii paginii” (`vectori-pdf`) sub imaginea cerută, dacă pagina are vectori. Alegerea (`AlegeriImport.imaginePdf`)
   rămâne la recitire (o alegere a trasării, altă pagină). Scara spune „din fișier”: DPI-ul vine din PDF.
-- **Mărimea:** totalul 725,6 / 800 kB (+3,5), pornirea 106,7 / 115 (+0,1), cu ușa 110,7.
+- **Mărimea:** totalul 725,6 / 800 kB (+3,5), pornirea 106,7 / 115 (+0,1), cu ușa 110,7; pe arborele unit cu `main`
+  (`8425a2c1`), 729,8 / 800, pornirea 107,0 / 115, cu ușa 111,0.
 - **Probele:** 10 unitare (`test/unit/import.pdf.scanat.test.ts`): fluxurile G4 și G3 ale fixturilor WIC, cu exact pixelii
   lui WIC; JPEG-ul scris de WIC (`wic-color.jpg`, din `genereaza.ps1`), trecut întreg, și cu un Exif adăugat, scos; CCITT 1D
   pe octeți și 2D, scrise de mână; Flate cu predictorul, Decode, Indexed, ImageMask, 16 biți, RGB, CMYK, ICCBased, datele
@@ -111,3 +112,10 @@ imagini de trasat.
   refuzurile); calculul cu reducere și rotire. E2e (`trasare.spec.ts`): o scanare G4, cu contururile ca în Node la 72 dpi,
   importată; una JPEG, importată; vectori și o imagine rotită, cu comutarea și o alegere a trasării între ele; JBIG2,
   refuzat cu numele.
+- **Otrăvurile** (`test/otravuri/25.7.py`): 39 / 39, fiecare pe proba ei (33 unitare, 6 prin e2e). La prima rulare,
+  37 / 39: P10 (G3 1D pe octeți citit ca T.4) a scăpat dintr-o coincidență a probei: pe 8 px, umplerea și codul rândului
+  următor fac albul 29 (`00000010`), care umple un rând alb la fel de bine (al doilea rând are acum negru); P24 (decodarea
+  obișnuită trece de un filtru de imagine) n-avea probă (un flux de conținut cu DCTDecode e acum un flux stricat, numărat).
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
+  `283c53ff12af`; pe canal, o pagină cu imaginea așezată rotită și o linie: întâi vectorii, apoi imaginea, 160 × 240 px,
+  72 px pe țol, cum stă pe pagină.

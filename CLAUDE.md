@@ -940,8 +940,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/io/tiffScrie.ts`: CCITT-ul împachetat, eșantioanele brute), cu orientarea (1–8) și DPI-ul așezării; calculul aplică
   `orientare` și dă `poza`; ușa importului trasează singură o pagină fără vectori, iar una cu vectori la cerere
   (`AlegeriImport.imaginePdf`; „Trasează imaginea paginii” / „Vectorii paginii”); refuzurile `pdf-imagine` (cu numele) și
-  `pdf-imagine-stricata`. **Totalul ramurii, înainte de a aduce `main`: 725,6 / 800 kB**, pornirea 106,7 / 115 (cu ușa
-  110,7).
+  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`. **Totalul ramurii, cu `main` adus (`8425a2c1`): 729,8 / 800
+  kB**, pornirea 107,0 / 115 (cu ușa 111,0).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
