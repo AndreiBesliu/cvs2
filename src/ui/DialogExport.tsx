@@ -180,6 +180,11 @@ type Props = {
    * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
    */
   readonly onDeschideInMasina?: () => void;
+  /**
+   * Deschis din „Trimite la mașină” (ADR 0250, felia 28.1↑d): butonul principal se cheamă așa, iar după export aplicația
+   * duce programul în Mașina (închide dialogul). Cu un controler pe care senderul nu-l vorbește, butonul e „Exportă”.
+   */
+  readonly trimite?: boolean;
   /** Foaia exportată (ADR 0210 §5), în titlu, când proiectul are mai multe. */
   readonly foaie?: string;
   /** Grosimea foii exportate (mm): adâncimea unei găuri (ADR 0175), arătată pe rândul ei. */
@@ -517,7 +522,7 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina, foaie, placute, foi, placuteToate, onRaport, grosimeFoaie,
+    onSetariMasina, onDeschideInMasina, trimite = false, foaie, placute, foi, placuteToate, onRaport, grosimeFoaie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -528,6 +533,9 @@ export function DialogExport(
   const [post, setPost] = useState<IdContract>('grbl-11');
   const [unitatiCerute, setUnitati] = useState<Unitati>('mm');
   const postAles = POSTURI_EXPORT.find((x) => x.id === post);
+  // „Trimite la mașină” (felia 28.1↑d) trimite doar ce vorbește senderul (familia GRBL); cu alt controler, butonul e iar
+  // „Exportă”, iar nota postului spune de ce programul doar se descarcă.
+  const trimiteAcum = trimite && postAles?.sender !== false;
   // Un controler care citește doar mm (RichAuto) nu primește inch; alegerea omului rămâne pentru celelalte posturi.
   const unitati: Unitati = postAles?.inch === false ? 'mm' : unitatiCerute;
   // Strategia schimbării sculei (ADR 0084): aleasă de om, dacă postul ales o acceptă; altfel, implicita postului.
@@ -1674,7 +1682,7 @@ export function DialogExport(
         )}
         <div className="butoane">
           <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite}
-            data-buton="exporta" title={valid ? undefined : motivInvalid}
+            data-buton="exporta" data-trimite={trimiteAcum || undefined} title={valid ? undefined : motivInvalid}
             onClick={() => {
               if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat) || placuteOprite) return;
               onExporta({
@@ -1682,7 +1690,7 @@ export function DialogExport(
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
               });
             }}>
-            {t('export.exporta')}
+            {t(trimiteAcum ? 'export.trimite' : 'export.exporta')}
           </button>
           <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
           {onRaport && <button type="button" data-buton="raport" onClick={() => { onRaport({ origine, z0 }); }}>{t('export.raport.deschide')}</button>}

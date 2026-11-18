@@ -307,11 +307,14 @@ mari.
 ### Atelierul
 %% pas: x-atelier
 %% faci
-Din „Aspectul…”, alege Atelier, apasă Păstrează și reîncarcă pagina; desenează un dreptunghi din coloana uneltelor. La
-final, alege din nou Insule și apasă Păstrează.
+Din „Aspectul…”, alege Atelier, apasă Păstrează și reîncarcă pagina; desenează un dreptunghi din coloana uneltelor. În
+Proprietăți apasă Interior și + la adâncime, apoi „Trimite la mașină” și butonul ferestrei. La final, întoarce-te la
+Proiectare, alege din nou Insule și apasă Păstrează.
 %% vezi
 Aplicația trece pe loc pe Atelier, întunecată și cu butoane mari: uneltele, cu numele lor, într-o coloană în stânga;
-panourile, în dreapta. După reîncărcare rămâne Atelier, fără să se vadă întâi Insulele.
+panourile, în dreapta. După reîncărcare rămâne Atelier, fără să se vadă întâi Insulele. Tăierea stă prima în Proprietăți:
+Interior rămâne apăsat, adâncimea crește cu 0,5 mm; „Trimite la mașină” descarcă programul și îl încarcă în Mașina,
+nepornit.
 
 ### Exportul unui desen cu de toate
 %% pas: x-export

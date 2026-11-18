@@ -185,6 +185,7 @@ export const enExport = {
   'export.gata': { one: 'Downloaded: {n} line, SHA-256 {sha}', other: 'Downloaded: {n} lines, SHA-256 {sha}' },
   'export.in-masina': 'Open in Machine',
   'export.in-masina.titlu': 'Loads the program into the Machine window without starting it',
+  'export.trimite': 'Send to machine',
   'export.gata.fisier': { one: 'Downloaded {nume}: {n} line, SHA-256 {sha}', other: 'Downloaded {nume}: {n} lines, SHA-256 {sha}' },
   'export.gata.dop': {
     one: 'The plug, downloaded: {nume}, on a {latime} × {inaltime} mm blank, at least {grosime} mm thick (XY0 at the chosen corner, Z0 on its face); {n} line, SHA-256 {sha}',

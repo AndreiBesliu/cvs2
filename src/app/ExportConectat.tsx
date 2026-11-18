@@ -42,6 +42,8 @@ type Props = {
   readonly onSetariMasina: (text: string) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
+  /** Deschis din „Trimite la mașină” (ADR 0250, felia 28.1↑d): butonul principal o spune, iar aplicația duce programul în Mașina. */
+  readonly trimite?: boolean;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
   readonly foaie?: string;
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
@@ -59,7 +61,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, foaie, toate, onRaport,
+  onDeschideInMasina, trimite, foaie, toate, onRaport,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -205,6 +207,7 @@ export function ExportConectat({
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
+      {...(trimite ? { trimite } : {})}
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
