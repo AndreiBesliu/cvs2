@@ -13,7 +13,8 @@ var Atelier3D = (function () {
     fund?: string; goale?: boolean; lung?: number; lat?: number; adanc?: number; sus?: number; buza?: number; profil?: string; varf?: number; inceput?: number;
     parte?: string; diam?: number; forma?: string; varf_d?: number; gaura?: string; groasa?: boolean; indoita?: { brate: number[]; unghiuri: number[] };
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
-    mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number };
+    mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
+    dinti?: number; unghi?: number; sens?: string; modul?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -56,19 +57,21 @@ var Atelier3D = (function () {
     bara: { lung: 4 },
     bila: { baza: 1 },
     cupa: { baza: 1 },
+    // roata dințată (ADR 0169); `pereche` (dinții roții a doua) e doar a editorului, nu a piesei
+    rotita: { dinti: 24, fel: "drepti", unghi: 20, sens: "dreapta", grosime: 3.8, gaura: "x", modul: 1, pereche: 24 },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
   // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
-  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"],
+  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"],
     ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
   const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
   let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
   const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
-  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
+  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
   // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
-  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "stift_h", "locas_h", "locas_urmeaza"];
+  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "stift_h", "locas_h", "locas_urmeaza"];
   const INALTIMI = ["stift_h", "locas_h", "locas_urmeaza"] as const;
   // inaltimile din setari prin motor: la zecimi, in margini, locasul dupa stift cat e bifat
   function puneInaltimi(v: Valori) {
@@ -144,6 +147,13 @@ var Atelier3D = (function () {
     if (d.tip === "bara") return tr`Bară ${d.lung}`;
     if (d.tip === "bila") return tr`Placă ${d.baza}×${d.baza} cu bilă`;
     if (d.tip === "cupa") return tr("Placă 1×1 cu cupă");
+    if (d.tip === "rotita") {
+      const sens = d.sens === "stanga" ? tr("stânga") : tr("dreapta");
+      const fel = d.fel === "oblici" ? tr`, dinți oblici ${fmt(d.unghi ?? 20, 0)}° ${sens}` : d.fel === "inv" ? tr`, dinți în V ${fmt(d.unghi ?? 20, 0)}° ${sens}` : "";
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
+      return tr`Roată dințată ${d.dinti ?? 24}${fel}${g}${m}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -190,6 +200,13 @@ var Atelier3D = (function () {
     if (t === "caramidaTechnic") { p.gauri = Array.from({ length: p.lung === 1 ? 1 : p.lung - 1 }, (_, k) => (["r", "x", "p"].includes(p.gauri && p.gauri[k]) ? p.gauri[k]! : "r")); if (!p.goale) delete p.goale; }
     if (t === "stiftTechnic") { if (+p.lung !== 3) delete p.lung; if (p.capat !== "ax") delete p.capat; }
     if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
+    if (t === "rotita") {
+      // perechea e a editorului; la dinții drepți, unghiul și sensul nu contează (două roți drepte la fel sunt aceeași piesă)
+      delete p.pereche;
+      // la oblici și în V sensul rămâne: perechea se prinde doar cu sensul opus
+      if (p.fel === "drepti") { delete p.unghi; delete p.sens; }
+      if (+p.modul === 1) delete p.modul;
+    }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -212,7 +229,7 @@ var Atelier3D = (function () {
     return drept ? (n === 1 ? 1 : n - 1) : 0;
   }
   const paramMotor = () => ({ varianta_stift: setari.varianta_stift, varianta_locas: setari.varianta_locas, varianta_gaura: setari.varianta_gaura, varianta_ax: setari.varianta_ax,
-    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa,
+    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti,
     pat: setari.pat.slice() as [number, number], pat_margine: setari.pat_margine, pat_distanta: setari.pat_distanta, ...Lego.inaltimi(setari) });
   const dimTri = (tri: readonly Tri[]): number[] => [0, 1, 2].map(k => { let m = 0; for (const t of tri) for (const p of t) if (p[k]! > m) m = p[k]!; return m; });
   function pieseDin(def: Def): PiesaGata[] {
@@ -494,6 +511,38 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-b-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["xr", "Ax + știft"]], p.gaura)}</div>`;
       $("#at-b-lung").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.lung = +b.dataset.v!; if (p.lung === 0.5 && p.gaura === "xr") p.gaura = "x"; editor(); schimbat(); };
       $("#at-b-gaura").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.gaura = b.dataset.v!; if (p.gaura === "xr" && p.lung === 0.5) p.lung = 1; editor(); schimbat(); };
+    } else if (t === "rotita") {
+      // roata dințată (ADR 0169): dinții, felul, unghiul și sensul la oblici și în V, grosimea, gaura, modulul; perechea
+      const p = stare.rotita, oblic = p.fel !== "drepti", a = Lego.distantaRoti(p.dinti, p.pereche, p.modul);
+      const pasi = a / 8, jum = a / 4;
+      const grila = Math.abs(pasi - Math.round(pasi)) < 1e-9 ? tr`pe grilă (${Math.round(pasi)} ${Math.round(pasi) === 1 ? tr("pas") : tr("pași")})`
+        : Math.abs(jum - Math.round(jum)) < 1e-9 ? tr("la jumătate de pas") : tr("în afara grilei de 8 mm");
+      e.innerHTML = `<h2>Roată dințată</h2>
+        <p class="mic">Roată care se prinde cu alta, ca la LEGO Technic (modulul 1, dinții de 20°). Dinții pot fi drepți, oblici (merg mai lin, dar împing axul în lungul lui; două roți oblice se prind doar cu sensuri opuse) sau în V (fără împingere). Gaura de ax și jocul dintre dinți vin din calibrare.</p>
+        <div class="at-campuri">
+          <label for="at-r-dinti">Dinți<input id="at-r-dinti" type="number" min="8" max="80" step="1" value="${p.dinti}"></label>
+          <label for="at-r-grosime">Grosime (mm)<input id="at-r-grosime" type="number" min="1" max="20" step="0.1" value="${p.grosime}"></label>
+          <label for="at-r-modul">Modul<input id="at-r-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-r-repede", [8, 12, 16, 20, 24, 36, 40].map((z): [string, string] => [String(z), String(z)]), String(p.dinti))}</div>
+        <div class="at-rand"><span class="mic">Dinții:</span>${seg("at-r-fel", [["drepti", "Drepți"], ["oblici", "Oblici"], ["inv", "În V"]], p.fel)}</div>
+        ${oblic ? `<div class="at-campuri"><label for="at-r-unghi">Unghiul (°)<input id="at-r-unghi" type="number" min="10" max="35" step="1" value="${p.unghi}"></label></div>
+        <div class="at-rand"><span class="mic">Sensul:</span>${seg("at-r-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>` : ""}
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-r-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><label for="at-r-pereche" class="mic">Se prinde cu o roată de</label><input id="at-r-pereche" type="number" min="8" max="80" step="1" value="${p.pereche}">
+          <span class="mic" id="at-r-distanta">${tr`dinți: axele la ${fmt(a)} mm, ${grila}.`}</span></div>
+        <div class="at-rand"><button class="btn" type="button" id="at-r-fa-pereche">Fă perechea</button><span class="mic">${oblic ? tr("pune în listă ambele roți; a doua, cu sensul opus") : tr("pune în listă ambele roți")}</span></div>`;
+      const alege = (id: string, f: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      $("#at-r-dinti").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.dinti = v; editor(); schimbat(); } };
+      $("#at-r-grosime").onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= 1 && v <= 20) { p.grosime = Math.round(v * 10) / 10; schimbat(); } };
+      $("#at-r-modul").onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= 0.5 && v <= 3) { p.modul = Math.round(v * 10) / 10; editor(); schimbat(); } };
+      alege("#at-r-repede", v => { p.dinti = +v; });
+      alege("#at-r-fel", v => { p.fel = v; });
+      if ($("#at-r-unghi")) $("#at-r-unghi").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 10 && v <= 35) { p.unghi = v; schimbat(); } };
+      if ($("#at-r-sens")) alege("#at-r-sens", v => { p.sens = v; });
+      alege("#at-r-gaura", v => { p.gaura = v; });
+      $("#at-r-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };
+      $("#at-r-fa-pereche").onclick = adaugaPerecheRoti;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -541,7 +590,8 @@ var Atelier3D = (function () {
           <li><b>Clema și bara:</b> cinci plăci 1×1 cu clemă și știft gol (1–5 cubulețe pe spate). Prinde bara de probă (sau o bară LEGO) în clemă și bag-o în știftul gol. Alege placa la care clema se prinde cu un clic și se rotește pe bară, iar bara stă în știft.</li>
           <li><b>Cupa:</b> cinci plăci cu cupă. Apasă bila de probă în fiecare. Alege cupa în care bila intră apăsând, stă în orice poziție și nu iese singură.</li>
           <li><b>Înălțimea:</b> cinci plăci 2×2 cu fund plin (1–5 cubulețe pe latura din spate), cu știfturi de 1,7 · 1,8 · 1,9 · 2,0 · 2,1 mm și locașurile cu 0,2 mm mai adânci. Pune o cărămidă LEGO peste fiecare placă, apoi apasă placa pe o cărămidă LEGO. Alege placa la care amândouă se prind ca un LEGO adevărat și scrie înălțimea ei mai jos, la „Înălțimea știftului”.</li>
-          <li>Scrie cele șase numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
+          <li><b>Roțile dințate:</b> cinci roți de 16 dinți (1–5 cubulețe pe fața de sus), cu jocul dintre dinți de la 0,05 la 0,25 mm. Pune fiecare pe un ax, într-o grindă LEGO, lângă o roată LEGO de 16 dinți (axele la două găuri, 16 mm). Alege roata care se învârte ușor, fără să se blocheze și fără joc mare.</li>
+          <li>Scrie cele șapte numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
         </ol>
         <div class="at-campuri" id="at-calib-campuri"></div>`;
       campuriVariante($("#at-calib-campuri"));
@@ -634,7 +684,7 @@ var Atelier3D = (function () {
   }
   function campuriVariante(loc: HTMLElement) {
     loc.innerHTML = [["varianta_stift", "Varianta știftului"], ["varianta_locas", "Varianta locașului"], ["varianta_gaura", "Varianta găurii"], ["varianta_ax", "Varianta axului"],
-      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"]]
+      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"]]
       .map(([k, e]) => `<label for="${loc.id}-${k}">${e}<input id="${loc.id}-${k}" data-setare="${k}" type="number" min="-3" max="9" step="1" value="${(setari as Valori)[k!]}"></label>`).join("")
       + campuriInaltimi(loc.id);
     legaInaltimi(loc);
@@ -1194,6 +1244,15 @@ var Atelier3D = (function () {
     salveaza(); randeazaLista();
     toast(tr`${n} × ${numeDef(curent.def)} în listă.`);
   }
+  function adaugaPerecheRoti() {
+    // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), z2 = stare.rotita.pereche, a: Def = { ...d, dinti: z2 };
+    if (d.fel === "oblici" || d.fel === "inv") a.sens = d.sens === "stanga" ? "dreapta" : "stanga";
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea ${d.dinti ?? 24} + ${z2} în listă (axele la ${fmt(Lego.distantaRoti(d.dinti ?? 24, z2, d.modul ?? 1))} mm).`);
+  }
   function adaugaPereche() {
     // aripile vin in perechi: aceeasi pana, taiata o data stanga si o data dreapta
     const d = defCurenta(), n = bucatiCerute();
@@ -1328,7 +1387,7 @@ var Atelier3D = (function () {
       "",
       tr("POTRIVIREA PIESELOR LEGO"),
       tr`- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
-      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa} (3 = mijlocul).`,
+      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa}, roți dințate ${setari.varianta_dinti} (3 = mijlocul).`,
       tr`- Înălțimile: știftul ${fmt(Lego.inaltimi(setari).stift_h)} mm, locașul de sub piesele pline ${fmt(Lego.inaltimi(setari).locas_h)} mm.`,
       tr("- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate."),
       "", "LISTA",
