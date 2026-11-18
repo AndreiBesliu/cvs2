@@ -9858,9 +9858,6 @@ acceptat cu „Da, cu recomandările” (16.11).
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
   `ddfc3c006a80`.
 
-## 2026-11-17 — Felia A.1: carcasa adminului, fila Azi, intrarea și stările goale (ADR 0260) (Model: Claude Opus 5.5)
-
-
 ## 2026-11-18 — Felia A.2: Erori (detaliul alături, filtrul pe sursă, graficul pe 14 zile) și Diagnoza (sumarul, problemele întâi) (ADR 0260) (Model: Claude Opus 5.5)
 
 - **Ramura:** `wip/A.1-admin`, din `origin/main` `b6aaa548`, în worktree-ul `C:\Users\besli\cncvs2-lucru\admin` (e2e pe
