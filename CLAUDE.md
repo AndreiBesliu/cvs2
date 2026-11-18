@@ -1210,6 +1210,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 18.11.2026: **10.3↑m, 11.3↑b și 28.1↑c unite în `main`, cu două probe instabile reparate** (la „unește ce se poate”,
+  după rapoartele liniilor; liniile oprite peste noapte, repornite la „neata! poti sa repornesti toate worktrees”):
+  piesele puse de mai multe ori, la tăiere și conversie (`3ef10357`, exact `7ae0d5a`; ADR 0180), avertismentul
+  urechilor, 2 × freza + 3 (`2bfbb4a6`, exact `65f404b`), și Atelierul, al doilea aranjament (`4cfe13d2`, exact
+  `1f7cbd41`; ADR 0250). Probele: `trenulet.spec.ts:77` (clicul pe lista de piese dat cât foaia exportului încă se
+  așază; a căzut în completul de pe `9361c831`) așteaptă acum „Timp de lucru” (`104adc41`), iar `pwa.spec.ts:432`
+  citește bara și textul deodată (`1a4e59f0`); fiecare prinde o otravă. Porțile pe unire: unit 9 507 / 0, e2e 524 / 524,
+  emulatoarele 101 / 101, iar partea lor Playwright 20 / 21 la fiecare din trei rulări, de fiecare dată altă probă
+  (/admin fără cont, fereastra contului, fila Diagnoza): bucăți încărcate la cerere care n-au venit în 5 s, cu
+  procesorul ocupat de porțile a patru linii; niciuna pe o cale atinsă de unire, iar cele două dintâi trec 4 / 4
+  singure; poarta rămâne completul de pe GitHub. Totalul 721,2 / 800, pornirea cu ușa 111,0 / 115. ADR-urile 0270–0279
+  sunt ale trasării (PDF-urile scanate, îndreptarea scanărilor). În lucru la linii: 3.6u, 25.6↑, A.1 și felia
+  incrustațiilor.
 - 17.11.2026: **10.3↑l și 25.3↑e unite în `main`, după reparația probei de viteză a luminii** (la „unește ce se poate”,
   după rapoartele liniilor): panourile pe foi (`eb237a77`, exact `e17a3521`: mărimea implicită care încape pe foaie,
   avertismentul, „Cât încape pe foaie”, „Așază pe foi…”, plus dinții drepți ai lui 10.3↑k pe grila egală) și rezultatul
