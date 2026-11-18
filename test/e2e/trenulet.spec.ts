@@ -131,6 +131,11 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
 
   await c.locator('[data-mod="2d"]').first().click();
   await c.locator('#btn-export').click();
+  // Foaia exportului se așază în pași, după deschidere: plăcile (într-un `setTimeout`), apoi timpul fiecărui fișier G-code,
+  // câte unul pe sarcină, și la urmă rândurile „Timp de lucru…”, deasupra plăcilor. Lista de piese stă dedesubt și coboară
+  // la fiecare pas (29 px la ultimul): un clic țintit înainte și ajuns după nimerește foaia, iar lista rămâne închisă
+  // (completul din 17.11, rularea 44142162789: `#e-salveaza` ascuns 30 s). Se așteaptă ultimul pas.
+  await expect(c.locator('#cnc-timp')).toContainText('Timp de lucru', { timeout: 20_000 });
   await c.locator('#foaie-export summary', { hasText: 'Lista de piese ca fișier .json' }).click();
   const descarcare = page.waitForEvent('download');
   await c.locator('#e-salveaza').click();

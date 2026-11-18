@@ -130,14 +130,14 @@ export function UnealtaCutit({ doc, indexFoaie, selectie, vedere, marime, zona, 
       if (s.signal.aborted) return;
       const cerere = { cutit, alese, inchide: o.inchide, prelungeste: o.prelungeste, pastreaza: o.pastreaza, stergeCutitul: o.stergeCutitul, ...(intreCerut ? { intre: intreCerut } : {}),
         ...(imCerut ? { imbinare: imCerut } : {}) };
-      calc.taieVectorii(laCerere, cerere, s.signal, indexFoaie).then((r) => {
+      calc.taieVectorii(laCerere, cerere, s.signal, indexFoaie, () => { if (!s.signal.aborted) setStare({ fel: 'gata', text: t('editare.surori.astept'), rau: false }); }).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           setStare({ fel: 'gata', text: t(`editare.taiere.motiv.${r.motiv}`), rau: true });
           return;
         }
         // Selecția rămâne cum era (fără nimic ales, tot nimic): tăieturile următoare au aceleași forme.
-        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: selectieDupa(alegerea, r.degrupate, r.sterse), sterse: r.sterse });
+        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: selectieDupa(alegerea, r.degrupate, r.sterse), sterse: r.sterse, ...(r.surori ? { surori: r.surori } : {}) });
         const parti = String(r.ids.length);
         const text = cutit.fel === 'reteaza'
           ? (r.ids.length === 0 ? t('editare.cutit.retezat-tot') : t('editare.cutit.retezat'))

@@ -1,5 +1,6 @@
 import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { idNou } from './copii.ts';
+import { cuUrechi, distantaCuUrechi, frezaExterioara } from './distantaPiese.ts';
 import type { Document, Foaie, Instanta, Piesa } from './document.ts';
 import { materialFoaie } from './foi.ts';
 import { placutaCoapta } from './placute.ts';
@@ -17,7 +18,10 @@ import { elementeInstanta, matriceInstanta } from './lume.ts';
 
 /** Marginea foii la «Încă…» și «+1», în mm (ca în proba din prag, §3). */
 export const MARGINE_COPII = 10;
-/** Distanța dintre copii, în mm: cel puțin atât, și cel puțin cea mai mare freză a profilelor exterioare ale piesei. */
+/**
+ * Distanța dintre copii, în mm: cel puțin atât, și cel puțin cea mai mare freză a profilelor exterioare ale piesei; cu urechi,
+ * cel puțin distanța propusă pentru ele (felia 11.3↑b).
+ */
 export const DISTANTA_COPII = 5;
 /** Cât poate cere «Încă…» în total (o piesă de mii de ori se face cu „Așază pe foi” și cu plăcuțele din CSV). */
 export const INCA_MAXIM = 1000;
@@ -55,11 +59,13 @@ export function cutieInstanta(piesa: Piesa, i: Instanta): Cutie | null {
   return Number.isFinite(c.minX) ? c : null;
 }
 
-/** Distanța dintre copii (mm): `DISTANTA_COPII`, sau cea mai mare freză a profilelor exterioare (altfel una ar tăia în vecina ei). */
+/**
+ * Distanța dintre copii (mm): `DISTANTA_COPII`, sau cea mai mare freză a profilelor exterioare (altfel una ar tăia în vecina
+ * ei); cu urechi pe un profil exterior, 2 × freza + 3 mm, rotunjită în sus (felia 11.3↑b): altfel tăieturile vecine se unesc
+ * și urechile dinspre vecini nu mai țin. «Încă…» și «+1» nu întreabă distanța, deci ea urcă singură.
+ */
 export function distantaCopii(piesa: Piesa): number {
-  let d = DISTANTA_COPII;
-  for (const o of piesa.operatii) if (o.tip === 'profil' && o.latura === 'exterior') d = Math.max(d, o.scula.diametru);
-  return d;
+  return Math.max(DISTANTA_COPII, distantaCuUrechi(frezaExterioara(piesa), cuUrechi(piesa)));
 }
 
 /**

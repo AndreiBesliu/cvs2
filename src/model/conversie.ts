@@ -33,7 +33,7 @@ import { netezesteCale } from './netezire.ts';
 import { punctPe } from './reparare.ts';
 import { TOLERANTA_MAXIMA, TOLERANTA_MINIMA } from './verificareLimite.ts';
 
-export type CerereConversie =
+export type CerereConversie = (
   /** Arce în locul curbelor; `linii`: și șirurile de linii scurte care stau pe un cerc. */
   | { readonly fel: 'arce'; readonly alese: readonly string[]; readonly toleranta: number; readonly linii: boolean }
   /** În cerc: doar dacă e (diametrul null, sub toleranță) sau cu diametrul dat. */
@@ -41,10 +41,19 @@ export type CerereConversie =
   /** În dreptunghi: doar dacă e (mărimea null, sub toleranță) sau cu mărimea dată. */
   | { readonly fel: 'dreptunghi'; readonly alese: readonly string[]; readonly toleranta: number; readonly marime: { readonly latime: number; readonly inaltime: number } | null }
   /** Netezește: șirurile de linii scurte devin cubice; `pastreaza`: liniile mai lungi de atât (mm) rămân linii. */
-  | { readonly fel: 'netezire'; readonly alese: readonly string[]; readonly toleranta: number; readonly pastreaza: number };
+  | { readonly fel: 'netezire'; readonly alese: readonly string[]; readonly toleranta: number; readonly pastreaza: number })
+  /**
+   * O piesă pusă de mai multe ori (felia 10.3↑m): fără alegere, conversia ei se refuză (`impartita`), iar aplicația întreabă.
+   * «Desprinde și convertește» nu ajunge aici (aplicația desprinde instanțele întâi); cu `piesa`, piesa se convertește în locul
+   * ei, deci toate instanțele ei (o singură dată, oricâte instanțe ale ei sunt alese); șablonul unor plăcuțe se sare, numărat.
+   */
+  & { readonly surori?: 'piesa' };
 
-/** `nimic-ales`, `toleranta` (în afara 0,001 … 1 mm), `valoare` (un diametru, o mărime sau „Păstrează” care nu e un număr pozitiv). */
-export type MotivConversie = 'nimic-ales' | 'toleranta' | 'valoare';
+/**
+ * `nimic-ales`, `toleranta` (în afara 0,001 … 1 mm), `valoare` (un diametru, o mărime sau „Păstrează” care nu e un număr
+ * pozitiv), `impartita` (s-ar schimba o piesă pusă de mai multe ori, fără alegere), `renuntat` (omul a renunțat la întrebare).
+ */
+export type MotivConversie = 'nimic-ales' | 'toleranta' | 'valoare' | 'impartita' | 'renuntat';
 
 export type RezultatConversie =
   | {
@@ -52,7 +61,10 @@ export type RezultatConversie =
     /** Piesele schimbate, cu aceleași id-uri (goală: nimic de convertit). */
     readonly piese: readonly Piesa[];
     readonly convertite: number;
-    /** Sărite: căile deschise (la cerc și dreptunghi), formele din piese puse de mai multe ori, cele întinse neuniform. */
+    /**
+     * Sărite: căile deschise (la cerc și dreptunghi), cele întinse neuniform și, la «Convertește piesa», șabloanele plăcuțelor
+     * (felia 10.3↑m; înainte, toate piesele puse de mai multe ori).
+     */
     readonly sarite: number;
     /** Doar dacă e: câte nu sunt cercuri / dreptunghiuri sub toleranță, cu cea mai mică abatere dintre ele. */
     readonly nepotrivite: number;
@@ -424,11 +436,18 @@ export function converteste(doc: Document, c: CerereConversie, indexFoaie = 0): 
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const st: Stare = { convertite: 0, sarite: 0, nepotrivite: 0, abatereMinima: null, operatie: 0, abatere: 0, curbe: 0, arce: 0, linii: 0 };
   const schimbate = new Map<string, Piesa>();
+  const cuLitere = new Set<string>();
+  for (const f of doc.foi) for (const i of f.instante) if (i.texte) cuLitere.add(i.piesa);
+  const vazute = new Set<string>();
   for (const inst of foaie.instante) {
     const p = alese.has(inst.id) ? piese.get(inst.piesa) : undefined;
     if (!p) continue;
     const lume = elementeInstanta(p.radacina, inst, matriceInstanta(inst));
-    if ((folosiri.get(p.id) ?? 0) > 1) {
+    const impartita = (folosiri.get(p.id) ?? 0) > 1;
+    // O piesă se convertește o singură dată (două instanțe alese ale ei: aceeași conversie); un șablon de plăcuțe, sărit.
+    if (vazute.has(p.id)) continue;
+    vazute.add(p.id);
+    if (impartita && c.surori === 'piesa' && cuLitere.has(p.id)) {
       st.sarite += lume.length;
       continue;
     }
@@ -439,6 +458,7 @@ export function converteste(doc: Document, c: CerereConversie, indexFoaie = 0): 
       const nou = nod ? convertesteElement(e, nod, p, c, st) : null;
       if (nou) noi.set(e.nod, nou);
     }
+    if (noi.size > 0 && impartita && c.surori !== 'piesa') return { ok: false, motiv: 'impartita' };
     st.convertite += noi.size;
     if (noi.size > 0) schimbate.set(p.id, { ...p, radacina: inlocuieste(p.radacina, noi) });
   }

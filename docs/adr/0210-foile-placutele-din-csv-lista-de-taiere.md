@@ -6,7 +6,8 @@ toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi 
 07.11** (foaia activă și lista cu foile; toate foile pe pânză), **11.2↑, 11.3↑ și 11.4↑ pe 08.11** (piesele puse de mai
 multe ori; „Așază pe foi”; plăcuțele, nucleul), **11.4↑b și 11.4↑c pe 09.11** («Din CSV…»; textul care iese din plăcuță),
 **11.5↑ și 11.6↑ pe 13.11** („Toate foile” la export; raportul foilor și lista de tăiere), **fișa plăcii 11 (11.7↑)
-pregătită pe 17.11**, fără mașină (vezi la capăt).
+pregătită pe 17.11**, fără mașină, și **avertismentul urechilor (11.3↑b) gata în aceeași zi** (varianta a, aleasă de owner;
+vezi la capăt).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -707,6 +708,8 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   piesele au urechi pe un profil exterior, iar sub ea apare un avertisment („urechile pieselor din mijloc nu vor ține”);
   minimul rămâne freza; **b)** proba urechilor la export, pe programe, pentru orice așezare, inclusiv mutată de mână
   (rasterul cere o rezoluție după mărimea foii); **c)** urechile așezate față în față între vecini (o opțiune a profilului).
+  **Ales pe 17.11:** a), cu 3 mm de lemn în loc de 1 („Da, 11.3↑b”; felia 11.3↑b, mai jos); b și c rămân la cuvântul
+  owner-ului.
 - **Probele:** `placa11.test.ts`, pe hârtie, pe exportul proaspăt: locurile, numele în ordinea CSV-ului, raportul, ramele
   (cutia drumului = plăcuțele ± raza, patru treceri, două urechi de 6 mm la Z −10 pe plăcuță), numele (V90 cel mult 3 mm,
   fiecare pe plăcuța lui, centrat la cel mult 1 mm, între 8 și 19,5; „Ana” de la 11 la 19), regimul și urechile care țin, cu
@@ -714,3 +717,34 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   `test/otravuri/11.7.py`, pe generator, judecate doar de cotele pe hârtie: 17 / 17 la prima rulare (`ffc8b2c`), martorul
   scăpat.
 - **Rămâne:** tăierea (owner-ul), apoi transcrierea măsurătorilor în probe; 11.5↑b, după etapa 13.
+
+## Felia 11.3↑b (avertismentul urechilor, gata pe 17.11)
+
+- **Cererea:** „Da, 11.3↑b” (owner-ul, la propunerea de după unirea lui 11.7↑): varianta a de mai sus, cu 3 mm de lemn între
+  tăieturi în loc de 1. Cu +1, rotunjit în sus, propunerea la Ø3,175 ar fi 8, deci 1,65 mm de lemn între două tăieturi
+  vecine; cu +3 e 10, deci 3,65 mm, cât folosește placa 11.
+- **Regula** (`src/model/distantaPiese.ts`): o piesă are urechi când unul dintre profilele ei exterioare are urechi (cele ale
+  unui profil interior țin miezul, nu piesa). Distanța propusă pentru piesele care se așază e 2 × cea mai mare freză a
+  profilelor lor exterioare + `LEMN_URECHI` (3 mm), rotunjită în sus la milimetru, dacă vreuna are urechi; altfel minimul de
+  până acum, freza. Pe hârtie: Ø3,175 → 10, Ø3 → 9, Ø3,5 → 10, Ø6 → 15, Ø6,35 → 16, Ø8 → 19. Minimul rămâne freza: sub
+  el, refuzul; între minim și propunere, doar avertismentul.
+- **«Așază pe foi»:** distanța pornește de la propunere (cea ținută, dacă e mai mare). Sub rândul minimului, o notă spune
+  de ce („cu urechi, 10 mm: între tăieturile vecine rămâne lemnul de care se țin urechile”). Sub propunere, nota devine
+  avertismentul, cu culoarea avertismentelor (contrast 5,7 pe tema luminoasă, 7,6 pe cea întunecată), iar **Așază** rămâne
+  pornit. Minimul se scrie acum cu virgula zecimală în română („3,175”, nu „3.175”).
+- **«Din CSV…»:** distanța ținută urcă singură la propunere; sub ea, scrisă la **Schimbă…**, apare avertismentul sub rândul
+  „unde ajung”.
+- **«Încă…», «+1» și „Mută și așază la capăt”** nu întreabă distanța, deci ea urcă singură la propunere (copiile: cel puțin
+  5 mm, freza, iar cu urechi 2 × freza + 3).
+- **Ce nu judecă:** doar piesele care se așază. Cele rămase pe foaie se ocolesc ca până acum, la distanța aleasă și cel
+  puțin cât freza lor, iar o piesă mutată de mână nu trece prin nicio fereastră. Pe acestea le-ar prinde proba la export
+  (varianta b).
+- **Documentul** nu se schimbă (nicio versiune nouă). Ferestrele, modelul așezării și mesajele vin la cerere: pornirea rămâne
+  106,6 kB (cu ușa 110,6 / 115, ca în `main` `e38ca72`), iar totalul crește cu 0,2 kB (711,0 / 800).
+- **Probele:** `asezare.urechi.test.ts` (regula pe hârtie, distanța propusă, pragul avertismentului și placa 11 refăcută din
+  distanța propusă: colțurile la x = 10 / 100 / 190 și y = 180 / 140 / 100 / 60 / 20, 15 + 10), copiile
+  (`pieseLegate.test.ts`), „Mută și așază” prin registru (`asezare.actiuni.test.ts`) și două e2e: Ø3,175 în «Așază pe foi»
+  (`asezare.spec.ts`), Ø6 în «Din CSV…» (`placute-iesire.spec.ts`). Otrăvurile `test/otravuri/11.3b.py`: 21 / 21 la prima rulare (`0a9ab92`; 14 unitare, 7 prin e2e). La
+  alegerea lor au ieșit din cod două gărzi pe care nicio otravă nu le putea prinde: −1e-9 la rotunjire (2 × freza + 3 iese
+  întreg doar pentru frezele multiplu de 0,5 mm, exacte în virgulă mobilă) și „propunerea peste minim” la avertisment.
+- **Rămâne,** la cuvântul owner-ului: b) proba urechilor la export; c) urechile la locuri alese.

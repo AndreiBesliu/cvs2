@@ -62,6 +62,7 @@ import { autointersectii, indexCutii, intersectiiIntre, offsetDeschis, offsetFig
 import type { Document, ElementNod, FormaDoc, Instanta, Nod, Operatie, Piesa, SegmentDoc, VarfDoc } from './document.ts';
 import { conturElement, cutieElement } from './forme.ts';
 import { dintiPe, drumImbinare, imbinareBuna, type Imbinare } from './imbinare.ts';
+import { CUTITE_PIESA } from './surori.ts';
 import { latimeBuna } from './intreBucati.ts';
 import type { Degrupata } from './jurnal.ts';
 import { elementeFoaie, elementeInstanta, matriceInstanta, type ElementLume } from './lume.ts';
@@ -162,7 +163,17 @@ export type CerereTaiere = {
    * flancul unui dinte (refuzul `pe-linie`), și nu taie niciun dinte.
    */
   readonly opriri?: readonly Punct[];
+  /**
+   * O piesă pusă de mai multe ori (felia 10.3↑m, ADR 0180): fără alegere, tăierea ei se refuză (`impartita`), iar aplicația
+   * întreabă. «Desprinde și taie» nu ajunge aici (aplicația desprinde instanțele întâi, pe firul principal); «Taie piesa»
+   * (`piesa`) taie instanța aleasă, iar comanda pune bucățile ei, puse și ele de mai multe ori, în locul fiecărei instanțe a
+   * piesei. Doar la cuțitele care nu depind de vecini (`CUTITE_PIESA`); refuzuri: `diferite` (două instanțe alese ale
+   * aceleiași piese, tăiate în locuri diferite ale ei), `placute` (șablonul unor plăcuțe: fiecare are literele ei).
+   */
+  readonly surori?: 'piesa';
 };
+
+export { CUTITE_PIESA } from './surori.ts';
 
 /**
  * De ce nu s-a tăiat nimic: `nimic-ales` (nicio formă aleasă), `ghidaj` (ghidajul nu mai e pe foaie), `valoare` (X / Y nu e un
@@ -182,7 +193,7 @@ export type CerereTaiere = {
  * (cere închiderea), `valoare` (pasul, înălțimea sau raza nu sunt numere bune). În panouri (`panouri.ts`): `panouri` (peste
  * `PLAFON_PANOURI` celule), `valoare` (mărimea sau numărul panourilor), `nimic-taiat` (formele încap într-un singur panou).
  */
-export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
+export type MotivTaiere = 'nimic-ales' | 'ghidaj' | 'valoare' | 'nimic-taiat' | 'impartita' | 'diferite' | 'placute' | 'renuntat' | 'pe-linie' | 'operatii' | 'nereusita' | 'nu-trece' | 'cutit' | 'prea-multe' | 'granita' | 'departe' | 'capat' | 'spatiu' | 'spatiu-cutit' | 'spatiu-inchide'
   | 'imbinare' | 'imbinare-raza' | 'imbinare-margine' | 'imbinare-dreapta' | 'imbinare-inchide' | 'panouri';
 
 export type RezultatTaiere =
@@ -757,6 +768,10 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
   const sterse: string[] = [];
   let forme = 0;
   let scoase = 0;
+  // «Taie piesa» (felia 10.3↑m): doar la cuțitele care nu depind de vecini; plăcuțele (instanțe cu literele lor) nu.
+  const piesaIntreaga = cerere.surori === 'piesa' && CUTITE_PIESA.has(c.fel);
+  const cuLitere = new Set<string>();
+  for (const f of doc.foi) for (const i of f.instante) if (i.texte) cuLitere.add(i.piesa);
   for (const inst of foaie.instante) {
     if (!alese.has(inst.id)) continue;
     const p = piese.get(inst.piesa);
@@ -765,7 +780,10 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     if (r === null) continue;
     if (typeof r === 'string') return { ok: false, motiv: r };
     if ('sterge' in r) { sterse.push(inst.id); continue; }
-    if ((folosiri.get(p.id) ?? 0) > 1) return { ok: false, motiv: 'impartita' };
+    if ((folosiri.get(p.id) ?? 0) > 1) {
+      if (!piesaIntreaga) return { ok: false, motiv: 'impartita' };
+      if (cuLitere.has(p.id)) return { ok: false, motiv: 'placute' };
+    }
     const parti: Array<{ readonly instanta: Instanta; readonly piesa: Piesa }> = [];
     for (const parte of r.parti) {
       const id = idLiber();
@@ -779,9 +797,31 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     degrupate.push({ instanta: inst, piesa: p, parti });
   }
   if (degrupate.length === 0 && sterse.length === 0) return { ok: false, motiv: 'nimic-taiat' };
+  // «Taie piesa»: instanțele alese ale aceleiași piese trebuie tăiate la fel (aceleași bucăți, în desenul piesei).
+  if (piesaIntreaga) {
+    const prima = new Map<string, string>();
+    for (const d of degrupate) {
+      if ((folosiri.get(d.piesa.id) ?? 0) < 2) continue;
+      const a = amprentaParti(d.parti.map((x) => x.piesa));
+      const b = prima.get(d.piesa.id);
+      if (b === undefined) prima.set(d.piesa.id, a);
+      else if (b !== a) return { ok: false, motiv: 'diferite' };
+    }
+  }
   if (imbinare && dinti === 0 && (forme > 0 || cerere.desparte !== true)) return { ok: false, motiv: 'imbinare' };
   for (const id of cutitSters) if (!sterse.includes(id)) sterse.push(id);
   return { ok: true, degrupate, ids, forme, scoase, sterse };
+}
+
+/**
+ * Amprenta bucăților unei instanțe tăiate, în desenul piesei (fără id-urile pieselor noi), fără ordinea lor (o soră rotită cu
+ * 180° dă partea A și B invers): două instanțe ale aceleiași piese tăiate în același loc al ei au aceeași amprentă (felia 10.3↑m,
+ * «Taie piesa»). Numerele sunt exacte: tăierea lucrează în desenul piesei, iar o singură tăietură prinde două surori în același
+ * loc al lor doar mutate de-a lungul ei sau rotite cu 180°, fără zgomot (rotunjirea la 1e-6, încercată, n-a schimbat nimic: scoasă
+ * la otrăvuri). Comanda pune bucățile la locul fiecărei instanțe, deci ordinea lor nu schimbă nimic pe foaie.
+ */
+function amprentaParti(piese: readonly Piesa[]): string {
+  return JSON.stringify(piese.map(({ id: _id, ...rest }) => JSON.stringify(rest)).sort());
 }
 
 /** Elementele instanței de fiecare parte a liniei (A: −1, B: 1) și câte contururi a tăiat ea (0: linia n-o atinge). */
