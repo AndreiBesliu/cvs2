@@ -4,6 +4,7 @@ import { COLECTII_PERSONAL, NUME_ROL_MAX, OWNER, PERMISIUNI, type CererePersonal
 import { administreazaPersonalul, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin } from '../erori/date.ts';
 import { invitatieDin, numeRol, omDin, rolDin, type Invitatie, type Om, type RolCustom } from './date.ts';
 import './personal.css';
@@ -57,13 +58,11 @@ export function FilaPersonal({ con, eu, emailEu }: { readonly con: Conexiune; re
     }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e) }); });
   };
 
-  if (date === null) return <p className="admin-mesaj" aria-busy="true">{t('admin.pers.se-incarca')}</p>;
+  if (date === null) return <SeIncarca text={t('admin.pers.se-incarca')} />;
   if (!date.ok) {
     return (
-      <div className="admin-randuri" role="alert">
-        <p className="admin-eroare">{t('admin.pers.citire', { motiv: date.motiv })}</p>
-        <button type="button" onClick={() => { setDate(null); setRev((n) => n + 1); }}>{t('admin.doc.reincearca')}</button>
-      </div>
+      <EroareCitire text={t('admin.pers.citire', { motiv: date.motiv })} motiv={date.motiv} reincarca={() => { setDate(null); setRev((n) => n + 1); }}
+        atribute={{ 'data-personal': 'eroare-citire' }} />
     );
   }
   const { oameni, roluri, invitatii } = date.d;

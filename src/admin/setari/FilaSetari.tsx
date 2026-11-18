@@ -5,6 +5,7 @@ import { CALE_SETARI, SETARI_IMPLICITE, setariCerute, setariDin } from '../../..
 import { setarileConturilor, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import '../personal/personal.css';
 import '../utilizatori/utilizatori.css';
@@ -48,8 +49,11 @@ export function FilaSetari({ con }: { readonly con: Conexiune }): ReactElement {
       <section className="pers-sectiune" aria-labelledby="set-conturi">
         <h2 id="set-conturi">{t('admin.set.titlu')}</h2>
         <p className="admin-slab">{t('admin.set.text')}</p>
-        {citite === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.set.se-incarca')}</p>
-          : !citite.ok ? <p className="admin-eroare" role="alert" data-set="eroare-citire">{t('admin.set.citire', { motiv: citite.motiv })}</p>
+        {citite === null ? <SeIncarca text={t('admin.set.se-incarca')} />
+          : !citite.ok ? (
+            <EroareCitire text={t('admin.set.citire', { motiv: citite.motiv })} motiv={citite.motiv} reincarca={() => { setRev((n) => n + 1); }}
+              atribute={{ 'data-set': 'eroare-citire' }} />
+          )
             : (
               <>
                 <p className="admin-slab" data-set="sursa">
