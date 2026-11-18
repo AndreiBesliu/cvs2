@@ -7,7 +7,7 @@ toate”, la „Le fac pe toate opțiuni, cu recomandarea ca implicit?”; vezi 
 multe ori; „Așază pe foi”; plăcuțele, nucleul), **11.4↑b și 11.4↑c pe 09.11** («Din CSV…»; textul care iese din plăcuță),
 **11.5↑ și 11.6↑ pe 13.11** („Toate foile” la export; raportul foilor și lista de tăiere), **fișa plăcii 11 (11.7↑)
 pregătită pe 17.11**, fără mașină, și **avertismentul urechilor (11.3↑b) gata în aceeași zi** (varianta a, aleasă de owner;
-vezi la capăt).
+vezi la capăt), apoi **proba urechilor la export (11.3↑c) pe 18.11** (varianta b).
 Etapa 11 adusă înainte (↑), fără mașină, cât plăcile de probă nu sunt tăiate; linia a deschis-o sesiunea principală, la
 întrebarea owner-ului despre ce se mai poate face în paralel. **Rândurile din prag:** „Mai multe foi de material într-un
 proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate)” (v1, decis 06.10) și funcția „Listă de tăiere pe mai
@@ -748,3 +748,37 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   alegerea lor au ieșit din cod două gărzi pe care nicio otravă nu le putea prinde: −1e-9 la rotunjire (2 × freza + 3 iese
   întreg doar pentru frezele multiplu de 0,5 mm, exacte în virgulă mobilă) și „propunerea peste minim” la avertisment.
 - **Rămâne,** la cuvântul owner-ului: b) proba urechilor la export; c) urechile la locuri alese.
+
+## Felia 11.3↑c (proba urechilor la export, gata pe 18.11)
+
+- **Cererea:** „Da, 11.3↑c” (owner-ul, la propunerea de după 11.3↑b): varianta b de mai sus.
+- **Proba** (`src/sim/desprinse.ts` și `src/cam/partiUrechi.ts`, legate în `src/jobs/calculCam.ts`): la exportul fiecărei
+  foi, nucleul simulării (cel al vederii 3D, cu sculele lui: plata, bila, V-ul) taie câmpul foii doar cu mutările care ajung
+  la fața de jos. O celulă la cel mult 0,001 mm deasupra ei e tăiată prin foaie; restul e lemn pe fund, inclusiv sub urechi,
+  care se opresc deasupra ei. Lemnul se umple din marginea foii, prin laturile celulelor, nu prin colțuri. O parte (un contur
+  închis tăiat prin foaie de un profil exterior cu urechi) e desprinsă când are lemn înăuntru, dar umplerea nu ajunge la
+  niciun pic din el. Celula e 0,25 mm, dublată până când foaia încape sub 4 194 304 de celule (o placă de 2 440 × 1 220: 1 mm).
+  Costul, măsurat: 11–27 ms pe foaia plăcii 11 și 32–40 ms pe o placă întreagă, față de 1,5–2,5 s cât ia exportul unei foi.
+  Filtrul mutărilor e doar pentru viteză: pe placa 11, doar 2 % din mutări ajung la fund (proba scade de la 17,6 la
+  10,7 ms), iar pe un program cu buzunare mari ar economisi cât o simulare întreagă.
+- **Avertismentul** stă printre avertismentele exportului, în limba omului: workerul dă doar părțile, iar textul îl face
+  firul principal, cu mesajele exportului cerute la nevoie. Spune câte piese se desprind, primele cinci cu valorile plăcuței
+  (sau numele piesei) și locul lor pe foaie, apoi câte mai sunt, plus sfatul (cu urechi, între piese cel puțin
+  2 × freza + 3 mm). La „Toate foile”, apare pe fiecare foaie, cu numele ei în față. Programul se descarcă oricum: e un
+  avertisment, nu un refuz, cum a fost propus.
+- **Ce prinde în plus față de 11.3↑b:** orice așezare, inclusiv cea mutată de mână; piesele rămase pe foaie lângă cele
+  așezate; urechile date în gol de altă tăietură prin foaie, nu doar de distanță.
+- **Ce nu judecă:** urechile unui profil interior (țin miezul, nu piesa); un profil care nu trece prin foaie; o parte fără
+  lemn înăuntru (scoasă toată).
+- **Probele:**
+  - `desprinse.test.ts`, pe hârtie: pătratul fără ureche, cu ureche și controlul; pragul fundului; două pătrate la 3 și la
+    6 mm; arcele; partea fără lemn; celula; părțile și poligonul.
+  - `urechi.export.test.ts`, pe placa 11: la 10 mm, nimic; la 5 mm, cele 13 plăcuțe de pe hârtie (rândurile 2–4 pe foaia 1,
+    rândul 2 și prima din rândul 3 pe foaia 2). Aceleași le găsește și proba pe G-code a plăcii, a doua plasă, mutată în
+    `test/placi/placa-11/cazute.ts`. Plus textul pe fiecare foaie.
+  - `urechi.mesaje.test.ts`: mesajele aduse la nevoie.
+  - e2e `export-urechi.spec.ts`: trei piese la 9 mm, cea din mijloc desprinsă; după «Așază pe foi» la 15 mm, nimic.
+  - Otrăvurile `test/otravuri/11.3c.py`: 25 / 25 la prima rulare (`632106c`; 23 unitare, 2 prin e2e).
+- **Documentul** nu se schimbă. Mărimea: pornirea rămâne 107,0 kB (cu ușa 111,0 / 115, ca în `main` `4a5f840`); totalul crește cu 4,6 kB (732,2 → 736,8 / 800), aproape tot în workerul CAM, care primește acum nucleul simulării și câmpul ei (workerul simulării le are deja, dar pachetele workerelor sunt separate).
+- **Rămâne,** la cuvântul owner-ului: c) urechile la locuri alese (un câmp nou: v26). Ca opțiune, mai târziu: confirmarea la
+  export, ca la textul ieșit din plăcuță (răspunsul 5), dacă avertismentul nu ajunge.

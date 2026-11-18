@@ -5,6 +5,7 @@
  * `src/ui/actiuniExportCalcul.ts` neschimbat: același program, aceiași octeți.
  */
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
+import { partiCuUrechi } from '../cam/partiUrechi.ts';
 import { programeDopuri } from '../cam/dopV.ts';
 import { programeDopuriDrepte } from '../cam/dopDrept.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
@@ -15,10 +16,12 @@ import { taieInPanouri } from '../model/panouri.ts';
 import { taie, type RezultatTaiere } from '../model/taiere.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
-import { pregatesteProgram } from '../sim/program.ts';
+import { partiDesprinse } from '../sim/desprinse.ts';
+import { pregatesteProgram, type ProgramSimulat } from '../sim/program.ts';
 import { despacheteaza, impacheteaza, transferabileProgram } from './impachetare.ts';
 import {
-  deTransferat, vederiSimulare, type CerereCam, type DopExportat, type ParametriExport, type RaspunsExport, type RaspunsSimulare, type RaspunsTraseu,
+  deTransferat, vederiSimulare, type CerereCam, type DopExportat, type ParametriExport, type ParteDesprinsa, type RaspunsExport, type RaspunsSimulare,
+  type RaspunsTraseu,
 } from './protocolCam.ts';
 import { ASTEPTARE_AX, rezumatJob, rezumatTraseu, sculeProgram, unesteRezumate, type RezumatJob } from './rezumat.ts';
 
@@ -39,6 +42,25 @@ export function numeFisierDop(nume: string, k: number, scurt: boolean): string {
   // `cncvs2-<origine>` (originea are și ea o liniuță: `stanga-jos`), apoi extensia sau `-<ordinea>-T<n>.<ext>`.
   const m = /^(cncvs2-[a-z]+-[a-z]+)(.*)$/.exec(nume);
   return m ? `${m[1]}-dop-${k + 1}${m[2]}` : `dop-${k + 1}-${nume}`;
+}
+
+/**
+ * Proba urechilor (ADR 0210, felia 11.3↑c): părțile foii tăiate prin ea de un profil exterior cu urechi, judecate pe programul
+ * exportat (mutările simulării, înainte să plece spre firul principal). Fără astfel de părți, nimic de calculat; un program pe
+ * care simularea îl refuză (o spune ea) nu se judecă.
+ */
+function desprinseFoii(doc: Document, simulare: ProgramSimulat): ParteDesprinsa[] {
+  const foaie = doc.foi[0];
+  if (!foaie || !simulare.ok) return [];
+  const parti = partiCuUrechi(doc);
+  if (parti.length === 0) return [];
+  const r = partiDesprinse({
+    foaie: foaie.stoc, grupuri: [{ scula: simulare.scula, mutari: simulare.mutari }, ...(simulare.apoi ?? [])], parti: parti.map((x) => x.poligon),
+  });
+  return r.desprinse.flatMap((k) => {
+    const x = parti[k];
+    return x ? [{ instanta: x.instanta, element: x.element, x: x.x, y: x.y }] : [];
+  });
 }
 
 /** Exportul propriu-zis: documentul → profilele → IR → postul ales (ADR 0083) → octeții cu SHA-256. */
@@ -85,6 +107,7 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
     dopuri.push({ element: d.element, program: ed.exportat, fisiere, semifabricat: d.semifabricat });
   }
   const { latime, inaltime, grosime } = foaie.stoc;
+  const simulare = pregatesteProgram(job.program, 0);
   return {
     ok: true, program: e.exportat, fisiere: e.fisiere, dopuri, sender: contract.senderAplicatie,
     avertismente: [...job.avertismente, ...calculate.dopuri.flatMap((d) => d.avertismente)],
@@ -93,7 +116,7 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
       ? unesteRezumate(e.fisiere.map((f) => rezumatJob(f, f.scula ? [f.scula] : sculeProgram(job.program), p.setariMasina)))
       : rezumatJob(e.exportat, sculeProgram(job.program), p.setariMasina),
     // Simularea (ADR 0047 §5) pornește pe firul principal după descărcare; mutările ei, de aici: IR-ul rămâne în worker.
-    simulare: pregatesteProgram(job.program, 0), foaie: { latime, inaltime, grosime },
+    simulare, foaie: { latime, inaltime, grosime }, desprinse: desprinseFoii(doc, simulare),
   };
 }
 

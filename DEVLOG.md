@@ -10161,3 +10161,33 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   determinist; e2e-ul extensiei 37 / 37 (Easy 3Draw, rotițele, extensiile, biblioteca), la prima rulare; restul suitei e2e
   (530 / 530) și emulatoarele, verzi pe `64cd3042` (codul aplicației e neschimbat de atunci), iar pe unire rulează toate;
   totalul 729,1 / 800, pornirea cu ușa 111,0 / 115.
+
+## 2026-11-18 — Felia 11.3↑c: proba urechilor la export (ADR 0210, varianta b) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑c, verificarea urechilor la export? Ar prinde orice așezare, și pe cele mutate de mână, iar avertismentul ar apărea în fereastra exportului. Răspunde „Da, 11.3↑c” sau „Mai târziu”.”: „Da, 11.3↑c”.
+**Started:** 18.11, 12:06.
+
+- **Ramura:** `main` `c302d73` (cu 11.3↑b unită în `2bfbb4a6`) a venit prin avans direct.
+- **Proba** (`src/sim/desprinse.ts`, nou): la exportul fiecărei foi, nucleul simulării taie câmpul foii doar cu mutările care
+  ajung la fața de jos (pe placa 11, 2 % din ele); o celulă la cel mult 0,001 mm deasupra ei e tăiată prin foaie, restul e
+  lemn pe fund (și sub urechi). Lemnul se umple din marginea foii (pe laturi); o parte la care nu ajunge umplerea, deși are
+  lemn înăuntru, se desprinde. Celula: 0,25 mm, dublată sub 4 194 304 de celule (2 440 × 1 220: 1 mm). Costul: 11–27 ms pe
+  foaia plăcii, 32–40 ms pe o placă întreagă.
+- **Părțile** (`src/cam/partiUrechi.ts`, nou): contururile închise tăiate prin foaie de un profil exterior cu urechi, ca
+  poligoane (coardele arcelor la 0,01 mm), cu mijlocul cutiei. Regulile de import cer împărțirea: `jobs` nu ia din `geom`,
+  `sim` doar din `ir`, `cam` nu ia din `sim`; legătura e în `src/jobs/calculCam.ts` (câmpul `desprinse` al exportului).
+- **Avertismentul** (`src/ui/actiuniExportCalcul.ts`, `avertismentDesprinse`): în limba omului, cu `t`; mesajele exportului
+  se cer la nevoie (fereastra le are deja; `urechi.mesaje.test.ts` probează drumul fără ele). Primele cinci piese cu valorile
+  plăcuței (sau numele piesei) și locul, apoi „și încă N”, plus sfatul; la „Toate foile”, pe fiecare foaie.
+- **Probele:** `desprinse.test.ts` (8, pe hârtie), `urechi.export.test.ts` (3, placa 11: la 10 nimic; la 5, cele 13 plăcuțe,
+  aceleași ca proba pe G-code a plăcii, mutată în `test/placi/placa-11/cazute.ts` ca a doua plasă; generatorul plăcii ia
+  acum distanța ca parametru, cu fișierele de aur neschimbate), `urechi.mesaje.test.ts` (1), e2e `export-urechi.spec.ts`
+  (trei piese la 9 mm: cea din mijloc, „lângă X 70, Y 119”; după «Așază pe foi» la 15, nimic).
+- **Otrăvurile** `test/otravuri/11.3c.py`: 25 / 25 la prima rulare (`632106c`; 23 unitare, 2 prin e2e). Filtrul mutărilor nu e în listă: nu schimbă niciun rezultat, doar viteza
+  (măsurat: 10,7 față de 17,6 ms pe foaia plăcii).
+- **Documentele:** ADR 0210 (secțiunea feliei), indexul ADR-urilor, manualul (ro, en: „Piesele care se desprind” la export,
+  trimiterea din „Așază pe foi”), fișa plăcii 11, `CLAUDE.md`, `etapa-03.md` și traducerea rândului, `otravuri.md`.
+- **Porțile:** pe unirea `60b7032` cu `main` `4a5f840`: tsc ×3, importurile 20 / 0, traducerile 823 / 0, unitare 9 576 (9 568 trec, 0 căzute, 8 sărite), build-ul determinist (336 de fișiere identice; pornirea 107,0 kB, cu ușa 111,0 / 115, ca în `main`; totalul 736,8 / 800, +4,6 kB, aproape tot în workerul CAM, care primește nucleul simulării). E2e-ul complet: 526 / 529 la prima rulare; cele 3 căzute (repornirea unei extensii, Cuțitul „Între bucăți”, trenulețul instalat din fișier, toate prin termen) trec rulate singure.
+- **Canalul `plansele`**, republicat din vârful ramurii.
+
+**Completed:** 18.11, 16:25.

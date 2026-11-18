@@ -67,6 +67,12 @@ export type DopExportat = {
   readonly element: string; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[]; readonly semifabricat: SemifabricatDop;
 };
 
+/**
+ * O parte desprinsă (ADR 0210, felia 11.3↑c): un contur tăiat prin foaie de un profil exterior cu urechi, la care, la capătul
+ * programului, nu mai ajunge niciun pic de lemn legat de marginea foii. Instanța, elementul în lume și mijlocul cutiei lui.
+ */
+export type ParteDesprinsa = { readonly instanta: string; readonly element: string; readonly x: number; readonly y: number };
+
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
   | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport }
@@ -97,6 +103,8 @@ export type RaspunsExport =
     readonly sender: boolean;
     /** Mutările nucleului simulării (ADR 0047 §3) pentru programul exportat, sau de ce nu se poate simula. */
     readonly simulare: ProgramSimulat; readonly foaie: FoaieCam;
+    /** Proba urechilor (felia 11.3↑c): părțile cu urechi care se desprind de foaie; gol fără ele, sau fără simulare. */
+    readonly desprinse: readonly ParteDesprinsa[];
   }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */

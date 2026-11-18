@@ -231,6 +231,15 @@ export const roExport = {
     other: 'Textul iese din {n} de plăcuțe ({nume}): sunt cu roșu în listă.',
   },
   'export.placute.confirma': 'Am văzut plăcuțele: le export așa, cu textul ieșit din ele.',
+  // Proba urechilor la export (ADR 0210, felia 11.3↑c): piesele care se desprind de foaie.
+  'export.urechi.desprinse': {
+    one: 'o piesă se desprinde de foaie cât freza încă taie lângă ea, fiindcă urechile ei nu mai țin de lemnul foii: {piese}. De obicei, piesele sunt prea aproape: cu urechi, lasă între ele cel puțin 2 × freza + 3 mm.',
+    few: '{n} piese se desprind de foaie cât freza încă taie lângă ele, fiindcă urechile lor nu mai țin de lemnul foii: {piese}. De obicei, piesele sunt prea aproape: cu urechi, lasă între ele cel puțin 2 × freza + 3 mm.',
+    other: '{n} de piese se desprind de foaie cât freza încă taie lângă ele, fiindcă urechile lor nu mai țin de lemnul foii: {piese}. De obicei, piesele sunt prea aproape: cu urechi, lasă între ele cel puțin 2 × freza + 3 mm.',
+  },
+  'export.urechi.loc': 'lângă X {x}, Y {y}',
+  'export.urechi.piesa': '{nume} ({loc})',
+  'export.urechi.inca': 'și încă {n}',
   // „Toate foile” (ADR 0210 §5, felia 11.5↑).
   'export.foi': 'Ce exporți',
   'export.foi.activa': 'Foaia activă',
