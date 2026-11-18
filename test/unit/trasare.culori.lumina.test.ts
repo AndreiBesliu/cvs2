@@ -129,7 +129,7 @@ test('corecția, pe o foaie cu trei linii: lumina și dominanta pleacă; pe hâr
   assert.equal(f.date[3], 250);
 });
 
-test('viteza: Neuniformă pe 12 Mpx sub 1,5 s (măsurat în prototip, nescris pentru viteză: 1,0–1,1 s)', () => {
+test('viteza: Neuniformă pe 12 Mpx sub 2 s, pragul de redeschidere din ADR 0226 (aici 0,6–0,7 s; în CI 0,9–1,5 s)', () => {
   const Wm = 4000, Hm = 3000, d = new Uint8ClampedArray(Wm * Hm * 4);
   let s = 3;
   for (let p = 0; p < Wm * Hm; p++) {
@@ -137,8 +137,15 @@ test('viteza: Neuniformă pe 12 Mpx sub 1,5 s (măsurat în prototip, nescris pe
     const l = 1 - 0.4 * ((p % Wm) / Wm), v = (s & 63) < 4 ? 40 : 230;
     d[4 * p] = v * l; d[4 * p + 1] = v * l * 0.98; d[4 * p + 2] = v * l * 0.95; d[4 * p + 3] = 255;
   }
-  const t0 = performance.now();
-  culoriLuminate({ latime: Wm, inaltime: Hm, date: d }, 'neuniforma');
-  const t = performance.now() - t0;
-  assert.ok(t < 1500, `${t.toFixed(0)} ms`);
+  // Timpul pe ceas al unui calcul pe un singur fir crește cu cât procesorul e mai împărțit: în CI, `node --test` rulează
+  // mai multe fișiere deodată pe 4 procesoare, iar aceeași corecție a ieșit între 0,9 și 1,5 s (căderea din 17.11: 1 504 ms
+  // la pragul vechi, 1,5 s). Se ia cea mai bună din cel mult 3 rulări, oprite la prima sub prag: încărcarea doar adaugă
+  // timp, iar o încetinire adevărată e lentă la fiecare rulare. `culoriLuminate` nu schimbă imaginea primită.
+  const PRAG = 2000, timpi: number[] = [];
+  do {
+    const t0 = performance.now();
+    culoriLuminate({ latime: Wm, inaltime: Hm, date: d }, 'neuniforma');
+    timpi.push(performance.now() - t0);
+  } while (timpi.length < 3 && Math.min(...timpi) >= PRAG);
+  assert.ok(Math.min(...timpi) < PRAG, timpi.map((t) => `${t.toFixed(0)} ms`).join(', '));
 });

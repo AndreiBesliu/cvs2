@@ -14,6 +14,10 @@
  *   panoul ei (`desparte`; fără el, linia n-o taie; cu îmbinare, o linie care doar desparte nu cere dinți);
  * - **cu îmbinare** (zigzag 100 / 20 / 3): fiecare bucată în celula ei, cu dinții de peste linie (10 mm), ariile fac firma, dinții
  *   se văd; cu jocul 0,2, bucățile la 0,2 una de alta;
+ * - **cu dinți drepți (100 / 20 / 3), pe grila egală** (felia 10.3↑l): linia Y = 500 cădea pe flancul dintelui din mijloc al
+ *   tăieturii X = 1 200 (refuzul `pe-linie`); acum dinții fiecărei tăieturi stau între liniile celeilalte axe, deci în pătratul
+ *   de 94 × 94 din jurul încrucișării (jumătatea de pas, fără rotunjirea de 3) toate laturile sunt drepte (pe X = 1 200 sau pe
+ *   Y = 500), iar panourile fac firma;
  * - **V-carve-urile care s-ar amesteca** (două litere lipite, cu același V-carve): panoul rămâne negrupat, cu numele lui pe
  *   fiecare bucată; **un id vechi eliberat de o tăietură** nu ajunge pe o bucată nouă; **cutia** e a tuturor contururilor
  *   unei piese (un text singur, în două panouri: câte o literă);
@@ -36,7 +40,7 @@ import { taie, type RezultatTaiere } from '../../src/model/taiere.ts';
 import { creeazaRegistru, ruleaza } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
 import '../../src/ui/actiuniDocumentCalcul.ts';
-import { ariePar, cutieForma, formeInstanta, judecaImbinarea, judecaPanourile, type FormaOracol } from '../oracles/taiere.ts';
+import { ariePar, cutieForma, esantioane, formeInstanta, judecaImbinarea, judecaPanourile, type FormaOracol } from '../oracles/taiere.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const stoc = { latime: 3000, inaltime: 2000, grosime: 18 };
@@ -234,6 +238,32 @@ test('cu îmbinare (zigzag 100 / 20 / 3): fiecare bucată în celula ei, cu din�
     assert.deepEqual(judecaPanourile({ inainte, panouri: pe, toleranta: 10 + joc / 2, joc }), [], `jocul ${joc}`);
     assert.deepEqual(judecaImbinarea({ inainte, parti: p.map((x) => x.forme), joc, dinte: { n: { x: 1, y: 0 }, v: 1200, cat: 8 } }), [], `jocul ${joc}`);
     // Dinții chiar trec peste linie: panoul 1 iese din celula lui strictă.
+    assert.ok((p[0] as { readonly cutie: Celula }).cutie.maxX > 1200 + 5, 'dinții panoului 1 trec de X = 1 200');
+  }
+});
+
+test('cu dinți drepți, pe grila egală: încrucișarea e dreaptă (Y = 500 nu mai cade pe flancul unui dinte), panourile fac firma', () => {
+  const d = docDin(stoc, FIRMA);
+  const inainte = formeInstanta(d, 'f');
+  const DINTI: Imbinare = { model: 'dinti', pas: 100, inaltime: 20, raza: 3 };
+  for (const joc of [0, 0.2]) {
+    const { r, dupa } = taiat(d, cerere(['f'], EGALE, { imbinare: DINTI, ...(joc > 0 ? { intre: { fel: 'spatiu', latime: joc } as const } : {}) }));
+    const p = panouri(dupa, r.ids);
+    assert.deepEqual(p.map((x) => x.nume), NUME4);
+    const pe = p.map((x, k) => ({ celula: CELULE_EGALE[k] as Celula, forme: x.forme }));
+    assert.deepEqual(judecaPanourile({ inainte, panouri: pe, toleranta: 10 + joc / 2, joc }), [], `jocul ${joc}`);
+    // Lângă încrucișare (sub 47 mm pe fiecare axă: jumătatea de pas, fără rotunjirea de 3 a ultimului dinte), fiecare punct al
+    // unui panou e pe una dintre linii (cu jocul).
+    for (const [k, x] of p.entries()) {
+      for (const f of x.forme) {
+        for (const q of esantioane(f, 64)) {
+          if (Math.abs(q.x - 1200) >= 47 - 1e-6 || Math.abs(q.y - 500) >= 47 - 1e-6) continue;
+          const peLinie = Math.abs(Math.abs(q.x - 1200) - joc / 2) < 1e-6 || Math.abs(Math.abs(q.y - 500) - joc / 2) < 1e-6;
+          assert.ok(peLinie, `jocul ${joc}, panoul ${k + 1}: (${q.x}, ${q.y}) e un dinte lângă încrucișare`);
+        }
+      }
+    }
+    // Dinții există: panoul 1 trece de X = 1 200 (departe de încrucișare).
     assert.ok((p[0] as { readonly cutie: Celula }).cutie.maxX > 1200 + 5, 'dinții panoului 1 trec de X = 1 200');
   }
 });

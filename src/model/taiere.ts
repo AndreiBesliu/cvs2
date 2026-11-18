@@ -155,6 +155,13 @@ export type CerereTaiere = {
    * n-o trece, dar care are contururi de ambele părți (un text, cu literele de o parte și de alta), se desparte pe laturi.
    */
   readonly desparte?: boolean;
+  /**
+   * Tăierea în panouri, cu îmbinare (ADR 0181 §7, felia 10.3↑l): punctele liniei prin care trec liniile celeilalte axe ale
+   * grilei. Fiecare coardă se împarte în ele, iar dinții se pun pe fiecare bucată a ei, cu marginile lor drepte (cel puțin o
+   * jumătate de pas): la încrucișarea a patru panouri, tăietura de pe cealaltă axă trece printr-o latură dreaptă, nu pe
+   * flancul unui dinte (refuzul `pe-linie`), și nu taie niciun dinte.
+   */
+  readonly opriri?: readonly Punct[];
 };
 
 /**
@@ -718,7 +725,7 @@ export function taie(doc: Document, cerere: CerereTaiere, indexFoaie = 0): Rezul
     if (typeof L === 'string') return { ok: false, motiv: L };
     if (imbinare) {
       // Drumul merge în sensul liniei; partea A (semnul −1) vine întâi, ca la tăierea fără îmbinare.
-      const dr: Dreapta = { A: { x: L.n.x * L.v, y: L.n.y * L.v }, u: L.u };
+      const dr: Dreapta = { A: { x: L.n.x * L.v, y: L.n.y * L.v }, u: L.u, ...(cerere.opriri ? { opriri: cerere.opriri } : {}) };
       taieUna = (inst, p) => taieCuImbinare(inst, p, dr, imbinare, pastreaza, intre, stangaLiniei(L), numara);
     } else {
       taieUna = intre ? (inst, p) => taieInstantaIntre(L, inst, p, pastreaza, intre) : (inst, p) => taieInstanta(L, inst, p, cerere.inchide, pastreaza);
@@ -2011,7 +2018,7 @@ function taieCuFormaIntre(K: Cutitul, M: Mutate, inst: Instanta, p: Piesa, pastr
  * Dreapta unei tăieturi cu îmbinare: prin A, pe direcția u (unitară). `de`, `pana`: capetele căii trase (poziții u · P); lipsă
  * la linia din panou, unde drumul trece de cutia fiecărei instanțe cu 10 mm.
  */
-type Dreapta = { readonly A: Punct; readonly u: Punct; readonly de?: number; readonly pana?: number };
+type Dreapta = { readonly A: Punct; readonly u: Punct; readonly de?: number; readonly pana?: number; readonly opriri?: readonly Punct[] };
 
 /** Calea trasă din două puncte, cu prelungirile ei pe aceeași dreaptă: capetele ei, sau null dacă nu e dreaptă. */
 function caleDreapta(xs: ReadonlyArray<{ readonly c: Contur }>): Dreapta | null {
@@ -2033,8 +2040,9 @@ function caleDreapta(xs: ReadonlyArray<{ readonly c: Contur }>): Dreapta | null 
  * pus pe fiecare coardă a ei prin regiune (trecerile, împerecheate par-impar) în care încape măcar un dinte întreg; o coardă mai
  * scurtă rămâne dreaptă, iar una care nu stă toată pe tăietură, la fel. `imbinare-margine`: dinții unei coarde ar atinge un
  * contur (o latură oblică sau o gaură prea aproape). Vârfurile de pe marginea formei (capetele coardelor) nu intră în drum.
+ * `opriri` (panourile, felia 10.3↑l): o coardă se împarte în ele, cu dinții pe fiecare bucată, iar între bucăți drumul e drept.
  */
-function drumCuImbinare(A: Punct, u: Punct, de: number, pana: number, inchise: readonly Contur[], im: Imbinare): { readonly c: Contur; readonly dinti: number } | MotivTaiere {
+function drumCuImbinare(A: Punct, u: Punct, de: number, pana: number, inchise: readonly Contur[], im: Imbinare, opriri: readonly Punct[] = []): { readonly c: Contur; readonly dinti: number } | MotivTaiere {
   const n = { x: -u.y, y: u.x };
   const L: Linie = { n, u, v: n.x * A.x + n.y * A.y };
   const poz: number[] = [];
@@ -2049,35 +2057,41 @@ function drumCuImbinare(A: Punct, u: Punct, de: number, pana: number, inchise: r
   const la = (t: number, s: number): Punct => ({ x: A.x + (t - tA) * u.x + s * n.x, y: A.y + (t - tA) * u.y + s * n.y });
   const vf = (t: number, s: number, b: number): Varf => ({ p: la(t, s), s: b === 0 ? LINIE_GEOM : { tip: 'A', bulge: b } });
   const varfuri: Varf[] = [vf(de, 0, 0)];
+  const ts = opriri.map((q) => dealungul(L, q)).sort((a, b) => a - b);
   let dinti = 0;
   // Contururile formei în cavalier, pentru marginea dinților: o singură dată și doar dacă vreo coardă primește dinți.
   let cav: ReadonlyArray<Cav | null | 'esuat'> | null = null;
   for (let k = 0; k + 1 < poz.length; k += 2) {
-    const a = poz[k] as number, b = poz[k + 1] as number;
-    if (a <= de || b >= pana) continue;
-    const d = drumImbinare(b - a, im);
-    if (d === 'imbinare-raza') return d;
-    if (d === null) continue;
-    const dinti0 = d.slice(1, -1).map((x) => vf(a + x.t, x.s, x.b));
-    let D: Cav | null | 'esuat';
-    try {
-      D = laCavalier({ inchis: false, varfuri: dinti0 });
-    } catch {
-      return 'nereusita';
-    }
-    if (D === 'esuat' || D === null) return 'nereusita';
-    cav ??= inchise.map((c): Cav | null | 'esuat' => {
+    const a0 = poz[k] as number, b0 = poz[k + 1] as number;
+    if (a0 <= de || b0 >= pana) continue;
+    // Bucățile coardei, între opririle dinăuntrul ei (o oprire la capăt nu împarte nimic).
+    const capete = [a0, ...ts.filter((t) => t > a0 + 1e-6 && t < b0 - 1e-6), b0];
+    for (let j = 0; j + 1 < capete.length; j++) {
+      const a = capete[j] as number, b = capete[j + 1] as number;
+      const d = drumImbinare(b - a, im);
+      if (d === 'imbinare-raza') return d;
+      if (d === null) continue;
+      const dinti0 = d.slice(1, -1).map((x) => vf(a + x.t, x.s, x.b));
+      let D: Cav | null | 'esuat';
       try {
-        return laCavalier(c);
+        D = laCavalier({ inchis: false, varfuri: dinti0 });
       } catch {
-        return 'esuat';
+        return 'nereusita';
       }
-    });
-    for (const C of cav) {
-      if (C && C !== 'esuat' && seAting(D.cutie, C.cutie) && intalniri(D, C).puncte.length > 0) return 'imbinare-margine';
+      if (D === 'esuat' || D === null) return 'nereusita';
+      cav ??= inchise.map((c): Cav | null | 'esuat' => {
+        try {
+          return laCavalier(c);
+        } catch {
+          return 'esuat';
+        }
+      });
+      for (const C of cav) {
+        if (C && C !== 'esuat' && seAting(D.cutie, C.cutie) && intalniri(D, C).puncte.length > 0) return 'imbinare-margine';
+      }
+      dinti += dintiPe(b - a, im.pas).n;
+      varfuri.push(...dinti0);
     }
-    dinti += dintiPe(b - a, im.pas).n;
-    varfuri.push(...dinti0);
   }
   varfuri.push(vf(pana, 0, 0));
   return { c: { inchis: false, varfuri }, dinti };
@@ -2098,7 +2112,7 @@ function taieCuImbinare(inst: Instanta, p: Piesa, dr: Dreapta, im: Imbinare, pas
   }
   const k = w.reduce((x, c) => uneste(x, cutieContur(c)), CUTIE_GOALA);
   const pr = [k.minX, k.maxX].flatMap((x) => [k.minY, k.maxY].map((y) => dr.u.x * x + dr.u.y * y));
-  const d = drumCuImbinare(dr.A, dr.u, dr.de ?? Math.min(...pr) - 10, dr.pana ?? Math.max(...pr) + 10, w.filter((c) => c.inchis), im);
+  const d = drumCuImbinare(dr.A, dr.u, dr.de ?? Math.min(...pr) - 10, dr.pana ?? Math.max(...pr) + 10, w.filter((c) => c.inchis), im, dr.opriri);
   if (typeof d === 'string') return d;
   numara(d.dinti);
   const K = cutitulDin([{ c: d.c, e: null }]);
