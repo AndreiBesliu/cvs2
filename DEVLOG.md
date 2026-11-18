@@ -10074,3 +10074,43 @@ supracursa în fereastra exportului, ca felie mică pe linie?”): „Da, pune-o
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 18.12), build-ul `0e3b8e7` (versiunea `0e3b8e7d426f`), verificat în browserul aplicației, în engleză, fără export. Fila venea din cache cu `d48ad64623af`; după „Reload” (lucrătorul nou), `0e3b8e7d426f`. Pe un dreptunghi, fereastra arată „Overtravel (mm)” chiar după Z0, cu 0, valid, cu explicația pe titlu, iar Exportă e pornit. „2.5” e marcat (bordura roșie, motivul „Overtravel must be a number from 0 to 2 mm.”), iar Exportă e oprit; „0.5” e valid, motivul pleacă și Exportă pornește. Rândul a rămas cu valorile implicite (adâncimea 3, pasul 3). Închisă și redeschisă, fereastra arată tot 0.5. Fereastra închisă fără export, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
 - **Nu acum:** tăieturile „prin foaie” ținute la zi cu foaia (un câmp în document, v26); păstrarea valorii cu profilul mașinii;
   12.1↑e (dopul în 3D), doar la cuvântul owner-ului.
+
+## 2026-11-18 — Felia 12.1↑f-4: supracursa și pe tăieturile cât foaia, la alegere (ADR 0177) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, aici, la întrebarea „Vrei ca tăieturile scrise cât grosimea foii să coboare și ele singure cu
+supracursa?” (variantele: „Da, felie nouă” / „Nu, rămâne așa”): „vreaus a fie optiune la alegerea userului”.
+**Started:** 18.11, 16:17. **Completed:** 18.11, 21:40.
+
+- **`main` în ramură:** `4a5f840` (cu 12.1↑f-2 unită în `89083cb`, 25.6↑, 25.7↑, A.1, A.2) unit în `287895f`. Git aliniase
+  intrarea DEVLOG 12.1↑f-2 cu A.1, în trei blocuri de conflict. Am luat DEVLOG-ul lui `main` întreg, plus intrarea 12.1↑f-3,
+  singura care lipsea din el (intrările comune, identice, verificat). Registrul otrăvurilor: al lui `main`, cu rândul 12.1c al
+  ramurii și rândul 12.1f-3. Codul s-a unit fără conflicte.
+- **Proba întâi** (`supracursa.prinFoaie.test.ts`), cu oracolul echivalenței cu ce ar scrie omul de mână:
+  - Pe o foaie de 6, cu supracursa 0,5 și bifa, exportul trebuie să fie octet cu octet al foii în care profilul cu urechi,
+    buzunarul și găurirea scrise cât foaia sunt scrise 6,5.
+  - Rămân cum sunt scrise: profilul de 3, cel de 6,3 (voia din ADR 0028 §2), V-carve-ul cât foaia (oprit chiar de adâncime)
+    și incrustația cât foaia.
+  - Fără bifă, sau fără supracursă, exportul e cel de dinainte.
+  - Pe hârtie, profilul cu urechi singur: fundul la −6,5, iar vârful urechilor (groase de 1,5) la −4,5, nu la −5.
+  - Pe codul de dinainte au picat 2 din 3 probe; controlul fără bifă a trecut. Profilul de 6,3 a venit odată cu lista de
+    otrăvuri, ca să prindă „cel puțin cât foaia” în loc de „cât foaia”.
+- **ADR 0177**, acceptat la răspunsul owner-ului: bifa lângă supracursă, implicit pusă; ce schimbă și ce nu. Înlocuiește în
+  parte ADR 0176: a treia liniuță a punctului 2 și primul „Ce am respins”. Starea lui ADR 0176 și rândul lui din index sunt
+  puse la zi. Titlul scurt se tăia la prima virgulă („Tăieturile cât grosimea foii”), deci titlul e „Supracursa și pe
+  tăieturile cât foaia, la alegere”, tradus.
+- **Codul** (`416d04a`):
+  - `cuTaieturiPrinFoaie` (`src/cam/prinFoaie.ts`), chemată din `programDinDocument` doar cu bifa (`prinFoaie`), după găuri.
+  - `ParametriExport.prinFoaie` (lipsa înseamnă „nu”); calculul exportului o dă mai departe.
+  - Fereastra: bifa „și tăieturile cât foaia” lângă câmp, oprită fără supracursă (cu eticheta mai stinsă), cu titlul ei. O
+    schimbare scoate rezultatul vechi; cererea o poartă doar bifată și cu o supracursă.
+  - Aplicația o ține (`App.tsx`), ca supracursa.
+  - Titlul câmpului și manualul (ro, en).
+- **Porțile, pe `416d04a`:** compilatoarele ×3, importurile (20 / 0, 1 290 de module), licențele, traducerile (824, 0 lipsă);
+  unit 9 571: 9 563 / 0 (8 sărite, 6,9 min); build determinist (338 de fișiere identice; pornirea 107,1, cu ușa 111,1 / 115;
+  totalul 732,6 / 800); e2e 531 / 531 din prima (8,8 min, 3 lucrători), fără nicio reluare.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1f-4.py`, 18: lucrarea F01–F09 (V-carve-ul și incrustația cât foaia coborâte, adâncimile deja peste foaie sau cu până la 3 mm sub ea schimbate, supracursa de două ori, bifa fără efect sau cu efect și fără ea, calculul exportului care o pierde sau o pune mereu), fereastra și aplicația B01–B09. Setul curat întâi (3 / 3), apoi 18 / 18 prinse: F01–F09 de proba echivalenței, B01–B09 de e2e-ul bifei (cu build înainte de fiecare). 12.1f-3 S18 (cererea are acum și bifa) reorientată și prinsă. Celelalte liste: niciun VOID nou, comparate otravă cu otravă cu HEAD. Arborele, curat la capăt; build-ul, refăcut pe HEAD.
+- **Mărimea:** felia, față de `287895f`, cu același build în ambii arbori: JavaScript +176 B gzip (lucrătorul CAM +119,
+  fereastra exportului +118, pornirea +25) și CSS +25 B; totalul 732,4 → 732,6 / 800; ușa, 111,0 → 111,1 / 115.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 18.12), build-ul `416d04a` (versiunea `416d04a8f509`), verificat în browserul aplicației, în engleză, fără export. Fila venea din cache cu `0e3b8e7d426f`; după „Reload”, `416d04a8f509`. Pe un dreptunghi, fereastra arată bifa „also cuts as deep as the sheet” chiar după „Overtravel (mm)”, aliniată cu câmpurile: pusă și oprită la 0 (eticheta stinsă), cu explicația pe titlu. Cu „0.5” pornește (pusă, eticheta în culoarea normală), iar Exportă e activ. Scoasă, apoi fereastra închisă și redeschisă: tot 0.5 și tot scoasă. Fereastra închisă fără export, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
+- **Nu acum:** bifa pe fiecare rând („prin foaie”, ținută la zi cu foaia; un câmp în document, v26); păstrarea cu profilul
+  mașinii; 12.1↑e (dopul în 3D), doar la cuvântul owner-ului.
