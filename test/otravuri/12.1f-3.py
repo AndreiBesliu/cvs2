@@ -63,8 +63,10 @@ o('S16', DLG, 'data-camp="supracursa" aria-invalid={!supracursaBuna}', 'data-cam
   'câmpul greșit nemarcat')
 o('S17', DLG, '              onChange={(e) => { schimbat(); onSupracursa(e.target.value); }} />',
   '              onChange={(e) => { onSupracursa(e.target.value); }} />', 'e2e', 'altă supracursă lasă rezultatul vechi al exportului')
-o('S18', DLG, '...(supracursaCitita !== null && supracursaCitita > 0 ? { supracursa: supracursaCitita } : {}),',
-  '...(false ? { supracursa: supracursaCitita } : {}),', 'e2e', 'supracursa nu ajunge la export')
+# S18 reorientată la 12.1↑f-4 (18.11): cererea are acum și bifa tăieturilor cât foaia (ADR 0177), lângă supracursă.
+o('S18', DLG, '...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),',
+  '...(false && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),', 'e2e',
+  'supracursa nu ajunge la export')
 o('S19', CON, '      supracursa={supracursa}\n', '      supracursa="0"\n', 'e2e', 'fereastra nu primește supracursa aplicației')
 o('S20', APP, "  const [supracursa, setSupracursa] = useState('0');", "  const [supracursa, setSupracursa] = useState('');", 'e2e',
   'implicitul gol (marcat greșit), nu 0')

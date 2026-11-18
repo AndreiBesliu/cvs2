@@ -1,6 +1,7 @@
 /**
- * Supracursa în fereastra exportului (ADR 0176, felia 12.1↑f-3), pe dreptunghiul de 30 × 20 din (20, 20), cu freza plată Ø6 a
- * operației și foaia de 18. Un fișier al ei, ca otrăvurile ferestrei (`test/otravuri/12.1f-3.py`) să ruleze doar proba asta.
+ * Supracursa în fereastra exportului (ADR 0176, felia 12.1↑f-3) și bifa tăieturilor cât foaia (ADR 0177, felia 12.1↑f-4), pe
+ * dreptunghiul de 30 × 20 din (20, 20), cu freza plată Ø6 a operației și foaia de 18. Un fișier al lor, ca otrăvurile ferestrei
+ * (`test/otravuri/12.1f-3.py`, `12.1f-4.py`) să ruleze doar probele astea.
  */
 import { test, expect, type Download, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -115,4 +116,40 @@ test('supracursa 0: gaura și decuparea dopului exact prin plăcile lor, ca îna
   await expect.poll(() => descarcari.length).toBe(2);
   const { locas, dop } = await programe(descarcari);
   expect([zMinim(locas), zMinim(dop)]).toEqual([-18, -20]);
+});
+
+/**
+ * Bifa „și tăieturile cât foaia” (ADR 0177, felia 12.1↑f-4), lângă supracursă: implicit pusă, oprită fără supracursă. Cu 0,5,
+ * profilul dreptunghiului scris cât foaia (18) coboară la 18,5; debifată, la 18 (rezultatul vechi pleacă la schimbare). În
+ * proiect, adâncimea rămâne 18; bifa scoasă rămâne scoasă la redeschiderea ferestrei.
+ */
+test('bifa tăieturilor cât foaia: implicit pusă, oprită fără supracursă; profilul de 18 la 18,5, debifată la 18', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const bifa = page.locator('[data-camp="supracursa-prin-foaie"]');
+  await expect(bifa).toBeChecked();
+  await expect(bifa).toBeDisabled();
+  await page.locator('[data-camp="supracursa"]').fill('0,5');
+  await expect(bifa).toBeEnabled();
+  await expect(bifa).toBeChecked();
+  const rand = page.locator('tr[data-operatie]').first();
+  await rand.locator('[data-camp="adancime"]').fill('18');
+  const descarcari: Download[] = [];
+  page.on('download', (d) => { descarcari.push(d); });
+  const exporta = async (n: number): Promise<string> => {
+    await page.locator('[data-buton="exporta"]').click();
+    await expect.poll(() => descarcari.length).toBe(n);
+    return readFileSync(await descarcari[n - 1]!.path(), 'ascii');
+  };
+  expect(zMinim(await exporta(1)), 'bifată: 18 + 0,5').toBe(-18.5);
+  await bifa.uncheck();
+  await expect(page.getByTestId('export-stare')).toHaveCount(0);
+  expect(zMinim(await exporta(2)), 'debifată: cât e scrisă').toBe(-18);
+  // În proiect, adâncimea e cea scrisă; bifa scoasă rămâne scoasă (o ține aplicația).
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
+  await expect(page.locator('[data-camp="supracursa-prin-foaie"]')).not.toBeChecked();
+  await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0,5');
 });

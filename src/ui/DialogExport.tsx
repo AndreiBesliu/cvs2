@@ -185,6 +185,12 @@ type Props = {
   readonly supracursa: string;
   readonly onSupracursa: (text: string) => void;
   /**
+   * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii trec cu ea. O ține aplicația, ca supracursa;
+   * fără supracursă, e oprită.
+   */
+  readonly prinFoaie: boolean;
+  readonly onPrinFoaie: (bifata: boolean) => void;
+  /**
    * „Deschide în Mașina” (ADR 0132 §7), după un export reușit pe care senderul îl vorbește (familia GRBL): închide dialogul și
    * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
    */
@@ -540,7 +546,8 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, supracursa, onSupracursa, onDeschideInMasina, foaie, placute, foi, placuteToate, onRaport, grosimeFoaie,
+    onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, foaie, placute, foi, placuteToate, onRaport,
+    grosimeFoaie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -804,6 +811,8 @@ export function DialogExport(
   // Supracursa (ADR 0176): un număr între 0 și maxima lucrării; 0 e voie (fără supracursă).
   const supracursaCitita = citesteNumar(supracursa);
   const supracursaBuna = supracursaCitita !== null && Number.isFinite(supracursaCitita) && supracursaCitita >= 0 && supracursaCitita <= SUPRACURSA_MAXIMA;
+  // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
+  const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
     && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
     && supracursaBuna;
@@ -1107,6 +1116,12 @@ export function DialogExport(
             {t('export.supracursa')}
             <input type="text" inputMode="decimal" value={supracursa} data-camp="supracursa" aria-invalid={!supracursaBuna}
               onChange={(e) => { schimbat(); onSupracursa(e.target.value); }} />
+          </label>
+          {/* Bifa tăieturilor cât foaia (ADR 0177), implicit pusă; fără supracursă, oprită. */}
+          <label className="alegere bifa-supracursa" title={t('export.supracursa.prin-foaie.titlu')}>
+            <input type="checkbox" checked={prinFoaie} data-camp="supracursa-prin-foaie" disabled={!cuSupracursa}
+              onChange={(e) => { schimbat(); onPrinFoaie(e.target.checked); }} />
+            {t('export.supracursa.prin-foaie')}
           </label>
           <label title={t('export.post.titlu')}>
             {t('export.post')}
@@ -1762,8 +1777,8 @@ export function DialogExport(
               onExporta({
                 origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
-                // Fără supracursă (0), cererea e cea de dinainte (ADR 0176).
-                ...(supracursaCitita !== null && supracursaCitita > 0 ? { supracursa: supracursaCitita } : {}),
+                // Fără supracursă (0), cererea e cea de dinainte (ADR 0176); cu ea, și bifa tăieturilor cât foaia (ADR 0177).
+                ...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),
               });
             }}>
             {t('export.exporta')}

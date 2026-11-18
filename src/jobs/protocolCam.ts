@@ -45,6 +45,11 @@ export type ParametriExport = {
    */
   readonly supracursa?: number;
   /**
+   * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii (profil, buzunar, găurire, fără incrustație)
+   * trec cu supracursa, ca scrise grosime plus supracursă. Lipsă: nu (exporturile de dinainte rămân aceleași).
+   */
+  readonly prinFoaie?: boolean;
+  /**
    * Răspunsul mașinii la `$$`, lipit de om (ADR 0046): estimarea timpului îl pune peste implicitele GRBL 1.1h. Lipsă sau
    * gol: implicitele. Nu schimbă programul, doar rezumatul.
    */

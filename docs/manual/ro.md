@@ -1434,9 +1434,12 @@ care). Pe lângă [operații](#operatii), alegi:
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
 - **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
   ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
-  decupările dopurilor merg cu atât mai jos, singure. O adâncime scrisă de tine poate trece de grosimea foii cu cel mult atât
-  (o tăietură prin foaie de 18 mm cu supracursa 0,5: scrii 18,5). Punțile și urechile își păstrează grosimea, măsurată de la
-  fața de jos a plăcii. Valoarea rămâne cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D o lasă deoparte;
+  decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
+  buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
+  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Debifată, tăieturile rămân cât
+  sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
+  de 18, cu supracursa 0,5). Punțile și urechile își păstrează grosimea, măsurată de la fața de jos a plăcii. Supracursa și bifa
+  rămân cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D le lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
   RichAuto, Syntec, Mach3** și **Mach4** primesc un fișier pe care îl rulezi de pe controlerul lor (în panoul mașinii nu
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul

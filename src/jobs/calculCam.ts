@@ -45,7 +45,7 @@ export function numeFisierDop(nume: string, k: number, scurt: boolean): string {
 export async function calculeazaExportul(doc: Document, p: ParametriExport): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
+  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {

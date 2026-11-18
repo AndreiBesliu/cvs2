@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 18.11.2026, la răspunsul owner-ului „Da, pune-o” (întrebarea din 17.11: „Pun supracursa în fereastra
 exportului, ca felie mică pe linie?”). Felia 12.1↑f-3, în linia incrustațiilor (worktree-ul `incrustatii`, ramura
 `wip/12.1-incrustatii`), fără mașină. **Documentul:** neschimbat (v25). Supracursa ține de mașină și de placa ei de sacrificiu,
-nu de proiect.
+nu de proiect. **În parte înlocuit de ADR 0177** (18.11.2026): tăieturile scrise cât grosimea foii trec și ele cu supracursa,
+la alegerea omului (o bifă, implicit pusă).
 
 ## Problema
 
