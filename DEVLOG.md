@@ -9905,3 +9905,25 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   115, `/admin` 112,2 / 200 (ramura pornește din `e88dbc1e`; motorul și atelierul stau în pachetul extensiei, nu în
   aplicație).
 - **Schița**, cu întrebările acum închise: <https://claude.ai/artifact/K7CMJUfim5wHZ4JTpK1qPX>.
+
+## 2026-11-18 — Felia 3.Th, după privirea pe roata reală: peretele găurii la roțile mici (Model: Claude Opus 5.5)
+
+**Prompt:** același („Da, cu recomandările”); felia nu se raportează înainte ca ieșirea reală să fie privită, mărită.
+**Started:** 18.11, 17:00. **Completed:** 18.11, 19:20.
+
+- **Privirea:** pe pagina planificatorului, în 3D, roțile de 24 (drepți, oblici, în V), de 8 cu gaură de ax, de 40 cu gaură
+  rotundă și de 12 oblică; în plan, mărite la contact, perechile 8 + 24, 12 + 20 și 16 + 16 la patru faze pe pas: fără
+  pătrunderi, distanța minimă 0,257–0,283 mm (teoria: 0,282 pe flanc, 0,25 la picior).
+- **Defectele, ale găurii:** la roata de 8 cu gaură de ax, colțurile crucii cădeau sub goluri: 0,036 mm de perete, iar
+  avertismentul spunea 0,25 (din raze). La modulul 0,5 cu 8 sau 12 dinți, gaura de 5 mm ieșea din roată: STL-ul deschis
+  (24–148 de muchii fără pereche).
+- **Reparația** (`lego.ts`, `pereteGaura`): peretele pe contur (colțurile și coarda golului); sub 0,8 mm, crucea se rotește
+  pe sfertul ei unde peretele iese cel mai gros (la roata de 8, brațele spre goluri: 0,23 mm); sub 0,1 mm, roata iese fără
+  gaură și o spune (textul nou și în engleză). Pachetul 18.9.1 (conținut nou, versiune nouă; 18.9.0 a stat doar pe canal).
+- **Probele:** unitara nouă măsoară peretele pe corpul construit (căzută întâi pe codul vechi: 0,036 mm), cere avertismentul
+  egal cu el și roata închisă, fără gaură, la modulul 0,5; e2e-ul cere 0,23 mm și trece prin modulul 0,5. Otrăvurile:
+  U19–U21 noi, U12 și U13 mutate pe codul nou; toate 30 / 30 prinse pe codul final.
+- **Porțile:** pe `d1a63d82`: unitare 9 549 / 0, traducerile, compilatoarele, importurile, licențele și build-ul
+  determinist; e2e-ul extensiei 37 / 37 (Easy 3Draw, rotițele, extensiile, biblioteca), la prima rulare; restul suitei e2e
+  (530 / 530) și emulatoarele, verzi pe `64cd3042` (codul aplicației e neschimbat de atunci), iar pe unire rulează toate;
+  totalul 729,1 / 800, pornirea cu ușa 111,0 / 115.

@@ -71,25 +71,43 @@ cărămida Technic, axul, știftul, bucșa), cu jocurile alese la calibrare (gau
 - **2a:** jocul dintre dinți vine din calibrare: cinci roți de probă de 16 dinți, cu 0,05 … 0,25 mm pe flanc, iar varianta aleasă
   stă în profilul imprimantei, lângă celelalte (implicit 3 = 0,15 mm).
 
-## Implementarea (felia 3.Th, pachetul 18.9.0)
+## Implementarea (felia 3.Th, pachetul 18.9.1)
 
 - **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`): `profilRoata` (cremaliera rulată pe cercul de divizare, 600 de poziții,
   21 de raze pe flanc, ținut în memorie pe dinți, modul și joc), `conturRoata` (cu mijlocul capului pe cercul de cap: altfel
   coarda dintre capetele arcului scurta diametrul), `prismaRasucita` (exteriorul rotit strat cu strat, cel mult 0,8° pe
   strat; gaura dreaptă; capacele prin earcut pe aceleași puncte, deci corpul rămâne închis) și tipul `rotita`: dinții 8–80,
   felul (drepți, oblici, în V), unghiul 10–35°, sensul (dreapta = elicea urcă în sens trigonometric), grosimea 1–20 mm, gaura
-  (ax în cruce, rotundă, fără), modulul 0,5–3; un avertisment când între gaură și piciorul dinților rămân sub 0,8 mm (la roata
-  de 8 cu gaură de ax: 0,25 mm). Jocul: `joc_dinti` 0,15, `varianta_dinti` 3, `pas_dinti` 0,05. Setul de calibrare are cinci
+  (ax în cruce, rotundă, fără), modulul 0,5–3. Peretele dintre gaură și dinți se socotește pe contur (colțurile crucii și
+  coarda golului, nu doar razele): sub 0,8 mm, crucea se rotește pe sfertul ei unde peretele iese cel mai gros (la roata de 8,
+  brațele spre goluri: 0,23 mm), cu un avertisment care spune peretele adevărat; sub 0,1 mm, roata iese fără gaură și o spune
+  (modulul 0,5 cu 8 sau 12 dinți). Jocul: `joc_dinti` 0,15, `varianta_dinti` 3, `pas_dinti` 0,05. Setul de calibrare are cinci
   roți de probă (`calibrare_rotita_1` … `5`), cu numărul lor în cubulețe pe fața de sus. `distantaRoti(z1, z2, m)` pentru atelier.
 - **Atelierul** (`planificator/atelier.ts`): „Roată dințată” în galeria pieselor de legătură, cu dinții (și scurtăturile 8, 12,
   16, 20, 24, 36, 40), felul, unghiul și sensul la oblici și în V, grosimea, gaura, modulul; „Se prinde cu…” arată distanța
   dintre axe și dacă e pe grilă, la jumătate de pas sau în afara ei; „Fă perechea” pune în listă ambele roți, a doua cu sensul
   opus (la oblici și la V: perechea se prinde doar așa). Varianta roților în profilul imprimantei, în fila Calibrare (pasul
   nou; „șapte numere”) și în README-ul arhivei. Textele, în engleză (35).
-- **Pachetul:** 18.9.0, înregistrat în bibliotecă (versiunea și amprenta conținutului), cu descrierea „… roți dințate …”.
+- **Pachetul:** 18.9.1, înregistrat în bibliotecă (versiunea și amprenta conținutului), cu descrierea „… roți dințate …”;
+  18.9.0 a stat doar pe canalul `rotite`, iar conținutul nou de după privirea pe roata reală a cerut o versiune nouă.
 - **Manualul:** cel al lui cvs2 descrie extensia doar ca fereastră (biblioteca, contul, limba, lucrările trimise), nu piesele
   atelierului, deci n-a primit rânduri; roata se explică în atelier (câmpurile, „Se prinde cu…”, avertismentul peretelui) și în
   fila Calibrare.
+
+## Privirea pe roata reală (18.11)
+
+Înaintea raportului, roțile au fost privite pe pagina planificatorului (din aceleași surse): în 3D, roata de 24 cu dinți
+drepți, oblici și în V, roata de 8 cu gaură de ax, cea de 40 cu gaură rotundă și cea de 12 oblică; în plan, mărite la locul
+de contact, perechile 8 + 24, 12 + 20 și 16 + 16, la patru faze pe un pas. Angrenarea: fără pătrunderi, cu distanța minimă
+dintre roți de 0,257–0,283 mm (teoria: 0,282 pe flanc, 0,25 la picior). Două defecte, amândouă ale găurii:
+
+- **Roata de 8 cu gaură de ax:** colțurile crucii (la 2,69 mm de centru) cădeau chiar sub goluri (piciorul, la 2,75 mm):
+  **0,036 mm** de perete, iar avertismentul spunea 0,25 (din raze, fără colțuri și fără coarda golului). Acum crucea are
+  brațele spre goluri: 0,23 mm, spus cum e.
+- **Modulul 0,5 cu 8 sau 12 dinți:** gaura de 5 mm ieșea din roată, iar STL-ul era deschis (24–148 de muchii fără pereche),
+  cu „0 mm” în avertisment. Acum roata iese fără gaură, închisă, și o spune.
+
+Fiecare defect a devenit probă (căzută întâi pe codul vechi: 0,036 mm), cu trei otrăvuri noi (U19–U21).
 
 ## Feliile
 
@@ -98,13 +116,16 @@ cărămida Technic, axul, știftul, bucșa), cu jocurile alese la calibrare (gau
 
 ## Probele
 
-- **unitare** (`test/unit/trenulet.rotite.test.ts`, 8): jocul din calibrare; profilul (cercurile, grosimea pe divizare,
+- **unitare** (`test/unit/trenulet.rotite.test.ts`, 9): jocul din calibrare; profilul (cercurile, grosimea pe divizare,
   conturul); perechile LEGO pe grilă (zero pătrunderi; jocul minim al flancului, 0,188 la 0,10, sau al piciorului, 0,25 la
   0,15); corpul închis la toate felurile și găurile, cu aceeași cutie și același volum; găurile (diferența de volum = aria ×
-  h); răsucirea în sensul ales, V-ul sus ca jos, gaura dreaptă; marginile și avertismentul; setul de calibrare.
+  h); răsucirea în sensul ales, V-ul sus ca jos, gaura dreaptă; marginile și avertismentul; peretele dintre gaură și dinți
+  (măsurat pe corpul construit, spus cum e, gaura care nu încape lipsește); setul de calibrare.
 - **e2e** (`test/e2e/trenulet.rotite.spec.ts`, 3): tipul în galerie, felurile, perechea pe grilă, „Fă perechea” cu sensul
-  opus, STL-ul descărcat închis; roata de 8 și avertismentul ei, „fără gaură”, fila Calibrare; varianta 5 dă dinți mai subțiri.
-- **otrăvuri** (`test/otravuri/3.Th.py`): 27 / 27 prinse (18 pe motor, 9 pe atelier), pe setul curat verde, în clona din afara Drive-ului.
+  opus, STL-ul descărcat închis; roata de 8 și avertismentul ei (0,23 mm), modulul 0,5 cu gaura care nu încape, „fără gaură”,
+  fila Calibrare; varianta 5 dă dinți mai subțiri.
+- **otrăvuri** (`test/otravuri/3.Th.py`): 30 / 30 prinse (21 pe motor, 9 pe atelier), toate pe codul de după privirea pe
+  roata reală, pe setul curat verde, în clona din afara Drive-ului.
 
 ## Probele cerute la propunere
 
