@@ -799,4 +799,5 @@ export const enEditare = {
   'actiune.muta-pe-foaie': 'Move to another sheet',
   // The sheets report (ADR 0210 §6, slice 11.6↑): its label in the palette, the only place that shows it.
   'actiune.raport-foi': 'Sheets report and cut list',
+  'actiune.trimite-masina': 'Send to machine',
 } as const satisfies Readonly<Record<string, Mesaj>>;

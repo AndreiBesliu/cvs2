@@ -59,6 +59,7 @@ The choice stays on this device (in the browser): the tablet in the workshop can
 
 ## The Workshop layout
 %% capitol: atelier
+%% acopera: export.trimite
 
 **Workshop** is the layout for a tablet and for the screen next to the machine. Choose it in the **Appearance** window
 (**Account** menu, **Appearance…** row). The first time, it starts with the dark theme and **Big buttons**; you can change
@@ -69,10 +70,19 @@ them in the same window before **Keep**.
 - The **top bar** has Undo and Redo with their names, then import, vector export and **Export G-code**. The bar extension
   (alignment, mirroring, copying, offset, boolean, 3D) sits below it, over several rows when it does not fit.
 - The **panels** sit together on the right: **Properties** on top, **On the sheet** below.
+- The chosen shape's **cut** comes first in **Properties**: its kind as big buttons (**Outside**, **Inside**, **On the
+  line**, **Pocket**, **V-carve**, **Drilling**…, then your own roles), depth and step with **−** and **+** (0.5 mm at a
+  time; you can also type them) and the tool card (for example **T1**, **Flat end mill Ø6**). **Change** opens the
+  **Export G-code** window, where the tool is chosen.
+- **Send to machine** sits at the end of the panel, in view however far you scroll it. It opens the export window with
+  the **Send to machine** button: the program is downloaded, as with an export, then goes into the **Machine** window
+  without starting. With a controller the app does not speak (NcStudio, RichAuto), the button is **Export** and the
+  program is only downloaded.
 - On a tablet held upright and on a phone, the tools move to a row at the bottom, under the canvas, which scrolls with a
   finger; the panels sit side by side below it.
 
-The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`).
+The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`). **Send to machine** is
+in the palette in Islands too.
 
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza

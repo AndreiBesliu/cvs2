@@ -58,6 +58,7 @@ Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate
 
 ## Atelierul
 %% capitol: atelier
+%% acopera: export.trimite
 
 **Atelierul** e aranjamentul pentru tabletă și pentru ecranul de lângă mașină. Îl alegi din fereastra **Aspectul** (meniul
 **Cont**, rândul **Aspectul…**). La prima alegere pornește cu tema întunecată și cu **Butoane mari**; le poți schimba din
@@ -68,10 +69,18 @@ aceeași fereastră, înainte de **Păstrează**.
 - **Bara de sus** are Anulează și Reface cu numele lor, apoi importul, exportul vectorilor și **Exportă G-code**. Extensia
   barei (alinierea, oglindirea, copierea, offsetul, booleanul, 3D) stă dedesubt, pe mai multe rânduri când nu încape.
 - **Panourile** stau împreună, în dreapta: **Proprietăți** sus, **Pe foaie** dedesubt.
+- **Tăierea** formei alese stă prima în **Proprietăți**: felul ei din butoane mari (**Exterior**, **Interior**, **Pe linie**,
+  **Buzunar**, **V-carve**, **Găurire**…, apoi rolurile tale), adâncimea și pasul cu **−** și **+** (câte 0,5 mm; le poți și
+  scrie) și cartela frezei (de pildă **T1**, **Freză plată Ø6**). **Schimbă** deschide fereastra **Exportă G-code**, unde se
+  alege freza.
+- **Trimite la mașină** stă la capătul panoului, la vedere oricât îl derulezi. Deschide fereastra exportului cu butonul
+  **Trimite la mașină**: programul se descarcă, ca la export, apoi intră în fereastra **Mașina**, fără să pornească. Cu un
+  controler pe care aplicația nu-l vorbește (NcStudio, RichAuto), butonul e **Exportă**, iar programul doar se descarcă.
 - Pe o tabletă ținută în picioare și pe telefon, uneltele trec într-un rând jos, sub pânză, care se derulează cu degetul;
   panourile stau unul lângă altul, dedesubt.
 
-Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`).
+Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`). **Trimite la mașină** e în
+paletă și în Insule.
 
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza

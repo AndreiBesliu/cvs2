@@ -133,3 +133,12 @@ test('aceeași acțiune în zone diferite e permisă (Anulează și sus, și jos
   const jos = [...ARANJAMENT_MODERN.zone.jos, { id: 'istoric', intrari: [{ actiune: 'istoric.anuleaza' }] }];
   assert.deepEqual(verificaAranjament(cuZona('jos', jos), REGISTRU), []);
 });
+
+test('tăierea din panou (felia 28.1↑d): Insulele o au din listă; un fel necunoscut e prins', () => {
+  assert.equal(ARANJAMENT_MODERN.taierea, 'lista');
+  assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
+  assert.match(verificaAranjament({ ...ARANJAMENT_MODERN, taierea: 'nu-exista' as 'lista' }, REGISTRU).join('\n'), /tăierea „nu-exista” nu există/);
+  // Un aranjament salvat ca JSON, fără câmp: tot prins (nu trece drept unul dintre feluri).
+  const { taierea: _t, ...fara } = ARANJAMENT_MODERN;
+  assert.match(verificaAranjament(fara as Aranjament, REGISTRU).join('\n'), /tăierea „undefined” nu există/);
+});

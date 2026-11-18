@@ -182,3 +182,195 @@
     max-width: none;
   }
 }
+
+/*
+ * Tăierea din butoane mari (felia 28.1↑d, planșa „C · Întunecat”), în panoul de proprietăți: rolul din butoane pe trei
+ * coloane, − / + lângă adâncime și pas, cartela frezei, apoi „Trimite la mașină” și „Exportă G-code” la capătul panoului.
+ */
+:root .aplicatie[data-aranjament='atelier'] .atelier-rol {
+  min-width: 0;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  border: 0;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-rol legend {
+  margin-bottom: var(--sp-2);
+  padding: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Panourile, mai late de la 1024 px (planșa: 320 px), cât lasă pânza: rolurile încap trei pe rând, cu numele întregi. */
+@media (min-width: 64rem) {
+  :root .aplicatie[data-aranjament='atelier'] > .doc-dreapta > .panou {
+    width: clamp(15.5rem, 22vw, 20rem);
+  }
+}
+
+/* Trei roluri pe rând; incrustațiile și rolurile omului, cu nume lungi, câte două. */
+:root .aplicatie[data-aranjament='atelier'] .atelier-roluri {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button {
+  grid-column: span 2;
+  min-width: 0;
+  min-height: max(var(--tinta), 56px);
+  padding: 4px 6px;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button:is([data-rol^='incrustatie'], [data-rol^='p:']) {
+  grid-column: span 3;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-roluri > button[aria-pressed='true'] {
+  border: 2px solid var(--a);
+  box-shadow: none;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-valori {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+/* Eticheta pe rândul ei, dedesubt − / câmpul / +: în panoul îngust, rândul întreg nu încape. */
+:root .aplicatie[data-aranjament='atelier'] .atelier-plus-minus {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-eticheta,
+:root .aplicatie[data-aranjament='atelier'] .atelier-fix {
+  grid-column: 1 / -1;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-eticheta {
+  font-weight: 500;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-plus-minus > button {
+  padding: 0;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  font-size: 1.375rem;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-plus-minus .camp-numeric {
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-plus-minus .camp-numeric input {
+  min-height: var(--tinta);
+  font-size: 1.125rem;
+  text-align: center;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-freza {
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: calc(var(--tinta) + 8px);
+  margin-bottom: var(--sp-3);
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  text-align: left;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-t {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--l-margine);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-freza-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-freza-nume {
+  font-weight: 600;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-freza-nota,
+:root .aplicatie[data-aranjament='atelier'] .atelier-schimba {
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
+/*
+ * Lipite de marginea de jos a panoului (care se derulează), ca pe planșă: „Trimite la mașină” rămâne la vedere oricât de
+ * lung e panoul. Fundul panoului acoperă ce trece pe sub ele.
+ */
+:root .aplicatie[data-aranjament='atelier'] .atelier-trimite {
+  position: sticky;
+  bottom: calc(-1 * var(--sp-3));
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 calc(-1 * var(--sp-3));
+  padding: var(--sp-2) 0 var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+  background: var(--s-panou);
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-trimite > button {
+  width: 100%;
+  min-height: max(var(--tinta), 56px);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+:root .aplicatie[data-aranjament='atelier'] .atelier-trimite > button.principal {
+  border: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+/* Sub 1024 px panoul are o treime din înălțime: cele două butoane stau unul lângă altul, ca să lase loc tăierii. */
+@media (max-width: 63.9375rem) {
+  :root .aplicatie[data-aranjament='atelier'] .atelier-trimite {
+    flex-flow: row wrap;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .atelier-trimite > button {
+    flex: 1 1 0;
+    width: auto;
+    min-height: var(--tinta);
+    padding: 0 var(--sp-2);
+    line-height: 1.2;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .atelier-trimite > button.principal {
+    font-size: var(--fs-3);
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .atelier-trimite > p {
+    flex-basis: 100%;
+  }
+}

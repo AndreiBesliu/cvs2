@@ -200,6 +200,7 @@ export const roExport = {
   },
   'export.in-masina': 'Deschide în Mașina',
   'export.in-masina.titlu': 'Încarcă programul în fereastra Mașina, fără să-l pornească',
+  'export.trimite': 'Trimite la mașină',
   'export.gata.fisier': {
     one: 'Descărcat {nume}: {n} linie, SHA-256 {sha}',
     few: 'Descărcat {nume}: {n} linii, SHA-256 {sha}',

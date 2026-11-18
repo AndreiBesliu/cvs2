@@ -10026,3 +10026,69 @@ concentram pe softul nostru”.
 - **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Ab`) cu traducerea, lista otrăvurilor și rândul
   ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
   **Completed:** 18.11 14:39.
+
+## 2026-11-18 — Felia 28.1↑d: tăierea din butoane mari în Atelier și „Trimite la mașină” (ADR 0250) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 28.1↑d” (owner-ul, la „Pornesc 28.1↑d (panoul Atelierului: butoane mari pentru felul tăierii, − / + la
+adâncime și pas, „Trimite la mașină”), sau rămâne pentru mai târziu?”). **Started:** 18.11 07:35. **Completed:** 18.11
+14:40.
+
+- **La pornire:** `main` `ae5a13c4` adus în ramură (`354ed251`; ciocnire doar în DEVLOG, ambele intrări păstrate).
+- **Hotărât fără întrebare (spus în raport):** felul tăierii ales prin datele aranjamentului (câmpul `taierea`), nu prin
+  `data-aranjament` citit în panou; − / + câte 0,5 mm; „Schimbă” din cartela frezei deschide fereastra exportului (acolo
+  se alege freza azi; ce e „în mandrină acum” nu știe aplicația fără mașină); „Trimite la mașină” = fereastra exportului
+  cu butonul ei, apoi Mașina cu programul nepornit (lista de dinainte de pornire rămâne a ferestrei Mașina, §8);
+  fișierul se descarcă și aici, ca la orice export. Lipire și Grilă cu nume pe pânză rămân cu zoomul de 64 px (alt rând
+  de idei).
+- **Codul:**
+  - `src/ui/aranjament.ts`: `TAIERI`, câmpul `taierea`, verificarea lui; Insulele `lista`, Atelierul `butoane`;
+  - `src/app/taiereButoane.ts` (− / +, freza comună, numele cu majusculă) și `PanouProprietati.tsx`: în Atelier, tăierea
+    prima (butoanele rolului, − / + lângă câmpuri, cartela frezei), „Trimite la mașină” și „Exportă G-code” la capăt, cu
+    motivul unui refuz scris;
+  - `actiuniExport.ts`: acțiunea `export.trimite` (aceeași stare ca `export.gcode`); App o deschide ca pe export, cu
+    `trimite`, și duce programul în Mașina după rezultat (`duInMasina`, scos din „Deschide în Mașina”); `DialogExport`:
+    butonul „Trimite la mașină”, „Exportă” pentru un controler fără sender;
+  - `atelier.css`: butoanele mari, rândul − / câmp / +, cartela, butoanele lipite de marginea de jos a panoului (sub
+    1024 px, unul lângă altul), panourile mai late de la 1024 px.
+- **Găsite pe capturi, înainte de raport:** tăierea stătea sub poziție, piesă și formă (acum prima); rândul − / câmp / +
+  nu încăpea în panoul de 248 px (acum eticheta deasupra); „Incrustație” se rupea în mijlocul cuvântului (acum
+  incrustațiile iau jumătate de rând, iar panoul e mai lat); „Trimite la mașină” ieșea din panou (acum lipit de marginea
+  lui); sub 1024 px, cele două butoane ocupau tot panoul (acum unul lângă altul). Privite la 1440, 1280 × 720, 1180 ×
+  820, 768 și 390 px.
+- **Hotărât de owner în timpul feliei:** la ideea lui despre telefon („pe telefon userii nu vor crea fisiere pentru
+  executie si doar vor incarca modele deja create … nu cred ca este nevoie sa ne concentram design complet pentru
+  mobile”), am propus §7 schimbat (fără muncă nouă de desen pe telefon; fluxul „proiectele mele → Trimite la mașină” cu
+  linia Proiectelor) sau doar prioritatea scăzută; a răspuns „1”. Scris în ADR 0250 (antetul, §7, rândul 28.5↑,
+  „Schimbarea din 18.11”) și în CLAUDE.md.
+- **Găsit de porți:** eticheta acțiunii stătea în mesajele carcasei; proba registrului le cere cu ale editorului (unde
+  stau și celelalte acțiuni aduse la cerere): mutată.
+- **Probele:** 4 unitare noi (`taiereButoane.test.ts`) și câte una în `aranjament.test.ts` și
+  `aranjamentAtelier.test.ts`; ușile manualului 109; 11 e2e (`atelier.taiere.spec.ts`: Insulele neschimbate și paleta,
+  rolul apăsat și anularea, găurirea la cerc, − / + și pasul lor de anulare, valorile diferite, cartela, trimiterea până
+  în Mașina cu aceeași amprentă, NcStudio, foaia goală cu motivul, engleza; numele rolurilor întregi, cuvânt cu cuvânt,
+  la 1280 × 720 și la 1024 × 768).
+- **Găsit de otrăvuri:** E11 (incrustațiile pe o treime de rând) a scăpat întâi: la 1280 px încăpeau, iar la 1024 px
+  „Incrustație” (64 px) ieșea peste spațiul de margine al butonului (56 px de loc), centrat, deci nevăzut de
+  `scrollWidth`. Proba cere acum fiecare cuvânt în locul lui din buton și rulează și la 1024 × 768; E11, prinsă.
+  - suita unitară întreagă: 9 501 teste, 9 492 trecute, 8 sărite; singura cădere (eticheta, mai sus) reparată și probată
+    din nou;
+  - e2e: suita întreagă, 527 / 527 în 86 de spec-uri (filtrele spec-urilor atinse au prins toate fișierele; `--list` dă
+    același total), în 14 minute, înaintea probei de la 1024 px; spec-ul feliei, apoi, 11 / 11;
+  - tipurile (aplicația, extensia, funcțiile), importurile, licențele, traducerile: curate; build-ul determinist: 332 de
+    fișiere identice;
+  - otrăvurile, cu unealta (`test/otravuri/28.1d.py`): 21 / 21 prinse (8 unitare, 13 prin e2e pe portul 4182), cu
+    unealta; E11 a scăpat întâi și e prinsă după întărirea probei numelor.
+- **Mărimea**, pe codul cu `main` `ae5a13c4`: pornirea 107,1 kB (cu ușa 111,1 / 115), totalul 719,0 / 800; bucata
+  Atelierului 0,32 kB, cu pornirea și ușa 111,4 / 115. Față de baza `354ed251` (aceleași flag-uri): pornirea +0,1,
+  totalul +1,1, bucata Atelierului +0,02.
+- **Pe unirea cu `main` `e88dbc1e`** (adus la capăt, `a4d26178`; ciocnire în panou: treptele incrustației drepte din
+  12.1↑f-2 portate în constanta tăierii; restul, rânduri adăugate de ambele părți): tipurile, importurile, licențele,
+  traducerile curate; suita unitară 9 554 (0 căderi, 8 sărite); build-ul determinist, 335 de fișiere identice; e2e
+  întreg 536 / 538, cele două căderi (ancora, la deschiderea editării; trenulețul pe mașină, un clic peste timp) trecute
+  singure și apoi de câte 3 ori (6 / 6), deci din încărcare; mărimea pe unirea cu `main` `e88dbc1e` (28.1↑c unită,
+  10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, A.1): pornirea 107,1 kB (cu ușa 111,1 / 115), totalul 730,2 / 800 (creșterea vine din
+  `main`); bucata Atelierului 0,31 kB, cu pornirea și ușa 111,4 / 115.
+- **Emulatoarele:** felia nu atinge meniul contului, nici `/admin` (singura atingere din `test/e2e-emulator` e numele
+  capabilității `export-gcode`, neschimbat); la unire le rulează sesiunea principală.
+- **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
+  „Atelierul”), testul din aplicație (pasul `x-atelier`), lista otrăvurilor și rândul ei, DEVLOG.

@@ -77,12 +77,20 @@ export type IdZona = (typeof ZONE)[number];
 export const DOCURI = ['stanga', 'dreapta'] as const;
 export type IdDoc = (typeof DOCURI)[number];
 
+/**
+ * Cum arată tăierea în panoul de proprietăți (ADR 0250, felia 28.1↑d): `lista` (rolul dintr-o listă, adâncimea și pasul
+ * scrise) sau `butoane` (rolul din butoane mari, − / + la adâncime și pas, cartela frezei, „Trimite la mașină”).
+ */
+export const TAIERI = ['lista', 'butoane'] as const;
+export type Taierea = (typeof TAIERI)[number];
+
 export type Aranjament = {
   readonly id: string;
   readonly zone: { readonly [Z in IdZona]: readonly Grup[] };
   readonly docuri: { readonly [D in IdDoc]: readonly IdPanou[] };
   /** Ferestrele, în ordinea filelor lor; prima se deschide când browserul nu ține alta (ADR 0132 §2). */
   readonly ferestre: readonly IdFereastra[];
+  readonly taierea: Taierea;
 };
 
 /** Acțiunea vederii care strânge și deschide fiecare panou (butonul din colțul lui). */
@@ -142,6 +150,7 @@ export const ARANJAMENT_MODERN: Aranjament = {
   },
   docuri: { stanga: ['lista'], dreapta: ['proprietati'] },
   ferestre: ['proiectare', 'masina', 'imprimanta'],
+  taierea: 'lista',
 };
 
 /** Cheia unei intrări într-o zonă: o acțiune, un control sau un cip apar cel mult o dată pe zonă (și ca cheie React). */
@@ -205,5 +214,6 @@ export function verificaAranjament(a: Aranjament, actiuni: ReadonlySet<string>):
   if (!ferestre.has('proiectare')) probleme.push('fără fereastra „proiectare”: desenul n-ar avea unde sta');
   const cuFile = ZONE.some((z) => a.zone[z].some((g) => g.intrari.some((x) => 'control' in x && x.control === 'ferestre')));
   if (ferestre.size > 1 && !cuFile) probleme.push('ferestrele n-au file: controlul „ferestre” nu e în nicio zonă');
+  if (!cunoscut(TAIERI, a.taierea)) probleme.push(`tăierea „${String(a.taierea)}” nu există`);
   return probleme;
 }

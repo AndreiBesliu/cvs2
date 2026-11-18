@@ -1130,9 +1130,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
-  **Aranjamentele, feliile 28.1↑a–28.1↑c (ADR 0250 §1–§7),** în worktree-ul `aranjamente` (ramura
-  `wip/28.1-aranjamente`): 28.1↑a (alegerea și densitatea) și 28.1↑b (fereastra Aspectul) unite în `main`; 28.1↑c
-  (Atelierul pe Proiectare, adus la cerere) gata pe 17.11, neunită.
+  **Aranjamentele, feliile 28.1↑a–28.1↑d (ADR 0250 §1–§7),** în worktree-ul `aranjamente` (ramura
+  `wip/28.1-aranjamente`): 28.1↑a (alegerea și densitatea), 28.1↑b (fereastra Aspectul) și 28.1↑c (Atelierul pe
+  Proiectare, adus la cerere) unite în `main`; 28.1↑d (tăierea din butoane mari, „Trimite la mașină”) gata pe 18.11,
+  neunită.
   - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`;
     `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
   - **Un aranjament nou intră în `src/ui/incarcaAranjament.ts`** (încărcătorul lui; datele într-un modul fără CSS, ca
@@ -1141,8 +1142,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Fereastra Aspectul (`src/app/Aspectul.tsx`, la cerere): din meniul contului (rândul `aspect`) și din paletă
     (`vedere.aspect`, în `ORIUNDE`).
   - Densitatea mare: `--tinta` 48 px, 56 la atingere. Numele uneltelor (`.nume-unealta`) sunt ascunse în Insule.
-  - Pe unirea cu `main` `b6aaa54`: pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 / 800; bucata Atelierului 0,30
-    kB, cu pornirea și ușa 111,3 / 115.
+  - **Pe telefon nu mai lucrăm la desen** (ADR 0250 §7, schimbat pe 18.11): ce merge azi nu se strică; fluxul
+    telefonului, „proiectele mele → Trimite la mașină”, vine cu linia Proiectelor, după proiectele în cont.
+  - Felul tăierii din panou e în datele aranjamentului (`taierea`: `lista` sau `butoane`); calculul butoanelor stă în
+    `src/app/taiereButoane.ts`. „Trimite la mașină” e acțiunea `export.trimite` (registrul exportului): App deschide
+    fereastra exportului cu butonul ei și duce programul în Mașina (`duInMasina`, ca „Deschide în Mașina”).
+  - După 28.1↑d, pe unirea cu `main` `e88dbc1e` (28.1↑c unită, 10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, A.1): pornirea 107,1 kB
+    (cu ușa 111,1 / 115), totalul 730,2 / 800 (creșterea vine din `main`); bucata Atelierului 0,31 kB, cu pornirea și
+    ușa 111,4 / 115. Felia singură, față de baza ei: pornirea +0,1, totalul +1,1.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
