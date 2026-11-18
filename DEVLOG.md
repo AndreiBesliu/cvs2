@@ -10225,3 +10225,20 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   503 / 509, cu 6 căderi în probele altor linii (riglele, exportul, cu un `EBUSY` al Playwright, mașina, cuțitul, proiectul în două file, Pen), altele decât cele de pe a treia unire. Cifrele din documente sunt cele de pe a treia unire.
   Proba filmului avea întâi `\d` într-un șablon JS scris prin heredoc, unde `\d` devine `d`: rescrisă cu o expresie literală.
 - **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.
+
+## 2026-11-18 — Completul roșu pe `0905a07a`: rolurile Atelierului cu fontul lat de pe Linux (Model: Claude Opus 5.5)
+
+**Prompt:** niciunul (incidentul: „Un CI roșu pe `main` e incidentul numărul unu”). **Started:** 18.11, 20:50.
+**Completed:** 18.11, 21:30.
+
+- **Căderea:** `atelier.taiere.spec.ts:107` (28.1↑d), doar pe Linux: la 1024 × 768, în panoul de 248 px, „Exterior” ieșea cu
+  9 px din butonul apăsat (DejaVu Sans, unde `system-ui` e lat); pe Windows, Segoe UI încăpea (49,1 în 54 px). Nimic
+  publicat: adresa de test a rămas pe `4a5f8400`.
+- **Proba** cere acum și fontul lat (Verdana aici), plus una în engleză; au căzut întâi pe codul vechi („Exterior”,
+  „Outside”, apoi „Straight-walled” rupt la cratimă: ~107 px în 94).
+- **Reparația** (`src/ui/atelier.css`): grila rolurilor e container; sub 16,25rem, rolurile câte două pe rând, incrustațiile
+  și rolurile omului pe tot rândul; de la ~1300 px, trei pe rând, ca pe planșă.
+- **Văzut în treacăt, neatins:** la 1024 px, cardul de sus al Atelierului („Exportă G-code” și iconițele transformării)
+  trece peste capul panoului din dreapta, cu orice font; de judecat în linia aranjamentelor.
+- **Porțile** pe `80142d26`, toate la prima rulare: unit 9 589 / 0, e2e 546 / 546, emulatoarele 101 / 101 și 29 / 29;
+  mărimile neschimbate (738,4 / 800, pornirea cu ușa 111,2 / 115).

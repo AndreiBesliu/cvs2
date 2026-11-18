@@ -1155,6 +1155,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Felul tăierii din panou e în datele aranjamentului (`taierea`: `lista` sau `butoane`); calculul butoanelor stă în
     `src/app/taiereButoane.ts`. „Trimite la mașină” e acțiunea `export.trimite` (registrul exportului): App deschide
     fereastra exportului cu butonul ei și duce programul în Mașina (`duInMasina`, ca „Deschide în Mașina”).
+  - Rolurile din butoane: trei pe rând doar unde încap și cu fontul lat; sub 16,25rem de grilă, câte două, iar
+    incrustațiile și rolurile omului pe tot rândul (`atelier.css`; completul roșu pe `0905a07a`). **O grilă de butoane
+    cu nume se probează și cu fontul lat** (Verdana aici; pe Linux, `system-ui` e lat).
   - După 28.1↑d, pe unirea cu `main` `e88dbc1e` (28.1↑c unită, 10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, A.1): pornirea 107,1 kB
     (cu ușa 111,1 / 115), totalul 730,2 / 800 (creșterea vine din `main`); bucata Atelierului 0,31 kB, cu pornirea și
     ușa 111,4 / 115. Felia singură, față de baza ei: pornirea +0,1, totalul +1,1.
