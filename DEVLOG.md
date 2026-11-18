@@ -9858,3 +9858,28 @@ apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
 - **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Aa`: regula id-urilor fișei nu primește `A.1`) cu
   traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
   **Completed:** 18.11 12:10.
+
+## 2026-11-18 — Felia 3.Th pornită: rotițele dințate (ADR 0169, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa facem ceva in plus la plugin-ul 3d. vreau sa pot face si rotite zimtate, ori drepte ori oblice (la
+marginea zimtata)” (owner-ul, în sesiunea principală, prin Remote Control: o sesiune nouă nu se putea porni, așa că
+propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 15:00.
+
+- **Ramura nouă din `main`:** `wip/3.Th-rotite`, din `e88dbc1e`, în worktree-ul `rotite` (joncțiunile `node_modules`, ca la
+  celelalte).
+- **Cercetarea:** roțile Technic au modulul 1 și unghiul de presiune de 20°, deci perechile obișnuite cad pe grila de 8 mm
+  (8 + 24, 16 + 16, 12 + 20 la 16 mm; 8 + 40, 24 + 24 la 24 mm) sau la jumătate de pas; doi oblici se prind doar cu sensuri
+  opuse și împing în lungul axului, cei în V nu.
+- **Prototipul** (`C:\Users\besli\cncvs2-lucru\unelte\proto-rotite\proto-rotite.mts`, în afara repo-ului): profilul
+  evolventic generat de cremaliera de referință (subtăierea la 8 dinți iese singură); angrenarea, verificată pe un pas
+  întreg de dinte la 13 perechi LEGO: zero pătrunderi, jocul minim 0,188 mm (2 × 0,1 × cos 20°); plasa închisă (zero muchii
+  fără pereche) la drepți, oblici (20°) și în V, cu gaura de ax dreaptă. Prima plasă avea 24 de puncte dublate (vârful
+  cremalierei doar atinge cercul de picior): razele pornesc acum puțin deasupra lui. Intersecția cerc–poligon, analitică:
+  profilul în 10–20 ms, plasa în 6–33 ms.
+- **ADR 0169, propus** (ultimul număr al liniei 0160–0169; următoarele iau 0280–0289). Schița, cu generatorul portat în
+  pagină (abaterea față de prototip sub 0,004 mm) și formularul (răspunsurile în `raspunsuri/owner`):
+  <https://claude.ai/artifact/K7CMJUfim5wHZ4JTpK1qPX>; colecția citită după publicare (goală). Întrebările: rotițele
+  moletate (1a / 1b) și jocul dintre dinți (2a / 2b); restul intră tot, fără întrebare (drepți, oblici, în V, cele trei
+  găuri, modulul, perechea).
+- **Documentele:** indexul ADR-urilor, fișa etapei 3 (rândul 3.Th, coada owner-ului) cu traducerile, jurnalul.
+- **Fără cod:** felia pornește după răspunsuri.
