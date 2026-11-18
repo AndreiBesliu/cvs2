@@ -85,7 +85,7 @@ function regiuniAlese(doc: Document, selectie: readonly string[], indexFoaie: nu
 /** Un număr rotunjit la 0,001 mm, cu virgulă în română. */
 const numar = (x: number, virgula: boolean): string => textNumar(Math.round(x * 1000) / 1000, virgula);
 
-export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, onLinie, onTaie, onInchide }: {
+export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, onLinie, onTaie, onAseaza, onInchide }: {
   readonly doc: Document;
   /** Foaia activă (ADR 0210 §1): pe ea se taie. */
   readonly indexFoaie?: number;
@@ -98,6 +98,8 @@ export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, on
   readonly onLinie: (l: LinieTaiere) => void;
   /** Aplică o tăiere calculată (acțiunea `document.taie`), cu verdictul ei. */
   readonly onTaie: (t: TaiereCalculata) => RezultatActiune;
+  /** „Așază pe foi” pe alegerea de acum (după „Taie în panouri”, panourile); lipsă: fără butonul din blocul panourilor. */
+  readonly onAseaza?: () => void;
   readonly onInchide: () => void;
 }): ReactElement {
   const virgula = useLimba() === 'ro';
@@ -286,7 +288,8 @@ export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, on
       <div className="butoane-retea">
         <button type="button" className="principal" data-taiere="taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.taie')}</button>
       </div>
-      <PanouriTaiere doc={doc} indexFoaie={indexFoaie} selectie={selectie} activ={grila} onActiv={() => { setGrila(true); }} onGrila={onLinie} onTaie={onTaie} />
+      <PanouriTaiere doc={doc} indexFoaie={indexFoaie} selectie={selectie} activ={grila} onActiv={() => { setGrila(true); }} onGrila={onLinie} onTaie={onTaie}
+        {...(onAseaza ? { onAseaza } : {})} />
       <fieldset className="campuri-taiere">
         <legend>{t('editare.taiere.decupare')}</legend>
         <p className="stare-taiere">{t('editare.taiere.decupare.text')}</p>

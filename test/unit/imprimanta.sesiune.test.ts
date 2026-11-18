@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { adresaRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from '../../src/machine/reteaLocala.ts';
 import {
-  CERERE_FISIERE, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
+  CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
-  MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, NOTA_ANULARE_MS, PAS_ANULARE_MS, PAS_ASTEPTARE_MS, PAUZE_RECONECTARE_MS,
+  MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, NOTA_ANULARE_MS, PAS_ANULARE_MS, PAS_ASTEPTARE_MS, PAUZA_ISTORIC_MS, PAUZE_RECONECTARE_MS,
   RACIRE_IMPLICITA_MIN, SesiuneImprimanta, TERMEN_ANULARE_ACUM_MS, TERMEN_ANULARE_MS, TIMP_PRIMUL_CADRU_MS, TIMP_STRATURI_MS, TIMP_TACERE_MS,
   type CeasImprimanta, type WebSocketText,
 } from '../../src/machine/imprimanta/sesiune.ts';
@@ -76,7 +76,7 @@ test('legarea: la deschidere pleacă doar citirile; primul cadru al imprimantei 
   const w = ultimul();
   assert.equal(w.url, 'ws://192.168.1.12:9999/');
   w.deschide();
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
   w.primeste(STARE);
   assert.deepEqual(await r, { ok: true });
   assert.equal(s.stare().legatura, 'conectat');
@@ -85,11 +85,11 @@ test('legarea: la deschidere pleacă doar citirile; primul cadru al imprimantei 
   w.primeste(INIMA);
   w.primeste('{"printProgress":27}');
   w.primeste(INIMA);
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, RASPUNS_INIMA, RASPUNS_INIMA]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, RASPUNS_INIMA, RASPUNS_INIMA]);
   assert.equal(s.stare().imprimanta.progres, 27);
   // Jurnalul: deschiderea (cu adresa), ce a plecat și ce a venit, în ordine.
   assert.deepEqual(s.stare().jurnal.map((l) => `${l.dir} ${l.text}`), [
-    'stare open ws://192.168.1.12:9999/', `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `primit ${STARE}`, `primit ${INIMA}`,
+    'stare open ws://192.168.1.12:9999/', `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `trimis ${CERERE_ISTORIC}`, `primit ${STARE}`, `primit ${INIMA}`,
     `trimis ok`, 'primit {"printProgress":27}', `primit ${INIMA}`, 'trimis ok',
   ]);
 });
@@ -136,7 +136,7 @@ test('bătaia inimii ca prim cadru o leagă și ea', async () => {
   ultimul().deschide();
   ultimul().primeste(INIMA);
   assert.deepEqual(await r, { ok: true });
-  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, RASPUNS_INIMA]);
+  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, RASPUNS_INIMA]);
 });
 
 test('comenzile pleacă doar cu legătura făcută, fiecare la chemarea ei', async () => {
@@ -150,10 +150,10 @@ test('comenzile pleacă doar cu legătura făcută, fiecare la chemarea ei', asy
   assert.equal(s.pauza(), true);
   assert.equal(s.reia(), true);
   assert.equal(s.opresteImprimarea(), true);
-  assert.deepEqual(ultimul().trimise.slice(2), [COMANDA_PAUZA, '{"method":"set","params":{"pause":0}}', '{"method":"set","params":{"stop":1}}']);
+  assert.deepEqual(ultimul().trimise.slice(3), [COMANDA_PAUZA, '{"method":"set","params":{"pause":0}}', '{"method":"set","params":{"stop":1}}']);
   // O cale în afara directorului G-code nu pleacă.
   assert.equal(s.porneste({ nume: 'x', cale: '/etc/passwd', timp: null, material: null, marime: null }), false);
-  assert.equal(ultimul().trimise.length, 5);
+  assert.equal(ultimul().trimise.length, 6);
 });
 
 test('eșecurile primei legări: timpul, ceva care tace, permisiunea refuzată, fără răspuns; fără reîncercări', async () => {
@@ -226,7 +226,7 @@ test('legătura căzută: „pierdută”, apoi se leagă singură din nou, cu p
   assert.equal(s.stare().legatura, 'conectat');
   assert.equal(s.stare().incercari, 0);
   assert.equal(s.stare().pierdutaLa, null);
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
   for (const x of ws) for (const t of x.trimise) assert.doesNotMatch(t, /"method":"set"/);
 });
 
@@ -284,7 +284,7 @@ test('Deconectează: închide legătura și nu mai încearcă nimic; imprimanta 
   assert.equal(ultimul().inchis, 1000);
   ceas.trece(120_000);
   assert.equal(ws.length, 1);
-  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE]);
+  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
 });
 
 test('un WebSocket vechi nu mai atinge starea după o legare nouă', async () => {
@@ -662,4 +662,31 @@ test('3.6r: piesa de acum (K1 o refuză): retrimisă cel mult 2 minute, confirma
   assert.equal(s.anuleazaPiesa('D'), true);
   s.deconecteaza();
   assert.deepEqual(s.stare().anulari, []);
+});
+
+test('3.6t: istoricul imprimantei: cerut la deschidere, cu citirile; ținut din cadrul lui; cerut din nou cel mult o dată la 5 s, doar cu legătura făcută', async () => {
+  const x = sesiune();
+  const { s, ceas, ultimul } = x;
+  assert.equal(s.cereIstoric(), false, 'fără legătură');
+  const r = s.conecteaza(ADRESA);
+  ultimul().deschide();
+  ultimul().primeste(STARE);
+  await r;
+  assert.equal(s.stare().istoric, null);
+  // Cererea de la deschidere ține loc și deschiderii cardului, imediat după.
+  assert.equal(s.cereIstoric(), false);
+  ultimul().primeste(JSON.stringify({ historyList: [{ filename: `${DIR_GCODE}a.gcode`, starttime: 1761305276, usagetime: 1140, usagematerial: 3712.4, printfinish: 1 }] }));
+  assert.deepEqual(s.stare().istoric, [{ fisier: 'a.gcode', inceput: 1761305276000, durata: 1140, filament: 3712.4, rezultat: 'gata' }]);
+  // Un cadru fără istoric nu-l uită.
+  ultimul().primeste(STARE);
+  assert.equal(s.stare().istoric?.length, 1);
+  treceViu(x, PAUZA_ISTORIC_MS - 1000);
+  assert.equal(s.cereIstoric(), false, 'sub 5 s');
+  ceas.trece(1000);
+  assert.equal(s.cereIstoric(), true);
+  assert.equal(ultimul().trimise.at(-1), CERERE_ISTORIC);
+  assert.equal(s.cereIstoric(), false, 'imediat după');
+  s.deconecteaza();
+  ceas.trece(PAUZA_ISTORIC_MS);
+  assert.equal(s.cereIstoric(), false, 'deconectată');
 });

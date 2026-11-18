@@ -46,6 +46,9 @@ export function formatFoaie(a: Pick<AlegeriFoaie, 'format' | 'alt'>): { readonly
   return FORMATE_FOAIE[a.format];
 }
 
+/** Rezultatul unei culori (ADR 0228): „Ca Rezultatul” (cel de sus), contururile sau liniile mediane. */
+export type RezultatCuloare = 'ca' | 'contururi' | 'mediane';
+
 /** Alegerile trasării pe culori (ADR 0221 §2–§3), după indicele culorii din reducere. */
 export type AlegeriCulori = {
   /** Câte culori (2–16); null: automat. */
@@ -54,6 +57,11 @@ export type AlegeriCulori = {
   readonly legaturi: readonly number[];
   /** Ce culori se trasează; null: toate, afară de fundal. */
   readonly bifate: readonly boolean[] | null;
+  /**
+   * Rezultatul fiecărei culori (ADR 0228, răspunsul 1a: implicit „Ca Rezultatul”); o culoare legată ia felul primei.
+   * null: toate „Ca Rezultatul”. O reducere nouă (alt număr) le șterge, ca pe legături și bife.
+   */
+  readonly rezultate: readonly RezultatCuloare[] | null;
 };
 
 /**
@@ -102,8 +110,11 @@ export type AlegeriTrasare = {
   readonly foaie: AlegeriFoaie;
 };
 
-/** Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal. */
-export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null };
+/**
+ * Culorile implicite (ADR 0221, răspunsul 1a): numărul automat, fără legături, toate afară de fundal; fiecare, „Ca
+ * Rezultatul” (ADR 0228, răspunsul 1a).
+ */
+export const CULORI_IMPLICITE: AlegeriCulori = { numar: null, legaturi: [], bifate: null, rezultate: null };
 
 /**
  * Opțiunile implicite ale liniei mediane (ADR 0223, răspunsurile 1a–3a): recomandările din ADR 0222, cu semnalarea pornită;

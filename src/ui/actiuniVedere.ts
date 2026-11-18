@@ -7,7 +7,7 @@ import type { Actiune } from './actiuni.ts';
  */
 export type ContextVedere = {
   readonly [K in 'paleta' | 'lista' | 'proprietati' | 'proiectare' | 'masina' | 'imprimanta' | 'potriveste' | 'tema' | 'traseu' | 'foaia-anterioara'
-    | 'foaia-urmatoare' | 'toate-foile']: () => void
+    | 'foaia-urmatoare' | 'toate-foile' | 'aspect']: () => void
 };
 
 const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
@@ -24,8 +24,9 @@ const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
 // rețea (ADR 0190).
 // `foaia-anterioara`, `foaia-urmatoare` (ADR 0210 §1): foaia activă a ferestrei, după lista foilor (PgUp / PgDn); la capăt,
 // nimic. Foaia activă e o vedere, deci nu e o comandă a documentului. `toate-foile` (felia 11.1↑b): comutatorul „Toate foile pe
-// pânză” / doar foaia activă, ținut în browser; pornit, le încadrează pe toate.
+// pânză” / doar foaia activă, ținut în browser; pornit, le încadrează pe toate. `aspect` (ADR 0250 §3, felia 28.1↑b): fereastra
+// Aspectul (aranjamentul, tema, butoanele mari), din paletă; tot ea, din meniul contului.
 export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = ([
   'paleta', 'lista', 'proprietati', 'proiectare', 'masina', 'imprimanta', 'potriveste', 'tema', 'traseu', 'foaia-anterioara', 'foaia-urmatoare',
-  'toate-foile',
+  'toate-foile', 'aspect',
 ] as const).map(vedere);

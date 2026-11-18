@@ -40,7 +40,7 @@ export type Eveniment = {
 };
 
 /** O lucrare în curs: pornirea ei, imprimarea, pauza. */
-const LUCREAZA: ReadonlySet<StareLucrare> = new Set<StareLucrare>(['pregatire', 'imprima', 'pauza']);
+export const LUCREAZA: ReadonlySet<StareLucrare> = new Set<StareLucrare>(['pregatire', 'imprima', 'pauza']);
 
 const maxim = (a: number | null, b: number | null): number | null => (a === null ? b : b === null ? a : Math.max(a, b));
 

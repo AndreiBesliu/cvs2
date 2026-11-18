@@ -128,7 +128,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 103)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 108)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -144,8 +144,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // Unealta Cuțit (ADR 0181, felia 10.3↑f), încă una: `unealta.cutit`. Foile (ADR 0210 §1), încă nouă: foaia nouă,
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor. Raportul foilor și
-  // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`.
-  assert.equal(USI.length, 107);
+  // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
+  // încă una: `vedere.aspect`.
+  assert.equal(USI.length, 108);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -273,11 +274,18 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'notificari-sunet': 'imprimanta.notificari.sunet', 'notificari-sistem': 'imprimanta.notificari.sistem',
   'notificari-titlu': 'imprimanta.notificari.titlu', 'notificari-legare': 'imprimanta.notificari.legare',
   'anunt-deschide': 'imprimanta.anunt.deschide', 'anunt-inchide': 'imprimanta.anunt.inchide',
+  // Felia 3.6t (ADR 0194 §B): cardul Istoricul (`src/app/IstoricImprimanta.tsx`; câmpul de preț e unul pentru toate materialele,
+  // `data-material` spune care) și bifa estimării care învață, din „Din desen…”.
+  'istoric-csv': 'imprimanta.istoric.csv', 'istoric-goleste': 'imprimanta.istoric.goleste',
+  'istoric-goleste-confirma': 'imprimanta.istoric.goleste.confirma', 'istoric-goleste-renunta': 'imprimanta.istoric.goleste.renunta',
+  'istoric-pret': 'imprimanta.istoric.pret', 'istoric-putere': 'imprimanta.istoric.putere', 'istoric-kwh': 'imprimanta.istoric.kwh',
+  'felie-corecteaza': 'imprimanta.felie.corecteaza',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {
   // Din 3.6r, și placa are controale (anularea unei piese).
-  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx');
+  const fereastra = citeste('src/app/PanouImprimanta.tsx') + citeste('src/app/PlacaImprimanta.tsx') + citeste('src/app/VestiriImprimanta.tsx')
+    + citeste('src/app/IstoricImprimanta.tsx');
   const dialog = citeste('src/app/DialogDinDesen.tsx');
   assert.doesNotMatch(fereastra, /data-imprimanta=\{/);
   assert.doesNotMatch(dialog, /data-imprimanta=\{/);
@@ -360,7 +368,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
     assert.ok(USI.some((u) => u.id === usa), `${c} → ${usa}`);
   }
   // Și ușile ajutorului după context (F1, `usaDeAcum` din Editare) sunt acoperite.
-  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
+  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.aspect', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
   }
@@ -368,14 +376,15 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
 
 /**
  * Rândurile meniului contului (ADR 0120), cu ușa care le acoperă și cheia textului de pe rând: manualul și sugestia au
- * ușile lor de dinainte, iar logarea, panoul, raportările (ADR 0116 §C) și ieșirea stau în capitolul contului. Un rând nou,
- * lipsă de aici, face proba să cadă.
+ * ușile lor de dinainte, aspectul (ADR 0250 §3) pe a acțiunii lui din paletă, iar logarea, panoul, raportările (ADR 0116 §C)
+ * și ieșirea stau în capitolul contului. Un rând nou, lipsă de aici, face proba să cadă.
  */
 const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; readonly cheie: string }>> = {
   cont: { usa: 'editare.cont', cheie: 'editare.cont.al-meu' },
   intra: { usa: 'editare.cont', cheie: 'editare.cont.intra' },
   raportari: { usa: 'editare.cont', cheie: 'editare.cont.raportari' },
   manual: { usa: 'editare.manual', cheie: 'editare.manual' },
+  aspect: { usa: 'vedere.aspect', cheie: 'editare.cont.aspect' },
   raporteaza: { usa: 'editare.cont', cheie: 'editare.cont.raporteaza' },
   sugestie: { usa: 'editare.sugestie', cheie: 'editare.sugestie' },
   iesi: { usa: 'editare.cont', cheie: 'editare.cont.iesi' },

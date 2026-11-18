@@ -34,6 +34,11 @@ export type OptiuniCulori = {
   readonly lumina?: Lumina;
   /** Doar etichetele, fără plasă și contururi (piesele, goale): liniile mediane pe culori le iau de aici (ADR 0227). */
   readonly doarEtichete?: boolean;
+  /**
+   * Culorile trasate pe linii mediane (ADR 0228; după indicele reducerii, la prima din lanțul ei): fără contururi aici, le
+   * face `traseazaCuloriMediane`. Lipsă: niciuna. Cu toate culorile bifate pe linii, doar etichetele, fără plasă.
+   */
+  readonly peLinii?: readonly boolean[];
 };
 
 export type CuloarePaleta = {
@@ -523,6 +528,8 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
   const prima = primele(o.legaturi, K);
   const eFundal = (l: number): boolean => l >= K || (fundal >= 0 && l === (prima[fundal] ?? -1));
   const bifata = (l: number): boolean => l < K && (prima[l] ?? -1) === l && (o.bifate ? o.bifate[l] === true : !eFundal(l));
+  // Pe contururi (ADR 0228): o culoare bifată care nu e pe linii mediane.
+  const peContur = (l: number): boolean => bifata(l) && o.peLinii?.[l] !== true;
   const et = new Int16Array(n);
   for (let p = 0; p < n; p++) { const l = orig[p] ?? 0; et[p] = l < K ? (prima[l] ?? l) : l; }
   // Câștigătorul unei celule-șa (A pe o diagonală, B pe cealaltă): niciodată fundalul; între două culori, cea mai apropiată
@@ -655,7 +662,9 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
     for (let p = 0; p < n; p++) { const l = et[p] ?? 0; e[p] = l < K ? l : 255; }
     return e;
   };
-  if (o.doarEtichete === true) return { ok: true, piese: [], raport: raport0(), etichete: eticheteFinale() };
+  if (o.doarEtichete === true || (o.peLinii !== undefined && !Array.from({ length: K }, (_, l) => peContur(l)).includes(true))) {
+    return { ok: true, piese: [], raport: raport0(), etichete: eticheteFinale() };
+  }
   let preaMulte = false;
   for (let cy = 0; cy <= H && !preaMulte; cy++) {
     jos.fill(-1);
@@ -819,8 +828,8 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
   const tau = margini === 'dure' ? Math.max(trepte.tau, EPS_DUR) : trepte.tau;
   const depasire = margini === 'dure' ? 1.5 : 0.9;
   let abatere = 0;
-  // Doar arcele care mărginesc o culoare trasată.
-  const folosit = (a: Arc): boolean => bifata(a.stanga) || bifata(a.dreapta);
+  // Doar arcele care mărginesc o culoare trasată pe contururi.
+  const folosit = (a: Arc): boolean => peContur(a.stanga) || peContur(a.dreapta);
   for (const a of arce) {
     if (!folosit(a)) continue;
     if (a.inchis) {
@@ -847,7 +856,7 @@ export function traseazaCulori(intrare: ImagineRGBA, o: OptiuniCulori): Rezultat
   const piese: PiesaCuloare[] = [];
   let contururi = 0, varfuri = 0;
   for (let L = 0; L < K; L++) {
-    if (!bifata(L)) continue;
+    if (!peContur(L)) continue;
     const jumatati: Jumatate[] = [];
     for (const a of arce) {
       if (a.stanga === L) jumatati.push({ arc: a, invers: false });

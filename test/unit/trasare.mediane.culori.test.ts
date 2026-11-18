@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { OptiuniCulori } from '../../src/trasare/culori.ts';
-import { traseazaCuloriMediane, type OptiuniMedianeCulori, type RezultatCuloriMediane } from '../../src/trasare/medianeCulori.ts';
+import { traseazaCuloriMediane, type OptiuniMedianeCulori, type PiesaMediana, type RezultatCuloriMediane } from '../../src/trasare/medianeCulori.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
 import { HARTIE_COLOR, LINII_COLORATE, MIJLOC_LINII, desenLiniiColorate } from './ajutor-poze.ts';
 
@@ -22,8 +22,8 @@ function trasat(om: Partial<OptiuniMedianeCulori> = {}, oc: Partial<OptiuniCulor
   assert.ok(r.ok);
   return r;
 }
-/** Piesa culorii cu numele dat (cea mai apropiată culoare din paletă). */
-function piesa(r: Ok, nume: Nume): Ok['piese'][number] {
+/** Piesa culorii cu numele dat (cea mai apropiată culoare din paletă), pe linii mediane (toate sunt, fără `peLinii`). */
+function piesa(r: Ok, nume: Nume): PiesaMediana {
   const t = LINII_COLORATE[nume];
   let bun = r.piese[0], d = Infinity;
   for (const p of r.piese) {
@@ -32,6 +32,7 @@ function piesa(r: Ok, nume: Nume): Ok['piese'][number] {
     if (e < d) { d = e; bun = p; }
   }
   assert.ok(bun && d < 400, `${nume}: nicio piesă apropiată`);
+  assert.ok('grosime' in bun, `${nume}: piesa nu e pe linii mediane`);
   return bun;
 }
 function numara(c: CaiTrasate): { deschise: number; bucle: number; contururi: number } {
