@@ -10026,3 +10026,37 @@ concentram pe softul nostru”.
 - **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Ab`) cu traducerea, lista otrăvurilor și rândul
   ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
   **Completed:** 18.11 14:39.
+
+## 2026-11-18 — 3.6u: filmele timelapse ale imprimantei (ADR 0194 §C) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (17.11, la reluare, după „neata! da drumul celorlalte worktrees” al owner-ului): „Apoi
+3.6u, din grupul 3 aprobat („Da, grupul 3”), cu aceeași disciplină.”
+**Started:** 17.11, 10:00. **Completed:** 18.11, 17:14.
+
+- **Driverul și sesiunea:** `elapseVideoList` citit în starea comună (`filme`; numele doar `<cifre>.mp4`, începutul în
+  secunde, fișierul sigur, cel mult 100), `reqElapseVideoList` printre citiri, adresa filmului în driver (`adresaFilm`, K1:
+  `http://<gazdă>/downloads/video/<nume>`), `cereFilme` (cel mult o dată la 5 s, separat de istoric).
+- **Filmul fiecărei imprimări** (`filmePe`, în `istoricImprimari.ts`): fișierul și începutul imprimantei, ±10 min, cel mai apropiat,
+  câte unul; `uneste` primește filmele.
+- **Fereastra:** coloana Filmul a cardului Istoricul („Filmul ↗”, filă nouă, fără trimitător; „—” fără film), ajutorul cardului,
+  manualul (ro, en). Istoricul și filmele, cerute din nou la fiecare deschidere a ferestrei cu imprimanta legată: cererea de la
+  montarea cardului (3.6t) nu pleca niciodată, fiindcă fereastra se montează înaintea legăturii (sau ascunsă, cu legarea la
+  pornire); a găsit-o proba e2e nouă, cu legarea la pornire.
+- **Imprimanta falsă:** lista la cerere și după lista fișierelor (`k1c-2025`), filmul lucrării cu `timelapse`, `GET
+  /downloads/video/<nume>` (200 pentru un nume din listă, altfel 404).
+- **Probe și porți:** 5 pe hârtie, una a sesiunii, manualul, două e2e; unit 9 570 (9 562 trecute, 0 căderi, 8 sărite),
+  build-ul determinist (336 fișiere), e2e 522 / 530 (cele 8 căderi, în probele altor linii, din încărcare: singure, 8 / 8), pe unirea cu `main` `4a5f840`
+  (`005ab99`, 18.11; `main` de după 3.6t, cu 10.3↑l–m, 11.3↑b, 12.1↑f-2, 25.3↑e, 25.6↑–25.7↑, 28.1↑c, A.1 și A.2).
+  Otrăvurile (`test/otravuri/3.6u.py`): 37 / 37 (28 pe probele unitare, 9 prin e2e); din lista 3.6t, șapte aduse la textul nou
+  și probate din nou. Ghidul, pasul 11.
+- **Mărimea:** totalul 732,7 / 800 kB (+0,5 față de `main` `4a5f840`, măsurat A/B pe aceeași mașină), pornirea
+  107,0 (cu ușa 111,0 / 115), neschimbată.
+  Privit în Chromium, în engleză: la 1280 px (luminos) și la 390 px (întunecat), cardul încape, iar „Video ↗” se vede pe rândul cu film.
+- **Pe drum:** codul s-a scris în clona `otravuri-36g` (ramura locală `lucru-3.6u`, din `424637b`) cât porțile 3.6t așteptau
+  liniștea; adus apoi peste `main` `71d488a` cu `cherry-pick` (fără conflicte). `main` adus în ramură încă de trei ori, fără
+  ciocniri: `b6aaa548` (doar DEVLOG), `ae5a13c4` (10.3↑l, 25.3↑e) și `4a5f8400` (10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, 25.7↑,
+  28.1↑c, A.1, A.2). Pe a doua unire (`83659f0`), mărimea (+0,5) și suita unitară au trecut pe 17.11 seara; procesul sesiunii
+  s-a oprit peste noapte după build, iar e2e-ul reluat pe 18.11 („neata! poti sa repornesti toate worktrees”) a dat
+  503 / 509, cu 6 căderi în probele altor linii (riglele, exportul, cu un `EBUSY` al Playwright, mașina, cuțitul, proiectul în două file, Pen), altele decât cele de pe a treia unire. Cifrele din documente sunt cele de pe a treia unire.
+  Proba filmului avea întâi `\d` într-un șablon JS scris prin heredoc, unde `\d` devine `d`: rescrisă cu o expresie literală.
+- **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.
