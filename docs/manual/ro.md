@@ -848,6 +848,14 @@ culoare (nu peste hârtie); raportul numără legăturile. Fiecare pastilă spun
 foaia are o singură freză, cum stă ea față de trăsătură; **Arată grosimea** desenează banda fiecărei culori cu grosimea
 ei. **Importă** pune câte o formă pe culoare, cu liniile ei tăiate pe linie.
 
+**Rezultatul fiecărei culori:** sub „Se trasează”, fiecare pastilă are lista ei: **Ca Rezultatul** (implicit: felul ales
+sus), **Contururi** sau **Linii mediane**. Așa, un logo cu forme pline într-o culoare și linii în alta iese dintr-o
+singură trasare: formele pline pe contururi (de buzunărit sau de incrustat), liniile pe linii mediane (tăiate pe linie).
+O culoare legată ia felul primei. Opțiunile liniilor mediane apar cât măcar o culoare e pe linii și sunt comune lor;
+pragul automat al părților late vine atunci doar din grosimea lor, iar legarea trece și peste culorile pe contururi. Un
+număr nou de culori șterge alegerile, ca pe bife și pe legături. **Importă** pune câte o formă pe culoare, fiecare cu
+felul ei.
+
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
 - scanările îndreptate vin mai târziu;
@@ -927,18 +935,26 @@ pânză, pe formele alese, în locul fâșiei. Nu se face, iar panoul spune de c
 model care nu iese cu mărimile date (o rotunjire care nu încape în dinte, o rază a valului sau a puzzle-ului sub cea dată)
 și dinții care ar atinge marginea unei forme (o latură oblică sau o gaură prea aproape de tăietură).
 
-**Taie în panouri** (un bloc al panoului): o firmă mai mare decât masa mașinii se taie în panouri, care se prind apoi unul
-de altul. Se taie formele alese (fără nimic ales, toate formele foii), pe o grilă peste cutia lor: cu **Mărimea panoului**,
-lățimea × înălțimea în mm (implicit, materialul foii), sau cu **Numărul de panouri**, pe lățime × pe înălțime. Cu mărimea,
-**Panourile** sunt **egale** (implicit: cel mai mic număr care încape, toate de aceeași mărime) sau **din colț** (panouri
-pline de la colțul din stânga-jos, plus ce rămâne): firma de 2 400 × 1 000 mm, cu panoul de 1 200 × 900, dă patru panouri de
-1 200 × 500, respectiv două de 1 200 × 900 și două de 1 200 × 100. Sub câmpuri, panoul spune câte panouri ies, iar cât
-lucrezi în bloc, grila se vede pe pânză. Tăieturile sunt ale liniilor din panou, cu **Închide bucățile**, **Între bucăți**
-și **Îmbinarea** de mai sus: dinții prind panourile între ele, iar jocul le lasă să intre unul în altul. Bucățile fiecărui
-panou devin un grup, **Panoul 1**, **Panoul 2** … (rând cu rând, de jos, de la stânga), și stau unde erau; un panou cu o
-singură bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte
-și de alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie;
-nici o formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
+**Taie în panouri** (un bloc al panoului): o firmă mai mare decât masa mașinii se taie în panouri, care se prind apoi unul de
+altul. Se taie formele alese (fără nimic ales, toate formele foii), pe o grilă peste cutia lor: cu **Mărimea panoului**,
+lățimea × înălțimea în mm, sau cu **Numărul de panouri**, pe lățime × pe înălțime. Cu mărimea, **Panourile** sunt **egale**
+(implicit: cel mai mic număr care încape, toate de aceeași mărime) sau **din colț** (panouri pline de la colțul din
+stânga-jos, plus ce rămâne): firma de 2 400 × 1 000 mm, cu panoul de 1 200 × 900, dă patru panouri de 1 200 × 500, respectiv
+două de 1 200 × 900 și două de 1 200 × 100. Implicit, mărimea e cât încape un panou pe foaie la **Așază pe foi**: foaia fără
+marginile așezării (cele ținute de la ultima așezare, fiecare cel puțin raza frezei profilului exterior) și fără dinții,
+jocul sau suprapunerea de pe ambele laturi; pe o foaie de 1 200 × 900 cu marginile de 10 mm, 1 180 × 880, iar cu dinții de
+20, 1 160 × 860 (firma de mai sus iese atunci în șase panouri de 800 × 500). Mărimea implicită urmează opțiunile până scrii
+alta; **Cât încape pe foaie** o pune la loc. Dacă cel mai mare panou, cu dinții, n-ar încăpea pe foaie (cum e sau, cu rotirea
+ținută a așezării, culcat), blocul o spune înaintea tăierii. Sub câmpuri, panoul spune câte panouri ies, iar cât lucrezi în
+bloc, grila se vede pe pânză. Tăieturile sunt ale liniilor din panou, cu **Închide bucățile**, **Între bucăți** și
+**Îmbinarea** de mai sus: dinții prind panourile între ele, iar jocul le lasă să intre unul în altul. Dinții fiecărei
+tăieturi stau între liniile celeilalte axe: la încrucișarea a patru panouri, laturile sunt drepte cel puțin o jumătate de
+pas, deci niciun dinte nu e tăiat de tăietura vecină. Bucățile fiecărui panou devin un grup, **Panoul 1**, **Panoul 2** …
+(rând cu rând, de jos, de la stânga), stau unde erau și rămân alese: **Așază pe foi…**, din bloc, deschide fereastra așezării
+pe ele (marginile, distanța, ordinea și rotirea ei), ca să le pună pe foi, câte încap pe fiecare; un panou cu o singură
+bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte și de
+alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; nici o
+formă pusă de mai multe ori pe foaie. **Taie în panouri** e un singur pas de anulare.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă

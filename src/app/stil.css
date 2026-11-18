@@ -2901,3 +2901,7 @@ main h1 {
   width: auto;
   flex: 1 1 6rem;
 }
+/* „Se trasează” pe rândul lui; dedesubt, rezultatul culorii (ADR 0228, răspunsul 2a) și „Leagă de…”. */
+.trasare-pastila-legatura > label {
+  flex-basis: 100%;
+}
