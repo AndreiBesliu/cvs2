@@ -429,3 +429,28 @@ după planșe?”. A răspuns „Da, sunt gata”.
     și „Trimite la mașină” (acțiunea nu există încă).
   - Mărimea, pe unirea cu `main` `b6aaa54`: pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 / 800; bucata
     Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
+- **28.1↑d, 18.11: tăierea din butoane mari, în Atelier** (aceeași ramură, adusă la `main` `ae5a13c4` la pornire;
+  ciocnire doar în DEVLOG):
+  - Tipul `Aranjament` are câmpul `taierea`: `lista` (Insule: rolul din listă, câmpurile) sau `butoane` (Atelier);
+    `verificaAranjament` prinde un fel necunoscut.
+  - În Atelier, tăierea stă prima în panoul de proprietăți, ca pe planșa „C · Întunecat”: felul ei din butoane mari
+    (rolurile care se potrivesc formelor alese, apoi rolurile omului; apăsat e rolul de acum), adâncimea și pasul cu − /
+    + (câte 0,5 mm, la micron; oprite înainte de zero și când formele alese au valori diferite, cu motivul în sfat;
+    câmpul dintre ele rămâne de scris), cartela frezei (freza comună: numărul, felul, diametrul; „Schimbă” deschide
+    fereastra exportului, unde se alege freza). Calculul stă în `src/app/taiereButoane.ts`.
+  - „Trimite la mașină” e o acțiune nouă a registrului exportului (`export.trimite`, cu starea lui `export.gcode`), deci
+    e și în paletă, în orice aranjament. Deschide fereastra exportului cu butonul „Trimite la mașină”; după un export pe
+    care senderul îl vorbește (familia GRBL), programul intră în Mașina fără să pornească, ca prin „Deschide în Mașina”
+    (ADR 0132 §7), fără al doilea clic. Fișierul se descarcă și aici, ca la orice export. Cu un controler pe care
+    senderul nu-l vorbește (NcStudio, RichAuto), butonul e „Exportă”, iar nota postului spune de ce. Lista de dinainte
+    de pornire (planșa „C · Trimite la mașină”) rămâne a ferestrei Mașina (§8, etapa 13).
+  - „Trimite la mașină” și „Exportă G-code” stau la capătul panoului, lipite de marginea lui de jos (la vedere oricât se
+    derulează), cu motivul unui refuz scris (pe tabletă sfatul nu se vede); sub 1024 px, unul lângă altul. De la 1024
+    px, panourile Atelierului sunt mai late (până la 320 px, ca pe planșă), ca rolurile să încapă câte trei pe rând, cu
+    numele întregi.
+  - Manualul: capitolul „Atelierul” acoperă `export.trimite` (ușa a 109-a); pasul `x-atelier` al testului din aplicație
+    cere și tăierea din butoane și trimiterea.
+  - Rămân pentru felia zoomului (ideile turei a zecea): Lipire și Grilă cu nume pe pânză, zoomul de 64 px, gesturile cu
+    două degete.
+  - Mărimea, pe codul cu `main` `ae5a13c4`: pornirea 107,1 kB (cu ușa 111,1 / 115), totalul 719,0 / 800; bucata
+    Atelierului 0,32 kB, cu pornirea și ușa 111,4 / 115. Față de baza `354ed251`: pornirea +0,1, totalul +1,1.
