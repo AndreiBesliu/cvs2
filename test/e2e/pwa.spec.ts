@@ -436,10 +436,15 @@ test('progresul, la prima vizită: „Pregătesc lucrul offline” cu procentul,
     await page.goto('/');
     await expect(progresul(page)).toBeVisible({ timeout: 20_000 });
     await expect(progresul(page)).toHaveText(/^Pregătesc lucrul offline: \d{1,2} %$/);
-    const p = await valoarea(page);
+    // Bara și textul, citite deodată (în aceeași sarcină a paginii): între două citiri separate, o bucată ajunsă între timp
+    // în cache crește procentul, iar textul nu mai conține valoarea citită întâi (2 din 9 rulări, pe main și pe ramuri, 17.11).
+    const { p, text } = await progresul(page).evaluate((el) => ({
+      p: Number(el.querySelector('progress')?.getAttribute('value')),
+      text: el.textContent ?? '',
+    }));
     expect(p).toBeGreaterThanOrEqual(0);
     expect(p).toBeLessThan(100);
-    expect(await progresul(page).textContent()).toContain(`${p} %`);
+    expect(text).toContain(`${p} %`);
     await workerActiv(page);
     await expect(progresul(page)).toHaveCount(0);
     await expect(page.getByTestId('actualizare')).toHaveCount(0);

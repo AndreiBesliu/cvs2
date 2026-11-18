@@ -83,11 +83,11 @@ test('o valoare stricată dă Insule și densitatea normală, fără erori în c
 });
 
 test('un aranjament pe care build-ul nu-l are încă: Insule, cu densitatea aleasă, iar alegerea omului rămâne ținută', async ({ page }) => {
-  await cuAlegerea(page, '{"v":1,"aranjament":"atelier","densitate":"mare"}');
+  await cuAlegerea(page, '{"v":1,"aranjament":"clasic","densitate":"mare"}');
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('CNC Vector Studio');
   expect((await atributele(page)).acum).toEqual({ aranjament: 'modern', densitate: 'mare' });
-  expect(await page.evaluate((c) => localStorage.getItem(c), CHEIE)).toBe('{"v":1,"aranjament":"atelier","densitate":"mare"}');
+  expect(await page.evaluate((c) => localStorage.getItem(c), CHEIE)).toBe('{"v":1,"aranjament":"clasic","densitate":"mare"}');
 });
 
 /** Fereastra Aspectul, deschisă din rândul ei din meniul contului. */
@@ -102,7 +102,7 @@ async function deschideAspectul(page: Page, nume = 'Aspectul interfeței'): Prom
 
 const tinut = (page: Page, cheie = CHEIE): Promise<string | null> => page.evaluate((c) => localStorage.getItem(c), cheie);
 
-test('meniul contului: „Aspectul…” după Manual, cu aranjamentul de acum; fereastra arată cele patru, trei „în curând”', async ({ page }) => {
+test('meniul contului: „Aspectul…” după Manual, cu aranjamentul de acum; fereastra arată cele patru, Clasic și Pas cu pas „în curând”', async ({ page }) => {
   await page.goto('/');
   const meniu = await deschideMeniulContului(page);
   const rand = meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="aspect"]');
@@ -112,7 +112,7 @@ test('meniul contului: „Aspectul…” după Manual, cu aranjamentul de acum; 
   const f = page.getByRole('dialog', { name: 'Aspectul interfeței' });
   await expect(f).toBeVisible();
   await expect(f).toContainText('Se aplică pe loc. Alegerea rămâne pe acest dispozitiv; pe tabletă poți alege altul.');
-  // Cele patru, în ordinea din ADR; doar Insule se poate alege acum, și e aleasă, cu focusul pe ea.
+  // Cele patru, în ordinea din ADR; Insule e aleasă, cu focusul pe ea; Atelierul se poate alege (felia 28.1↑c).
   const aranjamente = f.getByRole('radiogroup', { name: 'Aranjamentul' }).getByRole('radio');
   await expect(aranjamente).toHaveCount(4);
   const insule = f.getByRole('radio', { name: 'Insule implicit' });
@@ -122,7 +122,6 @@ test('meniul contului: „Aspectul…” după Manual, cu aranjamentul de acum; 
   await expect(insule).toHaveAccessibleDescription('Pânza pe tot ecranul, barele plutesc deasupra ei.');
   for (const [nume, descriere] of [
     ['Clasic', 'Meniuri, panouri andocate și linia de comandă.'],
-    ['Atelier', 'Butoane mari, pentru tabletă și lângă mașină.'],
     ['Pas cu pas', 'Te duce de la desen la mașină, pas cu pas.'],
   ] as const) {
     const r = f.getByRole('radio', { name: `${nume} în curând` });
@@ -130,6 +129,10 @@ test('meniul contului: „Aspectul…” după Manual, cu aranjamentul de acum; 
     await expect(r).not.toBeChecked();
     await expect(r).toHaveAccessibleDescription(descriere);
   }
+  const atelier = f.getByRole('radio', { name: 'Atelier', exact: true });
+  await expect(atelier).toBeEnabled();
+  await expect(atelier).not.toBeChecked();
+  await expect(atelier).toHaveAccessibleDescription('Butoane mari, pentru tabletă și lângă mașină.');
   // Tema și densitatea, cu ce e acum: după sistem, butoanele obișnuite.
   await expect(f.getByRole('radiogroup', { name: 'Tema' }).getByRole('radio', { name: 'după sistem' })).toBeChecked();
   await expect(f.getByRole('switch', { name: 'Butoane mari' })).not.toBeChecked();
@@ -242,7 +245,8 @@ test('în engleză: rândul, fereastra și numele aranjamentelor', async ({ page
   const f = page.getByRole('dialog', { name: 'Interface appearance' });
   await expect(f).toBeVisible();
   await expect(f.getByRole('radio', { name: 'Islands default' })).toBeChecked();
-  for (const nume of ['Classic', 'Workshop', 'Step by step']) await expect(f.getByRole('radio', { name: `${nume} coming soon` })).toBeDisabled();
+  for (const nume of ['Classic', 'Step by step']) await expect(f.getByRole('radio', { name: `${nume} coming soon` })).toBeDisabled();
+  await expect(f.getByRole('radio', { name: 'Workshop', exact: true })).toBeEnabled();
   await expect(f.getByRole('switch', { name: 'Big buttons' })).toBeVisible();
   await expect(f.getByRole('button', { name: 'Keep' })).toBeVisible();
   await f.getByRole('button', { name: 'Cancel' }).click();

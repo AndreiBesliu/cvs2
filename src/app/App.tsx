@@ -19,7 +19,8 @@ import {
   ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
 } from '../ui/aranjament.ts';
-import { TEME, type Tema } from '../ui/alegereAranjament.ts';
+import { TEME, type IdAranjament, type Tema } from '../ui/alegereAranjament.ts';
+import { incarcaAranjament } from '../ui/incarcaAranjament.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { ACTIUNI_EXTENSII, type ContextExtensii } from '../ui/actiuniExtensii.ts';
@@ -263,7 +264,20 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
   return null;
 }
 
-export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN, actualizare, progresActualizare }: Props) {
+export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament: aranjamentPornire = ARANJAMENT_MODERN, actualizare, progresActualizare }: Props) {
+  /** Aranjamentul de acum (ADR 0250): cel de la pornire, apoi cel ales în fereastra Aspectul, adus pe loc. */
+  const [aranjament, setAranjament] = useState(aranjamentPornire);
+  const alegeAranjament = (id: IdAranjament): Promise<boolean> => incarcaAranjament(id).then((a) => {
+    setAranjament(a);
+    document.documentElement.dataset['aranjament'] = a.id;
+    // Zona liberă s-a mutat (alte bare, alte panouri): foaia se potrivește din nou în ea, ca la „Arată toată foaia”.
+    setCadruPotrivire(null);
+    setPotrivire((n) => n + 1);
+    return true;
+  }, (e: unknown) => {
+    jurnal.adaugaLocala('promisiune', e);
+    return false;
+  });
   const limbaActiva = useLimba();
   const aplicaActualizare = useSyncExternalStore(actualizare.asculta, actualizare.citeste);
   const progres = useSyncExternalStore(progresActualizare.asculta, progresActualizare.citeste);
@@ -425,6 +439,24 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [potrivire, setPotrivire] = useState(0);
   /** Zona pânzei pe care n-o acoperă barele și panourile: foaia se potrivește în ea. */
   const zona = useRef<HTMLDivElement>(null);
+  /**
+   * Un aranjament cu extensia barei într-o coloană mai îngustă decât fereastra (Atelierul, felia 28.1↑c): când o umple
+   * modulul editării, după prima potrivire, extensia se rupe pe mai multe rânduri și zona liberă coboară. O singură dată, la
+   * sosirea modulului, foaia se potrivește din nou în zona de acum. Insulele nu au nevoie: acolo locul extensiei e rezervat.
+   */
+  useEffect(() => {
+    if (aranjament.id === ARANJAMENT_MODERN.id) return;
+    const ext = document.getElementById('loc-extensie');
+    if (!ext || ext.childElementCount > 0) return;
+    let cadru = 0;
+    const mo = new MutationObserver(() => {
+      if (ext.childElementCount === 0) return;
+      mo.disconnect();
+      cadru = requestAnimationFrame(() => { setCadruPotrivire(null); setPotrivire((n) => n + 1); });
+    });
+    mo.observe(ext, { childList: true });
+    return () => { mo.disconnect(); cancelAnimationFrame(cadru); };
+  }, [aranjament.id]);
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
   const fisierImport = useRef<HTMLInputElement>(null);
@@ -1550,7 +1582,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           aseaza={(c) => ruleaza(registru, 'foaie.aseaza', context({ asezare: () => c }))}
           onInchide={() => { setDialogAsezare(false); }} />
       )}
-      {aspect && <Aspectul tema={tema} onTema={schimbaTema} onInchide={() => { setAspect(false); }} focusInapoi={focusAspect.current} />}
+      {aspect && (
+        <Aspectul tema={tema} onTema={schimbaTema} onAranjament={alegeAranjament} onInchide={() => { setAspect(false); }}
+          focusInapoi={focusAspect.current} />
+      )}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}

@@ -2,6 +2,7 @@
 # Escape pun la loc densitatea și tema, Păstrează scrie alegerea, densitatea se aplică pe loc, doar aranjamentele build-ului
 # se pot alege, focusul se întoarce), legăturile ei (rândul din meniul contului, cu aranjamentul de acum; paleta din orice
 # fereastră; tema prin aplicație; F1 la capitolul ei) și manualul (capitolul acoperă ușa).
+# Refăcută în 28.1↑c (E01, E07): densitatea are acum funcția ei (`aplicaDensitatea`), iar aranjamentul îl pune aplicația.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; e2e-ul, cu
 # `CNCVS2_E2E_RETEA=127.0.9` și configul local (`.tmp/pw.config.ts`, portul 4182 al worktree-ului `aranjamente`).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -23,7 +24,7 @@ o('A01', MC, "    'manual',\n    'aspect',\n", "    'manual',\n", 'aspect', 'râ
 o('A02', MR, '%% capitol: aspect\n%% acopera: vedere.aspect', '%% capitol: aspect\n%% acopera: vedere.tema', 'aspect',
   'capitolul nu acoperă ușa ferestrei')
 # Fereastra și legăturile ei (e2e, `aranjament.spec.ts`).
-o('E01', AS, '    aplica(inainte);\n    if (tema !== inainte.tema)', '    if (tema !== inainte.tema)', 'e2e',
+o('E01', AS, '    aplicaDensitatea(inainte.densitate);\n    if (alegere.aranjament', '    if (alegere.aranjament', 'e2e',
   'Renunță nu pune la loc densitatea')
 o('E02', AS, 'localStorage.setItem(CHEIE_ARANJAMENT, scrieAlegerea(alegere));', 'void CHEIE_ARANJAMENT; void scrieAlegerea(alegere);', 'e2e',
   'Păstrează nu scrie')
@@ -31,7 +32,7 @@ o('E03', AS, 'disabled={!poate}', 'disabled={false}', 'e2e', 'Clasic se poate al
 o('E04', AP, "'vedere.tema', 'vedere.aspect', ", "'vedere.tema', ", 'e2e', 'din paletă, fereastra Mașina se închide')
 o('E05', AS, '    if (tema !== inainte.tema) onTema(inainte.tema);\n', '', 'e2e', 'Renunță nu pune la loc tema')
 o('E06', AS, '    return () => { if (focusInapoi instanceof HTMLElement) focusInapoi.focus(); };\n', '', 'e2e', 'focusul nu se întoarce')
-o('E07', AS, '    aplica(a);\n    setAlegere(a);', '    setAlegere(a);', 'e2e', 'densitatea se vede doar după Păstrează')
+o('E07', AS, '    aplicaDensitatea(a.densitate);\n    setAlegere(a);', '    setAlegere(a);', 'e2e', 'densitatea se vede doar după Păstrează')
 o('E08', AP, 'onTema={schimbaTema}', 'onTema={alegeTema}', 'e2e', 'tema din fereastră ocolește aplicația (bara nu o arată)')
 o('E09', ED, "  if (document.querySelector('[aria-labelledby=\"aspect-titlu\"]')) return 'vedere.aspect';\n", '', 'e2e',
   'F1 în fereastră nu ajunge la capitolul ei')

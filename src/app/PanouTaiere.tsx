@@ -191,14 +191,14 @@ export function PanouTaiere({ doc, indexFoaie = 0, selectie, ghidaje, centru, on
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], ...o }, s.signal, indexFoaie).then((r) => {
+      calc.taieVectorii(laCerere, { cutit: cu, alese: [...selectie], ...o }, s.signal, indexFoaie, () => { if (!s.signal.aborted) setStare({ fel: 'gata', text: t('editare.surori.astept'), rau: false }); }).then((r) => {
         if (s.signal.aborted) return;
         if (!r.ok) {
           const nimic = cu.fel === 'intersectii' ? 'editare.taiere.motiv.nimic-intersectii' : cu.fel === 'decupare' ? 'editare.taiere.motiv.nimic-decupat' : null;
           setStare({ fel: 'gata', text: t(r.motiv === 'nimic-taiat' && nimic ? nimic : `editare.taiere.motiv.${r.motiv}`), rau: true });
           return;
         }
-        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids, sterse: r.sterse });
+        const v = onTaie({ doc: laCerere, degrupate: r.degrupate, ids: r.ids, sterse: r.sterse, ...(r.surori ? { surori: r.surori } : {}) });
         const parti = String(r.ids.length);
         const text = cu.fel === 'decupare'
           ? t('editare.taiere.decupat', { n: String(r.degrupate.length), s: String(r.sterse.length), parti })

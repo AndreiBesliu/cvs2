@@ -49,12 +49,30 @@ The **layout** is how the bars and panels sit around the canvas:
 - **Workshop**: big buttons, for a tablet and next to the machine;
 - **Step by step**: takes you from the drawing to the machine, step by step.
 
-For now only Islands can be chosen; the other three show in the window as “coming soon” and arrive one at a time.
+For now Islands and [Workshop](#atelier) can be chosen; Classic and Step by step show in the window as “coming soon” and
+arrive one at a time.
 
 The **theme** is the same as the “Theme” button in the bar: as the system, light or dark. **Big buttons** makes the buttons
 taller (48 px; 56 on a touch screen), with any layout: easier to hit on a tablet or with gloves.
 
 The choice stays on this device (in the browser): the tablet in the workshop can look different from the office computer.
+
+## The Workshop layout
+%% capitol: atelier
+
+**Workshop** is the layout for a tablet and for the screen next to the machine. Choose it in the **Appearance** window
+(**Account** menu, **Appearance…** row). The first time, it starts with the dark theme and **Big buttons**; you can change
+them in the same window before **Keep**.
+
+- The **drawing tools** sit in a column on the left, with their names and keys in view (Select `V`, Rectangle `R`…);
+  below them, Snap and Grid.
+- The **top bar** has Undo and Redo with their names, then import, vector export and **Export G-code**. The bar extension
+  (alignment, mirroring, copying, offset, boolean, 3D) sits below it, over several rows when it does not fit.
+- The **panels** sit together on the right: **Properties** on top, **On the sheet** below.
+- On a tablet held upright and on a phone, the tools move to a row at the bottom, under the canvas, which scrolls with a
+  finger; the panels sit side by side below it.
+
+The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`).
 
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza
@@ -139,13 +157,17 @@ default), the sheet margin and the distance between parts, on X and on Y (with *
 number). The parts are placed by the box of each one, with its rotation, row by row; the ones staying on the sheet are
 avoided. Whatever no longer fits goes to the next sheet, if it is empty, then to new sheets, like the active sheet. A part
 larger than the sheet stays where it is. No size changes. The distance is at least the cutter of the outside profile
-(otherwise one part’s cut would run into its neighbour), and the window says the minimum. **Order**: as in the list
+(otherwise one part’s cut would run into its neighbour), and the window says the minimum. With tabs on the outside profile,
+the window starts at 2 × the cutter + 3 mm, rounded up (10 mm with a 3.175 cutter), and says why: below 2 × the cutter, the
+cuts of two neighbouring parts merge, and the tabs facing the neighbours have no wood left to hold on to. A smaller
+distance, but at least the cutter, is accepted, with a warning. **Order**: as in the list
 (default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
 **Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
 
 **Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
-sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement;
-**Move and arrange on a new sheet** arranges them on a new sheet, like the active one. Whatever does not fit goes, as
+sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement
+(the distance rises by itself to the cutter, and with tabs to 2 × the cutter + 3 mm); **Move and arrange on a new sheet**
+arranges them on a new sheet, like the active one. Whatever does not fit goes, as
 above, to the next sheets.
 
 Each gesture (a new sheet, one deleted, moved or renamed, a move between sheets, an arrangement) is a single undo step
@@ -162,7 +184,8 @@ part, so a change to them shows on all of them.
 **More and +1.** With a single part chosen, the Properties panel shows, under **Part**, how many times it is placed and on
 which sheets. **More…** asks **How many in total** (more than now, at most 1,000) and shows, before you add them, where the
 new ones go: on the part's row, to its right, then on rows below, from the sheet's margin (10 mm), going around the parts on
-the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger.
+the sheet. At least 5 mm stay between parts, or the diameter of the largest cutter of the outside profiles, if larger;
+with tabs on an outside profile, at least 2 × the cutter + 3 mm, rounded up (see “Arrange on sheets”).
 Whatever does not fit goes to the next sheet, if it is empty, then to new sheets, like the part's sheet. **+1** places one
 more after the last. `Ctrl+D` stays a separate copy, with its own part.
 
@@ -172,15 +195,27 @@ nodes, the text, the scale, the mirroring, the skew or the operations is made fo
 each one's own. Two chosen instances of the same part, rotated differently, would change differently on a non-uniform scale,
 a mirror or a skew: then the change is refused, with the reason.
 
-**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its own,
-a copy, in the same place: from then on it changes on its own. The last instance keeps the part. [Ungrouping](#degrupare),
-the [check](#verificare)'s repairs and [cutting the vectors](#taiere) do not change a part placed more than once: detach it
-first. A deleted instance goes alone; the part goes with its last instance.
+**Detach.** **Detach** (in the panel, or **Detach just this one**, from the band) gives each chosen instance a part of its
+own, a copy, in the same place: from then on it changes on its own. The last instance keeps the part.
+[Ungrouping](#degrupare) and the [check](#verificare)'s repairs do not change a part placed more than once: detach it first.
+[Cutting](#taiere) and converting ask (below). A deleted instance goes alone; the part goes with its last instance.
 
 **Grouping.** With a part placed more than once among the chosen shapes, **Group** asks: **Just this one** (detaches it, then
 groups) or **In all N** (the other shapes go into the part, so they show next to each of its instances; it works with a single
 part of this kind among the chosen ones). The **Remember the choice** box keeps it in the browser: grouping no longer asks.
 The right-click menu has both rows, **Group just this one** and **Group in the whole part**.
+
+**Cutting and converting.** When a cut ([Cut vectors](#taiere), the Knife, Cut into panels, Cut at intersections, Clip) or a
+conversion (Arcs, To circle, To rectangle, Smooth) would change a part placed more than once, the question shows at the top:
+**Detach and cut** (the main one: each cut shape gets a part of its own, and the others stay linked to each other) or **Cut
+the part (all N)** (the cut goes into the part: each instance of it, on any sheet, is cut in the same place, and the pieces
+stay placed as many times). **Cut the part** is only offered for cuts that do not depend on what is around each instance (the
+line, the guide, the last chosen shape, the Knife with Line, Pen, Freehand, Shape and Scissors); with Clip, Cut at
+intersections, Trim and Cut into panels, only **Detach and cut**. Two chosen instances of the same part cut in different
+places of it, and the template of some plates (each with its own letters), cannot be cut as a part: the reason says so. When
+converting, **Detach and convert** or **Convert the part**. **Remember the choice** keeps it in the browser; the **Parts
+placed more than once** row in the cutting options and in the conversion panel shows it, changes it or forgets it (**ask**).
+**Cancel** changes nothing. Each operation stays a single undo step.
 
 **Duplicate the sheet with the same parts**, from the sheet menu, makes a new sheet after it, with the same parts (new
 instances, in the same places): a change to a part shows on both sheets. **Duplicate the sheet** makes, as before, separate
@@ -206,7 +241,8 @@ capitals and diacritics: **matched automatically**) or, by choice, another colum
 (from, step, digits). A text without a field: choose in **The text of the part** the piece that changes from one plate to
 another and press **Make the chosen text the field {Name}** (the name is the column's, or the one written in). **Rows from …
 to** chooses the rows. Below them, where the plates go (“6 plates on 3 sheets: 2 + 2 + 2”), with the margin and spacing of
-“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter). **Make the plates**: the first row on
+“Arrange on sheets” (**Change…**; the spacing is at least the outside profile's cutter; with tabs, it starts at 2 × the
+cutter + 3 mm, and below that a warning appears). **Make the plates**: the first row on
 the chosen plate, the others new plates, all arranged on sheets (as “Arrange on sheets”), in a single step. With the **Limited
 by the box** box on the text, the panel says how many plates were shrunk and by how much.
 
@@ -974,8 +1010,8 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 **Arrange on sheets…**, in the block, opens the arrangement window on them (its margins, distance, order and rotation), to
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
-letter in its panel. More than 100 panels are not cut; neither is a shape placed more than once on the sheet. **Cut into
-panels** is a single undo step.
+letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
+**Cut into panels** is a single undo step.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -991,8 +1027,8 @@ becomes a shape, chosen, so you can delete the one you do not need. A shape that
 The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
 open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
-placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
-(Ctrl+Z).
+placed more than once asks first: see [Parts placed more than once](#piese-legate). Each cut (**Cut vectors**, from the
+panel) is a single undo step (Ctrl+Z).
 
 ## The Knife tool
 %% capitol: cutit
@@ -1064,11 +1100,12 @@ button:
   rectangle, straight on the sheet, at the centre of its box. A drilled shape does not become a rectangle: drilling needs a
   circle.
 
-The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly (more
-along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new arcs and
-lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle, how many
-were open paths (only closed shapes become a circle or a rectangle) or shapes placed several times on the sheet, which are not
-converted from here. Each conversion (**Convert vectors**, from the panel) is a single undo step (Ctrl+Z).
+The deviation is measured along the whole shape, at the nodes and along the sides, both ways. A shape stretched unevenly
+(more along one axis than the other) gets no arcs. The panel says what was done (the shapes, the curves replaced, the new
+arcs and lines, the largest deviation) and why the others stayed: how far the closest one is from a circle or a rectangle,
+how many were open paths (only closed shapes become a circle or a rectangle). A shape placed more than once asks first: see
+[Parts placed more than once](#piese-legate). Each conversion (**Convert vectors**, from the panel) is a single undo step
+(Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare

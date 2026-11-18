@@ -43,6 +43,7 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Tăiate, cele șase panouri rămân alese, iar „Așază pe foi…” din bloc deschide dialogul pe ele: câte unul pe foaie, pe șase
  * foi (cinci noi); Anulează le aduce înapoi pe prima foaie. Cu alegerile ținute ale așezării (marginile 2, sub raza 3 a frezei,
  * și rotirea cu 90°), mărimea implicită e 1 200 − 2 · 3 − 2 · 10 = 1 174 × 874, iar panourile de 820 × 1 000 încap culcate.
+
  */
 test.use({ locale: 'ro-RO' });
 

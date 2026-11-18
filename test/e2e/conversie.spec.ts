@@ -90,7 +90,7 @@ test('Arce: semicercul din 32 de linii rămâne la 0,01 și devine un arc la 0,1
 
   await page.locator('[data-conversie="dreptunghi-marime"]').check();
   await page.locator('[data-conversie="dreptunghi"]').click();
-  await expect(stare(page)).toHaveText('Nimic de convertit. Sărite: 1 (căi deschise sau forme puse de mai multe ori pe foaie).');
+  await expect(stare(page)).toHaveText('Nimic de convertit. Sărite: 1 (căi deschise sau șabloane de plăcuțe).');
   await page.locator('[data-conversie="inchide-panoul"]').click();
   await expect(panou(page)).toHaveCount(0);
 });

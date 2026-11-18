@@ -410,3 +410,22 @@ după planșe?”. A răspuns „Da, sunt gata”.
     lui (36 de pași).
   - Mărimea, față de un build curat al lui `main` `5ab3941`: pornirea 106,3 → 106,6 kB (cu ușa 110,6 / 115), totalul
     703,4 → 704,6 / 800; pe unirea cu `main` `4b52fc3`: pornirea 106,6 kB (cu ușa 110,6 / 115), totalul 710,8 / 800.
+- **28.1↑c, 17.11: Atelierul pe Proiectare, așezarea** (aceeași ramură, adusă la `main` după unirea lui 28.1↑b; la
+  capăt, `main` `b6aaa54`, fără conflicte):
+  - Atelierul e al doilea aranjament al build-ului. Datele lui (`src/ui/aranjamentAtelier.ts`: aceleași acțiuni, cipuri,
+    panouri și ferestre ca Insulele) și CSS-ul lui vin ca bucată la cerere (`src/ui/atelier.ts`, `atelier.css`), adusă
+    de `src/ui/incarcaAranjament.ts`: înaintea primei randări când e ales (`main.tsx`), sau pe loc din fereastra
+    Aspectul (App ține aranjamentul în stare). Fără bucată: Insulele, cu alegerea ținută păstrată și motivul în jurnalul
+    local.
+  - Așezarea, după planșa „C · Întunecat”: uneltele de desen pe o coloană în stânga, pe două coloane, cu numele și tasta
+    la vedere; bara de sus cu Anulează și Reface numite; extensia pe mai multe rânduri; panourile împreună, în dreapta.
+    Sub 1024 px (tableta în picioare, telefonul), uneltele trec într-un rând jos, care se derulează (planșa „C ·
+    Telefon”).
+  - Prima alegere din fereastră îl pornește întunecat și cu butoane mari (§5); tema și densitatea se schimbă apoi ca
+    oricând.
+  - Locul coloanei e rezervat de la pornire, iar foaia se potrivește din nou când modulul editării umple extensia (care
+    se rupe pe rânduri în coloana din mijloc) și după o schimbare pe loc.
+  - Rămân pentru 28.1↑d (tot din planșa „C”): felul tăierii din butoane mari, − / + la adâncime și pas, cartela frezei
+    și „Trimite la mașină” (acțiunea nu există încă).
+  - Mărimea, pe unirea cu `main` `b6aaa54`: pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 / 800; bucata
+    Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.

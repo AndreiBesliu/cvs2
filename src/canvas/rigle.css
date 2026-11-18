@@ -432,6 +432,11 @@
   position: relative;
 }
 
+/* Numele uneltei la vedere: ascuns în Insule (pictograma, cu numele în sfat), arătat de Atelier (ADR 0250, felia 28.1↑c). */
+.nume-unealta {
+  display: none;
+}
+
 .tasta-unealta {
   position: absolute;
   right: 2px;
