@@ -10242,3 +10242,23 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   trece peste capul panoului din dreapta, cu orice font; de judecat în linia aranjamentelor.
 - **Porțile** pe `80142d26`, toate la prima rulare: unit 9 589 / 0, e2e 546 / 546, emulatoarele 101 / 101 și 29 / 29;
   mărimile neschimbate (738,4 / 800, pornirea cu ușa 111,2 / 115).
+
+## 2026-11-18 — Feliile 3.Tj–3.To propuse: roata de vehicul, fulia, roțile la 90°, șenila (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom” (owner-ul, în sesiunea
+principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „uite aici imaginile mai exact”, cu nouă poze).
+**Started:** 18.11, 21:20. **Completed:** 18.11, 21:33.
+
+- **Pozele:** roata de vehicul (janta cu spițe în Y, anvelopa cu profil), janta mică cu canale, fulia, roata conică de 20,
+  conicele duble (12 și 20), coroana de 24, șenila cu zale late.
+- **Cercetarea:** modulul 1 la toate roțile Technic (și conicele duble: razele 6 și 10 mm); mărimile nominale din numele
+  pieselor (janta 55981, 18 × 14, cu anvelopa 30,4 × 14; fulia 4185, Ø24; zala 57518 pe pinioanele 57519 și 42529); cotele
+  fine doar în fișierele LDraw (licența pe fiecare) sau măsurate.
+- **ADR 0280, propus** (primul din 0280–0289): șase tipuri, pe feliile 3.Tj–3.To, cu primitivele de la 3.Th lărgite (o hartă
+  a punctelor pe strat: micșorarea spre vârful conului, raza tăiată la teșitură), corpul rotit și corpuri care se suprapun.
+  Schița, cu desenele de principiu și formularul (răspunsurile în `raspunsuri/owner`, goală la publicare):
+  <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. Întrebările: ordinea (1a / 1b / 1c), TPU-ul (2a / 2b), cotele (3a /
+  3b / 3c).
+- **Documentele:** indexul ADR-urilor (cu starea lui 0169, acceptat și implementat), fișa etapei 3 (rândul 3.Tj, coada
+  owner-ului) cu traducerile, jurnalul.
+- **Fără cod:** feliile pornesc după răspunsuri.

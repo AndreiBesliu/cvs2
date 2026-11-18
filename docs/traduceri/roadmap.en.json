@@ -305,6 +305,10 @@
       "ro": "Editarea nodurilor",
       "en": "Node editing"
     },
+    "16d44f9c580fa729": {
+      "ro": "Roți, fulii, roți la 90° și șenila: propunerea",
+      "en": "Wheels, pulleys, 90° gears and the track: the proposal"
+    },
     "177e163eb20639aa": {
       "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",
       "en": "Pure migrations vN → vN+1, with a golden corpus (from now on there is data on live)."
@@ -860,6 +864,10 @@
     "3d64c66453dc43e5": {
       "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
       "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
+    },
+    "3d84791b496a2b08": {
+      "ro": "Răspunsurile la ADR 0280, roțile și șenila: ordinea feliilor (1a: roata de vehicul și fulia întâi; 1b: roțile la 90°; 1c: șenila), filamentul TPU pentru anvelope (2a: da; 2b: nu încă) și cotele pieselor LEGO (3a: din LDraw, cu acordul pentru descărcare; 3b: măsurate cu șublerul; 3c: doar din nume), în [schiță](https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK)",
+      "en": "Answers to ADR 0280, the wheels and the track: the order of the slices (1a: the vehicle wheel and the pulley first; 1b: the 90° gears; 1c: the track), TPU filament for the tyres (2a: yes; 2b: not yet) and the dimensions of the LEGO parts (3a: from LDraw, with consent to download; 3b: measured with calipers; 3c: from the names only), in the [sketch](https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK)"
     },
     "3dc936174fd0788d": {
       "ro": "**Avertismentul urechilor la așezare** (ADR 0210, varianta a; „Da, 11.3↑b”, la propunerea de după unirea lui 11.7↑). Cu urechi pe un profil exterior, distanța propusă dintre piese e 2 × freza + 3 mm, rotunjită în sus (10 cu Ø3,175, ca pe placa 11): sub 2 × freza, tăieturile vecine se unesc, iar urechile dinspre vecini nu mai țin. «Așază pe foi» pornește de la ea și spune de ce; sub ea apare avertismentul (Așază rămâne pornit), iar sub freză, refuzul de până acum. «Din CSV…», «Încă…», «+1» și „Mută și așază la capăt” nu întreabă distanța, deci urcă singură la ea. Otrăvurile: 21 / 21 la prima rulare. Documentul nu se schimbă, iar pornirea nici ea.",
@@ -1713,6 +1721,10 @@
       "ro": "Proba de mediu trece de două ori de la `npm ci`: ci 8 s, `tsc` 2,8 s, unitățile 2,8 s, build 2,9 s, e2e în Edge 8 s. `dist/` identic între rulări, nimic readus de Drive, deci fără joncțiune. A doua trecere: un 404 pe `favicon.ico`, prins de e2e și reparat cu iconița.",
       "en": "The environment check passes twice from `npm ci`: ci 8 s, `tsc` 2.8 s, unit tests 2.8 s, build 2.9 s, e2e in Edge 8 s. `dist/` is identical between runs and Drive brought nothing back, so no junction is needed. Second pass: a 404 on `favicon.ico`, caught by e2e and fixed with the icon."
     },
+    "803a1fec56fb1dd3": {
+      "ro": "Roțile și șenila în atelierul Easy 3Draw",
+      "en": "Wheels and tracks in the Easy 3Draw workshop"
+    },
     "80b77831dab7eb23": {
       "ro": "DXF-urile de referință + fișierele tale deschise în programele tale",
       "en": "the reference DXFs + your files opened in your programs"
@@ -1865,6 +1877,10 @@
       "ro": "**Pachetul de atelier, adus din etapa 4** (fără mașină; ADR 0131; punctul 6 din `PLAN.md` §5.3, partea a doua; „Da, pornește”). Fișierele de probă T0–T7 ale celor opt controlere, după setul din sonda s8 (Anexa B), scrise de postul aplicației cu contractul fiecăruia: T0 citirea antetului și a comentariilor (cu stilurile alternative, unde nu sunt sigure), T1 arcele (cercurile Ø50 în 2 × 180° și 4 × 90°, colțurile R5, arcul R1200 și arcul mic), T2 avansul, pauza și, pe Syntec, punctul zecimal, T3 elicea, T4 schimbarea sculei (bariera, M6 la controler sau un fișier pe freză), T5 G54 și G55, T6 limita liniei și T7 găurirea în pași (pe GRBL 1.1, setul plăcii 3). Unde contractul e prudent, fișierul probează chiar controlerul (arcul R1200 ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în `test/ateliere/`. **Probele:** valorile pe hârtie citite din fișiere cu cititorul dialectelor (cercurile, timpii, pauza, elicea, adâncimile, WCS-ul, liniile lungi), fișa cu amprentele; pachetele comise, octet cu octet; arhivele, și prin cititorul zip al lui Python.",
       "en": "**The workshop pack, brought forward from stage 4** (no machine; ADR 0131; point 6 of `PLAN.md` §5.3, the second part; “Yes, start it”). The T0–T7 test files of the eight controllers, after the set in the s8 probe (Appendix B), written by the app’s post with each one’s contract: T0 reading the header and the comments (with the alternative styles, where they are not certain), T1 the arcs (the Ø50 circles in 2 × 180° and 4 × 90°, the R5 corners, the R1200 arc and the tiny arc), T2 the feed, the dwell and, on Syntec, the decimal point, T3 the helix, T4 the tool change (the barrier, M6 at the controller or one file per bit), T5 G54 and G55, T6 the line limit and T7 the peck drilling (on GRBL 1.1, the set of plate 3). Where the contract is cautious, the file tests the controller itself (the R1200 arc as an arc, the helix on RichAuto). Each pack has its sheet (the version, the settings, the material, the first run in the air, what is measured with the value on paper, the SHA-256 fingerprints) and a ZIP archive with the same bytes at every generation, in `test/ateliere/`. **Proofs:** the values on paper read from the files with the dialect reader (the circles, the times, the dwell, the helix, the depths, the WCS, the long lines), the sheet with the fingerprints; the committed packs, byte for byte; the archives, also through Python’s zip reader."
     },
+    "8e649ca56f839c5d": {
+      "ro": "3.Tj–3.To",
+      "en": "3.Tj–3.To"
+    },
     "8ebeb40e6301189a": {
       "ro": "Fișierele lăsate pe planșă",
       "en": "Files dropped on the board"
@@ -1884,6 +1900,10 @@
     "8f70e8f713e43d92": {
       "ro": "Gărzile offsetului",
       "en": "Offset guards"
+    },
+    "8fe839d2c18f6f3b": {
+      "ro": "**Roți, fulii, roți la 90° și șenila: propunerea** (fără mașină; ADR 0280, propus; worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”, cu nouă poze). Șase tipuri noi, pe feliile 3.Tj–3.To: roata de vehicul (janta și anvelopa), fulia, roata conică, coroana, conicele duble, șenila cu pinionul. Schița, cu desenele de principiu și trei întrebări: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. Codul, după răspunsuri.",
+      "en": "**Wheels, pulleys, 90° gears and the track: the proposal** (no machine; ADR 0280, proposed; the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”, with nine photos). Six new types, in slices 3.Tj–3.To: the vehicle wheel (rim and tyre), the pulley, the bevel gear, the crown gear, the double bevel gears, the track with its sprocket. The sketch, with schematic drawings and three questions: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. The code comes after the answers."
     },
     "90214645e1c0b62a": {
       "ro": "N axe din prima zi",
