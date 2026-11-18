@@ -472,3 +472,6 @@ schimbat) sau doar scad prioritatea telefonului?”, cu prima variantă recomand
     două degete.
   - Mărimea, pe codul cu `main` `ae5a13c4`: pornirea 107,1 kB (cu ușa 111,1 / 115), totalul 719,0 / 800; bucata
     Atelierului 0,32 kB, cu pornirea și ușa 111,4 / 115. Față de baza `354ed251`: pornirea +0,1, totalul +1,1.
+  - Apoi, pe unirea cu `main` `e88dbc1e` (28.1↑c unită, 10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, A.1): pornirea 107,1 kB (cu ușa
+    111,1 / 115), totalul 730,2 / 800 (creșterea vine din `main`); bucata Atelierului 0,31 kB, cu pornirea și ușa 111,4
+    / 115.
