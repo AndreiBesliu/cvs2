@@ -239,7 +239,8 @@ test('căutarea din antet găsește în ce s-a citit: o eroare și un tichet, fi
   await cauta.fill('PIESA 12');
   await page.locator(`[data-gasit="erori:${G1}"]`).click();
   await expect(bara(page, 'erori')).toHaveAttribute('aria-current', 'page');
-  await expect(page.locator(`[data-grup="${G1}"] button[aria-expanded="true"]`)).toBeVisible(LENT);
+  await expect(page.locator(`[data-grup="${G1}"]`)).toHaveAttribute('data-ales', 'true', LENT);
+  await expect(page.locator('[data-admin="detaliu-eroare"]')).toContainText('piesa 12 lipsă');
 
   await cauta.fill('dan@');
   await page.locator(`[data-gasit="tichete:${T(2)}"]`).click();

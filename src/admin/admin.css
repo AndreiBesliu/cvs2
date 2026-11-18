@@ -605,8 +605,207 @@
   background: var(--s-rosu);
 }
 
-/* Filele de până acum (Erori, Diagnoză). */
-.admin-grupuri,
+/* Fila Erori (ADR 0260 §2, felia A.2): filtrele, lista în stânga, eroarea aleasă în dreapta (lipită sus la derulare, deci
+   lista nu se mișcă), graficul aparițiilor. */
+.admin-erori,
+.admin-diagnoza {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.admin-erori-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.admin-segmente {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--s-peste);
+}
+
+.admin-segmente button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--t-slab);
+  font: inherit;
+  font-size: var(--fs-2);
+  white-space: nowrap;
+}
+
+.admin-segmente button[aria-pressed='true'] {
+  background: var(--s-panou);
+  color: var(--t);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(20 24 29 / 0.12);
+}
+
+.admin-erori-corp {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.admin-erori-lista {
+  width: clamp(280px, 42%, 420px);
+  flex: 0 0 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+
+.admin-erori-lista li + li {
+  border-top: 1px solid var(--l-margine);
+}
+
+/* Grila cu o coloană plină: regula globală a butoanelor (`justify-content: center`) ar strânge coloana pe text și ar
+   centra-o (18.11, bancul la 1440 px). */
+.admin-erori-lista button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  justify-items: start;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--t);
+  font: inherit;
+  text-align: left;
+}
+
+.admin-erori-lista button:hover {
+  background: var(--s-peste);
+}
+
+.admin-erori-lista li[data-ales='true'] button {
+  background: var(--s-ales);
+  box-shadow: inset 3px 0 0 var(--a);
+}
+
+.admin-erori-lista li[data-rezolvat='true'] .admin-grup-mesaj {
+  color: var(--t-slab);
+}
+
+.admin-erori-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.admin-cip[data-sursa='server'] {
+  color: var(--l-focus);
+  background: color-mix(in oklab, var(--l-focus) 12%, var(--s-panou));
+}
+
+.admin-erori-detaliu {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: sticky;
+  top: var(--sp-3);
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  font-size: var(--fs-2);
+}
+
+.admin-erori-detaliu p {
+  margin: 0;
+}
+
+.admin-erori-detaliu-cap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.admin-erori-detaliu-cap h3 {
+  flex: 1 1 auto;
+  margin: 0;
+  font-weight: 700;
+}
+
+.admin-erori-detaliu h4 {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--t-slab);
+}
+
+/* Cel mult 28rem: 14 bare pe toată lățimea detaliului ar fi blocuri late de 50 px (bancul, 18.11); așa rămân subțiri. */
+.admin-grafic {
+  max-width: 28rem;
+  margin: var(--sp-1) 0 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.admin-grafic svg {
+  display: block;
+  width: 100%;
+  height: 48px;
+}
+
+.admin-grafic-bara {
+  fill: var(--a);
+}
+
+.admin-grafic-axa {
+  stroke: var(--l-margine);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.admin-grafic-capete {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-1);
+}
+
+/* Diagnoza (ADR 0260 §7): sumarul deasupra, problemele întâi, cu fundalul stării lor. */
+.admin-diag-sumar {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.admin-diag-sumar li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 14px;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.admin-diag-sumar strong {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .admin-verificari {
   list-style: none;
   margin: 0;
@@ -615,7 +814,6 @@
   gap: var(--sp-2);
 }
 
-.admin-grup,
 .admin-verificari li {
   background: var(--s-panou);
   border: 1px solid var(--l-margine);
@@ -623,27 +821,12 @@
   padding: var(--sp-3) var(--sp-4);
 }
 
-.admin-grup[data-rezolvat='true'] {
-  opacity: 0.7;
+.admin-verificari li[data-stare='atentie'] {
+  background: var(--s-atentie);
 }
 
-.admin-grup-rand {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--sp-1) var(--sp-3);
-  align-items: start;
-}
-
-.admin-grup-rand > button {
-  grid-column: 2;
-  grid-row: 1 / span 3;
-}
-
-.admin-eticheta {
-  font-size: var(--fs-1);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--t-slab);
+.admin-verificari li[data-stare='esec'] {
+  background: var(--s-rosu);
 }
 
 .admin-grup-mesaj {
@@ -654,20 +837,6 @@
 
 .admin-slab {
   font-size: var(--fs-2);
-}
-
-.admin-detaliu {
-  margin-top: var(--sp-3);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--l-margine);
-  display: grid;
-  gap: var(--sp-2);
-  font-size: var(--fs-2);
-}
-
-.admin-detaliu h3 {
-  margin: var(--sp-2) 0 0;
-  font-size: var(--fs-3);
 }
 
 .admin-aparitie p {
@@ -717,6 +886,22 @@
 
 .admin-verificari li[data-stare='esec'] .admin-stare {
   color: var(--rosu);
+}
+
+/* Erori (A.2): sub 800 px nu mai încap două coloane lizibile, deci eroarea aleasă trece sub listă (fără lipire). */
+@media (max-width: 800px) {
+  .admin-erori-corp {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-erori-lista {
+    width: auto;
+  }
+
+  .admin-erori-detaliu {
+    position: static;
+  }
 }
 
 /* Sub 640 px rămâne o singură regulă până la felia telefonului (A.7): bara trece deasupra, cu filele pe rânduri (nimic nu

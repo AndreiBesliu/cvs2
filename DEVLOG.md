@@ -9621,6 +9621,50 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
   amprenta `6e62d40c5e55`.
 
+## 2026-11-17 — Felia A.1: carcasa adminului, fila Azi, intrarea și stările goale (ADR 0260) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, ia-le la rand” (owner-ul, pe 17.11, la lista sesiunii principale, al cărei punct 6 era linia adminului),
+apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
+`C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Reluată pe 18.11 la „neata! poti sa repornesti toate worktrees”
+(owner-ul, transmis de sesiunea principală), după oprirea procesului în noaptea de 17.11, cât rulau porțile și otrăvurile.
+**Started:** 17.11 19:26.
+
+- **Ramura:** `wip/A.1-admin`, din `origin/main` `b6aaa548`, în worktree-ul `C:\Users\besli\cncvs2-lucru\admin` (e2e pe
+  4191, rețeaua `127.0.44`; emulatoarele pe porturile comune, doar cu 4173 liber); `main` `ae5a13c4` adus pe 18.11
+  (`7716d708`, fără conflicte).
+- **Planul:** probele și otrăvurile întâi (`test/unit/admin.carcasa.test.ts`, `test/e2e-emulator/azi.emulator.spec.ts`,
+  `test/otravuri/A.1.py`), apoi carcasa (bara laterală grupată cu numerele și punctul Diagnozei, insigna instanței,
+  căutarea în ce s-a citit, meniul contului), fila Azi (cifrele, joburile, „Ce așteaptă de la tine”, ultimele
+  întâmplări) și ideea 76 (intrarea și „fără rol” în card, lista goală cu semnul și ultima rezolvare, eroarea citirii cu
+  „Deschide Diagnoza”, rândurile schițate), fără reguli, permisiuni sau date noi.
+- **Codul** (`38a0da44`): `src/admin/carcasa/` (`date.ts` pur: bara, părțile filei Azi pe rol, fila deschisă, insigna,
+  punctul, întâmplările din audit, căutarea, ultima rezolvare; `stari.tsx`: contextul carcasei, `LegaturaFila`,
+  `SeIncarca`, `ListaGoala`, `EroareCitire`; `sumar.ts`: numărătorile la intrare; `Cautare.tsx`),
+  `src/admin/azi/FilaAzi.tsx`, `PaginaAdmin.tsx` rescrisă (antetul, cardurile, `CarcasaAdmin`, meniul contului),
+  `masoaraDiagnoza` scoasă din fila Diagnoză, stările comune în toate filele, `rezolvatLa` în rândul tichetului.
+- **Bancul vizual** (local, pe emulatoare, capturi la 1440, 1024, 600 px, în ambele teme): găsite și reparate înainte de
+  commit lățimea conținutului (`main { max-width: 48rem }` din `stil.css` lovea `<main>`-ul nou), rândurile lungi din „Ce
+  așteaptă” (tăiate la două rânduri) și „Ieși” centrat în meniu.
+- **Oprirea din noaptea de 17.11** (procesul a ieșit cu 3221226505 cât rulau porțile și otrăvurile; rezultatele lor s-au
+  pierdut): pe 18.11, `main` `ae5a13c4` adus (`7716d708`, fără conflicte; intrarea mea din DEVLOG pusă la loc la noul
+  capăt), apoi toate porțile și otrăvurile de la capăt.
+- **Porțile pe `7716d708`:** traduceri, tipuri (aplicația, funcțiile), importuri, licențe; unitare 9 504 (9 496 trecute,
+  8 sărite, 0 căzute); build determinist identic; e2e 506 / 507, căzută `extensii.masina.spec.ts:84` („pierdut” în loc de
+  „pregatit”), și la reluarea singură; A/B alternat cu un build curat al lui `ae5a13c4` (4192): 4 / 4 de trei ori pe
+  fiecare (și la procesorul 62–68 %), deci instabilitatea cunoscută din 17.11, nu felia. **Emulatoarele au găsit trei
+  probleme ale feliei**, reparate în `de069700`: sonda funcțiilor (apelul fără App Check, refuzat cu 401, scris de browser
+  în consolă) făcută la fiecare intrare (acum doar în fila Diagnoză; `functii` opțională în `verificari`); titlurile
+  grupurilor barei cu `data-grup`, atributul rândurilor din fila Erori (acum `data-grup-bara`); bara derulată orizontal pe
+  telefon, cu legături în afara ecranului (acum pe rânduri).
+- **Pe `de069700`:** emulatoarele 101 / 101 funcții și 26 / 26 pagini; tipurile, importurile, unitarele adminului,
+  traducerile; build determinist identic; e2e-ul `/admin` 3 / 3.
+- **Otrăvurile:** 40 / 40 prinse (24 unitare; 16 pe emulatoare, printr-o buclă locală în `emulators:exec` care refolosește
+  `scripts/otravuri.py`), controlul verde, fiecare căzută pe aserțiunea care îi țintește defectul.
+- **Mărimea**, față de un build curat al lui `ae5a13c4`: `/admin` 106,5 → 112,2 / 200 kB (+5,7 din cei +25 ai liniei);
+  pornirea 106,6 (cu ușa 110,6 / 115) și totalul 716,7 / 800 neschimbate.
+- **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Aa`: regula id-urilor fișei nu primește `A.1`) cu
+  traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
+  **Completed:** 18.11 12:10.
 ## 2026-11-17 — Felia 10.3↑m: piesele puse de mai multe ori, la tăiere și la conversie (ADR 0180) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea liniei `taiere`, după explicația punctului 2: ambele opțiuni,
@@ -9816,11 +9860,8 @@ acceptat cu „Da, cu recomandările” (16.11).
 
 ## 2026-11-17 — Felia A.1: carcasa adminului, fila Azi, intrarea și stările goale (ADR 0260) (Model: Claude Opus 5.5)
 
-**Prompt:** „ok, ia-le la rand” (owner-ul, pe 17.11, la lista sesiunii principale, al cărei punct 6 era linia adminului),
-apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
-`C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Reluată pe 18.11 la „neata! poti sa repornesti toate worktrees”
-(owner-ul, transmis de sesiunea principală), după oprirea procesului în noaptea de 17.11, cât rulau porțile și otrăvurile.
-**Started:** 17.11 19:26.
+
+## 2026-11-18 — Felia A.2: Erori (detaliul alături, filtrul pe sursă, graficul pe 14 zile) și Diagnoza (sumarul, problemele întâi) (ADR 0260) (Model: Claude Opus 5.5)
 
 - **Ramura:** `wip/A.1-admin`, din `origin/main` `b6aaa548`, în worktree-ul `C:\Users\besli\cncvs2-lucru\admin` (e2e pe
   4191, rețeaua `127.0.44`; emulatoarele pe porturile comune, doar cu 4173 liber); `main` `ae5a13c4` adus pe 18.11
@@ -9944,3 +9985,47 @@ concentram pe softul nostru”.
   111,0.
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
   `283c53ff12af`.
+
+**Prompt:** „Da, A.2” (owner-ul, pe 18.11, în sesiunea liniei adminului, la „Pornesc felia A.2 (Erori și Diagnoză)?”).
+**Started:** 18.11 12:03.
+
+- **Ramura:** tot `wip/A.1-admin` (linia continuă pe ramura ei, ca `wip/28.1-aranjamente`), peste A.1 (`531ecfb4`), cu
+  `main` `c302d73a` adus (`951933e5`; ciocniri doar în documente, ambele părți păstrate).
+- **Planul:** după schițele `Admin-Erori` și `Admin-Diagnoza` (rândul G): probele și otrăvurile întâi; Erori cu lista în
+  stânga și eroarea aleasă în dreapta, fără să împingă lista, filtrul pe sursă (browser / server) pe ce s-a citit, graficul
+  aparițiilor pe 14 zile în SVG, fără bibliotecă, din aparițiile deja citite; Diagnoza cu sumarul (Bine, Atenție, Eșec)
+  deasupra și problemele întâi. Fără reguli, indexuri sau date noi.
+- **Codul** (`df7e2a57`): partea pură în `src/admin/erori/vedere.ts` (filtrul pe sursă, eroarea aleasă, aparițiile pe 14
+  zile pe calendarul local, barele graficului) și `src/admin/diagnoza/vedere.ts` (sumarul, problemele întâi);
+  `FilaErori.tsx` rescrisă (lista în stânga, detaliul alături, lipit sus; numerele filtrului prin două `count`; sursa;
+  `GraficAparitii`; alegerea ajustată în randare, fără să sară înapoi); `FilaDiagnoza.tsx` (sumarul, problemele întâi,
+  ora); `admin.css` (regulile listei vechi scoase); cheile de traducere; probele (`admin.vederi.test.ts`, cu fusul
+  României fixat în fișier; `erori.emulator.spec.ts`; probele vechi pe așezarea nouă) și `test/otravuri/A.2.py`.
+- **Bancul vizual** (local, pe emulatoare, 1440 / 1024 / 760 px, în ambele teme) a găsit patru lucruri, reparate în
+  `8d747031`: textul rândurilor centrat (regula globală `button { justify-content: center }` strângea grila rândului pe
+  text), colțurile barelor turtite de `preserveAspectRatio="none"` (acum barele se desenează la lățimea măsurată, cu
+  `ResizeObserver`), barele late de 50 px (graficul are cel mult 28rem), graficul gol fără vorbă (acum o propoziție; un
+  grup fără apariții păstrate o spune și el). Tot acolo: prima verificare a Diagnozei din `admin.emulator.spec.ts`
+  așteaptă 30 s (sonda pornește la rece `logClientError` în emulator; execuția a început după 5 s).
+- **Probele atinse pe emulatoare** (erori, admin, azi): 11 / 11. Prima rulare, cu `--workers=2` pus de mine, a căzut pe
+  baza comună a emulatorului (fiecare probă o golește la început; configurația cere un lucrător).
+- **Porțile rapide** pe `df7e2a57` și pe `8d747031`: traduceri, tipuri (aplicația, funcțiile), importuri, licențe;
+  unitare 9 528 (9 520 trecute, 8 sărite, 0 căzute); build determinist identic.
+- **Otrăvurile:** unitarele 12 / 12 (pe `df7e2a57` și pe `8d747031`). Pe emulatoare, primul tur (`8d747031`) a dat 16 /
+  16 „prinse”, dar E05, E06 și E14 căzuseră pe aceeași linie, pe care niciuna n-o atinge: ruta care ținea citirea
+  aparițiilor lui G2 (`**/errorLogs/<id>:runQuery`) nu se potrivea niciodată, fiindcă adresa are `?key=…` după
+  `:runQuery`, deci proba trecea doar când răspunsul întârzia. Reparată în `ed064a08` (ruta e o funcție pe calea
+  adresei, iar proba cere ca citirea să fie ținută); proba de 3 ori la rând, verde; al doilea tur: 16 / 16, controlul
+  verde, fiecare pe aserțiunea care îi țintește defectul. În total 28 / 28.
+- **Porțile lente** pe `ed064a08`: e2e 524 / 524 (10,6 min); emulatoarele: funcțiile 101 / 101, paginile 28 / 29. Căzută
+  `documentatie.emulator.spec.ts:137` (un text netradus în Roadmap-ul în engleză): build-ul porților prinsese rândul `3.Ab`
+  din fișă, scris deja, dar necomis și netradus (greșeala mea: build-ul porților se face pe arborele curat). Reluată pe
+  build-ul cu documentele finale și traducerea: 4 / 4 (`documentatie.emulator.spec.ts`).
+- **Mărimea**, față de un build curat al lui `951933e5` (A.1 cu `main` `c302d73a`): `/admin` 112,2 → 113,6 / 200 kB (+1,4;
+  linia, +7,1 din cei +25); pornirea 107,0 (cu ușa 111,0 / 115) și totalul 721,3 / 800 neschimbate.
+- **Uneltele locale:** `.tmp/liniste.sh` se găsea pe sine (linia de comandă a powershell-ului conține tiparul căutat),
+  deci n-ar fi dat niciodată liniște; acum numără doar procesele node. Bucla otrăvurilor de emulatoare își ia proba și
+  titlurile din listă (`E2E`, `GREP`).
+- **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Ab`) cu traducerea, lista otrăvurilor și rândul
+  ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
+  **Completed:** 18.11 14:39.
