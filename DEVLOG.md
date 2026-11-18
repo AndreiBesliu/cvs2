@@ -9887,6 +9887,11 @@ adâncime și pas, „Trimite la mașină”), sau rămâne pentru mai târziu?�
   incrustațiile iau jumătate de rând, iar panoul e mai lat); „Trimite la mașină” ieșea din panou (acum lipit de marginea
   lui); sub 1024 px, cele două butoane ocupau tot panoul (acum unul lângă altul). Privite la 1440, 1280 × 720, 1180 ×
   820, 768 și 390 px.
+- **Hotărât de owner în timpul feliei:** la ideea lui despre telefon („pe telefon userii nu vor crea fisiere pentru
+  executie si doar vor incarca modele deja create … nu cred ca este nevoie sa ne concentram design complet pentru
+  mobile”), am propus §7 schimbat (fără muncă nouă de desen pe telefon; fluxul „proiectele mele → Trimite la mașină” cu
+  linia Proiectelor) sau doar prioritatea scăzută; a răspuns „1”. Scris în ADR 0250 (antetul, §7, rândul 28.5↑,
+  „Schimbarea din 18.11”) și în CLAUDE.md.
 - **Găsit de porți:** eticheta acțiunii stătea în mesajele carcasei; proba registrului le cere cu ale editorului (unde
   stau și celelalte acțiuni aduse la cerere): mutată.
 - **Probele:** 4 unitare noi (`taiereButoane.test.ts`) și câte una în `aranjament.test.ts` și

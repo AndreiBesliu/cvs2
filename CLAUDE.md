@@ -1136,6 +1136,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Fereastra Aspectul (`src/app/Aspectul.tsx`, la cerere): din meniul contului (rândul `aspect`) și din paletă
     (`vedere.aspect`, în `ORIUNDE`).
   - Densitatea mare: `--tinta` 48 px, 56 la atingere. Numele uneltelor (`.nume-unealta`) sunt ascunse în Insule.
+  - **Pe telefon nu mai lucrăm la desen** (ADR 0250 §7, schimbat pe 18.11): ce merge azi nu se strică; fluxul
+    telefonului, „proiectele mele → Trimite la mașină”, vine cu linia Proiectelor, după proiectele în cont.
   - Felul tăierii din panou e în datele aranjamentului (`taierea`: `lista` sau `butoane`); calculul butoanelor stă în
     `src/app/taiereButoane.ts`. „Trimite la mașină” e acțiunea `export.trimite` (registrul exportului): App deschide
     fereastra exportului cu butonul ei și duce programul în Mașina (`duInMasina`, ca „Deschide în Mașina”).
