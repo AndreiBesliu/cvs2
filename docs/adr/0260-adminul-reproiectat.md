@@ -144,3 +144,40 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
     40 / 40 prinse (`test/otravuri/A.1.py`: 24 unitare, 16 pe emulatoare).
   - **Mărimea**, față de un build curat al lui `main` `ae5a13c4`: `/admin` 106,5 → 112,2 / 200 kB (+5,7 din cei +25 ai
     liniei); pornirea (106,6, cu ușa 110,6 / 115) și totalul (716,7 / 800) neschimbate.
+- **A.2, 18.11: Erori și Diagnoza** (aceeași ramură, `wip/A.1-admin`, peste A.1, cu `main` `c302d73a` adus în `951933e5`;
+  `3.Ab` în jurnalul etapei 3):
+  - **Partea pură:** `src/admin/erori/vedere.ts` (filtrul pe sursă, eroarea aleasă, aparițiile pe 14 zile, barele
+    graficului) și `src/admin/diagnoza/vedere.ts` (sumarul, problemele întâi).
+  - **Erori:** lista în stânga (între 280 și 420 px), eroarea aleasă în dreapta, lipită sus la derulare, deci lista nu se
+    mișcă la alegere; sub 800 px, detaliul trece sub listă. La deschidere e aleasă prima; un grup găsit de căutare vine
+    ales. Aleasă e cea văzută: un filtru care o ascunde mută alegerea pe prima arătată, iar ridicarea filtrului n-o mută
+    înapoi. Filtrul pe stare arată numărul fiecăreia (două numărători `count` la fiecare citire, pe indexul simplu al lui
+    `rezolvat` și pe colecție); filtrul pe sursă (browser / server) lucrează pe ce s-a citit, fără o cerere nouă. În
+    detaliu: ultima apariție, graficul, ultimele 20 de apariții și „Marchează rezolvată” / „Redeschide”, doar cu
+    `erori.rezolva` (ADR 0049). Un grup fără nicio apariție păstrată o spune (se păstrează 90 de zile, ADR 0040 §6).
+  - **Graficul pe 14 zile:** din aparițiile citite (ultimele 20; eticheta spune „din cele citite”), pe zilele calendarului
+    local (între miezurile nopții locale, deci și peste schimbarea orei; proba unitară fixează fusul României, ca să nu
+    treacă degeaba pe CI, în UTC). SVG fără bibliotecă: o serie, fără legendă (titlul o numește), bare cu 2 px între ele,
+    capătul de sus rotunjit (cel mult 4 px) și baza dreaptă pe axă, în culoarea de accent. Barele se desenează la lățimea
+    măsurată a graficului (`ResizeObserver`; fără scalarea SVG, colțurile rămân rotunde), iar graficul are cel mult 28rem,
+    ca barele să rămână subțiri. Ziua și numărul fiecărei bare la hover (`<title>`), totalul în eticheta graficului
+    (`role="img"`). Fără nicio apariție în cele 14 zile, o propoziție în locul axei goale.
+  - **Diagnoza:** sumarul (câte Bine, Atenție, Eșec; informațiile nu se numără) deasupra listei; problemele întâi (Eșec,
+    apoi Atenție, cu fundalul stării), restul în ordinea de până acum; ora verificării lângă „Rulează din nou”.
+  - Fără reguli, permisiuni, indexuri sau date noi; singurele cereri noi sunt cele două numărători ale filtrului.
+  - **Bancul vizual** (1440, 1024 și 760 px, în ambele teme) a găsit patru lucruri, reparate în `8d747031`: textul
+    rândurilor centrat de regula globală a butoanelor (`justify-content: center` strângea grila rândului pe text),
+    colțurile barelor turtite de scalarea SVG, barele late de 50 px pe toată lățimea detaliului și graficul gol, fără
+    nicio vorbă.
+  - **Otrăvurile au găsit o probă care trecea din noroc:** ruta care ține citirea aparițiilor lui G2
+    (`**/errorLogs/<id>:runQuery`) nu se potrivea niciodată, fiindcă adresa are `?key=…` după `:runQuery`; proba trecea
+    doar când răspunsul întârzia de la sine. Trei otrăvuri (E05, E06, E14) au căzut pe aceeași linie, pe care niciuna nu
+    o atinge. Reparată în `ed064a08`: ruta e o funcție pe calea adresei, iar proba cere ca citirea să fie ținută.
+  - **Probele:** 6 unitare noi (`test/unit/admin.vederi.test.ts`); 3 e2e noi pe emulatoare
+    (`test/e2e-emulator/erori.emulator.spec.ts`: owner-ul, cu așezarea, textul rândurilor, numerele, sursa, graficul și
+    graficul gol, alegerea care nu sare înapoi, aparițiile erorii de dinainte care nu rămân sub cea nouă, marcarea și
+    ecranul de 700 px; Diagnoza; un rol care doar citește erorile); probele vechi, pe așezarea nouă. Otrăvurile:
+    28 / 28 prinse pe `ed064a08` (`test/otravuri/A.2.py`: 12 unitare, 16 pe emulatoare), fiecare pe aserțiunea
+    care îi țintește defectul.
+  - **Mărimea**, față de un build curat al lui `951933e5` (A.1 cu `main` `c302d73a`): `/admin` 112,2 → 113,6 / 200 kB
+    (+1,4; linia: +7,1 din cei +25); pornirea (107,0, cu ușa 111,0 / 115) și totalul (721,3 / 800) neschimbate.
