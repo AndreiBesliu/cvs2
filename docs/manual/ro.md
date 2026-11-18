@@ -155,7 +155,8 @@ e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia răm
 e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul. Cu
 urechi pe profilul exterior, fereastra pornește de la 2 × freza + 3 mm, rotunjită în sus (10 mm cu freza de 3,175), și spune
 de ce: sub 2 × freza, tăieturile a două piese vecine se unesc, iar urechile dinspre vecini nu mai au lemn de care să se țină.
-O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment.
+O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment. La export, aplicația verifică oricum, pe
+program, dacă urechile țin (vezi [Exportul G-code](#export)).
 **Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
 încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
 minte în browser.
@@ -1458,6 +1459,13 @@ exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât 
 nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului. După un export pe care îl trimite
 senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
 să-l pornească.
+
+**Piesele care se desprind.** La fiecare export, aplicația urmărește programul până la fața de jos a foii: unde trece freza
+prin toată foaia și ce lemn rămâne pe fund, legat de marginea foii. O piesă tăiată pe dinafară cu urechi, la care nu mai
+ajunge niciun pic de lemn legat (de obicei fiindcă tăieturile pieselor vecine se unesc, iar urechile ei dau în gol), s-ar
+desprinde cât freza încă taie lângă ea. Exportul o spune printre avertismente, cu valorile plăcuței sau numele piesei și
+locul ei pe foaie („lângă X 70, Y 119”); cu **Toate foile**, pe fiecare foaie. Programul se descarcă oricum: e un
+avertisment, nu un refuz. Proba e a programului, deci prinde orice așezare, și pe cea mutată de mână.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o

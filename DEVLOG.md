@@ -9737,3 +9737,8 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   800; bucata Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
   „Atelierul”), testul din aplicație (pasul nou), lista otrăvurilor și rândul ei, DEVLOG.
+
+## 2026-11-18 — Felia 11.3↑c: proba urechilor la export (ADR 0210, varianta b) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑c, verificarea urechilor la export? Ar prinde orice așezare, și pe cele mutate de mână, iar avertismentul ar apărea în fereastra exportului. Răspunde „Da, 11.3↑c” sau „Mai târziu”.”: „Da, 11.3↑c”.
+**Started:** 18.11, 12:06.

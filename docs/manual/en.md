@@ -160,9 +160,10 @@ larger than the sheet stays where it is. No size changes. The distance is at lea
 (otherwise one part’s cut would run into its neighbour), and the window says the minimum. With tabs on the outside profile,
 the window starts at 2 × the cutter + 3 mm, rounded up (10 mm with a 3.175 cutter), and says why: below 2 × the cutter, the
 cuts of two neighbouring parts merge, and the tabs facing the neighbours have no wood left to hold on to. A smaller
-distance, but at least the cutter, is accepted, with a warning. **Order**: as in the list
-(default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
-**Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
+distance, but at least the cutter, is accepted, with a warning. On export, the app checks anyway, on the program, whether
+the tabs hold (see [Exporting G-code](#export)). **Order**: as in the list (default) or largest first. **Rotation**: none
+(default) or by 90°, lying down, only when more fit that way. Before **Arrange**, the window says the result (“25 parts on 2
+sheets: 15 + 10.”). The choices are remembered in the browser.
 
 **Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
 sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement
@@ -1509,6 +1510,14 @@ exactly this file reaches the machine). If the cutter would leave the sheet, the
 export asks you to confirm that nothing is in the way there (clamps, screws); the confirmation is written in the program's
 header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
 in [the Machine](#masina), without starting it.
+
+**Parts that come loose.** On every export, the app follows the program down to the bottom face of the sheet: where the
+cutter goes through the whole sheet and what wood is left on the bottom, connected to the sheet's edge. A part cut on the
+outside with tabs that no connected wood reaches any more (usually because the cuts of neighbouring parts merge and its tabs
+face nothing) would come loose while the cutter is still cutting next to it. The export says so among the warnings, with
+the plate's values or the part's name and its place on the sheet (“near X 70, Y 119”); with **All sheets**, on each sheet.
+The program is downloaded anyway: it is a warning, not a refusal. The check is on the program, so it catches any layout,
+including one moved by hand.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a

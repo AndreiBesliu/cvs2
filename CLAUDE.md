@@ -677,7 +677,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Avertismentul urechilor (felia 11.3↑b, varianta a)** gata pe 17.11: cu urechi pe un profil exterior, distanța propusă e
   2 × freza + 3 mm, rotunjită în sus (`src/model/distantaPiese.ts`, folosit de așezare și de copii). «Așază pe foi» pornește
   de la ea, cu nota; sub ea, avertismentul (nu refuzul); «Din CSV…», «Încă…», «+1» și „Mută și așază” urcă singure la ea.
-  Doar piesele care se așază sunt judecate; proba la export (b) și urechile la locuri alese (c) rămân la owner.
+  Doar piesele care se așază sunt judecate.
+  **Proba urechilor la export (felia 11.3↑c, varianta b)** gata pe 18.11: `src/sim/desprinse.ts` (nucleul simulării, doar pe
+  mutările care ajung la fund; lemnul rămas, umplut din marginea foii) și `src/cam/partiUrechi.ts` (părțile: contururile
+  tăiate prin foaie de un profil exterior cu urechi), legate în `src/jobs/calculCam.ts` (câmpul `desprinse` al exportului).
+  Textul îl face firul principal, cu `t` (`avertismentDesprinse`; mesajele exportului cerute la nevoie): printre avertismente,
+  pe fiecare foaie, nu un refuz. Urechile la locuri alese (c, câmp nou: v26) rămân la owner.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
