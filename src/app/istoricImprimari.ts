@@ -2,11 +2,12 @@
  * Istoricul imprimărilor (felia 3.6t, ADR 0194 §B), fără rețea și fără depozit: istoricul cvs2 (fiecare imprimare văzută de
  * fereastră, cu ce știe doar cvs2: numele pieselor, estimarea feliatorului, materialul, procentul la oprire) unit cu istoricul
  * imprimantei (toate imprimările ei, și cele pornite de pe ecran sau din Creality Print); gramele, costul, totalurile lunii,
- * CSV-ul și estimarea care învață. Nimic ghicit: fără prețul materialului, costul e „—”; fără material, doar metrii.
+ * CSV-ul și estimarea care învață. Nimic ghicit: fără prețul materialului, costul e „—”; fără material, doar metrii. Din 3.6u
+ * (ADR 0194 §C), filmul timelapse al fiecărei imprimări, dacă imprimanta l-a făcut.
  */
 import { ARIE_FILAMENT, MATERIALE, type Material } from '../cam/feliere/profil.ts';
 import { numeDin } from '../machine/imprimanta/creality.ts';
-import type { FisierImprimanta, ImprimareIstoric, RezultatImprimare } from '../machine/imprimanta/driver.ts';
+import type { FilmImprimanta, FisierImprimanta, ImprimareIstoric, RezultatImprimare } from '../machine/imprimanta/driver.ts';
 import { evenimente, LUCREAZA, lucrareNoua, type Clipa } from '../machine/imprimanta/evenimente.ts';
 
 /** O imprimare din istoricul cvs2, ținută în browser (baza `cvs2-imprimanta`, magazia `imprimari`; întrebarea 2: ultimele 500). */
@@ -91,6 +92,8 @@ export type RandIstoric = {
   readonly material: string | null;
   /** Fișierul a fost feliat în cvs2 („Din desen…”): doar el învață estimarea. */
   readonly dinCvs2: boolean;
+  /** Numele filmului timelapse de pe imprimantă (felia 3.6u); null: niciunul știut. */
+  readonly film: string | null;
 };
 
 /** Un material din lista felierului, după nume sau fel, fără majuscule („PLA High Speed”, „petg”); null: necunoscut. */
@@ -113,12 +116,40 @@ export function materialDinNume(fisier: string): Material | null {
 }
 
 /**
+ * Filmele imprimantei pe imprimări (felia 3.6u, ADR 0194 §C.13), pur: un film e al unei imprimări dacă are același fișier (când
+ * filmul îl spune) și începutul la cel mult `TOLERANTA_MS`; perechile cele mai apropiate se leagă întâi, câte una. Dă numele
+ * filmului pentru fiecare imprimare, în ordinea lor (null: niciunul).
+ */
+export function filmePe(imprimari: readonly { readonly fisier: string; readonly inceput: number }[], filme: readonly FilmImprimanta[] | null): (string | null)[] {
+  const out: (string | null)[] = imprimari.map(() => null);
+  if (filme === null) return out;
+  const perechi: { readonly a: number; readonly b: number; readonly d: number }[] = [];
+  imprimari.forEach((x, a) => {
+    filme.forEach((f, b) => {
+      const d = Math.abs(x.inceput - f.inceput);
+      if (d <= TOLERANTA_MS && (f.fisier === null || f.fisier === x.fisier)) perechi.push({ a, b, d });
+    });
+  });
+  perechi.sort((p, q) => p.d - q.d);
+  const luate = new Set<number>();
+  for (const p of perechi) {
+    const f = filme[p.b];
+    if (f === undefined || out[p.a] !== null || luate.has(p.b)) continue;
+    out[p.a] = f.nume;
+    luate.add(p.b);
+  }
+  return out;
+}
+
+/**
  * Cele două istorice unite (pur), cele mai noi întâi: o imprimare a imprimantei și una a cvs2 sunt aceeași dacă au același
  * fișier, începuturi la cel mult `TOLERANTA_MS` și aceeași imprimantă (când amândouă o spun); perechile cele mai apropiate se
  * leagă întâi, câte una. Ce spune imprimanta (rezultatul, durata, filamentul) trece înaintea celor văzute de fereastră; ce
- * știe doar cvs2 (piesele, estimarea, materialul) vine din cvs2; altfel, estimarea și materialul din lista imprimantei.
+ * știe doar cvs2 (piesele, estimarea, materialul) vine din cvs2; altfel, estimarea și materialul din lista imprimantei. Din
+ * 3.6u, filmele (`filmePe`): după începutul spus de imprimantă, când îl știe (același ceas cu filmul), altfel cel al ferestrei.
  */
-export function uneste(imp: readonly ImprimareIstoric[] | null, cvs2: readonly ImprimareCvs2[], imprimanta: string | null, fisiere: readonly FisierImprimanta[] | null): RandIstoric[] {
+export function uneste(imp: readonly ImprimareIstoric[] | null, cvs2: readonly ImprimareCvs2[], imprimanta: string | null, fisiere: readonly FisierImprimanta[] | null,
+  filme: readonly FilmImprimanta[] | null = null): RandIstoric[] {
   const din = imp ?? [];
   const perechi: { readonly a: number; readonly b: number; readonly d: number }[] = [];
   din.forEach((x, a) => {
@@ -144,11 +175,13 @@ export function uneste(imp: readonly ImprimareIstoric[] | null, cvs2: readonly I
       inceput: y?.inceput ?? x?.inceput ?? 0, fisier, imprimanta: y?.imprimanta ?? (x === null ? null : imprimanta), piese: y?.piese ?? null,
       rezultat: x?.rezultat ?? y?.rezultat ?? null, durata: x?.durata ?? y?.durata ?? null, progres: y?.progres ?? null,
       estimare: y?.estimare ?? f?.timp ?? null, filament: x?.filament ?? y?.filament ?? null,
-      material: y?.material ?? f?.material ?? materialDinNume(fisier)?.nume ?? null, dinCvs2: (y?.estimare ?? null) !== null,
+      material: y?.material ?? f?.material ?? materialDinNume(fisier)?.nume ?? null, dinCvs2: (y?.estimare ?? null) !== null, film: null,
     };
   };
-  return [...din.map((x, a) => rand(x, pereche.get(a) ?? null)), ...cvs2.filter((_, b) => !luate.has(b)).map((y) => rand(null, y))]
-    .sort((p, q) => q.inceput - p.inceput);
+  const toate = [...din.map((x, a) => ({ r: rand(x, pereche.get(a) ?? null), inceput: x.inceput })),
+    ...cvs2.filter((_, b) => !luate.has(b)).map((y) => ({ r: rand(null, y), inceput: y.inceput }))];
+  const pe = filmePe(toate.map((x) => ({ fisier: x.r.fisier, inceput: x.inceput })), filme);
+  return toate.map((x, k) => ({ ...x.r, film: pe[k] ?? null })).sort((p, q) => q.inceput - p.inceput);
 }
 
 /**

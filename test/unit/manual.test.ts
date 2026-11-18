@@ -280,6 +280,8 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'istoric-goleste-confirma': 'imprimanta.istoric.goleste.confirma', 'istoric-goleste-renunta': 'imprimanta.istoric.goleste.renunta',
   'istoric-pret': 'imprimanta.istoric.pret', 'istoric-putere': 'imprimanta.istoric.putere', 'istoric-kwh': 'imprimanta.istoric.kwh',
   'felie-corecteaza': 'imprimanta.felie.corecteaza',
+  // Felia 3.6u (ADR 0194 §C): filmul unei imprimări, în cardul Istoricul.
+  'istoric-film': 'imprimanta.istoric.film',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {

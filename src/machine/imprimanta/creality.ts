@@ -12,8 +12,8 @@
  * (lumina, ventilatoarele, viteza, debitul, țintele, homing-ul), cu numele din integrarea Home Assistant.
  */
 import {
-  intregIn, RE_NUME_PIESA, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FisierImprimanta, type Imprimanta,
-  type ImprimareIstoric, type Interval, type IdVentilator, type Pas, type PiesaPlaca, type RezultatImprimare, type StareLucrare,
+  intregIn, RE_NUME_PIESA, VENTILATOARE, type Capabilitati, type ComandaImprimanta, type DriverText, type FilmImprimanta, type FisierImprimanta,
+  type Imprimanta, type ImprimareIstoric, type Interval, type IdVentilator, type Pas, type PiesaPlaca, type RezultatImprimare, type StareLucrare,
 } from './driver.ts';
 
 export const PORT_CREALITY = 9999;
@@ -190,9 +190,39 @@ function imprimareDin(o: unknown): ImprimareIstoric | null {
   return { fisier, inceput: inceput * 1000, durata: pozitiv(r['usagetime']), filament: pozitiv(r['usagematerial']), rezultat: (pf === null ? null : REZULTATE.get(pf)) ?? null };
 }
 
+/** Cel mult atâtea filme dintr-o listă (felia 3.6u): un cadru stricat sau uriaș nu umple fereastra. */
+export const MAX_FILME = 100;
+/** Numele unui film K1 (integrarea Home Assistant, `timelapse.py`): doar cifre și `.mp4`; altul nu ajunge într-o adresă. */
+export const NUME_FILM = /^\d{1,20}\.mp4$/;
+/** Gazda legăturii, cum o dă `adresaRetea`: un IPv4 sau un nume (litere, cifre, `-`, cu puncte între ele) ori un IPv6 între paranteze. */
+const GAZDA = /^(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*|\[[0-9A-Fa-f:.]+\])$/;
+
 /**
- * Ce aduce un cadru: bătaia inimii (cere `ok`), câmpurile stării, lista fișierelor, istoricul (3.6t); `json` fals: text care nu
- * e un obiect JSON.
+ * Un film din `elapseVideoList` (felia 3.6u, ADR 0194 §C; integrarea Home Assistant): numele (`videoname`), începutul lucrării
+ * filmate (`id`, egal cu `printStartTime`; în secunde, ca `starttime` din istoric) și fișierul (`gcodename`, calea întreagă).
+ * Fără un nume bun sau fără un început rezonabil, intrarea se sare.
+ */
+function filmDin(o: unknown): FilmImprimanta | null {
+  if (typeof o !== 'object' || o === null) return null;
+  const r = o as Record<string, unknown>;
+  const nume = r['videoname'];
+  const inceput = numar(r['id']);
+  if (typeof nume !== 'string' || !NUME_FILM.test(nume) || inceput === null || inceput <= 0 || inceput >= 1e10) return null;
+  const g = text(r['gcodename']);
+  return { nume, inceput: inceput * 1000, fisier: g === null ? null : numeSigur(numeDin(g)) };
+}
+
+/**
+ * Filmul pe imprimantă (integrarea Home Assistant: `http://<gazdă>/downloads/video/<nume>`, pe 80), deschis într-o filă nouă
+ * (în pagină ar fi conținut mixt, ADR 0194): doar gazda legăturii și un nume din cifre; altfel null.
+ */
+export function adresaFilmK1(gazda: string, nume: string): string | null {
+  return GAZDA.test(gazda) && NUME_FILM.test(nume) ? `http://${gazda}/downloads/video/${nume}` : null;
+}
+
+/**
+ * Ce aduce un cadru: bătaia inimii (cere `ok`), câmpurile stării, lista fișierelor, istoricul (3.6t), filmele (3.6u); `json`
+ * fals: text care nu e un obiect JSON.
  */
 export type Cadru = {
   readonly json: boolean;
@@ -200,9 +230,10 @@ export type Cadru = {
   readonly stare: Partial<Imprimanta>;
   readonly fisiere: readonly FisierImprimanta[] | null;
   readonly istoric: readonly ImprimareIstoric[] | null;
+  readonly filme: readonly FilmImprimanta[] | null;
 };
 
-const NIMIC: Cadru = { json: false, inima: false, stare: {}, fisiere: null, istoric: null };
+const NIMIC: Cadru = { json: false, inima: false, stare: {}, fisiere: null, istoric: null, filme: null };
 
 /** Citește un cadru text al imprimantei. Câmpurile necunoscute rămân pe dinafară; un câmp cu altă formă nu schimbă nimic. */
 export function citesteCadru(t: string): Cadru {
@@ -275,7 +306,11 @@ export function citesteCadru(t: string): Cadru {
   // Istoricul (3.6t): o listă JSON (K1C 2025, după lista fișierelor și la `reqHistory`), primită și ca text JSON în JSON.
   const ist = listaJson(r['historyList']);
   const istoric = ist === null ? null : ist.slice(0, MAX_ISTORIC).map(imprimareDin).filter((x): x is ImprimareIstoric => x !== null);
-  return { json: true, inima: r['ModeCode'] === 'heart_beat', stare, fisiere, istoric };
+  // Filmele (3.6u): o listă JSON (K1C 2025, după istoric, la lista fișierelor; și la `reqElapseVideoList`), primită și ca text
+  // JSON în JSON.
+  const fil = listaJson(r['elapseVideoList']);
+  const filme = fil === null ? null : fil.slice(0, MAX_FILME).map(filmDin).filter((x): x is FilmImprimanta => x !== null);
+  return { json: true, inima: r['ModeCode'] === 'heart_beat', stare, fisiere, istoric, filme };
 }
 
 /** Cadrul arată ca al unei imprimante Creality: bătaia inimii sau măcar un câmp știut al stării. */
@@ -304,10 +339,14 @@ export function stareLucrare(i: Imprimanta): StareLucrare {
 
 const cerere =(method: 'get' | 'set', params: Readonly<Record<string, unknown>>): string => JSON.stringify({ method, params });
 
-/** Toată starea (`ReqPrinterPara`), lista fișierelor și istoricul imprimărilor (`reqHistory`, felia 3.6t): doar citiri. */
+/**
+ * Toată starea (`ReqPrinterPara`), lista fișierelor, istoricul imprimărilor (`reqHistory`, felia 3.6t) și lista filmelor
+ * (`reqElapseVideoList`, felia 3.6u): doar citiri.
+ */
 export const CERERE_STARE = cerere('get', { ReqPrinterPara: 1 });
 export const CERERE_FISIERE = cerere('get', { reqGcodeFile: 1 });
 export const CERERE_ISTORIC = cerere('get', { reqHistory: 1 });
+export const CERERE_FILME = cerere('get', { reqElapseVideoList: 1 });
 export const COMANDA_PAUZA = cerere('set', { pause: 1 });
 export const COMANDA_REIA = cerere('set', { pause: 0 });
 export const COMANDA_OPRESTE = cerere('set', { stop: 1 });
@@ -319,7 +358,7 @@ export function comandaPornire(cale: string): string | null {
 }
 
 /** Cererile de citire: singurele pe care legătura le trimite fără un clic al omului (pe lângă `ok`). */
-export const CITIRI: ReadonlySet<string> = new Set([CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
+export const CITIRI: ReadonlySet<string> = new Set([CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME]);
 
 /** Viteza și debitul pe K1: întregi 1–200 % (integrarea Home Assistant). */
 export const PROCENTE_K1: Interval = { min: 1, max: 200 };
@@ -403,9 +442,11 @@ export const CREALITY_K1: DriverText = {
   port: PORT_CREALITY,
   citiri: [...CITIRI],
   cerereIstoric: CERERE_ISTORIC,
+  cerereFilme: CERERE_FILME,
+  adresaFilm: adresaFilmK1,
   citeste: (t) => {
     const c = citesteCadru(t);
-    return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, istoric: c.istoric, raspuns: c.inima ? RASPUNS_INIMA : null };
+    return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, istoric: c.istoric, filme: c.filme, raspuns: c.inima ? RASPUNS_INIMA : null };
   },
   lucrare: stareLucrare,
   capabilitati: capabilitatiK1,

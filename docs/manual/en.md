@@ -1790,8 +1790,9 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
 - **History** (its card, in the Printer window): the prints, newest first, from two places: the printer's history (all of
   them, also those started from its screen or from Creality Print) and the cvs2 history, kept in this browser (the last 500),
   with the part names, the estimate and the material. For each: the date, the file, the result (✓ done, ⏹ stopped, ⚠ error),
-  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost. Below,
-  the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
+  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost and the
+  **Video**: if the printer filmed the print (timelapse turned on on its screen), “Video ↗” opens it from the printer, in a
+  new tab, where you save it (nothing from cvs2 goes to the printer); otherwise “—”. Below, the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
   printer keeps its own history). You set the **Price per kg** of each material; until then, the cost is “—”. Electricity
   joins the cost once you set the printer's **Average power** (W) and the **Price per kWh**. In “From drawing…”, **Correct
   the estimate from history** (on) shows the estimate learned from the finished prints of files sliced in cvs2, on the same

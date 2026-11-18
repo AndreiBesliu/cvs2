@@ -1726,7 +1726,9 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
 - **Istoricul** (cardul lui, în fereastra Imprimanta): imprimările, cele mai noi sus, din două locuri: istoricul imprimantei
   (toate, și cele pornite de pe ecran sau din Creality Print) și istoricul cvs2, ținut în acest browser (ultimele 500), cu
   numele pieselor, estimarea și materialul. Pentru fiecare: data, fișierul, rezultatul (✓ gata, ⏹ oprită, ⚠ eroare), durata
-  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul. Dedesubt, totalurile lunii,
+  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul și **Filmul**: dacă imprimanta
+  a filmat lucrarea (timelapse-ul pornit pe ecranul ei), „Filmul ↗” îl deschide de pe ea, într-o filă nouă, de unde îl
+  salvezi (nimic din cvs2 nu pleacă spre imprimantă); altfel, „—”. Dedesubt, totalurile lunii,
   **Exportă CSV** și **Golește istoricul cvs2…**, cu o confirmare: **Golește** sau **Păstrează-l** (istoricul imprimantei
   rămâne în ea). **Prețul pe kg** al fiecărui material îl pui tu; până atunci, costul e „—”. Curentul intră în cost după ce
   pui **Puterea medie** a imprimantei (W) și **Prețul kWh**. În „Din desen…”, **Corectează estimarea după istoric** (pornită)

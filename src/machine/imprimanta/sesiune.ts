@@ -17,7 +17,7 @@ import { permisiuneRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from '../reteaL
 import { CREALITY_K1 } from './creality.ts';
 import {
   aplica, comandaPermisa, esteLibera, IMPRIMANTA_NECUNOSCUTA, piesaAnulabila, sePoateRegla, tintaDe, type ComandaImprimanta, type DriverText,
-  type FisierImprimanta, type Imprimanta, type ImprimareIstoric, type Pas,
+  type FilmImprimanta, type FisierImprimanta, type Imprimanta, type ImprimareIstoric, type Pas,
 } from './driver.ts';
 
 /** Ce folosim dintr-un WebSocket (probele îl înlocuiesc): doar cadre text. */
@@ -61,6 +61,8 @@ export type StareImprimanta = {
   readonly fisiere: readonly FisierImprimanta[] | null;
   /** Istoricul imprimărilor, cum l-a trimis ultima dată imprimanta (null: încă nu), felia 3.6t. */
   readonly istoric: readonly ImprimareIstoric[] | null;
+  /** Filmele timelapse, cum le-a trimis ultima dată imprimanta (null: încă nu), felia 3.6u. */
+  readonly filme: readonly FilmImprimanta[] | null;
   /** Motivul ultimului eșec al legăturii (null: niciunul). */
   readonly motiv: MotivImprimanta | null;
   /** Încercările de a reface legătura de la cădere încoace. */
@@ -121,12 +123,15 @@ export const PAS_ANULARE_MS = 3000;
 export const TERMEN_ANULARE_MS = 6000;
 export const TERMEN_ANULARE_ACUM_MS = 120_000;
 export const NOTA_ANULARE_MS = 8000;
-/** Istoricul se cere cel mult o dată în atâta timp (felia 3.6t: „istoricul cerut des”, respins în ADR 0194). */
+/**
+ * Istoricul se cere cel mult o dată în atâta timp (felia 3.6t: „istoricul cerut des”, respins în ADR 0194); lista filmelor la
+ * fel, numărată separat (felia 3.6u).
+ */
 export const PAUZA_ISTORIC_MS = 5000;
 
 export const STARE_INITIALA: StareImprimanta = {
-  legatura: 'deconectat', adresa: null, driver: CREALITY_K1, imprimanta: IMPRIMANTA_NECUNOSCUTA, fisiere: null, istoric: null, motiv: null,
-  incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null, straturiRecente: [], anulari: [],
+  legatura: 'deconectat', adresa: null, driver: CREALITY_K1, imprimanta: IMPRIMANTA_NECUNOSCUTA, fisiere: null, istoric: null, filme: null,
+  motiv: null, incercari: 0, pierdutaLa: null, jurnal: [], secventa: null, racireLa: null, racitaLa: null, straturiRecente: [], anulari: [],
 };
 
 export type RezultatLegatura = { readonly ok: true } | { readonly ok: false; readonly motiv: MotivImprimanta };
@@ -156,8 +161,9 @@ export class SesiuneImprimanta {
   private ceasRacire: unknown = null;
   /** Pasul anulărilor cerute (felia 3.6r), cât e una. */
   private ceasAnulari: unknown = null;
-  /** Când a plecat ultima cerere a istoricului (felia 3.6t). */
+  /** Când a plecat ultima cerere a istoricului (felia 3.6t) și a filmelor (felia 3.6u). */
   private istoricCerutLa: number | null = null;
+  private filmeCeruteLa: number | null = null;
 
   constructor(opt: { readonly ceas?: CeasImprimanta; readonly fabrica?: FabricaWsText; readonly permisiune?: () => Promise<string | null> } = {}) {
     this.ceas = opt.ceas ?? CEAS_BROWSER;
@@ -270,6 +276,17 @@ export class SesiuneImprimanta {
   cereIstoric(): boolean {
     const c = this.s.driver.cerereIstoric;
     const la = this.istoricCerutLa;
+    if (c === null || this.s.legatura !== 'conectat' || (la !== null && this.ceas.acum() - la < PAUZA_ISTORIC_MS)) return false;
+    return this.trimite(c);
+  }
+
+  /**
+   * Cere din nou lista filmelor (felia 3.6u, ADR 0194 §C.13), o citire: la deschiderea cardului Istoricul și la finalul unei
+   * lucrări (la legare pleacă oricum, cu celelalte citiri); nu mai des de `PAUZA_ISTORIC_MS`. False dacă n-a plecat.
+   */
+  cereFilme(): boolean {
+    const c = this.s.driver.cerereFilme;
+    const la = this.filmeCeruteLa;
     if (c === null || this.s.legatura !== 'conectat' || (la !== null && this.ceas.acum() - la < PAUZA_ISTORIC_MS)) return false;
     return this.trimite(c);
   }
@@ -424,6 +441,7 @@ export class SesiuneImprimanta {
     if (ws === null || ws.readyState !== DESCHIS) return false;
     ws.send(t);
     if (t === this.s.driver.cerereIstoric) this.istoricCerutLa = this.ceas.acum();
+    if (t === this.s.driver.cerereFilme) this.filmeCeruteLa = this.ceas.acum();
     this.adaugaJurnal('trimis', t);
     return true;
   }
@@ -553,7 +571,7 @@ export class SesiuneImprimanta {
         this.pune({ ...this.s, legatura: 'conectat', motiv: null, incercari: 0, pierdutaLa: null });
         if (gata) gata({ ok: true });
       }
-      if (schimbari || c.fisiere !== null || c.istoric !== null) {
+      if (schimbari || c.fisiere !== null || c.istoric !== null || c.filme !== null) {
         // Valorile stratului, cu momentul lor (felia 3.6q); un alt fișier le uită pe cele vechi.
         const acum = this.ceas.acum();
         const altFisier = c.stare.fisier !== undefined && c.stare.fisier !== this.s.imprimanta.fisier;
@@ -564,6 +582,7 @@ export class SesiuneImprimanta {
           imprimanta: schimbari ? aplica(this.s.imprimanta, c.stare) : this.s.imprimanta,
           fisiere: c.fisiere ?? this.s.fisiere,
           istoric: c.istoric ?? this.s.istoric,
+          filme: c.filme ?? this.s.filme,
           straturiRecente: strat === undefined || strat === null ? straturi : [...straturi, { v: strat, la: acum }].slice(-MAX_STRATURI_RECENTE),
         });
       }

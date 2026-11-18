@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { adresaRetea, TIMP_DESCHIDERE_MS, type AdresaRetea } from '../../src/machine/reteaLocala.ts';
 import {
-  CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
+  CERERE_FILME, CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, COMANDA_PAUZA, DIR_GCODE, HOMING_MAX_MS, HOMING_MIN_MS, RASPUNS_INIMA,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
   MAX_JURNAL, MAX_LINIE_JURNAL, MAX_STRATURI_RECENTE, NOTA_ANULARE_MS, PAS_ANULARE_MS, PAS_ASTEPTARE_MS, PAUZA_ISTORIC_MS, PAUZE_RECONECTARE_MS,
@@ -76,7 +76,7 @@ test('legarea: la deschidere pleacă doar citirile; primul cadru al imprimantei 
   const w = ultimul();
   assert.equal(w.url, 'ws://192.168.1.12:9999/');
   w.deschide();
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME]);
   w.primeste(STARE);
   assert.deepEqual(await r, { ok: true });
   assert.equal(s.stare().legatura, 'conectat');
@@ -85,11 +85,12 @@ test('legarea: la deschidere pleacă doar citirile; primul cadru al imprimantei 
   w.primeste(INIMA);
   w.primeste('{"printProgress":27}');
   w.primeste(INIMA);
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, RASPUNS_INIMA, RASPUNS_INIMA]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME, RASPUNS_INIMA, RASPUNS_INIMA]);
   assert.equal(s.stare().imprimanta.progres, 27);
   // Jurnalul: deschiderea (cu adresa), ce a plecat și ce a venit, în ordine.
   assert.deepEqual(s.stare().jurnal.map((l) => `${l.dir} ${l.text}`), [
-    'stare open ws://192.168.1.12:9999/', `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `trimis ${CERERE_ISTORIC}`, `primit ${STARE}`, `primit ${INIMA}`,
+    'stare open ws://192.168.1.12:9999/', `trimis ${CERERE_STARE}`, `trimis ${CERERE_FISIERE}`, `trimis ${CERERE_ISTORIC}`, `trimis ${CERERE_FILME}`,
+    `primit ${STARE}`, `primit ${INIMA}`,
     `trimis ok`, 'primit {"printProgress":27}', `primit ${INIMA}`, 'trimis ok',
   ]);
 });
@@ -136,7 +137,7 @@ test('bătaia inimii ca prim cadru o leagă și ea', async () => {
   ultimul().deschide();
   ultimul().primeste(INIMA);
   assert.deepEqual(await r, { ok: true });
-  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, RASPUNS_INIMA]);
+  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME, RASPUNS_INIMA]);
 });
 
 test('comenzile pleacă doar cu legătura făcută, fiecare la chemarea ei', async () => {
@@ -150,10 +151,10 @@ test('comenzile pleacă doar cu legătura făcută, fiecare la chemarea ei', asy
   assert.equal(s.pauza(), true);
   assert.equal(s.reia(), true);
   assert.equal(s.opresteImprimarea(), true);
-  assert.deepEqual(ultimul().trimise.slice(3), [COMANDA_PAUZA, '{"method":"set","params":{"pause":0}}', '{"method":"set","params":{"stop":1}}']);
+  assert.deepEqual(ultimul().trimise.slice(4), [COMANDA_PAUZA, '{"method":"set","params":{"pause":0}}', '{"method":"set","params":{"stop":1}}']);
   // O cale în afara directorului G-code nu pleacă.
   assert.equal(s.porneste({ nume: 'x', cale: '/etc/passwd', timp: null, material: null, marime: null }), false);
-  assert.equal(ultimul().trimise.length, 6);
+  assert.equal(ultimul().trimise.length, 7);
 });
 
 test('eșecurile primei legări: timpul, ceva care tace, permisiunea refuzată, fără răspuns; fără reîncercări', async () => {
@@ -226,7 +227,7 @@ test('legătura căzută: „pierdută”, apoi se leagă singură din nou, cu p
   assert.equal(s.stare().legatura, 'conectat');
   assert.equal(s.stare().incercari, 0);
   assert.equal(s.stare().pierdutaLa, null);
-  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
+  assert.deepEqual(w.trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME]);
   for (const x of ws) for (const t of x.trimise) assert.doesNotMatch(t, /"method":"set"/);
 });
 
@@ -284,7 +285,7 @@ test('Deconectează: închide legătura și nu mai încearcă nimic; imprimanta 
   assert.equal(ultimul().inchis, 1000);
   ceas.trece(120_000);
   assert.equal(ws.length, 1);
-  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
+  assert.deepEqual(ultimul().trimise, [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME]);
 });
 
 test('un WebSocket vechi nu mai atinge starea după o legare nouă', async () => {
@@ -689,4 +690,38 @@ test('3.6t: istoricul imprimantei: cerut la deschidere, cu citirile; ținut din 
   s.deconecteaza();
   ceas.trece(PAUZA_ISTORIC_MS);
   assert.equal(s.cereIstoric(), false, 'deconectată');
+});
+
+test('3.6u: filmele: cerute la deschidere, cu citirile; ținute din cadrul lor; cerute din nou cel mult o dată la 5 s, separat de istoric', async () => {
+  const x = sesiune();
+  const { s, ceas, ultimul } = x;
+  assert.equal(s.cereFilme(), false, 'fără legătură');
+  const r = s.conecteaza(ADRESA);
+  ultimul().deschide();
+  assert.ok(ultimul().trimise.includes(CERERE_FILME), 'printre citirile de la deschidere');
+  ultimul().primeste(STARE);
+  await r;
+  assert.equal(s.stare().filme, null);
+  // Cererea de la deschidere ține loc și deschiderii cardului, imediat după.
+  assert.equal(s.cereFilme(), false);
+  ultimul().primeste(JSON.stringify({ elapseVideoList: [{ id: 1761305276, videoname: '1761305276.mp4', gcodename: `${DIR_GCODE}a.gcode` }] }));
+  assert.deepEqual(s.stare().filme, [{ nume: '1761305276.mp4', inceput: 1761305276000, fisier: 'a.gcode' }]);
+  // Un cadru fără filme nu le uită; nici unul doar cu istoric.
+  ultimul().primeste(STARE);
+  ultimul().primeste('{"historyList":[]}');
+  assert.equal(s.stare().filme?.length, 1);
+  // O listă goală e o listă: filmele șterse de pe imprimantă pleacă și din fereastră.
+  treceViu(x, PAUZA_ISTORIC_MS - 1000);
+  assert.equal(s.cereFilme(), false, 'sub 5 s');
+  ceas.trece(1000);
+  // Istoricul cerut acum nu oprește filmele, și invers: fiecare își numără pauza.
+  assert.equal(s.cereIstoric(), true);
+  assert.equal(s.cereFilme(), true);
+  assert.deepEqual(ultimul().trimise.slice(-2), [CERERE_ISTORIC, CERERE_FILME]);
+  assert.equal(s.cereFilme(), false, 'imediat după');
+  ultimul().primeste('{"elapseVideoList":[]}');
+  assert.deepEqual(s.stare().filme, []);
+  s.deconecteaza();
+  ceas.trece(PAUZA_ISTORIC_MS);
+  assert.equal(s.cereFilme(), false, 'deconectată');
 });

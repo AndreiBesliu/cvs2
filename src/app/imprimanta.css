@@ -1389,13 +1389,18 @@
   color: var(--t-slab);
 }
 
-.imprimanta-istoric th:nth-child(n + 4),
+.imprimanta-istoric th:nth-child(n + 4):nth-child(-n + 6),
 .imprimanta-istoric .imprimanta-numar {
   text-align: right;
 }
 
 .imprimanta-istoric-fisier {
   overflow-wrap: anywhere;
+}
+
+/* Felia 3.6u: filmul, un link spre imprimantă (într-o filă nouă). */
+.imprimanta-istoric-film {
+  white-space: nowrap;
 }
 
 .imprimanta-rez[data-rez='gata'] {

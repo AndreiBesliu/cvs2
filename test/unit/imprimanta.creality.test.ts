@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
-  CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
+  CERERE_FILME, CERERE_FISIERE, CERERE_ISTORIC, CERERE_STARE, CITIRI, citesteCadru, COMANDA_OPRESTE, COMANDA_PAUZA, COMANDA_REIA, comandaPornire, DIR_GCODE, esteCreality,
   firmwareDin, numar, numeDin, numeSigur, pozitieDin, stareLucrare,
 } from '../../src/machine/imprimanta/creality.ts';
 import {
@@ -38,7 +38,7 @@ test('firmware-ul, din `modelVersion`: „printer sw ver”; altfel nimic', () =
 
 test('bătaia inimii: cere `ok`; nu aduce stare', () => {
   const c = citesteCadru('{"ModeCode":"heart_beat","msg":"2026-11-07 10:48:00"}');
-  assert.deepEqual(c, { json: true, inima: true, stare: {}, fisiere: null, istoric: null });
+  assert.deepEqual(c, { json: true, inima: true, stare: {}, fisiere: null, istoric: null, filme: null });
   assert.ok(esteCreality(c));
 });
 
@@ -115,7 +115,7 @@ test('eroarea: `err.errcode` (0 = fără eroare), cu `key`; și ca număr gol', 
 
 test('textul care nu e un obiect JSON (`ok`, o listă, un text rupt) nu aduce nimic', () => {
   for (const t of ['ok', '[1,2]', '{"state":', '"text"', 'null', '']) {
-    assert.deepEqual(citesteCadru(t), { json: false, inima: false, stare: {}, fisiere: null, istoric: null }, t);
+    assert.deepEqual(citesteCadru(t), { json: false, inima: false, stare: {}, fisiere: null, istoric: null, filme: null }, t);
     assert.equal(esteCreality(citesteCadru(t)), false, t);
   }
   // Un obiect fără niciun câmp știut nu e un semn că răspunde o imprimantă.
@@ -206,7 +206,7 @@ test('cererile și comenzile, octet cu octet (OrcaSlicer, `ha_creality_ws`)', ()
     assert.equal(comandaPornire(rea), null, rea);
   }
   // Doar citirile pleacă fără clic; nicio comandă `set` nu e printre ele.
-  assert.deepEqual([...CITIRI], [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC]);
+  assert.deepEqual([...CITIRI], [CERERE_STARE, CERERE_FISIERE, CERERE_ISTORIC, CERERE_FILME]);
   for (const c of CITIRI) assert.match(c, /"method":"get"/);
 });
 
