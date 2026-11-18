@@ -18,6 +18,22 @@ export type PaginaTiff = {
 
 const MARIME: Readonly<Record<number, number>> = { 1: 1, 3: 2, 4: 4, 5: 8, 7: 1 };
 
+/**
+ * Banda unui TIFF II cu una singură (ADR 0270: fluxul CCITT al unei fixturi, pus într-un PDF): StripOffsets și
+ * StripByteCounts din primul IFD, cu valoarea SHORT sau LONG în câmpul etichetei.
+ */
+export function bandaTiff(b: Uint8Array): Uint8Array {
+  const v = new DataView(b.buffer, b.byteOffset, b.byteLength), ifd = v.getUint32(4, true), n = v.getUint16(ifd, true);
+  let off = 0, cnt = 0;
+  for (let k = 0; k < n; k++) {
+    const e = ifd + 2 + 12 * k, tag = v.getUint16(e, true);
+    const val = v.getUint16(e + 2, true) === 3 ? v.getUint16(e + 8, true) : v.getUint32(e + 8, true);
+    if (tag === 273) off = val;
+    if (tag === 279) cnt = val;
+  }
+  return b.slice(off, off + cnt);
+}
+
 /** Fișierul TIFF cu paginile date; `le`: ordinea octeților II (altfel MM). */
 export function scrieTiff(pagini: readonly PaginaTiff[], le = true): Uint8Array<ArrayBuffer> {
   const o: number[] = [];

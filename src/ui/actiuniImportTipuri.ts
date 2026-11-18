@@ -33,8 +33,14 @@ export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array 
  */
 export type CodRefuzImagine = 'tiff' | 'tiff-stricat' | 'imagine-citire' | 'prea-multe' | 'imagine-timp' | 'anulat';
 
+/**
+ * Refuzurile imaginii unei pagini PDF (ADR 0270): ce nu se citește încă (JBIG2, JPEG 2000, Separation…, cu numele) și o
+ * imagine stricată.
+ */
+export type CodRefuzPdfImagine = 'pdf-imagine' | 'pdf-imagine-stricata';
+
 /** Refuzurile celor șase uși. */
-export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf | CodRefuzImagine;
+export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf | CodRefuzImagine | CodRefuzPdfImagine;
 
 export type { AlegeriTrasare } from '../io/imagine.ts';
 
@@ -143,6 +149,8 @@ export type PrevizualizareImport =
     /** Straturile (OCG) căilor importate, în ordinea în care apar: devin numele elementelor. */
     readonly straturi: readonly string[];
     readonly avertismente: AvertismentePdf;
+    /** Imaginile paginii (ADR 0270): peste zero, dialogul oferă „Trasează imaginea paginii”. */
+    readonly imagini?: number;
   })
   | (Comune & {
     readonly format: 'eps';
@@ -164,6 +172,11 @@ export type PrevizualizareImport =
     readonly contur: CaiTrasate;
     /** Contururile părților late ale liniilor mediane (ADR 0223), pentru semnalare, în pixelii imaginii. */
     readonly late?: CaiTrasate;
+    /**
+     * Imaginea unei pagini PDF (ADR 0270): pagina are și vectori (dialogul oferă întoarcerea la ei, „Vectorii paginii”), sau
+     * nu (o pagină scanată, trasată singură); lipsă la o imagine.
+     */
+    readonly vectoriPdf?: boolean;
   })
   | {
     readonly ok: false; readonly cod: CodRefuzImport; readonly detaliu?: string;
@@ -173,6 +186,10 @@ export type PrevizualizareImport =
     readonly pagini?: number;
     /** O imagine refuzată după trasare (prea multe contururi): raportul, ca fereastra să spună ce să schimbi. */
     readonly trasare?: RaportImagine;
+    /** Un PDF citit până la pagina lui (ADR 0270): câte imagini are, ca dialogul să ofere trasarea lor. */
+    readonly imagini?: number;
+    /** Imaginea unei pagini PDF, refuzată: pagina are și vectori (dialogul oferă întoarcerea la ei). */
+    readonly vectoriPdf?: boolean;
   };
 
 /**
@@ -183,6 +200,8 @@ export type AlegeriImport = {
   readonly pxPeTol: 96 | 72; readonly unitate: UnitateDxf; readonly unitateWmf: UnitateWmf; readonly pagina: number;
   /** Alegerile trasării unei imagini (ADR 0220 §10); lipsă: cele implicite. */
   readonly trasare?: AlegeriTrasare;
+  /** Imaginea paginii unui PDF care are și vectori, trasată în locul lor (ADR 0270); lipsă: vectorii. */
+  readonly imaginePdf?: boolean;
 };
 
 export type ContextImport = {
@@ -196,6 +215,8 @@ export type ContextImport = {
   readonly pagina?: () => number;
   /** Alegerile trasării unei imagini (ADR 0220 §10); lipsă: cele implicite. */
   readonly trasare?: () => AlegeriTrasare | undefined;
+  /** Trasarea imaginii paginii unui PDF care are și vectori (ADR 0270); lipsă: vectorii. */
+  readonly imaginePdf?: () => boolean;
   /**
    * Oprirea citirii (ADR 0220): o citire nouă, Renunță, Escape sau fișierul următor o opresc pe cea în curs; trasarea unei
    * imagini își oprește workerul din mijlocul calculului.

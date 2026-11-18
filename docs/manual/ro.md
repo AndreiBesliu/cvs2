@@ -701,6 +701,9 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 - fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
 - se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
   întreg);
+- o **pagină scanată** (fără vectori, cu o imagine: de la scanerul de birou sau de la o aplicație de telefon) se
+  **trasează** singură, ca o imagine (mai jos), la mărimea de pe hârtie; la o pagină cu vectori și cu imagini, butonul
+  **Trasează imaginea paginii** trasează imaginea cea mai mare în locul vectorilor, iar **Vectorii paginii** te întoarce;
 - un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI salvat fără
   „Create PDF Compatible File” arată doar o notă de text, iar fereastra îți spune s-o bifezi.
 
@@ -847,7 +850,9 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
 - TIFF-ul (al scanerelor, al faxurilor, al programelor de CAD) îl citește aplicația singură: necomprimat, LZW, Deflate,
   PackBits sau CCITT (G3, G4: scanările alb-negru), cu DPI-ul lui; la unul cu mai multe pagini, fereastra îți dă alegerea
   paginii, ca la PDF. Un TIFF cu JPEG în el (sau BigTIFF, culori în virgulă mobilă, YCbCr, CIELab) e refuzat, cu numele a
-  ce nu citește: salvează-l atunci ca PNG. Imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
+  ce nu citește: salvează-l atunci ca PNG. Imaginile din SVG-uri se sar, ca până acum;
+- imaginea unui PDF scanat (JPEG, CCITT G3 / G4 sau necomprimată) se trasează la DPI-ul ei de pe pagină, întoarsă cum o
+  arată pagina; una JBIG2 sau JPEG 2000 e refuzată, cu numele ei: salvează atunci pagina ca PNG.
 
 ## Tăierea vectorilor
 %% capitol: taiere

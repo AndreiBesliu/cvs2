@@ -9645,3 +9645,10 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   722,1 / 800 kB (+5,4), pornirea 106,6 / 115 (cu ușa 110,6). O scanare A4 la 600 dpi (35 Mpx): G4 0,7–1,1 s, LZW ~1 s.
 - **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
   `ddfc3c006a80`.
+
+## 2026-11-18 — Felia 25.7↑ pornită: PDF-urile scanate (ADR 0270, provizoriu, acceptat cu recomandările) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mergi inainte si testez la final” (owner-ul, în sesiunea liniei trasării; felia următoare, după 25.6↑).
+**Started:** 18.11, 08:46. **Completed:** —.
+
+- **Ramura** la `ba2ecaff` (25.6↑, cu `origin/main` `ae5a13c4` adus). Numărul ADR-ului, provizoriu (cerut 0270–0279).

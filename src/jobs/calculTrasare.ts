@@ -16,7 +16,7 @@ import {
 } from '../trasare/foaia.ts';
 import { MEDIANA_SIMPLA, traseazaMediana, type OptiuniMediana, type RaportMediana } from '../trasare/mediana.ts';
 import { traseazaCuloriMediane, type MedianeCulori } from '../trasare/medianeCulori.ts';
-import { decodeazaTiff } from '../trasare/tiff.ts';
+import { decodeazaTiff, orienteaza } from '../trasare/tiff.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
 
@@ -46,6 +46,11 @@ export type CerereTrasare = {
   readonly maxPixeli?: number;
   /** Pagina unui TIFF cu mai multe (ADR 0229), de la 1; lipsă: prima. */
   readonly pagina?: number;
+  /**
+   * Imaginea unei pagini PDF (ADR 0270): orientarea așezării ei (1–8, ca eticheta TIFF), aplicată după decodare, ca
+   * imaginea să stea ca pe pagina afișată. Cu ea, workerul dă și imaginea pentru previzualizare (fereastra nu citește PDF-ul).
+   */
+  readonly orientare?: number;
   /**
    * Trasarea pe culori (ADR 0221): numărul, legăturile, bifele și rezultatul fiecărei culori (ADR 0228: „ca” e al lui
    * `rezultat`; lipsă sau null: toate „ca”); lipsă sau null: alb-negru, după `optiuni`.
@@ -117,8 +122,9 @@ type Scara = {
   /** Câte pagini are un TIFF (ADR 0229); lipsă la celelalte imagini. */
   readonly pagini?: number;
   /**
-   * Imaginea unui TIFF (ADR 0229), decodată de worker și redusă sub `PIXELI_POSTER`: previzualizarea ferestrei, fiindcă
-   * browserul n-o poate decoda din octeți; lipsă la celelalte imagini.
+   * Imaginea unui TIFF (ADR 0229) sau a unei pagini PDF (ADR 0270, întoarsă ca pe pagină), decodată de worker și redusă sub
+   * `PIXELI_POSTER`: previzualizarea ferestrei, fiindcă browserul n-o poate decoda din octeții fișierului; lipsă la
+   * celelalte imagini.
    */
   readonly poza?: ImagineRGBA;
 };
@@ -277,8 +283,8 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       redusDin = t.latime !== img.latime || t.inaltime !== img.inaltime ? { latime: t.latime, inaltime: t.inaltime } : null;
       dpiFisier = t.dpi ?? c.dpi;
       pagini = t.pagini;
-      // Previzualizarea ferestrei: browserul nu decodează TIFF-ul, deci i-o dă workerul, redusă.
-      poza = reduceImaginea(t.img);
+      // Previzualizarea ferestrei: browserul nu decodează TIFF-ul, deci i-o dă workerul (mai jos, redusă).
+      poza = img;
     } else {
       try {
         ({ img, redusDin } = await decodeaza(c.imagine, c.maxPixeli ?? PIXELI_MAXIM));
@@ -287,6 +293,13 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
       }
     }
   } else img = c.imagine;
+  // Imaginea unei pagini PDF (ADR 0270): întoarsă ca pe pagina afișată; fereastra o primește de aici.
+  if (c.orientare !== undefined) {
+    img = orienteaza(img, c.orientare);
+    if (redusDin && c.orientare >= 5 && c.orientare <= 8) redusDin = { latime: redusDin.inaltime, inaltime: redusDin.latime };
+    poza = img;
+  }
+  if (poza) poza = reduceImaginea(poza);
   // Pixelii fișierului pe un pixel decodat (decodarea poate reduce imaginea); un pixel al foii îndreptate ține cât unul al pozei.
   const pxFisier = (redusDin?.latime ?? img.latime) / img.latime;
   // Foaia (ADR 0225): îndreptată, ea e imaginea de aici încolo; altfel doar căutată, pentru sugestie.

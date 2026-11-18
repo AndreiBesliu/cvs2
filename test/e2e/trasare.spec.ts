@@ -4,7 +4,8 @@ import { ariePx } from '../../src/jobs/calculTrasare.ts';
 import { decodeazaTiff } from '../../src/trasare/tiff.ts';
 import { traseaza } from '../../src/trasare/trasare.ts';
 import { citestePng } from '../unit/ajutor-png.ts';
-import { scrieTiff } from '../unit/ajutor-tiff.ts';
+import { cuImagini } from '../unit/ajutor-pdf.ts';
+import { bandaTiff, scrieTiff } from '../unit/ajutor-tiff.ts';
 import { documentSalvat } from './ajutor-document.ts';
 
 /**
@@ -290,5 +291,70 @@ test('TIFF (ADR 0229): o scanare G4 cu două pagini se trasează, cu DPI-ul ei; 
   const jpeg = scrieTiff([{ etichete: [[256, 4, [8]], [257, 4, [8]], [258, 3, [8]], [259, 3, [7]], [262, 3, [1]], [278, 4, [8]]], bucati: [Uint8Array.of(0xff, 0xd8)] }]);
   await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'foto.tif', mimeType: 'image/tiff', buffer: Buffer.from(jpeg) });
   await expect(page.getByRole('dialog')).toContainText('Compression=7 (JPEG)');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+/** Pixelii negri (cerneala) ai previzualizării ferestrei trasării. */
+const pixeliNegri = (page: Page) => (): Promise<number> => page.getByTestId('trasare-previzualizare').evaluate((c) => {
+  const p = (c as HTMLCanvasElement).getContext('2d')?.getImageData(0, 0, (c as HTMLCanvasElement).width, (c as HTMLCanvasElement).height).data ?? new Uint8ClampedArray();
+  let n = 0;
+  for (let i = 0; i < p.length; i += 4) if ((p[i] ?? 255) < 80 && (p[i + 1] ?? 255) < 80 && (p[i + 2] ?? 255) < 80 && (p[i + 3] ?? 0) > 200) n++;
+  return n;
+});
+
+test('PDF scanat (ADR 0270): o pagină G4 se trasează singură, la DPI-ul așezării, și se importă; una JPEG; vectori și imagine, la alegere; JBIG2, refuzat cu numele', async ({ page }) => {
+  // Nucleul, în Node, pe pixelii fixturii G4 (fluxul ei e chiar imaginea paginii), la 72 px pe țol (240 px pe 240 pt).
+  const t = await decodeazaTiff(new Uint8Array(readFileSync('test/fixtures/trasare/tiff/wic-g4.tif')));
+  if (!t.ok) throw new Error(t.detaliu);
+  const ap = ariePx(0.3, 25.4 / 72);
+  const r = traseaza(t.img, { ...IMPLICITE, petePx: ap, gauriPx: ap });
+  if (!r.ok) throw new Error(r.cod);
+  const g4 = '/Width 240 /Height 160 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /K -1 /Columns 240 >>';
+  const banda = bandaTiff(new Uint8Array(readFileSync('test/fixtures/trasare/tiff/wic-g4.tif')));
+  const pdfDin = (nume: string, buffer: Buffer) => ({ name: nume, mimeType: 'application/pdf', buffer });
+  await page.goto('/');
+  const intrare = page.locator('[data-camp="fisier-svg"]');
+  await intrare.setInputFiles(pdfDin('scan.pdf', cuImagini(240, 160, 'q 240 0 0 160 0 0 cm /Im1 Do Q', [[g4, banda]])));
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('import-cai')).toContainText(`${r.raport.exterioare} tăiate pe exterior, ${r.raport.contururi - r.raport.exterioare} pe interior`);
+  await expect(page.getByTestId('trasare-scara')).toContainText('72 px pe țol, din fișier');
+  await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 240 × 160 px');
+  // Fereastra nu citește PDF-ul: poza paginii vine de la worker.
+  await page.locator('[data-camp="trasare-vedere-imagine"]').check();
+  await expect.poll(pixeliNegri(page)).toBeGreaterThan(100);
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 1);
+  expect(doc.split('"tip":"element"').length - 1).toBe(r.raport.contururi);
+  // JPEG (DCTDecode), decodat de browser în worker.
+  const jpg = readFileSync('test/fixtures/trasare/tiff/wic-color.jpg');
+  await intrare.setInputFiles(pdfDin('foto.pdf', cuImagini(240, 160, 'q 240 0 0 160 0 0 cm /Im1 Do Q', [['/Width 240 /Height 160 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode', jpg]])));
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 240 × 160 px');
+  await expect(page.getByTestId('import-cai')).toBeVisible();
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(2);
+  // Vectori și imagine, imaginea așezată rotită: întâi vectorii, cu oferta trasării; trasată, imaginea stă ca pe pagină.
+  await intrare.setInputFiles(pdfDin('amandoua.pdf', cuImagini(160, 240, 'q 0 -240 160 0 0 240 cm /Im1 Do Q 10 10 m 100 100 l S', [[g4, banda]])));
+  await expect(page.getByTestId('import-deschise')).toBeVisible();
+  await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
+  await page.locator('[data-buton="trasare-pdf"]').click();
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 160 × 240 px');
+  // O alegere a trasării recitește tot imaginea (alegerea „imaginea paginii” rămâne).
+  const cai = await page.getByTestId('import-cai').textContent();
+  await page.locator('[data-camp="trasare-inverseaza"]').check();
+  await expect(page.getByTestId('import-cai')).not.toHaveText(cai ?? '');
+  await expect(page.getByTestId('trasare-panou')).toBeVisible();
+  await page.locator('[data-buton="vectori-pdf"]').click();
+  await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
+  await expect(page.locator('[data-buton="trasare-pdf"]')).toBeVisible();
+  await page.locator('[data-buton="renunta"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  // JBIG2: refuzat, cu numele filtrului.
+  await intrare.setInputFiles(pdfDin('jbig2.pdf', cuImagini(20, 20, 'q 20 0 0 20 0 0 cm /Im1 Do Q', [['/Width 8 /Height 8 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /JBIG2Decode', Uint8Array.of(0)]])));
+  await expect(page.getByTestId('import-refuz')).toContainText('JBIG2Decode (JBIG2)');
+  await page.locator('[data-buton="renunta"]').click();
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

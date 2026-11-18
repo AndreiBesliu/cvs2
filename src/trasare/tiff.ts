@@ -184,8 +184,11 @@ class Reducere {
   }
 }
 
-/** Imaginea întoarsă după eticheta Orientation (2–8); 1 (sau altceva): aceeași. */
-function orienteaza(img: ImagineRGBA, o: number): ImagineRGBA {
+/**
+ * Imaginea întoarsă după eticheta Orientation (2–8; și așezarea imaginii unei pagini PDF, ADR 0270); 1 (sau altceva):
+ * aceeași.
+ */
+export function orienteaza(img: ImagineRGBA, o: number): ImagineRGBA {
   if (!(o >= 2 && o <= 8)) return img;
   const { latime: W, inaltime: H, date: d } = img, t = o >= 5, w2 = t ? H : W, h2 = t ? W : H;
   const r = new Uint8ClampedArray(4 * W * H);
