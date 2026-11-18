@@ -198,13 +198,14 @@ test('CCITT: G3 1D (K = 0, fluxul fixturii WIC), G3 1D cu rândurile pe octeți 
   const g3 = await imagine(cuImagini(240, 160, 'q 240 0 0 160 0 0 cm /Im1 Do Q', [[
     '/Width 240 /Height 160 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /K 0 /Columns 240 >>', banda('wic-g3.tif')]]));
   egale(await pixeli(g3), citestePng(new Uint8Array(readFileSync(`${DIR}/wic-g3.png`))), 'G3 1D');
-  // 8 × 2, scris de mână (T.4, tabelele 2 și 3): rândul 0 alb 2, negru 3, alb 3; rândul 1 alb 8.
+  // 8 × 2, scris de mână (T.4, tabelele 2 și 3): rândul 0 alb 2, negru 3, alb 3; rândul 1 alb 3, negru 2, alb 3.
   const ccitt = (dp: string, date: Uint8Array): Buffer => cuImagini(80, 20, 'q 80 0 0 20 0 0 cm /Im1 Do Q', [[
     `/Width 8 /Height 2 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /Columns 8 ${dp} >>`, date]]);
   const desen = [255, 255, 0, 0, 0, 255, 255, 255];
-  // Pe octeți, fără EOL: după fiecare rând, biții de umplere.
-  const mh = await pixeli(await imagine(ccitt('/K 0 /EncodedByteAlign true', biti('0111', '10', '1000', '000000', '10011', '000'))));
-  assert.deepEqual(canal(mh), [...desen, ...Array<number>(8).fill(255)]);
+  // Pe octeți, fără EOL: după fiecare rând, biții de umplere. Al doilea rând are negru: citite fără aliniere, umplerea și
+  // codul lui fac albul 29 (`00000010`), care pe 8 px ar umple un rând alb la fel de bine (otrava P10 a scăpat așa).
+  const mh = await pixeli(await imagine(ccitt('/K 0 /EncodedByteAlign true', biti('0111', '10', '1000', '000000', '1000', '11', '1000', '000000'))));
+  assert.deepEqual(canal(mh), [...desen, 255, 255, 255, 0, 0, 255, 255, 255]);
   // 2D: fiecare rând după EOL, cu bitul lui (1: 1D, 0: 2D); al doilea rând, trei V0 (la fel ca primul).
   const eol = '000000000001';
   const doiD = await pixeli(await imagine(ccitt('/K 1', biti(eol, '1', '0111', '10', '1000', eol, '0', '1', '1', '1', '0000'))));
@@ -219,6 +220,13 @@ test('CCITT: G3 1D (K = 0, fluxul fixturii WIC), G3 1D cu rândurile pe octeți 
   const latimi = await imagineaPaginiiPdf(new Uint8Array(cuImagini(80, 20, 'q 80 0 0 20 0 0 cm /Im1 Do Q', [[
     '/Width 8 /Height 2 /ColorSpace /DeviceGray /BitsPerComponent 1 /Filter /CCITTFaxDecode /DecodeParms << /K -1 /Columns 16 >>', Uint8Array.of(0)]])), {});
   assert.ok(!latimi.ok && latimi.cod === 'nesprijinit' && /Columns 16/.test(latimi.detaliu ?? ''), JSON.stringify(latimi));
+  // Decodarea obișnuită (conținutul paginii) refuză un filtru de imagine: un flux de conținut cu DCT e un flux stricat,
+  // numărat, nu o cale citită din octeții lui.
+  const dctContinut = await citestePdf(new Uint8Array(pdf([
+    '<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 72 72] /Contents 4 0 R >>', flux('/Filter /DCTDecode', '0 0 m 10 10 l S'),
+  ])));
+  assert.ok(!dctContinut.ok && dctContinut.cod === 'gol' && dctContinut.avertismente?.['fluxuri-stricate'] === 1, JSON.stringify(dctContinut).slice(0, 200));
   // Un filtru de imagine care nu e ultimul: stricat.
   const dctFlate = await imagineaPaginiiPdf(new Uint8Array(cuImagini(20, 20, 'q 20 0 0 20 0 0 cm /Im1 Do Q', [[
     '/Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter [/DCTDecode /FlateDecode]', Uint8Array.of(0)]])), {});

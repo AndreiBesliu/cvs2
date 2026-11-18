@@ -65,7 +65,7 @@ o('P21', PD, "  if (codec === 'JBIG2Decode') return { ok: false, cod: 'nesprijin
 o('P22', PD, "    default: return nume ?? '?';", "    default: return { fel: 'gri' };", 'scan', 'Separation citit ca gri')
 o('P23', PO, '        if (i !== filtre.length - 1) throw new PdfStricat(`filtrul de imagine ${c} nu e ultimul`);\n', '', 'scan',
   'un filtru de imagine urmat de altul, primit')
-o('P24', PO, '    if (r.codec !== null) throw new PdfStricat(`filtru necunoscut: ${r.codec}`);\n', '', 'pdf',
+o('P24', PO, '    if (r.codec !== null) throw new PdfStricat(`filtru necunoscut: ${r.codec}`);\n', '', 'scan',
   'decodarea obișnuită trece de un filtru de imagine')
 o('K01', CT, '    img = orienteaza(img, c.orientare);\n', '', 'scan', 'orientarea așezării nu se aplică')
 o('K02', CT, '    if (redusDin && c.orientare >= 5 && c.orientare <= 8) redusDin = { latime: redusDin.inaltime, inaltime: redusDin.latime };\n',
@@ -99,4 +99,5 @@ SETURI = {
     'pdf': ['test/unit/pdf.obiecte.test.ts', 'test/unit/import.pdf.test.ts'],
     'pdf2': ['test/unit/pdf.obiecte.test.ts', 'test/unit/import.pdf.test.ts', 'test/unit/pdf.corpus.test.ts', 'test/unit/import.pdf.scanat.test.ts'],
 }
-E2E = ['test/e2e/trasare.spec.ts']
+# Doar proba PDF-urilor scanate din spec (celelalte nu ating codul otrăvit, iar sub încărcare pică din timp).
+E2E = ['test/e2e/trasare.spec.ts', '--grep=PDF scanat']
