@@ -60,7 +60,7 @@ o('E10', CS, '  position: sticky;\n  bottom: calc(-1 * var(--sp-3));\n', '', 'e2
   '„Trimite la mașină” iese din panou când acesta se derulează')
 o('E11', CS, "button:is([data-rol^='incrustatie'], [data-rol^='p:']) {\n  grid-column: span 3;",
   "button:is([data-rol^='incrustatie'], [data-rol^='p:']) {\n  grid-column: span 2;", 'e2e',
-  'incrustațiile, în a treia parte de rând: cuvinte rupte')
+  'incrustațiile, într-o treime de rând: „Incrustație” trece peste spațiul de margine al butonului')
 o('E12', PP, '      {butoane && taiere}\n', '', 'e2e', 'Atelierul pierde tăierea')
 o('E13', PP, "title={t('prop.atelier.schimba.titlu')} onClick={onEditeazaOperatii}>", "title={t('prop.atelier.schimba.titlu')}>",
   'e2e', '„Schimbă” nu deschide exportul')

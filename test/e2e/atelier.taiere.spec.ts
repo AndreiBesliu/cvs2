@@ -32,25 +32,32 @@ async function fereastra(page: Page, a: { x: number; y: number }, b: { x: number
 }
 
 /**
- * Butoanele rolului au cel puțin 56 px (planșa), iar numele lor încap întregi: nimic nu iese din buton și niciun cuvânt nu
- * se rupe pe două rânduri (fiecare cuvânt are un singur dreptunghi).
+ * Butoanele rolului au cel puțin 56 px (planșa), iar numele lor încap întregi: niciun cuvânt nu se rupe pe două rânduri
+ * (fiecare are un singur dreptunghi) și fiecare stă în locul din buton, înăuntrul spațiului de margine. `scrollWidth` nu
+ * ajunge: textul centrat iese pe ambele părți, iar ce iese în stânga nu se numără.
  */
 async function numeIntregi(page: Page): Promise<void> {
   for (const b of await taierea(page).locator('[data-rol]').all()) {
     expect((await b.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(56);
     expect(await b.evaluate((e) => {
       const n = e.firstChild;
-      if (e.scrollWidth > e.clientWidth || n?.nodeType !== Node.TEXT_NODE) return false;
+      if (n?.nodeType !== Node.TEXT_NODE) return 'fără text';
+      const s = getComputedStyle(e);
+      const c = e.getBoundingClientRect();
+      const stanga = c.left + parseFloat(s.borderLeftWidth) + parseFloat(s.paddingLeft) - 0.5;
+      const dreapta = c.right - parseFloat(s.borderRightWidth) - parseFloat(s.paddingRight) + 0.5;
       const r = document.createRange();
       let i = 0;
       for (const cuvant of (n.textContent ?? '').split(' ')) {
         r.setStart(n, i);
         r.setEnd(n, i + cuvant.length);
-        if (r.getClientRects().length !== 1) return false;
+        const d = r.getClientRects();
+        if (d.length !== 1) return `„${cuvant}” rupt`;
+        if ((d[0]?.left ?? 0) < stanga || (d[0]?.right ?? 0) > dreapta) return `„${cuvant}” iese din locul lui`;
         i += cuvant.length + 1;
       }
-      return true;
-    }), await b.textContent() ?? '').toBe(true);
+      return 'întregi';
+    }), await b.textContent() ?? '').toBe('întregi');
   }
 }
 
