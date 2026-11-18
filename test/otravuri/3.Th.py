@@ -32,10 +32,11 @@ o('U08', E, 'tri.push([p3(A[k]!, z0), p3(A[k1]!, z0), p3(B[k1]!, z1)], [p3(A[k]!
 o('U09', E, 's = sens === "stanga" ? -1 : 1;', 's = 1;', 'rotite', 'sensul stânga răsucit tot spre dreapta')
 o('U10', E, 'zh => (zh <= h / 2 ? zh : h - zh) * k', 'zh => zh * k', 'rotite', '„în V” făcut oblic')
 o('U11', E, 'const k = Math.tan(beta) / R.r * s,', 'const k = Math.tan(beta) / R.ra * s,', 'rotite', 'răsucirea socotită pe cercul de cap')
-o('U12', E, 'const g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];',
-  'const g: Poli[] = gaura === "r" ? [cruce(0, 0, e.axGauraD, e.axGauraLat)] : gaura === "nu" ? [] : [cerc(0, 0, e.gauraD / 2)];', 'rotite',
+o('U12', E, 'let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];',
+  'let g: Poli[] = gaura === "r" ? [cruce(0, 0, e.axGauraD, e.axGauraLat)] : gaura === "nu" ? [] : [cerc(0, 0, e.gauraD / 2)];', 'rotite',
   'gaura rotundă și crucea schimbate între ele')
-o('U13', E, 'if (rg > 0 && R.rf - rg < 0.8)', 'if (rg > 0 && R.rf - rg < 0.2)', 'rotite', 'peretele de 0,25 mm al roții de 8 nu mai e spus')
+o('U13', E, '} else if (g.length && perete < 0.8) {', '} else if (g.length && perete < 0.2) {', 'rotite',
+  'peretele de 0,23 mm al roții de 8 nu mai e spus')
 o('U14', E, 'const z = Math.round(Math.min(80, Math.max(8,', 'const z = Math.round(Math.min(80, Math.max(6,', 'rotite', 'roți cu 6 dinți')
 o('U15', E, 'P = { ...salvat, varianta_dinti: v };', 'P = { ...salvat, varianta_dinti: 3 };', 'rotite', 'toate roțile de probă cu același joc')
 o('U16', E, 'tri.push(...semne(v, -3.4, 3.6, 3.79, 1.4));', 'tri.push(...semne(1, -3.4, 3.6, 3.79, 1.4));', 'rotite',
