@@ -10092,3 +10092,72 @@ adâncime și pas, „Trimite la mașină”), sau rămâne pentru mai târziu?�
   capabilității `export-gcode`, neschimbat); la unire le rulează sesiunea principală.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
   „Atelierul”), testul din aplicație (pasul `x-atelier`), lista otrăvurilor și rândul ei, DEVLOG.
+
+## 2026-11-18 — Felia 3.Th pornită: rotițele dințate (ADR 0169, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa facem ceva in plus la plugin-ul 3d. vreau sa pot face si rotite zimtate, ori drepte ori oblice (la
+marginea zimtata)” (owner-ul, în sesiunea principală, prin Remote Control: o sesiune nouă nu se putea porni, așa că
+propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 15:00.
+
+- **Ramura nouă din `main`:** `wip/3.Th-rotite`, din `e88dbc1e`, în worktree-ul `rotite` (joncțiunile `node_modules`, ca la
+  celelalte).
+- **Cercetarea:** roțile Technic au modulul 1 și unghiul de presiune de 20°, deci perechile obișnuite cad pe grila de 8 mm
+  (8 + 24, 16 + 16, 12 + 20 la 16 mm; 8 + 40, 24 + 24 la 24 mm) sau la jumătate de pas; doi oblici se prind doar cu sensuri
+  opuse și împing în lungul axului, cei în V nu.
+- **Prototipul** (`C:\Users\besli\cncvs2-lucru\unelte\proto-rotite\proto-rotite.mts`, în afara repo-ului): profilul
+  evolventic generat de cremaliera de referință (subtăierea la 8 dinți iese singură); angrenarea, verificată pe un pas
+  întreg de dinte la 13 perechi LEGO: zero pătrunderi, jocul minim 0,188 mm (2 × 0,1 × cos 20°); plasa închisă (zero muchii
+  fără pereche) la drepți, oblici (20°) și în V, cu gaura de ax dreaptă. Prima plasă avea 24 de puncte dublate (vârful
+  cremalierei doar atinge cercul de picior): razele pornesc acum puțin deasupra lui. Intersecția cerc–poligon, analitică:
+  profilul în 10–20 ms, plasa în 6–33 ms.
+- **ADR 0169, propus** (ultimul număr al liniei 0160–0169; următoarele iau 0280–0289). Schița, cu generatorul portat în
+  pagină (abaterea față de prototip sub 0,004 mm) și formularul (răspunsurile în `raspunsuri/owner`):
+  <https://claude.ai/artifact/K7CMJUfim5wHZ4JTpK1qPX>; colecția citită după publicare (goală). Întrebările: rotițele
+  moletate (1a / 1b) și jocul dintre dinți (2a / 2b); restul intră tot, fără întrebare (drepți, oblici, în V, cele trei
+  găuri, modulul, perechea).
+- **Documentele:** indexul ADR-urilor, fișa etapei 3 (rândul 3.Th, coada owner-ului) cu traducerile, jurnalul.
+- **Fără cod:** felia pornește după răspunsuri.
+
+## 2026-11-18 — Felia 3.Th: rotițele dințate în atelierul Easy 3Draw (ADR 0169, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea principală, la „Rotițele: mergem cu recomandările (1a, 2a)?”).
+**Started:** 18.11, 15:40. **Completed:** 18.11, 16:55.
+
+- **Motorul** (`lego.ts`): profilul din cremalieră, conturul cu mijlocul capului (coarda scurta diametrul: găsit de proba
+  cutiei), `prismaRasucita` (gaura dreaptă, capacele pe aceleași puncte), tipul `rotita` (drepți, oblici, în V; găurile;
+  modulul; avertismentul peretelui subțire), jocul din varianta nouă a calibrării (0,15 mm la 3, câte 0,05) și cinci roți de
+  probă în set.
+- **Atelierul** (`atelier.ts`): „Roată dințată” în galeria pieselor de legătură, „Se prinde cu…” (distanța și grila), „Fă
+  perechea” (a doua cu sensul opus: la V contează și el, perechea în V se prinde doar oglindită), varianta roților în
+  profilul imprimantei, în fila Calibrare și în README; 35 de texte în engleză. Pachetul 18.9.0, în bibliotecă, cu
+  descrierea „… roți dințate …”.
+- **Probele:** unitare 8 (`trenulet.rotite.test.ts`): la jocul de 0,15 pe flanc, jocul minim al perechii e cel de la picior
+  (0,25 · m), nu cel al flancului; proba cere minimul celor două, niciodată mai aproape decât teoria. E2e 3
+  (`trenulet.rotite.spec.ts`), cu STL-ul descărcat verificat închis și varianta 5 din calibrare. Otrăvurile: 27 / 27.
+- **Porțile:** pe `64cd3042`, toate la prima rulare: unitare 9 548 / 0, e2e 530 / 530, emulatoarele 101 / 101 și 26 / 26;
+  traducerile, compilatoarele, importurile, licențele și build-ul determinist; totalul 729,1 / 800, pornirea cu ușa 111,0 /
+  115, `/admin` 112,2 / 200 (ramura pornește din `e88dbc1e`; motorul și atelierul stau în pachetul extensiei, nu în
+  aplicație).
+- **Schița**, cu întrebările acum închise: <https://claude.ai/artifact/K7CMJUfim5wHZ4JTpK1qPX>.
+
+## 2026-11-18 — Felia 3.Th, după privirea pe roata reală: peretele găurii la roțile mici (Model: Claude Opus 5.5)
+
+**Prompt:** același („Da, cu recomandările”); felia nu se raportează înainte ca ieșirea reală să fie privită, mărită.
+**Started:** 18.11, 17:00. **Completed:** 18.11, 19:20.
+
+- **Privirea:** pe pagina planificatorului, în 3D, roțile de 24 (drepți, oblici, în V), de 8 cu gaură de ax, de 40 cu gaură
+  rotundă și de 12 oblică; în plan, mărite la contact, perechile 8 + 24, 12 + 20 și 16 + 16 la patru faze pe pas: fără
+  pătrunderi, distanța minimă 0,257–0,283 mm (teoria: 0,282 pe flanc, 0,25 la picior).
+- **Defectele, ale găurii:** la roata de 8 cu gaură de ax, colțurile crucii cădeau sub goluri: 0,036 mm de perete, iar
+  avertismentul spunea 0,25 (din raze). La modulul 0,5 cu 8 sau 12 dinți, gaura de 5 mm ieșea din roată: STL-ul deschis
+  (24–148 de muchii fără pereche).
+- **Reparația** (`lego.ts`, `pereteGaura`): peretele pe contur (colțurile și coarda golului); sub 0,8 mm, crucea se rotește
+  pe sfertul ei unde peretele iese cel mai gros (la roata de 8, brațele spre goluri: 0,23 mm); sub 0,1 mm, roata iese fără
+  gaură și o spune (textul nou și în engleză). Pachetul 18.9.1 (conținut nou, versiune nouă; 18.9.0 a stat doar pe canal).
+- **Probele:** unitara nouă măsoară peretele pe corpul construit (căzută întâi pe codul vechi: 0,036 mm), cere avertismentul
+  egal cu el și roata închisă, fără gaură, la modulul 0,5; e2e-ul cere 0,23 mm și trece prin modulul 0,5. Otrăvurile:
+  U19–U21 noi, U12 și U13 mutate pe codul nou; toate 30 / 30 prinse pe codul final.
+- **Porțile:** pe `d1a63d82`: unitare 9 549 / 0, traducerile, compilatoarele, importurile, licențele și build-ul
+  determinist; e2e-ul extensiei 37 / 37 (Easy 3Draw, rotițele, extensiile, biblioteca), la prima rulare; restul suitei e2e
+  (530 / 530) și emulatoarele, verzi pe `64cd3042` (codul aplicației e neschimbat de atunci), iar pe unire rulează toate;
+  totalul 729,1 / 800, pornirea cu ușa 111,0 / 115.

@@ -49,8 +49,10 @@ var Lego = (function (glob: typeof globalThis) {
     // bare si cleme (Ø 3,2 la LEGO), bila si cupa articulatiei (Ø 5,9), bucsa
     bara_d: 3.2, bara_gaura_d: 3.4, clema_d: 3.3, clema_perete: 1.1, clema_gura: 2.5, bila_d: 5.9, cupa_d: 6.1, cupa_gura: 5.2,
     bucsa_d: 7.2,
-    varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3,
-    pas_stift: 0.05, pas_locas: 0.05, pas_gaura: 0.1, pas_ax: 0.1, pas_bara: 0.1, pas_cupa: 0.1,
+    // rotitele dintate (ADR 0169): jocul pe flanc, pe cercul de divizare (varianta 3; 0,05 ... 0,25 mm la calibrare)
+    joc_dinti: 0.15,
+    varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3,
+    pas_stift: 0.05, pas_locas: 0.05, pas_gaura: 0.1, pas_ax: 0.1, pas_bara: 0.1, pas_cupa: 0.1, pas_dinti: 0.05,
     pat: [180, 180] as [number, number], pat_margine: 5, pat_distanta: 4,
   };
   let P = { ...IMPLICIT };
@@ -81,6 +83,8 @@ var Lego = (function (glob: typeof globalThis) {
     clemaD: P.clema_d + (P.varianta_bara - 3) * P.pas_bara,
     cupaD: P.cupa_d + (P.varianta_cupa - 3) * P.pas_cupa,
     cupaGura: P.cupa_gura + (P.varianta_cupa - 3) * P.pas_cupa,
+    // jocul dintre dintii rotitelor, pe flanc (ADR 0169)
+    jocDinti: Math.max(0, P.joc_dinti + (P.varianta_dinti - 3) * P.pas_dinti),
   });
 
   // ---------------------------------------------------------------------------------------------- corpuri
@@ -1086,6 +1090,158 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- rotitele dintate (ADR 0169)
+  // Profilul evolventic, generat de cremaliera de referinta (unghiul de presiune 20°, capul 1·m, piciorul 1,25·m), ca la
+  // frezarea prin rulare: la putini dinti, subtaierea de la picior iese singura. Jocul pe flanc (pe cercul de divizare) vine
+  // din calibrare. Roata sta in planul xy, cu centrul in origine; dintele 0 pe +x. Modulul 1 e al rotilor LEGO Technic:
+  // perechile obisnuite cad pe grila de 8 mm (8 + 24, 16 + 16 la 16 mm).
+  type ProfilRoata = { z: number; m: number; r: number; ra: number; rf: number; raze: number[]; jum: number[] };
+  const profileRoti = new Map<string, ProfilRoata>();
+  const rotP = ([x, y]: Pt, a: number): P2 => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+  function intervalCerc(poli: readonly P2[], rho: number): [number, number] | null {
+    // unghiurile (fata de +y, pozitiv spre -x) in care cercul de raza rho e in poligonul convex: unde taie laturile, apoi
+    // arcele dintre ele cu mijlocul in poligon
+    const t: number[] = [];
+    for (let i = 0; i < poli.length; i++) {
+      const a = poli[i]!, b = poli[(i + 1) % poli.length]!, dx = b[0] - a[0], dy = b[1] - a[1];
+      const A = dx * dx + dy * dy, B = 2 * (a[0] * dx + a[1] * dy), C = a[0] * a[0] + a[1] * a[1] - rho * rho, D = B * B - 4 * A * C;
+      if (D < 0) continue;
+      for (const s of [-1, 1]) { const u = (-B + s * Math.sqrt(D)) / (2 * A); if (u >= 0 && u <= 1) t.push(Math.atan2(-(a[0] + u * dx), a[1] + u * dy)); }
+    }
+    if (t.length < 2) return null;
+    t.sort((p, q) => p - q);
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i + 1 < t.length; i++) {
+      const mij = (t[i]! + t[i + 1]!) / 2;
+      if (inPoli(poli, [-rho * Math.sin(mij), rho * Math.cos(mij)])) { lo = Math.min(lo, t[i]!); hi = Math.max(hi, t[i + 1]!); }
+    }
+    return lo <= hi ? [lo, hi] : null;
+  }
+  function profilRoata(z: number, m: number, joc: number): ProfilRoata {
+    // jumatatea unghiului dintelui la fiecare raza: cremaliera taie golul (centrat pe +y la phi = 0), rulata pe cercul de
+    // divizare; golul la o raza e cat acopera cremaliera, legat de mijlocul lui
+    const cheie = z + "|" + m + "|" + joc, gata = profileRoti.get(cheie);
+    if (gata) return gata;
+    const alfa = 20 * Math.PI / 180, r = m * z / 2, ra = r + m, rf = r - 1.25 * m;
+    const sc = Math.PI * m / 2 + 2 * joc, lat = (y: number) => sc / 2 + y * Math.tan(alfa);
+    const dinte: P2[] = [[-lat(-1.25 * m), -1.25 * m], [lat(-1.25 * m), -1.25 * m], [lat(1.5 * m), 1.5 * m], [-lat(1.5 * m), 1.5 * m]];
+    // pe cercul de picior varful cremalierei doar atinge cercul: razele pornesc putin deasupra lui
+    const N = 20, r0 = rf + 0.002 * m, raze = Array.from({ length: N + 1 }, (_, i) => r0 + (ra - r0) * i / N), gol = raze.map(() => 0);
+    const phiMax = 2.6 * 2 * Math.PI / z, pasi = 600;
+    for (let k = 0; k <= pasi; k++) {
+      const phi = -phiMax + 2 * phiMax * k / pasi;
+      const poli = dinte.map(([x, y]) => rotP([x - r * phi, r + y], -phi));
+      raze.forEach((rho, i) => {
+        const iv = intervalCerc(poli, rho);
+        if (!iv) return;
+        if (iv[0] <= gol[i]! + 1e-9 && iv[1] > gol[i]!) gol[i] = iv[1];
+        if (-iv[1] <= gol[i]! + 1e-9 && -iv[0] > gol[i]!) gol[i] = -iv[0];
+      });
+    }
+    const R = { z, m, r, ra, rf, raze, jum: gol.map(g => Math.PI / z - g) };
+    profileRoti.set(cheie, R);
+    return R;
+  }
+  function conturRoata(R: ProfilRoata, fata = 0): Poli {
+    // conturul (trigonometric): pe fiecare dinte, flancul din dreapta de la picior la cap, apoi cel din stanga, in jos
+    const out: Poli = [];
+    for (let k = 0; k < R.z; k++) {
+      const c = fata + k * 2 * Math.PI / R.z, jos: P2[] = [], sus: P2[] = [];
+      for (let i = 0; i < R.raze.length; i++) {
+        const h = R.jum[i]!, rho = R.raze[i]!;
+        if (h <= 0) break;
+        jos.push([rho * Math.cos(c - h), rho * Math.sin(c - h)]);
+        sus.push([rho * Math.cos(c + h), rho * Math.sin(c + h)]);
+      }
+      // mijlocul capului, pe cercul de cap (altfel coarda dintre cele doua capete ale arcului scurteaza diametrul)
+      out.push(...jos, [R.ra * Math.cos(c), R.ra * Math.sin(c)], ...sus.reverse());
+    }
+    return out.filter((p, i) => { const q = out[(i + 1) % out.length]!; return Math.hypot(p[0] - q[0], p[1] - q[1]) > 1e-9; });
+  }
+  function pereteGaura(ext: Poli, g: Poli): number {
+    // cel mai subtire perete dintre gaura g si conturul ext (varf-latura, in ambele sensuri); -1 daca gaura iese din contur
+    // sau il taie (atunci un varf al unuia e de partea gresita a celuilalt)
+    if (g.some(p => !inPoli(ext, p)) || ext.some(p => inPoli(g, p))) return -1;
+    const ds = (p: P2, a: P2, b: P2) => {
+      const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy;
+      const u = l ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l)) : 0;
+      return Math.hypot(p[0] - a[0] - u * dx, p[1] - a[1] - u * dy);
+    };
+    let d = Infinity;
+    for (const [A, B] of [[g, ext], [ext, g]] as const) for (const p of A) for (let i = 0; i < B.length; i++) d = Math.min(d, ds(p, B[i]!, B[(i + 1) % B.length]!));
+    return d;
+  }
+  function prismaRasucita(ext: Poli, gauri: readonly Poli[], h: number, straturi: number, unghi: (z: number) => number): Tri[] {
+    // ca prismaGauri, cu exteriorul rotit strat cu strat in jurul originii (unghi(z), in radiani); gaurile raman drepte.
+    // Varfurile se misca o singura data (ca in prismaGauri), apoi straturile le rotesc: capacul de sus si ultimul strat al
+    // peretelui au aceleasi puncte, deci corpul ramane inchis.
+    const mic = ([x, y]: P2): P2 => { const g = (u: number) => { const t = Math.sin(x * 12.9898 + y * 78.233 + u) * 43758.5453; return t - Math.floor(t) - 0.5; }; return [x + 2e-4 * g(0), y + 2e-4 * g(1.7)]; };
+    const E = curataPoli(trig(ext)).map(mic), G = gauri.map(g => curataPoli(trig(g)).reverse().map(mic));
+    const zStrat = (i: number) => (i === straturi ? h : h * i / straturi);
+    const strat = (i: number) => { const a = unghi(zStrat(i)); return E.map(p => rotP(p, a)); };
+    const p3 = (p: Pt, z: number): P3 => [p[0], p[1], z], tri: Tri[] = [];
+    const capac = (S: readonly P2[], z: number, sus: boolean) => {
+      const pts: P2[] = [...S], idx: number[] = [];
+      for (const g of G) { idx.push(pts.length); pts.push(...g); }
+      const t = glob.earcut(pts.flat(), idx, 2);
+      for (let k = 0; k < t.length; k += 3) {
+        const a = t[k]!; let b = t[k + 1]!, c = t[k + 2]!;
+        if (arie2(pts, a, b, c) < 0) [b, c] = [c, b];
+        tri.push(sus ? [p3(pts[a]!, z), p3(pts[b]!, z), p3(pts[c]!, z)] : [p3(pts[a]!, z), p3(pts[c]!, z), p3(pts[b]!, z)]);
+      }
+    };
+    let A = strat(0);
+    capac(A, 0, false);
+    for (let i = 1; i <= straturi; i++) {
+      const B = strat(i), z0 = zStrat(i - 1), z1 = zStrat(i);
+      for (let k = 0; k < A.length; k++) { const k1 = (k + 1) % A.length; tri.push([p3(A[k]!, z0), p3(A[k1]!, z0), p3(B[k1]!, z1)], [p3(A[k]!, z0), p3(B[k1]!, z1), p3(B[k]!, z1)]); }
+      A = B;
+    }
+    capac(A, h, true);
+    for (const L of G) for (let i = 0; i < L.length; i++) {
+      const a = L[i]!, b = L[(i + 1) % L.length]!;
+      tri.push([p3(a, 0), p3(b, 0), p3(b, h)], [p3(a, 0), p3(b, h), p3(a, h)]);
+    }
+    return tri;
+  }
+  function rotita({ dinti = 24, fel = "drepti", unghi = 20, sens = "dreapta", grosime = 3.8, gaura = "x", modul = 1 }: {
+    dinti?: number; fel?: string; unghi?: number; sens?: string; grosime?: number; gaura?: string; modul?: number }): Corp {
+    // roata dintata: dinti drepti, oblici (elicoidali; sensul dreapta = elicea urca in sens trigonometric) sau in V; gaura de
+    // ax (in cruce), rotunda (pe stift) sau deloc, cu jocurile de la calibrare, ca la grinda si la bucsa
+    const e = ef(), avert: string[] = [];
+    const z = Math.round(Math.min(80, Math.max(8, Number.isFinite(+dinti) ? +dinti : 24)));
+    if (z !== +dinti) avert.push(tr`O roată are între 8 și 80 de dinți: am făcut-o cu ${z}.`);
+    const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(+modul) ? +modul : 1) * 10) / 10));
+    const h = Math.min(20, Math.max(1, Math.round((Number.isFinite(+grosime) ? +grosime : 3.8) * 10) / 10));
+    const beta = Math.min(35, Math.max(10, Number.isFinite(+unghi) ? +unghi : 20)) * Math.PI / 180, s = sens === "stanga" ? -1 : 1;
+    const R = profilRoata(z, m, e.jocDinti), ext = conturRoata(R, 0);
+    // gaura: peretele adevarat pana la dinti (colturile crucii si coarda golului, nu doar razele). Unde, dreapta, ar ramane
+    // sub 0,8 mm, crucea se roteste (pe sfertul ei de simetrie, din 5,625 in 5,625°) unde peretele iese cel mai gros: la roata
+    // de 8, bratele spre goluri, 0,23 mm in loc de 0,04 (colturile cadeau sub goluri). O gaura care nu incape lipseste.
+    let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];
+    let perete = g.length ? pereteGaura(ext, g[0]!) : Infinity;
+    if (gaura === "x" && perete < 0.8) {
+      const g0 = g[0]!;
+      for (let i = 1; i < 16; i++) {
+        const gi = g0.map(p => rotP(p, i * Math.PI / 32)), pi = pereteGaura(ext, gi);
+        if (pi > perete + 1e-9) { g = [gi]; perete = pi; }
+      }
+    }
+    if (g.length && perete < 0.1) {
+      avert.push(tr`Gaura nu încape în roata asta: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
+      g = [];
+    } else if (g.length && perete < 0.8) {
+      avert.push(tr`Între gaură și piciorul dinților rămân doar ${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
+    }
+    if (fel !== "oblici" && fel !== "inv") return { tri: prismaGauri(ext, g, 0, h), avert };
+    // rasucirea pe cercul de divizare: tan(beta) / r radiani pe mm; straturi de cel mult 0,8°
+    const k = Math.tan(beta) / R.r * s, pas = 0.8 * Math.PI / 180;
+    if (fel === "oblici") return { tri: prismaRasucita(ext, g, h, Math.max(6, Math.ceil(Math.abs(h * k) / pas)), zh => zh * k), avert };
+    // in V: jumatate intr-un sens, jumatate inapoi; un numar par de straturi, ca varful V-ului sa cada pe un strat
+    const n = Math.max(4, Math.ceil(Math.abs(h / 2 * k) / pas));
+    return { tri: prismaRasucita(ext, g, h, 2 * n, zh => (zh <= h / 2 ? zh : h - zh) * k), avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1135,6 +1291,15 @@ var Lego = (function (glob: typeof globalThis) {
       tri.push(...semne(v, 0.4, 7.7, 0.6, 1.6));
       piese.push({ nume: `calibrare_cupa_${v}`, titlu: tr`Calibrare: cupă ${v}`, tri: laOrigine(tri) });
     }
+    // rotitele dintate (ADR 0169): cinci roti de 16 dinti, cu gaura de ax, fiecare cu alt joc intre dinti (0,05 ... 0,25 mm
+    // pe flanc); semnul, pe fata de sus, intre gaura si dinti
+    for (let v = 1; v <= 5; v++) {
+      P = { ...salvat, varianta_dinti: v };
+      const tri = rotita({ dinti: 16, fel: "drepti", grosime: 3.8, gaura: "x" }).tri;
+      tri.push(...semne(v, -3.4, 3.6, 3.79, 1.4));
+      const joc = String(Math.round(ef().jocDinti * 100) / 100).replace(".", Limba.zecimal);
+      piese.push({ nume: `calibrare_rotita_${v}`, titlu: tr`Calibrare: roata dințată ${v} (joc ${joc} mm)`, tri: laOrigine(tri) });
+    }
     P = { ...salvat };
     piese.push({ nume: "calibrare_bara_proba", titlu: tr("Calibrare: bară de probă"), tri: laOrigine(bara({ lung: 4 }).tri) });
     piese.push({ nume: "calibrare_bila", titlu: tr("Calibrare: bilă de probă"), tri: laOrigine(bila({ baza: 1 }).tri) });
@@ -1158,7 +1323,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1241,5 +1406,8 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   return { IMPLICIT, seteaza: (s?: Partial<typeof IMPLICIT> | null) => { P = { ...IMPLICIT, ...(s || {}) }; }, parametri: () => P, efective: ef, inaltimi, construieste, calibrare, stl, grame, aseaza, zip,
-    contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita, _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi } };
+    contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
+    // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
+    distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
+    _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita } };
 })(typeof globalThis !== "undefined" ? globalThis : window);
