@@ -51,6 +51,12 @@ const PLAFON_ADMIN_KB = 200;
  * (recenzia felii „loc în pachetul de pornire”, 17.10: 92,3 + 4,6 kB).
  */
 const PLAFON_USA_KB = 8;
+/**
+ * Un aranjament ales, altul decât Insulele (ADR 0250, „Mărimea”; felia 28.1↑c: Atelierul), vine și el înaintea primei
+ * randări, ca bucată la cerere: are plafonul lui, iar pornirea plus ușa plus aranjamentul nu trec de plafonul pornirii (un
+ * om cu Atelierul ales și cu un proiect salvat le așteaptă pe toate trei). Se numără JavaScript-ul, ca pornirea.
+ */
+const PLAFON_ARANJAMENT_KB = 8;
 const BUCATA_ADMIN = /^assets\/PaginaAdmin-[^/]+\.js$/;
 /**
  * Testul pas cu pas al owner-ului (ADR 0072): o bucată doar online, ca `/admin` (vine doar pe instanța de test, la clicul pe
@@ -429,6 +435,8 @@ for (const r of bucati.keys()) {
 // plasă, pe artefact, e un text pe care îl are doar migrarea v1 → v2, care trebuie să fie în `incarcare` și nu în ușă.
 const usa = bucataNumita('usaCurenta');
 const kbUsa = kbInchidere(usa);
+const atelier = bucataNumita('atelier');
+const kbAtelier = kbInchidere(atelier);
 const MARCAJ_MIGRARI = 'pe care v2 îl folosește';
 if (!cod(bucataNumita('incarcare')).includes(MARCAJ_MIGRARI) || inchidere(usa).some((r) => cod(r).includes(MARCAJ_MIGRARI))) {
   console.error(`Migrările („${MARCAJ_MIGRARI}”) trebuie să fie în bucata incarcare-*.js și în afara ușii de la pornire (${inchidere(usa).join(', ')}).`);
@@ -734,10 +742,15 @@ console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join(
 console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);
 console.log(`Dicționarul codurilor (în precache): ${LIMBI_CODURI.map((l, k) => `${l} ${(kbCoduri[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_KB} pe limbă).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
+console.log(`Cu Atelierul ales, bucata lui vine înaintea primei randări: +${kbAtelier.toFixed(2)} kB (plafon ${PLAFON_ARANJAMENT_KB}; cu pornirea și ușa ${(pornire + kbUsa + kbAtelier).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(atelier).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
 if (kbUsa > PLAFON_USA_KB || pornire + kbUsa > PLAFON_PORNIRE_KB) {
   console.error(`Ușa proiectului: ${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}); pornirea cu ușa: ${(pornire + kbUsa).toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}).`);
+  process.exit(1);
+}
+if (kbAtelier > PLAFON_ARANJAMENT_KB || pornire + kbUsa + kbAtelier > PLAFON_PORNIRE_KB) {
+  console.error(`Atelierul: ${kbAtelier.toFixed(2)} kB (plafon ${PLAFON_ARANJAMENT_KB}); pornirea cu ușa și Atelierul: ${(pornire + kbUsa + kbAtelier).toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}).`);
   process.exit(1);
 }
 if (kbRaportorPornire > PLAFON_RAPORTOR_PORNIRE_KB || kbRaportor > PLAFON_RAPORTOR_KB) {

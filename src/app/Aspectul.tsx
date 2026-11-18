@@ -14,7 +14,7 @@ import { t } from '../i18n/t.ts';
 import {
   alegereaDeAcum, CHEIE_ARANJAMENT, IDURI_ARANJAMENT, scrieAlegerea, TEME, type Alegere, type Densitate, type IdAranjament, type Tema,
 } from '../ui/alegereAranjament.ts';
-import { ARANJAMENTE_DISPONIBILE } from '../ui/aranjament.ts';
+import { ARANJAMENTE_DISPONIBILE } from '../ui/incarcaAranjament.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import './aspect.css';
 
@@ -22,17 +22,18 @@ import './aspect.css';
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-/** Pune alegerea pe `<html>`: CSS-ul densității o citește de acolo. */
-function aplica(a: Alegere): void {
-  document.documentElement.dataset['aranjament'] = a.aranjament;
-  document.documentElement.dataset['densitate'] = a.densitate;
+/** Pune densitatea pe `<html>`: CSS-ul ei o citește de acolo. Aranjamentul îl pune aplicația, după ce i-a venit bucata. */
+function aplicaDensitatea(d: Densitate): void {
+  document.documentElement.dataset['densitate'] = d;
 }
 
-export function Aspectul({ tema, onTema, onInchide, focusInapoi }: {
+export function Aspectul({ tema, onTema, onAranjament, onInchide, focusInapoi }: {
   /** Tema de acum a aplicației. */
   readonly tema: Tema;
   /** Schimbă tema aplicației, pe loc (și o ține, ca butonul din bară). */
   readonly onTema: (tema: Tema) => void;
+  /** Aduce aranjamentul `id` și îl pune pe loc; `false` dacă bucata lui n-a venit (aplicația rămâne cum era). */
+  readonly onAranjament: (id: IdAranjament) => Promise<boolean>;
   readonly onInchide: () => void;
   /** Unde era focusul înainte: acolo se întoarce la închidere. */
   readonly focusInapoi: Element | null;
@@ -41,6 +42,8 @@ export function Aspectul({ tema, onTema, onInchide, focusInapoi }: {
   const [inainte] = useState(() => ({ ...alegereaDeAcum(document.documentElement.dataset), tema }));
   const [alegere, setAlegere] = useState<Alegere>(() => alegereaDeAcum(document.documentElement.dataset));
   const ales = useRef<HTMLInputElement>(null);
+  /** De ce n-a venit aranjamentul ales (gol cât merge). */
+  const [mesaj, setMesaj] = useState('');
   // Focusul pe aranjamentul ales; la închidere (curățarea rulează după ce aplicația nu mai e inertă) se întoarce unde era.
   useEffect(() => {
     ales.current?.focus();
@@ -48,11 +51,27 @@ export function Aspectul({ tema, onTema, onInchide, focusInapoi }: {
   }, [focusInapoi]);
 
   const schimba = (a: Alegere): void => {
-    aplica(a);
+    aplicaDensitatea(a.densitate);
     setAlegere(a);
   };
+  // Aranjamentul vine prin aplicație (bucata lui, la cerere). Prima alegere a Atelierului (ADR 0250 §5) îl pornește întunecat
+  // și cu butoane mari; tema și densitatea se schimbă apoi ca oricând, înainte de Păstrează.
+  const alegeAranjamentul = (id: IdAranjament): void => {
+    const de = alegere;
+    setMesaj('');
+    void onAranjament(id).then((ok) => {
+      if (!ok) {
+        setMesaj(t('aspect.neadus', { nume: t(`aranjament.${id}`) }));
+        return;
+      }
+      const primaAtelier = id === 'atelier' && de.aranjament !== 'atelier';
+      if (primaAtelier && tema !== 'intunecata') onTema('intunecata');
+      schimba({ aranjament: id, densitate: primaAtelier ? 'mare' : de.densitate });
+    });
+  };
   const renunta = (): void => {
-    aplica(inainte);
+    aplicaDensitatea(inainte.densitate);
+    if (alegere.aranjament !== inainte.aranjament) void onAranjament(inainte.aranjament);
     if (tema !== inainte.tema) onTema(inainte.tema);
     onInchide();
   };
@@ -89,7 +108,7 @@ export function Aspectul({ tema, onTema, onInchide, focusInapoi }: {
                 <input ref={alegere.aranjament === id ? ales : undefined} type="radio" name="aspect-aranjament" value={id}
                   checked={alegere.aranjament === id} disabled={!poate}
                   aria-labelledby={e ? `aspect-nume-${id} aspect-eticheta-${id}` : `aspect-nume-${id}`} aria-describedby={`aspect-descriere-${id}`}
-                  onChange={() => { schimba({ ...alegere, aranjament: id }); }} />
+                  onChange={() => { alegeAranjamentul(id); }} />
                 <span className={`aspect-mini aspect-mini-${id}`} aria-hidden="true"><i /><i /><i /></span>
                 <span className="aspect-text">
                   <span className="aspect-nume">
@@ -102,6 +121,7 @@ export function Aspectul({ tema, onTema, onInchide, focusInapoi }: {
             );
           })}
         </div>
+        <p className="aspect-mesaj" role="status">{mesaj}</p>
         <div className="aspect-tema" role="radiogroup" aria-labelledby="aspect-tema">
           <h3 id="aspect-tema">{t('vedere.tema')}</h3>
           <div className="aspect-optiuni">

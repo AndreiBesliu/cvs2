@@ -48,12 +48,30 @@ pune la loc ce era când ai deschis fereastra.
 - **Atelier**: butoane mari, pentru tabletă și lângă mașină;
 - **Pas cu pas**: te duce de la desen la mașină, pas cu pas.
 
-Deocamdată se poate alege doar Insule; celelalte trei apar în fereastră cu „în curând” și vin pe rând.
+Deocamdată se pot alege Insule și [Atelierul](#atelier); Clasic și Pas cu pas apar în fereastră cu „în curând” și vin
+pe rând.
 
 **Tema** e aceeași cu a butonului „Tema” din bară: după sistem, luminoasă sau întunecată. **Butoane mari** face butoanele
 mai înalte (48 px; 56 pe un ecran tactil), cu orice aranjament: se nimeresc mai ușor pe tabletă sau cu mănuși.
 
 Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate arăta altfel decât calculatorul din birou.
+
+## Atelierul
+%% capitol: atelier
+
+**Atelierul** e aranjamentul pentru tabletă și pentru ecranul de lângă mașină. Îl alegi din fereastra **Aspectul** (meniul
+**Cont**, rândul **Aspectul…**). La prima alegere pornește cu tema întunecată și cu **Butoane mari**; le poți schimba din
+aceeași fereastră, înainte de **Păstrează**.
+
+- **Uneltele de desen** stau într-o coloană, în stânga, cu numele la vedere și cu tasta fiecăreia (Selecție `V`,
+  Dreptunghi `R`…); sub ele, Lipire și Grilă.
+- **Bara de sus** are Anulează și Reface cu numele lor, apoi importul, exportul vectorilor și **Exportă G-code**. Extensia
+  barei (alinierea, oglindirea, copierea, offsetul, booleanul, 3D) stă dedesubt, pe mai multe rânduri când nu încape.
+- **Panourile** stau împreună, în dreapta: **Proprietăți** sus, **Pe foaie** dedesubt.
+- Pe o tabletă ținută în picioare și pe telefon, uneltele trec într-un rând jos, sub pânză, care se derulează cu degetul;
+  panourile stau unul lângă altul, dedesubt.
+
+Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`).
 
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza

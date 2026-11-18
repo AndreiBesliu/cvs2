@@ -475,6 +475,7 @@ export const enCarcasa = {
   'aspect.descriere.pasi': 'Takes you from the drawing to the machine, step by step.',
   'aspect.implicit': 'default',
   'aspect.in-curand': 'coming soon',
+  'aspect.neadus': 'The “{nume}” layout could not be loaded (no network?). Try again later.',
   'aspect.butoane-mari': 'Big buttons',
   'aspect.butoane-mari.nota': '48 px; 56 on a touch screen',
   'aspect.renunta': 'Cancel',

@@ -1,0 +1,184 @@
+/*
+ * Atelierul (ADR 0250 §1, §7; felia 28.1↑c): vine cu bucata lui, la cerere. Regulile încep cu `:root`, ca să treacă peste
+ * cele ale Insulelor cu aceeași formă (`.aplicatie[data-dreapta]` pe telefon), oricare ar fi ordinea foilor de stil.
+ *
+ * De la 1024 px: coloana uneltelor de desen în stânga, pe toată înălțimea lucrului, cu numele la vedere, pe două coloane;
+ * bara de sus și extensia ei lângă ea; panourile împreună, în dreapta. Sub 1024 px (tableta în picioare, telefonul):
+ * uneltele într-un rând jos, sub pânză, care se derulează; panourile, unul lângă altul, dedesubt.
+ *
+ * Locul coloanei (și al rândului) e rezervat de la pornire, cât modulul editării e pe drum: zona liberă, și foaia potrivită
+ * în ea, nu sar la sosirea lui.
+ */
+:root .aplicatie[data-aranjament='atelier'] {
+  grid-template:
+    'meniu meniu meniu' auto
+    'unelte bara dreapta' auto
+    'unelte extensie dreapta' auto
+    'unelte centru dreapta' minmax(0, 1fr)
+    'jos jos jos' auto / auto minmax(0, 1fr) auto;
+}
+
+/* Bara de sus, extensia și coloana uneltelor ies din rândul lor și stau direct în grila aplicației. */
+:root .aplicatie[data-aranjament='atelier'] > .sus {
+  display: contents;
+}
+
+:root .aplicatie[data-aranjament='atelier'] > .doc-stanga {
+  display: none;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .bara,
+:root .aplicatie[data-aranjament='atelier'] .extensie {
+  justify-self: start;
+  margin-left: 0;
+}
+
+/* Extensia barei, mai lată decât coloana din mijloc, trece pe mai multe rânduri în loc să intre sub panouri. */
+:root .aplicatie[data-aranjament='atelier'] .extensie {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+:root .aplicatie[data-aranjament='atelier'] > .doc-dreapta {
+  grid-area: dreapta;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .insula.unelte {
+  grid-area: unelte;
+  justify-self: start;
+  align-self: start;
+  width: 18.75rem;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  align-items: stretch;
+}
+
+/* Tot ce nu e o unealtă (opțiunile uneltei, nodurile, liniile, câmpul grilei) ia rândul întreg; Lipire și Grilă, câte o celulă. */
+:root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare > * {
+  grid-column: 1 / -1;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare > button {
+  grid-column: auto;
+  min-height: var(--tinta);
+  min-width: var(--tinta);
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare > .separator {
+  width: auto;
+  height: 1px;
+  margin: 2px 0;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .unealta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 20px 0 8px;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .nume-unealta {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root .aplicatie[data-aranjament='atelier'] .unelte .tasta-unealta {
+  top: 50%;
+  right: 6px;
+  bottom: auto;
+  translate: 0 -50%;
+  font-size: 10px;
+}
+
+@media (max-width: 63.9375rem) {
+  :root .aplicatie[data-aranjament='atelier'] {
+    grid-template:
+      'meniu' auto
+      'bara' auto
+      'extensie' auto
+      'centru' minmax(0, 1fr)
+      'unelte' auto
+      'dreapta' auto
+      'jos' auto / minmax(0, 1fr);
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .bara {
+    justify-self: stretch;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .insula.unelte {
+    justify-self: stretch;
+    width: auto;
+    min-height: calc(var(--tinta) + 2 * 6px + 2px);
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .unelte .bara-editare > .separator {
+    width: 1px;
+    height: auto;
+    margin: 4px 2px;
+  }
+
+  /* Pe telefon, numele sub pictogramă: butonul rămâne îngust, iar rândul arată mai multe unelte deodată. */
+  :root .aplicatie[data-aranjament='atelier'] .unelte .unealta {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    width: auto;
+    min-width: 4.5rem;
+    padding: 4px 6px;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] .unelte .tasta-unealta {
+    top: 4px;
+    translate: none;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] > .doc-dreapta {
+    flex-direction: row;
+  }
+
+  :root .aplicatie[data-aranjament='atelier'] > .doc-dreapta > .panou {
+    flex: 1 1 0;
+    width: auto;
+    max-height: 30vh;
+  }
+
+  /* Un panou strâns e doar butonul lui: nu se întinde pe jumătate de rând. */
+  :root .aplicatie[data-aranjament='atelier'] > .doc-dreapta > .panou[data-deschis='false'] {
+    flex: none;
+  }
+}
+
+/*
+ * Pe telefon, extensia rămâne un singur rând, ca în Insule (ADR 0132 §10): pe patru rânduri, cât cere la 390 px, ar lăsa
+ * pânzei o fâșie.
+ */
+@media (max-width: 40rem) {
+  :root .aplicatie[data-aranjament='atelier'] .extensie {
+    flex-wrap: nowrap;
+    max-width: none;
+  }
+}

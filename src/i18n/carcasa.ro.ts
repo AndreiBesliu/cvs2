@@ -497,6 +497,7 @@ export const roCarcasa = {
   'aspect.descriere.pasi': 'Te duce de la desen la mașină, pas cu pas.',
   'aspect.implicit': 'implicit',
   'aspect.in-curand': 'în curând',
+  'aspect.neadus': 'Aranjamentul „{nume}” nu s-a putut aduce (fără rețea?). Încearcă din nou mai târziu.',
   'aspect.butoane-mari': 'Butoane mari',
   'aspect.butoane-mari.nota': '48 px; 56 pe ecran tactil',
   'aspect.renunta': 'Renunță',

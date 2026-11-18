@@ -5,7 +5,8 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { programeazaPwa } from '../pwa/pornire.ts';
 import { semnal } from '../ui/CipuriVedere.tsx';
-import { ARANJAMENT_MODERN, ARANJAMENTE, ARANJAMENTE_DISPONIBILE } from '../ui/aranjament.ts';
+import { ARANJAMENT_MODERN } from '../ui/aranjament.ts';
+import { ARANJAMENTE_DISPONIBILE, incarcaAranjament } from '../ui/incarcaAranjament.ts';
 import { CHEIE_ARANJAMENT, citesteAlegerea } from '../ui/alegereAranjament.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import { App } from './App.tsx';
@@ -128,6 +129,13 @@ try {
 const alegere = citesteAlegerea(alegereTinuta, ARANJAMENTE_DISPONIBILE);
 document.documentElement.dataset['aranjament'] = alegere.aranjament;
 document.documentElement.dataset['densitate'] = alegere.densitate;
+// Bucata aranjamentului ales (ADR 0250, „Mărimea”), cerută de acum, așteptată înaintea primei randări. Dacă nu vine (fără
+// rețea, înainte de precache): Insulele, iar alegerea ținută rămâne; motivul, în jurnalul local (mediul omului).
+const aranjamentGata = incarcaAranjament(alegere.aranjament).catch((e: unknown) => {
+  jurnal.adaugaLocala('promisiune', e);
+  document.documentElement.dataset['aranjament'] = ARANJAMENT_MODERN.id;
+  return ARANJAMENT_MODERN;
+});
 
 function alegeTema(tema: string): void {
   document.documentElement.dataset['tema'] = tema;
@@ -271,7 +279,7 @@ async function porneste(): Promise<void> {
   }
 
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
-  const proiect = await deschideProiect();
+  const [proiect, aranjament] = await Promise.all([deschideProiect(), aranjamentGata]);
   // Doar mediul omului (`mediu`: IndexedDB lipsă, blocat, plin, termenul) e „doar local”; o bază la altă versiune, o ușă
   // care nu vine sau o excepție a codului nostru pleacă la server (reverificarea 3.2).
   if (proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum' || proiect.mod === 'nu-se-deschide') {
@@ -289,7 +297,7 @@ async function porneste(): Promise<void> {
           alegeLimba={alegeLimba}
           alegeTema={alegeTema}
           proiect={proiect}
-          aranjament={ARANJAMENTE[alegere.aranjament] ?? ARANJAMENT_MODERN}
+          aranjament={aranjament}
           actualizare={actualizare}
           progresActualizare={progresActualizare}
         />

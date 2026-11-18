@@ -1119,17 +1119,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
   în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
   nivelul rapid cere zero lipsuri).
-  **Aranjamentele, feliile 28.1↑a–28.1↑b (ADR 0250 §3–§5),** în worktree-ul `aranjamente` (ramura `wip/28.1-aranjamente`):
-  28.1↑a (alegerea și densitatea, citite înaintea primei randări) unită în `main` pe 16.11 (`8ea3057`); 28.1↑b (fereastra
-  Aspectul) gata pe 17.11, neunită.
-  - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`.
-  - `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
-  - `ARANJAMENTE` din `aranjament.ts` ține aranjamentele build-ului; azi, doar Insulele.
-  - **Un aranjament nou intră în `ARANJAMENTE`;** o alegere ținută a unuia care lipsește dă Insule, fără s-o șteargă.
-  - Densitatea mare: `--tinta` 48 px, 56 la atingere.
+  **Aranjamentele, feliile 28.1↑a–28.1↑c (ADR 0250 §1–§7),** în worktree-ul `aranjamente` (ramura
+  `wip/28.1-aranjamente`): 28.1↑a (alegerea și densitatea) și 28.1↑b (fereastra Aspectul) unite în `main`; 28.1↑c
+  (Atelierul pe Proiectare, adus la cerere) gata pe 17.11, neunită.
+  - Cheia e `cncvs2.aranjament`, ca JSON `{ v: 1, aranjament, densitate }`, citită în `src/ui/alegereAranjament.ts`;
+    `main.tsx` pune `data-aranjament` și `data-densitate` pe `<html>`, lângă temă.
+  - **Un aranjament nou intră în `src/ui/incarcaAranjament.ts`** (încărcătorul lui; datele într-un modul fără CSS, ca
+    `aranjamentAtelier.ts`, bucata cu CSS-ul ca `atelier.ts`); o alegere ținută a unuia care lipsește dă Insule, fără
+    s-o șteargă. App ține aranjamentul în stare (`alegeAranjament`), fereastra Aspectul îl schimbă pe loc.
   - Fereastra Aspectul (`src/app/Aspectul.tsx`, la cerere): din meniul contului (rândul `aspect`) și din paletă
-    (`vedere.aspect`, în `ORIUNDE`). Se aleg doar aranjamentele din `ARANJAMENTE_DISPONIBILE`; celelalte, „în curând”.
-  - Pornirea 106,6 (cu ușa 110,6 / 115 kB), totalul 710,8 / 800, pe unirea cu `main` `4b52fc3`.
+    (`vedere.aspect`, în `ORIUNDE`).
+  - Densitatea mare: `--tinta` 48 px, 56 la atingere. Numele uneltelor (`.nume-unealta`) sunt ascunse în Insule.
+  - Pe unirea cu `main` `b6aaa54`: pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 / 800; bucata Atelierului 0,30
+    kB, cu pornirea și ușa 111,3 / 115.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
