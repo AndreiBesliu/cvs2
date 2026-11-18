@@ -1215,6 +1215,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 18.11.2026: **12.1↑f-2, 25.6↑ și A.1 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): treptele
+  incrustației cu pereți drepți (`89083cba`, exact `aa9f3257`; ADR 0175 §3–§6), imaginile TIFF (`fd63de8e`, exact
+  `ba2ecaff`; ADR 0229, care încheie intervalul 0220–0229 al trasării) și carcasa adminului, cu fila Azi (`5147f448`,
+  exact `531ecfb4`; ADR 0260, prima felie a liniei, `3.Aa` în fișă). Ciocnirile de tabel din registrul otrăvurilor și
+  din fișa etapei 3 (rânduri vecine adăugate pe ambele părți) s-au rezolvat după cheia din prima coloană, iar un rând
+  schimbat doar de o parte s-a luat de acolo (28.1b, din main). Porțile pe unire, toate la prima rulare: unit 9 548 / 0,
+  e2e 527 / 527, emulatoarele 101 / 101 și 26 / 26. Totalul 729,1 / 800, pornirea cu ușa 111,0 / 115, `/admin` 112,2 /
+  200. Înainte, `c302d73a` a ajuns pe test după o reluare a completului: `extensii.spec.ts:43` (clicul pe „Închide” din
+  cadrul extensiei nu s-a mai întors, deși fereastra se închisese), de urmărit. În lucru la linii: 3.6u.
 - 18.11.2026: **10.3↑m, 11.3↑b și 28.1↑c unite în `main`, cu două probe instabile reparate** (la „unește ce se poate”,
   după rapoartele liniilor; liniile oprite peste noapte, repornite la „neata! poti sa repornesti toate worktrees”):
   piesele puse de mai multe ori, la tăiere și conversie (`3ef10357`, exact `7ae0d5a`; ADR 0180), avertismentul
