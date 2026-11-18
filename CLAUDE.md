@@ -1236,6 +1236,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 18.11.2026: **28.1↑d, 3.Th, 11.3↑c și 3.6u unite în `main`** (la „unește ce se poate”, după rapoartele liniilor):
+  tăierea din butoane mari în Atelier și „Trimite la mașină” (`a88502ab`, exact `c957303b`; ADR 0250, cu §7 schimbat de
+  owner în aceeași zi: pe telefon nu mai lucrăm la desen); rotițele dințate în atelierul Easy 3Draw (`7d9f6888`, exact
+  `6e7dda2e`; ADR 0169, acceptat cu recomandările și implementat, pachetul 18.9.1; privirea pe roata reală a găsit,
+  înaintea unirii, peretele găurii la roțile mici: 0,036 mm la roata de 8 cu gaură de ax și STL-ul deschis la modulul
+  0,5, ambele reparate, cu probe și otrăvuri); proba urechilor la export (`5b5f7401`, exact `35be1a64`; ADR 0210,
+  varianta b); filmele timelapse ale imprimantei (`d71817ab`, exact `427e187e`; ADR 0194 §C, care încheie grupul 3).
+  Ciocnirile, doar în DEVLOG, fișa etapei 3 și registrul otrăvurilor (după cheie). Porțile pe unire, toate la prima
+  rulare: unit 9 589 / 0, e2e 545 / 545, emulatoarele 101 / 101 și 29 / 29. Totalul 738,4 / 800, pornirea cu ușa 111,2 /
+  115 (cu Atelierul 111,5), `/admin` 113,7 / 200. În lucru la linii: 12.1↑f-3 (incrustațiile), de unit la raport.
 - 18.11.2026: **25.7↑ și A.2 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): PDF-urile scanate
   (`9bf53378`, exact `87192e03`; ADR 0270, primul din intervalul 0270–0279 al trasării) și Erorile cu Diagnoza adminului
   (`ce5bd472`, exact `86e3b36e`; ADR 0260, felia 3.Ab). La unirea lui A.2, jurnalul a păstrat un titlu gol al lui A.1,
