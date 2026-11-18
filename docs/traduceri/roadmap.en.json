@@ -569,6 +569,10 @@
       "ro": "Incrustația cu pereți drepți: locașul, dopul ridicat sau decupat, documentul v21",
       "en": "The straight-walled inlay: the pocket, the raised or cut-out plug, document v21"
     },
+    "2b5c911a799790b5": {
+      "ro": "Avertismentul urechilor la așezare",
+      "en": "The tabs warning when laying out"
+    },
     "2b928c08e30352d6": {
       "ro": "Șabloane + lot; §10 Fișa de lucru; admin **P2+**",
       "en": "Templates + batch; §10 Job sheet; admin **P2+**"
@@ -844,6 +848,10 @@
     "3d64c66453dc43e5": {
       "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
       "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
+    },
+    "3dc936174fd0788d": {
+      "ro": "**Avertismentul urechilor la așezare** (ADR 0210, varianta a; „Da, 11.3↑b”, la propunerea de după unirea lui 11.7↑). Cu urechi pe un profil exterior, distanța propusă dintre piese e 2 × freza + 3 mm, rotunjită în sus (10 cu Ø3,175, ca pe placa 11): sub 2 × freza, tăieturile vecine se unesc, iar urechile dinspre vecini nu mai țin. «Așază pe foi» pornește de la ea și spune de ce; sub ea apare avertismentul (Așază rămâne pornit), iar sub freză, refuzul de până acum. «Din CSV…», «Încă…», «+1» și „Mută și așază la capăt” nu întreabă distanța, deci urcă singură la ea. Otrăvurile: 21 / 21 la prima rulare. Documentul nu se schimbă, iar pornirea nici ea.",
+      "en": "**The tabs warning when laying out** (ADR 0210, option a; “Yes, 11.3↑b”, to the proposal after 11.7↑ was merged). With tabs on an outside profile, the proposed distance between parts is 2 × the cutter + 3 mm, rounded up (10 with Ø3.175, as on plate 11): below 2 × the cutter, the neighbouring cuts merge, and the tabs facing the neighbours no longer hold. “Arrange on sheets” starts from it and says why; below it a warning appears (Arrange stays enabled), and below the cutter, the refusal as before. «From CSV…», «More…», «+1» and “Move and arrange at the end” do not ask for the distance, so it rises to it by itself. The mutations: 21 / 21 on the first run. The document does not change, and neither does the startup."
     },
     "3e46274cb0ba0363": {
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",

@@ -134,14 +134,18 @@ așezării. Alegi ce se așază (piesele alese sau toate de pe foaie), colțul d
 distanța dintre piese, pe X și pe Y (cu **Aceeași pe X și pe Y** bifată, un singur număr). Piesele se pun după cutia
 fiecăreia, cu rotirea ei, rând cu rând; cele care rămân pe foaie se ocolesc. Ce nu mai încape trece pe foaia următoare, dacă
 e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia rămâne pe loc. Nicio mărime nu se schimbă. Distanța
-e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul.
+e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul. Cu
+urechi pe profilul exterior, fereastra pornește de la 2 × freza + 3 mm, rotunjită în sus (10 mm cu freza de 3,175), și spune
+de ce: sub 2 × freza, tăieturile a două piese vecine se unesc, iar urechile dinspre vecini nu mai au lemn de care să se țină.
+O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment.
 **Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
 încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
 minte în browser.
 
 **Mută și așază la capăt.** În meniul de clic dreapta, lângă **Mută pe**, **Mută și așază la capăt pe** și numele foii mută
-piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări; **Mută și așază pe o foaie nouă** le așază
-pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca mai sus, pe foile următoare.
+piesele alese pe ea și le așază după piesele ei, cu alegerile ultimei așezări (distanța urcă singură la freză, iar cu urechi
+la 2 × freza + 3 mm); **Mută și așază pe o foaie nouă** le așază pe o foaie nouă, ca foaia activă. Ce nu încape trece, ca
+mai sus, pe foile următoare.
 
 Fiecare gest (o foaie nouă, una ștearsă, mutată sau redenumită, o mutare între foi, o așezare) e un singur pas de anulare
 (`Ctrl+Z`).
@@ -157,7 +161,8 @@ se vede la toate.
 **Încă și +1.** Cu o singură piesă aleasă, panoul Proprietăți arată, la **Piesa**, de câte ori e pusă și pe ce foi.
 **Încă…** cere **Câte în total** (mai multe decât acum, cel mult 1 000) și arată, înainte să adaugi, unde ajung cele noi: pe
 rândul piesei, la dreapta ei, apoi pe rânduri dedesubt, de la marginea foii (10 mm), ocolind piesele de pe foaie. Între
-piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare. Ce nu încape trece
+piese rămân cel puțin 5 mm, sau diametrul celei mai mari freze a profilelor exterioare, dacă e mai mare; cu urechi pe un
+profil exterior, cel puțin 2 × freza + 3 mm, rotunjită în sus (vezi „Așază pe foi”). Ce nu încape trece
 pe foaia următoare, dacă e goală, apoi pe foi noi, ca foaia piesei. **+1** pune încă una după ultima. `Ctrl+D` rămâne o copie
 separată, cu piesa ei.
 
@@ -211,7 +216,7 @@ diacritice: **potrivit singur**) sau, la alegere, altă coloană, **o valoare** 
 cifrele). Un text fără câmp: alegi în **Textul piesei** bucata care se schimbă de la o plăcuță la alta și apeși **Fă din
 textul ales câmpul {Nume}** (numele e al coloanei, sau cel scris). **Rândurile de la … până la** aleg rândurile. Sub ele,
 unde ajung plăcuțele („6 plăcuțe pe 3 foi: 2 + 2 + 2”), cu marginea și distanța lui „Așază pe foi” (**Schimbă…**; distanța e
-cel puțin freza profilului exterior). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
+cel puțin freza profilului exterior; cu urechi, pornește de la 2 × freza + 3 mm, iar mai jos apare avertismentul). **Fă plăcuțele**: primul rând pe plăcuța aleasă, celelalte plăcuțe noi, toate așezate
 pe foi (ca „Așază pe foi”), într-un singur pas. Cu caseta **Limitat de casetă** pe text, panoul spune câte plăcuțe s-au
 micșorat și cât.
 

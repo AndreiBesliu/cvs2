@@ -673,8 +673,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   hârtie, pe exportul proaspăt, în `test/unit/placa11.test.ts`, cu proba urechilor (rasterul fundului foii la 0,1 mm, umplut
   din margine; controlul, fără urechi); octeții, în `placa11.aur.test.ts`. **Urechile nu țin sub 2 × freza:** la distanța
   implicită de 5, cu Ø3,175, ramele vecine scot tot lemnul dintre piese, iar urechile (la un sfert și la trei sferturi din
-  drum) nu stau față în față, deci piesele din mijloc cad. Placa folosește 10, pe foi de 300 × 220; avertismentul în
-  aplicație e la owner.
+  drum) nu stau față în față, deci piesele din mijloc cad. Placa folosește 10, pe foi de 300 × 220.
+  **Avertismentul urechilor (felia 11.3↑b, varianta a)** gata pe 17.11: cu urechi pe un profil exterior, distanța propusă e
+  2 × freza + 3 mm, rotunjită în sus (`src/model/distantaPiese.ts`, folosit de așezare și de copii). «Așază pe foi» pornește
+  de la ea, cu nota; sub ea, avertismentul (nu refuzul); «Din CSV…», «Încă…», «+1» și „Mută și așază” urcă singure la ea.
+  Doar piesele care se așază sunt judecate; proba la export (b) și urechile la locuri alese (c) rămân la owner.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

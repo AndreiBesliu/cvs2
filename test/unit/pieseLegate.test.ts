@@ -141,3 +141,16 @@ test('„Duplică foaia cu aceleași piese”: instanțe noi ale acelorași pies
   assert.equal(dupa.piese.length, 1);
   assert.equal(comandaDuplicareLegata(d, 'f9'), null);
 });
+
+test('cu urechi pe un profil exterior (felia 11.3↑b), distanța copiilor urcă la 2 × freza + 3, rotunjită în sus', () => {
+  const cuUrechi = (o: Operatie): Operatie => ({ ...o, urechi: { numar: 2, latime: 6, grosime: 2 } });
+  assert.equal(distantaCopii(placuta([cuUrechi(profil(3.175))])), 10, '2 × 3,175 + 3 = 9,35 → 10');
+  assert.equal(distantaCopii(placuta([cuUrechi(profil(3))])), 9);
+  assert.equal(distantaCopii(placuta([cuUrechi(profil(8))])), 19);
+  assert.equal(distantaCopii(placuta([cuUrechi(profil(8, 'interior'))])), 5, 'urechile unui profil interior nu cer nimic');
+  // Trei copii după plăcuța din (10, 160): pe rândul ei la 100 și 190 (10 + 80 + 10), apoi rândul de dedesubt, la 160 − 30 − 10.
+  const d = proiect([foaie('f1', [{ id: 'a', piesa: 'p', x: 10, y: 160, rotire: 0 }])], [placuta([cuUrechi(profil(3.175))])]);
+  const plan = planCopii(d, 'a', 3);
+  assert.ok(plan.ok);
+  assert.deepEqual(plan.locuri.map((l) => [l.x, l.y]), [[100, 160], [190, 160], [10, 120]]);
+});
