@@ -1,6 +1,7 @@
 # ADR 0169: Rotițele dințate în atelierul Easy 3Draw: dinți drepți, oblici și în V
 
-**Starea:** propus pe 18.11.2026, la felia 3.Th, la cererea owner-ului: „vreau sa facem ceva in plus la plugin-ul 3d. vreau
+**Starea:** acceptat pe 18.11.2026 („Da, cu recomandările”: 1a, 2a) și implementat la felia 3.Th; propus în aceeași zi,
+la cererea owner-ului: „vreau sa facem ceva in plus la plugin-ul 3d. vreau
 sa pot face si rotite zimtate, ori drepte ori oblice (la marginea zimtata)”. **Completează:** ADR 0129 (Planificatorul ca
 extensie), ADR 0164 (pluginul ca parte din cvs2), ADR 0168 (înălțimile și profilul imprimantei). Ultimul număr din
 intervalul liniei (0160–0169); feliile următoare ale pluginului iau 0280–0289.
@@ -64,12 +65,45 @@ cărămida Technic, axul, știftul, bucșa), cu jocurile alese la calibrare (gau
      variante și ținută în profilul imprimantei (recomandat: se reglează o dată, pentru toate roțile).
    - **2b.** Un câmp „Jocul” la fiecare roată (implicit 0,1 mm).
 
+## Răspunsurile
+
+- **1a:** roți dințate care se prind între ele; fără rotițe moletate (3.Ti nu se face).
+- **2a:** jocul dintre dinți vine din calibrare: cinci roți de probă de 16 dinți, cu 0,05 … 0,25 mm pe flanc, iar varianta aleasă
+  stă în profilul imprimantei, lângă celelalte (implicit 3 = 0,15 mm).
+
+## Implementarea (felia 3.Th, pachetul 18.9.0)
+
+- **Motorul** (`extensii/trenulet/sursa/lego/lego.ts`): `profilRoata` (cremaliera rulată pe cercul de divizare, 600 de poziții,
+  21 de raze pe flanc, ținut în memorie pe dinți, modul și joc), `conturRoata` (cu mijlocul capului pe cercul de cap: altfel
+  coarda dintre capetele arcului scurta diametrul), `prismaRasucita` (exteriorul rotit strat cu strat, cel mult 0,8° pe
+  strat; gaura dreaptă; capacele prin earcut pe aceleași puncte, deci corpul rămâne închis) și tipul `rotita`: dinții 8–80,
+  felul (drepți, oblici, în V), unghiul 10–35°, sensul (dreapta = elicea urcă în sens trigonometric), grosimea 1–20 mm, gaura
+  (ax în cruce, rotundă, fără), modulul 0,5–3; un avertisment când între gaură și piciorul dinților rămân sub 0,8 mm (la roata
+  de 8 cu gaură de ax: 0,25 mm). Jocul: `joc_dinti` 0,15, `varianta_dinti` 3, `pas_dinti` 0,05. Setul de calibrare are cinci
+  roți de probă (`calibrare_rotita_1` … `5`), cu numărul lor în cubulețe pe fața de sus. `distantaRoti(z1, z2, m)` pentru atelier.
+- **Atelierul** (`planificator/atelier.ts`): „Roată dințată” în galeria pieselor de legătură, cu dinții (și scurtăturile 8, 12,
+  16, 20, 24, 36, 40), felul, unghiul și sensul la oblici și în V, grosimea, gaura, modulul; „Se prinde cu…” arată distanța
+  dintre axe și dacă e pe grilă, la jumătate de pas sau în afara ei; „Fă perechea” pune în listă ambele roți, a doua cu sensul
+  opus (la oblici și la V: perechea se prinde doar așa). Varianta roților în profilul imprimantei, în fila Calibrare (pasul
+  nou; „șapte numere”) și în README-ul arhivei. Textele, în engleză (35).
+- **Pachetul:** 18.9.0, înregistrat în bibliotecă (versiunea și amprenta conținutului), cu descrierea „… roți dințate …”.
+
 ## Feliile
 
 - **3.Th:** roata (drepți, oblici, în V), gaura, modulul, perechea, jocul (după răspunsul 2), textele, manualul.
 - **3.Ti** (doar la 1b): rotițele moletate.
 
-## Probele (la felie)
+## Probele
+
+- **unitare** (`test/unit/trenulet.rotite.test.ts`, 8): jocul din calibrare; profilul (cercurile, grosimea pe divizare,
+  conturul); perechile LEGO pe grilă (zero pătrunderi; jocul minim al flancului, 0,188 la 0,10, sau al piciorului, 0,25 la
+  0,15); corpul închis la toate felurile și găurile, cu aceeași cutie și același volum; găurile (diferența de volum = aria ×
+  h); răsucirea în sensul ales, V-ul sus ca jos, gaura dreaptă; marginile și avertismentul; setul de calibrare.
+- **e2e** (`test/e2e/trenulet.rotite.spec.ts`, 3): tipul în galerie, felurile, perechea pe grilă, „Fă perechea” cu sensul
+  opus, STL-ul descărcat închis; roata de 8 și avertismentul ei, „fără gaură”, fila Calibrare; varianta 5 dă dinți mai subțiri.
+- **otrăvuri** (`test/otravuri/3.Th.py`): 27 / 27 prinse (18 pe motor, 9 pe atelier), pe setul curat verde, în clona din afara Drive-ului.
+
+## Probele cerute la propunere
 
 - **unitare**: profilul (simetria, cercurile de cap și de picior, subtăierea la 8 dinți), angrenarea perechilor LEGO (zero
   pătrunderi, jocul normal = 2 × joc × cos 20°), plasa închisă la toate felurile, volumul, gaura dreaptă, sensurile opuse la
