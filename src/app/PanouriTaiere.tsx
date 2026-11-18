@@ -123,14 +123,16 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
     };
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (s.signal.aborted) return;
-      calc.taiePanourile(laCerere, cerere, s.signal, indexFoaie).then((rez) => {
+      calc.taiePanourile(laCerere, cerere, s.signal, indexFoaie, () => { if (!s.signal.aborted) setStare({ fel: 'gata', text: t('editare.surori.astept'), rau: false }); }).then((rez) => {
         if (s.signal.aborted) return;
         if (!rez.ok) {
           const m = rez.motiv === 'valoare' ? 'editare.taiere.panouri.valoare' : rez.motiv === 'nimic-taiat' ? 'editare.taiere.panouri.unul' : (`editare.taiere.motiv.${rez.motiv}` as const);
           setStare({ fel: 'gata', text: t(m), rau: true });
           return;
         }
-        const v = onTaie({ doc: laCerere, degrupate: rez.degrupate, ids: rez.ids, sterse: rez.sterse, ...(rez.grupuri ? { grupuri: rez.grupuri } : {}) });
+        const v = onTaie({
+          doc: laCerere, degrupate: rez.degrupate, ids: rez.ids, sterse: rez.sterse, ...(rez.grupuri ? { grupuri: rez.grupuri } : {}), ...(rez.surori ? { surori: rez.surori } : {}),
+        });
         const text = t('editare.taiere.panouri.gata', { p: String(rez.panouri ?? rez.ids.length), nume: cerere.nume, n: String(rez.forme) })
           + (rez.scoase > 0 ? ` ${t('editare.taiere.panouri.scoase', { s: String(rez.scoase) })}` : '');
         setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });

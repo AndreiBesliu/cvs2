@@ -105,6 +105,8 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   await scrie(`roluri/${SUPORT}`, { nume: 'Suport', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste'] });
   await scrie(`staff/${uid}`, { rol: SUPORT });
   await page.locator('[data-admin="reincearca"]').click();
+  // Pagina se deschide pe Azi (ADR 0260); Erori, din bara laterală.
+  await page.locator('[data-fila="erori"]').click();
 
   // Nerezolvate: doar G1; toate: amândouă, cea mai recentă întâi.
   await expect(page.locator('[data-grup]')).toHaveCount(1);

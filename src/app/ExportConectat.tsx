@@ -130,6 +130,13 @@ export function ExportConectat({
               ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
               ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
               ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
+              // Treapta (ADR 0175 §5): umărul, cu încotro (lipsă = spre interior).
+              ...(o.incrustatie.treapta ? {
+                treapta: {
+                  adancime: o.incrustatie.treapta.adancime, latime: o.incrustatie.treapta.latime,
+                  ...(o.incrustatie.treapta.spre === 'exterior' ? { spre: 'exterior' as const } : {}),
+                },
+              } : {}),
             } : null,
           } : {}),
           ...(o.tip === 'vcarve' ? {

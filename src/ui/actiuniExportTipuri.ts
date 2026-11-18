@@ -6,7 +6,7 @@ export type { Coborare } from '../model/document.ts';
 // Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
 export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
 // Implicitele incrustațiilor (ADR 0170 în V, ADR 0171 cu pereți drepți), pentru rândurile lor din fereastra exportului.
-export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA } from '../model/document.ts';
+export { INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA } from '../model/document.ts';
 // Banda dopului în V (ADR 0172): lățimea cea mai mică, rotunjirea ei arătată, punțile implicite și ce rămâne sub fața coborâtă.
 export { latimeMinimaBanda, PUNTI_BANDA, PUNTI_DOP_DREPT, SUB_FATA_DOPULUI, susLaMicron } from '../model/incrustatie.ts';
 import type { StrategieScula } from '../post/contract.ts';
@@ -38,6 +38,8 @@ export const MARGINI_OPERATIE = {
   margineDop: PLAFON.latura,
   // Banda dopului în V (ADR 0172): lățimea (plafonul laturii) și placa (plafonul adâncimii unei operații), în mm.
   latimeBanda: PLAFON.latura, placaBanda: PLAFON.adancimeOperatie,
+  // Treapta incrustației cu pereți drepți (ADR 0175): lățimea umărului, în mm (plafonul laturii; adâncimea lui, al adâncimii).
+  latimeUmar: PLAFON.latura,
 } as const;
 
 /**

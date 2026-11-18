@@ -3,12 +3,15 @@
 **Starea:** acceptat pe 06.11.2026 (propus în aceeași zi), pentru feliile 10.3↑–10.3↑e (aduse din etapa 10), fără mașină, în
 worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
-cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
-06.11; **felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) și **felia 10.3↑c** (decuparea, §4) pe 07.11.
-**Schimbat de** ADR 0181 (08.11, răspunsul 4a): §13 și „Ce am respins”, tăierea cu un clic pe bucată (felul Retează al
-cuțitului). **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
-(biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
-**Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
+cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe 06.11;
+**felia 10.3↑b** (cuțitul-formă și „Taie la intersecții”, §3, §5, §6) și **felia 10.3↑c** (decuparea, §4) pe 07.11. **Schimbat
+de** ADR 0181 (08.11, răspunsul 4a): §13 și „Ce am respins”, tăierea cu un clic pe bucată (felul Retează al cuțitului).
+**Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033 (biarcele), ADR 0067 (booleanul), ADR 0103
+(degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta). **Documentul:** neschimbat (v19): rezultatul e din
+tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul). **Felia 10.3↑m** (piesele puse de mai multe ori, la
+tăiere și la conversie), adăugată pe 17.11, cu răspunsul owner-ului „Da, cu recomandările” la cele patru întrebări ale ei (mai
+jos): declanșatorul „vin planșele” din „Se redeschide dacă” s-a împlinit. Ea schimbă §12 (refuzul piesei puse de mai multe ori)
+și saltul ei la conversie (felia 10.3↑d).
 
 **Problema.** Rândul de prag „Tăierea și conversia vectorilor” (A, v1 din 06.10) cere cinci lucruri, niciunul în aplicație
 azi: tăierea cu o linie, decuparea la un contur, arcele în locul curbelor, netezirea și conversia în cercuri / dreptunghiuri.
@@ -85,9 +88,9 @@ ca biarce la 0,001 mm, cu multe linii scurte, fără ca omul să poată alege o 
     Netezește (fidelitatea desenului), 0,1 mm la În cerc și În dreptunghi (o gaură de lemn). Se măsoară pe toată forma, în ambele
     sensuri (nodurile și laturile), nu doar pe noduri (lecția din ediția întâi). Cercul din poligon trece prin noduri (răspunsul
     5a): un Ø100 desenat cu 64 de laturi rămâne Ø100, iar abaterea față de laturi (0,06 mm) trebuie să încapă în toleranță.
-12. **Refuzurile, cu motiv:** o piesă pusă de mai multe ori (ca la reparații, decizia 8a din ADR 0124), un cuțit care nu atinge
-    nicio formă, un cuțit care nu trece de tot printr-o formă de închis, plafoanele documentului (judecate de schema lui, pe
-    documentul de după).
+12. **Refuzurile, cu motiv:** o piesă pusă de mai multe ori (ca la reparații, decizia 8a din ADR 0124; din felia 10.3↑m,
+    întrebarea, nu refuzul), un cuțit care nu atinge nicio formă, un cuțit care nu trece de tot printr-o formă de închis,
+    plafoanele documentului (judecate de schema lui, pe documentul de după).
 13. **Ce nu face:** nu unește căi (discuție separată, ADR 0124 §14), nu taie interactiv cu un clic pe bucată (după „Taie la
     intersecții”, bucata se alege și se șterge), nu schimbă schema documentului.
 14. **Mărimea.** Plafonul total e comun (503,1 / 550 kB pe `main`, cu trei linii pe el): linia ține creșterea sub ~10 kB.
@@ -104,6 +107,7 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
 - **10.3↑c:** „Decupează la…” (§4).
 - **10.3↑d:** În cerc, În dreptunghi (§10) și Arce (§8), cu panoul Convertește.
 - **10.3↑e:** Netezește (§9).
+- **10.3↑m** (17.11, după planșe): piesele puse de mai multe ori, la tăiere și la conversie: întrebarea, nu refuzul.
 
 **Felia 10.3↑b, la cod** (în cadrul deciziilor de mai sus, 07.11):
 - **Unde taie cuțitul-formă:** un contur închis se taie doar unde exact una dintre bucățile cuțitului de lângă loc intră în
@@ -185,6 +189,38 @@ tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la inte
 - Măsurarea Hausdorff, comună conversiei și netezirii, stă în `src/model/abatereContur.ts`. Panoul: blocul Netezește, al
   doilea, ca în schiță (toleranța 0,01, „Păstrează liniile mai lungi de” 5).
 
+**Felia 10.3↑m, la cod** (17.11; piesele puse de mai multe ori, cu răspunsurile de mai jos):
+- **Când întreabă:** doar când operația chiar ar schimba o piesă pusă de mai multe ori (pe orice foaie): tăierea și panourile o
+  refuză ca înainte (`impartita`), conversia la fel, în locul saltului numărat; calculul (`actiuniExportCalcul.ts`) cere atunci
+  alegerea și reia. O tăiere care nu atinge piesa, sau o decupare care doar șterge o instanță a ei, nu întreabă.
+- **«Desprinde și taie»** (principal, la toate operațiile): calculul se face pe documentul cu instanțele alese cu surori
+  desprinse (`comenziDesprinde`, ADR 0210 §2: copia piesei, plăcuța coaptă), iar comanda desprinde doar instanțele pe care
+  operația chiar le-a schimbat (`desprindeSiTaie`, `desprindeSiConverteste` în `taiereSurori.ts`); celelalte rămân legate între
+  ele. La panouri, toate cele alese (fiecare ajunge într-un panou).
+- **«Taie piesa (toate cele N)»** (`surori: 'piesa'`): doar la cuțitele care nu depind de ce e în jurul fiecărei instanțe
+  (`CUTITE_PIESA`: liniile, ghidajul, ultima formă aleasă, calea trasă, Forma și Foarfeca Cuțitului); nu la decupare,
+  intersecții, retezat și panouri. Workerul taie instanța aleasă; comanda (`comenziTaiePiesa`) pune bucățile ei, puse și ele de
+  N ori, în locul fiecărei instanțe a piesei, de pe orice foaie: pleacă întâi instanțele de pe celelalte foi (de la capăt), apoi
+  degruparea foii de lucru (cu toate instanțele piesei de acolo), apoi bucățile, pe celelalte foi, în locul celor plecate; un
+  singur pas de anulare, exact. Refuzuri: `diferite` (două instanțe alese ale piesei tăiate în locuri diferite ale ei: amprenta
+  bucăților, în desenul piesei, la 1e-6 mm), `placute` (șablonul unor plăcuțe: fiecare are literele ei).
+- **«Convertește piesa»:** piesa se convertește în locul ei (o singură dată, oricâte instanțe ale ei sunt alese), deci se
+  schimbă toate instanțele ei; un șablon de plăcuțe se sare, numărat. Saltul numărat al pieselor puse de mai multe ori (felia
+  10.3↑d) a plecat: textele „Sărite” spun acum căile deschise, formele întinse inegal și șabloanele plăcuțelor.
+- **Banda întrebării** (`IntrebareSurori.tsx`, la cerere; `intrebareSurori.ts` ține întrebarea și alegerea): sus, sub bare, ca
+  întrebarea grupării (ADR 0210, întrebarea 6): „Tai o piesă pusă de N ori:”, **Desprinde și taie** (butonul principal), **Taie
+  piesa (toate cele N)** (doar unde are sens), **Ține minte alegerea**, **Renunță**; la conversie, „convertește”. Panoul care a
+  cerut spune „Alege sus”. O altă alegere a formelor, sau o altă tăiere (semnalul ei), închide întrebarea. Alegerea ținută
+  (`cncvs2.taiere-surori`) se vede, se schimbă sau se uită în rândul **Piese puse de mai multe ori** al opțiunilor tăierii
+  (panoul Taie, bara Cuțitului) și al panoului conversiei; „Taie piesa” ținută, la o operație unde nu are sens, întreabă.
+- **Ce nu face:** reparațiile verificării (ADR 0124, decizia 8a) și degruparea (ADR 0103) refuză în continuare o piesă pusă de
+  mai multe ori; aceeași întrebare li se poate da, într-o felie a liniilor lor.
+- **Mărimea:** pornirea neschimbată (106,6 kB; cu ușa 110,6 / 115), totalul +4,4 kB cu 10.3↑l (715,7 → 720,1 / 800, A/B în
+  clonă, pe `main` `9361c83`; 10.3↑l, +0,7 pe `4b52fc3`), deci felia ~+3,7: banda (la cerere), întrebarea și alegerea ținută,
+  comenzile pe firul principal, textele. Prima variantă dădea +6,1: calculul importa desprinderea (cu plăcuțele) și
+  `CUTITE_PIESA` din `taiere.ts`, iar modulele pieselor legate și `model/noduri.ts` ieșeau într-o bucată comună; acum calculul
+  ia din `surori.ts` (ușor) doar cine are surori și cuțitele, iar desprinderea o aduce prin calculul acțiunilor, la cerere.
+
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
 
@@ -222,6 +258,17 @@ din 06.11:** 1a, 2a, 3a, 4a, 5a, 6a, adică recomandările, cu nota de la 2 (§3
 6. **Arcele din linii scurte:** a) Arce face arce și din șirurile de linii scurte care stau pe un cerc (o polilinie din DXF dă
    G2 / G3), cu colțurile și liniile lungi păstrate (recomandat); b) doar din curbe, ca ArtCAM: liniile trec întâi prin Netezește.
 
+**Felia 10.3↑m (17.11).** Owner-ul a ales felia („1, dar, vreau sa explici in detaliu ce se cere la punctul 2”, apoi, după
+explicație, „Da, cu recomandările”), deci răspunsurile sunt recomandările:
+
+1. **Opțiunile:** a) ambele, «Desprinde și taie» și «Taie piesa» (recomandat, ca la grupare); b) doar «Desprinde și taie».
+2. **Butonul principal al întrebării:** a) «Desprinde și taie» (recomandat: nu schimbă nimic în afara formelor tăiate); b) «Taie
+   piesa».
+3. **«Taie piesa» cu două instanțe alese tăiate în locuri diferite ale piesei:** a) refuzul, cu motivul (recomandat); b)
+   trecerea singură la «Desprinde și taie».
+4. **Conversia unei piese puse de mai multe ori:** a) întrebarea, cu «Convertește piesa» (piesa se schimbă în locul ei, la
+   toate), în locul saltului numărat (recomandat); b) saltul rămâne.
+
 ## Ce am respins
 
 - **Booleanul (cavalier) pentru tăiere și decupare:** reface geometria (cubicele ca biarce), deci vârfurile neatinse nu rămân la
@@ -237,4 +284,4 @@ din 06.11:** 1a, 2a, 3a, 4a, 5a, 6a, adică recomandările, cu nota de la 2 (§3
 - încercările pe desene reale cer altceva (nota owner-ului: „aici va trebui sa testam si sa ajustam pe viitor, pentru cand avem
   situatiile concrete”);
 - se discută unirea căilor (ADR 0124 §14);
-- vin planșele (etapa 11): o piesă pusă de mai multe ori primește opțiuni, nu doar refuzul (principiul owner-ului din 02.11).
+- reparațiile sau degruparea trebuie să primească aceeași întrebare (felia 10.3↑m o dă doar tăierii și conversiei).

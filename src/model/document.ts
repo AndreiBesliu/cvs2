@@ -204,7 +204,7 @@ export type BandaDop = {
  * minus c, iar dopul e conturul tăiat al locașului micșorat cu c (colțurile potrivite). `punti` (ADR 0174, documentul v24): punțile
  * dopului decupat, ca urechile; fără ele, cele implicite (4 × 4 × 1 mm). Documentul v25 (ADR 0175): `locas` = `gaura` (prin
  * foaie: adâncimea e grosimea foii plus supracursa; lipsă = buzunar), `treapta` = umărul (adâncimea d, lățimea s, spre interior
- * sau spre exterior) și `sprijin` = `umar` (dopul în trepte pe umăr); treapta și umărul le aduce felia 12.1↑f-2.
+ * sau spre exterior) și `sprijin` = `umar` (dopul în trepte pe umăr; ADR 0175, felia 12.1↑f-2).
  */
 export type IncrustatieDreapta = {
   fel: 'drept'; jocLateral: number; dop: 'ridicat' | 'decupat'; sprijin: 'fund' | 'fata' | 'umar'; joc: number; fierastrau: number;
@@ -225,6 +225,11 @@ export const INCRUSTATIE_IMPLICITA: IncrustatieV = { fel: 'v', joc: 0.5, fierast
 export const INCRUSTATIE_DREAPTA_IMPLICITA: IncrustatieDreapta = {
   fel: 'drept', jocLateral: 0.1, dop: 'ridicat', sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 5,
 };
+/**
+ * Lățimea umărului cu care pornește o treaptă nouă (ADR 0175 §5), în mm; adâncimea lui pornește de la jumătatea locașului (la
+ * gaură, a foii). Alegerea autorului: un umăr de 3 mm încape și la literele mici tăiate cu Ø3.
+ */
+export const LATIME_UMAR_IMPLICITA = 3;
 /**
  * O freză de rest (ADR 0093): plată, cu distanța dintre inelele ei, în mm (cel mult raza ei). Potrivirea (mai mică decât
  * freza dinainte, plată, alt număr) o judecă lucrarea.

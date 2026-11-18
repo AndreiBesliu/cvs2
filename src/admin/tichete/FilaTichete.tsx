@@ -9,6 +9,8 @@ import {
 import { proiectulTichetului, tichete, type Conexiune } from '../../cloud/conexiune.ts';
 import { limba as limbaDeAcum, t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { ceaMaiRecenta } from '../carcasa/date.ts';
+import { EroareCitire, ListaGoala, SeIncarca, usePublica } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { useAdresaImaginii } from '../sugestii/FilaSugestii.tsx';
 import {
@@ -39,6 +41,7 @@ export function FilaTichete({ con, owner, permisiuni }: {
   readonly con: Conexiune; readonly owner: boolean; readonly permisiuni: ReadonlySet<Permisiune>;
 }): ReactElement {
   const limba = useLimba();
+  const publica = usePublica();
   const poateRaspunde = owner || permisiuni.has('tichete.raspunde');
   const [lista, setLista] = useState<Masura<readonly Tichet[]> | null>(null);
   const [rev, setRev] = useState(0);
@@ -49,11 +52,17 @@ export function FilaTichete({ con, owner, permisiuni }: {
   useEffect(() => {
     let viu = true;
     getDocs(query(collection(con.db, COLECTIE_TICHETE), orderBy('creatLa', 'desc'), limit(PLAFON_LISTA_TICHETE))).then(
-      (s) => { if (viu) setLista({ ok: true, valoare: ordoneaza(s.docs.map((d) => tichetDin(d.id, d.data()))) }); },
+      (s) => {
+        if (!viu) return;
+        const randuri = ordoneaza(s.docs.map((d) => tichetDin(d.id, d.data())));
+        setLista({ ok: true, valoare: randuri });
+        // Căutarea din antet găsește tichetul după text, adresă sau id (ADR 0260 §1).
+        publica('tichete', randuri.map((x) => ({ id: x.id, text: x.text.slice(0, 160), detaliu: x.autorEmail ?? '' })));
+      },
       (e: unknown) => { if (viu) setLista({ ok: false, motiv: motivDin(e) }); },
     );
     return () => { viu = false; };
-  }, [con, rev]);
+  }, [con, rev, publica]);
 
   const fa: Fa = (cerere, loc, mesaj) => {
     setLucru({ faza: 'lucreaza' });
@@ -70,6 +79,7 @@ export function FilaTichete({ con, owner, permisiuni }: {
   const toate = lista?.ok ? lista.valoare : [];
   const numare = numarePeStare(toate);
   const aratate = filtreaza(toate, filtru);
+  const ultimulRezolvat = ceaMaiRecenta(toate.filter((x) => x.stare === 'rezolvat').map((x) => x.rezolvatLa));
   const acum = Date.now();
   const eroareLa = (loc: string): string | null => (lucru.faza === 'eroare' && lucru.loc === loc ? lucru.motiv : null);
 
@@ -89,10 +99,16 @@ export function FilaTichete({ con, owner, permisiuni }: {
           ))}
           <button type="button" data-tic="reincarca" onClick={() => { setRev((n) => n + 1); }}>{t('admin.tic.reincarca')}</button>
         </div>
-        {lista === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.tic.se-incarca')}</p>
-          : !lista.ok ? <p className="admin-eroare" role="alert" data-tic="eroare-lista">{t('admin.tic.citire', { motiv: lista.motiv })}</p>
-            : toate.length === 0 ? <p className="admin-mesaj" data-tic="gol">{t('admin.tic.niciunul')}</p>
-              : aratate.length === 0 ? <p className="admin-mesaj" data-tic="gol-filtru">{t('admin.tic.niciunul-filtru')}</p>
+        {lista === null ? <SeIncarca text={t('admin.tic.se-incarca')} />
+          : !lista.ok ? (
+            <EroareCitire text={t('admin.tic.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((n) => n + 1); }}
+              atribute={{ 'data-tic': 'eroare-lista' }} />
+          )
+            : toate.length === 0 ? <ListaGoala text={t('admin.tic.niciunul')} atribute={{ 'data-tic': 'gol' }} />
+              : aratate.length === 0 ? (
+                <ListaGoala text={t('admin.tic.niciunul-filtru')} atribute={{ 'data-tic': 'gol-filtru' }}
+                  ultima={ultimulRezolvat ? t('admin.stari.ultimul-rezolvat', { data: dataScurta(ultimulRezolvat, limba) }) : null} />
+              )
                 : (
                   <ul className="pers-lista">
                     {aratate.map((x) => (

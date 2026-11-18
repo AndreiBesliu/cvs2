@@ -3,8 +3,9 @@
  * (`test/oracles/incrustatieDreapta.ts`): locașul trece prin foaie, cu adâncimea ei (nu cea scrisă în operație), iar dopul e
  * decupat prin placa lui de T + H, la nivel cu fața de jos, sau ridicat, cu fața pe placă, înalt de T. Jocul lateral c ± 0,02 pe
  * tot peretele (și în colțuri), nicio interferență, adâncimea și înălțimea ± 0,05. Controlul: fără gaură, adâncimea e a
- * operației; cu altă grosime a foii, gaura și dopul o urmează. Refuzurile lucrării: dopul ridicat pe fund la o gaură, treapta
- * și sprijinul pe umăr (până la felia 12.1↑f-2). Valorile pe hârtie (`valoriIncrustatieDreapta`) din grosimea foii.
+ * operației; cu altă grosime a foii, gaura și dopul o urmează. Refuzurile lucrării: dopul ridicat pe fund la o gaură, sprijinul
+ * pe umăr fără treaptă (treptele au proba lor, `incrustatieDreapta.trepte.test.ts`). Valorile pe hârtie
+ * (`valoriIncrustatieDreapta`) din grosimea foii.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -96,13 +97,11 @@ test('supracursa: gaura trece cu ea în masa de sacrificiu (10 + 0,3), dopul ră
   assert.ok(Math.abs(m.inaltime - 12) <= TOL_Z, `înălțimea dopului ${m.inaltime}, pe hârtie 12 (fără supracursa)`);
 });
 
-test('refuzurile lucrării, cu motivul: dopul ridicat pe fund la o gaură; treapta și sprijinul pe umăr, până la felia lor', async () => {
+test('refuzurile lucrării, cu motivul: dopul ridicat pe fund la o gaură; sprijinul pe umăr fără treaptă', async () => {
   const fund = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'fund' }));
   assert.ok(!fund.ok && /gaura n-are fund: dopul ridicat se sprijină pe fața plăcii/.test(fund.motiv), fund.ok ? 'primit' : fund.motiv);
-  const treapta = await exporta(document({ treapta: { adancime: 3, latime: 5 } }));
-  assert.ok(!treapta.ok && /treapta \(umărul locașului\) vine în felia 12\.1↑f-2/.test(treapta.motiv), treapta.ok ? 'primit' : treapta.motiv);
-  const umar = await exporta(document({ dop: 'ridicat', sprijin: 'umar' }));
-  assert.ok(!umar.ok && /sprijinul pe umăr e al dopului în trepte/.test(umar.motiv), umar.ok ? 'primit' : umar.motiv);
+  const umar = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'umar' }));
+  assert.ok(!umar.ok && /sprijinul pe umăr cere treapta/.test(umar.motiv), umar.ok ? 'primit' : umar.motiv);
   // Jocul de sub dop nu se aplică la gaură: un joc oricât de mic (sub 0,1) nu refuză dopul ridicat pe față.
   const joc = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'fata', joc: 0.05 }));
   assert.ok(joc.ok, joc.ok ? '' : joc.motiv);

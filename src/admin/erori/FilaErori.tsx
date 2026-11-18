@@ -3,6 +3,8 @@ import { collection, getDocs, limit, orderBy, query, where } from 'firebase/fire
 import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { rezolvareDin } from '../carcasa/date.ts';
+import { EroareCitire, ListaGoala, SeIncarca, usePublica, type Tinta } from '../carcasa/stari.tsx';
 import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, type Aparitie, type Masura, type RandGrup } from './date.ts';
 
 /** Câte grupuri arată fila; peste, ADR 0040 („Se redeschide dacă”) cere paginarea. */
@@ -11,13 +13,17 @@ const PLAFON_APARITII = 20;
 
 /**
  * Fila Erori (ADR 0040 §4): grupurile din `errorLogs`, cele mai recente întâi, citite la cerere prin reguli; deschis, un
- * grup arată ultima apariție și ultimele 20, plus „Rezolvat” / „Redeschide” prin callable.
+ * grup arată ultima apariție și ultimele 20, plus „Rezolvat” / „Redeschide” prin callable. Un grup găsit de căutarea din
+ * antet (`tinta`) vine deschis, cu filtrul „Toate” dacă e rezolvat (ADR 0260 §1).
  */
-export function FilaErori({ con, poateMarca }: { readonly con: Conexiune; readonly poateMarca: boolean }): ReactElement {
+export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Conexiune; readonly poateMarca: boolean; readonly tinta?: Tinta | null }): ReactElement {
   const l = useLimba();
-  const [filtru, setFiltru] = useState<'nerezolvate' | 'toate'>('nerezolvate');
+  const publica = usePublica();
+  const [filtru, setFiltru] = useState<'nerezolvate' | 'toate'>(tinta?.rezolvat === true ? 'toate' : 'nerezolvate');
   const [lista, setLista] = useState<Masura<readonly RandGrup[]> | null>(null);
-  const [deschis, setDeschis] = useState<string | null>(null);
+  // Fără nicio eroare nerezolvată: când s-a rezolvat ultima (ideea 76).
+  const [ultima, setUltima] = useState<Date | null>(null);
+  const [deschis, setDeschis] = useState<string | null>(tinta?.id ?? null);
   const [rev, setRev] = useState(0);
 
   useEffect(() => {
@@ -28,11 +34,20 @@ export function FilaErori({ con, poateMarca }: { readonly con: Conexiune; readon
       ? query(col, where('rezolvat', '==', false), orderBy('ultimaData', 'desc'), limit(PLAFON_GRUPURI))
       : query(col, orderBy('ultimaData', 'desc'), limit(PLAFON_GRUPURI));
     getDocs(q).then(
-      (s) => { if (viu) setLista({ ok: true, valoare: s.docs.map((d) => randDin(d.id, d.data())) }); },
+      async (s) => {
+        const randuri = s.docs.map((d) => randDin(d.id, d.data()));
+        // Indexul simplu al lui `marcatLa`, descendent: cea mai recentă marcare (fără nerezolvate, ea a fost o rezolvare).
+        const u = randuri.length > 0 || filtru !== 'nerezolvate' ? null
+          : await getDocs(query(col, orderBy('marcatLa', 'desc'), limit(1))).then((x) => (x.docs[0] ? rezolvareDin(x.docs[0].data()) : null), () => null);
+        if (!viu) return;
+        setUltima(u);
+        setLista({ ok: true, valoare: randuri });
+        publica('erori', randuri.map((g) => ({ id: g.id, text: g.mesaj, detaliu: g.tip, rezolvat: g.rezolvat })));
+      },
       (e: unknown) => { if (viu) setLista({ ok: false, motiv: motivDin(e) }); },
     );
     return () => { viu = false; };
-  }, [con, filtru, rev]);
+  }, [con, filtru, rev, publica]);
 
   return (
     <div className="admin-erori">
@@ -44,9 +59,15 @@ export function FilaErori({ con, poateMarca }: { readonly con: Conexiune; readon
         ))}
         <button type="button" data-admin="reincarca" onClick={() => { setRev((r) => r + 1); }}>{t('admin.erori.reincarca')}</button>
       </div>
-      {lista === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.erori.se-incarca')}</p>
-        : !lista.ok ? <p className="admin-eroare" role="alert" data-admin="eroare-lista">{t('admin.erori.citire', { motiv: lista.motiv })}</p>
-          : lista.valoare.length === 0 ? <p className="admin-mesaj" data-admin="gol">{t('admin.erori.niciuna')}</p>
+      {lista === null ? <SeIncarca text={t('admin.erori.se-incarca')} />
+        : !lista.ok ? (
+          <EroareCitire text={t('admin.erori.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((r) => r + 1); }}
+            atribute={{ 'data-admin': 'eroare-lista' }} />
+        )
+          : lista.valoare.length === 0 ? (
+            <ListaGoala text={t('admin.erori.niciuna')} atribute={{ 'data-admin': 'gol' }}
+              ultima={ultima ? t('admin.stari.ultima-rezolvata', { data: dataScurta(ultima, l) }) : null} />
+          )
             : (
               <ul className="admin-grupuri">
                 {lista.valoare.map((g) => (
@@ -125,7 +146,7 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
         {marcare.faza === 'esec' ? <span className="admin-eroare" role="alert">{t('admin.erori.marcare-esec', { motiv: marcare.motiv })}</span> : null}
       </div> : null}
       <h3>{t('admin.erori.aparitii')}</h3>
-      {aparitii === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.erori.se-incarca')}</p>
+      {aparitii === null ? <SeIncarca text={t('admin.erori.se-incarca')} />
         : !aparitii.ok ? <p className="admin-eroare" role="alert">{t('admin.erori.aparitii-citire', { motiv: aparitii.motiv })}</p>
           : (
             <ol className="admin-aparitii">

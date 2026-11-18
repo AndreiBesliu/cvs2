@@ -4,6 +4,7 @@ import { felLegatura, rezolvaRelativ } from '../../docs/markdown.ts';
 import { Markdown, type Legaturi } from '../../docs/Markdown.tsx';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import type { AducatorDocumentatie } from './aducere.ts';
 import { legaturaDocument, type Deschide } from './legaturi.ts';
 import './documentatie.css';
@@ -35,8 +36,10 @@ export function FilaDocumentatie({ aducator, cale, ancora, deschide }: {
     return () => { viu.current = false; };
   }, [incarca]);
 
-  if (catalog.faza === 'se-incarca') return <p className="admin-mesaj" aria-busy="true">{t('admin.doc.se-incarca')}</p>;
-  if (catalog.faza === 'eroare') return <Eroare motiv={catalog.motiv} reincearca={incarca} />;
+  if (catalog.faza === 'se-incarca') return <SeIncarca text={t('admin.doc.se-incarca')} />;
+  if (catalog.faza === 'eroare') {
+    return <EroareCitire text={t('admin.doc.esec', { motiv: catalog.motiv })} motiv={catalog.motiv} reincarca={incarca} atribute={{ 'data-documentatie': 'eroare' }} />;
+  }
   return <Navigator c={catalog.c} aducator={aducator} cale={cale} ancora={ancora} deschide={deschide} />;
 }
 

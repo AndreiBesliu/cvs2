@@ -18,6 +18,7 @@ import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../mo
 import { partiDegrupare } from '../model/degrupare.ts';
 import { grupDin, type ParteGrupata } from '../model/grupare.ts';
 import { comenziGrupuriPanouri } from '../model/grupuriPanouri.ts';
+import { comenziTaiePiesa, desprindeSiConverteste, desprindeSiTaie, desprinse } from '../model/taiereSurori.ts';
 import { placutaCoapta } from '../model/placute.ts';
 import { blocText } from '../model/blocText.ts';
 // Judecata literelor plăcuțelor (v23) se înregistrează în ușă la import: acțiunile o cer pe documentul de după.
@@ -37,7 +38,7 @@ import {
   comandaDuplicareLegata, comenziCopii, comenziDesprinde, folosiri as folosiriPieselor, INCA_MAXIM, instantePiesei, planCopii,
 } from '../model/pieseLegate.ts';
 import { aplica } from '../geom/matrice.ts';
-import { comenziAsezare, distantaMinima, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
+import { comenziAsezare, distantaPropusa, planAsezare, type OptiuniAsezare } from '../model/asezare.ts';
 import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
@@ -1176,6 +1177,15 @@ function judecaReparatia(h: Istoric, r: ReparatieCalculata, idFoaie: string | un
  */
 type ComandaTaiere = { readonly ok: true; readonly comanda: Comanda; readonly ids?: readonly string[] } | { readonly ok: false; readonly motiv: CheieSimpla };
 let ultimaTaiere: { readonly doc: Document; readonly t: TaiereCalculata; readonly foaie: string | undefined; readonly rez: ComandaTaiere } | null = null;
+/**
+ * Documentul de calcul pentru «Desprinde și taie» / «Desprinde și convertește» (felia 10.3↑m): instanțele `ids` ale foii,
+ * desprinse. Stă aici, cu acțiunile, ca desprinderea (și plăcuțele ei) să nu iasă din bucata lor (`actiuniExportCalcul.ts` o
+ * aduce la cerere).
+ */
+export function documentDesprins(doc: Document, idFoaie: string, ids: readonly string[]): Document {
+  return desprinse(doc, idFoaie, ids);
+}
+
 export function comandaTaiere(h: Istoric, t: TaiereCalculata, idFoaie?: string): ComandaTaiere {
   if (ultimaTaiere && ultimaTaiere.doc === h.doc && ultimaTaiere.t === t && ultimaTaiere.foaie === idFoaie) return ultimaTaiere.rez;
   const rez = judecaTaierea(h, t, idFoaie);
@@ -1199,9 +1209,23 @@ function comandaConversie(h: Istoric, c: ConversieCalculata): ComandaTaiere {
 function judecaConversia(h: Istoric, c: ConversieCalculata): ComandaTaiere {
   if (c.doc !== h.doc) return { ok: false, motiv: 'editare.conversie.motiv.veche' };
   if (c.piese.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
-  const vechi = new Map(h.doc.piese.map((p) => [p.id, p]));
+  // «Desprinde și convertește» (felia 10.3↑m): întâi se desprind instanțele ale căror piese s-au schimbat, apoi piesele lor.
   const comenzi: Comanda[] = [];
-  for (const p of c.piese) {
+  let baza = h.doc;
+  let piese = c.piese;
+  if (c.surori?.mod === 'desprinde') {
+    let x: ReturnType<typeof desprindeSiConverteste>;
+    try {
+      x = desprindeSiConverteste(h.doc, c.surori.desprins, c.surori.foaie, c.surori.alese, c.piese);
+    } catch {
+      return { ok: false, motiv: 'editare.conversie.motiv.veche' };
+    }
+    comenzi.push(...x.comenzi);
+    baza = x.doc;
+    piese = x.piese;
+  }
+  const vechi = new Map(baza.piese.map((p) => [p.id, p]));
+  for (const p of piese) {
     const v = vechi.get(p.id);
     if (!v) return { ok: false, motiv: 'editare.conversie.motiv.veche' };
     comenzi.push({ tip: 'inlocuieste-piesa', vechi: v, nou: p });
@@ -1233,7 +1257,21 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata, idFoaie: string | undefin
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   }
   const foaie = foaieCurenta(h.doc, idFoaie).id;
-  if (t.degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie, degrupate: t.degrupate });
+  // O piesă pusă de mai multe ori (felia 10.3↑m): «Desprinde și taie» desprinde întâi instanțele tăiate (degruparea arată apoi
+  // spre piesele lor); «Taie piesa» pune bucățile în locul fiecărei instanțe a piesei, de pe orice foaie.
+  let degrupate = t.degrupate;
+  try {
+    const baza = comenzi.length === 0 ? h.doc : executa(h, { tip: 'lot', comenzi }).doc;
+    if (t.surori?.mod === 'desprinde' && t.surori.ids.length > 0) {
+      const x = desprindeSiTaie(baza, foaie, t.surori.ids, degrupate);
+      comenzi.push(...x.comenzi);
+      degrupate = x.degrupate;
+    }
+    if (t.surori?.mod === 'piesa') comenzi.push(...comenziTaiePiesa(baza, foaie, degrupate));
+    else if (degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie, degrupate });
+  } catch {
+    return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+  }
   let ids: readonly string[] | undefined;
   if (grupuri.length > 0) {
     let g: ReturnType<typeof comenziGrupuriPanouri>;
@@ -1389,7 +1427,8 @@ function comandaAsezare(ctx: ContextDocument): ComandaCopii {
 
 /**
  * „Mută și așază la capăt”: selecția, pe foaia țintă (null: una nouă), cu alegerile date sau cu cele ținute; omul n-a scris
- * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz).
+ * aici nicio distanță, deci cea ținută urcă, dacă e nevoie, până la freza profilului exterior (regula, nu un refuz), iar cu
+ * urechi până la distanța propusă pentru ele (felia 11.3↑b).
  */
 function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
   const tinta = ctx.foaieTinta?.();
@@ -1398,7 +1437,7 @@ function comandaMutaSiAseaza(ctx: ContextDocument): ComandaCopii {
   const din = foaieCtx(ctx, doc).id;
   if (tinta !== null && (tinta === din || !doc.foi.some((f) => f.id === tinta))) return { ok: false, motiv: 'motiv.aceeasi-foaie' };
   const o = ctx.asezare?.().optiuni ?? optiuniTinute();
-  const d = distantaMinima(doc, ctx.selectie(), din);
+  const d = distantaPropusa(doc, ctx.selectie(), din);
   return comandaPlan(doc, ctx.selectie(), din, { ...o, distantaX: Math.max(o.distantaX, d), distantaY: Math.max(o.distantaY, d) }, tinta);
 }
 

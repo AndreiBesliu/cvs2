@@ -108,7 +108,8 @@ test('owner-ul vede conturile, dă o probă, planul gratuit, dezactivează și r
   await puneRolul(page, await intraCuGoogle(page), 'owner');
   // Filele apar după citirea rolului (asincronă): întâi una vizibilă, apoi lista lor.
   await expect(page.locator('[data-fila="setari"]')).toBeVisible(LENT);
-  expect(await file(page)).toEqual(['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'personal', 'setari', 'cont']);
+  // Bara laterală (ADR 0260): Azi, apoi grupurile (Probleme, Produs, Clienți, Echipa) și Contul meu la capăt.
+  expect(await file(page)).toEqual(['azi', 'erori', 'tichete', 'diagnoza', 'sugestii', 'roadmap', 'documentatie', 'utilizatori', 'personal', 'setari', 'cont']);
   await page.locator('[data-fila="utilizatori"]').click();
 
   // Cele mai noi întâi; planul de acum: proba lui Bob a trecut.
@@ -178,7 +179,9 @@ test('un rol care doar citește conturile vede fila Utilizatori, fără schimbar
   await deschide(page);
   await puneRolul(page, await intraCuGoogle(page), CONT_CIT);
   await expect(page.locator('[data-admin="cont"]')).toContainText('Conturi', LENT);
-  expect(await file(page)).toEqual(['utilizatori', 'cont']);
+  // Citirea conturilor dă și cifra conturilor noi în fila Azi (ADR 0260), deschisă întâi.
+  expect(await file(page)).toEqual(['azi', 'utilizatori', 'cont']);
+  await page.locator('[data-fila="utilizatori"]').click();
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'proba', LENT);
   await expect(page.locator('[data-util="schimba"]')).toHaveCount(0);
   await expect(page.locator('.util .pers-sectiune > p.admin-slab').first()).toHaveText('Cele mai noi conturi întâi. Rolul tău le citește, fără să schimbe planuri.');

@@ -163,9 +163,21 @@ test('locașul: gaura se scrie din rând; fără ea (buzunar), câmpul pleacă; 
   assert.ok(scrisBuzunar.incrustatie?.fel === 'drept' && !Object.hasOwn(scrisBuzunar.incrustatie, 'locas'));
 });
 
-test('treapta (12.1↑f-2) și un câmp necunoscut rămân în incrustație, oricare ar fi locașul ales', () => {
-  const cu = dreptV25({ treapta: { adancime: 3, latime: 5 }, notaAtelier: 'x' });
-  const scrisa = operatieDinDialog(cu, randul({ ...BAZA, sprijin: 'fata', locas: 'gaura' }), scula);
-  assert.ok(scrisa.incrustatie?.fel === 'drept');
-  assert.deepEqual([scrisa.incrustatie.treapta, scrisa.incrustatie['notaAtelier'], scrisa.incrustatie.locas], [{ adancime: 3, latime: 5 }, 'x', 'gaura']);
+const treaptaScrisa = (o: Operatie): unknown => (o.incrustatie?.fel === 'drept' ? o.incrustatie.treapta ?? null : 'fara incrustatie');
+
+test('treapta (12.1↑f-2) e a rândului: scrisă din el, îmbinată peste cea veche (un câmp necunoscut rămâne); fără ea, pleacă', () => {
+  const cu = dreptV25({ treapta: { adancime: 3, latime: 5, notaUmar: 'falț' }, notaAtelier: 'x' });
+  // Rândul cu altă treaptă, spre exterior: valorile lui; câmpul necunoscut al treptei rămâne, ca și al incrustației.
+  const exterior = operatieDinDialog(cu, randul({ ...BAZA, sprijin: 'umar', treapta: { adancime: 2, latime: 4, spre: 'exterior' } }), scula);
+  assert.ok(exterior.incrustatie?.fel === 'drept');
+  assert.deepEqual([exterior.incrustatie.treapta, exterior.incrustatie['notaAtelier']], [{ adancime: 2, latime: 4, notaUmar: 'falț', spre: 'exterior' }, 'x']);
+  // Înapoi spre interior: „spre” pleacă (lipsa e spre interior), oricât ar fi scris înainte.
+  const interior = operatieDinDialog(exterior, randul({ ...BAZA, sprijin: 'umar', treapta: { adancime: 2, latime: 4 } }), scula);
+  assert.deepEqual(treaptaScrisa(interior), { adancime: 2, latime: 4, notaUmar: 'falț' });
+  // Fără treaptă în rând, câmpul pleacă; cu aceleași valori, operația e aceeași (Exportă fără schimbare nu scrie o comandă).
+  assert.equal(treaptaScrisa(operatieDinDialog(cu, randul({ ...BAZA }), scula)), null);
+  assert.deepEqual(operatieDinDialog(interior, randul({ ...BAZA, sprijin: 'umar', treapta: { adancime: 2, latime: 4 } }), scula), interior);
+  // Gaura și treapta, împreună.
+  const ambele = operatieDinDialog(cu, randul({ ...BAZA, sprijin: 'umar', locas: 'gaura', treapta: { adancime: 3, latime: 5 } }), scula);
+  assert.deepEqual([locasScris(ambele), treaptaScrisa(ambele)], ['gaura', { adancime: 3, latime: 5, notaUmar: 'falț' }]);
 });

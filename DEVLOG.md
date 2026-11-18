@@ -9621,6 +9621,87 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   tutorialul, 51 / 51; totalul 716,0 / 800 kB (felia +0,4), pornirea 106,6 / 115 (cu ușa 110,6); canalul republicat,
   amprenta `6e62d40c5e55`.
 
+## 2026-11-17 — Felia 10.3↑m: piesele puse de mai multe ori, la tăiere și la conversie (ADR 0180) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, cu recomandările” (owner-ul, în sesiunea liniei `taiere`, după explicația punctului 2: ambele opțiuni,
+«Desprinde și taie» principal, refuzul când tăieturile diferă, la Convertește întrebarea). **Started:** 17.11, 19:17.
+**Completed:** 17.11, 22:29.
+
+- **Ramura** `wip/10.3m-surori`, din vârful lui 10.3↑l (`e17a352`, încă neunită: ca unirile să nu se ciocnească; unirea ei aduce
+  și 10.3↑l); `origin/main` `9361c83` (3.6t, 28.1↑b, probele instabile) unit în `b235424` (ciocnirea, doar în DEVLOG).
+- **Workerul** (`taiere.ts`, `conversie.ts`): fără alegere, tăierea și conversia unei piese puse de mai multe ori se refuză
+  (`impartita`; la conversie, în locul saltului numărat); «Taie piesa» (`surori: 'piesa'`, doar la `CUTITE_PIESA`), cu
+  refuzurile `diferite` (amprenta bucăților în desenul piesei, fără ordine) și `placute`; «Convertește piesa», piesa în locul
+  ei, o singură dată.
+- **Firul principal** (`taiereSurori.ts`, `surori.ts`): desprinderea doar a instanțelor schimbate (`desprindeSiTaie`,
+  `desprindeSiConverteste`) și bucățile pe toate instanțele, de pe orice foaie (`comenziTaiePiesa`: pleacă cele de pe celelalte
+  foi, degruparea foii de lucru, bucățile în locul lor); acțiunile `document.taie` și `document.converteste` le pun în același
+  pas.
+- **Calculul și interfața:** întrebarea doar la refuzul `impartita`, apoi calculul reia (`actiuniExportCalcul.ts`); banda din
+  capul pânzei (`IntrebareSurori.tsx`, la cerere), „Ține minte alegerea” (`intrebareSurori.ts`) și rândul „Piese puse de mai
+  multe ori” din opțiunile tăierii și din panoul conversiei; panoul care a cerut spune „Alege sus”; toate ușile (panoul Taie,
+  Cuțitul, panourile, meniul de intersecții, „Desparte”, Convertește). Manualul (ro, en), textele (ro, en).
+- **Treceri:** (1) e2e: «+1» pune pătratul pe foaia 2 (pe 300 × 200 nu încape alături), deci proba a luat cazul cu două foi;
+  «Încă…» pornește rândul de la cutia piesei și coboară, deci pătratul de la Y = 0 se vărsa pe foaia 2: pe o foaie mare, la
+  (100, 100); (2) otrăvurile: opt scăpate la prima rulare; șase probe noi pe hârtie (o formă pusă o dată printre cele alese,
+  tăiată doar a doua aleasă, plăcuțele la conversie, o a doua piesă cu surori neschimbată) și proba e2e a retezatului; T08
+  (rotunjirea amprentei) și W04 (aruncarea la anulare), echivalente: codul lor, scos; Q03, nevalidă (un `else` rămas), reparată;
+  (3) căutând zgomotul pentru T08: o soră rotită cu 180° și tăiată în același loc al piesei dă bucățile în ordine inversă și era
+  refuzată greșit (`diferite`): amprenta, fără ordine, cu proba ei (și otrava T09); (4) mărimea: prima variantă dădea +6,1 kB (o
+  bucată comună nouă): legăturile mutate, +4,4 cu 10.3↑l.
+- **Otrăvurile** (`test/otravuri/10.3m.py`, e2e în `surori.spec.ts`): 39 / 39 prinse, în clona din afara Drive-ului; la prima
+  rulare (`3f12ed0`, 40), 30 prinse, 8 scăpate, Q03 nevalidă.
+- **Porțile:** întregi pe unirea cu `main` (`b235424`): traducerile, cele trei compilatoare, importurile, licențele, unit 9 485
+  (9 477 trecute, 8 sărite, 0 căderi), build-ul determinist (334 de fișiere identice), e2e 510 / 511 (`pwa.spec.ts:491`,
+  progresul unei actualizări care cade, căzută din timp sub încărcare; singură, `pwa.spec.ts` 17 / 17), emulatoarele 101 / 101
+  și 21 / 21; apoi, pe ce ating legăturile mutate pentru mărime (`a710b3b`): traducerile, compilatorul, importurile, unit-urile
+  tăierii, conversiei, acțiunilor, importului și documentelor 400 / 400, build-ul determinist (331 de fișiere identice), e2e
+  `surori`, `taiere`, `cutit`, `conversie`, `asezare`, `piese-legate` și `manual` 52 / 52.
+- **Mărimea:** pornirea neschimbată (106,6 kB; cu ușa 110,6 / 115), totalul +4,4 kB cu 10.3↑l (715,7 → 720,1 / 800, A/B în
+  clonă, pe `main` `9361c83`; 10.3↑l, +0,7 pe `4b52fc3`), deci felia ~+3,7: banda (la cerere), întrebarea și alegerea ținută,
+  comenzile pe firul principal, textele. Prima variantă dădea +6,1: calculul importa desprinderea (cu plăcuțele) și
+  `CUTITE_PIESA` din `taiere.ts`, iar modulele pieselor legate și `model/noduri.ts` ieșeau într-o bucată comună; acum calculul
+  ia din `surori.ts` (ușor) doar cine are surori și cuțitele, iar desprinderea o aduce prin calculul acțiunilor, la cerere.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 17.12), pe `a710b3b`,
+  verificat (ro, en: banda la tăiere și la conversie, «Taie piesa» pe două foi, Anulează; nicio eroare în consolă).
+
+## 2026-11-17 — Felia 11.3↑b: avertismentul urechilor la așezare (ADR 0210) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑b? Răspunde „Da, 11.3↑b” sau „Mai târziu”.”: „Da, 11.3↑b”.
+**Started:** 17.11, 13:29.
+
+- **Ramura:** `main` `e38ca72` (28.1↑b unită, probele instabile reparate) a venit prin avans direct, peste 11.7↑ unită.
+- **Regula** (`src/model/distantaPiese.ts`, nou): cu urechi pe un profil exterior, distanța propusă dintre piese e
+  2 × freza + 3 mm, rotunjită în sus la milimetru (10 cu Ø3,175, ca pe placa 11; 9 cu Ø3; 15 cu Ø6). Sub 2 × freza,
+  tăieturile vecine se unesc și urechile dinspre vecini nu mai țin (placa 11: 9 din 15 plăcuțe cad la 5 mm). ADR-ul spunea
+  +1; cu el ar fi rămas 1,65 mm de lemn între tăieturi, cu +3 rămân 3,65, cât folosește placa. `frezaExterioara` s-a mutat
+  aici din `asezare.ts`, ca așezarea și copiile să aibă aceeași regulă fără un ciclu de importuri.
+- **«Așază pe foi»** (`DialogAsezare.tsx`): distanța pornește de la propunere; sub rândul minimului, nota „cu urechi, 10 mm:
+  între tăieturile vecine rămâne lemnul de care se țin urechile”; sub propunere, nota devine avertismentul (culoarea
+  avertismentelor; contrastul 5,7 pe tema luminoasă, 7,6 pe cea întunecată), iar Așază rămâne pornit; sub freză, refuzul de
+  până acum. Minimul se scrie acum cu virgula zecimală în română (3,175).
+- **«Din CSV…»** (`DialogCsv.tsx`): distanța ținută urcă singură la propunere; sub ea, scrisă la „Schimbă…”, avertismentul.
+- **«Încă…», «+1»** (`distantaCopii`) și **„Mută și așază la capăt”** (`actiuniDocumentCalcul.ts`): nu întreabă distanța,
+  deci urcă singură la propunere.
+- **Probele:** `asezare.urechi.test.ts` (5: regula pe hârtie, urechile doar pe profilul exterior, distanța propusă, pragul
+  avertismentului, placa 11 refăcută din distanța propusă), copiile cu urechi (`pieseLegate.test.ts`), „Mută și așază” cu
+  urechi (`asezare.actiuni.test.ts`); e2e: Ø3,175 în «Așază pe foi» (proiect v10 pus în baza aplicației, deschis prin
+  migrare) și Ø6 în «Din CSV…» (rama cu urechi din fereastra exportului; literele săpate în V, altfel exportul se oprește la
+  golurile lui „Ana”).
+- **Otrăvurile** `test/otravuri/11.3b.py`: 21 / 21 la prima rulare (`0a9ab92`, clona `m113b`, ștearsă după rulare): 14 unitare
+  și 7 prin e2e. `lot 0 20` lăsa pe dinafară ultima otravă (E07): rulată separat. Două gărzi au ieșit din cod la alegerea
+  listei: −1e-9 la rotunjire și „propunerea peste minim” la avertisment (nicio otravă nu le putea prinde).
+- **Documentele:** ADR 0210 (alegerea „a”, cu +3, și secțiunea feliei), indexul ADR-urilor, manualul (ro, en: „Așază pe
+  foi”, „Mută și așază”, «Încă…», «Din CSV…»), fișa plăcii 11 (aplicația propune singură distanța 10), `CLAUDE.md`,
+  `etapa-03.md` și traducerea rândului, `otravuri.md`.
+- **Porțile:** tsc ×3, importurile 20 / 0, traducerile 796 / 0, unitare 9 466 (9 458 trec, 0 căzute, 8 sărite), build-ul determinist (329 de fișiere identice; pornirea 106,6 kB, cu ușa 110,6 / 115, neschimbată față de `main` `e38ca72`; totalul 711,0 / 800, +0,2 kB). E2e-ul complet: 489 / 504 la prima rulare, cu 15 căderi din timp (paleta neapărută în 5 s, „ERR_ABORTED / frame was detached”); rulate apoi singure, 14 trec, iar `pwa.spec.ts:432` (progresul la prima vizită) cade și pe `main` `e38ca72`, alternat cu ramura: câte 2 din 9 rulări pe fiecare (procentul se mută între cele două citiri ale probei).
+- **`main` `ae5a13c`** (10.3↑l, 25.3↑e, 3.6t) unit în `abad0d6`; ciocnirea, doar în DEVLOG. Pe unire: tsc ×3, importurile,
+  traducerile 803 / 0, unitare 9 497 (9 489 trec, 0 căzute, 8 sărite), build-ul determinist (330 de fișiere identice;
+  pornirea 106,6 kB, cu ușa 110,6 / 115; totalul 716,9 / 800) și e2e-urile așezării, plăcuțelor și tăierii, 25 / 25.
+- **Canalul `plansele`**, republicat din vârful ramurii.
+
+**Completed:** 17.11, 20:36.
+
 ## 2026-11-17 — Felia 28.1↑c: Atelierul pe Proiectare, adus la cerere (ADR 0250 §1, §3, §5, §7) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, 28.1↑c” (owner-ul, la „Pornesc 28.1↑c (Atelier, adus la cerere)?”). **Started:** 17.11 13:28.
@@ -9656,6 +9737,127 @@ propunerea, fără cod.” (sesiunea principală, după unirea lui 25.3↑d în 
   800; bucata Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
 - **Documentele:** ADR 0250 („Implementarea”), fișa etapei 3 (jurnalul), CLAUDE.md (starea), manualul (capitolul
   „Atelierul”), testul din aplicație (pasul nou), lista otrăvurilor și rândul ei, DEVLOG.
+
+## 2026-11-17 — Felia 12.1↑f-2: treptele incrustației cu pereți drepți (ADR 0175 §3–§6) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale, după unirea lui 12.1↑f: „12.1↑f e în `main`: unirea `d2ef229` (exact `ca0fd4a`), cu
+planșele 11.7↑ peste ea și CLAUDE.md (regula: un câmp nou ia v26), `main` împins la `4b52fc3`. […] Felia următoare, 12.1↑f-2
+(treptele), e în planul tău: adu `origin/main` și continuă; 12.1↑e rămâne la cuvântul owner-ului.” Deciziile sunt ale ADR 0175,
+acceptat cu „Da, cu recomandările” (16.11).
+**Started:** 17.11, 11:16. **Completed:** 18.11, 08:45.
+
+- **`main` în ramură:** `4b52fc3` adus prin fast-forward (ramura era la `ca0fd4a`, deja unită în `d2ef229`).
+- **Proba întâi:** oracolul pereților drepți primește două niveluri (`masoaraPotrivireaTrepte`, fără importuri din `src/`):
+  jocul pe fiecare nivel cu partea lui de dop (nivelul de sus cu flanșa, deschiderea cu tija), interferența, reazemul (flanșa
+  trece de deschidere, deci stă pe umăr), umărul, fundul, tija și înălțimea dopului, pereții pe hârtie pe fiecare nivel. Zece
+  cazuri pe hârtie (`incrustatieDreapta.trepte.cazuri.ts`): exemplul din ADR (40 × 30, Ø6, d 3, s 5, D 8) pe umăr, pe fund și
+  decupat; spre exterior; steaua din prag (s 1: vârful deschiderii se retrage 5,715, unghiul intrând 0,919 spre centru); inelul
+  (litera cu gol); L-ul nesimetric; L-ul decupat cu freza de rest; gaura; fereastra (gaura spre exterior, decupată). Rulată
+  înaintea codului: toate refuzate („vine în felia 12.1↑f-2”).
+- **ADR 0175, precizarea din 17.11 (pe hârtie, fără decizii noi):** pe fund, tija D − d + g și flanșa d − g + H („D − d” din
+  ADR n-ar fi lăsat g deasupra umărului); g, cel puțin 0,1, sub D − d pe umăr, sub d pe fund, nefolosit la gaură; cu treaptă,
+  „pe față” refuzat, iar sprijinul contează și la dopul decupat; semifabricatul spre exterior e cutia lărgită cu s; tăierea
+  dopului în trepte; deschiderea care dispare; avertismentele de pe nivelul care urmează desenul; treapta spre exterior lângă
+  margine, ca orice tăietură (confirmarea ieșirii din foaie).
+- **Codul (``18210e4`, apoi `f01833f`, din otrava T19`):**
+  - valorile pe hârtie: treapta (d, s, încotro), tija și flanșa după sprijin;
+  - refuzurile noi, cu motiv, iar cele vechi „vine în felia 12.1↑f-2” au plecat;
+  - figura: `nivelDreapta`, câte un nivel potrivit ca locașul simplu; spre interior, deschiderea e desenul micșorat cu s, spre
+    exterior, nivelul de sus e desenul lărgit cu s;
+  - lucrarea: nivelul de sus până la d, apoi deschiderea de la d la D, cu trecerile pornite de sub umăr;
+  - dopul (`dopInTrepte`), mereu oglindit, cu tija în sus: buzunarul din jurul tijei, apoi fața coborâtă în jurul flanșei
+    (ridicat) sau flanșa decupată cu punți (decupat). Decuparea cu punți e o singură funcție, `decupareCuPunti`, comună cu
+    dopul decupat simplu (până acum scrisă de două ori);
+  - fereastra: „Treapta”, adâncimea și lățimea umărului (implicit jumătate din locaș și 3 mm); „Se sprijină” cu „pe umăr”
+    doar la treaptă și „pe față” doar fără ea, sprijinul mutat odată cu treapta și cu gaura; jocul g, „de sub tijă” sau „de
+    deasupra umărului”; cheia rândurilor legate ia și locașul, treapta și punțile;
+  - scrierea: treapta e a rândului, îmbinată peste cea veche, cu „spre” doar spre exterior;
+  - panoul, pe hârtie și la operație: treapta, tija și flanșa;
+  - manualul (ro, en); mesajul câmpurilor greșite pomenește umărul.
+- **Găsit pe oracol:** buzunarul din jurul tijei, pe flanșa lărgită doar cu raza frezei plus 0,5, lăsa la un umăr îngust un
+  canal cât freza (s + R + 0,5 = 3 la Ø3 și s = 1). Pe L și pe stea, deschiderea ieșea cu jocul 0,078 sau cu interferență. Cu
+  diametrul în loc de rază, toate zece trec.
+- **Probele:** `incrustatieDreapta.trepte.test.ts`, 14: cele zece cazuri pe oracol; controlul negativ (același dop al L-ului,
+  oglindit înapoi în program, deci neoglindit, pică; oglindit de două ori, se potrivește iar); refuzurile (inclusiv o fâșie
+  fără deschidere lângă un dreptunghi întreg și flanșa cât punțile); valorile pe hârtie; avertismentele colțurilor. Scrierea
+  treptei (proba veche, „treapta rămâne”, a devenit „treapta e a rândului”). Două e2e noi: exportul cu treaptă pe oracol (cu
+  întoarcerea la „fără”, care mută sprijinul de pe umăr) și câmpul greșit, spre exterior scris și citit înapoi, gaura în trepte
+  cu sprijinul mutat pe umăr.
+- **Porțile:** compilatoarele ×3, importurile (20 / 0, 1 247 de module), licențele, traducerile (792, 0 lipsă). Unit 9 473 pe codul final (`f01833f`): 9 464 / 1; căderea e o probă de timp fără legătură (`svg.test.ts`, „bugetul includerilor… repede”, 21,2 s sub încărcare), singură 29 / 29 (4,0 s). Build determinist: 327 de fișiere identice; pornirea 106,3, cu ușa 110,3 / 115; totalul 711,9 / 800. E2e 498 pe `18210e4`, cu mașina la 91 % CPU din celelalte worktree-uri (52 de procese node): 461 din prima (5,9 min, 3 lucrători), 19 căzute din timp (bara de editare sau paleta nevăzute în 5 s după pornire, în 19 fișiere fără legătură cu incrustațiile) și 18 nerulate după ele; cele 19 fișiere, reluate cu un lucrător: 142 / 142 (8,3 min). Spec-ul pereților drepți: 8 / 8.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1f-2.py`, 50: valorile T01–T04, refuzurile T05–T14, figura T15–T20, lucrarea T21–T23, dopul T24–T34, scrierea T35–T37, fereastra și panoul T38–T51, prin e2e. T31 a fost retrasă înainte de rulare: decuparea e comună, deci era chiar 12.1b P07. Prima rulare (`18210e4`): 49 / 50 prinse, fiecare de proba ei; cele e2e, de cele două probe noi ale treptei, nu din timp. T19 („deschiderea dispărută cu totul, primită”) a scăpat: condiția `ingust.regiuni.length === 0` era moartă, fiindcă offsetul care golește tot întoarce deja `ok: false`. Condiția e scoasă din cod, iar T19 retrasă (`f01833f`). Reorientate pe liniile mutate (indentarea din `decupareCuPunti` și `nivelDreapta`, liniile atinse de treaptă) și prinse, toate 20: 12.1 R08; 12.1b D04, F01, F05, R06, P07, P11, E08; 12.1b-2 B06, B07, B08, B16; 12.1c U06; 12.1f H10, H12, H16, H17, H18, H20, H25. Retrase: 12.1f H14, H15 (refuzurile „vine în felia 12.1↑f-2”, scoase de felie; țintele noi sunt T05–T14). Celelalte liste ale repo-ului: niciun VOID nou, comparate otravă cu otravă cu fișierele din HEAD (99 de liste).
+- **Mărimea:** felia, față de `4b52fc3`, cu același script în ambii arbori: totalul 709,5 → 711,9 / 800 kB (+2,4: lucrătorul CAM +1,6, fereastra exportului +0,6, panoul +0,15, modelul incrustației +0,1); pornirea 106,3 și ușa 110,3 / 115, neschimbate. Datele în afara JavaScript-ului: mesajele exportului +1,0 kB, ale carcasei +0,2, manualul +0,8 pe limbă.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 17.12), build-ul `f01833f` (versiunea `f01833f6e765`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi cu „straight-walled inlay”, rândul are „Step: none / inward / outward”, fără câmpurile umărului. „Inward” arată „Shoulder depth” 1,5 (jumătate din 3) și „Shoulder width” 3, mută sprijinul pe „the shoulder” (opțiunile: the shoulder / the pocket floor) și arată „Gap under the stem” 0,5 și „Saw gap” 2; pe fund, jocul devine „Gap above the shoulder”. Cu gaura, sprijinul trece pe umăr (singura opțiune), iar adâncimea rândului e 18, oprită, fără jocul g. Fără treaptă, la gaură, rămâne doar „the board face”. Înapoi pe buzunar, cu „outward”, sprijinul e pe umăr, iar valorile umărului s-au păstrat. Nimic nu e marcat greșit, Exportă e pornit. Fereastra închisă fără export, foaia golită, 0 erori în jurnalul local și în consolă.
+- **Reluarea și unirea (18.11):** procesul sesiunii s-a oprit pe 17.11 la 22:17, în timp ce scria documentele. Reluat la „Try again” al owner-ului, apoi la cererea sesiunii principale („neata! poti sa repornesti toate worktrees”, transmis: „adu `main` (`ae5a13c4`) în ramură”). Starea: cele patru documente scrise întregi (DEVLOG, fișa, registrul, traducerile), confirmate în `8384d56`; niciun proces și niciun port rămas. `main` `ae5a13c` (28.1↑b, probele instabile, 3.6t, proba de viteză a luminii reparată, 10.3↑l, 25.3↑e) unit în `d48ad64`. Conflictele, doar de adăugare, în documente, cu ambele părți păstrate: DEVLOG (al lui `main`, cu intrarea aceasta la capăt), registrul otrăvurilor (rândul 10.3l al lui `main` lângă rândurile cu notele), traducerile roadmap-ului (ale lui `main`, regenerate, plus cele două ale rândului acestuia). Codul s-a unit fără conflicte. Porțile pe ramura unită: compilatoarele ×3, importurile (20 / 0, 1 255 de module), licențele, traducerile (803, 0 lipsă); unit 9 504: 9 495 / 1, căderea fiind o probă de timp a raportorului (120 ms pentru 10 erori, sub încărcare), singură 51 / 51; build determinist (330 de fișiere identice; pornirea 106,6, cu ușa 110,6 / 115; totalul 719,1 / 800); e2e 509: 498 din prima (5,3 min), iar cele 11 căzute din timp, în 10 fișiere fără legătură cu incrustațiile, reluate cu un lucrător, 99 / 99. Listele de otrăvuri ale liniei, fără niciun VOID după unire. În listele altor linii, 7 VOID-uri venite odată cu `main`, pe fișiere pe care felia nu le atinge (identice cu `main`): 10.3j M06, M12; 25.2 E05; 25.3b F01; 25.3c J01, A04; 3.6o K17. Canalul `incrustatii`, republicat cu build-ul `d48ad64` (versiunea `d48ad64623af`, până pe 18.12), verificat în browserul aplicației, fără export: treapta spre interior mută sprijinul pe umăr (umăr / fund), cu jocul de sub tijă 0,5 și umărul 1,5 × 3; foaia golită, 0 erori în jurnalul local și în consolă.
+
+## 2026-11-17 — Felia 25.6↑ pornită: imaginile TIFF (ADR 0229, acceptat cu recomandările) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa mergi inainte si testez la final” (owner-ul, în sesiunea liniei trasării, după 25.3↑e).
+**Started:** 17.11, 19:49. **Completed:** 18.11, 08:12.
+
+- **Ramura** la `19b0faf3` (25.3↑e, cu `origin/main` `b6aaa548` adus).
+- **Felia** (`9a6d6b56`): `src/trasare/tiff.ts` și `src/trasare/ccitt.ts` (pure); calculul citește un TIFF cu ele
+  (pagina, DPI-ul paginii, reducerea); ușa (DPI-ul din etichete, refuzurile `tiff` și `tiff-stricat`, paginile în
+  raport); fereastra (alegerea paginii, textele); manualul; `.gitattributes` (TIFF binar); fixturile Windows.
+- **Probele, întâi:** 10 ale cititorului (16 fișiere WIC / GDI+, exact pixelii lui WIC; fișiere scrise de mână cu
+  valorile pe hârtie), una a ușii, una e2e.
+- **Previzualizarea** (`8dfa3190`): vectorii unui TIFF stăteau pe alb (browserul nu decodează TIFF); workerul trimite
+  pagina, redusă sub 1 Mpx.
+- **Otrăvurile** (`test/otravuri/25.6.py`): 41 / 41, fiecare pe proba ei (30 unitare ale cititorului, 8 ale ușii, 4 prin
+  e2e); la prima rulare (`9a6d6b56`), 36 / 38: C10 (fără a treia santinelă a referinței CCITT) a cerut o probă pe date
+  stricate, iar T02 (LZW, KwKwK) era echivalent, deci ramura a ieșit (`8dfa3190`); U07, U08 și W04 păzesc
+  previzualizarea, adăugată după.
+- Sesiunea s-a întrerupt în timpul otrăvurilor; reluată pe 18.11: arborele curat, otrăvurile încheiate (toate prinse).
+- **`main` adus** (`ddfc3c00`, de la `ae5a13c4`: 25.3↑e unită, 10.3↑l, proba de viteză a luminii), fără ciocniri;
+  porțile din nou: tipuri (3), importuri, licențe, traduceri (0); unitare 9 502 (9 494 trecute, 8 sărite, 0 căzute);
+  e2e-urile trasării, importului și tutorialul 52 / 52 (gruparea DXF, căzută o dată din timp, a trecut singură); totalul
+  722,1 / 800 kB (+5,4), pornirea 106,6 / 115 (cu ușa 110,6). O scanare A4 la 600 dpi (35 Mpx): G4 0,7–1,1 s, LZW ~1 s.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 18.12), amprenta
+  `ddfc3c006a80`.
+
+## 2026-11-17 — Felia A.1: carcasa adminului, fila Azi, intrarea și stările goale (ADR 0260) (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, ia-le la rand” (owner-ul, pe 17.11, la lista sesiunii principale, al cărei punct 6 era linia adminului),
+apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
+`C:\Users\besli\cncvs2-lucru\unelte\brief-admin.md`. Reluată pe 18.11 la „neata! poti sa repornesti toate worktrees”
+(owner-ul, transmis de sesiunea principală), după oprirea procesului în noaptea de 17.11, cât rulau porțile și otrăvurile.
+**Started:** 17.11 19:26.
+
+- **Ramura:** `wip/A.1-admin`, din `origin/main` `b6aaa548`, în worktree-ul `C:\Users\besli\cncvs2-lucru\admin` (e2e pe
+  4191, rețeaua `127.0.44`; emulatoarele pe porturile comune, doar cu 4173 liber); `main` `ae5a13c4` adus pe 18.11
+  (`7716d708`, fără conflicte).
+- **Planul:** probele și otrăvurile întâi (`test/unit/admin.carcasa.test.ts`, `test/e2e-emulator/azi.emulator.spec.ts`,
+  `test/otravuri/A.1.py`), apoi carcasa (bara laterală grupată cu numerele și punctul Diagnozei, insigna instanței,
+  căutarea în ce s-a citit, meniul contului), fila Azi (cifrele, joburile, „Ce așteaptă de la tine”, ultimele
+  întâmplări) și ideea 76 (intrarea și „fără rol” în card, lista goală cu semnul și ultima rezolvare, eroarea citirii cu
+  „Deschide Diagnoza”, rândurile schițate), fără reguli, permisiuni sau date noi.
+- **Codul** (`38a0da44`): `src/admin/carcasa/` (`date.ts` pur: bara, părțile filei Azi pe rol, fila deschisă, insigna,
+  punctul, întâmplările din audit, căutarea, ultima rezolvare; `stari.tsx`: contextul carcasei, `LegaturaFila`,
+  `SeIncarca`, `ListaGoala`, `EroareCitire`; `sumar.ts`: numărătorile la intrare; `Cautare.tsx`),
+  `src/admin/azi/FilaAzi.tsx`, `PaginaAdmin.tsx` rescrisă (antetul, cardurile, `CarcasaAdmin`, meniul contului),
+  `masoaraDiagnoza` scoasă din fila Diagnoză, stările comune în toate filele, `rezolvatLa` în rândul tichetului.
+- **Bancul vizual** (local, pe emulatoare, capturi la 1440, 1024, 600 px, în ambele teme): găsite și reparate înainte de
+  commit lățimea conținutului (`main { max-width: 48rem }` din `stil.css` lovea `<main>`-ul nou), rândurile lungi din „Ce
+  așteaptă” (tăiate la două rânduri) și „Ieși” centrat în meniu.
+- **Oprirea din noaptea de 17.11** (procesul a ieșit cu 3221226505 cât rulau porțile și otrăvurile; rezultatele lor s-au
+  pierdut): pe 18.11, `main` `ae5a13c4` adus (`7716d708`, fără conflicte; intrarea mea din DEVLOG pusă la loc la noul
+  capăt), apoi toate porțile și otrăvurile de la capăt.
+- **Porțile pe `7716d708`:** traduceri, tipuri (aplicația, funcțiile), importuri, licențe; unitare 9 504 (9 496 trecute,
+  8 sărite, 0 căzute); build determinist identic; e2e 506 / 507, căzută `extensii.masina.spec.ts:84` („pierdut” în loc de
+  „pregatit”), și la reluarea singură; A/B alternat cu un build curat al lui `ae5a13c4` (4192): 4 / 4 de trei ori pe
+  fiecare (și la procesorul 62–68 %), deci instabilitatea cunoscută din 17.11, nu felia. **Emulatoarele au găsit trei
+  probleme ale feliei**, reparate în `de069700`: sonda funcțiilor (apelul fără App Check, refuzat cu 401, scris de browser
+  în consolă) făcută la fiecare intrare (acum doar în fila Diagnoză; `functii` opțională în `verificari`); titlurile
+  grupurilor barei cu `data-grup`, atributul rândurilor din fila Erori (acum `data-grup-bara`); bara derulată orizontal pe
+  telefon, cu legături în afara ecranului (acum pe rânduri).
+- **Pe `de069700`:** emulatoarele 101 / 101 funcții și 26 / 26 pagini; tipurile, importurile, unitarele adminului,
+  traducerile; build determinist identic; e2e-ul `/admin` 3 / 3.
+- **Otrăvurile:** 40 / 40 prinse (24 unitare; 16 pe emulatoare, printr-o buclă locală în `emulators:exec` care refolosește
+  `scripts/otravuri.py`), controlul verde, fiecare căzută pe aserțiunea care îi țintește defectul.
+- **Mărimea**, față de un build curat al lui `ae5a13c4`: `/admin` 106,5 → 112,2 / 200 kB (+5,7 din cei +25 ai liniei);
+  pornirea 106,6 (cu ușa 110,6 / 115) și totalul 716,7 / 800 neschimbate.
+- **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Aa`: regula id-urilor fișei nu primește `A.1`) cu
+  traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
+  **Completed:** 18.11 12:10.
 
 ## 2026-11-18 — Felia 28.1↑d: tăierea din butoane mari în Atelier și „Trimite la mașină” (ADR 0250) (Model: Claude Opus 5.5)
 

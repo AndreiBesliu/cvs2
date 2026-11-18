@@ -109,10 +109,25 @@ export type ValoriIncrustatieDreapta = {
   /** Colțurile dopului: vârfurile max(0, rLocas − c), unghiurile rho + c. */
   readonly varfDop: number; readonly unghiDop: number;
   readonly c: number;
-  /** Înălțimea dopului: D + H pe fund sau decupat, D − g pe față (la gaură, D e grosimea foii și pe față rămâne D). */
+  /**
+   * Înălțimea dopului: D + H pe fund sau decupat, D − g pe față (la gaură, D e grosimea foii și pe față rămâne D); în trepte,
+   * tija plus flanșa.
+   */
   readonly inaltime: number;
-  /** Grosimea semifabricatului dopului: cea mai mică la cel ridicat (h + 1), cea exactă la cel decupat (D + H). */
+  /** Grosimea semifabricatului dopului: cea mai mică la cel ridicat (h + 1), cea exactă la cel decupat (h). */
   readonly grosime: number;
+  /** Treapta (ADR 0175 §3), sau null fără ea. */
+  readonly treapta: ValoriTreapta | null;
+};
+
+/**
+ * Treapta incrustației cu pereți drepți, pe hârtie (ADR 0175, precizarea din 17.11): umărul la d de la față, lat de s, încotro;
+ * dopul în trepte, după sprijin: pe umăr, tija D − d − g și flanșa d + H; pe fund, tija D − d + g și flanșa d − g + H; la gaură
+ * (pe umăr, tija la nivel cu fața de jos), tija T − d și flanșa d + H.
+ */
+export type ValoriTreapta = {
+  readonly d: number; readonly s: number; readonly spre: 'interior' | 'exterior';
+  readonly tija: number; readonly flansa: number;
 };
 
 /** Gaura (ADR 0175 §1): locașul cu pereți drepți trece prin foaie (adâncimea lui e a foii, nu a operației). */
@@ -132,7 +147,8 @@ export function cuGauriPrinFoaie(doc: Document, supracursa = 0): Document {
 /**
  * Valorile pe hârtie ale incrustației cu pereți drepți a operației, sau null: singurul loc al razelor (panoul le arată, iar
  * lucrarea închide și deschide desenul cu ele, `cam/incrustatieDreapta.ts`). La gaură (ADR 0175), adâncimea e `grosimeFoaie`
- * (fără ea, a operației), iar dopul ridicat pe față e înalt cât ea (n-are fund sub el, deci nici joc).
+ * (fără ea, a operației), iar dopul ridicat pe față e înalt cât ea (n-are fund sub el, deci nici joc). Cu treaptă, și tija și
+ * flanșa dopului (`ValoriTreapta`), iar înălțimea lui e suma lor.
  */
 export function valoriIncrustatieDreapta(op: Pick<Operatie, 'adancime' | 'scula' | 'incrustatie' | 'rest'>, grosimeFoaie?: number): ValoriIncrustatieDreapta | null {
   const i = op.incrustatie;
@@ -142,9 +158,18 @@ export function valoriIncrustatieDreapta(op: Pick<Operatie, 'adancime' | 'scula'
   const rLocas = raza(locas), rDop = i.frezeDop && i.frezeDop.length > 0 ? raza(i.frezeDop) : rLocas;
   const c = i.jocLateral, rho = Math.max(0, rDop - c);
   const gaura = esteGaura(op), D = gaura && grosimeFoaie !== undefined ? grosimeFoaie : op.adancime;
-  const inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;
+  let treapta: ValoriTreapta | null = null;
+  let inaltime: number;
+  if (i.treapta) {
+    const d = i.treapta.adancime, g = i.joc, H = i.fierastrau;
+    const [tija, flansa] = gaura ? [D - d, d + H] : i.sprijin === 'fund' ? [D - d + g, d - g + H] : [D - d - g, d + H];
+    treapta = { d, s: i.treapta.latime, spre: i.treapta.spre ?? 'interior', tija, flansa };
+    inaltime = tija + flansa;
+  } else {
+    inaltime = i.dop === 'ridicat' && i.sprijin === 'fata' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;
+  }
   return {
     rLocas, rDop, rho, varfDop: Math.max(0, rLocas - c), unghiDop: rho + c, c, inaltime,
-    grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI,
+    grosime: i.dop === 'decupat' ? inaltime : inaltime + SUB_FATA_DOPULUI, treapta,
   };
 }

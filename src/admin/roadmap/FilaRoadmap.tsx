@@ -4,6 +4,7 @@ import { textSimplu, parseazaInline } from '../../docs/markdown.ts';
 import { TextMd, type Legaturi } from '../../docs/Markdown.tsx';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { legaturaDocument, legaturiSpreDocumente, type Deschide } from '../documentatie/legaturi.ts';
 import { aduseGata, etapaImplicita, interval, progresEtapa, reperLive, type Progres } from './vedere.ts';
@@ -32,13 +33,11 @@ export function FilaRoadmap({ aducator, deschide }: { readonly aducator: Aducato
     return () => { viu.current = false; };
   }, [incarca]);
 
-  if (stare.faza === 'se-incarca') return <p className="admin-mesaj" aria-busy="true">{t('admin.doc.se-incarca')}</p>;
+  if (stare.faza === 'se-incarca') return <SeIncarca text={t('admin.doc.se-incarca')} />;
   if (stare.faza === 'eroare') {
     return (
-      <div className="admin-randuri" role="alert">
-        <p className="admin-eroare">{t('admin.doc.esec', { motiv: stare.motiv === 'forma' ? t('admin.doc.forma') : stare.motiv })}</p>
-        <button type="button" onClick={incarca}>{t('admin.doc.reincearca')}</button>
-      </div>
+      <EroareCitire text={t('admin.doc.esec', { motiv: stare.motiv === 'forma' ? t('admin.doc.forma') : stare.motiv })} motiv={stare.motiv}
+        reincarca={incarca} atribute={{ 'data-roadmap': 'eroare' }} />
     );
   }
   return <VedereRoadmap r={stare.r} deschide={deschide} />;

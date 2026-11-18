@@ -11,7 +11,9 @@
  *   devine un singur arc la 0,1 (capetele la bit) și rămâne la 0,01; poligonul închis cu 64 de laturi devine două semicercuri
  *   (niciun arc peste 180°); pe cercul R5, coarda cu întoarcerea de 40° rămâne linie (colțul); un dreptunghi nu devine cerc nici
  *   la 1 mm (lecția din ediția întâi); un zigzag fin rămâne linii;
- * - căile deschise și piesele puse de mai multe ori se sar (numărate); acțiunea `document.converteste`, un pas de anulare.
+ * - căile deschise se sar (numărate); o piesă pusă de mai multe ori care s-ar schimba, fără alegere, se refuză (`impartita`,
+ *   felia 10.3↑m: aplicația întreabă), iar cu «Convertește piesa», se convertește o dată; acțiunea `document.converteste`,
+ *   un pas de anulare.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -130,16 +132,20 @@ test('o cale închisă dus-întors pe un sfert de cerc nu e cerc: nu-l ocolește
   assert.ok((r.abatereMinima ?? 0) > 90, `abaterea: ${r.abatereMinima}`);
 });
 
-test('căile deschise și piesele puse de mai multe ori se sar, numărate; nimic de convertit nu schimbă nimic', () => {
+test('căile deschise se sar, numărate; o piesă pusă de două ori: refuzul fără alegere, conversia cu «Convertește piesa»; nimic de convertit nu schimbă nimic', () => {
   const d0 = docDin(stoc, forma('l', cale(false, [0, 0], [100, 0], [100, 100])), forma('p', poligonRegulat({ x: 0, y: 0 }, 50, 64, 0), 500, 500));
   const foaie = d0.foi[0];
   assert.ok(foaie);
   const d: Document = { ...d0, foi: [{ ...foaie, instante: [...foaie.instante, { id: 'p2', piesa: 'p', x: 200, y: 800, rotire: 0 }] }] };
-  const r = converteste(d, CERC(['l', 'p'], 0.1));
+  assert.deepEqual(converteste(d, CERC(['l', 'p'], 0.1)), { ok: false, motiv: 'impartita' }, 'piesa pusă de două ori s-ar schimba');
+  const r = converteste(d, CERC(['l'], 0.1));
   if (!r.ok) assert.fail(r.motiv);
   assert.equal(r.convertite, 0);
-  assert.equal(r.sarite, 2, 'calea deschisă și piesa pusă de două ori');
+  assert.equal(r.sarite, 1, 'calea deschisă');
   assert.deepEqual(r.piese, []);
+  const piesa = converteste(d, { ...CERC(['l', 'p', 'p2'], 0.1), surori: 'piesa' });
+  if (!piesa.ok) assert.fail(piesa.motiv);
+  assert.deepEqual([piesa.convertite, piesa.sarite, piesa.piese.map((x) => x.id)], [1, 1, ['p']], 'o dată, cu ambele instanțe alese');
   assert.deepEqual(converteste(d, CERC([], 0.1)), { ok: false, motiv: 'nimic-ales' });
   assert.deepEqual(converteste(d, CERC(['p'], 5)), { ok: false, motiv: 'toleranta' });
   assert.deepEqual(converteste(d, CERC(['p'], 0.1, -2)), { ok: false, motiv: 'valoare' });
