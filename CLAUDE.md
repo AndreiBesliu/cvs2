@@ -929,8 +929,19 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   recomandările („Da, 1a–2a”), pe aceeași ramură, pe canalul `trasare`:** `traseazaCulori` cu `peLinii` (contururile
   doar ale culorilor rămase pe contururi; fără ele, doar etichetele), chemat o singură dată de `traseazaCuloriMediane`
   (liniile doar ale culorilor alese; legarea și peste contururi); în pastilă, sub „Se trasează”, lista „Rezultatul
-  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou). **Totalul ramurii, cu `main` adus (`6e62d40c`): 716,0 /
-  800 kB**, pornirea 106,6 / 115 (cu ușa 110,6).
+  culorii” (`AlegeriCulori.rezultate`, ștearsă la un număr nou); unită în `main` pe 17.11 (`a3e81f6d`). **25.6↑
+  (imaginile TIFF, ADR 0229) gata pe 18.11, la „mergi înainte și testez la final”, pe aceeași ramură, pe canalul
+  `trasare`:** cititorul propriu `src/trasare/tiff.ts` (cu `ccitt.ts`), în workerul trasării (`decodeazaTiff`, pagina
+  aleasă, DPI-ul paginii, reducerea pe blocuri, `poza` pentru previzualizare); ușa nu-l mai refuză la semnătură;
+  refuzurile `tiff` (cu numele) și `tiff-stricat`; fixturile WIC / GDI+ în `test/fixtures/trasare/tiff`
+  (`genereaza.ps1`). **25.7↑ (PDF-urile scanate, ADR 0270; 0270–0279 sunt ale trasării) gata pe 18.11, tot la „mergi
+  înainte”, pe aceeași ramură, pe canalul `trasare`:** ușa PDF ține minte imaginile vizibile (`citestePdf` → `imagini`),
+  iar `imagineaPaginiiPdf` o scoate pe cea mai mare ca fișier (JPEG-ul fără Exif, sau un TIFF scris de
+  `src/io/tiffScrie.ts`: CCITT-ul împachetat, eșantioanele brute), cu orientarea (1–8) și DPI-ul așezării; calculul aplică
+  `orientare` și dă `poza`; ușa importului trasează singură o pagină fără vectori, iar una cu vectori la cerere
+  (`AlegeriImport.imaginePdf`; „Trasează imaginea paginii” / „Vectorii paginii”); refuzurile `pdf-imagine` (cu numele) și
+  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`. **Totalul ramurii, cu `main` adus (`8425a2c1`): 729,8 / 800
+  kB**, pornirea 107,0 / 115 (cu ușa 111,0).
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1210,6 +1221,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 18.11.2026: **25.7↑ și A.2 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): PDF-urile scanate
+  (`9bf53378`, exact `87192e03`; ADR 0270, primul din intervalul 0270–0279 al trasării) și Erorile cu Diagnoza adminului
+  (`ce5bd472`, exact `86e3b36e`; ADR 0260, felia 3.Ab). La unirea lui A.2, jurnalul a păstrat un titlu gol al lui A.1,
+  scos în `1bb885ff`. Porțile pe unire, toate la prima rulare: unit 9 564 / 0, e2e 528 / 528, emulatoarele 101 / 101 și
+  29 / 29. Totalul 732,2 / 800, pornirea cu ușa 111,0 / 115, `/admin` 113,7 / 200. Propus, neunit: 3.Th (rotițele
+  dințate în atelierul Easy 3Draw, ADR 0169) pe `wip/3.Th-rotite`, cu întrebările la owner. În lucru la linii: 3.6u și
+  felia incrustațiilor.
+- 18.11.2026: **12.1↑f-2, 25.6↑ și A.1 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): treptele
+  incrustației cu pereți drepți (`89083cba`, exact `aa9f3257`; ADR 0175 §3–§6), imaginile TIFF (`fd63de8e`, exact
+  `ba2ecaff`; ADR 0229, care încheie intervalul 0220–0229 al trasării) și carcasa adminului, cu fila Azi (`5147f448`,
+  exact `531ecfb4`; ADR 0260, prima felie a liniei, `3.Aa` în fișă). Ciocnirile de tabel din registrul otrăvurilor și
+  din fișa etapei 3 (rânduri vecine adăugate pe ambele părți) s-au rezolvat după cheia din prima coloană, iar un rând
+  schimbat doar de o parte s-a luat de acolo (28.1b, din main). Porțile pe unire, toate la prima rulare: unit 9 548 / 0,
+  e2e 527 / 527, emulatoarele 101 / 101 și 26 / 26. Totalul 729,1 / 800, pornirea cu ușa 111,0 / 115, `/admin` 112,2 /
+  200. Înainte, `c302d73a` a ajuns pe test după o reluare a completului: `extensii.spec.ts:43` (clicul pe „Închide” din
+  cadrul extensiei nu s-a mai întors, deși fereastra se închisese), de urmărit. În lucru la linii: 3.6u.
 - 18.11.2026: **10.3↑m, 11.3↑b și 28.1↑c unite în `main`, cu două probe instabile reparate** (la „unește ce se poate”,
   după rapoartele liniilor; liniile oprite peste noapte, repornite la „neata! poti sa repornesti toate worktrees”):
   piesele puse de mai multe ori, la tăiere și conversie (`3ef10357`, exact `7ae0d5a`; ADR 0180), avertismentul

@@ -7,6 +7,8 @@ import { colturiImplicite, type Colturi } from '../../src/trasare/foaia.ts';
 import type { CaiTrasate, ImagineRGBA } from '../../src/trasare/trasare.ts';
 import { caiDinTrasare, cerereTrasare, previzualizareDinRaspuns, previzualizareImagine } from '../../src/ui/actiuniImportCalcul.ts';
 import { desenLiniiColorate, distFormeFoaie, luminaLaterala, poza, pozaColor, POZE_FOAIE, pozaFoaie } from './ajutor-poze.ts';
+import { scrieTiff } from './ajutor-tiff.ts';
+import { readFileSync } from 'node:fs';
 
 /**
  * Ușa imaginilor (ADR 0220 §1, §7, §8): semnăturile, DPI-ul din antet (PNG `pHYs`, JPEG JFIF și EXIF, BMP), scara și
@@ -197,10 +199,14 @@ test('praful (sub 0,01 mm) se sare, numărat; cutia exactă decide când vârfur
   assert.equal(mare.avertismente['prea-mari'], 1);
 });
 
-test('refuzurile ușii: TIFF-ul (după semnătură sau după nume), înaintea decodării; o imagine pe care n-o decodează nimeni', async () => {
+test('refuzurile ușii: un TIFF stricat (ADR 0229: îl citește cititorul propriu), un .tif care nu e TIFF, o imagine necitibilă', async () => {
+  // Antetul fără niciun IFD: cititorul TIFF îl refuză ca stricat, cu motivul.
   const tiff = Uint8Array.from([...ascii('II'), 42, 0, 8, 0, 0, 0]);
-  assert.deepEqual(await previzualizareImagine({ nume: 'scan.bin', octeti: tiff }, undefined), { ok: false, cod: 'tiff', format: 'imagine' });
-  assert.deepEqual(await previzualizareImagine({ nume: 'scan.TIF', octeti: Uint8Array.from([1, 2, 3, 4]) }, undefined), { ok: false, cod: 'tiff', format: 'imagine' });
+  const t = await previzualizareImagine({ nume: 'scan.bin', octeti: tiff }, undefined);
+  assert.ok(!t.ok && t.cod === 'tiff-stricat' && t.format === 'imagine' && typeof t.detaliu === 'string', JSON.stringify(t));
+  // Un .tif care nu e TIFF merge la browser, ca orice imagine (în Node, fără `createImageBitmap`, necitibilă).
+  const n = await previzualizareImagine({ nume: 'scan.TIF', octeti: Uint8Array.from([1, 2, 3, 4]) }, undefined);
+  assert.ok(!n.ok && n.cod === 'imagine-citire', JSON.stringify(n));
   // În Node nu există `createImageBitmap`: decodarea cade, iar ușa o spune ca pe o imagine necitibilă, cu motivul.
   const r = await previzualizareImagine({ nume: 'poza.png', octeti: png(null) }, undefined);
   assert.equal(r.ok, false);
@@ -737,4 +743,43 @@ test('cererea din alegeri, pe culori (ADR 0228): felul fiecărei culori trece; o
   assert.equal(c.mediane, undefined);
   // Implicit (răspunsul 1a): fiecare culoare „Ca Rezultatul”.
   assert.equal(TRASARE_IMPLICITA.culori.rezultate, null);
+});
+
+test('TIFF (ADR 0229): DPI-ul din etichete în ușă; calculul îl citește singur, cu paginile lui și pagina aleasă; refuzurile', async () => {
+  const dir = 'test/fixtures/trasare/tiff';
+  const g4 = new Uint8Array(readFileSync(`${dir}/wic-g4.tif`)), doua = new Uint8Array(readFileSync(`${dir}/wic-pagini-g4.tif`));
+  // Ușa: DPI-ul din XResolution (WIC: 95,987); al lui GDI+, 96.
+  assert.ok(Math.abs((dpiImagine(g4) ?? 0) - 95.987) < 1e-9, String(dpiImagine(g4)));
+  assert.equal(dpiImagine(new Uint8Array(readFileSync(`${dir}/gdi-g4.tif`))), 96);
+  // Calculul: alb-negru, 240 × 160, scara din DPI-ul paginii (și fără DPI în cerere), o pagină.
+  const r = (await raspundeTrasare(cerere({ imagine: new Blob([g4]) }))).raspuns;
+  assert.ok(r.ok && r.fel === 'alb-negru', JSON.stringify(r).slice(0, 200));
+  assert.deepEqual([r.raport.latime, r.raport.inaltime, r.pagini], [240, 160, 1]);
+  assert.equal(r.scara, 'fisier');
+  assert.ok(Math.abs(r.dpi - 95.987) < 1e-6, String(r.dpi));
+  assert.ok(r.raport.contururi > 5, String(r.raport.contururi));
+  // Pentru previzualizare, imaginea decodată (browserul nu știe TIFF): 240 × 160, sub plafonul pozei, cu negrul desenului.
+  assert.deepEqual([r.poza?.latime, r.poza?.inaltime], [240, 160]);
+  assert.ok(Array.from(r.poza?.date ?? []).some((x, k) => k % 4 === 0 && x === 0), 'fără pixeli negri');
+  // Două pagini: implicit prima; a doua, aleasă, e alt desen.
+  const p1 = (await raspundeTrasare(cerere({ imagine: new Blob([doua]) }))).raspuns;
+  const p2 = (await raspundeTrasare(cerere({ imagine: new Blob([doua]), pagina: 2 }))).raspuns;
+  assert.ok(p1.ok && p2.ok && p1.fel === 'alb-negru' && p2.fel === 'alb-negru');
+  assert.deepEqual([p1.pagini, p2.pagini], [2, 2]);
+  assert.notEqual(p1.raport.contururi, p2.raport.contururi);
+  // Previzualizarea: raportul spune paginile (fereastra oferă alegerea).
+  const pv = previzualizareDinRaspuns({ nume: 'scan.tif', octeti: doua }, p2);
+  assert.ok(pv.ok && pv.format === 'imagine');
+  assert.equal(pv.trasare.pagini, 2);
+  assert.equal(pv.trasare.poza, p2.poza);
+  // Cererea: pagina, doar peste 1.
+  const f = { nume: 'scan.tif', octeti: doua };
+  assert.equal(cerereTrasare(f, TRASARE_IMPLICITA).pagina, undefined);
+  assert.equal(cerereTrasare(f, TRASARE_IMPLICITA, 2).pagina, 2);
+  // JPEG în TIFF: refuzat cu numele compresiei; un TIFF tăiat: stricat, cu motivul.
+  const jpeg = scrieTiff([{ etichete: [[256, 4, [1]], [257, 4, [1]], [258, 3, [8]], [259, 3, [7]], [262, 3, [1]], [278, 4, [1]]], bucati: [Uint8Array.of(0)] }]);
+  const rj = previzualizareDinRaspuns({ nume: 'x.tif', octeti: jpeg }, (await raspundeTrasare(cerere({ imagine: new Blob([jpeg]) }))).raspuns);
+  assert.ok(!rj.ok && rj.cod === 'tiff' && rj.format === 'imagine' && /JPEG/.test(rj.detaliu ?? ''), JSON.stringify(rj));
+  const rs = previzualizareDinRaspuns({ nume: 'x.tif', octeti: g4 }, (await raspundeTrasare(cerere({ imagine: new Blob([g4.slice(0, 300)]) }))).raspuns);
+  assert.ok(!rs.ok && rs.cod === 'tiff-stricat' && typeof rs.detaliu === 'string', JSON.stringify(rs));
 });

@@ -5,6 +5,7 @@ import { COLECTIE_CONTURI, MARGINI_PROBA, type SchimbarePlan } from '../../../sh
 import { planulContului, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
+import { EroareCitire, ListaGoala, SeIncarca, usePublica } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { contDin, planAfisat, PLAFON_LISTA_CONTURI, type ContClient } from './date.ts';
 import '../personal/personal.css';
@@ -28,6 +29,7 @@ type Fel = SchimbarePlan['fel'];
 
 export function FilaUtilizatori({ con, poateAdministra }: { readonly con: Conexiune; readonly poateAdministra: boolean }): ReactElement {
   const limba = useLimba();
+  const publica = usePublica();
   const [lista, setLista] = useState<Masura<{ readonly conturi: readonly ContClient[]; readonly la: number }> | null>(null);
   const [rev, setRev] = useState(0);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
@@ -37,11 +39,17 @@ export function FilaUtilizatori({ con, poateAdministra }: { readonly con: Conexi
     let viu = true;
     // Cele mai noi întâi: indexul simplu al lui `creatLa`, fără index compus.
     getDocs(query(collection(con.db, COLECTIE_CONTURI), orderBy('creatLa', 'desc'), limit(PLAFON_LISTA_CONTURI))).then(
-      (s) => { if (viu) setLista({ ok: true, valoare: { conturi: s.docs.map((d) => contDin(d.id, d.data())), la: Date.now() } }); },
+      (s) => {
+        if (!viu) return;
+        const conturi = s.docs.map((d) => contDin(d.id, d.data()));
+        setLista({ ok: true, valoare: { conturi, la: Date.now() } });
+        // Căutarea din antet găsește contul după adresă, nume sau uid (ADR 0260 §1).
+        publica('conturi', conturi.map((c) => ({ id: c.uid, text: c.email ?? c.uid, detaliu: c.nume ?? '' })));
+      },
       (e: unknown) => { if (viu) setLista({ ok: false, motiv: motivDin(e) }); },
     );
     return () => { viu = false; };
-  }, [con, rev]);
+  }, [con, rev, publica]);
 
   const schimba = (c: ContClient, schimbare: SchimbarePlan): void => {
     setLucru({ faza: 'lucreaza' });
@@ -72,9 +80,12 @@ export function FilaUtilizatori({ con, poateAdministra }: { readonly con: Conexi
         <div className="admin-randuri">
           <button type="button" data-util="reincarca" onClick={() => { setRev((n) => n + 1); }}>{t('admin.util.reincarca')}</button>
         </div>
-        {lista === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.util.se-incarca')}</p>
-          : !lista.ok ? <p className="admin-eroare" role="alert" data-util="eroare-lista">{t('admin.util.citire', { motiv: lista.motiv })}</p>
-            : conturi.length === 0 ? <p className="admin-mesaj" data-util="gol">{t('admin.util.niciunul')}</p>
+        {lista === null ? <SeIncarca text={t('admin.util.se-incarca')} />
+          : !lista.ok ? (
+            <EroareCitire text={t('admin.util.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((n) => n + 1); }}
+              atribute={{ 'data-util': 'eroare-lista' }} />
+          )
+            : conturi.length === 0 ? <ListaGoala text={t('admin.util.niciunul')} atribute={{ 'data-util': 'gol' }} />
               : (
                 <ul className="pers-lista">
                   {conturi.map((c) => (
@@ -104,7 +115,7 @@ function Rand({ c, acum, limba, poateAdministra, deschis, deschide, ocupat, fara
 }): ReactElement {
   const plan = planAfisat(c, acum);
   return (
-    <li data-cont={c.email ?? c.uid} data-plan={plan}>
+    <li data-cont={c.email ?? c.uid} data-uid={c.uid} data-plan={plan}>
       <div className="pers-rand">
         <span className="pers-cine">{c.email ?? c.uid}</span>
         <span className="util-plan" data-plan={plan} data-util="plan">{textPlan(c, plan, acum, limba)}</span>

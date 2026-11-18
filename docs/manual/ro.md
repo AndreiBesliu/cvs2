@@ -712,7 +712,7 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
 **Renunță la toate** închid fereastra. Se importă fișierele SVG, DXF, PDF, AI, EPS și WMF, precum și imaginile PNG, JPEG,
-WebP, GIF și BMP, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
+WebP, GIF, BMP și TIFF, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
 export.
 
 Un **DXF** se citește așa:
@@ -736,6 +736,9 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 - fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
 - se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
   întreg);
+- o **pagină scanată** (fără vectori, cu o imagine: de la scanerul de birou sau de la o aplicație de telefon) se
+  **trasează** singură, ca o imagine (mai jos), la mărimea de pe hârtie; la o pagină cu vectori și cu imagini, butonul
+  **Trasează imaginea paginii** trasează imaginea cea mai mare în locul vectorilor, iar **Vectorii paginii** te întoarce;
 - un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI salvat fără
   „Create PDF Compatible File” arată doar o notă de text, iar fereastra îți spune s-o bifezi.
 
@@ -765,7 +768,7 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
-O **imagine** (PNG, JPEG, WebP, GIF sau BMP: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
+O **imagine** (PNG, JPEG, WebP, GIF, BMP sau TIFF: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
 marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
 dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
@@ -879,7 +882,12 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
-- TIFF-ul nu se citește încă (salvează imaginea ca PNG), iar imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
+- TIFF-ul (al scanerelor, al faxurilor, al programelor de CAD) îl citește aplicația singură: necomprimat, LZW, Deflate,
+  PackBits sau CCITT (G3, G4: scanările alb-negru), cu DPI-ul lui; la unul cu mai multe pagini, fereastra îți dă alegerea
+  paginii, ca la PDF. Un TIFF cu JPEG în el (sau BigTIFF, culori în virgulă mobilă, YCbCr, CIELab) e refuzat, cu numele a
+  ce nu citește: salvează-l atunci ca PNG. Imaginile din SVG-uri se sar, ca până acum;
+- imaginea unui PDF scanat (JPEG, CCITT G3 / G4 sau necomprimată) se trasează la DPI-ul ei de pe pagină, întoarsă cum o
+  arată pagina; una JBIG2 sau JPEG 2000 e refuzată, cu numele ei: salvează atunci pagina ca PNG.
 
 ## Tăierea vectorilor
 %% capitol: taiere

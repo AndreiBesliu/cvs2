@@ -26,8 +26,11 @@ export interface DateDiagnoza {
   readonly appCheck: 'recaptcha' | 'proba' | 'oprit';
   readonly rol: string;
   readonly nerezolvate: Masura<number>;
-  /** Codul HTTP al unui apel fără App Check la `logClientError`; trebuie să fie 401. */
-  readonly functii: Masura<number>;
+  /**
+   * Codul HTTP al unui apel fără App Check la `logClientError`; trebuie să fie 401. Lipsă: sonda nu s-a făcut (rezumatul de
+   * la intrare, ADR 0260: o cerere activă spre server, cu „401” în consolă, se face doar în fila Diagnoză).
+   */
+  readonly functii?: Masura<number>;
   /** Documentele din `marcaje`, după id (ADR 0041); un job fără document n-a rulat niciodată. */
   readonly marcaje: Masura<Readonly<Record<string, Readonly<Record<string, unknown>>>>>;
   /** Amprenta publicării (`meta/deployment`, ADR 0044); `null`: documentul lipsește. */
@@ -66,13 +69,15 @@ export function verificari(d: DateDiagnoza): readonly Verificare[] {
   const f = d.functii;
   const t = 'admin.diag.functii' as const;
   const i = 'admin.diag.functii.indiciu' as const;
-  v.push(!f.ok
-    ? { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.nu-raspunde', param: { motiv: f.motiv } }, indiciu: i }
-    : f.valoare === 401
-      ? { id: 'functii', stare: 'bine', titlu: t, masura: { cheie: 'admin.diag.functii.bine' } }
-      : f.valoare >= 200 && f.valoare < 300
-        ? { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.fara-impunere' } }
-        : { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.cod', param: { cod: f.valoare } }, indiciu: i });
+  if (f !== undefined) {
+    v.push(!f.ok
+      ? { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.nu-raspunde', param: { motiv: f.motiv } }, indiciu: i }
+      : f.valoare === 401
+        ? { id: 'functii', stare: 'bine', titlu: t, masura: { cheie: 'admin.diag.functii.bine' } }
+        : f.valoare >= 200 && f.valoare < 300
+          ? { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.fara-impunere' } }
+          : { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.cod', param: { cod: f.valoare } }, indiciu: i });
+  }
   for (const j of JOBURI) v.push(verificareJob(j, d));
   return v;
 }

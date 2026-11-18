@@ -736,8 +736,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF and BMP
-images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
+**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF, BMP and
+TIFF images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
 - the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
@@ -761,6 +761,9 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 - every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
 - skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
   whole);
+- a **scanned page** (no vectors, one image: from an office scanner or a phone app) is **traced** by itself, like an image
+  (below), at its size on paper; on a page with vectors and images, the **Trace the page image** button traces the largest
+  image instead of the vectors, and **The page vectors** takes you back;
 - a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI saved
   without “Create PDF Compatible File” shows only a text notice, and the window tells you to tick it.
 
@@ -790,7 +793,7 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
-An **image** (PNG, JPEG, WebP, GIF or BMP: a logo, a scanned drawing, a signature) is **traced**: the application finds the
+An **image** (PNG, JPEG, WebP, GIF, BMP or TIFF: a logo, a scanned drawing, a signature) is **traced**: the application finds the
 drawing's edge and writes it as vectors, in black and white. The window widens, with the settings on the left and the
 preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
@@ -907,7 +910,12 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);
-- TIFF is not read yet (save the image as PNG), and images inside PDFs and SVGs are skipped, as before.
+- TIFF (from scanners, fax and CAD programs) is read by the application itself: uncompressed, LZW, Deflate, PackBits or
+  CCITT (G3, G4: black-and-white scans), with its DPI; for one with several pages, the window lets you pick the page, as for
+  a PDF. A TIFF with JPEG inside (or BigTIFF, floating-point colours, YCbCr, CIELab) is refused, naming what it cannot
+  read: save it as PNG then. Images inside SVGs are skipped, as before;
+- the image of a scanned PDF (JPEG, CCITT G3 / G4 or uncompressed) is traced at its DPI on the page, turned the way the
+  page shows it; a JBIG2 or JPEG 2000 one is refused, naming it: save the page as PNG then.
 
 ## Cutting vectors
 %% capitol: taiere
