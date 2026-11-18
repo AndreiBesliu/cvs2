@@ -9858,3 +9858,52 @@ apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
 - **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Aa`: regula id-urilor fișei nu primește `A.1`) cu
   traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
   **Completed:** 18.11 12:10.
+
+## 2026-11-17 — Completul roșu de două ori, reparat la cauză; liniile repornite; unirile din 17.11 seara și 18.11 (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, pe 17.11: „ok, ia-le la rand” și „Yes, start it then” (linia adminului); regula „unește ce se poate”;
+pe 18.11: „neata! poti sa repornesti toate worktrees”, „plansele este offline, activeaza-i remote-control”, „acum ne
+concentram pe softul nostru”.
+**Started:** 17.11, 19:20. **Completed:** 18.11, 14:47.
+
+- **Completul de pe `71d488a7` (3.6t), roșu:** `trasare.culori.lumina.test.ts:132`, 1 504 ms la pragul de 1,5 s. Reluat pe
+  același commit, a trecut, iar `b6aaa548` a ajuns pe test. Cauza, măsurată: corecția ia 0,6–0,7 s local și 0,9–1,5 s în
+  complet, unde fișierele de probe rulează în paralel pe 4 procesoare (5 din 8 rulări între 1,35 și 1,5 s); reprodusă cu
+  procesul fixat pe un procesor împărțit cu unul ocupat (3,8–10,2 s). Reparația (`9361c831`): pragul de redeschidere din ADR
+  0226 (2 s), cea mai bună din cel mult 3 rulări; încetinirea la fiecare apel cade, cea doar la primul apel trece.
+- **Unirile din 17.11 seara:** 10.3↑l (`eb237a77`) și 25.3↑e (`a3e81f6d`); porțile pe unire: unit 9 490 / 0, e2e 507 / 507,
+  emulatoarele 101 / 101 și 21 / 21 la reluare. La prima rulare, callable-ul `sugestii` a stat 300 s: lucrătorul funcțiilor
+  n-a pornit în 30 s cu procesorul la 97 % (`FUNCTIONS_DISCOVERY_TIMEOUT` ține și pornirea lui), iar emulatorul lasă atunci
+  cererea fără răspuns. `ae5a13c4`, verde în complet, publicat pe test.
+- **Completul de pe `9361c831`, roșu:** `trenulet.spec.ts:77`, `#e-salveaza` ascuns 30 s. Foaia exportului extensiei se
+  așază în pași (plăcile, timpul fiecărui fișier G-code, la urmă „Timp de lucru…”), iar lista de piese stă dedesubt: un clic
+  țintit înaintea ultimului pas și ajuns după el cade cu 29 px mai sus. Reprodus determinist (temporizatorul ultimului pas
+  ținut pe loc), reparat în probă (`104adc41`, așteaptă „Timp de lucru”); otrava (timpul necalculat) cade la așteptarea
+  nouă.
+- **`pwa.spec.ts:432`** (2 din 9, raportată de planșe și de tăiere): procentul barei și textul se citeau separat; acum
+  deodată (`1a4e59f0`), iar otrava (textul cu procentul + 1) cade.
+- **Noaptea:** la 22:17, procesele trasării, incrustațiilor și Kinstead s-au oprit în același minut (cod 3221226505),
+  adminul puțin după, cu sarcinile lor din fundal. Pe 18.11, la cuvântul owner-ului, am repornit trasarea, incrustațiile,
+  adminul și imprimanta, fiecare cu starea găsită (commit-uri locale neîmpinse, documente pe jumătate, porți întrerupte) și
+  pașii rămași; un mesaj spre sesiune îi pornește procesul, chiar dacă livrarea apare „queued”. Planșele, oprite cu o
+  întrebare către owner, au primit Remote Control la cererea lui (trezite cu un mesaj care spune că nu e răspunsul).
+- **Lotul întâi din 18.11:** 10.3↑m (`3ef10357`), 11.3↑b (`2bfbb4a6`), 28.1↑c (`4cfe13d2`), cu cele două probe reparate;
+  porțile: unit 9 507 / 0, e2e 524 / 524, emulatoarele 101 / 101, iar partea lor Playwright 20 / 21 la fiecare din trei
+  rulări, de fiecare dată altă probă (/admin fără cont, fereastra contului, fila Diagnoza: bucăți la cerere care n-au venit
+  în 5 s, cu procesorul ocupat de porțile a patru linii). `c302d73a`: completul a căzut o dată la `extensii.spec.ts:43`
+  (clicul pe „Închide” din cadrul extensiei nu s-a mai întors, deși fereastra se închisese; 24 / 24 local, sub șase
+  lucrători), apoi a trecut la reluare; publicat pe test.
+- **Lotul al doilea din 18.11:** 12.1↑f-2 (`89083cba`), 25.6↑ (`fd63de8e`), A.1 (`5147f448`). Registrul otrăvurilor și fișa
+  etapei 3 aveau ciocniri de tabel (rânduri vecine adăugate pe ambele părți): rezolvate după cheia din prima coloană, cu
+  rândul schimbat doar de o parte luat de acolo (unealta `uneste_tabele_dupa_cheie.py`, cu `--baza`). Porțile: unit 9 548 /
+  0, e2e 527 / 527, emulatoarele 101 / 101 și 26 / 26. Totalul 729,1 / 800, pornirea cu ușa 111,0 / 115, `/admin` 112,2 /
+  200. `e88dbc1e`: completul verde din prima, publicat pe test.
+- **3.Th, propus:** la „vreau sa pot face si rotite zimtate, ori drepte ori oblice (la marginea zimtata)”, cu o sesiune nouă
+  de neputut (owner-ul pe Remote Control): ADR 0169 (rotițele dințate în atelierul Easy 3Draw: drepți, oblici, în V),
+  prototipul (13 perechi LEGO fără pătrunderi, plasa închisă) și schița cu două întrebări, pe `wip/3.Th-rotite` (`259dc03e`,
+  worktree-ul `rotite`); codul, după răspunsuri.
+- **Coordonarea:** ADR-urile 0270–0279, date trasării (PDF-urile scanate, îndreptarea scanărilor); designul anunțat că
+  unirile și emulatoarele rămân la sesiunea principală.
+- **Rămâne:** 3.6u (imprimanta), la raportul liniei; de urmărit, nereparate: `extensii.spec.ts:43` (urma din complet, de
+  adus cu acordul owner-ului, ar arăta unde stă clicul), `extensii.masina.spec.ts:84`, emulatoarele Playwright sub
+  încărcare.
