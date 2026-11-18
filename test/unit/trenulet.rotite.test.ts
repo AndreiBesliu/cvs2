@@ -182,9 +182,55 @@ test('marginile: dinții (8–80), modulul (0,5–3), grosimea; peretele prea su
   assert.equal(Math.round(L.construieste({ tip: 'rotita', dinti: 120, gaura: 'nu' }).dim[0]! * 1000) / 1000, 82, 'cel mult 80 de dinți');
   assert.equal(Math.round(L.construieste({ tip: 'rotita', dinti: 20, modul: 0.2, gaura: 'nu' }).dim[0]! * 1000) / 1000, 11, 'modulul cel puțin 0,5');
   assert.equal(Math.round(L.construieste({ tip: 'rotita', dinti: 20, modul: 2, gaura: 'x' }).dim[0]! * 1000) / 1000, 44, 'modulul 2: Ø cap 2 · (20 + 2)');
-  assert.ok(L.construieste({ tip: 'rotita', dinti: 8, gaura: 'x' }).avert.some((a) => a.includes('0,25 mm')), 'roata de 8 cu gaură de ax: 0,25 mm de perete');
+  assert.ok(L.construieste({ tip: 'rotita', dinti: 8, gaura: 'x' }).avert.some((a) => a.includes('rămân doar')), 'roata de 8 cu gaură de ax: peretele subțire');
   assert.deepEqual(simplu(L.construieste({ tip: 'rotita', dinti: 16, gaura: 'x' }).avert), [], 'roata de 16: fără avertisment');
   assert.equal(Math.round(L.construieste({ tip: 'rotita', dinti: 16, grosime: 8, gaura: 'x' }).dim[2]! * 1000) / 1000, 8, 'grosimea');
+});
+
+/**
+ * Peretele cel mai subțire dintre gaură și dinți, pe fața de jos a roții drepte construite (gaura: vârfurile de sub cercul de
+ * picior, în ordinea unghiului), față de conturul motorului; centrul roții e la (ra, ra), ca după așezarea în colțul cutiei.
+ */
+function perete(tri: readonly Tri[], z: number, m = 1): number {
+  const R = L._.profilRoata(z, m, L.efective()['jocDinti']!), c: P2 = [R.ra, R.ra];
+  const contur = L._.conturRoata(R, 0).map(([x, y]): P2 => [x + c[0], y + c[1]]);
+  const jos = new Map<string, P2>();
+  for (const t of tri) for (const q of t) {
+    if (Math.abs(q[2]) < 1e-9 && Math.hypot(q[0] - c[0], q[1] - c[1]) < R.rf) jos.set(`${q[0].toFixed(6)},${q[1].toFixed(6)}`, [q[0], q[1]]);
+  }
+  const u = (p: P2) => Math.atan2(p[1] - c[1], p[0] - c[0]);
+  const gaura = [...jos.values()].sort((a, b) => u(a) - u(b));
+  assert.ok(gaura.length >= 12, `gaura are ${gaura.length} vârfuri`);
+  let d = Infinity;
+  for (const [A, B] of [[gaura, contur], [contur, gaura]] as const) {
+    for (const p of A) for (let i = 0; i < B.length; i++) d = Math.min(d, distSegment(p, B[i]!, B[(i + 1) % B.length]!));
+  }
+  return d;
+}
+/** Peretele spus în avertisment („rămân doar 0,23 mm”), în mm; NaN fără avertisment. */
+function pereteSpus(avert: readonly string[]): number {
+  const m = avert.map((a) => /rămân doar ([\d,]+) mm/.exec(a)).find((x) => x !== null);
+  return m ? Number(m[1]!.replace(',', '.')) : Number.NaN;
+}
+
+test('peretele dintre gaură și dinți: la roata de 8, brațele crucii spre goluri; avertismentul spune peretele adevărat; o gaură care nu încape lipsește', () => {
+  // dreaptă, crucea de 5 × 2 mm are colțurile (la 2,69 mm de centru) chiar sub golurile roții de 8 (piciorul, la 2,75 mm):
+  // 0,04 mm de perete; cu brațele spre goluri, peretele e cel de sub coarda golului, 0,23 mm
+  for (const gaura of ['x', 'r']) {
+    const p = L.construieste({ tip: 'rotita', dinti: 8, gaura }), d = perete(p.tri, 8);
+    assert.ok(d >= 0.2, `roata de 8, gaura ${gaura}: peretele ${d.toFixed(3)} mm`);
+    assert.ok(Math.abs(pereteSpus(p.avert) - d) <= 0.006, `roata de 8, gaura ${gaura}: spus ${pereteSpus(p.avert)} mm, măsurat ${d.toFixed(3)} mm`);
+  }
+  // la roțile cu perete gros, crucea rămâne dreaptă: la roata de 16, un colț al ei e la (2,5; 1,0) mm de centru
+  const R16 = L._.profilRoata(16, 1, JOC), c16 = R16.ra, r16 = L.construieste({ tip: 'rotita', dinti: 16, gaura: 'x' });
+  assert.ok(r16.tri.some((t) => t.some((q) => Math.abs(q[2]) < 1e-9 && Math.abs(q[0] - c16 - 2.5) < 1e-3 && Math.abs(q[1] - c16 - 1) < 1e-3)), 'roata de 16: crucea dreaptă');
+  // modulul 0,5 cu puțini dinți: gaura de 5 mm e mai mare decât piciorul dinților; roata iese întreagă, fără gaură, și o spune
+  for (const dinti of [8, 12]) for (const gaura of ['x', 'r']) {
+    const p = L.construieste({ tip: 'rotita', dinti, modul: 0.5, gaura }), plina = L.construieste({ tip: 'rotita', dinti, modul: 0.5, gaura: 'nu' });
+    assert.equal(muchiiRele(p.tri), 0, `modulul 0,5, ${dinti} dinți, gaura ${gaura}: corpul închis`);
+    assert.ok(Math.abs(volum(p.tri) - volum(plina.tri)) < 1e-6, `modulul 0,5, ${dinti} dinți, gaura ${gaura}: fără gaură`);
+    assert.ok(p.avert.some((a) => a.includes('nu încape')), `modulul 0,5, ${dinti} dinți, gaura ${gaura}: ${p.avert.join(' | ')}`);
+  }
 });
 
 test('setul de calibrare: cinci roți de 16 dinți, cu jocul de 0,05 … 0,25 mm, închise, cu semnul pe față', () => {

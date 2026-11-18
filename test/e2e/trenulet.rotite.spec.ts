@@ -5,7 +5,8 @@
  * - felurile dinților: la oblici, unghiul și sensul în nume; perechea arată distanța dintre axe și grila;
  * - „Fă perechea” pune în listă ambele roți, a doua cu dinții aleși și cu sensul opus;
  * - STL-ul descărcat e un corp închis (fiecare muchie, o dată în fiecare sens);
- * - roata de 8 cu gaură de ax spune cât perete rămâne; calibrarea are varianta roților și pasul ei.
+ * - roata de 8 cu gaură de ax spune cât perete rămâne (0,23 mm), iar la modulul 0,5 gaura care nu încape lipsește;
+ *   calibrarea are varianta roților și pasul ei.
  */
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
@@ -62,7 +63,16 @@ test('roata de 8 cu gaură de ax spune cât perete rămâne; calibrarea are vari
   await page.locator('#at-r-repede [data-v="8"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 8');
   await expect(page.locator('#at-avert')).toBeVisible();
-  await expect(page.locator('#at-avert')).toContainText('0,25 mm');
+  // brațele crucii spre goluri: peretele de sub coarda golului (ADR 0169, după privirea pe roata reală)
+  await expect(page.locator('#at-avert')).toContainText('0,23 mm');
+  // la modulul 0,5, gaura de 5 mm nu încape: roata iese fără ea și o spune
+  await page.locator('#at-r-modul').fill('0.5');
+  await page.locator('#at-r-modul').blur();
+  await expect(page.locator('#at-avert')).toContainText('nu încape');
+  await page.locator('#at-r-modul').fill('1');
+  await page.locator('#at-r-modul').blur();
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 8');
+  await expect(page.locator('#at-avert')).toContainText('0,23 mm');
   await page.locator('#at-r-gaura [data-v="nu"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 8, fără gaură');
   await expect(page.locator('#at-avert')).toBeHidden();

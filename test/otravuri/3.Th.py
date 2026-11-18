@@ -1,7 +1,8 @@
 # Lista de otrăvuri a feliei 3.Th (rotițele dințate în atelierul Easy 3Draw, ADR 0169), 18.11.2026, alese de autor: motorul
 # (jocul și variantele, cremaliera, cercurile, grosimea, mijlocul capului, pereții răsuciți, sensul, V-ul, răsucirea, găurile,
 # avertismentul, marginile, setul de calibrare, distanța dintre axe) și atelierul (perechea și sensul ei, grila, numele,
-# varianta trimisă motorului, câmpul din calibrare, unghiul doar la oblici).
+# varianta trimisă motorului, câmpul din calibrare, unghiul doar la oblici); apoi, după privirea pe roata reală, peretele
+# dintre gaură și dinți (rotirea crucii, avertismentul, gaura care nu încape).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; setul „e2e” e
 # `test/e2e/trenulet.rotite.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -43,6 +44,14 @@ o('U17', E, 'distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
   'distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2 + 0.1,', 'rotite', 'distanța dintre axe cu 0,1 mm prea mare')
 o('U18', E, 'jocDinti: Math.max(0, P.joc_dinti + (P.varianta_dinti - 3) * P.pas_dinti),',
   'jocDinti: Math.max(0, P.joc_dinti + (P.varianta_dinti - 3) * P.pas_dinti) / 2,', 'rotite', 'jocul efectiv înjumătățit')
+# După privirea pe roata reală (18.11): peretele găurii, rotirea crucii, gaura care nu încape.
+o('U19', E, 'if (gaura === "x" && perete < 0.8) {', 'if (gaura === "x" && perete < -1) {', 'rotite',
+  'crucea roții de 8 lăsată dreaptă (colțurile sub goluri, 0,04 mm de perete)')
+o('U20', E, '${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
+  '${String(Math.round((R.rf - (gaura === "r" ? e.gauraD : e.axGauraD) / 2) * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
+  'rotite', 'avertismentul socotit din raze (piciorul minus raza găurii), nu din peretele adevărat')
+o('U21', E, 'if (g.length && perete < 0.1) {', 'if (g.length && perete < -2) {', 'rotite',
+  'gaura care nu încape păstrată (corpul nu mai e închis)')
 
 # Atelierul (e2e).
 o('E01', A, 'if (d.fel === "oblici" || d.fel === "inv") a.sens = d.sens === "stanga" ? "dreapta" : "stanga";',
