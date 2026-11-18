@@ -1221,6 +1221,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 18.11.2026: **25.7↑ și A.2 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): PDF-urile scanate
+  (`9bf53378`, exact `87192e03`; ADR 0270, primul din intervalul 0270–0279 al trasării) și Erorile cu Diagnoza adminului
+  (`ce5bd472`, exact `86e3b36e`; ADR 0260, felia 3.Ab). La unirea lui A.2, jurnalul a păstrat un titlu gol al lui A.1,
+  scos în `1bb885ff`. Porțile pe unire, toate la prima rulare: unit 9 564 / 0, e2e 528 / 528, emulatoarele 101 / 101 și
+  29 / 29. Totalul 732,2 / 800, pornirea cu ușa 111,0 / 115, `/admin` 113,7 / 200. Propus, neunit: 3.Th (rotițele
+  dințate în atelierul Easy 3Draw, ADR 0169) pe `wip/3.Th-rotite`, cu întrebările la owner. În lucru la linii: 3.6u și
+  felia incrustațiilor.
 - 18.11.2026: **12.1↑f-2, 25.6↑ și A.1 unite în `main`** (la „unește ce se poate”, după rapoartele liniilor): treptele
   incrustației cu pereți drepți (`89083cba`, exact `aa9f3257`; ADR 0175 §3–§6), imaginile TIFF (`fd63de8e`, exact
   `ba2ecaff`; ADR 0229, care încheie intervalul 0220–0229 al trasării) și carcasa adminului, cu fila Azi (`5147f448`,
