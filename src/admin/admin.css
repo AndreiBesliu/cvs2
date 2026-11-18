@@ -669,8 +669,13 @@
   border-top: 1px solid var(--l-margine);
 }
 
+/* Grila cu o coloană plină: regula globală a butoanelor (`justify-content: center`) ar strânge coloana pe text și ar
+   centra-o (18.11, bancul la 1440 px). */
 .admin-erori-lista button {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  justify-items: start;
   gap: 6px;
   width: 100%;
   padding: 12px 14px;
@@ -746,7 +751,9 @@
   color: var(--t-slab);
 }
 
+/* Cel mult 28rem: 14 bare pe toată lățimea detaliului ar fi blocuri late de 50 px (bancul, 18.11); așa rămân subțiri. */
 .admin-grafic {
+  max-width: 28rem;
   margin: var(--sp-1) 0 0;
   display: grid;
   gap: var(--sp-1);

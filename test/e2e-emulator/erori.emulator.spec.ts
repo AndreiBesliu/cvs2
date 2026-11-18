@@ -100,6 +100,12 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   const lista = await page.locator('[data-admin="lista-erori"]').boundingBox();
   const cutie = await detaliu.boundingBox();
   expect(lista && cutie && cutie.x >= lista.x + lista.width).toBe(true);
+  // Textul rândurilor pornește din stânga (bancul, 18.11: regula globală a butoanelor centra grila rândului).
+  for (const rand of await page.locator('[data-grup] button').all()) {
+    const b = await rand.boundingBox();
+    const m = await rand.locator('.admin-grup-mesaj').boundingBox();
+    expect(b && m && m.x - b.x < 20).toBe(true);
+  }
 
   // Graficul: o bară pe fiecare zi cu apariții (din aparițiile citite), cu totalul în eticheta lui.
   const zileCu = new Set(CAND_G1.map((d) => d.toDateString())).size;
@@ -139,6 +145,11 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   // Aleasă rămâne cea văzută (G1), nu sare înapoi pe G2, ascunsă între timp de filtru.
   await expect(page.locator(`[data-grup="${G1}"]`)).toHaveAttribute('data-ales', 'true');
   await expect(page.locator('[data-grup][data-ales="true"]')).toHaveCount(1);
+  // G3, cu aparițiile mai vechi de 14 zile: în locul axei goale, propoziția; aparițiile, dedesubt.
+  await page.locator(`[data-grup="${G3}"]`).click();
+  await expect(detaliu.locator('[data-grafic="gol"]')).toBeVisible();
+  await expect(detaliu.locator('[data-grafic="aparitii"]')).toHaveCount(0);
+  await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(1);
 
   // Marcarea, din detaliu.
   await page.locator('[data-filtru="nerezolvate"]').click();

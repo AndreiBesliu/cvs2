@@ -49,6 +49,8 @@ export const enAdmin = {
   'admin.erori.grafic': 'Occurrences over 14 days',
   'admin.erori.grafic-eticheta': { one: '{n} occurrence in the last 14 days, of those read', other: '{n} occurrences in the last 14 days, of those read' },
   'admin.erori.azi': 'today',
+  'admin.erori.grafic-gol': 'No occurrences in the last 14 days.',
+  'admin.erori.fara-aparitii': 'No occurrences kept for this error (they are kept for 90 days).',
   'admin.diag.verificat-la': 'Checked at {ora}',
   'admin.diag.sumar': 'Summary of the checks',
   'admin.erori.build': 'Build {build} · instance {instanta}',

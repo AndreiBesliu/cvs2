@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { collection, getCount, getDocs, limit, orderBy, query, where, type Query } from 'firebase/firestore/lite';
 import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
@@ -150,12 +150,26 @@ function DetaliiAparitie({ a }: { readonly a: Aparitie }): ReactElement {
   );
 }
 
+const INALTIME_GRAFIC = 48;
+
 /**
  * Aparițiile pe 14 zile (ADR 0260 §2), din aparițiile citite: o bară pe zi (baza pe axă, capătul rotunjit), în culoarea de
- * accent; fiecare bară spune ziua și numărul la hover, iar eticheta graficului, totalul. Fără bibliotecă.
+ * accent; fiecare bară spune ziua și numărul la hover, iar eticheta graficului, totalul. Fără bibliotecă. Barele se
+ * desenează la lățimea măsurată a graficului (fără scalare, deci colțurile rămân rotunde); fără nicio apariție în cele
+ * 14 zile, o propoziție în locul axei goale.
  */
 function GraficAparitii({ aparitii }: { readonly aparitii: readonly Aparitie[] }): ReactElement {
   const l = useLimba();
+  const [latime, setLatime] = useState(280);
+  const masoara = useCallback((el: SVGSVGElement | null) => {
+    if (!el) return undefined;
+    const o = new ResizeObserver(([e]) => {
+      const w = Math.round(e?.contentRect.width ?? 0);
+      if (w > 0) setLatime(w);
+    });
+    o.observe(el);
+    return () => { o.disconnect(); };
+  }, []);
   const acum = new Date();
   const zile = aparitiiPeZile(aparitii.map((a) => a.cand), acum);
   const total = zile.reduce((s, x) => s + x, 0);
@@ -164,13 +178,18 @@ function GraficAparitii({ aparitii }: { readonly aparitii: readonly Aparitie[] }
   return (
     <figure className="admin-grafic">
       <figcaption className="admin-slab">{t('admin.erori.grafic')}</figcaption>
-      <svg viewBox="0 0 280 40" preserveAspectRatio="none" role="img" aria-label={t('admin.erori.grafic-eticheta', { n: total })} data-grafic="aparitii">
-        <line x1="0" y1="39.5" x2="280" y2="39.5" className="admin-grafic-axa" />
-        {baraGrafic(zile, 280, 40).map((b, k) => (b.cale ? (
-          <path key={k} d={b.cale} data-zi={k} className="admin-grafic-bara"><title>{`${ziua(k)} · ${zile[k] ?? 0}`}</title></path>
-        ) : null))}
-      </svg>
-      <div className="admin-grafic-capete admin-slab"><span>{ziua(0)}</span><span>{t('admin.erori.azi')}</span></div>
+      {total === 0 ? <p className="admin-slab" data-grafic="gol">{t('admin.erori.grafic-gol')}</p> : (
+        <>
+          <svg ref={masoara} viewBox={`0 0 ${latime} ${INALTIME_GRAFIC}`} role="img" aria-label={t('admin.erori.grafic-eticheta', { n: total })}
+            data-grafic="aparitii">
+            <line x1="0" y1={INALTIME_GRAFIC - 0.5} x2={latime} y2={INALTIME_GRAFIC - 0.5} className="admin-grafic-axa" />
+            {baraGrafic(zile, latime, INALTIME_GRAFIC).map((b, k) => (b.cale ? (
+              <path key={k} d={b.cale} data-zi={k} className="admin-grafic-bara"><title>{`${ziua(k)} · ${zile[k] ?? 0}`}</title></path>
+            ) : null))}
+          </svg>
+          <div className="admin-grafic-capete admin-slab"><span>{ziua(0)}</span><span>{t('admin.erori.azi')}</span></div>
+        </>
+      )}
     </figure>
   );
 }
@@ -219,6 +238,7 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
       <DetaliiAparitie a={grup.ultima} />
       {aparitii === null ? <SeIncarca text={t('admin.erori.se-incarca')} />
         : !aparitii.ok ? <p className="admin-eroare" role="alert">{t('admin.erori.aparitii-citire', { motiv: aparitii.motiv })}</p>
+          : aparitii.valoare.length === 0 ? <p className="admin-slab" data-admin="fara-aparitii">{t('admin.erori.fara-aparitii')}</p>
           : (
             <>
               <GraficAparitii aparitii={aparitii.valoare} />

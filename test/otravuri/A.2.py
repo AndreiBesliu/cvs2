@@ -71,6 +71,11 @@ o('E12', DG, '<strong>{sumar[s]}</strong>', '<strong>{sumar.bine}</strong>', 'e2
 o('E13', DG, '{rezultat ? (', '{false ? (', 'e2e', 'fără ora verificării')
 o('E14', CSS, '@media (max-width: 800px) {\n  .admin-erori-corp {\n    flex-direction: column;\n',
   '@media (max-width: 800px) {\n  .admin-erori-corp {\n', 'e2e', 'sub 800 px, detaliul rămâne alături, strivit')
+# Găsite de bancul vizual pe 18.11: graficul gol fără nicio vorbă, textul rândurilor centrat.
+o('E15', ER, "{total === 0 ? <p className=\"admin-slab\" data-grafic=\"gol\">", "{false ? <p className=\"admin-slab\" data-grafic=\"gol\">", 'e2e',
+  'fără nicio apariție în 14 zile, o axă goală în loc de propoziție')
+o('E16', CSS, '  grid-template-columns: minmax(0, 1fr);\n  justify-content: stretch;\n', '', 'e2e',
+  'textul rândurilor centrat de regula globală a butoanelor')
 
 SETURI = {
     'vederi': ['test/unit/admin.vederi.test.ts'],
@@ -80,5 +85,5 @@ E2E = ['test/e2e-emulator/erori.emulator.spec.ts']
 T1, T2, T3 = 'Erori: lista în stânga', 'Diagnoza: sumarul', 'un rol care doar citește erorile'
 GREP = {
     'E01': T1, 'E02': T1, 'E03': T1, 'E04': T1, 'E05': T1, 'E06': T1, 'E07': T1, 'E08': T1, 'E09': T3, 'E10': T1,
-    'E11': T2, 'E12': T2, 'E13': T2, 'E14': T1,
+    'E11': T2, 'E12': T2, 'E13': T2, 'E14': T1, 'E15': T1, 'E16': T1,
 }

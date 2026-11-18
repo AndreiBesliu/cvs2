@@ -133,7 +133,8 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   expect(await cate('audit')).toBe(1);
 
   await page.locator('[data-fila="diagnoza"]').click();
-  await expect(page.locator('[data-verificare="functii"]')).toHaveAttribute('data-stare', 'bine');
+  // Sonda funcțiilor pornește la rece `logClientError` în emulator (18.11: execuția a început după 5 s): termen mai lung.
+  await expect(page.locator('[data-verificare="functii"]')).toHaveAttribute('data-stare', 'bine', { timeout: 30_000 });
   await expect(page.locator('[data-verificare="nerezolvate"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="instanta"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="appcheck"]')).toHaveAttribute('data-stare', 'info');

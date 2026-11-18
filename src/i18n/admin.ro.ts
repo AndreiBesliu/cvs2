@@ -51,6 +51,8 @@ export const roAdmin = {
     other: '{n} de apariții în ultimele 14 zile, din cele citite',
   },
   'admin.erori.azi': 'azi',
+  'admin.erori.grafic-gol': 'Nicio apariție în ultimele 14 zile.',
+  'admin.erori.fara-aparitii': 'Nicio apariție păstrată pentru eroarea asta (se păstrează 90 de zile).',
   'admin.diag.verificat-la': 'Verificată la {ora}',
   'admin.diag.sumar': 'Sumarul verificărilor',
   'admin.erori.build': 'Build {build} · instanța {instanta}',
