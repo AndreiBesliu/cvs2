@@ -52,7 +52,9 @@ var Lego = (function (glob: typeof globalThis) {
     // rotitele dintate (ADR 0169): jocul pe flanc, pe cercul de divizare (varianta 3; 0,05 ... 0,25 mm la calibrare)
     joc_dinti: 0.15,
     varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3,
-    pas_stift: 0.05, pas_locas: 0.05, pas_gaura: 0.1, pas_ax: 0.1, pas_bara: 0.1, pas_cupa: 0.1, pas_dinti: 0.05,
+    // janta tiparita (ADR 0280): varianta muta diametrul scaunului anvelopei, ca o anvelopa LEGO sau din TPU sa stea strans
+    varianta_janta: 3,
+    pas_stift: 0.05, pas_locas: 0.05, pas_gaura: 0.1, pas_ax: 0.1, pas_bara: 0.1, pas_cupa: 0.1, pas_dinti: 0.05, pas_janta: 0.1,
     pat: [180, 180] as [number, number], pat_margine: 5, pat_distanta: 4,
   };
   let P = { ...IMPLICIT };
@@ -85,6 +87,8 @@ var Lego = (function (glob: typeof globalThis) {
     cupaGura: P.cupa_gura + (P.varianta_cupa - 3) * P.pas_cupa,
     // jocul dintre dintii rotitelor, pe flanc (ADR 0169)
     jocDinti: Math.max(0, P.joc_dinti + (P.varianta_dinti - 3) * P.pas_dinti),
+    // cat se muta diametrul scaunului jantei fata de cel cerut (ADR 0280): 0 la varianta 3, cate 0,1 mm pe varianta
+    jantaD: (P.varianta_janta - 3) * P.pas_janta,
   });
 
   // ---------------------------------------------------------------------------------------------- corpuri
@@ -1242,6 +1246,137 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri: prismaRasucita(ext, g, h, 2 * n, zh => (zh <= h / 2 ? zh : h - zh) * k), avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- roata cu anvelopa
+  // Roata cu anvelopă (ADR 0280, felia 3.Tj), culcată pe pat: axa pe z, fața cu spițele jos. Janta: banda cu scaunul
+  // anvelopei și canalul nervurii, butucul cu gaura Technic, discul sau spițele pe fața de jos; anvelopa: alezajul cu
+  // nervura, umerii teșiți, banda de rulare. Corpuri închise care se suprapun, ca știfturile cărămizilor. Cotele LEGO, din
+  // biblioteca LDraw (CC BY 4.0): janta 55982 are scaunul Ø16,8 pe 13,6 mm și canalul nervurii la mijloc; anvelopa 58090
+  // are 30,4 × 13,6, alezajul Ø16,5, nervura de 2,8 mm până la r 7,46, umerii teșiți de la r 15,15 la 14,0 pe 1,8 mm și
+  // trei canale de 0,4 mm pe banda de rulare.
+  const ROATA = {
+    canal: 1.6, canalAd: 1.05, perete: 0.85, // canalul nervurii în scaun (jumătate de lățime, adâncimea) și peretele de sub el
+    alezaj: 0.15, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.8, // anvelopa: alezajul sub scaun, nervura (bază, vârf, adâncime)
+    umar: 1.15, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4, // umerii teșiți; canalele benzii (la 13,6 mm)
+    bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.3,
+  };
+  // cotele jantei (o singură dată, pentru motor și atelier): peretele de sub canal crește cu diametrul (0,04·D, cel puțin
+  // 0,85 ca la LEGO), banda pornește de la rb, butucul are raza rh; spițele încap doar dacă între butuc și bandă rămân 3,5 mm
+  function jantaCote(D: number, gaura: string) {
+    const e = ef(), K = ROATA, perete = Math.max(K.perete, 0.04 * D), rb = D / 2 - K.canalAd - perete;
+    const rgaura = gaura === "r" ? e.gauraD / 2 : gaura === "nu" ? 0 : Math.hypot(e.axGauraD / 2, e.axGauraLat / 2);
+    const rh = Math.max(K.butuc, rgaura + K.peretButuc);
+    return { rb, rh, spite: rb - rh >= 3.5 - 1e-9 };
+  }
+  function roata({ fel = "plina", diam = 30.4, lat = 13.6, janta = 16.8, banda = "nervuri", spite = "disc", nrSpite = 5, gaura = "x" }: {
+    fel?: string; diam?: number; lat?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; gaura?: string }): Corp {
+    const e = ef(), avert: string[] = [], K = ROATA;
+    const nr = (v: unknown, d: number) => (Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const W = zecime(Math.min(40, Math.max(4, nr(lat, 13.6))));
+    let D = zecime(Math.min(150, Math.max(12.6, nr(janta, 16.8))));
+    if (D !== nr(janta, 16.8)) avert.push(tr`Janta are între 12,6 și 150 mm: am făcut-o de ${String(D).replace(".", Limba.zecimal)} mm.`);
+    let Dt = zecime(Math.min(200, nr(diam, 30.4)));
+    if (fel !== "janta" && Dt < D + 4) { Dt = zecime(D + 4); avert.push(tr`Anvelopa are nevoie de cel puțin 2 mm peste jantă: am făcut-o de Ø ${String(Dt).replace(".", Limba.zecimal)} mm.`); }
+    // scaunul tipărit primește varianta de la calibrare (doar la jantă: o anvelopă LEGO sau din TPU se pune pe el)
+    const Rs = D / 2 + (fel === "janta" ? e.jantaD / 2 : 0), R = Dt / 2, zc = W / 2;
+    const { rb, rh, spite: incap } = jantaCote(D, gaura), n = 4 * Math.ceil(Math.min(192, Math.max(N_CERC, 2 * Math.PI * R / 1.2)) / 4);
+    const tri: Tri[] = [];
+    // profilul exterior al anvelopei pe z: umerii teșiți (ca LEGO, în linie dreaptă), banda; `jos` coboară umerii (blocurile)
+    const umarLat = Math.min(K.umarLat, W / 4), sc = W / 13.6;
+    const nervuri = banda === "nervuri" ? [-K.nervuri * sc, 0, K.nervuri * sc].map(d => zc + d) : [];
+    const zona = W * 0.3;
+    const exterior = (z: number, jos: number) => {
+      const u = Math.min(z, W - z), r = R - K.umar * Math.max(0, (umarLat - u) / umarLat);
+      if (nervuri.some(c => Math.abs(z - c) < K.nervuraLat / 2 - 1e-9)) return r - K.nervuraAdanc;
+      return u < zona - 1e-9 ? r - jos : r;
+    };
+    // punctele de pe z unde profilul se frânge (umeri, canale, zonele blocurilor), plus câte 0,4 mm între ele
+    const frangeri = [0, umarLat, W - umarLat, W, zona, W - zona, ...nervuri.flatMap(c => [c - K.nervuraLat / 2, c + K.nervuraLat / 2])]
+      .filter(z => z >= 0 && z <= W).sort((a, b) => a - b);
+    const zs: number[] = [];
+    for (let i = 0; i < frangeri.length; i++) {
+      zs.push(frangeri[i]!);
+      const urm = frangeri[i + 1];
+      if (urm === undefined) break;
+      const k = Math.floor((urm - frangeri[i]!) / 0.4);
+      for (let j = 1; j < k; j++) zs.push(frangeri[i]! + (urm - frangeri[i]!) * j / k);
+    }
+    const unice = zs.filter((z, i) => i === 0 || z - zs[i - 1]! > 1e-6);
+    // în fiecare punct de frângere al canalelor și al zonelor, două puncte: înainte și după treaptă
+    const contur = (jos: number): P2[] => {
+      const p: P2[] = [];
+      for (const z of unice) {
+        const a = exterior(z - 1e-7, jos), b = exterior(z + 1e-7, jos);
+        if (z > 0 && z < W && Math.abs(a - b) > 1e-6) p.push([a, z], [b, z]); else p.push([exterior(z, jos), z]);
+      }
+      return p;
+    };
+    const blocuri = banda === "blocuri" && fel !== "janta";
+    if (fel !== "janta") {
+      const ext = contur(blocuri ? K.bloc : 0);
+      const interior: P2[] = fel === "anvelopa"
+        ? (() => {
+          // alezajul cu nervura la mijloc (trapez), ca anvelopa LEGO 58090: se pune și pe janta LEGO, și pe cea tipărită
+          const ra = D / 2 - K.alezaj, rv = ra - K.nervuraAd;
+          return [[ra, W], [ra, zc + K.nervura], [rv, zc + K.nervuraVarf], [rv, zc - K.nervuraVarf], [ra, zc - K.nervura], [ra, 0]];
+        })()
+        : [[rb, W], [rb, 0]];
+      // exteriorul urcă pe z, interiorul coboară: un poligon simplu în (r, z)
+      tri.push(...strung([...ext, ...interior], 0, 2 * Math.PI, 0, 0, n));
+      if (blocuri) {
+        // blocurile pe umeri, alternate între jos și sus, ca în poza owner-ului: fiecare, un corp rotit parțial peste umăr
+        const nb = Math.max(12, Math.round(2 * Math.PI * R / 3.2)), pas = 2 * Math.PI / nb;
+        const bloc = (z0: number, z1: number): P2[] => {
+          const sus = unice.filter(z => z >= z0 - 1e-9 && z <= z1 + 1e-9).map((z): P2 => [exterior(z, 0), z]);
+          const jos = sus.map(([r, z]): P2 => [r - K.bloc - 0.2, z]).reverse();
+          return [...sus, ...jos];
+        };
+        const pJos = bloc(0, zona), pSus = bloc(W - zona, W);
+        for (let k = 0; k < nb; k++) {
+          const a0 = k * pas, a1 = a0 + pas * 0.55;
+          tri.push(...strung(k % 2 ? pSus : pJos, a0, a1, 0, 0, n));
+        }
+      }
+    }
+    if (fel !== "anvelopa") {
+      // janta: banda (cu scaunul și canalul nervurii, teșit la 45° sus, ca să se tipărească fără suport), fața și butucul
+      if (fel === "janta") {
+        const rg = Rs - K.canalAd;
+        tri.push(...strung([[rb, 0], [Rs, 0], [Rs, zc - K.canal], [rg, zc - K.canal], [rg, zc + K.canal - K.canalAd], [Rs, zc + K.canal], [Rs, W], [rb, W]], 0, 2 * Math.PI, 0, 0, n));
+      }
+      const g: Poli | null = gaura === "r" ? cerc(0, 0, e.gauraD / 2) : gaura === "nu" ? null : cruce(0, 0, e.axGauraD, e.axGauraLat);
+      // fața, cât 0,3 din lățime (2–6 mm): butucul, înalt cât roata, stă pe ea; spițele, după diametrul jantei (1,8–4,5 mm)
+      const tp = Math.min(6, Math.max(2, K.fata * W)), ws = Math.min(4.5, Math.max(K.spita, 0.07 * D)), wr = Math.max(1.4, K.ramura * ws);
+      tri.push(...(g ? inel(cerc(0, 0, rh), g, [0, 0], 0, W) : cilindru(0, 0, rh, 0, W)));
+      // fața: discul, spițele drepte, în Y sau discul cu găuri, de la butuc la bandă (peste ele câte 0,3 mm)
+      let fata = spite;
+      if (fata !== "disc" && !incap) {
+        avert.push(tr("Janta e prea mică pentru spițe: am făcut fața plină."));
+        fata = "disc";
+      }
+      const N = Math.round(Math.min(12, Math.max(3, nr(nrSpite, 5)))), r0 = rh - 0.3, r1 = rb + 0.3;
+      const bara = (A: P2, B: P2, w: number): Poli => {
+        const L = Math.hypot(B[0] - A[0], B[1] - A[1]), nx = -(B[1] - A[1]) / L * w / 2, ny = (B[0] - A[0]) / L * w / 2;
+        return trig([[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]]);
+      };
+      if (fata === "disc") tri.push(...inel(cerc(0, 0, r1), cerc(0, 0, r0), [0, 0], 0, tp));
+      else if (fata === "gauri") {
+        const rm = (rh + rb) / 2, rgol = Math.max(0.6, Math.min((rb - rh) / 2 - 0.9, rm * Math.sin(Math.PI / N) - 0.9));
+        tri.push(...prismaGauri(cerc(0, 0, r1), [cerc(0, 0, r0), ...Array.from({ length: N }, (_, k) => cerc(rm * Math.cos(2 * Math.PI * k / N + Math.PI / N), rm * Math.sin(2 * Math.PI * k / N + Math.PI / N), rgol, 24))], 0, tp));
+      } else {
+        const rs = rh + 0.45 * (rb - rh), phi = 0.35 * Math.PI / N;
+        for (let k = 0; k < N; k++) {
+          const t = 2 * Math.PI * k / N, u = (r: number, a: number): P2 => [r * Math.cos(t + a), r * Math.sin(t + a)];
+          if (fata === "drepte") tri.push(...prisma(bara(u(r0, 0), u(r1, 0), ws), 0, tp));
+          else {
+            tri.push(...prisma(bara(u(r0, 0), u(rs + 0.4, 0), ws), 0, tp));
+            tri.push(...prisma(bara(u(rs, 0), u(r1, phi), wr), 0, tp), ...prisma(bara(u(rs, 0), u(r1, -phi), wr), 0, tp));
+          }
+        }
+      }
+    }
+    return { tri, avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1300,6 +1435,19 @@ var Lego = (function (glob: typeof globalThis) {
       const joc = String(Math.round(ef().jocDinti * 100) / 100).replace(".", Limba.zecimal);
       piese.push({ nume: `calibrare_rotita_${v}`, titlu: tr`Calibrare: roata dințată ${v} (joc ${joc} mm)`, tri: laOrigine(tri) });
     }
+    // jantele de probă (ADR 0280): cinci jante LEGO (scaunul Ø16,8 pe 13,6 mm, cu canalul nervurii), fiecare cu alt diametru
+    // al scaunului (16,6 ... 17,0 mm); o anvelopă LEGO 30,4 × 14 se pune pe ele, iar varianta care ține strâns intră în
+    // profil. Semnul: v cubulețe pe fața de sus a benzii.
+    for (let v = 1; v <= 5; v++) {
+      P = { ...salvat, varianta_janta: v };
+      const tri = roata({ fel: "janta", janta: 16.8, lat: 13.6, spite: "disc", gaura: "x" }).tri;
+      for (let k = 0; k < v; k++) {
+        const x = 7.45 * Math.cos(k * 0.5), y = 7.45 * Math.sin(k * 0.5);
+        tri.push(...cutie(x - 0.5, y - 0.5, 13.59, x + 0.5, y + 0.5, 14.59));
+      }
+      const d = String(Math.round((16.8 + ef().jantaD) * 100) / 100).replace(".", Limba.zecimal);
+      piese.push({ nume: `calibrare_janta_${v}`, titlu: tr`Calibrare: janta ${v} (Ø ${d} mm)`, tri: laOrigine(tri) });
+    }
     P = { ...salvat };
     piese.push({ nume: "calibrare_bara_proba", titlu: tr("Calibrare: bară de probă"), tri: laOrigine(bara({ lung: 4 }).tri) });
     piese.push({ nume: "calibrare_bila", titlu: tr("Calibrare: bilă de probă"), tri: laOrigine(bila({ baza: 1 }).tri) });
@@ -1323,7 +1471,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1409,5 +1557,7 @@ var Lego = (function (glob: typeof globalThis) {
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
+    spiteIncap: (janta: number, gaura = "x") => jantaCote(Math.min(150, Math.max(12.6, +janta || 16.8)), gaura).spite,
+    jantaMinimaSpite: (gaura = "x") => { let D = 12.6; while (D < 150 && !jantaCote(D, gaura).spite) D = Math.round((D + 0.1) * 10) / 10; return D; },
     _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita } };
 })(typeof globalThis !== "undefined" ? globalThis : window);
