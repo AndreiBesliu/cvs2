@@ -1346,7 +1346,8 @@ var Lego = (function (glob: typeof globalThis) {
       const g: Poli | null = gaura === "r" ? cerc(0, 0, e.gauraD / 2) : gaura === "nu" ? null : cruce(0, 0, e.axGauraD, e.axGauraLat);
       // fața, cât 0,3 din lățime (2–6 mm): butucul, înalt cât roata, stă pe ea; spițele, după diametrul jantei (1,8–4,5 mm)
       const tp = Math.min(6, Math.max(2, K.fata * W)), ws = Math.min(4.5, Math.max(K.spita, 0.07 * D)), wr = Math.max(1.4, K.ramura * ws);
-      tri.push(...(g ? inel(cerc(0, 0, rh), g, [0, 0], 0, W) : cilindru(0, 0, rh, 0, W)));
+      // butucul: același cerc la toate găurile (prismaGauri, ca la rotițe), deci găurile diferă doar prin aria lor
+      tri.push(...prismaGauri(cerc(0, 0, rh), g ? [g] : [], 0, W));
       // fața: discul, spițele drepte, în Y sau discul cu găuri, de la butuc la bandă (peste ele câte 0,3 mm)
       let fata = spite;
       if (fata !== "disc" && !incap) {

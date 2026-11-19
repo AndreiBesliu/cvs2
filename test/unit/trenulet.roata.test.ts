@@ -110,6 +110,27 @@ test('fața: discul, spițele drepte, în Y și găurile; spițele încap de la 
   // câte spițe: între 3 și 12
   assert.equal(tri('drepte', 20), tri('drepte', 12));
   assert.equal(tri('drepte', 1), tri('drepte', 3));
+  // fața, cât 0,3 din lățime (la 13,6 mm: 4,08), de la butuc (r 4,8 − 0,3) la bandă
+  assert.ok(profil(roata({})).some(([r, z]) => aproape(r, 4.5) && aproape(z, 4.08)), 'fața de 4,08 mm');
+  // la janta de 36: peretele de sub canal e 0,04·D (1,44), deci banda pornește de la r 18 − 1,05 − 1,44 = 15,51; spița
+  // dreaptă are 0,07·D = 2,52 mm (capătul ei, la r 15,81, la ±1,26 de axa ei)
+  const j = roata({ fel: 'janta', janta: 36, lat: 26, spite: 'drepte', nrSpite: 3 }), c = j.dim[0]! / 2;
+  assert.ok(profil(j).some(([r, z]) => aproape(r, 15.51) && aproape(z, 26)), 'banda de la r 15,51');
+  const capete = j.tri.flatMap((t) => t).filter((q) => Math.abs(q[2]) < 1e-9 && aproape(q[0] - c, 15.81, 0.01)).map((q) => Math.round((q[1] - c) * 100) / 100);
+  assert.deepEqual([...new Set(capete)].sort((a, b) => a - b), [-1.26, 1.26], 'spița de 2,52 mm');
+});
+
+test('găurile butucului: crucea axului, cercul știftului sau fără (diferența de volum = aria găurii × lățimea)', () => {
+  const e = L.efective(), W = 13.6, v = (gaura: string) => {
+    let s = 0;
+    for (const [a, b, c] of roata({ gaura }).tri) s += a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
+    return s / 6;
+  };
+  const crucea = 2 * e['axGauraD']! * e['axGauraLat']! - e['axGauraLat']! ** 2;
+  const cercul = (48 / 2) * (e['gauraD']! / 2) ** 2 * Math.sin((2 * Math.PI) / 48);
+  const [x, r, nu] = [v('x'), v('r'), v('nu')];
+  assert.ok(Math.abs(nu - x - crucea * W) < 0.05, `crucea: ${(nu - x).toFixed(3)} față de ${(crucea * W).toFixed(3)} mm³`);
+  assert.ok(Math.abs(nu - r - cercul * W) < 0.05, `cercul: ${(nu - r).toFixed(3)} față de ${(cercul * W).toFixed(3)} mm³`);
 });
 
 test('banda de rulare: trei canale de 0,4 mm, netedă sau cu blocuri alternate pe umeri', () => {
@@ -125,9 +146,12 @@ test('banda de rulare: trei canale de 0,4 mm, netedă sau cu blocuri alternate p
   assert.equal(muchiiRele(b.tri), 0);
   const p = profil(b);
   assert.ok(p.some(([r, z]) => aproape(r, R - 0.6) && aproape(z, W * 0.3)), 'baza coborâtă pe umăr');
-  const nb = Math.round(2 * Math.PI * R / 3.2);
-  assert.equal(nb, 30);
-  assert.equal(b.tri.length - roata({ banda: 'neteda' }).tri.length > 0, true);
+  // blocurile: fața lor dinăuntru, la r 15,2 − 0,8, numai pe ele; pe fiecare umăr, câte unul la doi pași (15 jos, 15 sus)
+  const c = b.dim[0]! / 2, unghiuri = (jos: boolean) => b.tri.flatMap((t) => t)
+    .filter((q) => aproape(Math.hypot(q[0] - c, q[1] - c), R - 0.8) && (q[2] < W / 2) === jos)
+    .map((q) => Math.atan2(q[1] - c, q[0] - c)).sort((a, b2) => a - b2);
+  const grupuri = (u: number[]) => u.filter((a, i) => i === 0 || a - u[i - 1]! > 0.15).length - (u.length && u[0]! + 2 * Math.PI - u[u.length - 1]! <= 0.15 ? 1 : 0);
+  assert.deepEqual([grupuri(unghiuri(true)), grupuri(unghiuri(false))], [15, 15], 'blocurile: 15 jos și 15 sus');
 });
 
 test('marginile și avertismentele: janta, anvelopa peste jantă, lățimea', () => {

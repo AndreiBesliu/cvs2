@@ -68,6 +68,11 @@ test('roata mare cu spițe în Y: numele, STL-ul descărcat închis, cu raza cer
   expect(triunghiuri).toBeGreaterThan(5_000);
   expect(rele).toBe(0);
   expect(raza).toBeCloseTo(28, 2);
+  // înapoi la mărimea LEGO: spițele alese nu mai încap, deci fața e plină, iar numele nu le mai pomenește
+  await page.locator('#at-ro-lego').click();
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Roată 30,4 × 13,6');
+  await expect(page.locator('#at-cote')).toContainText('30,4 × 30,4 × 13,6 mm');
+  await expect(page.locator('#at-ro-fata-plina')).toBeVisible();
 });
 
 test('„Pune janta și anvelopa” și varianta jantei din calibrare (la 5, scaunul cu 0,1 mm mai mare pe rază decât la 3)', async ({ page }) => {
