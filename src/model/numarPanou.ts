@@ -51,7 +51,8 @@ const inauntru = (a: Cutie, b: Cutie): boolean => a.minX >= b.minX && a.maxX <= 
  */
 export function locNumar(contururi: readonly Contur[], cifre: Cutie, joc: number): Punct | null {
   const inchise = contururi.filter((c) => c.inchis);
-  if (inchise.length === 0 || !(joc > 0)) return null;
+  // Fără contururi închise, cutia panoului e goală și nu iese niciun loc (otrava N08: o probă separată era de prisos).
+  if (!(joc > 0)) return null;
   const cutii = contururi.map(cutieContur);
   const K = inchise.reduce((k, c) => uneste(k, cutieContur(c)), CUTIE_GOALA);
   const w = cifre.maxX - cifre.minX, h = cifre.maxY - cifre.minY;

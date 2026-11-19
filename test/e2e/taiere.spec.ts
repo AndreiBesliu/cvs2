@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { cerc, dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
+import { documentSalvat } from './ajutor-document.ts';
 
 /**
  * Tăierea cu o linie dreaptă (felia 10.3↑, ADR 0180), în Edge, pe un DXF importat (o piesă cu un pătrat 100 × 100 și un cerc
@@ -99,6 +100,8 @@ test('fără „Închide bucățile”: tot două forme, bifa ținută după re�
   await page.locator('[data-taiere="taie"]').click();
   await expect(page.getByTestId('taiere-stare')).toHaveText('Tăietura nu trece prin nicio formă aleasă (o atingere nu taie).');
 
+  // Salvarea pleacă după schimbare, nu odată cu ea: reîncărcată înainte, pagina ar arăta versiunea de dinainte de tăiere.
+  await expect.poll(async () => (JSON.parse(await documentSalvat(page, 0)) as { foi: Array<{ instante: unknown[] }> }).foi[0]?.instante.length).toBe(2);
   await page.reload();
   await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-editare="taiere"]').click();
@@ -574,7 +577,10 @@ test('Numărul panoului: cu bifa, fiecare panou primește cifrele lui, gravate p
   await expect(page.getByTestId('lista-vectori').getByText('Piesa: 2 forme')).toBeVisible();
   await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page)).toHaveCount(1);
-  // Bifa rămâne ținută; oprită, tăierea nu mai pune numere.
+  // Bifa e ținută în browser: și după reîncărcare (versiunea salvată întâi, ca pagina să nu se întoarcă la ea).
+  await expect.poll(async () => (JSON.parse(await documentSalvat(page, 0)) as { foi: Array<{ instante: unknown[] }> }).foi[0]?.instante.length).toBe(1);
+  await page.reload();
+  await expect(randuri(page)).toHaveCount(1);
   await page.locator('[data-editare="taiere"]').click();
   await expect(page.locator('[data-taiere="panouri-numere"]')).toBeChecked();
   await page.locator('[data-taiere="panouri-numere"]').uncheck();

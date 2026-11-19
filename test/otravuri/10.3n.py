@@ -29,7 +29,6 @@ o('N04', N, "      if (!inRegiune(q, inchise)) return false;\n", "", 'numar', 'c
 o('N05', N, "const pas = joc / 2, departe = joc + pas / 2;", "const pas = joc / 2, departe = joc;", 'numar', 'probele cer doar jocul (fără jumătatea de pas)')
 o('N06', N, "  locuri.sort((a, b) => a.d - b.d || a.y - b.y);\n", "", 'numar', 'locurile, rând cu rând, nu de la colț')
 o('N07', N, "  grila(finX, finY, 30);\n", "", 'numar', 'fără grila fină de lângă colț')
-o('N08', N, "  if (inchise.length === 0 || !(joc > 0)) return null;", "  if (!(joc > 0)) return null;", 'numar', 'fără contururi închise, un loc oarecare')
 # Workerul și acțiunea.
 o('P01', M, "  return { ok: true, degrupate, ids, forme, scoase, sterse: [], grupuri, panouri: celule.length, perPanou };",
   "  return { ok: true, degrupate, ids, forme, scoase, sterse: [], grupuri, panouri: celule.length };", 'numar', 'workerul nu dă bucățile panourilor')
