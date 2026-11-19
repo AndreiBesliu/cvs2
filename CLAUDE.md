@@ -1239,6 +1239,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 19.11.2026: **12.1↑f-3, 12.1↑f-4 și 3.Tj unite în `main`** (la „unește ce se poate”): supracursa în fereastra
+  exportului și, la alegere, pe tăieturile cât foaia (`70bc8169`, exact `2861e718`; ADR 0176 și 0177, acceptate de owner
+  în sesiunea liniei). Linia se oprise în mijlocul aducerii lui `main`; ciocnirile, doar în listele de proprietăți din
+  `DialogExport.tsx` și `ExportConectat.tsx` (`trimite`, din 28.1↑d, lângă `supracursa` și `prinFoaie`) și în DEVLOG,
+  rezolvate la unire. Roata cu anvelopă în atelierul Easy 3Draw (`70cacc32`, exact `0ad10b6c`; ADR 0280, acceptat „Da,
+  fără TPU” (1a, 2b, 3a) și implementat la 3.Tj, pachetul 18.10.0; cotele LEGO măsurate în fișierele LDraw, ținute în
+  afara repo-ului). Secțiunea mărită a jantei peste profilul fin al nervurii LEGO a găsit, înaintea unirii, teșitura
+  canalului intrată 0,46 mm în nervură: reparată, cu proba pe punctele măsurate. Proba e2e a rotițelor, rămasă la
+  „șapte numere” în pasul de calibrare, adusă la zi. Porțile pe unire: unit 9 612 / 0, e2e 551 / 552 (S06 din
+  `otravuri-28.spec.ts`, stratul traseului neapărut în 5 s sub încărcare: trece singură și 9 / 9 repetată cu trei
+  lucrători), emulatoarele 101 / 101 și 29 / 29. Totalul 738,9 / 800, pornirea cu ușa 111,2 / 115, `/admin` 113,7 / 200.
+  Urmează 3.Tk (fulia), la cuvântul owner-ului. Necomis în worktree-uri: adminul (cu ADR 0261 propus) și trasarea.
 - 18.11.2026: **28.1↑d, 3.Th, 11.3↑c și 3.6u unite în `main`** (la „unește ce se poate”, după rapoartele liniilor):
   tăierea din butoane mari în Atelier și „Trimite la mașină” (`a88502ab`, exact `c957303b`; ADR 0250, cu §7 schimbat de
   owner în aceeași zi: pe telefon nu mai lucrăm la desen); rotițele dințate în atelierul Easy 3Draw (`7d9f6888`, exact
