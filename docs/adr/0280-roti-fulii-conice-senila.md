@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj și 3.Tk implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk și 3.Tl implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -160,6 +160,48 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
   pornește 3.Tk”); recenzia proprie: corpurile închise pe 576 de combinații în proba de lucru (180 în proba unitară),
   secțiunea mărită peste 4185a și 4185b, amprentele roții (1 351, neschimbate) și VOID-urile tuturor listelor de
   otrăvuri ale pluginului (două noi, mutate; plus 3.Th E06, rămasă de la 3.Tj).
+
+## Felia 3.Tl, implementată: roata conică (pachetul 18.12.0)
+
+- **Cotele LEGO**, din biblioteca LDraw (aceleași fișiere, licența CC BY 4.0): `87407.dat` (Technic Gear 20 Tooth Bevel
+  with Peghole), `32198a.dat` (… with Two Axlehole Slots) și `32269.dat` (20 Tooth Double Bevel). 87407 are Ø20,8 și 8
+  mm înălțime (manșonul cu gaura de știft, r 3,6), gulerul din spate de r 4,4, dinții între 1,2 și 4,0 mm sub guler, iar
+  conul din spate trece prin r 6,9 la 1,8 mm. Dinții din LDraw sunt stilizați (pene cu creasta la ~34°), deci profilul
+  lor nu e unul de angrenare: din fișiere s-au luat butucul, gaura, conturul și reperul montajului, iar dinții sunt după
+  teorie.
+- **Montajul**: vârful conului lui 87407 e la 12 mm de gulerul din spate (1,5 pași), cu planul de divizare la 2 mm sub
+  guler. Picioarele dinților la spate (r 9,1) cad la 1,1 mm de guler, cât banda dinților din LDraw (1,2), iar conul din
+  spate, la 45°, trece prin r 6,9 la 1,8 mm, cât în LDraw. Regula, la orice pereche: planul de divizare la 2·m de fața
+  din spate, deci vârful la m·(2 + z2 / 2) de ea, pe grila de jumătate de pas exact când perechea are 12, 20, 28, 36 …
+  de dinți (mărimile LEGO; la 12 + 12, 8 mm, un pas).
+- **Motorul** (`conica`, `conicaCote`, `prismaStraturi`): dinți drepți pe conul de divizare, tan δ = z / z2 (perechea la
+  90°, axele întâlnite în vârful comun); profilul Tredgold: roata dreaptă cu z / cos δ dinți pe conul din spate (aceeași
+  cremalieră și același joc din calibrare ca la rotițe), adus din desfășurare pe con și proiectat din vârf pe planul de
+  divizare. Straturile, din spate spre vârf, micșorează conturul (dinții se subțiază spre vârful conului) și îl taie pe
+  rază la conul din spate (harta punctelor pe strat), din 0,1·m în 0,1·m între picioarele și capetele dinților. Sub
+  picioare, corpul coboară drept pe pat (cilindrul cercului de picior din spate), nu pe conul din spate: la un pinion (δ
+  mic) conul acela ar sta aproape culcat, în consolă. Pe flanc, jumătatea dintelui scade spre cap cu cel puțin 0,0001
+  rad (la subtăiere crește cu cel mult 0,0002), ca tăierea pe rază să nu plieze conturul. Lățimea dinților R / 4;
+  butucul (r 3,89, același la toate găurile) cu alezajul, scurt (până la capătul dinților) sau lung, ca 87407 (până la
+  4,3 mm de vârf: manșoanele unei perechi nu se ating); corpul dinților se oprește la un cerc cu 0,05 mm peste alezaj,
+  acoperit de butuc.
+- **Atelierul**: „Roată conică” în galeria pieselor de legătură, „Ca LEGO 20 (87407)”, „Ca LEGO 12”, dinții ei și ai
+  perechii, modulul, gaura, butucul; montajul pe grilă (cât e fața din spate a fiecăreia de axa celeilalte), „Fă
+  perechea” (roata și perechea ei, cu dinții schimbați între ele); 15 texte în engleză. Pachetul 18.12.0.
+- **Privirea pe conica reală** (capturile 3D și secțiunea în planul axelor, cu perechea montată și peste 87407):
+  conurile de divizare se întâlnesc în vârful comun, dintele unei roți intră în golul celeilalte, iar montajul cade
+  peste cel LEGO (fața din spate la 12 mm de vârf, manșonul până la ~8 mm). Tot privind, pinionul (12 pentru 36) ar fi
+  avut spatele în consolă (conul din spate la 18° de orizontală): acum corpul coboară drept sub picioarele dinților.
+  Diferența aleasă pentru tipărire: spatele e plin până la r 9,1 (la LEGO doar gulerul de r 4,4 atinge grinda): între
+  roată și grindă, o bucșă ½.
+- **Probele:** unitare 6 (`trenulet.conica.test.ts`: corpul închis la 42 de combinații, montajul la cinci perechi,
+  cotele LEGO 20 punct cu punct (dintele pe cercul de divizare, conul din spate, cilindrul, capul, butucul, gaura),
+  perechea la 90° fără pătrundere în trei faze și prinsă (0,2 mm în plus n-o atinge, 0,9 mm da), găurile ca diferențe de
+  volum, marginile), e2e 2 (`trenulet.conica.spec.ts`). Otrăvurile (`test/otravuri/3.Tl.py`): 25 / 25 (17 pe motor, 8
+  prin e2e), toate prinse din prima.
+- **Recenzia:** fără agenți; recenzia proprie: corpurile închise pe 300 de combinații în proba de lucru (42 în proba
+  unitară), perechea montată la 90° pe roțile întregi (fără pătrundere, prinsă, la cinci perechi), secțiunea în planul
+  axelor peste 87407 și VOID-urile tuturor listelor de otrăvuri ale pluginului (niciunul nou).
 
 ## Feliile
 
