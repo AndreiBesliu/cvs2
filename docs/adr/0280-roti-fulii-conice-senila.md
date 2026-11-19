@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu felia 3.Tj implementată în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj și 3.Tk implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -120,6 +120,46 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
 - **Recenzia:** workflow-ul de recenzie cu agenți a fost refuzat de clasificatorul modului automat (nu l-am ocolit);
   recenzia proprie: 648 de combinații extreme, toate corpuri închise, și secțiunea mărită a jantei peste nervura LEGO, care
   a găsit teșitura canalului în nervură (reparată).
+
+## Felia 3.Tk, implementată: fulia (pachetul 18.11.0)
+
+- **Cotele LEGO**, din biblioteca LDraw (aceleași fișiere, descărcate pe 19.11.2026, licența CC BY 4.0): `4185a.dat`
+  (Technic Wedge Belt Wheel - Not Reinforced) și `4185b.dat` (… - Reinforced), cu secțiunea r–z pe unghiuri
+  (`C:\Users\besli\cncvs2-lucru\unelte\ldraw\sectiune.py`) și felia z = 0 (`felie.py`): Ø24, obada de 3,5 mm, butucul de
+  4 mm (r 3,25; 3,75 la cel întărit), discul de 2,4 mm la mijloc, cu șase găuri de știft (Ø4,75 la r 8, de la 30°, din
+  60 în 60 de grade), peretele de 0,5 mm sub canal; canalul în V (4185a) de la r 12 la ±1,3 mm de mijloc până la r 11 la
+  ±0,65 mm, cu fundul plat; cel rotund (4185b), aproape un semicerc de r 1 (fundul la r 10,99).
+- **Motorul** (`lego.ts`, `fulie`, `fulieCote`): culcată pe pat, cu fața jos. Obada are canalul la mijloc: în V (ca
+  4185a, la scară cu lățimea cerută), rotund (semicercul cu raza cât jumătate din lățime, ca 4185b) sau plat, pentru o
+  curea (scaunul cu marginile teșite la 45°, fără suport); obada se lărgește cât să cuprindă canalul, cu 0,4 mm de o
+  parte și de alta; peretele de sub canal are 0,5 mm (ca LEGO) sau 0,02·D. Butucul, cu gaura Technic, are aceeași rază
+  la toate găurile (cât cere crucea, cel puțin 3,75) și e cu 0,5 mm mai înalt decât obada (spre sus). Fața, de 2,4 mm
+  (sau 0,3 din lățime, cel mult 6): plină, cu găurile de știft pe cercurile grilei (6·k pe cercul de 8·k mm, doar unde
+  știftul trece de bandă cu 0,1 mm și gaura stă la 0,4 mm de butuc: de la Ø24) sau cu spițe drepte ori în Y (de la
+  Ø17,8). Butucul și fața sunt acum funcții comune cu roata (`butucRoata`, `fataRoata`); ieșirile roții au rămas
+  aceleași pe 1 351 de combinații (amprentele, înainte și după).
+- **Cureaua** (`cureaua`): pentru două fulii cu axele la distanța C, lungimea curelei deschise pe fundul canalelor,
+  2·√(C² − d²) + π(r1 + r2) + 2d·asin(d / C); fuliile se ating sub R1 + R2 + 0,5 mm.
+- **Atelierul**: „Fulie” în galeria pieselor de legătură, „Ca LEGO Ø24”, canalul (în V, rotund, plat), diametrul,
+  lățimea, lățimea canalului (sau a curelei), fața (doar ce încape, cu diametrul de la care încap găurile de știft),
+  gaura; cureaua spre a doua fulie (diametrul ei, distanța dintre axe, butoanele grilei de 2 … 10 pași), cu textul
+  grilei comun cu roțile dințate; „Fă perechea”; 30 de texte în engleză. Pachetul 18.11.0, cu descrierea „… roți dințate
+  sau cu anvelopă, fulii …”.
+- **Privirea pe fulia reală** (capturile 3D și secțiunea mărită peste 4185a și 4185b): obada și canalele cad peste cele
+  LEGO; diferențele sunt cele alese pentru tipărire: fața stă jos (la LEGO, la mijloc), iar butucul iese 0,5 mm doar în
+  sus (la LEGO, câte 0,25 mm de fiecare parte). Tot privind: câmpurile curelei, așezate întâi pe toată lățimea, au
+  trecut în grila câmpurilor, iar textul curelei a rămas fără paranteze una în alta. Probele au mai găsit că raza
+  butucului depindea de gaură (o gaură schimba și forma fuliei): acum e aceeași.
+- **Probele:** unitare 8 (`trenulet.fulie.test.ts`: corpul închis la 180 de combinații, cotele LEGO 4185a punct cu
+  punct, prin numărul de înfășurare pe o rază, pentru corpurile suprapuse; canalele rotund și plat; fața și pragurile
+  ei; butucul; marginile; cureaua pe hârtie; calibrările extreme), e2e 3 (`trenulet.fulie.spec.ts`). Otrăvurile
+  (`test/otravuri/3.Tk.py`): 37 / 37 (25 pe motor, 12 prin e2e), toate prinse din prima. La mutarea feței roții,
+  otrăvurile 3.Tj U10 și U14 au trecut pe codul nou, iar 3.Th E06, rămasă VOID de la 3.Tj (lista câmpurilor de
+  calibrare), a fost mutată și ea.
+- **Recenzia:** fără agenți (recenzia cu agenți fusese refuzată de clasificator la 3.Tj, iar owner-ul a ales „Da,
+  pornește 3.Tk”); recenzia proprie: corpurile închise pe 576 de combinații în proba de lucru (180 în proba unitară),
+  secțiunea mărită peste 4185a și 4185b, amprentele roții (1 351, neschimbate) și VOID-urile tuturor listelor de
+  otrăvuri ale pluginului (două noi, mutate; plus 3.Th E06, rămasă de la 3.Tj).
 
 ## Feliile
 
