@@ -1254,8 +1254,12 @@ var Lego = (function (glob: typeof globalThis) {
   // are 30,4 × 13,6, alezajul Ø16,5, nervura de 2,8 mm până la r 7,46, umerii teșiți de la r 15,15 la 14,0 pe 1,8 mm și
   // trei canale de 0,4 mm pe banda de rulare.
   const ROATA = {
-    canal: 1.6, canalAd: 1.05, perete: 0.85, // canalul nervurii în scaun (jumătate de lățime, adâncimea) și peretele de sub el
-    alezaj: 0.15, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.8, // anvelopa: alezajul sub scaun, nervura (bază, vârf, adâncime)
+    // canalul nervurii în scaun: peretele de jos la −1,7 de mijloc, fundul plat (la −1,05 sub scaun) până la +1,25, apoi
+    // teșitura de 45°; nervura anvelopei LEGO 58090 (LDraw, pe felii de 0,1 mm) ocupă ±1,6, cu flancurile abrupte (r 8,39 la
+    // ±1,6, 7,59 la ±1,25) și fundul aproape plat (7,50 la ±0,6, 7,45 la mijloc): jocul e de cel puțin 0,1 mm peste tot
+    canalJos: 1.7, canalSus: 1.25, canalAd: 1.05, perete: 0.85,
+    // anvelopa tipărită: alezajul cu 0,15 sub scaun; nervura cu forma celei LEGO, [deplasarea pe z, adâncimea sub alezaj]
+    alezaj: 0.15, nervura: [[1.6, 0], [1.25, 0.66], [0.6, 0.75], [0, 0.8]] as [number, number][],
     umar: 1.15, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4, // umerii teșiți; canalele benzii (la 13,6 mm)
     bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.3,
   };
@@ -1281,7 +1285,8 @@ var Lego = (function (glob: typeof globalThis) {
     const { rb, rh, spite: incap } = jantaCote(D, gaura), n = 4 * Math.ceil(Math.min(192, Math.max(N_CERC, 2 * Math.PI * R / 1.2)) / 4);
     const tri: Tri[] = [];
     // profilul exterior al anvelopei pe z: umerii teșiți (ca LEGO, în linie dreaptă), banda; `jos` coboară umerii (blocurile)
-    const umarLat = Math.min(K.umarLat, W / 4), sc = W / 13.6;
+    // pe lățimi sub 13,6, canalul și nervura se strâng pe z (adâncimile rămân), ca să încapă
+    const umarLat = Math.min(K.umarLat, W / 4), sc = W / 13.6, sz = Math.min(1, sc);
     const nervuri = banda === "nervuri" ? [-K.nervuri * sc, 0, K.nervuri * sc].map(d => zc + d) : [];
     const zona = W * 0.3;
     const exterior = (z: number, jos: number) => {
@@ -1316,8 +1321,9 @@ var Lego = (function (glob: typeof globalThis) {
       const interior: P2[] = fel === "anvelopa"
         ? (() => {
           // alezajul cu nervura la mijloc (trapez), ca anvelopa LEGO 58090: se pune și pe janta LEGO, și pe cea tipărită
-          const ra = D / 2 - K.alezaj, rv = ra - K.nervuraAd;
-          return [[ra, W], [ra, zc + K.nervura], [rv, zc + K.nervuraVarf], [rv, zc - K.nervuraVarf], [ra, zc - K.nervura], [ra, 0]];
+          const ra = D / 2 - K.alezaj, sus = K.nervura.map(([dz, ad]): P2 => [ra - ad, zc + dz * sz]);
+          const jos = K.nervura.slice(0, -1).reverse().map(([dz, ad]): P2 => [ra - ad, zc - dz * sz]);
+          return [[ra, W], ...sus, ...jos, [ra, 0]];
         })()
         : [[rb, W], [rb, 0]];
       // exteriorul urcă pe z, interiorul coboară: un poligon simplu în (r, z)
@@ -1341,7 +1347,7 @@ var Lego = (function (glob: typeof globalThis) {
       // janta: banda (cu scaunul și canalul nervurii, teșit la 45° sus, ca să se tipărească fără suport), fața și butucul
       if (fel === "janta") {
         const rg = Rs - K.canalAd;
-        tri.push(...strung([[rb, 0], [Rs, 0], [Rs, zc - K.canal], [rg, zc - K.canal], [rg, zc + K.canal - K.canalAd], [Rs, zc + K.canal], [Rs, W], [rb, W]], 0, 2 * Math.PI, 0, 0, n));
+        tri.push(...strung([[rb, 0], [Rs, 0], [Rs, zc - K.canalJos * sz], [rg, zc - K.canalJos * sz], [rg, zc + K.canalSus * sz], [Rs, zc + K.canalSus * sz + K.canalAd], [Rs, W], [rb, W]], 0, 2 * Math.PI, 0, 0, n));
       }
       const g: Poli | null = gaura === "r" ? cerc(0, 0, e.gauraD / 2) : gaura === "nu" ? null : cruce(0, 0, e.axGauraD, e.axGauraLat);
       // fața, cât 0,3 din lățime (2–6 mm): butucul, înalt cât roata, stă pe ea; spițele, după diametrul jantei (1,8–4,5 mm)

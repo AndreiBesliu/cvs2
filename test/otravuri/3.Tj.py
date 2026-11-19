@@ -17,14 +17,16 @@ E = 'extensii/trenulet/sursa/lego/lego.ts'
 A = 'extensii/trenulet/sursa/planificator/atelier.ts'
 
 # Motorul (unitare).
-o('U01', E, 'canal: 1.6, canalAd: 1.05, perete: 0.85,', 'canal: 1.2, canalAd: 1.05, perete: 0.85,', 'roata',
-  'canalul nervurii prea îngust (nervura LEGO, de 2,8 mm, nu mai intră)')
-o('U02', E, 'canal: 1.6, canalAd: 1.05, perete: 0.85,', 'canal: 1.6, canalAd: 0.85, perete: 0.85,', 'roata',
-  'canalul nervurii prea puțin adânc (fundul peste vârful nervurii)')
-o('U03', E, 'alezaj: 0.15, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.8,', 'alezaj: 0, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.8,',
-  'roata', 'anvelopa fără strângere pe scaun')
-o('U04', E, 'alezaj: 0.15, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.8,', 'alezaj: 0.15, nervura: 1.4, nervuraVarf: 0.6, nervuraAd: 0.5,',
-  'roata', 'nervura anvelopei mai scurtă decât la LEGO')
+o('U01', E, 'canalJos: 1.7, canalSus: 1.25, canalAd: 1.05, perete: 0.85,', 'canalJos: 1.4, canalSus: 1.25, canalAd: 1.05, perete: 0.85,', 'roata',
+  'peretele de jos al canalului peste flancul nervurii LEGO')
+o('U02', E, 'canalJos: 1.7, canalSus: 1.25, canalAd: 1.05, perete: 0.85,', 'canalJos: 1.7, canalSus: 1.25, canalAd: 0.85, perete: 0.85,', 'roata',
+  'canalul nervurii prea puțin adânc (fundul peste nervura LEGO)')
+o('U03', E, "alezaj: 0.15, nervura: [[1.6, 0], [1.25, 0.66], [0.6, 0.75], [0, 0.8]] as [number, number][],",
+  "alezaj: 0, nervura: [[1.6, 0], [1.25, 0.66], [0.6, 0.75], [0, 0.8]] as [number, number][],", 'roata', 'anvelopa fără strângere pe scaun')
+o('U04', E, "alezaj: 0.15, nervura: [[1.6, 0], [1.25, 0.66], [0.6, 0.75], [0, 0.8]] as [number, number][],",
+  "alezaj: 0.15, nervura: [[1.6, 0], [1.25, 0.66], [0.6, 0.75], [0, 0.5]] as [number, number][],", 'roata', 'nervura anvelopei mai scurtă decât la LEGO')
+o('U25', E, 'canalJos: 1.7, canalSus: 1.25, canalAd: 1.05, perete: 0.85,', 'canalJos: 1.7, canalSus: 0.6, canalAd: 1.05, perete: 0.85,', 'roata',
+  'teșitura canalului pornește prea devreme (lovește fundul plat al nervurii LEGO)')
 o('U05', E, 'umar: 1.15, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4,',
   'umar: 0.6, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4,', 'roata', 'umerii teșiți mai puțin decât la LEGO')
 o('U06', E, 'umar: 1.15, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4,',

@@ -48,6 +48,22 @@ function profil(p: { tri: Tri[]; dim: number[] }): [number, number][] {
   return [...s.values()];
 }
 const aproape = (a: number, b: number, tol = 0.002) => Math.abs(a - b) <= tol;
+/** Raza cea mai mare (sau cea mai mică) a plasei pe planul z, din intersecția triunghiurilor cu el (ca un profil LDraw). */
+function razaLa(p: { tri: Tri[]; dim: number[] }, z: number, fel: 'max' | 'min'): number {
+  const cx = p.dim[0]! / 2, cy = p.dim[1]! / 2;
+  let rmin = Infinity, rmax = -Infinity;
+  for (const t of p.tri) {
+    const a = t.map((q) => q[2] - z);
+    if (Math.min(...a) > 0 || Math.max(...a) < 0) continue;
+    for (let i = 0; i < 3; i++) {
+      const P = t[i]!, Q = t[(i + 1) % 3]!, ap = a[i]!, aq = a[(i + 1) % 3]!;
+      if (ap === aq || !((ap <= 0 && aq >= 0) || (aq <= 0 && ap >= 0))) continue;
+      const w = ap / (ap - aq), r = Math.hypot(P[0] + (Q[0] - P[0]) * w - cx, P[1] + (Q[1] - P[1]) * w - cy);
+      rmin = Math.min(rmin, r); rmax = Math.max(rmax, r);
+    }
+  }
+  return fel === 'max' ? rmax : rmin;
+}
 
 test('corpul e închis la toate felurile, fețele, benzile și găurile, cu cutia cerută', () => {
   for (const fel of ['plina', 'janta', 'anvelopa']) for (const spite of ['disc', 'drepte', 'y', 'gauri']) for (const banda of ['nervuri', 'neteda', 'blocuri']) {
@@ -66,23 +82,26 @@ test('corpul e închis la toate felurile, fețele, benzile și găurile, cu cuti
 test('cotele LEGO: janta cu scaunul la r 8,4 și canalul nervurii; anvelopa cu alezajul la r 8,25 și nervura până la r 7,45', () => {
   const W = 13.6, zc = W / 2;
   const j = profil(roata({ fel: 'janta' })), a = profil(roata({ fel: 'anvelopa' }));
-  // janta: cel mai mare r e scaunul (8,4); canalul, la r 7,35, de la zc − 1,6 până la zc + 1,6 − 1,05 (sus teșit la 45°)
+  // janta: cel mai mare r e scaunul (8,4); canalul, la r 7,35, de la zc − 1,7 până la zc + 1,25 (apoi teșit la 45°)
   assert.ok(aproape(Math.max(...j.map(([r]) => r)), 8.4), 'scaunul la r 8,4');
   const canal = j.filter(([r]) => aproape(r, 7.35)).map(([, z]) => z);
-  assert.ok(canal.some((z) => aproape(z, zc - 1.6)) && canal.some((z) => aproape(z, zc + 1.6 - 1.05)), `canalul: ${canal.join(', ')}`);
-  // anvelopa: Ø30,4 afară; alezajul la r 8,25 (0,15 strâns pe scaunul de 8,4, ca LEGO: 8,24 pe 8,4); nervura până la 7,45
+  assert.ok(canal.some((z) => aproape(z, zc - 1.7)) && canal.some((z) => aproape(z, zc + 1.25)), `canalul: ${canal.join(', ')}`);
+  // anvelopa: Ø30,4 afară; alezajul la r 8,25 (0,15 strâns pe scaunul de 8,4, ca LEGO: 8,24 pe 8,4); nervura ca LEGO
   assert.ok(aproape(Math.max(...a.map(([r]) => r)), 15.2), 'Ø30,4');
   assert.ok(a.some(([r, z]) => aproape(r, 8.25) && aproape(z, 0)), 'alezajul');
-  const varf = a.filter(([r]) => aproape(r, 7.45)).map(([, z]) => z);
-  assert.ok(varf.some((z) => aproape(z, zc - 0.6)) && varf.some((z) => aproape(z, zc + 0.6)), `vârful nervurii: ${varf.join(', ')}`);
-  // nervura (trapez: ±1,4 la r 8,25, ±0,6 la r 7,45) stă liberă în canal (fundul la 7,35; pereții: jos vertical la zc − 1,6,
-  // sus teșit de la (7,35; zc + 0,55) la (8,4; zc + 1,6)): cel puțin 0,05 mm peste tot
-  const jocMin = Math.min(...[0, 0.25, 0.5, 0.75, 1].map((t) => {
-    const r = 7.45 + 0.8 * t, h = 0.6 + 0.8 * t;
-    const sus = zc + 0.55 + (r - 7.35) - (zc + h);
-    return Math.min(r - 7.35, (zc - h) - (zc - 1.6), sus);
-  }));
-  assert.ok(jocMin >= 0.05, `nervura în canal: jocul minim ${jocMin.toFixed(3)} mm`);
+  // nervura anvelopei LEGO 58090, pe hârtie (LDraw, felii de 0,1 mm): [deplasarea de mijloc, raza minimă]
+  const NERVURA_LEGO: [number, number][] = [[0, 7.454], [0.35, 7.467], [0.65, 7.497], [0.95, 7.546], [1.25, 7.586], [1.35, 7.789], [1.45, 7.981], [1.55, 8.184]];
+  const ja = roata({ fel: 'janta' }), an = roata({ fel: 'anvelopa' });
+  for (const [dz, rl] of NERVURA_LEGO) for (const s of [-1, 1]) {
+    // janta tipărită: materialul ei, la înălțimea punctului, rămâne cu cel puțin 0,1 mm sub nervura LEGO
+    const rj = razaLa(ja, zc + s * dz, 'max');
+    assert.ok(rl - rj >= 0.1 - 1e-9, `canalul la ${s * dz}: janta până la r ${rj.toFixed(3)}, nervura LEGO la ${rl}`);
+    // anvelopa tipărită are aceeași nervură (cel mult 0,07 mm abatere de la LEGO pe flancul abrupt, 0,03 pe fund)
+    const ra = razaLa(an, zc + s * dz, 'min');
+    assert.ok(Math.abs(ra - rl) <= (dz > 1.3 ? 0.07 : 0.03), `nervura tipărită la ${s * dz}: r ${ra.toFixed(3)}, LEGO ${rl}`);
+  }
+  // scaunul strânge anvelopa LEGO (alezajul ei, 8,27–8,33 la ±2,5…±3) cu 0,07–0,13 mm, ca janta LEGO
+  for (const dz of [2.5, 3, 4.2]) assert.ok(aproape(razaLa(ja, zc + dz, 'max'), 8.4), `scaunul la ${dz}`);
 });
 
 test('varianta jantei mută scaunul cu 0,05 mm pe rază pe variantă; anvelopa și roata dintr-o bucată nu se mută', () => {
