@@ -64,8 +64,8 @@ o('E04', A, 'const fel = d.fel === "oblici" ? tr`, dinți oblici ${fmt(d.unghi ?
   'const fel = d.fel === "oblici" ? tr`, dinți oblici ${fmt(d.unghi ?? 20, 0)}°`', 'e2e', 'numele roții oblice fără sens')
 o('E05', A, 'varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti,', 'varianta_cupa: setari.varianta_cupa,', 'e2e',
   'varianta roților din calibrare nu ajunge la motor')
-o('E06', A, '["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"]]', '["varianta_cupa", "Varianta cupei"]]',
-  'e2e', 'fila Calibrare fără câmpul roților')
+o('E06', A, '["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"], ', '["varianta_cupa", "Varianta cupei"], ',
+  'e2e', 'fila Calibrare fără câmpul roților (mutată pe lista cu janta, de la 3.Tj)')
 o('E07', A, 'p.pereche = v; editor(); } };', 'p.pereche = v + 2; editor(); } };', 'e2e', 'dinții perechii citiți greșit')
 o('E08', A, '${oblic ? `<div class="at-campuri"><label for="at-r-unghi">', '${true ? `<div class="at-campuri"><label for="at-r-unghi">', 'e2e',
   'unghiul și la dinții drepți')

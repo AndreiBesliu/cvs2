@@ -37,7 +37,7 @@ o('U08', E, 'bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fa
   'bloc: 0.3, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.3,', 'roata', 'baza blocurilor coborâtă doar 0,3 mm')
 o('U09', E, 'bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.3,',
   'bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.15,', 'roata', 'fața pe jumătate de groasă')
-o('U10', E, 'const e = ef(), K = ROATA, perete = Math.max(K.perete, 0.04 * D)', 'const e = ef(), K = ROATA, perete = K.perete', 'roata',
+o('U10', E, 'const K = ROATA, perete = Math.max(K.perete, 0.04 * D)', 'const K = ROATA, perete = K.perete', 'roata',
   'peretele benzii nu crește cu diametrul jantei')
 o('U11', E, 'return { rb, rh, spite: rb - rh >= 3.5 - 1e-9 };', 'return { rb, rh, spite: rb - rh >= 2.5 };', 'roata',
   'spițele cerute și unde nu încap (pragul de 3,5 mm coborât)')
@@ -45,8 +45,8 @@ o('U12', E, 'const Rs = D / 2 + (fel === "janta" ? e.jantaD / 2 : 0)', 'const Rs
   'varianta jantei pusă pe rază întreagă (dublă)')
 o('U13', E, 'jantaD: (P.varianta_janta - 3) * P.pas_janta,', 'jantaD: (P.varianta_janta - 3) * P.pas_janta / 2,', 'roata',
   'pasul variantei jantei înjumătățit')
-o('U14', E, 'const tp = Math.min(6, Math.max(2, K.fata * W)), ws = Math.min(4.5, Math.max(K.spita, 0.07 * D))',
-  'const tp = Math.min(6, Math.max(2, K.fata * W)), ws = K.spita', 'roata', 'spițele la fel de subțiri la orice jantă')
+o('U14', E, 'const ws = Math.min(4.5, Math.max(K.spita, 0.07 * D))', 'const ws = K.spita', 'roata',
+  'spițele la fel de subțiri la orice jantă (fața comună a roților, `fataRoata`, din 3.Tk)')
 o('U15', E, 'const nb = Math.max(12, Math.round(2 * Math.PI * R / 3.2))', 'const nb = Math.max(12, Math.round(2 * Math.PI * R / 4))', 'roata',
   'mai puține blocuri decât unul la 3,2 mm')
 o('U16', E, 'tri.push(...strung(k % 2 ? pSus : pJos, a0, a1, 0, 0, n));', 'tri.push(...strung(pJos, a0, a1, 0, 0, n));', 'roata',

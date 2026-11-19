@@ -10380,3 +10380,30 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   determinist, 738,4 / 800 kB); e2e-ul planificatorului, al bibliotecii și al extensiilor 27 / 27 (proba rotițelor rămăsese
   la „șapte numere”: adusă la zi); e2e-ul complet și emulatoarele, la unire.
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-19 — Felia 3.Tk: fulia în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tk” (owner-ul, la „Pornesc 3.Tk (fulia)?”). **Started:** 19.11, 12:14. **Completed:** 19.11,
+13:26.
+
+- **Cotele:** fulia LEGO 4185, în cele două variante din LDraw (4185a, canalul în V; 4185b, întărită, canalul rotund),
+  citite cu două unelte noi, în afara repo-ului: secțiunea r–z a piesei pe un semiplan prin axă (`unelte\ldraw\sectiune.py`)
+  și felia z = 0, cu contururile ei (`felie.py`): Ø24, obada de 3,5, butucul de 4, discul de 2,4 cu șase găuri de știft la r
+  8, canalul în V cu fundul plat la r 11.
+- **Motorul** (`fulie`, `fulieCote`, `cureaua`): canalul în V, rotund sau plat; fața plină, cu găurile de știft pe cercurile
+  grilei sau cu spițe; butucul și fața, funcții comune cu roata (amprentele roții, neschimbate pe 1 351 de combinații);
+  lungimea curelei pe fundul canalelor.
+- **Atelierul:** „Fulie”, „Ca LEGO Ø24”, canalul, mărimile, fața (doar ce încape), gaura, cureaua spre a doua fulie cu
+  butoanele grilei, „Fă perechea”; 30 de texte în engleză; pachetul 18.11.0.
+- **Privirea pe fulia reală:** secțiunea mărită peste 4185a și 4185b (obada și canalele cad peste cele LEGO; fața jos și
+  butucul în sus, alese pentru tipărire); câmpurile curelei mutate în grila câmpurilor, textul curelei fără paranteze duble;
+  raza butucului, aceeași la toate găurile.
+- **Probele:** unitare 8, e2e 3; otrăvurile 37 / 37 (25 pe motor, 12 prin e2e), toate prinse din prima. Otrăvurile 3.Tj U10,
+  U14 și 3.Th E06 (VOID de la 3.Tj) mutate pe codul de acum.
+- **Recenzia:** fără agenți (recenzia cu agenți fusese refuzată de clasificator la 3.Tj, iar owner-ul a ales „Da, pornește
+  3.Tk”); recenzia proprie: corpurile închise pe 576 de combinații în proba de lucru (180 în proba unitară), secțiunea
+  mărită peste 4185a și 4185b, amprentele roții (1 351, neschimbate) și VOID-urile tuturor listelor de otrăvuri ale
+  pluginului (două noi, mutate; plus 3.Th E06, rămasă de la 3.Tj).
+- **Porțile:** toate verzi din prima pe f971aec8: unitarele 9 620, 0 căzute; e2e 555 / 555; emulatoarele 101 / 101 și 29 /
+  29; totalul 738,8 / 800, pornirea cu ușa 111,2 / 115 (pachetul pluginului: 439 310 octeți, +5,3 kB).
+- **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.

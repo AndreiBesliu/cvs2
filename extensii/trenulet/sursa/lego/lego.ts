@@ -1263,13 +1263,64 @@ var Lego = (function (glob: typeof globalThis) {
     umar: 1.15, umarLat: 1.8, nervuri: 2.6, nervuraLat: 0.4, nervuraAdanc: 0.4, // umerii teșiți; canalele benzii (la 13,6 mm)
     bloc: 0.6, butuc: 4.8, peretButuc: 1.6, spita: 1.8, ramura: 0.8, fata: 0.3,
   };
+  // raza găurii din butucul roților (ADR 0280): până la colțul crucii, la gaura de ax
+  const razaGauraButuc = (gaura: string): number => { const e = ef(); return gaura === "r" ? e.gauraD / 2 : gaura === "nu" ? 0 : Math.hypot(e.axGauraD / 2, e.axGauraLat / 2); };
   // cotele jantei (o singură dată, pentru motor și atelier): peretele de sub canal crește cu diametrul (0,04·D, cel puțin
   // 0,85 ca la LEGO), banda pornește de la rb, butucul are raza rh; spițele încap doar dacă între butuc și bandă rămân 3,5 mm
   function jantaCote(D: number, gaura: string) {
-    const e = ef(), K = ROATA, perete = Math.max(K.perete, 0.04 * D), rb = D / 2 - K.canalAd - perete;
-    const rgaura = gaura === "r" ? e.gauraD / 2 : gaura === "nu" ? 0 : Math.hypot(e.axGauraD / 2, e.axGauraLat / 2);
-    const rh = Math.max(K.butuc, rgaura + K.peretButuc);
+    const K = ROATA, perete = Math.max(K.perete, 0.04 * D), rb = D / 2 - K.canalAd - perete;
+    const rh = Math.max(K.butuc, razaGauraButuc(gaura) + K.peretButuc);
     return { rb, rh, spite: rb - rh >= 3.5 - 1e-9 };
+  }
+  // cercurile grilei (8, 16 … mm) pe care încap găurile de știft ale unei fețe de roată (ADR 0280, ca la fulia LEGO 4185):
+  // știftul Technic trece de bandă (rb) cu cel puțin 0,1 mm, iar gaura rămâne la 0,4 mm de butuc (rh)
+  function cercuriStift(rh: number, rb: number): number[] {
+    const e = ef(), out: number[] = [];
+    for (let k = 1; P.pas * k + P.stift_technic_d / 2 + 0.1 <= rb + 1e-9; k++) if (P.pas * k - e.gauraD / 2 >= rh + 0.4 - 1e-9) out.push(k);
+    return out;
+  }
+  // butucul roților (ADR 0280): același cerc la toate găurile (prismaGauri, ca la rotițe), deci găurile diferă doar prin aria
+  // lor; înalt cât h
+  function butucRoata(gaura: string, rh: number, h: number): Tri[] {
+    const e = ef();
+    const g: Poli | null = gaura === "r" ? cerc(0, 0, e.gauraD / 2) : gaura === "nu" ? null : cruce(0, 0, e.axGauraD, e.axGauraLat);
+    return prismaGauri(cerc(0, 0, rh), g ? [g] : [], 0, h);
+  }
+  // fața roților (ADR 0280), de la z 0 la tp, de la butuc (rh) la bandă (rb), peste ele câte 0,3 mm: discul, discul cu N
+  // găuri, găurile de știft pe cercurile grilei (6·k pe cercul k, ca la fulia LEGO: șase la r 8, de la 30°) sau N spițe,
+  // drepte ori în Y; spițele, după diametrul D (1,8–4,5 mm)
+  function fataRoata(fata: string, N: number, rh: number, rb: number, tp: number, D: number): Tri[] {
+    const K = ROATA, tri: Tri[] = [];
+    const ws = Math.min(4.5, Math.max(K.spita, 0.07 * D)), wr = Math.max(1.4, K.ramura * ws), r0 = rh - 0.3, r1 = rb + 0.3;
+    const bara = (A: P2, B: P2, w: number): Poli => {
+      const L = Math.hypot(B[0] - A[0], B[1] - A[1]), nx = -(B[1] - A[1]) / L * w / 2, ny = (B[0] - A[0]) / L * w / 2;
+      return trig([[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]]);
+    };
+    if (fata === "disc") tri.push(...inel(cerc(0, 0, r1), cerc(0, 0, r0), [0, 0], 0, tp));
+    else if (fata === "gauri") {
+      const rm = (rh + rb) / 2, rgol = Math.max(0.6, Math.min((rb - rh) / 2 - 0.9, rm * Math.sin(Math.PI / N) - 0.9));
+      tri.push(...prismaGauri(cerc(0, 0, r1), [cerc(0, 0, r0), ...Array.from({ length: N }, (_, k) => cerc(rm * Math.cos(2 * Math.PI * k / N + Math.PI / N), rm * Math.sin(2 * Math.PI * k / N + Math.PI / N), rgol, 24))], 0, tp));
+    } else if (fata === "stift") {
+      // gaura poate trece de bandă (știftul nu): fața se întinde atunci sub bandă, cât s-o cuprindă
+      const rg = ef().gauraD / 2, gauri: Poli[] = [cerc(0, 0, r0)];
+      let re = r1;
+      for (const k of cercuriStift(rh, rb)) {
+        for (let j = 0; j < 6 * k; j++) { const a = (2 * j + 1) * Math.PI / (6 * k); gauri.push(cerc(P.pas * k * Math.cos(a), P.pas * k * Math.sin(a), rg, 32)); }
+        re = Math.max(re, P.pas * k + rg + 0.1);
+      }
+      tri.push(...prismaGauri(cerc(0, 0, re, Math.max(N_CERC, 4 * Math.ceil(2 * Math.PI * re / 4.8))), gauri, 0, tp));
+    } else {
+      const rs = rh + 0.45 * (rb - rh), phi = 0.35 * Math.PI / N;
+      for (let k = 0; k < N; k++) {
+        const t = 2 * Math.PI * k / N, u = (r: number, a: number): P2 => [r * Math.cos(t + a), r * Math.sin(t + a)];
+        if (fata === "drepte") tri.push(...prisma(bara(u(r0, 0), u(r1, 0), ws), 0, tp));
+        else {
+          tri.push(...prisma(bara(u(r0, 0), u(rs + 0.4, 0), ws), 0, tp));
+          tri.push(...prisma(bara(u(rs, 0), u(r1, phi), wr), 0, tp), ...prisma(bara(u(rs, 0), u(r1, -phi), wr), 0, tp));
+        }
+      }
+    }
+    return tri;
   }
   function roata({ fel = "plina", diam = 30.4, lat = 13.6, janta = 16.8, banda = "nervuri", spite = "disc", nrSpite = 5, gaura = "x" }: {
     fel?: string; diam?: number; lat?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; gaura?: string }): Corp {
@@ -1349,39 +1400,85 @@ var Lego = (function (glob: typeof globalThis) {
         const rg = Rs - K.canalAd;
         tri.push(...strung([[rb, 0], [Rs, 0], [Rs, zc - K.canalJos * sz], [rg, zc - K.canalJos * sz], [rg, zc + K.canalSus * sz], [Rs, zc + K.canalSus * sz + K.canalAd], [Rs, W], [rb, W]], 0, 2 * Math.PI, 0, 0, n));
       }
-      const g: Poli | null = gaura === "r" ? cerc(0, 0, e.gauraD / 2) : gaura === "nu" ? null : cruce(0, 0, e.axGauraD, e.axGauraLat);
       // fața, cât 0,3 din lățime (2–6 mm): butucul, înalt cât roata, stă pe ea; spițele, după diametrul jantei (1,8–4,5 mm)
-      const tp = Math.min(6, Math.max(2, K.fata * W)), ws = Math.min(4.5, Math.max(K.spita, 0.07 * D)), wr = Math.max(1.4, K.ramura * ws);
-      // butucul: același cerc la toate găurile (prismaGauri, ca la rotițe), deci găurile diferă doar prin aria lor
-      tri.push(...prismaGauri(cerc(0, 0, rh), g ? [g] : [], 0, W));
+      const tp = Math.min(6, Math.max(2, K.fata * W));
+      tri.push(...butucRoata(gaura, rh, W));
       // fața: discul, spițele drepte, în Y sau discul cu găuri, de la butuc la bandă (peste ele câte 0,3 mm)
       let fata = spite;
       if (fata !== "disc" && !incap) {
         avert.push(tr("Janta e prea mică pentru spițe: am făcut fața plină."));
         fata = "disc";
       }
-      const N = Math.round(Math.min(12, Math.max(3, nr(nrSpite, 5)))), r0 = rh - 0.3, r1 = rb + 0.3;
-      const bara = (A: P2, B: P2, w: number): Poli => {
-        const L = Math.hypot(B[0] - A[0], B[1] - A[1]), nx = -(B[1] - A[1]) / L * w / 2, ny = (B[0] - A[0]) / L * w / 2;
-        return trig([[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]]);
-      };
-      if (fata === "disc") tri.push(...inel(cerc(0, 0, r1), cerc(0, 0, r0), [0, 0], 0, tp));
-      else if (fata === "gauri") {
-        const rm = (rh + rb) / 2, rgol = Math.max(0.6, Math.min((rb - rh) / 2 - 0.9, rm * Math.sin(Math.PI / N) - 0.9));
-        tri.push(...prismaGauri(cerc(0, 0, r1), [cerc(0, 0, r0), ...Array.from({ length: N }, (_, k) => cerc(rm * Math.cos(2 * Math.PI * k / N + Math.PI / N), rm * Math.sin(2 * Math.PI * k / N + Math.PI / N), rgol, 24))], 0, tp));
-      } else {
-        const rs = rh + 0.45 * (rb - rh), phi = 0.35 * Math.PI / N;
-        for (let k = 0; k < N; k++) {
-          const t = 2 * Math.PI * k / N, u = (r: number, a: number): P2 => [r * Math.cos(t + a), r * Math.sin(t + a)];
-          if (fata === "drepte") tri.push(...prisma(bara(u(r0, 0), u(r1, 0), ws), 0, tp));
-          else {
-            tri.push(...prisma(bara(u(r0, 0), u(rs + 0.4, 0), ws), 0, tp));
-            tri.push(...prisma(bara(u(rs, 0), u(r1, phi), wr), 0, tp), ...prisma(bara(u(rs, 0), u(r1, -phi), wr), 0, tp));
-          }
-        }
-      }
+      const N = Math.round(Math.min(12, Math.max(3, nr(nrSpite, 5))));
+      tri.push(...fataRoata(fata, N, rh, rb, tp, D));
     }
     return { tri, avert };
+  }
+
+  // ---------------------------------------------------------------------------------------------- fulia
+  // Fulia (ADR 0280, felia 3.Tk), culcată pe pat: axa pe z, fața jos, obada cu canalul la mijloc, butucul cu 0,5 mm peste
+  // obadă (spre sus), ca distanța de la LEGO. Cotele LEGO 4185 (LDraw, CC BY 4.0, pe felii de 0,1 mm): Ø24, obada de 3,5 mm,
+  // butucul de 4 mm (r 3,25; 3,75 la cel întărit), discul de 2,4 mm cu șase găuri de știft (Ø4,75 la r 8, de la 30°, din 60
+  // în 60 de grade), peretele de 0,5 mm sub canal; canalul în V (4185a) de la r 12 la ±1,3 mm de mijloc până la r 11 la
+  // ±0,65 mm, cu fundul plat; canalul rotund (4185b), aproape un semicerc de r 1 (fundul la r 10,99).
+  const FULIE = {
+    v: [2.6, 1.0, 1.3] as const,   // canalul în V: lățimea sus, adâncimea, fundul (ca 4185a; cu lățimea cerută, la scară)
+    rotund: 2.0,                    // canalul rotund: lățimea sus; semicercul are raza ei pe jumătate, cu centrul pe margine
+    plat: [4, 1.2] as const,        // canalul plat: lățimea curelei și înălțimea marginilor (teșite la 45°: fără suport)
+    margine: 0.4, perete: 0.5, butuc: 3.75, peretButuc: 1.2, disc: 2.4, sus: 0.5,
+  };
+  type FulieDef = { diam?: unknown; lat?: unknown; canal?: unknown; latCanal?: unknown; gaura?: string };
+  // cotele fuliei (o singură dată, pentru motor și atelier): mărimile în margini (cu avertismente), canalul, banda (rb, sub
+  // canal, cu peretele de 0,5 mm sau 0,02·D) și butucul (rh: același la toate găurile, cât cere crucea, ca o gaură să difere
+  // doar prin aria ei); ce fețe încap
+  function fulieCote({ diam, lat, canal, latCanal }: FulieDef) {
+    const K = FULIE, avert: string[] = [];
+    const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const z = (x: number) => String(x).replace(".", Limba.zecimal);
+    const c = canal === "rotund" || canal === "plat" ? canal : "v";
+    const wc = zecime(Math.min(20, Math.max(1, nr(latCanal, c === "v" ? K.v[0] : c === "rotund" ? K.rotund : K.plat[0]))));
+    // canalul: lățimea sus și adâncimea (în V și plat, un trapez; rotund, un semicerc)
+    const sus = c === "plat" ? wc + 2 * K.plat[1] : wc, adanc = c === "v" ? wc * K.v[1] / K.v[0] : c === "rotund" ? wc / 2 : K.plat[1];
+    let W = zecime(Math.min(40, Math.max(2, nr(lat, 3.5))));
+    const Wmin = Math.ceil((sus + 2 * K.margine) * 10 - 1e-6) / 10;
+    if (W < Wmin) { W = Wmin; avert.push(tr`Canalul cere o obadă de cel puțin ${z(Wmin)} mm: am făcut-o de ${z(Wmin)} mm.`); }
+    const rh = Math.max(K.butuc, razaGauraButuc("x") + K.peretButuc), perete = (d: number) => Math.max(K.perete, 0.02 * d);
+    let D = zecime(Math.min(200, Math.max(12, nr(diam, 24))));
+    const Dmin = Math.ceil(2 * (rh + adanc + perete(D) + 0.3) * 10 - 1e-6) / 10;
+    if (D < Dmin) { D = Dmin; avert.push(tr`Fulia are nevoie de cel puțin Ø ${z(Dmin)} mm (butucul, canalul și peretele dintre ele): am făcut-o de Ø ${z(Dmin)} mm.`); }
+    else if (D !== nr(diam, 24)) avert.push(tr`Fulia are între 12 și 200 mm: am făcut-o de Ø ${z(D)} mm.`);
+    const R = D / 2, rb = R - adanc - perete(D);
+    return { D, R, W, c, wc, sus, adanc, rb, rh, fund: R - adanc, avert, spite: rb - rh >= 3.5 - 1e-9, stift: cercuriStift(rh, rb).length > 0 };
+  }
+  function fulie({ diam = 24, lat = 3.5, canal = "v", latCanal, spite = "stift", nrSpite = 6, gaura = "x" }: {
+    diam?: number; lat?: number; canal?: string; latCanal?: number; spite?: string; nrSpite?: number; gaura?: string }): Corp {
+    const q = fulieCote({ diam, lat, canal, latCanal }), { R, W, rb, rh, adanc } = q, avert = q.avert.slice(), zc = W / 2;
+    const n = 4 * Math.ceil(Math.min(192, Math.max(N_CERC, 2 * Math.PI * R / 1.2)) / 4);
+    // obada: profilul (r, z) pe partea dinafară, de jos în sus, cu canalul la mijloc; în V și plat un trapez, rotund un
+    // semicerc cu centrul pe margine (un număr par de segmente, ca fundul să fie un vârf)
+    let canalP: P2[];
+    if (q.c === "rotund") {
+      const m = 2 * Math.max(6, Math.ceil(Math.PI * adanc / 0.8));
+      canalP = Array.from({ length: m + 1 }, (_, k): P2 => { const t = -Math.PI / 2 + Math.PI * k / m; return [R - adanc * Math.cos(t), zc + adanc * Math.sin(t)]; });
+    } else {
+      const a = q.sus / 2, b = q.c === "v" ? q.wc * FULIE.v[2] / FULIE.v[0] / 2 : q.wc / 2;
+      canalP = [[R, zc - a], [R - adanc, zc - b], [R - adanc, zc + b], [R, zc + a]];
+    }
+    const tri: Tri[] = [...strung([[rb, 0], [R, 0], ...canalP, [R, W], [rb, W]], 0, 2 * Math.PI, 0, 0, n)];
+    // butucul, cu 0,5 mm peste obadă; fața: discul, cât la LEGO (2,4 mm) sau 0,3 din lățime, cel mult 6 și cel mult obada
+    tri.push(...butucRoata(gaura, rh, zecime(W + FULIE.sus)));
+    const tp = Math.min(W, 6, Math.max(FULIE.disc, 0.3 * W));
+    let fata = spite === "disc" || spite === "drepte" || spite === "y" ? spite : "stift";
+    if (fata === "stift" && !q.stift) { avert.push(tr("Fulia e prea mică pentru găurile de știft: am făcut fața plină.")); fata = "disc"; }
+    if ((fata === "drepte" || fata === "y") && !q.spite) { avert.push(tr("Fulia e prea mică pentru spițe: am făcut fața plină.")); fata = "disc"; }
+    tri.push(...fataRoata(fata, Math.round(Math.min(12, Math.max(3, +nrSpite || 6))), rh, rb, tp, q.D));
+    return { tri, avert };
+  }
+  // cureaua deschisă dintre două fulii cu axele la distanța C (ADR 0280), pe fundul canalelor (razele r1, r2): cele două
+  // tangente și arcele cuprinse; NaN dacă un cerc îl cuprinde pe celălalt
+  function lungimeCurea(r1: number, r2: number, C: number): number {
+    const d = Math.abs(r1 - r2);
+    return C > d ? 2 * Math.sqrt(C * C - d * d) + Math.PI * (r1 + r2) + 2 * d * Math.asin(d / C) : NaN;
   }
 
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
@@ -1478,7 +1575,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1566,5 +1663,13 @@ var Lego = (function (glob: typeof globalThis) {
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,
     spiteIncap: (janta: number, gaura = "x") => jantaCote(Math.min(150, Math.max(12.6, +janta || 16.8)), gaura).spite,
     jantaMinimaSpite: (gaura = "x") => { let D = 12.6; while (D < 150 && !jantaCote(D, gaura).spite) D = Math.round((D + 0.1) * 10) / 10; return D; },
+    // fulia (ADR 0280): mărimile după margini și ce fețe încap; de la ce diametru încape o față; cureaua dintre două fulii (pe
+    // fundul canalelor) și dacă fuliile s-ar atinge (cu 0,5 mm între ele, cel puțin)
+    fulieFete: (d: FulieDef) => { const q = fulieCote(d); return { D: q.D, W: q.W, spite: q.spite, stift: q.stift }; },
+    fulieMinimaFata: (d: FulieDef, fata: "spite" | "stift") => { let D = 12; while (D < 200 && !fulieCote({ ...d, diam: D })[fata]) D = Math.round((D + 0.1) * 10) / 10; return D; },
+    cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
+      const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
+      return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };
+    },
     _: { inel, prisma, cruce, razaPoligon, insetConvex, taieSemiplan, trunchi, profilRoata, conturRoata, prismaRasucita } };
 })(typeof globalThis !== "undefined" ? globalThis : window);
