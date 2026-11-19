@@ -161,6 +161,8 @@ test('marginile și avertismentele: janta, anvelopa peste jantă, lățimea', ()
   const a = roata({ diam: 18, janta: 16.8 });
   assert.ok(aproape(a.dim[0]!, 20.8, 0.01), `anvelopa cu 2 mm peste jantă: ${a.dim[0]}`);
   assert.ok(a.avert.some((x) => x.includes('2 mm')), a.avert.join(' | '));
+  // între Ø D + 2 și D + 4 tot se ridică la D + 4 (2 mm de cauciuc pe rază, nu 1)
+  assert.ok(aproape(roata({ diam: 20, janta: 16.8 }).dim[0]!, 20.8, 0.01), 'Ø20 pe janta de 16,8: 20,8');
   assert.ok(aproape(roata({ lat: 2 }).dim[2]!, 4) && aproape(roata({ lat: 60 }).dim[2]!, 40), 'lățimea între 4 și 40');
   assert.deepEqual(simplu(roata({}).avert), [], 'implicit: fără avertisment');
 });
