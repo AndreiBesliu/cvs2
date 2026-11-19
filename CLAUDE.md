@@ -1239,6 +1239,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 19.11.2026: **3.Tk unită în `main`** (la „Da, pornește 3.Tk” al owner-ului): fulia în atelierul Easy 3Draw (`9f1202c7`,
+  exact `2b92fa19`; ADR 0280, pachetul 18.11.0), cu cotele fuliei LEGO 4185 din LDraw (4185a, canalul în V; 4185b,
+  canalul rotund), fața cu găurile de știft pe cercurile grilei și cureaua spre a doua fulie. Butucul și fața roților sunt
+  acum funcții comune (`butucRoata`, `fataRoata`), cu ieșirile roții neschimbate pe 1 351 de combinații. Otrăvurile 37 / 37
+  din prima; 3.Th E06, rămasă VOID de la 3.Tj, mutată. Porțile, din prima, pe arborele unirii (`f971aec8` plus documentele):
+  unit 9 620 / 0, e2e 555 / 555, emulatoarele 101 / 101 și 29 / 29. Totalul 738,8 / 800, pornirea cu ușa 111,2 / 115.
+  Urmează 3.Tl (roata conică), la cuvântul owner-ului.
 - 19.11.2026: **12.1↑f-3, 12.1↑f-4 și 3.Tj unite în `main`** (la „unește ce se poate”): supracursa în fereastra
   exportului și, la alegere, pe tăieturile cât foaia (`70bc8169`, exact `2861e718`; ADR 0176 și 0177, acceptate de owner
   în sesiunea liniei). Linia se oprise în mijlocul aducerii lui `main`; ciocnirile, doar în listele de proprietăți din
