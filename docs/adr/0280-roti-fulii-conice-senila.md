@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a); propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu felia 3.Tj implementată în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -82,6 +82,44 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
 - **3a:** cotele din fișierele LDraw ale pieselor din poze, descărcate cu acordul owner-ului (alegerea 3a). Fișierele stau în
   afara repo-ului (`C:\Users\besli\cncvs2-lucru\ldraw`); din ele se iau doar cotele, cu sursa și licența fiecăruia scrise
   aici, la felia care le folosește.
+
+## Felia 3.Tj, implementată: roata cu anvelopă (pachetul 18.10.0)
+
+- **Cotele LEGO**, măsurate din biblioteca LDraw (<https://www.ldraw.org>, fișierele descărcate pe 19.11.2026, licența
+  CC BY 4.0, scrisă în fiecare): `55982.dat` (Wheel Rim 14 x 18 with Axlehole) și `58090.dat` (Tyre 14/ 50 x 17 VR), cu
+  profilul radial pe felii de 0,4 mm (`C:\Users\besli\cncvs2-lucru\unelte\ldraw\plat.py`). Janta are scaunul anvelopei
+  la r 8,4 (Ø16,8, nu 18 cum spune numele BrickLink) pe 13,6 mm, cu un canal la mijloc; anvelopa are 30,4 × 13,6, alezajul
+  la r 8,24–8,40, nervura lată (3,2 mm la bază, flancurile abrupte până la ±1,25 mm, apoi fundul aproape plat, până la
+  r 7,45; profilul fin, pe felii de 0,1 mm), umerii teșiți drept de la r 15,15 la 14,0 pe 1,8 mm și trei canale de 0,4 mm
+  pe bandă. Din fișiere s-au luat doar cotele; fișierele nu intră în repo.
+- **Motorul** (`lego.ts`, `roata`): culcată pe pat, cu fața spre pat; dintr-o bucată (implicit, la 2b), doar janta (pentru
+  o anvelopă LEGO sau din TPU) sau doar anvelopa (din TPU, cu nervura ca LEGO, deci se pune și pe janta LEGO). Janta:
+  banda cu scaunul și canalul nervurii (de la −1,7 la +1,25 mm față de mijloc, cu fundul la r 7,35, deci 0,1 mm sub
+  nervura LEGO, apoi teșit la 45° până la scaun, ca să se tipărească fără suport), peretele de sub canal 0,04·D (cel puțin
+  0,85); fața (0,3 din lățime, 2–6 mm) plină, cu spițe drepte, în Y sau cu găuri (lățimea spiței 0,07·D, 1,8–4,5 mm),
+  spițele doar dacă între butuc și bandă rămân 3,5 mm (de la janta de Ø20,4 cu gaura de ax; altfel fața plină, cu
+  avertisment); butucul cu gaura Technic. Anvelopa: nervura și umerii ca LEGO, banda cu nervuri, netedă sau cu blocuri
+  alternate pe umeri (unul la ~3,2 mm). Corpuri închise care se suprapun, ca știfturile cărămizilor.
+  Varianta jantei (calibrarea) mută scaunul cu 0,1 mm pe diametru; setul de calibrare are cinci jante LEGO, Ø16,6 … 17,0.
+- **Atelierul**: „Roată cu anvelopă” în galeria pieselor de legătură, felul, „Ca LEGO 30,4 × 14”, diametrele, lățimea,
+  banda, fața (sub diametrul de la care încap spițele, fața plină spusă ca atare, iar numele nu le pomenește), gaura,
+  „Pune janta și anvelopa”; varianta jantei în profilul imprimantei, în fila Calibrare (pasul nou, „opt numere”) și în
+  README-ul arhivei; 40 de texte în engleză. Pachetul 18.10.0, cu descrierea „… roți dințate sau cu anvelopă …”.
+- **Privirea pe roata reală** (capturile 3D ale variantelor, înaintea raportului): la roțile mari, butucul înalt cât roata
+  stătea pe spițe de 2 mm, iar janta de Ø16,8 se numea „6 spițe în Y” deși ieșea plină. Acum fața e 0,3 din lățime, spițele
+  și peretele benzii cresc cu diametrul, iar numele spune ce iese. Probele au mai găsit două: pragul spițelor cădea pe
+  rotunjire (20,5 în loc de 20,4) și cercul cu număr impar de segmente scurta cutia (20,78 în loc de 20,8).
+- **Nervura, la recenzia proprie:** secțiunea mărită a jantei peste profilul fin al nervurii LEGO a arătat că nervura e
+  lată și cu fundul plat, iar teșitura canalului de atunci (pornită de la +0,55 mm) ar fi intrat în ea până la 0,46 mm
+  pe rază (la +1,25 mm). Canalul ține acum nervura până la +1,25 mm și abia apoi se teșește; nervura anvelopei tipărite
+  are forma celei LEGO; jocul minim dintre janta tipărită și nervura LEGO e 0,104 mm.
+- **Probele:** unitare 8 (`trenulet.roata.test.ts`: corpul închis la 108 combinații, cotele LEGO cu janta tipărită sub
+  punctele măsurate ale nervurii LEGO și nervura tipărită pe ele, varianta jantei, fața și spițele, găurile butucului,
+  banda, marginile, setul de calibrare), e2e 3 (`trenulet.roata.spec.ts`). Otrăvurile (`test/otravuri/3.Tj.py`):
+  34 / 34 (25 pe motor, 9 prin e2e), toate prinse.
+- **Recenzia:** workflow-ul de recenzie cu agenți a fost refuzat de clasificatorul modului automat (nu l-am ocolit);
+  recenzia proprie: 648 de combinații extreme, toate corpuri închise, și secțiunea mărită a jantei peste nervura LEGO, care
+  a găsit teșitura canalului în nervură (reparată).
 
 ## Feliile
 

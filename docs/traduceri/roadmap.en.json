@@ -145,6 +145,10 @@
       "ro": "Frezele de rest",
       "en": "Rest bits"
     },
+    "0b5300f0479817c7": {
+      "ro": "Roata cu anvelopă în atelier",
+      "en": "Wheels with tyres in the workshop"
+    },
     "0c71baf23a31780e": {
       "ro": "Transcrierile reale ca fixturi",
       "en": "Real transcripts as fixtures"
@@ -304,10 +308,6 @@
     "168bdc4d7289a620": {
       "ro": "Editarea nodurilor",
       "en": "Node editing"
-    },
-    "16d44f9c580fa729": {
-      "ro": "Roți, fulii, roți la 90° și șenila: propunerea",
-      "en": "Wheels, pulleys, 90° gears and the track: the proposal"
     },
     "177e163eb20639aa": {
       "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",
@@ -548,6 +548,10 @@
     "28ba9ab134dee11c": {
       "ro": "**Instanțele fonturilor variabile, aduse din etapa 7** (fără mașină; ADR 0113; subsesiunea cerută de owner pentru felii care se pot lucra în paralel, în worktree-ul `wip/7.4-fonturi-variabile`). Un font variabil se citește la instanța cerută: coordonatele normalizate ca fontTools (`avar`, F2Dot14), contururile din `gvar` (IUP, componentele), avansul din `HVAR` sau din punctele fantomă, crenarea variabilă (dispozitivele GPOS), majuscula din `cpht` fără H; CFF2 se citește și el (`blend`, `vsindex`). Instanțele numite sunt fețe separate: un font variabil încărcat în Fonturile mele dă câte o intrare pe instanță (Roboto Flex: 20 de fețe, „Roboto Flex Bold” cu id-ul `f:<amprenta>@6`), iar o instanță dată de sistem ca față (Bahnschrift SemiBold) nu mai e refuzată; textul se redeschide editabil, la aceeași instanță. Totalul 414,8 → 418,5 / 450 kB, pornirea neschimbată (97,6, cu ușa 101,1 / 110). **Treceri:** (1) oracolul (instancer-ul fontTools pe Roboto Flex, OFL, 13 axe, și trei variante; 39 de locuri), cititorul, id-urile, biblioteca, e2e-ul rescris; găsite pe drum: offsetul dispozitivelor unei perechi anume e de la setul ei (crenarea nu varia), `HVAR` și punctele fantomă diferă cu 1 unitate la 4 din 1 672 de perechi glifă × loc; (2) CFF2, cu Noto Sans CJK JP (OFL) și un CFF2 scris de mână (instancer-ul lui fontTools cade pe `vsindex` din Private: oracolul ia pen-ul). Mutațiile: 46 / 50 prinse; întâi au trecut 12, opt cereau date noi (regiunea intermediară dincolo de vârf, un dispozitiv de hinting, punctul fantomă din stânga, `blend` și `vsindex` în CFF2, FDSelect 4); una VOID (cod mort scos), trei echivalente.",
       "en": "**Variable font instances, brought forward from stage 7** (no machine; ADR 0113; the sub-session the owner asked for, for slices that can be worked on in parallel, in the `wip/7.4-fonturi-variabile` worktree). A variable font is read at the requested instance: the coordinates normalised as fontTools does (`avar`, F2Dot14), the outlines from `gvar` (IUP, the components), the advance from `HVAR` or from the phantom points, variable kerning (the GPOS devices), the capital height from `cpht` when there is no H; CFF2 is read too (`blend`, `vsindex`). Named instances are separate faces: a variable font loaded into My fonts gives one entry per instance (Roboto Flex: 20 faces, “Roboto Flex Bold” with the id `f:<amprenta>@6`), and an instance the system gives as a face (Bahnschrift SemiBold) is no longer refused; the text reopens editable, at the same instance. Total 414.8 → 418.5 / 450 kB, startup unchanged (97.6, with the door 101.1 / 110). **Passes:** (1) the oracle (the fontTools instancer on Roboto Flex, OFL, 13 axes, and three variants; 39 locations), the reader, the ids, the library, the rewritten e2e; found on the way: the device offset of a specific pair counts from its set (kerning did not vary), `HVAR` and the phantom points differ by 1 unit in 4 of 1,672 glyph × location pairs; (2) CFF2, with Noto Sans CJK JP (OFL) and a hand-written CFF2 (the fontTools instancer fails on `vsindex` in a Private dict: the oracle takes the pen). Mutations: 46 / 50 caught; 12 passed at first, eight needed new data (the intermediate region beyond its peak, a hinting device, the left phantom point, `blend` and `vsindex` in CFF2, FDSelect 4); one VOID (dead code removed), three equivalent."
+    },
+    "28dc6b9a49ecea06": {
+      "ro": "3.Tj (roata cu anvelopă)",
+      "en": "3.Tj (the wheel with a tyre)"
     },
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
@@ -865,10 +869,6 @@
       "ro": "**Gata pe 13.11.** Notificările și semnul din bară (ADR 0194, acceptat pe 11.11, grupul 3: „notificările și istoricul”): finalul, oprirea, pauza din fișier (cu nota), lipsa filamentului, o eroare, legătura pierdută, ca notificare a sistemului cât cvs2 e ascuns sau ca bandă în aplicație, cu sunet; semnul pe butonul Imprimanta, în orice aranjament, și procentul în titlul filei; doar citiri; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
       "en": "**Done on 13.11.** Notifications and the mark on the bar (ADR 0194, accepted on 11.11, group 3: \"notifications and history\"): the end, the stop, the pause from the file (with its note), running out of filament, an error, a lost connection, as a system notification while cvs2 is hidden or as a banner in the app, with a sound; the mark on the Printer button, in every layout, and the percentage in the tab title; reads only; tested on the fake printer, then with the guide on the owner's printer"
     },
-    "3d84791b496a2b08": {
-      "ro": "Răspunsurile la ADR 0280, roțile și șenila: ordinea feliilor (1a: roata de vehicul și fulia întâi; 1b: roțile la 90°; 1c: șenila), filamentul TPU pentru anvelope (2a: da; 2b: nu încă) și cotele pieselor LEGO (3a: din LDraw, cu acordul pentru descărcare; 3b: măsurate cu șublerul; 3c: doar din nume), în [schiță](https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK)",
-      "en": "Answers to ADR 0280, the wheels and the track: the order of the slices (1a: the vehicle wheel and the pulley first; 1b: the 90° gears; 1c: the track), TPU filament for the tyres (2a: yes; 2b: not yet) and the dimensions of the LEGO parts (3a: from LDraw, with consent to download; 3b: measured with calipers; 3c: from the names only), in the [sketch](https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK)"
-    },
     "3dc936174fd0788d": {
       "ro": "**Avertismentul urechilor la așezare** (ADR 0210, varianta a; „Da, 11.3↑b”, la propunerea de după unirea lui 11.7↑). Cu urechi pe un profil exterior, distanța propusă dintre piese e 2 × freza + 3 mm, rotunjită în sus (10 cu Ø3,175, ca pe placa 11): sub 2 × freza, tăieturile vecine se unesc, iar urechile dinspre vecini nu mai țin. «Așază pe foi» pornește de la ea și spune de ce; sub ea apare avertismentul (Așază rămâne pornit), iar sub freză, refuzul de până acum. «Din CSV…», «Încă…», «+1» și „Mută și așază la capăt” nu întreabă distanța, deci urcă singură la ea. Otrăvurile: 21 / 21 la prima rulare. Documentul nu se schimbă, iar pornirea nici ea.",
       "en": "**The tabs warning when laying out** (ADR 0210, option a; “Yes, 11.3↑b”, to the proposal after 11.7↑ was merged). With tabs on an outside profile, the proposed distance between parts is 2 × the cutter + 3 mm, rounded up (10 with Ø3.175, as on plate 11): below 2 × the cutter, the neighbouring cuts merge, and the tabs facing the neighbours no longer hold. “Arrange on sheets” starts from it and says why; below it a warning appears (Arrange stays enabled), and below the cutter, the refusal as before. «From CSV…», «More…», «+1» and “Move and arrange at the end” do not ask for the distance, so it rises to it by itself. The mutations: 21 / 21 on the first run. The document does not change, and neither does the startup."
@@ -1092,6 +1092,10 @@
     "4d235580c0cc066d": {
       "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11, cu răspunsurile lui): conexiunile ținute, fiecare cu rețeaua ei, alese de om (fără conectare singură); găsirea după nume și, la clic, în toată rețeaua; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
       "en": "Connecting over WiFi, much easier (ADR 0136, the owner’s request of 05.11, with the owner’s answers): the saved connections, each with its network, chosen by the person (no connecting on its own); finding by name and, on a click, on the whole network; the steps for each failure; setting up the ESP3D bridge from the app, instead of the commands in its terminal; tested on the emulator, behind a fake bridge"
+    },
+    "4d55bcd4b7fba1b8": {
+      "ro": "Printează o roată dintr-o bucată („Ca LEGO 30,4 × 14”) și setul de calibrare cu cele cinci jante; pune pe jante o anvelopă LEGO 30,4 × 14 și alege „Varianta jantei” (fila Calibrare din 3D)",
+      "en": "Print a one-piece wheel (“Like LEGO 30.4 × 14”) and the calibration set with the five rims; put a LEGO 30.4 × 14 tyre on the rims and choose the “Rim variant” (the Calibration tab in 3D)"
     },
     "4df95c07f33790be": {
       "ro": "3.S pe live (acolo primirea e oprită până atunci)",
@@ -1877,10 +1881,6 @@
       "ro": "**Pachetul de atelier, adus din etapa 4** (fără mașină; ADR 0131; punctul 6 din `PLAN.md` §5.3, partea a doua; „Da, pornește”). Fișierele de probă T0–T7 ale celor opt controlere, după setul din sonda s8 (Anexa B), scrise de postul aplicației cu contractul fiecăruia: T0 citirea antetului și a comentariilor (cu stilurile alternative, unde nu sunt sigure), T1 arcele (cercurile Ø50 în 2 × 180° și 4 × 90°, colțurile R5, arcul R1200 și arcul mic), T2 avansul, pauza și, pe Syntec, punctul zecimal, T3 elicea, T4 schimbarea sculei (bariera, M6 la controler sau un fișier pe freză), T5 G54 și G55, T6 limita liniei și T7 găurirea în pași (pe GRBL 1.1, setul plăcii 3). Unde contractul e prudent, fișierul probează chiar controlerul (arcul R1200 ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în `test/ateliere/`. **Probele:** valorile pe hârtie citite din fișiere cu cititorul dialectelor (cercurile, timpii, pauza, elicea, adâncimile, WCS-ul, liniile lungi), fișa cu amprentele; pachetele comise, octet cu octet; arhivele, și prin cititorul zip al lui Python.",
       "en": "**The workshop pack, brought forward from stage 4** (no machine; ADR 0131; point 6 of `PLAN.md` §5.3, the second part; “Yes, start it”). The T0–T7 test files of the eight controllers, after the set in the s8 probe (Appendix B), written by the app’s post with each one’s contract: T0 reading the header and the comments (with the alternative styles, where they are not certain), T1 the arcs (the Ø50 circles in 2 × 180° and 4 × 90°, the R5 corners, the R1200 arc and the tiny arc), T2 the feed, the dwell and, on Syntec, the decimal point, T3 the helix, T4 the tool change (the barrier, M6 at the controller or one file per bit), T5 G54 and G55, T6 the line limit and T7 the peck drilling (on GRBL 1.1, the set of plate 3). Where the contract is cautious, the file tests the controller itself (the R1200 arc as an arc, the helix on RichAuto). Each pack has its sheet (the version, the settings, the material, the first run in the air, what is measured with the value on paper, the SHA-256 fingerprints) and a ZIP archive with the same bytes at every generation, in `test/ateliere/`. **Proofs:** the values on paper read from the files with the dialect reader (the circles, the times, the dwell, the helix, the depths, the WCS, the long lines), the sheet with the fingerprints; the committed packs, byte for byte; the archives, also through Python’s zip reader."
     },
-    "8e649ca56f839c5d": {
-      "ro": "3.Tj–3.To",
-      "en": "3.Tj–3.To"
-    },
     "8ebeb40e6301189a": {
       "ro": "Fișierele lăsate pe planșă",
       "en": "Files dropped on the board"
@@ -1900,10 +1900,6 @@
     "8f70e8f713e43d92": {
       "ro": "Gărzile offsetului",
       "en": "Offset guards"
-    },
-    "8fe839d2c18f6f3b": {
-      "ro": "**Roți, fulii, roți la 90° și șenila: propunerea** (fără mașină; ADR 0280, propus; worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”, cu nouă poze). Șase tipuri noi, pe feliile 3.Tj–3.To: roata de vehicul (janta și anvelopa), fulia, roata conică, coroana, conicele duble, șenila cu pinionul. Schița, cu desenele de principiu și trei întrebări: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. Codul, după răspunsuri.",
-      "en": "**Wheels, pulleys, 90° gears and the track: the proposal** (no machine; ADR 0280, proposed; the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”, with nine photos). Six new types, in slices 3.Tj–3.To: the vehicle wheel (rim and tyre), the pulley, the bevel gear, the crown gear, the double bevel gears, the track with its sprocket. The sketch, with schematic drawings and three questions: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. The code comes after the answers."
     },
     "90214645e1c0b62a": {
       "ro": "N axe din prima zi",
@@ -2024,6 +2020,10 @@
     "97782b935c8ff9d0": {
       "ro": "Importul WMF, cu cititor propriu",
       "en": "WMF import, with our own reader"
+    },
+    "97826ebd0f99c6cc": {
+      "ro": "**Roata cu anvelopă în atelier** (fără mașină; ADR 0280, acceptat: „Da, fără TPU” (1a, 2b, 3a); worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). „Roată cu anvelopă” în galeria pieselor de legătură: dintr-o bucată (din PLA), doar janta (pentru o anvelopă LEGO) sau doar anvelopa (din TPU), cu cotele LEGO măsurate în LDraw (janta Ø16,8 × 13,6, anvelopa 30,4 × 13,6 cu nervura); banda cu nervuri, netedă sau cu blocuri; fața plină, cu spițe drepte, în Y sau cu găuri; cinci jante de probă la calibrare. Pachetul 18.10.0. Unitare 8, e2e 3, otrăvuri 34 / 34 (25 pe motor, 9 prin e2e), toate prinse. Urmează 3.Tk (fulia).",
+      "en": "**Wheels with tyres in the workshop** (no machine; ADR 0280, accepted: “Da, fără TPU” (1a, 2b, 3a); the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). “Wheel with tyre” in the gallery of connecting pieces: in one piece (in PLA), just the rim (for a LEGO tyre) or just the tyre (in TPU), with the LEGO dimensions measured in LDraw (rim Ø16.8 × 13.6, tyre 30.4 × 13.6 with its rib); a tread with grooves, smooth or with blocks; a solid face, straight or Y spokes, or holes; five test rims in calibration. Package 18.10.0. Unit 8, e2e 3, poisons 34 / 34 (25 on the engine, 9 through e2e), all caught. Next: 3.Tk (the pulley)."
     },
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
