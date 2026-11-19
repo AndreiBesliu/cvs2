@@ -1239,6 +1239,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 19.11.2026: **3.Tl unită în `main`** (la „Da, pornește 3.Tl” al owner-ului): roata conică în atelierul Easy 3Draw
+  (`bd7351a4`, exact `21213162`; ADR 0280, pachetul 18.12.0). Perechea la 90°, cu axele în vârful comun; profilul Tredgold,
+  proiectat din vârf, cu straturile spre vârf (`prismaStraturi`, harta punctelor pe strat). Planul de divizare e la 2·m de
+  fața din spate, deci vârful la m·(2 + z2 / 2): la LEGO 87407, 12 mm de gulerul din spate (dedus din LDraw, unde dinții sunt
+  stilizați), pe grila de jumătate de pas la perechile de 12, 20, 28, 36 … de dinți. Perechea montată nu se pătrunde pe roțile
+  întregi și e prinsă (0,2 mm în plus n-o atinge, 0,9 mm da). Otrăvurile 25 / 25 din prima. Porțile, din prima, pe
+  `e171418a` (codul unirii; apoi doar documentele): unit 9 626 / 0, e2e 557 / 557, emulatoarele 101 / 101 și 29 / 29.
+  Totalul 738,8 / 800. Proiectul de tipuri al planificatorului (`trenulet.tipuri.test.ts`, `exactOptionalPropertyTypes`) e
+  mai strict decât `tsc` al aplicației. Urmează 3.Tm (roata coroană), la cuvântul owner-ului.
 - 19.11.2026: **3.Tk unită în `main`** (la „Da, pornește 3.Tk” al owner-ului): fulia în atelierul Easy 3Draw (`9f1202c7`,
   exact `2b92fa19`; ADR 0280, pachetul 18.11.0), cu cotele fuliei LEGO 4185 din LDraw (4185a, canalul în V; 4185b,
   canalul rotund), fața cu găurile de știft pe cercurile grilei și cureaua spre a doua fulie. Butucul și fața roților sunt
