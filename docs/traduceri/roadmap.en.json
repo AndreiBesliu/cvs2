@@ -1661,6 +1661,10 @@
       "ro": "Sheets + Multi-Plate; §10 Listă de tăiere",
       "en": "Sheets + Multi-Plate; §10 Cut list"
     },
+    "7b54e18bd9ea21ce": {
+      "ro": "Urechile la locuri alese",
+      "en": "Tabs at chosen places"
+    },
     "7b8b7a77b8b58c94": {
       "ro": "Un singur IR al traseului",
       "en": "A single toolpath IR"

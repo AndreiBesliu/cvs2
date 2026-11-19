@@ -10475,3 +10475,27 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   dinaintea ultimelor schimbări din `lego.ts` (reînregistrată, versiunea nepublicată); lente verzi pe `925762a7` (e2e 560 /
   560, emulatoarele 101 / 101 și 29 / 29), iar pe `a27927b3` e2e-ul pachetului (biblioteca, extensiile, pluginul) 48 / 48.
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-19 — Felia 11.3↑d pornită: urechile la locuri alese, ADR 0211 propus și schița (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu ADR-ul și schița? Răspunde „Da, ADR și schița” sau „Mai târziu”.”: „Da, ADR și schița”.
+**Started:** 19.11, 21:10.
+
+- **`main` `4b7539a`** a venit prin avans direct (ramura n-avea nimic peste el).
+- **ADR 0211, propus** (`docs/adr/0211-urechile-la-locuri-alese.md`): urechile la locuri alese, varianta c din ADR 0210.
+  Trei variante, pe felii: a) alese cu mausul, într-un mod al pânzei deschis din rândul exportului (recomandarea, ca
+  editarea urechilor din ArtCAM); b) automat, „unde ține”, pe proba de la 11.3↑c, calculat pe fiecare instanță la export;
+  c) reguli simple (laturile lungi, scurte, mijlocul laturilor). Documentul v26: `urechi.mod` și `urechi.locuri` (punctele,
+  în coordonatele piesei); programele de azi rămân octet cu octet; pornirea buclei în mijlocul celui mai lung gol dintre
+  urechi (o abatere de la ADR 0027 §4, doar pentru modurile noi); flancul, din golul cel mai mic.
+- **Schița:** <https://claude.ai/artifact/XiHkAQJ5nJjxNVyGQzVG27>: desenele la scară (acum: trei plăcuțe la 5 mm, cu
+  tăieturile unite; „unde ține”: trei rânduri la 5 mm și două coloane la 20 mm, înainte și după; cele trei reguli), un mod
+  al urechilor de încercat (clicul pune, clicul scoate, tras mută; pornirea în golul cel mai lung; refuzul sub 6 / 0,9 mm)
+  și formularul celor șapte întrebări. Răspunsurile stau în baza paginii (colecția `raspunsuri`, scrisă doar de owner),
+  verificată cu un document de probă scris, citit înapoi și șters.
+- **Cercetarea:** codul (`Operatie.urechi`, `geometrieUrechi`, pornirea în vârful 0), ADR 0028 și 0027, referința
+  funcțională (ArtCAM: urechile se editează pe vector, cu clic).
+- **Indexul ADR-urilor** și traducerea titlului (roadmap-ul în engleză, 855 / 0). Nimic din cod; felia 11.3↑d pornește la
+  răspunsuri.
+
+**Completed:** 19.11, 22:36.
