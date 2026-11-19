@@ -1,7 +1,8 @@
 # ADR 0028 — Urechile (documentul v5)
 
 **Starea:** acceptat pe 09.10.2026, în felia 2.4, pe verdictul din `docs/PORTARE.md` §3.1 (profilul adaptat, emitentul
-rescris pe IR). **Intră în:** etapa 2. Nimic de aici nu se schimbă fără un ADR nou.
+rescris pe IR). **Intră în:** etapa 2. Nimic de aici nu se schimbă fără un ADR nou. **Trimitere (18.11.2026):** supracursa de
+la punctul 2 e în fereastra exportului din felia 12.1↑f-3 (ADR 0176).
 
 **Problema.** O piesă decupată prin material se desprinde de foaie pe ultima trecere și poate fi prinsă de freză.
 Urechile lasă punți subțiri de material, rupte după tăiere. În ediția întâi:

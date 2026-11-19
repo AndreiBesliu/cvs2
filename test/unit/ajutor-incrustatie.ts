@@ -1,10 +1,27 @@
 /**
  * Documentul unui caz al incrustației în V (`test/oracles/incrustatie.cazuri.ts`), comun probelor potrivirii (ADR 0170) și
- * benzii cu decupare (ADR 0172), ca o probă să nu importe alta (node:test ar rula și testele ei).
+ * benzii cu decupare (ADR 0172), ca o probă să nu importe alta (node:test ar rula și testele ei). Și Z-urile unui program, comune
+ * probelor supracursei pe dopuri (ADR 0176).
  */
 import type { CazIncrustatie } from '../oracles/incrustatie.cazuri.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+
+/**
+ * Z-urile scrise în mutările unui program G-code (fără comentarii), rotunjite la micron: cel mai mic e fundul celei mai adânci
+ * treceri, iar vârful punților (palierul lor) e unul dintre ele.
+ */
+export function zuriProgram(text: string): Set<number> {
+  const z = new Set<number>();
+  for (const linie of text.split('\n')) {
+    if (linie.startsWith('(') || linie.startsWith(';')) continue;
+    for (const m of linie.matchAll(/Z(-?\d*\.?\d+)/g)) z.add(Math.round(Number(m[1]) * 1000) / 1000);
+  }
+  return z;
+}
+
+/** Fundul celei mai adânci treceri a unui program (Z-ul cel mai mic), în mm. */
+export const zMinim = (text: string): number => Math.min(...zuriProgram(text));
 
 /** Forma „cale” închisă a unui poligon, în coordonatele foii (matricea identitate). */
 const cale = (pol: readonly (readonly [number, number])[]) => ({

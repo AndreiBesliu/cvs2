@@ -5,7 +5,8 @@
  * cu flanșa, deschiderea cu tija); flanșa trece de deschidere (stă pe umăr); umărul d, fundul D, tija și înălțimea dopului
  * ± 0,05; ce rămâne după sprijin (g sub tijă pe umăr, g deasupra umărului pe fund, nimic la gaură; H peste placă); pereții pe
  * hârtie ± 0,02 (`incrustatieDreapta.trepte.cazuri.ts`). Controlul negativ: același dop neoglindit pică pe L. Refuzurile
- * lucrării și valorile pe hârtie (`valoriIncrustatieDreapta`).
+ * lucrării și valorile pe hârtie (`valoriIncrustatieDreapta`). Supracursa (ADR 0176): flanșa decupată trece cu ea sub placa
+ * dopului, cu aceeași potrivire și cu vârful punților tot la grosimea lor de fața de jos.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,6 +18,7 @@ import { CAZURI_TREPTE, type CazTrepte } from '../oracles/incrustatieDreapta.tre
 import type { FrezaPlataCaz } from '../oracles/incrustatieDreapta.cazuri.ts';
 import { cutieDesen, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
+import { zuriProgram } from './ajutor-incrustatie.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const TOL_JOC = 0.02, TOL_Z = 0.05, TOL_RAZA = 0.02;
@@ -58,10 +60,10 @@ function documentTrepte(c: CazTrepte, peste: Record<string, unknown> = {}, opera
   };
 }
 
-async function exporta(brut: unknown) {
+async function exporta(brut: unknown, supracursa?: number) {
   const d = incarca(brut);
   if (!d.ok) assert.fail(d.motiv);
-  return calculeazaExport(d.doc, { origine: 'stanga-jos', z0: 'sus' });
+  return calculeazaExport(d.doc, { origine: 'stanga-jos', z0: 'sus', ...(supracursa === undefined ? {} : { supracursa }) });
 }
 
 /** Sculele bucăților unui program, în ordine: cea de la pornire, apoi fiecare `T… M6`, după numărul lor. */
@@ -82,11 +84,11 @@ const masoara = (c: CazTrepte, locas: string, dop: string): MasuraTrepte => maso
   },
 );
 
-async function potrivire(c: CazTrepte): Promise<{
+async function potrivire(c: CazTrepte, supracursa?: number): Promise<{
   readonly m: MasuraTrepte; readonly locas: string; readonly dop: string; readonly grosime: number; readonly exacta: boolean;
   readonly avertismente: readonly string[];
 }> {
-  const r = await exporta(documentTrepte(c));
+  const r = await exporta(documentTrepte(c), supracursa);
   if (!r.ok) assert.fail(`${c.id}: ${r.motiv}`);
   assert.equal(r.dopuri.length, 1, `${c.id}: un singur dop`);
   const locas = r.program.text, dop = r.dopuri[0]!.program.text;
@@ -132,6 +134,26 @@ for (const c of CAZURI_TREPTE) {
     }
   });
 }
+
+test('supracursa 0,5 (ADR 0176), dreptunghi-decupat: flanșa decupată prin placa de 9,5 plus 0,5, potrivirea neschimbată, vârful punților tot la 8,5', async () => {
+  const c = CAZURI_TREPTE.find((x) => x.id === 'dreptunghi-decupat')!;
+  const cu = await potrivire(c, 0.5), fara = await potrivire(c);
+  const unde = `sus ${JSON.stringify(cu.m.sus)}, jos ${JSON.stringify(cu.m.jos)}, h ${cu.m.inaltime}, tija ${cu.m.tija}`;
+  for (const n of [cu.m.sus, cu.m.jos]) {
+    assert.ok(n.joc.n > 100 && n.joc.min >= c.c - TOL_JOC && n.joc.max <= c.c + TOL_JOC, `jocul lateral cu supracursa: ${unde}`);
+    assert.equal(n.interferenta, 0, `interferența cu supracursa: ${unde}`);
+  }
+  // Oracolul dă șanțul decupării cel mai adânc (9,5 + 0,5); dopul e placa, exactă, de 9,5, cu tija neschimbată.
+  assert.ok(Math.abs(cu.m.inaltime - (c.h + 0.5)) <= TOL_Z && Math.abs(cu.m.tija - c.tija) <= TOL_Z, `șanțul de ${c.h} + 0,5, tija de ${c.tija}: ${unde}`);
+  assert.deepEqual({ grosime: cu.grosime, exacta: cu.exacta }, { grosime: c.h, exacta: true });
+  // Locașul nu trece prin foaie, deci nu se schimbă. Dopul: fundul decupării la 9,5 + 0,5, iar vârful punților implicite (groase
+  // de 1) tot la 9,5 − 1 = 8,5 de față, nu la 10 − 1 = 9 (ADR 0028 §2: puntea se măsoară de la fața de jos a plăcii).
+  assert.equal(cu.locas, fara.locas);
+  const z = zuriProgram(cu.dop), z0 = zuriProgram(fara.dop);
+  assert.deepEqual([Math.min(...z), Math.min(...z0)], [-10, -9.5]);
+  assert.ok(z.has(-8.5) && !z.has(-9), `vârful punților la −8,5: ${[...z].filter((x) => x < 0).sort((a, b) => a - b).join(', ')}`);
+  assert.ok(z0.has(-8.5), 'fără supracursă, același vârf');
+});
 
 /**
  * Programul oglindit pe X față de mijlocul semifabricatului lat de `W`: X → W − X, I → −I, G2 ↔ G3 (comentariile rămân). Un dop

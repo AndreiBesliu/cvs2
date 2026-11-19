@@ -14,6 +14,7 @@
  * litera „i”: bucla mică a punctului primește câte punți încap (3 din 4), cu avertismentul, în loc să refuze tot exportul.
  * Controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii (nu la S). Un document de
  * dinainte de v22, cu banda aleasă, dar fără valorile ei, se taie cu cele implicite (decuparea, placa S + H + 1, 4 punți).
+ * Cu supracursa din fereastră (ADR 0176), decuparea trece cu ea sub placă, iar punțile rămân groase de gp de la fundul ei.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +24,7 @@ import { masoaraPotrivirea, suprafataPeScule, laDesen, cutieDesen } from '../ora
 import { CAZURI_INCRUSTATIE, type CazIncrustatie } from '../oracles/incrustatie.cazuri.ts';
 import type { PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
-import { documentCaz } from './ajutor-incrustatie.ts';
+import { documentCaz, zuriProgram } from './ajutor-incrustatie.ts';
 
 const TOL = 0.05;
 const CELULA = 0.1;
@@ -184,6 +185,24 @@ test('un document de dinainte de v22, cu banda aleasă și fără valorile ei: d
   assert.ok(Math.abs(dop.semifabricat.latime - (x1 - x0 + 2 * margine)) < 1e-6, `lățimea semifabricatului ${dop.semifabricat.latime}`);
   // Fundul, pereții, decuparea: două schimbări de freză; punțile implicite: 4 pe buclă.
   assert.equal((dop.program.text.match(/^T\d+ M6$/gm) ?? []).length, 2);
+});
+
+test('supracursa 0,5 (ADR 0176), dreptunghi: decuparea trece cu ea sub placă, vârful punților rămâne la T − 1 de față, locașul la fel', async () => {
+  const c = CAZURI_INCRUSTATIE.find((x) => x.id === 'dreptunghi')!;
+  const cu = await calculeazaExport(deschis(documentBanda(c)), { origine: 'stanga-jos', z0: 'sus', supracursa: 0.5 });
+  const fara = await calculeazaExport(deschis(documentBanda(c)), { origine: 'stanga-jos', z0: 'sus' });
+  if (!cu.ok || !fara.ok) assert.fail(cu.ok ? (fara.ok ? '' : fara.motiv) : cu.motiv);
+  const mic = (x: number): number => Math.round(x * 1000) / 1000;
+  const T = placa(c), dop = cu.dopuri[0]!.program.text;
+  const z = zuriProgram(dop), z0 = zuriProgram(fara.dopuri[0]!.program.text);
+  assert.deepEqual([Math.min(...z), Math.min(...z0)], [-mic(T + 0.5), -mic(T)], `fundul decupării: placa de ${T} plus 0,5`);
+  // Vârful punților, de la fața de jos a plăcii (ADR 0028 §2): T − 1 de față, nu T + 0,5 − 1.
+  assert.ok(z.has(-mic(T - PUNTI.grosime)) && !z.has(-mic(T + 0.5 - PUNTI.grosime)),
+    `vârful punților la −${mic(T - PUNTI.grosime)}: ${[...z].filter((x) => x < 0).sort((a, b) => a - b).join(', ')}`);
+  assert.ok(z0.has(-mic(T - PUNTI.grosime)), 'fără supracursă, același vârf');
+  // Placa rămâne exact T; locașul în V nu trece prin foaie, deci nu se schimbă.
+  assert.deepEqual(cu.dopuri[0]!.semifabricat, fara.dopuri[0]!.semifabricat);
+  assert.equal(cu.program.text, fara.program.text);
 });
 
 test('controlul negativ: banda fără decupare lasă placa întreagă, care se oprește pe fața plăcii, nu la S', async () => {

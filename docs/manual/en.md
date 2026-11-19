@@ -1493,6 +1493,14 @@ drawing, it closes by itself.
 which). Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
+- the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
+  spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
+  and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
+  a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
+  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. Unticked, the cuts stay
+  as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
+  18 mm sheet, with 0.5 overtravel). Tabs keep their thickness, measured from the bottom of the board. The overtravel and the
+  box stay while the app is open and do not go into the project; the toolpath and the 3D view leave them out;
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
   **NcStudio, RichAuto, Syntec, Mach3** and **Mach4** get a file that you run from their own controller (it doesn't reach the
   machine panel). A post written only from the controller's documentation, not yet tested on a machine, carries a note: watch

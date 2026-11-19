@@ -39,9 +39,10 @@ const dreptunghi = (x0: number, y0: number, x1: number, y1: number): Contur => (
 });
 
 /**
- * Decuparea dopului prin placa lui (ADR 0171 §3, ADR 0174), prin toată placa (`adancime`): exterioarele ca profile exterioare, cu
- * punți, golurile ca interioare, cu cea mai mică freză a dopului (unghiurile lui au exact raza ei); marginea cel puțin cât ea
- * (altfel șanțul iese din placă). Folosită de dopul decupat simplu și de flanșa celui în trepte.
+ * Decuparea dopului prin placa lui (ADR 0171 §3, ADR 0174), prin toată placa, plus supracursa (`adancime`, ADR 0176): exterioarele
+ * ca profile exterioare, cu punți, golurile ca interioare, cu cea mai mică freză a dopului (unghiurile lui au exact raza ei);
+ * marginea cel puțin cât ea (altfel șanțul iese din placă). Punțile se măsoară de la fața de jos a plăcii (ADR 0028 §2), deci
+ * supracursa nu le subțiază. Folosită de dopul decupat simplu și de flanșa celui în trepte.
  */
 function decupareCuPunti(id: string, exterioare: readonly Contur[], goluri: readonly Contur[], op: Operatie, inc: IncrustatieDreapta, m: number, adancime: number):
   { readonly ok: true; readonly noduri: readonly Nod[]; readonly operatii: readonly Operatie[]; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string } {
@@ -81,10 +82,13 @@ function decupareCuPunti(id: string, exterioare: readonly Contur[], goluri: read
   };
 }
 
-/** Semifabricatul dopului în trepte: colțul cutiei lui pe foaie (x1, y0), marginea, mărimea; frezele; înălțimea și tija. */
+/**
+ * Semifabricatul dopului în trepte: colțul cutiei lui pe foaie (x1, y0), marginea, mărimea; frezele; înălțimea și tija; cât trece
+ * decuparea de placă (supracursa, ADR 0176).
+ */
 type CadruTrepte = {
   readonly x1: number; readonly y0: number; readonly m: number; readonly latime: number; readonly inaltime: number;
-  readonly lata: number; readonly h: number; readonly tija: number; readonly flansa: number;
+  readonly lata: number; readonly h: number; readonly tija: number; readonly flansa: number; readonly supracursa: number;
 };
 
 type PiesaDop = Document['piese'][number];
@@ -95,7 +99,8 @@ type PiesaDop = Document['piese'][number];
  * flanșă, pe flanșa lărgită cu diametrul primei freze plus `TRECERE` (freza ajunge peste toată fața flanșei, și în colțurile
  * ei, și are loc între tijă și marginea buzunarului), cu frezele dopului; apoi:
  * - ridicat: buzunarul din jurul flanșei, până la h, pe tot semifabricatul (fața coborâtă, ca la dopul ridicat);
- * - decupat: flanșa decupată prin placa lui (h), cu cea mai mică freză și cu punți, iar golurile ei ca interioare.
+ * - decupat: flanșa decupată prin placa lui (h, plus supracursa), cu cea mai mică freză și cu punți, iar golurile ei ca
+ *   interioare.
  */
 function dopInTrepte(id: string, sus: NivelDreapta, jos: NivelDreapta, op: Operatie, k: CadruTrepte):
   { readonly ok: true; readonly piesa: PiesaDop; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string } {
@@ -151,7 +156,7 @@ function dopInTrepte(id: string, sus: NivelDreapta, jos: NivelDreapta, op: Opera
   }
   const exterioare = sus.dop.map((r) => transformaContur(r.exterior, oglinda));
   const goluri = sus.dop.flatMap((r) => r.gauri.map((g) => transformaContur(g, oglinda)));
-  const d = decupareCuPunti(id, exterioare, goluri, op, inc, k.m, k.h);
+  const d = decupareCuPunti(id, exterioare, goluri, op, inc, k.m, k.h + k.supracursa);
   if (!d.ok) return d;
   return {
     ok: true,
@@ -166,8 +171,9 @@ function dopInTrepte(id: string, sus: NivelDreapta, jos: NivelDreapta, op: Opera
 /**
  * Dopurile cu pereți drepți ale foii: câte unul pe regiunea fiecărei incrustații (operațiile unei piese dintr-o instanță cu
  * aceleași valori, ca locașul), fiecare cu programul lui, pe semifabricatul lui; sau motivul primului care nu se poate tăia.
+ * `supracursa` (din fereastra exportului, ADR 0176): cât trece decuparea dopului decupat de placa lui; 0, exact prin ea.
  */
-export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
+export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
   const operatieDe = (t: Taietura): Operatie | undefined => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
   const taieturi = ordineTaieturi(doc, 0).filter((t) => t.tip === 'buzunar' && operatieDe(t)?.incrustatie?.fel === 'drept');
   const cheie = (u: Taietura): string => {
@@ -211,7 +217,7 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
     let piesa: Document['piese'][number];
     const jos = f.figura.jos;
     if (treapta && jos) {
-      const p = dopInTrepte(t.idLume, f.figura, jos, op, { x1, y0, m, latime, inaltime, lata, h, tija: treapta.tija, flansa: treapta.flansa });
+      const p = dopInTrepte(t.idLume, f.figura, jos, op, { x1, y0, m, latime, inaltime, lata, h, tija: treapta.tija, flansa: treapta.flansa, supracursa });
       if (!p.ok) return p;
       piesa = p.piesa;
       avertismente.push(...p.avertismente);
@@ -232,11 +238,11 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
       };
       avertismente.push(`dopul ${t.idLume}: freza trece cu până la ${Math.ceil((e + lata / 2) * 10) / 10} mm dincolo de marginile semifabricatului (fața coborâtă până la margine): fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă`);
     } else {
-      // Decupat: neoglindit, prin toată placa (`decupareCuPunti`).
+      // Decupat: neoglindit, prin toată placa, plus supracursa (`decupareCuPunti`).
       const muta = { a: 1, b: 0, c: 0, d: 1, e: m - x0, f: m - y0 };
       const exterioare = f.figura.dop.map((r) => transformaContur(r.exterior, muta));
       const goluri = f.figura.dop.flatMap((r) => r.gauri.map((g) => transformaContur(g, muta)));
-      const d = decupareCuPunti(t.idLume, exterioare, goluri, op, inc, m, grosime);
+      const d = decupareCuPunti(t.idLume, exterioare, goluri, op, inc, m, grosime + supracursa);
       if (!d.ok) return d;
       piesa = { id: 'dop', radacina: { tip: 'grup', id: 'r', matrice: { ...IDENTITATE }, copii: [...d.noduri] }, operatii: [...d.operatii] };
       avertismente.push(...d.avertismente);
@@ -245,7 +251,7 @@ export function programeDopuriDrepte(doc: Document, regim: Regim): { readonly ok
       schema: VERSIUNE_SCHEMA, rev: 0, piese: [piesa],
       foi: [{ id: 'semifabricat', stoc: { latime, inaltime, grosime }, instante: [{ id: 'dop', piesa: 'dop', x: 0, y: 0, rotire: 0 }] }],
     };
-    const job = programDinDocument(sintetic, regim);
+    const job = programDinDocument(sintetic, regim, supracursa);
     if (!job.ok) return { ok: false, motiv: `${t.idLume}, dopul: ${job.motiv}` };
     dopuri.push({
       element: t.idLume, program: job.program, semifabricat: { latime, inaltime, grosimeMinima: grosime, ...(inc.dop === 'decupat' ? { exacta: true } : {}) },

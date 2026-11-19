@@ -67,7 +67,7 @@ function desprinseFoii(doc: Document, simulare: ProgramSimulat): ParteDesprinsa[
 export async function calculeazaExportul(doc: Document, p: ParametriExport): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
+  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
@@ -88,10 +88,11 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
   if (!e.ok) return e;
   // Dopurile incrustațiilor (ADR 0170 §3): câte un program pe semifabricatul lui, cu originea în colțul ales și Z0 mereu pe fața
   // lui. Fața se coboară până dincolo de marginea semifabricatului (în aer), deci ieșirea e a construcției, scrisă în program.
-  // Dopurile (ADR 0170, ADR 0171): întâi cele în V, apoi cele cu pereți drepți; numerele fișierelor le urmează.
-  const inV = programeDopuri(doc, REGIM_IMPLICIT);
+  // Dopurile (ADR 0170, ADR 0171): întâi cele în V, apoi cele cu pereți drepți; numerele fișierelor le urmează. Decupările lor
+  // trec de placă cu aceeași supracursă ca foaia (ADR 0176).
+  const inV = programeDopuri(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
   if (!inV.ok) return inV;
-  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT);
+  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
   if (!drepte.ok) return drepte;
   const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };
   const dopuri: DopExportat[] = [];
