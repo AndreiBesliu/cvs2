@@ -10436,3 +10436,42 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
 - **Porțile:** toate verzi din prima pe e171418a: unitarele 9 626, 0 căzute; e2e 557 / 557; emulatoarele 101 / 101 și 29 /
   29; totalul 738,8 / 800, pornirea cu ușa 111,2 / 115 (pachetul pluginului: 443 328 octeți, +4,0 kB).
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-19 — Felia 3.Tm: roata coroană în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tm” (owner-ul, la „Pornesc 3.Tm (roata coroană)?”). **Started:** 19.11, 18:55. **Completed:**
+19.11, 21:03.
+
+- **Cotele:** coroana LEGO 3650 (24 de dinți, din poza owner-ului), cu secțiunile din LDraw: fața de jos, planul de divizare
+  la 4 mm deasupra ei, raza dinafară (13,19), butucul până la 8 mm. Dinții din LDraw sunt drepți, deci cei de aici sunt
+  tăiați de pinion.
+- **Motorul** (`coroana`, `coroanaDinte`, `coroanaRaze`): dintele coroanei, pe fiecare rază, e ce lasă pinionul (îngroșat cu
+  jocul) trecând prin gol; punctul secțiunii pinionului pe cilindru la asin; baleiajul până iese dintele; jocul de la fundul
+  golului doar sub capul real; razele dinților între subtăiere și ascuțire; montajul pe grilă (axul pinionului la m·(4 + z1
+  / 2)).
+- **Atelierul:** „Roată coroană”, „Ca LEGO 24 (3650)”, dinții ei și ai pinionului, modulul, gaura, butucul, unde stă
+  pinionul, „Fă perechea” (cu pinionul, cât de gros îl cer dinții); 14 texte în engleză; pachetul 18.13.0.
+- **Pe drum:** jocul măsurat pe perechea 3D (bisecție) scădea la pinioanele mari (0,17 mm la 24 / 24 în loc de 0,3): punctul
+  secțiunii era pus pe cilindru ca în plan, iar acum cade la r·asin(y / r); proba cu pași mai deși (0,05 în loc de 0,2·m) a
+  arătat întâi că nu feliile sunt cauza. Baleiajul de ±2,6 pași scăpa ieșirea dintelui pinionului de 40 (proba: aceleași
+  eșantioane plus cele de după, cu amprentele plaselor). Secțiunea mărită a arătat că prelungirea capului, rotită cu
+  pinionul, tăia flancul coroanei unde pinionul real nu ajunge (dintele, cu 0,04 mm mai subțire pe planul de divizare și
+  mult mai subțire jos), iar după îndreptare, o crestătură de 0,1 mm sub capul real. Garda „un singur cerc bun” scoasă:
+  nicio pereche nu ajunge la ea. Otrava înălțimilor (16 → 4) a scăpat întâi: proba nouă „plasa e înfășurătoarea” (flancul
+  plasei față de golul calculat din definiție, la mijlocul dintre înălțimi) o prinde; otrava baleiajului scurt e practic
+  echivalentă (≤0,003 mm la modulul 1, 0,031 la modulul 3, cât zgomotul eșantionării). Numele coroanei a făcut ambiguă
+  otrava E01 a conicei (aceeași primă linie): redirecționată.
+- **Privirea pe coroana reală:** secțiunea în planul axelor peste 3650c și desfășuratele cilindrului la trei raze, cu
+  pinionul montat (24 / 8, 24 / 24, 40 / 40), plus capturile 3D din atelier: nicio suprapunere, joc uniform.
+- **Probele:** unitare 9, e2e 3; perechea la 90° fără pătrundere și prinsă, pe roțile întregi; otrăvurile 40 / 41 (U08
+  practic echivalentă).
+- **Recenzia:** fără agenți: workflow-ul de recenzie (cinci găsitori pe dimensiuni, verificatori adversariali) a fost
+  refuzat de clasificator („Undermining Oversight”), cu ultracode pornit. Recenzia proprie: corpurile închise pe 96 de
+  combinații noi (jocurile 0,05 și 0,25, modulele 0,7 / 1,3 / 2), perechea 3D la jocurile extreme și la modulele 2 și 1,3
+  (liberă sub 2·joc, prinsă peste), intrările ciudate, timpul (sub 0,8 s la 80 / 40, modulul 3), secțiunile mărite (24 / 8,
+  24 / 24, 40 / 40) și VOID-urile tuturor listelor pluginului (unul nou, 3.Tl E01, redirecționat).
+- **Porțile:** rapide verzi pe `a27927b3` (traducerile, tsc, unit 9 627 / 0, build, determinismul; pornirea 107,2 / 115, cu
+  ușa 111,2 / 115, totalul 738,8 / 800), după o cădere: amprenta lui 18.13.0 din bibliotecă rămăsese a conținutului
+  dinaintea ultimelor schimbări din `lego.ts` (reînregistrată, versiunea nepublicată); lente verzi pe `925762a7` (e2e 560 /
+  560, emulatoarele 101 / 101 și 29 / 29), iar pe `a27927b3` e2e-ul pachetului (biblioteca, extensiile, pluginul) 48 / 48.
+- **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.

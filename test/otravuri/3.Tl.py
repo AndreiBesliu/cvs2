@@ -51,7 +51,9 @@ o('U17', E, 'b = conicaCote({ dinti: a.z2, pereche: a.z, modul: a.m });', 'b = c
   'montajul perechii, socotit ca al roții de acum')
 
 # Atelierul (e2e).
-o('E01', A, 'const b = d.butuc === "scurt" ? tr(", butuc scurt") : ""', 'const b = ""', 'e2e', 'butucul scurt nespus în nume')
+# E01: cu rândul următor, fiindcă roata coroană (3.Tm) are aceeași primă linie în numele ei
+o('E01', A, 'const b = d.butuc === "scurt" ? tr(", butuc scurt") : "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";\n      return tr`Roată conică',
+  'const b = "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";\n      return tr`Roată conică', 'e2e', 'butucul scurt nespus în nume')
 o('E02', A, 'return tr`Roată conică ${d.dinti ?? 20} pentru ${d.pereche ?? 20}${g}${b}${m}`;', 'return tr`Roată conică ${d.dinti ?? 20} pentru ${d.pereche ?? 20}${b}${m}`;',
   'e2e', 'gaura nespusă în numele conicei')
 o('E03', A, '{ dinti: 12, pereche: 12, modul: 1, gaura: "x", butuc: "scurt" }', '{ dinti: 12, pereche: 12, modul: 1, gaura: "r", butuc: "scurt" }', 'e2e',

@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk și 3.Tl implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk, 3.Tl și 3.Tm implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -202,6 +202,58 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
 - **Recenzia:** fără agenți; recenzia proprie: corpurile închise pe 300 de combinații în proba de lucru (42 în proba
   unitară), perechea montată la 90° pe roțile întregi (fără pătrundere, prinsă, la cinci perechi), secțiunea în planul
   axelor peste 87407 și VOID-urile tuturor listelor de otrăvuri ale pluginului (niciunul nou).
+
+## Felia 3.Tm, implementată: roata coroană (pachetul 18.13.0)
+
+- **Cotele LEGO**, din biblioteca LDraw (aceleași fișiere; licența CC BY 2.0 și CC BY 4.0): `3650a.dat`, `3650b.dat`,
+  `3650c.dat` (Technic Gear 24 Tooth Crown). Fața de jos e la 3,2 mm sub originea piesei, planul de divizare la 0,8
+  deasupra ei (deci la 4 mm de fața de jos), dinții până la r 13,19, butucul până la 8 mm, cu gaura de ax. Dinții din
+  LDraw sunt drepți (3650 merge și ca roată dreaptă), deci profilul lor nu e cel tăiat de pinion: din fișiere s-au luat
+  fața de jos, planul de divizare, raza dinafară și butucul.
+- **Montajul**: planul de divizare la 4·m de fața de jos, deci axul pinionului la m·(4 + z1 / 2) deasupra ei: 8, 12, 16
+  mm la pinioanele LEGO de 8, 16, 24 (pe grilă, la jumătate de pas, pe grilă). Axele se întâlnesc la 90°, deci unul se
+  oprește înaintea celuilalt; butucul lung urcă până la 8·m, iar axul pinionului de 8 (și de 12) se oprește înaintea
+  lui.
+- **Motorul** (`coroana`, `coroanaCote`, `coroanaDinte`, `coroanaRaze`): pe fiecare rază r, dintele coroanei e ce rămâne
+  după ce dintele pinionului (roata dreaptă de la rotițe, cu profilul ei, îngroșată cu jocul din calibrare pe fiecare
+  flanc) trece prin gol. Pinionul se rotește cu φ, coroana cu φ·z1 / z2, iar un punct al secțiunii pinionului, la y de
+  planul axelor, cade pe cilindrul de rază r la s = r·asin(y / r) − r·φ·z1 / z2 în lungul cercului; golul, la fiecare
+  înălțime, e cât îl acoperă dintele în toate pozițiile lui. Baleiajul ține cât stă dintele sub capetele coroanei: un
+  punct al lui la raza ρ și la unghiul δ de axa dintelui iese deasupra la φ = acos((r1 − m) / ρ) + |δ|. Jocul de la
+  fundul golului: capul pinionului, prelungit cu 0,25·m, taie doar sub cel mai de jos punct al capului real, iar golul
+  de acolo nu e mai larg decât la prima înălțime prin care trece capul (fără crestătură în flanc, deci fără consolă).
+  Razele dinților: de la cea la care dintele iese mai subțire de 0,15·m (subtăierea, înăuntru) până la cea la care s-ar
+  ascuți (afară), cel mult 2,5·m înăuntru și 2·m în afară; dinții mai scurți de un modul în lungul razei se spun. LEGO
+  24 / 8: dinții de la 10,5 la 12,9 mm (la 3650, până la 13,19), 25,8 × 25,8 × 8.
+- **Pe drum** (găsite cu proba 3D a perechii și cu secțiunile mărite): cu punctul secțiunii pus pe cilindru ca în plan
+  (s = y − r·φ·z1 / z2), jocul scădea de la 0,3 la 0,19 mm la 24 / 16 și la 0,17 la 24 / 24; cu baleiajul de ±2,6 pași,
+  pinionul de 40 ieșea pe la jumătate din zona dinților (capătul dinăuntru, cu o felie mai jos decât trebuie);
+  prelungirea capului, rotită cu pinionul, tăia flancul coroanei unde pinionul real nu ajunge (0,04 mm din fiecare flanc
+  pe planul de divizare, la 24 / 8, și mult mai mult jos). Acum dintele are pe planul de divizare, la raza de
+  rostogolire, exact grosimea de pe hârtie (golul cremalierei pinionului), iar jocul e 0,3 mm la toate perechile
+  încercate (24 / 8 … 80 / 40). Otrava înălțimilor (16 → 4) a scăpat întâi: proba nouă „plasa e înfășurătoarea” compară
+  flancul plasei, la mijlocul dintre înălțimile tăierii, cu golul calculat direct din definiție (cel mult 0,024 mm; cu 4
+  înălțimi, 0,10). Noul nume a făcut ambiguă otrava E01 a conicei (aceeași primă linie): redirecționată, prinsă din nou.
+- **Atelierul**: „Roată coroană” în galeria pieselor de legătură, „Ca LEGO 24 (3650)”, dinții ei și ai pinionului (și
+  repede: 8, 16, 24), modulul, gaura, butucul lung sau scurt; unde stă pinionul (axul, pe grilă; în dreptul dinților,
+  cât de gros; butucul, dacă e în calea axului); „Fă perechea” (coroana și roata dreaptă a pinionului, cât de groasă o
+  cer dinții coroanei, cu aceeași gaură); perechea care nu se prinde se spune și nu intră în listă; 14 texte în engleză.
+  Pachetul 18.13.0.
+- **Privirea pe coroana reală** (capturile 3D și secțiunile mărite: planul axelor peste 3650c și desfășuratele
+  cilindrului la trei raze, cu pinionul montat, la 24 / 8, 24 / 24, 40 / 40): nicio suprapunere; dinții, trapeze la raza
+  de rostogolire și afară, cu gât îngust înăuntru (urma capului pinionului). Pinionul de 8 cu gaură (de la 3.Th) are
+  0,23 mm între gaură și piciorul dinților, ca la LEGO: motorul o spune.
+- **Probele:** unitare 9 (`trenulet.coroana.test.ts`: corpul închis la 42 de combinații și refuzul perechilor care nu se
+  prind, montajul, cotele LEGO 24 punct cu punct (dintele la raza de rostogolire pe planul de divizare, cu grosimea de
+  pe hârtie, dinții de la rIn la rOut, discul, capetele, butucul, gaura), dinții fără consolă, plasa e înfășurătoarea,
+  modulul 2, perechea la 90° fără pătrundere în opt faze și prinsă (0,25 mm în plus n-o atinge, 0,4 mm da, la 24 / 8, 24
+  / 24, 40 / 40), găurile ca diferențe de volum, marginile), e2e 3 (`trenulet.coroana.spec.ts`). Otrăvurile
+  (`test/otravuri/3.Tm.py`): 40 / 41 (U08 practic echivalentă).
+- **Recenzia:** fără agenți: workflow-ul de recenzie (cinci găsitori pe dimensiuni, verificatori adversariali) a fost
+  refuzat de clasificator („Undermining Oversight”), cu ultracode pornit. Recenzia proprie: corpurile închise pe 96 de
+  combinații noi (jocurile 0,05 și 0,25, modulele 0,7 / 1,3 / 2), perechea 3D la jocurile extreme și la modulele 2 și
+  1,3 (liberă sub 2·joc, prinsă peste), intrările ciudate, timpul (sub 0,8 s la 80 / 40, modulul 3), secțiunile mărite
+  (24 / 8, 24 / 24, 40 / 40) și VOID-urile tuturor listelor pluginului (unul nou, 3.Tl E01, redirecționat).
 
 ## Feliile
 
