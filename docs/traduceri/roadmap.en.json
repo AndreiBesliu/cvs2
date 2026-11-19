@@ -2685,6 +2685,10 @@
       "ro": "Text, text pe cale, fonturi",
       "en": "Text, text on a path, fonts"
     },
+    "c47df738c4fbf914": {
+      "ro": "Dopul în vederea 3D",
+      "en": "The plug in the 3D view"
+    },
     "c522fbef9a2f41e6": {
       "ro": "Regiunea păstrată, cu oracolul întâi",
       "en": "The kept region, oracle first"
