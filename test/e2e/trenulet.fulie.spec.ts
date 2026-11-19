@@ -58,6 +58,8 @@ test('canalul plat lărgește obada și lasă fața plină; canalul rotund; „C
   await atelierFulie(page);
   await page.locator('#at-fu-canal [data-v="plat"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Fulie Ø 24 × 7,2, curea de 4, plină');
+  // obada s-a lărgit odată cu canalul, deci motorul nu mai are ce să spună
+  await expect(page.locator('#at-avert')).toBeHidden();
   await expect(page.locator('#at-cote')).toContainText('24 × 24 × 7,7 mm');
   await expect(page.locator('label[for="at-fu-latc"]')).toContainText('Cureaua (mm)');
   await expect(page.locator('#at-fu-spite [data-v]')).toHaveCount(3);

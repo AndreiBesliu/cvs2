@@ -28,6 +28,7 @@ const cere = createRequire(import.meta.url);
 const { motoare } = cere('../../extensii/trenulet/sursa/teste/incarca.js') as { motoare(): { L: Lego } };
 const { L } = motoare();
 const fulie = (d: Record<string, unknown> = {}) => L.construieste({ tip: 'fulie', ...d });
+const cu = <T>(s: Record<string, unknown>, f: () => T): T => { L.seteaza(s); try { return f(); } finally { L.seteaza({}); } };
 const simplu = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 const aproape = (a: number, b: number, tol = 0.002) => Math.abs(a - b) <= tol;
 
@@ -203,4 +204,25 @@ test('cureaua: lungimea pe fundul canalelor, pe hârtie; fuliile care s-ar ating
   assert.ok(Number.isNaN(L.cureaua({ diam: 100 }, {}, 30).lungime));
   // canalul plat: pe scaun (r 10,8)
   assert.ok(aproape(L.cureaua({ canal: 'plat' }, { canal: 'plat' }, 32).lungime, 64 + 2 * Math.PI * 10.8, 1e-9));
+});
+
+test('la calibrările extreme, la diametre și lățimi mari: butucul, banda și fața', () => {
+  // găurile de știft cele mai largi (varianta 9, Ø5,6) trec de banda de la r 10,5: fața se întinde sub bandă, corpul rămâne
+  // închis; crucea cea mai mică (varianta −3) lasă butucul la r 3,75, ca la 4185b
+  cu({ varianta_gaura: 9, varianta_ax: 9 }, () => { const p = fulie(); assert.equal(muchiiRele(p.tri), 0); assert.equal(material(p, 8, 30, 1.2), false); });
+  cu({ varianta_ax: -3 }, () => {
+    const p = fulie();
+    assert.equal(material(p, 3.7, 45, 3.95), true, 'butucul, până la r 3,75');
+    assert.equal(material(p, 3.8, 45, 3.95), false);
+  });
+  // peretele de sub canal crește cu diametrul (0,02·D): la Ø100, banda de la r 50 − 1 − 2 = 47
+  const m = fulie({ diam: 100 });
+  assert.equal(material(m, 46.9, 0, 3), false);
+  assert.equal(material(m, 47.1, 0, 3), true);
+  // fața: 2,4 mm (ca LEGO) până la obada de 8, apoi 0,3 din lățime (6 la 20)
+  const f8 = fulie({ diam: 48, lat: 7.5 }), f20 = fulie({ diam: 48, lat: 20 });
+  assert.equal(material(f8, 12, 0, 2.35), true);
+  assert.equal(material(f8, 12, 0, 2.45), false);
+  assert.equal(material(f20, 12, 0, 5.95), true);
+  assert.equal(material(f20, 12, 0, 6.05), false);
 });
