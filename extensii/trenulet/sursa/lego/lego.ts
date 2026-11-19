@@ -1589,6 +1589,135 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- roata coroana
+  // Roata coroană (ADR 0280, felia 3.Tm), culcată pe fața de jos, cu dinții pe fața de sus, pentru o roată dreaptă de la rotițe
+  // (pinionul: dinții, modulul, jocul din calibrare) cu axa la 90°, culcată peste raza coroanei. Pe fiecare rază r, dintele
+  // coroanei e ce rămâne după ce dintele pinionului (îngroșat cu jocul; sub cel mai de jos punct al capului, încă 0,25·m: jocul
+  // de la fundul golului) trece prin gol rostogolit cu raza r·z1 / z2: golul, la fiecare înălțime, cât îl acoperă dintele în
+  // toate pozițiile lui. Dinții merg de la raza la care dintele coroanei ar ieși prea subțire jos (subtăierea) până la cea la
+  // care s-ar ascuți sus, cel mult 2,5·m înăuntru și 2·m în afară. Planul de divizare la 4·m de fața de jos, ca la LEGO 3650
+  // (din LDraw: fața de jos la −3,2, planul de divizare la 0,8): axul pinionului la 4·m + z1·m / 2, pe grilă la pinioanele LEGO
+  // de 8, 16, 24 (8, 12, 16 mm). Dinții din LDraw sunt drepți (3650 merge și ca roată dreaptă); cei de aici, tăiați de pinion,
+  // doar la 90°.
+  const COROANA = { jos: 4, pas: 0.2, inaltimi: 16, dinteMin: 0.15, adanc: 0.25, inauntru: 2.5, afara: 2 };
+  type CoroanaDef = { dinti?: unknown; pinion?: unknown; modul?: unknown };
+  function coroanaCote({ dinti, pinion, modul }: CoroanaDef) {
+    const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const z2 = Math.round(Math.min(80, Math.max(12, nr(dinti, 24)))), z1 = Math.round(Math.min(40, Math.max(8, nr(pinion, 8))));
+    const m = Math.min(3, Math.max(0.5, Math.round(nr(modul, 1) * 10) / 10)), r2 = m * z2 / 2, r1 = m * z1 / 2, zp = COROANA.jos * m;
+    return { z2, z1, m, r2, r1, zp, tR: zp - 1.25 * m, tT: zp + m, axa: zp + r1 };
+  }
+  // jumătățile dintelui coroanei la raza r, pe înălțimile de la piciorul lui (zp − 1,25·m) la cap (zp + m), în lungul cercului
+  const dintiCoroana = new Map<string, number[]>();
+  function coroanaDinte(q: ReturnType<typeof coroanaCote>, r: number, joc: number): number[] {
+    const cheie = [q.z1, q.z2, q.m, joc, Math.round(r * 1e6)].join("|"), gata = dintiCoroana.get(cheie);
+    if (gata) return gata;
+    const { z1, z2, m, r1, zp, tR, tT } = q, P = profilRoata(z1, m, -joc), tA = zp + r1, k = r * z1 / z2;
+    // dintele pinionului, cu capul în jos: conturul real (închis, cu coarda capului) și prelungirea capului cu 0,25·m, pe aceeași
+    // lățime (jocul de la fundul golului): trei muchii, de la colțurile capului la cele ale prelungirii
+    const a: P2[] = [], b: P2[] = [];
+    let hc = 0;
+    for (let i = 0; i < P.raze.length; i++) {
+      const h = P.jum[i]!, rho = P.raze[i]!;
+      if (h <= 0) break;
+      hc = h;
+      a.push([rho * Math.cos(-Math.PI / 2 - h), rho * Math.sin(-Math.PI / 2 - h)]); b.push([rho * Math.cos(-Math.PI / 2 + h), rho * Math.sin(-Math.PI / 2 + h)]);
+    }
+    const re = P.ra + COROANA.adanc * m, he = hc * P.ra / re, tCap = tA - P.ra;
+    const prel: P2[] = [a[a.length - 1]!, [re * Math.cos(-Math.PI / 2 - he), re * Math.sin(-Math.PI / 2 - he)], [re * Math.cos(-Math.PI / 2 + he), re * Math.sin(-Math.PI / 2 + he)], b[b.length - 1]!];
+    const dinte = [...a, ...b.reverse()];
+    // la picior, capul prelungit doar atinge înălțimea: golul de acolo se ia cu 0,01·m mai sus, unde chiar trece (altfel ar ieși
+    // zero, iar dinții vecini s-ar lipi la bază)
+    const ts = Array.from({ length: COROANA.inaltimi + 1 }, (_, i) => tR + (tT - tR) * i / COROANA.inaltimi + (i ? 0 : 0.01 * m)), gol = ts.map(() => 0);
+    // baleiajul, cât stă dintele sub capul dinților coroanei (tT): un punct al lui la raza ρ > r1 − m, la unghiul δ de axa
+    // dintelui, iese deasupra la φ = acos((r1 − m) / ρ) + |δ| (cu ±2,6 pași, cât era, pinionul de 40 ieșea pe la jumătate)
+    let phiMax = 0;
+    for (const [x, y] of dinte) { const rho = Math.hypot(x, y); if (rho > r1 - m) phiMax = Math.max(phiMax, Math.acos((r1 - m) / rho) + Math.abs(Math.atan2(x, -y))); }
+    // 400 de pași: față de 4000, vârfurile dinților se mută cu cel mult 0,006 mm
+    const pasi = 400;
+    // pinionul, rotit cu φ în secțiunea lui (y, înălțimea), iar coroana cu φ·z1 / z2: un punct al secțiunii la y cade pe
+    // cilindrul de rază r la unghiul asin(y / r), adică la s = r·asin(y / r) − r·φ·z1 / z2 în lungul cercului, în coroana rotită
+    // (cu s = y − k·φ, ca în plan, golul ieșea prea îngust la pinioanele mari: jocul scădea de la 0,3 la 0,17 mm la 24 / 24)
+    for (let s = 0; s <= pasi; s++) {
+      const phi = -phiMax + 2 * phiMax * s / pasi, c = Math.cos(phi), sn = Math.sin(phi);
+      const rot = ([x, y]: P2): P2 => [x * c - y * sn, x * sn + y * c + tA], D = dinte.map(rot), E = prel.map(rot);
+      ts.forEach((t, i) => {
+        const taie = (A: P2, B: P2) => {
+          if ((A[1] - t) * (B[1] - t) > 0 || A[1] === B[1]) return;
+          const y = A[0] + (t - A[1]) / (B[1] - A[1]) * (B[0] - A[0]), u = Math.abs(r * Math.asin(Math.max(-1, Math.min(1, y / r))) - k * phi);
+          if (u > gol[i]!) gol[i] = u;
+        };
+        for (let e = 0; e < D.length; e++) taie(D[e]!, D[(e + 1) % D.length]!);
+        // prelungirea, doar sub cel mai de jos punct al capului real (tA − ra): deasupra, rotită cu pinionul, ar tăia flancul
+        // coroanei unde pinionul nu ajunge (la 24 / 8, pe planul de divizare, 0,04 mm din fiecare flanc)
+        if (t <= tCap) for (let e = 0; e + 1 < E.length; e++) taie(E[e]!, E[e + 1]!);
+      });
+    }
+    // sub capul real e doar joc: golul de acolo nu iese mai larg decât la prima înălțime prin care trece capul (altfel flancul
+    // ar avea o crestătură chiar sub ea, iar dintele, o consolă de ~0,1 mm deasupra)
+    const iSus = ts.findIndex((t, i) => t > tCap && gol[i]! > 0);
+    if (iSus > 0) for (let i = 0; i < iSus; i++) gol[i] = Math.min(gol[i]!, gol[iSus]!);
+    const out = gol.map(g => Math.PI * r / z2 - g);
+    dintiCoroana.set(cheie, out);
+    return out;
+  }
+  // razele dinților: cele la care dintele nu iese mai subțire de 0,15·m pe nicio înălțime, în jurul razei de divizare
+  function coroanaRaze(q: ReturnType<typeof coroanaCote>, joc: number) {
+    const bun = (r: number) => Math.min(...coroanaDinte(q, r, joc)) >= COROANA.dinteMin * q.m;
+    let rIn = q.r2, rOut = q.r2;
+    if (!bun(q.r2)) return null;
+    for (let r = q.r2; r >= q.r2 - COROANA.inauntru * q.m - 1e-9 && bun(r); r -= 0.1 * q.m) rIn = r;
+    for (let r = q.r2; r <= q.r2 + COROANA.afara * q.m + 1e-9 && bun(r); r += 0.1 * q.m) rOut = r;
+    // un singur cerc bun nu face dinți (ar ieși fără lungime)
+    return rOut - rIn > 0.05 * q.m ? { rIn, rOut } : null;
+  }
+  function coroana({ dinti = 24, pinion = 8, modul = 1, gaura = "x", butuc = "lung" }: {
+    dinti?: number; pinion?: number; modul?: number; gaura?: string; butuc?: string }): Corp {
+    const e = ef(), avert: string[] = [], q = coroanaCote({ dinti, pinion, modul }), { z2, m, zp, tR, tT } = q;
+    if (z2 !== +dinti || q.z1 !== +pinion) avert.push(tr`O roată coroană are între 12 și 80 de dinți, pinionul între 8 și 40: am făcut-o de ${z2}, pentru unul de ${q.z1}.`);
+    const raze = coroanaRaze(q, e.jocDinti);
+    if (!raze) throw new Error(tr`Pinionul de ${q.z1} nu se prinde cu o coroană de ${z2}: alege o coroană mai mare.`);
+    const { rIn, rOut } = raze, rh = razaGauraButuc("x") + 1.2, rgol = razaGauraButuc(gaura), tri: Tri[] = [];
+    // dinți mai scurți de un modul în lungul razei (24 / 8: 2,4 mm, cât LEGO 3650; 24 / 16: 1,4; 12 / 8: 0,8): spune-o
+    if (rOut - rIn < m - 1e-9) avert.push(tr`Dinții coroanei ies scurți pentru pinionul de ${q.z1} (${String(zecime(rOut - rIn)).replace(".", Limba.zecimal)} mm în lungul razei): țin mai bine pe o coroană mai mare.`);
+    // discul, sub dinți, de la butuc la marginea lor; corpul dinților se oprește la un cerc cu 0,05 mm peste alezaj
+    tri.push(...prismaGauri(cerc(0, 0, rOut, 4 * Math.ceil(Math.max(N_CERC, 2 * Math.PI * rOut / 0.8) / 4)), rgol ? [cerc(0, 0, rgol + 0.05)] : [], 0, tR));
+    // dinții: fiecare, un corp închis peste felii de rază (din 0,2·m în 0,2·m), cu baza înfiptă 0,3 mm în disc
+    const rs: number[] = [];
+    for (let r = rIn; r < rOut - 1e-6; r += COROANA.pas * m) rs.push(r);
+    rs.push(rOut);
+    const ts = Array.from({ length: COROANA.inaltimi + 1 }, (_, i) => tR + (tT - tR) * i / COROANA.inaltimi);
+    const felii = rs.map(r => ({ r, h: coroanaDinte(q, r, e.jocDinti) }));
+    const poli = (f: { r: number; h: number[] }): P2[] => {
+      // în (s, t): stânga în sus, dreapta în jos; jos, înfipt în disc
+      const st = f.h.map((h, i): P2 => [-h, i === 0 ? tR - 0.3 : ts[i]!]), dr = f.h.map((h, i): P2 => [h, i === 0 ? tR - 0.3 : ts[i]!]).reverse();
+      return [...st, ...dr];
+    };
+    for (let k = 0; k < z2; k++) {
+      const c = 2 * Math.PI * k / z2, sus = (f: { r: number }, [s, t]: P2): P3 => { const a = c + s / f.r; return [f.r * Math.cos(a), f.r * Math.sin(a), t]; };
+      const corp: Tri[] = [];
+      const P0 = poli(felii[0]!), n = P0.length;
+      for (let j = 0; j + 1 < felii.length; j++) {
+        const A = poli(felii[j]!), B = poli(felii[j + 1]!);
+        for (let i = 0; i < n; i++) {
+          const i1 = (i + 1) % n, a0 = sus(felii[j]!, A[i]!), a1 = sus(felii[j]!, A[i1]!), b0 = sus(felii[j + 1]!, B[i]!), b1 = sus(felii[j + 1]!, B[i1]!);
+          corp.push([a0, a1, b1], [a0, b1, b0]);
+        }
+      }
+      // capetele, în același sens ca pereții: conturul e în sens orar în (s, t), deci pereții de mai sus ies cu normala spre
+      // interior; capătul dinăuntru (normala spre +r) rămâne trigonometric, cel dinafară se întoarce; apoi tot corpul, afară
+      for (const [f, intors] of [[felii[0]!, false], [felii[felii.length - 1]!, true]] as const) {
+        const T = poli(f).slice().reverse();
+        for (const [x, y, w] of triunghiuriPoligon(T)) corp.push(intors ? [sus(f, T[x]!), sus(f, T[w]!), sus(f, T[y]!)] : [sus(f, T[x]!), sus(f, T[y]!), sus(f, T[w]!)]);
+      }
+      tri.push(...orienteaza(corp));
+    }
+    // butucul: lung, cât LEGO 3650 (8·m de la fața de jos: axul pinionului de 8 trece la înălțimea vârfului lui); scurt, până
+    // la capul dinților (axul pinionului poate trece peste el)
+    tri.push(...butucRoata(gaura, rh, butuc === "scurt" ? tT : 2 * zp));
+    return { tri, avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1683,7 +1812,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1778,6 +1907,14 @@ var Lego = (function (glob: typeof globalThis) {
     // roata conică (ADR 0280): pentru o pereche la 90°, cât e vârful comun al conurilor de fața din spate a fiecăreia (deci
     // cât e fața din spate de axa celeilalte)
     conicaMontaj: (d: ConicaDef) => { const a = conicaCote(d), b = conicaCote({ dinti: a.z2, pereche: a.z, modul: a.m }); return { z: a.z, z2: a.z2, fata: a.zA, fataPereche: b.zA }; },
+    // roata coroană (ADR 0280): dacă pinionul se prinde; unde stă (axul lui deasupra feței de jos a coroanei; în dreptul
+    // dinților ei, de la rIn la rOut de axul ei); cât de gros (cel puțin 3,8, cât LEGO, și peste dinți cu 0,3 de fiecare parte);
+    // până unde urcă butucul lung și dacă e în calea axului pinionului (un ax LEGO are 4,8 mm, cu 0,2 mm loc)
+    coroanaMontaj: (d: CoroanaDef) => {
+      const q = coroanaCote(d), r = coroanaRaze(q, ef().jocDinti), rIn = r ? r.rIn : NaN, rOut = r ? r.rOut : NaN;
+      return { z2: q.z2, z1: q.z1, m: q.m, prinde: !!r, axa: q.axa, rIn, rOut, mijloc: (rIn + rOut) / 2,
+        grosime: Math.max(3.8, Math.ceil((rOut - rIn + 0.6) * 10 - 1e-6) / 10), butucLung: 2 * q.zp, inCale: q.axa - 2.4 < 2 * q.zp + 0.2 };
+    },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };
