@@ -15,7 +15,7 @@ var Atelier3D = (function () {
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
     mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
-    latCanal?: number };
+    latCanal?: number; pereche?: number; butuc?: string };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -65,12 +65,15 @@ var Atelier3D = (function () {
     // fulia (ADR 0280), ca LEGO 4185: Ø24, canalul în V; `pereche` (Ø fuliei a doua) și `distanta` (dintre axe, mm) sunt doar ale
     // editorului, pentru curea
     fulie: { diam: 24, lat: 3.5, canal: "v", latCanal: 2.6, spite: "stift", nrSpite: 6, gaura: "x", pereche: 24, distanta: 32 },
+    // roata conică (ADR 0280), ca LEGO 87407: 20 de dinți, pentru o pereche de 20, gaura de știft, butucul lung; perechea (dinții
+    // celeilalte) e a piesei, fiindcă unghiul conului vine din ea
+    conica: { dinti: 20, pereche: 20, modul: 1, gaura: "r", butuc: "lung" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
   // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
   const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"], ["roata", "Roată cu anvelopă"], ["fulie", "Fulie"],
-    ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
+    ["conica", "Roată conică"], ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
   const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
   let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
   const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
@@ -178,6 +181,11 @@ var Atelier3D = (function () {
       const s = d.spite === "drepte" ? tr`, ${n} spițe` : d.spite === "y" ? tr`, ${n} spițe în Y` : d.spite === "disc" ? tr(", plină") : "";
       return tr`Fulie Ø ${fmt(f.D)} × ${fmt(f.W)}${c}${s}${g}`;
     }
+    if (d.tip === "conica") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const b = d.butuc === "scurt" ? tr(", butuc scurt") : "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
+      return tr`Roată conică ${d.dinti ?? 20} pentru ${d.pereche ?? 20}${g}${b}${m}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -240,6 +248,7 @@ var Atelier3D = (function () {
       delete p.pereche; delete p.distanta;
       normFulie(p);
     }
+    if (t === "conica" && +p.modul === 1) delete p.modul;
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -653,6 +662,31 @@ var Atelier3D = (function () {
       camp("#at-fu-dist", 1, 1000, v => { p.distanta = v; });
       $("#at-fu-lego").onclick = () => { Object.assign(p, { diam: 24, lat: 3.5, canal: "v", latCanal: 2.6, spite: "stift", gaura: "x" }); editor(); schimbat(); };
       $("#at-fu-fa-pereche").onclick = adaugaPerecheFulii;
+    } else if (t === "conica") {
+      // roata conică (ADR 0280): dinții ei și ai perechii (unghiul conului), modulul, gaura, butucul; montajul pe grilă
+      const p = stare.conica, a = Lego.conicaMontaj(p);
+      e.innerHTML = `<h2>Roată conică</h2>
+        <p class="mic">Roată cu dinții pe un con, pentru o pereche la 90°: axele se întâlnesc în vârful comun al conurilor, iar dinții se subțiază spre el. Unghiul conului vine din raportul celor două roți, deci fiecare se face pentru perechea ei. Modulul 1 e cel LEGO; jocul dintre dinți vine din calibrare, ca la roțile dințate. Se printează culcată pe fața din spate.</p>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-co-lego20">Ca LEGO 20 (87407)</button><button class="btn" type="button" id="at-co-lego12">Ca LEGO 12</button></div>
+        <div class="at-campuri">
+          <label for="at-co-dinti">Dinți<input id="at-co-dinti" type="number" min="8" max="60" step="1" value="${p.dinti}"></label>
+          <label for="at-co-pereche">Dinții perechii<input id="at-co-pereche" type="number" min="8" max="60" step="1" value="${p.pereche}"></label>
+          <label for="at-co-modul">Modul<input id="at-co-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-co-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><span class="mic">Butucul:</span>${seg("at-co-butuc", [["lung", "Lung (ca 87407)"], ["scurt", "Scurt"]], p.butuc)}</div>
+        <p class="mic" id="at-co-montaj">${tr`Axele se întâlnesc în vârful conurilor. Fața din spate a acesteia e la ${fmt(a.fata)} mm de axa perechii, ${textGrila(a.fata)}; a perechii, la ${fmt(a.fataPereche)} mm de axa acesteia, ${textGrila(a.fataPereche)}.`}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-co-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă ambele roți, fiecare pentru cealaltă")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a0: number, b0: number, f2: (v: number) => void) => { $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a0 && v <= b0) { f2(v); editor(); schimbat(); } }; };
+      alege("#at-co-gaura", v => { p.gaura = v; });
+      alege("#at-co-butuc", v => { p.butuc = v; });
+      camp("#at-co-dinti", 8, 60, v => { p.dinti = Math.round(v); });
+      camp("#at-co-pereche", 8, 60, v => { p.pereche = Math.round(v); });
+      camp("#at-co-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      $("#at-co-lego20").onclick = () => { Object.assign(p, { dinti: 20, pereche: 20, modul: 1, gaura: "r", butuc: "lung" }); editor(); schimbat(); };
+      $("#at-co-lego12").onclick = () => { Object.assign(p, { dinti: 12, pereche: 12, modul: 1, gaura: "x", butuc: "scurt" }); editor(); schimbat(); };
+      $("#at-co-fa-pereche").onclick = adaugaPerecheConice;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -1389,6 +1423,15 @@ var Atelier3D = (function () {
     const cu = Lego.cureaua(d, a, p.distanta);
     toast(cu.atinge ? tr`${n} × fuliile Ø ${fmt(Lego.fulieFete(d).D)} și Ø ${fmt(Lego.fulieFete(a).D)} în listă (axele trebuie să fie la cel puțin ${fmt(cu.minim)} mm).`
       : tr`${n} × fuliile Ø ${fmt(Lego.fulieFete(d).D)} și Ø ${fmt(Lego.fulieFete(a).D)} în listă (cureaua: ${fmt(cu.lungime)} mm, cu axele la ${fmt(p.distanta)} mm).`);
+  }
+  function adaugaPerecheConice() {
+    // roata conică de acum și perechea ei: dinții schimbați între ele (fiecare roată se face pentru cealaltă); același modul,
+    // aceeași gaură și același butuc
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), a: Def = { ...d, dinti: d.pereche ?? 20, pereche: d.dinti ?? 20 }, m = Lego.conicaMontaj(d);
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea conică ${m.z} + ${m.z2} în listă (fețele din spate la ${fmt(m.fata)} și ${fmt(m.fataPereche)} mm de axa celeilalte).`);
   }
   function adaugaPerecheRoti() {
     // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus
