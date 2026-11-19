@@ -11,6 +11,8 @@
  * - **o linie deschisă** (o gravură) la Y = 10, de-a lungul panoului: cifrele urcă peste ea, la Y = 13,125;
  * - **un cerc mic** (r 0,2) înăuntrul cutiei a două cifre (14 × 10), departe de probele ei: îl prinde regula „niciun contur întreg
  *   înăuntru”, deci cifrele trec la următorul loc (10,125);
+ * - **un panou mare** (1 200 × 600) cu o gaură îngustă lângă colț (5..15 × 2..300): grila fină de lângă colț (pasul 3,5) dă
+ *   20,625 (3,125 + 5 · 3,5, primul pas după 15 + 3,125); grila rară (pasul 1 200 / 60 = 20) ar da 23,125;
  * - **un panou de 12 × 12:** 7 + 2 · 3,125 > 12 pe lățime, deci null; fără contururi închise, null;
  * - **jocul și înălțimea:** max(2, h / 4); înălțimile bune, de la 3 la 100.
  * - **acțiunea `document.taie` cu numere:** firma de 2 400 × 1 000, în patru panouri de 1 200 × 500 (cu litera „a” pe panoul 1):
@@ -70,6 +72,10 @@ test('un cerc mic înăuntrul cutiei a două cifre, departe de probele ei: regul
   const DOUA = { minX: 0, minY: 0, maxX: 14, maxY: 10 };
   egal(locNumar([PATRAT], DOUA, JOC), [3.125, 3.125], 'fără cerc');
   egal(locNumar([PATRAT, conturCerc(6.625, 6.625, 0.2)], DOUA, JOC), [10.125, 3.125], 'cu cercul');
+});
+
+test('un panou mare, cu o gaură îngustă lângă colț: grila fină de lângă colț, nu cea rară', () => {
+  egal(locNumar([conturDreptunghi(0, 0, 1200, 600), conturDreptunghi(5, 2, 10, 298)], CIFRA, JOC), [20.625, 3.125], 'grila fină');
 });
 
 test('fără loc: un panou de 12 × 12; fără contururi închise', () => {
