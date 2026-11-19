@@ -161,6 +161,14 @@ test('cotele LEGO 24 / 8: dintele la raza de rostogolire, pe planul de divizare;
     assert.equal(f(12, 15 * k - jum + 0.1, 4), true, `flancul celălalt ${k}, înăuntru`);
     assert.equal(f(12, 15 * k - jum - 0.1, 4), false, `flancul celălalt ${k}, afară`);
   }
+  // dinții țin de la rIn la rOut, cât spune montajul (atelierul i le arată omului)
+  const M = L.coroanaMontaj({});
+  for (const k of [0, 9, 20]) {
+    assert.equal(f(M.rIn + 0.05, 15 * k, 4), true, `dintele ${k}, la capătul dinăuntru`);
+    assert.equal(f(M.rIn - 0.1, 15 * k, 4), false, `dintele ${k}, înainte de capătul dinăuntru`);
+    assert.equal(f(M.rOut - 0.05, 15 * k, 4), true, `dintele ${k}, la capătul dinafară`);
+    assert.equal(f(M.rOut + 0.1, 15 * k, 4), false, `dintele ${k}, după capătul dinafară`);
+  }
   // discul până la piciorul dinților (zp − 1,25 = 2,75), în dreptul golului; capetele la zp + 1 = 5
   assert.equal(f(12, 7.5, 2.7), true);
   assert.equal(f(12, 7.5, 2.8), false);
@@ -176,6 +184,25 @@ test('cotele LEGO 24 / 8: dintele la raza de rostogolire, pe planul de divizare;
   const s = material(coroana({ butuc: 'scurt' }));
   assert.equal(s(3.8, 45, 4.9), true);
   assert.equal(s(3.8, 45, 5.1), false);
+});
+
+test('dinții n-au consolă (se printează cu ei în sus): jumătatea dintelui nu crește în sus cu mai mult de 0,05 mm', () => {
+  // în mm, în lungul cercului, față de cel mai îngust loc de dedesubt. Spre capătul dinăuntru, vârful dintelui umple subtăierea
+  // pinionului de 8 (golul lui e mai larg la picior): se lărgește în sus cu 0,017 mm la 24 / 8 și cu 0,038 mm la 40 / 8, sub
+  // orice imprimantă. Fără plafonul golului de sub capul real, crestătura de chiar sub el face 0,13 … 0,21 mm. Departe de
+  // capetele dinților: capacul lor, un poligon pe cilindru, triunghiulat, intră spre axă cu până la ~0,06 mm.
+  for (const dinti of [24, 40]) {
+    const f = material(coroana({ dinti })), M = L.coroanaMontaj({ dinti }), pas = 180 / dinti;
+    const jum = (r: number, z: number) => { let a = 0, b = pas; for (let i = 0; i < 30; i++) { const c = (a + b) / 2; if (f(r, c, z)) a = c; else b = c; } return (a * Math.PI * r) / 180; };
+    for (const r of [M.rIn + 0.15, (M.rIn + M.mijloc) / 2, dinti / 2, M.rOut - 0.15]) {
+      let minJos = Infinity;
+      for (let z = 2.8; z <= 4.96; z += 0.08) {
+        const w = jum(r, z);
+        assert.ok(w <= minJos + 0.05, `${dinti} pentru 8, r ${r.toFixed(2)}, z ${z.toFixed(2)}: ${w.toFixed(4)} mm, dedesubt ${minJos.toFixed(4)} mm`);
+        minJos = Math.min(minJos, w);
+      }
+    }
+  }
 });
 
 test('modulul 2: totul de două ori (axul, discul, butucul), jocul rămâne cel din calibrare', () => {

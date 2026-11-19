@@ -1668,8 +1668,7 @@ var Lego = (function (glob: typeof globalThis) {
     if (!bun(q.r2)) return null;
     for (let r = q.r2; r >= q.r2 - COROANA.inauntru * q.m - 1e-9 && bun(r); r -= 0.1 * q.m) rIn = r;
     for (let r = q.r2; r <= q.r2 + COROANA.afara * q.m + 1e-9 && bun(r); r += 0.1 * q.m) rOut = r;
-    // un singur cerc bun nu face dinți (ar ieși fără lungime)
-    return rOut - rIn > 0.05 * q.m ? { rIn, rOut } : null;
+    return { rIn, rOut };
   }
   function coroana({ dinti = 24, pinion = 8, modul = 1, gaura = "x", butuc = "lung" }: {
     dinti?: number; pinion?: number; modul?: number; gaura?: string; butuc?: string }): Corp {

@@ -77,6 +77,8 @@ test('coroana de 40 pentru pinionul de 8, cu gaură rotundă: STL-ul închis, cu
   expect(raza).toBeCloseTo(21.4, 1);
   await page.locator('#at-cr-fa-pereche').click();
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Roată coroană 40 pentru pinionul de 8, gaură rotundă', 'Roată dințată 8, gaură rotundă']);
+  // pinionul, cât de gros îl cere coroana: dinții ei de la 17,5 la 21,4, plus 0,3 de fiecare parte
+  await expect(page.locator('#at-lista tr td:nth-child(2)')).toHaveText(['42,8 × 42,8 × 8', '10 × 10 × 4,5']);
 });
 
 test('un pinion care nu se prinde (16, la o coroană de 12): montajul și piesa spun de ce, perechea nu intră în listă', async ({ page }) => {
