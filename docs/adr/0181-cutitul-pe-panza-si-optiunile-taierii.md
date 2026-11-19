@@ -9,7 +9,9 @@ cuțitul-formă, închiderea, unde ajung bucățile și rolul lor), ADR 0050 și
 (gestul Pen-ului), ADR 0037 §5 (offsetul unei căi deschise), ADR 0130 (gruparea). **Schimbă** (răspunsul 4a): ADR 0180 §13 și
 „Ce am respins” (tăierea cu un clic pe bucată). **Documentul:** neschimbat (v20): cuțitul uneltei nu se salvează, iar rezultatul
 e din tipurile de azi. **Felia 10.3↑l** (panourile pe foi, §7), adăugată pe 17.11 la „1” al owner-ului: declanșatorul „vin
-planșele” din „Se redeschide dacă” s-a împlinit.
+planșele” din „Se redeschide dacă” s-a împlinit. **Felia 10.3↑n** (numărul panoului gravat pe el, §7), pornită pe 19.11 la
+„continua” al owner-ului, din propunerile liniei (a treia, după panourile pe foi și piesele puse de mai multe ori), cu
+implicitele de mai jos.
 
 **Problema.** Cuțitul de azi stă doar în panoul Taie: linia verticală X = …, cea orizontală Y = …, un ghidaj sau ultima formă
 aleasă, care trebuie desenată întâi cu altă unealtă și rămâne în desen. Nu se poate tăia cu o linie trasă direct pe pânză, la
@@ -126,6 +128,7 @@ Ordinea din întrebarea 1, varianta recomandată:
 - **10.3↑k:** Taie în panouri (§7).
 - **10.3↑l** (adăugată pe 17.11, după planșe): panourile pe foi (§7): mărimea implicită care încape, avertismentul,
   „Așază pe foi…” din bloc.
+- **10.3↑n** (adăugată pe 19.11): numărul panoului gravat pe el, ca panourile să se asambleze în ordine (§7).
 
 Fiecare felie: proba scrisă întâi (valorile pe hârtie, oracolul independent, documentul de după trecut prin ușă), manualul în
 ambele limbi pentru fiecare buton, otrăvurile țintite în clona ramurii, porțile, publicarea pe canalul `taiere`; înaintea
@@ -321,6 +324,27 @@ primului commit de cod, `origin/main` unit în ramură.
 - **Mărimea:** pornirea neschimbată (106,3 kB; cu ușa 110,3 / 115), totalul +0,7 kB (709,6 → 710,3 / 800), măsurat A/B în clonă,
   pe `main` `4b52fc3` și pe ramură (`2fd63df`): blocul, modelul mărimii și textele, în bucata panoului Taie; reparația
   opririlor, în worker.
+
+**Felia 10.3↑n, designul** (19.11; numărul panoului gravat; implicitele, fără întrebări: fiecare alegere e o opțiune):
+- **Bifa „Gravează numărul fiecărui panou”** în blocul Taie în panouri, oprită implicit: numărul se gravează pe fața panoului,
+  deci se vede; lângă ea, **înălțimea** cifrelor (implicit 10 mm, de la 3 la 100). Bifa și înălțimea se țin în browser, ca
+  opțiunile tăierii.
+- **Ce se gravează:** numărul panoului („3”, din „Panoul 3”), un text adevărat (editabil apoi din panoul Text), cu fontul inclus
+  cu o singură linie (Relief SingleLine, ADR 0140): gravat pe linie, într-o trecere, la adâncimea liniilor deschise
+  (`adancimeDeschise`: jumătate din grosimea foii, cel mult 1 mm), cu freza foii când are una singură, ca un text nou.
+- **Unde:** înăuntrul materialului panoului (regiunea par-impar a contururilor lui închise: placa, fără golurile ei), cu cutia
+  cifrelor la cel puțin un joc de orice contur al panoului (marginea, tăieturile, dinții, literele de pe el), jocul fiind max(2
+  mm, înălțimea / 4). Locul se caută de la colțul din stânga-jos al panoului: o grilă fină lângă colț (pasul, jumătate din
+  mărimea cifrelor), una rară peste tot panoul, locurile încercate de la cel mai apropiat de colț; primul loc bun (rând cu rând,
+  numărul ar ajunge pe un dinte, la un panou cu dinți dedesubt: văzut pe firma reală). Fără loc (un panou prea mic sau plin),
+  panoul rămâne fără număr, iar blocul spune câte au rămas așa.
+- **Gruparea:** numărul intră în grupul panoului (un panou dintr-o singură bucată devine un grup, cu bucata și numărul), deci
+  „Așază pe foi” îl mută cu el. Tăierea, numerele și grupurile sunt un singur pas de anulare.
+- **Calculul:** workerul dă, pe lângă panouri, bucățile fiecăruia (`perPanou`); pe firul principal, blocul încarcă fontul (în
+  precache), așază cifrele (`text/calcul.ts`, la cerere) și caută locurile pe contururile bucăților (`numarPanou.ts`, pur), iar
+  acțiunea `document.taie` pune piesele numerelor, cu id-uri noi, în grupurile panourilor.
+- **Se redeschide dacă:** owner-ul vrea numărul pe spatele panoului (cere întoarcerea plăcii: altă discuție, a CAM-ului), doar
+  în program (raportul foilor are deja numele panourilor) sau alt text decât numărul.
 
 ## Proba
 

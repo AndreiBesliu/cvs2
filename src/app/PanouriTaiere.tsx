@@ -7,13 +7,14 @@ import { cutieElement } from '../model/forme.ts';
 import { grilaPanouri, type GrilaPanouri } from '../model/grilaPanouri.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { CererePanouri } from '../model/panouri.ts';
+import { inaltimeNumarBuna } from '../model/numarPanou.ts';
 import { celMaiMarePanou, incapePeFoaie, iesirePesteLinie, locPeFoaie, marimeImplicita } from '../model/panouriPeFoaie.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { TaiereCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { optiuniTinute } from './asezareTinuta.ts';
-import { imbinareDin, intreDin, useOptiuniTaiere } from './optiuniTaiere.ts';
+import { imbinareDin, intreDin, schimbaOptiuniTaiere, useOptiuniTaiere } from './optiuniTaiere.ts';
 
 /** Grila de arătat pe pânză (ADR 0181 §7): liniile ei, în cutia formelor. */
 export type GrilaTaiere = { readonly axa: 'grila'; readonly cutie: Cutie; readonly xs: readonly number[]; readonly ys: readonly number[] };
@@ -33,6 +34,9 @@ const mm = (x: number, virgula: boolean): string => textNumar(Math.round(x * 100
  * `panouriPeFoaie.ts`) și urmează opțiunile până scrii o mărime; butonul „Cât încape” o pune la loc. Un panou al grilei care
  * n-ar încăpea (cu dinții; cum e sau, cu rotirea ținută a așezării, culcat) e spus înaintea tăierii. „Așază pe foi…” deschide
  * dialogul pentru alegerea de acum: după tăiere, panourile.
+ *
+ * **Numerele (10.3↑n):** cu „Gravează numărul fiecărui panou”, după tăiere fiecare panou primește cifrele lui, gravate pe el
+ * (`numerePanouri.ts`, la cerere), în același pas de anulare; panoul spune câte au intrat și câte n-au avut loc.
  */
 export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, onGrila, onTaie, onAseaza }: {
   readonly doc: Document;
@@ -57,6 +61,8 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
   const [textC, setTextC] = useState('2');
   const [textR, setTextR] = useState('1');
   const [colt, setColt] = useState(false);
+  // Înălțimea cifrelor, scrisă de om (null: cea ținută în opțiuni).
+  const [textNumar, setTextNumar] = useState<string | null>(null);
   const [stare, setStare] = useState<Stare | null>(null);
   const semnal = useRef<AbortController | null>(null);
   useEffect(() => () => { semnal.current?.abort(); }, []);
@@ -113,6 +119,8 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
     semnal.current = s;
     setStare({ fel: 'calcul' });
     const intre = intreDin(optiuni), imbinare = imbinareDin(optiuni, true);
+    // Numerele panourilor (10.3↑n), cu înălțimea din clipa clicului.
+    const inaltimeNumar = optiuni.numere ? optiuni.inaltimeNumar : null;
     const cerere: CererePanouri = {
       alese: [...alese], grila: g, inchide: optiuni.inchide, nume: t('editare.taiere.panouri.nume'), ...(intre ? { intre } : {}), ...(imbinare ? { imbinare } : {}),
     };
@@ -130,12 +138,23 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
           setStare({ fel: 'gata', text: t(m), rau: true });
           return;
         }
-        const v = onTaie({
-          doc: laCerere, degrupate: rez.degrupate, ids: rez.ids, sterse: rez.sterse, ...(rez.grupuri ? { grupuri: rez.grupuri } : {}), ...(rez.surori ? { surori: rez.surori } : {}),
-        });
-        const text = t('editare.taiere.panouri.gata', { p: String(rez.panouri ?? rez.ids.length), nume: cerere.nume, n: String(rez.forme) })
-          + (rez.scoase > 0 ? ` ${t('editare.taiere.panouri.scoase', { s: String(rez.scoase) })}` : '');
-        setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
+        const aplica = (numere: Awaited<ReturnType<typeof import('./numerePanouri.ts').numerePanouri>> | null): void => {
+          if (s.signal.aborted) return;
+          const v = onTaie({
+            doc: laCerere, degrupate: rez.degrupate, ids: rez.ids, sterse: rez.sterse, ...(rez.grupuri ? { grupuri: rez.grupuri } : {}), ...(rez.surori ? { surori: rez.surori } : {}),
+            ...(numere && numere !== 'font' && numere.numere.length > 0 ? { numere: numere.numere } : {}),
+          });
+          const text = t('editare.taiere.panouri.gata', { p: String(rez.panouri ?? rez.ids.length), nume: cerere.nume, n: String(rez.forme) })
+            + (rez.scoase > 0 ? ` ${t('editare.taiere.panouri.scoase', { s: String(rez.scoase) })}` : '')
+            + (numere === 'font' ? ` ${t('editare.taiere.panouri.numere.font')}` : numere ? ` ${t('editare.taiere.panouri.numere.gata', { n: String(numere.numere.length) })}`
+              + (numere.fara > 0 ? ` ${t('editare.taiere.panouri.numere.fara', { n: String(numere.fara) })}` : '') : '');
+          setStare(v.ok ? { fel: 'gata', text, rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
+        };
+        if (inaltimeNumar === null) {
+          aplica(null);
+          return;
+        }
+        import('./numerePanouri.ts').then((n) => n.numerePanouri(laCerere, indexFoaie, rez, cerere.nume, inaltimeNumar)).then(aplica, cade);
       }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
     }, cade);
   };
@@ -200,6 +219,25 @@ export function PanouriTaiere({ doc, indexFoaie = 0, selectie, activ, onActiv, o
             l: mm(iese.mare.latime, virgula), i: mm(iese.mare.inaltime, virgula), L: mm(iese.loc.latime, virgula), I: mm(iese.loc.inaltime, virgula),
           })}
         </p>
+      ) : null}
+      <label className="bifa-taiere" title={t('editare.taiere.panouri.numere.titlu')}>
+        <input type="checkbox" checked={optiuni.numere} data-taiere="panouri-numere" onChange={(e) => { schimbaOptiuniTaiere({ numere: e.target.checked }); }} />
+        <span>{t('editare.taiere.panouri.numere')}</span>
+      </label>
+      {optiuni.numere ? (
+        <label className="rand-taiere">
+          <span aria-hidden="true" />
+          <span>{t('editare.taiere.panouri.numere.inaltime')}</span>
+          <input className="camp-taiere" value={textNumar ?? mm(optiuni.inaltimeNumar, virgula)} inputMode="decimal" data-taiere="panouri-inaltime-numar"
+            aria-label={t('editare.taiere.panouri.numere.inaltime')} aria-invalid={textNumar !== null && !inaltimeNumarBuna(citesteNumar(textNumar) ?? Number.NaN)}
+            onChange={(e) => {
+              setTextNumar(e.target.value);
+              const x = citesteNumar(e.target.value);
+              if (x !== null && inaltimeNumarBuna(x)) schimbaOptiuniTaiere({ inaltimeNumar: x });
+            }}
+            onBlur={() => { setTextNumar(null); }} />
+          <span>mm</span>
+        </label>
       ) : null}
       <div className="butoane-retea">
         <button type="button" data-taiere="panouri-taie" disabled={motiv !== null || stare?.fel === 'calcul'} onClick={taie}>{t('editare.taiere.panouri.taie')}</button>
