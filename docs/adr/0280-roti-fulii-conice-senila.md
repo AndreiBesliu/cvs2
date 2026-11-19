@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a); propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -74,6 +74,14 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
      alegerea e și acordul pentru descărcare (recomandat).
    - **3b.** Le măsoară owner-ul cu șublerul, după lista cotelor, cu desenul fiecărei piese.
    - **3c.** Doar din numele pieselor (diametrul × lățimea) și din calibrare, fără potrivirea exactă.
+
+## Răspunsurile
+
+- **1a:** roata de vehicul și fulia întâi (3.Tj, 3.Tk), apoi roțile la 90° (3.Tl, 3.Tm, 3.Tn), apoi șenila (3.To).
+- **2b:** owner-ul n-are încă TPU: implicit, roata dintr-o bucată, din PLA; anvelopa separată, din TPU, rămâne la alegere.
+- **3a:** cotele din fișierele LDraw ale pieselor din poze, descărcate cu acordul owner-ului (alegerea 3a). Fișierele stau în
+  afara repo-ului (`C:\Users\besli\cncvs2-lucru\ldraw`); din ele se iau doar cotele, cu sursa și licența fiecăruia scrise
+  aici, la felia care le folosește.
 
 ## Feliile
 
