@@ -1481,6 +1481,114 @@ var Lego = (function (glob: typeof globalThis) {
     return C > d ? 2 * Math.sqrt(C * C - d * d) + Math.PI * (r1 + r2) + 2 * d * Math.asin(d / C) : NaN;
   }
 
+  // ---------------------------------------------------------------------------------------------- roata conica
+  // Roata conică (ADR 0280, felia 3.Tl), culcată pe fața din spate, cu dinții drepți spre vârful conului; perechea se prinde
+  // la 90°, cu axele întâlnite în vârful comun al conurilor (tan δ = z / z2). Profilul: Tredgold, pe conul din spate, ca roata
+  // dreaptă cu z / cos δ dinți (aceeași cremalieră și același joc din calibrare ca la rotițe), proiectat din vârf pe planul de
+  // divizare; straturile spre vârf îl micșorează (dinții se subțiază spre vârful conului) și îl taie cu conul din spate (harta
+  // punctelor pe strat). Planul de divizare stă la 2·m de fața din spate: la conica LEGO de 20 (87407, din LDraw), vârful e la
+  // 12 mm de gulerul din spate (1,5 pași; picioarele dinților la spate, la r 9,1, încep la 1,1 mm de guler, ca banda dinților
+  // de acolo, iar conul din spate trece prin r 6,9 la 0,2 mm), manșonul se oprește la 4 mm de vârf; la cea de 12, vârful e la
+  // 8 mm (1 pas). Lățimea dinților: R / 4 (R, distanța de la vârf la cercul de divizare, pe con).
+  const CONICA = { spate: 2, latime: 0.25, peretButuc: 1.2, liber: 0.4 };
+  type ConicaDef = { dinti?: unknown; pereche?: unknown; modul?: unknown };
+  // cotele conicei (o singură dată, pentru motor și atelier): dinții în margini, unghiul conului, planul de divizare și vârful
+  function conicaCote({ dinti, pereche, modul }: ConicaDef) {
+    const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const z = Math.round(Math.min(60, Math.max(8, nr(dinti, 20)))), z2 = Math.round(Math.min(60, Math.max(8, nr(pereche, 20))));
+    const m = Math.min(3, Math.max(0.5, Math.round(nr(modul, 1) * 10) / 10)), delta = Math.atan2(z, z2), rp = m * z / 2;
+    // planul de divizare deasupra feței din spate: 2·m, deci vârful conului la m·(2 + z2 / 2), pe grila de jumătate de pas
+    // când perechea are 12, 20, 28, 36 … de dinți (ca la LEGO)
+    const rh = razaGauraButuc("x") + CONICA.peretButuc, ctg = 1 / Math.tan(delta), zp = CONICA.spate * m;
+    return { z, z2, m, delta, rp, rh, zp, zA: zp + rp * ctg, R: rp / Math.sin(delta) };
+  }
+  function prismaStraturi(straturi: readonly { z: number; p: readonly P2[] }[], gauri: readonly Poli[]): Tri[] {
+    // ca prismaRasucita, cu fiecare strat dat (aceleași puncte, în aceeași ordine, trigonometric, la înălțimi crescătoare);
+    // găurile, drepte, de la primul strat la ultimul
+    const G = gauri.map(g => curataPoli(trig(g)).reverse()), p3 = (p: Pt, z: number): P3 => [p[0], p[1], z], tri: Tri[] = [];
+    const capac = (S: readonly P2[], z: number, sus: boolean) => {
+      const pts: P2[] = [...S], idx: number[] = [];
+      for (const g of G) { idx.push(pts.length); pts.push(...g); }
+      const t = glob.earcut(pts.flat(), idx, 2);
+      for (let k = 0; k < t.length; k += 3) {
+        const a = t[k]!; let b = t[k + 1]!, c = t[k + 2]!;
+        if (arie2(pts, a, b, c) < 0) [b, c] = [c, b];
+        tri.push(sus ? [p3(pts[a]!, z), p3(pts[b]!, z), p3(pts[c]!, z)] : [p3(pts[a]!, z), p3(pts[c]!, z), p3(pts[b]!, z)]);
+      }
+    };
+    const z0 = straturi[0]!.z, z1 = straturi[straturi.length - 1]!.z;
+    capac(straturi[0]!.p, z0, false);
+    for (let i = 1; i < straturi.length; i++) {
+      const A = straturi[i - 1]!, B = straturi[i]!;
+      for (let k = 0; k < A.p.length; k++) {
+        const k1 = (k + 1) % A.p.length;
+        tri.push([p3(A.p[k]!, A.z), p3(A.p[k1]!, A.z), p3(B.p[k1]!, B.z)], [p3(A.p[k]!, A.z), p3(B.p[k1]!, B.z), p3(B.p[k]!, B.z)]);
+      }
+    }
+    capac(straturi[straturi.length - 1]!.p, z1, true);
+    for (const L of G) for (let i = 0; i < L.length; i++) {
+      const a = L[i]!, b = L[(i + 1) % L.length]!;
+      tri.push([p3(a, z0), p3(b, z0), p3(b, z1)], [p3(a, z0), p3(b, z1), p3(a, z1)]);
+    }
+    return tri;
+  }
+  function conica({ dinti = 20, pereche = 20, modul = 1, gaura = "r", butuc = "lung" }: {
+    dinti?: number; pereche?: number; modul?: number; gaura?: string; butuc?: string }): Corp {
+    const e = ef(), avert: string[] = [], q = conicaCote({ dinti, pereche, modul });
+    const { z, z2, m, delta, rp, rh, zp, zA } = q, sd = Math.sin(delta), cd = Math.cos(delta), ctg = cd / sd;
+    if (z !== +dinti || z2 !== +pereche) avert.push(tr`O roată conică are între 8 și 60 de dinți: am făcut-o de ${z}, pentru una de ${z2}.`);
+    // profilul roții echivalente de pe conul din spate (Tredgold): z / cos δ dinți; un punct (ρ, φ) al lui, desfășurat în jurul
+    // vârfului conului din spate, ajunge pe con la raza ρ·cos δ și înălțimea zB + ρ·sin δ, la unghiul φ / cos δ; de acolo, din
+    // vârf, pe planul de divizare (zp)
+    const V = profilRoata(z / cd, m, e.jocDinti), zB = zp - rp * Math.tan(delta);
+    const pe = (rho: number, phi: number, c: number): P2 => {
+      const t = (zA - zp) / (zA - (zB + rho * sd)), r = t * rho * cd, a = c + phi / cd;
+      return [r * Math.cos(a), r * Math.sin(a)];
+    };
+    // pe fiecare flanc, jumătatea dintelui scade spre cap cu cel puțin 0,0001 rad (la subtăiere crește cu cel mult 0,0002 rad):
+    // unghiurile conturului cresc strict, deci tăierea pe rază la conul din spate nu-l pliază și nu-i suprapune punctele
+    const O0: P2[] = [];
+    for (let k = 0; k < z; k++) {
+      const c = k * 2 * Math.PI / z, jos: P2[] = [], sus: P2[] = [];
+      let hm = Infinity;
+      for (let i = 0; i < V.raze.length; i++) {
+        const h = (hm = Math.min(hm - 1e-4, V.jum[i]!));
+        if (h <= 0) break;
+        jos.push(pe(V.raze[i]!, -h, c)); sus.push(pe(V.raze[i]!, h, c));
+      }
+      O0.push(...jos, pe(V.ra, 0, c), ...sus.reverse());
+    }
+    const O = curataPoli(trig(O0));
+    // gaura și lățimea dinților: R / 4, cât rămâne peretele dintre gaură și picioarele dinților (0,4 mm) la capătul dinspre vârf
+    const rgol = razaGauraButuc(gaura), rIn = Math.min(...O.map((a, i) => {
+      const b = O[(i + 1) % O.length]!, dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy, u = l ? Math.max(0, Math.min(1, -(a[0] * dx + a[1] * dy) / l)) : 0;
+      return Math.hypot(a[0] + u * dx, a[1] + u * dy);
+    }));
+    let sIn = Math.max(1 - CONICA.latime, rgol ? (rgol + CONICA.liber) / rIn : 0), g: Poli[] = [];
+    if (rgol && sIn > 0.9) { avert.push(tr("Gaura nu încape în roata asta conică: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.")); sIn = 1 - CONICA.latime; }
+    // alezajul (crucea sau cercul) e al butucului; corpul dinților se oprește la un cerc cu 0,05 mm peste el (pereții lor nu
+    // coincid), pe care butucul îl acoperă
+    else if (rgol) g = [cerc(0, 0, rgol + 0.05)];
+    // straturile: fața din spate, picioarele dinților la spate, pași de 0,1·m până la capetele lor (unde conul din spate le
+    // taie), apoi capătul dinspre vârf; pe fiecare, conturul micșorat spre vârf și tăiat, pe rază, la conul din spate. Sub
+    // picioarele dinților, corpul coboară drept pe pat (cilindrul cercului de picior din spate, rp − 1,25·m·cos δ), nu pe conul
+    // din spate: la un pinion (δ mic) conul acela ar sta aproape culcat, în consolă. Cilindrul nu atinge roata perechii: e la
+    // cel puțin rp2 + 1,25·m·sin δ de axa ei, iar ea nu trece de rp2 + m·sin δ (capul ei din spate).
+    const zIn = zA - sIn * (zA - zp), zT = Math.min(zIn, zp + m * sd), zR = zp - 1.25 * m * sd;
+    const hs = [0, zR];
+    for (let h = zR + 0.1 * m; h < zT - 1e-6; h += 0.1 * m) hs.push(h);
+    hs.push(zT); if (zIn > zT + 1e-6) hs.push(zIn);
+    const strat = (h: number) => {
+      const s = (zA - h) / (zA - zp), rb = rp + (Math.max(h, zR) - zp) * ctg;
+      return { z: h, p: O.map(([x, y]): P2 => { const r = Math.hypot(x, y) * s, k = r > rb ? rb / r : 1; return [x * s * k, y * s * k]; }) };
+    };
+    const tri = prismaStraturi(hs.map(strat), g);
+    // butucul: scurt, până la capătul dinților; lung (ca 87407), până la rh + 0,4 mm de vârf (manșoanele unei perechi nu se ating)
+    const hb = butuc === "scurt" ? zIn : Math.max(zIn, zA - rh - CONICA.liber);
+    tri.push(...butucRoata(g.length ? gaura : "nu", rh, hb));
+    return { tri, avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1575,7 +1683,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1667,6 +1775,9 @@ var Lego = (function (glob: typeof globalThis) {
     // fundul canalelor) și dacă fuliile s-ar atinge (cu 0,5 mm între ele, cel puțin)
     fulieFete: (d: FulieDef) => { const q = fulieCote(d); return { D: q.D, W: q.W, spite: q.spite, stift: q.stift }; },
     fulieMinimaFata: (d: FulieDef, fata: "spite" | "stift") => { let D = 12; while (D < 200 && !fulieCote({ ...d, diam: D })[fata]) D = Math.round((D + 0.1) * 10) / 10; return D; },
+    // roata conică (ADR 0280): pentru o pereche la 90°, cât e vârful comun al conurilor de fața din spate a fiecăreia (deci
+    // cât e fața din spate de axa celeilalte)
+    conicaMontaj: (d: ConicaDef) => { const a = conicaCote(d), b = conicaCote({ dinti: a.z2, pereche: a.z, modul: a.m }); return { z: a.z, z2: a.z2, fata: a.zA, fataPereche: b.zA }; },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
       return { lungime: lungimeCurea(p.fund, q.fund, c), minim, atinge: !(c >= minim - 1e-9) };

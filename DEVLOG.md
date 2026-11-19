@@ -10407,3 +10407,32 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
 - **Porțile:** toate verzi din prima pe f971aec8: unitarele 9 620, 0 căzute; e2e 555 / 555; emulatoarele 101 / 101 și 29 /
   29; totalul 738,8 / 800, pornirea cu ușa 111,2 / 115 (pachetul pluginului: 439 310 octeți, +5,3 kB).
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-19 — Felia 3.Tl: roata conică în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tl” (owner-ul, la „Pornesc 3.Tl (roata conică)?”). **Started:** 19.11, 15:30. **Completed:**
+19.11, 17:20.
+
+- **Cotele:** conica LEGO 87407 (cu gaura de știft, din poza owner-ului), 32198a și dublu conica 32269, cu secțiunile și
+  felia din LDraw. Dinții din LDraw sunt stilizați, deci profilul e după teorie; din fișiere: butucul, gaura, conturul și
+  montajul (vârful la 12 mm de gulerul din spate, potrivit picioarelor și conului din spate de acolo).
+- **Motorul** (`conica`, `conicaCote`, `prismaStraturi`): profilul Tredgold proiectat din vârf, straturile spre vârf cu
+  harta punctelor (micșorarea și tăierea la conul din spate), cilindrul de sub picioare, butucul lung sau scurt; planul de
+  divizare la 2·m de fața din spate, deci montajul pe grila de jumătate de pas la perechile de 12, 20, 28, 36 … de dinți.
+- **Atelierul:** „Roată conică”, „Ca LEGO 20 (87407)”, „Ca LEGO 12”, dinții și ai perechii, modulul, gaura, butucul,
+  montajul pe grilă, „Fă perechea”; 15 texte în engleză; pachetul 18.12.0.
+- **Pe drum:** la roțile mici, tăierea pe rază la conul din spate plia conturul (subtăierea face jumătatea dintelui să
+  crească puțin spre cap): acum scade strict; corpul dinților și butucul aveau pereți de alezaj identici (vârfuri care
+  coincideau întâmplător): corpul dinților se oprește acum la un cerc cu 0,05 mm peste alezaj; straturile, din 0,05 în 0,1·m
+  (plasa pe jumătate, proba unitară de la 116 la 22 s); tipul `Def` al planificatorului, fără `pereche` și `butuc` (proba de
+  tipuri a planificatorului, mai strictă decât cea a aplicației).
+- **Privirea pe conica reală:** secțiunea în planul axelor, cu perechea montată (20 + 20 și 12 + 36) și peste 87407;
+  pinionul 12 pentru 36 avea spatele în consolă: corpul coboară acum drept sub picioarele dinților.
+- **Probele:** unitare 6, e2e 2; perechea la 90° fără pătrundere, pe roțile întregi (60 000–140 000 de vârfuri), și prinsă;
+  otrăvurile 25 / 25 (17 pe motor, 8 prin e2e), toate prinse din prima.
+- **Recenzia:** fără agenți; recenzia proprie: corpurile închise pe 300 de combinații în proba de lucru (42 în proba
+  unitară), perechea montată la 90° pe roțile întregi (fără pătrundere, prinsă, la cinci perechi), secțiunea în planul
+  axelor peste 87407 și VOID-urile tuturor listelor de otrăvuri ale pluginului (niciunul nou).
+- **Porțile:** toate verzi din prima pe e171418a: unitarele 9 626, 0 căzute; e2e 557 / 557; emulatoarele 101 / 101 și 29 /
+  29; totalul 738,8 / 800, pornirea cu ușa 111,2 / 115 (pachetul pluginului: 443 328 octeți, +4,0 kB).
+- **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
