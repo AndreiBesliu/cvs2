@@ -80,7 +80,7 @@ test('roata de 8 cu gaură de ax spune cât perete rămâne; calibrarea are vari
   await page.locator('#at-tipuri [data-tip="calibrare"]').click();
   await expect(page.locator('#at-calib-campuri [data-setare="varianta_dinti"]')).toHaveValue('3');
   await expect(page.locator('ol.pasi')).toContainText('Roțile dințate:');
-  await expect(page.locator('ol.pasi')).toContainText('Scrie cele șapte numere');
+  await expect(page.locator('ol.pasi')).toContainText('Scrie cele opt numere');
 });
 
 /** Volumul unui STL binar (corp închis, fețele spre exterior), în mm³. */

@@ -5,7 +5,7 @@
  * - la janta mică fața e plină și spune de la ce diametru încap spițele; banda cu blocuri intră în nume;
  * - roata mare cu spițe în Y: numele, STL-ul descărcat închis (fiecare muchie, o dată în fiecare sens);
  * - „Pune janta și anvelopa” pune în listă janta și anvelopa de aceeași mărime;
- * - calibrarea are varianta jantei, iar la varianta 5 janta iese mai lată decât la 3.
+ * - calibrarea are varianta jantei și pasul jantelor („opt numere”), iar la varianta 5 janta iese mai lată decât la 3.
  */
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
@@ -91,6 +91,8 @@ test('„Pune janta și anvelopa” și varianta jantei din calibrare (la 5, sca
   const r3 = await raza();
   await page.locator('#at-tipuri [data-tip="calibrare"]').click();
   await expect(page.locator('#at-calib-campuri label', { hasText: 'Varianta jantei' })).toBeVisible();
+  await expect(page.locator('ol.pasi')).toContainText('Jantele:');
+  await expect(page.locator('ol.pasi')).toContainText('Scrie cele opt numere');
   await seteaza(page, '#at-calib-campuri [data-setare="varianta_janta"]', '5');
   await page.locator('#at-tipuri [data-tip="legaturi"]').click();
   await page.locator('#at-leg [data-leg="roata"]').click();
