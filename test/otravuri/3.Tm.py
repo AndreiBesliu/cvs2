@@ -21,6 +21,8 @@ K = 'const COROANA = { jos: 4, pas: 0.2, inaltimi: 16, dinteMin: 0.15, adanc: 0.
 
 # Motorul (unitare).
 o('U01', E, K, K.replace('jos: 4', 'jos: 3.5'), 'coroana', 'planul de divizare la 3,5·m de fața de jos (axul pinionului în afara grilei)')
+# U02 a scăpat la prima rulare (`b5b409c3`): cu 4 înălțimi, flancul se abate cu ~0,10 mm de înfășurătoare chiar deasupra
+# capului real, o fâșie pe care proba perechii (vârfuri în plasă) n-o vede. A prins-o proba nouă „plasa e înfășurătoarea”.
 o('U02', E, K, K.replace('inaltimi: 16', 'inaltimi: 4'), 'coroana', 'înălțimile dintelui prea rare (flancul tăiat drept între ele)')
 o('U03', E, K, K.replace('dinteMin: 0.15', 'dinteMin: 0.05'), 'coroana', 'dinții duși până unde ies subțiri ca o foaie')
 o('U04', E, K, K.replace('adanc: 0.25', 'adanc: 0'), 'coroana', 'fără jocul de la fundul golului (golul se închide sub capul pinionului)')
@@ -28,6 +30,11 @@ o('U05', E, K, K.replace('inauntru: 2.5', 'inauntru: 0.2'), 'coroana', 'dinții 
 o('U06', E, K, K.replace('afara: 2', 'afara: 0.3'), 'e2e', 'dinții opriți aproape de raza de rostogolire, în afară')
 o('U07', E, 'u = Math.abs(r * Math.asin(Math.max(-1, Math.min(1, y / r))) - k * phi);', 'u = Math.abs(y - k * phi);', 'coroana',
   'secțiunea pinionului pusă pe cilindru ca în plan (jocul scade la pinioanele mari)')
+# U08 a scăpat la prima rulare (`b5b409c3`): practic echivalentă. Dintele care iese din zona dinților aproape că nu mai lărgește
+# golul: față de baleiajul până la ieșire, plasa diferă cu cel mult 0,003 mm la modulul 1 (24 / 8 … 80 / 40) și cu 0,031 mm la
+# modulul 3 (40 / 40, colțul de sus dinăuntru, jocul 0,25), cât zgomotul eșantionării pe φ (~0,006·m): o probă n-o poate
+# despărți fără să cadă din întâmplare (`.tmp/referinta-coroana.cjs`, `.tmp/rezolutie-coroana.cjs`). Codul rămâne marginea pe
+# construcție: taie tot ce taie mutantul, plus colțul acela.
 o('U08', E, 'for (const [x, y] of dinte) { const rho = Math.hypot(x, y); if (rho > r1 - m) phiMax = Math.max(phiMax, Math.acos((r1 - m) / rho) + Math.abs(Math.atan2(x, -y))); }',
   'phiMax = Math.min(Math.PI / 2, 2.6 * 2 * Math.PI / z1);', 'coroana', 'baleiajul de ±2,6 pași (pinionul de 40 iese pe la jumătate)')
 o('U09', E, 'if (t <= tCap) for (let e = 0; e + 1 < E.length; e++) taie(E[e]!, E[e + 1]!);', 'for (let e = 0; e + 1 < E.length; e++) taie(E[e]!, E[e + 1]!);', 'coroana',

@@ -1614,7 +1614,9 @@ var Lego = (function (glob: typeof globalThis) {
     if (gata) return gata;
     const { z1, z2, m, r1, zp, tR, tT } = q, P = profilRoata(z1, m, -joc), tA = zp + r1, k = r * z1 / z2;
     // dintele pinionului, cu capul în jos: conturul real (închis, cu coarda capului) și prelungirea capului cu 0,25·m, pe aceeași
-    // lățime (jocul de la fundul golului): trei muchii, de la colțurile capului la cele ale prelungirii
+    // lățime (jocul de la fundul golului): trei muchii, de la colțurile capului la cele ale prelungirii. Îngroșat cu jocul,
+    // profilul ajunge neascuțit la cercul de cap (ra) la orice pinion de la 8 dinți, modul și joc: cel mai de jos punct al
+    // capului real e la tA − ra
     const a: P2[] = [], b: P2[] = [];
     let hc = 0;
     for (let i = 0; i < P.raze.length; i++) {

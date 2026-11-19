@@ -27,6 +27,7 @@ type Lego = {
   efective(): Record<string, number>;
   construieste(d: Record<string, unknown>): Piesa;
   coroanaMontaj(d: Record<string, unknown>): Montaj;
+  _: { profilRoata(z: number, m: number, joc: number): { raze: number[]; jum: number[]; ra: number } };
 };
 
 const cere = createRequire(import.meta.url);
@@ -130,7 +131,7 @@ test('corpul e închis la toate perechile care se prind, găurile, butucii și m
 test('montajul: axul pinionului la m·(4 + z1 / 2) de fața de jos; pinionul peste dinți; butucul lung în calea pinioanelor mici', () => {
   for (const [pinion, axa] of [[8, 8], [16, 12], [24, 16]]) assert.equal(L.coroanaMontaj({ pinion }).axa, axa, `pinionul de ${pinion}`);
   assert.equal(L.coroanaMontaj({ modul: 2 }).axa, 16, 'modulul 2: 2·(4 + 4)');
-  for (const [dinti, pinion] of [[24, 8], [24, 24], [40, 8], [80, 40], [12, 8]]) {
+  for (const [dinti, pinion] of [[24, 8], [24, 24], [40, 8], [80, 40], [12, 8]] as [number, number][]) {
     const M = L.coroanaMontaj({ dinti, pinion });
     const r2 = dinti / 2;
     assert.ok(M.prinde && M.rIn <= r2 && r2 <= M.rOut, `${dinti} pentru ${pinion}: dinții cuprind raza de rostogolire (${M.rIn}–${M.rOut})`);
@@ -200,6 +201,49 @@ test('dinții n-au consolă (se printează cu ei în sus): jumătatea dintelui n
         const w = jum(r, z);
         assert.ok(w <= minJos + 0.05, `${dinti} pentru 8, r ${r.toFixed(2)}, z ${z.toFixed(2)}: ${w.toFixed(4)} mm, dedesubt ${minJos.toFixed(4)} mm`);
         minJos = Math.min(minJos, w);
+      }
+    }
+  }
+});
+
+test('plasa e înfășurătoarea: între înălțimile tăierii, flancul stă la cel mult 0,035 mm de golul din definiție', () => {
+  // Golul din definiție, deasupra capului real: cât acoperă secțiunea pinionului-cuțit (rotița, cu profilul ei, îngroșată cu
+  // jocul pe fiecare flanc) la înălțimea t, pe cilindrul de rază r, în 8000 de poziții, fără interpolare. Un punct al
+  // secțiunii, la y de planul axelor, cade la s = r·asin(y / r) − r·φ·z1 / z2. Plasa interpolează între înălțimile tăierii: la
+  // mijlocul dintre ele, cel mult 0,024 mm (24 / 8, la capătul dinăuntru, chiar deasupra capului); cu 8 înălțimi, 0,046, cu
+  // 4, 0,10.
+  const e = L.efective(), m = 1, tR = 2.75, tT = 5, tCap = 3;
+  for (const [dinti, pinion] of [[24, 8], [40, 40]] as [number, number][]) {
+    const P = L._.profilRoata(pinion, m, -e.jocDinti!), tA = 4 * m + (m * pinion) / 2, a: [number, number][] = [], b: [number, number][] = [];
+    for (let i = 0; i < P.raze.length; i++) {
+      const h = P.jum[i]!, rho = P.raze[i]!;
+      if (h <= 0) break;
+      a.push([rho * Math.cos(-Math.PI / 2 - h), rho * Math.sin(-Math.PI / 2 - h)]);
+      b.push([rho * Math.cos(-Math.PI / 2 + h), rho * Math.sin(-Math.PI / 2 + h)]);
+    }
+    const contur = [...a, ...b.reverse()];
+    const gol = (r: number, t: number) => {
+      let g = 0;
+      for (let s = 0; s <= 8000; s++) {
+        const phi = -1.6 + (3.2 * s) / 8000, c = Math.cos(phi), sn = Math.sin(phi);
+        const D = contur.map(([x, y]): [number, number] => [x * c - y * sn, x * sn + y * c + tA]);
+        for (let k = 0; k < D.length; k++) {
+          const A = D[k]!, B = D[(k + 1) % D.length]!;
+          if ((A[1] - t) * (B[1] - t) > 0 || A[1] === B[1]) continue;
+          const y = A[0] + ((t - A[1]) / (B[1] - A[1])) * (B[0] - A[0]);
+          g = Math.max(g, Math.abs(r * Math.asin(Math.max(-1, Math.min(1, y / r))) - (r * pinion * phi) / dinti));
+        }
+      }
+      return g;
+    };
+    const f = material(coroana({ dinti, pinion })), M = L.coroanaMontaj({ dinti, pinion }), pas = 180 / dinti;
+    const jum = (r: number, z: number) => { let u0 = 0, u1 = pas; for (let i = 0; i < 30; i++) { const c = (u0 + u1) / 2; if (f(r, c, z)) u0 = c; else u1 = c; } return (u0 * Math.PI * r) / 180; };
+    for (let r = M.rIn + 0.15; r <= M.rOut - 0.15 + 1e-9; r += (M.rOut - M.rIn - 0.3) / 4) {
+      for (let i = 0; i < 16; i++) {
+        const t = tR + ((tT - tR) * (i + 0.5)) / 16;
+        if (t < tCap + 0.02 || t > tT - 0.02) continue;
+        const d = jum(r, t) - ((Math.PI * r) / dinti - gol(r, t));
+        assert.ok(Math.abs(d) <= 0.035, `${dinti} pentru ${pinion}, r ${r.toFixed(2)}, z ${t.toFixed(3)}: plasa ${d > 0 ? 'mai groasă' : 'mai subțire'} cu ${Math.abs(d).toFixed(4)} mm`);
       }
     }
   }
