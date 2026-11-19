@@ -10330,3 +10330,53 @@ supracursa?” (variantele: „Da, felie nouă” / „Nu, rămâne așa”): �
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 18.12), build-ul `416d04a` (versiunea `416d04a8f509`), verificat în browserul aplicației, în engleză, fără export. Fila venea din cache cu `0e3b8e7d426f`; după „Reload”, `416d04a8f509`. Pe un dreptunghi, fereastra arată bifa „also cuts as deep as the sheet” chiar după „Overtravel (mm)”, aliniată cu câmpurile: pusă și oprită la 0 (eticheta stinsă), cu explicația pe titlu. Cu „0.5” pornește (pusă, eticheta în culoarea normală), iar Exportă e activ. Scoasă, apoi fereastra închisă și redeschisă: tot 0.5 și tot scoasă. Fereastra închisă fără export, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
 - **Nu acum:** bifa pe fiecare rând („prin foaie”, ținută la zi cu foaia; un câmp în document, v26); păstrarea cu profilul
   mașinii; 12.1↑e (dopul în 3D), doar la cuvântul owner-ului.
+
+## 2026-11-18 — Feliile 3.Tj–3.To propuse: roata de vehicul, fulia, roțile la 90°, șenila (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom” (owner-ul, în sesiunea
+principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „uite aici imaginile mai exact”, cu nouă poze).
+**Started:** 18.11, 21:20. **Completed:** 18.11, 21:33.
+
+- **Pozele:** roata de vehicul (janta cu spițe în Y, anvelopa cu profil), janta mică cu canale, fulia, roata conică de 20,
+  conicele duble (12 și 20), coroana de 24, șenila cu zale late.
+- **Cercetarea:** modulul 1 la toate roțile Technic (și conicele duble: razele 6 și 10 mm); mărimile nominale din numele
+  pieselor (janta 55981, 18 × 14, cu anvelopa 30,4 × 14; fulia 4185, Ø24; zala 57518 pe pinioanele 57519 și 42529); cotele
+  fine doar în fișierele LDraw (licența pe fiecare) sau măsurate.
+- **ADR 0280, propus** (primul din 0280–0289): șase tipuri, pe feliile 3.Tj–3.To, cu primitivele de la 3.Th lărgite (o hartă
+  a punctelor pe strat: micșorarea spre vârful conului, raza tăiată la teșitură), corpul rotit și corpuri care se suprapun.
+  Schița, cu desenele de principiu și formularul (răspunsurile în `raspunsuri/owner`, goală la publicare):
+  <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>. Întrebările: ordinea (1a / 1b / 1c), TPU-ul (2a / 2b), cotele (3a /
+  3b / 3c).
+- **Documentele:** indexul ADR-urilor (cu starea lui 0169, acceptat și implementat), fișa etapei 3 (rândul 3.Tj, coada
+  owner-ului) cu traducerile, jurnalul.
+- **Fără cod:** feliile pornesc după răspunsuri.
+
+## 2026-11-19 — Felia 3.Tj: roata cu anvelopă în atelierul Easy 3Draw (ADR 0280, acceptat, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, fără TPU” (owner-ul, la „Pornesc roțile și șenila cu recomandările (1a; 3a: descarc cotele din LDraw)?”).
+**Started:** 19.11, 00:10. **Completed:** 19.11, 10:10.
+
+- **Cotele:** 17 piese LEGO din poze și ce folosesc ele (187 de fișiere, 0,7 MB) aduse din biblioteca LDraw, în afara
+  repo-ului (`cncvs2-lucru\ldraw`; unealta, încet: biblioteca limitează cererile); cititorul de cote
+  (`unelte\ldraw\plat.py`) le aplatizează în triunghiuri și dă profilul radial. Janta 55982: scaunul la r 8,4 (nu 9, cum
+  spune numele), canalul nervurii; anvelopa 58090: 30,4 × 13,6, alezajul 8,24–8,40, nervura lată, cu fundul aproape plat,
+  până la 7,45, umerii teșiți drept.
+- **Motorul** (`roata`, `jantaCote`): dintr-o bucată, doar janta, doar anvelopa; banda (nervuri, netedă, blocuri alternate),
+  fața (plină, spițe drepte, în Y, găuri), butucul cu gaura Technic, varianta jantei și cinci jante de probă.
+- **Atelierul:** „Roată cu anvelopă”, „Ca LEGO 30,4 × 14”, „Pune janta și anvelopa”, fața plină spusă sub Ø20,4, varianta
+  jantei în profil, la calibrare și în README; 40 de texte în engleză; pachetul 18.10.0.
+- **Privirea pe roata reală:** fața îngroșată (0,3 din lățime) și spițele și banda după diametru (butucul stătea pe spițe de
+  2 mm); numele jantei mici fără spițe pretinse. Probele au găsit pragul spițelor pe rotunjire și cutia scurtată de un număr
+  impar de segmente.
+- **Nervura, la recenzia proprie:** profilul fin al nervurii LEGO (felii de 0,1 mm) a arătat-o lată și cu fundul plat;
+  teșitura canalului ar fi intrat în ea până la 0,46 mm pe rază. Canalul o ține acum până la +1,25 mm, apoi se teșește;
+  nervura tipărită are forma celei LEGO; proba nouă e pe punctele măsurate (și cade pe motorul de dinainte).
+- **Probele:** unitare 8, e2e 3; otrăvurile 34 / 34 (25 pe motor, 9 prin e2e), toate prinse (U21 scăpase: proba anvelopei de
+  Ø18 nu deosebea pragul; acum și Ø20; U25 nouă, pe teșitura canalului).
+- **Recenzia:** workflow-ul de recenzie cu agenți a fost refuzat de clasificatorul modului automat (nu l-am ocolit);
+  recenzia proprie: 648 de combinații extreme, toate corpuri închise, și secțiunea mărită a jantei peste nervura LEGO, care
+  a găsit teșitura canalului în nervură (reparată).
+- **Porțile:** rapide verzi pe 72cabee6 (compilatoarele, importurile, unitarele 9 605, 0 căzute, licențele, build-ul
+  determinist, 738,4 / 800 kB); e2e-ul planificatorului, al bibliotecii și al extensiilor 27 / 27 (proba rotițelor rămăsese
+  la „șapte numere”: adusă la zi); e2e-ul complet și emulatoarele, la unire.
+- **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.

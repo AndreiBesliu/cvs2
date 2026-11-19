@@ -145,6 +145,10 @@
       "ro": "Frezele de rest",
       "en": "Rest bits"
     },
+    "0b5300f0479817c7": {
+      "ro": "Roata cu anvelopă în atelier",
+      "en": "Wheels with tyres in the workshop"
+    },
     "0c71baf23a31780e": {
       "ro": "Transcrierile reale ca fixturi",
       "en": "Real transcripts as fixtures"
@@ -548,6 +552,10 @@
     "28ba9ab134dee11c": {
       "ro": "**Instanțele fonturilor variabile, aduse din etapa 7** (fără mașină; ADR 0113; subsesiunea cerută de owner pentru felii care se pot lucra în paralel, în worktree-ul `wip/7.4-fonturi-variabile`). Un font variabil se citește la instanța cerută: coordonatele normalizate ca fontTools (`avar`, F2Dot14), contururile din `gvar` (IUP, componentele), avansul din `HVAR` sau din punctele fantomă, crenarea variabilă (dispozitivele GPOS), majuscula din `cpht` fără H; CFF2 se citește și el (`blend`, `vsindex`). Instanțele numite sunt fețe separate: un font variabil încărcat în Fonturile mele dă câte o intrare pe instanță (Roboto Flex: 20 de fețe, „Roboto Flex Bold” cu id-ul `f:<amprenta>@6`), iar o instanță dată de sistem ca față (Bahnschrift SemiBold) nu mai e refuzată; textul se redeschide editabil, la aceeași instanță. Totalul 414,8 → 418,5 / 450 kB, pornirea neschimbată (97,6, cu ușa 101,1 / 110). **Treceri:** (1) oracolul (instancer-ul fontTools pe Roboto Flex, OFL, 13 axe, și trei variante; 39 de locuri), cititorul, id-urile, biblioteca, e2e-ul rescris; găsite pe drum: offsetul dispozitivelor unei perechi anume e de la setul ei (crenarea nu varia), `HVAR` și punctele fantomă diferă cu 1 unitate la 4 din 1 672 de perechi glifă × loc; (2) CFF2, cu Noto Sans CJK JP (OFL) și un CFF2 scris de mână (instancer-ul lui fontTools cade pe `vsindex` din Private: oracolul ia pen-ul). Mutațiile: 46 / 50 prinse; întâi au trecut 12, opt cereau date noi (regiunea intermediară dincolo de vârf, un dispozitiv de hinting, punctul fantomă din stânga, `blend` și `vsindex` în CFF2, FDSelect 4); una VOID (cod mort scos), trei echivalente.",
       "en": "**Variable font instances, brought forward from stage 7** (no machine; ADR 0113; the sub-session the owner asked for, for slices that can be worked on in parallel, in the `wip/7.4-fonturi-variabile` worktree). A variable font is read at the requested instance: the coordinates normalised as fontTools does (`avar`, F2Dot14), the outlines from `gvar` (IUP, the components), the advance from `HVAR` or from the phantom points, variable kerning (the GPOS devices), the capital height from `cpht` when there is no H; CFF2 is read too (`blend`, `vsindex`). Named instances are separate faces: a variable font loaded into My fonts gives one entry per instance (Roboto Flex: 20 faces, “Roboto Flex Bold” with the id `f:<amprenta>@6`), and an instance the system gives as a face (Bahnschrift SemiBold) is no longer refused; the text reopens editable, at the same instance. Total 414.8 → 418.5 / 450 kB, startup unchanged (97.6, with the door 101.1 / 110). **Passes:** (1) the oracle (the fontTools instancer on Roboto Flex, OFL, 13 axes, and three variants; 39 locations), the reader, the ids, the library, the rewritten e2e; found on the way: the device offset of a specific pair counts from its set (kerning did not vary), `HVAR` and the phantom points differ by 1 unit in 4 of 1,672 glyph × location pairs; (2) CFF2, with Noto Sans CJK JP (OFL) and a hand-written CFF2 (the fontTools instancer fails on `vsindex` in a Private dict: the oracle takes the pen). Mutations: 46 / 50 caught; 12 passed at first, eight needed new data (the intermediate region beyond its peak, a hinting device, the left phantom point, `blend` and `vsindex` in CFF2, FDSelect 4); one VOID (dead code removed), three equivalent."
+    },
+    "28dc6b9a49ecea06": {
+      "ro": "3.Tj (roata cu anvelopă)",
+      "en": "3.Tj (the wheel with a tyre)"
     },
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
@@ -1088,6 +1096,10 @@
     "4d235580c0cc066d": {
       "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11, cu răspunsurile lui): conexiunile ținute, fiecare cu rețeaua ei, alese de om (fără conectare singură); găsirea după nume și, la clic, în toată rețeaua; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
       "en": "Connecting over WiFi, much easier (ADR 0136, the owner’s request of 05.11, with the owner’s answers): the saved connections, each with its network, chosen by the person (no connecting on its own); finding by name and, on a click, on the whole network; the steps for each failure; setting up the ESP3D bridge from the app, instead of the commands in its terminal; tested on the emulator, behind a fake bridge"
+    },
+    "4d55bcd4b7fba1b8": {
+      "ro": "Printează o roată dintr-o bucată („Ca LEGO 30,4 × 14”) și setul de calibrare cu cele cinci jante; pune pe jante o anvelopă LEGO 30,4 × 14 și alege „Varianta jantei” (fila Calibrare din 3D)",
+      "en": "Print a one-piece wheel (“Like LEGO 30.4 × 14”) and the calibration set with the five rims; put a LEGO 30.4 × 14 tyre on the rims and choose the “Rim variant” (the Calibration tab in 3D)"
     },
     "4df95c07f33790be": {
       "ro": "3.S pe live (acolo primirea e oprită până atunci)",
@@ -1717,6 +1729,10 @@
       "ro": "Proba de mediu trece de două ori de la `npm ci`: ci 8 s, `tsc` 2,8 s, unitățile 2,8 s, build 2,9 s, e2e în Edge 8 s. `dist/` identic între rulări, nimic readus de Drive, deci fără joncțiune. A doua trecere: un 404 pe `favicon.ico`, prins de e2e și reparat cu iconița.",
       "en": "The environment check passes twice from `npm ci`: ci 8 s, `tsc` 2.8 s, unit tests 2.8 s, build 2.9 s, e2e in Edge 8 s. `dist/` is identical between runs and Drive brought nothing back, so no junction is needed. Second pass: a 404 on `favicon.ico`, caught by e2e and fixed with the icon."
     },
+    "803a1fec56fb1dd3": {
+      "ro": "Roțile și șenila în atelierul Easy 3Draw",
+      "en": "Wheels and tracks in the Easy 3Draw workshop"
+    },
     "80b77831dab7eb23": {
       "ro": "DXF-urile de referință + fișierele tale deschise în programele tale",
       "en": "the reference DXFs + your files opened in your programs"
@@ -2008,6 +2024,10 @@
     "97782b935c8ff9d0": {
       "ro": "Importul WMF, cu cititor propriu",
       "en": "WMF import, with our own reader"
+    },
+    "97826ebd0f99c6cc": {
+      "ro": "**Roata cu anvelopă în atelier** (fără mașină; ADR 0280, acceptat: „Da, fără TPU” (1a, 2b, 3a); worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). „Roată cu anvelopă” în galeria pieselor de legătură: dintr-o bucată (din PLA), doar janta (pentru o anvelopă LEGO) sau doar anvelopa (din TPU), cu cotele LEGO măsurate în LDraw (janta Ø16,8 × 13,6, anvelopa 30,4 × 13,6 cu nervura); banda cu nervuri, netedă sau cu blocuri; fața plină, cu spițe drepte, în Y sau cu găuri; cinci jante de probă la calibrare. Pachetul 18.10.0. Unitare 8, e2e 3, otrăvuri 34 / 34 (25 pe motor, 9 prin e2e), toate prinse. Urmează 3.Tk (fulia).",
+      "en": "**Wheels with tyres in the workshop** (no machine; ADR 0280, accepted: “Da, fără TPU” (1a, 2b, 3a); the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “Uite alte tipuri de roti si un tip de sina pe care vreau ca pluginul sa le faca custom”). “Wheel with tyre” in the gallery of connecting pieces: in one piece (in PLA), just the rim (for a LEGO tyre) or just the tyre (in TPU), with the LEGO dimensions measured in LDraw (rim Ø16.8 × 13.6, tyre 30.4 × 13.6 with its rib); a tread with grooves, smooth or with blocks; a solid face, straight or Y spokes, or holes; five test rims in calibration. Package 18.10.0. Unit 8, e2e 3, poisons 34 / 34 (25 on the engine, 9 through e2e), all caught. Next: 3.Tk (the pulley)."
     },
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",

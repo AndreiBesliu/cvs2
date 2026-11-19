@@ -14,7 +14,7 @@ var Atelier3D = (function () {
     parte?: string; diam?: number; forma?: string; varf_d?: number; gaura?: string; groasa?: boolean; indoita?: { brate: number[]; unghiuri: number[] };
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
     mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
-    dinti?: number; unghi?: number; sens?: string; modul?: number };
+    dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -59,19 +59,21 @@ var Atelier3D = (function () {
     cupa: { baza: 1 },
     // roata dințată (ADR 0169); `pereche` (dinții roții a doua) e doar a editorului, nu a piesei
     rotita: { dinti: 24, fel: "drepti", unghi: 20, sens: "dreapta", grosime: 3.8, gaura: "x", modul: 1, pereche: 24 },
+    // roata cu anvelopă (ADR 0280): dintr-o bucată (implicit, fără TPU), doar janta sau doar anvelopa (din TPU)
+    roata: { fel: "plina", diam: 30.4, lat: 13.6, janta: 16.8, banda: "nervuri", spite: "disc", nrSpite: 5, gaura: "x" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
   // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
-  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"],
+  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"], ["roata", "Roată cu anvelopă"],
     ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
   const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
   let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
   const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
-  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
+  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
   // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
-  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "stift_h", "locas_h", "locas_urmeaza"];
+  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "varianta_janta", "stift_h", "locas_h", "locas_urmeaza"];
   const INALTIMI = ["stift_h", "locas_h", "locas_urmeaza"] as const;
   // inaltimile din setari prin motor: la zecimi, in margini, locasul dupa stift cat e bifat
   function puneInaltimi(v: Valori) {
@@ -154,6 +156,15 @@ var Atelier3D = (function () {
       const m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
       return tr`Roată dințată ${d.dinti ?? 24}${fel}${g}${m}`;
     }
+    if (d.tip === "roata") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const b = d.banda === "neteda" ? tr(", netedă") : d.banda === "blocuri" ? tr(", cu blocuri") : "";
+      const n = d.nrSpite ?? 5;
+      const s = d.spite === "drepte" ? tr`, ${n} spițe` : d.spite === "y" ? tr`, ${n} spițe în Y` : d.spite === "gauri" ? tr`, ${n} găuri` : "";
+      if (d.fel === "janta") return tr`Jantă Ø ${fmt(d.janta ?? 16.8)} × ${fmt(d.lat ?? 13.6)}${s}${g}`;
+      if (d.fel === "anvelopa") return tr`Anvelopă ${fmt(d.diam ?? 30.4)} × ${fmt(d.lat ?? 13.6)}${b}`;
+      return tr`Roată ${fmt(d.diam ?? 30.4)} × ${fmt(d.lat ?? 13.6)}${b}${s}${g}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -207,6 +218,10 @@ var Atelier3D = (function () {
       if (p.fel === "drepti") { delete p.unghi; delete p.sens; }
       if (+p.modul === 1) delete p.modul;
     }
+    if (t === "roata") {
+      // ce nu ține de felul ales nu intră în piesă (două roți la fel sunt aceeași piesă)
+      normRoata(p);
+    }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -229,7 +244,7 @@ var Atelier3D = (function () {
     return drept ? (n === 1 ? 1 : n - 1) : 0;
   }
   const paramMotor = () => ({ varianta_stift: setari.varianta_stift, varianta_locas: setari.varianta_locas, varianta_gaura: setari.varianta_gaura, varianta_ax: setari.varianta_ax,
-    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti,
+    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti, varianta_janta: setari.varianta_janta,
     pat: setari.pat.slice() as [number, number], pat_margine: setari.pat_margine, pat_distanta: setari.pat_distanta, ...Lego.inaltimi(setari) });
   const dimTri = (tri: readonly Tri[]): number[] => [0, 1, 2].map(k => { let m = 0; for (const t of tri) for (const p of t) if (p[k]! > m) m = p[k]!; return m; });
   function pieseDin(def: Def): PiesaGata[] {
@@ -543,6 +558,36 @@ var Atelier3D = (function () {
       alege("#at-r-gaura", v => { p.gaura = v; });
       $("#at-r-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };
       $("#at-r-fa-pereche").onclick = adaugaPerecheRoti;
+    } else if (t === "roata") {
+      // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
+      const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";
+      e.innerHTML = `<h2>Roată cu anvelopă</h2>
+        <p class="mic">Roată de vehicul, culcată pe pat (fața cu spițele jos). Dintr-o bucată se printează din PLA, fără nimic de montat. Doar janta ia o anvelopă LEGO (30,4 × 14 pe janta de Ø16,8 × 13,6, potrivirea din fila Calibrare) sau una printată din TPU; anvelopa printată are nervura din interior ca LEGO, deci se pune și pe o jantă LEGO.</p>
+        <div class="at-rand"><span class="mic">Felul:</span>${seg("at-ro-fel", [["plina", "Dintr-o bucată"], ["janta", "Doar janta"], ["anvelopa", "Doar anvelopa (TPU)"]], p.fel)}</div>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-ro-lego">Ca LEGO 30,4 × 14</button></div>
+        <div class="at-campuri">
+          ${faraAnvelopa ? "" : `<label for="at-ro-diam">Ø anvelopă (mm)<input id="at-ro-diam" type="number" min="16" max="200" step="0.1" value="${p.diam}"></label>`}
+          <label for="at-ro-janta">Ø jantă (mm)<input id="at-ro-janta" type="number" min="12.6" max="150" step="0.1" value="${p.janta}"></label>
+          <label for="at-ro-lat">Lățime (mm)<input id="at-ro-lat" type="number" min="4" max="40" step="0.1" value="${p.lat}"></label>
+        </div>
+        ${faraAnvelopa ? "" : `<div class="at-rand"><span class="mic">Banda:</span>${seg("at-ro-banda", [["nervuri", "Cu nervuri"], ["neteda", "Netedă"], ["blocuri", "Cu blocuri"]], p.banda)}</div>`}
+        ${faraJanta ? "" : `${!Lego.spiteIncap(p.janta, p.gaura) ? `<div class="at-rand"><span class="mic" id="at-ro-fata-plina">${tr`Fața: plină (spițele încap de la janta de Ø ${fmt(Lego.jantaMinimaSpite(p.gaura))} mm).`}</span></div>`
+          : `<div class="at-rand"><span class="mic">Fața:</span>${seg("at-ro-spite", [["disc", "Plină"], ["drepte", "Spițe drepte"], ["y", "Spițe în Y"], ["gauri", "Cu găuri"]], p.spite)}</div>
+        ${p.spite === "disc" ? "" : `<div class="at-campuri"><label for="at-ro-nr">Câte (3–12)<input id="at-ro-nr" type="number" min="3" max="12" step="1" value="${p.nrSpite}"></label></div>`}`}
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-ro-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>`}
+        ${p.fel === "plina" ? "" : `<div class="at-rand"><button class="btn" type="button" id="at-ro-amandoua">Pune janta și anvelopa</button><span class="mic">${tr("aceeași mărime, de printat: janta din PLA, anvelopa din TPU")}</span></div>`}`;
+      const alege = (id: string, f: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { if (!$(id)) return; $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(Math.round(v * 10) / 10); editor(); schimbat(); } }; };
+      alege("#at-ro-fel", v => { p.fel = v; });
+      alege("#at-ro-banda", v => { p.banda = v; });
+      alege("#at-ro-spite", v => { p.spite = v; });
+      alege("#at-ro-gaura", v => { p.gaura = v; });
+      camp("#at-ro-diam", 16, 200, v => { p.diam = v; });
+      camp("#at-ro-janta", 12.6, 150, v => { p.janta = v; });
+      camp("#at-ro-lat", 4, 40, v => { p.lat = v; });
+      camp("#at-ro-nr", 3, 12, v => { p.nrSpite = Math.round(v); });
+      $("#at-ro-lego").onclick = () => { p.diam = 30.4; p.janta = 16.8; p.lat = 13.6; editor(); schimbat(); };
+      if ($("#at-ro-amandoua")) $("#at-ro-amandoua").onclick = adaugaJantaSiAnvelopa;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -591,7 +636,8 @@ var Atelier3D = (function () {
           <li><b>Cupa:</b> cinci plăci cu cupă. Apasă bila de probă în fiecare. Alege cupa în care bila intră apăsând, stă în orice poziție și nu iese singură.</li>
           <li><b>Înălțimea:</b> cinci plăci 2×2 cu fund plin (1–5 cubulețe pe latura din spate), cu știfturi de 1,7 · 1,8 · 1,9 · 2,0 · 2,1 mm și locașurile cu 0,2 mm mai adânci. Pune o cărămidă LEGO peste fiecare placă, apoi apasă placa pe o cărămidă LEGO. Alege placa la care amândouă se prind ca un LEGO adevărat și scrie înălțimea ei mai jos, la „Înălțimea știftului”.</li>
           <li><b>Roțile dințate:</b> cinci roți de 16 dinți (1–5 cubulețe pe fața de sus), cu jocul dintre dinți de la 0,05 la 0,25 mm. Pune fiecare pe un ax, într-o grindă LEGO, lângă o roată LEGO de 16 dinți (axele la două găuri, 16 mm). Alege roata care se învârte ușor, fără să se blocheze și fără joc mare.</li>
-          <li>Scrie cele șapte numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
+          <li><b>Jantele:</b> cinci jante LEGO, cu scaunul de la Ø16,6 la Ø17,0 mm (1–5 cubulețe pe fața de sus). Pune pe fiecare o anvelopă LEGO 30,4 × 14. Alege janta pe care anvelopa intră apăsând și stă fără să alunece.</li>
+          <li>Scrie cele opt numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
         </ol>
         <div class="at-campuri" id="at-calib-campuri"></div>`;
       campuriVariante($("#at-calib-campuri"));
@@ -684,7 +730,7 @@ var Atelier3D = (function () {
   }
   function campuriVariante(loc: HTMLElement) {
     loc.innerHTML = [["varianta_stift", "Varianta știftului"], ["varianta_locas", "Varianta locașului"], ["varianta_gaura", "Varianta găurii"], ["varianta_ax", "Varianta axului"],
-      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"]]
+      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"], ["varianta_janta", "Varianta jantei"]]
       .map(([k, e]) => `<label for="${loc.id}-${k}">${e}<input id="${loc.id}-${k}" data-setare="${k}" type="number" min="-3" max="9" step="1" value="${(setari as Valori)[k!]}"></label>`).join("")
       + campuriInaltimi(loc.id);
     legaInaltimi(loc);
@@ -1244,6 +1290,24 @@ var Atelier3D = (function () {
     salveaza(); randeazaLista();
     toast(tr`${n} × ${numeDef(curent.def)} în listă.`);
   }
+  function normRoata(p: Def): Def {
+    // ce nu ține de felul ales nu intră în piesă (două roți la fel sunt aceeași piesă); spițele, doar unde încap
+    if (p.fel === "anvelopa") { delete p.spite; delete p.nrSpite; delete p.gaura; }
+    else if (p.spite !== "disc" && !Lego.spiteIncap(p.janta ?? 16.8, p.gaura ?? "x")) p.spite = "disc";
+    if (p.fel === "janta") { delete p.diam; delete p.banda; }
+    if (p.spite === "disc") delete p.nrSpite;
+    return p;
+  }
+  function adaugaJantaSiAnvelopa() {
+    // janta și anvelopa de aceeași mărime (ADR 0280): janta din PLA, anvelopa din TPU, de pus una pe alta
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), p = stare.roata;
+    const janta = normRoata({ tip: "roata", fel: "janta", janta: p.janta, lat: p.lat, spite: p.spite, nrSpite: p.nrSpite, gaura: p.gaura });
+    const anvelopa = normRoata({ tip: "roata", fel: "anvelopa", diam: d.diam ?? p.diam, janta: p.janta, lat: p.lat, banda: p.banda });
+    pune(janta, n); pune(anvelopa, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × janta și anvelopa ${fmt(anvelopa.diam!)} × ${fmt(p.lat)} în listă (anvelopa, din TPU).`);
+  }
   function adaugaPerecheRoti() {
     // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus
     laZi();
@@ -1387,7 +1451,7 @@ var Atelier3D = (function () {
       "",
       tr("POTRIVIREA PIESELOR LEGO"),
       tr`- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
-      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa}, roți dințate ${setari.varianta_dinti} (3 = mijlocul).`,
+      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa}, roți dințate ${setari.varianta_dinti}, jantă ${setari.varianta_janta} (3 = mijlocul).`,
       tr`- Înălțimile: știftul ${fmt(Lego.inaltimi(setari).stift_h)} mm, locașul de sub piesele pline ${fmt(Lego.inaltimi(setari).locas_h)} mm.`,
       tr("- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate."),
       "", "LISTA",
