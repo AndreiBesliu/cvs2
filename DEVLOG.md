@@ -10586,3 +10586,44 @@ tipuri de piese si vreau sa fie mai organizat UI-ul” (owner-ul, în timpul fel
   pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 738,8 / 800, neschimbate: felia stă doar în pachetul extensiei), lente
   verzi (e2e 568 / 568, cu cele 5 noi; emulatoarele 101 / 101 și 29 / 29).
 - Pachetul Easy 3Draw 18.15.0, reînregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+
+## 2026-11-19 — Felia 12.1↑e: dopul în vederea 3D (ADR 0178) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, aici, la întrebarea „Ce felie fac mai departe pe linia incrustațiilor?” (variantele: „12.1↑e, dopul 3D” /
+„Bifa pe fiecare rând”): „12.1↑e, dopul 3D”. Reluată pe 20.11, la mesajul sesiunii principale, după ce porțile lente de
+aseară s-au oprit peste noapte.
+**Started:** 19.11, 21:16. **Completed:** 20.11, 10:53.
+
+- **`main` în ramură:** `4b7539a7` (cu 12.1↑f-3 și f-4 unite în `70bc8169`, 3.Tj–3.Tm), prin fast-forward.
+- **Decizia**, din ADR 0170 §5 („în vederea 3D, «Foaia / Dopul N»”) și din planșa „Dopul în vederea 3D” a schiței acceptate
+  atunci (<https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK>): „Foaia 1 / Dopul 1 / Împreună (secțiunea)”. Felia se
+  împarte: 12.1↑e, aceasta, alegerea „Foaia / Dopul N”; 12.1↑e-2, la cuvântul owner-ului, „Împreună (secțiunea)”, cu valorile
+  simulate lângă cele pe hârtie.
+- **Proba întâi** (`incrustatie.dop3d.test.ts`), pe un document cu o incrustație în V și una cu pereți drepți. Pe codul de
+  dinainte a picat toată (4 / 4):
+  - lista dopurilor vederii e a exportului, în aceeași ordine (pe elemente: întâi `i/a0`, cel în V, apoi `j/b`, cel drept) și
+    cu aceleași semifabricate;
+  - relieful fiecărui dop, pe semifabricatul lui, la 0,1 mm, e pe toate celulele plane cel al oracolului independent al
+    simulării, pe G-code-ul dopului exportat (± 0,02);
+  - un dop care nu se poate tăia (marginea 2 sub freza Ø6 a dopului decupat) nu oprește foaia: vederea o simulează, fără
+    dopuri, cu motivul; un dop care lipsește e refuzat cu numărul lui;
+  - fără incrustații, fără dopuri.
+- **ADR 0178**, acceptat din ADR 0170 §5 și din planșă; rândul din index (tradus).
+- **Codul** (`2491fdc`):
+  - `dopurileFoii` (`calculCam.ts`): o singură funcție a dopurilor, a exportului și a vederii 3D.
+  - `calculeazaSimularea(doc, dop?)`: fără dop, foaia; cu el, programul dopului pe semifabricatul lui (fața la 0, fundul la
+    grosimea lui cea mai mică); oricum, lista dopurilor sau motivul lor.
+  - Cererea `simulare` cu `dop`, `simulareInBazin` și `programSimulare` cu el; `RaspunsSimulare` / `ProgramSimulare` cu
+    `dopuri` și `motivDopuri`.
+  - Vederea 3D: grupul „Foaia / Dopul N” în insula de stare (doar cu dopuri), titlul fiecărui dop cu semifabricatul, simularea
+    dopului ales, camera care îl încadrează, starea („Dopul 1 simulat la … mm, pe semifabricatul de …”), „Încadrează dopul”,
+    cipul roșu al dopurilor refuzate, `data-alegere` pentru probe. Mesajele (ro, en), manualul (ro, en).
+  - E2e (`incrustatie3d.spec.ts`): butoanele, dopul ridicat pe semifabricatul de 40 × 30 × 6 (pe fund, h = D + H = 5, plus 1;
+    pe hârtie greșisem întâi D − g + H), fața coborâtă la 5 și dopul în picioare (pixelii), camera pe mijlocul lui, înapoi la
+    foaie; fără incrustații, fără butoane.
+- **Porțile, pe `2491fdc`:** compilatoarele ×3, importurile (20 / 0, 1 312 de module), licențele, traducerile (855, 0 lipsă); unit 9 639: 9 631 / 0 (8 sărite, 6,2 min); build determinist (341 de fișiere identice; pornirea 107,2, cu ușa 111,2 / 115, cu Atelierul 111,5; totalul 739,4 / 800); e2e 562 / 562 din prima (9,7 min, 3 lucrători), fără nicio reluare. Prima rulare a e2e-ului, pornită aseară în fundal, s-a oprit peste noapte la 555 / 562, fără niciun test căzut până acolo; am reluat-o întreagă azi-dimineață. Așteptarea unui minut de liniște a ținut 20 de minute fără să-l găsească (pe mașină rulau mereu procese Playwright), deci a pornit la capătul ei.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1e.py`, 21: lucrarea D01–D12 (ordinea dopurilor, supracursa exportului pierdută, mereu primul dop, semifabricatul mai gros, motivul pierdut, refuzul fără număr, lista cu semifabricatul greșit, lucrătorul, bazinul și calculul interfeței care pierd dopul cerut, interfața fără dopuri sau fără motiv), vederea V01–V09. Seturile curate întâi (`dop3d` 4 / 4, `supracursa` 25 / 25), apoi 21 / 21 prinse: D01 și D03–D12 de `incrustatie.dop3d.test.ts`, D02 de probele supracursei, V01–V09 de `incrustatie3d.spec.ts` (cu build înainte de fiecare). Reorientate și prinse: 12.1b P09 și 12.1f-3 S09, S10 (dopurile, acum în `dopurileFoii`), 4.A K02 (simularea foii, acum ramura fără dop a lui `calculeazaSimularea`); 12.1b E13, 12.1b-2 B26, 12.1f-2 T49, 12.1f H26 și H27 (indentarea panoului, schimbată de 28.1↑d, venită cu `main`). Celelalte liste, comparate otravă cu otravă cu `main` `4b7539a7`: niciun VOID nou. În 4.A, K03, K04, M02, M04 și M05 sunt VOID și pe `main` (ținte schimbate de alte linii): lăsate liniilor lor. Arborele, curat la capăt; build-ul, refăcut pe HEAD.
+- **Mărimea:** felia, față de `4b7539a7`, cu același build în ambii arbori: JavaScript +626 B gzip (vederea 3D +413, lucrătorul CAM +125, calculul interfeței +53, restul +35) și CSS +14 B; totalul 738,8 → 739,4 / 800; pornirea (107,2) și ușa (111,2 / 115), neschimbate.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 20.12), build-ul `2491fdc` (versiunea `2491fdc7c429`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 cu rolul „straight-walled inlay” (adâncimea 3, marginea dopului 5), vederea 3D arată „Sheet / Plug 1”, cu „Sheet” apăsat, titlul dopului „… on its 110 × 70 × 6 mm blank” și niciun cip de refuz. „Plug 1”: „Plug 1 simulated at 0.25 mm, on the 110 × 70 × 6 mm blank”, relieful 440 × 280, dopul în picioare, cu fața la 0 și marginea coborâtă (până la 5), camera pe mijlocul lui (55, 35), „Fit the plug”. Înapoi la „Sheet”: 1 200 × 800, adâncimea 3, camera pe (150, 100), „Fit the sheet”. Vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă. Văzut atunci: titlul dopului numește incrustația prin id-ul ei intern („e1/e1”), pe care utilizatorul nu-l vede nicăieri; de înlocuit, într-o felie mică.
+- **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
+  „prin foaie” pe fiecare rând (v26).

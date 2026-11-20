@@ -81,7 +81,8 @@ o('B24', DLG, '    const puntiRand = banda?.punti ?? dr?.punti ?? PUNTI_DOP_DREP
   'rândul nu citește punțile dopului din proiect')
 o('B25', DLG, 'value={p.grosimePunti} data-camp="dop-punti-grosime"', 'value={p.latimePunti} data-camp="dop-punti-grosime"', 'e2e',
   'câmpul grosimii arată lățimea')
-o('B26', PAN, "                {incDreapta.dop === 'decupat' && ((p) => rand(", "                {false && ((p) => rand(", 'e2e', 'panoul fără punțile dopului')
+# B26 reorientată la 12.1↑e (19.11): 28.1↑d a scos 4 spații de indentare din panou.
+o('B26', PAN, "            {incDreapta.dop === 'decupat' && ((p) => rand(", "            {false && ((p) => rand(", 'e2e', 'panoul fără punțile dopului')
 o('B27', PAN, '(incDreapta.punti ?? PUNTI_DOP_DREPT)}', '(PUNTI_DOP_DREPT)}', 'e2e', 'panoul arată implicitele, nu punțile din proiect')
 
 SETURI = {

@@ -89,7 +89,8 @@ o('P06', DOP, 'urechi: { numar: n, latime: palier, grosime: punti.grosime }, ...
 o('P07', DOP, '  const mica = [...freze].sort((a, b) => a.scula.diametru - b.scula.diametru)[0]!;', '  const mica = freze[0]!;', 'drept',
   'dopul decupat cu prima freză, nu cu cea mai mică (unghiurile lui rotunjite prea larg)')
 o('P08', DOP, "...(inc.dop === 'decupat' ? { exacta: true } : {}) },", '},', 'e2e', 'placa dopului decupat arătată „cel puțin”, nu exactă')
-o('P09', CAL, '  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  const calculate = { dopuri: [...inV.dopuri] };', 'drept',
+# P09 reorientată la 12.1↑e (19.11): dopurile sunt acum în `dopurileFoii`, a exportului și a vederii 3D (ADR 0178).
+o('P09', CAL, '  return { ok: true, dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  return { ok: true, dopuri: [...inV.dopuri] };', 'drept',
   'dopul cu pereți drepți nu iese din export')
 o('P11', DOP, '  const palier = punti.latime + mica.scula.diametru;', '  const palier = punti.latime;', 'drept',
   'palierul punților fără freză (lucrarea refuză dopul decupat cu freza Ø6)')
@@ -139,7 +140,8 @@ o('E10', DLG, '    if (nd !== null && dd !== null) adaugaFreza(nd, dd, null);', 
 o('E11', DLG, '          frezeDop = [{ numar, diametru, pasLateral: pasLateralDop }, ...restDop];', '', 'e2e', 'freza dopului bifată, dar nescrisă')
 o('E12', DLG, "{t(d.exacta ? 'export.gata.dop-decupat' : 'export.gata.dop', {", "{t('export.gata.dop', {", 'e2e',
   'placa dopului decupat arătată „cel puțin”')
-o('E13', PAN, '          {hartieDreapta && incDreapta && (', '          {false && (', 'e2e', 'secțiunea pe hârtie a pereților drepți lipsă')
+# E13 reorientată la 12.1↑e (19.11): o altă linie a scos o treaptă de indentare a secțiunii (venită cu `main` `4b7539a7`).
+o('E13', PAN, '      {hartieDreapta && incDreapta && (', '      {false && (', 'e2e', 'secțiunea pe hârtie a pereților drepți lipsă')
 o('E14', PAN, "t(o.incrustatie?.fel === 'drept' ? 'export.latura.incrustatie-drept' : 'export.latura.buzunar')", "t('export.latura.buzunar')", 'e2e',
   'operația numită buzunar în panou')
 o('E15', ARB, "              {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && t('arbore.buzunar.incrustatie', { joc: n(o.incrustatie.jocLateral) })}",
