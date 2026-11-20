@@ -10520,3 +10520,20 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   îndreptarea comentariului din motor (`10a0a34d`, amprenta lui 18.14.0 reînregistrată), e2e-ul pachetului (biblioteca,
   extensiile, pluginul) 51 / 51 și unitarele pluginului și ale bibliotecii 44 / 44.
 - **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-20 — ADR 0281 propus: piesele atelierului Easy 3Draw, pe file (Model: Claude Opus 5.5)
+
+**Prompt:** „O sa vreau ca rotitele sa fie pe un tab diferit de blocks si de conectoare.. nu stiu, o sa se adune multe
+tipuri de piese si vreau sa fie mai organizat UI-ul” (owner-ul, în timpul feliei 3.Tn). **Started:** 20.11, 08:52.
+**Completed:** 20.11, 09:23.
+
+- **Ce e azi:** sub fila „Legături”, o singură galerie cu 18 tipuri (grinzile, știfturile, toate roțile, clemele); cu
+  șenila, 19.
+- **Propunerea:** familiile ca file (Cărămizi, Technic, Legături, Roți), cu piesele familiei dedesubt, ca azi sub
+  „Legături”; „Din cvs2” și „Calibrare”, la capăt; ultima piesă ținută minte pe filă. Nimic nu se mută în date: piesele se
+  țin după tip, nu după filă.
+- **Schița**, cu macheta de încercat (gruparea în 3, 4 sau 6 familii; așezarea în file, listă sau meniuri) și trei întrebări
+  (gruparea, așezarea, ordinea față de șenilă), cu răspunsurile salvate în pagină:
+  <https://claude.ai/artifact/G32UWgWyP73uk26yMF3U26>. Căutarea peste toate filele și pictogramele pieselor pot sta lângă
+  oricare variantă: intră fără întrebare, ca felii după filele.
+- **Codul:** la răspunsurile owner-ului (felia 3.Tp).

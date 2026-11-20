@@ -2397,6 +2397,10 @@
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
       "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
     },
+    "b06c1742e8022967": {
+      "ro": "Piesele atelierului Easy 3Draw pe file",
+      "en": "The Easy 3Draw workshop parts on tabs"
+    },
     "b0bd74ff72e4e581": {
       "ro": "Documentația admin",
       "en": "Admin documentation"
