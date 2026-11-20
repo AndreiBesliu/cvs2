@@ -1947,6 +1947,8 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   return { IMPLICIT, seteaza: (s?: Partial<typeof IMPLICIT> | null) => { P = { ...IMPLICIT, ...(s || {}) }; }, parametri: () => P, efective: ef, inaltimi, construieste, calibrare, stl, grame, aseaza, zip,
+    // tipurile pe care le știe `construieste`: fiecare stă într-o familie a atelierului (ADR 0281, proba unitară a tabelei)
+    tipuri: Object.freeze(Object.keys(TIPURI)),
     contururi, insetRectiliniu, conturPana, pozitiiGauriPana, centreIndoita,
     // rotitele (ADR 0169): distanta dintre axele a doua roti care se prind (modulul m), pentru atelier
     distantaRoti: (z1: number, z2: number, m = 1) => m * (z1 + z2) / 2,

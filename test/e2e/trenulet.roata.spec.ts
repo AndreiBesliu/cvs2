@@ -1,7 +1,7 @@
 /**
  * Roata cu anvelopă în atelierul Easy 3Draw (ADR 0280, felia 3.Tj), pe pagina de sine stătătoare a planificatorului (din
  * aceleași surse ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Roată 30,4 × 13,6”, ca LEGO, dintr-o bucată, 30,4 × 30,4 × 13,6 mm;
+ * - tipul nou, în fila Roți (ADR 0281): „Roată 30,4 × 13,6”, ca LEGO, dintr-o bucată, 30,4 × 30,4 × 13,6 mm;
  * - la janta mică fața e plină și spune de la ce diametru încap spițele; banda cu blocuri intră în nume;
  * - roata mare cu spițe în Y: numele, STL-ul descărcat închis (fiecare muchie, o dată în fiecare sens);
  * - „Pune janta și anvelopa” pune în listă janta și anvelopa de aceeași mărime;
@@ -14,8 +14,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierRoata(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="roata"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="roata"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată 30,4 × 13,6');
 }
 async function seteaza(page: Page, sel: string, v: string): Promise<void> {
@@ -89,13 +89,13 @@ test('„Pune janta și anvelopa” și varianta jantei din calibrare (la 5, sca
     return citesteStl(readFileSync(await (await descarcare).path())).raza;
   };
   const r3 = await raza();
-  await page.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await page.locator('#at-tipuri [data-fila="calibrare"]').click();
   await expect(page.locator('#at-calib-campuri label', { hasText: 'Varianta jantei' })).toBeVisible();
   await expect(page.locator('ol.pasi')).toContainText('Jantele:');
   await expect(page.locator('ol.pasi')).toContainText('Scrie cele opt numere');
   await seteaza(page, '#at-calib-campuri [data-setare="varianta_janta"]', '5');
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="roata"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="roata"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Jantă Ø 16,8 × 13,6');
   const r5 = await raza();
   expect(r3).toBeCloseTo(8.4, 2);

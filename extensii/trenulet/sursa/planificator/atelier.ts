@@ -77,12 +77,24 @@ var Atelier3D = (function () {
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
-  // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
-  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"], ["roata", "Roată cu anvelopă"], ["fulie", "Fulie"],
-    ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
-  const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
-  let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
-  const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
+  // Piesele pe familii (ADR 0281): o singură tabelă, din care se fac filele de sus și galeriile de sub ele. Fiecare tip al
+  // motorului stă într-o singură familie, afară de „dinCvs2”, care are fila lui (o probă unitară o cere, cu `Lego.tipuri`);
+  // „placaTechnic” nu e un tip, ci o formă gata a cărămizii (o placă 2 × 6 cu găuri), deschisă în editorul ei. „Din cvs2” și
+  // „Calibrare” sunt file proprii, la capăt (în body.html). Datele nu știu de familii: piesele se țin după tip.
+  type Familie = readonly [id: string, nume: string, piese: readonly (readonly [tip: string, nume: string])[]];
+  const FAMILII: readonly Familie[] = [
+    ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"],
+      ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
+    ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
+    ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"]]]
+  ];
+  /** Familia fiecărei piese din galerii. */
+  const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
+  /** Fila de sus a unui tip: familia lui, sau chiar tipul, la filele proprii („calibrare”, „dinCvs2”). */
+  const filaPentru = (t: string): string => FAMILIA.get(t) ?? t;
+  /** Ultima piesă aleasă pe fiecare filă de familie; la început, prima din galeria ei. */
+  const ultima = new Map(FAMILII.map(([f, , piese]): [string, string] => [f, piese[0]![0]]));
+  let puneGrila: boolean | null = null, trageGrinda = false;
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
   const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
   // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
@@ -822,17 +834,11 @@ var Atelier3D = (function () {
         <div class="at-campuri" id="at-calib-campuri"></div>`;
       campuriVariante($("#at-calib-campuri"));
     }
-    if (eLegatura(t)) {
-      // galeria pieselor de legatura, deasupra editorului
-      e.insertAdjacentHTML("afterbegin", `<div class="leg-galerie" id="at-leg" role="group" aria-label="Piesele de legătură">${LEGATURI.map(([k, n]) =>
-        `<button type="button" data-leg="${k}" aria-pressed="${k === t}">${n}</button>`).join("")}</div>`);
-      $("#at-leg").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-leg]"); if (b) { inlocuieste = null; alegeLegatura(b.dataset.leg!); } };
-    }
   }
   const seg = (id: string, opt: readonly (readonly [string | number, string])[], cur: string | number) => `<div class="segment" id="${id}">${opt.map(([v, x]) => `<button type="button" data-v="${v}" aria-pressed="${String(cur) === v}">${x}</button>`).join("")}</div>`;
-  function alegeLegatura(k: string) {
+  function alegePiesa(k: string) {
     if (k === "placaTechnic") {
-      // placa Technic: o placa 2 x 6 cu gauri pe mijloc, in editorul de caramizi (fila ramane pe caramizi)
+      // placa Technic: o placa 2 x 6 cu gauri pe mijloc, in editorul de caramizi (din aceeasi familie)
       const c = stare.caramida;
       Object.assign(c, { celule: [0, 1, 2, 3, 4, 5].flatMap(i => [[i, 0], [i, 1]]), placi: 1, stifturi: true, fund: "tuburi", gauri: [1, 2, 3, 4, 5].map(a => [a, 1, "r"]), mod: "gauri", laterale: [], goale: false });
       c.cols = Math.max(c.cols, 8); c.rows = Math.max(c.rows, 4);
@@ -840,7 +846,6 @@ var Atelier3D = (function () {
       toast("Placă Technic 2×6, cu găuri pe mijloc (în locul formei de la Cărămidă / placă). Le schimbi din „Găuri”.");
       return;
     }
-    ultimaLegatura = k;
     alegeTip(k);
   }
   function adaugaPerecheLegatura(t: string) {
@@ -1373,7 +1378,7 @@ var Atelier3D = (function () {
     vedere = v === "model" ? "model" : "piesa";
     document.querySelectorAll<HTMLElement>("#at-vedere-mod [data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === vedere)));
     $("#at-act-piesa").hidden = vedere !== "piesa"; $("#at-act-model").hidden = vedere !== "model";
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.tip === tabPentru(stare.tip))));
+    marcheazaFile();
     $("#at-culori").hidden = vedere === "model";
     if (vedere === "model") {
       privita = null;
@@ -1783,11 +1788,21 @@ var Atelier3D = (function () {
   // --------------------------------------------------------------------------- pornire
   let toastT: ReturnType<typeof setTimeout> | null = null;
   function toast(t: string) { const el = $("#at-toast"); el.textContent = t; el.classList.add("vizibil"); clearTimeout(toastT!); toastT = setTimeout(() => el.classList.remove("vizibil"), 2600); }
+  /** Filele de sus după piesa de acum (ADR 0281): apăsată fila ei, iar dedesubt galeria familiei, cu piesa apăsată (cât se
+   *  vede modelul, nicio filă și nicio galerie); familia își ține minte piesa. */
+  function marcheazaFile() {
+    const f = filaPentru(stare.tip), fam = FAMILII.find(([x]) => x === f), g = $("#at-galerie");
+    if (fam) ultima.set(f, stare.tip);
+    document.querySelectorAll<HTMLElement>("#at-tipuri [data-fila]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.fila === f)));
+    g.hidden = vedere !== "piesa" || !fam;
+    if (!fam) return;
+    g.setAttribute("aria-label", fam[1]);
+    g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}" aria-pressed="${k === stare.tip}">${n}</button>`).join("");
+  }
   function alegeTip(t: string) {
     stare.tip = t; privita = null;
     if (vedere === "model") { vedere = "piesa"; $("#at-act-piesa").hidden = false; $("#at-act-model").hidden = true; $("#at-culori").hidden = false; document.querySelectorAll<HTMLElement>("#at-vedere-mod [data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === "piesa"))); }
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", (b.dataset.tip === tabPentru(t)) as unknown as string));
-    if (eLegatura(t)) ultimaLegatura = t;
+    marcheazaFile();
     $("#at-adauga").textContent = t === "calibrare" ? "Adaugă setul în lista de printat" : "Adaugă în lista de printat";
     editor(); construiesteCurent(); salveaza(); butonModel();
   }
@@ -1820,9 +1835,12 @@ var Atelier3D = (function () {
   async function init() {
     if (!window.Lego) return;
     try { incarca(JSON.parse(localStorage.getItem(CHEIE) || "null") || {}); } catch (e) { incarca({}); }
+    // filele familiilor (ADR 0281), din tabelă, înaintea filelor proprii; una deschide ultima piesă aleasă în familie
+    $("#at-tipuri").insertAdjacentHTML("afterbegin", FAMILII.map(([f, nume, piese]) =>
+      `<button type="button" data-fila="${f}" aria-pressed="false">${nume} <span class="at-nr" aria-hidden="true">${piese.length}</span></button>`).join(""));
     // fila „Din cvs2” doar în cvs2, cu formele deschise extensiei (ADR 0166)
     const cuForme = !!(window.cvs2 && window.cvs2.forme);
-    const filaForme = document.querySelector<HTMLElement>('#at-tipuri [data-tip="dinCvs2"]');
+    const filaForme = document.querySelector<HTMLElement>('#at-tipuri [data-fila="dinCvs2"]');
     if (filaForme) filaForme.hidden = !cuForme;
     if (stare.tip === "dinCvs2" && !cuForme) stare.tip = "caramida";
     uiImprimante = Profiluri.ui<Valori>($("#prof-imprimanta"), {
@@ -1831,7 +1849,8 @@ var Atelier3D = (function () {
       stare: () => imprimante!, salveaza: s => { imprimante = s; salveaza(); rezumatImprimanta(); }, valori: valoriImprimanta, aplica: aplicaImprimanta,
     });
     culori(); reglaje();
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => { b.onclick = () => { inlocuieste = null; alegeTip(b.dataset.tip === "legaturi" ? ultimaLegatura : b.dataset.tip!); }; });
+    $("#at-tipuri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fila]"); if (!b) return; inlocuieste = null; alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!); };
+    $("#at-galerie").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-piesa]"); if (!b) return; inlocuieste = null; alegePiesa(b.dataset.piesa!); };
     $("#at-adauga").onclick = adaugaInLista;
     $("#at-stl").onclick = descarcaSTL;
     $("#at-zip").onclick = descarcaZip;
@@ -1849,14 +1868,12 @@ var Atelier3D = (function () {
     $("#at-goleste").onclick = () => { $("#at-confirma").hidden = false; };
     $("#at-goleste-da").onclick = () => { lista = []; $("#at-confirma").hidden = true; salveaza(); randeazaLista(); };
     $("#mod-3d").addEventListener("change", schimbaSetare);
-    editor();
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", (b.dataset.tip === tabPentru(stare.tip)) as unknown as string));
-    if (eLegatura(stare.tip)) ultimaLegatura = stare.tip;
+    editor(); marcheazaFile();
     try { db = window.claude ? await window.claude.use("db") : null; } catch (e) { db = null; }
     if (db) {
       try {
         const d = await db.doc("atelier/curent").get();
-        if (d.exists) { incarca(d.data()); culori(); reglaje(); if (v3.ok) v3.mat.color.set(setari.culoare); if (vedere === "model") { if (pornit) { editorModel(); arataModel(); } } else { editor(); if (pornit) construiesteCurent(); } if (pornit) { randeazaLista(); butonModel(); } }
+        if (d.exists) { incarca(d.data()); marcheazaFile(); culori(); reglaje(); if (v3.ok) v3.mat.color.set(setari.culoare); if (vedere === "model") { if (pornit) { editorModel(); arataModel(); } } else { editor(); if (pornit) construiesteCurent(); } if (pornit) { randeazaLista(); butonModel(); } }
       } catch (e) { /* raman cele locale */ }
     }
   }
