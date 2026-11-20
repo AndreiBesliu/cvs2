@@ -17,6 +17,10 @@
       "ro": "Pagina `/admin` reproiectată",
       "en": "The redesigned `/admin` page"
     },
+    "02dfe18536360c3e": {
+      "ro": "Printează o conică dublă de 12 și prinde-o la 90° de o conică dublă LEGO de 12 (32270), cu axele întâlnite și planul de mijloc al fiecăreia la 8 mm (1 pas) de axul celeilalte; apoi pe axe paralele (12 mm, jumătate de pas) și o pereche printată de 12 cu 36, cu „Fă perechea” (la 90°, planul celei de 12 la 20 mm de axul celei de 36, al celei de 36 la 8 mm de axul celei de 12)",
+      "en": "Print a 12-tooth double bevel gear and mesh it at 90° with a LEGO 12-tooth double bevel gear (32270), with the axles meeting and the middle plane of each 8 mm (1 step) from the other’s axle; then on parallel axles (12 mm, half a step) and a printed pair of 12 with 36, with “Make the pair” (at 90°, the middle plane of the 12-tooth one 20 mm from the axle of the 36-tooth one, that of the 36-tooth one 8 mm from the axle of the 12-tooth one)"
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -564,6 +568,10 @@
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
       "en": "The ruler on the sheet's edge, with the dimension line"
+    },
+    "2a0105cdca2b705e": {
+      "ro": "**Conicele duble în atelier** (fără mașină; ADR 0280, acceptat; worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „neata! continua”). „Conică dublă” în galeria pieselor de legătură: roata dreaptă de la rotițe, cu dinții teșiți la 45° spre ambele fețe, ca LEGO 32270 și 32269; se prinde cu perechea ei pe axe paralele (ca rotițele) și la 90°, cu axele întâlnite (planul de mijloc al fiecăreia la 8 mm de axul unei perechi de 12, pe grilă); dinții (și repede: 12, 20, 28, 36), dinții perechii, „Fă perechea”. Perechile montate nu se pătrund și sunt prinse: cele LEGO, cu tot jocul din calibrare, și la cel mai mic; toate cele cu cel puțin 12 dinți, cu joc; o roată de sub 12 dinți cu una de peste 2,5 ori mai mare se prinde strâns, iar montajul o spune. Pachetul 18.14.0. Unitare 8, e2e 3, otrăvuri 31 / 31. Urmează 3.Tp (piesele pe file, ADR 0281, propus) sau 3.To (șenila), la răspunsurile owner-ului.",
+      "en": "**The double bevel gears in the workshop** (no machine; ADR 0280, accepted; the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “neata! continua”). “Double bevel gear” in the gallery of connecting pieces: the spur gear from the gears, with its teeth bevelled at 45° towards both faces, like LEGO 32270 and 32269; it meshes with its pair on parallel axles (like the gears) and at 90°, with the axles meeting (the middle plane of each 8 mm from the axle of a 12-tooth pair, on the grid); the teeth (and quickly: 12, 20, 28, 36), the pair’s teeth, “Make the pair”. The mounted pairs do not interpenetrate and are engaged: the LEGO ones with all the backlash from calibration, even the smallest; all those with at least 12 teeth with backlash; a gear with fewer than 12 teeth and one more than 2.5 times larger mesh tightly, and the mounting says so. Package 18.14.0. Unit 8, e2e 3, poisons 31 / 31. Next: 3.Tp (the parts on tabs, ADR 0281, proposed) or 3.To (the track), at the owner’s answers."
     },
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
@@ -2237,6 +2245,10 @@
       "ro": "**Oracolul independent al buzunarului** (fără mașină; fără ADR nou: nicio decizie schimbată; datoria din `CLAUDE.md`, „Oracolul documentului v11 e scris de sesiunea aplicației, nu independent: de reluat”; o sesiune paralelă nouă, deci independentă prin construcție, în worktree-ul ei, pe `wip/5.1b-oracol-buzunar`). `test/oracles/buzunar.ts` e scris doar din ADR 0069, 0073, 0076, 0093 și 0094 (plus 0024, 0034 și 0008, pentru forme și montaj), din tipurile documentului și din ieșire, fără să vadă `src/cam/` și probele vechi; zero importuri din `src/`, iar din oracole doar cititorul G-code și silueta sculei ale oracolului simulării. Judecă G-code-ul exportat pe fiecare bucată (grupul de aceeași adâncime, citit par-impar): pasul pe trecere (un câmp de înălțimi tăiat de tot programul: sub freză, cel mult `pas` de material; nicio rapidă în material; nimic sub adâncime), peretele (centrul la cel puțin R − 0,006 de margine, garantat exact prin bisecția pe distanța 1-Lipschitz, și în afara insulelor), acoperirea deschiderii cu cea mai mică freză, pasul lateral (zona centrului la cel mult s de drum; inelele la R + k·s, liniile la unghiul cerut și la s), sensul, coborârea (panta cel mult unghiul; cu rampă, zigzag sau elice, nicio coborâre verticală în material) și frezele de rest (doar unde cea dinainte n-a ajuns: la peste R_a − R de drumul ei, fără să meargă pe lângă un perete deja tăiat). Pe corpusul CAM (11 exporturi cu buzunare, 16 bucăți, cu toate posturile, unitățile și strategiile) și pe 13 cazuri pe hârtie (dreptunghiul 100 × 60, și cu originea în dreapta-sus și Z0 jos; L-ul în opoziție, cu s = R; insula 20 × 20; canalul de 4 mm, cu și fără freza de rest Ø3; liniile la 0° și la 30°; rampa, zigzagul și elicea la atan 0,1; cercul R20, cu și fără insula R5): verdictul curat și măsurile egale cu hârtia (inelele 3 … 29,4, ultimul 41,2 × 1,2; bucla insulei −(26² − 9(4 − π)); gura canalului până la 80 − √5; liniile 30,8 … 50; pantele 0,1 și 0,075; cercurile 2, 5, …, 17 și coroanele 17 / 8 și 14 / 11). Cele 4 refuzuri prezise de oracol sunt ale aplicației, cu același motiv. **Niciun defect al aplicației.** Hârtia mea a greșit o dată: în L, δ maxim e la îmbinarea brațelor, 32(2 − √2) = 18,745, nu 16, deci inelul de la 18 există (aplicația avea dreptate). Sabotajele pe o copie a ieșirii: 4 / 4 (peretele mutat cu 0,1 mm, prima trecere la −4, inelul cel mai adânc scos, freza de rest pe lângă perete), plus 14 perechi, câte una pe verificare. Rămâne a sesiunii aplicației partea de ușă (`test/oracles/document.ts`, câmpurile v11–v18).",
       "en": "**The independent pocket oracle** (no machine; no new ADR: no decision changed; the debt in `CLAUDE.md`, „Oracolul documentului v11 e scris de sesiunea aplicației, nu independent: de reluat”; a new parallel session, hence independent by construction, in its own worktree, on `wip/5.1b-oracol-buzunar`). `test/oracles/buzunar.ts` is written only from ADRs 0069, 0073, 0076, 0093 and 0094 (plus 0024, 0034 and 0008, for the shapes and the setup), from the document types and from the output, without seeing `src/cam/` or the old probes; zero imports from `src/`, and from the oracles only the G-code reader and the tool silhouette of the simulation oracle. It judges the exported G-code on each piece (the group of equal depth, read even-odd): the step per pass (a height field cut by the whole program: under the cutter, at most `pas` of material; no rapid move in material; nothing below the depth), the wall (the center at least R − 0.006 from the boundary, guaranteed exactly by bisection on the 1-Lipschitz distance, and outside the islands), the coverage of the opening by the smallest cutter, the stepover (the center zone within s of the path; the rings at R + k·s, the lines at the requested angle and s apart), the cutting direction, the descent (the slope at most the angle; with a ramp, zigzag or helix, no vertical descent into material) and the rest cutters (only where the previous one did not reach: farther than R_a − R from its path, without running along a wall already cut). On the CAM corpus (11 exports with pockets, 16 pieces, with all the posts, units and strategies) and on 13 paper cases (the 100 × 60 rectangle, also with the origin top-right and Z0 at the bottom; the L in conventional cutting, with s = R; the 20 × 20 island; the 4 mm channel, with and without the Ø3 rest cutter; the lines at 0° and 30°; the ramp, the zigzag and the helix at atan 0.1; the R20 circle, with and without the R5 island): a clean verdict and the measures equal to the paper (the rings 3 … 29.4, the last 41.2 × 1.2; the island loop −(26² − 9(4 − π)); the channel mouth up to 80 − √5; the lines 30.8 … 50; the slopes 0.1 and 0.075; the circles 2, 5, …, 17 and the annuli 17 / 8 and 14 / 11). The 4 refusals predicted by the oracle are the application's, with the same reason. **No defect in the application.** My paper was wrong once: in the L, the maximum δ is at the junction of the arms, 32(2 − √2) = 18.745, not 16, so the ring at 18 exists (the application was right). Sabotage on a copy of the output: 4 / 4 (the wall moved by 0.1 mm, the first pass at −4, the deepest ring removed, the rest cutter along the wall), plus 14 pairs, one per check. The door part remains the application session's (`test/oracles/document.ts`, the v11–v18 fields)."
     },
+    "a73232f78e4aa255": {
+      "ro": "Conicele duble în atelier",
+      "en": "The double bevel gears in the workshop"
+    },
     "a75abf755145bbba": {
       "ro": "Sensul de tăiere",
       "en": "Cutting direction"
@@ -2384,6 +2396,10 @@
     "b052146a0aa660c8": {
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
       "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
+    },
+    "b06c1742e8022967": {
+      "ro": "Piesele atelierului Easy 3Draw pe file",
+      "en": "The Easy 3Draw workshop parts on tabs"
     },
     "b0bd74ff72e4e581": {
       "ro": "Documentația admin",
@@ -2760,6 +2776,10 @@
     "ccfd4cbed32bc5bf": {
       "ro": "Offsetul",
       "en": "The offset"
+    },
+    "cd3be2c0e3441cd1": {
+      "ro": "3.Tn (conicele duble)",
+      "en": "3.Tn (the double bevel gears)"
     },
     "cd409d4e8f7a4c4a": {
       "ro": "Degajările pe colțurile cu arce, ultimele rămase din etapa 2",

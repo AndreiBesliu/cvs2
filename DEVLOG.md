@@ -10475,3 +10475,65 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   dinaintea ultimelor schimbări din `lego.ts` (reînregistrată, versiunea nepublicată); lente verzi pe `925762a7` (e2e 560 /
   560, emulatoarele 101 / 101 și 29 / 29), iar pe `a27927b3` e2e-ul pachetului (biblioteca, extensiile, pluginul) 48 / 48.
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-20 — Felia 3.Tn: conicele duble în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! continua” (owner-ul, a doua zi; la „Pornesc 3.Tn (conicele duble)?” răspunsese „Nu acum”). **Started:**
+20.11, 07:28. **Completed:** 20.11, 09:22.
+
+- **Cotele:** conicele duble LEGO 32270 (12 dinți) și 32269 (20), din LDraw: late de 8 mm, dinții drepți în mijloc și teșiți
+  la 45° spre ambele fețe, piciorul la r_p − 2·m.
+- **Motorul** (`conicaDubla`, `dublaCote`, `dublaMontaj`): roata dreaptă de la rotițe, lată de 8·m; banda de mijloc (±2·m)
+  cu dinții rotiței; spre fețe, dintele micșorat spre vârful conului de 45° și subțiat liniar până la 0,3·m pe flanc;
+  piciorul la r_p − 2·m, discul cu 0,2 mm mai mic; gaura din funcția comună cu rotițele (`gauraRoata`); montajul pe axe
+  paralele (m·(z1 + z2) / 2) și la 90° (planul de mijloc la r_p(perechii) + 2·m de axul ei); perechea strânsă la 90° (sub 12
+  dinți, cu una de peste 2,5 ori mai mare).
+- **Atelierul:** „Conică dublă”, dinții (și repede: 12, 20, 28, 36), modulul, gaura, dinții perechii, montajul pe grilă,
+  perechea strânsă spusă, „Fă perechea”; 10 texte în engleză; pachetul 18.14.0.
+- **Pe drum:** un model analitic al perechii la 90° (pe dinte, fără plase), apoi plasele reale: dinții drepți teșiți ca un
+  con se pătrund; piciorul obișnuit pune discul unei roți în dinții celeilalte; dinții micșorați spre vârful conului se
+  prind exact la perechile egale; subțierea de la fețe face și perechile inegale să se prindă; fața unei roți, tangentă la
+  discul celeilalte: discul cu 0,2 mm mai mic. `verifica` pe toate listele pluginului a arătat că gaura conicei repeta
+  rândurile rotiței (cinci otrăvuri 3.Th ajunseseră VOID, rândul lor apărea de două ori): funcția comună `gauraRoata`, cu
+  rotițele identice la octet (231 de piese), și otrăvurile mutate pe ea. Câmpul „Dinții perechii” mutat lângă ceilalți
+  (stătea pe toată lățimea); scara fețelor, scrisă din geometrie, (ub + r_p − w / 2) / r_p, nu din piciorul dinților.
+  Recenzia: jocul perechilor la 90°, prin bisecție, la jocurile 0,05 / 0,15 / 0,25 din calibrare: cu subțierea de 0,1·m, 12
+  cu 28 și 12 cu 36 se pătrundeau la 0,05; cu 0,3·m, perechile LEGO au jocul întreg (și la modulele 0,5 și 2), toate cele cu
+  cel puțin 12 dinți au joc (12 cu 60, cea mai inegală: 0,08 mm din 0,10 la 0,05), iar roțile de sub 12 dinți cu una de
+  peste 2,5 ori mai mare (8 cu 24 se pătrunde) sunt spuse în montaj. Otrava E09 (perechea păstrată în piesă) scăpase:
+  schimbarea perechii nu reface piesa, deci proba e2e o reface acum înainte de fiecare adăugare.
+- **Privirea pe roata reală:** secțiunea roții de 12 peste LDraw 32270 (prin dinte și prin gol), perechea 12 + 12 la 90° în
+  planul axelor, feliile prin zona de contact la două faze (niciun eșantion comun), capturile 3D din atelier (12; 36 cu
+  gaură rotundă) și editorul; după subțierea nouă, perechea 12 + 36 la 90° (niciun eșantion comun) și secțiunile de la față,
+  la 12 și la 8 dinți, peste cele vechi.
+- **Probele:** unitare 8, e2e 3; perechea la 90° și pe axe paralele, fără pătrundere și prinsă, și la jocul cel mai mic din
+  calibrare; otrăvurile 31 / 31.
+- **Recenzia:** fără agenți: workflow-ul de recenzie, refuzat de două ori de clasificator, nu a fost reîncercat. Recenzia
+  proprie: corpurile închise pe 369 de combinații (toți dinții 8…60 la modulul 1 și câte 14 la modulele 0,5 / 0,7 / 1,3 / 2
+  / 3, cu toate găurile; cel mai lent, 150 ms), intrările ciudate (nimic nu aruncă; modulul se strânge în plajă fără
+  avertisment, ca la rotițe, conice și coroane), jocul perechilor la 90°, prin bisecție, la jocurile 0,05 / 0,15 / 0,25 din
+  calibrare și la modulele 0,5 și 2. A găsit perechile LEGO inegale pătrunse la jocul cel mai mic (12 cu 28, 12 cu 36):
+  subțierea de la fețe, de la 0,1 la 0,3·m, și perechea strânsă spusă în montaj. Apoi otrava E09 scăpată (proba e2e
+  întărită) și VOID-urile tuturor listelor pluginului (cinci noi, la gaura comună, mutate).
+- **Porțile:** rapide verzi pe `b50ec0de` (traducerile, tsc, unit 9 635 / 0, 8 sărite, build, determinismul; pornirea 107,2
+  / 115, cu ușa 111,2 / 115, totalul 738,8 / 800), lente verzi (e2e 563 / 563, emulatoarele 101 / 101 și 29 / 29); după
+  îndreptarea comentariului din motor (`10a0a34d`, amprenta lui 18.14.0 reînregistrată), e2e-ul pachetului (biblioteca,
+  extensiile, pluginul) 51 / 51 și unitarele pluginului și ale bibliotecii 44 / 44.
+- **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-20 — ADR 0281 propus: piesele atelierului Easy 3Draw, pe file (Model: Claude Opus 5.5)
+
+**Prompt:** „O sa vreau ca rotitele sa fie pe un tab diferit de blocks si de conectoare.. nu stiu, o sa se adune multe
+tipuri de piese si vreau sa fie mai organizat UI-ul” (owner-ul, în timpul feliei 3.Tn). **Started:** 20.11, 08:52.
+**Completed:** 20.11, 09:23.
+
+- **Ce e azi:** sub fila „Legături”, o singură galerie cu 18 tipuri (grinzile, știfturile, toate roțile, clemele); cu
+  șenila, 19.
+- **Propunerea:** familiile ca file (Cărămizi, Technic, Legături, Roți), cu piesele familiei dedesubt, ca azi sub
+  „Legături”; „Din cvs2” și „Calibrare”, la capăt; ultima piesă ținută minte pe filă. Nimic nu se mută în date: piesele se
+  țin după tip, nu după filă.
+- **Schița**, cu macheta de încercat (gruparea în 3, 4 sau 6 familii; așezarea în file, listă sau meniuri) și trei întrebări
+  (gruparea, așezarea, ordinea față de șenilă), cu răspunsurile salvate în pagină:
+  <https://claude.ai/artifact/G32UWgWyP73uk26yMF3U26>. Căutarea peste toate filele și pictogramele pieselor pot sta lângă
+  oricare variantă: intră fără întrebare, ca felii după filele.
+- **Codul:** la răspunsurile owner-ului (felia 3.Tp).
