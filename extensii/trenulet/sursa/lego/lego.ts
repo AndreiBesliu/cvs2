@@ -1728,9 +1728,10 @@ var Lego = (function (glob: typeof globalThis) {
   // discul celeilalte). În banda de mijloc (±2·m) dinții sunt drepți: pe axe paralele se prind ca rotițele. Spre fiecare față,
   // același dinte se micșorează spre vârful unui con de 45°, aflat la 2·m + r_p de mijloc, și se subțiază încă, liniar, până la
   // 0,3·m pe flanc la față (înainte de micșorare). La 90°, perechile egale se prind ca o pereche conică (cu vârful comun și jocul
-  // 2·joc); celelalte, aproximativ, ca la LEGO, iar subțierea le ține jocul: cu 0,3·m, perechile cu cel puțin 12 dinți (LEGO:
-  // 12, 20, 28, 36) au la 90° tot jocul din calibrare, și la cel mai mic (0,05); cu 0,1·m, 12 cu 28 și 12 cu 36 se pătrundeau
-  // acolo, iar fără subțiere 12 cu 36 se pătrunde și la jocul obișnuit. O roată de sub 12 dinți cu una de peste 2,5 ori mai mare
+  // 2·joc); celelalte, aproximativ, ca la LEGO, iar subțierea le ține jocul: cu 0,3·m, perechile LEGO (12, 20, 28, 36) au la
+  // 90° tot jocul din calibrare la 0,05 și la 0,15 (la 0,25, 12 cu 36: 0,44 mm din 0,50), iar toate cele cu cel puțin 12 dinți
+  // au joc (12 cu 60, cea mai inegală: 0,08 mm din 0,10 la 0,05); cu 0,1·m, 12 cu 28 și 12 cu 36 se pătrundeau la 0,05, iar
+  // fără subțiere 12 cu 36 se pătrunde și la jocul obișnuit. O roată de sub 12 dinți cu una de peste 2,5 ori mai mare
   // se prinde strâns (8 cu 24, la jocul 0,05, se pătrunde): montajul o spune (`strans`). Montajul la 90°: planul de mijloc al
   // fiecărei roți la r_p(perechii) + 2·m de axul perechii (12 → 8 mm, 20 → 12, 28 → 16, 36 → 20: pe grila de jumătate de pas,
   // de aceea conicele duble LEGO au 12, 20, 28, 36 de dinți).
