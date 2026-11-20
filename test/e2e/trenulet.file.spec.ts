@@ -8,7 +8,8 @@
  *   editor”); „Placă cu găuri” rămâne pe Cărămizi, în editorul cărămizii;
  * - o listă salvată de 18.14.0 (`test/fixtures/trenulet/atelier-18.14.0.json`, făcută de pagina publicată, ca un om) se
  *   deschide la fel: piesa din editor (acum pe fila Roți), lista cu aceleași rânduri, modelul, culoarea; iar datele scrise
- *   înapoi sunt aceleași (nimic nu se mută în date);
+ *   înapoi sunt aceleași (nimic nu se mută în date). Și pe claude.ai, unde vine din baza artefactului abia după ce partea
+ *   3D a pornit: filele și galeria trec pe piesa ei;
  * - pe telefon (390 px): filele și galeria fiecărei familii încap, fără depășire, iar galeria stă sub file, deasupra vederii 3D.
  */
 import { readFileSync } from 'node:fs';
@@ -148,14 +149,14 @@ test('fiecare filă ține minte ultima piesă aleasă în ea: după altă filă,
 const randuri = (page: Page) => page.locator('#at-lista tr').evaluateAll((rs) => rs.map((r) => [...r.querySelectorAll('td')]
   .map((c) => c.querySelector('input')?.value ?? (c.textContent ?? '').replace(/\s+/g, ' ').trim())));
 
-test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe fila Roți, lista, modelul, culoarea; datele rămân aceleași', async ({ page }) => {
-  const { stocat, arata } = JSON.parse(readFileSync('test/fixtures/trenulet/atelier-18.14.0.json', 'utf8')) as {
-    stocat: { stare: { tip: string }; lista: unknown[]; model: unknown[] };
-    arata: { nume: string; fila: string[]; galerie: string[]; dinti: string; pinion: string; lista: string[][]; model: string; culoare: string };
-  };
-  // pagina 18.14.0 o arăta sub „Legături”, cu coroana aleasă în galeria lor
-  expect([stocat.stare.tip, arata.fila, arata.galerie]).toEqual(['coroana', ['legaturi'], ['coroana']]);
-  await deschide(page, stocat);
+/** Stocarea lui 18.14.0 și ce arăta pagina publicată după ea (`genereaza.mts`, ca un om, din `origin/main`). */
+const SALVAT = JSON.parse(readFileSync('test/fixtures/trenulet/atelier-18.14.0.json', 'utf8')) as {
+  stocat: { stare: { tip: string }; lista: unknown[]; model: unknown[] };
+  arata: { nume: string; fila: string[]; galerie: string[]; dinti: string; pinion: string; lista: string[][]; model: string; culoare: string };
+};
+/** Pagina de acum arată ce arăta 18.14.0: coroana în editor (acum pe fila Roți), aceleași rânduri în listă, modelul, culoarea. */
+async function laFelCa18140(page: Page): Promise<void> {
+  const { arata } = SALVAT;
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'roti');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'coroana');
   await expect(page.locator('#at-nume-piesa')).toHaveText(arata.nume);
@@ -164,9 +165,43 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   await expect.poll(() => randuri(page)).toEqual(arata.lista);
   await expect(page.locator('#at-vedere-mod [data-v="model"]')).toHaveText(arata.model);
   await expect(page.locator('#at-culori [aria-pressed="true"]')).toHaveAttribute('data-c', arata.culoare);
+}
+
+test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe fila Roți, lista, modelul, culoarea; datele rămân aceleași', async ({ page }) => {
+  const { stocat, arata } = SALVAT;
+  // pagina 18.14.0 o arăta sub „Legături”, cu coroana aleasă în galeria lor
+  expect([stocat.stare.tip, arata.fila, arata.galerie]).toEqual(['coroana', ['legaturi'], ['coroana']]);
+  await deschide(page, stocat);
+  await laFelCa18140(page);
   // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nicio cheie nouă, nimic mutat)
   const scris = JSON.parse(await page.evaluate((k) => localStorage.getItem(k) ?? 'null', CHEIE)) as typeof stocat;
   expect([scris.stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
+});
+
+test('pe claude.ai, lista salvată de 18.14.0 vine din baza artefactului după ce partea 3D a pornit: filele și galeria o urmează', async ({ page }) => {
+  // baza artefactului (`window.claude.use('db')`, cât folosește pagina), care răspunde cu stocarea lui 18.14.0 abia la semnal;
+  // pe calculatorul acesta, `localStorage` e gol (alt browser decât cel care a salvat)
+  await page.addInitScript((s) => {
+    const w = window as unknown as { claude: unknown; dbGata?: boolean };
+    const asteapta = async (): Promise<void> => { while (!w.dbGata) await new Promise((r) => setTimeout(r, 20)); };
+    const doc = (cale: string) => ({
+      get: async () => {
+        if (cale !== 'atelier/curent') return { exists: false, data: () => ({}) };
+        await asteapta();
+        return { exists: true, data: () => JSON.parse(s) as unknown };
+      },
+      set: async () => undefined, delete: async () => undefined,
+    });
+    const colectie = () => ({ doc: () => ({ id: String(Math.random()).slice(2) }),
+      orderBy: () => ({ onSnapshot: (f: (x: { docs: never[] }) => void) => { setTimeout(() => f({ docs: [] }), 0); return () => undefined; } }) });
+    w.claude = { use: async (ce: string) => (ce === 'db' ? { doc, collection: colectie } : { save: async () => undefined }) };
+  }, JSON.stringify(SALVAT.stocat));
+  await deschide(page);
+  // partea 3D a pornit cu piesa de la început, înainte ca baza să răspundă
+  await expect(filaApasata(page)).toHaveAttribute('data-fila', 'caramizi');
+  await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'caramida');
+  await page.evaluate(() => { (window as unknown as { dbGata: boolean }).dbGata = true; });
+  await laFelCa18140(page);
 });
 
 test('pe telefon (390 px): filele și galeria fiecărei familii încap, fără depășire; galeria stă sub file, deasupra vederii 3D', async ({ page }) => {
