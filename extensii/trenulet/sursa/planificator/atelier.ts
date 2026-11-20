@@ -71,12 +71,15 @@ var Atelier3D = (function () {
     // roata coroană (ADR 0280), ca LEGO 3650: 24 de dinți, pentru pinionul de 8, gaura de ax, butucul lung; pinionul e al piesei,
     // fiindcă el îi taie dinții
     coroana: { dinti: 24, pinion: 8, modul: 1, gaura: "x", butuc: "lung" },
+    // conica dublă (ADR 0280), ca LEGO 32270: 12 dinți, gaura de ax; `pereche` (dinții celeilalte) e doar a editorului, pentru
+    // montaj și „Fă perechea”
+    conicaDubla: { dinti: 12, modul: 1, gaura: "x", pereche: 12 },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
   // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
   const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"], ["roata", "Roată cu anvelopă"], ["fulie", "Fulie"],
-    ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
+    ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
   const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
   let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
   const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
@@ -194,6 +197,10 @@ var Atelier3D = (function () {
       const b = d.butuc === "scurt" ? tr(", butuc scurt") : "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
       return tr`Roată coroană ${d.dinti ?? 24} pentru pinionul de ${d.pinion ?? 8}${g}${b}${m}`;
     }
+    if (d.tip === "conicaDubla") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      return tr`Conică dublă ${d.dinti ?? 12}${g}${d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : ""}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -257,6 +264,7 @@ var Atelier3D = (function () {
       normFulie(p);
     }
     if ((t === "conica" || t === "coroana") && +p.modul === 1) delete p.modul;
+    if (t === "conicaDubla") { delete p.pereche; if (+p.modul === 1) delete p.modul; }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -322,6 +330,12 @@ var Atelier3D = (function () {
     if (!a.prinde) return tr`Pinionul de ${a.z1} nu se prinde cu o coroană de ${a.z2}: alege o coroană mai mare.`;
     const butuc = d.butuc !== "scurt" && a.inCale ? tr` Butucul lung urcă până la ${fmt(a.butucLung, 2)} mm, în calea axului pinionului: acela se oprește înaintea butucului.` : "";
     return tr`Axul pinionului trece la ${fmt(a.axa, 2)} mm deasupra feței de jos a coroanei, ${textGrila(a.axa)}, și întâlnește axul ei la 90°: unul dintre ele se oprește înaintea celuilalt. Pinionul, gros de cel puțin ${fmt(a.grosime)} mm, stă în dreptul dinților coroanei: de la ${fmt(a.rIn, 2)} la ${fmt(a.rOut, 2)} mm de axul ei, cu mijlocul la ${fmt(a.mijloc, 2)} mm.` + butuc;
+  }
+  function textDubla(d: { dinti?: number; modul?: number }, pereche: number): string {
+    // cum stau axele unei conice duble și ale perechii ei: paralele (distanța, ca la rotițe) și la 90° (planul de mijloc al
+    // fiecăreia de axul celeilalte), pe grilă sau nu
+    const a = Lego.dublaMontaj(d, pereche);
+    return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.`;
   }
   function editor() {
     const t = stare.tip, e = $("#at-editor");
@@ -730,6 +744,30 @@ var Atelier3D = (function () {
       camp("#at-cr-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
       $("#at-cr-lego").onclick = () => { Object.assign(p, { dinti: 24, pinion: 8, modul: 1, gaura: "x", butuc: "lung" }); editor(); schimbat(); };
       $("#at-cr-fa-pereche").onclick = adaugaPerecheCoroana;
+    } else if (t === "conicaDubla") {
+      // conica dublă (ADR 0280): dinții (și repede: 12, 20, 28, 36), modulul, gaura; perechea (a editorului): axele, paralele și
+      // la 90°
+      const p = stare.conicaDubla;
+      e.innerHTML = `<h2>Conică dublă</h2>
+        <p class="mic">Roată dințată cu dinții teșiți spre ambele fețe, ca la LEGO: se prinde cu alta pe axe paralele, ca roțile dințate, și la 90°, cu axele întâlnite, ca două roți conice. Perechile LEGO (12, 20, 28, 36 de dinți) se prind la 90° pe grilă; cu cât perechea e mai inegală, cu atât se prinde mai strâns. E lată de 8 mm la modulul 1; jocul dintre dinți vine din calibrare. Se printează culcată pe o față: dinții de jos sunt teșiți în consolă, la vreo 45°.</p>
+        <div class="at-campuri">
+          <label for="at-cd-dinti">Dinți<input id="at-cd-dinti" type="number" min="8" max="60" step="1" value="${p.dinti}"></label>
+          <label for="at-cd-modul">Modul<input id="at-cd-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+          <label for="at-cd-pereche">Dinții perechii<input id="at-cd-pereche" type="number" min="8" max="60" step="1" value="${p.pereche}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-cd-repede", [12, 20, 28, 36].map((z): [string, string] => [String(z), String(z)]), String(p.dinti))}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-cd-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <p class="mic" id="at-cd-montaj">${textDubla(p, p.pereche)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-cd-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă ambele conice duble")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a0: number, b0: number, f2: (v: number) => void) => { $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a0 && v <= b0) { f2(v); editor(); schimbat(); } }; };
+      alege("#at-cd-repede", v => { p.dinti = +v; });
+      alege("#at-cd-gaura", v => { p.gaura = v; });
+      camp("#at-cd-dinti", 8, 60, v => { p.dinti = Math.round(v); });
+      camp("#at-cd-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      // perechea e doar a editorului: schimbă textul montajului, nu piesa
+      $("#at-cd-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 60) { p.pereche = v; editor(); } };
+      $("#at-cd-fa-pereche").onclick = adaugaPerecheDuble;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -1487,6 +1525,14 @@ var Atelier3D = (function () {
     pune(d, n); pune(pinion, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × coroana ${a.z2} și pinionul ei de ${a.z1} în listă (axul pinionului la ${fmt(a.axa, 2)} mm deasupra feței de jos a coroanei, mijlocul lui la ${fmt(a.mijloc, 2)} mm de axul ei).`);
+  }
+  function adaugaPerecheDuble() {
+    // conica dublă de acum și perechea ei (dinții aleși; același modul și aceeași gaură)
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), z2 = stare.conicaDubla.pereche, a: Def = { ...d, dinti: z2 }, m = Lego.dublaMontaj(d, z2);
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea de conice duble ${m.z} + ${m.z2} în listă (pe axe paralele, axele la ${fmt(m.paralel, 2)} mm; la 90°, planurile de mijloc la ${fmt(m.acesta, 2)} și ${fmt(m.perechea, 2)} mm de axul celeilalte).`);
   }
   function adaugaPerecheRoti() {
     // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus

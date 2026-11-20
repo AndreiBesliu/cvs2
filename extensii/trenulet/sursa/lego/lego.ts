@@ -1719,6 +1719,54 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- conicele duble
+  // Conica dublă (ADR 0280, felia 3.Tn), culcată pe o față: roata dreaptă de la rotițe (profilul și jocul din calibrare), lată
+  // de 8·m, cu piciorul dinților la r_p − 2·m, ca LEGO 32270 și 32269 (din LDraw: lățimea 8, discul de r 4 la 12 dinți și 7,95
+  // la 20), ca o pereche la 90° să nu-și atingă discurile; discul, cu 0,2 mm mai mic (la LEGO, fața unei roți e tangentă la
+  // discul celeilalte). În banda de mijloc (±2·m) dinții sunt drepți: pe axe paralele se prind ca rotițele. Spre fiecare față,
+  // același dinte se micșorează spre vârful unui con de 45°, aflat la 2·m + r_p de mijloc, și se subțiază încă, liniar, până la
+  // 0,1·m pe flanc la față. La 90°, perechile egale se prind ca o pereche conică (cu vârful comun și jocul 2·joc); celelalte,
+  // aproximativ, ca la LEGO: fără subțiere, 12 cu 36 s-ar pătrunde, cu ea au jocul 0,13 mm. Montajul la 90°: planul de mijloc
+  // al fiecărei roți la r_p(perechii) + 2·m de axul perechii (12 → 8 mm, 20 → 12, 28 → 16, 36 → 20: pe grila de jumătate de
+  // pas, de aceea conicele duble LEGO au 12, 20, 28, 36 de dinți).
+  const DUBLA = { lat: 8, banda: 2, picior: 2, subtiere: 0.1, inDisc: 0.3, liber: 0.2 };
+  type DublaDef = { dinti?: unknown; modul?: unknown };
+  function dublaCote({ dinti, modul }: DublaDef) {
+    const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const z = Math.round(Math.min(60, Math.max(8, nr(dinti, 12)))), m = Math.min(3, Math.max(0.5, Math.round(nr(modul, 1) * 10) / 10));
+    const rp = m * z / 2;
+    return { z, m, rp, w: DUBLA.lat * m, rc: rp - DUBLA.picior * m - DUBLA.liber, ub: DUBLA.banda * m };
+  }
+  function conicaDubla({ dinti = 12, modul = 1, gaura = "x" }: { dinti?: number; modul?: number; gaura?: string }): Corp {
+    const e = ef(), avert: string[] = [], q = dublaCote({ dinti, modul }), { z, m, rp, w, rc, ub } = q;
+    if (z !== +dinti) avert.push(tr`O conică dublă are între 8 și 60 de dinți: am făcut-o cu ${z}.`);
+    const R = profilRoata(z, m, e.jocDinti), pas = 2 * Math.PI / z;
+    // un dinte, centrat pe unghiul c, la scara s (spre vârful conului) și cu subțierea t (0 … 1): flancul drept de la picior în
+    // sus, mijlocul capului, flancul stâng în jos; dedesubt, pereții radiali coboară până la 0,3·m sub disc (dintele intră în el)
+    const raze: number[] = [], jum: number[] = [];
+    for (let i = 0; i < R.raze.length && R.jum[i]! > 0; i++) { raze.push(R.raze[i]!); jum.push(R.jum[i]!); }
+    const dinte = (c: number, s: number, t: number): P2[] => {
+      const d = DUBLA.subtiere * m * t, h = (i: number) => Math.max(jum[i]! - d / raze[i]!, jum[i]! / 4), pol = (r: number, a: number): P2 => [s * r * Math.cos(a), s * r * Math.sin(a)];
+      const jos = rc - DUBLA.inDisc * m, dr: P2[] = [pol(jos, c - h(0))], st: P2[] = [pol(jos, c + h(0))];
+      for (let i = 0; i < raze.length; i++) { dr.push(pol(raze[i]!, c - h(i))); st.push(pol(raze[i]!, c + h(i))); }
+      return [...dr, pol(R.ra, c), ...st.reverse()];
+    };
+    // straturile, de jos în sus: fața, marginile benzii, fața; la fețe, scara (r_p − 2·m) / r_p și subțierea întreagă
+    const sf = (rp - DUBLA.picior * m) / rp, zs = [0, w / 2 - ub, w / 2 + ub, w], ss = [sf, 1, 1, sf], ts = [1, 0, 0, 1];
+    // discul, cu gaura; peretele dintre gaură și disc, ca la rotițe
+    let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];
+    const disc = cerc(0, 0, rc, 4 * Math.ceil(Math.max(N_CERC, 2 * Math.PI * rc / 0.8) / 4)), perete = g.length ? pereteGaura(disc, g[0]!) : Infinity;
+    if (g.length && perete < 0.1) {
+      avert.push(tr`Gaura nu încape în conica asta dublă: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
+      g = [];
+    } else if (g.length && perete < 0.8) {
+      avert.push(tr`Între gaură și marginea discului rămân doar ${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
+    }
+    const tri: Tri[] = prismaGauri(disc, g, 0, w);
+    for (let k = 0; k < z; k++) tri.push(...prismaStraturi(zs.map((zz, i) => ({ z: zz, p: dinte(k * pas, ss[i]!, ts[i]!) })), []));
+    return { tri, avert };
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1813,7 +1861,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1915,6 +1963,12 @@ var Lego = (function (glob: typeof globalThis) {
       const q = coroanaCote(d), r = coroanaRaze(q, ef().jocDinti), rIn = r ? r.rIn : NaN, rOut = r ? r.rOut : NaN;
       return { z2: q.z2, z1: q.z1, m: q.m, prinde: !!r, axa: q.axa, rIn, rOut, mijloc: (rIn + rOut) / 2,
         grosime: Math.max(3.8, Math.ceil((rOut - rIn + 0.6) * 10 - 1e-6) / 10), butucLung: 2 * q.zp, inCale: q.axa - 2.4 < 2 * q.zp + 0.2 };
+    },
+    // conica dublă (ADR 0280): pe axe paralele, distanța dintre axe (ca la rotițe); la 90°, cât e planul de mijloc al fiecăreia
+    // de axul celeilalte, r_p(celeilalte) + 2·m (cu modulul acesteia)
+    dublaMontaj: (d: DublaDef, z2: unknown) => {
+      const a = dublaCote(d), b = dublaCote({ dinti: z2, modul: a.m });
+      return { z: a.z, z2: b.z, m: a.m, paralel: a.rp + b.rp, acesta: b.rp + DUBLA.banda * a.m, perechea: a.rp + DUBLA.banda * a.m };
     },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
