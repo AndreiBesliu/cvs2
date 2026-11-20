@@ -1309,6 +1309,10 @@
       "ro": "3.6i (proba pe imprimantă, pasul 2)",
       "en": "3.6i (the test on the printer, step 2)"
     },
+    "5afa3167a9be4da1": {
+      "ro": "Piesele atelierului pe file",
+      "en": "The workshop parts on tabs"
+    },
     "5bece914e15c12d9": {
       "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
       "en": "Textures; STL / OBJ export; Relief clipart; Laser"
@@ -1892,6 +1896,10 @@
     "8c3c194433fcbf6c": {
       "ro": "Booleanul, adus din etapa 6",
       "en": "The boolean, brought forward from stage 6"
+    },
+    "8c4e9d064de2ed05": {
+      "ro": "**Piesele atelierului pe file** (fără mașină; ADR 0281, acceptat cu 1b, 2a, 3a; worktree-ul `galeria`, ramura `wip/3.Tp-galeria-pe-file`; „Da, pornește 3.Tp”, apoi „prefer sa o pui intr-un worktree separat”). Sus, în locul celor opt file de până acum, trei familii, cu câte piese au: Cărămizi (10: cele System, suportul și cele Technic), Legături (8), Roți (6); apoi „Din cvs2” (doar în cvs2) și „Calibrare”. Sub file, pe toată lățimea, galeria familiei alese (pe telefon, deasupra vederii 3D); fiecare filă ține minte ultima piesă aleasă în ea. O singură tabelă tip → familie, din care se fac filele și galeriile; o probă unitară cere fiecare tip al motorului o singură dată în ea. Nimic nu se mută în date: o listă salvată de 18.14.0 se deschide la fel, și pe claude.ai. Pachetul 18.15.0. Unitare 5, e2e 5, otrăvuri 29 / 29. Urmează 3.To (șenila, în fila Roți), apoi 3.Tp↑a (căutarea) și 3.Tp↑b (pictogramele).",
+      "en": "**The workshop parts on tabs** (no machine; ADR 0281, accepted with 1b, 2a, 3a; the `galeria` worktree, branch `wip/3.Tp-galeria-pe-file`; “Da, pornește 3.Tp”, then “prefer sa o pui intr-un worktree separat”). At the top, instead of the eight tabs so far, three families, with how many parts they have: Bricks (10: the System ones, the bracket and the Technic ones), Joints (8), Wheels (6); then “From cvs2” (only in cvs2) and “Calibration”. Under the tabs, across the full width, the gallery of the chosen family (on a phone, above the 3D view); each tab remembers the last part chosen in it. A single type → family table, from which the tabs and the galleries are made; a unit test requires every engine type exactly once in it. Nothing moves in the data: a list saved by 18.14.0 opens the same, on claude.ai too. Package 18.15.0. Unit 5, e2e 5, poisons 29 / 29. Next: 3.To (the track, in the Wheels tab), then 3.Tp↑a (the search) and 3.Tp↑b (the icons)."
     },
     "8d47a7050074a377": {
       "ro": "Încercarea liniilor mediane pe culori (25.3↑c, ADR 0227) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; ramura `wip/25.1-trasare`): din „Importă…”, un desen cu linii colorate (o schemă, un desen cu carioci; o poză sau o scanare), cu **Sursa: Culorile** și **Rezultatul: Linii mediane**: liniile fiecărei culori, **Leagă peste alte culori** la încrucișări, grosimea în pastile. Spune unde leagă ce nu trebuie sau lasă rupte trăsături evidente (ADR 0227, „Se redeschide dacă”); desenul trimis intră în probe",
@@ -2637,6 +2645,10 @@
       "ro": "Instanțele fonturilor variabile, aduse din etapa 7",
       "en": "Variable font instances, brought forward from stage 7"
     },
+    "c040828fb099c23d": {
+      "ro": "3.Tp (piesele pe file)",
+      "en": "3.Tp (the parts on tabs)"
+    },
     "c083a50de5467f32": {
       "ro": "Transformările selecției, Alt care inversează lipirea",
       "en": "Transforming the selection, Alt inverting snapping"
@@ -2848,6 +2860,10 @@
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
       "en": "The planner in English, following the language of cvs2"
+    },
+    "d45955ce6023d1a4": {
+      "ro": "Pe test (<https://cncvectorstudio-test.web.app/>), în Easy 3Draw, partea 3D: filele de sus (Cărămizi, Legături, Roți, cu câte piese au), cu piesele familiei dedesubt; alege câte o piesă pe fiecare filă și treci între ele (fiecare filă își ține piesa); lista de printat și modelul de dinainte sunt la fel; pe telefon, filele și piesele încap, deasupra vederii 3D",
+      "en": "On test (<https://cncvectorstudio-test.web.app/>), in Easy 3Draw, the 3D part: the tabs at the top (Bricks, Joints, Wheels, with how many parts they have), with the family’s parts underneath; pick a part on each tab and switch between them (each tab keeps its part); the print list and the model from before are the same; on a phone, the tabs and the parts fit, above the 3D view"
     },
     "d49e636700fcb2e9": {
       "ro": "**Remedierile din testul uneltelor de desen** (ADR 0074; raportul testului pas cu pas: 29 de pași bine, 2 nemarcați, notele owner-ului). Clicul alege conturul cel mai apropiat, apoi cea mai mică formă care cuprinde punctul (după un offset spre exterior, forma dinăuntru se alege iar cu un clic). Offsetul din desen are Colțurile: Ca originalul (implicit, colțurile ascuțite rămân ascuțite) sau Rotunjite (cu raza distanței, și spre interior). Copierea pe curbă: pe ea, la stânga sau la dreapta, tangente sau la o distanță. Pen-ul: dublu clic închide calea, tragerea din primul nod arată închiderea, Ctrl+Z / Ctrl+Y anulează și refac pașii desenului, Ctrl+Shift+Z imediat după îl redeschide. Mânerele despărțite se unesc din nou cu Alt sau cu Curbă pe ambele părți. Cronologia din roadmap arată feliile aduse înainte pe etapele viitoare (↑N). Manualul și pașii testului sunt la zi. **Treceri:** (1) cele șase remedieri cu probele lor; pe hârtie, două greșeli găsite și reparate înainte de commit (colțul unui contur cu trei vârfuri nu se prelungea; capătul unui braț lat cât 2d nu se rotunjea întreg), iar o valoare a probei era calculată greșit (colțul intrând al L-ului adaugă arie la offsetul exact, nu scade).",
