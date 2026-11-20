@@ -1,6 +1,7 @@
 # ADR 0281: Piesele atelierului Easy 3Draw pe file: familiile în locul galeriei unice „Legături”
 
-**Starea:** propus pe 20.11.2026, la cererea owner-ului: „O sa vreau ca rotitele sa fie pe un tab diferit de blocks si de
+**Starea:** acceptat pe 20.11.2026 (1b, 2a, 3a), cu felia 3.Tp pornită în aceeași zi („Da, pornește 3.Tp”); propus în
+aceeași zi, la cererea owner-ului: „O sa vreau ca rotitele sa fie pe un tab diferit de blocks si de
 conectoare.. nu stiu, o sa se adune multe tipuri de piese si vreau sa fie mai organizat UI-ul”. **Completează:** ADR 0280
 (roțile, fulia, roțile la 90°, șenila), ADR 0169 (rotițele dințate), ADR 0129 (Planificatorul ca extensie). Al doilea număr
 al intervalului 0280–0289 al pluginului. Schița, cu macheta de încercat (gruparea și așezarea, la alegere) și întrebările:
@@ -45,6 +46,18 @@ lista `LEGATURI` din `atelier.ts`, `tabPentru` (tipul → fila) și `ultimaLegat
 3. **Când?**
    - **3a.** Înaintea șenilei: felia filelor după conicele duble, iar șenila intră direct în fila roților (recomandat).
    - **3b.** După șenilă (3.To, cu șenila deocamdată sub „Legături”).
+
+## Răspunsurile
+
+Owner-ul a răspuns în schiță pe 20.11.2026, apoi: „Da, pornește 3.Tp”.
+
+- **1b:** trei familii, nu patru: **Cărămizi** (10: Cărămidă / placă, Pantă, Pantă inversă, Pană / aripă, Rotund / con,
+  Știfturi pe lateral, Suport (bracket) și cele Technic: Grindă, Cărămidă Technic, Placă cu găuri), **Legături** (8: Știft,
+  Ax, Bucșă / conector, Clemă, Bară, Mâner, Bilă, Cupă) și **Roți** (6: Roată dințată, Roată conică, Roată coroană, Conică
+  dublă, Fulie, Roată cu anvelopă; șenila intră a șaptea, la 3.To).
+- **2a:** file: familiile sus, piesele familiei alese dedesubt, ca azi sub „Legături”; fiecare filă ține minte ultima piesă
+  aleasă în ea. „Din cvs2” și „Calibrare” rămân file proprii, la capăt.
+- **3a:** înaintea șenilei: felia filelor (3.Tp) după conicele duble, iar șenila (3.To) intră direct în fila Roți.
 
 ## Feliile
 
