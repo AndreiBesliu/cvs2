@@ -9,7 +9,7 @@
 import { useSyncExternalStore } from 'react';
 import { IMBINARE_MAXIMA, MODELE_IMBINARE, type Imbinare, type ModelImbinare } from '../model/imbinare.ts';
 import { LATIME_IMPLICITA, latimeBuna } from '../model/intreBucati.ts';
-import { INALTIME_NUMAR, inaltimeNumarBuna } from '../model/numarPanou.ts';
+import { INALTIME_NUMAR, inaltimeNumarBuna } from '../model/inaltimeNumar.ts';
 import type { Intre, Pastrare, Prelungire } from '../model/taiere.ts';
 
 /** Ce stă între bucăți: nimic, un spațiu sau o suprapunere (ADR 0181 §2). */

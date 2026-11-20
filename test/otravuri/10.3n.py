@@ -14,7 +14,8 @@ def o(id, fis, vechi, nou, set, ce):
 
 
 N = 'src/model/numarPanou.ts'
-M = 'src/model/panouri.ts'
+H = 'src/model/inaltimeNumar.ts'
+M ='src/model/panouri.ts'
 A = 'src/ui/actiuniDocumentCalcul.ts'
 B = 'src/app/PanouriTaiere.tsx'
 O_ = 'src/app/optiuniTaiere.ts'
@@ -22,7 +23,7 @@ O_ = 'src/app/optiuniTaiere.ts'
 # Locul cifrelor.
 o('N01', N, "export const jocNumar = (inaltime: number): number => Math.max(2, inaltime / 4);", "export const jocNumar = (inaltime: number): number => inaltime / 4;",
   'numar', 'jocul fără minimul de 2 mm')
-o('N02', N, "h >= INALTIME_NUMAR.minima && h <= INALTIME_NUMAR.maxima", "h > INALTIME_NUMAR.minima && h <= INALTIME_NUMAR.maxima", 'numar',
+o('N02', H, "h >= INALTIME_NUMAR.minima && h <= INALTIME_NUMAR.maxima", "h > INALTIME_NUMAR.minima && h <= INALTIME_NUMAR.maxima", 'numar',
   'înălțimea cea mai mică refuzată')
 o('N03', N, "    for (const c of cutii) if (inauntru(c, b)) return false;\n", "", 'numar', 'un contur întreg înăuntrul cutiei (o literă mică) trece')
 o('N04', N, "      if (!inRegiune(q, inchise)) return false;\n", "", 'numar', 'cifrele în afara materialului (în decupătura unui L)')

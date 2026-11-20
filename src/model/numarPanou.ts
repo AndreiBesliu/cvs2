@@ -16,12 +16,6 @@ import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
  *   ar ajunge pe un dinte, departe de colț (văzut pe firma reală, felia 10.3↑n).
  */
 
-/** Înălțimea cifrelor, în mm: implicită, cea mai mică și cea mai mare primite. */
-export const INALTIME_NUMAR = { implicita: 10, minima: 3, maxima: 100 } as const;
-
-/** O înălțime a cifrelor bună: un număr între cea mai mică și cea mai mare. */
-export const inaltimeNumarBuna = (h: number): boolean => Number.isFinite(h) && h >= INALTIME_NUMAR.minima && h <= INALTIME_NUMAR.maxima;
-
 /** Jocul dintre cifre și contururile panoului, în mm: un sfert din înălțime, cel puțin 2. */
 export const jocNumar = (inaltime: number): number => Math.max(2, inaltime / 4);
 
