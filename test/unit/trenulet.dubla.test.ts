@@ -154,6 +154,8 @@ test('cotele LEGO 12: în banda de mijloc dinții rotiței; discul la r_p − 2�
   // discul: în dreptul golului (15°), material până la 3,8, nu și peste; dintele 0 merge până la cap (7), în bandă
   assert.equal(f(3.75, 15, 4), true);
   assert.equal(f(3.85, 15, 4), false);
+  // dintele pornește din disc: pe mijlocul lui, material de la disc până la piciorul obișnuit (3,8 … 4,75), și pe fețe
+  for (const z of [0.5, 4, 7.5]) for (let rr = 3.7; rr <= 4.8; rr += 0.1) assert.equal(f(rr, 0, z), true, `dintele 0 la r ${rr.toFixed(1)}, z ${z}`);
   assert.equal(f(6.95, 0, 4), true);
   assert.equal(f(7.05, 0, 4), false);
   // pe fețe (z 0,02 și 7,98), capul la 7·(4 / 6) = 4,667 (plus ce crește pe 0,02 mm: 7 / 6 / 50)

@@ -1208,6 +1208,24 @@ var Lego = (function (glob: typeof globalThis) {
     }
     return tri;
   }
+  // gaura unei roți dințate (rotițele, conicele duble): în cruce (pentru ax), rotundă (pe știft) sau deloc, cu jocurile de la
+  // calibrare; peretele adevărat până la conturul ext (colțurile crucii și coarda golului, nu doar razele). Unde, dreaptă, ar rămâne
+  // sub 0,8 mm, crucea se rotește (pe sfertul ei de simetrie, din 5,625 în 5,625°) unde peretele iese cel mai gros: la roata de 8,
+  // brațele spre goluri, 0,23 mm în loc de 0,04 (colțurile cădeau sub goluri). Sub 0,1 mm gaura lipsește; sub 0,8, roata iese slabă.
+  function gauraRoata(ext: Poli, gaura: string): { g: Poli[]; perete: number; lipseste: boolean; slaba: boolean } {
+    const e = ef();
+    let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];
+    let perete = g.length ? pereteGaura(ext, g[0]!) : Infinity;
+    if (gaura === "x" && perete < 0.8) {
+      const g0 = g[0]!;
+      for (let i = 1; i < 16; i++) {
+        const gi = g0.map(p => rotP(p, i * Math.PI / 32)), pi = pereteGaura(ext, gi);
+        if (pi > perete + 1e-9) { g = [gi]; perete = pi; }
+      }
+    }
+    const lipseste = g.length > 0 && perete < 0.1;
+    return { g: lipseste ? [] : g, perete, lipseste, slaba: !lipseste && g.length > 0 && perete < 0.8 };
+  }
   function rotita({ dinti = 24, fel = "drepti", unghi = 20, sens = "dreapta", grosime = 3.8, gaura = "x", modul = 1 }: {
     dinti?: number; fel?: string; unghi?: number; sens?: string; grosime?: number; gaura?: string; modul?: number }): Corp {
     // roata dintata: dinti drepti, oblici (elicoidali; sensul dreapta = elicea urca in sens trigonometric) sau in V; gaura de
@@ -1218,25 +1236,9 @@ var Lego = (function (glob: typeof globalThis) {
     const m = Math.min(3, Math.max(0.5, Math.round((Number.isFinite(+modul) ? +modul : 1) * 10) / 10));
     const h = Math.min(20, Math.max(1, Math.round((Number.isFinite(+grosime) ? +grosime : 3.8) * 10) / 10));
     const beta = Math.min(35, Math.max(10, Number.isFinite(+unghi) ? +unghi : 20)) * Math.PI / 180, s = sens === "stanga" ? -1 : 1;
-    const R = profilRoata(z, m, e.jocDinti), ext = conturRoata(R, 0);
-    // gaura: peretele adevarat pana la dinti (colturile crucii si coarda golului, nu doar razele). Unde, dreapta, ar ramane
-    // sub 0,8 mm, crucea se roteste (pe sfertul ei de simetrie, din 5,625 in 5,625°) unde peretele iese cel mai gros: la roata
-    // de 8, bratele spre goluri, 0,23 mm in loc de 0,04 (colturile cadeau sub goluri). O gaura care nu incape lipseste.
-    let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];
-    let perete = g.length ? pereteGaura(ext, g[0]!) : Infinity;
-    if (gaura === "x" && perete < 0.8) {
-      const g0 = g[0]!;
-      for (let i = 1; i < 16; i++) {
-        const gi = g0.map(p => rotP(p, i * Math.PI / 32)), pi = pereteGaura(ext, gi);
-        if (pi > perete + 1e-9) { g = [gi]; perete = pi; }
-      }
-    }
-    if (g.length && perete < 0.1) {
-      avert.push(tr`Gaura nu încape în roata asta: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
-      g = [];
-    } else if (g.length && perete < 0.8) {
-      avert.push(tr`Între gaură și piciorul dinților rămân doar ${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
-    }
+    const R = profilRoata(z, m, e.jocDinti), ext = conturRoata(R, 0), G = gauraRoata(ext, gaura), g = G.g;
+    if (G.lipseste) avert.push(tr`Gaura nu încape în roata asta: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
+    else if (G.slaba) avert.push(tr`Între gaură și piciorul dinților rămân doar ${String(Math.round(G.perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
     if (fel !== "oblici" && fel !== "inv") return { tri: prismaGauri(ext, g, 0, h), avert };
     // rasucirea pe cercul de divizare: tan(beta) / r radiani pe mm; straturi de cel mult 0,8°
     const k = Math.tan(beta) / R.r * s, pas = 0.8 * Math.PI / 180;
@@ -1751,18 +1753,15 @@ var Lego = (function (glob: typeof globalThis) {
       for (let i = 0; i < raze.length; i++) { dr.push(pol(raze[i]!, c - h(i))); st.push(pol(raze[i]!, c + h(i))); }
       return [...dr, pol(R.ra, c), ...st.reverse()];
     };
-    // straturile, de jos în sus: fața, marginile benzii, fața; la fețe, scara (r_p − 2·m) / r_p și subțierea întreagă
-    const sf = (rp - DUBLA.picior * m) / rp, zs = [0, w / 2 - ub, w / 2 + ub, w], ss = [sf, 1, 1, sf], ts = [1, 0, 0, 1];
-    // discul, cu gaura; peretele dintre gaură și disc, ca la rotițe
-    let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];
-    const disc = cerc(0, 0, rc, 4 * Math.ceil(Math.max(N_CERC, 2 * Math.PI * rc / 0.8) / 4)), perete = g.length ? pereteGaura(disc, g[0]!) : Infinity;
-    if (g.length && perete < 0.1) {
-      avert.push(tr`Gaura nu încape în conica asta dublă: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
-      g = [];
-    } else if (g.length && perete < 0.8) {
-      avert.push(tr`Între gaură și marginea discului rămân doar ${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
-    }
-    const tri: Tri[] = prismaGauri(disc, g, 0, w);
+    // straturile, de jos în sus: fața, marginile benzii, fața; la fețe, scara e distanța până la vârful conului (aflat la ub + r_p
+    // de mijloc) împărțită la cea de la marginea benzii, (ub + r_p − w / 2) / r_p (la 8·m și ±2·m: (r_p − 2·m) / r_p), și subțierea
+    // întreagă
+    const sf = (ub + rp - w / 2) / rp, zs = [0, w / 2 - ub, w / 2 + ub, w], ss = [sf, 1, 1, sf], ts = [1, 0, 0, 1];
+    // discul, cu gaura (ca la rotițe, cu peretele până la disc)
+    const disc = cerc(0, 0, rc, 4 * Math.ceil(Math.max(N_CERC, 2 * Math.PI * rc / 0.8) / 4)), G = gauraRoata(disc, gaura);
+    if (G.lipseste) avert.push(tr`Gaura nu încape în conica asta dublă: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.`);
+    else if (G.slaba) avert.push(tr`Între gaură și marginea discului rămân doar ${String(Math.round(G.perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă. Alege mai mulți dinți sau un modul mai mare.`);
+    const tri: Tri[] = prismaGauri(disc, G.g, 0, w);
     for (let k = 0; k < z; k++) tri.push(...prismaStraturi(zs.map((zz, i) => ({ z: zz, p: dinte(k * pas, ss[i]!, ts[i]!) })), []));
     return { tri, avert };
   }
