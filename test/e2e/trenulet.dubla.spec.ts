@@ -1,7 +1,7 @@
 /**
  * Conica dublă în atelierul Easy 3Draw (ADR 0280, felia 3.Tn), pe pagina de sine stătătoare a planificatorului (din aceleași
  * surse ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Conică dublă 12”, ca LEGO 32270, 14 × 14 × 8;
+ * - tipul nou, în fila Roți (ADR 0281): „Conică dublă 12”, ca LEGO 32270, 14 × 14 × 8;
  * - montajul cu perechea ei: pe axe paralele (12 cu 12: 12 mm, la jumătate de pas) și la 90° (planul de mijloc la 8 mm de axul
  *   perechii, 1 pas); „Repede” 20, cu perechea de 12: 16 mm pe axe paralele, 8 și 12 la 90°;
  * - conica dublă de 36, cu gaură rotundă: STL-ul descărcat închis, cu raza capului (19); „Fă perechea” pune în listă ambele, cu
@@ -16,8 +16,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierDubla(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="conicaDubla"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="conicaDubla"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Conică dublă 12');
 }
 async function seteaza(page: Page, sel: string, v: string): Promise<void> {

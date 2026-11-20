@@ -75,7 +75,8 @@ o('E10', A, 'p.latCanal = v === "rotund" ? 2 : v === "plat" ? 4 : 2.6;', 'p.latC
   'canalul rotund cu lățimea celui în V')
 o('E11', A, 'camp("#at-fu-dist", 1, 1000, v => { p.distanta = v; });', 'camp("#at-fu-dist", 1, 1000, v => { p.distanta = v + 1; });', 'e2e',
   'distanța dintre axe citită greșit')
-o('E12', A, '["roata", "Roată cu anvelopă"], ["fulie", "Fulie"],', '["roata", "Roată cu anvelopă"],', 'e2e', 'fulia lipsește din galerie')
+# 3.Tp (ADR 0281): fulia stă acum în tabela familiilor, pe Roți, după conica dublă (ținta mutată din vechea listă LEGATURI).
+o('E12', A, '["fulie", "Fulie"], ', '', 'e2e', 'fulia lipsește din galerie')
 
 SETURI = {
     'fulie': ['test/unit/trenulet.fulie.test.ts'],

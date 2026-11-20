@@ -1,7 +1,7 @@
 /**
  * Rotițele dințate în atelierul Easy 3Draw (ADR 0169, felia 3.Th), pe pagina de sine stătătoare a planificatorului (din
  * aceleași surse ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Roată dințată 24”, 26 × 26 × 3,8 mm;
+ * - tipul nou, în fila Roți (ADR 0281): „Roată dințată 24”, 26 × 26 × 3,8 mm;
  * - felurile dinților: la oblici, unghiul și sensul în nume; perechea arată distanța dintre axe și grila;
  * - „Fă perechea” pune în listă ambele roți, a doua cu dinții aleși și cu sensul opus;
  * - STL-ul descărcat e un corp închis (fiecare muchie, o dată în fiecare sens);
@@ -15,8 +15,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierRotita(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="rotita"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="rotita"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 24');
 }
 
@@ -77,7 +77,7 @@ test('roata de 8 cu gaură de ax spune cât perete rămâne; calibrarea are vari
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 8, fără gaură');
   await expect(page.locator('#at-avert')).toBeHidden();
 
-  await page.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await page.locator('#at-tipuri [data-fila="calibrare"]').click();
   await expect(page.locator('#at-calib-campuri [data-setare="varianta_dinti"]')).toHaveValue('3');
   await expect(page.locator('ol.pasi')).toContainText('Roțile dințate:');
   await expect(page.locator('ol.pasi')).toContainText('Scrie cele opt numere');
@@ -102,11 +102,11 @@ test('varianta roților din calibrare ajunge în roată: la 5 (joc 0,25 mm) din�
     return volumStl(readFileSync(await (await descarcare).path()));
   };
   const la3 = await stl();
-  await page.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await page.locator('#at-tipuri [data-fila="calibrare"]').click();
   await page.locator('#at-calib-campuri [data-setare="varianta_dinti"]').fill('5');
   await page.locator('#at-calib-campuri [data-setare="varianta_dinti"]').blur();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="rotita"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="rotita"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată dințată 24');
   const la5 = await stl();
   // 24 de dinți × 2 flancuri × 0,1 mm mai mult joc × ~2 mm de flanc × 3,8 mm: în jur de 36 mm³ mai puțin

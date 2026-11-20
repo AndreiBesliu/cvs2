@@ -10537,3 +10537,52 @@ tipuri de piese si vreau sa fie mai organizat UI-ul” (owner-ul, în timpul fel
   <https://claude.ai/artifact/G32UWgWyP73uk26yMF3U26>. Căutarea peste toate filele și pictogramele pieselor pot sta lângă
   oricare variantă: intră fără întrebare, ca felii după filele.
 - **Codul:** la răspunsurile owner-ului (felia 3.Tp).
+
+## 2026-11-20 — Felia 3.Tp: piesele atelierului Easy 3Draw pe file (ADR 0281) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tp”, apoi „prefer sa o pui intr-un worktree separat” (owner-ul, după răspunsurile din schița ADR
+0281: 1b, 2a, 3a). Lucrată de o sesiune pornită de sesiunea principală, în worktree-ul `galeria` (ramura
+`wip/3.Tp-galeria-pe-file`, din `main` `0ab28651`). **Started:** 20.11, 10:49. **Completed:** 20.11, 12:38.
+
+- **ADR 0281** acceptat, cu răspunsurile: trei familii (Cărămizi, cu cele Technic; Legături; Roți), ca file, înaintea
+  șenilei.
+- **Filele:** sus, Cărămizi 10, Legături 8, Roți 6 (cu câte piese au), apoi, după o linie, „Din cvs2” (doar în cvs2) și
+  „Calibrare”. Sub file, pe toată lățimea, galeria familiei alese, cu piesa de acum apăsată; fiecare filă ține minte ultima
+  piesă aleasă în ea (la început, prima din galerie). „Placă cu găuri” rămâne forma gata a cărămizii, pe Cărămizi.
+- **O singură tabelă** tip → familie (`FAMILII`, în `atelier.ts`), în locul lui `LEGATURI`, `eLegatura`, `tabPentru`,
+  `ultimaLegatura`: filele familiilor se fac din ea (în marcaj stau doar filele proprii), la fel galeria. Motorul își spune
+  tipurile (`Lego.tipuri`), iar proba unitară cere fiecare tip o singură dată în tabelă.
+- **Pe drum:** (1) galeria, pusă întâi în panoul editorului, ca cea de până acum a „Legăturilor”, ajungea pe telefon sub
+  vederea 3D (pe ecranele înguste previzualizarea urcă deasupra editorului): mutată sub file, pe toată lățimea, ca în macheta
+  2a; linia dintre file, ascunsă pe telefon (rămânea atârnată la capătul primului rând). (2) Încărcarea din baza artefactului
+  (claude.ai) nu muta filele pe piesa încărcată, dacă partea 3D pornise deja: acum le mută (și galeria). (3) Marcarea filelor
+  la pornire era de prisos (partea 3D se vede doar după `intra()`, care o face): scoasă, fiindcă otrava pe ea ar fi rămas
+  echivalentă. (4) Galeria se făcea din nou la fiecare piesă aleasă, deci cu tastatura focusul de pe buton se pierdea:
+  cărămizile System, până acum file fixe, l-ar fi pierdut la fiecare alegere. Acum galeria se face din nou doar la altă
+  familie, iar în aceeași se mută doar apăsarea (proba: Enter, apoi Tab și Enter, cu focusul pe butonul ales).
+- **Nimic nu se mută în date:** fixtura `test/fixtures/trenulet/atelier-18.14.0.json`, făcută de pagina publicată 18.14.0
+  (din `origin/main`, ca un om: piese din toate familiile, perechi, două piese în model, culoarea, coroana 32 / 16 în
+  editor), se deschide la fel pe pagina nouă: aceeași piesă, acum pe Roți, aceleași rânduri în listă, același model,
+  aceeași culoare; scrisă înapoi, aceeași stare, listă și model. La fel pe claude.ai, cu lista venită din baza artefactului
+  după pornirea părții 3D.
+- **Probele:** unitare 5 (`trenulet.familii.test.ts`), e2e 5 (`trenulet.file.spec.ts`: fiecare filă cu piesele ei și
+  editorul lor, focusul în galerie; ultima piesă pe filă și „Înlocuiește în model” anulat la altă piesă; lista lui 18.14.0,
+  din `localStorage` și din baza artefactului; telefonul, 390 px, cu fiecare filă și piesă întreagă, pe un rând).
+  Spec-urile pluginului trec pe drumul nou (`data-fila`, `#at-galerie`); proba în engleză trece acum prin fiecare piesă a
+  fiecărei familii (24) și prin filele proprii. Textele noi: Bricks, Wheels.
+- **Otrăvurile** (`test/otravuri/3.Tp.py`): 29 / 29 pe codul final (`d7d900fb`; 8 ale tabelei și ale motorului, 19 prin e2e,
+  2 ale traducerii). La prima rulare (`1129ebd5`), 26 / 27: E15 (filele pe un singur rând) scăpase, fiindcă pe telefon
+  pastilele se strângeau, cu numele rupt pe două rânduri, fără depășire; proba telefonului cere acum fiecare filă și piesă
+  întreagă, iar E15 e prinsă. După galeria refăcută doar la altă familie: E05 mutată pe apăsarea din galerie, E18 și E19
+  noi, E02, E04, E06–E08 reluate, toate prinse. `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi, plus 3.Tk
+  E12 (fulia din galerie, cu alt vecin în vechea listă `LEGATURI`), redirecționată pe tabelă, prinsă.
+- **Privirea:** capturile atelierului pe desktop (1280 px) și pe telefon (390 px), luminos și întunecat, cu câte o piesă din
+  fiecare familie (Pantă, Bucșă, Roată conică), pe pagina de sine stătătoare (cu fonturile ei) și în cvs2, în română și în
+  engleză (Bricks, Joints, Wheels, From cvs2, Calibration), mărite pe file și galerie: fără depășire, fără erori în jurnal,
+  galeria sub file. Contrastul numărului de pe file (12 px): 6,05–7,04 pe fila neapăsată, 12,5–15,8 pe cea apăsată, în
+  toate patru. Prima măsurătoare dăduse 1,33 în cvs2 întunecat: cvs2 dă culorile în `oklab`, pe care o citeam ca `rgb()`;
+  refăcută prin canvas.
+- **Porțile:** rapide verzi pe `f63bc14e` (traducerile, tsc, unit 9 648 / 0, 8 sărite, licențele, build, determinismul;
+  pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 738,8 / 800, neschimbate: felia stă doar în pachetul extensiei), lente
+  verzi (e2e 568 / 568, cu cele 5 noi; emulatoarele 101 / 101 și 29 / 29).
+- Pachetul Easy 3Draw 18.15.0, reînregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
