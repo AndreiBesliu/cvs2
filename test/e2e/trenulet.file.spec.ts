@@ -129,9 +129,17 @@ test('fiecare filă ține minte ultima piesă aleasă în ea: după altă filă,
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'roti');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'conica');
   await expect(page.locator('#at-in-model')).toHaveText('Înlocuiește în model');
+  // altă filă sau altă piesă din galerie: piesa nouă nu mai înlocuiește conica din model
   await fila(page, 'legaturi').click();
+  await expect(page.locator('#at-in-model')).toHaveText('Pune în model');
   await fila(page, 'roti').click();
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'conica');
+  await page.locator('#at-vedere-mod [data-v="model"]').click();
+  await page.locator('#at-m-editeaza').click();
+  await expect(page.locator('#at-in-model')).toHaveText('Înlocuiește în model');
+  await piesa(page, 'coroana').click();
+  await expect(page.locator('#at-in-model')).toHaveText('Pune în model');
+  await piesa(page, 'conica').click();
   // „Placă cu găuri”: forma gata a cărămizii, pe aceeași filă; Cărămizi ține minte cărămida, cu placa în ea
   await fila(page, 'caramizi').click();
   await piesa(page, 'placaTechnic').click();

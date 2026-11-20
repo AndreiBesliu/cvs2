@@ -1868,7 +1868,7 @@ var Atelier3D = (function () {
     $("#at-goleste").onclick = () => { $("#at-confirma").hidden = false; };
     $("#at-goleste-da").onclick = () => { lista = []; $("#at-confirma").hidden = true; salveaza(); randeazaLista(); };
     $("#mod-3d").addEventListener("change", schimbaSetare);
-    editor(); marcheazaFile();
+    editor();
     try { db = window.claude ? await window.claude.use("db") : null; } catch (e) { db = null; }
     if (db) {
       try {
