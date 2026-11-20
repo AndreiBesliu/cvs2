@@ -2,7 +2,8 @@
 # familiilor (fiecare tip al motorului o dată, „dinCvs2” pe fila lui, doar tipuri și forme gata, forma gata lângă tipul ei,
 # id-ul familiei, ordinea galeriei), lista tipurilor din motor, marcajul (doar filele proprii), filele (fila tipului, ultima
 # piesă ținută minte, clicul pe filă, filele în vederea modelului, numărul pieselor), galeria (familia ei, piesa apăsată,
-# ascunsă în model și pe filele proprii, sub file), placa cu găuri, „Înlocuiește în model” anulat la altă piesă, filele după
+# ascunsă în model și pe filele proprii, sub file, făcută din nou doar la altă familie, ca focusul să rămână pe butonul ales),
+# placa cu găuri, „Înlocuiește în model” anulat la altă piesă, filele după
 # încărcarea din baza artefactului, telefonul (filele și galeria pe mai multe rânduri) și traducerea.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; setul „e2e” e
 # `test/e2e/trenulet.file.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
@@ -47,7 +48,8 @@ o('E03', A, 'alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!);', 'alegeT
   'clicul pe filă alege familia ca tip (editorul calibrării)')
 o('E04', A, 'fam = FAMILII.find(([x]) => x === f), g = $("#at-galerie");', 'fam = FAMILII.find(([x]) => x === f) && FAMILII[0], g = $("#at-galerie");',
   'e2e', 'galeria arată mereu piesele Cărămizilor')
-o('E05', A, 'aria-pressed="${k === stare.tip}">${n}</button>', 'aria-pressed="false">${n}</button>', 'e2e', 'nicio piesă apăsată în galerie')
+o('E05', A, 'b.setAttribute("aria-pressed", String(b.dataset.piesa === stare.tip))', 'b.setAttribute("aria-pressed", "false")', 'e2e',
+  'nicio piesă apăsată în galerie')
 o('E06', A, 'g.hidden = vedere !== "piesa" || !fam;', 'g.hidden = !fam;', 'e2e', 'galeria rămâne în vederea modelului')
 o('E07', A, 'g.hidden = vedere !== "piesa" || !fam;', 'g.hidden = vedere !== "piesa";', 'e2e', 'galeria (veche) rămâne pe „Calibrare”')
 o('E08', A, 'String(vedere === "piesa" && b.dataset.fila === f)', 'String(b.dataset.fila === f)', 'e2e', 'o filă rămâne apăsată în vederea modelului')
@@ -70,6 +72,9 @@ o('E16', H, '.mod-3d .at-galerie { display: flex; gap: 6px; flex-wrap: wrap; mar
   '.mod-3d .at-galerie { display: flex; gap: 6px; flex-wrap: nowrap; margin-top: -4px; }', 'e2e', 'galeria pe un singur rând: pe telefon iese din ecran')
 o('E17', H, '.mod-3d .at-galerie { display: flex;', '.mod-3d .at-galerie { order: 1; display: flex;', 'e2e',
   'galeria sub panouri (pe telefon, sub vederea 3D), nu sub file')
+o('E18', A, 'if (g.dataset.familie !== f) {', 'if (true) {', 'e2e',
+  'galeria făcută din nou la fiecare piesă: cu tastatura, focusul de pe butonul ales se pierde')
+o('E19', A, 'if (g.dataset.familie !== f) {', 'if (!g.dataset.familie) {', 'e2e', 'galeria rămâne cu piesele primei familii arătate')
 
 # Traducerea (unitare).
 o('T01', T, '"Roți": "Wheels",', '"Roți": "",', 'engleza', 'fila Roți, netradusă')

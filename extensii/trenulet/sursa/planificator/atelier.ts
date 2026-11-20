@@ -1796,8 +1796,12 @@ var Atelier3D = (function () {
     document.querySelectorAll<HTMLElement>("#at-tipuri [data-fila]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.fila === f)));
     g.hidden = vedere !== "piesa" || !fam;
     if (!fam) return;
-    g.setAttribute("aria-label", fam[1]);
-    g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}" aria-pressed="${k === stare.tip}">${n}</button>`).join("");
+    // galeria se face din nou doar la altă familie: în aceeași, butoanele (și focusul de pe ele) rămân, se mută doar apăsarea
+    if (g.dataset.familie !== f) {
+      g.dataset.familie = f; g.setAttribute("aria-label", fam[1]);
+      g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+    }
+    g.querySelectorAll<HTMLElement>("[data-piesa]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.piesa === stare.tip)));
   }
   function alegeTip(t: string) {
     stare.tip = t; privita = null;

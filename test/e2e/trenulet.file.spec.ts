@@ -79,6 +79,17 @@ test('filele: Cărămizi, Legături, Roți (cu câte piese au), apoi Calibrare; 
       await expect(page.locator('#at-nume-piesa')).not.toHaveText('');
     }
   }
+  // cu tastatura: în aceeași familie, butonul ales rămâne în focus (galeria nu se face din nou), iar apăsarea se mută
+  await fila(page, 'caramizi').click();
+  await piesa(page, 'pana').focus();
+  await page.keyboard.press('Enter');
+  await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'pana');
+  await expect(piesa(page, 'pana')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'rotund');
+  await expect(piesa(page, 'rotund')).toBeFocused();
+  await expect(page.locator('#at-editor h2').first()).toHaveText(EDITOR['rotund']!);
   // „Calibrare”: fila ei, fără galerie; „Din cvs2” doar în cvs2
   await fila(page, 'calibrare').click();
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'calibrare');
@@ -157,7 +168,8 @@ test('fiecare filă ține minte ultima piesă aleasă în ea: după altă filă,
 const randuri = (page: Page) => page.locator('#at-lista tr').evaluateAll((rs) => rs.map((r) => [...r.querySelectorAll('td')]
   .map((c) => c.querySelector('input')?.value ?? (c.textContent ?? '').replace(/\s+/g, ' ').trim())));
 
-/** Stocarea lui 18.14.0 și ce arăta pagina publicată după ea (`genereaza.mts`, ca un om, din `origin/main`). */
+/** Stocarea lui 18.14.0 și ce arăta pagina publicată după ea: făcute cu pagina din `main` `0ab28651`, ca un om (piese din
+ *  toate familiile, perechi, două piese în model, culoarea albastră, coroana 32 pentru pinionul de 16 în editor). */
 const SALVAT = JSON.parse(readFileSync('test/fixtures/trenulet/atelier-18.14.0.json', 'utf8')) as {
   stocat: { stare: { tip: string }; lista: unknown[]; model: unknown[] };
   arata: { nume: string; fila: string[]; galerie: string[]; dinti: string; pinion: string; lista: string[][]; model: string; culoare: string };
@@ -228,6 +240,13 @@ test('pe telefon (390 px): filele și galeria fiecărei familii încap, fără d
       expect(r.x, await b.textContent() ?? '').toBeGreaterThanOrEqual(0);
       expect(r.x + r.width, await b.textContent() ?? '').toBeLessThanOrEqual(390);
     }
+    // și întregi: fiecare filă și fiecare piesă pe un singur rând (strânse pe un rând prea plin, numele s-ar rupe în pastilă)
+    expect(await page.locator('#at-tipuri button:visible, #at-galerie button').evaluateAll((bs) => bs.filter((b) => {
+      const r = document.createRange();
+      r.selectNodeContents(b);
+      const rs = [...r.getClientRects()].filter((x) => x.width > 0);
+      return rs.some((x) => x.top >= rs[0]!.bottom - 1);
+    }).map((b) => b.textContent))).toEqual([]);
     const t = (await page.locator('#at-tipuri').boundingBox())!, g = (await page.locator('#at-galerie').boundingBox())!;
     const v = (await page.locator('#at-vedere').boundingBox())!;
     expect(g.y).toBeGreaterThanOrEqual(t.y + t.height);
