@@ -59,9 +59,12 @@ test('conica dublă ca LEGO 12 (32270): 14 × 14 × 8, montajul cu perechea pe a
   await expect(montaj).toHaveText('Pe axe paralele, axele la 20 mm, la jumătate de pas. La 90°, cu axele întâlnite: planul de mijloc al acesteia la 12 mm de axul perechii, la jumătate de pas; al perechii, la 12 mm de axul acesteia, la jumătate de pas.');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Conică dublă 20');
   await expect(page.locator('#at-avert')).toBeHidden();
-  // perechea e doar a editorului: aceeași roată, adăugată cu altă pereche, e aceeași piesă în listă
+  // perechea e doar a editorului: aceeași roată, refăcută și adăugată cu altă pereche, e aceeași piesă în listă (schimbarea
+  // perechii singură nu reface piesa, deci „Repede” 20, din nou, o reface înainte de fiecare adăugare)
+  await page.locator('#at-cd-repede [data-v="20"]').click();
   await page.locator('#at-adauga').click();
   await seteaza(page, '#at-cd-pereche', '12');
+  await page.locator('#at-cd-repede [data-v="20"]').click();
   await page.locator('#at-adauga').click();
   await expect(page.locator('#at-lista tr[data-id]')).toHaveCount(1);
   await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText('2');
