@@ -3,11 +3,12 @@
  * - roata dreaptă de la rotițe (profilul, modulul, jocul din calibrare), lată de 8·m, cu piciorul dinților la r_p − 2·m (ca LEGO
  *   32270 și 32269, din LDraw) și discul cu 0,2 mm mai mic: în banda de mijloc (±2·m) dinții sunt exact ai rotiței;
  * - spre fiecare față, dintele se micșorează spre vârful unui con de 45°, la 2·m + r_p de mijloc: pe față, la scara
- *   (r_p − 2·m) / r_p; și se subțiază încă, liniar, până la 0,1·m pe flanc la față;
+ *   (r_p − 2·m) / r_p; și se subțiază încă, liniar, până la 0,3·m pe flanc la față;
  * - montajul: pe axe paralele, axele la m·(z1 + z2) / 2, ca la rotițe; la 90°, planul de mijloc al fiecăreia la r_p(perechii) +
- *   2·m de axul perechii (12 → 8 mm, 20 → 12, 36 → 20);
- * - o pereche nu se pătrunde în nicio fază, dar e prinsă: la 90°, perechile egale și 12 cu 20 au jocul 2·joc (0,25 mm în plus n-o
- *   ating, 0,5 da), 12 cu 36 mai puțin (0,1 mm nu, 0,5 da); pe axe paralele, ca rotițele (0,25 nu, 0,4 da).
+ *   2·m de axul perechii (12 → 8 mm, 20 → 12, 36 → 20); perechea strânsă la 90° (sub 12 dinți, cu una de peste 2,5 ori mai mare);
+ * - o pereche nu se pătrunde în nicio fază, dar e prinsă: la 90°, perechile LEGO (12, 20, 28, 36) au jocul 2·joc (0,25 mm în
+ *   plus n-o ating, 0,5 da), și la jocul cel mai mic din calibrare (0,05: 0,08 nu, 0,2 da), unde 8 cu 24 se pătrunde; pe axe
+ *   paralele, ca rotițele (0,25 nu, 0,4 da).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +20,8 @@ type Piesa = { tri: Tri[]; dim: number[]; avert: string[]; baza: number[] };
 type Lego = {
   efective(): Record<string, number>;
   construieste(d: Record<string, unknown>): Piesa;
-  dublaMontaj(d: Record<string, unknown>, z2: unknown): { z: number; z2: number; m: number; paralel: number; acesta: number; perechea: number };
+  dublaMontaj(d: Record<string, unknown>, z2: unknown): { z: number; z2: number; m: number; paralel: number; acesta: number; perechea: number; strans: boolean };
+  seteaza(s: Record<string, unknown> | null): void;
 };
 
 const cere = createRequire(import.meta.url);
@@ -140,6 +142,10 @@ test('montajul: pe axe paralele la m·(z1 + z2) / 2; la 90°, planul de mijloc a
   }
   const M2 = L.dublaMontaj({ dinti: 12, modul: 2 }, 20);
   assert.deepEqual(simplu([M2.paralel, M2.acesta, M2.perechea]), [32, 24, 16], 'modulul 2: totul de două ori');
+  // strânsă la 90°: o roată de sub 12 dinți cu una de peste 2,5 ori mai mare (în orice ordine)
+  for (const [z, z2, strans] of [[8, 20, false], [8, 21, true], [24, 8, true], [11, 27, false], [11, 28, true], [12, 60, false], [10, 25, false], [10, 26, true]] as [number, number, boolean][]) {
+    assert.equal(L.dublaMontaj({ dinti: z }, z2).strans, strans, `${z} cu ${z2}`);
+  }
 });
 
 test('cotele LEGO 12: în banda de mijloc dinții rotiței; discul la r_p − 2·m − 0,2; pe față, capul la scara (r_p − 2·m) / r_p', () => {
@@ -169,22 +175,42 @@ test('cotele LEGO 12: în banda de mijloc dinții rotiței; discul la r_p − 2�
   assert.equal(f(5.89, 0, 1), false);
 });
 
-test('pe față, dintele e subțiat cu 0,1·m pe flanc față de dintele micșorat al rotiței', () => {
+test('pe față, dintele e subțiat cu 0,3·m pe flanc față de dintele micșorat al rotiței', () => {
   // la 4 mm de fața de sus: dintele rotiței micșorat cu scara 2 / 3 (7,98 ≈ fața) față de cel al conicei duble, pe cercul de r 4
-  // (divizarea, micșorată): jumătatea rotiței e (π / 2 − 2·joc) / 2 / 6 rad; la conica dublă, cu 0,1 / 6 rad mai puțin
+  // (divizarea, micșorată): jumătatea rotiței e (π / 2 − 2·joc) / 2 / 6 rad; la conica dublă, cu 0,3 / 6 rad mai puțin
   const f = material(dubla({ gaura: 'nu' })), e = L.efective(), z = 7.995;
-  const jum = ((Math.PI / 2 - 2 * e.jocDinti!) / 2 / 6) * (180 / Math.PI), sub = (0.1 / 6) * (180 / Math.PI), s = (4 + 7 / 6 / 200) / 6;
+  const jum = ((Math.PI / 2 - 2 * e.jocDinti!) / 2 / 6) * (180 / Math.PI), sub = (0.3 / 6) * (180 / Math.PI), s = (4 + 7 / 6 / 200) / 6;
   assert.equal(f(6 * s, jum - sub - 0.15, z), true, `înăuntru: ${(jum - sub).toFixed(3)}°`);
   assert.equal(f(6 * s, jum - sub + 0.15, z), false, `afară: ${(jum - sub).toFixed(3)}°`);
 });
 
-test('perechea la 90° nu se pătrunde în nicio fază, dar e prinsă: egalele și 12 cu 20 au jocul 2·joc, 12 cu 36 mai puțin', () => {
-  for (const [zA, zB, jos] of [[12, 12, 0.25], [20, 20, 0.25], [12, 20, 0.25], [12, 36, 0.1]] as [number, number, number][]) {
+test('perechea la 90° nu se pătrunde în nicio fază, dar e prinsă: perechile LEGO au tot jocul, 2·joc', () => {
+  for (const [zA, zB] of [[12, 12], [20, 20], [12, 20], [12, 28], [12, 36]] as [number, number][]) {
     const p = la90(zA, zB), f = faze(zA);
     assert.deepEqual(p(f), f.map(() => 0), `${zA} cu ${zB}: fazele`);
-    assert.deepEqual([suma(p(f, jos)), suma(p(f, -jos))], [0, 0], `${zA} cu ${zB}: ±${jos} mm`);
+    assert.deepEqual([suma(p(f, 0.25)), suma(p(f, -0.25))], [0, 0], `${zA} cu ${zB}: ±0,25 mm`);
     const prea = [suma(p(f, 0.5)), suma(p(f, -0.5))];
     assert.ok(prea.every((n) => n > 100), `${zA} cu ${zB}: ±0,5 mm trebuie să atingă (${prea})`);
+  }
+});
+
+test('la jocul cel mai mic din calibrare (0,05), perechile LEGO la 90° tot nu se pătrund; 8 cu 24 da, și montajul o spune', () => {
+  // cu subțierea de 0,1·m, 12 cu 28 și 12 cu 36 se pătrundeau aici; jocul e 2 · 0,05: 0,08 mm în plus n-o ating, 0,2 da
+  L.seteaza({ joc_dinti: 0.05 });
+  try {
+    for (const [zA, zB] of [[12, 12], [12, 28], [12, 36], [8, 20]] as [number, number][]) {
+      const p = la90(zA, zB), f = faze(zA);
+      assert.deepEqual(p(f), f.map(() => 0), `${zA} cu ${zB}: fazele`);
+      if (zA === 8) continue;
+      assert.deepEqual([suma(p(f, 0.08)), suma(p(f, -0.08))], [0, 0], `${zA} cu ${zB}: ±0,08 mm`);
+      const prea = [suma(p(f, 0.2)), suma(p(f, -0.2))];
+      assert.ok(prea.every((n) => n > 0), `${zA} cu ${zB}: ±0,2 mm trebuie să atingă (${prea})`);
+    }
+    assert.ok(suma(la90(8, 24)(faze(8))) > 0, '8 cu 24 se pătrunde');
+    assert.equal(L.dublaMontaj({ dinti: 8 }, 24).strans, true);
+    assert.equal(L.dublaMontaj({ dinti: 8 }, 20).strans, false);
+  } finally {
+    L.seteaza(null);
   }
 });
 

@@ -333,9 +333,9 @@ var Atelier3D = (function () {
   }
   function textDubla(d: { dinti?: number; modul?: number }, pereche: number): string {
     // cum stau axele unei conice duble și ale perechii ei: paralele (distanța, ca la rotițe) și la 90° (planul de mijloc al
-    // fiecăreia de axul celeilalte), pe grilă sau nu
-    const a = Lego.dublaMontaj(d, pereche);
-    return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.`;
+    // fiecăreia de axul celeilalte), pe grilă sau nu; perechea strânsă la 90° (o roată mică cu una mult mai mare) se spune
+    const a = Lego.dublaMontaj(d, pereche), strans = a.strans ? tr` La 90°, perechea asta se prinde strâns, poate fără joc: o roată de sub 12 dinți cu una de peste 2,5 ori mai mare.` : "";
+    return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.` + strans;
   }
   function editor() {
     const t = stare.tip, e = $("#at-editor");
@@ -749,7 +749,7 @@ var Atelier3D = (function () {
       // la 90°
       const p = stare.conicaDubla;
       e.innerHTML = `<h2>Conică dublă</h2>
-        <p class="mic">Roată dințată cu dinții teșiți spre ambele fețe, ca la LEGO: se prinde cu alta pe axe paralele, ca roțile dințate, și la 90°, cu axele întâlnite, ca două roți conice. Perechile LEGO (12, 20, 28, 36 de dinți) se prind la 90° pe grilă; cu cât perechea e mai inegală, cu atât se prinde mai strâns. E lată de 8 mm la modulul 1; jocul dintre dinți vine din calibrare. Se printează culcată pe o față: dinții de jos sunt teșiți în consolă, la vreo 45°.</p>
+        <p class="mic">Roată dințată cu dinții teșiți spre ambele fețe, ca la LEGO: se prinde cu alta pe axe paralele, ca roțile dințate, și la 90°, cu axele întâlnite, ca două roți conice. Perechile LEGO (12, 20, 28, 36 de dinți) se prind la 90° pe grilă; o roată de sub 12 dinți cu una mult mai mare se prinde strâns. E lată de 8 mm la modulul 1; jocul dintre dinți vine din calibrare. Se printează culcată pe o față: dinții de jos sunt teșiți în consolă, la vreo 45°.</p>
         <div class="at-campuri">
           <label for="at-cd-dinti">Dinți<input id="at-cd-dinti" type="number" min="8" max="60" step="1" value="${p.dinti}"></label>
           <label for="at-cd-modul">Modul<input id="at-cd-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>

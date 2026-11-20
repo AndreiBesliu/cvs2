@@ -1727,11 +1727,14 @@ var Lego = (function (glob: typeof globalThis) {
   // la 20), ca o pereche la 90° să nu-și atingă discurile; discul, cu 0,2 mm mai mic (la LEGO, fața unei roți e tangentă la
   // discul celeilalte). În banda de mijloc (±2·m) dinții sunt drepți: pe axe paralele se prind ca rotițele. Spre fiecare față,
   // același dinte se micșorează spre vârful unui con de 45°, aflat la 2·m + r_p de mijloc, și se subțiază încă, liniar, până la
-  // 0,1·m pe flanc la față. La 90°, perechile egale se prind ca o pereche conică (cu vârful comun și jocul 2·joc); celelalte,
-  // aproximativ, ca la LEGO: fără subțiere, 12 cu 36 s-ar pătrunde, cu ea au jocul 0,13 mm. Montajul la 90°: planul de mijloc
-  // al fiecărei roți la r_p(perechii) + 2·m de axul perechii (12 → 8 mm, 20 → 12, 28 → 16, 36 → 20: pe grila de jumătate de
-  // pas, de aceea conicele duble LEGO au 12, 20, 28, 36 de dinți).
-  const DUBLA = { lat: 8, banda: 2, picior: 2, subtiere: 0.1, inDisc: 0.3, liber: 0.2 };
+  // 0,3·m pe flanc la față (înainte de micșorare). La 90°, perechile egale se prind ca o pereche conică (cu vârful comun și jocul
+  // 2·joc); celelalte, aproximativ, ca la LEGO, iar subțierea le ține jocul: cu 0,3·m, perechile cu cel puțin 12 dinți (LEGO:
+  // 12, 20, 28, 36) au la 90° tot jocul din calibrare, și la cel mai mic (0,05); cu 0,1·m, 12 cu 28 și 12 cu 36 se pătrundeau
+  // acolo, iar fără subțiere 12 cu 36 se pătrunde și la jocul obișnuit. O roată de sub 12 dinți cu una de peste 2,5 ori mai mare
+  // se prinde strâns (8 cu 24, la jocul 0,05, se pătrunde): montajul o spune (`strans`). Montajul la 90°: planul de mijloc al
+  // fiecărei roți la r_p(perechii) + 2·m de axul perechii (12 → 8 mm, 20 → 12, 28 → 16, 36 → 20: pe grila de jumătate de pas,
+  // de aceea conicele duble LEGO au 12, 20, 28, 36 de dinți).
+  const DUBLA = { lat: 8, banda: 2, picior: 2, subtiere: 0.3, inDisc: 0.3, liber: 0.2 };
   type DublaDef = { dinti?: unknown; modul?: unknown };
   function dublaCote({ dinti, modul }: DublaDef) {
     const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
@@ -1964,10 +1967,12 @@ var Lego = (function (glob: typeof globalThis) {
         grosime: Math.max(3.8, Math.ceil((rOut - rIn + 0.6) * 10 - 1e-6) / 10), butucLung: 2 * q.zp, inCale: q.axa - 2.4 < 2 * q.zp + 0.2 };
     },
     // conica dublă (ADR 0280): pe axe paralele, distanța dintre axe (ca la rotițe); la 90°, cât e planul de mijloc al fiecăreia
-    // de axul celeilalte, r_p(celeilalte) + 2·m (cu modulul acesteia)
+    // de axul celeilalte, r_p(celeilalte) + 2·m (cu modulul acesteia); `strans`: o roată de sub 12 dinți cu una de peste 2,5 ori
+    // mai mare, care la 90° se prinde strâns (pe plase, la jocul 0,05: 8 cu 24 se pătrunde; 8 cu 20, 9 cu 22, 10 cu 25, 11 cu
+    // 27 au joc)
     dublaMontaj: (d: DublaDef, z2: unknown) => {
-      const a = dublaCote(d), b = dublaCote({ dinti: z2, modul: a.m });
-      return { z: a.z, z2: b.z, m: a.m, paralel: a.rp + b.rp, acesta: b.rp + DUBLA.banda * a.m, perechea: a.rp + DUBLA.banda * a.m };
+      const a = dublaCote(d), b = dublaCote({ dinti: z2, modul: a.m }), mic = Math.min(a.z, b.z), strans = mic < 12 && Math.max(a.z, b.z) > 2.5 * mic;
+      return { z: a.z, z2: b.z, m: a.m, paralel: a.rp + b.rp, acesta: b.rp + DUBLA.banda * a.m, perechea: a.rp + DUBLA.banda * a.m, strans };
     },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;

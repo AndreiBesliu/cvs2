@@ -6,7 +6,8 @@
  *   perechii, 1 pas); „Repede” 20, cu perechea de 12: 16 mm pe axe paralele, 8 și 12 la 90°;
  * - conica dublă de 36, cu gaură rotundă: STL-ul descărcat închis, cu raza capului (19); „Fă perechea” pune în listă ambele, cu
  *   cotele lor;
- * - la 8 dinți gaura nu încape: avertismentul piesei.
+ * - la 8 dinți gaura nu încape: avertismentul piesei; cu o pereche de 24 (de 3 ori mai mare), montajul spune că la 90° se
+ *   prinde strâns.
  */
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
@@ -88,9 +89,14 @@ test('conica dublă de 36, cu gaură rotundă: STL-ul închis, cu raza capului; 
   await expect(page.locator('#at-lista tr td:nth-child(2)')).toHaveText(['38 × 38 × 8', '14 × 14 × 8']);
 });
 
-test('la 8 dinți gaura nu încape: piesa o spune și iese fără gaură', async ({ page }) => {
+test('la 8 dinți gaura nu încape: piesa o spune și iese fără gaură; cu o pereche de 24, montajul spune că se prinde strâns', async ({ page }) => {
   await atelierDubla(page);
   await seteaza(page, '#at-cd-dinti', '8');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Conică dublă 8');
   await expect(page.locator('#at-avert')).toHaveText('Gaura nu încape în conica asta dublă: am făcut-o fără gaură. Alege mai mulți dinți sau un modul mai mare.');
+  // cu perechea de 12 (de 1,5 ori mai mare), nimic; cu una de 24 (de 3 ori), perechea strânsă la 90°
+  const montaj = page.locator('#at-cd-montaj');
+  await expect(montaj).not.toContainText('strâns');
+  await seteaza(page, '#at-cd-pereche', '24');
+  await expect(montaj).toContainText('La 90°, perechea asta se prinde strâns, poate fără joc: o roată de sub 12 dinți cu una de peste 2,5 ori mai mare.');
 });
