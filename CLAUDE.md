@@ -1239,6 +1239,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 19.11.2026: **3.Tm unită în `main`** (la „Da, pornește 3.Tm” al owner-ului): roata coroană în atelierul Easy 3Draw
+  (`733bf5c2`, exact `c11cec4d`; ADR 0280, pachetul 18.13.0). Dinții pe fața de sus, tăiați chiar de pinionul ales
+  (rotița îngroșată cu jocul, baleiată prin gol): un punct al secțiunii pinionului cade pe cilindrul fiecărei raze la
+  s = r·asin(y / r) − r·φ·z1 / z2 (cu aproximarea din plan, jocul scădea la 0,17 mm la 24 / 24), iar prelungirea
+  capului (jocul de la fund) taie doar sub capul real. Montajul ca la LEGO 3650 (din LDraw): planul de divizare la 4·m
+  de fața de jos, deci axul pinionului la m·(4 + z1 / 2), adică 8 / 12 / 16 mm la pinioanele de 8 / 16 / 24. Perechea
+  montată nu se pătrunde (pe roțile întregi, la jocurile 0,05 … 0,25 și la module ≠ 1) și e prinsă, cu jocul de 2·joc.
+  Otrăvurile 40 / 41: U02 prinsă de proba nouă „plasa e înfășurătoarea”, U08 (baleiajul scurt) practic echivalentă;
+  3.Tl E01, ambiguă după numele coroanei, redirecționată. Porțile: rapide pe `a27927b3` (unit 9 627 / 0, după
+  reînregistrarea amprentei lui 18.13.0), lente pe `925762a7` (e2e 560 / 560, emulatoarele 101 / 101 și 29 / 29);
+  totalul 738,8 / 800. Workflow-ul de recenzie, refuzat iar de clasificator: recenzia proprie. Urmează 3.Tn (conicele
+  duble), la cuvântul owner-ului.
 - 19.11.2026: **3.Tl unită în `main`** (la „Da, pornește 3.Tl” al owner-ului): roata conică în atelierul Easy 3Draw
   (`bd7351a4`, exact `21213162`; ADR 0280, pachetul 18.12.0). Perechea la 90°, cu axele în vârful comun; profilul Tredgold,
   proiectat din vârf, cu straturile spre vârf (`prismaStraturi`, harta punctelor pe strat). Planul de divizare e la 2·m de
