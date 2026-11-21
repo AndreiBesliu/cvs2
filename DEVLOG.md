@@ -10225,3 +10225,11 @@ propunerea s-a făcut acolo). **Started:** 18.11, ~14:00. **Completed:** 18.11, 
   503 / 509, cu 6 căderi în probele altor linii (riglele, exportul, cu un `EBUSY` al Playwright, mașina, cuțitul, proiectul în două file, Pen), altele decât cele de pe a treia unire. Cifrele din documente sunt cele de pe a treia unire.
   Proba filmului avea întâi `\d` într-un șablon JS scris prin heredoc, unde `\d` devine `d`: rescrisă cu o expresie literală.
 - **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.
+
+## 2026-11-18 — Felia 25.4↑c pornită: îndreptarea scanărilor (ADR 0271, provizoriu, acceptat cu recomandările) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pornesc felia următoare, îndreptarea
+scanărilor (25.4↑c, ADR 0271)?”; tot sub „vreau să mergi înainte și testez la final”).
+**Started:** 18.11, 21:28.
+
+- **Ramura** adusă la `origin/main` `0905a07a` (înaintare rapidă, fără ciocniri: 25.7↑ e deja unită în `main`).
