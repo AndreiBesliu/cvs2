@@ -19,7 +19,8 @@ felia lui, dopul în vederea 3D și potrivirea simulată, arătată lângă valo
      simulate lângă cele pe hârtie (planșa schiței).
 2. **Alegerea:** în insula de stare a vederii 3D apare un grup de butoane: „Foaia”, apoi „Dopul 1” … „Dopul N”.
    - Butoanele apar doar când foaia are dopuri.
-   - Fiecare dop are pe titlu elementul lui și semifabricatul (lățime × înălțime × grosime).
+   - Fiecare dop are pe titlu incrustația lui, numită ca în bara de jos (forma, mărimea, locul), și semifabricatul (lățime ×
+     înălțime × grosime); vezi precizarea din 21.11.
    - Dopurile sunt cele ale exportului, în aceeași ordine (întâi cele în V, apoi cele cu pereți drepți), deci „Dopul N” e
      fișierul `…-dop-N`.
 3. **Dopul simulat:** programul dopului (același ca la export, fără supracursă, ca foaia, ADR 0057 §1) se simulează pe
@@ -55,6 +56,20 @@ felia lui, dopul în vederea 3D și potrivirea simulată, arătată lângă valo
   `CerereCam` `simulare` primește `dop`.
 - Vederea 3D: grupul de butoane, simularea dopului ales, încadrarea; mesajele (ro, en); manualul (ro, en).
 - Probele, e2e-ul vederii, otrăvurile (`test/otravuri/12.1e.py`), fișa (rândul 12.1↑e), DEVLOG-ul.
+
+## Precizarea din 21.11 (titlul dopului)
+
+Fără decizie nouă: cum se citește „elementul lui” din §2.
+
+- Prima implementare punea pe titlu id-ul intern al incrustației („e1/e1”), pe care omul nu-l vede nicăieri. L-am văzut pe
+  canal, la verificarea feliei; owner-ul a ales apoi „Titlul dopului”.
+- Titlul numește acum incrustația cu aceeași funcție ca bara de jos, avertismentele și fereastra exportului (`descriere`,
+  mutată din `App.tsx` în `src/app/descriereElement.ts`), apoi semifabricatul: „Incrustația: dreptunghi 30.00 × 20.00 la X
+  20.00, Y 20.00. Semifabricatul dopului: 40 × 30 × 6 mm”.
+- Un element pe care foaia nu-l mai are (lista dopurilor de dinaintea unei editări, până la simularea nouă) lasă doar
+  semifabricatul, nu un id.
+- [măsurat] Proba e2e, scrisă întâi (`incrustatie3d.spec.ts`), a picat pe codul vechi exact la titlu („Dopul incrustației
+  e1/e1, …”); valoarea de pe hârtie e ancorată și pe bara de jos.
 
 **Se redeschide dacă:** semifabricatul dopului primește un loc pe o foaie (foile multiple), sau owner-ul vrea „Împreună” altfel
 decât în planșă.

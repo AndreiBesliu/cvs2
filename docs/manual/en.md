@@ -1945,10 +1945,10 @@ blocks (the deepest point of each), and the status in the corner says so.
 - **0.1 mm when zoomed in**: when you get close enough, the area around the centre (at most 204.8 × 204.8 mm) is simulated
   again at 0.1 mm and drawn over the sheet; the rest stays at 0.25 mm.
 - **The sheet or a plug**: if the sheet has [inlays](#incrustatie), buttons “Sheet”, “Plug 1”, “Plug 2” … appear at the top,
-  in the order of the plugs' files in the export (each one's title gives its blank). “Plug N” simulates the plug's program on
-  its blank (the face at 0, the bottom at its thickness) and frames it: you see the plug standing, the lowered face or the
-  cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug cannot be cut, the sheet still shows, and the
-  status says why the plugs are missing.
+  in the order of the plugs' files in the export (each one's title names its inlay, as the bottom bar does, and gives its
+  blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
+  see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
+  cannot be cut, the sheet still shows, and the status says why the plugs are missing.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the
