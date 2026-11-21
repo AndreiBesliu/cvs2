@@ -10627,3 +10627,44 @@ aseară s-au oprit peste noapte.
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 20.12), build-ul `2491fdc` (versiunea `2491fdc7c429`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 cu rolul „straight-walled inlay” (adâncimea 3, marginea dopului 5), vederea 3D arată „Sheet / Plug 1”, cu „Sheet” apăsat, titlul dopului „… on its 110 × 70 × 6 mm blank” și niciun cip de refuz. „Plug 1”: „Plug 1 simulated at 0.25 mm, on the 110 × 70 × 6 mm blank”, relieful 440 × 280, dopul în picioare, cu fața la 0 și marginea coborâtă (până la 5), camera pe mijlocul lui (55, 35), „Fit the plug”. Înapoi la „Sheet”: 1 200 × 800, adâncimea 3, camera pe (150, 100), „Fit the sheet”. Vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă. Văzut atunci: titlul dopului numește incrustația prin id-ul ei intern („e1/e1”), pe care utilizatorul nu-l vede nicăieri; de înlocuit, într-o felie mică.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
   „prin foaie” pe fiecare rând (v26).
+
+## 2026-11-21 — Felia 3.To: șenila în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „da si vreau sa pornesti si restul worktrees” (owner-ul, la „Pornesc acum șenila (3.To), direct în fila Roți,
+sau mai târziu?”). **Started:** 21.11, 17:52. **Completed:** 21.11, 19:51.
+
+- **Cotele:** zala LEGO 57518 și pinioanele 57519 (10 scobituri pe R 19,42) și 42529 (14), din LDraw, cu o unealtă nouă de
+  felii pe oricare axă (`unelte/ldraw/felie_axa.py`) și o randare 3D a triunghiurilor din LDraw (three.js).
+- **Motorul** (`senila`, `senilaMontaj`): zala cu aripile și limba (cu joc față de crestătura zalei următoare), bolțul între
+  obraji, clema din atelier cu strângerea din calibrare, pereții canalului, găurile de știft; pinionul cu scobiturile pe R =
+  6 / sin(π / z) și jocul dinților, vârful limitat la pinioanele mici; montajul pe două pinioane (cureaua pe razele r = z ·
+  12 / 2π: zalele sunt coarde).
+- **Atelierul:** „Șenilă” în fila Roți (7 piese), zala sau pinionul, montajul în știfturi, „Fă șenila”; 26 de texte în
+  engleză; pachetul 18.16.0.
+- **Pe drum:** zalele drepte se atingeau pe ±5,6 (cât la LEGO): limba ±5,45, crestătura ±5,75. Vârful pinionului de 6 intra
+  în placa zalei: limitat. Pereții canalului lui 57518 i-a arătat abia randarea 3D (în felie îi citisem greșit): adăugați,
+  ca discul pinionului să țină șenila. „21 zale” → „21 de zale” (și „de știfturi”). Proba listei salvate de 18.14.0 cerea
+  „nicio cheie nouă”; un tip nou adaugă starea lui implicită, deci proba cere acum că nimic din ce era nu se schimbă și că
+  singura cheie nouă e a șenilei.
+- **Privirea pe piesele reale:** secțiunile zalei peste 57518, discul pinionului peste 57519, șenila întinsă pe pinionul de
+  10, randările 3D (57518 și zala noastră), capturile din atelier.
+- **Probele:** unitare 7, e2e 3; otrăvurile 36 / 36.
+- **Recenzia:** proprie: Workflow-ul de recenzie cu agenți (cinci dimensiuni, câte doi verificatori pe constatare, un critic
+  al acoperirii), cerut de ultracode, a fost refuzat a treia oară de clasificator și nu a fost ocolit. Pe dimensiuni: zala
+  față de 57518 (secțiunile și randările 3D din LDraw: bolțul, locașul clemei și pereții coincid), pinionul de 10 peste
+  57519, două zale îndoite spre pinion până la 60°, șenila întinsă pe pinioanele de 6, 10 și 14 (cu control negativ),
+  intrările ciudate, atelierul (cu pinioanele care s-ar atinge, „Fă șenila” refuză), plaja editorului (60 137 de combinații:
+  jocul sub o zală, întinsă cel mult cu o zală mai departe). A găsit montajul socotit pe arcele cercului bolțurilor (curea
+  pe R): cu 1,6…2,6 mm prea lung la toate perechile (10 cu 10 la 8 știfturi: 2 mm de joc și întinsă la 65, nu 4 și 66; la 9
+  știfturi, 23 de zale în loc de 22, care se potrivesc exact), scăpat fiindcă proba lui compara codul cu propria formulă
+  (comentariul ei avea valorile bune, 248 și 4 mm). Reparat în `a14a9a00`: cureaua pe r = z · 12 / 2π, măsurată față de
+  media pe faze a înfășurătoarei convexe a bolțurilor (la câțiva µm; formula ANSI a lanțurilor greșește cu 1,5 mm la 6 cu
+  40); proba ancorată pe hârtie și pe înfășurătoare; otrăvurile U24 (greșeala de atunci) și U25 (unghiurile înfășurării
+  întoarse).
+- **Porțile:** rapide și lente verzi pe `a14a9a00`, la prima trecere (traducerile, tsc, unit 9 651 / 0, 8 sărite, build,
+  determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800; e2e 573 / 573, emulatoarele 101 / 101 și 29
+  / 29). Înainte de reparația montajului, pe `e2e2a740`, la fel, cu e2e-ul 572 / 573 la prima trecere: testul în engleză al
+  pluginului (ADR 0165) a căzut pe timp, cât alte worktree-uri rulau e2e (repornirea după schimbarea limbii, peste 5 s), și
+  a trecut reluat cu fișierul lui (10 / 10).
+- **Rămase:** lanțul tipărit dintr-o bucată și întinzătorul, la cuvântul owner-ului.
+- **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.

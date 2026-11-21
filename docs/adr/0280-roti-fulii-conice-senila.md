@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk, 3.Tl și 3.Tm implementate în aceeași zi și 3.Tn a doua zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk, 3.Tl și 3.Tm implementate în aceeași zi, 3.Tn a doua zi și 3.To pe 21.11; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -309,6 +309,64 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
   0,15 / 0,25 din calibrare și la modulele 0,5 și 2. A găsit perechile LEGO inegale pătrunse la jocul cel mai mic (12 cu
   28, 12 cu 36): subțierea de la fețe, de la 0,1 la 0,3·m, și perechea strânsă spusă în montaj. Apoi otrava E09 scăpată
   (proba e2e întărită) și VOID-urile tuturor listelor pluginului (cinci noi, la gaura comună, mutate).
+
+## Felia 3.To, implementată: șenila (pachetul 18.16.0)
+
+- **Cotele LEGO**, din biblioteca LDraw (aceleași fișiere; licența CC BY 4.0): `57518.dat` (Technic Chain Tread 5 Wide),
+  `57519.dat` (Technic Sprocket Wheel 40.4) și `42529.dat` (Sprocket Wheel 56.5). Zala: lată de 38,4, cu pasul de 12
+  (bolțul la 0, cârligele la 12 mm de el); aripile groase de 3,2, de la 1,2 la 12,4 mm de bolț; limba, la mijloc (±5,6),
+  de la 4,4 la 14,8; bolțul Ø3,2 la 5,6 mm deasupra feței de rulare, între doi ochi (±5,6…7,2, rotunzi, r 2,4 în jurul
+  bolțului, până la 8,4); cârligele, la ±3,2…5,6, ies din doi pereți (de la 4,4 la 9,2 mm de bolț, până la 8,4) care fac
+  canalul discului pinionului; găurile de știft la ±8, cu crampoane pe fața de rulare. Pinionul 57519: 10 scobituri,
+  cercuri de r 1,67 pe raza 19,42 = 6 / sin 18° (fundul la 17,75), vârfurile la 20,4, discul gros de 4; 42529: 14
+  scobituri, pe raza 26,96.
+- **Motorul** (`senila`, cu `piesa` = zala sau pinionul; `senilaMontaj`): zala, tipărită pe fața de rulare, cu aripile
+  și limba, bolțul (bara LEGO) între obraji până la 8,4, teșiți la 45° pe dedesubt, clema cu două fălci (inelul clemei
+  din atelier, cu `clemaD` din calibrare, deci strângerea de la bară și clemă), pereții canalului (±3,2…5,45, până la
+  8,4), găurile de știft la alegere. Limba are ±5,45, iar crestătura ±5,75: la LEGO amândouă au ±5,6 (se ating,
+  turnate); așa rămân 0,15 mm pe parte și cu zalele LEGO. Pinionul: scobiturile, cercuri de rază 1,6 + jocul dinților
+  din calibrare pe raza R = 6 / sin(π / z); vârful la R + 1, dar cel mult la 0,3 mm sub placa zalei (la 6 dinți ar
+  atinge-o); discul gros de 4, pe un butuc de Ø12 și 8 mm, cu gaura ca la rotițe. Montajul pe două pinioane: lungimea
+  liniei bolțurilor, ca o curea deschisă pe razele r = z · 12 / 2π (pe pinion, zalele sunt coarde: o jumătate de pinion
+  de z dinți ține z / 2 zale, nu arcul π·R); e media pe faze a înfășurătoarei convexe a bolțurilor, la câțiva µm, iar la
+  perechile egale exact 2·d + z·12 (10 cu 10 la 9 știfturi: 22 de zale, fără joc); zalele (rotunjit în sus), jocul și
+  distanța la care stă întinsă.
+- **Pe drum** (pe plasele reale, cu probe de vârfuri în corpuri): două zale drepte se atingeau pe planul ±5,6 (limba
+  LEGO cât crestătura): jocul de mai sus. La pinionul de 6, vârful dintelui intra în placa zalei: vârful limitat.
+  Feliile prin 57518 tăiaseră pereții canalului, dar abia randarea 3D a triunghiurilor din LDraw (three.js, din mai
+  multe unghiuri) i-a arătat întregi: fără ei, șenila ar fi putut aluneca lateral de pe pinion; acum îi are și zala
+  noastră. Pentru tipar: fața de rulare netedă (crampoanele ar cere suport), obrajii teșiți dedesubt (ochii LEGO sunt
+  rotunzi, cu consolă).
+- **Atelierul**: „Șenilă” în fila Roți; zala (cu sau fără găurile de știft) sau pinionul (dinții, repede „Ca LEGO 57519
+  (10)” și „Ca LEGO 42529 (14)”, gaura); montajul pe două pinioane, cu axele în știfturi („21 de zale”, „24 de
+  știfturi”: „de” de la 20 în sus), jocul și distanța la care stă întinsă; pinioanele care s-ar atinge se spun; „Fă
+  șenila” pune în listă zalele și cele două pinioane (zala din editor e același rând); 26 de texte în engleză. Pachetul
+  18.16.0.
+- **Privirea pe piesele reale**: secțiunile zalei prin falcă, prin mijloc și prin obraz, peste 57518; discul pinionului
+  de 10 peste 57519 (scobiturile și vârfurile cad unele peste altele); șenila întinsă pe pinionul de 10, în planul
+  discului; randările 3D ale lui 57518 și ale zalei noastre; capturile din atelier (zala, pinioanele de 10, 14 și 6).
+- **Probele:** unitare 7 (`trenulet.senila.test.ts`: corpurile închise la zală și la pinioane, și la calibrările de
+  margine; cotele zalei punct cu punct: bolțul, clema și gura ei, pereții canalului, locul dintelui, placa, găurile,
+  limba și crestătura; două zale legate, îndoite spre pinion până la 60° și înapoi 8° fără atingeri, oprite la 12°;
+  scobiturile cu jocul lor și vârfurile, și la 6 dinți; șenila întinsă pe pinioanele de 6, 10 și 14 fără atingeri, nici
+  între zale; montajul pe hârtie la perechile egale și față de înfășurătoarea bolțurilor la cinci perechi inegale, la
+  distanța dată și la cea întinsă, plus plaja editorului; marginile), e2e 3 (`trenulet.senila.spec.ts`); fila Roți are 7
+  piese; lista salvată de 18.14.0 primește la scriere doar starea implicită a șenilei. Otrăvurile
+  (`test/otravuri/3.To.py`): 36 / 36.
+- **Recenzia:** proprie: Workflow-ul de recenzie cu agenți (cinci dimensiuni, câte doi verificatori pe constatare, un
+  critic al acoperirii), cerut de ultracode, a fost refuzat a treia oară de clasificator și nu a fost ocolit. Pe
+  dimensiuni: zala față de 57518 (secțiunile și randările 3D din LDraw: bolțul, locașul clemei și pereții coincid),
+  pinionul de 10 peste 57519, două zale îndoite spre pinion până la 60°, șenila întinsă pe pinioanele de 6, 10 și 14 (cu
+  control negativ), intrările ciudate, atelierul (cu pinioanele care s-ar atinge, „Fă șenila” refuză), plaja editorului
+  (60 137 de combinații: jocul sub o zală, întinsă cel mult cu o zală mai departe). A găsit montajul socotit pe arcele
+  cercului bolțurilor (curea pe R): cu 1,6…2,6 mm prea lung la toate perechile (10 cu 10 la 8 știfturi: 2 mm de joc și
+  întinsă la 65, nu 4 și 66; la 9 știfturi, 23 de zale în loc de 22, care se potrivesc exact), scăpat fiindcă proba lui
+  compara codul cu propria formulă (comentariul ei avea valorile bune, 248 și 4 mm). Reparat în `a14a9a00`: cureaua pe r
+  = z · 12 / 2π, măsurată față de media pe faze a înfășurătoarei convexe a bolțurilor (la câțiva µm; formula ANSI a
+  lanțurilor greșește cu 1,5 mm la 6 cu 40); proba ancorată pe hârtie și pe înfășurătoare; otrăvurile U24 (greșeala de
+  atunci) și U25 (unghiurile înfășurării întoarse).
+- **Rămase pentru felii următoare**, la cuvântul owner-ului: lanțul tipărit dintr-o bucată (zalele deja legate) și
+  întinzătorul. Strângerea clemei pe bolț vine din calibrarea existentă a barei și a clemei.
 
 ## Feliile
 
