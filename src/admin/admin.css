@@ -750,6 +750,13 @@
   font-weight: 700;
 }
 
+/* Butonul din capul detaliului (Marchează rezolvată, Marchează rezolvat) rămâne pe un rând; titlul se rupe în locul lui
+   (bancul, 21.11: la 1024 px, „Marchează / rezolvat” pe două rânduri). */
+.admin-erori-detaliu-cap > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .admin-erori-detaliu h4 {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-2);
