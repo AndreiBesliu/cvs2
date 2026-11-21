@@ -92,6 +92,35 @@ Owner-ul a răspuns în schiță pe 20.11.2026, apoi: „Da, pornește 3.Tp”.
   telefonului cere acum fiecare filă și piesă întreagă. `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi,
   plus 3.Tk E12 (fulia din galerie), redirecționată pe tabelă.
 
+## Felia 3.Tp↑a, implementată: căutarea (pachetul 18.16.0)
+
+Pornită pe 21.11.2026, la cuvântul owner-ului („da si vreau sa pornesti si restul worktrees”), fără întrebare (§4).
+
+- **Câmpul:** „Caută o piesă”, lângă file, nu în locul lor: la capătul rândului lor, iar pe telefon pe un rând al lui, cât
+  tot rândul.
+- **Potrivirea:** la fiecare literă, galeria arată piesele găsite din toate familiile, în ordinea filelor și a galeriilor.
+  Fiecare cuvânt căutat trebuie să înceapă un cuvânt din numele de pe ecran (în limba paginii), fără diacritice (ș și ş,
+  la fel) și fără majuscule. „con” găsește Rotund / con, Bucșă / conector, Roată conică și Conică dublă (conectorul se
+  adaugă la exemplul din schiță: „con” e începutul cuvântului lui); „nic” nu găsește nimic (e doar în mijlocul lui Technic
+  și al conicelor); „roata con” găsește doar Roată conică. Un text fără litere nu găsește nimic.
+- **Alegerea:** o piesă găsită se deschide cu fila ei, care o ține minte, iar rezultatele rămân, ca să se încerce pe rând
+  (focusul rămâne pe butonul ales); Enter alege prima. Escape, golirea câmpului sau o filă aleasă întorc galeria familiei.
+  Peste model și peste filele proprii („Calibrare”, „Din cvs2”), căutarea arată tot rezultatele, fără piesă apăsată.
+- **Fără potrivire:** „Nicio piesă nu se potrivește cu „…”.”, cu textul căutat.
+- **Nimic în date:** căutarea nu se păstrează; piesele se aleg pe drumul de până acum (`alegePiesa`).
+- **Escape și ×** golesc câmpul singure (e un câmp `type="search"`, care trimite `input`); un cod propriu pentru Escape era
+  echivalent (otrava lui a scăpat) și a ieșit.
+- **Textele noi**, în engleză: Find a piece, No piece matches “…”., Pieces found.
+- **Probele:** e2e 4 (`trenulet.cautare.spec.ts`: „con” și alegerea pe rând, cu fila și focusul; diacriticele, majusculele,
+  începutul de cuvânt, mai multe cuvinte, textul fără litere, mesajul, Escape, Enter, golirea; peste model și peste
+  „Calibrare”; telefonul, cu câmpul pe un rând al lui), plus căutarea în engleză în proba din cvs2 (`trenulet.spec.ts`:
+  „bevel” găsește Bevel gear și Double bevel gear; mesajul și numele, în engleză).
+- **Otrăvurile:** 21 / 21 pe codul final (`3.Tpa.py`, 20; `3.Tpa-en.py`, 1: potrivirea pe numele din limba paginii, cu setul
+  ei în engleză). La prima rulare, 19 / 21 în lista principală: F03 (Escape) era echivalentă, deci codul ei a ieșit; G03
+  (cache-ul familiei, neșters la căutare) scăpase fiindcă proba căuta înainte ca atelierul să-și fi arătat galeria; proba
+  așteaptă acum galeria și o prinde. 3.Tp E05 și E13, mutate pe rândurile noi; `verifica` pe toate listele pluginului:
+  aceleași 20 de VOID vechi.
+
 ## Feliile
 
 - **3.Tp:** filele, după răspunsuri; ultima piesă pe filă; probele atelierului mutate pe file.
