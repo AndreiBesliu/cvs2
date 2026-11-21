@@ -3,6 +3,6 @@
   "api": 1,
   "id": "trenulet",
   "nume": "Easy 3Draw",
-  "versiune": "18.16.0",
+  "versiune": "18.17.0",
   "permisiuni": ["stocare", "descarcari", "masina", "cont", "forme"]
 }

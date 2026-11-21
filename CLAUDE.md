@@ -1239,6 +1239,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 21.11.2026: **3.To unită în `main`** (la „da si vreau sa pornesti si restul worktrees” al owner-ului): șenila în
+  atelierul Easy 3Draw, direct în fila Roți (`86116b20`, exact `7040401d`; ADR 0280, pachetul 18.16.0). Zala ca LEGO
+  57518 (38,4 × 17,2, pasul de 12): bolțul, clema cu strângerea din calibrare, limba și crestătura cu 0,15 mm pe parte,
+  pereții canalului (găsiți la privirea peste LDraw: discul pinionului trece printre ei, deci șenila nu alunecă
+  lateral), obrajii până la 8,4, găurile de știft la alegere. Pinionul ca 57519 (10) și 42529 (14), de la 6 la 40 de
+  dinți (vârful, la pinioanele mici, sub placa zalei). Montajul pe două pinioane, cu axele în știfturi: zalele, jocul,
+  distanța la care stă întinsă, pinioanele care s-ar atinge; „Fă șenila” pune zalele și pinioanele în listă. Recenzia
+  proprie (Workflow-ul cu agenți, cerut de ultracode, refuzat a treia oară de clasificator): șenila întinsă pe
+  pinioanele de 6, 10 și 14 nu atinge nimic (cu control negativ), două zale se îndoaie liber spre pinion până la 60°,
+  secțiunile peste 57518 și 57519 din LDraw coincid, intrările ciudate trec; a găsit montajul socotit pe arcele cercului
+  bolțurilor (curea pe R), cu 1,6…2,6 mm prea lung (10 cu 10 la 8 știfturi: 2 mm de joc și întinsă la 65, nu 4 și 66; la
+  9 știfturi, 23 de zale în loc de 22), scăpat fiindcă proba lui era autoconsistentă: reparat pe coarde (cureaua pe r =
+  z · 12 / 2π, la câțiva µm de media pe faze a înfășurătoarei convexe a bolțurilor), cu proba ancorată pe hârtie și pe
+  înfășurătoare. Probele: unit 7, e2e 3, e2e-ul pluginului 35 / 35; otrăvurile 36 / 36 (3.Tp U03 mutată pe rândul Roți,
+  prinsă). Porțile: rapide și lente verzi pe `a14a9a00`, la prima trecere (unit 9 651 / 0, e2e 573 / 573, emulatoarele
+  101 / 101 și 29 / 29; pornirea 107,2 / 115, totalul 739,4 / 800). Rămase, la cuvântul owner-ului: lanțul dintr-o
+  bucată, întinzătorul.
 - 20.11.2026: **3.Tp și 12.1↑e unite în `main`**, în lot (worktree-ul `unire`, ramura `unire-2011b`). **3.Tp** (la „Da,
   pornește 3.Tp” și „prefer sa o pui intr-un worktree separat” ale owner-ului; linia `galeria`, ramura
   `wip/3.Tp-galeria-pe-file`): piesele atelierului Easy 3Draw pe file (`ae548a42`, exact `7feac1c2`; ADR 0281, acceptat
