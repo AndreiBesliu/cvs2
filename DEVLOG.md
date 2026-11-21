@@ -10671,3 +10671,26 @@ numărul panoului; reluată pe 20.11 la „continua”, transmis de sesiunea pri
 - **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 21.12), pe `85b3ee54`,
   verificat (ro, en: bifa oprită implicit, numerele „1” și „2” în colțul fiecărui panou, pe linie, 1 mm, cu freza foii Ø6,
   Anulează; nicio eroare în consolă).
+
+## 2026-11-21 — ADR 0182 propus și acceptat: legarea căilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Owner-ul (21.11): «da si vreau sa pornesti si restul worktrees». […] După felia de acum, ia-o pe următoarea din
+coada ta, dacă nu așteaptă o decizie a owner-ului. Dacă tot ce urmează cere o decizie, pregătește propunerea (ADR, schiță) și
+pune-i întrebarea, cu implicitul în față.” (sesiunea principală). **Started:** 21.11, 17:58. **Completed:** 21.11, 19:18.
+
+- **Coada liniei:** după 10.3↑n a rămas doar unirea căilor (ADR 0124 §14), propusă owner-ului pe 17.11; o decizie a lui (pe
+  04.11 a ales 6b, cu nota că unirea căilor e o discuție separată, mai amplă), deci propunerea întâi.
+- **Cercetarea:** în cvs2, legarea capetelor la importul DXF (`dxf.ts`, `leaga`), rândul „Capetele a două căi” din Verificare
+  (doar arătat), „Unește” și „Închide” din reparații; Vectric, Illustrator și CorelDRAW, din ajutorul lor; pe hârtie, cinci
+  cazuri (un L, un pătrat din patru linii, un gol de 2 mm, un T, un arc întors).
+- **Propunerea** (ADR 0182): comanda „Leagă căile” (Ctrl+J; „Unește” e numele reuniunii), aceleași reguli ca la importul DXF, în
+  worker, un pas de anulare; „Leagă” și „Leagă toate căile” în Verificare; în unealta Noduri, care lucrează pe o singură formă,
+  capătul căii editate tras peste capătul altei căi. Trei întrebări, recomandarea întâi: golul peste toleranță (a: o linie),
+  unde se întâlnesc capetele (a: pe capătul primei), căile cu operații diferite (a: refuzul).
+- **Schița**, cu desenele înainte / după și răspunsurile salvate în pagină: <https://claude.ai/artifact/VUTp5KjrMGY6ggTcm114B2>.
+- **Răspunsurile owner-ului** („am raspuns”, 21.11, în sesiunea liniei; în pagină): 1a, 2a, 3a, cu nota „cat mai multe optiuni
+  pe care le putem pune la dispozitia userilor”. ADR 0182 acceptat: recomandările sunt implicitele, iar variantele celelalte
+  devin opțiuni ținute în browser (golul până la N mm sau doar lipirea, capetele la mijloc, operația primei); din ce respingeam,
+  felurile legăturii (curbă netedă, prelungire până la intersecție, racordare, teșitură) și legarea la importul SVG și PDF
+  (oprită implicit) intră ca opțiuni, în feliile 10.3↑q și 10.3↑r.
+- **Codul** (10.3↑o): următoarea felie a liniei.

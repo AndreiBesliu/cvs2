@@ -3313,6 +3313,10 @@
       "ro": "Fișa plăcii 1 (`docs/etape/placa-01.md`) și programele A (stânga-jos) și B (dreapta-sus), ca fișiere de aur în `test/placi/placa-01/`, cu SHA-256. Testul cere bytes identici cu ce generează postul acum, hash-urile în fișă și poarta trecută pe ambele. Hosting-ul pe test (restul feliei 1.9) așteaptă exportul Firestore confirmat de owner.",
       "en": "The plate 1 file (`docs/etape/placa-01.md`) and programs A (bottom-left) and B (top-right), as golden files in `test/placi/placa-01/`, with SHA-256. The test requires bytes identical to what the post generates now, the hashes in the file and the gate passed on both. Hosting on test (the rest of slice 1.9) waits for the Firestore export confirmed by the owner."
     },
+    "f3f032aaa89b00ca": {
+      "ro": "Legarea căilor",
+      "en": "Joining paths"
+    },
     "f3f56140bc9ac770": {
       "ro": "înainte de 3.9",
       "en": "before 3.9"
