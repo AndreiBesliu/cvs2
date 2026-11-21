@@ -1246,6 +1246,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 21.11.2026, seara: **12.1↑e (titlul dopului) și 10.3↑n unite în `main`**, în lot peste 3.To (worktree-ul `unire`,
+  ramura `unire-2111b`). **Titlul dopului** (linia incrustațiilor, ramura `wip/12.1-incrustatii`, `3d7e6214` din
+  `f9c45042`; la „porneste-o si pe asta” și „Titlul dopului” ale owner-ului): butonul „Dopul N” numește incrustația ca
+  bara de jos, nu prin id-ul intern („e1/e1”; ADR 0178, precizarea din 21.11); otrăvurile 7 / 7, canalul verificat.
+  **10.3↑n** (linia tăierii, ramura `wip/10.3n-numere`, `fa8e7abe` din `2fce5b91`; ADR 0181): numărul fiecărui panou
+  gravat pe el, opțional, oprit implicit (bifa „Gravează numărul fiecărui panou” și înălțimea cifrelor, ținute; fontul
+  `relief-singleline`, locul cel mai apropiat de colțul din stânga-jos, în același pas de anulare cu tăierea);
+  otrăvurile 15 / 15, totalul +2,3 kB (pornirea neschimbată). Pe aceeași ramură, **ADR 0182 acceptat** (legarea căilor:
+  „Leagă căile”, în Verificare și în unealta Noduri; feliile 10.3↑o–10.3↑r, codul la cuvântul owner-ului). Ciocnirile,
+  doar în DEVLOG (ambele părți păstrate). Porțile lotului, pe `fa8e7abe`: unit 9 658 / 0 (8 sărite), e2e 574 / 574,
+  emulatoarele 101 / 101 și 29 / 29, toate la prima trecere; pornirea 107,2 / 115 (cu ușa 111,2), totalul 741,9 / 800.
+  Urmează, la cuvântul owner-ului: codul lui ADR 0182 (10.3↑o), 3.Tp↑a (căutarea, 18.17.0), 12.1↑e-2.
 - 21.11.2026: **3.To unită în `main`** (la „da si vreau sa pornesti si restul worktrees” al owner-ului): șenila în
   atelierul Easy 3Draw, direct în fila Roți (`86116b20`, exact `7040401d`; ADR 0280, pachetul 18.16.0). Zala ca LEGO
   57518 (38,4 × 17,2, pasul de 12): bolțul, clema cu strângerea din calibrare, limba și crestătura cu 0,15 mm pe parte,
