@@ -30,6 +30,11 @@ export function usePublica(): (fel: FelGasit, randuri: readonly Gasibil[]) => vo
 }
 const nimic = (): void => undefined;
 
+/** Dacă rolul vede o filă (o legătură spre ea are rost); fără carcasă, nu. */
+export function useVedeFila(fila: Fila): boolean {
+  return useContext(ContextCarcasa)?.vede(fila) ?? false;
+}
+
 /**
  * Legătura spre o filă: `#fila`, ca un clic de mijloc (sau cu Ctrl) s-o deschidă într-o filă nouă a browserului; clicul
  * simplu o deschide aici, fără o intrare nouă în istoric (ca bara de file de până acum).

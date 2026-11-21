@@ -9827,3 +9827,13 @@ apoi „Yes, start it then”; transmis de sesiunea principală, cu brief-ul din
 - **Documentele:** ADR 0260 („Implementarea”), fișa etapei 3 (rândul `3.Ab`) cu traducerea, lista otrăvurilor și rândul
   ei din `docs/otravuri.md`, DEVLOG. CLAUDE.md neatins: decizia intră la unire.
   **Completed:** 18.11 14:39.
+
+## 2026-11-18 — Felia A.3: Tichete (lista și conversația, legătura cu erorile, răspunsurile rapide) (ADR 0260, ADR 0261) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, A.3” (owner-ul, pe 18.11, în sesiunea liniei adminului, la „Pornesc A.3 (Tichete), cu ADR-ul răspunsurilor
+rapide propus întâi?”).
+**Started:** 18.11 21:00.
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.2 (`86e3b36e`).
+- **Răspunsurile rapide cer o setare nouă, o regulă și audit,** deci felia s-a oprit întâi la ADR 0261 (propus, `182428da`),
+  cu întrebarea la owner. Restul feliei (lista, conversația, legătura cu erorile) e acoperit de ADR 0260 și merge înainte.

@@ -1,54 +1,64 @@
-import { useEffect, useId, useState, type FormEvent, type ReactElement } from 'react';
+import { useEffect, useId, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query } from 'firebase/firestore/lite';
 import type { Permisiune } from '../../../shared/personal.ts';
 import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
 import {
-  COLECTIE_TICHETE, curataTextTichet, marimeCitita, PLAFON_LISTA_TICHETE, RASPUNS_MAX, STARI_TICHET, type CerereTichet, type MetaProiectTichet,
-  type RaspunsTichet,
+  COLECTIE_TICHETE, curataTextTichet, marimeCitita, PLAFON_LISTA_TICHETE, RASPUNS_MAX, STARI_TICHET, type MetaProiectTichet, type RaspunsTichet,
+  type StareTichet,
 } from '../../../shared/tichete.ts';
 import { proiectulTichetului, tichete, type Conexiune } from '../../cloud/conexiune.ts';
 import { limba as limbaDeAcum, t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { ceaMaiRecenta } from '../carcasa/date.ts';
-import { EroareCitire, ListaGoala, SeIncarca, usePublica } from '../carcasa/stari.tsx';
-import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
+import { EroareCitire, LegaturaFila, ListaGoala, SeIncarca, usePublica, useVedeFila, type Tinta } from '../carcasa/stari.tsx';
+import { dataScurta, motivDin, randDin, type Masura, type RandGrup } from '../erori/date.ts';
+import { alesDupaLista } from '../erori/vedere.ts';
 import { useAdresaImaginii } from '../sugestii/FilaSugestii.tsx';
-import {
-  despacheteazaProiect, eRosu, filtreaza, numarePeStare, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet,
-} from './date.ts';
-import '../personal/personal.css';
+import { despacheteazaProiect, eRosu, filtreaza, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet } from './date.ts';
+import { eroriSesiune, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
 import '../sugestii/sugestii.css';
 import './tichete.css';
 
 /**
- * Fila Tichete (ADR 0116 §13): raportările clienților, cele mai noi întâi, cu filtrul pe stare. Fiecare arată felul, cine și
- * când, vârsta (roșie după 48 h fără răspuns), textul, datele aplicației, amprentele erorilor din sesiune și poza planșei, la
- * cerere. Cu `tichete.raspunde` (și owner-ul): răspunsul (clientul îl vede în aplicație) și starea, prin callable-ul
- * `tichete`, pe versiunea văzută. Citirile trec prin reguli, la cerere („Reîncarcă”).
+ * Fila Tichete (ADR 0116 §13; ADR 0260 §3, felia A.3): raportările clienților, cele mai noi întâi, în stânga, cu filtrul pe
+ * stare și numărul fiecăreia; tichetul ales în dreapta, ca o conversație: raportarea clientului (textul, poza planșei la
+ * cerere, proiectul atașat, erorile din sesiune cu legătura spre fila Erori, datele aplicației), apoi răspunsurile echipei și,
+ * cu `tichete.raspunde` (și owner-ul), câmpul răspunsului, „Răspunde și rezolvă” (sau „… și redeschide”) și starea, prin
+ * callable-ul `tichete`, pe versiunea văzută. Citirile trec prin reguli, la cerere („Reîncarcă”); un tichet găsit de căutarea
+ * din antet (`tinta`) vine ales.
  */
 
-/** Unde s-a pornit lucrul (id-ul tichetului); eroarea se arată acolo. */
+/** Unde s-a pornit lucrul (id-ul tichetului): mesajul și eroarea se arată acolo. */
 type Lucru =
   | { readonly faza: 'liber' }
-  | { readonly faza: 'lucreaza' }
-  | { readonly faza: 'gata'; readonly mesaj: string }
+  | { readonly faza: 'lucreaza'; readonly loc: string }
+  | { readonly faza: 'gata'; readonly mesaj: string; readonly loc: string }
   | { readonly faza: 'eroare'; readonly motiv: string; readonly loc: string };
 
-type CererePersonal = Extract<CerereTichet, { actiune: 'raspunde' | 'stare' }>;
-type Fa = (cerere: CererePersonal, loc: string, mesaj: (r: RaspunsTichet) => string) => void;
-
-export function FilaTichete({ con, owner, permisiuni }: {
-  readonly con: Conexiune; readonly owner: boolean; readonly permisiuni: ReadonlySet<Permisiune>;
+export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
+  readonly con: Conexiune; readonly owner: boolean; readonly permisiuni: ReadonlySet<Permisiune>; readonly tinta?: Tinta | null;
 }): ReactElement {
   const limba = useLimba();
   const publica = usePublica();
   const poateRaspunde = owner || permisiuni.has('tichete.raspunde');
   const [lista, setLista] = useState<Masura<readonly Tichet[]> | null>(null);
   const [rev, setRev] = useState(0);
+  // După o schimbare, lista se citește din nou; până vine, nu pleacă nimic (versiunea văzută ar fi cea veche).
+  const [recitire, setRecitire] = useState(false);
   const [filtru, setFiltru] = useState<Filtru>('toate');
+  const [ales, setAles] = useState<string | null>(tinta?.id ?? null);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
-  // Un răspuns trimis golește formularul rândului: cheia lui crește.
-  const [trimise, setTrimise] = useState(0);
+  // Ciornele răspunsurilor, pe tichet: alegerea altui tichet nu pierde ce s-a scris; un răspuns trimis își golește ciorna.
+  const [ciorne, setCiorne] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const scrie = (id: string, text: string): void => {
+    setCiorne((m) => {
+      const n = new Map(m);
+      if (text === '') n.delete(id);
+      else n.set(id, text);
+      return n;
+    });
+  };
+
   useEffect(() => {
     let viu = true;
     getDocs(query(collection(con.db, COLECTIE_TICHETE), orderBy('creatLa', 'desc'), limit(PLAFON_LISTA_TICHETE))).then(
@@ -56,152 +66,297 @@ export function FilaTichete({ con, owner, permisiuni }: {
         if (!viu) return;
         const randuri = ordoneaza(s.docs.map((d) => tichetDin(d.id, d.data())));
         setLista({ ok: true, valoare: randuri });
+        setRecitire(false);
         // Căutarea din antet găsește tichetul după text, adresă sau id (ADR 0260 §1).
         publica('tichete', randuri.map((x) => ({ id: x.id, text: x.text.slice(0, 160), detaliu: x.autorEmail ?? '' })));
       },
-      (e: unknown) => { if (viu) setLista({ ok: false, motiv: motivDin(e) }); },
+      (e: unknown) => {
+        if (!viu) return;
+        setLista({ ok: false, motiv: motivDin(e) });
+        setRecitire(false);
+      },
     );
     return () => { viu = false; };
   }, [con, rev, publica]);
 
-  const fa: Fa = (cerere, loc, mesaj) => {
-    setLucru({ faza: 'lucreaza' });
-    tichete(con, cerere).then((r) => {
-      setLucru({ faza: 'gata', mesaj: mesaj(r) });
-      if (cerere.actiune === 'raspunde') setTrimise((n) => n + 1);
-      setRev((n) => n + 1);
-    }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e), loc }); });
+  const reincarca = (): void => {
+    setRecitire(true);
+    setRev((n) => n + 1);
   };
 
-  const ocupat = lucru.faza === 'lucreaza';
-  // Fără cheia App Check pe instanță, serverul refuză orice scriere: butoanele se opresc.
-  const faraAppCheck = con.appCheck === 'oprit';
+  const raspunde = (x: Tichet, text: string, apoi: StareTichet | null): void => {
+    const versiune = x.versiune;
+    if (versiune === null) return;
+    setLucru({ faza: 'lucreaza', loc: x.id });
+    void (async () => {
+      let r: RaspunsTichet;
+      try {
+        r = await tichete(con, { actiune: 'raspunde', id: x.id, versiune, text });
+      } catch (e: unknown) {
+        setLucru({ faza: 'eroare', motiv: motivDin(e), loc: x.id });
+        return;
+      }
+      scrie(x.id, '');
+      if (apoi !== null) {
+        try {
+          // Starea, pe versiunea întoarsă de răspuns: nimeni altcineva n-a văzut-o între timp.
+          await tichete(con, { actiune: 'stare', id: x.id, versiune: r.versiune, stare: apoi });
+        } catch (e: unknown) {
+          setLucru({ faza: 'eroare', motiv: t('admin.tic.trimis-fara-stare', { motiv: motivDin(e) }), loc: x.id });
+          reincarca();
+          return;
+        }
+      }
+      setLucru({ faza: 'gata', loc: x.id, mesaj: apoi === null ? t('admin.tic.trimis') : t('admin.tic.trimis-si', { stare: t(`admin.tic.stare.${apoi}`) }) });
+      reincarca();
+    })();
+  };
+
+  const schimbaStarea = (x: Tichet, stare: StareTichet): void => {
+    const versiune = x.versiune;
+    if (versiune === null) return;
+    setLucru({ faza: 'lucreaza', loc: x.id });
+    tichete(con, { actiune: 'stare', id: x.id, versiune, stare }).then((r) => {
+      setLucru({ faza: 'gata', loc: x.id, mesaj: r.schimbat ? t('admin.tic.stare-schimbata', { stare: t(`admin.tic.stare.${stare}`) }) : t('admin.tic.neschimbat') });
+      reincarca();
+    }, (e: unknown) => { setLucru({ faza: 'eroare', motiv: motivDin(e), loc: x.id }); });
+  };
+
   const toate = lista?.ok ? lista.valoare : [];
-  const numare = numarePeStare(toate);
+  const numere = numereFiltru(toate);
   const aratate = filtreaza(toate, filtru);
+  const alesAcum = alesDupaLista(ales, aratate);
+  // Ales e cel văzut: dacă filtrul (sau un răspuns care îi schimbă starea) îl ascunde, alegerea trece pe primul arătat și
+  // rămâne acolo. Ajustarea se face în randare, ca în fila Erori.
+  if (lista?.ok && alesAcum !== ales) setAles(alesAcum);
+  const tichet = aratate.find((x) => x.id === alesAcum) ?? null;
   const ultimulRezolvat = ceaMaiRecenta(toate.filter((x) => x.stare === 'rezolvat').map((x) => x.rezolvatLa));
   const acum = Date.now();
-  const eroareLa = (loc: string): string | null => (lucru.faza === 'eroare' && lucru.loc === loc ? lucru.motiv : null);
+  const ocupat = lucru.faza === 'lucreaza' || recitire;
+  // Mesajul unui lucru terminat pe alt tichet (unul care a ieșit din filtru) stă deasupra listei.
+  const mesajSus = lucru.faza === 'gata' && lucru.loc !== tichet?.id ? lucru.mesaj : null;
 
   return (
-    <div className="pers sug tic">
-      {lucru.faza === 'lucreaza' ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.tic.lucreaza')}</p> : null}
-      {lucru.faza === 'gata' ? <div className="pers-stare" role="status" data-tic="gata"><p>{lucru.mesaj}</p></div> : null}
-      <section className="pers-sectiune" aria-labelledby="tic-lista">
-        <h2 id="tic-lista">{t('admin.tic.titlu')} <span className="admin-slab">{toate.length}</span></h2>
-        <p className="admin-slab">{t('admin.tic.text')}</p>
-        {poateRaspunde ? null : <p className="admin-mesaj" data-tic="doar-citire">{t('admin.tic.doar-citire')}</p>}
-        <div className="admin-randuri">
+    <div className="admin-erori admin-tichete sug">
+      <div className="admin-erori-cap">
+        <h2 className="tic-titlu-fila">{t('admin.tic.titlu')}</h2>
+        <div className="admin-segmente" role="group" aria-label={t('admin.tic.stare')}>
           {(['toate', ...STARI_TICHET] as const).map((f) => (
             <button key={f} type="button" aria-pressed={filtru === f} data-filtru-tic={f} onClick={() => { setFiltru(f); }}>
-              {f === 'toate' ? t('admin.tic.filtru.toate') : t('admin.tic.filtru', { nume: t(`admin.tic.stare.${f}`), n: numare[f] })}
+              {t('admin.tic.filtru', { nume: t(f === 'toate' ? 'admin.tic.filtru.toate' : `admin.tic.stare.${f}`), n: numere[f] })}
             </button>
           ))}
-          <button type="button" data-tic="reincarca" onClick={() => { setRev((n) => n + 1); }}>{t('admin.tic.reincarca')}</button>
         </div>
-        {lista === null ? <SeIncarca text={t('admin.tic.se-incarca')} />
-          : !lista.ok ? (
-            <EroareCitire text={t('admin.tic.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={() => { setRev((n) => n + 1); }}
-              atribute={{ 'data-tic': 'eroare-lista' }} />
-          )
-            : toate.length === 0 ? <ListaGoala text={t('admin.tic.niciunul')} atribute={{ 'data-tic': 'gol' }} />
-              : aratate.length === 0 ? (
-                <ListaGoala text={t('admin.tic.niciunul-filtru')} atribute={{ 'data-tic': 'gol-filtru' }}
-                  ultima={ultimulRezolvat ? t('admin.stari.ultimul-rezolvat', { data: dataScurta(ultimulRezolvat, limba) }) : null} />
-              )
-                : (
-                  <ul className="pers-lista">
+        <button type="button" data-tic="reincarca" onClick={reincarca}>{t('admin.tic.reincarca')}</button>
+      </div>
+      <p className="admin-slab tic-text-fila">{t('admin.tic.text')}</p>
+      {mesajSus ? <p className="admin-mesaj" role="status" data-tic="gata">{mesajSus}</p> : null}
+      {lista === null ? <SeIncarca text={t('admin.tic.se-incarca')} />
+        : !lista.ok ? (
+          <EroareCitire text={t('admin.tic.citire', { motiv: lista.motiv })} motiv={lista.motiv} reincarca={reincarca}
+            atribute={{ 'data-tic': 'eroare-lista' }} />
+        )
+          : toate.length === 0 ? <ListaGoala text={t('admin.tic.niciunul')} atribute={{ 'data-tic': 'gol' }} />
+            : aratate.length === 0 ? (
+              <ListaGoala text={t('admin.tic.niciunul-filtru')} atribute={{ 'data-tic': 'gol-filtru' }}
+                ultima={ultimulRezolvat ? t('admin.stari.ultimul-rezolvat', { data: dataScurta(ultimulRezolvat, limba) }) : null} />
+            )
+              : (
+                <div className="admin-erori-corp">
+                  <ul className="admin-erori-lista tic-lista" data-tic="lista">
                     {aratate.map((x) => (
-                      <Rand key={x.id} con={con} x={x} poateRaspunde={poateRaspunde} ocupat={ocupat} faraAppCheck={faraAppCheck}
-                        eroare={eroareLa(x.id)} fa={fa} limba={limba} acum={acum} trimise={trimise} />
+                      <RandTichet key={x.id} x={x} ales={x.id === alesAcum} limba={limba} acum={acum} alege={() => { setAles(x.id); }} />
                     ))}
                   </ul>
-                )}
-        {toate.length >= PLAFON_LISTA_TICHETE ? <p className="admin-slab" data-tic="plafon">{t('admin.tic.plafon', { n: PLAFON_LISTA_TICHETE })}</p> : null}
-      </section>
+                  {tichet ? (
+                    <DetaliuTichet key={tichet.id} con={con} x={tichet} poateRaspunde={poateRaspunde} ocupat={ocupat} limba={limba} acum={acum}
+                      lucru={lucru.faza !== 'liber' && lucru.loc === tichet.id ? lucru : null}
+                      compune={poateRaspunde ? (
+                        <Raspuns x={tichet} text={ciorne.get(tichet.id) ?? ''} scrie={(s) => { scrie(tichet.id, s); }} ocupat={ocupat}
+                          faraAppCheck={con.appCheck === 'oprit'} raspunde={raspunde} />
+                      ) : null}
+                      schimbaStarea={schimbaStarea} />
+                  ) : null}
+                </div>
+              )}
+      {toate.length >= PLAFON_LISTA_TICHETE ? <p className="admin-slab" data-tic="plafon">{t('admin.tic.plafon', { n: PLAFON_LISTA_TICHETE })}</p> : null}
     </div>
   );
 }
 
-function Rand({ con, x, poateRaspunde, ocupat, faraAppCheck, eroare, fa, limba, acum, trimise }: {
-  readonly con: Conexiune; readonly x: Tichet; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly faraAppCheck: boolean;
-  readonly eroare: string | null; readonly fa: Fa; readonly limba: string; readonly acum: number; readonly trimise: number;
+/** Un rând al listei: titlul (din text), starea, felul, când și cine, vârsta roșie, câte răspunsuri. */
+function RandTichet({ x, ales, limba, acum, alege }: {
+  readonly x: Tichet; readonly ales: boolean; readonly limba: string; readonly acum: number; readonly alege: () => void;
 }): ReactElement {
   const ore = x.creatLa ? Math.floor((acum - x.creatLa.getTime()) / 3_600_000) : 0;
-  const a = x.aplicatia;
-  const stare = (s: 'rezolvat' | 'deschis', eticheta: string): ReactElement => (
-    <button type="button" disabled={ocupat || faraAppCheck || x.versiune === null} data-tic={s === 'rezolvat' ? 'rezolva' : 'redeschide'}
-      onClick={() => {
-        if (x.versiune === null) return;
-        fa({ actiune: 'stare', id: x.id, versiune: x.versiune, stare: s }, x.id,
-          (r) => (r.schimbat ? t('admin.tic.stare-schimbata', { stare: t(`admin.tic.stare.${s}`) }) : t('admin.tic.neschimbat')));
-      }}>
-      {eticheta}
-    </button>
-  );
   return (
-    <li data-tichet={x.id} data-stare={x.stare ?? 'necunoscuta'}>
-      <div className="pers-rand">
-        <span className="pers-cine">{x.fel ? t(`admin.tic.fel.${x.fel}`) : '?'} · {x.autorEmail ?? '—'}</span>
-        <span className="sug-stare tic-stare" data-stare={x.stare ?? 'necunoscuta'} data-tic="stare">{t(`admin.tic.stare.${x.stare ?? 'necunoscuta'}`)}</span>
-      </div>
-      <p className="admin-slab sug-meta">
-        {dataScurta(x.creatLa, limba)}
-        {eRosu(x, acum) ? <span className="tic-rosu" data-tic="fara-raspuns">{` · ${t('admin.tic.fara-raspuns', { ore })}`}</span> : null}
-      </p>
-      <p className="sug-text" data-tic="text">{x.text}</p>
-      {a ? (
-        <p className="admin-slab tic-aplicatia" data-tic="aplicatia">
-          {t('admin.tic.aplicatia', { versiune: a.versiune, instanta: a.instanta, limba: a.limba, plan: a.plan ?? t('admin.tic.fara-plan') })}
-          <br />
-          {t('admin.tic.browser', { browser: a.browser })}
-        </p>
-      ) : null}
-      <p className="admin-slab tic-amprente" data-tic="amprente">
-        {x.amprente.length > 0 ? t('admin.tic.amprente', { lista: x.amprente.join(', ') }) : t('admin.tic.fara-amprente')}
-      </p>
-      {x.poza ? <PozaTichetului con={con} x={x} /> : null}
-      {x.proiect ? <ProiectulTichetului con={con} id={x.id} meta={x.proiect} /> : null}
-      {x.raspunsuri.map((r, k) => (
-        <div key={k} className="sug-decizia" data-tic="raspuns">
-          <p className="admin-slab">{t('admin.tic.raspunsul', { cine: r.deEmail ?? '—', data: dataScurta(r.la, limba) })}</p>
-          <p className="sug-text">{r.text}</p>
-        </div>
-      ))}
-      {poateRaspunde ? (
-        <>
-          <Raspuns key={trimise} x={x} ocupat={ocupat} faraAppCheck={faraAppCheck} fa={fa} />
-          <div className="admin-randuri">
-            {x.stare === 'rezolvat' ? stare('deschis', t('admin.tic.redeschide')) : stare('rezolvat', t('admin.tic.rezolva'))}
-          </div>
-        </>
-      ) : null}
-      {eroare ? <p className="admin-eroare" role="alert" data-tic="eroare">{t('admin.tic.esec', { motiv: eroare })}</p> : null}
+    <li data-tichet={x.id} data-stare={x.stare ?? 'necunoscuta'} data-ales={ales}>
+      <button type="button" aria-current={ales ? 'true' : undefined} onClick={alege}>
+        <span className="tic-titlu" data-tic="titlu">{titluTichet(x.text) || t('admin.tic.fara-text')}</span>
+        <span className="admin-erori-meta">
+          <CipStare stare={x.stare} />
+          {x.fel ? <span className="admin-cip">{t(`admin.tic.fel.${x.fel}`)}</span> : null}
+          <span>{dataScurta(x.creatLa, limba)}</span>
+          {x.raspunsuri.length > 0 ? <span>{t('admin.tic.raspunsuri', { n: x.raspunsuri.length })}</span> : null}
+          {eRosu(x, acum) ? <span className="tic-rosu" data-tic="fara-raspuns">{t('admin.tic.fara-raspuns', { ore })}</span> : null}
+        </span>
+      </button>
     </li>
   );
 }
 
-/** Răspunsul la un tichet, pe versiunea de la deschiderea rândului. */
-function Raspuns({ x, ocupat, faraAppCheck, fa }: {
-  readonly x: Tichet; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly fa: Fa;
+function CipStare({ stare }: { readonly stare: StareTichet | null }): ReactElement {
+  return <span className="admin-cip tic-cip" data-tic-stare={stare ?? 'necunoscuta'}>{t(`admin.tic.stare.${stare ?? 'necunoscuta'}`)}</span>;
+}
+
+/**
+ * Tichetul ales, ca o conversație: capul (titlul, starea, felul, schimbarea stării), raportarea clientului, răspunsurile
+ * echipei, apoi câmpul răspunsului (doar cu `tichete.raspunde`). Lipit sus la derulare, cu conversația derulată în el.
+ */
+function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, compune, schimbaStarea }: {
+  readonly con: Conexiune; readonly x: Tichet; readonly poateRaspunde: boolean; readonly ocupat: boolean; readonly limba: string; readonly acum: number;
+  readonly lucru: Exclude<Lucru, { faza: 'liber' }> | null; readonly compune: ReactNode; readonly schimbaStarea: (x: Tichet, s: StareTichet) => void;
+}): ReactElement {
+  const ore = x.creatLa ? Math.floor((acum - x.creatLa.getTime()) / 3_600_000) : 0;
+  const a = x.aplicatia;
+  const faraAppCheck = con.appCheck === 'oprit';
+  const stareNoua: StareTichet = x.stare === 'rezolvat' ? 'deschis' : 'rezolvat';
+  return (
+    <section className="admin-erori-detaliu tic-detaliu" data-tic="detaliu" data-tic-ales={x.id} aria-labelledby="tichet-ales">
+      <div className="admin-erori-detaliu-cap">
+        <h3 id="tichet-ales" className="tic-titlu-detaliu">{titluTichet(x.text) || t('admin.tic.fara-text')}</h3>
+        {poateRaspunde && x.stare !== null ? (
+          <button type="button" disabled={ocupat || faraAppCheck || x.versiune === null} data-tic={stareNoua === 'rezolvat' ? 'rezolva' : 'redeschide'}
+            onClick={() => { schimbaStarea(x, stareNoua); }}>
+            {t(stareNoua === 'rezolvat' ? 'admin.tic.rezolva' : 'admin.tic.redeschide')}
+          </button>
+        ) : null}
+      </div>
+      <p className="admin-erori-meta tic-cap-meta">
+        <CipStare stare={x.stare} />
+        {x.fel ? <span className="admin-cip" data-tic="fel">{t(`admin.tic.fel.${x.fel}`)}</span> : null}
+        <span>{x.autorEmail ?? '—'}</span>
+        <span>{dataScurta(x.creatLa, limba)}</span>
+        {eRosu(x, acum) ? <span className="tic-rosu" data-tic="fara-raspuns">{t('admin.tic.fara-raspuns', { ore })}</span> : null}
+      </p>
+      {lucru?.faza === 'gata' ? <p className="admin-mesaj" role="status" data-tic="gata">{lucru.mesaj}</p> : null}
+      {lucru?.faza === 'lucreaza' ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.tic.lucreaza')}</p> : null}
+      {lucru?.faza === 'eroare' ? <p className="admin-eroare" role="alert" data-tic="eroare">{t('admin.tic.esec', { motiv: lucru.motiv })}</p> : null}
+      <ol className="tic-conversatia" data-tic="conversatia" aria-label={t('admin.tic.conversatia')}>
+        <li className="tic-mesaj" data-de="client" data-tic="raportarea">
+          <p className="admin-slab tic-mesaj-cap">{t('admin.tic.raportarea', { cine: x.autorEmail ?? '—', data: dataScurta(x.creatLa, limba) })}</p>
+          <p className="sug-text" data-tic="text">{x.text}</p>
+          {x.poza ? <PozaTichetului con={con} x={x} /> : null}
+          {x.proiect ? <ProiectulTichetului con={con} id={x.id} meta={x.proiect} /> : null}
+          <ErorileSesiunii con={con} amprente={x.amprente} />
+          {a ? (
+            <p className="admin-slab tic-aplicatia" data-tic="aplicatia">
+              {t('admin.tic.aplicatia', { versiune: a.versiune, instanta: a.instanta, limba: a.limba, plan: a.plan ?? t('admin.tic.fara-plan') })}
+              <br />
+              {t('admin.tic.browser', { browser: a.browser })}
+            </p>
+          ) : null}
+        </li>
+        {x.raspunsuri.map((r, k) => (
+          <li key={k} className="tic-mesaj" data-de="echipa" data-tic="raspuns">
+            <p className="admin-slab tic-mesaj-cap">{t('admin.tic.raspunsul', { cine: r.deEmail ?? '—', data: dataScurta(r.la, limba) })}</p>
+            <p className="sug-text">{r.text}</p>
+          </li>
+        ))}
+      </ol>
+      {poateRaspunde ? compune : <p className="admin-slab" data-tic="doar-citire">{t('admin.tic.doar-citire')}</p>}
+    </section>
+  );
+}
+
+/**
+ * Erorile din sesiunea raportării (amprentele, ADR 0116 §11): cu fila Erori (rolul o vede, deci și citește `errorLogs`),
+ * fiecare grup se citește o dată, la alegerea tichetului, și arată mesajul, starea și legătura spre el în fila Erori (ADR 0260
+ * §3); fără, doar amprentele. Un grup care nu mai e în jurnal o spune.
+ */
+function ErorileSesiunii({ con, amprente }: { readonly con: Conexiune; readonly amprente: readonly string[] }): ReactElement {
+  const poateCiti = useVedeFila('erori');
+  const [citite, setCitite] = useState<Masura<ReadonlyMap<string, RandGrup | null>> | null>(null);
+  const cheie = amprente.join(',');
+  useEffect(() => {
+    if (!poateCiti || cheie === '') return undefined;
+    let viu = true;
+    Promise.all(cheie.split(',').map((a) => getDoc(doc(con.db, 'errorLogs', a)).then((d) => [a, d.exists() ? randDin(d.id, d.data()) : null] as const))).then(
+      (perechi) => { if (viu) setCitite({ ok: true, valoare: new Map(perechi) }); },
+      (e: unknown) => { if (viu) setCitite({ ok: false, motiv: motivDin(e) }); },
+    );
+    return () => { viu = false; };
+  }, [con, cheie, poateCiti]);
+
+  if (amprente.length === 0) return <p className="admin-slab tic-erori" data-tic="amprente">{t('admin.tic.fara-amprente')}</p>;
+  const doarAmprente = <p className="admin-slab tic-amprente">{amprente.join(', ')}</p>;
+  return (
+    <div className="tic-erori" data-tic="amprente">
+      <p className="admin-slab">{t('admin.tic.erori-sesiune', { n: amprente.length })}</p>
+      {!poateCiti ? doarAmprente
+        : citite === null ? <p className="admin-slab" aria-busy="true">{t('admin.tic.erori-se-citesc')}</p>
+          : !citite.ok ? (
+            <>
+              <p className="admin-eroare" role="alert" data-tic="erori-citire">{t('admin.tic.erori-citire', { motiv: citite.motiv })}</p>
+              {doarAmprente}
+            </>
+          )
+            : (
+              <ul className="tic-erori-lista">
+                {eroriSesiune(amprente, citite.valoare).map((e) => (
+                  <li key={e.amprenta} data-amprenta={e.amprenta}>
+                    {e.grup ? (
+                      <>
+                        <span className="tic-eroare-mesaj">{e.grup.mesaj || e.amprenta}</span>
+                        {e.grup.rezolvat ? <span className="admin-cip" data-stare="bine">{t('admin.erori.rezolvat')}</span> : null}
+                        <LegaturaFila fila="erori" tinta={{ id: e.amprenta, rezolvat: e.grup.rezolvat }} data-tic="spre-erori">
+                          {t('admin.tic.spre-erori')}
+                        </LegaturaFila>
+                      </>
+                    ) : (
+                      <>
+                        <span className="tic-amprente">{e.amprenta}</span>
+                        <span className="admin-slab" data-tic="eroare-lipsa">{t('admin.tic.eroare-lipsa')}</span>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+    </div>
+  );
+}
+
+/**
+ * Răspunsul la tichet: textul (ciorna tichetului), „Răspunde” și „Răspunde și rezolvă” (sau „… și redeschide”, la unul
+ * rezolvat). Pleacă pe versiunea tichetului arătat acum (lista se citește din nou după fiecare schimbare, iar cât se citește,
+ * nimic nu pleacă).
+ */
+function Raspuns({ x, text, scrie, ocupat, faraAppCheck, raspunde }: {
+  readonly x: Tichet; readonly text: string; readonly scrie: (text: string) => void; readonly ocupat: boolean; readonly faraAppCheck: boolean;
+  readonly raspunde: (x: Tichet, text: string, apoi: StareTichet | null) => void;
 }): ReactElement {
   const id = useId();
-  const [versiune] = useState(x.versiune);
-  const [text, setText] = useState('');
+  const curat = curataTextTichet(text, RASPUNS_MAX);
+  const oprit = ocupat || faraAppCheck || x.versiune === null || curat === null;
+  const apoi = stareDupaRaspuns(x.stare);
   const trimite = (e: FormEvent): void => {
     e.preventDefault();
-    if (versiune === null || curataTextTichet(text, RASPUNS_MAX) === null) return;
-    fa({ actiune: 'raspunde', id: x.id, versiune, text }, x.id, () => t('admin.tic.trimis'));
+    if (!oprit) raspunde(x, text, null);
   };
   return (
-    <form className="sug-formular tic-raspuns" onSubmit={trimite} data-tic="formular-raspuns">
+    <form className="tic-compune" onSubmit={trimite} data-tic="formular-raspuns">
       <label htmlFor={id}>{t('admin.tic.raspunde')}</label>
-      <textarea id={id} rows={3} maxLength={RASPUNS_MAX} value={text} data-tic="raspuns-text" onChange={(e) => { setText(e.target.value); }} />
-      <p className="admin-slab sug-ajutor">{t('admin.tic.raspuns-ajutor')}</p>
-      <div className="admin-randuri">
-        <button type="submit" data-tic="trimite" disabled={ocupat || faraAppCheck || versiune === null || curataTextTichet(text, RASPUNS_MAX) === null}>
-          {t('admin.tic.trimite')}
-        </button>
+      <textarea id={id} rows={3} maxLength={RASPUNS_MAX} value={text} placeholder={t('admin.tic.raspuns-loc')} data-tic="raspuns-text"
+        onChange={(e) => { scrie(e.target.value); }} />
+      <div className="tic-compune-jos">
+        <p className="admin-slab">{faraAppCheck ? t('admin.erori.fara-appcheck') : t('admin.tic.raspuns-ajutor')}</p>
+        {apoi ? (
+          <button type="button" data-tic="trimite-si" disabled={oprit} onClick={() => { if (!oprit) raspunde(x, text, apoi); }}>
+            {t(apoi === 'rezolvat' ? 'admin.tic.trimite-rezolva' : 'admin.tic.trimite-redeschide')}
+          </button>
+        ) : null}
+        <button type="submit" className="principal" data-tic="trimite" disabled={oprit}>{t('admin.tic.trimite')}</button>
       </div>
     </form>
   );

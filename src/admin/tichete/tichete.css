@@ -1,15 +1,104 @@
-/* Fila Tichete (ADR 0116 §13): stările cu culorile filei Sugestii, vârsta roșie a unui tichet fără răspuns, datele lungi rupte. */
-.tic-stare[data-stare='deschis'] {
-  color: var(--a);
+/* Fila Tichete (ADR 0116 §13; ADR 0260 §3, felia A.3): lista și detaliul filei Erori (`admin.css`), cu titlul filei în
+   stânga filtrelor. Detaliul e o conversație: capul, mesajele (derulate în el, cât e lipit sus) și câmpul răspunsului, jos.
+   Stările au culorile cipurilor din admin (nou: accentul, deschis: albastrul, rezolvat: verdele). */
+.tic-titlu-fila {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--fs-4);
 }
 
-.tic-stare[data-stare='rezolvat'] {
+.tic-text-fila {
+  margin: calc(-1 * var(--sp-2)) 0 0;
+}
+
+/* Titlul rândului: textul obișnuit (nu monospațiat, ca mesajul unei erori), cel mult două rânduri. */
+.tic-titlu {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.tic-lista li[data-stare='rezolvat'] .tic-titlu {
+  color: var(--t-slab);
+  font-weight: 400;
+}
+
+.tic-cip[data-tic-stare='nou'] {
+  color: var(--a);
+  background: var(--s-atentie);
+}
+
+.tic-cip[data-tic-stare='deschis'] {
+  color: var(--l-focus);
+  background: color-mix(in oklab, var(--l-focus) 12%, var(--s-panou));
+}
+
+.tic-cip[data-tic-stare='rezolvat'] {
   color: var(--traseu-taiere);
+  background: color-mix(in oklab, var(--traseu-taiere) 14%, var(--s-panou));
 }
 
 .tic-rosu {
   color: var(--rosu);
   font-weight: 600;
+}
+
+/* Detaliul: lipit sus și cel mult cât ecranul, ca răspunsul să rămână la vedere; conversația se derulează în el. */
+.tic-detaliu {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2 * var(--sp-3));
+}
+
+.tic-detaliu > * {
+  flex-shrink: 0;
+}
+
+.tic-titlu-detaliu {
+  overflow-wrap: anywhere;
+}
+
+.tic-detaliu .tic-cap-meta {
+  margin: 0;
+}
+
+.tic-conversatia {
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  min-height: 6rem;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tic-mesaj {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+/* Răspunsurile echipei: împinse spre dreapta, cu bara accentului (ca decizia unei sugestii). */
+.tic-mesaj[data-de='echipa'] {
+  margin-left: var(--sp-5);
+  border-left: 4px solid var(--a);
+  background: color-mix(in oklab, var(--a) 8%, var(--s-panou));
+}
+
+.tic-mesaj p {
+  margin: 0;
+}
+
+.tic-mesaj-cap {
+  font-size: var(--fs-1);
 }
 
 .tic-aplicatia,
@@ -18,6 +107,71 @@
   overflow-wrap: anywhere;
 }
 
-.tic-raspuns {
-  margin-top: var(--sp-2);
+.tic-erori {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+}
+
+.tic-erori-lista {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tic-erori-lista li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.tic-eroare-mesaj {
+  flex: 1 1 14rem;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+/* Câmpul răspunsului, jos în detaliu. */
+.tic-compune {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}
+
+.tic-compune label {
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+
+.tic-compune-jos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.tic-compune-jos p {
+  flex: 1 1 12rem;
+  margin: 0;
+}
+
+/* Sub 800 px, detaliul trece sub listă (`admin.css`): fără înălțimea ecranului, conversația curge cu pagina. */
+@media (max-width: 800px) {
+  .tic-detaliu {
+    max-height: none;
+  }
+
+  .tic-conversatia {
+    overflow-y: visible;
+  }
 }
