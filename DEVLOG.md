@@ -10674,7 +10674,7 @@ sau mai târziu?”). **Started:** 21.11, 17:52. **Completed:** 21.11, 19:51.
 
 **Prompt:** „da si vreau sa pornesti si restul worktrees” (owner-ul, pe 21.11, prin sesiunea principală: „La tine urmează
 3.Tp↑a (căutarea), apoi 3.Tp↑b (pictogramele)”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă
-la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 20:07.
+la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
 
 - **Câmpul „Caută o piesă”**, la capătul rândului de file (pe telefon, pe un rând al lui, cât tot rândul): la fiecare
   literă, galeria arată piesele găsite din toate familiile, în ordinea filelor. Fiecare cuvânt căutat începe un cuvânt din
@@ -10706,3 +10706,11 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 20:07.
   emulatoarele 101 / 101 și 29 / 29, la reluare: prima rulare nu pornise, cu portul Auth ținut de altă linie).
 - Pachetul Easy 3Draw 18.17.0 (3.To a luat 18.16.0 și a intrat întâi în `main`; ramura a adus `main` `4667898a` în
   `0a10d403`), înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+- **Adusă la `main` cu 3.To** (cerută de sesiunea principală, 21.11, 20:30: „3.Tp↑a trebuie să treacă pe 18.17.0,
+  pentru că 3.To (șenila) ia pachetul 18.16.0”; gata la 21:38): unirea `0a10d403`, cu ciocniri doar în documente (rămân
+  rândurile ambelor felii, 3.To apoi 3.Tp↑a) și în amprenta din bibliotecă; `atelier.ts`, `texte.en.json`, spec-urile și
+  `3.Tp.py` s-au unit singure. Documentele pe 18.17.0 în `bb52ac5e` (rândul din fișă are în dicționarul roadmap-ului o
+  amprentă nouă). Porțile verzi pe `bb52ac5e`: rapide (traducerile 0 lipsă, tsc, unit 9 659 / 0, 8 sărite, licențele,
+  build, determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800), lente (e2e 577 / 577, cu cele 3
+  ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
+  20 de VOID.
