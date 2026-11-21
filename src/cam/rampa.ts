@@ -104,7 +104,7 @@ export function buclaCuRampa(
   if (urechi) {
     const g = geometrieUrechi(P, urechi);
     if (typeof g === 'string') return { ok: false, motiv: g };
-    for (const cc of g.centre) zone.push([cc - g.h - g.l, cc + g.h + g.l]);
+    for (const [k, cc] of g.centre.entries()) zone.push([cc - g.h - (g.flancuri[k] as number), cc + g.h + (g.flancuri[k] as number)]);
   }
   const scoate = (s: number): number => {
     const t = peTura(s, P);
