@@ -127,9 +127,18 @@ test('o scanare rotită cu 2°: sugestia, „Îndreaptă scanarea” cu unghiul 
   await page.locator('[data-camp="trasare-vedere-imagine"]').check();
   for (const fx of [0.2, 0.8]) await expect.poll(() => minimLa(page, fx, 94 / 588, 819, 588)).toBeLessThan(128);
   await page.locator('[data-camp="trasare-vedere-ambele"]').check();
-  // Un unghi scris (cu minusul tipografic și virgula): folosit în locul celui găsit; șters, înapoi la cel găsit.
+  // Un unghi scris (cu minusul tipografic și virgula): folosit în locul celui găsit, iar zona (în pixelii pânzei de până
+  // atunci) se scoate; șters, înapoi la cel găsit.
+  await page.locator('[data-buton="trasare-zona"]').click();
+  await page.mouse.move(b.x + 0.35 * b.width, b.y + 0.35 * b.height);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 0.65 * b.width, b.y + 0.65 * b.height, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.getByTestId('trasare-zona')).toBeVisible();
+  await page.locator('[data-buton="trasare-zona"]').click();
   await page.locator('[data-camp="trasare-rotire-unghi"]').fill('−1,5');
   await expect(page.getByTestId('trasare-rotire')).toContainText('(unghiul scris de tine).');
+  await expect(page.getByTestId('trasare-zona')).toHaveCount(0);
   expect(await unghiRaport(page)).toBe(-1.5);
   await page.locator('[data-camp="trasare-rotire-unghi"]').fill('');
   await expect(page.getByTestId('trasare-rotire')).toContainText('(unghiul găsit singur).');

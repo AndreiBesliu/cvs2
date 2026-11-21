@@ -37,8 +37,8 @@ const COS_GROSIER = 4;
 const CERNEALA_MINIMA = 64;
 /**
  * Încrederea: scorul cel mai bun trebuie să fie de cel puțin atâtea ori cel mai bun scor aflat la cel puțin `DEPARTE` grade
- * de el (prototipul: desenele tehnice 5,7–7,3, textul 1,8–1,9, un logo cu un rând de text 1,4; o schiță, cercurile,
- * zgomotul 1,0–1,15).
+ * de el (prototipul, ADR 0271: desenele tehnice 5,9–8,2, textul 1,7–2,1, un logo cu un rând de text 1,4–1,5; o schiță,
+ * cercurile, zgomotul 1,0–1,14).
  */
 export const INCREDERE_MINIMA = 1.25;
 const DEPARTE = 1;
@@ -91,9 +91,9 @@ function cerneala(img: ImagineRGBA): Cerneala | null {
   const m = Math.min(n, PUNCTE_FIN), pas = n / m, xs = new Float32Array(m), ys = new Float32Array(m);
   for (let p = 0, i = 0, k2 = 0; p < w * h && k2 < m; p++) {
     if (((f[p] ?? 0) >= T) === intunecata) continue;
-    // Al i-lea pixel de cerneală e luat dacă ajunge la următorul prag al pasului (la pas egal, în ordinea rândurilor).
-    // Fiecare punct, mișcat cu o fracțiune de pixel (secvența R2, deterministă): pe axe, centrele pixelilor ar cădea toate
-    // la fel între coșuri, iar unghiul 0 ar câștiga din grila pixelilor, nu din desen.
+    // Al i-lea pixel de cerneală e luat dacă ajunge la următorul prag al pasului (la pas egal, în ordinea rândurilor), mutat
+    // cu o fracțiune de pixel (secvența R2, deterministă): pe axe, centrele pixelilor ar cădea toate la fel între coșuri,
+    // iar unghiul 0 ar câștiga din grila pixelilor, nu din desen.
     if (i >= Math.floor(k2 * pas)) {
       xs[k2] = (p % w) + ((k2 * 0.7548776662466927) % 1) - w / 2;
       ys[k2] = Math.floor(p / w) + ((k2 * 0.5698402909980532) % 1) - h / 2;
@@ -106,8 +106,8 @@ function cerneala(img: ImagineRGBA): Cerneala | null {
 
 /**
  * Scorul unghiului a (radiani): pixelii rotiți cu −a (desenul îndreptat dacă e rotit cu a), împărțiți liniar între două
- * coșuri de lățime `cos` pe rânduri și pe coloane; suma pătratelor diferențelor dintre coșurile vecine. Folosește din
- * puncte doar primele n, sau, cu `pas` > 1, unul din `pas`.
+ * coșuri de lățime `cos` pe rânduri și pe coloane; suma pătratelor diferențelor dintre coșurile vecine. Folosește un
+ * punct din `pas` (baleiajul grosier, pe o parte din puncte).
  */
 function scor(c: Cerneala, a: number, cos: number, pas: number, R: Float64Array, C: Float64Array): number {
   R.fill(0); C.fill(0);
