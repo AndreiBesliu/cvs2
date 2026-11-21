@@ -4,7 +4,7 @@ import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { rezolvareDin } from '../carcasa/date.ts';
-import { EroareCitire, ListaGoala, SeIncarca, usePublica, type Tinta } from '../carcasa/stari.tsx';
+import { EroareCitire, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, type Tinta } from '../carcasa/stari.tsx';
 import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, type Aparitie, type Masura, type RandGrup } from './date.ts';
 import { alesDupaLista, aparitiiPeZile, baraGrafic, cuTinta, filtreazaSursa, SURSE, type FiltruSursa } from './vedere.ts';
 
@@ -215,6 +215,8 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
   }, [con, grup.id]);
 
   const faraAppCheck = con.appCheck === 'oprit';
+  // Lipit sus, dar cât spațiul de sub el (A.3): un detaliu mai înalt decât ecranul se derulează în el, nu doar la capătul listei.
+  const catSpatiul = useCatSpatiulDeJos();
   const marcheaza = (): void => {
     setMarcare({ faza: 'se-marcheaza' });
     marcheazaEroarea(con, grup.id, !grup.rezolvat).then(
@@ -224,7 +226,7 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
   };
 
   return (
-    <section className="admin-erori-detaliu" data-admin="detaliu-eroare" aria-labelledby="eroare-aleasa">
+    <section ref={catSpatiul} className="admin-erori-detaliu" data-admin="detaliu-eroare" aria-labelledby="eroare-aleasa">
       <div className="admin-erori-detaliu-cap">
         <h3 id="eroare-aleasa" className="admin-grup-mesaj">{grup.mesaj}</h3>
         {/* Fără `erori.rezolva` (ADR 0049), rolul doar citește: butonul nu se arată (serverul l-ar refuza oricum). */}

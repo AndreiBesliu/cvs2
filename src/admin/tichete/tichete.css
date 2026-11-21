@@ -46,11 +46,12 @@
   font-weight: 600;
 }
 
-/* Detaliul: lipit sus și cel mult cât ecranul, ca răspunsul să rămână la vedere; conversația se derulează în el. */
-.tic-detaliu {
+/* Detaliul: lipit sus și cât spațiul de sub el (`admin.css`, `useCatSpatiulDeJos`), ca răspunsul să rămână la vedere;
+   conversația se derulează în el. Selectorul dublu bate grila din `admin.css` oricum s-ar așeza foile în bundle (21.11, proba
+   e2e: grila câștiga, iar câmpul răspunsului ieșea din detaliu). */
+.admin-erori-detaliu.tic-detaliu {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 2 * var(--sp-3));
 }
 
 .tic-detaliu > * {
@@ -153,6 +154,55 @@
   font-weight: 600;
 }
 
+/* Răspunsurile rapide (ADR 0261), deasupra câmpului: pastile, ca în schiță; cea oprită (textul n-ar mai încăpea) se estompează. */
+.tic-rapide {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.tic-rapide p,
+.tic-rapide-eroare {
+  margin: 0;
+}
+
+.tic-rapide-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.tic-rapide-setari {
+  font-size: var(--fs-2);
+}
+
+.tic-rapide-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tic-rapide-butoane button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--l-margine);
+  border-radius: 999px;
+  background: var(--s-panou);
+  color: var(--t);
+  font: inherit;
+  font-size: var(--fs-2);
+}
+
+.tic-rapide-butoane button:hover:not(:disabled) {
+  border-color: var(--a);
+  color: var(--a);
+}
+
+.tic-rapide-butoane button:disabled {
+  opacity: 0.5;
+}
+
 .tic-compune-jos {
   display: flex;
   flex-wrap: wrap;
@@ -165,12 +215,8 @@
   margin: 0;
 }
 
-/* Sub 800 px, detaliul trece sub listă (`admin.css`): fără înălțimea ecranului, conversația curge cu pagina. */
+/* Sub 800 px, detaliul trece sub listă, fără înălțimea ecranului (`admin.css`): conversația curge cu pagina. */
 @media (max-width: 800px) {
-  .tic-detaliu {
-    max-height: none;
-  }
-
   .tic-conversatia {
     overflow-y: visible;
   }

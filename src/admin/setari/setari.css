@@ -1,0 +1,97 @@
+/* Răspunsurile rapide în fila Setări (ADR 0261): câte un rând pe răspuns (eticheta cu mutarea și ștergerea alături, textele
+   sub ea), apoi adăugarea, numărul și „Salvează”. Câmpurile, ca ale aplicației; nimic mai lat decât secțiunea. */
+.set-rapide-editor {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 44rem;
+}
+
+.set-rapide-lista {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-rapid {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.set-rapid label {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+
+.set-rapid input,
+.set-rapid textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font: inherit;
+  font-size: var(--fs-3);
+  font-weight: 400;
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.set-rapid textarea {
+  resize: vertical;
+}
+
+.set-rapid-sus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2);
+}
+
+.set-rapid-sus label {
+  flex: 1 1 14rem;
+}
+
+.set-rapid-nr {
+  min-width: 1.5em;
+  padding-bottom: var(--sp-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--t-slab);
+}
+
+.set-rapid-mut {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.set-rapid-probleme {
+  margin: 0;
+  color: var(--a);
+}
+
+.set-rapide-gol {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px dashed var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.set-rapide-gol p,
+.set-rapide-editor > p {
+  margin: 0;
+}
+
+.set-rapide-numar {
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+}

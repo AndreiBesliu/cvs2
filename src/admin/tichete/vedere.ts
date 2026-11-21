@@ -36,6 +36,24 @@ export function stareDupaRaspuns(stare: StareTichet | null): StareTichet | null 
   return stare === 'rezolvat' ? 'deschis' : 'rezolvat';
 }
 
+/**
+ * Textul unui răspuns rapid pus în câmp (ADR 0261 §5): în locul selecției (sau la cursor), fără să șteargă restul, cu un rând
+ * gol înainte și după, când lângă el e text. Întoarce și locul cursorului, la capătul bucății puse.
+ */
+export function insereazaLaCursor(text: string, start: number, end: number, bucata: string): { readonly text: string; readonly cursor: number } {
+  const s = Math.max(0, Math.min(start, text.length));
+  const e = Math.max(s, Math.min(end, text.length));
+  const inainte = text.slice(0, s);
+  const dupa = text.slice(e);
+  const sus = inainte === '' || inainte.endsWith('\n\n') ? '' : inainte.endsWith('\n') ? '\n' : '\n\n';
+  const jos = dupa === '' || dupa.startsWith('\n\n') ? '' : dupa.startsWith('\n') ? '\n' : '\n\n';
+  const cap = inainte + sus + bucata;
+  return { text: cap + jos + dupa, cursor: cap.length };
+}
+
+/** Un răspuns rapid încape încă în câmp, pus la capăt: altfel butonul lui se oprește (ADR 0261 §5). */
+export const incapeRapid = (text: string, bucata: string, max: number): boolean => insereazaLaCursor(text, text.length, text.length, bucata).text.length <= max;
+
 /** O eroare din sesiunea raportării: amprenta și, dacă s-a citit, grupul ei (null = nu mai e în jurnal). */
 export interface EroareSesiune {
   readonly amprenta: string;

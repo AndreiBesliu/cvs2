@@ -9,6 +9,7 @@ import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import '../personal/personal.css';
 import '../utilizatori/utilizatori.css';
+import { RaspunsuriRapide } from './RaspunsuriRapide.tsx';
 
 /**
  * Fila Setări (ADR 0116 §20, felia 14.C↑b), doar a owner-ului: zilele în care aplicația ține dreptul contului fără
@@ -24,12 +25,19 @@ export function FilaSetari({ con }: { readonly con: Conexiune }): ReactElement {
   const limba = useLimba();
   const [citite, setCitite] = useState<Masura<Citite> | null>(null);
   const [rev, setRev] = useState(0);
+  // Formularul pornește din nou la fiecare citire sosită, nu la cererea ei (21.11, A.3: cu `key={rev}`, după „Salvează” se
+  // remonta din valorile de dinainte, citite încă, și le ținea și după ce sosea citirea nouă).
+  const [citiri, setCitiri] = useState(0);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
 
   useEffect(() => {
     let viu = true;
     getDoc(doc(con.db, CALE_SETARI.colectie, CALE_SETARI.id)).then(
-      (s) => { if (viu) setCitite({ ok: true, valoare: { setari: setariDin(s.data()), modificatLa: dataDin(s.get('modificatLa')), salvate: s.exists() } }); },
+      (s) => {
+        if (!viu) return;
+        setCitite({ ok: true, valoare: { setari: setariDin(s.data()), modificatLa: dataDin(s.get('modificatLa')), salvate: s.exists() } });
+        setCitiri((n) => n + 1);
+      },
       (e: unknown) => { if (viu) setCitite({ ok: false, motiv: motivDin(e) }); },
     );
     return () => { viu = false; };
@@ -59,11 +67,12 @@ export function FilaSetari({ con }: { readonly con: Conexiune }): ReactElement {
                 <p className="admin-slab" data-set="sursa">
                   {citite.valoare.salvate ? t('admin.set.modificate', { data: dataScurta(citite.valoare.modificatLa, limba) }) : t('admin.set.implicite')}
                 </p>
-                <Formular key={rev} initiale={citite.valoare.setari} ocupat={lucru.faza === 'lucreaza'} faraAppCheck={con.appCheck === 'oprit'}
+                <Formular key={citiri} initiale={citite.valoare.setari} ocupat={lucru.faza === 'lucreaza'} faraAppCheck={con.appCheck === 'oprit'}
                   eroare={lucru.faza === 'eroare' ? lucru.motiv : null} salveaza={salveaza} />
               </>
             )}
       </section>
+      <RaspunsuriRapide con={con} />
     </div>
   );
 }

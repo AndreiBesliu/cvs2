@@ -1,7 +1,8 @@
-import { useEffect, useId, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query } from 'firebase/firestore/lite';
 import type { Permisiune } from '../../../shared/personal.ts';
 import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
+import { CALE_RASPUNSURI_RAPIDE, rapideDin, TEXT_RAPID_MAX, textRapid, type RaspunsRapid } from '../../../shared/raspunsuriRapide.ts';
 import {
   COLECTIE_TICHETE, curataTextTichet, marimeCitita, PLAFON_LISTA_TICHETE, RASPUNS_MAX, STARI_TICHET, type MetaProiectTichet, type RaspunsTichet,
   type StareTichet,
@@ -10,12 +11,12 @@ import { proiectulTichetului, tichete, type Conexiune } from '../../cloud/conexi
 import { limba as limbaDeAcum, t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { ceaMaiRecenta } from '../carcasa/date.ts';
-import { EroareCitire, LegaturaFila, ListaGoala, SeIncarca, usePublica, useVedeFila, type Tinta } from '../carcasa/stari.tsx';
+import { EroareCitire, LegaturaFila, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, useVedeFila, type Tinta } from '../carcasa/stari.tsx';
 import { dataScurta, motivDin, randDin, type Masura, type RandGrup } from '../erori/date.ts';
 import { alesDupaLista } from '../erori/vedere.ts';
 import { useAdresaImaginii } from '../sugestii/FilaSugestii.tsx';
 import { despacheteazaProiect, eRosu, filtreaza, numeFisierProiect, ordoneaza, proiectVerificat, tichetDin, type Filtru, type Tichet } from './date.ts';
-import { eroriSesiune, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
+import { eroriSesiune, incapeRapid, insereazaLaCursor, numereFiltru, stareDupaRaspuns, titluTichet } from './vedere.ts';
 import '../sugestii/sugestii.css';
 import './tichete.css';
 
@@ -27,6 +28,12 @@ import './tichete.css';
  * callable-ul `tichete`, pe versiunea văzută. Citirile trec prin reguli, la cerere („Reîncarcă”); un tichet găsit de căutarea
  * din antet (`tinta`) vine ales.
  */
+
+/**
+ * Ciornele răspunsurilor, pe tichet, cât e deschisă pagina: alegerea altui tichet sau un drum în altă filă (la o eroare din
+ * sesiune, de pildă) nu pierde ce s-a scris; un răspuns trimis își golește ciorna. Nu trec de o reîncărcare a paginii.
+ */
+const CIORNE = new Map<string, string>();
 
 /** Unde s-a pornit lucrul (id-ul tichetului): mesajul și eroarea se arată acolo. */
 type Lucru =
@@ -48,15 +55,11 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
   const [filtru, setFiltru] = useState<Filtru>('toate');
   const [ales, setAles] = useState<string | null>(tinta?.id ?? null);
   const [lucru, setLucru] = useState<Lucru>({ faza: 'liber' });
-  // Ciornele răspunsurilor, pe tichet: alegerea altui tichet nu pierde ce s-a scris; un răspuns trimis își golește ciorna.
-  const [ciorne, setCiorne] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const [ciorne, setCiorne] = useState<ReadonlyMap<string, string>>(() => new Map(CIORNE));
   const scrie = (id: string, text: string): void => {
-    setCiorne((m) => {
-      const n = new Map(m);
-      if (text === '') n.delete(id);
-      else n.set(id, text);
-      return n;
-    });
+    if (text === '') CIORNE.delete(id);
+    else CIORNE.set(id, text);
+    setCiorne(new Map(CIORNE));
   };
 
   useEffect(() => {
@@ -78,6 +81,20 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
     );
     return () => { viu = false; };
   }, [con, rev, publica]);
+
+  // Răspunsurile rapide (ADR 0261 §6): o citire la deschidere și la „Reîncarcă”, doar pentru cine poate răspunde (regula le
+  // dă doar lor). Căzută, câmpul merge mai departe, iar locul butoanelor spune motivul.
+  const [rapide, setRapide] = useState<Masura<readonly RaspunsRapid[]> | null>(null);
+  const [revRapide, setRevRapide] = useState(0);
+  useEffect(() => {
+    if (!poateRaspunde) return undefined;
+    let viu = true;
+    getDoc(doc(con.db, CALE_RASPUNSURI_RAPIDE.colectie, CALE_RASPUNSURI_RAPIDE.id)).then(
+      (s) => { if (viu) setRapide({ ok: true, valoare: rapideDin(s.data()).lista }); },
+      (e: unknown) => { if (viu) setRapide({ ok: false, motiv: motivDin(e) }); },
+    );
+    return () => { viu = false; };
+  }, [con, poateRaspunde, revRapide]);
 
   const reincarca = (): void => {
     setRecitire(true);
@@ -147,7 +164,7 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
             </button>
           ))}
         </div>
-        <button type="button" data-tic="reincarca" onClick={reincarca}>{t('admin.tic.reincarca')}</button>
+        <button type="button" data-tic="reincarca" onClick={() => { reincarca(); setRevRapide((n) => n + 1); }}>{t('admin.tic.reincarca')}</button>
       </div>
       <p className="admin-slab tic-text-fila">{t('admin.tic.text')}</p>
       {mesajSus ? <p className="admin-mesaj" role="status" data-tic="gata">{mesajSus}</p> : null}
@@ -173,7 +190,7 @@ export function FilaTichete({ con, owner, permisiuni, tinta = null }: {
                       lucru={lucru.faza !== 'liber' && lucru.loc === tichet.id ? lucru : null}
                       compune={poateRaspunde ? (
                         <Raspuns x={tichet} text={ciorne.get(tichet.id) ?? ''} scrie={(s) => { scrie(tichet.id, s); }} ocupat={ocupat}
-                          faraAppCheck={con.appCheck === 'oprit'} raspunde={raspunde} />
+                          faraAppCheck={con.appCheck === 'oprit'} raspunde={raspunde} rapide={rapide} owner={owner} />
                       ) : null}
                       schimbaStarea={schimbaStarea} />
                   ) : null}
@@ -221,8 +238,9 @@ function DetaliuTichet({ con, x, poateRaspunde, ocupat, limba, acum, lucru, comp
   const a = x.aplicatia;
   const faraAppCheck = con.appCheck === 'oprit';
   const stareNoua: StareTichet = x.stare === 'rezolvat' ? 'deschis' : 'rezolvat';
+  const catSpatiul = useCatSpatiulDeJos();
   return (
-    <section className="admin-erori-detaliu tic-detaliu" data-tic="detaliu" data-tic-ales={x.id} aria-labelledby="tichet-ales">
+    <section ref={catSpatiul} className="admin-erori-detaliu tic-detaliu" data-tic="detaliu" data-tic-ales={x.id} aria-labelledby="tichet-ales">
       <div className="admin-erori-detaliu-cap">
         <h3 id="tichet-ales" className="tic-titlu-detaliu">{titluTichet(x.text) || t('admin.tic.fara-text')}</h3>
         {poateRaspunde && x.stare !== null ? (
@@ -332,12 +350,26 @@ function ErorileSesiunii({ con, amprente }: { readonly con: Conexiune; readonly 
  * rezolvat). Pleacă pe versiunea tichetului arătat acum (lista se citește din nou după fiecare schimbare, iar cât se citește,
  * nimic nu pleacă).
  */
-function Raspuns({ x, text, scrie, ocupat, faraAppCheck, raspunde }: {
+function Raspuns({ x, text, scrie, ocupat, faraAppCheck, raspunde, rapide, owner }: {
   readonly x: Tichet; readonly text: string; readonly scrie: (text: string) => void; readonly ocupat: boolean; readonly faraAppCheck: boolean;
-  readonly raspunde: (x: Tichet, text: string, apoi: StareTichet | null) => void;
+  readonly raspunde: (x: Tichet, text: string, apoi: StareTichet | null) => void; readonly rapide: Masura<readonly RaspunsRapid[]> | null;
+  readonly owner: boolean;
 }): ReactElement {
   const id = useId();
+  const camp = useRef<HTMLTextAreaElement>(null);
   const curat = curataTextTichet(text, RASPUNS_MAX);
+  // Un răspuns rapid intră la cursor (sau în locul selecției), fără să șteargă restul; apoi câmpul primește focusul, cu
+  // cursorul după bucata pusă (ADR 0261 §5). Cât de mare poate fi câmpul: cât un răspuns.
+  const pune = (bucata: string): void => {
+    const el = camp.current;
+    const n = insereazaLaCursor(text, el?.selectionStart ?? text.length, el?.selectionEnd ?? text.length, bucata);
+    if (n.text.length > RASPUNS_MAX) return;
+    scrie(n.text);
+    requestAnimationFrame(() => {
+      camp.current?.focus();
+      camp.current?.setSelectionRange(n.cursor, n.cursor);
+    });
+  };
   const oprit = ocupat || faraAppCheck || x.versiune === null || curat === null;
   const apoi = stareDupaRaspuns(x.stare);
   const trimite = (e: FormEvent): void => {
@@ -346,8 +378,9 @@ function Raspuns({ x, text, scrie, ocupat, faraAppCheck, raspunde }: {
   };
   return (
     <form className="tic-compune" onSubmit={trimite} data-tic="formular-raspuns">
+      <RaspunsuriRapide rapide={rapide} owner={owner} text={text} limba={x.aplicatia?.limba ?? null} pune={pune} />
       <label htmlFor={id}>{t('admin.tic.raspunde')}</label>
-      <textarea id={id} rows={3} maxLength={RASPUNS_MAX} value={text} placeholder={t('admin.tic.raspuns-loc')} data-tic="raspuns-text"
+      <textarea ref={camp} id={id} rows={3} maxLength={RASPUNS_MAX} value={text} placeholder={t('admin.tic.raspuns-loc')} data-tic="raspuns-text"
         onChange={(e) => { scrie(e.target.value); }} />
       <div className="tic-compune-jos">
         <p className="admin-slab">{faraAppCheck ? t('admin.erori.fara-appcheck') : t('admin.tic.raspuns-ajutor')}</p>
@@ -359,6 +392,42 @@ function Raspuns({ x, text, scrie, ocupat, faraAppCheck, raspunde }: {
         <button type="submit" className="principal" data-tic="trimite" disabled={oprit}>{t('admin.tic.trimite')}</button>
       </div>
     </form>
+  );
+}
+
+/**
+ * Butoanele răspunsurilor rapide (ADR 0261 §5), deasupra câmpului: câte unul pe etichetă, cu textul din limba raportării la
+ * hover; unul al cărui text nu mai încape în câmp se oprește, cu motivul. Owner-ul are lângă ele legătura spre Setări, unde
+ * le scrie (și, cât lista e goală, vorba că acolo se scriu). O citire căzută spune motivul; câmpul merge mai departe.
+ */
+function RaspunsuriRapide({ rapide, owner, text, limba, pune }: {
+  readonly rapide: Masura<readonly RaspunsRapid[]> | null; readonly owner: boolean; readonly text: string; readonly limba: string | null;
+  readonly pune: (bucata: string) => void;
+}): ReactElement | null {
+  if (rapide === null) return null;
+  if (!rapide.ok) return <p className="admin-slab tic-rapide-eroare" data-tic="rapide-eroare">{t('admin.tic.rapide-citire', { motiv: rapide.motiv })}</p>;
+  if (rapide.valoare.length === 0 && !owner) return null;
+  return (
+    <div className="tic-rapide" data-tic="rapide">
+      <div className="tic-rapide-cap">
+        <span className="admin-slab">{t('admin.tic.rapide')}</span>
+        {owner ? <LegaturaFila fila="setari" className="tic-rapide-setari" data-tic="rapide-setari">{t('admin.tic.rapide-schimba')}</LegaturaFila> : null}
+      </div>
+      {rapide.valoare.length === 0 ? <p className="admin-slab" data-tic="rapide-gol">{t('admin.tic.rapide-niciunul')}</p> : (
+        <div className="tic-rapide-butoane">
+          {rapide.valoare.map((r, k) => {
+            const bucata = textRapid(r, limba);
+            const incape = incapeRapid(text, bucata, RASPUNS_MAX);
+            return (
+              <button key={`${k}:${r.eticheta}`} type="button" data-rapid={r.eticheta} disabled={!incape}
+                title={incape ? bucata : t('admin.tic.rapide-nu-incape', { max: TEXT_RAPID_MAX })} onClick={() => { pune(bucata); }}>
+                {r.eticheta}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

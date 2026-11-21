@@ -164,6 +164,9 @@ test('setările: implicitele până la prima salvare; valorile din margini se sa
   await page.locator('[data-set="salveaza"]').click();
   await expect(page.locator('[data-set="gata"]')).toHaveText('Setările sunt salvate.', LENT);
   await expect(page.locator('[data-set="sursa"]')).toContainText('Schimbate ultima dată pe ');
+  // Fără reîncărcare, formularul arată valorile salvate (21.11, A.3: se remonta din cele de dinainte și le ținea).
+  await expect(page.locator('[data-set="zile-offline"]')).toHaveValue('3');
+  await expect(page.locator('[data-set="zile-tichete"]')).toHaveValue('90');
   const s = await citeste('setari/conturi');
   expect([s['zileOffline']?.integerValue, s['zilePastrareTichete']?.integerValue]).toEqual(['3', '90']);
   expect(await actiuniAudit()).toEqual(['setari.conturi']);

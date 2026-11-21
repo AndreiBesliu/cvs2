@@ -154,6 +154,22 @@ test('Erori: lista în stânga, eroarea aleasă în dreapta fără să împingă
   await expect(detaliu.locator('[data-grafic="aparitii"]')).toHaveCount(0);
   await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(1);
 
+  // Un detaliu mai înalt decât ecranul (21.11, A.3): lipit sus, ține cât spațiul de sub el și se derulează în el, și înainte
+  // de prima derulare a paginii (până acum, partea lui de jos ieșea din ecran până la capătul listei). La 520 px rămân sub
+  // antet peste 240 px, cât are detaliul cel puțin (sub atât, încape abia după ce pagina urcă).
+  await page.locator(`[data-grup="${G1}"]`).click();
+  await expect(detaliu.locator('.admin-aparitii li')).toHaveCount(3);
+  await page.setViewportSize({ width: 1280, height: 520 });
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  await expect.poll(async () => {
+    const b = await detaliu.boundingBox();
+    return b ? Math.round(b.y + b.height) : Number.POSITIVE_INFINITY;
+  }, { message: 'detaliul încape sub antet, în ecran' }).toBeLessThanOrEqual(520);
+  // Se derulează în el: ultima apariție ajunge la vedere fără să miște pagina.
+  expect(await detaliu.evaluate((el) => { el.scrollTop = el.scrollHeight; return el.scrollTop > 0 && window.scrollY === 0; })).toBe(true);
+  await expect(detaliu.locator('.admin-aparitii li').last()).toBeInViewport({ ratio: 1 });
+  await page.setViewportSize({ width: 1280, height: 800 });
+
   // Marcarea, din detaliu.
   await page.locator('[data-filtru="nerezolvate"]').click();
   await page.locator(`[data-grup="${G1}"]`).click();

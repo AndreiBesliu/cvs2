@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tichetDin, type Tichet } from '../../src/admin/tichete/date.ts';
-import { eroriSesiune, numereFiltru, stareDupaRaspuns, titluTichet, TITLU_MAX } from '../../src/admin/tichete/vedere.ts';
+import { eroriSesiune, incapeRapid, insereazaLaCursor, numereFiltru, stareDupaRaspuns, titluTichet, TITLU_MAX } from '../../src/admin/tichete/vedere.ts';
 import type { RandGrup } from '../../src/admin/erori/date.ts';
 
 /**
@@ -61,4 +61,31 @@ test('erorile din sesiune: în ordinea amprentelor din tichet, cu grupul citit; 
   assert.deepEqual(eroriSesiune([a, b, c], citite), [{ amprenta: a, grup: null }, { amprenta: c, grup: grup(c) }]);
   assert.deepEqual(eroriSesiune([], citite), []);
   assert.deepEqual(eroriSesiune([a, b], new Map()), []);
+});
+
+test('răspunsul rapid pus la cursor (ADR 0261 §5): fără să șteargă restul, cu un rând gol înainte și după, când lângă e text', () => {
+  const A = 'Mulțumim!';
+  // Câmpul gol: doar textul, cursorul la capăt.
+  assert.deepEqual(insereazaLaCursor('', 0, 0, A), { text: A, cursor: A.length });
+  // La capătul unui text: un rând gol înainte.
+  assert.deepEqual(insereazaLaCursor('Bună,', 5, 5, A), { text: `Bună,\n\n${A}`, cursor: `Bună,\n\n${A}`.length });
+  // După un rând nou: încă unul, nu două; după un rând gol: niciunul.
+  assert.equal(insereazaLaCursor('Bună,\n', 6, 6, A).text, `Bună,\n\n${A}`);
+  assert.equal(insereazaLaCursor('Bună,\n\n', 7, 7, A).text, `Bună,\n\n${A}`);
+  // La început, înaintea unui text: un rând gol după; cursorul după bucata pusă.
+  assert.deepEqual(insereazaLaCursor('Semnat, echipa', 0, 0, A), { text: `${A}\n\nSemnat, echipa`, cursor: A.length });
+  // În mijloc: rând gol de ambele părți; selecția se înlocuiește.
+  assert.equal(insereazaLaCursor('Bună, XX echipa', 6, 8, A).text, `Bună, \n\n${A}\n\n echipa`);
+  assert.equal(insereazaLaCursor('Unu\n\nDoi', 3, 3, A).text, `Unu\n\n${A}\n\nDoi`);
+  // Capetele în afara textului se strâng; un capăt înaintea începutului nu întoarce selecția.
+  assert.equal(insereazaLaCursor('ab', 9, 99, A).text, `ab\n\n${A}`);
+  assert.equal(insereazaLaCursor('ab', 2, 1, A).text, `ab\n\n${A}`);
+});
+
+test('butonul unui răspuns rapid se oprește când textul n-ar mai încăpea în câmp (cu rândul gol dinainte)', () => {
+  const plin = 'x'.repeat(1990);
+  assert.equal(incapeRapid('', 'y'.repeat(2000), 2000), true);
+  assert.equal(incapeRapid('', 'y'.repeat(2001), 2000), false);
+  assert.equal(incapeRapid(plin, 'y'.repeat(8), 2000), true);
+  assert.equal(incapeRapid(plin, 'y'.repeat(9), 2000), false, '1990 + 2 (rândul gol) + 9 = 2001');
 });

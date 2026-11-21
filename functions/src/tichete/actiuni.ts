@@ -3,6 +3,10 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { COLECTIE_CONTURI } from '../../../shared/conturiPlan.ts';
 import { COLECTII_PERSONAL, normalizeazaEmail } from '../../../shared/personal.ts';
 import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
+import {
+  aceleasiRapide, CALE_RASPUNSURI_RAPIDE, ETICHETA_RAPID_MAX, esteVersiuneVazuta, listaRapideCeruta, RAPIDE_MAX, rapideDin, TEXT_RAPID_MAX,
+  type RaspunsRaspunsuriRapide,
+} from '../../../shared/raspunsuriRapide.ts';
 import { esteVersiune } from '../../../shared/sugestii.ts';
 import {
   caleProiectTichet, COLECTIE_LIMITE_TICHETE, COLECTIE_TICHETE, curataAmprentele, curataAplicatia, curataTextTichet, esteFelTichet,
@@ -260,12 +264,43 @@ async function proiectul(db: Firestore, fisiere: Fisiere, uid: string, d: Record
 }
 
 /**
- * Callable-ul `tichete`: `{ actiune: 'raporteaza' | 'mele' | 'citit' | 'raspunde' | 'stare' | 'proiect', … }`; refuzurile sunt
- * `HttpsError`-uri cu motivul. `fisiere`: Storage-ul proiectelor atașate.
+ * Răspunsurile rapide (ADR 0261): lista întreagă, scrisă doar de owner, pe versiunea văzută (0 = niciun document încă), cu
+ * auditul în tranzacție: lista dinainte și cea de după (texte ale owner-ului, fără date ale clienților, deci întregi). O listă
+ * neschimbată nu scrie nimic; fără document, lista de dinainte e goală.
+ */
+async function raspunsuriRapide(db: Firestore, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsRaspunsuriRapide> {
+  const lista = listaRapideCeruta(d['lista']);
+  if (lista === null) {
+    throw argument(`cel mult ${RAPIDE_MAX} răspunsuri, fiecare cu eticheta lui (1–${ETICHETA_RAPID_MAX} litere, pe un rând) și textul în română `
+      + `(1–${TEXT_RAPID_MAX} de caractere); engleza, dacă e scrisă, la fel`);
+  }
+  const vazuta = d['versiune'];
+  if (!esteVersiuneVazuta(vazuta)) throw argument('versiunea văzută a răspunsurilor rapide');
+  return db.runTransaction(async (tx) => {
+    if (!(await drepturiIn(tx, db, uid)).owner) throw new HttpsError('permission-denied', 'doar owner-ul schimbă răspunsurile rapide');
+    const ref = db.collection(CALE_RASPUNSURI_RAPIDE.colectie).doc(CALE_RASPUNSURI_RAPIDE.id);
+    const s = await tx.get(ref);
+    const acolo = s.exists ? rapideDin(s.data()) : null;
+    const versiune = acolo?.versiune ?? 0;
+    if (versiune !== vazuta) throw new HttpsError('failed-precondition', 'răspunsurile rapide s-au schimbat de când le-ai deschis; reîncarcă fila');
+    if (aceleasiRapide(acolo?.lista ?? [], lista)) return { ok: true, schimbat: false, versiune };
+    const cand = Timestamp.fromDate(acum);
+    tx.set(ref, { schema: 1, lista, versiune: versiune + 1, modificatLa: cand, modificatDe: uid });
+    scrieAudit(tx, db, {
+      cand, cine: uid, rol: 'owner', actiune: 'setari.raspunsuriRapide', tinta: `${CALE_RASPUNSURI_RAPIDE.colectie}/${CALE_RASPUNSURI_RAPIDE.id}`,
+      inainte: acolo ? acolo.lista : null, dupa: lista,
+    });
+    return { ok: true, schimbat: true, versiune: versiune + 1 };
+  });
+}
+
+/**
+ * Callable-ul `tichete`: `{ actiune: 'raporteaza' | 'mele' | 'citit' | 'raspunde' | 'stare' | 'proiect' | 'raspunsuriRapide', … }`;
+ * refuzurile sunt `HttpsError`-uri cu motivul. `fisiere`: Storage-ul proiectelor atașate.
  */
 export async function trateazaTichetul(
   db: Firestore, fisiere: Fisiere, uid: string | null, token: TokenTichet | null, data: unknown, acum: Date = new Date(),
-): Promise<RaspunsTichet | RaspunsRaportarileMele | RaspunsProiectTichet> {
+): Promise<RaspunsTichet | RaspunsRaportarileMele | RaspunsProiectTichet | RaspunsRaspunsuriRapide> {
   if (!uid) throw new HttpsError('unauthenticated', 'intră în cont');
   const d = obiect(data);
   const actiune = d['actiune'];
@@ -277,6 +312,7 @@ export async function trateazaTichetul(
       case 'raspunde': return await raspunde(db, uid, token, d, acum);
       case 'stare': return await schimbaStarea(db, uid, d, acum);
       case 'proiect': return await proiectul(db, fisiere, uid, d, acum);
+      case 'raspunsuriRapide': return await raspunsuriRapide(db, uid, d, acum);
       default: throw argument('acțiunea');
     }
   } catch (e) {
