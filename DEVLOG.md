@@ -10673,3 +10673,24 @@ sesiunii principale, după „da si vreau sa pornesti si restul worktrees” al 
     se verifică cu `assert.ok(a === b)`.
   - O probă e2e care cerea textul exact al unghiului găsit („2,0x”) a picat pe 1,99: unghiul se citește ca număr, cu
     toleranța.
+
+## 2026-11-21 — ADR 0272 propus: imaginile pe foaie (straturile bitmap), cu schița (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propunerea” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pregătesc propunerea pentru straturile
+bitmap (ADR 0272, cu schiță)?”, după „cat mai este de facut pentru trasare?”).
+**Started:** 21.11, 18:56. **Completed:** 21.11, 19:10.
+
+- **Ce am văzut în aplicație:** documentul (piese cu arbore, instanțe pe foi) n-are un element de imagine. Proiectul se
+  scrie întreg, ca JSON, în IndexedDB, la fiecare schimbare, cu 20 de versiuni: o imagine nu poate sta în el, deci octeții
+  ei merg într-o bază a lor, după amprentă. Pânza are deja straturi, cu vectorii desenați într-un worker. Panoul foii e
+  cel al proprietăților, fără nimic ales.
+- **Cercetarea:** Vectric, ArtCAM / Carveco, Fusion 360 (calibrarea din două puncte), LightBurn, Inkscape.
+- **ADR 0272 (propus):** imaginea pe foaie, sub desen, nici tăiată, nici exportată; punerea din fereastra trasării;
+  fixată sau desfăcută; lista în panoul foii; „Calibrează” și „Trasează…” în 25.8↑b. Trei întrebări, cu recomandarea
+  întâi: bifa la import, oprită; imaginea fixată; lista în panoul foii.
+- **Schița:** <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, cu macheta interactivă (opacitatea, lacătul, calibrarea, trasarea, un desen peste imagine),
+  piciorul ferestrei trasării și formularul (`raspunsuri/owner`). Privită o dată local (Edge fără fereastră): nicio eroare
+  în afara fonturilor blocate, fără derulare laterală la 375 px. Panoul calibrării rămânea vizibil după „Aplică” (stilul
+  lui bătea `hidden`): reparat, republicată.
+- **Și:** rândul trasării din `ACOPERIRE-ARTCAM-DESKPROTO.md`, pus la zi (25.3↑d până la 25.4↑c și ce rămâne la cerere);
+  rândul straturilor bitmap: propus.
