@@ -150,6 +150,23 @@ export function inZonaUrechii(g: GeometrieUrechi, s: number, P: number): boolean
 /** Rezerva pozițiilor pe buclă (mm): cât `EPS_RUPTURA` al parcurgerii. */
 const EPS_RUPTURA_URECHI = 1e-6;
 
+/**
+ * Zonele urechilor pe tură, [c_k − h − ℓ_k; c_k + h + ℓ_k] (ADR 0028; ADR 0211: cu flancul fiecăreia): rampa nu-și pornește
+ * trecerile strict înăuntrul uneia.
+ */
+export function zoneUrechi(g: GeometrieUrechi): Array<readonly [number, number]> {
+  return g.centre.map((c, k) => [c - g.h - (g.flancuri[k] as number), c + g.h + (g.flancuri[k] as number)] as const);
+}
+
+/**
+ * Coloanele punților pe buclă (ADR 0031, precizarea din 10.10): începutul fiecăreia, [c_k − h + R; c_k + h − R], unde puntea ține
+ * grosimea (ADR 0028 §2), și lungimea lor, 2h − D. La distanțe egale, urechile se numără de la pornirea `s` a buclei; alese
+ * (ADR 0211), stau pe loc, oriunde ar porni ea.
+ */
+export function coloaneUrechi(g: GeometrieUrechi, s: number, R: number, D: number, alese: boolean): { readonly inceputuri: number[]; readonly lungime: number } {
+  return { inceputuri: g.centre.map((c) => (alese ? 0 : s) + c - g.h + R), lungime: 2 * g.h - D };
+}
+
 /** Centrele urechilor alese (crescătoare, în [0, P)) față de bucla pornită din `s`. */
 export function centreDeLa(P: number, centre: readonly number[], s: number): number[] {
   return centre.map((c) => { const x = c - s; return x - Math.floor(x / P) * P; }).sort((a, b) => a - b);

@@ -22,7 +22,6 @@ DOC = 'src/model/document.ts'
 UL = 'src/model/urechiLocuri.ts'
 UR = 'src/cam/urechi.ts'
 JB = 'src/cam/job.ts'
-RP = 'src/cam/rampa.ts'
 AC = 'src/app/urechiAleseCalcul.ts'
 VO = 'src/app/valoriOperatii.ts'
 
@@ -85,10 +84,10 @@ o('C12', JB, "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese') {
 o('C13', JB, '        return incepeLa(c, s);', '        return acum[j] ?? c;', 'cam', 'bucla nu pornește în cel mai lung gol')
 o('C14', JB, "          if (fixe && gu && typeof gu !== 'string' && inZonaUrechii(gu, s, lungimeBucla(c))) return false;\n", '', 'cam',
   'intrarea poate porni în zona unei urechi')
-o('C15', JB, '(fixe ? 0 : s) + cc', 's + cc', 'cam', 'coloanele urechilor alese se mută cu pornirea intrării')
+o('C15', UR, '(alese ? 0 : s) + c - g.h + R', 's + c - g.h + R', 'cam', 'coloanele urechilor alese se mută cu pornirea intrării')
 o('C16', JB, '        if (urechi?.bucle) urechi = ', '        if (false) urechi = ', 'cam', 'direcția inversă nu oglindește urechile alese')
-o('C17', RP, '    for (const [k, cc] of g.centre.entries()) zone.push([cc - g.h - (g.flancuri[k] as number), cc + g.h + (g.flancuri[k] as number)]);',
-  '    for (const cc of g.centre) zone.push([cc - g.h - g.l, cc + g.h + g.l]);', 'cam', 'zonele rampei din flancul cel mai mic')
+o('C17', UR, '  return g.centre.map((c, k) => [c - g.h - (g.flancuri[k] as number), c + g.h + (g.flancuri[k] as number)] as const);',
+  '  return g.centre.map((c) => [c - g.h - g.l, c + g.h + g.l] as const);', 'cam', 'zonele rampei din flancul cel mai mic')
 # Modul pânzei (unitare).
 o('A01', AC, '    return Math.min(d, k.lungime - d) < min - 1e-9;', '    return false;', 'ui', 'urechile se pot pune oricât de aproape')
 o('A02', AC, "  if (lista.length >= PLAFON.urechi) return { ok: false, motiv: 'plafon' };\n", '', 'ui', 'peste 100 de urechi pe un element')

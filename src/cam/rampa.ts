@@ -3,7 +3,7 @@ import type { Miscare } from '../ir/ir.ts';
 import type { Degajare } from './degajari.ts';
 import { EPS_RUPTURA, lungimeBucla, parcurge, zLa, type Nod } from './parcurgere.ts';
 import { RAMPA_MINIMA } from './rampaMinima.ts';
-import { EPS_VARF, geometrieUrechi, noduriProfil, type ParametriUrechi } from './urechi.ts';
+import { EPS_VARF, geometrieUrechi, noduriProfil, zoneUrechi, type ParametriUrechi } from './urechi.ts';
 
 /**
  * Rampa (ADR 0029): bucla se taie continuu, fără ridicare între treceri. Pe fiecare trecere k, freza coboară de la
@@ -100,11 +100,11 @@ export function buclaCuRampa(
     return { ok: false, motiv: `rampa nu încape pe bucla de ${P.toFixed(3)} mm (cel puțin ${2 * RAMPA_MINIMA} mm): scoate rampa operației` };
   }
   // Zonele urechilor (aceleași pe toate trecerile): intrarea nu are voie să cadă strict înăuntrul uneia.
-  const zone: Array<readonly [number, number]> = [];
+  let zone: Array<readonly [number, number]> = [];
   if (urechi) {
     const g = geometrieUrechi(P, urechi);
     if (typeof g === 'string') return { ok: false, motiv: g };
-    for (const [k, cc] of g.centre.entries()) zone.push([cc - g.h - (g.flancuri[k] as number), cc + g.h + (g.flancuri[k] as number)]);
+    zone = zoneUrechi(g);
   }
   const scoate = (s: number): number => {
     const t = peTura(s, P);

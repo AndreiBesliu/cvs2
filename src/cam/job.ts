@@ -34,7 +34,7 @@ import { cuTaieturiPrinFoaie } from './prinFoaie.ts';
 import { SUPRACURSA_MAXIMA } from './supracursaMaxima.ts';
 import { traseuProfil } from './traseu.ts';
 import {
-  centreDeLa, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
+  centreDeLa, coloaneUrechi, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
   type ParametriUrechi,
 } from './urechi.ts';
 
@@ -64,8 +64,9 @@ function ultimaPozitie(miscari: readonly Miscare[]): { readonly x: number; reado
  */
 function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | string | null, R: number, D: number, fixe = false): boolean {
   if (!gu || typeof gu === 'string') return true;
-  return gu.centre.every((cc) => {
-    const coloana = bucataBuclei(c, (fixe ? 0 : s) + cc - gu.h + R, 2 * gu.h - D);
+  const { inceputuri, lungime } = coloaneUrechi(gu, s, R, D, fixe);
+  return inceputuri.every((inceput) => {
+    const coloana = bucataBuclei(c, inceput, lungime);
     const p = coloana.varfuri[0]?.p;
     const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana, D).distanta : p ? distantaLaContur(p, x) : Infinity;
     return d >= D;

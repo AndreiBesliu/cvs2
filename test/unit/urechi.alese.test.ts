@@ -14,7 +14,8 @@ import assert from 'node:assert/strict';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { lungimeBucla, punctLa } from '../../src/cam/parcurgere.ts';
 import {
-  centreDeLa, geometrieUrechi, inZonaUrechii, noduriProfil, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla,
+  centreDeLa, coloaneUrechi, geometrieUrechi, inZonaUrechii, noduriProfil, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla,
+  zoneUrechi,
 } from '../../src/cam/urechi.ts';
 import { conturCerc, conturDreptunghi } from '../../src/geom/contur.ts';
 import type { Document, Operatie, UrechiOperatie } from '../../src/model/document.ts';
@@ -63,6 +64,16 @@ test('geometria alese: refuzul sub W / 0,9 între centre, și o ureche singură 
   assert.ok(typeof r === 'string' && r.includes('prea apropiate'), String(r));
   const s = geometrieUrechi(11, { numar: 1, latime: 10, varf: 1, centre: [3] });
   assert.ok(typeof s === 'string' && s.includes('nu încape'), String(s));
+});
+
+test('zonele rampei și coloanele punților: cu flancul fiecărei urechi; coloanele alese stau pe loc', () => {
+  const g = geometrieUrechi(100, { numar: 3, latime: 10, varf: 1, centre: [10, 25, 70] });
+  assert.ok(typeof g === 'object');
+  // Flancurile 2,25, 2,25 și 5 (proba de mai sus).
+  assert.deepEqual(zoneUrechi(g).map(([a, b]) => [Number(a.toFixed(9)), Number(b.toFixed(9))]), [[2.75, 17.25], [17.75, 32.25], [60, 80]]);
+  // Coloana: [c − h + R; c + h − R], lungă de 2h − D (R = 1,5, D = 3): la distanțe egale, de la pornirea s; alese, pe loc.
+  assert.deepEqual(coloaneUrechi(g, 40, 1.5, 3, false), { inceputuri: [46.5, 61.5, 106.5], lungime: 7 });
+  assert.deepEqual(coloaneUrechi(g, 40, 1.5, 3, true), { inceputuri: [6.5, 21.5, 66.5], lungime: 7 });
 });
 
 test('pornirea: în mijlocul celui mai lung gol, peste vârful 0 dacă e cazul; centrele, față de ea', () => {
@@ -214,6 +225,14 @@ test('lucrarea: aceleași locuri cu rampă, cu intrări și pe linie cu direcți
   assert.ok(inversa.ok, inversa.ok ? '' : inversa.motiv);
   const pl = citeste(inversa.program.miscari, 16).paliere;
   assert.ok(pl.some((p) => palierLa(p, X0)) && pl.some((p) => palierLa(p, X0 + 80)), JSON.stringify(pl));
+  // Trei urechi pe latura de jos, la x = 10, 20 și 40 (goluri inegale: cu una sau două, bucla pornită în mijlocul celui mai
+  // lung gol e simetrică față de ele, iar oglindirea nu schimbă nimic). Inversată, fiecare rămâne la locul ei.
+  for (const directie of ['invers', undefined] as const) {
+    const r = programDinDocument(documentCu({ latura: 'pe-linie', ...(directie ? { directie } : {}), urechi: urechiAlese({ e: [{ x: 10, y: 0 }, { x: 20, y: 0 }, { x: 40, y: 0 }] }) }));
+    assert.ok(r.ok, r.ok ? '' : r.motiv);
+    const ps = citeste(r.program.miscari, 16).paliere.map((q) => [Number(Math.min(q.x0, q.x1).toFixed(6)), Number(Math.max(q.x0, q.x1).toFixed(6)), Number(q.y0.toFixed(6))]);
+    assert.deepEqual(ps.sort((a, b) => (a[0] as number) - (b[0] as number)), [[X0 + 7, X0 + 13, Y0], [X0 + 17, X0 + 23, Y0], [X0 + 37, X0 + 43, Y0]], `${directie ?? 'desen'}`);
+  }
   // Asimetric: o singură ureche, pe latura de jos, la x = 20. Inversată, bucla pornește tot din vârful ei 0, deci poziția s
   // devine P − s: urechea rămâne în (20, 0), palierul orizontal de la x = 17 la x = 23, în ambele sensuri.
   for (const directie of ['invers', undefined] as const) {
