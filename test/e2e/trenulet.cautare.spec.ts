@@ -61,8 +61,10 @@ test('„con” găsește piesele din toate filele, în ordinea lor; alegerea le
   await fila(page, 'roti').click();
   await expect(camp(page)).toHaveValue('');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'conicaDubla');
-  await expect(gasite(page)).toHaveText(['Roată dințată', 'Roată conică', 'Roată coroană', 'Conică dublă', 'Fulie', 'Roată cu anvelopă']);
+  // toată familia Roților (câte spune fila ei: o piesă nouă în familie nu schimbă proba), nu rezultatele
   await expect(page.locator('#at-galerie')).toHaveAttribute('aria-label', 'Roți');
+  await expect(gasite(page)).toHaveCount(Number(await fila(page, 'roti').locator('.at-nr').textContent()));
+  await expect(gasite(page).first()).toHaveText('Roată dințată');
 });
 
 test('fără diacritice și majuscule, la început de cuvânt, fiecare cuvânt; nicio potrivire: mesajul; Enter alege prima, Escape golește', async ({ page }) => {
