@@ -10627,3 +10627,47 @@ aseară s-au oprit peste noapte.
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 20.12), build-ul `2491fdc` (versiunea `2491fdc7c429`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 cu rolul „straight-walled inlay” (adâncimea 3, marginea dopului 5), vederea 3D arată „Sheet / Plug 1”, cu „Sheet” apăsat, titlul dopului „… on its 110 × 70 × 6 mm blank” și niciun cip de refuz. „Plug 1”: „Plug 1 simulated at 0.25 mm, on the 110 × 70 × 6 mm blank”, relieful 440 × 280, dopul în picioare, cu fața la 0 și marginea coborâtă (până la 5), camera pe mijlocul lui (55, 35), „Fit the plug”. Înapoi la „Sheet”: 1 200 × 800, adâncimea 3, camera pe (150, 100), „Fit the sheet”. Vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă. Văzut atunci: titlul dopului numește incrustația prin id-ul ei intern („e1/e1”), pe care utilizatorul nu-l vede nicăieri; de înlocuit, într-o felie mică.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
   „prin foaie” pe fiecare rând (v26).
+
+## 2026-11-21 — Felia 10.3↑n: numărul panoului gravat pe el (ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, 19.11, după raportul lui 10.3↑m: a treia propunere a liniei,
+numărul panoului; reluată pe 20.11 la „continua”, transmis de sesiunea principală). **Started:** 19.11, 21:11. **Completed:**
+21.11, 19:20.
+
+- **Ramura** `wip/10.3n-numere`, din `main` `4b7539a7` (3.Tm unită; cu 10.3↑l și 10.3↑m în ea).
+- **Locul cifrelor** (`src/model/numarPanou.ts`, pur): cutia lor în materialul panoului, la cel puțin un joc (max(2, înălțimea /
+  4)) de orice contur, niciun contur întreg înăuntru; locurile, de la cel mai apropiat de colțul din stânga-jos (grila fină
+  lângă colț, cea rară peste panou). Înălțimea (10 mm, de la 3 la 100), în `src/model/inaltimeNumar.ts` (ușor).
+- **Calculul și acțiunea:** workerul dă `perPanou`; blocul cheamă la cerere `src/app/numerePanouri.ts` (fontul
+  `relief-singleline`, cifrele prin `text/calcul.ts`, freza foii, adâncimea liniilor deschise, `locNumar`); `document.taie` pune
+  numerele cu id-uri noi în grupurile panourilor, în același pas de anulare.
+- **Interfața:** bifa „Gravează numărul fiecărui panou” (oprită implicit) și „Înălțimea cifrelor”, ținute
+  (`cncvs2.taiere-numere`, `cncvs2.taiere-inaltime-numar`); starea spune câte numere s-au gravat, câte panouri n-au avut loc sau
+  că fontul nu s-a încărcat. Manualul (ro, en), textele (ro, en).
+- **Treceri:** (1) numărul pe un dinte: căutat rând cu rând, de jos, pe firma reală (desenată din node, cu fontul real) numărul
+  ajungea pe un dinte de sub panou, departe de colț; acum locurile, de la cel mai apropiat de colț, cu o grilă fină lângă el (și
+  proba ei pe hârtie); (2) otrăvurile: la prima rulare (16), N08 (proba separată „fără contururi închise”) a scăpat,
+  echivalentă: codul ei, scos; U01 (bifa netinută) o prindea doar proba 88, care a căzut și fără otravă: proba numerelor
+  reîncarcă pagina și cere bifa; (3) proba 88 (instabilă dinainte): reîncărca pagina înaintea salvării automate, deci arăta
+  versiunea de dinainte de tăiere: așteaptă acum salvarea (`documentSalvat`); (4) mărimea: înălțimea cifrelor, luată din
+  `numarPanou.ts` de opțiuni și de bloc, aducea locul cifrelor în bucata panoului Taie (+0,6 kB): mutată în `inaltimeNumar.ts`
+  (ușor).
+- **Otrăvurile** (`test/otravuri/10.3n.py`, e2e în `taiere.spec.ts`): 15 / 15 prinse, în clona din afara Drive-ului (cele 11
+  unitare și pe `90e629bb`, cu N02 pe modulul nou); la prima rulare (16), 14 prinse, N08 scăpată (echivalentă), U01 prinsă doar
+  de proba instabilă.
+- **Porțile:** întregi pe unirea cu `main` `a64adf63` (`85b3ee54`): traducerile, cele trei compilatoare, importurile, licențele,
+  unit 9 659 (9 651 trecute, 8 sărite, 0 căderi), build-ul determinist (343 de fișiere identice), e2e 568 / 571 (trei căderi din
+  resurse și timp, sub încărcarea altor rulări: `cont.spec.ts:145`, cu `net::ERR_INSUFFICIENT_RESOURCES` la `page.goto`,
+  `masina.spec.ts:13` și `masina.coduri.spec.ts:134`, așteptări depășite; cele trei fișiere, reluate singure după liniște, 21 /
+  21), emulatoarele 101 / 101 și 29 / 29; înainte, pe vârful feliei (`3af621f6`): unit 9 642 / 0, e2e 561 / 561, emulatoarele
+  101 / 101 și 29 / 29; după mutarea înălțimii (`90e629bb`): traducerile, compilatorul, importurile, unit-urile tăierii,
+  cuțitului, acțiunilor, manualului și documentației 319 / 319, build-ul determinist, e2e `taiere`, `cutit`, `surori` și
+  `manual` 45 / 45.
+- **Mărimea:** pornirea neschimbată (107,2 kB; cu ușa 111,2 / 115), totalul +2,3 kB (739,5 → 741,8 / 800, A/B în clonă, pe
+  `main` `a64adf63` și pe unire, `85b3ee54`; pe `4b7539a7`, tot +2,3): bucata numerelor, la cerere, 1,7 kB (locul cifrelor,
+  așezarea lor, fontul), blocul panourilor +0,5 kB (bifa, înălțimea, stările), acțiunea +0,2 kB, workerul +0,02. Prima variantă
+  ducea locul cifrelor în bucata panoului Taie (+0,6 kB acolo, prin înălțimea luată din `numarPanou.ts`): acum vine doar cu
+  numerele.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 21.12), pe `85b3ee54`,
+  verificat (ro, en: bifa oprită implicit, numerele „1” și „2” în colțul fiecărui panou, pe linie, 1 mm, cu freza foii Ø6,
+  Anulează; nicio eroare în consolă).

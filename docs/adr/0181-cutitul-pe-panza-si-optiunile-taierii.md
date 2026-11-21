@@ -11,7 +11,7 @@ cuțitul-formă, închiderea, unde ajung bucățile și rolul lor), ADR 0050 și
 e din tipurile de azi. **Felia 10.3↑l** (panourile pe foi, §7), adăugată pe 17.11 la „1” al owner-ului: declanșatorul „vin
 planșele” din „Se redeschide dacă” s-a împlinit. **Felia 10.3↑n** (numărul panoului gravat pe el, §7), pornită pe 19.11 la
 „continua” al owner-ului, din propunerile liniei (a treia, după panourile pe foi și piesele puse de mai multe ori), cu
-implicitele de mai jos.
+implicitele de mai jos; gata pe 21.11, pe `wip/10.3n-numere`.
 
 **Problema.** Cuțitul de azi stă doar în panoul Taie: linia verticală X = …, cea orizontală Y = …, un ghidaj sau ultima formă
 aleasă, care trebuie desenată întâi cu altă unealtă și rămâne în desen. Nu se poate tăia cu o linie trasă direct pe pânză, la
@@ -345,6 +345,28 @@ primului commit de cod, `origin/main` unit în ramură.
   acțiunea `document.taie` pune piesele numerelor, cu id-uri noi, în grupurile panourilor.
 - **Se redeschide dacă:** owner-ul vrea numărul pe spatele panoului (cere întoarcerea plăcii: altă discuție, a CAM-ului), doar
   în program (raportul foilor are deja numele panourilor) sau alt text decât numărul.
+
+**Felia 10.3↑n, la cod** (19–21.11; numărul panoului gravat):
+- **Locul** (`numarPanou.ts`, pur): `locNumar(contururi, cifre, joc)`; cutia e bună când niciun contur nu stă întreg înăuntrul
+  ei, iar probele marginii (la `joc / 2`) și mijlocul stau în regiunea par-impar a contururilor închise, la cel puțin `joc + joc
+  / 4` de contururile din jur: fiecare punct al marginii e la cel mult `joc / 4` de o probă, deci la cel puțin `joc` de orice
+  contur. Locurile: grila fină (30 de pași pe axă) și cea rară (cel puțin a 60-a parte din panou), sortate după distanța de
+  colț. Proba pe hârtie (`taiere.numar.test.ts`): pătratul, o gaură, un L, o linie deschisă, un cerc mic înăuntrul cutiei, grila
+  fină lângă o gaură îngustă, panoul prea mic, apoi acțiunea pe firma de 2 400 × 1 000 (patru panouri, litera pe primul).
+- **Calculul:** workerul dă `perPanou` (`panouri.ts`: bucățile fiecărui panou, în ordinea lor); blocul cheamă la cerere
+  `numerePanouri.ts`: fontul (`relief-singleline`; neîncărcat, panourile rămân fără numere, cu motiv), cifrele `k + 1` prin
+  `text/calcul.ts`, piesa textului cu freza foii (`sculaFoii`) și grosimea ei (deci adâncimea liniilor deschise), contururile
+  fiecărui panou din bucățile tăiate și din instanțele foii, apoi `locNumar` (jocul, `jocNumar`). Acțiunea `document.taie` pune
+  numerele (`TaiereCalculata.numere`) cu id-uri noi (nici ale documentului de dinainte) în grupurile panourilor; un panou
+  dintr-o bucată devine grup cu bucata și numărul. Înălțimea și verificarea ei, în `inaltimeNumar.ts` (ușor), ca locul cifrelor
+  să vină doar cu numerele.
+- **Văzut pe firma reală** (geometria tăiată, cu fontul real, desenată din node: pânza headless iese albă): prima variantă căuta
+  rând cu rând și punea numărul pe un dinte de sub panou; acum stă lângă colț, înăuntru, pe fiecare din cele patru panouri.
+- **Mărimea:** pornirea neschimbată (107,2 kB; cu ușa 111,2 / 115), totalul +2,3 kB (739,5 → 741,8 / 800, A/B în clonă, pe
+  `main` `a64adf63` și pe unire, `85b3ee54`; pe `4b7539a7`, tot +2,3): bucata numerelor, la cerere, 1,7 kB (locul cifrelor,
+  așezarea lor, fontul), blocul panourilor +0,5 kB (bifa, înălțimea, stările), acțiunea +0,2 kB, workerul +0,02. Prima variantă
+  ducea locul cifrelor în bucata panoului Taie (+0,6 kB acolo, prin înălțimea luată din `numarPanou.ts`): acum vine doar cu
+  numerele.
 
 ## Proba
 
