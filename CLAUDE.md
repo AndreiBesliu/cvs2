@@ -682,7 +682,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   mutările care ajung la fund; lemnul rămas, umplut din marginea foii) și `src/cam/partiUrechi.ts` (părțile: contururile
   tăiate prin foaie de un profil exterior cu urechi), legate în `src/jobs/calculCam.ts` (câmpul `desprinse` al exportului).
   Textul îl face firul principal, cu `t` (`avertismentDesprinse`; mesajele exportului cerute la nevoie): printre avertismente,
-  pe fiecare foaie, nu un refuz. Urechile la locuri alese (c, câmp nou: v26) rămân la owner.
+  pe fiecare foaie, nu un refuz.
+  **Urechile la locuri alese (felia 11.3↑d, ADR 0211, varianta a; documentul v26)** gata pe 21.11: `urechi.mod` și
+  `urechi.locuri` (punctele formei, pe elementele operației; ușa le judecă pe documentul brut, `problemaUrechi`); orice cod
+  care schimbă nodurile unei operații trece prin `cuNoduri` (`src/model/urechiLocuri.ts`), iar un rol salvat nu ia locurile;
+  lucrarea le proiectează pe drumul frezei, cu flancul din golul fiecărei urechi și bucla pornită în cel mai lung gol
+  (`src/cam/urechi.ts`, `job.ts`); fereastra exportului are „Locurile”, iar „Alege pe desen…” ascunde fereastra (nu o
+  închide) și pune pânza în modul urechilor (`src/app/ModUrechi.tsx`, la cerere; „Gata” prin `document.aplica-operatii`).
+  „Unde ține” (b, 11.3↑e) și regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,

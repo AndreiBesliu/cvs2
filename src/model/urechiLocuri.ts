@@ -20,6 +20,13 @@ export function cuNoduri(o: Operatie, noduri: string[], redenumite?: ReadonlyMap
   return { ...o, noduri, urechi: { ...u, locuri } };
 }
 
+/** Câte urechi alese are operația (ADR 0211): punctele de pe elementele ei, doar cu modul „alese”. */
+export function numarUrechiAlese(o: Operatie): number {
+  const l = o.urechi?.mod === 'alese' ? o.urechi.locuri : undefined;
+  if (!l) return 0;
+  return o.noduri.reduce((s, n) => s + (Object.hasOwn(l, n) ? (l[n]?.length ?? 0) : 0), 0);
+}
+
 /**
  * Urechile unei operații-model (un rol salvat, ADR 0114): fără locurile alese, care sunt ale unei piese anume, iar modul
  * „alese” devine cel implicit, „egale”. Celelalte moduri (reguli, fără piesă) rămân.

@@ -85,11 +85,6 @@ function puncteAlese(t: Taietura): readonly Punct[] | null {
   return lista.map((q) => aplica(t.matrice, { x: q.x, y: q.y }));
 }
 
-/** Tăietura are urechi: la distanțe egale, oricând le cere; la locuri alese, doar cu cel puțin un loc pe elementul ei. */
-function areUrechi(t: Taietura): boolean {
-  return t.urechi !== null && (puncteAlese(t)?.length ?? 1) > 0;
-}
-
 /**
  * Urechile alese pe buclele unei tăieturi (ADR 0211, „CAM-ul”): fiecare punct trece pe cel mai apropiat punct al celei mai
  * apropiate bucle; pe fiecare buclă, centrele crescătoare, ca lungime de la vârful ei 0. Refuzul spune locul: două urechi
@@ -361,7 +356,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // Buclele fiecărei tăieturi: ca o degajare să nu se apropie de ele (ADR 0032 §5 a); cele cu urechi, ca o intrare să nu le
   // taie legătura (ADR 0030 §3, condiția c).
   const bucleToate: readonly (readonly Contur[])[] = profile.map((p) => (p.ok ? (p.treceri[0]?.contururi ?? []) : []));
-  const bucleCuUrechi: readonly (readonly Contur[])[] = taieturi.map((u, i) => (areUrechi(u) ? (bucleToate[i] ?? []) : []));
+  const bucleCuUrechi: readonly (readonly Contur[])[] = taieturi.map((u, i) => (u.urechi ? (bucleToate[i] ?? []) : []));
   const cutiiBucle: readonly (readonly Cutie[])[] = bucleToate.map((bs) => bs.map(cutieContur));
   /** Pragul degajărilor și al intrărilor unei tăieturi: diametrul sculei ei plus 1 mm (ADR 0032 §5 a). */
   const pragDe = (iu: number): number => (taieturi[iu]?.scula.diametru ?? 0) + MARJA_SCHELET;

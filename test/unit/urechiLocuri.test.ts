@@ -15,6 +15,7 @@ import { placutaCoapta } from '../../src/model/placute.ts';
 import { operatiiPentruRol } from '../../src/model/rol.ts';
 import { operatiiPentruRolPersonal, rolPersonalPiesei, sablonDinPiese, type RolPersonal } from '../../src/model/rolPersonal.ts';
 import { taie } from '../../src/model/taiere.ts';
+import { raportFoi } from '../../src/model/raportFoi.ts';
 import { executa, istoricNou } from '../../src/model/jurnal.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 
@@ -173,4 +174,39 @@ test('a doua plasă: tăierea unei piese fără rol (profil și gravare pe acela
   const dupa = taiatCuUrechi([{ ...profil('l1', ['r'], null), latura: 'pe-linie', adancime: 1, pas: 1 }]);
   assert.ok(dupa.piese.length >= 2, `${dupa.piese.length} piese`);
   treceUsa(dupa);
+});
+
+test('a doua plasă: rolul schimbat pe o piesă cu goluri dă urechile primei operații fiecărei operații noi, doar cu locurile elementelor ei', () => {
+  const p: Piesa = {
+    id: 'p', radacina: {
+      tip: 'grup', id: 'g', matrice: { ...I }, copii: [
+        { tip: 'element', id: 'e', forma: { ...D }, matrice: { ...I } },
+        { tip: 'element', id: 'h', forma: { tip: 'cerc', raza: 5 }, matrice: { ...I, e: 40, f: 15 } },
+      ],
+    },
+    // Rolul „exterior” cu goluri (ADR 0112): conturul pe dinafară, gaura pe dinăuntru, fiecare cu locurile ei.
+    operatii: [profil('x1', ['e'], alese({ e: SCURTE })), { ...profil('x2', ['h'], alese({ h: [{ x: 5, y: 0 }] })), latura: 'interior' }],
+  };
+  treceUsa(documentCu([p]));
+  // Pe „interior”, conturul trece pe dinăuntru, gaura pe dinafară; urechile vin din prima operație (ADR 0112 §4): locurile ei
+  // rămân pe contur, iar operația găurii nu le poate ține (nu-i sunt elemente).
+  const ops = operatiiPentruRol(documentCu([p]), p, 'interior');
+  assert.ok(ops && ops.length === 2, JSON.stringify(ops?.map((o) => o.noduri)));
+  assert.deepEqual(ops.map((o) => [o.latura, o.noduri, o.urechi?.locuri]), [['interior', ['e'], { e: SCURTE }], ['exterior', ['h'], {}]]);
+  treceUsa(documentCu([{ ...p, operatii: ops }]));
+});
+
+test('a doua plasă: un rol salvat cu locuri (scris în stocare de altcineva) nu le dă pieselor', () => {
+  const rol: RolPersonal = { id: 'r2', nume: 'Străin', baza: 'exterior', operatie: profil('model', ['model'], alese({ model: SCURTE, e: SCURTE })) };
+  const aplicate = operatiiPentruRolPersonal(piesa(null), rol);
+  assert.ok(aplicate);
+  assert.deepEqual(aplicate.map((o) => o.urechi), [{ numar: 2, latime: 6, grosime: 2 }]);
+  treceUsa(documentCu([{ ...piesa(null), operatii: aplicate }]));
+});
+
+test('raportul foilor: la locuri alese, câte urechi sunt alese (nu câte pe buclă)', () => {
+  const r = raportFoi(documentCu([piesa(alese({ e: [...SCURTE, { x: 40, y: 0 }] }))]), 'taiata', (n) => `Foaia ${n}`);
+  assert.equal(r.foi[0]?.operatii[0]?.urechi, 3);
+  const egale = raportFoi(documentCu([piesa({ numar: 4, latime: 6, grosime: 2 })]), 'taiata', (n) => `Foaia ${n}`);
+  assert.equal(egale.foi[0]?.operatii[0]?.urechi, 4);
 });

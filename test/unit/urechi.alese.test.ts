@@ -85,12 +85,19 @@ test('zona în care bucla nu poate porni: la mai puțin de h + ℓ de centrul un
   assert.equal(inZonaUrechii(g, 99.9, 100), false);
   assert.equal(inZonaUrechii(g, 0.5, 100), true);
   assert.equal(inZonaUrechii(g, 35, 100), false);
+  // Peste vârful 0: centrul în 5, zona (−5, 15) cuprinde și 99,5.
+  const w = geometrieUrechi(100, { numar: 2, latime: 10, varf: 1, centre: [5, 55] });
+  assert.ok(typeof w === 'object');
+  assert.equal(inZonaUrechii(w, 99.5, 100), true);
+  assert.equal(inZonaUrechii(w, 84, 100), false);
 });
 
 test('proiecția pe buclă: cel mai apropiat punct, ca lungime de la vârful 0, pe linii și pe arce', () => {
   const p = conturDreptunghi(0, 0, 10, 10);
   assert.deepEqual(proiectiePeBucla(p, { x: 12, y: 5 }), { s: 15, d: 2 });
   assert.deepEqual(proiectiePeBucla(p, { x: 5, y: -3 }), { s: 5, d: 3 });
+  // La egalitate (colțul de pornire e și capătul ultimei laturi), poziția cea mai mică: 0, nu 40.
+  assert.deepEqual(proiectiePeBucla(p, { x: -1, y: -1 }), { s: 0, d: Math.SQRT2 });
   // Pe cerc, punctul de pe buclă e chiar cel spre care arată punctul dat.
   const c = conturCerc(0, 0, 10);
   const x = proiectiePeBucla(c, { x: 0, y: 20 });
@@ -235,4 +242,28 @@ test('lucrarea: refuzurile spun locul (două urechi prea apropiate, una pe o buc
   const fara = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2 } }));
   assert.ok(egale.ok && fara.ok);
   assert.deepEqual(egale.program, fara.program);
+});
+
+/** Capătul primului arc de intrare (p₀, unde bucla pornește), din programul unei treceri cu intrări. */
+function pornireaIntrarii(miscari: readonly Miscare[]): { x: number; y: number } {
+  for (const m of miscari) if (m.tip === 'arc' && m.la.X !== undefined && m.la.Y !== undefined) return { x: m.la.X, y: m.la.Y };
+  throw new Error('fără arc de intrare');
+}
+
+test('lucrarea: cu intrări, bucla nu pornește în zona unei urechi alese (în flancul ei, Z-ul n-ar fi adâncimea plină)', () => {
+  // Urechile de 12 mm cu Ø3,175: palierul ±6, flancul 6, deci zona ±12; coloana punții, ±(6 − 1,5875), pe care intrarea o
+  // ocolește oricum. Fără urechi, intrarea pornește din p₀; o ureche aleasă la 10 mm de el, pe latura lui, îl pune în flanc.
+  const fara = programDinDocument(documentCu({ intrari: { raza: 3 }, urechi: urechiAlese({}, { latime: 12 }) }));
+  assert.ok(fara.ok, fara.ok ? '' : fara.motiv);
+  const p0 = pornireaIntrarii(fara.program.miscari);
+  const peOrizontala = aproape(p0.y, Y0 - R, 1e-6) || aproape(p0.y, Y0 + 30 + R, 1e-6);
+  const ureche = peOrizontala ? { x: p0.x + 10, y: p0.y } : { x: p0.x, y: p0.y + 10 };
+  const cu = programDinDocument(documentCu({ intrari: { raza: 3 }, urechi: urechiAlese({ e: [{ x: ureche.x - X0, y: ureche.y - Y0 }] }, { latime: 12 }) }));
+  assert.ok(cu.ok, cu.ok ? '' : cu.motiv);
+  const q0 = pornireaIntrarii(cu.program.miscari);
+  assert.ok(Math.hypot(q0.x - ureche.x, q0.y - ureche.y) >= 12 - 1e-6, `p₀ ${JSON.stringify(q0)}, urechea ${JSON.stringify(ureche)}`);
+  // Palierul urechii e chiar acolo, lung de 12 mm.
+  const { paliere } = citeste(cu.program.miscari, 16);
+  assert.equal(paliere.length, 1, JSON.stringify(paliere));
+  assert.ok(aproape((paliere[0] as Palier).lungime, 12, 1e-6), JSON.stringify(paliere));
 });
