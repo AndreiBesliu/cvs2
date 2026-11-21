@@ -1,8 +1,8 @@
 # ADR 0211 — Urechile la locuri alese (etapa 11, varianta c din ADR 0210)
 
 **Starea:** acceptat pe 19.11.2026, cu toate recomandările (1a–7a: „Da, toate recomandările”, la „Pornesc 11.3↑d cu toate
-recomandările?”). Propus în aceeași zi, în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main`
-`4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c). Felia 11.3↑d (varianta a) pornește acum; vezi la capăt.
+recomandările?”); varianta a, implementată în felia 11.3↑d (21.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
+(worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c).
 **Completează:** ADR 0028 (urechile: profilul Z(s), centrele la distanțe egale), ADR 0027 §4 (pornirea în vârful 0) și
 ADR 0210 (feliile 11.7↑, 11.3↑b și 11.3↑c: urechile nu țin sub 2 × freza, distanța propusă, proba la export).
 **Schița:** <https://claude.ai/artifact/XiHkAQJ5nJjxNVyGQzVG27> (variantele desenate, un mod al pânzei de încercat și formularul celor șapte întrebări; răspunsurile
@@ -123,3 +123,35 @@ export).
 **Precizarea de la implementare (19.11):** punctele alese se țin în coordonatele **elementului** (ale formei lui, înaintea
 matricei lui), nu ale rădăcinii piesei. Tot pe piesă sunt (2a): toate copiile le au, cu rotirea lor. Diferența: dacă forma
 se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână în urmă și să cadă pe alt punct al conturului.
+
+## Implementarea feliei 11.3↑d (a, alese cu mausul; 19–21.11)
+
+- **Documentul v26** (`src/model/document.ts`, `migrari.ts`, `schemaDocument.ts`): `urechi.mod` și `urechi.locuri`, ca mai sus.
+  Ușa judecă locurile pe documentul brut (`problemaUrechi`, ca literele plăcuțelor), cu calea câmpului în motiv: doar cu
+  „alese”, pe elemente ale operației, cel mult 100 pe element, x și y finite. **Precizare:** „în plafonul foii” înseamnă
+  ±`PLAFON.translatie` (10⁷ mm), ca vârfurile căilor. Cheile rămân date (un element „__proto__” își păstrează locurile).
+  Oracolul documentului la v26 (`CAMPURI_NOI_O[26]`, `document.v26.oracol.test.ts`) și corpusul de aur la v26 (urechile
+  capacului, la trei locuri alese).
+- **Locurile urmează nodurile** (`src/model/urechiLocuri.ts`, `cuNoduri`): gruparea (cu redenumirile), degruparea, piesa coaptă
+  a plăcuței («Desprinde»), repararea, tăierea și rolurile trec pe aici, deci o cheie nu rămâne pe un element plecat (ușa ar
+  refuza documentul la redeschidere). **Precizare:** un rol salvat (ADR 0114) nu ia locurile alese, care sunt ale unei piese:
+  „alese” devine implicitul, iar o piesă cu urechi alese își recunoaște rolul. Schimbarea rolului ia urechile primei
+  operații (ADR 0112 §4), cu locurile doar pe elementele fiecărei operații noi.
+- **Lucrarea** (`src/cam/urechi.ts`, `job.ts`): proiecția, flancurile și refuzurile, ca la „CAM-ul”; pornirea (5a); cu intrări,
+  p₀ se alege în afara zonelor urechilor, iar coloanele punților stau pe loc; direcția inversă oglindește urechile; un
+  element fără niciun loc ales n-are urechi. Modurile „lemn” și regulile se refuză la export până la feliile lor. Programele
+  fără mod rămân octet cu octet (plăcile de aur 1, 2 și 11).
+- **Fereastra exportului**: sub urechile rândului, „Locurile: la distanțe egale / alese pe desen”; cu „alese”, „Câte, pe
+  buclă” se oprește, iar „Alege pe desen…” pune pânza în modul urechilor. **Precizare:** fereastra stă ascunsă (nu închisă), cu
+  tot ce era scris în ea, iar acțiunile documentului rămân oprite; „Gata” (Enter) scrie locurile într-un pas, prin aceeași ușă
+  ca Exportă (`document.aplica-operatii`), „Renunță” (Escape) le lasă cum erau. La Exportă, „la distanțe egale” scoate modul
+  și locurile; numărul arătat al urechilor alese nu intră în document.
+- **Modul pânzei** (`src/app/ModUrechi.tsx`, la cerere; partea pură în `urechiAleseCalcul.ts`): conturul operației pe fiecare
+  copie de pe foaie, semnele urechilor, clicul, tragerea, banda. **Precizare:** distanța dintre urechi se măsoară aici pe
+  conturul desenat (în lume), nu pe drumul frezei; lucrarea o judecă din nou pe drum, la export, cu locul.
+- **Semnele cu „Arată traseul”** (4a), panoul („alese pe desen: N × W mm”) și raportul foilor (câte sunt alese).
+- **Probele:** oracolul documentului la v26 și corpusul de aur; `urechiLocuri.test.ts` (a doua plasă: gruparea, degruparea,
+  plăcuța, rolurile, tăierea, raportul, toate prin ușă); `urechi.alese.test.ts` (exemplul de pe hârtie: palierele la
+  x = −1,5875 și 81,5875, de la y = 12 la 18, pornirea la mijlocul laturilor lungi; rampa, intrările, direcția inversă,
+  refuzurile); `urechiAleseCalcul.test.ts`, `urechi.dialog.test.ts`; e2e `urechi-alese.spec.ts` (pe trei plăcuțe la 9 mm,
+  urechile mutate pe laturile scurte țin: exportul nu mai are piese desprinse). Otrăvurile `test/otravuri/11.3d.py`: 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
