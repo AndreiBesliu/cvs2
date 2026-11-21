@@ -253,6 +253,6 @@ formular și trimise așa de owner.
 - owner-ul răspunde altfel la întrebări;
 - vine zona de setări: pragurile (întâi cel al buclei mici) trec acolo, global sau pe proiect (§16);
 - vine rândul „Tăierea și conversia”: intersecțiile primesc „Taie la intersecții” (§15);
-- se discută unirea căilor (capetele a două căi prea apropiate, §14);
+- se discută unirea căilor (capetele a două căi prea apropiate, §14): discutată în ADR 0182 (legarea căilor, acceptat pe 21.11);
 - se cere selecția pe elemente (atunci clicul alege chiar formele problemei);
 - un caz real scapă (o ratare sau o alarmă falsă): cazul intră în probe, cu valoarea lui pe hârtie.
