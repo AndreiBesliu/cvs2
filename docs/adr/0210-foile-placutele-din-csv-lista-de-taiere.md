@@ -708,8 +708,8 @@ plăcuțelor: v21 dacă 11.4↑ ajunge în `main` înaintea lui 12.1↑b (ADR 01
   piesele au urechi pe un profil exterior, iar sub ea apare un avertisment („urechile pieselor din mijloc nu vor ține”);
   minimul rămâne freza; **b)** proba urechilor la export, pe programe, pentru orice așezare, inclusiv mutată de mână
   (rasterul cere o rezoluție după mărimea foii); **c)** urechile așezate față în față între vecini (o opțiune a profilului).
-  **Ales pe 17.11:** a), cu 3 mm de lemn în loc de 1 („Da, 11.3↑b”; felia 11.3↑b, mai jos); b și c rămân la cuvântul
-  owner-ului.
+  **Ales pe 17.11:** a), cu 3 mm de lemn în loc de 1 („Da, 11.3↑b”; felia 11.3↑b, mai jos); b, pe 18.11 (felia 11.3↑c);
+  c, pe 19.11, în ADR 0211 (urechile la locuri alese, acceptat cu toate recomandările).
 - **Probele:** `placa11.test.ts`, pe hârtie, pe exportul proaspăt: locurile, numele în ordinea CSV-ului, raportul, ramele
   (cutia drumului = plăcuțele ± raza, patru treceri, două urechi de 6 mm la Z −10 pe plăcuță), numele (V90 cel mult 3 mm,
   fiecare pe plăcuța lui, centrat la cel mult 1 mm, între 8 și 19,5; „Ana” de la 11 la 19), regimul și urechile care țin, cu

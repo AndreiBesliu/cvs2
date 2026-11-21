@@ -1,7 +1,8 @@
 # ADR 0211 — Urechile la locuri alese (etapa 11, varianta c din ADR 0210)
 
-**Starea:** propus pe 19.11.2026, în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main`
-`4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c). Nimic din cod încă: feliile pornesc la răspunsuri.
+**Starea:** acceptat pe 19.11.2026, cu toate recomandările (1a–7a: „Da, toate recomandările”, la „Pornesc 11.3↑d cu toate
+recomandările?”). Propus în aceeași zi, în linia planșelor (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main`
+`4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c). Felia 11.3↑d (varianta a) pornește acum; vezi la capăt.
 **Completează:** ADR 0028 (urechile: profilul Z(s), centrele la distanțe egale), ADR 0027 §4 (pornirea în vârful 0) și
 ADR 0210 (feliile 11.7↑, 11.3↑b și 11.3↑c: urechile nu țin sub 2 × freza, distanța propusă, proba la export).
 **Schița:** <https://claude.ai/artifact/XiHkAQJ5nJjxNVyGQzVG27> (variantele desenate, un mod al pânzei de încercat și formularul celor șapte întrebări; răspunsurile
@@ -111,3 +112,14 @@ plafonul foii, pe elemente ale operației. «Desprinde» și «Încă…» iau l
    b) se unesc într-una.
 7. **„Unde ține” (b):** a) se calculează la fiecare export, pe vecinii de acum; b) se scrie o dată în document, ca locuri
    alese.
+
+## Răspunsurile owner-ului (19.11)
+
+„Da, toate recomandările”: 1a (alese cu mausul întâi, apoi „unde ține”, apoi regulile), 2a (pe piesă), 3a (un mod al
+pânzei, deschis din rândul exportului), 4a (semnele pe contur, în modul lor și cu „Arată traseul”), 5a (pornirea în
+mijlocul celui mai lung gol), 6a (refuz la export, iar modul pânzei nu le lasă să se apropie), 7a („unde ține”, la fiecare
+export).
+
+**Precizarea de la implementare (19.11):** punctele alese se țin în coordonatele **elementului** (ale formei lui, înaintea
+matricei lui), nu ale rădăcinii piesei. Tot pe piesă sunt (2a): toate copiile le au, cu rotirea lor. Diferența: dacă forma
+se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână în urmă și să cadă pe alt punct al conturului.
