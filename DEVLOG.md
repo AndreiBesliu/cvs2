@@ -10704,4 +10704,5 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 20:07.
 - **Porțile:** rapide verzi pe `2ab00d64` (traducerile, tsc, unit 9 652 / 0, 8 sărite, licențele, build, determinismul;
   pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800, ca pe `main`), lente verzi (e2e 574 / 574, cu cele 4 noi;
   emulatoarele 101 / 101 și 29 / 29, la reluare: prima rulare nu pornise, cu portul Auth ținut de altă linie).
-- Pachetul Easy 3Draw 18.16.0, înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+- Pachetul Easy 3Draw 18.17.0 (3.To a luat 18.16.0 și a intrat întâi în `main`; ramura a adus `main` `4667898a` în
+  `0a10d403`), înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.

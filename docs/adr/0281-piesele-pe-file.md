@@ -92,7 +92,7 @@ Owner-ul a răspuns în schiță pe 20.11.2026, apoi: „Da, pornește 3.Tp”.
   telefonului cere acum fiecare filă și piesă întreagă. `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi,
   plus 3.Tk E12 (fulia din galerie), redirecționată pe tabelă.
 
-## Felia 3.Tp↑a, implementată: căutarea (pachetul 18.16.0)
+## Felia 3.Tp↑a, implementată: căutarea (pachetul 18.17.0)
 
 Pornită pe 21.11.2026, la cuvântul owner-ului („da si vreau sa pornesti si restul worktrees”), fără întrebare (§4).
 
@@ -120,6 +120,8 @@ Pornită pe 21.11.2026, la cuvântul owner-ului („da si vreau sa pornesti si r
   (cache-ul familiei, neșters la căutare) scăpase fiindcă proba căuta înainte ca atelierul să-și fi arătat galeria; proba
   așteaptă acum galeria și o prinde. 3.Tp E05 și E13, mutate pe rândurile noi; `verifica` pe toate listele pluginului:
   aceleași 20 de VOID vechi.
+- **Pachetul 18.17.0, nu 18.16.0:** 3.To (șenila, ADR 0280) a luat 18.16.0 și a intrat întâi în `main`; ramura a
+  adus `main` (`4667898a`) înaintea unirii, cu ciocniri doar în documente și în amprenta din bibliotecă.
 
 ## Feliile
 
