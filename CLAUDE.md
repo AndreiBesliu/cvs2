@@ -1239,6 +1239,33 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 20.11.2026: **3.Tp și 12.1↑e unite în `main`**, în lot (worktree-ul `unire`, ramura `unire-2011b`). **3.Tp** (la „Da,
+  pornește 3.Tp” și „prefer sa o pui intr-un worktree separat” ale owner-ului; linia `galeria`, ramura
+  `wip/3.Tp-galeria-pe-file`): piesele atelierului Easy 3Draw pe file (`ae548a42`, exact `7feac1c2`; ADR 0281, acceptat
+  cu 1b, 2a, 3a; pachetul 18.15.0). Trei familii ca file (Cărămizi, cu cele Technic; Legături; Roți), piesele familiei
+  dedesubt, ultima piesă ținută minte pe fiecare filă, „Calibrare” și „Din cvs2” deoparte; o singură tabelă tip →
+  familie; nimic mutat în date (o listă salvată cu 18.14.0 se deschide la fel). Porțile liniei pe `f63bc14e` (unit 9 640
+  / 0, e2e 568 / 568, emulatoarele 101 / 101 și 29 / 29), otrăvurile 29 / 29. **12.1↑e** (linia incrustațiilor, ramura
+  `wip/12.1-incrustatii`): dopul în vederea 3D (`b3c3970f`, din `c576138a`; ADR 0178): „Foaia / Dopul N”, dopul ales
+  simulat pe semifabricatul lui; porțile liniei pe `2491fdc` (unit 9 631 / 0, e2e 562 / 562), otrăvurile 21 / 21;
+  ciocnirea, doar în DEVLOG (ambele părți păstrate). Porțile lotului, pe `b3c3970f`: rapide și lente verzi (unit 9 644 /
+  0, e2e 570 / 570, emulatoarele 101 / 101 și 29 / 29; totalul 739,4 / 800, pornirea cu ușa 111,2 / 115). Urmează, la
+  cuvântul owner-ului: 3.To (șenila, direct în fila Roți), 3.Tp↑a (căutarea), 3.Tp↑b (pictogramele), 12.1↑e-2.
+- 20.11.2026: **3.Tn unită în `main`** (la „neata! continua” al owner-ului, după „Nu acum” de seara trecută): conicele
+  duble în atelierul Easy 3Draw (`55d3949e`, exact `b7ed3591`; ADR 0280, pachetul 18.14.0). Roata dreaptă de la rotițe,
+  lată de 8·m, cu dinții teșiți la 45° spre ambele fețe, ca LEGO 32270 / 32269 (din LDraw): banda de mijloc (±2·m) e
+  rotița; spre fețe, dintele se micșorează spre vârful conului (la r_p + 2·m de mijloc) și se subțiază liniar până la
+  0,3·m pe flanc; piciorul la r_p − 2·m, discul cu 0,2 mm mai mic. Montajul: pe axe paralele ca rotițele; la 90°, planul
+  de mijloc al fiecăreia la r_p(perechii) + 2·m de axul ei (8 mm față de o pereche de 12). Recenzia proprie (jocul
+  perechilor la 90°, prin bisecție, la marginile calibrării) a găsit 12 cu 28 și 12 cu 36 pătrunse la jocul 0,05 cu
+  subțierea de 0,1·m: cu 0,3·m, perechile LEGO au tot jocul (la 0,05 și 0,15), toate cele de la 12 dinți au joc, iar o
+  roată de sub 12 dinți cu una de peste 2,5 ori mai mare e spusă în montaj (`strans`; 8 cu 24 se pătrunde). Gaura
+  roților, într-o funcție comună (`gauraRoata`, rotițele identice la octet); otrăvurile 3.Th ale găurii, mutate pe ea.
+  Otrăvurile 31 / 31 (E09 după întărirea probei e2e). Porțile: rapide și lente pe `b50ec0de` (unit 9 635 / 0, e2e 563 /
+  563, emulatoarele 101 / 101 și 29 / 29; totalul 738,8 / 800), apoi e2e-ul pachetului 51 / 51 după îndreptarea unui
+  comentariu (`10a0a34d`). Pe drum, la cererea owner-ului, **ADR 0281 propus**: piesele atelierului pe file (Cărămizi,
+  Technic, Legături, Roți), cu schița <https://claude.ai/artifact/G32UWgWyP73uk26yMF3U26>; urmează 3.Tp (filele) sau
+  3.To (șenila), la răspunsurile owner-ului.
 - 19.11.2026: **3.Tm unită în `main`** (la „Da, pornește 3.Tm” al owner-ului): roata coroană în atelierul Easy 3Draw
   (`733bf5c2`, exact `c11cec4d`; ADR 0280, pachetul 18.13.0). Dinții pe fața de sus, tăiați chiar de pinionul ales
   (rotița îngroșată cu jocul, baleiată prin gol): un punct al secțiunii pinionului cade pe cilindrul fiecărei raze la

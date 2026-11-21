@@ -1,7 +1,7 @@
 /**
  * Roata conică în atelierul Easy 3Draw (ADR 0280, felia 3.Tl), pe pagina de sine stătătoare a planificatorului (din aceleași
  * surse ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Roată conică 20 pentru 20, gaură rotundă”, ca LEGO 87407, 21,4 × 21,4 × 7,7;
+ * - tipul nou, în fila Roți (ADR 0281): „Roată conică 20 pentru 20, gaură rotundă”, ca LEGO 87407, 21,4 × 21,4 × 7,7;
  * - montajul pe grilă: fața din spate la 12 mm de axa perechii (la jumătate de pas); „Ca LEGO 12”: la 8 mm (1 pas);
  * - roata de 36 pentru 12: numele, montajul ei și al perechii, STL-ul descărcat închis, cu raza cerută; „Fă perechea” pune în
  *   listă roata și perechea ei, cu dinții schimbați între ele.
@@ -13,8 +13,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierConica(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="conica"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="conica"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată conică 20 pentru 20, gaură rotundă');
 }
 async function seteaza(page: Page, sel: string, v: string): Promise<void> {

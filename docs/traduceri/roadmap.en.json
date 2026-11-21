@@ -17,6 +17,10 @@
       "ro": "Pagina `/admin` reproiectată",
       "en": "The redesigned `/admin` page"
     },
+    "02dfe18536360c3e": {
+      "ro": "Printează o conică dublă de 12 și prinde-o la 90° de o conică dublă LEGO de 12 (32270), cu axele întâlnite și planul de mijloc al fiecăreia la 8 mm (1 pas) de axul celeilalte; apoi pe axe paralele (12 mm, jumătate de pas) și o pereche printată de 12 cu 36, cu „Fă perechea” (la 90°, planul celei de 12 la 20 mm de axul celei de 36, al celei de 36 la 8 mm de axul celei de 12)",
+      "en": "Print a 12-tooth double bevel gear and mesh it at 90° with a LEGO 12-tooth double bevel gear (32270), with the axles meeting and the middle plane of each 8 mm (1 step) from the other’s axle; then on parallel axles (12 mm, half a step) and a printed pair of 12 with 36, with “Make the pair” (at 90°, the middle plane of the 12-tooth one 20 mm from the axle of the 36-tooth one, that of the 36-tooth one 8 mm from the axle of the 12-tooth one)"
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -564,6 +568,10 @@
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
       "en": "The ruler on the sheet's edge, with the dimension line"
+    },
+    "2a0105cdca2b705e": {
+      "ro": "**Conicele duble în atelier** (fără mașină; ADR 0280, acceptat; worktree-ul `rotite`, ramura `wip/3.Tj-roti-senile`; „neata! continua”). „Conică dublă” în galeria pieselor de legătură: roata dreaptă de la rotițe, cu dinții teșiți la 45° spre ambele fețe, ca LEGO 32270 și 32269; se prinde cu perechea ei pe axe paralele (ca rotițele) și la 90°, cu axele întâlnite (planul de mijloc al fiecăreia la 8 mm de axul unei perechi de 12, pe grilă); dinții (și repede: 12, 20, 28, 36), dinții perechii, „Fă perechea”. Perechile montate nu se pătrund și sunt prinse: cele LEGO, cu tot jocul din calibrare, și la cel mai mic; toate cele cu cel puțin 12 dinți, cu joc; o roată de sub 12 dinți cu una de peste 2,5 ori mai mare se prinde strâns, iar montajul o spune. Pachetul 18.14.0. Unitare 8, e2e 3, otrăvuri 31 / 31. Urmează 3.Tp (piesele pe file, ADR 0281, propus) sau 3.To (șenila), la răspunsurile owner-ului.",
+      "en": "**The double bevel gears in the workshop** (no machine; ADR 0280, accepted; the `rotite` worktree, branch `wip/3.Tj-roti-senile`; “neata! continua”). “Double bevel gear” in the gallery of connecting pieces: the spur gear from the gears, with its teeth bevelled at 45° towards both faces, like LEGO 32270 and 32269; it meshes with its pair on parallel axles (like the gears) and at 90°, with the axles meeting (the middle plane of each 8 mm from the axle of a 12-tooth pair, on the grid); the teeth (and quickly: 12, 20, 28, 36), the pair’s teeth, “Make the pair”. The mounted pairs do not interpenetrate and are engaged: the LEGO ones with all the backlash from calibration, even the smallest; all those with at least 12 teeth with backlash; a gear with fewer than 12 teeth and one more than 2.5 times larger mesh tightly, and the mounting says so. Package 18.14.0. Unit 8, e2e 3, poisons 31 / 31. Next: 3.Tp (the parts on tabs, ADR 0281, proposed) or 3.To (the track), at the owner’s answers."
     },
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
@@ -1301,6 +1309,10 @@
       "ro": "3.6i (proba pe imprimantă, pasul 2)",
       "en": "3.6i (the test on the printer, step 2)"
     },
+    "5afa3167a9be4da1": {
+      "ro": "Piesele atelierului pe file",
+      "en": "The workshop parts on tabs"
+    },
     "5bece914e15c12d9": {
       "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
       "en": "Textures; STL / OBJ export; Relief clipart; Laser"
@@ -1889,6 +1901,10 @@
       "ro": "Booleanul, adus din etapa 6",
       "en": "The boolean, brought forward from stage 6"
     },
+    "8c4e9d064de2ed05": {
+      "ro": "**Piesele atelierului pe file** (fără mașină; ADR 0281, acceptat cu 1b, 2a, 3a; worktree-ul `galeria`, ramura `wip/3.Tp-galeria-pe-file`; „Da, pornește 3.Tp”, apoi „prefer sa o pui intr-un worktree separat”). Sus, în locul celor opt file de până acum, trei familii, cu câte piese au: Cărămizi (10: cele System, suportul și cele Technic), Legături (8), Roți (6); apoi „Din cvs2” (doar în cvs2) și „Calibrare”. Sub file, pe toată lățimea, galeria familiei alese (pe telefon, deasupra vederii 3D); fiecare filă ține minte ultima piesă aleasă în ea. O singură tabelă tip → familie, din care se fac filele și galeriile; o probă unitară cere fiecare tip al motorului o singură dată în ea. Nimic nu se mută în date: o listă salvată de 18.14.0 se deschide la fel, și pe claude.ai. Pachetul 18.15.0. Unitare 5, e2e 5, otrăvuri 29 / 29. Urmează 3.To (șenila, în fila Roți), apoi 3.Tp↑a (căutarea) și 3.Tp↑b (pictogramele).",
+      "en": "**The workshop parts on tabs** (no machine; ADR 0281, accepted with 1b, 2a, 3a; the `galeria` worktree, branch `wip/3.Tp-galeria-pe-file`; “Da, pornește 3.Tp”, then “prefer sa o pui intr-un worktree separat”). At the top, instead of the eight tabs so far, three families, with how many parts they have: Bricks (10: the System ones, the bracket and the Technic ones), Joints (8), Wheels (6); then “From cvs2” (only in cvs2) and “Calibration”. Under the tabs, across the full width, the gallery of the chosen family (on a phone, above the 3D view); each tab remembers the last part chosen in it. A single type → family table, from which the tabs and the galleries are made; a unit test requires every engine type exactly once in it. Nothing moves in the data: a list saved by 18.14.0 opens the same, on claude.ai too. Package 18.15.0. Unit 5, e2e 5, poisons 29 / 29. Next: 3.To (the track, in the Wheels tab), then 3.Tp↑a (the search) and 3.Tp↑b (the icons)."
+    },
     "8d47a7050074a377": {
       "ro": "Încercarea liniilor mediane pe culori (25.3↑c, ADR 0227) pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; ramura `wip/25.1-trasare`): din „Importă…”, un desen cu linii colorate (o schemă, un desen cu carioci; o poză sau o scanare), cu **Sursa: Culorile** și **Rezultatul: Linii mediane**: liniile fiecărei culori, **Leagă peste alte culori** la încrucișări, grosimea în pastile. Spune unde leagă ce nu trebuie sau lasă rupte trăsături evidente (ADR 0227, „Se redeschide dacă”); desenul trimis intră în probe",
       "en": "Trying centre lines on colours (25.3↑c, ADR 0227) on the `trasare` channel (<https://cncvectorstudio-test--trasare-icw58h57.web.app>; the `wip/25.1-trasare` branch): from “Import…”, a drawing with coloured lines (a diagram, a felt-tip drawing; a photo or a scan), with **Source: Colours** and **Result: Centre lines**: each colour’s lines, **Join across other colours** at crossings, the width in the swatches. Say where it joins what it should not or leaves obvious strokes broken (ADR 0227, “Reopens if”); the drawing you send goes into the tests"
@@ -2241,6 +2257,10 @@
       "ro": "**Oracolul independent al buzunarului** (fără mașină; fără ADR nou: nicio decizie schimbată; datoria din `CLAUDE.md`, „Oracolul documentului v11 e scris de sesiunea aplicației, nu independent: de reluat”; o sesiune paralelă nouă, deci independentă prin construcție, în worktree-ul ei, pe `wip/5.1b-oracol-buzunar`). `test/oracles/buzunar.ts` e scris doar din ADR 0069, 0073, 0076, 0093 și 0094 (plus 0024, 0034 și 0008, pentru forme și montaj), din tipurile documentului și din ieșire, fără să vadă `src/cam/` și probele vechi; zero importuri din `src/`, iar din oracole doar cititorul G-code și silueta sculei ale oracolului simulării. Judecă G-code-ul exportat pe fiecare bucată (grupul de aceeași adâncime, citit par-impar): pasul pe trecere (un câmp de înălțimi tăiat de tot programul: sub freză, cel mult `pas` de material; nicio rapidă în material; nimic sub adâncime), peretele (centrul la cel puțin R − 0,006 de margine, garantat exact prin bisecția pe distanța 1-Lipschitz, și în afara insulelor), acoperirea deschiderii cu cea mai mică freză, pasul lateral (zona centrului la cel mult s de drum; inelele la R + k·s, liniile la unghiul cerut și la s), sensul, coborârea (panta cel mult unghiul; cu rampă, zigzag sau elice, nicio coborâre verticală în material) și frezele de rest (doar unde cea dinainte n-a ajuns: la peste R_a − R de drumul ei, fără să meargă pe lângă un perete deja tăiat). Pe corpusul CAM (11 exporturi cu buzunare, 16 bucăți, cu toate posturile, unitățile și strategiile) și pe 13 cazuri pe hârtie (dreptunghiul 100 × 60, și cu originea în dreapta-sus și Z0 jos; L-ul în opoziție, cu s = R; insula 20 × 20; canalul de 4 mm, cu și fără freza de rest Ø3; liniile la 0° și la 30°; rampa, zigzagul și elicea la atan 0,1; cercul R20, cu și fără insula R5): verdictul curat și măsurile egale cu hârtia (inelele 3 … 29,4, ultimul 41,2 × 1,2; bucla insulei −(26² − 9(4 − π)); gura canalului până la 80 − √5; liniile 30,8 … 50; pantele 0,1 și 0,075; cercurile 2, 5, …, 17 și coroanele 17 / 8 și 14 / 11). Cele 4 refuzuri prezise de oracol sunt ale aplicației, cu același motiv. **Niciun defect al aplicației.** Hârtia mea a greșit o dată: în L, δ maxim e la îmbinarea brațelor, 32(2 − √2) = 18,745, nu 16, deci inelul de la 18 există (aplicația avea dreptate). Sabotajele pe o copie a ieșirii: 4 / 4 (peretele mutat cu 0,1 mm, prima trecere la −4, inelul cel mai adânc scos, freza de rest pe lângă perete), plus 14 perechi, câte una pe verificare. Rămâne a sesiunii aplicației partea de ușă (`test/oracles/document.ts`, câmpurile v11–v18).",
       "en": "**The independent pocket oracle** (no machine; no new ADR: no decision changed; the debt in `CLAUDE.md`, „Oracolul documentului v11 e scris de sesiunea aplicației, nu independent: de reluat”; a new parallel session, hence independent by construction, in its own worktree, on `wip/5.1b-oracol-buzunar`). `test/oracles/buzunar.ts` is written only from ADRs 0069, 0073, 0076, 0093 and 0094 (plus 0024, 0034 and 0008, for the shapes and the setup), from the document types and from the output, without seeing `src/cam/` or the old probes; zero imports from `src/`, and from the oracles only the G-code reader and the tool silhouette of the simulation oracle. It judges the exported G-code on each piece (the group of equal depth, read even-odd): the step per pass (a height field cut by the whole program: under the cutter, at most `pas` of material; no rapid move in material; nothing below the depth), the wall (the center at least R − 0.006 from the boundary, guaranteed exactly by bisection on the 1-Lipschitz distance, and outside the islands), the coverage of the opening by the smallest cutter, the stepover (the center zone within s of the path; the rings at R + k·s, the lines at the requested angle and s apart), the cutting direction, the descent (the slope at most the angle; with a ramp, zigzag or helix, no vertical descent into material) and the rest cutters (only where the previous one did not reach: farther than R_a − R from its path, without running along a wall already cut). On the CAM corpus (11 exports with pockets, 16 pieces, with all the posts, units and strategies) and on 13 paper cases (the 100 × 60 rectangle, also with the origin top-right and Z0 at the bottom; the L in conventional cutting, with s = R; the 20 × 20 island; the 4 mm channel, with and without the Ø3 rest cutter; the lines at 0° and 30°; the ramp, the zigzag and the helix at atan 0.1; the R20 circle, with and without the R5 island): a clean verdict and the measures equal to the paper (the rings 3 … 29.4, the last 41.2 × 1.2; the island loop −(26² − 9(4 − π)); the channel mouth up to 80 − √5; the lines 30.8 … 50; the slopes 0.1 and 0.075; the circles 2, 5, …, 17 and the annuli 17 / 8 and 14 / 11). The 4 refusals predicted by the oracle are the application's, with the same reason. **No defect in the application.** My paper was wrong once: in the L, the maximum δ is at the junction of the arms, 32(2 − √2) = 18.745, not 16, so the ring at 18 exists (the application was right). Sabotage on a copy of the output: 4 / 4 (the wall moved by 0.1 mm, the first pass at −4, the deepest ring removed, the rest cutter along the wall), plus 14 pairs, one per check. The door part remains the application session's (`test/oracles/document.ts`, the v11–v18 fields)."
     },
+    "a73232f78e4aa255": {
+      "ro": "Conicele duble în atelier",
+      "en": "The double bevel gears in the workshop"
+    },
     "a75abf755145bbba": {
       "ro": "Sensul de tăiere",
       "en": "Cutting direction"
@@ -2388,6 +2408,10 @@
     "b052146a0aa660c8": {
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
       "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
+    },
+    "b06c1742e8022967": {
+      "ro": "Piesele atelierului Easy 3Draw pe file",
+      "en": "The Easy 3Draw workshop parts on tabs"
     },
     "b0bd74ff72e4e581": {
       "ro": "Documentația admin",
@@ -2625,6 +2649,10 @@
       "ro": "Instanțele fonturilor variabile, aduse din etapa 7",
       "en": "Variable font instances, brought forward from stage 7"
     },
+    "c040828fb099c23d": {
+      "ro": "3.Tp (piesele pe file)",
+      "en": "3.Tp (the parts on tabs)"
+    },
     "c083a50de5467f32": {
       "ro": "Transformările selecției, Alt care inversează lipirea",
       "en": "Transforming the selection, Alt inverting snapping"
@@ -2688,6 +2716,10 @@
     "c47d47f8c00b422a": {
       "ro": "Text, text pe cale, fonturi",
       "en": "Text, text on a path, fonts"
+    },
+    "c47df738c4fbf914": {
+      "ro": "Dopul în vederea 3D",
+      "en": "The plug in the 3D view"
     },
     "c522fbef9a2f41e6": {
       "ro": "Regiunea păstrată, cu oracolul întâi",
@@ -2765,6 +2797,10 @@
       "ro": "Offsetul",
       "en": "The offset"
     },
+    "cd3be2c0e3441cd1": {
+      "ro": "3.Tn (conicele duble)",
+      "en": "3.Tn (the double bevel gears)"
+    },
     "cd409d4e8f7a4c4a": {
       "ro": "Degajările pe colțurile cu arce, ultimele rămase din etapa 2",
       "en": "Reliefs at corners with arcs, the last ones left from stage 2"
@@ -2832,6 +2868,10 @@
     "d44cbac72109e492": {
       "ro": "Planificatorul în engleză, după limba lui cvs2",
       "en": "The planner in English, following the language of cvs2"
+    },
+    "d45955ce6023d1a4": {
+      "ro": "Pe test (<https://cncvectorstudio-test.web.app/>), în Easy 3Draw, partea 3D: filele de sus (Cărămizi, Legături, Roți, cu câte piese au), cu piesele familiei dedesubt; alege câte o piesă pe fiecare filă și treci între ele (fiecare filă își ține piesa); lista de printat și modelul de dinainte sunt la fel; pe telefon, filele și piesele încap, deasupra vederii 3D",
+      "en": "On test (<https://cncvectorstudio-test.web.app/>), in Easy 3Draw, the 3D part: the tabs at the top (Bricks, Joints, Wheels, with how many parts they have), with the family’s parts underneath; pick a part on each tab and switch between them (each tab keeps its part); the print list and the model from before are the same; on a phone, the tabs and the parts fit, above the 3D view"
     },
     "d49e636700fcb2e9": {
       "ro": "**Remedierile din testul uneltelor de desen** (ADR 0074; raportul testului pas cu pas: 29 de pași bine, 2 nemarcați, notele owner-ului). Clicul alege conturul cel mai apropiat, apoi cea mai mică formă care cuprinde punctul (după un offset spre exterior, forma dinăuntru se alege iar cu un clic). Offsetul din desen are Colțurile: Ca originalul (implicit, colțurile ascuțite rămân ascuțite) sau Rotunjite (cu raza distanței, și spre interior). Copierea pe curbă: pe ea, la stânga sau la dreapta, tangente sau la o distanță. Pen-ul: dublu clic închide calea, tragerea din primul nod arată închiderea, Ctrl+Z / Ctrl+Y anulează și refac pașii desenului, Ctrl+Shift+Z imediat după îl redeschide. Mânerele despărțite se unesc din nou cu Alt sau cu Curbă pe ambele părți. Cronologia din roadmap arată feliile aduse înainte pe etapele viitoare (↑N). Manualul și pașii testului sunt la zi. **Treceri:** (1) cele șase remedieri cu probele lor; pe hârtie, două greșeli găsite și reparate înainte de commit (colțul unui contur cu trei vârfuri nu se prelungea; capătul unui braț lat cât 2d nu se rotunjea întreg), iar o valoare a probei era calculată greșit (colțul intrând al L-ului adaugă arie la offsetul exact, nu scade).",
@@ -2976,6 +3016,10 @@
     "de0643a0b03a958a": {
       "ro": "Scheletul",
       "en": "The skeleton"
+    },
+    "de0d80531f79bf9c": {
+      "ro": "**Dopul în vederea 3D** (fără mașină; ADR 0178, acceptat din ADR 0170 §5 și din planșa „Dopul în vederea 3D” a schiței de atunci, la alegerea owner-ului „12.1↑e, dopul 3D”; worktree-ul `incrustatii`, ramura `wip/12.1-incrustatii`, cu `main` `4b7539a7` adus prin fast-forward). În vederea 3D, „Foaia / Dopul 1 … Dopul N”, doar cu dopuri, în ordinea și cu semifabricatele exportului (titlul fiecăruia spune semifabricatul); „Dopul N” simulează programul dopului pe semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează; un dop refuzat nu oprește foaia, iar starea spune motivul. `dopurileFoii` (o funcție, a exportului și a vederii), `calculeazaSimularea(doc, dop?)`, cererea `simulare` cu `dop`; mesajele și manualul (ro, en). „Împreună (secțiunea)” cu potrivirea simulată: felia 12.1↑e-2. Proba, scrisă întâi (`incrustatie.dop3d.test.ts`), a picat toată pe codul vechi: lista a exportului (V, apoi drept), relieful fiecărui dop = oracolul independent pe G-code-ul exportat (celulele plane, ± 0,02), refuzul, fără incrustații. E2e (`incrustatie3d.spec.ts`): butoanele, dopul de 40 × 30 × 6 cu fața coborâtă la 5 (pixelii), camera, înapoi la foaie. Porțile, pe `2491fdc`: compilatoarele ×3, importurile, licențele, traducerile (855, 0 lipsă); unit 9 631 / 0 (8 sărite); build determinist (341 de fișiere; pornirea cu ușa 111,2 / 115; totalul 739,4 / 800); e2e 562 / 562 din prima (rularea de aseară, oprită peste noapte la 555 / 562 fără nicio cădere, reluată întreagă). Otrăvurile: lista nouă `12.1e.py`, 21: 21 / 21 prinse (D01 și D03–D12 de proba dopurilor, D02 de cea a supracursei, V01–V09 de e2e-ul vederii); reorientate și prinse: 12.1b P09 și E13, 12.1b-2 B26, 12.1f-2 T49, 12.1f H26 și H27, 12.1f-3 S09 și S10, 4.A K02; celelalte liste, niciun VOID nou (4.A K03, K04, M02, M04 și M05, VOID și pe `main`, sunt ale altor linii). Mărimea: JavaScript +626 B gzip (vederea 3D +413, lucrătorul CAM +125, calculul interfeței +53), CSS +14 B; totalul 738,8 → 739,4 / 800; pornirea și ușa, neschimbate. Publicat pe canalul `incrustatii`, build-ul `2491fdc` (versiunea `2491fdc7c429`, până pe 20.12), verificat în browserul aplicației, în engleză, fără export: „Sheet / Plug 1” pe un dreptunghi cu incrustație dreaptă; dopul simulat pe semifabricatul de 110 × 70 × 6 și încadrat; înapoi la foaie; foaia lăsată goală, 0 erori în jurnal și în consolă. Titlul dopului arată id-ul intern al incrustației („e1/e1”): de înlocuit, într-o felie mică. Nu acum: 12.1↑e-2 (secțiunea și potrivirea simulată) la cuvântul owner-ului; bifa pe fiecare rând (v26).",
+      "en": "**The plug in the 3D view** (no machine; ADR 0178, accepted from ADR 0170 §5 and the “The plug in the 3D view” board of the sketch of that time, at the owner's choice “12.1↑e, dopul 3D”; the `incrustatii` worktree, branch `wip/12.1-incrustatii`, with `main` `4b7539a7` fast-forwarded). In the 3D view, “Sheet / Plug 1 … Plug N”, only with plugs, in the order and with the blanks of the export (each one's title gives the blank); “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it; a refused plug does not stop the sheet, and the status says why. `dopurileFoii` (one function, the export's and the view's), `calculeazaSimularea(doc, dop?)`, the `simulare` request with `dop`; the messages and the manual (ro, en). “Together (the section)” with the simulated fit: slice 12.1↑e-2. The proof, written first (`incrustatie.dop3d.test.ts`), failed entirely on the old code: the list is the export's (V, then straight), each plug's relief = the independent oracle on the exported G-code (the flat cells, ± 0.02), the refusal, no inlays. E2e (`incrustatie3d.spec.ts`): the buttons, the 40 × 30 × 6 plug with the face lowered to 5 (the pixels), the camera, back to the sheet. The gates, on `2491fdc`: the compilers ×3, the imports, the licences, the translations (855, 0 missing); unit 9,631 / 0 (8 skipped); the deterministic build (341 files; startup with the door 111.2 / 115; total 739.4 / 800); e2e 562 / 562 at the first run (last night's run, stopped overnight at 555 / 562 with no failure, rerun in full). The poisons: the new list `12.1e.py`, 21: 21 / 21 caught (D01 and D03–D12 by the plugs' proof, D02 by the overtravel's, V01–V09 by the view's e2e); retargeted and caught: 12.1b P09 and E13, 12.1b-2 B26, 12.1f-2 T49, 12.1f H26 and H27, 12.1f-3 S09 and S10, 4.A K02; the other lists, no new VOID (4.A K03, K04, M02, M04 and M05, VOID on `main` too, belong to other lines). The size: JavaScript +626 B gzip (the 3D view +413, the CAM worker +125, the interface's calculation +53), CSS +14 B; total 738.8 → 739.4 / 800; startup and the door unchanged. Published on the `incrustatii` channel, the build `2491fdc` (version `2491fdc7c429`, until 20.12), checked in the app's browser, in English, without exporting: “Sheet / Plug 1” on a rectangle with a straight-walled inlay; the plug simulated on the 110 × 70 × 6 blank and framed; back to the sheet; the sheet left empty, no errors in the log or the console. The plug's title shows the inlay's internal id (“e1/e1”): to replace, in a small slice. Not now: 12.1↑e-2 (the section and the simulated fit) at the owner's word; the box on each row (v26)."
     },
     "de2406a915c5bfb0": {
       "ro": "Planificatorul Trenuleț ca extensie, din sursele neschimbate",

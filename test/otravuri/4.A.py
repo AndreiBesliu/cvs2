@@ -70,8 +70,9 @@ o('B08', BAZ, "  return calculeaza({ fel: 'timp', program, foaie, setari }, tran
 # ---- calculul mutat și workerul ----
 o('K01', CAL, '  const r = programDinDocument(doc);\n  return r.ok', '  const r = programDinDocument(doc, REGIM_IMPLICIT, 1);\n  return r.ok', 'cam',
   'traseul cu supracursă (alt program decât al documentului)')
-o('K02', CAL, '  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const p = pregatesteProgram',
-  '  const job = programDinDocument(doc, REGIM_IMPLICIT, 1);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const p = pregatesteProgram', 'cam',
+# K02 reorientată la 12.1↑e (19.11): simularea foii e acum ramura fără dop a lui `calculeazaSimularea` (ADR 0178), indentată.
+o('K02', CAL, '    const job = programDinDocument(doc, REGIM_IMPLICIT, 0);\n    if (!job.ok) return { ok: false, motiv: job.motiv };\n    const p = pregatesteProgram',
+  '    const job = programDinDocument(doc, REGIM_IMPLICIT, 1);\n    if (!job.ok) return { ok: false, motiv: job.motiv };\n    const p = pregatesteProgram', 'cam',
   'vederea 3D cu supracursă')
 o('K03', CAL, "      return { raspuns: r, transfer: r.ok ? deTransferat([r.program.octeti, ...r.fisiere.map((f) => f.octeti), ...vederiSimulare(r.simulare)]) : [] };",
   "      return { raspuns: r, transfer: [] };", 'cam', 'octeții și mutările exportului copiate, nu transferate')

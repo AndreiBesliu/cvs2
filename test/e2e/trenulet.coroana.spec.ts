@@ -1,7 +1,7 @@
 /**
  * Roata coroană în atelierul Easy 3Draw (ADR 0280, felia 3.Tm), pe pagina de sine stătătoare a planificatorului (din aceleași
  * surse ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Roată coroană 24 pentru pinionul de 8”, ca LEGO 3650, 25,8 × 25,8 × 8;
+ * - tipul nou, în fila Roți (ADR 0281): „Roată coroană 24 pentru pinionul de 8”, ca LEGO 3650, 25,8 × 25,8 × 8;
  * - montajul: axul pinionului de 8 la 8 mm deasupra feței de jos (pe grilă, 1 pas), cu butucul lung în calea lui; al celui de
  *   16, la 12 mm (la jumătate de pas), fără butuc în cale;
  * - coroana de 40 pentru 8, cu gaură rotundă: STL-ul descărcat închis, cu raza dinților; „Fă perechea” pune în listă coroana și
@@ -15,8 +15,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierCoroana(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="coroana"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="coroana"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Roată coroană 24 pentru pinionul de 8');
 }
 async function seteaza(page: Page, sel: string, v: string): Promise<void> {

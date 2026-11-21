@@ -10500,6 +10500,158 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
 
 **Completed:** 19.11, 22:36.
 
+## 2026-11-20 — Felia 3.Tn: conicele duble în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! continua” (owner-ul, a doua zi; la „Pornesc 3.Tn (conicele duble)?” răspunsese „Nu acum”). **Started:**
+20.11, 07:28. **Completed:** 20.11, 09:22.
+
+- **Cotele:** conicele duble LEGO 32270 (12 dinți) și 32269 (20), din LDraw: late de 8 mm, dinții drepți în mijloc și teșiți
+  la 45° spre ambele fețe, piciorul la r_p − 2·m.
+- **Motorul** (`conicaDubla`, `dublaCote`, `dublaMontaj`): roata dreaptă de la rotițe, lată de 8·m; banda de mijloc (±2·m)
+  cu dinții rotiței; spre fețe, dintele micșorat spre vârful conului de 45° și subțiat liniar până la 0,3·m pe flanc;
+  piciorul la r_p − 2·m, discul cu 0,2 mm mai mic; gaura din funcția comună cu rotițele (`gauraRoata`); montajul pe axe
+  paralele (m·(z1 + z2) / 2) și la 90° (planul de mijloc la r_p(perechii) + 2·m de axul ei); perechea strânsă la 90° (sub 12
+  dinți, cu una de peste 2,5 ori mai mare).
+- **Atelierul:** „Conică dublă”, dinții (și repede: 12, 20, 28, 36), modulul, gaura, dinții perechii, montajul pe grilă,
+  perechea strânsă spusă, „Fă perechea”; 10 texte în engleză; pachetul 18.14.0.
+- **Pe drum:** un model analitic al perechii la 90° (pe dinte, fără plase), apoi plasele reale: dinții drepți teșiți ca un
+  con se pătrund; piciorul obișnuit pune discul unei roți în dinții celeilalte; dinții micșorați spre vârful conului se
+  prind exact la perechile egale; subțierea de la fețe face și perechile inegale să se prindă; fața unei roți, tangentă la
+  discul celeilalte: discul cu 0,2 mm mai mic. `verifica` pe toate listele pluginului a arătat că gaura conicei repeta
+  rândurile rotiței (cinci otrăvuri 3.Th ajunseseră VOID, rândul lor apărea de două ori): funcția comună `gauraRoata`, cu
+  rotițele identice la octet (231 de piese), și otrăvurile mutate pe ea. Câmpul „Dinții perechii” mutat lângă ceilalți
+  (stătea pe toată lățimea); scara fețelor, scrisă din geometrie, (ub + r_p − w / 2) / r_p, nu din piciorul dinților.
+  Recenzia: jocul perechilor la 90°, prin bisecție, la jocurile 0,05 / 0,15 / 0,25 din calibrare: cu subțierea de 0,1·m, 12
+  cu 28 și 12 cu 36 se pătrundeau la 0,05; cu 0,3·m, perechile LEGO au jocul întreg (și la modulele 0,5 și 2), toate cele cu
+  cel puțin 12 dinți au joc (12 cu 60, cea mai inegală: 0,08 mm din 0,10 la 0,05), iar roțile de sub 12 dinți cu una de
+  peste 2,5 ori mai mare (8 cu 24 se pătrunde) sunt spuse în montaj. Otrava E09 (perechea păstrată în piesă) scăpase:
+  schimbarea perechii nu reface piesa, deci proba e2e o reface acum înainte de fiecare adăugare.
+- **Privirea pe roata reală:** secțiunea roții de 12 peste LDraw 32270 (prin dinte și prin gol), perechea 12 + 12 la 90° în
+  planul axelor, feliile prin zona de contact la două faze (niciun eșantion comun), capturile 3D din atelier (12; 36 cu
+  gaură rotundă) și editorul; după subțierea nouă, perechea 12 + 36 la 90° (niciun eșantion comun) și secțiunile de la față,
+  la 12 și la 8 dinți, peste cele vechi.
+- **Probele:** unitare 8, e2e 3; perechea la 90° și pe axe paralele, fără pătrundere și prinsă, și la jocul cel mai mic din
+  calibrare; otrăvurile 31 / 31.
+- **Recenzia:** fără agenți: workflow-ul de recenzie, refuzat de două ori de clasificator, nu a fost reîncercat. Recenzia
+  proprie: corpurile închise pe 369 de combinații (toți dinții 8…60 la modulul 1 și câte 14 la modulele 0,5 / 0,7 / 1,3 / 2
+  / 3, cu toate găurile; cel mai lent, 150 ms), intrările ciudate (nimic nu aruncă; modulul se strânge în plajă fără
+  avertisment, ca la rotițe, conice și coroane), jocul perechilor la 90°, prin bisecție, la jocurile 0,05 / 0,15 / 0,25 din
+  calibrare și la modulele 0,5 și 2. A găsit perechile LEGO inegale pătrunse la jocul cel mai mic (12 cu 28, 12 cu 36):
+  subțierea de la fețe, de la 0,1 la 0,3·m, și perechea strânsă spusă în montaj. Apoi otrava E09 scăpată (proba e2e
+  întărită) și VOID-urile tuturor listelor pluginului (cinci noi, la gaura comună, mutate).
+- **Porțile:** rapide verzi pe `b50ec0de` (traducerile, tsc, unit 9 635 / 0, 8 sărite, build, determinismul; pornirea 107,2
+  / 115, cu ușa 111,2 / 115, totalul 738,8 / 800), lente verzi (e2e 563 / 563, emulatoarele 101 / 101 și 29 / 29); după
+  îndreptarea comentariului din motor (`10a0a34d`, amprenta lui 18.14.0 reînregistrată), e2e-ul pachetului (biblioteca,
+  extensiile, pluginul) 51 / 51 și unitarele pluginului și ale bibliotecii 44 / 44.
+- **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-20 — ADR 0281 propus: piesele atelierului Easy 3Draw, pe file (Model: Claude Opus 5.5)
+
+**Prompt:** „O sa vreau ca rotitele sa fie pe un tab diferit de blocks si de conectoare.. nu stiu, o sa se adune multe
+tipuri de piese si vreau sa fie mai organizat UI-ul” (owner-ul, în timpul feliei 3.Tn). **Started:** 20.11, 08:52.
+**Completed:** 20.11, 09:23.
+
+- **Ce e azi:** sub fila „Legături”, o singură galerie cu 18 tipuri (grinzile, știfturile, toate roțile, clemele); cu
+  șenila, 19.
+- **Propunerea:** familiile ca file (Cărămizi, Technic, Legături, Roți), cu piesele familiei dedesubt, ca azi sub
+  „Legături”; „Din cvs2” și „Calibrare”, la capăt; ultima piesă ținută minte pe filă. Nimic nu se mută în date: piesele se
+  țin după tip, nu după filă.
+- **Schița**, cu macheta de încercat (gruparea în 3, 4 sau 6 familii; așezarea în file, listă sau meniuri) și trei întrebări
+  (gruparea, așezarea, ordinea față de șenilă), cu răspunsurile salvate în pagină:
+  <https://claude.ai/artifact/G32UWgWyP73uk26yMF3U26>. Căutarea peste toate filele și pictogramele pieselor pot sta lângă
+  oricare variantă: intră fără întrebare, ca felii după filele.
+- **Codul:** la răspunsurile owner-ului (felia 3.Tp).
+
+## 2026-11-20 — Felia 3.Tp: piesele atelierului Easy 3Draw pe file (ADR 0281) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tp”, apoi „prefer sa o pui intr-un worktree separat” (owner-ul, după răspunsurile din schița ADR
+0281: 1b, 2a, 3a). Lucrată de o sesiune pornită de sesiunea principală, în worktree-ul `galeria` (ramura
+`wip/3.Tp-galeria-pe-file`, din `main` `0ab28651`). **Started:** 20.11, 10:49. **Completed:** 20.11, 12:38.
+
+- **ADR 0281** acceptat, cu răspunsurile: trei familii (Cărămizi, cu cele Technic; Legături; Roți), ca file, înaintea
+  șenilei.
+- **Filele:** sus, Cărămizi 10, Legături 8, Roți 6 (cu câte piese au), apoi, după o linie, „Din cvs2” (doar în cvs2) și
+  „Calibrare”. Sub file, pe toată lățimea, galeria familiei alese, cu piesa de acum apăsată; fiecare filă ține minte ultima
+  piesă aleasă în ea (la început, prima din galerie). „Placă cu găuri” rămâne forma gata a cărămizii, pe Cărămizi.
+- **O singură tabelă** tip → familie (`FAMILII`, în `atelier.ts`), în locul lui `LEGATURI`, `eLegatura`, `tabPentru`,
+  `ultimaLegatura`: filele familiilor se fac din ea (în marcaj stau doar filele proprii), la fel galeria. Motorul își spune
+  tipurile (`Lego.tipuri`), iar proba unitară cere fiecare tip o singură dată în tabelă.
+- **Pe drum:** (1) galeria, pusă întâi în panoul editorului, ca cea de până acum a „Legăturilor”, ajungea pe telefon sub
+  vederea 3D (pe ecranele înguste previzualizarea urcă deasupra editorului): mutată sub file, pe toată lățimea, ca în macheta
+  2a; linia dintre file, ascunsă pe telefon (rămânea atârnată la capătul primului rând). (2) Încărcarea din baza artefactului
+  (claude.ai) nu muta filele pe piesa încărcată, dacă partea 3D pornise deja: acum le mută (și galeria). (3) Marcarea filelor
+  la pornire era de prisos (partea 3D se vede doar după `intra()`, care o face): scoasă, fiindcă otrava pe ea ar fi rămas
+  echivalentă. (4) Galeria se făcea din nou la fiecare piesă aleasă, deci cu tastatura focusul de pe buton se pierdea:
+  cărămizile System, până acum file fixe, l-ar fi pierdut la fiecare alegere. Acum galeria se face din nou doar la altă
+  familie, iar în aceeași se mută doar apăsarea (proba: Enter, apoi Tab și Enter, cu focusul pe butonul ales).
+- **Nimic nu se mută în date:** fixtura `test/fixtures/trenulet/atelier-18.14.0.json`, făcută de pagina publicată 18.14.0
+  (din `origin/main`, ca un om: piese din toate familiile, perechi, două piese în model, culoarea, coroana 32 / 16 în
+  editor), se deschide la fel pe pagina nouă: aceeași piesă, acum pe Roți, aceleași rânduri în listă, același model,
+  aceeași culoare; scrisă înapoi, aceeași stare, listă și model. La fel pe claude.ai, cu lista venită din baza artefactului
+  după pornirea părții 3D.
+- **Probele:** unitare 5 (`trenulet.familii.test.ts`), e2e 5 (`trenulet.file.spec.ts`: fiecare filă cu piesele ei și
+  editorul lor, focusul în galerie; ultima piesă pe filă și „Înlocuiește în model” anulat la altă piesă; lista lui 18.14.0,
+  din `localStorage` și din baza artefactului; telefonul, 390 px, cu fiecare filă și piesă întreagă, pe un rând).
+  Spec-urile pluginului trec pe drumul nou (`data-fila`, `#at-galerie`); proba în engleză trece acum prin fiecare piesă a
+  fiecărei familii (24) și prin filele proprii. Textele noi: Bricks, Wheels.
+- **Otrăvurile** (`test/otravuri/3.Tp.py`): 29 / 29 pe codul final (`d7d900fb`; 8 ale tabelei și ale motorului, 19 prin e2e,
+  2 ale traducerii). La prima rulare (`1129ebd5`), 26 / 27: E15 (filele pe un singur rând) scăpase, fiindcă pe telefon
+  pastilele se strângeau, cu numele rupt pe două rânduri, fără depășire; proba telefonului cere acum fiecare filă și piesă
+  întreagă, iar E15 e prinsă. După galeria refăcută doar la altă familie: E05 mutată pe apăsarea din galerie, E18 și E19
+  noi, E02, E04, E06–E08 reluate, toate prinse. `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi, plus 3.Tk
+  E12 (fulia din galerie, cu alt vecin în vechea listă `LEGATURI`), redirecționată pe tabelă, prinsă.
+- **Privirea:** capturile atelierului pe desktop (1280 px) și pe telefon (390 px), luminos și întunecat, cu câte o piesă din
+  fiecare familie (Pantă, Bucșă, Roată conică), pe pagina de sine stătătoare (cu fonturile ei) și în cvs2, în română și în
+  engleză (Bricks, Joints, Wheels, From cvs2, Calibration), mărite pe file și galerie: fără depășire, fără erori în jurnal,
+  galeria sub file. Contrastul numărului de pe file (12 px): 6,05–7,04 pe fila neapăsată, 12,5–15,8 pe cea apăsată, în
+  toate patru. Prima măsurătoare dăduse 1,33 în cvs2 întunecat: cvs2 dă culorile în `oklab`, pe care o citeam ca `rgb()`;
+  refăcută prin canvas.
+- **Porțile:** rapide verzi pe `f63bc14e` (traducerile, tsc, unit 9 648 / 0, 8 sărite, licențele, build, determinismul;
+  pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 738,8 / 800, neschimbate: felia stă doar în pachetul extensiei), lente
+  verzi (e2e 568 / 568, cu cele 5 noi; emulatoarele 101 / 101 și 29 / 29).
+- Pachetul Easy 3Draw 18.15.0, reînregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+
+## 2026-11-19 — Felia 12.1↑e: dopul în vederea 3D (ADR 0178) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, aici, la întrebarea „Ce felie fac mai departe pe linia incrustațiilor?” (variantele: „12.1↑e, dopul 3D” /
+„Bifa pe fiecare rând”): „12.1↑e, dopul 3D”. Reluată pe 20.11, la mesajul sesiunii principale, după ce porțile lente de
+aseară s-au oprit peste noapte.
+**Started:** 19.11, 21:16. **Completed:** 20.11, 10:53.
+
+- **`main` în ramură:** `4b7539a7` (cu 12.1↑f-3 și f-4 unite în `70bc8169`, 3.Tj–3.Tm), prin fast-forward.
+- **Decizia**, din ADR 0170 §5 („în vederea 3D, «Foaia / Dopul N»”) și din planșa „Dopul în vederea 3D” a schiței acceptate
+  atunci (<https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK>): „Foaia 1 / Dopul 1 / Împreună (secțiunea)”. Felia se
+  împarte: 12.1↑e, aceasta, alegerea „Foaia / Dopul N”; 12.1↑e-2, la cuvântul owner-ului, „Împreună (secțiunea)”, cu valorile
+  simulate lângă cele pe hârtie.
+- **Proba întâi** (`incrustatie.dop3d.test.ts`), pe un document cu o incrustație în V și una cu pereți drepți. Pe codul de
+  dinainte a picat toată (4 / 4):
+  - lista dopurilor vederii e a exportului, în aceeași ordine (pe elemente: întâi `i/a0`, cel în V, apoi `j/b`, cel drept) și
+    cu aceleași semifabricate;
+  - relieful fiecărui dop, pe semifabricatul lui, la 0,1 mm, e pe toate celulele plane cel al oracolului independent al
+    simulării, pe G-code-ul dopului exportat (± 0,02);
+  - un dop care nu se poate tăia (marginea 2 sub freza Ø6 a dopului decupat) nu oprește foaia: vederea o simulează, fără
+    dopuri, cu motivul; un dop care lipsește e refuzat cu numărul lui;
+  - fără incrustații, fără dopuri.
+- **ADR 0178**, acceptat din ADR 0170 §5 și din planșă; rândul din index (tradus).
+- **Codul** (`2491fdc`):
+  - `dopurileFoii` (`calculCam.ts`): o singură funcție a dopurilor, a exportului și a vederii 3D.
+  - `calculeazaSimularea(doc, dop?)`: fără dop, foaia; cu el, programul dopului pe semifabricatul lui (fața la 0, fundul la
+    grosimea lui cea mai mică); oricum, lista dopurilor sau motivul lor.
+  - Cererea `simulare` cu `dop`, `simulareInBazin` și `programSimulare` cu el; `RaspunsSimulare` / `ProgramSimulare` cu
+    `dopuri` și `motivDopuri`.
+  - Vederea 3D: grupul „Foaia / Dopul N” în insula de stare (doar cu dopuri), titlul fiecărui dop cu semifabricatul, simularea
+    dopului ales, camera care îl încadrează, starea („Dopul 1 simulat la … mm, pe semifabricatul de …”), „Încadrează dopul”,
+    cipul roșu al dopurilor refuzate, `data-alegere` pentru probe. Mesajele (ro, en), manualul (ro, en).
+  - E2e (`incrustatie3d.spec.ts`): butoanele, dopul ridicat pe semifabricatul de 40 × 30 × 6 (pe fund, h = D + H = 5, plus 1;
+    pe hârtie greșisem întâi D − g + H), fața coborâtă la 5 și dopul în picioare (pixelii), camera pe mijlocul lui, înapoi la
+    foaie; fără incrustații, fără butoane.
+- **Porțile, pe `2491fdc`:** compilatoarele ×3, importurile (20 / 0, 1 312 de module), licențele, traducerile (855, 0 lipsă); unit 9 639: 9 631 / 0 (8 sărite, 6,2 min); build determinist (341 de fișiere identice; pornirea 107,2, cu ușa 111,2 / 115, cu Atelierul 111,5; totalul 739,4 / 800); e2e 562 / 562 din prima (9,7 min, 3 lucrători), fără nicio reluare. Prima rulare a e2e-ului, pornită aseară în fundal, s-a oprit peste noapte la 555 / 562, fără niciun test căzut până acolo; am reluat-o întreagă azi-dimineață. Așteptarea unui minut de liniște a ținut 20 de minute fără să-l găsească (pe mașină rulau mereu procese Playwright), deci a pornit la capătul ei.
+- **Otrăvurile:** lista nouă `test/otravuri/12.1e.py`, 21: lucrarea D01–D12 (ordinea dopurilor, supracursa exportului pierdută, mereu primul dop, semifabricatul mai gros, motivul pierdut, refuzul fără număr, lista cu semifabricatul greșit, lucrătorul, bazinul și calculul interfeței care pierd dopul cerut, interfața fără dopuri sau fără motiv), vederea V01–V09. Seturile curate întâi (`dop3d` 4 / 4, `supracursa` 25 / 25), apoi 21 / 21 prinse: D01 și D03–D12 de `incrustatie.dop3d.test.ts`, D02 de probele supracursei, V01–V09 de `incrustatie3d.spec.ts` (cu build înainte de fiecare). Reorientate și prinse: 12.1b P09 și 12.1f-3 S09, S10 (dopurile, acum în `dopurileFoii`), 4.A K02 (simularea foii, acum ramura fără dop a lui `calculeazaSimularea`); 12.1b E13, 12.1b-2 B26, 12.1f-2 T49, 12.1f H26 și H27 (indentarea panoului, schimbată de 28.1↑d, venită cu `main`). Celelalte liste, comparate otravă cu otravă cu `main` `4b7539a7`: niciun VOID nou. În 4.A, K03, K04, M02, M04 și M05 sunt VOID și pe `main` (ținte schimbate de alte linii): lăsate liniilor lor. Arborele, curat la capăt; build-ul, refăcut pe HEAD.
+- **Mărimea:** felia, față de `4b7539a7`, cu același build în ambii arbori: JavaScript +626 B gzip (vederea 3D +413, lucrătorul CAM +125, calculul interfeței +53, restul +35) și CSS +14 B; totalul 738,8 → 739,4 / 800; pornirea (107,2) și ușa (111,2 / 115), neschimbate.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 20.12), build-ul `2491fdc` (versiunea `2491fdc7c429`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 cu rolul „straight-walled inlay” (adâncimea 3, marginea dopului 5), vederea 3D arată „Sheet / Plug 1”, cu „Sheet” apăsat, titlul dopului „… on its 110 × 70 × 6 mm blank” și niciun cip de refuz. „Plug 1”: „Plug 1 simulated at 0.25 mm, on the 110 × 70 × 6 mm blank”, relieful 440 × 280, dopul în picioare, cu fața la 0 și marginea coborâtă (până la 5), camera pe mijlocul lui (55, 35), „Fit the plug”. Înapoi la „Sheet”: 1 200 × 800, adâncimea 3, camera pe (150, 100), „Fit the sheet”. Vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă. Văzut atunci: titlul dopului numește incrustația prin id-ul ei intern („e1/e1”), pe care utilizatorul nu-l vede nicăieri; de înlocuit, într-o felie mică.
+- **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
+  „prin foaie” pe fiecare rând (v26).
+
 ## 2026-11-19 — Felia 11.3↑d: urechile la locuri alese, alese cu mausul; documentul v26 (ADR 0211) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu toate recomandările?”: „Da, toate recomandările”.

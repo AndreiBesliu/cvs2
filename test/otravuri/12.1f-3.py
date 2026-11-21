@@ -45,9 +45,10 @@ o('S08', JOB, '      const varf = grosime - g;', '      const varf = t.adancime 
   'vârful punților măsurat de la adâncime: supracursa subțiază punțile')
 
 # ---- Calculul exportului ----
-o('S09', CALC, '  const inV = programeDopuri(doc, REGIM_IMPLICIT, p.supracursa ?? 0);', '  const inV = programeDopuri(doc, REGIM_IMPLICIT);', 'dopuri',
+# S09 și S10 reorientate la 12.1↑e (19.11): dopurile sunt acum în `dopurileFoii`, care primește supracursa exportului.
+o('S09', CALC, '  const inV = programeDopuri(doc, REGIM_IMPLICIT, supracursa);', '  const inV = programeDopuri(doc, REGIM_IMPLICIT);', 'dopuri',
   'dopurile în V nu primesc supracursa exportului')
-o('S10', CALC, '  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT, p.supracursa ?? 0);', '  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT);',
+o('S10', CALC, '  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT, supracursa);', '  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT);',
   'dopuri', 'dopurile drepte nu primesc supracursa exportului')
 
 # ---- Marginea, fereastra, aplicația ----
