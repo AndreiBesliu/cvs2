@@ -1,7 +1,8 @@
 # Lista de otrăvuri a feliei 3.To (șenila în atelierul Easy 3Draw, ADR 0280), 21.11.2026, alese de autor: zala (pasul, limba
 # și crestătura cu jocul lor, fălcile, pereții canalului, obrajii teșiți, bolțul, clema și gura ei, aripile, găurile de știft),
 # pinionul (scobiturile și jocul lor, raza lor, vârful și limita lui la pinioanele mici, discul, butucul, plaja dinților și
-# avertismentul ei), montajul (zalele, pragul pinioanelor care s-ar atinge, distanța la care stă întinsă) și atelierul (galeria,
+# avertismentul ei), montajul (lungimea pe coarde, unghiurile înfășurării, zalele, pragul pinioanelor care s-ar atinge, distanța
+# la care stă întinsă) și atelierul (galeria,
 # numele, piesa fără câmpurile editorului, textul montajului cu „de”, „Fă șenila”, câmpurile și alegerile) și traducerea.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; setul „e2e” e
 # `test/e2e/trenulet.senila.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
@@ -55,6 +56,10 @@ o('U21', E, 'zale = Math.ceil(L / SENILA.pas - 1e-9)', 'zale = Math.floor(L / SE
 o('U22', E, 'const aproape = d < a.R + b.R + 2 * SENILA.varf + 1;', 'const aproape = d < a.R + b.R + 2 * SENILA.varf;', 'senila',
   'pinioanele lipite, fără milimetrul dintre vârfuri')
 o('U23', E, 'if (lung(m) < tinta) lo = m; else hi = m;', 'if (lung(m) < tinta) hi = m; else lo = m;', 'senila', 'bisecția întinsei întoarsă')
+o('U24', E, 'const r1 = a.z * SENILA.pas / (2 * Math.PI), r2 = b.z * SENILA.pas / (2 * Math.PI), dr = r2 - r1;',
+  'const r1 = a.R, r2 = b.R, dr = r2 - r1;', 'senila', 'lungimea pe arcele cercului bolțurilor (cureaua pe R; zalele sunt coarde)')
+o('U25', E, 'r1 * (Math.PI - 2 * al) + r2 * (Math.PI + 2 * al)', 'r1 * (Math.PI + 2 * al) + r2 * (Math.PI - 2 * al)', 'senila',
+  'unghiurile înfășurării întoarse (pinionul mic cuprins mai mult)')
 
 # Atelierul (e2e).
 o('E01', A, '["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]]', '["roata", "Roată cu anvelopă"]]]', 'e2e', 'șenila lipsește din fila Roți')

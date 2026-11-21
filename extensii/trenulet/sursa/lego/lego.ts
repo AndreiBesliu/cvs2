@@ -2042,14 +2042,18 @@ var Lego = (function (glob: typeof globalThis) {
       const a = dublaCote(d), b = dublaCote({ dinti: z2, modul: a.m }), mic = Math.min(a.z, b.z), strans = mic < 12 && Math.max(a.z, b.z) > 2.5 * mic;
       return { z: a.z, z2: b.z, m: a.m, paralel: a.rp + b.rp, acesta: b.rp + DUBLA.banda * a.m, perechea: a.rp + DUBLA.banda * a.m, strans };
     },
-    // șenila pe două pinioane, cu axele la distanța d (mm): lungimea liniei bolțurilor (curea deschisă pe razele R), zalele
-    // (câte încap, rotunjit în sus), jocul care rămâne și distanța la care zalele astea stau întinse (`intins`, prin bisecție);
+    // șenila pe două pinioane, cu axele la distanța d (mm): lungimea liniei bolțurilor, zalele (câte încap, rotunjit în sus),
+    // jocul care rămâne și distanța la care zalele astea stau întinse (`intins`, prin bisecție). Bolțurile stau pe cercurile R,
+    // dar zalele sunt coarde: pe o jumătate de pinion de z dinți stau z / 2 zale (la 10 dinți, 60 mm, nu arcul π·R = 61,0).
+    // Lungimea e deci a unei curele deschise pe razele r = z · 12 / 2π (cercul lung de z zale): media pe faze a înfășurătoarei
+    // convexe a bolțurilor, la câțiva µm (proba); perechile egale, exact 2·d + z·12 (10 cu 10 la 72 mm: 22 de zale, fără joc).
     // `aproape`: vârfurile pinioanelor s-ar atinge (sub 1 mm între ele)
     senilaMontaj: (z1: unknown, z2: unknown, distanta: unknown) => {
-      const a = pinionSenilaCote(z1), b = pinionSenilaCote(z2), d = Math.max(0, +(distanta as number) || 0), dr = b.R - a.R;
+      const a = pinionSenilaCote(z1), b = pinionSenilaCote(z2), d = Math.max(0, +(distanta as number) || 0);
+      const r1 = a.z * SENILA.pas / (2 * Math.PI), r2 = b.z * SENILA.pas / (2 * Math.PI), dr = r2 - r1;
       const aproape = d < a.R + b.R + 2 * SENILA.varf + 1;
       if (aproape || d <= Math.abs(dr)) return { z1: a.z, z2: b.z, R1: a.R, R2: b.R, d, L: NaN, zale: 0, joc: NaN, intins: NaN, aproape: true };
-      const lung = (x: number) => { const al = Math.asin(dr / x); return 2 * Math.sqrt(x * x - dr * dr) + a.R * (Math.PI - 2 * al) + b.R * (Math.PI + 2 * al); };
+      const lung = (x: number) => { const al = Math.asin(dr / x); return 2 * Math.sqrt(x * x - dr * dr) + r1 * (Math.PI - 2 * al) + r2 * (Math.PI + 2 * al); };
       const L = lung(d), zale = Math.ceil(L / SENILA.pas - 1e-9), tinta = zale * SENILA.pas;
       let lo = d, hi = d + SENILA.pas;
       for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (lung(m) < tinta) lo = m; else hi = m; }

@@ -48,11 +48,12 @@ test('zala de șenilă, ca LEGO 57518: 38,4 × 17,2; montajul pe două pinioane 
   await atelierSenila(page);
   await expect(page.locator('#at-cote')).toContainText('38,4 × 17,2 × 8,4');
   const montaj = page.locator('#at-sn-montaj');
-  await expect(montaj).toHaveText('Pe pinioanele de 10 și 10, cu axele la 64 mm (8 știfturi), șenila are 21 de zale (252 mm) și rămân 2 mm de joc; întinsă, axele ar sta la 65 mm.');
+  // pe hârtie: pe fiecare pinion de 10 stau 5 zale, deci 2 · 64 + 120 = 248 mm; 21 de zale, 4 mm de joc, întinsă la 66
+  await expect(montaj).toHaveText('Pe pinioanele de 10 și 10, cu axele la 64 mm (8 știfturi), șenila are 21 de zale (252 mm) și rămân 4 mm de joc; întinsă, axele ar sta la 66 mm.');
   // celălalt pinion și distanța sunt ale editorului: montajul se schimbă, piesa nu
   await seteaza(page, '#at-sn-pereche', '14');
   await seteaza(page, '#at-sn-distanta', '10');
-  await expect(montaj).toHaveText('Pe pinioanele de 10 și 14, cu axele la 80 mm (10 știfturi), șenila are 26 de zale (312 mm) și rămân 5,6 mm de joc; întinsă, axele ar sta la 82,8 mm.');
+  await expect(montaj).toHaveText('Pe pinioanele de 10 și 14, cu axele la 80 mm (10 știfturi), șenila are 26 de zale (312 mm) și rămân 7,3 mm de joc; întinsă, axele ar sta la 83,65 mm.');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Zală de șenilă');
   // prea aproape, pinioanele s-ar atinge
   await seteaza(page, '#at-sn-distanta', '5');

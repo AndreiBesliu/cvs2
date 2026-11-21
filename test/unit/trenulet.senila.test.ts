@@ -8,7 +8,8 @@
  *   înapoi, aripile se opresc una în alta (ca la LEGO);
  * - pinionul: scobiturile, cercuri de rază 1,6 + jocul dinților pe raza R = 6 / sin(π / z) (57519: 10, R 19,42); vârful la
  *   R + 1, dar cel mult la 0,3 mm sub placa zalei (la 6 dinți); șenila întinsă pe pinioanele de 6, 10, 14 nu atinge nimic;
- * - montajul pe două pinioane: lungimea liniei bolțurilor, zalele, jocul, distanța la care stă întinsă.
+ * - montajul pe două pinioane: lungimea liniei bolțurilor (pe pinion, zalele sunt coarde: perechile egale, 2·d + z·12;
+ *   inegale, față de înfășurătoarea convexă a bolțurilor), zalele, jocul, distanța la care stă întinsă.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -199,19 +200,55 @@ test('șenila întinsă pe pinioanele de 6, 10, 14: zalele nu ating pinionul, ni
   }
 });
 
+/**
+ * Lungimea cerută de șenilă, fără formula motorului: perimetrul înfășurătoarei convexe a bolțurilor de pe ambele pinioane
+ * (pe cercurile R = 6 / sin(π / z), la pasul de 12), în medie pe n × n faze ale pinioanelor (zalele sunt coarde; de la o fază
+ * la alta, lungimea se mișcă cu câteva zecimi, media nu).
+ */
+function infasuratoare(z1: number, z2: number, C: number, n = 24): number {
+  const R1 = 6 / Math.sin(Math.PI / z1), R2 = 6 / Math.sin(Math.PI / z2);
+  const cr = (o: number[], a: number[], b: number[]) => (a[0]! - o[0]!) * (b[1]! - o[1]!) - (a[1]! - o[1]!) * (b[0]! - o[0]!);
+  let s = 0;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const pts: number[][] = [];
+    for (let k = 0; k < z1; k++) { const u = 2 * Math.PI * (k + i / n) / z1; pts.push([R1 * Math.cos(u), R1 * Math.sin(u)]); }
+    for (let k = 0; k < z2; k++) { const u = 2 * Math.PI * (k + j / n) / z2; pts.push([C + R2 * Math.cos(u), R2 * Math.sin(u)]); }
+    pts.sort((a, b) => a[0]! - b[0]! || a[1]! - b[1]!);
+    const jos: number[][] = [], sus: number[][] = [];
+    for (const q of pts) { while (jos.length >= 2 && cr(jos[jos.length - 2]!, jos[jos.length - 1]!, q) <= 0) jos.pop(); jos.push(q); }
+    for (const q of [...pts].reverse()) { while (sus.length >= 2 && cr(sus[sus.length - 2]!, sus[sus.length - 1]!, q) <= 0) sus.pop(); sus.push(q); }
+    const h = jos.slice(0, -1).concat(sus.slice(0, -1));
+    for (let k = 0; k < h.length; k++) { const a = h[k]!, b = h[(k + 1) % h.length]!; s += Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!); }
+  }
+  return s / (n * n);
+}
+
 test('montajul: zalele pe două pinioane, jocul, distanța la care stă întinsă; pinioanele care s-ar atinge', () => {
-  const R10 = 6 / Math.sin(Math.PI / 10), R14 = 6 / Math.sin(Math.PI / 14);
+  // pe hârtie, pinioane egale: pe o jumătate de pinion de 10 stau 5 zale (60 mm, nu arcul π·R = 61,0), deci 2·d + 10·12:
+  // la 64 mm, 128 + 120 = 248, 21 de zale (252 mm), 4 mm de joc, întinsă la 64 + 4 / 2 = 66; la 72 mm, 22 de zale, fără joc
   const m = L.senilaMontaj(10, 10, 64);
-  // pinioane egale: 2·d + 2π·R = 128 + 120 = 248; 21 de zale (252 mm), 4 mm de joc; întinsă la d + 2
-  assert.ok(Math.abs(m.L - (128 + 2 * Math.PI * R10)) < 1e-9);
+  assert.ok(Math.abs(m.L - 248) < 1e-9, `L ${m.L}`);
   assert.equal(m.zale, 21);
-  assert.ok(Math.abs(m.joc - (252 - m.L)) < 1e-9);
-  assert.ok(Math.abs(m.intins - (64 + (252 - m.L) / 2)) < 1e-6, `întinsă la ${m.intins}`);
-  // inegale: curea deschisă
-  const d = 80, al = Math.asin((R14 - R10) / d), Lp = 2 * Math.sqrt(d * d - (R14 - R10) ** 2) + R10 * (Math.PI - 2 * al) + R14 * (Math.PI + 2 * al);
-  const n = L.senilaMontaj(10, 14, d);
-  assert.ok(Math.abs(n.L - Lp) < 1e-9);
-  assert.equal(n.zale, Math.ceil(Lp / 12));
+  assert.ok(Math.abs(m.joc - 4) < 1e-9, `joc ${m.joc}`);
+  assert.ok(Math.abs(m.intins - 66) < 1e-6, `întinsă la ${m.intins}`);
+  const x = L.senilaMontaj(10, 10, 72);
+  assert.equal(x.zale, 22);
+  assert.ok(Math.abs(x.joc) < 1e-9 && Math.abs(x.intins - 72) < 1e-6, `joc ${x.joc}, întinsă la ${x.intins}`);
+  // inegale: lungimea și distanța întinsă, față de înfășurătoarea bolțurilor (6 cu 40: formula ANSI a lanțurilor greșește aici
+  // cu 1,5 mm, iar cureaua pe razele R cu 1,3)
+  for (const [z1, z2, d] of [[10, 14, 80], [6, 40, 104], [6, 10, 40], [7, 23, 96], [14, 40, 480]] as const) {
+    const n = L.senilaMontaj(z1, z2, d), cerut = infasuratoare(z1, z2, d);
+    assert.ok(Math.abs(n.L - cerut) < 0.02, `${z1} cu ${z2} la ${d}: ${n.L} față de ${cerut}`);
+    assert.equal(n.zale, Math.ceil((cerut - 0.02) / 12), `${z1} cu ${z2} la ${d}: zalele`);
+    assert.ok(Math.abs(n.joc - (n.zale * 12 - cerut)) < 0.02, `${z1} cu ${z2} la ${d}: jocul`);
+    assert.ok(Math.abs(infasuratoare(z1, z2, n.intins) - n.zale * 12) < 0.02, `${z1} cu ${z2}: întinsă la ${n.intins}`);
+  }
+  // plaja editorului (6…40 de dinți, 2…60 de știfturi): jocul sub o zală, întinsă cel mult cu o zală mai departe
+  for (const z1 of [6, 7, 10, 14, 23, 40]) for (const z2 of [6, 9, 10, 14, 31, 40]) for (let s = 2; s <= 60; s++) {
+    const k = L.senilaMontaj(z1, z2, s * 8);
+    if (k.aproape) continue;
+    assert.ok(k.joc >= 0 && k.joc < 12 && k.intins >= s * 8 - 1e-9 && k.intins < s * 8 + 12, `${z1} cu ${z2} la ${s}: ${k.joc}, ${k.intins}`);
+  }
   // vârfurile s-ar atinge sub R1 + R2 + 2 + 1
   assert.equal(L.senilaMontaj(10, 10, 40).aproape, true);
   assert.equal(L.senilaMontaj(10, 10, 41.5).aproape, true, 'sub 2 · 20,42 + 1 = 41,83');
