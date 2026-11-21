@@ -154,8 +154,14 @@
     {
       "nume": "v25-proiect.json",
       "versiune": 25,
-      "commit": "31c04e1",
+      "commit": "9655d3f",
       "sha256": "0d917b67e81471520d0cccba8d033bc93b7e577ff901f27c50dcd01731dadbd7"
+    },
+    {
+      "nume": "v26-proiect.json",
+      "versiune": 26,
+      "commit": "63a1eca",
+      "sha256": "970bc4974ab4c3589007baf7898c664edf0158094b24f26738096e8dfa442c58"
     }
   ],
   "deschise": [
@@ -324,8 +330,15 @@
       "nume": "v25-deschis.json",
       "versiune": 25,
       "din": "v24-proiect.json",
-      "commit": "31c04e1",
+      "commit": "9655d3f",
       "sha256": "eb3fdde37fd4a94908cfe23610526553959addfe2dcd7b820312ac865b925142"
+    },
+    {
+      "nume": "v26-deschis.json",
+      "versiune": 26,
+      "din": "v25-proiect.json",
+      "commit": "63a1eca",
+      "sha256": "52e35fdf18b5ad7cee8ccfe389ec87ff98f433ee86653b15ae46526d9eabafc2"
     }
   ]
 }
