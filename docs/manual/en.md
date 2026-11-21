@@ -1493,6 +1493,14 @@ drawing, it closes by itself.
 which). Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
+- the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
+  spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
+  and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
+  a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
+  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. Unticked, the cuts stay
+  as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
+  18 mm sheet, with 0.5 overtravel). Tabs keep their thickness, measured from the bottom of the board. The overtravel and the
+  box stay while the app is open and do not go into the project; the toolpath and the 3D view leave them out;
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
   **NcStudio, RichAuto, Syntec, Mach3** and **Mach4** get a file that you run from their own controller (it doesn't reach the
   machine panel). A post written only from the controller's documentation, not yet tested on a machine, carries a note: watch
@@ -1936,6 +1944,11 @@ blocks (the deepest point of each), and the status in the corner says so.
 - From the keyboard: the arrow keys rotate, `+` and `-` zoom in and out, `0` fits.
 - **0.1 mm when zoomed in**: when you get close enough, the area around the centre (at most 204.8 × 204.8 mm) is simulated
   again at 0.1 mm and drawn over the sheet; the rest stays at 0.25 mm.
+- **The sheet or a plug**: if the sheet has [inlays](#incrustatie), buttons “Sheet”, “Plug 1”, “Plug 2” … appear at the top,
+  in the order of the plugs' files in the export (each one's title gives its blank). “Plug N” simulates the plug's program on
+  its blank (the face at 0, the bottom at its thickness) and frames it: you see the plug standing, the lowered face or the
+  cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug cannot be cut, the sheet still shows, and the
+  status says why the plugs are missing.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

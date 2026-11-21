@@ -35,7 +35,9 @@ o('U11', E, 'const k = Math.tan(beta) / R.r * s,', 'const k = Math.tan(beta) / R
 o('U12', E, 'let g: Poli[] = gaura === "r" ? [cerc(0, 0, e.gauraD / 2)] : gaura === "nu" ? [] : [cruce(0, 0, e.axGauraD, e.axGauraLat)];',
   'let g: Poli[] = gaura === "r" ? [cruce(0, 0, e.axGauraD, e.axGauraLat)] : gaura === "nu" ? [] : [cerc(0, 0, e.gauraD / 2)];', 'rotite',
   'gaura rotundă și crucea schimbate între ele')
-o('U13', E, '} else if (g.length && perete < 0.8) {', '} else if (g.length && perete < 0.2) {', 'rotite',
+# U13, U20, U21: în funcția comună a găurii (`gauraRoata`, de la 3.Tn: conica dublă are aceeași gaură), ori, la U20, cu textul
+# rotiței înainte, fiindcă formatul peretelui e și în avertismentul conicei duble
+o('U13', E, 'slaba: !lipseste && g.length > 0 && perete < 0.8 }', 'slaba: !lipseste && g.length > 0 && perete < 0.2 }', 'rotite',
   'peretele de 0,23 mm al roții de 8 nu mai e spus')
 o('U14', E, 'const z = Math.round(Math.min(80, Math.max(8,', 'const z = Math.round(Math.min(80, Math.max(6,', 'rotite', 'roți cu 6 dinți')
 o('U15', E, 'P = { ...salvat, varianta_dinti: v };', 'P = { ...salvat, varianta_dinti: 3 };', 'rotite', 'toate roțile de probă cu același joc')
@@ -48,10 +50,10 @@ o('U18', E, 'jocDinti: Math.max(0, P.joc_dinti + (P.varianta_dinti - 3) * P.pas_
 # După privirea pe roata reală (18.11): peretele găurii, rotirea crucii, gaura care nu încape.
 o('U19', E, 'if (gaura === "x" && perete < 0.8) {', 'if (gaura === "x" && perete < -1) {', 'rotite',
   'crucea roții de 8 lăsată dreaptă (colțurile sub goluri, 0,04 mm de perete)')
-o('U20', E, '${String(Math.round(perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
-  '${String(Math.round((R.rf - (gaura === "r" ? e.gauraD : e.axGauraD) / 2) * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
+o('U20', E, 'piciorul dinților rămân doar ${String(Math.round(G.perete * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
+  'piciorul dinților rămân doar ${String(Math.round((R.rf - (gaura === "r" ? e.gauraD : e.axGauraD) / 2) * 100) / 100).replace(".", Limba.zecimal)} mm: roata iese slabă.',
   'rotite', 'avertismentul socotit din raze (piciorul minus raza găurii), nu din peretele adevărat')
-o('U21', E, 'if (g.length && perete < 0.1) {', 'if (g.length && perete < -2) {', 'rotite',
+o('U21', E, 'const lipseste = g.length > 0 && perete < 0.1;', 'const lipseste = g.length > 0 && perete < -2;', 'rotite',
   'gaura care nu încape păstrată (corpul nu mai e închis)')
 
 # Atelierul (e2e).
@@ -64,9 +66,10 @@ o('E04', A, 'const fel = d.fel === "oblici" ? tr`, dinți oblici ${fmt(d.unghi ?
   'const fel = d.fel === "oblici" ? tr`, dinți oblici ${fmt(d.unghi ?? 20, 0)}°`', 'e2e', 'numele roții oblice fără sens')
 o('E05', A, 'varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti,', 'varianta_cupa: setari.varianta_cupa,', 'e2e',
   'varianta roților din calibrare nu ajunge la motor')
-o('E06', A, '["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"]]', '["varianta_cupa", "Varianta cupei"]]',
-  'e2e', 'fila Calibrare fără câmpul roților')
-o('E07', A, 'p.pereche = v; editor(); } };', 'p.pereche = v + 2; editor(); } };', 'e2e', 'dinții perechii citiți greșit')
+o('E06', A, '["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"], ', '["varianta_cupa", "Varianta cupei"], ',
+  'e2e', 'fila Calibrare fără câmpul roților (mutată pe lista cu janta, de la 3.Tj)')
+# E07: cu plaja rotiței (8 … 80) înainte; conica dublă (3.Tn) are aceeași coadă, cu plaja 8 … 60
+o('E07', A, 'if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };', 'if (v >= 8 && v <= 80) { p.pereche = v + 2; editor(); } };', 'e2e', 'dinții perechii citiți greșit')
 o('E08', A, '${oblic ? `<div class="at-campuri"><label for="at-r-unghi">', '${true ? `<div class="at-campuri"><label for="at-r-unghi">', 'e2e',
   'unghiul și la dinții drepți')
 o('E09', A, 'Lego.distantaRoti(p.dinti, p.pereche, p.modul)', 'Lego.distantaRoti(p.dinti, p.dinti, p.modul)', 'e2e',

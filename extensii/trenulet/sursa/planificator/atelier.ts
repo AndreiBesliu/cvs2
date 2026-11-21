@@ -14,7 +14,8 @@ var Atelier3D = (function () {
     parte?: string; diam?: number; forma?: string; varf_d?: number; gaura?: string; groasa?: boolean; indoita?: { brate: number[]; unghiuri: number[] };
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
     mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
-    dinti?: number; unghi?: number; sens?: string; modul?: number };
+    dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
+    latCanal?: number; pereche?: number; butuc?: string; pinion?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -59,19 +60,45 @@ var Atelier3D = (function () {
     cupa: { baza: 1 },
     // roata dințată (ADR 0169); `pereche` (dinții roții a doua) e doar a editorului, nu a piesei
     rotita: { dinti: 24, fel: "drepti", unghi: 20, sens: "dreapta", grosime: 3.8, gaura: "x", modul: 1, pereche: 24 },
+    // roata cu anvelopă (ADR 0280): dintr-o bucată (implicit, fără TPU), doar janta sau doar anvelopa (din TPU)
+    roata: { fel: "plina", diam: 30.4, lat: 13.6, janta: 16.8, banda: "nervuri", spite: "disc", nrSpite: 5, gaura: "x" },
+    // fulia (ADR 0280), ca LEGO 4185: Ø24, canalul în V; `pereche` (Ø fuliei a doua) și `distanta` (dintre axe, mm) sunt doar ale
+    // editorului, pentru curea
+    fulie: { diam: 24, lat: 3.5, canal: "v", latCanal: 2.6, spite: "stift", nrSpite: 6, gaura: "x", pereche: 24, distanta: 32 },
+    // roata conică (ADR 0280), ca LEGO 87407: 20 de dinți, pentru o pereche de 20, gaura de știft, butucul lung; perechea (dinții
+    // celeilalte) e a piesei, fiindcă unghiul conului vine din ea
+    conica: { dinti: 20, pereche: 20, modul: 1, gaura: "r", butuc: "lung" },
+    // roata coroană (ADR 0280), ca LEGO 3650: 24 de dinți, pentru pinionul de 8, gaura de ax, butucul lung; pinionul e al piesei,
+    // fiindcă el îi taie dinții
+    coroana: { dinti: 24, pinion: 8, modul: 1, gaura: "x", butuc: "lung" },
+    // conica dublă (ADR 0280), ca LEGO 32270: 12 dinți, gaura de ax; `pereche` (dinții celeilalte) e doar a editorului, pentru
+    // montaj și „Fă perechea”
+    conicaDubla: { dinti: 12, modul: 1, gaura: "x", pereche: 12 },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
-  // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
-  const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["rotita", "Roată dințată"],
-    ["suport", "Suport (bracket)"], ["clema", "Clemă"], ["maner", "Mâner"], ["bara", "Bară"], ["bila", "Bilă"], ["cupa", "Cupă"]];
-  const eLegatura = (t: string) => LEGATURI.some(([k]) => k === t);
-  let ultimaLegatura = "grinda", puneGrila: boolean | null = null, trageGrinda = false;
-  const tabPentru = (t: string) => (eLegatura(t) ? "legaturi" : t);
+  // Piesele pe familii (ADR 0281): o singură tabelă, din care se fac filele de sus și galeriile de sub ele. Fiecare tip al
+  // motorului stă într-o singură familie, afară de „dinCvs2”, care are fila lui (o probă unitară o cere, cu `Lego.tipuri`);
+  // „placaTechnic” nu e un tip, ci o formă gata a cărămizii (o placă 2 × 6 cu găuri), deschisă în editorul ei. „Din cvs2” și
+  // „Calibrare” sunt file proprii, la capăt (în body.html). Datele nu știu de familii: piesele se țin după tip.
+  type Familie = readonly [id: string, nume: string, piese: readonly (readonly [tip: string, nume: string])[]];
+  const FAMILII: readonly Familie[] = [
+    ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"],
+      ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
+    ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
+    ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"]]]
+  ];
+  /** Familia fiecărei piese din galerii. */
+  const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
+  /** Fila de sus a unui tip: familia lui, sau chiar tipul, la filele proprii („calibrare”, „dinCvs2”). */
+  const filaPentru = (t: string): string => FAMILIA.get(t) ?? t;
+  /** Ultima piesă aleasă pe fiecare filă de familie; la început, prima din galeria ei. */
+  const ultima = new Map(FAMILII.map(([f, , piese]): [string, string] => [f, piese[0]![0]]));
+  let puneGrila: boolean | null = null, trageGrinda = false;
   // inaltimile (ADR 0168) sunt implicitele motorului (Lego.IMPLICIT; o proba le tine la fel); regulile lor, in Lego.inaltimi
-  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
+  const SETARI_IMPLICIT = { varianta_stift: 3, varianta_locas: 3, varianta_gaura: 3, varianta_ax: 3, varianta_bara: 3, varianta_cupa: 3, varianta_dinti: 3, varianta_janta: 3, stift_h: 1.9, locas_h: 2.1, locas_urmeaza: true, pat: [180, 180], pat_margine: 5, pat_distanta: 4, culoare: "#c8322b", cuTren: true };
   // imprimantele: fiecare cu patul ei, variantele de la calibrare si inaltimile (si cuplajele pieselor de cale printate, din 2D)
-  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "stift_h", "locas_h", "locas_urmeaza"];
+  const CHEI_IMPRIMANTA: (keyof typeof SETARI_IMPLICIT)[] = ["pat", "pat_margine", "pat_distanta", "varianta_stift", "varianta_locas", "varianta_gaura", "varianta_ax", "varianta_bara", "varianta_cupa", "varianta_dinti", "varianta_janta", "stift_h", "locas_h", "locas_urmeaza"];
   const INALTIMI = ["stift_h", "locas_h", "locas_urmeaza"] as const;
   // inaltimile din setari prin motor: la zecimi, in margini, locasul dupa stift cat e bifat
   function puneInaltimi(v: Valori) {
@@ -154,6 +181,38 @@ var Atelier3D = (function () {
       const m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
       return tr`Roată dințată ${d.dinti ?? 24}${fel}${g}${m}`;
     }
+    if (d.tip === "roata") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const b = d.banda === "neteda" ? tr(", netedă") : d.banda === "blocuri" ? tr(", cu blocuri") : "";
+      const n = d.nrSpite ?? 5;
+      const s = d.spite === "drepte" ? tr`, ${n} spițe` : d.spite === "y" ? tr`, ${n} spițe în Y` : d.spite === "gauri" ? tr`, ${n} găuri` : "";
+      if (d.fel === "janta") return tr`Jantă Ø ${fmt(d.janta ?? 16.8)} × ${fmt(d.lat ?? 13.6)}${s}${g}`;
+      if (d.fel === "anvelopa") return tr`Anvelopă ${fmt(d.diam ?? 30.4)} × ${fmt(d.lat ?? 13.6)}${b}`;
+      return tr`Roată ${fmt(d.diam ?? 30.4)} × ${fmt(d.lat ?? 13.6)}${b}${s}${g}`;
+    }
+    if (d.tip === "fulie") {
+      // mărimile, cum ies (motorul lărgește obada pentru canal și diametrul pentru butuc); canalul în V de 2,6 nu se spune
+      const f = Lego.fulieFete(d), w = d.latCanal, n = d.nrSpite ?? 6;
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const c = d.canal === "rotund" ? (w === undefined || w === 2 ? tr(", canal rotund") : tr`, canal rotund de ${fmt(w)}`)
+        : d.canal === "plat" ? tr`, curea de ${fmt(w ?? 4)}` : w === undefined || w === 2.6 ? "" : tr`, canal în V de ${fmt(w)}`;
+      const s = d.spite === "drepte" ? tr`, ${n} spițe` : d.spite === "y" ? tr`, ${n} spițe în Y` : d.spite === "disc" ? tr(", plină") : "";
+      return tr`Fulie Ø ${fmt(f.D)} × ${fmt(f.W)}${c}${s}${g}`;
+    }
+    if (d.tip === "conica") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const b = d.butuc === "scurt" ? tr(", butuc scurt") : "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
+      return tr`Roată conică ${d.dinti ?? 20} pentru ${d.pereche ?? 20}${g}${b}${m}`;
+    }
+    if (d.tip === "coroana") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const b = d.butuc === "scurt" ? tr(", butuc scurt") : "", m = d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : "";
+      return tr`Roată coroană ${d.dinti ?? 24} pentru pinionul de ${d.pinion ?? 8}${g}${b}${m}`;
+    }
+    if (d.tip === "conicaDubla") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      return tr`Conică dublă ${d.dinti ?? 12}${g}${d.modul && d.modul !== 1 ? tr`, modulul ${fmt(d.modul)}` : ""}`;
+    }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
@@ -207,6 +266,17 @@ var Atelier3D = (function () {
       if (p.fel === "drepti") { delete p.unghi; delete p.sens; }
       if (+p.modul === 1) delete p.modul;
     }
+    if (t === "roata") {
+      // ce nu ține de felul ales nu intră în piesă (două roți la fel sunt aceeași piesă)
+      normRoata(p);
+    }
+    if (t === "fulie") {
+      // perechea și distanța sunt ale editorului (cureaua); fața, doar ce încape
+      delete p.pereche; delete p.distanta;
+      normFulie(p);
+    }
+    if ((t === "conica" || t === "coroana") && +p.modul === 1) delete p.modul;
+    if (t === "conicaDubla") { delete p.pereche; if (+p.modul === 1) delete p.modul; }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -229,7 +299,7 @@ var Atelier3D = (function () {
     return drept ? (n === 1 ? 1 : n - 1) : 0;
   }
   const paramMotor = () => ({ varianta_stift: setari.varianta_stift, varianta_locas: setari.varianta_locas, varianta_gaura: setari.varianta_gaura, varianta_ax: setari.varianta_ax,
-    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti,
+    varianta_bara: setari.varianta_bara, varianta_cupa: setari.varianta_cupa, varianta_dinti: setari.varianta_dinti, varianta_janta: setari.varianta_janta,
     pat: setari.pat.slice() as [number, number], pat_margine: setari.pat_margine, pat_distanta: setari.pat_distanta, ...Lego.inaltimi(setari) });
   const dimTri = (tri: readonly Tri[]): number[] => [0, 1, 2].map(k => { let m = 0; for (const t of tri) for (const p of t) if (p[k]! > m) m = p[k]!; return m; });
   function pieseDin(def: Def): PiesaGata[] {
@@ -258,6 +328,27 @@ var Atelier3D = (function () {
   }
 
   // --------------------------------------------------------------------------- editorul
+  // unde cade distanța a dintre două axe față de grila de 8 mm (roțile dințate, ADR 0169; fuliile, ADR 0280)
+  function textGrila(a: number): string {
+    const pasi = a / 8, jum = a / 4;
+    const grila = Math.abs(pasi - Math.round(pasi)) < 1e-9 ? tr`pe grilă (${Math.round(pasi)} ${Math.round(pasi) === 1 ? tr("pas") : tr("pași")})`
+      : Math.abs(jum - Math.round(jum)) < 1e-9 ? tr("la jumătate de pas") : tr("în afara grilei de 8 mm");
+    return grila;
+  }
+  function textCoroana(d: { dinti?: number; pinion?: number; modul?: number; butuc?: string }): string {
+    // unde stă pinionul unei roți coroană: axul (înălțimea, pe grilă), în dreptul dinților, cât de gros; butucul lung, dacă e în
+    // calea axului; sau că nu se prinde
+    const a = Lego.coroanaMontaj(d);
+    if (!a.prinde) return tr`Pinionul de ${a.z1} nu se prinde cu o coroană de ${a.z2}: alege o coroană mai mare.`;
+    const butuc = d.butuc !== "scurt" && a.inCale ? tr` Butucul lung urcă până la ${fmt(a.butucLung, 2)} mm, în calea axului pinionului: acela se oprește înaintea butucului.` : "";
+    return tr`Axul pinionului trece la ${fmt(a.axa, 2)} mm deasupra feței de jos a coroanei, ${textGrila(a.axa)}, și întâlnește axul ei la 90°: unul dintre ele se oprește înaintea celuilalt. Pinionul, gros de cel puțin ${fmt(a.grosime)} mm, stă în dreptul dinților coroanei: de la ${fmt(a.rIn, 2)} la ${fmt(a.rOut, 2)} mm de axul ei, cu mijlocul la ${fmt(a.mijloc, 2)} mm.` + butuc;
+  }
+  function textDubla(d: { dinti?: number; modul?: number }, pereche: number): string {
+    // cum stau axele unei conice duble și ale perechii ei: paralele (distanța, ca la rotițe) și la 90° (planul de mijloc al
+    // fiecăreia de axul celeilalte), pe grilă sau nu; perechea strânsă la 90° (o roată mică cu una mult mai mare) se spune
+    const a = Lego.dublaMontaj(d, pereche), strans = a.strans ? tr` La 90°, perechea asta se prinde strâns, poate fără joc: o roată de sub 12 dinți cu una de peste 2,5 ori mai mare.` : "";
+    return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.` + strans;
+  }
   function editor() {
     const t = stare.tip, e = $("#at-editor");
     if (t === "caramida") {
@@ -513,10 +604,7 @@ var Atelier3D = (function () {
       $("#at-b-gaura").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.gaura = b.dataset.v!; if (p.gaura === "xr" && p.lung === 0.5) p.lung = 1; editor(); schimbat(); };
     } else if (t === "rotita") {
       // roata dințată (ADR 0169): dinții, felul, unghiul și sensul la oblici și în V, grosimea, gaura, modulul; perechea
-      const p = stare.rotita, oblic = p.fel !== "drepti", a = Lego.distantaRoti(p.dinti, p.pereche, p.modul);
-      const pasi = a / 8, jum = a / 4;
-      const grila = Math.abs(pasi - Math.round(pasi)) < 1e-9 ? tr`pe grilă (${Math.round(pasi)} ${Math.round(pasi) === 1 ? tr("pas") : tr("pași")})`
-        : Math.abs(jum - Math.round(jum)) < 1e-9 ? tr("la jumătate de pas") : tr("în afara grilei de 8 mm");
+      const p = stare.rotita, oblic = p.fel !== "drepti", a = Lego.distantaRoti(p.dinti, p.pereche, p.modul), grila = textGrila(a);
       e.innerHTML = `<h2>Roată dințată</h2>
         <p class="mic">Roată care se prinde cu alta, ca la LEGO Technic (modulul 1, dinții de 20°). Dinții pot fi drepți, oblici (merg mai lin, dar împing axul în lungul lui; două roți oblice se prind doar cu sensuri opuse) sau în V (fără împingere). Gaura de ax și jocul dintre dinți vin din calibrare.</p>
         <div class="at-campuri">
@@ -543,6 +631,155 @@ var Atelier3D = (function () {
       alege("#at-r-gaura", v => { p.gaura = v; });
       $("#at-r-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 80) { p.pereche = v; editor(); } };
       $("#at-r-fa-pereche").onclick = adaugaPerecheRoti;
+    } else if (t === "roata") {
+      // roata cu anvelopă (ADR 0280): felul, mărimea, banda de rulare, fața, gaura; janta și anvelopa, împreună
+      const p = stare.roata, faraJanta = p.fel === "anvelopa", faraAnvelopa = p.fel === "janta";
+      e.innerHTML = `<h2>Roată cu anvelopă</h2>
+        <p class="mic">Roată de vehicul, culcată pe pat (fața cu spițele jos). Dintr-o bucată se printează din PLA, fără nimic de montat. Doar janta ia o anvelopă LEGO (30,4 × 14 pe janta de Ø16,8 × 13,6, potrivirea din fila Calibrare) sau una printată din TPU; anvelopa printată are nervura din interior ca LEGO, deci se pune și pe o jantă LEGO.</p>
+        <div class="at-rand"><span class="mic">Felul:</span>${seg("at-ro-fel", [["plina", "Dintr-o bucată"], ["janta", "Doar janta"], ["anvelopa", "Doar anvelopa (TPU)"]], p.fel)}</div>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-ro-lego">Ca LEGO 30,4 × 14</button></div>
+        <div class="at-campuri">
+          ${faraAnvelopa ? "" : `<label for="at-ro-diam">Ø anvelopă (mm)<input id="at-ro-diam" type="number" min="16" max="200" step="0.1" value="${p.diam}"></label>`}
+          <label for="at-ro-janta">Ø jantă (mm)<input id="at-ro-janta" type="number" min="12.6" max="150" step="0.1" value="${p.janta}"></label>
+          <label for="at-ro-lat">Lățime (mm)<input id="at-ro-lat" type="number" min="4" max="40" step="0.1" value="${p.lat}"></label>
+        </div>
+        ${faraAnvelopa ? "" : `<div class="at-rand"><span class="mic">Banda:</span>${seg("at-ro-banda", [["nervuri", "Cu nervuri"], ["neteda", "Netedă"], ["blocuri", "Cu blocuri"]], p.banda)}</div>`}
+        ${faraJanta ? "" : `${!Lego.spiteIncap(p.janta, p.gaura) ? `<div class="at-rand"><span class="mic" id="at-ro-fata-plina">${tr`Fața: plină (spițele încap de la janta de Ø ${fmt(Lego.jantaMinimaSpite(p.gaura))} mm).`}</span></div>`
+          : `<div class="at-rand"><span class="mic">Fața:</span>${seg("at-ro-spite", [["disc", "Plină"], ["drepte", "Spițe drepte"], ["y", "Spițe în Y"], ["gauri", "Cu găuri"]], p.spite)}</div>
+        ${p.spite === "disc" ? "" : `<div class="at-campuri"><label for="at-ro-nr">Câte (3–12)<input id="at-ro-nr" type="number" min="3" max="12" step="1" value="${p.nrSpite}"></label></div>`}`}
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-ro-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>`}
+        ${p.fel === "plina" ? "" : `<div class="at-rand"><button class="btn" type="button" id="at-ro-amandoua">Pune janta și anvelopa</button><span class="mic">${tr("aceeași mărime, de printat: janta din PLA, anvelopa din TPU")}</span></div>`}`;
+      const alege = (id: string, f: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a: number, b: number, f: (v: number) => void) => { if (!$(id)) return; $(id).onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= a && v <= b) { f(Math.round(v * 10) / 10); editor(); schimbat(); } }; };
+      alege("#at-ro-fel", v => { p.fel = v; });
+      alege("#at-ro-banda", v => { p.banda = v; });
+      alege("#at-ro-spite", v => { p.spite = v; });
+      alege("#at-ro-gaura", v => { p.gaura = v; });
+      camp("#at-ro-diam", 16, 200, v => { p.diam = v; });
+      camp("#at-ro-janta", 12.6, 150, v => { p.janta = v; });
+      camp("#at-ro-lat", 4, 40, v => { p.lat = v; });
+      camp("#at-ro-nr", 3, 12, v => { p.nrSpite = Math.round(v); });
+      $("#at-ro-lego").onclick = () => { p.diam = 30.4; p.janta = 16.8; p.lat = 13.6; editor(); schimbat(); };
+      if ($("#at-ro-amandoua")) $("#at-ro-amandoua").onclick = adaugaJantaSiAnvelopa;
+    } else if (t === "fulie") {
+      // fulia (ADR 0280): canalul, mărimea, fața (doar ce încape), gaura; cureaua spre o altă fulie, pe grilă sau nu
+      const p = stare.fulie, f = Lego.fulieFete(p), cu = Lego.cureaua(p, { ...p, diam: p.pereche }, p.distanta);
+      const spite = p.spite === "drepte" || p.spite === "y";
+      const fata = (spite && !f.spite) || (p.spite === "stift" && !f.stift) ? "disc" : p.spite;
+      const fete: [string, string][] = [["disc", "Plină"], ...(f.stift ? [["stift", "Găuri de știft"]] as [string, string][] : []),
+        ...(f.spite ? [["drepte", "Spițe drepte"], ["y", "Spițe în Y"]] as [string, string][] : [])];
+      const curea = cu.atinge ? tr`Fuliile s-ar atinge: axele trebuie să fie la cel puțin ${fmt(cu.minim)} mm.`
+        : tr`Cureaua: ${fmt(cu.lungime)} mm pe fundul canalelor, cu axele la ${fmt(p.distanta)} mm, ${textGrila(p.distanta)}. Un elastic se alege puțin mai scurt, ca să stea întins.`;
+      e.innerHTML = `<h2>Fulie</h2>
+        <p class="mic">Roată cu canal, pentru un elastic sau o curea, culcată pe pat (fața jos). Canalul în V e ca la fulia LEGO, pentru elasticele LEGO; cel rotund ține un inel O sau un elastic rotund; cel plat, cu margini teșite, o curea. Butucul iese cu 0,5 mm peste obadă, ca la LEGO; gaura de ax și găurile de știft vin din calibrare.</p>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-fu-lego">Ca LEGO Ø24</button></div>
+        <div class="at-rand"><span class="mic">Canalul:</span>${seg("at-fu-canal", [["v", "În V"], ["rotund", "Rotund"], ["plat", "Plat (curea)"]], p.canal)}</div>
+        <div class="at-campuri">
+          <label for="at-fu-diam">Ø (mm)<input id="at-fu-diam" type="number" min="12" max="200" step="0.1" value="${p.diam}"></label>
+          <label for="at-fu-lat">Lățime (mm)<input id="at-fu-lat" type="number" min="2" max="40" step="0.1" value="${p.lat}"></label>
+          <label for="at-fu-latc">${p.canal === "plat" ? tr("Cureaua (mm)") : tr("Canalul (mm)")}<input id="at-fu-latc" type="number" min="1" max="20" step="0.1" value="${p.latCanal}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Fața:</span>${seg("at-fu-spite", fete, fata)}${f.stift ? "" : `<span class="mic" id="at-fu-stift-de-la">${tr`găurile de știft încap de la Ø ${fmt(Lego.fulieMinimaFata(p, "stift"))} mm`}</span>`}</div>
+        ${fata === "drepte" || fata === "y" ? `<div class="at-campuri"><label for="at-fu-nr">Câte (3–12)<input id="at-fu-nr" type="number" min="3" max="12" step="1" value="${p.nrSpite}"></label></div>` : ""}
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-fu-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-campuri">
+          <label for="at-fu-pereche">A doua fulie, Ø (mm)<input id="at-fu-pereche" type="number" min="12" max="200" step="0.1" value="${p.pereche}"></label>
+          <label for="at-fu-dist">Între axe (mm)<input id="at-fu-dist" type="number" min="1" max="1000" step="0.1" value="${p.distanta}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Pe grilă (pași):</span>${seg("at-fu-grila", [2, 3, 4, 5, 6, 8, 10].map((k): [string, string] => [String(8 * k), String(k)]), String(p.distanta))}</div>
+        <p class="mic" id="at-fu-curea">${curea}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-fu-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă ambele fulii, cu același canal")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a: number, b: number, f2: (v: number) => void) => { if (!$(id)) return; $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a && v <= b) { f2(Math.round(v * 10) / 10); editor(); schimbat(); } }; };
+      // la alt canal: lățimea lui implicită și, dacă e nevoie, obada cât să-l cuprindă (fără avertisment)
+      alege("#at-fu-canal", v => { p.canal = v; p.latCanal = v === "rotund" ? 2 : v === "plat" ? 4 : 2.6; p.lat = Math.max(p.lat, Lego.fulieFete(p).W); });
+      alege("#at-fu-spite", v => { p.spite = v; });
+      alege("#at-fu-gaura", v => { p.gaura = v; });
+      alege("#at-fu-grila", v => { p.distanta = +v; });
+      camp("#at-fu-diam", 12, 200, v => { p.diam = v; });
+      camp("#at-fu-lat", 2, 40, v => { p.lat = v; });
+      camp("#at-fu-latc", 1, 20, v => { p.latCanal = v; });
+      camp("#at-fu-nr", 3, 12, v => { p.nrSpite = Math.round(v); });
+      camp("#at-fu-pereche", 12, 200, v => { p.pereche = v; });
+      camp("#at-fu-dist", 1, 1000, v => { p.distanta = v; });
+      $("#at-fu-lego").onclick = () => { Object.assign(p, { diam: 24, lat: 3.5, canal: "v", latCanal: 2.6, spite: "stift", gaura: "x" }); editor(); schimbat(); };
+      $("#at-fu-fa-pereche").onclick = adaugaPerecheFulii;
+    } else if (t === "conica") {
+      // roata conică (ADR 0280): dinții ei și ai perechii (unghiul conului), modulul, gaura, butucul; montajul pe grilă
+      const p = stare.conica, a = Lego.conicaMontaj(p);
+      e.innerHTML = `<h2>Roată conică</h2>
+        <p class="mic">Roată cu dinții pe un con, pentru o pereche la 90°: axele se întâlnesc în vârful comun al conurilor, iar dinții se subțiază spre el. Unghiul conului vine din raportul celor două roți, deci fiecare se face pentru perechea ei. Modulul 1 e cel LEGO; jocul dintre dinți vine din calibrare, ca la roțile dințate. Se printează culcată pe fața din spate.</p>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-co-lego20">Ca LEGO 20 (87407)</button><button class="btn" type="button" id="at-co-lego12">Ca LEGO 12</button></div>
+        <div class="at-campuri">
+          <label for="at-co-dinti">Dinți<input id="at-co-dinti" type="number" min="8" max="60" step="1" value="${p.dinti}"></label>
+          <label for="at-co-pereche">Dinții perechii<input id="at-co-pereche" type="number" min="8" max="60" step="1" value="${p.pereche}"></label>
+          <label for="at-co-modul">Modul<input id="at-co-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-co-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><span class="mic">Butucul:</span>${seg("at-co-butuc", [["lung", "Lung (ca 87407)"], ["scurt", "Scurt"]], p.butuc)}</div>
+        <p class="mic" id="at-co-montaj">${tr`Axele se întâlnesc în vârful conurilor. Fața din spate a acesteia e la ${fmt(a.fata)} mm de axa perechii, ${textGrila(a.fata)}; a perechii, la ${fmt(a.fataPereche)} mm de axa acesteia, ${textGrila(a.fataPereche)}.`}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-co-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă ambele roți, fiecare pentru cealaltă")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a0: number, b0: number, f2: (v: number) => void) => { $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a0 && v <= b0) { f2(v); editor(); schimbat(); } }; };
+      alege("#at-co-gaura", v => { p.gaura = v; });
+      alege("#at-co-butuc", v => { p.butuc = v; });
+      camp("#at-co-dinti", 8, 60, v => { p.dinti = Math.round(v); });
+      camp("#at-co-pereche", 8, 60, v => { p.pereche = Math.round(v); });
+      camp("#at-co-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      $("#at-co-lego20").onclick = () => { Object.assign(p, { dinti: 20, pereche: 20, modul: 1, gaura: "r", butuc: "lung" }); editor(); schimbat(); };
+      $("#at-co-lego12").onclick = () => { Object.assign(p, { dinti: 12, pereche: 12, modul: 1, gaura: "x", butuc: "scurt" }); editor(); schimbat(); };
+      $("#at-co-fa-pereche").onclick = adaugaPerecheConice;
+    } else if (t === "coroana") {
+      // roata coroană (ADR 0280): dinții ei și ai pinionului (o roată dreaptă, care îi taie dinții), modulul, gaura, butucul;
+      // unde stă pinionul
+      const p = stare.coroana;
+      e.innerHTML = `<h2>Roată coroană</h2>
+        <p class="mic">Roată cu dinții pe fața de sus, pentru o roată dințată dreaptă (pinionul) culcată peste ea, cu axul la 90°: axele se întâlnesc. Dinții coroanei sunt tăiați chiar de pinionul ales, deci fiecare coroană se face pentru pinionul ei. Modulul 1 e cel LEGO; jocul dintre dinți vine din calibrare, ca la roțile dințate. Se printează culcată pe fața de jos.</p>
+        <div class="at-rand"><span class="mic">Repede:</span><button class="btn" type="button" id="at-cr-lego">Ca LEGO 24 (3650)</button></div>
+        <div class="at-campuri">
+          <label for="at-cr-dinti">Dinți<input id="at-cr-dinti" type="number" min="12" max="80" step="1" value="${p.dinti}"></label>
+          <label for="at-cr-pinion">Dinții pinionului<input id="at-cr-pinion" type="number" min="8" max="40" step="1" value="${p.pinion}"></label>
+          <label for="at-cr-modul">Modul<input id="at-cr-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Pinionul:</span>${seg("at-cr-repede", [8, 16, 24].map((z): [string, string] => [String(z), String(z)]), String(p.pinion))}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-cr-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><span class="mic">Butucul:</span>${seg("at-cr-butuc", [["lung", "Lung (ca 3650)"], ["scurt", "Scurt"]], p.butuc)}</div>
+        <p class="mic" id="at-cr-montaj">${textCoroana(p)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-cr-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă coroana și pinionul ei")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a0: number, b0: number, f2: (v: number) => void) => { $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a0 && v <= b0) { f2(v); editor(); schimbat(); } }; };
+      alege("#at-cr-repede", v => { p.pinion = +v; });
+      alege("#at-cr-gaura", v => { p.gaura = v; });
+      alege("#at-cr-butuc", v => { p.butuc = v; });
+      camp("#at-cr-dinti", 12, 80, v => { p.dinti = Math.round(v); });
+      camp("#at-cr-pinion", 8, 40, v => { p.pinion = Math.round(v); });
+      camp("#at-cr-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      $("#at-cr-lego").onclick = () => { Object.assign(p, { dinti: 24, pinion: 8, modul: 1, gaura: "x", butuc: "lung" }); editor(); schimbat(); };
+      $("#at-cr-fa-pereche").onclick = adaugaPerecheCoroana;
+    } else if (t === "conicaDubla") {
+      // conica dublă (ADR 0280): dinții (și repede: 12, 20, 28, 36), modulul, gaura; perechea (a editorului): axele, paralele și
+      // la 90°
+      const p = stare.conicaDubla;
+      e.innerHTML = `<h2>Conică dublă</h2>
+        <p class="mic">Roată dințată cu dinții teșiți spre ambele fețe, ca la LEGO: se prinde cu alta pe axe paralele, ca roțile dințate, și la 90°, cu axele întâlnite, ca două roți conice. Perechile LEGO (12, 20, 28, 36 de dinți) se prind la 90° pe grilă; o roată de sub 12 dinți cu una mult mai mare se prinde strâns. E lată de 8 mm la modulul 1; jocul dintre dinți vine din calibrare. Se printează culcată pe o față: dinții de jos sunt teșiți în consolă, la vreo 45°.</p>
+        <div class="at-campuri">
+          <label for="at-cd-dinti">Dinți<input id="at-cd-dinti" type="number" min="8" max="60" step="1" value="${p.dinti}"></label>
+          <label for="at-cd-modul">Modul<input id="at-cd-modul" type="number" min="0.5" max="3" step="0.1" value="${p.modul}"></label>
+          <label for="at-cd-pereche">Dinții perechii<input id="at-cd-pereche" type="number" min="8" max="60" step="1" value="${p.pereche}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-cd-repede", [12, 20, 28, 36].map((z): [string, string] => [String(z), String(z)]), String(p.dinti))}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-cd-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["nu", "Fără"]], p.gaura)}</div>
+        <p class="mic" id="at-cd-montaj">${textDubla(p, p.pereche)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-cd-fa-pereche">Fă perechea</button><span class="mic">${tr("pune în listă ambele conice duble")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      const camp = (id: string, a0: number, b0: number, f2: (v: number) => void) => { $(id).onchange = ev => { const v = +String((ev.target as HTMLInputElement).value).replace(",", "."); if (v >= a0 && v <= b0) { f2(v); editor(); schimbat(); } }; };
+      alege("#at-cd-repede", v => { p.dinti = +v; });
+      alege("#at-cd-gaura", v => { p.gaura = v; });
+      camp("#at-cd-dinti", 8, 60, v => { p.dinti = Math.round(v); });
+      camp("#at-cd-modul", 0.5, 3, v => { p.modul = Math.round(v * 10) / 10; });
+      // perechea e doar a editorului: schimbă textul montajului, nu piesa
+      $("#at-cd-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 8 && v <= 60) { p.pereche = v; editor(); } };
+      $("#at-cd-fa-pereche").onclick = adaugaPerecheDuble;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -591,22 +828,17 @@ var Atelier3D = (function () {
           <li><b>Cupa:</b> cinci plăci cu cupă. Apasă bila de probă în fiecare. Alege cupa în care bila intră apăsând, stă în orice poziție și nu iese singură.</li>
           <li><b>Înălțimea:</b> cinci plăci 2×2 cu fund plin (1–5 cubulețe pe latura din spate), cu știfturi de 1,7 · 1,8 · 1,9 · 2,0 · 2,1 mm și locașurile cu 0,2 mm mai adânci. Pune o cărămidă LEGO peste fiecare placă, apoi apasă placa pe o cărămidă LEGO. Alege placa la care amândouă se prind ca un LEGO adevărat și scrie înălțimea ei mai jos, la „Înălțimea știftului”.</li>
           <li><b>Roțile dințate:</b> cinci roți de 16 dinți (1–5 cubulețe pe fața de sus), cu jocul dintre dinți de la 0,05 la 0,25 mm. Pune fiecare pe un ax, într-o grindă LEGO, lângă o roată LEGO de 16 dinți (axele la două găuri, 16 mm). Alege roata care se învârte ușor, fără să se blocheze și fără joc mare.</li>
-          <li>Scrie cele șapte numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
+          <li><b>Jantele:</b> cinci jante LEGO, cu scaunul de la Ø16,6 la Ø17,0 mm (1–5 cubulețe pe fața de sus). Pune pe fiecare o anvelopă LEGO 30,4 × 14. Alege janta pe care anvelopa intră apăsând și stă fără să alunece.</li>
+          <li>Scrie cele opt numere și înălțimea mai jos. Dacă cea mai bună e 1 sau 5, încearcă și 0 sau 6 (la înălțime, cu − / +). Dacă ai mai multe imprimante, fă întâi câte o imprimantă (mai jos, la „Imprimanta și potrivirea pieselor”): fiecare își ține numerele ei.</li>
         </ol>
         <div class="at-campuri" id="at-calib-campuri"></div>`;
       campuriVariante($("#at-calib-campuri"));
     }
-    if (eLegatura(t)) {
-      // galeria pieselor de legatura, deasupra editorului
-      e.insertAdjacentHTML("afterbegin", `<div class="leg-galerie" id="at-leg" role="group" aria-label="Piesele de legătură">${LEGATURI.map(([k, n]) =>
-        `<button type="button" data-leg="${k}" aria-pressed="${k === t}">${n}</button>`).join("")}</div>`);
-      $("#at-leg").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-leg]"); if (b) { inlocuieste = null; alegeLegatura(b.dataset.leg!); } };
-    }
   }
   const seg = (id: string, opt: readonly (readonly [string | number, string])[], cur: string | number) => `<div class="segment" id="${id}">${opt.map(([v, x]) => `<button type="button" data-v="${v}" aria-pressed="${String(cur) === v}">${x}</button>`).join("")}</div>`;
-  function alegeLegatura(k: string) {
+  function alegePiesa(k: string) {
     if (k === "placaTechnic") {
-      // placa Technic: o placa 2 x 6 cu gauri pe mijloc, in editorul de caramizi (fila ramane pe caramizi)
+      // placa Technic: o placa 2 x 6 cu gauri pe mijloc, in editorul de caramizi (din aceeasi familie)
       const c = stare.caramida;
       Object.assign(c, { celule: [0, 1, 2, 3, 4, 5].flatMap(i => [[i, 0], [i, 1]]), placi: 1, stifturi: true, fund: "tuburi", gauri: [1, 2, 3, 4, 5].map(a => [a, 1, "r"]), mod: "gauri", laterale: [], goale: false });
       c.cols = Math.max(c.cols, 8); c.rows = Math.max(c.rows, 4);
@@ -614,7 +846,6 @@ var Atelier3D = (function () {
       toast("Placă Technic 2×6, cu găuri pe mijloc (în locul formei de la Cărămidă / placă). Le schimbi din „Găuri”.");
       return;
     }
-    ultimaLegatura = k;
     alegeTip(k);
   }
   function adaugaPerecheLegatura(t: string) {
@@ -684,7 +915,7 @@ var Atelier3D = (function () {
   }
   function campuriVariante(loc: HTMLElement) {
     loc.innerHTML = [["varianta_stift", "Varianta știftului"], ["varianta_locas", "Varianta locașului"], ["varianta_gaura", "Varianta găurii"], ["varianta_ax", "Varianta axului"],
-      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"]]
+      ["varianta_bara", "Varianta clemei / barei"], ["varianta_cupa", "Varianta cupei"], ["varianta_dinti", "Varianta roților dințate"], ["varianta_janta", "Varianta jantei"]]
       .map(([k, e]) => `<label for="${loc.id}-${k}">${e}<input id="${loc.id}-${k}" data-setare="${k}" type="number" min="-3" max="9" step="1" value="${(setari as Valori)[k!]}"></label>`).join("")
       + campuriInaltimi(loc.id);
     legaInaltimi(loc);
@@ -1147,7 +1378,7 @@ var Atelier3D = (function () {
     vedere = v === "model" ? "model" : "piesa";
     document.querySelectorAll<HTMLElement>("#at-vedere-mod [data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === vedere)));
     $("#at-act-piesa").hidden = vedere !== "piesa"; $("#at-act-model").hidden = vedere !== "model";
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.tip === tabPentru(stare.tip))));
+    marcheazaFile();
     $("#at-culori").hidden = vedere === "model";
     if (vedere === "model") {
       privita = null;
@@ -1243,6 +1474,70 @@ var Atelier3D = (function () {
     pune(curent.def, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × ${numeDef(curent.def)} în listă.`);
+  }
+  function normRoata(p: Def): Def {
+    // ce nu ține de felul ales nu intră în piesă (două roți la fel sunt aceeași piesă); spițele, doar unde încap
+    if (p.fel === "anvelopa") { delete p.spite; delete p.nrSpite; delete p.gaura; }
+    else if (p.spite !== "disc" && !Lego.spiteIncap(p.janta ?? 16.8, p.gaura ?? "x")) p.spite = "disc";
+    if (p.fel === "janta") { delete p.diam; delete p.banda; }
+    if (p.spite === "disc") delete p.nrSpite;
+    return p;
+  }
+  function adaugaJantaSiAnvelopa() {
+    // janta și anvelopa de aceeași mărime (ADR 0280): janta din PLA, anvelopa din TPU, de pus una pe alta
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), p = stare.roata;
+    const janta = normRoata({ tip: "roata", fel: "janta", janta: p.janta, lat: p.lat, spite: p.spite, nrSpite: p.nrSpite, gaura: p.gaura });
+    const anvelopa = normRoata({ tip: "roata", fel: "anvelopa", diam: d.diam ?? p.diam, janta: p.janta, lat: p.lat, banda: p.banda });
+    pune(janta, n); pune(anvelopa, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × janta și anvelopa ${fmt(anvelopa.diam!)} × ${fmt(p.lat)} în listă (anvelopa, din TPU).`);
+  }
+  function normFulie(p: Def): Def {
+    // fața, doar ce încape (altfel plină, cum o face și motorul); câte spițe, doar la spițe (două fulii la fel sunt aceeași piesă)
+    const f = Lego.fulieFete(p);
+    if (((p.spite === "drepte" || p.spite === "y") && !f.spite) || (p.spite === "stift" && !f.stift)) p.spite = "disc";
+    if (p.spite !== "drepte" && p.spite !== "y") delete p.nrSpite;
+    return p;
+  }
+  function adaugaPerecheFulii() {
+    // fulia de acum și perechea ei (diametrul ales; același canal, aceeași lățime, față și gaură), cu cureaua dintre ele
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), p = stare.fulie, a = normFulie({ ...d, diam: p.pereche });
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    const cu = Lego.cureaua(d, a, p.distanta);
+    toast(cu.atinge ? tr`${n} × fuliile Ø ${fmt(Lego.fulieFete(d).D)} și Ø ${fmt(Lego.fulieFete(a).D)} în listă (axele trebuie să fie la cel puțin ${fmt(cu.minim)} mm).`
+      : tr`${n} × fuliile Ø ${fmt(Lego.fulieFete(d).D)} și Ø ${fmt(Lego.fulieFete(a).D)} în listă (cureaua: ${fmt(cu.lungime)} mm, cu axele la ${fmt(p.distanta)} mm).`);
+  }
+  function adaugaPerecheConice() {
+    // roata conică de acum și perechea ei: dinții schimbați între ele (fiecare roată se face pentru cealaltă); același modul,
+    // aceeași gaură și același butuc
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), a: Def = { ...d, dinti: d.pereche ?? 20, pereche: d.dinti ?? 20 }, m = Lego.conicaMontaj(d);
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea conică ${m.z} + ${m.z2} în listă (fețele din spate la ${fmt(m.fata)} și ${fmt(m.fataPereche)} mm de axa celeilalte).`);
+  }
+  function adaugaPerecheCoroana() {
+    // roata coroană de acum și pinionul ei: o roată dreaptă cu dinții pinionului, cât de groasă cere coroana, cu același modul
+    // și aceeași gaură (câmpurile în ordinea roții dințate din editor, ca două roți la fel să fie aceeași piesă)
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), a = Lego.coroanaMontaj(d);
+    if (!a.prinde) { toast(textCoroana(d)); return; }
+    const pinion: Def = { tip: "rotita", dinti: a.z1, fel: "drepti", grosime: a.grosime, gaura: d.gaura ?? "x" };
+    if (a.m !== 1) pinion.modul = a.m;
+    pune(d, n); pune(pinion, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × coroana ${a.z2} și pinionul ei de ${a.z1} în listă (axul pinionului la ${fmt(a.axa, 2)} mm deasupra feței de jos a coroanei, mijlocul lui la ${fmt(a.mijloc, 2)} mm de axul ei).`);
+  }
+  function adaugaPerecheDuble() {
+    // conica dublă de acum și perechea ei (dinții aleși; același modul și aceeași gaură)
+    laZi();
+    const d = defCurenta(), n = bucatiCerute(), z2 = stare.conicaDubla.pereche, a: Def = { ...d, dinti: z2 }, m = Lego.dublaMontaj(d, z2);
+    pune(d, n); pune(a, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea de conice duble ${m.z} + ${m.z2} în listă (pe axe paralele, axele la ${fmt(m.paralel, 2)} mm; la 90°, planurile de mijloc la ${fmt(m.acesta, 2)} și ${fmt(m.perechea, 2)} mm de axul celeilalte).`);
   }
   function adaugaPerecheRoti() {
     // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus
@@ -1387,7 +1682,7 @@ var Atelier3D = (function () {
       "",
       tr("POTRIVIREA PIESELOR LEGO"),
       tr`- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
-      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa}, roți dințate ${setari.varianta_dinti} (3 = mijlocul).`,
+      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa}, roți dințate ${setari.varianta_dinti}, jantă ${setari.varianta_janta} (3 = mijlocul).`,
       tr`- Înălțimile: știftul ${fmt(Lego.inaltimi(setari).stift_h)} mm, locașul de sub piesele pline ${fmt(Lego.inaltimi(setari).locas_h)} mm.`,
       tr("- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate."),
       "", "LISTA",
@@ -1493,11 +1788,25 @@ var Atelier3D = (function () {
   // --------------------------------------------------------------------------- pornire
   let toastT: ReturnType<typeof setTimeout> | null = null;
   function toast(t: string) { const el = $("#at-toast"); el.textContent = t; el.classList.add("vizibil"); clearTimeout(toastT!); toastT = setTimeout(() => el.classList.remove("vizibil"), 2600); }
+  /** Filele de sus după piesa de acum (ADR 0281): apăsată fila ei, iar dedesubt galeria familiei, cu piesa apăsată (cât se
+   *  vede modelul, nicio filă și nicio galerie); familia își ține minte piesa. */
+  function marcheazaFile() {
+    const f = filaPentru(stare.tip), fam = FAMILII.find(([x]) => x === f), g = $("#at-galerie");
+    if (fam) ultima.set(f, stare.tip);
+    document.querySelectorAll<HTMLElement>("#at-tipuri [data-fila]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.fila === f)));
+    g.hidden = vedere !== "piesa" || !fam;
+    if (!fam) return;
+    // galeria se face din nou doar la altă familie: în aceeași, butoanele (și focusul de pe ele) rămân, se mută doar apăsarea
+    if (g.dataset.familie !== f) {
+      g.dataset.familie = f; g.setAttribute("aria-label", fam[1]);
+      g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+    }
+    g.querySelectorAll<HTMLElement>("[data-piesa]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.piesa === stare.tip)));
+  }
   function alegeTip(t: string) {
     stare.tip = t; privita = null;
     if (vedere === "model") { vedere = "piesa"; $("#at-act-piesa").hidden = false; $("#at-act-model").hidden = true; $("#at-culori").hidden = false; document.querySelectorAll<HTMLElement>("#at-vedere-mod [data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === "piesa"))); }
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", (b.dataset.tip === tabPentru(t)) as unknown as string));
-    if (eLegatura(t)) ultimaLegatura = t;
+    marcheazaFile();
     $("#at-adauga").textContent = t === "calibrare" ? "Adaugă setul în lista de printat" : "Adaugă în lista de printat";
     editor(); construiesteCurent(); salveaza(); butonModel();
   }
@@ -1530,9 +1839,12 @@ var Atelier3D = (function () {
   async function init() {
     if (!window.Lego) return;
     try { incarca(JSON.parse(localStorage.getItem(CHEIE) || "null") || {}); } catch (e) { incarca({}); }
+    // filele familiilor (ADR 0281), din tabelă, înaintea filelor proprii; una deschide ultima piesă aleasă în familie
+    $("#at-tipuri").insertAdjacentHTML("afterbegin", FAMILII.map(([f, nume, piese]) =>
+      `<button type="button" data-fila="${f}" aria-pressed="false">${nume} <span class="at-nr" aria-hidden="true">${piese.length}</span></button>`).join(""));
     // fila „Din cvs2” doar în cvs2, cu formele deschise extensiei (ADR 0166)
     const cuForme = !!(window.cvs2 && window.cvs2.forme);
-    const filaForme = document.querySelector<HTMLElement>('#at-tipuri [data-tip="dinCvs2"]');
+    const filaForme = document.querySelector<HTMLElement>('#at-tipuri [data-fila="dinCvs2"]');
     if (filaForme) filaForme.hidden = !cuForme;
     if (stare.tip === "dinCvs2" && !cuForme) stare.tip = "caramida";
     uiImprimante = Profiluri.ui<Valori>($("#prof-imprimanta"), {
@@ -1541,7 +1853,8 @@ var Atelier3D = (function () {
       stare: () => imprimante!, salveaza: s => { imprimante = s; salveaza(); rezumatImprimanta(); }, valori: valoriImprimanta, aplica: aplicaImprimanta,
     });
     culori(); reglaje();
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => { b.onclick = () => { inlocuieste = null; alegeTip(b.dataset.tip === "legaturi" ? ultimaLegatura : b.dataset.tip!); }; });
+    $("#at-tipuri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fila]"); if (!b) return; inlocuieste = null; alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!); };
+    $("#at-galerie").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-piesa]"); if (!b) return; inlocuieste = null; alegePiesa(b.dataset.piesa!); };
     $("#at-adauga").onclick = adaugaInLista;
     $("#at-stl").onclick = descarcaSTL;
     $("#at-zip").onclick = descarcaZip;
@@ -1560,13 +1873,11 @@ var Atelier3D = (function () {
     $("#at-goleste-da").onclick = () => { lista = []; $("#at-confirma").hidden = true; salveaza(); randeazaLista(); };
     $("#mod-3d").addEventListener("change", schimbaSetare);
     editor();
-    document.querySelectorAll<HTMLElement>("#at-tipuri [data-tip]").forEach(b => b.setAttribute("aria-pressed", (b.dataset.tip === tabPentru(stare.tip)) as unknown as string));
-    if (eLegatura(stare.tip)) ultimaLegatura = stare.tip;
     try { db = window.claude ? await window.claude.use("db") : null; } catch (e) { db = null; }
     if (db) {
       try {
         const d = await db.doc("atelier/curent").get();
-        if (d.exists) { incarca(d.data()); culori(); reglaje(); if (v3.ok) v3.mat.color.set(setari.culoare); if (vedere === "model") { if (pornit) { editorModel(); arataModel(); } } else { editor(); if (pornit) construiesteCurent(); } if (pornit) { randeazaLista(); butonModel(); } }
+        if (d.exists) { incarca(d.data()); marcheazaFile(); culori(); reglaje(); if (v3.ok) v3.mat.color.set(setari.culoare); if (vedere === "model") { if (pornit) { editorModel(); arataModel(); } } else { editor(); if (pornit) construiesteCurent(); } if (pornit) { randeazaLista(); butonModel(); } }
       } catch (e) { /* raman cele locale */ }
     }
   }

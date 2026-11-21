@@ -15,7 +15,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
- * - numele (ADR 0167): „Easy 3Draw” 18.9.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ * - numele (ADR 0167): „Easy 3Draw” 18.15.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
  *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
@@ -30,7 +30,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.9.1.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.15.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 /**
  * Cât așteaptă probele cadrul extensiei până la „pornit”: un document separat, în procesul lui, cu pachetul adus din
@@ -80,7 +80,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.9.1, de la trenulet-18.9.1.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.15.0, de la trenulet-18.15.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -177,7 +177,7 @@ async function pachetVechi(): Promise<Buffer> {
   })));
 }
 
-test('numele nou (ADR 0167): „Easy 3Draw” 18.9.1, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+test('numele nou (ADR 0167): „Easy 3Draw” 18.15.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
@@ -192,7 +192,7 @@ test('numele nou (ADR 0167): „Easy 3Draw” 18.9.1, instalat peste „Planific
   await page.reload();
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.9.1, de la trenulet-18.9.1.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.15.0, de la trenulet-18.15.0.zip');
   await page.locator('[data-extensii="instaleaza"]').click();
   // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
   await page.locator('[data-extensii="buton"]').click();
@@ -309,11 +309,11 @@ test('înălțimile (ADR 0168): la zecimi, în profilul imprimantei; locașul du
   await expect(locas).toHaveValue('2.2');
   await expect.poll(inaltimePiesa).toBeCloseTo(inainte + 0.1, 5);
   // aceleași valori și în fila Calibrare
-  await c.locator('#at-tipuri [data-tip="calibrare"]').click();
+  await c.locator('#at-tipuri [data-fila="calibrare"]').click();
   await expect(c.locator('#at-calib-campuri-stift_h')).toHaveValue('2');
   await expect(c.locator('#at-calib-campuri-locas_h')).toHaveValue('2.2');
   await expect(c.locator('#at-calib-campuri [data-bifa="locas_urmeaza"]')).toBeChecked();
-  await c.locator('#at-tipuri [data-tip="caramida"]').click();
+  await c.locator('#at-tipuri [data-fila="caramizi"]').click();
   await expect.poll(inaltimePiesa).toBeCloseTo(inainte + 0.1, 5);
   // fără bifă, locașul e al lui: rotunjit la zecimi, cu − / + (virgula, în proba unitară a lui Lego.inaltimi)
   await bifa.uncheck();
@@ -384,7 +384,7 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
   // fără cvs2, nicio formă spre desen (ADR 0166): nici butonul plăcilor, nici fila atelierului
   await expect(page.locator('#cnc-placi figure').first()).toBeVisible();
   await expect(page.locator('[data-in-desen]')).toHaveCount(0);
-  await expect(page.locator('#at-tipuri [data-tip="dinCvs2"]')).toBeHidden();
+  await expect(page.locator('#at-tipuri [data-fila="dinCvs2"]')).toBeHidden();
   expect(erori).toEqual([]);
 });
 
@@ -556,12 +556,25 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
   await c.locator('#foaie-export [data-inchide]').click();
   await c.locator('[data-mod="3d"]').first().click();
-  for (const fel of ['caramida', 'panta', 'pantaInversa', 'pana', 'rotund', 'lateral', 'legaturi', 'calibrare', 'dinCvs2']) {
-    await c.locator(`#at-tipuri [data-tip="${fel}"]`).click();
-    await expect(c.locator(`#at-tipuri [data-tip="${fel}"]`)).toHaveAttribute('aria-pressed', 'true');
-    expect(await romanaRamasa(page, 'Păstrat la repornire'), fel).toEqual([]);
+  // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
+  // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
+  await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 6', 'From cvs2', 'Calibration']);
+  for (const fila of ['caramizi', 'legaturi', 'roti']) {
+    await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
+    await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
+    for (const piesa of await c.locator('#at-galerie [data-piesa]').evaluateAll((b) => b.map((x) => (x as HTMLElement).dataset['piesa'] ?? ''))) {
+      await c.locator(`#at-galerie [data-piesa="${piesa}"]`).click();
+      // „Placă cu găuri” e o formă gata a cărămizii: se deschide în editorul ei
+      await expect(c.locator('#at-galerie [aria-pressed="true"]')).toHaveAttribute('data-piesa', piesa === 'placaTechnic' ? 'caramida' : piesa);
+      expect(await romanaRamasa(page, 'Păstrat la repornire'), `${fila} / ${piesa}`).toEqual([]);
+    }
   }
-  await c.locator('#at-tipuri [data-tip="caramida"]').click();
+  for (const fila of ['calibrare', 'dinCvs2']) {
+    await c.locator(`#at-tipuri [data-fila="${fila}"]`).click();
+    await expect(c.locator(`#at-tipuri [data-fila="${fila}"]`)).toHaveAttribute('aria-pressed', 'true');
+    expect(await romanaRamasa(page, 'Păstrat la repornire'), fila).toEqual([]);
+  }
+  await c.locator('#at-tipuri [data-fila="caramizi"]').click();
   await expect(c.locator('#at-mod-grila [data-mod="forma"]')).toHaveText('Shape');
   // „plăci” la înălțime e placa LEGO (plates), nu placa de lemn (boards)
   await expect(c.locator('label[for="at-placi"]')).toContainText('plates');
@@ -597,7 +610,7 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await expect(trimite).toHaveAccessibleName('Trimite la Easy 3Draw');
   await trimite.click();
   // planificatorul: în 3D, la „Din cvs2”, cu forma ridicată la 3,2 mm
-  await expect(c.locator('#at-tipuri [data-tip="dinCvs2"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(c.locator('#at-tipuri [data-fila="dinCvs2"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(c.locator('#at-forma-info')).toHaveText('2 contururi închise, 40 × 20 mm; 1 deschis, lăsat afară');
   await expect(c.locator('#at-nume-piesa')).toHaveText('Formă din cvs2, 3,2 mm');
   await c.locator('#at-f-grosime').evaluate((e) => { (e as HTMLInputElement).value = '5'; e.dispatchEvent(new Event('change', { bubbles: true })); });

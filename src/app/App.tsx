@@ -405,6 +405,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [traseu, setTraseu] = useState<StareTraseu | null>(null);
   // Răspunsul la `$$` lipit în dialogul exportului (ADR 0046 §8): cât e deschisă pagina, comun cu timpul traseului.
   const [setariMasina, setSetariMasina] = useState('');
+  // Supracursa scrisă în fereastra exportului (ADR 0176), ca text: tot cât e deschisă pagina, de la o fereastră la alta.
+  const [supracursa, setSupracursa] = useState('0');
+  // Bifa de lângă ea (ADR 0177): și tăieturile cât foaia trec cu supracursa; implicit pusă, ținută la fel.
+  const [prinFoaie, setPrinFoaie] = useState(true);
   const [timpTraseu, setTimpTraseu] = useState<{ readonly program: Program; readonly setari: string; readonly r: RezumatJob } | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
@@ -1579,6 +1583,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
+          supracursa={supracursa}
+          onSupracursa={setSupracursa}
+          prinFoaie={prinFoaie}
+          onPrinFoaie={setPrinFoaie}
           onRaport={(p) => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); setRaport(p); }}
           // „Deschide în Mașina” (ADR 0132 §7): doar după un export pe care senderul îl vorbește; închide dialogul, deschide
           // Mașina și îi cere să încarce exportul, fără să-l pornească.

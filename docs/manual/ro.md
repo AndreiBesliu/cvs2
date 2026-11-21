@@ -1442,6 +1442,14 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 care). Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
+- **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
+  ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
+  decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
+  buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
+  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Debifată, tăieturile rămân cât
+  sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
+  de 18, cu supracursa 0,5). Punțile și urechile își păstrează grosimea, măsurată de la fața de jos a plăcii. Supracursa și bifa
+  rămân cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D le lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
   RichAuto, Syntec, Mach3** și **Mach4** primesc un fișier pe care îl rulezi de pe controlerul lor (în panoul mașinii nu
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
@@ -1873,6 +1881,11 @@ fiecăruia), iar starea din colț o spune.
 - De la tastatură: săgețile rotesc, `+` și `-` apropie și depărtează, `0` încadrează.
 - **0,1 mm la apropiere**: când te apropii destul, zona din jurul centrului (cel mult 204,8 × 204,8 mm) se simulează din nou
   la 0,1 mm și se desenează peste placă; restul rămâne la 0,25 mm.
+- **Foaia sau un dop**: dacă foaia are [incrustații](#incrustatie), sus apar butoanele „Foaia”, „Dopul 1”, „Dopul 2” …, în
+  ordinea fișierelor dopurilor din export (titlul fiecăruia spune semifabricatul). „Dopul N” simulează programul dopului pe
+  semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în picioare, fața coborâtă sau
+  decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa se vede tot, iar starea spune
+  de ce lipsesc dopurile.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

@@ -75,8 +75,9 @@ o('C10', DOP, '      semifabricat = { latime, inaltime, grosimeMinima: T, exacta
   'banda', 'placa dopului decupat arătată „cel puțin”')
 o('C11', DOP, '      semifabricat = { latime, inaltime, grosimeMinima: T, exacta: true };',
   '      semifabricat = { latime, inaltime, grosimeMinima: val.grosimeMinima, exacta: true };', 'banda', 'placa exactă, dar cu grosimea feței coborâte')
-o('C12', DOP, "tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T, pas: op.pas,",
-  "tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T - 0.5, pas: op.pas,", 'banda', 'decuparea nu trece prin placă')
+# C12 reorientată la 12.1↑f-3 (18.11): adâncimea decupării are acum și supracursa (ADR 0176).
+o('C12', DOP, "tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T + supracursa, pas: op.pas,",
+  "tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T - 0.5 + supracursa, pas: op.pas,", 'banda', 'decuparea nu trece prin placă')
 o('C13', DOP, '    if (banda?.decupare) {', '    if (banda) {', 'banda', 'decuparea și fără bifă')
 o('C14', DOP, '      avertismente.push(`dopul ${t.idLume}: e decupat din placa groasă', '      void (`dopul ${t.idLume}: e decupat din placa groasă', 'e2e',
   'avertismentul punților lipsă')

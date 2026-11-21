@@ -1,0 +1,100 @@
+import { test, expect, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
+
+/**
+ * Dopul în vederea 3D (ADR 0178, felia 12.1↑e), în Edge, cu WebGL2. Pe dreptunghiul de 30 × 20 din (20, 20), cu rolul
+ * „incrustație cu pereți drepți” ales din panou (implicitele: dopul ridicat, pe fund, D 3, g 0,5, H 2, marginea 5, Ø6),
+ * vederea 3D are „Foaia / Dopul 1”. Dopul, pe semifabricatul lui de 40 × 30 × 6 (pe fund, h = D + H = 3 + 2 = 5, plus 1):
+ * fața coborâtă la 5 în jur, dopul în picioare la mijloc. Înapoi la foaie, placa de 300 × 200. Fără incrustații, fără butoane.
+ * Un fișier al lui, ca otrăvurile vederii (`test/otravuri/12.1e.py`) să ruleze doar proba asta.
+ */
+test.use({ locale: 'ro-RO' });
+
+const buton = (page: Page) => page.locator('[data-editare="vedere-3d"]');
+const panza3d = (page: Page) => page.getByTestId('panza-3d');
+const taierea = (page: Page) => page.getByTestId('prop-taierea');
+
+/** Dreptunghiul de 30 × 20 din (20, 20): „Adaugă dreptunghi” (100 × 60), cu lățimea și înălțimea scrise în panou. */
+async function dreptunghiMic(page: Page): Promise<void> {
+  await adauga(page, 'dreptunghi');
+  const forma = page.getByTestId('prop-forma');
+  for (const [camp, v] of [['forma-latime', '30'], ['forma-inaltime', '20']] as const) {
+    const c = forma.locator(`[data-camp="${camp}"]`);
+    await c.fill(v);
+    await c.press('Enter');
+  }
+}
+
+/** Culoarea (RGB) pixelului de sub punctul (x, y, z) al lumii, în mm, după matricea ultimului cadru. */
+async function culoareLa(page: Page, x: number, y: number, z: number): Promise<readonly [number, number, number]> {
+  return page.evaluate(([x, y, z]) => {
+    const c = document.querySelector<HTMLCanvasElement>('[data-testid="panza-3d"]');
+    if (!c?.dataset.pv) throw new Error('fără cadru');
+    const m = c.dataset.pv.split(',').map(Number);
+    const cx = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!, cy = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
+    const cw = m[3]! * x + m[7]! * y + m[11]! * z + m[15]!;
+    const px = Math.floor(((cx / cw + 1) / 2) * c.width), py = Math.floor(((1 - cy / cw) / 2) * c.height);
+    const d = document.createElement('canvas');
+    d.width = c.width;
+    d.height = c.height;
+    const g = d.getContext('2d');
+    if (!g) throw new Error('fără 2D');
+    g.drawImage(c, 0, 0);
+    const p = g.getImageData(px, py, 1, 1).data;
+    return [p[0] ?? 0, p[1] ?? 0, p[2] ?? 0] as const;
+  }, [x, y, z] as const);
+}
+
+const lumina = (c: readonly [number, number, number]): number => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+
+async function deschide(page: Page): Promise<void> {
+  await buton(page).click();
+  await expect(panza3d(page)).toHaveAttribute('data-stare', 'gata', { timeout: 30_000 });
+  await expect(panza3d(page)).toHaveAttribute('data-cadre', /^[1-9]/);
+}
+
+test('dopul în 3D: „Foaia / Dopul 1”; dopul pe semifabricatul de 40 × 30 × 6, fața coborâtă la 5; înapoi la foaie', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie-drept');
+  await deschide(page);
+  const p = panza3d(page), grup = page.getByTestId('alegere-3d');
+  await expect(p).toHaveAttribute('data-alegere', 'foaie');
+  await expect(p).toHaveAttribute('data-relief', '1200x800');
+  await expect(grup.locator('button')).toHaveText(['Foaia', 'Dopul 1']);
+  await expect(grup.locator('[data-3d-alege="foaie"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(grup.locator('[data-3d-alege="dop-1"]')).toHaveAttribute('title', /pe semifabricatul lui de 40 × 30 × 6 mm$/);
+  await expect(page.getByTestId('stare-3d-dopuri')).toHaveCount(0);
+
+  await grup.locator('[data-3d-alege="dop-1"]').click();
+  await expect(p).toHaveAttribute('data-alegere', 'dop-1');
+  await expect(grup.locator('[data-3d-alege="dop-1"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('stare-3d-text')).toHaveText(/^Dopul 1 simulat la [\d,]+ mm, pe semifabricatul de 40 × 30 × 6 mm$/, { timeout: 30_000 });
+  await expect(p).toHaveAttribute('data-stare', 'gata');
+  await expect(p).toHaveAttribute('data-adancime', '5');
+  const celula = Number(await p.getAttribute('data-celula'));
+  await expect(p).toHaveAttribute('data-relief', `${Math.round(40 / celula)}x${Math.round(30 / celula)}`);
+  await expect(page.locator('[data-3d="incadreaza"]')).toHaveText('Încadrează dopul');
+  await expect(p).toHaveAttribute('data-cadre', /^[1-9]/);
+  // Camera încadrează semifabricatul: ținta e mijlocul lui.
+  await expect(p).toHaveAttribute('data-tinta', '20,15');
+  // Dopul ridicat, în picioare la mijlocul semifabricatului (fața lui la 0); în colț, fața coborâtă la 5 (mai închisă).
+  const dop = await culoareLa(page, 20, 15, 0), fata = await culoareLa(page, 2, 2, -5);
+  expect(lumina(dop) - lumina(fata), `dopul (${dop.join(' ')}) e mai luminos decât fața coborâtă (${fata.join(' ')})`).toBeGreaterThan(20);
+
+  await grup.locator('[data-3d-alege="foaie"]').click();
+  await expect(p).toHaveAttribute('data-alegere', 'foaie');
+  await expect(page.getByTestId('stare-3d-text')).toHaveText('Placa simulată la 0,25 mm', { timeout: 30_000 });
+  await expect(p).toHaveAttribute('data-relief', '1200x800');
+  await expect(p).toHaveAttribute('data-adancime', '3');
+  await expect(p).toHaveAttribute('data-tinta', '150,100');
+});
+
+test('fără incrustații, vederea 3D n-are butoanele dopurilor', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await deschide(page);
+  await expect(page.getByTestId('alegere-3d')).toHaveCount(0);
+  await expect(page.getByTestId('stare-3d-dopuri')).toHaveCount(0);
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'foaie');
+});

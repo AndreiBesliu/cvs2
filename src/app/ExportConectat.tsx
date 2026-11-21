@@ -40,6 +40,12 @@ type Props = {
   /** Răspunsul la `$$` lipit (ADR 0046 §8): îl ține aplicația, comun cu timpul de lângă traseu. */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /** Supracursa scrisă de om (ADR 0176): o ține aplicația, ca setările mașinii, de la o fereastră la alta. */
+  readonly supracursa: string;
+  readonly onSupracursa: (text: string) => void;
+  /** Bifa tăieturilor cât foaia (ADR 0177): o ține aplicația, ca supracursa. */
+  readonly prinFoaie: boolean;
+  readonly onPrinFoaie: (bifata: boolean) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
   /** Deschis din „Trimite la mașină” (ADR 0250, felia 28.1↑d): butonul principal o spune, iar aplicația duce programul în Mașina. */
@@ -61,7 +67,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, trimite, foaie, toate, onRaport,
+  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -213,6 +219,10 @@ export function ExportConectat({
       onReseteaza={onReseteaza}
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
+      supracursa={supracursa}
+      onSupracursa={onSupracursa}
+      prinFoaie={prinFoaie}
+      onPrinFoaie={onPrinFoaie}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
       {...(trimite ? { trimite } : {})}
       {...(placute ? { placute } : {})}

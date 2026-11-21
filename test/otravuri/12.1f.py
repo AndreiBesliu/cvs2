@@ -79,9 +79,11 @@ o('H24', CON, "              ...(o.incrustatie.locas === 'gaura' ? { locas: 'gau
 o('H25', DLG, "const jocFolosit = (p: RandSprijin): boolean => p.locasInc !== 'gaura' && (p.treaptaInc !== 'fara' || sprijinitPeFata(p));",
   "const jocFolosit = (p: RandSprijin): boolean => (p.treaptaInc !== 'fara' || sprijinitPeFata(p));", 'e2e',
   'jocul de sub dop arătat la gaură')
-o('H26', PAN, "                {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}\n", '', 'e2e', 'panoul fără gaură, pe hârtie')
-o('H27', PAN, "            {operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)", "            {operatiiAlese.length > 0 && (false && operatiiAlese.every(esteGaura)",
-  'e2e', 'Tăierea fără adâncimea prin foaie')
+# H26 și H27 reorientate la 12.1↑e (19.11): 28.1↑d a scos 4 spații de indentare din panou, iar Tăierea are acum și drumul
+# Atelierului (`butoane`); H27 ține drumul obișnuit.
+o('H26', PAN, "            {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}\n", '', 'e2e', 'panoul fără gaură, pe hârtie')
+o('H27', PAN, "        {!butoane && operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)",
+  "        {!butoane && operatiiAlese.length > 0 && (false && operatiiAlese.every(esteGaura)", 'e2e', 'Tăierea fără adâncimea prin foaie')
 
 SETURI = {
     'doc': ['test/unit/document.v25.oracol.test.ts'],

@@ -54,16 +54,12 @@
     <div class="at-continut">
       <p class="mic at-intro">Piese compatibile LEGO pentru imprimanta 3D: le desenezi aici și primești STL-ul gata așezat pe pat. În aceeași listă intră și piesele printate ale circuitului din 2D.</p>
       <nav class="at-tipuri" id="at-tipuri" aria-label="Felul piesei">
-        <button type="button" data-tip="caramida" aria-pressed="true">Cărămidă / placă</button>
-        <button type="button" data-tip="panta" aria-pressed="false">Pantă</button>
-        <button type="button" data-tip="pantaInversa" aria-pressed="false">Pantă inversă</button>
-        <button type="button" data-tip="pana" aria-pressed="false">Pană / aripă</button>
-        <button type="button" data-tip="rotund" aria-pressed="false">Rotund / con</button>
-        <button type="button" data-tip="lateral" aria-pressed="false">Știfturi pe lateral</button>
-        <button type="button" data-tip="legaturi" aria-pressed="false">Legături</button>
-        <button type="button" data-tip="calibrare" aria-pressed="false">Calibrare</button>
-        <button type="button" data-tip="dinCvs2" aria-pressed="false" hidden>Din cvs2</button>
+        <!-- filele familiilor le pune atelier.ts, din tabela FAMILII (ADR 0281); aici stau doar filele proprii, la capăt -->
+        <span class="at-tipuri-sep" aria-hidden="true"></span>
+        <button type="button" data-fila="dinCvs2" aria-pressed="false" hidden>Din cvs2</button>
+        <button type="button" data-fila="calibrare" aria-pressed="false">Calibrare</button>
       </nav>
+      <div class="at-galerie" id="at-galerie" role="group" hidden></div>
       <div class="at-atelier">
         <section class="at-panou" id="at-editor" aria-label="Piesa"></section>
         <section class="at-panou" aria-label="Previzualizare">

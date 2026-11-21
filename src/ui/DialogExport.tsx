@@ -7,7 +7,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import {
   INCRUSTATIE_DREAPTA_IMPLICITA, INCRUSTATIE_IMPLICITA, LATIME_UMAR_IMPLICITA, laturiOferite, latimeMinimaBanda, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT,
   PUNTI_BANDA, PUNTI_DOP_DREPT,
-  SUB_FATA_DOPULUI, susLaMicron, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
+  SUB_FATA_DOPULUI, SUPRACURSA_MAXIMA, susLaMicron, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
   type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatFoi, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
   type Unitati,
 } from './actiuniExportTipuri.ts';
@@ -178,6 +178,18 @@ type Props = {
    */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /**
+   * Supracursa (ADR 0176), ca text, cum o scrie omul: cât trec tăieturile prin placă sub fața ei de jos, 0 … `SUPRACURSA_MAXIMA`
+   * mm. O ține aplicația, ca setările mașinii, de la o fereastră la alta; nu intră în document.
+   */
+  readonly supracursa: string;
+  readonly onSupracursa: (text: string) => void;
+  /**
+   * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii trec cu ea. O ține aplicația, ca supracursa;
+   * fără supracursă, e oprită.
+   */
+  readonly prinFoaie: boolean;
+  readonly onPrinFoaie: (bifata: boolean) => void;
   /**
    * „Deschide în Mașina” (ADR 0132 §7), după un export reușit pe care senderul îl vorbește (familia GRBL): închide dialogul și
    * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
@@ -539,7 +551,8 @@ function ListaFoi({ foi: r, sha256, limba }: { readonly foi: RezumatFoi; readonl
 export function DialogExport(
   {
     operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina, onDeschideInMasina, trimite = false, foaie, placute, foi, placuteToate, onRaport, grosimeFoaie,
+    onSetariMasina, supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite = false, foaie, placute, foi,
+    placuteToate, onRaport, grosimeFoaie,
   }: Props,
 ) {
   const limba = useLimba();
@@ -803,8 +816,14 @@ export function DialogExport(
   const frezeDopBune = randuri.every((b) => b.frezaDop);
   const benziBune = randuri.every((b) => b.banda);
   const puntiDopBune = randuri.every((b) => b.puntiDop);
+  // Supracursa (ADR 0176): un număr între 0 și maxima lucrării; 0 e voie (fără supracursă).
+  const supracursaCitita = citesteNumar(supracursa);
+  const supracursaBuna = supracursaCitita !== null && Number.isFinite(supracursaCitita) && supracursaCitita >= 0 && supracursaCitita <= SUPRACURSA_MAXIMA;
+  // Bifa tăieturilor cât foaia (ADR 0177) are ce schimba doar cu o supracursă bună, peste 0.
+  const cuSupracursa = supracursaBuna && supracursaCitita !== null && supracursaCitita > 0;
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune;
+    && varfuriBune && vPeLinie && resturiBune && strategiiBune && incrustatiiBune && drepteBune && frezeDopBune && benziBune && puntiDopBune
+    && supracursaBuna;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -1061,6 +1080,7 @@ export function DialogExport(
     ...(frezeDopBune ? [] : [t('motiv.freza-dop-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(benziBune ? [] : [t('motiv.banda-invalida', { n: MARGINI_OPERATIE.numarScula })]),
     ...(puntiDopBune ? [] : [t('motiv.punti-dop-invalide', { n: MARGINI_OPERATIE.urechi })]),
+    ...(supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -1098,6 +1118,18 @@ export function DialogExport(
               <option value="sus">{t('export.z0.sus')}</option>
               <option value="jos">{t('export.z0.jos')}</option>
             </select>
+          </label>
+          {/* Supracursa (ADR 0176): nu scrie în document, deci rămâne deschisă și când fila doar citește. */}
+          <label title={t('export.supracursa.titlu', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })}>
+            {t('export.supracursa')}
+            <input type="text" inputMode="decimal" value={supracursa} data-camp="supracursa" aria-invalid={!supracursaBuna}
+              onChange={(e) => { schimbat(); onSupracursa(e.target.value); }} />
+          </label>
+          {/* Bifa tăieturilor cât foaia (ADR 0177), implicit pusă; fără supracursă, oprită. */}
+          <label className="alegere bifa-supracursa" title={t('export.supracursa.prin-foaie.titlu')}>
+            <input type="checkbox" checked={prinFoaie} data-camp="supracursa-prin-foaie" disabled={!cuSupracursa}
+              onChange={(e) => { schimbat(); onPrinFoaie(e.target.checked); }} />
+            {t('export.supracursa.prin-foaie')}
           </label>
           <label title={t('export.post.titlu')}>
             {t('export.post')}
@@ -1753,6 +1785,8 @@ export function DialogExport(
               onExporta({
                 origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea, ...(toate ? { toateFoile: true } : {}),
+                // Fără supracursă (0), cererea e cea de dinainte (ADR 0176); cu ea, și bifa tăieturilor cât foaia (ADR 0177).
+                ...(cuSupracursa && supracursaCitita !== null ? { supracursa: supracursaCitita, ...(prinFoaie ? { prinFoaie: true } : {}) } : {}),
               });
             }}>
             {t(trimiteAcum ? 'export.trimite' : 'export.exporta')}

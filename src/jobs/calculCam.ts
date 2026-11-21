@@ -8,6 +8,7 @@ import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { partiCuUrechi } from '../cam/partiUrechi.ts';
 import { programeDopuri } from '../cam/dopV.ts';
 import { programeDopuriDrepte } from '../cam/dopDrept.ts';
+import type { DopCalculat } from '../cam/incrustatie.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { repara, verificaPentruPanou, type RezultatReparare, type VerificarePanou } from '../model/reparare.ts';
@@ -63,11 +64,24 @@ function desprinseFoii(doc: Document, simulare: ProgramSimulat): ParteDesprinsa[
   });
 }
 
+/**
+ * Dopurile incrustațiilor foii (ADR 0170, ADR 0171), câte unul pe regiune: întâi cele în V, apoi cele cu pereți drepți; numerele
+ * fișierelor exportului și „Dopul N” din vederea 3D (ADR 0178) le urmează. Decupările lor trec de placă cu `supracursa`
+ * (ADR 0176). O singură funcție, a exportului și a vederii 3D; sau motivul primului dop care nu se poate tăia.
+ */
+export function dopurileFoii(doc: Document, supracursa: number): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
+  const inV = programeDopuri(doc, REGIM_IMPLICIT, supracursa);
+  if (!inV.ok) return inV;
+  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT, supracursa);
+  if (!drepte.ok) return drepte;
+  return { ok: true, dopuri: [...inV.dopuri, ...drepte.dopuri] };
+}
+
 /** Exportul propriu-zis: documentul → profilele → IR → postul ales (ADR 0083) → octeții cu SHA-256. */
 export async function calculeazaExportul(doc: Document, p: ParametriExport): Promise<RaspunsExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
+  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0, p.prinFoaie === true);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
@@ -88,12 +102,9 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
   if (!e.ok) return e;
   // Dopurile incrustațiilor (ADR 0170 §3): câte un program pe semifabricatul lui, cu originea în colțul ales și Z0 mereu pe fața
   // lui. Fața se coboară până dincolo de marginea semifabricatului (în aer), deci ieșirea e a construcției, scrisă în program.
-  // Dopurile (ADR 0170, ADR 0171): întâi cele în V, apoi cele cu pereți drepți; numerele fișierelor le urmează.
-  const inV = programeDopuri(doc, REGIM_IMPLICIT);
-  if (!inV.ok) return inV;
-  const drepte = programeDopuriDrepte(doc, REGIM_IMPLICIT);
-  if (!drepte.ok) return drepte;
-  const calculate = { dopuri: [...inV.dopuri, ...drepte.dopuri] };
+  // Decupările lor trec de placă cu aceeași supracursă ca foaia (ADR 0176).
+  const calculate = dopurileFoii(doc, p.supracursa ?? 0);
+  if (!calculate.ok) return calculate;
   const dopuri: DopExportat[] = [];
   for (const [k, d] of calculate.dopuri.entries()) {
     const semifabricat = { latime: d.semifabricat.latime, inaltime: d.semifabricat.inaltime, grosime: d.semifabricat.grosimeMinima };
@@ -130,17 +141,32 @@ export function calculeazaTraseul(doc: Document): RaspunsTraseu {
 }
 
 /**
- * Programul documentului pentru vederea 3D (ADR 0057 §1): același CAM ca traseul și exportul (fără supracursă), apoi
- * mutările nucleului, cu fața plăcii la Z 0.
+ * Programul pentru vederea 3D (ADR 0057 §1): același CAM ca traseul și exportul (fără supracursă), apoi mutările nucleului,
+ * cu fața la Z 0. Fără `dop`, al foii; cu el, al dopului cu acel număr (de la 0), pe semifabricatul lui, cu fundul la grosimea
+ * lui cea mai mică (ADR 0178). Oricum, lista dopurilor foii (elementul și semifabricatul fiecăruia), sau de ce nu se pot tăia:
+ * un dop refuzat nu oprește foaia.
  */
-export function calculeazaSimularea(doc: Document): RaspunsSimulare {
+export function calculeazaSimularea(doc: Document, dop?: number): RaspunsSimulare {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
-  if (!job.ok) return { ok: false, motiv: job.motiv };
-  const p = pregatesteProgram(job.program, 0);
-  if (!p.ok) return { ok: false, motiv: p.motiv };
-  return { ok: true, foaie: { latime: foaie.stoc.latime, inaltime: foaie.stoc.inaltime, grosime: foaie.stoc.grosime }, simulare: p };
+  const d = dopurileFoii(doc, 0);
+  const cuDopuri = d.ok
+    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }
+    : { dopuri: [], motivDopuri: d.motiv };
+  if (dop === undefined) {
+    const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
+    if (!job.ok) return { ok: false, motiv: job.motiv };
+    const p = pregatesteProgram(job.program, 0);
+    if (!p.ok) return { ok: false, motiv: p.motiv };
+    return { ok: true, foaie: { latime: foaie.stoc.latime, inaltime: foaie.stoc.inaltime, grosime: foaie.stoc.grosime }, simulare: p, ...cuDopuri };
+  }
+  if (!d.ok) return { ok: false, motiv: d.motiv };
+  const x = d.dopuri[dop];
+  if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };
+  const p = pregatesteProgram(x.program, 0);
+  if (!p.ok) return { ok: false, motiv: `dopul ${dop + 1}: ${p.motiv}` };
+  const s = x.semifabricat;
+  return { ok: true, foaie: { latime: s.latime, inaltime: s.inaltime, grosime: s.grosimeMinima }, simulare: p, ...cuDopuri };
 }
 
 /** Răspunsul unei cereri, cu tablourile lui de transferat (ADR 0014). */
@@ -160,7 +186,7 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       return { raspuns: r, transfer: r.ok ? transferabileProgram(r.program) : [] };
     }
     case 'simulare': {
-      const r = calculeazaSimularea(c.document);
+      const r = calculeazaSimularea(c.document, c.dop);
       return { raspuns: r, transfer: r.ok ? deTransferat(vederiSimulare(r.simulare)) : [] };
     }
     case 'timp':

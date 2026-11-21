@@ -3,7 +3,7 @@ import type { Zona } from '../canvas/Rigle.tsx';
 import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
-import type { ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
+import type { DopSimulat, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { apropie, cuprinde, fereastraFina, incadreaza, matrici, panorameaza, rgb, roteste, subCursor, type Camera, type ZonaNdc } from './vedere3dCalcul.ts';
@@ -171,6 +171,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const [stareGpu, setStareGpu] = useState<StareGpu>('ok');
   const [stare, setStare] = useState<Stare>({ fel: 'calcul' });
   const [fin, setFin] = useState<Fin>({ fel: 'nimic' });
+  // Ce arată vederea (ADR 0178): foaia, sau dopul cu numărul dat (de la 0); dopurile foii vin cu fiecare simulare.
+  const [alegere, setAlegere] = useState<'foaie' | number>('foaie');
+  const [dopuri, setDopuri] = useState<{ readonly lista: readonly DopSimulat[]; readonly motiv?: string }>({ lista: [] });
   // Ce s-a simulat (documentul, programul, relieful plăcii și al ferestrei fine) și camera: ținute aici, nu în stare
   // (un cadru nou nu re-randează componenta).
   const sim = useRef<{ doc: Document | null; calc: Calcul | null; program: Extract<ProgramSimulare, { ok: true }> | null; placa: Relief | null; fin: Relief | null }>(
@@ -298,9 +301,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
 
   /**
    * Simularea documentului de acum: CAM-ul în workerul lui (ADR 0109), apoi bazinul. O simulare nouă, un document schimbat
-   * sau vederea închisă le anulează pe amândouă (`ctl`).
+   * sau vederea închisă le anulează pe amândouă (`ctl`). `ce`: foaia, sau dopul cu numărul dat (ADR 0178).
    */
-  const simuleaza = (): void => {
+  const simuleaza = (ce: 'foaie' | number = alegere): void => {
     job.current?.abort();
     jobFin.current?.ctl.abort();
     jobFin.current = null;
@@ -318,6 +321,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           setStare({ fel: 'refuz', motiv: p.motiv });
           return;
         }
+        setDopuri({ lista: p.dopuri, ...(p.motivDopuri !== undefined ? { motiv: p.motivDopuri } : {}) });
         const fereastra = calc.fereastraFoii(p.foaie);
         setStare({ fel: 'simulare', celula: fereastra.celula });
         void calc.simuleazaRelief(p, fereastra, ctl.signal).then((r) => {
@@ -346,7 +350,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           odihneste();
         });
       };
-      calc.programSimulare(d, ctl.signal).then(cuProgram, (e: unknown) => {
+      calc.programSimulare(d, ctl.signal, ce === 'foaie' ? undefined : ce).then(cuProgram, (e: unknown) => {
         if (ctl.signal.aborted || e instanceof calc.CalculAnulat) return;
         // Un worker căzut e o defecțiune (jurnalul, ca la simulare); o excepție a CAM-ului rămâne motivul, ca până acum.
         if (e instanceof calc.LucratorCazut) {
@@ -444,19 +448,31 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     const p = sim.current.program;
     if (p) schimbaCamera(incadreaza(p.foaie, aspect(), zonaNdc()));
   };
+  /** Foaia sau un dop (ADR 0178): altă alegere se simulează, iar camera încadrează ce s-a ales. */
+  const alege = (ce: 'foaie' | number): void => {
+    if (ce === alegere) return;
+    setAlegere(ce);
+    cam.current = null;
+    simuleaza(ce);
+  };
 
   const s = sim.current;
   const vechi = stare.fel === 'gata' && s.doc !== doc;
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
+  // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
+  const dop = alegere === 'foaie' ? null : alegere + 1;
   const textStare = stareGpu === 'fara-webgl' ? t('editare.3d.fara-webgl')
     : stareGpu === 'context-pierdut' ? t('editare.3d.context')
       : stareGpu === 'prea-mare' ? t('editare.3d.prea-mare')
         : stare.fel === 'calcul' ? t('editare.3d.calcul')
-          : stare.fel === 'simulare' ? t('editare.3d.simulare', { celula: nr(stare.celula) })
-            : stare.fel === 'refuz' ? t('editare.3d.refuz', { motiv: stare.motiv })
+          : stare.fel === 'simulare' ? (dop === null ? t('editare.3d.simulare', { celula: nr(stare.celula) }) : t('editare.3d.simulare-dop', { n: dop, celula: nr(stare.celula) }))
+            : stare.fel === 'refuz' ? (dop === null ? t('editare.3d.refuz', { motiv: stare.motiv }) : t('editare.3d.refuz-dop', { n: dop, motiv: stare.motiv }))
               : stare.fel === 'eroare' ? t('editare.3d.eroare', { motiv: stare.motiv })
-                : s.placa && s.placa.bloc > 1 ? t('editare.3d.gata-blocuri', { celula: nr(s.placa.fereastra.celula), pas: nr(s.placa.bloc * s.placa.fereastra.celula) })
-                  : t('editare.3d.gata', { celula: nr(s.placa?.fereastra.celula ?? 0) });
+                : dop !== null && s.program && s.placa ? t('editare.3d.gata-dop', {
+                  n: dop, celula: nr(s.placa.fereastra.celula), latime: nr(s.program.foaie.latime), inaltime: nr(s.program.foaie.inaltime), grosime: nr(s.program.foaie.grosime),
+                })
+                  : s.placa && s.placa.bloc > 1 ? t('editare.3d.gata-blocuri', { celula: nr(s.placa.fereastra.celula), pas: nr(s.placa.bloc * s.placa.fereastra.celula) })
+                    : t('editare.3d.gata', { celula: nr(s.placa?.fereastra.celula ?? 0) });
   const clasaStare = stareGpu !== 'ok' || stare.fel === 'eroare' ? 'cip cip-rosu' : stare.fel === 'refuz' ? 'cip cip-rosu' : 'cip';
   const textFin = stare.fel !== 'gata' || stareGpu !== 'ok' ? null
     : fin.fel === 'calcul' ? t('editare.3d.fin.calcul')
@@ -478,6 +494,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
         data-celula={s.placa && stare.fel === 'gata' ? s.placa.fereastra.celula : undefined}
         data-fereastra={fin.fel === 'gata' && s.fin ? [s.fin.fereastra.x0, s.fin.fereastra.y0, s.fin.fereastra.latime, s.fin.fereastra.inaltime].map((v) => Math.round(v * 1000) / 1000).join(',') : undefined}
         data-adancime={s.placa && stare.fel === 'gata' ? Math.round(s.placa.adancimeMax * 1000) / 1000 : undefined}
+        data-alegere={dop === null ? 'foaie' : `dop-${dop}`}
         data-vechi={vechi}
         onPointerDown={(e) => {
           e.stopPropagation();
@@ -525,17 +542,40 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
         }}
       />
       <div className="insula stare-3d" style={{ left: zona.x + 8, top: zona.y + 8 }} data-testid="stare-3d">
+        {/* Foaia sau un dop (ADR 0178): butoanele apar doar când foaia are dopuri (sau unul e încă ales). */}
+        {dopuri.lista.length > 0 || dop !== null ? (
+          <span className="alegere-3d" role="group" aria-label={t('editare.3d.alegere')} data-testid="alegere-3d">
+            <button type="button" aria-pressed={dop === null} data-3d-alege="foaie" onClick={() => { alege('foaie'); }}>{t('editare.3d.foaia')}</button>
+            {dopuri.lista.map((d, k) => (
+              <button
+                key={`${k}-${d.element}`}
+                type="button"
+                aria-pressed={alegere === k}
+                data-3d-alege={`dop-${k + 1}`}
+                title={t('editare.3d.dopul.titlu', {
+                  element: d.element, latime: nr(d.semifabricat.latime), inaltime: nr(d.semifabricat.inaltime), grosime: nr(d.semifabricat.grosimeMinima),
+                })}
+                onClick={() => { alege(k); }}
+              >
+                {t('editare.3d.dopul', { n: k + 1 })}
+              </button>
+            ))}
+          </span>
+        ) : null}
         <span className={clasaStare} role="status" data-testid="stare-3d-text" title={textStare}>{textStare}</span>
+        {dopuri.motiv !== undefined ? (
+          <span className="cip cip-rosu" data-testid="stare-3d-dopuri">{t('editare.3d.dopuri-refuz', { motiv: dopuri.motiv })}</span>
+        ) : null}
         {textFin ? <span className={fin.fel === 'refuz' ? 'cip cip-rosu' : 'cip'} data-testid="stare-3d-fin">{textFin}</span> : null}
         {vechi ? (
           <span className="cip cip-atentie" data-testid="stare-3d-vechi">
             {t('editare.3d.vechi')}{' '}
-            <button type="button" data-3d="din-nou" onClick={simuleaza}>{t('editare.3d.din-nou')}</button>
+            <button type="button" data-3d="din-nou" onClick={() => { simuleaza(); }}>{t('editare.3d.din-nou')}</button>
           </span>
         ) : null}
         {stare.fel === 'gata' && stareGpu === 'ok' ? (
           <span className="randul-3d">
-            <button type="button" data-3d="incadreaza" onClick={reincadreaza}>{t('editare.3d.incadreaza')}</button>
+            <button type="button" data-3d="incadreaza" onClick={reincadreaza}>{t(dop === null ? 'editare.3d.incadreaza' : 'editare.3d.incadreaza-dop')}</button>
             <span className="sfat-3d">{t('editare.3d.sfat')}</span>
           </span>
         ) : null}

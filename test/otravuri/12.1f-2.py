@@ -120,7 +120,8 @@ o('T46', DLG, "      treaptaInc: dr?.treapta ? (dr.treapta.spre === 'exterior' ?
 o('T47', DLG, "? { sprijinInc: p.treaptaInc === 'fara' ? 'fata' : 'umar' } : {}) });", "? { sprijinInc: 'fata' } : {}) });", 'e2e',
   'gaura în trepte mută sprijinul pe față')
 o('T48', CON, "              ...(o.incrustatie.treapta ? {\n", "              ...(false ? {\n", 'e2e', 'fereastra nu primește treapta din proiect')
-o('T49', PAN, '                {hartieDreapta.treapta ? (<>', '                {false ? (<>', 'e2e', 'panoul fără treaptă, pe hârtie')
+# T49 reorientată la 12.1↑e (19.11): 28.1↑d a scos 4 spații de indentare din panou.
+o('T49', PAN, '            {hartieDreapta.treapta ? (<>', '            {false ? (<>', 'e2e', 'panoul fără treaptă, pe hârtie')
 o('T50', PAN, "        {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && o.incrustatie.treapta && rand(t('prop.inc.treapta'),",
   "        {false && o.incrustatie?.fel === 'drept' && o.incrustatie.treapta && rand(t('prop.inc.treapta'),", 'e2e', 'Tăierea fără treaptă')
 o('T51', PAN, "            : o.incrustatie.sprijin === 'umar' ? 'prop.inc.dop.ridicat-umar' : 'prop.inc.dop.ridicat-fund'),",
