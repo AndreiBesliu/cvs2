@@ -10765,3 +10765,49 @@ pune-i întrebarea, cu implicitul în față.” (sesiunea principală). **Start
   felurile legăturii (curbă netedă, prelungire până la intersecție, racordare, teșitură) și legarea la importul SVG și PDF
   (oprită implicit) intră ca opțiuni, în feliile 10.3↑q și 10.3↑r.
 - **Codul** (10.3↑o): următoarea felie a liniei.
+
+
+## 2026-11-21 — Felia 3.Tp↑a: căutarea peste toate filele atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „da si vreau sa pornesti si restul worktrees” (owner-ul, pe 21.11, prin sesiunea principală: „La tine urmează
+3.Tp↑a (căutarea), apoi 3.Tp↑b (pictogramele)”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă
+la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
+
+- **Câmpul „Caută o piesă”**, la capătul rândului de file (pe telefon, pe un rând al lui, cât tot rândul): la fiecare
+  literă, galeria arată piesele găsite din toate familiile, în ordinea filelor. Fiecare cuvânt căutat începe un cuvânt din
+  numele de pe ecran (în limba paginii), fără diacritice și fără majuscule: „con” găsește Rotund / con, Bucșă / conector,
+  Roată conică, Conică dublă; „nic” nu găsește nimic; „roata con”, doar Roată conică; un text fără litere, nimic.
+- **Alegerea** deschide piesa cu fila ei (care o ține minte); rezultatele rămân, cu focusul pe buton; Enter alege prima;
+  Escape, × sau o filă întorc galeria familiei; peste model și peste filele proprii, căutarea arată tot rezultatele, fără
+  piesă apăsată. Fără potrivire, mesajul cu textul căutat. Nimic nu se păstrează în date.
+- **Pe drum:** (1) întâi potrivirea pe orice bucată din nume: „nic” găsea Technic și conicele; acum, la început de cuvânt.
+  (2) Codul căutării stă grupat lângă `marcheazaFile()` și în `init`, fără să atingă tabela familiilor (3.To lucrează în
+  paralel pe rândul `roti`); rândurile țintite de otrăvurile 3.Tp au rămas neatinse, afară de două (E05, E13), mutate și
+  prinse. (3) Otrava F03 (Escape) a scăpat: câmpul `type="search"` se golește singur la Escape, cu `input`, deci codul
+  propriu era echivalent și a ieșit (Escape rămâne în proba e2e). (4) Otrava G03 a scăpat fiindcă proba căuta înainte ca
+  atelierul să-și fi arătat galeria familiei (three.js încă se încărca): proba așteaptă acum galeria. (5) În jurnalul fișei,
+  id-ul e `3.Tp-2`: tiparul jurnalului primește „↑” doar la feliile din etapele următoare, deci nu și „3.Tp↑a”.
+- **Probele:** e2e 4 (`trenulet.cautare.spec.ts`: „con” și alegerea pe rând, cu fila și focusul; diacriticele, majusculele,
+  începutul de cuvânt, mai multe cuvinte, textul fără litere, mesajul, Escape, Enter, golirea; peste model și peste
+  „Calibrare”; telefonul), plus căutarea în engleză în proba din cvs2 (`trenulet.spec.ts`: „bevel” găsește Bevel gear și
+  Double bevel gear; mesajul în engleză). Textele noi: Find a piece, No piece matches “…”., Pieces found.
+- **Otrăvurile:** 21 / 21 pe codul final (`23ce2982`; `3.Tpa.py`, 20: 17 prin e2e, 3 ale traducerii; `3.Tpa-en.py`, 1, prin
+  proba în engleză). La prima rulare (`c9ed8648`), 19 / 21: F03 echivalentă (scoasă, cu codul ei), G03 scăpată (proba
+  întărită, apoi prinsă, cu F04, F05, G01, G04 reluate). Pornite după 30 de minute de așteptare a liniștii (alte linii
+  țineau procesorul la 70–95 %). `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi.
+- **Privirea:** pe pagina de sine stătătoare (desktop și telefon, luminos și întunecat: „con”, „roata”, „xyz”) și în cvs2
+  (română: desktop luminos cu „con”, telefon întunecat cu „roata”; engleză: desktop întunecat cu „bevel”), mărite pe file,
+  câmp și galerie: câmpul la capătul rândului (pe telefon, pe un rând al lui), fără depășire, fără erori în jurnal.
+- **Porțile:** rapide verzi pe `2ab00d64` (traducerile, tsc, unit 9 652 / 0, 8 sărite, licențele, build, determinismul;
+  pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800, ca pe `main`), lente verzi (e2e 574 / 574, cu cele 4 noi;
+  emulatoarele 101 / 101 și 29 / 29, la reluare: prima rulare nu pornise, cu portul Auth ținut de altă linie).
+- Pachetul Easy 3Draw 18.17.0 (3.To a luat 18.16.0 și a intrat întâi în `main`; ramura a adus `main` `4667898a` în
+  `0a10d403`), înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+- **Adusă la `main` cu 3.To** (cerută de sesiunea principală, 21.11, 20:30: „3.Tp↑a trebuie să treacă pe 18.17.0,
+  pentru că 3.To (șenila) ia pachetul 18.16.0”; gata la 21:38): unirea `0a10d403`, cu ciocniri doar în documente (rămân
+  rândurile ambelor felii, 3.To apoi 3.Tp↑a) și în amprenta din bibliotecă; `atelier.ts`, `texte.en.json`, spec-urile și
+  `3.Tp.py` s-au unit singure. Documentele pe 18.17.0 în `bb52ac5e` (rândul din fișă are în dicționarul roadmap-ului o
+  amprentă nouă). Porțile verzi pe `bb52ac5e`: rapide (traducerile 0 lipsă, tsc, unit 9 659 / 0, 8 sărite, licențele,
+  build, determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800), lente (e2e 577 / 577, cu cele 3
+  ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
+  20 de VOID.

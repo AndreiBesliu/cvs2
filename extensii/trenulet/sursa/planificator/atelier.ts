@@ -1843,20 +1843,51 @@ var Atelier3D = (function () {
   // --------------------------------------------------------------------------- pornire
   let toastT: ReturnType<typeof setTimeout> | null = null;
   function toast(t: string) { const el = $("#at-toast"); el.textContent = t; el.classList.add("vizibil"); clearTimeout(toastT!); toastT = setTimeout(() => el.classList.remove("vizibil"), 2600); }
+  // Căutarea peste toate filele (ADR 0281, felia 3.Tp↑a): textul scris de om; cât nu e gol, galeria arată piesele găsite.
+  let cautare = "";
+  /** Cuvintele unui text, de potrivit: fără diacritice (ș și ş, ț și ţ, la fel), fără majuscule, despărțite de orice nu e
+   *  literă sau cifră („Bucșă / conector” → bucsa, conector). */
+  const cuvinte = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  /** Piesele găsite, din toate familiile, în ordinea filelor și a galeriilor: fiecare cuvânt căutat începe un cuvânt din numele
+   *  de pe ecran (în limba paginii): „con” găsește Rotund / con, Bucșă / conector, Roată conică, Conică dublă. */
+  function pieseGasite(q: string): (readonly [string, string])[] {
+    const cautate = cuvinte(q);
+    return FAMILII.flatMap(([, , piese]) => piese).filter(([, n]) => {
+      const din = cuvinte(tr(n));
+      return cautate.length > 0 && cautate.every(c => din.some(w => w.startsWith(c)));
+    });
+  }
+  function cauta(q: string) { cautare = q; marcheazaFile(); }
+  /** O filă aleasă golește căutarea (galeria se întoarce la familia piesei). */
+  function golesteCautarea() { cautare = ""; $<HTMLInputElement>("#at-cauta").value = ""; }
   /** Filele de sus după piesa de acum (ADR 0281): apăsată fila ei, iar dedesubt galeria familiei, cu piesa apăsată (cât se
-   *  vede modelul, nicio filă și nicio galerie); familia își ține minte piesa. */
+   *  vede modelul, nicio filă și nicio galerie); familia își ține minte piesa. Cu o căutare, galeria arată piesele găsite (și
+   *  peste model sau peste o filă proprie). */
   function marcheazaFile() {
     const f = filaPentru(stare.tip), fam = FAMILII.find(([x]) => x === f), g = $("#at-galerie");
+    const q = cautare.trim();
     if (fam) ultima.set(f, stare.tip);
     document.querySelectorAll<HTMLElement>("#at-tipuri [data-fila]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.fila === f)));
     g.hidden = vedere !== "piesa" || !fam;
-    if (!fam) return;
-    // galeria se face din nou doar la altă familie: în aceeași, butoanele (și focusul de pe ele) rămân, se mută doar apăsarea
-    if (g.dataset.familie !== f) {
-      g.dataset.familie = f; g.setAttribute("aria-label", fam[1]);
-      g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+    if (q) {
+      // piesele găsite, făcute din nou doar la alt text: cât se încearcă pe rând, butoanele (și focusul) rămân
+      g.hidden = false;
+      if (g.dataset.cautare !== q) {
+        g.dataset.cautare = q; delete g.dataset.familie; g.setAttribute("aria-label", "Piesele găsite");
+        const gasite = pieseGasite(q);
+        if (gasite.length) g.innerHTML = gasite.map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+        else { g.innerHTML = `<p class="mic at-galerie-gol"></p>`; g.firstElementChild!.textContent = tr`Nicio piesă nu se potrivește cu „${q}”.`; }
+      }
+    } else {
+      if (!fam) return;
+      // galeria se face din nou doar la altă familie: în aceeași, butoanele (și focusul de pe ele) rămân, se mută doar apăsarea
+      if (g.dataset.familie !== f) {
+        g.dataset.familie = f; g.setAttribute("aria-label", fam[1]);
+        delete g.dataset.cautare;
+        g.innerHTML = fam[2].map(([k, n]) => `<button type="button" data-piesa="${k}">${n}</button>`).join("");
+      }
     }
-    g.querySelectorAll<HTMLElement>("[data-piesa]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.piesa === stare.tip)));
+    g.querySelectorAll<HTMLElement>("[data-piesa]").forEach(b => b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.piesa === stare.tip)));
   }
   function alegeTip(t: string) {
     stare.tip = t; privita = null;
@@ -1908,8 +1939,16 @@ var Atelier3D = (function () {
       stare: () => imprimante!, salveaza: s => { imprimante = s; salveaza(); rezumatImprimanta(); }, valori: valoriImprimanta, aplica: aplicaImprimanta,
     });
     culori(); reglaje();
-    $("#at-tipuri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fila]"); if (!b) return; inlocuieste = null; alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!); };
+    $("#at-tipuri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fila]"); if (!b) return; inlocuieste = null; golesteCautarea(); alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!); };
     $("#at-galerie").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-piesa]"); if (!b) return; inlocuieste = null; alegePiesa(b.dataset.piesa!); };
+    // căutarea (3.Tp↑a): la fiecare literă, galeria arată piesele găsite; Enter alege prima (Escape și × golesc câmpul de
+    // căutare singure, cu `input`, ca orice câmp `type="search"`)
+    const campCautare = $<HTMLInputElement>("#at-cauta");
+    campCautare.oninput = () => cauta(campCautare.value);
+    campCautare.onkeydown = ev => {
+      const prima = ev.key === "Enter" && cautare.trim() ? document.querySelector<HTMLElement>("#at-galerie [data-piesa]") : null;
+      if (prima) { ev.preventDefault(); inlocuieste = null; alegePiesa(prima.dataset.piesa!); }
+    };
     $("#at-adauga").onclick = adaugaInLista;
     $("#at-stl").onclick = descarcaSTL;
     $("#at-zip").onclick = descarcaZip;

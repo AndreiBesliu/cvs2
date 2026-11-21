@@ -49,8 +49,9 @@ o('E03', A, 'alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!);', 'alegeT
   'clicul pe filă alege familia ca tip (editorul calibrării)')
 o('E04', A, 'fam = FAMILII.find(([x]) => x === f), g = $("#at-galerie");', 'fam = FAMILII.find(([x]) => x === f) && FAMILII[0], g = $("#at-galerie");',
   'e2e', 'galeria arată mereu piesele Cărămizilor')
-o('E05', A, 'b.setAttribute("aria-pressed", String(b.dataset.piesa === stare.tip))', 'b.setAttribute("aria-pressed", "false")', 'e2e',
-  'nicio piesă apăsată în galerie')
+# 3.Tp↑a (căutarea): apăsarea din galerie cere și vederea piesei (peste model, rezultatele căutării nu apasă nimic): ținta mutată.
+o('E05', A, 'b.setAttribute("aria-pressed", String(vedere === "piesa" && b.dataset.piesa === stare.tip))', 'b.setAttribute("aria-pressed", "false")',
+  'e2e', 'nicio piesă apăsată în galerie')
 o('E06', A, 'g.hidden = vedere !== "piesa" || !fam;', 'g.hidden = !fam;', 'e2e', 'galeria rămâne în vederea modelului')
 o('E07', A, 'g.hidden = vedere !== "piesa" || !fam;', 'g.hidden = vedere !== "piesa";', 'e2e', 'galeria (veche) rămâne pe „Calibrare”')
 o('E08', A, 'String(vedere === "piesa" && b.dataset.fila === f)', 'String(b.dataset.fila === f)', 'e2e', 'o filă rămâne apăsată în vederea modelului')
@@ -63,7 +64,8 @@ o('E11', A, 'if (d.exists) { incarca(d.data()); marcheazaFile(); culori();', 'if
   'după încărcarea din baza artefactului, filele și galeria rămân pe piesa de dinainte')
 o('E12', A, 'if (!b) return; inlocuieste = null; alegePiesa(', 'if (!b) return; alegePiesa(', 'e2e',
   'altă piesă din galerie ar înlocui piesa din model („Înlocuiește în model” rămâne)')
-o('E13', A, 'if (!b) return; inlocuieste = null; alegeTip(ultima.get(', 'if (!b) return; alegeTip(ultima.get(', 'e2e',
+# 3.Tp↑a (căutarea): clicul pe filă golește și căutarea, între cele două: ținta mutată.
+o('E13', A, 'if (!b) return; inlocuieste = null; golesteCautarea(); alegeTip(ultima.get(', 'if (!b) return; golesteCautarea(); alegeTip(ultima.get(', 'e2e',
   'altă filă ar înlocui piesa din model („Înlocuiește în model” rămâne)')
 o('E14', A, '["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ', '["pantaInversa", "Pantă inversă"], ["panta", "Pantă"], ', 'e2e',
   'ordinea galeriei Cărămizilor schimbată')
