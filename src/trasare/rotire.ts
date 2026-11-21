@@ -151,7 +151,8 @@ export function gasesteUnghiul(img: ImagineRGBA): UnghiGasit {
   let sDeparte = 0;
   for (let i = -nG; i <= nG; i++) if (Math.abs(i - iBun) * dG >= DEPARTE) sDeparte = Math.max(sDeparte, sG[i + nG] ?? 0);
   const incredere = sDeparte > 0 ? sBun / sDeparte : 0;
-  if (Math.abs(iBun) === nG || !(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };
+  // Un maxim la capătul baleiajului (unghiul e dincolo) iese, după baleiajul fin, peste `UNGHI_CAUTAT`: nesigur, la sfârșit.
+  if (!(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };
   // Fin: coșuri de un pixel, toate punctele, pe ±1,5 pași grosieri, cu pasul cât un sfert de pixel pe latura cea mai lungă.
   const RF = new Float64Array(2 * Math.ceil(raza) + 4), CF = new Float64Array(RF.length);
   const dF = (0.25 / c.latura) / rad, nF = Math.ceil((1.5 * dG) / dF), a0 = iBun * dG;

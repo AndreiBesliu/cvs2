@@ -33,10 +33,11 @@ o('R05', RO, '    R[r0] = (R[r0] ?? 0) + 1 - fr; R[r0 + 1] = (R[r0 + 1] ?? 0) + 
   '    R[r0] = (R[r0] ?? 0) + 1;\n    C[q0] = (C[q0] ?? 0) + 1;', 'rot', 'coșul cel mai apropiat, fără împărțirea liniară')
 o('R06', RO, '    const r = x * sn + y * cs + o, q = x * cs - y * sn + o;', '    const r = -x * sn + y * cs + o, q = x * cs + y * sn + o;', 'rot',
   'unghiul cu semnul întors')
-o('R07', RO, '  if (Math.abs(iBun) === nG || !(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };',
-  '  if (Math.abs(iBun) === nG) return { unghi: null, incredere };', 'rot', 'încrederea nu se judecă')
-o('R08', RO, '  if (Math.abs(iBun) === nG || !(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };',
-  '  if (!(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };', 'rot', 'maximul la capătul intervalului, primit')
+o('R07', RO, '  if (!(incredere >= INCREDERE_MINIMA)) return { unghi: null, incredere };',
+  '  if (incredere < 0) return { unghi: null, incredere };', 'rot', 'încrederea nu se judecă')
+# R08 (maximul la capătul baleiajului grosier, primit) a scăpat la prima rulare (`5ac7aefb`): verificarea de la sfârșit
+# (|u| > UNGHI_CAUTAT) o acoperă, iar ea respingea degeaba un unghi chiar de sub 10°, când grila grosieră trecea de 10°.
+# Echivalentă: codul ei a fost scos.
 o('R09', RO, 'if (Math.abs(i - iBun) * dG >= DEPARTE)', 'if (i !== iBun)', 'rot', 'încrederea față de vecinii vârfului')
 o('R10', RO, '    if (num < 0) u += (dF * 0.5 * (s0 - s2)) / num;', '    if (num < 0) u -= (dF * 0.5 * (s0 - s2)) / num;', 'rot',
   'parabola mută vârful în partea greșită')

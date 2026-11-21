@@ -149,6 +149,7 @@ test('rotirea: peste maxPixeli, pânza redusă cu factorul k; sub 0,005°, aceea
   const g = gasesteUnghiul(rotesteImaginea(randeaza(pagina('desen', 1000, 600), 1000, 600, 3), 3, { prelungeste: false, maxPixeli: 400_000 }).img);
   assert.ok(g.unghi !== null && Math.abs(g.unghi) < 0.03, `redusă: ${g.unghi}`);
   const t = rotesteImaginea(img, 0.004, { prelungeste: false, maxPixeli: 16_000_000 });
-  assert.equal(t.img, img);
+  // Identitatea, fără diff-ul a două imagini mari (o otravă care rotește totuși ar ține proba minute întregi).
+  assert.ok(t.img === img, 'sub 0,005°, aceeași imagine');
   assert.equal(t.k, 1);
 });
