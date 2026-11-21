@@ -838,6 +838,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6u gata pe 18.11** (filmele timelapse): `elapseVideoList` în driver (`filme`, `adresaFilm`), `filmePe` (pur), coloana Filmul
   a cardului Istoricul (filă nouă, fără trimitător); istoricul și filmele, cerute din nou la deschiderea ferestrei (`vizibila`).
   Totalul 732,7 / 800 (+0,5). Grupul 3 încheiat; proba pe K1C: ghidul, pașii 9–11.
+  **Grupul 4 propus pe 21.11** (ADR 0195, schița cu formularul: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>): 3.6v, codurile explicate (dicționarul
+  cvs2 al familiei K1, 71 de chei, căutate după `key`, apoi `errcode`; pana de curent din `repoPlrStatus`), 3.6w, camera
+  WebRTC (`/call/webrtc_local` pe 8000, fără STUN), 3.6x, camera MJPEG (8080, cadre `blob:`); CSP-ul neschimbat. Codul,
+  la răspunsuri.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

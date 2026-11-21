@@ -10627,3 +10627,29 @@ aseară s-au oprit peste noapte.
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 20.12), build-ul `2491fdc` (versiunea `2491fdc7c429`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 cu rolul „straight-walled inlay” (adâncimea 3, marginea dopului 5), vederea 3D arată „Sheet / Plug 1”, cu „Sheet” apăsat, titlul dopului „… on its 110 × 70 × 6 mm blank” și niciun cip de refuz. „Plug 1”: „Plug 1 simulated at 0.25 mm, on the 110 × 70 × 6 mm blank”, relieful 440 × 280, dopul în picioare, cu fața la 0 și marginea coborâtă (până la 5), camera pe mijlocul lui (55, 35), „Fit the plug”. Înapoi la „Sheet”: 1 200 × 800, adâncimea 3, camera pe (150, 100), „Fit the sheet”. Vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă. Văzut atunci: titlul dopului numește incrustația prin id-ul ei intern („e1/e1”), pe care utilizatorul nu-l vede nicăieri; de înlocuit, într-o felie mică.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
   „prin foaie” pe fiecare rând (v26).
+
+## 2026-11-21 — 3.6v–3.6x propuse: camera imprimantei și codurile ei explicate (ADR 0195) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (21.11), după „da si vreau sa pornesti si restul worktrees” al owner-ului: „Continuă
+linia imprimantei. […] Proba pe K1C (ghidul, pașii 9–11) cere imprimanta owner-ului. Dacă are nevoie de el acum, spune-i
+într-un rând ce să facă, cu link-ul. Între timp, ia felia următoare din coada ta care nu așteaptă nici proba, nici o decizie.
+Dacă nu e niciuna, pregătește propunerea (ADR, schiță) și pune-i întrebarea, cu implicitul în față.”
+**Started:** 21.11, 17:55. **Completed:** 21.11, 18:25.
+
+- **Coada liniei:** grupurile 1–3 din cele șapte din 08.11 sunt gata și unite în `main`; urmează grupul 4, camera („1 → 2
+  → 3, apoi camera”, cu „Fiecare grup ar avea ADR-ul lui”), iar lângă ea codurile explicate (acceptate pe 07.11, promise de
+  cardul erorii). Nicio felie nu pornea fără o decizie: fiecare grup cere ADR-ul și schița înaintea codului; Moonraker
+  (ADR 0192 §E.19) vine după.
+- **Cercetarea:** Creality Print 4 (AGPL; citit, nimic copiat): textul unei erori se caută după `err.key` în `errorData.js`
+  (71 de chei pentru familia K1: 31 grave, 38 obișnuite, 2 speciale; 10 cu pagină în wiki); răspunsurile la o eroare
+  (Continuă = reia și `cleanErr`, Anulează = `stop` și `cleanErr`, pana de curent = `repoPlrStatus` 1 sau 0).
+  `creality-printer-monitor` (MIT): întâi `key`, apoi `errcode`. K2Dash (Unlicense): semnalizarea camerei, `POST
+  /call/webrtc_local` pe 8000, oferta și răspunsul în base64, citite de pe alt port (deci cu CORS, pe K2). mjpg-streamer:
+  `Access-Control-Allow-Origin: *`. Pe K1C-ul owner-ului (transcrierea din 07.11): `webrtcSupport: 1`, `video: 1`,
+  `repoPlrStatus: 0`.
+- **Propunerea:** ADR 0195 (propus), cu feliile 3.6v (codurile), 3.6w (camera WebRTC) și 3.6x (camera MJPEG); CSP-ul
+  neschimbat (`connect-src` are `http:` din 3.6h, `<video srcObject>` nu e o adresă, `img-src` are `blob:`). Două întrebări
+  care se exclud: schița; răspunsurile la o eroare din cvs2 (a: nu acum, recomandat; b: acum, cu confirmare). Schița, cu
+  formularul răspunsurilor: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>.
+- **Pentru owner:** coada din fișă are acum și proba grupului 3 pe K1C (ghidul, pașii 9–11).
+- **Mărimea de azi:** totalul 739,4 / 800, pornirea cu ușa 111,2 / 115, măsurate de sesiunea principală pe 20.11, pe `b3c3970f` (`main` `a64adf6` adaugă doar CLAUDE.md și indexul ADR).

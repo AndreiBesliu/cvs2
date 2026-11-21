@@ -53,6 +53,10 @@
       "ro": "**Buzunarul, adus din etapa 5** (fără mașină; ADR 0069; „Ok, dar, in timp ce eu voi face testul, vreau sa poti lucra la ce urmeaza”: lucrat cât owner-ul face testul uneltelor de desen, publicat pe un canal de previzualizare, nu pe adresa de test). În fereastra exportului, „buzunar” e încă o tăietură a rândului (coloana se cheamă acum „Tăietura”): freza scoate tot materialul dinăuntrul conturului, până la adâncime, în inele paralele cu conturul, la un pas lateral de cel mult jumătate din diametru (implicit 40 %), dinăuntru spre perete; între inele nu se ridică cât drumul rămâne în buzunar. Documentul v11 (migrarea doar cu numărul). Refuzate, cu motiv: calea deschisă, insulele, contururile care se ating, freza care nu încape. Manualul („Operațiile de tăiere”) e la zi. Ca să încapă, ușa unui proiect salvat s-a despărțit (ADR 0070): la pornire vin doar verificările, migrările doar pentru un document vechi; pornirea cu ușa 99,9 → 98,6 / 100 kB. **Treceri:** (1) schema v11 și ușa, inelele (arborele, postordinea), legăturile, lucrarea (buzunarul nu e inel), dialogul; oracolul simulării pe G-code-ul exportat: dreptunghiul, L-ul cu pasul maxim, cercul, scoase întregi; o probă pe hârtie a găsit un prag de topologie (40 × 30, pasul 2,4: inelul exact la jumătatea lățimii, o linie, refuzat de offset): inelul se ia la 14,999 mm; `document.aplica-operatii` refuza schimbarea felului (prins de e2e), acum felul e o valoare; pornirea cu ușa ajunsese la 100,2 / 100 kB, de unde ADR 0070; oracolul documentului v11 și lipirea cu el (~24 de fișiere de probe) scrise de aceeași sesiune, nu independent.",
       "en": "**The pocket, brought forward from stage 5** (no machine; ADR 0069; “Ok, but while I do the test, I want you to be able to work on what comes next”: done while the owner runs the drawing tools test, published on a preview channel, not on the test address). In the export window, “pocket” is one more cut for a row (the column is now called “Cut”): the cutter clears all the material inside the outline, down to the depth, in rings parallel to the outline, a side step of at most half the diameter apart (40% by default), from the inside out to the wall; between rings it does not lift as long as the way stays inside the pocket. Document v11 (the migration only changes the number). Refused, with a reason: the open path, islands, outlines that touch, a cutter that does not fit. The manual (“The cutting operations”) is up to date. To make it fit, the door of a saved project was split (ADR 0070): at startup only the checks come, the migrations only for an older document; startup with the door 99.9 → 98.6 / 100 kB. **Passes:** (1) schema v11 and the door, the rings (the tree, post-order), the links, the job (the pocket is not a ring), the dialog; the simulation oracle on the exported G-code: the rectangle, the L with the maximum step, the circle, cleared whole; a paper test found a topology threshold (40 × 30, step 2.4: the ring exactly at half the width, a line, refused by the offset): the ring is taken at 14.999 mm; `document.aplica-operatii` refused changing the kind (caught by e2e), now the kind is a value; startup with the door had reached 100.2 / 100 kB, hence ADR 0070; the v11 document oracle and its glue (~24 test files) written by the same session, not independently."
     },
+    "04e87b64ccad03b5": {
+      "ro": "Camera imprimantei și codurile ei explicate",
+      "en": "The printer camera and its error codes explained"
+    },
     "0576698832e7cabf": {
       "ro": "Roadmap-ul în engleză",
       "en": "The roadmap in English"
@@ -745,6 +749,10 @@
       "ro": "Unealta Pen și tipurile nodurilor",
       "en": "The Pen tool and the node types"
     },
+    "32d7e6d3d94127a5": {
+      "ro": "Camera imprimantei prin WebRTC",
+      "en": "The printer camera over WebRTC"
+    },
     "32e55f096f4f3a7c": {
       "ro": "fișierele tale reale",
       "en": "your real files"
@@ -1221,6 +1229,10 @@
       "ro": "Profilul pe orice contur",
       "en": "Profile on any contour"
     },
+    "54d9714a4695b1cc": {
+      "ro": "3.6s–3.6u pe imprimantă",
+      "en": "3.6s–3.6u on the printer"
+    },
     "551d992a22ab4c72": {
       "ro": "Linia mediană",
       "en": "Centre line"
@@ -1448,6 +1460,10 @@
     "6873abde95cb8caf": {
       "ro": "Fereastra Aspectul",
       "en": "The Appearance window"
+    },
+    "68e8555ba1a9dd97": {
+      "ro": "Camera imprimantei prin WebRTC (ADR 0195): cardul Camera în fereastra Imprimanta, pornit la clic, cu imaginea direct de pe imprimantă (semnalizarea pe 8000, fără niciun server); proba pe imprimanta falsă, cu o cameră falsă într-o a doua pagină, apoi ghidul",
+      "en": "The printer camera over WebRTC (ADR 0195): the Camera card in the Printer window, started with a click, with the picture straight from the printer (signalling on 8000, no server at all); tested on the fake printer, with a fake camera in a second page, then the guide"
     },
     "696ecb4953d33ecc": {
       "ro": "Plafonul total 500 kB",
@@ -2085,6 +2101,10 @@
       "ro": "Remedierile din testul uneltelor de desen",
       "en": "The fixes from the drawing tools test"
     },
+    "99c2277b56fe658b": {
+      "ro": "Proba grupului 3 pe K1C (3.6s–3.6u, ADR 0194; în `main` din 18.11, pe adresa principală de test: <https://cncvectorstudio-test.web.app/>), după [ghid](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), pașii 9–11: o imprimare scurtă cu notificările pornite și cvs2 în fundal (vine notificarea? sunetul?), istoricul la final (durata, filamentul) și, cu timelapse-ul pornit pe ecranul imprimantei, „Filmul ↗”; jurnalul copiat, dacă ceva nu merge",
+      "en": "Test of group 3 on the K1C (3.6s–3.6u, ADR 0194; in `main` since 18.11, on the main test address: <https://cncvectorstudio-test.web.app/>), following the [guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/imprimanta-k1c.md), steps 9–11: a short print with the notifications on and cvs2 in the background (does the notification come? the sound?), the history at the end (the duration, the filament) and, with timelapse turned on on the printer's screen, “Video ↗”; the log copied if something does not work"
+    },
     "9a3c1ae6540a935d": {
       "ro": "Progresul etapelor viitoare",
       "en": "The progress of future stages"
@@ -2193,6 +2213,10 @@
       "ro": "Testul pas cu pas",
       "en": "The step-by-step test"
     },
+    "a1534e725cd07e08": {
+      "ro": "Codurile imprimantei explicate",
+      "en": "Printer error codes explained"
+    },
     "a17680231b9f3053": {
       "ro": "Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B",
       "en": "The test instance (Firestore export confirmed by the owner, then hosting only) and the plate 1 file, with programs A and B"
@@ -2220,6 +2244,10 @@
     "a316b45e2a5823a3": {
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
+    },
+    "a374b647cf50278f": {
+      "ro": "Camera MJPEG (ADR 0195), pentru K1 fără WebRTC: fluxul de pe 8080, citit cadru cu cadru în același card; proba pe imprimanta falsă",
+      "en": "The MJPEG camera (ADR 0195), for K1 printers without WebRTC: the stream from 8080, read frame by frame in the same card; tested on the fake printer"
     },
     "a3e058270f81d2bb": {
       "ro": "Planșele, aduse din etapa 11: foaia activă și lista cu foile",
@@ -2977,6 +3005,10 @@
       "ro": "înainte să pornim primirea pe live",
       "en": "before we turn receiving on for live"
     },
+    "db9aaf36cca405a1": {
+      "ro": "Camera MJPEG, pentru K1 fără WebRTC",
+      "en": "The MJPEG camera, for K1 printers without WebRTC"
+    },
     "dbb48461078beeca": {
       "ro": "V-carve (+ fund plat); Gravare pe linie + smart engrave",
       "en": "V-carve (+ flat bottom); On-line engraving + smart engrave"
@@ -3084,6 +3116,10 @@
     "e2a199e5f1f08a88": {
       "ro": "Importul SVG",
       "en": "SVG import"
+    },
+    "e353ee2086f86124": {
+      "ro": "Codurile imprimantei explicate (ADR 0195, propus pe 21.11, grupul 4 al îmbunătățirilor legăturii prin WiFi, cu codurile acceptate pe 07.11): dicționarul cvs2 al familiei K1 (codul de pe ecran, gravitatea, ce faci, linkul în wiki-ul Creality), în cardul erorii și în notificări, adus la prima eroare; pana de curent citită din imprimantă; proba pe imprimanta falsă, apoi ghidul pe imprimanta owner-ului",
+      "en": "Printer error codes explained (ADR 0195, proposed on 21.11, group 4 of the WiFi link improvements, with the codes accepted on 07.11): cvs2's dictionary for the K1 family (the code on the screen, the severity, what to do, the link into the Creality wiki), in the error card and in the notifications, loaded at the first error; the power loss read from the printer; tested on the fake printer, then the guide on the owner's printer"
     },
     "e3683bc685424e89": {
       "ro": "three.js în pachetul extensiei: previzualizarea 3D în cvs2",
