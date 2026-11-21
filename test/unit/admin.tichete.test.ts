@@ -17,13 +17,11 @@ test('titlul: primul rând cu text, cu spațiile strânse; un text gol dă un ti
 });
 
 test('titlul lung: tăiat la ultimul cuvânt întreg, cu „…”; un cuvânt prea lung, tăiat în el; literele din afara BMP întregi', () => {
-  const cuvinte = 'Am un proiect cu trei foi și când apăs Exportă G-code bara merge până la patruzeci la sută și apoi stă pe loc';
-  const titlu = titluTichet(cuvinte);
-  assert.ok(Array.from(titlu).length <= TITLU_MAX + 1, titlu);
-  assert.ok(titlu.endsWith('…'));
-  assert.ok(cuvinte.startsWith(titlu.slice(0, -1)), titlu);
-  assert.equal(titlu.slice(0, -1), titlu.slice(0, -1).trimEnd());
-  assert.ok(cuvinte.charAt(titlu.length - 1) === ' ', 'tăiat înaintea unui spațiu, deci la un cuvânt întreg');
+  // A 90-a literă cade în mijlocul lui „mare” (21.11: propoziția de dinainte se rupea întâmplător înaintea unui spațiu, iar
+  // otrava U04, tăierea în mijlocul cuvântului, trecea). Titlul așteptat e scris de mână, nu calculat.
+  const cuvinte = 'Exportul se oprește la patruzeci la sută când proiectul are trei foi de placaj și planșa mare pentru dulapul din bucătărie';
+  assert.equal(Array.from(cuvinte)[TITLU_MAX], 'a');
+  assert.equal(titluTichet(cuvinte), 'Exportul se oprește la patruzeci la sută când proiectul are trei foi de placaj și planșa…');
   // Fără spațiu în prima jumătate: tăiat exact la plafon.
   assert.equal(titluTichet('x'.repeat(200)), `${'x'.repeat(TITLU_MAX)}…`);
   // Exact la plafon: neatins.
