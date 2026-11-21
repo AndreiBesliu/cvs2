@@ -2,7 +2,8 @@
 
 **Starea:** acceptat pe 18.11.2026, la „Da, pornește” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pornesc
 felia următoare, îndreptarea scanărilor (25.4↑c, ADR 0271)?”), tot sub „vreau să mergi înainte și testez la final”:
-recomandările de mai jos sunt implicite, iar întrebările rămân pentru încercarea de la final. Felia 25.4↑c, fără mașină, în
+recomandările de mai jos sunt implicite, iar întrebările rămân pentru încercarea de la final. Implementat pe 18–21.11
+(mai jos). Felia 25.4↑c, fără mașină, în
 linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`); numărul, din intervalul trasării (0270–0279).
 **Completează:** ADR 0224 (scanările și pozele), ADR 0225 (foaia pozată oblic, îndreptată după colțuri), ADR 0229 și ADR
 0270 (TIFF-ul și PDF-urile scanate).
@@ -119,3 +120,52 @@ deosebește de hârtie, iar un PDF scanat e deja decupat la pagină.
 2. **Colțurile pânzei rotite:**
    - **a)** pânza crește și nu se taie nimic (luat);
    - b) pânza rămâne cât imaginea, iar colțurile desenului se taie.
+
+## Implementarea (18–21.11)
+
+- **Nucleul** (`src/trasare/rotire.ts`, pur, în workerul trasării; din nucleul trasării ia doar pragul Otsu):
+  - `gasesteUnghiul`: cerneala imaginii reduse (cel mult 2 Mpx, blocurile parcurse în ordinea memoriei). O imagine cu
+    transparență, sau cu sub 64 de pixeli de cerneală, e nesigură, cu încrederea 0. Se folosesc cel mult 400 000 de
+    puncte, luate la pas egal și mutate cu fracțiunea secvenței R2. Urmează baleiajul grosier: coșuri de 4 px, ~20 000 de
+    puncte, pasul cât jumătate de coș pe latura cea mai lungă (între 0,05° și 0,5°). Încrederea e vârful împărțit la cel
+    mai bun scor aflat la cel puțin 1° de el (pragul 1,25). Apoi baleiajul fin (coșuri de un pixel, pasul cât un sfert de
+    pixel pe latura cea mai lungă, pe ±1,5 pași grosieri) și parabola.
+  - `rotesteImaginea`: pânza `panzaRotita` (W cos + H sin pe H cos + W sin), redusă cu factorul k peste plafon, cu
+    eșantionarea biliniară. În afara imaginii: mediana fiecărui canal pe margine, sau, cu `prelungeste`, pixelul de
+    margine cel mai apropiat. Sub 0,005°, aceeași imagine.
+- **Calculul** (`src/jobs/calculTrasare.ts`): după foaie, `rotirea` caută unghiul; pe o imagine cu transparență, fără
+  cerere, `rotire` e null.
+  - Unghiul aplicat e cel scris (tăiat la ±45°; unul care nu e număr lasă unghiul găsit) sau cel găsit.
+  - Sugestia apare fără cerere, de la 0,1°, doar dacă foaia nu e sugerată. Previzualizarea e redusă sub 1 Mpx.
+  - Pe pânza redusă (factorul k), pixelii fișierului pe pixel și scara foii se împart la k, deci DPI-ul și mărimea în mm
+    rămân.
+- **Ușa importului:** `AlegeriTrasare.rotire` (`{ indreapta, unghi }`, implicit oprită), cererea, `RaportImagine.rotire`.
+  `UNGHI_SCRIS_MAXIM` (45) stă în ușă, egal cu `UNGHI_MAXIM` al nucleului (o probă le ține egale): ușa nu importă
+  nucleul.
+- **Fereastra:**
+  - Grupul se numește „Îndreptarea” (fostul „Foaia pozată”) și primește „Îndreaptă scanarea”, cu „Unghiul (°)”: indiciul
+    e unghiul găsit, minusul tipografic și virgula se citesc, ±45°.
+  - Bifa și unghiul scot zona. Sub vectori stă imaginea îndreptată.
+  - Raportul spune unghiul („Scanarea, îndreptată cu 1,70° (unghiul găsit singur).”), avertismentul când nu e niciun
+    unghi și sugestia. Rândul „Imaginea:” spune mărimea din fișier, nu pânza rotită.
+- **Mărimea:** totalul 741,6 / 800 kB pe arborele unit cu `main` `a64adf63` (acolo, 739,4: felia +2,2), pornirea 107,2 / 115 și ușa 111,2, neschimbate.
+- **Probele:**
+  - **16 unitare** (`trasare.rotire.test.ts` și `import.rotire.test.ts`, câte 8):
+    - fixturile GDI+: desenul +1,7° și −6,5°, textul −3,2°, G4-ul −0,6°, nerotitul;
+    - paginile sintetice: desenul de la 0 la ±9°, alb-negru, textul, liniile verticale singure, grila pixelilor, pagina
+      inversată;
+    - cazurile nesigure;
+    - rotirea: discul dus unde trebuie, și pe pânza redusă; fondul, marginea prelungită;
+    - calculul: chenarul cu laturile pe axe, sugestia, unghiul scris, zona, DPI-ul pe pânza redusă, marginea ștearsă,
+      foaia cu scanarea, cererea din alegeri.
+  - **2 e2e** (`trasare-rotire.spec.ts`), pe o scanare desenată și rotită de browser: sugestia, mărimea chenarului înainte
+    și după, zona scoasă, imaginea îndreptată sub vectori, unghiul scris cu minusul tipografic, Importă; pe cercuri,
+    avertismentul și unghiul scris.
+  - **Pe arborele unit cu `main`:** unitare 9 668 (9 658 trecute, 8 sărite; o probă DXF cu ceas, de 11,5 s sub
+    încărcare, care singură trece în 0,6 s), e2e 52 / 52 (specurile trasării și importul).
+- **Otrăvurile** (`test/otravuri/25.4c.py`): 44, fiecare pe proba ei (36 unitare, 8 prin e2e). La prima rulare (`5ac7aefb`), 36 / 37 unitare: R08 (maximul la capătul baleiajului grosier, primit) a scăpat, fiindcă verificarea de la sfârșit (|u| > 10°) o acoperă; mai mult, ea respingea degeaba un unghi de sub 10° când grila grosieră trecea de 10°. Echivalentă: codul ei a fost scos (`0346cd18`). Pe codul final, 36 / 36 unitare (`0346cd18`) și 8 / 8 prin e2e (`645208c6`), deci 44 / 44.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>), amprenta `645208c691d8`.
+  Privit pe canal (în engleză): o scanare strâmbă desenată în pagină (un desen tehnic rotit cu 1,7°, pe hârtie crem) a
+  primit sugestia „The scan looks turned by 1.7°”; bifată, „Scan straightened by 1.70° (angle found automatically).”,
+  desenul de 260,17 × 180,82 mm (chenarul adevărat: 260,1 × 180,7), imaginea îndreptată cu laturile pe axe și colțurile
+  noi în culoarea hârtiei; −2,5° scris o rotește în sensul cerut; nicio eroare în consolă.

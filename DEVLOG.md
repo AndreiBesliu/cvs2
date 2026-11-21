@@ -10628,10 +10628,48 @@ aseară s-au oprit peste noapte.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
   „prin foaie” pe fiecare rând (v26).
 
-## 2026-11-18 — Felia 25.4↑c pornită: îndreptarea scanărilor (ADR 0271, provizoriu, acceptat cu recomandările) (Model: Claude Opus 5.5)
+## 2026-11-21 — Felia 25.4↑c: îndreptarea scanărilor (ADR 0271, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, pornește” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pornesc felia următoare, îndreptarea
-scanărilor (25.4↑c, ADR 0271)?”; tot sub „vreau să mergi înainte și testez la final”).
-**Started:** 18.11, 21:28.
+scanărilor (25.4↑c, ADR 0271)?”; tot sub „vreau să mergi înainte și testez la final”). Reluată pe 21.11 la mesajul
+sesiunii principale, după „da si vreau sa pornesti si restul worktrees” al owner-ului.
+**Started:** 18.11, 21:28. **Completed:** 21.11, 18:37.
 
-- **Ramura** adusă la `origin/main` `0905a07a` (înaintare rapidă, fără ciocniri: 25.7↑ e deja unită în `main`).
+- **Ramura:** pornită de la `0905a07a` (înaintare rapidă: 25.7↑ era deja în `main`). Pauza din 18.11 seara a oprit-o
+  înaintea otrăvurilor. Pe 21.11: lucrul comis (`ffed319b`), apoi `main` `a64adf63` adus (`9d1eac56`), cu ciocniri doar în
+  DEVLOG și în indexul ADR.
+- **Cercetarea:** Leptonica (`pixFindSkew`: scorul lui Postl, ±7°, încrederea max / min, pragul 3), unpaper, ImageMagick
+  (`-deskew`, Radon), Acrobat. ArtCAM / Carveco, Vectric, LightBurn și Inkscape n-o au.
+- **Prototipul** (`.tmp/proto-0271.ts`, cu generatorul `.tmp/gen-0271.ts`): pagini sintetice cu acoperirea exactă, rotite cu
+  unghiuri știute.
+  - Unghiul 0 câștiga din grila pixelilor: textul cu zgomot rotit cu 0,15° ieșea 0,004°. Remedierea: punctele mutate cu o
+    fracțiune de pixel (R2).
+  - Încrederea lui Leptonica despărțea prost o schiță (2,8) de un logo (3,4). Despart bine vârful raportat la cel mai bun
+    scor de la peste 1° (pragul 1,25) și scorul pe ambele axe.
+  - Eroarea, sub 0,016° (logo, 0,05°); ~50 ms pe o pagină A4.
+- **Nucleul** (`src/trasare/rotire.ts`): `gasesteUnghiul`, `rotesteImaginea` (pânza mărită, fondul din margine, marginea
+  prelungită, reducerea cu k), `panzaRotita`. **Calculul:** după foaie, înaintea zonei; sugestia (de la 0,1°, nu peste a
+  foii); scara împărțită la k. **Ușa:** `AlegeriTrasare.rotire`, cererea, raportul. **Fereastra:** grupul „Îndreptarea”,
+  „Îndreaptă scanarea”, „Unghiul (°)”, raportul, avertismentul, previzualizarea îndreptată. Textele (ro, en) și manualul.
+- **Probele:**
+  - Fixturile scrise și rotite de GDI+ (`test/fixtures/trasare/rotire/genereaza.ps1`): un desen tehnic (+1,7°, −6,5°,
+    nerotit), o pagină de text (−3,2°), un G4 (−0,6°).
+  - 16 unitare (`trasare.rotire.test.ts`, `import.rotire.test.ts`) și 2 e2e (`trasare-rotire.spec.ts`).
+- **Otrăvurile** (`test/otravuri/25.4c.py`): 44 / 44 (36 unitare, 8 prin e2e). La prima rulare (`5ac7aefb`), R08 (maximul
+  la capătul baleiajului grosier) a scăpat, echivalentă: o acoperă verificarea de la sfârșit, iar ea respingea degeaba un
+  unghi de sub 10°. Codul ei, scos (`0346cd18`).
+- **Porțile, pe arborele unit:**
+  - `tsc` pe cele trei configurații, regulile importurilor, licențele, determinismul.
+  - Unitare 9 668: 9 658 trecute, 8 sărite. Două au căzut: traducerea rândului nou, venită cu documentele, și o probă DXF
+    cu ceas (11,5 s sub încărcare; singură, 0,6 s).
+  - E2e 52 / 52 (specurile trasării și importul), cât rulau și e2e-urile altor linii.
+  - Mărimea: totalul 741,6 / 800 kB (`main` 739,4: +2,2), pornirea 107,2 / 115 și ușa 111,2, neschimbate.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 21.12), amprenta
+  `645208c691d8`, din build-ul curat al commit-ului de cod. Privit pe canal: sugestia, îndreptarea cu 1,70°, desenul cu
+  mărimea chenarului, colțurile în culoarea hârtiei, un unghi scris; nicio eroare în consolă.
+- **Lecții:**
+  - Un scor de proiecții pe pixeli are o favoare pentru 0°, din grila pixelilor: punctele se mută cu o fracțiune de pixel.
+  - `assert.equal` pe două obiecte mari construiește diff-ul lor: otrava R19 a ținut proba aproape 2 minute. Identitatea
+    se verifică cu `assert.ok(a === b)`.
+  - O probă e2e care cerea textul exact al unghiului găsit („2,0x”) a picat pe 1,99: unghiul se citește ca număr, cu
+    toleranța.

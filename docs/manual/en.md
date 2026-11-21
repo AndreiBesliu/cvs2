@@ -838,6 +838,15 @@ preview on the right:
   corners come from and the proportions in the photo, says when they do not match the paper size and, without
   straightening, suggests it when it sees a slanted sheet. If the sheet is not found (a scan, a sheet on a white table),
   the corners sit near the photo's edges: move them with the **Corners** button;
+- **Straighten the scan** (on an opaque image; off by default): for a crooked scan (the sheet put askew on the scanner
+  glass or pulled in crooked by the feeder). The app finds the angle from the lines, text rows and shape edges of the
+  drawing (up to 10° either way) and turns the image back, on a canvas enlarged so that nothing is lost; the new corners
+  take the paper's colour, and with **Ignore what touches the edge**, what touched the scan's edge touches the new one too.
+  The pixel size does not change. **Angle (°)** shows the angle found; type another one if you want (positive: the drawing
+  is turned counterclockwise; at most 45°), and empty looks for it again. The report says how much it was straightened and
+  where the angle comes from; without straightening, it suggests it when the scan looks turned by at least 0.1°. A drawing
+  without straight lines (circles, a sketch) has no sure angle: the report asks you to type it. With **Straighten the
+  sheet** ticked, the drawing on the straightened sheet is straightened; the area is drawn on the straightened image;
 - **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the straightened sheet's paper size,
   from the DPI written in the file, and without them from 96 px per inch, as for an SVG; the line under it shows the
   height, the pixel's size and where the scale comes from.
