@@ -10,6 +10,7 @@ import { campuriDin } from './campuriText.ts';
 import { copieArbore } from './copii.ts';
 import { PLAFON, type GrupNod, type Instanta, type Nod, type Piesa } from './document.ts';
 import { noduriInInstanta } from './lume.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /** Un text cu câmpuri al unei piese: grupul cu blocul lui valid și numele câmpurilor (în ordine, fără repetări). */
 export type TextCuCampuri = { readonly grup: GrupNod; readonly bloc: BlocText; readonly campuri: readonly string[] };
@@ -99,7 +100,7 @@ export function placutaCoapta(p: Piesa, i: Instanta, id: string): { readonly pie
   const noduri = noduriInInstanta(radacina, texte);
   const operatii = vechi.flatMap((o) => {
     const n = noduri(o);
-    return n.length > 0 ? [{ ...structuredClone(o), noduri: [...n] }] : [];
+    return n.length > 0 ? [cuNoduri(structuredClone(o), [...n])] : [];
   });
   // Un text pe rădăcină dă numele piesei, ca piesa unui text (primul rând nevid): al plăcuței, nu „Masa {nr}”.
   const peRadacina = Object.hasOwn(texte, radacina.id) ? texte[radacina.id] : undefined;

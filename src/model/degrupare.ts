@@ -6,6 +6,7 @@
  */
 import { compune } from '../geom/matrice.ts';
 import type { Matrice, Nod, Operatie, Piesa } from './document.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /** De ce o piesă nu se desface. */
 export type MotivDegrupare = 'o-singura-forma' | 'vcarve';
@@ -53,7 +54,7 @@ export function partiDegrupare(piesa: Piesa): readonly ParteDegrupata[] | MotivD
     radacina: fara ? c : { ...c, matrice: compune(g.matrice, c.matrice) },
     operatii: piesa.operatii.flatMap((o) => {
       const noduri = o.noduri.filter((n) => al.get(n) === k);
-      return noduri.length > 0 ? [{ ...o, noduri }] : [];
+      return noduri.length > 0 ? [cuNoduri(o, noduri)] : [];
     }),
   }));
 }

@@ -14,6 +14,7 @@ import { amprentaContururi, blocText } from './blocText.ts';
 import { PLAFON, type GrupNod, type Instanta, type Nod, type Operatie, type Piesa } from './document.ts';
 import { conturElement } from './forme.ts';
 import { elementeInstanta, matriceInstanta, valoriVcarve } from './lume.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /** De ce instanțele alese nu se grupează: mai puțin de două, sau V-carve-uri care s-ar amesteca. */
 export type MotivGrupare = 'doua' | 'vcarve';
@@ -158,7 +159,7 @@ export function grupDin(parti: readonly ParteGrupata[], id: string): { readonly 
     const radacina = acelasiLoc || inOrigine(instanta) ? r : { ...r, matrice: compune(matriceInstanta(instanta), r.matrice) };
     const redenumite = new Map<string, string>();
     copii.push(cuIdLiber(radacina, noduri, redenumite));
-    for (const o of structuredClone(piesa.operatii)) operatii.push({ ...o, id: idLiber(o.id, idOperatii), noduri: o.noduri.map((n) => redenumite.get(n) ?? n) });
+    for (const o of structuredClone(piesa.operatii)) operatii.push(cuNoduri({ ...o, id: idLiber(o.id, idOperatii) }, o.noduri.map((n) => redenumite.get(n) ?? n), redenumite));
   }
   const loc = acelasiLoc ? { x: p0.x, y: p0.y, rotire: p0.rotire } : { x: 0, y: 0, rotire: 0 };
   const { id: _id, nume, radacina: _radacina, operatii: _operatii, ...rest } = prima.piesa;

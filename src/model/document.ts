@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 25;
+export const VERSIUNE_SCHEMA = 26;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -125,6 +125,20 @@ export type Directie = 'invers' | 'scurt';
  * grosimea punții de la fața de jos a foii, în mm.
  */
 export type Urechi = { numar: number; latime: number; grosime: number; [cheie: string]: unknown };
+/**
+ * Unde stau urechile pe buclă (ADR 0211, documentul v26): la distanțe egale (lipsă = „egale”, ca până în v25), alese de om
+ * („alese”, cu punctele lui în `locuri`), unde ține lemnul („lemn”) sau după o regulă (pe laturile lungi, scurte, la mijlocul
+ * fiecărei laturi). „lemn” și regulile le aduc feliile 11.3↑e și 11.3↑f: până atunci, exportul le refuză cu motiv.
+ */
+export type ModUrechi = 'egale' | 'alese' | 'lemn' | 'lungi' | 'scurte' | 'mijloc';
+export const MODURI_URECHI: readonly ModUrechi[] = ['egale', 'alese', 'lemn', 'lungi', 'scurte', 'mijloc'];
+/** Un loc ales al unei urechi (ADR 0211): un punct în coordonatele elementului (ale formei lui, înaintea matricei lui). */
+export type LocUreche = { x: number; y: number; [cheie: string]: unknown };
+/**
+ * Urechile unei operații (v26): ca `Urechi`, cu modul locurilor și, doar la „alese”, punctele alese pe fiecare element al
+ * operației (cel mult `PLAFON.urechi` pe element). Punțile dopului decupat (ADR 0174) rămân `Urechi`, fără locuri.
+ */
+export type UrechiOperatie = Urechi & { mod?: ModUrechi; locuri?: Record<string, LocUreche[]> };
 /** Rampa unei operații de profil (ADR 0029): lungimea în plan, de-a lungul buclei, pe care freza coboară o trecere (mm). */
 export type Rampa = { lungime: number; [cheie: string]: unknown };
 /** Intrările și ieșirile unei operații de profil (ADR 0030): raza sfertului de cerc, pe traseul centrului frezei (mm). */
@@ -137,7 +151,7 @@ export type Colturi = { tip: 'dog-bone' | 't-bone'; [cheie: string]: unknown };
  */
 export type Operatie = {
   id: string; tip: TipOperatie; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
-  urechi: Urechi | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; despartire?: boolean;
+  urechi: UrechiOperatie | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; despartire?: boolean;
   /** Pe un buzunar (ADR 0069), distanța dintre inele, în mm; un profil n-o are (ușa o cere doar pe buzunar). */
   pasLateral?: number;
   /** Pe un buzunar (ADR 0076, documentul v12), cum coboară freza în material; lipsă = plonjarea dreaptă (ca în v11). */
@@ -301,7 +315,7 @@ export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]:
 export type Foaie = {
   id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown;
 };
-export type Document = { schema: 25; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 26; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {
