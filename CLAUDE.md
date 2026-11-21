@@ -1246,6 +1246,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 21.11.2026, noaptea: **3.Tp↑a unită în `main`** (`ffae623a`, din `900a501a`; linia `galeria`, ramura
+  `wip/3.Tp-galeria-pe-file`, la „da si vreau sa pornesti si restul worktrees” al owner-ului; ADR 0281 §4): câmpul
+  „Caută o piesă” la capătul rândului de file ale atelierului Easy 3Draw (pe telefon, pe un rând al lui): la fiecare
+  literă, piesele găsite din toate familiile, în ordinea filelor; fiecare cuvânt căutat începe un cuvânt din numele de
+  pe ecran (în limba paginii), fără diacritice și fără majuscule; alegerea deschide piesa cu fila ei; Enter alege prima,
+  Escape, × sau o filă întorc galeria familiei; nimic în date. Pachetul 18.17.0 (3.To luase 18.16.0; ramura a adus
+  `main` `4667898a`). Otrăvurile 21 / 21 (F03 echivalentă, scoasă cu codul ei; G03 prinsă după întărirea probei).
+  Porțile liniei verzi pe `bb52ac5e` (e2e 577 / 577, emulatoarele 101 / 101 și 29 / 29); ciocnirea cu lotul de seară,
+  doar în DEVLOG. Porțile unirii, pe `ffae623a`: unit 9 658 / 0 (8 sărite), e2e 578 / 578, emulatoarele 101 / 101 și 29
+  / 29, toate la prima trecere; pornirea 107,2 / 115 (cu ușa 111,2), totalul 741,9 / 800. Urmează, la cuvântul
+  owner-ului: 3.Tp↑b (pictogramele).
 - 21.11.2026, seara: **12.1↑e (titlul dopului) și 10.3↑n unite în `main`**, în lot peste 3.To (worktree-ul `unire`,
   ramura `unire-2111b`). **Titlul dopului** (linia incrustațiilor, ramura `wip/12.1-incrustatii`, `3d7e6214` din
   `f9c45042`; la „porneste-o si pe asta” și „Titlul dopului” ale owner-ului): butonul „Dopul N” numește incrustația ca
