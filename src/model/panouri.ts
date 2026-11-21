@@ -150,5 +150,7 @@ export function taieInPanouri(doc: Document, cerere: CererePanouri, indexFoaie =
     if (parti.length === 1 && p0?.instanta === i && p0.piesa === piesa(i)) continue;
     degrupate.push({ instanta: i, piesa: piesa(i), parti });
   }
-  return { ok: true, degrupate, ids, forme, scoase, sterse: [], grupuri, panouri: celule.length };
+  // Bucățile fiecărui panou, în ordinea panourilor (felia 10.3↑n: numărul gravat intră în grupul lui).
+  const perPanou = celule.map((k) => (pe.get(k) as number[]).map((i) => (fin[i] as Bucata).instanta.id));
+  return { ok: true, degrupate, ids, forme, scoase, sterse: [], grupuri, panouri: celule.length, perPanou };
 }

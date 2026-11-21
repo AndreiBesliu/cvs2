@@ -10698,3 +10698,70 @@ la mesajul sesiunii principale de pe 21.11 („da si vreau sa pornesti si restul
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 21.12), build-ul `75e304d0` (versiunea `75e304d0c671`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 din (20, 20), cu rolul „straight-walled inlay”, bara de jos spune „Selected: rectangle 100.00 × 60.00 at X 20.00, Y 20.00”, iar titlul lui „Plug 1” e „The inlay: rectangle 100.00 × 60.00 at X 20.00, Y 20.00. The plug’s blank: 110 × 70 × 6 mm”. „Plug 1” se simulează ca înainte (440 × 280 la 0,25 mm, adâncimea 5, camera pe 55, 35). Înapoi la „Sheet”, vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată) și bifa „prin foaie” pe fiecare rând (v26): ce cere
   fiecare, în raport.
+
+## 2026-11-21 — Felia 10.3↑n: numărul panoului gravat pe el (ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, 19.11, după raportul lui 10.3↑m: a treia propunere a liniei,
+numărul panoului; reluată pe 20.11 la „continua”, transmis de sesiunea principală). **Started:** 19.11, 21:11. **Completed:**
+21.11, 19:20.
+
+- **Ramura** `wip/10.3n-numere`, din `main` `4b7539a7` (3.Tm unită; cu 10.3↑l și 10.3↑m în ea).
+- **Locul cifrelor** (`src/model/numarPanou.ts`, pur): cutia lor în materialul panoului, la cel puțin un joc (max(2, înălțimea /
+  4)) de orice contur, niciun contur întreg înăuntru; locurile, de la cel mai apropiat de colțul din stânga-jos (grila fină
+  lângă colț, cea rară peste panou). Înălțimea (10 mm, de la 3 la 100), în `src/model/inaltimeNumar.ts` (ușor).
+- **Calculul și acțiunea:** workerul dă `perPanou`; blocul cheamă la cerere `src/app/numerePanouri.ts` (fontul
+  `relief-singleline`, cifrele prin `text/calcul.ts`, freza foii, adâncimea liniilor deschise, `locNumar`); `document.taie` pune
+  numerele cu id-uri noi în grupurile panourilor, în același pas de anulare.
+- **Interfața:** bifa „Gravează numărul fiecărui panou” (oprită implicit) și „Înălțimea cifrelor”, ținute
+  (`cncvs2.taiere-numere`, `cncvs2.taiere-inaltime-numar`); starea spune câte numere s-au gravat, câte panouri n-au avut loc sau
+  că fontul nu s-a încărcat. Manualul (ro, en), textele (ro, en).
+- **Treceri:** (1) numărul pe un dinte: căutat rând cu rând, de jos, pe firma reală (desenată din node, cu fontul real) numărul
+  ajungea pe un dinte de sub panou, departe de colț; acum locurile, de la cel mai apropiat de colț, cu o grilă fină lângă el (și
+  proba ei pe hârtie); (2) otrăvurile: la prima rulare (16), N08 (proba separată „fără contururi închise”) a scăpat,
+  echivalentă: codul ei, scos; U01 (bifa netinută) o prindea doar proba 88, care a căzut și fără otravă: proba numerelor
+  reîncarcă pagina și cere bifa; (3) proba 88 (instabilă dinainte): reîncărca pagina înaintea salvării automate, deci arăta
+  versiunea de dinainte de tăiere: așteaptă acum salvarea (`documentSalvat`); (4) mărimea: înălțimea cifrelor, luată din
+  `numarPanou.ts` de opțiuni și de bloc, aducea locul cifrelor în bucata panoului Taie (+0,6 kB): mutată în `inaltimeNumar.ts`
+  (ușor).
+- **Otrăvurile** (`test/otravuri/10.3n.py`, e2e în `taiere.spec.ts`): 15 / 15 prinse, în clona din afara Drive-ului (cele 11
+  unitare și pe `90e629bb`, cu N02 pe modulul nou); la prima rulare (16), 14 prinse, N08 scăpată (echivalentă), U01 prinsă doar
+  de proba instabilă.
+- **Porțile:** întregi pe unirea cu `main` `a64adf63` (`85b3ee54`): traducerile, cele trei compilatoare, importurile, licențele,
+  unit 9 659 (9 651 trecute, 8 sărite, 0 căderi), build-ul determinist (343 de fișiere identice), e2e 568 / 571 (trei căderi din
+  resurse și timp, sub încărcarea altor rulări: `cont.spec.ts:145`, cu `net::ERR_INSUFFICIENT_RESOURCES` la `page.goto`,
+  `masina.spec.ts:13` și `masina.coduri.spec.ts:134`, așteptări depășite; cele trei fișiere, reluate singure după liniște, 21 /
+  21), emulatoarele 101 / 101 și 29 / 29; înainte, pe vârful feliei (`3af621f6`): unit 9 642 / 0, e2e 561 / 561, emulatoarele
+  101 / 101 și 29 / 29; după mutarea înălțimii (`90e629bb`): traducerile, compilatorul, importurile, unit-urile tăierii,
+  cuțitului, acțiunilor, manualului și documentației 319 / 319, build-ul determinist, e2e `taiere`, `cutit`, `surori` și
+  `manual` 45 / 45.
+- **Mărimea:** pornirea neschimbată (107,2 kB; cu ușa 111,2 / 115), totalul +2,3 kB (739,5 → 741,8 / 800, A/B în clonă, pe
+  `main` `a64adf63` și pe unire, `85b3ee54`; pe `4b7539a7`, tot +2,3): bucata numerelor, la cerere, 1,7 kB (locul cifrelor,
+  așezarea lor, fontul), blocul panourilor +0,5 kB (bifa, înălțimea, stările), acțiunea +0,2 kB, workerul +0,02. Prima variantă
+  ducea locul cifrelor în bucata panoului Taie (+0,6 kB acolo, prin înălțimea luată din `numarPanou.ts`): acum vine doar cu
+  numerele.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 21.12), pe `85b3ee54`,
+  verificat (ro, en: bifa oprită implicit, numerele „1” și „2” în colțul fiecărui panou, pe linie, 1 mm, cu freza foii Ø6,
+  Anulează; nicio eroare în consolă).
+
+## 2026-11-21 — ADR 0182 propus și acceptat: legarea căilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Owner-ul (21.11): «da si vreau sa pornesti si restul worktrees». […] După felia de acum, ia-o pe următoarea din
+coada ta, dacă nu așteaptă o decizie a owner-ului. Dacă tot ce urmează cere o decizie, pregătește propunerea (ADR, schiță) și
+pune-i întrebarea, cu implicitul în față.” (sesiunea principală). **Started:** 21.11, 17:58. **Completed:** 21.11, 19:18.
+
+- **Coada liniei:** după 10.3↑n a rămas doar unirea căilor (ADR 0124 §14), propusă owner-ului pe 17.11; o decizie a lui (pe
+  04.11 a ales 6b, cu nota că unirea căilor e o discuție separată, mai amplă), deci propunerea întâi.
+- **Cercetarea:** în cvs2, legarea capetelor la importul DXF (`dxf.ts`, `leaga`), rândul „Capetele a două căi” din Verificare
+  (doar arătat), „Unește” și „Închide” din reparații; Vectric, Illustrator și CorelDRAW, din ajutorul lor; pe hârtie, cinci
+  cazuri (un L, un pătrat din patru linii, un gol de 2 mm, un T, un arc întors).
+- **Propunerea** (ADR 0182): comanda „Leagă căile” (Ctrl+J; „Unește” e numele reuniunii), aceleași reguli ca la importul DXF, în
+  worker, un pas de anulare; „Leagă” și „Leagă toate căile” în Verificare; în unealta Noduri, care lucrează pe o singură formă,
+  capătul căii editate tras peste capătul altei căi. Trei întrebări, recomandarea întâi: golul peste toleranță (a: o linie),
+  unde se întâlnesc capetele (a: pe capătul primei), căile cu operații diferite (a: refuzul).
+- **Schița**, cu desenele înainte / după și răspunsurile salvate în pagină: <https://claude.ai/artifact/VUTp5KjrMGY6ggTcm114B2>.
+- **Răspunsurile owner-ului** („am raspuns”, 21.11, în sesiunea liniei; în pagină): 1a, 2a, 3a, cu nota „cat mai multe optiuni
+  pe care le putem pune la dispozitia userilor”. ADR 0182 acceptat: recomandările sunt implicitele, iar variantele celelalte
+  devin opțiuni ținute în browser (golul până la N mm sau doar lipirea, capetele la mijloc, operația primei); din ce respingeam,
+  felurile legăturii (curbă netedă, prelungire până la intersecție, racordare, teșitură) și legarea la importul SVG și PDF
+  (oprită implicit) intră ca opțiuni, în feliile 10.3↑q și 10.3↑r.
+- **Codul** (10.3↑o): următoarea felie a liniei.

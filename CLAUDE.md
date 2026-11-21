@@ -590,6 +590,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/model/taiereSurori.ts` (desprinderea doar a celor schimbate, bucățile pe toate foile), cine are surori și `CUTITE_PIESA`
   în `src/model/surori.ts` (ușor: importat de calcul, nu din `taiere.ts`). Reparațiile și degruparea refuză în continuare o
   piesă pusă de mai multe ori.
+  **Numărul panoului gravat pe el (felia 10.3↑n)** gata pe 21.11, pe `wip/10.3n-numere` (din `main` `4b7539a7`), neunită:
+  workerul dă `perPanou` (bucățile fiecărui panou, `panouri.ts`); blocul panourilor (bifa și înălțimea în `optiuniTaiere.ts`:
+  `cncvs2.taiere-numere`, `cncvs2.taiere-inaltime-numar`) cheamă la cerere `src/app/numerePanouri.ts` (fontul
+  `relief-singleline`, cifrele prin `text/calcul.ts`, freza foii, adâncimea liniilor deschise), care caută locul cu `locNumar`
+  din `src/model/numarPanou.ts` (pur); înălțimea și verificarea ei stau în `src/model/inaltimeNumar.ts` (ușor: luate din
+  `numarPanou.ts`, aduceau locul cifrelor în bucata panoului Taie). Acțiunea `document.taie` pune numerele
+  (`TaiereCalculata.numere`) cu id-uri noi în grupurile panourilor, în același pas.
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul

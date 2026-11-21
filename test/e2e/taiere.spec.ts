@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { cerc, dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
+import { documentSalvat } from './ajutor-document.ts';
 
 /**
  * Tăierea cu o linie dreaptă (felia 10.3↑, ADR 0180), în Edge, pe un DXF importat (o piesă cu un pătrat 100 × 100 și un cerc
@@ -99,6 +100,8 @@ test('fără „Închide bucățile”: tot două forme, bifa ținută după re�
   await page.locator('[data-taiere="taie"]').click();
   await expect(page.getByTestId('taiere-stare')).toHaveText('Tăietura nu trece prin nicio formă aleasă (o atingere nu taie).');
 
+  // Salvarea pleacă după schimbare, nu odată cu ea: reîncărcată înainte, pagina ar arăta versiunea de dinainte de tăiere.
+  await expect.poll(async () => (JSON.parse(await documentSalvat(page, 0)) as { foi: Array<{ instante: unknown[] }> }).foi[0]?.instante.length).toBe(2);
   await page.reload();
   await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-editare="taiere"]').click();
@@ -549,4 +552,37 @@ test('Panourile pe foi, cu alegerile ținute ale așezării: marginea sub raza f
   await L.fill('1200');
   await I.fill('900');
   await expect(page.getByTestId('panouri-iese')).toHaveText('Cel mai mare panou, cu dinții, are până la 1210 × 510 mm, iar pe foaie încap 1194 × 894: «Așază pe foi» l-ar lăsa pe loc.');
+});
+
+// ——— Numărul panoului gravat (felia 10.3↑n, ADR 0181) ———
+
+test('Numărul panoului: cu bifa, fiecare panou primește cifrele lui, gravate pe linie, în grupul lui; Anulează', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await importa(page, FIRMA);
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="panouri-numere"]')).not.toBeChecked();
+  await expect(page.locator('[data-taiere="panouri-inaltime-numar"]')).toHaveCount(0);
+  await page.locator('[data-taiere="panouri-numere"]').check();
+  await expect(page.locator('[data-taiere="panouri-inaltime-numar"]')).toHaveValue('10');
+  await page.locator('[data-taiere="panouri-numar"]').check();
+  await page.locator('[data-taiere="panouri-coloane"]').fill('2');
+  await page.locator('[data-taiere="panouri-randuri"]').fill('1');
+  await page.locator('[data-taiere="panouri-taie"]').click();
+  await expect(page.getByTestId('panouri-stare')).toContainText('Numere gravate: 2.');
+  await page.keyboard.press('Escape');
+  await expect(randuri(page)).toHaveText(['Panoul 1', 'Panoul 2']);
+  // Panoul 1: un grup cu placa și cifrele (un text cu gravura pe linie).
+  await randuri(page).nth(0).click();
+  await expect(page.getByTestId('lista-vectori').getByText('Piesa: 2 forme')).toBeVisible();
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(randuri(page)).toHaveCount(1);
+  // Bifa e ținută în browser: și după reîncărcare (versiunea salvată întâi, ca pagina să nu se întoarcă la ea).
+  await expect.poll(async () => (JSON.parse(await documentSalvat(page, 0)) as { foi: Array<{ instante: unknown[] }> }).foi[0]?.instante.length).toBe(1);
+  await page.reload();
+  await expect(randuri(page)).toHaveCount(1);
+  await page.locator('[data-editare="taiere"]').click();
+  await expect(page.locator('[data-taiere="panouri-numere"]')).toBeChecked();
+  await page.locator('[data-taiere="panouri-numere"]').uncheck();
+  expect(erori).toEqual([]);
 });
