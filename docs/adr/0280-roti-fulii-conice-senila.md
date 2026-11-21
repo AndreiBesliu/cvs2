@@ -1,6 +1,6 @@
 # ADR 0280: Roțile și șenila în atelierul Easy 3Draw: roata de vehicul, fulia, roțile la 90°, șenila
 
-**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk, 3.Tl și 3.Tm implementate în aceeași zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
+**Starea:** acceptat pe 19.11.2026 („Da, fără TPU”: 1a, 2b, 3a), cu feliile 3.Tj, 3.Tk, 3.Tl și 3.Tm implementate în aceeași zi și 3.Tn a doua zi; propus pe 18.11.2026, la cererea owner-ului: „Uite alte tipuri de roti si un tip de sina pe care vreau ca
 pluginul sa le faca custom”, cu nouă poze ale pieselor lui LEGO. **Completează:** ADR 0169 (rotițele dințate: profilul,
 jocul din calibrare, perechea), ADR 0168 (profilul imprimantei), ADR 0129 (Planificatorul ca extensie). Primul număr al
 intervalului 0280–0289 al pluginului. Schița, cu desenele de principiu și întrebările:
@@ -254,6 +254,61 @@ are roți de vehicul, fulii, roți care se prind la 90° și nici șenile.
   combinații noi (jocurile 0,05 și 0,25, modulele 0,7 / 1,3 / 2), perechea 3D la jocurile extreme și la modulele 2 și
   1,3 (liberă sub 2·joc, prinsă peste), intrările ciudate, timpul (sub 0,8 s la 80 / 40, modulul 3), secțiunile mărite
   (24 / 8, 24 / 24, 40 / 40) și VOID-urile tuturor listelor pluginului (unul nou, 3.Tl E01, redirecționat).
+
+## Felia 3.Tn, implementată: conicele duble (pachetul 18.14.0)
+
+- **Cotele LEGO**, din biblioteca LDraw (aceleași fișiere; licența CC BY 2.0 și CC BY 4.0): `32270.dat` (Technic Gear 12
+  Tooth Double Bevel) și `32269.dat` (Technic Gear 20 Tooth Double Bevel). Late de 8 mm, cu dinții drepți în mijloc și
+  teșiți la 45° spre ambele fețe; piciorul dinților e adânc, la r_p − 2·m (4 mm la 12 dinți, 8 la 20), ca dinții
+  perechii să încapă la 90°. 12 dinți: 14 × 14 × 8; 20 de dinți: 22 × 22 × 8.
+- **Montajul**: pe axe paralele, ca rotițele, axele la m·(z1 + z2) / 2 (12 cu 12: 12 mm, la jumătate de pas; 12 cu 20:
+  16, pe grilă). La 90°, cu axele întâlnite, planul de mijloc al fiecăreia e la r_p(perechii) + 2·m de axul perechii: 8
+  mm față de o pereche de 12 (1 pas), 12 față de una de 20, 16 față de una de 28, 20 față de una de 36; perechile LEGO
+  stau pe grilă sau la jumătate de pas.
+- **Motorul** (`conicaDubla`, `dublaCote`, `dublaMontaj`): roata dreaptă de la rotițe (profilul, modulul, jocul din
+  calibrare), lată de 8·m. În banda de mijloc (±2·m) dinții sunt exact ai rotiței; spre fiecare față, același dinte se
+  micșorează spre vârful unui con de 45°, aflat la r_p + 2·m de mijloc (pe față, la scara (r_p − 2·m) / r_p), și se
+  subțiază încă, liniar, până la 0,3·m pe flanc la față (înainte de micșorare). Piciorul dinților la r_p − 2·m, discul
+  cu 0,2 mm mai mic, iar dintele pornește din disc (0,3·m înăuntrul lui). Corpul: discul cu gaura, plus câte un corp
+  închis pe dinte (patru straturi: fața, marginile benzii, fața). Gaura (cruce, rotundă sau deloc, cu peretele până la
+  disc) vine din funcția comună cu rotițele, `gauraRoata`; avertismentele (gaura care nu încape, peretele sub 0,8 mm)
+  sunt ale conicei duble. `dublaMontaj` spune și perechea strânsă la 90° (`strans`): o roată de sub 12 dinți cu una de
+  peste 2,5 ori mai mare.
+- **Pe drum** (cu un model analitic al perechii la 90°, apoi pe plasele reale): dinții drepți teșiți ca un con (aceeași
+  rază pe toată lățimea dintelui) se pătrund la 90° cu câțiva mm³; piciorul obișnuit (1,25·m) punea discul unei roți în
+  dinții celeilalte (de aici piciorul adânc, ca la LEGO); dinții micșorați spre vârful conului de 45° se prind exact la
+  perechile egale (jocul 2·joc), iar subțierea de la fețe face și perechile inegale să se prindă. Fața unei roți era
+  tangentă la discul celeilalte: discul, cu 0,2 mm mai mic. Recenzia a măsurat jocul la 90° prin bisecție, la marginile
+  calibrării: cu subțierea de 0,1·m, la jocul cel mai mic (0,05), 12 cu 28 și 12 cu 36 se pătrundeau (la jocul obișnuit
+  aveau 0,18 și 0,10 mm, față de 0,30 la perechile egale). Cu 0,3·m, perechile LEGO (12, 20, 28, 36) au jocul întreg,
+  2·joc, la 0,05 și la 0,15 (la 0,25, 12 cu 36: 0,44 mm din 0,50), la modulele 0,5, 1 și 2, iar toate perechile cu cel
+  puțin 12 dinți au joc (12 cu 60, cea mai inegală: 0,08 mm din 0,10 la 0,05); pe axe paralele, la fel. O roată de sub
+  12 dinți cu una de peste 2,5 ori mai mare se prinde strâns (8 cu 24 se pătrunde la 0,05; 8 cu 20, 9 cu 22, 10 cu 25,
+  11 cu 27 au joc): montajul o spune. Gaura conicei duble repeta rândurile rotiței: acum e o funcție comună (rotițele
+  ies identice la octet, 231 de piese comparate), iar otrăvurile 3.Th ale găurii (U13, U20, U21) și E07 (coada câmpului
+  perechii, aceeași la amândouă) sunt mutate pe ea.
+- **Atelierul**: „Conică dublă” în galeria pieselor de legătură, dinții (și repede: 12, 20, 28, 36), modulul, gaura,
+  dinții perechii (doar ai editorului: aceeași roată, adăugată cu altă pereche, e aceeași piesă în listă); montajul cu
+  perechea, pe axe paralele și la 90°, pe grilă sau la jumătate de pas, și perechea strânsă la 90°; „Fă perechea”
+  (amândouă roțile în listă, cu cotele lor); 10 texte în engleză. Pachetul 18.14.0.
+- **Privirea pe roata reală** (secțiunile mărite, din plasele reale, și capturile 3D din atelier): secțiunea roții de 12
+  prin dinte și prin gol, peste LDraw 32270; perechea 12 + 12 la 90°, în planul axelor; feliile prin zona de contact, la
+  faza 0 și la un sfert de pas: niciun eșantion în amândouă roțile, la 12 + 12 și la 12 + 36; secțiunile de la față (la
+  12 și la 8 dinți), subțierea nouă peste cea veche: doar material scos, în zonele de capăt, banda neatinsă. Capturile:
+  conicele de 8, 12, 20 și cea de 36 cu gaură rotundă.
+- **Probele:** unitare 8 (`trenulet.dubla.test.ts`: corpul închis la toți dinții, găurile și modulele; montajul, cu
+  perechea strânsă; cotele LEGO 12 punct cu punct (banda e rotița, discul, dintele pornit din disc, capul pe față);
+  subțierea de la fețe; perechea la 90° fără pătrundere în nicio fază și prinsă (12 + 12, 20 + 20, 12 + 20, 12 + 28, 12
+  + 36: 0,25 mm în plus n-o ating, 0,5 da); la jocul cel mai mic din calibrare, 0,05 (perechile LEGO: 0,08 nu, 0,2 da; 8
+  cu 24 se pătrunde); pe axe paralele, ca rotițele (0,25 nu, 0,4 da); marginile), e2e 3 (`trenulet.dubla.spec.ts`).
+  Otrăvurile (`test/otravuri/3.Tn.py`): 31 / 31.
+- **Recenzia:** fără agenți: workflow-ul de recenzie, refuzat de două ori de clasificator, nu a fost reîncercat.
+  Recenzia proprie: corpurile închise pe 369 de combinații (toți dinții 8…60 la modulul 1 și câte 14 la modulele 0,5 /
+  0,7 / 1,3 / 2 / 3, cu toate găurile; cel mai lent, 150 ms), intrările ciudate (nimic nu aruncă; modulul se strânge în
+  plajă fără avertisment, ca la rotițe, conice și coroane), jocul perechilor la 90°, prin bisecție, la jocurile 0,05 /
+  0,15 / 0,25 din calibrare și la modulele 0,5 și 2. A găsit perechile LEGO inegale pătrunse la jocul cel mai mic (12 cu
+  28, 12 cu 36): subțierea de la fețe, de la 0,1 la 0,3·m, și perechea strânsă spusă în montaj. Apoi otrava E09 scăpată
+  (proba e2e întărită) și VOID-urile tuturor listelor pluginului (cinci noi, la gaura comună, mutate).
 
 ## Feliile
 

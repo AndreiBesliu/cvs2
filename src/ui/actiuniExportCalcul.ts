@@ -260,15 +260,16 @@ type DateSimulare = { readonly scula: DateScula; readonly mutari: Float64Array; 
 
 /**
  * Programul documentului pentru vederea 3D (ADR 0057 §1): același CAM ca traseul și exportul (fără supracursă), apoi
- * mutările nucleului, cu fața plăcii la Z 0, în workerul CAM (ADR 0109); simularea, în bazin. `semnal` anulează calculul
- * (un document schimbat, vederea închisă): promisiunea e respinsă cu `CalculAnulat`.
+ * mutările nucleului, cu fața plăcii la Z 0, în workerul CAM (ADR 0109); simularea, în bazin. Cu `dop` (de la 0), programul
+ * dopului acela, pe semifabricatul lui (ADR 0178); oricum, și lista dopurilor foii. `semnal` anulează calculul (un document
+ * schimbat, vederea închisă): promisiunea e respinsă cu `CalculAnulat`.
  */
-export async function programSimulare(doc: Document, semnal?: AbortSignal): Promise<ProgramSimulare> {
-  const r = await simulareInBazin(doc, semnal ? { semnal } : {});
+export async function programSimulare(doc: Document, semnal?: AbortSignal, dop?: number): Promise<ProgramSimulare> {
+  const r = await simulareInBazin(doc, semnal ? { semnal } : {}, dop);
   if (!r.ok) return r;
   const { scula, mutari, apoi } = r.simulare;
   const date: DateSimulare = { scula, mutari, ...(apoi ? { apoi } : {}) };
-  return { ok: true, foaie: r.foaie, date };
+  return { ok: true, foaie: r.foaie, date, dopuri: r.dopuri, ...(r.motivDopuri !== undefined ? { motivDopuri: r.motivDopuri } : {}) };
 }
 
 /** Fereastra plăcii întregi, la celula implicită (sau dublată, peste plafonul celulelor: ADR 0047 §1). */

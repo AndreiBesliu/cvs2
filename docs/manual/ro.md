@@ -1886,6 +1886,11 @@ fiecăruia), iar starea din colț o spune.
 - De la tastatură: săgețile rotesc, `+` și `-` apropie și depărtează, `0` încadrează.
 - **0,1 mm la apropiere**: când te apropii destul, zona din jurul centrului (cel mult 204,8 × 204,8 mm) se simulează din nou
   la 0,1 mm și se desenează peste placă; restul rămâne la 0,25 mm.
+- **Foaia sau un dop**: dacă foaia are [incrustații](#incrustatie), sus apar butoanele „Foaia”, „Dopul 1”, „Dopul 2” …, în
+  ordinea fișierelor dopurilor din export (titlul fiecăruia spune semifabricatul). „Dopul N” simulează programul dopului pe
+  semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în picioare, fața coborâtă sau
+  decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa se vede tot, iar starea spune
+  de ce lipsesc dopurile.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

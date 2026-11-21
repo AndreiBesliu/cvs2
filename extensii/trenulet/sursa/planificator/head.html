@@ -243,6 +243,12 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .at-tipuri { display: flex; gap: 6px; flex-wrap: wrap; }
 .at-tipuri button { border: 1px solid var(--linie); background: var(--panou); border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: 14px; }
 .at-tipuri button[aria-pressed="true"] { background: var(--text); color: var(--panou); border-color: var(--text); }
+/* filele familiilor, cu câte piese au (ADR 0281); o linie le desparte de filele proprii („Din cvs2”, „Calibrare”) */
+.at-tipuri .at-nr { margin-left: 2px; font-weight: 400; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.at-tipuri button[aria-pressed="true"] .at-nr { color: inherit; }
+.at-tipuri-sep { width: 1px; align-self: stretch; margin: 3px 4px; background: var(--linie); }
+/* pe telefon filele trec pe două rânduri: linia ar rămâne atârnată la capătul primului */
+@media (max-width: 520px) { .at-tipuri-sep { display: none; } }
 .at-atelier { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
 @media (max-width: 860px) { .at-atelier { grid-template-columns: minmax(0, 1fr); } .at-atelier > section:last-child { order: -1; } .mod-3d .vedere { aspect-ratio: 16 / 11; } }
 .at-panou { background: var(--panou); border: 1px solid var(--linie); border-radius: var(--raza); padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -266,9 +272,10 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .mod-3d .celule rect { cursor: pointer; }
 .mod-3d .sabloane { display: flex; gap: 6px; flex-wrap: wrap; }
 .mod-3d .sabloane button { font-variant-numeric: tabular-nums; font-size: 13px; padding: 5px 9px; }
-.mod-3d .leg-galerie { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 12px; margin-bottom: 4px; border-bottom: 1px solid var(--linie); }
-.mod-3d .leg-galerie button { border: 1px solid var(--linie); background: var(--panou-2); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 13px; }
-.mod-3d .leg-galerie button[aria-pressed="true"] { background: var(--text); color: var(--panou); border-color: var(--text); }
+/* galeria familiei alese (ADR 0281), lipită de filele de sus: piesele ei, cu piesa de acum apăsată */
+.mod-3d .at-galerie { display: flex; gap: 6px; flex-wrap: wrap; margin-top: -4px; }
+.mod-3d .at-galerie button { border: 1px solid var(--linie); background: var(--panou-2); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 13px; }
+.mod-3d .at-galerie button[aria-pressed="true"] { background: var(--text); color: var(--panou); border-color: var(--text); }
 .mod-3d .punct-gaura { cursor: pointer; }
 .mod-3d .punct-gaura:hover > circle:first-child { stroke: var(--text); stroke-width: 2.5; }
 .mod-3d #at-editor h3 { font-size: 15px; margin: 16px 0 4px; }

@@ -54,6 +54,13 @@
   gap: var(--sp-2);
 }
 
+/* Foaia sau un dop (ADR 0178): butoanele, apăsate cum le arată tema (`aria-pressed`), pe un rând care se rupe. */
+.alegere-3d {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
 .sfat-3d {
   font-size: var(--fs-2);
   color: var(--t);

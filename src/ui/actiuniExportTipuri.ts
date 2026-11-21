@@ -90,9 +90,9 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
  * Parametrii exportului și rezumatul jobului: definiți lângă calculul lor, în workerul CAM (ADR 0109,
  * `src/jobs/protocolCam.ts`, `src/jobs/rezumat.ts`); interfața le citește de aici, ca tipuri.
  */
-import type { DopExportat, ParametriExport } from '../jobs/protocolCam.ts';
+import type { DopExportat, DopSimulat, ParametriExport } from '../jobs/protocolCam.ts';
 import type { RezumatJob } from '../jobs/rezumat.ts';
-export type { ParametriExport } from '../jobs/protocolCam.ts';
+export type { DopSimulat, ParametriExport } from '../jobs/protocolCam.ts';
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
 
 /**
@@ -132,7 +132,11 @@ export type FereastraRelief = {
  * (placa, apoi ferestrele fine) le refolosește. Mutările sunt opace pentru interfață: le citește doar calculul.
  */
 export type ProgramSimulare =
-  | { readonly ok: true; readonly foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }; readonly date: unknown }
+  | {
+    readonly ok: true; readonly foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }; readonly date: unknown;
+    /** Dopurile foii, în ordinea exportului (ADR 0178): „Dopul N” din vederea 3D; gol fără ele, sau cu `motivDopuri`. */
+    readonly dopuri: readonly DopSimulat[]; readonly motivDopuri?: string;
+  }
   | { readonly ok: false; readonly motiv: string };
 
 /**

@@ -1,7 +1,7 @@
 /**
  * Fulia în atelierul Easy 3Draw (ADR 0280, felia 3.Tk), pe pagina de sine stătătoare a planificatorului (din aceleași surse
  * ca pachetul):
- * - tipul nou, în galeria pieselor de legătură: „Fulie Ø 24 × 3,5”, ca LEGO 4185, cu găurile de știft, 24 × 24 × 4 mm;
+ * - tipul nou, în fila Roți (ADR 0281): „Fulie Ø 24 × 3,5”, ca LEGO 4185, cu găurile de știft, 24 × 24 × 4 mm;
  * - cureaua spre a doua fulie, pe fundul canalelor: pe grilă, la jumătate de pas, fuliile care s-ar atinge;
  * - canalul plat lărgește obada (7,2) și lasă fața plină, cu diametrul de la care încap găurile de știft; „Ca LEGO Ø24”;
  * - fulia mare cu spițe în Y: STL-ul descărcat închis, cu raza cerută; „Fă perechea” pune ambele fulii în listă.
@@ -13,8 +13,8 @@ import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 async function atelierFulie(page: Page): Promise<void> {
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
-  await page.locator('#at-tipuri [data-tip="legaturi"]').click();
-  await page.locator('#at-leg [data-leg="fulie"]').click();
+  await page.locator('#at-tipuri [data-fila="roti"]').click();
+  await page.locator('#at-galerie [data-piesa="fulie"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Fulie Ø 24 × 3,5');
 }
 async function seteaza(page: Page, sel: string, v: string): Promise<void> {

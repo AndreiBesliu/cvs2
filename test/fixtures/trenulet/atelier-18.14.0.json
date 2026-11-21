@@ -1,0 +1,813 @@
+{
+ "_": "Stocarea atelierului Easy 3Draw 18.14.0 (localStorage atelier.caramizi.v1) și ce arăta pagina după ea; făcută de pagina publicată, din origin/main (0ab28651), ca un om (felia 3.Tp, ADR 0281).",
+ "stocat": {
+  "setari": {
+   "varianta_stift": 3,
+   "varianta_locas": 3,
+   "varianta_gaura": 3,
+   "varianta_ax": 3,
+   "varianta_bara": 3,
+   "varianta_cupa": 3,
+   "varianta_dinti": 3,
+   "varianta_janta": 3,
+   "stift_h": 1.9,
+   "locas_h": 2.1,
+   "locas_urmeaza": true,
+   "pat": [
+    180,
+    180
+   ],
+   "pat_margine": 5,
+   "pat_distanta": 4,
+   "culoare": "#1f5fbf",
+   "cuTren": true
+  },
+  "lista": [
+   {
+    "id": "mwos9f02tbrq",
+    "def": {
+     "tip": "caramida",
+     "celule": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "placi": 3,
+     "stifturi": true,
+     "fund": "tuburi"
+    },
+    "nume": "Cărămidă 2×4",
+    "bucati": 2
+   },
+   {
+    "id": "mwos9fbmjqta",
+    "def": {
+     "tip": "panta",
+     "lung": 2,
+     "adanc": 2,
+     "sus": 1,
+     "placi": 3,
+     "buza": 1.6,
+     "profil": "curb"
+    },
+    "nume": "Pantă curbă 2×2",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9fm9ie1n",
+    "def": {
+     "tip": "grinda",
+     "celule": [
+      [
+       0,
+       0,
+       "r"
+      ],
+      [
+       1,
+       0,
+       "r"
+      ],
+      [
+       2,
+       0,
+       "r"
+      ],
+      [
+       3,
+       0,
+       "r"
+      ],
+      [
+       4,
+       0,
+       "r"
+      ]
+     ],
+     "groasa": true
+    },
+    "nume": "Grindă 5",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9fx5kuqt",
+    "def": {
+     "tip": "stiftTechnic",
+     "fanta": true
+    },
+    "nume": "Știft Technic",
+    "bucati": 4
+   },
+   {
+    "id": "mwos9g8xnlh7",
+    "def": {
+     "tip": "bucsa",
+     "lung": 2,
+     "gaura": "x"
+    },
+    "nume": "Conector de ax 2",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9gfeencr",
+    "def": {
+     "tip": "rotita",
+     "dinti": 24,
+     "fel": "drepti",
+     "grosime": 3.8,
+     "gaura": "x"
+    },
+    "nume": "Roată dințată 24",
+    "bucati": 2
+   },
+   {
+    "id": "mwos9gmdvsbl",
+    "def": {
+     "tip": "fulie",
+     "diam": 24,
+     "lat": 3.5,
+     "canal": "v",
+     "latCanal": 2.6,
+     "spite": "stift",
+     "gaura": "x"
+    },
+    "nume": "Fulie Ø 24 × 3,5",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9gx0e652",
+    "def": {
+     "tip": "conicaDubla",
+     "dinti": 12,
+     "gaura": "x"
+    },
+    "nume": "Conică dublă 12",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9gx0vbbu",
+    "def": {
+     "tip": "conicaDubla",
+     "dinti": 20,
+     "gaura": "x"
+    },
+    "nume": "Conică dublă 20",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9h3yrmjj",
+    "def": {
+     "tip": "roata",
+     "fel": "plina",
+     "diam": 30.4,
+     "lat": 13.6,
+     "janta": 16.8,
+     "banda": "nervuri",
+     "spite": "disc",
+     "gaura": "x"
+    },
+    "nume": "Roată 30,4 × 13,6",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9hf2tcer",
+    "def": {
+     "tip": "caramida",
+     "celule": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ],
+     "placi": 1,
+     "stifturi": true,
+     "fund": "tuburi",
+     "gauri": [
+      [
+       1,
+       1,
+       "r"
+      ],
+      [
+       2,
+       1,
+       "r"
+      ],
+      [
+       3,
+       1,
+       "r"
+      ],
+      [
+       4,
+       1,
+       "r"
+      ],
+      [
+       5,
+       1,
+       "r"
+      ]
+     ]
+    },
+    "nume": "Placă 2×6, 5 găuri",
+    "bucati": 1
+   },
+   {
+    "id": "mwos9i6tckt3",
+    "def": {
+     "tip": "coroana",
+     "dinti": 32,
+     "pinion": 16,
+     "gaura": "x",
+     "butuc": "lung"
+    },
+    "nume": "Roată coroană 32 pentru pinionul de 16",
+    "bucati": 1
+   }
+  ],
+  "stare": {
+   "tip": "coroana",
+   "caramida": {
+    "cols": 10,
+    "rows": 6,
+    "celule": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      1
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      2,
+      1
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      3,
+      1
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      4,
+      1
+     ],
+     [
+      5,
+      0
+     ],
+     [
+      5,
+      1
+     ]
+    ],
+    "placi": 1,
+    "stifturi": true,
+    "fund": "tuburi",
+    "gauri": [
+     [
+      1,
+      1,
+      "r"
+     ],
+     [
+      2,
+      1,
+      "r"
+     ],
+     [
+      3,
+      1,
+      "r"
+     ],
+     [
+      4,
+      1,
+      "r"
+     ],
+     [
+      5,
+      1,
+      "r"
+     ]
+    ],
+    "goale": false,
+    "laterale": [],
+    "mod": "gauri"
+   },
+   "panta": {
+    "lung": 2,
+    "adanc": 2,
+    "sus": 1,
+    "placi": 3,
+    "buza": 1.6,
+    "profil": "curb"
+   },
+   "pantaInversa": {
+    "lung": 2,
+    "adanc": 2,
+    "sus": 1,
+    "placi": 3,
+    "buza": 1.6
+   },
+   "pana": {
+    "lung": 4,
+    "lat": 2,
+    "varf": 0,
+    "inceput": 0,
+    "parte": "stanga",
+    "placi": 1,
+    "stifturi": true,
+    "gauri": []
+   },
+   "rotund": {
+    "diam": 1,
+    "placi": 3,
+    "forma": "cilindru",
+    "varf_d": 5.4,
+    "stifturi": "toate",
+    "gaura": "nu"
+   },
+   "grinda": {
+    "cols": 9,
+    "rows": 5,
+    "celule": [
+     [
+      0,
+      0,
+      "r"
+     ],
+     [
+      1,
+      0,
+      "r"
+     ],
+     [
+      2,
+      0,
+      "r"
+     ],
+     [
+      3,
+      0,
+      "r"
+     ],
+     [
+      4,
+      0,
+      "r"
+     ]
+    ],
+    "groasa": true,
+    "unealta": "r",
+    "fel": "grila",
+    "brate": [
+     6,
+     4
+    ],
+    "unghiuri": [
+     53.13
+    ],
+    "gauriInd": []
+   },
+   "caramidaTechnic": {
+    "lung": 4,
+    "gauri": [
+     "r",
+     "r",
+     "r"
+    ],
+    "goale": false
+   },
+   "ax": {
+    "lung": 4
+   },
+   "stiftTechnic": {
+    "fanta": true,
+    "lung": 2,
+    "capat": "stift"
+   },
+   "lateral": {
+    "lung": 1,
+    "fete": "una"
+   },
+   "bucsa": {
+    "lung": 2,
+    "gaura": "x"
+   },
+   "suport": {
+    "lung": 2,
+    "adanc": 1,
+    "inalt": 1,
+    "invers": false
+   },
+   "clema": {
+    "lung": 1,
+    "axa": "verticala"
+   },
+   "maner": {
+    "lung": 2,
+    "axa": "verticala"
+   },
+   "bara": {
+    "lung": 4
+   },
+   "bila": {
+    "baza": 1
+   },
+   "cupa": {
+    "baza": 1
+   },
+   "rotita": {
+    "dinti": 24,
+    "fel": "drepti",
+    "unghi": 20,
+    "sens": "dreapta",
+    "grosime": 3.8,
+    "gaura": "x",
+    "modul": 1,
+    "pereche": 24
+   },
+   "roata": {
+    "fel": "plina",
+    "diam": 30.4,
+    "lat": 13.6,
+    "janta": 16.8,
+    "banda": "nervuri",
+    "spite": "disc",
+    "nrSpite": 5,
+    "gaura": "x"
+   },
+   "fulie": {
+    "diam": 24,
+    "lat": 3.5,
+    "canal": "v",
+    "latCanal": 2.6,
+    "spite": "stift",
+    "nrSpite": 6,
+    "gaura": "x",
+    "pereche": 24,
+    "distanta": 32
+   },
+   "conica": {
+    "dinti": 20,
+    "pereche": 20,
+    "modul": 1,
+    "gaura": "r",
+    "butuc": "lung"
+   },
+   "coroana": {
+    "dinti": 32,
+    "pinion": 16,
+    "modul": 1,
+    "gaura": "x",
+    "butuc": "lung"
+   },
+   "conicaDubla": {
+    "dinti": 12,
+    "modul": 1,
+    "gaura": "x",
+    "pereche": 20
+   },
+   "dinCvs2": {
+    "contururi": [],
+    "grosime": 3.2,
+    "deschise": 0,
+    "refuz": ""
+   }
+  },
+  "model": [
+   {
+    "id": "mwos9hkmgqbn",
+    "def": {
+     "tip": "caramida",
+     "celule": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ],
+      [
+       3,
+       1
+      ],
+      [
+       4,
+       0
+      ],
+      [
+       4,
+       1
+      ],
+      [
+       5,
+       0
+      ],
+      [
+       5,
+       1
+      ]
+     ],
+     "placi": 1,
+     "stifturi": true,
+     "fund": "tuburi",
+     "gauri": [
+      [
+       1,
+       1,
+       "r"
+      ],
+      [
+       2,
+       1,
+       "r"
+      ],
+      [
+       3,
+       1,
+       "r"
+      ],
+      [
+       4,
+       1,
+       "r"
+      ],
+      [
+       5,
+       1,
+       "r"
+      ]
+     ]
+    },
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "rot": 0,
+    "culoare": "#c8322b"
+   },
+   {
+    "id": "mwos9hmxc09i",
+    "def": {
+     "tip": "panta",
+     "lung": 2,
+     "adanc": 2,
+     "sus": 1,
+     "placi": 3,
+     "buza": 1.6,
+     "profil": "curb"
+    },
+    "x": 0,
+    "y": 0,
+    "z": 1,
+    "rot": 0,
+    "culoare": "#c8322b"
+   }
+  ],
+  "imprimante": {
+   "lista": [
+    {
+     "id": "mwos9eia150x",
+     "nume": "Imprimanta mea",
+     "v": {
+      "pat": [
+       180,
+       180
+      ],
+      "pat_margine": 5,
+      "pat_distanta": 4,
+      "varianta_stift": 3,
+      "varianta_locas": 3,
+      "varianta_gaura": 3,
+      "varianta_ax": 3,
+      "varianta_bara": 3,
+      "varianta_cupa": 3,
+      "varianta_dinti": 3,
+      "varianta_janta": 3,
+      "stift_h": 1.9,
+      "locas_h": 2.1,
+      "locas_urmeaza": true,
+      "print_tata": 3,
+      "print_mama": 3
+     }
+    }
+   ],
+   "activ": "mwos9eia150x",
+   "implicit": "mwos9eia150x"
+  }
+ },
+ "arata": {
+  "nume": "Roată coroană 32 pentru pinionul de 16",
+  "fila": [
+   "legaturi"
+  ],
+  "galerie": [
+   "coroana"
+  ],
+  "dinti": "32",
+  "pinion": "16",
+  "lista": [
+   [
+    "Cărămidă 2×4",
+    "31,8 × 15,8 × 11,5",
+    "−2+",
+    "5,5 g",
+    "Scoate"
+   ],
+   [
+    "Pantă curbă 2×2",
+    "15,8 × 15,8 × 11,5",
+    "−1+",
+    "2,4 g",
+    "Scoate"
+   ],
+   [
+    "Grindă 5",
+    "39,2 × 7,2 × 7,8",
+    "−1+",
+    "1,6 g",
+    "Scoate"
+   ],
+   [
+    "Știft Technic",
+    "15,8 × 6 × 5",
+    "−4+",
+    "1,4 g",
+    "Scoate"
+   ],
+   [
+    "Conector de ax 2",
+    "7,2 × 7,2 × 15,8",
+    "−1+",
+    "0,5 g",
+    "Scoate"
+   ],
+   [
+    "Roată dințată 24",
+    "26 × 26 × 3,8",
+    "−2+",
+    "3,7 g",
+    "Scoate"
+   ],
+   [
+    "Fulie Ø 24 × 3,5",
+    "24 × 24 × 4",
+    "−1+",
+    "1,1 g",
+    "Scoate"
+   ],
+   [
+    "Conică dublă 12",
+    "14 × 14 × 8",
+    "−1+",
+    "0,7 g",
+    "Scoate"
+   ],
+   [
+    "Conică dublă 20",
+    "22 × 22 × 8",
+    "−1+",
+    "2,5 g",
+    "Scoate"
+   ],
+   [
+    "Roată 30,4 × 13,6",
+    "30,4 × 30,4 × 13,6",
+    "−1+",
+    "6,2 g",
+    "Scoate"
+   ],
+   [
+    "Placă 2×6, 5 găuri",
+    "47,8 × 15,8 × 5,1",
+    "−1+",
+    "2 g",
+    "Scoate"
+   ],
+   [
+    "Roată coroană 32 pentru pinionul de 16",
+    "33,6 × 33,6 × 8",
+    "−1+",
+    "3,6 g",
+    "Scoate"
+   ]
+  ],
+  "model": "Modelul (2)",
+  "culoare": "#1f5fbf"
+ }
+}
