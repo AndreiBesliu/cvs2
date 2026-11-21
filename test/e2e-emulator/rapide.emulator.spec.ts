@@ -192,8 +192,9 @@ test('un rol care răspunde le folosește, fără legătura spre Setări; unul c
   const ctx = await browser.newContext({ baseURL: 'http://localhost:4173', locale: 'ro-RO', bypassCSP: true, serviceWorkers: 'block' });
   const altul = await ctx.newPage();
   await scrie('roluri/RCiteste000000000000', { nume: 'Citește', permisiuni: ['tichete.citeste'] });
+  // Și în corpul cererii: un document se citește prin `documents:batchGet`, cu calea lui în corp (21.11: otrava E22 trecea).
   let setari = 0;
-  altul.on('request', (r) => { if (new URL(r.url()).pathname.includes('/setari/')) setari += 1; });
+  altul.on('request', (r) => { if (`${r.url()} ${r.postData() ?? ''}`.includes('raspunsuriRapide')) setari += 1; });
   await intraCuRolul(altul, 'RCiteste000000000000');
   await bara(altul, 'tichete').click();
   const d2 = altul.locator('[data-tic="detaliu"]');

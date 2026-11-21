@@ -242,14 +242,17 @@ test('Tichete: lista în stânga, conversația în dreapta; numerele, erorile di
 
 test('un rol care răspunde, fără fila Erori: amprentele ca text, nicio citire în errorLogs; câmpul și starea', async ({ page }) => {
   await scrie(`roluri/${ROL}`, { nume: 'Suport', permisiuni: ['tichete.raspunde'] });
+  // Și în corpul cererii: Firestore Lite citește un document prin `documents:batchGet`, cu calea lui în corp (21.11: numărate
+  // doar după adresă, citirile interzise nu se vedeau, iar otrava E08 trecea).
   let citiriErori = 0;
-  page.on('request', (r) => { if (new URL(r.url()).pathname.includes('/errorLogs')) citiriErori += 1; });
+  page.on('request', (r) => { if (`${r.url()} ${r.postData() ?? ''}`.includes('errorLogs')) citiriErori += 1; });
   await intraCuRolul(page, ROL);
   await bara(page, 'tichete').click();
   const detaliu = page.locator('[data-tic="detaliu"]');
   await expect(detaliu).toHaveAttribute('data-tic-ales', T(1), LENT);
   await expect(detaliu.locator('[data-tic="amprente"]')).toContainText(`${G1}, ${GV}, ${GX}`);
   await expect(detaliu.locator('[data-tic="spre-erori"]')).toHaveCount(0);
+  await expect(detaliu.locator('[data-tic="erori-citire"]')).toHaveCount(0);
   await expect(detaliu.locator('[data-tic="raspuns-text"]')).toBeVisible();
   await expect(detaliu.locator('[data-tic="rezolva"]')).toBeVisible();
   await expect(detaliu.locator('[data-tic="doar-citire"]')).toHaveCount(0);
