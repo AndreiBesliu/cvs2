@@ -1,8 +1,9 @@
 /**
  * Șenila din atelierul Easy 3Draw (ADR 0280, felia 3.To), pe plasele reale:
  * - zala ca LEGO 57518 (din LDraw): lată de 38,4, pasul de 12; bolțul Ø3,2 la (y 0, z 5,6), între obrajii de la |x| 5,75;
- *   clema (inelul clemei din atelier, `clemaD` din calibrare) la (y −12, z 5,6), cu fălcile la |x| 3,2…5,45; între fălci,
- *   loc pentru discul pinionului; găurile de știft la (±8, −6,8); limba ±5,45 intră în crestătura ±5,75 a zalei următoare;
+ *   clema (inelul clemei din atelier, `clemaD` din calibrare) la (y −12, z 5,6), cu fălcile la |x| 3,2…5,45, care ies din
+ *   pereții canalului (y −4,4…−10, z până la 8,4); între ei, loc pentru discul pinionului; găurile de știft la (±8, −6,8);
+ *   limba ±5,45 intră în crestătura ±5,75 a zalei următoare;
  * - două zale legate nu se ating, drepte și îndoite spre pinion până la 60° (pinionul de 6), nici îndoite înapoi cu 8°; la 12°
  *   înapoi, aripile se opresc una în alta (ca la LEGO);
  * - pinionul: scobiturile, cercuri de rază 1,6 + jocul dinților pe raza R = 6 / sin(π / z) (57519: 10, R 19,42); vârful la
@@ -83,7 +84,7 @@ test('corpul e închis la zală și la pinioane (dinții, găurile, calibrarea);
   }
   const z = zala();
   assert.deepEqual(simplu(z.dim.slice(0, 2).map((v) => Math.round(v * 1000) / 1000)), [38.4, 17.2]);
-  assert.ok(Math.abs(z.dim[2]! - 8.05) < 0.01, `înălțimea zalei: ${z.dim[2]}`);
+  assert.ok(Math.abs(z.dim[2]! - 8.4) < 1e-9, `înălțimea zalei (pereții canalului, ca la 57518): ${z.dim[2]}`);
   assert.deepEqual(simplu(z.avert), []);
   // pinionul de 10: vârfurile la R + 1 = 20,42 (57519: 20,4), gros de 8 cu butucul
   const p = pinion();
@@ -111,6 +112,13 @@ test('cotele zalei, ca 57518: bolțul, clema cu fălcile, locul discului, găuri
     }
   }
   for (const x of [3.1, 5.55, -3.1, -5.55]) assert.equal(z.in(x, -12, 5.6 - (ri + ro) / 2), false, `în afara fălcilor, x ${x}`);
+  // pereții canalului, în dreptul fălcilor, de la y −4,4 până la inel, înalți până la 8,4; în fața lor (spre bolț) stă cârligul
+  // zalei de dinainte
+  for (const x of [-4.3, 4.3]) {
+    for (const y of [-4.6, -7, -9.8]) for (const zz of [3.4, 6, 8.3]) assert.equal(z.in(x, y, zz), true, `peretele la x ${x}, y ${y}, z ${zz}`);
+    assert.equal(z.in(x, -7, 8.5), false, 'peste perete');
+    assert.equal(z.in(x, -4.2, 6), false, 'în fața peretelui');
+  }
   // între fălci și sub bolțuri (|x| < 3,2), deasupra plăcii, e liber de la un bolț la altul: acolo intră dintele pinionului
   for (const y of [-1.8, -6, -10.2]) for (const zz of [3.3, 5, 7, 8]) assert.equal(z.in(0, y, zz), false, `locul dintelui, y ${y}, z ${zz}`);
   // placa groasă de 3,2, aripile până la |x| 19,2; găurile de știft la (±8, −6,8)
@@ -206,6 +214,7 @@ test('montajul: zalele pe două pinioane, jocul, distanța la care stă întins�
   assert.equal(n.zale, Math.ceil(Lp / 12));
   // vârfurile s-ar atinge sub R1 + R2 + 2 + 1
   assert.equal(L.senilaMontaj(10, 10, 40).aproape, true);
+  assert.equal(L.senilaMontaj(10, 10, 41.5).aproape, true, 'sub 2 · 20,42 + 1 = 41,83');
   assert.equal(L.senilaMontaj(10, 10, 42).aproape, false);
 });
 

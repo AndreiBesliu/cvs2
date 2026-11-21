@@ -1777,17 +1777,19 @@ var Lego = (function (glob: typeof globalThis) {
   // - aripile: y de la −1,2 la −12,4, groase de 3,2, până la |x| 19,2; limba, la mijloc, y de la −4,4 la −14,8: intră în
   //   crestătura dintre aripile zalei următoare (0,8 mm între aripi, 1,6 până la limba ei). La LEGO, limba și crestătura au
   //   amândouă ±5,6 (se ating, turnate); aici limba are ±5,45 și crestătura ±5,75, deci 0,15 mm pe parte și cu zalele LEGO;
-  // - bolțul: Ø3,2 (bara LEGO), la z 5,6, între obrajii de la |x| 5,75…7,2, înalți până la z 8; obrajii trec cu 3,6 mm peste
+  // - bolțul: Ø3,2 (bara LEGO), la z 5,6, între obrajii de la |x| 5,75…7,2, înalți până la z 8,4; obrajii trec cu 3,6 mm peste
   //   capătul aripilor, teșiți la 45° pe dedesubt (acolo stau aripile zalei de dinainte, iar teșitura se tipărește singură);
   // - clema: două fălci, la |x| 3,2…5,45, la y −12, cu gura în sus; inelul e al clemei din atelier (`clemaD` din calibrare,
   //   peretele, gura); între fălci (|x| < 3,2) rămâne loc pentru discul pinionului, gros de 4;
-  // - găurile de știft Technic, la x ±8, y −6,8.
+  // - pereții canalului: în dreptul fălcilor (|x| 3,2…5,45), de la y −4,4 până în inelul clemei, înalți până la z 8,4 (ca la
+  //   LEGO): discul pinionului trece printre ei, deci șenila nu alunecă lateral de pe pinion; fălcile ies din ei;
+  // - găurile de știft Technic, la x ±8, y −6,8. Fața de rulare e netedă (crampoanele LEGO ar cere suport la tipar).
   // Pinionul: scobiturile sunt cercuri de rază bara / 2 + jocul dinților din calibrare, centrate pe raza R = 6 / sin(π / z),
   // unde stau bolțurile șenilei întinse pe pinion; vârful dinților, la R + 1, dar cel mult la 0,3 mm sub placa zalei din
   // dreptul lui (la 6 dinți ar atinge-o); discul gros de 4, pe un butuc de Ø12 și 8 mm.
   // LEGO: 57519, R 19,42, scobitura de r 1,67 (fundul la 17,75), vârful la 20,4; 42529, R 26,96.
   const SENILA = { pas: 12, lat: 19.2, placa: 3.2, zb: 5.6, aripa: [-12.4, -1.2], limba: [-14.8, -4.4], xl: 5.45, xn: 5.75, obraz: 7.2, obrazY: 2.4,
-    obrazZ: 8, falci: [3.2, 5.45], gauraX: 8, gauraY: -6.8, disc: 4, varf: 1, butucR: 6, butucZ: 8 };
+    obrazZ: 8.4, falci: [3.2, 5.45], zid: [-10, -4.4], zidZ: 8.4, gauraX: 8, gauraY: -6.8, disc: 4, varf: 1, butucR: 6, butucZ: 8 };
   function pinionSenilaCote(dinti: unknown) {
     const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
     const z = Math.round(Math.min(40, Math.max(6, nr(dinti, 10))));
@@ -1806,7 +1808,8 @@ var Lego = (function (glob: typeof globalThis) {
     tri.push(...pe(obraz, xn, S.obraz), ...pe(obraz, -S.obraz, -xn));
     tri.push(...pe(cerc(0, S.zb, rb, N_CERC), -(xn + 0.8), xn + 0.8));
     const falca = sectiuneC(ri, ro, P.clema_gura, Math.PI / 2, yc, S.zb), gat = dreptunghi(yc - 1.8, S.placa - 1.2, yc + 1.8, S.zb - ri - 0.25);
-    for (const [x0, x1] of [[f0, f1], [-f1, -f0]] as [number, number][]) tri.push(...pe(falca, x0, x1), ...pe(gat, x0, x1));
+    const zid = dreptunghi(S.zid[0]!, S.placa - 0.2, S.zid[1]!, S.zidZ);
+    for (const [x0, x1] of [[f0, f1], [-f1, -f0]] as [number, number][]) tri.push(...pe(falca, x0, x1), ...pe(gat, x0, x1), ...pe(zid, x0, x1));
     return { tri, avert: [] };
   }
   function pinionSenila({ dinti = 10, gaura = "x" }: { dinti?: number; gaura?: string }): Corp {

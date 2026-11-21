@@ -46,7 +46,7 @@ function citesteStl(stl: Buffer): { triunghiuri: number; rele: number; raza: num
 
 test('zala de șenilă, ca LEGO 57518: 38,4 × 17,2; montajul pe două pinioane de 10, cu axele la 8 știfturi: 21 de zale', async ({ page }) => {
   await atelierSenila(page);
-  await expect(page.locator('#at-cote')).toContainText('38,4 × 17,2 × 8');
+  await expect(page.locator('#at-cote')).toContainText('38,4 × 17,2 × 8,4');
   const montaj = page.locator('#at-sn-montaj');
   await expect(montaj).toHaveText('Pe pinioanele de 10 și 10, cu axele la 64 mm (8 știfturi), șenila are 21 de zale (252 mm) și rămân 2 mm de joc; întinsă, axele ar sta la 65 mm.');
   // celălalt pinion și distanța sunt ale editorului: montajul se schimbă, piesa nu
@@ -80,9 +80,14 @@ test('pinionul de șenilă „Ca LEGO 42529 (14)”, cu gaură rotundă: STL-ul 
   expect(raza).toBeCloseTo(6 / Math.sin(Math.PI / 14) + 1, 1);
 });
 
-test('„Fă șenila”: zalele câte cere montajul și cele două pinioane, în listă', async ({ page }) => {
+test('„Fă șenila”: zalele câte cere montajul și cele două pinioane, în listă, cu zala din editor ca aceeași piesă', async ({ page }) => {
   await atelierSenila(page);
+  // zala din editor (montajul schimbat întâi: e doar al editorului), apoi „Fă șenila”: același rând de zale, 1 + 21
+  await seteaza(page, '#at-sn-distanta', '9');
+  await page.locator('#at-sn-gauri [data-v="da"]').click();
+  await page.locator('#at-adauga').click();
+  await seteaza(page, '#at-sn-distanta', '8');
   await page.locator('#at-sn-fa').click();
   await expect(page.locator('#at-lista tr td:first-child')).toHaveText(['Zală de șenilă', 'Pinion de șenilă 10']);
-  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['21', '2']);
+  await expect(page.locator('#at-lista tr[data-id] .pas-n')).toHaveText(['22', '2']);
 });

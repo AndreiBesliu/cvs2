@@ -26,7 +26,8 @@ o('U01', A, '["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ', '["conica
   'fulia lipsește din tabelă: un tip al motorului fără familie, deci fără filă')
 o('U02', A, '["legaturi", "Legături", [["stiftTechnic", "Știft"], ', '["legaturi", "Legături", [["grinda", "Grindă"], ["stiftTechnic", "Știft"], ',
   'familii', 'grinda în două familii')
-o('U03', A, '["fulie", "Fulie"], ["roata", "Roată cu anvelopă"]]]', '["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["dinCvs2", "Din cvs2"]]]',
+# U03: de la 3.To, rândul Roți se termină cu șenila
+o('U03', A, '["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]]', '["roata", "Roată cu anvelopă"], ["senila", "Șenilă"], ["dinCvs2", "Din cvs2"]]]',
   'familii', 'forma din cvs2 ca piesă a Roților (are fila ei)')
 o('U04', A, '["bucsa", "Bucșă / conector"]', '["bucse", "Bucșă / conector"]', 'familii',
   'un tip scris greșit: bucșa lipsește, iar „bucse” nu e al motorului')
