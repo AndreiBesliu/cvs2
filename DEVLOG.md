@@ -10668,3 +10668,33 @@ sau mai târziu?”). **Started:** 21.11, 17:52. **Completed:** 21.11, 19:51.
   a trecut reluat cu fișierul lui (10 / 10).
 - **Rămase:** lanțul tipărit dintr-o bucată și întinzătorul, la cuvântul owner-ului.
 - **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
+## 2026-11-21 — Felia 12.1↑e, reparația: titlul dopului numește incrustația (ADR 0178, precizarea din 21.11) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, la întrebarea „Ce fac mai departe pe linia incrustațiilor?” (variantele: „Titlul dopului” /
+„12.1↑e-2”): „Titlul dopului”. Întâi în sesiunea principală, transmis de ea („porneste-o si pe asta”), apoi și aici. Pornită
+la mesajul sesiunii principale de pe 21.11 („da si vreau sa pornesti si restul worktrees”); reluată după oprirea procesului
+(Claude Code a ieșit cu codul 3221226505), cu proba deja scrisă și nimic comis.
+**Started:** 21.11, 17:54. **Completed:** 21.11, 19:41.
+
+- **`main` în ramură:** `a64adf63` (cu 12.1↑e unită în `b3c3970f`, în lot cu 3.Tp), prin fast-forward.
+- **Ce era:** titlul butonului „Dopul N” din vederea 3D numea incrustația prin id-ul ei intern („Dopul incrustației e1/e1,
+  pe semifabricatul lui de …”), pe care omul nu-l vede nicăieri. L-am văzut pe canal, la verificarea lui 12.1↑e.
+- **Proba întâi** (`incrustatie3d.spec.ts`), pe dreptunghiul de 30 × 20 din (20, 20):
+  - bara de jos spune „Selectat: dreptunghi 30.00 × 20.00 la X 20.00, Y 20.00” (valoarea de pe hârtie);
+  - titlul dopului trebuie să fie „Incrustația: dreptunghi 30.00 × 20.00 la X 20.00, Y 20.00. Semifabricatul dopului:
+    40 × 30 × 6 mm”.
+  - Pe codul vechi a picat exact la titlu (a primit „Dopul incrustației e1/e1, …”); bara de jos a trecut.
+- **Codul** (`75e304d0`):
+  - `descriere` (forma, mărimea și locul unui element în lume), mutată neschimbată din `App.tsx` în
+    `src/app/descriereElement.ts`: aceeași funcție pentru bara de jos, avertismente, fereastra exportului și titlul dopului.
+  - Vederea 3D: harta elementelor foii după id-ul lor în lume, doar cât foaia are dopuri. Titlul e „Incrustația:
+    {descriere}.” urmat de „Semifabricatul dopului: …”. Un element pe care foaia nu-l mai are (lista dopurilor de dinaintea
+    unei editări, până la simularea nouă) lasă doar semifabricatul, nu un id.
+  - Mesajele (ro, en), ADR 0178 (§2 și precizarea din 21.11), manualul (ro, en).
+- **Porțile, pe `75e304d0`:** compilatoarele ×3, importurile (20 / 0, 1 318 de module), licențele, traducerile (865, 0 lipsă); unit 9 652: 9 643 / 1 (8 sărite, 6,5 min). Căderea e proba pe ceas a importului DXF („o bombă de blocuri oprită repede”, pragul 5 s): a ținut 6,0 s, cu mașina încărcată de e2e-urile altor sesiuni; singură, de trei ori, 0,59 / 0,59 / 0,55 s, iar felia nu atinge importul DXF. Build determinist (342 de fișiere identice; pornirea 107,2, cu ușa 111,2 / 115, cu Atelierul 111,5; totalul 739,5 / 800). E2e 568 / 570 (10 min, 3 lucrători): așteptarea unui minut de liniște a ținut 20 de minute fără să-l găsească, iar cele 2 căderi, în `taiere.spec.ts`, sunt așteptări de 5 s în lista vectorilor; fișierul întreg, reluat cu un lucrător, 16 / 16.
+- **Otrăvurile:** lista `test/otravuri/12.1e.py` crește la 28: V10–V16, titlul dopului (id-ul intern, fără incrustație, elementul căutat după instanță, lumea foii nefăcută sau a altei foi, grosimea greșită, descrierea comună cu altă precizie), fiecare cu build și e2e-ul vederii: 7 / 7 prinse, fiecare fișier refăcut la sha-ul lui. Celelalte liste, comparate otravă cu otravă cu `a64adf63`: niciun VOID nou. Arborele, curat la capăt; build-ul, refăcut pe HEAD.
+- **Mărimea:** felia, față de `a64adf63`, cu același build în ambii arbori: JavaScript +110 B gzip (vederea 3D +104; celelalte bucăți, ± câțiva zeci de octeți, cu suma +6) și CSS 0; totalul 739,4 → 739,5 / 800; pornirea (107,2) și ușa (111,2 / 115), neschimbate.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 21.12), build-ul `75e304d0` (versiunea `75e304d0c671`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 din (20, 20), cu rolul „straight-walled inlay”, bara de jos spune „Selected: rectangle 100.00 × 60.00 at X 20.00, Y 20.00”, iar titlul lui „Plug 1” e „The inlay: rectangle 100.00 × 60.00 at X 20.00, Y 20.00. The plug’s blank: 110 × 70 × 6 mm”. „Plug 1” se simulează ca înainte (440 × 280 la 0,25 mm, adâncimea 5, camera pe 55, 35). Înapoi la „Sheet”, vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
+- **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată) și bifa „prin foaie” pe fiecare rând (v26): ce cere
+  fiecare, în raport.
