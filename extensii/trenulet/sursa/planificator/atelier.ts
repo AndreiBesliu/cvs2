@@ -1886,11 +1886,11 @@ var Atelier3D = (function () {
     culori(); reglaje();
     $("#at-tipuri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fila]"); if (!b) return; inlocuieste = null; golesteCautarea(); alegeTip(ultima.get(b.dataset.fila!) ?? b.dataset.fila!); };
     $("#at-galerie").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-piesa]"); if (!b) return; inlocuieste = null; alegePiesa(b.dataset.piesa!); };
-    // căutarea (3.Tp↑a): la fiecare literă, galeria arată piesele găsite; Enter alege prima, Escape golește câmpul
+    // căutarea (3.Tp↑a): la fiecare literă, galeria arată piesele găsite; Enter alege prima (Escape și × golesc câmpul de
+    // căutare singure, cu `input`, ca orice câmp `type="search"`)
     const campCautare = $<HTMLInputElement>("#at-cauta");
     campCautare.oninput = () => cauta(campCautare.value);
     campCautare.onkeydown = ev => {
-      if (ev.key === "Escape" && campCautare.value) { ev.preventDefault(); campCautare.value = ""; cauta(""); return; }
       const prima = ev.key === "Enter" && cautare.trim() ? document.querySelector<HTMLElement>("#at-galerie [data-piesa]") : null;
       if (prima) { ev.preventDefault(); inlocuieste = null; alegePiesa(prima.dataset.piesa!); }
     };

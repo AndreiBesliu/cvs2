@@ -24,6 +24,8 @@ async function deschide(page: Page): Promise<void> {
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   await page.goto(PAGINA);
   await page.locator('[data-mod="3d"]').first().click();
+  // atelierul pornit: galeria familiei piesei de acum (cărămida), înainte de orice căutare
+  await expect(page.locator('#at-galerie [data-piesa="caramida"]')).toHaveAttribute('aria-pressed', 'true');
 }
 const camp = (page: Page) => page.locator('#at-cauta');
 const gasite = (page: Page) => page.locator('#at-galerie [data-piesa]');

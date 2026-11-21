@@ -1,9 +1,12 @@
 # Lista de otrăvuri a feliei 3.Tp↑a (căutarea peste toate filele atelierului Easy 3Draw, ADR 0281 §4), 21.11.2026, alese de
 # autor: potrivirea (diacriticele, majusculele, începutul de cuvânt, fiecare cuvânt, textul fără litere, ordinea filelor),
 # galeria rezultatelor (arătată și peste model sau peste o filă proprie, făcută din nou doar la alt text, întoarsă la familie
-# după golire, mesajul fără potrivire, numele ei), golirea la o filă (și a câmpului), Escape, Enter (doar cu o căutare),
-# telefonul (câmpul pe un rând al lui) și traducerea. Potrivirea pe numele din limba paginii se probează doar în cvs2, în
-# engleză: otrava ei e în `3.Tpa-en.py`, cu setul ei e2e (`trenulet.spec.ts`).
+# după golire, mesajul fără potrivire, numele ei), golirea la o filă (și a câmpului), Enter (doar cu o căutare), telefonul
+# (câmpul pe un rând al lui) și traducerea. Potrivirea pe numele din limba paginii se probează doar în cvs2, în engleză:
+# otrava ei e în `3.Tpa-en.py`, cu setul ei e2e (`trenulet.spec.ts`).
+# F03 (Escape) a scăpat la prima rulare: câmpul `type="search"` îl golește singur, cu `input`, deci codul propriu era
+# echivalent și a ieșit din atelier (Escape rămâne în proba e2e). G03 a scăpat fiindcă proba căuta înainte ca atelierul să-și
+# fi arătat galeria familiei: proba așteaptă acum galeria la deschidere.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; setul „e2e” e
 # `test/e2e/trenulet.cautare.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -47,8 +50,6 @@ o('F01', A, 'inlocuieste = null; golesteCautarea(); alegeTip(ultima.get(', 'inlo
   'o filă aleasă nu golește căutarea: galeria rămâne cu rezultatele')
 o('F02', A, 'function golesteCautarea() { cautare = ""; $<HTMLInputElement>("#at-cauta").value = ""; }', 'function golesteCautarea() { cautare = ""; }',
   'e2e', 'o filă golește căutarea, dar textul rămâne în câmp')
-o('F03', A, 'if (ev.key === "Escape" && campCautare.value) {', 'if (ev.key === "Esc" && campCautare.value) {', 'e2e',
-  'Escape nu golește câmpul (doar cât îl golește browserul singur)')
 o('F04', A, 'const prima = ev.key === "Enter" && cautare.trim() ?', 'const prima = ev.key === "Intro" && cautare.trim() ?', 'e2e',
   'Enter nu alege prima piesă găsită')
 o('F05', A, 'const prima = ev.key === "Enter" && cautare.trim() ?', 'const prima = ev.key === "Enter" ?', 'e2e',
