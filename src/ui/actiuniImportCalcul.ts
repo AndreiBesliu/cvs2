@@ -1,6 +1,6 @@
 import { citesteDxf } from '../io/dxf.ts';
 import { citesteEps } from '../io/eps.ts';
-import { citestePdf } from '../io/pdf.ts';
+import { citestePdf, imagineaPaginiiPdf } from '../io/pdf.ts';
 import { laturiDinImbricare } from '../io/imbricare.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import { caleInchisa, cutieCai, numeDinFisier, pregateste, type CaleImport } from '../io/piesa.ts';
@@ -11,7 +11,7 @@ import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
 import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
 import { REZOLUTIE } from '../geom/toleranta.ts';
 import { praf, preaDeparte } from '../io/caleImport.ts';
-import { dpiImagine, felImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
+import { dpiImagine, formatFoaie, TRASARE_IMPLICITA, type AlegeriTrasare } from '../io/imagine.ts';
 import { trasareInBazin, TrasareAnulata, TrasareCazuta } from '../jobs/bazinTrasare.ts';
 import type { CerereTrasare, RaspunsTrasare } from '../jobs/calculTrasare.ts';
 import type { CaiTrasate } from '../trasare/trasare.ts';
@@ -27,7 +27,12 @@ export type OptiuniPrevizualizare = {
   readonly trasare?: AlegeriTrasare | undefined;
   /** Oprirea citirii (o citire nouă, Renunță, Escape): trasarea în curs își oprește workerul. */
   readonly semnal?: AbortSignal | undefined;
+  /** Trasarea imaginii paginii unui PDF care are și vectori (ADR 0270), cerută în dialog. */
+  readonly imaginePdf?: boolean;
 };
+
+/** Așezarea imaginii unei pagini PDF (ADR 0270): DPI-ul pe lățimea ei și orientarea (1–8, ca eticheta TIFF). */
+type AsezarePdf = { readonly dpi: number; readonly orientare: number };
 
 /**
  * Imbricarea, mărimea desenului și numărătorile, comune ușilor; null dacă imbricarea trece de plafonul ei. O imagine trasată
@@ -79,17 +84,47 @@ export function previzualizareDxf(f: FisierImport, unitate?: UnitateDxf): Previz
 }
 
 /**
+ * Imaginea paginii unui PDF (ADR 0270): cerută (`imagine`, o pagină care are și vectori), cu alegerile trasării și oprirea
+ * citirii, ca la o imagine.
+ */
+export type OptiuniImaginePdf = {
+  readonly imagine?: boolean; readonly trasare?: AlegeriTrasare | undefined; readonly semnal?: AbortSignal | undefined;
+};
+
+/**
  * Previzualizarea PDF și AI (ADR 0104 §7): pagina aleasă, prin aceeași imbricare și aceeași piesă ca la SVG. Căile sunt
  * în mm față de colțul stânga-jos al paginii afișate, deci desenul ajunge pe foaie unde era pe pagină; stratul (OCG) devine
- * numele elementului, ca la DXF.
+ * numele elementului, ca la DXF. O pagină scanată (ADR 0270), fără vectori dar cu o imagine, se trasează singură; una cu
+ * vectori și cu imagine arată vectorii, cu numărul imaginilor, iar imaginea se trasează la cerere (`o.imagine`).
  */
-export async function previzualizarePdf(f: FisierImport, pagina?: number): Promise<PrevizualizareImport> {
+export async function previzualizarePdf(f: FisierImport, pagina?: number, o: OptiuniImaginePdf = {}): Promise<PrevizualizareImport> {
   const r = await citestePdf(f.octeti, pagina ? { pagina } : {});
+  // Vectorii paginii, dacă citirea lor a dat ceva în afară de „gol”: trasarea oferă întoarcerea la ei.
+  const vectori = r.ok || r.cod !== 'gol';
+  if ((r.imagini ?? 0) > 0 && (o.imagine === true || !vectori)) return imagineaPaginii(f, pagina, o, vectori);
   if (!r.ok) return { ...r, format: 'pdf' };
   const cai = r.cai.map((c) => ({ varfuri: c.varfuri, inchis: c.inchis, ...(c.strat ? { nume: c.strat.slice(0, PLAFON.numeLungime) } : {}) }));
   const c = comune(f, cai, r.marime);
-  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'pdf', pagini: r.pagini, avertismente: r.avertismente };
-  return { ...c, format: 'pdf', pagini: r.pagini, pagina: r.pagina, straturi: r.straturi, avertismente: r.avertismente };
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'pdf', pagini: r.pagini, avertismente: r.avertismente, imagini: r.imagini };
+  return { ...c, format: 'pdf', pagini: r.pagini, pagina: r.pagina, straturi: r.straturi, avertismente: r.avertismente, imagini: r.imagini };
+}
+
+/**
+ * Trasarea imaginii paginii (ADR 0270): fișierul ei (JPEG, sau TIFF) trece prin ușa imaginilor, cu DPI-ul și orientarea
+ * așezării; paginile sunt ale PDF-ului (alegerea paginii), iar un refuz al cititorului TIFF e al imaginii paginii.
+ */
+async function imagineaPaginii(f: FisierImport, pagina: number | undefined, o: OptiuniImaginePdf, vectoriPdf: boolean): Promise<PrevizualizareImport> {
+  const im = await imagineaPaginiiPdf(f.octeti, pagina ? { pagina } : {});
+  if (!im.ok) {
+    const cod = im.cod === 'nesprijinit' ? 'pdf-imagine' : im.cod === 'stricat' || im.cod === 'fara-imagine' ? 'pdf-imagine-stricata' : im.cod;
+    return { ok: false, cod, format: 'pdf', vectoriPdf, ...(im.detaliu !== undefined ? { detaliu: im.detaliu } : {}), ...(im.pagini ? { pagini: im.pagini } : {}) };
+  }
+  const p = await previzualizareImagine({ nume: f.nume, octeti: im.fisier.octeti }, o.trasare, o.semnal, undefined, { dpi: im.dpi, orientare: im.orientare });
+  if (p.ok) return p.format === 'imagine' ? { ...p, trasare: { ...p.trasare, pagini: im.pagini }, vectoriPdf } : p;
+  if (p.cod === 'tiff' || p.cod === 'tiff-stricat') {
+    return { ok: false, cod: p.cod === 'tiff' ? 'pdf-imagine' : 'pdf-imagine-stricata', format: 'pdf', vectoriPdf, pagini: im.pagini, ...(p.detaliu !== undefined ? { detaliu: p.detaliu } : {}) };
+  }
+  return { ...p, pagini: im.pagini, vectoriPdf, ...(p.trasare ? { trasare: { ...p.trasare, pagini: im.pagini } } : {}) };
 }
 
 /**
@@ -124,14 +159,15 @@ export function previzualizareWmf(f: FisierImport, unitate?: UnitateWmf): Previz
  * refuzat (`tip`).
  */
 /** Raportul imaginii din răspunsul workerului: pixelii, scara și ce a făcut trasarea (pe culori, și paleta, ADR 0221). */
-function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' }>): RaportImagine {
+function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' } | { cod: 'tiff' }>): RaportImagine {
   const t = r.raport;
   const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
     intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
     mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
-    lumina: r.raport.lumina, inegala: r.raport.inegala,
+    lumina: r.raport.lumina, inegala: r.raport.inegala, ...(r.pagini !== undefined ? { pagini: r.pagini } : {}),
+    ...(r.poza ? { poza: r.poza } : {}),
   } as const;
   if (r.fel === 'culori') {
     // Cu liniile mediane (ADR 0227): grosimea fiecărei culori, în pastila ei, și raportul lor.
@@ -250,15 +286,16 @@ export function caiDinTrasare(c: CaiTrasate, mmPePx: number, inaltimePx: number)
 
 /**
  * Previzualizarea unei imagini (ADR 0220): trasarea în workerul ei, cu alegerile din fereastră, apoi aceeași piesă ca la
- * SVG. TIFF-ul se refuză deocamdată (răspunsul 5a); o imagine pe care browserul n-o decodează, prea multe contururi sau
- * trasarea peste termen, la fel, cu motivul lor. `semnal`: al citirii (o citire nouă, Renunță sau Escape o opresc, cu
- * workerul ei, din mijlocul calculului).
+ * SVG. Un TIFF îl citește cititorul propriu (ADR 0229), cu `pagina` aleasă; un TIFF cu ce nu știe încă, unul stricat, o
+ * imagine pe care browserul n-o decodează, prea multe contururi sau trasarea peste termen se refuză, cu motivul lor.
+ * `semnal`: al citirii (o citire nouă, Renunță sau Escape o opresc, cu workerul ei, din mijlocul calculului). `pdf`: imaginea
+ * unei pagini PDF (ADR 0270), cu DPI-ul și orientarea așezării ei.
  */
-export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal): Promise<PrevizualizareImport> {
-  if (felImagine(f.octeti) === 'tiff' || (/\.tiff?$/i.test(f.nume) && !felImagine(f.octeti))) return { ok: false, cod: 'tiff', format: 'imagine' };
+export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare | undefined, semnal?: AbortSignal, pagina?: number,
+  pdf?: AsezarePdf): Promise<PrevizualizareImport> {
   let r: RaspunsTrasare;
   try {
-    r = await trasareInBazin(cerereTrasare(f, t ?? TRASARE_IMPLICITA), semnal ? { semnal } : {});
+    r = await trasareInBazin(cerereTrasare(f, t ?? TRASARE_IMPLICITA, pagina, pdf), semnal ? { semnal } : {});
   } catch (e) {
     if (e instanceof TrasareAnulata) return { ok: false, cod: 'anulat', format: 'imagine' };
     if (e instanceof TrasareCazuta) return { ok: false, cod: 'imagine-timp', format: 'imagine', detaliu: e.message };
@@ -270,9 +307,10 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
 /**
  * Cererea trasării din alegerile ferestrei: opțiunile nucleului (lumina și marginea doar când nu sunt implicite), curățarea,
  * scara, zona, culorile (cu felul fiecăreia, ADR 0228) sau liniile mediane, cu opțiunile lor cât măcar o culoare e pe linii,
- * și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate).
+ * și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate). Imaginea unei pagini PDF (ADR 0270) își
+ * ia DPI-ul și orientarea din așezarea pe pagină.
  */
-export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare {
+export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: number, pdf?: AsezarePdf): CerereTrasare {
   const peCulori = a.sursa === 'culori';
   const peLinii = a.rezultat === 'mediane' || (peCulori && (a.culori.rezultate ?? []).includes('mediane'));
   return {
@@ -281,10 +319,12 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
       sursa: peCulori ? 'auto' : a.sursa, prag: a.prag, inverseaza: a.inverseaza, netezime: a.netezime,
       ...(a.lumina !== 'uniforma' ? { lumina: a.lumina } : {}), ...(a.margine ? { margine: true } : {}),
     },
-    peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
+    peteMm: a.peteMm, gauriMm: a.gauriMm, latimeMm: a.latimeMm, dpi: pdf ? pdf.dpi : dpiImagine(f.octeti), ...(a.zona ? { zona: a.zona } : {}),
+    ...(pdf ? { orientare: pdf.orientare } : {}),
     ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
     ...(peLinii ? { mediane: a.mediane } : {}),
     ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
+    ...(pagina !== undefined && pagina > 1 ? { pagina } : {}),
   };
 }
 
@@ -294,6 +334,9 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare): CerereTrasare
  */
 export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): PrevizualizareImport {
   if (!r.ok && r.cod === 'citire') return { ok: false, cod: 'imagine-citire', format: 'imagine', detaliu: r.detaliu };
+  if (!r.ok && r.cod === 'tiff') {
+    return { ok: false, cod: r.motiv === 'stricat' ? 'tiff-stricat' : 'tiff', format: 'imagine', detaliu: r.detaliu, ...(r.pagini ? { pagini: r.pagini } : {}) };
+  }
   const trasare = raportImagine(r);
   if (!r.ok) return { ok: false, cod: 'prea-multe', format: 'imagine', detaliu: String(r.raport.contururi), trasare };
   if (r.fel === 'culori') return previzualizareCulori(f, r, trasare);
@@ -307,8 +350,11 @@ export function previzualizareDinRaspuns(f: FisierImport, r: RaspunsTrasare): Pr
 
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
   const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
-  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal);
-  if (format === 'pdf' || format === 'eps') return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f) : previzualizarePdf(f, o.pagina);
+  if (format === 'imagine') return previzualizareImagine(f, o.trasare, o.semnal, o.pagina);
+  if (format === 'pdf' || format === 'eps') {
+    return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f)
+      : previzualizarePdf(f, o.pagina, { imagine: o.imaginePdf === true, trasare: o.trasare, semnal: o.semnal });
+  }
   if (format === 'wmf') return previzualizareWmf(f, o.unitateWmf);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);
   if (format === 'svg') return previzualizareSvg(f, o.pxPeTol, o.limba);

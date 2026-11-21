@@ -8,7 +8,7 @@ ecranele, iar cele 16 idei din ele sunt acceptate** („Da la toate”): 13 intr
 După tura a opta, încă 11 („Da la toate”): 10 în feliile 28.x, una linie separată. După tura a noua, încă 11 („Da la
 toate”), toate în feliile 28.x. După tura a zecea, încă 12 („Da la toate”): 11 în feliile 28.x, una linie separată. După
 tura a unsprezecea, încă 13 în feliile 28.x („Da la toate”; a 14-a e a adminului, în ADR 0260) (toate, în secțiunile de la
-capăt). **Tot pe 13.11, owner-ul a declarat schițele gata** („Da, sunt gata”; codul pornește după unirea planșelor). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
+capăt). **Tot pe 13.11, owner-ul a declarat schițele gata** („Da, sunt gata”; codul pornește după unirea planșelor). **Pe 18.11, §7 s-a schimbat:** pe telefon nu mai lucrăm la desen, iar telefonul primește, cu linia Proiectelor, fluxul „proiectele mele → Trimite la mașină” („1”; secțiunea „Schimbarea din 18.11”). Cererea owner-ului, exactă, după schițele celor patru direcții (canvas-ul
 <https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>, 12 ecrane): „imi plac toate, si vreau sa fie la dispozitia userilor”.
 **Intră în:** etapa 28 („Cele două interfețe, ghidul de pornire”), adusă în etapa 3, fără mașină (feliile 28.1↑–28.6↑).
 **Închide:** rândul de prag „Două interfețe: asistent pas cu pas pentru începători + interfața completă”, dacă răspunsul
@@ -81,12 +81,14 @@ al doilea șablon, clasic […] și interfața personalizabilă”, momentul ale
 
    Conexiunea, starea, codul controlerului, poziționarea, programul și consola sunt aceleași module în toate; se schimbă
    doar așezarea.
-7. **Pe telefon (sub 48 rem):**
-   - Insule are aranjamentul lui de azi, rafinat după schiță (fila deschisă cu numele, indicatorul cu Pauză, uneltele
-     derulate, foaia cu piesa aleasă);
-   - Atelier și Pas cu pas își păstrează felul (ținte mari, respectiv pașii);
-   - Clasic trece pe aranjamentul de telefon al Insulelor: o bară de meniuri nu încape la 390 px, iar omul o vede scris în
-     fereastra Aspectul.
+7. **Pe telefon (sub 48 rem)** (schimbat pe 18.11, secțiunea „Schimbarea din 18.11: telefonul încarcă și trimite”):
+   - pe telefon, omul nu desenează: încarcă un proiect gata făcut (salvat sau urcat în cont) și îl trimite la mașină.
+     Fluxul lui („proiectele mele → Trimite la mașină”) e o felie a liniei Proiectelor, după ce proiectele ajung în
+     cont;
+   - ce merge azi pe telefon rămâne și nu se strică (probele de la 390 și 320 px păzesc asta), dar feliile 28.x nu mai
+     aduc așezări de desen pentru telefon; planșele de telefon de pe canvas rămân referință, nu țintă;
+   - Clasic trece pe aranjamentul de telefon al Insulelor, ca până acum: o bară de meniuri nu încape la 390 px, iar omul
+     o vede scris în fereastra Aspectul.
 8. **Funcțiile din schițe care nu țin de aranjament** intră în coada etapelor lor, valabile în toate aranjamentele, nu în
    această linie:
    - **Schimbarea sculei ghidată la M6** (schița C): ridică Z, schimbă freza, palpează, reia. Fereastra Mașina, etapa 13.
@@ -107,7 +109,7 @@ al doilea șablon, clasic […] și interfața personalizabilă”, momentul ale
 | 28.2↑ | **Clasic**: bara de meniuri (din registru, pe categorii), bara cu grupuri etichetate, panourile andocate cu file, grila proprietăților, bara de stare cu comutatoare. |
 | 28.3↑ | Linia de comandă a Clasicului: o acțiune a registrului după nume, cu argumentele ei simple („offset 3”); Enter aplică, Escape renunță, istoricul pe săgeți. |
 | 28.4↑ | **Pas cu pas**: rândul pașilor, panoul fiecărui pas (Desenul = uneltele; Tăierile = piesele fără rol, apoi rolurile, cu planșa colorată pe roluri; Verificarea = verificarea vectorilor; Simularea = vederea 3D; Mașina = pasul 5), „Continuă” cu motivul când lipsește ceva. |
-| 28.5↑ | **Insule** rafinat după schița A: bara selecției cu „Rolul…”, cipul traseului cu Animează, zoomul pe pânză, arborele proiectului cu operațiile pe piese; telefonul (punctul 7). |
+| 28.5↑ | **Insule** rafinat după schița A: bara selecției cu „Rolul…”, cipul traseului cu Animează, zoomul pe pânză, arborele proiectului cu operațiile pe piese; pe telefon, doar ce merge azi rămâne (punctul 7, schimbat pe 18.11). |
 | 28.6↑ | Ferestrele Mașina și Imprimanta după aranjament (punctul 6 și completarea din 13.11), cu lista de dinainte de pornire în Pas cu pas. |
 | 28.7↑ | Prima pornire (dacă răspunsul la întrebarea 4 e „a”): alegerea aranjamentului o dată, ca primul pas al ghidului de pornire (rândul de prag „Ghid la prima pornire”). |
 
@@ -379,6 +381,22 @@ după planșe?”. A răspuns „Da, sunt gata”.
   `127.0.9`), din `main`-ul cu planșele, cu felia 28.1↑ întâi (Atelier, alegerea și ținerea). O schimbare de design de
   acum încolo trece întâi pe canvas, apoi în ADR.
 
+## Schimbarea din 18.11: telefonul încarcă și trimite
+
+În timpul feliei 28.1↑d, owner-ul a scris, exact: „ca idee, ma gandesc ca pe telefon userii nu vor crea fisiere pentru
+executie si doar vor incarca modele deja create, salvate sau uploaded in cont si le vor trimite catre o masina pentru
+executie. asa ca nu cred ca este nevoie sa ne concentram design complet pentru mobile”. La întrebarea „hotărăsc acum (§7
+schimbat) sau doar scad prioritatea telefonului?”, cu prima variantă recomandată, a răspuns „1”.
+
+- **Ce se schimbă:** §7 (mai sus) și rândul 28.5↑. Feliile 28.x nu mai aduc așezări de desen pentru telefon; ce merge
+  azi pe telefon (Insule, Atelier cu uneltele într-un rând jos, Clasic pe aranjamentul Insulelor) rămâne și e păzit de
+  probele de la 390 și 320 px.
+- **Fluxul telefonului:** lista proiectelor din cont, alegerea unuia, „Trimite la mașină” (acțiunea `export.trimite`,
+  din 28.1↑d). E o felie a liniei Proiectelor (proiectele multiple, `.cvs2` ca document; încă fără ADR), fiindcă cere
+  proiectele în cont: azi aplicația ține doar ultimele 20 de versiuni locale, în browser, fără listă.
+- **Ce există deja și nu e același lucru:** primirea lucrărilor (ADR 0126, `#primeste-lucrare`) aduce programe de la
+  altă aplicație deschisă alături, nu din cont; telefonul ca telecomandă (§8) rămâne o linie a ei, după cercetare.
+
 ## Implementarea
 
 - **28.1↑a, 16.11: alegerea și densitatea, citite înaintea primei randări** (worktree-ul `aranjamente`, ramura
@@ -429,3 +447,31 @@ după planșe?”. A răspuns „Da, sunt gata”.
     și „Trimite la mașină” (acțiunea nu există încă).
   - Mărimea, pe unirea cu `main` `b6aaa54`: pornirea 107,0 kB (cu ușa 111,0 / 115), totalul 716,8 / 800; bucata
     Atelierului 0,30 kB, cu pornirea și ușa 111,3 / 115.
+- **28.1↑d, 18.11: tăierea din butoane mari, în Atelier** (aceeași ramură, adusă la `main` `ae5a13c4` la pornire;
+  ciocnire doar în DEVLOG):
+  - Tipul `Aranjament` are câmpul `taierea`: `lista` (Insule: rolul din listă, câmpurile) sau `butoane` (Atelier);
+    `verificaAranjament` prinde un fel necunoscut.
+  - În Atelier, tăierea stă prima în panoul de proprietăți, ca pe planșa „C · Întunecat”: felul ei din butoane mari
+    (rolurile care se potrivesc formelor alese, apoi rolurile omului; apăsat e rolul de acum), adâncimea și pasul cu − /
+    + (câte 0,5 mm, la micron; oprite înainte de zero și când formele alese au valori diferite, cu motivul în sfat;
+    câmpul dintre ele rămâne de scris), cartela frezei (freza comună: numărul, felul, diametrul; „Schimbă” deschide
+    fereastra exportului, unde se alege freza). Calculul stă în `src/app/taiereButoane.ts`.
+  - „Trimite la mașină” e o acțiune nouă a registrului exportului (`export.trimite`, cu starea lui `export.gcode`), deci
+    e și în paletă, în orice aranjament. Deschide fereastra exportului cu butonul „Trimite la mașină”; după un export pe
+    care senderul îl vorbește (familia GRBL), programul intră în Mașina fără să pornească, ca prin „Deschide în Mașina”
+    (ADR 0132 §7), fără al doilea clic. Fișierul se descarcă și aici, ca la orice export. Cu un controler pe care
+    senderul nu-l vorbește (NcStudio, RichAuto), butonul e „Exportă”, iar nota postului spune de ce. Lista de dinainte
+    de pornire (planșa „C · Trimite la mașină”) rămâne a ferestrei Mașina (§8, etapa 13).
+  - „Trimite la mașină” și „Exportă G-code” stau la capătul panoului, lipite de marginea lui de jos (la vedere oricât se
+    derulează), cu motivul unui refuz scris (pe tabletă sfatul nu se vede); sub 1024 px, unul lângă altul. De la 1024
+    px, panourile Atelierului sunt mai late (până la 320 px, ca pe planșă), ca rolurile să încapă câte trei pe rând, cu
+    numele întregi.
+  - Manualul: capitolul „Atelierul” acoperă `export.trimite` (ușa a 109-a); pasul `x-atelier` al testului din aplicație
+    cere și tăierea din butoane și trimiterea.
+  - Rămân pentru felia zoomului (ideile turei a zecea): Lipire și Grilă cu nume pe pânză, zoomul de 64 px, gesturile cu
+    două degete.
+  - Mărimea, pe codul cu `main` `ae5a13c4`: pornirea 107,1 kB (cu ușa 111,1 / 115), totalul 719,0 / 800; bucata
+    Atelierului 0,32 kB, cu pornirea și ușa 111,4 / 115. Față de baza `354ed251`: pornirea +0,1, totalul +1,1.
+  - Apoi, pe unirea cu `main` `e88dbc1e` (28.1↑c unită, 10.3↑m, 11.3↑b, 12.1↑f-2, 25.6↑, A.1): pornirea 107,1 kB (cu ușa
+    111,1 / 115), totalul 730,2 / 800 (creșterea vine din `main`); bucata Atelierului 0,31 kB, cu pornirea și ușa 111,4
+    / 115.

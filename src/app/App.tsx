@@ -405,6 +405,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [traseu, setTraseu] = useState<StareTraseu | null>(null);
   // Răspunsul la `$$` lipit în dialogul exportului (ADR 0046 §8): cât e deschisă pagina, comun cu timpul traseului.
   const [setariMasina, setSetariMasina] = useState('');
+  // Supracursa scrisă în fereastra exportului (ADR 0176), ca text: tot cât e deschisă pagina, de la o fereastră la alta.
+  const [supracursa, setSupracursa] = useState('0');
+  // Bifa de lângă ea (ADR 0177): și tăieturile cât foaia trec cu supracursa; implicit pusă, ținută la fel.
+  const [prinFoaie, setPrinFoaie] = useState(true);
   const [timpTraseu, setTimpTraseu] = useState<{ readonly program: Program; readonly setari: string; readonly r: RezumatJob } | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
@@ -459,6 +463,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   }, [aranjament.id]);
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
+  /**
+   * Dialogul exportului deschis din „Trimite la mașină” (ADR 0250, felia 28.1↑d): după un export pe care senderul îl vorbește,
+   * programul intră în Mașina fără clicul „Deschide în Mașina”. Ref, pentru rezultatul care vine după randare.
+   */
+  const [trimiteExport, setTrimiteExport] = useState(false);
+  const trimiteLaMasina = useRef(false);
   const fisierImport = useRef<HTMLInputElement>(null);
   /**
    * Importul SVG (ADR 0035 §9): coada fișierelor alese sau lăsate pe planșă (felia 2.8b), pe care dialogul le trece pe
@@ -495,6 +505,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const opresteExportul = (): void => {
     exportCalcul.current?.abort();
     exportCalcul.current = null;
+  };
+  /**
+   * „Deschide în Mașina” (ADR 0132 §7) și capătul lui „Trimite la mașină” (felia 28.1↑d): închide exportul, deschide Mașina
+   * și îi cere să încarce ultimul export, fără să-l pornească.
+   */
+  const duInMasina = (): void => {
+    cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false);
+    setCerereMasina((n) => n + 1);
+    deschideFereastra('masina');
   };
   /**
    * Câte documente au venit din bază de la pornire. Dialogul de export ia de aici valorile operațiilor din nou: o versiune
@@ -644,6 +663,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
           ...(dopuri.length > 0 ? { dopuri: dopuri.map(({ octeti: _o, ...d }) => d) } : {}), ...(r.foi ? { foi: r.foi } : {}),
         });
+        // „Trimite la mașină” (felia 28.1↑d): un program pe care senderul îl vorbește intră în Mașina, fără să pornească, și
+        // dialogul se închide (fără simulare); altfel dialogul rămâne, cu motivul lângă rezultat.
+        if (trimiteLaMasina.current && r.sender) {
+          duInMasina();
+          return;
+        }
         // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
         opresteSimularea();
         const ac = new AbortController();
@@ -967,7 +992,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       return;
     }
     if (id === 'import.svg') fisierImport.current?.click();
-    else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
+    else if (id === 'export.gcode' || id === 'export.trimite') {
+      trimiteLaMasina.current = id === 'export.trimite';
+      setTrimiteExport(trimiteLaMasina.current);
+      setStareExport(null);
+      setDialogExport(true);
+    }
     else if (id === 'export.raport') setRaport({ origine: 'stanga-jos', z0: 'sus' });
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
     else if (registruExtensii.actiuni.has(id)) ruleaza(registruExtensii, id, contextExtensii);
@@ -1114,6 +1144,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     unitateWmf: () => a.unitateWmf,
     pagina: () => a.pagina,
     trasare: () => a.trasare,
+    imaginePdf: () => a.imaginePdf === true,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,
@@ -1376,6 +1407,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onRol={(r) => aplicaDinPanou('document.rol', { rolNou: () => r })}
               onOperatii={(noi) => aplicaDinPanou('document.aplica-operatii', { operatiiNoi: () => noi })}
               onEditeazaOperatii={() => { executa('export.gcode'); }}
+              // Tăierea după aranjament (felia 28.1↑d): în Atelier, butoanele mari și „Trimite la mașină”, cu starea acțiunii.
+              taierea={aranjament.taierea}
+              trimite={stareActiune('export.trimite')}
+              onTrimite={() => { executa('export.trimite'); }}
             />
           </Suspense>
         );
@@ -1548,16 +1583,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
+          supracursa={supracursa}
+          onSupracursa={setSupracursa}
+          prinFoaie={prinFoaie}
+          onPrinFoaie={setPrinFoaie}
           onRaport={(p) => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); setRaport(p); }}
           // „Deschide în Mașina” (ADR 0132 §7): doar după un export pe care senderul îl vorbește; închide dialogul, deschide
           // Mașina și îi cere să încarce exportul, fără să-l pornească.
-          {...(stareExport?.ok && ultimulExport ? {
-            onDeschideInMasina: () => {
-              cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false);
-              setCerereMasina((n) => n + 1);
-              deschideFereastra('masina');
-            },
-          } : {})}
+          {...(stareExport?.ok && ultimulExport ? { onDeschideInMasina: duInMasina } : {})}
+          {...(trimiteExport ? { trimite: true } : {})}
         />
       )}
       {coadaImport && (

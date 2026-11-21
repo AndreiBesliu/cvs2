@@ -106,9 +106,9 @@ export function traseuInBazin(document: Document, o: OptiuniCam = {}): Promise<R
   return calculeaza({ fel: 'traseu', document }, [], o) as Promise<RaspunsTraseu>;
 }
 
-/** Mutările simulării programului documentului, pentru vederea 3D. */
-export function simulareInBazin(document: Document, o: OptiuniCam = {}): Promise<RaspunsSimulare> {
-  return calculeaza({ fel: 'simulare', document }, [], o) as Promise<RaspunsSimulare>;
+/** Mutările simulării programului documentului, sau ale dopului cu numărul `dop` (ADR 0178), pentru vederea 3D. */
+export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: number): Promise<RaspunsSimulare> {
+  return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;
 }
 
 /** Timpul unui program deja calculat; programul împachetat se transferă (cel dat nu mai e folosibil după apel). */

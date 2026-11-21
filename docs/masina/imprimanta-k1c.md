@@ -151,6 +151,19 @@ După o imprimare scurtă din „Din desen…” (placa de probă de la pasul 6)
    imprimări pe K1C-8578 (feliatorul: 18m)”). Spune-mi cât a durat de fapt următoarea, față de ea.
 6. **Copiază jurnalul** la final: cadrul cu `historyList` ne spune ce înseamnă `startway` și ce mai cuprinde `totaltime`.
 
+## 11. Filmele (felia 3.6u)
+
+Imprimanta face filmul doar cu timelapse-ul pornit pe ecranul ei (pe K1C 2025, nemăsurat unde: spune-mi unde l-ai găsit).
+
+1. Pornește timelapse-ul pe ecranul imprimantei, apoi o imprimare scurtă din „Din desen…” (placa de probă de la pasul 6),
+   cu fereastra Imprimanta deschisă.
+2. După final, în cardul **Istoricul**, rândul imprimării are **Filmul ↗**. Dacă nu apare imediat (imprimanta poate face
+   filmul mai încet), treci în Proiectare și înapoi în Imprimanta: lista se cere din nou. Spune-mi după cât timp a apărut.
+3. **Filmul ↗** îl deschide de pe imprimantă, într-o filă nouă (`http://<IP>/downloads/video/<cifre>.mp4`). Spune-mi dacă
+   pornește; îl salvezi de acolo (clic dreapta pe film → Salvează videoclipul ca…).
+4. Dacă nu apare niciun film: **Copiază jurnalul** la final; cadrul cu `elapseVideoList` ne spune ce trimite K1C 2025
+   (numele, `id`, `gcodename`).
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).

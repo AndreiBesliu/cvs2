@@ -62,3 +62,10 @@ test('aranjamentele build-ului: Insule și Atelier; Insulele vin pe loc, un aran
   await assert.rejects(incarcaAranjament('clasic'), /clasic/);
   await assert.rejects(incarcaAranjament('pasi'), /pasi/);
 });
+
+test('tăierea din butoane mari (felia 28.1↑d): doar Atelierul; Insulele rămân pe listă', () => {
+  assert.equal(ARANJAMENT_ATELIER.taierea, 'butoane');
+  assert.equal(ARANJAMENT_MODERN.taierea, 'lista');
+  // „Trimite la mașină” e o acțiune a registrului: în paletă în orice aranjament, nu doar în panoul Atelierului.
+  assert.ok(REGISTRU.has('export.trimite'));
+});

@@ -1762,6 +1762,16 @@ nav button[aria-pressed='true'] {
   accent-color: var(--a-plin);
 }
 
+/* Bifa tăieturilor cât foaia (ADR 0177), pe rândul câmpurilor exportului: la nivelul câmpurilor, nu al etichetelor lor. */
+.dialog .campuri label.bifa-supracursa {
+  align-self: end;
+  min-height: 32px;
+}
+
+.dialog .campuri label.bifa-supracursa:has(input:disabled) {
+  color: var(--t-slab);
+}
+
 .dialog .aseaza-minim {
   flex-basis: 100%;
   margin: 0;

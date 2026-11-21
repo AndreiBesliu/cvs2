@@ -3,8 +3,10 @@
  * (`test/oracles/incrustatieDreapta.ts`): locașul trece prin foaie, cu adâncimea ei (nu cea scrisă în operație), iar dopul e
  * decupat prin placa lui de T + H, la nivel cu fața de jos, sau ridicat, cu fața pe placă, înalt de T. Jocul lateral c ± 0,02 pe
  * tot peretele (și în colțuri), nicio interferență, adâncimea și înălțimea ± 0,05. Controlul: fără gaură, adâncimea e a
- * operației; cu altă grosime a foii, gaura și dopul o urmează. Refuzurile lucrării: dopul ridicat pe fund la o gaură, treapta
- * și sprijinul pe umăr (până la felia 12.1↑f-2). Valorile pe hârtie (`valoriIncrustatieDreapta`) din grosimea foii.
+ * operației; cu altă grosime a foii, gaura și dopul o urmează. Refuzurile lucrării: dopul ridicat pe fund la o gaură, sprijinul
+ * pe umăr fără treaptă (treptele au proba lor, `incrustatieDreapta.trepte.test.ts`). Valorile pe hârtie
+ * (`valoriIncrustatieDreapta`) din grosimea foii. Supracursa (ADR 0176): gaura și decuparea dopului trec cu ea sub plăcile lor,
+ * iar dopul ridicat, fără tăietură prin placă, nu se schimbă.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,6 +16,7 @@ import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { masoaraPotrivireaDreapta } from '../oracles/incrustatieDreapta.ts';
 import type { DesenO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
+import { zMinim } from './ajutor-incrustatie.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const TOL_JOC = 0.02, TOL_Z = 0.05;
@@ -89,20 +92,31 @@ test('controlul: fără gaură, locașul are adâncimea operației (3); cu foaia
     `foaia de 12: adâncimea ${doisprezece.m.adancime}, dopul ${doisprezece.m.inaltime}`);
 });
 
-test('supracursa: gaura trece cu ea în masa de sacrificiu (10 + 0,3), dopul rămâne cât placa plus H (12)', async () => {
-  const { m } = await potrivire({ locas: 'gaura' }, 10.3, 12, 10, 0.3);
+test('supracursa: gaura trece cu ea în masa de sacrificiu (10 + 0,3), dopul rămâne cât placa plus H (12), decupat prin 12 + 0,3', async () => {
+  const { r, m } = await potrivire({ locas: 'gaura' }, 10.3, 12, 10, 0.3);
   jocBun(m, 'cu supracursa');
   assert.ok(Math.abs(m.adancime - 10.3) <= TOL_Z, `adâncimea locașului ${m.adancime}, pe hârtie 10 + 0,3`);
-  assert.ok(Math.abs(m.inaltime - 12) <= TOL_Z, `înălțimea dopului ${m.inaltime}, pe hârtie 12 (fără supracursa)`);
+  // ADR 0176: și decuparea dopului trece de placa lui cu supracursa. Oracolul dă șanțul cel mai adânc (12 + 0,3); dopul e
+  // placa, exactă, de 12 (T + H, fără supracursă).
+  assert.ok(Math.abs(m.inaltime - 12.3) <= TOL_Z, `șanțul decupării ${m.inaltime}, pe hârtie placa de 12 plus 0,3`);
+  assert.equal(zMinim(r.dopuri[0]!.program.text), -12.3, 'fundul decupării dopului: placa de 12 plus 0,3');
+  assert.deepEqual({ grosime: r.dopuri[0]!.semifabricat.grosimeMinima, exacta: r.dopuri[0]!.semifabricat.exacta }, { grosime: 12, exacta: true });
 });
 
-test('refuzurile lucrării, cu motivul: dopul ridicat pe fund la o gaură; treapta și sprijinul pe umăr, până la felia lor', async () => {
+test('supracursa pe dopul ridicat pe față (ADR 0176): dopul n-are tăietură prin placă, deci programul lui nu se schimbă', async () => {
+  const ridicat = { locas: 'gaura', dop: 'ridicat', sprijin: 'fata' };
+  const cu = await exporta(document(ridicat), 0.3), fara = await exporta(document(ridicat));
+  assert.ok(cu.ok && fara.ok, cu.ok ? (fara.ok ? '' : fara.motiv) : cu.motiv);
+  assert.equal(cu.dopuri[0]!.program.text, fara.dopuri[0]!.program.text);
+  // Locașul, gaura, trece cu supracursa: −10,3 față de −10.
+  assert.deepEqual([zMinim(cu.program.text), zMinim(fara.program.text)], [-10.3, -10]);
+});
+
+test('refuzurile lucrării, cu motivul: dopul ridicat pe fund la o gaură; sprijinul pe umăr fără treaptă', async () => {
   const fund = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'fund' }));
   assert.ok(!fund.ok && /gaura n-are fund: dopul ridicat se sprijină pe fața plăcii/.test(fund.motiv), fund.ok ? 'primit' : fund.motiv);
-  const treapta = await exporta(document({ treapta: { adancime: 3, latime: 5 } }));
-  assert.ok(!treapta.ok && /treapta \(umărul locașului\) vine în felia 12\.1↑f-2/.test(treapta.motiv), treapta.ok ? 'primit' : treapta.motiv);
-  const umar = await exporta(document({ dop: 'ridicat', sprijin: 'umar' }));
-  assert.ok(!umar.ok && /sprijinul pe umăr e al dopului în trepte/.test(umar.motiv), umar.ok ? 'primit' : umar.motiv);
+  const umar = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'umar' }));
+  assert.ok(!umar.ok && /sprijinul pe umăr cere treapta/.test(umar.motiv), umar.ok ? 'primit' : umar.motiv);
   // Jocul de sub dop nu se aplică la gaură: un joc oricât de mic (sub 0,1) nu refuză dopul ridicat pe față.
   const joc = await exporta(document({ locas: 'gaura', dop: 'ridicat', sprijin: 'fata', joc: 0.05 }));
   assert.ok(joc.ok, joc.ok ? '' : joc.motiv);

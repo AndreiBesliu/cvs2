@@ -191,13 +191,19 @@ export function PanouImprimanta({ desen, versiuneDesen, scrieInaltimi, vizibila 
     });
   };
   // Istoricul (3.6t): fiecare imprimare văzută intră în istoricul cvs2; unit cu al imprimantei, pentru card și pentru estimarea
-  // care învață din „Din desen…” (imprimanta: cea legată, altfel ultima ținută).
-  useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); });
+  // care învață din „Din desen…” (imprimanta: cea legată, altfel ultima ținută). Din 3.6u, cu filmele imprimantei; la finalul
+  // unei lucrări se cer din nou amândouă.
+  useInregistrare(st, stare, din, () => { sesiune.cereIstoric(); sesiune.cereFilme(); });
+  // La fiecare deschidere a ferestrei, cu imprimanta legată (ADR 0194 §B.12, §C.13): istoricul și filmele, din nou. Fereastra
+  // se montează înaintea legăturii (sau ascunsă, cu legarea la pornire, 3.6s), deci montarea nu e o deschidere; o legare cu
+  // fereastra la vedere le are deja în citiri, iar pauza de 5 s a sesiunii o oprește pe a doua.
+  const conectata = st.legatura === 'conectat';
+  useEffect(() => { if (vizibila && conectata) { sesiune.cereIstoric(); sesiune.cereFilme(); } }, [vizibila, conectata]);
   const cvs2 = useImprimariCvs2();
   const [setariIstoric, setSetariIstoric] = useState<SetariIstoric>(citesteSetariIstoric);
   const schimbaSetariIstoric = (s: SetariIstoric): void => { setSetariIstoric(s); scrieSetariIstoric(s); };
   const numeIstoric = i.nume ?? tinute[0]?.nume ?? null;
-  const randuri = useMemo(() => uneste(st.istoric, cvs2, numeIstoric, st.fisiere), [st.istoric, cvs2, numeIstoric, st.fisiere]);
+  const randuri = useMemo(() => uneste(st.istoric, cvs2, numeIstoric, st.fisiere, st.filme), [st.istoric, cvs2, numeIstoric, st.fisiere, st.filme]);
   const istoric: Istoric = { randuri, nCvs2: cvs2.length, setari: setariIstoric, schimba: schimbaSetariIstoric, imprimanta: numeIstoric };
   // Dialogul „Din desen…” (3.6j): unul singur, deasupra vederilor, ca să nu dispară când legătura se schimbă; fișierul feliat
   // trece la trimitere prin `deTrimis`. La închidere, focusul revine la butonul care l-a deschis.
@@ -589,7 +595,7 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
             dinDesen={dinDesen} trimitere={ales !== null} cuTrimitere={cap.trimitere} />
         )}
         <CardIstoric randuri={istoric.randuri} nCvs2={istoric.nCvs2} setari={istoric.setari} schimba={istoric.schimba} durata={durata}
-          cere={() => { sesiune.cereIstoric(); }} />
+          adresaFilm={(nume) => (st.adresa === null ? null : st.driver.adresaFilm(st.adresa.gazda, nume))} />
         <CardNotificari setari={setari} schimba={schimbaSetari} />
         <Jurnal st={st} />
       </div>

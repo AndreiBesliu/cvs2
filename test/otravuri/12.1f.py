@@ -42,42 +42,48 @@ o('H09', MOD, "op.incrustatie?.fel === 'drept' && op.incrustatie.locas === 'gaur
   'gaura', 'nimic nu e gaură')
 
 # ---- Dopul ----
-o('H10', MOD, '  const inaltime = i.dop === \'ridicat\' && i.sprijin === \'fata\' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;',
-  '  const inaltime = i.dop === \'ridicat\' && i.sprijin === \'fata\' ? D - i.joc : D + i.fierastrau;', 'gaura', 'dopul pe față, la gaură, cu jocul de sub el')
+# H10, H12 reorientate la 12.1↑f-2 (17.11): înălțimea fără treaptă e ramura `else`; dopul ia și treapta din valorile pe hârtie.
+o('H10', MOD, '    inaltime = i.dop === \'ridicat\' && i.sprijin === \'fata\' ? D - (gaura ? 0 : i.joc) : D + i.fierastrau;',
+  '    inaltime = i.dop === \'ridicat\' && i.sprijin === \'fata\' ? D - i.joc : D + i.fierastrau;', 'gaura', 'dopul pe față, la gaură, cu jocul de sub el')
 o('H11', MOD, 'D = gaura && grosimeFoaie !== undefined ? grosimeFoaie : op.adancime;', 'D = op.adancime;', 'gaura', 'valorile pe hârtie din adâncimea operației')
-o('H12', DOP, '    const { inaltime: h, grosime } = valoriIncrustatieDreapta(op, doc.foi[0]?.stoc.grosime)!;',
-  '    const { inaltime: h, grosime } = valoriIncrustatieDreapta(op)!;', 'gaura', 'dopul fără grosimea foii')
+o('H12', DOP, '    const { inaltime: h, grosime, treapta } = valoriIncrustatieDreapta(op, doc.foi[0]?.stoc.grosime)!;',
+  '    const { inaltime: h, grosime, treapta } = valoriIncrustatieDreapta(op)!;', 'gaura', 'dopul fără grosimea foii')
 
 # ---- Refuzurile ----
 o('H13', REF, "  if (gaura && i.dop === 'ridicat' && i.sprijin === 'fund') {", '  if (false) {', 'gaura', 'dopul ridicat pe fund la o gaură, primit')
-o('H14', REF, "  if (i.treapta !== undefined) return `${unde}: treapta (umărul locașului) vine în felia 12.1↑f-2`;\n", '', 'gaura',
-  'treapta tăiată fără felia ei')
-o('H15', REF, "  if (i.sprijin === 'umar') return `${unde}: sprijinul pe umăr e al dopului în trepte, care vine în felia 12.1↑f-2`;\n", '', 'gaura',
-  'sprijinul pe umăr primit fără treaptă')
-o('H16', REF, "  if (i.dop === 'ridicat' && i.sprijin === 'fata' && !gaura) {", "  if (i.dop === 'ridicat' && i.sprijin === 'fata') {", 'gaura',
+# H14, H15 retrase la 12.1↑f-2 (17.11): treapta și sprijinul pe umăr nu mai sunt refuzate (felia lor le aduce); țintele noi sunt
+# în `12.1f-2.py` (T05–T14: sprijinul, umărul, jocurile; T13: sprijinul pe umăr fără treaptă).
+# H16 reorientată la 12.1↑f-2 (17.11): jocul de sub dopul pe față se judecă doar fără treaptă.
+o('H16', REF, "  if (!tr && i.dop === 'ridicat' && i.sprijin === 'fata' && !gaura) {", "  if (!tr && i.dop === 'ridicat' && i.sprijin === 'fata') {", 'gaura',
   'jocul de sub dop judecat și la gaură')
 
 # ---- Scrierea ----
-o('H17', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, ...fara } = vechi ?? {};\n  void _locas;\n',
-  '  const { frezeDop: _vechi, punti: puntiVechi, ...fara } = vechi ?? {};\n', 'scriere', 'gaura veche rămasă pe un buzunar')
+# H17, H18, H20, H25 reorientate la 12.1↑f-2 (17.11): scrierea scoate și treapta veche; Exportă scrie și treapta; la gaură, cu
+# treaptă, sprijinul trece pe umăr; jocul g arătat e `jocFolosit`.
+o('H17', SCR, '  const { frezeDop: _vechi, punti: puntiVechi, locas: _locas, treapta: treaptaVeche, ...fara } = vechi ?? {};\n  void _locas;\n',
+  '  const { frezeDop: _vechi, punti: puntiVechi, treapta: treaptaVeche, ...fara } = vechi ?? {};\n', 'scriere', 'gaura veche rămasă pe un buzunar')
 
 # ---- Fereastra și panoul ----
-o('H18', DLG, "          ...(prinFoaie ? { locas: 'gaura' as const } : {}),\n", '', 'e2e', 'Exportă nu scrie gaura')
+o('H18', DLG, "          ...(prinFoaie ? { locas: 'gaura' as const } : {}), ...(treapta ? { treapta } : {}),\n", "          ...(treapta ? { treapta } : {}),\n", 'e2e',
+  'Exportă nu scrie gaura')
 o('H19', DLG, '                  <td><input type="text" inputMode="decimal" value={grosimeFoaie !== undefined ? text(grosimeFoaie) : p.adancime} data-camp="adancime" disabled\n',
   '                  <td><input type="text" inputMode="decimal" value={grosimeFoaie !== undefined ? text(grosimeFoaie) : p.adancime} data-camp="adancime"\n',
   'e2e', 'adâncimea gaurii editabilă')
-o('H20', DLG, "                            schimba(o.cheie, { locasInc, ...(locasInc === 'gaura' && p.sprijinInc === 'fund' ? { sprijinInc: 'fata' } : {}) });",
+o('H20', DLG, "                            schimba(o.cheie, { locasInc, ...(locasInc === 'gaura' && p.sprijinInc === 'fund' ? { sprijinInc: p.treaptaInc === 'fara' ? 'fata' : 'umar' } : {}) });",
   '                            schimba(o.cheie, { locasInc });', 'e2e', 'gaura lasă sprijinul pe fund')
 o('H21', DLG, "                          {p.locasInc !== 'gaura' && <option value=\"fund\">{t('export.incrustatie-drept.sprijin.fund')}</option>}",
   "                          <option value=\"fund\">{t('export.incrustatie-drept.sprijin.fund')}</option>", 'e2e', '„pe fund” oferit la gaură')
 o('H22', DLG, "locasInc: dr?.locas === 'gaura' ? 'gaura' : 'buzunar',", "locasInc: 'buzunar',", 'e2e', 'rândul nu citește gaura din proiect')
 o('H23', CON, '      {...(doc.foi[0] ? { grosimeFoaie: doc.foi[0].stoc.grosime } : {})}\n', '', 'e2e', 'fereastra fără grosimea foii')
 o('H24', CON, "              ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),\n", '', 'e2e', 'fereastra nu primește gaura din proiect')
-o('H25', DLG, "                      {sprijinitPeFata(p) ? (p.locasInc !== 'gaura' && (", "                      {sprijinitPeFata(p) ? (true && (", 'e2e',
+o('H25', DLG, "const jocFolosit = (p: RandSprijin): boolean => p.locasInc !== 'gaura' && (p.treaptaInc !== 'fara' || sprijinitPeFata(p));",
+  "const jocFolosit = (p: RandSprijin): boolean => (p.treaptaInc !== 'fara' || sprijinitPeFata(p));", 'e2e',
   'jocul de sub dop arătat la gaură')
-o('H26', PAN, "                {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}\n", '', 'e2e', 'panoul fără gaură, pe hârtie')
-o('H27', PAN, "            {operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)", "            {operatiiAlese.length > 0 && (false && operatiiAlese.every(esteGaura)",
-  'e2e', 'Tăierea fără adâncimea prin foaie')
+# H26 și H27 reorientate la 12.1↑e (19.11): 28.1↑d a scos 4 spații de indentare din panou, iar Tăierea are acum și drumul
+# Atelierului (`butoane`); H27 ține drumul obișnuit.
+o('H26', PAN, "            {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}\n", '', 'e2e', 'panoul fără gaură, pe hârtie')
+o('H27', PAN, "        {!butoane && operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)",
+  "        {!butoane && operatiiAlese.length > 0 && (false && operatiiAlese.every(esteGaura)", 'e2e', 'Tăierea fără adâncimea prin foaie')
 
 SETURI = {
     'doc': ['test/unit/document.v25.oracol.test.ts'],

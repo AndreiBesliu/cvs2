@@ -208,6 +208,16 @@ export type ImprimareIstoric = {
   readonly rezultat: RezultatImprimare | null;
 };
 
+/**
+ * Un film timelapse făcut de imprimantă (felia 3.6u, ADR 0194 §C): numele dat de ea (K1: doar cifre și `.mp4`), începutul
+ * lucrării filmate (ms, după ceasul imprimantei) și fișierul ei, dacă îl spune.
+ */
+export type FilmImprimanta = {
+  readonly nume: string;
+  readonly inceput: number;
+  readonly fisier: string | null;
+};
+
 /** Un cadru citit de driver. */
 export type CadruCitit = {
   /** Arată ca imprimanta driverului (un câmp știut al ei): primul cadru așa leagă legătura. */
@@ -217,6 +227,8 @@ export type CadruCitit = {
   readonly fisiere: readonly FisierImprimanta[] | null;
   /** Istoricul imprimărilor, dacă l-a adus (null: nu), felia 3.6t. */
   readonly istoric: readonly ImprimareIstoric[] | null;
+  /** Lista filmelor, dacă a adus-o (null: nu), felia 3.6u. */
+  readonly filme: readonly FilmImprimanta[] | null;
   /** De trimis pe loc, ca legătura să rămână vie (K1: `ok` la bătaia inimii); null: nimic. */
   readonly raspuns: string | null;
 };
@@ -234,6 +246,16 @@ export interface DriverText {
    * deschiderea cardului Istoricul; null: imprimanta n-are istoric.
    */
   readonly cerereIstoric: string | null;
+  /**
+   * Cererea listei filmelor (felia 3.6u, ADR 0194 §C), una dintre citiri, trimisă din nou la deschiderea cardului Istoricul și
+   * la finalul unei lucrări; null: imprimanta nu filmează.
+   */
+  readonly cerereFilme: string | null;
+  /**
+   * Adresa unui film pe imprimantă, de deschis într-o filă nouă: doar gazda legăturii și numele dat de imprimantă, nimic din
+   * cvs2; null pentru un nume sau o gazdă care nu trec de regulile driverului.
+   */
+  adresaFilm(gazda: string, nume: string): string | null;
   citeste(text: string): CadruCitit;
   lucrare(i: Imprimanta): StareLucrare;
   capabilitati(i: Imprimanta): Capabilitati;

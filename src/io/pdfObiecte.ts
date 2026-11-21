@@ -634,15 +634,33 @@ export class DocumentPdf {
 
   /** Octeții decodați ai unui flux, prin filtrele lui, în ordine. Un filtru de imagine (DCT, JPX…) aruncă `PdfStricat`. */
   async decodeaza(f: Flux): Promise<Uint8Array> {
+    const r = await this.decodeazaImagine(f);
+    if (r.codec !== null) throw new PdfStricat(`filtru necunoscut: ${r.codec}`);
+    return r.date;
+  }
+
+  /**
+   * Ca `decodeaza`, dar un filtru de imagine (DCT, CCITT, JBIG2, JPX; ADR 0270), dacă e ultimul, nu se aplică: întoarce
+   * octeții de dinaintea lui, numele lui (întreg) și parametrii lui, ca imaginea s-o decodeze altcineva.
+   */
+  async decodeazaImagine(f: Flux): Promise<{ readonly date: Uint8Array; readonly codec: string | null; readonly parametri: Dict }> {
     let date = f.date;
     const fil = await this.rezolva(f.dict.get('Filter') ?? f.dict.get('F'));
     const par = await this.rezolva(f.dict.get('DecodeParms') ?? f.dict.get('DP'));
     const filtre = Array.isArray(fil) ? fil : fil === null ? [] : [fil];
     const parametri = Array.isArray(par) ? par : [par];
+    let codec: string | null = null, dpCodec: Dict = new Map<string, Val>();
     for (let i = 0; i < filtre.length; i++) {
       const nume = numeDin(filtre[i]);
       const p = await this.rezolva(parametri[i] ?? null);
       const dp = esteDict(p) ? p : new Map<string, Val>();
+      const c = nume ? CODECURI_IMAGINE[nume] : undefined;
+      if (c !== undefined) {
+        if (i !== filtre.length - 1) throw new PdfStricat(`filtrul de imagine ${c} nu e ultimul`);
+        codec = c;
+        dpCodec = dp;
+        break;
+      }
       switch (nume) {
         case 'FlateDecode': case 'Fl': {
           const r = await inflate(date);
@@ -663,9 +681,15 @@ export class DocumentPdf {
     }
     this.decodati += date.length;
     if (this.decodati > PLAFON_DECODARE.total) throw new PdfPestePlafon('fișierul decodat trece de plafon');
-    return date;
+    return { date, codec, parametri: dpCodec };
   }
 }
+
+/** Filtrele de imagine (și prescurtările lor din imaginile inline), cu numele întreg. */
+const CODECURI_IMAGINE: Readonly<Record<string, string>> = {
+  DCTDecode: 'DCTDecode', DCT: 'DCTDecode', CCITTFaxDecode: 'CCITTFaxDecode', CCF: 'CCITTFaxDecode',
+  JBIG2Decode: 'JBIG2Decode', JPXDecode: 'JPXDecode',
+};
 
 /* ── Filtrele, pure ────────────────────────────────────────────────────────────────────────────────────────────────── */
 

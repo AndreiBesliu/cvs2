@@ -58,6 +58,7 @@ Alegerea rămâne pe dispozitivul ăsta (în browser): tableta din atelier poate
 
 ## Atelierul
 %% capitol: atelier
+%% acopera: export.trimite
 
 **Atelierul** e aranjamentul pentru tabletă și pentru ecranul de lângă mașină. Îl alegi din fereastra **Aspectul** (meniul
 **Cont**, rândul **Aspectul…**). La prima alegere pornește cu tema întunecată și cu **Butoane mari**; le poți schimba din
@@ -68,10 +69,18 @@ aceeași fereastră, înainte de **Păstrează**.
 - **Bara de sus** are Anulează și Reface cu numele lor, apoi importul, exportul vectorilor și **Exportă G-code**. Extensia
   barei (alinierea, oglindirea, copierea, offsetul, booleanul, 3D) stă dedesubt, pe mai multe rânduri când nu încape.
 - **Panourile** stau împreună, în dreapta: **Proprietăți** sus, **Pe foaie** dedesubt.
+- **Tăierea** formei alese stă prima în **Proprietăți**: felul ei din butoane mari (**Exterior**, **Interior**, **Pe linie**,
+  **Buzunar**, **V-carve**, **Găurire**…, apoi rolurile tale), adâncimea și pasul cu **−** și **+** (câte 0,5 mm; le poți și
+  scrie) și cartela frezei (de pildă **T1**, **Freză plată Ø6**). **Schimbă** deschide fereastra **Exportă G-code**, unde se
+  alege freza.
+- **Trimite la mașină** stă la capătul panoului, la vedere oricât îl derulezi. Deschide fereastra exportului cu butonul
+  **Trimite la mașină**: programul se descarcă, ca la export, apoi intră în fereastra **Mașina**, fără să pornească. Cu un
+  controler pe care aplicația nu-l vorbește (NcStudio, RichAuto), butonul e **Exportă**, iar programul doar se descarcă.
 - Pe o tabletă ținută în picioare și pe telefon, uneltele trec într-un rând jos, sub pânză, care se derulează cu degetul;
   panourile stau unul lângă altul, dedesubt.
 
-Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`).
+Comenzile sunt aceleași ca în Insule: oricare se găsește și în paleta de comenzi (`Ctrl+K`). **Trimite la mașină** e în
+paletă și în Insule.
 
 ## Pânza: zoom, deplasare, rigle și grilă
 %% capitol: panza
@@ -155,7 +164,8 @@ e goală, apoi pe foi noi, ca foaia activă. O piesă mai mare decât foaia răm
 e cel puțin freza profilului exterior (altfel tăietura unei piese ar intra în vecina ei), iar fereastra spune minimul. Cu
 urechi pe profilul exterior, fereastra pornește de la 2 × freza + 3 mm, rotunjită în sus (10 mm cu freza de 3,175), și spune
 de ce: sub 2 × freza, tăieturile a două piese vecine se unesc, iar urechile dinspre vecini nu mai au lemn de care să se țină.
-O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment.
+O distanță mai mică, dar cel puțin cât freza, se primește, cu un avertisment. La export, aplicația verifică oricum, pe
+program, dacă urechile țin (vezi [Exportul G-code](#export)).
 **Ordinea**: ca în listă (implicit) sau cele mari întâi. **Rotirea**: fără (implicit) sau cu 90°, culcate, doar când așa
 încap mai multe. Înainte de **Așază**, fereastra spune rezultatul („25 de piese pe 2 foi: 15 + 10.”). Alegerile se țin
 minte în browser.
@@ -712,7 +722,7 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
 **Renunță la toate** închid fereastra. Se importă fișierele SVG, DXF, PDF, AI, EPS și WMF, precum și imaginile PNG, JPEG,
-WebP, GIF și BMP, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
+WebP, GIF, BMP și TIFF, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de
 export.
 
 Un **DXF** se citește așa:
@@ -736,6 +746,9 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 - fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
 - se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
   întreg);
+- o **pagină scanată** (fără vectori, cu o imagine: de la scanerul de birou sau de la o aplicație de telefon) se
+  **trasează** singură, ca o imagine (mai jos), la mărimea de pe hârtie; la o pagină cu vectori și cu imagini, butonul
+  **Trasează imaginea paginii** trasează imaginea cea mai mare în locul vectorilor, iar **Vectorii paginii** te întoarce;
 - un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI salvat fără
   „Create PDF Compatible File” arată doar o notă de text, iar fereastra îți spune s-o bifezi.
 
@@ -765,7 +778,7 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
-O **imagine** (PNG, JPEG, WebP, GIF sau BMP: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
+O **imagine** (PNG, JPEG, WebP, GIF, BMP sau TIFF: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
 marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
 dreapta:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
@@ -879,7 +892,12 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
-- TIFF-ul nu se citește încă (salvează imaginea ca PNG), iar imaginile din PDF-uri și din SVG-uri se sar, ca până acum.
+- TIFF-ul (al scanerelor, al faxurilor, al programelor de CAD) îl citește aplicația singură: necomprimat, LZW, Deflate,
+  PackBits sau CCITT (G3, G4: scanările alb-negru), cu DPI-ul lui; la unul cu mai multe pagini, fereastra îți dă alegerea
+  paginii, ca la PDF. Un TIFF cu JPEG în el (sau BigTIFF, culori în virgulă mobilă, YCbCr, CIELab) e refuzat, cu numele a
+  ce nu citește: salvează-l atunci ca PNG. Imaginile din SVG-uri se sar, ca până acum;
+- imaginea unui PDF scanat (JPEG, CCITT G3 / G4 sau necomprimată) se trasează la DPI-ul ei de pe pagină, întoarsă cum o
+  arată pagina; una JBIG2 sau JPEG 2000 e refuzată, cu numele ei: salvează atunci pagina ca PNG.
 
 ## Tăierea vectorilor
 %% capitol: taiere
@@ -1340,12 +1358,23 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
   trece prin placă, ca buzunar pe toată grosimea, iar adâncimea e grosimea foii (plus supracursa), ținută la zi cu foaia (pe
   rând și în panou apare „prin foaie”). Gaura n-are fund: dopul decupat stă la nivel cu fața de jos (îl apeși pe o suprafață
   plană la lipire, iar partea de deasupra, H, se rindeluiește), iar cel ridicat se sprijină cu fața pe placă, înalt cât ea.
+- **Treapta** (doar în fereastra exportului): **fără**; **spre interior**: locașul are un umăr, cu nivelul de sus cât desenul,
+  până la **Adâncimea umărului** (d; implicit jumătate din adâncimea locașului, la gaură din grosimea foii), iar sub el o
+  deschidere mai îngustă cu **Lățimea umărului** (s; implicit 3 mm) pe fiecare parte, până la fund (sau prin foaie); sau
+  **spre exterior**: desenul e deschiderea, iar nivelul de sus e mai lat cu s pe fiecare parte (ca falțul unui geam).
+  Ambele niveluri au colțurile potrivite ca locașul simplu, cu același joc lateral. Dopul are o **flanșă** pe nivelul de sus
+  și o **tijă** pe deschidere, și se taie mereu oglindit, cu tija în sus, apoi îl întorci în locaș. Fără treaptă, câmpurile
+  umărului se ascund (valorile rămân în rând).
 - **Dopul** (doar în fereastra exportului): **ridicat pe semifabricat**: dopul rămâne în picioare pe semifabricatul lui
   (desenul oglindit, fața coborâtă în jur), îl întorci în locaș și tai spatele; sau **decupat prin placă**: dopul se taie prin
   toată placa lui, cu punți (desenul neoglindit), și intră în locaș fără întoarcere.
-- **Se sprijină** (doar la dopul ridicat): **pe fundul locașului**: dopul e înalt cât adâncimea plus **spațiul pentru
-  fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a semifabricatului stă pe
-  placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1 și sub adâncime).
+- **Se sprijină** (la dopul ridicat; cu treaptă, și la cel decupat): **pe fundul locașului**: dopul e înalt cât adâncimea plus
+  **spațiul pentru fierăstrău** (H; implicit 2 mm), care rămâne între plăci; sau **pe fața plăcii**: fața coborâtă a
+  semifabricatului stă pe placă, iar dopul e înalt cât adâncimea minus **jocul pentru clei** (g; implicit 0,5 mm, cel puțin 0,1
+  și sub adâncime). Cu treaptă: **pe umăr** (implicit): flanșa stă pe umăr, iar sub tijă rămâne **jocul de sub tijă** (g):
+  tija are D − d − g, flanșa d + H; sau **pe fundul locașului**: tija stă pe fund, iar deasupra umărului rămâne **jocul de
+  deasupra umărului** (g): tija are D − d + g, flanșa d − g + H. La gaura în trepte, dopul stă pe umăr, cu tija la nivel cu
+  fața de jos (T − d), fără joc. „Pe față” e doar al dopului fără treaptă.
 - **Cât iese peste placă** (la dopul decupat; tot H): placa dopului e groasă cât adâncimea plus H, iar partea care iese peste
   placă se rindeluiește după lipire.
 - **Marginea dopului** (implicit 5 mm): cât lemn rămâne în jurul desenului pe semifabricatul dopului; la cel decupat, cel puțin
@@ -1361,19 +1390,27 @@ Valorile incrustației, în panou (sub Adâncime și Pas) și pe rândul ei din 
 dopului (vârfurile R − c, unghiurile r), jocul pe contur, înălțimea dopului și grosimea semifabricatului (cea mai mică la dopul
 ridicat, înălțimea plus 1 mm; exactă la cel decupat) și, la dopul decupat, punțile lui. De exemplu, cu freza Ø6, adâncimea 6, jocul 0,1 și dopul ridicat pe
 fund: vârfurile locașului R3, unghiurile R2,9, ale dopului R2,9 și R3; dopul e înalt de 8 mm, iar semifabricatul are cel
-puțin 9 mm.
+puțin 9 mm. Cu treaptă, panoul arată și umărul (încotro, d, s) și dopul în trepte (tija și flanșa): dreptunghiul de 40 × 30
+cu Ø6, adâncimea 8, umărul spre interior la 3 mm, lat de 5, pe umăr, g 0,5 și H 2 are deschiderea de 30 × 20, tija de 4,5 mm
+și flanșa de 5 mm; dopul e înalt de 9,5 mm, pe un semifabricat de cel puțin 10,5 mm.
 
 **Exportul.** Ca la incrustația în V, se descarcă și un fișier pentru fiecare dop („-dop-1”…), cu semifabricatul lui: XY0 în
 colțul ales, Z0 pe fața lui. La dopul ridicat, fața se coboară în jur cu frezele dopului, până dincolo de marginile
 semifabricatului: fixează-l fără cleme pe margini, de exemplu cu bandă dublu adezivă. La dopul decupat, conturul se taie ca
 exterior, prin placă, cu punțile alese (implicit 4 pe buclă, late de 4 mm și groase de 1 mm), iar golurile desenului ca
-interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire.
+interioare; taie punțile și curăță-le la nivelul pereților înainte de lipire. Cu treaptă, locașul se taie în două niveluri:
+întâi nivelul de sus, până la umăr, apoi deschiderea, de sub umăr până la fund. Dopul în trepte e mereu oglindit, cu tija în
+sus: în jurul tijei, freza coboară până la flanșă; apoi, la dopul ridicat, fața se coboară în jurul flanșei, iar la cel
+decupat flanșa se taie prin placă, cu punți. Spre exterior, semifabricatul e cutia desenului lărgită cu s, plus marginea.
 
 **Refuzurile**, cu motivul, la export: incrustația pe altceva decât un buzunar; o freză în V la dop; jocul lateral cel puțin cât
 raza celei mai mici freze a locașului; pe față, jocul de sub dop sub 0,1 mm sau cel puțin cât adâncimea; o parte a desenului
 mai îngustă decât freza; marginea dopului decupat mai mică decât freza lui; punți cel puțin cât placa dopului de groase; o buclă
-pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund); treapta și
-sprijinul pe umăr, până la felia lor (12.1↑f-2).
+pe care nu încape nicio punte (lățimea plus freza); la o gaură, dopul ridicat sprijinit pe fund (n-are fund). Cu treaptă:
+dopul pe față, sau pe fund la o gaură; umărul la fund sau mai jos (la gaură, la fața de jos); umărul cel mult cât jocul
+lateral de lat; jocul g sub 0,1 mm, pe umăr cel puțin D − d, pe fund cel puțin d; o deschidere care dispare sub umăr (o parte
+mai îngustă decât freza, cu elementul ei); la dopul decupat, marginea mai mică decât prima lui freză plus 0,5 mm, sau flanșa
+cel mult cât punțile de groasă. Fără treaptă, sprijinul pe umăr.
 
 ## Traseul pe pânză
 %% capitol: traseu
@@ -1405,6 +1442,14 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 care). Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
+- **Supracursa** (mm, între 0 și 2, implicit 0): cât coboară tăieturile prin placă sub fața ei de jos, în masa de sacrificiu,
+  ca pe o placă puțin mai groasă decât cea scrisă să nu rămână o piele. [Gaura](#incrustatie-drept) incrustației și
+  decupările dopurilor merg cu atât mai jos, singure. Cu bifa **și tăieturile cât foaia** (implicit pusă), un profil, un
+  buzunar sau o găurire scrise cât grosimea foii merg și ele cu atât mai jos, ca și cum ai fi scris grosimea plus supracursa
+  (în proiect, adâncimea rămâne cum e scrisă); V-carve-urile și incrustațiile nu se schimbă. Debifată, tăieturile rămân cât
+  sunt scrise. Oricum, o adâncime scrisă de tine poate trece de grosimea foii cu cel mult supracursa (de exemplu 18,3 pe foaia
+  de 18, cu supracursa 0,5). Punțile și urechile își păstrează grosimea, măsurată de la fața de jos a plăcii. Supracursa și bifa
+  rămân cât e deschisă aplicația și nu intră în proiect; traseul și vederea 3D le lasă deoparte;
 - **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
   RichAuto, Syntec, Mach3** și **Mach4** primesc un fișier pe care îl rulezi de pe controlerul lor (în panoul mașinii nu
   ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
@@ -1458,6 +1503,13 @@ exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât 
 nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului. După un export pe care îl trimite
 senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
 să-l pornească.
+
+**Piesele care se desprind.** La fiecare export, aplicația urmărește programul până la fața de jos a foii: unde trece freza
+prin toată foaia și ce lemn rămâne pe fund, legat de marginea foii. O piesă tăiată pe dinafară cu urechi, la care nu mai
+ajunge niciun pic de lemn legat (de obicei fiindcă tăieturile pieselor vecine se unesc, iar urechile ei dau în gol), s-ar
+desprinde cât freza încă taie lângă ea. Exportul o spune printre avertismente, cu valorile plăcuței sau numele piesei și
+locul ei pe foaie („lângă X 70, Y 119”); cu **Toate foile**, pe fiecare foaie. Programul se descarcă oricum: e un
+avertisment, nu un refuz. Proba e a programului, deci prinde orice așezare, și pe cea mutată de mână.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o
@@ -1682,7 +1734,9 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
 - **Istoricul** (cardul lui, în fereastra Imprimanta): imprimările, cele mai noi sus, din două locuri: istoricul imprimantei
   (toate, și cele pornite de pe ecran sau din Creality Print) și istoricul cvs2, ținut în acest browser (ultimele 500), cu
   numele pieselor, estimarea și materialul. Pentru fiecare: data, fișierul, rezultatul (✓ gata, ⏹ oprită, ⚠ eroare), durata
-  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul. Dedesubt, totalurile lunii,
+  față de estimare („19 min · estimat 18 min, +6 %”), filamentul în metri și în grame, costul și **Filmul**: dacă imprimanta
+  a filmat lucrarea (timelapse-ul pornit pe ecranul ei), „Filmul ↗” îl deschide de pe ea, într-o filă nouă, de unde îl
+  salvezi (nimic din cvs2 nu pleacă spre imprimantă); altfel, „—”. Dedesubt, totalurile lunii,
   **Exportă CSV** și **Golește istoricul cvs2…**, cu o confirmare: **Golește** sau **Păstrează-l** (istoricul imprimantei
   rămâne în ea). **Prețul pe kg** al fiecărui material îl pui tu; până atunci, costul e „—”. Curentul intră în cost după ce
   pui **Puterea medie** a imprimantei (W) și **Prețul kWh**. În „Din desen…”, **Corectează estimarea după istoric** (pornită)
@@ -1827,6 +1881,11 @@ fiecăruia), iar starea din colț o spune.
 - De la tastatură: săgețile rotesc, `+` și `-` apropie și depărtează, `0` încadrează.
 - **0,1 mm la apropiere**: când te apropii destul, zona din jurul centrului (cel mult 204,8 × 204,8 mm) se simulează din nou
   la 0,1 mm și se desenează peste placă; restul rămâne la 0,25 mm.
+- **Foaia sau un dop**: dacă foaia are [incrustații](#incrustatie), sus apar butoanele „Foaia”, „Dopul 1”, „Dopul 2” …, în
+  ordinea fișierelor dopurilor din export (titlul fiecăruia spune semifabricatul). „Dopul N” simulează programul dopului pe
+  semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în picioare, fața coborâtă sau
+  decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa se vede tot, iar starea spune
+  de ce lipsesc dopurile.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

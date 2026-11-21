@@ -166,6 +166,10 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   const colturiArata = colturiCiorna ?? alegeri.foaie.colturi ?? foaie?.colturi ?? null;
   const [foaieImg, setFoaieImg] = useState<HTMLCanvasElement | null>(null);
   useEffect(() => { setFoaieImg(foaie?.previzualizare ? panzaDin(foaie.previzualizare) : null); }, [foaie]);
+  // Un TIFF (ADR 0229): browserul nu-l decodează, deci poza vine de la worker, redusă.
+  const pozaRaport = raport?.poza ?? null;
+  const [pozaTiff, setPozaTiff] = useState<HTMLCanvasElement | null>(null);
+  useEffect(() => { setPozaTiff(pozaRaport ? panzaDin(pozaRaport) : null); }, [pozaRaport]);
   // Liniile mediane (ADR 0222 §8): banda grosimii, sub linii, la cerere.
   const [arataGrosimea, setArataGrosimea] = useState(false);
   const mediane = raport?.mediane ?? null;
@@ -267,7 +271,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   // 0224) se desenează la locul zonei lor.
   const W = peColturi ? foaie?.poza.latime ?? 1 : raport?.intreg.latimePx ?? bmp?.width ?? 1;
   const H = peColturi ? foaie?.poza.inaltime ?? 1 : raport?.intreg.inaltimePx ?? bmp?.height ?? 1;
-  const baza = indreptata && !peColturi ? foaieImg : bmp;
+  const poza = bmp ?? pozaTiff;
+  const baza = indreptata && !peColturi ? foaieImg : poza;
   const zonaTrasata = raport?.zona ?? null, zonaArata = zonaCiorna ?? alegeri.zona;
   const zx = zonaTrasata?.x ?? 0, zy = zonaTrasata?.y ?? 0;
   const incadrare = Math.min(marime.w / W, marime.h / H) * 0.95;
@@ -285,9 +290,9 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     g.setTransform(s * dpr, 0, 0, s * dpr, (marime.w / 2 - cx * s) * dpr, (marime.h / 2 - cy * s) * dpr);
     if (peColturi) {
       // Colțurile (ADR 0225): poza, umbrită în afara foii, cu marginea ei și cele patru mânere.
-      if (bmp) {
+      if (poza) {
         g.imageSmoothingEnabled = s < 4;
-        g.drawImage(bmp, 0, 0, W, H);
+        g.drawImage(poza, 0, 0, W, H);
       }
       if (colturiArata) {
         const q = new Path2D();
@@ -391,7 +396,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
         }
       }
     }
-  }, [bmp, baza, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, benzi, caleLate, arataLate, zonaArata, zonaTrasata, zx, zy, modZona, zonaCiorna, raport, peColturi, colturiArata]);
+  }, [poza, baza, pictata, cai, vedere, estompare, s, cx, cy, marime, W, H, evidentiata, culori, arataGrosimea, mediane, benzi, caleLate, arataLate, zonaArata, zonaTrasata, zx, zy, modZona, zonaCiorna, raport, peColturi, colturiArata]);
   const mareste = (f: number, px?: number, py?: number): void => {
     // Punctul de sub maus rămâne pe loc (fără maus: centrul).
     const ox = px ?? marime.w / 2, oy = py ?? marime.h / 2;

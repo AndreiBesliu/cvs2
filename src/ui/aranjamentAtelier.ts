@@ -24,4 +24,7 @@ export const ARANJAMENT_ATELIER: Aranjament = {
   },
   docuri: { stanga: [], dreapta: ['proprietati', 'lista'] },
   ferestre: ARANJAMENT_MODERN.ferestre,
+  // Tăierea din butoane mari (felia 28.1↑d, planșa „C · Întunecat”): rolul, − / + la adâncime și pas, cartela frezei,
+  // „Trimite la mașină”.
+  taierea: 'butoane',
 };

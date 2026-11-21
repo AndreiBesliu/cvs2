@@ -126,6 +126,15 @@ export const enEditare = {
   'editare.3d.din-nou': 'Simulate again',
   'editare.3d.incadreaza': 'Fit the sheet',
   'editare.3d.sfat': 'Drag: rotate · right button or Shift: pan · wheel: zoom',
+  'editare.3d.alegere': 'What the 3D view shows: the sheet or a plug',
+  'editare.3d.foaia': 'Sheet',
+  'editare.3d.dopul': 'Plug {n}',
+  'editare.3d.dopul.titlu': 'The plug of the inlay {element}, on its {latime} × {inaltime} × {grosime} mm blank',
+  'editare.3d.simulare-dop': 'Simulating plug {n} at {celula} mm…',
+  'editare.3d.gata-dop': 'Plug {n} simulated at {celula} mm, on the {latime} × {inaltime} × {grosime} mm blank',
+  'editare.3d.refuz-dop': 'Plug {n} cannot be simulated: {motiv}',
+  'editare.3d.dopuri-refuz': 'The plugs cannot be shown: {motiv}',
+  'editare.3d.incadreaza-dop': 'Fit the plug',
   'editare.cota-dreapta': 'The shapes go {mm} mm past the sheet on the right',
   'editare.cota-stanga': 'The shapes go {mm} mm past the sheet on the left',
   'editare.cota-sus': 'The shapes go {mm} mm past the top of the sheet',
@@ -799,4 +808,5 @@ export const enEditare = {
   'actiune.muta-pe-foaie': 'Move to another sheet',
   // The sheets report (ADR 0210 §6, slice 11.6↑): its label in the palette, the only place that shows it.
   'actiune.raport-foi': 'Sheets report and cut list',
+  'actiune.trimite-masina': 'Send to machine',
 } as const satisfies Readonly<Record<string, Mesaj>>;

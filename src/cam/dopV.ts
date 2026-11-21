@@ -56,8 +56,9 @@ const sculaIR = (s: Operatie['scula']): Scula => ({
 /**
  * Dopurile foii: câte unul pe regiunea fiecărei incrustații (contururile V-carve ale unei piese dintr-o instanță, cu aceleași
  * valori, ca locașul), fiecare cu programul lui, pe semifabricatul lui; sau motivul primului care nu se poate tăia.
+ * `supracursa` (din fereastra exportului, ADR 0176): cât trece decuparea benzii de placa ei; 0, exact prin ea.
  */
-export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
+export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): { readonly ok: true; readonly dopuri: readonly DopCalculat[] } | { readonly ok: false; readonly motiv: string } {
   const operatieDe = (t: Taietura): Operatie | undefined => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
   const taieturi = ordineTaieturi(doc, 0).filter((t) => t.tip === 'vcarve' && operatieDe(t)?.incrustatie?.fel === 'v');
   const cheie = (u: Taietura): string => {
@@ -148,7 +149,8 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
     for (const x of v.miscari) miscari.push(x);
     let semifabricat: SemifabricatDop = { latime, inaltime, grosimeMinima: val.grosimeMinima };
     if (banda?.decupare) {
-      // Decuparea, la urmă (după ea, dopul ține doar în punți): pe linie, pe exterioarele lărgite cu e + r, prin toată placa.
+      // Decuparea, la urmă (după ea, dopul ține doar în punți): pe linie, pe exterioarele lărgite cu e + r, prin toată placa,
+      // plus supracursa (ADR 0176; punțile, de la fața de jos a plăcii, rămân cât sunt).
       // Freza decupării există: fără ea (fundul doar cu V, ADR 0173), `refuzIncrustatie` a refuzat decuparea mai sus.
       const d = banda.freza!, T = banda.placa, p = banda.punti;
       const linie = offsetFigura(exterioare(), banda.e + d.diametru / 2);
@@ -161,7 +163,7 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
       if (!pePunti.ok) return { ok: false, motiv: `${t.idLume}, decuparea dopului: ${pePunti.motiv}: micșorează punțile` };
       const noduri = [...bucle.map((c, i) => element(`bucla-${i + 1}`, c)), ...goluri.map((c, i) => element(`gol-${i + 1}`, c))];
       const baza = {
-        tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T, pas: op.pas, scula: structuredClone(d), rampa: null, intrari: null, colturi: null,
+        tip: 'profil', latura: 'pe-linie', sens: op.sens, adancime: T + supracursa, pas: op.pas, scula: structuredClone(d), rampa: null, intrari: null, colturi: null,
       } as const;
       const sintetic: Document = {
         schema: VERSIUNE_SCHEMA, rev: 0,
@@ -175,7 +177,7 @@ export function programeDopuri(doc: Document, regim: RegimDop): { readonly ok: t
         }],
         foi: [{ id: 'semifabricat', stoc: { latime, inaltime, grosime: T }, instante: [{ id: 'dop', piesa: 'dop', x: 0, y: 0, rotire: 0 }] }],
       };
-      const job = programDinDocument(sintetic, regim);
+      const job = programDinDocument(sintetic, regim, supracursa);
       if (!job.ok) return { ok: false, motiv: `${t.idLume}, decuparea dopului: ${job.motiv}` };
       monteaza(d);
       eticheta(`dopul ${t.idLume}: decuparea cu T${d.numar} Ø${d.diametru}, prin placa de ${fix(T)} mm, cu ${p.numar} punți pe buclă`);

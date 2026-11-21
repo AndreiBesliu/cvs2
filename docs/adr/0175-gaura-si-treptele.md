@@ -90,6 +90,39 @@ Două lucruri se schimbă față de buzunar:
    - 12.1↑f-2: treptele (spre interior și spre exterior), dopul în trepte (ridicat și decupat), sprijinul pe umăr. ~5 h.
    - Plafonul total e comun cu celelalte linii; ușa de la pornire crește doar cu schema celor două câmpuri (zeci de octeți).
 
+## Precizarea din 17.11 (felia 12.1↑f-2, pe hârtie)
+
+Fără decizii noi: ce trebuia hotărât ca treptele să se poată tăia și măsura, din răspunsurile de mai sus.
+
+- **Dopul pe fund.** Pe fund, tija stă pe fundul locașului, iar deasupra umărului rămâne g. Deci tija are D − d + g și
+  flanșa d − g + H; înălțimea dopului e D + H, ca la dopul fără treaptă pe fund. „D − d” din §„Ce am aflat” n-ar lăsa g
+  deasupra umărului. Exemplul pe fund: tija 5,5, flanșa 4,5, dopul 10.
+- **Jocul g.** Pe umăr, g e sub tijă; pe fund, g e deasupra umărului. În ambele cazuri trebuie să fie cel puțin 0,1 mm
+  (`JOC_INCRUSTATIE_MINIM`), iar pe umăr sub D − d, pe fund sub d. La gaura în trepte, tija iese la nivel cu fața de jos,
+  deci g nu se folosește.
+- **Sprijinul.** Cu treaptă, „pe față” e refuzat: fața coborâtă a dopului în trepte rămâne la H peste placă, deci nu se
+  poate sprijini pe ea. Fără treaptă, „pe umăr” e refuzat. Cu treaptă, sprijinul contează și la dopul decupat, care e și el
+  întors.
+- **Semifabricatul dopului în trepte.** E cutia nivelului de sus cu marginea pe fiecare parte. Spre interior, cutia
+  nivelului de sus e chiar a desenului. Spre exterior, e cutia desenului lărgită cu s, fiindcă flanșa trece de desen. Dopul
+  e mereu oglindit pe X.
+- **Tăierea dopului în trepte.**
+  - Ridicat, două buzunare. Primul ocolește flanșa până la h, pe tot semifabricatul. Al doilea ocolește tija până la
+    flanșă, pe flanșa lărgită cu diametrul primei freze plus 0,5 mm. Așa freza ajunge peste tot pe fața flanșei, și în
+    colțurile ei, iar între tijă și marginea buzunarului are loc chiar și la un umăr îngust. Cu raza în loc de diametru,
+    canalul ar fi fost, la Ø3 și s = 1, exact cât freza.
+  - Decupat, același buzunar în jurul tijei. Apoi flanșa e decupată prin placă, cu cea mai mică freză și cu punți, ca dopul
+    decupat fără treaptă; golurile ei se taie ca interioare. Marginea trebuie să fie cel puțin diametrul primei freze plus
+    0,5 mm, ca buzunarul din jurul tijei să rămână în placă, iar flanșa trebuie să fie mai groasă decât punțile.
+- **Deschiderea care dispare.** Deschiderea e refuzată când o parte a desenului micșorat cu s e mai îngustă decât freza
+  locașului. Tot așa când o parte a desenului rămâne fără deschidere sub umăr.
+- **Avertismentele colțurilor** (vârful retras, părțile unite) sunt ale nivelului care urmează desenul: nivelul de sus spre
+  interior, deschiderea spre exterior.
+- **Treapta spre exterior lângă marginea foii** se judecă ca orice tăietură, fără refuz nou: dacă freza iese din foaie,
+  exportul cere confirmarea.
+- **Locașul se taie în ordine:** întâi nivelul de sus, până la d, apoi deschiderea, de la d la D (trecerile ei pornesc de
+  sub umăr).
+
 ## Ce am respins
 
 - **Dopul în trepte neoglindit:** tija ar sta sub flanșă, unde freza nu ajunge de sus; ar cere tăierea pe a doua față.

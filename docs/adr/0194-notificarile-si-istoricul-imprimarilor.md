@@ -237,6 +237,42 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
   pe telefon), fără nimic ieșit din ecran. Otrăvurile: `test/otravuri/3.6t.py`, 57 / 57 (47 pe probele unitare, 10 prin e2e); listele 3.6p–3.6s se aplică în
   continuare.
 
+## Felia 3.6u, gata (18.11.2026)
+
+- **Driverul K1** (contractul din ADR 0192): `elapseVideoList` ajunge în cadrul citit (`filme`), cu intrări normalizate: numele
+  dat de imprimantă, doar `<cifre>.mp4` (cel mult 20 de cifre, ca integrarea Home Assistant; altul se sare și nu ajunge într-o
+  adresă), începutul lucrării filmate (`id`, egal cu `printStartTime`: în secunde, ca `starttime` din istoric, doar până în anul
+  2286; nemăsurat pe K1C 2025, a cărei listă era goală) și fișierul (`gcodename`, doar numele, fără `..` și caractere de control);
+  primit și ca text JSON în JSON, cel mult 100. `reqElapseVideoList` e printre citirile de la legare (K1C 2025 trimite lista
+  oricum, după lista fișierelor). Adresa filmului e a driverului (`adresaFilm`): la K1, `http://<gazdă>/downloads/video/<nume>`,
+  pe 80, doar cu gazda legăturii (verificată din nou: un IPv4, un nume cu puncte sau un IPv6 între paranteze) și un nume bun.
+  Nicio comandă nouă.
+- **Când se cer:** la legare, cu celelalte citiri; la fiecare deschidere a ferestrei Imprimanta, cu imprimanta legată; la finalul
+  unei lucrări (după 5 s, cu istoricul); cel mult o dată la 5 s (`cereFilme`, cu pauza ei, separată de a istoricului). Cererea
+  „la deschiderea cardului” din 3.6t nu pleca niciodată: fereastra se montează înaintea legăturii (sau ascunsă, cu legarea la
+  pornire, 3.6s). Acum un efect al panoului cere istoricul și filmele când fereastra devine vizibilă cu imprimanta legată.
+- **Filmul fiecărei imprimări** (`filmePe`, pur): același fișier (când filmul îl spune) și începutul la cel mult 10 minute; cele
+  mai apropiate se leagă întâi, câte unul. Începutul e cel spus de imprimantă, când rândul îl are (același ceas cu filmul),
+  altfel cel al ferestrei.
+- **Cardul Istoricul:** coloana **Filmul** (schița, planșa C): „Filmul ↗” deschide filmul de pe imprimantă într-o filă nouă
+  (`target="_blank"`, `rel="noopener noreferrer"`: fila nu primește adresa cvs2), de unde se salvează; fără film, „—”. Pe
+  telefon, eticheta „Filmul” lângă link. Ajutorul cardului spune de ce poate lipsi (timelapse-ul pornit pe ecranul imprimantei).
+  CSP-ul neschimbat: o filă nouă e o navigare, nu o resursă.
+- **Imprimanta falsă:** `elapseVideoList` la `reqElapseVideoList` și după lista fișierelor (`k1c-2025`), pornind de la `filme`;
+  cu `timelapse`, o lucrare încheiată sau oprită își lasă filmul (`<început>.mp4`), fără să-l anunțe; `GET
+  /downloads/video/<nume>` dă un film din listă (`video/mp4`) sau 404.
+- **Măsurat și probat:** totalul 732,7 / 800 kB (+0,5 față de `main` `4a5f840`, măsurat A/B pe aceeași mașină;
+  ținta ADR-ului ~1), pornirea 107,0 (cu ușa 111,0 / 115; aceeași ca pe `main`). Probe noi:
+  `test/unit/imprimanta.filme.test.ts` (5: lista K1 pe transcrierea K1C 2025, numele nesigure, adresa, filmul fiecărei
+  imprimări, istoricul unit cu filmele), o probă a sesiunii (cererea filmelor), manualul (controlul `istoric-film`), două e2e
+  (filmul Benchy-ului deschis într-o filă nouă, cu cererea ajunsă la imprimantă, un nume nesigur fără film, filmul unei imprimări
+  din „Din desen…” după final; cu legarea la pornire, fereastra deschisă mai târziu cere din nou istoricul și filmele).
+  Porțile: unit 9 570 (9 562 trecute, 0 căderi, 8 sărite), build-ul determinist (336 fișiere), e2e 522 / 530 (cele 8 căderi, în probele altor linii, din încărcare: singure, 8 / 8), pe unirea cu
+  `main` `4a5f840` (`005ab99`, 18.11; `main` de după 3.6t, cu 10.3↑l–m, 11.3↑b, 12.1↑f-2, 25.3↑e, 25.6↑–25.7↑, 28.1↑c, A.1 și A.2).
+  Privit în Chromium, în engleză: la 1280 px (luminos) și la 390 px (întunecat), cardul încape, iar „Video ↗” se vede pe rândul cu film.
+  Otrăvurile: `test/otravuri/3.6u.py`, 37 / 37 (28 pe probele unitare, 9 prin e2e); din lista 3.6t, șapte
+  aduse la textul de după 3.6u (D01, D09, S02, I03, S03, U02, U05) și probate din nou; listele 3.6p–3.6s se aplică în continuare.
+
 ## Întrebările (owner)
 
 **Răspunsurile, din 11.11:** „Da, recomandările”: 1a (planșele așa), 2a (istoricul cvs2 în browser).

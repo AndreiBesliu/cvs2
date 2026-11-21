@@ -59,6 +59,7 @@ The choice stays on this device (in the browser): the tablet in the workshop can
 
 ## The Workshop layout
 %% capitol: atelier
+%% acopera: export.trimite
 
 **Workshop** is the layout for a tablet and for the screen next to the machine. Choose it in the **Appearance** window
 (**Account** menu, **Appearance…** row). The first time, it starts with the dark theme and **Big buttons**; you can change
@@ -69,10 +70,19 @@ them in the same window before **Keep**.
 - The **top bar** has Undo and Redo with their names, then import, vector export and **Export G-code**. The bar extension
   (alignment, mirroring, copying, offset, boolean, 3D) sits below it, over several rows when it does not fit.
 - The **panels** sit together on the right: **Properties** on top, **On the sheet** below.
+- The chosen shape's **cut** comes first in **Properties**: its kind as big buttons (**Outside**, **Inside**, **On the
+  line**, **Pocket**, **V-carve**, **Drilling**…, then your own roles), depth and step with **−** and **+** (0.5 mm at a
+  time; you can also type them) and the tool card (for example **T1**, **Flat end mill Ø6**). **Change** opens the
+  **Export G-code** window, where the tool is chosen.
+- **Send to machine** sits at the end of the panel, in view however far you scroll it. It opens the export window with
+  the **Send to machine** button: the program is downloaded, as with an export, then goes into the **Machine** window
+  without starting. With a controller the app does not speak (NcStudio, RichAuto), the button is **Export** and the
+  program is only downloaded.
 - On a tablet held upright and on a phone, the tools move to a row at the bottom, under the canvas, which scrolls with a
   finger; the panels sit side by side below it.
 
-The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`).
+The commands are the same as in Islands: any of them is also in the command palette (`Ctrl+K`). **Send to machine** is
+in the palette in Islands too.
 
 ## The canvas: zoom, panning, rulers and grid
 %% capitol: panza
@@ -160,9 +170,10 @@ larger than the sheet stays where it is. No size changes. The distance is at lea
 (otherwise one part’s cut would run into its neighbour), and the window says the minimum. With tabs on the outside profile,
 the window starts at 2 × the cutter + 3 mm, rounded up (10 mm with a 3.175 cutter), and says why: below 2 × the cutter, the
 cuts of two neighbouring parts merge, and the tabs facing the neighbours have no wood left to hold on to. A smaller
-distance, but at least the cutter, is accepted, with a warning. **Order**: as in the list
-(default) or largest first. **Rotation**: none (default) or by 90°, lying down, only when more fit that way. Before
-**Arrange**, the window says the result (“25 parts on 2 sheets: 15 + 10.”). The choices are remembered in the browser.
+distance, but at least the cutter, is accepted, with a warning. On export, the app checks anyway, on the program, whether
+the tabs hold (see [Exporting G-code](#export)). **Order**: as in the list (default) or largest first. **Rotation**: none
+(default) or by 90°, lying down, only when more fit that way. Before **Arrange**, the window says the result (“25 parts on 2
+sheets: 15 + 10.”). The choices are remembered in the browser.
 
 **Move and arrange at the end.** In the right-click menu, next to **Move to**, **Move and arrange at the end of** and the
 sheet’s name moves the chosen parts onto it and arranges them after its parts, with the choices of the last arrangement
@@ -736,8 +747,8 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF and BMP
-images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
+**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, and so are PNG, JPEG, WebP, GIF, BMP and
+TIFF images, up to 16 MB, not compressed (no `.svgz`). Text has to be converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
 - the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
@@ -761,6 +772,9 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 - every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
 - skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
   whole);
+- a **scanned page** (no vectors, one image: from an office scanner or a phone app) is **traced** by itself, like an image
+  (below), at its size on paper; on a page with vectors and images, the **Trace the page image** button traces the largest
+  image instead of the vectors, and **The page vectors** takes you back;
 - a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI saved
   without “Create PDF Compatible File” shows only a text notice, and the window tells you to tick it.
 
@@ -790,7 +804,7 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
-An **image** (PNG, JPEG, WebP, GIF or BMP: a logo, a scanned drawing, a signature) is **traced**: the application finds the
+An **image** (PNG, JPEG, WebP, GIF, BMP or TIFF: a logo, a scanned drawing, a signature) is **traced**: the application finds the
 drawing's edge and writes it as vectors, in black and white. The window widens, with the settings on the left and the
 preview on the right:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
@@ -907,7 +921,12 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);
-- TIFF is not read yet (save the image as PNG), and images inside PDFs and SVGs are skipped, as before.
+- TIFF (from scanners, fax and CAD programs) is read by the application itself: uncompressed, LZW, Deflate, PackBits or
+  CCITT (G3, G4: black-and-white scans), with its DPI; for one with several pages, the window lets you pick the page, as for
+  a PDF. A TIFF with JPEG inside (or BigTIFF, floating-point colours, YCbCr, CIELab) is refused, naming what it cannot
+  read: save it as PNG then. Images inside SVGs are skipped, as before;
+- the image of a scanned PDF (JPEG, CCITT G3 / G4 or uncompressed) is traced at its DPI on the page, turned the way the
+  page shows it; a JBIG2 or JPEG 2000 one is refused, naming it: save the page as PNG then.
 
 ## Cutting vectors
 %% capitol: taiere
@@ -1386,12 +1405,24 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
   overtravel), kept up to date with the sheet (the row and the panel show “through the sheet”). A hole has no floor: a cut-out
   plug sits flush with the bottom face (press it onto a flat surface while gluing; the part above, H, is planed off), and a
   raised plug rests with its face on the board, as tall as the board.
+- **Step** (in the export window only): **none**; **inward**: the recess gets a shoulder, with the upper level as big as the
+  drawing, down to the **Shoulder depth** (d; by default half the recess depth, for a hole half the sheet thickness), and
+  below it an opening narrower by the **Shoulder width** (s; default 3 mm) on each side, down to the floor (or through the
+  sheet); or **outward**: the drawing is the opening, and the upper level is wider by s on each side (like a window rebate).
+  Both levels get their corners matched like the plain recess, with the same side gap. The plug gets a **flange** on the
+  upper level and a **stem** in the opening, and is always cut mirrored, stem up; then you flip it into the recess. Without a
+  step, the shoulder fields are hidden (the values stay in the row).
 - **Plug** (in the export window only): **raised on a blank**: the plug stands on its own blank (drawing mirrored, face
   lowered around it); you flip it into the pocket and cut off the back; or **cut out of a board**: the plug is cut through its
   whole board, with tabs (drawing not mirrored), and goes into the pocket without flipping.
-- **Rests on** (raised plug only): **the pocket floor**: the plug is as tall as the depth plus the **saw gap** (H; default
-  2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits on the board, and the plug
-  is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the depth).
+- **Rests on** (raised plug; with a step, the cut-out one too): **the pocket floor**: the plug is as tall as the depth plus
+  the **saw gap** (H; default 2 mm), which stays between the boards; or **the board face**: the lowered face of the blank sits
+  on the board, and the plug is as tall as the depth minus the **glue gap** (g; default 0.5 mm, at least 0.1 and under the
+  depth). With a step: **the shoulder** (default): the flange rests on the shoulder, and the **gap under the stem** (g) stays
+  below it: the stem is D − d − g, the flange d + H; or **the pocket floor**: the stem rests on the floor, and the **gap above
+  the shoulder** (g) stays above it: the stem is D − d + g, the flange d − g + H. In a stepped hole, the plug rests on the
+  shoulder, with the stem flush with the bottom face (T − d), without a gap. “The board face” is for a plug without a step
+  only.
 - **Above the board** (cut-out plug; also H): the plug board is as thick as the depth plus H, and the part above the board is
   planed off after gluing.
 - **Plug margin** (default 5 mm): how much wood stays around the drawing on the plug blank; for a cut-out plug, at least its
@@ -1407,19 +1438,28 @@ The inlay's values, in the panel (under Depth and Step down) and on its row in t
 the plug corners (tips R − c, inside corners r), the gap along the outline, the plug height and the blank thickness (the
 smallest for a raised plug, the height plus 1 mm; exact for a cut-out one) and, for a cut-out plug, its tabs. For example, with a Ø6 bit, depth 6, gap 0.1 and a
 raised plug resting on the floor: pocket tips R3, inside corners R2.9; plug R2.9 and R3; the plug is 8 mm tall, and the blank
-at least 9 mm.
+at least 9 mm. With a step, the panel also shows the shoulder (which way, d, s) and the stepped plug (stem and flange): the
+40 × 30 rectangle with a Ø6 bit, depth 8, an inward shoulder at 3 mm, 5 mm wide, resting on the shoulder, g 0.5 and H 2, has a
+30 × 20 opening, a 4.5 mm stem and a 5 mm flange; the plug is 9.5 mm tall, on a blank at least 10.5 mm thick.
 
 **Export.** As with the V inlay, a file for each plug is downloaded too (“-dop-1”…), with its blank: XY0 at the chosen corner,
 Z0 on its face. For a raised plug, the face is lowered around it with the plug bits, past the edges of the blank: hold it
 without clamps on the edges, for example with double-sided tape. For a cut-out plug, the outline is cut as an outside profile,
 through the board, with the chosen tabs (by default 4 per loop, 4 mm wide and 1 mm thick), and the drawing's holes as insides;
-cut the tabs and clean them flush with the walls before gluing.
+cut the tabs and clean them flush with the walls before gluing. With a step, the recess is cut in two levels: first the upper
+level, down to the shoulder, then the opening, from below the shoulder to the floor. The stepped plug is always mirrored, stem
+up: around the stem, the bit goes down to the flange; then, for a raised plug, the face is lowered around the flange, and for
+a cut-out one the flange is cut through the board, with tabs. Outward, the blank is the drawing's box widened by s, plus the
+margin.
 
 **Refusals**, with the reason, on export: the inlay on anything but a pocket; a V bit for the plug; a side gap at least the
 radius of the pocket's smallest bit; on the face, a glue gap under 0.1 mm or at least the depth; a part of the drawing narrower
 than the bit; a cut-out plug margin smaller than its bit; tabs at least as thick as the plug board; a loop with no room for a
-single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none); the step and the rest on
-the shoulder, until their slice (12.1↑f-2).
+single tab (the width plus the bit); for a hole, a raised plug resting on the floor (there is none). With a step: the plug on
+the face, or on the floor in a hole; the shoulder at the floor or lower (in a hole, at the bottom face); a shoulder no wider
+than the side gap; a gap g under 0.1 mm, on the shoulder at least D − d, on the floor at least d; an opening that vanishes
+under the shoulder (a part narrower than the bit, with its element); for a cut-out plug, a margin smaller than its first bit
+plus 0.5 mm, or a flange no thicker than the tabs. Without a step, resting on the shoulder.
 
 ## The toolpath on the canvas
 %% capitol: traseu
@@ -1453,6 +1493,14 @@ drawing, it closes by itself.
 which). Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
+- the **Overtravel** (mm, from 0 to 2, 0 by default): how far through cuts go below the bottom of the board, into the
+  spoilboard, so that a board a little thicker than the one written leaves no skin. The inlay [hole](#incrustatie-drept)
+  and the plug cut-outs go that much deeper by themselves. With the box **also cuts as deep as the sheet** (ticked by default),
+  a profile, a pocket or a drilling written as deep as the sheet goes that much deeper too, as if you had written the thickness
+  plus the overtravel (in the project, the depth stays as written); V-carves and inlays do not change. Unticked, the cuts stay
+  as written. Either way, a depth you write may exceed the sheet thickness by at most the overtravel (for example 18.3 in an
+  18 mm sheet, with 0.5 overtravel). Tabs keep their thickness, measured from the bottom of the board. The overtravel and the
+  box stay while the app is open and do not go into the project; the toolpath and the 3D view leave them out;
 - the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
   **NcStudio, RichAuto, Syntec, Mach3** and **Mach4** get a file that you run from their own controller (it doesn't reach the
   machine panel). A post written only from the controller's documentation, not yet tested on a machine, carries a note: watch
@@ -1509,6 +1557,14 @@ exactly this file reaches the machine). If the cutter would leave the sheet, the
 export asks you to confirm that nothing is in the way there (clamps, screws); the confirmation is written in the program's
 header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
 in [the Machine](#masina), without starting it.
+
+**Parts that come loose.** On every export, the app follows the program down to the bottom face of the sheet: where the
+cutter goes through the whole sheet and what wood is left on the bottom, connected to the sheet's edge. A part cut on the
+outside with tabs that no connected wood reaches any more (usually because the cuts of neighbouring parts merge and its tabs
+face nothing) would come loose while the cutter is still cutting next to it. The export says so among the warnings, with
+the plate's values or the part's name and its place on the sheet (“near X 70, Y 119”); with **All sheets**, on each sheet.
+The program is downloaded anyway: it is a warning, not a refusal. The check is on the program, so it catches any layout,
+including one moved by hand.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
@@ -1742,8 +1798,9 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
 - **History** (its card, in the Printer window): the prints, newest first, from two places: the printer's history (all of
   them, also those started from its screen or from Creality Print) and the cvs2 history, kept in this browser (the last 500),
   with the part names, the estimate and the material. For each: the date, the file, the result (✓ done, ⏹ stopped, ⚠ error),
-  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost. Below,
-  the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
+  the duration against the estimate (“19 min · estimated 18 min, +6 %”), the filament in metres and grams, the cost and the
+  **Video**: if the printer filmed the print (timelapse turned on on its screen), “Video ↗” opens it from the printer, in a
+  new tab, where you save it (nothing from cvs2 goes to the printer); otherwise “—”. Below, the month's totals, **Export CSV** and **Clear the cvs2 history…**, with a confirmation: **Clear** or **Keep it** (the
   printer keeps its own history). You set the **Price per kg** of each material; until then, the cost is “—”. Electricity
   joins the cost once you set the printer's **Average power** (W) and the **Price per kWh**. In “From drawing…”, **Correct
   the estimate from history** (on) shows the estimate learned from the finished prints of files sliced in cvs2, on the same
@@ -1887,6 +1944,11 @@ blocks (the deepest point of each), and the status in the corner says so.
 - From the keyboard: the arrow keys rotate, `+` and `-` zoom in and out, `0` fits.
 - **0.1 mm when zoomed in**: when you get close enough, the area around the centre (at most 204.8 × 204.8 mm) is simulated
   again at 0.1 mm and drawn over the sheet; the rest stays at 0.25 mm.
+- **The sheet or a plug**: if the sheet has [inlays](#incrustatie), buttons “Sheet”, “Plug 1”, “Plug 2” … appear at the top,
+  in the order of the plugs' files in the export (each one's title gives its blank). “Plug N” simulates the plug's program on
+  its blank (the face at 0, the bottom at its thickness) and frames it: you see the plug standing, the lowered face or the
+  cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug cannot be cut, the sheet still shows, and the
+  status says why the plugs are missing.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

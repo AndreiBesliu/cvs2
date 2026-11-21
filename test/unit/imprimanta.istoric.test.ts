@@ -190,7 +190,7 @@ test('3.6t: costul: doar cu prețul pe kg al materialului (după fel); curentul 
 
 const rand = (x: Partial<RandIstoric>): RandIstoric => ({
   inceput: T, fisier: 'a.gcode', imprimanta: 'K1C-8578', piese: null, rezultat: 'gata', durata: 600, progres: null, estimare: null, filament: 1000,
-  material: 'PLA', dinCvs2: false, ...x,
+  material: 'PLA', dinCvs2: false, film: null, ...x,
 });
 
 test('3.6t: totalurile lunii: imprimările lunii (ceasul local), timpul, gramele și costul știute', () => {

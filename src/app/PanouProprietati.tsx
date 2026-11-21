@@ -22,6 +22,8 @@ import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
 import { useRoluriMele } from './roluriMele.ts';
+import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
+import type { Taierea } from '../ui/aranjament.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import { CampText } from '../ui/CampText.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
@@ -69,6 +71,14 @@ type Props = {
   readonly onOperatii: (noi: ReadonlyMap<string, readonly Operatie[]>) => RezultatActiune;
   /** Deschide dialogul exportului, unde se schimbă restul valorilor operațiilor. */
   readonly onEditeazaOperatii: () => void;
+  /**
+   * Cum arată tăierea, după aranjament (ADR 0250, felia 28.1↑d): `lista` (Insule: rolul dintr-o listă, câmpurile) sau
+   * `butoane` (Atelier: rolul din butoane mari, − / + la adâncime și pas, cartela frezei, „Trimite la mașină”).
+   */
+  readonly taierea?: Taierea;
+  /** Starea lui „Trimite la mașină” (cu motivul unui refuz) și pornirea lui; doar cu tăierea din butoane. */
+  readonly trimite?: RezultatActiune;
+  readonly onTrimite?: () => void;
 };
 
 /** Piesele instanțelor alese de pe foaie, fiecare o dată, în ordinea foii. */
@@ -138,9 +148,13 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {/* Incrustația cu pereți drepți (ADR 0171): jocul lateral, felul dopului și sprijinul lui, marginea; frezele dopului, dacă are. */}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && rand(t('prop.inc'), t('prop.inc.valoare-drept', {
           lateral: mm(o.incrustatie.jocLateral), margine: mm(o.incrustatie.margine),
-          dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata' : 'prop.inc.dop.ridicat-fund'),
+          dop: t(o.incrustatie.dop === 'decupat' ? 'prop.inc.dop.decupat' : o.incrustatie.sprijin === 'fata' ? 'prop.inc.dop.ridicat-fata'
+            : o.incrustatie.sprijin === 'umar' ? 'prop.inc.dop.ridicat-umar' : 'prop.inc.dop.ridicat-fund'),
         }))}
         {o.tip === 'buzunar' && esteGaura(o) && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
+        {/* Treapta (ADR 0175 §5): încotro, adâncimea și lățimea umărului. */}
+        {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && o.incrustatie.treapta && rand(t('prop.inc.treapta'),
+          t(o.incrustatie.treapta.spre === 'exterior' ? 'prop.inc.treapta.exterior' : 'prop.inc.treapta.interior', { d: mm(o.incrustatie.treapta.adancime), s: mm(o.incrustatie.treapta.latime) }))}
         {o.tip === 'buzunar' && o.incrustatie?.fel === 'drept' && (o.incrustatie.frezeDop ?? []).length > 0 && rand(t('prop.inc.freze-dop'),
           (o.incrustatie.frezeDop ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
@@ -165,9 +179,10 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
-  onPlusUnu, onInca, onDesprinde, onPlacuta,
+  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite,
 }: Props): ReactNode {
-  useLimba();
+  const limba = useLimba();
+  const butoane = taierea === 'butoane';
   // Ancora transformării (ADR 0240 §A.7), cât unealta Transformare are o selecție: X / Y o mută, nu formele.
   const ancora = useSyncExternalStore(ancoraPanou.asculta, ancoraPanou.citeste);
   const roluriMele = useRoluriMele().roluri;
@@ -177,6 +192,8 @@ export function PanouProprietati({
   // Refuzul ultimului rol ales, pentru selecția de atunci; la fel, al lemnului din jurul dopului ales.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const [refuzJur, setRefuzJur] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
+  // Refuzul ultimului − / + (felia 28.1↑d), pentru selecția de atunci.
+  const [refuzPlus, setRefuzPlus] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   // Literele plăcuței în lucru (fontul se aduce) sau refuzul lor, pentru selecția de atunci (ADR 0210 §4); «Din CSV…»
   // deschisă (pentru selecția de atunci) și ce a făcut ultima ei rulare.
   const [placuta, setPlacuta] = useState<{ readonly cheie: string; readonly motiv: string | null } | null>(null);
@@ -326,11 +343,204 @@ export function PanouProprietati({
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
   };
+  // Tăierea din butoane mari (felia 28.1↑d, planșa „C · Întunecat”): − / + mută adâncimea sau pasul tuturor operațiilor
+  // alese cu 0,5 mm, prin aceeași acțiune ca valoarea scrisă (un pas de anulare); cu valori diferite, − / + nu au de la ce
+  // porni (motivul, în sfat), iar câmpul dintre ele rămâne de scris.
+  const valoareNoua = (c: 'adancime' | 'pas', x: number): { readonly adancime?: number; readonly pas?: number } => (c === 'adancime' ? { adancime: x } : { pas: x });
+  const apasaPlus = (c: 'adancime' | 'pas', valoare: number | null, semn: 1 | -1): void => {
+    const x = plusMinus(valoare, semn);
+    if (x === null) return;
+    const rez = scrieValori(valoareNoua(c, x));
+    setRefuzPlus(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
+  };
+  const randPlusMinus = (c: 'adancime' | 'pas', eticheta: string, valoare: number | null, minus: string, plus: string): ReactNode => {
+    const motiv = oprit ?? (valoare === null ? t('prop.atelier.diferite') : undefined);
+    const buton = (semn: 1 | -1, nume: string, semnVazut: string): ReactNode => (
+      <button type="button" data-buton={`${c}-${semn < 0 ? 'minus' : 'plus'}`} aria-label={nume} disabled={doarCitire || plusMinus(valoare, semn) === null}
+        {...(motiv ? { title: motiv } : {})} onClick={() => { apasaPlus(c, valoare, semn); }}>{semnVazut}</button>
+    );
+    return (
+      <div className="atelier-plus-minus" data-pas={c}>
+        <span className="atelier-eticheta">{eticheta}</span>
+        {buton(-1, minus, '−')}
+        {camp(eticheta, c, valoare, 'mm', false, (x) => scrieValori(valoareNoua(c, x)))}
+        {buton(1, plus, '+')}
+      </div>
+    );
+  };
+  // Cartela frezei: freza comună a operațiilor alese (numărul, felul, diametrul), schimbată din fereastra exportului.
+  const freza = frezaComuna(operatiiAlese);
+  const diametru = (x: number): string => new Intl.NumberFormat(limba, { maximumFractionDigits: 3 }).format(x);
+  const numeFreza = freza === null ? t('prop.atelier.freze-diferite')
+    : freza.forma?.tip === 'v' ? t('prop.atelier.freza.v', { unghi: freza.forma.unghi, diametru: diametru(freza.diametru) })
+      : t('prop.atelier.freza.plata', { diametru: diametru(freza.diametru) });
 
+  // Tăierea (ADR 0112): în listă stă după formă; din butoane (Atelier, felia 28.1↑d) stă prima, sub notă, ca pe planșa
+  // „C · Întunecat”.
+  const taiere: ReactNode = oferite.length > 0 && (
+    <section data-testid="prop-taierea" data-taierea={taierea}>
+      <h3>{t('prop.taierea')}</h3>
+      {butoane && (
+        <fieldset className="atelier-rol" data-camp="rol">
+          <legend>{t('prop.atelier.cum')}</legend>
+          <div className="atelier-roluri">
+            {oferite.map((r) => (
+              <button type="button" key={r} data-rol={r} aria-pressed={personalComun === null && rolComun === r} disabled={doarCitire}
+                {...(oprit ? { title: oprit } : {})} onClick={() => { alegeRol(r); }}>
+                {cuMajuscula(t(`export.latura.${r}`), limba)}
+              </button>
+            ))}
+          </div>
+          {oferitePersonale.length > 0 && (
+            <>
+              <p className="prop-grup">{t('prop.rol.mele')}</p>
+              <div className="atelier-roluri">
+                {oferitePersonale.map((r) => (
+                  <button type="button" key={r.id} data-rol={`p:${r.id}`} aria-pressed={personalComun?.id === r.id} disabled={doarCitire}
+                    {...(oprit ? { title: oprit } : {})} onClick={() => { alegeRol(r); }}>
+                    {r.nume}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </fieldset>
+      )}
+      {butoane && operatiiAlese.length > 0 && (
+        <div className="atelier-valori">
+          {/* La gaură (ADR 0175), adâncimea e a foii: doar de citit, ca în listă. */}
+          {foaie && operatiiAlese.every(esteGaura)
+            ? <p className="atelier-plus-minus" data-pas="adancime"><span className="atelier-eticheta">{t('prop.adancime')}</span>
+              <span className="atelier-fix">{t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) })}</span></p>
+            : randPlusMinus('adancime', t('prop.adancime'), comun((o) => o.adancime), t('prop.atelier.mai-putin-adanc'), t('prop.atelier.mai-adanc'))}
+          {randPlusMinus('pas', t('prop.pas'), comun((o) => o.pas), t('prop.atelier.pas-mic'), t('prop.atelier.pas-mare'))}
+          {refuzPlus?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="plus-minus">{refuzPlus.motiv}</p>}
+        </div>
+      )}
+      {butoane && operatiiAlese.length > 0 && (
+        <button type="button" className="atelier-freza" data-buton="freza" title={t('prop.atelier.schimba.titlu')} onClick={onEditeazaOperatii}>
+          <span className="atelier-t">{freza ? `T${freza.numar}` : '—'}</span>
+          <span className="atelier-freza-text">
+            <span className="atelier-freza-nume">{numeFreza}</span>
+            <span className="atelier-freza-nota">{t('prop.atelier.freza.operatii', { n: operatiiAlese.length })}</span>
+          </span>
+          <span className="atelier-schimba">{t('prop.atelier.schimba')}</span>
+        </button>
+      )}
+      <dl>
+        {!butoane && rand(t('prop.rol'), (
+          <select value={valoareRol} data-camp="rol" aria-label={t('prop.rol')} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+            onChange={(ev) => {
+              const v = ev.target.value;
+              const r = oferite.find((x) => x === v) ?? oferitePersonale.find((x) => `p:${x.id}` === v);
+              if (r) alegeRol(r);
+            }}>
+            {rolComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
+            {oferite.map((r) => <option key={r} value={r}>{t(`export.latura.${r}`)}</option>)}
+            {oferitePersonale.length > 0 && (
+              <optgroup label={t('prop.rol.mele')}>
+                {oferitePersonale.map((r) => <option key={r.id} value={`p:${r.id}`}>{r.nume}</option>)}
+              </optgroup>
+            )}
+          </select>
+        ))}
+        {/* La gaură (ADR 0175), adâncimea e a foii: doar de citit. */}
+        {!butoane && operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)
+          ? rand(t('prop.adancime'), t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) }))
+          : rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x }))))}
+        {!butoane && operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
+        {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
+        {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
+          (x) => scrieIncrustatie({ fierastrau: x })))}
+        {incrustatii && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
+          (x) => scrieIncrustatie({ margine: x })))}
+        {incrustatii && rand(t('prop.inc.jur'), (
+          <select key={`${cheie}/inc-jur`} value={jurComun ?? ''} data-camp="inc-jur" aria-label={t('prop.inc.jur')} disabled={doarCitire}
+            {...(oprit ? { title: oprit } : {})}
+            onChange={(ev) => { if (ev.target.value === 'fata' || ev.target.value === 'banda') alegeJur(ev.target.value); }}>
+            {jurComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
+            <option value="fata">{t('prop.inc.jur.fata')}</option>
+            <option value="banda">{t('prop.inc.jur.banda')}</option>
+          </select>
+        ))}
+        {drepte && rand(t('prop.inc.lateral'), camp(t('prop.inc.lateral'), 'inc-lateral', comunInc((i) => (i.fel === 'drept' ? i.jocLateral : Number.NaN)), 'mm', false,
+          (x) => scrieIncrustatie({ jocLateral: x })))}
+        {toateH && rand(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), camp(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), 'inc-fierastrau',
+          comunInc((i) => i.fierastrau), 'mm', false, (x) => scrieIncrustatie({ fierastrau: x })))}
+        {toateG && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
+        {drepte && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
+          (x) => scrieIncrustatie({ margine: x })))}
+      </dl>
+      {hartie && primaInc?.incrustatie && (
+        <div className="prop-hartie" data-testid="prop-incrustatie-hartie">
+          <p className="prop-grup">{t('prop.inc.hartie')}</p>
+          <dl>
+            {rand(t('prop.inc.intra'), t('prop.inc.intra.valoare', { mm: mm(hartie.S) }))}
+            {rand(t('prop.inc.contact'), t('prop.inc.contact.valoare', { mm: mm(hartie.contact) }))}
+            {rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(primaInc.incrustatie.joc) }))}
+            {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
+            {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
+            {/* Fundul doar cu freza V (ADR 0173): inelele la 2·creasta·t, în locaș și pe dop, cu crestele lor. */}
+            {fundV && rand(t('prop.inc.fund-v'), t('prop.inc.fund-v.valoare', {
+              locas: mm(2 * hartie.creastaLocas * hartie.t), cl: mm(hartie.creastaLocas), dop: mm(2 * hartie.creastaDop * hartie.t), cd: mm(hartie.creastaDop),
+            }))}
+            {/* Banda (ADR 0172): lățimea și cea mai mică, semifabricatul în plan, decuparea (placa exactă, punțile) sau tăietura de mână. */}
+            {hartieBanda && rand(t('prop.inc.banda'), t('prop.inc.banda.valoare', { latime: mm(hartieBanda.latime), minima: mm(susLaMicron(hartieBanda.minima)) }))}
+            {hartieBanda && rand(t('prop.inc.banda.semifabricat'), t('prop.inc.banda.semifabricat.valoare', { mm: mm(hartieBanda.margine) }))}
+            {hartieBanda && rand(t('prop.inc.decupare'), hartieBanda.decupare
+              ? t('prop.inc.decupare.valoare', { placa: mm(hartieBanda.placa), punti: hartieBanda.punti.numar, latime: mm(hartieBanda.punti.latime), grosime: mm(hartieBanda.punti.grosime) })
+              : t('prop.inc.decupare.fara', { e: mm(hartieBanda.e) }))}
+            {rand(t('prop.inc.semifabricat'), hartieBanda?.decupare
+              ? t('prop.inc.semifabricat.exact', { mm: mm(hartieBanda.placa) }) : t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
+          </dl>
+        </div>
+      )}
+      {/* Pe hârtie, pereții drepți (ADR 0171 §5): razele colțurilor, jocul, înălțimea dopului, spațiul folosit, semifabricatul;
+          la dopul decupat, punțile lui (ADR 0174, alese în fereastră; fără ele, cele implicite). */}
+      {hartieDreapta && incDreapta && (
+        <div className="prop-hartie" data-testid="prop-incrustatie-hartie" data-fel="drept">
+          <p className="prop-grup">{t('prop.inc.hartie')}</p>
+          <dl>
+            {rand(t('prop.inc.colturi-locas'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.rLocas), unghi: mm(hartieDreapta.rho) }))}
+            {rand(t('prop.inc.colturi-dop'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.varfDop), unghi: mm(hartieDreapta.unghiDop) }))}
+            {rand(t('prop.inc.joc-contur'), t('prop.inc.mm', { mm: mm(hartieDreapta.c) }))}
+            {rand(t('prop.inc.inaltime'), t('prop.inc.mm', { mm: mm(hartieDreapta.inaltime) }))}
+            {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
+            {/* În trepte (ADR 0175 §5): umărul, tija și flanșa dopului, jocul g (sub tijă sau deasupra umărului; nu la gaură) și H. */}
+            {hartieDreapta.treapta ? (<>
+            {rand(t('prop.inc.treapta'), t(hartieDreapta.treapta.spre === 'exterior' ? 'prop.inc.treapta.exterior' : 'prop.inc.treapta.interior',
+              { d: mm(hartieDreapta.treapta.d), s: mm(hartieDreapta.treapta.s) }))}
+            {rand(t('prop.inc.trepte-dop'), t('prop.inc.trepte-dop.valoare', { tija: mm(hartieDreapta.treapta.tija), flansa: mm(hartieDreapta.treapta.flansa) }))}
+            {incDreapta.locas !== 'gaura' && rand(t(incDreapta.sprijin === 'fund' ? 'prop.inc.clei-umar' : 'prop.inc.clei-tija'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))}
+            {rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
+            </>) : incDreapta.locas === 'gaura' && incDreapta.dop === 'ridicat' ? null : incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
+              ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
+              : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
+            {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
+            {incDreapta.dop === 'decupat' && ((p) => rand(t('prop.inc.punti'), t('prop.inc.punti.valoare', { punti: p.numar, latime: mm(p.latime), grosime: mm(p.grosime) })))(incDreapta.punti ?? PUNTI_DOP_DREPT)}
+          </dl>
+        </div>
+      )}
+      {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
+      {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
+      {refuzJur?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="inc-jur">{refuzJur.motiv}</p>}
+      <PanouRoluri piese={piese} cheie={cheie} />
+    </section>
+  );
+  // „Trimite la mașină” și „Exportă G-code” (felia 28.1↑d), la capătul panoului, lipite de marginea lui de jos (CSS-ul
+  // Atelierului), cu sau fără selecție (se trimite foaia); pe tabletă sfatul nu se vede, deci motivul unui refuz stă scris.
+  const trimiteBloc: ReactNode = butoane && trimite && onTrimite && (
+    <div className="atelier-trimite" data-testid="atelier-trimite">
+      <button type="button" className="principal" data-buton="trimite" disabled={!trimite.ok} onClick={onTrimite}>{t('actiune.trimite-masina')}</button>
+      <button type="button" data-buton="exporta-gcode" disabled={!trimite.ok} onClick={onEditeazaOperatii}>{t('actiune.exporta-gcode')}</button>
+      {!trimite.ok && <p className="prop-nota" data-motiv="trimite">{t(trimite.motiv)}</p>}
+    </div>
+  );
   return (
     <div className="proprietati">
       <h2>{t('prop.titlu')}</h2>
       <p className="prop-nota">{t('prop.nota')}</p>
+      {butoane && taiere}
       {alese.length === 0 && foaie && (
         <section>
           <h3>{t('prop.foaia')}</h3>
@@ -453,106 +663,12 @@ export function PanouProprietati({
           <dl>{campuriForma(par)}</dl>
         </section>
       )}
-      {oferite.length > 0 && (
-        <section data-testid="prop-taierea">
-          <h3>{t('prop.taierea')}</h3>
-          <dl>
-            {rand(t('prop.rol'), (
-              <select value={valoareRol} data-camp="rol" aria-label={t('prop.rol')} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
-                onChange={(ev) => {
-                  const v = ev.target.value;
-                  const r = oferite.find((x) => x === v) ?? oferitePersonale.find((x) => `p:${x.id}` === v);
-                  if (r) alegeRol(r);
-                }}>
-                {rolComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
-                {oferite.map((r) => <option key={r} value={r}>{t(`export.latura.${r}`)}</option>)}
-                {oferitePersonale.length > 0 && (
-                  <optgroup label={t('prop.rol.mele')}>
-                    {oferitePersonale.map((r) => <option key={r.id} value={`p:${r.id}`}>{r.nume}</option>)}
-                  </optgroup>
-                )}
-              </select>
-            ))}
-            {/* La gaură (ADR 0175), adâncimea e a foii: doar de citit. */}
-            {operatiiAlese.length > 0 && (foaie && operatiiAlese.every(esteGaura)
-              ? rand(t('prop.adancime'), t('prop.inc.gaura.adancime', { mm: mm(foaie.stoc.grosime) }))
-              : rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x }))))}
-            {operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
-            {incrustatii && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
-            {incrustatii && rand(t('prop.inc.fierastrau'), camp(t('prop.inc.fierastrau'), 'inc-fierastrau', comunInc((i) => i.fierastrau), 'mm', false,
-              (x) => scrieIncrustatie({ fierastrau: x })))}
-            {incrustatii && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
-              (x) => scrieIncrustatie({ margine: x })))}
-            {incrustatii && rand(t('prop.inc.jur'), (
-              <select key={`${cheie}/inc-jur`} value={jurComun ?? ''} data-camp="inc-jur" aria-label={t('prop.inc.jur')} disabled={doarCitire}
-                {...(oprit ? { title: oprit } : {})}
-                onChange={(ev) => { if (ev.target.value === 'fata' || ev.target.value === 'banda') alegeJur(ev.target.value); }}>
-                {jurComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
-                <option value="fata">{t('prop.inc.jur.fata')}</option>
-                <option value="banda">{t('prop.inc.jur.banda')}</option>
-              </select>
-            ))}
-            {drepte && rand(t('prop.inc.lateral'), camp(t('prop.inc.lateral'), 'inc-lateral', comunInc((i) => (i.fel === 'drept' ? i.jocLateral : Number.NaN)), 'mm', false,
-              (x) => scrieIncrustatie({ jocLateral: x })))}
-            {toateH && rand(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), camp(t(toateDecupate ? 'prop.inc.peste' : 'prop.inc.fierastrau'), 'inc-fierastrau',
-              comunInc((i) => i.fierastrau), 'mm', false, (x) => scrieIncrustatie({ fierastrau: x })))}
-            {toateG && rand(t('prop.inc.joc'), camp(t('prop.inc.joc'), 'inc-joc', comunInc((i) => i.joc), 'mm', false, (x) => scrieIncrustatie({ joc: x })))}
-            {drepte && rand(t('prop.inc.margine'), camp(t('prop.inc.margine'), 'inc-margine', comunInc((i) => i.margine), 'mm', false,
-              (x) => scrieIncrustatie({ margine: x })))}
-          </dl>
-          {hartie && primaInc?.incrustatie && (
-            <div className="prop-hartie" data-testid="prop-incrustatie-hartie">
-              <p className="prop-grup">{t('prop.inc.hartie')}</p>
-              <dl>
-                {rand(t('prop.inc.intra'), t('prop.inc.intra.valoare', { mm: mm(hartie.S) }))}
-                {rand(t('prop.inc.contact'), t('prop.inc.contact.valoare', { mm: mm(hartie.contact) }))}
-                {rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(primaInc.incrustatie.joc) }))}
-                {rand(t('prop.inc.placi'), t('prop.inc.mm', { mm: mm(hartie.H) }))}
-                {con !== null && rand(t('prop.inc.con'), t('prop.inc.con.valoare', { folosit: mm(Math.max(primaInc.adancime, hartie.fata)), con: mm(con) }))}
-                {/* Fundul doar cu freza V (ADR 0173): inelele la 2·creasta·t, în locaș și pe dop, cu crestele lor. */}
-                {fundV && rand(t('prop.inc.fund-v'), t('prop.inc.fund-v.valoare', {
-                  locas: mm(2 * hartie.creastaLocas * hartie.t), cl: mm(hartie.creastaLocas), dop: mm(2 * hartie.creastaDop * hartie.t), cd: mm(hartie.creastaDop),
-                }))}
-                {/* Banda (ADR 0172): lățimea și cea mai mică, semifabricatul în plan, decuparea (placa exactă, punțile) sau tăietura de mână. */}
-                {hartieBanda && rand(t('prop.inc.banda'), t('prop.inc.banda.valoare', { latime: mm(hartieBanda.latime), minima: mm(susLaMicron(hartieBanda.minima)) }))}
-                {hartieBanda && rand(t('prop.inc.banda.semifabricat'), t('prop.inc.banda.semifabricat.valoare', { mm: mm(hartieBanda.margine) }))}
-                {hartieBanda && rand(t('prop.inc.decupare'), hartieBanda.decupare
-                  ? t('prop.inc.decupare.valoare', { placa: mm(hartieBanda.placa), punti: hartieBanda.punti.numar, latime: mm(hartieBanda.punti.latime), grosime: mm(hartieBanda.punti.grosime) })
-                  : t('prop.inc.decupare.fara', { e: mm(hartieBanda.e) }))}
-                {rand(t('prop.inc.semifabricat'), hartieBanda?.decupare
-                  ? t('prop.inc.semifabricat.exact', { mm: mm(hartieBanda.placa) }) : t('prop.inc.semifabricat.valoare', { mm: mm(hartie.grosimeMinima) }))}
-              </dl>
-            </div>
-          )}
-          {/* Pe hârtie, pereții drepți (ADR 0171 §5): razele colțurilor, jocul, înălțimea dopului, spațiul folosit, semifabricatul;
-              la dopul decupat, punțile lui (ADR 0174, alese în fereastră; fără ele, cele implicite). */}
-          {hartieDreapta && incDreapta && (
-            <div className="prop-hartie" data-testid="prop-incrustatie-hartie" data-fel="drept">
-              <p className="prop-grup">{t('prop.inc.hartie')}</p>
-              <dl>
-                {rand(t('prop.inc.colturi-locas'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.rLocas), unghi: mm(hartieDreapta.rho) }))}
-                {rand(t('prop.inc.colturi-dop'), t('prop.inc.colturi.valoare', { varf: mm(hartieDreapta.varfDop), unghi: mm(hartieDreapta.unghiDop) }))}
-                {rand(t('prop.inc.joc-contur'), t('prop.inc.mm', { mm: mm(hartieDreapta.c) }))}
-                {rand(t('prop.inc.inaltime'), t('prop.inc.mm', { mm: mm(hartieDreapta.inaltime) }))}
-                {incDreapta.locas === 'gaura' && rand(t('prop.inc.locas'), t('prop.inc.locas.gaura'))}
-                {incDreapta.locas === 'gaura' && incDreapta.dop === 'ridicat' ? null : incDreapta.dop === 'ridicat' && incDreapta.sprijin === 'fata'
-                  ? rand(t('prop.inc.clei'), t('prop.inc.mm', { mm: mm(incDreapta.joc) }))
-                  : rand(t(incDreapta.dop === 'decupat' ? 'prop.inc.peste' : 'prop.inc.placi'), t('prop.inc.mm', { mm: mm(incDreapta.fierastrau) }))}
-                {rand(t('prop.inc.semifabricat'), t(incDreapta.dop === 'decupat' ? 'prop.inc.semifabricat.exact' : 'prop.inc.semifabricat.valoare', { mm: mm(hartieDreapta.grosime) }))}
-                {incDreapta.dop === 'decupat' && ((p) => rand(t('prop.inc.punti'), t('prop.inc.punti.valoare', { punti: p.numar, latime: mm(p.latime), grosime: mm(p.grosime) })))(incDreapta.punti ?? PUNTI_DOP_DREPT)}
-              </dl>
-            </div>
-          )}
-          {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
-          {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
-          {refuzJur?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="inc-jur">{refuzJur.motiv}</p>}
-          <PanouRoluri piese={piese} cheie={cheie} />
-        </section>
-      )}
+      {!butoane && taiere}
       {piesa?.operatii.map((o, i) => operatie(o, i + 1, foaie?.stoc.grosime))}
       {piesa && piesa.operatii.length > 0 && (
         <button type="button" className="prop-export" data-buton="editeaza-export" onClick={onEditeazaOperatii}>{t('prop.editeaza-export')}</button>
       )}
+      {butoane && trimiteBloc}
     </div>
   );
 }

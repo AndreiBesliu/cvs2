@@ -145,8 +145,8 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor. Raportul foilor și
   // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
-  // încă una: `vedere.aspect`.
-  assert.equal(USI.length, 108);
+  // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`.
+  assert.equal(USI.length, 109);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -280,6 +280,8 @@ const CONTROALE_IMPRIMANTA: Readonly<Record<string, string>> = {
   'istoric-goleste-confirma': 'imprimanta.istoric.goleste.confirma', 'istoric-goleste-renunta': 'imprimanta.istoric.goleste.renunta',
   'istoric-pret': 'imprimanta.istoric.pret', 'istoric-putere': 'imprimanta.istoric.putere', 'istoric-kwh': 'imprimanta.istoric.kwh',
   'felie-corecteaza': 'imprimanta.felie.corecteaza',
+  // Felia 3.6u (ADR 0194 §C): filmul unei imprimări, în cardul Istoricul.
+  'istoric-film': 'imprimanta.istoric.film',
 };
 
 test('fiecare control al ferestrei Imprimanta (data-imprimanta) e numit în capitolul „imprimanta”, în ambele limbi', () => {

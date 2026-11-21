@@ -127,6 +127,15 @@ export const roEditare = {
   'editare.3d.din-nou': 'Simulează din nou',
   'editare.3d.incadreaza': 'Încadrează placa',
   'editare.3d.sfat': 'Trage: rotește · butonul drept sau Shift: mută · rotița: apropie',
+  'editare.3d.alegere': 'Ce arată vederea 3D: foaia sau un dop',
+  'editare.3d.foaia': 'Foaia',
+  'editare.3d.dopul': 'Dopul {n}',
+  'editare.3d.dopul.titlu': 'Dopul incrustației {element}, pe semifabricatul lui de {latime} × {inaltime} × {grosime} mm',
+  'editare.3d.simulare-dop': 'Se simulează dopul {n} la {celula} mm…',
+  'editare.3d.gata-dop': 'Dopul {n} simulat la {celula} mm, pe semifabricatul de {latime} × {inaltime} × {grosime} mm',
+  'editare.3d.refuz-dop': 'Dopul {n} nu se poate simula: {motiv}',
+  'editare.3d.dopuri-refuz': 'Dopurile nu se pot arăta: {motiv}',
+  'editare.3d.incadreaza-dop': 'Încadrează dopul',
   'editare.cota-dreapta': 'Formele ies din foaie cu {mm} mm la dreapta',
   'editare.cota-stanga': 'Formele ies din foaie cu {mm} mm la stânga',
   'editare.cota-sus': 'Formele ies din foaie cu {mm} mm sus',
@@ -825,4 +834,5 @@ export const roEditare = {
   'actiune.muta-pe-foaie': 'Mută pe altă foaie',
   // Raportul foilor (ADR 0210 §6, felia 11.6↑): eticheta lui în paletă, singurul loc care o arată.
   'actiune.raport-foi': 'Raportul foilor și lista de tăiere',
+  'actiune.trimite-masina': 'Trimite la mașină',
 } as const satisfies DictionarRoPentru<typeof enEditare>;

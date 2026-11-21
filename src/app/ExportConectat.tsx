@@ -40,8 +40,16 @@ type Props = {
   /** Răspunsul la `$$` lipit (ADR 0046 §8): îl ține aplicația, comun cu timpul de lângă traseu. */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /** Supracursa scrisă de om (ADR 0176): o ține aplicația, ca setările mașinii, de la o fereastră la alta. */
+  readonly supracursa: string;
+  readonly onSupracursa: (text: string) => void;
+  /** Bifa tăieturilor cât foaia (ADR 0177): o ține aplicația, ca supracursa. */
+  readonly prinFoaie: boolean;
+  readonly onPrinFoaie: (bifata: boolean) => void;
   /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
   readonly onDeschideInMasina?: () => void;
+  /** Deschis din „Trimite la mașină” (ADR 0250, felia 28.1↑d): butonul principal o spune, iar aplicația duce programul în Mașina. */
+  readonly trimite?: boolean;
   /** Numele foii exportate, pentru titlu (ADR 0210 §5), când proiectul are mai multe. */
   readonly foaie?: string;
   /** Documentul cu toate foile (ADR 0210 §5): „Toate foile” și plăcuțele tuturor. */
@@ -59,7 +67,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  onDeschideInMasina, foaie, toate, onRaport,
+  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -128,6 +136,13 @@ export function ExportConectat({
               ...(o.incrustatie.frezeDop ? { frezeDop: o.incrustatie.frezeDop.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
               ...(o.incrustatie.punti ? { punti: { numar: o.incrustatie.punti.numar, latime: o.incrustatie.punti.latime, grosime: o.incrustatie.punti.grosime } } : {}),
               ...(o.incrustatie.locas === 'gaura' ? { locas: 'gaura' as const } : {}),
+              // Treapta (ADR 0175 §5): umărul, cu încotro (lipsă = spre interior).
+              ...(o.incrustatie.treapta ? {
+                treapta: {
+                  adancime: o.incrustatie.treapta.adancime, latime: o.incrustatie.treapta.latime,
+                  ...(o.incrustatie.treapta.spre === 'exterior' ? { spre: 'exterior' as const } : {}),
+                },
+              } : {}),
             } : null,
           } : {}),
           ...(o.tip === 'vcarve' ? {
@@ -204,7 +219,12 @@ export function ExportConectat({
       onReseteaza={onReseteaza}
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
+      supracursa={supracursa}
+      onSupracursa={onSupracursa}
+      prinFoaie={prinFoaie}
+      onPrinFoaie={onPrinFoaie}
       {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
+      {...(trimite ? { trimite } : {})}
       {...(placute ? { placute } : {})}
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}

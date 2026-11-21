@@ -40,10 +40,15 @@ export type ParametriExport = {
    */
   readonly confirmareIesire?: IesireFoaie;
   /**
-   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Dialogul nu-l trimite încă (vine cu
-   * profilul mașinii).
+   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Îl trimite fereastra exportului (ADR 0176):
+   * gaura incrustației și decupările dopurilor trec cu atât sub plăcile lor, iar o adâncime scrisă poate trece de foaie cu atât.
    */
   readonly supracursa?: number;
+  /**
+   * Bifa de lângă supracursă (ADR 0177): și tăieturile scrise cât grosimea foii (profil, buzunar, găurire, fără incrustație)
+   * trec cu supracursa, ca scrise grosime plus supracursă. Lipsă: nu (exporturile de dinainte rămân aceleași).
+   */
+  readonly prinFoaie?: boolean;
   /**
    * Răspunsul mașinii la `$$`, lipit de om (ADR 0046): estimarea timpului îl pune peste implicitele GRBL 1.1h. Lipsă sau
    * gol: implicitele. Nu schimbă programul, doar rezumatul.
@@ -67,13 +72,22 @@ export type DopExportat = {
   readonly element: string; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[]; readonly semifabricat: SemifabricatDop;
 };
 
+/** Un dop al foii, cum îl alege vederea 3D (ADR 0178): elementul primei tăieturi a regiunii lui și semifabricatul lui. */
+export type DopSimulat = { readonly element: string; readonly semifabricat: SemifabricatDop };
+
+/**
+ * O parte desprinsă (ADR 0210, felia 11.3↑c): un contur tăiat prin foaie de un profil exterior cu urechi, la care, la capătul
+ * programului, nu mai ajunge niciun pic de lemn legat de marginea foii. Instanța, elementul în lume și mijlocul cutiei lui.
+ */
+export type ParteDesprinsa = { readonly instanta: string; readonly element: string; readonly x: number; readonly y: number };
+
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
   | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport }
   /** „Arată traseul” (ADR 0038 §2): programul, împachetat. */
   | { readonly fel: 'traseu'; readonly document: Document }
-  /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului. */
-  | { readonly fel: 'simulare'; readonly document: Document }
+  /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului, sau ale dopului cu numărul `dop` (ADR 0178). */
+  | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
   /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
@@ -97,6 +111,8 @@ export type RaspunsExport =
     readonly sender: boolean;
     /** Mutările nucleului simulării (ADR 0047 §3) pentru programul exportat, sau de ce nu se poate simula. */
     readonly simulare: ProgramSimulat; readonly foaie: FoaieCam;
+    /** Proba urechilor (felia 11.3↑c): părțile cu urechi care se desprind de foaie; gol fără ele, sau fără simulare. */
+    readonly desprinse: readonly ParteDesprinsa[];
   }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
@@ -105,7 +121,11 @@ export type RaspunsExport =
 export type RaspunsTraseu = { readonly ok: true; readonly program: ProgramImpachetat } | { readonly ok: false; readonly motiv: string };
 
 export type RaspunsSimulare =
-  | { readonly ok: true; readonly foaie: FoaieCam; readonly simulare: Extract<ProgramSimulat, { ok: true }> }
+  | {
+    readonly ok: true; readonly foaie: FoaieCam; readonly simulare: Extract<ProgramSimulat, { ok: true }>;
+    /** Dopurile foii, în ordinea exportului (ADR 0178); gol fără incrustații, sau cu `motivDopuri`: de ce nu se pot tăia. */
+    readonly dopuri: readonly DopSimulat[]; readonly motivDopuri?: string;
+  }
   | { readonly ok: false; readonly motiv: string };
 
 export type MesajCam = { readonly id: number; readonly cerere: CerereCam };
