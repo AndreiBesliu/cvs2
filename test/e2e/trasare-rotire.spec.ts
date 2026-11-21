@@ -115,7 +115,10 @@ test('o scanare rotită cu 2°: sugestia, „Îndreaptă scanarea” cu unghiul 
   await expect(page.getByTestId('trasare-rotire')).toContainText('(unghiul găsit singur).');
   expect(Math.abs((await unghiRaport(page)) - 2)).toBeLessThanOrEqual(0.05);
   await expect(page.getByTestId('trasare-sugestie-rotire')).toHaveCount(0);
-  await expect(page.locator('[data-camp="trasare-rotire-unghi"]')).toHaveAttribute('placeholder', /^2,0\d$/);
+  // Indiciul câmpului: unghiul găsit, cu două zecimale (aici 1,99 sau 2,0x).
+  const indiciu = (await page.locator('[data-camp="trasare-rotire-unghi"]').getAttribute('placeholder')) ?? '';
+  expect(indiciu).toMatch(/^\d,\d\d$/);
+  expect(Math.abs(Number(indiciu.replace(',', '.')) - 2)).toBeLessThanOrEqual(0.05);
   await expect(page.locator('[data-camp="trasare-rotire-unghi"]')).toHaveValue('');
   // Raportul spune imaginea din fișier, nu pânza rotită (819 × 588 px).
   await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 800 × 560 px');
