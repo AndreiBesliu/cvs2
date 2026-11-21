@@ -42,7 +42,8 @@ test('3.6t: istoricul K1 (transcrierea K1C 2025): fișierul, începutul, durata,
 
 const FISIER = `${DIR_GCODE}placa_PLA_18m0s.gcode`;
 const clipa = (x: Partial<ClipaIstoric> = {}): ClipaIstoric => ({
-  legatura: 'vie', lucrare: 'imprima', fisier: FISIER, eroare: null, cheieEroare: null, faraFilament: null, strat: null, pauzaFisier: null,
+  legatura: 'vie', lucrare: 'imprima', fisier: FISIER, eroare: null, cheieEroare: null, faraFilament: null, reluareDupaPana: null, strat: null,
+  pauzaFisier: null,
   trecut: 60, filament: 100, progres: 10, ...x,
 });
 const T = 1_800_000_000_000;

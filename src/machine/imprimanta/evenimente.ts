@@ -1,13 +1,13 @@
 /**
  * Evenimentele unei imprimări (felia 3.6s, ADR 0194 §A), din două clipe la rând ale ferestrei: finalul, oprirea, pauza din
  * fișier (cu stratul și nota), altă pauză, lipsa filamentului, o eroare nouă, legătura pierdută cât lucrează și primul strat
- * gata. Un eveniment vine doar dintr-o schimbare: o clipă fără una dinainte (prima după legare) sau cu lucrarea necunoscută
+ * gata; din 3.6v (ADR 0195), și imprimarea oprită de o pană de curent, care așteaptă pe ecran să fie reluată. Un eveniment vine doar dintr-o schimbare: o clipă fără una dinainte (prima după legare) sau cu lucrarea necunoscută
  * nu spune nimic, deci o legare nouă nu repetă ce s-a anunțat. Cât legătura lipsește, starea ținută e veche: doar pierderea
  * ei e un eveniment; când revine, ce s-a schimbat între timp (de exemplu finalul) se anunță la prima clipă vie.
  */
 import type { StareLucrare } from './driver.ts';
 
-export const EVENIMENTE = ['gata', 'oprita', 'pauzaFisier', 'pauza', 'faraFilament', 'eroare', 'pierduta', 'primulStrat'] as const;
+export const EVENIMENTE = ['gata', 'oprita', 'pauzaFisier', 'pauza', 'faraFilament', 'eroare', 'pana', 'pierduta', 'primulStrat'] as const;
 export type FelEveniment = (typeof EVENIMENTE)[number];
 
 /** Ce știe fereastra la un moment dat, cât trebuie pentru evenimente. */
@@ -19,6 +19,8 @@ export type Clipa = {
   readonly eroare: number | null;
   readonly cheieEroare: number | null;
   readonly faraFilament: boolean | null;
+  /** O pană de curent a oprit imprimarea, care așteaptă pe ecran (3.6v). */
+  readonly reluareDupaPana: boolean | null;
   /** Stratul viu (3.6q), nu numărul trimis de imprimantă. */
   readonly strat: number | null;
   /** Pauza din fișier la care stă imprimanta acum (doar în pauză, doar pentru fișierele știute), cu nota ei. */
@@ -34,6 +36,8 @@ export type Eveniment = {
   readonly nota: string | null;
   /** Cheia erorii (altfel codul ei). */
   readonly cheie: number | null;
+  /** Codul erorii (`errcode`): explicația se caută întâi după cheie, apoi după el (3.6v). */
+  readonly cod: number | null;
   /** Durata (s) și filamentul (mm) lucrării, la final sau la oprire. */
   readonly durata: number | null;
   readonly filament: number | null;
@@ -53,7 +57,7 @@ export function lucrareNoua(a: Clipa | null, b: Clipa): boolean {
 export function evenimente(a: Clipa | null, b: Clipa): Eveniment[] {
   if (a === null || a.lucrare === 'necunoscuta' || b.lucrare === 'necunoscuta') return [];
   const ev = (fel: FelEveniment, x: Partial<Eveniment> = {}): Eveniment =>
-    ({ fel, fisier: b.fisier ?? a.fisier, strat: null, nota: null, cheie: null, durata: null, filament: null, ...x });
+    ({ fel, fisier: b.fisier ?? a.fisier, strat: null, nota: null, cheie: null, cod: null, durata: null, filament: null, ...x });
   const r: Eveniment[] = [];
   if (a.legatura !== 'pierduta' && b.legatura === 'pierduta' && LUCREAZA.has(a.lucrare)) r.push(ev('pierduta'));
   if (b.legatura !== 'vie') return r;
@@ -69,7 +73,8 @@ export function evenimente(a: Clipa | null, b: Clipa): Eveniment[] {
       }
     } else if (b.lucrare === 'imprima' && a.strat === 1 && b.strat !== null && b.strat >= 2) r.push(ev('primulStrat', { strat: 1 }));
   }
-  if (b.eroare !== null && (b.eroare !== a.eroare || b.cheieEroare !== a.cheieEroare)) r.push(ev('eroare', { cheie: b.cheieEroare ?? b.eroare }));
+  if (b.eroare !== null && (b.eroare !== a.eroare || b.cheieEroare !== a.cheieEroare)) r.push(ev('eroare', { cheie: b.cheieEroare ?? b.eroare, cod: b.eroare }));
+  if (b.reluareDupaPana === true && a.reluareDupaPana !== true) r.push(ev('pana'));
   return r;
 }
 

@@ -1769,7 +1769,12 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   the address is the one on its screen.
 - **The status.** At the top sits the printer strip: the state (Ready, Preparing, Printing, Paused, Stopped, Done), the name,
   the address and the firmware. Below: the job (the file, the progress, the elapsed and remaining time, the layer), the
-  **Temperatures** of the nozzle, the bed and the enclosure and the code the printer reported (its screen shows the text).
+  **Temperatures** of the nozzle, the bed and the enclosure and the error the printer reported, explained: the code on its
+  screen (for example CX2585), whether it is serious or minor, what happened and **What to do**, and where Creality has a
+  page for the code, **Creality page ↗** (a new tab). A code cvs2 doesn't know is said as such, with the **Code list ↗** from
+  the Creality wiki; its text is on the printer's screen. The dictionary (the K1 family: K1, K1C, K1 Max) comes at the first
+  error and works offline too. After a power cut, the card says the printer asks on its screen whether to resume the print;
+  you answer there.
 - **The plate**, while printing or paused, in the job card: the bed seen from above, zoomed on the parts, with the
   printer’s front at the bottom. It shows the parts (their outline; the **current part** with a teal outline; a
   **cancelled** one, crossed out), the **nozzle** (a white dot, only while printing) and, for files sent from cvs2, the
@@ -1788,7 +1793,8 @@ printer works alongside the CNC, so the Machine window stays the CNC’s. `F1` o
   printer’s own list, made of letters, digits, _ . -, reaches the printer; nothing typed by hand.
 - **Notifications** (their card, in the Printer window): **Turn on notifications** asks the browser for permission, once.
   Under **Tell me when** you choose the events: it finished, it stopped, the pause from the file (with its note), another
-  pause, out of filament, an error, the connection lost while printing and the first layer done (off at first). While
+  pause, out of filament, an error (with the code and what to do), a power cut, the connection lost while printing and the
+  first layer done (off at first). While
   cvs2 is hidden, a system notification comes (click it: the Printer window); while it is in front, a banner at the top,
   with **Open Printer** and **Close**. **With sound**: a few short tones. **Also the system notification while cvs2 is in
   front**, if you want it then too. **Percentage in the tab title**: “45 % · CNC Vector Studio”. On the Printer button in

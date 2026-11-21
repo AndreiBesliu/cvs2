@@ -80,7 +80,9 @@ test('legarea după adresă: starea, temperaturile, codul și fișierele; bătă
   await expect(page.locator('[data-imprimanta="tinta-duza"]')).toHaveValue('220');
   await expect(page.getByTestId('imprimanta-temp-pat')).toHaveText('50 /  °C');
   await expect(page.locator('[data-imprimanta="tinta-pat"]')).toHaveValue('50');
-  await expect(page.getByTestId('imprimanta-cod')).toContainText('Cod 5000');
+  // Din 3.6v, codul vine explicat din dicționar: CC5000 (cheia 0, deci după `errcode`), cum l-a arătat K1C-ul owner-ului pe 03.11.
+  await expect(page.getByTestId('imprimanta-cod')).toContainText('CC5000');
+  await expect(page.getByTestId('imprimanta-cod')).toContainText('Coordonatele din fișier ies din cursă');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('caramida-2x4.gcode');
   await expect(page.getByTestId('imprimanta-fisiere')).toContainText('PLA · 41 min');
   // Cât imprimă, fișierele nu se pot porni.
@@ -1162,11 +1164,12 @@ test('notificările (3.6s): permisiunea dintr-un clic; din Proiectare, semnul pe
   await page.locator('[data-imprimanta="reia"]').click();
   await expect(stare(page)).toHaveText('Imprimă');
   await expect(banda).toHaveCount(0);
-  // O eroare, cu cvs2 în față: doar banda (fără notificarea sistemului), cu cheia.
+  // O eroare, cu cvs2 în față: doar banda (fără notificarea sistemului). Din 3.6v, explicată: cheia 12 nu e în dicționar,
+  // codul 5000 e (CC5000).
   imp.eroare(5000, 12);
   await expect(banda).toHaveAttribute('data-fel', 'eroare');
-  await expect(banda).toContainText('K1C-8578: o eroare');
-  await expect(banda).toContainText('Cheia 12');
+  await expect(banda).toContainText('K1C-8578: eroare CC5000');
+  await expect(banda).toContainText('Coordonatele din fișier ies din cursă');
   expect(await notificarile(page)).toHaveLength(1);
   imp.eroare(0, 0);
   await banda.locator('[data-imprimanta="anunt-inchide"]').click();
@@ -1468,4 +1471,83 @@ test('istoricul și filmele (3.6t, 3.6u): cu legarea la deschidere, cardul Istor
   await expect.poll(() => [cate(ISTORIC), cate(FILME)]).toEqual([3, 3]);
   await expect(randuriIstoric(page).first().locator('[data-imprimanta="istoric-film"]')).toHaveAttribute('href', `http://${IP}/downloads/video/${BENCHY.starttime}.mp4`);
   expect(comenziSet(imp)).toEqual([]);
+});
+
+test('codurile explicate (3.6v): dicționarul cerut abia la prima eroare, o dată; o cheie gravă, cu pagina Creality; cheia înaintea codului; un număr necunoscut, cu lista; din Proiectare, banda și notificarea sistemului cu explicația; pana de curent, în card și în bandă; doar citiri', async ({ page }) => {
+  await notificariInlocuite(page);
+  const imp = await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 26 } });
+  const cereri: string[] = [];
+  page.on('request', (r) => { if (r.url().includes('/coduri/creality-k1.')) cereri.push(new URL(r.url()).pathname); });
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  await page.getByTestId('imprimanta-notificari').locator('[data-imprimanta="notificari-porneste"]').click();
+  await expect(page.getByTestId('imprimanta-notificari')).toContainText('Notificările sunt permise în acest browser.');
+  // Fără eroare, nimic adus.
+  await page.waitForTimeout(500);
+  expect(cereri).toEqual([]);
+  // O cheie gravă, cu pagina ei în wiki-ul Creality: termistorul duzei.
+  imp.eroare(2509, 2509);
+  const cod = page.getByTestId('imprimanta-cod');
+  await expect(cod).toHaveAttribute('data-explicat', 'da');
+  await expect(cod).toHaveAttribute('data-grava', 'da');
+  await expect(cod).toContainText('TE2509');
+  await expect(cod).toContainText('gravă');
+  await expect(cod).toContainText('Temperatura duzei nu se poate citi (termistorul pare deconectat)');
+  await expect(cod).toContainText('Ce faci: Oprește imprimanta și verifică mufa termistorului din capul de imprimare.');
+  await expect(cod).toContainText('cheia 2509 · errcode 2509');
+  const wiki = cod.locator('[data-imprimanta="eroare-wiki"]');
+  await expect(wiki).toHaveText('Pagina Creality ↗');
+  await expect(wiki).toHaveAttribute('href', 'https://wiki.creality.com/en/k1-flagship-series/k1-series-general-documents/2509-error-trouble-shooting');
+  await expect(wiki).toHaveAttribute('target', '_blank');
+  await expect(wiki).toHaveAttribute('rel', 'noopener noreferrer');
+  // Cheia înaintea codului: un errcode necunoscut, cu cheia 116 (filamentul), o eroare obișnuită, fără pagină.
+  imp.eroare(7777, 116);
+  await expect(cod).toContainText('TR0116');
+  await expect(cod).toHaveAttribute('data-grava', 'nu');
+  await expect(cod).toContainText('obișnuită');
+  await expect(cod.locator('[data-imprimanta="eroare-wiki"]')).toHaveCount(0);
+  // Un număr pe care dicționarul nu-l are: spus ca atare, cu lista codurilor, fără o explicație ghicită.
+  imp.eroare(4410, 4410);
+  await expect(cod).toHaveAttribute('data-explicat', 'necunoscut');
+  await expect(cod).toContainText('Codul 4410 nu e în dicționarul cvs2');
+  await expect(cod.locator('[data-imprimanta="eroare-lista"]')).toHaveAttribute('href', 'https://wiki.creality.com/en/k1-flagship-series/k1-series-general-documents/error-code-summary');
+  // Dicționarul limbii de acum, o singură dată.
+  expect(cereri).toEqual(['/coduri/creality-k1.ro.json']);
+  imp.eroare(0, 0);
+  await expect(page.getByTestId('imprimanta-cod')).toHaveCount(0);
+  // Din Proiectare, cu cvs2 ascuns: banda și notificarea sistemului spun ce s-a întâmplat și ce faci.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.evaluate(() => { (window as unknown as { __ascuns: boolean }).__ascuns = true; });
+  imp.eroare(2586, 2586);
+  const banda = page.getByTestId('imprimanta-anunt');
+  await expect(banda).toHaveAttribute('data-fel', 'eroare');
+  await expect(banda).toContainText('K1C-8578: eroare CY2586');
+  await expect(banda).toContainText('Coordonatele Y ies din cursă.');
+  await expect.poll(() => notificarile(page)).toContainEqual({
+    titlu: 'K1C-8578: eroare CY2586',
+    text: 'Coordonatele Y ies din cursă. Fișierul cere o mișcare pe Y dincolo de pat. Refeliază-l pentru imprimanta ta sau mută piesele spre mijlocul patului.',
+  });
+  imp.eroare(0, 0);
+  await banda.locator('[data-imprimanta="anunt-inchide"]').click();
+  await expect(banda).toHaveCount(0);
+  // Pana de curent: banda (și notificarea), apoi cardul, în fereastra Imprimanta; când întrebarea se închide, pleacă amândouă.
+  imp.pana(true);
+  await expect(banda).toHaveAttribute('data-fel', 'pana');
+  await expect(banda).toContainText('K1C-8578: pană de curent');
+  await expect.poll(() => notificarile(page)).toContainEqual({
+    titlu: 'K1C-8578: pană de curent', text: 'Imprimarea s-a oprit la o pană de curent. Imprimanta te întreabă pe ecran dacă o reia.',
+  });
+  await page.evaluate(() => { (window as unknown as { __ascuns: boolean }).__ascuns = false; });
+  await page.locator('[data-actiune="vedere.imprimanta"]').click();
+  await expect(page.getByTestId('imprimanta-pana')).toContainText('Pană de curent');
+  await expect(page.getByTestId('imprimanta-pana')).toContainText('imprimanta te întreabă pe ecran dacă o reia');
+  imp.pana(false);
+  await expect(page.getByTestId('imprimanta-pana')).toHaveCount(0);
+  await expect(banda).toHaveCount(0);
+  // Bifa evenimentului nou, pornită implicit, în cardul Notificările.
+  await expect(page.locator('[data-imprimanta="notificare-eveniment"][data-eveniment="pana"]')).toBeChecked();
+  // Doar citiri: nicio comandă nouă.
+  expect(comenziSet(imp)).toEqual([]);
+  expect(cereri).toEqual(['/coduri/creality-k1.ro.json']);
 });

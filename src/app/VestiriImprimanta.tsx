@@ -11,16 +11,22 @@
  */
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { t } from '../i18n/t.ts';
+import { explicaEroare, type IntrareCodImprimanta } from '../../shared/coduriImprimanta.ts';
+import { limba, t } from '../i18n/t.ts';
 import type { StareLucrare } from '../machine/imprimanta/driver.ts';
 import { cheieEveniment, EVENIMENTE, evenimente, lucrareNoua, type Clipa, type Eveniment } from '../machine/imprimanta/evenimente.ts';
 import type { StareImprimanta } from '../machine/imprimanta/sesiune.ts';
 import {
   cereAtentie, cerePermisiunea, notificaSistemul, permisiune, semnImprimanta, suna, textEveniment, type Permisiune, type SetariNotificari,
 } from './notificariImprimanta.ts';
+import { intrareCuTermen, useCoduriImprimanta } from './coduriImprimanta.ts';
 import { parteTitlu } from './titluFila.ts';
 
-type Anunt = { readonly e: Eveniment; readonly titlu: string; readonly corp: string };
+/** Banda își face textul la randare: o eroare își primește explicația când vine dicționarul (3.6v). */
+type Anunt = { readonly e: Eveniment };
+
+/** Cât așteaptă notificarea sistemului explicația unei erori; fără ea, pleacă cu cheia. */
+const TERMEN_EXPLICATIE_MS = 1500;
 
 export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, deschide, numeImprimanta, numeFisier, durata }: {
   readonly st: StareImprimanta; readonly stare: StareLucrare;
@@ -34,14 +40,18 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
   const i = st.imprimanta;
   const legatura = st.legatura === 'conectat' ? 'vie' : st.legatura === 'pierduta' ? 'pierduta' : 'alta';
   const clipa: Clipa = {
-    legatura, lucrare: stare, fisier: i.fisier, eroare: i.eroare, cheieEroare: i.cheieEroare, faraFilament: i.faraFilament, strat,
-    pauzaFisier, trecut: i.trecut, filament: i.filament,
+    legatura, lucrare: stare, fisier: i.fisier, eroare: i.eroare, cheieEroare: i.cheieEroare, faraFilament: i.faraFilament,
+    reluareDupaPana: i.reluareDupaPana, strat, pauzaFisier, trecut: i.trecut, filament: i.filament,
   };
   const semnatura = JSON.stringify(clipa);
   const inainte = useRef<Clipa | null>(null);
   const anuntate = useRef(new Set<string>());
   const [anunt, setAnunt] = useState<Anunt | null>(null);
   const [gataNevazut, setGataNevazut] = useState(false);
+  const familie = st.driver.coduri;
+  const coduri = useCoduriImprimanta(familie, i.eroare !== null);
+  const explicatie = (e: Eveniment): IntrareCodImprimanta | null => (e.fel === 'eroare' && typeof coduri === 'object' && coduri !== null
+    ? explicaEroare(coduri, e.cod, e.cheie)?.intrare ?? null : null);
   useEffect(() => {
     const a = inainte.current;
     inainte.current = clipa;
@@ -53,6 +63,7 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
     setAnunt((x) => {
       if (x === null) return x;
       if ((x.e.fel === 'pauza' || x.e.fel === 'pauzaFisier' || x.e.fel === 'faraFilament') && clipa.lucrare === 'imprima') return null;
+      if (x.e.fel === 'pana' && clipa.reluareDupaPana !== true) return null;
       return x.e.fel === 'pierduta' && clipa.legatura === 'vie' ? null : x;
     });
     for (const e of evenimente(a, clipa)) {
@@ -60,11 +71,19 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
       const k = cheieEveniment(e);
       if (anuntate.current.has(k)) continue;
       anuntate.current.add(k);
-      const text = textEveniment(e, numeImprimanta, numeFisier(e.fisier), durata);
-      setAnunt({ e, ...text });
+      setAnunt({ e });
       if (e.fel === 'gata') setGataNevazut(true);
       const ascuns = document.visibilityState !== 'visible';
-      const sistem = (ascuns || setari.sistemInFata) && notificaSistemul(text.titlu, text.corp, `cvs2-imprimanta-${e.fel}`, deschide);
+      const sistem = (ascuns || setari.sistemInFata) && permisiune() === 'acordata';
+      if (sistem) {
+        const trimite = (x: IntrareCodImprimanta | null): void => {
+          const text = textEveniment(e, numeImprimanta, numeFisier(e.fisier), durata, x);
+          notificaSistemul(text.titlu, text.corp, `cvs2-imprimanta-${e.fel}`, deschide);
+        };
+        // O eroare așteaptă puțin explicația (dicționarul vine la prima eroare); restul pleacă pe loc.
+        if (e.fel === 'eroare' && familie !== null) void intrareCuTermen(familie, limba(), e.cod, e.cheie, TERMEN_EXPLICATIE_MS).then(trimite);
+        else trimite(null);
+      }
       // Cu notificarea sistemului cât cvs2 e ascuns, sunetul e al sistemului.
       if (setari.sunet && !(ascuns && sistem)) suna(cereAtentie(e.fel));
     }
@@ -85,10 +104,11 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
     setLocAnunt(document.getElementById('loc-anunt-imprimanta'));
   });
   const semn = semnImprimanta({ legatura, lucrare: stare, progres: i.progres, faraFilament: i.faraFilament, eroare: i.eroare, gataNevazut });
-  const banda = anunt === null ? null : (
+  const textAnunt = anunt === null ? null : textEveniment(anunt.e, numeImprimanta, numeFisier(anunt.e.fisier), durata, explicatie(anunt.e));
+  const banda = anunt === null || textAnunt === null ? null : (
     <div className="imprimanta-anunt" data-fel={anunt.e.fel} role={cereAtentie(anunt.e.fel) ? 'alert' : 'status'} data-testid="imprimanta-anunt">
-      <strong>{anunt.titlu}</strong>
-      {anunt.corp !== '' && <span>{anunt.corp}</span>}
+      <strong>{textAnunt.titlu}</strong>
+      {textAnunt.corp !== '' && <span>{textAnunt.corp}</span>}
       <span className="imprimanta-butoane">
         {!vizibila && <button type="button" data-imprimanta="anunt-deschide" onClick={deschide}>{t('imprimanta.anunt.deschide')}</button>}
         <button type="button" data-imprimanta="anunt-inchide" onClick={() => { setAnunt(null); }}>{t('imprimanta.anunt.inchide')}</button>

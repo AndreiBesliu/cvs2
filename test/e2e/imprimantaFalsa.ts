@@ -115,6 +115,8 @@ export interface ImprimantaFalsa {
   filmeCerute(): readonly { readonly url: string; readonly cod: number }[];
   /** Din 3.6s: senzorul spune că s-a terminat filamentul (`materialStatus` 1), iar o imprimare trece în pauză. */
   faraFilament(): void;
+  /** Din 3.6v: o pană de curent a oprit imprimarea, care așteaptă pe ecran (`repoPlrStatus` 1); 0, întrebarea s-a închis. */
+  pana(da: boolean): void;
   /** Un pas al imprimării, ca la fiecare `pasMs`, dat de probă (din 3.6r: cu `pasMs` mare, imprimanta stă între pași). */
   pas(): void;
   taie(): void;
@@ -196,6 +198,8 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
     maxNozzleTemp: 320, maxBedTemp: 115, deviceState: 0, autohome: 'X:0 Y:0 Z:0',
     // Din 3.6s: senzorul de filament (0: filamentul e pus), ca K1C-ul owner-ului.
     materialStatus: 0,
+    // Din 3.6v: nicio imprimare oprită de o pană de curent (0), ca K1C-ul owner-ului.
+    repoPlrStatus: 0,
   };
   const ignorate = new Set<string>();
   const homingMs = opt.homingMs ?? 600;
@@ -538,6 +542,7 @@ export function pornesteImprimanta(opt: OptiuniImprimantaFalsa = {}): Promise<Im
         stratLaProgres: (p) => straturiPeProgres.get(p) ?? null,
         filmeCerute: () => [...filmeCerute],
         faraFilament: () => { schimba(s['state'] === 1 ? { materialStatus: 1, state: 5 } : { materialStatus: 1 }); },
+        pana: (da) => { schimba({ repoPlrStatus: da ? 1 : 0 }); },
         pas: unPas,
         taie: () => { for (const x of socketuri) x.resetAndDestroy(); },
         taci: () => {
