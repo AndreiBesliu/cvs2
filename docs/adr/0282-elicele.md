@@ -1,6 +1,7 @@
 # ADR 0282: Elicele în atelierul Easy 3Draw: configurabile, tipărite fără suport, cu prinderea LEGO
 
-**Starea:** propus pe 22.11.2026, la cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
+**Starea:** acceptat pe 22.11.2026 (1a, 2a, 3a), cu felia 3.Tq pornită pe ramura `wip/3.Tq-elice` (worktree-ul
+`rotite`); propus în aceeași zi, la cererea owner-ului: „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie
 si configurabile elicele si compatibile cu lego”. **Completează:** ADR 0280 (roțile, fulia, roțile la 90° și șenila),
 ADR 0281 (piesele pe file), ADR 0169 (rotițele dințate, cu gaura pentru ax din calibrare), ADR 0129 (Planificatorul ca
 extensie). Al treilea număr al intervalului 0280–0289 al pluginului. Schița, cu macheta de încercat și întrebările:
@@ -57,6 +58,31 @@ vârfurile drepte), 15790 (Ø9, gaură de știft); cu mai multe palete, 41530 (8
    - **3a.** Din LDraw, ca la roți: descarc fișierele celor 9 elice și pe cele comune pe care le folosesc (text, câțiva kB
      fiecare; licența CC BY 4.0) și măsor butucul, gaura, diametrul și unghiul paletelor (recomandat).
    - **3b.** Fără descărcare: doar diametrul și gaura, din numele pieselor; paletele, după modelul nostru.
+
+## Răspunsurile
+
+Owner-ul a răspuns în conversație pe 22.11.2026: „1a, 2a, 3a”.
+
+- **1a:** o filă nouă, „Elice”, după Roți: elicea, apoi elicea de barcă și ventilatorul cu carcasă.
+- **2a:** elicea întâi (3.Tq), apoi barca (3.Tr), apoi carcasa (3.Ts).
+- **3a:** cotele din LDraw. Aduse cele 9 elice și ce folosesc (100 de fișiere, 183 kB, licența CC BY 4.0), în
+  `C:\Users\besli\cncvs2-lucru\ldraw`, și măsurate cu `unelte/ldraw/elice_masura.py` (suprafața eșantionată: diametrul,
+  butucul, paletele și unghiul lor pe direcția principală a secțiunii cilindrice), `elice_desfasurata.py` (banda cilindrică,
+  desfăcută) și `felie_axa.py` (gaura, la mijlocul butucului):
+  - **6041:** Ø30,2; butucul Ø8, gaură de ax; paletele plate, la ≈ 23°, coarda 7–9.
+  - **92842:** Ø48,5; butucul Ø7,2 × 8, gaură de știft Ø4,8; paletele la ≈ 14–17°, coarda 6–7, cu vârfurile drepte.
+  - **15790:** Ø83,3; butucul Ø8 × 8, gaură de știft Ø4,8; paletele plate, la ≈ 14° de la rădăcină la vârf, coarda 10,4 → 8,3.
+  - **65768, 4617b:** butucul Ø8, gaură de știft Ø4,8.
+  - **41530:** opt pereți drepți, paraleli cu axa (o roată cu palete, nu o elice cu pas); butucul Ø13 × 8, gaură de ax: e reperul
+    ventilatorului cu carcasă (3.Ts), nu al elicei.
+  - **87751:** șapte palete, aproape plate spre vârf; Ø51,6.
+
+  „Diametrul” din numele pieselor e aproximativ (15790, „9”, are 83,3 mm, nu 72), deci „Ca LEGO” ia cotele măsurate.
+
+**Ce schimbă cotele față de propunere:** butucul e Ø8 × 8, ca la LEGO (nu Ø10). Paletele LEGO sunt plate, cu unghiul la
+fel de la rădăcină la vârf, nu cu pas constant: paleta „plată” intră lângă cea „răsucită” (implicită, care trage mai bine),
+iar „Ca LEGO” (6041, 92842, 15790) pune paleta plată, cu unghiul măsurat, la 70 % din rază. Cu multe palete pe butucul LEGO,
+rădăcina iese îngustă: secțiunea reală a paletei (cu grosimea ei) încape în 85 % din pasul dintre palete.
 
 ## Feliile
 
