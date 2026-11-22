@@ -181,3 +181,54 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
     care îi țintește defectul.
   - **Mărimea**, față de un build curat al lui `951933e5` (A.1 cu `main` `c302d73a`): `/admin` 112,2 → 113,6 / 200 kB
     (+1,4; linia: +7,1 din cei +25); pornirea (107,0, cu ușa 111,0 / 115) și totalul (721,3 / 800) neschimbate.
+- **A.3, 21.11: Tichete ca o conversație** (aceeași ramură, `wip/A.1-admin`, peste A.2, cu `main` `a64adf63` adus în
+  `c356744f`; `3.Ac` în jurnalul etapei 3). Răspunsurile rapide cer un document, o regulă și audit noi, deci felia s-a
+  oprit întâi la ADR 0261 (propus, `182428da`), cu schița și formularul întrebărilor
+  (<https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>). Ce urmează e doar partea ADR-ului 0260:
+  - **Partea pură:** `src/admin/tichete/vedere.ts` (titlul tichetului din primul rând al textului, tăiat la un cuvânt întreg
+    peste 90 de litere; numerele filtrului, și la „Toate”; starea pusă de „Răspunde și …”; erorile din sesiune cu grupurile
+    citite) și `cuTinta` în `src/admin/erori/vedere.ts` (grupul cerut din altă filă, adus singur).
+  - **Lista** în stânga, ca la Erori: titlul, starea și felul ca cipuri, data, câte răspunsuri, vârsta roșie. Tichetul ales
+    stă în dreapta, lipit sus. Ales e cel văzut: un filtru (sau un răspuns care îi schimbă starea) care îl ascunde mută
+    alegerea pe primul arătat, fără s-o mute înapoi. Un tichet găsit de căutarea din antet vine ales.
+  - **Conversația:** raportarea clientului (textul întreg, poza la cerere, proiectul atașat, erorile din sesiune, datele
+    aplicației), apoi răspunsurile echipei, împinse spre dreapta, cu bara accentului, apoi câmpul răspunsului, jos. Detaliul
+    ține cât spațiul de sub el, și înainte de prima derulare, când stă sub antet (`useCatSpatiulDeJos`). Conversația se
+    derulează în el, deci butoanele răspunsului rămân la vedere. Sub 800 px, detaliul trece sub listă și curge cu pagina.
+  - **Răspunsul:** „Răspunde” și, din schiță, „Răspunde și rezolvă” (la un tichet rezolvat, „… și redeschide”). Starea pleacă
+    pe versiunea întoarsă de răspuns. După fiecare schimbare, lista se citește din nou, iar cât se citește nu pleacă nimic:
+    versiunea arătată ar fi cea veche, iar serverul ar refuza-o. Ciornele stau pe tichet cât e deschisă pagina: alegerea altui
+    tichet sau un drum în fila Erori nu le pierde, iar un răspuns trimis își golește ciorna.
+  - **Erorile din sesiune:** cu fila Erori (rolul o vede, deci citește și `errorLogs`), grupul fiecărei amprente se citește o
+    dată, la alegerea tichetului: mesajul, starea și „Deschide în Erori ›”. Unul care nu mai e în jurnal o spune. Fără fila
+    Erori, amprentele rămân text și nu se citește nimic din `errorLogs`.
+  - **Erori:** un grup cerut dintr-un tichet poate fi mai vechi decât cele mai recente 100; atunci se aduce singur (`getDoc`)
+    și stă primul în listă, cât îl lasă filtrul pe stare. Detaliul ei ține și el cât spațiul de sub el și se derulează în el:
+    din A.2, un detaliu mai înalt decât ecranul își ascundea partea de jos până la capătul listei.
+  - Fără reguli, permisiuni, indexuri sau date noi.
+  - **Găsite pe drum:**
+    - ruta probei din A.1 care ținea citirea tichetelor, pentru rândurile schițate (`**/documents:runQuery`), nu se potrivea,
+      ca aceea din A.2 (`?key=…` după `:runQuery`). Schița se vedea doar dacă citirea întârzia de la sine. Acum ruta e pe
+      cale, iar proba cere ca citirea să fie ținută;
+    - din 15.B↑a, câmpul răspunsului își ținea versiunea de la deschiderea rândului, deci, la citirea codului, un al doilea
+      răspuns fără „Reîncarcă” ar fi fost refuzat. Acum pleacă pe versiunea tichetului arătat, iar proba trimite două
+      răspunsuri la rând.
+  - **Răspunsurile rapide** (ADR 0261, acceptat pe 21.11 cu toate recomandările) intră tot în A.3; detaliile lor stau în
+    „Implementarea” lui 0261.
+  - **Probele:** 8 unitare noi pentru partea de aici (`test/unit/admin.tichete.test.ts`: titlul, numerele, starea de după
+    răspuns, erorile din sesiune, punerea la cursor și plafonul ei; `admin.vederi.test.ts`: grupul adus). 3 e2e noi pe
+    emulatoare (`test/e2e-emulator/conversatia.emulator.spec.ts`: owner-ul, cu așezarea, conversația lungă cu răspunsul la
+    vedere, erorile din sesiune spre Erori, grupul vechi adus, ciornele, „Răspunde și rezolvă” cu nimic trimis cât se
+    recitește lista, al doilea răspuns fără „Reîncarcă”, alegerea care nu sare înapoi și ecranul de 700 px; un rol care
+    răspunde fără fila Erori, fără nicio citire în `errorLogs`; un rol care doar citește). Probele vechi, pe așezarea nouă
+    (`tichete`, `azi`, `erori`, `utilizatori`).
+  - **Otrăvurile:** 59 / 59 prinse pentru toată felia (`test/otravuri/A.3.py`: 24 unitare, 5 pe server, 1 pe regulă, 29 pe
+    emulatoare), fiecare pe aserțiunea care îi țintește defectul, pe `25b22992` (unitarele, E08 și E22 din nou pe `ed96b7a6`).
+    La primul tur, 56 / 59. U04 trecea fiindcă propoziția
+    probei se rupea, la a 90-a literă, chiar înaintea unui spațiu; acum titlul așteptat e scris de mână. E08 și E22 treceau
+    fiindcă citirile interzise se numărau doar după adresă, iar Firestore Lite citește un document prin `documents:batchGet`,
+    cu calea în corp; acum se caută și în corp.
+  - **Mărimea**, față de un build curat al lui `main` `a64adf63` (cu A.2): `/admin` 113,7 → 121,2 / 200 kB (+7,5, din care
+    vreo 5,7 sunt răspunsurile rapide; dicționarele adminului, română și engleză, intră amândouă în bucata lui, deci fiecare
+    text nou contează de două ori; linia ajunge la +14,7 din cei +25). Pornirea (107,2, cu ușa 111,2 / 115) și totalul
+    (739,5 / 800) sunt neschimbate.
