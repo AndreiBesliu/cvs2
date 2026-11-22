@@ -5,6 +5,8 @@
 # (`repoPlrStatus`, dicționarul familiei), evenimentele (pana o dată, codul erorii), notificările (explicația în text, setarea
 # pornită), precache-ul și fereastra, prin e2e (linkurile, fila nouă fără trimitător, lista codurilor, gravitatea, dicționarul
 # cerut abia la prima eroare și o dată, banda și notificarea sistemului cu explicația, pana de curent în card și în bandă).
+# Din recenzia proprie (22.11): cheia 0 (D03), linkurile cât textul lor (U13), dicționarul cerut din nou la eroarea următoare
+# după o cerere căzută (U14); U06 și U07, aduse la forma nouă a cererii (eroarea, nu „cere”).
 # Lăsate deoparte, echivalente pe ce se poate primi: `Object.hasOwn` la căutare (cheile sunt numere, deci nu ajung la prototip),
 # `pana === 1` față de `pana !== 0` (imprimanta trimite 0 sau 1), garda formei în generator și la aducerea din rețea (fișierele
 # generate o trec mereu; o probează proba formei).
@@ -28,6 +30,7 @@ EI = 'src/app/EroareImprimanta.tsx'
 CA = 'src/app/coduriImprimanta.ts'
 VI = 'src/app/VestiriImprimanta.tsx'
 PI = 'src/app/PanouImprimanta.tsx'
+CS = 'src/app/imprimanta.css'
 
 # Forma citită din rețea.
 o('S01', SH, "typeof x === 'string' && x.startsWith(WIKI_CREALITY) && x.length <= 300", "typeof x === 'string' && x.length <= 300", 'cod',
@@ -61,6 +64,7 @@ o('T05', TB, "const WIKI = 'https://wiki.creality.com/en/';", "const WIKI = 'htt
 # Driverul.
 o('D01', CR, '  if (pana !== null) stare.reluareDupaPana = pana === 1;\n', '', 'cod', 'pana de curent necitită')
 o('D02', CR, "  coduri: 'creality-k1',\n", '  coduri: null,\n', 'cod', 'K1 fără dicționar')
+o('D03', CR, '    stare.cheieEroare = cheie === 0 ? null : cheie;', '    stare.cheieEroare = cheie;', 'cod', 'cheia 0 luată drept cheie (fereastra ar arăta „Cod 0”)')
 # Evenimentele.
 o('E01', EV, "  if (b.reluareDupaPana === true && a.reluareDupaPana !== true) r.push(ev('pana'));\n", '', 'cod', 'pana de curent neanunțată')
 o('E02', EV, "if (b.reluareDupaPana === true && a.reluareDupaPana !== true) r.push", "if (b.reluareDupaPana === true) r.push", 'cod',
@@ -85,9 +89,9 @@ o('U03', EI, '<a href={coduri.lista} target="_blank" rel="noopener noreferrer" d
   'e2e', 'un cod necunoscut fără lista codurilor')
 o('U04', EI, "data-grava={i.grava ? 'da' : 'nu'}", 'data-grava="da"', 'e2e', 'toate erorile arătate grave')
 o('U05', EI, '{pana === true && (', '{false && (', 'e2e', 'pana de curent lipsă din card')
-o('U06', PI, 'useCoduriImprimanta(st.driver.coduri, i.eroare !== null)', 'useCoduriImprimanta(st.driver.coduri, true)', 'e2e',
+o('U06', PI, 'useCoduriImprimanta(st.driver.coduri, i.eroare)', 'useCoduriImprimanta(st.driver.coduri, 1)', 'e2e',
   'dicționarul cerut la legare, fără nicio eroare')
-o('U07', VI, 'useCoduriImprimanta(familie, i.eroare !== null)', 'useCoduriImprimanta(familie, true)', 'e2e',
+o('U07', VI, 'useCoduriImprimanta(familie, i.eroare)', 'useCoduriImprimanta(familie, 1)', 'e2e',
   'vestirile cer dicționarul fără nicio eroare')
 o('U08', VI, 'durata, explicatie(anunt.e));', 'durata, null);', 'e2e', 'banda fără explicație')
 o('U09', VI, 'void intrareCuTermen(familie, limba(), e.cod, e.cheie, TERMEN_EXPLICATIE_MS).then(trimite);', 'trimite(null);', 'e2e',
@@ -96,10 +100,13 @@ o('U10', VI, "      if (x.e.fel === 'pana' && clipa.reluareDupaPana !== true) re
 o('U11', CA, '  if (!p) {\n    p = fetch(', '  if (true) {\n    p = fetch(', 'e2e', 'dicționarul adus la fiecare cerere')
 o('U12', CA, 'aduCoduriImprimanta(familie, limba).then((x) => { if (viu) setD(x); }', "aduCoduriImprimanta(familie, 'en').then((x) => { if (viu) setD(x); }",
   'e2e', 'dicționarul în altă limbă decât fereastra')
+o('U13', CS, '.imprimanta-cod > a {\n  justify-self: start;\n}\n', '', 'e2e', 'linkurile cardului întinse pe tot rândul (clicul pe gol deschide pagina)')
+o('U14', CA, "eroare !== null && (cerere.n === 0 || d === 'lipsa')", 'eroare !== null && cerere.n === 0', 'e2e',
+  'un dicționar care n-a venit nu se mai cere până la redeschidere')
 
 SETURI = {
     'cod': ['test/unit/imprimanta.coduri.test.ts', 'test/unit/imprimanta.notificari.test.ts', 'test/unit/imprimanta.creality.test.ts',
             'test/unit/precache.test.ts'],
 }
-# Doar proba e2e a feliei (linia ei la commit-ul probat), ca fiecare otravă să nu ruleze tot fișierul.
-E2E = ['test/e2e/imprimanta.spec.ts:1476']
+# Doar probele e2e ale feliei (liniile lor la commit-ul probat), ca fiecare otravă să nu ruleze tot fișierul.
+E2E = ['test/e2e/imprimanta.spec.ts:1476', 'test/e2e/imprimanta.spec.ts:1563']

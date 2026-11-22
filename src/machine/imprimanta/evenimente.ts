@@ -1,9 +1,10 @@
 /**
  * Evenimentele unei imprimări (felia 3.6s, ADR 0194 §A), din două clipe la rând ale ferestrei: finalul, oprirea, pauza din
  * fișier (cu stratul și nota), altă pauză, lipsa filamentului, o eroare nouă, legătura pierdută cât lucrează și primul strat
- * gata; din 3.6v (ADR 0195), și imprimarea oprită de o pană de curent, care așteaptă pe ecran să fie reluată. Un eveniment vine doar dintr-o schimbare: o clipă fără una dinainte (prima după legare) sau cu lucrarea necunoscută
- * nu spune nimic, deci o legare nouă nu repetă ce s-a anunțat. Cât legătura lipsește, starea ținută e veche: doar pierderea
- * ei e un eveniment; când revine, ce s-a schimbat între timp (de exemplu finalul) se anunță la prima clipă vie.
+ * gata; din 3.6v (ADR 0195), și imprimarea oprită de o pană de curent, care așteaptă pe ecran să fie reluată. Un eveniment
+ * vine doar dintr-o schimbare: o clipă fără una dinainte (prima după legare) sau cu lucrarea necunoscută nu spune nimic, deci
+ * o legare nouă nu repetă ce s-a anunțat. Cât legătura lipsește, starea ținută e veche: doar pierderea ei e un eveniment;
+ * când revine, ce s-a schimbat între timp (de exemplu finalul) se anunță la prima clipă vie.
  */
 import type { StareLucrare } from './driver.ts';
 

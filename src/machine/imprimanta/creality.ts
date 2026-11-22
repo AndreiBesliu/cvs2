@@ -279,7 +279,9 @@ export function citesteCadru(t: string): Cadru {
   const cod = typeof err === 'object' && err !== null ? numar((err as Record<string, unknown>)['errcode']) : numar(err);
   if (cod !== null) {
     stare.eroare = cod === 0 ? null : cod;
-    stare.cheieEroare = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
+    // Cheia 0, ca și codul 0, nu numește nimic (3.6v): fereastra și notificarea arată atunci codul.
+    const cheie = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
+    stare.cheieEroare = cheie === 0 ? null : cheie;
   }
   // Piesele de pe placă (cadrul `exclude_object` al lui Klipper, felia 3.6q): listele, ca text JSON în JSON; piesa de acum, „”
   // fiind niciuna. Poziția duzei și filamentul folosit vin cu starea, la ~3 s cât imprimă (transcrierea din 07.11).

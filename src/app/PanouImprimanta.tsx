@@ -433,7 +433,7 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
   const cereri = useCereri(i);
   const legata = st.legatura === 'conectat';
   // Dicționarul codurilor familiei (3.6v): abia de la prima eroare.
-  const coduri = useCoduriImprimanta(st.driver.coduri, i.eroare !== null);
+  const coduri = useCoduriImprimanta(st.driver.coduri, i.eroare);
   const totalStraturi = harta !== null && harta.straturi.length > 0 ? harta.straturi.length : i.straturi;
   const cuPlaca = (stare === 'imprima' || stare === 'pauza') && (harta !== null || (i.piese?.length ?? 0) > 0);
   // Încălzirea pornită fără o lucrare stă la vedere, în bandă, cu Răcește (ADR 0192 §D.15).

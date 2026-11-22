@@ -49,7 +49,7 @@ export function Vestiri({ st, stare, strat, pauzaFisier, setari, vizibila, desch
   const [anunt, setAnunt] = useState<Anunt | null>(null);
   const [gataNevazut, setGataNevazut] = useState(false);
   const familie = st.driver.coduri;
-  const coduri = useCoduriImprimanta(familie, i.eroare !== null);
+  const coduri = useCoduriImprimanta(familie, i.eroare);
   const explicatie = (e: Eveniment): IntrareCodImprimanta | null => (e.fel === 'eroare' && typeof coduri === 'object' && coduri !== null
     ? explicaEroare(coduri, e.cod, e.cheie)?.intrare ?? null : null);
   useEffect(() => {

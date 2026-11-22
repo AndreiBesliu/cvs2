@@ -2,7 +2,8 @@
  * Dicționarul codurilor imprimantei în aplicație (felia 3.6v, ADR 0195 §A.5): fișierul familiei driverului
  * (`coduri/<familie>.<limba>.json`, în precache), cerut abia la prima eroare, o singură dată pe familie și limbă, și verificat
  * după formă (un fișier vechi, trunchiat sau al altei familii nu trece). O cerere căzută (fără rețea, înainte de precache) se
- * reîncearcă la următoarea cerere. Notificarea sistemului nu așteaptă după el decât puțin: fără dicționar, pleacă cu cheia.
+ * face din nou la eroarea următoare (cardul, banda) și la notificarea următoare. Notificarea sistemului nu așteaptă după el
+ * decât puțin: fără dicționar, pleacă cu cheia.
  */
 import { useEffect, useState } from 'react';
 import type { LimbaCoduri } from '../../shared/coduri.ts';
@@ -34,14 +35,20 @@ export function aduCoduriImprimanta(familie: FamilieImprimanta, limba: LimbaCodu
 /** Dicționarul încă pe drum, nevenit (fără rețea, înainte de precache), sau null: driverul n-are dicționar ori n-a fost cerut. */
 export type StareCoduriImprimanta = DictionarImprimanta | 'incarca' | 'lipsa' | null;
 
-/** Dicționarul familiei, în limba de acum, cerut de la prima eroare (`cere`) încolo. */
-export function useCoduriImprimanta(familie: FamilieImprimanta | null, cere: boolean): StareCoduriImprimanta {
+/**
+ * Dicționarul familiei, în limba de acum, cerut de la prima eroare (`eroare` nenul) încolo. Unul care n-a venit se cere din
+ * nou la eroarea următoare, ca fereastra să nu rămână fără explicații până la redeschidere.
+ */
+export function useCoduriImprimanta(familie: FamilieImprimanta | null, eroare: number | null): StareCoduriImprimanta {
   const limba = useLimba();
-  const [cerut, setCerut] = useState(cere);
-  if (cere && !cerut) setCerut(true);
   const [d, setD] = useState<StareCoduriImprimanta>(null);
+  // A câta cerere (0: încă niciuna) și eroarea văzută ultima.
+  const [cerere, setCerere] = useState({ eroare, n: eroare === null ? 0 : 1 });
+  if (eroare !== cerere.eroare) {
+    setCerere({ eroare, n: eroare !== null && (cerere.n === 0 || d === 'lipsa') ? cerere.n + 1 : cerere.n });
+  }
   useEffect(() => {
-    if (familie === null || !cerut) {
+    if (familie === null || cerere.n === 0) {
       setD(null);
       return undefined;
     }
@@ -49,7 +56,7 @@ export function useCoduriImprimanta(familie: FamilieImprimanta | null, cere: boo
     setD('incarca');
     aduCoduriImprimanta(familie, limba).then((x) => { if (viu) setD(x); }, () => { if (viu) setD('lipsa'); });
     return () => { viu = false; };
-  }, [familie, limba, cerut]);
+  }, [familie, limba, cerere.n]);
   return d;
 }
 

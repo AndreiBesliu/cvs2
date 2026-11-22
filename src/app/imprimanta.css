@@ -229,6 +229,11 @@
   color: var(--t-slab);
 }
 
+/* Linkurile cardului țin cât textul lor: în grilă, un link întins pe tot rândul ar prinde clicul și pe gol. */
+.imprimanta-cod > a {
+  justify-self: start;
+}
+
 .imprimanta-pana {
   border-left-color: var(--rosu);
 }

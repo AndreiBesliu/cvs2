@@ -1501,6 +1501,13 @@ test('codurile explicate (3.6v): dicționarul cerut abia la prima eroare, o dat�
   await expect(wiki).toHaveAttribute('href', 'https://wiki.creality.com/en/k1-flagship-series/k1-series-general-documents/2509-error-trouble-shooting');
   await expect(wiki).toHaveAttribute('target', '_blank');
   await expect(wiki).toHaveAttribute('rel', 'noopener noreferrer');
+  // Linkul ține cât textul lui: un clic pe golul de lângă el nu deschide pagina.
+  const inPlus = (l: typeof wiki): Promise<number> => l.evaluate((a) => {
+    const r = document.createRange();
+    r.selectNodeContents(a);
+    return a.getBoundingClientRect().width - r.getBoundingClientRect().width;
+  });
+  expect(await inPlus(wiki)).toBeLessThan(2);
   // Cheia înaintea codului: un errcode necunoscut, cu cheia 116 (filamentul), o eroare obișnuită, fără pagină.
   imp.eroare(7777, 116);
   await expect(cod).toContainText('TR0116');
@@ -1512,6 +1519,7 @@ test('codurile explicate (3.6v): dicționarul cerut abia la prima eroare, o dat�
   await expect(cod).toHaveAttribute('data-explicat', 'necunoscut');
   await expect(cod).toContainText('Codul 4410 nu e în dicționarul cvs2');
   await expect(cod.locator('[data-imprimanta="eroare-lista"]')).toHaveAttribute('href', 'https://wiki.creality.com/en/k1-flagship-series/k1-series-general-documents/error-code-summary');
+  expect(await inPlus(cod.locator('[data-imprimanta="eroare-lista"]'))).toBeLessThan(2);
   // Dicționarul limbii de acum, o singură dată.
   expect(cereri).toEqual(['/coduri/creality-k1.ro.json']);
   imp.eroare(0, 0);
@@ -1550,4 +1558,28 @@ test('codurile explicate (3.6v): dicționarul cerut abia la prima eroare, o dat�
   // Doar citiri: nicio comandă nouă.
   expect(comenziSet(imp)).toEqual([]);
   expect(cereri).toEqual(['/coduri/creality-k1.ro.json']);
+});
+
+test('codurile explicate (3.6v): un dicționar care n-a venit lasă codul, ca înainte, și se cere din nou la eroarea următoare', async ({ page }) => {
+  const imp = await porneste({ imprima: { fisier: 'output_11031835.gcode', progres: 26 } });
+  const CALE = '**/coduri/creality-k1.ro.json';
+  const cereri: string[] = [];
+  page.on('request', (r) => { if (r.url().includes('/coduri/creality-k1.')) cereri.push(new URL(r.url()).pathname); });
+  // Prima cerere nu ajunge (de exemplu fără rețea, înainte de precache).
+  await page.route(CALE, (r) => r.abort());
+  await deschide(page);
+  await leaga(page, IP);
+  await expect(stare(page)).toHaveText('Imprimă');
+  imp.eroare(2509, 2509);
+  const cod = page.getByTestId('imprimanta-cod');
+  await expect(cod).toHaveAttribute('data-explicat', 'nu');
+  await expect(cod).toContainText('Cod 2509');
+  await expect(cod).toContainText('Imprimanta a semnalat un cod; ecranul ei arată textul.');
+  // Rețeaua revine; eroarea următoare cere dicționarul din nou și primește explicația.
+  await page.unroute(CALE);
+  imp.eroare(2585, 2585);
+  await expect(cod).toHaveAttribute('data-explicat', 'da');
+  await expect(cod).toContainText('CX2585');
+  expect(cereri).toEqual(['/coduri/creality-k1.ro.json', '/coduri/creality-k1.ro.json']);
+  expect(comenziSet(imp)).toEqual([]);
 });
