@@ -99,6 +99,12 @@ o('E25', DT, '    if (!el.open) el.showModal();', '    if (!el.open) el.show();'
   'ferestrele nu mai sunt modale: Esc nu le închide, pagina din spate rămâne vie')
 o('E26', FS_, 'const aratate = aleLui(toate, aleMele ? eu : null);', 'const aratate = aleLui(toate, null);', 'e2e',
   '„Ale mele” nu filtrează')
+# Găsite de bancul vizual pe 22.11: o adresă lungă ieșea din card (și lățea pagina la 760 px); mesajele de deasupra tablei o
+# împingeau în jos la fiecare mutare, sub cursorul care trage.
+o('E27', CS, '.sug-card {\n  position: relative;\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  min-width: 0;\n',
+  '.sug-card {\n  position: relative;\n  display: grid;\n', 'e2e', 'o adresă lungă iese din card și lățește pagina')
+o('E28', FS_, "faza: 'gata', id: s.id, discret: true,", "faza: 'gata', id: s.id, discret: false,", 'e2e',
+  'mesajul unei mutări se pune deasupra tablei: tabla sare sub cursor')
 
 SETURI = {
     'tabla': ['test/unit/sugestii.tabla.test.ts'],
@@ -112,5 +118,5 @@ T3, T4, T5 = (S, 'tabla: tragerea, nota cerută'), (S, 'tabla: o mutare refuzat�
 GREP = {
     'E01': T3, 'E02': T3, 'E03': T3, 'E04': T3, 'E05': T2, 'E06': T3, 'E07': T3, 'E08': T3, 'E09': T4, 'E10': T3,
     'E11': T3, 'E12': T3, 'E13': T3, 'E14': T3, 'E15': T3, 'E16': T3, 'E17': T4, 'E18': T2, 'E19': T5, 'E20': T1,
-    'E21': T1, 'E22': T2, 'E23': T3, 'E24': T3, 'E25': T1, 'E26': T1,
+    'E21': T1, 'E22': T2, 'E23': T3, 'E24': T3, 'E25': T1, 'E26': T1, 'E27': T3, 'E28': T3,
 }

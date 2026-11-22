@@ -210,10 +210,11 @@ test('omul scrie și își editează sugestia; owner-ul o vede pe tablă și dec
   await expect(card(page, 'acceptata', 'Grila magnetică')).toBeVisible();
   await expect(coloana(page, 'acceptata').locator('[data-sug="numar"]')).toHaveText('1');
   await expect(coloana(page, 'noua').locator('[data-sug="numar"]')).toHaveText('1');
-  // „Ale mele” / „Toate”.
+  // „Ale mele” / „Toate”: owner-ul de acum (alt cont decât primul) n-a scris niciuna.
   await page.locator('[data-sug="ale-mele"]').click();
-  await expect(page.locator('[data-sugestie]')).toHaveCount(1);
-  await expect(card(page, 'noua', 'Centrează pe foaie')).toBeVisible();
+  await expect(page.locator('[data-sug="ale-mele"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-sugestie]')).toHaveCount(0);
+  await expect(page.locator('[data-sug="gol-filtru"]')).toBeVisible();
   await page.locator('[data-sug="toate"]').click();
   await expect(page.locator('[data-sugestie]')).toHaveCount(2);
   mkdirSync('.tmp', { recursive: true });
@@ -299,7 +300,7 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   const B = 'SB000000000000000002';
   const C = 'SC000000000000000003';
   await scrie(`sugestii/${A}`, sugestie('Exportul DXF R12', { creataLa: new Date('2026-10-29T12:00:00Z') }));
-  await scrie(`sugestii/${B}`, sugestie('Tema roz', { creataLa: new Date('2026-10-29T11:00:00Z') }));
+  await scrie(`sugestii/${B}`, sugestie('Tema roz', { creataLa: new Date('2026-10-29T11:00:00Z'), autorEmail: 'o.adresa.foarte.lunga.de.email@exemplu-firma.ro' }));
   await scrie(`sugestii/${C}`, sugestie('Undo după export', { creataLa: new Date('2026-10-29T10:00:00Z') }));
   await intraCaOwner(page);
   await page.locator('[data-fila="sugestii"]').click();
@@ -318,16 +319,23 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   const callable = (u: URL): boolean => u.port === '5005' && u.pathname.endsWith('/sugestii');
   let tinute = 0;
   await page.route(callable, async (q) => { tinute += 1; await oprit; await q.continue(); });
+  // Tabla nu sare cât cererea e în drum, nici la răspuns: niciun mesaj nu se pune deasupra ei.
+  const sus = async (): Promise<number> => (await page.locator('[data-sug="tabla"]').boundingBox())?.y ?? -1;
+  const y0 = await sus();
   await card(page, 'noua', 'Exportul DXF R12').dragTo(coloana(page, 'acceptata'));
   await expect(card(page, 'acceptata', 'Exportul DXF R12')).toHaveAttribute('aria-busy', 'true');
   await expect(coloana(page, 'noua').locator('[data-sugestie="Exportul DXF R12"]')).toHaveCount(0);
   await expect.poll(() => tinute, { message: 'cererea e ținută' }).toBe(1);
   await expect(page.locator('[draggable="true"]')).toHaveCount(0);
   await expect(card(page, 'noua', 'Tema roz').locator('[data-sug="muta"]')).toBeDisabled();
+  expect(await sus()).toBe(y0);
   elibereaza();
   await page.unroute(callable);
   await expect(card(page, 'acceptata', 'Exportul DXF R12')).not.toHaveAttribute('aria-busy', 'true', LENT);
-  await expect(page.locator('[data-sug="gata"]')).toHaveText('„Exportul DXF R12”: Acceptată: de făcut.');
+  // Decizia se anunță pentru cititorul de ecran; la vedere, o spune cardul mutat.
+  await expect(page.locator('[data-sug="anunt"]')).toHaveText('„Exportul DXF R12”: Acceptată: de făcut.');
+  await expect(page.locator('[data-sug="gata"]')).toHaveCount(0);
+  expect(await sus()).toBe(y0);
   const a1 = await citeste(`sugestii/${A}`);
   expect([a1['stare']?.stringValue, a1['nota']?.stringValue, a1['versiune']?.integerValue]).toEqual(['acceptata', '', '2']);
   await expect(coloana(page, 'noua').locator('[data-sug="numar"]')).toHaveText('2');
@@ -408,6 +416,14 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   await expect(detaliu(page).locator('[data-sug="stare"]')).toHaveText('Amânată: mai târziu');
   await page.keyboard.press('Escape');
   expect(citiri).toEqual([]);
+
+  // Sub 1 100 px, coloanele trec pe rânduri; o adresă lungă se taie în card, iar nimic nu iese din ecran în dreapta.
+  await page.setViewportSize({ width: 700, height: 900 });
+  const b = card(page, 'respinsa', 'Tema roz');
+  const cutie = await b.boundingBox();
+  const adresa = await b.locator('.sug-card-cine').boundingBox();
+  expect(cutie && adresa && adresa.x + adresa.width <= cutie.x + cutie.width + 0.5, 'adresa stă în card').toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(erori).toEqual([]);
 });
 

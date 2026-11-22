@@ -129,7 +129,7 @@
 
 @media (max-width: 1099px) {
   .sug-tabla {
-    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
   }
 }
 
@@ -204,16 +204,22 @@
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-2);
 }
 
+/* În bandă, cardurile pe rânduri, fiecare cât conținutul lui (nu întins cât cel mai înalt de pe rând). */
 .sug-carduri-rand {
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+  align-items: start;
 }
 
+/* Coloana cardului poate fi mai îngustă decât conținutul: o adresă sau un cuvânt lung se taie în card, nu iese din el. */
 .sug-card {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-3) var(--sp-2);
   background: var(--s-panou);
@@ -320,6 +326,12 @@
   transform: rotate(90deg);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .sug-banda h3 > button::before {
+    transition: none;
+  }
+}
+
 /* Fără respinse, butonul e oprit; un card tras peste el cade tot în bandă (un buton oprit nu primește evenimentele mausului). */
 .sug-banda h3 > button:disabled {
   pointer-events: none;
@@ -371,4 +383,15 @@
 .sug-fereastra-cap > button {
   flex: 0 0 auto;
   font-size: var(--fs-4);
+}
+
+/* Anunțul unei decizii, pentru cititorul de ecran: la vedere, cardul mutat îl spune deja, iar un mesaj deasupra tablei ar
+   împinge-o sub cursorul care trage. */
+.sug-ascuns {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

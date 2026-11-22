@@ -29,11 +29,14 @@ import './sugestii.css';
  * server, pe versiunea văzută: una schimbată între timp e refuzată de server.
  */
 
-/** Ce se întâmplă acum: o cerere (cu mutarea arătată pe tablă), mesajul ei, sau eroarea, la locul ei (`nou` sau sugestia). */
+/**
+ * Ce se întâmplă acum: o cerere (cu mutarea arătată pe tablă), mesajul ei, sau eroarea, la locul ei (`nou` sau sugestia).
+ * Mesajul unei decizii e discret (doar pentru cititorul de ecran): tabla nu sare sub cursorul care trage.
+ */
 type Lucru =
   | { readonly faza: 'liber' }
   | { readonly faza: 'lucreaza'; readonly mutare: Mutare | null }
-  | { readonly faza: 'gata'; readonly mesaj: string; readonly id: string | null }
+  | { readonly faza: 'gata'; readonly mesaj: string; readonly id: string | null; readonly discret: boolean }
   | { readonly faza: 'eroare'; readonly motiv: string; readonly loc: string };
 
 /** O mutare care așteaptă nota (Respinsă, Amânată); din meniu, focusul se întoarce apoi pe card. */
@@ -111,7 +114,7 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
   const fa: Fa = (cerere, loc, mesaj, dupa) => {
     setLucru({ faza: 'lucreaza', mutare: null });
     sugestii(con, cerere).then((r) => {
-      setLucru({ faza: 'gata', mesaj: mesaj(r), id: loc === 'nou' ? null : loc });
+      setLucru({ faza: 'gata', mesaj: mesaj(r), id: loc === 'nou' ? null : loc, discret: false });
       setDeschis(null);
       dupa?.();
       setRev((n) => n + 1);
@@ -129,7 +132,7 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
     sugestii(con, { actiune: 'decide', ...d }).then((r) => {
       setLista((l) => (l?.ok ? { ok: true, valoare: dupaDecizie(l.valoare, d, r, new Date()) } : l));
       setLucru({
-        faza: 'gata', id: s.id,
+        faza: 'gata', id: s.id, discret: true,
         mesaj: r.schimbat ? t('admin.sug.decisa', { titlu: s.titlu, stare: t(`admin.sug.stare.${stare}`) }) : t('admin.sug.neschimbata'),
       });
       setDeschis(null);
@@ -169,8 +172,9 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
 
   return (
     <div className="pers sug">
-      {lucru.faza === 'lucreaza' ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.sug.lucreaza')}</p> : null}
-      {lucru.faza === 'gata' ? <div className="pers-stare" role="status" data-sug="gata"><p>{lucru.mesaj}</p></div> : null}
+      {lucru.faza === 'lucreaza' && lucru.mutare === null ? <p className="admin-mesaj" role="status" aria-busy="true">{t('admin.sug.lucreaza')}</p> : null}
+      {lucru.faza === 'gata' && !lucru.discret ? <div className="pers-stare" role="status" data-sug="gata"><p>{lucru.mesaj}</p></div> : null}
+      <p className="sug-ascuns" role="status" data-sug="anunt">{lucru.faza === 'gata' && lucru.discret ? lucru.mesaj : ''}</p>
       <div className="admin-erori-cap">
         <h2 className="sug-titlu-fila">{t(vedeToate ? 'admin.sug.toate' : 'admin.sug.ale-tale')} <span className="admin-slab">{toate.length}</span></h2>
         {vedeToate && poateScrie ? (
