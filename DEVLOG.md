@@ -10811,3 +10811,19 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
   build, determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800), lente (e2e 577 / 577, cu cele 3
   ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
   20 de VOID.
+
+## 2026-11-22 — ADR 0282 propus: elicele în atelierul Easy 3Draw (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si configurabile elicele si compatibile cu
+lego” (owner-ul, după „neata, continua si porneste si worktrees”). **Started:** 22.11, 09:35. **Completed:** 22.11, 16:28.
+
+- **Reperele LEGO**, din numele pieselor LDraw: elicele cu 3 palete 6041 (Ø3½, ax), 65768 (Ø3½), 2421 (Ø4), 4617b și 92842
+  (Ø5½), 15790 (Ø9) și cele cu mai multe palete 41530 (8, Ø5, ax), 87751 (7, Ø6), 80273 (5, Ø9).
+- **Propunerea:** o piesă „Elice” din parametri (2–8 palete, diametrul în știfturi, pasul ca raport față de diametru,
+  lățimea, forma, profilul, sensul și perechea, prinderea ca la rotițe, conul), tipărită fără suport: butucul și muchia de
+  jos a fiecărei palete pe masă, cu consola la vârf de 0,2 / tan β pe strat (0,9 mm la pasul 0,7). Apoi elicea de barcă și
+  ventilatorul cu carcasă.
+- **Schița**, cu macheta de încercat (vederea de sus și silueta pe masă, calculate din parametri; „Ca LEGO” cu valori
+  apropiate) și trei întrebări (unde stau, ce vine întâi, cotele din LDraw cu descărcarea lor), cu răspunsurile salvate în
+  pagină: <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>.
+- **Codul:** la răspunsurile owner-ului (felia 3.Tq), pe ramura `wip/3.Tq-elice`, în worktree-ul `rotite`.
