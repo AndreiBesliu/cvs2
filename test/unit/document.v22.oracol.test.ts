@@ -247,6 +247,7 @@ test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, s
     16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'], 19: ['rang'],
     20: ['incrustatie'], 21: ['incrustatie.jocLateral', 'incrustatie.dop', 'incrustatie.sprijin', 'incrustatie.frezeDop'],
     22: ['incrustatie.banda'], 23: ['instanta:texte'], 24: ['incrustatie.punti'], 25: ['incrustatie.locas', 'incrustatie.treapta'],
+    26: ['urechi.mod', 'urechi.locuri'],
   });
   const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1, rang: 1, incrustatie: { jocLateral: 1, dop: 1, sprijin: 1, frezeDop: 1, banda: 1 } }]);
   // Rândul 23 e al instanței (`texte`, ADR 0210 §7): îl judecă proba v23; aici, pașii pe operație, până la v22.

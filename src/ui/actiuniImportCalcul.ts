@@ -164,7 +164,7 @@ function raportImagine(r: Exclude<RaspunsTrasare, { cod: 'citire' } | { cod: 'ti
   const baza = {
     latimePx: t.latime, inaltimePx: t.inaltime, redusDin: r.redusDin, latimeMm: t.latime * r.mmPePx, inaltimeMm: t.inaltime * r.mmPePx,
     intreg: { latimePx: r.intreg.latime, inaltimePx: r.intreg.inaltime }, zona: r.zona,
-    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, transparenta: t.transparenta, automat: t.automat,
+    mmPePx: r.mmPePx, scara: r.scara, dpi: r.dpi, foaie: r.foaie, rotire: r.rotire, transparenta: t.transparenta, automat: t.automat,
     margini: t.margini, pete: t.pete, gauri: t.gauri, margine: t.margine, contururi: t.contururi, varfuri: t.varfuri, abaterePx: t.abatere,
     lumina: r.raport.lumina, inegala: r.raport.inegala, ...(r.pagini !== undefined ? { pagini: r.pagini } : {}),
     ...(r.poza ? { poza: r.poza } : {}),
@@ -307,8 +307,9 @@ export async function previzualizareImagine(f: FisierImport, t: AlegeriTrasare |
 /**
  * Cererea trasării din alegerile ferestrei: opțiunile nucleului (lumina și marginea doar când nu sunt implicite), curățarea,
  * scara, zona, culorile (cu felul fiecăreia, ADR 0228) sau liniile mediane, cu opțiunile lor cât măcar o culoare e pe linii,
- * și foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate). Imaginea unei pagini PDF (ADR 0270) își
- * ia DPI-ul și orientarea din așezarea pe pagină.
+ * foaia (ADR 0225: doar cu „Îndreaptă foaia”, cu formatul și colțurile mutate) și scanarea (ADR 0271: doar cu „Îndreaptă
+ * scanarea”, cu unghiul scris sau null). Imaginea unei pagini PDF (ADR 0270) își ia DPI-ul și orientarea din așezarea pe
+ * pagină.
  */
 export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: number, pdf?: AsezarePdf): CerereTrasare {
   const peCulori = a.sursa === 'culori';
@@ -324,6 +325,7 @@ export function cerereTrasare(f: FisierImport, a: AlegeriTrasare, pagina?: numbe
     ...(peCulori ? { culori: a.culori } : {}), ...(a.rezultat === 'mediane' ? { rezultat: 'mediane' } : {}),
     ...(peLinii ? { mediane: a.mediane } : {}),
     ...(a.foaie.indreapta ? { foaie: { colturi: a.foaie.colturi, format: formatFoaie(a.foaie) } } : {}),
+    ...(a.rotire.indreapta ? { rotire: { unghi: a.rotire.unghi } } : {}),
     ...(pagina !== undefined && pagina > 1 ? { pagina } : {}),
   };
 }

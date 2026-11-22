@@ -45,7 +45,7 @@ function documentTrepte(c: CazTrepte, peste: Record<string, unknown> = {}, opera
     else incrustatie[k] = v;
   }
   return {
-    schema: 25, rev: 0,
+    schema: 26, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri },
       operatii: [{

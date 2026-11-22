@@ -3,6 +3,7 @@ import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase
 import { httpsCallable } from 'firebase/functions';
 import type { CerereConturi, RaspunsPlan, RaspunsSetari } from '../../shared/conturiPlan.ts';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
+import type { CerereRaspunsuriRapide, RaspunsRapid, RaspunsRaspunsuriRapide } from '../../shared/raspunsuriRapide.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import type { CerereTichet, RaspunsProiectTichet, RaspunsTichet } from '../../shared/tichete.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
@@ -84,6 +85,14 @@ export async function planulContului(c: Conexiune, cerere: Extract<CerereConturi
 /** Setările conturilor din fila Setări (ADR 0116 §20): doar owner-ul; refuzurile vin cu motivul serverului. */
 export async function setarileConturilor(c: Conexiune, cerere: Extract<CerereConturi, { actiune: 'setari' }>): Promise<RaspunsSetari> {
   return (await httpsCallable<CerereConturi, RaspunsSetari>(c.functii, 'administreazaConturile')(cerere)).data;
+}
+
+/**
+ * Răspunsurile rapide ale tichetelor (ADR 0261), doar owner-ul, din fila Setări: lista întreagă, pe versiunea văzută (0 = niciun
+ * document încă), prin callable-ul `tichete`; refuzurile vin cu motivul.
+ */
+export async function salveazaRaspunsurileRapide(c: Conexiune, lista: readonly RaspunsRapid[], versiune: number): Promise<RaspunsRaspunsuriRapide> {
+  return (await httpsCallable<CerereRaspunsuriRapide, RaspunsRaspunsuriRapide>(c.functii, 'tichete')({ actiune: 'raspunsuriRapide', lista, versiune })).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {

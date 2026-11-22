@@ -53,7 +53,7 @@ function document(prin: number, varianta?: 'profil' | 'fara-voie'): unknown {
     }),
   ];
   return {
-    schema: 25, rev: 0, piese,
+    schema: 26, rev: 0, piese,
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: T }, instante: piese.map((p) => ({ id: `i-${String(p['id'])}`, piesa: p['id'], x: 0, y: 0, rotire: 0 })) }],
   };
 }

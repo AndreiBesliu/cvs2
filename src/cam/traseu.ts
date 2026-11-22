@@ -5,7 +5,7 @@ import { degajeaza, type Degajare } from './degajari.ts';
 import type { Trecere } from './profil.ts';
 import { arcIesire, arcIntrare, arcIntrareCuRampa, type IntrareAleasa } from './intrari.ts';
 import { buclaCuRampa, refuzLungimeRampa, type ParametriRampa } from './rampa.ts';
-import { bucataCuUrechi, EPS_VARF, lungimeBucla, noduriProfil, type ParametriUrechi } from './urechi.ts';
+import { bucataCuUrechi, EPS_VARF, lungimeBucla, noduriProfil, urechiPeBucla, type ParametriUrechi } from './urechi.ts';
 
 export type ParametriTraseu = {
   /** Z-ul de siguranță, deasupra feței de sus (mm). */
@@ -87,7 +87,7 @@ export function traseuProfil(
           m.push({ tip: 'rapida', la: { X: intrare.a.x, Y: intrare.a.y } });
           m.push({ tip: 'taiere', la: { Z: 0 }, avans: p.avansPlonjare });
           m.push(arcIntrareCuRampa(intrare, -d, p.avans, p.avansPlonjare));
-          const e = taieBucla(m, c, d, p, urechi, degajari?.[j]);
+          const e = taieBucla(m, c, d, p, urechiPeBucla(urechi, j), degajari?.[j]);
           if (e) return { ok: false, motiv: e };
           m.push(arcIesire(intrare, p.avans));
           m.push({ tip: 'rapida', la: { Z: p.zSigur } });
@@ -99,7 +99,7 @@ export function traseuProfil(
       m.push({ tip: 'rapida', la: { Z: p.zSigur } });
       m.push({ tip: 'rapida', la: { X: start.x, Y: start.y } });
       m.push({ tip: 'taiere', la: { Z: 0 }, avans: p.avansPlonjare });
-      const r = buclaCuRampa(c, adancimi, rampa, urechi, p.avans, p.avansPlonjare, degajari?.[j]);
+      const r = buclaCuRampa(c, adancimi, rampa, urechiPeBucla(urechi, j), p.avans, p.avansPlonjare, degajari?.[j]);
       if (!r.ok) return r;
       for (const x of r.miscari) m.push(x);
       m.push({ tip: 'rapida', la: { Z: p.zSigur } });
@@ -116,7 +116,7 @@ export function traseuProfil(
       m.push({ tip: 'rapida', la: { X: start.x, Y: start.y } });
       m.push({ tip: 'taiere', la: { Z: z }, avans: p.avansPlonjare });
       if (intrare) m.push(arcIntrare(intrare, p.avans));
-      const e = taieBucla(m, c, t.adancime, p, urechi, degajari?.[j]);
+      const e = taieBucla(m, c, t.adancime, p, urechiPeBucla(urechi, j), degajari?.[j]);
       if (e) return { ok: false, motiv: e };
       if (intrare) m.push(arcIesire(intrare, p.avans));
       m.push({ tip: 'rapida', la: { Z: p.zSigur } });

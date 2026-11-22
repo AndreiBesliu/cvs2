@@ -1,4 +1,4 @@
-import { createContext, useContext, type AnchorHTMLAttributes, type ReactElement, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, type AnchorHTMLAttributes, type ReactElement, type ReactNode } from 'react';
 import { t } from '../../i18n/t.ts';
 import type { Fila } from '../adresa.ts';
 import type { FelGasit, Gasibil } from './date.ts';
@@ -29,6 +29,45 @@ export function usePublica(): (fel: FelGasit, randuri: readonly Gasibil[]) => vo
   return useContext(ContextCarcasa)?.publica ?? nimic;
 }
 const nimic = (): void => undefined;
+
+/** Dacă rolul vede o filă (o legătură spre ea are rost); fără carcasă, nu. */
+export function useVedeFila(fila: Fila): boolean {
+  return useContext(ContextCarcasa)?.vede(fila) ?? false;
+}
+
+/**
+ * Detaliul lipit sus al unei file cu lista alături (Erori, Tichete) ține cât spațiul de sub el și se derulează în el: tot ce
+ * are rămâne la îndemână și înainte de prima derulare (cât pagina nu e derulată, detaliul stă sub antet, mai jos decât locul
+ * lui lipit), nu doar la capătul listei. Sub 800 px trece sub listă și curge cu pagina. Fără script, regula din CSS ține locul.
+ */
+export function useCatSpatiulDeJos(): (el: HTMLElement | null) => (() => void) | undefined {
+  return useCallback((el: HTMLElement | null) => {
+    if (!el) return undefined;
+    const ingust = matchMedia('(max-width: 800px)');
+    let cadru = 0;
+    const potriveste = (): void => {
+      cadru = 0;
+      if (ingust.matches) {
+        el.style.maxHeight = '';
+        return;
+      }
+      const lipit = parseFloat(getComputedStyle(el).top) || 0;
+      const sus = Math.max(el.getBoundingClientRect().top, lipit);
+      el.style.maxHeight = `${Math.max(240, Math.floor(window.innerHeight - sus - lipit))}px`;
+    };
+    const cere = (): void => { if (cadru === 0) cadru = requestAnimationFrame(potriveste); };
+    potriveste();
+    window.addEventListener('scroll', cere, { passive: true });
+    window.addEventListener('resize', cere);
+    ingust.addEventListener('change', cere);
+    return () => {
+      cancelAnimationFrame(cadru);
+      window.removeEventListener('scroll', cere);
+      window.removeEventListener('resize', cere);
+      ingust.removeEventListener('change', cere);
+    };
+  }, []);
+}
 
 /**
  * Legătura spre o filă: `#fila`, ca un clic de mijloc (sau cu Ctrl) s-o deschidă într-o filă nouă a browserului; clicul

@@ -7,7 +7,7 @@ import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente, type Avertisment } from '../model/avertismente.ts';
-import { documentNou, type Document, type Operatie } from '../model/document.ts';
+import { documentNou, type Document, type LocUreche, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
 import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
@@ -116,6 +116,10 @@ const incarcaDialogImport = () => import('./ImportConectat.tsx').then(cuMesaje);
 // Dialogurile vin legate de document (`ExportConectat`, `ImportConectat`): valorile operațiilor, citirea fișierelor și coada
 // importului pleacă din pachetul de pornire odată cu ferestrele lor.
 const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.ExportConectat }), () => ({ default: DialogNeincarcat })));
+// Modul urechilor alese (ADR 0211, 3a) și semnele lor cu „Arată traseul” (4a): la cerere, din rândul exportului.
+const incarcaUrechile = () => import('./ModUrechi.tsx').then(cuMesaje);
+const ModUrechi = lazy(() => incarcaUrechile().then((m) => ({ default: m.ModUrechi })));
+const SemneUrechiFoaie = lazy(() => incarcaUrechile().then((m) => ({ default: m.SemneUrechiFoaie })));
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
 const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
@@ -327,6 +331,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const focusAspect = useRef<Element | null>(null);
   /** Raportul foilor (ADR 0210 §6): colțul și Z0 ale exportului, de la fereastra lui; din paletă, cele implicite. */
   const [raport, setRaport] = useState<Pick<ParametriExport, 'origine' | 'z0'> | null>(null);
+  /**
+   * Modul urechilor alese (ADR 0211, 3a): operația ale cărei urechi se pun pe pânză, cu urechile rândului ferestrei. Cât ține,
+   * fereastra exportului stă ascunsă (nu închisă, cu tot ce ai scris în ea), iar acțiunile documentului rămân oprite.
+   */
+  const [urechiAlese, setUrechiAlese] = useState<{
+    readonly piesa: string; readonly operatie: string; readonly numar: number; readonly latime: number; readonly grosime: number;
+  } | null>(null);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
@@ -802,8 +813,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const dialogDeschis = useRef(false);
   dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || raport !== null;
-  /** Un dialog sau paleta: aplicația de sub ele e inertă. */
-  const modal = dialogDeschis.current || paleta;
+  /** Un dialog sau paleta: aplicația de sub ele e inertă. Cât pui urechile pe desen (ADR 0211), pânza lucrează. */
+  const modal = (dialogDeschis.current && urechiAlese === null) || paleta;
   const modalRef = useRef(modal);
   modalRef.current = modal;
   useEffect(() => {
@@ -1081,6 +1092,29 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     },
   };
   const mesaj = mesajProiect(mod, proiect, motivNecitit);
+
+  /**
+   * „Gata” în modul urechilor (ADR 0211, 3a): locurile alese intră în operație, cu modul „alese”, ca o singură comandă (aceeași
+   * ușă ca Exportă: `document.aplica-operatii`, gestul ferestrei); fără nicio ureche, operația rămâne „alese”, fără locuri.
+   * Urechile operației, dacă documentul nu le are încă, sunt cele ale rândului ferestrei.
+   */
+  const gataUrechi = (locuri: Readonly<Record<string, readonly LocUreche[]>>): void => {
+    const a = urechiAlese;
+    setUrechiAlese(null);
+    const p = a ? doc.piese.find((x) => x.id === a.piesa) : undefined;
+    if (!a || !p) return;
+    const cuLocuri = Object.keys(locuri).length > 0;
+    const operatii = p.operatii.map((o): Operatie => {
+      if (o.id !== a.operatie) return o;
+      const { locuri: _vechi, ...baza } = o.urechi ?? { numar: a.numar, latime: a.latime, grosime: a.grosime };
+      void _vechi;
+      // Copia pune cheile (un id poate fi „__proto__”): răspândirea le creează ca date.
+      return { ...o, urechi: { ...baza, mod: 'alese', ...(cuLocuri ? { locuri: { ...locuri } as Record<string, LocUreche[]> } : {}) } };
+    });
+    ruleaza(registru, 'document.aplica-operatii', context({ operatiiNoi: () => new Map([[p.id, operatii]]) }));
+  };
+  /** Foaia are urechi alese (ADR 0211, 4a): semnele lor apar cu „Arată traseul”. */
+  const cuUrechiAlese = doc.piese.some((x) => x.operatii.some((o) => o.urechi?.mod === 'alese'));
 
   /**
    * Exportă: întâi valorile din dialog intră în document, ca o singură comandă (se salvează, Ctrl+Z le scoate), apoi
@@ -1480,13 +1514,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {...(desen ? { desen } : {})}
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
-                <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
+                <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
                   onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
+                {/* Urechile alese (ADR 0211): modul lor, peste editor; altfel, semnele lor cu „Arată traseul” (4a). */}
+                {urechiAlese ? (
+                  <Suspense fallback={null}>
+                    <ModUrechi doc={doc} indexFoaie={indexActiva} piesa={urechiAlese.piesa} operatie={urechiAlese.operatie} latime={urechiAlese.latime}
+                      nume={doc.piese.find((x) => x.id === urechiAlese.piesa)?.nume ?? urechiAlese.piesa} vedere={v} marime={m} zona={zona}
+                      onGata={gataUrechi} onRenunta={() => { setUrechiAlese(null); }} />
+                  </Suspense>
+                ) : traseu?.arata && cuUrechiAlese ? (
+                  <Suspense fallback={null}><SemneUrechiFoaie doc={doc} indexFoaie={indexActiva} vedere={v} marime={m} /></Suspense>
+                ) : null}
               </Suspense>
             )}
             textLasare={t('import.lasa-aici')}
@@ -1496,7 +1540,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               dată reia garda de 0,3 s din CSS (`apare`), în care clicul trece prin ea. Între timp își păstrează focusul
               (Duplică apăsat de la tastatură nu-l pierde).
             */}
-            {selectieValida.length > 0 && aranjament.zone.selectie.length > 0 && (
+            {selectieValida.length > 0 && aranjament.zone.selectie.length > 0 && urechiAlese === null && (
               <div key={String(modal)} className="insula" role="toolbar" aria-label={t('bara.selectie')}>
                 {grupuri('selectie')}
               </div>
@@ -1552,6 +1596,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       )}
       <Suspense fallback={null}>
       {dialogExport && (
+        // Cât pui urechile pe desen (ADR 0211, 3a), fereastra stă ascunsă, cu tot ce ai scris în ea; „Gata” o aduce înapoi.
+        <div className="export-cu-urechi" hidden={urechiAlese !== null}>
         <DialogExport
           baza={bazaNoua}
           doc={docActiv}
@@ -1578,7 +1624,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           // Mașina și îi cere să încarce exportul, fără să-l pornească.
           {...(stareExport?.ok && ultimulExport ? { onDeschideInMasina: duInMasina } : {})}
           {...(trimiteExport ? { trimite: true } : {})}
+          {...(doarCiteste(mod) ? {} : {
+            onAlegeUrechi: (a: NonNullable<typeof urechiAlese>) => {
+              // Rezultatul ultimului export era al documentului de acum: îl scoate, ca fereastra să nu-l arate după urechile noi.
+              cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null);
+              setUrechiAlese(a);
+            },
+          })}
         />
+        </div>
       )}
       {coadaImport && (
         <DialogImport

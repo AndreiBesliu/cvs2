@@ -160,7 +160,8 @@ test('owner: Azi întâi, cu cifrele, joburile, ce așteaptă și întâmplăril
   // Punctul Diagnozei = cea mai rea stare din fila ei, fără sonda funcțiilor (doar în filă).
   const punct = await bara(page, 'diagnoza').locator('[data-punct]').getAttribute('data-punct');
   await bara(page, 'diagnoza').click();
-  await expect(page.locator('[data-verificare="functii"]')).toBeVisible(LENT);
+  // Sonda funcțiilor pornește la rece `logClientError`: sub încărcare (21.11, mai multe linii pe mașină) trece de 30 s.
+  await expect(page.locator('[data-verificare="functii"]')).toBeVisible(PORNIRE);
   const fara = '[data-verificare]:not([data-verificare="functii"])';
   const rea = (await page.locator(`${fara}[data-stare="esec"]`).count()) > 0 ? 'esec'
     : (await page.locator(`${fara}[data-stare="atentie"]`).count()) > 0 ? 'atentie' : null;
@@ -247,6 +248,9 @@ test('căutarea din antet găsește în ce s-a citit: o eroare și un tichet, fi
   await expect(bara(page, 'tichete')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator(`[data-tichet="${T(2)}"]`)).toHaveAttribute('data-gasit-aici', 'true', LENT);
   await expect(page.locator(`[data-tichet="${T(2)}"]`)).toBeInViewport();
+  // Felia A.3: tichetul găsit vine și ales, cu conversația lui în dreapta.
+  await expect(page.locator(`[data-tichet="${T(2)}"]`)).toHaveAttribute('data-ales', 'true');
+  await expect(page.locator('[data-tic="detaliu"]')).toHaveAttribute('data-tic-ales', T(2));
 });
 
 test('lista goală are semnul și ultima rezolvare; eroarea citirii, motivul și „Deschide Diagnoza”; cât se încarcă, rânduri schițate', async ({ page }) => {
@@ -261,12 +265,19 @@ test('lista goală are semnul și ultima rezolvare; eroarea citirii, motivul și
   await expect(gol.locator('[data-semn]')).toBeVisible();
   await expect(gol.locator('[data-ultima]')).toContainText('16.11.2026');
 
-  // Rândurile schițate: o citire întârziată ține schița la vedere.
-  await page.route('**/documents:runQuery', async (r) => { await new Promise((ok) => setTimeout(ok, 1500)); await r.continue(); });
+  // Rândurile schițate: o citire ținută ține schița la vedere. Ruta e pe cale, nu un glob: adresa are `?key=…` după
+  // `:runQuery` (21.11, A.3: globul de aici nu se potrivea, ca cel din A.2, iar schița se vedea doar dacă citirea întârzia).
+  let elibereaza = (): void => {};
+  const oprit = new Promise<void>((ok) => { elibereaza = ok; });
+  const listaTichete = (u: URL): boolean => u.pathname.endsWith('/documents:runQuery');
+  let tinute = 0;
+  await page.route(listaTichete, async (r) => { tinute += 1; await oprit; await r.continue(); });
   await bara(page, 'tichete').click();
+  await expect.poll(() => tinute, { message: 'citirea tichetelor e ținută' }).toBeGreaterThanOrEqual(1);
   await expect(page.locator('[data-schita]')).toBeVisible();
+  elibereaza();
   await expect(page.locator('[data-tic="gol"]')).toBeVisible(LENT);
-  await page.unroute('**/documents:runQuery');
+  await page.unroute(listaTichete);
 
   // Permisiunea scoasă din rol după intrare: citirea erorilor e refuzată; Diagnoza e la un clic.
   await scrie(`roluri/${ROL}`, { nume: 'Suport', permisiuni: ['diagnoza.citeste', 'tichete.citeste'] });
