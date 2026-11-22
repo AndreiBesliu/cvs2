@@ -1022,7 +1022,11 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
 letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
-**Cut into panels** is a single undo step.
+With **Engrave each panel’s number** (off by default: the digits show on the front), each panel gets its number (“3”), in the
+single-line font (Relief SingleLine), engraved on the line, near the bottom-left corner, inside, at least a quarter of the
+digit height (at least 2 mm) away from edges, cuts, teeth and letters; **Digit height** is 10 mm by default. The number goes
+into the panel’s group (a text, editable later in the Text panel); a panel with no room gets no number, and the panel says
+how many. **Cut into panels** is a single undo step, numbers included.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -1951,10 +1955,10 @@ blocks (the deepest point of each), and the status in the corner says so.
 - **0.1 mm when zoomed in**: when you get close enough, the area around the centre (at most 204.8 × 204.8 mm) is simulated
   again at 0.1 mm and drawn over the sheet; the rest stays at 0.25 mm.
 - **The sheet or a plug**: if the sheet has [inlays](#incrustatie), buttons “Sheet”, “Plug 1”, “Plug 2” … appear at the top,
-  in the order of the plugs' files in the export (each one's title gives its blank). “Plug N” simulates the plug's program on
-  its blank (the face at 0, the bottom at its thickness) and frames it: you see the plug standing, the lowered face or the
-  cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug cannot be cut, the sheet still shows, and the
-  status says why the plugs are missing.
+  in the order of the plugs' files in the export (each one's title names its inlay, as the bottom bar does, and gives its
+  blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
+  see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
+  cannot be cut, the sheet still shows, and the status says why the plugs are missing.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

@@ -1246,7 +1246,7 @@ function judecaConversia(h: Istoric, c: ConversieCalculata): ComandaTaiere {
 function judecaTaierea(h: Istoric, t: TaiereCalculata, idFoaie: string | undefined): ComandaTaiere {
   if (t.doc !== h.doc) return { ok: false, motiv: 'editare.taiere.motiv.veche' };
   const sterse = t.sterse ?? [];
-  const grupuri = t.grupuri ?? [];
+  let grupuri = t.grupuri ?? [];
   if (t.degrupate.length === 0 && sterse.length === 0 && grupuri.length === 0) return { ok: false, motiv: 'motiv.nimic-ales' };
   // Decuparea: întâi ștergerile (fiecare pe documentul de după cele dinainte), apoi degruparea; panourile (ADR 0181 §7), apoi
   // gruparea lor, pe documentul de după degrupare (cu alegerea de după: grupurile în locul bucăților); un singur pas de anulare.
@@ -1271,6 +1271,28 @@ function judecaTaierea(h: Istoric, t: TaiereCalculata, idFoaie: string | undefin
     else if (degrupate.length > 0) comenzi.push({ tip: 'degrupeaza', foaie, degrupate });
   } catch {
     return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+  }
+  // Numerele panourilor (felia 10.3↑n): piesele cifrelor, cu id-uri noi (ocolesc și documentul de dinainte: un id eliberat de
+  // tăiere nu ajunge pe o cifră), la capătul foii, apoi în grupul panoului (un panou dintr-o singură bucată devine grup).
+  if (t.numere && t.numere.length > 0) {
+    let d: Document;
+    try {
+      d = comenzi.length === 0 ? h.doc : executa(h, { tip: 'lot', comenzi }).doc;
+    } catch {
+      return { ok: false, motiv: 'editare.taiere.motiv.veche' };
+    }
+    const ocupate = new Set<string>([...h.doc.piese.map((p) => p.id), ...h.doc.foi.flatMap((f) => f.instante.map((i) => i.id))]);
+    let poz = d.foi.find((f) => f.id === foaie)?.instante.length ?? 0, pozPiesa = d.piese.length;
+    const lista = grupuri.map((g) => ({ nume: g.nume, ids: [...g.ids] }));
+    for (const n of t.numere) {
+      const id = idNou(d, ocupate);
+      ocupate.add(id);
+      comenzi.push({ tip: 'adauga', foaie, instanta: { id, piesa: id, x: n.x, y: n.y, rotire: 0 }, pozitie: poz++, piesa: { piesa: { ...n.piesa, id }, pozitie: pozPiesa++ } });
+      const g = lista.find((x) => x.nume === n.nume);
+      if (g) g.ids.push(id);
+      else lista.push({ nume: n.nume, ids: [...n.ids, id] });
+    }
+    grupuri = lista;
   }
   let ids: readonly string[] | undefined;
   if (grupuri.length > 0) {
