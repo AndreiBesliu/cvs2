@@ -64,8 +64,11 @@ o('C05', DOPV, 'desen: contururi.map(poligon),', 'desen: [],', 'potrivire', 'pot
 
 # ---- Calculul din lucrător (src/jobs/calculCam.ts) ----
 o('J01', CALC, 'inV: x.potrivire !== undefined', 'inV: true', 'dop3d', 'și dopul drept „în V” (comutatorul pornit la el)')
-o('J02', CALC, '  const locas = pregatesteProgram(job.program, 0);', '  const locas = pregatesteProgram(job.program, 1);', 'potrivire',
-  'locașul simulat cu fața plăcii mutată')
+# J02, la prima rulare (`pregatesteProgram(job.program, 1)`, „fața plăcii mutată”), a scăpat ca mutant echivalent: `sus`
+# doar desparte mișcările în aer de cele în lemn, iar cele dintre 0 și 1 mm nu taie sub fața plăcii. Mutată pe refuzul dopului
+# drept, pe care nu-l proba nimic: proba lui e acum în `incrustatie.potrivire3d.test.ts` (refuzurile calculului).
+o('J02', CALC, '  if (!x.potrivire) return { ok: false, motiv:', '  if (false) return { ok: false, motiv:', 'potrivire',
+  'dopul drept măsurat ca unul în V, fără refuz')
 o('J03', CALC, 'grosimeDop: x.semifabricat.grosimeMinima })', 'grosimeDop: x.semifabricat.grosimeMinima + 1 })', 'potrivire',
   'grosimea dopului din secțiune greșită')
 

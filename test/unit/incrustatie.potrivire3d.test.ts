@@ -146,6 +146,25 @@ test('controlul negativ: dopul tăiat ca a doua cavitate are rânduri roșii, cu
   assert.ok(Math.abs(p.sectiune.y - rosu.unde![1]) <= CELULA, `secțiunea, pe rândul locului: y ${p.sectiune.y} / ${rosu.unde![1]}`);
 });
 
+test('refuzurile calculului, cu motivul: dopul cu pereți drepți (felia 12.1↑e-3) și dopul care lipsește, cu numărul lui', () => {
+  // Foaia cazului „dreptunghi” (dopul 1, în V) cu încă o incrustație cu pereți drepți (dopul 2), ca în `incrustatie.dop3d.test.ts`.
+  const c = CAZURI_INCRUSTATIE[0]!;
+  const d = { ...(documentCaz(c) as object), schema: 25 } as { schema: number; piese: unknown[]; foi: { instante: unknown[] }[] };
+  d.piese.push({
+    id: 'q', radacina: { tip: 'element', id: 'b', matrice: { a: 1, b: 0, c: 0, d: 1, e: 80, f: 60 }, forma: { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 } },
+    operatii: [{
+      id: 'o', tip: 'buzunar', noduri: ['b'], latura: 'interior', sens: 'urcare', adancime: 3, pas: 1.5, pasLateral: 2.4,
+      scula: { numar: 3, nume: 'freza plata', diametru: 6 }, urechi: null, rampa: null, intrari: null, colturi: null,
+      incrustatie: { fel: 'drept', jocLateral: 0.1, dop: 'decupat', sprijin: 'fund', joc: 0.5, fierastrau: 2, margine: 8 },
+    }],
+  });
+  d.foi[0]!.instante.push({ id: 'j', piesa: 'q', x: 0, y: 0, rotire: 0 });
+  const doc = deschis(d);
+  assert.ok(aplicatie(c, doc).randuri.intra.ok, 'dopul în V se măsoară');
+  assert.deepEqual(calculeazaPotrivirea(doc, 1), { ok: false, motiv: 'dopul 2: potrivirea simulată e doar la incrustația în V, deocamdată' });
+  assert.deepEqual(calculeazaPotrivirea(doc, 2), { ok: false, motiv: 'dopul 3 nu mai e în document' });
+});
+
 test('secțiunea dreptunghiului, pe hârtie: pe mijloc, fundul la −D și dopul la −S; la margine, placa la 0 și dopul la H deasupra', () => {
   const c = CAZURI_INCRUSTATIE[0]!;
   const p = aplicatie(c, deschis(documentCaz(c)));
