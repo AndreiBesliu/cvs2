@@ -10811,3 +10811,42 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
   build, determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800), lente (e2e 577 / 577, cu cele 3
   ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
   20 de VOID.
+
+## 2026-11-22 — Felia 10.3↑o: legarea căilor (ADR 0182) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, începe 10.3↑o” (owner-ul, 21.11, în sesiunea liniei `taiere`, după raportul lui 10.3↑n și răspunsurile la ADR
+0182); reluată pe 22.11 la „neata, continua si porneste si worktrees” (owner-ul, prin sesiunea principală). **Started:** 21.11,
+19:23. **Completed:** 22.11, 21:50.
+
+- **Ramura** `wip/10.3o-legare`, din vârful lui 10.3↑n (`2fce5b91`); `origin/main` `40487c43` (10.3↑n, titlul dopului, 3.To,
+  3.Tp↑a) unit în `b7f509b9`, fără conflicte (lucrul necomis, pus deoparte pe cele cinci fișiere atinse și pus la loc).
+- **Legarea** (`src/model/legareCai.ts`, pur, în worker, cererea `legare`): regulile importului DXF (lipirea sub toleranță, doar
+  câte două capete, lanțurile, cel închis), golul între exact două lanțuri, o singură cale închisă, calea în coordonatele primei
+  (arcele întoarse și oglindite, cubicele cu mânerele mutate), refuzurile cu motiv; `reparare.ts` își dă harta, felul
+  operațiilor și schimbările pieselor.
+- **Interfața:** butonul „Leagă căile” și săgeata „Opțiunile legării” (`PanouLegare.tsx`) în secțiunea booleanului, rândul din
+  meniul de clic dreapta, Ctrl+J și paleta (acțiunea `document.leaga-caile`); „Leagă” și „Leagă toate căile” în Verificare;
+  opțiunile ținute (`cncvs2.legare`). Manualul (ro, en): capitolul „Legarea căilor”, Verificarea, Ctrl+J. Textele (ro, en).
+- **Treceri:** (1) golurile: liniile vin doar între exact două lanțuri (un T sau trei lanțuri ar lega capete depărtate, la
+  întâmplare), iar o singură cale aleasă se închide (deci Ctrl+J din nou, după o legare, o închide); (2) e2e: rezultatul se
+  ștergea pe loc, fiindcă alegerea primește alt tablou după orice schimbare a documentului: se compară după conținut; limba
+  paginii de probă, română; (3) otrăvurile: rotirea lanțului închis era cod mort (mersul pornește chiar de la prima cale):
+  scoasă; probe noi înaintea rulării (prima și a doua cale întoarse la gol, arcul oglindit); L11, nevalidă (un `else` rămas
+  singur), rescrisă și prinsă; (4) CRLF scris de `Path.write_text` din Python în patru fișiere: adus la LF; (5) mărimea:
+  opțiunile într-un modul ușor de la început (lecția lui 10.3↑n), deci legarea a rămas toată în worker; (6) porțile: cu un cerc
+  ales, primul rând activ al meniului de clic dreapta devenise „Leagă căile” (`import.spec.ts:436` aștepta „Duplică”): comanda e
+  acum activă, în bară, în panou și în meniu, doar cu o cale deschisă aleasă.
+- **Otrăvurile** (`test/otravuri/10.3o.py`, e2e în `legare.spec.ts`): 25 / 25 prinse, în clona din afara Drive-ului; L11,
+  nevalidă la prima rulare, rescrisă (`181e270e`) și prinsă.
+- **Porțile:** întregi pe vârful feliei (`181e270e`, cu `main` `40487c43` unit): traducerile, cele trei compilatoare,
+  importurile, licențele, unit 9 677 (9 669 trecute, 8 sărite, 0 căderi), build-ul determinist (344 de fișiere identice), e2e
+  580 / 581 (`import.spec.ts:436`, rândul activ al meniului, reparat; trecerea 6), emulatoarele 101 / 101 și 29 / 29; apoi, pe
+  reparație (`3ad80ef2`): compilatorul, importurile, unit-urile manualului, acțiunilor și legării 30 / 30, e2e `import`,
+  `legare` și `boolean` 30 / 30.
+- **Mărimea:** pornirea +0,1 kB (107,2 → 107,3; cu ușa 111,3 / 115: acțiunea, tasta și eticheta ei în dicționarul de bază),
+  totalul +4,2 kB (742,0 → 746,2 / 800, A/B în clonă, pe `main` `40487c43` și pe `3ad80ef2`): workerul +2,4 kB (legarea), bucata
+  editării +1,6 kB (butoanele, panoul opțiunilor, depozitul, textele), Verificarea +0,2 kB; opțiunile stau într-un modul ușor,
+  deci legarea a rămas toată în worker.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 22.12), pe `3ad80ef2`,
+  verificat (ro, en: două linii trase cu unealta Linie, lipite de lipirea de noduri, alese cu un cadru și legate cu Ctrl+J
+  într-un L (geometria citită din proiect, exactă), panoul opțiunilor în română, Anulează; nicio eroare în consolă).
