@@ -4,10 +4,11 @@ import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import type { DopSimulat, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
+import type { DopSimulat, PotrivireV, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { descriere } from './descriereElement.ts';
+import { Sectiune3D } from './Sectiune3D.tsx';
 import { apropie, cuprinde, fereastraFina, incadreaza, matrici, panorameaza, rgb, roteste, subCursor, type Camera, type ZonaNdc } from './vedere3dCalcul.ts';
 import './vedere3d.css';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -179,6 +180,12 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   // Elementele foii după id-ul lor în lume, ca titlul fiecărui dop să-și numească incrustația (ADR 0178, precizarea din
   // 21.11); doar cât foaia are dopuri.
   const lume = useMemo(() => (dopuri.lista.length > 0 ? new Map(elementeFoaie(doc, 0).map((e) => [e.idLume, e])) : null), [doc, dopuri.lista]);
+  // „Împreună (secțiunea)” (ADR 0179): pornită doar pe un dop în V; potrivirea lui, măsurată în workerul CAM.
+  const [impreuna, setImpreuna] = useState(false);
+  const [potrivire, setPotrivire] = useState<
+    { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: PotrivireV } | { readonly fel: 'refuz'; readonly motiv: string }
+  >({ fel: 'nimic' });
+  const jobPotrivire = useRef<AbortController | null>(null);
   // Ce s-a simulat (documentul, programul, relieful plăcii și al ferestrei fine) și camera: ținute aici, nu în stare
   // (un cadru nou nu re-randează componenta).
   const sim = useRef<{ doc: Document | null; calc: Calcul | null; program: Extract<ProgramSimulare, { ok: true }> | null; placa: Relief | null; fin: Relief | null }>(
@@ -424,6 +431,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
       cancelAnimationFrame(cadru.current);
       job.current?.abort();
       jobFin.current?.ctl.abort();
+      jobPotrivire.current?.abort();
       tema.disconnect();
       sistem.removeEventListener('change', cere);
       c.removeEventListener('webglcontextlost', pierdut);
@@ -453,9 +461,42 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     const p = sim.current.program;
     if (p) schimbaCamera(incadreaza(p.foaie, aspect(), zonaNdc()));
   };
-  /** Foaia sau un dop (ADR 0178): altă alegere se simulează, iar camera încadrează ce s-a ales. */
+  /**
+   * Potrivirea dopului cu numărul `k` (ADR 0179), în workerul CAM. O alegere nouă, „Împreună” oprită sau vederea închisă o
+   * anulează; un worker căzut e o defecțiune (jurnalul), un refuz al calculului e motivul.
+   */
+  const masoara = (k: number): void => {
+    jobPotrivire.current?.abort();
+    const ctl = new AbortController();
+    jobPotrivire.current = ctl;
+    const d = doc;
+    setPotrivire({ fel: 'calcul' });
+    const cade = (e: unknown): void => {
+      if (ctl.signal.aborted) return;
+      setPotrivire({ fel: 'refuz', motiv: e instanceof Error ? e.message : String(e) });
+    };
+    import('../ui/actiuniExportCalcul.ts').then((calc) => {
+      if (ctl.signal.aborted) return;
+      calc.potrivireSimulata(d, k, ctl.signal).then((r) => {
+        if (ctl.signal.aborted) return;
+        setPotrivire(r.ok ? { fel: 'gata', p: r.potrivire } : { fel: 'refuz', motiv: r.motiv });
+      }, (e: unknown) => {
+        if (e instanceof calc.CalculAnulat) return;
+        if (e instanceof calc.LucratorCazut) reportError(new Error(`vederea 3D, potrivirea: ${e.message}`));
+        cade(e);
+      });
+    }, cade);
+  };
+  const opresteImpreuna = (): void => {
+    jobPotrivire.current?.abort();
+    jobPotrivire.current = null;
+    setImpreuna(false);
+    setPotrivire({ fel: 'nimic' });
+  };
+  /** Foaia sau un dop (ADR 0178): altă alegere se simulează, iar camera încadrează ce s-a ales; „Împreună” se oprește. */
   const alege = (ce: 'foaie' | number): void => {
     if (ce === alegere) return;
+    opresteImpreuna();
     setAlegere(ce);
     cam.current = null;
     simuleaza(ce);
@@ -466,6 +507,19 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
   // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
   const dop = alegere === 'foaie' ? null : alegere + 1;
+  // „Împreună (secțiunea)” (ADR 0179 §1): doar pe un dop în V; altfel oprită, cu motivul pe titlu (rămâne în tab, ca să-l spună).
+  const dopAles = alegere === 'foaie' ? null : dopuri.lista[alegere] ?? null;
+  const poateImpreuna = dopAles?.inV === true;
+  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege') : poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.doarV');
+  const comutaImpreuna = (): void => {
+    if (!poateImpreuna || alegere === 'foaie') return;
+    if (impreuna) {
+      opresteImpreuna();
+      return;
+    }
+    setImpreuna(true);
+    masoara(alegere);
+  };
   /**
    * Titlul unui dop (ADR 0178 §2, precizarea din 21.11): incrustația lui, numită ca în bara de jos, apoi semifabricatul. Un
    * element pe care foaia nu-l mai are (o listă de dinaintea unei editări, până la simularea nouă) lasă doar semifabricatul.
@@ -557,7 +611,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           schimbaCamera(nou);
         }}
       />
-      <div className="insula stare-3d" style={{ left: zona.x + 8, top: zona.y + 8 }} data-testid="stare-3d">
+      <div className={impreuna ? 'insula stare-3d cu-sectiune' : 'insula stare-3d'} style={{ left: zona.x + 8, top: zona.y + 8 }} data-testid="stare-3d">
         {/* Foaia sau un dop (ADR 0178): butoanele apar doar când foaia are dopuri (sau unul e încă ales). */}
         {dopuri.lista.length > 0 || dop !== null ? (
           <span className="alegere-3d" role="group" aria-label={t('editare.3d.alegere')} data-testid="alegere-3d">
@@ -574,6 +628,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
                 {t('editare.3d.dopul', { n: k + 1 })}
               </button>
             ))}
+            <button type="button" data-3d="impreuna" aria-pressed={impreuna} aria-disabled={!poateImpreuna} title={titluImpreuna} onClick={comutaImpreuna}>
+              {t('editare.3d.impreuna')}
+            </button>
           </span>
         ) : null}
         <span className={clasaStare} role="status" data-testid="stare-3d-text" title={textStare}>{textStare}</span>
@@ -584,7 +641,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
         {vechi ? (
           <span className="cip cip-atentie" data-testid="stare-3d-vechi">
             {t('editare.3d.vechi')}{' '}
-            <button type="button" data-3d="din-nou" onClick={() => { simuleaza(); }}>{t('editare.3d.din-nou')}</button>
+            <button type="button" data-3d="din-nou" onClick={() => { simuleaza(); if (impreuna && alegere !== 'foaie') masoara(alegere); }}>{t('editare.3d.din-nou')}</button>
           </span>
         ) : null}
         {stare.fel === 'gata' && stareGpu === 'ok' ? (
@@ -592,6 +649,15 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
             <button type="button" data-3d="incadreaza" onClick={reincadreaza}>{t(dop === null ? 'editare.3d.incadreaza' : 'editare.3d.incadreaza-dop')}</button>
             <span className="sfat-3d">{t('editare.3d.sfat')}</span>
           </span>
+        ) : null}
+        {impreuna && dop !== null ? (
+          <section className="sectiune-3d" data-testid="sectiune-3d" aria-label={t('editare.3d.sectiune.eticheta', { n: dop })}>
+            {potrivire.fel === 'calcul' ? <span className="cip" role="status">{t('editare.3d.sectiune.calcul', { n: dop })}</span> : null}
+            {potrivire.fel === 'refuz' ? (
+              <span className="cip cip-rosu" role="status">{t('editare.3d.sectiune.refuz', { n: dop, motiv: potrivire.motiv })}</span>
+            ) : null}
+            {potrivire.fel === 'gata' ? <Sectiune3D p={potrivire.p} n={dop} /> : null}
+          </section>
         ) : null}
       </div>
     </div>

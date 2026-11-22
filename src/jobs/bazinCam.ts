@@ -18,7 +18,7 @@ import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { RaspunsCalcul } from './calculCam.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import { transferabileProgram } from './impachetare.ts';
-import type { CerereCam, MesajCam, ParametriExport, RaspunsExport, RaspunsMesajCam, RaspunsSimulare, RaspunsTraseu } from './protocolCam.ts';
+import type { CerereCam, MesajCam, ParametriExport, RaspunsExport, RaspunsMesajCam, RaspunsPotrivire, RaspunsSimulare, RaspunsTraseu } from './protocolCam.ts';
 import type { RezumatJob } from './rezumat.ts';
 
 /** Cât așteaptă bazinul un calcul CAM (bun-simț: pe 2 304 de forme, exportul întreg ține ~1,5 s pe firul principal). */
@@ -109,6 +109,11 @@ export function traseuInBazin(document: Document, o: OptiuniCam = {}): Promise<R
 /** Mutările simulării programului documentului, sau ale dopului cu numărul `dop` (ADR 0178), pentru vederea 3D. */
 export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: number): Promise<RaspunsSimulare> {
   return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;
+}
+
+/** „Împreună (secțiunea)” (ADR 0179): potrivirea dopului în V cu numărul `dop` (de la 0); secțiunea vine transferată. */
+export function potrivireInBazin(document: Document, dop: number, o: OptiuniCam = {}): Promise<RaspunsPotrivire> {
+  return calculeaza({ fel: 'potrivire', document, dop }, [], o) as Promise<RaspunsPotrivire>;
 }
 
 /** Timpul unui program deja calculat; programul împachetat se transferă (cel dat nu mai e folosibil după apel). */

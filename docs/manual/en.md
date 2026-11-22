@@ -1949,6 +1949,12 @@ blocks (the deepest point of each), and the status in the corner says so.
   blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
   see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
   cannot be cut, the sheet still shows, and the status says why the plugs are missing.
+- **Together (section)**: on a V plug, the button after the plugs shows the plug flipped and seated in its pocket, in a
+  horizontal section through the middle of the drawing. Next to it, the table puts the paper values (as in the panel) beside
+  the ones simulated at 0.1 mm: how far the plug goes in, how much of the walls touch, the glue gap under the plug and the
+  space between the boards, for the saw. A row more than 0.05 mm off its paper value (or walls touching on less than 95 %) is
+  red, with its place, and the section goes through it. In the drawing, the glue is blue, the walls in contact are green and
+  the dashed line is the saw cut. On a straight-walled plug, the button is off for now.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

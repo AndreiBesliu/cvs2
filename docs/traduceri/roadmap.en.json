@@ -2113,6 +2113,10 @@
       "ro": "Publicarea pe live (P1, partea 2): workflow-ul cu sha fixat, mediul `live` cu aprobarea owner-ului, WIF; amprenta `meta/deployment`, scrisă de pipeline (mutată din 3.3, ADR 0040 §7); contul de serviciu dedicat al backup-ului",
       "en": "Publishing to live (P1, part 2): the workflow with a pinned sha, the `live` environment with the owner's approval, WIF; the `meta/deployment` fingerprint, written by the pipeline (moved from 3.3, ADR 0040 §7); the backup's dedicated service account"
     },
+    "9b104e31bf9bdf8f": {
+      "ro": "Dopul întors în locașul simulat",
+      "en": "The plug flipped in the simulated pocket"
+    },
     "9b8d8f97eff6788f": {
       "ro": "Bancul vizual v1 (`npm run banc`, pagina `/banc/` pe instanța de test), cu martorii lui negativi, și unealta de otrăvuri comisă (`scripts/otravuri.py`, `docs/otravuri.md`). Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
       "en": "Visual bench v1 (`npm run banc`, the `/banc/` page on the test instance), with its negative controls, and the poison tool committed (`scripts/otravuri.py`, `docs/otravuri.md`). Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
