@@ -23,7 +23,8 @@ function Miniatura({ octeti }: { readonly octeti: Blob | null | undefined }): Re
  * Imaginile foii active (ADR 0272 §5), în panoul foii, sub câmpurile ei: fiecare cu miniatura, numele, ochiul (vizibilă),
  * lacătul (fixată; desfăcută, se mută, se scalează și se rotește cu mânerele ei), opacitatea și ștergerea. Fiecare schimbare
  * e un pas de anulare (`foaie.imagini`), cu motivul unui refuz sub rândul ei. O imagine ai cărei octeți lipsesc din browser
- * (un proiect adus din altul, ori una ștearsă) o spune; locul ei rămâne pe foaie, punctat.
+ * (un proiect adus din altul, ori una ștearsă) o spune; locul ei rămâne pe foaie, punctat. Pe telefon (sub 40 rem), lista
+ * nu se arată (ADR 0272 §9: imaginile se văd, dar nu se schimbă).
  */
 export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini }: {
   readonly imagini: readonly ImagineFoaie[];
@@ -46,7 +47,7 @@ export function ImaginiFoii({ imagini, octeti, doarCitire, oprit, onImagini }: {
     return r;
   };
   return (
-    <section data-testid="prop-imagini">
+    <section data-testid="prop-imagini" data-imagine-foaie="">
       <h3>{t('prop.imagini')}</h3>
       <ul className="prop-imagini">
         {imagini.map((im) => {

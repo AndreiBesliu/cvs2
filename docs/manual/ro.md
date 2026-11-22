@@ -897,7 +897,7 @@ felul ei.
 
 Desenul trasat intră ca o formă, cu imaginea drept pagină (sau zona): colțul stânga-jos al imaginii e colțul foii.
 Contururile din afară se taie pe exterior, golurile pe interior, după sensul fiecărui contur. Deocamdată:
-- scanările îndreptate vin mai târziu;
+- imaginea însăși poate rămâne pe foaie, sub desen, ca ajutor: vezi [Imaginile pe foaie](#imagini-foaie);
 - o imagine de peste 16 megapixeli se micșorează întâi (raportul o spune); una cu peste 20 000 de contururi e refuzată, cu
   numărul lor, la fel ca o trasare de peste 30 de secunde: mărește **Ignoră petele sub** sau mută pragul;
 - o fotografie se citește întoarsă cum o arată telefonul (orientarea din fișier);
@@ -907,6 +907,38 @@ Contururile din afară se taie pe exterior, golurile pe interior, după sensul f
   ce nu citește: salvează-l atunci ca PNG. Imaginile din SVG-uri se sar, ca până acum;
 - imaginea unui PDF scanat (JPEG, CCITT G3 / G4 sau necomprimată) se trasează la DPI-ul ei de pe pagină, întoarsă cum o
   arată pagina; una JBIG2 sau JPEG 2000 e refuzată, cu numele ei: salvează atunci pagina ca PNG.
+
+## Imaginile pe foaie
+%% capitol: imagini-foaie
+%% acopera: foaie.imagini
+
+O imagine (o poză, o scanare, o schiță făcută de mână) poate rămâne pe foaie, sub desen, estompată: un ajutor de desen,
+pe care îl urmărești cu uneltele de desen ori îl compari cu vectorii trasați din el. Nu se taie și nu se exportă.
+
+**Cum o pui:** din „Importă…”, în fereastra trasării:
+- bifa **Păstrează imaginea pe foaie** (implicit oprită; alegerea se ține minte până reîncarci pagina): **Importă** pune
+  vectorii și, sub ei, imaginea, exact una peste alta, într-un singur pas de anulare;
+- butonul **Doar imaginea** o pune fără vectori; merge și când trasarea nu iese (o poză cu prea multe contururi). Lăsată
+  pe planșă, imaginea are centrul în punctul lăsat.
+
+Pe foaie ajunge imaginea din fereastră: cu foaia sau scanarea îndreptată, dacă le-ai bifat, la scara din fereastră (DPI-ul,
+lățimea, formatul foii), iar una de peste 16 megapixeli, micșorată. Stă sub desen cu opacitatea de 40 %.
+
+**Imaginile foii:** cu nimic selectat, panoul Proprietăți are, sub câmpurile foii, lista **Imaginile foii**. Fiecare imagine
+are miniatura și numele ei, ochiul (vizibilă sau ascunsă), lacătul (fixată sau desfăcută), coșul (o scoate de pe foaie) și
+**Opacitatea**, în procente (1–100). Fiecare schimbare e un pas de anulare.
+
+**Fixată** (implicit), imaginea nu se alege: clicurile ajung la desen, iar uneltele desenează peste ea. **Desfăcută**
+(lacătul deschis), cu unealta Selecție sau Transformare, are un contur punctat și mânere:
+- o tragi de interior ca s-o muți;
+- de un colț ca s-o scalezi, proporțional, cu colțul opus pe loc;
+- de mânerul de deasupra ca s-o rotești (cu Shift, din 15 în 15°).
+
+Pe o linie a desenului, clicul rămâne al formei; înăuntrul formelor, al imaginii. Escape renunță la o tragere.
+
+Imaginile se țin în browser, lângă proiect, nu în document: pe alt calculator ori în alt browser, foaia arată doar locul
+lor, punctat, iar lista spune că lipsesc. O imagine pe care n-o mai folosește nicio versiune păstrată a proiectului se
+șterge la o pornire, după cel puțin o zi. Pe telefon, imaginile se văd, dar nu se pun și nu se schimbă.
 
 ## Tăierea vectorilor
 %% capitol: taiere
