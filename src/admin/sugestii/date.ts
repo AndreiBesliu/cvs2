@@ -1,10 +1,11 @@
 /**
- * Fila Sugestii (ADR 0107), partea pură: documentele citite prin reguli devin rânduri (ce lipsește e necunoscut, nu
- * inventat), ordinea, filtrele pe stare cu numărul din fiecare și ce poate face omul pe un rând.
+ * Fila Sugestii (ADR 0107; tabla: ADR 0260 §4), partea pură: documentele citite prin reguli devin rânduri (ce lipsește e
+ * necunoscut, nu inventat), ordinea, coloanele tablei, mutarea unui card și ce poate face omul pe un rând.
  */
 import { type TipPoza } from '../../../shared/poza.ts';
 import {
-  esteStare, esteTip, esteZona, STARI_SUGESTIE, type StareSugestie, type TipSugestie, type ZonaSugestie,
+  curataText, esteStare, esteTip, esteZona, NOTA_MAX, STARI_SUGESTIE, type RaspunsSugestie, type StareSugestie, type TipSugestie,
+  type ZonaSugestie,
 } from '../../../shared/sugestii.ts';
 import { dataDin } from '../erori/date.ts';
 
@@ -64,18 +65,69 @@ export function ordoneaza(lista: readonly Sugestie[]): Sugestie[] {
   return [...lista].sort((a, b) => cand(b) - cand(a) || a.id.localeCompare(b.id));
 }
 
-export type Filtru = 'toate' | StareSugestie;
+/** Pură: sugestiile omului (uid-ul lui) sau toate (null). */
+export const aleLui = (lista: readonly Sugestie[], doarAle: string | null): readonly Sugestie[] =>
+  doarAle === null ? lista : lista.filter((s) => s.autor === doarAle);
 
-/** Pură: rândurile filtrului; cu `doarAle` (uid-ul omului), doar sugestiile lui. */
-export function filtreaza(lista: readonly Sugestie[], filtru: Filtru, doarAle: string | null): Sugestie[] {
-  return lista.filter((s) => (filtru === 'toate' || s.stare === filtru) && (doarAle === null || s.autor === doarAle));
+/** Coloanele tablei (ADR 0260 §4), în ordinea schiței; Respinsele stau sub ele, strânse. */
+export const COLOANE: readonly StareSugestie[] = ['noua', 'acceptata', 'in-lucru', 'amanata', 'facuta'];
+
+/** Unde se mută un card, în ordinea meniului „Mută în…”: coloanele, apoi Respinsă; fără starea lui de acum. */
+export const tintePentru = (s: Sugestie): StareSugestie[] => [...COLOANE, 'respinsa' as const].filter((x) => x !== s.stare);
+
+/** Nota se cere la Respinsă și la Amânată (ADR 0260 §4): autorul află de ce. */
+export const notaCeruta = (stare: StareSugestie): boolean => stare === 'respinsa' || stare === 'amanata';
+
+/** Pură: o decizie care cere notă nu pleacă fără ea; spațiile singure nu sunt o notă (serverul le taie). */
+export const lipsesteNota = (stare: StareSugestie, nota: string): boolean => notaCeruta(stare) && nota.trim() === '';
+
+/** Cardurile fiecărei stări (și Respinsele, sub coloane), plus cele cu o stare necunoscută, în afara lor. */
+export interface Tabla {
+  readonly coloane: Readonly<Record<StareSugestie, readonly Sugestie[]>>;
+  readonly necunoscute: readonly Sugestie[];
 }
 
-/** Pură: câte sugestii are fiecare stare (pentru butoanele filtrului); o stare necunoscută nu intră în niciuna. */
-export function numarePeStare(lista: readonly Sugestie[]): Readonly<Record<StareSugestie, number>> {
-  const n = Object.fromEntries(STARI_SUGESTIE.map((s) => [s, 0])) as Record<StareSugestie, number>;
-  for (const s of lista) if (s.stare !== null) n[s.stare] += 1;
-  return n;
+/**
+ * Pură: cardurile pe stări. În „Fără decizie”, cele mai noi întâi; în celelalte, ultima decizie întâi (un card mutat urcă în
+ * capul coloanei), apoi cele mai noi.
+ */
+export function tabla(lista: readonly Sugestie[]): Tabla {
+  const coloane = Object.fromEntries(STARI_SUGESTIE.map((s) => [s, [] as Sugestie[]])) as Record<StareSugestie, Sugestie[]>;
+  const necunoscute: Sugestie[] = [];
+  for (const s of ordoneaza(lista)) (s.stare === null ? necunoscute : coloane[s.stare]).push(s);
+  const decisa = (s: Sugestie): number => s.decisaLa?.getTime() ?? -Infinity;
+  for (const st of STARI_SUGESTIE) if (st !== 'noua') coloane[st].sort((a, b) => decisa(b) - decisa(a) || 0);
+  return { coloane, necunoscute };
+}
+
+/** O mutare plecată spre server: cardul stă deja în coloana nouă, cu ora plecării ca oră a deciziei. */
+export interface Mutare {
+  readonly id: string;
+  readonly spre: StareSugestie;
+  readonly la: Date;
+}
+
+/** Pură: lista arătată pe tablă cât o mutare e în drum. */
+export const cuMutarea = (lista: readonly Sugestie[], m: Mutare | null): readonly Sugestie[] =>
+  m === null ? lista : lista.map((s) => (s.id === m.id ? { ...s, stare: m.spre, decisaLa: m.la } : s));
+
+/** Decizia trimisă: sugestia, versiunea văzută, starea și nota. */
+export interface DecizieTrimisa {
+  readonly id: string;
+  readonly versiune: number;
+  readonly stare: StareSugestie;
+  readonly nota: string;
+}
+
+/**
+ * Pură: lista după o decizie primită de server, fără s-o recitească (o mutare nu costă cele până la 300 de citiri ale listei).
+ * Serverul a scris pe versiunea trimisă (tranzacția o verifică), deci documentul e acum cel citit, cu starea, nota curățată ca
+ * pe server, ora deciziei și versiunea întoarsă. Un rând cu altă versiune (reîncărcat între timp) rămâne cum l-a adus citirea.
+ */
+export function dupaDecizie(lista: readonly Sugestie[], d: DecizieTrimisa, r: RaspunsSugestie, acum: Date): readonly Sugestie[] {
+  if (!r.schimbat) return lista;
+  const nota = curataText(d.nota, NOTA_MAX) ?? d.nota;
+  return lista.map((s) => (s.id === d.id && s.versiune === d.versiune ? { ...s, stare: d.stare, nota, decisaLa: acum, versiune: r.versiune } : s));
 }
 
 /** Autorul își editează sugestia cât n-are decizie (serverul refuză la fel, ADR 0107 §3). */

@@ -11007,3 +11007,14 @@ rapide propus întâi?”).
   index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
+
+## 2026-11-22 — Felia A.4: Sugestii ca tablă a deciziilor (ADR 0260 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, A.4” (owner-ul, pe 22.11, în sesiunea liniei adminului, după raportul lui A.3).
+**Started:** 22.11 21:42.
+
+- **Ramura:** tot `wip/A.1-admin`, adusă înainte (fast-forward) la `main` `88be9d6c`, care conține A.3 (`528ee187`).
+- **Planul:** fila Sugestii devine tabla din schiță (rândul G, `Admin-Sugestii`): o coloană pe decizie (Fără decizie,
+  Acceptată, În lucru, Amânată, Făcută), Respinsele strânse dedesubt, arătate la cerere; owner-ul trage un card dintr-o
+  coloană în alta sau alege „Mută în…” din meniul cardului (calea din tastatură), prin callable-ul `sugestii` de azi, pe
+  versiunea văzută; nota se cere la Respinsă și la Amânată. Fără reguli noi, fără date noi, fără schimbări pe server.

@@ -1,4 +1,5 @@
-/* Fila Sugestii (ADR 0107): secțiunile și listele filei Personal (`personal.css`), plus starea și textele sugestiei. */
+/* Fila Sugestii (ADR 0107; tabla: ADR 0260 §4, felia A.4): secțiunile și formularele filei Personal (`personal.css`), tabla
+   deciziilor (o coloană pe stare, Respinsele dedesubt), ferestrele (detaliul, nota cerută), starea și textele sugestiei. */
 .sug textarea {
   font: inherit;
   font-size: var(--fs-3);
@@ -110,4 +111,264 @@
   display: grid;
   justify-items: start;
   gap: var(--sp-2);
+}
+
+.sug-titlu-fila {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+/* Tabla: cinci coloane cât e loc; mai îngust, coloanele trec pe rânduri (niciun meniu nu se taie la o derulare laterală). */
+.sug-tabla {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--sp-3);
+}
+
+@media (max-width: 1099px) {
+  .sug-tabla {
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  }
+}
+
+/* Coloanele, un ton peste fondul paginii (`--s-peste`), în ambele teme; cardurile, pe panou. */
+.sug-coloana,
+.sug-banda {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-3);
+  border-radius: var(--r-3);
+  background: color-mix(in oklab, var(--t) 6%, var(--s-peste));
+  border: 1px solid transparent;
+}
+
+.sug-coloana {
+  min-height: 8rem;
+}
+
+/* Unde cade cardul tras: conturul accentului. */
+.sug-coloana[data-peste='da'],
+.sug-banda[data-peste='da'] {
+  border-color: var(--a);
+  background: var(--s-atentie);
+}
+
+.sug-coloana h3,
+.sug-banda h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-2);
+}
+
+/* Capul coloanei: pastila stării, în culorile cipurilor din admin (accentul, albastrul, verdele, neutrul). */
+.sug-cap {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--t);
+  background: var(--s-atentie);
+}
+
+.sug-cap[data-stare='acceptata'] {
+  color: var(--l-focus);
+  background: color-mix(in oklab, var(--l-focus) 12%, var(--s-panou));
+}
+
+.sug-cap[data-stare='in-lucru'] {
+  color: var(--a);
+  background: var(--s-ales);
+}
+
+.sug-cap[data-stare='amanata'] {
+  color: var(--t-slab);
+  background: var(--s-panou);
+}
+
+/* Verdele pe nuanța lui ar avea ~4,4:1 în tema luminoasă: textul se derivă spre culoarea textului (peste 4,5:1 în ambele). */
+.sug-cap[data-stare='facuta'] {
+  color: color-mix(in oklab, var(--traseu-taiere) 75%, var(--t));
+  background: color-mix(in oklab, var(--traseu-taiere) 14%, var(--s-panou));
+}
+
+.sug-carduri {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.sug-carduri-rand {
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+}
+
+.sug-card {
+  position: relative;
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3) var(--sp-2);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.sug-card[draggable='true'] {
+  cursor: grab;
+}
+
+.sug-card[data-trasa='da'] {
+  opacity: 0.5;
+}
+
+/* Plecat spre server: în coloana nouă, cu marginea punctată până la răspuns. */
+.sug-card[aria-busy='true'] {
+  border-style: dashed;
+  border-color: var(--a);
+}
+
+/* Titlul e butonul cardului (deschide detaliul): textul obișnuit, la stânga, cel mult trei rânduri. */
+.sug-card-titlu.sug-card-titlu {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  justify-content: start;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.sug-card-titlu.sug-card-titlu:hover:enabled {
+  background: none;
+  text-decoration: underline;
+}
+
+.sug-card-sus {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
+
+.sug-card-sus > .sug-card-titlu {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sug-card-jos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.sug-card-cine {
+  flex: 1 1 6rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sug-card .admin-eroare {
+  margin: 0;
+  font-size: var(--fs-2);
+  overflow-wrap: anywhere;
+}
+
+.sug-muta {
+  position: relative;
+}
+
+.sug-muta > button {
+  min-height: 28px;
+  min-width: 32px;
+  margin: -4px -6px 0 0;
+  padding: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-4);
+  line-height: 1;
+}
+
+.sug-banda h3 > button {
+  min-height: 30px;
+  padding: 0 var(--sp-2);
+  font-weight: 600;
+}
+
+/* Săgeata benzii: spre dreapta strânsă, în jos arătată (fără text pentru cititorul de ecran). */
+.sug-banda h3 > button::before {
+  content: '▸' / '';
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.sug-banda h3 > button[aria-expanded='true']::before {
+  transform: rotate(90deg);
+}
+
+/* Fără respinse, butonul e oprit; un card tras peste el cade tot în bandă (un buton oprit nu primește evenimentele mausului). */
+.sug-banda h3 > button:disabled {
+  pointer-events: none;
+}
+
+/* Ferestrele (detaliul, nota cerută): pe panou, cât un text de citit, cu fundalul paginii estompat. */
+.sug-fereastra {
+  width: min(40rem, calc(100vw - 2 * var(--sp-4)));
+  max-height: calc(100vh - 2 * var(--sp-5));
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-5);
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-2);
+}
+
+.sug-fereastra[open] {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.sug-fereastra::backdrop {
+  background: var(--fond);
+}
+
+.sug-fereastra-mica {
+  width: min(32rem, calc(100vw - 2 * var(--sp-4)));
+}
+
+.sug-fereastra h2 {
+  margin: 0;
+  font-size: var(--fs-4);
+  overflow-wrap: anywhere;
+}
+
+.sug-fereastra-cap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.sug-fereastra-cap h2 {
+  flex: 1 1 auto;
+}
+
+.sug-fereastra-cap > button {
+  flex: 0 0 auto;
+  font-size: var(--fs-4);
 }
