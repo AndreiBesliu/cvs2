@@ -61,6 +61,8 @@ const RELE: Array<[string, ImagineFoaie]> = [
   ['y infinit', imagine({ y: Number.POSITIVE_INFINITY })],
   ['vizibila ca șir', imagine({ vizibila: 'da' })],
   ['fixata lipsă', fara('fixata')],
+  // Fiecare câmp cerut, lipsă (o ușă care l-ar face opțional ar primi imaginea).
+  ...(['vizibila', 'opacitate', 'rotire', 'latime', 'inaltime', 'x', 'y'] as const).map((c): [string, ImagineFoaie] => [`${c} lipsă`, fara(c)]),
   ['id cu spațiu', imagine({ id: 'i 1' })],
   ['id prea lung', imagine({ id: 'a'.repeat(PLAFON.idLungime + 1) })],
   ['id lipsă', fara('id')],
