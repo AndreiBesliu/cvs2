@@ -6,8 +6,10 @@
  * fiecare culoare, ADR 0228), cu imaginea pictată
  * în culorile ei pentru previzualizare. Foaia pozată oblic (ADR
  * 0225, `src/trasare/foaia.ts`): îndreptată la cerere, înaintea zonei (pagina e foaia, cu mărimea formatului), altfel doar
- * căutată, pentru sugestia raportului. Zona aleasă (ADR 0224) e un decupaj: se trasează doar ea, iar pagina e ea. Rulează
- * în `lucratorTrasare.ts`; în Node (testele), în proces, cu pixelii dați direct.
+ * căutată, pentru sugestia raportului. Scanarea strâmbă (ADR 0271, `src/trasare/rotire.ts`): unghiul căutat mereu, după
+ * foaie (pentru sugestie), iar la cerere imaginea rotită înapoi, pe o pânză mărită, înaintea zonei. Zona aleasă (ADR 0224)
+ * e un decupaj: se trasează doar ea, iar pagina e ea. Rulează în `lucratorTrasare.ts`; în Node (testele), în proces, cu
+ * pixelii dați direct.
  */
 import { CULORI_MAXIM, traseazaCulori, type OptiuniCulori, type PiesaCuloare, type RaportCulori } from '../trasare/culori.ts';
 import {
@@ -16,6 +18,7 @@ import {
 } from '../trasare/foaia.ts';
 import { MEDIANA_SIMPLA, traseazaMediana, type OptiuniMediana, type RaportMediana } from '../trasare/mediana.ts';
 import { traseazaCuloriMediane, type MedianeCulori } from '../trasare/medianeCulori.ts';
+import { gasesteUnghiul, rotesteImaginea, UNGHI_MAXIM, UNGHI_SUGESTIE } from '../trasare/rotire.ts';
 import { decodeazaTiff, orienteaza } from '../trasare/tiff.ts';
 import { traseaza, type CaiTrasate, type ImagineRGBA, type OptiuniTrasare, type RaportTrasare } from '../trasare/trasare.ts';
 import { deTransferat } from './protocolCam.ts';
@@ -75,6 +78,12 @@ export type CerereTrasare = {
    * formatul în mm (orientat apoi după poză), sau null („Din poză”: proporțiile estimate). Lipsă sau null: neîndreptată.
    */
   readonly foaie?: { readonly colturi: Colturi | null; readonly format: { readonly w: number; readonly h: number } | null } | null;
+  /**
+   * Îndreaptă scanarea (ADR 0271): unghiul scris, în grade (pozitiv: desenul rotit în sens invers acelor pe ecran; tăiat la
+   * ±`UNGHI_MAXIM`), sau null: cel găsit. Lipsă sau null: neîndreptată (unghiul se caută oricum, pentru sugestie). Rotirea
+   * vine după foaie și înaintea zonei: cu ea, zona e în pixelii imaginii îndreptate.
+   */
+  readonly rotire?: { readonly unghi: number | null } | null;
 };
 
 /** Foaia din poză (ADR 0225): îndreptată, sau doar găsită (pentru sugestie). */
@@ -94,6 +103,27 @@ export type FoaieTrasata = {
   /** Sugestia raportului: îndreptarea oprită și o foaie oblică găsită. */
   readonly sugestie: boolean;
   /** Foaia îndreptată, redusă sub `PIXELI_POSTER` (previzualizarea), sau null (foaia doar găsită). */
+  readonly previzualizare: ImagineRGBA | null;
+};
+
+/** Scanarea strâmbă (ADR 0271): unghiul găsit și cel cu care s-a îndreptat imaginea. */
+export type RotireTrasata = {
+  /** Unghiul găsit (grade; pozitiv: desenul rotit în sens invers acelor pe ecran), sau null: niciunul sigur. */
+  readonly gasit: number | null;
+  /** Îndreptarea a fost cerută. */
+  readonly ceruta: boolean;
+  /** Unghiul cu care s-a îndreptat (grade), sau null: neîndreptată (necerută, ori cerută fără unghi scris sau găsit). */
+  readonly aplicat: number | null;
+  /** De unde vine unghiul aplicat: scris de om sau găsit; null: neîndreptată. */
+  readonly sursa: 'scris' | 'gasit' | null;
+  /**
+   * Sugestia raportului: îndreptarea necerută, un unghi găsit de cel puțin `UNGHI_SUGESTIE` și nicio sugestie a foii (o foaie
+   * pozată oblic se îndreaptă după colțuri).
+   */
+  readonly sugestie: boolean;
+  /** Mărimea imaginii dinainte de rotire (după foaie), în px. */
+  readonly inainte: { readonly latime: number; readonly inaltime: number };
+  /** Imaginea îndreptată, redusă sub `PIXELI_POSTER` (previzualizarea), sau null: nerotită. */
   readonly previzualizare: ImagineRGBA | null;
 };
 
@@ -119,6 +149,8 @@ type Scara = {
   readonly zona: ZonaTrasare | null;
   /** Foaia din poză (ADR 0225), sau null: negăsită și neîndreptată (ori o imagine cu transparență). */
   readonly foaie: FoaieTrasata | null;
+  /** Scanarea strâmbă (ADR 0271), sau null: o imagine cu transparență, fără îndreptare cerută. */
+  readonly rotire: RotireTrasata | null;
   /** Câte pagini are un TIFF (ADR 0229); lipsă la celelalte imagini. */
   readonly pagini?: number;
   /**
@@ -217,6 +249,28 @@ function foaia(img: ImagineRGBA, cerere: CerereTrasare['foaie'], maxPixeli: numb
   };
 }
 
+/**
+ * Scanarea strâmbă (ADR 0271): unghiul găsit (pe imaginile opace) și, cu `cerere`, imaginea rotită înapoi cu unghiul scris
+ * (tăiat la ±`UNGHI_MAXIM`) sau cu cel găsit; cu `prelungeste` („Ignoră ce atinge marginea”), marginea veche se prelungește
+ * pe pânza nouă. Întoarce imaginea de trasat de aici încolo și factorul reducerii pânzei (1: nereducută).
+ */
+function rotirea(
+  img: ImagineRGBA, cerere: CerereTrasare['rotire'],
+  o: { readonly prelungeste: boolean; readonly maxPixeli: number; readonly sugestieFoaie: boolean },
+): { img: ImagineRGBA; k: number; rotire: RotireTrasata | null } {
+  const g = gasesteUnghiul(img), inainte = { latime: img.latime, inaltime: img.inaltime };
+  const scris = cerere && cerere.unghi !== null && Number.isFinite(cerere.unghi) ? Math.max(-UNGHI_MAXIM, Math.min(UNGHI_MAXIM, cerere.unghi)) : null;
+  // O imagine cu transparență (unghiul n-are deloc încredere) și fără îndreptare cerută: nimic de spus.
+  if (!cerere && g.unghi === null && g.incredere === 0) return { img, k: 1, rotire: null };
+  const aplicat = cerere ? scris ?? g.unghi : null;
+  const sugestie = !cerere && g.unghi !== null && Math.abs(g.unghi) >= UNGHI_SUGESTIE && !o.sugestieFoaie;
+  const sursa = aplicat === null ? null : scris !== null ? 'scris' : 'gasit';
+  const baza = { gasit: g.unghi, ceruta: !!cerere, aplicat, sursa, sugestie, inainte } as const;
+  if (aplicat === null) return { img, k: 1, rotire: { ...baza, previzualizare: null } };
+  const r = rotesteImaginea(img, aplicat, { prelungeste: o.prelungeste, maxPixeli: o.maxPixeli });
+  return { img: r.img, k: r.k, rotire: { ...baza, previzualizare: r.img === img ? null : reduceImaginea(r.img) } };
+}
+
 /** Imaginea decodată de browser (orientarea EXIF aplicată), redusă sub `maxPixeli`, în pixeli RGBA. */
 async function decodeaza(b: Blob, maxPixeli: number): Promise<{ img: ImagineRGBA; redusDin: Scara['redusDin'] }> {
   let bmp = await createImageBitmap(b);
@@ -301,11 +355,20 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   }
   if (poza) poza = reduceImaginea(poza);
   // Pixelii fișierului pe un pixel decodat (decodarea poate reduce imaginea); un pixel al foii îndreptate ține cât unul al pozei.
-  const pxFisier = (redusDin?.latime ?? img.latime) / img.latime;
+  let pxFisier = (redusDin?.latime ?? img.latime) / img.latime;
   // Foaia (ADR 0225): îndreptată, ea e imaginea de aici încolo; altfel doar căutată, pentru sugestie.
   const f = foaia(img, c.foaie, c.maxPixeli ?? PIXELI_MAXIM);
   img = f.img;
-  const foaie = f.foaie, mmFoaie = foaie?.indreptata && foaie.format ? foaie.format.w / img.latime : null;
+  const foaie = f.foaie;
+  let mmFoaie = foaie?.indreptata && foaie.format ? foaie.format.w / img.latime : null;
+  // Scanarea strâmbă (ADR 0271): rotită înapoi, ea e imaginea de aici încolo. Un pixel rotit ține cât unul al imaginii; pe
+  // pânza redusă sub plafon (factorul k), pixelii sunt mai mari.
+  const rt = rotirea(img, c.rotire, {
+    prelungeste: c.optiuni.margine === true, maxPixeli: c.maxPixeli ?? PIXELI_MAXIM, sugestieFoaie: foaie?.sugestie === true,
+  });
+  img = rt.img;
+  const rotire = rt.rotire;
+  if (rt.k !== 1) { pxFisier /= rt.k; if (mmFoaie !== null) mmFoaie /= rt.k; }
   // Zona (ADR 0224, răspunsul 2a): un decupaj; de aici încolo, imaginea trasată e ea.
   const intreg = { latime: img.latime, inaltime: img.inaltime };
   const zona = c.zona ? zonaIn(c.zona, img.latime, img.inaltime) : null;
@@ -316,8 +379,8 @@ export async function raspundeTrasare(c: CerereTrasare): Promise<{ raspuns: Rasp
   const scara = c.latimeMm !== null ? 'latime' : mmFoaie !== null ? 'foaie' : dpiFisier !== null ? 'fisier' : 'presupus';
   const dpi = (25.4 * pxFisier) / mmPePx;
   const petePx = ariePx(c.peteMm, mmPePx), gauriPx = ariePx(c.gauriMm, mmPePx);
-  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) } as const;
-  const pz = foaie?.previzualizare?.date, deFoaie = [pz, poza?.date].filter((x): x is Uint8ClampedArray => x instanceof Uint8ClampedArray);
+  const sc = { mmPePx, scara, dpi, redusDin, intreg, zona, foaie, rotire, ...(pagini !== null ? { pagini } : {}), ...(poza ? { poza } : {}) } as const;
+  const deFoaie = [foaie?.previzualizare?.date, rotire?.previzualizare?.date, poza?.date].filter((x): x is Uint8ClampedArray => x instanceof Uint8ClampedArray);
   const m = c.mediane;
   const om: OptiuniMediana = m
     ? { capete: m.capete, late: m.late, semnaleaza: m.semnaleaza, bucle: m.bucle, pragLatPx: m.pragLatMm !== null && m.pragLatMm > 0 ? m.pragLatMm / mmPePx : null }

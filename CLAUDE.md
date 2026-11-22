@@ -955,8 +955,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/io/tiffScrie.ts`: CCITT-ul împachetat, eșantioanele brute), cu orientarea (1–8) și DPI-ul așezării; calculul aplică
   `orientare` și dă `poza`; ușa importului trasează singură o pagină fără vectori, iar una cu vectori la cerere
   (`AlegeriImport.imaginePdf`; „Trasează imaginea paginii” / „Vectorii paginii”); refuzurile `pdf-imagine` (cu numele) și
-  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`. **Totalul ramurii, cu `main` adus (`8425a2c1`): 729,8 / 800
-  kB**, pornirea 107,0 / 115 (cu ușa 111,0).
+  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`.
+  **25.4↑c (îndreptarea scanărilor, ADR 0271) gata pe 21.11, pe aceeași ramură, pe canalul `trasare`:**
+  `src/trasare/rotire.ts` (pur, în workerul trasării): `gasesteUnghiul` (scorul lui Postl pe rânduri și coloane, punctele
+  mutate cu o fracțiune de pixel, ±10°, încrederea din vârf) și `rotesteImaginea` (pânza mărită, fondul din margine,
+  marginea prelungită, reducerea cu k); calculul, după foaie și înaintea zonei (`CerereTrasare.rotire`, `RotireTrasata`,
+  scara împărțită la k); ușa (`AlegeriTrasare.rotire`, `UNGHI_SCRIS_MAXIM`); fereastra (grupul „Îndreptarea”, „Îndreaptă
+  scanarea”, „Unghiul (°)”, sugestia, avertismentul); fixturile GDI+ în `test/fixtures/trasare/rotire`
+  (`genereaza.ps1`); canalul, amprenta `645208c691d8`.
+  **Totalul ramurii, cu `main` adus (`9d1eac56`): 741,6 / 800 kB** (`main` `a64adf63`: 739,4), pornirea 107,2 / 115
+  (cu ușa 111,2). **ADR 0272 (imaginile pe foaie, straturile bitmap; feliile 25.8↑a–b) propus pe 21.11,** cu schița
+  (<https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, formularul în `raspunsuri/owner`): codul pornește după răspunsuri.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

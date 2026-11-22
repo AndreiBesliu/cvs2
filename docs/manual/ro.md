@@ -811,6 +811,15 @@ dreapta:
   arată formatul, de unde vin colțurile și proporțiile din poză, spune când nu se potrivesc cu formatul și, fără îndreptare,
   ți-o propune când vede o foaie oblică. Dacă foaia nu se găsește (un scan, o foaie pe o masă albă), colțurile stau lângă
   marginile pozei: mută-le cu butonul **Colțurile**;
+- **Îndreaptă scanarea** (pe o imagine opacă; implicit oprită): pentru o scanare strâmbă (foaia pusă oblic pe geamul
+  scanerului sau trasă strâmb de alimentator). Aplicația găsește unghiul din liniile, rândurile de text și marginile
+  formelor desenului (până la 10° într-o parte și în alta) și rotește imaginea înapoi, pe o pânză mărită cât să nu se piardă
+  nimic; colțurile noi iau culoarea hârtiei, iar cu **Ignoră ce atinge marginea**, ce atingea marginea scanării o atinge și
+  pe cea nouă. Mărimea pixelului nu se schimbă. **Unghiul (°)** arată unghiul găsit; scrie altul dacă vrei (pozitiv:
+  desenul e rotit în sens invers acelor de ceasornic; cel mult 45°), iar gol îl caută din nou. Raportul spune cu cât s-a
+  îndreptat și de unde vine unghiul; fără îndreptare, ți-o propune când scanarea pare rotită cu cel puțin 0,1°. Un desen
+  fără linii drepte (cercuri, o schiță) n-are un unghi sigur: raportul îți cere să-l scrii. Cu **Îndreaptă foaia** bifată,
+  se îndreaptă desenul de pe foaia îndreptată; zona se trage pe imaginea îndreptată;
 - **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din formatul foii îndreptate, din DPI-ul scris în
   fișier, iar fără ele din 96 px pe țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine
   scara.
