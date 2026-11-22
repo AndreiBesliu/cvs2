@@ -32,7 +32,7 @@ o('L08', L, "      const s = q0.s.tip === 'C' ? { ...q0.s, c1: mutat(q0.s.c1, dQ
 o('L09', L, "      if (best.a === a0) intoarce(A);\n", "", 'legare', 'primul lanț nu se întoarce spre gol')
 o('L10', L, "  } else if (c.fel !== 'toate' && deschise.length === 1 && alese.length === 1) {", "  } else if (c.fel !== 'toate' && deschise.length === 1) {",
   'legare', 'o cale rămasă singură (alta, dintr-o piesă pusă de două ori) se închide')
-o('L11', L, "    if (limita > 0) multe = true;\n", "", 'legare', 'trei lanțuri cu goluri: fără „multe”')
+o('L11', L, "    if (limita > 0) multe = true;", "    if (limita > 0) multe = false;", 'legare', 'trei lanțuri cu goluri: fără „multe”')
 o('L12', L, "  if ((L.cai[p] as { inv: boolean }).inv) { intoarce(L); p = L.cai.length - 1 - p; }\n", "", 'legare', 'calea legată nu ia sensul primei')
 o('L13', L, "  if (arce && !esteSimilitudine(T, TOLERANTA_SIMILITUDINE_LUME)) return null;\n", "", 'legare', 'arcele printr-o matrice neuniformă')
 o('L14', L, "  const semn = determinantNormat(T) < 0 ? -1 : 1;", "  const semn = 1;", 'legare', 'oglindirea nu schimbă semnul arcului')
