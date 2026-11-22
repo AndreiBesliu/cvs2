@@ -10812,6 +10812,89 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
   ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
   20 de VOID.
 
+## 2026-11-21 — Felia 25.4↑c: îndreptarea scanărilor (ADR 0271, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pornesc felia următoare, îndreptarea
+scanărilor (25.4↑c, ADR 0271)?”; tot sub „vreau să mergi înainte și testez la final”). Reluată pe 21.11 la mesajul
+sesiunii principale, după „da si vreau sa pornesti si restul worktrees” al owner-ului.
+**Started:** 18.11, 21:28. **Completed:** 21.11, 18:37.
+
+- **Ramura:** pornită de la `0905a07a` (înaintare rapidă: 25.7↑ era deja în `main`). Pauza din 18.11 seara a oprit-o
+  înaintea otrăvurilor. Pe 21.11: lucrul comis (`ffed319b`), apoi `main` `a64adf63` adus (`9d1eac56`), cu ciocniri doar în
+  DEVLOG și în indexul ADR.
+- **Cercetarea:** Leptonica (`pixFindSkew`: scorul lui Postl, ±7°, încrederea max / min, pragul 3), unpaper, ImageMagick
+  (`-deskew`, Radon), Acrobat. ArtCAM / Carveco, Vectric, LightBurn și Inkscape n-o au.
+- **Prototipul** (`.tmp/proto-0271.ts`, cu generatorul `.tmp/gen-0271.ts`): pagini sintetice cu acoperirea exactă, rotite cu
+  unghiuri știute.
+  - Unghiul 0 câștiga din grila pixelilor: textul cu zgomot rotit cu 0,15° ieșea 0,004°. Remedierea: punctele mutate cu o
+    fracțiune de pixel (R2).
+  - Încrederea lui Leptonica despărțea prost o schiță (2,8) de un logo (3,4). Despart bine vârful raportat la cel mai bun
+    scor de la peste 1° (pragul 1,25) și scorul pe ambele axe.
+  - Eroarea, sub 0,016° (logo, 0,05°); ~50 ms pe o pagină A4.
+- **Nucleul** (`src/trasare/rotire.ts`): `gasesteUnghiul`, `rotesteImaginea` (pânza mărită, fondul din margine, marginea
+  prelungită, reducerea cu k), `panzaRotita`. **Calculul:** după foaie, înaintea zonei; sugestia (de la 0,1°, nu peste a
+  foii); scara împărțită la k. **Ușa:** `AlegeriTrasare.rotire`, cererea, raportul. **Fereastra:** grupul „Îndreptarea”,
+  „Îndreaptă scanarea”, „Unghiul (°)”, raportul, avertismentul, previzualizarea îndreptată. Textele (ro, en) și manualul.
+- **Probele:**
+  - Fixturile scrise și rotite de GDI+ (`test/fixtures/trasare/rotire/genereaza.ps1`): un desen tehnic (+1,7°, −6,5°,
+    nerotit), o pagină de text (−3,2°), un G4 (−0,6°).
+  - 16 unitare (`trasare.rotire.test.ts`, `import.rotire.test.ts`) și 2 e2e (`trasare-rotire.spec.ts`).
+- **Otrăvurile** (`test/otravuri/25.4c.py`): 44 / 44 (36 unitare, 8 prin e2e). La prima rulare (`5ac7aefb`), R08 (maximul
+  la capătul baleiajului grosier) a scăpat, echivalentă: o acoperă verificarea de la sfârșit, iar ea respingea degeaba un
+  unghi de sub 10°. Codul ei, scos (`0346cd18`).
+- **Porțile, pe arborele unit:**
+  - `tsc` pe cele trei configurații, regulile importurilor, licențele, determinismul.
+  - Unitare 9 668: 9 658 trecute, 8 sărite. Două au căzut: traducerea rândului nou, venită cu documentele, și o probă DXF
+    cu ceas (11,5 s sub încărcare; singură, 0,6 s).
+  - E2e 52 / 52 (specurile trasării și importul), cât rulau și e2e-urile altor linii.
+  - Mărimea: totalul 741,6 / 800 kB (`main` 739,4: +2,2), pornirea 107,2 / 115 și ușa 111,2, neschimbate.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 21.12), amprenta
+  `645208c691d8`, din build-ul curat al commit-ului de cod. Privit pe canal: sugestia, îndreptarea cu 1,70°, desenul cu
+  mărimea chenarului, colțurile în culoarea hârtiei, un unghi scris; nicio eroare în consolă.
+- **Lecții:**
+  - Un scor de proiecții pe pixeli are o favoare pentru 0°, din grila pixelilor: punctele se mută cu o fracțiune de pixel.
+  - `assert.equal` pe două obiecte mari construiește diff-ul lor: otrava R19 a ținut proba aproape 2 minute. Identitatea
+    se verifică cu `assert.ok(a === b)`.
+  - O probă e2e care cerea textul exact al unghiului găsit („2,0x”) a picat pe 1,99: unghiul se citește ca număr, cu
+    toleranța.
+
+## 2026-11-21 — ADR 0272 propus: imaginile pe foaie (straturile bitmap), cu schița (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propunerea” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pregătesc propunerea pentru straturile
+bitmap (ADR 0272, cu schiță)?”, după „cat mai este de facut pentru trasare?”).
+**Started:** 21.11, 18:56. **Completed:** 21.11, 19:10.
+
+- **Ce am văzut în aplicație:** documentul (piese cu arbore, instanțe pe foi) n-are un element de imagine. Proiectul se
+  scrie întreg, ca JSON, în IndexedDB, la fiecare schimbare, cu 20 de versiuni: o imagine nu poate sta în el, deci octeții
+  ei merg într-o bază a lor, după amprentă. Pânza are deja straturi, cu vectorii desenați într-un worker. Panoul foii e
+  cel al proprietăților, fără nimic ales.
+- **Cercetarea:** Vectric, ArtCAM / Carveco, Fusion 360 (calibrarea din două puncte), LightBurn, Inkscape.
+- **ADR 0272 (propus):** imaginea pe foaie, sub desen, nici tăiată, nici exportată; punerea din fereastra trasării;
+  fixată sau desfăcută; lista în panoul foii; „Calibrează” și „Trasează…” în 25.8↑b. Trei întrebări, cu recomandarea
+  întâi: bifa la import, oprită; imaginea fixată; lista în panoul foii.
+- **Schița:** <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, cu macheta interactivă (opacitatea, lacătul, calibrarea, trasarea, un desen peste imagine),
+  piciorul ferestrei trasării și formularul (`raspunsuri/owner`). Privită o dată local (Edge fără fereastră): nicio eroare
+  în afara fonturilor blocate, fără derulare laterală la 375 px. Panoul calibrării rămânea vizibil după „Aplică” (stilul
+  lui bătea `hidden`): reparat, republicată.
+- **Și:** rândul trasării din `ACOPERIRE-ARTCAM-DESKPROTO.md`, pus la zi (25.3↑d până la 25.4↑c și ce rămâne la cerere);
+  rândul straturilor bitmap: propus.
+
+## 2026-11-22 — ADR 0282 propus: elicele în atelierul Easy 3Draw (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si configurabile elicele si compatibile cu
+lego” (owner-ul, după „neata, continua si porneste si worktrees”). **Started:** 22.11, 16:16. **Completed:** 22.11, 16:28.
+
+- **Reperele LEGO**, din numele pieselor LDraw: elicele cu 3 palete 6041 (Ø3½, ax), 65768 (Ø3½), 2421 (Ø4), 4617b și 92842
+  (Ø5½), 15790 (Ø9) și cele cu mai multe palete 41530 (8, Ø5, ax), 87751 (7, Ø6), 80273 (5, Ø9).
+- **Propunerea:** o piesă „Elice” din parametri (2–8 palete, diametrul în știfturi, pasul ca raport față de diametru,
+  lățimea, forma, profilul, sensul și perechea, prinderea ca la rotițe, conul), tipărită fără suport: butucul și muchia de
+  jos a fiecărei palete pe masă, cu consola la vârf de 0,2 / tan β pe strat (0,9 mm la pasul 0,7). Apoi elicea de barcă și
+  ventilatorul cu carcasă.
+- **Schița**, cu macheta de încercat (vederea de sus și silueta pe masă, calculate din parametri; „Ca LEGO” cu valori
+  apropiate) și trei întrebări (unde stau, ce vine întâi, cotele din LDraw cu descărcarea lor), cu răspunsurile salvate în
+  pagină: <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>.
+- **Codul:** la răspunsurile owner-ului (felia 3.Tq), pe ramura `wip/3.Tq-elice`, în worktree-ul `rotite`.
+
 ## 2026-11-21 — 3.6v–3.6x propuse: camera imprimantei și codurile ei explicate (ADR 0195) (Model: Claude Opus 5.5)
 
 **Prompt:** cererea sesiunii principale (21.11), după „da si vreau sa pornesti si restul worktrees” al owner-ului: „Continuă

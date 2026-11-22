@@ -959,8 +959,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/io/tiffScrie.ts`: CCITT-ul împachetat, eșantioanele brute), cu orientarea (1–8) și DPI-ul așezării; calculul aplică
   `orientare` și dă `poza`; ușa importului trasează singură o pagină fără vectori, iar una cu vectori la cerere
   (`AlegeriImport.imaginePdf`; „Trasează imaginea paginii” / „Vectorii paginii”); refuzurile `pdf-imagine` (cu numele) și
-  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`. **Totalul ramurii, cu `main` adus (`8425a2c1`): 729,8 / 800
-  kB**, pornirea 107,0 / 115 (cu ușa 111,0).
+  `pdf-imagine-stricata`; canalul, amprenta `283c53ff12af`.
+  **25.4↑c (îndreptarea scanărilor, ADR 0271) gata pe 21.11, pe aceeași ramură, pe canalul `trasare`:**
+  `src/trasare/rotire.ts` (pur, în workerul trasării): `gasesteUnghiul` (scorul lui Postl pe rânduri și coloane, punctele
+  mutate cu o fracțiune de pixel, ±10°, încrederea din vârf) și `rotesteImaginea` (pânza mărită, fondul din margine,
+  marginea prelungită, reducerea cu k); calculul, după foaie și înaintea zonei (`CerereTrasare.rotire`, `RotireTrasata`,
+  scara împărțită la k); ușa (`AlegeriTrasare.rotire`, `UNGHI_SCRIS_MAXIM`); fereastra (grupul „Îndreptarea”, „Îndreaptă
+  scanarea”, „Unghiul (°)”, sugestia, avertismentul); fixturile GDI+ în `test/fixtures/trasare/rotire`
+  (`genereaza.ps1`); canalul, amprenta `645208c691d8`.
+  **Totalul ramurii, cu `main` adus (`9d1eac56`): 741,6 / 800 kB** (`main` `a64adf63`: 739,4), pornirea 107,2 / 115
+  (cu ușa 111,2). **ADR 0272 (imaginile pe foaie, straturile bitmap; feliile 25.8↑a–b) propus pe 21.11,** cu schița
+  (<https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, formularul în `raspunsuri/owner`): codul pornește după răspunsuri.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1250,6 +1259,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 22.11.2026, după-amiaza: **25.4↑c (îndreptarea scanărilor) unită în `main`, în lot cu ADR 0282 propus (elicele)**
+  (worktree-ul `unire`, ramura `unire-2211`). **25.4↑c** (linia trasării, ramura `wip/25.1-trasare`, `9071e62f` din
+  `78a44def`; ADR 0271): bifa „Îndreaptă scanarea”, în grupul „Îndreptarea”: unghiul unei scanări strâmbe găsit din
+  cerneală (scorul lui Postl pe rânduri și pe coloane, până la 10° în fiecare parte, cu încrederea vârfului), imaginea
+  rotită înapoi pe o pânză mărită, cu fondul din mediana marginii; unghiul se poate scrie de mână (cel mult 45°);
+  otrăvurile 44 / 44. Pe aceeași ramură, ADR 0272 propus (imaginile pe foaie). La porțile lotului a căzut proba căutării
+  din manual: presupunea că „ROTESTE” nu găsește importul, iar textul nou al trasării pomenește, corect, rotirea;
+  exemplul negativ e acum contul (`bdc23ef6`). **ADR 0282 propus** (`52df1977`, din `df573f80` pe ramura
+  `wip/3.Tq-elice`, în worktree-ul `rotite`; la „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si
+  configurabile elicele si compatibile cu lego” al owner-ului): o piesă „Elice” din parametri (2–8 palete, diametrul în
+  știfturi, pasul, lățimea, forma, profilul, sensul și perechea, prinderea ca la rotițe, conul), tipărită fără suport,
+  cu muchia de jos a paletelor pe masă; apoi elicea de barcă și ventilatorul cu carcasă; trei întrebări (unde stau, ce
+  vine întâi, cotele din LDraw) în schița <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>; codul (3.Tq), la
+  răspunsuri. Ciocnirile, doar în DEVLOG și în indexul ADR (rândurile 0271 și 0272 din ramură, 0280 și 0281 din `main`).
+  Porțile lotului: complete pe `9071e62f`: unit 9 674 / 0 (8 sărite), e2e 579 / 580 (căzută, determinist, proba căutării
+  din manual: reparată în `bdc23ef6`, apoi `manual.spec.ts` 5 / 5), emulatoarele 101 / 101 și 29 / 29; rapide pe
+  `52df1977`, cu propunerea (doar documente): unit 9 674 / 0, build-ul determinist; pornirea 107,2 / 115 (cu ușa 111,2),
+  totalul 744,1 / 800.
 - 21.11.2026, noaptea: **3.Tp↑a unită în `main`** (`ffae623a`, din `900a501a`; linia `galeria`, ramura
   `wip/3.Tp-galeria-pe-file`, la „da si vreau sa pornesti si restul worktrees” al owner-ului; ADR 0281 §4): câmpul
   „Caută o piesă” la capătul rândului de file ale atelierului Easy 3Draw (pe telefon, pe un rând al lui): la fiecare

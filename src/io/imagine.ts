@@ -31,6 +31,15 @@ export type AlegeriFoaie = {
   readonly colturi: ColturiFoaie | null;
 };
 
+/**
+ * Alegerile scanării strâmbe (ADR 0271): „Îndreaptă scanarea” (răspunsul 1a: implicit oprită, cu sugestia din raport) și
+ * unghiul scris, în grade (pozitiv: desenul rotit în sens invers acelor de ceasornic), sau null: găsit singur.
+ */
+export type AlegeriRotire = { readonly indreapta: boolean; readonly unghi: number | null };
+
+/** Cel mai mare unghi scris (grade), ca `UNGHI_MAXIM` din `src/trasare/rotire.ts` (ușa nu importă nucleul trasării). */
+export const UNGHI_SCRIS_MAXIM = 45;
+
 /** Formatul știut cu mărimea dată (în orice orientare), sau „alt”: numele din raport vine din foaia trasată, nu din alegeri. */
 export function formatDupaMarime(f: { readonly w: number; readonly h: number }): Exclude<FormatFoaie, 'poza'> {
   for (const [k, v] of Object.entries(FORMATE_FOAIE) as Array<[keyof typeof FORMATE_FOAIE, { readonly w: number; readonly h: number }]>) {
@@ -108,6 +117,8 @@ export type AlegeriTrasare = {
   readonly zona: { readonly x: number; readonly y: number; readonly w: number; readonly h: number } | null;
   /** Foaia pozată oblic (ADR 0225), pe imaginile opace. */
   readonly foaie: AlegeriFoaie;
+  /** Scanarea strâmbă (ADR 0271), pe imaginile opace; după foaie, înaintea zonei. */
+  readonly rotire: AlegeriRotire;
 };
 
 /**
@@ -125,13 +136,18 @@ export const MEDIANE_IMPLICITE: AlegeriMediane = { capete: 'centru', late: 'medi
 /** Foaia, implicit (ADR 0225, răspunsurile 1a, 2a): neîndreptată, A4, colțurile găsite singure. */
 export const FOAIE_IMPLICITA: AlegeriFoaie = { indreapta: false, format: 'a4', alt: { w: 210, h: 297 }, colturi: null };
 
+/** Scanarea, implicit (ADR 0271, răspunsul 1a): neîndreptată, unghiul găsit singur când se bifează. */
+export const ROTIRE_IMPLICITA: AlegeriRotire = { indreapta: false, unghi: null };
+
 /**
- * Implicitele (ADR 0220 §3–§7, ADR 0222 §2, ADR 0224, ADR 0225): sursa aleasă singură, contururile, pragul automat,
- * Echilibrat, petele și golurile sub 0,3 mm, lumina uniformă, fără zonă, fără ștergerea marginii și fără îndreptarea foii.
+ * Implicitele (ADR 0220 §3–§7, ADR 0222 §2, ADR 0224, ADR 0225, ADR 0271): sursa aleasă singură, contururile, pragul
+ * automat, Echilibrat, petele și golurile sub 0,3 mm, lumina uniformă, fără zonă, fără ștergerea marginii, fără îndreptarea
+ * foii și a scanării.
  */
 export const TRASARE_IMPLICITA: AlegeriTrasare = {
   sursa: 'auto', rezultat: 'contururi', prag: null, inverseaza: false, netezime: 'echilibrat', peteMm: 0.3, gauriMm: 0.3, latimeMm: null,
   culori: CULORI_IMPLICITE, mediane: MEDIANE_IMPLICITE, lumina: 'uniforma', margine: false, zona: null, foaie: FOAIE_IMPLICITA,
+  rotire: ROTIRE_IMPLICITA,
 };
 
 /**

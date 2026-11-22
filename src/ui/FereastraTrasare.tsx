@@ -6,7 +6,7 @@ import type { CuloarePaleta } from '../trasare/culori.ts';
 import type { CaiTrasate, ImagineRGBA } from '../trasare/trasare.ts';
 import { colturiBune, type Colturi } from '../trasare/colturi.ts';
 import { primele } from '../trasare/legaturi.ts';
-import { formatDupaMarime, SUGESTIE_INEGALA, type RezultatCuloare } from '../io/imagine.ts';
+import { formatDupaMarime, SUGESTIE_INEGALA, UNGHI_SCRIS_MAXIM, type RezultatCuloare } from '../io/imagine.ts';
 import type { AlegeriTrasare, PrevizualizareImport, RaportImagine } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
 
@@ -166,6 +166,10 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   const colturiArata = colturiCiorna ?? alegeri.foaie.colturi ?? foaie?.colturi ?? null;
   const [foaieImg, setFoaieImg] = useState<HTMLCanvasElement | null>(null);
   useEffect(() => { setFoaieImg(foaie?.previzualizare ? panzaDin(foaie.previzualizare) : null); }, [foaie]);
+  // Scanarea strâmbă (ADR 0271): îndreptată, sub vectori stă imaginea îndreptată (de la worker), după foaie.
+  const rotire = raport?.rotire ?? null;
+  const [rotireImg, setRotireImg] = useState<HTMLCanvasElement | null>(null);
+  useEffect(() => { setRotireImg(rotire?.previzualizare ? panzaDin(rotire.previzualizare) : null); }, [rotire]);
   // Un TIFF (ADR 0229): browserul nu-l decodează, deci poza vine de la worker, redusă.
   const pozaRaport = raport?.poza ?? null;
   const [pozaTiff, setPozaTiff] = useState<HTMLCanvasElement | null>(null);
@@ -199,6 +203,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
     prag: alegeri.prag ?? 128, pete: String(alegeri.peteMm), gauri: String(alegeri.gauriMm), latime: alegeri.latimeMm === null ? '' : String(alegeri.latimeMm),
     lat: om.pragLatMm === null ? '' : String(om.pragLatMm),
     altL: String(alegeri.foaie.alt.w), altI: String(alegeri.foaie.alt.h),
+    unghi: alegeri.rotire.unghi === null ? '' : String(alegeri.rotire.unghi),
   }));
   const trimise = useRef(alegeri);
   trimise.current = alegeri;
@@ -220,6 +225,13 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
       const altL = numar(ciorna.altL), altI = numar(ciorna.altI);
       if (a.foaie.format === 'alt' && altL !== null && altI !== null && altL > 0 && altI > 0 && (altL !== a.foaie.alt.w || altI !== a.foaie.alt.h)) {
         s.foaie = { ...a.foaie, alt: { w: altL, h: altI } };
+        s.zona = null;
+      }
+      // Unghiul scanării (ADR 0271), cu semn (și minusul tipografic), cel mult ±45°; gol: găsit singur. Altul scoate zona.
+      const textUnghi = ciorna.unghi.trim().replace('−', '-').replace(',', '.');
+      const unghi = textUnghi === '' ? null : Number(textUnghi);
+      if ((unghi === null || (Number.isFinite(unghi) && Math.abs(unghi) <= UNGHI_SCRIS_MAXIM)) && unghi !== a.rotire.unghi) {
+        s.rotire = { ...a.rotire, unghi };
         s.zona = null;
       }
       if (Object.keys(s).length > 0) onSchimba(s);
@@ -272,7 +284,7 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   const W = peColturi ? foaie?.poza.latime ?? 1 : raport?.intreg.latimePx ?? bmp?.width ?? 1;
   const H = peColturi ? foaie?.poza.inaltime ?? 1 : raport?.intreg.inaltimePx ?? bmp?.height ?? 1;
   const poza = bmp ?? pozaTiff;
-  const baza = indreptata && !peColturi ? foaieImg : poza;
+  const baza = peColturi ? poza : rotireImg ?? (indreptata ? foaieImg : poza);
   const zonaTrasata = raport?.zona ?? null, zonaArata = zonaCiorna ?? alegeri.zona;
   const zx = zonaTrasata?.x ?? 0, zy = zonaTrasata?.y ?? 0;
   const incadrare = Math.min(marime.w / W, marime.h / H) * 0.95;
@@ -424,6 +436,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
   };
 
   const aleasa = raport && raport.sursa !== 'culori' ? t(raport.sursa === 'alfa' ? 'import.trasare.aleasa.alfa' : 'import.trasare.aleasa.lum') : '';
+  // Mărimea imaginii decodate (după foaie), dinaintea rotirii scanării (ADR 0271): raportul o spune pe ea, nu pânza rotită.
+  const decodata = rotire?.previzualizare ? rotire.inainte : { latime: raport?.intreg.latimePx ?? 0, inaltime: raport?.intreg.inaltimePx ?? 0 };
   const px = (mm: string): string => {
     const v = Number(mm.replace(',', '.'));
     return raport && Number.isFinite(v) && v > 0 ? t('import.trasare.px', { px: nr(v / raport.mmPePx, 1) }) : '';
@@ -562,6 +576,21 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
                 </label>
               </span>
             )}
+            {/* Scanarea strâmbă (ADR 0271): rotită înapoi cu unghiul găsit, sau cu cel scris în câmp. */}
+            <label className="rand">
+              <input type="checkbox" checked={alegeri.rotire.indreapta} data-camp="trasare-rotire" onChange={(e) => {
+                onSchimba({ rotire: { ...alegeri.rotire, indreapta: e.target.checked }, zona: null });
+              }} />
+              {t('import.trasare.rotire')}
+            </label>
+            {alegeri.rotire.indreapta ? (
+              <label>
+                {t('import.trasare.rotire.unghi')}
+                <input type="text" inputMode="decimal" value={ciorna.unghi} data-camp="trasare-rotire-unghi" title={t('import.trasare.rotire.unghi-titlu')}
+                  placeholder={rotire?.gasit !== null && rotire?.gasit !== undefined ? nr(rotire.gasit, 2) : ''}
+                  onChange={(e) => { setCiorna({ ...ciorna, unghi: e.target.value }); }} />
+              </label>
+            ) : <p className="mic">{t('import.trasare.rotire.sfat')}</p>}
           </div>
         )}
         <label>
@@ -709,6 +738,15 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
                 </p>
               )}
               {foaie && !foaie.indreptata && foaie.sugestie && <p className="avertisment" data-testid="trasare-sugestie-foaie">{t('import.trasare.sugestie-foaie')}</p>}
+              {rotire?.ceruta && rotire.aplicat !== null && rotire.sursa !== null && (
+                <p data-testid="trasare-rotire">
+                  {t('import.trasare.rotire-raport', { unghi: nr(rotire.aplicat, 2), sursa: t(`import.trasare.rotire.${rotire.sursa}`) })}
+                </p>
+              )}
+              {rotire?.ceruta && rotire.aplicat === null && <p className="avertisment" data-testid="trasare-rotire-negasit">{t('import.trasare.rotire-negasit')}</p>}
+              {rotire && rotire.sugestie && rotire.gasit !== null && (
+                <p className="avertisment" data-testid="trasare-sugestie-rotire">{t('import.trasare.sugestie-rotire', { unghi: nr(rotire.gasit, 1) })}</p>
+              )}
               {raport.sursa !== 'alfa' && raport.lumina === 'uniforma' && raport.inegala !== null && raport.inegala > SUGESTIE_INEGALA && (
                 <p className="avertisment" data-testid="trasare-sugestie">{t('import.trasare.sugestie', { procent: nr(100 * raport.inegala, 0) })}</p>
               )}
@@ -724,8 +762,8 @@ export function PanouTrasare({ alegeri, onSchimba, octeti, stare, seRecitesc, fr
               )}
               <p data-testid="trasare-imagine">
                 {raport.redusDin
-                  ? t('import.trasare.redusa', { latime: raport.intreg.latimePx, inaltime: raport.intreg.inaltimePx, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
-                  : t('import.trasare.imagine', { latime: foaie?.indreptata ? foaie.poza.latime : raport.intreg.latimePx, inaltime: foaie?.indreptata ? foaie.poza.inaltime : raport.intreg.inaltimePx })}
+                  ? t('import.trasare.redusa', { latime: decodata.latime, inaltime: decodata.inaltime, latime0: raport.redusDin.latime, inaltime0: raport.redusDin.inaltime })
+                  : t('import.trasare.imagine', { latime: foaie?.indreptata ? foaie.poza.latime : decodata.latime, inaltime: foaie?.indreptata ? foaie.poza.inaltime : decodata.inaltime })}
               </p>
               {(raport.pete > 0 || raport.gauri > 0) && <p data-testid="trasare-curatare">{t('import.trasare.curatare', { pete: t('import.trasare.pete-sterse', { n: raport.pete }), gauri: t('import.trasare.goluri-umplute', { n: raport.gauri }) })}</p>}
               {raport.margine > 0 && <p data-testid="trasare-margine">{t('import.trasare.margine-sterse', { n: raport.margine })}</p>}

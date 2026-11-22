@@ -9,7 +9,7 @@ import type { AlegeriTrasare } from '../io/imagine.ts';
 import type { CaiTrasate, ImagineRGBA } from '../trasare/trasare.ts';
 import type { CuloarePaleta } from '../trasare/culori.ts';
 import type { Lumina } from '../trasare/lumina.ts';
-import type { FoaieTrasata, Posterizare, ZonaTrasare } from '../jobs/calculTrasare.ts';
+import type { FoaieTrasata, Posterizare, RotireTrasata, ZonaTrasare } from '../jobs/calculTrasare.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
@@ -71,6 +71,11 @@ export type RaportImagine = {
    * (sugestia); null: niciuna.
    */
   readonly foaie: FoaieTrasata | null;
+  /**
+   * Scanarea strâmbă (ADR 0271): unghiul găsit (sugestia), cel cu care s-a îndreptat și previzualizarea imaginii îndreptate;
+   * null: o imagine cu transparență.
+   */
+  readonly rotire: RotireTrasata | null;
   /** Sursa cernelii (alb-negru) sau culorile (ADR 0221); pe culori, `prag` e 0, histograma goală, iar `automat` e al numărului. */
   readonly sursa: 'alfa' | 'lum' | 'culori'; readonly transparenta: boolean;
   readonly prag: number; readonly automat: boolean; readonly margini: 'netezite' | 'dure';
