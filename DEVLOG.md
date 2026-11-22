@@ -11007,3 +11007,35 @@ rapide propus întâi?”).
   index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
+
+## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „neata, continua si porneste si worktrees” (owner-ul, pe 22.11, prin sesiunea principală: „Pornește 3.Tp↑b,
+pictogramele din ADR 0281”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă la `main`
+`40487c43`, cu 3.Tp↑a unită). **Started:** 22.11, 16:16. **Completed:** 22.11, 17:40.
+
+- **Pictogramele:** pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, un desen mic al piesei, de
+  18 px: un SVG de 24 × 24, doar linii, de culoarea textului (deci după temă și după apăsare), ascuns cititoarelor de ecran
+  (butonul se numește tot ca piesa). Cele 25 de desene, făcute de mână după piesele din vederea 3D (cu valorile de pornire
+  ale editoarelor), alese pe foi de privire (desenul la 48 px și pe butoane, apăsat și nu, la 1x și 2x, mărit): unde un
+  desen semăna cu altceva (bila cu pictograma de „utilizator”, fulia cu o clepsidră, roata cu o țintă, șenila cu grinda),
+  a fost refăcut (știfturile plăcii sub bilă și cupă; fulia din față, cu găurile ei; roata cu spițe; șenila din zale).
+- **O piesă nouă** (elicele, ADR 0282, propuse în paralel) își pune desenul în `PICTOGRAME` (`atelier.ts`, lângă
+  `FAMILII`), pe un rând; până atunci are cubul generic, iar proba unitară i-l cere.
+- **Probele:** unitare 4 (`trenulet.pictograme.test.ts`: completitudinea în ambele sensuri, desenele diferite, doar forme
+  fără culori și stil, în pătratul de 24 cu tot cu linia, arcele urmărite pe toată lungimea lor; judecata însăși, pe desene
+  greșite), e2e 4 (`trenulet.pictograme.spec.ts`), plus pictogramele în proba din cvs2, în engleză (`trenulet.spec.ts`).
+  Pe `35121af0`: unit trenulet* și biblioteca* 129 / 129, e2e pluginului și al bibliotecii 50 / 50.
+- **Otrăvurile:** 18 / 18 (`3.Tpb.py`) pe `35121af0`, la prima rulare, după baza verde (unitare 4 / 4, e2e 4 / 4): 7
+  prin proba unitară, 11 prin e2e. Pornite după 6 minute de așteptare a liniștii. `verifica` pe cele 22 de liste ale
+  pluginului: aceleași 20 de VOID vechi.
+- **Privirea:** pagina de sine stătătoare (desktop 1x și 2x, telefon, luminos și întunecat: fiecare filă, cu o piesă
+  apăsată, și căutarea „con”) și cvs2 (română: desktop luminos, Legături; telefon întunecat, Roți; engleză: desktop
+  întunecat, Cărămizi și „gear”): toate butoanele cu pictogramă, de 18 × 18, centrate, de culoarea textului, fără depășire,
+  fiecare pe un rând, fără erori în jurnal. Butonul are 32 px în loc de 30.
+- **Porțile:** verzi pe `330a5873`: rapide (traducerile 0 lipsă, tsc, unit 9 670 / 0, 8 sărite, licențele, build,
+  determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 741,9 / 800, al lui `main`: felia nu atinge
+  aplicația), lente (e2e 580 / 582 la prima rulare, cu 3 lucrători: două probe ale aplicației, neatinse de felie, căzute la
+  încărcare, `proiect.spec.ts:302` (un `toBeEnabled` de 5 s) și `simulare.spec.ts:53` (120 s depășite), au trecut reluate
+  singure, 25 / 25 pe fișierele lor; emulatoarele 101 / 101 și 29 / 29).
+- Pachetul Easy 3Draw 18.18.0, înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
