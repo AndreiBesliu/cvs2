@@ -9,6 +9,7 @@ import {
 } from './document.ts';
 import { conturElement } from './forme.ts';
 import { elementeInstanta } from './lume.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /**
  * Rolul de tăiere al unei piese (ADR 0112): ce face freza cu toate formele ei. Se alege din panoul de proprietăți și
@@ -282,11 +283,11 @@ export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[]
   const profil = (r: Rol | null): boolean => r === 'exterior' || r === 'interior';
   const extra = profil(vechi) && profil(rol) ? { urechi, rampa, intrari, colturi } : { urechi: null, rampa: null, intrari: null, colturi: null };
   const pasLateral = tipVechi === 'buzunar' && pasVechi !== undefined && pasVechi <= scula.diametru / 2 ? pasVechi : pasLateralImplicit(scula.diametru);
-  const ops = g.map((x): Operatie => ({
-    ...structuredClone(necunoscute), id: x.id, tip: x.tip, noduri: [...x.noduri], scula: structuredClone(scula), latura: x.latura, sens, adancime, pas,
+  const ops = g.map((x): Operatie => cuNoduri({
+    ...structuredClone(necunoscute), id: x.id, tip: x.tip, noduri: [], scula: structuredClone(scula), latura: x.latura, sens, adancime, pas,
     ...structuredClone(extra), ...(x.tip === 'buzunar' ? { pasLateral } : {}),
     ...(incrustatie ? { incrustatie: structuredClone(incrustatie) } : {}), ...(fundPlat ? { fundPlat: structuredClone(fundPlat) } : {}),
-  }));
+  }, [...x.noduri]));
   const singura = p.operatii.length === 1 ? p.operatii[0] : undefined;
   if (ops.length === 1 && singura) ops[0] = { ...ops[0]!, id: singura.id };
   return ops;

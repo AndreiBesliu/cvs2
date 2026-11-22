@@ -25,12 +25,13 @@ const inst = (id: string, p: string, x: number, y: number, rotire: number): Inst
  * lui v8) devine 11, ca să rămână otravă; „8” devine „9”. Nimic altceva (ADR 0034 §3). Pe loc; întoarce documentul.
  * Felia 2.3c-2 (ADR 0037): 11, nu 10: ușa curentă (a oracolului și a aplicației) e v10, deci „mai nouă” e de acum 11.
  * Felia 5.1↑ (ADR 0069): 12, nu 11: ușa curentă e v11. Felia 5.9↑ (ADR 0133): 20, ușa curentă e v19. Felia 12.1↑ (ADR 0170): 21, ușa curentă e v20. Felia 12.1↑b (ADR 0171): 22, ușa curentă e v21. Felia 12.1↑c (ADR 0172): 23, ușa curentă e v22. Felia 11.4↑ (ADR 0210): 24, ușa curentă e v23. Felia 12.1↑b-2
- * (ADR 0174): 25, ușa curentă e v24. Felia 12.1↑f (ADR 0175): 26, ușa curentă e v25.
+ * (ADR 0174): 25, ușa curentă e v24. Felia 12.1↑f (ADR 0175): 26, ușa curentă e v25. Felia 11.3↑d (ADR 0211): 27, ușa
+ * curentă e v26.
  */
 const laV9 = (d: unknown): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 8) d['schema'] = 9;
-  else if (d['schema'] === 9) d['schema'] = 26;
+  else if (d['schema'] === 9) d['schema'] = 27;
   else if (d['schema'] === '8') d['schema'] = '9';
   return d;
 };

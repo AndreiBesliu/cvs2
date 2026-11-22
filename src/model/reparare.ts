@@ -24,6 +24,7 @@ import {
   buclaLa, locuri, pentruCavalier, siruriMici, verificaVectorii, type OptiuniVerificare, type Problema, type RezultatVerificare,
 } from './verificare.ts';
 import { TOLERANTA_MAXIMA, TOLERANTA_MINIMA } from './verificareLimite.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /** Ce se poate repara dintr-un rând al listei (paralel cu `probleme`). */
 export type Reparabil =
@@ -243,7 +244,7 @@ export function aplicaSchimbarea(p: Piesa, s: Schimbare): Piesa | null {
   const radacina: Nod = r.length === 1 ? (r[0] as Nod) : { tip: 'grup', id: idNou('g'), matrice: { ...IDENTITATE }, copii: r };
   const operatii = p.operatii.flatMap((o) => {
     const noduri = o.noduri.flatMap((id) => (s.scoase.has(id) ? [] : [id, ...(noi.get(id) ?? [])]));
-    return noduri.length === 0 ? [] : [{ ...o, noduri }];
+    return noduri.length === 0 ? [] : [cuNoduri(o, noduri)];
   });
   return { ...p, radacina, operatii };
 }

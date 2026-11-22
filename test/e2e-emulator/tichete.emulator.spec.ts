@@ -184,19 +184,25 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
     marime, createHash('sha256').update(salvat).digest('hex'), (JSON.parse(salvat) as { schema: number }).schema,
   ]);
 
-  // Owner-ul, în fila Tichete: raportarea cu amprenta și datele aplicației; răspunsul o trece în „deschis”.
+  // Owner-ul, în fila Tichete (ADR 0260 §3, felia A.3): tichetul ales în dreapta, ca o conversație: raportarea cu eroarea
+  // din sesiune (mesajul grupului ei, cu legătura spre Erori) și datele aplicației; răspunsul îl trece în „deschis”.
   const admin = await ownerInTichete(browser);
   const rand = admin.locator(`[data-tichet="${tichet?.id ?? ''}"]`);
-  await expect(rand.locator('[data-tic="text"]')).toHaveText('Grila ar trebui\nsă se vadă mai bine.', LENT);
-  await expect(rand.locator('[data-tic="amprente"]')).toContainText(grup?.id ?? '-');
-  await expect(rand.locator('[data-tic="aplicatia"]')).toContainText(BUILD);
+  const detaliu = admin.locator(`[data-tic="detaliu"][data-tic-ales="${tichet?.id ?? ''}"]`);
+  await expect(rand).toHaveAttribute('data-ales', 'true', LENT);
+  await expect(rand.locator('[data-tic="titlu"]')).toHaveText('Grila ar trebui');
+  await expect(detaliu.locator('[data-tic="text"]')).toHaveText('Grila ar trebui\nsă se vadă mai bine.', LENT);
+  const eroareSesiune = detaliu.locator(`[data-amprenta="${grup?.id ?? '-'}"]`);
+  await expect(eroareSesiune).toContainText('eroare de probă pentru raportare', LENT);
+  await expect(eroareSesiune.locator('[data-tic="spre-erori"]')).toHaveText('Deschide în Erori ›');
+  await expect(detaliu.locator('[data-tic="aplicatia"]')).toContainText(BUILD);
   // Proiectul, descărcat prin callable (din Storage, pe server), despachetat și verificat: versiunea salvată, octet cu octet.
-  const descarcaProiect = rand.locator('[data-tic="descarca-proiect"]');
+  const descarcaProiect = detaliu.locator('[data-tic="descarca-proiect"]');
   await expect(descarcaProiect).toHaveText(`Descarcă proiectul (${kb} kB, schema ${(JSON.parse(salvat) as { schema: number }).schema})`);
   const [descarcare] = await Promise.all([admin.waitForEvent('download', LENT), descarcaProiect.click()]);
   expect(descarcare.suggestedFilename()).toBe(`cncvs2-tichet-${tichet?.id ?? ''}.json`);
   expect(readFileSync(await descarcare.path(), 'utf8')).toBe(salvat);
-  await expect(rand.locator('[data-tic="proiect-descarcat"]')).toHaveText(`Proiectul s-a descărcat: cncvs2-tichet-${tichet?.id ?? ''}.json.`);
+  await expect(detaliu.locator('[data-tic="proiect-descarcat"]')).toHaveText(`Proiectul s-a descărcat: cncvs2-tichet-${tichet?.id ?? ''}.json.`);
   // Un fișier schimbat între timp în Storage (alt proiect decât cel trimis) nu se descarcă: amprenta din tichet nu se potrivește.
   const caleProiect = encodeURIComponent(`tichete/${tichet?.id ?? ''}/proiect.json.gz`);
   const schimbat = await fetch(`http://127.0.0.1:9195/upload/storage/v1/b/${PROIECT}.appspot.com/o?uploadType=media&name=${caleProiect}`, {
@@ -204,13 +210,13 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   });
   expect(schimbat.status, await schimbat.clone().text()).toBe(200);
   await descarcaProiect.click();
-  await expect(rand.locator('[data-tic="proiect-eroare"]')).toHaveText(
+  await expect(detaliu.locator('[data-tic="proiect-eroare"]')).toHaveText(
     'Proiectul nu s-a putut descărca: fișierul primit nu e cel trimis (mărimea sau amprenta diferă)', LENT,
   );
-  await rand.locator('[data-tic="raspuns-text"]').fill('Mulțumim! Grila mai groasă vine în versiunea următoare.');
-  await rand.locator('[data-tic="trimite"]').click();
-  await expect(rand.locator('[data-tic="raspuns"]')).toContainText('Grila mai groasă vine în versiunea următoare.', LENT);
-  await expect(rand).toHaveAttribute('data-stare', 'deschis');
+  await detaliu.locator('[data-tic="raspuns-text"]').fill('Mulțumim! Grila mai groasă vine în versiunea următoare.');
+  await detaliu.locator('[data-tic="trimite"]').click();
+  await expect(detaliu.locator('[data-tic="raspuns"]')).toContainText('Grila mai groasă vine în versiunea următoare.', LENT);
+  await expect(rand).toHaveAttribute('data-stare', 'deschis', LENT);
   await admin.context().close();
 
   // În editor, la pornirea următoare: semnul pe buton și numărul pe rând, din reconfirmarea contului.

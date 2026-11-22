@@ -867,6 +867,15 @@ preview on the right:
   corners come from and the proportions in the photo, says when they do not match the paper size and, without
   straightening, suggests it when it sees a slanted sheet. If the sheet is not found (a scan, a sheet on a white table),
   the corners sit near the photo's edges: move them with the **Corners** button;
+- **Straighten the scan** (on an opaque image; off by default): for a crooked scan (the sheet put askew on the scanner
+  glass or pulled in crooked by the feeder). The app finds the angle from the lines, text rows and shape edges of the
+  drawing (up to 10° either way) and turns the image back, on a canvas enlarged so that nothing is lost; the new corners
+  take the paper's colour, and with **Ignore what touches the edge**, what touched the scan's edge touches the new one too.
+  The pixel size does not change. **Angle (°)** shows the angle found; type another one if you want (positive: the drawing
+  is turned counterclockwise; at most 45°), and empty looks for it again. The report says how much it was straightened and
+  where the angle comes from; without straightening, it suggests it when the scan looks turned by at least 0.1°. A drawing
+  without straight lines (circles, a sketch) has no sure angle: the report asks you to type it. With **Straighten the
+  sheet** ticked, the drawing on the straightened sheet is straightened; the area is drawn on the straightened image;
 - **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the straightened sheet's paper size,
   from the DPI written in the file, and without them from 96 px per inch, as for an SVG; the line under it shows the
   height, the pixel's size and where the scale comes from.
@@ -1230,7 +1239,7 @@ all projects: another computer, another browser, or the test address versus the 
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
-| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
+| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, or picked on the drawing (see [Tabs picked on the drawing](#export)) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall). A corner whose relief would leave less than 1 mm of material to another wall of the part, or to the relief of another corner (at the base of a thin tongue or finger), goes without it, with a warning. Corners with a curved side (a “D”, a round shoulder, a lens, an imported curve) get the relief too; where the cutter cannot reach the corner at all, a warning says so |
@@ -1599,6 +1608,20 @@ face nothing) would come loose while the cutter is still cutting next to it. The
 the plate's values or the part's name and its place on the sheet (“near X 70, Y 119”); with **All sheets**, on each sheet.
 The program is downloaded anyway: it is a warning, not a refusal. The check is on the program, so it catches any layout,
 including one moved by hand.
+
+**Tabs picked on the drawing.** Under a row's tabs, **Placement: evenly spaced / picked on the drawing**. With
+**picked on the drawing**, the “Count, per loop” field is switched off (the count is how many you placed), and **Pick on the
+drawing…** hides the window and puts the canvas into the operation's tab mode: its outline shows on every copy of the part on
+the sheet, with the picked tabs as small dots. A click on the outline adds a tab at the nearest point on it; a click on a tab
+removes it; dragged, a tab slides along the outline. Two tabs never come closer than their length divided by 0.9, centre to
+centre (the band at the top says why). The places belong to the part, so every copy has them, rotated with it. **Done** (or
+Enter) writes them in a single step (Ctrl+Z takes it back) and brings the window back with everything you had typed in it;
+**Cancel** (or Escape) leaves the tabs as they were. On export, each picked tab lands on the nearest point of the cutter path,
+and the loop starts in the middle of the longest gap between tabs (with lead-ins, the lead-in is chosen away from the tabs), so
+the cutter never enters the wood on a tab. Two tabs too close on the cutter path, or one on a loop that is too short, stop
+the export, with the place. An element with no picked tab is cut without tabs. With **Show toolpath**, the picked tabs show
+as dots on the outline. This is how you put them towards the edge of the sheet or a wide strip, where they hold, or keep them
+off a side where they would spoil the part.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
