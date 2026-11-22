@@ -1255,6 +1255,24 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 22.11.2026, după-amiaza: **25.4↑c (îndreptarea scanărilor) unită în `main`, în lot cu ADR 0282 propus (elicele)**
+  (worktree-ul `unire`, ramura `unire-2211`). **25.4↑c** (linia trasării, ramura `wip/25.1-trasare`, `9071e62f` din
+  `78a44def`; ADR 0271): bifa „Îndreaptă scanarea”, în grupul „Îndreptarea”: unghiul unei scanări strâmbe găsit din
+  cerneală (scorul lui Postl pe rânduri și pe coloane, până la 10° în fiecare parte, cu încrederea vârfului), imaginea
+  rotită înapoi pe o pânză mărită, cu fondul din mediana marginii; unghiul se poate scrie de mână (cel mult 45°);
+  otrăvurile 44 / 44. Pe aceeași ramură, ADR 0272 propus (imaginile pe foaie). La porțile lotului a căzut proba căutării
+  din manual: presupunea că „ROTESTE” nu găsește importul, iar textul nou al trasării pomenește, corect, rotirea;
+  exemplul negativ e acum contul (`bdc23ef6`). **ADR 0282 propus** (`52df1977`, din `df573f80` pe ramura
+  `wip/3.Tq-elice`, în worktree-ul `rotite`; la „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si
+  configurabile elicele si compatibile cu lego” al owner-ului): o piesă „Elice” din parametri (2–8 palete, diametrul în
+  știfturi, pasul, lățimea, forma, profilul, sensul și perechea, prinderea ca la rotițe, conul), tipărită fără suport,
+  cu muchia de jos a paletelor pe masă; apoi elicea de barcă și ventilatorul cu carcasă; trei întrebări (unde stau, ce
+  vine întâi, cotele din LDraw) în schița <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>; codul (3.Tq), la
+  răspunsuri. Ciocnirile, doar în DEVLOG și în indexul ADR (rândurile 0271 și 0272 din ramură, 0280 și 0281 din `main`).
+  Porțile lotului: complete pe `9071e62f`: unit 9 674 / 0 (8 sărite), e2e 579 / 580 (căzută, determinist, proba căutării
+  din manual: reparată în `bdc23ef6`, apoi `manual.spec.ts` 5 / 5), emulatoarele 101 / 101 și 29 / 29; rapide pe
+  `52df1977`, cu propunerea (doar documente): unit 9 674 / 0, build-ul determinist; pornirea 107,2 / 115 (cu ușa 111,2),
+  totalul 744,1 / 800.
 - 21.11.2026, noaptea: **3.Tp↑a unită în `main`** (`ffae623a`, din `900a501a`; linia `galeria`, ramura
   `wip/3.Tp-galeria-pe-file`, la „da si vreau sa pornesti si restul worktrees” al owner-ului; ADR 0281 §4): câmpul
   „Caută o piesă” la capătul rândului de file ale atelierului Easy 3Draw (pe telefon, pe un rând al lui): la fiecare
