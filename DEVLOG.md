@@ -10628,6 +10628,47 @@ aseară s-au oprit peste noapte.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată lângă valorile pe hârtie), la cuvântul owner-ului; bifa
   „prin foaie” pe fiecare rând (v26).
 
+## 2026-11-21 — Felia 3.To: șenila în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
+
+**Prompt:** „da si vreau sa pornesti si restul worktrees” (owner-ul, la „Pornesc acum șenila (3.To), direct în fila Roți,
+sau mai târziu?”). **Started:** 21.11, 17:52. **Completed:** 21.11, 19:51.
+
+- **Cotele:** zala LEGO 57518 și pinioanele 57519 (10 scobituri pe R 19,42) și 42529 (14), din LDraw, cu o unealtă nouă de
+  felii pe oricare axă (`unelte/ldraw/felie_axa.py`) și o randare 3D a triunghiurilor din LDraw (three.js).
+- **Motorul** (`senila`, `senilaMontaj`): zala cu aripile și limba (cu joc față de crestătura zalei următoare), bolțul între
+  obraji, clema din atelier cu strângerea din calibrare, pereții canalului, găurile de știft; pinionul cu scobiturile pe R =
+  6 / sin(π / z) și jocul dinților, vârful limitat la pinioanele mici; montajul pe două pinioane (cureaua pe razele r = z ·
+  12 / 2π: zalele sunt coarde).
+- **Atelierul:** „Șenilă” în fila Roți (7 piese), zala sau pinionul, montajul în știfturi, „Fă șenila”; 26 de texte în
+  engleză; pachetul 18.16.0.
+- **Pe drum:** zalele drepte se atingeau pe ±5,6 (cât la LEGO): limba ±5,45, crestătura ±5,75. Vârful pinionului de 6 intra
+  în placa zalei: limitat. Pereții canalului lui 57518 i-a arătat abia randarea 3D (în felie îi citisem greșit): adăugați,
+  ca discul pinionului să țină șenila. „21 zale” → „21 de zale” (și „de știfturi”). Proba listei salvate de 18.14.0 cerea
+  „nicio cheie nouă”; un tip nou adaugă starea lui implicită, deci proba cere acum că nimic din ce era nu se schimbă și că
+  singura cheie nouă e a șenilei.
+- **Privirea pe piesele reale:** secțiunile zalei peste 57518, discul pinionului peste 57519, șenila întinsă pe pinionul de
+  10, randările 3D (57518 și zala noastră), capturile din atelier.
+- **Probele:** unitare 7, e2e 3; otrăvurile 36 / 36.
+- **Recenzia:** proprie: Workflow-ul de recenzie cu agenți (cinci dimensiuni, câte doi verificatori pe constatare, un critic
+  al acoperirii), cerut de ultracode, a fost refuzat a treia oară de clasificator și nu a fost ocolit. Pe dimensiuni: zala
+  față de 57518 (secțiunile și randările 3D din LDraw: bolțul, locașul clemei și pereții coincid), pinionul de 10 peste
+  57519, două zale îndoite spre pinion până la 60°, șenila întinsă pe pinioanele de 6, 10 și 14 (cu control negativ),
+  intrările ciudate, atelierul (cu pinioanele care s-ar atinge, „Fă șenila” refuză), plaja editorului (60 137 de combinații:
+  jocul sub o zală, întinsă cel mult cu o zală mai departe). A găsit montajul socotit pe arcele cercului bolțurilor (curea
+  pe R): cu 1,6…2,6 mm prea lung la toate perechile (10 cu 10 la 8 știfturi: 2 mm de joc și întinsă la 65, nu 4 și 66; la 9
+  știfturi, 23 de zale în loc de 22, care se potrivesc exact), scăpat fiindcă proba lui compara codul cu propria formulă
+  (comentariul ei avea valorile bune, 248 și 4 mm). Reparat în `a14a9a00`: cureaua pe r = z · 12 / 2π, măsurată față de
+  media pe faze a înfășurătoarei convexe a bolțurilor (la câțiva µm; formula ANSI a lanțurilor greșește cu 1,5 mm la 6 cu
+  40); proba ancorată pe hârtie și pe înfășurătoare; otrăvurile U24 (greșeala de atunci) și U25 (unghiurile înfășurării
+  întoarse).
+- **Porțile:** rapide și lente verzi pe `a14a9a00`, la prima trecere (traducerile, tsc, unit 9 651 / 0, 8 sărite, build,
+  determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800; e2e 573 / 573, emulatoarele 101 / 101 și 29
+  / 29). Înainte de reparația montajului, pe `e2e2a740`, la fel, cu e2e-ul 572 / 573 la prima trecere: testul în engleză al
+  pluginului (ADR 0165) a căzut pe timp, cât alte worktree-uri rulau e2e (repornirea după schimbarea limbii, peste 5 s), și
+  a trecut reluat cu fișierul lui (10 / 10).
+- **Rămase:** lanțul tipărit dintr-o bucată și întinzătorul, la cuvântul owner-ului.
+- **Schița** ADR 0280, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
+
 ## 2026-11-21 — Felia 12.1↑e, reparația: titlul dopului numește incrustația (ADR 0178, precizarea din 21.11) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, la întrebarea „Ce fac mai departe pe linia incrustațiilor?” (variantele: „Titlul dopului” /
@@ -10657,3 +10698,116 @@ la mesajul sesiunii principale de pe 21.11 („da si vreau sa pornesti si restul
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 21.12), build-ul `75e304d0` (versiunea `75e304d0c671`), verificat în browserul aplicației, în engleză, fără export. Pe un dreptunghi de 100 × 60 din (20, 20), cu rolul „straight-walled inlay”, bara de jos spune „Selected: rectangle 100.00 × 60.00 at X 20.00, Y 20.00”, iar titlul lui „Plug 1” e „The inlay: rectangle 100.00 × 60.00 at X 20.00, Y 20.00. The plug’s blank: 110 × 70 × 6 mm”. „Plug 1” se simulează ca înainte (440 × 280 la 0,25 mm, adâncimea 5, camera pe 55, 35). Înapoi la „Sheet”, vederea închisă, dreptunghiul anulat (foaia goală), 0 erori în jurnalul local și în consolă.
 - **Nu acum:** 12.1↑e-2 („Împreună (secțiunea)” și potrivirea simulată) și bifa „prin foaie” pe fiecare rând (v26): ce cere
   fiecare, în raport.
+
+## 2026-11-21 — Felia 10.3↑n: numărul panoului gravat pe el (ADR 0181) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (owner-ul, în sesiunea liniei `taiere`, 19.11, după raportul lui 10.3↑m: a treia propunere a liniei,
+numărul panoului; reluată pe 20.11 la „continua”, transmis de sesiunea principală). **Started:** 19.11, 21:11. **Completed:**
+21.11, 19:20.
+
+- **Ramura** `wip/10.3n-numere`, din `main` `4b7539a7` (3.Tm unită; cu 10.3↑l și 10.3↑m în ea).
+- **Locul cifrelor** (`src/model/numarPanou.ts`, pur): cutia lor în materialul panoului, la cel puțin un joc (max(2, înălțimea /
+  4)) de orice contur, niciun contur întreg înăuntru; locurile, de la cel mai apropiat de colțul din stânga-jos (grila fină
+  lângă colț, cea rară peste panou). Înălțimea (10 mm, de la 3 la 100), în `src/model/inaltimeNumar.ts` (ușor).
+- **Calculul și acțiunea:** workerul dă `perPanou`; blocul cheamă la cerere `src/app/numerePanouri.ts` (fontul
+  `relief-singleline`, cifrele prin `text/calcul.ts`, freza foii, adâncimea liniilor deschise, `locNumar`); `document.taie` pune
+  numerele cu id-uri noi în grupurile panourilor, în același pas de anulare.
+- **Interfața:** bifa „Gravează numărul fiecărui panou” (oprită implicit) și „Înălțimea cifrelor”, ținute
+  (`cncvs2.taiere-numere`, `cncvs2.taiere-inaltime-numar`); starea spune câte numere s-au gravat, câte panouri n-au avut loc sau
+  că fontul nu s-a încărcat. Manualul (ro, en), textele (ro, en).
+- **Treceri:** (1) numărul pe un dinte: căutat rând cu rând, de jos, pe firma reală (desenată din node, cu fontul real) numărul
+  ajungea pe un dinte de sub panou, departe de colț; acum locurile, de la cel mai apropiat de colț, cu o grilă fină lângă el (și
+  proba ei pe hârtie); (2) otrăvurile: la prima rulare (16), N08 (proba separată „fără contururi închise”) a scăpat,
+  echivalentă: codul ei, scos; U01 (bifa netinută) o prindea doar proba 88, care a căzut și fără otravă: proba numerelor
+  reîncarcă pagina și cere bifa; (3) proba 88 (instabilă dinainte): reîncărca pagina înaintea salvării automate, deci arăta
+  versiunea de dinainte de tăiere: așteaptă acum salvarea (`documentSalvat`); (4) mărimea: înălțimea cifrelor, luată din
+  `numarPanou.ts` de opțiuni și de bloc, aducea locul cifrelor în bucata panoului Taie (+0,6 kB): mutată în `inaltimeNumar.ts`
+  (ușor).
+- **Otrăvurile** (`test/otravuri/10.3n.py`, e2e în `taiere.spec.ts`): 15 / 15 prinse, în clona din afara Drive-ului (cele 11
+  unitare și pe `90e629bb`, cu N02 pe modulul nou); la prima rulare (16), 14 prinse, N08 scăpată (echivalentă), U01 prinsă doar
+  de proba instabilă.
+- **Porțile:** întregi pe unirea cu `main` `a64adf63` (`85b3ee54`): traducerile, cele trei compilatoare, importurile, licențele,
+  unit 9 659 (9 651 trecute, 8 sărite, 0 căderi), build-ul determinist (343 de fișiere identice), e2e 568 / 571 (trei căderi din
+  resurse și timp, sub încărcarea altor rulări: `cont.spec.ts:145`, cu `net::ERR_INSUFFICIENT_RESOURCES` la `page.goto`,
+  `masina.spec.ts:13` și `masina.coduri.spec.ts:134`, așteptări depășite; cele trei fișiere, reluate singure după liniște, 21 /
+  21), emulatoarele 101 / 101 și 29 / 29; înainte, pe vârful feliei (`3af621f6`): unit 9 642 / 0, e2e 561 / 561, emulatoarele
+  101 / 101 și 29 / 29; după mutarea înălțimii (`90e629bb`): traducerile, compilatorul, importurile, unit-urile tăierii,
+  cuțitului, acțiunilor, manualului și documentației 319 / 319, build-ul determinist, e2e `taiere`, `cutit`, `surori` și
+  `manual` 45 / 45.
+- **Mărimea:** pornirea neschimbată (107,2 kB; cu ușa 111,2 / 115), totalul +2,3 kB (739,5 → 741,8 / 800, A/B în clonă, pe
+  `main` `a64adf63` și pe unire, `85b3ee54`; pe `4b7539a7`, tot +2,3): bucata numerelor, la cerere, 1,7 kB (locul cifrelor,
+  așezarea lor, fontul), blocul panourilor +0,5 kB (bifa, înălțimea, stările), acțiunea +0,2 kB, workerul +0,02. Prima variantă
+  ducea locul cifrelor în bucata panoului Taie (+0,6 kB acolo, prin înălțimea luată din `numarPanou.ts`): acum vine doar cu
+  numerele.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 21.12), pe `85b3ee54`,
+  verificat (ro, en: bifa oprită implicit, numerele „1” și „2” în colțul fiecărui panou, pe linie, 1 mm, cu freza foii Ø6,
+  Anulează; nicio eroare în consolă).
+
+## 2026-11-21 — ADR 0182 propus și acceptat: legarea căilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Owner-ul (21.11): «da si vreau sa pornesti si restul worktrees». […] După felia de acum, ia-o pe următoarea din
+coada ta, dacă nu așteaptă o decizie a owner-ului. Dacă tot ce urmează cere o decizie, pregătește propunerea (ADR, schiță) și
+pune-i întrebarea, cu implicitul în față.” (sesiunea principală). **Started:** 21.11, 17:58. **Completed:** 21.11, 19:18.
+
+- **Coada liniei:** după 10.3↑n a rămas doar unirea căilor (ADR 0124 §14), propusă owner-ului pe 17.11; o decizie a lui (pe
+  04.11 a ales 6b, cu nota că unirea căilor e o discuție separată, mai amplă), deci propunerea întâi.
+- **Cercetarea:** în cvs2, legarea capetelor la importul DXF (`dxf.ts`, `leaga`), rândul „Capetele a două căi” din Verificare
+  (doar arătat), „Unește” și „Închide” din reparații; Vectric, Illustrator și CorelDRAW, din ajutorul lor; pe hârtie, cinci
+  cazuri (un L, un pătrat din patru linii, un gol de 2 mm, un T, un arc întors).
+- **Propunerea** (ADR 0182): comanda „Leagă căile” (Ctrl+J; „Unește” e numele reuniunii), aceleași reguli ca la importul DXF, în
+  worker, un pas de anulare; „Leagă” și „Leagă toate căile” în Verificare; în unealta Noduri, care lucrează pe o singură formă,
+  capătul căii editate tras peste capătul altei căi. Trei întrebări, recomandarea întâi: golul peste toleranță (a: o linie),
+  unde se întâlnesc capetele (a: pe capătul primei), căile cu operații diferite (a: refuzul).
+- **Schița**, cu desenele înainte / după și răspunsurile salvate în pagină: <https://claude.ai/artifact/VUTp5KjrMGY6ggTcm114B2>.
+- **Răspunsurile owner-ului** („am raspuns”, 21.11, în sesiunea liniei; în pagină): 1a, 2a, 3a, cu nota „cat mai multe optiuni
+  pe care le putem pune la dispozitia userilor”. ADR 0182 acceptat: recomandările sunt implicitele, iar variantele celelalte
+  devin opțiuni ținute în browser (golul până la N mm sau doar lipirea, capetele la mijloc, operația primei); din ce respingeam,
+  felurile legăturii (curbă netedă, prelungire până la intersecție, racordare, teșitură) și legarea la importul SVG și PDF
+  (oprită implicit) intră ca opțiuni, în feliile 10.3↑q și 10.3↑r.
+- **Codul** (10.3↑o): următoarea felie a liniei.
+
+
+## 2026-11-21 — Felia 3.Tp↑a: căutarea peste toate filele atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „da si vreau sa pornesti si restul worktrees” (owner-ul, pe 21.11, prin sesiunea principală: „La tine urmează
+3.Tp↑a (căutarea), apoi 3.Tp↑b (pictogramele)”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă
+la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
+
+- **Câmpul „Caută o piesă”**, la capătul rândului de file (pe telefon, pe un rând al lui, cât tot rândul): la fiecare
+  literă, galeria arată piesele găsite din toate familiile, în ordinea filelor. Fiecare cuvânt căutat începe un cuvânt din
+  numele de pe ecran (în limba paginii), fără diacritice și fără majuscule: „con” găsește Rotund / con, Bucșă / conector,
+  Roată conică, Conică dublă; „nic” nu găsește nimic; „roata con”, doar Roată conică; un text fără litere, nimic.
+- **Alegerea** deschide piesa cu fila ei (care o ține minte); rezultatele rămân, cu focusul pe buton; Enter alege prima;
+  Escape, × sau o filă întorc galeria familiei; peste model și peste filele proprii, căutarea arată tot rezultatele, fără
+  piesă apăsată. Fără potrivire, mesajul cu textul căutat. Nimic nu se păstrează în date.
+- **Pe drum:** (1) întâi potrivirea pe orice bucată din nume: „nic” găsea Technic și conicele; acum, la început de cuvânt.
+  (2) Codul căutării stă grupat lângă `marcheazaFile()` și în `init`, fără să atingă tabela familiilor (3.To lucrează în
+  paralel pe rândul `roti`); rândurile țintite de otrăvurile 3.Tp au rămas neatinse, afară de două (E05, E13), mutate și
+  prinse. (3) Otrava F03 (Escape) a scăpat: câmpul `type="search"` se golește singur la Escape, cu `input`, deci codul
+  propriu era echivalent și a ieșit (Escape rămâne în proba e2e). (4) Otrava G03 a scăpat fiindcă proba căuta înainte ca
+  atelierul să-și fi arătat galeria familiei (three.js încă se încărca): proba așteaptă acum galeria. (5) În jurnalul fișei,
+  id-ul e `3.Tp-2`: tiparul jurnalului primește „↑” doar la feliile din etapele următoare, deci nu și „3.Tp↑a”.
+- **Probele:** e2e 4 (`trenulet.cautare.spec.ts`: „con” și alegerea pe rând, cu fila și focusul; diacriticele, majusculele,
+  începutul de cuvânt, mai multe cuvinte, textul fără litere, mesajul, Escape, Enter, golirea; peste model și peste
+  „Calibrare”; telefonul), plus căutarea în engleză în proba din cvs2 (`trenulet.spec.ts`: „bevel” găsește Bevel gear și
+  Double bevel gear; mesajul în engleză). Textele noi: Find a piece, No piece matches “…”., Pieces found.
+- **Otrăvurile:** 21 / 21 pe codul final (`23ce2982`; `3.Tpa.py`, 20: 17 prin e2e, 3 ale traducerii; `3.Tpa-en.py`, 1, prin
+  proba în engleză). La prima rulare (`c9ed8648`), 19 / 21: F03 echivalentă (scoasă, cu codul ei), G03 scăpată (proba
+  întărită, apoi prinsă, cu F04, F05, G01, G04 reluate). Pornite după 30 de minute de așteptare a liniștii (alte linii
+  țineau procesorul la 70–95 %). `verifica` pe toate listele pluginului: aceleași 20 de VOID vechi.
+- **Privirea:** pe pagina de sine stătătoare (desktop și telefon, luminos și întunecat: „con”, „roata”, „xyz”) și în cvs2
+  (română: desktop luminos cu „con”, telefon întunecat cu „roata”; engleză: desktop întunecat cu „bevel”), mărite pe file,
+  câmp și galerie: câmpul la capătul rândului (pe telefon, pe un rând al lui), fără depășire, fără erori în jurnal.
+- **Porțile:** rapide verzi pe `2ab00d64` (traducerile, tsc, unit 9 652 / 0, 8 sărite, licențele, build, determinismul;
+  pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800, ca pe `main`), lente verzi (e2e 574 / 574, cu cele 4 noi;
+  emulatoarele 101 / 101 și 29 / 29, la reluare: prima rulare nu pornise, cu portul Auth ținut de altă linie).
+- Pachetul Easy 3Draw 18.17.0 (3.To a luat 18.16.0 și a intrat întâi în `main`; ramura a adus `main` `4667898a` în
+  `0a10d403`), înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+- **Adusă la `main` cu 3.To** (cerută de sesiunea principală, 21.11, 20:30: „3.Tp↑a trebuie să treacă pe 18.17.0,
+  pentru că 3.To (șenila) ia pachetul 18.16.0”; gata la 21:38): unirea `0a10d403`, cu ciocniri doar în documente (rămân
+  rândurile ambelor felii, 3.To apoi 3.Tp↑a) și în amprenta din bibliotecă; `atelier.ts`, `texte.en.json`, spec-urile și
+  `3.Tp.py` s-au unit singure. Documentele pe 18.17.0 în `bb52ac5e` (rândul din fișă are în dicționarul roadmap-ului o
+  amprentă nouă). Porțile verzi pe `bb52ac5e`: rapide (traducerile 0 lipsă, tsc, unit 9 659 / 0, 8 sărite, licențele,
+  build, determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 739,4 / 800), lente (e2e 577 / 577, cu cele 3
+  ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
+  20 de VOID.

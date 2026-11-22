@@ -590,6 +590,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/model/taiereSurori.ts` (desprinderea doar a celor schimbate, bucățile pe toate foile), cine are surori și `CUTITE_PIESA`
   în `src/model/surori.ts` (ușor: importat de calcul, nu din `taiere.ts`). Reparațiile și degruparea refuză în continuare o
   piesă pusă de mai multe ori.
+  **Numărul panoului gravat pe el (felia 10.3↑n)** gata pe 21.11, pe `wip/10.3n-numere` (din `main` `4b7539a7`), neunită:
+  workerul dă `perPanou` (bucățile fiecărui panou, `panouri.ts`); blocul panourilor (bifa și înălțimea în `optiuniTaiere.ts`:
+  `cncvs2.taiere-numere`, `cncvs2.taiere-inaltime-numar`) cheamă la cerere `src/app/numerePanouri.ts` (fontul
+  `relief-singleline`, cifrele prin `text/calcul.ts`, freza foii, adâncimea liniilor deschise), care caută locul cu `locNumar`
+  din `src/model/numarPanou.ts` (pur); înălțimea și verificarea ei stau în `src/model/inaltimeNumar.ts` (ușor: luate din
+  `numarPanou.ts`, aduceau locul cifrelor în bucata panoului Taie). Acțiunea `document.taie` pune numerele
+  (`TaiereCalculata.numere`) cu id-uri noi în grupurile panourilor, în același pas.
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul
@@ -1239,6 +1246,46 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 21.11.2026, noaptea: **3.Tp↑a unită în `main`** (`ffae623a`, din `900a501a`; linia `galeria`, ramura
+  `wip/3.Tp-galeria-pe-file`, la „da si vreau sa pornesti si restul worktrees” al owner-ului; ADR 0281 §4): câmpul
+  „Caută o piesă” la capătul rândului de file ale atelierului Easy 3Draw (pe telefon, pe un rând al lui): la fiecare
+  literă, piesele găsite din toate familiile, în ordinea filelor; fiecare cuvânt căutat începe un cuvânt din numele de
+  pe ecran (în limba paginii), fără diacritice și fără majuscule; alegerea deschide piesa cu fila ei; Enter alege prima,
+  Escape, × sau o filă întorc galeria familiei; nimic în date. Pachetul 18.17.0 (3.To luase 18.16.0; ramura a adus
+  `main` `4667898a`). Otrăvurile 21 / 21 (F03 echivalentă, scoasă cu codul ei; G03 prinsă după întărirea probei).
+  Porțile liniei verzi pe `bb52ac5e` (e2e 577 / 577, emulatoarele 101 / 101 și 29 / 29); ciocnirea cu lotul de seară,
+  doar în DEVLOG. Porțile unirii, pe `ffae623a`: unit 9 658 / 0 (8 sărite), e2e 578 / 578, emulatoarele 101 / 101 și 29
+  / 29, toate la prima trecere; pornirea 107,2 / 115 (cu ușa 111,2), totalul 741,9 / 800. Urmează, la cuvântul
+  owner-ului: 3.Tp↑b (pictogramele).
+- 21.11.2026, seara: **12.1↑e (titlul dopului) și 10.3↑n unite în `main`**, în lot peste 3.To (worktree-ul `unire`,
+  ramura `unire-2111b`). **Titlul dopului** (linia incrustațiilor, ramura `wip/12.1-incrustatii`, `3d7e6214` din
+  `f9c45042`; la „porneste-o si pe asta” și „Titlul dopului” ale owner-ului): butonul „Dopul N” numește incrustația ca
+  bara de jos, nu prin id-ul intern („e1/e1”; ADR 0178, precizarea din 21.11); otrăvurile 7 / 7, canalul verificat.
+  **10.3↑n** (linia tăierii, ramura `wip/10.3n-numere`, `fa8e7abe` din `2fce5b91`; ADR 0181): numărul fiecărui panou
+  gravat pe el, opțional, oprit implicit (bifa „Gravează numărul fiecărui panou” și înălțimea cifrelor, ținute; fontul
+  `relief-singleline`, locul cel mai apropiat de colțul din stânga-jos, în același pas de anulare cu tăierea);
+  otrăvurile 15 / 15, totalul +2,3 kB (pornirea neschimbată). Pe aceeași ramură, **ADR 0182 acceptat** (legarea căilor:
+  „Leagă căile”, în Verificare și în unealta Noduri; feliile 10.3↑o–10.3↑r, codul la cuvântul owner-ului). Ciocnirile,
+  doar în DEVLOG (ambele părți păstrate). Porțile lotului, pe `fa8e7abe`: unit 9 658 / 0 (8 sărite), e2e 574 / 574,
+  emulatoarele 101 / 101 și 29 / 29, toate la prima trecere; pornirea 107,2 / 115 (cu ușa 111,2), totalul 741,9 / 800.
+  Urmează, la cuvântul owner-ului: codul lui ADR 0182 (10.3↑o), 3.Tp↑a (căutarea, 18.17.0), 12.1↑e-2.
+- 21.11.2026: **3.To unită în `main`** (la „da si vreau sa pornesti si restul worktrees” al owner-ului): șenila în
+  atelierul Easy 3Draw, direct în fila Roți (`86116b20`, exact `7040401d`; ADR 0280, pachetul 18.16.0). Zala ca LEGO
+  57518 (38,4 × 17,2, pasul de 12): bolțul, clema cu strângerea din calibrare, limba și crestătura cu 0,15 mm pe parte,
+  pereții canalului (găsiți la privirea peste LDraw: discul pinionului trece printre ei, deci șenila nu alunecă
+  lateral), obrajii până la 8,4, găurile de știft la alegere. Pinionul ca 57519 (10) și 42529 (14), de la 6 la 40 de
+  dinți (vârful, la pinioanele mici, sub placa zalei). Montajul pe două pinioane, cu axele în știfturi: zalele, jocul,
+  distanța la care stă întinsă, pinioanele care s-ar atinge; „Fă șenila” pune zalele și pinioanele în listă. Recenzia
+  proprie (Workflow-ul cu agenți, cerut de ultracode, refuzat a treia oară de clasificator): șenila întinsă pe
+  pinioanele de 6, 10 și 14 nu atinge nimic (cu control negativ), două zale se îndoaie liber spre pinion până la 60°,
+  secțiunile peste 57518 și 57519 din LDraw coincid, intrările ciudate trec; a găsit montajul socotit pe arcele cercului
+  bolțurilor (curea pe R), cu 1,6…2,6 mm prea lung (10 cu 10 la 8 știfturi: 2 mm de joc și întinsă la 65, nu 4 și 66; la
+  9 știfturi, 23 de zale în loc de 22), scăpat fiindcă proba lui era autoconsistentă: reparat pe coarde (cureaua pe r =
+  z · 12 / 2π, la câțiva µm de media pe faze a înfășurătoarei convexe a bolțurilor), cu proba ancorată pe hârtie și pe
+  înfășurătoare. Probele: unit 7, e2e 3, e2e-ul pluginului 35 / 35; otrăvurile 36 / 36 (3.Tp U03 mutată pe rândul Roți,
+  prinsă). Porțile: rapide și lente verzi pe `a14a9a00`, la prima trecere (unit 9 651 / 0, e2e 573 / 573, emulatoarele
+  101 / 101 și 29 / 29; pornirea 107,2 / 115, totalul 739,4 / 800). Rămase, la cuvântul owner-ului: lanțul dintr-o
+  bucată, întinzătorul.
 - 20.11.2026: **3.Tp și 12.1↑e unite în `main`**, în lot (worktree-ul `unire`, ramura `unire-2011b`). **3.Tp** (la „Da,
   pornește 3.Tp” și „prefer sa o pui intr-un worktree separat” ale owner-ului; linia `galeria`, ramura
   `wip/3.Tp-galeria-pe-file`): piesele atelierului Easy 3Draw pe file (`ae548a42`, exact `7feac1c2`; ADR 0281, acceptat

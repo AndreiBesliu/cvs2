@@ -216,6 +216,8 @@ export type RezultatTaiere =
     readonly grupuri?: ReadonlyArray<{ readonly nume: string; readonly ids: readonly string[] }>;
     /** Panourile: câte sunt („Panoul 1” … „Panoul n”). */
     readonly panouri?: number;
+    /** Tăierea în panouri (felia 10.3↑n): bucățile fiecărui panou, în ordinea panourilor (id-urile de după tăiere). */
+    readonly perPanou?: ReadonlyArray<readonly string[]>;
   }
   | { readonly ok: false; readonly motiv: MotivTaiere };
 

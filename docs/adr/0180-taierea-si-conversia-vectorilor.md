@@ -283,5 +283,5 @@ explicație, „Da, cu recomandările”), deci răspunsurile sunt recomandăril
 - owner-ul răspunde altfel la întrebări;
 - încercările pe desene reale cer altceva (nota owner-ului: „aici va trebui sa testam si sa ajustam pe viitor, pentru cand avem
   situatiile concrete”);
-- se discută unirea căilor (ADR 0124 §14);
+- se discută unirea căilor (ADR 0124 §14): discutată în ADR 0182 (legarea căilor, acceptat pe 21.11);
 - reparațiile sau degruparea trebuie să primească aceeași întrebare (felia 10.3↑m o dă doar tăierii și conversiei).

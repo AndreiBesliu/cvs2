@@ -989,7 +989,12 @@ pas, deci niciun dinte nu e tăiat de tăietura vecină. Bucățile fiecărui pa
 pe ele (marginile, distanța, ordinea și rotirea ei), ca să le pună pe foi, câte încap pe fiecare; un panou cu o singură
 bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte și de
 alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; o formă
-pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). **Taie în panouri** e un singur pas de anulare.
+pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). Cu **Gravează numărul fiecărui panou** (oprită implicit:
+cifrele se văd pe față), fiecare panou primește numărul lui („3”), cu fontul cu o singură linie (Relief SingleLine), gravat
+pe linie, lângă colțul din stânga-jos, înăuntru, la cel puțin un sfert din înălțimea cifrelor (cel puțin 2 mm) de margini,
+tăieturi, dinți și litere; **Înălțimea cifrelor** e implicit 10 mm. Numărul intră în grupul panoului (un text, editabil apoi
+în panoul Text); un panou fără loc rămâne fără număr, iar panoul spune câte. **Taie în panouri** e un singur pas de anulare,
+cu numere cu tot.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă

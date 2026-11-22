@@ -1022,7 +1022,11 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
 letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
-**Cut into panels** is a single undo step.
+With **Engrave each panel’s number** (off by default: the digits show on the front), each panel gets its number (“3”), in the
+single-line font (Relief SingleLine), engraved on the line, near the bottom-left corner, inside, at least a quarter of the
+digit height (at least 2 mm) away from edges, cuts, teeth and letters; **Digit height** is 10 mm by default. The number goes
+into the panel’s group (a text, editable later in the Text panel); a panel with no room gets no number, and the panel says
+how many. **Cut into panels** is a single undo step, numbers included.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
