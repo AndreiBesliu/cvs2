@@ -4,7 +4,7 @@ import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import type { DopSimulat, PotrivireV, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
+import type { DopSimulat, Potrivire, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { descriere } from './descriereElement.ts';
@@ -183,7 +183,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   // „Împreună (secțiunea)” (ADR 0179): pornită doar pe un dop în V; potrivirea lui, măsurată în workerul CAM.
   const [impreuna, setImpreuna] = useState(false);
   const [potrivire, setPotrivire] = useState<
-    { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: PotrivireV } | { readonly fel: 'refuz'; readonly motiv: string }
+    { readonly fel: 'nimic' | 'calcul' } | { readonly fel: 'gata'; readonly p: Potrivire } | { readonly fel: 'refuz'; readonly motiv: string }
   >({ fel: 'nimic' });
   const jobPotrivire = useRef<AbortController | null>(null);
   // Ce s-a simulat (documentul, programul, relieful plăcii și al ferestrei fine) și camera: ținute aici, nu în stare
@@ -507,10 +507,11 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
   // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
   const dop = alegere === 'foaie' ? null : alegere + 1;
-  // „Împreună (secțiunea)” (ADR 0179 §1): doar pe un dop în V; altfel oprită, cu motivul pe titlu (rămâne în tab, ca să-l spună).
+  // „Împreună (secțiunea)” (ADR 0179 §1): pe un dop în V sau cu pereți drepți fără trepte; altfel oprită, cu motivul pe titlu
+  // (rămâne în tab, ca să-l spună).
   const dopAles = alegere === 'foaie' ? null : dopuri.lista[alegere] ?? null;
-  const poateImpreuna = dopAles?.inV === true;
-  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege') : poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.doarV');
+  const poateImpreuna = dopAles?.sectiune === true;
+  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege') : poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.trepte');
   const comutaImpreuna = (): void => {
     if (!poateImpreuna || alegere === 'foaie') return;
     if (impreuna) {

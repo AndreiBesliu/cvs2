@@ -231,7 +231,7 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
       // Potrivirea simulată (ADR 0179): oglinda de mai sus, hârtia panoului, iar lemnul dopului fără ce taie decuparea până la
       // vârful punților.
       potrivire: {
-        cutie: { x0, y0, x1, y1 }, desen: contururi.map(poligon), margine: m,
+        fel: 'v', cutie: { x0, y0, x1, y1 }, desen: contururi.map(poligon), margine: m,
         hartie: {
           D: op.adancime, g: inc.joc, S: val.S, H: val.H, t: val.t,
           creastaLocas: fp ? 0 : val.creastaLocas, creastaDop: fp ? 0 : val.creastaDop,

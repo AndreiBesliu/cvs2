@@ -48,8 +48,35 @@ vrea să vadă, înainte să taie, dopul întors în locaș, cu valorile simulat
    - Se desenează la scara 1:1 pe ambele axe: placa, cu fundul ei până la D + 1,5 mm, și dopul întors, până la fața lui.
    - Jocul cu clei e albastru, pereții în contact sunt verzi, iar tăietura cu fierăstrăul e o linie întreruptă la mijlocul
      spațiului dintre plăci.
-6. **Incrustația cu pereți drepți și treptele** (oracolele lor, `masoaraPotrivireaDreapta` și `masoaraPotrivireaTrepte`)
-   vin în felia 12.1↑e-3.
+6. **Incrustația cu pereți drepți** vine în felia 12.1↑e-3 (vezi mai jos), iar **treptele** în 12.1↑e-4 (oracolul lor,
+   `masoaraPotrivireaTrepte`, are alte rânduri: umărul, tija, flanșa, reazemul).
+
+## Felia 12.1↑e-3: pereții drepți (22.11)
+
+La alegerea owner-ului „12.1↑e-3, pereții drepți”. Fără trepte: ele sunt felia 12.1↑e-4. Contractul dopului (ADR 0171 §3):
+dopul ridicat e oglindit pe X, (x, y) → (x1 + m − x, y − y0 + m), cu fața coborâtă în jur până la h; cel decupat nu se
+oglindește, (x, y) → (x − x0 + m, y − y0 + m), și e tăiat prin placa groasă exact h, cu punți. Pe hârtie, h = D + H pe fund
+și la decupat, D − g pe față (la gaură, ADR 0175 §1, D e grosimea foii).
+
+1. **Comutatorul** e pornit și pe dopul cu pereți drepți fără trepte; cu trepte rămâne oprit, cu motivul pe titlu.
+2. **Jocul lateral se măsoară exact, pe mutări**, nu pe grilă: jocul de pe hârtie e de obicei 0,1 mm, cât o celulă, deci
+   grila nu-l vede. O freză plată taie, la un nivel z, discurile ei de-a lungul mutărilor aflate în întregime sub z. Funcția
+   „distanța în plan la cea mai apropiată mutare, minus raza frezei ei” e deci negativă în ce s-a tăiat și 0 pe perete. Pe
+   peretele locașului, la D/2, punctele le dă grila de 0,1 mm, iar bisecția pe funcție le face exacte. Jocul fiecăruia e cât
+   intră punctul, dus pe semifabricat după contract, în zona tăiată din jurul dopului, la h/2. Interferența: punctele
+   peretelui dopului (fără rama semifabricatului), aduse înapoi pe foaie, care cad în afara locașului. Implementarea e a
+   aplicației (`src/sim/taiereExacta.ts`, pe mutările nucleului); oracolul (`masoaraPotrivireaDreapta`) urmează același
+   contract pe textul G-code, cu cititorul lui.
+3. **Adâncimea locașului și înălțimea dopului** sunt medianele pe grilă: fundul locașului (F peste D/2) și fața coborâtă a
+   dopului (M peste h/2); la cel decupat, cea mai adâncă tăietură (punțile ridică fundul șanțului în dreptul lor).
+4. **Tabelul** are cinci rânduri: jocul lateral (c, cu toleranța 0,02, ca oracolul), dopul în locaș (niciun punct al
+   peretelui lui afară), adâncimea locașului (D), înălțimea dopului (h) și sprijinul. Pe fund, sprijinul e „Între plăci”,
+   H = h − D; pe față, „Sub dop (clei)”, g = D − h (la gaură, 0: dopul e cât foaia, ADR 0175); la decupat, „Peste placă (de
+   rindeluit)”, H = h − D (ADR 0171: ce iese peste placă se rindeluiește, nu se taie). Ultimele trei au toleranța 0,05.
+5. **Secțiunea**, ca la V: pe orizontală, prin mijlocul desenului sau, cu rânduri roșii, prin locul primului din tabel,
+   marcat. Dopul ridicat, întors și coborât până la primul contact (h* = min(F + M)); cel decupat, neîntors, pus pe fundul
+   locașului. Linia întreruptă e tăietura cu fierăstrăul la mijlocul spațiului dintre plăci (pe fund) sau la fața plăcii (pe
+   față); la decupat e fața plăcii, până la care se rindeluiește dopul.
 
 ## Dovada
 

@@ -1,11 +1,34 @@
 /**
  * Documentul unui caz al incrustației în V (`test/oracles/incrustatie.cazuri.ts`), comun probelor potrivirii (ADR 0170) și
  * benzii cu decupare (ADR 0172), ca o probă să nu importe alta (node:test ar rula și testele ei). Și Z-urile unui program, comune
- * probelor supracursei pe dopuri (ADR 0176).
+ * probelor supracursei pe dopuri (ADR 0176). Și documentul unui caz cu pereți drepți (`incrustatieDreapta.cazuri.ts`), comun
+ * probei potrivirii lui (ADR 0171) și celei a secțiunii (ADR 0179).
  */
 import type { CazIncrustatie } from '../oracles/incrustatie.cazuri.ts';
+import type { CazDreapta, FrezaPlataCaz } from '../oracles/incrustatieDreapta.cazuri.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+const sculaPlata = (f: FrezaPlataCaz) => ({ numar: f.numar, nume: 'freza plata', diametru: f.diametru });
+
+/** Documentul v21 al unui caz cu pereți drepți: o piesă cu desenul și buzunarul cu incrustația, pe o foaie de 200 × 150 × 18. */
+export function documentDrept(c: CazDreapta): unknown {
+  const noduri = c.desen.map((pol, k) => ({ tip: 'element', id: `a${k}`, matrice: { ...I }, forma: cale(pol) }));
+  const [prima, ...rest] = c.locas;
+  const operatie = {
+    id: 'inc', tip: 'buzunar', noduri: noduri.map((n) => n.id), latura: 'interior', sens: 'urcare', adancime: c.D, pas: c.pas,
+    scula: sculaPlata(prima!), pasLateral: prima!.pasLateral, urechi: null, rampa: null, intrari: null, colturi: null,
+    ...(rest.length > 0 ? { rest: rest.map((r) => ({ scula: sculaPlata(r), pasLateral: r.pasLateral })) } : {}),
+    incrustatie: {
+      fel: 'drept', jocLateral: c.c, dop: c.dop, sprijin: c.sprijin, joc: c.g, fierastrau: c.H, margine: c.margine,
+      ...(c.frezeDop ? { frezeDop: c.frezeDop.map((f) => ({ scula: sculaPlata(f), pasLateral: f.pasLateral })) } : {}),
+    },
+  };
+  return {
+    schema: 21, rev: 0,
+    piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii: [operatie] }],
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
+  };
+}
 
 /**
  * Z-urile scrise în mutările unui program G-code (fără comentarii), rotunjite la micron: cel mai mic e fundul celei mai adânci

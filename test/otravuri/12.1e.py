@@ -27,7 +27,7 @@ o('D01', CALC, '  return { ok: true, dopuri: [...inV.dopuri, ...drepte.dopuri] }
 o('D02', CALC, '  const calculate = dopurileFoii(doc, p.supracursa ?? 0);', '  const calculate = dopurileFoii(doc, 0);', 'supracursa',
   'exportul nu mai dă dopurilor supracursa')
 # D03 și D06 reorientate la 12.1↑e-2 (21.11): `calculeazaPotrivirea` (ADR 0179) caută dopul la fel; ancora ține acum și rândul
-# care urmează în `calculeazaSimularea`. D07: lista dopurilor are acum și `inV`.
+# care urmează în `calculeazaSimularea`. D07: lista dopurilor are acum și `inV` (din 22.11, `sectiune`, felia 12.1↑e-3).
 SIM_DOP = "  const x = d.dopuri[dop];\n  if (!x) return { ok: false, motiv: `dopul ${dop + 1} nu mai e în document` };\n  const p = pregatesteProgram(x.program, 0);"
 o('D03', CALC, SIM_DOP, SIM_DOP.replace('d.dopuri[dop]', 'd.dopuri[0]'), 'dop3d', 'vederea arată mereu primul dop')
 o('D04', CALC, '  return { ok: true, foaie: { latime: s.latime, inaltime: s.inaltime, grosime: s.grosimeMinima }, simulare: p, ...cuDopuri };',
@@ -36,8 +36,8 @@ o('D04', CALC, '  return { ok: true, foaie: { latime: s.latime, inaltime: s.inal
 o('D05', CALC, '    : { dopuri: [], motivDopuri: d.motiv };', '    : { dopuri: [] };', 'dop3d', 'motivul dopurilor refuzate se pierde')
 o('D06', CALC, SIM_DOP, SIM_DOP.replace('motiv: `dopul ${dop + 1} nu mai e în document`', "motiv: 'dopul lipsește'"), 'dop3d',
   'refuzul dopului care lipsește, fără numărul lui')
-o('D07', CALC, '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, inV: x.potrivire !== undefined })) }',
-  '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: { ...x.semifabricat, latime: x.semifabricat.inaltime }, inV: x.potrivire !== undefined })) }',
+o('D07', CALC, '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, sectiune: x.potrivire !== undefined })) }',
+  '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: { ...x.semifabricat, latime: x.semifabricat.inaltime }, sectiune: x.potrivire !== undefined })) }',
   'dop3d', 'lista dopurilor cu semifabricatul greșit')
 o('D08', CALC, '      const r = calculeazaSimularea(c.document, c.dop);', '      const r = calculeazaSimularea(c.document);', 'dop3d',
   'lucrătorul ignoră dopul cerut')

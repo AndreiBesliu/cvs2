@@ -16,6 +16,7 @@ import type { IdContract } from '../post/contracte/index.ts';
 import type { SemifabricatDop } from '../cam/incrustatie.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
 import type { PotrivireV } from '../sim/potrivire.ts';
+import type { PotrivireDreapta } from '../sim/potrivireDreapta.ts';
 import type { ProgramSimulat } from '../sim/program.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import type { RezumatJob } from './rezumat.ts';
@@ -74,10 +75,10 @@ export type DopExportat = {
 };
 
 /**
- * Un dop al foii, cum îl alege vederea 3D (ADR 0178): elementul primei tăieturi a regiunii lui, semifabricatul lui și dacă
- * e în V (doar atunci are „Împreună (secțiunea)”, ADR 0179).
+ * Un dop al foii, cum îl alege vederea 3D (ADR 0178): elementul primei tăieturi a regiunii lui, semifabricatul lui și dacă are
+ * „Împreună (secțiunea)” (ADR 0179: în V și cu pereți drepți fără trepte).
  */
-export type DopSimulat = { readonly element: string; readonly semifabricat: SemifabricatDop; readonly inV: boolean };
+export type DopSimulat = { readonly element: string; readonly semifabricat: SemifabricatDop; readonly sectiune: boolean };
 
 /**
  * O parte desprinsă (ADR 0210, felia 11.3↑c): un contur tăiat prin foaie de un profil exterior cu urechi, la care, la capătul
@@ -92,7 +93,7 @@ export type CerereCam =
   | { readonly fel: 'traseu'; readonly document: Document }
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului, sau ale dopului cu numărul `dop` (ADR 0178). */
   | { readonly fel: 'simulare'; readonly document: Document; readonly dop?: number }
-  /** „Împreună (secțiunea)” (ADR 0179): dopul în V cu numărul `dop` întors în locașul lui, cu potrivirea măsurată. */
+  /** „Împreună (secțiunea)” (ADR 0179): dopul cu numărul `dop` (în V sau drept, fără trepte) în locașul lui, cu potrivirea măsurată. */
   | { readonly fel: 'potrivire'; readonly document: Document; readonly dop: number }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
@@ -134,8 +135,8 @@ export type RaspunsSimulare =
   }
   | { readonly ok: false; readonly motiv: string };
 
-/** Potrivirea simulată a unui dop în V (ADR 0179), sau de ce nu se poate măsura. */
-export type RaspunsPotrivire = { readonly ok: true; readonly potrivire: PotrivireV } | { readonly ok: false; readonly motiv: string };
+/** Potrivirea simulată a unui dop (ADR 0179: în V, sau cu pereți drepți fără trepte), sau de ce nu se poate măsura. */
+export type RaspunsPotrivire = { readonly ok: true; readonly potrivire: PotrivireV | PotrivireDreapta } | { readonly ok: false; readonly motiv: string };
 
 export type MesajCam = { readonly id: number; readonly cerere: CerereCam };
 

@@ -13,7 +13,7 @@ import { cutieContur } from '../geom/cutie.ts';
 import { IDENTITATE, transformaContur } from '../geom/matrice.ts';
 import { offsetFigura } from '../geom/offset.ts';
 import { VERSIUNE_SCHEMA, type Document, type IncrustatieDreapta, type Nod, type Operatie } from '../model/document.ts';
-import { PUNTI_DOP_DREPT, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { esteGaura, PUNTI_DOP_DREPT, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { ordineTaieturi, type Taietura } from '../model/lume.ts';
 import { conturDeTaiat } from './contur.ts';
 import { contururiRegiuni, figuraDreapta, frezeIncrustatieDreapta, refuzIncrustatieDreapta, valoriBuzunarDrept, type NivelDreapta } from './incrustatieDreapta.ts';
@@ -257,6 +257,18 @@ export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0
       element: t.idLume, program: job.program, semifabricat: { latime, inaltime, grosimeMinima: grosime, ...(inc.dop === 'decupat' ? { exacta: true } : {}) },
       // Avertismentele figurii (colțurile, părțile unite) le spune deja lucrarea foii, la locaș.
       avertismente: [...avertismente, ...job.avertismente.map((a) => `dopul ${t.idLume}: ${a}`)],
+      // Potrivirea simulată (ADR 0179, felia 12.1↑e-3): contractul de mai sus și hârtia panoului; dopul în trepte, mai târziu.
+      // La gaură, D e grosimea foii, iar dopul ridicat pe față e înalt cât ea: sub el nu rămâne joc (g = D − h = 0).
+      ...(treapta ? {} : {
+        potrivire: {
+          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m,
+          hartie: {
+            D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
+            g: esteGaura(op) ? 0 : inc.joc,
+            sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat',
+          },
+        },
+      }),
     });
   }
   return { ok: true, dopuri };

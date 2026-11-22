@@ -1976,12 +1976,17 @@ blocks (the deepest point of each), and the status in the corner says so.
   blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
   see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
   cannot be cut, the sheet still shows, and the status says why the plugs are missing.
-- **Together (section)**: on a V plug, the button after the plugs shows the plug flipped and seated in its pocket, in a
-  horizontal section through the middle of the drawing. Next to it, the table puts the paper values (as in the panel) beside
-  the ones simulated at 0.1 mm: how far the plug goes in, how much of the walls touch, the glue gap under the plug and the
-  space between the boards, for the saw. A row more than 0.05 mm off its paper value (or walls touching on less than 95 %) is
-  red, with its place, and the section goes through it. In the drawing, the glue is blue, the walls in contact are green and
-  the dashed line is the saw cut. On a straight-walled plug, the button is off for now.
+- **Together (section)**: on a chosen plug, the button after the plugs shows the plug seated in its pocket (flipped; the
+  cut-out one, the way it was cut), in a horizontal section through the middle of the drawing. Next to it, the table puts the
+  paper values (as in the panel) beside the ones simulated at 0.1 mm. On a V plug: how far the plug goes in, how much of the
+  walls touch, the glue gap under the plug and the space between the boards, for the saw. On a straight-walled plug: the side
+  gap, measured exactly on the cutter's passes (the median over the whole outline; the title gives the range), the plug in
+  the pocket (no point of its wall outside the pocket), the pocket depth, the plug height and the support: the space between
+  the boards (on the bottom), the glue gap under the plug (on the face) or how much the cut-out plug sticks out above the
+  board, to plane off. A row more than 0.05 mm off its paper value (the side gap, more than 0.02 mm; walls touching, under
+  95 %) is red, with its place, and the section goes through the first red row. In the drawing, the glue is blue, the walls in
+  contact are green and the dashed line is the saw cut (on the cut-out plug, the board's face, down to which it is planed).
+  On a stepped plug, the button is off for now.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

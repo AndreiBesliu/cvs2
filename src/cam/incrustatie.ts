@@ -20,22 +20,35 @@ export type RegimDop = { readonly turatie: number; readonly avans: number; reado
 export type SemifabricatDop = { readonly latime: number; readonly inaltime: number; readonly grosimeMinima: number; readonly exacta?: true };
 
 /**
- * Ce cere potrivirea simulată a dopului în V (ADR 0179): cutia desenului pe foaie, marginea din oglinda contractului (ADR 0170
- * §3), valorile pe hârtie (crestele: 0 cu freză dreaptă, ADR 0173) și adâncimea decupării (ADR 0172). Aceeași formă ca
- * parametrii din `src/sim/potrivire.ts`, fără grilă (CAM-ul nu știe de simulare).
+ * Ce cere potrivirea simulată a unui dop (ADR 0179): cutia desenului pe foaie, marginea din contract (ADR 0170 §3, ADR 0171
+ * §3) și valorile pe hârtie. Aceeași formă ca parametrii din `src/sim/potrivire.ts` (`fel: 'v'`: desenul aplatizat, crestele,
+ * 0 cu freză dreaptă, ADR 0173, și adâncimea decupării, ADR 0172) și din `src/sim/potrivireDreapta.ts` (`fel: 'drept'`, felia
+ * 12.1↑e-3), fără grilă (CAM-ul nu știe de simulare).
  */
-export type DescrierePotrivire = {
-  readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
-  /** Desenul pe foaie: poligoane închise, câte un șir [x, y, x, y, …] (arcele aplatizate), regiune par-impar. */
-  readonly desen: readonly (readonly number[])[];
-  readonly margine: number;
-  readonly hartie: {
-    readonly D: number; readonly g: number; readonly S: number; readonly H: number; readonly t: number;
-    readonly creastaLocas: number; readonly creastaDop: number;
+export type DescrierePotrivire =
+  | {
+    readonly fel: 'v';
+    readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+    /** Desenul pe foaie: poligoane închise, câte un șir [x, y, x, y, …] (arcele aplatizate), regiune par-impar. */
+    readonly desen: readonly (readonly number[])[];
+    readonly margine: number;
+    readonly hartie: {
+      readonly D: number; readonly g: number; readonly S: number; readonly H: number; readonly t: number;
+      readonly creastaLocas: number; readonly creastaDop: number;
+    };
+    /** Adâncimea de la care lemnul nu mai e al dopului: vârful punților decupării (ADR 0172); altfel Infinity. */
+    readonly taiata: number;
+  }
+  | {
+    readonly fel: 'drept';
+    readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+    readonly margine: number;
+    /** Adâncimea locașului D (la gaură, grosimea foii), jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul. */
+    readonly hartie: {
+      readonly D: number; readonly c: number; readonly h: number; readonly H: number; readonly g: number;
+      readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean;
+    };
   };
-  /** Adâncimea de la care lemnul nu mai e al dopului: vârful punților decupării (ADR 0172); altfel Infinity. */
-  readonly taiata: number;
-};
 
 export type DopCalculat = {
   /** Elementul (în lume) al primei tăieturi a regiunii: după el se recunoaște dopul. */
@@ -43,7 +56,7 @@ export type DopCalculat = {
   readonly program: Program;
   readonly semifabricat: SemifabricatDop;
   readonly avertismente: readonly string[];
-  /** Doar la dopul în V (ADR 0179): ce cere potrivirea simulată. Cel cu pereți drepți, în felia 12.1↑e-3. */
+  /** Ce cere potrivirea simulată (ADR 0179): la dopul în V și la cel cu pereți drepți fără trepte (treptele, în 12.1↑e-4). */
   readonly potrivire?: DescrierePotrivire;
 };
 
