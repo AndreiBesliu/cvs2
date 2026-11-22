@@ -11019,3 +11019,13 @@ unde țin de lemnul foii)? Răspunde „Da, 11.3↑e” sau „Nu acum”.”: �
   vecine pe toate patru laturile: pe foaia 1 (cinci rânduri pline de câte trei), mijlocul rândurilor 2–4 (numele 5, 8, 11);
   pe foaia 2 (trei rânduri pline și una la x = 10, y = 75), doar mijlocul rândului 2 (numele 20). Cu urechile la distanțe
   egale cădeau 9 + 4. La 10 mm, lemnul de 3,65 mm dintre tăieturi e legat de margine, deci programele rămân ale plăcii.
+- **Lucrarea și fereastra**, comise (`8a8c30fc`, `fa86da15`): `src/cam/urechiLemn.ts`, modul „lemn” în `job.ts`, cele două
+  treceri (`programFoii`, `src/jobs/calculCam.ts`; fundul foii, `fundFoii`, scos din `src/sim/desprinse.ts`), „unde ține” în
+  fereastra exportului, butonul „Pune urechile unde țin”, semnele de pe traseu, panoul; ADR 0211 („Implementarea feliei
+  11.3↑e”), manualul (ro, en) și CLAUDE.md, fără cifrele porților.
+- **Verificat până la pauză:** tipurile; regulile de import (20 / 20, 0 încălcări); traducerile; `urechi.lemn.test.ts` (placa
+  11 la 5 mm: 3 + 1 plăcuțe desprinse, cele de pe hârtie, și aceleași prin proba pe G-code; la 10 mm, programele plăcii,
+  octet cu octet; alegerea și fundul pe hârtie, cu arcele și sensul trigonometric); unitarele întregi: 9 759 / 0 (8 sărite).
+- **Pauză:** 22.11, 22:58, la cuvântul owner-ului („cand termina background tasks, vreau sa facem pauza”). Rămân: e2e-ul
+  (mașina n-a avut un minut liniștit în 20 de minute), otrăvurile (lista de 39, nerulată), build-ul determinist, rândul din
+  fișa etapei și traducerea lui, `docs/otravuri.md`, canalul, raportul.

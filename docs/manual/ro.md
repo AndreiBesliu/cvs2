@@ -1167,7 +1167,7 @@ adresa de test față de cea live au lista lor.
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
-| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, sau alese pe desen (vezi [Urechile alese pe desen](#export)) |
+| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, alese pe desen sau unde ține (vezi [Urechile alese pe desen](#export)) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment. Și colțurile cu o latură curbă (un „D”, un umăr rotund, o lentilă, o curbă importată) primesc degajarea; unde freza nu ajunge deloc în colț, avertismentul o spune |
@@ -1537,6 +1537,16 @@ urechi (cu intrări, intrarea se alege în afara urechilor), ca freza să nu int
 pe drumul frezei, sau una pe o buclă prea scurtă, opresc exportul, cu locul. Un element fără nicio ureche aleasă se taie fără
 urechi. Cu **Arată traseul**, urechile alese apar ca puncte pe contur. Așa le pui spre marginea foii sau spre o fâșie lată,
 acolo unde țin, ori le ocolești pe o latură unde ar strica piesa.
+
+**Urechile unde țin.** A treia alegere a locurilor, **unde ține**, le lasă aplicației, la fiecare export și pe fiecare copie
+(două copii ale aceleiași piese au vecini diferiți). Aplicația taie întâi programul cu aceste operații fără urechi și se uită
+la fundul foii: unde e lemn legat de marginea ei. Un loc e bun când toată urechea, dusă cât freza dincolo de tăietură, cade pe
+lemnul acesta (pe un profil pe dinăuntru, pe lemnul piesei: urechea ține miezul de piesă). Apoi pune câte cere „Câte, pe
+buclă”, cât mai departe una de alta; cu lemn de jur împrejur, ies chiar cele de la distanțe egale, octet cu octet. Dacă nu
+încap toate, le pune pe cele găsite și spune pe ce piese; o piesă fără niciun loc rămâne printre cele care se desprind (de
+obicei, una înconjurată de vecine prea apropiate). Pe linie nu merge: freza n-are o parte de deșeu. Cu **Arată traseul**,
+urechile puse de aplicație apar pe drumul frezei, ca inele mici. Lângă avertismentul pieselor care se desprind, **Pune urechile
+unde țin** trece pe „unde ține” operațiile lor din fereastră; apoi exporți din nou.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o
