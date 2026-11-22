@@ -1,20 +1,21 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
 import { treaptaZoom, type Bucata, type FoaieVecina, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { imaginiPentruPanza, useOctetiImagini } from './octetiImagini.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente, type Avertisment } from '../model/avertismente.ts';
-import { documentNou, type Document, type Operatie } from '../model/document.ts';
+import { documentNou, type Document, type ImagineFoaie, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { comandaInaltimi } from '../model/inaltimeImprimanta.ts';
 import { executa as executaComanda, istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { doarFoaia, indexFoaieActiva, locuriFoi, materialFoaie, numeFoaie } from '../model/foi.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
-import { ACTIUNI_DOCUMENT, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, cuImagineaNoua, incarcaAlegerea, sculaFoii, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
@@ -49,7 +50,7 @@ import type { LucrarePrimita } from './primireLucrare.ts';
 import { lucrarePornita } from './lucrare.ts';
 // Doar tipul ferestrei Mașina: bucata ei rămâne la cerere (un import de valoare ar trage-o în pornire).
 import type { PanouMasina as TipPanouMasina } from './PanouMasina.tsx';
-import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
+import { ConflictDeScriere, eroareDeMediu, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
   readonly config: RezultatConfig;
@@ -712,6 +713,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       return [{ id: f.id, x: (locuri[k] ?? 0) - x0, y: 0, latime: f.stoc.latime, inaltime: f.stoc.inaltime, nume: numeFoaie(f, k, sablonFoaie), forme: d.forme }];
     });
   }, [doc, indexActiva, toateFoile, limbaActiva]);
+  // Imaginile foii active (ADR 0272): octeții citiți din baza lor la cerere; cele vizibile, pe pânză, sub vectori.
+  const octetiImagini = useOctetiImagini(foaie?.imagini);
+  const imaginiPanza = useMemo(() => imaginiPentruPanza(foaie?.imagini, octetiImagini), [foaie?.imagini, octetiImagini]);
   // Piesele puse de mai multe ori (ADR 0210 §2): câte instanțe are fiecare piesă și a câta e fiecare instanță, în ordinea
   // proiectului (foile, apoi instanțele lor), pentru „(4 din 12)” din listă.
   const surori = useMemo(() => {
@@ -773,7 +777,21 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
+  // Imaginile foilor nefolosite (ADR 0272 §2): curățate o dată, în fila care scrie, după ce s-a liniștit pornirea.
+  const curatat = useRef(false);
+  useEffect(() => {
+    if (mod !== 'scriitor' || curatat.current) return undefined;
+    const ceas = setTimeout(() => {
+      curatat.current = true;
+      import('./imaginiFoaie.ts').then((m) => m.curataLaPornire(curenta.current.istoric.doc)).catch((e: unknown) => {
+        if (eroareDeMediu(e)) jurnal.adaugaLocala('salvare', e);
+        else jurnal.adauga('salvare', e);
+      });
+    }, 10_000);
+    return () => { clearTimeout(ceas); };
+  }, [mod, jurnal]);
+
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'imagineImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'imaginiNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata' | 'foaieAleasa' | 'foaieTinta' | 'etichetaNoua' | 'cateInTotal' | 'grupareSurori' | 'asezare' | 'textNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -1172,9 +1190,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const alesFisier = (lista: FileList | null): void => { pornesteImport(lista ? [...lista] : [], null); };
   const pornesteImportRef = useRef(pornesteImport);
   pornesteImportRef.current = pornesteImport;
-  /** `document.importa` cu importul pregătit de dialog, în locul lui: aceeași ușă a documentului ca restul acțiunilor. */
-  const contextImportNou = (p: ImportPregatit, loc: { readonly x: number; readonly y: number } | null): ContextDocument => (
-    context({ importNou: () => p, locImport: () => loc }));
+  /**
+   * `document.importa` cu importul pregătit de dialog, în locul lui (și imaginea păstrată pe foaie, ADR 0272): aceeași ușă a
+   * documentului ca restul acțiunilor.
+   */
+  const contextImportNou = (p: ImportPregatit, loc: { readonly x: number; readonly y: number } | null, imagine?: ImagineFoaie): ContextDocument => (
+    context({ importNou: () => p, locImport: () => loc, ...(imagine ? { imagineImport: () => imagine } : {}) }));
 
   /**
    * Un buton al unei acțiuni, cu iconița ei (din CSS, după `data-icona`), numele (ascuns vizual unde iconița ajunge) și un
@@ -1396,6 +1417,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               doc={doc} indexFoaie={indexActiva} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie}
               doarCitire={doarCiteste(mod)}
               onEticheta={(camp, valoare) => aplicaDinPanou('foaie.eticheta', { etichetaNoua: () => ({ camp, valoare }) })}
+              onImagini={(lista) => aplicaDinPanou('foaie.imagini', { imaginiNoi: () => lista })}
+              octetiImagini={octetiImagini}
               onPlusUnu={() => aplicaDinPanou('piesa.plus-unu', {})}
               onInca={(total) => aplicaDinPanou('piesa.inca', { cateInTotal: () => total })}
               onDesprinde={() => aplicaDinPanou('piesa.desprinde', {})}
@@ -1463,6 +1486,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             forme={forme}
             foaie={stoc}
             vecine={vecine}
+            imagini={imaginiPanza}
             onActiveaza={(id) => { if (!dialogDeschis.current) activeazaFoaie(id); }}
             cadru={cadruPotrivire}
             selectie={selectieDesen}
@@ -1603,7 +1627,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           registruImport={registruImport}
           contextImport={contextImport}
           stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}
-          importa={(p, loc) => ruleaza(registru, 'document.importa', contextImportNou(p, loc))}
+          importa={(p, loc, imagine) => ruleaza(registru, 'document.importa', contextImportNou(p, loc, imagine))}
+          puneImaginea={(imagine) => {
+            const c = context();
+            return ruleaza(registru, 'foaie.imagini', { ...c, imaginiNoi: () => cuImagineaNoua(c, imagine) });
+          }}
           onInchide={() => { setCoadaImport(null); }}
         />
       )}

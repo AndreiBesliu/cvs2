@@ -64,6 +64,8 @@ export const PLAFON = {
   varfuriLume: 1_000_000,
   /** Ghidajele unei foi (ADR 0050). */
   ghidaje: 1_000,
+  /** Imaginile unei foi (ADR 0272): ajutoare de desen, sub desen; octeții lor stau în afara documentului. */
+  imagini: 100,
 } as const;
 
 export type Matrice = { a: number; b: number; c: number; d: number; e: number; f: number };
@@ -294,12 +296,24 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 /**
+ * O imagine a foii (ADR 0272): un ajutor de desen, sub desen, nici tăiat, nici exportat. `sursa` e amprenta SHA-256 a
+ * octeților ei (64 de cifre hexazecimale), păstrați în afara documentului (`src/app/imaginiFoaie.ts`). Centrul (`x`, `y`)
+ * și mărimea (`latime`, `inaltime`) sunt în mm ai foii (Y în sus), `rotire` în grade, trigonometric, ca la instanțe;
+ * `opacitate` în (0, 1]. `fixata`: clicurile trec prin ea, la desen. Nu schimbă ce se taie, deci a intrat fără schemă
+ * nouă, ca ghidajele.
+ */
+export type ImagineFoaie = {
+  id: string; sursa: string; nume?: string; x: number; y: number; latime: number; inaltime: number; rotire: number;
+  opacitate: number; vizibila: boolean; fixata: boolean; [cheie: string]: unknown;
+};
+/**
  * Foaia (ADR 0024). `material` (ADR 0210 §1) e o etichetă scrisă de om („MDF alb 18”), pentru lista de tăiere și numele
  * fișierelor: nu schimbă ce se taie, deci a intrat fără schemă nouă. Un document mai vechi îl poate avea ca un câmp
  * necunoscut, cu orice valoare: eticheta e doar textul (`materialFoaie`), restul rămâne neatins.
  */
 export type Foaie = {
-  id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown;
+  id: string; nume?: string; material?: unknown; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; imagini?: ImagineFoaie[];
+  [cheie: string]: unknown;
 };
 export type Document = { schema: 25; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 

@@ -10694,3 +10694,9 @@ bitmap (ADR 0272, cu schiță)?”, după „cat mai este de facut pentru trasar
   lui bătea `hidden`): reparat, republicată.
 - **Și:** rândul trasării din `ACOPERIRE-ARTCAM-DESKPROTO.md`, pus la zi (25.3↑d până la 25.4↑c și ce rămâne la cerere);
   rândul straturilor bitmap: propus.
+
+## 2026-11-21 — Felia 25.8↑a pornită: imaginile pe foaie (ADR 0272, acceptat: „Da, 1a–3a”) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării, la întrebarea „Iei cele trei recomandări (1a, 2a, 3a)?”
+despre ADR 0272).
+**Started:** 21.11, 19:15.

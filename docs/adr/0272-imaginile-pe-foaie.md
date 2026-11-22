@@ -1,8 +1,9 @@
 # ADR 0272 — Imaginile pe foaie (straturile bitmap)
 
-**Starea:** propus pe 21.11.2026, la „Da, propunerea” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pregătesc
-propunerea pentru straturile bitmap (ADR 0272, cu schiță)?”). Codul pornește după răspunsurile la întrebările de la capăt.
-Feliile 25.8↑a și 25.8↑b, fără mașină, în linia trasării (worktree-ul `trasare`, ramura `wip/25.1-trasare`).
+**Starea:** acceptat pe 21.11.2026, la „Da, 1a–3a” (owner-ul, în sesiunea liniei trasării): toate recomandările de la
+capăt. Propus în aceeași zi, la „Da, propunerea” (la întrebarea „Pregătesc propunerea pentru straturile bitmap (ADR 0272,
+cu schiță)?”). Feliile 25.8↑a și 25.8↑b, fără mașină, în linia trasării (worktree-ul `trasare`, ramura
+`wip/25.1-trasare`).
 **Completează:** ADR 0220 (trasarea din imagine; întrebarea 1c, „imaginea pusă întâi pe foaie, ca strat … mai târziu”),
 ADR 0210 §1 (foile), ADR 0050 (ghidajele). Rândul „Straturi bitmap ca suprafață de desen” din
 `ACOPERIRE-ARTCAM-DESKPROTO.md` (v1, decis pe 06.10).
@@ -85,14 +86,14 @@ obișnuite la o mașină CNC nu se pot face:
 - **Restul:** textele (ro, en), manualul.
 - **Mărimea, estimată:** ~+6–9 kB în total, încărcați doar pe o foaie cu imagini; pornirea, neschimbată.
 
-## Întrebările (recomandarea întâi)
+## Întrebările (răspunsurile: „Da, 1a–3a”)
 
 1. **„Păstrează imaginea pe foaie” la import:**
-   - **a)** oprită implicit, ca azi; o bifezi când vrei, iar alegerea se ține minte cât lucrezi;
+   - **a)** oprită implicit, ca azi; o bifezi când vrei, iar alegerea se ține minte cât lucrezi (luat);
    - b) pornită implicit: fiecare trasare lasă și imaginea pe foaie.
 2. **Imaginea pusă pe foaie:**
-   - **a)** fixată: clicurile ajung la desen; o desfaci din lacătul ei ca s-o muți;
+   - **a)** fixată: clicurile ajung la desen; o desfaci din lacătul ei ca s-o muți (luat);
    - b) ca o formă: se alege cu clicul, se mută și se rotește direct.
 3. **Lista imaginilor:**
-   - **a)** în panoul foii, sub ghidaje: fiecare foaie, imaginile ei;
+   - **a)** în panoul foii, sub ghidaje: fiecare foaie, imaginile ei (luat);
    - b) un panou nou, „Straturi”, cu imaginile și grupurile desenului.

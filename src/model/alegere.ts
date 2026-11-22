@@ -16,8 +16,10 @@ import { elementeFoaie } from './lume.ts';
  * conturul: cel mai apropiat dintre cele la cel mult `toleranta` mm (la egalitate, cel de deasupra). Altfel, interiorul: dintre
  * formele închise care cuprind punctul (regula evenodd), cea mai mică, ca o formă dinăuntrul alteia să rămână de ales cu un
  * clic (testul owner-ului: după un offset spre exterior, conturul nou, deasupra, prindea orice clic dinăuntru). Sau null.
+ * `doarContur`: doar conturul (o imagine desfăcută de sub desen, ADR 0272, se apucă și dinăuntrul formelor, nu și de pe
+ * liniile lor).
  */
-export function instantaLa(doc: Document, x: number, y: number, toleranta: number, indexFoaie = 0): string | null {
+export function instantaLa(doc: Document, x: number, y: number, toleranta: number, indexFoaie = 0, doarContur = false): string | null {
   const lume = elementeFoaie(doc, indexFoaie);
   let peContur: { readonly id: string; readonly d: number } | null = null;
   let inauntru: { readonly id: string; readonly arie: number } | null = null;
@@ -31,7 +33,7 @@ export function instantaLa(doc: Document, x: number, y: number, toleranta: numbe
     const d = distantaLaContur({ x, y }, c);
     if (d <= toleranta) {
       if (!peContur || d < peContur.d) peContur = { id: e.instanta, d };
-    } else if (!peContur && c.inchis && inRegiune({ x, y }, [c])) {
+    } else if (!doarContur && !peContur && c.inchis && inRegiune({ x, y }, [c])) {
       const arie = Math.abs(arieCuSemn(c));
       if (!inauntru || arie < inauntru.arie) inauntru = { id: e.instanta, arie };
     }

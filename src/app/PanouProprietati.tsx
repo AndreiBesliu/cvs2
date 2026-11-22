@@ -6,7 +6,7 @@ import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import { inaltimeConV, PLAFON, type Document, type FormaDoc, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
+import { inaltimeConV, PLAFON, type Document, type FormaDoc, type ImagineFoaie, type Incrustatie, type Operatie, type Piesa } from '../model/document.ts';
 import { esteGaura, PUNTI_DOP_DREPT, susLaMicron, valoriBanda, valoriIncrustatie, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { materialFoaie, numeFoaie } from '../model/foi.ts';
@@ -21,6 +21,7 @@ import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { PanouRoluri } from './PanouRoluri.tsx';
+import { ImaginiFoii } from './ImaginiFoii.tsx';
 import { useRoluriMele } from './roluriMele.ts';
 import { cuMajuscula, frezaComuna, plusMinus } from './taiereButoane.ts';
 import type { Taierea } from '../ui/aranjament.ts';
@@ -65,6 +66,12 @@ type Props = {
   readonly onPlacuta?: (c: CerereText) => RezultatActiune;
   /** Numele sau materialul foii active (ADR 0210 §1); gol: fără. */
   readonly onEticheta: (camp: CampEticheta, valoare: string) => RezultatActiune;
+  /**
+   * Imaginile foii active (ADR 0272 §5): lista lor întreagă, după o schimbare din panou (ochiul, lacătul, opacitatea,
+   * ștergerea), și octeții lor (miniaturile; null: lipsă din browser). Fără ele, panoul nu le arată.
+   */
+  readonly onImagini?: (lista: readonly ImagineFoaie[]) => RezultatActiune;
+  readonly octetiImagini?: ReadonlyMap<string, Blob | null>;
   /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
   readonly onRol: (r: Rol | RolPersonal) => RezultatActiune;
   /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
@@ -179,7 +186,7 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
  */
 export function PanouProprietati({
   doc, indexFoaie = 0, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEticheta, onRol, onOperatii, onEditeazaOperatii,
-  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite,
+  onPlusUnu, onInca, onDesprinde, onPlacuta, taierea = 'lista', trimite, onTrimite, onImagini, octetiImagini,
 }: Props): ReactNode {
   const limba = useLimba();
   const butoane = taierea === 'butoane';
@@ -558,6 +565,9 @@ export function PanouProprietati({
             {rand(t('prop.forme'), foaie.instante.length)}
           </dl>
         </section>
+      )}
+      {alese.length === 0 && foaie && onImagini && octetiImagini && (foaie.imagini?.length ?? 0) > 0 && (
+        <ImaginiFoii imagini={foaie.imagini ?? []} octeti={octetiImagini} doarCitire={doarCitire} oprit={oprit} onImagini={onImagini} />
       )}
       {alese.length > 1 && <p className="prop-multi">{t('prop.selectate', { n: alese.length })}</p>}
       {alese.length > 0 && (

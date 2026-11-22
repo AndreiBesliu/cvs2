@@ -5,10 +5,14 @@ import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
 import { formatImport } from '../io/formatImport.ts';
 import { TRASARE_IMPLICITA } from '../io/imagine.ts';
 import {
-  PLAFON_IMPORT, type AlegeriImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
+  PLAFON_IMPORT, pregatesteImagineaFoii, type AlegeriImport, type ContextImport, type FisierImport, type ImportPregatit,
+  type PrevizualizareImport,
 } from '../ui/actiuniImport.ts';
 import { DialogImport } from '../ui/DialogImport.tsx';
 import { mesajeGata } from '../i18n/laCerere.ts';
+import type { CheieSimpla } from '../i18n/t.ts';
+import type { ImagineFoaie } from '../model/document.ts';
+import { OPACITATE_IMAGINE, pastreaza } from './imaginiFoaie.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -38,6 +42,12 @@ type StareDialog = AlegeriImport & {
 /** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină, trasarea implicită. */
 const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1, trasare: TRASARE_IMPLICITA };
 
+/**
+ * Bifa „Păstrează imaginea pe foaie” (ADR 0272, răspunsul 1a): oprită implicit, ca până acum; ținută minte cât lucrezi (cât
+ * stă modulul încărcat, adică până la reîncărcarea paginii).
+ */
+let pastreazaImaginea = false;
+
 type Props = {
   /** Coada fișierelor alese sau lăsate pe planșă (felia 2.8b), cel puțin unul: dialogul le trece pe rând. */
   readonly fisiere: readonly File[];
@@ -45,9 +55,11 @@ type Props = {
   readonly registruImport: Registru<ContextImport>;
   /** Contextul ușilor pentru un fișier și alegerile lui (limba, fila care doar citește, jurnalul: ale aplicației). */
   readonly contextImport: (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void, semnal?: AbortSignal) => ContextImport;
-  /** Starea și rularea lui `document.importa`, prin registrul și contextul aplicației. */
+  /** Starea și rularea lui `document.importa`, prin registrul și contextul aplicației (cu imaginea păstrată pe foaie, ADR 0272). */
   readonly stareImporta: (p: ImportPregatit, loc: Loc) => RezultatActiune;
-  readonly importa: (p: ImportPregatit, loc: Loc) => RezultatActiune;
+  readonly importa: (p: ImportPregatit, loc: Loc, imagine?: ImagineFoaie) => RezultatActiune;
+  /** „Doar imaginea” (ADR 0272): imaginea pe foaia activă, fără vectori (`foaie.imagini`). */
+  readonly puneImaginea: (imagine: ImagineFoaie) => RezultatActiune;
   readonly onInchide: () => void;
   /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
   readonly de?: string;
@@ -70,9 +82,13 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de, freza }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, puneImaginea, onInchide, de, freza }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
+  const [pastreazaBifat, setPastreazaBifat] = useState(pastreazaImaginea);
+  /** Imaginea pentru foaie (ADR 0272): în lucru, și motivul ultimului eșec (până la citirea următoare). */
+  const [imagineInLucru, setImagineInLucru] = useState(false);
+  const [motivImagine, setMotivImagine] = useState<CheieSimpla | null>(null);
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
   const cerere = useRef(0);
   /**
@@ -99,6 +115,8 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     opresteCitirea();
     const ac = new AbortController();
     oprire.current = ac;
+    setImagineInLucru(false);
+    setMotivImagine(null);
     setDialog({ fisier: f, nume: f.nume, ...a, pxAutomat: automat, ...(vechi ? { stare: vechi, seRecitesc: true } : { stare: 'citire' }) });
     const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, a, (r) => {
       if (c !== cerere.current) return;
@@ -117,6 +135,8 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     const initiala = stareInitiala(f);
     const c = ++cerere.current;
     opresteCitirea();
+    setImagineInLucru(false);
+    setMotivImagine(null);
     setDialog(initiala);
     if (initiala.stare !== 'citire') return;
     f.arrayBuffer().then((b) => {
@@ -147,6 +167,42 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   const loc: Loc = punct ? { x: punct.x + 10 * k, y: punct.y - 10 * k } : null;
   const ok = dialog.stare !== 'citire' && dialog.stare.ok ? dialog.stare : null;
   const stareOk = ok ? stareImporta(ok.pregatit, loc) : null;
+  /**
+   * Imaginea pentru foaie (ADR 0272): pregătită în workerul trasării, cu alegerile de pe ecran, păstrată în baza imaginilor,
+   * apoi pusă: cu desenul, într-un singur pas de anulare („Importă” cu bifa), ori singură („Doar imaginea”; lăsată pe planșă,
+   * cu centrul în punctul lăsat). O citire nouă, fișierul următor sau închiderea o lasă fără efect.
+   */
+  const puneImagineaFoii = (cuDesen: boolean): void => {
+    const f = dialog.fisier;
+    if (!f || imagineInLucru || dialog.seRecitesc) return;
+    const c = cerere.current;
+    const pregatit = ok?.pregatit;
+    setImagineInLucru(true);
+    setMotivImagine(null);
+    const pune = async (): Promise<CheieSimpla | null> => {
+      const im = await pregatesteImagineaFoii(f, { trasare: dialog.trasare ?? TRASARE_IMPLICITA, pagina: dialog.pagina });
+      if (c !== cerere.current) return null;
+      if (!im) return 'import.imagine-foaie.nepusa';
+      const sursa = await pastreaza(new Uint8Array(await im.octeti.arrayBuffer()), im.tip, im.latimePx, im.inaltimePx);
+      if (c !== cerere.current) return null;
+      const imagine: ImagineFoaie = {
+        id: 'im1', sursa, nume: im.nume, x: im.x, y: im.y, latime: im.latime, inaltime: im.inaltime, rotire: 0, opacitate: OPACITATE_IMAGINE,
+        vizibila: true, fixata: true,
+      };
+      const r = cuDesen && pregatit ? importa(pregatit, loc, imagine) : puneImaginea(loc ? { ...imagine, x: loc.x, y: loc.y } : imagine);
+      if (!r.ok) return r.motiv;
+      urmatorul();
+      return null;
+    };
+    pune().catch((e: unknown) => {
+      contextImport(f, ALEGERI, () => undefined).jurnal?.(e);
+      return 'import.imagine-foaie.nepusa' as const;
+    }).then((motiv) => {
+      if (c !== cerere.current) return;
+      setImagineInLucru(false);
+      setMotivImagine(motiv);
+    }, () => undefined);
+  };
   /** Recitirea cu o alegere schimbată: ce e pe ecran (previzualizarea sau refuzul) rămâne acolo până sosește noul rezultat. */
   const recitesteCu = (schimbare: Partial<AlegeriImport>): void => {
     if (!dialog.fisier) return;
@@ -176,8 +232,19 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       onImporta={() => {
         // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
         // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).
-        if (!ok || dialog.seRecitesc) return;
+        if (!ok || dialog.seRecitesc || imagineInLucru) return;
+        if (pastreazaBifat && ok.format === 'imagine') {
+          puneImagineaFoii(true);
+          return;
+        }
         if (importa(ok.pregatit, loc).ok) urmatorul();
+      }}
+      imagineFoaie={{
+        pastreaza: pastreazaBifat,
+        onPastreaza: (b) => { pastreazaImaginea = b; setPastreazaBifat(b); },
+        onDoarImaginea: () => { puneImagineaFoii(false); },
+        lucru: imagineInLucru,
+        motiv: motivImagine,
       }}
       onInchide={inchide}
       {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
