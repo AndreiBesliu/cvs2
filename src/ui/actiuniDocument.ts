@@ -95,7 +95,15 @@ export type TaiereCalculata = {
   readonly grupuri?: readonly PanouDeGrupat[];
   /** O piesă pusă de mai multe ori (felia 10.3↑m): «Desprinde și taie» sau «Taie piesa» (`taiereSurori.ts`). */
   readonly surori?: SuroriTaiere;
+  /**
+   * Numerele panourilor (felia 10.3↑n): piesa cifrelor fiecărui panou (un text cu un font cu o singură linie, cu id-ul de lucru)
+   * și locul ei pe foaie, cu numele panoului și bucățile lui (după tăiere); acțiunea le dă id-uri noi și le pune în grupuri.
+   */
+  readonly numere?: readonly NumarPanouCalculat[];
 };
+
+/** Numărul gravat al unui panou, calculat de blocul panourilor (felia 10.3↑n). */
+export type NumarPanouCalculat = { readonly nume: string; readonly ids: readonly string[]; readonly piesa: Piesa; readonly x: number; readonly y: number };
 /** O conversie calculată de worker (ADR 0180, felia 10.3↑d): piesele schimbate, cu aceleași id-uri, pe documentul `doc`. */
 export type ConversieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[]; readonly surori?: SuroriConversie };
 

@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import type { Zona } from '../canvas/Rigle.tsx';
 import '../i18n/editare.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
+import { elementeFoaie } from '../model/lume.ts';
 import type { DopSimulat, ProgramSimulare, ReliefSimulat } from '../ui/actiuniExportTipuri.ts';
 import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { descriere } from './descriereElement.ts';
 import { apropie, cuprinde, fereastraFina, incadreaza, matrici, panorameaza, rgb, roteste, subCursor, type Camera, type ZonaNdc } from './vedere3dCalcul.ts';
 import './vedere3d.css';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -174,6 +176,9 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   // Ce arată vederea (ADR 0178): foaia, sau dopul cu numărul dat (de la 0); dopurile foii vin cu fiecare simulare.
   const [alegere, setAlegere] = useState<'foaie' | number>('foaie');
   const [dopuri, setDopuri] = useState<{ readonly lista: readonly DopSimulat[]; readonly motiv?: string }>({ lista: [] });
+  // Elementele foii după id-ul lor în lume, ca titlul fiecărui dop să-și numească incrustația (ADR 0178, precizarea din
+  // 21.11); doar cât foaia are dopuri.
+  const lume = useMemo(() => (dopuri.lista.length > 0 ? new Map(elementeFoaie(doc, 0).map((e) => [e.idLume, e])) : null), [doc, dopuri.lista]);
   // Ce s-a simulat (documentul, programul, relieful plăcii și al ferestrei fine) și camera: ținute aici, nu în stare
   // (un cadru nou nu re-randează componenta).
   const sim = useRef<{ doc: Document | null; calc: Calcul | null; program: Extract<ProgramSimulare, { ok: true }> | null; placa: Relief | null; fin: Relief | null }>(
@@ -461,6 +466,17 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
   const nr = (v: number): string => textNumar(Math.round(v * 1000) / 1000, limba === 'ro');
   // Dopul arătat (ADR 0178), numărat de la 1, ca fișierul lui; null pe foaie.
   const dop = alegere === 'foaie' ? null : alegere + 1;
+  /**
+   * Titlul unui dop (ADR 0178 §2, precizarea din 21.11): incrustația lui, numită ca în bara de jos, apoi semifabricatul. Un
+   * element pe care foaia nu-l mai are (o listă de dinaintea unei editări, până la simularea nouă) lasă doar semifabricatul.
+   */
+  const titluDop = (d: DopSimulat): string => {
+    const semifabricat = t('editare.3d.dopul.semifabricat', {
+      latime: nr(d.semifabricat.latime), inaltime: nr(d.semifabricat.inaltime), grosime: nr(d.semifabricat.grosimeMinima),
+    });
+    const e = lume?.get(d.element);
+    return e ? `${t('editare.3d.dopul.incrustatia', { descriere: descriere(e) })} ${semifabricat}` : semifabricat;
+  };
   const textStare = stareGpu === 'fara-webgl' ? t('editare.3d.fara-webgl')
     : stareGpu === 'context-pierdut' ? t('editare.3d.context')
       : stareGpu === 'prea-mare' ? t('editare.3d.prea-mare')
@@ -552,9 +568,7 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
                 type="button"
                 aria-pressed={alegere === k}
                 data-3d-alege={`dop-${k + 1}`}
-                title={t('editare.3d.dopul.titlu', {
-                  element: d.element, latime: nr(d.semifabricat.latime), inaltime: nr(d.semifabricat.inaltime), grosime: nr(d.semifabricat.grosimeMinima),
-                })}
+                title={titluDop(d)}
                 onClick={() => { alege(k); }}
               >
                 {t('editare.3d.dopul', { n: k + 1 })}

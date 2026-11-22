@@ -222,7 +222,7 @@ test('fâșia arătată cât tragi (ADR 0181 §2): linia mutată cu 2 de fiecare
 });
 
 test('spațiul cerut din opțiuni: doar cu închidere și fără „nimic”, cu lățimea lor', () => {
-  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'spatiu', latime: 3, imbinare: 'dreapta', pas: 40, inaltime: 20, raza: 3 };
+  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'spatiu', latime: 3, imbinare: 'dreapta', pas: 40, inaltime: 20, raza: 3, numere: false, inaltimeNumar: 10 };
   assert.deepEqual(intreDin(o), { fel: 'spatiu', latime: 3 });
   assert.deepEqual(intreDin({ ...o, intre: 'suprapunere', latime: 0.5 }), { fel: 'suprapunere', latime: 0.5 });
   assert.equal(intreDin({ ...o, intre: 'nimic' }), undefined);
@@ -230,7 +230,7 @@ test('spațiul cerut din opțiuni: doar cu închidere și fără „nimic”, cu
 });
 
 test('îmbinarea cerută din opțiuni (ADR 0181 §6): doar cu închidere, pe o tăietură dreaptă și cu un model, cu mărimile lor', () => {
-  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'nimic', latime: 3, imbinare: 'zigzag', pas: 40, inaltime: 20, raza: 3 };
+  const o: OptiuniTaiere = { inchide: true, prelungeste: 'nu', pastreaza: 'ambele', stergeCutitul: false, intre: 'nimic', latime: 3, imbinare: 'zigzag', pas: 40, inaltime: 20, raza: 3, numere: false, inaltimeNumar: 10 };
   assert.deepEqual(imbinareDin(o, true), { model: 'zigzag', pas: 40, inaltime: 20, raza: 3 });
   assert.deepEqual(imbinareDin({ ...o, imbinare: 'puzzle', pas: 30, inaltime: 12, raza: 0.5 }, true), { model: 'puzzle', pas: 30, inaltime: 12, raza: 0.5 });
   assert.equal(imbinareDin(o, false), undefined, 'tăietura nu e dreaptă');

@@ -1770,6 +1770,71 @@ var Lego = (function (glob: typeof globalThis) {
     return { tri, avert };
   }
 
+  // ---------------------------------------------------------------------------------------------- șenila
+  // Șenila (ADR 0280, felia 3.To), ca LEGO 57518 (Technic Chain Tread 5 Wide) pe pinioanele 57519 (10 scobituri) și 42529
+  // (14), cu cotele din LDraw. Zala se tipărește pe fața de rulare (z = 0): x pe lățime, y de-a lungul șenilei (bolțul la
+  // y = 0, clema la y = −12: zala următoare stă cu un pas, 12 mm, mai încolo), z în sus.
+  // - aripile: y de la −1,2 la −12,4, groase de 3,2, până la |x| 19,2; limba, la mijloc, y de la −4,4 la −14,8: intră în
+  //   crestătura dintre aripile zalei următoare (0,8 mm între aripi, 1,6 până la limba ei). La LEGO, limba și crestătura au
+  //   amândouă ±5,6 (se ating, turnate); aici limba are ±5,45 și crestătura ±5,75, deci 0,15 mm pe parte și cu zalele LEGO;
+  // - bolțul: Ø3,2 (bara LEGO), la z 5,6, între obrajii de la |x| 5,75…7,2, înalți până la z 8,4; obrajii trec cu 3,6 mm peste
+  //   capătul aripilor, teșiți la 45° pe dedesubt (acolo stau aripile zalei de dinainte, iar teșitura se tipărește singură);
+  // - clema: două fălci, la |x| 3,2…5,45, la y −12, cu gura în sus; inelul e al clemei din atelier (`clemaD` din calibrare,
+  //   peretele, gura); între fălci (|x| < 3,2) rămâne loc pentru discul pinionului, gros de 4;
+  // - pereții canalului: în dreptul fălcilor (|x| 3,2…5,45), de la y −4,4 până în inelul clemei, înalți până la z 8,4 (ca la
+  //   LEGO): discul pinionului trece printre ei, deci șenila nu alunecă lateral de pe pinion; fălcile ies din ei;
+  // - găurile de știft Technic, la x ±8, y −6,8. Fața de rulare e netedă (crampoanele LEGO ar cere suport la tipar).
+  // Pinionul: scobiturile sunt cercuri de rază bara / 2 + jocul dinților din calibrare, centrate pe raza R = 6 / sin(π / z),
+  // unde stau bolțurile șenilei întinse pe pinion; vârful dinților, la R + 1, dar cel mult la 0,3 mm sub placa zalei din
+  // dreptul lui (la 6 dinți ar atinge-o); discul gros de 4, pe un butuc de Ø12 și 8 mm.
+  // LEGO: 57519, R 19,42, scobitura de r 1,67 (fundul la 17,75), vârful la 20,4; 42529, R 26,96.
+  const SENILA = { pas: 12, lat: 19.2, placa: 3.2, zb: 5.6, aripa: [-12.4, -1.2], limba: [-14.8, -4.4], xl: 5.45, xn: 5.75, obraz: 7.2, obrazY: 2.4,
+    obrazZ: 8.4, falci: [3.2, 5.45], zid: [-10, -4.4], zidZ: 8.4, gauraX: 8, gauraY: -6.8, disc: 4, varf: 1, butucR: 6, butucZ: 8 };
+  function pinionSenilaCote(dinti: unknown) {
+    const nr = (v: unknown, d: number) => (v !== null && v !== "" && Number.isFinite(+(v as number)) ? +(v as number) : d);
+    const z = Math.round(Math.min(40, Math.max(6, nr(dinti, 10))));
+    return { z, R: SENILA.pas / 2 / Math.sin(Math.PI / z) };
+  }
+  function zalaSenila({ gauriStift = "da" }: { gauriStift?: string }): Corp {
+    const e = ef(), S = SENILA, rb = P.bara_d / 2, ri = e.clemaD / 2, ro = ri + P.clema_perete, yc = -S.pas, L = S.lat, xl = S.xl, xn = S.xn, tri: Tri[] = [];
+    const [a0, a1] = S.aripa as [number, number], [l0, l1] = S.limba as [number, number], [f0, f1] = S.falci as [number, number];
+    // placa: aripile, crestătura dintre ele (lângă bolț) și limba (la clemă), cu găurile de știft
+    const placa: Poli = [[-L, a1], [-xn, a1], [-xn, l1], [xn, l1], [xn, a1], [L, a1], [L, a0], [xl, a0], [xl, l0], [-xl, l0], [-xl, a0], [-L, a0]];
+    const gauri_ = gauriStift === "nu" ? [] : [cerc(-S.gauraX, S.gauraY, e.gauraD / 2), cerc(S.gauraX, S.gauraY, e.gauraD / 2)];
+    tri.push(...prismaGauri(trig(placa), gauri_, 0, S.placa));
+    // obrajii, bolțul, fălcile și gâtul lor: profile în planul (y, z), întinse pe x
+    const pe = (p: Poli, x0: number, x1: number) => axe(prisma(trig(p), x0, x1), ([a, b, x]) => [x, a, b], false);
+    const obraz: Poli = [[-4.2, S.placa - 0.2], [-1.0, S.placa - 0.2], [S.obrazY, S.placa - 0.2 + S.obrazY + 1.0], [S.obrazY, S.obrazZ], [-4.2, S.obrazZ]];
+    tri.push(...pe(obraz, xn, S.obraz), ...pe(obraz, -S.obraz, -xn));
+    tri.push(...pe(cerc(0, S.zb, rb, N_CERC), -(xn + 0.8), xn + 0.8));
+    const falca = sectiuneC(ri, ro, P.clema_gura, Math.PI / 2, yc, S.zb), gat = dreptunghi(yc - 1.8, S.placa - 1.2, yc + 1.8, S.zb - ri - 0.25);
+    const zid = dreptunghi(S.zid[0]!, S.placa - 0.2, S.zid[1]!, S.zidZ);
+    for (const [x0, x1] of [[f0, f1], [-f1, -f0]] as [number, number][]) tri.push(...pe(falca, x0, x1), ...pe(gat, x0, x1), ...pe(zid, x0, x1));
+    return { tri, avert: [] };
+  }
+  function pinionSenila({ dinti = 10, gaura = "x" }: { dinti?: number; gaura?: string }): Corp {
+    const e = ef(), avert: string[] = [], { z, R } = pinionSenilaCote(dinti), rho = P.bara_d / 2 + e.jocDinti;
+    const ra = Math.min(R + SENILA.varf, R * Math.cos(Math.PI / z) + SENILA.zb - SENILA.placa - 0.3);
+    if (z !== +dinti) avert.push(tr`Un pinion de șenilă are între 6 și 40 de dinți: l-am făcut cu ${z}.`);
+    // conturul: arcele vârfurilor pe cercul ra, între scobituri (cercuri de rază rho centrate pe R, parcurse pe dinăuntru)
+    const fi = Math.acos((R * R + ra * ra - rho * rho) / (2 * R * ra)), p: P2[] = [];
+    for (let k = 0; k < z; k++) {
+      const c = 2 * Math.PI * k / z, cn = 2 * Math.PI * (k + 1) / z, na = Math.max(2, Math.ceil((cn - c - 2 * fi) * ra / 0.4));
+      for (let i = 0; i <= na; i++) { const u = c + fi + (cn - c - 2 * fi) * i / na; p.push([ra * Math.cos(u), ra * Math.sin(u)]); }
+      const cx = R * Math.cos(cn), cy = R * Math.sin(cn);
+      const u0 = Math.atan2(ra * Math.sin(cn - fi) - cy, ra * Math.cos(cn - fi) - cx), u1 = Math.atan2(ra * Math.sin(cn + fi) - cy, ra * Math.cos(cn + fi) - cx);
+      const span = 2 * Math.PI - (((u1 - u0) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), ns = Math.max(4, Math.ceil(span * rho / 0.15));
+      for (let i = 1; i < ns; i++) { const u = u0 - span * i / ns; p.push([cx + rho * Math.cos(u), cy + rho * Math.sin(u)]); }
+    }
+    // gaura, ca la rotițe; discul și butucul (care începe cu 0,1 mm în disc: pereții găurii nu se suprapun pe aceleași vârfuri)
+    const G = gauraRoata(cerc(0, 0, SENILA.butucR), gaura);
+    const tri: Tri[] = [...prismaGauri(trig(p), G.g, 0, SENILA.disc), ...prismaGauri(cerc(0, 0, SENILA.butucR), G.g, SENILA.disc - 0.1, SENILA.butucZ)];
+    return { tri, avert };
+  }
+  function senila({ piesa = "zala", gauriStift = "da", dinti = 10, gaura = "x" }: { piesa?: string; gauriStift?: string; dinti?: number; gaura?: string }): Corp {
+    return piesa === "pinion" ? pinionSenila({ dinti, gaura }) : zalaSenila({ gauriStift });
+  }
+
   function semne(n: number, x0: number, y0: number, z0: number, pas = 2.4) {
     // n cuburi mici de 1,2 mm, ca sa recunosti varianta
     const tri: Tri[] = [];
@@ -1864,7 +1929,7 @@ var Lego = (function (glob: typeof globalThis) {
   }
 
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, dinCvs2 };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, rotita, roata, fulie, conica, coroana, conicaDubla, senila, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);
@@ -1976,6 +2041,23 @@ var Lego = (function (glob: typeof globalThis) {
     dublaMontaj: (d: DublaDef, z2: unknown) => {
       const a = dublaCote(d), b = dublaCote({ dinti: z2, modul: a.m }), mic = Math.min(a.z, b.z), strans = mic < 12 && Math.max(a.z, b.z) > 2.5 * mic;
       return { z: a.z, z2: b.z, m: a.m, paralel: a.rp + b.rp, acesta: b.rp + DUBLA.banda * a.m, perechea: a.rp + DUBLA.banda * a.m, strans };
+    },
+    // șenila pe două pinioane, cu axele la distanța d (mm): lungimea liniei bolțurilor, zalele (câte încap, rotunjit în sus),
+    // jocul care rămâne și distanța la care zalele astea stau întinse (`intins`, prin bisecție). Bolțurile stau pe cercurile R,
+    // dar zalele sunt coarde: pe o jumătate de pinion de z dinți stau z / 2 zale (la 10 dinți, 60 mm, nu arcul π·R = 61,0).
+    // Lungimea e deci a unei curele deschise pe razele r = z · 12 / 2π (cercul lung de z zale): media pe faze a înfășurătoarei
+    // convexe a bolțurilor, la câțiva µm (proba); perechile egale, exact 2·d + z·12 (10 cu 10 la 72 mm: 22 de zale, fără joc).
+    // `aproape`: vârfurile pinioanelor s-ar atinge (sub 1 mm între ele)
+    senilaMontaj: (z1: unknown, z2: unknown, distanta: unknown) => {
+      const a = pinionSenilaCote(z1), b = pinionSenilaCote(z2), d = Math.max(0, +(distanta as number) || 0);
+      const r1 = a.z * SENILA.pas / (2 * Math.PI), r2 = b.z * SENILA.pas / (2 * Math.PI), dr = r2 - r1;
+      const aproape = d < a.R + b.R + 2 * SENILA.varf + 1;
+      if (aproape || d <= Math.abs(dr)) return { z1: a.z, z2: b.z, R1: a.R, R2: b.R, d, L: NaN, zale: 0, joc: NaN, intins: NaN, aproape: true };
+      const lung = (x: number) => { const al = Math.asin(dr / x); return 2 * Math.sqrt(x * x - dr * dr) + r1 * (Math.PI - 2 * al) + r2 * (Math.PI + 2 * al); };
+      const L = lung(d), zale = Math.ceil(L / SENILA.pas - 1e-9), tinta = zale * SENILA.pas;
+      let lo = d, hi = d + SENILA.pas;
+      for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (lung(m) < tinta) lo = m; else hi = m; }
+      return { z1: a.z, z2: b.z, R1: a.R, R2: b.R, d, L, zale, joc: tinta - L, intins: (lo + hi) / 2, aproape: false };
     },
     cureaua: (a: FulieDef, b: FulieDef, C: unknown) => {
       const p = fulieCote(a), q = fulieCote(b), c = +(C as number), minim = Math.ceil((p.R + q.R + 0.5) * 10 - 1e-6) / 10;
