@@ -1262,6 +1262,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 22.11.2026, seara: **11.3↑d (urechile la locurile alese) și A.3 (Tichete) unite în `main`**, în lot (worktree-ul
+  `unire`, ramura `unire-2211b`). **11.3↑d** (linia planșelor, ramura `wip/11.1-plansele`, `44046e5d` din `76d5b0b3`;
+  ADR 0211, varianta a, la „Da, toate recomandările” ale owner-ului): urechile se aleg pe desen, într-un mod al pânzei
+  deschis din rândul exportului („Alege pe desen…”), iar lucrarea le taie la locurile alese; documentul trece pe v26
+  (`urechi.mod`, `urechi.locuri`), deci o felie care mai urcă schema ia v27; otrăvurile 46 / 48 (două echivalente, la
+  tăiere). **A.3** (linia adminului, ramura `wip/A.1-admin`, `528ee187` din `3ab5b1b3`; ADR 0260 §3 și ADR 0261,
+  acceptat cu „Da, toate recomandările”): Tichete ca o conversație (lista și firul, cu legătura spre erori) și
+  răspunsurile rapide (scrise în Setări, alese în câmpul răspunsului); `/admin` 113,7 → 121,2 / 200 kB; otrăvurile 59 /
+  59. La publicare, pe lângă Hosting: regulile Firestore (citirea `setari/raspunsuriRapide` pentru cine răspunde la
+  tichete) și funcția `tichete` (acțiunea `raspunsuriRapide`); celelalte funcții, indexurile și regulile Storage,
+  neschimbate. Porțile lotului: verzi pe `528ee187` la prima trecere: unit 9 748 / 0 (8 sărite), e2e 581 / 581,
+  emulatoarele 104 / 104 și 34 / 34; pornirea 107,7 / 115 (cu ușa 112,1), totalul 751,6 / 800, `/admin` 121,2 / 200.
 - 22.11.2026, după-amiaza: **25.4↑c (îndreptarea scanărilor) unită în `main`, în lot cu ADR 0282 propus (elicele)**
   (worktree-ul `unire`, ramura `unire-2211`). **25.4↑c** (linia trasării, ramura `wip/25.1-trasare`, `9071e62f` din
   `78a44def`; ADR 0271): bifa „Îndreaptă scanarea”, în grupul „Îndreptarea”: unghiul unei scanări strâmbe găsit din
