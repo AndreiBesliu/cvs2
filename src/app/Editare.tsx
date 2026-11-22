@@ -786,6 +786,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     }
     return false;
   }, [doc.piese, foaie, selectie]);
+  // Leagă căile (ADR 0182), în bară, în panoul opțiunilor și în meniu: activă doar cu o cale deschisă printre formele alese
+  // (Ctrl+J și paleta trec prin ușa aplicației, care spune motivul: „Nicio cale deschisă…”).
+  const caleDeschisa = useMemo(() => {
+    const piese = new Map(doc.piese.map((x) => [x.id, x]));
+    const instante = new Map((foaie?.instante ?? []).map((i) => [i.id, i]));
+    const are = (n: Nod): boolean => (n.tip === 'element' ? n.forma.tip === 'cale' && !n.forma.inchis : n.copii.some(are));
+    return selectie.some((id) => {
+      const r = piese.get(instante.get(id)?.piesa ?? '')?.radacina;
+      return r ? are(r) : false;
+    });
+  }, [doc.piese, foaie, selectie]);
   const taieLaIntersectii = (): Promise<string | null> => {
     if (selectie.length === 0 || p.doarCitire) return Promise.resolve(null);
     const laCerere = doc, alese = [...selectie];
@@ -1261,7 +1272,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       { id: 'scade', eticheta: numeScurt(t('editare.boolean.scade')), activ: doua, ruleaza: () => { void booleanul('diferenta').then(facut); } },
       { id: 'intersecteaza', eticheta: numeScurt(t('editare.boolean.intersecteaza')), activ: doua, ruleaza: () => { void booleanul('intersectie').then(facut); } },
       { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: douaContururi && poate, ruleaza: () => { void taieLaIntersectii().then(facut); } },
-      { id: 'leaga-caile', eticheta: t('actiune.leaga-caile'), tasta: tastaActiunii('document.leaga-caile'), activ: selectie.length > 0 && poate, ruleaza: () => { void leagaCaile().then(facut); } },
+      { id: 'leaga-caile', eticheta: t('actiune.leaga-caile'), tasta: tastaActiunii('document.leaga-caile'), activ: caleDeschisa && poate, ruleaza: () => { void leagaCaile().then(facut); } },
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
@@ -1649,7 +1660,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               data-editare="boolean-intersecteaza" onClick={() => { void booleanul('intersectie'); }}>
               <IconaBoolean fel="intersecteaza" />
             </button>
-            <button type="button" className="aliniaza" disabled={selectie.length === 0 || p.doarCitire} title={t('editare.legare')} aria-label={t('actiune.leaga-caile')}
+            <button type="button" className="aliniaza" disabled={!caleDeschisa || p.doarCitire} title={t('editare.legare')} aria-label={t('actiune.leaga-caile')}
               data-editare="leaga-caile" onClick={() => { void leagaCaile(); }}>
               <IconaLegare />
             </button>
@@ -1658,7 +1669,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <IconaSageata />
             </button>
             {panouLegare ? (
-              <PanouLegare poate={selectie.length > 0 && !p.doarCitire} onLeaga={() => { void leagaCaile(); }} onInchide={() => { setPanou(null); }} />
+              <PanouLegare poate={caleDeschisa && !p.doarCitire} onLeaga={() => { void leagaCaile(); }} onInchide={() => { setPanou(null); }} />
             ) : null}
             <button type="button" className="aliniaza" disabled={selectie.length < 2 || p.doarCitire} title={t('editare.grupeaza')} aria-label={t('editare.grupeaza')}
               data-editare="grupeaza" onClick={() => { grupeaza(); }}>
