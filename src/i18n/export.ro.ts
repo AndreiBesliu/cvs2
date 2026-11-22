@@ -179,6 +179,17 @@ export const roExport = {
   'export.urechi.locuri': 'Locurile:',
   'export.urechi.locuri.egale': 'la distanțe egale',
   'export.urechi.locuri.alese': 'alese pe desen',
+  // „Unde ține” (ADR 0211, b; felia 11.3↑e).
+  'export.urechi.locuri.lemn': 'unde ține',
+  'export.urechi.locuri.lemn.titlu': 'La export, pe fiecare copie, aplicația caută lemnul de care se țin urechile: pe dinafară, lemnul foii; pe dinăuntru, piesa. Nu merge pe linie.',
+  'export.urechi.lemn': 'La export, pe fiecare copie: câte cere numărul, cât mai departe una de alta, acolo unde țin de lemn. Le vezi cu „Arată traseul”.',
+  'export.urechi.undeTine': 'Pune urechile unde țin',
+  'export.urechi.undeTine.titlu': 'Trece pe „unde ține” operațiile pieselor desprinse; apoi exportă din nou.',
+  'export.urechi.undeTine.puse': {
+    one: 'O operație a trecut pe „unde ține”: exportă din nou.',
+    few: '{n} operații au trecut pe „unde ține”: exportă din nou.',
+    other: '{n} de operații au trecut pe „unde ține”: exportă din nou.',
+  },
   'export.urechi.alege': 'Alege pe desen…',
   'export.urechi.alese': { one: '{n} ureche aleasă', few: '{n} urechi alese', other: '{n} de urechi alese' },
   'export.urechi.mod.titlu': 'Urechile: {nume}',

@@ -111,8 +111,9 @@ function incrustatieVScrisa(o: Incrustatie | undefined, i: IncrustatieOperatie):
 
 /**
  * Urechile scrise de Exportă (ADR 0211): ale dialogului peste ale documentului (îmbinate, ca restul). Cu „alese pe desen”,
- * locurile alese rămân ale documentului (le scrie modul pânzei); la distanțe egale, modul „alese” și locurile pleacă, iar
- * un alt mod scris de mână rămâne. Numărul arătat al urechilor alese nu intră în document.
+ * locurile alese rămân ale documentului (le scrie modul pânzei); cu „unde ține”, modul e „lemn”, iar locurile pleacă; la
+ * distanțe egale, modurile „alese” și „lemn” și locurile pleacă, iar un alt mod scris de mână (o regulă) rămâne. Numărul arătat
+ * al urechilor alese nu intră în document.
  */
 function urechiDinDialog(o: Operatie['urechi'], v: ValoriOperatie['urechi']): Operatie['urechi'] {
   if (!v) return v;
@@ -120,10 +121,8 @@ function urechiDinDialog(o: Operatie['urechi'], v: ValoriOperatie['urechi']): Op
   void _alese;
   if (!o) return dialog;
   const imbinate: Record<string, unknown> = { ...o, ...dialog };
-  if (dialog.mod !== 'alese' && o.mod === 'alese') {
-    delete imbinate['mod'];
-    delete imbinate['locuri'];
-  }
+  if (dialog.mod !== 'alese') delete imbinate['locuri'];
+  if (dialog.mod === undefined && (o.mod === 'alese' || o.mod === 'lemn')) delete imbinate['mod'];
   return imbinate as NonNullable<Operatie['urechi']>;
 }
 

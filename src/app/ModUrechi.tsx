@@ -70,10 +70,11 @@ export function SemneUrechi({ contururi, locuri, vedere, tras }: {
 
 /**
  * Semnele urechilor alese ale tuturor operațiilor de pe foaie, cu „Arată traseul” (ADR 0211, 4a): doar desenate, fără nimic de
- * apăsat.
+ * apăsat. `lemn`: centrele urechilor „unde ține” (ADR 0211, b), pe drumul frezei, cum le-a pus lucrarea traseului.
  */
-export function SemneUrechiFoaie({ doc, indexFoaie, vedere, marime }: {
+export function SemneUrechiFoaie({ doc, indexFoaie, vedere, marime, lemn }: {
   readonly doc: Document; readonly indexFoaie: number; readonly vedere: Vedere; readonly marime: { readonly latime: number; readonly inaltime: number };
+  readonly lemn?: readonly { readonly x: number; readonly y: number }[] | undefined;
 }): ReactElement {
   const semne = useMemo(() => doc.piese.flatMap((p) => p.operatii.filter((o) => o.urechi?.mod === 'alese').map((o) => ({
     cheie: `${p.id}/${o.id}`, contururi: contururiUrechi(doc, indexFoaie, p.id, o.id), locuri: locuriOperatiei(doc, p.id, o.id),
@@ -81,6 +82,10 @@ export function SemneUrechiFoaie({ doc, indexFoaie, vedere, marime }: {
   return (
     <svg className="rigle-desen urechi-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="semne-urechi">
       {semne.map((s) => <SemneUrechi key={s.cheie} contururi={s.contururi} locuri={s.locuri} vedere={vedere} />)}
+      {(lemn ?? []).map((q, j) => (
+        <circle key={`lemn/${j}`} className="ureche-lemn" cx={vedere.tx + q.x * vedere.scara} cy={vedere.ty - q.y * vedere.scara} r={SEMN_PX}
+          data-ureche-lemn={j} />
+      ))}
     </svg>
   );
 }

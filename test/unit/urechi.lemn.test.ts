@@ -17,7 +17,7 @@ import './limbi.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { cereMesaje } from '../../src/i18n/laCerere.ts';
 import { exportInBazin } from '../../src/jobs/bazinCam.ts';
-import { programFoii } from '../../src/jobs/calculCam.ts';
+import { calculeazaSimularea, programFoii } from '../../src/jobs/calculCam.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { alegeIndici, centreBune, FUND_LEGAT, FUND_TAIAT, urechiLemnBucla, type FundLemn } from '../../src/cam/urechiLemn.ts';
 import { LEGAT, TAIAT } from '../../src/sim/desprinse.ts';
@@ -148,8 +148,9 @@ test('alegerea, pe hârtie: capetele unui arc bun, mijloacele a două arce opuse
   assert.deepEqual(alegeIndici(bune(100, [0, 99]), 4, 5), [0, 25, 50, 75]);
   // O singură ureche: la mijlocul celui mai lung arc bun.
   assert.deepEqual(alegeIndici(bune(100, [10, 20], [40, 70]), 1, 5), [55]);
-  // Cât încap: pe 0–9, cu golul 5, două (0 și 9), nu trei.
+  // Cât încap: pe 0–9, cu golul 5, două (0 și 9), nu trei, nici patru.
   assert.deepEqual(alegeIndici(bune(100, [0, 9]), 3, 5), [0, 9]);
+  assert.deepEqual(alegeIndici(bune(100, [0, 9]), 4, 5), [0, 9]);
   // Arcul bun trece prin vârful 0 (de la 95 la 5, de jur împrejur): capetele lui, la 10 una de alta.
   assert.deepEqual(alegeIndici(bune(100, [0, 5], [95, 99]), 2, 5), [5, 95]);
   // Nimic bun; o buclă mai scurtă decât golul.
@@ -157,12 +158,16 @@ test('alegerea, pe hârtie: capetele unui arc bun, mijloacele a două arce opuse
   assert.deepEqual(alegeIndici(bune(4, [0, 3]), 1, 5), []);
 });
 
-/** Un fund de 100 × 100 mm, cu celula 1: legat peste tot, cu `taiat(x, y)` tăiat. */
-function fund(taiat: (x: number, y: number) => boolean): FundLemn {
+/** Un fund de 100 × 100 mm, cu celula 1: pe fiecare celulă, valoarea din centrul ei. */
+function fundV(v: (x: number, y: number) => number): FundLemn {
   const s = new Uint8Array(100 * 100);
-  for (let j = 0; j < 100; j++) for (let i = 0; i < 100; i++) s[j * 100 + i] = taiat(i + 0.5, j + 0.5) ? FUND_TAIAT : FUND_LEGAT;
+  for (let j = 0; j < 100; j++) for (let i = 0; i < 100; i++) s[j * 100 + i] = v(i + 0.5, j + 0.5);
   return { s, nx: 100, ny: 100, celula: 1 };
 }
+/** Legat peste tot, cu `taiat(x, y)` tăiat. */
+const fund = (taiat: (x: number, y: number) => boolean): FundLemn => fundV((x, y) => (taiat(x, y) ? FUND_TAIAT : FUND_LEGAT));
+/** Lemnul nelegat de foaie (o piesă tăiată de jur împrejur): `LEMN` din `sim/desprinse.ts`. */
+const NELEGAT = 0;
 /** Bucla frezei a unui dreptunghi, în sensul acelor de ceasornic din (x0, y0): la urcare, piesa e în dreapta mersului. */
 const bucla = (x0: number, y0: number, x1: number, y1: number): Contur => ({
   inchis: true, varfuri: [{ p: { x: x0, y: y0 }, s: LINIE }, { p: { x: x0, y: y1 }, s: LINIE }, { p: { x: x1, y: y1 }, s: LINIE }, { p: { x: x1, y: y0 }, s: LINIE }],
@@ -172,10 +177,8 @@ test('pe un fund de hârtie: cu lemn de jur împrejur, la distanțe egale; făr�
   const c = bucla(30, 40, 70, 60); // P = 2 · (40 + 20) = 120, pornind în colțul stânga-jos, în sus
   const peste = urechiLemnBucla(c, 'urcare', 'exterior', fund(() => false), 3, 6, 2, 1, true);
   assert.deepEqual(peste, { cate: 2, centre: [30, 90], egale: true });
-  // Fără egale (cu intrări): aceleași două, cât mai departe una de alta, oriunde e bun.
-  const faraEgale = urechiLemnBucla(c, 'urcare', 'exterior', fund(() => false), 3, 6, 2, 1, false);
-  assert.equal(faraEgale.cate, 2);
-  assert.equal(Math.abs((faraEgale.centre[1] ?? 0) - (faraEgale.centre[0] ?? 0)), 60);
+  // Fără egale (cu intrări): două, cât mai departe una de alta; toate pornirile sunt bune, deci de la vârful 0.
+  assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund(() => false), 3, 6, 2, 1, false), { cate: 2, centre: [0, 60], egale: false });
   // Tăiat la stânga lui x = 29: latura din stânga (s de la 0 la 20) n-are lemn la 3 mm spre deșeu (x = 27), dar locurile
   // egale (30, pe latura de sus, și 90, pe cea de jos) stau departe de ea: rămân.
   assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund((x) => x < 29), 3, 6, 2, 1, true), { cate: 2, centre: [30, 90], egale: true });
@@ -183,11 +186,37 @@ test('pe un fund de hârtie: cu lemn de jur împrejur, la distanțe egale; făr�
   // 63 la 16 (de jur împrejur, cu palierul de ±3 în afara laturii de sus); golul cel mai mare, 60, îl dau perechile (x, x + 60)
   // cu x de la 3 la 16 sau de la 63 la 76: prima serie, de la mijlocul ei, 9 (stânga, la y = 49), și 69 (dreapta, la y = 51).
   assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund((_x, y) => y > 62), 3, 6, 2, 1, true), { cate: 2, centre: [9, 69], egale: false });
-  // Pe dinăuntru, urechea ține de piesă: deșeul e înăuntrul buclei, iar piesa (în afară) e lemn, deci locurile egale.
-  const interior = urechiLemnBucla(c, 'opozitie', 'interior', fund((x, y) => x > 31 && x < 69 && y > 41 && y < 59), 3, 6, 2, 1, true);
-  assert.deepEqual(interior, { cate: 2, centre: [30, 90], egale: true });
+  // Sus, lemn nelegat de foaie (o vecină tăiată de jur împrejur): pe dinafară nu ține, ca tăiat.
+  assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fundV((_x, y) => (y > 62 ? NELEGAT : FUND_LEGAT)), 3, 6, 2, 1, true), { cate: 2, centre: [9, 69], egale: false });
+  // Același dreptunghi în sens trigonometric, la opoziție (piesa tot în stânga mersului): de jos, spre dreapta; latura de sus,
+  // s de la 60 la 100, fără lemn; centrele bune de la 103 la 56, iar perechile la 60 pornesc de la 43–56 sau 103–116.
+  const trig: Contur = {
+    inchis: true, varfuri: [{ p: { x: 30, y: 40 }, s: LINIE }, { p: { x: 70, y: 40 }, s: LINIE }, { p: { x: 70, y: 60 }, s: LINIE }, { p: { x: 30, y: 60 }, s: LINIE }],
+  };
+  assert.deepEqual(urechiLemnBucla(trig, 'opozitie', 'exterior', fund((_x, y) => y > 62), 3, 6, 2, 1, true), { cate: 2, centre: [49, 109], egale: false });
+  // Doar spre stânga e lemn (tăiat de la x = 29 încolo): mostrele bune 0–19, centrele 3–16 (palierul de ±3 rămâne pe latură),
+  // deci două urechi la capetele lor.
+  assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund((x) => x >= 29), 3, 6, 2, 1, true), { cate: 2, centre: [3, 16], egale: false });
+  // Lângă marginea foii: latura din stânga la x = 2, deci la 3 mm spre deșeu, în afara foii, nu e lemn. Patru urechi: locul
+  // egal 15 cade acolo; centrele bune 23–116, iar patru încap cel mult la 30 una de alta (de la 23 la 113, cu 30 de la 113
+  // înapoi la 23): prima serie de porniri, 23–26, de la mijlocul ei.
+  assert.deepEqual(urechiLemnBucla(bucla(2, 40, 42, 60), 'urcare', 'exterior', fund(() => false), 3, 6, 4, 1, true), { cate: 4, centre: [24, 54, 84, 114], egale: false });
+  // Pe dinăuntru, urechea ține de piesă: deșeul e înăuntrul buclei, iar piesa (în afară) e lemn, deci locurile egale; și cu
+  // piesa nelegată de foaie (în prima trecere, cu ea însăși „unde ține”, piesa e tăiată de jur împrejur).
+  const miez = (x: number, y: number): boolean => x > 31 && x < 69 && y > 41 && y < 59;
+  assert.deepEqual(urechiLemnBucla(c, 'opozitie', 'interior', fund(miez), 3, 6, 2, 1, true), { cate: 2, centre: [30, 90], egale: true });
+  assert.deepEqual(urechiLemnBucla(c, 'opozitie', 'interior', fundV((x, y) => (miez(x, y) ? FUND_TAIAT : NELEGAT)), 3, 6, 2, 1, true), { cate: 2, centre: [30, 90], egale: true });
   // Fără niciun lemn legat: nicio ureche.
   assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund(() => true), 3, 6, 2, 1, true), { cate: 0, centre: [], egale: false });
+});
+
+test('pe arce: un cerc de rază 10 (două semicercuri în sensul acelor), cu lemnul tăiat deasupra lui y = 55', () => {
+  // Pornind din (40, 50), peste vârf, apoi pe dedesubt; P = 20π, 63 de mostre. Dus 3 mm spre deșeu (raza 13), punctul cade
+  // deasupra lui y = 55 când sin θ > 5 / 13: mostrele 4–27; centrele bune (±3), de la 31 la 62 și 0. Două urechi: golul cel
+  // mai mare, 31 de pași; pornirile bune 31, 32 și 62, 0: prima serie, de la mijlocul ei (31), apoi 62.
+  const cerc: Contur = { inchis: true, varfuri: [{ p: { x: 40, y: 50 }, s: { tip: 'A', bulge: -1 } }, { p: { x: 60, y: 50 }, s: { tip: 'A', bulge: -1 } }] };
+  const P = 20 * Math.PI;
+  assert.deepEqual(urechiLemnBucla(cerc, 'urcare', 'exterior', fund((_x, y) => y > 55), 3, 6, 2, 1, true), { cate: 2, centre: [(31 * P) / 63, (62 * P) / 63], egale: false });
 });
 
 test('lucrarea: „unde ține” fără fundul foii se refuză; în prima trecere, fără urechi; pe linie, refuz cu motivul', () => {
@@ -207,6 +236,16 @@ test('lucrarea: „unde ține” fără fundul foii se refuză; în prima trecer
   assert.ok(doua.ok);
   assert.deepEqual(doua.program, egale.program);
   assert.equal(doua.urechiLemn?.length, 2 * (d.foi[0]?.instante.length ?? 0));
+  // Vederea 3D trece și ea prin cele două treceri.
+  assert.equal(calculeazaSimularea(f).ok, true);
+  // Cu intrări, locurile nu se mai numără de la vârful 0 (le-ar muta pornirea intrării): alese, deci altele decât cele egale.
+  const cuIntrari = (x: Document): Document => ({
+    ...x, piese: x.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => (o.urechi ? { ...o, intrari: { raza: 3 } } : o)) })),
+  });
+  const intrari = programFoii(doarFoaia(cuIntrari(d), d.foi[0]?.id));
+  assert.ok(intrari.ok);
+  assert.equal(intrari.urechiLemn?.length, doua.urechiLemn?.length);
+  assert.notDeepEqual(intrari.urechiLemn, doua.urechiLemn);
   const peLinie = {
     ...d, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => (o.urechi ? { ...o, latura: 'pe-linie' as const } : o)) })),
   };
