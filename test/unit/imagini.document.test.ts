@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { documentNou, PLAFON, type ImagineFoaie } from '../../src/model/document.ts';
+import { documentNou, PLAFON, VERSIUNE_SCHEMA, type ImagineFoaie } from '../../src/model/document.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { anuleaza, executa, istoricNou, reface, type Istoric } from '../../src/model/jurnal.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
@@ -74,7 +74,7 @@ test('ușa: imaginile bune trec, cu câmpurile lor necunoscute păstrate; un doc
   const r = incarca(cuImagini(BUNE));
   assert.ok(r.ok, motiv(r));
   assert.deepEqual(r.doc.foi[0]?.imagini, BUNE);
-  assert.equal(r.doc.schema, 25, 'fără schemă nouă');
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA, 'fără schemă nouă: a documentului de acum');
   const d = documentNou(STOC);
   const g = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(g.ok);

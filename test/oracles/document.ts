@@ -321,7 +321,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 25;
+export const SCHEMA_CURENTA_O = 26;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -2043,6 +2043,12 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
  *   `adancime` în (0, 1 000], `latime` în (0, 10 000], `spre` opțional 'interior' / 'exterior'), iar `sprijin` primește
  *   'umar'. Geometria (d față de adâncime, deschiderea de sub umăr, sprijinul potrivit locașului) e a lucrării. Pe un v24,
  *   `locas` sau `treapta` în `incrustatie` e o ciocnire la v24 → v25 (pe orice fel), iar sprijinul 'umar' nu e o valoare v24.
+ * - v26 (ADR 0211): urechile unei operații pot avea `mod` (unul din 'egale', 'alese', 'lemn', 'lungi', 'scurte', 'mijloc';
+ *   lipsă = la distanțe egale) și `locuri`, doar cu modul 'alese': un obiect cu chei id-uri de ELEMENTE ale operației (din
+ *   `noduri`), fiecare cu o listă de cel mult 100 de puncte, obiecte cu `x` și `y` numere finite (în coordonatele
+ *   elementului; câmpurile necunoscute ale punctului se păstrează). Câte urechi, potrivirea lor pe buclă și pornirea sunt ale
+ *   lucrării. O cheie `__proto__` e un id ca oricare (ADR 0024 §9). Pe un v25, `mod` sau `locuri` în `urechi` e o ciocnire
+ *   la v25 → v26. Punțile dopului (v24) rămân urechi fără locuri: acolo `mod` și `locuri` sunt câmpuri necunoscute.
  * - Migrările v10 → … → v22 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
  *   document vN valid”), cu câmpul PROPRIU: v10 cu `pasLateral` pe o operație (un buzunar e refuzat deja de schema v10);
  *   v11 cu `coborare`; v12 cu `retragereCompleta` (găurirea e refuzată de schema v12); v13 cu `forma` pe scula operației
@@ -2154,6 +2160,9 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   24: ['incrustatie.punti'],
   // ADR 0175: „un v24 cu `locas` sau `treapta` în `incrustatie` (câmpuri necunoscute atunci) e refuzat, ca ciocnire”.
   25: ['incrustatie.locas', 'incrustatie.treapta'],
+  // ADR 0211: „un v25 poate avea, ca necunoscute, câmpurile `mod` sau `locuri` în urechile unei operații, pe care v26 le
+  // folosește: un astfel de document nu e un v25 valid”.
+  26: ['urechi.mod', 'urechi.locuri'],
 };
 
 /** Prefixul unui câmp nou de pe instanță în `CAMPURI_NOI_O` (v23); restul sunt căi pe operație. */
@@ -2241,7 +2250,7 @@ export type DocV21O = Liber & { schema: 21; rev: number; piese: PiesaV21O[]; foi
 export type DocV22O = Liber & { schema: 22; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** Un document v11 … v24, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O;
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O | DocV20O | DocV21O | DocV22O | DocV23O | DocV24O | DocV25O | DocV26O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2484,6 +2493,36 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
     cu('rang', 'rang', [` = ${arata(op['rang'])} nu e un întreg 0–${RANG_MAXIM_O}`]);
   }
   if (versiune >= 20 && are(op, 'incrustatie')) cu('incrustatie', 'incrustatie', problemeIncrustatieO(op['incrustatie'], versiune));
+  if (versiune >= 26 && esteObiect(op['urechi'])) cu('urechi', 'urechi', problemeLocuriUrechiO(op['urechi'], op['noduri']));
+  return rez;
+}
+
+/** ADR 0211 (v26): modurile locurilor urechilor, exact. */
+export const MODURI_URECHI_O = ['egale', 'alese', 'lemn', 'lungi', 'scurte', 'mijloc'] as const;
+
+/**
+ * ADR 0211 (v26): de ce modul sau locurile alese ale urechilor unei operații nu sunt bune, ca listă de motive (goală = bune).
+ * `mod` opțional, unul din cele șase; `locuri` doar cu „alese”: un obiect, cu chei id-uri din `noduri`, fiecare cu o listă
+ * de cel mult `PLAFOANE_O.urechi` puncte { x, y } finite, în ±`PLAFOANE_O.translatie` (ca vârfurile căilor).
+ */
+export function problemeLocuriUrechiO(u: Liber, noduri: unknown): string[] {
+  const rez: string[] = [];
+  if (are(u, 'mod') && !(MODURI_URECHI_O as readonly unknown[]).includes(u['mod'])) rez.push(`.mod = ${arata(u['mod'])} nu e ${MODURI_URECHI_O.join(' / ')}`);
+  if (!are(u, 'locuri')) return rez;
+  if (u['mod'] !== 'alese') rez.push(`.locuri: doar cu modul „alese” (modul: ${are(u, 'mod') ? arata(u['mod']) : '(lipsă)'})`);
+  const l = u['locuri'];
+  if (!esteObiect(l)) return [...rez, `.locuri = ${arata(l)} nu e un obiect`];
+  const aleOperatiei = new Set(Array.isArray(noduri) ? noduri : []);
+  const finit = (x: unknown): boolean => typeof x === 'number' && Number.isFinite(x) && Math.abs(x) <= PLAFOANE_O.translatie;
+  for (const k of Object.keys(l)) {
+    if (!aleOperatiei.has(k)) rez.push(`.locuri[${JSON.stringify(k)}]: nu e un element al operației`);
+    const lista = l[k];
+    if (!Array.isArray(lista)) { rez.push(`.locuri[${JSON.stringify(k)}] = ${arata(lista)} nu e o listă`); continue; }
+    if (lista.length > PLAFOANE_O.urechi) rez.push(`.locuri[${JSON.stringify(k)}]: ${lista.length} de puncte, peste ${PLAFOANE_O.urechi}`);
+    lista.forEach((q: unknown, j: number) => {
+      if (!esteObiect(q) || !finit(q['x']) || !finit(q['y'])) rez.push(`.locuri[${JSON.stringify(k)}][${j}] = ${arata(q)} nu e un punct { x, y } finit în ±${PLAFOANE_O.translatie}`);
+    });
+  }
   return rez;
 }
 
@@ -2608,9 +2647,9 @@ export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v25 (o copie; un v25 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV25O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV25O;
+/** Un document primit de ușa curentă, cum iese din ea: v26 (o copie; un v26 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV26O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV26O;
 }
 
 /**
@@ -2867,6 +2906,8 @@ export type DocV23O = Liber & { schema: 23; rev: number; piese: PiesaV22O[]; foi
 export type DocV24O = Liber & { schema: 24; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 /** v25 (ADR 0175): aceleași piese (gaura și treapta intră în `IncrustatieDreaptaO`). */
 export type DocV25O = Liber & { schema: 25; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
+/** v26 (ADR 0211): ca v25; urechile operațiilor pot avea `mod` și `locuri` (judecate de `problemeLocuriUrechiO`). */
+export type DocV26O = Liber & { schema: 26; rev: number; piese: PiesaV22O[]; foi: FoaieO[] };
 
 /** v23: ce schimbă literele plăcuțelor în plafoanele de ansamblu (`verificaArboreO`, din `verificaVnO`). */
 export type AjustariLumeO = {
@@ -3401,3 +3442,12 @@ export function ridicaV25O(doc: unknown): DocV25O { return ridicaPanaLaO(doc, SC
 export function usaCurentaV25O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V25_O); }
 export function migreazaV1V25O(v1: DocV1O): DocV25O { return ridicaPanaLaO(v1, SCHEMA_V25_O) as DocV25O; }
 export function migreazaV24V25O(v24: DocV24O): DocV25O { return ridicaPanaLaO(v24, SCHEMA_V25_O) as DocV25O; }
+
+// Numele pe versiuni (v26, ADR 0211: locurile urechilor).
+export const SCHEMA_V26_O = 26;
+export function verificaV26(doc: unknown): string[] { return verificaVnO(doc, SCHEMA_V26_O); }
+export function verificaPanaLaV26O(doc: unknown): string[] { return verificaPanaLaO(doc, SCHEMA_V26_O); }
+export function ridicaV26O(doc: unknown): DocV26O { return ridicaPanaLaO(doc, SCHEMA_V26_O) as DocV26O; }
+export function usaCurentaV26O(doc: unknown): 'migrari' | 'usa' { return usaCurentaPanaLaO(doc, SCHEMA_V26_O); }
+export function migreazaV1V26O(v1: DocV1O): DocV26O { return ridicaPanaLaO(v1, SCHEMA_V26_O) as DocV26O; }
+export function migreazaV25V26O(v25: DocV25O): DocV26O { return ridicaPanaLaO(v25, SCHEMA_V26_O) as DocV26O; }

@@ -2,12 +2,14 @@
  * Opțiunile tăierii (ADR 0180 §3, ADR 0181 §2, §6), ținute în browser pentru toate proiectele și aceleași în panoul Taie și în
  * bara uneltei Cuțit (o singură setare): „Închide bucățile” (implicit bifată; cheia ei de dinainte rămâne), „Prelungește
  * capetele” (nu), „Păstrează” (ambele părți), „șterge cuțitul-formă după tăiere” (nu), „Între bucăți” (nimic; spațiul sau
- * suprapunerea, cu lățimea lor, implicit 3 mm) și „Îmbinarea” (dreaptă; un model, cu pasul 40, înălțimea 20 și raza 3 mm). Un
- * singur depozit: ce se schimbă într-un loc se vede pe loc și în celălalt.
+ * suprapunerea, cu lățimea lor, implicit 3 mm) și „Îmbinarea” (dreaptă; un model, cu pasul 40, înălțimea 20 și raza 3 mm); în
+ * blocul panourilor, „Gravează numărul fiecărui panou” (nu) și înălțimea cifrelor (10 mm; felia 10.3↑n). Un singur depozit: ce
+ * se schimbă într-un loc se vede pe loc și în celălalt.
  */
 import { useSyncExternalStore } from 'react';
 import { IMBINARE_MAXIMA, MODELE_IMBINARE, type Imbinare, type ModelImbinare } from '../model/imbinare.ts';
 import { LATIME_IMPLICITA, latimeBuna } from '../model/intreBucati.ts';
+import { INALTIME_NUMAR, inaltimeNumarBuna } from '../model/inaltimeNumar.ts';
 import type { Intre, Pastrare, Prelungire } from '../model/taiere.ts';
 
 /** Ce stă între bucăți: nimic, un spațiu sau o suprapunere (ADR 0181 §2). */
@@ -28,6 +30,9 @@ export type OptiuniTaiere = {
   readonly pas: number;
   readonly inaltime: number;
   readonly raza: number;
+  /** Tăierea în panouri (felia 10.3↑n): numărul fiecărui panou, gravat pe el, și înălțimea cifrelor, în mm. */
+  readonly numere: boolean;
+  readonly inaltimeNumar: number;
 };
 
 const CHEI = {
@@ -38,6 +43,8 @@ const CHEI = {
   intre: 'cncvs2.taiere-intre',
   latime: 'cncvs2.taiere-latime',
   imbinare: 'cncvs2.taiere-imbinare',
+  numere: 'cncvs2.taiere-numere',
+  inaltimeNumar: 'cncvs2.taiere-inaltime-numar',
 } as const;
 
 /** Îmbinarea de la început: dreaptă, cu valorile implicite ale modelelor. */
@@ -74,6 +81,8 @@ function citeste(): OptiuniTaiere {
     pas: nr(m['pas'], IMBINARE_IMPLICITA.pas),
     inaltime: nr(m['inaltime'], IMBINARE_IMPLICITA.inaltime),
     raza: nr(m['raza'], IMBINARE_IMPLICITA.raza, true),
+    numere: ia(CHEI.numere) === '1',
+    inaltimeNumar: inaltimeNumarBuna(Number(ia(CHEI.inaltimeNumar) ?? Number.NaN)) ? Number(ia(CHEI.inaltimeNumar)) : INALTIME_NUMAR.implicita,
   };
 }
 
@@ -94,6 +103,7 @@ export function schimbaOptiuniTaiere(o: Partial<OptiuniTaiere>): void {
   if (o.latime !== undefined && !latimeBuna(o.latime)) return;
   if ((o.pas !== undefined && !marimeImbinareBuna(o.pas)) || (o.inaltime !== undefined && !marimeImbinareBuna(o.inaltime))) return;
   if (o.raza !== undefined && !marimeImbinareBuna(o.raza, true)) return;
+  if (o.inaltimeNumar !== undefined && !inaltimeNumarBuna(o.inaltimeNumar)) return;
   acum = { ...optiuniTaiere(), ...o };
   try {
     if (o.inchide !== undefined) localStorage.setItem(CHEI.inchide, o.inchide ? '1' : '0');
@@ -102,6 +112,8 @@ export function schimbaOptiuniTaiere(o: Partial<OptiuniTaiere>): void {
     if (o.stergeCutitul !== undefined) localStorage.setItem(CHEI.stergeCutitul, o.stergeCutitul ? '1' : '0');
     if (o.intre !== undefined) localStorage.setItem(CHEI.intre, o.intre);
     if (o.latime !== undefined) localStorage.setItem(CHEI.latime, String(o.latime));
+    if (o.numere !== undefined) localStorage.setItem(CHEI.numere, o.numere ? '1' : '0');
+    if (o.inaltimeNumar !== undefined) localStorage.setItem(CHEI.inaltimeNumar, String(o.inaltimeNumar));
     if (o.imbinare !== undefined || o.pas !== undefined || o.inaltime !== undefined || o.raza !== undefined) {
       localStorage.setItem(CHEI.imbinare, JSON.stringify({ imbinare: acum.imbinare, pas: acum.pas, inaltime: acum.inaltime, raza: acum.raza }));
     }

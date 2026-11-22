@@ -2,6 +2,7 @@ import type { Document, Latura, Operatie, Piesa, Scula, TipOperatie } from './do
 import { jsonCanonic } from './jsonCanonic.ts';
 import { grupeRol, numereFreze, rolPiesei, ROLURI, type Rol } from './rol.ts';
 import { operatieInMargini } from './schemaDocument.ts';
+import { urechiDeSablon } from './urechiLocuri.ts';
 
 /**
  * Rolurile personalizate (ADR 0114): un nume, un rol de bază și operația-model a lui (toate valorile operației), ținute de om
@@ -69,7 +70,8 @@ const ID_MODEL = 'model';
 function model(o: Operatie, tip: TipOperatie, latura: Latura): Operatie {
   const { despartire: _d, rang: _r, ...v } = o;
   void _d; void _r;
-  return { ...structuredClone(v), id: ID_MODEL, noduri: [ID_MODEL], tip, latura };
+  // Locurile alese ale urechilor (ADR 0211) sunt ale piesei, nu ale rolului.
+  return { ...structuredClone(v), urechi: structuredClone(urechiDeSablon(v.urechi)), id: ID_MODEL, noduri: [ID_MODEL], tip, latura };
 }
 
 /**
@@ -109,7 +111,8 @@ function faraNumar(s: Scula): Scula {
  * numerele frezelor (§6).
  */
 function cheie(o: Operatie, faraNumere: boolean): string {
-  const { id: _i, tip: _t, noduri: _n, latura: _l, despartire: _d, rang: _r, ...v } = faraNumere ? cuScule(o, faraNumar) : o;
+  const x = { ...o, urechi: urechiDeSablon(o.urechi) };
+  const { id: _i, tip: _t, noduri: _n, latura: _l, despartire: _d, rang: _r, ...v } = faraNumere ? cuScule(x, faraNumar) : x;
   void _i; void _t; void _n; void _l; void _d; void _r;
   return jsonCanonic(v);
 }
@@ -175,7 +178,7 @@ export function operatiiPentruRolPersonal(p: Piesa, r: SablonRol): Operatie[] | 
   const ops = g.map((x): Operatie => {
     const { despartire: _d, ...v } = cuGoluri(r.baza) && x.latura !== r.baza ? r.goluri ?? r.operatie : r.operatie;
     void _d;
-    return { ...structuredClone(v), id: x.id, tip: x.tip, noduri: [...x.noduri], latura: x.latura };
+    return { ...structuredClone(v), urechi: structuredClone(urechiDeSablon(v.urechi)), id: x.id, tip: x.tip, noduri: [...x.noduri], latura: x.latura };
   });
   const singura = p.operatii.length === 1 ? p.operatii[0] : undefined;
   if (ops.length === 1 && singura) ops[0] = { ...ops[0]!, id: singura.id };

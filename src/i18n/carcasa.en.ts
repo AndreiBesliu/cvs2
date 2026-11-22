@@ -305,6 +305,7 @@ export const enCarcasa = {
   'prop.rest.valoare': 'T{numar}, Ø{diametru} mm, stepover {pas} mm',
   'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, stepover {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, bridge {grosime} mm',
+  'prop.urechi.alese': 'picked on the drawing: {numar} × {latime} mm, bridge {grosime} mm',
   'prop.rampa.valoare': '{mm} mm long',
   'prop.coborare.rampa': '{nume}, {unghi}°',
   'prop.coborare.zigzag': '{nume}, {unghi}° over {mm} mm',

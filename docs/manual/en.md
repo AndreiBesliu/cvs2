@@ -1031,7 +1031,11 @@ group, **Panel 1**, **Panel 2** … (row by row, from the bottom, from the left)
 put them on sheets, as many as fit on each; a panel with a single piece is that piece, with the panel's name, and an empty
 cell of the grid gets no number. A text with its letters on both sides of a line that does not touch them is split too, each
 letter in its panel. More than 100 panels are not cut; a shape placed more than once asks first (only **Detach and cut**).
-**Cut into panels** is a single undo step.
+With **Engrave each panel’s number** (off by default: the digits show on the front), each panel gets its number (“3”), in the
+single-line font (Relief SingleLine), engraved on the line, near the bottom-left corner, inside, at least a quarter of the
+digit height (at least 2 mm) away from edges, cuts, teeth and letters; **Digit height** is 10 mm by default. The number goes
+into the panel’s group (a text, editable later in the Text panel); a panel with no room gets no number, and the panel says
+how many. **Cut into panels** is a single undo step, numbers included.
 
 **Clip to the last chosen shape**: the boundary is the shape chosen last (with Shift + click), closed, and it stays. **Keep**
 **inside** or **outside**: each chosen shape keeps only what is on the chosen side, and one with nothing there goes.
@@ -1205,7 +1209,7 @@ all projects: another computer, another browser, or the test address versus the 
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
-| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
+| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, or picked on the drawing (see [Tabs picked on the drawing](#export)) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall). A corner whose relief would leave less than 1 mm of material to another wall of the part, or to the relief of another corner (at the base of a thin tongue or finger), goes without it, with a warning. Corners with a curved side (a “D”, a round shoulder, a lens, an imported curve) get the relief too; where the cutter cannot reach the corner at all, a warning says so |
@@ -1574,6 +1578,20 @@ face nothing) would come loose while the cutter is still cutting next to it. The
 the plate's values or the part's name and its place on the sheet (“near X 70, Y 119”); with **All sheets**, on each sheet.
 The program is downloaded anyway: it is a warning, not a refusal. The check is on the program, so it catches any layout,
 including one moved by hand.
+
+**Tabs picked on the drawing.** Under a row's tabs, **Placement: evenly spaced / picked on the drawing**. With
+**picked on the drawing**, the “Count, per loop” field is switched off (the count is how many you placed), and **Pick on the
+drawing…** hides the window and puts the canvas into the operation's tab mode: its outline shows on every copy of the part on
+the sheet, with the picked tabs as small dots. A click on the outline adds a tab at the nearest point on it; a click on a tab
+removes it; dragged, a tab slides along the outline. Two tabs never come closer than their length divided by 0.9, centre to
+centre (the band at the top says why). The places belong to the part, so every copy has them, rotated with it. **Done** (or
+Enter) writes them in a single step (Ctrl+Z takes it back) and brings the window back with everything you had typed in it;
+**Cancel** (or Escape) leaves the tabs as they were. On export, each picked tab lands on the nearest point of the cutter path,
+and the loop starts in the middle of the longest gap between tabs (with lead-ins, the lead-in is chosen away from the tabs), so
+the cutter never enters the wood on a tab. Two tabs too close on the cutter path, or one on a loop that is too short, stop
+the export, with the place. An element with no picked tab is cut without tabs. With **Show toolpath**, the picked tabs show
+as dots on the outline. This is how you put them towards the edge of the sheet or a wide strip, where they hold, or keep them
+off a side where they would spoil the part.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
@@ -1954,10 +1972,10 @@ blocks (the deepest point of each), and the status in the corner says so.
 - **0.1 mm when zoomed in**: when you get close enough, the area around the centre (at most 204.8 × 204.8 mm) is simulated
   again at 0.1 mm and drawn over the sheet; the rest stays at 0.25 mm.
 - **The sheet or a plug**: if the sheet has [inlays](#incrustatie), buttons “Sheet”, “Plug 1”, “Plug 2” … appear at the top,
-  in the order of the plugs' files in the export (each one's title gives its blank). “Plug N” simulates the plug's program on
-  its blank (the face at 0, the bottom at its thickness) and frames it: you see the plug standing, the lowered face or the
-  cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug cannot be cut, the sheet still shows, and the
-  status says why the plugs are missing.
+  in the order of the plugs' files in the export (each one's title names its inlay, as the bottom bar does, and gives its
+  blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
+  see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
+  cannot be cut, the sheet still shows, and the status says why the plugs are missing.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

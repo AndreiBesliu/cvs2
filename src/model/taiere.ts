@@ -71,6 +71,7 @@ import { adaugaNod, caleDinForma, type FormaCale } from './noduri.ts';
 import { punctPe as punctSeg, rafineaza, treceri as langa } from './reparare.ts';
 import { grupeRol, rolPiesei } from './rol.ts';
 import { PLAFON_PERECHI, pentruCavalier } from './verificare.ts';
+import { cuNoduri } from './urechiLocuri.ts';
 
 /**
  * Cu ce se taie: linia verticală x = X, cea orizontală y = Y (mm ai foii), un ghidaj al foii (ADR 0050), după id, ultima formă
@@ -216,6 +217,8 @@ export type RezultatTaiere =
     readonly grupuri?: ReadonlyArray<{ readonly nume: string; readonly ids: readonly string[] }>;
     /** Panourile: câte sunt („Panoul 1” … „Panoul n”). */
     readonly panouri?: number;
+    /** Tăierea în panouri (felia 10.3↑n): bucățile fiecărui panou, în ordinea panourilor (id-urile de după tăiere). */
+    readonly perPanou?: ReadonlyArray<readonly string[]>;
   }
   | { readonly ok: false; readonly motiv: MotivTaiere };
 
@@ -576,7 +579,7 @@ function operatiiParte(p: Piesa, radacina: Nod, elemente: ReadonlyArray<{ readon
     if (g && g.length > 0) {
       const ops = g.map((x): Operatie => {
         const baza = p.operatii.find((o) => o.tip === x.tip && (o.tip !== 'profil' || o.latura === x.latura)) ?? (p.operatii[0] as Operatie);
-        return { ...structuredClone(baza), id: x.id, tip: x.tip, latura: x.latura, noduri: [...x.noduri] };
+        return cuNoduri({ ...structuredClone(baza), id: x.id, tip: x.tip, latura: x.latura }, [...x.noduri]);
       });
       const singura = p.operatii.length === 1 ? p.operatii[0] : undefined;
       if (ops.length === 1 && singura) ops[0] = { ...(ops[0] as Operatie), id: singura.id };
@@ -618,7 +621,7 @@ function operatiiParte(p: Piesa, radacina: Nod, elemente: ReadonlyArray<{ readon
     let id = o.id;
     for (let n = 2; folosite.has(id); n++) id = `${o.id.slice(0, 56)}-${n}`;
     folosite.add(id);
-    ops.push({ ...o, id });
+    ops.push(cuNoduri({ ...o, id }, o.noduri));
   }
   return { operatii: ops, scoase };
 }

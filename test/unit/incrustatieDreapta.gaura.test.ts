@@ -27,7 +27,7 @@ const H = 2, C = 0.1, MARGINE = 8;
 /** Buzunarul Ø6 (adâncimea scrisă 3, pe care gaura o ignoră) cu incrustația dreaptă dată, pe o foaie groasă de `T`. */
 function document(incrustatie: Record<string, unknown>, T = 10): unknown {
   return {
-    schema: 25, rev: 0,
+    schema: 26, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'element', id: 'a', matrice: { ...I, e: 20, f: 20 }, forma: { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 } },
       operatii: [{

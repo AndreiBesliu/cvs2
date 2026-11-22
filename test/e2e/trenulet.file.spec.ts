@@ -28,7 +28,7 @@ const FAMILII: readonly (readonly [string, string, readonly (readonly [string, s
   ['legaturi', 'Legături', [['stiftTechnic', 'Știft'], ['ax', 'Ax'], ['bucsa', 'Bucșă / conector'], ['clema', 'Clemă'], ['bara', 'Bară'], ['maner', 'Mâner'],
     ['bila', 'Bilă'], ['cupa', 'Cupă']]],
   ['roti', 'Roți', [['rotita', 'Roată dințată'], ['conica', 'Roată conică'], ['coroana', 'Roată coroană'], ['conicaDubla', 'Conică dublă'], ['fulie', 'Fulie'],
-    ['roata', 'Roată cu anvelopă']]],
+    ['roata', 'Roată cu anvelopă'], ['senila', 'Șenilă']]],
 ];
 /** Titlul editorului fiecărui tip: piesa aleasă își deschide editorul ei („placaTechnic” e o formă gata a cărămizii). */
 const EDITOR: Readonly<Record<string, string>> = {
@@ -36,7 +36,7 @@ const EDITOR: Readonly<Record<string, string>> = {
   rotund: 'Rotund și con', lateral: 'Cărămidă cu știfturi pe lateral', suport: 'Suport (bracket)', grinda: 'Grindă Technic, de orice formă',
   caramidaTechnic: 'Cărămidă Technic', stiftTechnic: 'Știft Technic', ax: 'Ax Technic', bucsa: 'Bucșă și conector de ax', clema: 'Placă cu clemă',
   bara: 'Bară', maner: 'Placă cu mâner', bila: 'Placă cu bilă', cupa: 'Placă cu cupă', rotita: 'Roată dințată', conica: 'Roată conică',
-  coroana: 'Roată coroană', conicaDubla: 'Conică dublă', fulie: 'Fulie', roata: 'Roată cu anvelopă',
+  coroana: 'Roată coroană', conicaDubla: 'Conică dublă', fulie: 'Fulie', roata: 'Roată cu anvelopă', senila: 'Șenilă',
 };
 const tipul = (k: string): string => (k === 'placaTechnic' ? 'caramida' : k);
 
@@ -57,7 +57,7 @@ const piesaApasata = (page: Page) => page.locator('#at-galerie [aria-pressed="tr
 
 test('filele: Cărămizi, Legături, Roți (cu câte piese au), apoi Calibrare; sub fiecare, piesele familiei ei, cu editorul lor', async ({ page }) => {
   await deschide(page);
-  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 10', 'Legături 8', 'Roți 6', 'Calibrare']);
+  await expect(page.locator('#at-tipuri button:visible')).toHaveText(['Cărămizi 10', 'Legături 8', 'Roți 7', 'Calibrare']);
   // la început: Cărămizi, cu cărămida
   await expect(filaApasata(page)).toHaveAttribute('data-fila', 'caramizi');
   await expect(piesaApasata(page)).toHaveAttribute('data-piesa', 'caramida');
@@ -193,9 +193,12 @@ test('o listă salvată de 18.14.0 se deschide la fel: piesa din editor, acum pe
   expect([stocat.stare.tip, arata.fila, arata.galerie]).toEqual(['coroana', ['legaturi'], ['coroana']]);
   await deschide(page, stocat);
   await laFelCa18140(page);
-  // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nicio cheie nouă, nimic mutat)
+  // scrise înapoi la deschidere: aceeași stare, aceeași listă, același model (nimic mutat); singura cheie nouă e starea
+  // implicită a tipurilor venite după 18.14.0 (șenila, 3.To)
   const scris = JSON.parse(await page.evaluate((k) => localStorage.getItem(k) ?? 'null', CHEIE)) as typeof stocat;
-  expect([scris.stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
+  const { senila, ...stare } = scris.stare as Record<string, unknown>;
+  expect([stare, scris.lista, scris.model]).toEqual([stocat.stare, stocat.lista, stocat.model]);
+  expect(senila).toEqual({ piesa: 'zala', gauriStift: 'da', dinti: 10, gaura: 'x', pereche: 10, distanta: 8 });
 });
 
 test('pe claude.ai, lista salvată de 18.14.0 vine din baza artefactului după ce partea 3D a pornit: filele și galeria o urmează', async ({ page }) => {

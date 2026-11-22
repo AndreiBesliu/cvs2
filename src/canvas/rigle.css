@@ -1004,3 +1004,57 @@
 .desen-eticheta {
   transform: none;
 }
+
+/*
+ * Urechile alese (ADR 0211, felia 11.3↑d): conturul operației și semnele urechilor, în modul lor și cu „Arată traseul”. Banda
+ * modului stă sus, pe mijlocul pânzei; desenul nu oprește mausul (clicurile le primește pânza, iar modul le citește).
+ */
+/* Modul întreg stă cât pânza (punctele se socotesc din colțul ei), fără să oprească mausul; doar banda îl primește. */
+.mod-urechi {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.urechi-desen {
+  pointer-events: none;
+}
+
+.urechi-contur {
+  fill: none;
+  stroke: var(--l-focus);
+  stroke-width: 2;
+}
+
+.ureche-aleasa {
+  fill: var(--a);
+  stroke: var(--s-panou);
+  stroke-width: 1.5;
+}
+
+.ureche-aleasa.trasa {
+  fill: var(--l-focus);
+}
+
+/* Locul (sus, pe mijlocul zonei libere) îl pune modul, din zona liberă; fără ea, sus, pe mijlocul pânzei. */
+.banda-urechi {
+  position: absolute;
+  top: var(--sp-2);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-3);
+  max-width: calc(100% - 2 * var(--sp-3));
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.banda-urechi .motiv-urechi:empty {
+  display: none;
+}
+
+.banda-urechi .motiv-urechi {
+  color: var(--rosu, var(--t));
+}

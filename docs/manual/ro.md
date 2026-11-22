@@ -998,7 +998,12 @@ pas, deci niciun dinte nu e tăiat de tăietura vecină. Bucățile fiecărui pa
 pe ele (marginile, distanța, ordinea și rotirea ei), ca să le pună pe foi, câte încap pe fiecare; un panou cu o singură
 bucată e chiar ea, cu numele panoului, iar o celulă goală a grilei nu primește număr. Un text cu literele de o parte și de
 alta a unei linii care nu le atinge se desparte și el, fiecare literă în panoul ei. Peste 100 de panouri nu se taie; o formă
-pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). **Taie în panouri** e un singur pas de anulare.
+pusă de mai multe ori întreabă întâi (doar **Desprinde și taie**). Cu **Gravează numărul fiecărui panou** (oprită implicit:
+cifrele se văd pe față), fiecare panou primește numărul lui („3”), cu fontul cu o singură linie (Relief SingleLine), gravat
+pe linie, lângă colțul din stânga-jos, înăuntru, la cel puțin un sfert din înălțimea cifrelor (cel puțin 2 mm) de margini,
+tăieturi, dinți și litere; **Înălțimea cifrelor** e implicit 10 mm. Numărul intră în grupul panoului (un text, editabil apoi
+în panoul Text); un panou fără loc rămâne fără număr, iar panoul spune câte. **Taie în panouri** e un singur pas de anulare,
+cu numere cu tot.
 
 **Decupează la ultima formă aleasă**: granița e forma aleasă ultima (cu Shift + clic), închisă, și rămâne. **Păstrează**
 **înăuntru** sau **în afară**: fiecare formă aleasă păstrează doar ce e de partea aleasă, iar una fără nimic acolo pleacă. **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu **Închide bucățile**, o formă închisă
@@ -1162,7 +1167,7 @@ adresa de test față de cea live au lista lor.
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
-| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
+| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, sau alese pe desen (vezi [Urechile alese pe desen](#export)) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment. Și colțurile cu o latură curbă (un „D”, un umăr rotund, o lentilă, o curbă importată) primesc degajarea; unde freza nu ajunge deloc în colț, avertismentul o spune |
@@ -1519,6 +1524,19 @@ ajunge niciun pic de lemn legat (de obicei fiindcă tăieturile pieselor vecine 
 desprinde cât freza încă taie lângă ea. Exportul o spune printre avertismente, cu valorile plăcuței sau numele piesei și
 locul ei pe foaie („lângă X 70, Y 119”); cu **Toate foile**, pe fiecare foaie. Programul se descarcă oricum: e un
 avertisment, nu un refuz. Proba e a programului, deci prinde orice așezare, și pe cea mutată de mână.
+
+**Urechile alese pe desen.** Sub urechile unui rând, **Locurile: la distanțe egale / alese pe desen**. Cu
+**alese pe desen**, câmpul „Câte, pe buclă” se oprește (numărul e câte ai pus), iar **Alege pe desen…** ascunde fereastra și
+pune pânza în modul urechilor operației: conturul ei apare pe fiecare copie a piesei de pe foaie, cu urechile alese ca puncte
+mici. Un clic pe contur pune o ureche, pe cel mai apropiat punct al lui; un clic pe o ureche o scoate; trasă, urechea alunecă
+pe contur. Două urechi nu se apropie sub lungimea lor împărțită la 0,9, între centre (banda de sus spune de ce). Locurile se
+țin pe piesă, deci toate copiile le au, cu rotirea lor. **Gata** (sau Enter) le scrie, într-un singur pas (Ctrl+Z îl scoate),
+și aduce fereastra înapoi, cu tot ce scriseseși în ea; **Renunță** (sau Escape) lasă urechile cum erau. La export, fiecare
+ureche aleasă cade pe cel mai apropiat punct al drumului frezei, iar bucla pornește din mijlocul celui mai lung gol dintre
+urechi (cu intrări, intrarea se alege în afara urechilor), ca freza să nu intre în lemn pe o ureche. Două urechi prea apropiate
+pe drumul frezei, sau una pe o buclă prea scurtă, opresc exportul, cu locul. Un element fără nicio ureche aleasă se taie fără
+urechi. Cu **Arată traseul**, urechile alese apar ca puncte pe contur. Așa le pui spre marginea foii sau spre o fâșie lată,
+acolo unde țin, ori le ocolești pe o latură unde ar strica piesa.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o
@@ -1891,10 +1909,10 @@ fiecăruia), iar starea din colț o spune.
 - **0,1 mm la apropiere**: când te apropii destul, zona din jurul centrului (cel mult 204,8 × 204,8 mm) se simulează din nou
   la 0,1 mm și se desenează peste placă; restul rămâne la 0,25 mm.
 - **Foaia sau un dop**: dacă foaia are [incrustații](#incrustatie), sus apar butoanele „Foaia”, „Dopul 1”, „Dopul 2” …, în
-  ordinea fișierelor dopurilor din export (titlul fiecăruia spune semifabricatul). „Dopul N” simulează programul dopului pe
-  semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în picioare, fața coborâtă sau
-  decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa se vede tot, iar starea spune
-  de ce lipsesc dopurile.
+  ordinea fișierelor dopurilor din export (titlul fiecăruia spune incrustația, ca bara de jos, și semifabricatul). „Dopul N”
+  simulează programul dopului pe semifabricatul lui (fața la 0, fundul la grosimea lui) și îl încadrează: vezi dopul în
+  picioare, fața coborâtă sau decuparea, înainte să-l tai. „Foaia” te întoarce la placă. Dacă un dop nu se poate tăia, placa
+  se vede tot, iar starea spune de ce lipsesc dopurile.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

@@ -1,7 +1,8 @@
 # Lista de otrăvuri a feliei 12.1↑e (dopul în vederea 3D, ADR 0178), 19.11.2026, alese de autor: dopurile foii (o funcție, a
 # exportului și a vederii: ordinea, supracursa exportului), simularea (dopul ales, semifabricatul, lista, motivul), drumul
 # cererii (bazinul, calculul interfeței, lucrătorul) și vederea 3D (alegerea, camera, lista, simularea dopului, butoanele,
-# starea, atributele pentru probe).
+# starea, atributele pentru probe). La precizarea din 21.11 (titlul dopului), V10–V16: titlul numește incrustația ca bara
+# de jos (`descriere`, mutată în `src/app/descriereElement.ts`), nu prin id-ul ei intern, apoi semifabricatul.
 # Țintele din ADR 0178: alt dop decât cel ales, semifabricatul greșit, ordinea dopurilor schimbată, un dop refuzat care
 # oprește foaia sau al cărui motiv se pierde, camera care nu încadrează dopul, butoanele care nu apar.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
@@ -18,6 +19,7 @@ CALC = 'src/jobs/calculCam.ts'
 BAZ = 'src/jobs/bazinCam.ts'
 EXP = 'src/ui/actiuniExportCalcul.ts'
 V3D = 'src/app/Vedere3D.tsx'
+DES = 'src/app/descriereElement.ts'
 
 # ---- Dopurile foii și simularea ----
 o('D01', CALC, '  return { ok: true, dopuri: [...inV.dopuri, ...drepte.dopuri] };', '  return { ok: true, dopuri: [...drepte.dopuri, ...inV.dopuri] };',
@@ -60,6 +62,23 @@ o('V07', V3D, '                : dop !== null && s.program && s.placa ? t(\'edit
 o('V08', V3D, "        data-alegere={dop === null ? 'foaie' : `dop-${dop}`}", "        data-alegere={'foaie'}", 'e2e', 'atributul alegerii, mereu foaia')
 o('V09', V3D, "            <button type=\"button\" data-3d=\"incadreaza\" onClick={reincadreaza}>{t(dop === null ? 'editare.3d.incadreaza' : 'editare.3d.incadreaza-dop')}</button>",
   "            <button type=\"button\" data-3d=\"incadreaza\" onClick={reincadreaza}>{t('editare.3d.incadreaza')}</button>", 'e2e', '„Încadrează placa” la dop')
+
+# ---- Titlul dopului (precizarea din 21.11) ----
+o('V10', V3D, "    return e ? `${t('editare.3d.dopul.incrustatia', { descriere: descriere(e) })} ${semifabricat}` : semifabricat;",
+  "    return e ? `${t('editare.3d.dopul.incrustatia', { descriere: d.element })} ${semifabricat}` : semifabricat;", 'e2e',
+  'titlul numește incrustația prin id-ul ei intern')
+o('V11', V3D, "    return e ? `${t('editare.3d.dopul.incrustatia', { descriere: descriere(e) })} ${semifabricat}` : semifabricat;",
+  '    return semifabricat;', 'e2e', 'titlul fără incrustație')
+o('V12', V3D, '    const e = lume?.get(d.element);', "    const e = lume?.get(d.element.split('/')[0] ?? '');", 'e2e',
+  'elementul căutat după instanță, nu după id-ul lui în lume')
+o('V13', V3D, '(dopuri.lista.length > 0 ? new Map(elementeFoaie(doc, 0)', '(false ? new Map(elementeFoaie(doc, 0)', 'e2e',
+  'lumea foii nefăcută (titlul fără incrustație)')
+o('V14', V3D, 'new Map(elementeFoaie(doc, 0).map(', 'new Map(elementeFoaie(doc, 1).map(', 'e2e', 'lumea altei foi')
+o('V15', V3D, '      latime: nr(d.semifabricat.latime), inaltime: nr(d.semifabricat.inaltime), grosime: nr(d.semifabricat.grosimeMinima),',
+  '      latime: nr(d.semifabricat.latime), inaltime: nr(d.semifabricat.inaltime), grosime: nr(d.semifabricat.inaltime),', 'e2e',
+  'semifabricatul din titlu cu grosimea greșită')
+o('V16', DES, 'const doua = (x: number): string => x.toFixed(2);', 'const doua = (x: number): string => x.toFixed(1);', 'e2e',
+  'descrierea comună (bara de jos și titlul) cu altă precizie')
 
 SETURI = {
     'dop3d': ['test/unit/incrustatie.dop3d.test.ts'],

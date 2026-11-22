@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { amprenta, deSters, esteImaginePastrata, PASTRATA_CEL_PUTIN_MS, surseDinTexte, surseFolosite } from '../../src/app/imaginiFoaie.ts';
-import type { Document, Foaie, ImagineFoaie } from '../../src/model/document.ts';
+import { VERSIUNE_SCHEMA, type Document, type Foaie, type ImagineFoaie } from '../../src/model/document.ts';
 
 /**
  * Imaginile foilor (ADR 0272, felia 25.8↑a), partea pură a bazei lor: amprenta SHA-256 (cheia, comparată cu `node:crypto`),
@@ -14,7 +14,7 @@ const imagine = (sursa: string, id = sursa.slice(0, 6)): ImagineFoaie => ({
   id, sursa, x: 100, y: 80, latime: 200, inaltime: 150, rotire: 0, opacitate: 0.4, vizibila: true, fixata: true,
 });
 const foaie = (id: string, imagini?: ImagineFoaie[]): Foaie => ({ id, stoc: { latime: 600, inaltime: 400, grosime: 18 }, instante: [], ...(imagini ? { imagini } : {}) });
-const doc = (foi: Foaie[]): Document => ({ schema: 25, rev: 1, piese: [], foi });
+const doc = (foi: Foaie[]): Document => ({ schema: VERSIUNE_SCHEMA, rev: 1, piese: [], foi });
 
 test('amprenta: SHA-256 în hexazecimal, ca node:crypto; aceeași pentru aceiași octeți', async () => {
   const o = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3, 4, 5]);
