@@ -21,6 +21,10 @@
       "ro": "Printează o conică dublă de 12 și prinde-o la 90° de o conică dublă LEGO de 12 (32270), cu axele întâlnite și planul de mijloc al fiecăreia la 8 mm (1 pas) de axul celeilalte; apoi pe axe paralele (12 mm, jumătate de pas) și o pereche printată de 12 cu 36, cu „Fă perechea” (la 90°, planul celei de 12 la 20 mm de axul celei de 36, al celei de 36 la 8 mm de axul celei de 12)",
       "en": "Print a 12-tooth double bevel gear and mesh it at 90° with a LEGO 12-tooth double bevel gear (32270), with the axles meeting and the middle plane of each 8 mm (1 step) from the other’s axle; then on parallel axles (12 mm, half a step) and a printed pair of 12 with 36, with “Make the pair” (at 90°, the middle plane of the 12-tooth one 20 mm from the axle of the 36-tooth one, that of the 36-tooth one 8 mm from the axle of the 12-tooth one)"
     },
+    "03133dff5fc1ca93": {
+      "ro": "**Pictogramele pieselor** (3.Tp↑b din ADR 0281, fără întrebare; worktree-ul `galeria`, ramura `wip/3.Tp-galeria-pe-file`; „neata, continua si porneste si worktrees”). Pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, un desen mic al piesei, făcut de mână după piesa din vederea 3D: doar linii, de culoarea textului (după temă și după apăsare), ascuns cititoarelor de ecran. O piesă nouă își pune desenul pe un rând, lângă tabela familiilor (până atunci, un cub generic; proba unitară i-l cere). Pachetul 18.18.0. Unitare 4, e2e 4, otrăvuri 18 / 18.",
+      "en": "**The pieces’ icons** (3.Tp↑b in ADR 0281, without a question; the `galeria` worktree, branch `wip/3.Tp-galeria-pe-file`; “neata, continua si porneste si worktrees”). On every button of the galleries (the family’s and the search’s), before the name, a small drawing of the piece, drawn by hand after the piece in the 3D view: lines only, in the text’s colour (so it follows the theme and the pressed state), hidden from screen readers. A new piece adds its drawing on one line, next to the families table (until then, a generic cube; the unit test asks for it). Package 18.18.0. Unit 4, e2e 4, poisons 18 / 18."
+    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
@@ -1249,6 +1253,10 @@
       "ro": "Linia mediană",
       "en": "Centre line"
     },
+    "56508803d1b651ac": {
+      "ro": "Pe test, în Easy 3Draw, partea 3D: fiecare piesă are un desen mic pe buton, înaintea numelui; treci prin Cărămizi, Legături și Roți și caută „roata”: piesele se recunosc după desen, în tema luminoasă și în cea întunecată, iar pe telefon butoanele încap",
+      "en": "On test, in Easy 3Draw, the 3D part: every piece has a small drawing on its button, before the name; go through Bricks, Joints and Wheels and search for “roata” (wheel): the pieces are recognisable by their drawings, in the light theme and in the dark one, and on a phone the buttons fit"
+    },
     "56a9f2396bb907ee": {
       "ro": "**Decuparea la ultima formă aleasă** (ADR 0180 §4, §6; „Da, 10.3↑c”; `main` `36c75cb` unit întâi în ramură). **Decupează la ultima formă aleasă**: granița (închisă) rămâne; fiecare formă aleasă păstrează ce e de partea aleasă (**Păstrează**: înăuntru / în afară), iar una fără nimic acolo pleacă; **Formele care trec granița** se taie (implicit), se șterg sau rămân întregi; cu „Închide bucățile”, o formă închisă tăiată rămâne închisă pe graniță (un dreptunghi decupat la un cerc devine partea lor comună). Decuparea refolosește împărțirea cuțitului închis (10.3↑b); ștergerile și degruparea sunt un singur pas de anulare. **Treceri:** (1) probele pe hârtie, nucleul și oracolul, verzi din prima; (2) la e2e, panoul cu trei blocuri ieșea din fereastră: acum nu trece de 70 % din ea și se derulează, iar blocul decupării are așezarea din schiță. **Probele:** 8 pe hârtie (`taiere.decupare.test.ts`: cele zece linii în cercul Ø100, cu capetele în ±√(2500 − y²), semidiscul de 1 413,72 mm² și restul, fără închidere, cele trei alegeri pentru formele care trec granița, piesa cu un contur în afară, refuzurile, acțiunea cu ștergeri și anularea), oracolul independent pe 100 de decupări (`taiere.decupare.oracol.test.ts`, cu martorul lui), 1 e2e nou. **Otrăvurile** din `test/otravuri/10.3c.py`: 15, toate prinse la prima rulare (`342eaa7`); K11 și K13 din `10.3b.py`, mutate pe codul nou, prinse și ele. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 516,6 → 517,2 / 550 kB. Linia, până acum: ~11,1 kB (10.3↑ +6,8, 10.3↑b +3,7, 10.3↑c +0,6), peste ghidul de ~10 kB din brief, cu două felii rămase.**",
       "en": "**Clipping to the last chosen shape** (ADR 0180 §4, §6; “Da, 10.3↑c”; `main` `36c75cb` merged into the branch first). **Clip to the last chosen shape**: the boundary (closed) stays; each chosen shape keeps what is on the chosen side (**Keep**: inside / outside), and one with nothing there goes; **Shapes crossing the boundary** are cut (the default), are deleted or stay whole; with “Close the pieces”, a closed shape that is cut stays closed along the boundary (a rectangle clipped to a circle becomes their common part). Clipping reuses the split of the closed knife (10.3↑b); the deletions and the ungrouping are a single undo step. **Passes:** (1) the paper tests, the core and the oracle, green at once; (2) at e2e, the panel with three blocks went out of the window: now it stays within 70 % of it and scrolls, and the clipping block has the layout of the sketch. **Tests:** 8 on paper (`taiere.decupare.test.ts`: the ten lines in the Ø100 circle, with their ends at ±√(2500 − y²), the half disc of 1 413.72 mm² and the rest, without closing, the three choices for the shapes crossing the boundary, the part with a contour outside, the refusals, the action with deletions and the undo), the independent oracle on 100 clips (`taiere.decupare.oracol.test.ts`, with its witness), 1 new e2e. **The poisons** in `test/otravuri/10.3c.py`: 15, all caught at the first run (`342eaa7`); K11 and K13 of `10.3b.py`, moved onto the new code, caught as well. **Startup 101.4 (with the door 104.9 / 110 kB), unchanged; the total 516.6 → 517.2 / 550 kB. The line so far: ~11.1 kB (10.3↑ +6.8, 10.3↑b +3.7, 10.3↑c +0.6), above the ~10 kB guidance of the brief, with two slices left.**"
@@ -2124,6 +2132,10 @@
     "9a7e6ef50318aa04": {
       "ro": "Unealta Transformare, extensia barei, editarea formelor după plasare",
       "en": "The Transform tool, the bar extension, editing shapes after placement"
+    },
+    "9ac4459c462e1ac1": {
+      "ro": "3.Tp↑b (pictogramele)",
+      "en": "3.Tp↑b (the icons)"
     },
     "9acf4eda676c4ae0": {
       "ro": "Joburile cu mai multe freze din document",
@@ -3316,6 +3328,10 @@
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
       "en": "`nonzero` normalisation at the door"
+    },
+    "f2402bcee11ee800": {
+      "ro": "Pictogramele pieselor",
+      "en": "The pieces’ icons"
     },
     "f254e58163cfe205": {
       "ro": "Lipirea mânerelor de scalare",
