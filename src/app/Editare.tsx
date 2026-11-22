@@ -60,6 +60,9 @@ import { alegereaDeAcum } from '../ui/alegereAranjament.ts';
 import { useRaportariNecitite } from './raportariNecitite.ts';
 import type { StareVerificare } from './PanouVerificare.tsx';
 import type { LinieTaiere } from './PanouTaiere.tsx';
+import { optiuniLegare } from './optiuniLegare.ts';
+import { PanouLegare } from './PanouLegare.tsx';
+import { motivLegare, textLegare } from './textLegare.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -311,6 +314,8 @@ export type ProprietatiEditare = {
    * Ctrl+Shift+G trec prin ușa ei, iar motivul se spune lângă butoane, ca la clic.
    */
   readonly onRefuz: (f: ((id: string, motiv: CheieSimpla) => void) | null) => void;
+  /** Pornirea legării căilor (ADR 0182), dată aplicației pentru Ctrl+J și paletă (null: modulul plecat). */
+  readonly onLegare: (f: (() => void) | null) => void;
   /**
    * Testul pas cu pas (ADR 0072), deschis la pornire: doar pe instanța de test (și local), la adresa cu `?test` (din 31.10,
    * fără buton în bară, la cererea owner-ului; codul rămâne, pentru tutorialul de mai târziu), cu versiunea și instanța
@@ -336,7 +341,7 @@ export type ProprietatiEditare = {
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
-  useLimba();
+  const virgula = useLimba() === 'ro';
   const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen, onRefuz, indexFoaie, idFoaie } = p;
   // Ultimul desen al Pen-ului (ADR 0074 §4): pașii lui și proiectul de dinainte / de după, ca Ctrl+Shift+Z să-l redeschidă.
   const ultimulPen = useRef<{ readonly desen: DesenPen; readonly inainte: Document; dupa: Document | null } | null>(null);
@@ -426,9 +431,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
-  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | 'conversie' | null>(null);
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | 'conversie' | 'legare' | null>(null);
   const panouRef = useRef(panou);
   panouRef.current = panou;
+  const panouLegare = panou === 'legare';
   const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare', panouVectori = panou === 'vectori';
   // Verificarea vectorilor (ADR 0124): rezultatul ține cât panoul e deschis; locurile de pe pânză pleacă odată cu el.
   const panouVerificare = panou === 'verificare';
@@ -793,6 +799,41 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       return v.ok ? null : t(v.motiv);
     }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
   };
+  // Legarea căilor (ADR 0182, felia 10.3↑o): din bară, din meniul de clic dreapta, din paletă și cu Ctrl+J. Calculul e al
+  // workerului CAM, pe documentul de la clic, cu opțiunile ținute în browser; se aplică prin `document.repara`, doar dacă
+  // desenul nu s-a schimbat între timp. Rezultatul (sau motivul) se spune în secțiunea booleanului, până la altă selecție
+  // (nu și cea făcută chiar de legare, când instanțele legate pleacă din alegere). Alegerea se compară după conținut: tabloul
+  // ei e altul după orice schimbare a documentului, chiar cu aceleași forme alese.
+  const [stareLegare, setStareLegare] = useState<{ readonly text: string; readonly rau: boolean } | null>(null);
+  const pastreazaStareLegare = useRef(false);
+  useEffect(() => {
+    if (pastreazaStareLegare.current) { pastreazaStareLegare.current = false; return; }
+    setStareLegare(null);
+  }, [cheieSelectie]);
+  const leagaCaile = (): Promise<string | null> => {
+    if (selectie.length === 0 || p.doarCitire) return Promise.resolve(null);
+    const laCerere = doc, alese = [...selectie];
+    const spune = (text: string, rau: boolean): string | null => { setStareLegare({ text, rau }); return rau ? text : null; };
+    const eroare = (e: unknown): string | null => {
+      reportError(new Error(`legarea căilor: ${e instanceof Error ? e.message : String(e)}`));
+      return spune(t('editare.legare.eroare'), true);
+    };
+    return import('../ui/actiuniExportCalcul.ts').then((calc) => calc.leagaVectorii(laCerere, { fel: 'alese', alese }, optiuniLegare(), undefined, indexFoaie).then((r) => {
+      if (!r.ok) return spune(motivLegare(r, virgula), true);
+      pastreazaStareLegare.current = r.sterse.length > 0;
+      const v = ruleaza('document.repara', { reparatie: () => ({ doc: laCerere, piese: r.piese, sterse: r.sterse }) });
+      if (!v.ok) { pastreazaStareLegare.current = false; return spune(t(v.motiv), true); }
+      return spune(textLegare(r), false);
+    }, (e: unknown) => (e instanceof calc.CalculAnulat ? null : eroare(e))), eroare);
+  };
+  // Ctrl+J și paleta trec prin ușa aplicației (`document.leaga-caile`), care pornește legarea de aici.
+  const legareRef = useRef(leagaCaile);
+  legareRef.current = leagaCaile;
+  const { onLegare } = p;
+  useEffect(() => {
+    onLegare(() => { void legareRef.current(); });
+    return () => { onLegare(null); };
+  }, [onLegare]);
   // Desparte, din unealta Noduri (ADR 0181 §4): forma tăiată în nodul ales, ca de foarfeca cuțitului (calculul e al
   // workerului); după, e aleasă prima bucată, ca unealta să rămână pe ea.
   const desparteLaNod = (instanta: string, punct: { readonly x: number; readonly y: number }): Promise<string | null> => {
@@ -1220,6 +1261,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       { id: 'scade', eticheta: numeScurt(t('editare.boolean.scade')), activ: doua, ruleaza: () => { void booleanul('diferenta').then(facut); } },
       { id: 'intersecteaza', eticheta: numeScurt(t('editare.boolean.intersecteaza')), activ: doua, ruleaza: () => { void booleanul('intersectie').then(facut); } },
       { id: 'taie-intersectii', eticheta: numeScurt(t('editare.taiere.intersectii.taie')), activ: douaContururi && poate, ruleaza: () => { void taieLaIntersectii().then(facut); } },
+      { id: 'leaga-caile', eticheta: t('actiune.leaga-caile'), tasta: tastaActiunii('document.leaga-caile'), activ: selectie.length > 0 && poate, ruleaza: () => { void leagaCaile().then(facut); } },
       'separator',
       { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
       { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
@@ -1594,7 +1636,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         );
         const douaAlese = selectie.length === 2 && !p.doarCitire;
         const booleanSectiune = (
-          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.boolean')} data-testid="extensie-boolean">
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.boolean')} data-testid="extensie-boolean">
             <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.uneste')} aria-label={t('editare.boolean.uneste')}
               data-editare="boolean-uneste" onClick={() => { void booleanul('reuniune'); }}>
               <IconaBoolean fel="uneste" />
@@ -1607,6 +1649,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               data-editare="boolean-intersecteaza" onClick={() => { void booleanul('intersectie'); }}>
               <IconaBoolean fel="intersecteaza" />
             </button>
+            <button type="button" className="aliniaza" disabled={selectie.length === 0 || p.doarCitire} title={t('editare.legare')} aria-label={t('actiune.leaga-caile')}
+              data-editare="leaga-caile" onClick={() => { void leagaCaile(); }}>
+              <IconaLegare />
+            </button>
+            <button type="button" className="aliniaza sageata-optiuni" aria-expanded={panouLegare} aria-controls="panou-legare" title={t('editare.legare.optiuni')}
+              aria-label={t('editare.legare.optiuni')} data-editare="optiuni-legare" onClick={() => { setPanou(panouLegare ? null : 'legare'); }}>
+              <IconaSageata />
+            </button>
+            {panouLegare ? (
+              <PanouLegare poate={selectie.length > 0 && !p.doarCitire} onLeaga={() => { void leagaCaile(); }} onInchide={() => { setPanou(null); }} />
+            ) : null}
             <button type="button" className="aliniaza" disabled={selectie.length < 2 || p.doarCitire} title={t('editare.grupeaza')} aria-label={t('editare.grupeaza')}
               data-editare="grupeaza" onClick={() => { grupeaza(); }}>
               <IconaGrupare />
@@ -1616,6 +1669,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <IconaDegrupare />
             </button>
             {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
+            {stareLegare ? <span className={stareLegare.rau ? 'motiv-extensie' : 'motiv-extensie gata'} role="status" data-testid="stare-legare">{stareLegare.text}</span> : null}
             {motivGrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-grupare">{motivGrupare}</span> : null}
             {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
@@ -2917,6 +2971,27 @@ function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersectea
       <path d={plin[fel]} />
       <rect x="2" y="2" width="8" height="8" className="contur" />
       <rect x="6" y="6" width="8" height="8" className="contur" />
+    </svg>
+  );
+}
+
+/** Legarea căilor (ADR 0182): două căi care se întâlnesc într-un nod plin, cu capetele libere goale. */
+function IconaLegare(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2.5 13 L8 8.5 L13.5 3" className="contur" />
+      <circle cx="8" cy="8.5" r="2.2" />
+      <circle cx="2.5" cy="13" r="1.3" className="contur" />
+      <circle cx="13.5" cy="3" r="1.3" className="contur" />
+    </svg>
+  );
+}
+
+/** Săgeata îngustă de lângă un buton: deschide opțiunile lui. */
+function IconaSageata(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="8" height="16" viewBox="0 0 8 16" aria-hidden="true">
+      <path d="M1 6.5 L4 9.5 L7 6.5" className="contur" />
     </svg>
   );
 }

@@ -80,6 +80,8 @@ const USI: readonly Usa[] = [
   // Spațierea literelor alese (ADR 0138 §5), rândul de sub textul panoului.
   { id: 'editare.text.spatieri', eticheta: eticheta('editare.text.spatieri') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
+  // Legarea căilor (ADR 0182, felia 10.3↑o): săgeata opțiunilor, de lângă butonul „Leagă căile” (acțiunea e în registru).
+  { id: 'editare.legare.optiuni', eticheta: eticheta('editare.legare.optiuni') },
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
   { id: 'editare.sugestie', eticheta: eticheta('editare.sugestie') },
@@ -99,7 +101,7 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   desprinde: 'piesa.desprinde',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori', verificare: 'editare.verificare', taiere: 'editare.taiere',
   conversie: 'editare.conversie',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', 'leaga-caile': 'document.leaga-caile', 'optiuni-legare': 'editare.legare.optiuni', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri', 'nod-desparte': 'unealta.noduri',
 };
 
 // Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același
@@ -128,7 +130,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 108)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 111)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -145,8 +147,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor. Raportul foilor și
   // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
-  // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`.
-  assert.equal(USI.length, 109);
+  // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Legarea căilor (ADR
+  // 0182, felia 10.3↑o), încă două: acțiunea `document.leaga-caile` și opțiunile legării.
+  assert.equal(USI.length, 111);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
