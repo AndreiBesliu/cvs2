@@ -1167,7 +1167,7 @@ adresa de test față de cea live au lista lor.
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
-| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
+| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, sau alese pe desen (vezi [Urechile alese pe desen](#export)) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment. Și colțurile cu o latură curbă (un „D”, un umăr rotund, o lentilă, o curbă importată) primesc degajarea; unde freza nu ajunge deloc în colț, avertismentul o spune |
@@ -1524,6 +1524,19 @@ ajunge niciun pic de lemn legat (de obicei fiindcă tăieturile pieselor vecine 
 desprinde cât freza încă taie lângă ea. Exportul o spune printre avertismente, cu valorile plăcuței sau numele piesei și
 locul ei pe foaie („lângă X 70, Y 119”); cu **Toate foile**, pe fiecare foaie. Programul se descarcă oricum: e un
 avertisment, nu un refuz. Proba e a programului, deci prinde orice așezare, și pe cea mutată de mână.
+
+**Urechile alese pe desen.** Sub urechile unui rând, **Locurile: la distanțe egale / alese pe desen**. Cu
+**alese pe desen**, câmpul „Câte, pe buclă” se oprește (numărul e câte ai pus), iar **Alege pe desen…** ascunde fereastra și
+pune pânza în modul urechilor operației: conturul ei apare pe fiecare copie a piesei de pe foaie, cu urechile alese ca puncte
+mici. Un clic pe contur pune o ureche, pe cel mai apropiat punct al lui; un clic pe o ureche o scoate; trasă, urechea alunecă
+pe contur. Două urechi nu se apropie sub lungimea lor împărțită la 0,9, între centre (banda de sus spune de ce). Locurile se
+țin pe piesă, deci toate copiile le au, cu rotirea lor. **Gata** (sau Enter) le scrie, într-un singur pas (Ctrl+Z îl scoate),
+și aduce fereastra înapoi, cu tot ce scriseseși în ea; **Renunță** (sau Escape) lasă urechile cum erau. La export, fiecare
+ureche aleasă cade pe cel mai apropiat punct al drumului frezei, iar bucla pornește din mijlocul celui mai lung gol dintre
+urechi (cu intrări, intrarea se alege în afara urechilor), ca freza să nu intre în lemn pe o ureche. Două urechi prea apropiate
+pe drumul frezei, sau una pe o buclă prea scurtă, opresc exportul, cu locul. Un element fără nicio ureche aleasă se taie fără
+urechi. Cu **Arată traseul**, urechile alese apar ca puncte pe contur. Așa le pui spre marginea foii sau spre o fâșie lată,
+acolo unde țin, ori le ocolești pe o latură unde ar strica piesa.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o

@@ -10,6 +10,7 @@ import { cuprinse } from '../model/ordine.ts';
 import { numePlacutei, placuteCuTextIesit } from '../model/placuteIesire.ts';
 import { iesireTextTinuta } from './iesireTextTinuta.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
+import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -56,6 +57,11 @@ type Props = {
   readonly toate: Document;
   /** „Raportul foilor…” (ADR 0210 §6): aplicația închide exportul și deschide raportul. */
   readonly onRaport?: (p: { readonly origine: ColtOrigine; readonly z0: 'sus' | 'jos' }) => void;
+  /**
+   * „Alege pe desen…” (ADR 0211, 3a): operația `operatie` a piesei `piesa`, cu urechile rândului; aplicația ascunde fereastra și
+   * pune pânza în modul urechilor.
+   */
+  readonly onAlegeUrechi?: (a: { readonly piesa: string; readonly operatie: string; readonly numar: number; readonly latime: number; readonly grosime: number }) => void;
 };
 
 /** Plăcuțele foii `k` (toate foile, fără el) cu textul ieșit, cu numele lor și confirmarea aleasă în fereastra CSV; altfel nimic. */
@@ -67,7 +73,7 @@ function placuteIesite(d: Document, k?: number): { readonly nume: readonly strin
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
-  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport,
+  supracursa, onSupracursa, prinFoaie, onPrinFoaie, onDeschideInMasina, trimite, foaie, toate, onRaport, onAlegeUrechi,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -117,7 +123,10 @@ export function ExportConectat({
             ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
           },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
-          urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
+          urechi: o.urechi ? {
+            numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime,
+            ...(o.urechi.mod === 'alese' ? { mod: 'alese' as const, alese: numarUrechiAlese(o) } : {}),
+          } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
           colturi: o.colturi ? { tip: o.colturi.tip } : null,
@@ -229,6 +238,13 @@ export function ExportConectat({
       {...(placuteToate ? { placuteToate } : {})}
       foi={toate.foi.length}
       {...(onRaport ? { onRaport } : {})}
+      {...(onAlegeUrechi ? {
+        onAlegeUrechi: (cheie: string, u: { readonly numar: number; readonly latime: number; readonly grosime: number }) => {
+          // Cheia rândului e `<piesă>/<operație>`; id-urile n-au „/” (`schemaDocument.ts`).
+          const k = cheie.indexOf('/');
+          if (k > 0) onAlegeUrechi({ piesa: cheie.slice(0, k), operatie: cheie.slice(k + 1), ...u });
+        },
+      } : {})}
     />
   );
 }

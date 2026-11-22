@@ -1514,6 +1514,14 @@ nav button[aria-pressed='true'] {
   max-width: 5rem;
 }
 
+/* Locurile urechilor (ADR 0211): comutatorul „la distanțe egale / alese pe desen”, pe rândul câmpurilor lor. */
+.dialog .locuri-urechi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+}
+
 /* În tabel, câmpurile de număr sunt înguste: cu urechile, rampa și intrările, tabelul are opt coloane. */
 .dialog table input[type='text'] {
   max-width: 5.5rem;

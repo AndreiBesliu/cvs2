@@ -10476,6 +10476,30 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   560, emulatoarele 101 / 101 și 29 / 29), iar pe `a27927b3` e2e-ul pachetului (biblioteca, extensiile, pluginul) 48 / 48.
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
 
+## 2026-11-19 — Felia 11.3↑d pornită: urechile la locuri alese, ADR 0211 propus și schița (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu ADR-ul și schița? Răspunde „Da, ADR și schița” sau „Mai târziu”.”: „Da, ADR și schița”.
+**Started:** 19.11, 21:10.
+
+- **`main` `4b7539a`** a venit prin avans direct (ramura n-avea nimic peste el).
+- **ADR 0211, propus** (`docs/adr/0211-urechile-la-locuri-alese.md`): urechile la locuri alese, varianta c din ADR 0210.
+  Trei variante, pe felii: a) alese cu mausul, într-un mod al pânzei deschis din rândul exportului (recomandarea, ca
+  editarea urechilor din ArtCAM); b) automat, „unde ține”, pe proba de la 11.3↑c, calculat pe fiecare instanță la export;
+  c) reguli simple (laturile lungi, scurte, mijlocul laturilor). Documentul v26: `urechi.mod` și `urechi.locuri` (punctele,
+  în coordonatele piesei); programele de azi rămân octet cu octet; pornirea buclei în mijlocul celui mai lung gol dintre
+  urechi (o abatere de la ADR 0027 §4, doar pentru modurile noi); flancul, din golul cel mai mic.
+- **Schița:** <https://claude.ai/artifact/XiHkAQJ5nJjxNVyGQzVG27>: desenele la scară (acum: trei plăcuțe la 5 mm, cu
+  tăieturile unite; „unde ține”: trei rânduri la 5 mm și două coloane la 20 mm, înainte și după; cele trei reguli), un mod
+  al urechilor de încercat (clicul pune, clicul scoate, tras mută; pornirea în golul cel mai lung; refuzul sub 6 / 0,9 mm)
+  și formularul celor șapte întrebări. Răspunsurile stau în baza paginii (colecția `raspunsuri`, scrisă doar de owner),
+  verificată cu un document de probă scris, citit înapoi și șters.
+- **Cercetarea:** codul (`Operatie.urechi`, `geometrieUrechi`, pornirea în vârful 0), ADR 0028 și 0027, referința
+  funcțională (ArtCAM: urechile se editează pe vector, cu clic).
+- **Indexul ADR-urilor** și traducerea titlului (roadmap-ul în engleză, 855 / 0). Nimic din cod; felia 11.3↑d pornește la
+  răspunsuri.
+
+**Completed:** 19.11, 22:36.
+
 ## 2026-11-20 — Felia 3.Tn: conicele duble în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
 
 **Prompt:** „neata! continua” (owner-ul, a doua zi; la „Pornesc 3.Tn (conicele duble)?” răspunsese „Nu acum”). **Started:**
@@ -10894,3 +10918,34 @@ lego” (owner-ul, după „neata, continua si porneste si worktrees”). **Star
   apropiate) și trei întrebări (unde stau, ce vine întâi, cotele din LDraw cu descărcarea lor), cu răspunsurile salvate în
   pagină: <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>.
 - **Codul:** la răspunsurile owner-ului (felia 3.Tq), pe ramura `wip/3.Tq-elice`, în worktree-ul `rotite`.
+
+## 2026-11-19 — Felia 11.3↑d: urechile la locuri alese, alese cu mausul; documentul v26 (ADR 0211) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu toate recomandările?”: „Da, toate recomandările”.
+**Started:** 19.11, 22:38.
+
+- **Reluată pe 21.11**, la mesajul sesiunii principale (owner-ul: „da si vreau sa pornesti si restul worktrees”): `main`
+  `a64adf63` (3.Tn, 3.Tp, 12.1↑e) unit în ramură (`9655d3f2`; ciocnirea, doar în DEVLOG); `main` era tot pe v25, deci v26
+  rămâne a liniei.
+- **Documentul v26** (`63a1eca0`): `urechi.mod` și `urechi.locuri`, migrarea v25 → v26 (doar numărul; un v25 cu ele în urechi
+  e o ciocnire), ușa pe documentul brut (`problemaUrechi`, cu calea câmpului în motiv; ±10⁷ mm, ca vârfurile căilor), oracolul
+  documentului la v26 (`CAMPURI_NOI_O[26]`, cazurile pe hârtie, `document.v26.oracol.test.ts` 16 / 16) și pinurile versiunii
+  curente (cea mai nouă: 27). `cuNoduri` (`src/model/urechiLocuri.ts`): gruparea, degruparea, plăcuța coaptă, repararea,
+  tăierea și rolurile țin locurile pe elementele operației; rolul salvat nu le ia (`urechiDeSablon`). Corpusul de aur la v26
+  (`e5e464c4`): urechile capacului, la trei locuri alese; intrările v1–v25, aceiași octeți.
+- **Lucrarea** (`f267c067`): proiecția pe buclă, flancul din golul fiecărei urechi (la distanțe egale, chiar formula de azi),
+  refuzurile cu locul, pornirea în cel mai lung gol, intrările în afara zonelor (coloanele stau pe loc), rampa, degajările,
+  direcția inversă (urechile oglindite); suita unitară întreagă verde, deci programele fără mod, octet cu octet.
+- **Fereastra și modul pânzei** (`2ff0e0ac`): „Locurile” în rând, „Alege pe desen…” (fereastra ascunsă, nu închisă),
+  `ModUrechi.tsx` (la cerere, 8,9 kB), „Gata” prin `document.aplica-operatii`, semnele cu „Arată traseul”, panoul, raportul
+  foilor, manualul (ro, en).
+- **Pe drum:** proba e2e dădea clicul de scoatere pe marginea cutiei conturului desenat, care iese cu 4 px mai lată decât linia
+  lui: clicul cădea lângă ureche, unde se încerca o punere „prea aproape”; o probă de depanare (locurile pe ecran, elementul de
+  sub punct) a arătat că un clic pe centrul semnului o scoate, iar proba ia acum locurile din semne. Rădăcina modului e un `div`
+  cât pânza (un `span` gol nu stă sigur în colțul ei), banda stă în zona liberă (pânza e și sub meniu și sub bare),
+  `pointercancel` nu mai scoate urechea, Enter e „Gata” doar de pe pânză. Pluralul românesc pentru 0 („0 urechi alese”).
+  Manualul primește linkuri doar spre capitole: build-ul a refuzat o ancoră.
+- **Porțile:** tsc × 3; regulile de import (20 / 20, 0 încălcări); traducerile (868 / 0); unitare întregi 9 700 / 0 (8 sărite; singura cădere, traducerea rândului nou, completată); build-ul determinist (347 de fișiere identice; pornirea 107,7 / 115 kB, cu ușa 112,1 / 115, totalul 747,1 / 800); e2e întreg 562 / 571, iar cele 9 reluate cu un lucrător, 9 / 9: opt căderi de timp (sesiunea browserului închisă, serverul oprit cât rulau alte linii) și una a feliei, `placute.spec.ts`, care verifica schema 25 a documentului salvat (acum 26).
+- **Otrăvurile 11.3d:** 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
+
+**Completed:** 21.11, 21:19.
