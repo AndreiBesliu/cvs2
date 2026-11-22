@@ -719,6 +719,12 @@
   min-width: 0;
   position: sticky;
   top: var(--sp-3);
+  /* Cel mult cât ecranul, derulat în el (A.3): lipit sus, un detaliu mai înalt își ascundea partea de jos până la capătul
+     listei. Scriptul (`useCatSpatiulDeJos`) îl potrivește la spațiul de sub el; regula asta ține locul fără el. Plafonul
+     cuprinde și umplutura, și bordura (21.11, proba e2e: fără `border-box`, detaliul trecea cu 34 px de el). */
+  box-sizing: border-box;
+  max-height: calc(100vh - 2 * var(--sp-3));
+  overflow-y: auto;
   display: grid;
   gap: var(--sp-2);
   padding: var(--sp-4);
@@ -742,6 +748,13 @@
   flex: 1 1 auto;
   margin: 0;
   font-weight: 700;
+}
+
+/* Butonul din capul detaliului (Marchează rezolvată, Marchează rezolvat) rămâne pe un rând; titlul se rupe în locul lui
+   (bancul, 21.11: la 1024 px, „Marchează / rezolvat” pe două rânduri). */
+.admin-erori-detaliu-cap > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .admin-erori-detaliu h4 {
@@ -901,6 +914,8 @@
 
   .admin-erori-detaliu {
     position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
 

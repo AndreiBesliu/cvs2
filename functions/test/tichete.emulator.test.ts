@@ -7,6 +7,7 @@ import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { POZA_MAX_OCTETI } from '../../shared/poza.ts';
+import { ETICHETA_RAPID_MAX, RAPIDE_MAX, type RaspunsRaspunsuriRapide } from '../../shared/raspunsuriRapide.ts';
 import {
   AMPRENTE_MAX, caleProiectTichet, PROIECT_MAX_BASE64, PROIECT_MAX_OCTETI, RASPUNS_MAX, RASPUNSURI_MAX, TEXT_MAX, TICHETE_PE_ZI,
   type RaspunsProiectTichet, type RaspunsRaportarileMele, type RaspunsTichet,
@@ -360,4 +361,62 @@ test('semnul din meniul contului: deschiderea contului spune câte raportări au
   assert.equal((await deschide()).raportariNecitite, 1);
   await fa('ana', { actiune: 'citit', id: r.id });
   assert.equal((await deschide()).raportariNecitite, 0);
+});
+
+/* ── Răspunsurile rapide (ADR 0261, felia A.3): doar owner-ul, pe versiunea văzută, cu auditul întreg ───────────────── */
+
+const rapide = (uid: string | null, lista: unknown, versiune: unknown = 0) => fa(uid, { actiune: 'raspunsuriRapide', lista, versiune }) as Promise<RaspunsRaspunsuriRapide>;
+const documentulRapide = async () => (await db.doc('setari/raspunsuriRapide').get()).data() ?? null;
+
+test('răspunsurile rapide: doar owner-ul, pe versiunea văzută; lista curățată; auditul cu lista dinainte și după; neschimbată nu scrie', async () => {
+  const A = { eticheta: '  Am primit,   ne uităm ', ro: ' Mulțumim! Ne uităm la ea.\r\nRevenim aici. ', en: '  ' };
+  const B = { eticheta: 'Reparat', ro: 'Reparat în versiunea nouă.', en: 'Fixed in the new version.' };
+  const aCurat = { eticheta: 'Am primit, ne uităm', ro: 'Mulțumim! Ne uităm la ea.\nRevenim aici.', en: '' };
+  // Doar owner-ul: nici cine răspunde la tichete, nici cine le citește, nici un client; fără logare, nimic.
+  for (const uid of ['sup', 'cit', 'ana']) assert.equal(await cod(rapide(uid, [B])), 'permission-denied', uid);
+  assert.equal(await cod(rapide(null, [B])), 'unauthenticated');
+  // O listă goală peste nimic: nimic de scris.
+  assert.deepEqual(await rapide('own', []), { ok: true, schimbat: false, versiune: 0 });
+  assert.equal(await documentulRapide(), null);
+  assert.deepEqual(await rapide('own', [A, B]), { ok: true, schimbat: true, versiune: 1 });
+  const d1 = await documentulRapide();
+  assert.deepEqual([d1?.['schema'], d1?.['lista'], d1?.['versiune'], d1?.['modificatDe']], [1, [aCurat, B], 1, 'own']);
+  // Pe o versiune veche (altă filă a browserului): refuzată, fără scriere.
+  assert.equal(await cod(rapide('own', [B], 0)), 'failed-precondition');
+  assert.equal(await cod(rapide('own', [B], 2)), 'failed-precondition');
+  // Aceeași listă (și scrisă altfel, curățată la fel): nimic scris.
+  assert.deepEqual(await rapide('own', [{ ...A, eticheta: 'Am primit, ne uităm' }, B], 1), { ok: true, schimbat: false, versiune: 1 });
+  assert.deepEqual(await rapide('own', [B, aCurat], 1), { ok: true, schimbat: true, versiune: 2 });
+  assert.deepEqual(await rapide('own', [], 2), { ok: true, schimbat: true, versiune: 3 });
+  assert.deepEqual((await documentulRapide())?.['lista'], []);
+  const randuri = (await audit()).filter((x) => x['actiune'] === 'setari.raspunsuriRapide');
+  assert.deepEqual(randuri.map((x) => [x['cine'], x['rol'], x['tinta'], x['inainte'], x['dupa']]), [
+    ['own', 'owner', 'setari/raspunsuriRapide', null, [aCurat, B]],
+    ['own', 'owner', 'setari/raspunsuriRapide', [aCurat, B], [B, aCurat]],
+    ['own', 'owner', 'setari/raspunsuriRapide', [B, aCurat], []],
+  ]);
+  assert.equal((await audit()).length, 3);
+});
+
+test('răspunsurile rapide: o listă greșită e refuzată fără nicio scriere; exact la plafoane trece', async () => {
+  const r = (k: number, extra: Record<string, unknown> = {}) => ({ eticheta: `R${k}`, ro: `Textul ${k}.`, en: '', ...extra });
+  const rele: unknown[] = [
+    'nu e o listă', { 0: r(1) }, Array.from({ length: RAPIDE_MAX + 1 }, (_, k) => r(k)), [null], [r(1), 'x'],
+    [r(1, { eticheta: '' })], [r(1, { eticheta: '   ' })], [r(1, { eticheta: 'x'.repeat(ETICHETA_RAPID_MAX + 1) })], [r(1, { eticheta: 'clopoțel\u0007' })],
+    [r(1), r(2, { eticheta: ' r1 ' })], [r(1, { eticheta: 'Sigur' }), r(2, { eticheta: 'ȘIGUR' })],
+    [r(1, { ro: '   ' })], [r(1, { ro: 'y'.repeat(RASPUNS_MAX + 1) })], [r(1, { ro: 'a\u0000b' })], [{ eticheta: 'Fără text' }],
+    [r(1, { en: 'z'.repeat(RASPUNS_MAX + 1) })], [r(1, { en: 'a\u0001b' })],
+  ];
+  for (const l of rele) assert.equal(await cod(rapide('own', l)), 'invalid-argument', JSON.stringify(l).slice(0, 80));
+  // Versiunea văzută greșită sau lipsă (cererea fără câmp).
+  for (const v of [-1, 1.5, '0', null]) assert.equal(await cod(rapide('own', [r(1)], v)), 'invalid-argument', String(v));
+  assert.equal(await cod(fa('own', { actiune: 'raspunsuriRapide', lista: [r(1)] })), 'invalid-argument');
+  assert.equal(await documentulRapide(), null);
+  assert.equal((await audit()).length, 0);
+  // Exact la plafoane: 12 răspunsuri, eticheta de 40 de litere (și diacritice), textele de 2 000 de caractere.
+  const plin = Array.from({ length: RAPIDE_MAX }, (_, k) => (k === 0
+    ? r(k, { eticheta: 'ă'.repeat(ETICHETA_RAPID_MAX), ro: 'ț'.repeat(RASPUNS_MAX), en: 'q'.repeat(RASPUNS_MAX) })
+    : r(k)));
+  assert.deepEqual(await rapide('own', plin), { ok: true, schimbat: true, versiune: 1 });
+  assert.equal(((await documentulRapide())?.['lista'] as unknown[]).length, RAPIDE_MAX);
 });

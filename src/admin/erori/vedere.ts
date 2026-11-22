@@ -15,6 +15,16 @@ export const alesDupaLista = (ales: string | null, r: readonly { readonly id: st
   ales !== null && r.some((g) => g.id === ales) ? ales : r[0]?.id ?? null;
 
 /**
+ * Grupul cerut din altă filă (amprenta unei erori din tichet, felia A.3), adus separat fiindcă nu e între cele citite (cele
+ * mai recente 100): pus primul în listă, cât îl lasă filtrul pe stare (cel cu sursa vine după). Un grup deja citit nu se
+ * dublează.
+ */
+export function cuTinta(lista: readonly RandGrup[], adus: RandGrup | null, doarNerezolvate: boolean): RandGrup[] {
+  if (adus === null || lista.some((g) => g.id === adus.id) || (doarNerezolvate && adus.rezolvat)) return [...lista];
+  return [adus, ...lista];
+}
+
+/**
  * Câte apariții are fiecare din ultimele `zile` zile ale calendarului local (ultima e azi), din momentele date; una
  * necunoscută, de după `acum` sau mai veche nu se numără. Zilele se socotesc între miezuri de noapte locale (o zi cu
  * schimbarea orei are 23 sau 25 de ore, deci rotunjirea).

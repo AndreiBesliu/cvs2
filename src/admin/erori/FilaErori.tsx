@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import { collection, getCount, getDocs, limit, orderBy, query, where, type Query } from 'firebase/firestore/lite';
+import { collection, doc, getCount, getDoc, getDocs, limit, orderBy, query, where, type Query } from 'firebase/firestore/lite';
 import { marcheazaEroarea, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { rezolvareDin } from '../carcasa/date.ts';
-import { EroareCitire, ListaGoala, SeIncarca, usePublica, type Tinta } from '../carcasa/stari.tsx';
+import { EroareCitire, ListaGoala, SeIncarca, useCatSpatiulDeJos, usePublica, type Tinta } from '../carcasa/stari.tsx';
 import { aparitieDin, dataScurta, laPlafonOameni, motivDin, randDin, type Aparitie, type Masura, type RandGrup } from './date.ts';
-import { alesDupaLista, aparitiiPeZile, baraGrafic, filtreazaSursa, SURSE, type FiltruSursa } from './vedere.ts';
+import { alesDupaLista, aparitiiPeZile, baraGrafic, cuTinta, filtreazaSursa, SURSE, type FiltruSursa } from './vedere.ts';
 
 /** Câte grupuri arată fila; peste, ADR 0040 („Se redeschide dacă”) cere paginarea. */
 export const PLAFON_GRUPURI = 100;
@@ -21,7 +21,8 @@ const numara = (q: Query): Promise<number | null> => getCount(q).then((s) => s.d
  * prin reguli, în stânga; grupul ales în dreapta, fără să împingă lista: ultima apariție, aparițiile pe 14 zile (graficul,
  * din ultimele 20 citite), stiva, ultimele apariții și „Rezolvat” / „Redeschide” prin callable. Filtrul pe stare, cu
  * numărul fiecăreia, și filtrul pe sursă (browser / server, pe ce s-a citit). Un grup găsit de căutarea din antet (`tinta`)
- * vine ales, cu filtrul „Toate” dacă e rezolvat (ADR 0260 §1).
+ * vine ales, cu filtrul „Toate” dacă e rezolvat (ADR 0260 §1). Unul cerut dintr-un tichet (amprenta unei erori din sesiune,
+ * felia A.3) poate fi mai vechi decât cele mai recente 100: atunci se aduce singur și stă primul în listă.
  */
 export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Conexiune; readonly poateMarca: boolean; readonly tinta?: Tinta | null }): ReactElement {
   const l = useLimba();
@@ -34,6 +35,7 @@ export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Con
   const [ales, setAles] = useState<string | null>(tinta?.id ?? null);
   const [numere, setNumere] = useState<Readonly<Record<Stare, number | null>>>({ nerezolvate: null, toate: null });
   const [rev, setRev] = useState(0);
+  const idTinta = tinta?.id ?? null;
 
   useEffect(() => {
     let viu = true;
@@ -44,7 +46,11 @@ export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Con
       : query(col, orderBy('ultimaData', 'desc'), limit(PLAFON_GRUPURI));
     getDocs(q).then(
       async (s) => {
-        const randuri = s.docs.map((d) => randDin(d.id, d.data()));
+        const citite = s.docs.map((d) => randDin(d.id, d.data()));
+        // Grupul cerut din altă filă, dacă nu e între cele citite: adus singur (o citire căzută îl lasă deoparte).
+        const adus = idTinta === null || citite.some((g) => g.id === idTinta) ? null
+          : await getDoc(doc(col, idTinta)).then((d) => (d.exists() ? randDin(d.id, d.data()) : null), () => null);
+        const randuri = cuTinta(citite, adus, filtru === 'nerezolvate');
         // Indexul simplu al lui `marcatLa`, descendent: cea mai recentă marcare (fără nerezolvate, ea a fost o rezolvare).
         const u = randuri.length > 0 || filtru !== 'nerezolvate' ? null
           : await getDocs(query(col, orderBy('marcatLa', 'desc'), limit(1))).then((x) => (x.docs[0] ? rezolvareDin(x.docs[0].data()) : null), () => null);
@@ -56,7 +62,7 @@ export function FilaErori({ con, poateMarca, tinta = null }: { readonly con: Con
       (e: unknown) => { if (viu) setLista({ ok: false, motiv: motivDin(e) }); },
     );
     return () => { viu = false; };
-  }, [con, filtru, rev, publica]);
+  }, [con, filtru, rev, publica, idTinta]);
 
   // Numerele filtrului (schițele): numărători pe indexul simplu al lui `rezolvat` și pe colecție, la fiecare citire.
   useEffect(() => {
@@ -209,6 +215,8 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
   }, [con, grup.id]);
 
   const faraAppCheck = con.appCheck === 'oprit';
+  // Lipit sus, dar cât spațiul de sub el (A.3): un detaliu mai înalt decât ecranul se derulează în el, nu doar la capătul listei.
+  const catSpatiul = useCatSpatiulDeJos();
   const marcheaza = (): void => {
     setMarcare({ faza: 'se-marcheaza' });
     marcheazaEroarea(con, grup.id, !grup.rezolvat).then(
@@ -218,7 +226,7 @@ function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiun
   };
 
   return (
-    <section className="admin-erori-detaliu" data-admin="detaliu-eroare" aria-labelledby="eroare-aleasa">
+    <section ref={catSpatiul} className="admin-erori-detaliu" data-admin="detaliu-eroare" aria-labelledby="eroare-aleasa">
       <div className="admin-erori-detaliu-cap">
         <h3 id="eroare-aleasa" className="admin-grup-mesaj">{grup.mesaj}</h3>
         {/* Fără `erori.rezolva` (ADR 0049), rolul doar citește: butonul nu se arată (serverul l-ar refuza oricum). */}

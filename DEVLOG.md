@@ -10949,3 +10949,61 @@ lego” (owner-ul, după „neata, continua si porneste si worktrees”). **Star
 - **Otrăvurile 11.3d:** 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
 
 **Completed:** 21.11, 21:19.
+
+## 2026-11-18 — Felia A.3: Tichete (lista și conversația, legătura cu erorile, răspunsurile rapide) (ADR 0260, ADR 0261) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, A.3” (owner-ul, pe 18.11, în sesiunea liniei adminului, la „Pornesc A.3 (Tichete), cu ADR-ul răspunsurilor
+rapide propus întâi?”).
+**Started:** 18.11 21:00.
+
+**Prompturile de după:** sesiunea principală, pe 21.11: owner-ul, „da si vreau sa pornesti si restul worktrees”, cu `main`
+`a64adf63` de adus și ADR-ul cu întrebarea întâi; apoi owner-ul, aici, „Da, toate recomandările” (la „Accepți ADR 0261
+(răspunsurile rapide) cu toate recomandările?”).
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.2 (`86e3b36e`), cu `main` `a64adf63` adus în `c356744f` (ciocnire doar în
+  DEVLOG: intrările din `main` întâi, apoi A.3).
+- **Răspunsurile rapide cer o setare nouă, o regulă și audit,** deci felia s-a oprit întâi la ADR 0261 (propus, `182428da`),
+  cu schița și formularul celor cinci întrebări (<https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>, răspunsurile în baza
+  paginii, ca la linia planșelor). Restul feliei (lista, conversația, legătura cu erorile) e acoperit de ADR 0260 și a mers
+  înainte (`daf67f80`). ADR 0261 acceptat pe 21.11 cu 1a–5a.
+- **Codul:**
+  - `daf67f80`: lista și conversația din Tichete, erorile din sesiune spre Erori, grupul vechi adus în Erori (partea ADR-ului 0260);
+  - `49be8407`: răspunsurile rapide (contractul `shared/raspunsuriRapide.ts`, acțiunea callable-ului cu auditul, regula, secțiunea
+    din Setări, pastilele din Tichete), detaliul cât spațiul de sub el (`useCatSpatiulDeJos`), ciornele pe pagină și probele;
+  - `2a596685`, `25b22992`, `ed96b7a6`: ce au găsit otrăvurile și bancul vizual (mai jos).
+- **Găsite de proba e2e, de banc și de otrăvuri:**
+  - detaliul lipit sus din Erori (din A.2) își ascundea partea de jos până la capătul listei; acum, ca cel din Tichete, ține cât
+    spațiul de sub el, cu umplutura și bordura în plafon (`box-sizing`; fără ea, trecea cu 34 px);
+  - grila detaliului din `admin.css` bătea flex-ul celui din Tichete (după ordinea foilor în bundle), deci câmpul răspunsului
+    ieșea din detaliu: acum selectorul e dublu;
+  - formularul setărilor conturilor (din 14.C↑b) și editorul nou porneau din nou la cererea citirii, nu la sosirea ei: după
+    „Salvează” arătau valorile de dinainte;
+  - din 15.B↑a, câmpul răspunsului își ținea versiunea de la deschidere (al doilea răspuns ar fi fost refuzat, la citirea
+    codului): acum pleacă pe versiunea tichetului arătat, iar proba trimite două răspunsuri la rând;
+  - proba rândurilor schițate din A.1 ținea citirea cu un glob care nu se potrivea (`?key=`), ca cea din A.2;
+  - sonda rece a funcțiilor, în proba filei Azi, trece de 30 s sub încărcare: 60 s;
+  - bancul (1440, 1024, 760 px, ambele teme, 15 capturi): butonul din capul detaliului se rupea pe două rânduri, iar problema
+    unui rând din Setări era gri (`25b22992`);
+  - otrăvurile: U04 (propoziția probei se rupea chiar înaintea unui spațiu), E08 și E22 (citirile interzise numărate doar după
+    adresă; Firestore Lite citește un document prin `documents:batchGet`), reparate în `2a596685` și `ed96b7a6`.
+- **Porțile rapide:** tipurile (aplicația, funcțiile, extensia), importurile (20 de reguli, 0 încălcări), licențele,
+  traducerile (868 de texte, 0 netraduse), unitarele 9 669 (9 661 trecute, 8 sărite, 0 căzute). Pe emulator: callable-ul și
+  regulile, 40 / 40; probele atinse pe emulatoare, 17 / 17 (cu 3 căderi reparate pe drum, mai sus).
+- **Porțile lente**, pe un build al arborelui cu documentele traduse: e2e-ul întreg (`test/e2e`, 570 de probe, pe 4191), 549 la
+  prima rulare, cu 16 lucrători, cât mașina rula și alte linii; cele 21 căzute erau toate în fișierele editorului, neatinse de
+  A.3 (15 termene de 30 s depășite, 6 `page.goto` întrerupte) și trec toate la reluare, cu 4 lucrători. Pe emulatoare:
+  funcțiile 104 / 104 și paginile 34 / 34 (cu proba documentației).
+- **Otrăvurile:** 59 / 59 prinse (24 unitare; 5 pe server și 1 pe regulă; 29 pe emulatoare), controalele verzi, pe `25b22992`,
+  iar unitarele, E08 și E22 din nou pe `ed96b7a6`, după probele întărite (primul tur, 56 / 59).
+- **Mărimea**, față de un build curat al lui `main` `a64adf63`: `/admin` 113,7 → 121,2 / 200 kB (+7,5, din care vreo 5,7 sunt
+  răspunsurile rapide: dicționarele adminului, română și engleză, intră amândouă în bucata lui; linia, +14,7 din cei +25);
+  pornirea (107,2, cu ușa 111,2 / 115) și totalul (739,5 / 800) neschimbate; build-ul determinist, 343 de fișiere identice.
+- **Unirea cu `main` `40487c43`**, la încheiere (în `43049e82`; ciocnire doar în DEVLOG, nimic din zonele lui A.3). Pe unire:
+  tipurile, importurile, licențele, traducerile (879 de texte, 0 netraduse); build-ul determinist (345 de fișiere; `/admin`
+  121,2, pornirea 107,2, totalul 741,9 / 800); unitarele 9 683 (9 674 trecute, 8 sărite, 1 căzută: proba pe ceas a DXF-ului,
+  `dxf.test.ts:420`, 9,7 s față de pragul de 5 s, cât build-ul determinist rula alături; singură, 3 din 3); probele
+  adminului pe emulatoare, cu documentația, 21 / 21.
+- **Documentele:** ADR 0260 („Implementarea”, A.3), ADR 0261 (acceptat, întrebările, „Implementarea”) și rândul lui din
+  index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
+  **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
+  principale: „neata, continua si porneste si worktrees”, al owner-ului).
