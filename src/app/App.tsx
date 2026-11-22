@@ -39,6 +39,7 @@ import type { RezultatConfig } from './config.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
+import { descriere } from './descriereElement.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import { legareLaPornire } from './imprimantaLaPornire.ts';
@@ -220,21 +221,6 @@ const FEREASTRA_EXTENSIE = 'extensie';
 /** Extensia deschisă: id-ul, numele și, cu permisiunea `forme` (ADR 0166), unde pleacă formele trimise din desen. */
 type ExtensieDeschisa = { readonly id: string; readonly nume: string; readonly forme: ((f: FormeCvs2) => void) | null };
 type Fereastra = IdFereastra | typeof FEREASTRA_EXTENSIE;
-
-const doua = (x: number): string => x.toFixed(2);
-
-/** Un element în lume, în cuvinte: forma și unde stă pe foaie. Calea, prin cutia ei exactă în lume (ADR 0034 §8). */
-function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
-  const { e: x, f: y } = e.matrice;
-  if (e.forma.tip === 'dreptunghi') {
-    return t('forma.dreptunghi', { latime: doua(e.forma.latime), inaltime: doua(e.forma.inaltime), x: doua(x), y: doua(y) });
-  }
-  if (e.forma.tip === 'cerc') return t('forma.cerc', { raza: doua(e.forma.raza), x: doua(x), y: doua(y) });
-  const c = cutieElement(e);
-  // O cale deschisă are n − 1 segmente și se spune „cale deschisă” (ADR 0037 §2, §12).
-  const n = e.forma.varfuri.length - (e.forma.inchis ? 0 : 1);
-  return t(e.forma.inchis ? 'forma.cale' : 'forma.cale-deschisa', { latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY), n, x: doua(c.minX), y: doua(c.minY) });
-}
 
 /** O instanță, în cuvinte: numele piesei, sau primul ei element (și câte mai are). */
 function descriereInstanta(elemente: readonly ElementLume[], nume: string | undefined): string {
