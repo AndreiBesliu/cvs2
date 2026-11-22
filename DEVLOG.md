@@ -10860,6 +10860,11 @@ rapide propus întâi?”).
 - **Mărimea**, față de un build curat al lui `main` `a64adf63`: `/admin` 113,7 → 121,2 / 200 kB (+7,5, din care vreo 5,7 sunt
   răspunsurile rapide: dicționarele adminului, română și engleză, intră amândouă în bucata lui; linia, +14,7 din cei +25);
   pornirea (107,2, cu ușa 111,2 / 115) și totalul (739,5 / 800) neschimbate; build-ul determinist, 343 de fișiere identice.
+- **Unirea cu `main` `40487c43`**, la încheiere (în `43049e82`; ciocnire doar în DEVLOG, nimic din zonele lui A.3). Pe unire:
+  tipurile, importurile, licențele, traducerile (879 de texte, 0 netraduse); build-ul determinist (345 de fișiere; `/admin`
+  121,2, pornirea 107,2, totalul 741,9 / 800); unitarele 9 683 (9 674 trecute, 8 sărite, 1 căzută: proba pe ceas a DXF-ului,
+  `dxf.test.ts:420`, 9,7 s față de pragul de 5 s, cât build-ul determinist rula alături; singură, 3 din 3); probele
+  adminului pe emulatoare, cu documentația, 21 / 21.
 - **Documentele:** ADR 0260 („Implementarea”, A.3), ADR 0261 (acceptat, întrebările, „Implementarea”) și rândul lui din
   index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
