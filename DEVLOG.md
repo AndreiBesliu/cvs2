@@ -10920,3 +10920,36 @@ Dacă nu e niciuna, pregătește propunerea (ADR, schiță) și pune-i întrebar
   formularul răspunsurilor: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>.
 - **Pentru owner:** coada din fișă are acum și proba grupului 3 pe K1C (ghidul, pașii 9–11).
 - **Mărimea de azi:** totalul 739,4 / 800, pornirea cu ușa 111,2 / 115, măsurate de sesiunea principală pe 20.11, pe `b3c3970f` (`main` `a64adf6` adaugă doar CLAUDE.md și indexul ADR).
+
+## 2026-11-22 — 3.6v: codurile imprimantei explicate (ADR 0195 §A) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, la propunerea grupului 4, ADR 0195: 1a, schița așa; 2a, răspunsurile la o eroare
+rămân pe ecranul imprimantei). Reluată pe 22.11 la „Reia 3.6v: aseară procesul s-a oprit cât îți rulau porțile.” (sesiunea
+principală, după „neata, continua si porneste si worktrees” al owner-ului).
+**Started:** 21.11, 18:30. **Completed:** 22.11, 18:50.
+
+- **Cercetarea, în plus față de propunere:** „K1 Series Error Code Summary” (wiki-ul Creality: 89 de coduri, cu explicația
+  și soluția) a adus 61 de chei pe care tabelul Creality Print 4 nu le are și înțelesul lui 103; ecranul arată „Error
+  Key：104”, deci `err.key` e numărul de pe ecran. CC5000 (captura owner-ului din 03.11) e în tabelul Creality Print 6.
+  Paginile din wiki: 12, în engleză, verificate (200; o cale inventată, 404).
+- **Dicționarul:** 126 de chei, textele noastre în română și engleză (o singură sursă de lucru, din care au ieșit
+  tabelul și cele două fișiere de texte), `coduri/creality-k1.<limba>.json` la build, în precache, cu plafonul de 8 kB
+  gzip în poarta mărimii. Nu în fișierul GRBL: acela avea 9,1 din 12 kB și ar fi tras textele imprimantei în panoul CNC.
+- **Fereastra și notificările:** cardul „De la imprimantă” (codul de pe ecran, gravitatea, ce faci, pagina Creality, lista
+  codurilor pentru un număr necunoscut), banda cu explicația (făcută la randare), notificarea sistemului care așteaptă
+  explicația cel mult 1,5 s, evenimentul nou „Pană de curent” (pornit implicit).
+- **Driverul:** `DriverText.coduri`, `Imprimanta.reluareDupaPana` (`repoPlrStatus`), codul în evenimentul `eroare`.
+- **Recenzia proprie** (22.11; Workflow-ul cu agenți e refuzat aici fără o regulă de permisiune pusă de owner), pe
+  dimensiuni (forma și căutarea, cârligul și notificările, driverul și evenimentele, linkurile, textele și diacriticele),
+  trei reparații, fiecare cu proba și otrava ei: linkurile cardului se întindeau pe tot rândul grilei (un clic pe gol
+  deschidea pagina; U13); un dicționar care n-a venit nu se mai cerea până la redeschiderea ferestrei (acum, la eroarea
+  următoare; e2e nou, U14); cheia 0 cu un cod nenul ar fi arătat „Cod 0” fără dicționar (D03).
+- **Probe și porți:** 11 pe hârtie, cheia 0 în proba driverului, manualul (două controale), două e2e noi și două
+  actualizate; pe `805ad35b`: unit 9 693 (9 685 trecute, 0 căderi, 8 sărite), build-ul determinist (350 fișiere), e2e 582 / 582: 549 în rularea întreagă; cele 11 căderi, din încărcare (alte linii rulau e2e), singure 11 / 11; `imprimanta.spec.ts` e serial, deci cele 22 de după căderea lui `:294` (la deschiderea ferestrei) n-au rulat acolo: tot fișierul, singur, 30 / 30.
+  Otrăvurile (`test/otravuri/3.6v.py`): 46 / 46 (32 pe probele unitare, 14 prin e2e); din lista 3.6s, U02 adusă la codul nou și probată din nou.
+- **Pe drum:** procesul s-a oprit pe 21.11 seara, cât rulau porțile; pe `27bda139` trecuseră toate (e2e 563 / 571, cele
+  8 căderi, în probele altor linii, singure 8 / 8; otrăvurile 43 / 43). Azi: `main` adus de două ori (`40487c4`,
+  `69fe779`; ciocnirile doar în DEVLOG și în dicționarul roadmap-ului), recenzia, porțile din nou, pe vârf.
+- **Mărimea:** totalul 745,6 / 800 kB (+1,5 față de `main` `69fe779`, A/B), pornirea 107,2
+  (cu ușa 111,2 / 115), neschimbată. Privit în Edge, la 1280 px (luminos) și la 390 px (întunecat, în română și în engleză): cardul încape, iar „Pagina Creality ↗” ține cât textul (105 px; în engleză, 95), nu tot rândul.
+- **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.

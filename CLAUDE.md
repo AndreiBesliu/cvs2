@@ -845,10 +845,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6u gata pe 18.11** (filmele timelapse): `elapseVideoList` în driver (`filme`, `adresaFilm`), `filmePe` (pur), coloana Filmul
   a cardului Istoricul (filă nouă, fără trimitător); istoricul și filmele, cerute din nou la deschiderea ferestrei (`vizibila`).
   Totalul 732,7 / 800 (+0,5). Grupul 3 încheiat; proba pe K1C: ghidul, pașii 9–11.
-  **Grupul 4 propus pe 21.11** (ADR 0195, schița cu formularul: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>): 3.6v, codurile explicate (dicționarul
-  cvs2 al familiei K1, 71 de chei, căutate după `key`, apoi `errcode`; pana de curent din `repoPlrStatus`), 3.6w, camera
-  WebRTC (`/call/webrtc_local` pe 8000, fără STUN), 3.6x, camera MJPEG (8080, cadre `blob:`); CSP-ul neschimbat. Codul,
-  la răspunsuri.
+  **Grupul 4 acceptat pe 21.11** (ADR 0195, „Da, recomandările”: 1a, 2a; schița: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>). **3.6v gata pe 22.11**
+  (codurile explicate): dicționarul familiei K1, 126 de chei, în `coduri/creality-k1.<limba>.json` (precache, plafonul 8 kB),
+  căutat după `key`, apoi după `errcode`; cardul „De la imprimantă” (`EroareImprimanta.tsx`), banda și notificarea cu
+  explicația; pana de curent (`repoPlrStatus`), eveniment nou; la recenzia proprie, trei reparații (linkurile cât textul,
+  dicționarul cerut din nou după o cerere căzută, cheia 0). Totalul 745,6 / 800 (+1,5). Urmează 3.6w
+  (camera WebRTC), la cuvântul owner-ului.
   **Biblioteca extensiilor (ADR 0230, felia 3.Xg)** gata pe 07.11, în worktree-ul `biblioteca`, cu recomandările („Da,
   1a–7a”), **unită în `main` pe 07.11** („Da, unește”): Easy 3Draw se instalează și se actualizează dintr-o listă servită
   lângă aplicație. **La fiecare build,

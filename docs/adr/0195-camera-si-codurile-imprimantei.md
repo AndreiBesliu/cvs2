@@ -1,6 +1,6 @@
 # ADR 0195 — Camera imprimantei și codurile ei explicate
 
-**Starea:** propus pe 21.11.2026, pentru feliile 3.6v, 3.6w și 3.6x (fără imprimantă, pe imprimanta falsă; apoi proba pe
+**Starea:** acceptat pe 21.11.2026 (propus în aceeași zi), cu recomandările („Da, recomandările”: 1a, 2a), pentru feliile 3.6v, 3.6w și 3.6x (fără imprimantă, pe imprimanta falsă; apoi proba pe
 imprimanta owner-ului, după ghid), în worktree-ul `imprimanta` (ramura `wip/3.6g-imprimanta`, la `main` `a64adf63`). Cererea
 owner-ului: grupul 4 din cele șapte grupuri de îmbunătățiri ale legăturii prin WiFi (08.11, „Camera: imaginea live în
 fereastră”, cu ordinea recomandată atunci: „1 → 2 → 3, apoi camera”), după grupul 3 (ADR 0194, unit în `main` pe 18.11), la
@@ -9,7 +9,7 @@ codurile explicate („in primul rand, accept toate sugestiile tale”); cardul 
 într-o felie separată”). **Completează:** ADR 0190 (fereastra Imprimanta; întrebarea 4 din 07.11, camera într-o felie a ei,
 „4a”), ADR 0192 (starea comună și capabilitățile driverelor primesc camera și dicționarul codurilor) și ADR 0194 (o eroare
 se anunță cu ce înseamnă, nu doar cu cheia). **Documentul:** neschimbat. **CSP-ul:** neschimbat (§D). **Schița,** cu
-formularul răspunsurilor (colecția `raspunsuri`): <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>.
+formularul răspunsurilor (colecția `raspunsuri`): <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>. **Felia 3.6v** gata pe 22.11 (secțiunea „Felia 3.6v, gata”); proba pe imprimanta owner-ului: ghidul, pasul 12.
 
 **Problema.** Când imprimanta se oprește cu o eroare, cvs2 arată „Cod 2585” și te trimite la ecranul ei; notificarea dă doar
 cheia („textul ei e pe ecranul imprimantei”). Ca să afli ce s-a întâmplat și ce faci, te duci la imprimantă sau cauți codul
@@ -145,7 +145,49 @@ Fiecare, după răspunsuri și după schiță, cu probele, otrăvurile și ghidu
 - **Pe imprimanta owner-ului** (ghidul, pași noi): camera (pornește? cât întârzie? și pe telefon?); o eroare, când apare,
   cu jurnalul copiat (cheia și codul ei față de dicționar).
 
+## Felia 3.6v, gata (22.11.2026)
+
+- **Dicționarul familiei K1:** 126 de chei, nu 71, cum spunea propunerea: cele 64 cu un înțeles din tabelul Creality Print 4
+  (fără cele cinci „Unknown error”, 2536, 2537 și 2566–2568, și fără 20000 și 20010, cheile Creality Print pentru pană și
+  filament), plus 61 din „K1 Series Error Code Summary”, rezumatul codurilor K1 din wiki-ul Creality (cu explicația și
+  soluția fiecăruia; de acolo și-a primit înțelesul 103), și CC5000, arătat de K1C-ul owner-ului pe 03.11 (ADR 0190), aflat
+  și în tabelul Creality Print 6. 84 grave, 42 obișnuite. 12 au pagina lor în wiki, în engleză, verificate una câte una
+  (răspund 200; o cale inventată dă 404); 2571 are acum pagina lui, nu pe a lui 2121, cum o lega Creality Print. Textele
+  (titlul, ce faci) sunt ale noastre, în română și engleză; nimic copiat.
+- **Fișierele:** `coduri/creality-k1.ro.json` și `coduri/creality-k1.en.json` (4,8 și 4,5 kB gzip,
+  plafonul 8 pe fișier, în poarta mărimii), generate la build (`scripts/coduriImprimanta.ts`, din
+  `src/machine/imprimanta/coduri/k1.ts`, `k1.ro.ts`, `k1.en.ts`), în precache. Forma (`shared/coduriImprimanta.ts`) se
+  verifică și la citire: linkurile doar spre `https://wiki.creality.com/`, fără ghilimele; codul de pe ecran, doar litere
+  și cifre; cheile, numere.
+- **Fereastra:** cardul „De la imprimantă” (`EroareImprimanta.tsx`): codul de pe ecran, gravă sau obișnuită, ce s-a
+  întâmplat, „Ce faci:”, „Pagina Creality ↗” (filă nouă, `noopener noreferrer`) și, mic, cheia și codul primite; un număr
+  necunoscut, ca atare, cu „Lista codurilor ↗”; fără dicționar, codul, ca înainte. Dicționarul se cere la prima eroare
+  (`useCoduriImprimanta`), o dată pe familie și limbă.
+- **Notificările:** banda își face textul la randare, deci o eroare își primește explicația când vine dicționarul;
+  notificarea sistemului o așteaptă cel mult 1,5 s, apoi pleacă oricum. Evenimentul nou **Pană de curent**
+  (`repoPlrStatus` 1), pornit implicit (o setare veche îl primește pornit); banda lui pleacă singură când întrebarea de
+  pe ecran se închide. Răspunsurile la o eroare rămân pe ecranul imprimantei (2a).
+- **Driverul** (ADR 0192): `DriverText.coduri` (K1: `creality-k1`), `Imprimanta.reluareDupaPana`; evenimentul `eroare`
+  poartă și codul (`errcode`); cheia 0, ca și codul 0, nu numește nimic. Imprimanta falsă: `pana(da)`; pornește cu
+  `repoPlrStatus` 0, ca K1C-ul owner-ului.
+- **Recenzia proprie** (22.11; Workflow-ul cu agenți e refuzat aici fără o regulă de permisiune), trei reparații, fiecare
+  cu proba și otrava ei: linkurile cardului țin cât textul lor (în grilă se întindeau pe tot rândul, deci un clic pe gol
+  deschidea pagina); un dicționar care n-a venit (fără rețea, înainte de precache) se cere din nou la eroarea următoare, nu
+  abia la redeschiderea ferestrei; cheia 0 cu un cod nenul nu mai poate arăta „Cod 0”.
+- **Măsurat și probat:** totalul 745,6 / 800 kB (+1,5 față de `main` `69fe779`, A/B pe aceeași mașină;
+  ținta ~5), pornirea 107,2 (cu ușa 111,2 / 115; aceeași ca pe `main`). Probe noi:
+  `test/unit/imprimanta.coduri.test.ts` (11: cheile și textele, linkurile, generatorul și gărzile lui, forma citită din
+  rețea, căutarea, pana în driver și în evenimente, notificarea explicată, setarea nouă, precache-ul), cheia 0 în proba
+  driverului, manualul (două controale noi), două e2e (3.6v: codurile, cu lățimea linkurilor; dicționarul cerut din nou
+  după o cerere căzută) și două actualizate (3.6g: CC5000 explicat; 3.6s: banda explicată).
+  Porțile, pe `805ad35b` (cu `main` `69fe779` adus): unit 9 693 (9 685 trecute, 0 căderi, 8 sărite), build-ul determinist (350 fișiere),
+  e2e 582 / 582: 549 în rularea întreagă; cele 11 căderi, din încărcare (alte linii rulau e2e), singure 11 / 11; `imprimanta.spec.ts` e serial, deci cele 22 de după căderea lui `:294` (la deschiderea ferestrei) n-au rulat acolo: tot fișierul, singur, 30 / 30.
+  Privit în Edge, la 1280 px (luminos) și la 390 px (întunecat, în română și în engleză): cardul încape, iar „Pagina Creality ↗” ține cât textul (105 px; în engleză, 95), nu tot rândul.
+  Otrăvurile: `test/otravuri/3.6v.py`, 46 / 46 (32 pe probele unitare, 14 prin e2e); din lista 3.6s, U02 adusă la codul nou și probată din nou.
+
 ## Întrebările (owner)
+
+**Răspunsurile, din 21.11:** „Da, recomandările”: 1a (schița așa), 2a (răspunsurile la o eroare rămân pe ecranul imprimantei; butoanele, într-o felie a lor, după proba pe K1C).
 
 1. **Schița** (<https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>): a) așa (recomandat); b) altfel (spune unde).
 2. **Răspunsurile la o eroare, din cvs2** (Continuă, Anulează, Reia după o pană de curent): a) nu acum: 3.6v explică, iar
