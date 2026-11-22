@@ -282,7 +282,9 @@ pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-f
 .mod-3d .sabloane button { font-variant-numeric: tabular-nums; font-size: 13px; padding: 5px 9px; }
 /* galeria familiei alese (ADR 0281), lipită de filele de sus: piesele ei, cu piesa de acum apăsată */
 .mod-3d .at-galerie { display: flex; gap: 6px; flex-wrap: wrap; margin-top: -4px; }
-.mod-3d .at-galerie button { border: 1px solid var(--linie); background: var(--panou-2); border-radius: 8px; padding: 6px 10px; font-weight: 700; font-size: 13px; }
+.mod-3d .at-galerie button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--linie); background: var(--panou-2); border-radius: 8px; padding: 6px 10px 6px 8px; font-weight: 700; font-size: 13px; }
+/* pictograma piesei (ADR 0281, felia 3.Tp↑b): doar linii, de culoarea textului (deci după temă și după apăsare) */
+.mod-3d .at-pict { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .mod-3d .at-galerie button[aria-pressed="true"] { background: var(--text); color: var(--panou); border-color: var(--text); }
 .mod-3d .at-galerie-gol { padding: 6px 0; }
 .mod-3d .punct-gaura { cursor: pointer; }
