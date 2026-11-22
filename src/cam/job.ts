@@ -37,6 +37,7 @@ import {
   centreDeLa, coloaneUrechi, EPS_VARF, geometrieUrechi, inZonaUrechii, pornireInGol, proiectiePeBucla, urecheCareNuIncape, urechiPeBucla, type GeometrieUrechi,
   type ParametriUrechi,
 } from './urechi.ts';
+import { urechiLemnBucla, type FundLemn, type LaturaLemn } from './urechiLemn.ts';
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
@@ -210,15 +211,40 @@ export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjar
  * o buclă unde nu încape). Programul rămâne corect fără ele.
  */
 export type RezultatJob =
-  | { readonly ok: true; readonly program: Program; readonly avertismente: readonly string[] }
+  | {
+    readonly ok: true; readonly program: Program; readonly avertismente: readonly string[];
+    /** Centrele urechilor „unde ține” (ADR 0211, b), pe drumul frezei, în lume: semnele de lângă traseu. */
+    readonly urechiLemn?: readonly Punct[];
+  }
   | { readonly ok: false; readonly motiv: string };
+
+/** Câte bucle numește avertismentul urechilor „unde ține” prea puține; celelalte se numără. */
+const BUCLE_NUMITE = 5;
+
+/** O buclă cu urechi „unde ține” mai puține decât numărul: tăietura, bucla (din câte are tăietura), câte au încăput, câte se cer. */
+type BuclaPutine = { readonly id: string; readonly j: number; readonly bucle: number; readonly k: number; readonly n: number };
+
+/**
+ * Avertismentul urechilor „unde ține” (ADR 0211, b: „dacă nu găsește destule, le pune pe cele găsite”): nimic nu se micșorează
+ * pe tăcute (ADR 0028). O piesă fără nicio ureche apare aici și, desprinsă, în proba urechilor.
+ */
+function avertismentLemn(putine: readonly BuclaPutine[]): string {
+  const numite = putine.slice(0, BUCLE_NUMITE).map((x) => `${x.id}${x.bucle > 1 ? ` (bucla ${x.j + 1})` : ''}: ${x.k} din ${x.n}`);
+  const rest = putine.length - numite.length;
+  const cate = putine.length === 1 ? 'o buclă are' : `${putine.length} bucle au`;
+  return `urechile „unde ține”: ${cate} mai puține urechi decât cere numărul, fiindcă în jurul lor nu e destul lemn de care să țină: ${numite.join('; ')}${rest > 0 ? `; și încă ${rest}` : ''}`;
+}
 
 /**
  * `supracursa`: cât are voie o operație sub fața de jos a foii (mm, 0 … `SUPRACURSA_MAXIMA`), din fereastra exportului
  * (ADR 0176); traseul și vederea 3D calculează fără ea (0). `prinFoaie` (bifa de lângă ea, ADR 0177): și tăieturile scrise cât
- * foaia trec cu supracursa, ca scrise grosime plus supracursă.
+ * foaia trec cu supracursa, ca scrise grosime plus supracursă. `lemn` (ADR 0211, b): pentru urechile „unde ține”, `'fara'` în
+ * prima trecere (tăiate fără urechi), apoi fundul foii de la capătul ei (`jobs/calculCam.ts`, `programFoii`); lipsă, ele se
+ * refuză, ca nicio tăietură să nu treacă pe tăcute fără urechi.
  */
-export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false): RezultatJob {
+export function programDinDocument(
+  doc: Document, regim: Regim = REGIM_IMPLICIT, supracursa = 0, prinFoaie = false, lemn?: FundLemn | 'fara',
+): RezultatJob {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
   if (!(supracursa >= 0 && supracursa <= SUPRACURSA_MAXIMA)) {
@@ -342,6 +368,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
+  // Urechile „unde ține” (ADR 0211, b): buclele cu mai puține decât numărul și centrele lor, în lume.
+  const putine: BuclaPutine[] = [];
+  const puncteLemn: Punct[] = [];
   // Profilele tuturor tăieturilor, o dată. Un profil care nu iese se raportează mai jos, la tăietura lui. Pe o parte
   // (ADR 0037 §3), partea pe foaie se inversează sub o matrice care oglindește.
   const profile = taieturi.map((u) => profil(conturDe(u), {
@@ -623,14 +652,26 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // Urechile (ADR 0028 §2): vârful lor se măsoară de la fața de jos a foii, deci puntea are grosimea cerută oricât de
     // adânc merge tăietura.
     let urechi: ParametriUrechi | undefined;
-    // Modurile urechilor (ADR 0211): „egale” (implicit) și „alese” se taie de acum; „unde ține” și regulile, în feliile lor.
+    // Modurile urechilor (ADR 0211): „egale” (implicit), „alese” și „unde ține” se taie de acum; regulile, în felia lor.
     const mod = t.urechi?.mod;
-    if (mod !== undefined && mod !== 'egale' && mod !== 'alese') {
-      return { ok: false, motiv: `${t.idLume}: urechile „${mod}” vin într-o felie următoare (ADR 0211): alege „la distanțe egale” sau „alese pe desen”` };
+    if (mod !== undefined && mod !== 'egale' && mod !== 'alese' && mod !== 'lemn') {
+      return { ok: false, motiv: `${t.idLume}: urechile „${mod}” vin într-o felie următoare (ADR 0211): alege „la distanțe egale”, „alese pe desen” sau „unde ține”` };
+    }
+    // „Unde ține” (ADR 0211, b): urechea ține de o parte a tăieturii (pe dinafară, de foaie; pe dinăuntru, miezul de piesă), deci
+    // cere un profil închis cu o parte de deșeu; locurile vin din fundul foii, iar în prima trecere tăietura n-are urechi.
+    const lemnAici = t.urechi !== null && mod === 'lemn';
+    if (lemnAici) {
+      if (latura !== 'exterior' && latura !== 'interior') {
+        const dece = latura === 'pe-linie' ? 'pe linie, freza taie ambii pereți' : 'pe o cale deschisă, urechea n-are de ce să țină';
+        return { ok: false, motiv: `${t.idLume}: urechile „unde ține” cer un profil pe dinafară sau pe dinăuntru: ${dece}` };
+      }
+      if (lemn === undefined) {
+        return { ok: false, motiv: `${t.idLume}: urechile „unde ține” se socotesc pe fundul foii, la export, la traseu și în vederea 3D` };
+      }
     }
     // La locuri alese, un element fără niciun loc n-are urechi (numărul e câte ai pus).
     const alese = puncteAlese(t);
-    if (t.urechi && !(alese && alese.length === 0)) {
+    if (t.urechi && !(alese && alese.length === 0) && !(lemnAici && lemn === 'fara')) {
       const g = t.urechi.grosime;
       if (g >= grosime - EPS_VARF) {
         return { ok: false, motiv: `${t.idLume}: urechile de ${g} mm nu încap în foaia de ${grosime} mm` };
@@ -662,6 +703,21 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const r = centrePeBucle(pr.treceri[0]?.contururi ?? [], alese, urechi.latime);
       if (typeof r === 'string') return { ok: false, motiv: `${t.idLume}: ${r}` };
       centreAlese = r;
+    }
+    // „Unde ține” (ADR 0211, b): pe fiecare buclă, din fundul foii. Cu toate buclele la distanțe egale (și fără intrări, care ar
+    // număra urechile de la pornirea lor), urechile rămân ale modului „egale”, octet cu octet; altfel, ca alese.
+    if (urechi && lemnAici && lemn !== undefined && lemn !== 'fara' && (latura === 'exterior' || latura === 'interior')) {
+      const u = urechi, fund = lemn, bucle = pr.treceri[0]?.contururi ?? [];
+      const parte: LaturaLemn = latura;
+      const rez = bucle.map((c) => urechiLemnBucla(c, t.sens, parte, fund, D, u.latime, u.numar, fund.celula, !t.intrari));
+      rez.forEach((r, j) => {
+        if (r.cate < u.numar) putine.push({ id: t.idLume, j, bucle: bucle.length, k: r.cate, n: u.numar });
+        for (const s of r.centre) {
+          const q = punctLa(bucle[j] as Contur, s)?.p;
+          if (q) puncteLemn.push(q);
+        }
+      });
+      if (!rez.every((r) => r.egale)) centreAlese = rez.map((r) => [...r.centre]);
     }
     /** Urechile buclei j înainte de pornire: la locuri alese, centrele ei pe bucla din profil; altfel, ale tăieturii. */
     const urechiInitiale = (j: number): ParametriUrechi | undefined => (urechi && centreAlese ? urechiPeBucla({ ...urechi, bucle: centreAlese }, j) : urechi);
@@ -838,5 +894,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }
-  return { ok: true, program: { axe: AXE_XYZ, scula: initiala ?? scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente };
+  if (putine.length > 0) avertismente.push(avertismentLemn(putine));
+  return {
+    ok: true, program: { axe: AXE_XYZ, scula: initiala ?? scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente,
+    ...(puncteLemn.length > 0 ? { urechiLemn: puncteLemn } : {}),
+  };
 }

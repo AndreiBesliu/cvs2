@@ -79,7 +79,8 @@ export type DopSimulat = { readonly element: string; readonly semifabricat: Semi
  * O parte desprinsă (ADR 0210, felia 11.3↑c): un contur tăiat prin foaie de un profil exterior cu urechi, la care, la capătul
  * programului, nu mai ajunge niciun pic de lemn legat de marginea foii. Instanța, elementul în lume și mijlocul cutiei lui.
  */
-export type ParteDesprinsa = { readonly instanta: string; readonly element: string; readonly x: number; readonly y: number };
+/** O piesă desprinsă (ADR 0210, 11.3↑c): instanța, elementul în lume, operația care o taie (`piesă/operație`) și locul spus omului. */
+export type ParteDesprinsa = { readonly instanta: string; readonly element: string; readonly operatie: string; readonly x: number; readonly y: number };
 
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
@@ -118,7 +119,10 @@ export type RaspunsExport =
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };
 
-export type RaspunsTraseu = { readonly ok: true; readonly program: ProgramImpachetat } | { readonly ok: false; readonly motiv: string };
+/** Traseul (ADR 0038 §2), cu centrele urechilor „unde ține” (ADR 0211, b), în lume: semnele lor de pe pânză. */
+export type RaspunsTraseu =
+  | { readonly ok: true; readonly program: ProgramImpachetat; readonly urechiLemn?: readonly { readonly x: number; readonly y: number }[] }
+  | { readonly ok: false; readonly motiv: string };
 
 export type RaspunsSimulare =
   | {

@@ -11007,3 +11007,15 @@ rapide propus întâi?”).
   index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
+
+## 2026-11-22 — Felia 11.3↑e: urechile „unde ține” (ADR 0211, varianta b) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑e („unde ține”: aplicația pune singură urechile la export, acolo
+unde țin de lemnul foii)? Răspunde „Da, 11.3↑e” sau „Nu acum”.”: „Da, 11.3↑e”.
+**Started:** 22.11, 21:34.
+
+- **`main` `88be9d6c`** a venit prin avans direct (11.3↑d unită în `44046e5d`; ramura n-avea nimic peste el).
+- **Cifrele, pe hârtie, întâi** (ADR 0211, „Proba”): pe placa 11 la 5 mm, cu „unde ține”, cad doar plăcuțele înconjurate de
+  vecine pe toate patru laturile: pe foaia 1 (cinci rânduri pline de câte trei), mijlocul rândurilor 2–4 (numele 5, 8, 11);
+  pe foaia 2 (trei rânduri pline și una la x = 10, y = 75), doar mijlocul rândului 2 (numele 20). Cu urechile la distanțe
+  egale cădeau 9 + 4. La 10 mm, lemnul de 3,65 mm dintre tăieturi e legat de margine, deci programele rămân ale plăcii.
