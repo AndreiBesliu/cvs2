@@ -11759,3 +11759,26 @@ PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului�
 - **Porțile, în CI:** în raportul din PR-ul ramurii.
 - **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
+
+## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
+`AndreiBesliu/cvs2#8`, A.6 din `df098dad`); pe drum, owner-ul: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie
+si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frezelor.”
+**Started:** 23.11, 19:20. **Completed:** unirea în `main`, 23.11, 20:27; publicările pe test, în rândul de la capăt.
+
+- **Lotul, întâi cu două felii:** `unire-2311f` din `d6fd5d68`: 11.3↑f (`527a95f3`, raportată gata) și A.6 (`df098dad`);
+  porțile pornite la 19:20.
+- **Mesajele sesiunii planșelor**, citite abia după: owner-ul îi ceruse ei unirea lui 11.3↑f („ok, cand se poate fa
+  unirea”) și ea ceruse să nu intre în lot. I-am răspuns (sesiunile își pot scrie cu `send_message`): n-am împins lotul,
+  ea a împins 11.3↑f în `main` (`c8b235ab`), iar A.6 a mers peste ea, pe `unire-2311h` (`4497d639`; ciocnirea, doar în
+  DEVLOG). Codul lui `4497d639` e identic cu al lui `66e88c92` (`git diff` gol în afara fișierelor `.md`).
+- **Porțile, în CI, pe `66e88c92`** (completul, 46 de minute): unit 9 885 / 0 (12 sărite), e2e 609 / 609, funcțiile pe
+  emulatoare 104 / 104, paginile 41 / 41; pornirea 108,5 / 115 (cu ușa 113,0; cu Atelierul 113,3), totalul 770,9 / 800,
+  `/admin` 127,5 / 200.
+- **Linia frezelor (16.A↑):** ramura `wip/16.A-freze` făcută din `main` (`c8b235ab`) și împinsă; promptul (ce există azi,
+  ADR 0290 propus cu întrebările, schița; marginile: documentul ține o copie a frezei, v27 pentru un câmp nou, contul prin
+  callable, mărimea pornirii) trimis owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (adminul, frezele); `docs/linii/principala.md` (starea,
+  mesajele între sesiuni); `docs/lucru-in-cloud.md` (sesiunile își pot scrie; o linie căreia i se cere unirea îi scrie
+  întâi sesiunii principale).
