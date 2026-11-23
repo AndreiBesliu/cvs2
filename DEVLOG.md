@@ -11467,3 +11467,31 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   și istoricul planului din rândurile de audit ale contului, doar cu „Audit: citește”. Personal (`Admin-Personal`): oamenii
   cu metoda de intrare sub nume și invitațiile deschise în aceeași listă, apoi matricea rol × permisiune, cu toate rolurile
   alături. Fără reguli, date, indexuri sau funcții noi.
+- **Utilizatori** (`a84f73ce`): partea pură întâi, cu probele ei (`utilizatori/vedere.ts`: filtrele și numerele lor,
+  căutarea, dreptul pe scurt, istoricul planului). Tabelul cu filtrele pe plan și căutarea; contul ales alături, cu
+  formularul de azi al planului și istoricul din audit (egalitate pe `tinta`, indexul simplu, ordonat în pagină), doar cu
+  „Audit: citește”; un cont găsit de căutarea din antet vine ales; cât lista se recitește, nimic nu pleacă.
+- **Personal:** felul intrării sub nume, din `sursa` documentului (Google prin invitație, parolă pe un cont creat aici,
+  adăugat în consolă: al primului owner nu e ținut nicăieri, deci nu se ghicește); invitațiile deschise în lista oamenilor;
+  „Adaugă un om” deschide formularul. Matricea: catalogul pe zone (`grupePermisiuni`), zona și fapta din eticheta de azi
+  (`etichetaPermisiune`, fără texte noi), un rol editat pe coloana lui, cu aceeași cerere `salveaza-rol`.
+- **Alegeri față de schiță, spuse owner-ului în raport:** schimbarea planului a rămas formularul cu „Salvează planul”, nu
+  trei butoane cu un clic (o dezactivare greșită ajunge imediat la client); matricea se editează pe coloană, cu salvare, nu
+  la fiecare bifă; felul intrării vine din sursa documentului, nu din Auth (ar cere o funcție nouă).
+- **Capturile** (cele două file la 1440, 1024 și 760 px, în ambele teme, pe emulatoare, cu un fișier de probă necomis) au
+  găsit: adresele rupte pe trei rânduri la 1024 px cu panoul alături (pragul de 1 100 px), matricea înghesuită sub 1 200 px,
+  textul de ajutor al căutării tăiat, datele cu oră prea late pentru coloane (`ziScurta`). Reparate, cu probe de așezare.
+- **Găsite în probe, nu în cod:** ordinea oamenilor depinde de uid-ul owner-ului probei (fără adresă în document), deci
+  rândul lui se caută după insigna fixă; o invitație pusă direct în bază cere id-ul serverului (amprenta adresei), altfel
+  anularea ei e refuzată.
+- **Probele:** 8 unitare noi; pe emulatoare, în container, toate paginile 38 / 38 (36 dinainte, 2 noi); probele e2e
+  obișnuite care ating `/admin` (`admin.spec.ts`, `pwa.spec.ts`) 20 / 20; tipurile, regulile de import, traducerile.
+- **Otrăvurile** (`test/otravuri/A.5.py`, pe `58bb8f54`, într-o clonă): 61 / 61 la prima rulare (23 unitare, 38 pe
+  emulatoare, fiecare pe aserțiunea care îi țintește defectul), după patru probe întărite înaintea rulării (U10, U16, E09,
+  E36). `verifica` pe toate listele: aceleași VOID-uri ca pe `main`.
+- **Mărimea** (build-ul determinist, față de `main` `c010e3d1`, măsurat la fel): `/admin` 124,1 → 125,6 / 200 kB (+1,5;
+  linia, +19,1 din cei +25); pornirea 107,9 (cu ușa 112,3 / 115) și totalul 763,1 / 800, neschimbate.
+- **Porțile, în CI:** rapidul verde pe `a84f73ce` (codul feliei); rapidul și completul commit-ului final, în raportul din
+  PR-ul ramurii.
+- **Documentele:** ADR 0260 („Implementarea”, A.5), fișa etapei 3 (rândul `3.Ae`) cu traducerea, lista otrăvurilor și
+  rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 16:20.
