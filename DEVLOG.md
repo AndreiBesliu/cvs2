@@ -11248,3 +11248,42 @@ porțile, documentele.
   `test/otravuri/__pycache__` (neignorat: rulat cu `-B`); sesiunea deschide un PR ciornă pentru ramură (regula mediului).
 - **Rămase, la cuvântul owner-ului:** elicea de barcă (3.Tr), ventilatorul cu carcasă (3.Ts); proba pe imprimantă (coada din
   fișă); numele piesei nu spune forma și profilul; descrierea din bibliotecă n-are loc de „elice” (157 din 160 de caractere).
+
+## 2026-11-23 — Lucrul în cloud, pasul 2: sesiunea principală în cloud (canalele, publicarea, felul de lucru) (Model: Claude Opus 5.5)
+
+**Prompt:** „ca sa fie clar, eu vreau sa mutam toata productia proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia
+de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. **Completed:** 23.11, 11:05.
+
+- **Ce lipsea pentru sesiunea principală în cloud:**
+  - Publicarea pe test și pe live mergea deja din GitHub (`publica.yml`, serverul și hosting-ul, cu WIF).
+  - Canalele de previzualizare cereau acreditări locale. Acum le publică `.github/workflows/canal.yml`: în mediul `test`,
+    cu WIF, doar pentru o ramură cu rapidul verde, cu intrările doar prin `env:`.
+  - Așteptarea CI-ului și publicarea erau un script local. Acum sunt `scripts/cloud/ci-si-publica.sh`, care se poate relua
+    (o comandă ține cel mult 30 de minute în container, iar completul durează mai mult) și nu pornește de două ori
+    completul sau publicarea pe același sha.
+  - `publica.yml` are `run-name` („publica test <sha>”), ca rularea unui sha să se găsească.
+- **`docs/lucru-in-cloud.md`, a treia versiune:** sesiunea principală în cloud (unirea pe `unire-<data>`, porțile în CI, un
+  singur push, publicarea, live la cuvântul owner-ului); PR-ul liniei gata (prin `gh api`, fiindcă GraphQL e oprit în
+  container); canalele; ce rămâne pe calculatorul owner-ului (probele pe imprimantă și pe mașină, `docs/faza0/`,
+  sincronizarea folderului).
+- **Probat:** YAML-ul celor două workflow-uri, sintaxa scriptului, filtrele lui pe rulările reale (rapidul și completul
+  după sha, publicarea după titlu), doar citind.
+
+## 2026-11-23 — Notele liniilor în repo (`docs/linii/`), la mutarea în cloud (Model: Claude Opus 5.5)
+
+**Prompt:** la „Unde mut notele liniilor, ca sesiunile cloud să le aibă?”, owner-ul: „În repo, docs/linii”.
+**Started:** 23.11, 11:07. **Completed:** 23.11, 11:16.
+
+- **Ce s-a mutat:** cele 18 note cncvs2 din memoria sesiunii principale locale, câte una pe linie, în `docs/linii/<linie>.md`
+  (fără antetul memoriei, cu legăturile dintre ele rezolvate). Le-a adus un script, nu o copiere de mână.
+- **`docs/linii/lectii.md`:** lecțiile generale la care trimit notele (probe, porți, mutații, Firestore, capcanele
+  uneltelor), 21 întregi. 44 de lecții s-au născut în alte proiecte ale owner-ului: din ele a rămas doar rândul scurt, general.
+- **Scrise de mână:** `docs/linii/README.md` (indexul liniilor, cu ramura și starea pe 23.11) și
+  `docs/linii/principala.md` (sesiunea principală: rolul, unirea pas cu pas, felul de lucru al owner-ului, starea, lecțiile
+  cele mai folosite).
+- **Ecranul, înainte de repo-ul public:** fără secrete, fără găurile aplicației vechi încă live (singurul semnal,
+  „inject”, era despre scripturile injectate de Playwright), fără alte proiecte. Prenumele owner-ului și căile locale
+  apăreau deja în repo.
+- **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
+- **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
+  fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.
