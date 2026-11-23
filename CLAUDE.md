@@ -597,6 +597,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   din `src/model/numarPanou.ts` (pur); înălțimea și verificarea ei stau în `src/model/inaltimeNumar.ts` (ușor: luate din
   `numarPanou.ts`, aduceau locul cifrelor în bucata panoului Taie). Acțiunea `document.taie` pune numerele
   (`TaiereCalculata.numere`) cu id-uri noi în grupurile panourilor, în același pas.
+  **Legarea căilor (felia 10.3↑o, ADR 0182)** gata pe 22.11, pe `wip/10.3o-legare` (din vârful lui 10.3↑n, cu `main` `40487c43`
+  unit), neunită: legarea în worker (`src/model/legareCai.ts`, cererea `legare`, cu harta, felul operațiilor și schimbările
+  pieselor din `reparare.ts`), aplicată prin `document.repara`; acțiunea ușoară `document.leaga-caile` (Ctrl+J, paleta) cheamă
+  `legaCaile` din context, dat de `Editare` prin `onLegare`; butonul și săgeata opțiunilor (`PanouLegare.tsx`) în secțiunea
+  booleanului; în Verificare, „Leagă” și „Leagă toate căile”. Opțiunile, în `src/model/legareOptiuni.ts` (ușor: depozitul
+  `src/app/optiuniLegare.ts`, cheia `cncvs2.legare`, îl ia de aici, nu din `legareCai.ts`); textele, în `src/app/textLegare.ts`
+  (comun cu Verificarea, fără ciclu prin `Editare`). Feliile următoare: 10.3↑p (unealta Noduri), 10.3↑q (felurile legăturii),
+  10.3↑r (legarea la import).
   **Foaia activă și lista cu foile (ADR 0210, felia 11.1↑, adusă din etapa 11)** gata pe 07.11, în worktree-ul `plansele`
   (ramura `wip/11.1-plansele`), după „Da, toate”: foaia activă e a ferestrei (o vedere ținută în browser, `cncvs2.foaia`, fără
   revizie și fără anulare); pânza, uneltele, panoul, verificarea, reparația, tăierea, traseul, timpul, vederea 3D și exportul

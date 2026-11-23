@@ -8,6 +8,7 @@ import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
 import type { CerereConversie } from '../model/conversie.ts';
+import type { CerereLegare, OptiuniLegare } from '../model/legareCai.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere } from '../model/taiere.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
@@ -105,7 +106,9 @@ export type CerereCam =
   /** Tăierea în panouri (ADR 0181 §7, felia 10.3↑k): degruparea și grupurile panourilor, pe foaia dată a documentului cererii. */
   | { readonly fel: 'panouri'; readonly document: Document; readonly cerere: CererePanouri; readonly indexFoaie?: number }
   /** Conversia vectorilor (ADR 0180, felia 10.3↑d): piesele schimbate (arce, cercuri, dreptunghiuri), pe documentul cererii. */
-  | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie; readonly indexFoaie?: number };
+  | { readonly fel: 'conversie'; readonly document: Document; readonly cerere: CerereConversie; readonly indexFoaie?: number }
+  /** Legarea căilor (ADR 0182, felia 10.3↑o): piesele schimbate și instanțele de șters, pe documentul cererii. */
+  | { readonly fel: 'legare'; readonly document: Document; readonly cerere: CerereLegare; readonly optiuni: OptiuniLegare; readonly indexFoaie?: number };
 
 export type RaspunsExport =
   | {

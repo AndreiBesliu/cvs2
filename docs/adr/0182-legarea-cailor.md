@@ -9,7 +9,8 @@ ta”); declanșatorul din ADR 0124, „Se redeschide dacă”: „se discută u
 **Completează:** ADR 0124 §14 (nodurile a două forme doar se arată), ADR 0101 §7 (legarea capetelor la importul DXF), ADR 0180
 §6 (unde ajung bucățile tăierii). **Schimbă:** ADR 0124, „Ce am respins”: unirea capetelor a două căi (6a) vine înapoi, ca
 discuția separată cerută atunci de owner („unirea căilor e o discuție separată, mai amplă”). **Documentul:** neschimbat: o cale
-legată e o `cale`, din tipurile de azi; opțiunile legării se țin în browser, ca opțiunile tăierii.
+legată e o `cale`, din tipurile de azi; opțiunile legării se țin în browser, ca opțiunile tăierii. **Felia
+10.3↑o** implementată pe 22.11, pe `wip/10.3o-legare`.
 
 **Problema.** Un desen venit în bucăți are căi deschise ale căror capete se întâlnesc: un SVG sau un PDF cu liniile scrise
 separat, un contur desenat din două căi cu Pen-ul, bucățile rămase după Retează sau Desparte, căile unei trasări din imagine.
@@ -90,6 +91,32 @@ uși nu. Azi, o cale nu se poate lega de alta deloc: rămâne doar redesenarea.
 Fiecare felie: proba scrisă întâi (valorile pe hârtie, un oracol independent: lanțul refăcut din eșantioane, cu lungimea și
 aria; documentul de după trecut prin ușă), manualul în ambele limbi, otrăvurile în clona ramurii, porțile, canalul `taiere`;
 înaintea primului commit de cod, `origin/main` unit în ramură.
+
+**Felia 10.3↑o, la cod** (21–22.11):
+- **Legarea** (`legareCai.ts`, pur; cererea `legare` a workerului CAM): capetele căilor deschise, grupate pe o grilă cu pasul
+  toleranței; o grupă de două se leagă (dacă au voie: aceeași clasă de piese, aceleași operații), una de trei sau mai multe se
+  numără (un T) și își blochează capetele; lanțurile, ca la importul DXF. Golul: între exact două lanțuri deschise, perechea de
+  capete libere cea mai apropiată (cu voie), cel mult limita opțiunii; o singură cale deschisă aleasă se închide. Calea legată:
+  vârfurile fiecărei căi în coordonatele primei (`inversa(W₁)·Wᵢ`; arcele își schimbă semnul sub oglindire, iar o matrice
+  neuniformă cu arce se refuză, `transformare`), întoarse la nevoie (bulge-ul cu semn schimbat, mânerele schimbate), lipite cu
+  nodul pe capătul căii mai devreme în document (sau la mijloc), cu mânerele cubicelor mutate cu capetele; la un lanț închis,
+  ultimul vârf pleacă în primul. Rezultatul are forma reparațiilor (piesele schimbate, instanțele de șters), deci îl aplică
+  `document.repara`.
+- **Comanda:** acțiunea ușoară `document.leaga-caile` (Ctrl+J, paleta), cu `legaCaile` dat de modulul editării prin contextul
+  aplicației; butonul și săgeata opțiunilor, în secțiunea booleanului; rândul din meniul de clic dreapta. Rezultatul sau motivul
+  stă lângă butoane (`stare-legare`) până la altă alegere, comparată după conținut (cea făcută de legare, când instanțele legate
+  pleacă, nu-l șterge). Opțiunile: `legareOptiuni.ts` (ușor), depozitul `optiuniLegare.ts` (cheia `cncvs2.legare`) și panoul
+  `PanouLegare.tsx`.
+- **Verificarea:** „Leagă” pe rândul „Capetele a două căi” (cererea `capete`, doar prin lipire) și „Leagă toate căile (n)”
+  (cererea `toate`, pe formele verificate), cu toleranța panoului și restul opțiunilor legării.
+- **Pe hârtie** (`legare.test.ts`): cazurile 1–5 de mai sus; golul cu linia, până la N mm și doar cu lipirea, cu prima și cu a
+  doua cale întoarse; arcul oglindit; o singură cale, închisă; „multe”; instanța rotită; refuzurile. Oracolul: căile
+  eșantionate, la cel mult 0,06 mm una de alta în ambele direcții, și lungimea, suma lor; aplicarea prin acțiune: un pas de
+  anulare, exact, documentul trecut prin ușă.
+- **Mărimea:** pornirea +0,1 kB (107,2 → 107,3; cu ușa 111,3 / 115: acțiunea, tasta și eticheta ei în dicționarul de bază),
+  totalul +4,2 kB (742,0 → 746,2 / 800, A/B în clonă, pe `main` `40487c43` și pe `3ad80ef2`): workerul +2,4 kB (legarea), bucata
+  editării +1,6 kB (butoanele, panoul opțiunilor, depozitul, textele), Verificarea +0,2 kB; opțiunile stau într-un modul ușor,
+  deci legarea a rămas toată în worker.
 
 ## Proba
 
