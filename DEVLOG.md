@@ -11434,3 +11434,24 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
   fără `--ref` cade în container (gh întreabă prin GraphQL, oprit acolo, care e ramura implicită); scriptul îl pornește
   acum cu `--ref main`, ca pe complet, iar comanda pentru live din `docs/lucru-in-cloud.md` are și ea `--ref main`.
 - **PR-ul `AndreiBesliu/cvs2#1`** s-a închis singur, ca unit, la push-ul în `main`.
+
+## 2026-11-23 — Sesiunea principală în cloud: a doua unire (11.3↑e, urechile „unde ține”; A.4, Sugestii ca tablă) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („Unește PR-urile gata”; „unește ce se poate” e ordin permanent),
+la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` și `AndreiBesliu/cvs2#3`).
+**Started:** 23.11, 14:32. **Completed:** unirea în `main`, 23.11, 15:30; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`, cu `main` (`8177ab81`) adus; rapidul și completul verzi pe
+  commit-urile finale (`83b690a5`, planșele; `20fb65de`, adminul, cu completul verde și pe `5d4ea694`).
+- **Unirea, pregătită cât rulau completele liniilor:** `unire-2311c` din `origin/main` (`feecf82a`); 11.3↑e în `d3ffcbf3`
+  (fără ciocniri), A.4 în `ddaa7ead` (ciocnirea, doar în DEVLOG: `rezolva-devlog.py`, ambele părți). În container, pe
+  arborele comun: tipurile (și ale funcțiilor), regulile de import (0 încălcări), traducerile (916, 0 lipsă), probele
+  atinse și cele ale documentelor 120 / 120.
+- **Porțile lotului, în CI, pe `ddaa7ead`**, verzi la prima trecere (completul, 47 de minute): unit 9 813 / 0 (12 sărite),
+  e2e 599 / 599, funcțiile pe emulatoare 104 / 104, paginile 36 / 36; pornirea 107,9 / 115 (cu ușa 112,3), totalul
+  763,1 / 800, `/admin` 124,1 / 200; manualul, 39 de capitole.
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al urechilor „unde ține” (unită în `d3ffcbf3`); indexul
+  liniilor (planșele, adminul, trasarea, elicele, biblioteca); starea din `docs/linii/principala.md`.
+- **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
+  (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
+  (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
