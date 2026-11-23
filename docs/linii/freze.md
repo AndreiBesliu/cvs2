@@ -27,6 +27,9 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   Completul de pe `d4dce8df` căzuse la rândurile meniului contului din proba tichetelor de pe emulatoare (reparat în
   `218eed21`). Pe ramura cu `ebfb1f82`: pornirea 109,4 kB (cu ușa 113,9, cu Atelierul 114,2 / 115), **totalul 793,6 /
   800 kB: mai rămân 6,4 kB** (felia singură, tot +9,0).
+- **23.11, 22:55: plafonul total 900 kB** (ADR 0301, „ok, ridica plafonul total la 900 kB”), pe ramură peste `2c3fd99b`;
+  16.A↑a o unește sesiunea principală, în lotul ei (`unire-2311k`), iar ADR 0301 după el. Pornirea rămâne 115 kB: cu
+  Atelierul, 114,2 / 115, deci 16.A↑b nu trebuie să pună nimic înaintea primei randări.
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 

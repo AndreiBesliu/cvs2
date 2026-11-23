@@ -12348,3 +12348,16 @@ trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
   `docs/linii/principala.md` (vârful unei ramuri mișcat după raport).
 - **La owner:** plafoanele (totalul 784,6 / 800, pornirea cu ușa 113,7 / 115), verificarea juridică a utilizării
   aplicației înaintea live-ului, „cine unește în `main`”.
+
+## 2026-11-23 — Plafonul total 900 kB (ADR 0301), pe linia frezelor (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, ridica plafonul total la 900 kB”, după raportul unirii lui 16.A↑a (rămân 6,4 kB sub plafonul de 800).
+**Started:** 23.11, 22:33. **Completed:** 23.11, 22:55.
+
+- **ADR 0301** (din intervalul liniei, 0300–0309; 0301 liber pe toate ramurile de pe `origin`): plafonul total 800 → 900
+  kB, cu cifrele măsurate pe `2c3fd99b` (codul lotului care unește 16.A↑a); pornirea rămâne 115 kB (cu Atelierul ales,
+  114,2 / 115). Rândul în indexul ADR.
+- **Poarta:** `PLAFON_TOTAL_KB = 900` în `scripts/build-determinist.ts`, cu istoria plafonului în comentariu. Build-ul
+  determinist: 376 de fișiere, totalul 793,6 / 900; probele documentației 75 / 75; traducerile, 959, 0 lipsă.
+- **Unirea:** pe `wip/16.A-freze`, peste `2c3fd99b`; unirea în `main` o face sesiunea principală, după lotul ei cu 16.A↑a
+  (`unire-2311k`), anunțată prin mesaj.
