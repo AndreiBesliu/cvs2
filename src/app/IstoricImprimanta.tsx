@@ -40,7 +40,8 @@ export function useInregistrare(st: StareImprimanta, stare: StareLucrare, din: D
   const i = st.imprimanta;
   const clipa: ClipaIstoric = {
     legatura: st.legatura === 'conectat' ? 'vie' : st.legatura === 'pierduta' ? 'pierduta' : 'alta', lucrare: stare, fisier: i.fisier,
-    eroare: i.eroare, cheieEroare: i.cheieEroare, faraFilament: i.faraFilament, strat: null, pauzaFisier: null, trecut: i.trecut,
+    eroare: i.eroare, cheieEroare: i.cheieEroare, faraFilament: i.faraFilament, reluareDupaPana: i.reluareDupaPana, strat: null,
+    pauzaFisier: null, trecut: i.trecut,
     filament: i.filament, progres: i.progres,
   };
   const semnatura = JSON.stringify([clipa, din, i.nume]);

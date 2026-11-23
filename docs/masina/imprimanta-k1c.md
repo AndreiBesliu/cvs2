@@ -164,6 +164,19 @@ Imprimanta face filmul doar cu timelapse-ul pornit pe ecranul ei (pe K1C 2025, n
 4. Dacă nu apare niciun film: **Copiază jurnalul** la final; cadrul cu `elapseVideoList` ne spune ce trimite K1C 2025
    (numele, `id`, `gcodename`).
 
+## 12. Codurile erorilor și pana de curent (felia 3.6v)
+
+Nu provoca o eroare: pasul e pentru când apare singură.
+
+1. Când imprimanta arată o eroare pe ecran (de exemplu „Error Key：2585”), uită-te în fereastra Imprimanta, la cardul
+   **De la imprimantă**: același cod (CX2585)? Ce scrie acolo se potrivește cu ecranul? Unde Creality are o pagină a
+   codului, **Pagina Creality ↗** o deschide într-o filă nouă.
+2. Cu cvs2 în fundal (altă filă, alt program), notificarea spune codul și ce faci. Spune-mi dacă a venit și ce scria.
+3. Dacă un cod nu e în dicționarul cvs2, cardul o spune și dă **Lista codurilor ↗**: **Copiază jurnalul** și trimite-mi-l,
+   ca să-l adaug.
+4. După o pană de curent în timpul unei imprimări, cardul și notificarea spun că imprimanta întreabă pe ecran dacă reia.
+   Răspunzi pe ecranul ei; spune-mi dacă banda din cvs2 a plecat după răspuns.
+
 ## Când nu merge
 
 - **„Nu răspunde nimic la …”**: imprimanta e oprită, are alt IP sau calculatorul nu e în rețeaua ei (vezi `ping`).

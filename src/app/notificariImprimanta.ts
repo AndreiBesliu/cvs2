@@ -4,6 +4,7 @@
  * Web Audio, fără fișiere), textele evenimentelor și semnul de pe butonul Imprimanta. Fără niciun server: merg cât cvs2 e
  * deschis, și în fundal.
  */
+import type { IntrareCodImprimanta } from '../../shared/coduriImprimanta.ts';
 import { limba, t } from '../i18n/t.ts';
 import type { StareLucrare } from '../machine/imprimanta/driver.ts';
 import { EVENIMENTE, type Eveniment, type FelEveniment } from '../machine/imprimanta/evenimente.ts';
@@ -22,7 +23,7 @@ export type SetariNotificari = {
 };
 
 export const SETARI_IMPLICITE: SetariNotificari = {
-  evenimente: { gata: true, oprita: true, pauzaFisier: true, pauza: true, faraFilament: true, eroare: true, pierduta: true, primulStrat: false },
+  evenimente: { gata: true, oprita: true, pauzaFisier: true, pauza: true, faraFilament: true, eroare: true, pana: true, pierduta: true, primulStrat: false },
   sunet: true, sistemInFata: false, titlu: true, legare: false,
 };
 
@@ -124,9 +125,18 @@ const metri = (mm: number): string => (mm / 1000).toLocaleString(limba() === 'ro
 
 /**
  * Titlul și textul unui eveniment: titlul cu numele imprimantei („K1C-8578: pauza din fișier”), textul cu fișierul (numele
- * scurt), durata și filamentul, stratul și nota pauzei, cheia erorii.
+ * scurt), durata și filamentul, stratul și nota pauzei; o eroare, cu explicația din dicționarul familiei (3.6v: codul de pe
+ * ecran în titlu, ce s-a întâmplat și ce faci în text), altfel cu cheia.
  */
-export function textEveniment(e: Eveniment, imprimanta: string, fisier: string, durata: (s: number) => string): { readonly titlu: string; readonly corp: string } {
+export function textEveniment(
+  e: Eveniment, imprimanta: string, fisier: string, durata: (s: number) => string, explicatie: IntrareCodImprimanta | null = null,
+): { readonly titlu: string; readonly corp: string } {
+  if (e.fel === 'eroare' && explicatie !== null) {
+    return {
+      titlu: t('imprimanta.notif.titlu', { imprimanta, eveniment: t('imprimanta.notif.eroare.cod', { cod: explicatie.cod }) }),
+      corp: t('imprimanta.notif.eroare.explicata', { titlu: explicatie.titlu, faci: explicatie.faci }),
+    };
+  }
   const titlu = t('imprimanta.notif.titlu', { imprimanta, eveniment: t(`imprimanta.notif.${e.fel}`) });
   switch (e.fel) {
     case 'gata':

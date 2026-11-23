@@ -58,7 +58,8 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (cale === FISIER_CATALOG_BIBLIOTECA) return 'biblioteca';
   if (cale.startsWith(`${DIR_BIBLIOTECA}/`) && esteNumePachetBiblioteca(cale.slice(DIR_BIBLIOTECA.length + 1))) return 'biblioteca';
   if (/^manual\/(?:ro|en)\.json$/.test(cale)) return 'precache';
-  if (/^coduri\/(?:ro|en)\.json$/.test(cale)) return 'precache';
+  // Dicționarul controlerelor (`coduri/ro.json`) și al fiecărei familii de imprimante (`coduri/creality-k1.ro.json`, 3.6v).
+  if (/^coduri\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\.)?(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^mesaje\/[a-z]+\.json$/.test(cale)) return 'precache';
   if (/^fonturi\/[A-Za-z0-9.-]+\.(?:ttf|txt)$/.test(cale)) return 'precache';
   if (/^tutorial\/[a-z0-9-]+\.json$/.test(cale)) return 'doar-online';
