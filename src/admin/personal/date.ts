@@ -65,6 +65,30 @@ export function numeRol(rol: string | null, roluri: readonly RolCustom[]): strin
   return roluri.find((r) => r.id === rol)?.nume ?? null;
 }
 
+/* ── Matricea rol × permisiune (ADR 0260 §6, felia A.5) ──────────────────────────────────────────────────────────── */
+
+export interface GrupPermisiuni {
+  /** Zona permisiunilor: ce stă înaintea punctului (`erori`, `conturi`…). */
+  readonly zona: string;
+  readonly permisiuni: readonly Permisiune[];
+}
+
+/** Rândurile matricei: catalogul, grupat pe zone, în ordinea lui (o zonă stă la locul primei ei permisiuni). */
+export function grupePermisiuni(catalog: readonly Permisiune[] = PERMISIUNI): GrupPermisiuni[] {
+  const grupe = new Map<string, Permisiune[]>();
+  for (const p of catalog) {
+    const zona = p.slice(0, p.indexOf('.'));
+    grupe.set(zona, [...(grupe.get(zona) ?? []), p]);
+  }
+  return [...grupe].map(([zona, permisiuni]) => ({ zona, permisiuni }));
+}
+
+/** Eticheta unei permisiuni („Erori: citește”), despărțită pentru matrice: zona și fapta; fără „:”, fapta e goală. */
+export function etichetaPermisiune(text: string): { readonly zona: string; readonly fapta: string } {
+  const k = text.indexOf(': ');
+  return k < 0 ? { zona: text, fapta: '' } : { zona: text.slice(0, k), fapta: text.slice(k + 2) };
+}
+
 /**
  * Ce filă cere ce (oricare din permisiunile listate): Erori, Diagnoza, documentația (Roadmap și Documentație), Sugestii
  * (scrierea sau citirea tuturor, ADR 0107), Utilizatori (citirea sau administrarea conturilor, ADR 0116), Personal și

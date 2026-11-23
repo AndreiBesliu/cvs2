@@ -11455,3 +11455,15 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
   (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
   (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
+
+## 2026-11-23 — Felia A.5: Utilizatori și Personal (ADR 0260 §5–§6)
+
+**Prompt:** „Da, pornește A.5” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după unirea lui A.4).
+**Started:** 23.11 15:35.
+
+- **Ramura:** tot `wip/A.1-admin`, adusă înainte (fast-forward) la `main` `c010e3d1`, care conține A.4 (`ddaa7ead`).
+- **Planul:** Utilizatori după schiță (rândul G, `Admin-Utilizatori`): filtrele pe plan cu numărul fiecăruia, căutarea în
+  conturile încărcate, tabelul (contul, planul, dreptul, crearea) cu contul ales alături, schimbarea planului în panoul lui
+  și istoricul planului din rândurile de audit ale contului, doar cu „Audit: citește”. Personal (`Admin-Personal`): oamenii
+  cu metoda de intrare sub nume și invitațiile deschise în aceeași listă, apoi matricea rol × permisiune, cu toate rolurile
+  alături. Fără reguli, date, indexuri sau funcții noi.

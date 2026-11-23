@@ -74,6 +74,11 @@ export function dataScurta(d: Date | null, limba: string): string {
   return d ? new Intl.DateTimeFormat(limba, { dateStyle: 'short', timeStyle: 'short' }).format(d) : '—';
 }
 
+/** Doar ziua, pentru coloanele și listele înguste (tabelul conturilor, istoricul planului). */
+export function ziScurta(d: Date | null, limba: string): string {
+  return d ? new Intl.DateTimeFormat(limba, { dateStyle: 'short' }).format(d) : '—';
+}
+
 /** Motivul unei erori Firebase (`code`, apoi mesajul), scurt. */
 export function motivDin(e: unknown): string {
   if (typeof e === 'object' && e !== null) {

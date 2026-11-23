@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Filele Utilizatori și Setări (ADR 0116 §19, §20; felia 14.C↑b) cap-coadă, pe emulatoare, pe build-ul real: owner-ul vede
- * conturile clienților, cele mai noi întâi, cu planul de acum; dă o probă de 30 de zile unui cont expirat, planul gratuit,
- * dezactivează și reactivează, iar documentul și auditul urmează; un plan schimbat între timp e refuzat lângă formular.
- * Setările: implicitele, apoi valorile noi, salvate pe server. Un rol care doar citește conturile vede fila fără schimbări.
+ * Filele Utilizatori și Setări (ADR 0116 §19, §20; felia 14.C↑b; așezarea Utilizatorilor: ADR 0260 §5, felia A.5) cap-coadă,
+ * pe emulatoare, pe build-ul real: owner-ul vede conturile clienților într-un tabel, cele mai noi întâi, cu planul de acum,
+ * filtrele pe plan (cu numere) și căutarea; contul ales stă alături, cu schimbarea planului și istoricul lui din audit; dă o
+ * probă de 30 de zile unui cont expirat, planul gratuit, dezactivează și reactivează, iar documentul și auditul urmează; un
+ * plan schimbat între timp e refuzat lângă formular. Setările: implicitele, apoi valorile noi, salvate pe server. Un rol care
+ * doar citește conturile vede fila fără schimbări și fără istoric (nicio citire din audit). Un cont găsit de căutarea din
+ * antet vine ales.
  */
 
 test.use({ locale: 'ro-RO' });
@@ -88,22 +91,40 @@ async function puneRolul(page: Page, uid: string, rol: string): Promise<void> {
 }
 
 const file = async (page: Page): Promise<string[]> => page.locator('[data-fila]').evaluateAll((b) => b.map((x) => x.getAttribute('data-fila') ?? ''));
-const rand = (page: Page, email: string) => page.locator(`li[data-cont="${email}"]`);
+const rand = (page: Page, email: string) => page.locator(`tr[data-cont="${email}"]`);
+const detaliu = (page: Page) => page.locator('[data-util="detaliu"]');
+const filtru = (page: Page, plan: string) => page.locator(`[data-filtru-plan="${plan}"]`);
+const aratate = (page: Page): Promise<(string | null)[]> => page.locator('tr[data-cont]').evaluateAll((l) => l.map((x) => x.getAttribute('data-cont')));
+const pasi = (page: Page): Promise<(string | null)[]> => detaliu(page).locator('[data-pas]').evaluateAll((l) => l.map((x) => x.getAttribute('data-pas')));
 
-async function schimba(page: Page, email: string, fel: string, zile?: number): Promise<void> {
-  const r = rand(page, email);
-  await r.locator('[data-util="schimba"]').click();
-  await r.locator('[data-util="schimbare"]').selectOption(fel);
-  if (zile !== undefined) await r.locator('[data-util="zile"]').fill(String(zile));
-  await r.locator('[data-util="salveaza-plan"]').click();
+/** Alege contul din tabel (panoul lui vine alături). */
+async function alege(page: Page, email: string): Promise<void> {
+  await rand(page, email).locator('[data-util="alege"]').click();
+  await expect(rand(page, email)).toHaveAttribute('data-ales', 'true');
+  await expect(detaliu(page).locator('h3')).toHaveText(email);
 }
 
-test('owner-ul vede conturile, dă o probă, planul gratuit, dezactivează și reactivează; serverul refuză un plan văzut vechi', async ({ page }) => {
+/** Schimbă planul contului din panoul lui. */
+async function schimba(page: Page, email: string, fel: string, zile?: number): Promise<void> {
+  await alege(page, email);
+  await detaliu(page).locator('[data-util="schimbare"]').selectOption(fel);
+  if (zile !== undefined) await detaliu(page).locator('[data-util="zile"]').fill(String(zile));
+  await detaliu(page).locator('[data-util="salveaza-plan"]').click();
+}
+
+test('owner-ul vede conturile în tabel, cu filtrele pe plan și căutarea; contul ales alături, cu istoricul din audit; dă o probă, planul gratuit, dezactivează și reactivează; serverul refuză un plan văzut vechi', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   const acum = Date.now();
   await puneCont('ana', new Date(acum - 2 * ZI), new Date(acum + 5 * ZI));
   await puneCont('bob', new Date(acum - ZI), new Date(acum - 3_600_000));
+  // Deschiderea contului Anei, cum o scrie callable-ul `cont` la prima logare.
+  await scrie('audit/Creare00000000000Ana', {
+    schema: 1, cand: new Date(acum - 2 * ZI), cine: 'ana', rol: null, actiune: 'conturi.creeaza', tinta: 'conturi/ana', inainte: null,
+    dupa: { email: 'ana@exemplu.ro', plan: 'proba', probaPana: acum + 5 * ZI },
+  });
+  // Un rând de audit al altui cont și unul de nume nu intră în istoricul planului Anei.
+  await scrie('audit/Nume000000000000Ana', { schema: 1, cand: new Date(acum - ZI), cine: 'ana', rol: null, actiune: 'conturi.nume', tinta: 'conturi/ana', inainte: { nume: 'A' }, dupa: { nume: 'ANA' } });
   await deschide(page);
   await puneRolul(page, await intraCuGoogle(page), 'owner');
   // Filele apar după citirea rolului (asincronă): întâi una vizibilă, apoi lista lor.
@@ -112,41 +133,94 @@ test('owner-ul vede conturile, dă o probă, planul gratuit, dezactivează și r
   expect(await file(page)).toEqual(['azi', 'erori', 'tichete', 'diagnoza', 'sugestii', 'roadmap', 'documentatie', 'utilizatori', 'personal', 'setari', 'cont']);
   await page.locator('[data-fila="utilizatori"]').click();
 
-  // Cele mai noi întâi; planul de acum: proba lui Bob a trecut.
-  const lista = page.locator('li[data-cont]');
-  await expect(lista).toHaveCount(2, LENT);
-  expect(await lista.evaluateAll((l) => l.map((x) => x.getAttribute('data-cont')))).toEqual(['bob@exemplu.ro', 'ana@exemplu.ro']);
+  // Cele mai noi întâi; planul de acum: proba lui Bob a trecut. Primul cont vine ales, cu panoul lui alături.
+  await expect(page.locator('tr[data-cont]')).toHaveCount(2, LENT);
+  expect(await aratate(page)).toEqual(['bob@exemplu.ro', 'ana@exemplu.ro']);
   await expect(rand(page, 'bob@exemplu.ro').locator('[data-util="plan"]')).toHaveAttribute('data-plan', 'expirat');
-  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="plan"]')).toHaveText(/^Probă: încă 5 zile \(până pe /);
+  await expect(rand(page, 'bob@exemplu.ro').locator('[data-util="drept"]')).toHaveText(/^din \d/);
+  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="plan"]')).toHaveText('Probă');
+  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="drept"]')).toHaveText('încă 5 zile');
+  await expect(rand(page, 'bob@exemplu.ro')).toHaveAttribute('data-ales', 'true');
+  await expect(detaliu(page).locator('h3')).toHaveText('bob@exemplu.ro');
+  await expect(detaliu(page)).toContainText('Proba a expirat pe ');
+  await expect(detaliu(page).locator('[data-util="istoric-gol"]')).toHaveText('Nicio schimbare de plan în audit.', LENT);
+  // Panoul stă alături de tabel, nu sub el, și nimic nu iese din ecran.
+  const tabel = await page.locator('[data-util="tabel"]').boundingBox();
+  const panou = await detaliu(page).boundingBox();
+  if (!tabel || !panou) throw new Error('tabelul și panoul nu sunt pe pagină');
+  expect(panou.x, 'panoul e la dreapta tabelului').toBeGreaterThanOrEqual(tabel.x + tabel.width);
+  expect(Math.abs(panou.y - tabel.y), 'pe același rând').toBeLessThan(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
-  // O probă nouă de 30 de zile, de azi, pentru contul expirat.
+  // Filtrele pe plan, cu numărul fiecăruia; unul care ascunde contul ales mută alegerea pe primul arătat, fără s-o mute înapoi.
+  await expect(page.locator('[data-filtru-plan]')).toHaveText(['Toate (2)', 'Probă (1)', 'Gratuit (0)', 'Expirat (1)', 'Dezactivat (0)', 'Personal (0)']);
+  await expect(filtru(page, 'toate')).toHaveAttribute('aria-pressed', 'true');
+  await filtru(page, 'proba').click();
+  expect(await aratate(page)).toEqual(['ana@exemplu.ro']);
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro');
+  // Istoricul Anei: deschiderea contului, din audit; numele schimbat nu e al planului.
+  await expect(detaliu(page).locator('[data-pas]')).toHaveText(/^\S+ · Probă până pe \S+ · Cont nou$/, LENT);
+  await filtru(page, 'toate').click();
+  expect(await aratate(page)).toEqual(['bob@exemplu.ro', 'ana@exemplu.ro']);
+  await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-ales', 'true');
+  await filtru(page, 'gratuit').click();
+  await expect(page.locator('[data-util="gol-filtru"]')).toHaveText('Niciun cont nu se potrivește.');
+  await expect(detaliu(page)).toHaveCount(0);
+  await filtru(page, 'toate').click();
+
+  // Căutarea în conturile încărcate: după adresă sau nume, fără majuscule; numerele filtrelor o urmează.
+  await page.locator('[data-util="cauta"]').fill('BOB');
+  expect(await aratate(page)).toEqual(['bob@exemplu.ro']);
+  await expect(page.locator('[data-filtru-plan]')).toHaveText(['Toate (1)', 'Probă (0)', 'Gratuit (0)', 'Expirat (1)', 'Dezactivat (0)', 'Personal (0)']);
+  await expect(page.locator('[data-util="numar"]')).toHaveText('2');
+  await page.locator('[data-util="cauta"]').fill('nimeni');
+  await expect(page.locator('[data-util="gol-filtru"]')).toBeVisible();
+  await page.locator('[data-util="cauta"]').fill('');
+  expect(await aratate(page)).toEqual(['bob@exemplu.ro', 'ana@exemplu.ro']);
+
+  // O probă nouă de 30 de zile, de azi, pentru contul expirat; istoricul lui o arată, făcută de tine.
   await schimba(page, 'bob@exemplu.ro', 'proba', 30);
   await expect(page.locator('[data-util="gata"]')).toHaveText('Planul contului bob@exemplu.ro: Probă.', LENT);
-  await expect(rand(page, 'bob@exemplu.ro').locator('[data-util="plan"]')).toHaveText(/^Probă: încă 30 de zile/);
+  await expect(rand(page, 'bob@exemplu.ro').locator('[data-util="drept"]')).toHaveText('încă 30 de zile');
+  await expect(detaliu(page)).toContainText('Probă: încă 30 de zile');
+  await expect(detaliu(page).locator('[data-pas]')).toHaveText(/^\S+ · Probă până pe \S+ · tu$/, LENT);
   const pana = Date.parse((await citeste('conturi/bob'))['probaPana']?.timestampValue ?? '');
   expect(Math.abs(pana - (acum + 30 * ZI))).toBeLessThan(5 * 60_000);
 
   // Gratuit, apoi dezactivat (lista oferă reactivarea întâi), apoi reactivat: înapoi la gratuit.
   await schimba(page, 'ana@exemplu.ro', 'gratuit');
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
+  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="drept"]')).toHaveText('nelimitat');
   await schimba(page, 'ana@exemplu.ro', 'dezactiveaza');
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'dezactivat', LENT);
+  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="drept"]')).toHaveText('—');
   expect((await citeste('conturi/ana'))['planInainte']).toBeTruthy();
-  await rand(page, 'ana@exemplu.ro').locator('[data-util="schimba"]').click();
-  await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="schimbare"]')).toHaveValue('reactiveaza');
-  await rand(page, 'ana@exemplu.ro').locator('[data-util="salveaza-plan"]').click();
+  // Formularul pornește din nou la planul nou al contului: pe unul dezactivat, reactivarea e prima.
+  await expect(detaliu(page).locator('[data-util="schimbare"]')).toHaveValue('reactiveaza', LENT);
+  await detaliu(page).locator('[data-util="salveaza-plan"]').click();
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
   const ana = await citeste('conturi/ana');
   expect([ana['plan']?.stringValue, ana['planInainte']?.nullValue]).toEqual(['gratuit', null]);
-  expect(await actiuniAudit()).toEqual(['conturi.dezactiveaza', 'conturi.gratuit', 'conturi.proba', 'conturi.reactiveaza']);
+  expect(await actiuniAudit()).toEqual(['conturi.creeaza', 'conturi.dezactiveaza', 'conturi.gratuit', 'conturi.nume', 'conturi.proba', 'conturi.reactiveaza']);
+  // Istoricul Anei, cel mai nou întâi: reactivat (gratuit), dezactivat, gratuit, deschiderea contului (proba).
+  await expect.poll(() => pasi(page), LENT).toEqual(['gratuit', 'dezactivat', 'gratuit', 'proba']);
+  await expect(page.locator('[data-filtru-plan]')).toHaveText(['Toate (2)', 'Probă (1)', 'Gratuit (1)', 'Expirat (0)', 'Dezactivat (0)', 'Personal (0)']);
 
   // Planul lui Bob se schimbă pe server (alt om din personal) cât lista îl arată pe cel vechi: cererea e refuzată.
   await scrie('conturi/bob', { schema: 1, email: 'bob@exemplu.ro', nume: 'BOB', creatLa: new Date(acum - ZI), plan: 'gratuit', probaPana: new Date(pana) });
   await schimba(page, 'bob@exemplu.ro', 'dezactiveaza');
-  await expect(rand(page, 'bob@exemplu.ro').locator('[data-util="eroare"]')).toContainText('planul contului s-a schimbat', LENT);
+  await expect(detaliu(page).locator('[data-util="eroare"]')).toContainText('planul contului s-a schimbat', LENT);
   expect((await citeste('conturi/bob'))['plan']?.stringValue).toBe('gratuit');
   await page.locator('[data-util="reincarca"]').click();
   await expect(rand(page, 'bob@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
+
+  // Sub 800 px, panoul trece sub tabel și nimic nu iese din ecran.
+  await page.setViewportSize({ width: 700, height: 900 });
+  const tabel2 = await page.locator('[data-util="tabel"]').boundingBox();
+  const panou2 = await detaliu(page).boundingBox();
+  if (!tabel2 || !panou2) throw new Error('tabelul și panoul nu sunt pe pagină');
+  expect(panou2.y, 'panoul e sub tabel').toBeGreaterThanOrEqual(tabel2.y + tabel2.height);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(erori).toEqual([]);
 });
 
@@ -176,9 +250,16 @@ test('setările: implicitele până la prima salvare; valorile din margini se sa
   await expect(page.locator('[data-set="zile-offline"]')).toHaveValue('3', LENT);
 });
 
-test('un rol care doar citește conturile vede fila Utilizatori, fără schimbarea planului, și nu vede Setările', async ({ page }) => {
+test('un rol care doar citește conturile vede fila Utilizatori, fără schimbarea planului și fără istoric (nicio citire din audit), și nu vede Setările', async ({ page }) => {
   await puneCont('ana', new Date(Date.now() - ZI), new Date(Date.now() + 9 * ZI));
+  await scrie('audit/Creare00000000000Ana', {
+    schema: 1, cand: new Date(Date.now() - ZI), cine: 'ana', rol: null, actiune: 'conturi.creeaza', tinta: 'conturi/ana', inainte: null,
+    dupa: { email: 'ana@exemplu.ro', plan: 'proba', probaPana: Date.now() + 9 * ZI },
+  });
   await scrie(`roluri/${CONT_CIT}`, { nume: 'Conturi', permisiuni: ['conturi.citeste'] });
+  // Fără „Audit: citește”, nimic nu se cere din audit (regulile ar refuza oricum): nici în adresă, nici în corpul cererii.
+  const dinAudit: string[] = [];
+  page.on('request', (q) => { if (new URL(q.url()).port === '8085' && `${q.url()} ${q.postData() ?? ''}`.includes('audit')) dinAudit.push(q.url()); });
   await deschide(page);
   await puneRolul(page, await intraCuGoogle(page), CONT_CIT);
   await expect(page.locator('[data-admin="cont"]')).toContainText('Conturi', LENT);
@@ -186,6 +267,37 @@ test('un rol care doar citește conturile vede fila Utilizatori, fără schimbar
   expect(await file(page)).toEqual(['azi', 'utilizatori', 'cont']);
   await page.locator('[data-fila="utilizatori"]').click();
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'proba', LENT);
-  await expect(page.locator('[data-util="schimba"]')).toHaveCount(0);
-  await expect(page.locator('.util .pers-sectiune > p.admin-slab').first()).toHaveText('Cele mai noi conturi întâi. Rolul tău le citește, fără să schimbe planuri.');
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro');
+  await expect(detaliu(page)).toContainText('Probă: încă 9 zile');
+  await expect(page.locator('[data-util="formular-plan"], [data-util="salveaza-plan"]')).toHaveCount(0);
+  await expect(page.locator('[data-util="text"]')).toHaveText('Cele mai noi conturi întâi. Rolul tău le citește, fără să schimbe planuri.');
+  await expect(detaliu(page).locator('h4')).toHaveCount(0);
+  await expect(page.locator('[data-util="istoric"], [data-util="istoric-gol"], [data-util="istoric-eroare"]')).toHaveCount(0);
+  expect(dinAudit).toEqual([]);
+});
+
+test('un cont găsit de căutarea din antet vine ales, cu panoul lui; un rol care administrează conturile fără audit schimbă planul, fără istoric', async ({ page }) => {
+  const acum = Date.now();
+  await puneCont('ana', new Date(acum - 3 * ZI), new Date(acum + 5 * ZI));
+  await puneCont('bob', new Date(acum - 2 * ZI), new Date(acum + 5 * ZI));
+  await puneCont('cristi', new Date(acum - ZI), new Date(acum + 5 * ZI));
+  await scrie(`roluri/${CONT_CIT}`, { nume: 'Conturi', permisiuni: ['conturi.administreaza'] });
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), CONT_CIT);
+  await expect(page.locator('[data-fila="utilizatori"]')).toBeVisible(LENT);
+  await page.locator('[data-fila="utilizatori"]').click();
+  await expect(rand(page, 'cristi@exemplu.ro')).toHaveAttribute('data-ales', 'true', LENT);
+  await page.locator('[data-fila="azi"]').click();
+  await page.locator('[data-admin="cauta"]').fill('ana@');
+  await page.locator('[data-gasit="conturi:ana"]').click();
+  await expect(page.locator('[data-fila="utilizatori"]')).toHaveAttribute('aria-current', 'page');
+  await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-ales', 'true', LENT);
+  await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-gasit-aici', 'true');
+  await expect(detaliu(page).locator('h3')).toHaveText('ana@exemplu.ro');
+  // Administrarea fără „Audit: citește”: planul se schimbă din panou, iar istoricul nu se arată.
+  await detaliu(page).locator('[data-util="schimbare"]').selectOption('gratuit');
+  await detaliu(page).locator('[data-util="salveaza-plan"]').click();
+  await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
+  await expect(page.locator('[data-util="istoric"], [data-util="istoric-gol"], [data-util="istoric-eroare"]')).toHaveCount(0);
+  expect((await citeste('conturi/ana'))['plan']?.stringValue).toBe('gratuit');
 });

@@ -123,8 +123,9 @@ test('omul scrie și își editează sugestia; owner-ul o vede pe tablă și dec
   await page.locator('[data-personal="nume-rol"]').fill('Sugestii');
   await page.locator('[data-permisiune="sugestii.scrie"]').check();
   await page.locator('[data-personal="salveaza-rol"]').click();
-  await expect(page.locator('[data-rol="Sugestii"]')).toContainText('Sugestii: scrie', LENT);
+  await expect(page.locator('[data-celula="Sugestii/sugestii.scrie"]')).toHaveAttribute('data-are', 'true', LENT);
   // Contul omului, cu parolă (linkul, apoi pagina Firebase a linkului, aici prin API-ul emulatorului).
+  await page.locator('[data-personal="adauga"]').click();
   await page.locator('[data-personal="email"]').fill('ana@exemplu.ro');
   await page.locator('[data-personal="rol-nou"]').selectOption({ label: 'Sugestii' });
   await page.locator('[data-personal="creeaza-cont"]').click();
