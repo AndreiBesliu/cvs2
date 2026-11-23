@@ -164,7 +164,8 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
 - **25.9↑ GATA** (23.11; ADR 0273 acceptat la „gata”, cu formularul: 1a, 2a, 3a și nota „ca de obicei, eu vreau cat mai
   multe optiuni puse la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”;
   codul la `95b4eb4e`, vârful încercat `1868b4e4`; completul verde acolo: unit 9 884 / 0, e2e 618 / 618, emulatoarele 104 / 104
-  și 38 / 38; canalul `trasare` la `fcf8f4b84ae6`, același cod; totalul 773,5 / 800, pornirea 108,5): fereastra cât ecranul (setările se derulează singure, previzualizarea crește, piciorul fix), grupurile
+  și 38 / 38; canalul `trasare` la `fcf8f4b84ae6`, același cod; cu `main` `f73f3f37` adus, `caa65bcd`, completul tot verde:
+  unit 9 966 / 0, e2e 637 / 637, emulatoarele 104 / 104 și 41 / 41; totalul 781,2 / 800, pornirea 108,6): fereastra cât ecranul (setările se derulează singure, previzualizarea crește, piciorul fix), grupurile
   cu rezumat (ținute în `cncvs2.trasare.fereastra`; „Simplu” = 1b ca opțiune), mărimea desenului (2a; imaginea = 2b ca
   opțiune) ținută după alte setări (3a; „Scara” = 3b ca opțiune), raportul scurt cu sugestiile ca butoane și „Detalii”,
   virgula în „Desenul”. Ușa, cererea și nucleul neschimbate: fereastra duce ținta în lățimea imaginii după fiecare trasare.

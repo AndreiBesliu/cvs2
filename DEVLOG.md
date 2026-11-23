@@ -12026,6 +12026,9 @@ la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau c
   lucrători; mesajul commit-ului spune „13”, numărătoarea exactă nu s-a păstrat), reparată doar în probă (20× la rulare, 1×
   la reluare): 100 / 100 la aceeași încărcare, iar o otravă care nu reia de la capăt rămâne prinsă.
 - **Canalul `trasare`:** `fcf8f4b84ae6` (același cod), cu `trasare-fereastra.spec.ts` 9 / 9 pe el.
+- **`main` adus din nou** (`f73f3f37`: 3.Xh, 12.1↑e-3 și 12.1↑e-4; ciocnirea doar în traducerile roadmap-ului, ambele
+  părți păstrate), în `caa65bcd`: completul verde acolo (51 de minute): unit 9 966 / 0 (12 sărite), e2e 637 / 637,
+  emulatoarele 104 / 104 și 41 / 41; pornirea 108,6 / 115, **totalul 781,2 / 800** (`main` 778,6; felia +2,6).
 - **Documentele:** ADR 0273 (acceptat, răspunsurile, implementarea) și rândul lui din index; manualul (capitolul importului,
   în ambele limbi); fișa etapei 3 (jurnalul, încercarea în coada owner-ului); traducerile roadmap-ului; `CLAUDE.md` (starea
   liniei); nota liniei.
