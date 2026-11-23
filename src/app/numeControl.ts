@@ -5,7 +5,9 @@ import { idBun } from '../../shared/utilizare.ts';
  * aici, ca `prefix.valoare` (`testid.export-gcode`, `camp.cont-email`). Un nume pleacă doar dacă e în catalogul scos din
  * sursă la build (`catalogControale.ts`: valorile scrise de mână în cod), deci un atribut făcut din textul omului (un nume de
  * foaie, de font) n-are cum să plece. Excepția: atributele pe care le pune doar codul, din registrul de acțiuni și din lista
- * uneltelor (`DIN_COD`), care trec după formă. Comun generatorului (`scripts/catalog-controale.ts`) și paginii.
+ * uneltelor (`DIN_COD`), care trec după formă: numesc controlul (deci nu ia numele altui atribut), iar clicul pe el nu pleacă,
+ * fiindcă acțiunea și unealta lui se înregistrează deja (`utilizareDom.ts`). Comun generatorului (`scripts/catalog-controale.ts`)
+ * și paginii.
  */
 
 /** Atributele care numesc un control, în ordinea în care se citesc, cu prefixul numelui. */

@@ -122,6 +122,13 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   await expect(page.locator('#export-titlu')).toBeVisible();
   await page.locator('[role="dialog"]').getByRole('button', { name: 'Închide', exact: true }).click();
   await expect(page.locator('#export-titlu')).toHaveCount(0);
+  // Apoi deschisă din nou, cu exportul făcut (o acțiune a registrului reușită între timp): gata.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  await page.locator('[role="dialog"]').getByRole('button', { name: 'Închide', exact: true }).click();
+  await expect(page.locator('#export-titlu')).toHaveCount(0);
   await ascunde(page);
   await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
   const [l] = await loturi();
@@ -139,12 +146,18 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   expect(fara).toContainEqual({ fel: 'unealta', id: 'noduri', de: 'bara' });
   expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'panza', rez: 'ok' });
   expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'tasta', rez: 'ok' });
-  // Clicurile fine (felia A.8c): pe fila Mașina (din registru), pe unealta Noduri; zoom-ul pe pânză; dialogul exportului.
-  expect(fara).toContainEqual({ fel: 'clic', id: 'actiune.vedere.masina', de: 'bara' });
-  expect(fara).toContainEqual({ fel: 'clic', id: 'unealta.noduri', de: 'bara' });
+  // Clicurile fine (felia A.8c): pe butonul exportului și pe Închide din fereastra contului (după intrare); nu și pe butoanele
+  // registrului sau pe unelte, care au deja acțiunea și unealta lor. Zoom-ul pe pânză; dialogurile.
+  expect(fara).toContainEqual({ fel: 'clic', id: 'buton.exporta', de: 'panou' });
+  expect(fara).toContainEqual({ fel: 'clic', id: 'buton.inchide-cont', de: 'panou' });
+  expect(fara.filter((e) => e['fel'] === 'clic' && /^(actiune|unealta)\./.test(String(e['id'])))).toEqual([]);
   expect(fara.find((e) => e['fel'] === 'zoom')).toMatchObject({ de: 'panza', n: 2 });
   expect(fara).toContainEqual({ fel: 'dialog', id: 'eticheta.export-titlu', rez: 'deschis' });
   expect(fara).toContainEqual({ fel: 'dialog', id: 'eticheta.export-titlu', rez: 'renuntat' });
+  expect(fara).toContainEqual({ fel: 'dialog', id: 'eticheta.export-titlu', rez: 'gata' });
+  // Fereastra contului: deschisă înaintea contului (nimic), închisă după intrarea cu butonul ei principal (gata, fără registru).
+  expect(fara).toContainEqual({ fel: 'dialog', id: 'testid.dialog-cont', rez: 'gata' });
+  expect(fara).not.toContainEqual({ fel: 'dialog', id: 'testid.dialog-cont', rez: 'deschis' });
   const grupare = fara.find((e) => e['id'] === 'document.grupeaza');
   expect(grupare).toMatchObject({ fel: 'actiune', de: 'tasta' });
   expect(String(grupare?.['rez'])).toMatch(/^motiv\./);

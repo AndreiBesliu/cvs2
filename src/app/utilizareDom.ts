@@ -1,11 +1,12 @@
 import type { Eveniment } from '../../shared/utilizare.ts';
 import { CATALOG_CONTROALE } from './catalogControale.ts';
-import { INTERACTIV, numeControl } from './numeControl.ts';
+import { DIN_COD, INTERACTIV, numeControl } from './numeControl.ts';
 import { sursaDin } from './utilizare.ts';
 
 /**
  * Ce se prinde din pagină (ADR 0262, felia A.8c), în bucata înregistratorului, deci nimic în pornire: clicul pe un control, cu
- * numele lui din catalog (`numeControl.ts`) și zona; rotița, ca zoom pe pânză și derulare în rest (treptele unui gest se
+ * numele lui din catalog (`numeControl.ts`) și zona, afară de butoanele registrului și ale uneltelor (acțiunea și unealta lor
+ * se înregistrează deja, cu sursa; două evenimente pe un clic ar rupe și numărarea repetărilor); rotița, ca zoom pe pânză și derulare în rest (treptele unui gest se
  * numără în înregistrator); dialogurile (tot ce are `role="dialog"`), deschise și închise. Un dialog închis a „mers până la
  * capăt” dacă între timp a reușit o acțiune a registrului sau s-a apăsat butonul lui principal; altfel e „renunțat”. Clicurile,
  * derularea și zoom-ul le oprește înregistratorul când clicurile fine sunt oprite din Setări; dialogurile intră mereu.
@@ -35,7 +36,7 @@ export function urmaresteControalele(d: DepsDom): void {
       for (const [dialog, x] of deschise) if (dialog.contains(el)) x.principal = true;
     }
     const id = numeControl(el, catalog);
-    if (id) d.primeste({ fel: 'clic', t: d.ceas(), id, de: sursaDin(el, false) });
+    if (id && !DIN_COD.has(id.slice(0, id.indexOf('.')))) d.primeste({ fel: 'clic', t: d.ceas(), id, de: sursaDin(el, false) });
   }, true);
 
   d.win.addEventListener('wheel', (e) => {

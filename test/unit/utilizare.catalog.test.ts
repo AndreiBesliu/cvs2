@@ -24,8 +24,10 @@ test('catalogul are controalele și dialogurile editorului, nu și adminul sau v
   for (const n of CATALOG_CONTROALE) {
     assert.ok(numeDin(n.slice(0, n.indexOf('.')), n.slice(n.indexOf('.') + 1)) === n, `numele ${n} e deja normalizat`);
     assert.ok(!DIN_COD.has(n.slice(0, n.indexOf('.'))), `${n}: ce pune codul nu intră în catalog`);
-    assert.ok(!n.startsWith('admin.') && !n.startsWith('set.'), `${n}: adminul nu se înregistrează`);
   }
+  // Butonul adminului (`id="set-rapid-exemple"`) nu intră; nici reperul ancorei de pe pânză (un `div` fără rol).
+  assert.ok(!CATALOG_CONTROALE.has('id.set-rapid-exemple'), 'adminul nu se înregistrează');
+  assert.ok(!CATALOG_CONTROALE.has('testid.ancora'), 'doar controalele și ferestrele');
 });
 
 test('numele unui control: primul atribut cu un nume din catalog; din registru și uneltele trec după formă', () => {

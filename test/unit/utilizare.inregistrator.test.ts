@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lotDin, SETARI_UTILIZARE_IMPLICITE, setariPublice, type ContextLot, type SetariPublice, type Sursa } from '../../shared/utilizare.ts';
+import { lotDin, REPETARI_MAX, SETARI_UTILIZARE_IMPLICITE, setariPublice, type ContextLot, type SetariPublice, type Sursa } from '../../shared/utilizare.ts';
 import { preiaUtilizarea, sursaDin, utilizarea } from '../../src/app/utilizare.ts';
 import {
   CHEIE_LOTURI_UTILIZARE, CHEIE_SETARI_UTILIZARE, contextDinMediu, creeazaInregistrator, creeazaPompa, EVENIMENTE_IN_ASTEPTARE,
@@ -83,13 +83,27 @@ test('clicurile fine: repetate la rând, numărate într-unul; derularea și zoo
   m.treci(PAUZA_GEST_MS + 1);
   m.ins.primeste({ fel: 'zoom', t: 3_800, de: 'panza', n: 1 });
   m.ins.primeste({ fel: 'derulare', t: 3_900, de: 'panou', n: 1 });
+  m.ins.primeste({ fel: 'derulare', t: 3_950, de: 'bara', n: 1 });
   m.ins.primeste({ ...clic, id: 'Buton Salvează', t: 4_000 });
   assert.deepEqual(m.ins.pasi(), [
     { ...clic, t: 1_000, n: 2 },
     { fel: 'zoom', t: 2_600, de: 'panza', n: 3 },
     { fel: 'zoom', t: 3_800, de: 'panza', n: 1 },
     { fel: 'derulare', t: 3_900, de: 'panou', n: 1 },
+    { fel: 'derulare', t: 3_950, de: 'bara', n: 1 },
   ]);
+  // Același control din altă zonă (bara, apoi meniul) e alt clic.
+  const n = mediu();
+  n.ins.primeste({ ...clic, t: 1 });
+  n.ins.primeste({ ...clic, de: 'meniu', t: 2 });
+  assert.deepEqual(n.ins.pasi(), [{ ...clic, t: 1 }, { ...clic, de: 'meniu', t: 2 }]);
+});
+
+test('un gest numărat nu trece de plafonul repetărilor (serverul l-ar arunca): treptele în plus încep alt eveniment', () => {
+  const m = mediu();
+  m.ins.primeste({ fel: 'zoom', t: 1, de: 'panza', n: REPETARI_MAX - 1 });
+  m.ins.primeste({ fel: 'zoom', t: 2, de: 'panza', n: 2 });
+  assert.deepEqual(m.ins.pasi().map((e) => ('n' in e ? e.n : 0)), [REPETARI_MAX - 1, 2]);
 });
 
 test('clicurile fine oprite din Setări: clicurile, derularea și zoom-ul nu intră deloc; acțiunile și dialogurile, da', () => {
