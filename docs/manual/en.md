@@ -2119,7 +2119,8 @@ it, and the app’s interface stays the same.
   fingerprint in the library and keeps it in this browser (it works offline too); **Update to …** brings the new version,
   with its data, and “What’s new” then shows only what appeared since your version; **Open** opens its window; **Remove**
   deletes it, after a question. On a phone, the list and the page come one at a time: a row opens its page, and **Back to
-  the list** (‹) takes you back. The library is read each time it opens and needs an internet connection; without one,
+  the list** (‹) takes you back. From the keyboard: ← and → switch the tab, ↑ and ↓ move between the rows of the list,
+  Enter opens the row’s page, and Escape closes the library. The library is read each time it opens and needs an internet connection; without one,
   **Try again** asks for it again, and installed extensions stay under **Installed** and work as before. A link like
   `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
 - At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install

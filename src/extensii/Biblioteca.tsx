@@ -10,6 +10,10 @@
  * la deschidere; cât vine, lista arată un schelet, iar fereastra își ține mărimea.
  *
  * Pe un ecran îngust, lista și pagina sunt două vederi: un rând ales deschide pagina lui, iar „Înapoi la listă” se întoarce.
+ *
+ * Tastatura (ADR 0231 §B.7): la deschidere, focusul stă pe fila aleasă; ← și → schimbă fila; în listă, ↑ și ↓ mută focusul
+ * între rânduri, iar Enter deschide pagina rândului; Escape închide fereastra. Din file și din listă, doar fila aleasă și
+ * rândul arătat sunt în ordinea lui Tab.
  */
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
@@ -74,8 +78,13 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   const [ales, setAles] = useState<string | null>(cerere.id);
   const [progres, setProgres] = useState<Readonly<Record<string, Progres>>>({});
   const [deScos, setDeScos] = useState<ExtensieInstalata | null>(null);
-  // După întrebarea de la „Scoate”, focusul se întoarce pe gestul paginii (sau, dacă extensia a plecat, pe ×).
   const radacina = useRef<HTMLDivElement | null>(null);
+  // La deschidere, focusul stă pe fila aleasă; pe un ecran îngust, deschisă pe o pagină (dintr-un link), pe „Înapoi la listă”.
+  useEffect(() => {
+    const posibile = radacina.current?.querySelectorAll<HTMLButtonElement>('[data-extensii="inapoi-lista"], [role="tab"][aria-selected="true"], [data-extensii="inchide-biblioteca"]');
+    [...(posibile ?? [])].find((x) => x.offsetParent !== null)?.focus();
+  }, []);
+  // După întrebarea de la „Scoate”, focusul se întoarce pe gestul paginii (sau, dacă extensia a plecat, pe ×).
   const intors = useRef(false);
   useEffect(() => {
     if (deScos) { intors.current = true; return; }
@@ -109,6 +118,24 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     inchide();
   };
 
+  // ← și → schimbă fila, cu focusul după ele (și de la un capăt la celălalt).
+  const tastaFile = (e: KeyboardEvent): void => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const f: Fila = fila === 'toate' ? 'instalate' : 'toate';
+    setFila(f);
+    radacina.current?.querySelector<HTMLButtonElement>(`[data-extensii="fila-${f}"]`)?.focus();
+  };
+  // ↑ și ↓ mută focusul între rândurile listei (și de la un capăt la celălalt); Enter, pe rând, îi deschide pagina.
+  const tastaLista = (e: KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const randurile = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('[data-extensii="rand-biblioteca"]')];
+    const i = randurile.indexOf(document.activeElement as HTMLButtonElement);
+    if (i < 0) return;
+    e.preventDefault();
+    randurile[(i + (e.key === 'ArrowDown' ? 1 : randurile.length - 1)) % randurile.length]?.focus();
+  };
+
   /** Instalarea sau actualizarea dintr-un clic, în pagină: descărcarea verificată, scrierea, apoi lista celor instalate. */
   const instaleaza = async (rand: RandBiblioteca, cum: 'instalata' | 'actualizata'): Promise<void> => {
     setProgres((p) => ({ ...p, [rand.id]: { fel: 'lucreaza' } }));
@@ -134,7 +161,7 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
     const s = stareaLui(e);
     return (
       <button key={e.id} type="button" className="bib-card" data-extensii="rand-biblioteca" data-id={e.id} data-stare={s.fel}
-        {...(aratat?.id === e.id ? { 'aria-current': 'true' as const } : {})} onClick={() => { setAles(e.id); }}>
+        tabIndex={aratat?.id === e.id ? 0 : -1} {...(aratat?.id === e.id ? { 'aria-current': 'true' as const } : {})} onClick={() => { setAles(e.id); }}>
         <SemnElement element={e} marime={28} />
         <span className="bib-card-text">
           <strong>{numeleLui(e)}</strong>
@@ -147,7 +174,7 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
   };
 
   const lista = (
-    <div className="bib-lista" data-testid="biblioteca-lista">
+    <div className="bib-lista" id="bib-lista" role="tabpanel" aria-labelledby={`bib-fila-${fila}`} data-testid="biblioteca-lista" onKeyDown={tastaLista}>
       {fila === 'toate' && catalog.fel === 'incarca' && (
         <div className="bib-schelet" role="status" aria-label={t('extensii.biblioteca.incarca')} data-testid="biblioteca-schelet">
           <span /><span />
@@ -181,16 +208,18 @@ export function FereastraBiblioteca({ cerere, catalog, instalate, limba, acoperi
               <span aria-hidden="true">‹</span>
             </button>
             <h2 id="fereastra-biblioteca-titlu">{t('extensii.biblioteca.titlu')}</h2>
-            <div className="bib-file" role="tablist" aria-label={t('extensii.biblioteca.titlu')}>
-              <button type="button" role="tab" aria-selected={fila === 'toate'} data-extensii="fila-toate" onClick={() => { setFila('toate'); }}>
+            <div className="bib-file" role="tablist" aria-label={t('extensii.biblioteca.titlu')} onKeyDown={tastaFile}>
+              <button type="button" role="tab" id="bib-fila-toate" aria-selected={fila === 'toate'} aria-controls="bib-lista" tabIndex={fila === 'toate' ? 0 : -1}
+                data-extensii="fila-toate" onClick={() => { setFila('toate'); }}>
                 {t('extensii.biblioteca.fila-toate')}{catalog.fel === 'ok' ? ` · ${randuri.length}` : ''}
               </button>
-              <button type="button" role="tab" aria-selected={fila === 'instalate'} data-extensii="fila-instalate" onClick={() => { setFila('instalate'); }}>
+              <button type="button" role="tab" id="bib-fila-instalate" aria-selected={fila === 'instalate'} aria-controls="bib-lista" tabIndex={fila === 'instalate' ? 0 : -1}
+                data-extensii="fila-instalate" onClick={() => { setFila('instalate'); }}>
                 {t('extensii.biblioteca.fila-instalate')} · {instalate.length}
               </button>
             </div>
             <button type="button" className="bib-inchide" data-extensii="inchide-biblioteca" aria-label={t('extensii.biblioteca.inchide')} title={t('extensii.biblioteca.inchide')}
-              autoFocus onClick={inchide}>
+              onClick={inchide}>
               <span aria-hidden="true">×</span>
             </button>
           </div>

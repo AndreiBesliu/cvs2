@@ -2052,7 +2052,8 @@ tu, iar interfața aplicației rămâne aceeași.
   stă sus, în pagină: **Instalează** descarcă pachetul, îl verifică după amprenta lui din bibliotecă și îl pune în browserul
   acesta (merge și offline); **Actualizează la …** aduce versiunea nouă, cu datele ei, iar „Ce e nou” arată atunci doar ce a
   apărut de la versiunea ta; **Deschide** îi deschide fereastra; **Scoate** o șterge, după o întrebare. Pe telefon, lista și
-  pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. Biblioteca se citește la fiecare
+  pagina vin pe rând: un rând deschide pagina lui, iar **Înapoi la listă** (‹) te întoarce. De la tastatură: ← și →
+  schimbă fila, ↑ și ↓ mută între rândurile listei, Enter deschide pagina rândului, iar Escape închide biblioteca. Biblioteca se citește la fiecare
   deschidere și are nevoie de internet; fără el, **Reîncearcă** o cere din nou, iar extensiile instalate rămân la
   **Instalate** și merg ca până acum. Un link de forma `…/#biblioteca=trenulet` deschide biblioteca pe pagina lui Easy
   3Draw; nimic nu se descarcă fără clicul tău.

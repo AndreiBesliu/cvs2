@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
-import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
+import { citesteZip } from '../../src/extensii/zip.ts';
 import { deschideBiblioteca, deschideMeniul, inchideBiblioteca, pagina, paginaInstalatei, randLista } from './ajutor-biblioteca.ts';
 
 /**
@@ -11,6 +12,14 @@ import { deschideBiblioteca, deschideMeniul, inchideBiblioteca, pagina, paginaIn
 test.use({ locale: 'ro-RO' });
 
 const SALUT = Buffer.from(impacheteaza('extensii/salut').octeti);
+
+/** Același pachet, cu altă versiune în manifest (o versiune mai veche a extensiei). */
+async function cuVersiunea(octeti: Uint8Array, versiune: string): Promise<Buffer> {
+  const z = await citesteZip(octeti, { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 });
+  if (!z.ok) throw new Error(z.motiv);
+  return Buffer.from(scrieZip(z.intrari.map((i) => (i.nume !== 'extensie.json' ? i
+    : { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown>, versiune })) }))));
+}
 
 const inaltimi = (l: Locator) => l.evaluateAll((e) => e.map((x) => Math.round(x.getBoundingClientRect().height)));
 async function celPutin(l: Locator, minim: number, ce: string): Promise<void> {
@@ -54,6 +63,30 @@ test.describe('la atingere, pe telefon', () => {
   });
 });
 
+/** Fereastra cu `data-testid` dat încape în lățime: nimic nu iese din cutia ei și nicio zonă a ei nu se derulează în lateral. */
+async function incapeIn(page: Page, test: string): Promise<void> {
+  const cutie = page.getByTestId(test).locator('.dialog-cutie');
+  await expect(cutie).toBeVisible();
+  const m = await cutie.evaluate((e) => {
+    const r = e.getBoundingClientRect();
+    // Capturile se derulează în lateral, anume: ce e în șirul lor nu se judecă.
+    const afara = [...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi figure')).filter((x) => { const b = x.getBoundingClientRect(); return b.width > 0 && (b.left < r.left - 0.5 || b.right > r.right + 0.5); })
+      .map((x) => `${x.tagName.toLowerCase()}.${x.className}`);
+    // Nici zonele care se derulează în ea (lista, pagina) nu au derulare în lateral; capturile, da, anume.
+    // (Un text tăiat anume cu „…” nu e o derulare: se judecă doar zonele pe care omul le poate derula.)
+    const deruleaza = (x: Element): boolean => x === e || ['auto', 'scroll'].includes(getComputedStyle(x).overflowX);
+    const zone = [e, ...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi') && deruleaza(x) && x.scrollWidth - x.clientWidth > 1)
+      .map((x) => `${x.tagName.toLowerCase()}.${x.className} +${x.scrollWidth - x.clientWidth}`);
+    return { stanga: r.left, dreapta: r.right, lat: innerWidth, zone, afara };
+  });
+  expect(m.stanga, `${test}: marginea din stânga`).toBeGreaterThanOrEqual(0);
+  expect(m.dreapta, `${test}: marginea din dreapta`).toBeLessThanOrEqual(m.lat);
+  expect(m.zone, `${test}: fără derulare în lateral`).toEqual([]);
+  expect(m.afara, `${test}: nimic nu iese din cutie`).toEqual([]);
+}
+
+const FONT_LAT = "Verdana, 'DejaVu Sans', sans-serif";
+
 /**
  * Ferestrele încap și pe cel mai îngust telefon, cu un font lat (Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e
  * oricum lat): nimic nu iese din cutie în lateral, iar butoanele rămân pe ecran.
@@ -65,27 +98,8 @@ for (const latime of [390, 360, 320]) {
     test('confirmarea, gestionarea și întrebarea scoaterii încap în lățime', async ({ page }) => {
       const p = pachetTrenulet();
       await page.goto('/');
-      await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
-      const incape = async (test: string): Promise<void> => {
-        const cutie = page.getByTestId(test).locator('.dialog-cutie');
-        await expect(cutie).toBeVisible();
-        const m = await cutie.evaluate((e) => {
-          const r = e.getBoundingClientRect();
-          // Capturile se derulează în lateral, anume: ce e în șirul lor nu se judecă.
-          const afara = [...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi figure')).filter((x) => { const b = x.getBoundingClientRect(); return b.width > 0 && (b.left < r.left - 0.5 || b.right > r.right + 0.5); })
-            .map((x) => `${x.tagName.toLowerCase()}.${x.className}`);
-          // Nici zonele care se derulează în ea (lista, pagina) nu au derulare în lateral; capturile, da, anume.
-          // (Un text tăiat anume cu „…” nu e o derulare: se judecă doar zonele pe care omul le poate derula.)
-          const deruleaza = (x: Element): boolean => x === e || ['auto', 'scroll'].includes(getComputedStyle(x).overflowX);
-          const zone = [e, ...e.querySelectorAll('*')].filter((x) => !x.closest('.pagina-capturi') && deruleaza(x) && x.scrollWidth - x.clientWidth > 1)
-            .map((x) => `${x.tagName.toLowerCase()}.${x.className} +${x.scrollWidth - x.clientWidth}`);
-          return { stanga: r.left, dreapta: r.right, lat: innerWidth, zone, afara };
-        });
-        expect(m.stanga, `${test}: marginea din stânga`).toBeGreaterThanOrEqual(0);
-        expect(m.dreapta, `${test}: marginea din dreapta`).toBeLessThanOrEqual(m.lat);
-        expect(m.zone, `${test}: fără derulare în lateral`).toEqual([]);
-        expect(m.afara, `${test}: nimic nu iese din cutie`).toEqual([]);
-      };
+      await page.evaluate((f) => { document.documentElement.style.setProperty('--font', f); }, FONT_LAT);
+      const incape = (test: string): Promise<void> => incapeIn(page, test);
       await expect(page.locator('[data-extensii="buton"]')).toBeVisible();
       // Un nume de fișier lung, fără locuri de rupere: se frânge oriunde, nu împinge fereastra în lateral.
       await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: `easy3draw_pachetul_de_proba_cu_un_nume_foarte_lung_si_fara_spatii_${String(p.manifest.versiune)}.zip`, mimeType: 'application/zip', buffer: Buffer.from(p.octeti) });
@@ -117,6 +131,42 @@ for (const latime of [390, 360, 320]) {
       await expect(page.getByTestId('biblioteca-lista')).toBeHidden();
       await instalata.locator('[data-extensii="pagina-scoate"]').click();
       await incape('extensii-scoatere');
+    });
+  });
+}
+
+/**
+ * La birou, cu fontul lat (ADR 0231 §B.7): meniul cu „Actualizează” în rând și fereastra bibliotecii, cu cea mai lungă linie
+ * de gesturi („Actualizează la …” și „Deschide”), încap la 1024 și la 1280 px; numele extensiei nu ajunge sub butoane.
+ */
+for (const [lat, inalt] of [[1024, 700], [1280, 800]] as const) {
+  test.describe(`la ${lat} px, cu fontul lat`, () => {
+    test.use({ viewport: { width: lat, height: inalt } });
+
+    test('meniul și fereastra bibliotecii încap; gesturile paginii nu se suprapun cu numele', async ({ page }) => {
+      const p = pachetTrenulet();
+      await page.goto('/');
+      await page.evaluate((f) => { document.documentElement.style.setProperty('--font', f); }, FONT_LAT);
+      // O versiune veche, ca rândul din meniu și pagina să aibă „Actualizează”.
+      await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-vechi.zip', mimeType: 'application/zip', buffer: await cuVersiunea(p.octeti, '18.6.0') });
+      await page.locator('[data-extensii="instaleaza"]').click();
+      await expect(page.getByTestId('extensii-instalare')).toHaveCount(0);
+      const meniu = await deschideMeniul(page);
+      await expect(meniu.locator('[data-extensii="biblioteca-actualizeaza"]')).toBeVisible();
+      const m = await meniu.evaluate((e) => {
+        const r = e.getBoundingClientRect();
+        const afara = [...e.querySelectorAll('button, .rand-text')].filter((x) => { const b = x.getBoundingClientRect(); return b.left < r.left - 0.5 || b.right > r.right + 0.5; }).map((x) => x.className);
+        return { dreapta: r.right, lat: innerWidth, afara };
+      });
+      expect(m.dreapta, 'meniul, pe ecran').toBeLessThanOrEqual(m.lat);
+      expect(m.afara, 'nimic nu iese din meniu').toEqual([]);
+      await deschideBiblioteca(page);
+      await expect(pagina(page)).toHaveAttribute('data-stare', 'actualizeaza');
+      await incapeIn(page, 'fereastra-biblioteca');
+      // Capul paginii: numele, apoi gesturile; cutiile lor nu se calcă.
+      const [nume, gest] = [await pagina(page).locator('.pagina-nume h3').boundingBox(), await pagina(page).locator('.pagina-gest').boundingBox()];
+      expect(nume && gest && nume.x + nume.width <= gest.x + 0.5, `numele (${JSON.stringify(nume)}) și gesturile (${JSON.stringify(gest)})`).toBe(true);
+      expect(nume?.width ?? 0, 'numele are loc').toBeGreaterThan(80);
     });
   });
 }

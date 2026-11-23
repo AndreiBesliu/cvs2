@@ -337,6 +337,52 @@ test('linkul #biblioteca=trenulet: pagina lui din bibliotecă, nimic descărcat 
   await faraEroriInJurnal(page);
 });
 
+test('tastatura: focusul intră pe fila aleasă; săgețile schimbă fila și mută între rânduri; Enter deschide pagina; Escape închide', async ({ page }) => {
+  await page.goto('/');
+  await instaleazaDinFisier(page, 'salut.zip', Buffer.from(impacheteaza('extensii/salut').octeti));
+  await instaleazaDinFisier(page, 'trenulet-18.6.0.zip', await pachetVechi('18.6.0'));
+  const b = await deschideBiblioteca(page);
+  const toate = b.locator('[data-extensii="fila-toate"]');
+  const instalate = b.locator('[data-extensii="fila-instalate"]');
+  // La deschidere, focusul stă pe fila aleasă (nu pe ×); doar ea e în ordinea lui Tab.
+  await expect(toate).toBeFocused();
+  await expect(toate).toHaveAttribute('aria-selected', 'true');
+  await expect(toate).toHaveAttribute('tabindex', '0');
+  await expect(instalate).toHaveAttribute('tabindex', '-1');
+  await expect(page.getByRole('tabpanel', { name: 'Toate · 1' })).toBeVisible();
+  // Săgețile schimbă fila, cu focusul după ele; de la capăt trec la celălalt.
+  await page.keyboard.press('ArrowRight');
+  await expect(instalate).toBeFocused();
+  await expect(instalate).toHaveAttribute('aria-selected', 'true');
+  await expect(instalate).toHaveAttribute('tabindex', '0');
+  await expect(page.getByRole('tabpanel', { name: 'Instalate · 2' })).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  await expect(toate).toBeFocused();
+  await page.keyboard.press('ArrowLeft');
+  await expect(instalate).toBeFocused();
+  // În listă: doar rândul ales e în ordinea lui Tab; săgețile mută focusul între rânduri, Enter deschide pagina.
+  const randuri = page.getByTestId('biblioteca-lista').locator('[data-extensii="rand-biblioteca"]');
+  await expect(randuri).toHaveCount(2);
+  await expect(randuri.nth(0)).toHaveAttribute('tabindex', '0');
+  await expect(randuri.nth(1)).toHaveAttribute('tabindex', '-1');
+  const ids = await randuri.evaluateAll((e) => e.map((x) => x.getAttribute('data-id')));
+  await randuri.nth(0).focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(randuri.nth(1)).toBeFocused();
+  await expect(pagina(page), 'săgeata doar mută focusul').toHaveAttribute('data-id', ids[0] ?? '?');
+  await page.keyboard.press('Enter');
+  await expect(pagina(page)).toHaveAttribute('data-id', ids[1] ?? '?');
+  await expect(randuri.nth(1)).toHaveAttribute('tabindex', '0');
+  await page.keyboard.press('ArrowDown');
+  await expect(randuri.nth(0), 'de la ultimul rând, la primul').toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(randuri.nth(1)).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(biblioteca(page)).toHaveCount(0);
+  await expect(page.locator('[data-extensii="buton"]')).toBeFocused();
+  await faraEroriInJurnal(page);
+});
+
 test('din paleta de comenzi (Ctrl K): „Biblioteca extensiilor” deschide fereastra de oriunde, cu catalogul cerut atunci; Escape o închide, cu focusul la piesa de puzzle', async ({ page }) => {
   const cataloage: string[] = [];
   page.on('request', (r: Request) => { if (r.url().endsWith('/extensii/catalog.json')) cataloage.push(r.url()); });
