@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) GATA pe `wip/3.Tq-elice`, în sesiunea cloud a liniei (pilotul), Easy 3Draw 18.19.0, unită în `main` pe 23.11 (`0ae9c6c1`); apoi 3.Tr (barca), 3.Ts (carcasa), la cuvântul owner-ului; cotele LEGO măsurate din LDraw, față de axa piesei_
+_CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (elicea) unită în `main` pe 23.11 (`0ae9c6c1`, Easy 3Draw 18.19.0); reparația probelor atelierului (`baa00ad`) și 3.Tr (elicea de barcă, 18.20.0) GATA pe `wip/3.Tq-elice`, în sesiunea cloud a liniei; apoi 3.Ts (carcasa), la cuvântul owner-ului; cotele LEGO măsurate din LDraw, față de axa piesei_
 
 ## 3.Tq, gata (23.11, în cloud)
 
@@ -30,7 +30,7 @@ _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (
   încărcare: nu s-a reprodus cu ascultători în pagină și nici cu urma Playwright, ci cu three.js ținut și lăsat la un
   moment ales. **Probele atelierului pe pagina de sine stătătoare trebuie să aștepte pornirea părții 3D** (`#at-vedere
   canvas`), cu three.js dat din `vendor/` (în container, `cdnjs.cloudflare.com` e oprit, iar cererea cade repede, exact
-  cât proba scrie). Spec-urile celorlalte piese (rotițe, roți, șenilă …) încă nu așteaptă: aceeași cursă, mai rar.
+  cât proba scrie). Din 23.11, toate probele atelierului o fac, printr-un ajutor comun: mai jos.
 - **O otravă „echivalentă” se rulează.** Trei socotite echivalente au fost rulate: una era prinsă deja, una nu era
   echivalentă (garda radicalului din forma rotunjită: fără ea, vârful paletei e NaN la 99 dintre diametrele din 0,1 în
   0,1 mm, fiindcă ultima stație cade cu o rotunjire peste 100 % din paletă).
@@ -39,6 +39,54 @@ _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (
 - **`biblioteca.ts --scrie` după ultima schimbare a pluginului:** la o schimbare pe aceeași versiune nepublicată, pune
   temporar versiunea publicată (18.18.0) în `extensii/biblioteca.json` și rulează-l din nou.
 - **În container:** `python3` fără `-B` lasă `__pycache__` în `test/otravuri/` și `scripts/ldraw/` (neignorate).
+
+## 3.Tr, gata (23.11, în cloud): elicea de barcă
+
+La „pornește 3.Tr” al owner-ului, pe ramura liniei, peste reparația probelor. Easy 3Draw 18.20.0.
+
+- **Ce are:** a doua piesă a filei „Elice”, „Elice de barcă”: 3–5 palete late (conturul „ureche”), pasul constant,
+  înclinate înapoi pe cerc, secțiunea ogivală, butucul cât paletele, capacul rotunjit, „Repede” pe grila de știfturi,
+  „Fă perechea”. Probele: unitare 12 (`trenulet.barca.test.ts`), e2e 5 (`trenulet.barca.spec.ts`). Otrăvurile: `3.Tr.py`
+  141 / 141, `3.Tr-en.py` 6 / 6. Documentele: ADR 0282 („Implementarea (3.Tr)”), fișa etapei 3, `docs/otravuri.md`, DEVLOG.
+- **Hotărâte la implementare** (decizia spunea doar „3–5 palete late, înclinate înapoi”; motivele, în ADR):
+  - înclinarea e pe cerc (skew), nu spre pupa (rake): cea spre pupa ridică muchia de jos de pe masă, deci cere suport;
+  - reperul LEGO e elicea motorului de barcă (u9216: Ø21,6, trei palete ovale, pe un arbore de Ø2), doar pentru formă:
+    fără „Ca LEGO”, cu diametrele pe grila de știfturi;
+  - se tipărește cu partea dinspre barcă pe masă: axul intră de jos, capacul rămâne spre pupa, fața plată e sus;
+  - butucul crește cu elicea (Ø8 sub Ø45, apoi 18 % din diametru) și e înalt cât paletele.
+- **Rămase, la cuvântul owner-ului:** 3.Ts (ventilatorul cu carcasă; reperele sunt 41530 și 50899, „Propeller 3 Blade 5D
+  with Outer Ring”); proba pe imprimantă și în apă (coada din fișa etapei 3); înclinarea spre pupa, dacă o vrea (cu suport).
+
+## Capcanele găsite la 3.Tr
+
+- **O secțiune cu o față plată are puncte coliniare:** tăierea urechilor (`triunghiuriPoligon`) le pierde, iar capătul
+  paletei rămâne deschis (78 de muchii fără pereche). Capetele se închid ca o fâșie între fața de sus și cea de jos.
+- **O refactorizare mută otrăvurile vechi.** Paletele scoase într-o funcție comună au lăsat 13 otrăvuri din `3.Tq.py` fără
+  țintă (text mutat) sau cu două ținte (cod repetat la piesa nouă). `verifica` pe toate listele zonei, după fiecare
+  mutare de cod; codul repetat (butucul) a trecut într-o funcție a lui, ca otrava să aibă un singur loc.
+- **Elicea veche, la octet:** amprenta plaselor pe o grilă de parametri (3 456 de combinații), luată înainte și după.
+- **O piesă nouă schimbă căutarea:** „bar” găsește acum și „Elice de barcă”. Proba pictogramelor lua a treia piesă a
+  fiecărei familii (`piese[2]`): o familie cu două piese o strica.
+- **Fereastra unei palete nu e centrată pe mijlocul corzii:** spatele bombat iese într-o parte, deci „nimic lângă
+  bisectoare” era o probă greșită. Golul dintre palete se măsoară pe cerc: cel mai mare gol dintre două unghiuri vecine.
+- **O otravă scăpată arată o probă cu un singur punct:** capacul era cerut doar la jumătatea înălțimii (un inel); numele,
+  niciodată cu gaura și capacul împreună.
+
+## Probele atelierului așteaptă pornirea părții 3D (23.11, după unirea lui 3.Tq)
+
+La „ia reparația probelor atelierului” al owner-ului, pe ramura liniei, repornită din `main` (`8177ab8`). Doar probe:
+pluginul rămâne 18.19.0, fără `biblioteca.ts --scrie`.
+
+- **Ajutorul:** `test/e2e/ajutor-atelier.ts`. `threeDinPachet(page)` dă three.js din `vendor/` paginii de sine stătătoare
+  (înaintea paginii); `intraIn3D(c)` apasă „3D” și așteaptă pânza previzualizării (`#at-vedere canvas`), pusă în același
+  pas cu redesenarea editorului. `c` e pagina sau cadrul extensiei din cvs2.
+- **Unde:** cele 11 spec-uri ale atelierului (rotițe, roată, fulie, conică, coroană, conică dublă, șenilă, căutare, file,
+  pictograme, elice) și cele trei intrări în 3D din `trenulet.spec.ts` care nu așteptau. Șapte dintre ele cereau three.js
+  de pe cdnjs: în CI, din rețea; în container, fără previzualizare.
+- **Dovada:** secvența rotițelor (roata de 8, modulul 0,5), cu three.js sosit la 120–220 ms, din 1 în 1 ms: fără
+  așteptare, 5 scrieri pierdute din 101 (sosirea în timpul lui `fill`); cu ea, 0 din 101.
+- **O probă nouă a atelierului** intră în 3D cu `intraIn3D`, nu cu un clic pe `[data-mod="3d"]`; pe pagina de sine
+  stătătoare, cu `threeDinPachet` înainte.
 
 ## Istoria (22.11 și 23.11 dimineața, local)
 
