@@ -210,3 +210,14 @@ test('raportul foilor: la locuri alese, câte urechi sunt alese (nu câte pe buc
   const egale = raportFoi(documentCu([piesa({ numar: 4, latime: 6, grosime: 2 })]), 'taiata', (n) => `Foaia ${n}`);
   assert.equal(egale.foi[0]?.operatii[0]?.urechi, 4);
 });
+
+test('raportul foilor: pe laturile lungi sau scurte, câte cere numărul; la mijlocul laturilor, fără număr (depinde de laturile conturului)', () => {
+  for (const mod of ['lungi', 'scurte'] as const) {
+    const r = raportFoi(documentCu([piesa({ numar: 4, latime: 6, grosime: 2, mod })]), 'taiata', (n) => `Foaia ${n}`);
+    assert.equal(r.foi[0]?.operatii[0]?.urechi, 4, mod);
+    assert.equal(r.foi[0]?.operatii[0]?.urechiLa, undefined, mod);
+  }
+  const mijloc = raportFoi(documentCu([piesa({ numar: 4, latime: 6, grosime: 2, mod: 'mijloc' })]), 'taiata', (n) => `Foaia ${n}`);
+  assert.equal(mijloc.foi[0]?.operatii[0]?.urechi, 0);
+  assert.equal(mijloc.foi[0]?.operatii[0]?.urechiLa, 'mijloc');
+});

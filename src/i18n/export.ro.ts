@@ -183,6 +183,13 @@ export const roExport = {
   'export.urechi.locuri.lemn': 'unde ține',
   'export.urechi.locuri.lemn.titlu': 'La export, pe fiecare copie, aplicația caută lemnul de care se țin urechile: pe dinafară, lemnul foii; pe dinăuntru, piesa. Nu merge pe linie.',
   'export.urechi.lemn': 'La export, pe fiecare copie: câte cere numărul, cât mai departe una de alta, acolo unde țin de lemn. Le vezi cu „Arată traseul”.',
+  // Regulile pe laturi (ADR 0211, c; felia 11.3↑f).
+  'export.urechi.locuri.lungi': 'pe laturile lungi',
+  'export.urechi.locuri.scurte': 'pe laturile scurte',
+  'export.urechi.locuri.mijloc': 'la mijlocul laturilor',
+  'export.urechi.locuri.laturi.titlu': 'Laturile sunt bucățile drepte ale conturului pe care încape o ureche. Pe un contur fără laturi drepte (un cerc), urechile rămân la distanțe egale.',
+  'export.urechi.laturi': 'Numărul se împarte pe laturile acestea, la distanțe egale pe fiecare; dacă nu încap toate, exportul spune câte au încăput. Le vezi cu „Arată traseul”.',
+  'export.urechi.mijloc': 'Câte o ureche la mijlocul fiecărei laturi drepte, oricare ar fi numărul. Le vezi cu „Arată traseul”.',
   'export.urechi.undeTine': 'Pune urechile unde țin',
   'export.urechi.undeTine.titlu': 'Trece pe „unde ține” operațiile pieselor desprinse; apoi exportă din nou.',
   'export.urechi.undeTine.puse': {
@@ -311,6 +318,7 @@ export const roExport = {
   'export.raport.op.despartire': 'despărțirea foii',
   'export.raport.op.adancime': { one: '{adancime} mm, {n} trecere', few: '{adancime} mm, {n} treceri', other: '{adancime} mm, {n} de treceri' },
   'export.raport.op.urechi': { one: '{n} ureche', few: '{n} urechi', other: '{n} de urechi' },
+  'export.raport.op.urechi.mijloc': 'urechi la mijlocul laturilor',
   'export.raport.desen-marcaj': '{marime} (desen)',
   'export.raport.valori-mai-multe': '{lista}, … ({n})',
   'export.raport.col.marime': 'Mărimea (mm)',

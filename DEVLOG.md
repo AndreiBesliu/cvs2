@@ -11455,3 +11455,13 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 - **Între timp, la linii:** biblioteca (3.Xh) are ADR 0231 propus, cu schița și patru întrebări la owner
   (`AndreiBesliu/cvs2#4`, ciornă); trasarea (25.8↑a, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului
   (`AndreiBesliu/cvs2#5`) își așteaptă porțile finale.
+
+## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
+
+**Prompt:** owner-ul, în sesiunea liniei, după raportul feliei 11.3↑e („11.3↑f (regulile urechilor) pornește doar la cuvântul
+tău”): „Da, 11.3↑f”. Modelul sesiunii, în trailerul commit-urilor ei.
+**Started:** 23.11, 15:32.
+
+- **`main` `c010e3d0`** (11.3↑e unită în `d3ffcbf3`, A.4) a venit prin avans direct: ramura n-avea nimic peste el. Rapidul
+  de pe `main` și rularea de noapte, verzi.
+

@@ -1197,7 +1197,7 @@ adresa de test față de cea live au lista lor.
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos), **incrustație în V** (locașul și dopul lui, vezi [Incrustația în V](#incrustatie)), **incrustație cu pereți drepți** (un buzunar cu dopul lui, vezi [Incrustația cu pereți drepți](#incrustatie-drept)); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
-| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, alese pe desen sau unde ține (vezi [Urechile alese pe desen](#export)) |
+| Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos); **Locurile**: la distanțe egale, alese pe desen, unde ține sau pe laturi (vezi [Urechile alese pe desen](#export)) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment. Și colțurile cu o latură curbă (un „D”, un umăr rotund, o lentilă, o curbă importată) primesc degajarea; unde freza nu ajunge deloc în colț, avertismentul o spune |
@@ -1577,6 +1577,17 @@ buclă”, cât mai departe una de alta; cu lemn de jur împrejur, ies chiar cel
 obicei, una înconjurată de vecine prea apropiate). Pe linie nu merge: freza n-are o parte de deșeu. Cu **Arată traseul**,
 urechile puse de aplicație apar pe drumul frezei, ca inele mici. Lângă avertismentul pieselor care se desprind, **Pune urechile
 unde țin** trece pe „unde ține” operațiile lor din fereastră; apoi exporți din nou.
+
+**Urechile pe laturi.** Trei reguli simple, pentru plăcuțe și dreptunghiuri: **pe laturile lungi**, **pe laturile scurte** și
+**la mijlocul laturilor**. Laturile sunt bucățile drepte ale drumului frezei pe care încape o ureche (lungimea urechii împărțită
+la 0,9); colțurile rotunjite, arcele și teșiturile mici nu sunt laturi. „Lungi” înseamnă laturile cele mai lungi (și cele cu cel
+mult 1 % mai scurte), „scurte”, cele mai scurte. Numărul din „Câte, pe buclă” se împarte pe laturile regulii, la distanțe egale
+pe fiecare: două urechi pe laturile lungi ale unui dreptunghi stau la mijlocul lor, patru, la un sfert și la trei sferturi din
+latură; pe un pătrat, două urechi stau pe laturi opuse. Dacă nu încap toate, le pune pe cele care încap, iar exportul spune
+câte. **La mijlocul laturilor** pune câte o ureche la mijlocul fiecărei laturi, oricare ar fi numărul (câmpul lui se oprește).
+Pe un contur fără laturi drepte (un cerc), urechile rămân la distanțe egale. Pe plăcuțele așezate în rânduri și coloane,
+urechile de la mijlocul laturilor cad față în față cu ale vecinelor: și când tăieturile vecine se unesc, plăcuțele se țin una
+de alta prin ele. Cu **Arată traseul**, urechile puse după regulă apar pe drumul frezei, ca inele mici.
 
 **Toate foile.** Cu mai multe [foi](#foile), fereastra întreabă **Ce exporți: Foaia activă / Toate foile (N)**. **Toate
 foile** face câte un program pe foaie, fiecare exact cel pe care l-ai exporta din foaia lui singură, și le descarcă într-o

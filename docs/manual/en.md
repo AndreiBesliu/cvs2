@@ -1239,7 +1239,7 @@ all projects: another computer, another browser, or the test address versus the 
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below), **V inlay** (the pocket and its plug, see [The V inlay](#incrustatie)), **straight-walled inlay** (a pocket with its plug, see [The straight-walled inlay](#incrustatie-drept)); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
-| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, picked on the drawing or where it holds (see [Tabs picked on the drawing](#export)) |
+| Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face); **Placement**: evenly spaced, picked on the drawing, where it holds or on the sides (see [Tabs picked on the drawing](#export)) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall). A corner whose relief would leave less than 1 mm of material to another wall of the part, or to the relief of another corner (at the base of a thin tongue or finger), goes without it, with a warning. Corners with a curved side (a “D”, a round shoulder, a lens, an imported curve) get the relief too; where the cutter cannot reach the corner at all, a warning says so |
@@ -1633,6 +1633,17 @@ at all stays among the loose ones (usually one surrounded by neighbours that are
 cutter has no waste side. With **Show toolpath**, the tabs the app placed show on the cutter path as small rings. Next to the
 warning about loose parts, **Put the tabs where they hold** switches their operations in the window to “where it holds”; then
 export again.
+
+**Tabs on the sides.** Three simple rules, for plaques and rectangles: **on the long sides**, **on the short sides** and **in
+the middle of each side**. Sides are the straight stretches of the cutter path long enough for a tab (the tab length divided by
+0.9); rounded corners, arcs and small chamfers are not sides. “Long” means the longest sides (and those at most 1 % shorter),
+“short”, the shortest. The number in “Count, per loop” is shared between the rule's sides, evenly spaced on each: two tabs on
+the long sides of a rectangle sit in their middles, four, at a quarter and at three quarters of the side; on a square, two tabs
+sit on opposite sides. If they do not all fit, it places the ones that do, and the export says how many. **In the middle of
+each side** puts one tab in the middle of every side, whatever the number (its field is switched off). On an outline with no
+straight sides (a circle), the tabs stay evenly spaced. On plaques laid out in rows and columns, tabs in the middle of the sides
+face the neighbours' tabs: even where neighbouring cuts merge, the plaques hold on to each other through them. With **Show
+toolpath**, the tabs placed by a rule show on the cutter path as small rings.
 
 **All sheets.** With several [sheets](#foile), the window asks **What to export: The active sheet / All sheets (N)**. **All
 sheets** makes one program per sheet, each exactly the one you would export from its sheet alone, and downloads them in a
