@@ -130,7 +130,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 112)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 113)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -149,8 +149,9 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
   // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Imaginile foii
   // (ADR 0272, felia 25.8↑a), încă una: `foaie.imagini`. Legarea căilor (ADR 0182, felia 10.3↑o), încă două: acțiunea
-  // `document.leaga-caile` și opțiunile legării.
-  assert.equal(USI.length, 112);
+  // `document.leaga-caile` și opțiunile legării. Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a), încă una:
+  // `vedere.freze`.
+  assert.equal(USI.length, 113);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -376,7 +377,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
     assert.ok(USI.some((u) => u.id === usa), `${c} → ${usa}`);
   }
   // Și ușile ajutorului după context (F1, `usaDeAcum` din Editare) sunt acoperite.
-  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.aspect', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
+  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.aspect', 'vedere.freze', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
   }
@@ -384,7 +385,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
 
 /**
  * Rândurile meniului contului (ADR 0120), cu ușa care le acoperă și cheia textului de pe rând: manualul și sugestia au
- * ușile lor de dinainte, aspectul (ADR 0250 §3) pe a acțiunii lui din paletă, iar logarea, panoul, raportările (ADR 0116 §C)
+ * ușile lor de dinainte, aspectul (ADR 0250 §3) și frezele (ADR 0300 §3) pe a acțiunii lor din paletă, iar logarea, panoul, raportările (ADR 0116 §C)
  * și ieșirea stau în capitolul contului. Un rând nou, lipsă de aici, face proba să cadă.
  */
 const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; readonly cheie: string }>> = {
@@ -393,6 +394,7 @@ const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; r
   raportari: { usa: 'editare.cont', cheie: 'editare.cont.raportari' },
   manual: { usa: 'editare.manual', cheie: 'editare.manual' },
   aspect: { usa: 'vedere.aspect', cheie: 'editare.cont.aspect' },
+  freze: { usa: 'vedere.freze', cheie: 'editare.cont.freze' },
   raporteaza: { usa: 'editare.cont', cheie: 'editare.cont.raporteaza' },
   sugestie: { usa: 'editare.sugestie', cheie: 'editare.sugestie' },
   iesi: { usa: 'editare.cont', cheie: 'editare.cont.iesi' },

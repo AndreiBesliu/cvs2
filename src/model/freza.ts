@@ -142,12 +142,15 @@ export function problemeFreza(f: Freza, alte: readonly FrezaSalvata[] = [], id: 
 function curata<F extends Freza>(f: F): F {
   const { unghi: _u, varf: _v, ...rest } = f;
   void _u; void _v;
-  return {
+  const c: Record<string, unknown> = {
     ...rest,
     nume: f.nume.normalize('NFC').trim(),
     ...(areUnghi(f.fel) ? { unghi: f.unghi } : {}),
     ...(f.fel === 'gravare' ? { varf: f.varf } : {}),
-  } as F;
+  };
+  // Un câmp opțional golit (tăișul, nota) pleacă de tot, nu rămâne ca `undefined`.
+  for (const k of Object.keys(c)) if (c[k] === undefined) delete c[k];
+  return c as F;
 }
 
 /**

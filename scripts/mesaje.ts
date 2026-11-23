@@ -12,6 +12,8 @@ import { enEditare } from '../src/i18n/editare.en.ts';
 import { roEditare } from '../src/i18n/editare.ro.ts';
 import { enExport } from '../src/i18n/export.en.ts';
 import { roExport } from '../src/i18n/export.ro.ts';
+import { enFreze } from '../src/i18n/freze.en.ts';
+import { roFreze } from '../src/i18n/freze.ro.ts';
 import { enImprimanta } from '../src/i18n/imprimanta.en.ts';
 import { roImprimanta } from '../src/i18n/imprimanta.ro.ts';
 import { enImport } from '../src/i18n/import.en.ts';
@@ -31,6 +33,7 @@ export const DICTIONARE_MODULE: Readonly<Record<ModulMesaje, Readonly<Record<Lim
   carcasa: { en: enCarcasa, ro: roCarcasa },
   editare: { en: enEditare, ro: roEditare },
   export: { en: enExport, ro: roExport },
+  freze: { en: enFreze, ro: roFreze },
   imprimanta: { en: enImprimanta, ro: roImprimanta },
   import: { en: enImport, ro: roImport },
   masina: { en: enMasina, ro: roMasina },

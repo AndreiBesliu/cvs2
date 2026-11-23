@@ -8,6 +8,7 @@ import type { enTraseu } from './traseu.en.ts';
 import type { enEditare } from './editare.en.ts';
 import type { enMasina } from './masina.en.ts';
 import type { enImprimanta } from './imprimanta.en.ts';
+import type { enFreze } from './freze.en.ts';
 import type { en } from './mesaje.en.ts';
 import { esteDictionarMesaje, fisierBaza } from '../../shared/dictionar.ts';
 import { LIMBI, type Limba, type Mesaj } from './tipuri.ts';
@@ -20,7 +21,7 @@ import { LIMBI, type Limba, type Mesaj } from './tipuri.ts';
  * `/admin`, prin `admin.ts`). Doar tipul lor intră aici, nu textul.
  */
 type Toate = typeof en & typeof enImport & typeof enExport & typeof enCarcasa & typeof enTraseu & typeof enSimulare & typeof enAdmin
-  & typeof enEditare & typeof enTutorial & typeof enMasina & typeof enImprimanta;
+  & typeof enEditare & typeof enTutorial & typeof enMasina & typeof enImprimanta & typeof enFreze;
 export type Cheie = keyof Toate;
 
 /** Cheile al căror mesaj e plural: nu se pot cere fără `n`. */

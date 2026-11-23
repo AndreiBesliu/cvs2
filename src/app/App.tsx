@@ -137,6 +137,8 @@ const DialogRaportFoi = lazy(() => incarcaRaport().then((m) => ({ default: m.Dia
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 /** Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b): aranjamentul, tema și butoanele mari, din paletă și din meniul contului. */
 const Aspectul = lazy(() => import('./Aspectul.tsx').then(cuMesaje).then((m) => ({ default: m.Aspectul }), () => ({ default: DialogNeincarcat })));
+/** Fereastra „Frezele mele” (ADR 0300 §3, felia 16.A↑a): biblioteca de freze din browser, din paletă și din meniul contului. */
+const FrezeleMele = lazy(() => import('./FrezeleMele.tsx').then(cuMesaje).then((m) => ({ default: m.FrezeleMele }), () => ({ default: DialogNeincarcat })));
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
@@ -215,11 +217,12 @@ const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
 const NICIO_VECINA: readonly FoaieVecina[] = [];
 
 /**
- * Acțiunile care rulează din orice fereastră (ADR 0132 §3): paleta, tema, fereastra Aspectul (ADR 0250 §3) și filele
+ * Acțiunile care rulează din orice fereastră (ADR 0132 §3): paleta, tema, fereastra Aspectul (ADR 0250 §3), fereastra
+ * „Frezele mele” (ADR 0300 §3) și filele
  * ferestrelor. Celelalte sunt ale desenului: din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la
  * Proiectare.
  */
-const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', ...Object.values(DESCHIDE_FEREASTRA)]);
+const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', 'vedere.aspect', 'vedere.freze', ...Object.values(DESCHIDE_FEREASTRA)]);
 /**
  * Fereastra extensiei deschise (ADR 0160 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
@@ -332,6 +335,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Fereastra Aspectul, cu locul focusului de dinainte (acolo se întoarce la închidere). */
   const [aspect, setAspect] = useState(false);
   const focusAspect = useRef<Element | null>(null);
+  /** Fereastra „Frezele mele” (ADR 0300 §3), tot cu locul focusului de dinainte. */
+  const [freze, setFreze] = useState(false);
+  const focusFreze = useRef<Element | null>(null);
   /** Raportul foilor (ADR 0210 §6): colțul și Z0 ale exportului, de la fereastra lui; din paletă, cele implicite. */
   const [raport, setRaport] = useState<Pick<ParametriExport, 'origine' | 'z0'> | null>(null);
   /**
@@ -621,6 +627,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     tema: () => { schimbaTema(TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto'); },
     // Paleta întoarce focusul înaintea acțiunii, iar meniul contului îl pune pe butonul Cont: fereastra îl ține minte.
     aspect: () => { focusAspect.current = document.activeElement; setAspect(true); },
+    freze: () => { focusFreze.current = document.activeElement; setFreze(true); },
   };
   /**
    * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
@@ -837,7 +844,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || raport !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina || dialogAsezare || aspect || freze || raport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. Cât pui urechile pe desen (ADR 0211), pânza lucrează. */
   const modal = (dialogDeschis.current && urechiAlese === null) || paleta;
   const modalRef = useRef(modal);
@@ -1555,7 +1562,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
                 <Editare doc={doc} indexFoaie={indexActiva} idFoaie={idActiva} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita && urechiAlese === null}
                   usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : fereastra === 'imprimanta' ? 'vedere.imprimanta' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
-                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }}
+                  onRefuz={setRefuzEditare} onLegare={setLegareEditare} reface={stareActiune('istoric.reface').ok} onAseaza={() => { setDialogAsezare(true); }} onAspect={() => { contextVedere.aspect(); }} onFreze={() => { contextVedere.freze(); }}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1701,6 +1708,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         <Aspectul tema={tema} onTema={schimbaTema} onAranjament={alegeAranjament} onInchide={() => { setAspect(false); }}
           focusInapoi={focusAspect.current} />
       )}
+      {freze && <FrezeleMele onInchide={() => { setFreze(false); }} focusInapoi={focusFreze.current} />}
       {cerereLucrare && (
         <DialogLucrare
           key={cerereLucrare.lucrare.id}
