@@ -11018,6 +11018,48 @@ rapide propus întâi?”).
   Acceptată, În lucru, Amânată, Făcută), Respinsele strânse dedesubt, arătate la cerere; owner-ul trage un card dintr-o
   coloană în alta sau alege „Mută în…” din meniul cardului (calea din tastatură), prin callable-ul `sugestii` de azi, pe
   versiunea văzută; nota se cere la Respinsă și la Amânată. Fără reguli noi, fără date noi, fără schimbări pe server.
+- **Făcut pe 22.11** (`4181e6d1`, `4a64e984`): tabla (`src/admin/sugestii/`: `date.ts`, `Tabla.tsx`, `Detaliu.tsx`,
+  `Formular.tsx`, `FilaSugestii.tsx`), cu mutarea arătată cât cererea e în drum și lista ținută după răspuns, fără
+  recitire; nota cerută la Respinsă și Amânată; detaliul ca fereastră; „Sugestie nouă”; „Ale mele” / „Toate”. Bancul vizual
+  a găsit o adresă lungă care ieșea din card (și lățea pagina la 760 px) și mesajele de deasupra tablei, care o împingeau sub
+  cursorul care trage: reparate, cu probe și otrăvuri (E27, E28).
+- **Pauza:** 22.11 seara („cand termina background tasks, vreau sa facem pauza”), cu WIP-ul împins. Atunci: unitarele
+  întregi, e2e-ul feliei 14 / 14, otrăvurile unitare 14 / 14, pe emulatoare 25 din 28.
+- **Reluată pe 23.11, într-o sesiune cloud** (linia mutată din worktree-ul local; brief-ul sesiunii principale: „Felia în
+  lucru: A.4 (Sugestii ca tablă), oprită la pauza din 22.11 seara (WIP `4a64e984`)”), cu `main` `8f122eb6` adus în
+  `141fe90e`. **Reluată:** 23.11, 12:10.
+- **Mediul cloud:** login-ul Google al emulatorului de Auth încarcă `https://apis.google.com/js/api.js`, iar rețeaua
+  mediului o refuza, deci nicio probă a paginii `/admin` nu trecea de intrare. Owner-ul a aprobat gazda în mediu
+  (`apis.google.com`); e trecută în `docs/lucru-in-cloud.md`.
+- **Găsit în cloud, înaintea otrăvurilor:** proba „mutările nu recitesc lista” cădea în container. Număra orice
+  `runQuery` / `batchGet`, iar ultima citire a rezumatului de la intrare (amprenta publicării, `meta/deployment`, din
+  Diagnoza barei) sosea după listă. Acum numără doar citirile sugestiilor (colecția e în corpul cererii), și imediat după
+  prima mutare.
+- **Otrăvurile de pe emulatoare, cele trei rămase:**
+  - E19, nevalidă: titlul probei are paranteze, iar `--grep` e o expresie regulată. Titlul din `GREP`, fără ele: prinsă.
+  - E27, scăpată: proba măsura cardul din banda Respinselor la 700 px, lat de 416 px, în care adresa lungă încăpea
+    (măsurat: cu otrava, rândul adresei are 304 px, într-un card de 169 px la cinci coloane). Adresa lungă e acum pe cardul
+    urmărit în coloana cea mai îngustă și, la 700 px, în a doua coloană: prinsă, pe „adresa stă în card”.
+  - E12, echivalentă: cu otrava, la locul butonului oprit e chiar butonul, iar `dragenter`, `dragover` și `drop` ajung pe
+    el și urcă la bandă (măsurat în Edge), deci cardul cade în bandă și fără `pointer-events: none`. Regula și otrava ei au
+    ieșit; proba lasă acum cardul chiar peste buton.
+- **Bucla otrăvurilor de pe emulatoare, în repo:** `scripts/otravuri-emulatoare.py` (până acum în `.tmp`-ul local, care în
+  cloud nu ține de la o sesiune la alta); lista își spune proba și titlurile (`E2E`, `GREP`; A.1 le avea în script).
+- **Otrăvurile, pe starea finală** (`699921a4`, într-o clonă, în container): 41 / 41 (14 unitare; 27 pe emulatoare, toate
+  rulate din nou, fiecare căzută pe aserțiunea care îi țintește defectul), controalele fără otravă verzi (unitare 5 și 11,
+  proba Sugestiilor 5 / 5). `verifica` pe toate listele: aceleași VOID-uri ca pe `main`, niciunul nou.
+- **Mărimea** (build-ul determinist, față de `main` `8f122eb6`, măsurat la fel): `/admin` 121,2 → 124,1 / 200 kB (+2,9;
+  linia, +17,6 din cei +25); pornirea 107,9 (cu ușa 112,2 / 115) și totalul 760,9 / 800, neschimbate.
+- **Porțile, în CI, pe `699921a4`:** rapidul verde (rularea 45160886438) și completul verde (rularea 45160903650):
+  unitare 9 787 / 0 (12 sărite pe Linux), e2e 592 / 592, emulatoarele 104 / 104 și paginile 36 / 36. Completul a ținut 59
+  de minute din cele 60 ale limitei (pasul unitarelor, 35 de minute; alte rulări din aceeași zi, vreo 43 în total). În
+  container, înainte: proba Sugestiilor 5 / 5, toate paginile pe emulatoare 36 / 36, tipurile, probele documentelor 57 / 57.
+  Commit-ul final adaugă doar documentele și scoate `.lucru/`; porțile lui, în raportul din PR.
+- **Documentele:** ADR 0260 („Implementarea”, A.4), fișa etapei 3 (rândul `3.Ad`) cu traducerea, rândul listei și bucla
+  emulatoarelor în `docs/otravuri.md`, nota liniei (`docs/linii/admin.md`), `docs/lucru-in-cloud.md` (gazda permisă, bucla),
+  DEVLOG. Setul de lucru adus din `.tmp` (`.lucru/`) a ieșit: ciornele au intrat în documente, bucla otrăvurilor în
+  `scripts/`, iar bancul vizual și lanțurile locale rămân în istorie (`137a08ac`).
+  **Completed:** 23.11 14:05.
 
 ## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
 
