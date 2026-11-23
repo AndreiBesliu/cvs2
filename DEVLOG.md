@@ -11407,3 +11407,32 @@ model în repo); e în raportul din chat și în sesiunea din mesajul commit-ulu
 - **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e acum permisă în mediul
   sesiunii (aprobată de owner), deci linia verifică singură ce a publicat.
 - **Urmează:** 3.Xh-3 (fereastra „Biblioteca extensiilor”, meniul scurtat, paleta).
+
+## 2026-11-23 — 3.Xh-3: fereastra „Biblioteca extensiilor”, meniul scurtat, acțiunea din paletă (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); felia a treia din cele patru ale ADR-ului, pornită fără
+altă întrebare.
+**Started:** 23.11, 16:50. **Completed:** 23.11, 18:30. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra bibliotecii** (`5831218`, `7628b50`, `b864e6c`, apoi commit-ul documentelor): lista („Toate”, „Instalate”) și
+  pagina extensiei, cu semnul, capturile, descrierea, „Ce poate face”, „Ce e nou” și gestul ei chiar acolo (instalarea,
+  actualizarea dintr-un clic, „Deschide”, „Scoate”); scheletul cât vine catalogul; lista și pagina pe rând, pe telefon.
+- **Meniul, scurtat:** extensiile instalate (cu „Actualizează” în rând), apoi „Biblioteca extensiilor…”; lățime fixă.
+  Fereastra „Extensiile tale” a plecat (fila „Instalate”).
+- **Paleta:** „Biblioteca extensiilor”, de oriunde; grupul „Extensii”. **Găsit pe drum:** paleta nu arăta deloc acțiunile cu
+  prefixul `extensii`, deci nici „Trimite la extensie” (ADR 0166): prefixul n-avea grup.
+- **Găsit de probe și pe capturi:** un nume lung de fișier împingea pagina extensiei în lateral pe telefon (166–236 px);
+  cu un nume lung de extensie, meniul creștea cu 19 px când apărea „Actualizează”; filele bibliotecii aveau 36 px la
+  atingere; focusul nu se întorcea la piesa de puzzle (aplicația era încă inertă). Toate reparate, fiecare cu proba ei.
+- **Abaterile de la ADR**, scrise în „Implementat”: fereastra stă în bucata la cerere a ferestrelor extensiilor (nu într-una
+  nouă); „din fișier” și „din adresă”, la capătul listei; acțiunea paletei costă ~0,1 kB în pornire (registrul e static);
+  actualizarea din meniu stă în rândul extensiei.
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 119 / 119; e2e cu Chrome: biblioteca, extensiile,
+  țintele, pluginul, manualul și carcasa, 57 / 57; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul
+  764,4 / 800 kB (+1,7). Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-3.py`, în clonă): 57 / 57 (4 unitare, 53 prin e2e). La prima rulare, 55 / 57: proba
+  „meniul nu sare”, făcută mai aspră (a găsit defectul de mai sus); un cod de prisos, scos cu otrava lui. Otrăvurile din
+  listele vechi al căror cod s-a mutat în fereastra nouă au urmașe aici (3.Xb, 3.Xg, 3.Xh-1, 3.Xh-2: 28 la un loc).
+- **Urmează:** 3.Xh-4 (săgețile în listă și în file, fontul lat la birou, densitatea, recitirea manualului), apoi PR-ul
+  „gata de unit”.

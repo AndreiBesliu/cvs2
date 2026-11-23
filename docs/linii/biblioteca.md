@@ -5,8 +5,9 @@
 _Linia „biblioteca”, din 23.11.2026 într-o sesiune cloud: ramura `wip/3.Xh-biblioteca-ui` (din `main` `8f122eb6`, adusă la
 `8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`
 (<https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e permisă în mediul „CNC VS 2” din 23.11). Starea:
-**ADR 0231 ACCEPTAT („Da, 1a–4a”); 3.Xh-1 (datele) și 3.Xh-2 (ferestrele) GATA pe 23.11; urmează 3.Xh-3 (fereastra
-„Biblioteca extensiilor”, meniul scurtat, paleta). PR-ul liniei, ciornă până la capătul lui 3.Xh: `AndreiBesliu/cvs2#4`.**_
+**ADR 0231 ACCEPTAT („Da, 1a–4a”); 3.Xh-1 (datele), 3.Xh-2 (ferestrele de confirmare) și 3.Xh-3 (fereastra bibliotecii)
+GATA pe 23.11; urmează 3.Xh-4 (săgețile în listă, fontul lat la birou, densitatea, recitirea manualului). PR-ul liniei,
+ciornă până la capătul lui 3.Xh: `AndreiBesliu/cvs2#4`.**_
 
 Cererea owner-ului (23.11): „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos
 si cu un UI/UX mai bun si atragator”.
@@ -36,8 +37,18 @@ si cu un UI/UX mai bun si atragator”.
   descărcarea, mărimile prin `src/extensii/marime.ts`); țintele cât `--tinta` la atingere și la densitatea mare; o
   fereastră înaltă rămâne sus, cu butoanele lipite jos. Totalul 762,7 / 800 kB (+0,7). Otrăvurile: 40 / 40 (12 unitare, 28 prin e2e), în clonă; la prima rulare 38 / 42: două probe întărite (regexul lui „să …”, roșul butonului citit cu mausul peste el), o derulare pusă la zero, de prisos lângă butoanele lipite jos, scoasă cu otrava ei, și o otravă a manualului pe care proba lui n-o poate vedea, scoasă.
   Completul din CI pe 3.Xh-1 (`8b608bb`): verde.
-- **Rămase pentru 3.Xh-3** (meniul se reface acolo): legenda rândului („18.20.0 · deschide fereastra”), „ce e nou” în
-  fereastra actualizării (și în pagina extensiei), scheletul cât vine catalogul.
+- **23.11, 3.Xh-3 (fereastra bibliotecii), gata** (`5831218`, `7628b50`, `b864e6c`, apoi commit-ul documentelor):
+  `src/extensii/Biblioteca.tsx` (lista „Toate” / „Instalate”, pagina extensiei cu capturile, descrierea, „Ce poate face”,
+  „Ce e nou” și gestul ei), `src/extensii/parti.tsx` (cutia unei ferestre, „Ce poate face”, întrebarea de la „Scoate”);
+  meniul scurtat, cu „Actualizează” în rândul extensiei și lățimea fixă; linkul `#biblioteca=<id>` pe pagina extensiei;
+  `extensii.biblioteca` în paletă și grupul „Extensii” al paletei. Fereastra „Extensiile tale” a plecat. Pornirea +0,1 kB
+  (acțiunea paletei), totalul 764,4 / 800 kB (+1,7). Otrăvurile: 57 / 57 (4 unitare, 53 prin e2e), în clonă; la prima rulare 55 / 57: „meniul nu sare” s-a dovedit prea blândă (cu un nume lung de extensie, meniul creștea cu 19 px când apărea „Actualizează”: proba făcută mai aspră, numele ținut pe un rând) și un cod de prisos, scos cu otrava lui.
+- **Unde stau acum lucrurile** (pentru o linie care atinge extensiile): fereastra bibliotecii și confirmările sunt în aceeași
+  bucată la cerere (`Instalare.tsx` le alege după `cerere.fel`); catalogul îl cere gazda (`Extensii.tsx`,
+  `incarcaBiblioteca`), la deschiderea meniului sau a ferestrei, și îl dă ferestrei; ajutoarele probelor e2e sunt în
+  `test/e2e/ajutor-biblioteca.ts` (`deschideBiblioteca`, `paginaDinCatalog`, `paginaInstalatei`).
+- **Rămâne pentru 3.Xh-4:** săgețile în listă și în file, fontul lat la 1024 și 1280 px, densitatea mare în fereastră,
+  recitirea manualului.
 
 **Regula nouă pentru toate liniile care schimbă o extensie din bibliotecă (răspunsul 3a):**
 1. versiunea nouă în `extensii/<dosar>/extensie.json`;
@@ -90,7 +101,19 @@ apoi cele șase fișiere din `extensii/<dosar>/biblioteca/` se comit. O captură
   din listă; controlul rămâne păzit de lista din probă (`CONTROALE_EXTENSII`).
 - **Un meniu rămas deschis acoperă fereastra, în probă:** un fișier pus direct în câmpul lui (`setInputFiles`) nu închide
   meniul, cum îl închide alegerea din el. Probele îl închid întâi cu Escape.
-- **Otrăvurile vecine:** după 3.Xh-2, trei s-au golit și au fost mutate pe codul nou (3.Xb E03 și E04, 3.Xh-1 N01). După felie, `verifica` pe 3.Xa–3.Xg dă aceleași VOID-uri ca pe `main` (3.Xa: E02–E07; 3.Xb: K01;
+- **Paleta arată doar acțiunile grupurilor ei** (`GRUPURI` din `src/ui/Paleta.tsx`, după prefixul id-ului): o acțiune cu
+  un prefix nou nu apare deloc, fără nicio eroare. Așa lipsea din paletă „Trimite la extensie” (ADR 0166), deși registrul o
+  avea. Un prefix nou cere grupul lui.
+- **Focusul dat unui buton din aplicație cât ea e inertă nu se prinde:** la închiderea unei ferestre, întâi `onModal(false)`
+  (în aceeași randare), apoi focusul, într-un `setTimeout` (ca la „Rămân”).
+- **O regulă de bază scrisă mai jos în foaie o bate pe cea de la atingere** scrisă mai sus, la aceeași specificitate: filele
+  bibliotecii rămâneau de 36 px pe telefon până când regula de la atingere a primit `.dialog-biblioteca` în față.
+- **Proba de încăpere judecă zonele care se derulează în fereastră**, nu doar cutia ei: un nume lung de fișier împingea
+  pagina extensiei în lateral (zona paginii se derula, cutia nu), iar proba veche nu vedea. Un text tăiat anume cu „…” nu
+  e o derulare.
+- **Probele de mutație prin e2e și capturile folosesc același port (4173):** capturile se fac după ce clona a terminat.
+- **Otrăvurile vecine:** după 3.Xh-3, cele al căror cod s-a mutat în fereastra nouă au urmașe în `3.Xh-3.py` și au plecat
+  din listele lor (3.Xb E03–E04; 3.Xg E01–E03, E06, E10, E12; 3.Xh-1 U03–U05; 3.Xh-2, 17). După 3.Xh-2, trei s-au golit și au fost mutate pe codul nou (3.Xb E03 și E04, 3.Xh-1 N01). După felie, `verifica` pe 3.Xa–3.Xg dă aceleași VOID-uri ca pe `main` (3.Xa: E02–E07; 3.Xb: K01;
   3.Xc: K01, E01, E07, E08; 3.Xd: X18; 3.Xf: X03), deci felia n-a golit niciuna. Cele vechi sunt de dinaintea liniei.
 
 ## 3.Xg: biblioteca (încheiată, în `main` din 07.11)

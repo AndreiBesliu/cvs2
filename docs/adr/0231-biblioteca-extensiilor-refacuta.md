@@ -1,8 +1,8 @@
 # ADR 0231: Biblioteca extensiilor, refăcută: fereastra ei, semnul extensiei, capturile și „ce e nou”
 
 **Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–4a”; „Răspunsurile owner-ului”, mai jos), pentru felia
-3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele) și
-3.Xh-2 (ferestrele) pe 23.11; 3.Xh-3 și 3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
+3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele),
+3.Xh-2 (ferestrele de confirmare) și 3.Xh-3 (fereastra bibliotecii) pe 23.11; 3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
 care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”. **Continuă:** ADR 0230 (biblioteca: toate marginile lui
 rămân, §C), ADR 0127 și 0128 (pachetul, permisiunile arătate la instalare), ADR 0160 (fereastra extensiei), ADR 0164 (tema),
 ADR 0167 (semnul lui Easy 3Draw, lăsat acolo pentru „altă decizie, cu schiță”), ADR 0250 (aranjamentele, densitatea).
@@ -293,3 +293,45 @@ Datele noi ale catalogului (punctul 1):
   `extensii.spec.ts`, `biblioteca.spec.ts` și `extensii.tinte.spec.ts` (nou: țintele la atingere și la densitatea mare;
   390, 360 și 320 px cu fontul lat și un nume de fișier lung). Manualul, în ambele limbi. Otrăvurile:
   `test/otravuri/3.Xh-2.py` (`docs/otravuri.md`).
+
+### 3.Xh-3: fereastra „Biblioteca extensiilor”, meniul scurtat, paleta (23.11.2026)
+
+- **Fereastra** (`src/extensii/Biblioteca.tsx`): capul cu titlul, filele **Toate** (catalogul) și **Instalate** (ce e în
+  browserul acesta, și extensiile din afara bibliotecii) și ×; în stânga lista, în dreapta pagina extensiei alese. La birou
+  are 61 × 41rem și nu-și schimbă mărimea când vine catalogul.
+- **Pagina extensiei:** semnul (48 px), numele, „de CNC Vector Studio · 18.20.0 · 457 kB”, capturile, descrierea lungă, „Ce
+  poate face” și „Ce e nou”. Gestul stă în capul paginii: **Instalează** (nimic nu se descarcă înainte de clic),
+  **Actualizează la …**, **Deschide**, **Scoate** (cu întrebarea din 3.Xh-2). Sub butoane, starea: „Amprenta se verifică la
+  instalare.”, „Ai 18.17.0. Datele ei rămân.”, „✓ Instalată. Merge și fără internet.”, „Instalată, la zi”. O extensie
+  instalată își spune sursa, data și cât ocupă datele ei.
+- **Actualizarea spune ce aduce:** la o versiune mai veche instalată, „Ce e nou” arată doar versiunile de după a omului.
+  Merge dintr-un clic; când versiunea nouă cere ceva în plus, pagina arată „Versiunea nouă poate și”, iar clicul deschide
+  fereastra de confirmare din 3.Xh-2 (marginea din ADR 0230).
+- **Stările:** cât vine catalogul, lista arată un schelet; fără internet, „Toate” spune „Biblioteca are nevoie de internet.”
+  cu **Reîncearcă**, iar „Instalate” merge ca până acum; un catalog stricat își spune mesajul pe înțeles, cu detaliul în
+  jurnal; linkul spre o extensie care nu e în catalog o spune în pagină, fără să arate alta în locul ei.
+- **Meniul, scurtat:** extensiile instalate și **Biblioteca extensiilor…**. Lățimea lui e fixă (21rem), iar „Actualizează”
+  apare **în rândul extensiei** („18.17.0 → 18.20.0”), nu ca un rând nou: meniul nu se mai mișcă atunci când vine catalogul
+  (era de la 250 × 215 la 362 × 377 px). Numele și rândul de sub el stau fiecare pe un rând, tăiate cu „…”: cu un nume
+  lung, rândul se rupea în două când apărea „Actualizează”, iar meniul creștea cu 19 px. Fereastra „Extensiile tale” a plecat: e fila „Instalate”.
+- **Pe un ecran îngust** (sub 40rem), biblioteca ia tot ecranul, iar lista și pagina vin pe rând: un rând deschide pagina
+  lui, **Înapoi la listă** (‹) se întoarce. Capturile se derulează în lateral; butoanele paginii sunt cât lățimea ei.
+- **Paleta de comenzi:** acțiunea `extensii.biblioteca` („Biblioteca extensiilor”), de oriunde, fără să schimbe fereastra de
+  dedesubt. Paleta are acum grupul „Extensii”. **Până acum, acțiunile cu prefixul `extensii` nu apăreau deloc în paletă:**
+  nici „Trimite la extensie”, promisă acolo de manual și de ADR 0166 §B. Proba ei e în `biblioteca.spec.ts`.
+- **Abaterile de la schiță și de la §B.6, §D:**
+  - fereastra stă în bucata la cerere a ferestrelor extensiilor (`Instalare`), nu într-una nouă: nimic de adăugat în harta
+    importurilor;
+  - „Din fișier” și „din adresă” stau la capătul listei („Din afara bibliotecii”), nu într-un buton din cap: pe telefon,
+    capul n-are loc de el;
+  - acțiunea paletei stă în registrul static al aplicației, deci pornirea crește cu ~0,1 kB (§B.6 spunea „nimic în
+    pornire”); fereastra o cere printr-o ancoră, `#biblioteca`, pe care modulul extensiilor o ascultă deja pentru linkuri;
+  - actualizarea din meniu stă în rândul extensiei, nu într-un rând evidențiat de sub el (ca meniul să nu sară).
+- **Măsurat** (`npm run determinism`): pornirea 107,9 kB (cu ușa 112,3 / 115: +0,1); totalul 764,4 / 800 kB (+1,7 față de
+  3.Xh-2; estimarea din §D era ~+6 pentru toată direcția B, iar până aici sunt +3,5).
+- **Probele:** `biblioteca.spec.ts`, rescris pe fereastră (13 probe); `extensii.spec.ts` și `extensii.tinte.spec.ts` pe
+  drumurile noi (țintele la atingere și la densitatea mare; 390, 360 și 320 px cu fontul lat; lista și pagina pe rând).
+  Proba de încăpere a găsit un nume lung de fișier care împingea pagina în lateral pe telefon (166–236 px): reparat.
+  Otrăvurile: `test/otravuri/3.Xh-3.py` (`docs/otravuri.md`).
+- **Rămâne pentru 3.Xh-4:** săgețile în listă și în file, fontul lat la 1024 și 1280 px, densitatea mare în fereastră,
+  recitirea manualului, capturile ferestrei în manual (dacă owner-ul le vrea).
