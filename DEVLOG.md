@@ -11008,6 +11008,59 @@ rapide propus întâi?”).
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
 
+## 2026-11-22 — Felia 11.3↑e: urechile „unde ține” (ADR 0211, varianta b) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑e („unde ține”: aplicația pune singură urechile la export, acolo
+unde țin de lemnul foii)? Răspunde „Da, 11.3↑e” sau „Nu acum”.”: „Da, 11.3↑e”.
+**Started:** 22.11, 21:34.
+
+- **`main` `88be9d6c`** a venit prin avans direct (11.3↑d unită în `44046e5d`; ramura n-avea nimic peste el).
+- **Cifrele, pe hârtie, întâi** (ADR 0211, „Proba”): pe placa 11 la 5 mm, cu „unde ține”, cad doar plăcuțele înconjurate de
+  vecine pe toate patru laturile: pe foaia 1 (cinci rânduri pline de câte trei), mijlocul rândurilor 2–4 (numele 5, 8, 11);
+  pe foaia 2 (trei rânduri pline și una la x = 10, y = 75), doar mijlocul rândului 2 (numele 20). Cu urechile la distanțe
+  egale cădeau 9 + 4. La 10 mm, lemnul de 3,65 mm dintre tăieturi e legat de margine, deci programele rămân ale plăcii.
+- **Lucrarea și fereastra**, comise (`8a8c30fc`, `fa86da15`): `src/cam/urechiLemn.ts`, modul „lemn” în `job.ts`, cele două
+  treceri (`programFoii`, `src/jobs/calculCam.ts`; fundul foii, `fundFoii`, scos din `src/sim/desprinse.ts`), „unde ține” în
+  fereastra exportului, butonul „Pune urechile unde țin”, semnele de pe traseu, panoul; ADR 0211 („Implementarea feliei
+  11.3↑e”), manualul (ro, en) și CLAUDE.md, fără cifrele porților.
+- **Verificat până la pauză:** tipurile; regulile de import (20 / 20, 0 încălcări); traducerile; `urechi.lemn.test.ts` (placa
+  11 la 5 mm: 3 + 1 plăcuțe desprinse, cele de pe hârtie, și aceleași prin proba pe G-code; la 10 mm, programele plăcii,
+  octet cu octet; alegerea și fundul pe hârtie, cu arcele și sensul trigonometric); unitarele întregi: 9 759 / 0 (8 sărite).
+- **Pauză:** 22.11, 22:58, la cuvântul owner-ului („cand termina background tasks, vreau sa facem pauza”). Rămân: e2e-ul
+  (mașina n-a avut un minut liniștit în 20 de minute), otrăvurile (lista de 39, nerulată), build-ul determinist, rândul din
+  fișa etapei și traducerea lui, `docs/otravuri.md`, canalul, raportul.
+- **Reluarea în cloud (23.11, 12:14; modelul sesiunii, în trailerul commit-urilor ei, de la `2081f07` încolo).**
+  **Prompt:** brief-ul liniei, prim mesaj al sesiunii cloud: „Ești linia planșelor din cncvs2 […] Linia a fost mutată pe
+  23.11.2026 din worktree-ul local în cloud. […] Felia în lucru: 11.3↑e („unde ține”), pornită la „Da, 11.3↑e” al
+  owner-ului. S-a oprit la pauza din 22.11 seara (WIP `39d801fc`). […] Rămân, în ordine: 1. E2e-ul feliei și al vecinilor.
+  2. Otrăvurile, într-o clonă, plus `verifica` pe toate listele liniei. 3. Porțile întregi, în CI […] 4. Documentele. […]
+  5. Canalul […]”.
+- **`main` `8f122eb6` adus în `2081f07`** (12.1↑e-2, 10.3↑o, 3.6v, uneltele cloud): DEVLOG, cu ambele părți
+  (`scripts/rezolva-devlog.py`); `src/jobs/calculCam.ts`, importurile, cu ambele părți. Potrivirea dopului
+  (`calculeazaPotrivirea`, 12.1↑e-2) lua locașul din `programDinDocument`, care refuză „unde ține” fără fundul foii: acum,
+  din `programFoii`, cu proba interacțiunii (cazul „dreptunghi” al oracolului incrustației și o ramă „unde ține” pe aceeași
+  foaie: aceeași potrivire ca rama cu urechile la distanțe egale; pică pe apelul nereparat).
+- **E2e-ul, în container** (Edge, după build): `urechi-lemn`, `urechi-alese`, `export-urechi`, 3 / 3; vecinii (exportul,
+  „Toate foile”, traseul și oracolul lui, simularea, vederea 3D, incrustația în 3D, supracursa, bazinul CAM, animația,
+  manualul, panoul, legarea, așezarea, raportul foilor, tăierea Atelierului, bucățile la cerere), 110 / 110; din prima.
+- **Otrăvurile** (`test/otravuri/11.3e.py`, într-o clonă): 42 / 42 la capăt (36 unitare, 6 prin e2e): F01, L06 și C09
+  scăpaseră la prima rulare (38 / 41) și au primit probe țintite (umplerea fundului pe orizontală, cu F03 adăugată; partea
+  spre care se duce palierul pe un arc; rezerva golului minim); din listele 11.3c și 11.3d, șase otrăvuri ieșite VOID pe codul
+  feliei, mutate pe el și prinse din nou. `verifica` pe toate listele liniei (11.1–11.7): cele șase VOID-uri noi sunt S07,
+  U05, E01 (11.3c) și C11, C12, A06 (11.3d); rămân 13 VOID-uri vechi, dinaintea feliei, aceleași și pe `main` (11.1b A05; 11.2
+  L03, L09; 11.4 P10, P12, C01, C03, E06, E09; 11.4b T02; 11.4c E07; 11.6 R09; 11.7 R01).
+- **Porțile, în CI, pe `ed87f2e8`:** rapidul (<https://github.com/AndreiBesliu/cvs2/actions/runs/45161951454>) și completul
+  (<https://github.com/AndreiBesliu/cvs2/actions/runs/45161951934>), verzi: unitarele 9 795 / 0 (12 sărite); e2e 593 / 593; pe
+  emulatoare 104 / 104 (funcțiile și regulile) și 34 / 34 (paginile). Build-ul determinist: pornirea 107,9 kB (cu ușa 112,3 /
+  115), totalul 763,1 / 800 kB (+2,2 față de `main`: 760,9 pe `75dc1f9a`), `/admin` 121,2 / 200.
+- **Documentele:** ADR 0211 (varianta b, implementată; potrivirea, probele țintite, porțile), fișa etapei 3 (rândul
+  `11.3↑e`) cu traducerea, registrul otrăvurilor (rândul listei; 11.3c și 11.3d, refăcute), paragraful liniei din
+  `CLAUDE.md`, nota liniei (`docs/linii/plansele.md`); setul de lucru `.lucru/` scos. Canalul `plansele` se publică din
+  GitHub Actions (`canal.yml`), pe vârful ramurii, după rapidul verde.
+  **Completed:** 23.11, 13:54.
+- **A doua aducere a lui `main`** (`8177ab81`: 3.Tq, elicele din atelierul Easy 3Draw, și limita completului, 90 de minute),
+  după documente, fără ciocniri (doar pluginul, documentele lui și CI-ul); porțile finale, pe unire.
+
 ## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
 
 **Prompt:** „neata, continua si porneste si worktrees” (owner-ul, pe 22.11, prin sesiunea principală: „Pornește 3.Tp↑b,
