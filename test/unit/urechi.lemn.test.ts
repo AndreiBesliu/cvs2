@@ -19,8 +19,9 @@ import { cereMesaje } from '../../src/i18n/laCerere.ts';
 import { exportInBazin } from '../../src/jobs/bazinCam.ts';
 import { calculeazaPotrivirea, calculeazaSimularea, programFoii } from '../../src/jobs/calculCam.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
-import { alegeIndici, centreBune, FUND_LEGAT, FUND_TAIAT, urechiLemnBucla, type FundLemn } from '../../src/cam/urechiLemn.ts';
-import { LEGAT, TAIAT } from '../../src/sim/desprinse.ts';
+import { alegeIndici, centreBune, FUND_LEGAT, FUND_TAIAT, fundSub, urechiLemnBucla, type FundLemn } from '../../src/cam/urechiLemn.ts';
+import { fundFoii, LEGAT, TAIAT } from '../../src/sim/desprinse.ts';
+import { STRIDE } from '../../src/sim/nucleu.ts';
 import type { Document } from '../../src/model/document.ts';
 import { doarFoaia } from '../../src/model/foi.ts';
 import { LINIE, type Contur } from '../../src/geom/contur.ts';
@@ -127,6 +128,30 @@ test('valorile fundului: aceleași în lucrare și în simulare (lucrarea nu imp
   assert.equal(FUND_LEGAT, LEGAT);
 });
 
+test('fundul foii: umplerea din margine intră și pe orizontală, într-un „[” (doar spre stânga) și într-un „]” (doar spre dreapta)', () => {
+  // Foaia 100 × 80 × 10, freza plată Ø2, trei tăieturi prin foaie: latura din spate și două brațe de 30 mm, de la y = 20 la
+  // y = 60. Lemnul dintre brațe ține de foaie doar prin gura deschisă: de la marginea foii, umplerea ocolește un braț și se
+  // întoarce spre latura din spate, deci pe orizontală, într-un singur sens (în „[”, spre stânga; în „]”, spre dreapta).
+  const linie = (ax: number, ay: number, bx: number, by: number): number[] => [0, ax, ay, -10, bx, by, -10, 0, 0, 0];
+  const fundCu = (spate: number, gura: number): FundLemn => {
+    const m = [linie(spate, 20, spate, 60), linie(spate, 60, gura, 60), linie(spate, 20, gura, 20)];
+    const mutari = new Float64Array(m.length * STRIDE);
+    m.forEach((x, k) => { mutari.set(x, k * STRIDE); });
+    return fundFoii({ latime: 100, inaltime: 80, grosime: 10 }, [{ scula: { forma: { tip: 'plata' }, diametru: 2 }, mutari }]);
+  };
+  for (const [nume, spate, gura] of [['[', 30, 60], [']', 70, 40]] as const) {
+    const f = fundCu(spate, gura);
+    const mijloc = (spate + gura) / 2;
+    // Pe tăieturi (latura din spate, brațul de sus), tăiat; între brațe, lângă latura din spate și la mijloc, lemn legat.
+    assert.equal(fundSub(f, spate, 40), TAIAT, nume);
+    assert.equal(fundSub(f, mijloc, 60), TAIAT, nume);
+    assert.equal(fundSub(f, mijloc, 40), LEGAT, nume);
+    assert.equal(fundSub(f, spate + Math.sign(gura - spate) * 3, 40), LEGAT, nume);
+    // În afara lor, legat oricum (de la marginea de sus, în jos).
+    assert.equal(fundSub(f, mijloc, 70), LEGAT, nume);
+  }
+});
+
 test('centrele bune: palierul întreg pe mostre bune, de jur împrejur; cu un palier cât bucla, toate sau niciuna', () => {
   const b = Uint8Array.from([1, 1, 1, 0, 1, 1, 1, 1, 1, 1]);
   assert.deepEqual([...centreBune(b, 1)], [1, 1, 0, 0, 0, 1, 1, 1, 1, 1]);
@@ -211,6 +236,13 @@ test('pe un fund de hârtie: cu lemn de jur împrejur, la distanțe egale; făr�
   assert.deepEqual(urechiLemnBucla(c, 'opozitie', 'interior', fundV((x, y) => (miez(x, y) ? FUND_TAIAT : NELEGAT)), 3, 6, 2, 1, true), { cate: 2, centre: [30, 90], egale: true });
   // Fără niciun lemn legat: nicio ureche.
   assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund(() => true), 3, 6, 2, 1, true), { cate: 0, centre: [], egale: false });
+  // Golul minim are rezerva de rotunjire: cu W = 9, între centre trebuie W / 0,9 = 10 mm, iar la exact 10 lucrarea (W ≤ 0,9 ·
+  // golul) ar putea refuza din rotunjire, deci alegerea cere un pas în plus (11). Lemn doar la stânga, sub y = 59: mostrele bune
+  // 0–18, centrele 4–14 (palierul de ±4), capetele la exact 10 una de alta: o singură ureche, la mijloc (9), nu două (4 și 14).
+  const jos = fund((x, y) => !(x < 29 && y < 59));
+  assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', jos, 3, 9, 2, 1, true), { cate: 1, centre: [9], egale: false });
+  // Cu un pas mai mult de lemn (sub y = 60: mostrele 0–19, centrele 4–15), capetele sunt la 11: două.
+  assert.deepEqual(urechiLemnBucla(c, 'urcare', 'exterior', fund((x) => x >= 29), 3, 9, 2, 1, true), { cate: 2, centre: [4, 15], egale: false });
 });
 
 test('pe arce: un cerc de rază 10 (două semicercuri în sensul acelor), cu lemnul tăiat deasupra lui y = 55', () => {
@@ -220,6 +252,15 @@ test('pe arce: un cerc de rază 10 (două semicercuri în sensul acelor), cu lem
   const cerc: Contur = { inchis: true, varfuri: [{ p: { x: 40, y: 50 }, s: { tip: 'A', bulge: -1 } }, { p: { x: 60, y: 50 }, s: { tip: 'A', bulge: -1 } }] };
   const P = 20 * Math.PI;
   assert.deepEqual(urechiLemnBucla(cerc, 'urcare', 'exterior', fund((_x, y) => y > 55), 3, 6, 2, 1, true), { cate: 2, centre: [(31 * P) / 63, (62 * P) / 63], egale: false });
+  // Partea, pe arc: palierul se duce spre afară (raza 13), nu spre centru (raza 7). Cu lemnul tăiat doar înăuntrul razei 9,
+  // toate locurile țin (la distanțe egale: P / 4 și 3P / 4); cu lemn doar înăuntrul razei 11,5, niciunul.
+  const inauntru = (r: number) => (x: number, y: number): boolean => Math.hypot(x - 50, y - 50) < r;
+  assert.deepEqual(urechiLemnBucla(cerc, 'urcare', 'exterior', fund(inauntru(9)), 3, 6, 2, 1, true), { cate: 2, centre: [P / 4, (3 * P) / 4], egale: true });
+  assert.deepEqual(urechiLemnBucla(cerc, 'urcare', 'exterior', fund((x, y) => !inauntru(11.5)(x, y)), 3, 6, 2, 1, true), { cate: 0, centre: [], egale: false });
+  // Același cerc în sens trigonometric, la opoziție (piesa tot înăuntru): la fel.
+  const trig: Contur = { inchis: true, varfuri: [{ p: { x: 40, y: 50 }, s: { tip: 'A', bulge: 1 } }, { p: { x: 60, y: 50 }, s: { tip: 'A', bulge: 1 } }] };
+  assert.deepEqual(urechiLemnBucla(trig, 'opozitie', 'exterior', fund(inauntru(9)), 3, 6, 2, 1, true), { cate: 2, centre: [P / 4, (3 * P) / 4], egale: true });
+  assert.deepEqual(urechiLemnBucla(trig, 'opozitie', 'exterior', fund((x, y) => !inauntru(11.5)(x, y)), 3, 6, 2, 1, true), { cate: 0, centre: [], egale: false });
 });
 
 test('lucrarea: „unde ține” fără fundul foii se refuză; în prima trecere, fără urechi; pe linie, refuz cu motivul', () => {

@@ -26,6 +26,7 @@ DE = 'src/ui/DialogExport.tsx'
 o('F01', DS, '    if (i > 0) pune(k - 1);\n', '', 'lemn', 'umplerea din margine nu trece spre stânga')
 o('F02', DS, '    if (s[k] === LEMN) { s[k] = LEGAT; coada[capat++] = k; }', '    if (s[k] !== LEGAT) { s[k] = LEGAT; coada[capat++] = k; }', 'lemn',
   'umplerea trece și prin tăieturi')
+o('F03', DS, '    if (i < nx - 1) pune(k + 1);\n', '', 'lemn', 'umplerea din margine nu trece spre dreapta')
 # Locul bun (unitare: fundul de hârtie, arcele).
 o('L01', UL, '  if (!(i >= 0 && i < f.nx && j >= 0 && j < f.ny)) return FUND_TAIAT;', '  if (!(i >= 0 && i < f.nx && j >= 0 && j < f.ny)) return FUND_LEGAT;',
   'lemn', 'în afara foii e lemn legat')
