@@ -102,9 +102,9 @@ o('P10', E, 'g *= ELICE.radacina + (1 - ELICE.radacina) * Math.min(1, x / 0.25);
   'rădăcina se lărgește pe jumătate din paletă')
 o('P11', E, 'const t = ELICE.tRad - (ELICE.tRad - ELICE.tVarf) * x;', 'const t = ELICE.tRad - (ELICE.tRad - ELICE.tVarf) * x * x;', 'elice',
   'grosimea scade pătratic spre vârf')
-o('P12', E, 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);', 'let c = Math.max(x >= 0.5 ? 1.5 * t : t, cmax * g), sec = roteste(c);', 'elice',
+o('P12', E, 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);\n      for (let k = 0; k < 8; k++) {', 'let c = Math.max(x >= 0.5 ? 1.5 * t : t, cmax * g), sec = roteste(c);\n      for (let k = 0; k < 8; k++) {', 'elice',
   'vârful rotunjitei, strâns la 1,5 grosimi')
-o('P13', E, 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);', 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax), sec = roteste(c);', 'elice',
+o('P13', E, 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax * g), sec = roteste(c);\n      for (let k = 0; k < 8; k++) {', 'let c = Math.max(x >= 0.5 ? 2.5 * t : t, cmax), sec = roteste(c);\n      for (let k = 0; k < 8; k++) {', 'elice',
   'coarda fără formă (toate paletele drepte, cu rădăcina lată)')
 o('P14', E, K, K.replace('umplere: 0.85,', 'umplere: 1.0,'), 'elice', 'paletele umplu tot pasul (se ating la butuc)')
 o('P15', E, 'const U = ELICE.umplere * 2 * Math.PI * r / z,', 'const U = ELICE.umplere * 2 * Math.PI * r / (z - 1),', 'elice', 'pasul dintre palete, socotit cu o paletă mai puțin')
@@ -112,14 +112,14 @@ o('P16', E, '        if (lat <= U) break;\n        c = Math.max(t, c * U / lat *
   'limita corzii, doar pe coarda proiectată (fără grosimea secțiunii)')
 o('P17', E, '      for (let k = 0; k < 8; k++) {\n        const lat = Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));',
   '      for (let k = 0; k < 0; k++) {\n        const lat = Math.max(...sec.map(p => p[0])) - Math.min(...sec.map(p => p[0]));', 'elice', 'coarda nelimitată (paletele late se întrepătrund)')
-o('P18', E, '.map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);',
-  '.map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) + v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);', 'elice', 'secțiunea forfecată, nu rotită (grosimea se strică)')
+o('P18', E, 'sectiuneElice(cc, t, profil)\n        .map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) - v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);',
+  'sectiuneElice(cc, t, profil)\n        .map(([u, v]): P2 => [(u - cc / 2) * Math.cos(b) + v * Math.sin(b), (u - cc / 2) * Math.sin(b) + v * Math.cos(b)]);', 'elice', 'secțiunea forfecată, nu rotită (grosimea se strică)')
 o('P19', E, 'return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'return { r, sec: sec.map(([s, h]): P2 => [s, h]) };', 'elice',
   'secțiunile rămân centrate pe coardă (jumătate din paletă sub masă)')
-o('P20', E, 'const zmin = Math.min(...sec.map(p => p[1]));', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3;', 'elice', 'paleta la 0,3 mm deasupra mesei (în aer)')
-o('P21', E, 'const th = 2 * Math.PI * k / z;\n      const p3 = (r: number, [s, h]: P2): P3 => { const f = th + semn * s / r;',
-  'const th = Math.PI * k / z;\n      const p3 = (r: number, [s, h]: P2): P3 => { const f = th + semn * s / r;', 'elice', 'paletele înghesuite pe jumătate de cerc')
-o('P22', E, 'const p3 = (r: number, [s, h]: P2): P3 => { const f = th + semn * s / r;', 'const p3 = (r: number, [s, h]: P2): P3 => { const f = th + semn * s / (r + 1);', 'elice',
+o('P20', E, 'const zmin = Math.min(...sec.map(p => p[1]));\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'const zmin = Math.min(...sec.map(p => p[1])) - 0.3;\n      return { r, sec: sec.map(([s, h]): P2 => [s, h - zmin]) };', 'elice', 'paleta la 0,3 mm deasupra mesei (în aer)')
+o('P21', E, 'const th = 2 * Math.PI * k / z;\n      const p3 = (st: StatieElice, [s, h]: P2): P3 => { const f = st.rot ? th + semn * (s / st.r + st.rot) : th + semn * s / st.r;',
+  'const th = Math.PI * k / z;\n      const p3 = (st: StatieElice, [s, h]: P2): P3 => { const f = st.rot ? th + semn * (s / st.r + st.rot) : th + semn * s / st.r;', 'elice', 'paletele înghesuite pe jumătate de cerc')
+o('P22', E, 'const p3 = (st: StatieElice, [s, h]: P2): P3 => { const f = st.rot ? th + semn * (s / st.r + st.rot) : th + semn * s / st.r;', 'const p3 = (st: StatieElice, [s, h]: P2): P3 => { const f = st.rot ? th + semn * (s / st.r + st.rot) : th + semn * s / (st.r + 1);', 'elice',
   'coarda așezată pe un cilindru mai mare cu 1 mm (unghiul paletei, altul)')
 o('P23', E, 'const semn = d.sens === "stanga" ? -1 : 1,', 'const semn = d.sens === "stanga" ? 1 : -1,', 'elice', 'dreapta și stânga, pe dos')
 o('P24', E, 'const semn = d.sens === "stanga" ? -1 : 1,', 'const semn = d.sens === "stanga" ? 1 : 1,', 'elice', 'stânga e tot dreapta (perechea, două elice la fel)')
@@ -136,13 +136,13 @@ o('B04', E, 'const hRad = Math.max(...statii.filter(st => st.r <= rh + 0.5)', 'c
   'butucul, înalt cât paleta de la 5 mm de el')
 o('B05', E, 'const hRad = Math.max(...statii.filter(st => st.r <= rh + 0.5)', 'const hRad = Math.max(...statii.filter(st => st.r <= rh - 0.5)', 'elice',
   'nicio secțiune la butuc (înălțimea lui, fără paletă)')
-o('B06', E, 'const G = d.gaura === "b" ? { g: [cerc(0, 0, e.baraGauraD / 2)] }', 'const G = d.gaura === "b" ? { g: [cerc(0, 0, e.gauraD / 2)] }', 'elice',
+o('B06', E, 'const G = gaura === "b" ? { g: [cerc(0, 0, ef().baraGauraD / 2)] }', 'const G = gaura === "b" ? { g: [cerc(0, 0, ef().gauraD / 2)] }', 'elice',
   'gaura pentru bară, cât cea de știft')
-o('B07', E, 'gauraRoata(cerc(0, 0, rh), d.gaura === "r" || d.gaura === "nu" ? d.gaura : "x");', 'gauraRoata(cerc(0, 0, rh), d.gaura === "nu" ? d.gaura : "x");', 'elice',
+o('B07', E, 'gauraRoata(cerc(0, 0, rh), gaura === "r" || gaura === "nu" ? gaura : "x");', 'gauraRoata(cerc(0, 0, rh), gaura === "nu" ? gaura : "x");', 'elice',
   'gaura rotundă devine gaură de ax')
-o('B08', E, 'tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0, Hh));\n    if (d.con === "da") {', 'tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0.2, Hh));\n    if (d.con === "da") {', 'elice',
+o('B08', E, 'return prismaGauri(cerc(0, 0, rh), G.g, 0, Hh);', 'return prismaGauri(cerc(0, 0, rh), G.g, 0.2, Hh);', 'elice',
   'butucul la 0,2 mm deasupra mesei')
-o('B09', E, 'tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0, Hh));\n    if (d.con === "da") {', 'tri.push(...prismaGauri(cerc(0, 0, rh), G.g, 0, Hh));\n    if (d.con !== "da") {', 'elice',
+o('B09', E, 'tri.push(...butucElice(rh, Hh, d.gaura));\n    if (d.con === "da") {', 'tri.push(...butucElice(rh, Hh, d.gaura));\n    if (d.con !== "da") {', 'elice',
   'conul, pe dos (elicea implicită are con)')
 o('B10', E, K, K.replace('con: 1.3 }', 'con: 1.0 }'), 'elice', 'conul înalt cât raza butucului')
 o('B11', E, 'const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];', 'const n = N_CERC, z0 = Hh + 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];', 'elice',
@@ -156,18 +156,18 @@ o('X02', E, '(x <= 0.55 ? 1 : Math.sqrt(Math.max(0, 1 - ((x - 0.55) / 0.45) ** 2
   'rotunjita, fără garda radicalului (la vârf, un rest de rotunjire negativ ar da NaN)')
 
 # Avertismentele (unitare).
-o('V01', E, 'if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(', 'if (Number.isFinite(+(d.palete as number)) && q.z === +(d.palete as number)) avert.push(', 'elice',
+o('V01', E, 'if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(tr`O elice are', 'if (Number.isFinite(+(d.palete as number)) && q.z === +(d.palete as number)) avert.push(tr`O elice are', 'elice',
   'paletele în afara plajei, nespuse (și spuse când sunt în plajă)')
-o('V02', E, 'if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(', 'if (false) avert.push(', 'elice',
+o('V02', E, 'if (Number.isFinite(+(d.diametru as number)) && q.D !== +(d.diametru as number)) avert.push(tr`Diametrul unei elice e', 'if (false) avert.push(tr`Diametrul unei elice e', 'elice',
   'diametrul în afara plajei, nespus')
 o('V03', E, 'avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${q.z}.`);', 'avert.push(tr`O elice are între 2 și 8 palete: am făcut-o cu ${d.palete}.`);', 'elice',
   'avertismentul spune paletele cerute, nu cele făcute')
 o('V04', E, 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.D} mm.`);', 'avert.push(tr`Diametrul unei elice e între 20 și 200 mm: am făcut-o de ${q.R} mm.`);', 'elice',
   'avertismentul spune raza')
-o('V05', E, 'conicaDubla, senila, elice, dinCvs2 };', 'conicaDubla, senila, dinCvs2 };', 'elice', 'elicea scoasă din tipurile motorului')
+o('V05', E, 'conicaDubla, senila, elice, eliceBarca, dinCvs2 };', 'conicaDubla, senila, eliceBarca, dinCvs2 };', 'elice', 'elicea scoasă din tipurile motorului')
 
 # Atelierul (e2e).
-o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"]]]', '    ["roti2", "Elice", [["elice", "Elice"]]]', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
+o('E01', A, '    ["propulsie", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]', '    ["roti2", "Elice", [["elice", "Elice"], ["eliceBarca", "Elice de barcă"]]]', 'e2e', 'fila Elice, cu altă cheie (familia `propulsie` lipsește)')
 o('E02', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 4, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'e2e', 'editorul pornește cu 4 palete')
 o('E03', A, 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot",', 'elice: { palete: 3, diametru: 72, pas: 0.7, latime: 35, forma: "rot",', 'e2e', 'editorul pornește cu lățimea 35 %')
 o('E04', A, 'forma: "rot", paleta: "rasucita", profil: "placa", sens: "dreapta", gaura: "x", con: "nu" },',
@@ -194,7 +194,7 @@ o('E14', A, 'tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}°
 o('E15', A, 'return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm',
   'return tr`Pasul ${fmt(c.D, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm', 'e2e',
   'textul elicei: diametrul în locul pasului')
-o('E16', A, 'un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;', 'un strat iese cu ${fmt(c.consola, 0)} mm peste cel de dedesubt.`;', 'e2e',
+o('E16', A, 'Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;', 'Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 0)} mm peste cel de dedesubt.`;', 'e2e',
   'textul elicei: consola la milimetru (0,9 devine 1)')
 L1 = '    "6041": { palete: 3, diametru: 27.4, pas: 0.93, latime: 60, forma: "drept", paleta: "plata", sens: "stanga", gaura: "x" },'
 L2 = '    "92842": { palete: 3, diametru: 43.1, pas: 0.59, latime: 29, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },'
