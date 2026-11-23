@@ -17,7 +17,9 @@ jobs:
     # Testele unitare, nefeliate aici, trec de 10 minute pe mașina CI-ului din felia 2.5c (oracolul intrărilor cu rampă).
     # 24.10: nivelul rapid singur ia 14–24 min după runner, iar tot job-ul ajunsese la 29,3 min (20.10, verde); o rulare
     # mai lentă a fost oprită la 30 min în ultimul pas. Noaptea nu e grăbită: 60 de minute.
-    timeout-minutes: 60
+    # 23.11: job-ul ia 44–60 de minute după runner (pasul rapid 23–35, e2e 16–21); completul unirii lui 3.Tq s-a încheiat
+    # verde la 59 min 54 s. Limita e 90, ca un runner lent să nu facă roșu un complet bun.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
