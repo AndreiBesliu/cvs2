@@ -123,6 +123,7 @@ export const en = {
   'vedere.foaia-urmatoare': 'Next sheet',
   'vedere.toate-foile': 'All sheets on the canvas',
   'vedere.aspect': 'Interface appearance',
+  'vedere.freze': 'My bits',
   'tema.auto': 'as the system',
   'tema.luminoasa': 'light',
   'tema.intunecata': 'dark',

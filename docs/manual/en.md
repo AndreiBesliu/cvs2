@@ -834,8 +834,14 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
 An **image** (PNG, JPEG, WebP, GIF, BMP or TIFF: a logo, a scanned drawing, a signature) is **traced**: the application finds the
-drawing's edge and writes it as vectors, in black and white. The window widens, with the settings on the left and the
-preview on the right:
+drawing's edge and writes it as vectors, in black and white. The window is as tall as the screen and does not scroll: the
+settings are on the left (their column scrolls on its own), the preview on the right (it grows with the window), and at
+the bottom, always in view, the short report and the buttons. At the top are **Source** and **Result**; the other settings
+sit in four groups, in working order: **Image** (lighting, sheet, scan, edge), **Tracing** (the threshold or the colours,
+the centre-line options), **Clean-up** (smoothness, specks, holes) and **Size**. A click on a group's title opens or
+folds it; folded, the title sums up what is chosen (for example “Balanced · specks under 0.3 mm · holes under 0.3 mm”).
+The first time, Image and Clean-up are folded; the window remembers in the browser which groups you opened. The
+**Simple** box, under the groups, hides Image and Clean-up altogether (their values stay as they are). The settings:
 - **Source**: what counts as drawing. **Chosen automatically** takes **Transparency** for an image with a transparent
   background (the drawing is everything that is not transparent, whatever its colour) and **Brightness** for an opaque one
   (the background has the colour of the image's edge); the line under the list says which it chose;
@@ -876,23 +882,33 @@ preview on the right:
   where the angle comes from; without straightening, it suggests it when the scan looks turned by at least 0.1°. A drawing
   without straight lines (circles, a sketch) has no sure angle: the report asks you to type it. With **Straighten the
   sheet** ticked, the drawing on the straightened sheet is straightened; the area is drawn on the straightened image;
-- **Width (mm)**: the drawing's size on the sheet. Left empty, the size comes from the straightened sheet's paper size,
-  from the DPI written in the file, and without them from 96 px per inch, as for an SVG; the line under it shows the
-  height, the pixel's size and where the scale comes from.
+- **Size**: **Size you type** **Of the drawing** (the default) or **Of the image**. For the drawing, **Drawing width** and
+  **Drawing height** (in mm) are those of the vectors' box and are linked: type one and the other follows, since the
+  drawing is not stretched; left empty, they show the current size. **When you change the settings, keep**: **The typed
+  size** (the default: after another threshold or clean-up, the drawing stays as you typed it, with one more tracing if
+  needed) or **The scale** (the scale from the moment you typed; the drawing may change by fractions of a mm, and the
+  fields show the new size). For the image, **Image width (mm)** is that of the whole image (or of the area). With no size
+  typed, it comes from the straightened sheet's paper size, from the DPI written in the file, and without them from 96 px
+  per inch, as for an SVG; the line under it shows the height, the pixel's size and where the scale comes from. On the
+  preview, a dotted box shows the drawing's box, with its size.
 
 The preview shows the **Image**, the **Vectors** or **Both** (with **Fade the image**, so the vectors show over it); the wheel
 zooms around the mouse, dragging moves the image, **Zoom in** and **Zoom out** do the same from buttons, and **Fit** shows the
 whole image. **Area** picks only part of it: while the button is pressed, dragging on the preview draws the
 rectangle, moves it or stretches it by its sides and corners (Shift + drag draws it without the button), and **Whole image**
 removes it. Only the area is traced, as if it were the image: the automatic threshold and the lighting no longer see what
-is outside it, its bottom-left corner lands on the sheet's corner, and **Width** is its width. With the sheet straightened,
+is outside it, its bottom-left corner lands on the sheet's corner, and **Image width** is its width. With the sheet straightened,
 the preview shows the straightened sheet with the vectors; **Corners** shows the photo, with the sheet's outline and four
 handles you drag onto its corners (Area and Corners are not pressed together), and **Find automatically** looks for them
-again; new corners or another paper size remove the area. Under the preview is the
-report: the **largest deviation** of the vectors from the edge in the image (in mm and in
-pixels, measured on every outline), the image's size, how many specks and holes were cleaned up, and whether the edges were
-hard (no shades: then the pixel steps are smoothed). Every change traces the image again, on the side: the window stays
-responsive, and a new change stops the one under way.
+again; new corners or another paper size remove the area. At the bottom, the short report: how many outlines (or centre
+lines), the **Drawing** (its size) and the deviation. Under it, the suggestions, each with its button: **Apply “Uneven”**
+(paper lit unevenly), **Straighten the sheet** (a sheet photographed at an angle), **Straighten the scan** (a turned
+scan), **Switch to Outlines** (dots without a centre line); the button changes the setting and opens its group, and the
+Image group's title has a dot while there is a suggestion for it. **Details** (kept open, if you open them) show the
+rest: the **largest deviation** of the vectors from the edge in the image (in mm and in pixels, measured on every
+outline), the image's size, how many specks and holes were cleaned up, whether the edges were hard (no shades: then the
+pixel steps are smoothed), the outlines by side and what was skipped. Every change traces the image again, on the side:
+the window stays responsive, and a new change stops the one under way.
 
 With **Source: Colours**, the image is traced by colour: each colour becomes a shape of its own, and two neighbouring
 colours share exactly the same edge (no strip and no overlap between them), so you can carve them at different depths or
@@ -1234,6 +1250,52 @@ The check helps you find the mistakes first; the drawing stays yours. A few can 
 Intersections between shapes are only shown: they may be intended, since the bit follows each shape with its role, and the
 export says what cannot be cut. A shape from a part placed more than once is not repaired from here, since the repair
 would change all of them: the row says how many times it is placed.
+
+## My bits
+%% capitol: freze
+%% acopera: vedere.freze
+
+The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
+palette. It works without an account and offline: the library lives in this browser (saving it in your account comes in a
+later slice). Soon you will pick a bit from the library on the export rows and in the Cutting section; until then, the bit is
+typed on the row, as before (see [Exporting G-code](#export)).
+
+The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
+spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
+show a single kind. On a phone, the list comes first; a bit you pick opens full screen, and **Bits** takes you back.
+
+**New bit** opens the editor, with the fields:
+- **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
+  0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
+- **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°) or **Engraving** (a V bit with a **Flat tip**,
+  smaller than the diameter);
+- **Diameter** (at most 100 mm), **Cutting length** (if you know it; for V and engraving bits, at least the cone),
+  **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
+- **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
+  the diameter, at most 50);
+- **Note**: the maker, the code, where it came from.
+
+The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
+back what was there. If you pick another bit or close the window with unsaved changes, they are saved on their own when they
+are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
+first; projects that use it keep their copy.
+
+**Add the starter bits** shows while the library is empty: six common bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an
+engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s default values (18,000 rpm, a feed of 1,000 mm/min, a plunge
+of 300 mm/min). Change them afterwards to match your bits.
+
+**Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
+computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
+(`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri` and `nota`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
+1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
+Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
+“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted.
+
+At the bottom, the window says where the library lives: **Only in this browser**. In a private window or with the site’s
+data blocked, the bits last only as long as the tab, and the window says so. A library written by a newer version of the app
+is read-only.
 
 ## The cutting operations
 %% capitol: operatii

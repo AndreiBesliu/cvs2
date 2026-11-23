@@ -118,8 +118,8 @@ o('E04', FE, '                if (Number.isInteger(a) && a !== k && a !== p) lea
   'pastila trasă: legătura în sens invers')
 o('E05', FE, "    const id = setTimeout(() => { onSchimba({ culori: { numar, legaturi: [], bifate: null } }); }, 250);",
   "    const id = setTimeout(() => { onSchimba({ culori: { ...c, numar } }); }, 250);", 'e2e', 'alt număr păstrează legăturile și bifele vechi')
-o('E06', DI, "              <p data-testid=\"import-piese\">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>",
-  "              <p data-testid=\"import-piese\">{t('import.trasare.piese', { n: 1 })}</p>", 'e2e', 'numărul pieselor spus greșit')
+o('E06', DI, "        <p data-testid=\"import-piese\">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>",
+  "        <p data-testid=\"import-piese\">{t('import.trasare.piese', { n: 1 })}</p>", 'e2e', 'numărul pieselor spus greșit')
 o('E07', DI, "  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');",
   "  if (cod === 'gol' && format === 'imagine') return t('import.imagine.gol');", 'e2e', 'refuzul pe culori spune de prag')
 o('E08', FE, '                  <button type="button" data-buton="trasare-dezleaga" onClick={() => { leaga(k, -1); }}>',

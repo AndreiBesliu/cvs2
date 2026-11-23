@@ -49,7 +49,9 @@ test('panoul: la început, freza în pregătire la zeroul programului; pas cu pa
 test('rulează cu viteza aleasă, se oprește singur la final (freza sus, la Z sigur); de la final o ia de la capăt', async ({ page }) => {
   await deschide(page);
   const panou = page.getByTestId('animatie');
-  await panou.locator('[data-animatie="viteza"]').selectOption('500');
+  // Cu 20×, jobul de 95 s ține ~5 s: destul ca „Oprește” să se vadă și pe un procesor ocupat (la 500×, ~0,2 s: sub încărcare,
+  // animația se termina înaintea verificării).
+  await panou.locator('[data-animatie="viteza"]').selectOption('20');
   await panou.locator('[data-animatie="reda"]').click();
   await expect(panou.locator('[data-animatie="opreste"]')).toBeVisible();
   await expect.poll(() => t(page)).toBeGreaterThan(0.5);
@@ -58,6 +60,8 @@ test('rulează cu viteza aleasă, se oprește singur la final (freza sus, la Z s
   await expect(panou.locator('[data-animatie="miscare"]')).toHaveAttribute('data-tip', 'final');
   expect(Number(await panou.locator('[data-animatie="pozitie"]').getAttribute('data-z'))).toBeGreaterThan(0);
   const durata = await t(page);
+  // De la capăt, cu 1×: nu ajunge iar la final înaintea clicului pe „Oprește”.
+  await panou.locator('[data-animatie="viteza"]').selectOption('1');
   await panou.locator('[data-animatie="reda"]').click();
   await panou.locator('[data-animatie="opreste"]').click();
   expect(await t(page)).toBeLessThan(durata);

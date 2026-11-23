@@ -162,6 +162,25 @@ Estimarea: ~7 felii (A.8c s-a despărțit în A.8c și A.8d pe 23.11). A.7 (tele
     două evenimente pe un clic ar fi rupt și numărarea repetărilor (clic, acțiune, clic, acțiune);
   - **calculele lungi, mașina și imprimanta trec în A.8d**: vin pe drumurile lor (workerul CAM, senderul, driverul imprimantei),
     nu din pagină.
+- **A.8d** (23.11, `3.Aj`): trei feluri noi în lista albă, fiecare cu câmpurile lui și doar acolo unde au sens:
+  - **`calcul`**: calculele bazinului CAM (`export`, `traseu`, `simulare`, `potrivire`, `timp`, `verificare`, `reparare`,
+    `taiere`, `panouri`, `conversie`, `legare`) și citirea importului (`import`); durata în trepte (`TREPTE_MS`: marginea de
+    sus, de la 0,1 s la peste 5 minute), cum s-a încheiat (`ok`, `eroare`, `anulat`), formele documentului la calculele CAM și
+    octeții și formatul fișierului la import, tot în trepte (`TREPTE_MARIME`); niciun nume și nicio valoare exactă;
+  - **`masina`**: legată (cu felul legăturii: serial, rețea, simulată), lucrarea pornită, pusă pe pauză, reluată, oprită de
+    program, anulată de om, terminată, întreruptă, codurile controlerului (eroarea și alarma cu numărul lor, blocarea) și
+    deconectată; fără G-code, adrese sau poziții;
+  - **`imprimanta`**: legată, lucrarea pornită aici, evenimentele imprimării (ADR 0194 §A: finalul, oprirea, pauzele, lipsa
+    filamentului, eroarea cu cheia ei, pana de curent, legătura pierdută, primul strat) și deconectată; fără fișiere, adrese
+    sau temperaturi.
+
+  Bazinul spune fiecare calcul unui observator (`src/jobs/observatorCalcul.ts`; bazinul nu importă interfața), pus din
+  pornire; un ascultător care aruncă și un document stricat nu schimbă calculul. Mașina și imprimanta se citesc din stările
+  lor la rând, pure (`src/app/utilizareMasina.ts`, prin indicatorul lucrării; `src/app/utilizareImprimanta.ts`, prin
+  evenimentele notificărilor, toate, oricare ar fi setările lor). Valorile vin brute; înregistratorul face treptele, lasă
+  deoparte un cod din afara marginilor și trece evenimentul prin lista albă, ca serverul. Două alegeri: o lucrare a
+  imprimantei găsită în curs la legare nu e „pornită” (a pornit-o altcineva, altundeva), iar o legătură pierdută care revine
+  nu e o legare nouă.
 
 ## Probele
 

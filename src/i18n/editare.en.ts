@@ -830,6 +830,7 @@ export const enEditare = {
   'editare.cont.intra': 'Sign in or create an account…',
   'editare.cont.iesi': 'Sign out',
   'editare.cont.aspect': 'Appearance…',
+  'editare.cont.freze': 'My bits…',
   'editare.cont.nelogat': 'Not signed in',
   'editare.cont.proba-noua': { one: 'A new account: a {n}-day trial, no card', other: 'A new account: a {n}-day trial, no card' },
   'editare.cont.neconfirmat': 'Email address not confirmed yet',

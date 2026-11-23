@@ -298,6 +298,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`numereFreze` în `src/model/rol.ts`); recunoașterea ignoră numerele frezelor. **Un câmp nou al operației intră singur în
   rol; unul care ține de o formă anume (ca `despartire`) se scoate în `model()` și în aplicare** (`src/model/rolPersonal.ts`).
   **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 432,1 / 450.**
+  **Biblioteca de freze (ADR 0300, felia 16.A↑a, adusă din etapa 16)** gata pe 23.11, în sesiunea cloud a liniei (ramura
+  `wip/16.A-freze`), unită în `main` pe 24.11 (`02a5864a`), din cererea owner-ului din 23.11: fereastra **Frezele mele**
+  (rândul „Frezele mele…” din meniul contului și `vedere.freze` în paletă, din orice fereastră; `src/app/FrezeleMele.tsx`,
+  la cerere, cu modulul de mesaje `freze`): lista pe feluri, cu căutarea; editorul, cu silueta la scară și refuzurile pe
+  câmp; duplicarea, ștergerea, frezele de pornire; exportul JSON și importul JSON sau CSV (`src/io/frezeFisier.ts`).
+  Frezele (plată, în V, de gravare) stau în browser (IndexedDB `cncvs2-freze`, `src/app/frezeMele.ts`); modelul pur e
+  `src/model/freza.ts`, cu marginile ușii documentului (`sculaDinFreza` dă copia care trece de schema operației).
+  **Documentul și serverul nu s-au schimbat:** alegerea frezei în proiect (documentul v27) vine în 16.A↑b, salvarea în
+  cont în 16.A↑c, apoi calibrarea, bila și toroidala, profilul desenat, valorile pe material. **Un rând nou în meniul
+  contului se numără și în proba tichetelor de pe emulatoare** (`test/e2e-emulator/tichete.emulator.spec.ts`), nu doar în
+  `cont.spec.ts`. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu Atelierul 114,2), totalul 793,6 / 900.**
+  **Plafonul total 900 kB (ADR 0301, decizia owner-ului din 23.11, „ok, ridica plafonul total la 900 kB”):** cu 16.A↑a,
+  totalul era 793,6 / 800, iar feliile următoare (frezele, fereastra exportului, utilizarea, aranjamentele) nu mai
+  încăpeau în 6,4 kB. **Pornirea rămâne 115 kB:** cu ușa și cu Atelierul e la 114,2, deci o felie care atinge pornirea
+  cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului pe plafonul ei (ADR 0252).
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
@@ -1019,8 +1034,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`473f2e20`):** o imagine rămâne pe foaie, sub desen, estompată, nici tăiată, nici exportată („Păstrează imaginea pe
   foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
   stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
-  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului;
-  următorul ADR al liniei e 0273.
+  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului.
+  **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, unită în `main` pe 23.11 (`4fe2d2ad`), cu răspunsurile
+  1a–3a și, la nota owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
+  previzualizarea crește, piciorul fix); grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu, ținute în
+  browser (`cncvs2.trasare.fereastra`; „Simplu” ascunde Imaginea și Curățarea); mărimea desenului (lățimea sau înălțimea
+  cutiei vectorilor, legate), dusă de fereastră în lățimea imaginii după fiecare trasare (sau doar scara; sau lățimea
+  imaginii, ca înainte), deci ușa și cererea neschimbate; raportul scurt, sugestiile ca butoane, „Detalii”; „Desenul” cu
+  virgula în română, la toate formatele. Partea pură în `src/ui/fereastraTrasareCalcul.ts`. **O probă e2e care lucrează cu
+  un câmp din Imaginea sau Curățarea deschide întâi grupurile** (`grupuriDeschise` din `test/e2e/ajutor-trasare.ts`), iar
+  rândurile raportului de sub „Detalii” se așteaptă atașate, nu vizibile. Următorul ADR al liniei e 0274.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191
@@ -1190,6 +1213,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/app/SugestieDinEditor.ts`, `src/app/pozaSugestiei.ts`: IndexedDB și un canal BroadcastChannel; editorul nu încarcă
   Firebase); fila o atașează sugestiei noi, iar serverul o ține în `sugestii/{id}/poze/plansa` (doar `get`, de cine poate
   citi sugestia). Bucățile ei sunt doar online (`DOAR_ONLINE`), cu plafonul lor de 8 kB, în afara totalului.
+  **Utilizarea aplicației (ADR 0262, feliile A.8a și A.8b ale liniei adminului)** gata pe 23.11, în sesiunea cloud a
+  liniei, unită în `main` pe 23.11 (`5325b8fe`): editorul înregistrează acțiunile registrului (cu sursa gestului și
+  rezultatul), ferestrele și unealta și le trimite în loturi, doar cu contul deschis, prin callable-ul `utilizare`
+  (`functions/src/utilizare/`); colectarea e pornită pentru toți cei cu cont și e spusă în nota de confidențialitate;
+  setările (`setari/utilizare`) le schimbă doar owner-ul, din fila Setări. **Un fel nou de eveniment intră întâi în lista
+  albă din `shared/utilizare.ts`:** serverul reface evenimentul doar din câmpurile felului lui și aruncă restul, numărat.
+  **În pornire stau doar sursa gestului și tamponul** (`src/app/utilizare.ts`); înregistratorul (`src/app/utilizareLot.ts`)
+  are bucata lui, iar trimiterea o pune editarea, prin bucata contului: **un `import('./PanouCont.tsx')` din pornire scoate
+  o bucată nouă, comună.** Tipurile comune stau în `utilizareTipuri.ts` (regula `fara-cicluri` numără și importurile doar
+  de tipuri). **Legate de cont, evenimentele sunt date personale (GDPR): de verificat juridic înaintea live-ului** (ADR
+  0262 §3). Urmează A.8c (dialogurile, clicurile fine), A.9–A.11, apoi A.7. **Pornirea 109,2 kB (cu ușa 113,7 / 115; cu
+  Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200, contul 30,0 / 32.**
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -1310,6 +1345,49 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 24.11.2026, noaptea (a noua unire din cloud): **16.A↑a (biblioteca de freze) unită în `main`, cu plafonul total
+  de 900 kB** (sesiunea principală, ramura `unire-2311k`, din `ebfb1f82`). **16.A↑a** (linia frezelor, ramura
+  `wip/16.A-freze`, `218eed21`, PR-ul `AndreiBesliu/cvs2#12`; ADR 0300, acceptat de owner cu „Da, 1a–6a”, în sesiunea
+  liniei), unită în `02a5864a`: fereastra „Frezele mele” (din meniul contului și din paletă), cu lista pe feluri,
+  editorul cu silueta la scară, frezele de pornire și fișierul JSON / CSV; frezele (plată, în V, de gravare) stau în
+  browser; documentul și serverul, neschimbate (alegerea în proiect, cu documentul v27, vine în 16.A↑b; contul, în
+  16.A↑c); otrăvurile 46 / 46; felia: pornirea +0,2 kB, totalul +9,0 kB. Owner-ul îi ceruse liniei unirea („ok, cand e
+  verde fa unirea”); linia a scris întâi aici, felia era deja în lot, deci unirea a rămas a sesiunii principale.
+  **Plafonul total 900 kB** (ADR 0301, scris de linia frezelor pe ramura ei, `30d5ba17`, unit în lot în `813fa675`):
+  decizia owner-ului, „ok, ridica plafonul total la 900 kB”, spusă în sesiunea liniei după raportul mărimii
+  (793,6 / 800 cu 16.A↑a). **Pornirea rămâne 115 kB** (cu ușa și cu Atelierul, 114,2: mai sunt 0,8 kB). Ciocnirile, două
+  rânduri de tabel (fișa etapei 3, registrul otrăvurilor), ambele părți păstrate. Porțile lotului, în CI, verzi la prima
+  trecere: completul pe `02a5864a` (49 min 44 s): unit 10 018 / 0 (12 sărite, pe Linux), e2e 646 / 646, funcțiile pe
+  emulatoare 115 / 115, paginile 45 / 45; rapidul pe vârful `cfd584a1`, care schimbă față de `02a5864a` doar constanta
+  plafonului din `scripts/build-determinist.ts` și documente; pornirea 109,4 kB (cu ușa 113,9), **totalul 793,6 / 900
+  kB**, `/admin` 130,3 / 200. Nimic pe server. Înainte, lotul al optulea a ajuns pe test (`ebfb1f82`, 24.11, 01:04), cu
+  serverul: funcția `utilizare` creată, regulile și indexurile publicate. Gata pe ramuri, neunite: 28.8↑a (fereastra
+  exportului, `AndreiBesliu/cvs2#11`: unirea la cuvântul owner-ului, după ce o încearcă pe canalul `export`) și A.8c
+  (adminul; porțile verzi, fără raport încă). **La owner:** fereastra exportului, verificarea juridică (GDPR) a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”.
+- 23.11.2026, spre miezul nopții (a opta unire din cloud): **A.8a cu A.8b (utilizarea aplicației) și 25.9↑ (fereastra
+  trasării, refăcută) unite în `main`**, în lot (sesiunea principală, ramura `unire-2311j`, din `f73f3f37`). **A.8a și
+  A.8b** (linia adminului, ramura `wip/A.1-admin`, `55d26b81`, PR-ul `AndreiBesliu/cvs2#8`; ADR 0262, acceptat de owner
+  pe 23.11, în sesiunea liniei, din formularul schiței; `3.Ag` și `3.Ah` în fișa etapei 3), unite în `5325b8fe`:
+  editorul înregistrează ce folosesc oamenii (acțiunile registrului, cu sursa gestului și rezultatul, ferestrele,
+  unealta) și trimite loturi, doar cu contul deschis, prin callable-ul nou `utilizare`; serverul reface fiecare eveniment
+  din lista albă (`shared/utilizare.ts`), primește cel mult 120 de loturi pe cont și pe oră și le șterge singur după
+  zilele din setări; setările le schimbă doar owner-ul, din fila Setări („Utilizarea aplicației”); colectarea, pornită
+  pentru toți cei cu cont, e spusă în nota de confidențialitate (răspunsul owner-ului la ADR). Otrăvurile 48 / 48 și
+  40 / 40. **La publicare merge și serverul:** funcția `utilizare`, regulile Firestore, indexurile (TTL pe `utilizare` și
+  `limiteUtilizare`). **Înaintea live-ului:** legate de cont, evenimentele sunt date personale (GDPR), de verificat
+  juridic (ADR 0262 §3). **25.9↑** (linia trasării, ramura `wip/25.1-trasare`, `2acad1d0`, apoi vârful `8c0eded9`, cu
+  `main` adus și doar documente în plus; PR-ul `AndreiBesliu/cvs2#10`; ADR 0273, acceptat cu 1a–3a și cu celelalte
+  variante ca opțiuni), unită în `4fe2d2ad`: fereastra trasării cât ecranul, fără derularea ei, cu previzualizarea care
+  crește și butoanele mereu la vedere; grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu; mărimea
+  desenului scrisă direct (lățimea sau înălțimea vectorilor); raportul scurt, cu sugestiile ca butoane; otrăvurile
+  24 / 24; felia +2,6 kB. Ciocnirea, doar în dicționarul traducerilor roadmap-ului (ambele părți păstrate, în ordinea
+  cheilor). Porțile lotului, în CI, verzi la prima trecere pe `4fe2d2ad` (completul, 62 min 49 s): unit 9 995 / 0
+  (12 sărite, pe Linux), e2e 637 / 637, funcțiile pe emulatoare 115 / 115, paginile 45 / 45; pornirea 109,2 kB (plafonul
+  115; **cu ușa 113,7, cu Atelierul 114,0: mai e 1 kB**), **totalul 784,6 / 800 kB (mai sunt 15,4 kB)**, `/admin`
+  130,3 / 200, contul 30,0 / 32. Înainte, lotul al șaptelea a ajuns pe test (`f73f3f37`, 23:54). Urmează, la raport:
+  16.A↑a (frezele, `AndreiBesliu/cvs2#12`), 28.8↑a (fereastra exportului, `AndreiBesliu/cvs2#11`), A.8c. **De hotărât de
+  owner: plafoanele** (pornirea și totalul) și „cine unește în `main`”.
 - 23.11.2026, noaptea (a șaptea unire din cloud): **3.Xh (biblioteca extensiilor, refăcută) și 12.1↑e-3 cu 12.1↑e-4
   (pereții drepți și treptele în „Împreună (secțiunea)”) unite în `main`**, în lot (sesiunea principală, ramura
   `unire-2311i`, din `870e8759`). **3.Xh** (linia bibliotecii, ramura `wip/3.Xh-biblioteca-ui`, `611a3c5f`, PR-ul

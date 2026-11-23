@@ -63,7 +63,7 @@ test('offline, de la a doua încărcare: pornește, schimbă limba, deschide imp
 
     // Importul (dialogul și citirea), apoi exportul (dialogul și calculul), offline.
     await page.locator('[data-camp="fisier-svg"]').setInputFiles(LOGO);
-    await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+    await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80,00 × 40,00 mm');
     await page.locator('[data-buton="importa"]').click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.locator('[data-actiune="export.gcode"]').click();
