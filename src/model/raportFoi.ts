@@ -27,6 +27,8 @@ export type OperatieRaport = {
   readonly adancime: number;
   readonly treceri: number;
   readonly urechi: number;
+  /** Urechile la mijlocul fiecărei laturi (ADR 0211, c): câte sunt depinde de laturile fiecărui contur, deci fără număr. */
+  readonly urechiLa?: 'mijloc';
   readonly despartire: boolean;
 };
 
@@ -99,7 +101,9 @@ function operatieRaport(o: Operatie): OperatieRaport {
   return {
     tip: o.tip, latura: o.latura,
     scula: { numar: o.scula.numar, diametru: o.scula.diametru, unghi: o.scula.forma?.tip === 'v' ? o.scula.forma.unghi : null },
-    adancime: o.adancime, treceri: o.pas > 0 ? Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) : 1, urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.numar) : 0,
+    adancime: o.adancime, treceri: o.pas > 0 ? Math.max(1, Math.ceil(o.adancime / o.pas - 1e-9)) : 1,
+    urechi: o.urechi ? (o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.mod === 'mijloc' ? 0 : o.urechi.numar) : 0,
+    ...(o.urechi?.mod === 'mijloc' ? { urechiLa: 'mijloc' as const } : {}),
     despartire: o.despartire === true,
   };
 }

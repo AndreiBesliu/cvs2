@@ -105,9 +105,11 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
 - **`main`, pe 23.11, din cloud:** 3.Tq (elicele, `0ae9c6c1`; pe test cu `8177ab81`); 11.3↑e (planșele, `d3ffcbf3`) și A.4
   (adminul, `ddaa7ead`; pe test cu `c010e3d1`); reparația probelor atelierului și 3.Tr (elicea de barcă, Easy 3Draw
   18.20.0), unite în `d262e57a` de sesiunea liniei, la cuvântul owner-ului; 25.8↑a (trasarea, `473f2e20`) și A.5
-  (adminul, `1b46c955`), cu reparația probei extensiilor (`8287d66e`).
+  (adminul, `1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f (planșele, `f4601938`), unită de sesiunea
+  liniei, la cuvântul owner-ului.
 - **Liniile** (vezi [indexul](README.md)):
-  - **planșele:** 11.3↑f (urechile după reguli) raportată gata, în lotul următor;
+  - **planșele:** 11.3↑f (urechile după reguli) unită în `main` (`f4601938`) de sesiunea liniei, la cuvântul owner-ului;
+    nicio felie în lucru (tăierea plăcii 11, la owner; 11.5↑b după etapa 13);
   - **adminul:** A.6 (Roadmap, Documentație, Setări) în lucru; A.7, la cuvântul owner-ului;
   - **incrustațiile:** 12.1↑e-3 și 12.1↑e-4 în lucru, PR-ul încă ciornă;
   - **biblioteca extensiilor, interfața nouă** (3.Xh, `wip/3.Xh-biblioteca-ui`, ADR 0231 acceptat cu 1a–4a, canalul

@@ -125,7 +125,7 @@ export function ExportConectat({
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? {
             numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime,
-            ...(o.urechi.mod === 'alese' ? { mod: 'alese' as const, alese: numarUrechiAlese(o) } : o.urechi.mod === 'lemn' ? { mod: 'lemn' as const } : {}),
+            ...(o.urechi.mod === 'alese' ? { mod: 'alese' as const, alese: numarUrechiAlese(o) } : o.urechi.mod !== undefined && o.urechi.mod !== 'egale' ? { mod: o.urechi.mod } : {}),
           } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
