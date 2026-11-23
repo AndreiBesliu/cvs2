@@ -11667,3 +11667,23 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
 - **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
   indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).
+
+## 2026-11-23 — Linia exportului: fereastra „Exportă G-code” desenată din nou, propunerea (ADR 0290 propus)
+
+**Prompt:** brief-ul liniei, de la sesiunea principală, cu cererea owner-ului, exactă: „in primul rand, nu imi place deloc
+fereastra asta, nici nu este clar ce anume imi ceri sa fac, vreau sa facem un design pentru fereastra export, si vreau ca
+ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute userul sa inteleaga ce reprezinta”.
+**Started:** 23.11, seara.
+
+- **Ramura:** `wip/28.8-export`, din `origin/main` `d6fd5d68`; ADR-urile 0290–0299, canalul `export`. Nota liniei:
+  `docs/linii/export.md`.
+- **Capturile de azi:** 32 (8 cazuri × 1280 / 1024 × ro / en) plus una derulată, în Edge, pe `dist/` servit de `vite preview`.
+  Tabelul are 1 270 px într-o cutie de 894 (1 414 la V-carve); listele se taie; 61 de explicații doar în `title`; 69 din 88 de
+  câmpuri apar după o alegere, fără să spună de ce; greșeala apare sub tabel, departe de câmp.
+- **ADR 0290 propus:** inventarul setărilor pe întrebări (când apar, explicația de azi, desenul propus), trei direcții (B
+  recomandată: lista și fișa), desenele (pozele alegerilor de mână, desenele întrebărilor din valori, cu cota activă aprinsă),
+  costul măsurat (11 desene 5,5 kB gzip, 50 de poze 1,8 kB), legătura cu canvas-ul aranjamentelor, patru întrebări, feliile
+  28.8↑a–f. Indexul ADR, cu traducerea rândului în roadmap.
+- **Schița:** <https://claude.ai/artifact/FX4y5HfSixLXthAcnrzUQP> (fereastra propusă de încercat, ambele teme, 1280 / 1024;
+  capturile; formularul întrebărilor).
+- **Fără cod de produs.** Codul pornește după răspunsurile owner-ului.

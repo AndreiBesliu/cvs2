@@ -1709,6 +1709,10 @@
       "ro": "fișierele T0–T7 pe GRBL",
       "en": "files T0–T7 on GRBL"
     },
+    "753843d5905c2586": {
+      "ro": "Fereastra „Exportă G-code”",
+      "en": "The “Export G-code” window"
+    },
     "75ae1fd995077bbc": {
       "ro": "Traseul pe pânză și panoul de proprietăți (ADR 0038): 2.8c, panoul editabil, și 2.8d, traseul pe WebGL2 (16.10); 2.8e, probele independente (17.10 11:10–14:45: oracolul stratului, recenzia, otrăvurile). Detaliile: blocul „2.8” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Orele de pe 16.10 nu sunt scrise acolo.",
       "en": "The toolpath on the canvas and the properties panel (ADR 0038): 2.8c, the editable panel, and 2.8d, the toolpath on WebGL2 (16.10); 2.8e, the independent checks (17.10 11:10–14:45: the layer oracle, the review, the poisons). Details: the “2.8” block in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The times on 16.10 are not written there."
