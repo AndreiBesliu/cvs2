@@ -598,7 +598,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `numarPanou.ts`, aduceau locul cifrelor în bucata panoului Taie). Acțiunea `document.taie` pune numerele
   (`TaiereCalculata.numere`) cu id-uri noi în grupurile panourilor, în același pas.
   **Legarea căilor (felia 10.3↑o, ADR 0182)** gata pe 22.11, pe `wip/10.3o-legare` (din vârful lui 10.3↑n, cu `main` `40487c43`
-  unit), neunită: legarea în worker (`src/model/legareCai.ts`, cererea `legare`, cu harta, felul operațiilor și schimbările
+  unit), unită în `main` pe 23.11 (`ab7dc43d`): legarea în worker (`src/model/legareCai.ts`, cererea `legare`, cu harta, felul operațiilor și schimbările
   pieselor din `reparare.ts`), aplicată prin `document.repara`; acțiunea ușoară `document.leaga-caile` (Ctrl+J, paleta) cheamă
   `legaCaile` din context, dat de `Editare` prin `onLegare`; butonul și săgeata opțiunilor (`PanouLegare.tsx`) în secțiunea
   booleanului; în Verificare, „Leagă” și „Leagă toate căile”. Opțiunile, în `src/model/legareOptiuni.ts` (ușor: depozitul
@@ -860,7 +860,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **3.6u gata pe 18.11** (filmele timelapse): `elapseVideoList` în driver (`filme`, `adresaFilm`), `filmePe` (pur), coloana Filmul
   a cardului Istoricul (filă nouă, fără trimitător); istoricul și filmele, cerute din nou la deschiderea ferestrei (`vizibila`).
   Totalul 732,7 / 800 (+0,5). Grupul 3 încheiat; proba pe K1C: ghidul, pașii 9–11.
-  **Grupul 4 acceptat pe 21.11** (ADR 0195, „Da, recomandările”: 1a, 2a; schița: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>). **3.6v gata pe 22.11**
+  **Grupul 4 acceptat pe 21.11** (ADR 0195, „Da, recomandările”: 1a, 2a; schița: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>). **3.6v gata pe 22.11, unită în `main` pe 23.11 (`75dc1f9a`)**
   (codurile explicate): dicționarul familiei K1, 126 de chei, în `coduri/creality-k1.<limba>.json` (precache, plafonul 8 kB),
   căutat după `key`, apoi după `errcode`; cardul „De la imprimantă” (`EroareImprimanta.tsx`), banda și notificarea cu
   explicația; pana de curent (`repoPlrStatus`), eveniment nou; la recenzia proprie, trei reparații (linkurile cât textul,
@@ -1276,6 +1276,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, dimineața (a treia unire, 10:30): **lotul de după pauză unit în `main`** (worktree-ul `unire`, ramura
+  `unire-2311`, din `308b4cb7`). **12.1↑e-2** (incrustațiile: dopul întors în locașul simulat, ADR 0179), din
+  `082435b4`, nu din vârful `wip/12.1-incrustatii` (WIP 12.1↑e-3), unită în `3fc56052`. **10.3↑o** (legarea căilor, ADR
+  0182; `wip/10.3o-legare`, `27439b08`), unită în `ab7dc43d`: ciocnirile din `src/jobs/calculCam.ts` (tipul răspunsului)
+  și `src/ui/actiuniExportCalcul.ts` (importul), rezolvate cu ambele părți (potrivirea din 12.1↑e-2, legarea din
+  10.3↑o). **3.6v** (codurile imprimantei explicate, ADR 0195; `wip/3.6g-imprimanta`, `19e22f32`), unită în `75dc1f9a`.
+  Nimic pe server: nicio funcție, nicio regulă. Porțile unirii, pe `75dc1f9a`: unit 9 786 / 0 (8 sărite), e2e 592 / 592,
+  funcțiile pe emulatoare 104 / 104, paginile 34 / 34; pornirea 107,9 kB (plafonul 115), totalul 760,9 / 800 kB.
+  Urmează: pilotul în cloud (elicele, 3.Tq), apoi liniile în lucru mutate în cloud (12.1↑e-3, 25.8↑a, 11.3↑e, A.4).
 - 23.11.2026, dimineața, a doua unire: **corectura pregătirii cloud unită în `main`** (ramura `wip/lucru-cloud`,
   `383120f5`, unită în `301413f8`). După documentația mediilor cloud (citită pe 23.11), `scripts/cloud/pregatire.sh` nu
   mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), pune Node 26 în locul lui
