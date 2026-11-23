@@ -1,6 +1,7 @@
 # ADR 0300: Biblioteca de freze: „Frezele mele”, în browser și în cont
 
-**Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–6a”); propus în aceeași zi, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si
+**Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–6a”); **felia 16.A↑a implementată pe ramura
+`wip/16.A-freze`** (23.11, „Implementarea (16.A↑a)”); propus în aceeași zi, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si
 sa le salvez in cont”. Felia 16.A↑ (adusă din etapa 16, fără mașină), linia „freze”: ramura `wip/16.A-freze`, ADR-urile
 0300–0309, canalul `freze`. **Rândurile din prag:** „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
 gravare, profil, formă desenată)” și „Freze de profil desenate de utilizator; roundover cu offset față de interior”
@@ -253,6 +254,41 @@ Pe 23.11.2026, exact: „Da, 1a–6a”. Deci:
 5. **a:** salvarea în cont cere un plan activ; cu proba încheiată sau contul dezactivat, biblioteca din cont doar se citește
    și se descarcă (capabilitatea `cloud`, felia c).
 6. **a:** întâi biblioteca în browser (16.A↑a), apoi alegerea în proiect (b), apoi contul (c).
+
+## Implementarea (16.A↑a)
+
+Pe 23.11.2026, în sesiunea cloud a liniei, pe ramura `wip/16.A-freze`. Documentul nu se schimbă, serverul nu se atinge.
+
+- **Modelul** (`src/model/freza.ts`, fără valibot): freza plată, în V și de gravare, cu marginile ușii documentului
+  (diametrul până la 100 mm, T-ul 1–999, unghiul 1°–179°, vârful sub diametru), tăișul cel puțin cât conul
+  (R − a)·cot(θ/2), turația întreagă, pasul lateral cel mult 50 %, numele unice (fără spațiile dublate, cu literele compuse
+  unite, fără deosebire de majuscule, și față de numele frezelor necitite). La salvare pleacă unghiul plăcii și vârful V-ului,
+  iar un câmp opțional golit; versiunea crește; câmpurile necunoscute ale frezei vechi rămân. `sculaDinFreza` dă copia pentru
+  document (T, nume, Ø, forma), care trece de schema operației; o folosește felia 16.A↑b. Lista: adăugarea, schimbarea,
+  ștergerea, mai multe deodată, importul („Păstrează-le pe amândouă”, „Înlocuiește”, „Sari”), plafonul de 500.
+- **Depozitul** (`src/app/frezeMele.ts`): IndexedDB `cncvs2-freze`, magazia `biblioteci`, o înregistrare pe bibliotecă
+  (`{ v: 1, freze }`, cheia `local`; din 16.A↑c, și una pe cont). Fiecare schimbare citește, schimbă și scrie într-o
+  tranzacție, deci două file nu-și pierd schimbările; celelalte file află printr-un `BroadcastChannel`. Frezele pe care
+  versiunea de azi nu le citește rămân neatinse la scriere; o listă scrisă de o versiune mai nouă doar se citește; fără
+  stocare sau după o scriere căzută, biblioteca ține cât fila, iar fereastra o spune.
+- **Fișierul** (`src/io/frezeFisier.ts`): JSON-ul propriu, fără id, versiune și dată; CSV-ul cu cititorul plăcuțelor
+  (`src/io/csv.ts`, acum o bucată comună de 0,65 kB): coloanele în orice ordine, `nume`, `fel` și `diametru` necesare,
+  restul cu implicitele din manual, virgula zecimală doar când separatorul nu e virgula.
+- **Fereastra** (`src/app/FrezeleMele.tsx`, `freze.css`, modulul de mesaje `freze`, la cerere): după schiță. Câmpurile se
+  scriu ca text (virgula sau punctul); „Salvează” le judecă. Plecarea din editor (altă freză, una nouă, închiderea, „Frezele”
+  pe telefon) salvează schimbările bune; cu un câmp greșit, editorul rămâne, cu focusul pe el. Numele gol primește numele
+  propus (la gravare, și cu diametrul: „Gravare 30° vârf 0,2 Ø3,175”, ca două freze de gravare să nu se ciocnească).
+  Ștergerea întreabă în fereastră (Escape renunță la întrebare). „Exportă…” e oprit cât biblioteca e goală.
+- **Legăturile:** rândul „Frezele mele…” în meniul contului, după contul (și raportările), înaintea manualului;
+  `vedere.freze` în paletă, din orice fereastră (ca Aspectul); F1 în fereastră deschide capitolul „Frezele mele”.
+- **Probele:** unitare 23 noi (`freza.test.ts` 12, `frezeFisier.test.ts` 6, `frezeMele.test.ts` 5, cu un depozit fals);
+  e2e 9 noi (`freze.spec.ts`: meniul, pornirea, filtrul, F1, editorul cu refuzurile, reîncărcarea, plecarea, duplicarea,
+  ștergerea, exportul, importul CSV și JSON, două file, telefonul la 390 / 360 / 320 px și 1280 px cu fontul lat, paleta peste
+  Mașina, engleza); `cont.spec.ts`, `manual.spec.ts`, `manual.test.ts` și `meniuCont.test.ts` cu rândul și capitolul noi.
+  Suita unitară în container: 9 907 / 9 919 (12 sărite, 0 căzute). Otrăvurile: `test/otravuri/16.A-a.py`, 46 / 46.
+- **Mărimea** (față de `main` `870e8759`, măsurat pe același container): pornirea 108,5 → 108,7 kB (doar legătura: acțiunea
+  din paletă, importul la cerere, cheia din dicționarul de bază; cu ușa 113,2 / 115), totalul 770,9 → 779,9 / 800 kB
+  (fereastra 8,8 kB, stilul 1,4, bucata comună a CSV-ului 0,65); mesajele `freze`, ca date, 3,0 kB gzip.
 
 ## Se redeschide dacă
 

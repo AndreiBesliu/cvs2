@@ -11819,3 +11819,17 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 
 - ADR 0300 trecut pe „acceptat”, cu răspunsurile; felia 16.A↑a pornită (biblioteca în browser, fereastra, frezele de pornire,
   fișierul, meniul contului și paleta, manualul).
+- **Modelul** (`src/model/freza.ts`), **fișierul** (`src/io/frezeFisier.ts`) și **depozitul** (`src/app/frezeMele.ts`,
+  IndexedDB `cncvs2-freze`), cu probele scrise înainte: 12 + 6 + 5 unitare.
+- **Fereastra** (`src/app/FrezeleMele.tsx`, modulul de mesaje `freze`), din meniul contului și din paletă, F1 la capitolul nou
+  (ro, en); e2e 9 noi. Capcana: spec-urile își pun singure româna (`test.use({ locale: 'ro-RO' })`); containerul pornește
+  Edge-ul în engleză.
+- **Porțile, în container:** tipurile, importurile (20 / 20), unitarele întregi 9 907 / 9 919 (12 sărite, 0 căzute),
+  traducerile (930, 0 lipsă), build-ul determinist (363 de fișiere), e2e-ul ferestrei și al vecinilor (cont, manual,
+  tutorial, aranjament, CSP, atelier, PWA, foi, import, așezare, piese legate, tăiere) 9 + 74 + 35, verzi. Rapidul în CI,
+  verde pe `1e330fd2`. Mărimea: pornirea 108,5 → 108,7 kB (cu ușa 113,2 / 115), totalul 770,9 → 779,9 / 800.
+- **Otrăvurile** (`test/otravuri/16.A-a.py`), într-o clonă: 46 / 46 prinse (31 unitare, 15 prin e2e); M15 a scăpat întâi
+  și e prinsă de o probă nouă (importul peste numele unei freze necitite); E08 refăcută (lăsa codul fără sintaxă).
+  `verifica` pe toate listele: aceleași 234 de VOID-uri ca pe `main`.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑a)”), fișa etapei 3 (rândul `16.A↑a`), pragul, registrul otrăvurilor,
+  traducerile, nota liniei. **Completed:** 23.11, 22:20.

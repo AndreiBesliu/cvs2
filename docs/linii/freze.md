@@ -2,7 +2,7 @@
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
 `c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 ACCEPTAT pe 23.11 („Da, 1a–6a”);
-16.A↑a în lucru_
+16.A↑a GATA pe ramură (23.11), de încercat pe canalul `freze`; urmează 16.A↑b_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
 aplicatie si sa le salvez in cont”. Rândurile din prag: „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
@@ -19,6 +19,10 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   când freza se schimbă (copia cu originea ei, v27), 5 salvarea în cont și planul (cere un plan activ; altfel doar citire),
   6 ordinea feliilor (browserul, alegerea în proiect, apoi contul).
 - **23.11, seara: ADR 0300 acceptat**, cu toate recomandările („Da, 1a–6a”). Pornită felia 16.A↑a.
+- **23.11, 22:20: 16.A↑a gata pe ramură** (`1e330fd2` fereastra, plus probele și documentele): biblioteca în browser
+  (IndexedDB `cncvs2-freze`), fereastra „Frezele mele” din meniul contului și din paletă, frezele de pornire, fișierul JSON /
+  CSV, manualul. Unitare 23 noi, e2e 9 noi; suita unitară 9 907 / 9 919; otrăvuri 46 / 46. Pornirea +0,2 kB (legătura),
+  totalul +9,0 kB (779,9 / 800).
 - **Feliile**, în ordine: 16.A↑a (biblioteca în browser, fereastra, fișierul), apoi b (alegerea în proiect, v27), c
   (contul), d (calibrarea), e (bila și toroidala), f (profilul desenat), g (valorile pe material).
 
@@ -37,6 +41,13 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   textele, ca date (ADR 0086). Bucata contului e la 29,6 / 32 kB: sincronizarea trebuie să rămână mică (~2 kB).
 
 ## Capcane
+
+- **Edge-ul din container pornește în engleză** (`navigator.languages` e `en-US`): fiecare spec își pune româna cu
+  `test.use({ locale: 'ro-RO' })`, altfel textele românești nu se găsesc.
+- **Un `import` din `src/io/csv.ts` scoate o bucată comună** (`csv-*.js`, 0,65 kB, împărțită cu fereastra «Din CSV…»): numele
+  ei intră în harta importurilor din pornire. Măsurat: pornirea +0,2 kB cu toată legătura ferestrei.
+- **Otrăvurile e2e care scot un `if` dintr-un `if … else if` lasă codul fără sintaxă** (build eșuat, NEVALIDĂ): se
+  schimbă condiția, nu se scoate rândul.
 
 - **Intervalul ADR se verifică pe toate ramurile, nu doar în `main`.** Brief-ul a dat întâi 0290–0299, luate cu o oră înainte
   de linia exportului (`wip/28.8-export`, ADR 0290 propus pe ramura ei); `main` a corectat la 0300–0309. Înaintea unui ADR
