@@ -11696,7 +11696,7 @@ interfață, plus virgula”). **Started:** 23.11, 19:20. **Completed:** 23.11, 
 
 **Prompt:** „gata” (owner-ul, după formularul schiței: 1a, 2a, 3a, cu nota „ca de obicei, eu vreau cat mai multe optiuni puse
 la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”). **Started:** 23.11,
-19:45. **Completed:** în curs (porțile).
+19:45. **Completed:** 23.11, 22:20.
 
 - **Fereastra** (`src/ui/FereastraTrasare.tsx`, `src/ui/DialogImport.tsx`, `src/app/stil.css`): cât ecranul, fără derularea
   ei; corpul pe două coloane (setările se derulează singure, previzualizarea crește cu fereastra: 1054 × 814 la 1920 × 1080,
@@ -11722,8 +11722,14 @@ la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau c
 - **Otrăvurile:** `test/otravuri/25.9.py`, 24 / 24 prinse, într-o clonă (A04, fereastra cât conținutul, scăpase întâi: proba
   așezării cere acum înălțimea ecranului, și cu Simplu); 12 din listele trasării (25.2, 25.3, 25.4b, 25.4c, 25.5, 26.A),
   mutate pe codul nou, cu aceeași mutație.
-- **Mărimea:** pornirea 108,5 / 115 kB (neschimbată), totalul 772,7 / 800 (+2,7 kB).
-- **Porțile în CI:** în curs.
+- **Mărimea:** pornirea 108,5 / 115 kB (neschimbată), totalul 773,5 / 800 cu `main` adus (11.3↑f; felia +2,7 kB).
+- **Porțile în CI:** rapidul verde pe fiecare vârf; completul verde pe `1868b4e4` (46 de minute): unit 9 884 / 0 (12 sărite,
+  pe Linux), e2e 618 / 618, funcțiile pe emulatoare 104 / 104, paginile 38 / 38. Înainte, completul de pe `e6f32e4` căzuse
+  la `animatie.spec.ts:49` (1 din 618, în afara feliei): la 500×, jobul de 95 s ține ~0,2 s, iar sub încărcare animația
+  ajungea la final înaintea verificării lui „Oprește” sau a clicului pe el. Reprodusă aici (cel puțin 10 din 100, cu zece
+  lucrători; mesajul commit-ului spune „13”, numărătoarea exactă nu s-a păstrat), reparată doar în probă (20× la rulare, 1×
+  la reluare): 100 / 100 la aceeași încărcare, iar o otravă care nu reia de la capăt rămâne prinsă.
+- **Canalul `trasare`:** `fcf8f4b84ae6` (același cod), cu `trasare-fereastra.spec.ts` 9 / 9 pe el.
 - **Documentele:** ADR 0273 (acceptat, răspunsurile, implementarea) și rândul lui din index; manualul (capitolul importului,
   în ambele limbi); fișa etapei 3 (jurnalul, încercarea în coada owner-ului); traducerile roadmap-ului; `CLAUDE.md` (starea
   liniei); nota liniei.

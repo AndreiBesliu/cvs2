@@ -163,7 +163,8 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   „Drepte și arce”, silueta și șablonul, culorile în incrustații, treptele de gri, radiera) rămâne pe felii ale lor.
 - **25.9↑ GATA** (23.11; ADR 0273 acceptat la „gata”, cu formularul: 1a, 2a, 3a și nota „ca de obicei, eu vreau cat mai
   multe optiuni puse la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”;
-  codul la `95b4eb4e`): fereastra cât ecranul (setările se derulează singure, previzualizarea crește, piciorul fix), grupurile
+  codul la `95b4eb4e`, vârful încercat `1868b4e4`; completul verde acolo: unit 9 884 / 0, e2e 618 / 618, emulatoarele 104 / 104
+  și 38 / 38; canalul `trasare` la `fcf8f4b84ae6`, același cod; totalul 773,5 / 800, pornirea 108,5): fereastra cât ecranul (setările se derulează singure, previzualizarea crește, piciorul fix), grupurile
   cu rezumat (ținute în `cncvs2.trasare.fereastra`; „Simplu” = 1b ca opțiune), mărimea desenului (2a; imaginea = 2b ca
   opțiune) ținută după alte setări (3a; „Scara” = 3b ca opțiune), raportul scurt cu sugestiile ca butoane și „Detalii”,
   virgula în „Desenul”. Ușa, cererea și nucleul neschimbate: fereastra duce ținta în lățimea imaginii după fiecare trasare.
@@ -171,7 +172,9 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   (pe telefon, setările ajungeau sub previzualizare): pe coloana derulată în corp, `min-height: auto`; (2) pânza în locul ei,
   absolută: mărimea desenată nu mai împinge așezarea; (3) un câmp cu valori al ciornei (lățimea imaginii) se citește doar în
   modul lui, altfel orice altă ciornă (petele) îl golea și scotea scara; (4) o otravă din listă se potrivește și ca
-  subșir cu mai multe spații în față: din 95 de otrăvuri pe fișierele ferestrei, doar 12 au ieșit VOID după reașezare.
+  subșir cu mai multe spații în față: din 95 de otrăvuri pe fișierele ferestrei, doar 12 au ieșit VOID după reașezare;
+  (5) `lot 0 23` rulează [0, 23): numără lista înainte (A04, a 24-a, scăpase și a cerut o probă nouă); (6) o probă e2e cu
+  animația la 500× (95 s în ~0,2 s) cade sub încărcare: completul a căzut o dată pe ea, reparată doar în probă (20× și 1×).
 - **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
   foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
 - **În cloud (din 23.11):**
