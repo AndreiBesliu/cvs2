@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { expect, test, type Page } from '@playwright/test';
-import { adauga, deschideMeniulContului } from '../e2e/ajutor-panza.ts';
+import { adauga, deschideMeniulContului, ecran, vedere } from '../e2e/ajutor-panza.ts';
 
 /**
  * Utilizarea aplicației (ADR 0262, felia A.8b) cap-coadă, pe emulatoare, pe build-ul real: un client cu contul deschis
@@ -104,6 +104,15 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   await expect(page.locator('[data-unealta="dreptunghi"]')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-actiune="vedere.masina"]').click();
   await page.locator('[data-actiune="vedere.proiectare"]').click();
+  // Un nod nou (dublu clic pe latura de sus), apoi Delete pe el: tasta trece printr-un ascultător de captură al editării, care
+  // oprește propagarea, deci sursa ei se prinde înaintea lui.
+  await page.locator('[data-unealta="noduri"]').click();
+  const peEcran = await ecran(page, await vedere(page));
+  const mijloc = peEcran(70, 20);
+  await page.mouse.dblclick(mijloc.x, mijloc.y);
+  await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '5');
+  await page.keyboard.press('Delete');
+  await expect(page.getByTestId('noduri')).toHaveAttribute('data-noduri', '4');
   await ascunde(page);
   await expect.poll(async () => (await loturi()).length, LENT).toBe(1);
   const [l] = await loturi();
@@ -118,6 +127,9 @@ test('lotul unui client: după lista albă, cu contul lui, sursa fiecărui gest,
   expect(fara).toContainEqual({ fel: 'actiune', id: 'vedere.masina', de: 'bara', rez: 'ok' });
   expect(fara).toContainEqual({ fel: 'fereastra', id: 'masina' });
   expect(fara).toContainEqual({ fel: 'fereastra', id: 'proiectare' });
+  expect(fara).toContainEqual({ fel: 'unealta', id: 'noduri', de: 'bara' });
+  expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'panza', rez: 'ok' });
+  expect(fara).toContainEqual({ fel: 'actiune', id: 'document.forma', de: 'tasta', rez: 'ok' });
   const grupare = fara.find((e) => e['id'] === 'document.grupeaza');
   expect(grupare).toMatchObject({ fel: 'actiune', de: 'tasta' });
   expect(String(grupare?.['rez'])).toMatch(/^motiv\./);
