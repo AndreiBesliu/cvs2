@@ -86,7 +86,8 @@ o('E05', FM, 'void salveaza().then((id) => { if (id !== null) apoi(); });', 'voi
 o('E06', FM, "return { ...f, nume: c.nume.trim() === '' ? numePropus(f, ro) : c.nume };", 'return { ...f, nume: c.nume };', 'e2e',
   'numele gol nu primește numele propus')
 o('E07', FM, 'onClick={() => { setStergere(true); }}', 'onClick={sterge}', 'e2e', 'ștergerea fără întrebare')
-o('E08', FM, '    if (stergere) setStergere(false);\n', '', 'e2e', 'Escape pe întrebarea ștergerii închide fereastra')
+o('E08', FM, '    if (stergere) setStergere(false);', '    if (stergere && !stergere) setStergere(false);', 'e2e',
+  'Escape pe întrebarea ștergerii închide fereastra')
 o('E09', FM, "setImportat({ freze: r.freze, sarite: r.sarite, politica: 'amandoua' });",
   "setImportat({ freze: r.freze, sarite: r.sarite, politica: 'inlocuieste' });", 'e2e', 'importul înlocuiește implicit')
 o('E10', FM, 'sarite: r.sarite + importat.sarite', 'sarite: r.sarite', 'e2e', 'rândurile greșite ale fișierului nu se numără')
