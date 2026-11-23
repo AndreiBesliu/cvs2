@@ -79,8 +79,8 @@ o('C08', UR, '    return Math.min(x, P - x) < g.h', '    return x < g.h', 'cam',
 o('C09', UR, '    const l = g.flancuri[k] as number;', '    const l = g.l;', 'cam', 'profilul ia flancul cel mai mic pe toate urechile')
 o('C10', JB, '  const lista = l && Object.hasOwn(l, t.nod) ? (l[t.nod] ?? []) : [];', '  const lista = l && Object.hasOwn(l, t.nod) ? [] : [];', 'cam',
   'punctele alese nu ajung la lucrare')
-o('C11', JB, '    if (t.urechi && !(alese && alese.length === 0)) {', '    if (t.urechi) {', 'cam', 'elementul fără locuri e judecat ca unul cu urechi')
-o('C12', JB, "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese') {", '    if (false) {', 'cam', 'modurile care vin se taie ca „egale”')
+o('C11', JB, "    if (t.urechi && !(alese && alese.length === 0) && !(lemnAici && lemn === 'fara')) {", "    if (t.urechi && !(lemnAici && lemn === 'fara')) {", 'cam', 'elementul fără locuri e judecat ca unul cu urechi')
+o('C12', JB, "    if (mod !== undefined && mod !== 'egale' && mod !== 'alese' && mod !== 'lemn') {", '    if (false) {', 'cam', 'modurile care vin se taie ca „egale”')
 o('C13', JB, '        return incepeLa(c, s);', '        return acum[j] ?? c;', 'cam', 'bucla nu pornește în cel mai lung gol')
 o('C14', JB, "          if (fixe && gu && typeof gu !== 'string' && inZonaUrechii(gu, s, lungimeBucla(c))) return false;\n", '', 'cam',
   'intrarea poate porni în zona unei urechi')
@@ -95,7 +95,7 @@ o('A03', AC, "  if (k.lungime < distantaMinima(latime)) return { ok: false, moti
 o('A04', AC, "  if (preaAproape(k, lista, x.s, latime, index)) return", "  if (preaAproape(k, lista, x.s, latime, -1)) return", 'ui',
   'mutarea se ciocnește cu urechea însăși')
 o('A05', AC, '  for (const n of o?.noduri ?? []) {', '  for (const n of Object.keys(l ?? {})) {', 'ui', 'locurile din document și pe chei străine')
-o('A06', VO, "  if (dialog.mod !== 'alese' && o.mod === 'alese') {", '  if (false) {', 'ui', 'înapoi la distanțe egale, modul și locurile rămân')
+o('A06', VO, "  if (dialog.mod !== 'alese') delete imbinate['locuri'];\n  if (dialog.mod === undefined && (o.mod === 'alese' || o.mod === 'lemn')) delete imbinate['mod'];\n", '', 'ui', 'înapoi la distanțe egale, modul și locurile rămân')
 o('A07', VO, '  const { alese: _alese, ...dialog } = v;\n  void _alese;\n', '  const dialog = v;\n', 'ui', 'numărul arătat intră în document')
 # Interfața (e2e).
 o('E01', 'src/app/ExportConectat.tsx', "alese: numarUrechiAlese(o) }", 'alese: 0 }', 'e2e', 'fereastra arată mereu 0 urechi alese')

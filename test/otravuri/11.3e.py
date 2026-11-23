@@ -3,8 +3,8 @@
 # lemnul cerut), centrele bune (palierul), alegerea (cât încap, golul cel mai mare, pornirea din mijlocul seriei), locurile
 # egale (și fără ele, cu intrări), lucrarea (refuzurile, prima trecere fără urechi, avertismentul, centrele, semnele), cele
 # două treceri (exportul, traseul, vederea 3D), operația piesei desprinse și butonul, scrierea ferestrei și interfața (e2e).
-# Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit; e2e-ul, cu
-# `CNCVS2_E2E_RETEA=127.0.5` și configul local (`.tmp/pw.config.ts`, portul worktree-ului).
+# Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă, după commit (în cloud: docs/lucru-in-cloud.md,
+# „Otrăvurile”; e2e-ul, cu configul repo-ului, pe 4173).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -78,6 +78,10 @@ o('T03', CC, '    const job = programFoii(doc, REGIM_IMPLICIT, 0);', '    const 
   'vederea 3D fără cele două treceri')
 o('T04', CC, '  const r = programFoii(doc);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)', '  const r = programDinDocument(doc);\n  return r.ok ? { ok: true, program: impacheteaza(r.program)',
   'e2e', 'traseul fără cele două treceri')
+# Potrivirea dopului în V (ADR 0179, venită din main la unirea din 23.11) ia locașul din programul foii.
+o('T05', CC, '  const job = programFoii(doc, REGIM_IMPLICIT, 0);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas',
+  '  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);\n  if (!job.ok) return { ok: false, motiv: job.motiv };\n  const locas', 'lemn',
+  'potrivirea dopului fără cele două treceri')
 # Piesa desprinsă și butonul (unitare).
 o('B01', PU, 'operatie: `${t.piesa}/${t.operatie}`', 'operatie: t.operatie', 'lemn', 'operația fără piesă (rândul nu se găsește)')
 o('B02', EC, "    if (o?.urechi && o.urechi.mod !== 'lemn' && !rez.includes(d.operatie)) rez.push(d.operatie);",

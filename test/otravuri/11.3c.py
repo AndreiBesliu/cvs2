@@ -30,7 +30,7 @@ o('S04', DS, '    if (k < (ny - 1) * nx) pune(k + nx);\n', '', 'urechi', 'umpler
 o('S05', DS, '    if (lemn > 0 && !legata) desprinse.push(idx);', '    if (!legata) desprinse.push(idx);', 'urechi',
   'și o parte fără lemn înăuntru (scoasă toată) se spune desprinsă')
 o('S06', DS, '      xs.sort((a, b) => a - b);\n', '', 'urechi', 'trecerile rândului nesortate: intervalele ies întoarse')
-o('S07', DS, '          if (v === 1) continue;\n', '', 'urechi', 'și celulele tăiate prin foaie trec drept lemn înăuntrul părții')
+o('S07', DS, '          if (v === TAIAT) continue;\n', '', 'urechi', 'și celulele tăiate prin foaie trec drept lemn înăuntrul părții')
 # Părțile (unitare).
 o('P01', PU, "if (t.tip !== 'profil' || t.latura !== 'exterior' || t.urechi === null",
   "if (t.tip !== 'profil' || t.urechi === null", 'urechi', 'și profilele interioare cu urechi sunt părți')
@@ -55,14 +55,14 @@ o('U02', EC, "    return valori !== '' ? valori : (i ? piese.get(i.piesa)?.nume?
 o('U03', EC, "    const loc = t('export.urechi.loc', { x: String(Math.round(d.x)), y: String(Math.round(d.y)) });",
   "    const loc = t('export.urechi.loc', { x: String(Math.round(d.y)), y: String(Math.round(d.x)) });", 'urechi', 'X și Y schimbate')
 o('U04', EC, "  await cereMesaje('export');\n", '', 'urechi', 'mesajele exportului nu se cer: fără ele, exportul cade')
-o('U05', EC, '  return { ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), simulare:',
-  '  return { ...rest, avertismente: rest.avertismente, simulare:', 'urechi', 'exportul unei foi nu spune piesele desprinse')
+o('U05', EC, '    ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse),',
+  '    ...rest, avertismente: rest.avertismente,', 'urechi', 'exportul unei foi nu spune piesele desprinse')
 o('U06', EC, '(await cuDesprinse(d, r.avertismente, r.desprinse)).map(', 'r.avertismente.map(', 'urechi',
   '„Toate foile” nu spune piesele desprinse')
 o('U07', EC, '  const rest = desprinse.length - numite.length;', '  const rest = 0;', 'urechi', 'fără „și încă N”')
 # Interfața (e2e).
-o('E01', EC, '  return { ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), simulare:',
-  '  return { ...rest, avertismente: rest.avertismente, simulare:', 'e2e', 'fereastra exportului nu spune piesa desprinsă')
+o('E01', EC, '    ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse),',
+  '    ...rest, avertismente: rest.avertismente,', 'e2e', 'fereastra exportului nu spune piesa desprinsă')
 o('E02', ER, "    one: 'o piesă se desprinde de foaie cât freza încă taie lângă ea,", "    one: 'o piesă se desprinde de foaie,", 'e2e',
   'singularul avertismentului, alt text')
 
