@@ -50,6 +50,9 @@ test('mașina: legarea cu felul legăturii, lucrarea pornită, pusă pe pauză, 
 test('mașina: oprirea cerută de program, anularea omului, întreruperea, codurile (eroare, alarmă, blocare), fiecare o dată', () => {
   const m6 = sesiune({ faza: 'bariera', program: program(10), urm: 4, raport: raport('Idle'), bariera: { linie: 3, m6: true } as StareFlux['bariera'] });
   assert.deepEqual(sir(legata, ruleaza, m6, ruleaza, legata), ['legata:retea', 'pornita', 'oprita', 'reluata', 'anulata']);
+  // Suspendată (senderul așteaptă omul): o pauză; apoi reluată.
+  const suspendat = sesiune({ faza: 'suspendat', program: program(10), urm: 5, raport: raport('Idle') });
+  assert.deepEqual(sir(legata, ruleaza, suspendat, ruleaza), ['legata:retea', 'pornita', 'pauza', 'reluata']);
   const pierdut = sesiune({ faza: 'pierdut', program: program(10), urm: 4 }, { conexiune: 'deconectat', transport: null });
   assert.deepEqual(sir(legata, ruleaza, pierdut), ['legata:retea', 'pornita', 'intrerupta', 'deconectata']);
   const eroare = sesiune({ faza: 'pregatit', program: program(10), raport: raport('Idle') }, { cod: cod(1, 'eroare', 22) });
@@ -78,6 +81,8 @@ test('imprimanta: legarea, lucrarea nouă (nu și una găsită în curs), evenim
   // Găsită imprimând la legare: legarea, fără „pornită” (a pornit-o altcineva, altundeva).
   assert.deepEqual(idsImprimanta(alta, clipa()), ['legata']);
   assert.deepEqual(idsImprimanta(clipa(), clipa({ lucrare: 'pauza' })), ['pauza']);
+  // Pauza scrisă în fișier (cu nota ei, care nu pleacă).
+  assert.deepEqual(evenimenteImprimanta(clipa(), clipa({ lucrare: 'pauza', pauzaFisier: { strat: 12, nota: 'pune piulițele' } })), [{ id: 'pauza-fisier' }]);
   assert.deepEqual(idsImprimanta(clipa(), clipa({ eroare: 2029, cheieEroare: 2029, lucrare: 'pauza' })), ['pauza', 'eroare:2029']);
   assert.deepEqual(idsImprimanta(clipa(), clipa({ lucrare: 'gata' })), ['gata']);
   // Legătura pierdută și revenită: pierderea e un eveniment, revenirea nu e o legare nouă.
