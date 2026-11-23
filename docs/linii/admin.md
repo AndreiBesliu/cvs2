@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.4 unite în main (A.4: ddaa7ead); A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11, pe wip/A.1-admin, cu PR spre main; A.6–A.7 la cuvântul owner-ului_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.4 unite în main (A.4: ddaa7ead); A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11, din fe026f9f (PR-ul AndreiBesliu/cvs2#8); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, pe aceeași ramură, după A.5; A.7 la cuvântul owner-ului_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -30,12 +30,18 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   audit doar cu „Audit: citește”); Personal cu felul intrării sub nume, invitațiile în lista oamenilor și matricea
   rol × permisiune (un rol editat pe coloana lui). Fără reguli, date sau funcții noi: **la unire se publică doar
   Hosting-ul.** `/admin` 124,1 → 125,6 / 200 kB (linia, +19,1 din +25: pentru A.6 și A.7 rămân ~5,9 kB din țintă).
-  Otrăvurile 61 / 61. Raportul și porțile: PR-ul ramurii spre `main`.
+  Otrăvurile 61 / 61. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit doar `fe026f9f`).
+- **A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11** (`3.Af`; pornită la „porneste”, peste A.5, încă neunită):
+  „Ce așteaptă de la tine” lipit alături de etape peste 1 400 px; pista cronologiei pe un rând doar cât are loc (container,
+  42rem), cu semnele etapelor pe două rânduri pe o pistă îngustă; cuprinsul documentului (alături peste 1 400 px, deasupra mai
+  îngust) cu secțiunea de acum; starea ADR-ului sub titlu; istoricul fiecărei setări sub butonul ei, din audit. Fără reguli,
+  date sau funcții noi: doar Hosting-ul. `/admin` 125,6 → 127,5 / 200 kB (linia, +21,0 din +25: pentru A.7 rămân ~4 kB).
+  Otrăvurile 54 / 54. Se unește după A.5 (sau odată cu el), din commit-ul raportat în PR.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
-- **Feliile rămase:** A.6 Roadmap, Documentație, Setări (istoricul din audit, și al răspunsurilor rapide); A.7 telefonul.
-  Fiecare doar la cuvântul owner-ului.
-- **Alegeri față de schițe, de știut la A.6–A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
+- **Felia rămasă:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul owner-ului; are ~4 kB
+  din ținta de mărime a liniei.
+- **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).
 
@@ -86,3 +92,10 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   reparațiile ei cer probe și otrăvuri de așezare;
 - un `select` controlat a cărui valoare nu mai e între opțiuni arată prima opțiune, dar starea rămâne cea veche: formularul
   unui rând care își schimbă opțiunile pornește din nou cu `key` pe ce le hotărăște.
+- **o regulă de așezare pentru „îngust” se alege după lățimea secțiunii (container), măsurată pe mai multe lățimi**, nu după
+  ecran: lângă o coloană lipită, aceeași pistă e mai îngustă la 1 440 px decât fără ea la 1 024 px. Lățimea dintr-un
+  `@container` e a conținutului (fără umplutură): la 1 024 px, secțiunea cronologiei are 716 px înăuntru;
+- o probă a unui panou lipit (`sticky`) cere înălțimea lui cel mult cât ecranul și locul lui după derulare, nu capătul de jos
+  la începutul paginii (panoul începe sub cifre);
+- în baza otrăvurilor de pe emulatoare, prima probă a unei rulări Playwright poate pierde focusul (`toBeFocused`: „inactive”)
+  imediat după fereastra de login; reluată, trece. Nu e a feliei: se reia baza, nu se schimbă proba.

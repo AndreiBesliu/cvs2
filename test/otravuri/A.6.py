@@ -2,9 +2,9 @@
 # partea pură (istoricul setărilor din audit: setările conturilor de la cât la cât, răspunsurile rapide adăugate, scoase,
 # schimbate sau doar mutate, ordinea; cuprinsul documentului, secțiunea de acum, titlul ADR-ului despărțit, data stării) și
 # paginile pe emulatoare (cuprinsul alături și deasupra, secțiunea de acum la derulare și la capătul paginii, clicul și al
-# doilea clic, starea ADR-ului sub titlu; „Ce așteaptă de la tine” lipit alături de etape, semnele pistei în coloana lor,
-# pista pe un rând doar cât are loc;
-# istoricul fiecărei setări sub butonul ei, citit din nou după o salvare). Felia nu schimbă serverul, nici regulile.
+# doilea clic, starea ADR-ului sub titlu; „Ce așteaptă de la tine” lipit alături de etape, semnele pistei în coloana lor, pista
+# pe un rând doar cât are loc; istoricul fiecărei setări sub butonul ei, citit din nou după o salvare). Felia nu schimbă
+# serverul, nici regulile.
 # Unitarele se rulează cu `scripts/otravuri.py`, cele de pe emulatoare cu `scripts/otravuri-emulatoare.py` (docs/otravuri.md),
 # dintr-o clonă, după commit. o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
