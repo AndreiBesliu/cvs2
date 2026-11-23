@@ -65,7 +65,8 @@ test('dopul în 3D: „Foaia / Dopul 1”; dopul pe semifabricatul de 40 × 30 �
   const p = panza3d(page), grup = page.getByTestId('alegere-3d');
   await expect(p).toHaveAttribute('data-alegere', 'foaie');
   await expect(p).toHaveAttribute('data-relief', '1200x800');
-  await expect(grup.locator('button')).toHaveText(['Foaia', 'Dopul 1']);
+  // Lângă dopuri, comutatorul secțiunii (ADR 0179 §1), oprit pe foaie.
+  await expect(grup.locator('button')).toHaveText(['Foaia', 'Dopul 1', 'Împreună (secțiunea)']);
   await expect(grup.locator('[data-3d-alege="foaie"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(grup.locator('[data-3d-alege="dop-1"]')).toHaveAttribute('title', `Incrustația: ${forma}. Semifabricatul dopului: 40 × 30 × 6 mm`);
   await expect(page.getByTestId('stare-3d-dopuri')).toHaveCount(0);
@@ -101,4 +102,68 @@ test('fără incrustații, vederea 3D n-are butoanele dopurilor', async ({ page 
   await expect(page.getByTestId('alegere-3d')).toHaveCount(0);
   await expect(page.getByTestId('stare-3d-dopuri')).toHaveCount(0);
   await expect(panza3d(page)).toHaveAttribute('data-alegere', 'foaie');
+});
+
+/** Scrie o valoare într-un câmp al secțiunii Tăierea și o aplică (Enter). */
+async function scrie(page: Page, camp: string, valoare: string): Promise<void> {
+  const c = taierea(page).locator(`[data-camp="${camp}"]`);
+  await c.fill(valoare);
+  await c.press('Enter');
+}
+
+/**
+ * „Împreună (secțiunea)” (ADR 0179, felia 12.1↑e-2), pe cercul R15 din (70, 50) cu incrustația în V (V60 Ø6, adâncimea 3,
+ * fierăstrăul 2; pe hârtie, ca `incrustatie.spec.ts`: S = 2,5, g = 0,5, H = 2). Comutatorul e oprit pe foaie și pornit pe
+ * „Dopul 1”; apăsat, arată secțiunea prin mijlocul cercului și tabelul, cu hârtia lângă simulare și niciun rând roșu.
+ * „Foaia” îl oprește și ascunde secțiunea.
+ */
+test('„Împreună (secțiunea)”: dopul în V întors în locaș, hârtia lângă simulare, secțiunea prin mijloc', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'cerc');
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie');
+  await scrie(page, 'adancime', '3');
+  await scrie(page, 'inc-fierastrau', '2');
+  await deschide(page);
+  const grup = page.getByTestId('alegere-3d'), impreuna = page.locator('[data-3d="impreuna"]');
+  await expect(impreuna).toBeDisabled();
+  await expect(impreuna).toHaveAttribute('title', 'Alege întâi un dop: secțiunea îl arată întors în locașul lui');
+  await grup.locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  await expect(impreuna).toBeEnabled();
+  await expect(impreuna).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('sectiune-3d')).toHaveCount(0);
+
+  await impreuna.click();
+  await expect(impreuna).toHaveAttribute('aria-pressed', 'true');
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  // Secțiunea pe orizontală, prin mijlocul cercului (y = 50, cât o celulă de 0,1 mm).
+  await expect(sectiune.locator('h3')).toHaveText(/^Dopul 1, întors în locaș: secțiunea la Y 50\.\d\d mm$/);
+  const rand = (r: string) => tabel.locator(`tr[data-rand="${r}"] td`);
+  await expect(rand('intra')).toHaveText(['2.50 mm', /^2\.(4[5-9]|5\d) mm$/]);
+  await expect(rand('contact')).toHaveText(['100 % din bandă', /^(9[5-9]|100) %$/]);
+  await expect(rand('sub')).toHaveText(['0.50 mm', /^0\.(4[5-9]|5[0-5]) mm$/]);
+  await expect(rand('intre')).toHaveText(['2.00 mm', /^(1\.9[5-9]|2\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  for (const strat of ['placa', 'dop', 'fierastrau']) await expect(svg.locator(`[data-strat="${strat}"]`)).toHaveCount(1);
+  await expect(svg.locator('[data-strat="contact"]')).not.toHaveCount(0);
+  await expect(svg.locator('[data-strat="marcaj"]')).toHaveCount(0);
+
+  await grup.locator('[data-3d-alege="foaie"]').click();
+  await expect(page.getByTestId('sectiune-3d')).toHaveCount(0);
+  await expect(impreuna).toHaveAttribute('aria-pressed', 'false');
+  await expect(impreuna).toBeDisabled();
+});
+
+test('„Împreună (secțiunea)” rămâne oprită la dopul cu pereți drepți, cu motivul pe titlu (felia 12.1↑e-3)', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await taierea(page).locator('[data-camp="rol"]').selectOption('incrustatie-drept');
+  await deschide(page);
+  await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  const impreuna = page.locator('[data-3d="impreuna"]');
+  await expect(impreuna).toBeDisabled();
+  await expect(impreuna).toHaveAttribute('title', 'Secțiunea cu dopul în locaș e doar la incrustația în V, deocamdată');
 });

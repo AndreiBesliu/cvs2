@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
 import { DIR_CODURI, esteDictionarCoduri, fisierCoduri, LIMBI_CODURI } from '../shared/coduri.ts';
+import { esteDictionarImprimanta, FAMILII_IMPRIMANTA, fisierCoduriImprimanta } from '../shared/coduriImprimanta.ts';
 import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/manual.ts';
 import { DIR_MESAJE, esteDictionarMesaje, esteFisierMesaje, fisierBaza, fisierMesaje, MODULE_MESAJE, type Limba } from '../shared/mesaje.ts';
 import { DICTIONARE_BAZA, DICTIONARE_MODULE } from './mesaje.ts';
@@ -98,6 +99,11 @@ const PLAFON_RAPORTOR_PORNIRE_KB = 1.5;
  * în precache (explicația unei alarme vine și fără rețea). Plafonul e pe fișierul unei limbi, comprimat (8,9 kB la felia 3.6c).
  */
 const PLAFON_CODURI_KB = 12;
+/**
+ * Dicționarul codurilor imprimantelor (felia 3.6v, ADR 0195): câte un fișier pe familie și limbă, tot date, tot în precache,
+ * cerut de fereastra Imprimanta la prima eroare. Plafonul e pe fișier, comprimat.
+ */
+const PLAFON_CODURI_IMPRIMANTA_KB = 8;
 const RAPORTOR_PORNIRE = 'src/app/raportorPornire.ts';
 
 function fisiere(dir: string): string[] {
@@ -644,6 +650,20 @@ if (formaCodurilor.some((f, k) => f === null || f !== formaCodurilor[0] || (codu
   console.error(`Dicționarul codurilor (dist/${DIR_CODURI}/): lipsește, are altă formă, alte tabele într-o limbă, nu e în precache sau trece de ${PLAFON_CODURI_KB} kB gzip (${kbCoduri.map((kb) => kb.toFixed(1)).join(', ')}; ADR 0085).`);
   process.exit(1);
 }
+// Dicționarul codurilor imprimantelor (ADR 0195): fiecare familie, în ambele limbi, cu aceleași chei, în precache, sub plafon.
+const coduriImprimanta = FAMILII_IMPRIMANTA.flatMap((f) => LIMBI_CODURI.map((l) => ({ f, l, cale: fisierCoduriImprimanta(f, l) })));
+const kbCoduriImprimanta = coduriImprimanta.map(({ cale }) => (a.has(cale) ? gz(join('.tmp/build-1', cale)) : 0));
+const cheiImprimanta = coduriImprimanta.map(({ f, l, cale }): string | null => {
+  if (!a.has(cale)) return null;
+  const d: unknown = JSON.parse(readFileSync(join('.tmp/build-1', cale), 'utf8'));
+  return esteDictionarImprimanta(d, f, l) ? `${f}:${Object.keys(d.erori).join(',')}` : null;
+});
+if (cheiImprimanta.some((x) => x === null)
+  || FAMILII_IMPRIMANTA.some((f) => new Set(cheiImprimanta.filter((x) => x !== null && x.startsWith(`${f}:`))).size !== 1)
+  || coduriImprimanta.some(({ cale }) => !manifest.has(cale)) || kbCoduriImprimanta.some((kb) => kb > PLAFON_CODURI_IMPRIMANTA_KB)) {
+  console.error(`Dicționarul codurilor imprimantelor (dist/${DIR_CODURI}/): lipsește, are altă formă, alte chei într-o limbă, nu e în precache sau trece de ${PLAFON_CODURI_IMPRIMANTA_KB} kB gzip (${coduriImprimanta.map(({ cale }, k) => `${cale} ${(kbCoduriImprimanta[k] ?? 0).toFixed(1)}`).join(', ')}; ADR 0195).`);
+  process.exit(1);
+}
 // Mesajele modulelor la cerere (ADR 0086): un fișier pe modul, ambele limbi cu aceleași chei, în precache; textele lor nu
 // mai stau în JavaScript (cel mai lung mesaj al fiecărui modul, căutat în fiecare bucată, marcajul care nu trebuie să apară).
 const problemeMesaje: string[] = [];
@@ -741,6 +761,7 @@ console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} 
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
 console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);
 console.log(`Dicționarul codurilor (în precache): ${LIMBI_CODURI.map((l, k) => `${l} ${(kbCoduri[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_KB} pe limbă).`);
+console.log(`Codurile imprimantelor (în precache): ${coduriImprimanta.map(({ f, l }, k) => `${f}.${l} ${(kbCoduriImprimanta[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_IMPRIMANTA_KB} pe fișier).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Cu Atelierul ales, bucata lui vine înaintea primei randări: +${kbAtelier.toFixed(2)} kB (plafon ${PLAFON_ARANJAMENT_KB}; cu pornirea și ușa ${(pornire + kbUsa + kbAtelier).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(atelier).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });

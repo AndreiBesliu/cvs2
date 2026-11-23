@@ -4,6 +4,7 @@ import '../i18n/editare.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import type { Document } from '../model/document.ts';
+import type { CerereLegare } from '../model/legareCai.ts';
 import { instantaDin } from '../model/lume.ts';
 import type { CerereReparare, Reparabil, VerificarePanou } from '../model/reparare.ts';
 import type { Problema } from '../model/verificare.ts';
@@ -14,6 +15,8 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { ReparatieCalculata } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { optiuniLegare } from './optiuniLegare.ts';
+import { motivLegare, textLegare } from './textLegare.ts';
 import './verificare.css';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -27,7 +30,9 @@ mesaje.catch(() => undefined);
  * panoul e deschis, o schimbare a documentului îl reface (după 300 ms). Un clic pe un rând alege instanțele formelor
  * problemei și o scoate în față pe pânză. Reparațiile sunt puține și cerute (verificarea ajută întâi la găsit): „Scoate
  * toate copiile”, „Închide” pe o cale deschisă, bucla scoasă sau despărțită, nodurile unite; fiecare, un pas de anulare,
- * calculat de worker pe documentul din clipa clicului și aplicat doar dacă desenul nu s-a schimbat între timp.
+ * calculat de worker pe documentul din clipa clicului și aplicat doar dacă desenul nu s-a schimbat între timp. Capetele a
+ * două căi (ADR 0182, felia 10.3↑o) se leagă pe rând („Leagă”) sau toate („Leagă toate căile”), prin lipire, cu toleranța
+ * panoului și opțiunile legării ținute în browser.
  */
 
 /** Ce arată pânza: rezultatul și rândul ales (indicele în `probleme`). */
@@ -110,6 +115,12 @@ function reparatiaFelului(fel: Problema['fel'], randuri: ReadonlyArray<{ readonl
     return n > 0 ? { cerere: { fel: 'toate-nodurile' }, cheie: 'toate-nodurile', n } : null;
   }
   return null;
+}
+
+/** Rândul „Capetele a două căi”: legarea lui (ADR 0182), cu cele două forme. */
+function legareaRandului(p: Problema): CerereLegare | null {
+  if (p.fel !== 'noduri' || !p.capete || p.elemente.length !== 2) return null;
+  return { fel: 'capete', elemente: [p.elemente[0] as string, p.elemente[1] as string] };
 }
 
 type StareReparare = { readonly fel: 'calcul' } | { readonly fel: 'gata'; readonly text: string; readonly rau: boolean };
@@ -201,6 +212,33 @@ export function PanouVerificare({ doc, indexFoaie = 0, selectie, stare, onStare,
     }, cade);
   };
 
+  /**
+   * Legarea capetelor (ADR 0182): ca reparația, calculată de worker pe documentul de acum și aplicată prin aceeași acțiune;
+   * lipirea e toleranța panoului, restul opțiunilor, ale legării.
+   */
+  const leaga = (cerere: CerereLegare): void => {
+    if (tolerantaBuna === null || reparare?.fel === 'calcul') return;
+    const laCerere = doc;
+    const semnal = new AbortController();
+    semnalReparare.current?.abort();
+    semnalReparare.current = semnal;
+    setReparare({ fel: 'calcul' });
+    const cade = (e: unknown): void => {
+      if (semnal.signal.aborted) return;
+      reportError(new Error(`legarea căilor: ${e instanceof Error ? e.message : String(e)}`));
+      setReparare({ fel: 'gata', text: t('editare.legare.eroare'), rau: true });
+    };
+    import('../ui/actiuniExportCalcul.ts').then((calc) => {
+      if (semnal.signal.aborted) return;
+      calc.leagaVectorii(laCerere, cerere, { ...optiuniLegare(), toleranta: tolerantaBuna }, semnal.signal, indexFoaie).then((x) => {
+        if (semnal.signal.aborted) return;
+        if (!x.ok) { setReparare({ fel: 'gata', text: motivLegare(x, virgula), rau: true }); return; }
+        const v = onRepara({ doc: laCerere, piese: x.piese, sterse: x.sterse });
+        setReparare(v.ok ? { fel: 'gata', text: textLegare(x), rau: false } : { fel: 'gata', text: t(v.motiv), rau: true });
+      }, (e: unknown) => { if (!(e instanceof calc.CalculAnulat)) cade(e); });
+    }, cade);
+  };
+
   const r = stare?.rezultat;
   const gata = r && typeof r !== 'string' && r.ok ? r : null;
   const grupe = useMemo(() => {
@@ -258,21 +296,31 @@ export function PanouVerificare({ doc, indexFoaie = 0, selectie, stare, onStare,
           <div className="lista-verificare" data-testid="verificare-lista">
             {grupe.map((g) => {
               const toate = reparatiaFelului(g.fel, g.randuri);
+              const capete = g.randuri.filter(({ p }) => legareaRandului(p) !== null).length;
               return (
                 <section key={g.fel} data-fel={g.fel}>
                   <h3>{t(`editare.verificare.fel.${g.fel}`, { n: String(g.randuri.length) })}</h3>
                   {g.fel === 'intersectie' ? <p className="stare-verificare" data-testid="verificare-nota-intersectii">{t('editare.verificare.nota.intersectii')}</p> : null}
-                  {toate ? (
+                  {toate || capete > 0 ? (
                     <div className="butoane-verificare">
-                      <button type="button" className="repara-verificare" data-repara={toate.cheie} disabled={ocupat} title={t(`editare.verificare.repara.${toate.cheie}.titlu`)}
-                        onClick={() => { repara(toate.cerere); }}>
-                        {t(`editare.verificare.repara.${toate.cheie}`, { n: String(toate.n) })}
-                      </button>
+                      {toate ? (
+                        <button type="button" className="repara-verificare" data-repara={toate.cheie} disabled={ocupat} title={t(`editare.verificare.repara.${toate.cheie}.titlu`)}
+                          onClick={() => { repara(toate.cerere); }}>
+                          {t(`editare.verificare.repara.${toate.cheie}`, { n: String(toate.n) })}
+                        </button>
+                      ) : null}
+                      {capete > 0 ? (
+                        <button type="button" className="repara-verificare" data-repara="leaga-toate" disabled={ocupat} title={t('editare.verificare.repara.leaga-toate.titlu')}
+                          onClick={() => { leaga({ fel: 'toate', alese }); }}>
+                          {t('editare.verificare.repara.leaga-toate', { n: String(capete) })}
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
                   <ul>
                     {g.randuri.slice(0, RANDURI_PE_FEL).map(({ p, k, r: rep }) => {
                       const reparatie = pragBun !== null && inchidereBuna !== null ? reparatiaRandului(p, rep, pragBun, inchidereBuna) : null;
+                      const legare = legareaRandului(p);
                       return (
                         <li key={k}>
                           <button type="button" aria-pressed={stare?.aleasa === k} data-problema={k} data-fel={p.fel}
@@ -284,6 +332,12 @@ export function PanouVerificare({ doc, indexFoaie = 0, selectie, stare, onStare,
                             <button type="button" className="repara-verificare" data-repara={reparatie.cheie} data-problema={k} disabled={ocupat}
                               title={t(`editare.verificare.repara.${reparatie.cheie}.titlu`)} onClick={() => { repara(reparatie.cerere); }}>
                               {t(`editare.verificare.repara.${reparatie.cheie}`)}
+                            </button>
+                          ) : null}
+                          {legare ? (
+                            <button type="button" className="repara-verificare" data-repara="leaga" data-problema={k} disabled={ocupat}
+                              title={t('editare.verificare.repara.leaga.titlu')} onClick={() => { leaga(legare); }}>
+                              {t('editare.verificare.repara.leaga')}
                             </button>
                           ) : null}
                         </li>

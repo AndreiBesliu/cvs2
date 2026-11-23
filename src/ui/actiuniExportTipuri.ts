@@ -92,7 +92,8 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
  */
 import type { DopExportat, DopSimulat, ParametriExport } from '../jobs/protocolCam.ts';
 import type { RezumatJob } from '../jobs/rezumat.ts';
-export type { DopSimulat, ParametriExport } from '../jobs/protocolCam.ts';
+export type { DopSimulat, ParametriExport, RaspunsPotrivire } from '../jobs/protocolCam.ts';
+export type { PotrivireV } from '../sim/potrivire.ts';
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
 
 /**

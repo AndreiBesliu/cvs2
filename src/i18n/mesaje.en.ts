@@ -62,6 +62,7 @@ export const en = {
   'actiune.repara': 'Repair vectors',
   'actiune.taie': 'Cut vectors',
   'actiune.converteste': 'Convert vectors',
+  'actiune.leaga-caile': 'Join paths',
   'motiv.editare-se-incarca': 'Editing is still loading: try again in a moment.',
   'motiv.o-singura-piesa': 'Choose a single part.',
   'motiv.doar-citire': 'The project is open in another tab: this one only reads it.',

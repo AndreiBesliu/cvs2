@@ -28,7 +28,7 @@
 import { VERSIUNE_SCHEMA, type Document, type Operatie } from '../model/document.ts';
 import { valoriBanda, valoriIncrustatie } from '../model/incrustatie.ts';
 import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
-import { conturDreptunghi, type Contur } from '../geom/conturBaza.ts';
+import { cerculArcului, conturDreptunghi, numarSegmente, segment, type Contur } from '../geom/conturBaza.ts';
 import { cutieContur } from '../geom/cutie.ts';
 import { IDENTITATE, transformaContur } from '../geom/matrice.ts';
 import { offsetFigura } from '../geom/offset.ts';
@@ -47,6 +47,39 @@ const DINCOLO_DE_MARGINE = 1;
 const TRECERE_FUND = 0.5;
 
 const fix = (x: number): string => String(Math.round(x * 1000) / 1000);
+
+/** Săgeata cea mai mare a unei coarde la aplatizarea arcelor desenului, pentru potrivirea simulată (mm). */
+const SAGEATA_DESEN = 0.002;
+/** Pașii unei cubice aplatizate. */
+const PASI_CUBICA = 32;
+
+/**
+ * Conturul închis ca poligon [x, y, x, y, …], pentru potrivirea simulată (ADR 0179): arcele, cu săgeata sub `SAGEATA_DESEN`;
+ * cubicele, pe `PASI_CUBICA` pași. Grila de 0,1 mm a potrivirii nu vede mai fin.
+ */
+function poligon(c: Contur): number[] {
+  const rez: number[] = [];
+  for (let i = 0; i < numarSegmente(c); i++) {
+    const { a, b, s } = segment(c, i);
+    rez.push(a.x, a.y);
+    if (s.tip === 'A') {
+      const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
+      const pas = raza > SAGEATA_DESEN ? 2 * Math.acos(1 - SAGEATA_DESEN / raza) : Math.abs(baleiaj);
+      const k = Math.max(1, Math.ceil(Math.abs(baleiaj) / pas));
+      for (let q = 1; q < k; q++) {
+        const u = start + (baleiaj * q) / k;
+        rez.push(centru.x + raza * Math.cos(u), centru.y + raza * Math.sin(u));
+      }
+    } else if (s.tip === 'C') {
+      for (let q = 1; q < PASI_CUBICA; q++) {
+        const u = q / PASI_CUBICA, w = 1 - u;
+        const p = (pa: number, p1: number, p2: number, pb: number): number => w * w * w * pa + 3 * w * w * u * p1 + 3 * w * u * u * p2 + u * u * u * pb;
+        rez.push(p(a.x, s.c1.x, s.c2.x, b.x), p(a.y, s.c1.y, s.c2.y, b.y));
+      }
+    }
+  }
+  return rez;
+}
 
 const sculaIR = (s: Operatie['scula']): Scula => ({
   numar: s.numar, nume: s.nume, diametru: s.diametru,
@@ -195,6 +228,16 @@ export function programeDopuri(doc: Document, regim: RegimDop, supracursa = 0): 
       program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari },
       semifabricat,
       avertismente: [...avertismente, ...v.avertismente.map((a) => `dopul ${t.idLume}: ${a}`)],
+      // Potrivirea simulată (ADR 0179): oglinda de mai sus, hârtia panoului, iar lemnul dopului fără ce taie decuparea până la
+      // vârful punților.
+      potrivire: {
+        cutie: { x0, y0, x1, y1 }, desen: contururi.map(poligon), margine: m,
+        hartie: {
+          D: op.adancime, g: inc.joc, S: val.S, H: val.H, t: val.t,
+          creastaLocas: fp ? 0 : val.creastaLocas, creastaDop: fp ? 0 : val.creastaDop,
+        },
+        taiata: banda?.decupare ? banda.placa - banda.punti.grosime : Number.POSITIVE_INFINITY,
+      },
     });
   }
   return { ok: true, dopuri };

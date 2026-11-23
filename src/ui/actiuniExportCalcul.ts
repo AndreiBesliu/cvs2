@@ -1,4 +1,4 @@
-import { conversieInBazin, exportInBazin, panouriInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { conversieInBazin, exportInBazin, legareInBazin, panouriInBazin, potrivireInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { ParteDesprinsa } from '../jobs/protocolCam.ts';
@@ -15,6 +15,7 @@ import { sha256Hex, type FisierExportat } from '../post/export.ts';
 import { faraComentarii, foiIdentice, numeInArhiva } from '../post/foi.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
+import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import { aleseCuSurori, catePuse, CUTITE_PIESA, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from '../model/surori.ts';
@@ -24,7 +25,7 @@ import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
 import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
 import type { ProgramSimulat } from '../sim/program.ts';
-import type { FereastraRelief, ParametriExport, ProgramSimulare, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
+import type { FereastraRelief, ParametriExport, ProgramSimulare, RaspunsPotrivire, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
 
 // Cine cheamă calculul își recunoaște anularea (nu se arată) și workerul căzut (merge în jurnal).
 export { CalculAnulat, LucratorCazut } from '../jobs/bazinCam.ts';
@@ -176,6 +177,14 @@ export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: O
 }
 
 /**
+ * Legarea căilor (ADR 0182, felia 10.3↑o), pe documentul din clipa cererii, în workerul CAM: piesele schimbate și instanțele
+ * de șters, pe care acțiunea `document.repara` le aplică într-un pas, doar dacă documentul e încă același.
+ */
+export function leagaVectorii(doc: Document, cerere: CerereLegare, optiuni: OptiuniLegare, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatLegare> {
+  return legareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {}, indexFoaie);
+}
+
+/**
  * Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑), pe documentul din clipa cererii, în workerul CAM: instanțele tăiate și
  * părțile lor, pe care acțiunea `document.taie` le aplică într-un pas, doar dacă documentul e încă același.
  */
@@ -270,6 +279,14 @@ export async function programSimulare(doc: Document, semnal?: AbortSignal, dop?:
   const { scula, mutari, apoi } = r.simulare;
   const date: DateSimulare = { scula, mutari, ...(apoi ? { apoi } : {}) };
   return { ok: true, foaie: r.foaie, date, dopuri: r.dopuri, ...(r.motivDopuri !== undefined ? { motivDopuri: r.motivDopuri } : {}) };
+}
+
+/**
+ * „Împreună (secțiunea)” (ADR 0179): dopul în V cu numărul `dop` (de la 0) întors în locașul lui, cu potrivirea măsurată,
+ * în workerul CAM. `semnal` o anulează (altă alegere, un document schimbat, vederea închisă).
+ */
+export function potrivireSimulata(doc: Document, dop: number, semnal?: AbortSignal): Promise<RaspunsPotrivire> {
+  return potrivireInBazin(doc, dop, semnal ? { semnal } : {});
 }
 
 /** Fereastra plăcii întregi, la celula implicită (sau dublată, peste plafonul celulelor: ADR 0047 §1). */
