@@ -11724,16 +11724,16 @@ sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
 - **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
   ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
 
-## 2026-11-23 — ADR 0290 propus: biblioteca de freze, „Frezele mele” (Model: Claude Opus 5.5)
+## 2026-11-23 — ADR 0300 propus: biblioteca de freze, „Frezele mele” (Model: Claude Opus 5.5)
 
 **Prompt:** „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si sa le salvez in cont” (owner-ul, 23.11, în
-brief-ul liniei „freze”: ramura `wip/16.A-freze`, ADR-urile 0290–0299, canalul `freze`; întâi propunerea, fără cod de
+brief-ul liniei „freze”: ramura `wip/16.A-freze`, ADR-urile 0300–0309, canalul `freze`; întâi propunerea, fără cod de
 produs). **Started:** 23.11, seara, în sesiunea cloud a liniei. **Completed:** 23.11, 21:05.
 
 - **Ce e azi**, citit în cod: copia frezei pe fiecare operație (`SchemaScula`: T, nume, Ø, forma plată / V cu vârf), fără
   tabelul `scule[]` din plan; valorile de lucru fixe pentru orice freză (`REGIM_IMPLICIT`: 18 000 rot/min, 1 000 și
   300 mm/min); CAM-ul știe plata și V-ul, simularea și bila, oracolul și profilul ca puncte; nicio dată a omului în cont.
-- **Propunerea (ADR 0290):** fereastra „Frezele mele” (din meniul contului, paletă, export, Tăierea; și offline, și fără
+- **Propunerea (ADR 0300):** fereastra „Frezele mele” (din meniul contului, paletă, export, Tăierea; și offline, și fără
   cont), alegerea pe rândurile exportului și în Tăierea, documentul v27 (originea copiei, valorile de lucru, lungimea
   tăișului; fără ele, programele octet cu octet), sincronizarea prin callable-ul `freze` cu copia din browser și îmbinarea pe
   câmpuri, capabilitatea `cloud`, fișierul JSON și CSV, calibrarea, apoi bila, toroidala și profilul desenat, fiecare cu
@@ -11741,6 +11741,10 @@ produs). **Started:** 23.11, seara, în sesiunea cloud a liniei. **Completed:** 
   plafon la felia lor.
 - **Schița**, cu machetele pe ambele teme, la birou și pe telefon, editorul frezei de încercat și șase întrebări, cu
   răspunsurile salvate în pagină (doar owner-ul scrie; un vizitator obișnuit, refuzat): <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP>.
-- **Documentele:** ADR 0290 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 926,
+- **Documentele:** ADR 0300 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 926,
   0 lipsă), nota liniei (`docs/linii/freze.md`). Probele documentației în container: 58 / 58.
 - **Codul:** la răspunsurile owner-ului, începând cu 16.A↑a.
+- **Numărul, corectat:** scris întâi ca ADR 0290 (cum spunea brief-ul); la deschiderea PR-ului, `wip/28.8-export` avea deja
+  ADR 0290 (PR-ul `AndreiBesliu/cvs2#11`), iar `main` (`870e8759`) dăduse liniei frezelor 0300–0309. Cu `main` adus în
+  ramură (DEVLOG-ul cu `rezolva-devlog.py`), propunerea e acum ADR 0300, cu legătura spre fereastra exportului refăcută
+  (secțiunea „Freza” a fișei, dacă ea vine întâi).

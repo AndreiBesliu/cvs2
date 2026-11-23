@@ -1,13 +1,14 @@
-# ADR 0290: Biblioteca de freze: „Frezele mele”, în browser și în cont
+# ADR 0300: Biblioteca de freze: „Frezele mele”, în browser și în cont
 
 **Starea:** propus pe 23.11.2026, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si
 sa le salvez in cont”. Felia 16.A↑ (adusă din etapa 16, fără mașină), linia „freze”: ramura `wip/16.A-freze`, ADR-urile
-0290–0299, canalul `freze`. **Rândurile din prag:** „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
+0300–0309, canalul `freze`. **Rândurile din prag:** „Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V,
 gravare, profil, formă desenată)” și „Freze de profil desenate de utilizator; roundover cu offset față de interior”
 (`ACOPERIRE-ARTCAM-DESKPROTO.md`). **Completează:** ADR 0084 (freza pe fiecare rând al exportului), 0090 și 0092 (forma
 frezei), 0093 (frezele de rest), 0112 și 0114 (rolul din panou, rolurile personalizate, regula numerelor T), 0116 (contul),
 0120 (meniul contului), 0250 (aranjamentele) și `PLAN.md` §4.6, punctul 6 (valorile calibrării intră în biblioteca de
-scule). Schița, cu fereastra, editorul, alegerea la export și întrebările: <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP> (răspunsurile se salvează în pagină, în `raspunsuri/owner`).
+scule). Schița, cu fereastra, editorul, alegerea la export și întrebările: <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP> (răspunsurile se salvează în pagină, în `raspunsuri/owner`). **Numărul:** scris întâi ca 0290; mutat pe 23.11 la 0300,
+fiindcă 0290–0299 sunt ale liniei exportului (`wip/28.8-export`, ADR 0290 propus acolo).
 
 ## Ce e azi
 
@@ -91,6 +92,9 @@ tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu fe
 - **În secțiunea Tăierea** (ADR 0112), rândul „Freza”, pentru formele alese, cu aceeași listă: schimbă freza operațiilor lor
   într-un pas de anulare.
 - **Rolurile personalizate** rămân cum sunt (freza copiată în rol); un rol cu o freză din bibliotecă o arată cu numele ei.
+- **Fereastra exportului refăcută** (linia exportului, ADR 0290, propus pe ramura `wip/28.8-export`: lista operațiilor și fișa
+  celei alese, cu secțiunea „Freza”): dacă ea e unită înaintea feliei b, alegerea din bibliotecă intră în secțiunea „Freza”
+  a fișei; altfel stă pe rândul de azi și se mută odată cu fereastra. Ordinea o ține sesiunea principală, la unire.
 
 ### 5. Documentul v27: copia rămâne, cu originea ei (întrebarea 4)
 
@@ -151,7 +155,7 @@ tăia: plata, V-ul și gravarea acum; bila, toroidala și profilul desenat cu fe
 
 ### 9. Formele noi, după frezele de azi
 
-Fiecare cu ADR-ul ei (0291 și următoarele), cu probele pe hârtie și invariantele: niciodată mai adânc decât pasul pe
+Fiecare cu ADR-ul ei (0301 și următoarele), cu probele pe hârtie și invariantele: niciodată mai adânc decât pasul pe
 trecere, freza nu intră greșit în piesă.
 
 - **Bila și toroidala:** întâi simularea (toroidala în nucleu, elicea cu bila) și oracolul (toroidala în
@@ -176,8 +180,8 @@ cu măsurătoarea.
 | 16.A↑b | Alegerea în proiect: lista pe rândurile exportului (și fundul plat, restul, dopul, banda), rândul „Freza” în Tăierea, numerele T, documentul v27, valorile de lucru în program (turația la schimbare, avansul, plonjarea; estimarea timpului cu ele), refuzul adâncimii peste tăiș, nota „s-a schimbat în bibliotecă” | canalul `freze` |
 | 16.A↑c | Contul: callable-ul `freze`, colecția, regulile, capabilitatea `cloud`, sincronizarea, conflictul, prima logare cu o bibliotecă fără cont; probele pe emulatoare | adresa de test, după unire și publicarea serverului |
 | 16.A↑d | Calibrarea: valorile măsurate în editor, folosite de CAM (după răspunsul 3), legate de fișa plăcii 4 | canalul `freze` |
-| 16.A↑e | Bila și toroidala (ADR 0291): simularea, oracolul, CAM-ul | canalul `freze` |
-| 16.A↑f | Profilul desenat (ADR 0292): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
+| 16.A↑e | Bila și toroidala (ADR 0301): simularea, oracolul, CAM-ul | canalul `freze` |
+| 16.A↑f | Profilul desenat (ADR 0302): editorul siluetei, simularea, oracolul, canelura și roundover-ul | canalul `freze` |
 | 16.A↑g | Valorile pe material (seturi pe eticheta materialului foii, ADR 0210 §1) și calculatorul avansului | canalul `freze` |
 
 Mai târziu, la cuvântul owner-ului: Rolurile mele în cont (aceeași sincronizare), burghiul cu vârf la găurire, biblioteca

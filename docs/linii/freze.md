@@ -1,7 +1,7 @@
-# Frezele (16.A↑, ADR 0290–0299)
+# Frezele (16.A↑, ADR 0300–0309)
 
 _cncvs2, biblioteca de freze („Frezele mele”), felia 16.A↑ adusă din etapa 16: ramura `wip/16.A-freze` (din `main`
-`c8b235ab`), ADR-urile 0290–0299, canalul `freze`; ADR 0290 PROPUS pe 23.11, cu schița și șase întrebări; codul pornește
+`c8b235ab`), ADR-urile 0300–0309, canalul `freze`; ADR 0300 PROPUS pe 23.11, cu schița și șase întrebări; codul pornește
 doar după răspunsurile owner-ului_
 
 Pornită pe 23.11.2026, în sesiunea cloud a liniei, la cererea owner-ului: „Vreau sa pot crea freze l sau profiluri de freze in
@@ -10,7 +10,7 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 
 ## Starea
 
-- **23.11, seara:** ADR 0290 propus (`docs/adr/0290-biblioteca-de-freze.md`), cu rândul în indexul ADR și titlul tradus.
+- **23.11, seara:** ADR 0300 propus (`docs/adr/0300-biblioteca-de-freze.md`), cu rândul în indexul ADR și titlul tradus.
   Schița: <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP> (machetele pe ambele teme, la birou și la 390 / 360 / 320 px;
   editorul frezei se poate încerca; răspunsurile se salvează în pagină, în `raspunsuri/owner`, doar de owner, verificat cu
   un vizitator obișnuit, refuzat). Fără cod de produs.
@@ -37,6 +37,11 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
 
 ## Capcane
 
+- **Intervalul ADR se verifică pe toate ramurile, nu doar în `main`.** Brief-ul a dat întâi 0290–0299, luate cu o oră înainte
+  de linia exportului (`wip/28.8-export`, ADR 0290 propus pe ramura ei); `main` a corectat la 0300–0309. Înaintea unui ADR
+  nou: `git fetch origin`, apoi `git ls-tree --name-only origin/<ramura> docs/adr/` pe fiecare `origin/wip/*`.
+- **Fereastra exportului se desenează din nou pe altă linie** (ADR 0290, `wip/28.8-export`): felia 16.A↑b pune alegerea din
+  bibliotecă în secțiunea „Freza” a fișei, dacă fereastra nouă e unită întâi; altfel pe rândul de azi.
 - **`node scripts/traduceri.ts --help` scrie fișierul** (nu cunoaște `--help`): adaugă textele noi cu `en` gol. Verificarea e
   `--verifica`.
 
