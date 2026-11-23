@@ -713,7 +713,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   taie pe tăcute fără urechi); cu toate locurile egale bune și fără intrări, programul modului „egale”, octet cu octet. Lângă
   avertismentul pieselor desprinse, „Pune urechile unde țin” trece rândurile lor din fereastră. **Un calcul nou care cere
   programul foii îl ia din `programFoii`** (potrivirea dopului, ADR 0179, trece și ea pe acolo). Pornirea 107,9 kB (cu ușa
-  112,3 / 115), totalul 763,1 / 800. Regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
+  112,3 / 115), totalul 763,1 / 800.
+  **Urechile după reguli, pe laturi (felia 11.3↑f, ADR 0211, varianta c; documentul tot v26)** gata pe 23.11, pe
+  `wip/11.1-plansele`, neunită: „pe laturile lungi”, „pe laturile scurte” și „la mijlocul laturilor”
+  (`src/cam/urechiLaturi.ts`, pur). Laturile sunt bucățile drepte ale drumului frezei pe care încape o ureche; numărul de
+  pe buclă se împarte pe laturile regulii, iar centrele intră pe drumul locurilor alese (`centrePeLaturi`, în `job.ts`).
+  Fără laturi drepte, programul modului „egale”, octet cu octet. Lucrarea nu mai are niciun mod refuzat ca „felie
+  următoare”. Pe plăcuțele în rânduri și coloane, urechile de la mijlocul laturilor cad față în față cu ale vecinelor și
+  le țin una de alta (placa 11 la 5 mm: nu se mai desprinde niciuna). Pornirea 107,9 kB (cu ușa 112,3 / 115), totalul
+  763,9 / 800.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
