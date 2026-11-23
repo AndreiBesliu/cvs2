@@ -204,8 +204,8 @@ test('„Împreună (secțiunea)” la dopul decupat: neîntors, „Peste placă
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
   await inc.locator('[data-camp="inc-freza-dop"]').check();
   await page.locator('[data-buton="exporta"]').click();
@@ -240,8 +240,8 @@ test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foai
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
   await inc.locator('[data-camp="inc-freza-dop"]').check();
@@ -297,10 +297,10 @@ test('„Împreună (secțiunea)” la dopul în trepte: jocul la flanșă și l
   await page.goto('/');
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const randOp = page.locator('tr[data-operatie]').first();
+  const randOp = page.locator('[data-fisa="op"]').first();
   await randOp.locator('[data-camp="latura"]').selectOption('incrustatie-drept');
   await randOp.locator('[data-camp="adancime"]').fill('8');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-treapta"]').selectOption('interior');
   await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
   await inc.locator('[data-camp="inc-treapta-latime"]').fill('5');

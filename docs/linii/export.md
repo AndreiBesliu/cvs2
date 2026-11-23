@@ -20,8 +20,11 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 - **23.11: ADR 0290 acceptat, cu toate recomandările („1a, 2a, 3a, 4a”).** Feliile, precizate la acceptare: 28.8↑a mută toate
   câmpurile în fișă (fără desene încă), b–e aduc desenele pe familii, f rezultatul, Atelier și fișa de sine stătătoare pentru
   Clasic și Pas cu pas (aranjamentele lor, 28.2↑ și 28.4↑, nu sunt încă scrise).
-- Înaintea lui 28.8↑a: tabla „Exportul G-code, în cele patru” pe canvas-ul aranjamentelor (regula din ADR 0250), dacă răspunsul
-  la întrebarea 4 e „a”.
+- **23.11: tabla „Exportul G-code” pe canvas-ul aranjamentelor** (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>): fereastra
+  în cele patru aranjamente.
+- **23.11: 28.8↑a gata** (carcasa: lista și fișele, grupurile pe întrebări, explicația câmpului activ, greșelile în grup,
+  „Du-mă la …”, Rezultatul adus o singură dată), pe ramură și pe canalul `export`; neunită. Otrăvurile 18 / 18. Totalul +2,3 kB.
+  Detaliile: ADR 0290, „Implementarea 28.8↑a”. Urmează 28.8↑b (desenele foii, mașinii și profilului).
 
 ## Ce s-a găsit (23.11)
 
@@ -47,6 +50,15 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 
 ## Capcanele
 
+- **Selectorii probelor (din 28.8↑a):** o operație e `[data-fisa="op"][data-operatie="…"]` (fișa, cu toate câmpurile ei,
+  inclusiv cele de sub bife); în listă, `[data-nav-op="…"]` (locul, „cu N”, mânerul, săgețile) și `[data-nav="…"]` (butonul;
+  `foaia`, `masina`, `rezultatul` sau cheia operației). Grupurile: `[data-grup="…"]`, cu `[data-explicatie]` și `[data-greseala]`.
+  Ce nu se aplică nu apare (`toHaveCount(0)`), nu e oprit.
+- **Grupul unui câmp nou:** în `GRUP_CAMP` (`src/ui/exportGrupuri.ts`); altfel `export.grupuri.test.ts` cade.
+- **Starea exportului se schimbă de două ori** (descărcarea, apoi simularea): ce se face „după export” se face la trecerea în
+  rezultat, nu la fiecare schimbare a stării.
+- **În containerul cloud,** `masina-wifi-pod.spec.ts:44` cade și pe `main` curat (`esp3d.local` nu se rezolvă aici); în CI trece.
+
 - **Capturile:** un `scrollIntoView` pe un câmp din dreapta derulează și dialogul în lateral; pentru capturi cinstite, după el,
   `scrollLeft = 0` pe `.dialog-cutie`. Captura derulată rămâne în schiță ca exemplu (așa o vede omul după un clic).
 - **Cum s-au făcut:** `npm run build`, `npx vite preview --port 4173`, apoi un script Playwright (Edge, `deviceScaleFactor: 2`)
@@ -58,6 +70,5 @@ vreau ca ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute us
 
 ## Ce rămâne
 
-- Răspunsurile owner-ului la cele patru întrebări din ADR 0290.
-- Apoi: tabla pe canvas, 28.8↑a–f, fiecare cu proba scrisă înainte, e2e, privirea pe fereastra reală, otrăvurile, documentele și
-  canalul `export`.
+- 28.8↑b–f, fiecare cu proba scrisă înainte, e2e, privirea pe fereastra reală, otrăvurile, documentele și canalul `export`.
+- Unirea în `main`, la cuvântul owner-ului (de sesiunea principală), după ce încearcă fereastra pe canal.

@@ -11992,6 +11992,27 @@ ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute userul sa i
 **Completed:** 23.11, seara (propunerea, acceptată). Urmează tabla de pe canvas, apoi 28.8↑a.
 
 
+## 2026-11-23 — Linia exportului: felia 28.8↑a, fereastra pe listă și fișă (ADR 0290)
+
+**Prompt:** răspunsul owner-ului la ADR 0290, exact: „1a, 2a, 3a, 4a”.
+**Started:** 23.11, 19:46.
+
+- **Tabla „Exportul G-code”** pe canvas-ul aranjamentelor (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), înaintea codului.
+- **Fereastra:** lista în stânga (foaia, mașina, operațiile în ordinea tăierii, Rezultatul), fișele una sub alta în dreapta, cu
+  toate câmpurile de azi pe grupuri (`src/ui/exportGrupuri.ts`), explicația câmpului activ, trecerile egale sub pas, greșelile în
+  grupul câmpului cu punctul din listă și „Du-mă la …”. Ce nu se aplică nu apare. Câmpurile, valorile și programul, aceleași.
+- **Găsit pe drum:** simularea sosește după descărcare și schimbă starea din nou; fereastra aducea iar Rezultatul sub mausul omului
+  (`supracursa.spec.ts`, sub încărcare). Acum îl aduce o singură dată, cu o probă.
+- **Probele:** `export.grupuri.test.ts`, `export.fisa.spec.ts`; 19 spec-uri mutate pe fișe (și `incrustatie3d.spec.ts`, venit cu
+  `main`). Unit 9 881 / 0; e2e întreg local, fără `masina-wifi-pod.spec.ts:44`, care cade și pe `main` curat în container.
+- **Otrăvurile:** `test/otravuri/28.8a.py`, 18 / 18 prinse (8 pe hârtie, 10 e2e).
+- **Manualul** (ro, en), ADR 0290 („Tabla”, „Implementarea 28.8↑a”), rândul din fișa etapei 3, registrul otrăvurilor.
+- **`main` adus** (`f73f3f37`, cu A.6, 3.Xh, 12.1↑e-3, 12.1↑e-4), fără ciocniri de cod.
+- **Mărimea:** totalul +2,3 kB (cu `main`, 780,8 / 800), pornirea neschimbată.
+
+**Completed:** 23.11, 23:05.
+
+
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
 
 **Prompt:** owner-ul, în sesiunea liniei, după raportul feliei 11.3↑e („11.3↑f (regulile urechilor) pornește doar la cuvântul
