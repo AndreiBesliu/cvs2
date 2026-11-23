@@ -36,8 +36,9 @@ o('D04', CALC, '  return { ok: true, foaie: { latime: s.latime, inaltime: s.inal
 o('D05', CALC, '    : { dopuri: [], motivDopuri: d.motiv };', '    : { dopuri: [] };', 'dop3d', 'motivul dopurilor refuzate se pierde')
 o('D06', CALC, SIM_DOP, SIM_DOP.replace('motiv: `dopul ${dop + 1} nu mai e în document`', "motiv: 'dopul lipsește'"), 'dop3d',
   'refuzul dopului care lipsește, fără numărul lui')
-o('D07', CALC, '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat, sectiune: x.potrivire !== undefined })) }',
-  '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: { ...x.semifabricat, latime: x.semifabricat.inaltime }, sectiune: x.potrivire !== undefined })) }',
+# 23.11 (felia 12.1↑e-4): orice dop are acum potrivirea, deci lista dopurilor nu mai are `sectiune`; D07 urmează linia.
+o('D07', CALC, '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: x.semifabricat })) }',
+  '    ? { dopuri: d.dopuri.map((x) => ({ element: x.element, semifabricat: { ...x.semifabricat, latime: x.semifabricat.inaltime } })) }',
   'dop3d', 'lista dopurilor cu semifabricatul greșit')
 o('D08', CALC, '      const r = calculeazaSimularea(c.document, c.dop);', '      const r = calculeazaSimularea(c.document);', 'dop3d',
   'lucrătorul ignoră dopul cerut')

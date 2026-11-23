@@ -65,19 +65,17 @@ o('C05', DOPV, 'desen: contururi.map(poligon),', 'desen: [],', 'potrivire', 'pot
 # ---- Calculul din lucrător (src/jobs/calculCam.ts) ----
 # 22.11 (felia 12.1↑e-3): dopul drept are acum secțiunea, deci `inV` a devenit `sectiune`, iar refuzul (J02) e al dopului în
 # trepte. J01 și J02 trec pe proba pereților drepți, singura cu un dop în trepte; J03 urmează grosimea scoasă într-o constantă.
-o('J01', CALC, 'sectiune: x.potrivire !== undefined', 'sectiune: true', 'dreapta', 'și dopul în trepte cu secțiunea (comutatorul pornit la el)')
-# J02, la prima rulare (`pregatesteProgram(job.program, 1)`, „fața plăcii mutată”), a scăpat ca mutant echivalent: `sus`
-# doar desparte mișcările în aer de cele în lemn, iar cele dintre 0 și 1 mm nu taie sub fața plăcii. Mutată pe refuzul dopului
-# drept, pe care nu-l proba nimic: proba lui e acum în `incrustatie.potrivire3d.test.ts` (refuzurile calculului).
-o('J02', CALC, '  if (!x.potrivire) return { ok: false, motiv:', '  if (false) return { ok: false, motiv:', 'dreapta',
-  'dopul în trepte măsurat, fără refuz')
+# 23.11 (felia 12.1↑e-4): dopul în trepte are și el secțiunea, deci câmpul `sectiune` și refuzul lui au plecat din cod; J01 și
+# J02 au plecat cu ele (dispecerul celor trei feluri e acum în lista lui 12.1↑e-4).
 o('J03', CALC, '  const grosimeDop = x.semifabricat.grosimeMinima;', '  const grosimeDop = x.semifabricat.grosimeMinima + 1;', 'potrivire',
   'grosimea dopului din secțiune greșită')
 
 # ---- Vederea 3D (src/app/Vedere3D.tsx, src/app/Sectiune3D.tsx) ----
-o('U01', V3D, '  const poateImpreuna = dopAles?.sectiune === true;', '  const poateImpreuna = false;', 'e2e', 'comutatorul niciodată pornit')
-o('U02', V3D, '  const poateImpreuna = dopAles?.sectiune === true;', '  const poateImpreuna = dopAles !== null;', 'e2e',
-  'comutatorul pornit și la dopul în trepte')
+# 23.11 (felia 12.1↑e-4): comutatorul e pornit pe orice dop ales; U01, U02 și U12 urmează condiția nouă.
+o('U01', V3D, "  const poateImpreuna = alegere !== 'foaie' && dopuri.lista[alegere] !== undefined;", '  const poateImpreuna = false;', 'e2e',
+  'comutatorul niciodată pornit')
+o('U02', V3D, "  const poateImpreuna = alegere !== 'foaie' && dopuri.lista[alegere] !== undefined;", '  const poateImpreuna = true;', 'e2e',
+  'comutatorul pornit și pe foaie, fără dop ales')
 o('U03', V3D, '    if (ce === alegere) return;\n    opresteImpreuna();\n', '    if (ce === alegere) return;\n', 'e2e',
   'altă alegere lasă „Împreună” apăsat')
 o('U04', V3D, '      calc.potrivireSimulata(d, k, ctl.signal)', '      calc.potrivireSimulata(d, k + 1, ctl.signal)', 'e2e', 'se măsoară alt dop decât cel ales')
@@ -89,8 +87,8 @@ o('U09', SEC, '      <path data-strat="dop" d={g.dop} className="sectiune-dop" /
 o('U10', SEC, '{ n, y: p.sectiune.y.toFixed(2) }', '{ n, y: p.sectiune.x0.toFixed(2) }', 'e2e', 'titlul secțiunii cu X în loc de Y')
 o('U11', 'src/app/sectiuneDesen.ts', '  const contact = rulari(n, (i) => inLocas(i) && Number.isFinite(dop(i)) && dop(i) - placa(i) < CONTACT && !prin(i))',
   '  const contact = rulari(n, () => false)', 'e2e', 'pereții în contact nedesenați')
-o('U12', V3D, "  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege')", "  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.trepte')",
-  'e2e', 'pe foaie, motivul dopului în trepte')
+o('U12', V3D, "  const titluImpreuna = poateImpreuna ? t('editare.3d.impreuna.titlu') : t('editare.3d.impreuna.alege');",
+  "  const titluImpreuna = t('editare.3d.impreuna.titlu');", 'e2e', 'pe foaie, titlul comutatorului pornit, nu „Alege întâi un dop”')
 
 SETURI = {
     'potrivire': ['test/unit/incrustatie.potrivire3d.test.ts'],

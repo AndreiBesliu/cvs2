@@ -12,6 +12,7 @@
  *   aplicației nu trece de al lui;
  * - umărul, fundul, tija și înălțimea dopului la cel mult 0,02 de oracol; niciun rând roșu, cu hârtia panoului;
  * - controlul negativ: dopul L-ului neoglindit (tăiat cu flanșa sus) are rânduri roșii, cu locul lor, marcat pe secțiune;
+ * - controlul negativ al reazemului: dopul tăiat cu 6 mm alături, mai mult decât umărul de 5, n-are flanșa pe umăr pe o latură;
  * - controlul pe hârtie: o valoare scrisă diferit de programe face roșu doar rândul ei;
  * - secțiunile pe hârtie: pe umăr, pe fund, decupat, la gaură;
  * - dopul decupat în trepte cu gol: miezul golului flanșei cade, nu e al dopului.
@@ -105,6 +106,20 @@ function oglindit(p: Extract<ProgramSimulat, { ok: true }>, W: number): Extract<
   return { ...p, mutari: o(p.mutari), ...(p.apoi ? { apoi: p.apoi.map((g) => ({ ...g, mutari: o(g.mutari) })) } : {}) };
 }
 
+/** Programul mutat pe X cu `dx` (mm): centrul arcelor cu el. */
+function mutat(p: Extract<ProgramSimulat, { ok: true }>, dx: number): Extract<ProgramSimulat, { ok: true }> {
+  const o = (m: Float64Array): Float64Array => {
+    const r = Float64Array.from(m);
+    for (let q = 0; q < r.length; q += STRIDE) {
+      r[q + 1] = r[q + 1]! + dx;
+      r[q + 4] = r[q + 4]! + dx;
+      r[q + 7] = r[q + 7]! + dx;
+    }
+    return r;
+  };
+  return { ...p, mutari: o(p.mutari), ...(p.apoi ? { apoi: p.apoi.map((g) => ({ ...g, mutari: o(g.mutari) })) } : {}) };
+}
+
 /** Programele simulate ale unui caz (locașul și dopul) și descriptorul dopului, ca să se măsoare cu altă hârtie sau alt dop. */
 function cazSimulat(c: CazTrepte, peste: Record<string, unknown> = {}) {
   const doc = deschis(documentTrepte(c, peste));
@@ -135,6 +150,15 @@ test('controlul negativ: dopul în trepte al L-ului, neoglindit (tăiat cu flan�
   // Oglindit de două ori, dopul se potrivește iar: controlul nu pică din cauza oglinzii.
   const iar = potrivireaTrepte(locas, oglindit(oglindit(dop, W), W), { ...descriptor, grosimeDop });
   assert.ok(Object.values(iar.randuri).every((r) => r.ok), `oglindit de două ori: ${descrie(iar)}`);
+});
+
+test('controlul negativ: dopul tăiat cu 6 mm alături (s = 5) nu mai stă cu flanșa pe umăr pe o latură: „Flanșa pe umăr” e roșu, cu locul lui', () => {
+  const c = caz('dreptunghi-umar');
+  const { locas, dop, descriptor, grosimeDop } = cazSimulat(c);
+  const p = potrivireaTrepte(locas, mutat(dop, 6), { ...descriptor, grosimeDop });
+  const unde = descrie(p);
+  assert.ok(!p.randuri.reazem.ok && p.reazem.nu > 0 && p.reazem.banda.min < 0, `flanșa căzută în deschidere trece drept sprijinită: ${unde}`);
+  assert.ok(p.randuri.reazem.unde && Number.isFinite(p.randuri.reazem.unde[0]), `rândul roșu își spune locul: ${unde}`);
 });
 
 test('controlul pe hârtie: o valoare scrisă diferit de programe face roșu doar rândul ei, cu locul lui', () => {
