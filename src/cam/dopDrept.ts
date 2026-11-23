@@ -13,12 +13,13 @@ import { cutieContur } from '../geom/cutie.ts';
 import { IDENTITATE, transformaContur } from '../geom/matrice.ts';
 import { offsetFigura } from '../geom/offset.ts';
 import { VERSIUNE_SCHEMA, type Document, type IncrustatieDreapta, type Nod, type Operatie } from '../model/document.ts';
-import { PUNTI_DOP_DREPT, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
+import { esteGaura, PUNTI_DOP_DREPT, valoriIncrustatieDreapta } from '../model/incrustatie.ts';
 import { ordineTaieturi, type Taietura } from '../model/lume.ts';
 import { conturDeTaiat } from './contur.ts';
 import { contururiRegiuni, figuraDreapta, frezeIncrustatieDreapta, refuzIncrustatieDreapta, valoriBuzunarDrept, type NivelDreapta } from './incrustatieDreapta.ts';
 import { puntiPeBucle, type DopCalculat } from './incrustatie.ts';
 import { programDinDocument, type Regim } from './job.ts';
+import { poligon } from './partiUrechi.ts';
 import { lungimeBucla } from './parcurgere.ts';
 
 /** Cât trece marginea regiunii dopului ridicat de marginea semifabricatului, cel puțin (mm): fața se coboară până dincolo. */
@@ -27,6 +28,13 @@ const DINCOLO_DE_MARGINE = 1;
 const TRECERE = 0.5;
 
 const fix = (x: number): string => String(Math.round(x * 1000) / 1000);
+
+/** Săgeata cea mai mare a unei coarde la aplatizarea desenului dopului, pentru potrivirea simulată (mm; grila ei are 0,1 mm). */
+const SAGEATA_DESEN = 0.002;
+
+/** Desenul dopului pe foaie, pentru potrivirea simulată (ADR 0179): exterioarele și golurile regiunilor, ca poligoane. */
+const desenDop = (regiuni: readonly { readonly exterior: Contur; readonly gauri: readonly Contur[] }[]): number[][] =>
+  regiuni.flatMap((r) => [r.exterior, ...r.gauri]).map((c) => Array.from(poligon(c, SAGEATA_DESEN)));
 
 /** Un element de document: calea închisă a conturului, în coordonatele semifabricatului (și pentru dopul în V, `dopV.ts`). */
 export const element = (id: string, c: Contur): Nod => ({
@@ -257,6 +265,25 @@ export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0
       element: t.idLume, program: job.program, semifabricat: { latime, inaltime, grosimeMinima: grosime, ...(inc.dop === 'decupat' ? { exacta: true } : {}) },
       // Avertismentele figurii (colțurile, părțile unite) le spune deja lucrarea foii, la locaș.
       avertismente: [...avertismente, ...job.avertismente.map((a) => `dopul ${t.idLume}: ${a}`)],
+      // Potrivirea simulată (ADR 0179): contractul de mai sus și hârtia panoului. La gaură, D e grosimea foii, iar dopul ridicat
+      // pe față e înalt cât ea: sub el nu rămâne joc (g = D − h = 0). Dopul în trepte (felia 12.1↑e-4) e mereu oglindit; al celui
+      // decupat, lemnul flanșei se citește deasupra punților (ele o leagă de rama plăcii).
+      potrivire: treapta && jos ? {
+        fel: 'trepte' as const, cutie: { x0, y0, x1, y1 }, margine: m, flansa: desenDop(f.figura.dop), tija: desenDop(jos.dop),
+        hartie: {
+          D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, d: treapta.d, c: inc.jocLateral, tija: treapta.tija,
+          h, H: inc.fierastrau, g: inc.joc, sprijin: inc.sprijin === 'fund' ? 'fund' as const : 'umar' as const,
+          decupat: inc.dop === 'decupat', gaura: esteGaura(op),
+        },
+        taiata: inc.dop === 'decupat' ? h - (inc.punti ?? PUNTI_DOP_DREPT).grosime : Number.POSITIVE_INFINITY,
+      } : {
+        fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m, dop: desenDop(f.figura.dop),
+        hartie: {
+          D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
+          g: esteGaura(op) ? 0 : inc.joc,
+          sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat', gaura: esteGaura(op),
+        },
+      },
     });
   }
   return { ok: true, dopuri };
