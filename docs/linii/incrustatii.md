@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia incrustațiilor (etapa 12): din 23.11.2026, în sesiunea cloud a liniei (`docs/lucru-in-cloud.md`), pe ramura `wip/12.1-incrustatii`; 12.1↑–12.1↑f-4 (v20–v25), 12.1↑e (dopul în 3D, ADR 0178) și 12.1↑e-2 (secțiunea, ADR 0179; `3fc56052`, din `082435b4`) UNITE în main; 12.1↑e-3 (pereții drepți în secțiune) GATA pe 23.11, cu PR spre `main`; urmează, doar la cuvântul owner-ului, 12.1↑e-4 (treptele în secțiune); bifa „prin foaie” pe rând ar lua v27_
+_cncvs2, linia incrustațiilor (etapa 12): din 23.11.2026, în sesiunea cloud a liniei (`docs/lucru-in-cloud.md`), pe ramura `wip/12.1-incrustatii`; 12.1↑–12.1↑f-4 (v20–v25), 12.1↑e (dopul în 3D, ADR 0178) și 12.1↑e-2 (secțiunea, ADR 0179; `3fc56052`, din `082435b4`) UNITE în main; 12.1↑e-3 (pereții drepți în secțiune) și 12.1↑e-4 (treptele în secțiune) GATA pe 23.11, în PR-ul spre `main` (`AndreiBesliu/cvs2#7`); urmează doar ce cere owner-ul; bifa „prin foaie” pe rând ar lua v27_
 
 Pornită pe 06.11.2026 ca sesiune paralelă, la cererea owner-ului („vreau sa deschidem worktrees pentru alte etape sau
 felii”, apoi „Inlays, stage 12”). Lângă ea: alte linii (tăierea vectorilor, planșele, trasarea, imprimanta, biblioteca) și
@@ -161,6 +161,26 @@ sesiunea principală (ține `main`, unește liniile doar la cuvântul owner-ului
   - Cifrele porților și legăturile rulărilor CI sunt în DEVLOG și în PR. `.lucru/` e scos.
   - Rămân: 12.1↑e-4 (treptele în secțiune; oracolul lor, `masoaraPotrivireaTrepte`, are alte rânduri: umărul, tija, flanșa,
     reazemul) și bifa „prin foaie” pe rând (v27), amândouă doar la cuvântul owner-ului.
+- **12.1↑e-4 GATA (23.11, de la 15:52; owner-ul: „12.1↑e-4, treptele”):** pe aceeași ramură, cu `main` `c010e3d1` deja în ea.
+  - Întâi o reparație a lui 12.1↑e-3 (`81ab6bba`), găsită la pregătirea treptelor: lemnul dopului e doar ce atinge desenul
+    lui (miezul golului unui dop decupat cade); grilele, lemnul și pereții exacți, funcții comune; ieșirile drepte identice.
+  - „Împreună (secțiunea)” pe orice dop ales: `src/sim/potrivireTrepte.ts`, descriptorul `fel: 'trepte'` din `dopDrept.ts`,
+    tabelul cu zece rânduri (jocul la flanșă și la tijă, dopul, flanșa pe umăr, umărul, fundul, tija, h, cleiul, peste placă),
+    desenul ca la pereții drepți. Cod `b3fa8eab`, `46c74dc7`, `e8b7f9d9`.
+  - Privirea la 1024 px a găsit insula mai lată decât zona liberă (sub panoul de proprietăți, coloana „În simulare”
+    ascunsă), și la pereții drepți: lățimea e acum a zonei (`--zona-latime`), cu proba e2e la 1024 × 768.
+  - Otrăvurile, porțile, mărimea și canalul: în DEVLOG și în PR.
+- **Lecții (12.1↑e-4):**
+  - Un oracol cu index pe găleți (aici, de 1 mm) dă exact doar valorile apropiate de zero: departe, o margine de sus (sau
+    1e6). Un rând ca reazemul (cât trece flanșa de deschidere, mm întregi) se probează pe hârtie (minimul s − c, colțul
+    dreptunghiului), nu cu mediana oracolului.
+  - Implicitul treptei din fereastra exportului e „pe umăr”, nu „pe fund” ca la dopul drept simplu: proba e2e se scrie pe
+    hârtia lui (tija D − d − g).
+  - O otravă scăpată pe corpus, pentru o situație care nu apare acolo (lemnul legat doar prin coloană, perechea fără schimbare
+    de semn), se prinde cu o grilă mică scrisă de mână, direct pe funcția comună.
+  - O mutare de cod pe o ramură cu PR deschis face VOID otrăvurile vechi: `scripts/otravuri-void-noi.py <commit-ul
+    dinainte>` le arată doar pe ale feliei.
+  - Privirea pe un ecran îngust (1024 px) e o variantă de sine stătătoare: lățimea unei insule se vede doar acolo.
 - **Lecții (12.1↑e-3, în cloud):**
   - Privirea pe piesa reală se face pe toate variantele (ridicat pe fund și pe față, decupat, gaură, alt joc lateral,
     engleză, ecran scund) și mărită la perete. Probele comparau numere și treceau; desenul avea patru defecte.
