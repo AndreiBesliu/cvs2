@@ -15,7 +15,7 @@ test('strategia paralelă din fereastra exportului: liniile la 30°, fundul plat
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="latura"]').selectOption('buzunar');
   await rand.locator('[data-camp="diametru"]').fill('12');
   await rand.locator('[data-camp="adancime"]').fill('10');

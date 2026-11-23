@@ -62,10 +62,10 @@ test('incrustația în V: rolul din panou, valorile pe hârtie, exportul cu fiș
 
   // Fereastra exportului: rândul incrustației, cu freza în V, fundul plat și valorile din panou.
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await expect(rand.locator('[data-camp="latura"]')).toHaveValue('incrustatie');
   await expect(rand.locator('[data-camp="forma-scula"]')).toHaveValue('v');
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
   await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
   await expect(detalii.locator('[data-camp="inc-acelasi"]')).not.toBeChecked();
@@ -128,9 +128,9 @@ test('incrustația din fereastra exportului: fundul plat bifat singur; „Acela�
   await page.goto('/');
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="latura"]').selectOption('incrustatie');
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="fund-plat"]')).toBeChecked();
   await expect(detalii.locator('[data-camp="inc-joc"]')).toHaveValue('0,5');
   await expect(detalii.locator('[data-camp="inc-fierastrau"]')).toHaveValue('2');
@@ -171,7 +171,7 @@ test('fundul doar cu freza V: fără bifa Fund plat, nota, decuparea benzii cu f
   await expect(hartie).toContainText('Semifabricatul dopului');
   await expect(hartie).not.toContainText('doar cu freza V');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   const nota = detalii.locator('.nota-incrustatie');
   await expect(nota).toHaveAttribute('data-fund', 'plat');
   await detalii.locator('[data-camp="fund-plat"]').uncheck();

@@ -632,7 +632,7 @@ test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; 
 
 /** Cheile rândurilor din tabelul operațiilor (nu din rezumat), în ordinea afișată. */
 const randuriOrdine = (page: Page): Promise<Array<string | null>> =>
-  page.locator('tr[data-operatie]:has(td.ordine)').evaluateAll((r) => r.map((x) => x.getAttribute('data-operatie')));
+  page.locator('[data-nav-op]').evaluateAll((r) => r.map((x) => x.getAttribute('data-nav-op')));
 const rapide = (text: string): string[] => text.split('\n').filter((l) => /^G0 X/.test(l));
 
 /**
@@ -702,7 +702,7 @@ test('ordinea de mână (ADR 0133): A mea cu săgețile și tragerea; riscul cer
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-ordine="a-mea"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await randuriOrdine(page)).toEqual(['e1/e1', 'e2/e2']);
-  await tragePeRand(page, '[data-trage="e2/e2"]', 'tr[data-operatie="e1/e1"]:has(td.ordine)');
+  await tragePeRand(page, '[data-trage="e2/e2"]', '[data-nav-op="e1/e1"]');
   expect(await randuriOrdine(page)).toEqual(['e2/e2', 'e1/e1']);
   await expect(page.getByTestId('risc-ordine')).toHaveCount(0);
 
@@ -733,24 +733,24 @@ test('ordinea de mână (ADR 0133 §2): V-carve-urile aceleiași piese, cu acele
   await page.locator('[data-editare="boolean-scade"]').click();
   await expect(randuri).toHaveCount(1);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('tr[data-operatie]:has(td.ordine)')).toHaveCount(2);
+  await expect(page.locator('[data-fisa="op"]')).toHaveCount(2);
   const chei = await randuriOrdine(page);
   const [prima, a2] = chei as [string, string];
   for (const k of [prima, a2]) {
-    await page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="latura"]`).selectOption('vcarve');
-    await page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="forma-scula"]`).selectOption('v');
+    await page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="latura"]`).selectOption('vcarve');
+    await page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="forma-scula"]`).selectOption('v');
   }
   // Aceleași valori: al doilea rând se sapă odată cu primul.
-  await expect(page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`)).toHaveText('cu 1');
-  await expect(page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-legat]`)).toHaveCount(0);
+  await expect(page.locator(`[data-nav-op="${a2}"] [data-legat]`)).toHaveText('cu 1');
+  await expect(page.locator(`[data-nav-op="${prima}"] [data-legat]`)).toHaveCount(0);
   // În ordinea mea, rândul mutat întâi devine primul: celălalt arată locul lui.
   await page.locator('[data-ordine="a-mea"]').click();
   await page.locator(`[data-sus="${a2}"]`).click();
-  await expect(page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-legat]`)).toHaveText('cu 1');
+  await expect(page.locator(`[data-nav-op="${prima}"] [data-legat]`)).toHaveText('cu 1');
   // Rândul exteriorului, trecut pe V-carve, nu mai e un exterior: se sapă pe dinăuntru, fără risc.
   await expect(page.getByTestId('risc-ordine')).toHaveCount(0);
-  await expect(page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`)).toHaveCount(0);
+  await expect(page.locator(`[data-nav-op="${a2}"] [data-legat]`)).toHaveCount(0);
   // Altă adâncime: două regiuni, fără legătură.
-  await page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-camp="adancime"]`).fill('2');
+  await page.locator(`[data-fisa="op"][data-operatie="${prima}"] [data-camp="adancime"]`).fill('2');
   await expect(page.locator('[data-legat]')).toHaveCount(0);
 });

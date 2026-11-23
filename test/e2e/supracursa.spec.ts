@@ -63,8 +63,8 @@ test('supracursa: lângă Z0, valorile greșite oprite, gaura și decuparea dopu
   await expect(camp).toHaveAttribute('aria-invalid', 'false');
   await expect(page.getByTestId('export-invalid')).toHaveCount(0);
   // Gaura cu dopul decupat, cu marginea 8 (freza Ø6 a locașului).
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
   await inc.locator('[data-camp="inc-margine"]').fill('8');
@@ -105,8 +105,8 @@ test('supracursa 0: gaura și decuparea dopului exact prin plăcile lor, ca îna
   await dreptunghiMic(page);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0');
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
-  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('[data-fisa="op"]').first().locator('[data-incrustatie][data-fel="drept"]');
   await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
   await inc.locator('[data-camp="inc-margine"]').fill('8');
@@ -133,7 +133,7 @@ test('bifa tăieturilor cât foaia: implicit pusă, oprită fără supracursă; 
   await page.locator('[data-camp="supracursa"]').fill('0,5');
   await expect(bifa).toBeEnabled();
   await expect(bifa).toBeChecked();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="adancime"]').fill('18');
   const descarcari: Download[] = [];
   page.on('download', (d) => { descarcari.push(d); });
@@ -149,7 +149,7 @@ test('bifa tăieturilor cât foaia: implicit pusă, oprită fără supracursă; 
   // În proiect, adâncimea e cea scrisă; bifa scoasă rămâne scoasă (o ține aplicația).
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
+  await expect(page.locator('[data-fisa="op"]').first().locator('[data-camp="adancime"]')).toHaveValue('18');
   await expect(page.locator('[data-camp="supracursa-prin-foaie"]')).not.toBeChecked();
   await expect(page.locator('[data-camp="supracursa"]')).toHaveValue('0,5');
 });

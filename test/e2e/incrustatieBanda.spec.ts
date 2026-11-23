@@ -52,7 +52,7 @@ test('banda dopului în V: alegerile din fereastră, exportul pe placa exactă, 
   // Oracolul potrivirii, pe un dop cu bandă, măsoară ~15 s în browserul probei (o fereastră de 0,1 mm în jurul cercului).
   test.setTimeout(120_000);
   await pregateste(page);
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('fata');
   await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveCount(0);
   await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
@@ -143,7 +143,7 @@ test('banda dopului în V: alegerile din fereastră, exportul pe placa exactă, 
 test('banda fără decupare: placa „cel puțin”, tăietura de mână; ce s-a ales, redeschis; placa goală; conflictul frezei', async ({ page }) => {
   test.setTimeout(90_000);
   await pregateste(page);
-  const rand = page.locator('tr[data-operatie]').first(), detalii = page.locator('tr[data-detalii]').first();
+  const rand = page.locator('[data-fisa="op"]').first(), detalii = page.locator('[data-fisa="op"]').first();
   await detalii.locator('[data-camp="inc-jur"]').selectOption('banda');
   await detalii.locator('[data-camp="banda-latime"]').fill('10');
   await detalii.locator('[data-camp="banda-punti-numar"]').fill('3');
@@ -216,12 +216,12 @@ test('rândurile legate: două incrustații în V ale aceleiași piese, legate d
   await page.locator('[data-editare="boolean-scade"]').click();
   await expect(randuri).toHaveCount(1);
   await page.locator('[data-actiune="export.gcode"]').click();
-  const principale = page.locator('tr[data-operatie]:has(td.ordine)');
+  const principale = page.locator('[data-nav-op]');
   await expect(principale).toHaveCount(2);
-  const [prima, a2] = await principale.evaluateAll((l) => l.map((e) => e.getAttribute('data-operatie'))) as [string, string];
-  const rand = (k: string, c: string) => page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="${c}"]`);
-  const det = (k: string, c: string) => page.locator(`tr[data-detalii="${k}"] [data-camp="${c}"]`);
-  const legat = page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`);
+  const [prima, a2] = await principale.evaluateAll((l) => l.map((e) => e.getAttribute('data-nav-op'))) as [string, string];
+  const rand = (k: string, c: string) => page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="${c}"]`);
+  const det = (k: string, c: string) => page.locator(`[data-fisa="op"][data-operatie="${k}"] [data-camp="${c}"]`);
+  const legat = page.locator(`[data-nav-op="${a2}"] [data-legat]`);
   for (const k of [prima, a2]) {
     await rand(k, 'latura').selectOption('incrustatie');
     await rand(k, 'forma-scula').selectOption('v');
@@ -274,7 +274,7 @@ test('lemnul din jurul dopului ales din panou: banda pe hârtie înainte de expo
   if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
   await expect(page.locator('[data-nod="operatie"]')).toContainText(', incrustație cu dop, cu banda îngustă (jocul 0.5 mm)');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const detalii = page.locator('tr[data-detalii]').first();
+  const detalii = page.locator('[data-fisa="op"]').first();
   await expect(detalii.locator('[data-camp="inc-jur"]')).toHaveValue('banda');
   await expect(detalii.locator('[data-camp="banda-latime"]')).toHaveValue('');
   await page.getByRole('button', { name: 'Închide' }).click();

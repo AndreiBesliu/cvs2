@@ -300,7 +300,7 @@ test('«Din CSV…» pe un șablon cu urechi (felia 11.3↑b): distanța urcă s
   await rama.locator('[data-camp="pas"]').fill('6');
   await rama.locator('[data-camp="urechi"]').check();
   // Literele, săpate în V (V90 Ø6), ca pe o plăcuță: decupate în rama păstrată, exportul (care scrie urechile) s-ar opri.
-  for (const litere of await page.locator('tr[data-operatie]:has(td.ordine)').filter({ hasText: 'cale ' }).all()) {
+  for (const litere of await page.locator('[data-fisa="op"]').filter({ has: page.locator('h3', { hasText: 'cale ' }) }).all()) {
     await litere.locator('[data-camp="latura"]').selectOption('vcarve');
     await litere.locator('[data-camp="forma-scula"]').selectOption('v');
     await litere.locator('[data-camp="unghi-v"]').fill('90');

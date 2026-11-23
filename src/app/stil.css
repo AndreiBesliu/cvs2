@@ -1895,6 +1895,325 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Fereastra exportului pe listă și fișă (ADR 0290, felia 28.8↑a): titlul sus, lista în stânga (foaia, mașina, operațiile în
+ * ordinea tăierii, rezultatul), fișele una sub alta în dreapta, cu derularea lor, și butoanele jos, mereu la vedere. Fiecare
+ * grup al unei fișe răspunde la o întrebare: explicația lui în stânga (locul desenelor din 28.8↑b), câmpurile în dreapta.
+ */
+.dialog-cutie.dialog-export {
+  width: min(70rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dialog-export > h2 {
+  margin: 0;
+  padding: var(--sp-4) var(--sp-5) var(--sp-3);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.dx-corp {
+  display: grid;
+  grid-template-columns: 16.5rem minmax(0, 1fr);
+  min-height: 0;
+}
+
+.dx-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-2) var(--sp-2) var(--sp-4);
+  border-right: 1px solid var(--l-margine);
+  background: var(--s-peste);
+}
+
+.dx-sectiune {
+  padding: var(--sp-3) var(--sp-2) var(--sp-1);
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.dialog .dx-nav {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 32px;
+  padding: var(--sp-2) var(--sp-5) var(--sp-2) var(--sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  background: none;
+  color: var(--t);
+  font: inherit;
+  text-align: left;
+  justify-content: stretch;
+  justify-items: start;
+  align-content: start;
+  cursor: pointer;
+}
+
+.dialog .dx-nav:hover {
+  background: color-mix(in oklab, var(--t) 6%, var(--s-peste));
+}
+
+.dialog .dx-nav[aria-current='true'] {
+  background: var(--s-ales);
+  border-color: color-mix(in oklab, var(--a) 45%, var(--s-panou));
+}
+
+.dx-nume {
+  font-size: var(--fs-3);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.dx-meta {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+  overflow-wrap: anywhere;
+}
+
+/* O fișă cu o valoare greșită: punctul roșu în listă, pe lângă motivul din grupul ei. */
+.dialog .dx-nav[data-gresit]::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: var(--sp-2);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rosu);
+}
+
+/* O operație din listă: locul, „cu N” și mânerul (ordinea mea) în stânga, numele și ce taie în dreapta. */
+.dx-nav-op {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 2px;
+}
+
+.dx-nav-op.tras {
+  opacity: 0.5;
+}
+
+.dx-nav-op .ordine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 1.75rem;
+  padding-top: var(--sp-2);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dx-lista .ordine-taierii {
+  margin: 0 0 var(--sp-2);
+  padding: 0 var(--sp-2);
+}
+
+.dx-lista .ordine-taierii .nota {
+  font-size: var(--fs-1);
+}
+
+.dx-fise {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 var(--sp-5);
+}
+
+/* Loc sub ultima fișă: un clic în listă o aduce și pe ea sus. */
+.dx-capat {
+  height: calc(100% - 6rem);
+}
+
+.dx-fisa {
+  padding: var(--sp-4) 0 var(--sp-2);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.dx-fisa h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.dx-loc {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dx-grup {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+}
+
+.dx-grup + .dx-grup {
+  border-top: 1px solid color-mix(in oklab, var(--l-margine) 60%, var(--s-panou));
+}
+
+.dx-explicatie {
+  align-self: start;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+  font-size: var(--fs-2);
+  line-height: 1.45;
+  color: var(--t-slab);
+}
+
+.dx-campuri {
+  min-width: 0;
+}
+
+.dx-campuri h4 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.dx-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+/* Blocurile de sub o bifă (urechile, rampa, coborârea, frezele de rest…) stau pe rândul lor. */
+.dx-rand > div,
+.dx-rand > p,
+.dx-rand > ul {
+  flex-basis: 100%;
+}
+
+.dx-rand > p {
+  margin: 0;
+  font-size: var(--fs-2);
+}
+
+.dx-coloana {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.dx-coloana > p {
+  margin: 0;
+}
+
+.dialog .dx-rand input[type='text'] {
+  max-width: 7rem;
+}
+
+/* Alegerile au texte lungi („fața de sus a materialului”): cât încap pe rândul fișei, nu tăiate la 9 rem. */
+.dialog .dx-rand select {
+  max-width: 100%;
+}
+
+.dialog .dx-rand input.numar-scula {
+  max-width: 3.25rem;
+}
+
+/* Sub pas: câte treceri ies și cât scoate fiecare (egale, ca în lucrare). */
+.nota-camp {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.dx-greseala {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-1) var(--sp-2);
+  border-left: 3px solid var(--rosu);
+  background: var(--s-rosu);
+  font-size: var(--fs-2);
+  color: var(--t);
+}
+
+/* Jos, mereu la vedere: ce oprește exportul (cu „du-mă acolo”), confirmările și butoanele. */
+.dx-jos {
+  max-height: 45vh;
+  overflow: auto;
+  padding: var(--sp-2) var(--sp-5) var(--sp-4);
+  border-top: 1px solid var(--l-margine);
+}
+
+.dx-jos .butoane {
+  margin-top: var(--sp-2);
+}
+
+.dx-invalid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.dx-invalid p {
+  flex: 1 1 20rem;
+  margin: 0;
+  font-size: var(--fs-2);
+}
+
+.dialog .dx-du {
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-3);
+}
+
+/* Pe un ecran îngust, lista trece deasupra, pe orizontală, iar explicația deasupra câmpurilor. */
+@media (max-width: 48rem) {
+  .dx-corp {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dx-lista {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    overflow: auto hidden;
+    padding: var(--sp-2);
+    border-right: 0;
+    border-bottom: 1px solid var(--l-margine);
+  }
+
+  .dx-lista .dx-sectiune {
+    display: none;
+  }
+
+  .dx-lista .ordine-taierii {
+    flex: 0 0 14rem;
+    margin: 0;
+  }
+
+  .dialog .dx-nav {
+    width: auto;
+    min-width: 9rem;
+  }
+
+  .dx-fise,
+  .dx-jos {
+    padding-inline: var(--sp-3);
+  }
+
+  .dx-grup {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+  }
+}
+
+/*
  * Raportul foilor și lista de tăiere (ADR 0210 §6, felia 11.6↑): previzualizarea foii lângă rândurile ei, pe un ecran îngust
  * una sub alta. Previzualizarea e SVG-ul exportului de vectori, desenat pentru hârtie albă: stă pe alb și în tema întunecată.
  */

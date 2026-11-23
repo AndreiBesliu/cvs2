@@ -185,7 +185,7 @@ test('Ctrl+D: o copie separată, decalată cu 20 mm, selectată; Ctrl+Z o scoate
   await page.keyboard.press('Control+y');
   await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('.dialog tbody tr')).toHaveCount(2);
+  await expect(page.locator('[data-fisa="op"]')).toHaveCount(2);
 });
 
 test('pe un telefon (375 × 548), cu lista plină, pânza rămâne destul de mare ca să pornească și să primească gesturi', async ({ page }) => {

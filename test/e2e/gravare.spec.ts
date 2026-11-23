@@ -16,7 +16,7 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   // Freza în V pe exterior (latura implicită): oprit, cu motivul.
   await rand.locator('[data-camp="forma-scula"]').selectOption('v');
   await expect(rand.locator('[data-camp="varf-v"]')).toHaveValue('0');
@@ -62,7 +62,7 @@ test('gravarea pe linie cu freza de gravare: V pe exterior refuzat; pe linie, cu
   await expect(panou).toContainText('T1, V 30° cu vârful de 0.25 mm, Ø3.175 mm');
   await expect(panou).toContainText('invers');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-operatie]').first();
+  const din = page.locator('[data-fisa="op"]').first();
   await expect(din.locator('[data-camp="latura"]')).toHaveValue('pe-linie');
   await expect(din.locator('[data-camp="varf-v"]')).toHaveValue('0,25');
   await expect(din.locator('[data-camp="directie"]')).toHaveValue('invers');

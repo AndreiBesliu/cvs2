@@ -34,7 +34,7 @@ async function importa(page: Page, entitati: string): Promise<void> {
 async function gaurire(page: Page): Promise<number> {
   await page.locator('[data-actiune="export.gcode"]').click();
   // Rândul întâi (fereastra vine la cerere): numărate înainte de el, alegerile ar fi zero și fără conversie.
-  const latura = page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]');
+  const latura = page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]');
   await expect(latura.locator('option').first()).toBeAttached();
   const n = await latura.locator('option[value="gaurire"]').count();
   await page.getByRole('button', { name: 'Închide' }).click();

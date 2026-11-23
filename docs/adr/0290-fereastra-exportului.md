@@ -283,3 +283,28 @@ Trimite la mașină”, Pas cu pas = „D · Pasul 5”. Propunerea:
 | 28.8↑f | Rezultatul în fereastră, Atelier (densitatea mare), fișa ca piesă de sine stătătoare pentru Clasic și Pas cu pas, privirea pe fereastra reală cu fontul lat | ≈ +0,5 kB |
 
 Fiecare felie are proba scrisă înainte, e2e, otrăvurile, documentele și canalul `export`. Înaintea lui 28.8↑a, tabla de pe canvas.
+
+## Tabla de pe canvas (23.11)
+
+Pe canvas-ul aranjamentelor (<https://claude.ai/artifact/VuzcaEYQsLoTvRBxpnSak2>), tabla „Exportul G-code” arată fereastra în
+cele patru aranjamente, cu harta schițelor schimbată ca la „Cu canvas-ul aranjamentelor”: Insule = lista și fișa.
+
+## Implementarea 28.8↑a (23.11)
+
+- **Toate fișele una sub alta, într-un singur panou derulat**, nu o fișă pe rând: Foaia și originea, Mașina și fișierul,
+  operațiile în ordinea tăierii, Rezultatul. Un clic în listă aduce fișa sus; derularea marchează în listă fișa de sus
+  (`aria-current`). Așa, un câmp e mereu în pagină (probele și „du-mă acolo” îl găsesc), iar Tab merge prin toată fereastra.
+  Sub ultima fișă stă un loc gol, ca și ea să poată veni sus.
+- **Grupurile fiecărui fel de operație și grupul fiecărui câmp** stau în `src/ui/exportGrupuri.ts` (pur); proba
+  `test/unit/export.grupuri.test.ts` citește câmpurile din sursa ferestrei, deci un câmp nou fără grup cade acolo.
+- **Ce nu se aplică nu apare:** pe un buzunar, o găurire, un V-carve sau o cale deschisă, rampa, intrările, colțurile și urechile
+  lipsesc, cu nota de azi sub Tăietura; despărțirea apare doar pe o operație cu căi deschise. Valorile lor rămân în rând (doar
+  nu se arată), deci programul e același.
+- **Explicația** e textul `title` al câmpului din fereastra de azi: la maus sau la focus, ia locul explicației grupului.
+- **Greșelile** sunt verificările de azi ale rândului (`randBun`), fiecare în grupul câmpului de reparat; un T cu două freze se
+  spune la fiecare loc al operației unde e scris (freza, fundul plat, frezele de rest, dopul, banda). Motivul de sub butoane
+  rămâne, cu „Du-mă la …” spre prima fișă greșită.
+- **Rezultatul vine sus o singură dată**, când apare: simularea sosește după descărcare și schimbă starea din nou, iar panoul nu
+  mai sare sub mausul omului (reprodus cu o probă care debifa „și tăieturile cât foaia” după export).
+- Eroarea unui export refuzat stă jos, lângă butoane, nu în Rezultat.
+- Mărimea: totalul 770,8 → 773,1 / 800 kB (+2,3), pornirea neschimbată (108,5 / 115).

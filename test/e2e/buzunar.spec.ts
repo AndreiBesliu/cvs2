@@ -15,11 +15,13 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="latura"]').selectOption('buzunar');
   const pas = page.locator('[data-camp="pas-lateral"]');
   await expect(pas).toHaveValue('2,4');
-  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toBeDisabled();
+  // Ce e al profilului nu apare pe fișă (ADR 0290), cu nota de ce, sub Tăietura.
+  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toHaveCount(0);
+  await expect(rand.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
   // Peste raza frezei (Ø6): exportul e oprit, cu motivul.
   await pas.fill('3,5');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
@@ -56,7 +58,7 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
   if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
   await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Buzunar pe 1 contur: 3 mm în treceri de 3 mm, T1 Ø6']);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]')).toHaveValue('buzunar');
+  await expect(page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]')).toHaveValue('buzunar');
   await expect(page.locator('[data-camp="pas-lateral"]')).toHaveValue('2,4');
 });
 
@@ -70,7 +72,7 @@ test('coborârea în buzunar: zigzagul își arată rampele, elicea iese în pro
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('buzunar');
+  await page.locator('[data-fisa="op"]').first().locator('[data-camp="latura"]').selectOption('buzunar');
   const cob = page.locator('[data-camp="coborare"]');
   await expect(cob).toHaveValue('plonjare');
   await expect(page.locator('[data-camp="unghi-coborare"]')).toHaveCount(0);

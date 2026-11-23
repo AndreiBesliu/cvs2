@@ -115,12 +115,12 @@ test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschid
   await expect(page.locator('[data-operatie="e1/deschise"] [data-camp="despartire"]')).toBeChecked();
 });
 
-test('E06: bifa „Despărțire” e inactivă pe un rând doar cu contururi închise', async ({ page }) => {
+test('E06: bifa „Despărțire” nu se poate pune pe un rând doar cu contururi închise (din ADR 0290, nu apare pe fișă)', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-operatie]')).toHaveCount(1);
-  await expect(page.locator('[data-operatie] [data-camp="despartire"]')).toBeDisabled();
+  await expect(page.locator('[data-operatie] [data-camp="despartire"]')).toHaveCount(0);
 });
 
 test('E07: al doilea clic al unui dublu-clic (detail = 2) pe „Importă” nu importă nimic', async ({ page }) => {

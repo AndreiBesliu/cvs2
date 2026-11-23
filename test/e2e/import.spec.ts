@@ -204,7 +204,9 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   await expect(val.locator('select[data-camp="latura"]')).toHaveValue('pe-linie');
   // Un rând cu o singură cale deschisă: pe linie, stânga, dreapta (ADR 0037 §12).
   await expect(val.locator('select[data-camp="latura"] option')).toHaveText(['pe linie', 'stânga', 'dreapta']);
-  await expect(val.locator('[data-camp="urechi"]')).toBeDisabled();
+  // Pe o cale deschisă, urechile vin într-o versiune următoare: nu apar pe fișă, cu nota de ce (ADR 0290).
+  await expect(val.locator('[data-camp="urechi"]')).toHaveCount(0);
+  await expect(val.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
   await page.locator('[data-operatie="e1/exterior"] select[data-camp="latura"]').selectOption('pe-linie');
   await page.locator('[data-operatie="e1/interior"] select[data-camp="latura"]').selectOption('pe-linie');
   // Desenul (400 × 300 pe pagină) iese din foaia de 300 × 200: confirmarea de la 1.10.

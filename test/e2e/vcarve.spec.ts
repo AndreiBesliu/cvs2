@@ -15,9 +15,11 @@ test('V-carve-ul din fereastra exportului: freza plată refuzată, freza în V p
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="latura"]').selectOption('vcarve');
-  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toBeDisabled();
+  // Ce e al profilului nu apare pe fișă (ADR 0290), cu nota de ce, sub Tăietura.
+  for (const camp of ['urechi', 'rampa', 'intrari', 'colturi']) await expect(rand.locator(`[data-camp="${camp}"]`)).toHaveCount(0);
+  await expect(rand.locator('[data-nota="nu-se-aplica"]')).toBeVisible();
   await expect(page.locator('[data-vcarve]')).toContainText('fără ea, fundul rămâne');
   // Cu freza plată (implicit): exportul e oprit, cu motivul.
   await expect(rand.locator('[data-camp="forma-scula"]')).toHaveValue('plata');
@@ -69,7 +71,7 @@ test('V-carve-ul din fereastra exportului: freza plată refuzată, freza în V p
   await expect(panou).toContainText('V-carve');
   await expect(panou).toContainText('T1, V 90°, Ø6.00 mm');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const din = page.locator('tr[data-operatie]').first();
+  const din = page.locator('[data-fisa="op"]').first();
   await expect(din.locator('[data-camp="latura"]')).toHaveValue('vcarve');
   await expect(din.locator('[data-camp="forma-scula"]')).toHaveValue('v');
   await expect(din.locator('[data-camp="unghi-v"]')).toHaveValue('90');
@@ -80,12 +82,12 @@ test('același T cu două forme e un conflict de freze: T1 plată Ø6 și T1 V90
   await adauga(page, 'dreptunghi');
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const randuri = page.locator('tr[data-operatie]');
+  const randuri = page.locator('[data-fisa="op"]');
   await expect(randuri).toHaveCount(2);
   for (let k = 0; k < 2; k++) await randuri.nth(k).locator('[data-camp="diametru"]').fill('6');
   // Freza în V taie pe linie (ADR 0092 §3): cercul, pe linie. Rândurile stau în ordinea tăierii (ADR 0133), deci cercul e
   // căutat după cheie, nu după loc.
-  const cerc = page.locator('tr[data-operatie="e2/e2"]');
+  const cerc = page.locator('[data-fisa="op"][data-operatie="e2/e2"]');
   await cerc.locator('[data-camp="latura"]').selectOption('pe-linie');
   await cerc.locator('[data-camp="forma-scula"]').selectOption('v');
   await cerc.locator('[data-camp="unghi-v"]').fill('90');
@@ -113,7 +115,7 @@ test('fundul plat cu freza dreaptă: bifa, conflictul, programul cu două freze 
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const rand = page.locator('tr[data-operatie]').first();
+  const rand = page.locator('[data-fisa="op"]').first();
   await rand.locator('[data-camp="latura"]').selectOption('vcarve');
   await rand.locator('[data-camp="forma-scula"]').selectOption('v');
   await rand.locator('[data-camp="unghi-v"]').fill('90');
