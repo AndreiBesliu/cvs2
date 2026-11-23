@@ -305,11 +305,14 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   await intraCaOwner(page);
   await page.locator('[data-fila="sugestii"]').click();
   await expect(coloana(page, 'noua').locator('[data-sugestie]')).toHaveCount(3, LENT);
-  // De aici, nicio citire a listei (`:runQuery`) și niciun document citit (`batchGet`): mutările țin decizia din răspuns.
+  // De aici, nicio citire a listei (`:runQuery`) și nicio sugestie citită (`batchGet`): mutările țin decizia din răspuns.
+  // Doar citirile sugestiilor (colecția e în corpul cererii): rezumatul de la intrare (Diagnoza din bară: marcajele, apoi
+  // amprenta publicării) poate fi încă pe drum când lista a sosit.
   const citiri: string[] = [];
   page.on('request', (q) => {
     const u = new URL(q.url());
-    if (u.pathname.endsWith('/documents:runQuery') || u.pathname.endsWith('/documents:batchGet')) citiri.push(`${u.pathname} ${q.postData() ?? ''}`);
+    const corp = q.postData() ?? '';
+    if ((u.pathname.endsWith('/documents:runQuery') || u.pathname.endsWith('/documents:batchGet')) && corp.includes('sugestii')) citiri.push(`${u.pathname} ${corp}`);
   });
 
   // Fără notă cerută: tragerea în Acceptată pleacă pe loc. Cât cererea e în drum (ținută aici), cardul stă deja în coloana
@@ -341,9 +344,15 @@ test('tabla: tragerea, nota cerută la Respinsă și Amânată, „Mută în…�
   await expect(coloana(page, 'noua').locator('[data-sug="numar"]')).toHaveText('2');
   await expect(coloana(page, 'acceptata').locator('[data-sug="numar"]')).toHaveText('1');
 
-  // Respinsă: banda strânsă (fără respinse încă) primește cardul; fereastra cere nota; spațiile nu sunt o notă.
+  // Respinsă: banda strânsă (fără respinse încă) primește cardul, lăsat chiar peste butonul ei oprit; fereastra cere nota;
+  // spațiile nu sunt o notă.
   await expect(page.locator('[data-sug="respinse"]')).toBeDisabled();
-  await card(page, 'noua', 'Tema roz').dragTo(coloana(page, 'respinsa'));
+  const banda = await coloana(page, 'respinsa').boundingBox();
+  const butonBanda = await page.locator('[data-sug="respinse"]').boundingBox();
+  if (!banda || !butonBanda) throw new Error('banda Respinselor nu e pe pagină');
+  await card(page, 'noua', 'Tema roz').dragTo(coloana(page, 'respinsa'), {
+    targetPosition: { x: butonBanda.x - banda.x + butonBanda.width / 2, y: butonBanda.y - banda.y + butonBanda.height / 2 },
+  });
   const fereastra = page.locator('[data-sug="cere-nota"]');
   await expect(fereastra).toBeVisible();
   await expect(fereastra.locator('h2')).toHaveText('Mută „Tema roz” în Respinsă');

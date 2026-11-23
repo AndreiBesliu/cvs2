@@ -114,7 +114,8 @@ E2E = ['test/e2e-emulator/sugestii.emulator.spec.ts']
 # Proba fiecărei otrăvi de emulatoare: fișierul și titlul ei (`--grep`), pentru bucla locală.
 S = 'test/e2e-emulator/sugestii.emulator.spec.ts'
 T1, T2 = (S, 'omul scrie și își editează sugestia'), (S, 'decizia pe o sugestie schimbată între timp')
-T3, T4, T5 = (S, 'tabla: tragerea, nota cerută'), (S, 'tabla: o mutare refuzată'), (S, 'din editor (ADR 0111)')
+# Titlurile, fără paranteze: `--grep` e o expresie regulată, iar „(ADR 0111)” ar fi un grup (nicio probă potrivită).
+T3, T4, T5 = (S, 'tabla: tragerea, nota cerută'), (S, 'tabla: o mutare refuzată'), (S, 'face poza planșei')
 GREP = {
     'E01': T3, 'E02': T3, 'E03': T3, 'E04': T3, 'E05': T2, 'E06': T3, 'E07': T3, 'E08': T3, 'E09': T4, 'E10': T3,
     'E11': T3, 'E12': T3, 'E13': T3, 'E14': T3, 'E15': T3, 'E16': T3, 'E17': T4, 'E18': T2, 'E19': T5, 'E20': T1,
