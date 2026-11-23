@@ -1276,6 +1276,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, la prânz: **mutarea întregii producții în cloud** (la „ca sa fie clar, eu vreau sa mutam toata productia
+  proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia de acolo, cu toate worktrees si asa mai departe” și „În
+  repo, docs/linii” ale owner-ului): ramura `wip/lucru-cloud-2` (`ec745716`), unită în `7c5adbf8`. Uneltele sesiunii
+  principale în cloud: `.github/workflows/canal.yml` (canalele de previzualizare din GitHub Actions, cu WIF, în mediul
+  `test`, doar pentru o ramură cu rapidul verde), `scripts/cloud/ci-si-publica.sh` (CI-ul și publicarea unui commit din
+  `main`, de reluat în container), `run-name` în `publica.yml`; `docs/lucru-in-cloud.md` v3 (sesiunea principală în
+  cloud, PR-ul liniei gata, canalele, ce rămâne pe calculatorul owner-ului). Notele liniilor în `docs/linii/` (18 note
+  aduse din memoria sesiunii principale, `lectii.md`, indexul și `principala.md`), după ecranul repo-ului public.
+  Publicarea pe test și pe live mergea deja din GitHub (`publica.yml`: serverul și hosting-ul). Urmează: liniile în
+  lucru și sesiunea principală, mutate în cloud.
 - 23.11.2026, dimineața (a treia unire, 10:30): **lotul de după pauză unit în `main`** (worktree-ul `unire`, ramura
   `unire-2311`, din `308b4cb7`). **12.1↑e-2** (incrustațiile: dopul întors în locașul simulat, ADR 0179), din
   `082435b4`, nu din vârful `wip/12.1-incrustatii` (WIP 12.1↑e-3), unită în `3fc56052`. **10.3↑o** (legarea căilor, ADR
