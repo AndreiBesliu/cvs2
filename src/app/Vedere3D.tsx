@@ -611,10 +611,16 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
           schimbaCamera(nou);
         }}
       />
-      {/* Cu secțiunea, insula ar putea fi mai înaltă decât zona liberă (o gaură prin foaia de 18): rămâne în zonă, iar secțiunea se derulează. */}
+      {/*
+        Insula rămâne în zona liberă: cel mult cât lățimea ei (pe un ecran îngust, altfel intră sub panoul de proprietăți) și,
+        cu secțiunea, cât înălțimea ei (o gaură prin foaia de 18): atunci secțiunea se derulează.
+      */}
       <div
         className={impreuna ? 'insula stare-3d cu-sectiune' : 'insula stare-3d'} data-testid="stare-3d"
-        style={{ left: zona.x + 8, top: zona.y + 8, ...(impreuna ? { maxHeight: Math.max(160, zona.h - 16) } : {}) }}
+        style={{
+          left: zona.x + 8, top: zona.y + 8, ['--zona-latime' as string]: `${Math.max(160, zona.w - 16)}px`,
+          ...(impreuna ? { maxHeight: Math.max(160, zona.h - 16) } : {}),
+        }}
       >
         {/* Foaia sau un dop (ADR 0178): butoanele apar doar când foaia are dopuri (sau unul e încă ales). */}
         {dopuri.lista.length > 0 || dop !== null ? (

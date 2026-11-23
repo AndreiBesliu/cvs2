@@ -7,7 +7,8 @@
 //   node scripts/privire-sectiune.mjs <dosar> <varianta> [limba] [adresa]
 //
 // Variantele: v (incrustația în V), fund (pereți drepți, implicitele panoului), lateral (jocul lateral 0,5), fata, decupat,
-// gaura-decupat, gaura-ridicat, cerc. Limba: ro-RO (implicit) sau en-US. Mărimea ferestrei: LAT și INALT (implicit
+// gaura-decupat, gaura-ridicat, cerc; în trepte (adâncimea 8, umărul d 3, s 5, spre interior): trepte (pe umăr), trepte-fund,
+// trepte-decupat, trepte-gaura (gaura prin foaie, dopul ridicat), trepte-exterior. Limba: ro-RO (implicit) sau en-US. Mărimea ferestrei: LAT și INALT (implicit
 // 1400 × 900). Variantele alese în fereastra exportului apasă „Exportă” (fișierul se descarcă în dosarul temporar al
 // browserului). În Edge, ca e2e-ul.
 import { chromium } from '@playwright/test';
@@ -54,6 +55,13 @@ if (varianta === 'v') {
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
   const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  if (varianta.startsWith('trepte')) {
+    await page.locator('tr[data-operatie]').first().locator('[data-camp="adancime"]').fill('8');
+    await inc.locator('[data-camp="inc-treapta"]').selectOption(varianta === 'trepte-exterior' ? 'exterior' : 'interior');
+    await inc.locator('[data-camp="inc-treapta-adancime"]').fill('3');
+    await inc.locator('[data-camp="inc-treapta-latime"]').fill(varianta === 'trepte-exterior' ? '4' : '5');
+    if (varianta === 'trepte-fund') await inc.locator('[data-camp="inc-sprijin"]').selectOption('fund');
+  }
   if (varianta.includes('gaura')) await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
   if (varianta.includes('decupat')) {
     // Marginea dopului decupat trebuie să fie cel puțin cât freza lui: freza dopului, a lui (Ø3).
