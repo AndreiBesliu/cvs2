@@ -2817,6 +2817,10 @@
       "ro": "**Măsurarea pe un laptop de atelier** (bancul s6-V, cu pragurile din T13).",
       "en": "**Measuring on a workshop laptop** (the s6-V bench, with the thresholds from T13)."
     },
+    "bfddb116cedaaa8a": {
+      "ro": "Utilizarea aplicației",
+      "en": "App usage"
+    },
     "c00da2966bb78b19": {
       "ro": "Instanțele fonturilor variabile, aduse din etapa 7",
       "en": "Variable font instances, brought forward from stage 7"
