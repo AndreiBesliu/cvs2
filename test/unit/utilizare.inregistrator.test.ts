@@ -116,6 +116,16 @@ test('fără cont sau cu colectarea oprită: evenimentele intră doar în pașii
   assert.equal(m.ins.pasi().length, 2);
 });
 
+test('un eveniment de dinaintea intrării în cont nu intră în lotul de după ea', () => {
+  const m = mediu();
+  m.cont(null);
+  m.ins.actiune('document.roteste', 'ok');
+  m.cont('ana');
+  m.ins.actiune('document.oglindeste', 'ok');
+  m.ins.inchideLotul();
+  assert.deepEqual(m.ins.loturi().map((x) => x.lot.evenimente.map((e) => e.id)), [['document.oglindeste']]);
+});
+
 test('lotul plin (200) se închide singur și cere trimiterea', () => {
   const m = mediu();
   for (let i = 0; i < 200; i++) m.ins.actiune(i % 2 === 0 ? 'document.roteste' : 'document.oglindeste', 'ok');
