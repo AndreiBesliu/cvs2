@@ -308,7 +308,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Documentul și serverul nu s-au schimbat:** alegerea frezei în proiect (documentul v27) vine în 16.A↑b, salvarea în
   cont în 16.A↑c, apoi calibrarea, bila și toroidala, profilul desenat, valorile pe material. **Un rând nou în meniul
   contului se numără și în proba tichetelor de pe emulatoare** (`test/e2e-emulator/tichete.emulator.spec.ts`), nu doar în
-  `cont.spec.ts`. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu Atelierul 114,2), totalul 793,6 / 800: mai sunt 6,4 kB.**
+  `cont.spec.ts`. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu Atelierul 114,2), totalul 793,6 / 900.**
+  **Plafonul total 900 kB (ADR 0301, decizia owner-ului din 23.11, „ok, ridica plafonul total la 900 kB”):** cu 16.A↑a,
+  totalul era 793,6 / 800, iar feliile următoare (frezele, fereastra exportului, utilizarea, aranjamentele) nu mai
+  încăpeau în 6,4 kB. **Pornirea rămâne 115 kB:** cu ușa și cu Atelierul e la 114,2, deci o felie care atinge pornirea
+  cere întâi loc (o bucată mutată la cerere) sau decizia owner-ului pe plafonul ei (ADR 0252).
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
