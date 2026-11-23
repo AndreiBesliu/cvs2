@@ -12076,7 +12076,7 @@ PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului�
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
 `AndreiBesliu/cvs2#8`, A.6 din `df098dad`); pe drum, owner-ul: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie
 si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frezelor.”
-**Started:** 23.11, 19:20. **Completed:** unirea în `main`, 23.11, 20:27; publicările pe test, în rândul de la capăt.
+**Started:** 23.11, 19:20. **Completed:** 23.11, 21:37 (unirea în `main` la 20:27, publicarea pe test la 21:37).
 
 - **Lotul, întâi cu două felii:** `unire-2311f` din `d6fd5d68`: 11.3↑f (`527a95f3`, raportată gata) și A.6 (`df098dad`);
   porțile pornite la 19:20.
@@ -12112,3 +12112,33 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 - **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
   (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
   prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
+
+## 2026-11-23 — Sesiunea principală în cloud: a șaptea unire (3.Xh, biblioteca extensiilor refăcută; 12.1↑e-3 și 12.1↑e-4, pereții drepți și treptele în secțiune) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor bibliotecii și
+incrustațiilor (PR-urile `AndreiBesliu/cvs2#4` și `AndreiBesliu/cvs2#7`); linia bibliotecii, cu „ok, uneste-l” al owner-ului
+spus în sesiunea ei.
+**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, în rândul de la capăt.
+
+- **Înainte:** publicarea lui `ee4f629d` (A.6, cu 11.3↑f): completul pe `main` verde, `publica.yml` verde, adresa de test
+  spune `ee4f629d8aa7` (21:37). Între `d6fd5d68` și el, sesiunea planșelor publicase și ea `c8b235ab` (20:58), înainte să-i
+  ajungă mesajele: ordinea pe test a rămas a commit-urilor. Mesajele între sesiuni ajung doar între ture.
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; biblioteca avea `main` (`870e8759`), incrustațiile
+  `6f85243f`; Easy 3Draw 18.21.0 în `extensie.json` și în `extensii/biblioteca.json`, cu amprenta și cu rândul de „ce e
+  nou”; completul verde pe `18c4941` și rapidul pe `611a3c5f` (biblioteca), rapidul și completul pe `0b676694`
+  (incrustațiile).
+- **Unirea:** `unire-2311i` din `origin/main` (`870e8759`): 3.Xh în `2d1e482c` (arborele chiar al lui `611a3c5f`),
+  12.1↑e-3 și 12.1↑e-4 în `03460cab`; nicio ciocnire, nici în DEVLOG. În container, pe arborele comun: tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (947, 0 lipsă), probele atinse și cele ale documentelor
+  206 / 206 (biblioteca, manualul cu 113 uși, potrivirea dopului drept și în trepte, urechile „unde ține” și pe laturi,
+  care împart `calculCam.ts` cu potrivirea).
+- **Sesiunea bibliotecii a scris înainte să împingă** (regula din `docs/lucru-in-cloud.md`): owner-ul îi ceruse unirea;
+  felia era deja în lot, deci s-a oprit și și-a oprit completul propriu.
+- **Porțile lotului, în CI, pe `03460cab`**, verzi la prima trecere (completul, 61 min 45 s): unit 9 960 / 0 (12 sărite),
+  e2e 628 / 628, funcțiile pe emulatoare 104 / 104, paginile 41 / 41; pornirea 108,6 / 115 (cu ușa 113,1; cu Atelierul
+  113,4), totalul 778,6 / 800, `/admin` 127,5 / 200; Easy 3Draw 18.21.0, 461,1 kB; catalogul 4,9 kB; semnele și capturile,
+  7 fișiere, 211,6 kB (în afara plafonului).
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al bibliotecii (regulile noi: „ce e nou” la fiecare versiune,
+  versiunile a două linii pe aceeași extensie, grupul paletei); indexul liniilor; starea din `docs/linii/principala.md`.
+- **La owner:** plafonul total (778,6 / 800: feliile gata și cele în lucru nu mai încap toate), fondul semnului lui Easy
+  3Draw, rândul de „ce e nou” al lui 18.20.0.
