@@ -35,7 +35,8 @@ Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul but
 
 - **Ramura:** fiecare linie lucrează pe ramura ei `wip/<felia>-<nume>` (de pildă `wip/3.Tq-elice`). La pornire face
   `git fetch`, `git status`, `git log -5` și citește ultima intrare a liniei în `DEVLOG.md`, apoi continuă de unde a rămas
-  ramura. Dacă `package-lock.json` diferă de cel din `main`, rulează întâi `npm ci` (și `npm --prefix functions ci`).
+  ramura. Dacă lipsește `node_modules` sau `package-lock.json` diferă de cel din `main`, rulează întâi `npm ci` (și
+  `npm --prefix functions ci`). Dacă `node -v` nu e 26, pregătirea mediului a lipsit: se spune în raport.
 - **Cine scrie în `main`:** liniile doar împing ramura lor. În `main` scrie numai sesiunea principală, la unire.
 - **`main` adus în ramură:** înaintea documentelor unei felii, linia aduce `origin/main` în ramura ei. O ciocnire doar în
   `DEVLOG.md` se rezolvă cu `python3 -X utf8 scripts/rezolva-devlog.py DEVLOG.md`, care păstrează ambele părți.
