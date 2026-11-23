@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { catalogDinSursa, FISIER_CATALOG, textCatalog } from '../../scripts/catalog-controale.ts';
-import { CATALOG_CONTROALE } from '../../src/app/catalogControale.ts';
 import { DIN_COD, numeControl, numeDin } from '../../src/app/numeControl.ts';
 
 /**
@@ -18,16 +17,18 @@ test('catalogul scris e cel din sursă', () => {
 });
 
 test('catalogul are controalele și dialogurile editorului, nu și adminul sau valorile calculate', () => {
+  // Pe ce scoate scriptul acum (egal cu cel scris, după proba de mai sus), ca o schimbare a lui să cadă și aici.
+  const catalog = new Set(catalogDinSursa());
   for (const n of ['testid.dialog-cont', 'eticheta.export-titlu', 'icona.vedere.paleta', 'camp.cont-email', 'buton.cont-intra']) {
-    assert.ok(CATALOG_CONTROALE.has(n), n);
+    assert.ok(catalog.has(n), n);
   }
-  for (const n of CATALOG_CONTROALE) {
+  for (const n of catalog) {
     assert.ok(numeDin(n.slice(0, n.indexOf('.')), n.slice(n.indexOf('.') + 1)) === n, `numele ${n} e deja normalizat`);
     assert.ok(!DIN_COD.has(n.slice(0, n.indexOf('.'))), `${n}: ce pune codul nu intră în catalog`);
   }
   // Butonul adminului (`id="set-rapid-exemple"`) nu intră; nici reperul ancorei de pe pânză (un `div` fără rol).
-  assert.ok(!CATALOG_CONTROALE.has('id.set-rapid-exemple'), 'adminul nu se înregistrează');
-  assert.ok(!CATALOG_CONTROALE.has('testid.ancora'), 'doar controalele și ferestrele');
+  assert.ok(!catalog.has('id.set-rapid-exemple'), 'adminul nu se înregistrează');
+  assert.ok(!catalog.has('testid.ancora'), 'doar controalele și ferestrele');
 });
 
 test('numele unui control: primul atribut cu un nume din catalog; din registru și uneltele trec după formă', () => {
