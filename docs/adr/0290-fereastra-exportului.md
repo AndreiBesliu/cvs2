@@ -1,6 +1,7 @@
 # ADR 0290: Fereastra „Exportă G-code”: lista și fișa, cu desenul fiecărei setări
 
-**Starea:** propus pe 23.11.2026, la cererea owner-ului, cu schița și patru întrebări. Codul pornește doar după răspunsuri.
+**Starea:** propus pe 23.11.2026, la cererea owner-ului, cu schița și patru întrebări; **acceptat în aceeași zi, cu toate
+recomandările („1a, 2a, 3a, 4a”;** secțiunea „Răspunsurile owner-ului”). Întâi tabla de pe canvas, apoi feliile 28.8↑a–f.
 Primul număr al intervalului 0290–0299, al liniei exportului (ramura `wip/28.8-export`, canalul `export` al instanței de
 test). Schița, cu fereastra propusă de încercat, capturile de azi și formularul întrebărilor:
 <https://claude.ai/artifact/FX4y5HfSixLXthAcnrzUQP>.
@@ -226,6 +227,21 @@ vine la cerere.
      al lui Pas cu pas. Întâi o tablă pe canvas („Exportul G-code, în cele patru”), apoi codul (regula din ADR 0250).
    - **b:** acum doar Insule; celelalte aranjamente își fac fereastra în feliile lor (28.2↑, 28.4↑).
 
+## Răspunsurile owner-ului
+
+Pe 23.11.2026, exact: „1a, 2a, 3a, 4a”.
+
+1. **a, lista și fișa** (direcția B).
+2. **a, pozele desenate de mână și desenele întrebărilor generate din valori,** totul în bucata ferestrei, adusă la cerere.
+3. **a, sub desenul întrebării, textul câmpului activ,** plus propoziția scurtă mereu la vedere sub câmpurile care o cer.
+4. **a, aceeași fereastră în toate aranjamentele,** cu tabla pe canvas înaintea codului. În cod există azi Insule și Atelier
+   (28.1↑c); Clasicul (28.2↑) și Pas cu pas (28.4↑) nu sunt încă scrise, deci fișa operației se face o componentă de sine
+   stătătoare, pe care o iau ele când vin, iar felia 28.8↑f le pregătește locul.
+
+**Feliile, precizate la acceptare.** Carcasa nouă nu poate lăsa jumătate din câmpuri în tabelul vechi, deci 28.8↑a mută toate
+câmpurile de azi în fișă, grupate pe întrebări, fără desene încă (cu explicația câmpului activ, din textele de azi); desenele și
+pozele vin apoi pe familii (b–e). Tabelul de la „Feliile” e cel de după acceptare.
+
 ## Cu canvas-ul aranjamentelor
 
 Harta schițelor are, la „Exportul G-code”: Insule = „fereastra de azi”, Clasic = „B · Fereastra exportului”, Atelier = „C ·
@@ -259,11 +275,11 @@ Trimite la mașină”, Pas cu pas = „D · Pasul 5”. Propunerea:
 
 | Felia | Ce aduce | Mărimea |
 | --- | --- | --- |
-| 28.8↑a | Carcasa: lista, fișa, jos sumarul și butoanele; greșelile lângă câmp și punctul roșu; cartonașele cu poze; probele e2e mutate | ≈ +2,5 kB |
-| 28.8↑b | Fișa profilului: tăietura, freza, adâncimea și trecerile, sensul, rampa, intrările, colțurile, urechile, despărțirea | ≈ +2,5 kB |
-| 28.8↑c | Buzunarul (traseul, pasul lateral, coborârea, frezele de rest) și găurirea | ≈ +1,5 kB |
-| 28.8↑d | V-carve, fundul plat, incrustația în V și banda dopului | ≈ +1 kB |
-| 28.8↑e | Incrustația cu pereți drepți: locașul, treapta, dopul, sprijinul, jocurile, punțile | ≈ +1 kB |
-| 28.8↑f | Rezultatul în fereastră, manualul, Atelier și Clasic, privirea pe fereastra reală cu fontul lat | ≈ +0,5 kB |
+| 28.8↑a | Carcasa: lista (foaia și originea, mașina și fișierul, operațiile în ordinea tăierii, cu ordinea de mână), fișa operației cu toate câmpurile de azi grupate pe întrebări, explicația câmpului activ la vedere, greșelile lângă câmp și punctul roșu, jos sumarul și butoanele; probele e2e mutate pe selectorii noi; manualul | ≈ +2,5 kB |
+| 28.8↑b | Desenele și pozele foii, ale mașinii și ale profilului: colțul XY0, Z0 și supracursa, tăietura, freza, adâncimea și trecerile, sensul, rampa, intrările, colțurile, urechile, despărțirea | ≈ +3 kB |
+| 28.8↑c | Ale buzunarului (traseul, pasul lateral, coborârea, frezele de rest) și ale găuririi | ≈ +1,5 kB |
+| 28.8↑d | Ale V-carve-ului, fundului plat, incrustației în V și benzii dopului | ≈ +1 kB |
+| 28.8↑e | Ale incrustației cu pereți drepți: locașul, treapta, dopul, sprijinul, jocurile, punțile | ≈ +1 kB |
+| 28.8↑f | Rezultatul în fereastră, Atelier (densitatea mare), fișa ca piesă de sine stătătoare pentru Clasic și Pas cu pas, privirea pe fereastra reală cu fontul lat | ≈ +0,5 kB |
 
 Fiecare felie are proba scrisă înainte, e2e, otrăvurile, documentele și canalul `export`. Înaintea lui 28.8↑a, tabla de pe canvas.

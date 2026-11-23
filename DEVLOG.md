@@ -11690,6 +11690,10 @@ ficare setare sa fie insotita de o ilustratie sugestiva, ca sa ajute userul sa i
 - **`main` adus în ramură** (`c8b235ab`, cu 11.3↑f; ciocnirea doar în DEVLOG, rezolvată cu `rezolva-devlog.py`): urechile au
   încă trei locuri (pe laturile lungi, pe cele scurte, la mijloc), puse în inventar și în schiță; cifrele refăcute: 91 de câmpuri
   (72 după o alegere), 53 de poze (1,9 kB), desenele 5,8 kB; totalul 770,9 / 800.
+- **Răspunsul owner-ului:** „1a, 2a, 3a, 4a” (toate recomandările); ADR 0290 acceptat, cu feliile precizate (28.8↑a mută
+  toate câmpurile în fișă; desenele pe familii, în b–e).
+
+**Completed:** 23.11, seara (propunerea, acceptată). Urmează tabla de pe canvas, apoi 28.8↑a.
 
 
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
