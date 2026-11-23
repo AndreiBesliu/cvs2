@@ -12327,7 +12327,7 @@ spus în sesiunea ei.
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor adminului și
 trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
-**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 24.11, 00:05; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 23.11, 23:57; publicarea pe test, în rândul de la capăt.
 
 - **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; adminul avea `main` `ee4f629d`, trasarea `c8b235ab`;
   completul verde pe `09966989` (adminul; după el, doar documente până la `55d26b81`) și pe `1868b4e4` (trasarea; apoi

@@ -298,6 +298,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`numereFreze` în `src/model/rol.ts`); recunoașterea ignoră numerele frezelor. **Un câmp nou al operației intră singur în
   rol; unul care ține de o formă anume (ca `despartire`) se scoate în `model()` și în aplicare** (`src/model/rolPersonal.ts`).
   **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 432,1 / 450.**
+  **Biblioteca de freze (ADR 0300, felia 16.A↑a, adusă din etapa 16)** gata pe 23.11, în sesiunea cloud a liniei (ramura
+  `wip/16.A-freze`), unită în `main` pe 24.11 (`02a5864a`), din cererea owner-ului din 23.11: fereastra **Frezele mele**
+  (rândul „Frezele mele…” din meniul contului și `vedere.freze` în paletă, din orice fereastră; `src/app/FrezeleMele.tsx`,
+  la cerere, cu modulul de mesaje `freze`): lista pe feluri, cu căutarea; editorul, cu silueta la scară și refuzurile pe
+  câmp; duplicarea, ștergerea, frezele de pornire; exportul JSON și importul JSON sau CSV (`src/io/frezeFisier.ts`).
+  Frezele (plată, în V, de gravare) stau în browser (IndexedDB `cncvs2-freze`, `src/app/frezeMele.ts`); modelul pur e
+  `src/model/freza.ts`, cu marginile ușii documentului (`sculaDinFreza` dă copia care trece de schema operației).
+  **Documentul și serverul nu s-au schimbat:** alegerea frezei în proiect (documentul v27) vine în 16.A↑b, salvarea în
+  cont în 16.A↑c, apoi calibrarea, bila și toroidala, profilul desenat, valorile pe material. **Un rând nou în meniul
+  contului se numără și în proba tichetelor de pe emulatoare** (`test/e2e-emulator/tichete.emulator.spec.ts`), nu doar în
+  `cont.spec.ts`. **Pornirea 109,4 kB (cu ușa 113,9 / 115; cu Atelierul 114,2), totalul 793,6 / 800: mai sunt 6,4 kB.**
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
   owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
   `cont` al aranjamentului), panoul contului (doar online,
