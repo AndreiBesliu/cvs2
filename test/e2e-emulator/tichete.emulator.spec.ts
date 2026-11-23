@@ -133,7 +133,7 @@ test('raportarea din editor, cu poza și amprenta erorii din sesiune; răspunsul
   // Cu contul deschis, meniul are raportările.
   const meniu = await deschideMeniulContului(page);
   await expect(meniu.locator('[role="menuitem"] > span')).toHaveText([
-    'Contul meu…', 'Raportările mele', 'Manualul', 'Aspectul…', 'Raportează o problemă…', 'Trimite o sugestie…', 'Ieși din cont',
+    'Contul meu…', 'Raportările mele', 'Frezele mele…', 'Manualul', 'Aspectul…', 'Raportează o problemă…', 'Trimite o sugestie…', 'Ieși din cont',
   ]);
   await meniu.locator('[data-meniu-cont="raporteaza"]').click();
   const r = page.getByTestId('dialog-raportare');

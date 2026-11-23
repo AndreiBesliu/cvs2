@@ -1251,6 +1251,52 @@ Intersections between shapes are only shown: they may be intended, since the bit
 export says what cannot be cut. A shape from a part placed more than once is not repaired from here, since the repair
 would change all of them: the row says how many times it is placed.
 
+## My bits
+%% capitol: freze
+%% acopera: vedere.freze
+
+The **My bits** window keeps your bits. It opens from the **Account** menu (the **My bits…** row) or from the command
+palette. It works without an account and offline: the library lives in this browser (saving it in your account comes in a
+later slice). Soon you will pick a bit from the library on the export rows and in the Cutting section; until then, the bit is
+typed on the row, as before (see [Exporting G-code](#export)).
+
+The **list**, on the left, groups the bits by kind (Flat, V, Engraving), each with a small profile, the preferred T, the
+spindle speed and the feed. **Search for a bit** filters by name, and the **All**, **Flat**, **V** and **Engraving** buttons
+show a single kind. On a phone, the list comes first; a bit you pick opens full screen, and **Bits** takes you back.
+
+**New bit** opens the editor, with the fields:
+- **Name**: left empty, the bit gets the name proposed from its kind and diameter (“Flat Ø6”, “V60 Ø6”, “Engraving 30° tip
+  0.2 Ø3.175”). Two bits cannot share a name (case does not matter);
+- **Kind**: **Flat**, **V** (with the **Included angle**, between 1° and 179°) or **Engraving** (a V bit with a **Flat tip**,
+  smaller than the diameter);
+- **Diameter** (at most 100 mm), **Cutting length** (if you know it; for V and engraving bits, at least the cone),
+  **Flutes** (if you know them) and **Preferred T** (1–999, the number on the tool holder);
+- **Working values**: **Spindle speed** (rpm), **Feed** and **Plunge** (mm/min), **Step-down** (mm) and **Stepover** (% of
+  the diameter, at most 50);
+- **Note**: the maker, the code, where it came from.
+
+The profile on the right is to scale. Numbers take a comma or a point. **Save** keeps the bit, and **Discard changes** puts
+back what was there. If you pick another bit or close the window with unsaved changes, they are saved on their own when they
+are valid; otherwise the window stays and shows the fields to fix. **Duplicate** makes a copy of the bit, and **Delete…** asks
+first; projects that use it keep their copy.
+
+**Add the starter bits** shows while the library is empty: six common bits (flat Ø3.175, Ø6 and Ø12, V60 Ø6, V90 Ø12 and an
+engraving bit of 30° with a 0.2 tip and Ø3.175), with the app’s default values (18,000 rpm, a feed of 1,000 mm/min, a plunge
+of 300 mm/min). Change them afterwards to match your bits.
+
+**Export…** saves the library to the file `frezele-mele.cvs2freze.json`, which you bring in with **Import…** on another
+computer. **Import…** also reads a CSV (saved from Excel, for example) with a header row and the columns `nume`, `fel`
+(`plata`, `v` or `gravare`), `diametru`, `unghi`, `varf`, `numar` (the T), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri` and `nota`, in any order. Only `nume`, `fel` and `diametru` are required; without the others,
+the T is 1, the spindle speed 18,000, the feed 1,000, the plunge 300, the step-down half the diameter (for a flat bit) or
+1 mm, and the stepover 40 %. The separator (`;`, `,` or tab) is found on its own; with `;`, numbers may use a decimal comma.
+Before importing, you choose what happens to a name that already exists: **Keep both** (the default; the new one gets
+“(2)”), **Replace** or **Skip**. Rows that are wrong are skipped and counted.
+
+At the bottom, the window says where the library lives: **Only in this browser**. In a private window or with the site’s
+data blocked, the bits last only as long as the tab, and the window says so. A library written by a newer version of the app
+is read-only.
+
 ## The cutting operations
 %% capitol: operatii
 %% acopera: document.aplica-operatii, document.rol

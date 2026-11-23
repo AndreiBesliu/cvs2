@@ -1209,6 +1209,52 @@ Intersecțiile dintre forme doar se arată: pot fi voite, fiindcă freza urmeaz�
 spune ce nu se poate tăia. O formă dintr-o piesă pusă de mai multe ori nu se repară de aici, fiindcă reparația le-ar
 schimba pe toate: rândul spune de câte ori e pusă.
 
+## Frezele mele
+%% capitol: freze
+%% acopera: vedere.freze
+
+Fereastra **Frezele mele** ține frezele tale. Se deschide din meniul **Cont** (rândul **Frezele mele…**) sau din paleta de
+comenzi. Merge și fără cont și fără rețea: biblioteca stă în acest browser (salvarea în cont vine într-o felie următoare). În
+curând alegi o freză din bibliotecă pe rândurile exportului și în secțiunea Tăierea; până atunci, freza se scrie pe rând, ca
+înainte (vezi [Exportul G-code](#export)).
+
+**Lista**, în stânga, are frezele pe feluri (Plate, În V, Gravare), fiecare cu silueta mică, T-ul preferat, turația și
+avansul. **Caută o freză** filtrează după nume, iar butoanele **Toate**, **Plate**, **În V** și **Gravare** arată un singur
+fel. Pe telefon, lista vine întâi; o freză aleasă se deschide pe tot ecranul, iar **Frezele** te întoarce la listă.
+
+**Freză nouă** deschide editorul, cu câmpurile:
+- **Numele**: gol, freza primește numele propus din fel și diametru („Plată Ø6”, „V60 Ø6”, „Gravare 30° vârf 0,2 Ø3,175”).
+  Două freze nu pot avea același nume (fără deosebire de majuscule);
+- **Felul**: **Plată**, **În V** (cu **Unghiul inclus**, între 1° și 179°) sau **Gravare** (o freză în V cu **Vârful plat**,
+  mai mic decât diametrul);
+- **Diametrul** (cel mult 100 mm), **Lungimea tăișului** (dacă o știi; la V și la gravare, cel puțin cât conul),
+  **Tăișuri** (dacă le știi) și **T preferat** (1–999, numărul de pe portscule);
+- **Valorile de lucru**: **Turația** (rot/min), **Avansul** și **Plonjarea** (mm/min), **Pasul pe trecere** (mm) și
+  **Pasul lateral** (% din diametru, cel mult 50);
+- **Nota**: producătorul, codul, de unde e.
+
+Silueta din dreapta e la scară. Numerele se scriu cu virgulă sau cu punct. **Salvează** păstrează freza, iar **Renunță la
+schimbări** pune la loc ce era. Dacă alegi altă freză sau închizi fereastra cu schimbări nesalvate, ele se salvează singure
+când sunt bune; altfel fereastra rămâne și arată câmpurile de reparat. **Duplică** face o copie a frezei, iar **Șterge…**
+cere confirmarea; proiectele care o folosesc își păstrează copia ei.
+
+**Adaugă frezele de pornire** apare cât biblioteca e goală: șase freze obișnuite (plate Ø3,175, Ø6 și Ø12, V60 Ø6, V90 Ø12
+și gravare 30° cu vârful 0,2 și Ø3,175), cu valorile implicite ale aplicației (18 000 rot/min, avansul 1 000 mm/min,
+plonjarea 300 mm/min). Le schimbi apoi după frezele tale.
+
+**Exportă…** salvează biblioteca în fișierul `frezele-mele.cvs2freze.json`, pe care îl aduci cu **Importă…** pe alt
+calculator. **Importă…** citește și un CSV (salvat, de exemplu, din Excel), cu un rând de antet și coloanele `nume`, `fel`
+(`plata`, `v` sau `gravare`), `diametru`, `unghi`, `varf`, `numar` (T-ul), `turatie`, `avans`, `plonjare`, `pas`,
+`pas_lateral`, `tais`, `taisuri` și `nota`, în orice ordine. Doar `nume`, `fel` și `diametru` sunt necesare; fără celelalte,
+T-ul e 1, turația 18 000, avansul 1 000, plonjarea 300, pasul cât raza (la freza plată) sau 1 mm, iar pasul lateral 40 %.
+Separatorul (`;`, `,` sau tab) se găsește singur; cu `;`, numerele pot avea virgula zecimală. Înainte de import alegi ce se
+întâmplă cu un nume care există deja: **Păstrează-le pe amândouă** (implicit; cea nouă primește „(2)”), **Înlocuiește** sau
+**Sari**. Rândurile greșite se sar și se numără.
+
+Jos, fereastra spune unde stă biblioteca: **Doar în acest browser**. Într-o fereastră privată sau cu datele site-ului
+blocate, frezele țin doar cât fila, iar fereastra o spune. O bibliotecă scrisă de o versiune mai nouă a aplicației doar se
+citește.
+
 ## Operațiile de tăiere
 %% capitol: operatii
 %% acopera: document.aplica-operatii, document.rol

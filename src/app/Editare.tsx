@@ -251,7 +251,7 @@ const UnealtaCutit = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then(
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta, Aspectul), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
+ * paleta, Aspectul, Frezele mele), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
  * altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
  */
 function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean, acoperita: string): string {
@@ -259,6 +259,7 @@ function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean, acoperit
   if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
   if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
   if (document.querySelector('[aria-labelledby="aspect-titlu"]')) return 'vedere.aspect';
+  if (document.querySelector('[aria-labelledby="freze-titlu"]')) return 'vedere.freze';
   if (!activ) return acoperita;
   if (vedere3d) return 'editare.3d';
   return `unealta.${unealta}`;
@@ -308,6 +309,8 @@ export type ProprietatiEditare = {
   readonly onAseaza?: () => void;
   /** Fereastra Aspectul (ADR 0250 §3), din rândul ei din meniul contului. */
   readonly onAspect?: () => void;
+  /** Fereastra „Frezele mele” (ADR 0300 §3), din rândul ei din meniul contului. */
+  readonly onFreze?: () => void;
   /** Lipirea mutării, dată pânzei (null: lipirea oprită sau modulul plecat). */
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
@@ -561,6 +564,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       // Focusul pe butonul Cont: fereastra îl ține minte și i-l întoarce la închidere.
       refButonCont.current?.focus();
       p.onAspect?.();
+    } else if (id === 'freze') {
+      refButonCont.current?.focus();
+      p.onFreze?.();
     } else if (id === 'raporteaza') {
       setRaportare(true);
     } else if (id === 'raportari') {
@@ -2076,6 +2082,8 @@ function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, n
         return numeScurt(t('editare.manual'));
       case 'aspect':
         return t('editare.cont.aspect');
+      case 'freze':
+        return t('editare.cont.freze');
       case 'raporteaza':
         return t('editare.cont.raporteaza');
       case 'sugestie':

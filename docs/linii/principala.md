@@ -90,6 +90,10 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   `main`, se compară vârful cu commit-ul unit; dacă în plus sunt doar documente (`git diff --stat <unit> <vârf> -- .
   ':(exclude)*.md'` arată doar ce a venit din `main`), vârful se unește și el în lot, iar porțile rămân cele rulate
   (25.9↑, pe 23.11).
+- **O decizie a owner-ului spusă într-o sesiune de linie** (pe 24.11, plafonul total, în sesiunea frezelor) ajunge aici
+  ca mesaj al liniei, cu ADR-ul scris pe ramura ei: se verifică în git (commit-ul, ADR-ul cu vorbele owner-ului) și se
+  ia în lotul în lucru. Dacă atinge doar o constantă a porții, rapidul rulat pe vârf ajunge; completul rămâne cel de pe
+  codul produsului.
 - **PR-ul liniei** e deschis de sesiunea ei ca ciornă (regula mediului cloud): starea „ciornă” nu spune că felia nu e gata.
   Gata înseamnă raportul liniei (nota ei spune „gata”) și rapidul cu completul verzi pe commit-ul raportat.
 
@@ -112,34 +116,39 @@ _Sesiunea care ține registrul liniilor, unește feliile gata în `main`, scrie 
   printr-o schiță.
 - **Observabilitatea:** erorile ajung în jurnalul aplicației; joburile își lasă marcajul.
 
-## Starea pe 23.11.2026, spre miezul nopții (după a opta unire din cloud)
+## Starea pe 24.11.2026, noaptea (după a noua unire din cloud)
 
-- **Pe test:** `f73f3f37` (tot până la lotul al șaptelea: biblioteca extensiilor și incrustațiile, publicat la 23:54);
-  lotul al optulea (`4fe2d2ad`: utilizarea aplicației și fereastra trasării), în curs de publicare, cu serverul.
-- **`main`, pe 23.11, din cloud:** 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
+- **Pe test:** `ebfb1f82` (tot până la lotul al optulea: utilizarea aplicației și fereastra trasării; publicat pe 24.11
+  la 01:04, cu serverul: funcția `utilizare`, regulile, indexurile); lotul al nouălea (`813fa675`: frezele și plafonul
+  de 900 kB), în curs de publicare.
+- **`main`, din cloud:** pe 23.11: 3.Tq (`0ae9c6c1`); 11.3↑e și A.4 (`ddaa7ead`); 3.Tr, unită de linia elicelor
   (`d262e57a`); 25.8↑a și A.5 (`1b46c955`), cu reparația probei extensiilor (`8287d66e`); 11.3↑f, unită de linia
   planșelor (`f4601938`); A.6 (`4497d639`); 3.Xh (`2d1e482c`) și 12.1↑e-3 cu 12.1↑e-4 (`03460cab`); A.8a cu A.8b
-  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`).
+  (`5325b8fe`) și 25.9↑ (`4fe2d2ad`). Pe 24.11: 16.A↑a (`02a5864a`), cu ADR 0301 (`813fa675`).
 - **Liniile** (vezi [indexul](README.md)):
-  - **gata pe ramură, de verificat pentru lotul următor:** 16.A↑a (frezele: biblioteca în browser, „Frezele mele”, ADR
-    0300; `AndreiBesliu/cvs2#12`) și 28.8↑a (fereastra exportului pe listă și fișă, ADR 0290; `AndreiBesliu/cvs2#11`);
-  - **în lucru:** adminul (A.8c, apoi A.9–A.11: utilizarea aplicației, ADR 0262);
+  - **gata pe ramură, neunite:** 28.8↑a (fereastra exportului pe listă și fișă, ADR 0290; `AndreiBesliu/cvs2#11`;
+    unirea la cuvântul owner-ului, după ce o încearcă pe canalul `export`) și A.8c (adminul: dialogurile și clicurile
+    fine ale utilizării; porțile verzi pe `d5b35050`, fără raport și fără PR încă);
+  - **în lucru:** frezele (16.A↑b: alegerea în proiect, documentul v27), adminul (A.8d, apoi A.9–A.11), exportul
+    (desenele, 28.8↑b–f);
   - **la cuvântul owner-ului:** A.7 (adminul pe telefon), 25.8↑b, 3.Ts, restul bibliotecii extensiilor (căutarea,
     captura mărită), următoarea felie a incrustațiilor, 11.5↑b (după etapa 13);
-  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, tăierea (după 10.3↑o: 10.3↑p–r),
-    imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul owner-ului, cu un brief scris de
-    sesiunea principală și lipit de owner într-o sesiune cloud nouă;
+  - **fără felie în lucru:** planșele (tăierea plăcii 11, la owner), elicele, trasarea, incrustațiile, biblioteca,
+    tăierea (după 10.3↑o: 10.3↑p–r), imprimanta (după 3.6v: 3.6w, camera), aranjamentele (28.1↑). Pornesc la cuvântul
+    owner-ului, cu un brief scris de sesiunea principală și lipit de owner într-o sesiune cloud nouă;
   - **încheiate:** ancorele (6.V↑), raportările (15.B↑b), galeria (3.Tp, ADR 0281), probele instabile.
 - **La owner:**
-  - „cine unește în `main`” (recomandarea: doar sesiunea principală; până la răspuns, o felie dată de el unei linii
-    rămâne a ei, restul se unesc aici, în loturi; o linie căreia i se cere unirea scrie întâi aici);
-  - **plafoanele:** totalul e 784,6 / 800 kB după lotul al optulea (mai sunt 15,4 kB), iar pornirea cu ușa 113,7 / 115
-    (cu Atelierul 114,0): feliile gata și cele în lucru nu mai încap toate;
-  - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3);
+  - „cine unește în `main`” (recomandarea: doar sesiunea principală; pe 23–24.11, biblioteca și frezele au scris întâi
+    aici, iar felia era deja în lot: unirea a rămas aici);
+  - fereastra exportului: unirea lui 28.8↑a acum sau după desene;
+  - verificarea juridică (GDPR) a utilizării aplicației, înaintea live-ului (ADR 0262 §3); pe test, colectarea merge
+    din 24.11;
   - fondul semnului lui Easy 3Draw (gri-albăstrui, nu crem) și rândul de „ce e nou” al lui 18.20.0.
-- **De urmărit:** pornirea cu ușa e la 113,7 / 115 kB (cu Atelierul, 114,0): o felie care mai adaugă în pornire cere întâi
-  loc sau decizia owner-ului pe plafon. În panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o
-  literă (văzut de linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
+- **Plafoanele:** totalul e 793,6 / 900 kB (ADR 0301, decizia owner-ului din noaptea de 23 spre 24.11). **Pornirea a
+  rămas 115 kB:** cu ușa 113,9, cu Atelierul 114,2, deci mai sunt 0,8 kB; o felie care adaugă în pornire cere întâi loc
+  (o bucată mutată la cerere) sau decizia owner-ului.
+- **De urmărit:** în panoul foii, la 1400 px, etichetele „Numele” și „Materialul” apar tăiate la o literă (văzut de
+  linia trasării, și pe `220bd48e`: nu vine dintr-o felie de azi).
 - **Pe calculatorul owner-ului:** worktree-urile vechi (`C:\Users\besli\cncvs2-lucru\*`), toate curate și împinse, rămân
   copie de siguranță până spune owner-ul; probele pe imprimanta K1C și pe mașina CNC; `docs/faza0/`.
 
