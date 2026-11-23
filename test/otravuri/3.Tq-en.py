@@ -3,6 +3,8 @@
 # setul lor e2e, `test/e2e/trenulet.spec.ts` (proba în engleză, care parcurge acum și fila Elice); restul listei feliei e în
 # `3.Tq.py`, cu setul ei, mai scurt.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă, după commit.
+# Scoasă, ca echivalentă: titlul editorului cu un spațiu la capăt (`<h2>Elice </h2>`): traducerea pe pagină caută nodul de text
+# fără spațiile de la capete, deci „Propeller” apare la fel (rulată pe 0d027c5: scăpată, 10 / 10).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -20,8 +22,6 @@ o('N02', T, ' "Elice Ø{0} cu {1} palete, pasul {2}{3}{4}{5}{6}": "Propeller Ø{
 o('N03', T, ' ", stânga": ", left-hand",', ' ", stânga": ", right-hand",', 'e2e', '„stânga” tradus „right-hand” (sensul, pe dos în engleză)')
 o('N04', A, 'const pl = d.paleta === "plata" ? tr(", plată") : "", s = d.sens === "stanga" ? tr(", stânga") : "",',
   'const pl = d.paleta === "plata" ? ", plată" : "", s = d.sens === "stanga" ? tr(", stânga") : "",', 'e2e', '„plată” din numele elicei, netrecut prin traducere')
-o('N05', A, '<h2>Elice</h2>\n        <p class="mic">Elice pentru motoarele LEGO', '<h2>Elice </h2>\n        <p class="mic">Elice pentru motoarele LEGO', 'e2e',
-  'titlul editorului, lipit de un spațiu (nodul de text nu mai e cheia „Elice”)')
 
 SETURI = {}
 E2E = ['test/e2e/trenulet.spec.ts']
