@@ -37,14 +37,16 @@ o('E01', DLG, '    p.scrollTop += f.getBoundingClientRect().top - p.getBoundingC
   'clicul din listă nu aduce fișa sus')
 o('E02', DLG, '    if (gasit !== null && gasit !== curent) setCurent(gasit);', '    if (false) setCurent(gasit);', 'e2e',
   'derularea nu mută marcajul din listă')
-o('E03', DLG, "    if (text !== '' && (activ?.loc !== loc || activ.text !== text)) setActiv({ loc, text });",
-  "    if (false) setActiv({ loc, text });", 'e2e', 'explicația câmpului activ nu apare')
+# Din 28.8↑b, explicația ține și câmpul activ (pentru cota din desen): rândul de mai jos e al ei.
+o('E03', DLG, "    if (activ?.loc !== loc || activ.text !== text || activ.camp !== numeCamp) setActiv({ loc, text, camp: numeCamp });",
+  "    if (false) setActiv({ loc, text, camp: numeCamp });", 'e2e', 'explicația câmpului activ nu apare')
 o('E04', DLG, "    for (const [k, g] of verdicteGresite(randBun(p))) pune(motivVerdict(k, p), k === 'rest' && p.tip === 'vcarve' ? 'fund' : g);",
   "    for (const [k, g] of verdicteGresite(randBun(p))) void [k, g];", 'e2e', 'greșelile nu se spun în grupul câmpului')
 o('E05', DLG, "  const primaGresita: string | null = !supracursaBuna ? 'foaia' : ordine.find((k) => greseliRand(k).length > 0) ?? null;",
   "  const primaGresita: string | null = null;", 'e2e', 'fără „du-mă acolo”')
 o('E06', DLG, "data-gresit={gresit ? '' : undefined}", 'data-gresit={undefined}', 'e2e', 'fără punctul roșu în listă')
-o('E07', DLG, '    const n = Math.max(1, Math.ceil(a / s - 1e-9));', '    const n = Math.max(1, Math.floor(a / s));', 'e2e',
+# Din 28.8↑b, trecerile se socotesc o dată, pentru fereastră și pentru desen (`exportDeseneCalcul.ts`).
+o('E07', 'src/ui/exportDeseneCalcul.ts', '  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));', '  const n = Math.max(1, Math.floor(adancime / pas));', 'e2e',
   'trecerile numărate în jos (10 cu pasul 4: două treceri de 5, mai adânci decât pasul)')
 o('E08', DLG, "    if (cuRezultat && !cuRezultatInainte.current) du('rezultatul');\n    cuRezultatInainte.current = cuRezultat;\n  }, [cuRezultat]);",
   "    if (stare?.ok) du('rezultatul');\n    cuRezultatInainte.current = cuRezultat;\n  }, [stare]);", 'e2e',

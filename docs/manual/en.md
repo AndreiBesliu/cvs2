@@ -1635,8 +1635,13 @@ which). The window has three parts:
 - the **cards**, on the right, one under the other. Each has its fields grouped by question (What cut, Bit, How deep, Cut
   direction, Ramp, Lead-ins, Corners, Tabs; on a pocket, How it clears, How it goes down, Rest bits; on a V-carve, Flat bottom;
   on an inlay, its own). On the left of each group, its explanation; when you hover over a field or go into it, the field's
-  explanation. Under the step down, how many passes come out and how much each removes: the passes are equal (10 mm with a
-  step of 4 gives 3 passes of 3.33 mm). What does not apply to the operation is not shown: on a pocket, a drilling or a
+  explanation. Above the explanation, for the XY0 corner, Z0 and overtravel, the bit, depth, direction, ramp, lead-ins and
+  tabs, the question's drawing, made from your values: the sheet with the chosen corner (a click on another corner in the
+  drawing chooses it), the section of the sheet on the table with Z0 and the cuts that go into the table, the bit profile, the
+  section of the cut with its passes, the bit path around the part or the hole (in climb, what stays is to the right of the
+  path), the ramp from the side, the lead-ins from above, the tabs where the chosen rule puts them and their section. The values
+  sit on dimension lines, and the one of the field you are on is coloured. Under the step down, how many passes come out and
+  how much each removes: the passes are equal (10 mm with a step of 4 gives 3 passes of 3.33 mm), in the drawing too. What does not apply to the operation is not shown: on a pocket, a drilling or a
   V-carve, the profile's ramp, lead-ins, corners and tabs are missing, and a note under Cut says why;
 - the **bottom**, always in view: **Export**, **Close**, **Sheets report…**, the confirmations and, while a value is wrong,
   the reason, with **Take me to …**, which brings its card and goes into the field to fix. The wrong value is also told in the

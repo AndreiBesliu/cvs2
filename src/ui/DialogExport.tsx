@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
 import '../i18n/traseu.ts';
@@ -17,6 +17,10 @@ import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrd
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 import { grupuriOperatie, verdicteGresite, type GrupExport, type VerdictRand } from './exportGrupuri.ts';
+import { treceriEgale } from './exportDeseneCalcul.ts';
+import {
+  DesenAdancime, DesenColt, DesenFreza, DesenIntrari, DesenRampa, DesenSens, DesenUrechi, DesenZ0, type DesenComun,
+} from './exportDesene.tsx';
 
 type Latura = LaturaExport;
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
@@ -249,6 +253,30 @@ const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
 function laturi(d: Depasire, limba: string): string {
   const f = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   return LATURI_FOAIE.filter(([k]) => d[k] > 0).map(([k, cheie]) => t(cheie, { mm: f.format(d[k]) })).join(', ');
+}
+
+/**
+ * Rezervă înălțimea casetei explicației fiecărui grup: cel mai lung dintre textul grupului și titlurile câmpurilor lui, măsurat
+ * pe o copie goală a casetei (textul ei rămâne al lui React). Se măsoară din nou doar când se schimbă textele sau lățimea.
+ */
+function rezervaExplicatii(panou: HTMLElement | null): void {
+  for (const g of panou?.querySelectorAll<HTMLElement>('[data-grup]') ?? []) {
+    const e = g.querySelector<HTMLElement>('[data-explicatie]');
+    if (!e?.parentElement) continue;
+    const texte = [e.dataset['implicit'] ?? '', ...Array.from(g.querySelectorAll('[title]'), (x) => x.getAttribute('title') ?? '')];
+    const cheie = `${e.clientWidth}|${texte.join('\u0001')}`;
+    if (e.dataset['masurat'] === cheie) continue;
+    const m = e.cloneNode(false) as HTMLElement;
+    m.removeAttribute('data-explicatie');
+    m.setAttribute('aria-hidden', 'true');
+    Object.assign(m.style, { position: 'absolute', visibility: 'hidden', minHeight: '0', width: `${e.getBoundingClientRect().width}px` });
+    e.parentElement.append(m);
+    let max = 0;
+    for (const x of texte) { m.textContent = x; max = Math.max(max, m.getBoundingClientRect().height); }
+    m.remove();
+    e.style.minHeight = `${Math.ceil(max)}px`;
+    e.dataset['masurat'] = cheie;
+  }
 }
 
 const COLTURI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
@@ -719,7 +747,7 @@ export function DialogExport(
   // Fereastra pe listă și fișă (ADR 0290): panoul fișelor, fișa marcată în listă și explicația câmpului activ.
   const panou = useRef<HTMLDivElement>(null);
   const [curent, setCurent] = useState('foaia');
-  const [activ, setActiv] = useState<{ readonly loc: string; readonly text: string } | null>(null);
+  const [activ, setActiv] = useState<{ readonly loc: string; readonly text: string; readonly camp: string } | null>(null);
   const cerereVizibila = useRef<HTMLDivElement>(null);
   // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
   useEffect(() => { cutie.current?.focus(); }, []);
@@ -1210,10 +1238,8 @@ export function DialogExport(
   const primaGresita: string | null = !supracursaBuna ? 'foaia' : ordine.find((k) => greseliRand(k).length > 0) ?? null;
   /** Trecerile pe adâncime, egale (ca `adancimiTreceri` din lucrare): ⌈A / p⌉ treceri de A / n; fără valori bune, nimic. */
   const treceri = (p: Rand): readonly [number | null, number] => {
-    const a = citesteNumar(p.adancime), s = citesteNumar(p.pas);
-    if (a === null || s === null || !(a > 0) || !(s > 0)) return [null, 0];
-    const n = Math.max(1, Math.ceil(a / s - 1e-9));
-    return n > 1000 ? [null, 0] : [n, a / n];
+    const tr = treceriEgale(citesteNumar(p.adancime), citesteNumar(p.pas));
+    return tr ? [tr.n, tr.d] : [null, 0];
   };
   /** Numele tăieturii unui rând, scurt, pentru listă (aceleași cuvinte ca în lista „Tăietura”). */
   const numeTaietura = (p: Rand): string => p.tip === 'buzunar' ? t(p.incrustatieDreapta ? 'export.latura.incrustatie-drept' : CHEI_LATURA.buzunar)
@@ -1242,16 +1268,22 @@ export function DialogExport(
     }
     if (gasit !== null && gasit !== curent) setCurent(gasit);
   };
-  /** Câmpul sub maus sau cu focusul: explicația lui (titlul) ia locul celei a grupului. */
+  /**
+   * Câmpul sub maus sau cu focusul: explicația lui (titlul) ia locul celei a grupului, iar cota lui se aprinde în desen (28.8↑b);
+   * un câmp fără titlu aprinde doar cota. Caseta explicației își ține înălțimea (`rezervaExplicatii`), deci fișa nu se mută.
+   */
   const arata = (ev: { readonly target: EventTarget }): void => {
     const el = ev.target instanceof Element ? ev.target : null;
     const g = el?.closest<HTMLElement>('[data-grup]');
-    const cu = el?.closest<HTMLElement>('[title]');
     const f = g?.closest<HTMLElement>('[data-fisa]');
-    if (!g || !f || !cu || !g.contains(cu)) return;
+    if (!el || !g || !f || el.closest('[data-desen]')) return;
+    const cu = el.closest<HTMLElement>('[title]');
+    const camp = el.closest<HTMLElement>('[data-camp]') ?? el.closest('label')?.querySelector<HTMLElement>('[data-camp]') ?? null;
     const loc = `${f.dataset['fisa'] === 'op' ? f.dataset['operatie'] ?? '' : f.dataset['fisa'] ?? ''}|${g.dataset['grup'] ?? ''}`;
-    const text = cu.getAttribute('title') ?? '';
-    if (text !== '' && (activ?.loc !== loc || activ.text !== text)) setActiv({ loc, text });
+    const text = cu && g.contains(cu) ? cu.getAttribute('title') ?? '' : '';
+    const numeCamp = camp && g.contains(camp) ? camp.dataset['camp'] ?? '' : '';
+    if (text === '' && numeCamp === '') return;
+    if (activ?.loc !== loc || activ.text !== text || activ.camp !== numeCamp) setActiv({ loc, text, camp: numeCamp });
   };
   // După un export bun, Rezultatul vine sus (fișierul, avertismentele, rezumatul), o singură dată: simularea sosește mai târziu
   // și schimbă starea din nou, iar panoul nu sare iar sub mausul omului. Cu o confirmare cerută, omul rămâne jos.
@@ -1260,13 +1292,21 @@ export function DialogExport(
     if (cuRezultat && !cuRezultatInainte.current) du('rezultatul');
     cuRezultatInainte.current = cuRezultat;
   }, [cuRezultat]);
+  // Caseta explicației fiecărui grup își ține înălțimea celui mai lung text al lui (al grupului sau al unui câmp): altfel, la
+  // clic, focusul schimbă textul la apăsare, grupul își schimbă înălțimea, iar ce e dedesubt fuge de sub cursor înainte de ridicare.
+  useLayoutEffect(() => { rezervaExplicatii(panou.current); });
   // Grupul fișei unei operații (ADR 0290): explicația câmpului activ (sau a grupului) în stânga, unde vin desenele din 28.8↑b,
   // câmpurile și greșelile lui în dreapta.
-  const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: readonly string[] = []): ReactNode => {
-    const loc = `${fisa}|${id}`;
+  const grup = (id: GrupExport, fisa: string, corp: ReactNode, greseli: readonly string[] = [], desen?: (c: DesenComun) => ReactNode): ReactNode => {
+    const loc = `${fisa}|${id}`, aici = activ?.loc === loc ? activ : null;
     return (
       <div className="dx-grup" data-grup={id} key={id}>
-        <p className="dx-explicatie" data-explicatie aria-live="polite">{activ?.loc === loc ? activ.text : t(`export.grup.${id}.text` as CheieSimpla)}</p>
+        <div className="dx-stanga">
+          {desen && <figure className="dx-desen" data-desen>{desen({ f: (x) => fmtTrecere.format(x), aprins: aici && aici.camp !== '' ? [aici.camp] : [] })}</figure>}
+          <p className="dx-explicatie" data-explicatie data-implicit={t(`export.grup.${id}.text` as CheieSimpla)} aria-live="polite">
+            {aici && aici.text !== '' ? aici.text : t(`export.grup.${id}.text` as CheieSimpla)}
+          </p>
+        </div>
         <div className="dx-campuri">
           <h4>{t(`export.grup.${id}` as CheieSimpla)}</h4>
           {corp}
@@ -1385,7 +1425,7 @@ export function DialogExport(
               {COLTURI.map((c) => <option key={c} value={c}>{t(CHEI_COLT[c])}</option>)}
             </select>
           </label>
-              </div>)}
+              </div>, [], () => <DesenColt colt={origine} nume={t(CHEI_COLT[origine])} onColt={(c) => { schimbat(); setOrigine(c); }} />)}
               {grup('z0', 'foaia', <div className="dx-rand">
           <label>
             {t('export.z0')}
@@ -1406,7 +1446,8 @@ export function DialogExport(
               onChange={(e) => { schimbat(); onPrinFoaie(e.target.checked); }} />
             {t('export.supracursa.prin-foaie')}
           </label>
-              </div>, supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })])}
+              </div>, supracursaBuna ? [] : [t('motiv.supracursa-invalida', { max: fmtFreza.format(SUPRACURSA_MAXIMA) })],
+              (c) => <DesenZ0 c={c} z0={z0} supracursa={supracursaBuna ? supracursaCitita : null} prinFoaie={prinFoaie} />)}
             </section>
             <section className="dx-fisa" data-fisa="masina">
               <h3>{t('export.fisa.masina')}</h3>
@@ -1485,6 +1526,23 @@ export function DialogExport(
                 tip: p.tip, deschis, inele: p.strategie === 'inele', incrustatie: vc && p.incrustatie, banda: vc && p.incrustatie && p.jurDop === 'banda',
                 incrustatieDreapta: buz && p.incrustatieDreapta,
               });
+              // Desenul fiecărei întrebări (ADR 0290, felia 28.8↑b), din valorile rândului; grupurile fără desen încă, doar explicația.
+              const adancimeRand = buz && p.incrustatieDreapta && p.locasInc === 'gaura' && grosimeFoaie !== undefined ? grosimeFoaie : citesteNumar(p.adancime);
+              const desen = (g: GrupExport): ((c: DesenComun) => ReactNode) | undefined => {
+                switch (g) {
+                  case 'freza': return (c) => <DesenFreza c={c} numar={p.numarScula} diametru={citesteNumar(p.diametruScula)} v={p.formaScula === 'v'}
+                    unghi={citesteNumar(p.unghiV)} varfPlat={citesteNumar(p.varfV)} />;
+                  case 'adancime': return (c) => <DesenAdancime c={c} adancime={adancimeRand} pas={citesteNumar(p.pas)} grosime={grosimeFoaie}
+                    supracursa={cuSupracursa ? supracursaCitita ?? 0 : 0} />;
+                  case 'sens': return () => <DesenSens sens={p.sens}
+                    fel={p.tip !== 'profil' || p.latura === 'interior' ? 'gaura' : p.latura} />;
+                  case 'rampa': return (c) => <DesenRampa c={c} rampa={p.rampa && !nuProfil} lungime={citesteNumar(p.lungimeRampa)} adancime={adancimeRand} pas={citesteNumar(p.pas)} />;
+                  case 'intrari': return (c) => <DesenIntrari c={c} intrari={p.intrari && p.latura !== 'pe-linie' && !nuProfil} raza={citesteNumar(p.razaIntrare)} />;
+                  case 'urechi': return (c) => <DesenUrechi c={c} urechi={p.urechi && !nuProfil} mod={p.modUrechi} numar={citesteNumar(p.numarUrechi)}
+                    alese={o.valori.urechi?.alese ?? 0} latime={citesteNumar(p.latimeUreche)} grosime={citesteNumar(p.grosimeUreche)} grosimeFoaie={grosimeFoaie} />;
+                  default: return undefined;
+                }
+              };
               const corp = (g: GrupExport): ReactNode => {
                 switch (g) {
                   case 'taietura': return (<div className="dx-rand">
@@ -2069,7 +2127,7 @@ export function DialogExport(
                 <section className="dx-fisa" data-fisa="op" data-operatie={o.cheie} key={o.cheie}>
                   <h3>{o.descriere}</h3>
                   <p className="dx-loc">{t('export.fisa.loc', { n: loc + 1, total: ordine.length })}</p>
-                  {grupuri.map((g) => { const c = corp(g); return c === null ? null : grup(g, o.cheie, c, aici(g)); })}
+                  {grupuri.map((g) => { const c = corp(g); return c === null ? null : grup(g, o.cheie, c, aici(g), desen(g)); })}
                   {/* O greșeală al cărei grup nu e pe fișă (o bifă rămasă de la alt fel de tăiere) se spune la capăt, nu se pierde. */}
                   {greseli.filter(([, g]) => !grupuri.includes(g)).map(([m]) => <p className="dx-greseala" data-greseala key={m}>{m}</p>)}
                 </section>

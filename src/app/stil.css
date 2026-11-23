@@ -2055,7 +2055,7 @@ nav button[aria-pressed='true'] {
 
 .dx-grup {
   display: grid;
-  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  grid-template-columns: minmax(11rem, 17rem) minmax(0, 1fr);
   gap: var(--sp-4);
   padding: var(--sp-3) 0;
 }
@@ -2064,7 +2064,87 @@ nav button[aria-pressed='true'] {
   border-top: 1px solid color-mix(in oklab, var(--l-margine) 60%, var(--s-panou));
 }
 
+.dx-stanga {
+  align-self: start;
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+/*
+ * Desenele întrebărilor (ADR 0290, felia 28.8↑b): linii de culoarea textului, lemnul bej, masa gri, freza oțel, traseul în
+ * verdele traseului de pe pânză, cota câmpului activ în accent. Tokenurile lor au ambele teme, ca restul.
+ */
+.dx-desen {
+  --lemn: #ecdcbf;
+  --lemn2: #d8bb8e;
+  --lemn-c: #a8834f;
+  --masa: #c3c7cd;
+  --scula: #b7bec6;
+  margin: 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-2);
+  background: var(--s-peste);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='luminoasa']) .dx-desen {
+    --lemn: #5b4831;
+    --lemn2: #7a6043;
+    --lemn-c: #a58660;
+    --masa: #3a414b;
+    --scula: #6f7780;
+  }
+}
+
+:root[data-tema='intunecata'] .dx-desen {
+  --lemn: #5b4831;
+  --lemn2: #7a6043;
+  --lemn-c: #a58660;
+  --masa: #3a414b;
+  --scula: #6f7780;
+}
+
+.dx-ilu {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--t);
+}
+
+.dx-ilu .l { fill: var(--lemn); stroke: var(--lemn-c); stroke-width: 1; }
+.dx-ilu .l2 { fill: var(--lemn2); stroke: var(--lemn-c); stroke-width: 1; }
+.dx-ilu .m { fill: var(--masa); }
+.dx-ilu .g { fill: var(--s-panou); }
+.dx-ilu .g2 { fill: color-mix(in oklab, var(--traseu-taiere) 10%, var(--s-panou)); }
+.dx-ilu .c { fill: none; stroke: currentColor; stroke-width: 1.3; }
+.dx-ilu .cs { fill: none; stroke: var(--t-slab); stroke-width: 1; stroke-dasharray: 3 3; }
+.dx-ilu .slab { opacity: 0.45; }
+.dx-ilu .d { fill: none; stroke: var(--traseu-taiere); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.dx-ilu .lat { fill: none; stroke: var(--traseu-taiere); stroke-width: 6; opacity: 0.28; stroke-linecap: round; }
+.dx-ilu .dv { fill: var(--traseu-taiere); }
+.dx-ilu .f { fill: var(--scula); stroke: currentColor; stroke-width: 0.8; }
+.dx-ilu .u { fill: var(--a); }
+.dx-ilu .ua { fill: none; stroke: var(--a); stroke-width: 2.2; stroke-linecap: round; }
+.dx-ilu .sv { fill: currentColor; }
+.dx-ilu text { font: 11.5px var(--font); fill: var(--t-slab); }
+.dx-ilu text.tare { fill: var(--t); font-weight: 600; }
+.dx-ilu text.z0 { fill: var(--a); }
+.dx-ilu .cota .sg-l { fill: none; stroke: var(--t-slab); stroke-width: 1; }
+.dx-ilu .cota .sg-v { fill: var(--t-slab); }
+.dx-ilu .cota[data-aprinsa] .sg-l { stroke: var(--a); stroke-width: 1.8; }
+.dx-ilu .cota[data-aprinsa] .sg-v { fill: var(--a); }
+.dx-ilu .cota[data-aprinsa] text { fill: var(--a); font-weight: 700; }
+.dx-ilu .colt { cursor: pointer; }
+.dx-ilu .colt circle { fill: var(--s-panou); stroke: var(--t-slab); stroke-width: 1.3; }
+.dx-ilu .colt .tinta { fill: transparent; stroke: none; }
+.dx-ilu .colt[data-ales] circle:not(.tinta) { fill: var(--a); stroke: var(--a); }
+.dx-ilu .colt:hover circle:not(.tinta) { stroke: var(--a); stroke-width: 2; }
+
 .dx-explicatie {
+  /* Înălțimea rezervată (`rezervaExplicatii`) se măsoară pe o copie cu aceeași lățime: cu paddingul înăuntru, rândurile ies la fel. */
+  box-sizing: border-box;
   align-self: start;
   margin: 0;
   padding: var(--sp-2) var(--sp-3);
@@ -2210,6 +2290,10 @@ nav button[aria-pressed='true'] {
   .dx-grup {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--sp-2);
+  }
+
+  .dx-desen {
+    max-width: 20rem;
   }
 }
 

@@ -1583,8 +1583,13 @@ care). Fereastra are trei părți:
 - **fișele**, în dreapta, una sub alta. Fiecare are câmpurile grupate pe întrebări (Ce tăiere, Freza, Cât de adânc, Sensul de
   tăiere, Rampa, Intrările, Colțurile, Urechile; la un buzunar, Cum golește, Cum coboară, Frezele de rest; la un V-carve,
   Fundul plat; la o incrustație, ale ei). În stânga fiecărui grup, explicația lui; când treci cu mausul peste un câmp sau intri
-  în el, explicația câmpului. Sub pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3
-  treceri de 3,33 mm). Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
+  în el, explicația câmpului. Deasupra explicației, la colțul XY0, la Z0 și supracursă, la freză, adâncime, sens, rampă,
+  intrări și urechi, desenul întrebării, făcut din valorile tale: foaia cu colțul ales (un clic pe alt colț din desen îl alege),
+  secțiunea foii pe masă cu Z0 și tăieturile care trec în masă, profilul frezei, secțiunea tăieturii cu trecerile, drumul
+  frezei în jurul piesei sau al găurii (ce rămâne stă în dreapta drumului la urcare), rampa din lateral, intrările de sus,
+  urechile la locurile regulii alese și secțiunea lor. Valorile stau pe cote, iar cota câmpului pe care stai e colorată. Sub
+  pas, câte treceri ies și cât scoate fiecare: trecerile sunt egale (10 mm cu pasul 4 dau 3 treceri de 3,33 mm), la fel și în
+  desen. Ce nu se aplică operației nu apare: pe un buzunar, o găurire sau un V-carve, rampa, intrările, colțurile
   și urechile profilului lipsesc, iar o notă sub Tăietura spune de ce;
 - **jos**, mereu la vedere: **Exportă**, **Închide**, **Raportul foilor…**, confirmările și, cât o valoare e greșită, motivul,
   cu **Du-mă la …**, care aduce fișa ei și intră în câmpul de reparat. Valoarea greșită se spune și în grupul câmpului, iar
