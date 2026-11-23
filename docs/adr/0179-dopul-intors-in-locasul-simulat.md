@@ -163,7 +163,8 @@ Felia 12.1↑e-3 (pereții drepți):
 - [văzut] Privirea pe secțiunea reală, mărită, în Edge: ridicat pe fund și pe față, decupat, gaura (decupat și ridicat),
   cercul, jocul lateral de 0,5, în engleză, pe un ecran scund. Desenul dopului în V pe cercul R15 e identic octet cu octet
   înainte și după mutarea geometriei.
-- [măsurat] Otrăvurile (`test/otravuri/12.1e-3.py`): 63 / 63 prinse pe codul final.
+- [măsurat] Otrăvurile (`test/otravuri/12.1e-3.py`): 63 / 63 prinse pe codul final; după reparația lemnului dopului și
+  mutările feliei 12.1↑e-4, 67 / 67 (N02 și N03, scăpate pe corpus, prinse de grilele mici).
 
 Felia 12.1↑e-4 (treptele):
 
@@ -186,6 +187,8 @@ Felia 12.1↑e-4 (treptele):
   engleză pe 1024 px; niciun rând roșu, nicio eroare în consolă.
 - [măsurat] Grilele mici ale uneltelor comune (`potrivireDreapta.grila.test.ts`): lemnul legat doar prin coloană și perechea
   fără schimbare de semn (otrăvurile N02 și N03 ale lui 12.1↑e-3 scăpaseră pe corpus, unde situațiile lor nu apar).
+- [măsurat] Otrăvurile (`test/otravuri/12.1e-4.py`): 35 / 35 prinse din prima pe codul final (`e8b7f9d9`); cele 15 cu ținta
+  mutată (12.1e-3: 11, cu N02 și N03; 12.1e-2: 3; 12.1e: 1), prinse; niciun VOID nou.
 
 ## Ce am respins
 
