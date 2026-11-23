@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { alesDupaLista, aparitiiPeZile, baraGrafic, filtreazaSursa } from '../../src/admin/erori/vedere.ts';
+import { alesDupaLista, aparitiiPeZile, baraGrafic, cuTinta, filtreazaSursa } from '../../src/admin/erori/vedere.ts';
 import { problemeIntai, sumarDiagnoza } from '../../src/admin/diagnoza/vedere.ts';
 import type { RandGrup } from '../../src/admin/erori/date.ts';
 import type { Verificare } from '../../src/admin/diagnoza/verificari.ts';
@@ -32,6 +32,22 @@ test('eroarea aleasă rămâne cât e în listă; altfel prima din listă; o lis
   assert.equal(alesDupaLista('x', r), 'a');
   assert.equal(alesDupaLista(null, r), 'a');
   assert.equal(alesDupaLista('a', []), null);
+});
+
+test('grupul cerut dintr-un tichet (A.3), adus separat: primul în listă, o singură dată, cât îl lasă filtrul pe stare', () => {
+  const r = [rand('a', 'client'), rand('b', 'server')];
+  const vechi = rand('v', 'client');
+  const vechiRezolvat = { ...rand('w', 'server'), rezolvat: true };
+  assert.deepEqual(cuTinta(r, vechi, true).map((x) => x.id), ['v', 'a', 'b']);
+  assert.deepEqual(cuTinta(r, vechi, false).map((x) => x.id), ['v', 'a', 'b']);
+  // Rezolvat: doar cu „Toate” (cu „Nerezolvate” nu se arată, ca grupurile citite).
+  assert.deepEqual(cuTinta(r, vechiRezolvat, true).map((x) => x.id), ['a', 'b']);
+  assert.deepEqual(cuTinta(r, vechiRezolvat, false).map((x) => x.id), ['w', 'a', 'b']);
+  // Deja citit: nu se dublează; nimic adus: lista, neschimbată (o copie).
+  assert.deepEqual(cuTinta(r, rand('b', 'server'), false).map((x) => x.id), ['a', 'b']);
+  const fara = cuTinta(r, null, false);
+  assert.deepEqual(fara.map((x) => x.id), ['a', 'b']);
+  assert.notEqual(fara, r);
 });
 
 // Zilele sunt ale calendarului local (ora de vară schimbată pe 25.10.2026 nu mută nimic dintr-o zi în alta).

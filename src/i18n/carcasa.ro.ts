@@ -309,6 +309,7 @@ export const roCarcasa = {
   'prop.rest.valoare': 'T{numar}, Ø{diametru} mm, pasul lateral {pas} mm',
   'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, pasul lateral {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, puntea {grosime} mm',
+  'prop.urechi.alese': 'alese pe desen: {numar} × {latime} mm, puntea {grosime} mm',
   'prop.rampa.valoare': 'lungă de {mm} mm',
   'prop.coborare.rampa': '{nume}, {unghi}°',
   'prop.coborare.zigzag': '{nume}, {unghi}° pe {mm} mm',

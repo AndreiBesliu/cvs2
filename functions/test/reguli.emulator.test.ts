@@ -72,6 +72,7 @@ before(async () => {
     await setDoc(doc(db, 'conturi/om'), { email: 'om@exemplu.ro', plan: 'proba' });
     await setDoc(doc(db, 'conturi/sup'), { email: 'sup@exemplu.ro', plan: 'gratuit' });
     await setDoc(doc(db, 'setari/conturi'), { zileOffline: 7 });
+    await setDoc(doc(db, 'setari/raspunsuriRapide'), { schema: 1, lista: [{ eticheta: 'Am primit', ro: 'Ne uităm.', en: '' }], versiune: 1 });
     await setDoc(doc(db, `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: ['conturi.citeste'] });
     await setDoc(doc(db, `roluri/${CONT_ADM}`), { nume: 'Conturi: administrează', permisiuni: ['conturi.administreaza'] });
     await setDoc(doc(db, 'staff/ccit'), { rol: CONT_CIT });
@@ -362,6 +363,20 @@ test('conturile și setările nu le scrie nimeni din client, nici omul contului,
   }
   await assertFails(setDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
   await assertFails(updateDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
+});
+
+test('răspunsurile rapide (ADR 0261) le citesc owner-ul și cei cu tichete.raspunde; un rol doar cu tichete.citeste, nu; nu le scrie nimeni din client', async () => {
+  for (const uid of ['own', 'trasp', 'tot']) await assertSucceeds(getDoc(doc(ca(uid), 'setari/raspunsuriRapide')));
+  for (const uid of [null, 'om', 'sup', 'tcit', 'ccit', 'cadm', 'aud']) await assertFails(getDoc(doc(ca(uid), 'setari/raspunsuriRapide')));
+  // Cine le citește nu citește și setările conturilor, nici colecția.
+  await assertFails(getDoc(doc(ca('trasp'), 'setari/conturi')));
+  await assertFails(getDocs(collection(ca('trasp'), 'setari')));
+  await assertFails(getDocs(collection(ca('own'), 'setari')));
+  for (const uid of ['own', 'trasp']) {
+    await assertFails(setDoc(doc(ca(uid), 'setari/raspunsuriRapide'), { schema: 1, lista: [], versiune: 2 }));
+    await assertFails(updateDoc(doc(ca(uid), 'setari/raspunsuriRapide'), { versiune: 9 }));
+    await assertFails(deleteDoc(doc(ca(uid), 'setari/raspunsuriRapide')));
+  }
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {

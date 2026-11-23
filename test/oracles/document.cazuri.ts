@@ -6169,3 +6169,135 @@ export const REFUZATE_V25: readonly RefuzV18[] = [
   { nume: 'RG5 un v25 cu treapta fără adâncime', doc: docV(25, buzunar({ incrustatie: incD({ treapta: { latime: 5 } }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.treapta.adancime`, motiv: 'ADR 0175 §1: cerută' },
   { nume: 'RG6 un v25 cu treapta spre „sus”', doc: docV(25, buzunar({ incrustatie: incD({ treapta: treaptaD({ spre: 'sus' }) }) })), categorie: 'incrustatie', camp: `${opC}.incrustatie.treapta.spre`, motiv: 'ADR 0175 §1: interior sau exterior' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v26 (felia 11.3↑d, ADR 0211): modul urechilor și locurile lor alese, pe hârtie. Cazurile v25 de mai sus rămân
+// ale contractului v25; la ușa v26, un v25 valid urcă schimbând doar numărul. Unde ies urechile pe buclă (proiecția,
+// golurile, pornirea) e al lucrării, nu al ușii; la fel refuzul modurilor încă fără lucrare („lemn”, regulile).
+
+/** Un document al cazurilor v25, adus la v26: doar numărul (ADR 0211, „Documentul”). */
+const laV26 = (d: Liber): Liber => cuSchema(d, 26);
+/** Dreptunghiul 80 × 30 din proba pe hârtie a ADR 0211. */
+const D26 = dreptunghi(80, 30);
+/** Urechile de 6 × 2, două, cu `v` peste. */
+const urechi26 = (v: Liber = {}): Liber => ({ numar: 2, latime: 6, grosime: 2, ...v });
+/** Profilul exterior `x1` al elementului `e`, cu urechile date (și `v` peste). */
+const exterior26 = (urechi: Liber | null, v: Liber = {}): Liber => opV18({ id: 'x1', latura: 'exterior', urechi, ...v });
+/** Locurile din proba pe hârtie: pe laturile scurte ale lui `e`, la jumătatea înălțimii. */
+const scurte26 = (): Liber => ({ e: [{ x: 0, y: 15 }, { x: 80, y: 15 }] });
+/** Urechile alese din proba pe hârtie. */
+const alese26 = (v: Liber = {}): Liber => urechi26({ mod: 'alese', locuri: scurte26(), ...v });
+/** `n` puncte pe latura de jos a lui `e`. */
+const puncte26 = (n: number): Liber[] => Array.from({ length: n }, (_, k) => ({ x: (k * 80) / Math.max(1, n), y: 0 }));
+/** O piesă cu două elemente sub grupul `g`: `e` (80 × 30) și `f` (un cerc de Ø20, la 120, 15), cu operațiile date. */
+function docDoua26(operatii: readonly Liber[], schema = 26): Liber {
+  const d = docV18(D26, operatii, schema);
+  ((d['piese'] as Liber[])[0] as Liber)['radacina'] = {
+    tip: 'grup', id: 'g', matrice: I(), copii: [{ tip: 'element', id: 'e', forma: D26, matrice: I() }, { tip: 'element', id: 'f', forma: cerc(10), matrice: T(120, 15) }],
+  };
+  return d;
+}
+/** Un document v26 cu elementul și cheia locurilor numite „__proto__” (din JSON.parse: chei proprii, date ca oricare). */
+function docProto26(): Liber {
+  const text = JSON.stringify(docV18(D26, [exterior26(alese26())], 26))
+    .replace('"id":"e"', '"id":"__proto__"').replace('"noduri":["e"]', '"noduri":["__proto__"]').replace('"locuri":{"e":', '"locuri":{"__proto__":');
+  return JSON.parse(text) as Liber;
+}
+
+/** Documente v26 valide: ușa le primește neschimbate (v25-urile valide, renumerotate, și câmpurile noi la frontieră). */
+export const VALIDE_V26: readonly CazV18[] = [
+  ...VALIDE_V25.map((c) => ({ nume: `${c.nume} (v26)`, doc: laV26(c.doc) })),
+  { nume: 'U01 urechile alese pe laturile scurte (proba pe hârtie a ADR 0211)', doc: docV18(D26, [exterior26(alese26())], 26) },
+  { nume: 'U02 modul „egale” scris (ca lipsa lui)', doc: docV18(D26, [exterior26(urechi26({ mod: 'egale' }))], 26) },
+  { nume: 'U03 „alese” fără locuri (nicio ureche aleasă)', doc: docV18(D26, [exterior26(urechi26({ mod: 'alese' }))], 26) },
+  { nume: 'U04 „alese” cu locurile goale, și cu lista goală pe element', doc: docDoua26([exterior26(urechi26({ mod: 'alese', locuri: { e: [] } }), { noduri: ['e', 'f'] })]) },
+  { nume: 'U05 modurile fără locuri: „lemn”, „lungi”, „scurte”, „mijloc” (lucrarea lor vine în 11.3↑e și 11.3↑f)', doc: docDoua26([
+    exterior26(urechi26({ mod: 'lemn' }), { id: 'x1', noduri: ['e'] }), exterior26(urechi26({ mod: 'lungi' }), { id: 'x2', noduri: ['f'] }),
+    exterior26(urechi26({ mod: 'scurte' }), { id: 'x3', noduri: ['e'] }), exterior26(urechi26({ mod: 'mijloc' }), { id: 'x4', noduri: ['f'] }),
+  ]) },
+  { nume: 'U06 un punct cu un câmp necunoscut, și un câmp necunoscut în locuri și în urechi', doc: docV18(D26, [exterior26(urechi26({ mod: 'alese', nota: 1, locuri: { e: [{ x: 0, y: 15, nota: 'n' }] } }))], 26) },
+  { nume: 'U07 o sută de urechi alese pe un element (plafonul)', doc: docV18(D26, [exterior26(urechi26({ mod: 'alese', locuri: { e: puncte26(100) } }))], 26) },
+  { nume: 'U08 locurile pe ambele elemente ale operației, și pe interior', doc: docDoua26([
+    exterior26(urechi26({ mod: 'alese', locuri: { e: [{ x: 40, y: 0 }], f: [{ x: 10, y: 0 }, { x: -10, y: 0 }] } }), { noduri: ['e', 'f'], latura: 'interior' }),
+  ]) },
+  { nume: 'U09 punctele la marginea coordonatelor (±10⁷) și departe de contur', doc: docV18(D26, [exterior26(urechi26({ mod: 'alese', locuri: { e: [{ x: 10_000_000, y: -10_000_000 }, { x: 1e3, y: 1e3 }] } }))], 26) },
+  { nume: 'U10 elementul și cheia locurilor „__proto__” (din JSON.parse)', doc: docProto26() },
+];
+
+/** Documentele vechi urcă la v26: ce dădea hârtia la v25, cu numărul 26; un v25 cu urechi urcă doar cu numărul. */
+export const MIGRARI_V26_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v26: Liber }> = [
+  ...MIGRARI_V25_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v26: laV26(c.v25) })),
+  {
+    nume: 'M26a un v25 cu urechi (fără mod) urcă la v26 doar cu numărul: rămân la distanțe egale',
+    vechi: docV18(D26, [exterior26(urechi26())], 25),
+    v26: docV18(D26, [exterior26(urechi26())], 26),
+  },
+  {
+    nume: 'M26b un v20 cu urechi și un câmp necunoscut în ele urcă la v26 doar cu numărul (prin v21 … v25)',
+    vechi: docV18(D26, [exterior26(urechi26({ nota: 'x' }))], 20),
+    v26: docV18(D26, [exterior26(urechi26({ nota: 'x' }))], 26),
+  },
+];
+
+/** `mod` și `locuri` în afara urechilor sunt câmpuri necunoscute oarecare: primite și păstrate, fără ciocnire. */
+export const NECIOCNIRI_V26: ReadonlyArray<CazV18 & { readonly v26: Liber }> = [
+  ...NECIOCNIRI_V25.map((c) => ({ nume: c.nume, doc: c.doc, v26: laV26(c.v25) })),
+  (() => {
+    const d = docV18(D26, [exterior26(urechi26(), { mod: 'alese', locuri: scurte26() })], 25);
+    return { nume: 'N26a un v25 cu `mod` și `locuri` pe operație, nu în urechi', doc: d, v26: laV26(d) };
+  })(),
+  (() => {
+    const d = docV18(D26, [exterior26(null, { rampa: { lungime: 10, mod: 'alese' }, intrari: { raza: 3, locuri: [] } })], 25);
+    return { nume: 'N26b un v25 cu `mod` în rampă și `locuri` în intrări', doc: d, v26: laV26(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [buzunar({ incrustatie: incDP(puntiD({ mod: 'alese', locuri: { e: [] } })) })], 25);
+    return { nume: 'N26c un v25 cu `mod` și `locuri` în punțile dopului (sunt ca urechile, dar nu sunt urechi)', doc: d, v26: laV26(d) };
+  })(),
+];
+
+/** Frontierele v26: modul, locurile, lista unui element, punctul și coordonatele lui (ADR 0211, „Documentul”). */
+export const FRONTIERE_V26: readonly FrontieraV18[] = [
+  {
+    cale: 'urechi.mod', operatie: exterior26(urechi26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: opțional, unul din cele șase moduri',
+    valori: [[LIPSA, true], ['egale', true], ['alese', true], ['lemn', true], ['lungi', true], ['scurte', true], ['mijloc', true],
+      ['Alese', false], ['egal', false], ['', false], [null, false], [1, false], [['alese'], false]],
+  },
+  {
+    cale: 'urechi.locuri', operatie: exterior26(alese26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: opțional, un obiect pe elemente',
+    valori: [[LIPSA, true], [{}, true], [scurte26(), true], [{ e: [] }, true], [null, false], [[], false], ['e', false], [1, false], [{ x: [] }, false]],
+  },
+  {
+    cale: 'urechi.locuri.e', operatie: exterior26(alese26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: o listă de cel mult 100 de puncte',
+    valori: [[LIPSA, true], [[], true], [[{ x: 0, y: 15 }], true], [puncte26(100), true], [puncte26(101), false], [{}, false], [null, false], ['x', false]],
+  },
+  {
+    cale: 'urechi.locuri.e.0', operatie: exterior26(alese26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: un punct { x, y }',
+    valori: [[{ x: 1, y: 2 }, true], [{ x: 1, y: 2, z: 3 }, true], [[1, 2], false], [null, false], [{ x: 1 }, false], [{ y: 2 }, false], ['p', false], [1, false]],
+  },
+  {
+    cale: 'urechi.locuri.e.0.x', operatie: exterior26(alese26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: finit, în ±10⁷ (ca vârfurile căilor)',
+    valori: [[0, true], [-3.5, true], [10_000_000, true], [-10_000_000, true], [10_000_000.001, false], [-10_000_001, false], ['0', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'urechi.locuri.e.0.y', operatie: exterior26(alese26()), forma: D26, categorie: 'urechi', adr: 'ADR 0211: finit, în ±10⁷ (ca vârfurile căilor)',
+    valori: [[15, true], [-15, true], [10_000_000, true], [-10_000_000, true], [10_000_001, false], [-10_000_000.5, false], ['15', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+];
+
+/** Refuzurile v26: cele v25 (versiunea mai nouă e acum v27), plus modul și locurile greșite și ciocnirile lor. */
+export const REFUZATE_V26: readonly RefuzV18[] = [
+  ...REFUZATE_V25.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v27)', doc: docV(27, exterior26(urechi26()), D26), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'RU0 un v25 cu `mod` în urechi', doc: docV(25, exterior26(urechi26({ mod: 'alese' })), D26), categorie: 'ciocnire', camp: `${opC}.urechi.mod`, motiv: 'ADR 0211: câmpul propriu', text: 'nu e un document v25 valid' },
+  { nume: 'RU1 un v25 cu `locuri` în urechi (fără mod)', doc: docV(25, exterior26(urechi26({ locuri: scurte26() })), D26), categorie: 'ciocnire', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: câmpul propriu', text: 'nu e un document v25 valid' },
+  { nume: 'RU2 un v26 cu locuri alese și modul „egale”', doc: docV(26, exterior26(alese26({ mod: 'egale' })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: locurile doar cu „alese”' },
+  { nume: 'RU3 un v26 cu locuri alese, fără mod', doc: docV(26, exterior26(urechi26({ locuri: scurte26() })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: locurile doar cu „alese”' },
+  { nume: 'RU4 un v26 cu locurile pe un id care nu e în piesă', doc: docV(26, exterior26(alese26({ locuri: { x: [{ x: 0, y: 15 }] } })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: pe elementele operației' },
+  { nume: 'RU5 un v26 cu locurile pe un element al piesei care nu e al operației', doc: docDoua26([exterior26(alese26({ locuri: { f: [{ x: 10, y: 0 }] } }), { noduri: ['e'] })]), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: pe elementele operației' },
+  { nume: 'RU6 un v26 cu 101 urechi alese pe un element', doc: docV(26, exterior26(alese26({ locuri: { e: puncte26(101) } })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: cel mult 100 pe element (`PLAFON.urechi`)' },
+  { nume: 'RU7 un v26 cu un punct la x = 10⁷ + 1', doc: docV(26, exterior26(alese26({ locuri: { e: [{ x: 10_000_001, y: 0 }] } })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: în ±10⁷' },
+  { nume: 'RU8 un v26 cu un punct scris ca listă', doc: docV(26, exterior26(alese26({ locuri: { e: [[0, 15]] } })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: un punct { x, y }' },
+  { nume: 'RU9 un v26 cu locurile o listă', doc: docV(26, exterior26(alese26({ locuri: [{ x: 0, y: 15 }] })), D26), categorie: 'urechi', camp: `${opC}.urechi.locuri`, motiv: 'ADR 0211: un obiect pe elemente' },
+  { nume: 'RU10 un v26 cu modul „Alese”', doc: docV(26, exterior26(urechi26({ mod: 'Alese' })), D26), categorie: 'urechi', camp: `${opC}.urechi.mod`, motiv: 'ADR 0211: unul din cele șase moduri' },
+];

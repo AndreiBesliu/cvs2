@@ -10476,6 +10476,30 @@ principală; întâi ca link partajat, cu pozele ascunse de claude.ai, apoi „u
   560, emulatoarele 101 / 101 și 29 / 29), iar pe `a27927b3` e2e-ul pachetului (biblioteca, extensiile, pluginul) 48 / 48.
 - **Schița**, cu răspunsurile: <https://claude.ai/artifact/LDQXX4JQUW5S9kpVu4cWGK>.
 
+## 2026-11-19 — Felia 11.3↑d pornită: urechile la locuri alese, ADR 0211 propus și schița (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu ADR-ul și schița? Răspunde „Da, ADR și schița” sau „Mai târziu”.”: „Da, ADR și schița”.
+**Started:** 19.11, 21:10.
+
+- **`main` `4b7539a`** a venit prin avans direct (ramura n-avea nimic peste el).
+- **ADR 0211, propus** (`docs/adr/0211-urechile-la-locuri-alese.md`): urechile la locuri alese, varianta c din ADR 0210.
+  Trei variante, pe felii: a) alese cu mausul, într-un mod al pânzei deschis din rândul exportului (recomandarea, ca
+  editarea urechilor din ArtCAM); b) automat, „unde ține”, pe proba de la 11.3↑c, calculat pe fiecare instanță la export;
+  c) reguli simple (laturile lungi, scurte, mijlocul laturilor). Documentul v26: `urechi.mod` și `urechi.locuri` (punctele,
+  în coordonatele piesei); programele de azi rămân octet cu octet; pornirea buclei în mijlocul celui mai lung gol dintre
+  urechi (o abatere de la ADR 0027 §4, doar pentru modurile noi); flancul, din golul cel mai mic.
+- **Schița:** <https://claude.ai/artifact/XiHkAQJ5nJjxNVyGQzVG27>: desenele la scară (acum: trei plăcuțe la 5 mm, cu
+  tăieturile unite; „unde ține”: trei rânduri la 5 mm și două coloane la 20 mm, înainte și după; cele trei reguli), un mod
+  al urechilor de încercat (clicul pune, clicul scoate, tras mută; pornirea în golul cel mai lung; refuzul sub 6 / 0,9 mm)
+  și formularul celor șapte întrebări. Răspunsurile stau în baza paginii (colecția `raspunsuri`, scrisă doar de owner),
+  verificată cu un document de probă scris, citit înapoi și șters.
+- **Cercetarea:** codul (`Operatie.urechi`, `geometrieUrechi`, pornirea în vârful 0), ADR 0028 și 0027, referința
+  funcțională (ArtCAM: urechile se editează pe vector, cu clic).
+- **Indexul ADR-urilor** și traducerea titlului (roadmap-ul în engleză, 855 / 0). Nimic din cod; felia 11.3↑d pornește la
+  răspunsuri.
+
+**Completed:** 19.11, 22:36.
+
 ## 2026-11-20 — Felia 3.Tn: conicele duble în atelierul Easy 3Draw (ADR 0280) (Model: Claude Opus 5.5)
 
 **Prompt:** „neata! continua” (owner-ul, a doua zi; la „Pornesc 3.Tn (conicele duble)?” răspunsese „Nu acum”). **Started:**
@@ -10812,6 +10836,73 @@ la `main` `a64adf63`). **Started:** 21.11, 17:55. **Completed:** 21.11, 21:38.
   ale șenilei; emulatoarele 101 / 101 și 29 / 29). `verifica` pe cele 21 de liste ale pluginului (cu `3.To.py`): aceleași
   20 de VOID.
 
+## 2026-11-21 — Felia 25.4↑c: îndreptarea scanărilor (ADR 0271, acceptat cu recomandările, implementat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pornesc felia următoare, îndreptarea
+scanărilor (25.4↑c, ADR 0271)?”; tot sub „vreau să mergi înainte și testez la final”). Reluată pe 21.11 la mesajul
+sesiunii principale, după „da si vreau sa pornesti si restul worktrees” al owner-ului.
+**Started:** 18.11, 21:28. **Completed:** 21.11, 18:37.
+
+- **Ramura:** pornită de la `0905a07a` (înaintare rapidă: 25.7↑ era deja în `main`). Pauza din 18.11 seara a oprit-o
+  înaintea otrăvurilor. Pe 21.11: lucrul comis (`ffed319b`), apoi `main` `a64adf63` adus (`9d1eac56`), cu ciocniri doar în
+  DEVLOG și în indexul ADR.
+- **Cercetarea:** Leptonica (`pixFindSkew`: scorul lui Postl, ±7°, încrederea max / min, pragul 3), unpaper, ImageMagick
+  (`-deskew`, Radon), Acrobat. ArtCAM / Carveco, Vectric, LightBurn și Inkscape n-o au.
+- **Prototipul** (`.tmp/proto-0271.ts`, cu generatorul `.tmp/gen-0271.ts`): pagini sintetice cu acoperirea exactă, rotite cu
+  unghiuri știute.
+  - Unghiul 0 câștiga din grila pixelilor: textul cu zgomot rotit cu 0,15° ieșea 0,004°. Remedierea: punctele mutate cu o
+    fracțiune de pixel (R2).
+  - Încrederea lui Leptonica despărțea prost o schiță (2,8) de un logo (3,4). Despart bine vârful raportat la cel mai bun
+    scor de la peste 1° (pragul 1,25) și scorul pe ambele axe.
+  - Eroarea, sub 0,016° (logo, 0,05°); ~50 ms pe o pagină A4.
+- **Nucleul** (`src/trasare/rotire.ts`): `gasesteUnghiul`, `rotesteImaginea` (pânza mărită, fondul din margine, marginea
+  prelungită, reducerea cu k), `panzaRotita`. **Calculul:** după foaie, înaintea zonei; sugestia (de la 0,1°, nu peste a
+  foii); scara împărțită la k. **Ușa:** `AlegeriTrasare.rotire`, cererea, raportul. **Fereastra:** grupul „Îndreptarea”,
+  „Îndreaptă scanarea”, „Unghiul (°)”, raportul, avertismentul, previzualizarea îndreptată. Textele (ro, en) și manualul.
+- **Probele:**
+  - Fixturile scrise și rotite de GDI+ (`test/fixtures/trasare/rotire/genereaza.ps1`): un desen tehnic (+1,7°, −6,5°,
+    nerotit), o pagină de text (−3,2°), un G4 (−0,6°).
+  - 16 unitare (`trasare.rotire.test.ts`, `import.rotire.test.ts`) și 2 e2e (`trasare-rotire.spec.ts`).
+- **Otrăvurile** (`test/otravuri/25.4c.py`): 44 / 44 (36 unitare, 8 prin e2e). La prima rulare (`5ac7aefb`), R08 (maximul
+  la capătul baleiajului grosier) a scăpat, echivalentă: o acoperă verificarea de la sfârșit, iar ea respingea degeaba un
+  unghi de sub 10°. Codul ei, scos (`0346cd18`).
+- **Porțile, pe arborele unit:**
+  - `tsc` pe cele trei configurații, regulile importurilor, licențele, determinismul.
+  - Unitare 9 668: 9 658 trecute, 8 sărite. Două au căzut: traducerea rândului nou, venită cu documentele, și o probă DXF
+    cu ceas (11,5 s sub încărcare; singură, 0,6 s).
+  - E2e 52 / 52 (specurile trasării și importul), cât rulau și e2e-urile altor linii.
+  - Mărimea: totalul 741,6 / 800 kB (`main` 739,4: +2,2), pornirea 107,2 / 115 și ușa 111,2, neschimbate.
+- **Publicat** pe canalul `trasare` (<https://cncvectorstudio-test--trasare-icw58h57.web.app>, până pe 21.12), amprenta
+  `645208c691d8`, din build-ul curat al commit-ului de cod. Privit pe canal: sugestia, îndreptarea cu 1,70°, desenul cu
+  mărimea chenarului, colțurile în culoarea hârtiei, un unghi scris; nicio eroare în consolă.
+- **Lecții:**
+  - Un scor de proiecții pe pixeli are o favoare pentru 0°, din grila pixelilor: punctele se mută cu o fracțiune de pixel.
+  - `assert.equal` pe două obiecte mari construiește diff-ul lor: otrava R19 a ținut proba aproape 2 minute. Identitatea
+    se verifică cu `assert.ok(a === b)`.
+  - O probă e2e care cerea textul exact al unghiului găsit („2,0x”) a picat pe 1,99: unghiul se citește ca număr, cu
+    toleranța.
+
+## 2026-11-21 — ADR 0272 propus: imaginile pe foaie (straturile bitmap), cu schița (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, propunerea” (owner-ul, în sesiunea liniei trasării, la întrebarea „Pregătesc propunerea pentru straturile
+bitmap (ADR 0272, cu schiță)?”, după „cat mai este de facut pentru trasare?”).
+**Started:** 21.11, 18:56. **Completed:** 21.11, 19:10.
+
+- **Ce am văzut în aplicație:** documentul (piese cu arbore, instanțe pe foi) n-are un element de imagine. Proiectul se
+  scrie întreg, ca JSON, în IndexedDB, la fiecare schimbare, cu 20 de versiuni: o imagine nu poate sta în el, deci octeții
+  ei merg într-o bază a lor, după amprentă. Pânza are deja straturi, cu vectorii desenați într-un worker. Panoul foii e
+  cel al proprietăților, fără nimic ales.
+- **Cercetarea:** Vectric, ArtCAM / Carveco, Fusion 360 (calibrarea din două puncte), LightBurn, Inkscape.
+- **ADR 0272 (propus):** imaginea pe foaie, sub desen, nici tăiată, nici exportată; punerea din fereastra trasării;
+  fixată sau desfăcută; lista în panoul foii; „Calibrează” și „Trasează…” în 25.8↑b. Trei întrebări, cu recomandarea
+  întâi: bifa la import, oprită; imaginea fixată; lista în panoul foii.
+- **Schița:** <https://claude.ai/artifact/Ctc63ZdA6ipkLPA8uGCJyb>, cu macheta interactivă (opacitatea, lacătul, calibrarea, trasarea, un desen peste imagine),
+  piciorul ferestrei trasării și formularul (`raspunsuri/owner`). Privită o dată local (Edge fără fereastră): nicio eroare
+  în afara fonturilor blocate, fără derulare laterală la 375 px. Panoul calibrării rămânea vizibil după „Aplică” (stilul
+  lui bătea `hidden`): reparat, republicată.
+- **Și:** rândul trasării din `ACOPERIRE-ARTCAM-DESKPROTO.md`, pus la zi (25.3↑d până la 25.4↑c și ce rămâne la cerere);
+  rândul straturilor bitmap: propus.
+
 ## 2026-11-22 — ADR 0282 propus: elicele în atelierul Easy 3Draw (Model: Claude Opus 5.5)
 
 **Prompt:** „Vreau ca pluginul sa faca si elice, pentru imprimanta, si sa fie si configurabile elicele si compatibile cu
@@ -10827,3 +10918,144 @@ lego” (owner-ul, după „neata, continua si porneste si worktrees”). **Star
   apropiate) și trei întrebări (unde stau, ce vine întâi, cotele din LDraw cu descărcarea lor), cu răspunsurile salvate în
   pagină: <https://claude.ai/artifact/CNQtNLBfAXxrMqQ3L4RebT>.
 - **Codul:** la răspunsurile owner-ului (felia 3.Tq), pe ramura `wip/3.Tq-elice`, în worktree-ul `rotite`.
+
+## 2026-11-19 — Felia 11.3↑d: urechile la locuri alese, alese cu mausul; documentul v26 (ADR 0211) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, în sesiunea liniei, la „Pornesc 11.3↑d cu toate recomandările?”: „Da, toate recomandările”.
+**Started:** 19.11, 22:38.
+
+- **Reluată pe 21.11**, la mesajul sesiunii principale (owner-ul: „da si vreau sa pornesti si restul worktrees”): `main`
+  `a64adf63` (3.Tn, 3.Tp, 12.1↑e) unit în ramură (`9655d3f2`; ciocnirea, doar în DEVLOG); `main` era tot pe v25, deci v26
+  rămâne a liniei.
+- **Documentul v26** (`63a1eca0`): `urechi.mod` și `urechi.locuri`, migrarea v25 → v26 (doar numărul; un v25 cu ele în urechi
+  e o ciocnire), ușa pe documentul brut (`problemaUrechi`, cu calea câmpului în motiv; ±10⁷ mm, ca vârfurile căilor), oracolul
+  documentului la v26 (`CAMPURI_NOI_O[26]`, cazurile pe hârtie, `document.v26.oracol.test.ts` 16 / 16) și pinurile versiunii
+  curente (cea mai nouă: 27). `cuNoduri` (`src/model/urechiLocuri.ts`): gruparea, degruparea, plăcuța coaptă, repararea,
+  tăierea și rolurile țin locurile pe elementele operației; rolul salvat nu le ia (`urechiDeSablon`). Corpusul de aur la v26
+  (`e5e464c4`): urechile capacului, la trei locuri alese; intrările v1–v25, aceiași octeți.
+- **Lucrarea** (`f267c067`): proiecția pe buclă, flancul din golul fiecărei urechi (la distanțe egale, chiar formula de azi),
+  refuzurile cu locul, pornirea în cel mai lung gol, intrările în afara zonelor (coloanele stau pe loc), rampa, degajările,
+  direcția inversă (urechile oglindite); suita unitară întreagă verde, deci programele fără mod, octet cu octet.
+- **Fereastra și modul pânzei** (`2ff0e0ac`): „Locurile” în rând, „Alege pe desen…” (fereastra ascunsă, nu închisă),
+  `ModUrechi.tsx` (la cerere, 8,9 kB), „Gata” prin `document.aplica-operatii`, semnele cu „Arată traseul”, panoul, raportul
+  foilor, manualul (ro, en).
+- **Pe drum:** proba e2e dădea clicul de scoatere pe marginea cutiei conturului desenat, care iese cu 4 px mai lată decât linia
+  lui: clicul cădea lângă ureche, unde se încerca o punere „prea aproape”; o probă de depanare (locurile pe ecran, elementul de
+  sub punct) a arătat că un clic pe centrul semnului o scoate, iar proba ia acum locurile din semne. Rădăcina modului e un `div`
+  cât pânza (un `span` gol nu stă sigur în colțul ei), banda stă în zona liberă (pânza e și sub meniu și sub bare),
+  `pointercancel` nu mai scoate urechea, Enter e „Gata” doar de pe pânză. Pluralul românesc pentru 0 („0 urechi alese”).
+  Manualul primește linkuri doar spre capitole: build-ul a refuzat o ancoră.
+- **Porțile:** tsc × 3; regulile de import (20 / 20, 0 încălcări); traducerile (868 / 0); unitare întregi 9 700 / 0 (8 sărite; singura cădere, traducerea rândului nou, completată); build-ul determinist (347 de fișiere identice; pornirea 107,7 / 115 kB, cu ușa 112,1 / 115, totalul 747,1 / 800); e2e întreg 562 / 571, iar cele 9 reluate cu un lucrător, 9 / 9: opt căderi de timp (sesiunea browserului închisă, serverul oprit cât rulau alte linii) și una a feliei, `placute.spec.ts`, care verifica schema 25 a documentului salvat (acum 26).
+- **Otrăvurile 11.3d:** 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
+
+**Completed:** 21.11, 21:19.
+
+## 2026-11-18 — Felia A.3: Tichete (lista și conversația, legătura cu erorile, răspunsurile rapide) (ADR 0260, ADR 0261) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, A.3” (owner-ul, pe 18.11, în sesiunea liniei adminului, la „Pornesc A.3 (Tichete), cu ADR-ul răspunsurilor
+rapide propus întâi?”).
+**Started:** 18.11 21:00.
+
+**Prompturile de după:** sesiunea principală, pe 21.11: owner-ul, „da si vreau sa pornesti si restul worktrees”, cu `main`
+`a64adf63` de adus și ADR-ul cu întrebarea întâi; apoi owner-ul, aici, „Da, toate recomandările” (la „Accepți ADR 0261
+(răspunsurile rapide) cu toate recomandările?”).
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.2 (`86e3b36e`), cu `main` `a64adf63` adus în `c356744f` (ciocnire doar în
+  DEVLOG: intrările din `main` întâi, apoi A.3).
+- **Răspunsurile rapide cer o setare nouă, o regulă și audit,** deci felia s-a oprit întâi la ADR 0261 (propus, `182428da`),
+  cu schița și formularul celor cinci întrebări (<https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>, răspunsurile în baza
+  paginii, ca la linia planșelor). Restul feliei (lista, conversația, legătura cu erorile) e acoperit de ADR 0260 și a mers
+  înainte (`daf67f80`). ADR 0261 acceptat pe 21.11 cu 1a–5a.
+- **Codul:**
+  - `daf67f80`: lista și conversația din Tichete, erorile din sesiune spre Erori, grupul vechi adus în Erori (partea ADR-ului 0260);
+  - `49be8407`: răspunsurile rapide (contractul `shared/raspunsuriRapide.ts`, acțiunea callable-ului cu auditul, regula, secțiunea
+    din Setări, pastilele din Tichete), detaliul cât spațiul de sub el (`useCatSpatiulDeJos`), ciornele pe pagină și probele;
+  - `2a596685`, `25b22992`, `ed96b7a6`: ce au găsit otrăvurile și bancul vizual (mai jos).
+- **Găsite de proba e2e, de banc și de otrăvuri:**
+  - detaliul lipit sus din Erori (din A.2) își ascundea partea de jos până la capătul listei; acum, ca cel din Tichete, ține cât
+    spațiul de sub el, cu umplutura și bordura în plafon (`box-sizing`; fără ea, trecea cu 34 px);
+  - grila detaliului din `admin.css` bătea flex-ul celui din Tichete (după ordinea foilor în bundle), deci câmpul răspunsului
+    ieșea din detaliu: acum selectorul e dublu;
+  - formularul setărilor conturilor (din 14.C↑b) și editorul nou porneau din nou la cererea citirii, nu la sosirea ei: după
+    „Salvează” arătau valorile de dinainte;
+  - din 15.B↑a, câmpul răspunsului își ținea versiunea de la deschidere (al doilea răspuns ar fi fost refuzat, la citirea
+    codului): acum pleacă pe versiunea tichetului arătat, iar proba trimite două răspunsuri la rând;
+  - proba rândurilor schițate din A.1 ținea citirea cu un glob care nu se potrivea (`?key=`), ca cea din A.2;
+  - sonda rece a funcțiilor, în proba filei Azi, trece de 30 s sub încărcare: 60 s;
+  - bancul (1440, 1024, 760 px, ambele teme, 15 capturi): butonul din capul detaliului se rupea pe două rânduri, iar problema
+    unui rând din Setări era gri (`25b22992`);
+  - otrăvurile: U04 (propoziția probei se rupea chiar înaintea unui spațiu), E08 și E22 (citirile interzise numărate doar după
+    adresă; Firestore Lite citește un document prin `documents:batchGet`), reparate în `2a596685` și `ed96b7a6`.
+- **Porțile rapide:** tipurile (aplicația, funcțiile, extensia), importurile (20 de reguli, 0 încălcări), licențele,
+  traducerile (868 de texte, 0 netraduse), unitarele 9 669 (9 661 trecute, 8 sărite, 0 căzute). Pe emulator: callable-ul și
+  regulile, 40 / 40; probele atinse pe emulatoare, 17 / 17 (cu 3 căderi reparate pe drum, mai sus).
+- **Porțile lente**, pe un build al arborelui cu documentele traduse: e2e-ul întreg (`test/e2e`, 570 de probe, pe 4191), 549 la
+  prima rulare, cu 16 lucrători, cât mașina rula și alte linii; cele 21 căzute erau toate în fișierele editorului, neatinse de
+  A.3 (15 termene de 30 s depășite, 6 `page.goto` întrerupte) și trec toate la reluare, cu 4 lucrători. Pe emulatoare:
+  funcțiile 104 / 104 și paginile 34 / 34 (cu proba documentației).
+- **Otrăvurile:** 59 / 59 prinse (24 unitare; 5 pe server și 1 pe regulă; 29 pe emulatoare), controalele verzi, pe `25b22992`,
+  iar unitarele, E08 și E22 din nou pe `ed96b7a6`, după probele întărite (primul tur, 56 / 59).
+- **Mărimea**, față de un build curat al lui `main` `a64adf63`: `/admin` 113,7 → 121,2 / 200 kB (+7,5, din care vreo 5,7 sunt
+  răspunsurile rapide: dicționarele adminului, română și engleză, intră amândouă în bucata lui; linia, +14,7 din cei +25);
+  pornirea (107,2, cu ușa 111,2 / 115) și totalul (739,5 / 800) neschimbate; build-ul determinist, 343 de fișiere identice.
+- **Unirea cu `main` `40487c43`**, la încheiere (în `43049e82`; ciocnire doar în DEVLOG, nimic din zonele lui A.3). Pe unire:
+  tipurile, importurile, licențele, traducerile (879 de texte, 0 netraduse); build-ul determinist (345 de fișiere; `/admin`
+  121,2, pornirea 107,2, totalul 741,9 / 800); unitarele 9 683 (9 674 trecute, 8 sărite, 1 căzută: proba pe ceas a DXF-ului,
+  `dxf.test.ts:420`, 9,7 s față de pragul de 5 s, cât build-ul determinist rula alături; singură, 3 din 3); probele
+  adminului pe emulatoare, cu documentația, 21 / 21.
+- **Documentele:** ADR 0260 („Implementarea”, A.3), ADR 0261 (acceptat, întrebările, „Implementarea”) și rândul lui din
+  index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
+  **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
+  principale: „neata, continua si porneste si worktrees”, al owner-ului).
+
+## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „neata, continua si porneste si worktrees” (owner-ul, pe 22.11, prin sesiunea principală: „Pornește 3.Tp↑b,
+pictogramele din ADR 0281”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă la `main`
+`40487c43`, cu 3.Tp↑a unită). **Started:** 22.11, 16:16. **Completed:** 22.11, 17:40.
+
+- **Pictogramele:** pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, un desen mic al piesei, de
+  18 px: un SVG de 24 × 24, doar linii, de culoarea textului (deci după temă și după apăsare), ascuns cititoarelor de ecran
+  (butonul se numește tot ca piesa). Cele 25 de desene, făcute de mână după piesele din vederea 3D (cu valorile de pornire
+  ale editoarelor), alese pe foi de privire (desenul la 48 px și pe butoane, apăsat și nu, la 1x și 2x, mărit): unde un
+  desen semăna cu altceva (bila cu pictograma de „utilizator”, fulia cu o clepsidră, roata cu o țintă, șenila cu grinda),
+  a fost refăcut (știfturile plăcii sub bilă și cupă; fulia din față, cu găurile ei; roata cu spițe; șenila din zale).
+- **O piesă nouă** (elicele, ADR 0282, propuse în paralel) își pune desenul în `PICTOGRAME` (`atelier.ts`, lângă
+  `FAMILII`), pe un rând; până atunci are cubul generic, iar proba unitară i-l cere.
+- **Probele:** unitare 4 (`trenulet.pictograme.test.ts`: completitudinea în ambele sensuri, desenele diferite, doar forme
+  fără culori și stil, în pătratul de 24 cu tot cu linia, arcele urmărite pe toată lungimea lor; judecata însăși, pe desene
+  greșite), e2e 4 (`trenulet.pictograme.spec.ts`), plus pictogramele în proba din cvs2, în engleză (`trenulet.spec.ts`).
+  Pe `35121af0`: unit trenulet* și biblioteca* 129 / 129, e2e pluginului și al bibliotecii 50 / 50.
+- **Otrăvurile:** 18 / 18 (`3.Tpb.py`) pe `35121af0`, la prima rulare, după baza verde (unitare 4 / 4, e2e 4 / 4): 7
+  prin proba unitară, 11 prin e2e. Pornite după 6 minute de așteptare a liniștii. `verifica` pe cele 22 de liste ale
+  pluginului: aceleași 20 de VOID vechi.
+- **Privirea:** pagina de sine stătătoare (desktop 1x și 2x, telefon, luminos și întunecat: fiecare filă, cu o piesă
+  apăsată, și căutarea „con”) și cvs2 (română: desktop luminos, Legături; telefon întunecat, Roți; engleză: desktop
+  întunecat, Cărămizi și „gear”): toate butoanele cu pictogramă, de 18 × 18, centrate, de culoarea textului, fără depășire,
+  fiecare pe un rând, fără erori în jurnal. Butonul are 32 px în loc de 30.
+- **Porțile:** verzi pe `330a5873`: rapide (traducerile 0 lipsă, tsc, unit 9 670 / 0, 8 sărite, licențele, build,
+  determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 741,9 / 800, al lui `main`: felia nu atinge
+  aplicația), lente (e2e 580 / 582 la prima rulare, cu 3 lucrători: două probe ale aplicației, neatinse de felie, căzute la
+  încărcare, `proiect.spec.ts:302` (un `toBeEnabled` de 5 s) și `simulare.spec.ts:53` (120 s depășite), au trecut reluate
+  singure, 25 / 25 pe fișierele lor; emulatoarele 101 / 101 și 29 / 29).
+- Pachetul Easy 3Draw 18.18.0, înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+
+## 2026-11-23 — Lucrul în cloud: uneltele în repo, pregătirea mediului, felul de lucru (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! Putem sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul
+local, dar sesiunea sa lucreze in cloud pe repo din Github. Cat de complicat este si riscam cumva sa pierdem ceva progres?”,
+apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11, 08:20.
+
+- **Starea:** tot lucrul liniilor e pe GitHub (38 de ramuri, worktree-urile curate și împinse); unirea galeriei, singura
+  doar locală, împinsă ca `unire-2211c`.
+- **În repo:** `scripts/cloud/pregatire.sh` (mediul cloud, ca CI-ul: Node 26, npm ci, Edge, Java 21, firebase-tools 15.18.0,
+  Python 3), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile în clonă, documentele,
+  unirea și publicarea, pauza), `scripts/rezolva-devlog.py` (ciocnirile din DEVLOG) și `scripts/ldraw/` (aducerea și
+  măsurarea pieselor LDraw, randarea 3D; biblioteca în `LDRAW_DIR`, implicit `.tmp/ldraw`, în afara repo-ului).
+- **Probat local:** tipurile (`randare.mts`, venit din `.tmp`, avea tipurile slabe: reparate), regulile de import,
+  licențele, randarea pe o piesă a motorului și pe LDraw 6041.
+- **Corectura, după documentația mediilor cloud** (citită pe 23.11; `9e3e288b`, 09:10, apoi rândul despre `node_modules`):
+  pregătirea nu mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), Node 26 e pus în
+  locul lui 22, primul în PATH-ul imaginii, Java 21 vine din imagine. Porțile întregi trec în CI (rapidul la push, completul
+  pornit pe ramură), iar comenzile lungi rulează în prim-plan, fiindcă containerul se suspendă când stă. **Completed:** 23.11,
+  09:37.

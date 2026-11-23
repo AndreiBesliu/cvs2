@@ -136,7 +136,7 @@ test('pe dopul ridicat (fără punți din fereastră), câmpul pleacă; fără v
 /** Buzunarul unui document v25, cu incrustația dreaptă dată (peste valorile de bază). */
 const dreptV25 = (inc: Record<string, unknown> = {}): Operatie => {
   const r = incarca({
-    schema: 25, rev: 0,
+    schema: 26, rev: 0,
     piese: [{
       id: 'p', radacina: { tip: 'element', id: 'a', matrice: I, forma: { tip: 'dreptunghi', latime: 30, inaltime: 20, razaColt: 0 } },
       operatii: [{

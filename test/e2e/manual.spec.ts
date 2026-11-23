@@ -85,7 +85,8 @@ test('căutarea: fără diacritice și fără litere mari; nimic găsit se spune
   const ids = await gasite.evaluateAll((b) => b.map((x) => x.getAttribute('data-capitol')));
   expect(ids).toContain('transformari');
   expect(ids).toContain('selectie');
-  expect(ids).not.toContain('import');
+  // „rotește” e și în import, la îndreptarea scanărilor (25.4↑c); contul n-are ce căuta printre rezultate
+  expect(ids).not.toContain('cont');
   await cauta.fill('qqqzzz');
   await expect(gasite).toHaveCount(0);
   await expect(manual(page).locator('.manual-niciunul')).toHaveText('Niciun capitol nu conține „qqqzzz”.');

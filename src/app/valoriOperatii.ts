@@ -110,13 +110,31 @@ function incrustatieVScrisa(o: Incrustatie | undefined, i: IncrustatieOperatie):
 }
 
 /**
+ * Urechile scrise de Exportă (ADR 0211): ale dialogului peste ale documentului (îmbinate, ca restul). Cu „alese pe desen”,
+ * locurile alese rămân ale documentului (le scrie modul pânzei); la distanțe egale, modul „alese” și locurile pleacă, iar
+ * un alt mod scris de mână rămâne. Numărul arătat al urechilor alese nu intră în document.
+ */
+function urechiDinDialog(o: Operatie['urechi'], v: ValoriOperatie['urechi']): Operatie['urechi'] {
+  if (!v) return v;
+  const { alese: _alese, ...dialog } = v;
+  void _alese;
+  if (!o) return dialog;
+  const imbinate: Record<string, unknown> = { ...o, ...dialog };
+  if (dialog.mod !== 'alese' && o.mod === 'alese') {
+    delete imbinate['mod'];
+    delete imbinate['locuri'];
+  }
+  return imbinate as NonNullable<Operatie['urechi']>;
+}
+
+/**
  * Operația pe care o scrie Exportă: valorile din dialog peste cea din document, cu freza arătată. Urechile, rampa,
  * intrările, degajările și scula se
  * ÎMBINĂ, nu se înlocuiesc: un câmp necunoscut din ele rămâne (ADR 0016), iar ordinea cheilor din document (cea salvată,
  * canonică) nu se schimbă, ca un Exportă fără nicio schimbare să nu scrie o comandă (recenzia feliei 2.4).
  */
 export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, scula: SculaOperatie): Operatie {
-  const urechi = v === undefined ? o.urechi : v.urechi && o.urechi ? { ...o.urechi, ...v.urechi } : v.urechi;
+  const urechi = v === undefined ? o.urechi : urechiDinDialog(o.urechi, v.urechi);
   const rampa = v === undefined ? o.rampa : v.rampa && o.rampa ? { ...o.rampa, ...v.rampa } : v.rampa;
   const intrari = v === undefined ? o.intrari : v.intrari && o.intrari ? { ...o.intrari, ...v.intrari } : v.intrari;
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;

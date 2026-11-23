@@ -82,8 +82,10 @@ service cloud.firestore {
     }
 
     // Setările conturilor (ADR 0116 §20): le citește owner-ul, în fila Setări (și serverul); le scrie doar callable-ul.
+    // Răspunsurile rapide ale tichetelor (ADR 0261): le citesc cei care răspund la tichete (și owner-ul, care le scrie în
+    // fila Setări); le scrie doar callable-ul `tichete`. Restul colecției rămâne refuzat.
     match /setari/{id} {
-      allow get: if id == 'conturi' && eOwner();
+      allow get: if (id == 'conturi' && eOwner()) || (id == 'raspunsuriRapide' && are('tichete.raspunde'));
     }
 
     match /errorLogs/{amprenta} {

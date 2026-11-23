@@ -29,6 +29,7 @@ import { CampText } from '../ui/CampText.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
+import { numarUrechiAlese } from '../model/urechiLocuri.ts';
 
 /** «Din CSV…» (ADR 0210 §4), adusă la primul clic: fereastra și cititorul tabelului nu stau în panou. */
 const DialogCsv = lazy(() => import('./DialogCsv.tsx').then((m) => ({ default: m.DialogCsv })));
@@ -160,8 +161,11 @@ function operatie(o: Operatie, n: number, grosimeFoaie?: number): ReactNode {
         {/* Frezele de rest (ADR 0093): ale buzunarului sau ale fundului plat. */}
         {((o.tip === 'buzunar' ? o.rest : o.tip === 'vcarve' ? o.fundPlat?.rest : undefined) ?? []).length > 0 && rand(t('prop.rest'),
           ((o.tip === 'buzunar' ? o.rest : o.fundPlat?.rest) ?? []).map((r) => t('prop.rest.valoare', { numar: r.scula.numar, diametru: mmFreza(r.scula.diametru), pas: mm(r.pasLateral) })).join('; '))}
+        {/* La locuri alese (ADR 0211), câte sunt alese pe desen, în loc de câte pe buclă. */}
         {rand(t('export.urechi'), o.urechi
-          ? t('prop.urechi.valoare', { numar: o.urechi.numar, latime: mm(o.urechi.latime), grosime: mm(o.urechi.grosime) }) : t('prop.fara'))}
+          ? t(o.urechi.mod === 'alese' ? 'prop.urechi.alese' : 'prop.urechi.valoare', {
+            numar: o.urechi.mod === 'alese' ? numarUrechiAlese(o) : o.urechi.numar, latime: mm(o.urechi.latime), grosime: mm(o.urechi.grosime),
+          }) : t('prop.fara'))}
         {rand(t('export.rampa'), o.rampa ? t('prop.rampa.valoare', { mm: mm(o.rampa.lungime) }) : t('prop.fara'))}
         {rand(t('export.intrari'), o.intrari ? t('prop.intrari.valoare', { mm: mm(o.intrari.raza) }) : t('prop.fara'))}
         {rand(t('export.colturi'), o.colturi ? t(`export.colturi.${o.colturi.tip}`) : t('prop.fara'))}

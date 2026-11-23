@@ -123,6 +123,36 @@ Pornită pe 21.11.2026, la cuvântul owner-ului („da si vreau sa pornesti si r
 - **Pachetul 18.17.0, nu 18.16.0:** 3.To (șenila, ADR 0280) a luat 18.16.0 și a intrat întâi în `main`; ramura a
   adus `main` (`4667898a`) înaintea unirii, cu ciocniri doar în documente și în amprenta din bibliotecă.
 
+## Felia 3.Tp↑b, implementată: pictogramele (pachetul 18.18.0)
+
+Pornită pe 22.11.2026, la cuvântul owner-ului („neata, continua si porneste si worktrees”), fără întrebare (§4); în schiță:
+„un desen mic pe fiecare buton de piesă, ca să le recunoști fără să citești”.
+
+- **Desenul:** pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, o pictogramă de 18 px: un SVG
+  de 24 × 24, doar cu linii, de culoarea textului, deci după temă și după apăsare. Desenele sunt făcute de mână, după
+  piesele din vederea 3D (cu valorile de pornire ale editorului): cărămida, panta, panta inversă și cea cu știft pe lateral
+  din profil, cu știfturile; suportul în L; pana de sus; rotundul, un cilindru cu știft; grinda cu găuri; cărămida Technic,
+  cu găurile sub știfturi; placa cu găuri, de sus; știftul cu gulerul; axul ca o cruce (secțiunea lui); bucșa, crucea în
+  cerc; clema, bara, mânerul, bila și cupa, pe plăcile lor; roata dințată, cu crucea axului; conica, cu dinții sus și
+  butucul; coroana, cu dinții ca un zid; conica dublă, cu banda de dinți; fulia, din față, cu găurile; roata cu anvelopă,
+  cu spițe; șenila, o buclă de zale în jurul a două roți.
+- **Nimic în date, nimic de tradus:** pictograma e ascunsă cititoarelor de ecran (`aria-hidden`), deci butonul se numește
+  tot ca piesa, cu numele tradus pe pagină, ca până acum.
+- **O piesă nouă** își pune desenul în `PICTOGRAME` (`atelier.ts`, lângă `FAMILII`), pe un rând; până atunci, butonul ei
+  are pictograma generică (un cub), iar proba unitară îl cere.
+- **Butonul** are 32 px în loc de 30 (pictograma e mai înaltă decât rândul numelui); pe telefon (390 px), fiecare rămâne pe
+  un rând, fără depășire.
+- **Probele:** unitare 4 (`trenulet.pictograme.test.ts`: fiecare piesă cu desenul ei și fiecare desen al unei piese;
+  desenele diferite între ele și de cel generic; doar forme, fără culori și stil, în pătratul de 24 cu tot cu linia, arcele
+  urmărite pe toată lungimea lor; judecata însăși, pe desene greșite), e2e 4 (`trenulet.pictograme.spec.ts`: înaintea
+  numelui, ascunsă, 18 × 18, centrată, doar linii de culoarea textului, pe piesa apăsată și pe celelalte, și în tema
+  întunecată; desenele diferite; aceleași în căutare), plus în proba din cvs2, în engleză: pictogramele rămân după
+  traducere, iar butonul se numește ca piesa.
+- **Otrăvurile:** 18 / 18 pe codul final (`35121af0`), la prima rulare, după baza verde (unitare 4 / 4, e2e 4 / 4): 7 prin proba unitară (o piesă fără desen, un desen dublat, unul fără piesă, cubul generic dublat, o culoare scrisă în desen, un punct și un arc ieșite din pătrat), 11 prin e2e (pictograma citită de cititoarele de ecran, după nume, lipsă din căutare și din galeria familiei, toate cu cubul generic, pătratul desenului mai mic, fără clasă, umplută, de o culoare fixă, mai mare, pe linia de bază a textului). `verifica` pe toate cele 22 de liste ale pluginului: aceleași 20 de VOID vechi.
+- **Ce nu se probează:** că fiecare desen seamănă cu piesa lui (două desene schimbate între ele trec); asta se judecă
+  privind, pe capturi la 1x și 2x, în ambele teme.
+- **Mărimea:** desenele au ~3,4 kB în pachetul extensiei; în aplicație, nimic.
+
 ## Feliile
 
 - **3.Tp:** filele, după răspunsuri; ultima piesă pe filă; probele atelierului mutate pe file.

@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
-  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
+  areArce, instantaPreaDeparte, MODURI_URECHI, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
 } from './document.ts';
 
 /**
@@ -121,6 +121,15 @@ const SchemaUrechi = v.looseObject({
   grosime: pozitiv(PLAFON.grosime),
 });
 
+// ADR 0211 (v26): urechile unei operații, cu modul locurilor. Punctele alese (`locuri`) le judecă `problemaUrechi`, pe
+// documentul brut: un id de element poate fi `__proto__`, `constructor` sau `prototype` (ADR 0024 §9), iar ieșirea
+// validatorului nu are asemenea chei.
+const SchemaUrechiOperatie = v.looseObject({
+  ...SchemaUrechi.entries,
+  mod: v.optional(v.picklist(MODURI_URECHI)),
+  locuri: v.optional(v.looseObject({})),
+});
+
 const SchemaOperatie = v.looseObject({
   id: Id,
   tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve']),
@@ -130,7 +139,7 @@ const SchemaOperatie = v.looseObject({
   sens: v.picklist(['urcare', 'opozitie']),
   adancime: pozitiv(PLAFON.adancimeOperatie),
   pas: pozitiv(PLAFON.adancimeOperatie),
-  urechi: v.nullable(SchemaUrechi),
+  urechi: v.nullable(SchemaUrechiOperatie),
   rampa: v.nullable(v.looseObject({ lungime: pozitiv(PLAFON.latura) })),
   intrari: v.nullable(v.looseObject({ raza: pozitiv(PLAFON.latura) })),
   colturi: v.nullable(v.looseObject({ tip: v.picklist(['dog-bone', 't-bone']) })),
@@ -331,6 +340,40 @@ function problemaDeAnsamblu(d: Document): string | null {
 export function problemaTexte(d: Document): string | null {
   if (!d.foi.some((f) => f.instante.some((i) => i.texte !== undefined))) return null;
   return judecataTexte ? judecataTexte(d) : 'documentul are plăcuțe cu litere, iar judecata lor nu e încărcată';
+}
+
+/**
+ * Locurile alese ale urechilor (v26, ADR 0211), judecate de ușă după schemă, pe documentul BRUT (ca literele plăcuțelor): doar
+ * cu modul „alese”, pe elemente ale operației, cel mult `PLAFON.urechi` pe element, fiecare un punct cu x și y finite, în
+ * ±`PLAFON.translatie` (ca vârfurile căilor).
+ * Null: niciun loc ales, sau trec.
+ */
+export function problemaUrechi(d: Document): string | null {
+  for (const [i, p] of d.piese.entries()) {
+    for (const [j, o] of p.operatii.entries()) {
+      const u: unknown = o.urechi;
+      if (typeof u !== 'object' || u === null || !Object.hasOwn(u, 'locuri')) continue;
+      const cale = `piese.${i}.operatii.${j}.urechi.locuri`;
+      const urechi = u as Record<string, unknown>;
+      if (urechi['mod'] !== 'alese') return `${cale}: locurile alese ale urechilor cer modul „alese” (operația ${o.id} din piesa ${p.id})`;
+      const locuri = urechi['locuri'];
+      if (typeof locuri !== 'object' || locuri === null || Array.isArray(locuri)) return `${cale} nu e un obiect`;
+      const noduri = new Set(o.noduri);
+      for (const k of Object.keys(locuri)) {
+        if (!noduri.has(k)) return `${cale}.${k}: ${k} nu e un element al operației ${o.id} (din piesa ${p.id})`;
+        const lista: unknown = (locuri as Record<string, unknown>)[k];
+        if (!Array.isArray(lista)) return `${cale}.${k} nu e o listă`;
+        if (lista.length > PLAFON.urechi) return `${cale}.${k}: peste ${PLAFON.urechi} de urechi alese pe un element`;
+        for (const [n, q] of (lista as unknown[]).entries()) {
+          const x = typeof q === 'object' && q !== null && !Array.isArray(q) ? (q as Record<string, unknown>)['x'] : undefined;
+          const y = typeof q === 'object' && q !== null && !Array.isArray(q) ? (q as Record<string, unknown>)['y'] : undefined;
+          if (typeof x !== 'number' || typeof y !== 'number' || !Number.isFinite(x) || !Number.isFinite(y)) return `${cale}.${k}.${n} nu e un punct cu x și y finite`;
+          if (Math.abs(x) > PLAFON.translatie || Math.abs(y) > PLAFON.translatie) return `${cale}.${k}.${n} iese din ±${PLAFON.translatie} mm`;
+        }
+      }
+    }
+  }
+  return null;
 }
 
 export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(
