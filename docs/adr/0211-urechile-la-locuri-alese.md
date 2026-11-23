@@ -1,7 +1,7 @@
 # ADR 0211 — Urechile la locuri alese (etapa 11, varianta c din ADR 0210)
 
 **Starea:** acceptat pe 19.11.2026, cu toate recomandările (1a–7a: „Da, toate recomandările”, la „Pornesc 11.3↑d cu toate
-recomandările?”); varianta a, implementată în felia 11.3↑d (21.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
+recomandările?”); varianta a, implementată în felia 11.3↑d (21.11), varianta b, în felia 11.3↑e (23.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
 (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c).
 **Completează:** ADR 0028 (urechile: profilul Z(s), centrele la distanțe egale), ADR 0027 §4 (pornirea în vârful 0) și
 ADR 0210 (feliile 11.7↑, 11.3↑b și 11.3↑c: urechile nu țin sub 2 × freza, distanța propusă, proba la export).
@@ -86,7 +86,10 @@ plafonul foii, pe elemente ale operației. «Desprinde» și «Încă…» iau l
   golului lung.
 - **Octet cu octet:** programul fără `mod` nu se schimbă (fișierele de aur ale plăcilor 1, 2 și 11).
 - **Placa 11 la 5 mm:** cu „unde ține” cad doar plăcuțele fără nicio latură spre lemn, cele înconjurate de vecine.
-  Cifrele, pe hârtie, la începutul feliei 11.3↑e, iar proba de la 11.3↑c le numără.
+  Cifrele, pe hârtie, la începutul feliei 11.3↑e, iar proba de la 11.3↑c le numără. **Pe hârtie (22.11):** rândurile la
+  y = 180 / 145 / 110 / 75 / 40, coloanele la x = 10 / 95 / 180; pe foaia 1 (cinci rânduri pline) cad mijloacele rândurilor
+  2–4 (numele 5, 8, 11), pe foaia 2 (trei rânduri pline și una la x = 10, y = 75) doar mijlocul rândului 2 (numele 20): sub
+  mijlocul rândului 3 e lemn. Cu urechile la distanțe egale cădeau 9 + 4.
 - **E2e:** modul pânzei (clicul pune, clicul scoate, tras mută, „Gata” și „Renunță”), semnele și exportul.
 
 ## Ce am respins
@@ -155,3 +158,50 @@ se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână î
   x = −1,5875 și 81,5875, de la y = 12 la 18, pornirea la mijlocul laturilor lungi; rampa, intrările, direcția inversă,
   refuzurile); `urechiAleseCalcul.test.ts`, `urechi.dialog.test.ts`; e2e `urechi-alese.spec.ts` (pe trei plăcuțe la 9 mm,
   urechile mutate pe laturile scurte țin: exportul nu mai are piese desprinse). Otrăvurile `test/otravuri/11.3d.py`: 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
+
+## Implementarea feliei 11.3↑e (b, unde ține; 22–23.11)
+
+- **Documentul rămâne v26:** modul „lemn” era deja în ușă; nicio migrare. Fereastra exportului îl scrie ca pe celelalte
+  („Locurile: … / unde ține”); înapoi la distanțe egale, modul pleacă, iar locurile alese pleacă la orice alt mod.
+- **Două treceri** (`src/jobs/calculCam.ts`, `programFoii`): întâi programul cu operațiile „unde ține” tăiate fără urechi,
+  apoi fundul foii la capătul lui (`fundFoii`, scos din proba de la 11.3↑c, `src/sim/desprinse.ts`: mutările care ajung la
+  fața de jos, apoi umplerea din margine, prin lemn), apoi programul cu urechile. Exportul, traseul și vederea 3D trec pe aici,
+  deci arată aceleași urechi. Fără nicio operație „unde ține”, `programDinDocument`, neschimbat. **Precizare:** lucrarea fără
+  fundul foii refuză „unde ține” (nu taie pe tăcute fără urechi); supracursa și bifa „prin foaie” nu mută fundul.
+- **Locul bun** (`src/cam/urechiLemn.ts`): pe fiecare buclă, mostre la pasul celulei fundului (0,25 mm pe o foaie mică, 1 mm
+  pe o placă întreagă); o mostră e bună când punctul buclei, dus cât freza (D) spre partea de care ține urechea, cade pe lemnul
+  ei; un centru e bun când toate mostrele palierului lui (±W / 2) sunt bune. **Precizare:** pe un profil pe dinăuntru, urechea
+  ține miezul de piesă, deci partea ei e a piesei (lemn, legat sau nu: piesa ține de foaie prin urechile ei); pe dinafară,
+  deșeul, iar lemnul trebuie legat de marginea foii. Pe linie și pe o cale deschisă, refuz cu motivul.
+- **Câte și unde:** întâi cât mai multe, până la număr, cu cel puțin W / 0,9 între centre (cu o rezervă de rotunjire, ca
+  refuzul locurilor alese să nu le prindă), apoi cel mai mare gol minim; între așezările cu același gol, prima cea mai lungă
+  serie de porniri bune, de la mijlocul ei. **Precizare:** dacă toate cele n locuri de la distanțe egale sunt bune (și
+  tăietura n-are intrări, care ar număra urechile de la pornirea lor), urechile modului „egale”, octet cu octet: cu lemn de
+  jur împrejur, „unde ține” nu schimbă nimic (placa 11 la 10 mm dă programele plăcii). Altfel, urechile trec prin lucrarea
+  celor alese: pornirea în golul cel mai lung, intrările în afara urechilor.
+- **Mai puține decât numărul:** un avertisment al lucrării, cu primele cinci bucle („3 bucle au mai puține urechi … : a/r: 0
+  din 2; …”); o piesă fără nicio ureche apare și în proba urechilor, desprinsă.
+- **Butonul** „Pune urechile unde țin”, lângă avertismente: piesele desprinse își spun operația (`piesă/operație`), iar exportul
+  dă rândurile care nu sunt încă „unde ține”. **Precizare:** butonul trece rândurile ferestrei (nu documentul), într-o singură
+  schimbare, cu nota „… exportă din nou”: exportul următor le scrie, ca orice valoare a ferestrei.
+- **Semnele:** traseul dă centrele urechilor „unde ține”, pe drumul frezei; cu „Arată traseul”, inele mici (cele alese sunt
+  puncte pline, pe contur). Panoul: „unde ține: N × W mm pe buclă”.
+- **Probele:** `urechi.lemn.test.ts` (placa 11 la 5 mm: 3 + 1 plăcuțe desprinse, cele de pe hârtie, și aceleași prin proba pe
+  G-code; la 10 mm, programele plăcii, octet cu octet; alegerea și fundul pe hârtie; refuzurile; butonul),
+  `urechi.dialog.test.ts` (modul în fereastră), e2e `urechi-lemn.spec.ts` (trei dreptunghiuri la 9 mm: butonul din
+  avertisment, exportul fără piese desprinse, palierele celui din mijloc pe laturile scurte, șase semne pe traseu). Otrăvurile
+  `test/otravuri/11.3e.py`: 42 / 42 la capăt (36 unitare, 6 prin e2e): F01, L06 și C09 scăpaseră la prima rulare (38 / 41) și
+  au primit probe țintite (umplerea fundului pe orizontală, cu F03 adăugată; partea spre care se duce palierul pe un arc;
+  rezerva golului minim); din listele 11.3c și 11.3d, șase otrăvuri ieșite VOID pe codul feliei, mutate pe el și prinse din
+  nou.
+- **Potrivirea dopului** (ADR 0179, venită din `main` la reluarea din 23.11): „Împreună (secțiunea)” ia locașul din
+  același program al foii (`programFoii`), ca vederea 3D; cu `programDinDocument`, o foaie cu urechi „unde ține” era
+  refuzată. **Regula:** un calcul nou care cere programul foii îl ia din `programFoii`.
+- **Probele țintite** (23.11, după otrăvurile scăpate): fundul foii cu un „[” și un „]” tăiate prin ea (lemnul dintre brațe
+  ține de foaie doar prin gura deschisă, deci umplerea ajunge la el pe orizontală, într-un singur sens); pe un cerc, în
+  ambele sensuri de mers, palierul se duce spre afară (cu lemnul tăiat doar înăuntrul razei 9, toate locurile țin; cu lemn
+  doar înăuntrul razei 11,5, niciunul); golul minim cu rezerva lui (W = 9, capetele arcului bun la exact W / 0,9 = 10 mm: o
+  ureche, la mijloc; la 11 mm, două).
+- **Porțile** (în CI, pe `ed87f2e8`): unitarele 9 795 / 0 (12 sărite); e2e 593 / 593; pe emulatoare 104 / 104 (funcțiile și
+  regulile) și 34 / 34 (paginile). Mărimea: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,1 / 800 kB (+2,2 față de
+  `main`: 760,9 pe `75dc1f9a`), `/admin` 121,2 / 200.

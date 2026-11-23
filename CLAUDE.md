@@ -704,7 +704,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   lucrarea le proiectează pe drumul frezei, cu flancul din golul fiecărei urechi și bucla pornită în cel mai lung gol
   (`src/cam/urechi.ts`, `job.ts`); fereastra exportului are „Locurile”, iar „Alege pe desen…” ascunde fereastra (nu o
   închide) și pune pânza în modul urechilor (`src/app/ModUrechi.tsx`, la cerere; „Gata” prin `document.aplica-operatii`).
-  „Unde ține” (b, 11.3↑e) și regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
+  **Urechile „unde ține” (felia 11.3↑e, ADR 0211, varianta b; documentul tot v26)** gata pe 23.11, pe
+  `wip/11.1-plansele`, unită în `main` pe 23.11 (`d3ffcbf3`): cu o operație „unde ține”,
+  programul foii se face în două treceri (`programFoii`, `src/jobs/calculCam.ts`; exportul, traseul și vederea 3D trec pe
+  aici): întâi cu ea tăiată fără urechi, apoi fundul foii (`fundFoii`, `src/sim/desprinse.ts`), apoi programul cu urechile
+  puse unde palierul, dus cât freza spre partea de care ține, cade pe lemn legat (pe dinafară) sau pe piesă (pe dinăuntru),
+  câte cere numărul, cât mai departe una de alta (`src/cam/urechiLemn.ts`). `programDinDocument` fără fund refuză „lemn” (nu
+  taie pe tăcute fără urechi); cu toate locurile egale bune și fără intrări, programul modului „egale”, octet cu octet. Lângă
+  avertismentul pieselor desprinse, „Pune urechile unde țin” trece rândurile lor din fereastră. **Un calcul nou care cere
+  programul foii îl ia din `programFoii`** (potrivirea dopului, ADR 0179, trece și ea pe acolo). Pornirea 107,9 kB (cu ușa
+  112,3 / 115), totalul 763,1 / 800. Regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
@@ -1276,6 +1285,26 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 23.11.2026, după-amiaza (a doua unire din cloud): **11.3↑e (urechile „unde ține”) și A.4 (Sugestii ca tablă) unite
+  în `main`**, în lot (ramura `unire-2311c`, din `feecf82a`). **11.3↑e** (linia planșelor, ramura `wip/11.1-plansele`,
+  `83b690a5`, PR-ul `AndreiBesliu/cvs2#2`; ADR 0211, varianta b), unită în `d3ffcbf3`: în fereastra exportului,
+  „Locurile” urechilor au și „unde ține”: la fiecare export, aplicația taie întâi programul cu acele operații fără urechi,
+  se uită la fundul foii (lemnul legat de marginea ei) și pune urechile unde palierul cade pe lemn legat, câte cere
+  numărul, cât mai departe una de alta; cu lemn de jur împrejur ies cele de la distanțe egale, octet cu octet; lângă
+  avertismentul pieselor desprinse, „Pune urechile unde țin”; documentul rămâne v26; otrăvurile 42 / 42. Linia a găsit
+  că potrivirea dopului (12.1↑e-2) refuza o foaie cu urechi „unde ține” și a reparat-o: **un calcul nou care cere
+  programul foii îl ia din `programFoii`** (`src/jobs/calculCam.ts`). **A.4** (linia adminului, ramura `wip/A.1-admin`,
+  `20fb65de`, PR-ul `AndreiBesliu/cvs2#3`; ADR 0260 §4; `3.Ad` în fișa etapei 3), unită în `ddaa7ead`: fila Sugestii din
+  `/admin` e o tablă, cu o coloană pe decizie și Respinsele strânse dedesubt; owner-ul trage un card în altă coloană sau
+  îl mută din meniul „⋯”, iar la Respinsă și Amânată o fereastră cere nota; fără reguli, permisiuni, indexuri sau funcții
+  noi; `/admin` 121,2 → 124,1 / 200 kB; otrăvurile 41 / 41 (27 pe emulatoare, cu `scripts/otravuri-emulatoare.py`, intrat
+  în repo). Ambele ramuri aveau `main` adus și `.lucru/` scos. Ciocnirea, doar în DEVLOG (ambele părți păstrate). Nimic
+  pe server. Porțile lotului, în CI, verzi la prima trecere pe `ddaa7ead` (și pe commit-urile liniilor): unit 9 813 / 0
+  (12 sărite, pe Linux), e2e 599 / 599, funcțiile pe emulatoare 104 / 104, paginile 36 / 36; pornirea 107,9 kB (plafonul
+  115; cu ușa 112,3), totalul 763,1 / 800 kB, `/admin` 124,1 / 200. Urmează, la raportul liniilor: 25.8↑a (trasarea:
+  imaginile pe foaie, `AndreiBesliu/cvs2#6`) și reparația probelor atelierului Easy 3Draw (linia elicelor, la „ia
+  reparația probelor atelierului” al owner-ului, `AndreiBesliu/cvs2#5`); 12.1↑e-3, în lucru; biblioteca (3.Xh), cu ADR
+  0231 propus și întrebările la owner. La cuvântul owner-ului: 11.3↑f (regulile urechilor), A.5–A.7.
 - 23.11.2026, după-amiaza: **3.Tq (elicele) unită în `main`, prima unire din cloud; linia bibliotecii, pornită**
   (sesiunea principală din cloud, ramura `unire-2311b`, din `8f122eb6`). **3.Tq** (linia elicelor, pilotul lucrului în
   cloud; ramura `wip/3.Tq-elice`, `40c13d6a`, PR-ul `AndreiBesliu/cvs2#1`; ADR 0282, acceptat cu 1a, 2a, 3a), unită în

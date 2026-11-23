@@ -1047,6 +1047,13 @@
   fill: var(--l-focus);
 }
 
+/* Urechile „unde ține” (ADR 0211, b): puse de lucrare, nu de om; inelul le deosebește de cele alese. */
+.ureche-lemn {
+  fill: var(--s-panou);
+  stroke: var(--a);
+  stroke-width: 2.5;
+}
+
 /* Locul (sus, pe mijlocul zonei libere) îl pune modul, din zona liberă; fără ea, sus, pe mijlocul pânzei. */
 .banda-urechi {
   position: absolute;

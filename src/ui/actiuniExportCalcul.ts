@@ -55,6 +55,20 @@ export function avertismentDesprinse(doc: Document, desprinse: readonly ParteDes
   return [t('export.urechi.desprinse', { n: desprinse.length, piese: [...numite, ...(rest > 0 ? [t('export.urechi.inca', { n: String(rest) })] : [])].join('; ') })];
 }
 
+/**
+ * Operațiile pieselor desprinse care încă nu sunt „unde ține” (ADR 0211, b: butonul „Pune urechile unde țin”), ca rânduri ale
+ * ferestrei exportului (`piesă/operație`), o dată fiecare, în ordinea pieselor desprinse.
+ */
+export function operatiiDesprinse(doc: Document, desprinse: readonly ParteDesprinsa[]): string[] {
+  const rez: string[] = [];
+  for (const d of desprinse) {
+    const k = d.operatie.indexOf('/');
+    const o = doc.piese.find((p) => p.id === d.operatie.slice(0, k))?.operatii.find((x) => x.id === d.operatie.slice(k + 1));
+    if (o?.urechi && o.urechi.mod !== 'lemn' && !rez.includes(d.operatie)) rez.push(d.operatie);
+  }
+  return rez;
+}
+
 /** Avertismentele foii, cu al pieselor desprinse la capăt: mesajele exportului întâi (le are deja fereastra care exportă). */
 async function cuDesprinse(doc: Document, avertismente: readonly string[], desprinse: readonly ParteDesprinsa[]): Promise<string[]> {
   if (desprinse.length === 0) return [...avertismente];
@@ -73,7 +87,11 @@ export async function calculeazaExport(doc: Document, p: ParametriExport, semnal
   const r = await exportInBazin(doc, p, semnal ? { semnal } : {});
   if (!r.ok) return r;
   const { simulare, foaie, desprinse, ...rest } = r;
-  return { ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), simulare: (s) => simuleazaExport(simulare, foaie, s) };
+  const undeTine = operatiiDesprinse(doc, desprinse);
+  return {
+    ...rest, avertismente: await cuDesprinse(doc, rest.avertismente, desprinse), ...(undeTine.length > 0 ? { undeTine } : {}),
+    simulare: (s) => simuleazaExport(simulare, foaie, s),
+  };
 }
 
 /**
@@ -129,9 +147,10 @@ async function calculeazaToateFoile(doc: Document, activa: string, p: ParametriE
   const secunde = foi.every((f) => f.secunde !== null) ? foi.reduce((s, f) => s + (f.secunde ?? 0) * (1 + f.identice.length), 0) : null;
   const { simulare, foaie, rezumat, sender, fisiere } = activ.r;
   const avertismente = (await Promise.all(facute.map(async ({ nume, d, r }) => (await cuDesprinse(d, r.avertismente, r.desprinse)).map((a) => `${nume}: ${a}`)))).flat();
+  const undeTine = [...new Set(facute.flatMap(({ d, r }) => operatiiDesprinse(d, r.desprinse)))];
   return {
     ok: true, program: zip, fisiere: [zip], dopuri: [], rezumat, sender, ...(sender ? { masina: fisiere } : {}),
-    avertismente,
+    avertismente, ...(undeTine.length > 0 ? { undeTine } : {}),
     foi: { arhiva, foi, goale, secunde },
     simulare: (s) => simuleazaExport(simulare, foaie, s),
   };
@@ -325,9 +344,12 @@ export async function simuleazaRelief(
  * stratul traseului și animație. `semnal` anulează calculul (un document schimbat, un „Arată traseul” nou): promisiunea e
  * respinsă cu `CalculAnulat`.
  */
-export async function programTraseu(doc: Document, semnal?: AbortSignal): Promise<{ readonly ok: true; readonly program: Program } | { readonly ok: false; readonly motiv: string }> {
+export async function programTraseu(doc: Document, semnal?: AbortSignal): Promise<
+  | { readonly ok: true; readonly program: Program; readonly urechiLemn?: readonly { readonly x: number; readonly y: number }[] }
+  | { readonly ok: false; readonly motiv: string }
+> {
   const r = await traseuInBazin(doc, semnal ? { semnal } : {});
-  return r.ok ? { ok: true, program: despacheteaza(r.program) } : r;
+  return r.ok ? { ok: true, program: despacheteaza(r.program), ...(r.urechiLemn ? { urechiLemn: r.urechiLemn } : {}) } : r;
 }
 
 /**

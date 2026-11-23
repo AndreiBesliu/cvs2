@@ -252,10 +252,13 @@ test('lucrarea: refuzurile spun locul (două urechi prea apropiate, una pe o buc
   // Drumul are raza 1 + 1,5875: P = 16,26 mm; o ureche de 15 mm cere 16,67.
   const mica = programDinDocument(documentCu({ urechi: urechiAlese({ e: [{ x: 1, y: 0 }] }, { latime: 15 }) }, cerc));
   assert.ok(!mica.ok && mica.motiv.includes('nu încape') && mica.motiv.includes('lângă X'), mica.ok ? '' : mica.motiv);
-  for (const mod of ['lemn', 'lungi', 'scurte', 'mijloc'] as const) {
+  for (const mod of ['lungi', 'scurte', 'mijloc'] as const) {
     const r = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2, mod } }));
     assert.ok(!r.ok && r.motiv.includes('felie următoare'), r.ok ? mod : r.motiv);
   }
+  // „Unde ține” (11.3↑e) se taie de acum, dar doar cu fundul foii (`programFoii`): direct, refuz, nu o tăietură fără urechi.
+  const lemn = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2, mod: 'lemn' } }));
+  assert.ok(!lemn.ok && lemn.motiv.includes('se socotesc pe fundul foii'), lemn.ok ? 'lemn' : lemn.motiv);
   // „egale” scris dă exact programul fără mod.
   const egale = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2, mod: 'egale' } }));
   const fara = programDinDocument(documentCu({ urechi: { numar: 2, latime: 6, grosime: 2 } }));
