@@ -111,6 +111,10 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
   await page.locator('#at-eb-capac [data-v="da"]').click();
   await expect(nume).toHaveText(IMPLICIT + ', cu capac');
   await expect(page.locator('#at-cote')).toContainText('× 16,3 mm');
+  // în nume, gaura stă înaintea capacului
+  await page.locator('#at-eb-gaura [data-v="r"]').click();
+  await expect(nume).toHaveText(IMPLICIT + ', gaură rotundă, cu capac');
+  await page.locator('#at-eb-gaura [data-v="x"]').click();
   await page.locator('#at-eb-capac [data-v="nu"]').click();
   await expect(page.locator('#at-cote')).toContainText('× 11,5 mm');
   // câmpurile: paletele la întreg, diametrul la zecime, pasul la sutime, lățimea și înclinarea la întreg
