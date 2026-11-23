@@ -11818,6 +11818,8 @@ admin cat mai multe setari”).
   cu ușa, 115,4 / 115: poarta a căzut. Împărțită, pornirea e 109,2 (cu ușa 113,7, cu Atelierul 114,0 / 115).
 - **Probele:** 20 unitare, 1 a serverului, 3 e2e pe emulatoare. **Otrăvurile:** 40 / 40, după proba cu Delete pe un nod (E08).
 - **Abaterile, scrise în ADR:** coada în `localStorage`; trimiterea pusă de editare; dialogurile trec în A.8c.
+- **CI:** rapidul a căzut la regula `fara-cicluri` (tipurile luate de pornire din înregistrator, care o importă); reparat în
+  `09966989` (`utilizareTipuri.ts`), cu `npm run rapid` local verde (9 914 / 0) înainte de push.
 - **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
   **Completed:** 23.11 20:35.
 

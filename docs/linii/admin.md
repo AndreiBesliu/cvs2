@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b gata pe ramură, porțile pe 498c3c16 (PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul); apoi A.8c, A.9–A.11, apoi A.7_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.6 unite în main (A.6: 4497d639); ADR 0262 (utilizarea aplicației) acceptat pe 23.11; A.8a și A.8b gata pe ramură, porțile pe 09966989 (PR-ul AndreiBesliu/cvs2#8; la unire se publică și serverul); apoi A.8c, A.9–A.11, apoi A.7_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -45,6 +45,8 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   pornire doar sursa gestului și un tampon; înregistratorul în bucata lui (precache); trimiterea pusă de editare, prin bucata
   contului (**un `import('./PanouCont.tsx')` din pornire scoate o bucată nouă comună; nu-l adăuga**). Coada în
   `localStorage`. Pornirea 109,2 kB (cu ușa 113,7, cu Atelierul 114,0 / 115: **sub 1 kB liber**). Otrăvurile 40 / 40.
+  **Regula `fara-cicluri` numără și importurile doar de tipuri:** după ce împarți un modul, `npm run importuri` (sau tot
+  `npm run rapid`) înainte de push; tipurile comune ale utilizării stau în `utilizareTipuri.ts`.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
