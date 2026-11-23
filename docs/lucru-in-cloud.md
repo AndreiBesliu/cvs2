@@ -38,8 +38,11 @@ Pe claude.ai/code, în ecranul unei sesiuni noi, selectorul de mediu (primul but
 - **GitHub:** aplicația Claude instalată pe repo (<https://github.com/apps/claude>), ca sesiunile să poată împinge ramuri.
 
 Sesiunile le pornește owner-ul, pe claude.ai/code: mediul, repo-ul `AndreiBesliu/cvs2`, ramura, apoi brief-ul liniei ca
-prim mesaj. O sesiune cloud nu poate porni alte sesiuni și nu trimite note altora: legătura dintre ele e GitHub (ramurile,
-PR-urile, rulările CI).
+prim mesaj. O sesiune cloud nu poate porni alte sesiuni (pornirea e refuzată), dar îi poate scrie alteia (`send_message`,
+cu id-ul sesiunii; mesajul ajunge ca notificare, citită la tura următoare a celeilalte): de aflat id-ul, din legătura
+`Claude-Session` a commit-urilor ei. Legătura de zi cu zi rămâne GitHub (ramurile, PR-urile, rulările CI). **O linie căreia
+owner-ul îi cere să unească ea în `main` îi scrie întâi sesiunii principale** (ce commit, când), ca două sesiuni să nu
+împingă în `main` deodată; un push refuzat ca non-fast-forward nu se forțează: se aduce `main` și se reface unirea.
 
 ## O linie = o sesiune pe ramura ei
 

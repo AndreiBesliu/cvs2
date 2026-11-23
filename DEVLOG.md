@@ -11468,6 +11468,74 @@ de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. *
 - **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
   fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.
 
+## 2026-11-22 — Felia 12.1↑e-3: pereții drepți în „Împreună (secțiunea)” (ADR 0179) (Model: Claude Opus 5.5 până la pauză; din 23.11, Claude Fable 5.2)
+
+**Prompt:** owner-ul, la „Ce fac mai departe pe linia incrustațiilor?”: „12.1↑e-3, pereții drepți” (treptele trec la
+12.1↑e-4). Oprită la pauza lui din 22.11 („cand termina background tasks, vreau sa facem pauza”, transmisă de sesiunea
+principală), cu codul și probele scrise (WIP `2b7f889b`). Reluată pe 23.11, în sesiunea cloud a liniei, la brief-ul de
+mutare: „Ești linia incrustațiilor din cncvs2 […] Felia în lucru: 12.1↑e-3 (pereții drepți) […] Rămân, în ordine: 1. E2e-ul
+3D, după reparația testului decupatului. 2. Porțile întregi, în CI […] 3. Otrăvurile, într-o clonă, plus `verifica` pe toate
+listele liniei. […] 4. Privirea pe piesa reală, mărită și întreagă […] 5. Documentele […] 6. Canalul”.
+**Started:** 22.11, 21:52. **Completed:** 23.11, 15:25.
+
+- **Ramura:** `wip/12.1-incrustatii`. Pe 23.11, `main` `8f122eb6` (cu 12.1↑e-2 unită din `082435b4`, 10.3↑o, 3.6v, lucrul în
+  cloud) unit în `e0ce3523`, fără ciocniri. Codul feliei: `2b7f889b` (22.11), `c2b0e2c5` și `78d5c250` (23.11). După
+  documente, `main` `feecf82a` (3.Tq, elicele) adus în `79ef7a62`, cu ciocnirea doar în DEVLOG; porțile finale, pe vârful
+  ramurii, sunt în PR.
+- **Decizia** (ADR 0179, secțiunea feliei): „Împreună (secțiunea)” e pornită și pe dopul cu pereți drepți fără trepte.
+  Dopul ridicat apare întors și coborât până la primul contact; cel decupat, neîntors, pe fundul locașului. Tabelul are cinci
+  rânduri: jocul lateral, dopul în locaș, adâncimea locașului, înălțimea dopului, sprijinul (între plăci, sub dop sau peste
+  placă, de rindeluit).
+- **Jocul lateral, exact, pe mutări:** jocul de pe hârtie e de obicei 0,1 mm, cât o celulă a simulării, deci grila nu-l
+  vede. `src/sim/taiereExacta.ts` dă distanța în plan la cea mai apropiată mutare a unei freze plate aflate sub nivel, minus
+  raza ei; punctele peretelui le dă grila, iar bisecția le face exacte. Restul (adâncimea, înălțimea, sprijinul, secțiunea),
+  pe grile care își corespund prin contract (`src/sim/potrivireDreapta.ts`).
+- **Probele:**
+  - `incrustatieDreapta.potrivire3d.test.ts` (14): aplicația = oracolul pe cele 8 cazuri drepte (jocul, mediana la cel mult
+    0,01; adâncimea și înălțimea la cel mult 0,02), controlul negativ, controlul pe hârtie, gaura, treptele refuzate,
+    secțiunile celor trei sprijinuri, pe hârtie;
+  - `taiereExacta.test.ts` (6), pe hârtie;
+  - `sectiune.desen.test.ts` (9), pe secțiuni scrise de mână;
+  - e2e, `incrustatie3d.spec.ts` (7): dopul drept, cel decupat, gaura prin foaie, treptele cu butonul oprit.
+- **Privirea pe secțiunea reală** (23.11), mărită, în Edge, pe toate variantele: ridicat pe fund și pe față, decupat, gaura
+  (decupat și ridicat), cercul, jocul lateral de 0,5, engleza, un ecran scund. Tabelul și măsurarea erau corecte peste tot;
+  desenul avea patru defecte, pe care probele nu le vedeau:
+  - cleiul lateral nu se vedea la jocul implicit (o celulă: o cale fără arie), iar la 0,5 urca până la fața coborâtă a
+    dopului, prin spațiul dintre plăci; la dopul decupat, jocul lateral rămânea de culoarea fundalului;
+  - la gaura prin foaie, placa avea 1,5 mm de lemn sub gaură și „contact” pe un fund care nu există;
+  - pereții drepți ieșeau ușor înclinați (profilul trecea prin centrele celulelor);
+  - o secțiune înaltă (gaura în foaia de 18) scotea insula de sub bara de jos, cu nota de sub tabel nevăzută.
+- **Reparația** (`c2b0e2c5`): geometria desenului e un modul pur, `src/app/sectiuneDesen.ts`. La pereții drepți, fiecare
+  celulă e o treaptă cât ea; cleiul e doar în locaș, cel mult până la fața plăcii; la gaură, placa e cât foaia (hârtia
+  dopului spune `gaura`). Desenul dopului în V pe cercul R15 e identic octet cu octet înainte și după. Insula e ținută în
+  zona liberă, iar secțiunea se derulează. Derularea pusă întâi pe insulă lăsa în captură o zonă transparentă deasupra ei,
+  peste pânza 3D (17 070 de pixeli), și strivea cipurile: derulează doar secțiunea.
+- **Porțile, în CI:**
+  - pe `e0ce3523` (codul de dinaintea privirii): rapidul și completul verzi (unit 9 802 / 0, 12 sărite; e2e 594 / 594;
+    emulatoarele 104 / 104 și 34 / 34);
+  - pe `78d5c250` (codul final): rapidul verde (compilatoarele, importurile, licențele, traducerile, build-ul determinist,
+    oracolul exportului 2D; unit 9 811 / 0, 12 sărite) și completul verde (unit 9 811 / 0; e2e 595 / 595; emulatoarele 104 / 104 și 34 / 34);
+  - în container, înainte de fiecare push: tipurile, importurile, probele atinse (68 / 68), e2e-ul vederii (7 / 7).
+- **Otrăvurile**, într-o clonă: lista nouă `test/otravuri/12.1e-3.py`, 63.
+  - Pe `e0ce3523`, seturile curate verzi, apoi 46 / 46 prinse din prima.
+  - După reparația desenului, 17 noi (K07, G01–G12, L01–L04) și S05, S06 mutate pe modulul desenului: 16 prinse, L04
+    scăpată (fără regula care ține cipurile întregi, cipul stării se strângea cu 9,4 px). Proba gaurii îi măsoară acum
+    înălțimea înainte și după „Împreună” (`78d5c250`): prinsă.
+  - Pe codul final, lista întreagă: 63 / 63.
+  - Listele vecine, rulate întregi: 12.1e-2, 38 / 38 (J01–J03, U01, U02, U09, U11, U12 reorientate; cele 11 de interfață,
+    din nou pe codul final); 12.1e, 28 / 28 (D07 reorientată). Niciun VOID nou în nicio listă, față de `origin/main`.
+- **Mărimea**, față de `main` `8f122eb6`, cu același build în aceeași clonă: JavaScript +2 401 B gzip (lucrătorul CAM
+  +1 826, cu măsurarea dreaptă și tăietura exactă; vederea 3D +575), CSS +46 B; totalul 761,0 → 763,2 / 800; pornirea
+  (107,9; cu ușa 112,2 / 115), neschimbată.
+- **Uneltele setului de lucru**, în `scripts/`: `otravuri-void-noi.py` (VOID-urile noi ale unei felii),
+  `marime-bucati.py` (mărimea pe bucăți), `privire-sectiune.mjs` (privirea pe secțiunea reală, pe variante). Dosarul
+  `.lucru/` e scos.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 23.12), din
+  `canal.yml`, build-ul `78d5c250`. Gazda canalului nu e pe lista rețelei containerului, deci de aici nu s-a putut deschide;
+  secțiunea a fost privită pe build-ul local al aceluiași commit.
+- **Nu acum:** treptele în secțiune (12.1↑e-4) și bifa „prin foaie” pe fiecare rând (documentul v27), amândouă doar la
+  cuvântul owner-ului.
+
 ## 2026-11-23 — Sesiunea principală în cloud: prima unire din container (3.Tq, elicele); linia bibliotecii, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** brief-ul de predare al sesiunii principale locale, lipit de owner într-o sesiune cloud nouă („Ești sesiunea
@@ -11497,6 +11565,142 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
 - **Documentele:** decizia în `CLAUDE.md`; indexul ADR (0282: unită în `0ae9c6c1`); `docs/linii/README.md` (elicele unite,
   linia bibliotecii, liniile în lucru în sesiunile lor); `docs/linii/principala.md` („Din container”, starea);
   `docs/lucru-in-cloud.md` (gazda adresei de test la „Allowed domains”); nota elicelor (unită).
+
+## 2026-11-23 — 3.Xh, propunerea: biblioteca extensiilor, refăcută (ADR 0231 propus, cu schița) (sesiune cloud)
+
+**Prompt:** brief-ul liniei „biblioteca”, lipit de owner în sesiunea cloud; cererea lui, exact: „poti sa pornesti un branch
+in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”.
+**Started:** 23.11, 13:45. **Completed:** 23.11, 14:25. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Privit, pe build-ul de pe `8f122eb`:** 87 de capturi ale bibliotecii de azi (meniul în șase stări, ferestrele instalării,
+  actualizării și gestionării, extensia deschisă; 1440, 1024 și 390 px; două teme; ro și en), cu măsurători în pagină. Zece
+  lucruri găsite, în ADR: nicio imagine, extensia arătată de două ori, meniul care crește de la 250 × 215 la 362 × 377 px
+  când vine catalogul, fereastra instalării cu o frază de 450 de caractere, butonul de 82 × 28 px pe telefon, „Scoate” care
+  șterge fără întrebare, biblioteca negăsită de paletă.
+- **ADR 0231, propus:** trei direcții care se exclud (A meniul de azi, îmbunătățit; B fereastra „Biblioteca extensiilor”,
+  recomandată; C pagina pe tot ecranul), cu ce vede omul, ce cere catalogul și costul fiecăreia; ce se face în orice direcție;
+  marginile din ADR 0230, neschimbate; patru întrebări (unde stă, semnul lui Easy 3Draw, „ce e nou” cerut de probă,
+  capturile); feliile 3.Xh-1 … 3.Xh-4.
+- **Schița:** <https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>: capturile de azi cu semnele lor, cele trei direcții pe
+  ambele teme, la birou și pe telefon, în română și în engleză, în trei stări, cu trei capturi adevărate ale extensiei; trei
+  desene pentru semn; formularul întrebărilor (baza paginii, `raspunsuri/owner`; scrierea și citirea, probate o dată).
+- **Fără cod de produs.** Indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 913 texte, 0 fără traducere),
+  nota liniei (`docs/linii/biblioteca.md`). `main` adus în ramură (`8177ab8`, cu 3.Tq), fără ciocniri.
+- **Mediul:** în container lipsește Edge; capturile sunt făcute cu Chrome 153.
+- **Urmează:** răspunsurile owner-ului, apoi 3.Xh-1.
+
+## 2026-11-23 — 3.Xh-1: datele bibliotecii noi (semnul extensiei, descrierea, „ce e nou”, capturile) (sesiune cloud)
+
+**Prompt:** „Da, 1a–4a” (răspunsul owner-ului la cele patru întrebări din ADR 0231, în sesiunea liniei și în formularul
+schiței).
+**Started:** 23.11, 14:30. **Completed:** 15:26. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **ADR 0231, acceptat:** fereastra „Biblioteca extensiilor” (1a), cărămida ca semn al lui Easy 3Draw (2a), „ce e nou”
+  cerut de probă la fiecare versiune nouă (3a), trei capturi adevărate pe extensie, făcute de un script din repo (4a).
+- **Felia 3.Xh-1, prima din patru** (`76447fe`, apoi commit-ul documentelor), cu probele scrise înaintea codului:
+  - pachetul: `pictograma` în `extensie.json` (un SVG din pachet, cel mult 8 kB); motivul nou `pictograma`;
+  - catalogul: `pictograma`, `capturi`, `despre`, `noutati`, `autor`, opționale, citite tolerant (`sarite`); schema 1;
+  - construcția: semnul din pachet, capturile comise, numele cu amprenta; „ce e nou” cerut pentru versiunea de acum;
+  - `scripts/capturi-biblioteca.ts`: capturile, în română și în engleză (960 × 600, WebP);
+  - poarta build-ului și anteturile pentru imaginile bibliotecii; CSP-ul neschimbat;
+  - interfața de azi: semnul lângă numele extensiei (Biblioteca, extensiile instalate) și pe fila ei; fără semn, piesa de
+    puzzle;
+  - Easy 3Draw 18.20.0: semnul, descrierea lungă, autorul, „ce e nou” pe cinci versiuni, trei capturi pe limbă.
+- **Privit pe capturile mărite ale interfeței adevărate:** rândul extensiei instalate stătea la mijlocul meniului, iar
+  numele din Biblioteca ieșea gri. Probele treceau. Fiecare are acum proba ei e2e, scrisă înaintea reparației.
+- **Abaterea de la schiță:** fondul semnului e gri-albăstrui, nu crem (se pierdea pe fila aleasă); de arătat owner-ului.
+- **Porțile, în container:** tipurile, regulile de import, licențele; unitarele atinse 84 / 84 (toată suita, înaintea
+  ultimelor două reparații: 9 811 / 2 căzute, amândouă reparate apoi: proba manualului și lista fișierelor pachetului);
+  e2e cu Chrome (Edge lipsește): `biblioteca.spec.ts` 9 / 9, extensiile, pluginul și manualul 41 / 41;
+  `npm run determinism`: pornirea 107,9 kB (neschimbată; cu ușa 112,2 / 115), totalul 762,0 / 800 kB (+1,1), `/admin`
+  121,2 / 200; biblioteca: pachetul 457,3 kB, catalogul 4,8 kB, șapte imagini 211,6 kB. Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-1.py`, în clonă): 45 / 45 (35 unitare, 10 prin e2e). La prima rulare, 45 / 46: scăpase
+  ieșirea `faraNoutati` a construcției, citită doar de probă: scoasă, cu otrava ei. Listele vecine (3.Xa–3.Xg): aceleași
+  VOID-uri ca pe `main`.
+- **Regula nouă, pentru toate liniile care schimbă o extensie din bibliotecă:** versiunea nouă, rândul ei de „ce e nou”
+  (primul din `noutati`, în `extensii/biblioteca.json`), apoi `node scripts/biblioteca.ts --scrie`. E în nota liniei
+  (`docs/linii/biblioteca.md`); în `CLAUDE.md` o scrie sesiunea principală, la unire.
+- **Urmează:** 3.Xh-2 (fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele).
+
+## 2026-11-23 — 3.Xh-2: fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231; trimis a doua oară în sesiune, cât rula 3.Xh-1); felia a
+doua din cele patru ale ADR-ului, pornită fără altă întrebare.
+**Started:** 23.11, 15:30. **Completed:** 23.11, 16:45. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra de confirmare, una singură** (`5578eaa`, apoi commit-ul documentelor): semnul și numele extensiei în capul ei,
+  de unde vine, „Ce poate face” ca listă, izolarea, butoanele; la o actualizare, „Versiunea nouă poate și” stă prima.
+  Toate ferestrele extensiilor au 34rem (erau cât ecranul: 896 px la 1440).
+- **„Scoate” întreabă întâi** și spune ce se pierde; „Păstrează” (cu focusul) și Escape se întorc la listă, pe rândul
+  extensiei; gestul care șterge e roșu.
+- **Mesajele pe înțeles:** catalogul stricat, descărcarea căzută (fără textul browserului, fără „CORS”), mărimile („sub 1
+  kB”, „457 kB”, „1,6 MB”; `src/extensii/marime.ts`).
+- **Țintele:** la atingere și la densitatea mare, rândurile și butoanele meniului sunt cât `--tinta` (erau 30 și 28 px).
+- **Privit pe capturile mărite** (ambele teme; 1440, 390 și 320 px cu fontul lat): avertismentul era un rând portocaliu
+  strident, „1.616,3 kB”, numele permisiunii mai mare decât titlul listei; iar la 320 px fereastra se deschidea derulată la
+  capăt, cu numele extensiei ascuns. Toate îndreptate; ultima are proba ei, scrisă întâi (a căzut la 390, 360 și 320 px).
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 104 / 104; e2e cu Chrome: extensiile, biblioteca,
+  pluginul, țintele și manualul, 48 / 48; `npm run determinism`: pornirea 107,9 kB (neschimbată), totalul 762,7 / 800 kB
+  (+0,7). Suitele întregi, în CI. **Completul din CI pe 3.Xh-1 (`8b608bb`): verde, cu Edge.**
+- **Otrăvurile** (`test/otravuri/3.Xh-2.py`, în clonă): 40 / 40 (12 unitare, 28 prin e2e). La prima rulare, 38 / 42: două
+  probe întărite (regexul lui „să …”: `\b` nu vede marginea de după „ă”; roșul butonului, citit cu mausul peste el), o
+  derulare pusă la zero, de prisos lângă butoanele lipite jos, scoasă cu otrava ei, și o otravă a manualului pe care proba
+  lui n-o poate vedea, scoasă. Trei otrăvuri din listele vecine, golite de felie, mutate pe codul nou (3.Xb E03 și E04,
+  3.Xh-1 N01).
+- **Canalul `biblioteca`:** <https://cncvectorstudio-test--biblioteca-gw7dr9bc.web.app>; gazda lui e acum permisă în mediul
+  sesiunii (aprobată de owner), deci linia verifică singură ce a publicat.
+- **Urmează:** 3.Xh-3 (fereastra „Biblioteca extensiilor”, meniul scurtat, paleta).
+
+## 2026-11-23 — 3.Xh-3: fereastra „Biblioteca extensiilor”, meniul scurtat, acțiunea din paletă (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); felia a treia din cele patru ale ADR-ului, pornită fără
+altă întrebare.
+**Started:** 23.11, 16:50. **Completed:** 23.11, 18:30. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Fereastra bibliotecii** (`5831218`, `7628b50`, `b864e6c`, apoi commit-ul documentelor): lista („Toate”, „Instalate”) și
+  pagina extensiei, cu semnul, capturile, descrierea, „Ce poate face”, „Ce e nou” și gestul ei chiar acolo (instalarea,
+  actualizarea dintr-un clic, „Deschide”, „Scoate”); scheletul cât vine catalogul; lista și pagina pe rând, pe telefon.
+- **Meniul, scurtat:** extensiile instalate (cu „Actualizează” în rând), apoi „Biblioteca extensiilor…”; lățime fixă.
+  Fereastra „Extensiile tale” a plecat (fila „Instalate”).
+- **Paleta:** „Biblioteca extensiilor”, de oriunde; grupul „Extensii”. **Găsit pe drum:** paleta nu arăta deloc acțiunile cu
+  prefixul `extensii`, deci nici „Trimite la extensie” (ADR 0166): prefixul n-avea grup.
+- **Găsit de probe și pe capturi:** un nume lung de fișier împingea pagina extensiei în lateral pe telefon (166–236 px);
+  cu un nume lung de extensie, meniul creștea cu 19 px când apărea „Actualizează”; filele bibliotecii aveau 36 px la
+  atingere; focusul nu se întorcea la piesa de puzzle (aplicația era încă inertă). Toate reparate, fiecare cu proba ei.
+- **Abaterile de la ADR**, scrise în „Implementat”: fereastra stă în bucata la cerere a ferestrelor extensiilor (nu într-una
+  nouă); „din fișier” și „din adresă”, la capătul listei; acțiunea paletei costă ~0,1 kB în pornire (registrul e static);
+  actualizarea din meniu stă în rândul extensiei.
+- **Porțile, în container:** tipurile, regulile de import; unitarele atinse 119 / 119; e2e cu Chrome: biblioteca, extensiile,
+  țintele, pluginul, manualul și carcasa, 57 / 57; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul
+  764,4 / 800 kB (+1,7). Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-3.py`, în clonă): 57 / 57 (4 unitare, 53 prin e2e). La prima rulare, 55 / 57: proba
+  „meniul nu sare”, făcută mai aspră (a găsit defectul de mai sus); un cod de prisos, scos cu otrava lui. Otrăvurile din
+  listele vechi al căror cod s-a mutat în fereastra nouă au urmașe aici (3.Xb, 3.Xg, 3.Xh-1, 3.Xh-2: 28 la un loc).
+- **Urmează:** 3.Xh-4 (săgețile în listă și în file, fontul lat la birou, densitatea, recitirea manualului), apoi PR-ul
+  „gata de unit”.
+
+## 2026-11-23 — 3.Xh-4: tastatura în fereastra bibliotecii, fontul lat la birou; felia 3.Xh, gata de unit (sesiune cloud)
+
+**Prompt:** același „Da, 1a–4a” (răspunsul owner-ului la ADR 0231); ultima din cele patru felii ale ADR-ului.
+**Started:** 23.11, 18:35. **Completed:** 23.11, 18:55. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **Tastatura** (`19f180f`, apoi commit-ul documentelor): focusul pe fila aleasă la deschidere; ← și → între file; ↑ și ↓
+  între rândurile listei, Enter deschide pagina; doar fila aleasă și rândul arătat în ordinea lui Tab; lista e panoul filei.
+- **La birou, cu fontul lat** (1024 și 1280 px): meniul și fereastra încap; numele extensiei nu ajunge sub gesturi.
+- **Porțile, în container:** tipurile, regulile de import; e2e cu Chrome: biblioteca, extensiile, țintele, pluginul,
+  manualul și carcasa, 61 / 61; `npm run determinism`: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 764,6 / 800 kB.
+- **Otrăvurile** (`test/otravuri/3.Xh-4.py`, în clonă): 10 / 10. La prima rulare, 10 / 11: un plafon de lățime de prisos
+  în capul paginii, scos cu otrava lui.
+- **Toată felia 3.Xh** (propunerea și patru felii, într-o zi): pornirea +0,1 kB, totalul 760,9 → 764,6 / 800 kB;
+  otrăvurile 152 / 152; completul din CI verde pe 3.Xh-1 și 3.Xh-2, pornit pe 3.Xh-3 și pe capătul ramurii. PR-ul
+  `AndreiBesliu/cvs2#4`, gata de unit de sesiunea principală.
+- **De hotărât de owner:** fondul semnului lui Easy 3Draw (gri-albăstrui, nu cremul din schiță).
+
 - **Publicarea pe test** (`bash scripts/cloud/ci-si-publica.sh 8177ab81`, reluat de trei ori, cum e gândit): rapidul pe
   `main` verde; completul pe `main` verde în 44 de minute (unit 9 795 / 0, e2e 598 / 598, emulatoarele 104 / 104 și
   34 / 34); `publica.yml` verde în 3 minute; adresa de test spune `8177ab813f43`. **Găsit:** `gh workflow run publica.yml`
@@ -11551,6 +11755,59 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   prima întrebare, deși abia o pornise: cele 10 minute se numărau de la pornirea scriptului, care așteptase deja 18 minute
   completul. Reparat (se numără de la începutul așteptării rulării), reluat: a găsit publicarea verde.
 
+## 2026-11-23 — Felia 12.1↑e-4: treptele în „Împreună (secțiunea)” (ADR 0179) (Model: Claude Opus 5.5)
+
+**Prompt:** owner-ul, după raportul lui 12.1↑e-3: „12.1↑e-4, treptele”.
+**Started:** 23.11, 15:52. **Completed:** 23.11, 17:40.
+
+- **Ramura:** `wip/12.1-incrustatii`, cu `main` `c010e3d1` deja în ea. Înaintea treptelor, la pregătirea lor, o reparație a
+  lui 12.1↑e-3 (`81ab6bba`): lemnul dopului e doar ce atinge desenul lui. Socotit dop, miezul golului unui dop decupat (un
+  „O”: golul se taie ca profil interior, deci în mijlocul lui rămâne lemn, care cade) făcea „Dopul în locaș” roșu (248 de
+  puncte „afară”) și punea dopul pe fața plăcii. Proba nouă cădea pe codul vechi. Grilele, lemnul dopului și pereții exacți
+  au devenit funcții comune (`grilePotrivire`, `lemnDop`, `perete`), cu ieșirile celor 7 cazuri drepte identice octet cu octet
+  (SHA-256 al JSON-ului). Codul feliei: `b3fa8eab` (măsurarea, tabelul, desenul, manualul), `46c74dc7` (e2e-ul, insula pe
+  lățime), `e8b7f9d9` (otrăvurile, grilele mici).
+- **Decizia** (ADR 0179, secțiunea feliei): „Împreună (secțiunea)” e pornită pe orice dop ales, și pe cel în trepte (ridicat
+  sau decupat, mereu întors). Tabelul are zece rânduri: jocul lateral la flanșă și la tijă, dopul în locaș, flanșa pe umăr
+  (reazemul), umărul, fundul, tija, înălțimea dopului, cleiul de sub tijă (pe umăr; la gaură, 0) sau de deasupra umărului (pe
+  fund) și spațiul de peste placă. Măsurarea, `src/sim/potrivireTrepte.ts`, cu uneltele comune ale pereților drepți.
+- **Probele:**
+  - `incrustatieDreapta.potrivireTrepte3d.test.ts` (15): aplicația = oracolul (`masoaraPotrivireaTrepte`) pe cele 10 cazuri
+    ale treptelor; controlul negativ (dopul L-ului neoglindit) și al reazemului (dopul tăiat cu 6 mm alături, mai mult decât
+    umărul de 5); controlul pe hârtie (c, d, D, tija, h, g, H); secțiunile pe hârtie (pe umăr, pe fund, decupat, gaura);
+    dopul decupat în trepte cu gol.
+  - **Reazemul nu se compară cu mediana oracolului:** prima rulare a căzut doar acolo (dreptunghiul: aplicația 4,90, oracolul
+    1e6). Oracolul vede doar mutările din găleata de 1 mm a punctului, deci pentru reazem dă o margine de sus. Reazemul se
+    compară cu hârtia: minimul s − c pe toate cazurile; maximul în colțul dreptunghiului, √2·s − c spre interior și
+    (√2 − 1)·R + s − c spre exterior (6,971 și 5,557 măsurate pe 6,971 și 5,557 calculate); minimul aplicației nu trece de al
+    oracolului.
+  - `sectiune.desen.test.ts` (+3): desenul treptelor pe hârtie; `potrivireDreapta.grila.test.ts` (2): grilele mici ale
+    uneltelor comune, pentru otrăvurile N02 și N03 ale lui 12.1↑e-3, scăpate pe corpus.
+  - E2e, `incrustatie3d.spec.ts` (7): proba „butonul oprit la trepte” a devenit secțiunea treptelor, la 1024 × 768: zece
+    rânduri, niciunul roșu, cleiul și contactul pe hârtie, la celulă. Implicitul treptei e „pe umăr” (prima variantă a probei
+    aștepta „pe fund”).
+- **Privirea pe secțiunea reală**, în Edge: pe umăr, pe fund, decupat, gaura prin foaie (ridicat), spre exterior, în engleză
+  pe 1024 px. Tabelul și desenul, corecte peste tot. **Găsit:** la 1024 px, insula era mai lată decât zona liberă (lățimea ei
+  se socotea față de toată pânza 3D) și intra sub panoul de proprietăți, cu coloana „În simulare” ascunsă, și la pereții
+  drepți (din 12.1↑e-3). Acum vederea îi dă lățimea zonei (`--zona-latime`), ca înălțimea; proba e2e o cere și cădea fără
+  reparație (insula până la 1024 px, zona până la 752).
+- **Porțile, în CI,** pe `e8b7f9d9` (codul final): rapidul verde (compilatoarele, importurile, licențele, traducerile,
+  build-ul determinist, oracolul exportului 2D; unit 9 874 / 0, 12 sărite, pe cele șase felii) și completul verde (e2e 602;
+  funcțiile pe emulatoare și paginile, 36 / 36). Pe `be2c6750` (documente), rapidul verde. În container, înainte de fiecare push: tipurile, importurile, probele atinse
+  (210 / 210), e2e-ul vederii (13 / 13; o cădere din timp a `vedere3d.spec.ts:100`, cu patru lucrători, verde singură și la
+  reluarea ambelor fișiere).
+- **Otrăvurile**, într-o clonă: lista nouă `test/otravuri/12.1e-4.py`, 35: după baza verde (`trepte` 15 / 15, `desen` 12 / 12,
+  e2e 7 / 7), **35 / 35 prinse din prima** pe `e8b7f9d9` (T09, reazemul niciodată roșu, de controlul negativ nou). Cele 15 cu
+  ținta mutată, toate prinse: 12.1e-3 K01–K03, K05, K07, S01, S05, G01, L02, N02 și N03 (scăpate pe corpus după reparația
+  lemnului dopului; prinse de grilele mici); 12.1e-2 U01, U02, U12; 12.1e D07. J01, J02 (12.1e-2) și K04 (12.1e-3) au plecat
+  cu codul lor. Listele: 12.1e-3 67 / 67, 12.1e-2 36 / 36, 12.1e 28 / 28. Niciun VOID nou în nicio listă, față de
+  `origin/main`.
+- **Mărimea**, față de `81ab6bba` (12.1↑e-3 cu reparația), același build: JavaScript +1 320 B gzip (lucrătorul CAM +1 068,
+  vederea 3D +343), CSS +17 B; build-ul determinist al ramurii: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 767,0 / 800.
+- **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>), din `canal.yml`, de pe
+  `be2c6750` (aplicația lui `e8b7f9d9`).
+- **Nu acum:** bifa „prin foaie” pe fiecare rând (documentul v27), doar la cuvântul owner-ului.
+
 ## 2026-11-23 — Felia 3.Tr: elicea de barcă în atelierul Easy 3Draw (ADR 0282) (Model: Claude Fable 5.2)
 
 **Prompt:** „pornește 3.Tr” (în sesiunea cloud a liniei elicelor, după reparația probelor atelierului).
@@ -11589,6 +11846,27 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   starea ADR 0282, nota liniei.
 - **Nepublicat:** publicarea pe test rămâne la sesiunea principală (sau la cuvântul owner-ului): două publicări pornite din
   sesiuni diferite pot ajunge în ordinea greșită. Deschise, gata de unit acolo: `AndreiBesliu/cvs2#6`, `#8`, `#9`.
+
+## 2026-11-23 — 3.Xh: `main` adus a doua oară în ramură (3.Tr luase 18.20.0); partea bibliotecii, pe 18.21.0 (sesiune cloud)
+
+**Prompt:** niciunul nou: verificarea programată a completului de pe capătul ramurii (după raportul feliei 3.Xh) a găsit
+PR-ul `AndreiBesliu/cvs2#4` cu ciocniri față de `main`.
+**Started:** 23.11, 19:08. **Completed:** 23.11, 19:20 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce s-a întâmplat:** cât rula completul pe `79fbef5`, linia elicelor a unit în `main` reparația probelor atelierului și
+  3.Tr (`d262e57`, apoi `6f85243`), cu elicea de barcă tot ca Easy 3Draw 18.20.0, versiunea luată și de 3.Xh-1 pentru semn.
+- **Ciocnirile, cinci:** `extensii/trenulet/extensie.json` (semnul păstrat, versiunea 18.21.0); `extensii/biblioteca.json`
+  (prezentarea păstrată; „ce e nou”: 18.21.0, semnul, apoi 18.20.0, elicea de barcă, scris acum; amprenta, cu
+  `node scripts/biblioteca.ts --scrie`); `test/e2e/trenulet.spec.ts` (fereastra nouă de confirmare, cu 18.21.0); jurnalul
+  fișei etapei 3 și registrul otrăvurilor (rândurile ambelor părți, după cheie). DEVLOG-ul s-a unit singur.
+- **Otrăvurile:** `verifica` pe listele `3.T*.py` și `3.X*.py`: aceleași VOID-uri ca pe `main` și ca pe capătul ramurii
+  (27, toate vechi); niciunul nou.
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import (0 încălcări), unitarele documentelor, ale
+  pluginului și ale extensiilor 494 / 494, traducerile roadmap-ului (936, 0 lipsă; un rând schimbat, al lui 3.Xh-1),
+  build-ul determinist, e2e cu Chrome (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,0 kB
+  (cu ușa 112,4 / 115), totalul 766,9 / 800 kB, `/admin` 124,1 / 200; Easy 3Draw 18.21.0, 461,1 kB.
+- **Documentele:** ADR 0231 („Versiunea, după 3.Tr”), fișa etapei 3 (rândul lui 3.Xh-1), nota liniei (pasul 5 al regulii:
+  ce face linia unită a doua când `main` aduce aceeași versiune).
 
 ## 2026-11-23 — Felia A.5: Utilizatori și Personal (ADR 0260 §5–§6)
 
@@ -11634,7 +11912,7 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate” e ordin permanent), la rapoartele liniilor
 trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu/cvs2#5` și `AndreiBesliu/cvs2#8`).
-**Started:** 23.11, 16:37. **Completed:** unirea în `main`, 23.11, 19:20; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 16:37. **Completed:** 23.11, 20:30 (unirea în `main` la 19:20, publicarea pe test la 20:30).
 
 - **Verificate înaintea unirii:** cele trei ramuri fără `.lucru/`, cu `main` (`c010e3d1`) adus; rapidul și completul verzi
   pe commit-urile raportate (`2e8caa3e`, `8b1255b8`, `fe026f9f`); la elice, Easy 3Draw 18.20.0 în `extensie.json` și în
@@ -11667,6 +11945,24 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
 - **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
   indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).
+- **Publicarea pe test** (`d6fd5d68`): rapidul și completul pe `main`, verzi (completul, 48 de minute); `publica.yml` verde;
+  adresa de test spune `d6fd5d68cf33`. Scriptul, reluat de patru ori, a mers cap-coadă cu cele două reparații.
+
+## 2026-11-23 — 3.Xh: `main` adus a treia oară în ramură (25.8↑a, A.5, reparația probelor extensiilor) (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
+**Started:** 23.11, 19:33. **Completed:** 23.11, 19:40 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce a adus `main`** (`d6fd5d6`): 25.8↑a (imaginile pe foaie), A.5 (Utilizatori și Personal) și reparația probelor
+  extensiilor (`clicCareInchideCadrul`, `8287d66`).
+- **Ciocnirile, trei:** `test/e2e/extensii.spec.ts` (importurile ambelor părți: ajutoarele bibliotecii și
+  `clicCareInchideCadrul`); `test/unit/manual.test.ts` (ușile: 112 pe fiecare parte, cu altă ușă nouă, deci **113**:
+  `foaie.imagini` și `extensii.biblioteca`); DEVLOG (`scripts/rezolva-devlog.py`).
+- **Otrăvurile:** `verifica` pe toate listele: aceleași VOID-uri ca pe `main` (234), niciunul nou.
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import (0 încălcări), traducerile (939, 0 lipsă),
+  unitarele documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
+  773,8 / 800 kB, `/admin` 125,6 / 200; manualul, 40 de capitole.
 
 ## 2026-11-23 — ADR 0273 propus: fereastra trasării, refăcută (felia 25.9↑), cu schița (Model: Claude Opus 5.5)
 
@@ -11789,3 +12085,126 @@ sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
   afara `.md`), deci porțile de acolo valorează, ca la lotul sesiunii principale.
 - **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
   ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
+
+## 2026-11-23 — 3.Xh: `main` adus a patra oară în ramură (11.3↑f) (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
+**Started:** 23.11, 19:56. **Completed:** 23.11, 20:00 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce a adus `main`** (`c8b235a`): 11.3↑f (urechile după reguli, pe laturi). Ciocnirea, doar în DEVLOG
+  (`scripts/rezolva-devlog.py`).
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import, traducerile (941, 0 lipsă), unitarele
+  documentelor, ale pluginului, ale extensiilor și ale acțiunilor 511 / 511, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61; `verifica` pe toate listele de otrăvuri: aceleași VOID-uri
+  ca pe `main`. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul 774,6 / 800 kB, `/admin` 125,6 / 200.
+- **Completul:** cel de pe `8b443ac` e lăsat să meargă (poarta codului feliei, cu `main` de la a treia aducere); unul nou,
+  pe capăt. **De acum, o ciocnire doar în DEVLOG, venită cât rulează completul capătului, așteaptă sfârșitul lui:**
+  altfel, cu `main` unit la fiecare jumătate de oră, completul de un ceas nu mai apucă să se termine pe capăt.
+
+## 2026-11-23 — Felia A.6: Roadmap, Documentație și Setări (ADR 0260 §8–§9)
+
+**Prompt:** „porneste” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după ce A.5 a ajuns gata de unit, cu
+PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului”).
+**Started:** 23.11 17:25.
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.5 (`fe026f9f`, încă neunită: sesiunea principală o unește din commit-ul raportat,
+  nu din vârful ramurii).
+- **Planul:** după schițele rândului G (`Admin-Roadmap`, `Admin-Documentatie`, `Admin-Setari`). Roadmap: „Ce așteaptă de
+  la tine” mereu la vedere, într-o coloană lipită alături de etape. Documentație: cuprinsul paginii alături, cu secțiunea
+  de acum marcată, și starea ADR-ului (acceptat / propus) sub titlu. Setări: istoricul schimbărilor sub buton, din
+  rândurile de audit ale setărilor (și ale răspunsurilor rapide), doar cu „Audit: citește”. Fără reguli, date, indexuri
+  sau funcții noi.
+- **Roadmap** (`cd90a257`): peste 1 400 px, „Ce așteaptă de la tine” într-o coloană lipită alături de etape, cât ecranul de
+  înalt, cu titlul fix și lista derulată în ea; cifrele, peste amândouă coloanele.
+- **Pista cronologiei:** după lățimea secțiunii ei (container), nu a ecranului: un rând de la 42rem în sus, altfel pe rânduri;
+  sub 68,5rem, coloanele strânse și semnele etapelor pe două rânduri. Capturile au arătat semnele peste coloana vecină lângă
+  listă; la 1 024 px intrau acolo și înainte de felie.
+- **Documentație:** cuprinsul (titlurile de nivel 2 și 3, cu ancorele cititorului), alături peste 1 400 px, deasupra mai îngust,
+  cu secțiunea de acum (ultimul titlu urcat la 96 px; la capătul paginii, ultimul) și clicul care duce la titlu, și la al
+  doilea clic; sub titlul unui ADR, insigna stării și ziua din rândul „**Starea:**” (titlul randat separat de rest).
+- **Setări:** sub fiecare buton, istoricul din audit (egalitate pe `tinta`, ordinea în pagină), citit din nou după salvare;
+  fără condiția „Audit: citește” în pagină: fila e doar a owner-ului, care o are (condiția ar fi fost cod fără probă posibilă).
+- **Probele:** 7 unitare noi; pe emulatoare, 3 noi și istoricul în două probe vechi; în container, cele trei fișiere atinse
+  13 / 13 (apoi 6 / 6 după pista pe rânduri); tipurile, regulile de import, unitarele adminului.
+- **Otrăvurile** (`test/otravuri/A.6.py`, într-o clonă): la prima rulare (`326bcf6e`) 52 / 53, E19 scăpată (golul dintre
+  coloanele pistei conta doar între ~960 și ~1 000 px, măsurat pe lățimi); pe `ecba6fa6`, cu pista pe rânduri sub 42rem, proba
+  la 990 și 940 px și otrava pragului (E31): 54 / 54, fiecare pe aserțiunea care îi țintește defectul. Baza de pe emulatoare a
+  avut o cădere de focus în proba răspunsurilor rapide (prima probă a rulării), apoi 3 / 3 verzi. `verifica` pe toate
+  listele: aceleași VOID-uri ca pe A.5.
+- **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia, +21,0 din cei +25); pornirea 107,9 (cu ușa 112,3 / 115) și
+  totalul 763,1 / 800, neschimbate.
+- **Porțile, în CI:** în raportul din PR-ul ramurii.
+- **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
+  rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
+
+## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
+`AndreiBesliu/cvs2#8`, A.6 din `df098dad`); pe drum, owner-ul: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie
+si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frezelor.”
+**Started:** 23.11, 19:20. **Completed:** 23.11, 21:37 (unirea în `main` la 20:27, publicarea pe test la 21:37).
+
+- **Lotul, întâi cu două felii:** `unire-2311f` din `d6fd5d68`: 11.3↑f (`527a95f3`, raportată gata) și A.6 (`df098dad`);
+  porțile pornite la 19:20.
+- **Mesajele sesiunii planșelor**, citite abia după: owner-ul îi ceruse ei unirea lui 11.3↑f („ok, cand se poate fa
+  unirea”) și ea ceruse să nu intre în lot. I-am răspuns (sesiunile își pot scrie cu `send_message`): n-am împins lotul,
+  ea a împins 11.3↑f în `main` (`c8b235ab`), iar A.6 a mers peste ea, pe `unire-2311h` (`4497d639`; ciocnirea, doar în
+  DEVLOG). Codul lui `4497d639` e identic cu al lui `66e88c92` (`git diff` gol în afara fișierelor `.md`).
+- **Porțile, în CI, pe `66e88c92`** (completul, 46 de minute): unit 9 885 / 0 (12 sărite), e2e 609 / 609, funcțiile pe
+  emulatoare 104 / 104, paginile 41 / 41; pornirea 108,5 / 115 (cu ușa 113,0; cu Atelierul 113,3), totalul 770,9 / 800,
+  `/admin` 127,5 / 200.
+- **Linia frezelor (16.A↑):** ramura `wip/16.A-freze` făcută din `main` (`c8b235ab`) și împinsă; promptul (ce există azi,
+  ADR 0300 propus cu întrebările, schița; marginile: documentul ține o copie a frezei, v27 pentru un câmp nou, contul prin
+  callable, mărimea pornirii) trimis owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (adminul, frezele); `docs/linii/principala.md` (starea,
+  mesajele între sesiuni); `docs/lucru-in-cloud.md` (sesiunile își pot scrie; o linie căreia i se cere unirea îi scrie
+  întâi sesiunii principale).
+
+## 2026-11-23 — 3.Xh: completul verde pe capătul ramurii; `main` adus a cincea oară (A.6); PR-ul, gata de unit (sesiune cloud)
+
+**Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că s-au terminat verificările capătului.
+**Started:** 23.11, 20:51. **Completed:** 23.11, 20:55 (în container; rapidul, pe commit-ul împins).
+
+- **Completul cu Edge, verde** pe `18c4941` (capătul de dinainte, cu `main` până la 11.3↑f) și pe `8b443ac` (cu `main` până
+  la 25.8↑a și A.5); înainte, pe `79fbef5` (toată felia) și pe fiecare sub-felie.
+- **`main` adus** (`ee4f629`: A.6, Roadmap, Documentație și Setări ale adminului): venise cât rula completul, cu ciocnirea
+  doar în DEVLOG și codul doar în `src/admin/`, deci a așteptat sfârșitul lui (regula de la a patra aducere).
+- **Porțile, în container, pe arborele unit:** tipurile, regulile de import, traducerile (943, 0 lipsă), unitarele
+  documentelor, ale pluginului, ale extensiilor și ale acțiunilor 515 / 515, build-ul determinist, e2e cu Chrome
+  (biblioteca, extensiile, pluginul, manualul, carcasa) 61 / 61. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
+  774,7 / 800 kB, `/admin` 127,5 / 200.
+- **PR-ul trece din ciornă în „gata de unit”** după rapidul de pe commit-ul acesta; unirea, la sesiunea principală.
+
+- **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
+  (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
+  prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
+
+## 2026-11-23 — Sesiunea principală în cloud: a șaptea unire (3.Xh, biblioteca extensiilor refăcută; 12.1↑e-3 și 12.1↑e-4, pereții drepți și treptele în secțiune) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor bibliotecii și
+incrustațiilor (PR-urile `AndreiBesliu/cvs2#4` și `AndreiBesliu/cvs2#7`); linia bibliotecii, cu „ok, uneste-l” al owner-ului
+spus în sesiunea ei.
+**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, în rândul de la capăt.
+
+- **Înainte:** publicarea lui `ee4f629d` (A.6, cu 11.3↑f): completul pe `main` verde, `publica.yml` verde, adresa de test
+  spune `ee4f629d8aa7` (21:37). Între `d6fd5d68` și el, sesiunea planșelor publicase și ea `c8b235ab` (20:58), înainte să-i
+  ajungă mesajele: ordinea pe test a rămas a commit-urilor. Mesajele între sesiuni ajung doar între ture.
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; biblioteca avea `main` (`870e8759`), incrustațiile
+  `6f85243f`; Easy 3Draw 18.21.0 în `extensie.json` și în `extensii/biblioteca.json`, cu amprenta și cu rândul de „ce e
+  nou”; completul verde pe `18c4941` și rapidul pe `611a3c5f` (biblioteca), rapidul și completul pe `0b676694`
+  (incrustațiile).
+- **Unirea:** `unire-2311i` din `origin/main` (`870e8759`): 3.Xh în `2d1e482c` (arborele chiar al lui `611a3c5f`),
+  12.1↑e-3 și 12.1↑e-4 în `03460cab`; nicio ciocnire, nici în DEVLOG. În container, pe arborele comun: tipurile (și ale
+  funcțiilor), regulile de import (0 încălcări), traducerile (947, 0 lipsă), probele atinse și cele ale documentelor
+  206 / 206 (biblioteca, manualul cu 113 uși, potrivirea dopului drept și în trepte, urechile „unde ține” și pe laturi,
+  care împart `calculCam.ts` cu potrivirea).
+- **Sesiunea bibliotecii a scris înainte să împingă** (regula din `docs/lucru-in-cloud.md`): owner-ul îi ceruse unirea;
+  felia era deja în lot, deci s-a oprit și și-a oprit completul propriu.
+- **Porțile lotului, în CI, pe `03460cab`**, verzi la prima trecere (completul, 61 min 45 s): unit 9 960 / 0 (12 sărite),
+  e2e 628 / 628, funcțiile pe emulatoare 104 / 104, paginile 41 / 41; pornirea 108,6 / 115 (cu ușa 113,1; cu Atelierul
+  113,4), totalul 778,6 / 800, `/admin` 127,5 / 200; Easy 3Draw 18.21.0, 461,1 kB; catalogul 4,9 kB; semnele și capturile,
+  7 fișiere, 211,6 kB (în afara plafonului).
+- **Documentele:** decizia în `CLAUDE.md` și rândul de stare al bibliotecii (regulile noi: „ce e nou” la fiecare versiune,
+  versiunile a două linii pe aceeași extensie, grupul paletei); indexul liniilor; starea din `docs/linii/principala.md`.
+- **La owner:** plafonul total (778,6 / 800: feliile gata și cele în lucru nu mai încap toate), fondul semnului lui Easy
+  3Draw, rândul de „ce e nou” al lui 18.20.0.

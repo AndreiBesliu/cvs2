@@ -112,7 +112,7 @@ export function simulareInBazin(document: Document, o: OptiuniCam = {}, dop?: nu
   return calculeaza({ fel: 'simulare', document, ...(dop !== undefined ? { dop } : {}) }, [], o) as Promise<RaspunsSimulare>;
 }
 
-/** „Împreună (secțiunea)” (ADR 0179): potrivirea dopului în V cu numărul `dop` (de la 0); secțiunea vine transferată. */
+/** „Împreună (secțiunea)” (ADR 0179): potrivirea dopului cu numărul `dop` (de la 0), în V sau drept; secțiunea vine transferată. */
 export function potrivireInBazin(document: Document, dop: number, o: OptiuniCam = {}): Promise<RaspunsPotrivire> {
   return calculeaza({ fel: 'potrivire', document, dop }, [], o) as Promise<RaspunsPotrivire>;
 }

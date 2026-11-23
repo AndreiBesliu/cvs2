@@ -13,7 +13,8 @@ import './roadmap.css';
 /**
  * Fila Roadmap din `/admin` (ADR 0048): cele 30 de etape pe săptămâni, cu starea dedusă la build din fișe (nimic scris de
  * mână), plăcile și live-urile ca repere, panoul etapei alese (ținta, ce închide, placa, feliile cu datele și ADR-urile
- * lor) și ce așteaptă de la owner, sus. Datele vin la deschiderea filei (`roadmap.json`), nu cu pagina.
+ * lor) și ce așteaptă de la owner, sus; pe un ecran lat, în stânga, lipit sus, mereu la vedere (ADR 0260 §8, felia A.6).
+ * Datele vin la deschiderea filei (`roadmap.json`), nu cu pagina.
  */
 export function FilaRoadmap({ aducator, deschide }: { readonly aducator: AducatorDocumentatie; readonly deschide: Deschide }): ReactElement {
   // Limba activă alege fișierul (ADR 0056); la schimbarea ei, roadmap-ul se cere din nou.
@@ -83,17 +84,20 @@ function VedereRoadmap({ r, deschide }: { readonly r: Roadmap; readonly deschide
 
       <PanouOwner owner={r.owner} legaturi={legaturi} deschide={deschide} />
 
-      <section className="rm-cronologie" aria-labelledby="rm-cronologie-titlu">
-        <div className="rm-cap">
-          <h2 id="rm-cronologie-titlu">{t('admin.rm.cronologie')}</h2>
-          <Legenda />
-        </div>
-        <Pista etape={r.etape} ales={etapa?.id ?? null} alege={setAles} />
-      </section>
+      {/* Etapele, alături de „Ce așteaptă de la tine” pe un ecran lat (ADR 0260 §8): lista rămâne la vedere cât le citești. */}
+      <div className="rm-etape">
+        <section className="rm-cronologie" aria-labelledby="rm-cronologie-titlu">
+          <div className="rm-cap">
+            <h2 id="rm-cronologie-titlu">{t('admin.rm.cronologie')}</h2>
+            <Legenda />
+          </div>
+          <Pista etape={r.etape} ales={etapa?.id ?? null} alege={setAles} />
+        </section>
 
-      {etapa ? <PanouEtapa e={etapa} r={r} legaturi={legaturi} deschide={deschide} /> : null}
-      <p className="admin-slab rm-sursa">{t('admin.rm.generat')}</p>
-      {r.netraduse > 0 ? <p className="admin-slab rm-sursa" data-rm="netraduse">{t('admin.rm.netraduse', { n: r.netraduse })}</p> : null}
+        {etapa ? <PanouEtapa e={etapa} r={r} legaturi={legaturi} deschide={deschide} /> : null}
+        <p className="admin-slab rm-sursa">{t('admin.rm.generat')}</p>
+        {r.netraduse > 0 ? <p className="admin-slab rm-sursa" data-rm="netraduse">{t('admin.rm.netraduse', { n: r.netraduse })}</p> : null}
+      </div>
     </div>
   );
 }

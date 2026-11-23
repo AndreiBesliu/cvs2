@@ -2083,12 +2083,24 @@ blocks (the deepest point of each), and the status in the corner says so.
   blank). “Plug N” simulates the plug's program on its blank (the face at 0, the bottom at its thickness) and frames it: you
   see the plug standing, the lowered face or the cut-out before you cut it. “Sheet” takes you back to the sheet. If a plug
   cannot be cut, the sheet still shows, and the status says why the plugs are missing.
-- **Together (section)**: on a V plug, the button after the plugs shows the plug flipped and seated in its pocket, in a
-  horizontal section through the middle of the drawing. Next to it, the table puts the paper values (as in the panel) beside
-  the ones simulated at 0.1 mm: how far the plug goes in, how much of the walls touch, the glue gap under the plug and the
-  space between the boards, for the saw. A row more than 0.05 mm off its paper value (or walls touching on less than 95 %) is
-  red, with its place, and the section goes through it. In the drawing, the glue is blue, the walls in contact are green and
-  the dashed line is the saw cut. On a straight-walled plug, the button is off for now.
+- **Together (section)**: on a chosen plug, the button after the plugs shows the plug seated in its pocket (flipped; the
+  straight-walled cut-out one, the way it was cut), in a horizontal section through the middle of the drawing. Next to it, the table puts the
+  paper values (as in the panel) beside the ones simulated at 0.1 mm. On a V plug: how far the plug goes in, how much of the
+  walls touch, the glue gap under the plug and the space between the boards, for the saw. On a straight-walled plug: the side
+  gap, measured exactly on the cutter's passes (the median over the whole outline; the title gives the range), the plug in
+  the pocket (no point of its wall outside the pocket), the pocket depth, the plug height and the support: the space between
+  the boards (on the bottom), the glue gap under the plug (on the face) or how much the cut-out plug sticks out above the
+  board, to plane off. A row more than 0.05 mm off its paper value (the side gap, more than 0.02 mm; walls touching, under
+  95 %) is red, with its place, and the section goes through the first red row. In the drawing, the glue is blue (on
+  straight walls, the side gap and, on the face, the gap under the plug: only inside the pocket, below the board's face),
+  what touches is green and the dashed line is the saw cut (on the cut-out plug, the board's face, down to which it is
+  planed). On a hole through the sheet, the board is drawn as thick as the sheet: there is no wood under the hole. If the
+  section does not fit on the screen, the buttons stay at the top and it scrolls. The stepped plug goes in flipped, however it
+  was cut, and the table has the side gap on both levels (at the flange and at the stem), the plug in the pocket, the flange on
+  the shoulder (how far the flange wall goes past the opening below the shoulder, all around; a point where it does not makes
+  the row red), the depth of the shoulder and of the pocket, the stem length, the plug height, the glue under the stem (on the
+  shoulder; in a hole through the sheet, the stem is level with the bottom face, so 0) or above the shoulder (on the bottom)
+  and the space between the boards or how much the cut-out plug sticks out above the board.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the
@@ -2170,31 +2182,41 @@ reports) and why.
 
 ## Extensions
 %% capitol: extensii
-%% acopera: extensii.buton, extensii.trimite-selectia
+%% acopera: extensii.buton, extensii.trimite-selectia, extensii.biblioteca
 
 An extension adds a window of its own to the app, for example Easy 3Draw. It isn’t part of the app: you install
 it, and the app’s interface stays the same.
 
-- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, the
-  **Library**, then **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
-- The **Library** shows our extensions, published together with the app, for example Easy 3Draw: the name, the version,
-  what it does, what it asks for in short and its size. **Install** opens the install window, with what the extension asks
-  for in full; there, **Install** downloads the package, checks it against its fingerprint in the library and keeps it in
-  this browser, and **Open** opens its window (**Close** leaves it for later). When the library has a newer version of an
-  installed extension, its row in the menu says “update: …”, and **Update to …** brings it in one click, with its data; if
-  the new version asks for something more, the window says what first, and **Update** installs it. The library is read each
-  time the menu opens and needs an internet connection; without one, **Try again** asks for it again, and installed
-  extensions work as before. A link like `…/#biblioteca=trenulet` opens Easy 3Draw’s window from the library; nothing
-  downloads without your click. A package installed from a file or an address comes from outside the library, and the
-  window says so.
-- **Install from file** takes a `.zip` package. **Install from address** asks for the **Package address** (HTTPS), then
-  **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
-  from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
-  without your click.
-- Before installing, the window shows the name, the version, where the package comes from, its files and their size, what
-  the extension asks for (for example, to keep its data in this browser) and, if there is one, the version it replaces.
-  **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A damaged or wrong package is
-  refused, with the reason.
+- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, each
+  with its icon (one without an icon has the puzzle piece), then **Extension library…**. A click on an extension opens its
+  window, and its icon is on its tab too. When the library has a newer version of an installed extension, its row shows the
+  versions (“18.6.0 → 18.20.0”) and **Update**: it brings the new version in one click, with its data. If the new version
+  asks for something more, a window says what first, and there **Update** installs it; at the end, **Open** opens its
+  window and **Close** leaves it for later.
+- The **Extension library** is a window, opened from the menu or from **Search commands** (Ctrl+K), from anywhere: the
+  list on the left, the page of the chosen extension on the right. **All** shows
+  our extensions, published together with the app, for example Easy 3Draw; **Installed** shows the ones in this browser,
+  including those that came from outside the library. An extension’s page has its icon and name, who publishes it, the
+  version and the size, a few captures, the description, **What it can do** (one row for each thing the extension asks for)
+  and **What’s new**. The action is at the top of the page: **Install** downloads the package, checks it against its
+  fingerprint in the library and keeps it in this browser (it works offline too); **Update to …** brings the new version,
+  with its data, and “What’s new” then shows only what appeared since your version; **Open** opens its window; **Remove**
+  deletes it, after a question. On a phone, the list and the page come one at a time: a row opens its page, and **Back to
+  the list** (‹) takes you back. From the keyboard: ← and → switch the tab, ↑ and ↓ move between the rows of the list,
+  Enter opens the row’s page, and Escape closes the library. The library is read each time it opens and needs an internet connection; without one,
+  **Try again** asks for it again, and installed extensions stay under **Installed** and work as before. A link like
+  `…/#biblioteca=trenulet` opens the library on Easy 3Draw’s page; nothing downloads without your click.
+- At the end of the list, “From outside the library”: **Install from file (.zip)…** takes a `.zip` package, and **Install
+  from address…** asks for the **Package address** (HTTPS), then **Download**; the host must allow downloads from other
+  pages, otherwise you download the file yourself and install it from the file. A link like `…/#instaleaza=<address>` opens
+  the same window with the address filled in; nothing downloads without your click. A package installed this way comes from
+  outside the library, and the window says so.
+- Before installing such a package, the window asks you with the extension’s name (“Install “Easy 3Draw”?”) and shows its
+  icon, the version, where the package comes from, its files and their size and, if there is one, the version it replaces. Under
+  **What it can do** there is one row for each thing the extension asks for (for example, **Data in this browser**: it
+  keeps its data in this browser). For a new version that asks for something more, the list **The new version can also**
+  comes first, highlighted. **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A
+  damaged or wrong package is refused, with the reason.
 - An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
   it keeps them.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
@@ -2237,8 +2259,9 @@ it, and the app’s interface stays the same.
   starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above the buttons.
 - The extension runs isolated: it can’t see your projects or the machine’s port, and it can’t reach the internet; of your
   account it sees only what you allowed it (above); it talks to the app only through what the app gives it.
-- **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
-  one, together with its data, **Close** closes the window.
+- An installed extension’s page says where it came from, when, and how much its data takes. **Remove** asks you first and
+  says what is lost: the extension and its data in this browser (for example, the saved circuits), which can’t be brought
+  back. There, **Remove** deletes it, and **Keep** (or Escape) takes you back to the page.
 
 ## Keyboard shortcuts
 %% capitol: scurtaturi

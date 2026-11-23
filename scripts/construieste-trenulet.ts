@@ -133,6 +133,8 @@ export function pachetTrenulet(): { readonly manifest: Record<string, unknown>; 
     ['licente/three.txt', octeti(citeste('vendor', 'three.LICENSE'))],
     // dicționarul englez (ADR 0165): intrarea îl aduce doar când cvs2 e în engleză; pagina de sine stătătoare nu-l are
     ['texte.en.json', octeti(citeste('planificator', 'texte.en.json'))],
+    // semnul extensiei (ADR 0231 §B.2), numit de manifest: cvs2 îl arată în meniu, în fila ei și în bibliotecă
+    ...(typeof sursa.pictograma === 'string' ? [[sursa.pictograma, new Uint8Array(readFileSync(join(RAD, sursa.pictograma)))] as [string, Uint8Array]] : []),
   ]);
   const manifest = { ...sursa, intrare: 'index.js', stiluri: ['trenulet.css'], fisiere: Object.fromEntries([...fisiere].map(([c, b]) => [c, sha(b)])) };
   return {

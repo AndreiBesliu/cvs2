@@ -361,7 +361,7 @@ function CarcasaAdmin({ con, instanta, build, p }: { readonly con: Conexiune; re
                 poateIstoric={p.permisiuni.has('audit.citeste')} tinta={tintaConturi} />
             ) : null}
             {aratata === 'personal' ? <FilaPersonal con={con} eu={p.user.uid} emailEu={p.user.email ?? null} /> : null}
-            {aratata === 'setari' ? <FilaSetari con={con} /> : null}
+            {aratata === 'setari' ? <FilaSetari con={con} eu={p.user.uid} /> : null}
             {aratata === 'cont' ? <FilaCont con={con} user={p.user} /> : null}
           </main>
         </div>

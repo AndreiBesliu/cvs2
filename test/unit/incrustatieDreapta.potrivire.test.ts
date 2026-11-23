@@ -14,6 +14,7 @@ import { masoaraPotrivireaDreapta, type MasuraDreapta } from '../oracles/incrust
 import { CAZURI_DREAPTA, type CazDreapta, type FrezaPlataCaz } from '../oracles/incrustatieDreapta.cazuri.ts';
 import { cutieDesen, type PunctO } from '../oracles/incrustatie.ts';
 import type { SculaOracol } from '../oracles/simulare.ts';
+import { documentDrept } from './ajutor-incrustatie.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const TOL_JOC = 0.02, TOL_Z = 0.05, TOL_RAZA = 0.02;
@@ -22,25 +23,8 @@ const CELULA = 0.05;
 const cale = (pol: readonly PunctO[]) => ({ tip: 'cale', inchis: true, varfuri: pol.map(([x, y]) => ({ p: { x, y }, s: { tip: 'L' } })) });
 const sculaDoc = (f: FrezaPlataCaz) => ({ numar: f.numar, nume: 'freza plata', diametru: f.diametru });
 
-/** Documentul v21 al unui caz: o piesă cu desenul și buzunarul cu incrustația, pe o foaie de 200 × 150 × 18. */
-export function documentDrept(c: CazDreapta): unknown {
-  const noduri = c.desen.map((pol, k) => ({ tip: 'element', id: `a${k}`, matrice: { ...I }, forma: cale(pol) }));
-  const [prima, ...rest] = c.locas;
-  const operatie = {
-    id: 'inc', tip: 'buzunar', noduri: noduri.map((n) => n.id), latura: 'interior', sens: 'urcare', adancime: c.D, pas: c.pas,
-    scula: sculaDoc(prima!), pasLateral: prima!.pasLateral, urechi: null, rampa: null, intrari: null, colturi: null,
-    ...(rest.length > 0 ? { rest: rest.map((r) => ({ scula: sculaDoc(r), pasLateral: r.pasLateral })) } : {}),
-    incrustatie: {
-      fel: 'drept', jocLateral: c.c, dop: c.dop, sprijin: c.sprijin, joc: c.g, fierastrau: c.H, margine: c.margine,
-      ...(c.frezeDop ? { frezeDop: c.frezeDop.map((f) => ({ scula: sculaDoc(f), pasLateral: f.pasLateral })) } : {}),
-    },
-  };
-  return {
-    schema: 21, rev: 0,
-    piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii: [operatie] }],
-    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }],
-  };
-}
+// Documentul unui caz stă în ajutorul comun (ca proba secțiunii, ADR 0179, să nu importe proba asta).
+export { documentDrept } from './ajutor-incrustatie.ts';
 
 const deschis = (d: unknown) => {
   const r = incarca(d);

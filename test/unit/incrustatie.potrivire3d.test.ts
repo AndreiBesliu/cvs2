@@ -68,6 +68,7 @@ async function oracol(c: CazIncrustatie, doc: Document): Promise<MasuraPotrivire
 function aplicatie(c: CazIncrustatie, doc: Document): PotrivireV {
   const r = calculeazaPotrivirea(doc, 0);
   if (!r.ok) assert.fail(`${c.id}: ${r.motiv}`);
+  if (r.potrivire.fel !== 'v') assert.fail(`${c.id}: potrivirea dreaptă, nu în V`);
   return r.potrivire;
 }
 
@@ -132,7 +133,7 @@ test('controlul negativ: dopul tăiat ca a doua cavitate are rânduri roșii, cu
   const d = programeDopuri(doc, REGIM_IMPLICIT);
   if (!d.ok) assert.fail(d.motiv);
   const descriptor = d.dopuri[0]!.potrivire;
-  assert.ok(descriptor, 'dopul în V își spune potrivirea');
+  if (descriptor?.fel !== 'v') assert.fail('dopul în V își spune potrivirea în V');
   const p = potrivireaV(locas, dopRau, { ...descriptor, celula: CELULA, grosimeDop: d.dopuri[0]!.semifabricat.grosimeMinima });
   const unde = descrie(p);
   // A doua cavitate: dopul nu intră deloc (h* = 0), pereții nu se ating, sub el e cât locașul, între plăci nimic; fiecare
@@ -146,7 +147,7 @@ test('controlul negativ: dopul tăiat ca a doua cavitate are rânduri roșii, cu
   assert.ok(Math.abs(p.sectiune.y - rosu.unde![1]) <= CELULA, `secțiunea, pe rândul locului: y ${p.sectiune.y} / ${rosu.unde![1]}`);
 });
 
-test('refuzurile calculului, cu motivul: dopul cu pereți drepți (felia 12.1↑e-3) și dopul care lipsește, cu numărul lui', () => {
+test('dopul cu pereți drepți de pe aceeași foaie se măsoară drept (felia 12.1↑e-3); dopul care lipsește e refuzat, cu numărul lui', () => {
   // Foaia cazului „dreptunghi” (dopul 1, în V) cu încă o incrustație cu pereți drepți (dopul 2), ca în `incrustatie.dop3d.test.ts`.
   const c = CAZURI_INCRUSTATIE[0]!;
   const d = { ...(documentCaz(c) as object), schema: 25 } as { schema: number; piese: unknown[]; foi: { instante: unknown[] }[] };
@@ -161,7 +162,10 @@ test('refuzurile calculului, cu motivul: dopul cu pereți drepți (felia 12.1↑
   d.foi[0]!.instante.push({ id: 'j', piesa: 'q', x: 0, y: 0, rotire: 0 });
   const doc = deschis(d);
   assert.ok(aplicatie(c, doc).randuri.intra.ok, 'dopul în V se măsoară');
-  assert.deepEqual(calculeazaPotrivirea(doc, 1), { ok: false, motiv: 'dopul 2: potrivirea simulată e doar la incrustația în V, deocamdată' });
+  const drept = calculeazaPotrivirea(doc, 1);
+  if (!drept.ok) assert.fail(drept.motiv);
+  assert.equal(drept.potrivire.fel, 'drept', 'dopul 2 e cel drept');
+  assert.ok(Object.values(drept.potrivire.randuri).every((r) => r.ok), `dopul drept, niciun rând roșu: ${JSON.stringify(drept.potrivire.randuri)}`);
   assert.deepEqual(calculeazaPotrivirea(doc, 2), { ok: false, motiv: 'dopul 3 nu mai e în document' });
 });
 

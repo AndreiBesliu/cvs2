@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { CATEGORII, type Catalog, type DocumentCatalog } from '../../../shared/documentatie.ts';
-import { felLegatura, rezolvaRelativ } from '../../docs/markdown.ts';
-import { Markdown, type Legaturi } from '../../docs/Markdown.tsx';
+import { ancora as ancoraTitlului, felLegatura, rezolvaRelativ } from '../../docs/markdown.ts';
+import { Markdown, TextMd, type Legaturi } from '../../docs/Markdown.tsx';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import type { AducatorDocumentatie } from './aducere.ts';
+import { cuprins, dataStarii, desparteTitlul, sectiuneaDeAcum, type IntrareCuprins } from './cuprins.ts';
 import { legaturaDocument, type Deschide } from './legaturi.ts';
 import './documentatie.css';
 
 /**
  * Fila Documentație din `/admin` (ADR 0048): documentele repo-ului (starea, planul, fișele etapelor, plăcile, ADR-urile),
  * generate la build, aduse la cerere și randate de cititorul de markdown din `src/docs/`. Linkurile dintre documente
- * navighează în filă; ce nu e în documentație rămâne text.
+ * navighează în filă; ce nu e în documentație rămâne text. Alături, cuprinsul documentului, cu secțiunea de acum, iar sub
+ * titlul unui ADR, starea lui (ADR 0260 §8, felia A.6).
  */
 export function FilaDocumentatie({ aducator, cale, ancora, deschide }: {
   readonly aducator: AducatorDocumentatie;
@@ -135,6 +137,14 @@ function Articol({ d, c, aducator, ancora, deschide }: {
   }), [cunoscute, d.cale, deschide]);
 
   const gata = text !== null && text.cale === d.cale && 'text' in text;
+  // Un ADR își arată starea sub titlu: titlul se desparte de rest (ancora lui, ca a cititorului: primul titlu e unic).
+  const parti = useMemo(() => {
+    if (text === null || text.cale !== d.cale || !('text' in text)) return null;
+    return d.stare === null ? { titlu: null, rest: text.text } : desparteTitlul(text.text);
+  }, [text, d.cale, d.stare]);
+  const intrari = useMemo(() => (parti ? cuprins(parti.rest) : []), [parti]);
+  const data = useMemo(() => (parti?.titlu ? dataStarii(parti.rest) : null), [parti]);
+  const activ = useSectiuneaDeAcum(intrari);
   // După ce vine documentul: la ancora cerută, altfel la începutul lui, dar doar dacă începutul nu se vede. Derulat adânc
   // în documentul de dinainte (navigatorul rămâne lipit sus), articolul nou începea altfel de la mijloc; cu începutul pe
   // ecran, pagina nu se mișcă (filele rămân la vedere).
@@ -150,15 +160,100 @@ function Articol({ d, c, aducator, ancora, deschide }: {
   }, [gata, ancora, d.cale]);
 
   return (
-    <article className="doc-articol" ref={articol} aria-busy={!gata} data-document={d.cale}>
-      <header className="doc-cap">
-        <span className="doc-cale">{d.cale}</span>
-        <span className="admin-slab">{(d.octeti / 1024).toFixed(1)} kB</span>
-      </header>
-      {text === null || text.cale !== d.cale ? <p className="admin-mesaj">{t('admin.doc.se-incarca')}</p>
-        : 'eroare' in text ? <Eroare motiv={text.eroare} reincearca={() => { setText(null); setIncercare((n) => n + 1); }} />
-          : <Markdown text={text.text} legaturi={legaturi} nivelBaza={1} />}
-      <p className="admin-slab doc-sursa">{t('admin.doc.generat')}</p>
-    </article>
+    <>
+      {intrari.length > 1 ? <Cuprins intrari={intrari} activ={activ} cale={d.cale} deschide={deschide} /> : null}
+      <article className="doc-articol" ref={articol} aria-busy={!gata} data-document={d.cale}>
+        <header className="doc-cap">
+          <span className="doc-cale">{d.cale}</span>
+          <span className="admin-slab">{(d.octeti / 1024).toFixed(1)} kB</span>
+        </header>
+        {text === null || text.cale !== d.cale ? <p className="admin-mesaj">{t('admin.doc.se-incarca')}</p>
+          : 'eroare' in text ? <Eroare motiv={text.eroare} reincearca={() => { setText(null); setIncercare((n) => n + 1); }} />
+            : (
+              <>
+                {parti?.titlu ? (
+                  <div className="md">
+                    <h2 id={`md-${ancoraTitlului(parti.titlu)}`} className="md-titlu"><TextMd md={parti.titlu} legaturi={legaturi} /></h2>
+                    <p className="doc-adr" data-doc-stare={d.stare ?? 'altul'}>
+                      <span className="doc-stare" data-stare={d.stare ?? 'altul'}>{t(`admin.doc.adr.${d.stare ?? 'altul'}`)}</span>
+                      {data ? <span className="admin-slab">{data}</span> : null}
+                    </p>
+                  </div>
+                ) : null}
+                <Markdown text={parti?.rest ?? text.text} legaturi={legaturi} nivelBaza={1} />
+              </>
+            )}
+        <p className="admin-slab doc-sursa">{t('admin.doc.generat')}</p>
+      </article>
+    </>
+  );
+}
+
+/** Pragul de sus al secțiunii de acum: un titlu ajuns la el (de jos) e secțiunea citită. */
+const PRAG_SECTIUNE = 96;
+
+/** Indicele secțiunii de acum, la fiecare derulare (o dată pe cadru) și la redimensionare; -1 înaintea primului titlu. */
+function useSectiuneaDeAcum(intrari: readonly IntrareCuprins[]): number {
+  const [activ, setActiv] = useState(-1);
+  useEffect(() => {
+    if (intrari.length === 0) return undefined;
+    let cadru = 0;
+    const masoara = (): void => {
+      cadru = 0;
+      const sus = intrari.map((i) => globalThis.document.getElementById(`md-${i.ancora}`)?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY);
+      const radacina = globalThis.document.documentElement;
+      setActiv(sectiuneaDeAcum(sus, PRAG_SECTIUNE, globalThis.innerHeight + globalThis.scrollY >= radacina.scrollHeight - 2));
+    };
+    const cere = (): void => { if (cadru === 0) cadru = requestAnimationFrame(masoara); };
+    masoara();
+    globalThis.addEventListener('scroll', cere, { passive: true });
+    globalThis.addEventListener('resize', cere);
+    return () => {
+      globalThis.removeEventListener('scroll', cere);
+      globalThis.removeEventListener('resize', cere);
+      if (cadru !== 0) cancelAnimationFrame(cadru);
+    };
+  }, [intrari]);
+  return activ;
+}
+
+/**
+ * Cuprinsul documentului (ADR 0260 §8): titlurile de nivel 2 și 3, cu secțiunea de acum marcată (și ținută la vedere în
+ * cuprins, când el se derulează). Un clic duce la titlu și pune ancora în adresă.
+ */
+function Cuprins({ intrari, activ, cale, deschide }: {
+  readonly intrari: readonly IntrareCuprins[]; readonly activ: number; readonly cale: string; readonly deschide: Deschide;
+}): ReactElement {
+  const lista = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const c = lista.current;
+    const el = c?.querySelector<HTMLElement>('[aria-current]');
+    if (!c || !el || c.scrollHeight <= c.clientHeight) return;
+    if (el.offsetTop < c.scrollTop) c.scrollTop = el.offsetTop;
+    else if (el.offsetTop + el.offsetHeight > c.scrollTop + c.clientHeight) c.scrollTop = el.offsetTop + el.offsetHeight - c.clientHeight;
+  }, [activ]);
+  return (
+    <nav className="doc-cuprins" aria-labelledby="doc-cuprins-titlu" data-doc="cuprins">
+      <h3 id="doc-cuprins-titlu">{t('admin.doc.cuprins')}</h3>
+      <ol ref={lista}>
+        {intrari.map((i, k) => {
+          const l = legaturaDocument(cale, i.ancora, deschide);
+          return (
+            <li key={i.ancora} data-nivel={i.nivel}>
+              <a href={l.href} data-ancora={i.ancora} aria-current={k === activ ? 'location' : undefined}
+                onClick={(e) => {
+                  if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                  e.preventDefault();
+                  l.actiune();
+                  // Și la al doilea clic pe aceeași ancoră (adresa nu se mai schimbă, deci nici derularea din document).
+                  globalThis.document.getElementById(`md-${i.ancora}`)?.scrollIntoView({ block: 'start' });
+                }}>
+                {i.text}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
