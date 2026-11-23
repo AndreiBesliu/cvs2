@@ -55,7 +55,9 @@ export function impacheteaza(dosar: string): { readonly manifest: Record<string,
     const iesire = stripTypeScriptTypes(readFileSync(join(dosar, intrare), 'utf8'), { mode: 'strip' });
     fisiere.set(intrare.replace(/\.ts$/, '.js'), new TextEncoder().encode(iesire));
   } else fisiere.set(intrare, new Uint8Array(readFileSync(join(dosar, intrare))));
-  for (const c of [...((sursa.stiluri as string[] | undefined) ?? []), ...((sursa.altele as string[] | undefined) ?? [])]) {
+  // Semnul extensiei (`pictograma`, ADR 0231 §B.2) e un fișier al pachetului, ca stilurile.
+  const semn = typeof sursa.pictograma === 'string' ? [sursa.pictograma] : [];
+  for (const c of [...((sursa.stiluri as string[] | undefined) ?? []), ...semn, ...((sursa.altele as string[] | undefined) ?? [])]) {
     fisiere.set(c, new Uint8Array(readFileSync(join(dosar, c))));
   }
   const { altele: _altele, ...rest } = sursa;

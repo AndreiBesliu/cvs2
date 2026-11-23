@@ -93,7 +93,12 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
 import type { DopExportat, DopSimulat, ParametriExport } from '../jobs/protocolCam.ts';
 import type { RezumatJob } from '../jobs/rezumat.ts';
 export type { DopSimulat, ParametriExport, RaspunsPotrivire } from '../jobs/protocolCam.ts';
-export type { PotrivireV } from '../sim/potrivire.ts';
+import type { PotrivireV } from '../sim/potrivire.ts';
+import type { PotrivireDreapta } from '../sim/potrivireDreapta.ts';
+import type { PotrivireTrepte } from '../sim/potrivireTrepte.ts';
+export type { PotrivireDreapta, PotrivireTrepte, PotrivireV };
+/** Potrivirea simulată a unui dop (ADR 0179): în V, cu pereți drepți (felia 12.1↑e-3) sau în trepte (12.1↑e-4). */
+export type Potrivire = PotrivireV | PotrivireDreapta | PotrivireTrepte;
 export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
 
 /**

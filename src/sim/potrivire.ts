@@ -59,7 +59,18 @@ export type BandaPotrivire = { readonly n: number; readonly min: number; readonl
 /** Un rând al tabelului: cât se potrivește cu hârtia și, dacă nu, celula cea mai depărtată (pe foaie, mm). */
 export type RandPotrivire = { readonly ok: boolean; readonly unde?: readonly [number, number] };
 
+/**
+ * Secțiunea pe orizontală, la `y` (ADR 0179 §5): de la `x0`, câte o valoare pe celulă, Z-ul suprafeței plăcii (−F) și al feței
+ * de jos a dopului așezat (NaN unde lemnul nu e al dopului); `marcaj`, X-ul locului unui rând roșu; fața de sus a dopului e la
+ * `grosimeDop` − h*.
+ */
+export type SectiunePotrivire = {
+  readonly y: number; readonly x0: number; readonly celula: number;
+  readonly placa: Float32Array; readonly dop: Float32Array; readonly marcaj: number | null; readonly grosimeDop: number;
+};
+
 export type PotrivireV = {
+  readonly fel: 'v';
   readonly hartie: HartiePotrivire;
   readonly celula: number;
   /** h*: cât intră dopul, de la fața plăcii. */
@@ -70,30 +81,28 @@ export type PotrivireV = {
   readonly sub: BandaPotrivire;
   readonly intre: BandaPotrivire;
   readonly randuri: { readonly intra: RandPotrivire; readonly contact: RandPotrivire; readonly sub: RandPotrivire; readonly intre: RandPotrivire };
-  /**
-   * Secțiunea pe orizontală, la `y` (ADR 0179 §5): de la `x0`, câte o valoare pe celulă, Z-ul suprafeței plăcii (−F) și al
-   * feței dopului întors (M − h*; NaN unde lemnul nu e al dopului); `marcaj`, X-ul locului unui rând roșu.
-   */
-  readonly sectiune: {
-    readonly y: number; readonly x0: number; readonly celula: number;
-    readonly placa: Float32Array; readonly dop: Float32Array; readonly marcaj: number | null; readonly grosimeDop: number;
-  };
+  /** Fața dopului întors: M − h*. */
+  readonly sectiune: SectiunePotrivire;
 };
 
-function simuleaza(F: Camp, p: ProgramPotrivire): void {
+/** Toate mutările programului (scula de pornire, apoi grupurile de după schimbări) pe câmp. */
+export function simuleaza(F: Camp, p: ProgramPotrivire): void {
   ruleaza(F, p.scula, p.mutari);
   for (const g of p.apoi ?? []) ruleaza(F, g.scula, g.mutari);
 }
 
 /** Banda unor jocuri: câte, minimul, mediana, maximul (NaN fără niciunul). */
-function banda(v: number[]): BandaPotrivire {
+export function banda(v: number[]): BandaPotrivire {
   if (v.length === 0) return { n: 0, min: Number.NaN, med: Number.NaN, max: Number.NaN };
   const s = Float64Array.from(v).sort();
   return { n: s.length, min: s[0]!, med: s[(s.length - 1) >> 1]!, max: s[s.length - 1]! };
 }
 
-/** Celulele din desen (par-impar), pe rânduri: trecerile laturilor prin centrul fiecărui rând, sortate, umplute pe perechi. */
-function inDesen(desen: ParametriPotrivire['desen'], gx0: number, gy0: number, c: number, nx: number, ny: number): Uint8Array {
+/**
+ * Celulele din desen (par-impar), pe rânduri: trecerile laturilor prin centrul fiecărui rând, sortate, umplute pe perechi. Și
+ * lemnul dopurilor drepte (`potrivireDreapta.ts`) se alege cu ea, după desenul dopului.
+ */
+export function inDesen(desen: ParametriPotrivire['desen'], gx0: number, gy0: number, c: number, nx: number, ny: number): Uint8Array {
   const rez = new Uint8Array(nx * ny), treceri: number[] = [];
   for (let j = 0; j < ny; j++) {
     const y = gy0 + (j + 0.5) * c;
@@ -241,7 +250,7 @@ export function potrivireaV(locas: ProgramPotrivire, dop: ProgramPotrivire, p: P
     fataDop[i] = lemn[k] ? M[k]! - asezare : Number.NaN;
   }
   return {
-    hartie: h, celula: c, asezare, oprire: centru(kOprire), contact: { n: pereti, fractie }, sub: bSub, intre: bIntre, randuri,
+    fel: 'v', hartie: h, celula: c, asezare, oprire: centru(kOprire), contact: { n: pereti, fractie }, sub: bSub, intre: bIntre, randuri,
     sectiune: { y: gy0 + (j + 0.5) * c, x0: gx0, celula: c, placa, dop: fataDop, marcaj: rosu?.unde ? rosu.unde[0] : null, grosimeDop: p.grosimeDop },
   };
 }

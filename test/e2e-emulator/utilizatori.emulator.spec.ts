@@ -5,7 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
  * pe emulatoare, pe build-ul real: owner-ul vede conturile clienților într-un tabel, cele mai noi întâi, cu planul de acum,
  * filtrele pe plan (cu numere) și căutarea; contul ales stă alături, cu schimbarea planului și istoricul lui din audit; dă o
  * probă de 30 de zile unui cont expirat, planul gratuit, dezactivează și reactivează, iar documentul și auditul urmează; un
- * plan schimbat între timp e refuzat lângă formular. Setările: implicitele, apoi valorile noi, salvate pe server. Un rol care
+ * plan schimbat între timp e refuzat lângă formular. Setările: implicitele, apoi valorile noi, salvate pe server, cu istoricul
+ * fiecărei setări sub butonul ei (ADR 0260 §9, felia A.6). Un rol care
  * doar citește conturile vede fila fără schimbări și fără istoric (nicio citire din audit). Un cont găsit de căutarea din
  * antet vine ales.
  */
@@ -245,6 +246,8 @@ test('setările: implicitele până la prima salvare; valorile din margini se sa
   await puneRolul(page, await intraCuGoogle(page), 'owner');
   await page.locator('[data-fila="setari"]').click();
   await expect(page.locator('[data-set="sursa"]')).toHaveText('Nesalvate încă: merg implicitele.', LENT);
+  const istoric = page.locator('[data-set-istoric="conturi"]');
+  await expect(istoric.locator('[data-ist="gol"]')).toHaveText('Nicio schimbare în audit.');
   await expect(page.locator('[data-set="zile-offline"]')).toHaveValue('7');
   await expect(page.locator('[data-set="zile-tichete"]')).toHaveValue('365');
   await page.locator('[data-set="zile-offline"]').fill('61');
@@ -260,10 +263,62 @@ test('setările: implicitele până la prima salvare; valorile din margini se sa
   const s = await citeste('setari/conturi');
   expect([s['zileOffline']?.integerValue, s['zilePastrareTichete']?.integerValue]).toEqual(['3', '90']);
   expect(await actiuniAudit()).toEqual(['setari.conturi']);
+  // Sub buton, istoricul citit din nou: prima salvare, de la implicite (ADR 0260 §9).
+  await expect(istoric.locator('[data-pas]')).toHaveText([/ · tu · zilele offline: 7 → 3; păstrarea raportărilor rezolvate: 365 → 90$/]);
   // Reîncărcată, fila citește valorile salvate.
   await page.reload();
   await page.locator('[data-fila="setari"]').click();
   await expect(page.locator('[data-set="zile-offline"]')).toHaveValue('3', LENT);
+});
+
+test('istoricul setărilor (ADR 0260 §9): rândurile de audit ale fiecărei setări sub butonul ei, cea mai nouă întâi; o salvare nouă urcă în capul lui', async ({ page }) => {
+  const acum = Date.now();
+  const r = (eticheta: string, ro: string) => ({ eticheta, ro, en: '' });
+  await scrie('setari/conturi', { schema: 1, zileOffline: 10, zilePastrareTichete: 90, modificatLa: new Date(acum - 2 * ZI), modificatDe: 'om0' });
+  await scrie('setari/raspunsuriRapide', { schema: 1, versiune: 2, lista: [r('A', 'a'), r('B', 'b2')], modificatLa: new Date(acum - ZI), modificatDe: 'om0' });
+  const audit = (id: string, zile: number, actiune: string, tinta: string, inainte: unknown, dupa: unknown) => scrie(`audit/${id}`, {
+    schema: 1, cand: new Date(acum - zile * ZI), cine: 'om0', rol: 'owner', actiune, tinta, inainte, dupa,
+  });
+  await audit('c1', 5, 'setari.conturi', 'setari/conturi', null, { zileOffline: 10, zilePastrareTichete: 365 });
+  await audit('c2', 2, 'setari.conturi', 'setari/conturi', { zileOffline: 10, zilePastrareTichete: 365 }, { zileOffline: 10, zilePastrareTichete: 90 });
+  await audit('r1', 4, 'setari.raspunsuriRapide', 'setari/raspunsuriRapide', null, [r('A', 'a'), r('B', 'b')]);
+  await audit('r2', 1, 'setari.raspunsuriRapide', 'setari/raspunsuriRapide', [r('A', 'a'), r('B', 'b')], [r('A', 'a'), r('B', 'b2')]);
+  // Alt document (un cont) nu intră în istoricul setărilor.
+  await audit('x1', 0, 'conturi.gratuit', 'conturi/client1', { plan: 'proba' }, { plan: 'gratuit' });
+
+  await deschide(page);
+  await puneRolul(page, await intraCuGoogle(page), 'owner');
+  await page.locator('[data-fila="setari"]').click();
+  const conturi = page.locator('[data-set-istoric="conturi"] [data-pas]');
+  const rapide = page.locator('[data-set-istoric="rapide"] [data-pas]');
+  await expect(conturi).toHaveText([
+    /^\d{2}\.\d{2}\.\d{4} · personalul · păstrarea raportărilor rezolvate: 365 → 90$/,
+    /^\d{2}\.\d{2}\.\d{4} · personalul · zilele offline: 7 → 10$/,
+  ], LENT);
+  await expect(rapide).toHaveText([/ · personalul · schimbat „B”$/, / · personalul · adăugat „A”; adăugat „B”$/], LENT);
+  // Istoricul stă sub butonul setării lui.
+  const sub = async (buton: string, istoric: string) => {
+    const b = await page.locator(buton).boundingBox();
+    const i = await page.locator(istoric).boundingBox();
+    return b !== null && i !== null && i.y >= b.y + b.height;
+  };
+  expect(await sub('[data-set="salveaza"]', '[data-set-istoric="conturi"]')).toBe(true);
+  expect(await sub('[data-set="rapide-salveaza"]', '[data-set-istoric="rapide"]')).toBe(true);
+
+  // O salvare nouă, a mea, urcă în capul istoricului ei, fără reîncărcare; celălalt istoric rămâne cum era.
+  await page.locator('[data-set="zile-offline"]').fill('5');
+  await page.locator('[data-set="salveaza"]').click();
+  await expect(page.locator('[data-set="gata"]')).toHaveText('Setările sunt salvate.', LENT);
+  await expect(conturi).toHaveCount(3);
+  await expect(conturi.first()).toHaveText(/ · tu · zilele offline: 10 → 5$/);
+  await expect(rapide).toHaveCount(2);
+  // Răspunsurile rapide doar mutate: „ordinea”.
+  await page.locator('[data-rapid-rand="0"] [data-set="rapid-jos"]').click();
+  await page.locator('[data-set="rapide-salveaza"]').click();
+  await expect(page.locator('[data-set="rapide-gata"]')).toBeVisible(LENT);
+  await expect(rapide).toHaveCount(3);
+  await expect(rapide.first()).toHaveText(/ · tu · ordinea$/);
+  await expect(conturi).toHaveCount(3);
 });
 
 test('un rol care doar citește conturile vede fila Utilizatori, fără schimbarea planului și fără istoric (nicio citire din audit), și nu vede Setările', async ({ page }) => {

@@ -2,13 +2,16 @@
  * Pachetul unei extensii (ADR 0127 §A): `.zip`-ul citit, manifestul `extensie.json` judecat (forma, versiunea lui `HostApi`,
  * id-ul, căile, intrarea, stilurile, permisiunile din catalog) și fiecare fișier potrivit cu amprenta lui SHA-256, în ambele
  * sensuri (niciun fișier lipsă, niciunul în plus). Pur, în afară de `crypto.subtle`: aceeași judecată în Node și în browser.
+ *
+ * Semnul extensiei (ADR 0231 §B.2): câmpul opțional `pictograma`, un SVG mic din fișierele pachetului (deci cu amprenta lui
+ * verificată). Gazda îl arată doar ca imagine (`<img>`), niciodată pus în pagină ca SVG. O gazdă mai veche sare câmpul.
  */
 import { citesteZip, type MotivZip } from './zip.ts';
 
 export const FORMAT = 'cvs2-extensie';
 export const API = 1;
 export const MANIFEST = 'extensie.json';
-export const LIMITE_PACHET = { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 } as const;
+export const LIMITE_PACHET = { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024, octetiPictograma: 8 * 1024 } as const;
 /**
  * Serviciile pe care o extensie le poate cere (ADR 0127 §E): stocarea (ADR 0128), descărcările (ADR 0129), senderul
  * (`masina`, ADR 0160), contul văzut, doar citit (`cont`, ADR 0164), formele dintre desen și extensie (`forme`, ADR 0166).
@@ -25,10 +28,12 @@ export type Manifest = {
   readonly stiluri: readonly string[];
   readonly permisiuni: readonly string[];
   readonly fisiere: Readonly<Record<string, string>>;
+  /** Semnul extensiei: calea unui `.svg` din `fisiere` (cel mult `LIMITE_PACHET.octetiPictograma`); lipsă = fără semn. */
+  readonly pictograma?: string;
 };
 export type Pachet = { readonly manifest: Manifest; readonly fisiere: ReadonlyMap<string, Uint8Array>; readonly octeti: number };
 export type MotivPachet =
-  | MotivZip | 'fara-manifest' | 'manifest' | 'api' | 'id' | 'cale' | 'intrare' | 'stil' | 'permisiune' | 'lipsa' | 'in-plus' | 'amprenta';
+  | MotivZip | 'fara-manifest' | 'manifest' | 'api' | 'id' | 'cale' | 'intrare' | 'stil' | 'permisiune' | 'pictograma' | 'lipsa' | 'in-plus' | 'amprenta';
 export type RezultatPachet =
   | { readonly ok: true; readonly pachet: Pachet }
   | { readonly ok: false; readonly motiv: MotivPachet; readonly detaliu?: string };
@@ -64,7 +69,27 @@ export function citesteManifest(x: unknown): { readonly ok: true; readonly manif
   if (!intrare || !intrare.endsWith('.js') || !(intrare in fisiere)) return { ok: false, motiv: 'intrare', detaliu: intrare ?? '' };
   for (const s of stiluri) if (!s.endsWith('.css') || !(s in fisiere)) return { ok: false, motiv: 'stil', detaliu: s };
   for (const p of permisiuni) if (!CATALOG_PERMISIUNI.includes(p)) return { ok: false, motiv: 'permisiune', detaliu: p };
-  return { ok: true, manifest: { format: FORMAT, api: API, id, nume, versiune, intrare, stiluri, permisiuni, fisiere: fisiere as Record<string, string> } };
+  let pictograma: string | undefined;
+  if (m.pictograma !== undefined) {
+    const p = text(m.pictograma, 200);
+    if (!p || !p.endsWith('.svg') || !Object.hasOwn(fisiere, p)) return { ok: false, motiv: 'pictograma', detaliu: String(m.pictograma).slice(0, 200) };
+    pictograma = p;
+  }
+  return {
+    ok: true,
+    manifest: { format: FORMAT, api: API, id, nume, versiune, intrare, stiluri, permisiuni, fisiere: fisiere as Record<string, string>, ...(pictograma !== undefined ? { pictograma } : {}) },
+  };
+}
+
+/** Pură: octeții sunt textul unui SVG (UTF-8, cu `<svg` ca rădăcină, după o declarație XML și comentarii, dacă sunt). */
+export function esteSvg(octeti: Uint8Array): boolean {
+  let t: string;
+  try {
+    t = new TextDecoder('utf-8', { fatal: true }).decode(octeti);
+  } catch {
+    return false;
+  }
+  return /^\uFEFF?\s*(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg[\s>]/.test(t);
 }
 
 /** Pachetul din octeții unui `.zip`: citit, judecat și cu fiecare amprentă verificată; altfel motivul. */
@@ -96,5 +121,10 @@ export async function citestePachet(octeti: Uint8Array, limite: typeof LIMITE_PA
     total += b.length;
   }
   for (const nume of intrari.keys()) if (nume !== MANIFEST && !fisiere.has(nume)) return { ok: false, motiv: 'in-plus', detaliu: nume };
+  const semn = m.manifest.pictograma === undefined ? undefined : fisiere.get(m.manifest.pictograma);
+  if (semn) {
+    if (semn.length > limite.octetiPictograma) return { ok: false, motiv: 'pictograma', detaliu: 'prea-mare' };
+    if (!esteSvg(semn)) return { ok: false, motiv: 'pictograma', detaliu: m.manifest.pictograma ?? '' };
+  }
   return { ok: true, pachet: { manifest: m.manifest, fisiere, octeti: total } };
 }

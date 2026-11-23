@@ -132,6 +132,113 @@
   margin: var(--sp-5) 0 0;
 }
 
+/* Sub titlul unui ADR, starea lui (ADR 0260 §8): acceptat verde, propus albastru, ca în listă. */
+.doc-adr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.doc-stare[data-stare='acceptat'] {
+  background: color-mix(in oklab, var(--traseu-taiere) 18%, var(--s-panou));
+}
+
+/*
+ * Cuprinsul documentului (ADR 0260 §8): titlurile de nivel 2 și 3, cu secțiunea de acum marcată. Peste 1 400 px stă
+ * alături, lipit sus; mai îngust, deasupra documentului, cu derulare proprie.
+ */
+.doc-cuprins {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-3);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+}
+
+.doc-cuprins h3 {
+  margin: 0;
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-slab);
+}
+
+.doc-cuprins ol {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 12rem;
+  overflow: auto;
+}
+
+.doc-cuprins a {
+  display: block;
+  padding: 3px var(--sp-2);
+  border-left: 2px solid var(--l-margine);
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+  line-height: 1.35;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.doc-cuprins li[data-nivel='3'] a {
+  padding-left: var(--sp-4);
+}
+
+.doc-cuprins a:hover {
+  color: var(--t);
+  background: var(--s-peste);
+}
+
+.doc-cuprins a[aria-current] {
+  border-left-color: var(--a);
+  color: var(--t);
+  font-weight: 600;
+}
+
+/* Între 900 și 1 400 px, lista documentelor ține două rânduri: cuprinsul, apoi documentul, în coloana a doua. */
+@media (min-width: 900px) {
+  .doc:has(.doc-cuprins) .doc-nav {
+    grid-row: span 2;
+  }
+}
+
+@media (min-width: 1400px) {
+  .doc {
+    grid-template-columns: 17rem minmax(0, 1fr) 14rem;
+  }
+
+  .doc:has(.doc-cuprins) .doc-nav {
+    grid-row: auto;
+  }
+
+  .doc-articol {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .doc-cuprins {
+    grid-column: 3;
+    grid-row: 1;
+    position: sticky;
+    top: var(--sp-3);
+    max-height: calc(100vh - 2 * var(--sp-3));
+    box-sizing: border-box;
+  }
+
+  .doc-cuprins ol {
+    max-height: none;
+  }
+}
+
 @media (max-width: 640px) {
   .doc-articol {
     padding-inline: var(--sp-3);

@@ -328,3 +328,45 @@ ideile noi 63–76?”). Felia ei e **A.1**, cu carcasa:
     cineva din personal, „Salvează planul” oprit cât lista se recitește, „Renunță” din matrice fără nicio cerere spre server.
   - **Mărimea:** `/admin` 124,1 → 125,6 / 200 kB (+1,5; linia ajunge la +19,1 din cei +25). Pornirea (107,9, cu ușa 112,3 /
     115) și totalul (763,1 / 800) sunt cele ale lui `main`.
+- **A.6, 23.11: Roadmap, Documentație și Setări** (aceeași ramură, `wip/A.1-admin`, peste A.5, încă neunită: sesiunea
+  principală unește A.5 din `fe026f9f`; `3.Af` în jurnalul etapei 3; lucrată într-o sesiune cloud). Fără reguli, permisiuni,
+  indexuri, date sau funcții noi.
+  - **Roadmap:** peste 1 400 px, „Ce așteaptă de la tine” stă în stânga etapelor, lipit sus, cât ecranul de înalt, cu titlul
+    fix și lista derulată în el, deci rămâne la vedere cât citești etapele și feliile. Mai îngust, deasupra lor, ca înainte.
+    Cifrele trec peste amândouă coloanele.
+  - **Pista cronologiei,** după lățimea secțiunii ei (container), nu a ecranului: cele 33 de etape stau pe un rând doar de la
+    42rem în sus (~19,5 px pe coloană); mai îngust, pe rânduri, ca pe telefon. Sub 68,5rem, coloanele se strâng (1 px între
+    ele), iar semnele unei etape (↑N, placa, live-ul) trec pe două rânduri, cu cifra mai mică. Înainte de felie, la 1 024 px,
+    semnele intrau deja în coloana vecină; lângă listă, pista ar fi fost și mai îngustă.
+  - **Documentație, partea pură** (`src/admin/documentatie/cuprins.ts`): cuprinsul (titlurile de nivel 2 și 3 de la rădăcina
+    documentului, cu ancorele cititorului), secțiunea de acum (ultimul titlu urcat la 96 px de sus; la capătul paginii,
+    ultimul), titlul de nivel 1 despărțit de rest și ziua din rândul „**Starea:**”.
+  - **Cuprinsul,** cu cel puțin două intrări: peste 1 400 px, în a treia coloană, lipit sus, cu derularea lui (intrarea de acum
+    ținută la vedere în el); între 900 și 1 400 px, deasupra documentului, în coloana lui, cu cel mult 12rem; pe telefon, între
+    listă și document. Secțiunea de acum se măsoară o dată pe cadru, la derulare și la redimensionare. Un clic pune ancora în
+    adresă și duce la titlu, și la al doilea clic pe aceeași ancoră (adresa nu se mai schimbă).
+  - **Starea ADR-ului,** sub titlu: insigna (acceptat verde, propus albastru, din catalog) și ziua în care a primit-o. Ca să stea
+    sub titlu, la un ADR titlul se randează separat de restul textului (ancora lui, aceeași: primul titlu e unic). Un document
+    care nu e ADR se randează întreg, ca înainte.
+  - **Setări:** sub fiecare buton, istoricul setării (`src/admin/setari/istoric.ts`, `IstoricSetari.tsx`): rândurile de audit cu
+    `tinta` egală cu documentul ei (`setari/conturi`, `setari/raspunsuriRapide`; indexul simplu, cel mult 100, ordonate în
+    pagină), cea mai nouă întâi, cu ziua, cine și ce s-a schimbat. Setările conturilor: zilele offline și păstrarea raportărilor
+    rezolvate, de la cât la cât (prima salvare, de la implicite; dacă le păstrează, „implicitele, salvate”). Răspunsurile rapide,
+    după etichetă: schimbate și adăugate în ordinea listei noi, apoi cele scoase; fără nimic din ele, „ordinea”. Se citește din
+    nou după fiecare salvare. Fila e doar a owner-ului, care are „Audit: citește”, deci istoricul n-are o condiție a lui.
+  - **Găsite de capturi** (cele trei file la 1440, 1024 și 760 px, în ambele teme): semnele pistei peste coloana vecină (de
+    aici regulile pistei de mai sus); data și cine, mai mici decât restul rândului istoricului.
+  - **Probele:** 7 unitare noi (`admin.setari.istoric.test.ts`, `admin.documentatie.cuprins.test.ts`, cu ADR-ul liniei din
+    repo). Pe emulatoare, 3 noi: cuprinsul și starea (`documentatie.emulator.spec.ts`: alături și deasupra, fiecare intrare cu
+    titlul ei, secțiunea de acum la derulare și la capătul paginii, cu ADR 0116, a cărui ultimă secțiune e scurtă, clicul și al
+    doilea clic, ADR-ul propus, ADR-ul fără secțiuni, PLAN.md fără insignă), Roadmap-ul (lista alături și la vedere la
+    derulare, semnele în coloana lor la 1 440, 1 024, 990 și 940 px, rândurile pistei) și istoricul setărilor
+    (`utilizatori.emulator.spec.ts`: rândurile de audit ale fiecărei setări sub butonul ei, un document străin lăsat deoparte,
+    o salvare nouă în capul istoricului ei); plus istoricul în proba setărilor și în a răspunsurilor rapide.
+  - **Otrăvurile:** 54 / 54 prinse (`test/otravuri/A.6.py`: 23 unitare, 31 pe emulatoare), fiecare pe aserțiunea care îi
+    țintește defectul. La prima rulare (`326bcf6e`), 52 / 53: E19 (golul de 1 px dintre coloanele pistei) a scăpat, fiindcă
+    la 1 024 și 1 440 px semnele încap și fără el. Măsurat pe lățimi, regula contează între ~960 și ~1 000 px, iar sub ~960 px
+    cele 33 de coloane erau prea înguste oricum; de aici pista pe rânduri sub 42rem (`ecba6fa6`), cu proba la 990 și 940 px și
+    otrava pragului (E31). Pe `ecba6fa6`, E19 și E31 prinse. `verifica` pe toate listele: aceleași VOID-uri ca pe A.5.
+  - **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia ajunge la +21,0 din cei +25, deci pentru A.7 rămân ~4 kB).
+    Pornirea (107,9, cu ușa 112,3 / 115) și totalul (763,1 / 800) sunt cele ale lui `main`.
