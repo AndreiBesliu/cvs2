@@ -27,6 +27,16 @@ export type { FormatImport } from '../io/formatImport.ts';
 export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array };
 
 /**
+ * Imaginea de pus pe foaie (ADR 0272), pregătită din fișierul ferestrei trasării: octeții de păstrat, tipul și mărimea lor în
+ * px, numele, mărimea în mm și centrul în pagina importului (mm, Y în sus; originea e colțul stânga-jos al zonei trasate, ori
+ * al imaginii, ca la vectorii trasați).
+ */
+export type ImagineDeImport = {
+  readonly octeti: Blob; readonly tip: string; readonly latimePx: number; readonly inaltimePx: number; readonly nume: string;
+  readonly latime: number; readonly inaltime: number; readonly x: number; readonly y: number;
+};
+
+/**
  * Refuzurile ușii imaginilor (ADR 0220): un TIFF cu ce cititorul propriu nu știe încă (`tiff`, cu numele) sau stricat
  * (`tiff-stricat`, ADR 0229), o imagine pe care browserul n-o decodează, prea multe contururi (plafonul, cu numărul lor),
  * trasarea peste termen și una anulată de o previzualizare nouă.

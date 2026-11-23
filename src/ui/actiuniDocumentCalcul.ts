@@ -2,7 +2,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
+import { instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type Foaie, type FormaDoc, type Ghidaj, type ImagineFoaie, type Instanta, type Nod, type Operatie, type Piesa, type Stoc, type TextePlacuta } from '../model/document.ts';
 import type { Actiune } from './actiuni.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
@@ -42,7 +42,8 @@ import { comenziAsezare, distantaPropusa, planAsezare, type OptiuniAsezare } fro
 import { optiuniTinute } from '../app/asezareTinuta.ts';
 import { alegereTinuta, type AlegereGrupare } from './grupareSurori.ts';
 import {
-  alesePreaDeparte, copieArbore, cresteCopia, foaieCtx, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
+  alesePreaDeparte, copieArbore, cresteCopia, foaieCtx, foaieCurenta, idImagineNoua, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie,
+  sculaFoii,
   comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type ConversieCalculata, type FormaNoua, type ReparatieCalculata,
   type TaiereCalculata,
 } from './actiuniDocument.ts';
@@ -60,17 +61,20 @@ import {
  * imagini, ADR 0221 §6), toate în același pas, fiecare la locul ei din pagină (lăsate pe planșă, centrul cutiei lor comune
  * cade în punctul lăsat). Documentul de după trebuie să treacă de plafoane și de ușa documentului întreagă: ce intră prin
  * import se și redeschide. Ținută pe (document, import): `activa` și `ruleaza` cer aceeași judecată. Piesa o face
- * constructorul adus cu importul, cu freza și grosimea foii curente (adâncimea căilor deschise, ADR 0037 §11).
+ * constructorul adus cu importul, cu freza și grosimea foii curente (adâncimea căilor deschise, ADR 0037 §11). Cu imaginea
+ * păstrată pe foaie (ADR 0272), ea vine în același pas, mutată cu desenul (exact sub vectorii ei), cu primul id liber.
  */
 type ComandaImport =
   | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
   | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
 type Loc = { readonly x: number; readonly y: number } | null;
-let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; foaie: string | undefined; rez: ComandaImport } | null = null;
-function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie: string | undefined): ComandaImport {
+let ultimulImport: {
+  doc: Document; pregatit: ImportPregatit; la: Loc; foaie: string | undefined; imagine: ImagineFoaie | null; rez: ComandaImport;
+} | null = null;
+function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie: string | undefined, imagine: ImagineFoaie | null = null): ComandaImport {
   const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
   if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)
-    && ultimulImport.foaie === idFoaie) return ultimulImport.rez;
+    && ultimulImport.foaie === idFoaie && ultimulImport.imagine === imagine) return ultimulImport.rez;
   const scula = sculaFoii(doc, idFoaie);
   const foaie = foaieCurenta(doc, idFoaie);
   const ocupate = new Set<string>();
@@ -89,13 +93,18 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc, idFoaie
   if (!incape(doc, { noduri: elemente + puse.length, instante: puse.length, elementeLume: elemente, operatii, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
-    const comanda = pas(puse.map(({ id, pus }, i): Comanda => ({
+    const comenzi = puse.map(({ id, pus }, i): Comanda => ({
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: pus.x + dx, y: pus.y + dy, rotire: 0 }, pozitie: foaie.instante.length + i,
       piesa: { piesa: pus.piesa, pozitie: doc.piese.length + i },
-    }))) as Comanda;
+    }));
+    if (imagine) {
+      const vechi = foaie.imagini ?? [];
+      comenzi.push({ tip: 'inlocuieste-imagini', foaie: foaie.id, vechi, nou: [...vechi, { ...imagine, id: idImagineNoua(vechi), x: imagine.x + dx, y: imagine.y + dy }] });
+    }
+    const comanda = pas(comenzi) as Comanda;
     rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, ids: puse.map((q) => q.id) } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
-  ultimulImport = { doc, pregatit, la, foaie: idFoaie, rez };
+  ultimulImport = { doc, pregatit, la, foaie: idFoaie, imagine, rez };
   return rez;
 }
 
@@ -380,13 +389,13 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!ctx.importNou) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.());
+      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.(), ctx.imagineImport?.() ?? null);
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.importNou) return;
       const h = ctx.istoric();
-      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.());
+      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null, ctx.foaie?.(), ctx.imagineImport?.() ?? null);
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza([...r.ids]);
@@ -514,6 +523,24 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const vechi = foaie.ghidaje ?? [];
       if (!nou || !ghidajeBune(nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
+    },
+  },
+  // Imaginile foii (ADR 0272): lista întreagă, judecată ca la ușă; aceeași listă nu e o comandă.
+  'foaie.imagini': {
+    activa: (ctx) => {
+      const im = ctx.imaginiNoi?.();
+      if (!im) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return imaginiBune(im) ? true : 'motiv.prea-departe';
+    },
+    ruleaza: (ctx) => {
+      const nou = ctx.imaginiNoi?.();
+      const h = ctx.istoric();
+      const foaie = foaieCtx(ctx, h.doc);
+      const vechi = foaie.imagini ?? [];
+      if (!nou || !imaginiBune(nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-imagini', foaie: foaie.id, vechi, nou: nou.map((x) => ({ ...x })) }));
     },
   },
   // Mânerele selecției (ADR 0052): instanțele alese rotite sau scalate (cu piesele lor), într-un singur pas; refuzul are motivul
@@ -1624,6 +1651,29 @@ function ghidajeBune(g: readonly Ghidaj[]): boolean {
     if (typeof x.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(x.id) || ids.has(x.id)) return false;
     ids.add(x.id);
     if ((x.axa !== 'x' && x.axa !== 'y') || !Number.isFinite(x.poz) || Math.abs(x.poz) > PLAFON.translatie) return false;
+  }
+  return true;
+}
+
+/**
+ * Imaginile unei liste trec de ușă (ADR 0272): cel mult plafonul, id-uri bune și unice, amprenta SHA-256, centrul în plafon,
+ * mărimea pozitivă în plafonul laturii, rotirea în [0, 360), opacitatea în (0, 1], numele de cel mult 200 de caractere.
+ */
+export function imaginiBune(im: readonly ImagineFoaie[]): boolean {
+  if (im.length > PLAFON.imagini) return false;
+  const ids = new Set<string>();
+  // `Number.isFinite` refuză și ce nu e număr (un șir „5” ar trece de `> 0`): garda spune ce spune ușa, pe orice listă.
+  const inPlafon = (v: unknown, m: number): boolean => Number.isFinite(v) && Math.abs(v as number) <= m;
+  const intre = (v: unknown, min: number, max: number): boolean => Number.isFinite(v) && (v as number) > min && (v as number) <= max;
+  for (const x of im) {
+    if (typeof x.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(x.id) || ids.has(x.id)) return false;
+    ids.add(x.id);
+    if (typeof x.sursa !== 'string' || !/^[0-9a-f]{64}$/.test(x.sursa)) return false;
+    if (x.nume !== undefined && (typeof x.nume !== 'string' || x.nume.length > PLAFON.numeLungime)) return false;
+    if (!inPlafon(x.x, PLAFON.translatie) || !inPlafon(x.y, PLAFON.translatie)) return false;
+    if (!intre(x.latime, 0, PLAFON.latura) || !intre(x.inaltime, 0, PLAFON.latura) || !intre(x.opacitate, 0, 1)) return false;
+    if (!(Number.isFinite(x.rotire) && x.rotire >= 0 && x.rotire < 360)) return false;
+    if (typeof x.vizibila !== 'boolean' || typeof x.fixata !== 'boolean') return false;
   }
   return true;
 }

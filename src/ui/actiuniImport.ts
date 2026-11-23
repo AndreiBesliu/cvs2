@@ -1,5 +1,5 @@
 import type { Actiune } from './actiuni.ts';
-import type { ContextImport, FisierImport, PrevizualizareImport } from './actiuniImportTipuri.ts';
+import type { ContextImport, FisierImport, ImagineDeImport, PrevizualizareImport } from './actiuniImportTipuri.ts';
 import type { OptiuniPrevizualizare } from './actiuniImportCalcul.ts';
 
 export * from './actiuniImportTipuri.ts';
@@ -19,6 +19,20 @@ async function previzualizeaza(f: FisierImport, o: OptiuniPrevizualizare): Promi
     return { ok: false, cod: 'neincarcat' };
   }
   return modul.previzualizare(f, o);
+}
+
+/**
+ * Imaginea pentru foaie (ADR 0272), din ușa adusă la cerere, cu alegerile ferestrei; null dacă imaginea nu se poate citi
+ * ori ușa nu se poate aduce.
+ */
+export async function pregatesteImagineaFoii(f: FisierImport, o: Pick<OptiuniPrevizualizare, 'trasare' | 'pagina'>): Promise<ImagineDeImport | null> {
+  let modul: Awaited<ReturnType<typeof calcul>>;
+  try {
+    modul = await calcul();
+  } catch {
+    return null;
+  }
+  return modul.imagineaPentruFoaie(f, o);
 }
 
 /** Ușa, adusă în fundal după pornire (ca dialogurile): prima previzualizare nu așteaptă rețeaua. */

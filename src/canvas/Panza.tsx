@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
-  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type CerereFoi, type FoaieVecina, type FormaDesen, type GestDesen, type LinieGhid, type Lipeste,
-  type RaspunsDesen, type Vedere,
+  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type CerereFoi, type CerereImagini, type FoaieVecina, type FormaDesen, type GestDesen,
+  type ImaginePeFoaie, type LinieGhid, type Lipeste, type RaspunsDesen, type Vedere,
 } from './protocol.ts';
 import { vedereaPotrivita } from './potrivire.ts';
 
@@ -28,6 +28,8 @@ type Props = {
    */
   readonly vecine?: readonly FoaieVecina[];
   readonly onActiveaza?: (id: string) => void;
+  /** Imaginile vizibile ale foii active (ADR 0272), sub vectori, estompate. */
+  readonly imagini?: readonly ImaginePeFoaie[];
   /** Cutia selecției, în mm: bara selecției (`children`) stă lângă ea, sub ea dacă încape, altfel deasupra. */
   readonly cutie?: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number } | null;
   readonly children?: ReactNode;
@@ -62,6 +64,8 @@ type Props = {
 
 /** Fără foi vecine: aceeași listă, ca workerul să nu le primească din nou la fiecare randare. */
 const FARA_VECINE: readonly FoaieVecina[] = [];
+/** Fără imagini pe foaie: la fel. */
+const FARA_IMAGINI: readonly ImaginePeFoaie[] = [];
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
 const TOLERANTA_PX = 4;
@@ -84,8 +88,8 @@ function culori(): CerereDesen['culori'] {
  * prin registrul de acțiuni.
  */
 export function Panza({
-  forme, foaie, selectie, onClic, onMutare, zona, potrivire, cadru, vecine = FARA_VECINE, onActiveaza, cutie, children, onCursor,
-  onScara, onFisiere, textLasare, strat, suprapunere, lipeste, desen,
+  forme, foaie, selectie, onClic, onMutare, zona, potrivire, cadru, vecine = FARA_VECINE, onActiveaza, imagini = FARA_IMAGINI, cutie, children,
+  onCursor, onScara, onFisiere, textLasare, strat, suprapunere, lipeste, desen,
 }: Props) {
   const [trage, setTrage] = useState(false);
   const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
@@ -94,6 +98,7 @@ export function Panza({
   const cerereRef = useRef(0);
   // Ultimele foi vecine trimise workerului: se trimit din nou doar când se schimbă.
   const foiTrimise = useRef<readonly FoaieVecina[] | null>(null);
+  const imaginiTrimise = useRef<readonly ImaginePeFoaie[] | null>(null);
   const [marime, setMarime] = useState({ latime: 0, inaltime: 0, dpr: 1 });
   const [vedere, setVedere] = useState<Vedere | null>(null);
   const [deplasare, setDeplasare] = useState({ dx: 0, dy: 0 });
@@ -165,7 +170,7 @@ export function Panza({
     if (potrivire && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, cadru ?? foaie, zonaLibera()));
   }, [potrivire]);
 
-  // Orice schimbare → o cerere nouă către worker. Foile vecine pleacă înaintea ei, doar când s-au schimbat.
+  // Orice schimbare → o cerere nouă către worker. Foile vecine și imaginile foii pleacă înaintea ei, doar când s-au schimbat.
   useEffect(() => {
     const w = lucratorRef.current;
     if (!w || !vedere) return;
@@ -174,6 +179,11 @@ export function Panza({
       const foi: CerereFoi = { tip: 'foi', foi: vecine };
       w.postMessage(foi);
     }
+    if (imaginiTrimise.current !== imagini) {
+      imaginiTrimise.current = imagini;
+      const im: CerereImagini = { tip: 'imagini', imagini };
+      w.postMessage(im);
+    }
     cerereRef.current += 1;
     setTrimisa(cerereRef.current);
     const cerere: CerereDesen = {
@@ -181,7 +191,7 @@ export function Panza({
       vedere, foaie, forme, selectie, deplasare, culori: culori(),
     };
     w.postMessage(cerere);
-  }, [marime, vedere, foaie, forme, selectie, deplasare, tema, vecine]);
+  }, [marime, vedere, foaie, forme, selectie, deplasare, tema, vecine, imagini]);
 
   // Scara, spusă afară o dată pe vedere nouă (zoomul din bara de jos).
   useEffect(() => { if (vedere) onScara?.(vedere.scara); }, [vedere]);

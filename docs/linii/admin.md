@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.4 unite în main (A.4: ddaa7ead); A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11, din fe026f9f (PR-ul AndreiBesliu/cvs2#8); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, pe aceeași ramură, după A.5; A.7 la cuvântul owner-ului_
+_CNCVS2, ADR 0260: pagina /admin reproiectată; A.1–A.5 unite în main (A.5: 1b46c955); A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11, din df098dad (PR-ul AndreiBesliu/cvs2#8); A.7 la cuvântul owner-ului; ADR 0262 (utilizarea aplicației, A.8–A.11) propus, la răspunsurile owner-ului_
 
 Linia adminului din [sesiunea principală](principala.md): ADR 0260 (intervalul 0260–0269), acceptat pe 13.11.2026 cu ideile 51–62 de pe
 tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru admin”, iar la idei a răspuns „Da la toate”
@@ -25,18 +25,18 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **A.4 UNITĂ în main pe 23.11** (`ddaa7ead`, din `20fb65de`; `3.Ad`; PR-ul AndreiBesliu/cvs2#3): Sugestii ca tablă a
   deciziilor (o coloană pe stare, tragerea și „Mută în…”, nota cerută la Respinsă și Amânată, mutarea ținută după răspuns
   fără recitire). `/admin` 121,2 → 124,1. Otrăvurile 41 / 41 (E12 scoasă cu regula ei CSS, echivalentă în Edge).
-- **A.5 (Utilizatori și Personal) GATA DE UNIT din 23.11** (`3.Ae`; pornită la „Da, pornește A.5”, din `main` `c010e3d1`):
+- **A.5 UNITĂ în main pe 23.11** (`1b46c955`, din `fe026f9f`; `3.Ae`; pornită la „Da, pornește A.5”, din `main` `c010e3d1`):
   Utilizatori cu tabelul, filtrele pe plan (cu numere), căutarea, contul ales alături (formularul planului, istoricul din
   audit doar cu „Audit: citește”); Personal cu felul intrării sub nume, invitațiile în lista oamenilor și matricea
   rol × permisiune (un rol editat pe coloana lui). Fără reguli, date sau funcții noi: **la unire se publică doar
   Hosting-ul.** `/admin` 124,1 → 125,6 / 200 kB (linia, +19,1 din +25: pentru A.6 și A.7 rămân ~5,9 kB din țintă).
-  Otrăvurile 61 / 61. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit doar `fe026f9f`).
+  Otrăvurile 61 / 61.
 - **A.6 (Roadmap, Documentație, Setări) GATA DE UNIT din 23.11** (`3.Af`; pornită la „porneste”, peste A.5, încă neunită):
   „Ce așteaptă de la tine” lipit alături de etape peste 1 400 px; pista cronologiei pe un rând doar cât are loc (container,
   42rem), cu semnele etapelor pe două rânduri pe o pistă îngustă; cuprinsul documentului (alături peste 1 400 px, deasupra mai
   îngust) cu secțiunea de acum; starea ADR-ului sub titlu; istoricul fiecărei setări sub butonul ei, din audit. Fără reguli,
   date sau funcții noi: doar Hosting-ul. `/admin` 125,6 → 127,5 / 200 kB (linia, +21,0 din +25: pentru A.7 rămân ~4 kB).
-  Otrăvurile 54 / 54. Se unește după A.5 (sau odată cu el), din commit-ul raportat în PR.
+  Otrăvurile 54 / 54. Raportul și porțile: PR-ul AndreiBesliu/cvs2#8 (de unit din `df098dad`).
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul

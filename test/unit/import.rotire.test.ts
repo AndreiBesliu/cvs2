@@ -175,3 +175,21 @@ test('cererea din alegeri: „Îndreaptă scanarea” cu unghiul scris sau găsi
   assert.equal(cerereTrasare(f, { ...TRASARE_IMPLICITA, rotire: { indreapta: false, unghi: 3 } }).rotire, undefined);
   assert.equal(UNGHI_SCRIS_MAXIM, UNGHI_MAXIM);
 });
+
+test('imaginea pentru foaie (ADR 0272): întreagă, îndreptată, cu scara trasării și zona ei; refuzurile citirii trec la fel', async () => {
+  const { raspundeImagineaFoii } = await import('../../src/jobs/calculTrasare.ts');
+  const r = (await raspundeImagineaFoii(cerere({ rotire: { unghi: null }, dpi: 300, zona: { x: 10, y: 20, w: 300, h: 200 } }))).raspuns;
+  assert.ok(r.ok && r.fel === 'imagine-foaie');
+  // Pânza îndreptată (~1020 × 729), nu zona: zona doar se spune, ca imaginea să stea exact sub vectorii ei.
+  const t = (await raspundeTrasare(cerere({ rotire: { unghi: null }, dpi: 300, zona: { x: 10, y: 20, w: 300, h: 200 } }))).raspuns;
+  assert.ok(t.ok);
+  assert.deepEqual([r.img.latime, r.img.inaltime], [t.intreg.latime, t.intreg.inaltime]);
+  assert.equal(r.img.date.length, 4 * r.img.latime * r.img.inaltime);
+  assert.equal(r.mmPePx, t.mmPePx);
+  assert.deepEqual(r.zona, { x: 10, y: 20, w: 300, h: 200 });
+  // Dată în pixeli (fără fișier), imaginea se codează: nu e „originală”.
+  assert.equal(r.originala, null);
+  assert.equal(r.jpeg, false);
+  const gol = (await raspundeImagineaFoii(cerere({ imagine: new Blob([new Uint8Array([1, 2, 3, 4])]) }))).raspuns;
+  assert.ok(!gol.ok);
+});

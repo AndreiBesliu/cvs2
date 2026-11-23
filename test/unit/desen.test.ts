@@ -33,6 +33,14 @@ test('selecția la clic: pe contur în toleranță, înăuntru, iar cel de deasu
   assert.equal(instantaLa(doc, 200, 150, 0.5), null, 'în afara oricărei forme');
 });
 
+test('selecția doar pe contur (ADR 0272: o imagine desfăcută se apucă dinăuntrul formelor): înăuntru nu, pe linie da', () => {
+  assert.equal(instantaLa(doc, 30, 30, 0.5, 0, true), null, 'în dreptunghi, departe de linii');
+  assert.equal(instantaLa(doc, 70, 50, 0.5, 0, true), null, 'centrul cercului');
+  assert.equal(instantaLa(doc, 85.3, 50, 0.5, 0, true), 'e2', 'lângă marginea cercului, în toleranță');
+  assert.equal(instantaLa(doc, 19.7, 50, 0.5, 0, true), 'e1', 'lângă latura stângă');
+  assert.equal(instantaLa(doc, 30, 30, 0.5), 'e1', 'fără „doar contur”, interiorul alege ca până acum');
+});
+
 test('selecția la clic (ADR 0074 §1): forma dinăuntrul alteia, desenată înaintea ei, rămâne de ales; conturul cel mai apropiat câștigă', () => {
   // Testul owner-ului: după un offset spre exterior, conturul nou (deasupra, mai mare) prindea orice clic dinăuntru.
   const d: Document = docDin(

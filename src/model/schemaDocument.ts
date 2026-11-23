@@ -229,6 +229,24 @@ const SchemaInstanta = v.looseObject({
 });
 /** Ghidajele foii (ADR 0050): opționale, fără schemă nouă (nu schimbă tăierea); plafonul și poziția, ca la instanțe. */
 const SchemaGhidaj = v.looseObject({ id: Id, axa: v.picklist(['x', 'y']), poz: coordonata });
+/**
+ * Imaginile foii (ADR 0272): opționale, fără schemă nouă (nu schimbă tăierea). Amprenta SHA-256 a octeților (păstrați în
+ * afara documentului), centrul în plafonul pozițiilor, mărimea în cel al laturii, rotirea ca la instanțe, opacitatea în
+ * (0, 1].
+ */
+const SchemaImagineFoaie = v.looseObject({
+  id: Id,
+  sursa: v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/)),
+  nume: Nume,
+  x: coordonata,
+  y: coordonata,
+  latime: pozitiv(PLAFON.latura),
+  inaltime: pozitiv(PLAFON.latura),
+  rotire: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(360)),
+  opacitate: v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(1)),
+  vizibila: v.boolean(),
+  fixata: v.boolean(),
+});
 const SchemaFoaie = v.looseObject({
   id: Id,
   nume: Nume,
@@ -238,6 +256,7 @@ const SchemaFoaie = v.looseObject({
   stoc: v.looseObject({ latime: pozitiv(PLAFON.latura), inaltime: pozitiv(PLAFON.latura), grosime: pozitiv(PLAFON.grosime) }),
   instante: v.array(SchemaInstanta),
   ghidaje: v.optional(v.pipe(v.array(SchemaGhidaj), v.maxLength(PLAFON.ghidaje, `cel mult ${PLAFON.ghidaje} de ghidaje pe foaie`))),
+  imagini: v.optional(v.pipe(v.array(SchemaImagineFoaie), v.maxLength(PLAFON.imagini, `cel mult ${PLAFON.imagini} de imagini pe foaie`))),
 });
 
 /**
@@ -314,6 +333,11 @@ function problemaDeAnsamblu(d: Document): string | null {
     for (const g of f.ghidaje ?? []) {
       if (ghidaje.has(g.id)) return `două ghidaje ale foii ${f.id} au id-ul ${g.id}`;
       ghidaje.add(g.id);
+    }
+    const imagini = new Set<string>();
+    for (const im of f.imagini ?? []) {
+      if (imagini.has(im.id)) return `două imagini ale foii ${f.id} au id-ul ${im.id}`;
+      imagini.add(im.id);
     }
     for (const i of f.instante) {
       if (instante.has(i.id)) return `două instanțe au id-ul ${i.id}`;

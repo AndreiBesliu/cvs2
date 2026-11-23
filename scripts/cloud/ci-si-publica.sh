@@ -24,14 +24,17 @@ rulare() {
     --jq "[.[] | select($2)] | .[0] // empty | \"\(.databaseId) \(.status) \(.conclusion)\"" 2>/dev/null
 }
 # Așteaptă o rulare (workflow, filtru): 0 verde, 1 altfel terminată, 2 nu apare, 3 încă rulează la limită.
+# Cele 10 minute în care rularea trebuie să apară se numără de la începutul așteptării ei, nu de la pornirea scriptului:
+# altfel o publicare pornită după o așteptare lungă a completului e declarată lipsă la prima întrebare.
 asteapta() {
-  local r="" vazuta=0
+  local r="" vazuta=0 inceput
+  inceput=$(date +%s)
   while :; do
     r=$(rulare "$1" "$2")
     case "$r" in
       *" completed success") echo "$1: verde, $RULARI/${r%% *}"; return 0 ;;
       *" completed "*) echo "$1: ${r##* }, $RULARI/${r%% *}"; return 1 ;;
-      "") [ $vazuta -eq 0 ] && [ "$(date +%s)" -ge $(( LIMITA - ${ASTEAPTA:-25} * 60 + 600 )) ] && { echo "$1: nicio rulare după 10 minute"; return 2; } ;;
+      "") [ $vazuta -eq 0 ] && [ "$(date +%s)" -ge $(( inceput + 600 )) ] && { echo "$1: nicio rulare după 10 minute"; return 2; } ;;
       *) vazuta=1 ;;
     esac
     [ "$(date +%s)" -lt "$LIMITA" ] || { echo "$1: încă rulează ($r), reia scriptul"; return 3; }
