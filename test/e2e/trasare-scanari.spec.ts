@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { documentSalvat } from './ajutor-document.ts';
+import { grupuriDeschise } from './ajutor-trasare.ts';
 
 /**
  * Scanările și pozele (ADR 0224, felia 25.4↑) în aplicația construită: Lumina (ascunsă pe transparență și pe culori),
@@ -9,6 +10,9 @@ import { documentSalvat } from './ajutor-document.ts';
  */
 
 test.use({ locale: 'ro-RO' });
+
+// Câmpurile luminii, foii și scanării stau în grupul Imaginea, strâns la prima deschidere (ADR 0273 §2).
+test.beforeEach(async ({ page }) => { await grupuriDeschise(page); });
 
 const W = 600, H = 400;
 
@@ -149,7 +153,7 @@ test('foaia pe masă: „Ignoră ce atinge marginea” scoate masa; Importă pun
   await page.goto('/');
   await alegePoza(page, 'masa');
   await page.locator('[data-camp="trasare-lumina"]').selectOption('neuniforma');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
   await expect(page.getByTestId('import-cai')).not.toHaveText(PATRU);
   await page.locator('[data-camp="trasare-margine"]').check();
   await expect(page.getByTestId('import-cai')).toHaveText(PATRU);
@@ -196,7 +200,7 @@ test('zona: cu butonul, tragerea alege cercul (decupajul e pagina); „Toată im
   await expect(page.locator('[data-buton="trasare-zona"]')).toHaveAttribute('aria-pressed', 'false');
   await trage(page, [70, 260], [380, 360], true);
   await expect(page.getByTestId('import-cai')).toHaveText('1 contur închis: 1 tăiate pe exterior, 0 pe interior (după sensul fiecărui contur)');
-  await expect(page.getByTestId('trasare-zona')).toBeVisible();
+  await expect(page.getByTestId('trasare-zona')).toBeAttached();
 });
 
 test('pe culori, Lumina (ADR 0226): pe o poză luminată dintr-o parte, Uniformă rupe hârtia și raportul sugerează Neuniformă; cu ea, culorile desenului', async ({ page }) => {

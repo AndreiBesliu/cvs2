@@ -12,6 +12,7 @@ import {
   type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf, type AlegeriTrasare,
   type AvertismenteImagine,
 } from './actiuniImport.ts';
+import { textMarime } from './fereastraTrasareCalcul.ts';
 import { PanouTrasare } from './FereastraTrasare.tsx';
 import { useLimba } from './useLimba.ts';
 
@@ -261,6 +262,145 @@ export function DialogImport({
   const ofera = stare === 'citire' || !onImaginePdf ? null
     : !imaginePdf && stare.format === 'pdf' && (stare.imagini ?? 0) > 0 ? 'imagine'
       : imaginePdf && 'vectoriPdf' in stare && stare.vectoriPdf === true ? 'vectori' : null;
+  // Bucățile dialogului: la o imagine (ADR 0273 §1), în fereastra trasării (sus în setări, în picior, sub „Detalii”, la
+  // capătul piciorului); la celelalte formate, una sub alta, ca până acum.
+  const alegerePagina = pagini > 1 && (
+    <div className="campuri">
+      <label>
+        {t('import.pdf.pagina', { n: pagini })}
+        <select value={pagina} data-camp="pagina" onChange={(e) => { onPagina(Number(e.target.value)); }}>
+          {Array.from({ length: pagini }, (_, k) => <option key={k} value={k + 1}>{k + 1}</option>)}
+        </select>
+      </label>
+    </div>
+  );
+  const ofertaPdf = ofera && onImaginePdf && (
+    <div className="campuri">
+      <button type="button" data-buton={ofera === 'imagine' ? 'trasare-pdf' : 'vectori-pdf'} disabled={seRecitesc}
+        onClick={() => { onImaginePdf(ofera === 'imagine'); }}>
+        {t(ofera === 'imagine' ? 'import.pdf.trasare' : 'import.pdf.vectori')}
+      </button>
+    </div>
+  );
+  const refuz = stare !== 'citire' && !stare.ok && (
+    <>
+      <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori', stare.trasare?.mediane?.puncte ?? 0)}</p>
+      <ListaAvertismente a={stare.avertismente} format={stare.format} />
+    </>
+  );
+  // „Desenul” (ADR 0273 §6): la o imagine stă în raportul scurt al ferestrei; aici, la celelalte formate.
+  const info = ok && (
+    <>
+      {!imagine && <p data-testid="import-marime">{textMarime(ok.latime, ok.inaltime, limba)}</p>}
+      {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
+        <p data-testid="import-cai">{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+      )}
+      {ok.format === 'imagine' && ok.trasare.sursa === 'culori' && (
+        <p data-testid="import-piese">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>
+      )}
+      {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
+      {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (
+        // Liniile mediane (ADR 0222 §7): deschise și bucle, toate pe linie; grosimea e în raportul ferestrei.
+        <p data-testid="import-deschise">{t('import.mediane', { n: ok.deschise })}</p>
+      ) : (
+        <>
+          <p data-testid="import-deschise">{t('import.deschise', { n: ok.deschise })}</p>
+          <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
+        </>
+      ))}
+      {ok.format === 'dxf' && (ok.unitati.declarate ? (
+        <p data-testid="import-unitati">
+          {t('import.unitati.declarate', { unitate: ok.unitati.unitate ? t(UNITATE[ok.unitati.unitate]) : t('import.unitati.alta', { mm: mm.format(ok.unitati.mmPeUnitate) }) })}
+        </p>
+      ) : (
+        <div className="campuri">
+          <label>
+            {t('import.unitati')}
+            <select value={unitate} data-camp="unitate" onChange={(e) => { onUnitate(UNITATI_DXF.find((u) => u === e.target.value) ?? 'mm'); }}>
+              {UNITATI_DXF.map((u) => <option key={u} value={u}>{t(UNITATE[u])}</option>)}
+            </select>
+          </label>
+          <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
+        </div>
+      ))}
+      {ok.format === 'wmf' && (ok.unitati.sursa === 'aleasa' ? (
+        <div className="campuri">
+          <label>
+            {t('import.unitati')}
+            <select value={unitateWmf} data-camp="unitate-wmf" onChange={(e) => { onUnitateWmf(UNITATI_WMF.find((u) => u === e.target.value) ?? 'px'); }}>
+              {UNITATI_WMF.map((u) => <option key={u} value={u}>{t(UNITATE_WMF[u])}</option>)}
+            </select>
+          </label>
+          <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
+        </div>
+      ) : (
+        <p data-testid="import-unitati">
+          {ok.unitati.sursa === 'antet'
+            ? t('import.wmf.unitati-antet', { inch: mm.format(ok.unitati.inch ?? 0) })
+            : t('import.wmf.unitati-mapare', { mm: mm.format(ok.unitati.mmPeUnitateMapare ?? 0) })}
+        </p>
+      ))}
+      {(ok.format === 'pdf' || ok.format === 'eps') && ok.straturi.length > 0 && (
+        <p data-testid="import-straturi">
+          {t('import.pdf.straturi', {
+            n: ok.straturi.length,
+            straturi: ok.straturi.slice(0, STRATURI_ARATATE).map(numeStrat).join(', ') + (ok.straturi.length > STRATURI_ARATATE ? ', …' : ''),
+          })}
+        </p>
+      )}
+      {ok.format === 'svg' && ok.px && (
+        <div className="campuri">
+          <label>
+            {t('import.px')}
+            <select value={pxPeTol} data-camp="px" onChange={(e) => { onPx(e.target.value === '72' ? 72 : 96); }}>
+              <option value={96}>{t('import.px.96')}</option>
+              <option value={72}>{t('import.px.72')}</option>
+            </select>
+          </label>
+          {pxAutomat && pxPeTol === 72 && <p>{t('import.px.illustrator')}</p>}
+        </div>
+      )}
+      <ListaAvertismente a={ok.avertismente} format={ok.format} />
+    </>
+  );
+  const motivul = ok && motiv && <p role="status" className="avertisment" data-testid="import-motiv">{t(motiv)}</p>;
+  // Imaginea pe foaie (ADR 0272), în piciorul ferestrei: sfatul stă pe bifă și pe „Doar imaginea”, ca titlu.
+  const peFoaie = pe && (
+    <div className="imagine-foaie" data-imagine-foaie="">
+      {ok && (
+        <label title={t('import.imagine-foaie.sfat')}>
+          <input type="checkbox" data-camp="pastreaza-imaginea" checked={pe.pastreaza} disabled={pe.lucru}
+            onChange={(e) => { pe.onPastreaza(e.target.checked); }} />
+          {t('import.imagine-foaie.pastreaza')}
+        </label>
+      )}
+      {pe.lucru && <p role="status" data-testid="import-imagine-lucru">{t('import.imagine-foaie.lucru')}</p>}
+      {pe.motiv && <p role="alert" className="avertisment" data-testid="import-imagine-motiv">{t(pe.motiv)}</p>}
+    </div>
+  );
+  const butoane = (
+    <div className="butoane">
+      {ok && (
+        <button type="button" disabled={motiv !== null || seRecitesc || pe?.lucru === true} title={motiv ? t(motiv) : undefined} data-buton="importa"
+          onClick={(e) => { if (e.detail <= 1) onImporta(); }}>
+          {t('import.importa')}
+        </button>
+      )}
+      {/* „Doar imaginea” (ADR 0272): fără vectori; și după un refuz al trasării (o poză cu prea multe contururi). */}
+      {pe && (
+        <button type="button" data-buton="doar-imaginea" data-imagine-foaie="" disabled={seRecitesc || pe.lucru} title={t('import.imagine-foaie.sfat')}
+          onClick={(e) => { if (e.detail <= 1) pe.onDoarImaginea(); }}>
+          {t('import.imagine-foaie.doar')}
+        </button>
+      )}
+      {stare !== 'citire' && !stare.ok && stare.cod === 'neincarcat' && (
+        <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
+      )}
+      {/* Al doilea clic al unui dublu-clic cade pe butonul fișierului următor, în același loc: se ignoră (recenzia A). */}
+      {coada && onSari && <button type="button" data-buton="sari" onClick={(e) => { if (e.detail <= 1) onSari(); }}>{t('import.sari')}</button>}
+      <button type="button" data-buton="renunta" onClick={onInchide}>{t(coada ? 'import.renunta-toate' : 'import.renunta')}</button>
+    </div>
+  );
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
       <div className={imagine ? 'dialog-cutie dialog-trasare' : 'dialog-cutie'} ref={cutie} tabIndex={-1}>
@@ -272,144 +412,20 @@ export function DialogImport({
         {stare === 'citire' && !imagine && <p role="status">{t('import.citeste')}</p>}
         {/* Un panou pentru fiecare fișier al cozii: ciorna câmpurilor (lățimea scrisă la imaginea dinainte) și mărirea nu trec
             la imaginea următoare. */}
-        {imagine && (
+        {imagine ? (
           <PanouTrasare key={`${coada?.k ?? 1}:${nume}`} alegeri={trasare.alegeri} onSchimba={trasare.onSchimba} octeti={trasare.octeti} stare={stare}
-            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })} />
-        )}
-        {pagini > 1 && (
-          <div className="campuri">
-            <label>
-              {t('import.pdf.pagina', { n: pagini })}
-              <select value={pagina} data-camp="pagina" onChange={(e) => { onPagina(Number(e.target.value)); }}>
-                {Array.from({ length: pagini }, (_, k) => <option key={k} value={k + 1}>{k + 1}</option>)}
-              </select>
-            </label>
-          </div>
-        )}
-        {ofera && onImaginePdf && (
-          <div className="campuri">
-            <button type="button" data-buton={ofera === 'imagine' ? 'trasare-pdf' : 'vectori-pdf'} disabled={seRecitesc}
-              onClick={() => { onImaginePdf(ofera === 'imagine'); }}>
-              {t(ofera === 'imagine' ? 'import.pdf.trasare' : 'import.pdf.vectori')}
-            </button>
-          </div>
-        )}
-        {stare !== 'citire' && !stare.ok && (
+            seRecitesc={seRecitesc} {...(trasare.freza === undefined ? {} : { freza: trasare.freza })}
+            sus={<>{alegerePagina}{ofertaPdf}</>} alerte={<>{refuz}{motivul}</>} detalii={info} actiuni={<>{peFoaie}{butoane}</>} />
+        ) : (
           <>
-            <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu, nume, stare.format, stare.trasare?.sursa === 'culori', stare.trasare?.mediane?.puncte ?? 0)}</p>
-            <ListaAvertismente a={stare.avertismente} format={stare.format} />
+            {alegerePagina}
+            {ofertaPdf}
+            {refuz}
+            {info}
+            {motivul}
+            {butoane}
           </>
         )}
-        {ok && (
-          <>
-            <p data-testid="import-marime">{t('import.marime', { latime: ok.latime.toFixed(2), inaltime: ok.inaltime.toFixed(2) })}</p>
-            {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
-              <p data-testid="import-cai">{t(ok.format === 'imagine' ? 'import.cai-trasate' : 'import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
-            )}
-            {ok.format === 'imagine' && ok.trasare.sursa === 'culori' && (
-              <p data-testid="import-piese">{t('import.trasare.piese', { n: 1 + (ok.pregatit.impreuna?.length ?? 0) })}</p>
-            )}
-            {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
-            {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (
-              // Liniile mediane (ADR 0222 §7): deschise și bucle, toate pe linie; grosimea e în raportul ferestrei.
-              <p data-testid="import-deschise">{t('import.mediane', { n: ok.deschise })}</p>
-            ) : (
-              <>
-                <p data-testid="import-deschise">{t('import.deschise', { n: ok.deschise })}</p>
-                <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
-              </>
-            ))}
-            {ok.format === 'dxf' && (ok.unitati.declarate ? (
-              <p data-testid="import-unitati">
-                {t('import.unitati.declarate', { unitate: ok.unitati.unitate ? t(UNITATE[ok.unitati.unitate]) : t('import.unitati.alta', { mm: mm.format(ok.unitati.mmPeUnitate) }) })}
-              </p>
-            ) : (
-              <div className="campuri">
-                <label>
-                  {t('import.unitati')}
-                  <select value={unitate} data-camp="unitate" onChange={(e) => { onUnitate(UNITATI_DXF.find((u) => u === e.target.value) ?? 'mm'); }}>
-                    {UNITATI_DXF.map((u) => <option key={u} value={u}>{t(UNITATE[u])}</option>)}
-                  </select>
-                </label>
-                <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
-              </div>
-            ))}
-            {ok.format === 'wmf' && (ok.unitati.sursa === 'aleasa' ? (
-              <div className="campuri">
-                <label>
-                  {t('import.unitati')}
-                  <select value={unitateWmf} data-camp="unitate-wmf" onChange={(e) => { onUnitateWmf(UNITATI_WMF.find((u) => u === e.target.value) ?? 'px'); }}>
-                    {UNITATI_WMF.map((u) => <option key={u} value={u}>{t(UNITATE_WMF[u])}</option>)}
-                  </select>
-                </label>
-                <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
-              </div>
-            ) : (
-              <p data-testid="import-unitati">
-                {ok.unitati.sursa === 'antet'
-                  ? t('import.wmf.unitati-antet', { inch: mm.format(ok.unitati.inch ?? 0) })
-                  : t('import.wmf.unitati-mapare', { mm: mm.format(ok.unitati.mmPeUnitateMapare ?? 0) })}
-              </p>
-            ))}
-            {(ok.format === 'pdf' || ok.format === 'eps') && ok.straturi.length > 0 && (
-              <p data-testid="import-straturi">
-                {t('import.pdf.straturi', {
-                  n: ok.straturi.length,
-                  straturi: ok.straturi.slice(0, STRATURI_ARATATE).map(numeStrat).join(', ') + (ok.straturi.length > STRATURI_ARATATE ? ', …' : ''),
-                })}
-              </p>
-            )}
-            {ok.format === 'svg' && ok.px && (
-              <div className="campuri">
-                <label>
-                  {t('import.px')}
-                  <select value={pxPeTol} data-camp="px" onChange={(e) => { onPx(e.target.value === '72' ? 72 : 96); }}>
-                    <option value={96}>{t('import.px.96')}</option>
-                    <option value={72}>{t('import.px.72')}</option>
-                  </select>
-                </label>
-                {pxAutomat && pxPeTol === 72 && <p>{t('import.px.illustrator')}</p>}
-              </div>
-            )}
-            <ListaAvertismente a={ok.avertismente} format={ok.format} />
-          </>
-        )}
-        {ok && motiv && <p role="status" className="avertisment" data-testid="import-motiv">{t(motiv)}</p>}
-        {pe && (
-          <div className="imagine-foaie" data-imagine-foaie="">
-            {ok && (
-              <label>
-                <input type="checkbox" data-camp="pastreaza-imaginea" checked={pe.pastreaza} disabled={pe.lucru}
-                  onChange={(e) => { pe.onPastreaza(e.target.checked); }} />
-                {t('import.imagine-foaie.pastreaza')}
-              </label>
-            )}
-            <p className="mic">{t('import.imagine-foaie.sfat')}</p>
-            {pe.lucru && <p role="status" data-testid="import-imagine-lucru">{t('import.imagine-foaie.lucru')}</p>}
-            {pe.motiv && <p role="alert" className="avertisment" data-testid="import-imagine-motiv">{t(pe.motiv)}</p>}
-          </div>
-        )}
-        <div className="butoane">
-          {ok && (
-            <button type="button" disabled={motiv !== null || seRecitesc || pe?.lucru === true} title={motiv ? t(motiv) : undefined} data-buton="importa"
-              onClick={(e) => { if (e.detail <= 1) onImporta(); }}>
-              {t('import.importa')}
-            </button>
-          )}
-          {/* „Doar imaginea” (ADR 0272): fără vectori; și după un refuz al trasării (o poză cu prea multe contururi). */}
-          {pe && (
-            <button type="button" data-buton="doar-imaginea" data-imagine-foaie="" disabled={seRecitesc || pe.lucru}
-              onClick={(e) => { if (e.detail <= 1) pe.onDoarImaginea(); }}>
-              {t('import.imagine-foaie.doar')}
-            </button>
-          )}
-          {stare !== 'citire' && !stare.ok && stare.cod === 'neincarcat' && (
-            <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
-          )}
-          {/* Al doilea clic al unui dublu-clic cade pe butonul fișierului următor, în același loc: se ignoră (recenzia A). */}
-          {coada && onSari && <button type="button" data-buton="sari" onClick={(e) => { if (e.detail <= 1) onSari(); }}>{t('import.sari')}</button>}
-          <button type="button" data-buton="renunta" onClick={onInchide}>{t(coada ? 'import.renunta-toate' : 'import.renunta')}</button>
-        </div>
       </div>
     </div>
   );

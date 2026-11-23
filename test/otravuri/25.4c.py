@@ -105,9 +105,9 @@ o('F04', FT, '        s.rotire = { ...a.rotire, unghi };\n        s.zona = null;
   'un unghi scris nu scoate zona')
 o('F05', FT, '  const decodata = rotire?.previzualizare ? rotire.inainte : {', '  const decodata = {', 'e2e',
   'raportul spune pânza rotită ca imagine')
-o('F06', FT, '              {rotire && rotire.sugestie && rotire.gasit !== null && (', '              {rotire && rotire.gasit !== null && (', 'e2e',
+o('F06', FT, '  const sugestieRotire = rotire !== null && rotire.sugestie && rotire.gasit !== null;', '  const sugestieRotire = rotire !== null && rotire.gasit !== null;', 'e2e',
   'sugestia rămâne și cu îndreptarea bifată')
-o('F07', FT, '              {rotire?.ceruta && rotire.aplicat === null && <p', '              {rotire?.ceruta && rotire.gasit === null && <p', 'e2e',
+o('F07', FT, '            {rotire?.ceruta && rotire.aplicat === null && <p', '            {rotire?.ceruta && rotire.gasit === null && <p', 'e2e',
   'avertismentul rămâne și cu unghiul scris')
 o('F08', FT, "placeholder={rotire?.gasit !== null && rotire?.gasit !== undefined ? nr(rotire.gasit, 2) : ''}", "placeholder=''", 'e2e',
   'câmpul fără unghiul găsit ca indiciu')

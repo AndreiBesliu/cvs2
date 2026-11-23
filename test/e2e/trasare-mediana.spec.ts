@@ -32,7 +32,7 @@ function rezultatInNode(nume: string, om?: OptiuniMediana) {
 
 async function deschide(page: Page, fisier: string): Promise<void> {
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(`test/fixtures/trasare/${fisier}.png`);
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
 }
 
 test('semnătura: Linii mediane, cu grosimea și freza foii în raport; banda grosimii; Importă pune o piesă tăiată toată pe linie', async ({ page }) => {
@@ -77,7 +77,7 @@ test('Contururi ↔ Linii mediane: inelul devine o buclă pe linie; pe culori al
   await expect(page.getByTestId('import-deschise')).toHaveText('1 linie mediană, tăiată pe linie: un canal de cel mult 1 mm (jumătate din foaie, dacă e mai subțire), într-o trecere');
   await expect(page.getByTestId('import-cai')).toHaveCount(0);
   // Fără freză pe foaie, raportul spune doar grosimea.
-  await expect(page.getByTestId('trasare-grosime')).toBeVisible();
+  await expect(page.getByTestId('trasare-grosime')).toBeAttached();
   await expect(page.getByTestId('trasare-freza')).toHaveCount(0);
   await page.locator('[data-camp="trasare-sursa"]').selectOption('culori');
   await expect(page.locator('[data-camp="trasare-rezultat"]')).toHaveValue('mediane');

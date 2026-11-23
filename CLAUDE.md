@@ -1019,8 +1019,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`473f2e20`):** o imagine rămâne pe foaie, sub desen, estompată, nici tăiată, nici exportată („Păstrează imaginea pe
   foaie” și „Doar imaginea” în fereastra trasării; „Imaginile foii” în panoul Proprietăți, cu nimic selectat); octeții
   stau în browser (IndexedDB `cncvs2-imagini`, după amprentă), iar foaia ține doar așezarea (`Foaie.imagini`, fără schemă
-  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului;
-  următorul ADR al liniei e 0273.
+  nouă: documentul rămâne v26). Rămâne 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), la cuvântul owner-ului.
+  **25.9↑ (fereastra trasării, refăcută, ADR 0273) gata pe 23.11, pe aceeași ramură, cu răspunsurile 1a–3a și, la nota
+  owner-ului, celelalte variante ca opțiuni:** fereastra cât ecranul, fără derularea ei (setările se derulează singure,
+  previzualizarea crește, piciorul fix); grupurile Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu, ținute în
+  browser (`cncvs2.trasare.fereastra`; „Simplu” ascunde Imaginea și Curățarea); mărimea desenului (lățimea sau înălțimea
+  cutiei vectorilor, legate), dusă de fereastră în lățimea imaginii după fiecare trasare (sau doar scara; sau lățimea
+  imaginii, ca înainte), deci ușa și cererea neschimbate; raportul scurt, sugestiile ca butoane, „Detalii”; „Desenul” cu
+  virgula în română, la toate formatele. Partea pură în `src/ui/fereastraTrasareCalcul.ts`. **O probă e2e care lucrează cu
+  un câmp din Imaginea sau Curățarea deschide întâi grupurile** (`grupuriDeschise` din `test/e2e/ajutor-trasare.ts`), iar
+  rândurile raportului de sub „Detalii” se așteaptă atașate, nu vizibile. Următorul ADR al liniei e 0274.
   **Sub plafonul de 600 kB mai încap ~23 kB**, măsurat pe unirile de probă din 09.11: tăierea +19,4, planșele +18,9 (cu
   ușa +4,4 kB: 109,9 / 110), imprimanta +32,6, 6.V↑d +1,5; trasarea și imprimanta împreună au dat 609,8 / 600, iar poarta
   mărimii a căzut. A doua unire mare cere întâi decizia owner-ului pe plafon (sau modulele aduse la prima folosire, ADR 0191

@@ -1,5 +1,6 @@
 import { test, expect, type JSHandle, type Page } from '@playwright/test';
 import { documentSalvat } from './ajutor-document.ts';
+import { grupuriDeschise } from './ajutor-trasare.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
 
 /**
@@ -13,6 +14,9 @@ import { ecran, vedere } from './ajutor-panza.ts';
  */
 
 test.use({ locale: 'ro-RO' });
+
+// Câmpurile luminii, foii și scanării stau în grupul Imaginea, strâns la prima deschidere (ADR 0273 §2).
+test.beforeEach(async ({ page }) => { await grupuriDeschise(page); });
 
 type Imagine = {
   id: string; sursa: string; nume?: string; x: number; y: number; latime: number; inaltime: number; rotire: number; opacitate: number;
