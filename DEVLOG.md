@@ -11007,3 +11007,18 @@ rapide propus întâi?”).
   index, fișa etapei 3 (rândul `3.Ac`) cu traducerea, lista otrăvurilor și rândul ei din `docs/otravuri.md`, DEVLOG.
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
+
+## 2026-11-23 — Lucrul în cloud: uneltele în repo, pregătirea mediului, felul de lucru (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! Putem sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul
+local, dar sesiunea sa lucreze in cloud pe repo din Github. Cat de complicat este si riscam cumva sa pierdem ceva progres?”,
+apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11, 08:20.
+
+- **Starea:** tot lucrul liniilor e pe GitHub (38 de ramuri, worktree-urile curate și împinse); unirea galeriei, singura
+  doar locală, împinsă ca `unire-2211c`.
+- **În repo:** `scripts/cloud/pregatire.sh` (mediul cloud, ca CI-ul: Node 26, npm ci, Edge, Java 21, firebase-tools 15.18.0,
+  Python 3), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile în clonă, documentele,
+  unirea și publicarea, pauza), `scripts/rezolva-devlog.py` (ciocnirile din DEVLOG) și `scripts/ldraw/` (aducerea și
+  măsurarea pieselor LDraw, randarea 3D; biblioteca în `LDRAW_DIR`, implicit `.tmp/ldraw`, în afara repo-ului).
+- **Probat local:** tipurile (`randare.mts`, venit din `.tmp`, avea tipurile slabe: reparate), regulile de import,
+  licențele, randarea pe o piesă a motorului și pe LDraw 6041.
