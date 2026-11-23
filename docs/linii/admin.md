@@ -39,8 +39,14 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   Otrăvurile 54 / 54. Se unește după A.5 (sau odată cu el), din commit-ul raportat în PR.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
-- **Felia rămasă:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul owner-ului; are ~4 kB
-  din ținta de mărime a liniei.
+- **Felia rămasă din ADR 0260:** A.7 telefonul (bara de jos, meniul ☰, tichetul cu răspunsul), doar la cuvântul
+  owner-ului; are ~4 kB din ținta de mărime a liniei.
+- **ADR 0262 propus pe 23.11** (utilizarea aplicației, feliile A.8–A.11), la cererea owner-ului de a vedea în admin ce
+  unelte folosesc oamenii, fluxurile cele mai dese, ce nu se folosește și pașii dinaintea unei erori: evenimentele din
+  registrul de acțiuni, după o listă albă, acordul la intrarea în cont, loturi prin callable, sumele zilei noaptea, fila
+  Utilizare și cronologia unui om. Schița și formularul celor 7 întrebări:
+  <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (răspunsurile în baza ei, `raspunsuri`, scrise doar de owner). Codul
+  pornește după răspunsuri.
 - **Alegeri față de schițe, de știut la A.7:** schimbarea planului a rămas un formular cu „Salvează planul” (nu butoane
   cu un clic); felul intrării unui om vine din `sursa` documentului (metodele legate mai târziu din fila Cont ar cere o
   citire din Auth, pe server, deci un ADR al liniei).

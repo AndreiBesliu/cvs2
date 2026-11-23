@@ -11531,3 +11531,24 @@ PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului�
 - **Porțile, în CI:** în raportul din PR-ul ramurii.
 - **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
+
+## 2026-11-23 — ADR 0262 propus: utilizarea aplicației (feliile A.8–A.11 ale liniei adminului)
+
+**Prompt:** „in admin, vreau sa vad mai multe statistici/date despre comportamentul utilizatorilor, vreau sa vad ce unelte
+folosesc cel mai des si care este cel mai comun workflow. vreau sa pot deduce care parte a aplicatiei este cea mai utila si
+care nu, si vreau sa folosim asta si la troubleshooting. practic vreau sa stiu fiecare interactiune pe care o are userul cu
+aplicatia, mai putin parolele lor sau date sensibile etc.” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, cât
+porțile lui A.6 rulau în CI).
+**Started:** 23.11 18:15.
+
+- **Ce era deja:** `PLAN.md` §5.6 pune fila Analiză în etapa 28 („pâlnia, adopția din id-urile acțiunilor”), iar §3.2 spune
+  că analiza din admin e o vedere a registrului de acțiuni: vreo 105 acțiuni, pornite din bare, taste, paletă și meniuri, prin
+  aceeași funcție (`executa` din `App.tsx`). Jurnalul de erori a mers fără acord, cu o frază în nota de confidențialitate
+  (decizia 13); nota n-are încă operatorul și adresa de contact (ADR 0116 §18).
+- **ADR 0262 propus**, fără cod: evenimentele registrului după o listă albă (fără desen, texte, fișiere, adrese, parole),
+  acordul clienților la prima intrare în cont, loturi prin callable-ul nou `utilizare`, șterse după 90 de zile, sumele zilei
+  scrise de un job de noapte, fila Utilizare (uneltele, ce nu se folosește, fluxurile, frecările, duratele), cronologia unui om
+  pentru troubleshooting, două permisiuni noi; feliile A.8–A.11 (~4–5 felii).
+- **Schița cu formularul celor 7 întrebări:** <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (privată; răspunsurile în
+  baza ei, scrise doar de owner; probat: un vizitator nu poate scrie). Datele din schiță sunt de exemplu, marcate așa.
+- **Documentele:** ADR 0262, rândul lui în index, nota liniei, DEVLOG. **Completed:** 23.11 19:10.
