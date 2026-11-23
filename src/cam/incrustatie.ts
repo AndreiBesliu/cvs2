@@ -43,10 +43,13 @@ export type DescrierePotrivire =
     readonly fel: 'drept';
     readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
     readonly margine: number;
-    /** Adâncimea locașului D (la gaură, grosimea foii), jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul. */
+    /**
+     * Adâncimea locașului D (la gaură, grosimea foii), jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul;
+     * `gaura`, locașul prin foaie (desenul secțiunii n-are fund sub ea).
+     */
     readonly hartie: {
       readonly D: number; readonly c: number; readonly h: number; readonly H: number; readonly g: number;
-      readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean;
+      readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean; readonly gaura: boolean;
     };
   };
 

@@ -1956,8 +1956,10 @@ fiecăruia), iar starea din colț o spune.
   adâncimea locașului, înălțimea dopului și sprijinul: spațiul dintre plăci (pe fund), jocul cu clei de sub dop (pe față) sau
   cât iese dopul decupat peste placă, de rindeluit. Un rând care iese cu peste 0,05 mm din valoarea pe hârtie (jocul lateral,
   cu peste 0,02 mm; pereții atinși, sub 95 %) e roșu, cu locul lui, iar secțiunea trece prin primul rând roșu. În desen,
-  cleiul e albastru, pereții care se ating sunt verzi, iar linia întreruptă e tăietura cu fierăstrăul (la dopul decupat, fața
-  plăcii, până la care se rindeluiește). La dopul în trepte, butonul e oprit deocamdată.
+  cleiul e albastru (la pereții drepți, jocul lateral și, pe față, cel de sub dop: doar în locaș, sub fața plăcii), ce se
+  atinge e verde, iar linia întreruptă e tăietura cu fierăstrăul (la dopul decupat, fața plăcii, până la care se
+  rindeluiește). La gaura prin foaie, placa e desenată cât foaia: sub gaură nu e lemn. Dacă secțiunea nu încape pe ecran,
+  butoanele rămân sus, iar ea se derulează. La dopul în trepte, butonul e oprit deocamdată.
 
 Culorile: fața plăcii, tăieturile (mai închise cu adâncimea) și, albastru-gri, masa de sacrificiu acolo unde freza a trecut
 prin foaie. Dacă schimbi documentul cât vederea e deschisă, starea o spune; „Simulează din nou” îl simulează, cu placa

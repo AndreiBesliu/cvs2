@@ -265,7 +265,7 @@ export function programeDopuriDrepte(doc: Document, regim: Regim, supracursa = 0
           hartie: {
             D: esteGaura(op) ? (doc.foi[0]?.stoc.grosime ?? op.adancime) : op.adancime, c: inc.jocLateral, h, H: inc.fierastrau,
             g: esteGaura(op) ? 0 : inc.joc,
-            sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat',
+            sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const, decupat: inc.dop === 'decupat', gaura: esteGaura(op),
           },
         },
       }),

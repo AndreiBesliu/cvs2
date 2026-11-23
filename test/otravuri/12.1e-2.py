@@ -84,10 +84,11 @@ o('U04', V3D, '      calc.potrivireSimulata(d, k, ctl.signal)', '      calc.potr
 o('U06', SEC, 'hartie: mm(h.S), simulat: mm(p.asezare)', 'hartie: mm(h.D), simulat: mm(p.asezare)', 'e2e', '„Dopul intră” pe hârtie cu D în loc de S')
 o('U07', SEC, '`${Math.round(p.contact.fractie * 100)} %`', '`${Math.round(p.contact.fractie)} %`', 'e2e', 'contactul ca fracție, nu în procente')
 o('U08', SEC, "className={r.r.ok ? undefined : 'diferit'}", 'className="diferit"', 'e2e', 'toate rândurile roșii')
-o('U09', SEC, '      <path data-strat="dop" d={dop} className="sectiune-dop" />\n', '', 'e2e', 'secțiunea fără dop')
+# 23.11 (felia 12.1↑e-3): căile desenului vin din `sectiuneDesen.ts`; U09 și U11 urmează codul mutat.
+o('U09', SEC, '      <path data-strat="dop" d={g.dop} className="sectiune-dop" />\n', '', 'e2e', 'secțiunea fără dop')
 o('U10', SEC, '{ n, y: p.sectiune.y.toFixed(2) }', '{ n, y: p.sectiune.x0.toFixed(2) }', 'e2e', 'titlul secțiunii cu X în loc de Y')
-o('U11', SEC, '  const contact = rulari(n, (i) => inLocas(i) && s.dop[i]! - s.placa[i]! < CONTACT);', '  const contact = rulari(n, () => false);', 'e2e',
-  'pereții în contact nedesenați')
+o('U11', 'src/app/sectiuneDesen.ts', '  const contact = rulari(n, (i) => inLocas(i) && Number.isFinite(dop(i)) && dop(i) - placa(i) < CONTACT && !prin(i))',
+  '  const contact = rulari(n, () => false)', 'e2e', 'pereții în contact nedesenați')
 o('U12', V3D, "  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.alege')", "  const titluImpreuna = alegere === 'foaie' ? t('editare.3d.impreuna.trepte')",
   'e2e', 'pe foaie, motivul dopului în trepte')
 

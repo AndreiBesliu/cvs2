@@ -75,9 +75,27 @@
 /*
  * Secțiunea (ADR 0179 §5), în insulă, sub cipuri: insula se lărgește cât e pornită. Culorile desenului sunt ale materialelor
  * (placa de arțar, dopul de nuc, cleiul, contactul, tăietura), nu ale temei; textul tabelului e al temei.
+ *
+ * Insula rămâne în zona liberă (înălțimea cel mult cât ea, pusă de vedere). Când nu încape (o gaură prin foaia de 18, un
+ * ecran scund), alegerea și cipurile rămân pe loc, iar secțiunea se derulează. Derulează secțiunea, nu insula: cu derularea
+ * pe insulă, browserul lasă o zonă nedesenată deasupra ei, peste pânza 3D.
  */
 .stare-3d.cu-sectiune {
   max-width: min(48rem, calc(100% - 16px));
+}
+
+.stare-3d.cu-sectiune > * {
+  flex-shrink: 0;
+}
+
+.stare-3d.cu-sectiune > .sectiune-3d {
+  flex-shrink: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sectiune-3d > * {
+  flex-shrink: 0;
 }
 
 .sectiune-3d {

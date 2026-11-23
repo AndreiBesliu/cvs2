@@ -2020,9 +2020,11 @@ blocks (the deepest point of each), and the status in the corner says so.
   the pocket (no point of its wall outside the pocket), the pocket depth, the plug height and the support: the space between
   the boards (on the bottom), the glue gap under the plug (on the face) or how much the cut-out plug sticks out above the
   board, to plane off. A row more than 0.05 mm off its paper value (the side gap, more than 0.02 mm; walls touching, under
-  95 %) is red, with its place, and the section goes through the first red row. In the drawing, the glue is blue, the walls in
-  contact are green and the dashed line is the saw cut (on the cut-out plug, the board's face, down to which it is planed).
-  On a stepped plug, the button is off for now.
+  95 %) is red, with its place, and the section goes through the first red row. In the drawing, the glue is blue (on
+  straight walls, the side gap and, on the face, the gap under the plug: only inside the pocket, below the board's face),
+  what touches is green and the dashed line is the saw cut (on the cut-out plug, the board's face, down to which it is
+  planed). On a hole through the sheet, the board is drawn as thick as the sheet: there is no wood under the hole. If the
+  section does not fit on the screen, the buttons stay at the top and it scrolls. On a stepped plug, the button is off for now.
 
 The colours: the sheet's face, the cuts (darker with depth) and, in blue-grey, the spoilboard where the cutter went through
 the sheet. If you change the document while the view is open, the status says so; “Simulate again” simulates it, with the

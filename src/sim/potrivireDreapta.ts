@@ -24,10 +24,13 @@ import { bisectie, functieTaiere } from './taiereExacta.ts';
 /** Cât poate ieși jocul lateral din cel pe hârtie (mm), ca la oracolul pereților drepți. */
 export const TOLERANTA_JOC = 0.02;
 
-/** Valorile pe hârtie (ADR 0171): adâncimea D, jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul. */
+/**
+ * Valorile pe hârtie (ADR 0171): adâncimea D, jocul lateral c, înălțimea dopului h, spațiul H, jocul g, sprijinul; `gaura`,
+ * locașul prin foaie (ADR 0175: D e grosimea foii, iar sub gaură nu e lemn: desenul secțiunii n-are fund acolo).
+ */
 export type HartieDreapta = {
   readonly D: number; readonly c: number; readonly h: number; readonly H: number; readonly g: number;
-  readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean;
+  readonly sprijin: 'fund' | 'fata'; readonly decupat: boolean; readonly gaura: boolean;
 };
 
 export type ParametriDreapta = {

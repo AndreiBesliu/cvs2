@@ -186,6 +186,10 @@ test('„Împreună (secțiunea)” la dopul cu pereți drepți: jocul lateral, 
   const svg = sectiune.getByTestId('sectiune-svg');
   for (const strat of ['placa', 'dop', 'fierastrau']) await expect(svg.locator(`[data-strat="${strat}"]`)).toHaveCount(1);
   await expect(svg.locator('[data-strat="marcaj"]')).toHaveCount(0);
+  // Pereții sunt verticali (treptele celulelor de 0,1 mm), iar cleiul e doar jocul lateral, de o celulă de fiecare parte (X 20
+  // și X 50), de la fundul locașului (Y 3) până la fața plăcii (Y 0): deasupra ei e spațiul dintre plăci, nu clei.
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 3 L20 3Z M49.9 0 L50 0 L50 3 L49.9 3Z');
+  await expect(svg.locator('[data-strat="contact"]')).toHaveAttribute('points', '20.1,3 49.9,3');
   // Tăietura cu fierăstrăul, la mijlocul spațiului dintre plăci: H / 2 = 1 mm peste fața plăcii (Y-ul desenului e −Z).
   await expect(svg.locator('[data-strat="fierastrau"]')).toHaveAttribute('y1', /^-(0\.9[5-9]\d*|1(\.0[0-5]\d*)?)$/);
   await expect(sectiune.locator('.sectiune-nota')).toContainText('Jocul lateral e măsurat exact pe trecerile frezei');
@@ -223,6 +227,53 @@ test('„Împreună (secțiunea)” la dopul decupat: neîntors, „Peste placă
   const svg = sectiune.getByTestId('sectiune-svg');
   await expect(svg.locator('[data-strat="fierastrau"]')).toHaveCount(0);
   await expect(svg.locator('[data-strat="rindea"]')).toHaveAttribute('y1', '0');
+  // În jurul dopului decupat nu mai e lemn al lui: jocul lateral din locaș e clei, până la fața plăcii.
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 3 L20 3Z M49.9 0 L50 0 L50 3 L49.9 3Z');
+});
+
+/**
+ * Gaura prin foaie (ADR 0175), cu dopul decupat din placa de 18 + 2: secțiunea e înaltă (20 mm la 40 lățime). Placa e desenată
+ * cât foaia (fără lemn sub gaură și fără contact pe un fund care nu e), iar insula rămâne în zona liberă: alegerea și
+ * cipurile pe loc, secțiunea se derulează până la nota de sub tabel.
+ */
+test('„Împreună (secțiunea)” la gaura prin foaie: placa groasă cât foaia, fără fund; insula rămâne în zona liberă, secțiunea se derulează', async ({ page }) => {
+  await page.goto('/');
+  await dreptunghiMic(page);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]').selectOption('incrustatie-drept');
+  const inc = page.locator('tr[data-detalii]').first().locator('[data-incrustatie][data-fel="drept"]');
+  await inc.locator('[data-camp="inc-locas"]').selectOption('gaura');
+  await inc.locator('[data-camp="inc-dop"]').selectOption('decupat');
+  await inc.locator('[data-camp="inc-freza-dop"]').check();
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-dopuri')).toContainText('groasă de exact 20 mm');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await deschide(page);
+  await page.getByTestId('alegere-3d').locator('[data-3d-alege="dop-1"]').click();
+  await expect(panza3d(page)).toHaveAttribute('data-alegere', 'dop-1');
+  await page.locator('[data-3d="impreuna"]').click();
+  const sectiune = page.getByTestId('sectiune-3d'), tabel = sectiune.getByTestId('sectiune-tabel');
+  await expect(tabel).toBeVisible({ timeout: 30_000 });
+  await expect(tabel.locator('tr[data-rand="adancime"] td')).toHaveText(['18.00 mm', /^(17\.9[5-9]|18\.0[0-5]) mm$/]);
+  await expect(tabel.locator('tr.diferit')).toHaveCount(0);
+  const svg = sectiune.getByTestId('sectiune-svg');
+  // De la fața de sus a dopului (2 peste placă) până la fața de jos a foii (18): 20 mm, fără cei 1,5 mm de sub un buzunar.
+  await expect(svg).toHaveAttribute('viewBox', '15 -2 40 20');
+  await expect(svg.locator('[data-strat="contact"]')).toHaveCount(0);
+  await expect(svg.locator('[data-strat="clei"]')).toHaveAttribute('d', 'M20 0 L20.1 0 L20.1 18 L20 18Z M49.9 0 L50 0 L50 18 L49.9 18Z');
+  // Insula nu trece de zona liberă (sub ea e bara de jos), iar butoanele alegerii rămân la vedere.
+  const cutie = async (l: ReturnType<Page['locator']>) => (await l.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+  const zona = await cutie(page.locator('.zona-libera')), insula = await cutie(page.getByTestId('stare-3d'));
+  expect(insula.height).toBeGreaterThan(200);
+  expect(insula.y + insula.height).toBeLessThanOrEqual(zona.y + zona.height);
+  await expect(page.getByTestId('alegere-3d')).toBeInViewport({ ratio: 1 });
+  // Nota de sub tabel nu încape: se ajunge la ea derulând secțiunea, înăuntrul insulei.
+  const nota = sectiune.locator('.sectiune-nota');
+  await nota.scrollIntoViewIfNeeded();
+  await expect(nota).toBeInViewport({ ratio: 0.9 });
+  const laNota = await cutie(nota);
+  expect(laNota.y + laNota.height).toBeLessThanOrEqual(insula.y + insula.height + 1);
+  await expect(page.getByTestId('alegere-3d')).toBeInViewport({ ratio: 1 });
 });
 
 /**

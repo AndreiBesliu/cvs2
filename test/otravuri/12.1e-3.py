@@ -2,10 +2,12 @@
 # tăietura exactă pe mutări (filtrul frezelor plate, raza, nivelul, arcele orare, capetele, cutia, bisecția), măsurarea
 # potrivirii drepte (oglinda și grila dopului, rama decupatului, jocul și toleranța lui, interferența, așezarea, sprijinul,
 # verdictele rândurilor, secțiunea), ce îi dă CAM-ul (D la gaură, g la gaură, decupat, sprijinul, treapta, marginea),
-# dispecerul calculului și tabelul din vederea 3D.
+# dispecerul calculului și tabelul din vederea 3D. Din 23.11 (privirea pe secțiunea reală), și desenul secțiunii drepte
+# (`src/app/sectiuneDesen.ts`: treptele, cleiul doar în locaș, dopul decupat, gaura prin foaie) și insula ținută în zona liberă.
 # Țintele din ADR 0179 (felia 12.1↑e-3): jocul lateral greșit sau tolerat prea larg, dopul care iese din locaș trecut drept
 # bun, dopul decupat întors sau cu rama lui, sprijinul greșit (pe fund, pe față, la gaură), secțiunea în alt loc, dopul în
-# trepte măsurat ca unul drept, rândurile tabelului greșite.
+# trepte măsurat ca unul drept, rândurile tabelului greșite; în desen: pereții drepți înclinați, cleiul urcat în spațiul
+# dintre plăci sau lipsă în jocul lateral, lemn și contact sub gaura prin foaie, secțiunea ieșită de sub bara de jos.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), din worktree-ul feliei (în afara Drive-ului), după commit, cu
 # CNCVS2_E2E_RETEA=127.0.1 și configul local pe portul 4174 (`.tmp/pw.config.ts`).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -21,6 +23,9 @@ PD = 'src/sim/potrivireDreapta.ts'
 DD = 'src/cam/dopDrept.ts'
 CALC = 'src/jobs/calculCam.ts'
 SEC = 'src/app/Sectiune3D.tsx'
+DES = 'src/app/sectiuneDesen.ts'
+V3D = 'src/app/Vedere3D.tsx'
+CSS = 'src/app/vedere3d.css'
 
 # ---- Tăietura exactă (src/sim/taiereExacta.ts) ----
 o('T01', TE, "    if (g.scula.forma.tip !== 'plata') continue;\n", '', 'exacta', 'mutările frezei în V numărate ca pereți drepți')
@@ -83,6 +88,8 @@ o('K04', DD, '      ...(treapta ? {} : {', '      ...(false ? {} : {', 'dreapta'
 o('K05', DD, "          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m,", "          fel: 'drept' as const, cutie: { x0, y0, x1, y1 }, margine: m + 1,",
   'dreapta', 'marginea contractului greșită')
 o('K06', DD, "sprijin: inc.sprijin === 'fata' ? 'fata' as const : 'fund' as const,", "sprijin: 'fund' as const,", 'dreapta', 'sprijinul pe față pierdut')
+o('K07', DD, "decupat: inc.dop === 'decupat', gaura: esteGaura(op),", "decupat: inc.dop === 'decupat', gaura: false,", 'dreapta',
+  'gaura prin foaie nespusă desenului: lemn și contact sub ea')
 
 # ---- Dispecerul calculului (src/jobs/calculCam.ts) ----
 o('J01', CALC, "    potrivire: x.potrivire.fel === 'v' ? potrivireaV(", "    potrivire: x.potrivire.fel === 'drept' ? potrivireaV(", 'dreapta',
@@ -95,15 +102,45 @@ o('S03', SEC, '      simulat: mm(peFund ? p.inaltime - p.adancime : p.adancime -
   'între plăci cu semnul întors')
 o('S04', SEC, "  const sprijin = h.decupat ? 'peste' : peFund ? 'intre' : 'sub';", "  const sprijin = peFund ? 'intre' : 'sub';", 'e2e',
   'dopul decupat „între plăci”, nu „peste placă”')
-o('S05', SEC, 'rindea ? 0 : Math.max(0, p.inaltime - p.adancime) / 2;', 'rindea ? 0 : 0;', 'e2e', 'tăietura cu fierăstrăul la fața plăcii')
-o('S06', SEC, "  const rindea = p.fel === 'drept' && p.hartie.decupat;", '  const rindea = false;', 'e2e', 'la dopul decupat, fierăstrăul în loc de rindea')
+# 23.11: geometria desenului a trecut în `sectiuneDesen.ts` (pură, probată pe hârtie); S05 și S06 o urmează acolo.
+o('S05', DES, ': decupat ? 0 : Math.max(0, p.inaltime - p.adancime) / 2;', ': decupat ? 0 : 0;', 'e2e', 'tăietura cu fierăstrăul la fața plăcii')
+o('S06', DES, "    taiere: { fel: decupat ? 'rindea' : 'fierastrau', y: f(-zTaiere) },", "    taiere: { fel: 'fierastrau', y: f(-zTaiere) },", 'e2e',
+  'la dopul decupat, fierăstrăul în loc de rindea')
 o('S07', SEC, "  const titlu = p.fel === 'drept' && p.hartie.decupat ? 'editare.3d.sectiune.titlu-decupat' : 'editare.3d.sectiune.titlu';",
   "  const titlu = 'editare.3d.sectiune.titlu';", 'e2e', 'dopul decupat „întors” în titlu')
 o('S08', SEC, "      simulat: p.dop.afara === 0 ? t('editare.3d.sectiune.dop-tot', { n: p.dop.n }) : t('editare.3d.sectiune.dop-afara', { k: p.dop.afara, n: p.dop.n }),",
   "      simulat: t('editare.3d.sectiune.dop-afara', { k: p.dop.afara, n: p.dop.n }),", 'e2e', '„0 din N puncte ies” în loc de „toate cele N”')
 
+# ---- Desenul secțiunii (src/app/sectiuneDesen.ts), din privirea pe secțiunea reală (23.11) ----
+o('G01', DES, "c = s.celula, drept = p.fel === 'drept';", 'c = s.celula, drept = false;', 'desen', 'pereții drepți desenați prin centrele celulelor (înclinați)')
+o('G02', DES, '    return Number.isFinite(d) ? Math.min(d, 0) : decupat ? 0 : Number.NaN;', '    return Number.isFinite(d) ? d : decupat ? 0 : Number.NaN;', 'desen',
+  'cleiul urcat până la fața coborâtă a dopului, prin spațiul dintre plăci')
+o('G03', DES, '    return Number.isFinite(d) ? Math.min(d, 0) : decupat ? 0 : Number.NaN;', '    return Number.isFinite(d) ? Math.min(d, 0) : Number.NaN;', 'desen',
+  'la dopul decupat, jocul lateral fără clei')
+o('G04', DES, '    return Number.isFinite(d) ? Math.min(d, 0) : decupat ? 0 : Number.NaN;', '    return Number.isFinite(d) ? Math.min(d, 0) : 0;', 'desen',
+  'și la dopul ridicat, locașul fără lemn deasupra e desenat clei')
+o('G05', DES, '  const zJos = gaura ? -p.hartie.D : -(p.hartie.D + SUB_FUND),', '  const zJos = -(p.hartie.D + SUB_FUND),', 'desen', 'lemn desenat sub gaura prin foaie')
+o('G06', DES, ' && dop(i) - placa(i) < CONTACT && !prin(i))', ' && dop(i) - placa(i) < CONTACT)', 'desen', 'contact pe un fund care nu e, sub gaură')
+o('G07', DES, '  const prin = (i: number): boolean => gaura && placa(i) <= -p.hartie.D + FATA;', '  const prin = (i: number): boolean => gaura;', 'desen',
+  'la gaură, nici treapta rămasă în ea n-are contact')
+o('G08', DES, '  const clei = rulari(n, (i) => inLocas(i) && sus(i) - placa(i) >= CONTACT)', '  const clei = rulari(n, (i) => inLocas(i) && sus(i) - placa(i) > 0)', 'desen',
+  'jocul de sub pragul contactului desenat clei')
+o('G09', DES, ' && dop(i) - placa(i) < CONTACT && !prin(i))', ' && dop(i) - placa(i) < 2 * CONTACT && !prin(i))', 'desen', 'contactul până la 0,1 mm')
+o('G10', DES, '  const inLocas = (i: number): boolean => placa(i) < -FATA;', '  const inLocas = (_i: number): boolean => true;', 'desen',
+  'cleiul și contactul și pe fața plăcii, în afara locașului')
+o('G11', DES, '      else if (ultim && ultim[1] === zi) ultim[0] = s.x0 + (i + 1) * c;\n      else rez.push([s.x0 + i * c, zi], [s.x0 + (i + 1) * c, zi]);',
+  '      else rez.push([s.x0 + i * c, zi], [s.x0 + (i + 0.5) * c, zi]);', 'desen', 'treptele de o jumătate de celulă (pereții iar înclinați)')
+o('G12', DES, '    marcaj: s.marcaj !== null ? f(s.marcaj) : null,', '    marcaj: null,', 'desen', 'locul diferenței nedesenat')
+
+# ---- Legăturile desenului în vedere (e2e) ----
+o('L01', SEC, '      {g.clei ? <path data-strat="clei" d={g.clei} className="sectiune-clei" /> : null}\n', '', 'e2e', 'cleiul nedesenat')
+o('L02', V3D, '...(impreuna ? { maxHeight: Math.max(160, zona.h - 16) } : {}) }}', '}}', 'e2e', 'insula cu secțiunea trece de zona liberă, sub bara de jos')
+o('L03', CSS, '  min-height: 0;\n  overflow-y: auto;\n', '  min-height: 0;\n', 'e2e', 'secțiunea nu se derulează: nota rămâne în afara insulei')
+o('L04', CSS, '.stare-3d.cu-sectiune > * {\n  flex-shrink: 0;\n}\n', '', 'e2e', 'alegerea și cipurile se strivesc în loc să rămână pe loc')
+
 SETURI = {
     'exacta': ['test/unit/taiereExacta.test.ts'],
     'dreapta': ['test/unit/incrustatieDreapta.potrivire3d.test.ts'],
+    'desen': ['test/unit/sectiune.desen.test.ts'],
 }
 E2E = ['test/e2e/incrustatie3d.spec.ts']

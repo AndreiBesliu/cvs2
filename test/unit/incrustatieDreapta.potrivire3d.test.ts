@@ -17,6 +17,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { desenSectiune } from '../../src/app/sectiuneDesen.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../../src/cam/job.ts';
 import { programeDopuriDrepte } from '../../src/cam/dopDrept.ts';
 import { calculeazaPotrivirea } from '../../src/jobs/calculCam.ts';
@@ -85,8 +86,8 @@ for (const c of CAZURI_DREAPTA) {
     const unde = `${c.id}: aplicația ${descrie(p)} / oracolul jocul ${JSON.stringify(m.joc)}, ${m.interferenta} din ${m.nDop}, D ${m.adancime}, h ${m.inaltime}`;
     const h = inaltimeDop(c);
     assert.deepEqual(
-      [p.hartie.D, p.hartie.c, p.hartie.h, p.hartie.H, p.hartie.g, p.hartie.sprijin, p.hartie.decupat],
-      [c.D, c.c, h, c.H, c.g, c.sprijin, c.dop === 'decupat'], `hârtia: ${c.id}`,
+      [p.hartie.D, p.hartie.c, p.hartie.h, p.hartie.H, p.hartie.g, p.hartie.sprijin, p.hartie.decupat, p.hartie.gaura],
+      [c.D, c.c, h, c.H, c.g, c.sprijin, c.dop === 'decupat', false], `hârtia: ${c.id}`,
     );
     assert.ok(p.joc.n > 100, `punctele peretelui locașului: ${unde}`);
     assert.ok(Math.abs(p.joc.med - m.joc.med) <= 0.01, `jocul, mediana: ${unde}`);
@@ -278,8 +279,14 @@ test('gaura prin foaia de 10: pe hârtie D e grosimea foii; decupat, iese H pest
     if (!r.ok) assert.fail(`${ce}: ${r.motiv}`);
     if (r.potrivire.fel !== 'drept') assert.fail(`${ce}: potrivirea în V, nu dreaptă`);
     const p = r.potrivire, unde = `${ce}: ${descrie(p)}`;
-    assert.deepEqual([p.hartie.D, p.hartie.h, p.hartie.c], [10, h, 0.1], `hârtia: ${unde}`);
+    assert.deepEqual([p.hartie.D, p.hartie.h, p.hartie.c, p.hartie.gaura], [10, h, 0.1, true], `hârtia: ${unde}`);
     assert.ok(Math.abs(p.adancime - 10) <= 0.05 && Math.abs(p.inaltime - h) <= 0.05, `adâncimea și înălțimea: ${unde}`);
     assert.ok(Object.values(p.randuri).every((x) => x.ok), `niciun rând roșu: ${unde}`);
+    // Desenul secțiunii: placa groasă cât foaia (10), fără lemn sub gaură și fără contact pe un fund care nu e; cleiul e
+    // jocul lateral, de o parte și de alta, pe toată grosimea foii.
+    const g = desenSectiune(p);
+    assert.equal(g.yJos, '10', `fundul desenului e fața de jos a foii: ${unde}`);
+    assert.deepEqual(g.contact, [], `fără contact sub gaură: ${unde}`);
+    assert.match(g.clei, /^M[\d.]+ 0 L[\d.]+ 0 L[\d.]+ 10 L[\d.]+ 10Z M[\d.]+ 0 L[\d.]+ 0 L[\d.]+ 10 L[\d.]+ 10Z$/, `cleiul, în jocul lateral: ${unde}`);
   }
 });
