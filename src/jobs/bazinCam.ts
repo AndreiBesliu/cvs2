@@ -11,6 +11,7 @@
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
+import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
@@ -144,4 +145,9 @@ export function panouriInBazin(document: Document, cerere: CererePanouri, o: Opt
 /** Conversia vectorilor (ADR 0180, felia 10.3↑d), pe documentul dat: piesele schimbate. */
 export function conversieInBazin(document: Document, cerere: CerereConversie, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatConversie> {
   return calculeaza({ fel: 'conversie', document, cerere, indexFoaie }, [], o) as Promise<RezultatConversie>;
+}
+
+/** Legarea căilor (ADR 0182, felia 10.3↑o), pe documentul dat: piesele schimbate și instanțele de șters. */
+export function legareInBazin(document: Document, cerere: CerereLegare, optiuni: OptiuniLegare, o: OptiuniCam = {}, indexFoaie = 0): Promise<RezultatLegare> {
+  return calculeaza({ fel: 'legare', document, cerere, optiuni, indexFoaie }, [], o) as Promise<RezultatLegare>;
 }

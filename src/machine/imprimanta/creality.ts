@@ -279,7 +279,9 @@ export function citesteCadru(t: string): Cadru {
   const cod = typeof err === 'object' && err !== null ? numar((err as Record<string, unknown>)['errcode']) : numar(err);
   if (cod !== null) {
     stare.eroare = cod === 0 ? null : cod;
-    stare.cheieEroare = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
+    // Cheia 0, ca și codul 0, nu numește nimic (3.6v): fereastra și notificarea arată atunci codul.
+    const cheie = cod === 0 || typeof err !== 'object' || err === null ? null : numar((err as Record<string, unknown>)['key']);
+    stare.cheieEroare = cheie === 0 ? null : cheie;
   }
   // Piesele de pe placă (cadrul `exclude_object` al lui Klipper, felia 3.6q): listele, ca text JSON în JSON; piesa de acum, „”
   // fiind niciuna. Poziția duzei și filamentul folosit vin cu starea, la ~3 s cât imprimă (transcrierea din 07.11).
@@ -299,6 +301,10 @@ export function citesteCadru(t: string): Cadru {
   // Felia 3.6s: senzorul de filament (integrarea Home Assistant: 1 = s-a terminat; K1C 2025 trimite 0 cu filamentul pus).
   const material = numar(r['materialStatus']);
   if (material !== null) stare.faraFilament = material === 1;
+  // Felia 3.6v: o imprimare oprită de o pană de curent așteaptă pe ecran să fie reluată (Creality Print: `repoPlrStatus` 1;
+  // K1C 2025 trimite 0).
+  const pana = numar(r['repoPlrStatus']);
+  if (pana !== null) stare.reluareDupaPana = pana === 1;
   const lista = r['retGcodeFileInfo2'];
   const textLista = (r['retGcodeFileInfo'] as { fileInfo?: unknown } | null | undefined)?.fileInfo;
   const fisiere = Array.isArray(lista) ? lista.map(fisierDin).filter((f): f is FisierImprimanta => f !== null)
@@ -444,6 +450,7 @@ export const CREALITY_K1: DriverText = {
   cerereIstoric: CERERE_ISTORIC,
   cerereFilme: CERERE_FILME,
   adresaFilm: adresaFilmK1,
+  coduri: 'creality-k1',
   citeste: (t) => {
     const c = citesteCadru(t);
     return { recunoscut: esteCreality(c), stare: c.stare, fisiere: c.fisiere, istoric: c.istoric, filme: c.filme, raspuns: c.inima ? RASPUNS_INIMA : null };

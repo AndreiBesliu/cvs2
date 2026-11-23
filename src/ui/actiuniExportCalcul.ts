@@ -1,4 +1,4 @@
-import { conversieInBazin, exportInBazin, panouriInBazin, potrivireInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { conversieInBazin, exportInBazin, legareInBazin, panouriInBazin, potrivireInBazin, reparareInBazin, simulareInBazin, taiereInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { ParteDesprinsa } from '../jobs/protocolCam.ts';
@@ -15,6 +15,7 @@ import { sha256Hex, type FisierExportat } from '../post/export.ts';
 import { faraComentarii, foiIdentice, numeInArhiva } from '../post/foi.ts';
 import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
 import type { CerereConversie, RezultatConversie } from '../model/conversie.ts';
+import type { CerereLegare, OptiuniLegare, RezultatLegare } from '../model/legareCai.ts';
 import type { CererePanouri } from '../model/panouri.ts';
 import type { CerereTaiere, RezultatTaiere } from '../model/taiere.ts';
 import { aleseCuSurori, catePuse, CUTITE_PIESA, type AlegereSurori, type SuroriConversie, type SuroriTaiere } from '../model/surori.ts';
@@ -173,6 +174,14 @@ export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semn
  */
 export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: OptiuniReparare, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatReparare> {
   return reparareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {}, indexFoaie);
+}
+
+/**
+ * Legarea căilor (ADR 0182, felia 10.3↑o), pe documentul din clipa cererii, în workerul CAM: piesele schimbate și instanțele
+ * de șters, pe care acțiunea `document.repara` le aplică într-un pas, doar dacă documentul e încă același.
+ */
+export function leagaVectorii(doc: Document, cerere: CerereLegare, optiuni: OptiuniLegare, semnal?: AbortSignal, indexFoaie = 0): Promise<RezultatLegare> {
+  return legareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {}, indexFoaie);
 }
 
 /**

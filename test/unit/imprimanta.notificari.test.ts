@@ -17,14 +17,15 @@ import {
 
 const F = '/usr/data/printer_data/gcodes/placute_PLA_18m.gcode';
 const clipa = (x: Partial<Clipa> = {}): Clipa => ({
-  legatura: 'vie', lucrare: 'imprima', fisier: F, eroare: null, cheieEroare: null, faraFilament: false, strat: 5, pauzaFisier: null,
+  legatura: 'vie', lucrare: 'imprima', fisier: F, eroare: null, cheieEroare: null, faraFilament: false, reluareDupaPana: false, strat: 5,
+  pauzaFisier: null,
   trecut: 600, filament: 2000, ...x,
 });
 const feluri = (a: Clipa | null, b: Clipa): string[] => evenimente(a, b).map((e) => e.fel);
 
 test('3.6s: finalul și oprirea, o dată, cu durata și filamentul de dinainte (după final, imprimanta le poate pune pe 0)', () => {
   const [g] = evenimente(clipa({ trecut: 1140, filament: 3712 }), clipa({ lucrare: 'gata', trecut: 0, filament: 0 }));
-  assert.deepEqual(g, { fel: 'gata', fisier: F, strat: null, nota: null, cheie: null, durata: 1140, filament: 3712 });
+  assert.deepEqual(g, { fel: 'gata', fisier: F, strat: null, nota: null, cheie: null, cod: null, durata: 1140, filament: 3712 });
   assert.deepEqual(feluri(clipa({ lucrare: 'gata' }), clipa({ lucrare: 'gata' })), []);
   // Oprirea K1: 1, apoi 7 (pregătire, „oprirea în curs”), apoi 4; și o oprire din pornire.
   assert.deepEqual(feluri(clipa(), clipa({ lucrare: 'pregatire' })), []);
@@ -141,7 +142,7 @@ test('3.6s: semnul de pe butonul Imprimanta: procentul cât imprimă, pauza, ro�
 
 test('3.6s: textele: titlul cu numele imprimantei; finalul cu fișierul, durata și metrii; pauza cu stratul și nota; eroarea cu cheia', () => {
   const durata = (x: number): string => `${Math.round(x / 60)} min`;
-  const e = (x: Partial<Eveniment>): Eveniment => ({ fel: 'gata', fisier: F, strat: null, nota: null, cheie: null, durata: null, filament: null, ...x });
+  const e = (x: Partial<Eveniment>): Eveniment => ({ fel: 'gata', fisier: F, strat: null, nota: null, cheie: null, cod: null, durata: null, filament: null, ...x });
   const g = textEveniment(e({ durata: 1140, filament: 3712.4 }), 'K1C-8578', 'placute_PLA_18m.gcode', durata);
   assert.deepEqual(g, { titlu: 'K1C-8578: imprimarea s-a terminat', corp: 'placute_PLA_18m.gcode · 19 min · 3,7 m de filament' });
   assert.equal(textEveniment(e({ filament: 0 }), 'K', 'a.gcode', durata).corp, 'a.gcode');

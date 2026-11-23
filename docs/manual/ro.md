@@ -583,6 +583,35 @@ Butoanele sunt active doar cu două forme alese. Booleanul se refuză, cu motivu
 (o linie) sau are mai multe contururi (o piesă importată), dacă formele nu se ating (unirea și scăderea nu le-ar schimba), dacă
 nu au nimic în comun (intersecția) sau dacă din prima nu rămâne nimic (scăderea).
 
+## Legarea căilor
+%% capitol: legare
+%% acopera: document.leaga-caile, editare.legare.optiuni
+
+**Leagă căile** (butonul de lângă boolean, meniul de clic dreapta, `Ctrl+J`) face din căile deschise alese o singură cale,
+într-un pas de anulare: liniile unui SVG scrise separat, un contur desenat din două căi cu Pen-ul, ce rămâne după Retează.
+Formele închise și cele care nu sunt căi, printre cele alese, nu se ating.
+
+- Capetele care se ating (la cel mult 0,01 mm) devin un nod: capătul căii care e mai devreme în proiect. Doar câte două capete
+  într-un punct: trei capete (un T) rămân nelegate, iar mesajul spune câte.
+- Când după lipire rămân exact două căi, cele mai apropiate capete ale lor se leagă cu o linie dreaptă, oricât de departe ar fi.
+  Cu mai multe căi și goluri între ele, leagă-le câte două. O singură cale deschisă aleasă se închide cu o linie (deci `Ctrl+J`
+  din nou, după o legare, o închide).
+- O cale ale cărei capete se întâlnesc devine închisă; operația ei rămâne cea de dinainte (o gravare pe linie rămâne pe linie
+  până o schimbi).
+- Calea legată ia locul primei căi (aceeași piesă, același nume, același sens); celelalte pleacă.
+
+Legarea se refuză, cu motivul spus lângă butoane, dacă nu e aleasă nicio cale deschisă, dacă golul e mai mare decât lasă
+opțiunile, dacă **căile au operații diferite**, dacă o cale e într-o piesă cu mai multe forme și alta nu (degrupează întâi) sau
+dacă piesa e pusă de mai multe ori.
+
+**Opțiunile legării** (săgeata de lângă buton) se țin în browser, aceleași și în Verificarea vectorilor:
+
+- **Lipește sub**: distanța sub care două capete devin un nod (implicit 0,01 mm);
+- **Golul dintre două căi**: **Cu linie** (implicit), **Linie, până la** un gol dat (implicit 1 mm) sau **Doar lipire**;
+- **Capetele lipite**: **Pe capătul primei** (implicit: prima cale rămâne exactă) sau **La mijloc** (ambele capete se mută cu
+  jumătate);
+- **Operații diferite**: **Nu leagă** (implicit) sau **Ia operația primei căi**.
+
 ## Degruparea
 %% capitol: degrupare
 %% acopera: document.degrupeaza
@@ -1126,7 +1155,8 @@ Verificarea te ajută întâi să găsești greșelile; desenul rămâne al tău
   drept prin încrucișare; peste prag, bucla devine o formă separată, în aceeași piesă și cu aceeași operație (un „8”
   devine două forme, care se ating în punctul de încrucișare). **Repară toate buclele** le face pe toate deodată;
 - **Unește**, pe nodurile prea apropiate din aceeași formă: șirul de segmente scurte devine un singur nod. **Unește toate
-  nodurile** le face pe toate. Nodurile a două forme diferite doar se arată.
+  nodurile** le face pe toate. Capetele a două căi se leagă, pe rândul lor, cu **Leagă** (prin lipire: devin o singură cale),
+  iar **Leagă toate căile** le leagă pe toate (vezi Legarea căilor); celelalte noduri a două forme doar se arată.
 
 Intersecțiile dintre forme doar se arată: pot fi voite, fiindcă freza urmează fiecare formă cu rolul ei, iar exportul
 spune ce nu se poate tăia. O formă dintr-o piesă pusă de mai multe ori nu se repară de aici, fiindcă reparația le-ar
@@ -1733,7 +1763,11 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   de pe ecranul ei.
 - **Starea.** Sus stă banda imprimantei: starea (Liberă, Se pregătește, Imprimă, Pauză, Oprită, Gata), numele, adresa și
   firmware-ul. Dedesubt: lucrarea (fișierul, progresul, timpul trecut și cel rămas, stratul), **Temperaturile** duzei, ale
-  patului și din carcasă și codul semnalat de imprimantă (textul lui îl arată ecranul ei).
+  patului și din carcasă și eroarea semnalată de imprimantă, explicată: codul de pe ecranul ei (de exemplu CX2585), dacă e
+  gravă sau obișnuită, ce s-a întâmplat și **Ce faci**, iar unde Creality are o pagină a codului, **Pagina Creality ↗**
+  (o filă nouă). Un cod pe care cvs2 nu-l cunoaște se spune ca atare, cu **Lista codurilor ↗** din wiki-ul Creality; textul
+  lui e pe ecranul imprimantei. Dicționarul (familia K1: K1, K1C, K1 Max) vine la prima eroare și merge și fără internet.
+  După o pană de curent, cardul spune că imprimanta te întreabă pe ecran dacă reia imprimarea; răspunsul îl dai acolo.
 - **Placa**, cât imprimă sau stă în pauză, în cardul lucrării: patul văzut de sus, mărit pe piese, cu fața imprimantei jos.
   Arată piesele (conturul lor; **piesa de acum**, cu un contur turcoaz; una **anulată**, tăiată), **duza** (un punct alb,
   doar cât imprimă) și, pentru fișierele trimise din cvs2, **stratul de acum** (portocaliu) peste cel de dedesubt. Lângă ea,
@@ -1751,7 +1785,8 @@ setare pe imprimantă. Imprimanta lucrează în paralel cu CNC-ul, deci fereastr
   _ . -; nimic scris de mână.
 - **Notificările** (cardul lor, în fereastra Imprimanta): **Pornește notificările** cere o dată permisiunea browserului. Sub
   **Anunță-mă când** alegi evenimentele: s-a terminat, s-a oprit, pauza din fișier (cu nota ei), altă pauză, fără filament,
-  o eroare, legătura pierdută cât imprimă și primul strat gata (oprit de la început). Cât cvs2 e ascuns, vine o notificare
+  o eroare (cu codul și ce faci), o pană de curent, legătura pierdută cât imprimă și primul strat gata (oprit de la început).
+  Cât cvs2 e ascuns, vine o notificare
   a sistemului (clic pe ea: fereastra Imprimanta); cât e în față, o bandă sus, cu **Deschide Imprimanta** și **Închide**.
   **Cu sunet**: câteva tonuri scurte. **Și notificarea sistemului cât cvs2 e în față**, dacă o vrei și atunci. **Procentul
   în titlul filei**: „45 % · CNC Vector Studio”. Pe butonul Imprimanta din bara de sus, un punct și procentul, oriunde ai
@@ -2080,6 +2115,7 @@ tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+D` | Duplică |
 | `Ctrl+G` | Grupează |
 | `Ctrl+Shift+G` | Degrupează |
+| `Ctrl+J` | Leagă căile |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |

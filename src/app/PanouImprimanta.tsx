@@ -40,6 +40,8 @@ import {
 } from '../machine/imprimanta/tinute.ts';
 import { stratViu, type StratViu } from '../machine/imprimanta/stratViu.ts';
 import { numeDeTrimis, urca, type MotivUrcare } from '../machine/imprimanta/urcare.ts';
+import { useCoduriImprimanta } from './coduriImprimanta.ts';
+import { DeLaImprimanta } from './EroareImprimanta.tsx';
 import { DIN_DESEN, gasesteFisier, tineFisier, type FisierTinut } from './fisiereImprimanta.ts';
 import { CardIstoric, useImprimariCvs2, useInregistrare } from './IstoricImprimanta.tsx';
 import { citesteSetariIstoric, scrieSetariIstoric, uneste, type DinFisier, type Istoric, type SetariIstoric } from './istoricImprimari.ts';
@@ -430,6 +432,8 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
   const cap = st.driver.capabilitati(i);
   const cereri = useCereri(i);
   const legata = st.legatura === 'conectat';
+  // Dicționarul codurilor familiei (3.6v): abia de la prima eroare.
+  const coduri = useCoduriImprimanta(st.driver.coduri, i.eroare);
   const totalStraturi = harta !== null && harta.straturi.length > 0 ? harta.straturi.length : i.straturi;
   const cuPlaca = (stare === 'imprima' || stare === 'pauza') && (harta !== null || (i.piese?.length ?? 0) > 0);
   // Încălzirea pornită fără o lucrare stă la vedere, în bandă, cu Răcește (ADR 0192 §D.15).
@@ -576,14 +580,7 @@ function Imprimanta({ st, dinDesen, deTrimis, inchideDinDesen, harta, etichete, 
           </section>
           <section className="imprimanta-card" aria-labelledby="imprimanta-de-la">
             <h3 id="imprimanta-de-la">{t('imprimanta.de-la')}</h3>
-            {i.eroare === null
-              ? <p className="imprimanta-slab">{t('imprimanta.fara-eroare')}</p>
-              : (
-                <div className="imprimanta-cod" data-testid="imprimanta-cod">
-                  <strong>{t('imprimanta.eroare', { cod: i.eroare })}</strong>
-                  <span>{t('imprimanta.eroare.text')}</span>
-                </div>
-              )}
+            <DeLaImprimanta eroare={i.eroare} cheie={i.cheieEroare} pana={i.reluareDupaPana} coduri={coduri} />
           </section>
         </div>
         <Temperaturi st={st} cap={cap} stare={stare} legata={legata} cereri={cereri} raceste={raceste} />

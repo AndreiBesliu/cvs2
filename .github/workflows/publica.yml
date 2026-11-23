@@ -4,6 +4,7 @@
 # variabilele fiecărui mediu (`INSTANTA`, `WIF_PROVIDER`, `SA_PUBLICARE`) le pune owner-ul o dată (ADR 0044, „Pașii
 # owner-ului”). Intrările ajung în `run:` doar prin `env:`, niciodată direct în comandă.
 name: publica
+run-name: publica ${{ inputs.instanta }} ${{ inputs.sha }}
 
 on:
   workflow_dispatch:

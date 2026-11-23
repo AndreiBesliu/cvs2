@@ -110,6 +110,8 @@ test('eroarea: `err.errcode` (0 = fără eroare), cu `key`; și ca număr gol', 
   assert.deepEqual(citesteCadru('{"err":{"errcode":5000,"key":12}}').stare, { eroare: 5000, cheieEroare: 12 });
   assert.deepEqual(citesteCadru('{"err":{"errcode":"2585"}}').stare, { eroare: 2585, cheieEroare: null });
   assert.deepEqual(citesteCadru('{"err":{"errcode":0,"key":5}}').stare, { eroare: null, cheieEroare: null });
+  // Cheia 0 nu numește nimic (3.6v): rămâne codul, ca fereastra să nu arate „Cod 0”.
+  assert.deepEqual(citesteCadru('{"err":{"errcode":2509,"key":0}}').stare, { eroare: 2509, cheieEroare: null });
   assert.deepEqual(citesteCadru('{"err":7}').stare, { eroare: 7, cheieEroare: null });
 });
 

@@ -11008,6 +11008,58 @@ rapide propus întâi?”).
   **Completed:** 22.11 16:17 (porțile lente terminate pe 21.11 seara; documentele comise pe 22.11, la cuvântul sesiunii
   principale: „neata, continua si porneste si worktrees”, al owner-ului).
 
+## 2026-11-22 — Felia 3.Tp↑b: pictogramele pieselor din galeriile atelierului Easy 3Draw (ADR 0281 §4) (Model: Claude Opus 5.5)
+
+**Prompt:** „neata, continua si porneste si worktrees” (owner-ul, pe 22.11, prin sesiunea principală: „Pornește 3.Tp↑b,
+pictogramele din ADR 0281”). Lucrată în worktree-ul `galeria` (ramura `wip/3.Tp-galeria-pe-file`, adusă la `main`
+`40487c43`, cu 3.Tp↑a unită). **Started:** 22.11, 16:16. **Completed:** 22.11, 17:40.
+
+- **Pictogramele:** pe fiecare buton al galeriilor (al familiei și al căutării), înaintea numelui, un desen mic al piesei, de
+  18 px: un SVG de 24 × 24, doar linii, de culoarea textului (deci după temă și după apăsare), ascuns cititoarelor de ecran
+  (butonul se numește tot ca piesa). Cele 25 de desene, făcute de mână după piesele din vederea 3D (cu valorile de pornire
+  ale editoarelor), alese pe foi de privire (desenul la 48 px și pe butoane, apăsat și nu, la 1x și 2x, mărit): unde un
+  desen semăna cu altceva (bila cu pictograma de „utilizator”, fulia cu o clepsidră, roata cu o țintă, șenila cu grinda),
+  a fost refăcut (știfturile plăcii sub bilă și cupă; fulia din față, cu găurile ei; roata cu spițe; șenila din zale).
+- **O piesă nouă** (elicele, ADR 0282, propuse în paralel) își pune desenul în `PICTOGRAME` (`atelier.ts`, lângă
+  `FAMILII`), pe un rând; până atunci are cubul generic, iar proba unitară i-l cere.
+- **Probele:** unitare 4 (`trenulet.pictograme.test.ts`: completitudinea în ambele sensuri, desenele diferite, doar forme
+  fără culori și stil, în pătratul de 24 cu tot cu linia, arcele urmărite pe toată lungimea lor; judecata însăși, pe desene
+  greșite), e2e 4 (`trenulet.pictograme.spec.ts`), plus pictogramele în proba din cvs2, în engleză (`trenulet.spec.ts`).
+  Pe `35121af0`: unit trenulet* și biblioteca* 129 / 129, e2e pluginului și al bibliotecii 50 / 50.
+- **Otrăvurile:** 18 / 18 (`3.Tpb.py`) pe `35121af0`, la prima rulare, după baza verde (unitare 4 / 4, e2e 4 / 4): 7
+  prin proba unitară, 11 prin e2e. Pornite după 6 minute de așteptare a liniștii. `verifica` pe cele 22 de liste ale
+  pluginului: aceleași 20 de VOID vechi.
+- **Privirea:** pagina de sine stătătoare (desktop 1x și 2x, telefon, luminos și întunecat: fiecare filă, cu o piesă
+  apăsată, și căutarea „con”) și cvs2 (română: desktop luminos, Legături; telefon întunecat, Roți; engleză: desktop
+  întunecat, Cărămizi și „gear”): toate butoanele cu pictogramă, de 18 × 18, centrate, de culoarea textului, fără depășire,
+  fiecare pe un rând, fără erori în jurnal. Butonul are 32 px în loc de 30.
+- **Porțile:** verzi pe `330a5873`: rapide (traducerile 0 lipsă, tsc, unit 9 670 / 0, 8 sărite, licențele, build,
+  determinismul; pornirea 107,2 / 115, cu ușa 111,2 / 115, totalul 741,9 / 800, al lui `main`: felia nu atinge
+  aplicația), lente (e2e 580 / 582 la prima rulare, cu 3 lucrători: două probe ale aplicației, neatinse de felie, căzute la
+  încărcare, `proiect.spec.ts:302` (un `toBeEnabled` de 5 s) și `simulare.spec.ts:53` (120 s depășite), au trecut reluate
+  singure, 25 / 25 pe fișierele lor; emulatoarele 101 / 101 și 29 / 29).
+- Pachetul Easy 3Draw 18.18.0, înregistrat în bibliotecă după ultima schimbare din `extensii/trenulet`.
+
+## 2026-11-23 — Lucrul în cloud: uneltele în repo, pregătirea mediului, felul de lucru (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! Putem sa mutam tot acest proiect in sesiune cloud? Vreau sa se faca in continuare sync pe folderul
+local, dar sesiunea sa lucreze in cloud pe repo din Github. Cat de complicat este si riscam cumva sa pierdem ceva progres?”,
+apoi „Da, începe”. **Started:** 23.11, 08:13 (ramura). **Completed:** 23.11, 08:20.
+
+- **Starea:** tot lucrul liniilor e pe GitHub (38 de ramuri, worktree-urile curate și împinse); unirea galeriei, singura
+  doar locală, împinsă ca `unire-2211c`.
+- **În repo:** `scripts/cloud/pregatire.sh` (mediul cloud, ca CI-ul: Node 26, npm ci, Edge, Java 21, firebase-tools 15.18.0,
+  Python 3), `docs/lucru-in-cloud.md` (o linie = o sesiune pe ramura ei: porțile ca în CI, otrăvurile în clonă, documentele,
+  unirea și publicarea, pauza), `scripts/rezolva-devlog.py` (ciocnirile din DEVLOG) și `scripts/ldraw/` (aducerea și
+  măsurarea pieselor LDraw, randarea 3D; biblioteca în `LDRAW_DIR`, implicit `.tmp/ldraw`, în afara repo-ului).
+- **Probat local:** tipurile (`randare.mts`, venit din `.tmp`, avea tipurile slabe: reparate), regulile de import,
+  licențele, randarea pe o piesă a motorului și pe LDraw 6041.
+- **Corectura, după documentația mediilor cloud** (citită pe 23.11; `9e3e288b`, 09:10, apoi rândul despre `node_modules`):
+  pregătirea nu mai iese cu eroare (o eroare ar opri pornirea sesiunii; ce lipsește se spune la „LIPSESC”), Node 26 e pus în
+  locul lui 22, primul în PATH-ul imaginii, Java 21 vine din imagine. Porțile întregi trec în CI (rapidul la push, completul
+  pornit pe ramură), iar comenzile lungi rulează în prim-plan, fiindcă containerul se suspendă când stă. **Completed:** 23.11,
+  09:37.
+
 ## 2026-11-21 — Felia 12.1↑e-2: dopul întors în locașul simulat, „Împreună (secțiunea)” (ADR 0179) (Model: Claude Opus 5.5)
 
 **Prompt:** owner-ul, la întrebarea „Ce fac mai departe pe linia incrustațiilor?” (variantele: „12.1↑e-2, secțiunea” / „Bifa pe
@@ -11056,3 +11108,140 @@ continua si porneste si worktrees”): aseară procesul s-a oprit cu felia scris
 - **Publicat:** canalul `incrustatii` (<https://cncvectorstudio-test--incrustatii-pt5g8i2y.web.app>, până pe 22.12), build-ul `a11d855e` (versiunea `a11d855e17f9`), verificat fără export, cu Playwright (panoul browserului aplicației era ascuns), în engleză, cu un profil curat (nimic lăsat în browserul aplicației). Pe cercul R15 cu incrustația în V (adâncimea 3, fierăstrăul 2), „Plug 1”, apoi „Together (section)”: „Plug 1, flipped in its pocket: the section at Y 50.10 mm”, desenul (placa, dopul întors, contactul verde, cleiul albastru, tăietura) și tabelul 2.50 / 2.50 mm, 100 % of the band / 100 %, 0.50 / 0.50 mm, 2.00 / 2.00 mm; 0 erori în consolă și în jurnalul local.
 - **Nu acum:** incrustația cu pereți drepți și treptele în secțiune (felia 12.1↑e-3), secțiunea aleasă cu mausul; bifa „prin
   foaie” pe fiecare rând (v26), la cuvântul owner-ului.
+
+## 2026-11-22 — Felia 10.3↑o: legarea căilor (ADR 0182) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, începe 10.3↑o” (owner-ul, 21.11, în sesiunea liniei `taiere`, după raportul lui 10.3↑n și răspunsurile la ADR
+0182); reluată pe 22.11 la „neata, continua si porneste si worktrees” (owner-ul, prin sesiunea principală). **Started:** 21.11,
+19:23. **Completed:** 22.11, 21:50.
+
+- **Ramura** `wip/10.3o-legare`, din vârful lui 10.3↑n (`2fce5b91`); `origin/main` `40487c43` (10.3↑n, titlul dopului, 3.To,
+  3.Tp↑a) unit în `b7f509b9`, fără conflicte (lucrul necomis, pus deoparte pe cele cinci fișiere atinse și pus la loc).
+- **Legarea** (`src/model/legareCai.ts`, pur, în worker, cererea `legare`): regulile importului DXF (lipirea sub toleranță, doar
+  câte două capete, lanțurile, cel închis), golul între exact două lanțuri, o singură cale închisă, calea în coordonatele primei
+  (arcele întoarse și oglindite, cubicele cu mânerele mutate), refuzurile cu motiv; `reparare.ts` își dă harta, felul
+  operațiilor și schimbările pieselor.
+- **Interfața:** butonul „Leagă căile” și săgeata „Opțiunile legării” (`PanouLegare.tsx`) în secțiunea booleanului, rândul din
+  meniul de clic dreapta, Ctrl+J și paleta (acțiunea `document.leaga-caile`); „Leagă” și „Leagă toate căile” în Verificare;
+  opțiunile ținute (`cncvs2.legare`). Manualul (ro, en): capitolul „Legarea căilor”, Verificarea, Ctrl+J. Textele (ro, en).
+- **Treceri:** (1) golurile: liniile vin doar între exact două lanțuri (un T sau trei lanțuri ar lega capete depărtate, la
+  întâmplare), iar o singură cale aleasă se închide (deci Ctrl+J din nou, după o legare, o închide); (2) e2e: rezultatul se
+  ștergea pe loc, fiindcă alegerea primește alt tablou după orice schimbare a documentului: se compară după conținut; limba
+  paginii de probă, română; (3) otrăvurile: rotirea lanțului închis era cod mort (mersul pornește chiar de la prima cale):
+  scoasă; probe noi înaintea rulării (prima și a doua cale întoarse la gol, arcul oglindit); L11, nevalidă (un `else` rămas
+  singur), rescrisă și prinsă; (4) CRLF scris de `Path.write_text` din Python în patru fișiere: adus la LF; (5) mărimea:
+  opțiunile într-un modul ușor de la început (lecția lui 10.3↑n), deci legarea a rămas toată în worker; (6) porțile: cu un cerc
+  ales, primul rând activ al meniului de clic dreapta devenise „Leagă căile” (`import.spec.ts:436` aștepta „Duplică”): comanda e
+  acum activă, în bară, în panou și în meniu, doar cu o cale deschisă aleasă.
+- **Otrăvurile** (`test/otravuri/10.3o.py`, e2e în `legare.spec.ts`): 25 / 25 prinse, în clona din afara Drive-ului; L11,
+  nevalidă la prima rulare, rescrisă (`181e270e`) și prinsă.
+- **Porțile:** întregi pe vârful feliei (`181e270e`, cu `main` `40487c43` unit): traducerile, cele trei compilatoare,
+  importurile, licențele, unit 9 677 (9 669 trecute, 8 sărite, 0 căderi), build-ul determinist (344 de fișiere identice), e2e
+  580 / 581 (`import.spec.ts:436`, rândul activ al meniului, reparat; trecerea 6), emulatoarele 101 / 101 și 29 / 29; apoi, pe
+  reparație (`3ad80ef2`): compilatorul, importurile, unit-urile manualului, acțiunilor și legării 30 / 30, e2e `import`,
+  `legare` și `boolean` 30 / 30.
+- **Mărimea:** pornirea +0,1 kB (107,2 → 107,3; cu ușa 111,3 / 115: acțiunea, tasta și eticheta ei în dicționarul de bază),
+  totalul +4,2 kB (742,0 → 746,2 / 800, A/B în clonă, pe `main` `40487c43` și pe `3ad80ef2`): workerul +2,4 kB (legarea), bucata
+  editării +1,6 kB (butoanele, panoul opțiunilor, depozitul, textele), Verificarea +0,2 kB; opțiunile stau într-un modul ușor,
+  deci legarea a rămas toată în worker.
+- **Publicat** pe canalul `taiere` (<https://cncvectorstudio-test--taiere-7mmspw7e.web.app>, până pe 22.12), pe `3ad80ef2`,
+  verificat (ro, en: două linii trase cu unealta Linie, lipite de lipirea de noduri, alese cu un cadru și legate cu Ctrl+J
+  într-un L (geometria citită din proiect, exactă), panoul opțiunilor în română, Anulează; nicio eroare în consolă).
+
+## 2026-11-21 — 3.6v–3.6x propuse: camera imprimantei și codurile ei explicate (ADR 0195) (Model: Claude Opus 5.5)
+
+**Prompt:** cererea sesiunii principale (21.11), după „da si vreau sa pornesti si restul worktrees” al owner-ului: „Continuă
+linia imprimantei. […] Proba pe K1C (ghidul, pașii 9–11) cere imprimanta owner-ului. Dacă are nevoie de el acum, spune-i
+într-un rând ce să facă, cu link-ul. Între timp, ia felia următoare din coada ta care nu așteaptă nici proba, nici o decizie.
+Dacă nu e niciuna, pregătește propunerea (ADR, schiță) și pune-i întrebarea, cu implicitul în față.”
+**Started:** 21.11, 17:55. **Completed:** 21.11, 18:25.
+
+- **Coada liniei:** grupurile 1–3 din cele șapte din 08.11 sunt gata și unite în `main`; urmează grupul 4, camera („1 → 2
+  → 3, apoi camera”, cu „Fiecare grup ar avea ADR-ul lui”), iar lângă ea codurile explicate (acceptate pe 07.11, promise de
+  cardul erorii). Nicio felie nu pornea fără o decizie: fiecare grup cere ADR-ul și schița înaintea codului; Moonraker
+  (ADR 0192 §E.19) vine după.
+- **Cercetarea:** Creality Print 4 (AGPL; citit, nimic copiat): textul unei erori se caută după `err.key` în `errorData.js`
+  (71 de chei pentru familia K1: 31 grave, 38 obișnuite, 2 speciale; 10 cu pagină în wiki); răspunsurile la o eroare
+  (Continuă = reia și `cleanErr`, Anulează = `stop` și `cleanErr`, pana de curent = `repoPlrStatus` 1 sau 0).
+  `creality-printer-monitor` (MIT): întâi `key`, apoi `errcode`. K2Dash (Unlicense): semnalizarea camerei, `POST
+  /call/webrtc_local` pe 8000, oferta și răspunsul în base64, citite de pe alt port (deci cu CORS, pe K2). mjpg-streamer:
+  `Access-Control-Allow-Origin: *`. Pe K1C-ul owner-ului (transcrierea din 07.11): `webrtcSupport: 1`, `video: 1`,
+  `repoPlrStatus: 0`.
+- **Propunerea:** ADR 0195 (propus), cu feliile 3.6v (codurile), 3.6w (camera WebRTC) și 3.6x (camera MJPEG); CSP-ul
+  neschimbat (`connect-src` are `http:` din 3.6h, `<video srcObject>` nu e o adresă, `img-src` are `blob:`). Două întrebări
+  care se exclud: schița; răspunsurile la o eroare din cvs2 (a: nu acum, recomandat; b: acum, cu confirmare). Schița, cu
+  formularul răspunsurilor: <https://claude.ai/artifact/BwK8f4t9vrsQ98JeENHKdC>.
+- **Pentru owner:** coada din fișă are acum și proba grupului 3 pe K1C (ghidul, pașii 9–11).
+- **Mărimea de azi:** totalul 739,4 / 800, pornirea cu ușa 111,2 / 115, măsurate de sesiunea principală pe 20.11, pe `b3c3970f` (`main` `a64adf6` adaugă doar CLAUDE.md și indexul ADR).
+
+## 2026-11-22 — 3.6v: codurile imprimantei explicate (ADR 0195 §A) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, recomandările” (owner-ul, la propunerea grupului 4, ADR 0195: 1a, schița așa; 2a, răspunsurile la o eroare
+rămân pe ecranul imprimantei). Reluată pe 22.11 la „Reia 3.6v: aseară procesul s-a oprit cât îți rulau porțile.” (sesiunea
+principală, după „neata, continua si porneste si worktrees” al owner-ului).
+**Started:** 21.11, 18:30. **Completed:** 22.11, 18:50.
+
+- **Cercetarea, în plus față de propunere:** „K1 Series Error Code Summary” (wiki-ul Creality: 89 de coduri, cu explicația
+  și soluția) a adus 61 de chei pe care tabelul Creality Print 4 nu le are și înțelesul lui 103; ecranul arată „Error
+  Key：104”, deci `err.key` e numărul de pe ecran. CC5000 (captura owner-ului din 03.11) e în tabelul Creality Print 6.
+  Paginile din wiki: 12, în engleză, verificate (200; o cale inventată, 404).
+- **Dicționarul:** 126 de chei, textele noastre în română și engleză (o singură sursă de lucru, din care au ieșit
+  tabelul și cele două fișiere de texte), `coduri/creality-k1.<limba>.json` la build, în precache, cu plafonul de 8 kB
+  gzip în poarta mărimii. Nu în fișierul GRBL: acela avea 9,1 din 12 kB și ar fi tras textele imprimantei în panoul CNC.
+- **Fereastra și notificările:** cardul „De la imprimantă” (codul de pe ecran, gravitatea, ce faci, pagina Creality, lista
+  codurilor pentru un număr necunoscut), banda cu explicația (făcută la randare), notificarea sistemului care așteaptă
+  explicația cel mult 1,5 s, evenimentul nou „Pană de curent” (pornit implicit).
+- **Driverul:** `DriverText.coduri`, `Imprimanta.reluareDupaPana` (`repoPlrStatus`), codul în evenimentul `eroare`.
+- **Recenzia proprie** (22.11; Workflow-ul cu agenți e refuzat aici fără o regulă de permisiune pusă de owner), pe
+  dimensiuni (forma și căutarea, cârligul și notificările, driverul și evenimentele, linkurile, textele și diacriticele),
+  trei reparații, fiecare cu proba și otrava ei: linkurile cardului se întindeau pe tot rândul grilei (un clic pe gol
+  deschidea pagina; U13); un dicționar care n-a venit nu se mai cerea până la redeschiderea ferestrei (acum, la eroarea
+  următoare; e2e nou, U14); cheia 0 cu un cod nenul ar fi arătat „Cod 0” fără dicționar (D03).
+- **Probe și porți:** 11 pe hârtie, cheia 0 în proba driverului, manualul (două controale), două e2e noi și două
+  actualizate; pe `805ad35b`: unit 9 693 (9 685 trecute, 0 căderi, 8 sărite), build-ul determinist (350 fișiere), e2e 582 / 582: 549 în rularea întreagă; cele 11 căderi, din încărcare (alte linii rulau e2e), singure 11 / 11; `imprimanta.spec.ts` e serial, deci cele 22 de după căderea lui `:294` (la deschiderea ferestrei) n-au rulat acolo: tot fișierul, singur, 30 / 30.
+  Otrăvurile (`test/otravuri/3.6v.py`): 46 / 46 (32 pe probele unitare, 14 prin e2e); din lista 3.6s, U02 adusă la codul nou și probată din nou.
+- **Pe drum:** procesul s-a oprit pe 21.11 seara, cât rulau porțile; pe `27bda139` trecuseră toate (e2e 563 / 571, cele
+  8 căderi, în probele altor linii, singure 8 / 8; otrăvurile 43 / 43). Azi: `main` adus de două ori (`40487c4`,
+  `69fe779`; ciocnirile doar în DEVLOG și în dicționarul roadmap-ului), recenzia, porțile din nou, pe vârf.
+- **Mărimea:** totalul 745,6 / 800 kB (+1,5 față de `main` `69fe779`, A/B), pornirea 107,2
+  (cu ușa 111,2 / 115), neschimbată. Privit în Edge, la 1280 px (luminos) și la 390 px (întunecat, în română și în engleză): cardul încape, iar „Pagina Creality ↗” ține cât textul (105 px; în engleză, 95), nu tot rândul.
+- **Canalul `imprimanta`:** <https://cncvectorstudio-test--imprimanta-9lyu4r3e.web.app>, cu ultimul commit al feliei.
+
+## 2026-11-23 — Lucrul în cloud, pasul 2: sesiunea principală în cloud (canalele, publicarea, felul de lucru) (Model: Claude Opus 5.5)
+
+**Prompt:** „ca sa fie clar, eu vreau sa mutam toata productia proiectului cvs2 in cloud, vreau sa dezvoltam toata aplicatia
+de acolo, cu toate worktrees si asa mai departe”. **Started:** 23.11, 10:20. **Completed:** 23.11, 11:05.
+
+- **Ce lipsea pentru sesiunea principală în cloud:**
+  - Publicarea pe test și pe live mergea deja din GitHub (`publica.yml`, serverul și hosting-ul, cu WIF).
+  - Canalele de previzualizare cereau acreditări locale. Acum le publică `.github/workflows/canal.yml`: în mediul `test`,
+    cu WIF, doar pentru o ramură cu rapidul verde, cu intrările doar prin `env:`.
+  - Așteptarea CI-ului și publicarea erau un script local. Acum sunt `scripts/cloud/ci-si-publica.sh`, care se poate relua
+    (o comandă ține cel mult 30 de minute în container, iar completul durează mai mult) și nu pornește de două ori
+    completul sau publicarea pe același sha.
+  - `publica.yml` are `run-name` („publica test <sha>”), ca rularea unui sha să se găsească.
+- **`docs/lucru-in-cloud.md`, a treia versiune:** sesiunea principală în cloud (unirea pe `unire-<data>`, porțile în CI, un
+  singur push, publicarea, live la cuvântul owner-ului); PR-ul liniei gata (prin `gh api`, fiindcă GraphQL e oprit în
+  container); canalele; ce rămâne pe calculatorul owner-ului (probele pe imprimantă și pe mașină, `docs/faza0/`,
+  sincronizarea folderului).
+- **Probat:** YAML-ul celor două workflow-uri, sintaxa scriptului, filtrele lui pe rulările reale (rapidul și completul
+  după sha, publicarea după titlu), doar citind.
+
+## 2026-11-23 — Notele liniilor în repo (`docs/linii/`), la mutarea în cloud (Model: Claude Opus 5.5)
+
+**Prompt:** la „Unde mut notele liniilor, ca sesiunile cloud să le aibă?”, owner-ul: „În repo, docs/linii”.
+**Started:** 23.11, 11:07. **Completed:** 23.11, 11:16.
+
+- **Ce s-a mutat:** cele 18 note cncvs2 din memoria sesiunii principale locale, câte una pe linie, în `docs/linii/<linie>.md`
+  (fără antetul memoriei, cu legăturile dintre ele rezolvate). Le-a adus un script, nu o copiere de mână.
+- **`docs/linii/lectii.md`:** lecțiile generale la care trimit notele (probe, porți, mutații, Firestore, capcanele
+  uneltelor), 21 întregi. 44 de lecții s-au născut în alte proiecte ale owner-ului: din ele a rămas doar rândul scurt, general.
+- **Scrise de mână:** `docs/linii/README.md` (indexul liniilor, cu ramura și starea pe 23.11) și
+  `docs/linii/principala.md` (sesiunea principală: rolul, unirea pas cu pas, felul de lucru al owner-ului, starea, lecțiile
+  cele mai folosite).
+- **Ecranul, înainte de repo-ul public:** fără secrete, fără găurile aplicației vechi încă live (singurul semnal,
+  „inject”, era despre scripturile injectate de Playwright), fără alte proiecte. Prenumele owner-ului și căile locale
+  apăreau deja în repo.
+- **`docs/lucru-in-cloud.md`:** nota liniei, citită la pornire și ținută la zi cu fiecare felie; nota sesiunii principale.
+- **Afară:** generatorul documentației din `/admin` citește doar `docs/etape` și `docs/adr`, iar probele documentelor citesc
+  fișiere numite, deci `docs/linii` nu schimbă nici build-ul, nici probele.

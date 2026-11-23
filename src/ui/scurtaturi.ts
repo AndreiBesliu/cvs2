@@ -10,6 +10,8 @@ export const TASTE: ReadonlyArray<readonly [tasta: string, actiune: string]> = [
   ['Ctrl+D', 'document.duplica-selectia'],
   ['Ctrl+G', 'document.grupeaza'],
   ['Ctrl+Shift+G', 'document.degrupeaza'],
+  // Legarea căilor (ADR 0182): Ctrl+J ar deschide altfel descărcările browserului.
+  ['Ctrl+J', 'document.leaga-caile'],
   ['Delete', 'document.sterge-selectia'],
   ['Ctrl+K', 'vedere.paleta'],
   ['Home', 'vedere.potriveste'],
