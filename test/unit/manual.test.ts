@@ -130,7 +130,7 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 111)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 112)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
@@ -147,9 +147,10 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   // duplicată, ștearsă, mutată sus și jos, numele și materialul ei, mutarea selecției pe altă foaie, foaia de dinainte și
   // următoarea; apoi comutatorul „Toate foile pe pânză” (felia 11.1↑b) și celelalte uși ale planșelor. Raportul foilor și
   // lista de tăiere (ADR 0210 §6, felia 11.6↑), încă una: `export.raport`. Fereastra Aspectul (ADR 0250 §3, felia 28.1↑b),
-  // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Legarea căilor (ADR
-  // 0182, felia 10.3↑o), încă două: acțiunea `document.leaga-caile` și opțiunile legării.
-  assert.equal(USI.length, 111);
+  // încă una: `vedere.aspect`. „Trimite la mașină” (ADR 0250, felia 28.1↑d), încă una: `export.trimite`. Imaginile foii
+  // (ADR 0272, felia 25.8↑a), încă una: `foaie.imagini`. Legarea căilor (ADR 0182, felia 10.3↑o), încă două: acțiunea
+  // `document.leaga-caile` și opțiunile legării.
+  assert.equal(USI.length, 112);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

@@ -955,7 +955,7 @@ also crosses the colours on outlines. A new number of colours clears the choices
 The traced drawing comes in as one shape, with the image (or the area) as its page: the image's bottom-left corner is the
 sheet's corner.
 Outer outlines are cut on the outside, holes on the inside, from each outline's direction. For now:
-- straightened scans come later;
+- the image itself can stay on the sheet, under the drawing, as an aid: see [Images on the sheet](#imagini-foaie);
 - an image over 16 megapixels is reduced first (the report says so); one with over 20,000 outlines is refused, with their
   number, as is a tracing that takes over 30 seconds: raise **Ignore specks under** or move the threshold;
 - a photo is read turned the way the phone shows it (the orientation stored in the file);
@@ -965,6 +965,39 @@ Outer outlines are cut on the outside, holes on the inside, from each outline's 
   read: save it as PNG then. Images inside SVGs are skipped, as before;
 - the image of a scanned PDF (JPEG, CCITT G3 / G4 or uncompressed) is traced at its DPI on the page, turned the way the
   page shows it; a JBIG2 or JPEG 2000 one is refused, naming it: save the page as PNG then.
+
+## Images on the sheet
+%% capitol: imagini-foaie
+%% acopera: foaie.imagini
+
+An image (a photo, a scan, a hand sketch) can stay on the sheet, under the drawing, faded: a drawing aid that you follow with
+the drawing tools or compare with the vectors traced from it. It is not cut and not exported.
+
+**How to place it:** from “Import…”, in the tracing window:
+- the **Keep the image on the sheet** tick (off by default; the choice is kept until you reload the page): **Import** adds
+  the vectors and, under them, the image, exactly on top of each other, in a single undo step;
+- the **Image only** button places it without vectors; it also works when the tracing fails (a photo with too many
+  outlines). Dropped on the board, the image has its centre at the drop point.
+
+What lands on the sheet is the image in the window: with the sheet or the scan straightened, if you ticked them, at the
+window's scale (the DPI, the width, the sheet format), and one over 16 megapixels, reduced. It sits under the drawing at
+40 % opacity.
+
+**Sheet images:** with nothing selected, the Properties panel has, under the sheet's fields, the **Sheet images** list.
+Each image has its thumbnail and name, the eye (visible or hidden), the padlock (locked or unlocked), the bin (removes it
+from the sheet) and **Opacity**, in per cent (1–100). Every change is one undo step.
+
+**Locked** (the default), the image is not selected: clicks reach the drawing, and the tools draw over it. **Unlocked**
+(open padlock), with the Select or Transform tool, it has a dashed outline and handles:
+- drag its inside to move it;
+- a corner to scale it, in proportion, with the opposite corner kept in place;
+- the handle above it to rotate it (with Shift, in steps of 15°).
+
+On a line of the drawing, the click stays with the shape; inside shapes, it goes to the image. Escape cancels a drag.
+
+Images are kept in the browser, next to the project, not in the document: on another computer or in another browser, the
+sheet shows only their place, dashed, and the list says they are missing. An image that no kept version of the project uses
+any more is deleted at a start-up, after at least a day. On a phone, images show but are not placed or changed.
 
 ## Cutting vectors
 %% capitol: taiere
