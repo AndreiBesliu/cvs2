@@ -2,7 +2,7 @@
 
 <!-- Adusă din memoria sesiunii principale pe 23.11.2026 (mutarea în cloud). De aici înainte o ține la zi linia, pe ramura ei, odată cu feliile. -->
 
-_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) GATA pe 23.11, în cloud: codul la `980dd920` (cu `main` `8f122eb6` adus), otrăvurile 43 / 43, canalul `980dd92059a6`; PR-ul spre `main` deschis, unirea e a sesiunii principale; 767,9 / 800 kB; urmează 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0273); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
+_cncvs2, linia trasării din imagine (etapa 25): 25.1↑–25.3↑b UNITE în main pe 09.11 (`e277836`); 25.4↑ (scanările și pozele, ADR 0224) UNITĂ în main pe 09.11 (`0ebbd99`, de la `304ea37`; vârful `30448ea`); 25.5↑ (foaia pozată oblic, ADR 0225) UNITĂ în main (`07df71f`, de la `1ca446b`; main `0e3725c`); 25.4↑b (lumina pe culori, ADR 0226) UNITĂ în main pe 16.11 (la `94bf287`); 25.3↑c (liniile mediane pe culori, ADR 0227) UNITĂ în main pe 16.11 (`380c053`); 25.3↑d (punctele pierdute, corectura ADR 0222) UNITĂ în main pe 17.11 (`dd21a8a`); 25.3↑e (rezultatul pe fiecare culoare, ADR 0228) UNITĂ în main pe 17.11 (`a3e81f6d`); 25.6↑ (imaginile TIFF, ADR 0229) UNITĂ în main pe 18.11 (`fd63de8e`); 25.7↑ (PDF-urile scanate, ADR 0270) UNITĂ în main pe 18.11 (`9bf53378`); 25.4↑c (îndreptarea scanărilor, ADR 0271) UNITĂ în main pe 22.11 (`9071e62f`); 25.8↑a (imaginile pe foaie, ADR 0272 acceptat „Da, 1a–3a”) UNITĂ în main pe 23.11 (`473f2e20`, PR #6, de la `2e8caa3e`); 25.9↑ (fereastra trasării, refăcută, ADR 0273) PROPUS pe 23.11 la „2”, cu schița și trei întrebări, codul după răspunsuri; 25.8↑b („Calibrează”, „Trasează…” din imaginea de pe foaie), DOAR la cuvântul owner-ului; ADR 0270–0279 ale trasării (următorul liber 0274); linia lucrează din 23.11 într-o sesiune cloud, pe ramura `wip/25.1-trasare` (worktree-ul local `cncvs2-lucru\trasare` e istorie)_
 
 Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce se mai poate face în paralel. Lângă ea: incrustațiile
 ([Incrustațiile (12.1↑)](incrustatii.md)), imprimanta ([Imprimanta 3D (K1C)](imprimanta.md)), planșele ([Planșele (etapa 11)](plansele.md)).
@@ -147,6 +147,20 @@ Pornită pe 07.11.2026 de sesiunea principală, după ce owner-ul a întrebat ce
   doar în DEVLOG): e2e-urile vecine cu urechile și exportul 154 / 154, totalul 770,1 / 800 kB, pornirea 108,5 / 115 (cu
   ușa 113,0). Văzut în captura panoului, în afara feliei: la 1400 px, etichetele câmpurilor Numele și Materialul ale
   foii apar tăiate la o literă („N”, „M”); rândurile sunt ale planșelor, felia nu le atinge.
+- **25.8↑a UNITĂ în `main`** pe 23.11 seara (`473f2e20`, PR #6, de la `2e8caa3e`, a patra unire din cloud, cu A.5).
+- **25.9↑ PROPUS** (23.11, la „2”; ADR 0273): la întrebarea owner-ului „cum se mai poate imbunatati trasarea din imagine? si ca
+  functionalitate si ca UI/UX”, lista de îmbunătățiri (interfața 1–7, funcțiile 1–9) și ordinea recomandată: imagini reale de
+  la owner, o felie de interfață, apoi freza pe contururi și „Drepte și arce”; „2” = felia de interfață. Măsurat în aplicație,
+  pe logoul owner-ului, la cinci ecrane și pe trei moduri, în română și în engleză (proba locală din `.tmp/ux/masuri.spec.ts`,
+  nepusă în repo): butonul Importă e sub marginea ecranului în 14 din 15 situații (se derulează toată fereastra, cu
+  previzualizarea); previzualizarea stă la 800 × 418; „Lățimea” e a imaginii; „Desenul” are punct (`toFixed` în
+  `DialogImport.tsx`). Propunerea: fereastra cât ecranul (previzualizarea crește, piciorul fix), Sursa și Rezultatul sus, apoi
+  grupurile Imaginea, Trasarea, Curățarea, Mărimea (rezumatul pe titlu), mărimea desenului, raportul pe scurt cu sugestiile ca
+  butoane, virgula; nucleul și ușa neschimbate. Schița: <https://claude.ai/artifact/UA5gA9u1wh7cbG8RG5RYjp> (formularul scrie
+  `raspunsuri/owner` în baza paginii: citește-l cu ArtifactData la „gata”; colecția era goală la publicare). Întrebările: 1
+  comutatorul Simplu / Avansat (a: fără), 2 ce mărime scrii la deschidere (a: a desenului), 3 ce rămâne fix după ce ai scris
+  mărimea desenului (a: mărimea scrisă). Restul listei (rețetele, efectul reglajelor, clicul pe o pată, freza pe contururi,
+  „Drepte și arce”, silueta și șablonul, culorile în incrustații, treptele de gri, radiera) rămâne pe felii ale lor.
 - **25.8↑b (urmează, la cuvântul owner-ului):** „Calibrează” (două puncte și distanța), „Trasează…” din imaginea de pe
   foaie (cu zona), numele imaginilor în raportul foii (ADR 0272 §6, §7, §10).
 - **În cloud (din 23.11):**

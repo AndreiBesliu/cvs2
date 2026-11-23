@@ -11667,3 +11667,27 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
 - **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
   indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).
+
+## 2026-11-23 — ADR 0273 propus: fereastra trasării, refăcută (felia 25.9↑), cu schița (Model: Claude Opus 5.5)
+
+**Prompt:** „cum se mai poate imbunatati trasarea din imagine? si ca functionalitate si ca UI/UX” (owner-ul, în sesiunea
+cloud a liniei trasării), apoi „2”, la „Ce aș face întâi” (punctul 2: „O felie de interfață: punctele 1, 2, 4 și 5 de la
+interfață, plus virgula”). **Started:** 23.11, 19:20. **Completed:** 23.11, 19:40.
+
+- **Răspunsul la întrebare:** fereastra deschisă în aplicația de pe ramură, pe logoul owner-ului, în cele trei moduri;
+  lista de îmbunătățiri (interfața: fereastra fără derulare, grupurile, rețetele, mărimea desenului, raportul scurt, efectul
+  reglajelor, clicul pe o pată; funcțiile: freza pe contururi, „Ce faci cu el?”, „Drepte și arce”, silueta și șablonul,
+  culorile în incrustații, treptele de gri, radiera, 25.8↑b, mărunte) și ordinea recomandată.
+- **Măsurat** (o probă locală, în afara repo-ului): butonul Importă e sub marginea ecranului în 14 din 15 situații (1024 × 768
+  … 1920 × 1080, pe Contururi, Culori și Linii mediane; în română și în engleză), previzualizarea stă la 800 × 418, „Lățimea”
+  e a imaginii (340,8 mm, desenul 327,06 × 72,42), „Desenul” e scris cu punct (`toFixed` în `src/ui/DialogImport.tsx`).
+- **Cercetarea:** Illustrator (Image Trace), LightBurn (Trace Image), Inkscape 1.2 (Trace Bitmap), Vectric (Trace Bitmap).
+- **ADR 0273, propus:** fereastra cât ecranul (previzualizarea crește, piciorul fix), Sursa și Rezultatul sus, grupurile
+  Imaginea, Trasarea, Curățarea, Mărimea (rezumatul pe titlu), mărimea desenului, raportul pe scurt cu sugestiile ca butoane,
+  virgula; nucleul și ușa neschimbate. Trei întrebări (comutatorul Simplu / Avansat, mărimea scrisă la deschidere, ce rămâne
+  fix după ce ai scris mărimea desenului).
+- **Schița:** <https://claude.ai/artifact/UA5gA9u1wh7cbG8RG5RYjp> (fereastra de azi cu măsurătorile, macheta care se poate
+  folosi, formularul, care scrie `raspunsuri/owner`; colecția, goală la publicare).
+- **Documentele:** ADR 0273 și rândul lui din index, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului
+  (4 texte noi), nota liniei (25.8↑a unită; următorul ADR, 0274). `main` (`d6fd5d68`, cu 25.8↑a unită) adus întâi în ramură.
+- **Codul:** după răspunsuri.
