@@ -15,7 +15,8 @@ var Atelier3D = (function () {
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
     mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number;
     dinti?: number; unghi?: number; sens?: string; modul?: number; janta?: number; banda?: string; spite?: string; nrSpite?: number; canal?: string;
-    latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string };
+    latCanal?: number; pereche?: number; butuc?: string; pinion?: number; piesa?: string; gauriStift?: string;
+    palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string; con?: string };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -77,6 +78,8 @@ var Atelier3D = (function () {
     // șenila (ADR 0280), ca LEGO 57518 pe pinionul 57519: zala sau pinionul (10 dinți, gaura de ax); `pereche` (dinții
     // celuilalt pinion) și `distanta` (dintre axe, în știfturi) sunt doar ale editorului, pentru montaj și „Fă șenila”
     senila: { piesa: "zala", gauriStift: "da", dinti: 10, gaura: "x", pereche: 10, distanta: 8 },
+    // elicea (ADR 0282): 3 palete, Ø72 (9 știfturi), pasul 0,7 × diametrul, răsucită, pe butucul LEGO cu gaura de ax
+    elice: { palete: 3, diametru: 72, pas: 0.7, latime: 30, forma: "rot", paleta: "rasucita", profil: "placa", sens: "dreapta", gaura: "x", con: "nu" },
     // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
     dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
@@ -89,7 +92,8 @@ var Atelier3D = (function () {
     ["caramizi", "Cărămizi", [["caramida", "Cărămidă / placă"], ["panta", "Pantă"], ["pantaInversa", "Pantă inversă"], ["pana", "Pană / aripă"], ["rotund", "Rotund / con"],
       ["lateral", "Știfturi pe lateral"], ["suport", "Suport (bracket)"], ["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"]]],
     ["legaturi", "Legături", [["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"], ["clema", "Clemă"], ["bara", "Bară"], ["maner", "Mâner"], ["bila", "Bilă"], ["cupa", "Cupă"]]],
-    ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]]
+    ["roti", "Roți", [["rotita", "Roată dințată"], ["conica", "Roată conică"], ["coroana", "Roată coroană"], ["conicaDubla", "Conică dublă"], ["fulie", "Fulie"], ["roata", "Roată cu anvelopă"], ["senila", "Șenilă"]]],
+    ["propulsie", "Elice", [["elice", "Elice"]]]
   ];
   /** Familia fiecărei piese din galerii. */
   const FAMILIA = new Map(FAMILII.flatMap(([f, , piese]) => piese.map(([k]): [string, string] => [k, f])));
@@ -127,6 +131,7 @@ var Atelier3D = (function () {
     fulie: `<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="7.6" r="1.3"/><circle cx="16.2" cy="10.6" r="1.3"/><circle cx="14.6" cy="15.6" r="1.3"/><circle cx="9.4" cy="15.6" r="1.3"/><circle cx="7.8" cy="10.6" r="1.3"/><path d="M12 11v2M11 12h2"/>`,
     roata: `<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.8"/><path d="M12 6v4.2M12 13.8V18M6 12h4.2M13.8 12H18"/>`,
     senila: `<path d="M8 6.5h8a5.5 5.5 0 0 1 0 11H8a5.5 5.5 0 0 1 0-11z" pathLength="48" stroke-dasharray="2.4 1.6"/><circle cx="8" cy="12" r="2.6"/><circle cx="16" cy="12" r="2.6"/>`,
+    elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8 7.7 7.6 2.7 10.8 1.9C13 1.4 14.6 6 13.3 10.2M14.2 11.7C17.8 10.5 22.3 12.8 21.3 16C20.7 18.2 15.9 17.3 12.9 14M11.1 14C10.4 17.8 6.1 20.5 3.9 18.1C2.3 16.4 5.5 12.7 9.8 11.7"/>`,
   };
   const PICTOGRAMA_GENERICA = `<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/>`;
   /** Butonul unei piese din galerie: pictograma ei, apoi numele (pictograma e ascunsă cititoarelor de ecran: butonul se
@@ -256,6 +261,11 @@ var Atelier3D = (function () {
       if (d.piesa !== "pinion") return d.gauriStift === "nu" ? tr("Zală de șenilă, fără găuri") : tr("Zală de șenilă");
       const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "nu" ? tr(", fără gaură") : "";
       return tr`Pinion de șenilă ${d.dinti ?? 10}${g}`;
+    }
+    if (d.tip === "elice") {
+      const g = d.gaura === "r" ? tr(", gaură rotundă") : d.gaura === "b" ? tr(", pentru bară") : d.gaura === "nu" ? tr(", fără gaură") : "";
+      const pl = d.paleta === "plata" ? tr(", plată") : "", s = d.sens === "stanga" ? tr(", stânga") : "", c = d.con === "da" ? tr(", cu con") : "";
+      return tr`Elice Ø${fmt(d.diametru ?? 72, 1)} cu ${d.palete ?? 3} palete, pasul ${fmt(d.pas ?? 0.7, 2)}${pl}${s}${g}${c}`;
     }
     if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
@@ -397,6 +407,21 @@ var Atelier3D = (function () {
     if (m.aproape) return tr`Pinioanele de ${m.z1} și ${m.z2} s-ar atinge cu axele la ${fmt(m.d, 2)} mm: depărtează-le.`;
     return tr`Pe pinioanele de ${m.z1} și ${m.z2}, cu axele la ${fmt(m.d, 2)} mm (${stf}), șenila are ${zaleText(m.zale)} (${m.zale * 12} mm) și rămân ${fmt(m.joc, 1)} mm de joc; întinsă, axele ar sta la ${fmt(m.intins, 2)} mm.`;
   }
+  function textElice(p: { palete?: number; diametru?: number; pas?: number; latime?: number; paleta?: string }): string {
+    // elicea din editor: pasul, unghiul paletei (la butuc și la vârf, sau același, la cea plată) și consola la vârf, pe strat
+    const c = Lego.eliceCote(p), g = (x: number) => fmt(x * 180 / Math.PI, 0);
+    const paleta = c.plata ? tr`Paleta plată, la ${g(c.bVarf)}° de la butuc la vârf, ca la LEGO.` : tr`Paleta răsucită: ${g(c.bRad)}° lângă butuc, ${g(c.bVarf)}° la vârf.`;
+    return tr`Pasul ${fmt(c.P, 0)} mm (${fmt(c.pd, 2)} × diametrul). ${paleta} Se tipărește fără suport: la vârf, un strat iese cu ${fmt(c.consola, 1)} mm peste cel de dedesubt.`;
+  }
+  // „Ca LEGO” (ADR 0282, cotele din LDraw, măsurate față de axa găurii, nu față de centrul cutiei): diametrul (vârfurile la
+  // 13,69, 21,56 și 36,96 mm de axă: cât spun numele pieselor, 3½, 5½ și 9 știfturi), paleta plată cu unghiul de la 70 % din
+  // rază (6041: 23°; 92842 și 15790: 15°; pasul = π · 0,7 · tan β), coarda (procent din rază), gaura și sensul piesei (6041 e
+  // un elicoid stâng; celelalte două, drepte): elicea tipărită împinge aerul ca piesa LEGO pe care o înlocuiește
+  const ELICE_LEGO: Readonly<Record<string, Partial<typeof stare.elice>>> = {
+    "6041": { palete: 3, diametru: 27.4, pas: 0.93, latime: 60, forma: "drept", paleta: "plata", sens: "stanga", gaura: "x" },
+    "92842": { palete: 3, diametru: 43.1, pas: 0.59, latime: 29, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },
+    "15790": { palete: 3, diametru: 73.9, pas: 0.59, latime: 25, forma: "drept", paleta: "plata", sens: "dreapta", gaura: "r" },
+  };
   function textDubla(d: { dinti?: number; modul?: number }, pereche: number): string {
     // cum stau axele unei conice duble și ale perechii ei: paralele (distanța, ca la rotițe) și la 90° (planul de mijloc al
     // fiecăreia de axul celeilalte), pe grilă sau nu; perechea strânsă la 90° (o roată mică cu una mult mai mare) se spune
@@ -404,7 +429,12 @@ var Atelier3D = (function () {
     return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.` + strans;
   }
   function editor() {
-    const t = stare.tip, e = $("#at-editor");
+    const e = $("#at-editor"), activ = document.activeElement;
+    // un câmp al editorului în care omul tocmai a scris (valoarea încă neluată) se ia întâi. Redesenarea îl scoate din pagină,
+    // iar browserul îi dă `change` chiar atunci, în mijlocul ei: valoarea ar intra în piesă, dar editorul ar rămâne desenat cu
+    // ce era înainte (o redesenare venită din altă parte: three.js sosit târziu, lista din baza artefactului)
+    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();
+    const t = stare.tip;
     if (t === "caramida") {
       const p = stare.caramida;
       e.innerHTML = `<h2>Forma, pe grila de știfturi</h2>
@@ -860,6 +890,44 @@ var Atelier3D = (function () {
       $("#at-sn-pereche").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 6 && v <= 40) { p.pereche = v; editor(); } };
       $("#at-sn-distanta").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 2 && v <= 60) { p.distanta = v; editor(); } };
       $("#at-sn-fa").onclick = adaugaSenila;
+    } else if (t === "elice") {
+      // elicea (ADR 0282): paletele, diametrul, pasul, lățimea, forma, paleta (răsucită sau plată, ca LEGO), profilul, sensul,
+      // gaura și conul; „Ca LEGO” pune cotele măsurate în LDraw; „Fă perechea” pune în listă ambele sensuri
+      const p = stare.elice, lego = Object.keys(ELICE_LEGO).find(k => Object.entries(ELICE_LEGO[k]!).every(([c, v]) => (p as Record<string, unknown>)[c] === v)) ?? "";
+      e.innerHTML = `<h2>Elice</h2>
+        <p class="mic">Elice pentru motoarele LEGO, pe un butuc ca la LEGO (Ø8, înalt cât un știft), cu gaura din calibrare. Se tipărește fără suport: butucul și muchia de jos a fiecărei palete stau pe masă.</p>
+        <div class="at-rand"><span class="mic">Repede:</span>${seg("at-el-repede", [["6041", "Ca LEGO 6041"], ["92842", "Ca LEGO 92842"], ["15790", "Ca LEGO 15790"]], lego)}</div>
+        <div class="at-campuri">
+          <label for="at-el-palete">Paletele<input id="at-el-palete" type="number" min="2" max="8" step="1" value="${p.palete}"></label>
+          <label for="at-el-diam">Diametrul (mm)<input id="at-el-diam" type="number" min="20" max="200" step="0.1" value="${p.diametru}"></label>
+          <label for="at-el-pas">Pasul (× diametrul)<input id="at-el-pas" type="number" min="0.3" max="1.5" step="0.05" value="${p.pas}"></label>
+          <label for="at-el-lat">Lățimea (% din rază)<input id="at-el-lat" type="number" min="15" max="60" step="1" value="${p.latime}"></label>
+        </div>
+        <div class="at-rand"><span class="mic">Forma:</span>${seg("at-el-forma", [["rot", "Rotunjită"], ["ingust", "Îngustată"], ["drept", "Dreaptă"]], p.forma)}</div>
+        <div class="at-rand"><span class="mic">Paleta:</span>${seg("at-el-paleta", [["rasucita", "Răsucită"], ["plata", "Plată, ca LEGO"]], p.paleta)}</div>
+        <div class="at-rand"><span class="mic">Profilul:</span>${seg("at-el-profil", [["placa", "Placă curbată"], ["aripa", "Profil de aripă"]], p.profil)}</div>
+        <div class="at-rand"><span class="mic">Sensul:</span>${seg("at-el-sens", [["dreapta", "Dreapta"], ["stanga", "Stânga"]], p.sens)}</div>
+        <div class="at-rand"><span class="mic">Gaura:</span>${seg("at-el-gaura", [["x", "Pentru ax"], ["r", "Rotundă"], ["b", "Pentru bară"], ["nu", "Fără"]], p.gaura)}</div>
+        <div class="at-rand"><span class="mic">Conul:</span>${seg("at-el-con", [["nu", "Fără"], ["da", "Cu con"]], p.con)}</div>
+        <p class="mic" id="at-el-info">${textElice(p)}</p>
+        <div class="at-rand"><button class="btn" type="button" id="at-el-pereche">Fă perechea</button><span class="mic">${tr("pune în listă aceeași elice în ambele sensuri, pentru două motoare")}</span></div>`;
+      const alege = (id: string, f2: (v: string) => void) => { if (!$(id)) return; $(id).onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; f2(b.dataset.v!); editor(); schimbat(); }; };
+      alege("#at-el-repede", v => { Object.assign(p, ELICE_LEGO[v]); });
+      alege("#at-el-forma", v => { p.forma = v; });
+      alege("#at-el-paleta", v => { p.paleta = v; });
+      alege("#at-el-profil", v => { p.profil = v; });
+      alege("#at-el-sens", v => { p.sens = v; });
+      alege("#at-el-gaura", v => { p.gaura = v; });
+      alege("#at-el-con", v => { p.con = v; });
+      // câmpurile: doar valorile din plajă (altfel, ca la celelalte piese, rămâne ce era)
+      const camp = (id: string, zec: number, a: number, b: number, f2: (v: number) => void) => {
+        $(id).onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value * 10 ** zec) / 10 ** zec; if (v >= a && v <= b) { f2(v); editor(); schimbat(); } };
+      };
+      camp("#at-el-palete", 0, 2, 8, v => { p.palete = v; });
+      camp("#at-el-diam", 1, 20, 200, v => { p.diametru = v; });
+      camp("#at-el-pas", 2, 0.3, 1.5, v => { p.pas = v; });
+      camp("#at-el-lat", 0, 15, 60, v => { p.latime = v; });
+      $("#at-el-pereche").onclick = adaugaPerecheElice;
     } else if (t === "suport") {
       const p = stare.suport;
       e.innerHTML = `<h2>Suport (bracket)</h2>
@@ -1629,6 +1697,15 @@ var Atelier3D = (function () {
     pune({ tip: "senila", piesa: "pinion", dinti: m.z2, gaura: p.gaura }, n);
     salveaza(); randeazaLista();
     toast(tr`${n} × șenila (${zaleText(m.zale)}) și pinioanele de ${m.z1} și ${m.z2} în listă (axele la ${fmt(m.d, 2)} mm; întinsă, la ${fmt(m.intins, 2)}).`);
+  }
+  function adaugaPerecheElice() {
+    // aceeași elice, o dată pe dreapta și o dată pe stânga (pentru două motoare care se rotesc invers), câte bucăți sunt cerute
+    laZi();
+    const n = bucatiCerute(), d = defCurenta();
+    pune({ ...d, sens: "dreapta" }, n);
+    pune({ ...d, sens: "stanga" }, n);
+    salveaza(); randeazaLista();
+    toast(tr`${n} × perechea de elice (dreapta și stânga) în listă.`);
   }
   function adaugaPerecheRoti() {
     // roata de acum și perechea ei (dinții aleși; aceeași grosime, gaură și modul); la oblici și în V, cu sensul opus
