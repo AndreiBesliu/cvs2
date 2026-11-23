@@ -68,6 +68,30 @@ test('laturile: liniile în aceeași direcție sunt o latură, și peste vârful
   assert.deepEqual(laturiBucla(conturCerc(50, 50, 20)).laturi, []);
 });
 
+test('laturile: un arc desparte două linii din aceeași direcție, oriunde ar porni bucla; o linie dus-întors sunt două laturi', () => {
+  // Dreptunghiul 80 × 30 cu o scobitură semicirculară de rază 5 la mijlocul laturii de sus: sus rămân două laturi de 35.
+  const L = LINIE, jos = { tip: 'A', bulge: -1 } as const;
+  const varfuri = [
+    { p: { x: 0, y: 0 }, s: L }, { p: { x: 80, y: 0 }, s: L }, { p: { x: 80, y: 30 }, s: L }, { p: { x: 45, y: 30 }, s: jos },
+    { p: { x: 35, y: 30 }, s: L }, { p: { x: 0, y: 30 }, s: L },
+  ];
+  const A = 5 * Math.PI;
+  const de = (k: number): Contur => ({ inchis: true, varfuri: [...varfuri.slice(k), ...varfuri.slice(0, k)] });
+  const scobit = laturiBucla(de(0));
+  assert.ok(aproape(scobit.P, 210 + A, 1e-9));
+  egale(scobit.laturi.map((x) => x.s0), [0, 80, 110, 145 + A, 180 + A], 'pornirile');
+  egale(scobit.laturi.map((x) => x.lungime), [80, 30, 35, 35, 30], 'lungimile');
+  // Pornită imediat după arc (prima și ultima linie au aceeași direcție, dar între ele e arcul, la capătul buclei).
+  egale(laturiBucla(de(4)).laturi.map((x) => x.lungime), [35, 30, 80, 30, 35], 'după arc');
+  egale(laturiBucla(de(4)).laturi.map((x) => x.s0), [0, 35, 65, 145, 175], 'după arc, pornirile');
+  // Pornită chiar cu arcul (prima linie nu pleacă din vârful 0).
+  egale(laturiBucla(de(3)).laturi.map((x) => x.lungime), [35, 30, 80, 30, 35], 'cu arcul');
+  egale(laturiBucla(de(3)).laturi.map((x) => x.s0), [A, 35 + A, 65 + A, 145 + A, 175 + A], 'cu arcul, pornirile');
+  // Un ghimpe de 10 mm pe latura de sus (linia urcă și se întoarce pe ea însăși): urcușul și coborâșul sunt laturi diferite.
+  const ghimpe = laturiBucla(poligon([[0, 0], [80, 0], [80, 30], [40, 30], [40, 40], [40, 30], [0, 30]]));
+  assert.deepEqual(ghimpe.laturi.map((x) => x.lungime), [80, 30, 40, 10, 10, 40, 30]);
+});
+
 // ── Regulile, pe o buclă ──────────────────────────────────────────────────────────────────────
 
 test('regulile pe dreptunghiul 80 × 30 (P = 220, W = 6): lungi, scurte, mijloc; numărul împărțit pe laturile regulii', () => {
@@ -82,6 +106,8 @@ test('regulile pe dreptunghiul 80 × 30 (P = 220, W = 6): lungi, scurte, mijloc;
   assert.deepEqual(urechiPeLaturi(DREPT, 'lungi', 6, 3), { cate: 3, cerute: 3, centre: [20, 60, 150] });
   // Una singură: pe prima latură lungă.
   assert.deepEqual(urechiPeLaturi(DREPT, 'lungi', 6, 1), { cate: 1, cerute: 1, centre: [40] });
+  // Bucla pornită din mijlocul laturii de jos: urechea ei cade chiar în vârful 0 (180 + 40 = P), iar centrele ies crescătoare.
+  assert.deepEqual(urechiPeLaturi(poligon([[40, 0], [80, 0], [80, 30], [0, 30], [0, 0]]), 'lungi', 6, 2), { cate: 2, cerute: 2, centre: [0, 110] });
   // Pe drumul cu colțuri rotunde, aceleași locuri, mutate cu arcele de dinainte.
   egale(urechiPeLaturi(DRUM, 'scurte', 6, 2)?.centre ?? [], [80 + SFERT + 15, 190 + 3 * SFERT + 15], 'scurte pe drum');
   egale(urechiPeLaturi(DRUM, 'lungi', 6, 2)?.centre ?? [], [40, 110 + 2 * SFERT + 40], 'lungi pe drum');
@@ -107,6 +133,8 @@ test('o latură pe care nu încape o ureche nu numără: teșiturile mici, latur
   egale(urechiPeLaturi(tesit, 'scurte', 5, 2)?.centre ?? [], [72 + c / 2, 166 + 2 * c + c / 2], 'scurte, pe teșituri');
   // O ureche de 28 mm nu încape pe laturile de 30 (0,9 · 30 = 27): cele mai scurte laturi pe care încape sunt cele de 80.
   assert.deepEqual(urechiPeLaturi(DREPT, 'scurte', 28, 2), { cate: 2, cerute: 2, centre: [40, 150] });
+  // Chiar la limită (27 = 0,9 · 30), latura nu numără: cu rezerva de rotunjire, lucrarea n-ar primi nicio ureche pe ea.
+  assert.deepEqual(urechiPeLaturi(DREPT, 'scurte', 27, 2), { cate: 2, cerute: 2, centre: [40, 150] });
   // Nicio latură pe care să încapă: fără laturi (bucla rămâne la distanțe egale).
   assert.equal(urechiPeLaturi(DREPT, 'lungi', 80, 2), null);
   assert.equal(urechiPeLaturi(conturCerc(50, 50, 20), 'lungi', 6, 2), null);
@@ -125,6 +153,9 @@ test('laturile egale: pe un pătrat, două urechi stau pe laturi opuse; la mai p
   assert.deepEqual(urechiPeLaturi(conturDreptunghi(0, 0, 80, 79.5), 'lungi', 6, 4)?.centre, [40, 119.75, 199.5, 279.25]);
   assert.deepEqual(urechiPeLaturi(conturDreptunghi(0, 0, 80, 79), 'lungi', 6, 2)?.centre, [40, 199]);
   assert.deepEqual(urechiPeLaturi(conturDreptunghi(0, 0, 80, 79), 'scurte', 6, 2)?.centre, [119.5, 278.5]);
+  // Și la „scurte”: laturile de 30 și 30,2 (0,7 % diferență) sunt amândouă cele scurte, câte o ureche pe fiecare.
+  const sus = Math.hypot(80, 0.2);
+  egale(urechiPeLaturi(poligon([[0, 0], [80, 0], [80, 30], [0, 30.2]]), 'scurte', 6, 2)?.centre ?? [], [95, 110 + sus + 15.1], 'scurte, aproape egale');
 });
 
 test('o formă în L: cea mai lungă latură e una singură (două urechi pe ea, la 25 și 75), cea mai scurtă la fel', () => {
@@ -261,3 +292,56 @@ test('lucrarea: refuzurile urechilor rămân (puntea cât foaia, urechea mai scu
   assert.ok(lungi.ok);
   assert.notDeepEqual(lungi.program, fara.program);
 });
+
+// ── Două bucle: una cu laturi, una fără ───────────────────────────────────────────────────────
+
+/**
+ * Un dreptunghi 40 × 20 și un disc de rază 15 (centrul în (59, 10)), legate printr-un gât de 2 mm (sub diametrul frezei), tăiate
+ * pe dinăuntru cu Ø3,175: drumul frezei are două bucle. Cea din dreptunghi are laturile de jos și de sus de 40 − 2R = 36,825, pe
+ * cea din stânga de 20 − 2R = 16,825 și, în dreapta, două jumătăți de 9 − R = 7,4125 (gura gâtului le desparte cu două arce).
+ * Cea din disc are doar arce.
+ */
+const HALTERA: Radacina = (() => {
+  const xg = 59 - Math.sqrt(224);
+  const ocol = Math.tan((2 * Math.PI - 2 * Math.atan2(1, Math.sqrt(224))) / 4);
+  const L = { tip: 'L' } as const;
+  return {
+    tip: 'element', id: 'e', matrice: { ...I },
+    forma: {
+      tip: 'cale', inchis: true,
+      varfuri: [
+        { p: { x: 0, y: 0 }, s: L }, { p: { x: 40, y: 0 }, s: L }, { p: { x: 40, y: 9 }, s: L }, { p: { x: xg, y: 9 }, s: { tip: 'A', bulge: ocol } },
+        { p: { x: xg, y: 11 }, s: L }, { p: { x: 40, y: 11 }, s: L }, { p: { x: 40, y: 20 }, s: L }, { p: { x: 0, y: 20 }, s: L },
+      ],
+    },
+  };
+})();
+/** Câte urechi are bucla discului: mișcările pe arc la Z = −vârf (palierul unei urechi e un singur arc). */
+const peArce = (r: ReturnType<typeof cuRegula>): number => (r.ok ? r.program.miscari.filter((m) => m.tip === 'arc' && aproape(m.la.Z ?? 0, -VARF)).length : -1);
+
+test('lucrarea, două bucle: regula pe bucla cu laturi, distanțe egale pe cea fără; refuzul și avertismentul spun bucla', () => {
+  const lungi = cuRegula('lungi', 2, { latura: 'interior' }, HALTERA);
+  assert.ok(lungi.ok, lungi.ok ? '' : lungi.motiv);
+  tabele(mijloace(citeste(lungi.program.miscari, VARF).paliere), [[20, R, 6], [20, 20 - R, 6]], 'lungi');
+  assert.equal(peArce(lungi), 2);
+  // Semnele sunt doar ale urechilor puse după regulă (cele două de pe laturile lungi).
+  assert.equal(lungi.urechiLemn?.length, 2);
+  const scurte = cuRegula('scurte', 2, { latura: 'interior' }, HALTERA);
+  assert.ok(scurte.ok, scurte.ok ? '' : scurte.motiv);
+  tabele(mijloace(citeste(scurte.program.miscari, VARF).paliere), [[40 - R, (R + 9) / 2, 6], [40 - R, (11 + 20 - R) / 2, 6]], 'scurte');
+  const mijloc = cuRegula('mijloc', 2, { latura: 'interior' }, HALTERA);
+  assert.ok(mijloc.ok, mijloc.ok ? '' : mijloc.motiv);
+  tabele(mijloace(citeste(mijloc.program.miscari, VARF).paliere),
+    [[R, 10, 6], [20, R, 6], [20, 20 - R, 6], [40 - R, (R + 9) / 2, 6], [40 - R, (11 + 20 - R) / 2, 6]], 'mijloc');
+  assert.equal(peArce(mijloc), 2);
+  // Pe bucla discului (84,4 mm), 14 urechi de 6 mm nu încap la distanțe egale: refuzul modului „egale”, cu bucla.
+  const multe = cuRegula('lungi', 14, { latura: 'interior' }, HALTERA);
+  assert.ok(!multe.ok && /^i1\/e: bucla 1, fără laturi drepte: urechile nu încap: 14 urechi de 6 mm pe o buclă de 84\.4\d mm/.test(multe.motiv), multe.ok ? '' : multe.motiv);
+  // 12 încap pe disc; pe laturile lungi ale dreptunghiului, doar cinci pe fiecare (6 ≤ 0,9 · 36,825 / 5): avertismentul numește bucla.
+  const zece = cuRegula('lungi', 12, { latura: 'interior' }, HALTERA);
+  assert.ok(zece.ok, zece.ok ? '' : zece.motiv);
+  assert.equal(citeste(zece.program.miscari, VARF).paliere.length, 10);
+  assert.equal(peArce(zece), 12);
+  assert.deepEqual(zece.avertismente, ['urechile pe laturile lungi: o buclă are mai puține urechi decât cere numărul, fiindcă pe laturile ei nu încap mai multe: i1/e (bucla 2): 10 din 12']);
+});
+
