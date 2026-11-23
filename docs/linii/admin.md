@@ -13,7 +13,8 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - **Locul:** din 23.11, o sesiune cloud pe ramura `wip/A.1-admin` (linia continuă pe ea; felul de lucru:
   `docs/lucru-in-cloud.md`). Până atunci, worktree-ul local `admin`. Proba de pe emulatoare rulează cu UN lucrător (fiecare
   probă golește baza comună), pe 4173 și porturile emulatoarelor; în container sunt libere. Canalul `admin`
-  (<https://cncvectorstudio-test--admin-pz7pkdut.web.app>, până pe 18.12) se publică din GitHub (`canal.yml`).
+  (<https://cncvectorstudio-test--admin-pz7pkdut.web.app>, cu A.4 din 23.11, până pe 23.12) se publică din GitHub
+  (`canal.yml`, pentru o ramură cu rapidul verde).
 - **A.1 UNITĂ în main** (`5147f448`; `3.Aa`), **A.2 UNITĂ în main** (`ce5bd472`; `3.Ab`).
 - **A.3 UNITĂ în main pe 22.11** (`528ee187`, din `3ab5b1b3`; `3.Ac`; predarea în notele
   comune, `admin-A3.md`): Tichete ca o conversație (lista + detaliul, „Răspunde și rezolvă”, ciornele pe pagină, erorile din sesiune
@@ -22,11 +23,12 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
   regula `setari/raspunsuriRapide` (cu `tichete.raspunde`), secțiunea din Setări, pastilele din Tichete (la unire s-au
   publicat și regulile Firestore, și funcția `tichete`). `/admin` 113,7 → 121,2 (linia +14,7 din +25). Otrăvurile 59 / 59.
 - **A.4 (Sugestii ca tablă) GATA DE UNIT din 23.11** (`3.Ad`; pornită pe 22.11 la „Da, A.4”, oprită la pauza de seară,
-  încheiată în cloud, cu `main` `8f122eb6` adus în `141fe90e`): tabla deciziilor (o coloană pe stare, Respinsele dedesubt),
+  încheiată în cloud, cu `main` `8177ab81` adus în `5d4ea694`): tabla deciziilor (o coloană pe stare, Respinsele dedesubt),
   tragerea și „Mută în…” din tastatură, nota cerută la Respinsă și Amânată, mutarea arătată cât e în drum și ținută după
   răspuns fără recitire, detaliul ca fereastră, „Sugestie nouă”, „Ale mele” / „Toate”. Fără reguli, date sau funcții noi:
   **la unire se publică doar Hosting-ul.** `/admin` 121,2 → 124,1 / 200 kB (linia, +17,6 din +25). Otrăvurile 41 / 41 (14
-  unitare, 27 pe emulatoare; E12 scoasă cu regula ei CSS, echivalentă în Edge). Raportul și porțile: PR-ul ramurii spre `main`.
+  unitare, 27 pe emulatoare; E12 scoasă cu regula ei CSS, echivalentă în Edge). Raportul și porțile: PR-ul ramurii spre
+  `main`, AndreiBesliu/cvs2#3.
 - **Întrebarea la owner cu schiță** (ca linia planșelor): o pagină privată cu schițele de încercat și formularul, răspunsurile
   în baza ei (`raspunsuri`, scrise doar de owner); pentru 0261: <https://claude.ai/artifact/DhLTbJiBTWGdgjobiDcJb2>.
 - **Feliile rămase:** A.5 Utilizatori și Personal; A.6 Roadmap, Documentație, Setări (istoricul din audit, și al
@@ -52,7 +54,7 @@ tabla „Harta schițelor”. Owner-ul a cerut „vreau sa faci design si pentru
 - tabla (A.4): un mesaj pus deasupra ei la o mutare o împinge sub cursorul care trage, deci decizia se anunță doar pentru
   cititorul de ecran; un text lung `nowrap` dintr-un card lățește grila (și pagina): `minmax(0, 1fr)` + `min-width: 0`;
   `dragTo` din Playwright merge cu tragerea HTML5 în Edge; starea „în drum” se probează ținând callable-ul (portul 5005,
-  calea `/sugestii`); sugestiile din `beforeEach`-ul bancului vizual au id-uri de 21 de caractere, refuzate de server.
+  calea `/sugestii`); sugestiile din `beforeEach`-ul bancului vizual au id-uri de 21 de caractere, refuzate de server;
 - **în cloud, probele de pe emulatoare cer `apis.google.com` permis în mediu** (login-ul Google al emulatorului de Auth
   își încarcă scriptul de acolo; fără el, „Intră cu Google” dă `auth/internal-error` și fereastra nu se deschide). O probă
   în container, cu funcțiile compilate: `firebase emulators:exec --only auth,firestore,functions,storage --project

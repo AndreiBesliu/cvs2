@@ -11054,7 +11054,10 @@ rapide propus întâi?”).
   unitare 9 787 / 0 (12 sărite pe Linux), e2e 592 / 592, emulatoarele 104 / 104 și paginile 36 / 36. Completul a ținut 59
   de minute din cele 60 ale limitei (pasul unitarelor, 35 de minute; alte rulări din aceeași zi, vreo 43 în total). În
   container, înainte: proba Sugestiilor 5 / 5, toate paginile pe emulatoare 36 / 36, tipurile, probele documentelor 57 / 57.
-  Commit-ul final adaugă doar documentele și scoate `.lucru/`; porțile lui, în raportul din PR.
+  Commit-urile de după adaugă doar documentele, scot `.lucru/` și aduc `main` `8177ab81` (`5d4ea694`: rapidul verde,
+  unitare 9 800 / 0; mărimile, aceleași); porțile commit-ului final, în raportul din PR (AndreiBesliu/cvs2#3).
+- **Canalul `admin`:** <https://cncvectorstudio-test--admin-pz7pkdut.web.app>, publicat din GitHub (`canal.yml`) cu
+  `5d4ea694`, până pe 23.12.
 - **Documentele:** ADR 0260 („Implementarea”, A.4), fișa etapei 3 (rândul `3.Ad`) cu traducerea, rândul listei și bucla
   emulatoarelor în `docs/otravuri.md`, nota liniei (`docs/linii/admin.md`), `docs/lucru-in-cloud.md` (gazda permisă, bucla),
   DEVLOG. Setul de lucru adus din `.tmp` (`.lucru/`) a ieșit: ciornele au intrat în documente, bucla otrăvurilor în
