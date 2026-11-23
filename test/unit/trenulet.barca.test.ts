@@ -130,6 +130,13 @@ test('cotele: diametrul, butucul (Ø8, sau 18 % din diametru; înalt cât palete
   assert.ok(Math.abs(varf[2] - 16.3) < 1e-9 && varf[0] < 1e-9, `vârful capacului: ${varf}`);
   const laJum = Math.max(...vc.filter((q) => Math.abs(q[2] - (11.4 + 4.9 * 0.5)) < 1e-6).map((q) => q[0]));
   assert.ok(Math.abs(laJum - 4 * Math.cos(Math.PI / 6)) < 1e-6, `capacul la jumătatea înălțimii: ${laJum}`);
+  // o jumătate de elipsoid, din 6 inele: fiecare vârf, pe elipsa (r / 4)² + ((z − 11,4) / 4,9)² = 1; ultimul inel dinaintea
+  // vârfului, la 75°: r = 4 · cos 75° = 1,035, z = 11,4 + 4,9 · sin 75° = 16,133
+  for (const q of vc) assert.ok(Math.abs((q[0] / 4) ** 2 + ((q[2] - 11.4) / 4.9) ** 2 - 1) < 1e-9, `capacul, în afara elipsei: ${q}`);
+  const ultim = vc.filter((q) => q[0] > 1e-9 && q[2] > 11.4 + 4.9 * 0.9);
+  assert.ok(ultim.length > 0 && ultim.every((q) => Math.abs(q[0] - 4 * Math.cos(5 * Math.PI / 12)) < 1e-9 && Math.abs(q[2] - (11.4 + 4.9 * Math.sin(5 * Math.PI / 12))) < 1e-9),
+    `ultimul inel al capacului: ${ultim[0]}`);
+  assert.equal(new Set(vc.map((q) => q[2].toFixed(6))).size, 6, 'capacul: 5 inele peste butuc și vârful');
   // gaura: vârfurile ei, sub r 3,3 (sub rădăcina paletelor, r 3,6, și butucul, r 4)
   const gaura = (g: string) => {
     const v = polare(barca({ gaura: g })).filter((q) => q[0] < 3.3);
