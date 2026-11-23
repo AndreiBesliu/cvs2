@@ -12089,6 +12089,31 @@ sesiunii principale). Modelul: al sesiunii, în trailerul commit-urilor.
 - **Documentele:** decizia în `CLAUDE.md` și rândul de stare al regulilor (unită în `f4601938`); indexul liniilor, indexul
   ADR (0211, implementat în 11.3↑d–f), starea din `docs/linii/principala.md`, nota liniei (cu lecția ordinii).
 
+## 2026-11-23 — ADR 0300 propus: biblioteca de freze, „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau sa pot crea freze l sau profiluri de freze in aplicatie si sa le salvez in cont” (owner-ul, 23.11, în
+brief-ul liniei „freze”: ramura `wip/16.A-freze`, ADR-urile 0300–0309, canalul `freze`; întâi propunerea, fără cod de
+produs). **Started:** 23.11, seara, în sesiunea cloud a liniei. **Completed:** 23.11, 21:05.
+
+- **Ce e azi**, citit în cod: copia frezei pe fiecare operație (`SchemaScula`: T, nume, Ø, forma plată / V cu vârf), fără
+  tabelul `scule[]` din plan; valorile de lucru fixe pentru orice freză (`REGIM_IMPLICIT`: 18 000 rot/min, 1 000 și
+  300 mm/min); CAM-ul știe plata și V-ul, simularea și bila, oracolul și profilul ca puncte; nicio dată a omului în cont.
+- **Propunerea (ADR 0300):** fereastra „Frezele mele” (din meniul contului, paletă, export, Tăierea; și offline, și fără
+  cont), alegerea pe rândurile exportului și în Tăierea, documentul v27 (originea copiei, valorile de lucru, lungimea
+  tăișului; fără ele, programele octet cu octet), sincronizarea prin callable-ul `freze` cu copia din browser și îmbinarea pe
+  câmpuri, capabilitatea `cloud`, fișierul JSON și CSV, calibrarea, apoi bila, toroidala și profilul desenat, fiecare cu
+  simularea și oracolul ei. Șapte felii (16.A↑a–g); mărimea estimată: a–d încap (~787 / 800), formele noi cer decizia pe
+  plafon la felia lor.
+- **Schița**, cu machetele pe ambele teme, la birou și pe telefon, editorul frezei de încercat și șase întrebări, cu
+  răspunsurile salvate în pagină (doar owner-ul scrie; un vizitator obișnuit, refuzat): <https://claude.ai/artifact/HntiSsxBQyPFmZoA8B39EP>.
+- **Documentele:** ADR 0300 (propus), rândul în indexul ADR, titlul tradus (`node scripts/traduceri.ts --verifica`: 926,
+  0 lipsă), nota liniei (`docs/linii/freze.md`). Probele documentației în container: 58 / 58.
+- **Codul:** la răspunsurile owner-ului, începând cu 16.A↑a.
+- **Numărul, corectat:** scris întâi ca ADR 0290 (cum spunea brief-ul); la deschiderea PR-ului, `wip/28.8-export` avea deja
+  ADR 0290 (PR-ul `AndreiBesliu/cvs2#11`), iar `main` (`870e8759`) dăduse liniei frezelor 0300–0309. Cu `main` adus în
+  ramură (DEVLOG-ul cu `rezolva-devlog.py`), propunerea e acum ADR 0300, cu legătura spre fereastra exportului refăcută
+  (secțiunea „Freza” a fișei, dacă ea vine întâi).
+
 ## 2026-11-23 — 3.Xh: `main` adus a patra oară în ramură (11.3↑f) (sesiune cloud)
 
 **Prompt:** niciunul nou: vestea de pe PR-ul `AndreiBesliu/cvs2#4` că un push în `main` l-a lăsat iar cu ciocniri.
@@ -12244,6 +12269,27 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 - **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
   (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
   prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
+
+## 2026-11-23 — 16.A↑a: biblioteca de freze în browser, fereastra „Frezele mele” (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1a–6a” (owner-ul, la cele șase întrebări ale ADR 0300). **Started:** 23.11, 21:07.
+
+- ADR 0300 trecut pe „acceptat”, cu răspunsurile; felia 16.A↑a pornită (biblioteca în browser, fereastra, frezele de pornire,
+  fișierul, meniul contului și paleta, manualul).
+- **Modelul** (`src/model/freza.ts`), **fișierul** (`src/io/frezeFisier.ts`) și **depozitul** (`src/app/frezeMele.ts`,
+  IndexedDB `cncvs2-freze`), cu probele scrise înainte: 12 + 6 + 5 unitare.
+- **Fereastra** (`src/app/FrezeleMele.tsx`, modulul de mesaje `freze`), din meniul contului și din paletă, F1 la capitolul nou
+  (ro, en); e2e 9 noi. Capcana: spec-urile își pun singure româna (`test.use({ locale: 'ro-RO' })`); containerul pornește
+  Edge-ul în engleză.
+- **Porțile, în container:** tipurile, importurile (20 / 20), unitarele întregi 9 907 / 9 919 (12 sărite, 0 căzute),
+  traducerile (930, 0 lipsă), build-ul determinist (363 de fișiere), e2e-ul ferestrei și al vecinilor (cont, manual,
+  tutorial, aranjament, CSP, atelier, PWA, foi, import, așezare, piese legate, tăiere) 9 + 74 + 35, verzi. Rapidul în CI,
+  verde pe `1e330fd2`. Mărimea: pornirea 108,5 → 108,7 kB (cu ușa 113,2 / 115), totalul 770,9 → 779,9 / 800.
+- **Otrăvurile** (`test/otravuri/16.A-a.py`), într-o clonă: 46 / 46 prinse (31 unitare, 15 prin e2e); M15 a scăpat întâi
+  și e prinsă de o probă nouă (importul peste numele unei freze necitite); E08 refăcută (lăsa codul fără sintaxă).
+  `verifica` pe toate listele: aceleași 234 de VOID-uri ca pe `main`.
+- **Documentele:** ADR 0300 („Implementarea (16.A↑a)”), fișa etapei 3 (rândul `16.A↑a`), pragul, registrul otrăvurilor,
+  traducerile, nota liniei. **Completed:** 23.11, 22:20.
 
 ## 2026-11-23 — Sesiunea principală în cloud: a șaptea unire (3.Xh, biblioteca extensiilor refăcută; 12.1↑e-3 și 12.1↑e-4, pereții drepți și treptele în secțiune) (Model: Claude Fable 5.2)
 

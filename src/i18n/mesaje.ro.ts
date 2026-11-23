@@ -143,6 +143,7 @@ export const ro = {
   'vedere.foaia-urmatoare': 'Foaia următoare',
   'vedere.toate-foile': 'Toate foile pe pânză',
   'vedere.aspect': 'Aspectul interfeței',
+  'vedere.freze': 'Frezele mele',
   'tema.auto': 'după sistem',
   'tema.luminoasa': 'luminoasă',
   'tema.intunecata': 'întunecată',
