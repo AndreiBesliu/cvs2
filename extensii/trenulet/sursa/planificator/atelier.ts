@@ -429,7 +429,12 @@ var Atelier3D = (function () {
     return tr`Pe axe paralele, axele la ${fmt(a.paralel, 2)} mm, ${textGrila(a.paralel)}. La 90°, cu axele întâlnite: planul de mijloc al acesteia la ${fmt(a.acesta, 2)} mm de axul perechii, ${textGrila(a.acesta)}; al perechii, la ${fmt(a.perechea, 2)} mm de axul acesteia, ${textGrila(a.perechea)}.` + strans;
   }
   function editor() {
-    const t = stare.tip, e = $("#at-editor");
+    const e = $("#at-editor"), activ = document.activeElement;
+    // un câmp al editorului în care omul tocmai a scris (valoarea încă neluată) se ia întâi. Redesenarea îl scoate din pagină,
+    // iar browserul îi dă `change` chiar atunci, în mijlocul ei: valoarea ar intra în piesă, dar editorul ar rămâne desenat cu
+    // ce era înainte (o redesenare venită din altă parte: three.js sosit târziu, lista din baza artefactului)
+    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();
+    const t = stare.tip;
     if (t === "caramida") {
       const p = stare.caramida;
       e.innerHTML = `<h2>Forma, pe grila de știfturi</h2>

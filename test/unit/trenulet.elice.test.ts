@@ -269,6 +269,18 @@ test('profilul de aripă (NACA 4412), pe hârtie: gros de 12 % din coardă spre 
   assert.ok(Math.abs(s.puncte[7]!.mijloc - 2.387) < 2e-3 && Math.abs(s.puncte[5]!.mijloc - 2.049) < 2e-3, `săgeata: ${s.puncte[7]!.mijloc}, ${s.puncte[5]!.mijloc}`);
 });
 
+test('vârful paletei rotunjite, la diametrele la care ultima stație cade cu o rotunjire peste 100 % din paletă: 2 mm, fără NaN', () => {
+  // la 99 dintre diametrele din 0,1 în 0,1 mm (20,3; 20,8 … 155,3 … 195,8), r0 + (R − r0) · 28 / 28 iese cu un ulp peste R, iar
+  // 1 − ((x − 0,55) / 0,45)² coboară sub zero cu 9e-16: radicalul lui ar fi NaN, deci coarda vârfului și toată plasa lui
+  for (const diametru of [20.3, 20.8, 155.3, 177.8, 195.8]) {
+    const p = elice({ gaura: 'nu', diametru }), v = polare(p, centru(p)), R = diametru / 2;
+    assert.ok(p.tri.flat().every((q) => q.every(Number.isFinite)), `Ø${diametru}: un vârf fără coordonate`);
+    assert.equal(muchiiRele(p.tri), 0, `Ø${diametru}`);
+    const raze = statii(v), varf = sectiune(v, raze[28]!, Math.atan(0.7 * diametru / (2 * Math.PI * raze[28]!)), 3);
+    assert.ok(Math.abs(raze[28]! - R) < 1e-9 && Math.abs(varf.coarda - 2.0) < 1e-6, `Ø${diametru}: vârful la r ${raze[28]}, coarda ${varf.coarda}`);
+  }
+});
+
 test('butucul Ø8 × 8 și conul: paleta intră în butuc, conul stă în el cu 0,1 mm și îl închide sus', () => {
   const p = elice({ gaura: 'nu', con: 'da' }), v = polare(p, centru(p));
   // butucul: vârfurile de pe r 4, de la masă la 8

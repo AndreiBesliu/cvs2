@@ -15,9 +15,16 @@ import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 
+/** three.js din pachet (aceiași octeți ca pe cdnjs, ADR 0163): pagina de sine stătătoare îl cere de pe cdnjs, la intrarea în 3D. */
+const THREE = readFileSync('extensii/trenulet/sursa/vendor/three.min.js');
+
 async function atelierElice(page: Page): Promise<void> {
+  // three.js vine de aici, nu din rețea: când sosește, partea 3D alege din nou piesa și redesenează editorul. Proba așteaptă
+  // previzualizarea (pornirea încheiată) înainte să atingă editorul: altfel, redesenarea ar cădea în mijlocul unei scrieri
+  await page.route('https://cdnjs.cloudflare.com/**', (r) => r.fulfill({ body: THREE, contentType: 'application/javascript' }));
   await page.setContent(paginiPlanificator().preview);
   await page.locator('[data-mod="3d"]').first().click();
+  await expect(page.locator('#at-vedere canvas')).toBeAttached();
   await page.locator('#at-tipuri [data-fila="propulsie"]').click();
   await expect(page.locator('#at-galerie [data-piesa="elice"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø72 cu 3 palete, pasul 0,7');
@@ -183,6 +190,28 @@ test('editorul: fiecare alegere și fiecare câmp ajung în piesă; câmpurile, 
     await page.locator('#at-el-forma [data-v="rot"]').click();
     await expect(page.locator('#at-el-lat')).toHaveValue(bun);
   }
+});
+
+test('o redesenare a editorului sosită cât omul scrie într-un câmp (three.js venit târziu) ia întâi ce a scris: piesa și editorul spun același lucru', async ({ page }) => {
+  // three.js, ținut până îi dăm drumul: partea 3D îl așteaptă, apoi alege din nou piesa de acum și redesenează editorul
+  let daDrumul!: () => void;
+  const tinut = new Promise<void>((ok) => { daDrumul = ok; });
+  await page.route('https://cdnjs.cloudflare.com/**', async (r) => { await tinut; await r.fulfill({ body: THREE, contentType: 'application/javascript' }); });
+  await page.setContent(paginiPlanificator().preview);
+  await page.locator('[data-mod="3d"]').first().click();
+  await page.locator('#at-tipuri [data-fila="propulsie"]').click();
+  await page.locator('#at-el-repede [data-v="15790"]').click();
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø73,9 cu 3 palete, pasul 0,59, plată, gaură rotundă');
+  // omul a scris 4 în câmpul paletelor și e încă în câmp (valoarea nu e luată) când sosește three.js
+  await page.locator('#at-el-palete').fill('4');
+  await expect(page.locator('#at-el-palete')).toBeFocused();
+  daDrumul();
+  await expect(page.locator('#at-vedere canvas')).toBeAttached();
+  // redesenarea scoate câmpul din pagină, iar browserul îi dă `change` chiar atunci: valoarea intră în piesă. Editorul trebuie
+  // să arate aceeași piesă (4 palete, deci nu mai e „Ca LEGO 15790”), nu ce era înaintea scrierii
+  await expect(page.locator('#at-nume-piesa')).toHaveText('Elice Ø73,9 cu 4 palete, pasul 0,59, plată, gaură rotundă');
+  await expect(page.locator('#at-el-palete')).toHaveValue('4');
+  await expect(page.locator('#at-el-repede [aria-pressed="true"]')).toHaveCount(0);
 });
 
 test('„Fă perechea”: aceeași elice, pe dreapta și pe stânga, în listă; elicea din editor e același rând cu cea dreaptă', async ({ page }) => {

@@ -4,19 +4,18 @@
 # rădăcina din butuc, formele, coarda cea mai mică la vârf, limita corzii pe secțiunea reală, muchia de jos pe masă, așezarea
 # pe cilindru, paletele împărțite pe cerc, sensul), butucul (raza, înălțimea, cât cere paleta la rădăcină, gaura), conul (dacă,
 # cât de înalt, așezat în butuc), avertismentele; atelierul (fila și galeria, implicitele editorului, numele piesei, textul
-# elicei, „Ca LEGO” cu cotele și sensul fiecărei piese, alegerile, câmpurile cu plaja și rotunjirea lor, „Fă perechea”),
-# pictograma și traducerea. Textele fără diacritice rămase în română se văd doar în cvs2, în engleză: lista lor e `3.Tq-en.py`.
+# elicei, „Ca LEGO” cu cotele și sensul fiecărei piese, alegerile, câmpurile cu plaja și rotunjirea lor, „Fă perechea”,
+# redesenarea editorului cât omul scrie într-un câmp), pictograma și traducerea. Textele fără diacritice rămase în română se văd doar în cvs2, în engleză: lista lor e `3.Tq-en.py`.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă, după commit; setul „e2e” e
 # `test/e2e/trenulet.elice.spec.ts` (pagina de sine stătătoare a planificatorului, din aceleași surse).
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 #
-# Lăsate afară, ca echivalente:
+# Lăsată afară, ca echivalentă (rulată pe 0d027c5: scăpată, 12 / 12):
 # - `c = Math.max(t, c * U / lat * 0.995)` fără `Math.max(t, …)`: cu cel mult 8 palete pe butucul de r 3,6, pasul dintre palete e
 #   cel puțin 0,85 · 2π · 3,6 / 8 = 2,40 mm, iar secțiunea cu coarda cât grosimea (1,2) e lată de cel mult 1,2 · √2 + săgeata =
-#   1,75 mm: coarda nu ajunge niciodată la grosime (garda rămâne, pentru o plajă mai largă a paletelor);
-# - `ELICE.perSuprafata` (12 → 10): doar finețea plasei pe coardă (probele pe hârtie ale secțiunii ar cere alte puncte, dar
-#   forma rămâne aceeași în toleranță);
-# - `Math.max(0, 1 - ((x - 0.55) / 0.45) ** 2)` fără `Math.max(0, …)`: x e cel mult 1, deci radicalul nu coboară sub 0.
+#   1,75 mm: coarda nu ajunge niciodată la grosime (garda rămâne, pentru o plajă mai largă a paletelor).
+# Două pe care le socotisem echivalente nu erau (X01, X02, mai jos): rulate, una era prinsă deja, iar cealaltă a cerut proba ei
+# (garda radicalului ține plasa întreagă la 99 dintre diametrele din 0,1 în 0,1 mm).
 O = []
 
 
@@ -151,6 +150,11 @@ o('B11', E, 'const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh, con: Tri
 o('B12', E, 'const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh, con: Tri[] = [];', 'const n = N_CERC, z0 = Hh - 0.1, zv = Hh + ELICE.con * rh * 2, con: Tri[] = [];', 'elice',
   'conul de două ori mai înalt')
 
+# Două pe care le socotisem echivalente, rulate ca să se vadă (unitare).
+o('X01', E, K, K.replace('perSuprafata: 12,', 'perSuprafata: 10,'), 'elice', 'secțiunea din 10 bucăți pe față, nu 12 (plasa mai rară pe coardă)')
+o('X02', E, '(x <= 0.55 ? 1 : Math.sqrt(Math.max(0, 1 - ((x - 0.55) / 0.45) ** 2)));', '(x <= 0.55 ? 1 : Math.sqrt(1 - ((x - 0.55) / 0.45) ** 2));', 'elice',
+  'rotunjita, fără garda radicalului (la vârf, un rest de rotunjire negativ ar da NaN)')
+
 # Avertismentele (unitare).
 o('V01', E, 'if (Number.isFinite(+(d.palete as number)) && q.z !== +(d.palete as number)) avert.push(', 'if (Number.isFinite(+(d.palete as number)) && q.z === +(d.palete as number)) avert.push(', 'elice',
   'paletele în afara plajei, nespuse (și spuse când sunt în plajă)')
@@ -242,6 +246,13 @@ o('R02', A, '    pune({ ...d, sens: "dreapta" }, n);\n    pune({ ...d, sens: "st
 o('R03', A, '    pune({ ...d, sens: "dreapta" }, n);\n    pune({ ...d, sens: "stanga" }, n);', '    pune({ ...d, sens: "dreapta" }, n);\n    pune({ ...d, sens: "stanga" }, 1);', 'e2e',
   '„Fă perechea” pune o singură elice pe stânga, oricâte bucăți sunt cerute')
 o('R04', A, '$("#at-el-pereche").onclick = adaugaPerecheElice;', '$("#at-el-pereche").onclick = adaugaInLista;', 'e2e', '„Fă perechea” doar adaugă elicea din editor')
+
+# Redesenarea editorului cât omul scrie într-un câmp (e2e): fără luarea câmpului întâi, piesa are 4 palete și editorul 3.
+o('D01', A, '    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();\n', '', 'e2e',
+  'redesenarea editorului nu ia întâi câmpul în care scrie omul (piesa și editorul spun lucruri diferite)')
+o('D02', A, '    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();\n    const t = stare.tip;',
+  '    const t = stare.tip;\n    if (activ instanceof HTMLElement && e.contains(activ)) activ.blur();', 'e2e',
+  'câmpul, luat după ce s-a citit piesa de desenat (ordinea: aceeași stare, dar luarea trebuie să rămână înaintea desenării)')
 
 # Pictograma și traducerea (unitare).
 o('G01', A, '    elice: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', '    elice2: `<circle cx="12" cy="12" r="2.2"/><path d="M10.7 10.2C7.8', 'pictograme', 'elicea fără pictogramă')
