@@ -2,7 +2,8 @@
 # partea pură (istoricul setărilor din audit: setările conturilor de la cât la cât, răspunsurile rapide adăugate, scoase,
 # schimbate sau doar mutate, ordinea; cuprinsul documentului, secțiunea de acum, titlul ADR-ului despărțit, data stării) și
 # paginile pe emulatoare (cuprinsul alături și deasupra, secțiunea de acum la derulare și la capătul paginii, clicul și al
-# doilea clic, starea ADR-ului sub titlu; „Ce așteaptă de la tine” lipit alături de etape, semnele pistei în coloana lor;
+# doilea clic, starea ADR-ului sub titlu; „Ce așteaptă de la tine” lipit alături de etape, semnele pistei în coloana lor,
+# pista pe un rând doar cât are loc;
 # istoricul fiecărei setări sub butonul ei, citit din nou după o salvare). Felia nu schimbă serverul, nici regulile.
 # Unitarele se rulează cu `scripts/otravuri.py`, cele de pe emulatoare cu `scripts/otravuri-emulatoare.py` (docs/otravuri.md),
 # dintr-o clonă, după commit. o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
@@ -86,10 +87,12 @@ o('E15', CR, '  .rm-owner {\n    position: sticky;', '  .rm-owner {\n    positio
 o('E16', CR, '  .rm-owner-lista {\n    overflow: auto;', '  .rm-owner-lista {\n    overflow: visible;', 'e2e', 'lista lungă iese din panoul ei')
 o('E17', CR, '    max-height: calc(100vh - 2 * var(--sp-3));\n', '', 'e2e', 'panoul listei e mai înalt decât ecranul')
 o('E18', CR, '@container (max-width: 68.5rem) {', '@container (max-width: 20rem) {', 'e2e', 'semnele pistei înguste intră în coloana vecină')
-o('E19', CR, '  .rm-pista {\n    column-gap: 1px;\n  }\n\n', '', 'e2e', 'la 1 024 px, „↑13” nu mai încape în coloana lui')
+o('E19', CR, '  .rm-pista {\n    column-gap: 1px;\n  }\n\n', '', 'e2e', 'la 990 px, „↑13” nu mai încape în coloana lui')
 o('E20', CR, '    flex-wrap: wrap;\n    justify-content: center;\n    align-content: center;', '    justify-content: center;\n    align-content: center;', 'e2e',
   'semnele unei etape rămân pe un rând, peste coloana vecină')
 o('E21', CR, '  .rm-cifre {\n    grid-column: 1 / -1;\n  }\n', '', 'e2e', 'cifrele ocupă coloana listei și o mută lângă etape')
+o('E31', CR, '@container (min-width: 42rem) {', '@container (min-width: 30rem) {', 'e2e',
+  'la 940 px, toate etapele pe un rând, iar semnele lor intră în coloana vecină')
 
 # Pagina, pe emulatoare: Setări.
 o('E22', IS, "where('tinta', '==', tinta)", "where('rol', '==', 'owner')", 'e2e', 'istoricul unei setări le arată pe toate (și conturile)')
@@ -117,6 +120,6 @@ S1, S2, S3 = (SU, 'istoricul setărilor'), (SU, 'setările: implicitele până l
 GREP = {
     'E01': D1, 'E02': D1, 'E03': D1, 'E04': D1, 'E05': D1, 'E06': D1, 'E07': D1, 'E08': D1, 'E09': D1, 'E10': D1, 'E11': D1, 'E12': D1,
     'E13': D1,
-    'E14': R1, 'E15': R1, 'E16': R1, 'E17': R1, 'E18': R1, 'E19': R1, 'E20': R1, 'E21': R1,
+    'E14': R1, 'E15': R1, 'E16': R1, 'E17': R1, 'E18': R1, 'E19': R1, 'E20': R1, 'E21': R1, 'E31': R1,
     'E22': S1, 'E23': S1, 'E24': S1, 'E25': S1, 'E26': S1, 'E27': S1, 'E28': S2, 'E29': S1, 'E30': S3,
 }

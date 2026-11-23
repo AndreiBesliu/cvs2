@@ -344,4 +344,15 @@ test('Roadmap (ADR 0260 §8): „Ce așteaptă de la tine” alături de etape �
   await page.setViewportSize({ width: 1024, height: 900 });
   await expect.poll(async () => (await cutie(owner)).jos <= (await cutie(cronologie)).sus).toBe(true);
   expect(await iesite()).toEqual([]);
+  // Etapele stau pe un rând cât au loc (la 990 px, strânse una lângă alta); la 940 px, pe mai multe rânduri, ca pe telefon.
+  // Rândurile pistei: sus-urile butoanelor, grupate (un buton ales sau un tampon stă cu câțiva pixeli mai jos în rândul lui).
+  const randuri = () => page.locator('.rm-etapa').evaluateAll((l) => l.map((b) => b.getBoundingClientRect().top).sort((x, y) => x - y)
+    .filter((y, i, t) => i === 0 || y - (t[i - 1] ?? y) > 20).length);
+  expect(await randuri()).toBe(1);
+  await page.setViewportSize({ width: 990, height: 900 });
+  await expect.poll(randuri).toBe(1);
+  expect(await iesite(), '990 px').toEqual([]);
+  await page.setViewportSize({ width: 940, height: 900 });
+  await expect.poll(randuri).toBeGreaterThan(1);
+  expect(await iesite(), '940 px').toEqual([]);
 });
