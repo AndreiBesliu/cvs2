@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import type { Roadmap } from '../../shared/documentatie.ts';
 
 /**
@@ -214,4 +214,145 @@ test('adresa: /admin#documentatie/… deschide documentul după login; un docume
   await expect(page.locator('article[data-document="docs/etape/etapa-03.md"] h2').first()).toContainText('Etapa 3');
   await page.evaluate(() => { location.hash = '#documentatie/docs/adr/9999-nu-exista.md'; });
   await expect(page.locator('.doc-articol [role="alert"]')).toContainText('9999-nu-exista.md');
+});
+
+/** Cutia unui element pe ecran (în px). */
+const cutie = async (l: Locator) => {
+  const b = await l.boundingBox();
+  if (!b) throw new Error('elementul nu se vede');
+  return { sus: b.y, jos: b.y + b.height, stanga: b.x, dreapta: b.x + b.width };
+};
+
+test('Documentație (ADR 0260 §8): cuprinsul alături, cu secțiunea de acum și clicul pe ea; starea ADR-ului sub titlu; la 1 024 px, cuprinsul deasupra', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const CALE = 'docs/adr/0260-adminul-reproiectat.md';
+  await intraCaOwner(page, `/admin#documentatie/${CALE}`);
+  const articol = page.locator(`article[data-document="${CALE}"]`);
+  const titlu = articol.locator('h2').first();
+  await expect(titlu).toContainText('ADR 0260 — Pagina /admin reproiectată');
+
+  // Starea, sub titlu: insigna și ziua din rândul „**Starea:**”.
+  const stare = articol.locator('[data-doc-stare="acceptat"]');
+  await expect(stare.locator('.doc-stare')).toHaveText('acceptat');
+  await expect(stare).toContainText('13.11.2026');
+  expect((await cutie(stare)).sus).toBeGreaterThanOrEqual((await cutie(titlu)).jos - 1);
+
+  // Cuprinsul: titlurile de nivel 2 (și 3) ale documentului, fiecare cu ținta lui în articol; alături, în dreapta.
+  const cuprins = page.locator('[data-doc="cuprins"]');
+  const legaturi = cuprins.locator('a[data-ancora]');
+  await expect(legaturi.first()).toHaveText('Problema');
+  await expect(legaturi.nth(1)).toHaveText('Decizia');
+  await expect(legaturi.nth(2)).toHaveText('Feliile');
+  await expect(legaturi.last()).toHaveText('Implementarea');
+  const fara = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-doc="cuprins"] a[data-ancora]')]
+    .map((a) => a.dataset['ancora'] ?? '').filter((a) => !document.querySelector(`article [id="md-${CSS.escape(a)}"]`)));
+  expect(fara, 'fiecare intrare a cuprinsului are titlul ei în articol').toEqual([]);
+  expect((await cutie(cuprins)).stanga).toBeGreaterThanOrEqual((await cutie(articol)).dreapta);
+  expect((await cutie(page.locator('.doc-nav'))).dreapta).toBeLessThanOrEqual((await cutie(articol)).stanga);
+  // La începutul documentului, nicio secțiune încă.
+  await expect(cuprins.locator('[aria-current]')).toHaveCount(0);
+
+  // Derulat la „Feliile”, cuprinsul o marchează și rămâne la vedere (lipit sus).
+  await page.locator('#md-feliile').evaluate((el) => { el.scrollIntoView({ block: 'start' }); });
+  await expect(cuprins.locator('[aria-current="location"]')).toHaveText('Feliile');
+  await expect(cuprins).toBeInViewport();
+  // La capătul paginii, ultima secțiune (scurtă sau nu, nu mai urcă până sus).
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
+  await expect(cuprins.locator('[aria-current="location"]')).toHaveText('Implementarea');
+
+  // Un clic duce la titlu și pune ancora în adresă; al doilea clic pe aceeași ancoră, după o derulare, duce iar acolo.
+  const probele = legaturi.filter({ hasText: /^Probele$/ });
+  await probele.click();
+  await expect(page).toHaveURL(/#documentatie\/docs\/adr\/0260-adminul-reproiectat\.md#probele$/);
+  await expect(page.locator('#md-probele')).toBeInViewport();
+  await expect(cuprins.locator('[aria-current="location"]')).toHaveText('Probele');
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  await expect(page.locator('#md-probele')).not.toBeInViewport();
+  await probele.click();
+  await expect(page.locator('#md-probele')).toBeInViewport();
+
+  // La 1 024 px, cuprinsul stă deasupra documentului, în coloana lui; lista documentelor rămâne în stânga.
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expect.poll(async () => (await cutie(cuprins)).jos <= (await cutie(articol)).sus).toBe(true);
+  expect((await cutie(cuprins)).stanga).toBeGreaterThanOrEqual((await cutie(page.locator('.doc-nav'))).dreapta);
+  expect(Math.abs((await cutie(cuprins)).stanga - (await cutie(articol)).stanga)).toBeLessThan(1);
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  // Un document cu ultima secțiune scurtă: la capătul paginii, ea, deși titlul ei n-a urcat până sus.
+  const ADR116 = 'docs/adr/0116-conturile-clientilor.md';
+  await page.locator(`[data-doc="${ADR116}"]`).click();
+  await expect(page.locator(`article[data-document="${ADR116}"] h2`).first()).toBeVisible();
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
+  await expect(cuprins.locator('[aria-current="location"]')).toHaveText('Se redeschide dacă');
+  expect(await page.locator('#md-se-redeschide-dacă').evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThan(96);
+
+  // Un ADR propus își spune starea; unul fără titluri de secțiune n-are cuprins; un document care nu e ADR n-are insignă.
+  const catalog = JSON.parse(readFileSync('dist/documentatie/catalog.json', 'utf8')) as { documente: { cale: string; stare: string | null }[] };
+  const propus = catalog.documente.find((d) => d.stare === 'propus');
+  if (propus) {
+    await page.locator(`[data-doc="${propus.cale}"]`).click();
+    const data = /^\*\*Starea:\*\*.*?(\d{2}\.\d{2}\.\d{4})/m.exec(readFileSync(propus.cale, 'utf8'))?.[1] ?? '';
+    const s = page.locator(`article[data-document="${propus.cale}"] [data-doc-stare="propus"]`);
+    await expect(s.locator('.doc-stare')).toHaveText('propus');
+    if (data) await expect(s).toContainText(data);
+  }
+  await page.locator('[data-doc="docs/adr/0001-conturul-are-trei-primitive.md"]').click();
+  await expect(page.locator('article[data-document="docs/adr/0001-conturul-are-trei-primitive.md"] [data-doc-stare="acceptat"]')).toContainText('07.10.2026');
+  await expect(cuprins).toHaveCount(0);
+  await page.locator('[data-doc="PLAN.md"]').click();
+  await expect(page.locator('article[data-document="PLAN.md"] h2').first()).toBeVisible();
+  await expect(page.locator('[data-doc-stare]')).toHaveCount(0);
+  await expect(cuprins).toBeVisible();
+  expect(erori).toEqual([]);
+});
+
+test('Roadmap (ADR 0260 §8): „Ce așteaptă de la tine” alături de etape și la vedere la derulare; la 1 024 px, deasupra; semnele pistei rămân în coloana lor', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await intraCaOwner(page);
+  await page.locator('[data-fila="roadmap"]').click();
+  const owner = page.locator('[data-roadmap="owner"]');
+  const cronologie = page.locator('.rm-cronologie');
+  await expect(page.locator('.rm-etapa')).toHaveCount(33);
+  expect((await cutie(owner)).dreapta).toBeLessThanOrEqual((await cutie(cronologie)).stanga);
+  // Panoul e cel mult cât ecranul (lipit sus, încape întreg), iar o listă lungă se derulează în el (titlul lui rămâne sus).
+  const o = await cutie(owner);
+  expect(o.jos - o.sus).toBeLessThanOrEqual(900);
+  expect(await owner.locator('.rm-owner-lista').evaluate((el) => getComputedStyle(el).overflowY)).toBe('auto');
+  if (ROADMAP.owner.length > 12) expect(await owner.locator('.rm-owner-lista').evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+
+  // Coborât la ultima felie a etapei, lista e tot la vedere, sus.
+  await page.locator('[data-roadmap-etapa="3"] .rm-felie').last().evaluate((el) => { el.scrollIntoView({ block: 'center' }); });
+  await expect(cronologie).not.toBeInViewport();
+  await expect(owner).toBeInViewport();
+  const lipit = await cutie(owner);
+  expect(lipit.sus).toBeLessThan(40);
+  expect(lipit.jos).toBeLessThanOrEqual(900);
+
+  // Semnele fiecărei etape (↑N, placa, live-ul) rămân în coloana ei, pe pista îngustă de aici și la 1 024 px.
+  const iesite = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.rm-etapa')].flatMap((b) => {
+    const c = b.getBoundingClientRect();
+    return [...b.querySelectorAll<HTMLElement>('.rm-semne > *')].filter((s) => {
+      const r = s.getBoundingClientRect();
+      return r.left < c.left - 0.5 || r.right > c.right + 0.5;
+    }).map(() => b.dataset['etapa'] ?? '');
+  }));
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  expect(await iesite()).toEqual([]);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expect.poll(async () => (await cutie(owner)).jos <= (await cutie(cronologie)).sus).toBe(true);
+  expect(await iesite()).toEqual([]);
+  // Etapele stau pe un rând cât au loc (la 990 px, strânse una lângă alta); la 940 px, pe mai multe rânduri, ca pe telefon.
+  // Rândurile pistei: sus-urile butoanelor, grupate (un buton ales sau un tampon stă cu câțiva pixeli mai jos în rândul lui).
+  const randuri = () => page.locator('.rm-etapa').evaluateAll((l) => l.map((b) => b.getBoundingClientRect().top).sort((x, y) => x - y)
+    .filter((y, i, t) => i === 0 || y - (t[i - 1] ?? y) > 20).length);
+  expect(await randuri()).toBe(1);
+  await page.setViewportSize({ width: 990, height: 900 });
+  await expect.poll(randuri).toBe(1);
+  expect(await iesite(), '990 px').toEqual([]);
+  await page.setViewportSize({ width: 940, height: 900 });
+  await expect.poll(randuri).toBeGreaterThan(1);
+  expect(await iesite(), '940 px').toEqual([]);
 });

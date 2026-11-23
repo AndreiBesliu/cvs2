@@ -11634,7 +11634,7 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate” e ordin permanent), la rapoartele liniilor
 trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu/cvs2#5` și `AndreiBesliu/cvs2#8`).
-**Started:** 23.11, 16:37. **Completed:** unirea în `main`, 23.11, 19:20; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 16:37. **Completed:** 23.11, 20:30 (unirea în `main` la 19:20, publicarea pe test la 20:30).
 
 - **Verificate înaintea unirii:** cele trei ramuri fără `.lucru/`, cu `main` (`c010e3d1`) adus; rapidul și completul verzi
   pe commit-urile raportate (`2e8caa3e`, `8b1255b8`, `fe026f9f`); la elice, Easy 3Draw 18.20.0 în `extensie.json` și în
@@ -11667,6 +11667,8 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   gol în afara fișierelor `.md`), deci porțile de mai sus sunt ale lui.
 - **Documentele:** decizia în `CLAUDE.md` (a patra unire; a treia e a liniei elicelor) și rândul de stare al trasării;
   indexul ADR (0272); indexul liniilor; `docs/linii/principala.md` (starea, „Din container”, `main` mișcat sub un lot).
+- **Publicarea pe test** (`d6fd5d68`): rapidul și completul pe `main`, verzi (completul, 48 de minute); `publica.yml` verde;
+  adresa de test spune `d6fd5d68cf33`. Scriptul, reluat de patru ori, a mers cap-coadă cu cele două reparații.
 
 
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
@@ -11748,3 +11750,65 @@ produs). **Started:** 23.11, seara, în sesiunea cloud a liniei. **Completed:** 
   ADR 0290 (PR-ul `AndreiBesliu/cvs2#11`), iar `main` (`870e8759`) dăduse liniei frezelor 0300–0309. Cu `main` adus în
   ramură (DEVLOG-ul cu `rezolva-devlog.py`), propunerea e acum ADR 0300, cu legătura spre fereastra exportului refăcută
   (secțiunea „Freza” a fișei, dacă ea vine întâi).
+
+## 2026-11-23 — Felia A.6: Roadmap, Documentație și Setări (ADR 0260 §8–§9)
+
+**Prompt:** „porneste” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după ce A.5 a ajuns gata de unit, cu
+PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului”).
+**Started:** 23.11 17:25.
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.5 (`fe026f9f`, încă neunită: sesiunea principală o unește din commit-ul raportat,
+  nu din vârful ramurii).
+- **Planul:** după schițele rândului G (`Admin-Roadmap`, `Admin-Documentatie`, `Admin-Setari`). Roadmap: „Ce așteaptă de
+  la tine” mereu la vedere, într-o coloană lipită alături de etape. Documentație: cuprinsul paginii alături, cu secțiunea
+  de acum marcată, și starea ADR-ului (acceptat / propus) sub titlu. Setări: istoricul schimbărilor sub buton, din
+  rândurile de audit ale setărilor (și ale răspunsurilor rapide), doar cu „Audit: citește”. Fără reguli, date, indexuri
+  sau funcții noi.
+- **Roadmap** (`cd90a257`): peste 1 400 px, „Ce așteaptă de la tine” într-o coloană lipită alături de etape, cât ecranul de
+  înalt, cu titlul fix și lista derulată în ea; cifrele, peste amândouă coloanele.
+- **Pista cronologiei:** după lățimea secțiunii ei (container), nu a ecranului: un rând de la 42rem în sus, altfel pe rânduri;
+  sub 68,5rem, coloanele strânse și semnele etapelor pe două rânduri. Capturile au arătat semnele peste coloana vecină lângă
+  listă; la 1 024 px intrau acolo și înainte de felie.
+- **Documentație:** cuprinsul (titlurile de nivel 2 și 3, cu ancorele cititorului), alături peste 1 400 px, deasupra mai îngust,
+  cu secțiunea de acum (ultimul titlu urcat la 96 px; la capătul paginii, ultimul) și clicul care duce la titlu, și la al
+  doilea clic; sub titlul unui ADR, insigna stării și ziua din rândul „**Starea:**” (titlul randat separat de rest).
+- **Setări:** sub fiecare buton, istoricul din audit (egalitate pe `tinta`, ordinea în pagină), citit din nou după salvare;
+  fără condiția „Audit: citește” în pagină: fila e doar a owner-ului, care o are (condiția ar fi fost cod fără probă posibilă).
+- **Probele:** 7 unitare noi; pe emulatoare, 3 noi și istoricul în două probe vechi; în container, cele trei fișiere atinse
+  13 / 13 (apoi 6 / 6 după pista pe rânduri); tipurile, regulile de import, unitarele adminului.
+- **Otrăvurile** (`test/otravuri/A.6.py`, într-o clonă): la prima rulare (`326bcf6e`) 52 / 53, E19 scăpată (golul dintre
+  coloanele pistei conta doar între ~960 și ~1 000 px, măsurat pe lățimi); pe `ecba6fa6`, cu pista pe rânduri sub 42rem, proba
+  la 990 și 940 px și otrava pragului (E31): 54 / 54, fiecare pe aserțiunea care îi țintește defectul. Baza de pe emulatoare a
+  avut o cădere de focus în proba răspunsurilor rapide (prima probă a rulării), apoi 3 / 3 verzi. `verifica` pe toate
+  listele: aceleași VOID-uri ca pe A.5.
+- **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia, +21,0 din cei +25); pornirea 107,9 (cu ușa 112,3 / 115) și
+  totalul 763,1 / 800, neschimbate.
+- **Porțile, în CI:** în raportul din PR-ul ramurii.
+- **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
+  rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
+
+## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
+`AndreiBesliu/cvs2#8`, A.6 din `df098dad`); pe drum, owner-ul: „Vreau sa pot crea freze l sau profiluri de freze in aplicatie
+si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frezelor.”
+**Started:** 23.11, 19:20. **Completed:** unirea în `main`, 23.11, 20:27; publicările pe test, în rândul de la capăt.
+
+- **Lotul, întâi cu două felii:** `unire-2311f` din `d6fd5d68`: 11.3↑f (`527a95f3`, raportată gata) și A.6 (`df098dad`);
+  porțile pornite la 19:20.
+- **Mesajele sesiunii planșelor**, citite abia după: owner-ul îi ceruse ei unirea lui 11.3↑f („ok, cand se poate fa
+  unirea”) și ea ceruse să nu intre în lot. I-am răspuns (sesiunile își pot scrie cu `send_message`): n-am împins lotul,
+  ea a împins 11.3↑f în `main` (`c8b235ab`), iar A.6 a mers peste ea, pe `unire-2311h` (`4497d639`; ciocnirea, doar în
+  DEVLOG). Codul lui `4497d639` e identic cu al lui `66e88c92` (`git diff` gol în afara fișierelor `.md`).
+- **Porțile, în CI, pe `66e88c92`** (completul, 46 de minute): unit 9 885 / 0 (12 sărite), e2e 609 / 609, funcțiile pe
+  emulatoare 104 / 104, paginile 41 / 41; pornirea 108,5 / 115 (cu ușa 113,0; cu Atelierul 113,3), totalul 770,9 / 800,
+  `/admin` 127,5 / 200.
+- **Linia frezelor (16.A↑):** ramura `wip/16.A-freze` făcută din `main` (`c8b235ab`) și împinsă; promptul (ce există azi,
+  ADR 0300 propus cu întrebările, schița; marginile: documentul ține o copie a frezei, v27 pentru un câmp nou, contul prin
+  callable, mărimea pornirii) trimis owner-ului ca fișier.
+- **Documentele:** decizia în `CLAUDE.md`; indexul liniilor (adminul, frezele); `docs/linii/principala.md` (starea,
+  mesajele între sesiuni); `docs/lucru-in-cloud.md` (sesiunile își pot scrie; o linie căreia i se cere unirea îi scrie
+  întâi sesiunii principale).
+- **După unire:** promptul frezelor dăduse liniei ADR-urile 0290–0299, luate cu o oră înainte de linia exportului
+  (`wip/28.8-export`, pornită de owner; ADR 0290 propus pe ramura ei, nevăzut din `main`). Corectat la 0300–0309, în
+  prompt (retrimis owner-ului) și în documente; în prompt, și legătura cu fereastra exportului, unde se alege freza.
