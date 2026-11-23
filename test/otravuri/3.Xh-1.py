@@ -86,8 +86,6 @@ o('C07', CB, "{ lat: le(d + 4, 3) + 1, inalt: le(d + 7, 3) + 1 }", "{ lat: le(d 
   'mărimea unui WebP extins se citește pe doi octeți')
 o('C08', CB, "{ noutati: x.noutati.slice(0, MAX_NOUTATI) }", "{ noutati: x.noutati }", 'constructie',
   'catalogul primește toată istoria lui „ce e nou” (iar aplicația o sare)')
-o('C09', CB, "    if (stareNoutati(x.noutati, versiune) !== 'la-zi') faraNoutati.push(x.dosar);\n", '', 'constructie',
-  'construcția nu mai spune ce extensie n-are „ce e nou”')
 o('C10', CB, "    return { ...pune(`captura-${c.nume}-${limba}`, o, 'webp'), ...m, alt: c.alt[limba] };", "    return { ...pune(`captura-${c.nume}-${limba}`, o, 'webp'), ...m, alt: c.alt.ro };", 'constructie',
   'capturile în engleză au textul alternativ în română')
 

@@ -200,12 +200,9 @@ export function construiesteBiblioteca(cale = LISTA_BIBLIOTECA): {
   readonly catalog: CatalogBiblioteca;
   readonly fisiere: Map<string, Uint8Array>;
   readonly stari: ReadonlyMap<string, StareInregistrare>;
-  /** Dosarele al căror „ce e nou” nu începe cu versiunea pachetului de acum. */
-  readonly faraNoutati: readonly string[];
 } {
   const fisiere = new Map<string, Uint8Array>();
   const stari = new Map<string, StareInregistrare>();
-  const faraNoutati: string[] = [];
   const randuri: RandBiblioteca[] = [];
   for (const x of citesteLista(cale)) {
     const { manifest, octeti } = pachetDinDosar(x.dosar);
@@ -221,11 +218,10 @@ export function construiesteBiblioteca(cale = LISTA_BIBLIOTECA): {
     fisiere.set(`${DIR_BIBLIOTECA}/${rand.pachet}`, octeti);
     for (const [cale, o] of p.fisiere) fisiere.set(cale, o);
     stari.set(x.dosar, judecaInregistrarea(x, { versiune, continut: amprentaContinut(manifest) }));
-    if (stareNoutati(x.noutati, versiune) !== 'la-zi') faraNoutati.push(x.dosar);
   }
   const catalog: CatalogBiblioteca = { format: FORMAT_CATALOG, schema: SCHEMA_CATALOG, extensii: randuri };
   fisiere.set(FISIER_CATALOG_BIBLIOTECA, new TextEncoder().encode(`${JSON.stringify(catalog, null, 2)}\n`));
-  return { catalog, fisiere, stari, faraNoutati };
+  return { catalog, fisiere, stari };
 }
 
 if (import.meta.main) {

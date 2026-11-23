@@ -1,13 +1,13 @@
 # ADR 0231: Biblioteca extensiilor, refăcută: fereastra ei, semnul extensiei, capturile și „ce e nou”
 
-**Starea:** propus pe 23.11.2026 pentru felia 3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main`
-`8f122eb6`). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in care sa modificam libraria de plugin-uri?
-vreau ceva mai frumos si cu un UI/UX mai bun si atragator”. **Continuă:** ADR 0230 (biblioteca: toate marginile lui
+**Starea:** acceptat pe 23.11.2026, cu toate recomandările („Da, 1a–4a”; „Răspunsurile owner-ului”, mai jos), pentru felia
+3.Xh, a liniei bibliotecii (ramura `wip/3.Xh-biblioteca-ui`, din `main` `8f122eb6`). **Implementat:** 3.Xh-1 (datele) pe
+23.11; 3.Xh-2…3.Xh-4 urmează („Implementat”, la capăt). Cererea owner-ului, din aceeași zi: „poti sa pornesti un branch in
+care sa modificam libraria de plugin-uri? vreau ceva mai frumos si cu un UI/UX mai bun si atragator”. **Continuă:** ADR 0230 (biblioteca: toate marginile lui
 rămân, §C), ADR 0127 și 0128 (pachetul, permisiunile arătate la instalare), ADR 0160 (fereastra extensiei), ADR 0164 (tema),
 ADR 0167 (semnul lui Easy 3Draw, lăsat acolo pentru „altă decizie, cu schiță”), ADR 0250 (aranjamentele, densitatea).
 **Schița**, cu capturile de azi, cele trei direcții pe ambele teme, la birou și pe telefon, în română și în engleză, și cu
 formularul întrebărilor (colecția `raspunsuri`, documentul `owner`): <https://claude.ai/artifact/RVvJq3q2NPxtTPm2Y8Q8EV>.
-Codul pornește după răspunsuri.
 
 ## Ce e azi (capturile din 23.11)
 
@@ -38,9 +38,9 @@ container lipsește Edge, deci capturile sunt făcute cu Chrome 153, același mo
 10. **Actualizarea nu spune ce aduce.** „Actualizează la 18.18.0” vine fără niciun cuvânt, deși de la 18.6.0 au intrat
     roțile, fuliile, șenila, filele și căutarea.
 
-## Decizia (propusă)
+## Decizia
 
-### A. Trei direcții care se exclud; recomandarea e B
+### A. Trei direcții care se exclud; aleasă: B
 
 Diferă doar locul în care stă biblioteca. Machetele sunt în schiță.
 
@@ -127,7 +127,7 @@ Datele noi ale catalogului (punctul 1):
   catalogului rămâne în `scripts/`.
 - Nicio gazdă nouă și niciun script inline nou în CSP.
 
-### D. Mărimea (estimată; se măsoară la cod)
+### D. Mărimea (estimată; măsurătorile, la „Implementat”)
 
 - **Pornirea:** neschimbată (107,9 / 115 kB; cu ușa 112,2). Fereastra bibliotecii e o bucată nouă la cerere; numele ei
   intră în harta importurilor din `index.html`.
@@ -166,6 +166,18 @@ Datele noi ale catalogului (punctul 1):
      engleză), comise și refăcute când se schimbă înfățișarea extensiei;
    - b) fără capturi acum: doar semnul, descrierea și „ce e nou”.
 
+## Răspunsurile owner-ului (23.11)
+
+„Da, 1a–4a”, în sesiunea liniei și în formularul schiței (fără note):
+
+1. **1a:** biblioteca e o fereastră, „Biblioteca extensiilor”, deschisă din meniu (direcția B).
+2. **2a:** semnul lui Easy 3Draw e cărămida.
+3. **3a:** „ce e nou” e cerut de probă la fiecare versiune nouă a unei extensii din bibliotecă, în română și în engleză.
+   **E o regulă pentru toate liniile care schimbă pluginul:** versiunea nouă din `extensie.json`, rândul ei de „ce e nou”
+   în `extensii/biblioteca.json` (primul din `noutati`), apoi `node scripts/biblioteca.ts --scrie`.
+4. **4a:** trei capturi adevărate pe extensie, în română și în engleză, făcute de un script din repo, comise și refăcute
+   când se schimbă înfățișarea extensiei.
+
 ## Ce am respins
 
 - **Un punct pe butonul Extensii, la pornire, pentru o versiune nouă:** cere catalogul la pornire (respins în ADR 0230, 4b).
@@ -192,10 +204,56 @@ Datele noi ale catalogului (punctul 1):
   amprenta greșită; actualizarea dintr-un clic, din meniu și din pagină, cu fereastra doar la o permisiune nouă; „Scoate” cu
   întrebarea; fără rețea și cu un catalog stricat; linkul; engleza; 390, 360 și 320 px; fontul lat; tastatura.
 - **Manualul:** capitolul „Extensiile”, în ambele limbi, cu fiecare buton nou (`%% acopera:`).
-- **Otrăvurile:** `test/otravuri/3.Xh.py`, dintr-o clonă; listele 3.Xg, verificate după fiecare felie.
+- **Otrăvurile:** câte o listă pe felie (`test/otravuri/3.Xh-1.py` …), dintr-o clonă; listele extensiilor (3.Xa–3.Xg),
+  verificate după fiecare felie.
 
 ## Se redeschide dacă
 
 - vine o extensie de la altcineva decât owner-ul (atunci: semnăturile din ADR 0127 și un autor verificat);
 - catalogul trece de ~20 de extensii (atunci: căutarea, categoriile, eventual pagina din C);
 - owner-ul vrea biblioteca mai la vedere decât piesa de puzzle (decizia din 02.11).
+
+## Implementat
+
+### 3.Xh-1: datele (23.11.2026)
+
+- **Semnul în pachet.** `extensie.json` are câmpul opțional `pictograma`: un fișier `.svg` din `fisiere`, de cel mult
+  8 kB, care începe ca un SVG. Altfel pachetul se refuză cu motivul `pictograma` („semnul extensiei nu e un SVG mic din
+  pachet (cel mult 8 kB)”). Amprenta lui e verificată ca a oricărui fișier al pachetului. Împachetarea
+  (`scripts/impacheteaza-extensie.ts`, `scripts/construieste-trenulet.ts`) îl pune în pachet.
+- **Catalogul.** Câmpurile `pictograma`, `capturi` (`ro` și `en`, fiecare cu lățimea, înălțimea și textul alternativ),
+  `despre`, `noutati` și `autor`, toate opționale, citite de `citestePrezentare` (`shared/biblioteca.ts`). Un câmp greșit se
+  sare și e numit în `sarite` („<id>: <câmp>”); rândul rămâne bun. Numele unui fișier de imagine e legat de id-ul rândului
+  și poartă primele 8 caractere din amprenta lui: `<id>-pictograma-<8>.svg`, `<id>-captura-<nume>-<limba>-<8>.webp`.
+  Schema catalogului rămâne 1.
+- **Construcția** (`scripts/biblioteca.ts`). Semnul vine din pachet, deci e același fișier pe care îl are extensia
+  instalată. Capturile se citesc din `extensii/<dosar>/biblioteca/<nume>.<limba>.webp`, cu mărimea din antetul WebP. Lista
+  (`extensii/biblioteca.json`) primește `despre`, `autor`, `noutati` și `capturi` (numele și textul alternativ). Catalogul
+  ține ultimele cinci rânduri de „ce e nou”; lista poate păstra toată istoria.
+- **„Ce e nou”, cerut (răspunsul 3a).** Primul rând din `noutati` trebuie să fie al versiunii pachetului de acum
+  (`stareNoutati`). Altfel proba `biblioteca.constructie.test.ts` cade, cu rândul de scris în mesaj, iar `node
+  scripts/biblioteca.ts --scrie` refuză. Versiunile din `noutati` stau strict descrescător.
+- **Capturile (răspunsul 4a).** `node scripts/capturi-biblioteca.ts [dosar]` pornește serverul de dezvoltare și un browser
+  fără fereastră, instalează pachetul din fișier, deschide extensia, aduce cadrul ei la 1280 × 800 și scrie fiecare scenă
+  ca WebP de 960 × 600, în română și în engleză, pe tema luminoasă. Scenele stau în script (`SCENE`). Build-ul nu pornește
+  niciun browser: copiază capturile comise.
+- **Poarta build-ului** (`scripts/build-determinist.ts`): catalogul din `dist/` fără câmpuri sărite; fiecare imagine din
+  catalog există, cu mărimea ei și cu amprenta din nume; în `dist/extensii/` nu stă nimic în plus. Anteturile `immutable`
+  acoperă `/extensii/*.svg` și `/extensii/*.webp`. **CSP-ul nu s-a schimbat.**
+- **Interfața de azi** (până la fereastra din 3.Xh-3): semnul stă lângă numele extensiei în Biblioteca și la extensiile
+  instalate (28 px) și pe fila extensiei deschise (20 px, în locul piesei de puzzle). O extensie fără semn își arată piesa
+  de puzzle pe un fond neutru. Semnul unei extensii instalate vine din pachetul ținut în browser (o adresă `blob:`), deci se
+  vede și fără internet. Se arată doar ca `<img>`.
+- **Easy 3Draw 18.20.0:** semnul (cărămida 2 × 2), descrierea lungă, autorul („CNC Vector Studio”), „ce e nou” pentru
+  18.20.0–18.16.0, trei capturi pe limbă (circuitul, atelierul 3D, fila Roți).
+- **Abaterea de la schiță:** fondul semnului e gri-albăstrui (`#dbe6ee`), nu crem, iar cărămida e mai mare. Pe fila
+  aleasă, cremul se pierdea în fondul filei, iar la 20 px cărămida mică nu se mai citea. Owner-ul îl vede pe canal.
+- **Privirea pe interfața adevărată** (capturi mărite, ambele teme) a găsit două greșeli pe care probele nu le prindeau:
+  rândul extensiei instalate stătea la mijlocul meniului (un `<button>` își centrează conținutul), iar numele din Biblioteca
+  ieșea gri (regula versiunii îl prindea și pe el). Amândouă au acum proba lor e2e, scrisă înaintea reparației.
+- **Măsurat** (`npm run determinism`): pornirea 107,9 kB, neschimbată (cu ușa 112,2 / 115); totalul 762,0 / 800 kB
+  (+1,1); `/admin` 121,2 / 200. În `dist/extensii/`: pachetul 457,3 kB, catalogul 4,8 kB, semnul 0,7 kB, șase capturi de
+  31–39 kB (210,9 kB la un loc).
+- **Probele:** unitare pentru pachet, catalog, construcție, precache, anteturi și semn; e2e în `biblioteca.spec.ts` (semnul
+  în Biblioteca, în meniu și pe filă, și fără rețea; extensia fără semn). Otrăvurile: `test/otravuri/3.Xh-1.py`
+  (`docs/otravuri.md`).

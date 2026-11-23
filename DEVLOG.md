@@ -11343,3 +11343,37 @@ model în repo); e în raportul din chat și în sesiunea din mesajul commit-ulu
   nota liniei (`docs/linii/biblioteca.md`). `main` adus în ramură (`8177ab8`, cu 3.Tq), fără ciocniri.
 - **Mediul:** în container lipsește Edge; capturile sunt făcute cu Chrome 153.
 - **Urmează:** răspunsurile owner-ului, apoi 3.Xh-1.
+
+## 2026-11-23 — 3.Xh-1: datele bibliotecii noi (semnul extensiei, descrierea, „ce e nou”, capturile) (sesiune cloud)
+
+**Prompt:** „Da, 1a–4a” (răspunsul owner-ului la cele patru întrebări din ADR 0231, în sesiunea liniei și în formularul
+schiței).
+**Started:** 23.11, 14:30. **Completed:** 15:26. **Modelul:** nescris aici (regula sesiunii cloud: niciun nume de
+model în repo); e în raportul din chat și în sesiunea din mesajul commit-ului.
+
+- **ADR 0231, acceptat:** fereastra „Biblioteca extensiilor” (1a), cărămida ca semn al lui Easy 3Draw (2a), „ce e nou”
+  cerut de probă la fiecare versiune nouă (3a), trei capturi adevărate pe extensie, făcute de un script din repo (4a).
+- **Felia 3.Xh-1, prima din patru** (`76447fe`, apoi commit-ul documentelor), cu probele scrise înaintea codului:
+  - pachetul: `pictograma` în `extensie.json` (un SVG din pachet, cel mult 8 kB); motivul nou `pictograma`;
+  - catalogul: `pictograma`, `capturi`, `despre`, `noutati`, `autor`, opționale, citite tolerant (`sarite`); schema 1;
+  - construcția: semnul din pachet, capturile comise, numele cu amprenta; „ce e nou” cerut pentru versiunea de acum;
+  - `scripts/capturi-biblioteca.ts`: capturile, în română și în engleză (960 × 600, WebP);
+  - poarta build-ului și anteturile pentru imaginile bibliotecii; CSP-ul neschimbat;
+  - interfața de azi: semnul lângă numele extensiei (Biblioteca, extensiile instalate) și pe fila ei; fără semn, piesa de
+    puzzle;
+  - Easy 3Draw 18.20.0: semnul, descrierea lungă, autorul, „ce e nou” pe cinci versiuni, trei capturi pe limbă.
+- **Privit pe capturile mărite ale interfeței adevărate:** rândul extensiei instalate stătea la mijlocul meniului, iar
+  numele din Biblioteca ieșea gri. Probele treceau. Fiecare are acum proba ei e2e, scrisă înaintea reparației.
+- **Abaterea de la schiță:** fondul semnului e gri-albăstrui, nu crem (se pierdea pe fila aleasă); de arătat owner-ului.
+- **Porțile, în container:** tipurile, regulile de import, licențele; unitarele atinse 84 / 84 (toată suita, înaintea
+  ultimelor două reparații: 9 811 / 2 căzute, amândouă reparate apoi: proba manualului și lista fișierelor pachetului);
+  e2e cu Chrome (Edge lipsește): `biblioteca.spec.ts` 9 / 9, extensiile, pluginul și manualul 41 / 41;
+  `npm run determinism`: pornirea 107,9 kB (neschimbată; cu ușa 112,2 / 115), totalul 762,0 / 800 kB (+1,1), `/admin`
+  121,2 / 200; biblioteca: pachetul 457,3 kB, catalogul 4,8 kB, șapte imagini 211,6 kB. Suitele întregi, în CI.
+- **Otrăvurile** (`test/otravuri/3.Xh-1.py`, în clonă): 45 / 45 (35 unitare, 10 prin e2e). La prima rulare, 45 / 46: scăpase
+  ieșirea `faraNoutati` a construcției, citită doar de probă: scoasă, cu otrava ei. Listele vecine (3.Xa–3.Xg): aceleași
+  VOID-uri ca pe `main`.
+- **Regula nouă, pentru toate liniile care schimbă o extensie din bibliotecă:** versiunea nouă, rândul ei de „ce e nou”
+  (primul din `noutati`, în `extensii/biblioteca.json`), apoi `node scripts/biblioteca.ts --scrie`. E în nota liniei
+  (`docs/linii/biblioteca.md`); în `CLAUDE.md` o scrie sesiunea principală, la unire.
+- **Urmează:** 3.Xh-2 (fereastra de confirmare refăcută, „Scoate” cu întrebarea, mesajele pe înțeles, țintele).

@@ -3,8 +3,9 @@
 ## 3.Xh: interfața nouă a bibliotecii (în lucru, în cloud)
 
 _Linia „biblioteca”, din 23.11.2026 într-o sesiune cloud: ramura `wip/3.Xh-biblioteca-ui` (din `main` `8f122eb6`, adusă la
-`8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`. Starea: **ADR 0231 PROPUS, cu schița; codul așteaptă
-răspunsurile owner-ului.**_
+`8177ab8` pe 23.11), ADR-urile 0231–0239, canalul `biblioteca`. Starea: **ADR 0231 ACCEPTAT („Da, 1a–4a”); 3.Xh-1 (datele)
+GATA pe 23.11; urmează 3.Xh-2 (fereastra de confirmare, „Scoate” cu întrebarea). PR-ul liniei, ciornă până la capătul lui
+3.Xh: `AndreiBesliu/cvs2#4`.**_
 
 Cererea owner-ului (23.11): „poti sa pornesti un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos
 si cu un UI/UX mai bun si atragator”.
@@ -19,6 +20,28 @@ si cu un UI/UX mai bun si atragator”.
   la fiecare versiune (o regulă pentru toate liniile care schimbă pluginul); 4 capturile din bibliotecă.
 - **Feliile, după răspunsuri (pentru B):** 3.Xh-1 datele și semnul; 3.Xh-2 fereastra de confirmare și „Scoate”; 3.Xh-3
   fereastra bibliotecii, meniul scurtat, paleta; 3.Xh-4 telefonul, tastatura, manualul, otrăvurile.
+- **23.11, răspunsurile owner-ului: „Da, 1a–4a”** (în sesiune și în formular, fără note): 1a fereastra „Biblioteca
+  extensiilor”, deschisă din meniu; 2a semnul lui Easy 3Draw e cărămida; 3a „ce e nou” cerut de probă la fiecare versiune
+  nouă; 4a trei capturi adevărate pe extensie, făcute de un script din repo.
+- **23.11, 3.Xh-1 (datele), gata** (`76447fe`, apoi commit-ul documentelor): semnul în pachet (`pictograma` în
+  `extensie.json`, un SVG de cel mult 8 kB) și în catalog; `despre`, `noutati`, `autor` și `capturi` în
+  `extensii/biblioteca.json` și în catalog, citite tolerant (`sarite`); capturile comise în
+  `extensii/<dosar>/biblioteca/`; poarta build-ului cu imaginile; semnul în meniul de azi și pe fila extensiei. Easy 3Draw
+  18.20.0. Pornirea neschimbată, totalul 762,0 / 800 kB (+1,1). Otrăvurile: 45 / 45 (35 unitare, 10 prin e2e), în clonă; la prima rulare 45 / 46: scăpase ieșirea `faraNoutati` a construcției, citită doar de probă, scoasă cu otrava ei.
+  **Fondul semnului e gri-albăstrui (`#dbe6ee`), nu cremul din schiță** (se pierdea pe fila aleasă): de arătat owner-ului.
+
+**Regula nouă pentru toate liniile care schimbă o extensie din bibliotecă (răspunsul 3a):**
+1. versiunea nouă în `extensii/<dosar>/extensie.json`;
+2. rândul ei de „ce e nou”, **primul** din `noutati`, la extensia ei din `extensii/biblioteca.json`:
+   `{ "versiune": "<versiunea>", "ro": "…", "en": "…" }` (cel mult 240 de caractere fiecare; versiunile, strict
+   descrescător);
+3. `node scripts/biblioteca.ts --scrie` (refuză fără rândul de la 2);
+4. proba `test/unit/biblioteca.constructie.test.ts` cade până atunci, cu rândul de scris în mesaj.
+
+**Capturile unei extensii** (răspunsul 4a) se refac la cerere, când i se schimbă înfățișarea: `node
+scripts/capturi-biblioteca.ts [dosar]` (serverul de dezvoltare, un browser fără fereastră; scenele sunt în script, `SCENE`),
+apoi cele șase fișiere din `extensii/<dosar>/biblioteca/` se comit. O captură nouă = scena ei în script și rândul ei în
+`capturi`, cu textul alternativ în ambele limbi (cel mult patru pe extensie, cel mult 150 kB una).
 
 **Capcane găsite (23.11):**
 - **În container lipsește Edge** (pe 23.11 nu era instalat, iar `npx playwright install msedge` n-a răspuns în 150 s).
@@ -35,6 +58,17 @@ si cu un UI/UX mai bun si atragator”.
   versiune nouă: numărul se ia după `origin/main` adus, în ziua feliei.
 - **„Scoate” șterge azi fără întrebare** extensia și datele ei (`Gestionare`, `scoateExtensia`): se repară în 3.Xh-2, în
   orice direcție.
+- **Un `<button>` își pune conținutul la mijloc**, și cu `display: flex`: rândul unei extensii instalate, cu semnul lângă
+  text, stătea în mijlocul meniului (93,8 px de margine) până la `justify-content: flex-start`. Probele treceau; s-a văzut
+  doar pe captura mărită. Proba e2e măsoară acum unde începe rândul.
+- **`data-extensii="…"` e un control pentru proba manualului** (`manual.test.ts` cere fiecare valoare într-un capitol). Un
+  element care nu e control (semnul) are alt atribut: `data-semn`.
+- **Fereastra de eroare a lui Vite acoperă pagina** în scriptul capturilor, la prima rulare: catalogul nu se poate construi
+  cât capturile lipsesc, iar cererea lui cade. Scriptul pornește serverul cu `hmr: { overlay: false }`.
+- **Un `vite preview` rămas pe 4173** face ca Playwright să nu scrie nimic (`reuseExistingServer: false`): `pkill -f "vite
+  preview"` înaintea probelor e2e.
+- **Otrăvurile vecine:** după felie, `verifica` pe 3.Xa–3.Xg dă aceleași VOID-uri ca pe `main` (3.Xa: E02–E07; 3.Xb: K01;
+  3.Xc: K01, E01, E07, E08; 3.Xd: X18; 3.Xf: X03), deci felia n-a golit niciuna. Cele vechi sunt de dinaintea liniei.
 
 ## 3.Xg: biblioteca (încheiată, în `main` din 07.11)
 

@@ -167,7 +167,6 @@ test('Easy 3Draw are în bibliotecă semnul, trei capturi pe limbă, descrierea 
 });
 
 test('„ce e nou” e cerut la fiecare versiune (ADR 0231, răspunsul 3a): primul rând al fiecărei extensii e al versiunii pachetului de acum', () => {
-  assert.deepEqual(CONSTRUITA.faraNoutati, []);
   for (const x of citesteLista()) {
     const versiune = String(pachetDinDosar(x.dosar).manifest.versiune);
     assert.equal(stareNoutati(x.noutati, versiune), 'la-zi',
@@ -252,5 +251,4 @@ test('catalogul ține doar ultimele rânduri de „ce e nou”: lista poate păs
   assert.ok(c.ok);
   assert.deepEqual(c.sarite, [], 'aplicația citește „ce e nou” din catalog');
   assert.deepEqual(c.catalog.extensii[0]?.noutati, noutati.slice(0, MAX_NOUTATI));
-  assert.deepEqual(construita.faraNoutati, []);
 });
