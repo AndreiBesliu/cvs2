@@ -250,6 +250,7 @@ test('Documentație (ADR 0260 §8): cuprinsul alături, cu secțiunea de acum ș
     .map((a) => a.dataset['ancora'] ?? '').filter((a) => !document.querySelector(`article [id="md-${CSS.escape(a)}"]`)));
   expect(fara, 'fiecare intrare a cuprinsului are titlul ei în articol').toEqual([]);
   expect((await cutie(cuprins)).stanga).toBeGreaterThanOrEqual((await cutie(articol)).dreapta);
+  expect((await cutie(page.locator('.doc-nav'))).dreapta).toBeLessThanOrEqual((await cutie(articol)).stanga);
   // La începutul documentului, nicio secțiune încă.
   await expect(cuprins.locator('[aria-current]')).toHaveCount(0);
 
@@ -279,6 +280,14 @@ test('Documentație (ADR 0260 §8): cuprinsul alături, cu secțiunea de acum ș
   expect((await cutie(cuprins)).stanga).toBeGreaterThanOrEqual((await cutie(page.locator('.doc-nav'))).dreapta);
   expect(Math.abs((await cutie(cuprins)).stanga - (await cutie(articol)).stanga)).toBeLessThan(1);
   await page.setViewportSize({ width: 1440, height: 900 });
+
+  // Un document cu ultima secțiune scurtă: la capătul paginii, ea, deși titlul ei n-a urcat până sus.
+  const ADR116 = 'docs/adr/0116-conturile-clientilor.md';
+  await page.locator(`[data-doc="${ADR116}"]`).click();
+  await expect(page.locator(`article[data-document="${ADR116}"] h2`).first()).toBeVisible();
+  await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); });
+  await expect(cuprins.locator('[aria-current="location"]')).toHaveText('Se redeschide dacă');
+  expect(await page.locator('#md-se-redeschide-dacă').evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThan(96);
 
   // Un ADR propus își spune starea; unul fără titluri de secțiune n-are cuprins; un document care nu e ADR n-are insignă.
   const catalog = JSON.parse(readFileSync('dist/documentatie/catalog.json', 'utf8')) as { documente: { cale: string; stare: string | null }[] };

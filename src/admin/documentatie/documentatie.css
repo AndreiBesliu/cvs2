@@ -204,13 +204,10 @@
   font-weight: 600;
 }
 
+/* Între 900 și 1 400 px, lista documentelor ține două rânduri: cuprinsul, apoi documentul, în coloana a doua. */
 @media (min-width: 900px) {
   .doc:has(.doc-cuprins) .doc-nav {
     grid-row: span 2;
-  }
-
-  .doc-articol {
-    grid-column: 2;
   }
 }
 
@@ -224,6 +221,7 @@
   }
 
   .doc-articol {
+    grid-column: 2;
     grid-row: 1;
   }
 
