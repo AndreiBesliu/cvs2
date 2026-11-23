@@ -11495,3 +11495,17 @@ la rapoartele liniilor planșelor și adminului (PR-urile `AndreiBesliu/cvs2#2` 
   PR-ul ramurii.
 - **Documentele:** ADR 0260 („Implementarea”, A.5), fișa etapei 3 (rândul `3.Ae`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 16:20.
+
+## 2026-11-23 — Felia A.6: Roadmap, Documentație și Setări (ADR 0260 §8–§9)
+
+**Prompt:** „porneste” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, după ce A.5 a ajuns gata de unit, cu
+PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului”).
+**Started:** 23.11 17:25.
+
+- **Ramura:** tot `wip/A.1-admin`, peste A.5 (`fe026f9f`, încă neunită: sesiunea principală o unește din commit-ul raportat,
+  nu din vârful ramurii).
+- **Planul:** după schițele rândului G (`Admin-Roadmap`, `Admin-Documentatie`, `Admin-Setari`). Roadmap: „Ce așteaptă de
+  la tine” mereu la vedere, într-o coloană lipită alături de etape. Documentație: cuprinsul paginii alături, cu secțiunea
+  de acum marcată, și starea ADR-ului (acceptat / propus) sub titlu. Setări: istoricul schimbărilor sub buton, din
+  rândurile de audit ale setărilor (și ale răspunsurilor rapide), doar cu „Audit: citește”. Fără reguli, date, indexuri
+  sau funcții noi.
