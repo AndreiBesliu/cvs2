@@ -30,7 +30,7 @@ _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (
   încărcare: nu s-a reprodus cu ascultători în pagină și nici cu urma Playwright, ci cu three.js ținut și lăsat la un
   moment ales. **Probele atelierului pe pagina de sine stătătoare trebuie să aștepte pornirea părții 3D** (`#at-vedere
   canvas`), cu three.js dat din `vendor/` (în container, `cdnjs.cloudflare.com` e oprit, iar cererea cade repede, exact
-  cât proba scrie). Spec-urile celorlalte piese (rotițe, roți, șenilă …) încă nu așteaptă: aceeași cursă, mai rar.
+  cât proba scrie). Din 23.11, toate probele atelierului o fac, printr-un ajutor comun: mai jos.
 - **O otravă „echivalentă” se rulează.** Trei socotite echivalente au fost rulate: una era prinsă deja, una nu era
   echivalentă (garda radicalului din forma rotunjită: fără ea, vârful paletei e NaN la 99 dintre diametrele din 0,1 în
   0,1 mm, fiindcă ultima stație cade cu o rotunjire peste 100 % din paletă).
@@ -39,6 +39,22 @@ _CNCVS2, elicele din Easy 3Draw (ADR 0282, ACCEPTAT 22.11 cu 1a, 2a, 3a): 3.Tq (
 - **`biblioteca.ts --scrie` după ultima schimbare a pluginului:** la o schimbare pe aceeași versiune nepublicată, pune
   temporar versiunea publicată (18.18.0) în `extensii/biblioteca.json` și rulează-l din nou.
 - **În container:** `python3` fără `-B` lasă `__pycache__` în `test/otravuri/` și `scripts/ldraw/` (neignorate).
+
+## Probele atelierului așteaptă pornirea părții 3D (23.11, după unirea lui 3.Tq)
+
+La „ia reparația probelor atelierului” al owner-ului, pe ramura liniei, repornită din `main` (`8177ab8`). Doar probe:
+pluginul rămâne 18.19.0, fără `biblioteca.ts --scrie`.
+
+- **Ajutorul:** `test/e2e/ajutor-atelier.ts`. `threeDinPachet(page)` dă three.js din `vendor/` paginii de sine stătătoare
+  (înaintea paginii); `intraIn3D(c)` apasă „3D” și așteaptă pânza previzualizării (`#at-vedere canvas`), pusă în același
+  pas cu redesenarea editorului. `c` e pagina sau cadrul extensiei din cvs2.
+- **Unde:** cele 11 spec-uri ale atelierului (rotițe, roată, fulie, conică, coroană, conică dublă, șenilă, căutare, file,
+  pictograme, elice) și cele trei intrări în 3D din `trenulet.spec.ts` care nu așteptau. Șapte dintre ele cereau three.js
+  de pe cdnjs: în CI, din rețea; în container, fără previzualizare.
+- **Dovada:** secvența rotițelor (roata de 8, modulul 0,5), cu three.js sosit la 120–220 ms, din 1 în 1 ms: fără
+  așteptare, 5 scrieri pierdute din 101 (sosirea în timpul lui `fill`); cu ea, 0 din 101.
+- **O probă nouă a atelierului** intră în 3D cu `intraIn3D`, nu cu un clic pe `[data-mod="3d"]`; pe pagina de sine
+  stătătoare, cu `threeDinPachet` înainte.
 
 ## Istoria (22.11 și 23.11 dimineața, local)
 

@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 import { scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { intraIn3D } from './ajutor-atelier.ts';
 import { clicDupaReaparitie } from './ajutor-extensii.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
@@ -333,7 +334,7 @@ test('înălțimile (ADR 0168): la zecimi, în profilul imprimantei; locașul du
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toMatch(/"stift_h":2,"locas_h":2\.1,"locas_urmeaza":false/);
   await page.reload();
   await deschide(page);
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   await c.locator('details.setari:has(#at-reglaje) > summary').click();
   await expect(stift).toHaveValue('2');
   await expect(locas).toHaveValue('2.1');
@@ -459,7 +460,7 @@ test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circ
 
   // Atelierul: o culoare salvată întâi, apoi alta, cu × imediat: documentul atelierului (citit peste copia locală, la
   // deschidere) o are pe cea nouă.
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   await c.locator('#at-culori [data-c="#1f5fbf"]').click();
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#1f5fbf"');
   await c.locator('#at-culori [data-c="#2e8b4a"]').click();
@@ -555,7 +556,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#cnc-stare')).toContainText('does not fit on the 200 × 150 mm board (with the margin). Make the board bigger in the settings.', { timeout: 30_000 });
   await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
   await c.locator('#foaie-export [data-inchide]').click();
-  await c.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(c);
   // filele (ADR 0281): familiile, cu câte piese au, apoi cele proprii; numele lor, aici (cuvinte fără diacritice, pe care
   // proba de română nu le recunoaște); apoi fiecare piesă a fiecărei familii și fiecare filă proprie, fără română
   await expect(c.locator('#at-tipuri button:not([hidden])')).toHaveText(['Bricks 10', 'Joints 8', 'Wheels 7', 'Propeller 1', 'From cvs2', 'Calibration']);

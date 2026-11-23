@@ -10,12 +10,11 @@
  * Pe telefon, pictograma rămâne pe rândul numelui: o cere proba telefonului din `trenulet.file.spec.ts` (fiecare buton pe un
  * singur rând, cu tot ce are în el).
  */
-import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { intraIn3D, threeDinPachet } from './ajutor-atelier.ts';
 
 const PAGINA = 'http://easy3draw.test/';
-const THREE = readFileSync('extensii/trenulet/sursa/vendor/three.min.js');
 /** Familiile și piesele lor, în ordinea galeriilor (ca în `trenulet.file.spec.ts`). */
 const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[]])[] = [
   ['caramizi', [['caramida', 'Cărămidă / placă'], ['panta', 'Pantă'], ['pantaInversa', 'Pantă inversă'], ['pana', 'Pană / aripă'], ['rotund', 'Rotund / con'],
@@ -29,10 +28,10 @@ const FAMILII: readonly (readonly [string, readonly (readonly [string, string])[
 async function deschide(page: Page): Promise<void> {
   const { preview } = paginiPlanificator();
   await page.route(PAGINA, (r) => r.fulfill({ body: preview, contentType: 'text/html; charset=utf-8' }));
-  await page.route('https://cdnjs.cloudflare.com/**', (r) => r.fulfill({ body: THREE, contentType: 'application/javascript' }));
+  await threeDinPachet(page);
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   await page.goto(PAGINA);
-  await page.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(page);
   // atelierul pornit: galeria familiei piesei de acum (cărămida)
   await expect(page.locator('#at-galerie [data-piesa="caramida"]')).toHaveAttribute('aria-pressed', 'true');
 }

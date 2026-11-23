@@ -15,9 +15,9 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { intraIn3D, threeDinPachet } from './ajutor-atelier.ts';
 
 const PAGINA = 'http://easy3draw.test/';
-const THREE = readFileSync('extensii/trenulet/sursa/vendor/three.min.js');
 const CHEIE = 'atelier.caramizi.v1';
 
 /** Familiile, cum le-a ales owner-ul (1b): id-ul filei, numele, piesele galeriei (tipul și numele), în ordine. */
@@ -45,11 +45,11 @@ const tipul = (k: string): string => (k === 'placaTechnic' ? 'caramida' : k);
 async function deschide(page: Page, stocat?: unknown): Promise<void> {
   const { preview } = paginiPlanificator();
   await page.route(PAGINA, (r) => r.fulfill({ body: preview, contentType: 'text/html; charset=utf-8' }));
-  await page.route('https://cdnjs.cloudflare.com/**', (r) => r.fulfill({ body: THREE, contentType: 'application/javascript' }));
+  await threeDinPachet(page);
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   if (stocat !== undefined) await page.addInitScript(([k, s]) => { localStorage.setItem(k, s); }, [CHEIE, JSON.stringify(stocat)] as const);
   await page.goto(PAGINA);
-  await page.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(page);
 }
 const fila = (page: Page, f: string) => page.locator(`#at-tipuri [data-fila="${f}"]`);
 const piesa = (page: Page, k: string) => page.locator(`#at-galerie [data-piesa="${k}"]`);

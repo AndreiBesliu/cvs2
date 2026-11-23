@@ -11325,3 +11325,25 @@ un branch in care sa modificam libraria de plugin-uri? vreau ceva mai frumos si 
   fără `--ref` cade în container (gh întreabă prin GraphQL, oprit acolo, care e ramura implicită); scriptul îl pornește
   acum cu `--ref main`, ca pe complet, iar comanda pentru live din `docs/lucru-in-cloud.md` are și ea `--ref main`.
 - **PR-ul `AndreiBesliu/cvs2#1`** s-a închis singur, ca unit, la push-ul în `main`.
+
+## 2026-11-23 — Probele atelierului Easy 3Draw așteaptă pornirea părții 3D (Model: Claude Fable 5.2)
+
+**Prompt:** „ia reparația probelor atelierului” (după „ce ramane de facut aici?”, în sesiunea cloud a liniei elicelor).
+**Started:** 23.11, 13:45. **Completed:** 23.11, 14:45 (în container; CI-ul, pe commit-ul împins).
+
+- **Ce era:** la prima intrare în 3D, atelierul aduce three.js, apoi alege din nou piesa și redesenează editorul. O probă
+  care scrie într-un câmp chiar atunci își pierde scrierea (`fill` alege textul, apoi scrie: redesenarea cade între ele).
+  La 3.Tq, doar proba elicei a primit așteptarea; celelalte au rămas cu aceeași cursă, mai rar.
+- **Dovada, înainte:** secvența rotițelor (roata de 8, modulul 0,5), cu three.js întârziat. Din 3 în 3 ms, între 0 și
+  600 ms: 3 scrieri pierdute din 201. Din 1 în 1 ms, între 120 și 220 ms: 5 din 101. Rară: cele șapte spec-uri fără
+  three.js din pachet treceau 240 / 240 în container, unde cererea spre cdnjs (oprit aici) cade repede; în CI, three.js
+  venea din rețea, când apuca.
+- **Reparația, doar în probe:** `test/e2e/ajutor-atelier.ts`, cu `threeDinPachet` (three.js din `vendor/`, nu de pe cdnjs)
+  și `intraIn3D` (apasă „3D” și așteaptă pânza previzualizării, pusă în același pas cu redesenarea). Folosite în cele 11
+  spec-uri ale atelierului și la cele trei intrări în 3D din `trenulet.spec.ts` care nu așteptau. Pluginul nu s-a schimbat
+  (18.19.0, fără `biblioteca.ts --scrie`).
+- **Dovada, după:** aceeași secvență, cu așteptarea: 0 pierdute din 101. Cele 11 spec-uri, de 10 ori fiecare, cu patru
+  lucrători: 390 / 390; `trenulet.spec.ts`, de trei ori: 30 / 30.
+- **Porțile, în container:** tipurile, regulile de import (0 încălcări), traducerile (912, 0 lipsă), unit 9 795 / 0 (12
+  sărite, pe Linux), e2e-ul pluginului 49 / 49. Listele de otrăvuri `3.T*.py` nu țintesc probele: neschimbate.
+- **Documentele:** nota liniei (`docs/linii/elice.md`: ajutorul, regula pentru o probă nouă a atelierului).

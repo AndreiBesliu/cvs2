@@ -10,10 +10,12 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { intraIn3D, threeDinPachet } from './ajutor-atelier.ts';
 
 async function atelierSenila(page: Page): Promise<void> {
+  await threeDinPachet(page);
   await page.setContent(paginiPlanificator().preview);
-  await page.locator('[data-mod="3d"]').first().click();
+  await intraIn3D(page);
   await page.locator('#at-tipuri [data-fila="roti"]').click();
   await page.locator('#at-galerie [data-piesa="senila"]').click();
   await expect(page.locator('#at-nume-piesa')).toHaveText('Zală de șenilă');
