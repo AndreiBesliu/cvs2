@@ -1,7 +1,7 @@
 # ADR 0211 — Urechile la locuri alese (etapa 11, varianta c din ADR 0210)
 
 **Starea:** acceptat pe 19.11.2026, cu toate recomandările (1a–7a: „Da, toate recomandările”, la „Pornesc 11.3↑d cu toate
-recomandările?”); varianta a, implementată în felia 11.3↑d (21.11), varianta b, în lucru în felia 11.3↑e (22.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
+recomandările?”); varianta a, implementată în felia 11.3↑d (21.11), varianta b, în felia 11.3↑e (23.11; vezi la capăt). Propus în aceeași zi, în linia planșelor
 (worktree-ul `plansele`, ramura `wip/11.1-plansele`, din `main` `4b7539a`), la „Da, ADR și schița” (owner-ul, după 11.3↑c).
 **Completează:** ADR 0028 (urechile: profilul Z(s), centrele la distanțe egale), ADR 0027 §4 (pornirea în vârful 0) și
 ADR 0210 (feliile 11.7↑, 11.3↑b și 11.3↑c: urechile nu țin sub 2 × freza, distanța propusă, proba la export).
@@ -159,7 +159,7 @@ se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână î
   refuzurile); `urechiAleseCalcul.test.ts`, `urechi.dialog.test.ts`; e2e `urechi-alese.spec.ts` (pe trei plăcuțe la 9 mm,
   urechile mutate pe laturile scurte țin: exportul nu mai are piese desprinse). Otrăvurile `test/otravuri/11.3d.py`: 46 / 48 la capăt (43 unitare, 3 prin e2e): C15, C16 și C17 scăpaseră la prima rulare și au primit probe țintite; M07 și M08 (la tăiere) sunt echivalente, fiindcă bucata tăiată își păstrează id-ul formei din care vine.
 
-## Implementarea feliei 11.3↑e (b, unde ține; 22.11)
+## Implementarea feliei 11.3↑e (b, unde ține; 22–23.11)
 
 - **Documentul rămâne v26:** modul „lemn” era deja în ușă; nicio migrare. Fereastra exportului îl scrie ca pe celelalte
   („Locurile: … / unde ține”); înapoi la distanțe egale, modul pleacă, iar locurile alese pleacă la orice alt mod.
@@ -187,6 +187,21 @@ se mută în piesă, urechile ei se mută odată cu ea, în loc să rămână î
 - **Semnele:** traseul dă centrele urechilor „unde ține”, pe drumul frezei; cu „Arată traseul”, inele mici (cele alese sunt
   puncte pline, pe contur). Panoul: „unde ține: N × W mm pe buclă”.
 - **Probele:** `urechi.lemn.test.ts` (placa 11 la 5 mm: 3 + 1 plăcuțe desprinse, cele de pe hârtie, și aceleași prin proba pe
-  G-code; la 10 mm, programele plăcii, octet cu octet; alegerea și fundul pe hârtie; refuzurile; butonul), `urechi.dialog.test.ts`
-  (modul în fereastră), e2e `urechi-lemn.spec.ts` (trei dreptunghiuri la 9 mm: butonul din avertisment, exportul fără piese
-  desprinse, palierele celui din mijloc pe laturile scurte, șase semne pe traseu). Otrăvurile `test/otravuri/11.3e.py`: 39, de rulat (felia e în lucru).
+  G-code; la 10 mm, programele plăcii, octet cu octet; alegerea și fundul pe hârtie; refuzurile; butonul),
+  `urechi.dialog.test.ts` (modul în fereastră), e2e `urechi-lemn.spec.ts` (trei dreptunghiuri la 9 mm: butonul din
+  avertisment, exportul fără piese desprinse, palierele celui din mijloc pe laturile scurte, șase semne pe traseu). Otrăvurile
+  `test/otravuri/11.3e.py`: 42 / 42 la capăt (36 unitare, 6 prin e2e): F01, L06 și C09 scăpaseră la prima rulare (38 / 41) și
+  au primit probe țintite (umplerea fundului pe orizontală, cu F03 adăugată; partea spre care se duce palierul pe un arc;
+  rezerva golului minim); din listele 11.3c și 11.3d, șase otrăvuri ieșite VOID pe codul feliei, mutate pe el și prinse din
+  nou.
+- **Potrivirea dopului** (ADR 0179, venită din `main` la reluarea din 23.11): „Împreună (secțiunea)” ia locașul din
+  același program al foii (`programFoii`), ca vederea 3D; cu `programDinDocument`, o foaie cu urechi „unde ține” era
+  refuzată. **Regula:** un calcul nou care cere programul foii îl ia din `programFoii`.
+- **Probele țintite** (23.11, după otrăvurile scăpate): fundul foii cu un „[” și un „]” tăiate prin ea (lemnul dintre brațe
+  ține de foaie doar prin gura deschisă, deci umplerea ajunge la el pe orizontală, într-un singur sens); pe un cerc, în
+  ambele sensuri de mers, palierul se duce spre afară (cu lemnul tăiat doar înăuntrul razei 9, toate locurile țin; cu lemn
+  doar înăuntrul razei 11,5, niciunul); golul minim cu rezerva lui (W = 9, capetele arcului bun la exact W / 0,9 = 10 mm: o
+  ureche, la mijloc; la 11 mm, două).
+- **Porțile** (în CI, pe `ed87f2e8`): unitarele 9 795 / 0 (12 sărite); e2e 593 / 593; pe emulatoare 104 / 104 (funcțiile și
+  regulile) și 34 / 34 (paginile). Mărimea: pornirea 107,9 kB (cu ușa 112,3 / 115), totalul 763,1 / 800 kB (+2,2 față de
+  `main`: 760,9 pe `75dc1f9a`), `/admin` 121,2 / 200.

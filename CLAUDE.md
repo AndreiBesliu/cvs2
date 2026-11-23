@@ -704,15 +704,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   lucrarea le proiectează pe drumul frezei, cu flancul din golul fiecărei urechi și bucla pornită în cel mai lung gol
   (`src/cam/urechi.ts`, `job.ts`); fereastra exportului are „Locurile”, iar „Alege pe desen…” ascunde fereastra (nu o
   închide) și pune pânza în modul urechilor (`src/app/ModUrechi.tsx`, la cerere; „Gata” prin `document.aplica-operatii`).
-  **Urechile „unde ține” (felia 11.3↑e, ADR 0211, varianta b; documentul tot v26)** în lucru (pauză pe 22.11; lipsesc
-  e2e-ul, otrăvurile și porțile lente): cu o operație „unde ține”,
+  **Urechile „unde ține” (felia 11.3↑e, ADR 0211, varianta b; documentul tot v26)** gata pe 23.11, pe
+  `wip/11.1-plansele`, neunită: cu o operație „unde ține”,
   programul foii se face în două treceri (`programFoii`, `src/jobs/calculCam.ts`; exportul, traseul și vederea 3D trec pe
   aici): întâi cu ea tăiată fără urechi, apoi fundul foii (`fundFoii`, `src/sim/desprinse.ts`), apoi programul cu urechile
   puse unde palierul, dus cât freza spre partea de care ține, cade pe lemn legat (pe dinafară) sau pe piesă (pe dinăuntru),
   câte cere numărul, cât mai departe una de alta (`src/cam/urechiLemn.ts`). `programDinDocument` fără fund refuză „lemn” (nu
   taie pe tăcute fără urechi); cu toate locurile egale bune și fără intrări, programul modului „egale”, octet cu octet. Lângă
-  avertismentul pieselor desprinse, „Pune urechile unde țin” trece rândurile lor din fereastră. Regulile (c, 11.3↑f) rămân la
-  cuvântul owner-ului.
+  avertismentul pieselor desprinse, „Pune urechile unde țin” trece rândurile lor din fereastră. **Un calcul nou care cere
+  programul foii îl ia din `programFoii`** (potrivirea dopului, ADR 0179, trece și ea pe acolo). Pornirea 107,9 kB (cu ușa
+  112,3 / 115), totalul 763,1 / 800. Regulile (c, 11.3↑f) rămân la cuvântul owner-ului.
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
