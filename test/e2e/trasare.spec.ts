@@ -135,14 +135,20 @@ test('o coadă de două imagini: a doua pornește cu alegerile ei, nu cu lățim
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles(['test/fixtures/trasare/logo-cvs.png', 'test/fixtures/trasare/cerc-opac-alb.png']);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 2)');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
-  await page.locator('[data-camp="trasare-latime"]').fill('100');
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
+  // Lățimea desenului (ADR 0273 §4): scara vine din ea, deci „din lățime”, iar desenul e cât ai scris.
+  await page.locator('[data-camp="trasare-desen-l"]').fill('100');
   await expect(page.getByTestId('trasare-scara')).toContainText('din lățime');
+  await expect(page.getByTestId('import-marime')).toContainText('Desenul: 100,00 × ');
   await page.locator('[data-buton="sari"]').click();
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 2)');
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible();
-  await expect(page.locator('[data-camp="trasare-latime"]')).toHaveValue('');
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached();
+  await expect(page.locator('[data-camp="trasare-desen-l"]')).toHaveValue('');
   await expect(page.getByTestId('trasare-scara')).toContainText('presupus');
+  // Și lățimea imaginii, aleasă în grupul Mărimea (ca până la 25.9↑): scrisă la a doua, tot „din lățime”.
+  await page.locator('[data-camp="trasare-marime-fel"]').selectOption('imagine');
+  await page.locator('[data-camp="trasare-latime"]').fill('100');
+  await expect(page.getByTestId('trasare-scara')).toContainText('din lățime');
 });
 
 test('un cerc alb pe transparent (lecția D7): cu Luminozitatea, „nimic de trasat”; înapoi la Transparența, cercul', async ({ page }) => {
@@ -193,9 +199,9 @@ test('o imagine de 17 Mpx se reduce sub plafonul de 16 Mpx: raportul spune de la
   await expect(page.getByTestId('trasare-scara')).toHaveText(`Înălțimea ${nr(h * mm, 1)} mm · pixelul ${nr(mm, 3)} mm · 96 px pe țol, presupus (fișierul nu-l spune, ca la un SVG)`);
   // Discul: diametrul de 2000 px ai fișierului, la 96 px pe țol, 529,17 mm; reducerea îl mută cu cel mult un pixel redus.
   const marime = await page.getByTestId('import-marime').textContent();
-  const m = /Desenul: ([\d.]+) × ([\d.]+) mm/.exec(marime ?? '');
+  const m = /Desenul: ([\d,]+) × ([\d,]+) mm/.exec(marime ?? '');
   expect(m, marime ?? '').toBeTruthy();
-  for (const v of [Number(m?.[1]), Number(m?.[2])]) expect(Math.abs(v - (2000 / 96) * 25.4), `${v} față de 529,17`).toBeLessThan(mm);
+  for (const v of [Number(m?.[1]?.replace(',', '.')), Number(m?.[2]?.replace(',', '.'))]) expect(Math.abs(v - (2000 / 96) * 25.4), `${v} față de 529,17`).toBeLessThan(mm);
 });
 
 test('Escape cu tasta reală (lecția D8), în timpul trasării: fereastra se închide, iar workerul se oprește fără răspuns', async ({ page }) => {
@@ -224,7 +230,7 @@ test('o poză mare: cât trasează workerul, fila primește cadre; Inversează o
   await alegePoza(page, 3000, 2000);
   await expect.poll(async () => (await trasari(page)).length).toBe(1);
   await page.locator('[data-camp="trasare-inverseaza"]').check();
-  await expect(page.getByTestId('trasare-abatere')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByTestId('trasare-abatere')).toBeAttached({ timeout: 60_000 });
   const c = await citesteCeasurile(page);
   const t = c.workere.filter((x) => x.nume === 'trasare');
   expect(t.length, JSON.stringify(c.workere)).toBe(2);
@@ -331,13 +337,13 @@ test('PDF scanat (ADR 0270): o pagină G4 se trasează singură, la DPI-ul așez
   await intrare.setInputFiles(pdfDin('foto.pdf', cuImagini(240, 160, 'q 240 0 0 160 0 0 cm /Im1 Do Q', [['/Width 240 /Height 160 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode', jpg]])));
   await expect(page.getByTestId('trasare-panou')).toBeVisible();
   await expect(page.getByTestId('trasare-imagine')).toHaveText('Imaginea: 240 × 160 px');
-  await expect(page.getByTestId('import-cai')).toBeVisible();
+  await expect(page.getByTestId('import-cai')).toBeAttached();
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(2);
   // Vectori și imagine, imaginea așezată rotită: întâi vectorii, cu oferta trasării; trasată, imaginea stă ca pe pagină.
   await intrare.setInputFiles(pdfDin('amandoua.pdf', cuImagini(160, 240, 'q 0 -240 160 0 0 240 cm /Im1 Do Q 10 10 m 100 100 l S', [[g4, banda]])));
-  await expect(page.getByTestId('import-deschise')).toBeVisible();
+  await expect(page.getByTestId('import-deschise')).toBeAttached();
   await expect(page.getByTestId('trasare-panou')).toHaveCount(0);
   await page.locator('[data-buton="trasare-pdf"]').click();
   await expect(page.getByTestId('trasare-panou')).toBeVisible();

@@ -87,6 +87,10 @@ before(async () => {
     await setDoc(doc(db, 'tichete/t3'), { fel: 'intrebare', stare: 'nou' });
     for (const x of ['t1', 't2', 't3']) await setDoc(doc(db, `tichete/${x}/poze/plansa`), { tip: 'image/jpeg', marime: 3 });
     await setDoc(doc(db, 'limiteTichete/om'), { zi: '2026-11-02', numar: 1 });
+    // Utilizarea aplicației (ADR 0262): setările, un lot al unui client și contorul lui pe oră.
+    await setDoc(doc(db, 'setari/utilizare'), { schema: 1, colectare: true, versiune: 1 });
+    await setDoc(doc(db, 'utilizare/k3j9x0a1b2c3d4e5-1'), { schema: 1, uid: 'om', sesiune: 'k3j9x0a1b2c3d4e5', nr: 1, evenimente: [] });
+    await setDoc(doc(db, 'limiteUtilizare/om_1'), { numar: 1, ora: 1 });
     // Tot catalogul, fără să fie owner: setările rămân ale owner-ului.
     await setDoc(doc(db, 'roluri/RTot0000000000000000'), {
       nume: 'Tot', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste', 'conturi.citeste', 'conturi.administreaza', 'tichete.citeste', 'tichete.raspunde'],
@@ -376,6 +380,26 @@ test('răspunsurile rapide (ADR 0261) le citesc owner-ul și cei cu tichete.rasp
     await assertFails(setDoc(doc(ca(uid), 'setari/raspunsuriRapide'), { schema: 1, lista: [], versiune: 2 }));
     await assertFails(updateDoc(doc(ca(uid), 'setari/raspunsuriRapide'), { versiune: 9 }));
     await assertFails(deleteDoc(doc(ca(uid), 'setari/raspunsuriRapide')));
+  }
+});
+
+test('setările utilizării (ADR 0262 §8) le citește doar owner-ul; nu le scrie nimeni din client', async () => {
+  await assertSucceeds(getDoc(doc(ca('own'), 'setari/utilizare')));
+  for (const uid of [null, 'om', 'sup', 'aud', 'ccit', 'cadm', 'trasp', 'tot']) await assertFails(getDoc(doc(ca(uid), 'setari/utilizare')));
+  await assertFails(setDoc(doc(ca('own'), 'setari/utilizare'), { schema: 1, colectare: false, versiune: 2 }));
+  await assertFails(updateDoc(doc(ca('own'), 'setari/utilizare'), { colectare: false }));
+  await assertFails(deleteDoc(doc(ca('own'), 'setari/utilizare')));
+});
+
+test('loturile utilizării și contoarele lor nu le citește și nu le scrie nimeni din client, nici omul lotului, nici owner-ul', async () => {
+  for (const uid of [null, 'om', 'aud', 'tot', 'own']) {
+    await assertFails(getDoc(doc(ca(uid), 'utilizare/k3j9x0a1b2c3d4e5-1')));
+    await assertFails(getDocs(collection(ca(uid), 'utilizare')));
+    await assertFails(getDocs(query(collection(ca(uid), 'utilizare'), where('uid', '==', 'om'))));
+    await assertFails(getDoc(doc(ca(uid), 'limiteUtilizare/om_1')));
+    await assertFails(setDoc(doc(ca(uid), 'utilizare/k3j9x0a1b2c3d4e5-2'), { schema: 1, uid: uid ?? 'x', evenimente: [] }));
+    await assertFails(deleteDoc(doc(ca(uid), 'utilizare/k3j9x0a1b2c3d4e5-1')));
+    await assertFails(setDoc(doc(ca(uid), 'limiteUtilizare/om_1'), { numar: 0 }));
   }
 });
 

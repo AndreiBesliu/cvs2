@@ -42,6 +42,7 @@ import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import { descriere } from './descriereElement.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
+import { utilizarea } from './utilizare.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import { legareLaPornire } from './imprimantaLaPornire.ts';
 import { foaiaTinuta, tineFoaia, tineToateFoile, toateFoileTinute } from './foaiaActiva.ts';
@@ -388,6 +389,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const fereastraRef = useRef(fereastra);
   fereastraRef.current = fereastra;
   const deschideFereastra = (f: Fereastra): void => {
+    if (f !== fereastraRef.current) utilizarea.fereastra(f);
     fereastraRef.current = f;
     setFereastra(f);
     if (f === 'masina') setMasinaMontata(true);
@@ -1026,10 +1028,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (fereastraRef.current !== 'proiectare' && !ORIUNDE.has(id)) deschideFereastra('proiectare');
     const s = stareActiune(id);
     if (!s.ok) {
+      // Registrul spune singur rulările (ADR 0262); refuzul de aici și alegerea fișierului nu trec prin el.
+      utilizarea.actiune(id, s.motiv);
       refuzEditare.current?.(id, s.motiv);
       return;
     }
-    if (id === 'import.svg') fisierImport.current?.click();
+    if (id === 'import.svg') {
+      utilizarea.actiune(id, 'ok');
+      fisierImport.current?.click();
+    }
     else if (id === 'export.gcode' || id === 'export.trimite') {
       trimiteLaMasina.current = id === 'export.trimite';
       setTrimiteExport(trimiteLaMasina.current);

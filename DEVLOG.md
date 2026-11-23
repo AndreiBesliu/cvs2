@@ -11964,6 +11964,75 @@ trasării, elicelor și adminului (PR-urile `AndreiBesliu/cvs2#6`, `AndreiBesliu
   (biblioteca, extensiile, pluginul, manualul, carcasa) 105 / 105. Pornirea 108,6 kB (cu ușa 113,1 / 115), totalul
   773,8 / 800 kB, `/admin` 125,6 / 200; manualul, 40 de capitole.
 
+## 2026-11-23 — ADR 0273 propus: fereastra trasării, refăcută (felia 25.9↑), cu schița (Model: Claude Opus 5.5)
+
+**Prompt:** „cum se mai poate imbunatati trasarea din imagine? si ca functionalitate si ca UI/UX” (owner-ul, în sesiunea
+cloud a liniei trasării), apoi „2”, la „Ce aș face întâi” (punctul 2: „O felie de interfață: punctele 1, 2, 4 și 5 de la
+interfață, plus virgula”). **Started:** 23.11, 19:20. **Completed:** 23.11, 19:40.
+
+- **Răspunsul la întrebare:** fereastra deschisă în aplicația de pe ramură, pe logoul owner-ului, în cele trei moduri;
+  lista de îmbunătățiri (interfața: fereastra fără derulare, grupurile, rețetele, mărimea desenului, raportul scurt, efectul
+  reglajelor, clicul pe o pată; funcțiile: freza pe contururi, „Ce faci cu el?”, „Drepte și arce”, silueta și șablonul,
+  culorile în incrustații, treptele de gri, radiera, 25.8↑b, mărunte) și ordinea recomandată.
+- **Măsurat** (o probă locală, în afara repo-ului): butonul Importă e sub marginea ecranului în 14 din 15 situații (1024 × 768
+  … 1920 × 1080, pe Contururi, Culori și Linii mediane; în română și în engleză), previzualizarea stă la 800 × 418, „Lățimea”
+  e a imaginii (340,8 mm, desenul 327,06 × 72,42), „Desenul” e scris cu punct (`toFixed` în `src/ui/DialogImport.tsx`).
+- **Cercetarea:** Illustrator (Image Trace), LightBurn (Trace Image), Inkscape 1.2 (Trace Bitmap), Vectric (Trace Bitmap).
+- **ADR 0273, propus:** fereastra cât ecranul (previzualizarea crește, piciorul fix), Sursa și Rezultatul sus, grupurile
+  Imaginea, Trasarea, Curățarea, Mărimea (rezumatul pe titlu), mărimea desenului, raportul pe scurt cu sugestiile ca butoane,
+  virgula; nucleul și ușa neschimbate. Trei întrebări (comutatorul Simplu / Avansat, mărimea scrisă la deschidere, ce rămâne
+  fix după ce ai scris mărimea desenului).
+- **Schița:** <https://claude.ai/artifact/UA5gA9u1wh7cbG8RG5RYjp> (fereastra de azi cu măsurătorile, macheta care se poate
+  folosi, formularul, care scrie `raspunsuri/owner`; colecția, goală la publicare).
+- **Documentele:** ADR 0273 și rândul lui din index, fișa etapei 3 (jurnalul și coada owner-ului), traducerile roadmap-ului
+  (4 texte noi), nota liniei (25.8↑a unită; următorul ADR, 0274). `main` (`d6fd5d68`, cu 25.8↑a unită) adus întâi în ramură.
+- **Codul:** după răspunsuri.
+
+## 2026-11-23 — Felia 25.9↑: fereastra trasării, refăcută (ADR 0273, 1a–3a, cu variantele ca opțiuni) (Model: Claude Opus 5.5)
+
+**Prompt:** „gata” (owner-ul, după formularul schiței: 1a, 2a, 3a, cu nota „ca de obicei, eu vreau cat mai multe optiuni puse
+la dispozitia userului, deci daca celelalte optiuni sunt compatibile, le vreau ca optiuni de setari”). **Started:** 23.11,
+19:45. **Completed:** 23.11, 22:20.
+
+- **Fereastra** (`src/ui/FereastraTrasare.tsx`, `src/ui/DialogImport.tsx`, `src/app/stil.css`): cât ecranul, fără derularea
+  ei; corpul pe două coloane (setările se derulează singure, previzualizarea crește cu fereastra: 1054 × 814 la 1920 × 1080,
+  față de 800 × 418), piciorul mereu la vedere; pe telefon, o coloană derulată în corp. Pe cele 15 cazuri măsurate în ADR, în
+  ambele limbi și cu fontul lat, Importă și previzualizarea stau în ecran.
+- **Grupurile:** Sursa și Rezultatul sus; Imaginea, Trasarea, Curățarea, Mărimea, cu rezumatul pe titlu (cât e strâns);
+  Imaginea și Curățarea strânse la prima deschidere (1a); deschiderile, „Simplu” (1b, ca opțiune), Detaliile, mărimea și ce
+  rămâne fix, ținute în `cncvs2.trasare.fereastra`.
+- **Mărimea desenului** (2a; 2b ca opțiune): lățimea sau înălțimea cutiei vectorilor, legate; ținta se duce în lățimea
+  imaginii după fiecare trasare, cât desenul diferă cu peste 0,0005 mm, de cel mult 3 ori la rând (3a; 3b, „Scara”, ca
+  opțiune: ținta se șterge când desenul a ajuns la ea). Lățimea imaginii se ia din ciornă doar în modul ei (altfel, orice câmp
+  cu valori o scotea). Chenarul desenului, punctat, cu mărimea, pe previzualizare (cutia cu extremele exacte ale cubicelor).
+- **Piciorul:** raportul scurt (contururile sau liniile mediane, „Desenul”, abaterea), sugestiile cu butonul lor (Aplică
+  „Neuniformă”, Îndreaptă foaia, Îndreaptă scanarea, Treci pe Contururi; semnul pe titlul Imaginii), avertismentele, refuzul
+  și motivul ușii, „Detalii” (restul raportului, al ferestrei și al ușii) și acțiunile.
+- **„Desenul”** cu virgula în română și punctul în engleză, fără separatorul miilor, la toate formatele (`textMarime`).
+- **Partea pură:** `src/ui/fereastraTrasareCalcul.ts`, cu `test/unit/trasare.fereastra.test.ts` (6 probe, pe hârtie).
+- **Probele e2e:** `test/e2e/trasare-fereastra.spec.ts` (9: așezarea pe cinci ecrane × trei feluri × două limbi și cu toate
+  deschise; mărimea importată la 0,01 mm; „Scara”; grupurile și Simplu; sugestia; Detaliile; telefonul; „Drawing”);
+  `test/e2e/ajutor-trasare.ts` deschide grupurile pentru probele vechi; „Desenul” cu virgula în 21 de aserțiuni; rândurile din
+  Detalii, așteptate atașate. Vecinele, local: trasarea, importul, imaginile pe foaie, PWA, carcasa, manualul, editarea,
+  132 / 132.
+- **Otrăvurile:** `test/otravuri/25.9.py`, 24 / 24 prinse, într-o clonă (A04, fereastra cât conținutul, scăpase întâi: proba
+  așezării cere acum înălțimea ecranului, și cu Simplu); 12 din listele trasării (25.2, 25.3, 25.4b, 25.4c, 25.5, 26.A),
+  mutate pe codul nou, cu aceeași mutație.
+- **Mărimea:** pornirea 108,5 / 115 kB (neschimbată), totalul 773,5 / 800 cu `main` adus (11.3↑f; felia +2,7 kB).
+- **Porțile în CI:** rapidul verde pe fiecare vârf; completul verde pe `1868b4e4` (46 de minute): unit 9 884 / 0 (12 sărite,
+  pe Linux), e2e 618 / 618, funcțiile pe emulatoare 104 / 104, paginile 38 / 38. Înainte, completul de pe `e6f32e4` căzuse
+  la `animatie.spec.ts:49` (1 din 618, în afara feliei): la 500×, jobul de 95 s ține ~0,2 s, iar sub încărcare animația
+  ajungea la final înaintea verificării lui „Oprește” sau a clicului pe el. Reprodusă aici (cel puțin 10 din 100, cu zece
+  lucrători; mesajul commit-ului spune „13”, numărătoarea exactă nu s-a păstrat), reparată doar în probă (20× la rulare, 1×
+  la reluare): 100 / 100 la aceeași încărcare, iar o otravă care nu reia de la capăt rămâne prinsă.
+- **Canalul `trasare`:** `fcf8f4b84ae6` (același cod), cu `trasare-fereastra.spec.ts` 9 / 9 pe el.
+- **`main` adus din nou** (`f73f3f37`: 3.Xh, 12.1↑e-3 și 12.1↑e-4; ciocnirea doar în traducerile roadmap-ului, ambele
+  părți păstrate), în `caa65bcd`: completul verde acolo (51 de minute): unit 9 966 / 0 (12 sărite), e2e 637 / 637,
+  emulatoarele 104 / 104 și 41 / 41; pornirea 108,6 / 115, **totalul 781,2 / 800** (`main` 778,6; felia +2,6).
+- **Documentele:** ADR 0273 (acceptat, răspunsurile, implementarea) și rândul lui din index; manualul (capitolul importului,
+  în ambele limbi); fișa etapei 3 (jurnalul, încercarea în coada owner-ului); traducerile roadmap-ului; `CLAUDE.md` (starea
+  liniei); nota liniei.
+
 
 ## 2026-11-23 — Felia 11.3↑f: urechile după reguli, pe laturi (ADR 0211, varianta c)
 
@@ -12096,6 +12165,69 @@ PR-ul AndreiBesliu/cvs2#8; A.6 era următoarea, „doar la cuvântul owner-ului�
 - **Documentele:** ADR 0260 („Implementarea”, A.6), fișa etapei 3 (rândul `3.Af`) cu traducerea, lista otrăvurilor și
   rândul ei din `docs/otravuri.md`, nota liniei, DEVLOG. **Completed:** 23.11 18:05.
 
+## 2026-11-23 — ADR 0262 propus: utilizarea aplicației (feliile A.8–A.11 ale liniei adminului)
+
+**Prompt:** „in admin, vreau sa vad mai multe statistici/date despre comportamentul utilizatorilor, vreau sa vad ce unelte
+folosesc cel mai des si care este cel mai comun workflow. vreau sa pot deduce care parte a aplicatiei este cea mai utila si
+care nu, si vreau sa folosim asta si la troubleshooting. practic vreau sa stiu fiecare interactiune pe care o are userul cu
+aplicatia, mai putin parolele lor sau date sensibile etc.” (owner-ul, pe 23.11, în sesiunea cloud a liniei adminului, cât
+porțile lui A.6 rulau în CI).
+**Started:** 23.11 18:15.
+
+- **Ce era deja:** `PLAN.md` §5.6 pune fila Analiză în etapa 28 („pâlnia, adopția din id-urile acțiunilor”), iar §3.2 spune
+  că analiza din admin e o vedere a registrului de acțiuni: vreo 105 acțiuni, pornite din bare, taste, paletă și meniuri, prin
+  aceeași funcție (`executa` din `App.tsx`). Jurnalul de erori a mers fără acord, cu o frază în nota de confidențialitate
+  (decizia 13); nota n-are încă operatorul și adresa de contact (ADR 0116 §18).
+- **ADR 0262 propus**, fără cod: evenimentele registrului după o listă albă (fără desen, texte, fișiere, adrese, parole),
+  acordul clienților la prima intrare în cont, loturi prin callable-ul nou `utilizare`, șterse după 90 de zile, sumele zilei
+  scrise de un job de noapte, fila Utilizare (uneltele, ce nu se folosește, fluxurile, frecările, duratele), cronologia unui om
+  pentru troubleshooting, două permisiuni noi; feliile A.8–A.11 (~4–5 felii).
+- **Schița cu formularul celor 7 întrebări:** <https://claude.ai/artifact/Y75BvkeR7kZmBpadwoFyya> (privată; răspunsurile în
+  baza ei, scrise doar de owner; probat: un vizitator nu poate scrie). Datele din schiță sunt de exemplu, marcate așa.
+- **Documentele:** ADR 0262, rândul lui în index, nota liniei, DEVLOG. **Completed:** 23.11 19:10.
+
+## 2026-11-23 — ADR 0262 acceptat; felia A.8a: contractul utilizării, callable-ul `utilizare` și setările din admin
+
+**Prompt:** „am raspuns” (owner-ul, pe 23.11, după formularul schiței ADR 0262: 1 „c”, cu nota care o înlocuiește:
+colectarea pornită pentru toți, legată de cont, disocierea doar la cerere, prin tichet, fără buton în meniul contului, scrisă
+doar în regulament; 2a, 3b, 4a, 5a, 6a; 7a, cu nota „toate astea vin cu mentiunea ca defapta vreau sa pot configura eu din
+admin cat mai multe setari”).
+**Started:** 23.11 19:43.
+
+- **ADR 0262 acceptat** cu răspunsurile, citate în el: §3 (colectarea pentru toți cei cu cont, disocierea prin tichet, de
+  verificat juridic înaintea live-ului), §8 nou (setările din admin: colectarea, clicurile fine, lotul, cele două păstrări,
+  pașii dinaintea unei erori), feliile A.8a, A.8b, A.8c, A.9–A.11 (~6), apoi A.7.
+- **DEVLOG:** unirea lui `main` în ramură (`0feb3ec0`) dublase două intrări ale lui `main` (3.Tr și unirea elicelor); scoase.
+- **A.8a (`bcc654f8`):** lista albă comună editorului și serverului (`shared/utilizare.ts`): serverul reface fiecare eveniment
+  doar din câmpurile felului lui, iar unul cu altceva se aruncă, numărat. Callable-ul `utilizare`: lotul doar cu contul deschis
+  sau din personal, o singură scriere pe lot, cel mult 120 pe cont și pe oră, ștergerea singură după zilele din setări, nimic cu
+  colectarea oprită; setările doar ale owner-ului, pe versiunea văzută, cu auditul. Regulile: `setari/utilizare` doar owner-ul,
+  loturile nimeni din client; TTL și evenimentele neindexate. În fila Setări, „Utilizarea aplicației”, cu istoricul ei.
+- **Probele:** 9 unitare noi; 8 ale callable-ului și 2 ale regulilor, pe emulator; 1 e2e pe emulatoare. **Otrăvurile:** 48 / 48
+  la prima rulare (23 unitare, 14 server, 2 reguli, 9 emulatoare). **Mărimea:** `/admin` 127,5 → 129,9 / 200; pornirea și
+  totalul neschimbate. **La unire se publică și serverul** (funcția `utilizare`, regulile, indexurile).
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ag`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:05.
+
+## 2026-11-23 — Felia A.8b: înregistratorul utilizării în editor și trimiterea în loturi (ADR 0262)
+
+**Prompt:** același „am raspuns” (7a: A.8–A.11 acum), după A.8a.
+**Started:** 23.11 20:10.
+
+- **Codul (`63b5d444`, `588edb3d`):** sursa gestului și un tampon în pornire (`src/app/utilizare.ts`), registrul care spune
+  fiecare rulare (`observaRularile`), ferestrele și refuzurile din `App.tsx`, unealta din editare; înregistratorul în bucata
+  lui (`utilizareLot.ts`, în precache), cu repetările, inelul pașilor, lotul, coada din browser cu contul fiecărui lot, setările
+  aflate și pompa; trimiterea prin bucata contului, pusă de editare (`utilizareTrimitere.ts`, `trimiteUtilizarea`,
+  `trimiteLotul`); serverul nu scrie un lot gol (întrebarea setărilor). Nota de confidențialitate, în ambele limbi.
+- **Mărimea:** prima formă (tot înregistratorul în pornire, importul bucății contului din `main.tsx`) dădea pornirea 110,9 kB și,
+  cu ușa, 115,4 / 115: poarta a căzut. Împărțită, pornirea e 109,2 (cu ușa 113,7, cu Atelierul 114,0 / 115).
+- **Probele:** 20 unitare, 1 a serverului, 3 e2e pe emulatoare. **Otrăvurile:** 40 / 40, după proba cu Delete pe un nod (E08).
+- **Abaterile, scrise în ADR:** coada în `localStorage`; trimiterea pusă de editare; dialogurile trec în A.8c.
+- **CI:** rapidul a căzut la regula `fara-cicluri` (tipurile luate de pornire din înregistrator, care o importă); reparat în
+  `09966989` (`utilizareTipuri.ts`), cu `npm run rapid` local verde (9 914 / 0) înainte de push.
+- **Documentele:** ADR 0262 (implementarea), fișa etapei 3 (`3.Ah`), registrul otrăvurilor, traducerile, nota liniei.
+  **Completed:** 23.11 20:35.
+
 ## 2026-11-23 — Sesiunea principală în cloud: a șasea unire (A.6, Roadmap, Documentație și Setări); linia frezelor, pornită (Model: Claude Fable 5.2)
 
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la raportul liniei adminului (PR-ul
@@ -12164,7 +12296,7 @@ si sa le salvez in cont” și „Da-mi un prompt pentru o sesiune dedicata frez
 **Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor bibliotecii și
 incrustațiilor (PR-urile `AndreiBesliu/cvs2#4` și `AndreiBesliu/cvs2#7`); linia bibliotecii, cu „ok, uneste-l” al owner-ului
 spus în sesiunea ei.
-**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, în rândul de la capăt.
+**Started:** 23.11, 21:38. **Completed:** unirea în `main`, 23.11, 22:45; publicarea pe test, 23.11, 23:54.
 
 - **Înainte:** publicarea lui `ee4f629d` (A.6, cu 11.3↑f): completul pe `main` verde, `publica.yml` verde, adresa de test
   spune `ee4f629d8aa7` (21:37). Între `d6fd5d68` și el, sesiunea planșelor publicase și ea `c8b235ab` (20:58), înainte să-i
@@ -12188,3 +12320,31 @@ spus în sesiunea ei.
   versiunile a două linii pe aceeași extensie, grupul paletei); indexul liniilor; starea din `docs/linii/principala.md`.
 - **La owner:** plafonul total (778,6 / 800: feliile gata și cele în lucru nu mai încap toate), fondul semnului lui Easy
   3Draw, rândul de „ce e nou” al lui 18.20.0.
+- **Publicarea (`f73f3f37`):** rapidul și completul pe `main` verzi (completul, 47 min 40 s), `publica.yml` verde în
+  3 minute; adresa de test spune `f73f3f3765d1` (23:54).
+
+## 2026-11-23 — Sesiunea principală în cloud: a opta unire (A.8a și A.8b, utilizarea aplicației; 25.9↑, fereastra trasării refăcută) (Model: Claude Fable 5.2)
+
+**Prompt:** același brief de predare al sesiunii principale („unește ce se poate”), la rapoartele liniilor adminului și
+trasării (PR-urile `AndreiBesliu/cvs2#8` și `AndreiBesliu/cvs2#10`).
+**Started:** 23.11, 22:40. **Completed:** unirea în `main`, 24.11, 00:05; publicarea pe test, în rândul de la capăt.
+
+- **Verificate înaintea unirii:** ambele ramuri fără `.lucru/`; adminul avea `main` `ee4f629d`, trasarea `c8b235ab`;
+  completul verde pe `09966989` (adminul; după el, doar documente până la `55d26b81`) și pe `1868b4e4` (trasarea; apoi
+  documente până la `2acad1d0`). A.8a și A.8b ating serverul: funcția nouă `utilizare`, regulile Firestore, indexurile
+  (TTL pe `utilizare` și `limiteUtilizare`).
+- **Unirea:** `unire-2311j` din `origin/main` (`f73f3f37`): A.8a și A.8b în `5325b8fe`, 25.9↑ în `4fe2d2ad`. O singură
+  ciocnire, în `docs/traduceri/roadmap.en.json` (două rânduri vecine adăugate de cele două linii): ambele păstrate, în
+  ordinea cheilor; `node scripts/traduceri.ts --verifica`: 956 de texte, 0 fără traducere. În container, pe arborele
+  comun: tipurile (și ale funcțiilor), regulile de import, 110 / 110 probe atinse, build-ul determinist.
+- **Vârful trasării s-a mișcat după raport:** linia a adus `main` (`caa65bcd`) și și-a reluat completul; `8c0eded9`
+  adaugă doar DEVLOG-ul și nota ei. Unit și el în lot (`06b878e0`), cu codul neschimbat față de `4fe2d2ad` (`git diff`
+  gol în afara fișierelor `.md`), deci porțile rămân cele de mai jos.
+- **Porțile lotului, în CI, pe `4fe2d2ad`**, verzi la prima trecere (rapidul, 11 min; completul, 62 min 49 s): unit
+  9 995 / 0 (12 sărite), e2e 637 / 637, funcțiile pe emulatoare 115 / 115, paginile 45 / 45; pornirea 109,2 / 115 (cu
+  ușa 113,7; cu Atelierul 114,0), totalul 784,6 / 800, `/admin` 130,3 / 200, contul 30,0 / 32.
+- **Documentele:** decizia în `CLAUDE.md`, rândul de stare al trasării (25.9↑ unită) și paragraful nou al utilizării
+  aplicației (lista albă, ce stă în pornire, GDPR înaintea live-ului); indexul liniilor; starea și o lecție nouă în
+  `docs/linii/principala.md` (vârful unei ramuri mișcat după raport).
+- **La owner:** plafoanele (totalul 784,6 / 800, pornirea cu ușa 113,7 / 115), verificarea juridică a utilizării
+  aplicației înaintea live-ului, „cine unește în `main`”.

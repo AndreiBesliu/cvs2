@@ -2,15 +2,17 @@
  * Istoricul filei Setări (ADR 0260 §9, felia A.6), partea pură: din rândurile de audit ale unei setări (egalitate pe `tinta`,
  * ordinea în pagină), ce s-a schimbat la fiecare salvare. Setările conturilor: zilele offline și păstrarea tichetelor, de la
  * cât la cât (fără document înainte, de la implicite). Răspunsurile rapide: ce s-a adăugat, scos sau schimbat, după
- * etichetă; altfel, doar ordinea.
+ * etichetă; altfel, doar ordinea. Setările utilizării (ADR 0262 §8): comutatoarele pornite sau oprite, apoi numerele.
  */
 import type { SetariConturi } from '../../../shared/conturi.ts';
 import { SETARI_IMPLICITE, setariDin } from '../../../shared/conturiPlan.ts';
 import { rapideDin, type RaspunsRapid } from '../../../shared/raspunsuriRapide.ts';
+import { SETARI_UTILIZARE_IMPLICITE, setariUtilizareDin, type SetariUtilizare } from '../../../shared/utilizare.ts';
 import { intamplareDin, type Intamplare } from '../carcasa/date.ts';
 
 export type Schimbare =
-  | { readonly fel: 'offline' | 'tichete'; readonly inainte: number; readonly dupa: number }
+  | { readonly fel: 'offline' | 'tichete' | 'lot' | 'evenimente' | 'sume' | 'pasi'; readonly inainte: number; readonly dupa: number }
+  | { readonly fel: 'colectare' | 'clicuri'; readonly dupa: boolean }
   | { readonly fel: 'adaugat' | 'scos' | 'schimbat'; readonly eticheta: string }
   | { readonly fel: 'ordinea' | 'implicite' };
 
@@ -51,9 +53,27 @@ export function schimbariRapide(inainte: unknown, dupa: unknown): Schimbare[] {
   return s.length === 0 && a.map((r) => r.eticheta).join('\n') !== b.map((r) => r.eticheta).join('\n') ? [{ fel: 'ordinea' }] : s;
 }
 
+const COMUTATOARE: readonly ('colectare' | 'clicuri')[] = ['colectare', 'clicuri'];
+const NUMERE: readonly [keyof SetariUtilizare, 'lot' | 'evenimente' | 'sume' | 'pasi'][] = [
+  ['lotMinute', 'lot'], ['zileEvenimente', 'evenimente'], ['zileSume', 'sume'], ['pasiEroare', 'pasi'],
+];
+
+/** Setările utilizării: comutatoarele schimbate (cu starea nouă), apoi numerele, de la cât la cât; prima salvare, de la implicite. */
+export function schimbariUtilizare(inainte: unknown, dupa: unknown): Schimbare[] {
+  const fara = inainte === null || inainte === undefined;
+  const a = fara ? SETARI_UTILIZARE_IMPLICITE : setariUtilizareDin(inainte).setari;
+  const b = setariUtilizareDin(dupa).setari;
+  const s: Schimbare[] = [
+    ...COMUTATOARE.filter((k) => a[k] !== b[k]).map((k): Schimbare => ({ fel: k, dupa: b[k] })),
+    ...NUMERE.filter(([k]) => a[k] !== b[k]).map(([k, fel]): Schimbare => ({ fel, inainte: Number(a[k]), dupa: Number(b[k]) })),
+  ];
+  return s.length === 0 && fara ? [{ fel: 'implicite' }] : s;
+}
+
 const DESCRIE: ReadonlyMap<string, (inainte: unknown, dupa: unknown) => Schimbare[]> = new Map([
   ['setari.conturi', schimbariConturi],
   ['setari.raspunsuriRapide', schimbariRapide],
+  ['setari.utilizare', schimbariUtilizare],
 ]);
 
 /** Istoricul din rândurile de audit ale unei setări: doar acțiunile ei cunoscute, cea mai nouă întâi (fără dată, la urmă). */

@@ -49,8 +49,8 @@ o('A01', CA, '    lumina: r.raport.lumina, inegala: r.raport.inegala,',
 o('F01', FE, '        {peCulori && !raport?.transparenta && panouLumina}', '        {false && panouLumina}', 'e2e', 'Lumina lipsește pe culori')
 o('F02', FE, '        {t(peCulori ? `import.trasare.lumina.sfat-culori.${alegeri.lumina}` : `import.trasare.lumina.sfat.${alegeri.lumina}`)}',
   '        {t(`import.trasare.lumina.sfat.${alegeri.lumina}`)}', 'e2e', 'pe culori, sfatul alb-negrului')
-o('F03', FE, "              {raport.sursa !== 'alfa' && raport.lumina === 'uniforma' && raport.inegala !== null",
-  "              {raport.sursa === 'lum' && raport.lumina === 'uniforma' && raport.inegala !== null", 'e2e', 'sugestia lipsește pe culori')
+o('F03', FE, "  const sugestieLumina = raport !== null && raport.sursa !== 'alfa' && raport.lumina === 'uniforma'",
+  "  const sugestieLumina = raport !== null && raport.sursa === 'lum' && raport.lumina === 'uniforma'", 'e2e', 'sugestia lipsește pe culori')
 o('F04', FE, '        {peCulori && !raport?.transparenta && panouLumina}', '        {peCulori && panouLumina}', 'e2e', 'Lumina și pe transparență')
 
 SETURI = {

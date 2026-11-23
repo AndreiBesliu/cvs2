@@ -11,7 +11,13 @@ const PLAFON_ISTORIC = 100;
 function textSchimbare(s: Schimbare): string {
   switch (s.fel) {
     case 'offline':
-    case 'tichete': return t(`admin.set.ist.${s.fel}`, { inainte: s.inainte, dupa: s.dupa });
+    case 'tichete':
+    case 'lot':
+    case 'evenimente':
+    case 'sume':
+    case 'pasi': return t(`admin.set.ist.${s.fel}`, { inainte: s.inainte, dupa: s.dupa });
+    case 'colectare':
+    case 'clicuri': return t(`admin.set.ist.${s.fel}.${s.dupa ? 'pornit' : 'oprit'}`);
     case 'adaugat':
     case 'scos':
     case 'schimbat': return t(`admin.set.ist.${s.fel}`, { eticheta: s.eticheta });

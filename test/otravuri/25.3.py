@@ -187,14 +187,14 @@ o('F02', FE, "  const fel = freza === undefined ? null : Math.abs(freza - grosim
   "  const fel = freza === undefined ? null : Math.abs(freza - grosimeMm) <= Math.max(0.05, 0.1 * grosimeMm) ? 'potrivita' : freza > grosimeMm ? 'ingusta' : 'lata';", 'e2e',
   'freza lată spusă îngustă')
 o('F03', AP, '          {...(frezaImport === undefined ? {} : { freza: frezaImport })}\n', '', 'e2e', 'freza foii nu ajunge la fereastră')
-o('F04', DI, "            {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (", "            {ok.deschise > 0 && (false ? (", 'e2e',
+o('F04', DI, "      {ok.deschise > 0 && (ok.format === 'imagine' && ok.trasare.mediane ? (", "      {ok.deschise > 0 && (false ? (", 'e2e',
   'dialogul spune „căi deschise” și nota grosimii liniei din fișier')
 o('F05', FE, '      g.globalAlpha = 0.3;\n      g.lineWidth = mediane.grosimePx;', '      g.globalAlpha = 0;\n      g.lineWidth = mediane.grosimePx;', 'e2e',
   'banda grosimii nu se vede')
 o('F06', DI, "  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : puncte > 0 ? 'import.imagine.gol-mediane' : 'import.imagine.gol');",
   "  if (cod === 'gol' && format === 'imagine') return t(culori ? 'import.imagine.gol-culori' : 'import.imagine.gol');", 'e2e',
   'un disc plin, refuzat cu textul pragului')
-o('F07', FE, "              {mediane && mediane.puncte > 0 && <p data-testid=\"trasare-puncte\">{t('import.trasare.puncte', { n: mediane.puncte })}</p>}", '', 'e2e',
+o('F07', FE, "            {mediane && mediane.puncte > 0 && (\n              <p>\n                <span data-testid=\"trasare-puncte\">", "            {false && (\n              <p>\n                <span data-testid=\"trasare-puncte\">", 'e2e',
   'punctele nu se spun')
 o('F08', FE, "        {!peCulori && (\n          <label>\n            {t('import.trasare.rezultat')}", "        {false && (\n          <label>\n            {t('import.trasare.rezultat')}", 'e2e',
   '„Rezultatul” lipsește')

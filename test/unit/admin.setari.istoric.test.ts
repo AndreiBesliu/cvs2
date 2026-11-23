@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { istoricSetari, schimbariConturi, schimbariRapide } from '../../src/admin/setari/istoric.ts';
+import { SETARI_UTILIZARE_IMPLICITE } from '../../shared/utilizare.ts';
+import { istoricSetari, schimbariConturi, schimbariRapide, schimbariUtilizare } from '../../src/admin/setari/istoric.ts';
 
 /** Istoricul filei Setări (ADR 0260 §9, felia A.6), partea pură: ce s-a schimbat la fiecare salvare, din rândurile de audit. */
 
@@ -35,6 +36,18 @@ test('răspunsurile rapide, după etichetă: schimbate și adăugate în ordinea
   assert.deepEqual(schimbariRapide([r('A', 'a')], []), [{ fel: 'scos', eticheta: 'A' }]);
   // Un rând stricat din audit (fără text) nu se numără; ce nu e listă, o listă goală.
   assert.deepEqual(schimbariRapide({ lista: 1 }, [{ eticheta: 'X' }, r('A', 'a')]), [{ fel: 'adaugat', eticheta: 'A' }]);
+});
+
+test('setările utilizării (ADR 0262 §8): comutatoarele, apoi numerele, de la cât la cât; prima salvare pornește de la implicite', () => {
+  const I = SETARI_UTILIZARE_IMPLICITE;
+  assert.deepEqual(schimbariUtilizare(I, { ...I, colectare: false, clicuri: false, lotMinute: 10, zileEvenimente: 30, zileSume: 365, pasiEroare: 0 }), [
+    { fel: 'colectare', dupa: false }, { fel: 'clicuri', dupa: false }, { fel: 'lot', inainte: 5, dupa: 10 },
+    { fel: 'evenimente', inainte: 90, dupa: 30 }, { fel: 'sume', inainte: 730, dupa: 365 }, { fel: 'pasi', inainte: 30, dupa: 0 },
+  ]);
+  assert.deepEqual(schimbariUtilizare({ ...I, colectare: false }, I), [{ fel: 'colectare', dupa: true }]);
+  assert.deepEqual(schimbariUtilizare(null, { ...I, pasiEroare: 10 }), [{ fel: 'pasi', inainte: 30, dupa: 10 }]);
+  assert.deepEqual(schimbariUtilizare(null, I), [{ fel: 'implicite' }]);
+  assert.deepEqual(schimbariUtilizare({ ...I, lotMinute: 7 }, { ...I, lotMinute: 7 }), []);
 });
 
 test('istoricul: doar acțiunile setărilor, cea mai nouă întâi (fără dată, la urmă), cu cine; o acțiune cu nume de proprietate nu e una', () => {

@@ -81,12 +81,15 @@ service cloud.firestore {
       allow list: if are('conturi.citeste') || are('conturi.administreaza');
     }
 
-    // Setările conturilor (ADR 0116 §20): le citește owner-ul, în fila Setări (și serverul); le scrie doar callable-ul.
-    // Răspunsurile rapide ale tichetelor (ADR 0261): le citesc cei care răspund la tichete (și owner-ul, care le scrie în
-    // fila Setări); le scrie doar callable-ul `tichete`. Restul colecției rămâne refuzat.
+    // Setările conturilor (ADR 0116 §20) și ale utilizării aplicației (ADR 0262 §8): le citește owner-ul, în fila Setări (și
+    // serverul); le scriu doar callable-urile. Răspunsurile rapide ale tichetelor (ADR 0261): le citesc cei care răspund la
+    // tichete (și owner-ul, care le scrie în fila Setări); le scrie doar callable-ul `tichete`. Restul colecției rămâne refuzat.
     match /setari/{id} {
-      allow get: if (id == 'conturi' && eOwner()) || (id == 'raspunsuriRapide' && are('tichete.raspunde'));
+      allow get: if ((id == 'conturi' || id == 'utilizare') && eOwner()) || (id == 'raspunsuriRapide' && are('tichete.raspunde'));
     }
+
+    // Loturile utilizării (ADR 0262) și contoarele lor pe oră (`limiteUtilizare`) n-au regulă: le scrie doar callable-ul
+    // `utilizare`, iar adminul citește doar sumele zilei (felia A.9), nu loturile.
 
     match /errorLogs/{amprenta} {
       allow read: if are('erori.citeste');

@@ -12,6 +12,10 @@
   "fieldOverrides": [
     { "collectionGroup": "errorLogs", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
     { "collectionGroup": "aparitii", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
-    { "collectionGroup": "limiteErori", "fieldPath": "expiraLa", "ttl": true, "indexes": [] }
+    { "collectionGroup": "limiteErori", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "utilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "utilizare", "fieldPath": "evenimente", "indexes": [] },
+    { "collectionGroup": "utilizare", "fieldPath": "context", "indexes": [] },
+    { "collectionGroup": "limiteUtilizare", "fieldPath": "expiraLa", "ttl": true, "indexes": [] }
   ]
 }

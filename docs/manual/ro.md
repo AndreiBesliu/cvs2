@@ -808,8 +808,14 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
 O **imagine** (PNG, JPEG, WebP, GIF, BMP sau TIFF: un logo, un desen scanat, o semnătură) se **trasează**: aplicația găsește
-marginea desenului și o scrie ca vectori, în alb-negru. Fereastra se lărgește, cu reglajele în stânga și previzualizarea în
-dreapta:
+marginea desenului și o scrie ca vectori, în alb-negru. Fereastra ține cât ecranul și nu se derulează ea: reglajele stau în
+stânga (coloana lor se derulează singură), previzualizarea în dreapta (crește cu fereastra), iar jos, mereu la vedere,
+raportul pe scurt și butoanele. Sus stau **Sursa** și **Rezultatul**; restul reglajelor stau în patru grupuri, în ordinea
+lucrului: **Imaginea** (lumina, foaia, scanarea, marginea), **Trasarea** (pragul sau culorile, opțiunile liniilor
+mediane), **Curățarea** (netezimea, petele, golurile) și **Mărimea**. Un clic pe titlul unui grup îl deschide sau îl
+strânge; strâns, titlul arată pe scurt ce e ales (de exemplu „Echilibrat · pete sub 0,3 mm · goluri sub 0,3 mm”). La
+prima deschidere, Imaginea și Curățarea stau strânse; fereastra ține minte, în browser, ce grupuri ai deschis. Bifa
+**Simplu**, sub grupuri, ascunde de tot Imaginea și Curățarea (valorile lor rămân cum sunt). Reglajele:
 - **Sursa**: ce e desen. **Aleasă singură** ia **Transparența** la o imagine cu fundal transparent (desenul e tot ce nu e
   transparent, oricare i-ar fi culoarea) și **Luminozitatea** la una opacă (fundalul are culoarea marginii imaginii);
   rândul de sub listă spune ce a ales;
@@ -849,22 +855,31 @@ dreapta:
   îndreptat și de unde vine unghiul; fără îndreptare, ți-o propune când scanarea pare rotită cu cel puțin 0,1°. Un desen
   fără linii drepte (cercuri, o schiță) n-are un unghi sigur: raportul îți cere să-l scrii. Cu **Îndreaptă foaia** bifată,
   se îndreaptă desenul de pe foaia îndreptată; zona se trage pe imaginea îndreptată;
-- **Lățimea (mm)**: mărimea desenului pe foaie. Goală, mărimea vine din formatul foii îndreptate, din DPI-ul scris în
-  fișier, iar fără ele din 96 px pe țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde vine
-  scara.
+- **Mărimea**: **Scrii mărimea** **Desenului** (implicit) sau a **Imaginii**. La desen, **Lățimea desenului** și
+  **Înălțimea desenului** (în mm) sunt ale cutiei vectorilor și sunt legate: scrii una, cealaltă urmează, fiindcă desenul nu
+  se întinde; goale, arată mărimea de acum. **Când schimbi setările, rămâne**: **Mărimea scrisă** (implicit: după alt prag
+  sau altă curățare, desenul rămâne cât ai scris, cu încă o trasare dacă trebuie) sau **Scara** (scara din clipa în care ai
+  scris; desenul se poate schimba cu fracțiuni de mm, iar câmpurile arată mărimea nouă). La imagine, **Lățimea imaginii
+  (mm)** e a imaginii întregi (sau a zonei). Fără nicio mărime scrisă, ea vine din formatul foii îndreptate, din DPI-ul scris
+  în fișier, iar fără ele din 96 px pe țol, ca la un SVG; rândul de sub ea arată înălțimea, mărimea pixelului și de unde
+  vine scara. Pe previzualizare, un chenar punctat arată cutia desenului, cu mărimea ei.
 
 Previzualizarea arată **Imaginea**, **Vectorii** sau **Amândouă** (cu **Estompează imaginea**, ca vectorii să se vadă peste
 ea); rotița mărește în jurul mausului, tragerea mută imaginea, **Mărește** și **Micșorează** fac la fel din butoane, iar
 **Încadrează** arată toată imaginea. **Zona** alege doar o parte din ea: cât e apăsat butonul, tragerea pe previzualizare
 desenează dreptunghiul, îl mută sau îl întinde de laturi și colțuri (Shift + tragere îl desenează și fără buton), iar
 **Toată imaginea** îl scoate. Se trasează doar zona, ca și cum ar fi imaginea: pragul automat și lumina nu mai văd ce e în
-afara ei, colțul ei stânga-jos ajunge în colțul foii, iar **Lățimea** e a ei. Cu foaia îndreptată, previzualizarea arată
+afara ei, colțul ei stânga-jos ajunge în colțul foii, iar **Lățimea imaginii** e a ei. Cu foaia îndreptată, previzualizarea arată
 foaia îndreptată, cu vectorii; **Colțurile** arată poza, cu marginea foii și patru mânere pe care le tragi pe colțurile ei
 (Zona și Colțurile nu stau apăsate împreună), iar **Găsește singur** le caută din nou; colțuri noi sau alt format scot
-zona. Sub previzualizare stă raportul: **abaterea maximă** a vectorilor față de marginea din imagine (în
-mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat și dacă marginile erau dure
-(fără nuanțe: atunci treptele pixelilor se netezesc). Fiecare schimbare trasează imaginea din nou, deoparte: fereastra
-rămâne vie, iar o schimbare nouă o oprește pe cea începută.
+zona. Jos, raportul pe scurt: câte contururi (sau linii mediane), **Desenul** (mărimea lui, cu virgula zecimală) și
+abaterea. Sub el, sugestiile, fiecare cu butonul ei: **Aplică „Neuniformă”** (hârtia luminată inegal), **Îndreaptă foaia**
+(o foaie pozată oblic), **Îndreaptă scanarea** (o scanare rotită), **Treci pe Contururi** (punctele fără linie mediană);
+butonul schimbă reglajul și deschide grupul lui, iar titlul grupului Imaginea are un punct cât e o sugestie pentru el.
+**Detalii** (ținute deschise, dacă le deschizi) arată restul: **abaterea maximă** a vectorilor față de marginea din
+imagine (în mm și în pixeli, măsurată pe fiecare contur), mărimea imaginii, câte pete și goluri s-au curățat, dacă
+marginile erau dure (fără nuanțe: atunci treptele pixelilor se netezesc), contururile pe laturi și ce s-a sărit. Fiecare
+schimbare trasează imaginea din nou, deoparte: fereastra rămâne vie, iar o schimbare nouă o oprește pe cea începută.
 
 Cu **Sursa: Culorile**, imaginea se trasează pe culori: fiecare culoare devine o formă a ei, iar două culori vecine au
 exact aceeași margine (fără fâșie și fără suprapunere între ele), ca să le poți săpa la adâncimi diferite sau să le
