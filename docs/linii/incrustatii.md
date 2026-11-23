@@ -148,7 +148,8 @@ sesiunea principală (ține `main`, unește liniile doar la cuvântul owner-ului
   înainte de commit (porțile trecuseră): reluată azi. Rămân: pereții drepți și treptele în secțiune (12.1↑e-3); bifa pe rând
   (acum v27: v26 e a urechilor la locuri alese, 11.3↑d).
 - **12.1↑e-3 GATA (22.11 21:52 – 23.11; owner-ul: „12.1↑e-3, pereții drepți”; treptele → 12.1↑e-4):** oprită la pauza din
-  22.11 (WIP `2b7f889b`), reluată pe 23.11 în cloud, cu `main` `8f122eb6` unit în `e0ce3523` (fără ciocniri).
+  22.11 (WIP `2b7f889b`), reluată pe 23.11 în cloud, cu `main` `8f122eb6` unit în `e0ce3523` (fără ciocniri) și, după
+  documente, `main` `feecf82a` (3.Tq) adus în `79ef7a62` (ciocnire doar în DEVLOG).
   - „Împreună (secțiunea)” și pe dopul drept fără trepte: `potrivireDreapta.ts`, `taiereExacta.ts` (jocul lateral exact, pe
     mutări), descriptorul din `dopDrept.ts` (cu `gaura`), dispecerul, tabelul cu cinci rânduri.
   - Privirea pe secțiunea reală, pe toate variantele, a găsit patru defecte de desen, reparate (`c2b0e2c5`, `78d5c250`):

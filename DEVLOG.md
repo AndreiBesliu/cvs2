@@ -11301,7 +11301,9 @@ listele liniei. […] 4. Privirea pe piesa reală, mărită și întreagă […]
 **Started:** 22.11, 21:52. **Completed:** 23.11, 15:25.
 
 - **Ramura:** `wip/12.1-incrustatii`. Pe 23.11, `main` `8f122eb6` (cu 12.1↑e-2 unită din `082435b4`, 10.3↑o, 3.6v, lucrul în
-  cloud) unit în `e0ce3523`, fără ciocniri. Codul feliei: `2b7f889b` (22.11), `c2b0e2c5` și `78d5c250` (23.11).
+  cloud) unit în `e0ce3523`, fără ciocniri. Codul feliei: `2b7f889b` (22.11), `c2b0e2c5` și `78d5c250` (23.11). După
+  documente, `main` `feecf82a` (3.Tq, elicele) adus în `79ef7a62`, cu ciocnirea doar în DEVLOG; porțile finale, pe vârful
+  ramurii, sunt în PR.
 - **Decizia** (ADR 0179, secțiunea feliei): „Împreună (secțiunea)” e pornită și pe dopul cu pereți drepți fără trepte.
   Dopul ridicat apare întors și coborât până la primul contact; cel decupat, neîntors, pe fundul locașului. Tabelul are cinci
   rânduri: jocul lateral, dopul în locaș, adâncimea locașului, înălțimea dopului, sprijinul (între plăci, sub dop sau peste
