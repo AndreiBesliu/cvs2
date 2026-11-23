@@ -2909,6 +2909,10 @@
       "ro": "Contractele NcStudio, RichAuto",
       "en": "The NcStudio and RichAuto contracts"
     },
+    "c3fc2be093c91c4a": {
+      "ro": "**Roadmap, Documentație și Setări** (felia A.6 din ADR 0260 §8–§9; fără mașină; a șasea felie a liniei adminului, `3.Af` în fișă; aceeași ramură, `wip/A.1-admin`, peste A.5, încă neunită; pornită la „porneste”, cuvântul owner-ului; lucrată într-o sesiune cloud). Roadmap: peste 1 400 px, „Ce așteaptă de la tine” stă alături de etape, lipit sus, cu lista derulată în el, deci rămâne la vedere cât citești etapele; pista cronologiei stă pe un rând doar cât are loc (după lățimea secțiunii, nu a ecranului), iar pe o pistă îngustă semnele etapelor trec pe două rânduri, fără să intre în coloana vecină (la 1 024 px intrau și înainte). Documentație: cuprinsul documentului, alături peste 1 400 px și deasupra mai îngust, cu secțiunea de acum marcată la derulare și clicul care duce la titlu; sub titlul unui ADR, starea lui și ziua în care a primit-o. Setări: sub fiecare buton, istoricul setării din audit (zilele offline și păstrarea raportărilor de la cât la cât, răspunsurile rapide adăugate, scoase, schimbate sau doar mutate), citit din nou după fiecare salvare. Fără reguli, date, indexuri sau funcții noi: la unire se publică doar Hosting-ul. **Probele:** 7 unitare noi; pe emulatoare, 3 noi (cuprinsul și starea; Roadmap-ul la patru lățimi; istoricul setărilor), plus istoricul în probele setărilor și ale răspunsurilor rapide. **Otrăvurile:** 54 / 54 prinse (23 unitare, 31 pe emulatoare); la prima rulare a scăpat golul dintre coloanele pistei, care conta doar între ~960 și ~1 000 px: pista trece acum pe rânduri sub 42rem, cu proba și otrava pragului. **Mărimea:** `/admin` 125,6 → 127,5 / 200 kB (+1,9; linia, +21,0 din cei +25); pornirea (107,9, cu ușa 112,3 / 115) și totalul (763,1 / 800) neschimbate.",
+      "en": "**Roadmap, Documentation and Settings** (slice A.6 of ADR 0260 §8–§9; no machine; the sixth slice of the admin line, `3.Af` in the sheet; same branch, `wip/A.1-admin`, on top of A.5, not merged yet; started at “porneste”, the owner’s word; worked in a cloud session). Roadmap: above 1,400 px, “What’s waiting on you” sits beside the stages, stuck to the top, with the list scrolling inside it, so it stays in view while you read the stages; the timeline track stays on one row only while it fits (by the width of its section, not of the screen), and on a narrow track the signs of a stage wrap onto two rows instead of running into the next column (at 1,024 px they already did before). Documentation: the document’s table of contents, beside it above 1,400 px and above it when narrower, with the current section marked while scrolling and a click that goes to the heading; under an ADR’s title, its state and the day it got it. Settings: under each button, the setting’s history from the audit log (offline days and keeping reports from what to what, quick replies added, removed, changed or only moved), read again after each save. No new rules, data, indexes or functions: the merge publishes only Hosting. **Tests:** 7 new unit tests; on the emulators, 3 new ones (the table of contents and the state; the Roadmap at four widths; the settings history), plus the history in the settings and quick-replies tests. **Poisons:** 54 / 54 caught (23 unit, 31 on the emulators); on the first run the gap between the track’s columns escaped, since it only mattered between ~960 and ~1,000 px: the track now wraps into rows below 42rem, with the test and the threshold poison. **Size:** `/admin` 125.6 → 127.5 / 200 kB (+1.9; the line, +21.0 of the +25); startup (107.9, with the door 112.3 / 115) and the total (763.1 / 800) unchanged."
+    },
     "c45acda7aa7ec936": {
       "ro": "Relieful 5: texturi, export STL, biblioteca, laserul 3D (felii exportate pentru LightBurn / RDWorks)",
       "en": "Relief 5: textures, STL export, the library, 3D laser (slices exported for LightBurn / RDWorks)"
@@ -3548,6 +3552,10 @@
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
+    },
+    "f4970207b1f8afd3": {
+      "ro": "Roadmap, Documentație și Setări",
+      "en": "Roadmap, Documentation and Settings"
     },
     "f5a0f22b52f21ca7": {
       "ro": "Formele între cvs2 și plugin",

@@ -10,6 +10,7 @@ import { useLimba } from '../../ui/useLimba.ts';
 import { EroareCitire, SeIncarca } from '../carcasa/stari.tsx';
 import { dataDin, dataScurta, motivDin, type Masura } from '../erori/date.ts';
 import { EXEMPLE_RAPIDE } from './exemple.ts';
+import { IstoricSetari } from './IstoricSetari.tsx';
 import './setari.css';
 
 /**
@@ -24,7 +25,7 @@ type Lucru = { readonly faza: 'liber' | 'lucreaza' } | { readonly faza: 'gata'; 
 /** Un rând cât se scrie (necurățat): eticheta, textele. */
 type Rand = { eticheta: string; ro: string; en: string };
 
-export function RaspunsuriRapide({ con }: { readonly con: Conexiune }): ReactElement {
+export function RaspunsuriRapide({ con, eu }: { readonly con: Conexiune; readonly eu: string }): ReactElement {
   const limba = useLimba();
   const [citite, setCitite] = useState<Masura<Citite> | null>(null);
   const [rev, setRev] = useState(0);
@@ -71,6 +72,7 @@ export function RaspunsuriRapide({ con }: { readonly con: Conexiune }): ReactEle
                 faraAppCheck={con.appCheck === 'oprit'} eroare={lucru.faza === 'eroare' ? lucru.motiv : null} salveaza={salveaza} />
             </>
           )}
+      <IstoricSetari con={con} eu={eu} tinta={`${CALE_RASPUNSURI_RAPIDE.colectie}/${CALE_RASPUNSURI_RAPIDE.id}`} rev={rev} limba={limba} nume="rapide" />
     </section>
   );
 }
