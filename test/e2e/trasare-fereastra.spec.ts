@@ -23,7 +23,7 @@ async function logo(page: Page): Promise<void> {
 
 /** Unde stau fereastra, butoanele și previzualizarea, în pixelii ecranului. */
 async function asezare(page: Page): Promise<{
-  readonly derulare: number; readonly derulareOrizontala: number; readonly importa: DOMRectReadOnly; readonly renunta: DOMRectReadOnly;
+  readonly derulare: number; readonly derulareOrizontala: number; readonly inaltime: number; readonly importa: DOMRectReadOnly; readonly renunta: DOMRectReadOnly;
   readonly panza: DOMRectReadOnly; readonly laImporta: boolean; readonly laPanza: boolean;
 }> {
   return page.evaluate(() => {
@@ -38,7 +38,7 @@ async function asezare(page: Page): Promise<{
       return x !== null && (x === e || e.contains(x));
     };
     return {
-      derulare: cutie.scrollHeight - cutie.clientHeight, derulareOrizontala: cutie.scrollWidth - cutie.clientWidth,
+      derulare: cutie.scrollHeight - cutie.clientHeight, derulareOrizontala: cutie.scrollWidth - cutie.clientWidth, inaltime: cutie.getBoundingClientRect().height,
       importa: ri, renunta: renunta.getBoundingClientRect(), panza: rp, laImporta: sus(ri, importa), laPanza: sus(rp, panza),
     };
   });
@@ -61,6 +61,8 @@ for (const limba of ['ro-RO', 'en-GB'] as const) {
           const a = await asezare(page);
           const unde = `${fel}, ${w} × ${h}`;
           expect(a.derulareOrizontala, unde).toBeLessThanOrEqual(1);
+          // Fereastra are înălțimea ecranului (fără cei 2 rem din jur), oricât de puține setări ar avea: previzualizarea crește.
+          expect(a.inaltime, `${unde}: înălțimea ferestrei`).toBeGreaterThanOrEqual(h - 33);
           expect(a.importa.bottom, `${unde}: Importă`).toBeLessThanOrEqual(h);
           expect(a.renunta.bottom, `${unde}: Renunță`).toBeLessThanOrEqual(h);
           expect(a.renunta.right, `${unde}: Renunță`).toBeLessThanOrEqual(w);
@@ -88,6 +90,11 @@ for (const limba of ['ro-RO', 'en-GB'] as const) {
       for (const g of ['imagine', 'curatare']) await page.locator(`[data-buton="trasare-grup-${g}"]`).click();
       await page.locator('[data-buton="trasare-detalii"]').click();
       await masoara('toate deschise', 240);
+      // Simplu, cu grupurile rămase strânse: coloana setărilor e scurtă, fereastra tot cât ecranul.
+      await page.locator('[data-camp="trasare-simplu"]').check();
+      for (const g of ['trasare', 'marime']) await page.locator(`[data-buton="trasare-grup-${g}"]`).click();
+      await page.locator('[data-buton="trasare-detalii"]').click();
+      await masoara('simplu');
     });
   });
 }
