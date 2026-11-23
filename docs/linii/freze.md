@@ -46,6 +46,8 @@ gravare, profil, formă desenată)” și „Freze de profil desenate de utiliza
   `test.use({ locale: 'ro-RO' })`, altfel textele românești nu se găsesc.
 - **Un `import` din `src/io/csv.ts` scoate o bucată comună** (`csv-*.js`, 0,65 kB, împărțită cu fereastra «Din CSV…»): numele
   ei intră în harta importurilor din pornire. Măsurat: pornirea +0,2 kB cu toată legătura ferestrei.
+- **Rândurile meniului contului se numără și pe emulatoare** (`test/e2e-emulator/tichete.emulator.spec.ts`, cu contul
+  deschis): un rând nou intră și acolo, nu doar în `cont.spec.ts`. Completul de pe `d4dce8df` a căzut aici.
 - **Otrăvurile e2e care scot un `if` dintr-un `if … else if` lasă codul fără sintaxă** (build eșuat, NEVALIDĂ): se
   schimbă condiția, nu se scoate rândul.
 
