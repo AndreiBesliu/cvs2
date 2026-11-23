@@ -187,9 +187,25 @@ test('owner-ul vede conturile în tabel, cu filtrele pe plan și căutarea; cont
   const pana = Date.parse((await citeste('conturi/bob'))['probaPana']?.timestampValue ?? '');
   expect(Math.abs(pana - (acum + 30 * ZI))).toBeLessThan(5 * 60_000);
 
-  // Gratuit, apoi dezactivat (lista oferă reactivarea întâi), apoi reactivat: înapoi la gratuit.
+  // Gratuit, apoi dezactivat (lista oferă reactivarea întâi), apoi reactivat: înapoi la gratuit. Cât lista se recitește
+  // după schimbare (citirea e ținută aici), nimic nu pleacă: planul arătat ar fi cel vechi, iar serverul l-ar refuza.
+  let elibereaza = (): void => {};
+  const tinut = new Promise<void>((ok) => { elibereaza = ok; });
+  const citire = (u: URL): boolean => u.pathname.endsWith('/documents:runQuery');
+  let tinute = 0;
+  await page.route(citire, async (r) => {
+    if ((r.request().postData() ?? '').includes('"conturi"')) { tinute += 1; await tinut; }
+    await r.continue();
+  });
   await schimba(page, 'ana@exemplu.ro', 'gratuit');
+  await expect(page.locator('[data-util="gata"]')).toHaveText('Planul contului ana@exemplu.ro: Gratuit.', LENT);
+  await expect.poll(() => tinute, { message: 'citirea listei e ținută' }).toBe(1);
+  await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'proba');
+  await expect(detaliu(page).locator('[data-util="salveaza-plan"]')).toBeDisabled();
+  elibereaza();
+  await page.unroute(citire);
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
+  await expect(detaliu(page).locator('[data-util="salveaza-plan"]')).toBeEnabled();
   await expect(rand(page, 'ana@exemplu.ro').locator('[data-util="drept"]')).toHaveText('nelimitat');
   await schimba(page, 'ana@exemplu.ro', 'dezactiveaza');
   await expect(rand(page, 'ana@exemplu.ro')).toHaveAttribute('data-plan', 'dezactivat', LENT);
@@ -214,8 +230,8 @@ test('owner-ul vede conturile în tabel, cu filtrele pe plan și căutarea; cont
   await page.locator('[data-util="reincarca"]').click();
   await expect(rand(page, 'bob@exemplu.ro')).toHaveAttribute('data-plan', 'gratuit', LENT);
 
-  // Sub 800 px, panoul trece sub tabel și nimic nu iese din ecran.
-  await page.setViewportSize({ width: 700, height: 900 });
+  // Sub 1 100 px, panoul trece sub tabel și nimic nu iese din ecran.
+  await page.setViewportSize({ width: 1000, height: 900 });
   const tabel2 = await page.locator('[data-util="tabel"]').boundingBox();
   const panou2 = await detaliu(page).boundingBox();
   if (!tabel2 || !panou2) throw new Error('tabelul și panoul nu sunt pe pagină');

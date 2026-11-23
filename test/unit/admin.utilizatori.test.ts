@@ -100,6 +100,9 @@ test('dreptul pe scurt: gratuit fără termen, proba cu zilele rămase (rotunjit
   assert.deepEqual(dreptScurt(cristi, ACUM), { fel: 'nelimitat' });
   assert.equal(dreptScurt(dan, ACUM), null);
   assert.equal(dreptScurt(eva, ACUM), null, 'personalul are tot: fără termen de arătat');
+  // Un sfârșit de probă ținut pe un cont dezactivat sau al personalului nu e un termen de arătat.
+  assert.equal(dreptScurt(cont('d2', { plan: 'dezactivat', probaPana: ts('2026-10-30T10:00:00Z') }), ACUM), null);
+  assert.equal(dreptScurt(cont('e2', { plan: 'proba', probaPana: ts('2026-10-30T10:00:00Z'), drept: drept('personal') }), ACUM), null);
   assert.equal(dreptScurt(contDin('x', { plan: 'xyz' }), ACUM), null, 'un plan necunoscut e expirat, fără dată');
 });
 
@@ -116,12 +119,14 @@ test('istoricul planului: doar schimbările de plan din audit, cea mai nouă în
     rand('x', '2026-11-06T10:00:00Z', 'tichete.raporteaza', 'ana', null, { fel: 'problema' }),
     rand('f', null, 'conturi.proba', 'eu', 'owner', { plan: 'proba', probaPana: 'mâine' }),
     rand('e', '2026-11-06T09:00:00Z', 'conturi.proba', 'eu', 'owner', { plan: 'ceva' }),
+    // Contul unui om din personal, deschis de el: tot o deschidere, deși nu e a unui client.
+    rand('g', '2026-10-31T10:00:00Z', 'conturi.creeaza', 'eu', 'owner', { email: 'eu@exemplu.ro', plan: 'proba', probaPana: pana }),
   ]);
-  assert.deepEqual(pasi.map((p) => p.id), ['e', 'd', 'c', 'b', 'a', 'f'], 'numele și tichetele nu sunt ale planului; data necunoscută, la urmă');
-  assert.deepEqual(pasi.map((p) => p.plan), [null, 'proba', 'dezactivat', 'gratuit', 'proba', 'proba'], 'un plan necunoscut rămâne necunoscut');
-  assert.deepEqual(pasi.map((p) => p.probaPana?.getTime() ?? null), [null, pana + 30 * ZI, null, null, pana, null], 'sfârșitul se spune doar la o probă');
-  assert.deepEqual(pasi.map((p) => p.cine), ['eu', 'personal', 'personal', 'eu', 'client', 'eu']);
-  assert.deepEqual(pasi.map((p) => p.creare), [false, false, false, false, true, false]);
+  assert.deepEqual(pasi.map((p) => p.id), ['e', 'd', 'c', 'b', 'a', 'g', 'f'], 'numele și tichetele nu sunt ale planului; data necunoscută, la urmă');
+  assert.deepEqual(pasi.map((p) => p.plan), [null, 'proba', 'dezactivat', 'gratuit', 'proba', 'proba', 'proba'], 'un plan necunoscut rămâne necunoscut');
+  assert.deepEqual(pasi.map((p) => p.probaPana?.getTime() ?? null), [null, pana + 30 * ZI, null, null, pana, pana, null], 'sfârșitul se spune doar la o probă');
+  assert.deepEqual(pasi.map((p) => p.cine), ['eu', 'personal', 'personal', 'eu', 'client', 'eu', 'eu']);
+  assert.deepEqual(pasi.map((p) => p.creare), [false, false, false, false, true, true, false], 'deschiderea se cunoaște după acțiune, nu după cine a făcut-o');
   assert.deepEqual(istoricPlan([]), []);
 });
 

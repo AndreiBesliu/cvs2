@@ -290,10 +290,18 @@ test('matricea rol × permisiune: toate rolurile alături; un rol se editează p
   // Cât se editează un rol, celelalte nu se ating: nici alt „Editează”, nici „Rol nou”.
   await expect(cap('Dezvoltator').locator('[data-personal="editeaza"]')).toBeDisabled();
   await expect(page.locator('[data-personal="rol-nou-buton"]')).toBeDisabled();
-  // „Renunță” lasă rolul cum era, fără nicio cerere.
+  // „Renunță” lasă rolul cum era, fără nicio cerere spre server.
+  const cereri: string[] = [];
+  const noteaza = (q: { url(): string; method(): string }): void => {
+    const u = new URL(q.url());
+    if (u.port === '5005' && q.method() === 'POST') cereri.push(u.pathname.split('/').pop() ?? '');
+  };
+  page.on('request', noteaza);
   await celula(page, 'Suport', 'tichete.raspunde').locator('input').uncheck();
   await page.locator('[data-personal="renunta-rol"]').click();
   await expect(matrice.locator('input')).toHaveCount(0);
+  expect(cereri, '„Renunță” nu trimite nimic').toEqual([]);
+  page.off('request', noteaza);
   expect(await are('Suport')).toEqual(['erori.citeste', 'tichete.citeste', 'tichete.raspunde']);
   // Editat și salvat: numele și bifele noi, pe server și în matrice.
   await cap('Suport').locator('[data-personal="editeaza"]').click();
