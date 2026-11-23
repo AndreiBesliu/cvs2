@@ -12,7 +12,7 @@ import type { Config } from './config.ts';
 import { contDinRaspuns, contTinut, puneCont, useContTinut } from './dreptCont.ts';
 import { textEroareCont, useFereastraCont } from './ferestreCont.ts';
 import { puneRaportariNecitite } from './raportariNecitite.ts';
-import type { Inregistrator, RezultatPompa } from './utilizareLot.ts';
+import type { Inregistrator, RezultatPompa } from './utilizareTipuri.ts';
 import { trimiteCoada } from './utilizareTrimitere.ts';
 
 /** Raportările (ADR 0116 §C) stau în bucata panoului: aceeași legătură cu contul, tot doar online. */

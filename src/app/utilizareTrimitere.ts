@@ -1,5 +1,5 @@
 import type { Lot, RaspunsLot } from '../../shared/utilizare.ts';
-import type { Inregistrator, RezultatPompa } from './utilizareLot.ts';
+import type { Inregistrator, RezultatPompa } from './utilizareTipuri.ts';
 
 /**
  * Trimiterea cozii utilizării (ADR 0262, felia A.8b), partea pură: o aduce bucata contului (`trimiteUtilizarea` din

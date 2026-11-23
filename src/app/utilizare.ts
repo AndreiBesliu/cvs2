@@ -1,6 +1,6 @@
 import type { Eveniment, Fereastra, Sursa } from '../../shared/utilizare.ts';
 import type { Config } from './config.ts';
-import type { Inregistrator, RezultatPompa } from './utilizareLot.ts';
+import type { Inregistrator, RezultatPompa } from './utilizareTipuri.ts';
 
 /**
  * Utilizarea aplicației (ADR 0262, felia A.8b), partea din pornire: cât mai mică, fără Firebase. Ține sursa gestului de acum

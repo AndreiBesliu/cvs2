@@ -5,7 +5,10 @@ import {
 import type { Config } from './config.ts';
 import { contTinut } from './dreptCont.ts';
 import type { Depozit } from './jurnalErori.ts';
+import type { Inregistrator, LotTinut, RezultatPompa } from './utilizareTipuri.ts';
 import { preiaUtilizarea, trimiterea } from './utilizare.ts';
+
+export type { Inregistrator, LotTinut, RezultatPompa } from './utilizareTipuri.ts';
 
 /**
  * Înregistratorul utilizării aplicației (ADR 0262, felia A.8b), bucata adusă imediat după pornire (în precache: merge și
@@ -24,12 +27,6 @@ export const EVENIMENTE_IN_ASTEPTARE = 2_000;
 /** O acțiune repetată la rând (același id, aceeași sursă, același rezultat) se numără în aceeași, până la o pauză atât de lungă. */
 export const PAUZA_REPETARE_MS = 2_000;
 
-/** Un lot care așteaptă, cu contul care l-a strâns: altul, intrat după el în același browser, nu-l trimite în numele lui. */
-export interface LotTinut {
-  readonly uid: string;
-  readonly lot: Lot;
-}
-
 export interface DepsInregistrator {
   /** Ceasul sesiunii: ms de la încărcarea paginii. */
   readonly ceas: () => number;
@@ -42,31 +39,6 @@ export interface DepsInregistrator {
   readonly sursa: () => Sursa;
   /** Lotul s-a umplut și s-a închis singur: e de trimis. */
   readonly laLotPlin?: () => void;
-}
-
-export interface Inregistrator {
-  /** Un eveniment gata făcut (cu timpul și sursa lui), de la pornire. */
-  primeste(ev: Eveniment): void;
-  actiune(id: string, rez: string): void;
-  fereastra(id: Fereastra): void;
-  unealta(id: string): void;
-  /** Lotul de acum, la coada din browser (nimic dacă e gol). */
-  inchideLotul(): void;
-  /** Un lot gol, doar ca serverul să spună setările (cât colectarea e oprită). */
-  intreabaSetarile(): void;
-  /** Loturile care așteaptă, cele mai vechi întâi (citite din browser: și ale altor file). */
-  loturi(): readonly LotTinut[];
-  /** Un lot trimis (sau aruncat) pleacă din coadă. */
-  scoate(sesiune: string, nr: number): void;
-  /** Setările aflate de la server; colectarea oprită golește lotul și coada. */
-  primesteSetari(s: SetariPublice): void;
-  /** Nimic nu mai așteaptă (contul a plecat, serverul a refuzat). */
-  golesteTot(): void;
-  setari(): SetariPublice;
-  /** Pașii dinaintea unei erori: ultimele evenimente, cel mult cât cer setările. */
-  pasi(): readonly Eveniment[];
-  /** Câte evenimente are lotul de acum. */
-  inLot(): number;
 }
 
 /** O acțiune ținută ca să-i numărăm repetările (în lot și în inel e același obiect). */
@@ -195,9 +167,6 @@ export function creeazaInregistrator(d: DepsInregistrator): Inregistrator {
     inLot: () => lot.length,
   };
 }
-
-/** Rezultatul unei trimiteri a cozii: toată trimisă; rețeaua (mai târziu); refuzată (nimic nu mai pleacă în sesiunea asta). */
-export type RezultatPompa = 'gata' | 'retea' | 'stins';
 
 export interface DepsPompa {
   readonly ins: Inregistrator;
